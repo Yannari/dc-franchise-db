@@ -5,7 +5,9 @@
 // Placeholders: {a} the queen the line is about, {h} the holder, {w} the
 // maxi winner, {s} the saved queen, {c} {d} the two left to sing, {l} the
 // lever, {n} how many levers were in play, {k} the week's maxi challenge, {r}
-// the runway category. Never a name typed in.
+// the runway category, {t} how often a queen has been saved ("twice"), {y}
+// what she did since ("a win"), {x} on the stage the queen passed over for
+// having been saved before. Never a name typed in.
 //
 // A LINE THAT ASSUMES A KIND OF CHALLENGE SAYS SO: `{ fam: [...], line }`,
 // with the families from js/dr/data/maxi-performance.js. "My look was
@@ -80,6 +82,18 @@ export const SAVE_BEATS = {
     debt: [
       '{h} saves {s}. She owed her, and she knows it.',
       '{h} saves {s}, the queen who once did the same for her.',
+    ],
+    spread: [
+      '{h} saves {s}. {x} has been saved before, and {h} decided it was somebody else\'s turn.',
+      '"{x}, you have had your save," {h} says. "{s}, this one is yours."',
+    ],
+    'merit-again': [
+      '{h} saves {s}, saved {t} now. "I do not care how many times. She did not belong up there."',
+      '{h} saves {s} again. The room groans, and {h} does not look sorry.',
+    ],
+    favorite: [
+      '{h} saves {s}. Again. Nobody on that stage is surprised.',
+      '{h} says {s}\'s name before the host has finished the question. It is the same name as last time.',
     ],
   },
   saveLeft: [
@@ -172,6 +186,11 @@ export const SAVE_BEATS = {
       '{a} is blunt. "Those two can lip sync. I cannot. If you send me out there, I am gone."',
       '"Be honest, {b}. Which of us survives that song? Not me," {a} says.',
     ],
+    'pitch-my-turn': [
+      '"{c} has been saved {t}," {a} tells {b}. "I have never been saved. Not once. It is my turn."',
+      '{a} does the maths out loud for {b}. "{c}, saved {t}. Me, never. You tell me what is fair."',
+      '"Give it to somebody who has not had it," {a} says to {b}, looking straight at {c}.',
+    ],
     'pitch-noble': [
       '{a} surprises everybody. "Don\'t save me. Save one of them. I will win the lip sync."',
       '"I am not going to beg," {a} tells {b}. "Give me the song. I want it."',
@@ -210,6 +229,15 @@ export const SAVE_BEATS = {
       '"Her record is exactly why you should not save her," {a} tells {b} about {c}.',
       '{a} leans over. "You save {c}, you are saving the queen who beats you in the finale."',
     ],
+    'rebut-turn-over': [
+      '"She has been saved {t} already," {a} tells {b} about {c}. "How many lives does she get?"',
+      '{a} does not let {c} finish. "You have been saved {t}. Sit this one out."',
+      '"At some point the save is just a babysitter," {a} says. {c} has been saved {t}, and everybody knows it.',
+    ],
+    'saved-delivered': [
+      '"Somebody saved me and I came back with {y}," {a} tells {b}. "That is not a charity case, {c}. That is an investment."',
+      '{a} turns on {c}. "Yes, I was saved {t}. And since then? {y}. What have you done?"',
+    ],
     'rebut-friend': [
       '"Friends? {c} has been friends with everyone this week," {a} tells {b}.',
       '{a} rolls her eyes at {c}. "Do not fall for the best-friend act, {b}."',
@@ -239,6 +267,14 @@ export const SAVE_BEATS = {
       '{b} cuts {a} off mid-story. "I know what you are doing, and it is not working."',
     ],
     // Round 3: the holder answers.
+    'holder-no-score': [
+      '{a} shakes her head. "I am not keeping score. I am saving whoever should not be up there tonight."',
+      '"I do not care how many times {b} has been saved," {a} says. "I care about tonight."',
+    ],
+    'holder-fair': [
+      '"Everybody deserves a turn," {a} says, and does not look at {b}. {b} notices.',
+      '{a} admits it out loud: "{b} has had it {t}. That matters to me."',
+    ],
     'holder-stall': [
       '{a} holds up her hands. "I have not decided. Please stop asking me."',
       '"I need to think," {a} says, and walks to the bar so nobody can follow her.',
@@ -315,6 +351,10 @@ export const SAVE_BEATS = {
       self: [
         '"And then there is me," {h} says. "Standing in the bottom with the power in my hand."',
       ],
+      again: [
+        '"{x}, you have been here before, and somebody saved you. I have not forgotten that."',
+        '"{x}, you know you have had a save already."',
+      ],
     },
     suspense: [
       '{h} takes a breath. "The queen I am saving tonight is..."',
@@ -359,6 +399,9 @@ export const SAVE_BEATS = {
         plea: ['"What {s} said back there got to me. I hope I do not regret it."'],
         debt: ['"{s} saved me once. I pay my debts. That is who I am."'],
         self: ['"I was not going home holding my own lifeline. Obviously I saved myself."'],
+        spread: ['"{x} already had her save. It was not fair to hand her another one."'],
+        'merit-again': ['"People will say I saved {s} again. I saved the best queen in that bottom. That is all."'],
+        favorite: ['"Yes, I saved {s} again. She is my girl. I would do it a third time."'],
       },
       snubbed: [
         '"{h} made her choice. I will remember it when it is my turn."',
@@ -380,6 +423,16 @@ export const SAVE_BEATS = {
   promiseBroken: [
     '{h} promised {s} a save. Tonight she had the chance, and she did not take it.',
     '{s} looks at {h} and waits. {h} does not say her name.',
+  ],
+  /* The two left to sing, when the holder saved her favourite again. */
+  favoritism: [
+    '{c} and {d} look at each other. "Of course," {c} says. "Of course it is {s}."',
+    '"That was never a decision," {d} mutters. "{h} was always saving {s}."',
+  ],
+  /* The queen passed over because she had been saved before. */
+  passedOver: [
+    '{x} stares at {h}. "So I get punished for being saved once?"',
+    '{x} nods slowly. She knows exactly why it was not her.',
   ],
   grudge: [
     '{h} has not forgotten that {s} left her in the bottom. {s} is not saved.',

@@ -53,7 +53,7 @@ import { showWords } from '../shows.js';
 import { familyForChallenge } from './data/maxi-performance.js';
 import { chooseResultOrder } from './data/results-order.js';
 import { saveKind, saveLiveTonight, holderSave, holderEffects, luckSave, luckEffects,
-  campaignTargets, runCampaign, settleMemory, takeFallout } from './saves.js';
+  campaignTargets, runCampaign, settleMemory, takeFallout, timesSaved } from './saves.js';
 import { SAVE_BEATS, fillSave, pickSave, linesFor } from './data/save-beats.js';
 import { rngFor } from './rng.js';
 
@@ -978,6 +978,7 @@ export function runDragWeek(state, cfg, ctx) {
        bottom, so the campaign is what Untucked is about. The scenes are held
        here and spliced in after the room's arrival beats, once the night is
        sorted. */
+    const timesLabel = t => (t === 1 ? 'once' : t === 2 ? 'twice' : t ? `${t} times` : '');
     const winsLabel = q => {
       const w = (state.record?.[q] || []).filter(r => r === 'WIN').length;
       return w === 1 ? 'a win' : `${w} wins`;
@@ -1005,10 +1006,12 @@ export function runDragWeek(state, cfg, ctx) {
       applyEventLike(ev);
       werkEvents.push({ type: `campaign:${ev.id}`, players: [ev.a, ev.b, ev.c].filter(Boolean),
         bond: ev.bond, pop: ev.pop, state: {}, data: {} });
-      const vars = { a: ev.a, b: ev.b, c: ev.c, w: ev.w, n: ev.c ? winsLabel(ev.c) : winsLabel(ev.a) };
+      const vars = { a: ev.a, b: ev.b, c: ev.c, w: ev.w, n: ev.c ? winsLabel(ev.c) : winsLabel(ev.a),
+        t: timesLabel(ev.t), y: ev.y };
       // A bond chip belongs to the two queens the line is about.
       const shown = ['rebut-threat', 'rebut-deserve', 'expose-deal', 'rebut-record', 'rebut-friend',
-        'shouting-match', 'throw-under', 'counter', 'clap-back'].includes(ev.id) ? [ev.a, ev.c] : [ev.a, ev.b];
+        'shouting-match', 'throw-under', 'counter', 'clap-back', 'rebut-turn-over', 'saved-delivered',
+        'pitch-my-turn'].includes(ev.id) ? [ev.a, ev.c] : [ev.a, ev.b];
       camScene(`campaign:${ev.id}`, {
         players: shown.filter(Boolean), about: ev.c || null, target: ev.b, move: ev.id, round: ev.round,
       }, saveLine(SAVE_BEATS.campaign[ev.id], vars), ev);
@@ -1039,6 +1042,8 @@ export function runDragWeek(state, cfg, ctx) {
     };
     call.atRisk = [...holderRes.savedAll];
     call.bottom = [...holderRes.singers];
+    // Before tonight's save is written down: who had been saved already.
+    const priorSaved = Object.fromEntries(holderRes.pool.map(q => [q, timesSaved(saves, q)]));
     saves.uses.push({ ep: cfg.num, giver, picks: holderRes.picks });
     const memory = settleMemory(saves, holderRes, cfg.num);
     holderRes.memory = memory;
@@ -1069,6 +1074,7 @@ export function runDragWeek(state, cfg, ctx) {
         const pleaded = ((holderRes.pleas || {})[h] || {})[x] || 0;
         const tone = x === h ? 'self'
           : pleaded >= 0.8 ? 'pleaded'
+            : (priorSaved[x] || 0) > 0 && b0 < 3 ? 'again'
             : b0 >= 3 ? 'friend'
               : b0 <= -2 ? 'rival'
                 : winsOf(x) >= 2 ? 'threat' : 'neutral';
@@ -1078,7 +1084,7 @@ export function runDragWeek(state, cfg, ctx) {
       // 3. The wait.
       saveScene('save-hold', 'suspense', { players: [h], holder: h }, saveLine(C.suspense, { h }));
       // 4. The name.
-      const vars = { h, s: pk.saved, c, d };
+      const vars = { h, s: pk.saved, c, d, x: pk.passed || '', t: timesSaved(saves, pk.saved) === 1 ? 'once' : timesSaved(saves, pk.saved) === 2 ? 'twice' : `${timesSaved(saves, pk.saved)} times` };
       const tier = pk.selfSave ? SAVE_BEATS.saveHold.self
         : SAVE_BEATS.saveHold[pk.why] || SAVE_BEATS.saveHoldExtra[pk.why] || SAVE_BEATS.saveHold.merit;
       saveScene('save-hold', 'saved', {
@@ -1100,6 +1106,14 @@ export function runDragWeek(state, cfg, ctx) {
           { players: [pr.from, pr.to], holder: pr.from },
           saveLine(pr.kept ? SAVE_BEATS.promiseKept : SAVE_BEATS.promiseBroken, { h: pr.from, s: pr.to }));
       }
+      if (pk.why === 'favorite') {
+        saveScene('save-hold', 'favoritism', { players: [...holderRes.singers, h], holder: h },
+          saveLine(SAVE_BEATS.favoritism, { h, s: pk.saved, c, d }));
+      }
+      if (pk.passed && holderRes.singers.includes(pk.passed)) {
+        saveScene('save-hold', 'passed-over', { players: [pk.passed, h], holder: h },
+          saveLine(SAVE_BEATS.passedOver, { h, x: pk.passed, s: pk.saved }));
+      }
       for (const q of pk.snubbed || []) {
         saveScene('save-hold', 'grudge', { players: [h, q], holder: h },
           saveLine(SAVE_BEATS.grudge, { h, s: q }));
@@ -1120,7 +1134,7 @@ export function runDragWeek(state, cfg, ctx) {
     for (const pk of holderRes.picks) {
       const why = pk.selfSave ? 'self' : pk.why;
       saveScene('save-hold', 'confessional', { players: [pk.holder], who: pk.holder, confessional: true, holder: pk.holder },
-        saveLine(C.confessional.holder[why] || C.confessional.holder.merit, { h: pk.holder, s: pk.saved }));
+        saveLine(C.confessional.holder[why] || C.confessional.holder.merit, { h: pk.holder, s: pk.saved, x: pk.passed || '' }));
     }
     const sorest = [...holderRes.singers].sort((x, y) => (before[`${lastHolder}|${y}`] || 0) - (before[`${lastHolder}|${x}`] || 0))[0];
     if (sorest) {

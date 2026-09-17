@@ -791,11 +791,14 @@ const BUBBLE = {
   'rebut-record': 'that is why not', 'rebut-friend': 'fake friend', counter: 'I did more', 'clap-back': 'say it to my face',
   'shouting-match': 'shouting', stir: 'stirring', 'stir-caught': 'caught', 'holder-stall': 'undecided',
   'holder-hope': "don't worry", 'holder-snap': 'enough', 'holder-question': 'why you?',
+  'pitch-my-turn': 'my turn', 'rebut-turn-over': 'she had her turn', 'saved-delivered': 'I delivered',
+  'holder-no-score': 'not keeping score', 'holder-fair': 'everybody gets a turn',
 };
 const TONE = {
   'throw-under': 'throw', 'cold-shoulder': 'cold', backfired: 'cold', 'rebut-threat': 'throw', 'rebut-deserve': 'throw',
   'expose-deal': 'throw', 'rebut-record': 'throw', 'rebut-friend': 'throw', counter: 'throw', 'clap-back': 'throw',
-  'shouting-match': 'throw', stir: 'throw', 'holder-snap': 'cold',
+  'shouting-match': 'throw', stir: 'throw', 'holder-snap': 'cold', 'rebut-turn-over': 'throw',
+  'saved-delivered': 'throw', 'pitch-my-turn': 'throw',
 };
 const upper = t => (t ? t[0].toUpperCase() + t.slice(1) : t);
 
@@ -934,6 +937,11 @@ export function rpBuildSaveHold(row, scenes = []) {
           caption: cap(`Confessional · ${who}`, sc.text) };
       case 'save:left':
         return { ...common, phase: 'left', ...base, reveal: '', caption: cap('Lip sync for your life', sc.text) };
+      case 'save:favoritism':
+      case 'save:passed-over':
+        return { ...common, phase: 'saved', ...base, talk: who, tone: 'bitter',
+          bubble: sc.kind === 'save:favoritism' ? 'of course' : 'because I was saved?',
+          caption: cap(sc.kind === 'save:favoritism' ? 'Again?' : 'Passed over', sc.text) };
       default:   // repaid, promise-kept/broken, grudge
         return { ...common, phase: 'saved', ...base, talk: (sc.data?.players || [])[1] || null, tone: 'saved', bubble: '',
           caption: cap('What it settled', sc.text) };
@@ -948,6 +956,7 @@ export function rpBuildSaveHold(row, scenes = []) {
     'save:handoff': 'The hand-off', 'save:invoke': 'The host', 'save:speech': `${sc.data?.holder || ''} speaks`,
     'save:suspense': 'The wait', 'save:saved': `${sc.data?.holder || hold.holder} decides`, 'save:host-react': 'The host',
     'save:reaction': 'Reaction', 'save:confessional': `Confessional · ${sc.data?.who || ''}`, 'save:left': 'Lip sync for your life',
+    'save:favoritism': 'Again?', 'save:passed-over': 'Passed over',
   }[sc.kind] || 'What it settled');
   const cards = list.map((sc, i) => card('savehold', i, sc, ep, tagOf(sc), meta.color)
     .replace('class="svx-card"', `class="svx-card${sc.kind === 'save:saved' ? ' svx-card-reveal' : sc.kind === 'save:confessional' ? ' svx-card-confess' : ''}"`));

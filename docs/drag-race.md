@@ -253,6 +253,27 @@ holder), and a holder torn between friends. Nice archetypes never make deals
 or throw anyone under the bus. Every move moves bonds or popularity and a plea
 weight the decision reads.
 
+**How the holder weighs it** (`holderMind`): three pulls, and every queen has
+all three: *strategy* (strategic, low loyalty), *merit* (boldness,
+intuition) and *fair* (social, loyalty). The archetype tilts them (villains
+×1.6 strategy, nice queens ×0.45 strategy and ×1.3 fair, challenge beasts
+×1.3 merit) and never zeroes one, so a hero still wants to win. They sum to
+one. `ballotSelfishness` (zero for nice queens) is still what the legacy
+choice and Rate-a-Queen use; the save no longer does.
+
+**Already saved** (`timesSaved`, from `saves.uses`): a queen never saved can
+pitch "it's my turn" (`pitch-my-turn`); one who was saved before can be told
+"you've had your turn" (`rebut-turn-over`), both more likely the more saves
+she has had. She can answer with what she did since (`saved-delivered`, a
+merit answer). The holder can reply "I'm not keeping score"
+(`holder-no-score`, merit) or "everybody gets a turn" (`holder-fair`).
+In the decision the history is a penalty scaled by *fair* and softened by
+*merit* × her wins and highs since the save. It is a probability, never a
+rule. Why labels: `spread` (her top pick lost it to her history; that queen
+takes it personally), `merit-again`, `favorite` (her friend, saved by her
+again: the two singers cool on her). Over 40 seeds the Beaver's repeat-save
+rate went from 37.6% to 30.0%, and the Baguette's from 31.5% to 27.4%.
+
 **The ceremony** (`save-hold`): the host invokes the power in the wiki's
 words ("You've earned the power of the Golden Beaver" / "Heavy is the hand
 who holds the Beaver. Who do you want to save from the chomping block?"),

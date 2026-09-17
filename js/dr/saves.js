@@ -50,7 +50,6 @@
 //
 // PLAIN DATA ONLY on `state.saves` — it is serialised with the season and
 // snapshotted per episode, so a re-run rebuilds the same tank.
-import { ballotSelfishness } from './rate.js';
 import { noise } from './perform.js';
 
 export const SAVE_KINDS = {
@@ -165,6 +164,48 @@ function canScheme(p) {
   return stat(p, 'strategic') >= 6 && stat(p, 'loyalty') <= 4;
 }
 
+/* ── HOW A QUEEN WEIGHS A SAVE ─────────────────────────────────────────
+   Three pulls, and every queen feels all three. Nobody is only one thing:
+     strategy  keep the queen I can beat              strategic, low loyalty
+     merit     save whoever did not deserve the bottom boldness, intuition
+     fair      spread it around, reward the people     social, loyalty
+   The archetype leans on them (a villain plays harder, a nice queen spreads
+   it around more) but never zeroes one: a hero still wants to win, a villain
+   still notices who was robbed. Normalised, so the three sum to one.
+   This is the save's own read; `ballotSelfishness` stays as the legacy
+   choice and Rate-a-Queen use it, where the nice-queen zero is the rule. */
+const NICE_MIND = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
+const VILLAIN_MIND = new Set(['villain', 'mastermind', 'schemer']);
+const MERIT_MIND = new Set(['challenge-beast', 'hothead', 'perceptive-player']);
+export function holderMind(p) {
+  const a = p?.archetype || '';
+  const s = stat(p, 'strategic') / 10;
+  const l = stat(p, 'loyalty') / 10;
+  const strat = 0.05 + s * (1.2 - l) * (VILLAIN_MIND.has(a) ? 1.6 : NICE_MIND.has(a) ? 0.45 : 1);
+  const merit = 0.1 + (stat(p, 'boldness') + stat(p, 'intuition')) / 20 * (MERIT_MIND.has(a) ? 1.3 : 1);
+  const fair = 0.1 + (stat(p, 'social') + stat(p, 'loyalty')) / 20
+    * (NICE_MIND.has(a) ? 1.3 : VILLAIN_MIND.has(a) ? 0.5 : 1);
+  const t = strat + merit + fair;
+  return { strategy: strat / t, merit: merit / t, fair: fair / t };
+}
+
+/** How many times this season's save has already gone to `q`. */
+export function timesSaved(saves, q) {
+  return (saves?.uses || []).reduce((n, u) => n + (u.picks || []).filter(x => x.saved === q).length, 0);
+}
+/** The last episode she was saved on, or 0. */
+function lastSavedEp(saves, q) {
+  return (saves?.uses || []).filter(u => (u.picks || []).some(x => x.saved === q))
+    .reduce((m, u) => Math.max(m, Number(u.ep) || 0), 0);
+}
+/** What she did with it: wins and highs on the chart since that save. */
+export function deliveredSince(saves, q, state) {
+  const ep = lastSavedEp(saves, q);
+  if (!ep) return { wins: 0, highs: 0 };
+  const rec = (state?.record?.[q] || []).slice(ep);
+  return { wins: rec.filter(r => r === 'WIN').length, highs: rec.filter(r => r === 'HIGH').length };
+}
+
 const pick = (rng, arr) => arr[Math.floor(rng() * arr.length)];
 function weighted(rng, opts) {
   const total = opts.reduce((t, o) => t + Math.max(0, o.w), 0);
@@ -221,7 +262,9 @@ export function runCampaign({ saves, targets, pool, living, players, bond, rng, 
     if (cur) (cur.plea ||= []).push([h, q, d]);
   };
   const B = (x, y) => Number(bond(x, y)) || 0;
-  const appOf = n => ballotSelfishness(players[n]);
+  const appOf = n => holderMind(players[n]).strategy;
+  const mind = n => holderMind(players[n]);
+  const again = q => timesSaved(saves, q);
   const lip = n => num(players[n]?.drag?.lipsync);
   const wins = n => (state.record?.[n] || []).filter(r => r === 'WIN').length;
   const threat = n => threatOf(n, state, players);
@@ -242,7 +285,12 @@ export function runCampaign({ saves, targets, pool, living, players, bond, rng, 
     const bestTonight = pool.indexOf(p) === 0;
     const worstLip = others.every(q => lip(p) <= lip(q));
     const bestLip = others.every(q => lip(p) >= lip(q));
+    /* "SHE HAS HAD HER TURN." A queen never saved, standing next to one who
+       has been, has a reason nobody else has — and it grows with every save
+       the other queen has had. */
+    const repeat = others.filter(q => again(q) > 0).sort((x, y) => again(y) - again(x))[0];
     const opts = [
+      { id: 'pitch-my-turn', w: repeat && !again(p) ? 0.6 + again(repeat) * 0.8 : 0 },
       { id: 'debt-called', w: owed ? 8 : 0 },
       { id: 'promise', w: canScheme(P) ? 1.6 + appOf(p) * 2 : 0 },
       { id: 'pitch-friend', w: b >= 2 ? 1 + b * 0.4 : 0 },
@@ -260,6 +308,14 @@ export function runCampaign({ saves, targets, pool, living, players, bond, rng, 
     cur = ev;
     switch (o.id) {
       case 'debt-called': plea(h, p, 0.4); ev.bond.push([p, h, 0.2]); break;
+      case 'pitch-my-turn': {
+        // Lands on a queen who spreads it around; a merit queen barely hears it.
+        const m = mind(h);
+        ev.c = repeat; ev.t = again(repeat);
+        plea(h, p, 0.15 + m.fair * 1.1 * Math.min(2, ev.t) - m.merit * 0.2);
+        ev.bond.push([p, repeat, -0.8]);
+        break;
+      }
       case 'promise':
         plea(h, p, 0.6 + app * 0.8); ev.bond.push([p, h, 0.5]);
         (saves.promises ||= []).push({ from: p, to: h, ep, open: true });
@@ -300,10 +356,12 @@ export function runCampaign({ saves, targets, pool, living, players, bond, rng, 
       if (ev.id === 'pitch-deserve') opts.push('rebut-deserve');
       if (ev.id === 'promise' && stat(R, 'intuition') >= 5) opts.push('expose-deal');
       if (ev.id === 'pitch-record') opts.push('rebut-record');
+      if (again(p) > 0 && !again(r) && ev.id !== 'pitch-my-turn') opts.push('rebut-turn-over');
       if (ev.id === 'pitch-friend' && (canScheme(R) || B(r, p) <= 0)) opts.push('rebut-friend');
       if (!['cold-shoulder', 'breakdown', 'pitch-noble'].includes(ev.id)) opts.push('counter');
       for (const id of opts) {
-        const w = (id === 'counter' ? 0.8 : 1.6) + Math.max(0, -B(r, p)) * 0.3;
+        const w = (id === 'counter' ? 0.8 : id === 'rebut-turn-over' ? 1 + again(p) * 0.7 : 1.6)
+          + Math.max(0, -B(r, p)) * 0.3;
         replies.push({ id, r, p, h, w, after: ev });
       }
     }
@@ -345,6 +403,13 @@ export function runCampaign({ saves, targets, pool, living, players, bond, rng, 
         plea(o.h, o.p, hNice ? -0.8 : -0.2); ev.bond.push([o.r, o.p, -2]); ev.pop[o.p] = -0.3;
         break;
       case 'rebut-record': plea(o.h, o.p, -0.4 * appOf(o.h) - 0.1); ev.bond.push([o.r, o.p, -1]); break;
+      case 'rebut-turn-over': {
+        const m = mind(o.h);
+        ev.t = again(o.p);
+        plea(o.h, o.p, -(0.1 + m.fair * 0.9 * Math.min(2, ev.t)) + m.merit * 0.1);
+        ev.bond.push([o.r, o.p, -1.2]);
+        break;
+      }
       case 'rebut-friend': plea(o.h, o.p, -0.3); ev.bond.push([o.r, o.p, -1.2]); ev.bond.push([o.r, o.h, -0.3]); break;
       case 'counter': plea(o.h, o.r, 0.25); plea(o.h, o.p, -0.2); ev.bond.push([o.r, o.p, -0.8]); break;
       case 'shouting-match':
@@ -358,7 +423,18 @@ export function runCampaign({ saves, targets, pool, living, players, bond, rng, 
     threads.get(o.after)?.push(ev);
     // And she fires back, if she is the kind who does.
     const P = players[o.p];
-    if (o.id !== 'shouting-match' && (stat(P, 'boldness') >= 6 || stat(P, 'temperament') <= 4) && rng() < 0.7) {
+    /* "YOU SAVED ME AND I DELIVERED." Told her turn is over, a saved queen
+       who has won or placed since has the answer, and it is a merit answer. */
+    const since = o.id === 'rebut-turn-over' ? deliveredSince(saves, o.p, state) : null;
+    if (since && since.wins + since.highs > 0 && rng() < 0.4 + stat(P, 'boldness') * 0.05) {
+      const m = mind(o.h);
+      const back = { id: 'saved-delivered', round: 2, a: o.p, b: o.h, c: o.r, t: again(o.p),
+        y: since.wins ? (since.wins === 1 ? 'a win' : `${since.wins} wins`) : (since.highs === 1 ? 'a high' : `${since.highs} highs`),
+        bond: [[o.p, o.r, -0.6]], pop: { [o.p]: 0.3 } };
+      cur = back;
+      plea(o.h, o.p, 0.1 + m.merit * (0.5 + since.wins * 0.3 + since.highs * 0.15));
+      threads.get(o.after)?.push(back);
+    } else if (o.id !== 'shouting-match' && (stat(P, 'boldness') >= 6 || stat(P, 'temperament') <= 4) && rng() < 0.7) {
       const good = stat(P, 'social') >= 6;
       const back = { id: 'clap-back', round: 2, a: o.p, b: o.h, c: o.r, bond: [[o.p, o.r, -1]], pop: { [o.p]: 0.2, [o.r]: 0.1 } };
       cur = back;
@@ -376,7 +452,13 @@ export function runCampaign({ saves, targets, pool, living, players, bond, rng, 
     const standing = pool.map(q => ({ q, v: (pleas[h] || {})[q] || 0 })).sort((x, y) => y.v - x.v);
     const pushy = events.find(e => e.b === h && ['promise', 'throw-under', 'expose-deal'].includes(e.id));
     const friend = pool.filter(q => B(h, q) >= 3).sort((x, y) => B(h, y) - B(h, x))[0];
+    const turnTalk = events.some(e => e.b === h && ['rebut-turn-over', 'pitch-my-turn'].includes(e.id));
+    const repeatQ = pool.filter(q => again(q) > 0).sort((x, y) => again(y) - again(x))[0];
+    const m = mind(h);
     const opts = [
+      // "I'm not keeping score" / "Everybody deserves a turn": her mind, out loud.
+      { id: 'holder-no-score', w: turnTalk ? m.merit * 3 : 0 },
+      { id: 'holder-fair', w: turnTalk ? m.fair * 3 : 0 },
       { id: 'holder-stall', w: 1.2 },
       { id: 'holder-hope', w: friend ? 1.4 : 0 },
       { id: 'holder-snap', w: pushy && stat(H, 'temperament') <= 5 ? 1.6 : 0 },
@@ -385,7 +467,16 @@ export function runCampaign({ saves, targets, pool, living, players, bond, rng, 
     const o = weighted(rng, opts);
     const ev = { id: o.id, round: 3, a: h, bond: [], pop: {} };
     cur = ev;
-    if (o.id === 'holder-stall') {
+    if (o.id === 'holder-no-score') {
+      ev.b = repeatQ; ev.t = again(repeatQ);
+      plea(h, repeatQ, 0.25);
+      const talker = events.find(e => e.b === h && ['rebut-turn-over', 'pitch-my-turn'].includes(e.id));
+      if (talker) { ev.c = talker.a; ev.bond.push([h, talker.a, -0.4]); }
+    } else if (o.id === 'holder-fair') {
+      ev.b = repeatQ; ev.t = again(repeatQ);
+      plea(h, repeatQ, -0.3);
+      ev.bond.push([h, repeatQ, -0.3]);
+    } else if (o.id === 'holder-stall') {
       ev.b = standing[0]?.q;
       for (const q of pool) ev.bond.push([h, q, -0.15]);
     } else if (o.id === 'holder-hope') {
@@ -460,9 +551,9 @@ export function runCampaign({ saves, targets, pool, living, players, bond, rng, 
      plea    what the campaign did                         (less, for a schemer)
      debt    she repays a queen who saved her              (more, if loyal)
      grudge  she does not save a queen who passed her over (more, if hot-headed)
-   `ballotSelfishness` is the same read the legacy choice and the Rate-a-Queen
-   ballots use, so a hero behaves like a hero here too: it is zero for every
-   nice archetype. */
+     repeat  she was saved already                         (more, if she spreads it around)
+   The weights come from `holderMind`: every queen has all three pulls, so a
+   hero still plays a little and a villain still sees merit. */
 function threatOf(name, state, players) {
   const rec = state.record?.[name] || [];
   const wins = rec.filter(r => r === 'WIN').length;
@@ -473,33 +564,56 @@ function threatOf(name, state, players) {
 
 function chooseSaved({ chooser, pool, state, players, bond, rng, saves, pleas = {} }) {
   const me = players[chooser];
-  const app = ballotSelfishness(me);
+  const mind = holderMind(me);
+  const app = mind.strategy;
   const loyal = stat(me, 'loyalty');
   const hot = 10 - stat(me, 'temperament');
   // `pool` is best-first, so a lower index is the queen the panel liked more.
   const scored = pool.map((q, i) => {
-    if (q === chooser) return { q, s: Infinity, why: 'self' };
+    if (q === chooser) return { q, s: Infinity, base: Infinity, n: 0, why: 'self' };
     const merit = (pool.length - 1 - i) / Math.max(1, pool.length - 1);
     const b = Number(bond(chooser, q)) || 0;
     const debt = (saves?.debts || []).some(d => !d.paid && d.debtor === chooser && d.creditor === q);
     const grudge = (saves?.grudges || []).some(g => g.from === chooser && g.to === q);
     const p = (pleas[chooser] || {})[q] || 0;
-    const s = b * 0.35
-      + merit * (1 - app) * 1.6
+    /* ALREADY SAVED. Weighed by how much she spreads it around, softened
+       when the queen made good on the last one (a merit read), and a close
+       friend feels it less. Never a rule: a probability. */
+    const n = timesSaved(saves, q);
+    const since = n ? deliveredSince(saves, q, state) : { wins: 0, highs: 0 };
+    const repeat = n
+      ? Math.min(2.5, n) * (mind.fair * 0.6 - mind.merit * (since.wins * 0.4 + since.highs * 0.2))
+        * (1 - Math.max(0, b) * 0.06)
+      : 0;
+    const base = b * 0.35
+      + merit * (1 - app) * (0.6 + mind.merit) * 1.6
       - threatOf(q, state, players) * app * 0.9
       + p * (1 - app * 0.4)
       + (debt ? 1.8 * (0.5 + loyal / 20) : 0)
       - (grudge ? 1.0 * (0.5 + hot / 20) : 0)
       + noise(rng, 0.6);
-    const why = debt ? 'debt'
-      : app >= 0.35 ? 'strategy'
+    const s = base - repeat;
+    const mine = (saves?.uses || []).some(u => (u.picks || []).some(x => x.holder === chooser && x.saved === q));
+    let why = debt ? 'debt'
+      : app >= 0.4 ? 'strategy'
         : p >= 0.8 ? 'plea'
           : b >= 3 ? 'friend' : 'merit';
-    return { q, s, why, grudge };
+    // Saved again: on merit it is "she earned it", as a friend it is favouritism.
+    if (n && why === 'merit') why = 'merit-again';
+    else if (n && why === 'friend' && mine) why = 'favorite';
+    return { q, s, base, n, why, grudge };
   }).sort((x, y) => y.s - x.s);
   // A grudge that cost somebody her save is worth saying out loud.
   const snubbed = scored.slice(1).filter(x => x.grudge).map(x => x.q);
-  return { saved: scored[0].q, why: scored[0].why, appetite: app, snubbed };
+  /* SPREAD AROUND: the queen she would have saved had she not been saved
+     already lost it to that history, and the one who got it never had it. */
+  const top = scored[0];
+  const unpenalised = [...scored].sort((x, y) => y.base - x.base)[0];
+  const passed = unpenalised.q !== top.q && unpenalised.n > 0 && !top.n && top.q !== chooser ? unpenalised.q : null;
+  return {
+    saved: top.q, why: passed && !['debt', 'strategy'].includes(top.why) ? 'spread' : top.why,
+    appetite: app, snubbed, passed, times: top.n,
+  };
 }
 
 /**
@@ -509,7 +623,7 @@ function chooseSaved({ chooser, pool, state, players, bond, rng, saves, pleas = 
  * much the friendship counts over the rescue.
  */
 function chooseRecipient({ giver, living, pool, players, bond, rng }) {
-  const app = ballotSelfishness(players[giver]);
+  const app = holderMind(players[giver]).strategy;
   const scored = living.filter(q => q !== giver).map(q => {
     const b = Number(bond(giver, q)) || 0;
     const s = b * (0.45 + app * 0.3)
@@ -537,7 +651,8 @@ export function holderSave({ saves, winners = [], giver = null, pool, living, st
   const picks = [];
   for (const c of choosers) {
     const pk = chooseSaved({ chooser: c, pool: left, state, players, bond, rng, saves, pleas });
-    picks.push({ holder: c, saved: pk.saved, why: pk.why, selfSave: pk.saved === c, snubbed: pk.snubbed });
+    picks.push({ holder: c, saved: pk.saved, why: pk.why, selfSave: pk.saved === c, snubbed: pk.snubbed,
+      passed: pk.passed || null, times: pk.times || 0 });
     left = left.filter(q => q !== pk.saved);
   }
   return {
@@ -604,6 +719,14 @@ export function holderEffects(res, bond, memory = { repaid: [], promises: [] }) 
     add(out.pop, pk.saved, 0.4);
     add(out.tv, h, 1);
     add(out.tv, pk.saved, 0.5);
+    // Her favourite, again: the two left to sing say it, and the room hears it.
+    if (pk.why === 'favorite') {
+      for (const q of res.singers) out.bond.push([q, h, -0.8]);
+      add(out.pop, h, -0.4);
+      add(out.tv, h, 0.5);
+    }
+    // Passed over for having been saved before: she takes it personally.
+    if (pk.passed) out.bond.push([pk.passed, h, -0.6]);
   }
   for (const q of res.singers) {
     for (const pk of res.picks) {

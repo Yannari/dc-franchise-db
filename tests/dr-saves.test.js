@@ -5,7 +5,7 @@
 import { describe, expect, it } from 'vitest';
 import { playDragSeason } from '../js/dr/season.js';
 import { rngFor } from '../js/dr/rng.js';
-import { initSaves, luckSave, holderSave, runCampaign, settleMemory, takeFallout, SAVE_KINDS } from '../js/dr/saves.js';
+import { initSaves, luckSave, holderSave, runCampaign, settleMemory, takeFallout, SAVE_KINDS, holderMind, timesSaved } from '../js/dr/saves.js';
 import { dragScreens, sceneSections } from '../js/vp-dr/screens.js';
 import { SAVE_BEATS, linesFor } from '../js/dr/data/save-beats.js';
 import { familyForChallenge } from '../js/dr/data/maxi-performance.js';
@@ -322,6 +322,104 @@ describe('the campaign and what it leaves behind', () => {
     expect(campaigns).toBeGreaterThan(40);
     expect(repaid, 'no debt was ever repaid in twelve seasons').toBeGreaterThan(0);
     expect(settled, 'no promise was ever kept or broken in twelve seasons').toBeGreaterThan(0);
+  });
+});
+
+describe('already saved', () => {
+  const FAIR = { archetype: 'social-butterfly', stats: { strategic: 3, loyalty: 9, social: 9, boldness: 3, intuition: 3 } };
+  const MERIT = { archetype: 'challenge-beast', stats: { strategic: 3, loyalty: 4, social: 3, boldness: 9, intuition: 9 } };
+  const queens = { A: { drag: { lipsync: 5 } }, B: { drag: { lipsync: 5 } }, C: { drag: { lipsync: 5 } }, S: {} };
+  const history = n => Array.from({ length: n }, (_, i) => ({ ep: i + 2, picks: [{ holder: 'S', saved: 'A' }] }));
+
+  it('every queen weighs all three, in her own proportions', () => {
+    for (const p of [FAIR, MERIT, { archetype: 'villain', stats: {} }, { archetype: 'hero', stats: {} }, {}]) {
+      const m = holderMind(p);
+      expect(m.strategy).toBeGreaterThan(0);
+      expect(m.merit).toBeGreaterThan(0);
+      expect(m.fair).toBeGreaterThan(0);
+      expect(m.strategy + m.merit + m.fair).toBeCloseTo(1, 6);
+    }
+    const hero = holderMind({ archetype: 'hero', stats: { strategic: 8, loyalty: 4 } });
+    const villain = holderMind({ archetype: 'villain', stats: { strategic: 8, loyalty: 4 } });
+    expect(villain.strategy).toBeGreaterThan(hero.strategy);
+    expect(hero.fair).toBeGreaterThan(villain.fair);
+    expect(timesSaved({ uses: history(2) }, 'A')).toBe(2);
+  });
+
+  it('counts against a queen as a probability, more for a queen who spreads it around', () => {
+    const rate = (holder, n) => {
+      let a = 0;
+      for (let i = 0; i < 400; i++) {
+        const res = holderSave({
+          saves: { kind: 'beaver', uses: history(n) }, winners: ['W'], pool: ['A', 'B', 'C'],
+          living: ['W', 'A', 'B', 'C', 'S'], state: { record: {} }, players: { ...queens, W: holder },
+          bond: () => 0, rng: rngFor(i * 7919 + 13),
+        });
+        if (res.saved === 'A') a++;
+      }
+      return a / 400;
+    };
+    const fair0 = rate(FAIR, 0); const fair2 = rate(FAIR, 2);
+    const merit0 = rate(MERIT, 0); const merit2 = rate(MERIT, 2);
+    expect(fair2).toBeLessThan(fair0 - 0.15);
+    expect(fair2).toBeGreaterThan(0);               // never a rule
+    expect(merit0 - merit2).toBeLessThan((fair0 - fair2) / 2);
+    expect(rate(FAIR, 1)).toBeGreaterThan(fair2);   // grows with each save
+  });
+
+  it('what she did with the save softens it for a merit queen', () => {
+    const count = (record) => {
+      let a = 0;
+      for (let i = 0; i < 400; i++) {
+        const res = holderSave({
+          saves: { kind: 'beaver', uses: history(1) }, winners: ['W'], pool: ['A', 'B', 'C'],
+          living: ['W', 'A', 'B', 'C', 'S'], state: { record: { A: record } },
+          players: { ...queens, W: holderMind(MERIT) && { ...MERIT, stats: { ...MERIT.stats, social: 6, loyalty: 6 } } },
+          bond: () => 0, rng: rngFor(i * 7919 + 13),
+        });
+        if (res.saved === 'A') a++;
+      }
+      return a;
+    };
+    expect(count(['SAFE', 'BTM2', 'WIN', 'WIN'])).toBeGreaterThan(count(['SAFE', 'BTM2', 'SAFE', 'SAFE']));
+  });
+
+  it('is argued in Untucked only when somebody has been saved, and more the more she has', () => {
+    const players = { W: FAIR, V: { archetype: 'villain', stats: { strategic: 8, loyalty: 2, boldness: 8 } },
+      A: { archetype: 'floater', stats: {} }, N: { archetype: 'underdog', stats: {} }, S: {} };
+    const turns = n => {
+      let k = 0;
+      for (let i = 0; i < 150; i++) {
+        const { events } = runCampaign({
+          saves: { kind: 'beaver', uses: history(n) }, targets: ['W'], pool: ['V', 'A', 'N'],
+          living: ['W', 'V', 'A', 'N', 'S'], players, bond: () => 0, rng: rngFor(i * 7919 + 13), ep: 6,
+        });
+        k += events.filter(e => ['pitch-my-turn', 'rebut-turn-over'].includes(e.id)).length;
+        for (const e of events.filter(x => x.id === 'pitch-my-turn')) expect(e.c).toBe('A');
+        for (const e of events.filter(x => x.id === 'rebut-turn-over')) expect(e.c).toBe('A');
+      }
+      return k;
+    };
+    expect(turns(0)).toBe(0);
+    const one = turns(1); const three = turns(3);
+    expect(one).toBeGreaterThan(0);
+    expect(three).toBeGreaterThan(one);
+  });
+
+  it('a season says it with every name filled in', () => {
+    let seen = 0;
+    for (const s of SEEDS) {
+      for (const kind of ['beaver', 'baguette']) {
+        for (const r of weekly(season(s, { drSave: kind }))) {
+          for (const sc of r.dr.scenes || []) {
+            if (!String(sc.kind).startsWith('save:')) continue;
+            expect(sc.text, `${kind} seed ${s} ${sc.kind}`).not.toMatch(/\{[a-z]\}/);
+            if (/turn-over|my-turn|saved-delivered|no-score|holder-fair|favoritism|passed-over/.test(sc.kind)) seen++;
+          }
+        }
+      }
+    }
+    expect(seen).toBeGreaterThan(0);
   });
 });
 

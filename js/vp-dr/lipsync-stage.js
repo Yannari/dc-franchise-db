@@ -51,6 +51,7 @@ export const LS_CSS = `
 /* Always pinned; smaller on a shorter window, so the card just revealed
    still has room below it. */
 .lsx{position:sticky;top:6px;z-index:5}
+.lsx{contain:inline-size;min-width:0;max-width:100%}
 .lsx-cards .dr-step{scroll-margin-top:540px}
 .lsx-bg,.lsx-bg i{position:absolute;inset:0;pointer-events:none}
 .lsx-bg{z-index:0;transition:filter .7s}

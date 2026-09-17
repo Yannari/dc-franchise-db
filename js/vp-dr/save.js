@@ -360,6 +360,7 @@ export const SAVE_CSS = `
    stays in view while the cards run under it — on a window under 1000px tall
    it shrinks so the card just revealed still has room below it. */
 .svx{position:sticky;top:6px}
+.svx{contain:inline-size;min-width:0;max-width:100%}
 .svx-cards .dr-step{scroll-margin-top:560px}
 .svx-card{display:flex;gap:14px;align-items:flex-start;padding:12px 16px;border-radius:14px;
   background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.09)}

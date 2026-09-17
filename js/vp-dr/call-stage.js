@@ -45,6 +45,7 @@ export const CALL_CSS = `
   box-shadow:0 30px 80px -30px #000,inset 0 0 0 1px rgba(255,255,255,.07);color:#fff}
 /* Always pinned; smaller on a shorter window. */
 .csx{position:sticky;top:6px;z-index:5}
+.csx{contain:inline-size;min-width:0;max-width:100%}
 .csx-cards .dr-step{scroll-margin-top:470px}
 .csx-bg,.csx-bg i{position:absolute;inset:0;pointer-events:none}
 .csx-bg{z-index:0;transition:filter .6s}

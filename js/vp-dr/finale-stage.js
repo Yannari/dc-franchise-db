@@ -47,6 +47,10 @@ export const FINALE_STAGE_CSS = `
   background:radial-gradient(120% 85% at 50% 0,#3a2600 0,#150a02 52%,#070301 100%);
   box-shadow:0 30px 80px -30px #000,inset 0 0 0 1px rgba(255,214,107,.16)}
 .fsx{position:sticky;top:6px;z-index:5}
+/* NEVER WIDER THAN ITS COLUMN. A long line inside the stage (a scene note,
+   a banner) must not set the width of the page: without this one sentence
+   on one line pushed the cards and the rail off the screen. */
+.fsx{contain:inline-size;min-width:0;max-width:100%}
 /* THEMES: the same frame lit for the room it is in. */
 .fsx.th-stage{--fx:#ff7bc8;--fx2:#ffd66b;background:radial-gradient(120% 85% at 50% 0,#4a0a34 0,#1a0414 52%,#08020a 100%);
   box-shadow:0 30px 80px -30px #000,inset 0 0 0 1px rgba(255,123,200,.18)}

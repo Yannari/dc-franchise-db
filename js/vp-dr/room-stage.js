@@ -65,8 +65,10 @@ export const ROOM_STAGE_CSS = `${FINALE_STAGE_CSS}
 .rmx-tie.flat path{stroke:rgba(255,255,255,.3)}
 .rmx-tie b{font:700 13px/1 ui-monospace,Menlo,monospace}
 .rmx-tie.warm b{color:#3be08a}.rmx-tie.cold b{color:#ff5a6e}
-.rmx-note{padding:2px 10px;border-radius:99px;font-size:10px;letter-spacing:.18em;
-  text-transform:uppercase;background:rgba(255,255,255,.08);color:var(--fx);white-space:nowrap;max-width:90%;overflow:hidden;text-overflow:ellipsis}
+.rmx-note{padding:2px 12px;border-radius:12px;font-size:10px;line-height:1.35;letter-spacing:.16em;text-align:center;
+  text-transform:uppercase;background:rgba(255,255,255,.08);color:var(--fx);max-width:90%;overflow:hidden;
+  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+.rmx-note[hidden]{display:none}
 .rmx-pop{display:flex;gap:6px;justify-content:center;margin-top:2px}
 .rmx-pop span{font:700 11px/1 ui-monospace,Menlo,monospace;padding:2px 6px;border-radius:6px;background:rgba(59,224,138,.18);color:#3be08a}
 .rmx-pop span.dn{background:rgba(255,41,75,.18);color:#ff8fa3}

@@ -105,7 +105,7 @@ const TR = 'traitors';
 
 /** The record fields a Shield search writes, one per mission. */
 const SHIELD_FIELDS = new Set(['leftTheRelay', 'askedForMoreTime', 'wentForTheFont',
-  'setTheHiddenRing', 'tookTheAgentsOffer', 'wentForAShield', 'unpickedTheHare', 'tookTheGambit', 'wonTheKneeling']);
+  'setTheHiddenRing', 'tookTheAgentsOffer', 'wentForAShield', 'unpickedTheHare', 'tookTheGambit', 'wonTheKneeling', 'tookTheSword']);
 
 const GOOD = new Set(['strong', 'cross', 'right', 'sharp', 'true', 'on', 'good', 'win']);
 const BAD = new Set(['weak', 'freeze', 'wrong', 'lost', 'out', 'bad', 'lose', 'stop', 'dull']);
@@ -554,7 +554,7 @@ const NAV = TR_NAV_TOP;
 const COMMON_CSS = `
 .mb-scope{ -webkit-font-smoothing:antialiased; }
 .mb-scope *{box-sizing:border-box}
-.mb-scope [id^="mb-step-"][data-on="1"]{opacity:1 !important;transform:none !important}
+.mb-scope [id^="mb-step-"][data-on="1"]{opacity:1 !important;transform:none !important;filter:none !important}
 .mb-observer{max-width:1100px;margin:0 auto;padding:10px 18px;font-size:11px;
   letter-spacing:.14em;text-transform:uppercase;opacity:.62}
 .mb-observer span{opacity:.8;font-weight:700;margin-right:8px}

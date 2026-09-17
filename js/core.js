@@ -375,6 +375,7 @@ export const TR_MISSION_CATALOG = [
   { id:'wicker-beasts',    name:'Wicker Beasts',        kind:'bespoke' },
   { id:'traitors-chess',   name:"The Traitors' Chess",  kind:'bespoke' },
   { id:'church-match',     name:'Church Match',         kind:'bespoke' },
+  { id:'traitors-monument', name:"Traitors' Monument",  kind:'bespoke' },
 ];
 
 export const TWIST_CATALOG = [

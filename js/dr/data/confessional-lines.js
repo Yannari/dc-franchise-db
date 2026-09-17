@@ -233,6 +233,43 @@ export const CONFESSIONAL_TIERS = [
     '"I have been up there. I know what it feels like to lose it in front of everybody." {a} pauses. "I also know what it looks like from back here, and it looks worse."',
     '"She tried. I will give her that." {a} tilts her head. "That is the most generous thing I can say about what just happened."',
   ]),
+  /* THE CALL. `landed` is WIN or HIGH; `missed` is anything the host placed
+     under that, which includes a LOW who is safe and a bottom queen who may
+     yet be saved. So no line here promises a lip sync. */
+  tier('results-mine-landed', 'The host placed her at the top: she won or was high.', +1, [
+    '"When the host said my name I did not hear the rest of the sentence." {a} laughs. "I just heard my name and the word top."',
+    '"I have been waiting weeks to stand in that spot." {a} nods. "It feels exactly the way I thought it would. Better, actually."',
+    '"Top of the week. I am going to be insufferable in the werk room tomorrow and I have earned it." {a} grins.',
+    '"I looked down the line and everybody was looking at me." {a} pauses. "That is a new feeling, and I would like to keep it."',
+    '"The judges finally saw what I have been doing." {a} exhales. "It took long enough."',
+    '"{b} in the bottom and me at the top." {a} smiles. "Funny how a week can go."',
+    '"I told myself not to smile until they called it. I smiled at the word condragulations." {a} shrugs. "Close enough."',
+  ]),
+  tier('results-mine-missed', 'The host placed her low or in the bottom.', -1, [
+    '"Standing there while they call the good names first is its own kind of punishment." {a} looks at the camera. "Then they get to you."',
+    '"I knew it was coming. Knowing does not make it hurt less." {a} takes a breath.',
+    '"The bottom. Me. This week." {a} shakes her head. "I did not see that one coming and I should have."',
+    '"I kept my face still. Inside I was screaming." {a} pauses. "Mostly at myself."',
+    '"Everybody behind me got to breathe. I did not." {a} stares ahead. "That is the difference one critique makes."',
+    '"I am not done. I need the judges to hear that." {a} nods once. "I am not done."',
+    '"{b} got the top spot and I got this." {a} looks away. "Same stage. Very different night."',
+  ]),
+  tier('results-hers-landed', 'Somebody else was placed at the top.', +1, [
+    '"{b} at the top. Fine. Deserved, even." {a} pauses. "I hate saying deserved."',
+    '"When they said {b}, the girl next to me clapped. I clapped too. Mine was quieter."',
+    '"{b} is building a track record now, and a track record is a target." {a} looks at the camera. "Just noting it."',
+    '"Good for {b}. She worked for it." {a} nods. "I watched her work for it all week and it paid off."',
+    '"Another week, another good result for {b}." {a} raises an eyebrow. "At some point that stops being luck."',
+    '"I was happy for {b}. Really." {a} tilts her head. "I would have been happier for me."',
+  ]),
+  tier('results-hers-missed', 'Somebody else was placed low or in the bottom.', -1, [
+    '"{b} in the bottom? I am shocked." {a} is not shocked. "Genuinely. Shocked."',
+    '"I saw the face {b} made when the host said it." {a} presses her lips together. "She had been expecting something better."',
+    '"The critiques were not kind to {b} and neither was the call." {a} shrugs. "That tends to happen together."',
+    '"I will say it: {b} has been coasting, and tonight caught up with her." {a} looks at the camera.',
+    '"I felt bad for {b}. For about a second." {a} pauses. "Then I remembered I was not the one standing there."',
+    '"{b} kept nodding at the host like it was fine." {a} tilts her head. "It was not fine."',
+  ]),
   tier('choice-mine-landed', 'It went well and it was hers: the slot or partner she got.', +1, [
     '"I got what I wanted. That does not happen in here." {a} nods. "I am holding this with both hands and not looking grateful because grateful looks weak."',
     '"The second that slot was open I took it. Did not hesitate." {a} looks at the camera. "Thinking is how you lose the good ones."',
@@ -302,7 +339,7 @@ export const CONFESSIONAL_TIERS = [
 export const CONFESSIONAL_IDS = CONFESSIONAL_TIERS.map(t => t.id);
 
 /** The four surfaces whose scenes are one queen and a result, not a bond. */
-export const STAGED_SURFACES = ['runway', 'lipsync', 'choice', 'maxipre'];
+export const STAGED_SURFACES = ['runway', 'lipsync', 'choice', 'maxipre', 'results'];
 
 export function confessionalTier(id) {
   return CONFESSIONAL_TIERS.find(t => t.id === id) || null;

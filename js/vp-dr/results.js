@@ -18,6 +18,7 @@
 // two names in it: the reveal is a fight and the screen is built like one.
 // The loser's portrait greys out under a stamp at the end.
 import { lipsyncStage, lipsyncCardDecor, LS_CSS } from './lipsync-stage.js';
+import { callStage, CALL_CSS } from './call-stage.js';
 import { _shell, _portrait, _judgePortrait, _icon } from './style.js';
 import { resultOrder } from '../dr/data/results-order.js';
 import { _controls, _seedRail, _state } from './reveal.js';
@@ -458,11 +459,6 @@ export function rpBuildResults(row) {
      column rather than another row in it. */
   const hold = (row.dr.scenes || []).find(x => x.kind === 'stage:results-hold' && x.text);
   const holdBefore = hold?.data?.before || null;
-  const holdCard = i => `<div class="dr-step" id="dr-step-results-${i}">
-      <div class="dr-panel dr-a-room dr-hold">
-        ${_judgePortrait('rupaul', { stage: true, size: 40 })}
-        <p>${esc(hold.text)}</p>
-      </div></div>`;
 
   /* ── WHICH TEAM SHE WAS ON ──
      A team night's winning team used to be announced on the maxi screen, in
@@ -479,120 +475,102 @@ export function rpBuildResults(row) {
     ? n => teamNames[(a.teams || []).findIndex(t => (t || []).includes(n))] || ''
     : () => '';
 
-  /* ── AND THE PAUSE WAS INVISIBLE ──
-     `holdCard(-1)` gave the host's beat before the last call the id
-     `dr-step-results--1`, and `_reapplyVisibility` walks i from 0 — so the
-     one card on this screen that is pure suspense was rendered at opacity
-     zero and never revealed. It needs a real place in the sequence, which
-     means every row after it shifts by one and the controls have to be told.
-     */
+  /* ── THE STEPS, ONCE ──
+     The hold card, every call, the confessional that answers a call (the
+     engine splices `confess:` right after the scene it reacts to) and the
+     stakes. The cards, the rail and the stage all index this one list, which
+     is what the hold card's shifted index used to break: the rail and the
+     line both counted names and ran one step ahead after the pause. */
+  /* Not on a save night: "two queens stand before me" would name the singers
+     before the holder has chosen. Older episodes still carry the line. */
+  const stakes = row?.dr?.save?.hold ? null
+    : (row.dr.scenes || []).find(x => x.kind === 'stage:call-stakes' && x.text);
+  const allScenes = row.dr.scenes || [];
+  const confessAfter = sc => {
+    const i = sc ? allScenes.indexOf(sc) : -1;
+    const next = i >= 0 ? allScenes[i + 1] : null;
+    return next && next.step === 'results' && String(next.kind).startsWith('confess:') && next.text ? next : null;
+  };
+  const list = [];
   let holdDrawn = !hold;
-  let at = 0;
-  const steps = named.map(([result, name]) => {
-    const b = bend.get(name);
-    const moved = b && b.panelRank !== b.finalRank;
-    const meta = GRID_RESULTS[shown(result)] || {};
+  for (const [result, name] of named) {
+    if (!holdDrawn && holdBefore === result) { list.push({ t: 'hold', text: hold.text }); holdDrawn = true; }
     const said = lineFor(result, name);
-    // The seam: the first row of the block the host paused before.
-    let before = '';
-    if (!holdDrawn && holdBefore === result) { before = holdCard(at++); holdDrawn = true; }
-    const i = at++;
-    return `${before}<div class="dr-step" id="dr-step-results-${i}">
-      <div class="dr-panel dr-a-score dr-callrow${
-  result === 'SAFE' ? ' dr-quiet' : ''}" style="--v:${meta.color || '#7a3a5e'}">
-        ${_portrait(name, ep, { size: 52, station: true })}
-        <div><h3 class="dr-disp">${esc(name)}${teamOf(name)
-    ? `<span class="dr-callteam">${esc(teamOf(name))}</span>` : ''}</h3>
+    const sc = [...spoken].pop();
+    list.push({ t: 'call', r: shown(result), raw: result, n: name, said });
+    const c = said ? confessAfter(sc) : null;
+    if (c) list.push({ t: 'confess', n: (c.data?.players || [])[0], text: c.text });
+  }
+  if (stakes) {
+    list.push({ t: 'stakes', text: stakes.text, who: stakes.data?.players || [], stakes: stakes.data?.stakes || 'life' });
+  }
+
+  const steps = list.map((s, i) => {
+    if (s.t === 'hold' || s.t === 'stakes') {
+      return `<div class="dr-step" id="dr-step-results-${i}">
+      <div class="dr-panel dr-a-room dr-hold${s.t === 'stakes' ? ' dr-stakes' : ''}">
+        ${_judgePortrait('rupaul', { stage: true, size: 40 })}
+        <p>${esc(s.text)}</p>
+      </div></div>`;
+    }
+    if (s.t === 'confess') {
+      return `<div class="dr-step" id="dr-step-results-${i}">
+      <div class="dr-panel dr-beat csx-cconf">
+        ${_portrait(s.n, ep, { size: 42 })}
+        <div><span class="csx-ctag">Confessional</span><p>${esc(s.text)}</p></div>
+      </div></div>`;
+    }
+    const b = bend.get(s.n);
+    const moved = b && b.panelRank !== b.finalRank;
+    const meta = GRID_RESULTS[s.r] || {};
+    return `<div class="dr-step" id="dr-step-results-${i}">
+      <div class="dr-panel dr-a-score dr-callrow" style="--v:${meta.color || '#7a3a5e'}">
+        ${_portrait(s.n, ep, { size: 52, station: true })}
+        <div><h3 class="dr-disp">${esc(s.n)}${teamOf(s.n)
+    ? `<span class="dr-callteam">${esc(teamOf(s.n))}</span>` : ''}</h3>
           ${b ? `<span style="font-size:11px;color:#C9A6BC">panel ${b.panelRank} → ${b.finalRank}</span>` : ''}
-          ${said ? `<p class="dr-said">${esc(said)}</p>` : ''}
+          ${s.said ? `<p class="dr-said">${esc(s.said)}</p>` : ''}
         </div>
         ${moved ? '<span class="dr-moved dr-disp">the host moved her</span>' : '<span></span>'}
-        <span class="dr-stamp dr-disp" style="color:${meta.color || '#fff'}">${esc(meta.label || shown(result))}</span>
+        <span class="dr-stamp dr-disp" style="color:${meta.color || '#fff'}">${esc(meta.label || s.r)}</span>
       </div></div>`;
   }).join('');
+
+  /* ── THE STAGE ── js/vp-dr/call-stage.js. The line stands in the order the
+     panel ranked them, which the critiques already showed; the call order
+     would print the answer along the top of the screen. */
+  const line = named.map(([, n]) => n)
+    .sort((x, y) => (bend.get(x)?.panelRank ?? 99) - (bend.get(y)?.panelRank ?? 99));
+  const stage = callStage(row, list, { ep, line, bend, teamOf, pending });
 
   if (typeof window !== 'undefined') {
     window._drSidebar = window._drSidebar || {};
     /* The safe queens stay in the rail as CONTEXT — they were dismissed on
        the critiques screen and are not steps here, but a reader wants to
        know the room is smaller than the cast. */
-    const panelFor = k => `<h4 class="dr-disp">The call</h4>${
-      (safe.length ? `<div class="dr-slot dr-waiting"><span></span>
+    const panelFor = k => {
+      const done = list.slice(0, k).filter(s => s.t === 'call');
+      return `<h4 class="dr-disp">The call</h4>${
+        (safe.length ? `<div class="dr-slot dr-waiting"><span></span>
         <div><div class="dr-nm">${esc(safe.length)} already safe</div></div>
         <span class="dr-chip dr-c-safe">SAFE</span></div>` : '')}${
-      named.slice(0, k).map(([r, n]) => `<div class="dr-slot">${_portrait(n, ep, { size: 32 })}
-        <div><div class="dr-nm">${esc(n)}</div></div>
-        <span class="dr-chip ${CHIP[shown(r)] || 'dr-c-safe'}">${esc(GRID_RESULTS[shown(r)]?.label || shown(r))}</span>
+        done.map(s => `<div class="dr-slot">${_portrait(s.n, ep, { size: 32 })}
+        <div><div class="dr-nm">${esc(s.n)}</div></div>
+        <span class="dr-chip ${CHIP[s.r] || 'dr-c-safe'}">${esc(GRID_RESULTS[s.r]?.label || s.r)}</span>
       </div>`).join('')}`;
-    window._drSidebar.results = named.map((_, i) => panelFor(i + 1));
-  }
-
-  /* ── THE LINE, STILL STANDING ──
-     The call is the last thing that happens on the main stage and it drew
-     as a list: the queens were never on the screen, only their verdicts
-     were. This is the line they are standing in — the ones the panel kept
-     back after the safe were dismissed — and it stays at the top while the
-     calls are read, taking each queen's stamp as it lands.
-     Placement order would print the answer along the top of the screen, so
-     it is drawn in the order the panel ranked them, which the critiques
-     screen has already shown. */
-  const line = named.map(([, n]) => n);
-  const stand = line.length ? `<div class="dr-lineup-stage" id="dr-call-line">
-    ${line.map(n => `<div class="dr-standing" data-queen="${esc(n)}">
-      ${_portrait(n, ep, { size: 54, station: true })}
-      <b class="dr-disp">${esc(n)}</b>
-      <span class="dr-standing-tag dr-disp"></span>
-    </div>`).join('')}
-  </div>` : '';
-
-  /* Each step says what the line looks like after it — the stamp lands on
-     the queen it belongs to and the ones already called stay marked. */
-  if (typeof window !== 'undefined') {
-    const called = [];
-    window._drRevealExtra = window._drRevealExtra || {};
-    window._drRevealExtra.results = (idx) => {
-      const upto = named.slice(0, idx + 1);
-      const map = new Map(upto);
-      const byName = new Map(upto.map(([r, n]) => [n, shown(r)]));
-      for (const el of document.querySelectorAll('.dr-standing')) {
-        const n = el.getAttribute('data-queen');
-        const r = byName.get(n);
-        el.classList.toggle('called', !!r);
-        for (const c of ['WIN', 'HIGH', 'LOW', 'BTM', 'BTM2']) {
-          el.classList.toggle(`dr-r-${c}`, r === c);
-        }
-        const tag = el.querySelector('.dr-standing-tag');
-        if (tag) tag.textContent = r ? (GRID_RESULTS[r]?.label || r) : '';
-      }
-      void map;
     };
+    window._drSidebar.results = list.map((_, i) => panelFor(i + 1));
+    window._drRevealExtra = window._drRevealExtra || {};
+    window._drRevealExtra.results = idx => stage.apply(idx);
+    setTimeout(() => {
+      try { const { idx } = _state(ep, 'results'); if (idx >= 0) stage.apply(idx); } catch { /* decoration */ }
+    }, 0);
   }
 
-  /* ── AND WHAT THE LIP SYNC IS FOR, WHICH IS THE LAST THING SAID ──
-     `stage:call-stakes` is the host naming the terms — for your life, for the
-     win, for a place in the show's history — and it is the sentence that
-     turns a list of names into a threat. It was written, emitted every week
-     and drawn by nothing: the sweep that asserts written prose reaches a page
-     caught it, which is the only check that would have.
-     It goes last because it IS the handoff: the call ends, the stakes are
-     named, and the next screen is two queens on the mark. */
-  /* Not on a save night: "two queens stand before me" would name the singers
-     before the holder has chosen. Older episodes still carry the line. */
-  const stakes = row?.dr?.save?.hold ? null
-    : (row.dr.scenes || []).find(x => x.kind === 'stage:call-stakes' && x.text);
-  /* `at` is where the rows actually finished, which is one past `named.length`
-     on a night the host paused. Using the name count put this card on top of
-     the last call. */
-  const stakesCard = stakes ? `<div class="dr-step" id="dr-step-results-${at}">
-      <div class="dr-panel dr-a-room dr-hold dr-stakes">
-        ${_judgePortrait('rupaul', { stage: true, size: 40 })}
-        <p>${esc(stakes.text)}</p>
-      </div></div>` : '';
-
-  return `<style>${RESULTS_CSS}</style>${_shell(stand + steps + stakesCard, ep, {
+  return `<style>${RESULTS_CSS}${CALL_CSS}</style>${_shell(`${stage.html}<div class="csx-cards">${steps}</div>`, ep, {
     phase: 'stage', title: 'The Call', subtitle: 'who the panel kept back',
     sidebar: _seedRail('results', '<h4 class="dr-disp">The call</h4>'),
-  })}${_controls('results', at + (stakes ? 1 : 0), ep.num)}`;
+  })}${_controls('results', list.length, ep.num)}`;
 }
 
 /** The lip sync, built as a fight. */

@@ -1840,7 +1840,7 @@ export function runDragWeek(state, cfg, ctx) {
      being watched; cutting away from it to somebody's opinion of it is the
      one place a confessional would interrupt rather than punctuate. */
   const confessSpoken = new Set();
-  for (const step of ['untucked', 'choice', 'maxi-pre', 'runway', 'lipsync']) {
+  for (const step of ['untucked', 'choice', 'maxi-pre', 'runway', 'results', 'lipsync']) {
     const list = scenes.filter(sc => sc.step === step);
     if (list.length < 2) continue;
     const rows = confessionalsFor({
@@ -1854,13 +1854,13 @@ export function runDragWeek(state, cfg, ctx) {
       room: living, players, spoken: confessSpoken, slot: step, step,
       // So a confessional never mentions a garment on an acting week.
       blend: maxi.blend || null,
-      bond: ctx.bond, max: step === 'untucked' ? 2 : 1, chance: 0.3,
+      bond: ctx.bond, max: step === 'untucked' || step === 'results' ? 2 : 1, chance: 0.3,
       rng: streamFor((cfg.num || 0) + 1, `confessional|${step}`),
     });
     for (const r of rows.slice().reverse()) {
       const c = r.scene;
       for (const [, delta] of Object.entries(c.effects?.pop || {})) {
-        ctx.popDelta(c.players[0], delta);
+        (ctx.editDelta || ctx.popDelta)(c.players[0], delta);
       }
       const at = scenes.indexOf(list[r.index]);
       if (at < 0) continue;

@@ -343,9 +343,11 @@ export function applyWerkScene(scene, ctx) {
   }
   const [a, b] = scene.players;
   if (e.bond && b) ctx.addBond(a, b, e.bond);
+  // A confessional's edit stays off the engine's ledger; see `writeEdit` in js/dr/season.js.
+  const pop = scene.confessional && ctx.editDelta ? ctx.editDelta : ctx.popDelta;
   for (const [who, delta] of Object.entries(e.pop || {})) {
     const name = who === 'a' ? a : b;
-    if (name) ctx.popDelta(name, delta);
+    if (name) pop(name, delta);
   }
   return { applied: changes, state: e.state || null };
 }

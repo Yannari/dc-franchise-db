@@ -1164,9 +1164,22 @@ export function playDragSeason({
     if (!state.tv) state.tv = {};
     state.tv[n] = (state.tv[n] || 0) + Math.max(0, d);
   };
+  /* ── A CONFESSIONAL'S EDIT, KEPT OFF THE ENGINE'S LEDGER ──
+     Whether a confessional happens depends on whether its tier has lines a
+     scene can use, so a confessional writing `state.popularity` let the
+     prose decide the season: storylines read popularity, a written pool
+     changed who had an arc, and an Untucked scene four weeks later changed
+     with it (tests/dr-confessional.test.js, "changes nothing else"). The edit
+     still reaches the audience through the caller's `popDelta`, and is kept
+     on `state.edit` for anybody who wants to show it. */
+  const writeEdit = (n, d) => {
+    if (!state.edit) state.edit = {};
+    state.edit[n] = (state.edit[n] || 0) + d;
+    if (popDelta) popDelta(n, d);
+  };
   const ctx = {
     rng, players, bond, addBond: addBond || (() => {}),
-    popDelta: writePop, tvDelta: writeTv,
+    popDelta: writePop, tvDelta: writeTv, editDelta: writeEdit,
   };
 
   /* ── WHO WAS ALREADY RELATED ──

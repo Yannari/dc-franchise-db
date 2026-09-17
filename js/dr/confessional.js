@@ -42,13 +42,13 @@ import { CONFESSIONAL_TIERS, confessionalTier } from './data/confessional-lines.
    move on the same night -- she is being hard on herself, which nobody needs
    a sharp edge to do. */
 const SHADE = new Set(['did-cold', 'watched-cold',
-  'runway-hers-missed', 'lipsync-hers-missed',
+  'runway-hers-missed', 'lipsync-hers-missed', 'results-hers-missed',
   'choice-hers-missed', 'maxipre-hers-missed']);
 /* Every tier whose sign is negative. `taken-cold` is cold without being shade
    -- it was done TO her -- so it is rolled by neither branch, and every
    staged `mine-missed` is cold in the same way, about herself. */
 const COLD = new Set([...SHADE, 'taken-cold',
-  'runway-mine-missed', 'lipsync-mine-missed',
+  'runway-mine-missed', 'lipsync-mine-missed', 'results-mine-missed',
   'choice-mine-missed', 'maxipre-mine-missed']);
 
 const NEVER = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer',
@@ -248,9 +248,31 @@ export function candidatesFor(scene, room, bond = () => 0) {
    whether she lost the pick. Compared against the MEDIAN of that step on
    that night, so it reads as her standing among the others rather than as
    an absolute somebody picked. */
+const CALL_VALUE = {
+  'result-win': 5, 'result-high': 4, 'result-low': 2, 'result-btm': 1.5, 'result-bottom': 1,
+};
 const SURFACES = {
   runway: { id: 'runway', valueOf: sc => num(sc?.data?.score) },
   lipsync: { id: 'lipsync', valueOf: sc => num(sc?.data?.score) },
+  /* THE CALL. One queen and the word the host just said to her. Not against
+     the night's median: a call is already a ranking, and the median of a
+     bottom-heavy line would count a LOW as landing. The top is landing,
+     everything under it is not. */
+  results: {
+    id: 'results',
+    valueOf: sc => CALL_VALUE[sc?.data?.beat] ?? null,
+    outcomeOf: v => (v >= 4 ? 'landed' : 'missed'),
+    /* HER CALL IS ALWAYS NEXT TO SOMEBODY ELSE'S. A queen at the top measures
+       it against the bottom, and a queen in the bottom against whoever won,
+       so even her own confessional has a second name in it. */
+    mineAbout: (sc, list, landed) => {
+      const hers = (sc?.players || [])[0];
+      const other = list.map(x => ({ n: (x?.players || [])[0], v: CALL_VALUE[x?.data?.beat] }))
+        .filter(x => x.n && x.n !== hers && x.v != null)
+        .sort((x, y) => (landed ? x.v - y.v : y.v - x.v))[0];
+      return other ? other.n : null;
+    },
+  },
   'maxi-pre': { id: 'maxipre', valueOf: sc => num(sc?.data?.perf) },
   /* The draft has no score. Losing the pick IS the outcome.
      EXCEPT WHERE THERE WAS NO PICK. A makeover hands the room out — or draws
@@ -284,13 +306,13 @@ function medianOf(values) {
  * `landed` is at or above the night's median for that step. A scene with no
  * number at all yields nobody, rather than being guessed into a tier.
  */
-export function stagedCandidatesFor(scene, room, bond, surface, median) {
+export function stagedCandidatesFor(scene, room, bond, surface, median, list = []) {
   const who = scene?.players || [];
   if (who.length !== 1 || !surface || median === null) return [];
   const v = surface.valueOf(scene);
   if (v === null) return [];
   const hers = who[0];
-  const outcome = v >= median ? 'landed' : 'missed';
+  const outcome = surface.outcomeOf ? surface.outcomeOf(v, median) : v >= median ? 'landed' : 'missed';
   const tie = (x, y) => Math.abs(Number(bond(x, y)) || 0);
   const watchers = room.filter(n => n !== hers).map(n => ({
     name: n, tier: `${surface.id}-hers-${outcome}`, about: hers, stake: tie(n, hers),
@@ -307,7 +329,8 @@ export function stagedCandidatesFor(scene, room, bond, surface, median) {
      the split is even however big the cast is. */
   const watchTotal = watchers.reduce((t, c) => t + 1 + c.stake, 0);
   return [
-    { name: hers, tier: `${surface.id}-mine-${outcome}`, about: null,
+    { name: hers, tier: `${surface.id}-mine-${outcome}`,
+      about: surface.mineAbout ? surface.mineAbout(scene, list, outcome === 'landed') : null,
       stake: Math.max(IN_SCENE, watchTotal - 1) },
     ...watchers,
   ];
@@ -372,7 +395,7 @@ export function confessionalsFor({
     if (rng() >= chance) continue;
 
     const pool = surface
-      ? stagedCandidatesFor(sc, room, bond, surface, median)
+      ? stagedCandidatesFor(sc, room, bond, surface, median, scenes)
       : candidatesFor(sc, room, bond);
     const eligible = pool.filter(c => {
       if (spoken.has(c.name)) return false;

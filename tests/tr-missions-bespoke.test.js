@@ -35,7 +35,7 @@ const ROSTER = roster.players.slice(0, 18);
 const CAST = ROSTER.map(p => p.name);
 
 const SOURCES = ['contract', 'index', 'drowned-causeway', 'nightjar-orrery',
-  'long-account', 'ash-vault', 'buried-alive', 'beacon-lighting', 'wicker-beasts'];
+  'long-account', 'ash-vault', 'buried-alive', 'beacon-lighting', 'wicker-beasts', 'traitors-chess'];
 // `fileURLToPath` rather than handing a URL object straight to readFileSync:
 // under vitest's transform the relative-URL form resolved against the drive
 // root and every source arm below failed with ENOENT on `C:\js\...`.
@@ -149,7 +149,7 @@ describe('undermining is a shift to a probability, never a guarantee', () => {
   // screen. All four are named here so a mission that quietly loses its
   // dilemma is a red test rather than a silent simplification.
   const DILEMMA = ['drowned-causeway', 'nightjar-orrery', 'long-account', 'ash-vault',
-    'buried-alive', 'beacon-lighting', 'wicker-beasts'];
+    'buried-alive', 'beacon-lighting', 'wicker-beasts', 'traitors-chess'];
 
   it('every mission declares a dilemma, and it reads alignment through ctx and nowhere else', () => {
     for (const id of DILEMMA) {
@@ -201,6 +201,8 @@ describe('undermining is a shift to a probability, never a guarantee', () => {
       const b = r.phases[2].beats;
       return b.length ? b.filter(x => x.kind !== 'bad').length / b.length : 0;
     },
+    // Answers the room got right, out of five.
+    'traitors-chess': r => (r.tally.right || 0) / 5,
     'buried-alive': r => {
       const w = Object.values(r.tally.wrong || {});
       return w.length ? 1 - w.reduce((a, b) => a + b, 0) / w.length : 0;
@@ -238,7 +240,9 @@ describe('undermining is a shift to a probability, never a guarantee', () => {
         // pieces set right: 0.772 conflicted (0.906 clean), measured 2026-09-16
         'beacon-lighting': 0.67,
         // knots that carried the flame: 0.773 conflicted (0.914 clean), measured 2026-09-16
-        'wicker-beasts': 0.68 };
+        'wicker-beasts': 0.68,
+        // answers right: 0.470 conflicted (0.528 clean), measured 2026-09-16
+        'traitors-chess': 0.42 };
       const all = runs(mission, 120, { traitors: CAST, from: 2000 });
       const rate = all.reduce((a, r) => a + DILEMMA_RATE[mission.id](r), 0) / all.length;
       expect(rate, `an all-conflicted castle got through the dilemma at a rate of `

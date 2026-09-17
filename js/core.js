@@ -373,6 +373,7 @@ export const TR_MISSION_CATALOG = [
   { id:'buried-alive',     name:'Buried Alive',         kind:'bespoke' },
   { id:'beacon-lighting',  name:'Beacon Lighting',      kind:'bespoke' },
   { id:'wicker-beasts',    name:'Wicker Beasts',        kind:'bespoke' },
+  { id:'traitors-chess',   name:"The Traitors' Chess",  kind:'bespoke' },
 ];
 
 export const TWIST_CATALOG = [

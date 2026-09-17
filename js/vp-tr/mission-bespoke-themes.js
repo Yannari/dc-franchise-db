@@ -19,6 +19,7 @@
 import { BURIED } from './mission-theme-buried-alive.js';
 import { BEACON } from './mission-theme-beacon-lighting.js';
 import { WICKER } from './mission-theme-wicker-beasts.js';
+import { CHESS } from './mission-theme-traitors-chess.js';
 
 const NAV = '46px';
 const _esc = s => String(s == null ? '' : s)
@@ -889,4 +890,4 @@ const VAULT = {
 `,
 };
 
-export const THEMES = [CAUSEWAY, ORRERY, ACCOUNT, VAULT, BURIED, BEACON, WICKER];
+export const THEMES = [CAUSEWAY, ORRERY, ACCOUNT, VAULT, BURIED, BEACON, WICKER, CHESS];

@@ -339,7 +339,7 @@ export const CHESS = {
 @import url('https://fonts.googleapis.com/css2?family=Marcellus&family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=Sometype+Mono:wght@400;600&display=swap');
 .tc-root{--tc-ivory:#efe9dc;--tc-bronze:#5f8a78;--tc-gilt:#d8b25a;--tc-gilt-lo:#7b6224;--tc-wrong:#c0443a;--tc-mist:#a7a39a;--tc-shield:#f0cf62;
   --cv-display:'Marcellus',serif;
-  background:#0b0b0d;color:var(--tc-mist);font-family:'EB Garamond',Georgia,serif;font-size:19px;line-height:1.5;padding-bottom:120px;position:relative;overflow:hidden}
+  background:#0b0b0d;color:var(--tc-mist);font-family:'EB Garamond',Georgia,serif;font-size:19px;line-height:1.5;padding-bottom:120px;position:relative;overflow:clip}
 .tc-scenery{position:fixed;left:0;right:0;top:46px;bottom:0;overflow:hidden;pointer-events:none;z-index:0}
 .tc-hall{position:absolute;inset:0;background:radial-gradient(50% 40% at 50% 0%,rgba(216,178,90,.12),transparent 70%),linear-gradient(180deg,#141418,#0b0b0d 60%)}
 .tc-floor{position:absolute;left:-20%;right:-20%;bottom:-10%;height:55%;opacity:.14;background:conic-gradient(var(--tc-ivory) 25%,transparent 0 50%,var(--tc-ivory) 0 75%,transparent 0) 0 0/120px 120px;transform:perspective(420px) rotateX(62deg);transform-origin:bottom}

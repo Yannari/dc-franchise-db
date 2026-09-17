@@ -17,7 +17,7 @@ import { livingTraitors, livingFaithfuls } from './roles.js';
 import { murderPreferenceFor, influenceOf } from './state.js';
 import { shieldsSeenBy, daggerSeenBy } from './powers.js';
 import { armouryHesitation } from './armoury.js';
-import { pickVariant, buildDeathList, dinnerNeighbours, chapelPlea, dungeonCompanion,
+import { pickVariant, buildDeathList, dinnerNeighbours, chapelPlea, dungeonCompanion, hiddenDecoys,
   dungeonVoice, chooseSacrifice, variantLine, PLAIN_SIGHT_METHODS } from './murder-variants.js';
 import { _lineHash } from './castle/lines.js';
 
@@ -499,6 +499,11 @@ export function resolveMurder(ep, rng = Math.random) {
   if (isShielded(target)) {
     gs.tr.shieldedThisRound.delete(target);   // spent even though it blocked
     (gs.tr.blockedMurders ||= []).push({ ep, target });
+    // A hidden murder that killed nobody has nothing to hide: everybody comes
+    // down to breakfast, and it is an ordinary blocked night.
+    if (shaped.variant === 'hidden') {
+      shaped.variant = 'standard'; shaped.data = null; shaped.line = null; shaped.lineKey = null;
+    }
     return { target, blocked: true, victim: null, cost, decision,
       variant: shaped.variant, variantData: shaped.data, variantLine: shaped.line,
       variantLineKey: shaped.lineKey };
@@ -578,6 +583,16 @@ function _shapeNight(variant, ep, decision, target, tensionBefore) {
     const voice = dungeonVoice(ep, companion, target);
     const l = variantLine('dungeon-back', ep, { victim: target, companion });
     return { variant, data: { companion, voice }, line: l.text, lineKey: l.key };
+  }
+  if (variant === 'hidden') {
+    const decoys = hiddenDecoys(ep, target);
+    if (decoys.length < 2) return std;
+    // The coffins' order at the funeral: hashed, so the body is not always first.
+    const coffins = [target, ...decoys].sort((a, b) =>
+      (_lineHash(`coffin|${ep}|${a}`) - _lineHash(`coffin|${ep}|${b}`)) || (a < b ? -1 : 1));
+    const l = variantLine(coffins.length > 3 ? 'hidden-many' : 'hidden', ep,
+      { a: coffins[0], b: coffins[1], c: coffins[2], n: String(coffins.length) });
+    return { variant, data: { decoys, coffins }, line: l.text, lineKey: l.key };
   }
   if (variant === 'double') {
     // THE SECOND NAME IS THE ARGUMENT THE PACT LOST. The Traitor who was

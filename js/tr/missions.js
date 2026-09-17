@@ -114,6 +114,8 @@ export { POT_CEILING };
 import { pickBespokeMission, bespokeMission, bespokeMissionsEnabled, BESPOKE_MISSION_IDS,
   TRAITORS_MISSIONS } from './missions/index.js';
 import { createMissionCtx, runSideObjectives, sideLabelsOf } from './missions/contract.js';
+import { _setFuneralProbe, hiddenMurderFor } from './murder-variants.js';
+import { funeral as FUNERAL } from './missions/funeral.js';
 import { applyMissionEffects } from './missions/apply.js';
 
 // ══════════════════════════════════════════════════════════════════════
@@ -640,6 +642,9 @@ export const MISSION_ARCHETYPES = ARCHETYPES;
 let _enabled = true;
 export function _setMissionsEnabled(on) { _enabled = on !== false; }
 
+// A HIDDEN MURDER MAY ONLY BE CHOSEN WHEN ITS FUNERAL CAN RUN the next day.
+_setFuneralProbe(() => _enabled && bespokeMissionsEnabled());
+
 /**
  * Test-only, and it is what NARROWED the equivalence arm rather than deleting
  * it (Task 1 handoff).
@@ -1151,6 +1156,22 @@ export function runMission(ep, rng) {
   const scheduledId = (gs.tr.missionSchedule && gs.tr.missionSchedule[ep]) || null;
   const scheduledIsBespoke = scheduledId && BESPOKE_MISSION_IDS.includes(scheduledId);
   const scheduledIsGeneric = scheduledId && MISSION_IDS.includes(scheduledId);
+
+  // THE FUNERAL, whatever else was scheduled: last night's murder was hidden,
+  // and this afternoon is where the castle finds out who died.
+  const funeral = hiddenMurderFor(ep) && bespokeMissionsEnabled() ? FUNERAL : null;
+  if (funeral) {
+    const ctx = createMissionCtx({
+      ep, living,
+      alignmentOf: (name, e) => alignmentAt(name, e),
+      shieldsEnabled: _shieldMission,
+    });
+    const rec = funeral.simulate(ctx, rng);
+    if (!Array.isArray(gs.tr.missions)) gs.tr.missions = [];
+    gs.tr.missions.push(rec);
+    applyMissionEffects(rec, ep);
+    return rec;
+  }
 
   if (bespokeMissionsEnabled()) {
     const nBespoke = BESPOKE_MISSION_IDS.length;

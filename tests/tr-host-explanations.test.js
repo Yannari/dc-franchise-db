@@ -59,6 +59,7 @@ import { TR_RULES, PREMIERE_RULES, SURPRISE_RULES, rulesInPlay, ruleReminder }
   from '../js/tr-rules.js';
 import { rpBuildColdOpen } from '../js/vp-tr/cold-open.js';
 import { exitVerbs, roundExits } from '../js/shows.js';
+import { _setBespokeMissionsEnabled } from '../js/tr/missions/index.js';
 import roster from '../franchise_roster.json';
 
 // EVERY MURDER SHAPE TICKED ON, because this sweep is ABOUT them.
@@ -69,7 +70,7 @@ import roster from '../franchise_roster.json';
 // always the weaker arrangement: these arms went vacuous the moment the
 // default changed, which is exactly what a state reached by luck does.
 const ALL_MURDER_TWISTS = ['on-trial', 'plain-sight', 'face-to-face',
-  'dungeon', 'double', 'name-your-own'];
+  'dungeon', 'double', 'name-your-own', 'hidden'];
 
 const ROSTER = roster.players.slice(0, 20);
 const CAST = ROSTER.map(p => p.name);
@@ -118,6 +119,17 @@ for (let seed = 1; seed <= 24; seed++) RUNS.push(season(seed));
 const _blocked = run => run.episodes.some(ep => ep.tr && ep.tr.dawn && ep.tr.dawn.blocked);
 for (let seed = 25; seed <= 150 && !RUNS.some(_blocked); seed++) RUNS.push(season(seed));
 RUNS.push(season(8, { trShieldSource: 'armoury', trArmourySize: 4 }));
+// A HIDDEN MURDER needs the bespoke catalogue on (the app turns it on in
+// js/tr-run.js) so its funeral can run, and is pinned rather than hoped for.
+{
+  _setBespokeMissionsEnabled(true);
+  try {
+    setPlayers(ROSTER);
+    seasonConfig.trShieldSource = 'mission';
+    playTraitorsSeason({ cast: CAST, traitorCount: 3, seed: 5, murderSchedule: { 3: 'hidden' } });
+    RUNS.push({ season: null, episodes: (gs.episodeHistory || []).map(e => ({ ...e })) });
+  } finally { _setBespokeMissionsEnabled(false); }
+}
 
 /** Everything the audience sees this episode, as one searchable string. */
 function audienceHtml(ep) {
@@ -174,6 +186,7 @@ const SURPRISE_CONCEPTS = {
   'recruitment-note': [/note|anonymous|unsigned/i, /refus/i],
   'recruitment-ultimatum': [/refus/i, /removed|killed|not return|be removed/i],
   'armoury-shield': [/shield/i, /door/i],
+  'murder-hidden': [/funeral/i, /not be told|nobody is named/i],
 };
 
 describe('every rule is explained at or before the episode it governs', () => {

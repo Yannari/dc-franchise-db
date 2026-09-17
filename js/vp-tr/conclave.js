@@ -806,7 +806,12 @@ function _buildBeats(rec, ep) {
       ? '<p>' + _pick(PLAIN_SIGHT_TEXT, key + '|plain') + '</p>'
         + (rec.line ? '<p>' + _esc(rec.line) + '</p>' : '')
       : '<p>' + _pick(forced ? CLIMB_FORCED : CLIMB, key + '|climb') + '</p><p>'
-        + _pick(forced ? STAIR_FORCED : STAIR, key + '|stair') + '</p>'),
+        + _pick(forced ? STAIR_FORCED : STAIR, key + '|stair') + '</p>'
+        // A HIDDEN NIGHT: the audience is told now what the castle will not be.
+        + (rec.variant === 'hidden' && !rec.blocked
+          ? '<p class="cv-explain">Tonight the murder stays hidden. Whoever they choose, and a few others, '
+            + 'will be kept away from breakfast, and the castle will not be told who died until the funeral tomorrow afternoon.</p>'
+          : '')),
   'open', 'climb');
 
   // ── II. who is up there ──

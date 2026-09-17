@@ -105,7 +105,7 @@ const TR = 'traitors';
 
 /** The record fields a Shield search writes, one per mission. */
 const SHIELD_FIELDS = new Set(['leftTheRelay', 'askedForMoreTime', 'wentForTheFont',
-  'setTheHiddenRing', 'tookTheAgentsOffer', 'wentForAShield', 'unpickedTheHare', 'tookTheGambit', 'wonTheKneeling', 'tookTheSword']);
+  'setTheHiddenRing', 'tookTheAgentsOffer', 'wentForAShield', 'unpickedTheHare', 'tookTheGambit', 'wonTheKneeling', 'tookTheSword', 'laidTheFirstLily']);
 
 const GOOD = new Set(['strong', 'cross', 'right', 'sharp', 'true', 'on', 'good', 'win']);
 const BAD = new Set(['weak', 'freeze', 'wrong', 'lost', 'out', 'bad', 'lose', 'stop', 'dull']);
@@ -426,6 +426,9 @@ export function rpBuildBespokeMission(ep, observer = 'audience') {
     + _heroRoster(v, th)
     + '</header>'
     + '<div class="mb-observer"><span>Observer</span> ' + _esc(observer) + ' &mdash; ' + observerLine + '</div>'
+    // A STAGE, for a theme that has one: a full-width animated scene above the
+    // cards, driven by the same per-step states as the sidebar.
+    + (th.stage ? th.stage(v, states, st.idx + 1) : '')
     + '<div class="' + p + '-grid">'
     + '<main>'
     + _briefing(v, th)
@@ -483,7 +486,9 @@ function _paintInto(html, epNum, idx, total, p) {
 // REVEAL — DOM-only, dispatched from js/vp-tr/mission.js
 // ══════════════════════════════════════════════════════════════════════
 
-function _reapply(epNum, idx, total, prefix) {
+// `mode` tells a staged theme how to paint: 'next' plays the step's
+// animation, 'all' and 'mount' land on the end state.
+function _reapply(epNum, idx, total, mode = 'all') {
   const scroller = document.querySelector('.rp-main');
   const top = scroller ? scroller.scrollTop : 0;
   for (let i = 0; i < total; i++) {
@@ -499,7 +504,7 @@ function _reapply(epNum, idx, total, prefix) {
   const summary = document.getElementById('mb-summary-' + epNum);
   if (summary) summary.style.opacity = idx >= total - 1 ? '1' : '.3';
   if (store) {
-    try { THEME[store.missionId].paintSide(store.prefix, store.states, idx + 1); } catch { /* keep going */ }
+    try { THEME[store.missionId].paintSide(store.prefix, store.states, idx + 1, mode); } catch { /* keep going */ }
     if (store.shieldStates) _paintShield(epNum, store.shieldStates[Math.min(idx + 1, total)]);
   }
   if (scroller) scroller.scrollTop = top;
@@ -514,13 +519,13 @@ export function bespokeRevealNext(total, epNum) {
   const st = _state(epNum, total);
   if (st.idx >= total - 1) return;
   st.idx++;
-  _reapply(epNum, st.idx, total);
+  _reapply(epNum, st.idx, total, 'next');
   _scrollTo(epNum, st.idx);
 }
 export function bespokeRevealAll(total, epNum) {
   const st = _state(epNum, total);
   st.idx = total - 1;
-  _reapply(epNum, st.idx, total);
+  _reapply(epNum, st.idx, total, 'all');
 }
 
 // paint the sidebar once on first mount too (renderVPScreen inserts static HTML)
@@ -529,7 +534,7 @@ if (typeof window !== 'undefined') {
     const store = window.__trBespoke && window.__trBespoke[epNum];
     const st = _bespokeState['be-' + epNum];
     if (store && st) {
-      try { THEME[store.missionId].paintSide(store.prefix, store.states, st.idx + 1); } catch { /* */ }
+      try { THEME[store.missionId].paintSide(store.prefix, store.states, st.idx + 1, 'mount'); } catch { /* */ }
       if (store.shieldStates) _paintShield(epNum, store.shieldStates[st.idx + 1]);
     }
   };

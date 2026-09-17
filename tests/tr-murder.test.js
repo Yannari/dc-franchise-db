@@ -402,6 +402,7 @@ const SHAPE = {
   dungeon: ['companion', 'voice'],
   double: ['victims'],
   'name-your-own': ['decider', 'sacrificed'],
+  hidden: ['decoys', 'coffins'],
 };
 
 /**

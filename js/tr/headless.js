@@ -25,7 +25,7 @@ import { traitorsRoundBallots, traitorsBeliefSnapshot, TRAITORS_FORMAT } from '.
 import { exitVerbs, roundExits } from '../shows.js';
 import { seedTraitorKnowledge, ballotEvidence, murderEvidence, missionEvidence, followerEvidence,
   alibiEvidence } from './deduction.js';
-import { variantEvidence } from './murder-variants.js';
+import { variantEvidence, hiddenMurderFor } from './murder-variants.js';
 import { runRoundTable } from './roundtable.js';
 import { resolveMurder } from './murder.js';
 import { sceneParticipants, sceneSpeakers, KNOWN_WINDOWS } from './events.js';
@@ -1019,6 +1019,14 @@ function _endgameRecord(e) {
  * cold open is an arrival instead, and the screen branches on `ofEp` being
  * null rather than on the episode number.
  */
+/** Run `fn` with a hidden murder's decoys out of the room, then put them back. */
+function _withoutDecoys(hidden, fn) {
+  if (!hidden) return fn();
+  const saved = gs.activePlayers;
+  gs.activePlayers = (saved || []).filter(n => !hidden.decoys.includes(n));
+  try { return fn(); } finally { gs.activePlayers = saved; }
+}
+
 function _morning() {
   const rows = gs.episodeHistory || [];
   const prev = rows.length ? rows[rows.length - 1] : null;
@@ -1051,6 +1059,15 @@ function _morning() {
     // would know the shape of a night nobody told them about.
     variantLine: (prev && prev.tr?.conclave?.line) || null,
     variant: (prev && prev.tr?.conclave?.variant) || null,
+    // A HIDDEN MURDER: three empty chairs and no name. The decoys and the
+    // coffin order are public (the castle can see who is missing); which of
+    // the three is dead is not, and the screen must not say it.
+    hidden: (() => {
+      if (!prev || prev.tr?.conclave?.variant !== 'hidden' || prev.tr?.conclave?.blocked) return null;
+      const r = (gs.tr?.rounds || []).find(x => x.ep === prev.tr.conclave.ep && x.variant === 'hidden');
+      return r && r.variantData
+        ? { decoys: [...r.variantData.decoys], coffins: [...r.variantData.coffins] } : null;
+    })(),
     // ── WHAT THE ROOM DOES WITH THE EMPTY PLACE (Plan 9, Task 9) ────────
     //
     // The morning is not a roll call. It has reactions, and every one of them
@@ -3009,7 +3026,10 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     // flat 4-8 total shared across all seven windows. Phases slot around the
     // evidence/table/night contract below WITHOUT disturbing it — see that
     // comment for why the three calls it wraps cannot reorder.
-    const castleEvents = [
+    // A HIDDEN MURDER'S MORNING has no fallout (nobody knows who died) and
+    // no decoys (they are kept away until the funeral).
+    const hiddenToday = hiddenMurderFor(ep);
+    const castleEvents = hiddenToday ? [] : [
       ...runCastlePhase('breakfast-fallout', ep, castleRng), // dawn
     ];
 
@@ -3046,7 +3066,8 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     // murderEvidence/variantEvidence write `gs.knowledge`, which no castle
     // event may read, so running this phase before or after them changes
     // nothing about what it draws.
-    castleEvents.push(...runCastlePhase('morning-life', ep, castleRng)); // morning + journey-out
+    castleEvents.push(..._withoutDecoys(hiddenToday,
+      () => runCastlePhase('morning-life', ep, castleRng))); // morning + journey-out
     // EVIDENCE SOURCE 5, immediately after the phase that can produce a
     // finding, and taking its acceptance rolls off the CASTLE stream — so it
     // displaces no game draw, exactly like missionEvidence on the mission

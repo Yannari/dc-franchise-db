@@ -23,6 +23,7 @@ import { CHESS } from './mission-theme-traitors-chess.js';
 import { CHURCH } from './mission-theme-church-match.js';
 import { MONUMENT } from './mission-theme-traitors-monument.js';
 import { FUNERAL } from './mission-theme-funeral.js';
+import { STAGE_CSS, stageShell, stageFor, reducedMotion, stageEvents } from './mission-stage.js';
 
 const NAV = '46px';
 const _esc = s => String(s == null ? '' : s)
@@ -49,6 +50,337 @@ const CAUSEWAY_TAGS = {
   strong: 'Strong', weak: 'Struggled', steady: 'Steady', cross: 'Crossed',
   freeze: 'Froze', right: 'Correct', wrong: 'Miscount',
 };
+
+// ══════════════════════════════════════════════════════════════════════
+// THE STAGES — the first four missions, played (js/vp-tr/mission-stage.js)
+// ══════════════════════════════════════════════════════════════════════
+//
+// Each one is the sidebar's fact, made big enough to watch: the tide coming up
+// the causeway, the rings turning on the orrery, the screens going down in the
+// counting room, the props going under the vault roof. Suspense first, answer
+// a beat later; nothing is drawn before the card that shows it.
+
+// ── THE DROWNED CAUSEWAY ──────────────────────────────────────────────
+function _dcKind(c, ph) {
+  if (c.relic) return 'font';
+  if (c.isSocial) return 'scene';
+  if (ph.id === 'wade') return c.tone === 'bad' ? 'drop' : 'box';
+  if (ph.id === 'ledge') return c.tone === 'bad' ? 'slip' : 'up';
+  return 'bell';
+}
+const DC_CAP = { wade: ['Part one', 'The Wade'], ledge: ['Part two', 'The Ledge'], bell: ['Part three', 'The Bell'] };
+
+function _dcScene(v, s) {
+  const e = v.epNum;
+  const crates = Array.from({ length: Math.max(1, s.teams.reduce((a, t) => a + t.quota, 0)) }, (_, i) =>
+    '<rect class="ms-dc-crate' + (i < s.boxes ? ' up' : '') + '" data-cr="' + i + '" x="' + (452 + (i % 6) * 34)
+    + '" y="' + (120 - Math.floor(i / 6) * 26) + '" width="28" height="22" rx="2"/>').join('');
+  return '<rect width="1080" height="360" fill="url(#ms-dc-sky-' + e + ')"/>'
+    + '<path d="M0 214 C180 206 300 220 460 212 C620 204 760 218 1080 208 V360 H0Z" fill="#2b2a24"/>'
+    + '<g class="ms-dc-chapel" transform="translate(430,0)">'
+    + '<path d="M22 212 V96 h176 V212Z" fill="#20232a" stroke="#43525c" stroke-width="3"/>'
+    + '<path d="M14 96 L110 44 L206 96Z" fill="#171a20" stroke="#43525c" stroke-width="3"/>'
+    + '<rect x="96" y="150" width="28" height="62" rx="14" fill="#0d1014"/>'
+    + '<g class="ms-dc-bell" transform="translate(110,64)"><path d="M-12 12 a12 14 0 0 1 24 0z" fill="#b08d4a"/>'
+    + '<circle cy="14" r="3" fill="#b08d4a"/></g></g>'
+    + crates
+    + '<g class="ms-dc-font" transform="translate(238,250)"><path d="M-20 18 h40 l-6 -20 h-28z" fill="#1b2026" stroke="#43525c" stroke-width="2"/>'
+    + '<circle class="glint" cy="-4" r="10" fill="rgba(242,204,91,.9)"/></g>'
+    + '<g class="ms-dc-sea"><rect class="water" x="0" y="0" width="1080" height="360"/>'
+    + '<path class="wave" d="M0 8 q60 -8 120 0 t120 0 t120 0 t120 0 t120 0 t120 0 t120 0 t120 0 t120 0" fill="none" stroke="rgba(180,214,230,.35)" stroke-width="3"/></g>';
+}
+function _dcStage(v, states, n) {
+  const s = states[Math.max(0, Math.min(states.length - 1, n))] || states[0];
+  const e = v.epNum;
+  const defs = '<linearGradient id="ms-dc-sky-' + e + '" x1="0" x2="0" y1="0" y2="1">'
+    + '<stop offset="0" stop-color="#1d2a33"/><stop offset=".6" stop-color="#151d24"/><stop offset="1" stop-color="#0f141a"/></linearGradient>';
+  return stageShell({ epNum: e, defs, scene: _dcScene(v, s),
+    cap: ['tide ' + s.label, (DC_CAP[s.capPhase] || DC_CAP.wade)[1]],
+    pot: s.potAfter, vars: '--ms-accent:#9fd8ff;--ms-ink:#e8eef2', label: 'The causeway, staged' });
+}
+function _dcSettle(st, v, s) {
+  st.phase(s.watch && s.watch.length ? 'watch' : 'rest');
+  st.qa('.ms-dc-crate').forEach((c, i) => c.setAttribute('class', 'ms-dc-crate' + (i < s.boxes ? ' up' : '')));
+  const sea = st.q('.ms-dc-sea .water');
+  const top = 360 - Math.round(360 * (s.water / 100) * 0.62);
+  if (sea) { sea.setAttribute('y', top); sea.setAttribute('height', 360 - top); }
+  const wv = st.q('.ms-dc-sea .wave'); if (wv) wv.setAttribute('transform', 'translate(0,' + top + ')');
+  const font = st.q('.ms-dc-font'); if (font) font.setAttribute('class', 'ms-dc-font' + (s.fontSeen ? ' taken' : ''));
+  st.cap('tide ' + s.label, (DC_CAP[s.capPhase] || DC_CAP.wade)[1]);
+  st.pot(s.potAfter, false);
+  st.clearStamp();
+}
+function _dcPlay(st, v, prev, s) {
+  _dcSettle(st, v, prev);
+  const e = s.ev; if (!e) { _dcSettle(st, v, s); return; }
+  const land = (fn, ms) => st.later(fn, ms);
+  if (e.k === 'box' || e.k === 'up') {
+    st.phase('hold');
+    land(() => { _dcSettle(st, v, s); st.burst(12, 52, 34, 110, 'rgba(159,216,255,.9)'); }, 1100);
+  } else if (e.k === 'drop' || e.k === 'slip') {
+    st.phase('hold');
+    land(() => {
+      _dcSettle(st, v, s); st.phase('bad');
+      st.burst(16, 40, 72, 130, 'rgba(159,216,255,.9)');
+      st.stamp(e.k === 'drop' ? 'INTO THE CHANNEL' : 'OFF THE LEDGE', 'bad');
+    }, 1300);
+  } else if (e.k === 'font') {
+    st.phase('hold');
+    land(() => {
+      _dcSettle(st, v, s);
+      if (e.found) { st.phase('win'); st.flash('22%', '70%'); st.burst(18, 22, 70, 140, 'rgba(242,204,91,.95)'); st.stamp('A SHIELD IN THE FONT', 'gold'); }
+      else { st.stamp('NOTHING IN THE FONT', 'bad'); }
+    }, 1500);
+  } else if (e.k === 'bell') {
+    st.phase('hold');
+    land(() => {
+      _dcSettle(st, v, s); st.phase('win');
+      st.flash('50%', '20%'); st.stamp('THE BELL', 'good');
+      land(() => st.pot(s.potAfter, true), 1200);
+    }, 1600);
+  } else if (e.k === 'scene') { _dcSettle(st, v, s); st.phase('watch'); } else _dcSettle(st, v, s);
+}
+
+// ── THE NIGHTJAR ORRERY ───────────────────────────────────────────────
+function _noKind(c, ph) {
+  if (c.relic) return 'ring';
+  if (c.isSocial) return 'scene';
+  if (ph.id === 'ledger') return c.tone === 'bad' ? 'out' : 'true';
+  if (ph.id === 'gearing') return c.tone === 'bad' ? 'stuck' : 'open';
+  return c.tone === 'bad' ? 'dark' : 'lit';
+}
+const NO_CAP = { ledger: ['Part one', 'The Night-Book'], gearing: ['Part two', 'The Gearing'],
+  transit: ['Part three', 'The Transit'] };
+function _noScene(v, s) {
+  const e = v.epNum;
+  const rings = Array.from({ length: 6 }, (_, i) =>
+    '<g class="ms-no-ring' + (i < s.trueRings ? ' true' : '') + '" data-rg="' + i + '">'
+    + '<circle r="' + (44 + i * 30) + '" fill="none" stroke-width="5"/>'
+    + '<circle class="bead" cx="' + (44 + i * 30) + '" r="8"/></g>').join('');
+  const drawers = (v.teams || []).map((t, i) =>
+    '<g class="ms-no-drawer' + (i < (s.compartments || 0) ? ' open' : '') + '" data-dw="' + i + '" transform="translate(' + (120 + i * 760) + ',290)">'
+    + '<rect width="86" height="44" rx="4"/><rect class="pull" x="34" y="18" width="18" height="6" rx="3"/></g>').join('');
+  return '<rect width="1080" height="360" fill="url(#ms-no-sky-' + e + ')"/>'
+    + '<g class="ms-no-stars"></g>'
+    + '<g class="ms-no-orrery" transform="translate(540,150)">' + rings
+    + '<circle class="ms-no-sun' + (s.open ? ' lit' : '') + '" r="24"/></g>'
+    + drawers;
+}
+function _noStage(v, states, n) {
+  const s = states[Math.max(0, Math.min(states.length - 1, n))] || states[0];
+  const e = v.epNum;
+  const defs = '<linearGradient id="ms-no-sky-' + e + '" x1="0" x2="0" y1="0" y2="1">'
+    + '<stop offset="0" stop-color="#171426"/><stop offset=".6" stop-color="#120f1c"/><stop offset="1" stop-color="#0c0a14"/></linearGradient>';
+  return stageShell({ epNum: e, defs, scene: _noScene(v, s),
+    cap: [s.trueRings + ' of 6 rings true', (NO_CAP[s.capPhase] || NO_CAP.ledger)[1]],
+    pot: s.potAfter, vars: '--ms-accent:#e0c46a;--ms-ink:#efe7d6', label: 'The orrery, staged' });
+}
+function _noSettle(st, v, s) {
+  st.phase(s.watch && s.watch.length ? 'watch' : 'rest');
+  st.qa('.ms-no-ring').forEach((g, i) => g.setAttribute('class', 'ms-no-ring' + (i < s.trueRings ? ' true' : '')));
+  st.qa('.ms-no-drawer').forEach((g, i) => g.setAttribute('class', 'ms-no-drawer' + (i < (s.compartments || 0) ? ' open' : '')));
+  const sun = st.q('.ms-no-sun'); if (sun) sun.setAttribute('class', 'ms-no-sun' + (s.open ? ' lit' : ''));
+  st.cap(s.trueRings + ' of 6 rings true', (NO_CAP[s.capPhase] || NO_CAP.ledger)[1]);
+  st.pot(s.potAfter, false);
+  st.clearStamp();
+}
+function _noPlay(st, v, prev, s) {
+  _noSettle(st, v, prev);
+  const e = s.ev; if (!e) { _noSettle(st, v, s); return; }
+  const land = (fn, ms) => st.later(fn, ms);
+  if (e.k === 'true' || e.k === 'open' || e.k === 'ring') {
+    st.phase('hold');
+    land(() => {
+      _noSettle(st, v, s);
+      st.burst(12, 50, 42, 120, 'rgba(224,196,106,.9)');
+      if (e.k === 'ring' && e.found) { st.phase('win'); st.flash('50%', '42%'); st.stamp('A SHIELD IN THE RING', 'gold'); }
+    }, 1200);
+  } else if (e.k === 'out' || e.k === 'stuck' || e.k === 'dark') {
+    st.phase('hold');
+    land(() => {
+      _noSettle(st, v, s); st.phase('bad');
+      st.stamp(e.k === 'out' ? 'A RING OUT OF TRUE' : e.k === 'stuck' ? 'IT WOULD NOT OPEN' : 'THE FLOOR STAYED DARK', 'bad');
+    }, 1400);
+  } else if (e.k === 'lit') {
+    st.phase('hold');
+    land(() => {
+      _noSettle(st, v, s); st.phase('win');
+      st.flash('50%', '42%'); st.burst(22, 50, 42, 170, 'rgba(224,196,106,.95)');
+      st.stamp('THE FLOOR LIGHTS', 'good');
+      land(() => st.pot(s.potAfter, true), 1200);
+    }, 1700);
+  } else if (e.k === 'scene') { _noSettle(st, v, s); st.phase('watch'); } else _noSettle(st, v, s);
+}
+
+// ── THE LONG ACCOUNT ──────────────────────────────────────────────────
+function _laKind(c, ph) {
+  if (c.relic) return 'offer';
+  if (c.isSocial) return 'scene';
+  if (ph.id === 'survey') return c.tone === 'bad' ? 'miscount' : 'count';
+  if (ph.id === 'room') return c.tone === 'bad' ? 'seen' : 'screen';
+  return c.tone === 'bad' ? 'took' : 'held';
+}
+const LA_CAP = { survey: ['Part one', 'The Survey'], room: ['Part two', 'The Room'],
+  settlement: ['Part three', 'The Settlement'] };
+function _laScene(v, s) {
+  const e = v.epNum;
+  const desks = (s.claims || []).map((c, i) => {
+    const cols = Math.max(1, (s.claims || []).length);
+    const x = 540 + (i - (cols - 1) / 2) * Math.min(420, 900 / cols);
+    return '<g class="ms-la-desk' + ((s.counted || [])[i] ? ' sealed' : '') + '" data-dk="' + i + '" transform="translate(' + x.toFixed(0) + ',150)">'
+      + '<rect class="top" x="-70" y="60" width="140" height="16" rx="3"/>'
+      + '<rect class="leg" x="-58" y="76" width="10" height="70"/><rect class="leg" x="48" y="76" width="10" height="70"/>'
+      + '<g class="ms-la-screen"><rect x="-64" y="-46" width="128" height="106" rx="4"/>'
+      + '<path d="M-64 -46 h128" stroke="#8a6f3a" stroke-width="3"/></g>'
+      + '<text class="cnt" y="34" text-anchor="middle">' + _esc(String(c)) + '</text></g>';
+  }).join('');
+  return '<rect width="1080" height="360" fill="url(#ms-la-room-' + e + ')"/>'
+    + '<path d="M0 232 H1080 V360 H0Z" fill="#20180f"/>'
+    + '<g class="ms-la-lamps"><circle cx="220" cy="40" r="10"/><circle cx="540" cy="30" r="10"/><circle cx="860" cy="40" r="10"/></g>'
+    + desks
+    + '<g class="ms-la-chest' + ((s.counted || []).some(Boolean) ? ' open' : '') + '" transform="translate(540,300)">'
+    + '<rect class="body" x="-70" y="-24" width="140" height="48" rx="4"/>'
+    + '<path class="lid" d="M-70 -24 h140 v-16 a70 16 0 0 0 -140 0z"/>'
+    + '<circle class="coin" cy="-8" r="9"/></g>';
+}
+function _laStage(v, states, n) {
+  const s = states[Math.max(0, Math.min(states.length - 1, n))] || states[0];
+  const e = v.epNum;
+  const defs = '<linearGradient id="ms-la-room-' + e + '" x1="0" x2="0" y1="0" y2="1">'
+    + '<stop offset="0" stop-color="#2a2016"/><stop offset=".7" stop-color="#1a140d"/><stop offset="1" stop-color="#110d08"/></linearGradient>';
+  return stageShell({ epNum: e, defs, scene: _laScene(v, s),
+    cap: ['claims ' + (s.claims || []).join(' · '), (LA_CAP[s.capPhase] || LA_CAP.survey)[1]],
+    pot: s.potAfter, vars: '--ms-accent:#d8b25a;--ms-ink:#efe3c8', label: 'The counting room, staged' });
+}
+function _laSettle(st, v, s) {
+  st.phase(s.watch && s.watch.length ? 'watch' : 'rest');
+  st.qa('.ms-la-desk').forEach((g, i) => {
+    g.setAttribute('class', 'ms-la-desk' + ((s.counted || [])[i] ? ' sealed' : ''));
+    const t = g.querySelector('.cnt'); if (t) t.textContent = String((s.claims || [])[i] ?? '');
+  });
+  const chest = st.q('.ms-la-chest');
+  if (chest) chest.setAttribute('class', 'ms-la-chest' + ((s.counted || []).some(Boolean) ? ' open' : ''));
+  st.cap('claims ' + (s.claims || []).join(' · '), (LA_CAP[s.capPhase] || LA_CAP.survey)[1]);
+  st.pot(s.potAfter, false);
+  st.clearStamp();
+}
+function _laPlay(st, v, prev, s) {
+  _laSettle(st, v, prev);
+  const e = s.ev; if (!e) { _laSettle(st, v, s); return; }
+  const land = (fn, ms) => st.later(fn, ms);
+  if (e.k === 'count' || e.k === 'screen') {
+    st.phase('hold');
+    land(() => { _laSettle(st, v, s); st.burst(10, 50, 44, 90, 'rgba(216,178,90,.9)'); }, 1100);
+  } else if (e.k === 'miscount' || e.k === 'seen' || e.k === 'took') {
+    st.phase('hold');
+    land(() => {
+      _laSettle(st, v, s); st.phase('bad');
+      st.stamp(e.k === 'miscount' ? 'THE COUNT IS OUT' : e.k === 'seen' ? 'SEEN OVER THE SCREEN' : 'SOMEBODY TOOK', 'bad');
+    }, 1400);
+  } else if (e.k === 'held') {
+    st.phase('hold');
+    land(() => {
+      _laSettle(st, v, s); st.phase('win');
+      st.flash('50%', '84%'); st.burst(18, 50, 84, 140, 'rgba(216,178,90,.95)');
+      st.stamp('EVERY SCREEN HELD', 'gold');
+      land(() => st.pot(s.potAfter, true), 1200);
+    }, 1700);
+  } else if (e.k === 'offer') {
+    st.phase('hold');
+    land(() => {
+      _laSettle(st, v, s);
+      if (e.found) { st.phase('win'); st.flash('50%', '44%'); st.stamp('THE OFFER TAKEN', 'gold'); }
+      else st.stamp('TURNED IT DOWN', 'cool');
+    }, 1500);
+  } else if (e.k === 'scene') { _laSettle(st, v, s); st.phase('watch'); } else _laSettle(st, v, s);
+}
+
+// ── THE ASH VAULT ─────────────────────────────────────────────────────
+function _avKind(c, ph) {
+  if (c.relic) return 'flue';
+  if (c.isSocial) return 'scene';
+  if (ph.id === 'shoring') return c.tone === 'bad' ? 'fell' : 'prop';
+  if (ph.id === 'crawl') return c.tone === 'bad' ? 'stuck' : 'crawl';
+  return c.tone === 'bad' ? 'lost' : 'deed';
+}
+const AV_CAP = { shoring: ['Part one', 'The Shoring'], crawl: ['Part two', 'The Crawl'],
+  sort: ['Part three', 'The Sort'] };
+function _avScene(v, s) {
+  const e = v.epNum;
+  const props = (s.props || []).map((p, i) =>
+    '<g class="ms-av-prop' + (p === 1 ? ' up' : p === 2 ? ' down' : '') + '" data-pr="' + i
+    + '" transform="translate(' + (150 + i * 130) + ',150)">'
+    + '<rect class="post" x="-7" y="0" width="14" height="120" rx="3"/>'
+    + '<rect class="head" x="-22" y="-14" width="44" height="16" rx="3"/></g>').join('');
+  const bays = (s.bays || []).map((lab, i) =>
+    '<g class="ms-av-bay' + (/[0-9]/.test(String(lab)) ? ' done' : '') + '" data-by="' + i
+    + '" transform="translate(' + (280 + i * 520) + ',300)">'
+    + '<rect x="-70" y="-26" width="140" height="52" rx="4"/>'
+    + '<path class="deed" d="M-20 -12 h40 v24 h-40z"/>'
+    + '<text class="lab" y="44" text-anchor="middle">' + _esc(String(lab)) + '</text></g>').join('');
+  return '<rect width="1080" height="360" fill="url(#ms-av-vault-' + e + ')"/>'
+    + '<path d="M0 132 C160 108 300 140 460 124 C620 108 760 136 1080 118 V0 H0Z" fill="#16110d"/>'
+    + '<g class="ms-av-dust"></g>' + props + bays
+    + '<g class="ms-av-worm" transform="translate(' + (120 + (s.worm || 0) * 8) + ',232)">'
+    + '<ellipse rx="26" ry="12" fill="#2a2018" stroke="#6b5a42" stroke-width="2"/><circle cx="16" cy="-2" r="5" fill="#c9a877"/></g>'
+    + '<g class="ms-av-flue' + (s.flueLit ? ' lit' : '') + '" transform="translate(966,96)">'
+    + '<rect x="-24" y="-60" width="48" height="140" rx="4" fill="#191410" stroke="#4a3b2a" stroke-width="3"/>'
+    + '<circle class="glow" cy="20" r="16" fill="rgba(242,204,91,.9)"/></g>';
+}
+function _avStage(v, states, n) {
+  const s = states[Math.max(0, Math.min(states.length - 1, n))] || states[0];
+  const e = v.epNum;
+  const defs = '<linearGradient id="ms-av-vault-' + e + '" x1="0" x2="0" y1="0" y2="1">'
+    + '<stop offset="0" stop-color="#241c14"/><stop offset=".6" stop-color="#171009"/><stop offset="1" stop-color="#0f0b06"/></linearGradient>';
+  return stageShell({ epNum: e, defs, scene: _avScene(v, s),
+    cap: [(s.deeds || 0) + ' deeds out', (AV_CAP[s.capPhase] || AV_CAP.shoring)[1]],
+    pot: s.potAfter, vars: '--ms-accent:#c9a877;--ms-ink:#efe2cc', label: 'The vault, staged' });
+}
+function _avSettle(st, v, s) {
+  st.phase(s.watch && s.watch.length ? 'watch' : 'rest');
+  st.qa('.ms-av-prop').forEach((g, i) => {
+    const p = (s.props || [])[i];
+    g.setAttribute('class', 'ms-av-prop' + (p === 1 ? ' up' : p === 2 ? ' down' : ''));
+  });
+  st.qa('.ms-av-bay').forEach((g, i) => {
+    g.setAttribute('class', 'ms-av-bay' + (/[0-9]/.test(String((s.bays || [])[i])) ? ' done' : ''));
+    const t = g.querySelector('.lab'); if (t) t.textContent = String((s.bays || [])[i] || '');
+  });
+  const worm = st.q('.ms-av-worm'); if (worm) worm.setAttribute('transform', 'translate(' + (120 + (s.worm || 0) * 8) + ',232)');
+  const flue = st.q('.ms-av-flue'); if (flue) flue.setAttribute('class', 'ms-av-flue' + (s.flueLit ? ' lit' : ''));
+  st.cap((s.deeds || 0) + ' deeds out', (AV_CAP[s.capPhase] || AV_CAP.shoring)[1]);
+  st.pot(s.potAfter, false);
+  st.clearStamp();
+}
+function _avPlay(st, v, prev, s) {
+  _avSettle(st, v, prev);
+  const e = s.ev; if (!e) { _avSettle(st, v, s); return; }
+  const land = (fn, ms) => st.later(fn, ms);
+  if (e.k === 'prop' || e.k === 'crawl' || e.k === 'deed') {
+    st.phase('hold');
+    land(() => {
+      _avSettle(st, v, s);
+      st.burst(12, e.k === 'deed' ? 40 : 30, 60, 110, 'rgba(201,168,119,.9)');
+      if (e.k === 'deed') st.stamp('A DEED OUT', 'good');
+    }, 1200);
+  } else if (e.k === 'fell' || e.k === 'stuck' || e.k === 'lost') {
+    st.phase('hold');
+    land(() => {
+      _avSettle(st, v, s); st.phase('bad');
+      st.burst(18, 30, 40, 160, 'rgba(120,104,84,.9)');
+      st.stamp(e.k === 'fell' ? 'THE PROP CAME DOWN' : e.k === 'stuck' ? 'STUCK IN THE BAY' : 'LOST IN THE ASH', 'bad');
+    }, 1500);
+  } else if (e.k === 'flue') {
+    st.phase('hold');
+    land(() => {
+      _avSettle(st, v, s);
+      if (s.flueLit) { st.phase('win'); st.flash('89%', '34%'); st.burst(18, 89, 34, 140, 'rgba(242,204,91,.95)'); st.stamp('UP THE FLUE', 'gold'); }
+      else st.stamp('NOTHING UP THERE', 'bad');
+    }, 1600);
+  } else if (e.k === 'scene') { _avSettle(st, v, s); st.phase('watch'); } else _avSettle(st, v, s);
+  if (s.done) land(() => st.pot(s.potAfter, true), 1900);
+}
+
 const CAUSEWAY = {
   id: 'drowned-causeway', prefix: 'dc',
   rootVars: '',
@@ -67,6 +399,8 @@ const CAUSEWAY = {
     else if (ph.id === 'bell') ic = 'ico-bell';
     return '<span class="dc-ico ' + ic + '"><i></i><i></i><i></i></span>';
   },
+  stage: (v, states, n) => _dcStage(v, states, n),
+
   sidebar(v, n, states) {
     const s = states[Math.max(0, Math.min(states.length - 1, n))] || states[0];
     const teams = v.teams.map((t, i) =>
@@ -94,6 +428,8 @@ const CAUSEWAY = {
       + '</div>';
   },
   sideStates(v, total) {
+    const evs = stageEvents(v, _dcKind).map(x => ({ ...x,
+      found: /shield|came back with|found/i.test(x.text || '') && !/nothing|empty|only|no shield/i.test(x.text || '') }));
     const pr = phaseProg(v);
     const QUOTA = Math.max(1, Math.ceil((v.tally.boxesOut || 10) / 2));
     const perTeam = v.tally.perTeam || {};
@@ -111,11 +447,24 @@ const CAUSEWAY = {
       const teams = names.map((nm, i) => ({ name: nm, up: Math.round(finalUp[i] * g), quota: QUOTA }));
       const boxes = teams.reduce((a, t) => a + t.up, 0);
       const earned = Math.round(v.earned * f);
-      out.push({ water, label, teams, boxes, earned, potAfter: v.potBefore + earned, shown: n > 0 });
+      out.push({ ev: evs[n - 1] || null, capPhase: evs[n - 1] ? evs[n - 1].phase : (v.phases[0] || {}).id,
+        watch: evs[n - 1] && evs[n - 1].k === 'scene' ? evs[n - 1].who : [],
+        fontSeen: evs.slice(0, n).some(x => x.k === 'font' || x.k === 'flue' || x.k === 'ring' || x.k === 'offer'), done: n >= total,
+        v: { epNum: v.epNum, potBefore: v.potBefore, earned: v.earned, tally: v.tally, shield: v.shield },
+        water, label, teams, boxes, earned, potAfter: v.potBefore + earned, shown: n > 0 });
     }
     return out;
   },
-  paintSide(prefix, states, n) {
+  paintSide(prefix, states, n, mode) {
+    {
+      const s0 = states[Math.max(0, Math.min(states.length - 1, n))];
+      const st = s0 && s0.v ? stageFor(s0.v.epNum) : null;
+      if (st) {
+        st.clear();
+        if (mode === 'next' && n > 0 && !reducedMotion()) _dcPlay(st, s0.v, states[n - 1], s0);
+        else _dcSettle(st, s0.v, s0);
+      }
+    }
     const s = states[Math.max(0, Math.min(states.length - 1, n))]; if (!s) return;
     const $ = id => document.getElementById(id);
     const w = $('dc-water'); if (w) w.style.height = s.water + '%';
@@ -253,7 +602,58 @@ const CAUSEWAY = {
 .dc-summary{margin-top:34px;padding:24px;border:1px solid rgba(201,162,39,.4);background:rgba(9,13,16,.8);font-family:'Bodoni Moda',serif;font-size:21px;line-height:1.5}
 .dc-summary small{display:block;font-family:'Barlow Condensed',sans-serif;font-size:11.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--dc-brass);margin-bottom:9px}
 @media(prefers-reduced-motion:reduce){.dc-root *,.dc-root *::before,.dc-root *::after{animation:none !important;transition:none !important}.dc-card{opacity:1;transform:none}.dc-drizzle,.dc-swell{display:none}}
-`,
+
+/* ── THE STAGE ───────────────────────────────────────────────────────── */
+.ms-dc-crate{fill:#3a3026;stroke:#7a6549;stroke-width:2;opacity:.25;transition:opacity .7s,fill .7s}
+.ms-dc-crate.up{opacity:1;fill:#5b4326}
+.ms-dc-sea .water{fill:rgba(31,74,99,.82)}
+.ms-dc-sea rect{transition:y 1.1s ease-out,height 1.1s ease-out}
+.ms-dc-sea .wave{transition:transform 1.1s ease-out}
+.ms-dc-bell{transform-box:fill-box;transform-origin:50% 0}
+.ms[data-phase=win] .ms-dc-bell{animation:ms-dc-ring .4s ease-in-out 4}
+@keyframes ms-dc-ring{50%{transform:rotate(16deg)}}
+.ms-dc-font .glint{opacity:0;transition:opacity .6s}
+.ms-dc-font.taken .glint{opacity:1;animation:ms-glow 1.4s ease-in-out infinite}
+@keyframes ms-glow{50%{opacity:.3}}
+.ms-no-ring circle{stroke:#4a4133;transition:stroke .7s,filter .7s}
+.ms-no-ring .bead{fill:#4a4133;stroke:none}
+.ms-no-ring.true circle{stroke:#e0c46a;filter:drop-shadow(0 0 6px rgba(224,196,106,.7))}
+.ms-no-ring.true .bead{fill:#e0c46a}
+.ms-no-ring{transform-box:fill-box;transform-origin:50% 50%;animation:ms-no-turn 40s linear infinite}
+.ms-no-ring:nth-child(2n){animation-duration:28s;animation-direction:reverse}
+@keyframes ms-no-turn{to{transform:rotate(360deg)}}
+.ms-no-sun{fill:#2a2436;stroke:#4a4133;stroke-width:3;transition:fill .8s,filter .8s}
+.ms-no-sun.lit{fill:#e0c46a;filter:drop-shadow(0 0 22px rgba(224,196,106,.85))}
+.ms-no-drawer rect{fill:#241d2e;stroke:#4a4133;stroke-width:2;transition:transform .7s}
+.ms-no-drawer .pull{fill:#4a4133}
+.ms-no-drawer.open{transform:translateY(14px)}
+.ms-no-drawer.open rect{stroke:#e0c46a}
+.ms-la-desk .top,.ms-la-desk .leg{fill:#3a2b18}
+.ms-la-desk .ms-la-screen rect{fill:#2a2016;stroke:#8a6f3a;stroke-width:2;transition:transform .8s,opacity .8s}
+.ms-la-desk.sealed .ms-la-screen rect{opacity:1}
+.ms-la-desk:not(.sealed) .ms-la-screen{opacity:.25;transform:translateY(30px)}
+.ms-la-desk .cnt{font:20px 'Courier Prime',monospace;fill:#efe3c8}
+.ms-la-lamps circle{fill:#ffd98a;opacity:.8;animation:ms-glow 3s ease-in-out infinite}
+.ms-la-chest .body,.ms-la-chest .lid{fill:#2a2016;stroke:#8a6f3a;stroke-width:2}
+.ms-la-chest .lid{transform-box:fill-box;transform-origin:50% 100%;transition:transform .9s cubic-bezier(.3,1.3,.5,1)}
+.ms-la-chest.open .lid{transform:rotate(-38deg) translateY(-6px)}
+.ms-la-chest .coin{fill:#d8b25a;opacity:0;transition:opacity .7s}
+.ms-la-chest.open .coin{opacity:1;filter:drop-shadow(0 0 10px rgba(216,178,90,.9))}
+.ms-av-prop .post,.ms-av-prop .head{fill:#3a2e20;stroke:#6b5a42;stroke-width:2;transition:fill .6s,transform .7s}
+.ms-av-prop.up .post,.ms-av-prop.up .head{fill:#6b5a42}
+.ms-av-prop.down{transform-box:fill-box;transform-origin:50% 100%}
+.ms-av-prop.down .post{fill:#2a201a;transform:rotate(22deg)}
+.ms-av-bay rect{fill:#1d1710;stroke:#4a3b2a;stroke-width:2;transition:stroke .7s}
+.ms-av-bay .deed{fill:#2a2018;transition:fill .7s,filter .7s}
+.ms-av-bay.done rect{stroke:#c9a877}
+.ms-av-bay.done .deed{fill:#e8dcc0;filter:drop-shadow(0 0 7px rgba(232,220,192,.8))}
+.ms-av-bay .lab{font:13px 'IBM Plex Mono',monospace;fill:#c9a877}
+.ms-av-worm{transition:transform 1.1s ease-out}
+.ms-av-flue .glow{opacity:0;transition:opacity .7s}
+.ms-av-flue.lit .glow{opacity:1;animation:ms-glow 1.6s ease-in-out infinite}
+.ms[data-phase=watch] .ms-dc-crate,.ms[data-phase=watch] .ms-no-drawer,.ms[data-phase=watch] .ms-la-desk,.ms[data-phase=watch] .ms-av-prop{filter:brightness(.45)}
+.ms[data-phase=bad] .ms-vig{box-shadow:inset 0 0 160px 60px rgba(40,10,10,.85)}
+` + STAGE_CSS,
 };
 function _crates(t) {
   let h = '';
@@ -290,6 +690,8 @@ const ORRERY = {
     else if (ph.id === 'transit') ic = 'ico-merid';
     return '<span class="no-ico ' + ic + '"><i></i><i></i><i></i></span>';
   },
+  stage: (v, states, n) => _noStage(v, states, n),
+
   sidebar(v, n, states) {
     const s = states[Math.max(0, Math.min(states.length - 1, n))] || states[0];
     const rings = Array.from({ length: 6 }, (_, r) =>
@@ -311,6 +713,8 @@ const ORRERY = {
       + '</div>';
   },
   sideStates(v, total) {
+    const evs = stageEvents(v, _noKind).map(x => ({ ...x,
+      found: /shield|came back with|found/i.test(x.text || '') && !/nothing|empty|only|no shield/i.test(x.text || '') }));
     const pr = phaseProg(v);
     const names = v.teams.map(t => t.name);
     const trueByTeam = v.tally.ringsTrue || {};
@@ -335,11 +739,24 @@ const ORRERY = {
       const floor = open ? ('Floor · open (' + names.filter(nm => opened[nm]).join(', ') + ')') : 'Floor · shut';
       const f = total ? n / total : 0;
       const earned = Math.round(v.earned * f);
-      out.push({ trueRings, rings, led, tr, compartments, open, floor, earned, potAfter: v.potBefore + earned, shown: n > 0 });
+      out.push({ ev: evs[n - 1] || null, capPhase: evs[n - 1] ? evs[n - 1].phase : (v.phases[0] || {}).id,
+        watch: evs[n - 1] && evs[n - 1].k === 'scene' ? evs[n - 1].who : [],
+        fontSeen: evs.slice(0, n).some(x => x.k === 'font' || x.k === 'flue' || x.k === 'ring' || x.k === 'offer'), done: n >= total,
+        v: { epNum: v.epNum, potBefore: v.potBefore, earned: v.earned, tally: v.tally, shield: v.shield },
+        trueRings, rings, led, tr, compartments, open, floor, earned, potAfter: v.potBefore + earned, shown: n > 0 });
     }
     return out;
   },
-  paintSide(prefix, states, n) {
+  paintSide(prefix, states, n, mode) {
+    {
+      const s0 = states[Math.max(0, Math.min(states.length - 1, n))];
+      const st = s0 && s0.v ? stageFor(s0.v.epNum) : null;
+      if (st) {
+        st.clear();
+        if (mode === 'next' && n > 0 && !reducedMotion()) _noPlay(st, s0.v, states[n - 1], s0);
+        else _noSettle(st, s0.v, s0);
+      }
+    }
     const s = states[Math.max(0, Math.min(states.length - 1, n))]; if (!s) return;
     const $ = id => document.getElementById(id);
     const rings = document.querySelectorAll('#no-orrery .no-ring');
@@ -474,7 +891,58 @@ const ORRERY = {
 .no-summary{margin-top:36px;padding:26px;border:1px solid rgba(217,164,65,.35);background:rgba(8,11,24,.8);font-family:'Cormorant Garamond',serif;font-size:22px;line-height:1.45}
 .no-summary small{display:block;font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.28em;text-transform:uppercase;color:var(--no-brass);margin-bottom:9px}
 @media(prefers-reduced-motion:reduce){.no-root *,.no-root *::before,.no-root *::after{animation:none !important;transition:none !important}.no-card{opacity:1;transform:none}}
-`,
+
+/* ── THE STAGE ───────────────────────────────────────────────────────── */
+.ms-dc-crate{fill:#3a3026;stroke:#7a6549;stroke-width:2;opacity:.25;transition:opacity .7s,fill .7s}
+.ms-dc-crate.up{opacity:1;fill:#5b4326}
+.ms-dc-sea .water{fill:rgba(31,74,99,.82)}
+.ms-dc-sea rect{transition:y 1.1s ease-out,height 1.1s ease-out}
+.ms-dc-sea .wave{transition:transform 1.1s ease-out}
+.ms-dc-bell{transform-box:fill-box;transform-origin:50% 0}
+.ms[data-phase=win] .ms-dc-bell{animation:ms-dc-ring .4s ease-in-out 4}
+@keyframes ms-dc-ring{50%{transform:rotate(16deg)}}
+.ms-dc-font .glint{opacity:0;transition:opacity .6s}
+.ms-dc-font.taken .glint{opacity:1;animation:ms-glow 1.4s ease-in-out infinite}
+@keyframes ms-glow{50%{opacity:.3}}
+.ms-no-ring circle{stroke:#4a4133;transition:stroke .7s,filter .7s}
+.ms-no-ring .bead{fill:#4a4133;stroke:none}
+.ms-no-ring.true circle{stroke:#e0c46a;filter:drop-shadow(0 0 6px rgba(224,196,106,.7))}
+.ms-no-ring.true .bead{fill:#e0c46a}
+.ms-no-ring{transform-box:fill-box;transform-origin:50% 50%;animation:ms-no-turn 40s linear infinite}
+.ms-no-ring:nth-child(2n){animation-duration:28s;animation-direction:reverse}
+@keyframes ms-no-turn{to{transform:rotate(360deg)}}
+.ms-no-sun{fill:#2a2436;stroke:#4a4133;stroke-width:3;transition:fill .8s,filter .8s}
+.ms-no-sun.lit{fill:#e0c46a;filter:drop-shadow(0 0 22px rgba(224,196,106,.85))}
+.ms-no-drawer rect{fill:#241d2e;stroke:#4a4133;stroke-width:2;transition:transform .7s}
+.ms-no-drawer .pull{fill:#4a4133}
+.ms-no-drawer.open{transform:translateY(14px)}
+.ms-no-drawer.open rect{stroke:#e0c46a}
+.ms-la-desk .top,.ms-la-desk .leg{fill:#3a2b18}
+.ms-la-desk .ms-la-screen rect{fill:#2a2016;stroke:#8a6f3a;stroke-width:2;transition:transform .8s,opacity .8s}
+.ms-la-desk.sealed .ms-la-screen rect{opacity:1}
+.ms-la-desk:not(.sealed) .ms-la-screen{opacity:.25;transform:translateY(30px)}
+.ms-la-desk .cnt{font:20px 'Courier Prime',monospace;fill:#efe3c8}
+.ms-la-lamps circle{fill:#ffd98a;opacity:.8;animation:ms-glow 3s ease-in-out infinite}
+.ms-la-chest .body,.ms-la-chest .lid{fill:#2a2016;stroke:#8a6f3a;stroke-width:2}
+.ms-la-chest .lid{transform-box:fill-box;transform-origin:50% 100%;transition:transform .9s cubic-bezier(.3,1.3,.5,1)}
+.ms-la-chest.open .lid{transform:rotate(-38deg) translateY(-6px)}
+.ms-la-chest .coin{fill:#d8b25a;opacity:0;transition:opacity .7s}
+.ms-la-chest.open .coin{opacity:1;filter:drop-shadow(0 0 10px rgba(216,178,90,.9))}
+.ms-av-prop .post,.ms-av-prop .head{fill:#3a2e20;stroke:#6b5a42;stroke-width:2;transition:fill .6s,transform .7s}
+.ms-av-prop.up .post,.ms-av-prop.up .head{fill:#6b5a42}
+.ms-av-prop.down{transform-box:fill-box;transform-origin:50% 100%}
+.ms-av-prop.down .post{fill:#2a201a;transform:rotate(22deg)}
+.ms-av-bay rect{fill:#1d1710;stroke:#4a3b2a;stroke-width:2;transition:stroke .7s}
+.ms-av-bay .deed{fill:#2a2018;transition:fill .7s,filter .7s}
+.ms-av-bay.done rect{stroke:#c9a877}
+.ms-av-bay.done .deed{fill:#e8dcc0;filter:drop-shadow(0 0 7px rgba(232,220,192,.8))}
+.ms-av-bay .lab{font:13px 'IBM Plex Mono',monospace;fill:#c9a877}
+.ms-av-worm{transition:transform 1.1s ease-out}
+.ms-av-flue .glow{opacity:0;transition:opacity .7s}
+.ms-av-flue.lit .glow{opacity:1;animation:ms-glow 1.6s ease-in-out infinite}
+.ms[data-phase=watch] .ms-dc-crate,.ms[data-phase=watch] .ms-no-drawer,.ms[data-phase=watch] .ms-la-desk,.ms[data-phase=watch] .ms-av-prop{filter:brightness(.45)}
+.ms[data-phase=bad] .ms-vig{box-shadow:inset 0 0 160px 60px rgba(40,10,10,.85)}
+` + STAGE_CSS,
 };
 
 // ══════════════════════════════════════════════════════════════════════
@@ -504,6 +972,8 @@ const ACCOUNT = {
     const cls = c.isSocial ? 'blue' : (SEAL_CLS[c.kind] || (c.tone === 'good' ? 'gold' : c.tone === 'bad' ? 'grey' : 'blue'));
     return '<span class="la-seal ' + cls + '"></span>';
   },
+  stage: (v, states, n) => _laStage(v, states, n),
+
   sidebar(v, n, states) {
     const s = states[Math.max(0, Math.min(states.length - 1, n))] || states[0];
     const cols = v.teams.map((t, i) =>
@@ -523,6 +993,8 @@ const ACCOUNT = {
       + '</div>';
   },
   sideStates(v, total) {
+    const evs = stageEvents(v, _laKind).map(x => ({ ...x,
+      found: /shield|came back with|found/i.test(x.text || '') && !/nothing|empty|only|no shield/i.test(x.text || '') }));
     const pr = phaseProg(v);
     const names = v.teams.map(t => t.name);
     const claimsT = v.tally.claims || {}, settledT = v.tally.settled || {}, settle = v.tally.settlement || {};
@@ -542,11 +1014,24 @@ const ACCOUNT = {
       const counted = names.map(() => settleDone);
       const f = total ? n / total : 0;
       const earned = Math.round(v.earned * f);
-      out.push({ claims, settled, screens, tally, counted, earned, potAfter: v.potBefore + earned, shown: n > 0 });
+      out.push({ ev: evs[n - 1] || null, capPhase: evs[n - 1] ? evs[n - 1].phase : (v.phases[0] || {}).id,
+        watch: evs[n - 1] && evs[n - 1].k === 'scene' ? evs[n - 1].who : [],
+        fontSeen: evs.slice(0, n).some(x => x.k === 'font' || x.k === 'flue' || x.k === 'ring' || x.k === 'offer'), done: n >= total,
+        v: { epNum: v.epNum, potBefore: v.potBefore, earned: v.earned, tally: v.tally, shield: v.shield },
+        claims, settled, screens, tally, counted, earned, potAfter: v.potBefore + earned, shown: n > 0 });
     }
     return out;
   },
-  paintSide(prefix, states, n) {
+  paintSide(prefix, states, n, mode) {
+    {
+      const s0 = states[Math.max(0, Math.min(states.length - 1, n))];
+      const st = s0 && s0.v ? stageFor(s0.v.epNum) : null;
+      if (st) {
+        st.clear();
+        if (mode === 'next' && n > 0 && !reducedMotion()) _laPlay(st, s0.v, states[n - 1], s0);
+        else _laSettle(st, s0.v, s0);
+      }
+    }
     const s = states[Math.max(0, Math.min(states.length - 1, n))]; if (!s) return;
     const $ = id => document.getElementById(id);
     s.claims.forEach((c, i) => {
@@ -645,7 +1130,58 @@ const ACCOUNT = {
 .la-summary{margin-top:24px;padding:22px 26px 22px 74px;position:relative;background:linear-gradient(180deg,var(--la-paper),var(--la-paper-2));box-shadow:0 18px 40px rgba(0,0,0,.4);font-family:'Libre Baskerville',serif;font-size:20px;line-height:1.5}
 .la-summary small{display:block;font-family:'Inter',sans-serif;font-size:10.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--la-wax);margin-bottom:8px}
 @media(prefers-reduced-motion:reduce){.la-root *,.la-root *::before,.la-root *::after{animation:none !important;transition:none !important}.la-card{opacity:1;transform:none}.la-dust{display:none}}
-`,
+
+/* ── THE STAGE ───────────────────────────────────────────────────────── */
+.ms-dc-crate{fill:#3a3026;stroke:#7a6549;stroke-width:2;opacity:.25;transition:opacity .7s,fill .7s}
+.ms-dc-crate.up{opacity:1;fill:#5b4326}
+.ms-dc-sea .water{fill:rgba(31,74,99,.82)}
+.ms-dc-sea rect{transition:y 1.1s ease-out,height 1.1s ease-out}
+.ms-dc-sea .wave{transition:transform 1.1s ease-out}
+.ms-dc-bell{transform-box:fill-box;transform-origin:50% 0}
+.ms[data-phase=win] .ms-dc-bell{animation:ms-dc-ring .4s ease-in-out 4}
+@keyframes ms-dc-ring{50%{transform:rotate(16deg)}}
+.ms-dc-font .glint{opacity:0;transition:opacity .6s}
+.ms-dc-font.taken .glint{opacity:1;animation:ms-glow 1.4s ease-in-out infinite}
+@keyframes ms-glow{50%{opacity:.3}}
+.ms-no-ring circle{stroke:#4a4133;transition:stroke .7s,filter .7s}
+.ms-no-ring .bead{fill:#4a4133;stroke:none}
+.ms-no-ring.true circle{stroke:#e0c46a;filter:drop-shadow(0 0 6px rgba(224,196,106,.7))}
+.ms-no-ring.true .bead{fill:#e0c46a}
+.ms-no-ring{transform-box:fill-box;transform-origin:50% 50%;animation:ms-no-turn 40s linear infinite}
+.ms-no-ring:nth-child(2n){animation-duration:28s;animation-direction:reverse}
+@keyframes ms-no-turn{to{transform:rotate(360deg)}}
+.ms-no-sun{fill:#2a2436;stroke:#4a4133;stroke-width:3;transition:fill .8s,filter .8s}
+.ms-no-sun.lit{fill:#e0c46a;filter:drop-shadow(0 0 22px rgba(224,196,106,.85))}
+.ms-no-drawer rect{fill:#241d2e;stroke:#4a4133;stroke-width:2;transition:transform .7s}
+.ms-no-drawer .pull{fill:#4a4133}
+.ms-no-drawer.open{transform:translateY(14px)}
+.ms-no-drawer.open rect{stroke:#e0c46a}
+.ms-la-desk .top,.ms-la-desk .leg{fill:#3a2b18}
+.ms-la-desk .ms-la-screen rect{fill:#2a2016;stroke:#8a6f3a;stroke-width:2;transition:transform .8s,opacity .8s}
+.ms-la-desk.sealed .ms-la-screen rect{opacity:1}
+.ms-la-desk:not(.sealed) .ms-la-screen{opacity:.25;transform:translateY(30px)}
+.ms-la-desk .cnt{font:20px 'Courier Prime',monospace;fill:#efe3c8}
+.ms-la-lamps circle{fill:#ffd98a;opacity:.8;animation:ms-glow 3s ease-in-out infinite}
+.ms-la-chest .body,.ms-la-chest .lid{fill:#2a2016;stroke:#8a6f3a;stroke-width:2}
+.ms-la-chest .lid{transform-box:fill-box;transform-origin:50% 100%;transition:transform .9s cubic-bezier(.3,1.3,.5,1)}
+.ms-la-chest.open .lid{transform:rotate(-38deg) translateY(-6px)}
+.ms-la-chest .coin{fill:#d8b25a;opacity:0;transition:opacity .7s}
+.ms-la-chest.open .coin{opacity:1;filter:drop-shadow(0 0 10px rgba(216,178,90,.9))}
+.ms-av-prop .post,.ms-av-prop .head{fill:#3a2e20;stroke:#6b5a42;stroke-width:2;transition:fill .6s,transform .7s}
+.ms-av-prop.up .post,.ms-av-prop.up .head{fill:#6b5a42}
+.ms-av-prop.down{transform-box:fill-box;transform-origin:50% 100%}
+.ms-av-prop.down .post{fill:#2a201a;transform:rotate(22deg)}
+.ms-av-bay rect{fill:#1d1710;stroke:#4a3b2a;stroke-width:2;transition:stroke .7s}
+.ms-av-bay .deed{fill:#2a2018;transition:fill .7s,filter .7s}
+.ms-av-bay.done rect{stroke:#c9a877}
+.ms-av-bay.done .deed{fill:#e8dcc0;filter:drop-shadow(0 0 7px rgba(232,220,192,.8))}
+.ms-av-bay .lab{font:13px 'IBM Plex Mono',monospace;fill:#c9a877}
+.ms-av-worm{transition:transform 1.1s ease-out}
+.ms-av-flue .glow{opacity:0;transition:opacity .7s}
+.ms-av-flue.lit .glow{opacity:1;animation:ms-glow 1.6s ease-in-out infinite}
+.ms[data-phase=watch] .ms-dc-crate,.ms[data-phase=watch] .ms-no-drawer,.ms[data-phase=watch] .ms-la-desk,.ms[data-phase=watch] .ms-av-prop{filter:brightness(.45)}
+.ms[data-phase=bad] .ms-vig{box-shadow:inset 0 0 160px 60px rgba(40,10,10,.85)}
+` + STAGE_CSS,
 };
 function _tally(pair, counted) {
   let h = '';
@@ -687,6 +1223,8 @@ const VAULT = {
     else if (ph.id === 'sort') ic = 'ico-deed';
     return '<span class="av-ico ' + ic + '"><i></i><i></i><i></i></span>';
   },
+  stage: (v, states, n) => _avStage(v, states, n),
+
   sidebar(v, n, states) {
     const s = states[Math.max(0, Math.min(states.length - 1, n))] || states[0];
     const rows = v.teams.map((t, i) =>
@@ -711,6 +1249,8 @@ const VAULT = {
       + '<div class="big" id="av-pot-a">' + _gbp(s.potAfter) + '</div></div></div>';
   },
   sideStates(v, total) {
+    const evs = stageEvents(v, _avKind).map(x => ({ ...x,
+      found: /shield|came back with|found/i.test(x.text || '') && !/nothing|empty|only|no shield/i.test(x.text || '') }));
     const pr = phaseProg(v);
     const names = v.teams.map(t => t.name);
     const baysT = v.tally.bays || {}, boxT = v.tally.outOfTheCrawl || {}, deedT = v.tally.readable || {};
@@ -741,11 +1281,24 @@ const VAULT = {
         : '';
       const f = total ? n / total : 0;
       const earned = Math.round(v.earned * f);
-      out.push({ props, worm, bays, box, deed, deeds, flueLit, shieldVal, shieldCost, earned, potAfter: v.potBefore + earned, shown: n > 0 });
+      out.push({ ev: evs[n - 1] || null, capPhase: evs[n - 1] ? evs[n - 1].phase : (v.phases[0] || {}).id,
+        watch: evs[n - 1] && evs[n - 1].k === 'scene' ? evs[n - 1].who : [],
+        fontSeen: evs.slice(0, n).some(x => x.k === 'font' || x.k === 'flue' || x.k === 'ring' || x.k === 'offer'), done: n >= total,
+        v: { epNum: v.epNum, potBefore: v.potBefore, earned: v.earned, tally: v.tally, shield: v.shield },
+        props, worm, bays, box, deed, deeds, flueLit, shieldVal, shieldCost, earned, potAfter: v.potBefore + earned, shown: n > 0 });
     }
     return out;
   },
-  paintSide(prefix, states, n) {
+  paintSide(prefix, states, n, mode) {
+    {
+      const s0 = states[Math.max(0, Math.min(states.length - 1, n))];
+      const st = s0 && s0.v ? stageFor(s0.v.epNum) : null;
+      if (st) {
+        st.clear();
+        if (mode === 'next' && n > 0 && !reducedMotion()) _avPlay(st, s0.v, states[n - 1], s0);
+        else _avSettle(st, s0.v, s0);
+      }
+    }
     const s = states[Math.max(0, Math.min(states.length - 1, n))]; if (!s) return;
     const $ = id => document.getElementById(id);
     const props = document.querySelectorAll('#av-props b');
@@ -890,7 +1443,58 @@ const VAULT = {
 .av-summary{margin-top:32px;padding:24px;border:1px solid var(--av-soot);background:linear-gradient(155deg,rgba(43,35,32,.85),rgba(11,9,8,.9));font-size:20px;line-height:1.5;color:var(--av-bone)}
 .av-summary small{display:block;font-family:'Courier Prime',monospace;font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--av-ember);margin-bottom:9px}
 @media(prefers-reduced-motion:reduce){.av-root *,.av-root *::before,.av-root *::after{animation:none !important;transition:none !important}.av-card{opacity:1;transform:none}.av-ash{display:none}}
-`,
+
+/* ── THE STAGE ───────────────────────────────────────────────────────── */
+.ms-dc-crate{fill:#3a3026;stroke:#7a6549;stroke-width:2;opacity:.25;transition:opacity .7s,fill .7s}
+.ms-dc-crate.up{opacity:1;fill:#5b4326}
+.ms-dc-sea .water{fill:rgba(31,74,99,.82)}
+.ms-dc-sea rect{transition:y 1.1s ease-out,height 1.1s ease-out}
+.ms-dc-sea .wave{transition:transform 1.1s ease-out}
+.ms-dc-bell{transform-box:fill-box;transform-origin:50% 0}
+.ms[data-phase=win] .ms-dc-bell{animation:ms-dc-ring .4s ease-in-out 4}
+@keyframes ms-dc-ring{50%{transform:rotate(16deg)}}
+.ms-dc-font .glint{opacity:0;transition:opacity .6s}
+.ms-dc-font.taken .glint{opacity:1;animation:ms-glow 1.4s ease-in-out infinite}
+@keyframes ms-glow{50%{opacity:.3}}
+.ms-no-ring circle{stroke:#4a4133;transition:stroke .7s,filter .7s}
+.ms-no-ring .bead{fill:#4a4133;stroke:none}
+.ms-no-ring.true circle{stroke:#e0c46a;filter:drop-shadow(0 0 6px rgba(224,196,106,.7))}
+.ms-no-ring.true .bead{fill:#e0c46a}
+.ms-no-ring{transform-box:fill-box;transform-origin:50% 50%;animation:ms-no-turn 40s linear infinite}
+.ms-no-ring:nth-child(2n){animation-duration:28s;animation-direction:reverse}
+@keyframes ms-no-turn{to{transform:rotate(360deg)}}
+.ms-no-sun{fill:#2a2436;stroke:#4a4133;stroke-width:3;transition:fill .8s,filter .8s}
+.ms-no-sun.lit{fill:#e0c46a;filter:drop-shadow(0 0 22px rgba(224,196,106,.85))}
+.ms-no-drawer rect{fill:#241d2e;stroke:#4a4133;stroke-width:2;transition:transform .7s}
+.ms-no-drawer .pull{fill:#4a4133}
+.ms-no-drawer.open{transform:translateY(14px)}
+.ms-no-drawer.open rect{stroke:#e0c46a}
+.ms-la-desk .top,.ms-la-desk .leg{fill:#3a2b18}
+.ms-la-desk .ms-la-screen rect{fill:#2a2016;stroke:#8a6f3a;stroke-width:2;transition:transform .8s,opacity .8s}
+.ms-la-desk.sealed .ms-la-screen rect{opacity:1}
+.ms-la-desk:not(.sealed) .ms-la-screen{opacity:.25;transform:translateY(30px)}
+.ms-la-desk .cnt{font:20px 'Courier Prime',monospace;fill:#efe3c8}
+.ms-la-lamps circle{fill:#ffd98a;opacity:.8;animation:ms-glow 3s ease-in-out infinite}
+.ms-la-chest .body,.ms-la-chest .lid{fill:#2a2016;stroke:#8a6f3a;stroke-width:2}
+.ms-la-chest .lid{transform-box:fill-box;transform-origin:50% 100%;transition:transform .9s cubic-bezier(.3,1.3,.5,1)}
+.ms-la-chest.open .lid{transform:rotate(-38deg) translateY(-6px)}
+.ms-la-chest .coin{fill:#d8b25a;opacity:0;transition:opacity .7s}
+.ms-la-chest.open .coin{opacity:1;filter:drop-shadow(0 0 10px rgba(216,178,90,.9))}
+.ms-av-prop .post,.ms-av-prop .head{fill:#3a2e20;stroke:#6b5a42;stroke-width:2;transition:fill .6s,transform .7s}
+.ms-av-prop.up .post,.ms-av-prop.up .head{fill:#6b5a42}
+.ms-av-prop.down{transform-box:fill-box;transform-origin:50% 100%}
+.ms-av-prop.down .post{fill:#2a201a;transform:rotate(22deg)}
+.ms-av-bay rect{fill:#1d1710;stroke:#4a3b2a;stroke-width:2;transition:stroke .7s}
+.ms-av-bay .deed{fill:#2a2018;transition:fill .7s,filter .7s}
+.ms-av-bay.done rect{stroke:#c9a877}
+.ms-av-bay.done .deed{fill:#e8dcc0;filter:drop-shadow(0 0 7px rgba(232,220,192,.8))}
+.ms-av-bay .lab{font:13px 'IBM Plex Mono',monospace;fill:#c9a877}
+.ms-av-worm{transition:transform 1.1s ease-out}
+.ms-av-flue .glow{opacity:0;transition:opacity .7s}
+.ms-av-flue.lit .glow{opacity:1;animation:ms-glow 1.6s ease-in-out infinite}
+.ms[data-phase=watch] .ms-dc-crate,.ms[data-phase=watch] .ms-no-drawer,.ms[data-phase=watch] .ms-la-desk,.ms[data-phase=watch] .ms-av-prop{filter:brightness(.45)}
+.ms[data-phase=bad] .ms-vig{box-shadow:inset 0 0 160px 60px rgba(40,10,10,.85)}
+` + STAGE_CSS,
 };
 
 export const THEMES = [CAUSEWAY, ORRERY, ACCOUNT, VAULT, BURIED, BEACON, WICKER, CHESS, CHURCH, MONUMENT, FUNERAL];

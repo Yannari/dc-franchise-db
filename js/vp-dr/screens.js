@@ -709,8 +709,20 @@ function buildSection(sec, row) {
       })}${_controls(sec.suffix, scenes.length, ep.num)}`;
   }
 
-  return `<style>${EXTRA_CSS}</style>${_shell(
-    `<div class="dr-hallwrap">${room}${steps}</div>`, ep, {
+  /* ── THE STAGE, FOR EVERY SCREEN WITHOUT A BUILDER OF ITS OWN ──
+     js/vp-dr/room-stage.js: the queens in these scenes on a wall, the ones
+     in the scene being read lit in the middle, what it did to them, and the
+     cut to camera. Lit for the room the section happens in. */
+  const cast = [...new Set(scenes.flatMap(sc => sc?.data?.players || []))];
+  const theme = set === 'gala' ? '' : set === 'sofa' ? 'lounge'
+    : sec.phase === 'stage' || sec.phase === 'lipsync' ? 'stage' : sec.phase === 'untucked' ? 'lounge' : 'werk';
+  const genSt = cast.length ? roomStage(row, scenes.map(sc => ({
+    players: sc?.data?.players || [], confess: !!sc?.data?.confessional || String(sc.kind || '').startsWith('confess:'),
+    text: sc.text, bond: Number(sc?.effects?.bond) || 0, note: _note(sc),
+  })), { ep, room: cast, theme, title: sec.title, sub: sec.subtitle, uid: `${sec.suffix}${ep.num}` }) : null;
+  if (genSt) wireStage(sec.suffix, genSt, ep, _state);
+  return `<style>${EXTRA_CSS}${genSt ? ROOM_STAGE_CSS : ''}</style>${_shell(
+    `${genSt ? genSt.html : ''}<div class="dr-hallwrap rmx-cards">${room}${steps}</div>`, ep, {
       phase: sec.phase, title: sec.title, subtitle: sec.subtitle, sidebar: rail,
     })}${_controls(sec.suffix, scenes.length, ep.num)}`;
 }

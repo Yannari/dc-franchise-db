@@ -20,7 +20,7 @@
 import { lipsyncStage, lipsyncCardDecor, LS_CSS } from './lipsync-stage.js';
 import { callStage, CALL_CSS } from './call-stage.js';
 import { exitStage, ROOM_STAGE_CSS } from './room-stage.js';
-import { wireStage } from './finale-stage.js';
+import { wireStage, finaleOpenStage, FINALE_STAGE_CSS } from './finale-stage.js';
 import { _shell, _portrait, _judgePortrait, _icon } from './style.js';
 import { resultOrder } from '../dr/data/results-order.js';
 import { _controls, _seedRail, _state } from './reveal.js';
@@ -853,15 +853,23 @@ export function rpBuildFinaleOpen(row) {
      The near-identical kind is exactly why it went unnoticed. */
   const said = (row?.dr?.scenes || []).filter(sc =>
     /^finale:finale-open/.test(sc.kind || '') && sc.text);
-  const spoken = said.map(sc => {
+  const spoken = said.map((sc, i) => {
     const who = (sc.data?.players || [])[0];
-    return `<div class="dr-panel dr-a-room" style="padding:14px 16px;display:grid;
+    return `<div class="dr-step" id="dr-step-finopen-${i}"><div class="dr-panel dr-a-room" style="padding:14px 16px;display:grid;
       grid-template-columns:${who ? 'auto 1fr' : '1fr'};gap:14px;align-items:center;
       text-align:left;margin-top:12px">
       ${who ? _portrait(who, ep, { size: 48, station: true }) : ''}
       <p style="margin:0;color:#f4e3ed;line-height:1.6">${esc(sc.text)}</p>
-    </div>`;
+    </div></div>`;
   }).join('');
+  /* ── THE STAGE ── js/vp-dr/finale-stage.js: the finalists come up under
+     gold light, and each is lit as her morning is read. The opening prose
+     is a sequence of steps now; it used to be one static page. */
+  const openSt = said.length ? finaleOpenStage(row, said.map(sc => ({ who: (sc.data?.players || [])[0] || null })), {
+    ep: { num: row?.num ?? row?.dr?.ep ?? 0, format: 'drag-race' }, finalists: [...finalists].sort((a, b) => a.localeCompare(b)),
+    shape: SHAPE[fin?.type] || '', uid: `fo${row?.num ?? 0}`,
+  }) : null;
+  if (openSt) wireStage('finopen', openSt, { num: row?.num ?? row?.dr?.ep ?? 0 }, _state);
 
   const body = `<div class="dr-panel dr-a-score" style="padding:24px 20px;text-align:center">
       <div class="dr-sash dr-disp">Grand Finale</div>
@@ -872,6 +880,11 @@ export function rpBuildFinaleOpen(row) {
       <div class="dr-fin-grid">${cards}</div>
     </div>${spoken}`;
 
+  if (openSt) {
+    return `<style>${RESULTS_CSS}${FINALE_STAGE_CSS}</style>${_shell(`${openSt.html}<div class="fsx-cards">${spoken}</div>`, ep, {
+      phase: 'stage', title: 'Grand Finale', subtitle: "America's Next Drag Superstar",
+    })}${_controls('finopen', said.length, row?.num ?? row?.dr?.ep ?? 0)}`;
+  }
   return `<style>${RESULTS_CSS}
 .dr-fin-grid{display:flex;justify-content:center;gap:18px;flex-wrap:wrap;margin-top:6px}
 .dr-fin-card{display:flex;flex-direction:column;align-items:center;gap:8px}

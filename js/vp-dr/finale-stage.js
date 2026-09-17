@@ -147,6 +147,22 @@ export const FINALE_STAGE_CSS = `
 .fsx-cards .dr-panel.fsx-cmoment{border-color:rgba(255,214,107,.55)}
 .fsx-cards .fsx-ctag{display:inline-block;margin-bottom:4px;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:#ffd66b}
 
+/* ══ THE FINALE OPENS ══ */
+.fox-line{display:flex;justify-content:center;align-items:flex-end;gap:clamp(10px,3vw,34px);flex-wrap:wrap;margin-top:12px;padding-top:30px}
+.fox-q{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;opacity:0;transform:translateY(30px);
+  transition:opacity .6s,transform .7s cubic-bezier(.2,1.4,.4,1),filter .5s;transition-delay:var(--dl)}
+.fsx.lit .fox-q{opacity:1;transform:none}
+.fox-q::before{content:'';position:absolute;top:-30px;left:50%;width:170px;height:230px;transform:translateX(-50%);z-index:-1;
+  background:linear-gradient(180deg,rgba(255,236,190,.35),transparent 80%);clip-path:polygon(42% 0,58% 0,100% 100%,0 100%);opacity:.4;transition:opacity .5s}
+.fox-q .fsx-face{width:96px;height:96px;box-shadow:0 0 0 3px var(--fx)}
+.fox-q b{font:400 17px/1 'Anton','Impact',sans-serif;letter-spacing:.05em;text-transform:uppercase}
+.fsx.any .fox-q:not(.on){filter:brightness(.55)}
+.fox-q.on{transform:translateY(-8px) scale(1.06)}
+.fox-q.on::before{opacity:1}
+.fox-q.on .fsx-face{box-shadow:0 0 0 4px #fff1a8,0 0 50px 12px rgba(255,214,107,.55)}
+.fox-shape{margin-top:10px;text-align:center;font:italic 15px/1.3 Didot,'Bodoni MT',Georgia,serif;color:#fff3cf}
+@media (max-height: 999px){.fox-q .fsx-face{width:70px;height:70px}.fox-line{padding-top:16px}}
+
 /* ══ THE CROWN LIP SYNC ══ */
 .clx-bracket{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:8px}
 .clx-box{display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:10px;font-size:11px;letter-spacing:.06em;
@@ -827,6 +843,28 @@ export function cutStage(row, list, { ep, line = [], cut = [], uid = 'x' } = {})
       spot.style.left = `${body.offsetLeft + (Math.min(...xs) + Math.max(...xs)) / 2}px`;
       el.style.setProperty('--hunt', `${Math.max(20, (Math.max(...xs) - Math.min(...xs)) / 2)}px`);
     }
+  });
+  return { html, apply, states };
+}
+
+// ══════════════════════════════════════════════════════════════════════
+//  THE FINALE OPENS
+// ══════════════════════════════════════════════════════════════════════
+
+/** `list`: { who } per card (null for the host). */
+export function finaleOpenStage(row, list, { ep, finalists = [], shape = '', uid = 'x' } = {}) {
+  const states = list.map((s, i) => ({
+    phase: 'open', on: s.who, hostOn: !s.who,
+    banner: i === 0 ? { text: 'Grand finale', sub: `${finalists.length} queens, one crown` } : null,
+    burst: i === 0, mood: 'gold',
+  }));
+  const body = `<div class="fox-line">${finalists.map((q, j) => `<div class="fox-q" data-q="${esc(q)}" style="--dl:${(j * 0.18).toFixed(2)}s">${face(q, ep, 96)}<b>${esc(q)}</b></div>`).join(' ')}</div>
+    ${shape ? `<div class="fox-shape">${esc(shape)}</div>` : ''}`;
+  const html = shell({ id: `fox-${uid}`, title: 'Grand finale', sub: 'one of them is crowned tonight', body });
+  const apply = engine(`fox-${uid}`, states, (el, st) => {
+    el.classList.toggle('lit', !!st);
+    el.classList.toggle('any', !!st?.on);
+    for (const q of el.querySelectorAll('.fox-q')) q.classList.toggle('on', !!st && st.on === q.dataset.q);
   });
   return { html, apply, states };
 }

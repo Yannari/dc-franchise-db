@@ -47,6 +47,20 @@ export const FINALE_STAGE_CSS = `
   background:radial-gradient(120% 85% at 50% 0,#3a2600 0,#150a02 52%,#070301 100%);
   box-shadow:0 30px 80px -30px #000,inset 0 0 0 1px rgba(255,214,107,.16)}
 .fsx{position:sticky;top:6px;z-index:5}
+/* THEMES: the same frame lit for the room it is in. */
+.fsx.th-stage{--fx:#ff7bc8;--fx2:#ffd66b;background:radial-gradient(120% 85% at 50% 0,#4a0a34 0,#1a0414 52%,#08020a 100%);
+  box-shadow:0 30px 80px -30px #000,inset 0 0 0 1px rgba(255,123,200,.18)}
+.fsx.th-werk{--fx:#7df9ff;--fx2:#ff7bc8;background:radial-gradient(120% 85% at 50% 0,#1d1646 0,#0d0a24 52%,#05040f 100%);
+  box-shadow:0 30px 80px -30px #000,inset 0 0 0 1px rgba(125,249,255,.16)}
+.fsx.th-lounge{--fx:#c9a2ff;--fx2:#ffd66b;background:radial-gradient(120% 85% at 50% 0,#2d1446 0,#150a24 52%,#07040d 100%);
+  box-shadow:0 30px 80px -30px #000,inset 0 0 0 1px rgba(201,162,255,.16)}
+.fsx.th-stage .fsx-rays{background:repeating-conic-gradient(from 180deg at 50% -12%,rgba(255,123,200,.07) 0 4deg,transparent 4deg 11deg)}
+.fsx.th-werk .fsx-rays{background:repeating-linear-gradient(90deg,rgba(125,249,255,.04) 0 1px,transparent 1px 38px),repeating-linear-gradient(0deg,rgba(125,249,255,.04) 0 1px,transparent 1px 38px);animation:none}
+.fsx.th-lounge .fsx-rays{background:radial-gradient(40% 30% at 20% 30%,rgba(201,162,255,.12),transparent 70%),radial-gradient(35% 30% at 80% 20%,rgba(255,214,107,.08),transparent 70%);animation:none}
+.fsx[class*=th-] .fsx-title{color:#fff}
+.fsx[class*=th-] .fsx-head span{color:#1a0010;background:linear-gradient(90deg,var(--fx),#fff)}
+.fsx[class*=th-] .fsx-qbody{background:rgba(14,6,20,.94);border-color:var(--fx)}
+.fsx[class*=th-] .fsx-hface{box-shadow:0 0 0 2px var(--fx)}
 .fsx-cards .dr-step{scroll-margin-top:520px}
 .fsx-bg,.fsx-bg i{position:absolute;inset:0;pointer-events:none}
 .fsx-bg{z-index:0;transition:filter .6s}
@@ -87,7 +101,7 @@ export const FINALE_STAGE_CSS = `
 
 .fsx-banner{left:0;right:0;top:40%;text-align:center;pointer-events:none;opacity:0;transform:scale(.6)}
 .fsx-banner b{display:inline-block;padding:6px 26px;font:400 clamp(30px,5.6vw,60px)/1 'Anton','Impact',sans-serif;letter-spacing:.05em;
-  text-transform:uppercase;color:#fff;text-shadow:0 0 30px #ffd66b,0 6px 0 #7a4a00;background:linear-gradient(90deg,transparent,rgba(255,214,107,.32),transparent)}
+  text-transform:uppercase;color:#fff;text-shadow:0 0 30px var(--fx),0 6px 0 rgba(0,0,0,.6);background:linear-gradient(90deg,transparent,rgba(255,214,107,.32),transparent)}
 .fsx-banner small{display:block;margin-top:6px;font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:var(--fx)}
 .fsx-banner.red b{color:#d9d9e4;text-shadow:0 0 22px #000,0 6px 0 #3a0010;background:linear-gradient(90deg,transparent,rgba(255,41,75,.3),transparent)}
 .fsx-banner.red small{color:#ff9fb0}
@@ -349,7 +363,7 @@ const CHAIR_SVG = `<svg class="ivx-chair" viewBox="0 0 110 34" aria-hidden="true
   <rect x="8" y="4" width="94" height="14" rx="7" fill="#6b1d3b"/><rect x="14" y="16" width="82" height="6" rx="3" fill="#4a1229"/>
   <rect x="20" y="22" width="5" height="12" fill="#2a0a17"/><rect x="85" y="22" width="5" height="12" fill="#2a0a17"/></svg>`;
 
-function confetti(n = 38, seed = 29) {
+export function confetti(n = 38, seed = 29) {
   const cols = ['#ffd66b', '#fff1a8', '#ff7bc8', '#ffffff', '#38bdf8'];
   return spread(n, seed).map((p, i) => {
     const ang = -Math.PI / 2 + (p.a - 0.5) * Math.PI * 1.7;
@@ -360,23 +374,24 @@ function confetti(n = 38, seed = 29) {
   }).join('');
 }
 
-const face = (name, ep, size) => `<span class="fsx-face">${name ? _portrait(name, ep, { size }) : ''}</span>`;
+export const face = (name, ep, size) => `<span class="fsx-face">${name ? _portrait(name, ep, { size }) : ''}</span>`;
 
 /** A queen (or the host) to camera, drawn over a greyed stage. */
-export function quoteHtml({ name, ep, label, text, host = null }) {
-  const pic = host ? _judgePortrait(host, { stage: true, size: 130 }) : name ? _portrait(name, ep, { size: 130 }) : '';
+export function quoteHtml({ name, ep, label, text, host = null, guest = null }) {
+  const pic = guest ? _portrait(guest.name, ep, { slug: guest.slug, size: 130 })
+    : host ? _judgePortrait(host, { stage: true, size: 130 }) : name ? _portrait(name, ep, { size: 130 }) : '';
   return `<span class="fsx-qframe">${pic}</span>
     <div class="fsx-qbody"><small>${esc(label)}</small><q>${esc(trim(text, 210))}</q></div>`;
 }
 
 /** The frame every finale stage shares: background, header, overlays. */
-function shell({ id, title, sub, body, host = 'rupaul', hostLabel = 'The host', mood = '' }) {
-  return `<!--dr-chrome--><div class="fsx" id="${id}" data-phase="idle" data-mood="${mood}">
+export function shell({ id, title, sub, body, host = 'rupaul', hostLabel = 'The host', mood = '', theme = '', hostChip = true }) {
+  return `<!--dr-chrome--><div class="fsx${theme ? ` th-${theme}` : ''}" id="${id}" data-phase="idle" data-mood="${mood}">
     <div class="fsx-bg"><i class="fsx-rays"></i><i class="fsx-haze"></i><i class="fsx-wash"></i><i class="fsx-vig"></i></div>
     <div class="fsx-top">
       <div class="fsx-title">${esc(title)}<small data-sub>${esc(sub)}</small></div>
       <div class="fsx-head"><span data-hd></span></div>
-      <div class="fsx-host" data-host><span class="fsx-hface">${_judgePortrait(host, { stage: true, size: 36 })}</span><span class="fsx-hlabel">${esc(hostLabel)}</span></div>
+      ${hostChip ? `<div class="fsx-host" data-host><span class="fsx-hface">${_judgePortrait(host, { stage: true, size: 36 })}</span><span class="fsx-hlabel">${esc(hostLabel)}</span></div>` : ''}
     </div>
     <div class="fsx-body">${body}</div>
     <div class="fsx-banner"><b data-bn></b><small data-bs></small></div>
@@ -391,7 +406,7 @@ function shell({ id, title, sub, body, host = 'rupaul', hostLabel = 'The host', 
  * stage's own objects. A state may carry: phase, mood, hostOn, banner
  * {text, sub, red}, burst, stars, shake, quote (html).
  */
-function engine(id, states, paint) {
+export function engine(id, states, paint) {
   let prev = -99;
   let timer = null;
   return idx => {

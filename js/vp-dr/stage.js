@@ -23,7 +23,9 @@ import { campaignStage } from './save.js';
 import { _shell, _portrait, _judgePortrait, _icon, _note, _roomRail, ROOM_RAIL_CSS } from './style.js';
 // Borrowed for the untucked consequence row — same fact, same badge.
 import { WERK_CSS, ARROW_UP, ARROW_DOWN } from './werk.js';
-import { _controls, _seedRail } from './reveal.js';
+import { _controls, _seedRail, _state } from './reveal.js';
+import { NIGHT_STAGE_CSS, mainStageStage, runwayStage, critiquesStage } from './night-stage.js';
+import { wireStage } from './finale-stage.js';
 import { JUDGES } from '../dr/data/judges.js';
 import { STAGE_BEATS } from '../dr/data/stage-beats.js';
 
@@ -411,19 +413,11 @@ export function rpBuildMainStage(row) {
       <span class="dr-taste dr-t-guest">guest judge</span></span>` : ''}
   </div>`;
 
-  /* THE CATEGORY, AND WHO IS ABOUT TO WALK IN IT. Both were already on the
-     row and neither was drawn here — the reader met the category for the
-     first time on the runway screen, after it had already been walked. */
+  /* THE CATEGORY, AND WHO IS ABOUT TO WALK IN IT, drawn on the stage.
+     THE ROOM AS IT WAS TONIGHT: `dr.living` is the roster at the END of the
+     week, and a line-up drawn from it is missing the queen who goes home. */
   const cat = row?.dr?.runway?.category;
-  const living = row?.dr?.living || [];
-  const bill = `${cat ? `<div class="dr-callout">
-      <span class="dr-callout-k dr-disp">The category is</span>
-      <b class="dr-disp">${esc(cat)}</b></div>` : ''}
-    ${living.length ? `<div class="dr-lineup">
-      <span class="dr-lineup-k dr-disp">Walking tonight</span>
-      <div class="dr-lineup-row">${living.map(n => `<span class="dr-lineup-q">
-        ${_portrait(n, ep, { size: 40 })}<i>${esc(n)}</i></span>`).join('')}</div>
-    </div>` : ''}`;
+  const living = row?.dr?.roomAtStart || row?.dr?.living || [];
 
   const _gPor = (id, opts = {}) => {
     if (guest && String(id || '').startsWith('guest:'))
@@ -465,11 +459,19 @@ export function rpBuildMainStage(row) {
   /* THE MAIN STAGE ITSELF. The one screen that is named after the room it
      happens in was the only one on this night not drawing it: a proscenium
      arch, the panel's table below it, and the top of the runway. */
-  const hall = `<div class="dr-mainhall" aria-hidden="true">
-      <i class="dr-mh-arch"></i><i class="dr-mh-wash"></i><i class="dr-mh-lip"></i>
-    </div>`;
-  return `<style>${STAGE_CSS}</style>${_shell(
-    `<div class="dr-mainroom">${hall}${seats}${bill}${steps}</div>`, ep, {
+  /* ── THE STAGE ── js/vp-dr/night-stage.js: the desk, the category card,
+     the queens walking in, and whoever is speaking in the light. */
+  const panelList = allIds.map(id => ({
+    id, host: id === 'rupaul',
+    name: guest && String(id).startsWith('guest:') ? (guest.name || 'Guest') : judgeName(id),
+  }));
+  const stage = mainStageStage(row, scenes.map(sc => ({
+    speaker: _beatSpeaker(sc.data?.beat), judge: sc.data?.judge || null, who: (sc.data?.players || [])[0] || null,
+  })), { ep, judges: panelList, guest, living, category: cat || '', uid: `m${ep.num}` });
+  wireStage('mainstage', stage, ep, _state);
+  return `<style>${STAGE_CSS}${NIGHT_STAGE_CSS}</style>${_shell(
+    // The category and the line-up are on the stage now; the seats keep what each judge wants.
+    `${stage.html}<div class="dr-mainroom nsx-cards">${seats}${steps}</div>`, ep, {
       phase: 'stage', title: 'The Main Stage', subtitle: 'the panel takes its seats',
     })}${_controls('mainstage', Math.max(1, scenes.length), ep.num)}`;
 }
@@ -497,10 +499,7 @@ export function rpBuildRunway(row) {
       <i class="dr-cw-edge dr-l"></i><i class="dr-cw-edge dr-r"></i>
       <i class="dr-cw-back"></i>
     </div>`;
-  const lead = `${cat}<div class="dr-marquee">
-      <div class="dr-cat-k dr-disp">Tonight&rsquo;s category is</div>
-      <div class="dr-cat-v dr-fash">${esc(rw.category)}</div>
-    </div><div class="dr-floor"></div>`;
+  void cat;
 
   /* THE WALK ITSELF, WHICH THIS SCREEN WAS THROWING AWAY.
      Every queen has a written walk on the row — `stage:walk`, and often a
@@ -571,7 +570,18 @@ export function rpBuildRunway(row) {
         </div>`).join('')}`);
   }
 
-  return `<style>${STAGE_CSS}</style>${_shell(lead + steps, ep, {
+  /* ── THE STAGE ── js/vp-dr/night-stage.js: the catwalk, the pit, the
+     score filling, and the queens who have walked lined up below. */
+  const stage = runwayStage(row, walkers.map(name => ({
+    who: name,
+    score: Number(rw[name]?.score) || 0,
+    looks: (rw[name]?.walks || []).length,
+    confess: (row.dr.scenes || []).filter(sc => sc.text && sc.step === 'runway' && /^confess:/.test(sc.kind || '')
+      && ((sc.data?.about || (sc.data?.players || [])[0]) === name))
+      .map(sc => ({ speaker: (sc.data?.players || [])[0] || '', text: sc.text })),
+  })), { ep, category: rw.category, uid: `r${ep.num}` });
+  wireStage('runway', stage, ep, _state);
+  return `<style>${STAGE_CSS}${NIGHT_STAGE_CSS}</style>${_shell(`${stage.html}<div class="nsx-cards">${steps}</div>`, ep, {
     phase: 'stage', title: 'The Runway', subtitle: esc(rw.category),
     sidebar: _seedRail('runway', '<h4 class="dr-disp">The runway</h4>'),
   })}${_controls('runway', walkers.length, ep.num)}`;
@@ -897,18 +907,36 @@ export function rpBuildCritiques(row) {
   /* WHO IS TALKING, LIVE. Each step carries the judges who speak on it, and
      the reveal hook lights those seats and dims the rest — so the bench is
      doing what a bench does rather than being a decorative header. */
-  if (typeof window !== 'undefined') {
-    window._drRevealExtra = window._drRevealExtra || {};
-    window._drRevealExtra.critiques = (idx) => {
-      const step = document.getElementById(`dr-step-critiques-${idx}`);
-      const who = (step?.getAttribute('data-judges') || '').split(',').filter(Boolean);
-      for (const seat of document.querySelectorAll('.dr-seat-j')) {
-        seat.classList.toggle('on', who.includes(seat.getAttribute('data-judge')));
-      }
-    };
-  }
+  /* ── THE STAGE ── js/vp-dr/night-stage.js, one state per step in the
+     order the cards run: the safe queens leaving, each queen read, the room
+     answering "who should go home", the board, and the deliberation. */
+  void bench;
+  const stageList = [
+    ...(safe.length ? [{ t: 'safe', safe }] : []),
+    ...queens.map(name => {
+      const hers = byQueen.get(name);
+      return {
+        t: 'queen', who: name,
+        reads: hers.map(c => ({ judge: c.judge, tone: c.tone, spoke: !!(c.text || c.line || '').trim() })),
+        split: new Set(hers.map(c => c.tone)).size > 1,
+        reaction: reactions[name] || '',
+      };
+    }),
+    ...wsgVotes.map(([voter, target]) => ({ t: 'wsg', voter, target })),
+    ...(wsgCards ? [{ t: 'board', tally: wsg.tally || {} }] : []),
+    ...delib.map(sc => ({
+      t: 'delib', host: sc.kind === 'stage:deliberation-host',
+      judge: (row?.dr?.judges || []).find(id => judgeName(id) === sc.data?.judge) || null,
+    })),
+  ];
+  const panelList = ids.map(id => ({
+    id, host: id === 'rupaul',
+    name: guestObj && String(id).startsWith('guest:') ? (guestObj.name || 'Guest') : judgeName(id),
+  }));
+  const stage = critiquesStage(row, stageList, { ep, judges: panelList, guest: guestObj, uid: `c${ep.num}` });
+  wireStage('critiques', stage, ep, _state);
 
-  return `<style>${STAGE_CSS}</style>${_shell(bench + steps + wsgAnswers + wsgCards + delibCards, ep, {
+  return `<style>${STAGE_CSS}${NIGHT_STAGE_CSS}</style>${_shell(`${stage.html}<div class="nsx-cards">${steps + wsgAnswers + wsgCards + delibCards}</div>`, ep, {
     phase: 'stage', title: 'The Critiques',
     subtitle: split ? 'the panel is split tonight' : 'the panel speaks',
     sidebar: _seedRail('critiques', '<h4 class="dr-disp">The panel, so far</h4>'),

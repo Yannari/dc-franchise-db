@@ -1016,9 +1016,19 @@ describe('why she chose that lipstick', () => {
     /* MOST of them name the queen she ended — not all, because the card sits
        directly under the reveal that just said the name, and a line forced to
        repeat it reads like a form being filled in. */
-    const named = rows.filter(r => r.dr.scenes
-      .find(sc => sc.kind === 'legacy:confessional').text.includes(r.dr.lipsync.eliminated));
-    expect(named.length / rows.length).toBeGreaterThan(0.4);
+    /* Over several seasons, not one: which lines get drawn is the season's
+       dice, and a floor measured on a single draw goes red the moment an
+       unrelated change moves the rng. */
+    let named = 0; let total = 0;
+    for (const seed of [7, 19, 42, 77, 300]) {
+      for (const r of as(seed).rows) {
+        const c = (r.dr.scenes || []).find(sc => sc.kind === 'legacy:confessional');
+        if (!c || !r.dr.lipsync?.eliminated) continue;
+        total += 1;
+        if (c.text.includes(r.dr.lipsync.eliminated)) named += 1;
+      }
+    }
+    expect(named / total).toBeGreaterThan(0.4);
   });
 
   it('draws it as a piece to camera, not as a scene in the room', async () => {
@@ -1307,5 +1317,78 @@ describe('the circles reach the lounge', () => {
     const withCircle = run([{ members: ['A', 'C'] }]).events;
     expect(withCircle.some(e => e.id === 'circle-vouch')).toBe(true);
     expect(withCircle.some(e => e.id === 'circle-alone' && e.a === 'B')).toBe(true);
+  });
+});
+
+describe('the ceremony shows the weighing', () => {
+  const as = seed => season(seed, { drAllStars: true });
+  const cer = row => (row.dr.scenes || []).filter(sc => sc.step === 'legacy-choice' && sc.text);
+
+  it('opens on whether it is hard, then holds each name in turn', () => {
+    const row = as(7).rows.find(r => cer(r).length);
+    const kinds = cer(row).map(sc => sc.kind);
+    expect(kinds[0]).toMatch(/^legacy:weigh-(close|clear)$/);
+    // One beat per queen the host named, before she decides.
+    const bottom = row.dr.callAtCall?.bottom?.length
+      ? row.dr.callAtCall.bottom : row.dr.call.bottom;
+    const about = cer(row).filter(sc => sc.data?.about).map(sc => sc.data.about);
+    expect(about).toEqual(bottom.slice(0, 3));
+    expect(kinds.indexOf('legacy:deliberate')).toBeGreaterThan(kinds.indexOf(kinds[0]));
+    // And what it costs her, after she has watched it land.
+    expect(kinds).toContain('legacy:cost');
+  });
+
+  it('says something true about each queen it weighs', () => {
+    for (const seed of [7, 19, 42]) {
+      for (const row of as(seed).rows) {
+        const weighed = row.dr.lipsync?.weighed || [];
+        for (const sc of cer(row).filter(x => x.data?.about)) {
+          const w = weighed.find(x => x.q === sc.data.about);
+          if (!w) continue;
+          /* The beat is chosen from what is actually on her ledger tonight,
+             so a card calling somebody her friend has to be about a queen
+             she is close to. */
+          if (sc.data.salience === 'friend') expect(w.bond >= 5 || w.ally).toBe(true);
+          if (sc.data.salience === 'cold') expect(w.bond).toBeLessThanOrEqual(-4);
+          if (sc.data.salience === 'pleaded') expect(w.pleaded).toBeGreaterThan(0.4);
+          if (sc.data.salience === 'threat') expect(w.threat).toBeGreaterThanOrEqual(0.75);
+        }
+      }
+    }
+  });
+
+  it('is sometimes hard and sometimes not', () => {
+    let close = 0; let clear = 0;
+    for (const seed of [1, 2, 3, 4, 5, 6, 7, 19, 42, 300]) {
+      for (const row of as(seed).rows) {
+        if (!row.dr.lipsync?.why) continue;
+        if (row.dr.lipsync.close) close += 1; else clear += 1;
+      }
+    }
+    /* THE FIRST VERSION SCALED THE GAP BY THE POOL'S OWN SPREAD, which on a
+       bottom of TWO is the gap itself — every ordinary legacy night came
+       back exactly 1.0 and "she agonised" never fired once. Both halves have
+       to happen or the ceremony is telling one story. */
+    expect(close, 'she never struggles').toBeGreaterThan(0);
+    expect(clear, 'she always struggles').toBeGreaterThan(0);
+    const rate = close / (close + clear);
+    expect(rate).toBeGreaterThan(0.1);
+    expect(rate).toBeLessThan(0.6);
+  });
+
+  it('does not say the same thing twice in a season', () => {
+    for (const seed of [7, 19, 42]) {
+      const seen = new Set();
+      let dup = 0; let total = 0;
+      for (const row of as(seed).rows) {
+        for (const sc of cer(row)) {
+          const sig = `${sc.kind}|${sc.text.replace(/Q\d+/g, 'Q')}`;
+          total += 1;
+          if (seen.has(sig)) dup += 1;
+          seen.add(sig);
+        }
+      }
+      expect(dup / total, `seed ${seed}`).toBeLessThan(0.15);
+    }
   });
 });

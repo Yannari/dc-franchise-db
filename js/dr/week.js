@@ -53,6 +53,7 @@ import { revengePairs, revengeReentry, revengeLine, pairJudging } from './reveng
 import { REVENGE_BEATS } from './data/revenge-beats.js';
 import { dragAlliances, sameBloc } from './alliances.js';
 import { LEGACY_BEATS, LEGACY_CAMPAIGN, HISTORY_BEATS, SHADOW_BEATS, legacyLine } from './data/legacy-beats.js';
+import { WEIGH_BEATS } from './data/legacy-weigh.js';
 import { recordUse } from './power.js';
 import { runMaxi, applyEvents } from './maxi.js';
 import { showWords } from '../shows.js';
@@ -1975,6 +1976,8 @@ export function runDragWeek(state, cfg, ctx) {
           lipsync.reason = choice.reason;
           lipsync.spared = choice.spared || null;
           lipsync.mind = choice.mind;
+          lipsync.close = !!choice.close;
+          lipsync.gap = choice.gap;
           lipsync.weighed = choice.weighed;
           /* ONE PICK PER QUEEN, because `timesSpared` counts picks whose
              `saved` is a NAME — the shape the Beaver writes. A single entry
@@ -2027,6 +2030,41 @@ export function runDragWeek(state, cfg, ctx) {
               mind: choice.mind, weighed: choice.weighed },
             text: legacyLine(lines, lv, rng, said),
           });
+          /* ── THE WEIGHING, WHICH THE CEREMONY NEVER SHOWED ──────────
+             One line of deliberation meant a season of ceremonies read the
+             same. She arrives at that counter knowing whether this is hard
+             (js/dr/legacy.js hands back `close`), she holds each of those
+             two names and each of them is a different problem, and only then
+             does she decide. `choice.weighed` is what she is actually looking
+             at — the threat, the panel's order, the plea, the times that
+             queen has already been carried. */
+          const weighOf = n => (choice.weighed || []).find(w => w.q === n) || {};
+          const salience = (n) => {
+            const w = weighOf(n);
+            const isLast = pool[pool.length - 1] === n;
+            if (w.bond >= 5) return 'friend';
+            if (w.ally) return 'friend';
+            if (w.pleaded > 0.4) return 'pleaded';
+            if (w.threat >= 0.75) return 'threat';
+            if (w.spared > 0) return 'spared';
+            if (w.bond <= -4) return 'cold';
+            if (isLast) return 'panel-last';
+            return 'plain';
+          };
+          ceremony(choice.close ? 'legacy:weigh-close' : 'legacy:weigh-clear', [lc.winner],
+            choice.close ? WEIGH_BEATS.open.close : WEIGH_BEATS.open.clear);
+          /* ONE BEAT PER QUEEN, in the order the host named them, so the
+             cards read down the line the way the call did. Capped at three:
+             past that it is a list rather than a deliberation. */
+          for (const q of pool.slice(0, 3)) {
+            const tier = salience(q);
+            scenes.push({
+              step: 'legacy-choice', kind: `legacy:weigh-${tier}`,
+              data: { players: [lc.winner, q], holder: lc.winner, about: q, salience: tier },
+              text: legacyLine(WEIGH_BEATS.queen[tier] || WEIGH_BEATS.queen.plain,
+                { h: lc.winner, x: q, y: pool.find(n => n !== q) || '' }, rng, said),
+            });
+          }
           ceremony('legacy:deliberate', [lc.winner],
             LEGACY_BEATS.deliberate[choice.why] || LEGACY_BEATS.deliberate.panel);
           /* THE SECOND BEFORE, on its own screen: she is holding one and
@@ -2075,6 +2113,19 @@ export function runDragWeek(state, cfg, ctx) {
             text: legacyLine(
               LEGACY_BEATS.confessional[choice.why] || LEGACY_BEATS.confessional.panel,
               { h: lc.winner, x: chosen, o: other }, rng, said),
+          });
+          /* AND WHAT IT COSTS HER, once she has watched it land. The
+             confessional above says why; this says what she is walking back
+             into, which is the half the ceremony never had. */
+          const costTier = choice.spared || (Number(ctx.bond?.(lc.winner, chosen)) || 0) >= 4
+            ? 'friend'
+            : choice.why === 'threat' || choice.why === 'own-read' ? 'strategy'
+              : choice.close ? 'room' : 'none';
+          scenes.push({
+            step: 'legacy-choice', kind: 'legacy:cost',
+            data: { players: [lc.winner], who: lc.winner, confessional: true,
+              holder: lc.winner, chosen, cost: costTier },
+            text: legacyLine(WEIGH_BEATS.cost[costTier], { h: lc.winner, x: chosen }, rng, said),
           });
           ceremony('legacy:room', [chosen], LEGACY_BEATS.roomAnswer);
           ceremony('legacy:last-words', [chosen], LEGACY_BEATS.lastWords);

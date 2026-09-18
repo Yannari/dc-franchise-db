@@ -1113,6 +1113,19 @@ const WHOLE_TEXT = [
   'A full table. The relief lasts about eleven seconds, which is how long it takes somebody to '
   + 'realise that a night with nothing in it is still a night somebody spent choosing.',
 ];
+// A TABLE THAT CAME DOWN WHOLE BECAUSE THE ROOM PAID FOR IT. Said to
+// everybody, because everybody was there when the hands went up — which is the
+// whole difference between this morning and a blocked one.
+const BOUGHT_TEXT = [
+  'Nobody is missing, and for once the room knows exactly why: it voted, out loud and to a '
+  + 'person, to buy the night off. The pact was not allowed to work.',
+  'A full table, and no mystery in it at all. Every hand went up for the banishment last '
+  + 'night, and the hands are the reason everybody is here to see it.',
+  'The places all fill. That was the deal, and the deal is the only night this season '
+  + 'anybody can account for.',
+  'Everybody comes down. They paid for that, they paid in front of each other, and the '
+  + 'arithmetic of what it cost is already going round the table.',
+];
 const WHOLE_AUDIENCE = [
   'A name WAS written last night. You watched it happen. Something between that room and this '
   + 'one ate it, and not one person at this table will ever be told so.',
@@ -1576,6 +1589,8 @@ function _view(ep, observer) {
     // branch is on this rather than on `ep === 1`, because an episode number
     // is a thing somebody renumbers.
     arrival: dawn.ofEp == null,
+    // PUBLIC (see the pool): the room watched itself vote the murder away.
+    bought: !!dawn.bought,
     isAudience,
     watcher,
     // Was this player in the room to see it? A player who has already left
@@ -2033,7 +2048,8 @@ function _buildBeats(v) {
       + (v.variantRule ? '<p class="co-explain">' + _esc(v.variantRule) + '</p>' : '')),
     null, { kind: 'after', down: [...v.room], gap: v.missing.map(x => x.name) });
   } else if (!v.arrival) {
-    let inner = '<p>' + _pick(WHOLE_TEXT, key + '|whole') + '</p>'
+    let inner = '<p>' + (v.bought ? _pick(BOUGHT_TEXT, key + '|bought')
+      : _pick(WHOLE_TEXT, key + '|whole')) + '</p>'
       + _countStrip([['At the table', String(v.room.length)],
         ['Places laid', String(v.room.length)]]);
     // AND THE SHAPE OF A NIGHT THAT TOOK NOBODY. A chalice the pact never

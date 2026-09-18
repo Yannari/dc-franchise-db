@@ -250,6 +250,47 @@ function _seedStartingBonds(cast, seed) {
  * works. With the attempt recorded, removing `!blocked` really does leak
  * evidence out of a night nobody died on. See the comment on that test.
  */
+/**
+ * A PINNED MURDER SHAPE WHOSE NIGHT NEVER HAPPENED, moved to the next one.
+ *
+ * Reported from a played season: a Death Match was scheduled on the same
+ * episode as the deal at the dinner, the room took the deal — which means the
+ * pact does not work that night, by the format's own rule — and the twist the
+ * author had asked for simply evaporated. Measured at 16 seasons in 30 with
+ * both pinned to the same episode, which is not an edge case; it is a coin
+ * toss, and it was silent every time.
+ *
+ * THE RULE IS RIGHT AND THE SILENCE IS NOT. A bought night has no murder in
+ * it and never may, so the shape cannot run where it was booked. What it can
+ * do is run TOMORROW — the author asked for a Death Match this season, not for
+ * a Death Match on the only night the room might vote away — so the pin moves
+ * one night forward and the season keeps the twist. This is the "author's pin
+ * accepted by a season already decided" class from §11.5 of
+ * docs/ADDING-A-SHOW.md, which the deal itself was caught by once already.
+ *
+ * NEVER OVER THE TOP OF ANOTHER PIN. A night the author has booked something
+ * else on is a decision, and it outranks a night that was rained off; in that
+ * case the shape is dropped and the ledger says so rather than quietly
+ * rewriting the timeline. `ran` is filled in at the end of the season, because
+ * whether tomorrow's night happens at all is not knowable from here.
+ */
+function _carryTheShape(ep, why, { move = true } = {}) {
+  const sched = gs.tr && gs.tr.murderSchedule;
+  const shape = sched && sched[ep];
+  // `recruit` IS a night, and it is the night that just happened. Only a
+  // MURDER shape can be rained off by one.
+  if (!shape || shape === 'recruit') return null;
+  const next = ep + 1;
+  // `move: false` is a night with no tomorrow to move into — the pact is wiped
+  // out, or the fire round starts in the morning. The pin is still recorded as
+  // dropped, because "it did not run and nothing said so" is the whole defect.
+  const free = move && !sched[next];
+  if (free) sched[next] = shape;
+  const row = { shape, from: ep, to: free ? next : null, why, ran: false };
+  (gs.tr.shapesMoved ||= []).push(row);
+  return row;
+}
+
 function _night(ep, rng) {
   // NO MURDER ONCE THE FIRE ROUND IS REACHED. `_night` runs after the round
   // table, so the room here is post-banishment; when that banishment has left
@@ -260,6 +301,12 @@ function _night(ep, rng) {
   // be carried two under it.)
   if (!livingTraitors(ep).length
     || (gs.tr.endgameSize && (gs.activePlayers || []).length <= gs.tr.endgameSize)) {
+    // NOWHERE TO MOVE IT TO. A pact that has been wiped out will not be
+    // murdering tomorrow either, and a room that has reached the fire round has
+    // no tomorrow; the pin is recorded as dropped rather than pushed into a
+    // night that cannot run it.
+    _carryTheShape(ep, !livingTraitors(ep).length
+      ? 'the pact was already gone' : 'the fire round had been reached', { move: false });
     return { murdered: null, murderTarget: null, blocked: false, recruited: null,
       executed: null, livingAtMurder: [], conclave: null };
   }
@@ -333,6 +380,13 @@ function _night(ep, rng) {
       // A night spent making an offer holds no conclave, so there is no
       // meeting for the screen to draw. `null` and not an empty meeting:
       // the two are different nights and the screen says so.
+      // AND A MURDER SHAPE PINNED TO TONIGHT MOVES TO TOMORROW. Reported as
+      // "some twists don't work, like the On Trial twist", and it was the
+      // biggest hole of the three: the pact recruits whenever it is thin and a
+      // Traitor has been banished, so a shape pinned anywhere in the back half
+      // of a season could be eaten by an offer and never say so. Measured at 8
+      // of 40 pinned nights before this line existed.
+      _carryTheShape(ep, 'the pact made an offer instead');
       return { murdered: null, murderTarget: null, blocked: false, recruited,
         executed: offer.executed || null, livingAtMurder: [], conclave: null };
     }
@@ -1057,6 +1111,16 @@ function _morning() {
     // alone. Everybody came down; only the people watching at home know a
     // name was chosen upstairs and a relic ate it.
     blocked: !!(prev && prev.tr?.conclave?.blocked),
+    // ── AND THE OTHER WAY A TABLE COMES DOWN WHOLE ──────────────────
+    //
+    // The deal at the dinner: a unanimous room banishes with money on it and
+    // buys the night off, so there is no murder and everybody knows exactly
+    // why. PUBLIC, unlike `blocked` — the vote happened out loud in front of
+    // the whole castle. Without it the morning after the best twist in the
+    // catalogue drew the ordinary full-table pool, whose sentences are all
+    // built on the room NOT knowing why nobody is missing.
+    bought: !!(prev && (gs.tr?.rounds || [])
+      .find(r => r.ep === prev.num)?.banishOrMurder?.unanimous),
     // ── HOW LAST NIGHT WAS SHAPED, AND WHY IT IS ON THE MORNING ──────
     //
     // Six murder variants write a `variantLine` describing the shape of the
@@ -3186,6 +3250,7 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     // tonight. `banished` is the tell — a refused deal records no banishment
     // and the murder goes ahead exactly as it would have done.
     const dealTaken = !!(r.banishOrMurder && r.banishOrMurder.unanimous);
+    if (dealTaken) _carryTheShape(ep, 'the room took the deal');
     const night = (handOver || dealTaken) ? null : _night(ep, rng);
     // Same pair, same order, same stream — see the note on night one.
     // Housekeeping runs either way: a Shield still expires on a night nobody
@@ -3300,6 +3365,15 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
           channel: 'banishment', endgame: true });
       }
     }
+  }
+
+  // DID THE MOVED SHAPE ACTUALLY GET ITS NIGHT? Resolved here, where the whole
+  // season exists: a shape carried into the last night before the fire round
+  // has nowhere to land, and a record that claimed it ran would be worse than
+  // no record at all.
+  for (const row of (gs.tr.shapesMoved || [])) {
+    row.ran = row.to != null
+      && (gs.tr.rounds || []).some(r => r.ep === row.to && r.variant === row.shape);
   }
 
   return {

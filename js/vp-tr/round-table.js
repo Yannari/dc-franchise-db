@@ -2198,13 +2198,18 @@ function _leaders(t) {
  * refuses to write the field onto a finale record; this refuses again, so
  * neither lock is load-bearing on its own.
  */
-function _view(rec, observer, trial = null) {
+function _view(rec, observer, trial = null, strategy = null) {
   if (!rec) return null;
   const obs = observer == null ? 'audience' : String(observer);
   const isAudience = obs === 'audience';
   const watcher = obs.indexOf('player:') === 0 ? obs.slice('player:'.length) : null;
   const endgame = !!rec.endgame;
   const onTrial = trial && Array.isArray(trial.names) ? [...trial.names] : [];
+  // THE CASTLE'S OWN GROUPS, and they are public by construction: a circle is
+  // who sits with whom, which is the most visible thing in the building.
+  const circles = ((strategy && strategy.circles) || [])
+    .map(c => ({ ...c, members: (c.members || []).filter(n => (rec.seated || []).includes(n)) }))
+    .filter(c => c.members.length >= 3);
 
   const pub = publicBallots(rec, TR);
   const first = pub.filter(b => b.channel === 'banishment');
@@ -2244,6 +2249,7 @@ function _view(rec, observer, trial = null) {
     endgame,
     isAudience,
     watcher,
+    circles,
     // Everybody at this table who is on the standing list, in seating order.
     // Public, and the seats themselves are marked with it below.
     onTrial: onTrial.filter(n => (rec.seated || []).includes(n)),
@@ -2316,6 +2322,26 @@ function _buildBeats(v) {
       : 'Whatever anybody has worked out since breakfast has to be said here or not at all.')
     + '</p><div class="rt-faces">' + seats + '</div>'
     + _murmur(key + '|m0')), 'open', { kind: 'gather' });
+
+  // ── WHO SITS WITH WHOM, AND WHAT THEY CALL THEMSELVES ───────────────
+  //
+  // The blocs have always steered this vote (js/tr/alliances.js); a circle is
+  // one that has lasted long enough to have a name on it, and naming it is
+  // what lets the screen say the thing the format is actually about — that the
+  // table is not twelve people, it is a group and everybody else.
+  if ((v.circles || []).length) {
+    push('gather', _card(v.circles.length > 1 ? 'The Groupings' : v.circles[0].name,
+      'The room', 'table',
+      v.circles.map(c => '<p>'
+        // The card is already headed with the name when there is only one of
+        // them; repeating it in the first line read like a stutter.
+        + (v.circles.length > 1 ? '<b>' + _esc(c.name) + '</b> &mdash; ' : '')
+        + _esc(c.members.join(', ')) + '. ' + _esc(c.leader) + ' does the talking.</p>'
+        + '<div class="rt-faces">' + c.members.map(n => _faceChip(n, 26)).join('') + '</div>')
+        .join('')
+      + '<p>Nothing about that is secret. It is who eats together, and by now the '
+      + 'whole castle can draw it from memory.</p>'), null, { kind: 'gather' });
+  }
 
   // ── AND WHAT IS HANGING OVER IT ─────────────────────────────────────
   //
@@ -3439,7 +3465,8 @@ export function rpBuildRoundTable(ep, observer = 'audience') {
   // THE LIST, IF THE CASTLE IS SITTING UNDER ONE. Public: On Trial is read out
   // at breakfast, so the table knows, and a vote taken over a standing list is
   // a different vote — banishing one of those names takes it off the list.
-  const v = _view(rec, observer, (ep && ep.tr && ep.tr.trial) || null);
+  const v = _view(rec, observer, (ep && ep.tr && ep.tr.trial) || null,
+    (ep && ep.tr && ep.tr.strategy) || null);
   const beats = _buildBeats(v);
   const total = beats.length;
   const epNum = ep.num || v.ep || 0;

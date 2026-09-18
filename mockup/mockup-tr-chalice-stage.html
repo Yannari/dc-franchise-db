@@ -2,20 +2,20 @@
 <style>body{margin:0;background:#0a0908;font-family:system-ui;color:#d8cfc2;padding:24px}
 h1{font:700 13px/1 system-ui;letter-spacing:.2em;text-transform:uppercase;color:#e0a049}
 .wrap{max-width:820px;margin:0 auto}</style>
-<div class="wrap"><h1>The Poisoned Chalice — five steps</h1><div id="out"></div></div>
+<div class="wrap"><h1>The Poisoned Chalice — six steps</h1><div id="out"></div></div>
 <script type="module">
 import { chaliceStage, CHALICE_CSS } from '../js/vp-tr/conclave-chalice.js';
 document.head.insertAdjacentHTML('beforeend', '<style>' + CHALICE_CSS + '</style>');
 const rec = { variant: 'chalice', target: 'Carrie', blocked: false,
   vdata: { searcher: 'Bowie', pourer: 'Brick', found: true, remembered: true,
-    slow: true, decoys: ['Amy','Chet','B','Axel','Beth'],
+    slow: true, agreed: false, overruled: ['Beth'], aggrieved: [], decoys: ['Amy','Chet','B','Axel','Beth'],
     coffins: ['Amy','Carrie','Chet','B','Axel','Beth'] } };
 const av = (n, tone) => '<span class="cv-av" style="width:40px;height:40px;'
   + 'display:block;border-radius:50%;background:' + tone + '"></span>';
 const faces = { searcher: av('Bowie', '#4a6fa5'), pourer: av('Brick', '#a5644a'),
-  victim: av('Carrie', '#6f9a5a') };
+  victim: av('Carrie', '#6f9a5a'), dissent: av('Beth', '#8a5aa5') };
 document.getElementById('out').innerHTML =
-  [0,1,2,3,4].map(i => chaliceStage(rec, i, faces)).join('');
+  [0,1,2,3,4,5].map(i => chaliceStage(rec, i, faces)).join('');
 // the mockup shows all five at once, so no stage may be sticky here
 document.head.insertAdjacentHTML('beforeend',
   '<style>.ch-stage{position:relative!important}</style>');

@@ -78,7 +78,7 @@ import { forbiddenFor, foreignWordsIn } from './helpers/show-vocabulary.js';
 // always the weaker arrangement: these arms went vacuous the moment the
 // default changed, which is exactly what a state reached by luck does.
 const ALL_MURDER_TWISTS = ['on-trial', 'plain-sight', 'face-to-face',
-  'dungeon', 'double', 'name-your-own', 'hidden'];
+  'dungeon', 'double', 'name-your-own', 'hidden', 'chalice'];
 
 const ROSTER = roster.players.slice(0, 20);
 const CAST = ROSTER.map(p => p.name);
@@ -8299,7 +8299,10 @@ describe('the conclave screen does not invent a meeting on a plain-sight night',
     for (const run of RUNS) {
       for (const ep of run.episodes) {
         const c = ep.tr && ep.tr.conclave;
-        if (!c || c.variant === 'plain-sight' || !(c.argued || []).length) continue;
+        // A chalice night holds no meeting either, and its one `argued` entry
+        // is the pourer's own preference, not an argument anybody heard.
+        if (!c || c.variant === 'plain-sight' || c.variant === 'chalice'
+          || !(c.argued || []).length) continue;
         seen++;
         expect(strip(rpBuildConclave(ep, 'audience'))).toMatch(/proposed by|proposes/i);
       }
@@ -8352,7 +8355,8 @@ describe('the conclave screen does not invent a meeting on a plain-sight night',
 // the plain-sight arms above were written for, caught from the other side.
 describe('the private screens run to a measured length', () => {
   const cards = h => (String(h).match(/id="[a-z]{2,3}-step-/g) || []).length;
-  const NO_ARGUMENT = new Set(['plain-sight', 'name-your-own']);
+  // A chalice night holds no meeting either: the pact is in the library.
+  const NO_ARGUMENT = new Set(['plain-sight', 'name-your-own', 'chalice']);
 
   it('every conclave lands in the measured band, per variant', () => {
     const quiet = [], loud = [];

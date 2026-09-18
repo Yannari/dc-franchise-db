@@ -18,6 +18,7 @@ import { murderPreferenceFor, influenceOf } from './state.js';
 import { shieldsSeenBy, daggerSeenBy } from './powers.js';
 import { armouryHesitation } from './armoury.js';
 import { pickVariant, buildDeathList, dinnerNeighbours, chapelPlea, dungeonCompanion, hiddenDecoys,
+  chaliceSearch, chalicePourer, chaliceRemembered,
   dungeonVoice, chooseSacrifice, variantLine, PLAIN_SIGHT_METHODS } from './murder-variants.js';
 import { _lineHash } from './castle/lines.js';
 
@@ -474,6 +475,9 @@ export function resolveMurder(ep, rng = Math.random) {
   if (variant === 'plain-sight') {
     const out = _plainSight(ep, rng);
     if (out) return out;
+  } else if (variant === 'chalice') {
+    const out = _chalice(ep, rng);
+    if (out) return out;
   } else if (variant === 'name-your-own') {
     const out = _forcedSacrifice(ep);
     if (out) return out;
@@ -670,6 +674,57 @@ function _plainSight(ep, rng) {
   gs.activePlayers = (gs.activePlayers || []).filter(n => n !== target);
   return { target, blocked: false, victim: target, cost, decision, second: null,
     variant: 'plain-sight', variantData: data, variantLine: line, variantLineKey: lineKey };
+}
+
+/**
+ * THE POISONED CHALICE — and the search is half the mechanic.
+ *
+ * From the wiki (UK S2 ep 6, US S2): no conclave, and the pact has to find the
+ * chalice among a set of Shakespeare books before it can murder at all. One of
+ * them pours it in front of the room, which is a thing the room can REMEMBER —
+ * the show's own pourer was banished the next night for exactly that.
+ *
+ * TWO THINGS CAN GO WRONG FOR THE PACT and they are different. The search can
+ * fail, and then nobody is murdered and the castle is never told why. Or the
+ * drink is poured and nobody can put a face to it by morning (the US season's
+ * victim could not remember who handed it to her), and the night leaves no
+ * evidence at all.
+ */
+function _chalice(ep, rng) {
+  const pact = livingTraitors(ep);
+  if (!pact.length) return null;
+  const { searcher, found } = chaliceSearch(ep, pact);
+  if (!searcher) return null;
+  if (!found) {
+    // A night the pact loses to a bookshelf. Nobody dies, and there is no
+    // conclave tension either: there was nothing to argue about.
+    const l = variantLine('chalice-lost', ep, { who: searcher });
+    return { target: null, blocked: false, victim: null, cost: null,
+      decision: { decision: 'none', target: null, reason: 'chalice-lost', decidedBy: searcher,
+        argued: [], overruled: [] },
+      variant: 'chalice', variantData: { searcher, pourer: null, found: false, remembered: false },
+      variantLine: l.text, variantLineKey: l.key, noMurder: true };
+  }
+  const pourer = chalicePourer(ep, pact, searcher) || searcher;
+  const pref = formPreference(pourer, ep, rng);
+  if (!pref.target) return null;
+  const target = pref.target;
+  const cost = murderCost(target, pref.reason, ep);
+  const remembered = chaliceRemembered(ep, pourer, target);
+  const data = { searcher, pourer, found: true, remembered };
+  const l = variantLine('chalice', ep, { who: pourer, finder: searcher, victim: target });
+  const decision = { decision: 'murder', target, reason: pref.reason, decidedBy: pourer,
+    argued: [{ traitor: pourer, ...pref }], overruled: [] };
+
+  if (isShielded(target)) {
+    gs.tr.shieldedThisRound.delete(target);
+    (gs.tr.blockedMurders ||= []).push({ ep, target });
+    return { target, blocked: true, victim: null, cost, decision,
+      variant: 'chalice', variantData: data, variantLine: l.text, variantLineKey: l.key };
+  }
+  gs.activePlayers = (gs.activePlayers || []).filter(n => n !== target);
+  return { target, blocked: false, victim: target, cost, decision, second: null,
+    variant: 'chalice', variantData: data, variantLine: l.text, variantLineKey: l.key };
 }
 
 /**

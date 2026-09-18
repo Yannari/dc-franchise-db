@@ -7,7 +7,8 @@ first.
 
 **Already in the engine:** On Trial, In Plain Sight, Face to Face, The Dungeon,
 Double Murder, Name Your Own, **Hidden Murder** (built 2026-09-17 with The
-Funeral), Recruitment (note and ultimatum), The Armoury, Shield, Dagger, Seer.
+Funeral), **The Poisoned Chalice** (2026-09-17), Recruitment (note and
+ultimatum), The Armoury, Shield, Dagger, Seer.
 
 ## Night / murder twists
 
@@ -32,12 +33,14 @@ Funeral), Recruitment (note and ultimatum), The Armoury, Shield, Dagger, Seer.
    pot if enough players volunteer for Deathrow; only volunteers can be
    murdered. In the S3 version the Traitors pick four, and the mission can save
    three of them with Shields.
-5. **Poisoned Chalice** (UK S2, US S2) — a version of Murder in Plain Sight
-   with no conclave. A Traitor takes the poisoned chalice from a book and must
-   persuade a Faithful to drink from it before midnight. The persuasion can
-   fail. The engine's In Plain Sight already lists "a poisoned glass" as a
-   method, so this must be its own variant with the persuasion step, not a
-   new line of text.
+5. ~~**Poisoned Chalice**~~ **DONE 2026-09-17** (murder variant `chalice`).
+   No conclave. The pact's most bookish Traitor has to FIND the chalice among
+   the Shakespeare first — about one night in five it never turns up, and then
+   nobody is murdered and the castle is never told why. The most sociable
+   Traitor pours it, and the room remembers whose hand the glass came from
+   about two times in three (`poured`, 0.42) — one name, not a set, which is
+   how the show's own pourer was banished the next night. When nobody can
+   recall it, the night leaves no evidence at all.
 
 ## Round Table / money / endgame twists
 

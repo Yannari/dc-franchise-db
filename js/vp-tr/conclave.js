@@ -571,6 +571,14 @@ const SEAL_TEXT_FORCED = [
   'Written, folded, pressed. Downstairs the castle sleeps through the one murder '
   + 'it was never in any danger from.',
 ];
+// THE CHALICE NIGHT, in the turret's place. The pact is in the library with a
+// shelf of Shakespeare and a bottle, not upstairs in the cloaks.
+const CHALICE_TEXT = [
+  'No cloaks tonight, and no stair. The pact is sent to the library instead, to find a chalice hidden among the plays and to put something in it.',
+  'They are not asked to meet. They are asked to find a poisoned cup in a room full of books, and then to hand it to somebody at the end of the evening.',
+  'The turret stays empty. The pact spends the night pulling books off a shelf, looking for a glass that was never theirs.',
+  'There is no conclave on a chalice night: only a library, a bottle, and whoever is sociable enough to carry a drink across a room.',
+];
 const PLAIN_SIGHT_TEXT = [
   'There is no climb tonight and no meeting. One of them decided this over other people&rsquo;s conversation, at a table with the plates still on it, and nobody in the room felt the moment pass.',
   'No stair, no lantern, no argument. Just a decision taken in company, held behind an ordinary face for the length of a dinner.',
@@ -784,7 +792,12 @@ function _buildBeats(rec, ep) {
   const down = ((ep && ep.tr && ep.tr.downstairs) || []).filter(d => d && d.time);
   const argued = rec.argued || [];
   const overruled = rec.overruled || [];
-  const plain = rec.variant === 'plain-sight';
+  // TWO NIGHTS HOLD NO MEETING, for different reasons: one Traitor decides
+  // alone at a dinner (plain-sight), or the pact spends the night hunting a
+  // poisoned chalice and pouring it (chalice). The screen draws both as a
+  // night with no climb; only the words change.
+  const chalice = rec.variant === 'chalice';
+  const plain = rec.variant === 'plain-sight' || chalice;
   const forced = rec.variant === 'name-your-own';
   // A DOUBLE NIGHT HAS TWO BODIES. The second is the argument the pact lost
   // (see `_shapeNight` in murder.js): the overruled Traitor's target dies too.
@@ -800,10 +813,10 @@ function _buildBeats(rec, ep) {
     beats.push({ phase, html, hostSlot: hostSlot || null, slot: slot || null });
 
   // ── I. the climb ──
-  push('gather', _card(plain ? 'No Climb Tonight' : forced ? 'The Climb, Told' : 'The Climb',
+  push('gather', _card(chalice ? 'No Climb, A Library' : plain ? 'No Climb Tonight' : forced ? 'The Climb, Told' : 'The Climb',
     'I. The turret', 'door',
     plain
-      ? '<p>' + _pick(PLAIN_SIGHT_TEXT, key + '|plain') + '</p>'
+      ? '<p>' + (chalice ? _pick(CHALICE_TEXT, key + '|chalice') : _pick(PLAIN_SIGHT_TEXT, key + '|plain')) + '</p>'
         + (rec.line ? '<p>' + _esc(rec.line) + '</p>' : '')
       : '<p>' + _pick(forced ? CLIMB_FORCED : CLIMB, key + '|climb') + '</p><p>'
         + _pick(forced ? STAIR_FORCED : STAIR, key + '|stair') + '</p>'

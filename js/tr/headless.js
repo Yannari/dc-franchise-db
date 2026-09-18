@@ -28,7 +28,8 @@ import { seedTraitorKnowledge, ballotEvidence, murderEvidence, missionEvidence, 
 import { variantEvidence, hiddenMurderFor } from './murder-variants.js';
 import { _setBanishOrMurderSchedule } from './banish-or-murder.js';
 import { liveTrial, trialToday, closeTrial, rollTrial } from './on-trial.js';
-import { updateCircles, runTests, resolveTests, strategyRecord } from './strategy.js';
+import { updateCircles, runTests, runTruces, resolveTests, resolveTruces, strategyRecord }
+  from './strategy.js';
 import { runRoundTable } from './roundtable.js';
 import { resolveMurder } from './murder.js';
 import { sceneParticipants, sceneSpeakers, KNOWN_WINDOWS } from './events.js';
@@ -3274,12 +3275,21 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     // plays the identical numbers as one without.
     updateCircles(ep);
     const tests = runTests(ep, castleRng);
+    // AND THE OTHER MOVE: somebody may decide that of the two names on their
+    // board, the quieter one is worth sparing for a week to get at the one the
+    // room actually listens to. Declared before the table, because the table
+    // is where it is spent.
+    runTruces(ep, castleRng);
     // Voting Plans is shown before the Round Table, so freeze its beliefs now.
     // The reveal cascade inside runRoundTable() creates valid information for
     // tomorrow, but it must not travel backward onto tonight's pre-table screen.
     const beliefsBeforeTable = _beliefRecord(ep);
     const r = runRoundTable(ep, rng);
     if (!r) break;   // an empty castle: nothing left to banish
+    // WHAT THE TABLE DID TO TONIGHT'S DEAL. Straight after the banishment and
+    // on the castle stream: the room either took the name the truce was aimed
+    // at, took the name it was protecting, or did neither.
+    resolveTruces(ep, r.banished);
     // The reveal cascade has already run inside runRoundTable by the time
     // after-table fires — that is the whole point of the window: someone
     // was just revealed.

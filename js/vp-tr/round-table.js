@@ -1057,6 +1057,17 @@ const RT_CSS = `
 .rt-irony span{font-family:var(--rt-hand);font-style:italic;font-size:16px;
   line-height:1.5;color:rgba(226,130,140,.92)}
 
+/* A DEAL IS NOT AN IRONY, it is a plan, so it borrows the frame and loses the
+   handwriting: this is somebody's arithmetic and it should read like it. The
+   held/dead variants are the only place at this table where the audience is
+   told a plan worked. */
+.rt-deal span{font-family:inherit;font-style:normal;font-size:14px;
+  color:rgba(228,222,208,.92);display:block;margin:6px 0 0}
+.rt-deal .rt-faces{margin:9px 0 3px}
+.rt-deal[data-held="1"]{border-left-color:rgba(111,154,90,.7);
+  box-shadow:-14px 0 26px -18px rgba(111,154,90,.7)}
+.rt-deal[data-held="1"] b{color:rgba(150,196,126,.9)}
+
 /* ── THE SLATE — this screen's card, and its whole material argument ──
    Real slate: a dark stone face inside a wooden frame, a chalk ghost
    where the last name was wiped off, and the name itself drawn with a
@@ -2250,6 +2261,15 @@ function _view(rec, observer, trial = null, strategy = null) {
     isAudience,
     watcher,
     circles,
+    // ── WHAT SOMEBODY DID ABOUT IT THIS AFTERNOON ───────────────────
+    //
+    // AUDIENCE ONLY, and for the reason the plays exist: a test is one name
+    // told to one person, and a truce is a conversation two people had in a
+    // corridor. The room can see the VOTE that comes out of either — and does,
+    // below — but not the deal behind it. `rt-irony` is this screen's existing
+    // idiom for that and these use it.
+    truces: isAudience ? ((strategy && strategy.truces) || []).map(t => ({ ...t })) : [],
+    plans: isAudience ? ((strategy && strategy.plans) || []).map(x => ({ ...x })) : [],
     // Everybody at this table who is on the standing list, in seating order.
     // Public, and the seats themselves are marked with it below.
     onTrial: onTrial.filter(n => (rec.seated || []).includes(n)),
@@ -2341,6 +2361,48 @@ function _buildBeats(v) {
         .join('')
       + '<p>Nothing about that is secret. It is who eats together, and by now the '
       + 'whole castle can draw it from memory.</p>'), null, { kind: 'gather' });
+  }
+
+  // ── THE DEAL SOMEBODY DID THIS AFTERNOON ────────────────────────────
+  //
+  // The truce, said plainly and with the arithmetic in it, because the whole
+  // move is a judgement about two people and a screen that only showed the
+  // result would be showing a vote with no reason attached.
+  const standing = (v.truces || []).filter(t => t.ep <= v.ep && !(t.closedEp < v.ep));
+  for (const t of standing) {
+    if (!(v.seated || []).includes(t.by)) continue;
+    push('debate', '<div class="rt-irony rt-deal"><b>What the room cannot see &middot; the deal</b>'
+      + '<span>' + _esc(t.line || '') + '</span>'
+      + '<div class="rt-faces">' + [t.by, t.spared, t.against].map(n => _faceChip(n, 26)).join('')
+      + '</div>'
+      + '<span><b>' + _esc(t.by) + '</b> has two names and one vote. '
+      + _esc(t.against) + ' is the one this room listens to &mdash; weight '
+      + _esc(String(t.theirWeight)) + ' against ' + _esc(String(t.sparedWeight))
+      + ' &mdash; so ' + _esc(t.spared) + ' gets a week, and ' + _esc(t.by)
+      + ' spends the vote on ' + _esc(t.against) + '.</span>'
+      + '<span>' + (t.shared
+        ? _esc(t.circleName || 'Their own people') + ' were told.'
+        : 'Nobody else was told. Not even ' + _esc(t.circleName || 'their own circle') + '.')
+      + '</span></div>', null, { kind: 'deal' });
+  }
+
+  // ── AND WHAT SOMEBODY ALREADY KNOWS ─────────────────────────────────
+  //
+  // A landed test is the sharpest thing anybody at this table is holding, and
+  // it is unsayable: explaining it means explaining that you fed somebody a
+  // name. The card is the gap between what the speaker knows and what the
+  // speaker can argue.
+  for (const pl of (v.plans || [])) {
+    if (pl.outcome !== 'landed' || !(v.seated || []).includes(pl.by)) continue;
+    push('debate', '<div class="rt-irony rt-deal"><b>What the room cannot see &middot; the test</b>'
+      + '<span>' + _esc(pl.by) + ' gave ' + _esc(pl.bait) + '&rsquo;s name to '
+      + _esc(pl.suspect) + ' and to nobody else, and the pact went for '
+      + _esc(pl.bait) + ' that night.</span>'
+      + '<div class="rt-faces">' + [pl.by, pl.suspect, pl.bait].map(n => _faceChip(n, 26)).join('')
+      + '</div>'
+      + '<span>' + _esc(pl.by) + ' can say the name at this table. '
+      + _esc(pl.by) + ' cannot say how the name was got, because saying it means '
+      + 'admitting to handing somebody a target.</span></div>', null, { kind: 'test' });
   }
 
   // ── AND WHAT IS HANGING OVER IT ─────────────────────────────────────
@@ -2910,6 +2972,25 @@ function _buildBeats(v) {
       + '<div class="rt-silence-h">Nothing Is Turned Over</div>'
       + '<p>' + _pick(SILENCE_TEXT, key + '|si') + '</p></div>',
       'silence', { kind: 'silence' });
+  }
+
+  // ── WHAT THE TABLE DID TO THE DEAL ──────────────────────────────────
+  //
+  // Three endings, and the middle one is the reason the move is worth having:
+  // one person's plan meeting eleven other people's arithmetic.
+  for (const t of (v.truces || [])) {
+    if (t.closedEp !== v.ep || t.outcome === 'lapsed') continue;
+    const held = t.outcome === 'held';
+    push('verdict', '<div class="rt-irony rt-deal" data-held="' + (held ? '1' : '0') + '">'
+      + '<b>What the room cannot see &middot; ' + (held ? 'the deal held' : 'the deal is dead')
+      + '</b><span>' + _esc(t.resolvedLine || '') + '</span>'
+      + '<span>' + (held
+        ? _esc(t.by) + ' spent one vote and got the name ' + _esc(t.by) + ' wanted. '
+          + _esc(t.spared) + ' is still here, and still owes ' + _esc(t.by) + ' a week.'
+        : 'The room took ' + _esc(t.spared) + ' &mdash; the one name '
+          + _esc(t.by) + ' had promised not to say. A week of protection, spent on '
+          + 'somebody who is now walking out of the door.')
+      + '</span></div>', null, { kind: 'deal-out' });
   }
 
   // ── AND THE HOST SENDS THEM UP ────────────────────────────────────────

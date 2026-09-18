@@ -463,6 +463,10 @@ function _conclaveRecord(ep, m, ballots, turret) {
     // and the screen has to know which night it is drawing.
     variant: m.variant || 'standard',
     line: m.variantLine || null,
+    // The variant's own facts, for the screens that DRAW the night rather than
+    // narrate it (the chalice library stage needs to know who searched, who
+    // poured, and whether the poison was the slow kind).
+    vdata: m.variantData ? { ...m.variantData } : null,
     turret: [...(turret || [])],
     target: m.target,
     decidedBy: d.decidedBy || null,

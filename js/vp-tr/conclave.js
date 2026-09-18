@@ -56,6 +56,7 @@ import { pronouns, playerAvatarUrl } from '../players.js';
 import { exitVerbs } from '../shows.js';
 import { HOSTS_BY_FORMAT } from '../shows.js';
 import { CONCLAVE_CSS } from './style.js';
+import { CHALICE_CSS, chaliceStage, chaliceStep } from './conclave-chalice.js';
 import { _noiseTile, _filterBank, _buildFar, _buildMid, _buildFore,
   _buildHeroScene, _doorway } from './scenery.js';
 
@@ -1289,6 +1290,9 @@ function _reapplyVisibility(suffix, upToIdx, total) {
   const last = document.getElementById('cv-step-' + suffix + '-'
     + Math.max(0, Math.min(upToIdx, total - 1)));
   if (shell && last) shell.setAttribute('data-phase', last.getAttribute('data-phase') || 'argue');
+  // The library stage walks one step per reveal on a chalice night.
+  const stage = document.querySelector('.ch-stage');
+  if (stage) stage.setAttribute('data-ch', String(chaliceStep(upToIdx, total)));
   if (scroller) scroller.scrollTop = top;
 }
 
@@ -1431,7 +1435,8 @@ export function rpBuildConclave(ep, observer = 'audience') {
   // who was not in the room, because nothing below this line runs for them.
   if (rec && !conclaveVisibleTo(rec, observer)) return _shutDoor(observer, css);
 
-  const cssOnce = css + _filterBank();
+  const cssOnce = css + (rec && rec.variant === 'chalice'
+    ? '<style>' + CHALICE_CSS + '</style>' : '') + _filterBank();
 
   if (!rec) {
     return '<div class="cv-root" style="' + vars + '" data-ambient="tense">' + cssOnce
@@ -1565,6 +1570,10 @@ export function rpBuildConclave(ep, observer = 'audience') {
         + 'Each proposal, disagreement and final decision is shown below.') + '</p>'
     + '</div></div>'
     + '<header class="cv-head">' + observerBadge + '</header>'
+    // THE LIBRARY. A chalice night has no meeting to draw, so it gets a stage
+    // of its own above the beats instead of the turret's furniture.
+    + (rec.variant === 'chalice'
+      ? chaliceStage(rec, chaliceStep(st.idx, total)) : '')
     + '<div class="cv-grid">'
     + '<main class="cv-main' + (hasMargin ? '' : ' cv-no-gutter') + '">' + stream + '</main>'
     + '<aside class="cv-side"><div id="cv-sidebar-inner">' + _sidebar(state, st.idx) + '</div></aside>'

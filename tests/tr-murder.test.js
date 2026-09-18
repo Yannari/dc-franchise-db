@@ -396,7 +396,10 @@ function seasons(n, from = 1) {
  */
 const SHAPE = {
   standard: [],
-  'on-trial': ['list', 'spared'],
+  // TWO NIGHTS, TWO SHAPES. The naming night carries the list and nothing
+  // else; the collection night carries what the day left of it. Both are
+  // `on-trial`, so the shared keys are what the guard can assert.
+  'on-trial': ['names', 'phase'],
   'plain-sight': ['actor', 'method', 'nearby'],
   'face-to-face': ['plea'],
   dungeon: ['companion', 'voice'],
@@ -599,7 +602,14 @@ describe('the twist catalogue: one shape a night, and each leaves its own trail'
     const gone = CAST[7], here = CAST[6], victim = CAST[8];
     recordRound({ ep: 2, banished: null, banishedWasTraitor: false, murdered: victim,
       murderTarget: victim, ballots: [], accusations: [],
-      variant: 'on-trial', variantData: { list: [victim, gone, here], spared: [gone, here] } });
+      // THE COLLECTION NIGHT'S SHAPE (js/tr/on-trial.js). On Trial runs over two
+      // nights now: the list is written on one and collected on the next, and
+      // only the collection emits — being written down is something the whole
+      // castle was told about, and the channel is about who was on it and is
+      // still eating breakfast afterwards.
+      variant: 'on-trial',
+      variantData: { phase: 'taken', names: [victim, gone, here], taken: victim,
+        namedEp: 1, candidates: [victim, gone, here], lost: [] } });
     gs.activePlayers = CAST.filter(n => n !== victim && n !== gone);
     const formed = variantEvidence(3, seededRng(6));
     expect(formed.length, 'the death list taught the room nothing at all').toBeGreaterThan(0);

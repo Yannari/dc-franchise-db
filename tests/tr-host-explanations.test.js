@@ -143,6 +143,17 @@ RUNS.push(season(8, { trShieldSource: 'armoury', trArmourySize: 4 }));
   RUNS.push({ season: null, episodes: (gs.episodeHistory || []).map(e => ({ ...e })) });
 }
 
+// ON TRIAL runs over two episodes and is opt-in, so it is pinned too. Both of
+// its episodes are checked by the arms below, which is the point: the rule
+// governs the night the list is written AND the day the castle lives under it.
+{
+  setPlayers(ROSTER);
+  seasonConfig.trShieldSource = 'mission';
+  playTraitorsSeason({ cast: CAST, traitorCount: 3, seed: 3,
+    murderSchedule: { 4: 'on-trial' } });
+  RUNS.push({ season: null, episodes: (gs.episodeHistory || []).map(e => ({ ...e })) });
+}
+
 // THE DEATH MATCH, pinned for the same reason again: four players are called
 // to a card game, which is the most visible thing that happens in this format
 // and reaches nobody at all unless an author schedules it.
@@ -216,6 +227,10 @@ const SURPRISE_CONCEPTS = {
   // The two facts the castle cannot work out from watching: the Traitors chose
   // who sat down, and the loser of the game is the murder.
   'murder-death-match': [/card/i, /chose who sat down|Traitors chose|loses/i],
+  // The two facts a viewer cannot deduce from a full breakfast table: there is
+  // a list, and nobody can be murdered tonight who is not on it.
+  'murder-on-trial': [/list/i,
+    /Nobody Dies Tonight|nobody (else )?(can be|was) murdered|must murder one of|murder one of THOSE/i],
 };
 
 describe('every rule is explained at or before the episode it governs', () => {

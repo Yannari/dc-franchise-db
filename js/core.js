@@ -919,7 +919,7 @@ export const TWIST_CATALOG = [
   // and a scheduled shape the room cannot support falls back to a plain night.
   { id:'tr-on-trial', emoji:'📜', name:'On Trial', format:'traitors',
     category:'murder', phase:'any', variant:'on-trial', engineType:'tr-murder-variant',
-    desc:'The Traitors draw up a death list of several names and murder just one of them. The spared wake to learn they were on it — and the room hunts the survivors, because a Traitor will often write one of their own onto the list as cover. Needs a castle of 5+ with 3+ Faithful still standing.',
+    desc:'Runs over two nights. The Traitors meet as usual but write a shortlist of three or four names instead of killing anybody — so on that night everybody else in the castle is safe. The names are read out at breakfast and live with it all day, through the mission and the Round Table. The following night the murder must come off that list: banish one of those names in between and the Traitors have to settle for another, and they may write one of their own onto it for cover. Needs 6+ alive with 4+ Faithful, and a night left to collect on.',
     incompatible:['tr-plain-sight','tr-face-to-face','tr-dungeon','tr-double-murder','tr-name-your-own','tr-recruitment','tr-hidden-murder','tr-chalice','tr-death-match'] },
   { id:'tr-plain-sight', emoji:'🍷', name:'In Plain Sight', format:'traitors',
     category:'murder', phase:'any', variant:'plain-sight', engineType:'tr-murder-variant',

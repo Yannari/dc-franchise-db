@@ -207,18 +207,27 @@ export const TR_RULES = {
       + 'tonight was one of those nights — only the second empty chair does.',
     occursIn: tr => tr.conclave?.variant === 'double',
   },
+  // PUBLIC, AND IT IS THE ONLY MURDER SHAPE THAT IS. The names are read out at
+  // breakfast and the castle lives with them all day, which is the whole twist
+  // — a private list nobody is told about is the version this replaced, and it
+  // was invisible on screen.
   'murder-on-trial': {
     id: 'murder-on-trial',
-    trigger: 'The Traitors write a shortlist and only one name on it is used.',
+    trigger: 'The Traitors name three or four players instead of murdering one.',
     explainedAt: 'first-occurrence',
-    observerVisibility: 'audience',
-    reminder: 'On this night the Traitors put several names on a list and took '
-      + 'only one of them. The people who were on it and lived find out that '
-      + 'they were on it.',
-    fullRules: 'The Traitors name a shortlist rather than a single victim. One '
-      + 'of the listed players is murdered; the others survive knowing they were '
-      + 'written down — and the room will remember who was on that list.',
-    occursIn: tr => tr.conclave?.variant === 'on-trial',
+    observerVisibility: 'all',
+    reminder: 'Nobody was murdered last night. The Traitors named three or four '
+      + 'players instead, and tomorrow night they must murder one of THOSE names '
+      + 'and nobody else.',
+    fullRules: 'On Trial runs over two nights. On the first the Traitors hold '
+      + 'their meeting and write a shortlist of three or four names rather than '
+      + 'killing anybody — so every player not on that list is safe that night. '
+      + 'The castle is told at breakfast and the named spend the whole day on it, '
+      + 'through the mission and the Round Table. The murder comes the following '
+      + 'night and it must come off the list, so a name the room banishes in '
+      + 'between is a name the Traitors can no longer use and they must settle '
+      + 'for another. The Traitors may write one of their own onto the list.',
+    occursIn: tr => tr.conclave?.variant === 'on-trial' || !!tr.trial,
   },
   'murder-face-to-face': {
     id: 'murder-face-to-face',

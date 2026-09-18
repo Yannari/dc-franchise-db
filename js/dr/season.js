@@ -1558,8 +1558,43 @@ export function playDragSeason({
        six may still be competing when episode six arrives. Falling back to
        a random eliminated queen is better than doing nothing, and the row
        records which of the two happened so the screen can say so. */
+    /* ── REVENGE OF THE QUEENS IS A WEEK, NOT A SIDE EVENT ─────────────
+       AS2 ep 5: the eliminated cast walks back in, pairs off with the queens
+       still competing, the challenge is judged on those pairs, the returning
+       half of each of the top two couples lip syncs for a place back — and
+       the night STILL has a bottom and still sends somebody home.
+
+       The first version of this ran a lip sync bracket on an episode of its
+       own that eliminated nobody, which is the reunion Smackdown with a
+       different title. It is an ordinary week with a second cast woven
+       through it (js/dr/revenge.js), so it is booked here as a flag on the
+       week rather than as a row of its own.
+
+       WHEN: the author's episode number, or — at 0 — once the room has
+       halved, which is where the seasons that ran it put it. Refused while
+       fewer than two queens have gone, because two is the smallest field
+       that can produce a pair of couples. */
+    const revengeWantedEp = Number(config.drAllStarsTwistEp) || 0;
+    const revengeDue = config.drAllStars && config.drAllStarsTwist === 'revenge'
+      && !revengeRun && state.out.length >= 2 && state.living.length > finaleSize
+      && (revengeWantedEp ? epNum === revengeWantedEp
+        : state.living.length <= Math.ceil(cast.length / 2));
+    if (revengeDue) revengeRun = true;
+
     let returned = null;
-    if (week.returnee && state.out.length) {
+    /* ── SHE WON REVENGE LAST NIGHT, SO SHE WALKS IN THIS MORNING ──
+       The bracket put her back in `state.living`, which is what the chart and
+       the call read — but the ROOM never saw it happen: the Revenge night
+       ended on its own crowning and the next episode simply had one more
+       queen in it. The walk-back beats belong to the week after, which is
+       where `returnScenes` already puts every other return, and it is the
+       whole point of the twist: the queens who sent her home find her at a
+       station. */
+    if (state.pendingReturn) {
+      returned = state.pendingReturn;
+      state.pendingReturn = null;
+    }
+    if (!returned && week.returnee && state.out.length) {
       const wanted = week.returneeName || null;
       const gone = [...state.out];
       const exact = wanted && gone.includes(wanted) ? wanted : null;
@@ -1606,6 +1641,8 @@ export function playDragSeason({
       ...(returned ? { returnedQueen: returned.name } : {}),
       ...(porkchopNight ? { formatNote: 'porkchop' } : {}),
       ...(week.legacy ? { legacy: true } : {}),
+      // The night the eliminated cast comes back (js/dr/revenge.js).
+      ...(revengeDue ? { revenge: true, revengeField: [...state.out] } : {}),
       ...(week.rateAQueen ? { rateAQueen: true } : {}),
       /* THE CRITIQUE TWISTS WERE UNREACHABLE. js/dr/critiques.js exports
          whoShouldGoHome and rateAQueen, week.js dispatches on
@@ -1628,6 +1665,22 @@ export function playDragSeason({
        to learn about a twist that only changes who is in the room — and the
        scenes land before the cold open, which is where a queen walking back
        through the door actually happens. */
+    /* ── AND WHOEVER WON HER WAY BACK IN IS IN THE COMPETITION ──
+       Written here rather than inside the week engine for the same reason the
+       return scenes are: `runDragWeek` decides a night, and who is in the
+       room next week is the season's business. Her record is untouched, so
+       her row on the chart simply continues. */
+    const backIn = weekRow.dr?.revenge?.winners || [];
+    for (const who of backIn) {
+      if (state.living.includes(who)) continue;
+      state.out = state.out.filter(n => n !== who);
+      state.living = [...state.living, who];
+      const rec = { name: who, asked: null, honoured: true, revenge: true,
+        gap: Math.max(0, epNum - (state.record?.[who] || []).length) };
+      state.returns = [...(state.returns || []), { ...rec, episode: epNum }];
+      // The first one walks through the werk room door next week.
+      if (!state.pendingReturn) state.pendingReturn = rec;
+    }
     if (returned) {
       weekRow.dr.returned = returned;
       weekRow.dr.scenes = [
@@ -1665,41 +1718,6 @@ export function playDragSeason({
       live: ledgersNow ? ledgersNow() : null,
     };
     rows.push(weekRow);
-    /* ── REVENGE OF THE QUEENS ──────────────────────────────────────────
-       All Stars' own mid-season night (AS2 ep 5): every queen the season has
-       sent home comes back, they lip sync each other out in rounds, and the
-       last one standing is in the competition again — with the record she
-       already made, so her row on the chart simply continues.
-
-       ONCE, and when the room has halved, which is where the seasons that ran
-       it put it: late enough that the field of returners is worth watching,
-       early enough that the queen who comes back has a season to play. It
-       takes an episode of its own and sends nobody home, so — like a free
-       week — the season simply runs longer.
-
-       It is the same bracket as the Smackdown (`runSmackdown`), on its own
-       dice, because the two nights are the same night with different stakes. */
-    /* WHEN — the author's episode number, or the show's own judgement. The
-       box is 0 by default and that means "you place it": once the room has
-       halved. A number places the Revenge night AT that episode, and it is
-       still refused if the field is too thin or the room is already
-       finale-sized, because an author cannot book a bracket out of two
-       queens. */
-    const revengeWantedEp = Number(config.drAllStarsTwistEp) || 0;
-    const revengeDue = revengeWantedEp
-      ? num === revengeWantedEp
-      : state.living.length <= Math.ceil(cast.length / 2);
-    if (config.drAllStars && config.drAllStarsTwist === 'revenge' && !revengeRun
-      && revengeDue && state.out.length >= 3
-      && state.living.length > finaleSize) {
-      const rev = runSmackdown(state, { num: num++, seed }, ctx, {
-        title: 'Revenge of the Queens', rejoin: true, salt: 31337,
-      });
-      if (rev) {
-        rows.push(beat(state, rev, cast));
-        revengeRun = true;
-      }
-    }
     // No debt is taken on: the loop simply keeps going until the room is
     // finale-sized, so a free week is an extra week.
   }

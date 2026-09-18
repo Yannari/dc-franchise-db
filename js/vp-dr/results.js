@@ -370,6 +370,9 @@ export const RESULTS_CSS = `
 
 const CHIP = {
   WIN: 'dr-c-win', HIGH: 'dr-c-high', SAFE: 'dr-c-safe', LOW: 'dr-c-low',
+  // TOP2 borrows the win's chip: on this night it is the top of the call
+  // until the song says otherwise.
+  TOP2: 'dr-c-win',
   BTM: 'dr-c-btm', BTM2: 'dr-c-btm2', ELIM: 'dr-c-elim',
 };
 
@@ -418,7 +421,22 @@ export function rpBuildResults(row) {
      words stay the "up for elimination" ones, because that is what she said. */
   // `dr.save.hold` too, so an episode played before the flag existed reads right.
   const pending = !!(call.pendingSave || row?.dr?.save?.hold);
-  const shown = r => (pending && r === 'BTM2' ? 'LOW' : r);
+  /* ── AND THE TWO WHO ARE ABOUT TO SING ARE NOT "HIGH" ──
+     On a legacy night the call reads HIGH, HIGH, HIGH: one queen in the top,
+     and the two who are about to lip sync for the power, all stamped the
+     same. They are in `call.high` because that is the group they belong to
+     until the song separates them — but the CHART has a cell for the top two
+     and the screen should say it, the same way it says BTM2.
+     The winner of the song becomes WIN on the same screen a moment later;
+     the one who loses it stays TOP2, which is what the record keeps. */
+  const singers = new Set(call.singers || []);
+  const topTwoNight = singers.size === 2 && [...singers].every(n => (call.high || []).includes(n)
+    || (call.win || []).includes(n));
+  const shown = (r, name) => {
+    if (pending && r === 'BTM2') return 'LOW';
+    if (topTwoNight && r === 'HIGH' && singers.has(name)) return 'TOP2';
+    return r;
+  };
 
   /* WHAT THE HOST ACTUALLY SAID. The row carries a written line for every
      call — `stage:result-win`, `-safe`, `-bottom` — and this screen drew a
@@ -499,7 +517,7 @@ export function rpBuildResults(row) {
     if (!holdDrawn && holdBefore === result) { list.push({ t: 'hold', text: hold.text }); holdDrawn = true; }
     const said = lineFor(result, name);
     const sc = [...spoken].pop();
-    list.push({ t: 'call', r: shown(result), raw: result, n: name, said });
+    list.push({ t: 'call', r: shown(result, name), raw: result, n: name, said });
     const c = said ? confessAfter(sc) : null;
     if (c) list.push({ t: 'confess', n: (c.data?.players || [])[0], text: c.text });
   }

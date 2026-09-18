@@ -123,6 +123,18 @@ const SECTIONS = [
   { id: 'dr-arrivals', icon: icon('arrivals'), label: 'Arrivals', suffix: 'arrivals', phase: 'werk', accent: 'dr-a-room',
     opens: ['arrivals', 'entrance-order'], badge: { text: 'ENTRANCES', color: '#FFC83D' },
     title: 'Entrances', subtitle: 'the first thirteen through the door' },
+  /* ── THE ELIMINATED CAST COMES BACK FOR THE NIGHT ──
+     Revenge of the Queens (All Stars): they walk in at the top of the night,
+     pair off with the room, and two of them sing for a place back. Its own
+     section ahead of the cold open, because the door opening IS the cold open
+     on that night. The re-entry song is a separate section after the call --
+     it happens between the call and the bottom two's lip sync. */
+  { id: 'dr-revenge', icon: icon('return'), label: 'Revenge', suffix: 'revenge', phase: 'werk',
+    accent: 'dr-a-bond',
+    opens: ['revenge:open', 'revenge:walk', 'revenge:room', 'revenge:rule', 'revenge:pair'],
+    opensStep: ['revenge-door'],
+    badge: { text: 'THEY’RE BACK', color: '#3BE08A' },
+    title: 'Revenge of the Queens', subtitle: 'everybody this season sent home' },
   /* ── A QUEEN COMES BACK ──
      First screen of the night when the season books one, because the return
      is the first thing that happens: she is through the door before the room
@@ -279,6 +291,13 @@ const SECTIONS = [
   { id: 'dr-results', icon: icon('stamp'), label: 'The Call', suffix: 'results', phase: 'stage', accent: 'dr-a-score',
     opens: ['results'],
     opensStep: ['results'], badge: null, title: 'The Call', subtitle: 'who is safe' },
+  /* The song two returning queens sing for a place back, after the call. */
+  { id: 'dr-revenge-song', icon: icon('mic'), label: 'For Her Place', suffix: 'revengesong',
+    phase: 'lipsync', accent: 'dr-a-lip',
+    opens: ['revenge:couples', 'revenge:song', 'revenge:win', 'revenge:both', 'revenge:lost'],
+    opensStep: ['revenge-song'],
+    badge: { text: 'BACK IN?', color: '#3BE08A' },
+    title: 'Lip Sync For Her Place', subtitle: 'two queens, one way back in' },
   { id: 'dr-save-hold', icon: icon('ticket'), label: 'The Save', suffix: 'savehold', phase: 'stage',
     accent: 'dr-a-room', opens: [], opensStep: ['save-hold'],
     badge: { text: 'SAVED', color: '#ffed00' }, title: 'The Save', subtitle: 'one of three is saved' },

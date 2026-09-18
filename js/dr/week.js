@@ -49,6 +49,8 @@ import { renderStageBeats, runUntucked, applyUntuckedScene, renderChallengeBeats
   renderMaxiEventScenes } from './stage.js';
 import { lipsyncScore, lipsyncCall } from './lipsync.js';
 import { chooseElimination } from './legacy.js';
+import { revengePairs, revengeReentry, revengeLine } from './revenge.js';
+import { REVENGE_BEATS } from './data/revenge-beats.js';
 import { dragAlliances, sameBloc } from './alliances.js';
 import { LEGACY_BEATS, LEGACY_CAMPAIGN, HISTORY_BEATS, legacyLine } from './data/legacy-beats.js';
 import { recordUse } from './power.js';
@@ -69,7 +71,12 @@ export const SCENE_STEPS = [
      (js/dr/saves.js). `save-hold` is a winner saving one of the bottom three,
      between the call and the song; `save-luck` is a lip sync loser trying her
      luck, between the song and the goodbye. */
-  'cold-open', 'werk-morning', 'save-intro', 'mini', 'maxi-announce', 'choice', 'prep',
+  /* `revenge-door` is the eliminated cast walking back in (All Stars, AS2
+     ep 5) — before the morning, because it IS the morning on that night —
+     and `revenge-song` is the two of them lip syncing for a place back in
+     the competition, which happens after the call and before the bottom two
+     sing for their lives. */
+  'cold-open', 'revenge-door', 'werk-morning', 'save-intro', 'mini', 'maxi-announce', 'choice', 'prep',
   /* THE NUMBER COMES BEFORE THE WALK. `maxi-main` sat after `runway` here,
      so a rusical read as: the panel sits, the queens walk the category, and
      THEN they perform the show. The screens were already right — they follow
@@ -83,7 +90,7 @@ export const SCENE_STEPS = [
      with the lipsticks, the reveal, and the goodbye of a queen who never
      performed. AFTER `lipsync`, because she wins the song before she spends
      it, and before `exit`. */
-  'critiques', 'untucked', 'results', 'save-campaign', 'save-hold', 'lipsync',
+  'critiques', 'untucked', 'results', 'revenge-song', 'save-campaign', 'save-hold', 'lipsync',
   'legacy-choice', 'save-luck', 'exit',
 ];
 
@@ -179,6 +186,37 @@ export function runDragWeek(state, cfg, ctx) {
      left, there is no empty station and no message on the mirror. The
      entrances are the opening. */
   if (!isPremiere) say('cold-open', 'cold-open', { gone });
+
+  /* ── REVENGE OF THE QUEENS: THE DOOR ────────────────────────────────
+     Every queen the season has sent home walks back in, one at a time, last
+     out first — and each of them is paired with somebody still competing for
+     tonight's challenge. The pairs are worked out here because the challenge
+     is judged on them and the re-entry song is drawn from them.
+     The returners are NOT in `living`: they are not in the competition until
+     one of them wins her way back in after the call. */
+  let revenge = null;
+  if (cfg.revenge && (cfg.revengeField || []).length >= 2) {
+    const field = cfg.revengeField.filter(n => !living.includes(n));
+    const { returners, pairs } = revengePairs({
+      living: [...living], out: field, bond: (x, y) => Number(ctx.bond?.(x, y)) || 0, rng,
+    });
+    revenge = { returners, pairs, field };
+    const rv = (kind, who, pool, vars) => scenes.push({
+      step: 'revenge-door', kind: `revenge:${kind}`,
+      data: { players: who, revenge: true }, text: revengeLine(pool, vars, rng),
+    });
+    rv('open', [], REVENGE_BEATS.open, {});
+    for (const back of returners) {
+      const pair = pairs.find(x => x.back === back);
+      rv('walk', [back], REVENGE_BEATS.walk, { a: back });
+      if (pair) rv('room', [pair.with, back], REVENGE_BEATS.room, { a: back, b: pair.with });
+    }
+    rv('rule', [], REVENGE_BEATS.rule, {});
+    for (const pair of pairs) {
+      rv('pair', [pair.back, pair.with], REVENGE_BEATS.pair, { a: pair.back, b: pair.with });
+    }
+  }
+
   say('werk-morning', 'werk-morning', { living: [...living] });
 
   /* ── THE SEASON'S SAVE, IF IT HAS ONE ── js/dr/saves.js
@@ -962,11 +1000,18 @@ export function runDragWeek(state, cfg, ctx) {
        top two, and every reader of the song takes it from there. */
     const rest = bend.slice(2).map(r => r.name).filter(n => !top2.includes(n));
     if (legacy) {
-      /* Two up for elimination — the pool the lipstick chooses from — one LOW
-         above them, and one more queen in the top. Each only when the room is
-         big enough to fill it: a final five does not have six to call. */
-      const upFor = rest.slice(-2);
-      const low = rest.length > 2 ? [rest[rest.length - 3]] : [];
+      /* IMMUNITY IS NOT OPTIONAL ON THIS NIGHT EITHER. `callWeek` honours
+         `immune` and this block rebuilds the bottom after it, so a queen who
+         cannot be sent home tonight -- the one who just won her way back in,
+         or an early-win immunity -- was landing in the two up for elimination
+         and going home three hours after walking through the door. Measured:
+         the queen who won Revenge was eliminated on her return night.
+         She still takes the challenge and the runway and a place on the
+         chart; she just cannot be one of the names on the lipstick. */
+      const safeFromExit = n => immune.includes(n);
+      const pool = rest.filter(n => !safeFromExit(n));
+      const upFor = pool.slice(-2);
+      const low = pool.length > 2 ? [pool[pool.length - 3]] : [];
       const high = rest.length > 3 ? [rest[0]] : [];
       call.bottom = upFor;
       call.atRisk = [];
@@ -1410,6 +1455,53 @@ export function runDragWeek(state, cfg, ctx) {
   if (!M.tournamentExit) {
     say('untucked', 'untucked', { safe: call.safe });
     say('results', 'results', { call });
+  }
+
+  /* ── REVENGE OF THE QUEENS: THE SONG FOR A SEASON BACK ──────────────
+     The panel names the top two COUPLES, and the returning half of each of
+     them lip syncs — against the other, for her place in the competition.
+     AS2 kept them both, which the engine allows on the same terms as every
+     other double on this show: it has to be earned on the stage.
+
+     After the call and before the bottom two sing, which is the order the
+     night ran in: the room finds out who is back BEFORE it finds out who is
+     going home. */
+  if (revenge && revenge.pairs.length >= 2) {
+    const reSong = pick(rng, SONGS);
+    const order = bend.map(r => r.name);
+    const re = revengeReentry({
+      pairs: revenge.pairs, rank: order, players: Object.fromEntries(
+        [...living, ...revenge.field].map(n => [n, P(n)])),
+      /* ITS OWN SONG. The bottom two sing later in the night to a different
+         record, which is what the show does — and `song` is not declared
+         until the lip sync section below anyway. */
+      song: reSong, lipsyncRecord: state.lipsyncRecord, rng,
+    });
+    if (re) {
+      const rv = (kind, who, pool, vars) => scenes.push({
+        step: 'revenge-song', kind: `revenge:${kind}`,
+        data: { players: who, revenge: true }, text: revengeLine(pool, vars, rng),
+      });
+      const [c1, c2] = re.couples;
+      rv('couples', [c1.back, c1.with, c2.back, c2.with], REVENGE_BEATS.couples,
+        { a: c1.back, b: c1.with, c: c2.back, d: c2.with });
+      rv('song', re.singers, REVENGE_BEATS.song, { a: re.singers[0], c: re.singers[1] });
+      revenge.song = reSong?.title || null;
+      for (const n of re.winners) {
+        state.lipsyncRecord[n] = state.lipsyncRecord[n] || [];
+        state.lipsyncRecord[n].push('W');
+      }
+      const lost = re.singers.filter(n => !re.winners.includes(n));
+      for (const n of lost) state.lipsyncRecord[n]?.push('L');
+      rv(re.both ? 'both' : 'win', re.winners, re.both ? REVENGE_BEATS.both : REVENGE_BEATS.win,
+        { a: re.winners[0], c: re.winners[1] || '' });
+      for (const n of lost) rv('lost', [n], REVENGE_BEATS.lost, { a: n });
+      /* SHE IS BACK IN IT, and her chart row simply continues. `pendingReturn`
+         is what puts her through the werk room door next week, the same as
+         every other return (js/dr/season.js). */
+      revenge.reentry = re;
+      state.revengeBack = [...re.winners];
+    }
   }
 
   // 15. The lip sync.
@@ -2211,6 +2303,16 @@ export function runDragWeek(state, cfg, ctx) {
          every reader that would otherwise infer a lip sync from a bottom
          placement. Null on an ordinary season, so nothing changes there. */
       ...(cfg.legacy ? { allStars: { rule: 'legacy' } } : {}),
+      /* THE NIGHT THE ELIMINATED CAST CAME BACK. The pairs, the couples the
+         panel put first, and who won her place back — the screen and the
+         chart both read it. */
+      ...(revenge ? { revenge: {
+        returners: revenge.returners, pairs: revenge.pairs,
+        ...(revenge.reentry ? {
+          couples: revenge.reentry.couples, singers: revenge.reentry.singers,
+          winners: revenge.reentry.winners, both: revenge.reentry.both,
+        } : {}),
+      } } : {}),
       // The circles as they stood tonight, for the sidebar.
       ...(alliances.length ? { alliances } : {}),
       /* ── THE CRAFT THIS CAST PLAYED WITH, ONCE PER SEASON ──

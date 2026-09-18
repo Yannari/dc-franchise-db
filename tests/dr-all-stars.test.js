@@ -483,75 +483,129 @@ describe('the alliance rail', () => {
 
 describe('Revenge of the Queens', () => {
   const rev = seed => season(seed, { drAllStars: true, drAllStarsTwist: 'revenge' });
+  const night = res => res.rows.find(r => r.dr?.revenge);
 
-  it('runs once, mid-season, and sends nobody home', () => {
+  it('is a WEEK, not a side event: it still has a call and still sends somebody home', () => {
     for (let s = 300; s < 306; s++) {
       const res = rev(s);
-      const nights = res.rows.filter(r => r.dr?.smackdown?.rejoin);
-      expect(nights).toHaveLength(1);
-      const night = nights[0];
-      expect(night.exits || []).toHaveLength(0);
-      expect(night.dr.smackdown.title).toBe('Revenge of the Queens');
-      // Mid-season: there is still a season to play afterwards.
-      const at = res.rows.indexOf(night);
-      expect(at).toBeGreaterThan(1);
-      expect(res.rows.length - at).toBeGreaterThan(2);
+      const n = night(res);
+      expect(n, `seed ${s}`).toBeTruthy();
+      // The ordinary night happened around it.
+      expect(n.dr.challenge).toBeTruthy();
+      expect(n.dr.call).toBeTruthy();
+      expect(n.dr.lipsync).toBeTruthy();
+      expect(res.rows.filter(r => r.dr?.revenge)).toHaveLength(1);
     }
   });
 
-  it('puts the winner back in the competition with her record intact', () => {
+  it('brings the whole eliminated cast back and pairs them with the room', () => {
     const res = rev(300);
-    const night = res.rows.find(r => r.dr?.smackdown?.rejoin);
-    const who = night.dr.smackdown.winner;
-    expect(who).toBeTruthy();
-    // She was out before it and she is in the room after it.
-    const before = res.rows[res.rows.indexOf(night) - 1];
-    expect(before.dr.living).not.toContain(who);
-    const after = res.rows.slice(res.rows.indexOf(night) + 1).find(r => r.dr?.living);
-    expect(after.dr.living).toContain(who);
-    // And her chart row continued rather than restarting.
-    expect((res.state.record[who] || []).length).toBeGreaterThan(2);
+    const n = night(res);
+    const gone = res.rows.slice(0, res.rows.indexOf(n)).flatMap(r => (r.exits || []).map(x => x.name));
+    // COPY before sorting: `.sort()` is in place, and the order assertion
+    // below reads the same array.
+    expect([...n.dr.revenge.returners].sort()).toEqual([...new Set(gone)].sort());
+    /* The room as it stood THAT NIGHT — `living` on the row is after the
+       elimination, and one of the queens who partnered a returner can be the
+       one who went home. */
+    const room = n.dr.roomAtStart?.length ? n.dr.roomAtStart : n.dr.living;
+    for (const p of n.dr.revenge.pairs) {
+      expect(n.dr.revenge.returners).toContain(p.back);
+      expect(room).toContain(p.with);
+    }
+    /* Everybody who can be partnered is: a returner is left over only when
+       there are more of them than there are queens still competing. */
+    expect(n.dr.revenge.pairs.length)
+      .toBe(Math.min(n.dr.revenge.returners.length, room.length));
+    // Last out walks in first.
+    expect(n.dr.revenge.returners[0]).toBe(gone[gone.length - 1]);
   });
 
-  it('never runs without the mode, or without the twist', () => {
-    for (const cfg of [{}, { drAllStars: true }, { drAllStarsTwist: 'revenge' }]) {
-      const res = season(301, cfg);
-      expect(res.rows.filter(r => r.dr?.smackdown?.rejoin)).toHaveLength(0);
+  it('names two couples and puts their returning halves on the song', () => {
+    const res = rev(300);
+    const n = night(res);
+    expect(n.dr.revenge.couples).toHaveLength(2);
+    expect(n.dr.revenge.singers).toHaveLength(2);
+    for (const c of n.dr.revenge.couples) expect(n.dr.revenge.singers).toContain(c.back);
+  });
+
+  it('puts the winner back in with her record intact', () => {
+    const res = rev(300);
+    const n = night(res);
+    const who = n.dr.revenge.winners[0];
+    expect(who).toBeTruthy();
+    const before = res.rows[res.rows.indexOf(n) - 1];
+    expect(before.dr.living).not.toContain(who);
+    const after = res.rows.slice(res.rows.indexOf(n) + 1).find(r => r.dr?.living);
+    expect(after.dr.living).toContain(who);
+    // Her chart row continued rather than restarting.
+    expect((res.state.record[who] || []).length).toBeGreaterThan(3);
+  });
+
+  it('narrates the door, the pairing and the song', () => {
+    const res = rev(300);
+    const kinds = new Set((night(res).dr.scenes || []).map(x => x.kind));
+    for (const k of ['revenge:open', 'revenge:walk', 'revenge:rule', 'revenge:pair',
+      'revenge:couples', 'revenge:song']) {
+      expect(kinds.has(k), k).toBe(true);
+    }
+    // Every one of them says something.
+    for (const sc of (night(res).dr.scenes || []).filter(x => String(x.kind).startsWith('revenge:'))) {
+      expect(sc.text.length, sc.kind).toBeGreaterThan(10);
+      expect(sc.text).not.toMatch(/\{/);
     }
   });
 
-  it('leaves the reunion Smackdown its own night and its own title', () => {
-    const res = season(302, { drAllStars: true, drAllStarsTwist: 'revenge', drSmackdown: true });
-    const titles = res.rows.filter(r => r.dr?.smackdown).map(r => r.dr.smackdown.title);
-    expect(titles).toHaveLength(2);
-    expect(new Set(titles).size).toBe(2);
-    expect(titles[0]).toBe('Revenge of the Queens');
+  it('and she walks through the werk room door the week after', () => {
+    const res = rev(300);
+    const at = res.rows.indexOf(night(res));
+    const who = res.rows[at].dr.revenge.winners[0];
+    const next = res.rows[at + 1];
+    expect(next.dr.returned?.name).toBe(who);
+    expect(next.dr.returned.revenge).toBe(true);
+    expect(next.dr.lipsync?.eliminated).not.toBe(who);
+  });
+
+  it('never runs without the mode or the twist', () => {
+    for (const cfg of [{}, { drAllStars: true }, { drAllStarsTwist: 'revenge' }]) {
+      expect(season(301, cfg).rows.filter(r => r.dr?.revenge)).toHaveLength(0);
+    }
   });
 });
 
-describe('when the twist happens', () => {
-  it('is the show\'s call by default — once the room has halved', () => {
+describe('when Revenge happens', () => {
+  const night = res => res.rows.find(r => r.dr?.revenge);
+
+  it('is the show and not the author placing it, by default', () => {
     for (let s = 310; s < 314; s++) {
       const res = season(s, { drAllStars: true, drAllStarsTwist: 'revenge' });
-      const night = res.rows.find(r => r.dr?.smackdown?.rejoin);
-      const before = res.rows[res.rows.indexOf(night) - 1];
-      // The week before it left the room at half the cast or smaller.
-      expect(before.dr.living.length).toBeLessThanOrEqual(5);
+      expect(night(res).dr.living.length).toBeLessThanOrEqual(6);
     }
   });
 
   it('or the episode the author asks for', () => {
-    for (const ep of [4, 5, 6]) {
+    for (const ep of [5, 6]) {
       const res = season(311, { drAllStars: true, drAllStarsTwist: 'revenge', drAllStarsTwistEp: ep });
-      const night = res.rows.find(r => r.dr?.smackdown?.rejoin);
-      expect(night, `no Revenge night for episode ${ep}`).toBeTruthy();
-      expect(night.num).toBe(ep);
+      expect(night(res)?.num, `episode ${ep}`).toBe(ep);
     }
   });
 
-  it('and is refused when the field is too thin to make a bracket', () => {
-    // Episode two: at most one queen has ever been sent home.
-    const res = season(311, { drAllStars: true, drAllStarsTwist: 'revenge', drAllStarsTwistEp: 2 });
-    expect(res.rows.filter(r => r.dr?.smackdown?.rejoin)).toHaveLength(0);
+  it('and is refused while nobody has gone home', () => {
+    const res = season(311, { drAllStars: true, drAllStarsTwist: 'revenge', drAllStarsTwistEp: 1 });
+    expect(res.rows.filter(r => r.dr?.revenge)).toHaveLength(0);
+  });
+});
+
+describe('the call screen names the top two', () => {
+  it('reads HIGH, TOP2, TOP2 rather than three HIGHs', async () => {
+    const { dragScreens } = await import('../js/vp-dr/screens.js');
+    const res = season(120, { drAllStars: true });
+    const row = weekly(res).find(r => r.dr.lipsync?.legacy
+      && (r.dr.callAtCall || r.dr.call).high?.length >= 3);
+    expect(row).toBeTruthy();
+    const html = Object.fromEntries(dragScreens(row).map(s => [s.id, s.html]))['dr-results'];
+    const stamps = [...html.matchAll(/class="dr-stamp[^"]*"[^>]*>([A-Z0-9]+)</g)].map(m => m[1]);
+    expect(stamps.filter(x => x === 'TOP2')).toHaveLength(2);
+    expect(stamps.filter(x => x === 'HIGH').length).toBeGreaterThan(0);
   });
 });

@@ -13,13 +13,17 @@
 //
 //   0  the library      shelves, a lantern, dust, nobody looking yet
 //   1  the search       books come out; the chalice answers the light
-//   2  the pour         the bottle tips and the cup fills
-//   3  the hand-over    the glass crosses the room to a name
-//   4  the morning      an empty chair, or an hourglass and a row of coffins
+//   2  the argument     the pact stands either side of the cup, deciding
+//   3  the pour         the bottle tips and the cup fills
+//   4  the hand-over    the glass crosses the room to a name
+//   5  the morning      an empty chair, or an hourglass and a row of coffins
 //
 // Everything is SVG and CSS keyframes keyed off `data-ch` on the stage root,
-// which `_reapplyVisibility` writes on every click. No timers: a reader who
-// jumps to the end with Reveal All gets the end state, not a replay.
+// which `_reapplyVisibility` writes on every click, reading the step off the
+// BEAT rather than counting them: the argument is as long as the pact makes
+// it, and a proportional mapping poured the drink over cards where they were
+// still deciding whose it was. No timers: a reader who jumps to the end with
+// Reveal All gets the end state, not a replay.
 
 const _esc = s => String(s == null ? '' : s)
   .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -35,44 +39,30 @@ function stageFolded() {
   try { return localStorage.getItem('tr_stage_min') === '1'; } catch { return false; }
 }
 
-/** How many stage steps there are. The caller maps beats onto this. */
-export const CHALICE_STEPS = 5;
-
-/**
- * Which stage step a revealed beat index sits on.
- *
- * The beat stream is built from the record and its length varies with how many
- * Traitors are in the room, so the mapping is proportional rather than a table
- * of indices: the stage always opens on the library and always ends on the
- * morning, whatever the night's beat count turns out to be.
- */
-export function chaliceStep(idx, total) {
-  if (!(total > 1)) return 0;
-  const at = Math.max(0, Math.min(idx, total - 1));
-  return Math.max(0, Math.min(CHALICE_STEPS - 1,
-    Math.round((at / (total - 1)) * (CHALICE_STEPS - 1))));
-}
+/** How many stage steps there are. The builder maps each beat onto one. */
+export const CHALICE_STEPS = 6;
 
 const CAPTIONS = [
   ['I. The Library', 'No stair, no cloaks. The pact is sent to the shelves.'],
   ['II. The Search', '{finder} takes the plays down one at a time.'],
-  ['III. The Pour', 'Something is put in the cup that was not in it before.'],
-  ['IV. The Hand-Over', '{who} carries it across the room to {victim}.'],
-  ['V. The Morning', ''],
+  ['III. The Argument', ''],
+  ['IV. The Pour', 'Something is put in the cup that was not in it before.'],
+  ['V. The Hand-Over', '{who} carries it across the room to {victim}.'],
+  ['VI. The Morning', ''],
 ];
 
 function _caption(i, d, rec) {
   const [h, p] = CAPTIONS[i];
   const last = i === CHALICE_STEPS - 1;
-  // Step III is where the night's one real decision is, so it says whether the
-  // pact was behind it. `agreed` is undefined on a record written before the
-  // library became a conversation; those keep the neutral line.
-  const pour = d.agreed === false
+  // The argument step says what the argument WAS. `agreed` is undefined on a
+  // record written before the library became a conversation; those keep a line
+  // that asserts neither.
+  const argue = d.agreed === false
     ? 'Somebody else wanted a different name. {who} is the one holding the cup.'
-    : d.agreed === true && (d.overruled || []).length === 0
-      ? 'They came to the same name before the cup was even found.'
-      : p;
-  const tail = i === 2 ? pour : last
+    : d.agreed === true
+      ? 'They come to the same name before the cup is even filled.'
+      : 'The pact decides among the shelves, and {who} is carrying it.';
+  const tail = i === 2 ? argue : last
     ? (rec.blocked
       ? 'The glass is drunk and nothing happens to the person holding it.'
       : d.slow
@@ -162,7 +152,8 @@ export function chaliceStage(rec, step = 0, faces = {}) {
   }
   return '<div class="ch-stage' + (min ? ' ch-min' : '') + '" data-ch="' + step + '"'
     + (rec && rec.blocked ? ' data-blocked="1"' : '')
-    + (d.slow ? ' data-slow="1"' : '') + '>'
+    + (d.slow ? ' data-slow="1"' : '')
+    + (d.agreed === true ? ' data-agreed="1"' : '') + '>'
     + '<svg class="ch-svg" viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice"'
     + ' aria-hidden="true">'
     + '<defs>'
@@ -191,6 +182,10 @@ export function chaliceStage(rec, step = 0, faces = {}) {
     + '<g class="ch-pourer" transform="translate(16,-9)">' + BOTTLE + '</g>'
     + '<path class="ch-stream" d="M-14 -38 L-14 -20"/>'
     + '</g>'
+    // the argument: the pact either side of the cup, and a line between them
+    + '<g class="ch-arg-l" transform="translate(150,170)">' + FIGURE + '</g>'
+    + '<g class="ch-arg-r" transform="translate(250,170) scale(-1,1)">' + FIGURE + '</g>'
+    + '<path class="ch-spark" d="M174 100 L188 108 L176 114 L196 120 L184 126 L206 132"/>'
     + '<g class="ch-hand" transform="translate(236,170)">' + FIGURE + '</g>'
     + '<g class="ch-taker" transform="translate(330,170) scale(-1,1)">' + FIGURE + '</g>'
     + '<g class="ch-cross" transform="translate(186,146)">' + GLASS_SLIDE + '</g>'
@@ -215,6 +210,8 @@ export function chaliceStage(rec, step = 0, faces = {}) {
       + _caption(i, d, rec || {}) + '</div>').join('')
     + '</div>'
     + face(faces.searcher, 'ch-face-find', 36.5, 54)
+    + face(faces.searcher || faces.pourer, 'ch-face-arg-l', 37.5, 54)
+    + face(faces.dissent || faces.pourer, 'ch-face-arg-r', 62.5, 54)
     + face(faces.pourer, 'ch-face-pour', 59, 54)
     + face(faces.victim, 'ch-face-take', 82.5, 54)
     + face(faces.victim, 'ch-face-gone', 16, 55)
@@ -256,7 +253,9 @@ export const CHALICE_CSS = `
 .ch-figure{fill:#050403}
 .ch-arm{transform-origin:10px -42px;transition:transform .6s cubic-bezier(.4,1.5,.5,1)}
 .ch-reader{opacity:0;transition:opacity .6s ease,transform .9s ease}
-.ch-taker,.ch-hand{opacity:0;transition:opacity .7s ease}
+.ch-taker,.ch-hand,.ch-arg-l,.ch-arg-r{opacity:0;transition:opacity .7s ease}
+.ch-spark{stroke:#b32633;stroke-width:2.4;fill:none;opacity:0;stroke-linecap:round}
+.ch-pourer{opacity:1;transition:opacity .4s ease,transform .8s cubic-bezier(.4,1.4,.5,1)}
 .ch-table{opacity:0;transition:opacity .6s ease}
 .ch-top,.ch-leg{fill:#2a1f16}
 .ch-cup-bowl,.ch-cup-stem{fill:#8a6f3c}
@@ -279,46 +278,57 @@ export const CHALICE_CSS = `
 
 /* ── step 1: the search ─────────────────────────────────────────────── */
 .ch-stage[data-ch="1"] .ch-dark,.ch-stage[data-ch="2"] .ch-dark,
-.ch-stage[data-ch="3"] .ch-dark,.ch-stage[data-ch="4"] .ch-dark{opacity:.3}
-.ch-stage[data-ch="1"] .ch-reader,.ch-stage[data-ch="2"] .ch-reader{opacity:1}
+.ch-stage[data-ch="3"] .ch-dark,.ch-stage[data-ch="4"] .ch-dark,
+.ch-stage[data-ch="5"] .ch-dark{opacity:.3}
+.ch-stage[data-ch="1"] .ch-reader{opacity:1}
 .ch-stage[data-ch="1"] .ch-arm{transform:rotate(-52deg)}
 .ch-stage[data-ch="1"] .ch-glow{opacity:1;animation:ch-breathe 2.6s ease-in-out infinite}
 .ch-stage[data-ch="1"] .ch-hidden{opacity:1;animation:ch-gleam 2.2s ease-in-out infinite}
 .ch-stage[data-ch="1"] .ch-case .ch-book:nth-child(4n+3){transform:translateY(-6px)}
+.ch-stage[data-ch="1"] .ch-face-find{opacity:1}
 
-/* ── step 2: the pour ───────────────────────────────────────────────── */
-.ch-stage[data-ch="2"] .ch-table,.ch-stage[data-ch="3"] .ch-table{opacity:1}
-.ch-stage[data-ch="2"] .ch-reader{transform:translate(-40px,0);opacity:.5}
-.ch-stage[data-ch="2"] .ch-pourer{transform:translate(-26px,-26px) rotate(-118deg)}
-.ch-stage[data-ch="2"] .ch-stream{opacity:1;animation:ch-pour 1.1s ease-in .45s forwards}
-.ch-stage[data-ch="2"] .ch-fill{opacity:1;animation:ch-fill 1.2s ease-out .7s forwards}
-.ch-stage[data-ch="3"] .ch-fill{opacity:1;transform:scaleY(1)}
+/* ── step 2: the argument, either side of the cup ───────────────────── */
+.ch-stage[data-ch="2"] .ch-table{opacity:1}
+.ch-stage[data-ch="2"] .ch-pourer{opacity:0}
+.ch-stage[data-ch="2"] .ch-arg-l,.ch-stage[data-ch="2"] .ch-arg-r{opacity:1}
+.ch-stage[data-ch="2"] .ch-arg-l .ch-arm{transform:rotate(-30deg)}
+.ch-stage[data-ch="2"] .ch-arg-r .ch-arm{transform:rotate(-30deg)}
+.ch-stage[data-ch="2"] .ch-face-arg-l,.ch-stage[data-ch="2"] .ch-face-arg-r{opacity:1}
+/* the quarrel is only drawn on a night they had one */
+.ch-stage[data-ch="2"]:not([data-agreed]) .ch-spark{opacity:1;
+  animation:ch-spark 1.5s ease-in-out infinite}
+.ch-stage[data-ch="2"][data-agreed] .ch-glow{opacity:.8;cx:200}
 
-/* ── step 3: the hand-over ──────────────────────────────────────────── */
-.ch-stage[data-ch="3"] .ch-cross{opacity:1;animation:ch-cross 1.6s ease-in-out forwards}
-.ch-stage[data-ch="2"] .ch-hand,.ch-stage[data-ch="3"] .ch-hand{opacity:1}
-.ch-stage[data-ch="3"] .ch-taker{opacity:1}
-.ch-stage[data-ch="3"] .ch-taker .ch-arm{transform:rotate(-38deg)}
-.ch-stage[data-ch="3"] .ch-hand .ch-arm{transform:rotate(44deg)}
-/* the faces follow the bodies they sit on */
-.ch-stage[data-ch="1"] .ch-face-find,.ch-stage[data-ch="2"] .ch-face-find{opacity:1}
-.ch-stage[data-ch="2"] .ch-face-find{transform:translate(-50%,-50%) translateX(-10%);opacity:.5}
-.ch-stage[data-ch="2"] .ch-face-pour,.ch-stage[data-ch="3"] .ch-face-pour{opacity:1}
-.ch-stage[data-ch="3"] .ch-face-take{opacity:1}
-.ch-stage[data-ch="4"] .ch-face-gone{opacity:.42;filter:grayscale(1)}
+/* ── step 3: the pour ───────────────────────────────────────────────── */
+.ch-stage[data-ch="3"] .ch-table,.ch-stage[data-ch="4"] .ch-table{opacity:1}
+.ch-stage[data-ch="3"] .ch-hand,.ch-stage[data-ch="4"] .ch-hand{opacity:1}
+.ch-stage[data-ch="3"] .ch-pourer{transform:translate(-26px,-26px) rotate(-118deg)}
+.ch-stage[data-ch="3"] .ch-stream{opacity:1;animation:ch-pour 1.1s ease-in .45s forwards}
+.ch-stage[data-ch="3"] .ch-fill{opacity:1;animation:ch-fill 1.2s ease-out .7s forwards}
+.ch-stage[data-ch="3"] .ch-face-pour,.ch-stage[data-ch="4"] .ch-face-pour{opacity:1}
+.ch-stage[data-ch="4"] .ch-fill{opacity:1;transform:scaleY(1)}
 
-/* ── step 4: the morning ────────────────────────────────────────────── */
-.ch-stage[data-ch="4"] .ch-case,.ch-stage[data-ch="4"] .ch-table,
-.ch-stage[data-ch="4"] .ch-hidden,.ch-stage[data-ch="4"] .ch-glow,
-.ch-stage[data-ch="4"] .ch-reader,.ch-stage[data-ch="4"] .ch-taker,
-.ch-stage[data-ch="4"] .ch-hand{opacity:0}
-.ch-stage[data-ch="4"] .ch-morning{opacity:1}
-.ch-stage[data-ch="4"][data-slow] .ch-hour{opacity:1}
-.ch-stage[data-ch="4"][data-slow] .ch-sand{animation:ch-sand 2.4s linear infinite}
-.ch-stage[data-ch="4"][data-slow] .ch-grave{opacity:1}
-.ch-stage[data-ch="4"][data-slow] .ch-lift{
+/* ── step 4: the hand-over ──────────────────────────────────────────── */
+.ch-stage[data-ch="4"] .ch-cross{opacity:1;animation:ch-cross 1.6s ease-in-out forwards}
+.ch-stage[data-ch="4"] .ch-taker{opacity:1}
+.ch-stage[data-ch="4"] .ch-taker .ch-arm{transform:rotate(-38deg)}
+.ch-stage[data-ch="4"] .ch-hand .ch-arm{transform:rotate(44deg)}
+.ch-stage[data-ch="4"] .ch-face-take{opacity:1}
+
+/* ── step 5: the morning ────────────────────────────────────────────── */
+.ch-stage[data-ch="5"] .ch-case,.ch-stage[data-ch="5"] .ch-table,
+.ch-stage[data-ch="5"] .ch-hidden,.ch-stage[data-ch="5"] .ch-glow,
+.ch-stage[data-ch="5"] .ch-reader,.ch-stage[data-ch="5"] .ch-taker,
+.ch-stage[data-ch="5"] .ch-arg-l,.ch-stage[data-ch="5"] .ch-arg-r,
+.ch-stage[data-ch="5"] .ch-hand{opacity:0}
+.ch-stage[data-ch="5"] .ch-morning{opacity:1}
+.ch-stage[data-ch="5"] .ch-face-gone{opacity:.42;filter:grayscale(1)}
+.ch-stage[data-ch="5"][data-slow] .ch-hour{opacity:1}
+.ch-stage[data-ch="5"][data-slow] .ch-sand{animation:ch-sand 2.4s linear infinite}
+.ch-stage[data-ch="5"][data-slow] .ch-grave{opacity:1}
+.ch-stage[data-ch="5"][data-slow] .ch-lift{
   animation:ch-rise .7s ease-out both;animation-delay:calc(.4s + var(--i) * .18s)}
-.ch-stage[data-ch="4"][data-blocked] .ch-morning{opacity:.35}
+.ch-stage[data-ch="5"][data-blocked] .ch-morning{opacity:.35}
 
 @keyframes ch-breathe{0%,100%{opacity:.7}50%{opacity:1}}
 @keyframes ch-gleam{0%,100%{filter:none}50%{filter:brightness(1.7)}}
@@ -328,6 +338,7 @@ export const CHALICE_CSS = `
 @keyframes ch-sand{0%{transform:translateY(-10px);opacity:0}
   20%{opacity:1}100%{transform:translateY(12px);opacity:0}}
 @keyframes ch-rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes ch-spark{0%,100%{opacity:.25}50%{opacity:.9}}
 
 /* ── captions + ticks ───────────────────────────────────────────────── */
 .ch-caps{position:absolute;left:0;right:0;bottom:0;padding:14px 16px 16px;
@@ -342,12 +353,14 @@ export const CHALICE_CSS = `
 .ch-stage[data-ch="1"] .ch-cap-slot[data-i="1"],
 .ch-stage[data-ch="2"] .ch-cap-slot[data-i="2"],
 .ch-stage[data-ch="3"] .ch-cap-slot[data-i="3"],
-.ch-stage[data-ch="4"] .ch-cap-slot[data-i="4"]{display:block}
+.ch-stage[data-ch="4"] .ch-cap-slot[data-i="4"],
+.ch-stage[data-ch="5"] .ch-cap-slot[data-i="5"]{display:block}
 .ch-stage[data-ch="0"] .ch-tick[data-i="0"],
 .ch-stage[data-ch="1"] .ch-tick[data-i="1"],
 .ch-stage[data-ch="2"] .ch-tick[data-i="2"],
 .ch-stage[data-ch="3"] .ch-tick[data-i="3"],
-.ch-stage[data-ch="4"] .ch-tick[data-i="4"]{background:#e0a049}
+.ch-stage[data-ch="4"] .ch-tick[data-i="4"],
+.ch-stage[data-ch="5"] .ch-tick[data-i="5"]{background:#e0a049}
 
 @media (prefers-reduced-motion:reduce){
   .ch-stage *{animation:none!important;transition:none!important}

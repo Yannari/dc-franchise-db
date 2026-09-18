@@ -56,7 +56,7 @@ import { pronouns, playerAvatarUrl } from '../players.js';
 import { exitVerbs } from '../shows.js';
 import { HOSTS_BY_FORMAT } from '../shows.js';
 import { CONCLAVE_CSS } from './style.js';
-import { CHALICE_CSS, chaliceStage, chaliceStep } from './conclave-chalice.js';
+import { CHALICE_CSS, chaliceStage } from './conclave-chalice.js';
 import { _noiseTile, _filterBank, _buildFar, _buildMid, _buildFore,
   _buildHeroScene, _doorway } from './scenery.js';
 
@@ -1127,6 +1127,28 @@ function _buildBeats(rec, ep) {
     + (forced ? 'The castle will get this wrong' : 'The castle knows nothing') + '</span>'
     + '</div></div>', null, 'seal');
 
+  // ── AND, ON A CHALICE NIGHT, WHAT FIRST LIGHT LOOKS LIKE ──
+  //
+  // The wax card ends every other night on "will be told so at first light",
+  // which on a slow chalice is the one thing that does not happen. The stage
+  // also needs a beat to end on: without this the last reveal left it standing
+  // in the library while the letter had already been sealed.
+  if (chalice) {
+    const cof = (rec.vdata?.coffins || []).length;
+    push('seal', _card(rec.blocked ? 'Nothing Happens' : rec.vdata?.slow ? 'No Name at Breakfast'
+      : 'One Chair Short', 'IX. First light', 'lantern',
+    '<p>' + (rec.blocked
+      ? _esc(rec.target) + ' drank it and came down to breakfast anyway. Somebody was holding '
+        + 'a Shield, and the pact will not be told which of their evenings was wasted.</p>'
+      : rec.vdata?.slow
+        ? 'Nobody falls down in the night. The poison is the slow kind, so the castle comes '
+          + 'down to ' + cof + ' cups turned over and no name against any of them, and it '
+          + 'will find out at a graveside this afternoon.</p>'
+        : 'The chair is empty before anybody sits down, and the castle is told whose it '
+          + 'was. What it is not told is that the last thing in that hand was a drink.</p>')),
+    null, 'seal');
+  }
+
   // ── IX. the other room ──
   const scene = down.find(d => d.note && (d.parties || []).length >= 2) || down[0];
   if (scene) {
@@ -1359,9 +1381,11 @@ function _reapplyVisibility(suffix, upToIdx, total) {
   const last = document.getElementById('cv-step-' + suffix + '-'
     + Math.max(0, Math.min(upToIdx, total - 1)));
   if (shell && last) shell.setAttribute('data-phase', last.getAttribute('data-phase') || 'argue');
-  // The library stage walks one step per reveal on a chalice night.
+  // The library stage walks with the beats on a chalice night: the step is
+  // written on the beat itself by the builder, so the stage cannot drift out
+  // of time with the cards however many the argument turned out to be.
   const stage = document.querySelector('.ch-stage');
-  if (stage) stage.setAttribute('data-ch', String(chaliceStep(upToIdx, total)));
+  if (stage && last) stage.setAttribute('data-ch', last.getAttribute('data-stage') || '0');
   if (scroller) scroller.scrollTop = top;
 }
 
@@ -1571,9 +1595,20 @@ export function rpBuildConclave(ep, observer = 'audience') {
   // on `.cv-main`) so the turret uses the full width; on a night that does have
   // a downstairs scene the gutter comes back, blank cells and all.
   const hasMargin = beats.some(b => b.margin);
+  // WHICH STAGE STEP EACH BEAT IS. A proportional mapping was fine when the
+  // night had six beats and no argument in it; with the library arguing, the
+  // stage was pouring the drink over cards where the pact was still deciding
+  // whose it was. Each beat now carries its own step.
+  let seals = 0;
+  const stages = rec.variant !== 'chalice' ? null : beats.map((b, i) => {
+    if (b.phase === 'argue' || b.phase === 'overrule') return 2;
+    if (b.phase === 'seal') return Math.min(3 + seals++, 5);
+    return i === 0 ? 0 : 1;
+  });
   const stream = beats.map((b, i) =>
     '<div class="cv-beat' + (i <= st.idx ? ' cv-vis' : '')
-    + '" id="cv-step-' + suffix + '-' + i + '" data-phase="' + b.phase + '">'
+    + '" id="cv-step-' + suffix + '-' + i + '" data-phase="' + b.phase + '"'
+    + (stages ? ' data-stage="' + stages[i] + '"' : '') + '>'
     + (b.hostSlot ? _hostBand(_pick(
       // A plain-sight night takes the no-meeting variant of the two slots
       // that would otherwise announce a conclave that is not happening; a
@@ -1642,10 +1677,13 @@ export function rpBuildConclave(ep, observer = 'audience') {
     // THE LIBRARY. A chalice night has no meeting to draw, so it gets a stage
     // of its own above the beats instead of the turret's furniture.
     + (rec.variant === 'chalice'
-      ? chaliceStage(rec, chaliceStep(st.idx, total), {
+      ? chaliceStage(rec, (stages && stages[st.idx]) || 0, {
         searcher: rec.vdata?.searcher ? _av(rec.vdata.searcher, 40) : '',
         pourer: rec.vdata?.pourer ? _av(rec.vdata.pourer, 40) : '',
         victim: rec.target ? _av(rec.target, 40) : '',
+        dissent: rec.vdata?.overruled?.[0] ? _av(rec.vdata.overruled[0], 40)
+          : (rec.vdata?.searcher && rec.vdata.searcher !== rec.vdata.pourer
+            ? _av(rec.vdata.searcher, 40) : ''),
       }) : '')
     + '<div class="cv-grid">'
     + '<main class="cv-main' + (hasMargin ? '' : ' cv-no-gutter') + '">' + stream + '</main>'

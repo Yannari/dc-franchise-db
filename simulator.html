@@ -797,10 +797,30 @@
                  has to earn one, and the box only decides whether the engine
                  is permitted to call it at all. -->
             <div class="divider" id="sec-dr-divider"></div>
-            <div class="setup-section-label" id="sec-dr-options">MAIN STAGE OPTIONS</div>
-            <div class="bbopt-fixed" id="sec-dr-fixed-verdict">
-              <span class="bbopt-fixed-k">Verdict</span>
-              <span>The panel ranks the week, the bottom two lip sync, and the host alone decides who goes home. Nobody votes.</span>
+            <!-- ── THE MAIN STAGE, IN THE ORDER THE DECISIONS ARE MADE ──
+                 This was one flat list of thirteen controls under a single
+                 heading: a season SHAPE (All Stars) sat between the finale and
+                 a row of allowance checkboxes, and the panel -- the thing that
+                 decides every week -- was twelfth, between the triple lip sync
+                 and the reunion.
+
+                 Four headings now, in the order an author actually decides:
+                 what kind of season this is, who is judging it, what the call
+                 is allowed to do, and what save runs underneath it. Every
+                 control keeps its id, so js/cast-ui.js reads what it always
+                 read. EACH NEW HEADING IS SCOPED in js/quick-setup.js -- an id
+                 missing from that map is drawn on all four shows, which is how
+                 a drag season once explained how a Head of Household breaks a
+                 tie. -->
+            <div class="setup-section-label" id="sec-dr-options">THE SEASON</div>
+            <div class="form-group">
+              <label class="form-label">All Stars</label>
+              <select id="cfg-dr-all-stars" onchange="saveConfig();drVerdictUI()" class="form-input">
+                <option value="off">Off &mdash; the panel ranks, the host decides</option>
+                <option value="legacy">All Stars: Lip Sync for Your Legacy</option>
+                <option value="save">All Stars: the save (Beaver / Baguette)</option>
+              </select>
+              <div class="hint hint-tight">A returning cast who arrive with a past &mdash; an original season, a rank, and something to prove. On <b>Legacy</b> the top two lip sync and the winner of the song chooses who goes home. On <b>the save</b> the top queen saves one of the bottom three and the song decides the rest.</div>
             </div>
             <div class="form-group">
               <label class="form-label">Premiere</label>
@@ -815,11 +835,6 @@
               </select>
               <div class="hint hint-tight">What episode one is. The split premiere runs the cast in two halves with nobody going home; the porkchop sends somebody home on the first night.</div>
             </div>
-            <!-- The one schedulable twist this show has. It lives here rather
-                 than in FORMATS &amp; TWISTS, which is scoped to Total Drama —
-                 every show keeps its own options block. -->
-                        
-            
             <div class="form-group">
               <label class="form-label">Finale</label>
               <select id="cfg-dr-finale" onchange="saveConfig()" class="form-input">
@@ -832,19 +847,26 @@
               <div class="hint hint-tight">Where the season stops, and how the crown is decided once it gets there.</div>
             </div>
             <div class="form-group">
-              <label class="form-label">All Stars</label>
-              <select id="cfg-dr-all-stars" onchange="saveConfig()" class="form-input">
-                <option value="off">Off &mdash; the panel ranks, the host decides</option>
-                <option value="legacy">All Stars: Lip Sync for Your Legacy</option>
-                <option value="save">All Stars: the save (Beaver / Baguette)</option>
-              </select>
-              <div class="hint hint-tight">A returning cast who arrive with a past &mdash; an original season, a rank, and something to prove. On <b>Legacy</b> the top two lip sync and the winner of the song chooses who goes home. On <b>the save</b> the top queen saves one of the bottom three and the song decides the rest.</div>
+              <label style="display:flex;gap:8px;align-items:flex-start">
+                <input type="checkbox" id="cfg-dr-reunion" style="width:14px;height:14px;margin-top:3px" onchange="saveConfig()">
+                <span>Reunion episode<div class="hint hint-tight">Between the last elimination and the crowning. Nobody goes home; it is the only episode that reads the whole season rather than the week in front of it, so a quiet season gets a short reunion.</div></span>
+              </label>
             </div>
             <div class="form-group">
               <label style="display:flex;gap:8px;align-items:flex-start">
                 <input type="checkbox" id="cfg-dr-smackdown" style="width:14px;height:14px;margin-top:3px" onchange="saveConfig()">
                 <span>LaLaPaRUza Smackdown<div class="hint hint-tight">One episode before the finale: every eliminated queen comes back and lip syncs the others out in rounds for a title of her own. Adds one episode.</div></span>
               </label>
+            </div>
+            <div class="setup-section-label" id="sec-dr-panel-label">THE PANEL</div>
+            <div class="form-group" id="sec-dr-judges">
+              <label class="form-label">The panel <span style="font-weight:400;color:var(--muted);font-size:10px">(what each judge is watching)</span></label>
+              <div id="dr-judges-panel"></div>
+            </div>
+            <div class="setup-section-label" id="sec-dr-call-label">THE CALL</div>
+            <div class="bbopt-fixed" id="sec-dr-fixed-verdict">
+              <span class="bbopt-fixed-k">Verdict</span>
+              <span>The panel ranks the week, the bottom two lip sync, and the host alone decides who goes home. Nobody votes.</span>
             </div>
             <div class="form-group">
               <label style="display:flex;gap:8px;align-items:flex-start">
@@ -860,24 +882,14 @@
             </div>
             <div class="form-group">
               <label style="display:flex;gap:8px;align-items:flex-start">
-                <input type="checkbox" id="cfg-dr-immunity" style="width:14px;height:14px;margin-top:3px" onchange="saveConfig()">
-                <span>Early wins carry immunity<div class="hint hint-tight">The seasons 1–5 rule: a maxi win in the first five episodes keeps that queen out of the bottom the following week.</div></span>
-              </label>
-            </div>
-            <div class="form-group" id="sec-dr-judges">
-              <label class="form-label">The panel <span style="font-weight:400;color:var(--muted);font-size:10px">(what each judge is watching)</span></label>
-              <div id="dr-judges-panel"></div>
-            </div>
-            <div class="form-group">
-              <label style="display:flex;gap:8px;align-items:flex-start">
                 <input type="checkbox" id="cfg-dr-triple" style="width:14px;height:14px;margin-top:3px" onchange="saveConfig()">
                 <span>Triple lip sync on a tie<div class="hint hint-tight">When the bottom will not resolve into two, three queens lip sync instead.</div></span>
               </label>
             </div>
             <div class="form-group">
               <label style="display:flex;gap:8px;align-items:flex-start">
-                <input type="checkbox" id="cfg-dr-reunion" style="width:14px;height:14px;margin-top:3px" onchange="saveConfig()">
-                <span>Reunion episode<div class="hint hint-tight">Between the last elimination and the crowning. Nobody goes home; it is the only episode that reads the whole season rather than the week in front of it, so a quiet season gets a short reunion.</div></span>
+                <input type="checkbox" id="cfg-dr-immunity" style="width:14px;height:14px;margin-top:3px" onchange="saveConfig()">
+                <span>Early wins carry immunity<div class="hint hint-tight">The seasons 1–5 rule: a maxi win in the first five episodes keeps that queen out of the bottom the following week.</div></span>
               </label>
             </div>
             <div class="form-group">
@@ -886,6 +898,7 @@
                 <span>Two winners allowed<div class="hint hint-tight">Both finalists take the crown. Like the double shantay it cannot be rolled: only when the last lip sync is a genuine dead heat and both are excellent. It has happened once in the real show's history.</div></span>
               </label>
             </div>
+            <div class="setup-section-label" id="sec-dr-save-label">THE SEASON'S SAVE</div>
             <!-- The season's save (js/dr/saves.js). One at a time: they all
                  answer the same question, so two would fight over one night. -->
             <div class="form-group">
@@ -911,7 +924,6 @@
                   <input type="number" id="cfg-dr-golden-bars" class="form-input" min="1" max="3" value="1" style="width:64px" onchange="saveConfig()"></label>
               </div>
             </div>
-
             <div class="setup-section-label" id="sec-season-options">SEASON OPTIONS</div>
             <!-- Off by default and explicitly switched on, because it is the one
                  setting in this panel that costs money every time a season is

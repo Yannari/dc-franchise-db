@@ -1511,6 +1511,7 @@ export function renderConfig() {
   set('cfg-dr-tank-live', seasonConfig.drTankLive || 1);
   set('cfg-dr-golden-bars', seasonConfig.drGoldenBars || 1);
   drSaveOptionsUI();
+  drVerdictUI();
   chk('cfg-ri',        seasonConfig.ri);
   set('cfg-ri-reentry', seasonConfig.riReentryAt);
   set('cfg-ri-format', seasonConfig.riFormat || 'redemption');
@@ -2346,6 +2347,25 @@ export function updateShieldUI() {
 }
 
 /** The tank's two numbers only mean something when the tank is the save. */
+/* ── THE VERDICT ROW TELLS THE TRUTH ABOUT THE SEASON IN FRONT OF IT ──
+   It is the fixed explainer at the top of THE CALL, and it said "the bottom
+   two lip sync, and the host alone decides who goes home" on every season —
+   including an All Stars one, where the TOP two sing and a queen decides. A
+   row whose whole job is to state the rules the author cannot change has to
+   change when they do. */
+export function drVerdictUI() {
+  const el = document.getElementById('sec-dr-fixed-verdict');
+  if (!el) return;
+  const mode = document.getElementById('cfg-dr-all-stars')?.value || 'off';
+  const line = mode === 'legacy'
+    ? 'The panel ranks the week and names the top two. They lip sync for their legacy, and the winner of that song alone decides which of the queens up for elimination goes home. Nobody votes.'
+    : mode === 'save'
+      ? 'The panel ranks the week and names a bottom three. The queen holding the save takes one of them out of danger, the other two lip sync, and the host decides. Nobody votes.'
+      : 'The panel ranks the week, the bottom two lip sync, and the host alone decides who goes home. Nobody votes.';
+  const slot = el.querySelector('span:last-child');
+  if (slot) slot.textContent = line;
+}
+
 export function drSaveOptionsUI() {
   const sel = document.getElementById('cfg-dr-save');
   const box = document.getElementById('cfg-dr-tank-opts');

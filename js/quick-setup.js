@@ -1189,6 +1189,14 @@ const CONFIG_SCOPE = {
     'sec-tr-divider':        ['traitors'],
     'sec-dr-options':        ['drag-race'],
     'sec-dr-divider':        ['drag-race'],
+    /* THE MAIN STAGE'S OTHER THREE HEADINGS. Its controls were one flat list
+       under `sec-dr-options`; they are four groups now (the season, the panel,
+       the call, the save) and each heading needs scoping or it is drawn on all
+       four shows -- see the note below about the explainer rows, which is the
+       same bug with a different id. */
+    'sec-dr-panel-label':    ['drag-race'],
+    'sec-dr-call-label':     ['drag-race'],
+    'sec-dr-save-label':     ['drag-race'],
     // ── THE EXPLAINER ROWS, WHICH HAD NO IDS AND SO NO SCOPE ────────
     //
     // Each show's options block opens with a couple of fixed rows stating the

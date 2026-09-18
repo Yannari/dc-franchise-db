@@ -19,7 +19,7 @@
 // view rather than from the call, so a MIXED plate beside a PRAISE plate is
 // a real disagreement and not decoration. The rail carries the panel's
 // running ranking, which is what the viewer is actually watching.
-import { campaignStage } from './save.js';
+import { campaignStage, applyStage } from './save.js';
 import { _shell, _portrait, _judgePortrait, _icon, _note, _roomRail, _allianceRail, ROOM_RAIL_CSS } from './style.js';
 // Borrowed for the untucked consequence row — same fact, same badge.
 import { WERK_CSS, ARROW_UP, ARROW_DOWN } from './werk.js';
@@ -340,6 +340,14 @@ export const STAGE_CSS = `
 .dr-split{display:inline-block;margin-left:8px;font-size:9px;letter-spacing:.14em;
   padding:2px 8px;border:1px solid #FF7BC8;color:#FF7BC8}
 
+/* The queen she was paired with on a Revenge night, judged beside her. */
+.dr-couple{display:inline-flex;align-items:center;gap:7px;margin-left:12px;
+  padding:3px 10px 3px 6px;border:1px solid rgba(255,200,61,.5);border-radius:22px;
+  background:rgba(255,200,61,.08)}
+.dr-couple i{font-size:8.5px;letter-spacing:.2em;color:#C9A6BC;font-style:normal}
+.dr-couple b{font-size:13px;color:#FFC83D}
+.dr-couple img{border-radius:50%;border:1px solid rgba(255,200,61,.55)}
+
 /* Her reaction, under the panel's words. */
 .dr-react{margin-top:12px;padding:10px 14px;border-left:3px solid #7B2FF7;
   background:rgba(123,47,247,.10);font-size:13.5px;color:#e5d5f2}
@@ -600,6 +608,11 @@ export function rpBuildCritiques(row) {
   const lines = row?.dr?.critiques || [];
   if (!lines.length) return '';
   const reactions = row?.dr?.reactions || {};
+  /* ── WHO SHE STOOD THERE WITH ── Revenge of the Queens judges COUPLES, so
+     the panel is looking at two people and the card has to show two people.
+     Empty on every other night, which is every night but one. */
+  const pairedWith = Object.fromEntries(((row?.dr?.revenge?.pairs) || [])
+    .map(x => [x.with, x.back]));
   const guestObj = row?.dr?.guest;
   const _jpor = (id, opts = {}) => {
     if (guestObj && String(id || '').startsWith('guest:'))
@@ -727,6 +740,10 @@ export function rpBuildCritiques(row) {
       <div class="dr-panel dr-a-score" style="padding:14px 16px 14px 20px">
         ${_portrait(name, ep, { size: 54, station: true })}
         <b class="dr-disp" style="font-size:19px;margin-left:10px">${esc(name)}</b>
+        ${pairedWith[name] ? `<span class="dr-couple">
+          <i class="dr-disp">with</i>
+          ${_portrait(pairedWith[name], ep, { size: 34 })}
+          <b>${esc(pairedWith[name])}</b></span>` : ''}
         ${disagreed ? '<span class="dr-split dr-disp">the panel is split</span>' : ''}
       </div>
       ${cards}
@@ -1041,13 +1058,16 @@ export function rpBuildUntucked(row) {
   /* ── THE STAGE ── js/vp-dr/room-stage.js, lit for the lounge. Not on a
      campaign night, which already has its own strip pinned at the top. */
   const room = row?.dr?.roomAtStart || row?.houseAtStart || [];
-  /* ONE STAGE ON A CAMPAIGN NIGHT, NOT NONE. The campaign stage now carries
-     the whole room and lights whoever each card is about (js/vp-dr/save.js),
-     so the lounge stage would be a second pinned strip saying the same thing.
-     Before that it was neither: the campaign stage ignored ordinary scenes
-     and this line switched the lounge stage off, so half the night animated
-     nothing. */
-  const loungeStage = !campaign && room.length ? roomStage(row, scenes.map(sc => {
+  /* ── THE NIGHT STARTS AS AN ORDINARY UNTUCKED ──────────────────────
+     A campaign night is still Untucked until the campaigning starts: the
+     room comes off the stage, pours a drink and talks, and it should look
+     like every other lounge while it does. Then the bottom is named and the
+     screen becomes the campaign.
+     So BOTH stages are built and the reveal swaps them at the first campaign
+     scene -- rather than the campaign stage owning the whole night (which
+     made the ordinary half look like a pitch) or the lounge stage being
+     switched off entirely (which made it animate nothing at all). */
+  const loungeStage = room.length ? roomStage(row, scenes.map(sc => {
     const pl = sc.data?.players || [];
     const pop = {};
     for (const [k, v] of Object.entries(sc.effects?.pop || {})) {
@@ -1087,6 +1107,26 @@ export function rpBuildUntucked(row) {
 
   // WERK_CSS carries .dr-bond-row/.dr-arrow/.dr-up/.dr-down. Borrowed rather
   // than restated, which is what the prep screen already does with it.
+  /* ── AND THE SWAP ITSELF ──
+     Both stages register `_drRevealExtra.untucked`, so the last writer wins:
+     this one, which drives both and shows whichever the step belongs to. */
+  if (campaign && loungeStage && typeof window !== 'undefined') {
+    const firstCamp = scenes.findIndex(sc => sc?.data?.campaign);
+    window._drRevealExtra = window._drRevealExtra || {};
+    window._drRevealExtra.untucked = idx => {
+      try { loungeStage.apply(idx); } catch { /* decoration */ }
+      try { applyStage('untucked', idx); } catch { /* decoration */ }
+      if (typeof document === 'undefined') return;
+      const on = firstCamp >= 0 && idx >= firstCamp;
+      const camp = document.getElementById('svx-untucked');
+      const lng = document.getElementById(`rmx-u${ep.num}`);
+      if (camp) camp.hidden = !on;
+      if (lng) lng.hidden = on;
+    };
+    setTimeout(() => {
+      try { window._drRevealExtra.untucked(_state(ep, 'untucked').idx); } catch { /* decoration */ }
+    }, 0);
+  }
   return `<style>${STAGE_CSS}${WERK_CSS}${ROOM_RAIL_CSS}${UTK_CROWD_CSS}${campaign ? CAMPAIGN_CARD_CSS : ''}${loungeStage ? ROOM_STAGE_CSS : ''}</style>${_shell((campaign || '') + (loungeStage ? `${loungeStage.html}<div class="rmx-cards">${lounge}${steps}</div>` : lounge + steps), ep, {
     phase: 'untucked', title: 'Untucked', subtitle: campaign ? 'the campaign' : 'Illusions Lounge',
     /* THE TEMPERATURE GAUGE WAS A PICTURE OF NOTHING — a needle pinned at

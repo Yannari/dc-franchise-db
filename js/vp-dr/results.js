@@ -56,6 +56,10 @@ export const RESULTS_CSS = `
    a word is read. */
 .dr-callteam{display:inline-block;margin-left:9px;font-family:'Space Mono',ui-monospace,monospace;
   font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#C9A6BC;vertical-align:middle}
+/* And the queen she was paired with on a Revenge night — the call names a
+   couple, so the row does. */
+.dr-callpair{display:inline-block;margin-left:9px;font-size:13px;color:#FFC83D;
+  vertical-align:middle}
 .dr-callrow{display:grid;grid-template-columns:auto 1fr auto auto;gap:14px;align-items:center;
   padding:13px 16px 13px 20px}
 /* .dr-panel FIRST: the shell's accent class sets the same left border, and a
@@ -511,6 +515,12 @@ export function rpBuildResults(row) {
     const next = i >= 0 ? allScenes[i + 1] : null;
     return next && next.step === 'results' && String(next.kind).startsWith('confess:') && next.text ? next : null;
   };
+  /* WHO SHE WAS PAIRED WITH. On a Revenge night the call is a call of
+     couples: the panel judged two people and the row says both of them, so
+     the viewer can see why a queen who was middling all season is standing
+     in the top. */
+  const pairedWith = Object.fromEntries(((row?.dr?.revenge?.pairs) || [])
+    .map(x => [x.with, x.back]));
   const list = [];
   let holdDrawn = !hold;
   for (const [result, name] of named) {
@@ -547,7 +557,8 @@ export function rpBuildResults(row) {
       <div class="dr-panel dr-a-score dr-callrow" style="--v:${meta.color || '#7a3a5e'}">
         ${_portrait(s.n, ep, { size: 52, station: true })}
         <div><h3 class="dr-disp">${esc(s.n)}${teamOf(s.n)
-    ? `<span class="dr-callteam">${esc(teamOf(s.n))}</span>` : ''}</h3>
+    ? `<span class="dr-callteam">${esc(teamOf(s.n))}</span>` : ''}${pairedWith[s.n]
+    ? `<span class="dr-callpair">&amp; ${esc(pairedWith[s.n])}</span>` : ''}</h3>
           ${b ? `<span style="font-size:11px;color:#C9A6BC">panel ${b.panelRank} → ${b.finalRank}</span>` : ''}
           ${s.said ? `<p class="dr-said">${esc(s.said)}</p>` : ''}
         </div>

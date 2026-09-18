@@ -506,6 +506,8 @@ const CHAL_CSS = `
 .dr-tag{display:inline-block;font-size:9px;letter-spacing:.14em;text-transform:uppercase;
   padding:2px 8px;margin-left:6px;border:1px solid currentColor}
 .dr-t-warn{color:#FF294B}.dr-t-good{color:#3BE08A}.dr-t-note{color:#FFC83D}
+/* The returning queen she performed this with, on a Revenge night. */
+.dr-withq{margin-left:9px;font-size:14px;color:#FFC83D;letter-spacing:.02em}
 
 /* The draft board: what is still on it, and who took what. */
 /* THE BOARD IS WHO TOOK WHAT. The dr-taken class used to strike the chip
@@ -828,12 +830,19 @@ function detailFor(id, perf) {
   }
 }
 
-function perfCard(name, perf, i, suffix, ep, id) {
+function perfCard(name, perf, i, suffix, ep, id, mate = null) {
   const body = detailFor(id, perf);
   return `<div class="dr-step" id="dr-step-${suffix}-${i}">
     <div class="dr-panel dr-a-score dr-row">
       ${_portrait(name, ep, { size: 54, station: true })}
       <div><h3 class="dr-disp">${esc(name)}${
+    /* ── AND SHE DID NOT DO IT ALONE ──
+       On a Revenge night the number beside her is the PAIR'S: the queen the
+       season sent home performed this with her and the panel judged the two
+       of them together. Naming only one of them beside a score the other
+       half earned is the "an average that hides the event it should show"
+       failure in §11.5, on the busiest screen of the night. */
+    mate ? `<span class="dr-withq">&amp; ${esc(mate)}</span>` : ''}${
     perf?.moment ? '<span class="dr-tag dr-t-note">moment</span>' : ''}</h3>${body}</div>
       <span class="dr-score dr-disp ${scoreClass(perf?.perf)}">${n1(perf?.perf)}</span>
     </div></div>`;
@@ -3303,10 +3312,12 @@ export function rpBuildMaxi(row) {
      written; this is the first screen to read it. */
   const sfx = (maxiById(ch.id)?.stage === 'pre') ? 'maxi' : 'maxistage';
 
+  const pairedWith = Object.fromEntries(((row?.dr?.revenge?.pairs) || [])
+    .map(x => [x.with, x.back]));
   const steps = running.map((name, i) => {
     const said = linesFor(name)
       .map(sc => `<p class="dr-perf-line">${esc(sc.text)}</p>`).join('');
-    const card = perfCard(name, perfs[name], i, sfx, ep, ch.id);
+    const card = perfCard(name, perfs[name], i, sfx, ep, ch.id, pairedWith[name] || null);
     return said
       ? card.replace(/<\/div><\/div>$/, `${said}</div></div>`)
       : card;

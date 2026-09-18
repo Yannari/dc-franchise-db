@@ -529,6 +529,54 @@ describe('Revenge of the Queens', () => {
     for (const c of n.dr.revenge.couples) expect(n.dr.revenge.singers).toContain(c.back);
   });
 
+  it('sings the returners, not the competing queens — one song for the night', () => {
+    for (const seed of [300, 42, 77]) {
+      const n = night(rev(seed));
+      const back = n.dr.revenge.returners;
+      expect(n.dr.lipsync.queens.every(q => back.includes(q)), `seed ${seed}`).toBe(true);
+      expect([...n.dr.lipsync.queens].sort()).toEqual([...n.dr.revenge.singers].sort());
+      // And nobody in the competition sang: there is no lip sync for the win.
+      expect(n.dr.call.singers.every(q => back.includes(q))).toBe(true);
+    }
+  });
+
+  it('never names a returner on the call — her couple carries her', () => {
+    for (const seed of [300, 42, 77]) {
+      const n = night(rev(seed));
+      const c = n.dr.call;
+      const called = [...c.win, ...c.high, ...c.low, ...(c.atRisk || []), ...c.bottom, ...c.safe];
+      expect(called.filter(q => n.dr.revenge.returners.includes(q)), `seed ${seed}`).toEqual([]);
+    }
+  });
+
+  it('gives the week to the competing half of the winning couple', () => {
+    for (const seed of [300, 42, 77]) {
+      const n = night(rev(seed));
+      const won = n.dr.revenge.couples.find(c => c.back === n.dr.revenge.winner);
+      expect(won, `seed ${seed}`).toBeTruthy();
+      expect(n.dr.revenge.weekWinner).toBe(won.with);
+      expect(n.dr.call.win).toEqual([won.with]);
+    }
+  });
+
+  it('hands the lipstick to the queen who won her way back in', () => {
+    for (const seed of [300, 42, 77]) {
+      const n = night(rev(seed));
+      expect(n.dr.lipsync.chosenBy, `seed ${seed}`).toBe(n.dr.revenge.winner);
+      // And she spends it out of the bottom the host named, on somebody still in it.
+      expect(n.dr.call.bottom).toContain(n.dr.lipsync.eliminated);
+    }
+  });
+
+  it('sends the bottom to lobby the two queens it already sent home', () => {
+    for (const seed of [300, 42, 77]) {
+      const n = night(rev(seed));
+      if (!n.dr.legacyCampaign) continue;
+      expect([...n.dr.legacyCampaign.targets].sort(), `seed ${seed}`)
+        .toEqual([...n.dr.revenge.singers].sort());
+    }
+  });
+
   it('puts the winner back in with her record intact', () => {
     const res = rev(300);
     const n = night(res);
@@ -721,7 +769,87 @@ describe('one stage for the whole campaign night', () => {
     const row = weekly(season(777, { drAllStars: true })).find(r => r.dr.legacyCampaign);
     const html = Object.fromEntries(dragScreens(row).map(s => [s.id, s.html]))['dr-untucked'];
     expect((html.match(/svx-bystander/g) || []).length).toBeGreaterThan(2);
-    // ...and only one pinned stage, not the lounge's as well.
-    expect(html).not.toContain('rmx-cards');
+    /* BOTH stages are on the page now: the night starts as an ordinary
+       Untucked and becomes the campaign when the campaigning starts, and the
+       reveal hook swaps them. */
+    expect(html).toContain('rmx-cards');
+    expect(html).toContain('svx-untucked');
+  });
+});
+
+describe('a legacy bottom is two, and three only on a real tie', () => {
+  /* Two paths widened it and both ate the LOW: a booked double elimination,
+     and the season-wide "triple lip sync on a tie", which fired on nearly
+     every week because the queen it compares against is the LOW — the one
+     immediately above the bottom, so they are always close. Reported twice
+     as "three BTM2 and no LOW". A genuine dead heat naming three is a real
+     night and still happens; it is meant to be rare. */
+  it('is two unless the panel genuinely cannot split them', () => {
+    let nights = 0; let wide = 0;
+    for (const extra of [{}, { drTripleLipsync: true }, { drTripleLipsync: true, drImmunity: true }]) {
+      for (let s = 1; s <= 5; s++) {
+        for (const r of weekly(season(s * 77, { drAllStars: true, ...extra }))) {
+          if (!r.dr.lipsync?.legacy) continue;
+          nights++;
+          const n = r.dr.call.bottom.length;
+          expect([2, 3]).toContain(n);
+          if (n === 3) wide++;
+          // The LOW only disappears when the tie took her.
+          if (n === 2) expect((r.dr.call.low || []).length).toBeGreaterThan(0);
+        }
+      }
+    }
+    expect(nights).toBeGreaterThan(40);
+    // Rare: it was over half of every season with the box ticked.
+    expect(wide / nights).toBeLessThan(0.15);
+  });
+});
+
+describe('the campaign night starts as an ordinary Untucked', () => {
+  it('shows the lounge stage until the campaigning starts, then the campaign', async () => {
+    const { dragScreens } = await import('../js/vp-dr/screens.js');
+    const row = weekly(season(777, { drAllStars: true })).find(r => r.dr.legacyCampaign);
+    document.body.innerHTML = Object.fromEntries(
+      dragScreens(row).map(s => [s.id, s.html]))['dr-untucked'];
+    const hook = window._drRevealExtra?.untucked;
+    expect(hook).toBeTypeOf('function');
+    const camp = () => document.getElementById('svx-untucked');
+    const lounge = () => document.getElementById(`rmx-u${row.num}`);
+    const firstCamp = (row.dr.scenes || []).filter(sc => sc.step === 'untucked')
+      .findIndex(sc => sc.data?.campaign);
+    expect(firstCamp).toBeGreaterThan(0);
+    hook(0);
+    expect(lounge().hidden, 'the lounge should open the night').toBe(false);
+    expect(camp().hidden).toBe(true);
+    hook(firstCamp + 4);
+    expect(camp().hidden, 'the campaign should take over').toBe(false);
+    expect(lounge().hidden).toBe(true);
+  });
+});
+
+describe('the panel judges the couple', () => {
+  it('moves a queen with the partner she was handed', async () => {
+    const { pairJudging } = await import('../js/dr/revenge.js');
+    const ranking = [
+      { name: 'A', meanRank: 1 }, { name: 'B', meanRank: 2 },
+      { name: 'C', meanRank: 3 }, { name: 'D', meanRank: 4 },
+    ];
+    const pairs = [{ with: 'A', back: 'W' }, { with: 'B', back: 'X' },
+      { with: 'C', back: 'Y' }, { with: 'D', back: 'Z' }];
+    // B was handed the best returner of the four; A the worst.
+    const craft = { W: 1, X: 9, Y: 2, Z: 3 };
+    const out = pairJudging({ ranking, pairs, craftOf: n => craft[n] });
+    expect(out.map(r => r.name)).toEqual(['B', 'A', 'C', 'D']);
+    // Every row says who she stood with, and remembers what she was alone.
+    for (const r of out) {
+      expect(r.mate).toBeTruthy();
+      expect(r.soloRank).toBeTypeOf('number');
+    }
+  });
+
+  it('leaves an ordinary night exactly as the panel ranked it', async () => {
+    const { pairJudging } = await import('../js/dr/revenge.js');
+    const ranking = [{ name: 'A', meanRank: 1 }, { name: 'B', meanRank: 2 }];
+    expect(pairJudging({ ranking, pairs: [] })).toBe(ranking);
   });
 });

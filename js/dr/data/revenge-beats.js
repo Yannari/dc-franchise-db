@@ -55,6 +55,19 @@ export const REVENGE_BEATS = {
     '{a} wins it and she is back in the competition. Her record, her chart row, her season — all of it picks up exactly where it stopped.',
     'The host lets it hang. "{a}. Welcome back to the competition." The room comes apart.',
   ],
+  /* AND WHAT SHE WON BESIDES A SEASON. The winner of this song holds the
+     lipstick — a queen the room eliminated decides who leaves tonight — and
+     the queen she was paired with takes the week off the back of it. */
+  power: [
+    '"And {a}," the host says, "since you won tonight, you win tonight." The lipstick is hers, and every queen in that bottom works out what that means at the same moment.',
+    'The host hands {a} the lipstick. She was sent home by somebody standing in that room and now she is holding the thing that sends one of them home.',
+    '"One more thing," the host says, and the room goes quiet before he finishes the sentence, because it already knows. {a} is holding the power tonight.',
+  ],
+  couple: [
+    'And the win goes to the couple: {c} takes the week on the strength of the queen she was handed at the top of the night.',
+    '"{c}," the host says. "Your partner just won you this challenge. Condragulations." She laughs like somebody who cannot believe her luck, which is what she is.',
+    '{c} wins the maxi challenge without singing a note of it — the couple was judged as one thing and the couple won.',
+  ],
   both: [
     'The host does not choose. "I cannot separate you two, and I am not going to try. {a}. {c}. BOTH of you are back in this competition." The room loses whatever composure it had left.',
     '"Two queens went home," the host says. "Two queens are coming back. {a}, {c} — you are both in."',

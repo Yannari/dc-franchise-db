@@ -30,8 +30,6 @@
 // night a season would be the two-copies-of-one-rule failure this repo keeps
 // paying for — and the night's own shape (challenge, runway, critiques, call,
 // lip sync) is not what changes. What changes is who is in the room.
-import { lipsyncScore } from './lipsync.js';
-
 const pick = (rng, arr) => arr[Math.floor(rng() * arr.length) % arr.length];
 
 /**
@@ -69,54 +67,38 @@ export function revengePairs({ living = [], out = [], bond = () => 0, rng = Math
 /**
  * The couples the panel put first, and who wins her way back in.
  *
- * `rank` is the night's own ranking of the COMPETING queens (the bend, best
- * first) — a couple is only as good as the pair, and the competing half is
- * the one the panel has been watching all season. The returning half's own
- * performance breaks it: two couples whose competing queens placed level are
- * separated by the queen fighting for her season back.
+ * `rank` is the night's FINAL ranking of the competing queens — which on this
+ * night is already a ranking of pairs (`pairJudging`), so the top two couples
+ * are simply the two best-placed queens who had a partner. The couple is the
+ * unit the panel judged and the couple is the unit it calls.
  *
- * Then the two returning queens in those couples lip sync, and the winner is
- * back in the competition. `both` is the AS2 outcome — the show kept them
- * both — and it happens when the song genuinely cannot be split.
+ * Then the two RETURNING halves lip sync against each other. There is no
+ * separate lip sync for the win: this song is the night's song. Its winner
+ * walks back into the competition AND takes the lipstick — the queen the
+ * season sent home decides who goes home tonight — and the queen still
+ * competing who was paired with her wins the week.
+ *
+ * The losing couple's returner does not come back, and neither do any of the
+ * others: everybody whose pair was not called is out for good, which is why
+ * the returners never appear in the call on their own.
  */
-export function revengeReentry({
-  pairs = [], rank = [], players = {}, song = {}, lipsyncRecord = {}, rng = Math.random,
-} = {}) {
+export function revengeReentry({ pairs = [], rank = [] } = {}) {
   if (pairs.length < 2) return null;
   const place = n => {
     const i = rank.indexOf(n);
-    return i < 0 ? rank.length : i;
+    return i < 0 ? rank.length + 1 : i;
   };
-  const scored = pairs.map(p => ({
-    ...p,
-    // The competing half's night, and the returning half's own performance.
-    score: (rank.length - place(p.with)) + (lipsyncScore({
-      player: players[p.back], song, lipsyncRecord: lipsyncRecord[p.back], rng,
-    })?.score ?? 0) * 0.35,
-  })).sort((a, b) => b.score - a.score);
-
+  const scored = [...pairs].sort((a, b) => place(a.with) - place(b.with));
   const top = scored.slice(0, 2);
-  const duel = top.map(p => ({
-    name: p.back,
-    r: lipsyncScore({
-      player: players[p.back], song, lipsyncRecord: lipsyncRecord[p.back], rng,
-    }),
-  }));
-  duel.sort((a, b) => (b.r?.score ?? 0) - (a.r?.score ?? 0));
-  const gap = (duel[0]?.r?.score ?? 0) - (duel[1]?.r?.score ?? 0);
-  /* BOTH OF THEM, WHEN THE SONG WILL NOT SPLIT THEM. AS2 ended exactly here:
-     two queens went back into the competition on the same night. Sized like
-     every other double on this show — it has to be earned on the stage, and
-     it cannot be rolled. */
-  const both = gap < 0.35 && (duel[0]?.r?.score ?? 0) >= 6.2;
   return {
     couples: top.map(p => ({ back: p.back, with: p.with })),
     all: scored.map(p => ({ back: p.back, with: p.with })),
-    singers: duel.map(d => d.name),
-    winner: duel[0]?.name || null,
-    winners: both ? duel.map(d => d.name) : [duel[0]?.name].filter(Boolean),
-    both,
-    scores: Object.fromEntries(duel.map(d => [d.name, Math.round((d.r?.score ?? 0) * 100) / 100])),
+    /* The two queens who sing tonight. The night has ONE song and this is it
+       — the bottom does not sing on a legacy night, and the top two do not
+       sing either, because the queens fighting for a season back are the ones
+       with something to win. */
+    singers: top.map(p => p.back),
+    mate: Object.fromEntries(top.map(p => [p.back, p.with])),
   };
 }
 
@@ -124,4 +106,42 @@ export function revengeReentry({
 export function revengeLine(pool, vars = {}, rng = Math.random) {
   if (!Array.isArray(pool) || !pool.length) return '';
   return String(pick(rng, pool)).replace(/\{(\w+)\}/g, (m, k) => (vars[k] != null ? String(vars[k]) : m));
+}
+
+/**
+ * The challenge is judged on the PAIR, not on the queen.
+ *
+ * The returning half performs too — that is the whole premise of the night —
+ * so the panel is looking at two people and the rank it hands back belongs to
+ * both of them. A competing queen can be lifted by the queen she was paired
+ * with and she can be dragged down by her, which is the only thing that makes
+ * the pairing a stake rather than a staging note.
+ *
+ * `ranking` is `panelRanking`'s rows (meanRank, best lowest). Returns new rows
+ * with the pair's mean folded in and `panelRank` re-derived, plus `mate` on
+ * every paired row so every screen downstream can say who she stood with.
+ */
+export function pairJudging({ ranking = [], pairs = [], craftOf = () => 5, weight = 0.45 } = {}) {
+  if (!pairs.length || !ranking.length) return ranking;
+  const mateOf = Object.fromEntries(pairs.map(p => [p.with, p.back]));
+  /* The returner's own night, put on the same ruler as a mean rank: best
+     craft becomes rank 1, worst becomes last, so the two numbers can be
+     averaged at all. Ranked among the RETURNERS, because they are the field
+     she was performing in. */
+  const backOrder = [...pairs].sort((a, b) => craftOf(b.back) - craftOf(a.back));
+  const spread = ranking.length / Math.max(1, backOrder.length);
+  const backRank = Object.fromEntries(backOrder.map((p, i) => [p.back, (i + 0.5) * spread + 0.5]));
+  const rows = ranking.map(r => {
+    const mate = mateOf[r.name];
+    if (!mate) return { ...r };
+    return {
+      ...r,
+      mate,
+      soloRank: r.meanRank,
+      meanRank: r.meanRank * (1 - weight) + backRank[mate] * weight,
+    };
+  });
+  rows.sort((a, b) => a.meanRank - b.meanRank || a.name.localeCompare(b.name));
+  rows.forEach((r, i) => { r.panelRank = i + 1; });
+  return rows;
 }

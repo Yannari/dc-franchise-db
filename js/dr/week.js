@@ -49,7 +49,7 @@ import { renderStageBeats, runUntucked, applyUntuckedScene, renderChallengeBeats
   renderMaxiEventScenes } from './stage.js';
 import { lipsyncScore, lipsyncCall } from './lipsync.js';
 import { chooseElimination } from './legacy.js';
-import { revengePairs, revengeReentry, revengeLine } from './revenge.js';
+import { revengePairs, revengeReentry, revengeLine, pairJudging } from './revenge.js';
 import { REVENGE_BEATS } from './data/revenge-beats.js';
 import { dragAlliances, sameBloc } from './alliances.js';
 import { LEGACY_BEATS, LEGACY_CAMPAIGN, HISTORY_BEATS, legacyLine } from './data/legacy-beats.js';
@@ -107,6 +107,8 @@ const DRAMA_TV = {
   'loyal-soldier': 0.45, floater: 0.3, goat: 0.3,
 };
 const slugOf = n => String(n || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-');
+/* "once", "twice", "four times" — a count a line can say out loud. */
+const timesLabel = t => (t === 1 ? 'once' : t === 2 ? 'twice' : t ? `${t} times` : '');
 const pick = (rng, arr) => arr[Math.floor(rng() * arr.length)];
 
 /**
@@ -687,7 +689,17 @@ export function runDragWeek(state, cfg, ctx) {
       players, bond, rng,
     })
     : null;
-  const ranking = rated ? rated.ranking : panelRanking(views);
+  /* ── AND ON A REVENGE NIGHT THE PANEL IS JUDGING PAIRS ──────────────
+     The returning half performed too, so the rank belongs to both of them.
+     Folded in HERE, before the host's bend and before anything reads an
+     order, so the pair travels through the critiques, the call and the
+     results as one thing rather than being announced as a pairing and then
+     judged as eleven soloists. */
+  const ranking = pairJudging({
+    ranking: rated ? rated.ranking : panelRanking(views),
+    pairs: revenge?.pairs || [],
+    craftOf: n => blendScore(dragOf(P(n)), maxi?.blend || {}),
+  });
   const split = isSplitPanel(ranking);
 
   /* ── THE NIGHT THE SHOW LOOKS RIGGED ──────────────────────────────
@@ -970,9 +982,24 @@ export function runDragWeek(state, cfg, ctx) {
      Null on every ordinary night, where the call never moves and the one
      object is the whole truth. See the note where it is filled. */
   let callAtCall = null;
+  /* ── THE CALL ON A REVENGE NIGHT IS A CALL OF COUPLES ───────────────
+     The panel names the top two COUPLES, and the two queens it sends to the
+     stage are the RETURNING halves of them: the night's one song is the two
+     eliminated queens singing for a season back. Whichever of them wins walks
+     back into the competition holding the lipstick, and the queen she was
+     paired with wins the week.
+     Which is also why no returner is ever named in the bottom: a returner
+     whose couple was not called is out, full stop, and the queen still
+     competing beside her is in the bottom on her own name. */
+  const revengeNight = !!(revenge && revenge.pairs.length >= 2 && topTwoSing);
+  let reentry = null;
+  if (revengeNight) {
+    reentry = revengeReentry({ pairs: revenge.pairs, rank: bend.map(r => r.name) });
+    revenge.reentry = reentry;
+  }
   if (topTwoSing) {
-    const top2 = bend.slice(0, 2).map(r => r.name);
-    call.singers = top2;
+    const top2 = reentry ? reentry.couples.map(c => c.with) : bend.slice(0, 2).map(r => r.name);
+    call.singers = reentry ? [...reentry.singers] : top2;
     call.bottom = [];
     /* THE TOP TWO ARE THE CALL, AND NEITHER OF THEM HAS WON ANYTHING YET.
        They used to be in no group at all — `win` and `high` were emptied and
@@ -1010,7 +1037,7 @@ export function runDragWeek(state, cfg, ctx) {
        elimination — `atRisk` is the show's named-but-safe group, which is not
        what these queens are. Nobody among them sings: `call.singers` is the
        top two, and every reader of the song takes it from there. */
-    const rest = bend.slice(2).map(r => r.name).filter(n => !top2.includes(n));
+    const rest = bend.map(r => r.name).filter(n => !top2.includes(n));
     if (legacy) {
       /* IMMUNITY IS NOT OPTIONAL ON THIS NIGHT EITHER. `callWeek` honours
          `immune` and this block rebuilds the bottom after it, so a queen who
@@ -1155,7 +1182,6 @@ export function runDragWeek(state, cfg, ctx) {
        bottom, so the campaign is what Untucked is about. The scenes are held
        here and spliced in after the room's arrival beats, once the night is
        sorted. */
-    const timesLabel = t => (t === 1 ? 'once' : t === 2 ? 'twice' : t ? `${t} times` : '');
     const winsLabel = q => {
       const w = (state.record?.[q] || []).filter(r => r === 'WIN').length;
       return w === 1 ? 'a win' : `${w} wins`;
@@ -1322,11 +1348,24 @@ export function runDragWeek(state, cfg, ctx) {
       saveLine(SAVE_BEATS.saveLeft, { c, d, h: holderRes.picks.map(x => x.holder).join(' and ') }));
   }
 
+  /* ── A TIE CAN STILL PUT THREE UP FOR ELIMINATION, AND RARELY SHOULD ──
+     On a legacy night nobody in that bottom sings — the top two do — so the
+     triple is not a third queen joining a song; it is the panel unable to
+     split the bottom, naming three, and the lipstick choosing from three.
+     That is a real night and it stays.
+     What was wrong was how OFTEN. The gap is measured against `pool`, which
+     on this night is the single queen called LOW — the queen immediately
+     above the bottom, so the two are adjacent in the ranking and the 1.25
+     window caught them nearly every week. Measured on one seed: episodes 3,
+     4, 6, 7 and 8 all widened, which is not a tie, it is the default. A
+     legacy night needs a genuine dead heat: 0.2 of a rank, which measures at
+     about one night in fourteen with the box ticked, against one in two. */
+  const tieWindow = legacy ? 0.2 : 1.25;
   if (cfg.tripleOnTie && !holderRes && pool.length && call.bottom.length === 2 && living.length > 4) {
     const viewOf = n => (ranking.find(r => r.name === n) || {}).meanRank ?? 0;
     const lowest = pool[pool.length - 1];
     const highestBottom = call.bottom[0];
-    if (Math.abs(viewOf(lowest) - viewOf(highestBottom)) < 1.25) {
+    if (Math.abs(viewOf(lowest) - viewOf(highestBottom)) < tieWindow) {
       call.atRisk = call.atRisk.filter(n => n !== lowest);
       call.low = call.low.filter(n => n !== lowest);
       call.bottom = [lowest, ...call.bottom];
@@ -1358,6 +1397,9 @@ export function runDragWeek(state, cfg, ctx) {
   if (!M.tournamentExit) {
     say('critiques', 'critiques', {
       call: callAtCall || call, split, tripled, critiques, twist: cfg.critiqueTwist || null,
+      /* WHO SHE STOOD THERE WITH. The panel is judging a couple tonight, so
+         every screen that prints a name on this night prints the pair. */
+      ...(revenge ? { pairedWith: Object.fromEntries(revenge.pairs.map(x => [x.with, x.back])) } : {}),
       ...(cfg.rateAQueen ? { rateAQueen: true } : {}),
     });
   }
@@ -1426,7 +1468,12 @@ export function runDragWeek(state, cfg, ctx) {
        function), so the room knows exactly which two queens might be holding
        the lipstick in twenty minutes. `call.high` is both of them at this
        point — the song has not separated them yet. */
-    const likelyTop = [...call.high, ...call.win].filter(Boolean).slice(0, 2);
+    /* ── AND ON A REVENGE NIGHT IT IS NOT THEM ──────────────────────
+       The lipstick goes to whichever of the two RETURNING queens wins the
+       song, so the bottom spends Untucked lobbying queens it already sent
+       home — which is the whole reason the night is called what it is. */
+    const likelyTop = (revengeNight && reentry ? [...reentry.singers]
+      : [...call.high, ...call.win].filter(Boolean)).slice(0, 2);
     const ledger = (state.power ||= { uses: [], debts: [], grudges: [], promises: [], hopes: [] });
     const targets = campaignTargets({
       saves: ledger, pool: call.bottom, living, bond: ctx.bond, likelyTop,
@@ -1458,7 +1505,11 @@ export function runDragWeek(state, cfg, ctx) {
            was saying "I have 1 wins on my record". */
         const wcount = (state.record?.[ev.c || ev.a] || []).filter(r => r === 'WIN').length;
         const vars = { a: ev.a, b: ev.b, c: ev.c, w: ev.w, y: ev.y,
-          n: wcount === 1 ? 'a win' : `${wcount} wins`, t: '' };
+          /* AND THE COUNT, NOT AN EMPTY STRING. This was `t: ''`, so a queen
+             rebutted with "You have been saved . Sit this one out." — the
+             legacy ledger counts a spared queen exactly like the Beaver's
+             does, and the line has a number to say. */
+          n: wcount === 1 ? 'a win' : `${wcount} wins`, t: timesLabel(ev.t) };
         // This era's wording where it has its own; the save's pools otherwise.
         const pool2 = LEGACY_CAMPAIGN[ev.id] || SAVE_BEATS.campaign[ev.id];
         campaignScenes.push({
@@ -1487,54 +1538,29 @@ export function runDragWeek(state, cfg, ctx) {
 
   if (!M.tournamentExit) {
     say('untucked', 'untucked', { safe: call.safe });
-    say('results', 'results', { call });
+    say('results', 'results', {
+      call,
+      ...(revenge ? { pairedWith: Object.fromEntries(revenge.pairs.map(x => [x.with, x.back])) } : {}),
+    });
   }
 
   /* ── REVENGE OF THE QUEENS: THE SONG FOR A SEASON BACK ──────────────
-     The panel names the top two COUPLES, and the returning half of each of
-     them lip syncs — against the other, for her place in the competition.
-     AS2 kept them both, which the engine allows on the same terms as every
-     other double on this show: it has to be earned on the stage.
-
-     After the call and before the bottom two sing, which is the order the
-     night ran in: the room finds out who is back BEFORE it finds out who is
-     going home. */
-  if (revenge && revenge.pairs.length >= 2) {
-    const reSong = pick(rng, SONGS);
-    const order = bend.map(r => r.name);
-    const re = revengeReentry({
-      pairs: revenge.pairs, rank: order, players: Object.fromEntries(
-        [...living, ...revenge.field].map(n => [n, P(n)])),
-      /* ITS OWN SONG. The bottom two sing later in the night to a different
-         record, which is what the show does — and `song` is not declared
-         until the lip sync section below anyway. */
-      song: reSong, lipsyncRecord: state.lipsyncRecord, rng,
+     The panel has named the top two COUPLES; the returning half of each of
+     them is about to sing against the other, for her place in the
+     competition and for the lipstick that ends somebody's night.
+     Announced here, decided below: this is the night's one lip sync, so the
+     outcome belongs to the lip sync section and not to a second scoring pass
+     that could disagree with it. */
+  if (revengeNight && reentry) {
+    const rv = (kind, who, pool, vars) => scenes.push({
+      step: 'revenge-song', kind: `revenge:${kind}`,
+      data: { players: who, revenge: true }, text: revengeLine(pool, vars, rng),
     });
-    if (re) {
-      const rv = (kind, who, pool, vars) => scenes.push({
-        step: 'revenge-song', kind: `revenge:${kind}`,
-        data: { players: who, revenge: true }, text: revengeLine(pool, vars, rng),
-      });
-      const [c1, c2] = re.couples;
-      rv('couples', [c1.back, c1.with, c2.back, c2.with], REVENGE_BEATS.couples,
-        { a: c1.back, b: c1.with, c: c2.back, d: c2.with });
-      rv('song', re.singers, REVENGE_BEATS.song, { a: re.singers[0], c: re.singers[1] });
-      revenge.song = reSong?.title || null;
-      for (const n of re.winners) {
-        state.lipsyncRecord[n] = state.lipsyncRecord[n] || [];
-        state.lipsyncRecord[n].push('W');
-      }
-      const lost = re.singers.filter(n => !re.winners.includes(n));
-      for (const n of lost) state.lipsyncRecord[n]?.push('L');
-      rv(re.both ? 'both' : 'win', re.winners, re.both ? REVENGE_BEATS.both : REVENGE_BEATS.win,
-        { a: re.winners[0], c: re.winners[1] || '' });
-      for (const n of lost) rv('lost', [n], REVENGE_BEATS.lost, { a: n });
-      /* SHE IS BACK IN IT, and her chart row simply continues. `pendingReturn`
-         is what puts her through the werk room door next week, the same as
-         every other return (js/dr/season.js). */
-      revenge.reentry = re;
-      state.revengeBack = [...re.winners];
-    }
+    const [c1, c2] = reentry.couples;
+    rv('couples', [c1.back, c1.with, c2.back, c2.with], REVENGE_BEATS.couples,
+      { a: c1.back, b: c1.with, c: c2.back, d: c2.with });
+    rv('song', reentry.singers, REVENGE_BEATS.song,
+      { a: reentry.singers[0], c: reentry.singers[1] });
   }
 
   // 15. The lip sync.
@@ -1723,12 +1749,38 @@ export function runDragWeek(state, cfg, ctx) {
         win: [...call.win], high: [...call.high], low: [...call.low],
         atRisk: [...call.atRisk], bottom: [...call.bottom], safe: [...call.safe],
       };
-      call.win = [lc.winner];
+      /* ── AND ON A REVENGE NIGHT THE SONG AWARDS SOMEBODY ELSE'S WEEK ──
+         The two queens who sang are not in the competition: they were singing
+         for a place in it. The WIN belongs to the competing half of the
+         winning couple, who is the queen the panel ranked first once her
+         partner's night was counted — and the other couple's competing half
+         stays HIGH, which is what she was called. */
+      const weekWinner = reentry ? (reentry.mate[lc.winner] || lc.winner) : lc.winner;
+      call.win = [weekWinner];
       /* The queen the panel called HIGH is still HIGH — she was in the top
          and she never sang. Only the two singers move. */
-      call.high = [...call.high.filter(n => !call.singers.includes(n)),
-        ...[a, b].filter(n => n !== lc.winner)];
-      state.lastWinner = lc.winner;
+      call.high = [...call.high.filter(n => n !== weekWinner && !call.singers.includes(n)),
+        ...(reentry ? [] : [a, b].filter(n => n !== lc.winner))];
+      state.lastWinner = weekWinner;
+      if (reentry) {
+        const rv = (kind, who, pool, vars) => scenes.push({
+          step: 'legacy-choice', kind: `revenge:${kind}`,
+          data: { players: who, revenge: true }, text: revengeLine(pool, vars, rng),
+        });
+        reentry.winner = lc.winner;
+        reentry.winners = [lc.winner];
+        reentry.weekWinner = weekWinner;
+        reentry.lost = reentry.singers.filter(n => n !== lc.winner);
+        revenge.song = song.title;
+        rv('win', [lc.winner], REVENGE_BEATS.win, { a: lc.winner, c: weekWinner });
+        rv('couple', [weekWinner, lc.winner], REVENGE_BEATS.couple, { a: lc.winner, c: weekWinner });
+        rv('power', [lc.winner], REVENGE_BEATS.power, { a: lc.winner, c: weekWinner });
+        for (const n of reentry.lost) rv('lost', [n], REVENGE_BEATS.lost, { a: n });
+        /* SHE IS BACK IN IT, and her chart row simply continues.
+           `pendingReturn` is what puts her through the werk room door next
+           week, the same as every other return (js/dr/season.js). */
+        state.revengeBack = [lc.winner];
+      }
     }
 
     /* AND ON A LEGACY NIGHT SHE SPENDS IT. The queen who won the song chooses
@@ -2347,7 +2399,10 @@ export function runDragWeek(state, cfg, ctx) {
         returners: revenge.returners, pairs: revenge.pairs,
         ...(revenge.reentry ? {
           couples: revenge.reentry.couples, singers: revenge.reentry.singers,
-          winners: revenge.reentry.winners, both: revenge.reentry.both,
+          winners: revenge.reentry.winners || [],
+          winner: revenge.reentry.winner || null,
+          weekWinner: revenge.reentry.weekWinner || null,
+          lost: revenge.reentry.lost || [],
         } : {}),
       } } : {}),
       // The circles as they stood tonight, for the sidebar.

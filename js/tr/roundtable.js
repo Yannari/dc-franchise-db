@@ -21,6 +21,8 @@ import { pStats, pronouns } from '../players.js';
 import { getBond, addBond } from '../bonds.js';
 import { resolveVotes } from '../voting.js';
 import { learn, believes } from '../knowledge.js';
+import { banishOrMurderTonight, runTheDeal, settleTheStake, refusalEvidence }
+  from './banish-or-murder.js';
 import { knowersOf } from './knowledge-flow.js';
 import { alignmentAt } from './roles.js';
 import { alignmentFactId, suspicionBoard, chooseBanishmentVote, recordRound, revealCascade,
@@ -1100,6 +1102,29 @@ export function runRoundTable(ep, rng = Math.random, { reveal = true } = {}) {
   // later round, a murder, a castle scene -- can read a stale argument.
   if (gs.tr) gs.tr._tableAccusations = accusations;
 
+  // ── THE DEAL, IF TONIGHT IS THE DINNER ──────────────────────────────
+  //
+  // AFTER THE DEBATE AND BEFORE THE CHALK, which is both where the show puts
+  // it and the only place it can work: the pact's whole decision is "is the
+  // room about to take one of us", and that is a question about the argument
+  // which has only just finished. Offered before it, every Traitor would be
+  // guessing, and the twist would be a coin.
+  const deal = banishOrMurderTonight(ep) ? runTheDeal(ep, rng) : null;
+  if (deal && !deal.unanimous) {
+    // REFUSED. No banishment is held — the format's rule, and a night this
+    // engine had never produced. Nobody leaves this room; the pact works
+    // tonight instead, and the room has just watched some of its own vote for
+    // that to happen.
+    const round = { ep, banished: null, banishedWasTraitor: null, murdered: null,
+      ballots: [], revotes: [], accusations, betrayals: [],
+      speeches: speechesFrom(accusations, ep), clashes: tableClashes,
+      banishOrMurder: deal };
+    if (gs.tr) gs.tr._tableAccusations = null;
+    recordRound(round);
+    refusalEvidence(deal, ep, rng);
+    return round;
+  }
+
   const weights = daggerWeights(ep, living);
   const daggerHolder = weights ? Object.keys(weights)[0] : null;
 
@@ -1163,6 +1188,13 @@ export function runRoundTable(ep, rng = Math.random, { reveal = true } = {}) {
     // open threads, so a row that started in a corridor on day three finishes
     // here, where it costs a vote.
     clashes: tableClashes };
+  // THE DEAL WAS TAKEN, so the banishment has money on it — and the money is
+  // settled here rather than by the caller, because the alignment it turns on
+  // (`wasTraitor`) is decided on this line and nowhere else.
+  if (deal) {
+    round.banishOrMurder = deal;
+    round.stake = settleTheStake(deal, banished, wasTraitor);
+  }
   if (daggerHolder) {
     // Recorded on the round, because the room watched it happen: the draw is
     // public even though the win was not. `votes` is read off the exported

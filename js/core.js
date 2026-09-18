@@ -956,6 +956,15 @@ export const TWIST_CATALOG = [
   // and coexists with whatever the Traitors do once the castle is asleep. So
   // it carries no `incompatible` list at all — pin an Armoury and a Double on
   // the same episode and both run, which is a real and very bad day.
+  // ── THE DEAL AT THE DINNER ─────────────────────────────────────────
+  //
+  // NOT A MURDER SHAPE, so it is compatible with every one of them: this is
+  // the TABLE's twist, and the night it produces is whatever the night was
+  // going to be. It is its own engine type because it is the only twist that
+  // can end an episode with nobody banished.
+  { id:'tr-banish-or-murder', emoji:'⚖️', name:'Banish or Murder', format:'traitors',
+    category:'twist', phase:'any', engineType:'tr-banish-or-murder',
+    desc:'One night, after the argument and before the chalk, the castle is offered a deal: banish somebody with money on it — the pot GAINS if they are a Traitor and loses the same if they are not — or let the Traitors murder as normal. The vote is public and it has to be unanimous. One hand up for the murder and no banishment is held at all, and everybody in that room saw whose hand it was. Runs once a season, on a night with 6 to 13 still standing.' },
   { id:'tr-armoury', emoji:'🛡️', name:'The Armoury', format:'traitors',
     category:'power', phase:'any', engineType:'tr-armoury',
     desc:'The players who did best in today’s mission earn a visit to the Armoury. They go in one at a time and each opens a single box; one of them hides a shield, which blocks tonight’s murder and nothing else. The castle sees exactly WHO went in and never learns who came out with it — so the Traitors have to decide whether anybody in that group is worth the risk of wasting the night on a wall. Set the group size and how many shields are hidden in Castle Options.' },

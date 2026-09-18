@@ -598,6 +598,17 @@ export const STAGE_BEATS = [
       "\"{a}.\" A pause. \"You are one of two queens who will lip sync tonight, and the winner will hold the power.\" {a} takes a breath and holds it.",
       "\"You are in the top two tonight, {a}.\" The host lets it land. {a} presses her lips together. Behind her, a queen just heard that sentence and understood her fate is about to belong to somebody else.",
       "\"{a}, top two.\" The host says it simply because the night is already heavy enough. {a} receives it standing straight and still — holding everything in place until the music starts.",
+    ]),
+    /* REVENGE OF THE QUEENS: she is one half of a top COUPLE, and the half
+       that does not sing. Whether tonight is a win for her is about to be
+       decided by the queen she was handed at the top of the night. */
+    tier('place', 'One half of a top couple — and the half who does not sing.', [
+      '"{a} — you and your partner were one of the top two couples tonight." The host lets that land. "Which means the rest of it is out of your hands. She sings, and if she takes it, the win is yours."',
+      '"Top two couples of the night, and {a} is in one of them." The host says it warmly and {a} hears the shape of it: she has done everything she can do, and somebody who was eliminated three weeks ago is about to decide whether it was enough.',
+      '"You were exceptional tonight, {a}, and so was she." The host nods towards the stage. "The two of you are one of the top couples. Now go and watch her win it for you."',
+      '"{a}, your couple is in the top two." A beat. "You do not sing. She does. I would find somewhere to hold on to if I were you."',
+      '"One of the best pairs on that stage tonight belonged to {a}." The host smiles at her. "And the most nerve-wracking three minutes of her season start in about ninety seconds, and she does not get to do a thing about them."',
+      '"{a} — top couple." The host moves on and {a} stays exactly where she is, standing very still, watching a queen this season already eliminated walk out to decide her week.',
     ])],
   },
   {
@@ -704,6 +715,19 @@ export const STAGE_BEATS = [
       "\"You earned the right to be here by being the best tonight. Now earn the right to decide.\" He pauses. \"The song is {s}. Lip sync for your LEGACY, and don\'t fuck it up.\" Both queens set their feet.",
       "\"This is not a lip sync for the week. This is a lip sync for the POWER.\" He lets the distinction land on both queens. \"The song is {s}. The winner chooses who leaves, and that choice follows you. Good luck.\" The track rises.",
       "\"Ladies, the winner of this song walks off this stage with the power to end somebody else\'s run.\" He holds the room. \"The song is {s}. Lip sync for your LEGACY.\" The music comes up and both queens take their marks.",
+    ]),
+    /* REVENGE OF THE QUEENS. The two queens on that stage are not in the
+       competition: the season already sent them home, and they are singing
+       to get back in. Nobody in the room can lose this song and neither of
+       the singers can either — the loser simply goes back out the door she
+       came in through. */
+    tier('place', 'Two eliminated queens, singing for a place back in the competition.', [
+      'The host looks at the two queens on that stage and neither of them is in this competition. "You were both sent home. Tonight, one of you is going to sing her way back into this race — and she is going to do it in front of the queens who are still in it."',
+      '"This is not a lip sync for your life, ladies — your life in this competition is already over." The host lets that sit a second longer than is comfortable. "This is a lip sync for your PLACE. Win it, and you are back."',
+      '"Two queens went home. One queen is coming back." They take their marks and the room behind them does the arithmetic out loud. Whoever wins this is somebody every one of them will have to beat again.',
+      '"The winner of this lip sync returns to the competition," the host says, "and she returns holding the power to eliminate." The sentence lands in two halves and the second half is the one that empties the room of air.',
+      '"You have both already lost once." The host says it without cruelty, which makes it worse. "Only one of you gets to lose twice."',
+      '"For your place." The host steps back. Neither of them has anything left to protect and neither of them has anything left to lose, and the queens still in the competition are about to find out what that looks like on a stage.',
     ]),
     ],
   },
@@ -916,6 +940,18 @@ export const STAGE_BEATS = [
         "\"The power belongs to {a} tonight.\" The host says it directly and {a} receives it standing perfectly still, because the thing she has just been given is not a trophy — it is a burden dressed as a prize.",
         "\"{a}, condragulations. The lip sync is yours, and so is the decision.\" {a} exhales once through her nose and the exhale is the only tell — everything else on her face is already the face of somebody who knows what she has to do next.",
         "\"Condragulations, {a}. You have won the lip sync.\" The host holds the room quiet. \"You now hold the power to decide who leaves.\" {a} puts one hand on her hip and it looks like confidence until you notice the fingers are pressing into the bone.",
+      ]),
+      /* REVENGE OF THE QUEENS: the verdict is a RETURN. She was not in this
+         competition when the music started. The power she also won is said
+         a beat later, by the night's own scenes, so this line does one
+         thing: it puts her back in the race. */
+      tier('place', 'She took the song, and the song was her way back in.', [
+        '"{a}." The host holds the name long enough for the room to finish having its reaction. "Welcome back to the competition."',
+        '"The queen returning to this competition tonight is {a}." The sentence goes off like something dropped from a height, and {a} does not move, because moving would mean it was real.',
+        '"{a}, you came back here to fight for your place." The host smiles. "You have it. You are back in this race."',
+        '"You were eliminated from this competition." The host lets {a} sit in the past tense for a second. "You are not any more."',
+        '"{a} — pack your things back in." The room comes apart around her and {a} stands in the middle of it looking like somebody who has been handed her own season back.',
+        'The host does not draw it out. "{a}. You are back." Four words, and a season that was over is not over.',
       ]),
     ],
   },
@@ -1148,6 +1184,16 @@ export const STAGE_BEATS = [
         '"Tonight, the winner of the lip sync will choose which queen in the bottom goes home." The host says it evenly. {a} and {b} are performing for the right to make a decision that nobody in this room is going to forget.',
         '"For your legacy." The host pauses long enough for the meaning to settle. {a} and {b} are the best, the bottom queens are the worst, and the song connects those two facts with a power nobody asked for and somebody is about to win.',
         '"The winner of this lip sync will decide who sashays away tonight." {a} and {b} take their marks knowing that this song is not about survival and it is not exactly about winning — it is about earning the authority to end somebody else\'s run, and that authority starts the moment the music does.',
+      ]),
+      /* REVENGE OF THE QUEENS, where {a} and {b} are the RETURNING halves of
+         the two top couples and neither of them is in the competition yet. */
+      tier('place', 'The top two couples; their returning halves sing to come back.', [
+        '"The top two couples of the night." The host turns to the two queens who are not in this competition. "{a}, {b} — you will lip sync for your PLACE in this competition, and the winner takes the power to eliminate with her."',
+        '"Your partners are safe. You two are not even in this yet." The host looks at {a} and then at {b}. "One of you is about to be. Sing for it."',
+        '"{a}, {b} — the two of you were sent home, and the two of you just carried your couples to the top of this challenge." The host lets it hang. "Now one of you is going to sing her way back in."',
+        '"This song does not decide who goes home, ladies. It decides who COMES BACK." {a} and {b} take their marks and the queens in the bottom watch them go, because whichever of these two wins is the one holding their night in her hands.',
+        '"The winner of this lip sync rejoins this competition — and she chooses which of the queens in the bottom does not." {a} and {b} hear both halves of that and only one of them is going to get to act on it.',
+        '"For your place." The host says it to {a} and {b} and means the whole thing: the season they lost, the competition they are standing outside of, and the queen in the bottom whose name one of them is about to write.',
       ]),
     ],
   },

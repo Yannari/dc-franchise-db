@@ -507,7 +507,10 @@ const CHAL_CSS = `
   padding:2px 8px;margin-left:6px;border:1px solid currentColor}
 .dr-t-warn{color:#FF294B}.dr-t-good{color:#3BE08A}.dr-t-note{color:#FFC83D}
 /* The returning queen she performed this with, on a Revenge night. */
-.dr-withq{margin-left:9px;font-size:14px;color:#FFC83D;letter-spacing:.02em}
+.dr-withq{display:inline-flex;align-items:center;gap:6px;margin-left:9px;font-size:14px;
+  color:#FFC83D;letter-spacing:.02em;vertical-align:middle}
+.dr-withq i{font-size:8px;letter-spacing:.16em;text-transform:uppercase;font-style:normal;
+  padding:2px 6px;border:1px solid rgba(255,41,75,.55);color:#FF7BA0}
 
 /* The draft board: what is still on it, and who took what. */
 /* THE BOARD IS WHO TOOK WHAT. The dr-taken class used to strike the chip
@@ -842,7 +845,7 @@ function perfCard(name, perf, i, suffix, ep, id, mate = null) {
        of them together. Naming only one of them beside a score the other
        half earned is the "an average that hides the event it should show"
        failure in §11.5, on the busiest screen of the night. */
-    mate ? `<span class="dr-withq">&amp; ${esc(mate)}</span>` : ''}${
+    mate ? `<span class="dr-withq">&amp; ${esc(mate)}<i>eliminated</i></span>` : ''}${
     perf?.moment ? '<span class="dr-tag dr-t-note">moment</span>' : ''}</h3>${body}</div>
       <span class="dr-score dr-disp ${scoreClass(perf?.perf)}">${n1(perf?.perf)}</span>
     </div></div>`;

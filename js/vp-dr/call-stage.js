@@ -36,6 +36,8 @@ const spread = (n, seed) => {
 
 const STAKES = {
   life: 'Lip sync for your life', win: 'Lip sync for the win', legacy: 'Lip sync for your legacy',
+  // Revenge of the Queens: the two singing are not in the competition yet.
+  place: 'Lip sync for her place',
 };
 const MOOD = { WIN: 'win', HIGH: 'high', SAFE: 'safe', LOW: 'low', BTM: 'low', BTM2: 'btm' };
 

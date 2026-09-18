@@ -346,6 +346,8 @@ export const STAGE_CSS = `
   background:rgba(255,200,61,.08)}
 .dr-couple i{font-size:8.5px;letter-spacing:.2em;color:#C9A6BC;font-style:normal}
 .dr-couple b{font-size:13px;color:#FFC83D}
+.dr-couple u{font-size:8px;letter-spacing:.16em;text-decoration:none;
+  padding:2px 6px;border:1px solid rgba(255,41,75,.55);color:#FF7BA0}
 .dr-couple img{border-radius:50%;border:1px solid rgba(255,200,61,.55)}
 
 /* Her reaction, under the panel's words. */
@@ -743,7 +745,8 @@ export function rpBuildCritiques(row) {
         ${pairedWith[name] ? `<span class="dr-couple">
           <i class="dr-disp">with</i>
           ${_portrait(pairedWith[name], ep, { size: 34 })}
-          <b>${esc(pairedWith[name])}</b></span>` : ''}
+          <b>${esc(pairedWith[name])}</b>
+          <u class="dr-disp">eliminated</u></span>` : ''}
         ${disagreed ? '<span class="dr-split dr-disp">the panel is split</span>' : ''}
       </div>
       ${cards}

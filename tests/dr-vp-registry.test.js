@@ -35,7 +35,7 @@ describe('the registry', () => {
      ranged so that adding a screen is a decision somebody made on purpose. */
   /* 38: the season's save added three (intro, hold, luck) — js/vp-dr/save.js.
      Its campaign lives on the Untucked screen. */
-  const COUNT = 41;
+  const COUNT = 40;
   it('is the forty-one screens, in the running order', () => {
     expect(DRAG_SCREENS.length).toBe(COUNT);
     const ids = DRAG_SCREENS.map(s => s.id);
@@ -46,11 +46,13 @@ describe('the registry', () => {
     expect(ids).toContain('dr-set');
     expect(ids).toContain('dr-rehearsal');
     // The save's two stage screens sit either side of the song.
-    /* The call, then the song two returning queens sing for a place back
-       (All Stars' Revenge night), then the save. Same order as SCENE_STEPS in
-       js/dr/week.js -- the screens follow the night, not the other way. */
-    expect(ids.indexOf('dr-revenge-song')).toBe(ids.indexOf('dr-results') + 1);
-    expect(ids.indexOf('dr-save-hold')).toBe(ids.indexOf('dr-revenge-song') + 1);
+    /* The call, then the save. A Revenge night has no screen of its own:
+       the song two returning queens sing for a place back IS the night's lip
+       sync, so it draws on the lip sync screen with the rest of it. */
+    expect(ids).not.toContain('dr-revenge-song');
+    expect(ids.indexOf('dr-save-hold')).toBe(ids.indexOf('dr-results') + 1);
+    const src = readFileSync('js/vp-dr/screens.js', 'utf8');
+    expect(src).toContain("opensStep: ['revenge-song', 'lipsync', 'revenge-back']");
     /* The lipstick ceremony sits directly after the song: she wins it, then
        she spends it. All Stars only, but the screen list is one list. */
     expect(ids.indexOf('dr-legacy')).toBe(ids.indexOf('dr-lipsync') + 1);

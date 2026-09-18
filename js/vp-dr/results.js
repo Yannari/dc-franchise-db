@@ -58,8 +58,12 @@ export const RESULTS_CSS = `
   font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#C9A6BC;vertical-align:middle}
 /* And the queen she was paired with on a Revenge night — the call names a
    couple, so the row does. */
-.dr-callpair{display:inline-block;margin-left:9px;font-size:13px;color:#FFC83D;
-  vertical-align:middle}
+.dr-callpair{display:inline-flex;align-items:center;gap:6px;margin-left:9px;font-size:13px;
+  color:#FFC83D;vertical-align:middle}
+.dr-callpair i{font-size:8px;letter-spacing:.16em;text-transform:uppercase;font-style:normal;
+  padding:2px 6px;border:1px solid rgba(255,41,75,.55);color:#FF7BA0}
+.dr-topcouple{display:inline-block;margin-left:9px;font-size:9px;letter-spacing:.16em;
+  padding:2px 8px;border:1px solid #3BE08A;color:#3BE08A;vertical-align:middle}
 .dr-callrow{display:grid;grid-template-columns:auto 1fr auto auto;gap:14px;align-items:center;
   padding:13px 16px 13px 20px}
 /* .dr-panel FIRST: the shell's accent class sets the same left border, and a
@@ -307,6 +311,14 @@ export const RESULTS_CSS = `
    NO BACKTICKS IN HERE — this comment lives inside a template literal, and
    quoting a class name the way the rest of the file does ends the string. */
 .dr-crowned .dr-farelabel{color:#FFD76B}
+
+/* ── THE REVENGE NIGHT'S BANNER ── the one thing this screen cannot leave
+   the reader to infer: neither queen on that stage is in the competition. */
+.dr-placebar{margin:0 0 14px;padding:12px 18px;border-radius:16px;
+  border:1px solid rgba(59,224,138,.45);background:rgba(59,224,138,.08)}
+.dr-placek{display:block;font-size:11px;letter-spacing:.28em;text-transform:uppercase;
+  color:#3BE08A;margin-bottom:6px}
+.dr-placebar p{margin:0;font-size:13.5px;line-height:1.5;color:#d8e8de}
 .dr-crowned .dr-farebox::before{animation:drBloom 1.1s ease-out .35s both}
 .dr-crowned .dr-farepor .dr-por,.dr-crowned .dr-farepor .dr-initials{
   border-color:rgba(255,215,107,.9);box-shadow:0 0 58px -4px rgba(255,215,107,.85)}
@@ -521,6 +533,10 @@ export function rpBuildResults(row) {
      in the top. */
   const pairedWith = Object.fromEntries(((row?.dr?.revenge?.pairs) || [])
     .map(x => [x.with, x.back]));
+  /* AND WHICH TWO COUPLES THE PANEL PUT FIRST. Three queens can stand in
+     HIGH on this night and only two of them are in a top couple, so the
+     stamp alone does not say who the song is about. */
+  const topCouple = new Set(((row?.dr?.revenge?.couples) || []).map(c => c.with));
   const list = [];
   let holdDrawn = !hold;
   for (const [result, name] of named) {
@@ -558,7 +574,8 @@ export function rpBuildResults(row) {
         ${_portrait(s.n, ep, { size: 52, station: true })}
         <div><h3 class="dr-disp">${esc(s.n)}${teamOf(s.n)
     ? `<span class="dr-callteam">${esc(teamOf(s.n))}</span>` : ''}${pairedWith[s.n]
-    ? `<span class="dr-callpair">&amp; ${esc(pairedWith[s.n])}</span>` : ''}</h3>
+    ? `<span class="dr-callpair">&amp; ${esc(pairedWith[s.n])}<i>eliminated</i></span>` : ''}${
+  topCouple.has(s.n) ? '<span class="dr-topcouple dr-disp">top couple</span>' : ''}</h3>
           ${b ? `<span style="font-size:11px;color:#C9A6BC">panel ${b.panelRank} → ${b.finalRank}</span>` : ''}
           ${s.said ? `<p class="dr-said">${esc(s.said)}</p>` : ''}
         </div>
@@ -620,7 +637,18 @@ export function rpBuildLipSync(row) {
      yet — the save screen after this one decides (js/dr/saves.js). */
   const goesHome = ls.call === 'double-shantay' || (ls.saveTries || []).length
     ? null : ls.loser;
-  const beats = (row.dr.scenes || []).filter(s => s.step === 'lipsync' && s.text);
+  /* ── THE WHOLE SONG, NOT A THIRD OF IT ──
+     A Revenge night runs across three steps — the couples are called, they
+     sing, one of them is back — and they used to be two screens showing the
+     same two queens on the same stage. One song, one screen. */
+  const SONG_STEPS = ['revenge-song', 'lipsync', 'revenge-back'];
+  const beats = (row.dr.scenes || []).filter(s => SONG_STEPS.includes(s.step) && s.text);
+  /* WHO IS NOT IN THIS COMPETITION. On a Revenge night both singers were
+     eliminated weeks ago and are singing to come back, which is the one fact
+     this screen cannot leave the reader to infer from two identical
+     portraits. */
+  const back = new Set((row?.dr?.revenge?.returners) || []);
+  const forPlace = back.has(a) && back.has(b);
 
   /* ══ THE SCOREBOARD ══ lives on the concert stage now — see
      js/vp-dr/lipsync-stage.js, which builds it from `lipsync.beats` and never
@@ -704,9 +732,15 @@ export function rpBuildLipSync(row) {
   }
 
   return `<style>${RESULTS_CSS}${LS_CSS}</style>${_shell(
-    `<div class="dr-lsroom">${stage.html}<div class="lsx-cards">${steps}</div></div>`, ep, {
-      phase: 'lipsync', title: 'Lip Sync For Your Life',
-      subtitle: ls.call === 'double-shantay' ? 'both of them stay' : 'two queens, one song',
+    `<div class="dr-lsroom">${forPlace ? `<div class="dr-placebar">
+      <span class="dr-placek dr-disp">Lip sync for her place</span>
+      <p>Neither of these queens is in the competition. Both were sent home,
+      both came back tonight, and the winner of this song rejoins the race
+      holding the power to eliminate.</p></div>` : ''}${stage.html}<div class="lsx-cards">${steps}</div></div>`, ep, {
+      phase: 'lipsync',
+      title: forPlace ? 'Lip Sync For Her Place' : 'Lip Sync For Your Life',
+      subtitle: forPlace ? 'two eliminated queens, one way back in'
+        : ls.call === 'double-shantay' ? 'both of them stay' : 'two queens, one song',
     })}${_controls('lipsync', Math.max(1, beats.length), ep.num)}`;
 }
 

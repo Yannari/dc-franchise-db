@@ -194,6 +194,10 @@ export function renderStageBeats({
      The same two queens on the same stage means something completely
      different on a night nobody can lose. */
   stakes = 'life', rateAQueen = false,
+  /* THE COMPETING HALVES OF THE TOP TWO COUPLES, on a Revenge night. They
+     are HIGH and they are not singing, and those two facts together are a
+     third thing the ordinary `high` pool has no word for. */
+  topCouple = [],
   /* A beaver or baguette save is still to come: the call names the bottom
      three and must not say which two will sing. */
   pendingSave = false,
@@ -686,7 +690,7 @@ export function renderStageBeats({
          The tier is a fact about the QUEEN, so it is asked about the queen. */
       const singing = (lipsync?.queens || call.singers || []).includes(n);
       const tier = doubleWin ? 'double-win'
-        : (g === 'HIGH' && tierId !== 'high' && !singing) ? 'high'
+        : (g === 'HIGH' && tierId !== 'high' && !singing && !topCouple.includes(n)) ? 'high'
           : tierId;
       emit(beatById(beatId), tier, [n],
         { order: shape.id, ...(doubleWin ? { doubleWin: true } : {}) });
@@ -814,7 +818,15 @@ export function renderStageBeats({
        which is why these are their own beats and not another tier of
        `lipsync-shantay` — nobody is saved here, so nothing may say stay. */
     const prize = lipsync.call === 'for-the-win' || lipsync.call === 'legacy';
-    const prizeStakes = lipsync.call === 'legacy' ? 'legacy' : 'win';
+    /* ── AND ON A REVENGE NIGHT THE PRIZE IS A SEASON ──────────────────
+       This read the lip sync's own `call`, which is 'legacy' on every All
+       Stars night including the one where the two queens singing are not in
+       the competition at all — so the host told a queen she had "taken the
+       power to send one of the bottom queens home" and never told her, or
+       the room, that she was back in the race. The night's own `stakes` is
+       the question these lines are tiered on everywhere else. */
+    const prizeStakes = stakes === 'place' ? 'place'
+      : lipsync.call === 'legacy' ? 'legacy' : 'win';
     const prizeWritten = prize && !!(tierLines('lipsync-win-name', prizeStakes)
       || tierLines('lipsync-win-reaction', 'scrapper'));
     const runnerUp = (lipsync.queens || []).find(n => n !== lipsync.winner) || null;

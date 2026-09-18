@@ -853,3 +853,63 @@ describe('the panel judges the couple', () => {
     expect(pairJudging({ ranking, pairs: [] })).toBe(ranking);
   });
 });
+
+describe('one song, one screen', () => {
+  const rev = seed => season(seed, { drAllStars: true, drAllStarsTwist: 'revenge' });
+  const night = res => res.rows.find(r => r.dr?.revenge);
+
+  it('draws the couples, the song and the return on the lip sync screen', async () => {
+    const { dragScreens } = await import('../js/vp-dr/screens.js');
+    const row = night(rev(300));
+    const ids = dragScreens(row).map(x => x.id);
+    // The night has ONE lip sync, so it has one lip sync screen.
+    expect(ids).not.toContain('dr-revenge-song');
+    const html = Object.fromEntries(dragScreens(row).map(x => [x.id, x.html]))['dr-lipsync'];
+    const kindsOn = (row.dr.scenes || [])
+      .filter(sc => ['revenge-song', 'lipsync', 'revenge-back'].includes(sc.step) && sc.text);
+    expect(kindsOn.some(sc => sc.kind === 'revenge:couples')).toBe(true);
+    expect(kindsOn.some(sc => sc.step === 'lipsync')).toBe(true);
+    expect(kindsOn.some(sc => sc.kind === 'revenge:power')).toBe(true);
+    /* The screen escapes quotes and dashes, so compare on letters alone.
+       Only the beats that are not reveal-gated: the verdict and the lines
+       around it are withheld until the reader clicks, which is the spoiler
+       rule this screen has always had. */
+    const plain = t => String(t).toLowerCase().replace(/[^a-z0-9]+/g, '');
+    const page = plain(html);
+    const shown = kindsOn.filter(sc => /^revenge:(couples|song|couple|lost)$/.test(sc.kind)
+      || /^stage:lipsync-(beat|hook|stunt)$/.test(sc.kind));
+    expect(shown.length).toBeGreaterThan(4);
+    for (const sc of shown) expect(page, sc.kind).toContain(plain(sc.text).slice(0, 40));
+    // And it says, in as many words, that these two are not in the competition.
+    expect(html).toContain('Lip Sync For Her Place');
+  });
+
+  it('never tells an eliminated queen she is the top two', () => {
+    for (const seed of [300, 42, 77]) {
+      const n = night(rev(seed));
+      const said = (n.dr.scenes || []).filter(sc => sc.step === 'results' && sc.text)
+        .map(sc => sc.text).join(' ');
+      // The stakes line is addressed to the two returners; it must not call
+      // them the top two, and it must not promise either of them a life.
+      const stakes = (n.dr.scenes || [])
+        .find(sc => sc.kind === 'stage:call-stakes')?.text || '';
+      expect(stakes, `seed ${seed}`).toBeTruthy();
+      expect(/lip sync for your life|you are the top two/i.test(stakes)).toBe(false);
+      // And the queens who ARE in the top are told it is their couple.
+      expect(/couple/i.test(said), `seed ${seed}`).toBe(true);
+    }
+  });
+
+  it('announces the return before it announces the power', () => {
+    for (const seed of [300, 42, 77]) {
+      const n = night(rev(seed));
+      const order = (n.dr.scenes || [])
+        .filter(sc => ['lipsync', 'revenge-back'].includes(sc.step) && sc.text);
+      const backAt = order.findIndex(sc => sc.kind === 'stage:lipsync-win-name');
+      const powerAt = order.findIndex(sc => sc.kind === 'revenge:power');
+      expect(backAt, `seed ${seed}`).toBeGreaterThan(-1);
+      expect(powerAt).toBeGreaterThan(backAt);
+      expect(order[backAt].text).toMatch(/back|returning|not any more|pack your things/i);
+    }
+  });
+});

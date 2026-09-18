@@ -291,19 +291,22 @@ const SECTIONS = [
   { id: 'dr-results', icon: icon('stamp'), label: 'The Call', suffix: 'results', phase: 'stage', accent: 'dr-a-score',
     opens: ['results'],
     opensStep: ['results'], badge: null, title: 'The Call', subtitle: 'who is safe' },
-  /* The song two returning queens sing for a place back, after the call. */
-  { id: 'dr-revenge-song', icon: icon('mic'), label: 'For Her Place', suffix: 'revengesong',
-    phase: 'lipsync', accent: 'dr-a-lip',
-    opens: ['revenge:couples', 'revenge:song', 'revenge:win', 'revenge:both', 'revenge:lost'],
-    opensStep: ['revenge-song'],
-    badge: { text: 'BACK IN?', color: '#3BE08A' },
-    title: 'Lip Sync For Her Place', subtitle: 'two queens, one way back in' },
   { id: 'dr-save-hold', icon: icon('ticket'), label: 'The Save', suffix: 'savehold', phase: 'stage',
     accent: 'dr-a-room', opens: [], opensStep: ['save-hold'],
     badge: { text: 'SAVED', color: '#ffed00' }, title: 'The Save', subtitle: 'one of three is saved' },
+  /* ── ONE SONG, ONE SCREEN ──────────────────────────────────────────
+     Revenge of the Queens used to get a screen of its own, `dr-revenge-song`,
+     which meant a night with ONE lip sync drew two lip sync screens: the
+     couples were called and the singers took their marks on one, and then
+     the same two queens sang the same song on the next. They are the same
+     moment of television and they are one screen. The three steps run in the
+     order the night ran: the couples are called (`revenge-song`), they sing
+     (`lipsync`), and one of them is back (`revenge-back`). */
   { id: 'dr-lipsync', icon: icon('mic'), label: 'Lip Sync', suffix: 'lipsync', phase: 'lipsync', accent: 'dr-a-lip',
-    opens: ['lipsync'],
-    opensStep: ['lipsync'], badge: { text: 'LIP SYNC', color: '#FF294B' },
+    opens: ['lipsync', 'revenge:couples', 'revenge:song', 'revenge:win',
+      'revenge:couple', 'revenge:power', 'revenge:lost'],
+    opensStep: ['revenge-song', 'lipsync', 'revenge-back'],
+    badge: { text: 'LIP SYNC', color: '#FF294B' },
     title: 'Lip Sync For Your Life', subtitle: 'two queens, one song' },
   /* ── THE LIPSTICK ── All Stars only, and between the song and the exit:
      the queen who won the song goes backstage with two tubes, comes back, and

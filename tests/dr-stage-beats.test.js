@@ -274,14 +274,22 @@ describe('A NIGHT NOBODY CAN LOSE IS NOT AN ELIMINATION', () => {
     expect(bad, 'a night nobody can lose was written in survival words').toEqual([]);
   });
 
-  /* THE LEGACY NIGHT'S ELIMINATION, which was narrated by nothing at all:
-     week.js emitted it through `say()`, whose scenes carry `text: ''`, and
-     no renderer in js/ matched the kind. The queen left the season without
-     the screen saying who sent her. It is a pair beat because it needs both
-     names in one sentence — she names her. */
-  it('the legacy choice is a pair beat that can name both queens', () => {
-    const beat = STAGE_BEATS.find(b => b.id === 'lipsync-legacy-choice');
-    expect(beat, 'lipsync-legacy-choice is missing').toBeTruthy();
-    expect(beat.scope).toBe('pair');
+  /* THE LEGACY NIGHT'S ELIMINATION IS NOT A STAGE BEAT, and it used to be.
+     `lipsync-legacy-choice` fired on the `lipsync` step, which is one screen
+     BEFORE the lipstick ceremony — so the host named the queen who was going
+     home while the reader was still watching the song. The eight lines moved
+     into LEGACY_BEATS.reveal, where the ceremony draws them at the moment the
+     tube is turned around. Nothing on the lip sync step may name her. */
+  it('never names the queen the lipstick is about to end', () => {
+    expect(STAGE_BEATS.find(b => b.id === 'lipsync-legacy-choice')).toBeFalsy();
+    const onSong = STAGE_BEATS.filter(b => b.step === 'lipsync');
+    for (const b of onSong) {
+      for (const t of b.tiers || []) {
+        for (const line of t.lines || []) {
+          expect(/chosen|eliminat(e|ed) tonight is/i.test(String(line)),
+            `${b.id}/${t.id} speaks the lipstick's verdict`).toBe(false);
+        }
+      }
+    }
   });
 });

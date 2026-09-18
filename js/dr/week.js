@@ -91,6 +91,12 @@ export const SCENE_STEPS = [
      performed. AFTER `lipsync`, because she wins the song before she spends
      it, and before `exit`. */
   'critiques', 'untucked', 'results', 'revenge-song', 'save-campaign', 'save-hold', 'lipsync',
+  /* `revenge-back` is the end of that same song — who is back in, who won
+     the week off her, and who goes out the door twice. Its own step only so
+     it SORTS after the lip sync's own beats (which are rendered last, at the
+     bottom of this function); it is drawn on the lip sync screen, because a
+     night with one song has one song screen. */
+  'revenge-back',
   'legacy-choice', 'save-luck', 'exit',
 ];
 
@@ -1764,7 +1770,7 @@ export function runDragWeek(state, cfg, ctx) {
       state.lastWinner = weekWinner;
       if (reentry) {
         const rv = (kind, who, pool, vars) => scenes.push({
-          step: 'legacy-choice', kind: `revenge:${kind}`,
+          step: 'revenge-back', kind: `revenge:${kind}`,
           data: { players: who, revenge: true }, text: revengeLine(pool, vars, rng),
         });
         reentry.winner = lc.winner;
@@ -1772,7 +1778,11 @@ export function runDragWeek(state, cfg, ctx) {
         reentry.weekWinner = weekWinner;
         reentry.lost = reentry.singers.filter(n => n !== lc.winner);
         revenge.song = song.title;
-        rv('win', [lc.winner], REVENGE_BEATS.win, { a: lc.winner, c: weekWinner });
+        /* NOT `REVENGE_BEATS.win` HERE. The host has just said the verdict
+           on the stage — `lipsync-win-name` has a `place` tier that puts her
+           back in the competition — and saying it twice in two cards is how
+           a screen reads like it is stalling. What is left to say is what
+           else she won. */
         rv('couple', [weekWinner, lc.winner], REVENGE_BEATS.couple, { a: lc.winner, c: weekWinner });
         rv('power', [lc.winner], REVENGE_BEATS.power, { a: lc.winner, c: weekWinner });
         for (const n of reentry.lost) rv('lost', [n], REVENGE_BEATS.lost, { a: n });
@@ -2104,7 +2114,12 @@ export function runDragWeek(state, cfg, ctx) {
       /* WHAT THE SONG IS FOR. The same two queens on the same stage means
          something completely different on a night nobody can lose, and the
          call never said which. */
-      stakes: legacy ? 'legacy' : (topTwoSing ? 'win' : 'life'),
+      /* AND ON A REVENGE NIGHT IT IS NEITHER. The two queens on that stage
+         are not in the competition — they are singing to get back into it —
+         so every beat tiered on the stakes needs its own word for that, or
+         the host tells two eliminated queens they are the top two. */
+      stakes: revengeNight ? 'place' : legacy ? 'legacy' : (topTwoSing ? 'win' : 'life'),
+      topCouple: reentry ? reentry.couples.map(c => c.with) : [],
       rateAQueen: !!cfg.rateAQueen,
       // A save is still to come: the call must not name who lip syncs.
       pendingSave: !!holderRes,

@@ -20,7 +20,7 @@
 // a real disagreement and not decoration. The rail carries the panel's
 // running ranking, which is what the viewer is actually watching.
 import { campaignStage, applyStage } from './save.js';
-import { _shell, _portrait, _judgePortrait, _icon, _note, _roomRail, _allianceRail, ROOM_RAIL_CSS } from './style.js';
+import { _shell, _portrait, _judgePortrait, _icon, _note, _roomRail, _allianceRail, _pairRail, ROOM_RAIL_CSS } from './style.js';
 // Borrowed for the untucked consequence row — same fact, same badge.
 import { WERK_CSS, ARROW_UP, ARROW_DOWN } from './werk.js';
 import { _controls, _seedRail, _state } from './reveal.js';
@@ -920,7 +920,7 @@ export function rpBuildCritiques(row) {
        it: `_updateSidebar` REPLACES the whole sidebar on each step, so
        anything appended outside the per-step panels survives exactly one
        reveal and then disappears. */
-    const alli = _allianceRail(row);
+    const alli = _pairRail(row) + _allianceRail(row);
     window._drSidebar.critiques = queens.map((_, i) => `${alli}<h4 class="dr-disp">The panel, so far</h4>${
       queens.slice(0, i + 1)
         .map(n => `<div class="dr-slot">${_portrait(n, ep, { size: 32 })}
@@ -962,10 +962,10 @@ export function rpBuildCritiques(row) {
   const stage = critiquesStage(row, stageList, { ep, judges: panelList, guest: guestObj, uid: `c${ep.num}` });
   wireStage('critiques', stage, ep, _state);
 
-  return `<style>${STAGE_CSS}${NIGHT_STAGE_CSS}</style>${_shell(`${stage.html}<div class="nsx-cards">${steps + wsgAnswers + wsgCards + delibCards}</div>`, ep, {
+  return `<style>${STAGE_CSS}${NIGHT_STAGE_CSS}${ROOM_RAIL_CSS}</style>${_shell(`${stage.html}<div class="nsx-cards">${steps + wsgAnswers + wsgCards + delibCards}</div>`, ep, {
     phase: 'stage', title: 'The Critiques',
     subtitle: split ? 'the panel is split tonight' : 'the panel speaks',
-    sidebar: _seedRail('critiques', `${_allianceRail(row)}<h4 class="dr-disp">The panel, so far</h4>`),
+    sidebar: _seedRail('critiques', `${_pairRail(row)}${_allianceRail(row)}<h4 class="dr-disp">The panel, so far</h4>`),
   })}${_controls('critiques', queens.length + dOff + wsgOff + delib.length, ep.num)}`;
 }
 

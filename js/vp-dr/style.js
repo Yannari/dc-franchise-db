@@ -196,6 +196,14 @@ export const DR_CSS = `
     radial-gradient(circle at 50% 100%,rgba(255,240,200,.95) 0 1.7px,transparent 2.2px) 0 100%/10px 10px repeat-x}
 .dr-initials{display:grid;place-items:center;background:linear-gradient(160deg,#4a1030,#20060f);
   border:1px solid rgba(255,255,255,.22);color:#ffd9ec;font-weight:700}
+/* THE PORTRAIT THAT 404ED. The img removes itself and the wrapper draws her
+   initials in its place, at whatever size the wrapper was given — so a face
+   with no file is a face with a name on it, not a broken-image glyph. */
+.dr-bust{position:relative;display:inline-block;vertical-align:middle}
+.dr-bust-off::after{content:attr(data-in);position:absolute;inset:0;display:grid;place-items:center;
+  border-radius:inherit;background:linear-gradient(160deg,#4a1030,#20060f);
+  border:1px solid rgba(255,255,255,.22);color:#ffd9ec;font-weight:700;
+  font-size:calc(100% + 1px);line-height:1}
 .dr-out .dr-por,.dr-out .dr-initials{filter:grayscale(1) brightness(.45)}
 
 /* ── LAYOUT: the screen and its rail ── */
@@ -357,8 +365,21 @@ export function _portrait(name, ep, { slug = '', size = 48, station = false, cls
     return `<span ${frame}><span class="dr-initials" style="${box};font-size:${Math.round(size / 2.8)}px"
       title="${esc(name)}">${esc(initialsOf(name))}</span></span>`;
   }
-  return `<span ${frame}><img class="dr-por" style="${box}" src="${esc(url)}"
-    alt="${esc(name)}" width="${size}" height="${size}" loading="lazy"></span>`;
+  /* ── AND WHEN THE FILE IS NOT THERE ────────────────────────────────
+     `avatarUrl` answers from the registry, which says which portrait a queen
+     SHOULD have — it cannot know whether the PNG was ever exported. A queen
+     cast from another season's roster routinely has a row and no file, and
+     what the reader saw was the browser's broken-image glyph cropped inside
+     a 42px circle: "the circle stays here with a part of the icon visible",
+     reported off the safe queens on the critiques stage.
+     The initials are already the answer for a queen with no registry entry
+     at all; a 404 gets the same answer. Done with `onerror` and a data
+     attribute rather than a script, so it works on a screen rendered into a
+     string and inserted whole. */
+  return `<span ${frame} data-in="${esc(initialsOf(name))}" style="${box}"
+    ><img class="dr-por" style="${box}" src="${esc(url)}"
+    alt="${esc(name)}" width="${size}" height="${size}" loading="lazy"
+    onerror="this.parentNode.classList.add('dr-bust-off');this.remove()"></span>`;
 }
 
 /**
@@ -539,6 +560,34 @@ export const ROOM_RAIL_CSS = `
   overflow-wrap:break-word;color:#e9e2ee}
 .dr-alli b{flex:0 0 auto;font:400 12px/1 'Anton','Impact',sans-serif;color:#7dd3fc}
 
+/* ── THE PAIRS ── the competing queen, the queen who came back for her, and
+   what the two of them are to each other. The link between the names is the
+   whole point: it is a board of couples, read in one look. */
+.dr-pairs .dr-pr{display:flex;align-items:center;gap:6px;padding:6px 7px;margin:4px 0;border-radius:10px;
+  background:rgba(255,200,61,.06);box-shadow:inset 0 0 0 1px rgba(255,200,61,.22);min-width:0}
+.dr-pr-half{flex:1 1 0;min-width:0;display:flex;align-items:center;gap:5px}
+/* NOT THE TAG. A bare child-span selector here caught the "back" chip as well
+   as the portrait wrapper and drew it as a 26px circle with the word cropped
+   inside it — the same shape the portrait was supposed to be. */
+.dr-pr-half img,.dr-pr-half > span:not(.dr-pr-tag){flex:0 0 auto;width:26px!important;height:26px!important;
+  border-radius:50%;object-fit:cover;margin:0!important;box-shadow:0 0 0 1px rgba(255,255,255,.22)}
+.dr-pr-half b{min-width:0;font:400 11.5px/1.15 'Anton','Impact',sans-serif;letter-spacing:.02em;
+  color:#f4e9f7;overflow-wrap:anywhere}
+.dr-pr-back b{color:#FFC83D}
+.dr-pr-back img,.dr-pr-back > span:not(.dr-pr-tag){box-shadow:0 0 0 1px rgba(255,200,61,.6)}
+/* The tie between them, with the bond sitting on it. */
+.dr-pr-link{position:relative;flex:0 0 auto;width:22px;height:2px;border-radius:2px;
+  background:linear-gradient(90deg,rgba(244,233,247,.6),rgba(255,200,61,.85));
+  display:flex;justify-content:center}
+.dr-pr-link::before,.dr-pr-link::after{content:'';position:absolute;top:-2px;width:6px;height:6px;
+  border-radius:50%}
+.dr-pr-link::before{left:-3px;background:#f4e9f7}
+.dr-pr-link::after{right:-3px;background:#FFC83D}
+.dr-pr-link em{position:absolute;top:-13px;font-style:normal;font:400 10px/1 'Anton','Impact',sans-serif}
+.dr-pr-link em.warm{color:#3BE08A}.dr-pr-link em.cold{color:#FF294B}
+.dr-pr-tag{flex:0 0 auto;font-size:7px;letter-spacing:.14em;text-transform:uppercase;
+  padding:1px 4px;border:1px solid rgba(255,41,75,.5);color:#FF7BA0;border-radius:3px}
+
 .dr-room-rail h4{margin:0 0 8px}
 .dr-rr-grp{margin:0 0 12px}
 .dr-rr-k{display:block;font-size:9px;letter-spacing:.16em;text-transform:uppercase;
@@ -591,6 +640,38 @@ export function _allianceRail(row) {
       <span class="dr-alli-dots">${b.members.map(() => '<i></i>').join('')}</span>
       <i class="dr-alli-who">${b.members.map(n => esc(n)).join(' · ')}</i>
       ${w ? `<b>${w > 0 ? '+' : ''}${w}</b>` : ''}
+    </div>`;
+  }).join('')}
+  </div>`;
+}
+
+/* ── THE PAIRS, IN THE RAIL ───────────────────────────────────────────
+   Revenge of the Queens is judged, called and won on couples, and a name in
+   a chip beside a card is a fact the reader has to reassemble one card at a
+   time. The rail draws the whole board at once: every competing queen, the
+   eliminated queen she was handed, and how they feel about each other.
+
+   IT SAYS NOTHING ABOUT THE OUTCOME. This rail is on the screens that run
+   BEFORE the call — the door, the challenge, the critiques — so marking the
+   top couples here would print the call on the challenge screen. Who was
+   paired with whom is public from the moment the host says it. */
+export function _pairRail(row, ep = null) {
+  const pairs = row?.dr?.revenge?.pairs || [];
+  if (!pairs.length) return '';
+  const e = ep || { num: row?.num ?? row?.dr?.ep ?? 0, format: 'drag-race', dr: row?.dr || {} };
+  const bonds = row?.dr?.bonds || [];
+  const bondOf = (a, b) => {
+    const hit = bonds.find(([x, y]) => (x === a && y === b) || (x === b && y === a));
+    return hit ? hit[2] : 0;
+  };
+  return `<div class="dr-room-rail dr-pairs"><h4 class="dr-disp">Paired tonight</h4>
+    ${pairs.map(p => {
+    const v = bondOf(p.with, p.back);
+    return `<div class="dr-pr">
+      <span class="dr-pr-half">${_portrait(p.with, e, { size: 26 })}<b>${esc(p.with)}</b></span>
+      <i class="dr-pr-link">${v ? `<em class="${v > 0 ? 'warm' : 'cold'}">${v > 0 ? '+' : ''}${v}</em>` : ''}</i>
+      <span class="dr-pr-half dr-pr-back">${_portrait(p.back, e, { size: 26 })}
+        <b>${esc(p.back)}</b><span class="dr-pr-tag">back</span></span>
     </div>`;
   }).join('')}
   </div>`;

@@ -1980,7 +1980,14 @@ export function runDragWeek(state, cfg, ctx) {
              she is in the top group too, and "in the top two" is the more
              specific fact -- the one the chart has its own cell for. */
           : ((call.singers || []).includes(n) && legacy) ? 'TOP2'
-            : call.high.includes(n) ? 'HIGH'
+            /* AND ON A REVENGE NIGHT THE TOP TWO ARE COUPLES. The queens who
+               sang are not in this loop at all — they are not in the room —
+               so the two competing halves the panel put first were landing
+               in HIGH beside a third queen who was merely in the top, and
+               the call read HIGH HIGH HIGH with nothing saying which two the
+               night was about. The chart already has the cell. */
+            : (reentry && reentry.couples.some(c => c.with === n)) ? 'TOP2'
+              : call.high.includes(n) ? 'HIGH'
             /* ── THE BOTTOM, AND WHETHER SHE SANG IN IT ──
                On an ordinary night the bottom IS the lip sync, so BTM2 says
                she sang and survived. On a legacy night NOBODY in the bottom

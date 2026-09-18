@@ -21,7 +21,7 @@ import { lipsyncStage, lipsyncCardDecor, LS_CSS } from './lipsync-stage.js';
 import { callStage, CALL_CSS } from './call-stage.js';
 import { exitStage, ROOM_STAGE_CSS } from './room-stage.js';
 import { wireStage, finaleOpenStage, FINALE_STAGE_CSS } from './finale-stage.js';
-import { _shell, _portrait, _judgePortrait, _icon, _allianceRail, ROOM_RAIL_CSS } from './style.js';
+import { _shell, _portrait, _judgePortrait, _icon, _allianceRail, _pairRail, ROOM_RAIL_CSS } from './style.js';
 import { resultOrder } from '../dr/data/results-order.js';
 import { _controls, _seedRail, _state } from './reveal.js';
 import { GRID_RESULTS } from '../dr/grid.js';
@@ -448,9 +448,18 @@ export function rpBuildResults(row) {
   const singers = new Set(call.singers || []);
   const topTwoNight = singers.size === 2 && [...singers].every(n => (call.high || []).includes(n)
     || (call.win || []).includes(n));
+  /* WHICH TWO COUPLES THE PANEL PUT FIRST. Announced on this screen by the
+     host, so it is no more of a spoiler than the stamp beside it. */
+  const topCouple = new Set(((row?.dr?.revenge?.couples) || []).map(c => c.with));
+  /* ── AND ON A REVENGE NIGHT THE TOP TWO ARE THE TWO COUPLES ──
+     The queens who sing are not in the competition, so `singers` finds
+     nobody here and the call read HIGH HIGH HIGH: the two halves the panel
+     put first, and a third queen who was merely in the top, stamped the
+     same. The chart already keeps a cell for the top two. */
   const shown = (r, name) => {
     if (pending && r === 'BTM2') return 'LOW';
     if (topTwoNight && r === 'HIGH' && singers.has(name)) return 'TOP2';
+    if (r === 'HIGH' && topCouple.has(name)) return 'TOP2';
     return r;
   };
 
@@ -533,10 +542,6 @@ export function rpBuildResults(row) {
      in the top. */
   const pairedWith = Object.fromEntries(((row?.dr?.revenge?.pairs) || [])
     .map(x => [x.with, x.back]));
-  /* AND WHICH TWO COUPLES THE PANEL PUT FIRST. Three queens can stand in
-     HIGH on this night and only two of them are in a top couple, so the
-     stamp alone does not say who the song is about. */
-  const topCouple = new Set(((row?.dr?.revenge?.couples) || []).map(c => c.with));
   const list = [];
   let holdDrawn = !hold;
   for (const [result, name] of named) {
@@ -609,7 +614,7 @@ export function rpBuildResults(row) {
     };
     // The circles, on every panel of the rail -- see the note in stage.js:
     // the sidebar is replaced per step, so this has to live inside each one.
-    const alli = _allianceRail(row);
+    const alli = _pairRail(row) + _allianceRail(row);
     window._drSidebar.results = list.map((_, i) => alli + panelFor(i + 1));
     window._drRevealExtra = window._drRevealExtra || {};
     window._drRevealExtra.results = idx => stage.apply(idx);
@@ -620,7 +625,7 @@ export function rpBuildResults(row) {
 
   return `<style>${RESULTS_CSS}${ROOM_RAIL_CSS}${CALL_CSS}</style>${_shell(`${stage.html}<div class="csx-cards">${steps}</div>`, ep, {
     phase: 'stage', title: 'The Call', subtitle: 'who the panel kept back',
-    sidebar: _seedRail('results', `${_allianceRail(row)}<h4 class="dr-disp">The call</h4>`),
+    sidebar: _seedRail('results', `${_pairRail(row)}${_allianceRail(row)}<h4 class="dr-disp">The call</h4>`),
   })}${_controls('results', list.length, ep.num)}`;
 }
 

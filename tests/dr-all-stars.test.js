@@ -515,8 +515,13 @@ describe('Revenge of the Queens', () => {
     }
     /* Everybody who can be partnered is: a returner is left over only when
        there are more of them than there are queens still competing. */
-    expect(n.dr.revenge.pairs.length)
-      .toBe(Math.min(n.dr.revenge.returners.length, room.length));
+    /* EVERY QUEEN IN THE ROOM IS IN A COUPLE. Booked away from the halfway
+       point the two groups are not the same size, and the queens left over
+       were performing alone on a night the panel judges couples — so a
+       returner takes a second queen rather than anybody standing there
+       unpaired. */
+    expect(n.dr.revenge.pairs.map(p => p.with).sort()).toEqual([...room].sort());
+    for (const p of n.dr.revenge.pairs) expect(n.dr.revenge.returners).toContain(p.back);
     // Last out walks in first.
     expect(n.dr.revenge.returners[0]).toBe(gone[gone.length - 1]);
   });
@@ -910,6 +915,64 @@ describe('one song, one screen', () => {
       expect(backAt, `seed ${seed}`).toBeGreaterThan(-1);
       expect(powerAt).toBeGreaterThan(backAt);
       expect(order[backAt].text).toMatch(/back|returning|not any more|pack your things/i);
+    }
+  });
+});
+
+describe('the pairing is on the screen, not only in the prose', () => {
+  const rev = seed => season(seed, { drAllStars: true, drAllStarsTwist: 'revenge' });
+  const night = res => res.rows.find(r => r.dr?.revenge);
+
+  it('draws a board of couples in the rail of every screen that night', async () => {
+    const { dragScreens } = await import('../js/vp-dr/screens.js');
+    const row = night(rev(300));
+    const byId = Object.fromEntries(dragScreens(row).map(s => [s.id, s.html]));
+    for (const id of ['dr-revenge', 'dr-critiques', 'dr-results']) {
+      expect(byId[id], id).toBeTruthy();
+      expect(byId[id], `${id} has no pairing board`).toContain('dr-pairs');
+      // Both halves of every couple are named on it.
+      for (const p of row.dr.revenge.pairs) {
+        expect(byId[id], `${id} drops ${p.with} + ${p.back}`).toContain(p.back);
+      }
+    }
+  });
+
+  it('keeps the board through every reveal, not just the first', async () => {
+    const { dragScreens } = await import('../js/vp-dr/screens.js');
+    const row = night(rev(300));
+    dragScreens(row);
+    for (const key of ['critiques', 'results']) {
+      const panels = (window._drSidebar || {})[key] || [];
+      expect(panels.length, key).toBeGreaterThan(0);
+      for (const html of panels) expect(html, `${key} loses the board on reveal`).toContain('dr-pairs');
+    }
+  });
+
+  it('stamps the two top couples TOP2 rather than a third HIGH', () => {
+    for (const seed of [300, 42, 77]) {
+      const n = night(rev(seed));
+      const tops = n.dr.revenge.couples.map(c => c.with);
+      const rec = n.dr.results || {};
+      const resultOf = q => rec[q] || null;
+      // One of them took the week; the other is the top two.
+      const other = tops.find(q => !n.dr.call.win.includes(q));
+      if (!other || !resultOf(other)) continue;
+      expect(resultOf(other), `seed ${seed}`).toBe('TOP2');
+    }
+  });
+});
+
+describe('a queen whose portrait file is missing', () => {
+  it('gets her initials rather than a broken image', async () => {
+    const { _portrait } = await import('../js/vp-dr/style.js');
+    const html = _portrait('Scary Girl', { format: 'drag-race', num: 3 }, { size: 42 });
+    if (html.includes('<img')) {
+      // The img removes itself and the wrapper draws the initials in its place.
+      expect(html).toContain('onerror=');
+      expect(html).toContain('dr-bust-off');
+      expect(html).toMatch(/data-in="[^"]+"/);
+    } else {
+      expect(html).toContain('dr-initials');
     }
   });
 });

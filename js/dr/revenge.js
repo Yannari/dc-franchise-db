@@ -61,6 +61,24 @@ export function revengePairs({ living = [], out = [], bond = () => 0, rng = Math
     free.splice(free.indexOf(best), 1);
     pairs.push({ back, with: best, bond: Number(bond(back, best)) || 0 });
   }
+  /* ── AND NOBODY PERFORMS ALONE ─────────────────────────────────────
+     The show runs this night at the halfway point, where the queens it has
+     sent home and the queens still in it are the same number. Booked anywhere
+     else they are not, and the queens left over were performing solo on a
+     night the panel judges couples — and being called with no partner beside
+     their name while everybody around them had one.
+     A returner takes a second queen instead. She is one performer in two
+     couples, which is more work for her and more exposure, and it is the
+     only arrangement that keeps every queen in a couple. The returners with
+     the warmest room take the extra queens first, so the trio is not handed
+     to somebody who was barely spoken to. */
+  let ring = 0;
+  while (free.length && pairs.length) {
+    const q = free.shift();
+    const back = pairs[ring % pairs.length].back;
+    ring += 1;
+    pairs.push({ back, with: q, bond: Number(bond(back, q)) || 0, second: true });
+  }
   return { returners: order, pairs, unpaired: free };
 }
 
@@ -89,10 +107,16 @@ export function revengeReentry({ pairs = [], rank = [] } = {}) {
     return i < 0 ? rank.length + 1 : i;
   };
   const scored = [...pairs].sort((a, b) => place(a.with) - place(b.with));
-  const top = scored.slice(0, 2);
+  /* ONE COUPLE PER RETURNING QUEEN. A returner who took a second queen (the
+     trio above) appears twice, and two couples sharing a `back` would put
+     one queen on the stage singing against herself. The better-placed of her
+     two couples is the one that counts. */
+  const seen = new Set();
+  const distinct = scored.filter(p => !seen.has(p.back) && seen.add(p.back));
+  const top = distinct.slice(0, 2);
   return {
     couples: top.map(p => ({ back: p.back, with: p.with })),
-    all: scored.map(p => ({ back: p.back, with: p.with })),
+    all: distinct.map(p => ({ back: p.back, with: p.with })),
     /* The two queens who sing tonight. The night has ONE song and this is it
        — the bottom does not sing on a legacy night, and the top two do not
        sing either, because the queens fighting for a season back are the ones

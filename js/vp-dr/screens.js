@@ -23,7 +23,7 @@
 // vanish off the end of the show without a word. `tests/dr-vp-registry`
 // asserts that EVERY scene reaches a screen, which is the only version of
 // this that stays true as the engine grows new scene kinds.
-import { _shell, _portrait, _icon, _judgePortrait, _note, _setAllStars } from './style.js';
+import { _shell, _portrait, _icon, _judgePortrait, _note, _setAllStars, _pairRail, ROOM_RAIL_CSS } from './style.js';
 import { _controls, _state } from './reveal.js';
 import { rpBuildChart } from './chart.js';
 import { rpBuildRate } from './rate.js';
@@ -685,11 +685,17 @@ function buildSection(sec, row) {
   const scenes = sceneSections(row).get(sec.id) || [];
   if (!scenes.length) return '';
   const steps = scenes.map((sc, i) => step(sc, i, sec.suffix, ep, sec.accent)).join('');
+  /* THE PAIRS ABOVE THE ROOM, on the one night the room is a board of
+     couples. Empty string on every other night — and prefixed onto EVERY
+     entry of the per-step rail, because `_updateSidebar` replaces the whole
+     column on each reveal, so a board built once would vanish on click one. */
+  const pairs = _pairRail(row);
   if (typeof window !== 'undefined') {
     if (!window._drSidebar) window._drSidebar = {};
-    window._drSidebar[sec.suffix] = railFor(row, scenes, ep, sec).slice(1);
+    window._drSidebar[sec.suffix] = railFor(row, scenes, ep, sec).slice(1)
+      .map(h => pairs + h);
   }
-  const rail = railFor(row, scenes, ep, sec)[0] || '';
+  const rail = pairs + (railFor(row, scenes, ep, sec)[0] || '');
   /* THE SEVEN SCREENS NOBODY BUILT A ROOM FOR. Everything without its own
      builder falls here — the reunion and five sections of the finale night —
      and they were drawn on the same gradient as a Tuesday in the werk room.
@@ -735,7 +741,7 @@ function buildSection(sec, row) {
       };
     }), { ep, room, theme: 'werk', title: sec.title, sub: sec.subtitle, uid: `${sec.suffix}${ep.num}` }) : null;
     if (roomSt) wireStage(sec.suffix, roomSt, ep, _state);
-    return `<style>${EXTRA_CSS}${WERK_CSS}${ROOM_CSS}${roomSt ? ROOM_STAGE_CSS : ''}</style>${_shell(
+    return `<style>${EXTRA_CSS}${WERK_CSS}${ROOM_CSS}${ROOM_RAIL_CSS}${roomSt ? ROOM_STAGE_CSS : ''}</style>${_shell(
       `${roomSt ? roomSt.html : ''}<div class="dr-room rmx-cards"><div class="dr-room-art">${art}</div>${cards}</div>`, ep, {
         phase: sec.phase, title: sec.title, subtitle: sec.subtitle, sidebar: rail,
       })}${_controls(sec.suffix, scenes.length, ep.num)}`;
@@ -772,7 +778,7 @@ function buildSection(sec, row) {
     text: sc.text, bond: Number(sc?.effects?.bond) || 0, note: _note(sc),
   })), { ep, room: cast, theme, title: sec.title, sub: sec.subtitle, uid: `${sec.suffix}${ep.num}` }) : null;
   if (genSt) wireStage(sec.suffix, genSt, ep, _state);
-  return `<style>${EXTRA_CSS}${genSt ? ROOM_STAGE_CSS : ''}</style>${_shell(
+  return `<style>${EXTRA_CSS}${ROOM_RAIL_CSS}${genSt ? ROOM_STAGE_CSS : ''}</style>${_shell(
     `${genSt ? genSt.html : ''}<div class="dr-hallwrap rmx-cards">${room}${steps}</div>`, ep, {
       phase: sec.phase, title: sec.title, subtitle: sec.subtitle, sidebar: rail,
     })}${_controls(sec.suffix, scenes.length, ep.num)}`;

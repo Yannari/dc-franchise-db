@@ -41,6 +41,13 @@
 //                 all season. A name they had both been pushing is two
 //                 independent Faithful reads pointing at one person, and it
 //                 can only be assembled from two bodies.
+//   chalice       ONE NAME, AND IT IS THE RIGHT KIND OF NAME. No conclave: the
+//                 pact has to FIND the poisoned chalice in the library first,
+//                 and one of them pours it. The room remembers who handed the
+//                 victim a drink — which is a single name rather than a set,
+//                 and is how the show's own pourer was banished the next night.
+//                 Sometimes nobody can recall it, and then the night says
+//                 nothing at all.
 //   hidden        NOTHING AT BREAKFAST. The victim and two decoys are kept
 //                 away from the table, so the castle does not know who died
 //                 until The Funeral that afternoon (js/tr/missions/funeral.js).
@@ -122,6 +129,11 @@ export const VARIANTS = [
   // 44.0 -> 57.0%, against 53.0% at t >= 3 on the same seeds.
   { id: 'name-your-own', weight: 5,
     needs: (l, t, f) => t >= 3 && l >= 5 },
+  // A LIBRARY, A POURER AND A ROOM WITH DRINKS IN IT. Wants a pact that can
+  // spare a lookout and a castle big enough that handing somebody a glass is
+  // not the only thing that happened all evening.
+  { id: 'chalice', weight: 5,
+    needs: (l, t, f) => l >= 6 && t >= 1 && f >= 3 },
   // SEVEN, so that after the murder there are two decoys in coffins and at
   // least four people left to walk behind them. And only when The Funeral can
   // run the next afternoon: a hidden murder nobody ever reveals is not a twist.
@@ -388,6 +400,38 @@ export function dungeonVoice(ep, companion, victim) {
 }
 
 /**
+ * THE SEARCH FOR THE CHALICE, and whether they found it in time.
+ *
+ * The show's own pact lost most of the night to a shelf of Shakespeare. The
+ * reader of the pact does the looking, and a pact with nobody bookish in it
+ * can come back empty-handed — which is the one night the Traitors kill
+ * nobody without a Shield being involved.
+ */
+export function chaliceSearch(ep, pact) {
+  const searcher = [...pact].sort((a, b) =>
+    ((pStats(b).mental || 5) - (pStats(a).mental || 5)) || (a < b ? -1 : 1))[0];
+  if (!searcher) return { searcher: null, found: false };
+  const p = Math.max(0, Math.min(1, 0.35 + ((pStats(searcher).mental || 5) / 10) * 0.55));
+  return { searcher, found: hash01(`chalice-find|${ep}|${searcher}`) < p };
+}
+
+/**
+ * WHO POURS IT. The one the room would not look at twice for carrying a glass:
+ * the sociable one. That is also exactly who the room remembers afterwards.
+ */
+export function chalicePourer(ep, pact, searcher) {
+  const others = pact.filter(n => n !== searcher);
+  const pool = others.length ? others : pact;
+  return [...pool].sort((a, b) =>
+    ((pStats(b).social || 5) - (pStats(a).social || 5)) || (a < b ? -1 : 1))[0] || null;
+}
+
+/** Whether the room can put a face to the drink by morning. */
+export function chaliceRemembered(ep, pourer, victim) {
+  return hash01(`chalice-recall|${ep}|${pourer}|${victim}`) < 0.65;
+}
+
+/**
  * LAST NIGHT'S HIDDEN MURDER, or null: the round that just closed ran
  * `hidden`, and somebody died on it. The Funeral and the morning both read it.
  */
@@ -527,6 +571,20 @@ export const VARIANT_LINES = {
     'The castle counts three empty chairs and one murder, and has to eat breakfast without knowing whose chair is whose.',
     'Nobody is named this morning. {a}, {b} and {c} are simply not there, and the host will not say more until the afternoon.',
   ],
+  // The chalice: found, poured, and drunk without a second thought.
+  'chalice': [
+    'No conclave. {finder} finds the chalice behind a row of Shakespeare, {who} fills it with something fizzy, and {victim} takes it without looking at it.',
+    'They never meet. {finder} turns the library over for it, {who} pours at the end of the evening, and {victim} says thank you.',
+    'The pact spends the night among the books. {finder} comes out with the chalice, {who} carries it across to {victim}.',
+    'It is done with a drink and a smile: {finder} found it, {who} poured it, and {victim} drank it in a room full of people.',
+  ],
+  // The night the pact loses to a bookshelf.
+  'chalice-lost': [
+    'The pact turns the library over twice and never finds the chalice. Nobody is murdered, and nobody can be told why.',
+    'A shelf of Shakespeare, an hour of pulling books out, and no poison in any of them. The castle wakes up whole.',
+    '{who} is still looking for it when the candles burn down. There is no murder tonight and no explanation for it.',
+    'The chalice stays where it was hidden. The pact goes to bed with nothing done.',
+  ],
   // Five missing: the procession will clear some of them before the coffins.
   'hidden-many': [
     '{n} places are empty at breakfast. One of them is dead, and nobody at the table is told which.',
@@ -613,6 +671,7 @@ export function variantLine(kind, ep, subs) {
 const V = {
   spared: 0.30,        // you were on the list and you are still here
   proximity: 0.28,     // you were within reach of the glass
+  poured: 0.42,        // you put that glass in their hand, and the room saw
   plea: 0.34,          // the dead named you
   companion: 0.30,     // you went down and you came back
   stair: 0.55,         // you heard it yourself — one person, one read
@@ -708,6 +767,13 @@ export function variantEvidence(ep, rng = Math.random) {
     for (const name of (d.spared || [])) {
       _tellRoom(name, V.spared, `was on the list with ${victim} and is still here`,
         ep, rng, formed, 'spared-from-the-list', round.ep);
+    }
+  } else if (v === 'chalice') {
+    // ONE NAME. Not a set of neighbours: the room is trying to remember who
+    // put a glass in somebody's hand, and that is either a person or nobody.
+    if (d.remembered && d.pourer) {
+      _tellRoom(d.pourer, V.poured, `poured the drink ${victim} was holding`,
+        ep, rng, formed, 'poured-the-drink', round.ep);
     }
   } else if (v === 'plain-sight') {
     // PROXIMITY. One of these three did it — the room does not know which, and

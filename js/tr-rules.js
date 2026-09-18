@@ -286,6 +286,22 @@ export const TR_RULES = {
     occursIn: tr => tr.conclave?.variant === 'hidden',
   },
 
+  // AUDIENCE ONLY. The castle is told nothing: either somebody is gone and
+  // nobody knows how, or nobody is gone and nobody knows why.
+  'murder-chalice': {
+    id: 'murder-chalice',
+    trigger: 'The Traitors are sent to find a poisoned chalice instead of meeting.',
+    explainedAt: 'first-occurrence',
+    observerVisibility: 'audience',
+    reminder: 'There was no meeting tonight. The Traitors had to find a poisoned '
+      + 'chalice hidden in the castle and get somebody to drink from it, in front of everybody.',
+    fullRules: 'On a chalice night the pact never convenes. It must first find the '
+      + 'chalice where the production hid it; if it cannot, nobody is murdered at all. '
+      + 'If it can, one Traitor pours the drink and hands it over in company, and the '
+      + 'room may or may not remember whose hand it came from.',
+    occursIn: tr => tr.conclave?.variant === 'chalice',
+  },
+
   'armoury-shield': {
     id: 'armoury-shield',
     trigger: 'The Armoury opens after a mission.',
@@ -349,6 +365,7 @@ const VARIANT_RULE = {
   'plain-sight': 'murder-plain-sight',
   'name-your-own': 'murder-name-your-own',
   hidden: 'murder-hidden',
+  chalice: 'murder-chalice',
 };
 
 /**

@@ -2023,7 +2023,8 @@ function _buildBeats(v) {
       // AND HOW LAST NIGHT WAS ACTUALLY SHAPED. Only the two variants the
       // conclave already narrates are skipped, so the sentence appears once a
       // night and never twice.
-      + ((v.variantLine && v.variant !== 'plain-sight' && v.variant !== 'name-your-own')
+      + ((v.variantLine && v.variant !== 'plain-sight' && v.variant !== 'name-your-own'
+        && v.variant !== 'chalice')
         ? '<p class="co-shape"><span>You only &middot; audience</span>'
           + _esc(v.variantLine) + '</p>' : '')
       // AND THE RULE IT RAN UNDER. Printed for whoever is entitled to it, so
@@ -2035,6 +2036,12 @@ function _buildBeats(v) {
     let inner = '<p>' + _pick(WHOLE_TEXT, key + '|whole') + '</p>'
       + _countStrip([['At the table', String(v.room.length)],
         ['Places laid', String(v.room.length)]]);
+    // AND THE SHAPE OF A NIGHT THAT TOOK NOBODY. A chalice the pact never
+    // found leaves a full table and no explanation; the audience gets the
+    // sentence, the castle does not.
+    if (v.isAudience && v.variantLine && !v.missing.length) {
+      inner += '<p class="co-shape"><span>You only &middot; audience</span>' + _esc(v.variantLine) + '</p>';
+    }
     // THE ONE LINE THIS SCREEN HAS THAT A PLAYER MUST NOT SEE, and it is only
     // ever built when `_view` left the flag on the view.
     if (v.blocked) {

@@ -1057,8 +1057,15 @@ function _morning() {
     // AUDIENCE ONLY, gated in the screen's `_view`. The list, the chapel and
     // the dungeon are things the castle never learns; a player who read this
     // would know the shape of a night nobody told them about.
-    variantLine: (prev && prev.tr?.conclave?.line) || null,
-    variant: (prev && prev.tr?.conclave?.variant) || null,
+    // A NIGHT WITH NO CONCLAVE RECORD STILL HAS A SHAPE. `_conclaveRecord`
+    // returns null when nobody was named — a poisoned chalice the pact never
+    // found, say — so the shape is read off the ROUND when the conclave has
+    // nothing to say, or the one night the castle is never told anything about
+    // would also be the one night the audience is not told either.
+    variantLine: (prev && prev.tr?.conclave?.line)
+      || (prev && (gs.tr?.rounds || []).find(r => r.ep === prev.num)?.variantLine) || null,
+    variant: (prev && prev.tr?.conclave?.variant)
+      || (prev && (gs.tr?.rounds || []).find(r => r.ep === prev.num)?.variant) || null,
     // A HIDDEN MURDER: three empty chairs and no name. The decoys and the
     // coffin order are public (the castle can see who is missing); which of
     // the three is dead is not, and the screen must not say it.

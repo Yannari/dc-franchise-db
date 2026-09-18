@@ -38,9 +38,24 @@ import { MIRROR, COLD_BEATS } from './data/cold-open-beats.js';
 const pick = (rng, arr) => arr[Math.floor(rng() * arr.length) % arr.length];
 const num = v => (Number.isFinite(Number(v)) ? Number(v) : 5);
 
+/** The text of a line, whichever shape it was written in. */
+const lineText = l => (typeof l === 'string' ? l : (l && l.line) || '');
+
+/**
+ * The lines that fit tonight.
+ *
+ * A bottom queen did not necessarily sing: on a legacy night the top two do
+ * and she was simply not chosen. A line tagged `when` is only drawn on the
+ * shape it was written for.
+ */
+export function linesFor(pool, when = null) {
+  return (Array.isArray(pool) ? pool : [])
+    .filter(l => typeof l === 'string' || !l?.when || l.when === when);
+}
+
 /** One line, names filled, without replacement while the pool lasts. */
 export function coldLine(pool, vars = {}, rng = Math.random, used = null) {
-  const list = Array.isArray(pool) ? pool : [];
+  const list = (Array.isArray(pool) ? pool : []).map(lineText).filter(Boolean);
   if (!list.length) return '';
   const fresh = Array.isArray(used) ? list.filter(l => !used.includes(l)) : list;
   const from = fresh.length ? fresh : list;
@@ -208,13 +223,18 @@ export function coldOpen({
     const st = (players[n] || {}).stats || {};
     const temper = num(st.temperament);
     const bold = num(st.boldness);
+    /* WHAT ACTUALLY HAPPENED TO HER. She sang and survived, or the lipstick
+       went to somebody else, or she was named and was never in danger —
+       three different mornings, and only one of them involves a song. */
     const sang = (L.sang || []).includes(n);
+    const upFor = (L.bottom || []).includes(n);
+    const when = sang ? 'sang' : (L.legacy && upFor) ? 'spared' : 'named';
     const mood = temper <= 3 && bold >= 5 ? 'angry'
       : temper <= 4 ? 'sad'
         : bold >= 8 && temper >= 7 ? 'dont-care'
           : sang && temper >= 6 ? 'fine'
             : temper >= 7 ? 'fine' : 'sad';
-    say(`bottom-${mood}`, [n], COLD_BEATS.bottom[mood], { a: n }, { mood });
+    say(`bottom-${mood}`, [n], linesFor(COLD_BEATS.bottom[mood], when), { a: n }, { mood, when });
     /* Anger is loud and it costs her with the room; the rest is hers alone.
        Nobody in this show is punished for being upset. */
     if (mood === 'angry') {

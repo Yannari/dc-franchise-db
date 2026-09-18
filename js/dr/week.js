@@ -424,11 +424,27 @@ export function runDragWeek(state, cfg, ctx) {
     const bold = Number.isFinite(Number(her.boldness)) ? Number(her.boldness) : 5;
     const same = shadow.target === shadow.wentHome;
     const stillHere = living.includes(shadow.target);
-    /* SAYING IT IS EASY WHEN IT COSTS NOTHING. A name that agrees with the
-       night, or a name that belongs to a queen already gone, is a free
-       sentence; the one that costs is the name sitting three stations away. */
-    const price = same ? 0 : stillHere ? 3.2 : 1.1;
-    const tells = bold - price + (rng() - 0.5) * 2 > 4.4;
+    /* ── SHE ALMOST ALWAYS TELLS ────────────────────────────────────
+       The first version priced the sentence — free when her name agreed with
+       the night, expensive when it belonged to a queen three stations away —
+       and a queen refused 39% of the time, four mornings a season. Two things
+       wrong with that. It is too often to be an event, and it was refusing
+       hardest on exactly the night worth hearing: the rule hid the different
+       name and told you the matching one, which is the reveal backwards.
+
+       So telling is the default and refusing is the rare move it should be.
+       She only holds it back when she has something to hold back — a name
+       that is not the one who went home, belonging to a queen still standing
+       in that room — and then only if she is guarded enough to sit on it.
+       AND NOT MORE THAN TWICE A SEASON: a room where somebody is always
+       being mysterious is a room where nobody is, so the season keeps a
+       count and the third queen answers the question. */
+    const shy = (10 - bold) / 10;
+    const hasSomethingToHide = !same && stillHere;
+    state.shadowKept = Number(state.shadowKept) || 0;
+    const tells = !(hasSomethingToHide && state.shadowKept < 2
+      && shy > 0.3 && rng() < 0.7);
+    if (!tells) state.shadowKept += 1;
     const sv = { h: shadow.holder, x: shadow.target, w: shadow.winner, g: shadow.wentHome };
     const sc = (kind, who, pool) => scenes.push({
       step: 'cold-open', kind: `shadow:${kind}`,

@@ -35,6 +35,20 @@
 // {a} is the queen who wrote it, {b} the queen it is aimed at (a friend, a
 // rival, or the front-runner), and the sign-off is her own name, because
 // every real one is signed.
+//
+// ── AND A BOTTOM QUEEN DID NOT NECESSARILY SING ──────────────────────
+//
+// On a flagship night the bottom IS the lip sync. On an All Stars legacy
+// night NOBODY in the bottom sings — the top two do, and the winner of that
+// song decides who goes — so "I sang for my life and I am still here" said
+// by a queen who never took the stage is the exact bug docs/drag-race.md
+// warns about, reported off a played season. A line may carry `when`:
+//
+//   sang    she lip synced and survived it
+//   spared  she was up for elimination and somebody chose not to end her
+//   named   she was in the bottom and never in danger
+//
+// A line with no `when` fits any of the three. js/dr/coldopen.js filters.
 
 /** The message on the glass, by what she was doing when she wrote it. */
 export const MIRROR = {
@@ -146,6 +160,8 @@ export const COLD_BEATS = {
   /* HOW THE BOTTOM IS THIS MORNING. Four ways, and they are not the same. */
   bottom: {
     sad: [
+      { when: 'spared', line: '"Somebody chose to keep me," {a} says quietly. "I did not earn that. She just did not write it."' },
+      { when: 'sang', line: '"I had to sing for my life in front of everybody I respect," {a} says. "I am not over it and I am not going to pretend to be."' },
       '{a} is not really in the room. She is sitting at her station with her hands in her lap, still in the dress.',
       '"I keep going over it," {a} says. "The whole thing. On a loop. It has not stopped since I walked off that stage."',
       '{a} gets about four words out before she has to stop and take her lashes off.',
@@ -153,6 +169,7 @@ export const COLD_BEATS = {
       '{a} says she is fine. She is holding a lipstick she has not opened for ten minutes.',
     ],
     angry: [
+      { when: 'spared', line: '"My whole season was in somebody else’s hand and she did not even have to explain it." {a} is not shouting. It would be better if she were.' },
       '"I am not going to sit here and pretend that was fair," {a} says, to the room, at volume.',
       '{a} is not sad. {a} is furious, and she is not hiding it, and the room can feel it from the door.',
       '"Somebody explain the critiques to me," {a} says, still in full drag. "Because they do not add up and I have been standing there doing the maths."',
@@ -161,7 +178,11 @@ export const COLD_BEATS = {
     ],
     fine: [
       '"Bottom two, still here." {a} shrugs. "That is a win where I am from."',
-      '{a} is weirdly light about it. "I sang for my life and I am still in this competition. What am I going to complain about?"',
+      { when: 'sang', line: '{a} is weirdly light about it. "I sang for my life and I am still in this competition. What am I going to complain about?"' },
+      { when: 'sang', line: '"I have done the song and I survived the song." {a} shrugs. "Some queens in here have not had to do that yet."' },
+      { when: 'spared', line: '"She could have written my name and she did not." {a} is very calm about it. "I am going to remember that either way."' },
+      { when: 'spared', line: '"I stood there while two other queens sang for the right to end me," {a} says, "and then I got to stay. This format is something else."' },
+      { when: 'named', line: '"I was named and I was not in danger." {a} raises an eyebrow. "I will take the warning. I am not going to take it personally."' },
       '"It is done," {a} says. "I am not going to carry it into this week as well."',
       '{a} does her face, does her hair, and gets on with it. She has been in worse rooms than this one.',
     ],

@@ -1140,6 +1140,27 @@ describe('the other lipstick', () => {
     expect(found).toBeGreaterThan(0);
   });
 
+  it('refuses rarely, and never more than twice in a season', () => {
+    const per = [];
+    for (const seed of [1, 2, 3, 4, 5, 6, 7, 19, 42, 77, 300, 101]) {
+      let kept = 0;
+      for (const row of as(seed).rows) {
+        kept += (row.dr.scenes || []).filter(sc => sc.kind === 'shadow:kept').length;
+      }
+      per.push(kept);
+    }
+    /* SHE ALMOST ALWAYS TELLS. It used to be 39% of mornings — four a season
+       — and it refused hardest on the night worth hearing, because the name
+       that differs is the expensive one. Telling is the default now: a queen
+       only holds it back when she has something to hold back, and the season
+       stops at two, because a room where somebody is always being mysterious
+       is a room where nobody is. Measured over thirty seasons: mean 0.6, max
+       2, and the interesting reveal more than doubled. */
+    expect(Math.max(...per), 'a season refused more than twice').toBeLessThanOrEqual(2);
+    const mean = per.reduce((a, b) => a + b, 0) / per.length;
+    expect(mean, 'refusing is supposed to be rare').toBeLessThan(1.2);
+  });
+
   it('never opens it on the night — it is next week or never', () => {
     for (const seed of [7, 19, 42]) {
       for (const row of as(seed).rows) {

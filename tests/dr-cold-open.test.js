@@ -11,7 +11,7 @@ import { describe, expect, it } from 'vitest';
 import { playDragSeason } from '../js/dr/season.js';
 import { rngFor } from '../js/dr/rng.js';
 import { mirrorMessage, coldOpen } from '../js/dr/coldopen.js';
-import { MIRROR } from '../js/dr/data/cold-open-beats.js';
+import { MIRROR, COLD_BEATS } from '../js/dr/data/cold-open-beats.js';
 
 const STATS = ['physical', 'endurance', 'mental', 'social', 'strategic',
   'loyalty', 'boldness', 'intuition', 'temperament'];
@@ -133,5 +133,45 @@ describe('the mirror message', () => {
       living: ['B', 'C'], players, record: {}, bond: () => 0, rng: rngFor(3),
     });
     for (const s of scenes) expect(s.text).not.toContain('A ');
+  });
+});
+
+describe('a bottom queen did not necessarily sing', () => {
+  /* THE BUG docs/drag-race.md WARNS ABOUT, reported off a played All Stars
+     season: "I sang for my life and I am still in this competition", said by
+     a queen who never took the stage, because on a legacy night the TOP TWO
+     sing and the bottom simply waits to hear a name. */
+  const SINGS = /\b(sang|sings?|sung|lip ?sync|song)\b/i;
+
+  /* THE REGEX IS WRITTEN OUT, NOT PATCHED IN. The first version of this
+     guard was assembled by a script and its word boundaries arrived as
+     literal backspace characters — the pattern matched nothing, the test
+     passed on a pool that had an untagged offender in it, and it would have
+     gone on passing forever. An unfailable guard is worse than no guard. */
+  it('tags every line that assumes a song', () => {
+    const loose = [];
+    for (const [mood, pool] of Object.entries(COLD_BEATS.bottom)) {
+      for (const l of pool) {
+        const text = typeof l === 'string' ? l : l.line;
+        const tagged = typeof l !== 'string' && !!l.when;
+        if (SINGS.test(text) && !tagged) loose.push(`${mood}: ${text.slice(0, 60)}`);
+      }
+    }
+    expect(loose, 'these claim a song on a night that may not have had one').toEqual([]);
+  });
+
+  it('never tells a spared queen she sang', () => {
+    for (const seed of [7, 19, 42, 300]) {
+      for (const row of season(seed, { drAllStars: true }).rows) {
+        if (!row.dr.lipsync?.legacy) continue;
+        const sang = new Set(row.dr.lipsync.queens || []);
+        for (const sc of (row.dr.scenes || []).filter(x => String(x.kind).startsWith('cold:bottom-'))) {
+          const who = (sc.data?.players || [])[0];
+          if (sang.has(who)) continue;
+          expect(SINGS.test(sc.text) && sc.data.when !== 'spared',
+            `${who} never sang: ${sc.text.slice(0, 70)}`).toBe(false);
+        }
+      }
+    }
   });
 });

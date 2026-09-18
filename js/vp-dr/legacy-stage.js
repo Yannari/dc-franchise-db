@@ -91,14 +91,68 @@ export const LEGACY_STAGE_CSS = `
 .lgx-one.spared{opacity:.6}
 .lgx-one.spared .lgx-card{opacity:.85;color:#9ee6bb}
 
-/* The reveal itself: the tube turns to face the room. One-shot, so it plays
-   on the step and not on every repaint. */
-.lgx-one.turn .lgx-tube{animation:lgx-turn .8s cubic-bezier(.3,1.2,.4,1) both}
-@keyframes lgx-turn{
-  0%{transform:translateY(-14px) rotateY(0) rotate(-8deg)}
-  55%{transform:translateY(-22px) rotateY(180deg) rotate(2deg)}
-  100%{transform:translateY(-14px) rotateY(360deg) rotate(0)}
+/* ══ WHAT SHE IS WEIGHING ══ under each tube, while she deliberates ══
+   The chips are the facts the viewer has already been given — the call, the
+   bonds, Untucked — put where the decision is made. They are not on screen
+   at rest, and they say nothing about which tube she picks up. */
+.lgx-weigh{display:none;flex-wrap:wrap;justify-content:center;gap:3px;max-width:15ch;margin-top:2px}
+.fsx.weighing .lgx-weigh,.fsx.holding .lgx-weigh{display:flex}
+.lgx-weigh i{font-style:normal;font-size:8px;letter-spacing:.1em;text-transform:uppercase;
+  padding:2px 5px;border-radius:3px;color:#d9c6d2;
+  background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
+.lgx-weigh i.hot{color:#ff9ebb;box-shadow:inset 0 0 0 1px rgba(255,43,109,.5)}
+.lgx-weigh i.warm{color:#9ee6bb;box-shadow:inset 0 0 0 1px rgba(62,224,138,.45)}
+/* Staggered in, so the row reads as a queen going along the counter. */
+.fsx.weighing .lgx-one .lgx-weigh i{animation:lgx-chip .4s ease both}
+.lgx-one:nth-child(2) .lgx-weigh i{animation-delay:.12s}
+.lgx-one:nth-child(3) .lgx-weigh i{animation-delay:.24s}
+@keyframes lgx-chip{from{opacity:0;transform:translateY(4px)}}
+
+/* ══ THE SECOND BEFORE ══ she is holding one and the room does not know
+   which. Every tube goes down, the bulbs drop, and the counter waits. */
+.fsx.holding .lgx-row{filter:brightness(.42) saturate(.55)}
+.fsx.holding .lgx-one .lgx-tube{transform:none}
+.fsx.holding .lgx-bulbs i{animation:lgx-pulse 1.6s ease-in-out infinite}
+.lgx-bulbs i:nth-child(3){animation-delay:.2s}
+.lgx-bulbs i:nth-child(5){animation-delay:.4s}
+.lgx-bulbs i:nth-child(7){animation-delay:.6s}
+@keyframes lgx-pulse{0%,100%{opacity:.18}50%{opacity:.75}}
+.fsx.holding .lgx-counter::after{content:'';position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(60% 60% at 50% 40%,transparent,rgba(0,0,0,.55) 90%)}
+.lgx-counter{position:relative}
+
+/* ══ HER REASON ══ after the name, never before it. */
+.lgx-why{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;justify-content:center;
+  max-width:44ch;margin-top:2px;padding:8px 14px;border-radius:12px;
+  background:rgba(255,43,109,.10);box-shadow:inset 0 0 0 1px rgba(255,43,109,.35);
+  animation:lgx-chip .5s .25s ease both}
+.lgx-why-k{flex:0 0 auto;font:400 11px/1 'Anton','Impact',sans-serif;letter-spacing:.18em;
+  text-transform:uppercase;color:#ff9ebb}
+.lgx-why q{font-size:13px;line-height:1.45;color:#ffe9f2;font-style:italic}
+
+/* The reveal itself: she turns it around. The tube used to spin on its own
+   with no perspective, which reads as a wobble rather than a turn — the row
+   has depth now, the tube lifts out of the line, and the name lands with it.
+   One-shot, so it plays on the step and not on every repaint. */
+.lgx-row{perspective:900px}
+.lgx-one.turn{animation:lgx-step-out .9s cubic-bezier(.2,1.1,.3,1) both}
+.lgx-one.turn .lgx-tube{animation:lgx-turn 1.15s cubic-bezier(.3,1.05,.3,1) both;transform-style:preserve-3d}
+.lgx-one.turn .lgx-name{animation:lgx-chip .4s .85s ease both}
+@keyframes lgx-step-out{
+  0%{transform:translateY(0) scale(1)}
+  30%{transform:translateY(-6px) scale(1.02)}
+  100%{transform:translateY(-12px) scale(1.07)}
 }
+@keyframes lgx-turn{
+  0%{transform:translateY(-6px) rotateY(0) rotate(-8deg)}
+  18%{transform:translateY(-26px) rotateY(0) rotate(-12deg)}
+  /* the long half-second where it is edge-on and unreadable */
+  55%{transform:translateY(-30px) rotateY(90deg) rotate(0);filter:brightness(1.5)}
+  78%{transform:translateY(-18px) rotateY(200deg) rotate(3deg)}
+  100%{transform:translateY(-14px) rotateY(180deg) rotate(0)}
+}
+/* The room takes the light off everybody else as it lands. */
+.fsx.any .lgx-row{transition:filter .6s .5s}
 .lgx-hand{position:absolute;left:50%;bottom:calc(100% + 6px);transform:translateX(-50%);
   font:400 12px/1 'Anton','Impact',sans-serif;letter-spacing:.08em;text-transform:uppercase;
   color:#ffd66b;opacity:0;transition:opacity .4s;white-space:nowrap}
@@ -125,26 +179,44 @@ export const LEGACY_STAGE_CSS = `
  * The chosen name is absent from every state before the reveal, so a reader
  * who inspects the DOM mid-ceremony finds nothing to spoil.
  */
-export function lipstickStage(row, list, { ep, bottom = [], holder = null, uid = 'x' } = {}) {
+export function lipstickStage(row, list, {
+  ep, bottom = [], holder = null, uid = 'x',
+  /* WHAT SHE WEIGHED AND WHY, from js/dr/legacy.js by way of the row. */
+  weighed = [], reason = '', why = '', spared = null,
+} = {}) {
   const line = [...bottom].sort((a, b) => a.localeCompare(b));
   const states = list.map(s => {
     const st = {
       phase: 'cer', hostOn: false, banner: null, quote: '', mood: '',
       chosen: null, spared: [], held: false, thinking: false, turn: false,
+      weigh: false, hold: false, why: false,
     };
     if (s.kind === 'legacy:deliberate') {
       st.thinking = true;
       st.held = true;
+      /* WHAT SHE IS ACTUALLY WEIGHING, on the screen where she weighs it.
+         The ceremony used to deliberate behind a closed door and then assert
+         a name, so the viewer never saw a decision being made — reported as
+         "we never get the reasoning as to why someone chose the lipstick". */
+      st.weigh = true;
       st.banner = { text: 'The choice', sub: `${line.length} on the stage, one lipstick` };
+    } else if (s.kind === 'legacy:hold') {
+      /* ── THE SECOND BEFORE ── every tube is down, the counter is dark, one
+         of them is in her hand and the screen does not say which. */
+      st.hold = true;
+      st.mood = 'dark';
+      st.banner = { text: 'She has decided', sub: 'and she has not said it yet' };
     } else if (s.kind === 'legacy:reveal') {
       st.chosen = s.target || null;
       st.turn = true;
       st.mood = 'red';
+      st.why = true;
       st.banner = { text: 'The name on the lipstick', sub: s.target || '', red: true };
     } else if (s.kind === 'legacy:room') {
       st.chosen = s.target || null;
       st.spared = line.filter(q => q !== s.target);
       st.mood = 'red';
+      st.why = true;
     } else if (s.kind === 'legacy:last-words') {
       st.chosen = s.target || null;
       st.spared = line.filter(q => q !== s.target);
@@ -154,17 +226,51 @@ export function lipstickStage(row, list, { ep, bottom = [], holder = null, uid =
     return st;
   });
 
+  /* ── THE CHIPS UNDER EACH TUBE ──────────────────────────────────────
+     Everything the holder is actually weighing about this queen, as facts
+     she already knows and the viewer has already been shown: how dangerous
+     she is, where the panel put her, whether they are close, whether she
+     asked, and whether she has been carried through this before.
+     NOT A SPOILER: none of it says which tube she picks up. It is the same
+     information from the call and from Untucked, gathered in one place. */
+  const byQ = Object.fromEntries((weighed || []).map(w => [w.q, w]));
+  const chips = q => {
+    const w = byQ[q];
+    if (!w) return '';
+    const out = [];
+    if (w.threat >= 0.66) out.push('<i class="hot">biggest threat</i>');
+    else if (w.threat <= 0.34) out.push('<i>no threat to her</i>');
+    if (w.panel >= 0.99) out.push('<i class="hot">panel ranked her last</i>');
+    if (w.bond >= 4) out.push('<i class="warm">her friend</i>');
+    else if (w.bond <= -4) out.push('<i class="hot">no love lost</i>');
+    if (w.ally) out.push('<i class="warm">in her circle</i>');
+    if (w.pleaded > 0) out.push('<i class="warm">asked her for it</i>');
+    if (w.spared > 0) out.push(`<i>spared ${w.spared === 1 ? 'once' : `${w.spared} times`}</i>`);
+    return `<span class="lgx-weigh">${out.join('')}</span>`;
+  };
+
   const tubes = line.map(q => `<div class="lgx-one" data-q="${esc(q)}">
     <span class="lgx-hand">in her hand</span>
     ${TUBE}
     <span class="lgx-name">${esc(q)}</span>
+    ${chips(q)}
     <span class="lgx-card" data-card></span>
   </div>`).join(' ');
 
+  /* HER REASON, IN HER OWN WORDS, and it does not exist in the markup before
+     the name does: it names the queen she protected. */
+  const WHY_K = {
+    threat: 'Competition', panel: 'The panel', grudge: 'History',
+    turn: 'Fairness', friend: 'Friendship', bloc: 'Her circle', plea: 'A promise',
+  };
   const body = `<div class="lgx-counter">
     <div class="lgx-bulbs">${'<i></i>'.repeat(9)}</div>
     <div class="lgx-mirror">${holder ? face(holder, ep, 78) : ''}<b>${esc(holder || '')}</b></div>
     <div class="lgx-row">${tubes}</div>
+    ${reason ? `<div class="lgx-why" data-why hidden>
+      <span class="lgx-why-k">${esc(WHY_K[why] || 'Why')}</span>
+      <q>${esc(reason)}</q>
+    </div>` : ''}
   </div>`;
 
   const html = shell({
@@ -174,6 +280,10 @@ export function lipstickStage(row, list, { ep, bottom = [], holder = null, uid =
   const apply = engine(`lgx-${uid}`, states, (el, st, fresh) => {
     el.classList.toggle('thinking', !!st?.thinking);
     el.classList.toggle('any', !!st?.chosen);
+    el.classList.toggle('weighing', !!st?.weigh);
+    el.classList.toggle('holding', !!st?.hold);
+    const whyBox = el.querySelector('[data-why]');
+    if (whyBox) whyBox.hidden = !st?.why;
     for (const one of el.querySelectorAll('.lgx-one')) {
       const nm = one.dataset.q;
       const isChosen = !!st && st.chosen === nm;

@@ -114,32 +114,98 @@ export function chooseElimination({
       + mind.merit * panelLast * 1.4
       // fair: it is somebody's turn, and it is not her friend's
       + mind.fair * (panelLast * 0.6 + clamp(spared, 0, 3) * 0.25)
-      // a friend is harder to end, whoever she is
-      - clamp(b, -10, 10) / 10 * (0.5 + mind.fair)
-      /* AND HER OWN CIRCLE IS HARDER STILL. A bias, never a veto: a queen who
-         is genuinely the biggest threat in that bottom still goes home, which
-         is the betrayal the format runs on. The bloc bends it, the bloc does
-         not decide it — and it cannot coordinate, so nothing here is a vote. */
-      - (allies.includes(q) ? 0.45 : 0)
-      // and what she said in Untucked is worth something
-      - plea * 0.12
       // a nudge, so a room of similar queens is not deterministic
       + (rng() - 0.5) * 0.25;
-    return { q, score, threat, panelLast, raw: raw[q] };
+    /* ── THE THREE THINGS THAT PROTECT HER, KEPT APART ─────────────────
+       A friend is harder to end, whoever she is; her own circle is harder
+       still; and what a queen said in Untucked is worth something. All three
+       subtract, so none of them can ever be the loudest term in a pick — they
+       are the reason a name is NOT on the lipstick. Kept as their own numbers
+       so the ceremony can ask the only question that names them: who would
+       have gone if these had been zero.
+       A bias, never a veto: a queen who is genuinely the biggest threat in
+       that bottom still goes home, which is the betrayal the format runs on.
+       The bloc bends it, the bloc does not decide it — and it cannot
+       coordinate, so nothing here is a vote. */
+    const softFriend = clamp(b, 0, 10) / 10 * (0.5 + mind.fair);
+    const softBloc = allies.includes(q) ? 0.45 : 0;
+    const softPlea = plea * 0.12;
+    /* A COLD bond still pushes her towards the door, and that is not
+       protection — it stays in the score proper. */
+    const cold = clamp(b, -10, 0) / 10 * (0.5 + mind.fair);
+    const soft = softFriend + softBloc + softPlea;
+    return {
+      q, score: score - soft - cold, soft, softFriend, softBloc, softPlea,
+      threat, panelLast, raw: raw[q],
+    };
   }).sort((a, b) => b.score - a.score);
   const top = scored[0];
-  /* WHY, from whichever term actually dominated her score — not from her
-     archetype, which would let the label and the decision disagree. */
-  const parts = [
-    ['threat', mind.strategy * top.threat * 1.6],
-    ['panel', mind.merit * top.panelLast * 1.4],
-    ['grudge', mind.strategy * grudgeOf(winner, top.q, ledger) * 1.6],
-  ].sort((a, b) => b[1] - a[1]);
-  const why = parts[0][1] > 0 ? parts[0][0] : 'panel';
+  /* ── WHY, AND IT IS NOT ONE OF THREE THINGS ────────────────────────
+     This compared exactly three terms — threat, the panel's order and a
+     grudge — and 82% of ceremonies across forty seasons came back `panel`:
+     four nights in five, the holder said "the room already ranked her and I
+     agree" and the screen had nothing else to say. Two whole halves of the
+     score were unlabelled, and they are the two the viewer most wants named:
+     FAIRNESS (she has been spared three times, it is her turn) and the
+     PROTECTIVE terms — a friend she will not cut, her own circle, a queen who
+     talked her out of it in Untucked.
+
+     The protective terms are negative, so they never explain a pick directly.
+     They explain it COUNTERFACTUALLY: zero them out and see whether the name
+     changes. If it does, the reason the lipstick says this name is that it
+     could not say the other one, and that is the sentence the night wants. */
+  const cf = live.map(q => {
+    const e = scored.find(x => x.q === q);
+    return { q, score: e.score + e.soft };
+  }).sort((a, b) => b.score - a.score)[0];
+  const softOf = (q) => {
+    const e = scored.find(x => x.q === q) || {};
+    return { friend: e.softFriend || 0, bloc: e.softBloc || 0, plea: e.softPlea || 0 };
+  };
+  let why = null;
+  let spared = null;
+  if (cf && cf.q !== top.q) {
+    /* Somebody was protected OUT of this. Which of the three did it. */
+    const sp = softOf(cf.q);
+    const [kind] = Object.entries(sp).sort((a, b) => b[1] - a[1])[0];
+    if (sp[kind] > 0) { why = kind; spared = cf.q; }
+  }
+  if (!why) {
+    /* Nobody was protected out of it, so the loudest term that PUT her here
+       is the reason. `turn` is the fairness read: she has been spared before
+       and the room has not made her answer for it. */
+    const parts = [
+      ['threat', mind.strategy * top.threat * 1.6],
+      ['panel', mind.merit * top.panelLast * 1.4],
+      ['grudge', mind.strategy * grudgeOf(winner, top.q, ledger) * 1.6],
+      ['turn', mind.fair * clamp(timesSpared(ledger, top.q), 0, 3) * 0.25],
+    ].sort((a, b) => b[1] - a[1]);
+    why = parts[0][1] > 0 ? parts[0][0] : 'panel';
+  }
   const REASON = {
     threat: 'she is the one in that bottom who could take this from me',
     panel: 'the panel already said she was the weakest of them tonight',
     grudge: 'she has had this coming since the last time we were in a room together',
+    turn: 'she has been carried through this twice already and it has to be somebody',
+    friend: 'the other one is my friend and I was never going to write her name',
+    bloc: 'the other one is one of mine, and you do not end one of yours',
+    plea: 'the other one asked me for it, to my face, and I gave her my word',
   };
-  return { target: top.q, why, reason: REASON[why] };
+  /* WHAT SHE WEIGHED, for the screen: the mix that produced this, so the
+     ceremony can show a decision rather than assert one. */
+  return {
+    target: top.q,
+    why,
+    reason: REASON[why],
+    spared,
+    mind: { strategy: mind.strategy, merit: mind.merit, fair: mind.fair },
+    weighed: scored.map(x => ({
+      q: x.q, threat: Math.round(x.threat * 100) / 100,
+      panel: Math.round(x.panelLast * 100) / 100,
+      spared: timesSpared(ledger, x.q),
+      bond: Math.round((Number(bond(winner, x.q)) || 0) * 10) / 10,
+      ally: allies.includes(x.q),
+      pleaded: Math.round((Number(mine[x.q]) || 0) * 100) / 100,
+    })),
+  };
 }

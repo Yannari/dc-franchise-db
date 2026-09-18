@@ -879,11 +879,18 @@ describe('one song, one screen', () => {
        Only the beats that are not reveal-gated: the verdict and the lines
        around it are withheld until the reader clicks, which is the spoiler
        rule this screen has always had. */
-    const plain = t => String(t).toLowerCase().replace(/[^a-z0-9]+/g, '');
+    /* ENTITIES FIRST. Stripping punctuation alone leaves the NAME of the
+       entity behind — `&quot;` becomes the letters "quot" in the middle of
+       the sentence — so a line that is on the screen reads as missing. */
+    const plain = t => String(t).replace(/&[a-z]+;/g, ' ')
+      .toLowerCase().replace(/[^a-z0-9]+/g, '');
     const page = plain(html);
-    const shown = kindsOn.filter(sc => /^revenge:(couples|song|couple|lost)$/.test(sc.kind)
-      || /^stage:lipsync-(beat|hook|stunt)$/.test(sc.kind));
-    expect(shown.length).toBeGreaterThan(4);
+    /* The opening of the screen, which is never reveal-gated: the couples
+       being called and the two of them taking the stage. How far down the
+       column the at-rest render reaches depends on the season's own dice, so
+       asserting on the closing beats makes the test a seed check. */
+    const shown = kindsOn.filter(sc => /^revenge:(couples|song)$/.test(sc.kind));
+    expect(shown.length).toBe(2);
     for (const sc of shown) expect(page, sc.kind).toContain(plain(sc.text).slice(0, 40));
     // And it says, in as many words, that these two are not in the competition.
     expect(html).toContain('Lip Sync For Her Place');
@@ -973,6 +980,106 @@ describe('a queen whose portrait file is missing', () => {
       expect(html).toMatch(/data-in="[^"]+"/);
     } else {
       expect(html).toContain('dr-initials');
+    }
+  });
+});
+
+describe('why she chose that lipstick', () => {
+  const as = seed => season(seed, { drAllStars: true });
+
+  it('says it in her own voice, naming the queen she did not write', () => {
+    const res = as(7);
+    const rows = res.rows.filter(r => (r.dr.scenes || [])
+      .some(sc => sc.kind === 'legacy:confessional'));
+    expect(rows.length).toBeGreaterThan(3);
+    for (const row of rows) {
+      const c = row.dr.scenes.find(sc => sc.kind === 'legacy:confessional');
+      expect(c.data.confessional).toBe(true);
+      expect(c.data.who).toBe(row.dr.lipsync.chosenBy);
+      expect(c.text.length).toBeGreaterThan(60);
+      // The queen she ended is named in it.
+      expect(c.text).toContain(row.dr.lipsync.eliminated);
+    }
+  });
+
+  it('gives the decision more than one reason across a season', () => {
+    const whys = new Set();
+    for (const seed of [7, 19, 42, 77, 300]) {
+      for (const row of as(seed).rows) if (row.dr.lipsync?.why) whys.add(row.dr.lipsync.why);
+    }
+    /* It used to be three labels and 82% of nights came back `panel`. The
+       protective half of the score — a friend, her circle, a promise made in
+       Untucked — now has names of its own. */
+    expect(whys.size).toBeGreaterThan(3);
+    expect([...whys].some(w => ['friend', 'bloc', 'plea', 'turn'].includes(w))).toBe(true);
+  });
+
+  it('names the queen she protected when one was protected', () => {
+    for (const seed of [7, 19, 42, 77, 300]) {
+      for (const row of as(seed).rows) {
+        const ls = row.dr.lipsync;
+        if (!ls?.why || !['friend', 'bloc', 'plea'].includes(ls.why)) continue;
+        expect(ls.spared, `${seed}/${row.num}`).toBeTruthy();
+        expect(ls.spared).not.toBe(ls.eliminated);
+        // And the bottom she was standing in contained both of them.
+        expect(row.dr.call.bottom).toContain(ls.spared);
+      }
+    }
+  });
+});
+
+describe('the other lipstick', () => {
+  const as = seed => season(seed, { drAllStars: true });
+
+  it('asks the runner-up the morning after, and she answers or she does not', () => {
+    let asked = 0; const kinds = new Set();
+    for (const seed of [7, 19, 42, 77, 300]) {
+      for (const row of as(seed).rows) {
+        const sh = (row.dr.scenes || []).filter(sc => String(sc.kind).startsWith('shadow:'));
+        if (!sh.length) continue;
+        asked += 1;
+        expect(sh[0].kind).toBe('shadow:ask');
+        expect(sh[0].step).toBe('cold-open');
+        for (const x of sh) kinds.add(x.kind);
+        // Exactly one of the three answers, never two.
+        const answers = sh.filter(x => /shadow:(same|different|kept)$/.test(x.kind));
+        expect(answers.length, `${seed}/${row.num}`).toBe(1);
+      }
+    }
+    expect(asked).toBeGreaterThan(10);
+    expect(kinds.has('shadow:same')).toBe(true);
+    expect(kinds.has('shadow:kept')).toBe(true);
+    expect(kinds.has('shadow:different')).toBe(true);
+  });
+
+  it('costs her when she names a queen who is still in the room', () => {
+    let found = 0;
+    for (const seed of [7, 19, 42, 77, 300, 101, 202]) {
+      const res = as(seed);
+      for (const row of res.rows) {
+        const diff = (row.dr.scenes || []).find(sc => sc.kind === 'shadow:different');
+        if (!diff) continue;
+        found += 1;
+        const named = (row.dr.events || []).find(e => e.type === 'shadow:named');
+        if (!named) continue;
+        // The bond goes, and the grudge is on the ledger for the next ceremony.
+        expect(named.bond[0][2]).toBeLessThan(0);
+        const [by, against] = [named.players[1], named.players[0]];
+        expect(res.state.power.grudges.some(g => g.by === by && g.against === against)).toBe(true);
+      }
+    }
+    expect(found).toBeGreaterThan(0);
+  });
+
+  it('never opens it on the night — it is next week or never', () => {
+    for (const seed of [7, 19, 42]) {
+      for (const row of as(seed).rows) {
+        const sh = (row.dr.scenes || []).filter(sc => String(sc.kind).startsWith('shadow:'));
+        const cer = (row.dr.scenes || []).filter(sc => sc.step === 'legacy-choice');
+        if (!sh.length || !cer.length) continue;
+        // Both can happen in one episode, but the shadow is the MORNING one.
+        for (const x of sh) expect(x.step).toBe('cold-open');
+      }
     }
   });
 });

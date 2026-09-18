@@ -52,7 +52,7 @@ import { chooseElimination } from './legacy.js';
 import { revengePairs, revengeReentry, revengeLine, pairJudging } from './revenge.js';
 import { REVENGE_BEATS } from './data/revenge-beats.js';
 import { dragAlliances, sameBloc } from './alliances.js';
-import { LEGACY_BEATS, LEGACY_CAMPAIGN, HISTORY_BEATS, legacyLine } from './data/legacy-beats.js';
+import { LEGACY_BEATS, LEGACY_CAMPAIGN, HISTORY_BEATS, SHADOW_BEATS, legacyLine } from './data/legacy-beats.js';
 import { recordUse } from './power.js';
 import { runMaxi, applyEvents } from './maxi.js';
 import { showWords } from '../shows.js';
@@ -194,6 +194,7 @@ export function runDragWeek(state, cfg, ctx) {
      left, there is no empty station and no message on the mirror. The
      entrances are the opening. */
   if (!isPremiere) say('cold-open', 'cold-open', { gone });
+
 
   /* ── REVENGE OF THE QUEENS: THE DOOR ────────────────────────────────
      Every queen the season has sent home walks back in, one at a time, last
@@ -369,6 +370,79 @@ export function runDragWeek(state, cfg, ctx) {
     for (const [n, d] of Object.entries(e.tv || {})) ctx.tvDelta?.(n, d);
     for (const [k, v] of Object.entries(e.state || {})) (state.flags ||= {})[k] = v;
   };
+
+  /* ── THE OTHER LIPSTICK ─────────────────────────────────────────────
+     Last week's song had two queens in it and only one of them ever said a
+     name. The other one has been carrying hers overnight, and this is the
+     morning the room asks — which is the only place in this format where a
+     decision that never happened can still cost somebody something.
+     She opens it or she does not, and both are a move. It is her own read
+     that decides: a bold queen says it, a careful one keeps it, and a queen
+     whose name would land on somebody still in the room thinks twice. */
+  const shadowFx = e => { applyEventLike(e); werkEvents.push(e); };
+  const shadow = state.shadowLipstick;
+  if (shadow && shadow.target && living.includes(shadow.holder)) {
+    state.shadowLipstick = null;
+    const her = P(shadow.holder).stats || {};
+    const bold = Number.isFinite(Number(her.boldness)) ? Number(her.boldness) : 5;
+    const same = shadow.target === shadow.wentHome;
+    const stillHere = living.includes(shadow.target);
+    /* SAYING IT IS EASY WHEN IT COSTS NOTHING. A name that agrees with the
+       night, or a name that belongs to a queen already gone, is a free
+       sentence; the one that costs is the name sitting three stations away. */
+    const price = same ? 0 : stillHere ? 3.2 : 1.1;
+    const tells = bold - price + (rng() - 0.5) * 2 > 4.4;
+    const sv = { h: shadow.holder, x: shadow.target, w: shadow.winner, g: shadow.wentHome };
+    const sc = (kind, who, pool) => scenes.push({
+      step: 'cold-open', kind: `shadow:${kind}`,
+      data: { players: who, shadow: true, holder: shadow.holder, told: tells },
+      text: legacyLine(pool, sv, rng),
+    });
+    sc('ask', [shadow.holder, shadow.winner].filter(n => living.includes(n)), SHADOW_BEATS.ask);
+    if (!tells) {
+      sc('kept', [shadow.holder], SHADOW_BEATS.kept);
+      /* A ROOM THAT KNOWS THERE IS SOMETHING TO KNOW. Nobody is named, so
+         nobody takes it personally — everybody takes it slightly. */
+      for (const q of living) {
+        if (q === shadow.holder) continue;
+        shadowFx({ type: 'shadow:kept', players: [shadow.holder, q],
+          bond: [[shadow.holder, q, -0.4]], pop: {}, state: {}, data: {} });
+      }
+    } else if (same) {
+      sc('same', [shadow.holder, shadow.winner].filter(Boolean), SHADOW_BEATS.same);
+      /* TWO QUEENS WHO WOULD HAVE MADE THE SAME CALL. That is an alignment
+         the room can see, and the room is right to see it. */
+      if (living.includes(shadow.winner)) {
+        shadowFx({ type: 'shadow:same', players: [shadow.holder, shadow.winner],
+          bond: [[shadow.holder, shadow.winner, 2]], pop: {}, state: {}, data: {} });
+      }
+    } else {
+      sc('different', [shadow.holder, shadow.target].filter(n => living.includes(n)),
+        SHADOW_BEATS.different);
+      if (stillHere) {
+        sc('hit', [shadow.target], SHADOW_BEATS.hit);
+        /* SHE SAID IT TO HER FACE, so it is on the ledger: the bond goes and
+           the grudge is real, and js/dr/legacy.js will read it the next time
+           either of them is holding one of these. */
+        shadowFx({ type: 'shadow:named', players: [shadow.holder, shadow.target],
+          bond: [[shadow.holder, shadow.target, -3]], pop: {}, state: {}, data: {} });
+        state.power ||= { uses: [], debts: [], grudges: [], promises: [], hopes: [] };
+        if (!state.power.grudges.some(g => g.by === shadow.target && g.against === shadow.holder)) {
+          state.power.grudges.push({
+            by: shadow.target, against: shadow.holder, ep: cfg.num, over: shadow.target,
+          });
+        }
+        /* AND HER FRIENDS HEARD IT TOO. */
+        for (const q of living) {
+          if (q === shadow.holder || q === shadow.target) continue;
+          if ((Number(ctx.bond?.(q, shadow.target)) || 0) < 4) continue;
+          shadowFx({ type: 'shadow:fallout', players: [q, shadow.holder],
+            bond: [[q, shadow.holder, -1]], pop: {}, state: {}, data: {} });
+        }
+      }
+    }
+    sc('room', [], SHADOW_BEATS.room);
+  }
   /* THE PREMIERE'S FIRST IMPRESSIONS ARE REAL. They are applied here rather
      than inside arrivalScenes, so every bond in this episode lands through
      the same function — one place, one rule, and nothing about arrivals is
@@ -1837,6 +1911,9 @@ export function runDragWeek(state, cfg, ctx) {
           lipsync.legacy = true;
           lipsync.why = choice.why;
           lipsync.reason = choice.reason;
+          lipsync.spared = choice.spared || null;
+          lipsync.mind = choice.mind;
+          lipsync.weighed = choice.weighed;
           /* ONE PICK PER QUEEN, because `timesSpared` counts picks whose
              `saved` is a NAME — the shape the Beaver writes. A single entry
              carrying an array would count as nobody. */
@@ -1872,18 +1949,71 @@ export function runDragWeek(state, cfg, ctx) {
             winner: lc.winner, eliminated: chosen, pool,
             why: choice.why, reason: choice.reason,
           });
-          const lv = { h: lc.winner, x: chosen, p: pool.join(', ') };
+          /* `s` is the queen she PROTECTED, when the choice turned on one —
+             a friend, one of her circle, or a queen who asked her for it in
+             Untucked. Null on a night the pick was simply the pick. */
+          const lv = { h: lc.winner, x: chosen, p: pool.join(', '), s: choice.spared || '' };
           const ceremony = (kind, who, lines) => scenes.push({
             step: 'legacy-choice', kind,
             /* `chosen`, not `target`: a campaign scene already uses `target`
                for the queen being lobbied, and one word meaning two things is
                how a spoiler test cannot tell a pitch from a verdict. */
-            data: { players: who, holder: lc.winner, chosen, why: choice.why },
+            data: { players: who, holder: lc.winner, chosen, why: choice.why,
+              /* WHAT SHE WEIGHED, so the ceremony can show the decision
+                 instead of asserting it. */
+              reason: choice.reason, spared: choice.spared || null,
+              mind: choice.mind, weighed: choice.weighed },
             text: legacyLine(lines, lv, rng),
           });
           ceremony('legacy:deliberate', [lc.winner],
             LEGACY_BEATS.deliberate[choice.why] || LEGACY_BEATS.deliberate.panel);
+          /* THE SECOND BEFORE, on its own screen: she is holding one and
+             nobody knows which. `players` is her alone — the chosen queen is
+             not in this scene, because the scene is about not knowing. */
+          ceremony('legacy:hold', [lc.winner], LEGACY_BEATS.hold);
           ceremony('legacy:reveal', [lc.winner, chosen], LEGACY_BEATS.reveal);
+          /* ── AND THE OTHER ONE'S LIPSTICK ───────────────────────────
+             The queen who LOST that song had a name in her head too, and on
+             this format she is the only person alive who knows what it was.
+             It is worked out here, with the same rule and the same inputs —
+             her mind, her bonds, her grudges, what the room said to HER in
+             Untucked — and then it is sealed. Nothing on this night renders
+             it: `state.shadowLipstick` is opened in next week's cold open,
+             where she can say it out loud or keep it, and where a different
+             name is a problem for everybody still standing.
+             It cannot change tonight's exit. She did not win. */
+          const runnerUp = [a, b].find(n => n !== lc.winner) || null;
+          if (runnerUp && living.includes(runnerUp)) {
+            const hers = chooseElimination({
+              winner: runnerUp, pool,
+              players: Object.fromEntries(living.map(n => [n, P(n)])),
+              bond: (x, y) => Number(ctx.bond?.(x, y)) || 0,
+              state, ledger: state.power, pleas: legacyPleas, panelOrder: pool, rng,
+              allies: pool.filter(q => sameBloc(alliances, runnerUp, q)),
+            });
+            state.shadowLipstick = {
+              ep: cfg.num, holder: runnerUp, winner: lc.winner,
+              target: hers.target, why: hers.why, reason: hers.reason,
+              spared: hers.spared || null,
+              /* WHAT THE NIGHT ACTUALLY DID, so next week can tell whether
+                 she is agreeing with it or contradicting it. */
+              wentHome: chosen, pool: [...pool],
+            };
+          }
+          /* HER OWN ACCOUNT OF IT, to camera, after the fact. `o` is the
+             queen she did NOT write — the one the decision was actually
+             against, which is the queen she protected where there was one and
+             otherwise whoever else was standing there. */
+          const other = choice.spared
+            || pool.filter(n => n !== chosen)[0] || '';
+          scenes.push({
+            step: 'legacy-choice', kind: 'legacy:confessional',
+            data: { players: [lc.winner], who: lc.winner, confessional: true,
+              holder: lc.winner, chosen, why: choice.why },
+            text: legacyLine(
+              LEGACY_BEATS.confessional[choice.why] || LEGACY_BEATS.confessional.panel,
+              { h: lc.winner, x: chosen, o: other }, rng),
+          });
           ceremony('legacy:room', [chosen], LEGACY_BEATS.roomAnswer);
           ceremony('legacy:last-words', [chosen], LEGACY_BEATS.lastWords);
         }

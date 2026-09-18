@@ -25,6 +25,16 @@ const _esc = s => String(s == null ? '' : s)
   .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
   .replace(/"/g, '&quot;');
 
+// The fold carries its own behaviour and remembers itself in the same key the
+// mission stages use: one choice per viewer, not one per screen.
+const FOLD = "(function(b){var s=b.closest('.ch-stage');var m=s.classList.toggle('ch-min');"
+  + "b.innerHTML=m?'&#9656; show':'&#9662; hide';"
+  + "try{localStorage.setItem('tr_stage_min',m?'1':'0')}catch(e){}})(this)";
+
+function stageFolded() {
+  try { return localStorage.getItem('tr_stage_min') === '1'; } catch { return false; }
+}
+
 /** How many stage steps there are. The caller maps beats onto this. */
 export const CHALICE_STEPS = 5;
 
@@ -126,15 +136,23 @@ const GLASS_SLIDE = '<g class="ch-glass">'
  * chalice facts. Safe on a record with no `vdata` — the screen then draws the
  * scene without names in the captions.
  */
-export function chaliceStage(rec, step = 0) {
+export function chaliceStage(rec, step = 0, faces = {}) {
   const d = (rec && rec.vdata) || {};
+  const min = stageFolded();
+  // THE FACES SIT OVER THE SILHOUETTES, not inside the SVG: the portraits are
+  // HTML (js/vp-tr/portrait.js) and a <foreignObject> would drag the whole
+  // avatar stack into the scene graph. The viewBox is 400x200 and the stage is
+  // locked to 2/1, so a percentage lands exactly where the figure's head is.
+  const face = (html, cls, x, y) => (html
+    ? '<div class="ch-face ' + cls + '" style="left:' + x + '%;top:' + y + '%">'
+      + html + '</div>' : '');
   const coffins = (d.coffins || []).length || 3;
   let graves = '';
   for (let i = 0; i < Math.min(coffins, 6); i++) {
     graves += '<g class="ch-grave" style="--i:' + i + '" transform="translate('
       + (196 + i * 32) + ',112) scale(1.5)"><g class="ch-lift">' + COFFIN + '</g></g>';
   }
-  return '<div class="ch-stage" data-ch="' + step + '"'
+  return '<div class="ch-stage' + (min ? ' ch-min' : '') + '" data-ch="' + step + '"'
     + (rec && rec.blocked ? ' data-blocked="1"' : '')
     + (d.slow ? ' data-slow="1"' : '') + '>'
     + '<svg class="ch-svg" viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice"'
@@ -165,7 +183,8 @@ export function chaliceStage(rec, step = 0) {
     + '<g class="ch-pourer" transform="translate(16,-9)">' + BOTTLE + '</g>'
     + '<path class="ch-stream" d="M-14 -38 L-14 -20"/>'
     + '</g>'
-    + '<g class="ch-taker" transform="translate(292,170) scale(-1,1)">' + FIGURE + '</g>'
+    + '<g class="ch-hand" transform="translate(236,170)">' + FIGURE + '</g>'
+    + '<g class="ch-taker" transform="translate(330,170) scale(-1,1)">' + FIGURE + '</g>'
     + '<g class="ch-cross" transform="translate(186,146)">' + GLASS_SLIDE + '</g>'
     // the morning
     + '<g class="ch-morning">'
@@ -187,15 +206,36 @@ export function chaliceStage(rec, step = 0) {
     + CAPTIONS.map((_, i) => '<div class="ch-cap-slot" data-i="' + i + '">'
       + _caption(i, d, rec || {}) + '</div>').join('')
     + '</div>'
+    + face(faces.searcher, 'ch-face-find', 36.5, 54)
+    + face(faces.pourer, 'ch-face-pour', 59, 54)
+    + face(faces.victim, 'ch-face-take', 82.5, 54)
+    + face(faces.victim, 'ch-face-gone', 16, 55)
     + '<div class="ch-ticks">' + CAPTIONS.map((_, i) =>
       '<i class="ch-tick" data-i="' + i + '"></i>').join('') + '</div>'
+    + '<button type="button" class="ch-fold" onclick="' + FOLD + '">'
+    + (min ? '&#9656; show' : '&#9662; hide') + '</button>'
     + '</div>';
 }
 
 export const CHALICE_CSS = `
-.ch-stage{position:relative;width:100%;aspect-ratio:2/1;max-height:290px;
+.ch-stage{position:sticky;top:54px;z-index:20;width:100%;aspect-ratio:2/1;max-height:290px;
   border:1px solid rgba(224,160,73,.18);border-radius:10px;overflow:clip;
-  background:#0d0b09;margin:0 0 22px}
+  background:#0d0b09;margin:0 0 22px;
+  box-shadow:0 18px 44px rgba(0,0,0,.66);
+  transition:max-height .45s cubic-bezier(.4,0,.2,1)}
+.ch-stage.ch-min{max-height:74px}
+.ch-stage.ch-min .ch-svg,.ch-stage.ch-min .ch-face{opacity:0}
+.ch-fold{position:absolute;right:14px;bottom:10px;z-index:9;cursor:pointer;
+  border:1px solid rgba(255,255,255,.2);background:rgba(0,0,0,.5);color:#e8e2d8;
+  border-radius:999px;padding:3px 10px;font:600 10px/1 system-ui;letter-spacing:.1em;
+  text-transform:uppercase;opacity:.72}
+.ch-fold:hover{opacity:1}
+.ch-face{position:absolute;width:6.4%;aspect-ratio:1;transform:translate(-50%,-50%);
+  border-radius:50%;overflow:hidden;opacity:0;pointer-events:none;
+  box-shadow:0 0 0 1.5px rgba(224,160,73,.5),0 4px 14px rgba(0,0,0,.7);
+  transition:opacity .5s ease,transform .8s ease}
+.ch-face .cv-av{width:100%!important;height:100%!important;display:block;border-radius:50%}
+.ch-face .cv-av img{width:100%;height:100%;object-fit:cover;border-radius:50%}
 .ch-svg{position:absolute;inset:0;width:100%;height:100%}
 .ch-plank{fill:#2a1f16}
 .ch-book{fill:#8a6a44;opacity:calc(.6 + var(--bk));transition:transform .5s ease}
@@ -208,7 +248,7 @@ export const CHALICE_CSS = `
 .ch-figure{fill:#050403}
 .ch-arm{transform-origin:10px -42px;transition:transform .6s cubic-bezier(.4,1.5,.5,1)}
 .ch-reader{opacity:0;transition:opacity .6s ease,transform .9s ease}
-.ch-taker{opacity:0;transition:opacity .7s ease}
+.ch-taker,.ch-hand{opacity:0;transition:opacity .7s ease}
 .ch-table{opacity:0;transition:opacity .6s ease}
 .ch-top,.ch-leg{fill:#2a1f16}
 .ch-cup-bowl,.ch-cup-stem{fill:#8a6f3c}
@@ -248,13 +288,22 @@ export const CHALICE_CSS = `
 
 /* ── step 3: the hand-over ──────────────────────────────────────────── */
 .ch-stage[data-ch="3"] .ch-cross{opacity:1;animation:ch-cross 1.6s ease-in-out forwards}
+.ch-stage[data-ch="2"] .ch-hand,.ch-stage[data-ch="3"] .ch-hand{opacity:1}
 .ch-stage[data-ch="3"] .ch-taker{opacity:1}
 .ch-stage[data-ch="3"] .ch-taker .ch-arm{transform:rotate(-38deg)}
+.ch-stage[data-ch="3"] .ch-hand .ch-arm{transform:rotate(44deg)}
+/* the faces follow the bodies they sit on */
+.ch-stage[data-ch="1"] .ch-face-find,.ch-stage[data-ch="2"] .ch-face-find{opacity:1}
+.ch-stage[data-ch="2"] .ch-face-find{transform:translate(-50%,-50%) translateX(-10%);opacity:.5}
+.ch-stage[data-ch="2"] .ch-face-pour,.ch-stage[data-ch="3"] .ch-face-pour{opacity:1}
+.ch-stage[data-ch="3"] .ch-face-take{opacity:1}
+.ch-stage[data-ch="4"] .ch-face-gone{opacity:.42;filter:grayscale(1)}
 
 /* ── step 4: the morning ────────────────────────────────────────────── */
 .ch-stage[data-ch="4"] .ch-case,.ch-stage[data-ch="4"] .ch-table,
 .ch-stage[data-ch="4"] .ch-hidden,.ch-stage[data-ch="4"] .ch-glow,
-.ch-stage[data-ch="4"] .ch-reader,.ch-stage[data-ch="4"] .ch-taker{opacity:0}
+.ch-stage[data-ch="4"] .ch-reader,.ch-stage[data-ch="4"] .ch-taker,
+.ch-stage[data-ch="4"] .ch-hand{opacity:0}
 .ch-stage[data-ch="4"] .ch-morning{opacity:1}
 .ch-stage[data-ch="4"][data-slow] .ch-hour{opacity:1}
 .ch-stage[data-ch="4"][data-slow] .ch-sand{animation:ch-sand 2.4s linear infinite}
@@ -267,7 +316,7 @@ export const CHALICE_CSS = `
 @keyframes ch-gleam{0%,100%{filter:none}50%{filter:brightness(1.7)}}
 @keyframes ch-pour{to{stroke-dashoffset:0}}
 @keyframes ch-fill{from{transform:scaleY(0)}to{transform:scaleY(1)}}
-@keyframes ch-cross{from{transform:translate(186px,146px)}to{transform:translate(272px,152px)}}
+@keyframes ch-cross{from{transform:translate(186px,146px)}to{transform:translate(310px,152px)}}
 @keyframes ch-sand{0%{transform:translateY(-10px);opacity:0}
   20%{opacity:1}100%{transform:translateY(12px);opacity:0}}
 @keyframes ch-rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}

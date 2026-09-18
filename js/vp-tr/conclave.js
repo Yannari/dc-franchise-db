@@ -631,6 +631,23 @@ const HOST_LINES = {
     + 'holding it.',
     'This is the version with no witnesses inside the pact either.',
   ],
+  // ── AND ON A CHALICE NIGHT ──────────────────────────────────────────
+  //
+  // The pact IS together — the `Plain` pool's "no witnesses inside the pact
+  // either" is false here — but they are in the library, not the turret, and
+  // the night is decided by who can carry a glass across a room.
+  openChalice: [
+    'No turret tonight. The pact is sent to the library instead, to find a cup somebody hid there a long time ago.',
+    'Nobody climbs the stair. There is a chalice behind the plays, and by morning the castle is a glass short.',
+    'The Traitors do not meet tonight. They search. If they find it, somebody is handed a drink and thanks them for it.',
+    'No candles, no vote, no argument. A shelf of Shakespeare, a cup behind it, and a room to carry it across.',
+  ],
+  shortlistChalice: [
+    'There is no shortlist. There is a cup, and the only question is who ends up holding it.',
+    'Nothing is proposed up here, because nobody is up here. Watch the glass rather than the room.',
+    'No debate to follow. This one is decided by whoever can put a drink in a hand without it looking strange.',
+    'This is the version where the murder has to be walked across a room in front of everybody.',
+  ],
   // ── AND ON THE NIGHT THE PACT IS MADE TO NAME ONE OF ITS OWN ────────
   //
   // Same failure as `plain-sight` above, found the same way and reported by a
@@ -741,6 +758,7 @@ function _hostBand(line) {
  */
 function _hostSuffix(variant) {
   if (variant === 'plain-sight') return 'Plain';
+  if (variant === 'chalice') return 'Chalice';
   if (variant === 'name-your-own') return 'Forced';
   return '';
 }
@@ -1573,7 +1591,11 @@ export function rpBuildConclave(ep, observer = 'audience') {
     // THE LIBRARY. A chalice night has no meeting to draw, so it gets a stage
     // of its own above the beats instead of the turret's furniture.
     + (rec.variant === 'chalice'
-      ? chaliceStage(rec, chaliceStep(st.idx, total)) : '')
+      ? chaliceStage(rec, chaliceStep(st.idx, total), {
+        searcher: rec.vdata?.searcher ? _av(rec.vdata.searcher, 40) : '',
+        pourer: rec.vdata?.pourer ? _av(rec.vdata.pourer, 40) : '',
+        victim: rec.target ? _av(rec.target, 40) : '',
+      }) : '')
     + '<div class="cv-grid">'
     + '<main class="cv-main' + (hasMargin ? '' : ' cv-no-gutter') + '">' + stream + '</main>'
     + '<aside class="cv-side"><div id="cv-sidebar-inner">' + _sidebar(state, st.idx) + '</div></aside>'

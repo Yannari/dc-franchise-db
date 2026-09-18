@@ -10,6 +10,13 @@ const rec = { variant: 'chalice', target: 'Carrie', blocked: false,
   vdata: { searcher: 'Bowie', pourer: 'Brick', found: true, remembered: true,
     slow: true, decoys: ['Amy','Chet','B','Axel','Beth'],
     coffins: ['Amy','Carrie','Chet','B','Axel','Beth'] } };
+const av = (n, tone) => '<span class="cv-av" style="width:40px;height:40px;'
+  + 'display:block;border-radius:50%;background:' + tone + '"></span>';
+const faces = { searcher: av('Bowie', '#4a6fa5'), pourer: av('Brick', '#a5644a'),
+  victim: av('Carrie', '#6f9a5a') };
 document.getElementById('out').innerHTML =
-  [0,1,2,3,4].map(i => chaliceStage(rec, i)).join('');
+  [0,1,2,3,4].map(i => chaliceStage(rec, i, faces)).join('');
+// the mockup shows all five at once, so no stage may be sticky here
+document.head.insertAdjacentHTML('beforeend',
+  '<style>.ch-stage{position:relative!important}</style>');
 </script>

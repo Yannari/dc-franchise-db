@@ -468,3 +468,15 @@ describe('the save rule', () => {
     expect(season(130, { drAllStars: true }).state.saves?.kind ?? null).toBe(null);
   });
 });
+
+describe('the alliance rail', () => {
+  it('shows on the call and the critiques, not only the werk room', async () => {
+    const { dragScreens } = await import('../js/vp-dr/screens.js');
+    const row = weekly(season(61, { drAllStars: true })).find(r => (r.dr.alliances || []).length);
+    expect(row).toBeTruthy();
+    const screens = Object.fromEntries(dragScreens(row).map(s => [s.id, s.html]));
+    for (const id of ['dr-results', 'dr-critiques', 'dr-untucked']) {
+      expect(screens[id], id).toContain('Aligned');
+    }
+  });
+});

@@ -896,7 +896,12 @@ export function rpBuildCritiques(row) {
        ranking on this rail at any step. It is who has been critiqued, in the
        order they were called, and nothing else. The panel's order exists on
        the row for the screens that come after the call. */
-    window._drSidebar.critiques = queens.map((_, i) => `<h4 class="dr-disp">The panel, so far</h4>${
+    /* The circles ride along with every panel of this rail rather than around
+       it: `_updateSidebar` REPLACES the whole sidebar on each step, so
+       anything appended outside the per-step panels survives exactly one
+       reveal and then disappears. */
+    const alli = _allianceRail(row);
+    window._drSidebar.critiques = queens.map((_, i) => `${alli}<h4 class="dr-disp">The panel, so far</h4>${
       queens.slice(0, i + 1)
         .map(n => `<div class="dr-slot">${_portrait(n, ep, { size: 32 })}
           <div><div class="dr-nm">${esc(n)}</div></div>
@@ -940,7 +945,7 @@ export function rpBuildCritiques(row) {
   return `<style>${STAGE_CSS}${NIGHT_STAGE_CSS}</style>${_shell(`${stage.html}<div class="nsx-cards">${steps + wsgAnswers + wsgCards + delibCards}</div>`, ep, {
     phase: 'stage', title: 'The Critiques',
     subtitle: split ? 'the panel is split tonight' : 'the panel speaks',
-    sidebar: _seedRail('critiques', '<h4 class="dr-disp">The panel, so far</h4>'),
+    sidebar: _seedRail('critiques', `${_allianceRail(row)}<h4 class="dr-disp">The panel, so far</h4>`),
   })}${_controls('critiques', queens.length + dOff + wsgOff + delib.length, ep.num)}`;
 }
 

@@ -21,7 +21,7 @@ import { lipsyncStage, lipsyncCardDecor, LS_CSS } from './lipsync-stage.js';
 import { callStage, CALL_CSS } from './call-stage.js';
 import { exitStage, ROOM_STAGE_CSS } from './room-stage.js';
 import { wireStage, finaleOpenStage, FINALE_STAGE_CSS } from './finale-stage.js';
-import { _shell, _portrait, _judgePortrait, _icon } from './style.js';
+import { _shell, _portrait, _judgePortrait, _icon, _allianceRail, ROOM_RAIL_CSS } from './style.js';
 import { resultOrder } from '../dr/data/results-order.js';
 import { _controls, _seedRail, _state } from './reveal.js';
 import { GRID_RESULTS } from '../dr/grid.js';
@@ -561,7 +561,10 @@ export function rpBuildResults(row) {
         <span class="dr-chip ${CHIP[s.r] || 'dr-c-safe'}">${esc(GRID_RESULTS[s.r]?.label || s.r)}</span>
       </div>`).join('')}`;
     };
-    window._drSidebar.results = list.map((_, i) => panelFor(i + 1));
+    // The circles, on every panel of the rail -- see the note in stage.js:
+    // the sidebar is replaced per step, so this has to live inside each one.
+    const alli = _allianceRail(row);
+    window._drSidebar.results = list.map((_, i) => alli + panelFor(i + 1));
     window._drRevealExtra = window._drRevealExtra || {};
     window._drRevealExtra.results = idx => stage.apply(idx);
     setTimeout(() => {
@@ -569,9 +572,9 @@ export function rpBuildResults(row) {
     }, 0);
   }
 
-  return `<style>${RESULTS_CSS}${CALL_CSS}</style>${_shell(`${stage.html}<div class="csx-cards">${steps}</div>`, ep, {
+  return `<style>${RESULTS_CSS}${ROOM_RAIL_CSS}${CALL_CSS}</style>${_shell(`${stage.html}<div class="csx-cards">${steps}</div>`, ep, {
     phase: 'stage', title: 'The Call', subtitle: 'who the panel kept back',
-    sidebar: _seedRail('results', '<h4 class="dr-disp">The call</h4>'),
+    sidebar: _seedRail('results', `${_allianceRail(row)}<h4 class="dr-disp">The call</h4>`),
   })}${_controls('results', list.length, ep.num)}`;
 }
 

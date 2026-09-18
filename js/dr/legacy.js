@@ -181,10 +181,31 @@ export function chooseElimination({
       ['turn', mind.fair * clamp(timesSpared(ledger, top.q), 0, 3) * 0.25],
     ].sort((a, b) => b[1] - a[1]);
     why = parts[0][1] > 0 ? parts[0][0] : 'panel';
+    /* ── AND SHE ONLY GETS TO BLAME THE PANEL IF THE PANEL AGREED ──────
+       `panel` is the biggest term for most holders, so it was winning the
+       label even when the queen she chose was NOT the one the room ranked
+       last — and the prose it selects says "they told us", "she was the
+       weakest of them", "the room already did the work". Reported off a
+       played season: she picked the queen with the BETTER critiques and then
+       explained it by pointing at critiques everybody could see said the
+       opposite. Measured at 11 of 175 ceremonies, 6%.
+       A queen who goes against the room is a better story than a queen who
+       lies about it, so that is what it is called now. */
+    const panelLast = order.length ? order[order.length - 1] === top.q : false;
+    if (why === 'panel' && !panelLast) {
+      /* What is left once the room's own answer is off the table. A LOUD
+         second term is the real reason and says so — she took the bigger
+         threat, or the queen she has history with. A quiet one is not a
+         reason at all: she simply disagreed with the panel, and that is its
+         own sentence rather than a weak version of somebody else's. */
+      const next = parts.find(([k, v]) => k !== 'panel' && v > 0.45);
+      why = next ? next[0] : 'own-read';
+    }
   }
   const REASON = {
     threat: 'she is the one in that bottom who could take this from me',
     panel: 'the panel already said she was the weakest of them tonight',
+    'own-read': 'the room had somebody else last tonight and I do not agree with the room',
     grudge: 'she has had this coming since the last time we were in a room together',
     turn: 'she has been carried through this twice already and it has to be somebody',
     friend: 'the other one is my friend and I was never going to write her name',

@@ -44,6 +44,20 @@ export const LEGACY_BEATS = {
       'Backstage, {h} is very calm, and that is the part that should worry {x}.',
       '{h} picks one up without looking at the other.',
     ],
+    /* SHE DISAGREED WITH THE ROOM. The panel had somebody else last and she
+       wrote this name anyway — which used to be labelled `panel` and
+       explained with "they told us", about a queen the judges had ranked
+       ABOVE the other one. */
+    'own-read': [
+      '{h} looks at the two tubes and does not think about the critiques at all. She was in that room. She has her own eyes.',
+      '"The judges liked her more than they liked the other one," {h} says to the mirror. "I was standing next to both of them for a week."',
+      '{h} knows this is going to be unpopular. She picks it up anyway.',
+      '"Everybody is going to think I got it wrong." {h} shrugs at her own reflection. "Everybody can think that."',
+      '{h} is not going to be the queen who does what she is told, and she has about forty seconds left to prove it.',
+      'The panel ranked them. {h} ranks them differently, and tonight she is the one holding the lipstick.',
+      '{h} takes the one the room would not have taken. It is not a mistake and it is not an accident.',
+      '"This is going to cost me," {h} says, and picks it up anyway.',
+    ],
     /* ── AND THE FOUR REASONS THAT USED TO COME OUT AS "THE PANEL SAID SO" ──
        Measured across forty seasons, 82% of ceremonies drew the `panel` pool,
        because the label only knew three terms and the other half of the score
@@ -118,6 +132,14 @@ export const LEGACY_BEATS = {
       '"The second they read the critiques I knew." {h} nods. "Everybody in that room knew. Do not act surprised on my behalf."',
       '"There is a version of me that plays that differently." {h} pauses. "She is not the one holding the lipstick tonight."',
       '"{x} is going to watch this back and know it was fair. That matters to me." A beat. "A little."',
+    ],
+    'own-read': [
+      '"The judges had the other one lower. I know." {h} does not blink. "I was in that werk room all week and they were not."',
+      '"Everybody is going to say I got that wrong." {h} shrugs. "Fine. I watched {x} work all week and I made a call."',
+      '"I am not here to agree with the panel. I am here to win." {h} looks straight down the lens. "Those are different jobs."',
+      '"On paper it should have been {o}." A beat. "I do not play this on paper."',
+      '"You want me to explain it with the critiques and I cannot," {h} says. "It was not about the critiques. It was about who I have to beat."',
+      '"People at home are going to be screaming at me." {h} laughs. "Scream. I am the one who won the song."',
     ],
     grudge: [
       '"There is history there. Everybody in that room knows there is history there." {h} does not blink. "{x} knew what this was the second they announced I won."',

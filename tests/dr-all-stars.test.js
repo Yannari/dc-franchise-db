@@ -1083,6 +1083,38 @@ describe('why she chose that lipstick', () => {
     expect([...whys].some(w => ['friend', 'bloc', 'plea', 'turn'].includes(w))).toBe(true);
   });
 
+  it('only blames the panel when the panel actually had her last', () => {
+    let panel = 0;
+    for (const seed of [1, 2, 3, 4, 5, 6, 7, 8, 19, 42, 77, 300]) {
+      for (const row of as(seed).rows) {
+        const ls = row.dr.lipsync;
+        if (ls?.why !== 'panel') continue;
+        panel += 1;
+        /* The call as the host made it, worst LAST. `panel` selects prose
+           that says "they told us" and "she was the weakest of them" — said
+           about a queen the judges had ranked ABOVE the other one in 6% of
+           ceremonies, which a reader caught by comparing it with the
+           critiques on the same screen. A queen who goes against the room is
+           a better story than a queen who lies about it: that case is
+           `own-read` now, or the real term that carried it. */
+        const bottom = row.dr.callAtCall?.bottom?.length
+          ? row.dr.callAtCall.bottom : (row.dr.call?.bottom || []);
+        expect(ls.eliminated, `${seed}/${row.num}: the panel had ${bottom[bottom.length - 1]} last`)
+          .toBe(bottom[bottom.length - 1]);
+      }
+    }
+    expect(panel).toBeGreaterThan(20);
+  });
+
+  it('has a reason for going against the room, and uses it', () => {
+    const whys = [];
+    for (const seed of [1, 2, 3, 4, 5, 6, 7, 8, 19, 42, 77, 300]) {
+      for (const row of as(seed).rows) if (row.dr.lipsync?.why) whys.push(row.dr.lipsync.why);
+    }
+    // Written and reachable: the pool exists because this night happens.
+    expect(whys).toContain('own-read');
+  });
+
   it('names the queen she protected when one was protected', () => {
     for (const seed of [7, 19, 42, 77, 300]) {
       for (const row of as(seed).rows) {

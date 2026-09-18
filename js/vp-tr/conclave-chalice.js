@@ -64,7 +64,15 @@ const CAPTIONS = [
 function _caption(i, d, rec) {
   const [h, p] = CAPTIONS[i];
   const last = i === CHALICE_STEPS - 1;
-  const tail = last
+  // Step III is where the night's one real decision is, so it says whether the
+  // pact was behind it. `agreed` is undefined on a record written before the
+  // library became a conversation; those keep the neutral line.
+  const pour = d.agreed === false
+    ? 'Somebody else wanted a different name. {who} is the one holding the cup.'
+    : d.agreed === true && (d.overruled || []).length === 0
+      ? 'They came to the same name before the cup was even found.'
+      : p;
+  const tail = i === 2 ? pour : last
     ? (rec.blocked
       ? 'The glass is drunk and nothing happens to the person holding it.'
       : d.slow

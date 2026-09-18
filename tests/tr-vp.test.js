@@ -8580,3 +8580,34 @@ describe('the round table tally always shows the name just read', () => {
     expect(checked, 'no consecutive strips were compared').toBeGreaterThan(20);
   });
 });
+
+// ══════════════════════════════════════════════════════════════════════
+// THE HOST'S SIGN-OFF IS AN INSTRUCTION, NOT A REPORT
+// ══════════════════════════════════════════════════════════════════════
+//
+// Every other sentence on these screens is about something that has already
+// happened, so the registry's past-tense verbs are right for all of them. The
+// sign-off is the exception — it is addressed to people who have NOT done it
+// yet — and filling it from `exitMurder` produced "you have somebody to
+// murdered before morning", which shipped and was reported off a played
+// transcript. `exitMurderAction` (js/shows.js) is the form that belongs in a
+// sentence like that, and this is the guard that it is the one used.
+describe('the sign-off is addressed to people who have not done it yet', () => {
+  it('never tells the pact they have somebody to murdered', () => {
+    const [, murdered] = exitVerbs('traitors');
+    let seen = 0;
+    for (let seed = 1; seed <= 8 && seen < 3; seed++) {
+      setPlayers(ROSTER.map(p => ({ ...p })));
+      playTraitorsSeason({ cast: CAST, traitorCount: 3, seed });
+      for (const ep of (gs.episodeHistory || [])) {
+        if (!ep.tr || !ep.tr.table) continue;
+        const html = rpBuildRoundTable(ep, 'audience');
+        expect(html, `episode ${ep.num} tells them they have somebody to ${murdered}`)
+          .not.toContain('somebody to ' + murdered);
+        if (/good luck/.test(html)) seen++;
+      }
+    }
+    expect(seen, 'the sign-off pool never drew the line this arm is about')
+      .toBeGreaterThan(0);
+  });
+});

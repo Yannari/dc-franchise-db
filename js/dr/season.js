@@ -1272,7 +1272,16 @@ export function playDragSeason({
      golden bar does not move when anything else about the season does. A
      resumed season keeps the one it had — the tank remembers its levers —
      unless the author has since picked a different save. */
-  const saveId = config.drSave && config.drSave !== 'none' ? config.drSave : null;
+  /* ── THE ALL STARS SAVE RULE DEALS ONE IF THE AUTHOR HAS NOT ──
+     The mode's dropdown offers "All Stars: the save (Beaver / Baguette)",
+     which promises a season where the top queen holds a reprieve — and the
+     save itself is a SEPARATE control, so picking that rule and leaving the
+     save on "none" produced All Stars with no save in it at all. The rule is
+     the promise; the Beaver is its default. An author who picked a save
+     explicitly keeps the one she picked. */
+  const asSave = config.drAllStars && config.drAllStarsRule === 'save';
+  const saveId = config.drSave && config.drSave !== 'none' ? config.drSave
+    : (asSave ? 'beaver' : null);
   if ((state.saves?.kind || null) !== saveId) {
     state.saves = saveId ? initSaves({
       kind: saveId, cast: [...state.castOrder], rng: streamFor(seed, 'season-save'),

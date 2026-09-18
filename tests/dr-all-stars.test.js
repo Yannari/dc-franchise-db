@@ -449,3 +449,22 @@ describe('the call on a legacy night is the format\'s own', () => {
     }
   });
 });
+
+describe('the save rule', () => {
+  it('actually deals a save', () => {
+    const res = season(130, { drAllStars: true, drAllStarsRule: 'save' });
+    expect(res.state.allStars.rule).toBe('save');
+    expect(res.state.saves?.kind).toBe('beaver');
+    // ...and it is a save season, not a legacy one.
+    for (const r of weekly(res)) expect(r.dr.lipsync?.legacy).toBeFalsy();
+  });
+
+  it('keeps the save the author actually picked', () => {
+    const res = season(130, { drAllStars: true, drAllStarsRule: 'save', drSave: 'baguette' });
+    expect(res.state.saves?.kind).toBe('baguette');
+  });
+
+  it('deals none on the legacy rule', () => {
+    expect(season(130, { drAllStars: true }).state.saves?.kind ?? null).toBe(null);
+  });
+});

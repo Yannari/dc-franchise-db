@@ -35,7 +35,12 @@ import { getBond } from '../../bonds.js';
 import { awardShield } from '../powers.js';
 import { hiddenMurderFor } from '../murder-variants.js';
 
-const FILES = ['Left file', 'Right file'];
+// ONE WORD, LIKE EVERY OTHER MISSION'S TEAMS ('Cinder', 'Bell', 'Ivory').
+// 'Left file' read fine on this screen and nowhere else: the castle's
+// mission-fallout pool says "{a} asked about {tb}'s half of {mission}", which
+// came out as "asked about Right file's half of The Funeral". Two trees that
+// belong in a graveyard.
+const FILES = ['Willow', 'Cypress'];
 
 // ── CLUES: every one is a true, stored fact about the person it describes ──
 function _clueFor(decoy, others, mourners, rng, used = []) {

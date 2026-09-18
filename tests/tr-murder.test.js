@@ -403,7 +403,7 @@ const SHAPE = {
   double: ['victims'],
   'name-your-own': ['decider', 'sacrificed'],
   hidden: ['decoys', 'coffins'],
-  chalice: ['searcher', 'pourer', 'found', 'remembered'],
+  chalice: ['searcher', 'pourer', 'found', 'remembered', 'slow', 'decoys', 'coffins'],
 };
 
 /**

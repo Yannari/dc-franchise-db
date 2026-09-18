@@ -18,7 +18,7 @@ import { murderPreferenceFor, influenceOf } from './state.js';
 import { shieldsSeenBy, daggerSeenBy } from './powers.js';
 import { armouryHesitation } from './armoury.js';
 import { pickVariant, buildDeathList, dinnerNeighbours, chapelPlea, dungeonCompanion, hiddenDecoys,
-  chaliceSearch, chalicePourer, chaliceRemembered,
+  chaliceSearch, chalicePourer, chaliceRemembered, funeralReady,
   dungeonVoice, chooseSacrifice, variantLine, PLAIN_SIGHT_METHODS } from './murder-variants.js';
 import { _lineHash } from './castle/lines.js';
 
@@ -702,7 +702,9 @@ function _chalice(ep, rng) {
     return { target: null, blocked: false, victim: null, cost: null,
       decision: { decision: 'none', target: null, reason: 'chalice-lost', decidedBy: searcher,
         argued: [], overruled: [] },
-      variant: 'chalice', variantData: { searcher, pourer: null, found: false, remembered: false },
+      variant: 'chalice',
+      variantData: { searcher, pourer: null, found: false, remembered: false,
+        slow: false, decoys: [], coffins: [] },
       variantLine: l.text, variantLineKey: l.key, noMurder: true };
   }
   const pourer = chalicePourer(ep, pact, searcher) || searcher;
@@ -711,16 +713,34 @@ function _chalice(ep, rng) {
   const target = pref.target;
   const cost = murderCost(target, pref.reason, ep);
   const remembered = chaliceRemembered(ep, pourer, target);
-  const data = { searcher, pourer, found: true, remembered };
-  const l = variantLine('chalice', ep, { who: pourer, finder: searcher, victim: target });
+  // THE POISON IS SLOW, the way the show's was: the victim does not die in the
+  // night, the castle is not told at breakfast, and the afternoon is a funeral
+  // (js/tr/missions/funeral.js). Only when that funeral can actually run —
+  // otherwise the drink works overnight like any other murder.
+  const slow = funeralReady() && (gs.activePlayers || []).length >= 7;
+  const decoys = slow ? hiddenDecoys(ep, target) : [];
+  const coffins = slow && decoys.length >= 2
+    ? [target, ...decoys].sort((a, b) =>
+      (_lineHash(`coffin|${ep}|${a}`) - _lineHash(`coffin|${ep}|${b}`)) || (a < b ? -1 : 1))
+    : [];
+  const data = { searcher, pourer, found: true, remembered,
+    slow: coffins.length > 0, decoys: [...decoys], coffins };
+  // A pact of one searches and pours alone, and a line that names the same
+  // person twice in a sentence reads like a bug. Name the pact instead.
+  const finder = pourer === searcher ? 'The Traitor' : searcher;
+  const l = variantLine(data.slow ? 'chalice-slow' : 'chalice', ep,
+    { who: pourer, finder, victim: target });
   const decision = { decision: 'murder', target, reason: pref.reason, decidedBy: pourer,
     argued: [{ traitor: pourer, ...pref }], overruled: [] };
 
   if (isShielded(target)) {
     gs.tr.shieldedThisRound.delete(target);
     (gs.tr.blockedMurders ||= []).push({ ep, target });
+    // A Shield stops the drink working, and there is nothing to hide either.
     return { target, blocked: true, victim: null, cost, decision,
-      variant: 'chalice', variantData: data, variantLine: l.text, variantLineKey: l.key };
+      variant: 'chalice',
+      variantData: { ...data, slow: false, decoys: [], coffins: [] },
+      variantLine: l.text, variantLineKey: l.key };
   }
   gs.activePlayers = (gs.activePlayers || []).filter(n => n !== target);
   return { target, blocked: false, victim: target, cost, decision, second: null,

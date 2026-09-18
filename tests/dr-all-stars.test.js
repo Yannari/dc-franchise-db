@@ -609,3 +609,28 @@ describe('the call screen names the top two', () => {
     expect(stamps.filter(x => x === 'HIGH').length).toBeGreaterThan(0);
   });
 });
+
+describe('the third queen in the top is not told she is in the top two', () => {
+  it('gives the stakes line to the two who sing, and an ordinary high to the rest', () => {
+    let checked = 0;
+    for (let s = 120; s < 126; s++) {
+      const res = season(s, { drAllStars: true });
+      for (const r of weekly(res)) {
+        if (!r.dr.lipsync?.legacy) continue;
+        const c = r.dr.callAtCall || r.dr.call;
+        const singers = new Set(r.dr.call.singers || []);
+        const extra = (c.high || []).filter(n => !singers.has(n));
+        if (!extra.length) continue;
+        for (const n of extra) {
+          const said = (r.dr.scenes || []).find(x => x.kind === 'stage:result-high'
+            && (x.data?.players || []).includes(n));
+          if (!said) continue;
+          expect(said.text.toLowerCase(), `${n} was told she is in the top two`)
+            .not.toMatch(/top two|hold the power|lip sync tonight/);
+          checked++;
+        }
+      }
+    }
+    expect(checked).toBeGreaterThan(2);
+  });
+});

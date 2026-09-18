@@ -677,7 +677,18 @@ export function renderStageBeats({
        about the WIN group, so it is asked about the WIN group. */
     const doubleWin = g === 'WIN' && who.length > 1;
     for (const n of who) {
-      emit(beatById(beatId), doubleWin ? 'double-win' : tierId, [n],
+      /* ── THE TOP-TWO TIER BELONGS TO THE TOP TWO, NOT TO THE GROUP ──
+         On a legacy night HIGH holds the two queens about to sing AND the
+         queen who was in the top and is not one of them, and the whole group
+         was narrated with the stakes tier — so a genuine HIGH was told "top
+         two" in the host's own voice. Reported from a played season: the
+         third queen's card said "Brightly, top two" over a HIGH stamp.
+         The tier is a fact about the QUEEN, so it is asked about the queen. */
+      const singing = (lipsync?.queens || call.singers || []).includes(n);
+      const tier = doubleWin ? 'double-win'
+        : (g === 'HIGH' && tierId !== 'high' && !singing) ? 'high'
+          : tierId;
+      emit(beatById(beatId), tier, [n],
         { order: shape.id, ...(doubleWin ? { doubleWin: true } : {}) });
     }
   }

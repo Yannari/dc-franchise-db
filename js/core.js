@@ -343,6 +343,15 @@ export const TWIST_CATEGORIES = [
   { id: 'social', label: 'Social' },
   { id: 'challenge', label: 'Challenge' },
   { id: 'murder', label: 'Murder Twists' },
+  /* TWO SHELVES THE BIG BROTHER CATALOGUE WAS ALREADY FILING UNDER and this
+     list did not have. A twist whose `category` is not an id here has no
+     button in the picker's filter bar and shows only under All — five of them
+     were in that state (White Locust, The Sanctum, The Cliques, The Camp
+     Director, No Eviction), found by the guard in tests/tr-twists-are-opt-in
+     .test.js the day Banish or Murder shipped with the same defect. The
+     categories were right; the list was short. */
+  { id: 'ceremony', label: 'Ceremonies' },
+  { id: 'structural', label: 'House Structure' },
   /* ALL STARS IS ITS OWN SHELF. The format's twists are not variations on a
      regular season's — they change WHO DECIDES, which is the deepest rule the
      show has — so they group on their own rather than being scattered through
@@ -963,7 +972,12 @@ export const TWIST_CATALOG = [
   // going to be. It is its own engine type because it is the only twist that
   // can end an episode with nobody banished.
   { id:'tr-banish-or-murder', emoji:'⚖️', name:'Banish or Murder', format:'traitors',
-    category:'twist', phase:'any', engineType:'tr-banish-or-murder',
+    // `elim` AND NOT A CATEGORY OF ITS OWN. TWIST_CATEGORIES is the filter bar,
+    // and a twist filed under an id that is not in that list has no button to
+    // appear under — it shows only under All, which is how this one went
+    // missing the day it shipped. What it changes is who leaves, so it files
+    // with Elimination.
+    category:'elim', phase:'any', engineType:'tr-banish-or-murder',
     desc:'One night, after the argument and before the chalk, the castle is offered a deal: banish somebody with money on it — the pot GAINS if they are a Traitor and loses the same if they are not — or let the Traitors murder as normal. The vote is public and it has to be unanimous. One hand up for the murder and no banishment is held at all, and everybody in that room saw whose hand it was. Runs once a season, on a night with 6 to 13 still standing.' },
   { id:'tr-armoury', emoji:'🛡️', name:'The Armoury', format:'traitors',
     category:'power', phase:'any', engineType:'tr-armoury',

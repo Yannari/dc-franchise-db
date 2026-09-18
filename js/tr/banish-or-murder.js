@@ -82,13 +82,18 @@ export function _setBanishOrMurderSchedule(eps) {
  */
 export function banishOrMurderTonight(ep) {
   if (!gs.tr?.banishOrMurder) return false;
-  // A PIN OVERRIDES THE CHOICE OF NIGHT AND NOT THE SIZE OF THE ROOM. The
-  // size window below is not a taste; it is what makes the vote mean anything
-  // (see it). Asking seventeen people to be unanimous is asking nobody
-  // anything, and a pinned night that did it would hand an author a twist
-  // whose refusals are Faithful noise — measured at a refusal rate BELOW the
-  // room's own Traitor share, which is the signal pointing backwards.
-  if (_schedule) return _schedule.includes(ep) && _roomFits();
+  // A PIN RUNS. It used to have to pass the size window below as well, and
+  // that silently threw away the author's instruction: a castle of twenty is
+  // still fifteen strong at episode three, so a twist pinned to an early night
+  // did nothing at all and said nothing about it — the "author's pin accepted
+  // by a season already decided" bug class, reported the first time somebody
+  // scheduled this and went looking for it.
+  //
+  // The window is still right for the twist's OWN choice of night (see below).
+  // Asked for by name, the only floor is a room big enough to have a vote in
+  // it; the base rate at which a Faithful refuses is low enough that a big
+  // table still reaches unanimity most nights.
+  if (_schedule) return _schedule.includes(ep) && (gs.activePlayers || []).length >= 6;
   // A ROOM SMALL ENOUGH FOR UNANIMITY TO MEAN SOMETHING. Seventeen people
   // asked to agree on anything agree on nothing, and at that size the deal is
   // refused by arithmetic rather than by anybody's decision — measured at 31

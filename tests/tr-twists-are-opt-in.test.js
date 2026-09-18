@@ -23,7 +23,7 @@
 // back — otherwise this file would be green over an engine that had simply
 // lost the ability to run a twist at all.
 import { describe, it, expect } from 'vitest';
-import { gs, setPlayers, TWIST_CATALOG } from '../js/core.js';
+import { gs, setPlayers, TWIST_CATALOG, TWIST_CATEGORIES } from '../js/core.js';
 import { playTraitorsSeason } from '../js/tr/headless.js';
 import roster from '../franchise_roster.json';
 
@@ -108,5 +108,23 @@ describe('a pinned night runs whatever it was pinned to', () => {
     // support the pinned shape, so this is a floor rather than an equality.
     expect(ran, 'a pinned shape did not run on the night it was pinned to')
       .toBeGreaterThan(checked / 2);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// AND A TWIST NOBODY CAN FIND IS NOT OPT-IN EITHER
+// ══════════════════════════════════════════════════════════════════════
+//
+// The picker builds its filter bar from TWIST_CATEGORIES and shows a twist
+// under the button its `category` names. A category that is not in that list
+// has no button, so the twist appears only under All — which is how Banish or
+// Murder shipped invisible, and it was reported as "I don't see this twist
+// anywhere". The entry was right about everything except one word.
+describe('every twist has a shelf to be found on', () => {
+  it('no twist is filed under a category the filter bar does not have', () => {
+    const known = new Set(TWIST_CATEGORIES.map(c => c.id));
+    const homeless = TWIST_CATALOG.filter(t => !known.has(t.category))
+      .map(t => `${t.id} (${t.format}) is filed under "${t.category}"`);
+    expect(homeless, 'these twists have no button to appear under').toEqual([]);
   });
 });

@@ -51,7 +51,23 @@ function threatOf(q, { state }) {
      reads stronger than second of eight. A queen with no past sits just under
      the middle rather than at zero: unknown is not harmless. */
   const resume = past ? clamp(1 - (past.rank - 1) / Math.max(2, past.of - 1), 0, 1) : 0.35;
-  return clamp(resume * 0.5 + clamp(won * 2.2, 0, 1) * 0.5, 0, 1.2);
+  /* ── AND THE REST OF THE CHART, WHICH THE READ USED TO IGNORE ──────
+     This counted wins, highs and last season, and nothing else — so every
+     SAFE, LOW and BTM2 on her row was invisible to it. Reported off a played
+     ceremony: a queen on 3.00 points per episode was called the biggest
+     threat in a bottom that contained one on 3.46, and the viewer could see
+     both numbers on the chart beside the sentence. Measured across thirty
+     seasons, the queen named as the threat had the LOWER season 48% of the
+     time — a coin flip dressed as a read.
+     The intent stays: a ceiling, not form, so a crown at home and a win in
+     the bank still outweigh a tidy row of safes. But the body of the season
+     is a third of it now, centred so SAFE reads as ordinary rather than as
+     evidence. */
+  const PTS = { WIN: 5, WINNER: 5, TOP2: 4.5, FINALIST: 4, HIGH: 4, SAFE: 3, LOW: 2, BTM: 1, BTM2: 1, BTM3: 1, ELIM: 0 };
+  const scored = rec.filter(r => PTS[r] !== undefined);
+  const ppe = scored.length ? scored.reduce((t, r) => t + PTS[r], 0) / scored.length : 3;
+  const body = clamp((ppe - 2) / 3, 0, 1);
+  return clamp(resume * 0.36 + clamp(won * 2.2, 0, 1) * 0.36 + body * 0.28, 0, 1.2);
 }
 
 /* ── DOES SHE HAVE A REASON, FROM BEFORE TONIGHT? ─────────────────────

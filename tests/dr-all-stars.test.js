@@ -595,6 +595,28 @@ describe('Revenge of the Queens', () => {
     }
   });
 
+  it('puts the win on the chart for the queen who won her way back', async () => {
+    const { gridRows } = await import('../js/dr/grid.js');
+    for (const seed of [300, 42, 77]) {
+      const res = rev(seed);
+      const row = night(res);
+      const back = row.dr.revenge.winner;
+      /* THE ROOM IS WHAT THE RECORD LOOP WALKS, and the two queens who sang
+         on this night were eliminated weeks ago — so the couple won the maxi
+         challenge, her competing half took the WIN, and the queen who won
+         the song that decided it got a blank cell on the night she came
+         back. The win belongs to both halves of the couple. */
+      expect(row.dr.record[back].at(-1), `seed ${seed}`).toBe('WIN');
+      expect(row.dr.record[row.dr.revenge.weekWinner].at(-1)).toBe('WIN');
+      // And it lands on THIS episode rather than shifting her later cells.
+      const mine = gridRows(res.rows).find(g => g.name === back);
+      const cell = (mine.cells || []).find(c => c.episode === row.num);
+      expect(cell.result, `seed ${seed}: chart cell`).toBe('WIN');
+      // Her elimination is still where it was.
+      expect((mine.cells || []).some(c => c.result === 'ELIM')).toBe(true);
+    }
+  });
+
   it('puts the winner back in with her record intact', () => {
     const res = rev(300);
     const n = night(res);
@@ -1123,6 +1145,36 @@ describe('why she chose that lipstick', () => {
     }
     // Written and reachable: the pool exists because this night happens.
     expect(whys).toContain('own-read');
+  });
+
+  it('calls the queen with the better season the threat', async () => {
+    const { PPE_POINTS } = await import('../js/dr/grid.js');
+    const ppe = (rec) => {
+      const p = (rec || []).filter(r => PPE_POINTS[r] !== undefined);
+      return p.length ? p.reduce((t, r) => t + PPE_POINTS[r], 0) / p.length : 0;
+    };
+    let agree = 0; let dis = 0;
+    for (const seed of [1, 2, 3, 4, 5, 6, 7, 8, 19, 42, 77, 300]) {
+      const res = as(seed);
+      for (const row of res.rows) {
+        if (row.dr.lipsync?.why !== 'threat') continue;
+        const prev = res.rows[res.rows.indexOf(row) - 1];
+        const rec = prev?.dr?.record || {};
+        const bottom = row.dr.callAtCall?.bottom?.length
+          ? row.dr.callAtCall.bottom : (row.dr.call?.bottom || []);
+        if (bottom.length < 2 || bottom.some(q => !(rec[q] || []).length)) continue;
+        const best = [...bottom].sort((a, b) => ppe(rec[b]) - ppe(rec[a]))[0];
+        if (row.dr.lipsync.eliminated === best) agree += 1; else dis += 1;
+      }
+    }
+    /* THE READ IGNORED THE CHART. It counted wins, highs and last season and
+       nothing else, so every SAFE, LOW and BTM2 on her row was invisible —
+       and the queen it named as the biggest threat had the LOWER points per
+       episode 48% of the time, with both numbers printed on the same screen.
+       A ceiling still beats a tidy row of safes, so this is not zero: what it
+       cannot be is a coin flip. */
+    expect(dis / (agree + dis), `${dis} of ${agree + dis} disagreed with the chart`)
+      .toBeLessThan(0.25);
   });
 
   it('names the queen she protected when one was protected', () => {

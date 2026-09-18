@@ -2282,6 +2282,22 @@ export function runDragWeek(state, cfg, ctx) {
        deciding a night. */
     ctx.tvDelta?.(n, DRAMA_TV[P(n)?.archetype] ?? 0.5);
   }
+  /* ── AND THE QUEEN WHO WON HER WAY BACK IN WON THE NIGHT TOO ───────
+     The loop above walks the ROOM, and on a Revenge night the two queens who
+     sang are not in it — they were eliminated weeks ago. So the couple won
+     the maxi challenge, her competing half took the WIN on the chart, and
+     the queen who actually won the lip sync that decided it got a blank
+     cell on the night she came back.
+     She competed, she won the song, and the win belongs to both halves of
+     the couple. The chart derives which episode a cell belongs to from the
+     GROWTH of the per-row record snapshot (js/dr/grid.js), so an entry added
+     here lands on this episode rather than shifting her later cells. */
+  if (revenge?.reentry?.winner && !living.includes(revenge.reentry.winner)) {
+    const back = revenge.reentry.winner;
+    state.record[back] ||= [];
+    state.record[back].push('WIN');
+    ctx.tvDelta?.(back, 3);
+  }
   state.living = living.filter(n => !exits.includes(n));
   state.out.push(...exits);
   state.lastWinner = call.win[0] || null;

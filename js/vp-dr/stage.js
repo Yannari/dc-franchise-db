@@ -1041,6 +1041,12 @@ export function rpBuildUntucked(row) {
   /* ── THE STAGE ── js/vp-dr/room-stage.js, lit for the lounge. Not on a
      campaign night, which already has its own strip pinned at the top. */
   const room = row?.dr?.roomAtStart || row?.houseAtStart || [];
+  /* ONE STAGE ON A CAMPAIGN NIGHT, NOT NONE. The campaign stage now carries
+     the whole room and lights whoever each card is about (js/vp-dr/save.js),
+     so the lounge stage would be a second pinned strip saying the same thing.
+     Before that it was neither: the campaign stage ignored ordinary scenes
+     and this line switched the lounge stage off, so half the night animated
+     nothing. */
   const loungeStage = !campaign && room.length ? roomStage(row, scenes.map(sc => {
     const pl = sc.data?.players || [];
     const pop = {};

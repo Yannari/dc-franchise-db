@@ -702,3 +702,26 @@ describe('the campaign feels like the era', () => {
     expect(html).toContain('the campaign');
   });
 });
+
+describe('one stage for the whole campaign night', () => {
+  it('animates every card, not only the pitches', async () => {
+    const { dragScreens } = await import('../js/vp-dr/screens.js');
+    const row = weekly(season(777, { drAllStars: true })).find(r => r.dr.legacyCampaign);
+    dragScreens(row);
+    const states = (globalThis.window?._svx || {}).untucked;
+    expect(states?.steps?.length).toBeGreaterThan(20);
+    // Every step says something and lights somebody: the lounge scenes used
+    // to return a dead frame, so the stage sat frozen through half the night.
+    expect(states.steps.filter(s => s.caption).length).toBe(states.steps.length);
+    expect(states.steps.filter(s => s.talk).length).toBe(states.steps.length);
+  });
+
+  it('puts the room on the stage behind the two sides of it', async () => {
+    const { dragScreens } = await import('../js/vp-dr/screens.js');
+    const row = weekly(season(777, { drAllStars: true })).find(r => r.dr.legacyCampaign);
+    const html = Object.fromEntries(dragScreens(row).map(s => [s.id, s.html]))['dr-untucked'];
+    expect((html.match(/svx-bystander/g) || []).length).toBeGreaterThan(2);
+    // ...and only one pinned stage, not the lounge's as well.
+    expect(html).not.toContain('rmx-cards');
+  });
+});

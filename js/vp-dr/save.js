@@ -278,6 +278,17 @@ export const SAVE_CSS = `
 .svx.svx-camp .svx-spot{background:radial-gradient(40% 60% at 50% 40%,rgba(176,122,255,.24),transparent 70%)}
 .svx-row{display:flex;gap:clamp(10px,3vw,34px);justify-content:center;align-items:flex-end;width:100%;align-self:center;padding-bottom:30px}
 .svx-row .svx-pod{background:rgba(12,4,20,.55);border-radius:16px;padding:10px 10px 8px;backdrop-filter:blur(4px)}
+/* THE ROOM, BEHIND THE CAMPAIGN. The queens who are neither holding the
+   power nor in danger are on the stage so their own scenes can light them --
+   smaller and dimmer, so the two sides of the night still read first. */
+.svx-row .svx-pod.svx-bystander{background:rgba(12,4,20,.32);padding:6px 7px 5px;opacity:.62}
+.svx-row .svx-pod.svx-bystander .svx-face{width:34px;height:34px}
+/* The compact stage shrinks the campaign pods to 38px, so a bystander rule
+   written at 52 made the queens who do not matter tonight the biggest thing
+   on the stage. Measured in the browser: bystander 52, holder 38. */
+.svx.svx-compact .svx-row .svx-pod.svx-bystander .svx-face{width:30px;height:30px}
+.svx-row .svx-pod.svx-bystander b{font-size:10px}
+.svx-row .svx-pod.svx-bystander.talk{opacity:1}
 .svx-row .svx-pod{transition:transform .5s cubic-bezier(.2,1.4,.4,1),filter .5s,opacity .5s}
 .svx-row.svx-anytalk .svx-pod:not(.talk):not(.about):not(.power){filter:brightness(.55) saturate(.6)}
 .svx-row .svx-pod.talk{transform:translateY(-16px) scale(1.08)}
@@ -822,15 +833,30 @@ export function campaignStage(row, scenes = []) {
   const kind = hold.kind;
   const targets = hold.targets || [hold.holder];
   const moves = hold.campaign || [];
-  const cast = [...new Set([...targets, ...hold.pool])];
+  /* ── ONE STAGE FOR THE WHOLE NIGHT ────────────────────────────────
+     This drew pods for the two sides of the campaign only -- the queens with
+     the power and the queens in danger -- and the Untucked screen switched
+     the ordinary lounge stage OFF whenever a campaign existed. So on the
+     biggest night of the week every card that was not a pitch animated
+     nothing at all: the room's own scenes lost the reaction they get on
+     every other night.
+     The room is on the stage now. The campaign pods keep what makes them
+     different (a role, or a plea meter that fills as she is worked); the
+     rest are plain and light up when their card is read. Capped, because a
+     fourteen-queen lounge is a row of thumbnails. */
+  const roomCast = [...new Set(scenes.flatMap(sc => sc?.data?.players || []))]
+    .filter(n => n && !targets.includes(n) && !hold.pool.includes(n));
+  const cast = [...new Set([...targets, ...hold.pool, ...roomCast])].slice(0, 11);
+  const inPlay = new Set([...targets, ...hold.pool]);
   const pods = cast.map((n, i) => {
     const power = targets.includes(n);
-    return `<div class="svx-pod${power ? ' power' : ''}" data-q="${esc(n)}" style="--i:${i}">
+    const danger = hold.pool.includes(n);
+    return `<div class="svx-pod${power ? ' power' : ''}${inPlay.has(n) ? '' : ' svx-bystander'}" data-q="${esc(n)}" style="--i:${i}">
       <span class="svx-bubble"></span>
       <div class="svx-face">${face(n, ep, 96)}</div><b>${esc(n)}</b>
       ${power ? `<span class="svx-role">${kind === 'legacy' ? 'might hold it'
     : kind === 'baguette' ? 'the favourite' : 'has the beaver'}</span>`
-    : `<span class="svx-meter" data-q="${esc(n)}"><i></i></span>`}
+    : danger ? `<span class="svx-meter" data-q="${esc(n)}"><i></i></span>` : ''}
     </div>`;
   }).join('');
   const center = `<div class="svx-lounge">${loungeSvg()}</div><div class="svx-row">${pods}</div>`;
@@ -839,7 +865,20 @@ export function campaignStage(row, scenes = []) {
   let mi = 0;
   let last = idle;
   const steps = scenes.map(sc => {
-    if (!sc.data?.campaign) return { ...last, caption: undefined, talk: null };
+    /* AN ORDINARY LOUNGE SCENE IS STILL A SCENE. It used to return a dead
+       frame -- the previous state with the caption and the speaker stripped
+       -- so the stage sat frozen through half the night. It lights whoever
+       the card is about and says what happened, which is what the room stage
+       does on every other night. */
+    if (!sc.data?.campaign) {
+      const who = (sc.data?.players || []).filter(n => cast.includes(n));
+      last = {
+        ...last, phase: 'lounge', talk: who[0] || null, about: who[1] || null,
+        tone: null, bubble: '', meters: { ...meters },
+        caption: sc.text ? cap('Untucked', sc.text) : undefined,
+      };
+      return last;
+    }
     if (sc.kind === 'save:campaign-open' || sc.kind === 'legacy:campaign-open') {
       last = { phase: 'campaign-open', talk: null, meters: { ...meters }, caption: cap('Untucked', sc.text) };
       return last;

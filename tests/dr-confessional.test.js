@@ -465,3 +465,43 @@ describe('a scene that is one queen and a result', () => {
     }
   });
 });
+
+// ══════════════════════════════════════════════════════════════════════
+// LOW is safe, and its confessional has to know that
+// ══════════════════════════════════════════════════════════════════════
+describe('a queen called LOW', () => {
+  /* Reported from a played season: the FIRST queen called — safe, with a
+     note — said "Everybody behind me got to breathe. I did not", while the
+     whole room behind her was still waiting to hear anything. One `missed`
+     tier covered both a safe LOW and a queen up for elimination. */
+  it('never gets a line written for a queen up for elimination', () => {
+    const BOTTOM_ONLY = /got to breathe|the bottom\. me|call the good names first|i knew it was coming/i;
+    let checked = 0;
+    const STATSL = ['physical', 'endurance', 'mental', 'social', 'strategic',
+      'loyalty', 'boldness', 'intuition', 'temperament'];
+    const mk = seed => playDragSeason({
+      cast: Array.from({ length: 12 }, (_, i) => ({
+        name: `Q${i + 1}`, slug: `q${i + 1}`, gender: 'm', sexuality: 'gay',
+        archetype: ['villain', 'hero', 'floater', 'wildcard'][i % 4], age: 24 + i,
+        stats: Object.fromEntries(STATSL.map((k, j) => [k, ((i * 3 + j * 5) % 10) + 1])),
+      })),
+      seed, config: {}, bond: () => 0, addBond: () => {}, popDelta: () => {},
+    });
+    for (let s = 1; s <= 8; s++) {
+      const res = mk(s * 97 + 3);
+      for (const r of res.rows.filter(x => x.dr && !x.dr.finale)) {
+        const low = new Set([...(r.dr.call?.low || []), ...(r.dr.call?.atRisk || [])]);
+        const bottom = new Set(r.dr.call?.bottom || []);
+        for (const sc of (r.dr.scenes || [])) {
+          // The kind is `confess:confessional-results-mine-...`.
+          if (!String(sc.kind || '').includes('results-mine-')) continue;
+          const who = (sc.data?.players || [])[0];
+          if (!who || !low.has(who) || bottom.has(who)) continue;
+          expect(sc.text, `${who} was LOW and said: ${sc.text}`).not.toMatch(BOTTOM_ONLY);
+          checked++;
+        }
+      }
+    }
+    expect(checked).toBeGreaterThan(3);
+  });
+});

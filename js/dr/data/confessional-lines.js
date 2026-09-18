@@ -245,7 +245,22 @@ export const CONFESSIONAL_TIERS = [
     '"{b} in the bottom and me at the top." {a} smiles. "Funny how a week can go."',
     '"I told myself not to smile until they called it. I smiled at the word condragulations." {a} shrugs. "Close enough."',
   ]),
-  tier('results-mine-missed', 'The host placed her low or in the bottom.', -1, [
+  /* ── LOW IS NOT THE BOTTOM, AND THE SAME POOL CANNOT SERVE BOTH ──
+     One `missed` tier covered everything under HIGH, so a queen called LOW
+     -- safe, first name of the night, nothing to survive -- was given lines
+     written for a queen up for elimination. Reported from a played season:
+     "Everybody behind me got to breathe. I did not" said by the FIRST queen
+     called, who was safe, while the whole room behind her was still waiting.
+     Two nights, two pools. */
+  tier('results-mine-low', 'Safe, and told she was nearly not: a LOW.', -1, [
+    '"Safe. With a note." {a} exhales. "I will take safe. I am not going to pretend I liked the note."',
+    '"He said he was watching me." {a} looks at the camera. "That is a sentence you hear once and then think about all week."',
+    '"I did not do badly enough to sing and I did not do well enough to be told anything good." {a} shrugs. "That is the worst place on that stage."',
+    '"Low. Which means safe, which means fine." {a} pauses. "Fine is not what I came back for."',
+    '"I heard my name early and I still did not relax, because of HOW he said it." {a} nods once.',
+    '"Nobody remembers the girl who was almost in trouble." {a} looks away. "I would quite like to be remembered."',
+  ]),
+  tier('results-mine-missed', 'Up for elimination: the host put her in the bottom.', -1, [
     '"Standing there while they call the good names first is its own kind of punishment." {a} looks at the camera. "Then they get to you."',
     '"I knew it was coming. Knowing does not make it hurt less." {a} takes a breath.',
     '"The bottom. Me. This week." {a} shakes her head. "I did not see that one coming and I should have."',
@@ -262,7 +277,13 @@ export const CONFESSIONAL_TIERS = [
     '"Another week, another good result for {b}." {a} raises an eyebrow. "At some point that stops being luck."',
     '"I was happy for {b}. Really." {a} tilts her head. "I would have been happier for me."',
   ]),
-  tier('results-hers-missed', 'Somebody else was placed low or in the bottom.', -1, [
+  tier('results-hers-low', 'Somebody else was called low, and kept.', -1, [
+    '"{b} got the note and not the song." {a} raises an eyebrow. "She will be up early tomorrow."',
+    '"Safe with a warning is still safe." {a} tilts her head. "It is also a countdown."',
+    '"They told {b} they were watching her." {a} looks at the camera. "So am I."',
+    '"{b} heard her name and her shoulders came down about an inch." {a} nods. "One inch. Not two."',
+  ]),
+  tier('results-hers-missed', 'Somebody else is up for elimination.', -1, [
     '"{b} in the bottom? I am shocked." {a} is not shocked. "Genuinely. Shocked."',
     '"I saw the face {b} made when the host said it." {a} presses her lips together. "She had been expecting something better."',
     '"The critiques were not kind to {b} and neither was the call." {a} shrugs. "That tends to happen together."',

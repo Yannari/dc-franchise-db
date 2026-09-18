@@ -42,13 +42,13 @@ import { CONFESSIONAL_TIERS, confessionalTier } from './data/confessional-lines.
    move on the same night -- she is being hard on herself, which nobody needs
    a sharp edge to do. */
 const SHADE = new Set(['did-cold', 'watched-cold',
-  'runway-hers-missed', 'lipsync-hers-missed', 'results-hers-missed',
+  'runway-hers-missed', 'lipsync-hers-missed', 'results-hers-missed', 'results-hers-low',
   'choice-hers-missed', 'maxipre-hers-missed']);
 /* Every tier whose sign is negative. `taken-cold` is cold without being shade
    -- it was done TO her -- so it is rolled by neither branch, and every
    staged `mine-missed` is cold in the same way, about herself. */
 const COLD = new Set([...SHADE, 'taken-cold',
-  'runway-mine-missed', 'lipsync-mine-missed', 'results-mine-missed',
+  'runway-mine-missed', 'lipsync-mine-missed', 'results-mine-missed', 'results-mine-low',
   'choice-mine-missed', 'maxipre-mine-missed']);
 
 const NEVER = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer',
@@ -261,7 +261,12 @@ const SURFACES = {
   results: {
     id: 'results',
     valueOf: sc => CALL_VALUE[sc?.data?.beat] ?? null,
-    outcomeOf: v => (v >= 4 ? 'landed' : 'missed'),
+    /* THREE OUTCOMES, BECAUSE THE CALL HAS THREE KINDS OF NIGHT. LOW is
+       SAFE -- she is keeping her place and being told to watch herself -- and
+       it shared a pool with a queen up for elimination, which put "everybody
+       behind me got to breathe, I did not" in the mouth of the first queen
+       called safe. `low` is its own outcome now. */
+    outcomeOf: v => (v >= 4 ? 'landed' : v >= 2 ? 'low' : 'missed'),
     /* HER CALL IS ALWAYS NEXT TO SOMEBODY ELSE'S. A queen at the top measures
        it against the bottom, and a queen in the bottom against whoever won,
        so even her own confessional has a second name in it. */

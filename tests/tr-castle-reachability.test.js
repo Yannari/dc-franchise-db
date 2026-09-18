@@ -70,6 +70,7 @@ import { describe, expect, it } from 'vitest';
 import { setPlayers } from '../js/core.js';
 import { playTraitorsSeason } from '../js/tr/headless.js';
 import { EVENTS, KNOWN_WINDOWS } from '../js/tr/events.js';
+import { _setBespokeMissionsEnabled, bespokeMissionsEnabled } from '../js/tr/missions/index.js';
 import { actFor, outcomeSense, openThread, closeThread, advanceThread }
   from '../js/tr/threads.js';
 import { seedFranchiseHistory, seedEmptyHistory } from './helpers/tr-castle-fixture.js';
@@ -172,16 +173,65 @@ const SEASON_THREADS = [];
 const SEASONS = runSeasons(SWEEP_SEASONS, 0, SEASON_THREADS);
 const ALL_FIRINGS = SEASONS.flat();
 
+// ── THE EVENTS THE SWEEP ABOVE CANNOT REACH AT ANY SEASON COUNT ──────
+//
+// `runSeasons` never opts a season into the murder catalogue, so a season it
+// plays has no twist nights in it at all — every night is `standard` by
+// construction, and that is deliberate (it is what keeps this sweep's numbers
+// comparable across changes to the catalogue). An event whose gate is a twist
+// night therefore fires ZERO times here however many seasons are run, and the
+// dead-event assertion below would call it dead content when it is nothing of
+// the kind.
+//
+// An exemption list would hide a real regression the first time one of these
+// broke. A SECOND SWEEP does not: it is the same harness with the catalogue
+// switched on, and each id below has to fire in it.
+const VARIANT_GATED = ['grief-the-last-glass', 'grief-two-chairs', 'grief-the-coffins',
+  'grief-in-this-room'];
+const TWIST_SEASONS = 80;
+function runTwistSeasons(n, seedBase) {
+  const counts = {};
+  // AND THE MISSIONS ON TOO, which is not a detail. A chalice only poisons
+  // SLOWLY when The Funeral can run the next afternoon (js/tr/murder.js), and
+  // The Funeral is a bespoke mission — with them off, every chalice night is
+  // the fast kind and the morning this event is about never happens. The
+  // switch is restored afterwards so the sweeps above stay as they were.
+  const was = bespokeMissionsEnabled();
+  _setBespokeMissionsEnabled(true);
+  for (let i = 1; i <= n; i++) {
+    setPlayers(ROSTER);
+    seedFranchiseHistory(CAST);
+    const res = playTraitorsSeason({ cast: CAST, traitorCount: 3, seed: seedBase + i,
+      randomMurderTwists: ['chalice', 'double', 'hidden', 'plain-sight'] });
+    for (const round of res.log) {
+      for (const ce of (round.castleEvents || [])) {
+        counts[ce.event.id] = (counts[ce.event.id] || 0) + 1;
+      }
+    }
+  }
+  _setBespokeMissionsEnabled(was);
+  return counts;
+}
+const TWIST_FIRINGS = runTwistSeasons(TWIST_SEASONS, 70000);
+
 describe('THE DEAD-EVENT SWEEP', () => {
   it(`every registered event fires at least once across ${SWEEP_SEASONS} seasons`, () => {
     const countPerId = {};
     for (const f of ALL_FIRINGS) countPerId[f.id] = (countPerId[f.id] || 0) + 1;
-    const dead = EVENTS.map(e => e.id).filter(id => !countPerId[id]);
+    const dead = EVENTS.map(e => e.id)
+      .filter(id => !countPerId[id] && !TWIST_FIRINGS[id]);
 
     // The bottom of the distribution, printed unconditionally: the number the
     // season count above is derived FROM. If this list starts creeping toward
     // zero, the answer is to fix or delete the content, not to raise 400.
-    const rarest = EVENTS.map(e => ({ id: e.id, family: e.family, n: countPerId[e.id] || 0 }))
+    // THE VARIANT-GATED EVENTS ARE NOT IN THIS DISTRIBUTION, and excluding
+    // them is not an exemption: this sweep plays seasons with no twist nights
+    // in them at all, so an event gated on one has no rate to be at the bottom
+    // OF. Left in, it would sit at 0 for ever and hold the floor assertion
+    // below permanently at zero — which is the assertion going quiet, not the
+    // content being fine. The sweep that can see them asserts on them instead.
+    const rarest = EVENTS.filter(e => !VARIANT_GATED.includes(e.id))
+      .map(e => ({ id: e.id, family: e.family, n: countPerId[e.id] || 0 }))
       .sort((a, b) => a.n - b.n).slice(0, 10);
     console.log(`\n=== RAREST TEN (${SWEEP_SEASONS} seasons, ${ALL_FIRINGS.length} firings) ===`);
     for (const r of rarest) console.log(`   ${r.n}\t${r.family}\t${r.id}`);
@@ -200,6 +250,15 @@ describe('THE DEAD-EVENT SWEEP', () => {
     const floor = rarest[0];
     expect(floor.n, `the rarest event in the pool is ${floor.id} at ${floor.n} firings in ${SWEEP_SEASONS} seasons — one season in ${Math.round(SWEEP_SEASONS / Math.max(1, floor.n))}`)
       .toBeGreaterThanOrEqual(PER400(4));
+  });
+
+  it(`every variant-gated event fires in a catalogue-on sweep of ${TWIST_SEASONS} seasons`, () => {
+    for (const id of VARIANT_GATED) {
+      console.log(`   ${TWIST_FIRINGS[id] || 0}	${id} (catalogue on)`);
+      expect(TWIST_FIRINGS[id] || 0,
+        `${id} is gated on a twist night and did not fire even with the catalogue on`)
+        .toBeGreaterThan(0);
+    }
   });
 
   it('registers 80+ events across the seven families (honest count, not padded to a target)', () => {
@@ -598,7 +657,16 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // window delivered 2.78 scenes an episode out of a phase budgeted 5-8.
     // Twenty events fire in `journey-out` and two of them took a solo actor,
     // while the composer convenes one person about 40% of the time.
-    expect(EVENTS.length).toBe(201);
+    // 202 -> 205 the same day: `grief-two-chairs`, `grief-the-coffins` and
+    // `grief-in-this-room` — the mornings after a double, a hidden night and
+    // a murder committed in front of everybody. Same catalogue-on sweep.
+    // 201 -> 202 ON 2026-09-18: `grief-the-last-glass`, the morning after a
+    // slow chalice (js/tr/castle/grief.js). It is the first event in the pool
+    // whose gate is a TWIST night, which is why the catalogue-on sweep above
+    // exists at all — this count is the only place the registry size is
+    // pinned, and an event that cannot fire in the main sweep still has to be
+    // counted here.
+    expect(EVENTS.length).toBe(205);
     // 71 -> 73 (TASK 7 STAGE 6), and both are named rather than counted:
     // `susp-misread-tell` and `susp-defensive-overcorrect`. Each was rewritten
     // from a single branch onto `arcContinue`, so each can now genuinely

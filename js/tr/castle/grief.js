@@ -1775,3 +1775,435 @@ registerEvent({
       topic: (tableDriven || baseless) ? actor : (last ? last.name : actor) };
   },
 });
+
+// ══════════════════════════════════════════════════════════════════════
+// THE MORNING AFTER A CHALICE, and the object the room cannot read
+// ══════════════════════════════════════════════════════════════════════
+//
+// The chalice is the only murder that leaves something behind IN THE ROOM.
+// Every other night takes somebody out of a bed; this one is done in company,
+// with a glass, and the glass is still there in the morning. The castle had
+// nothing to say about that — the night showed on the conclave screen, the
+// memory of the pouring went into the Round Table's sources, and between the
+// two of them the morning itself was silent.
+//
+// WHAT THE ROOM IS ALLOWED TO KNOW, on quiet-night.js's rule. Not that there
+// was poison. Not that anybody was handed anything. A glass on a table, an
+// evening most of them only half remember, and no reason to connect the two.
+// Every branch below is people looking straight at the only physical evidence
+// this format ever produces and seeing crockery. The connection is made
+// somewhere else or not at all: `variantEvidence` gives the memory of the
+// pouring to whoever was watching, at a price, and that is the channel that
+// can reach a table. This one cannot, and must not.
+//
+// NOBODY HAS BEEN NAMED YET, which is the whole reason this scene can exist:
+// the pool may not say who is missing, because at that breakfast the castle
+// has been shown turned-over cups and no name at all.
+function _chaliceLastNight(ep) {
+  // FOUND BY EPISODE, not off the end of the list: `_victimLastNight` above
+  // does the same, and for the same reason — tonight's round object already
+  // exists by the time this morning's scenes are drawn.
+  const round = (gs?.tr?.rounds || []).find(r => r.ep === ep - 1);
+  if (!round || round.variant !== 'chalice') return null;
+  const d = round.variantData;
+  // FOUND, POURED, DRUNK — AND SLOW. A night the pact never found the cup
+  // leaves the room exactly as it was, and a Shield leaves everybody at
+  // breakfast. The fast kind is left to the rest of this family: the castle
+  // has been told who died and is looking at a chair, not at crockery.
+  //
+  // MEASURED BEFORE IT WAS NARROWED: 320 seasons produced 100 chalice
+  // mornings, 92 of them slow. A second pool written for the other eight
+  // fired ZERO times, because a fast morning runs `breakfast-fallout` as well
+  // and this family has spent its budget by the time `morning` comes round.
+  // Deleted rather than shipped.
+  if (!d || !d.found || !d.slow || !round.murdered) return null;
+  return { victim: round.murdered, slow: true };
+}
+
+const LAST_GLASS_LINES = {
+  'still-there': [
+    'There were cups turned over on the table and one still full, and {a} did not want to be the one to right any of them.',
+    '{a} counted the turned-over cups twice and got the same number twice.',
+    'Somebody had turned the cups over and nobody had said who was under which, and {b} stared at them anyway.',
+    '{a} moved one cup an inch and then put it back exactly where it had been.',
+    'Neither {a} nor {b} would touch the table. It had been set for people the castle had not been told about yet.',
+  ],
+  'washed-them-all': [
+    'Every glass from last night was clean and away before anybody came down, and {b} found that harder to take than the cups.',
+    '{a} asked who had tidied up. The question went round the room and came back with nothing on it.',
+    'The kitchen was spotless and the table was not, and {a} could not decide which of those bothered them more.',
+    '{b} had wanted to look at the glasses and there were no glasses left to look at.',
+  ],
+  'who-had-what': [
+    '{a} and {b} went back over the evening drink by drink and could not make it come out the same way twice.',
+    '"Who handed round the last ones?" {a} said, and {b} had been about to ask it.',
+    'Between them they could name everybody who had been standing up at the end of the night, which was almost everybody.',
+    'They tried to remember who had fetched what, and found they had both been watching the room rather than the table.',
+  ],
+  'thought-nothing-of-it': [
+    '{a} drank tea at a table of turned-over cups and did not once wonder why it was drinks and not chairs.',
+    'The cups were a formality as far as {b} was concerned, and {b} got on with breakfast.',
+    '{a} had bigger arithmetic to be doing than the crockery.',
+    'Neither of them read anything into the table. There was nothing in it to read, as far as either could see.',
+  ],
+};
+
+registerEvent({
+  id: 'grief-the-last-glass',
+  family: FAMILY,
+  // MORNING, NOT DAWN, and the reason is the slow poison. `breakfast-fallout`
+  // (the dawn phase) is SKIPPED WHOLESALE on a hidden morning — headless.js
+  // does not run it when nobody has been told who died — and a slow chalice is
+  // a hidden morning. Written for dawn, this scene would have been unreachable
+  // on the three nights in four it is actually about. `morning-life` runs on
+  // those mornings, with the decoys kept out of the room.
+  window: 'morning',
+  variationAxes: {
+    outcome: ['ambiguous', 'accepted', 'rejected'],
+    voice: ['intuition', 'temperament', 'strategic'],
+    relationship: ['close-ally', 'neutral'],
+  },
+  weight(ctx) {
+    if (ctx.actors?.length !== 2) return 0;
+    // ABOVE `grief-empty-chair`'s 3, on `night-overruled-in-the-turret`'s
+    // argument: its gate is already the rarest in the pool — one morning in a
+    // season that ran a chalice at all — so the weight does not make it
+    // common, it makes it the scene of the morning on the mornings it is
+    // available. At 3 it fired on a fifth of them.
+    return _chaliceLastNight(ctx.ep) ? 7 : 0;
+  },
+  fire(ctx, rng) {
+    const api = sceneApi(ctx, 'grief-the-last-glass');
+    const [a, b] = ctx.actors;
+    // NOTHING HERE READS THE NIGHT. The gate is in `weight()`; every line in
+    // the pool is about the table this morning and none of them names anybody
+    // who is missing, so `fire()` needs no fact the probe world in
+    // tests/tr-castle-write-path.test.js cannot give it. An event that throws
+    // without its gate is an event that writes no receipt.
+    const sa = pStats(a);
+    const sb = pStats(b);
+    const scores = {
+      // The sharper the pair, the likelier one of them stops at the object.
+      'still-there': 0.3 + (sa.intuition / 10) * 0.3,
+      'washed-them-all': 0.2 + (sb.strategic / 10) * 0.3,
+      'who-had-what': 0.2 + ((sa.mental + sb.mental) / 20) * 0.35,
+      'thought-nothing-of-it': Math.max(0.12, 0.5 - ((sa.intuition + sb.intuition) / 20) * 0.5),
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((acc, k) => acc + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = 'still-there';
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+
+    const sceneWhy = branch === 'washed-them-all' ? 'the glasses were washed before anybody came down'
+      : branch === 'who-had-what' ? 'tried to put last night’s drinks back in order'
+        : branch === 'thought-nothing-of-it' ? 'cleared the table without looking at it'
+          : 'the glass nobody would move';
+    const note = lineFor(LAST_GLASS_LINES[branch],
+      'grief-the-last-glass|' + branch + '|' + ctx.ep, { a, b });
+    // The pair are closer for having stood in that kitchen together, and least
+    // so on the branch where neither of them noticed anything.
+    const bondDelta = branch === 'thought-nothing-of-it' ? 0.5 : 1;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const t = api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
+    return { branch, pair: [a, b], speaker: a, respondent: b,
+      // NO VICTIM FIELD AT ALL. The castle has not been told who is missing,
+      // and a scene record that names them is one screen away from saying it
+      // out loud.
+      victim: null, topic: null,
+      topicKind: 'grief-loss', threadId: t?.id, bondDelta };
+  },
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// THE OTHER SHAPES OF NIGHT, and what the room has to look at
+// ══════════════════════════════════════════════════════════════════════
+//
+// The murder catalogue gives a night seven shapes and the castle had a scene
+// for exactly one of them (`grief-the-last-glass`, above). Every other twist
+// night was narrated on the conclave screen, entered the Round Table's
+// sources, and left the morning itself saying the same things it says after an
+// ordinary murder — which is the written-but-unreachable shape this project
+// keeps finding, one layer up: the content exists, and the day it belongs to
+// never mentions it.
+//
+// THE RULE IS quiet-night.js's, AND IT IS WHAT DECIDES WHICH SHAPES GET ONE.
+// A scene may only be built on what the room can SEE. Measured against that,
+// the catalogue splits in two:
+//
+//   double        two empty chairs. The loudest public fact in the format.
+//   hidden        several people missing and no name against any of them.
+//   plain-sight   everybody was in one room all evening, and one of them
+//                 is gone anyway.
+//
+// and the three that leave nothing public at all — `on-trial` (a list nobody
+// is shown), `face-to-face` (a chapel nobody is taken to twice) and `dungeon`
+// (which already has its own evidence channel and would be a second, free copy
+// of it) — get no scene, because a scene would be the room reasoning from a
+// fact it was never given.
+function _lastRound(ep) {
+  return (gs?.tr?.rounds || []).find(r => r.ep === ep - 1) || null;
+}
+
+/** Two names, and the castle counting to two. */
+function _doubleLastNight(ep) {
+  const r = _lastRound(ep);
+  if (!r || r.variant !== 'double') return null;
+  const v = r.variantData?.victims || [];
+  // A Shield on the second name leaves ONE chair empty, and this is not that
+  // morning — `_shapeNight` narrates that night as a standard murder for the
+  // same reason (js/tr/murder.js).
+  return v.length === 2 ? { victims: [...v] } : null;
+}
+
+/** People missing, no name, and an afternoon to wait for. */
+function _hiddenLastNight(ep) {
+  const r = _lastRound(ep);
+  if (!r || r.variant !== 'hidden') return null;
+  const c = r.variantData?.coffins || [];
+  return c.length >= 3 ? { n: c.length } : null;
+}
+
+/** A whole evening in one room, and somebody gone out of the middle of it. */
+function _plainSightLastNight(ep) {
+  const r = _lastRound(ep);
+  if (!r || r.variant !== 'plain-sight' || !r.murdered) return null;
+  return { victim: r.murdered };
+}
+
+// ── TWO CHAIRS ───────────────────────────────────────────────────────
+const TWO_CHAIRS_LINES = {
+  'counted-twice': [
+    '{a} counted the room, did not believe it, and counted it again. Two.',
+    'There were two places nobody was going to sit in, and {b} had to say the number out loud before it would go in.',
+    '{a} got to the end of the table and found they had lost two people, not one, and had to start again.',
+    '{b} had been braced for a chair. Nobody braces for two.',
+    'Two. {a} said it, {b} repeated it, and neither of them got any further than that for a while.',
+  ],
+  'which-one-first': [
+    '{a} wanted to know which of them had gone first, which {b} said did not matter and then thought about all morning.',
+    'They spent breakfast trying to work out the order it had happened in, as if the order were a kindness.',
+    '"Both of them, in one night," {b} said, and {a} could hear them working out what that took.',
+    '{a} could not stop arranging it into a sequence. {b} had stopped trying.',
+  ],
+  'what-it-tells-them': [
+    'Two in a night is not a night. {a} said so to {b}, and {b} had got there before {a} had finished.',
+    '{a} pointed out that whoever did this had been in a hurry, and neither of them liked what a hurry meant.',
+    '{b} took two empty chairs as arithmetic rather than grief, and was not ashamed of it.',
+    'It told them something, and {a} could not have said what, and could not put it down either.',
+  ],
+  'no-arithmetic-today': [
+    '{a} would not do the sum this morning and {b} did not make them.',
+    'Neither of them counted anything. It was the first morning of the season either had managed that.',
+    '{b} put breakfast in front of {a} and did not mention the table at all.',
+    'There was nothing to work out, {a} said, and meant there was nothing they could bear to work out yet.',
+  ],
+};
+
+registerEvent({
+  id: 'grief-two-chairs',
+  family: FAMILY,
+  window: 'dawn',
+  variationAxes: {
+    outcome: ['ambiguous', 'accepted', 'rejected'],
+    voice: ['temperament', 'strategic', 'loyalty'],
+    relationship: ['close-ally', 'neutral'],
+  },
+  weight(ctx) {
+    if (ctx.actors?.length !== 2) return 0;
+    // ABOVE `grief-empty-chair`'s 3 for `night-overruled-in-the-turret`'s
+    // reason: the gate is one morning in a season that ran a double at all,
+    // so the weight decides whether it is the scene of that morning, not how
+    // often the morning comes round.
+    return _doubleLastNight(ctx.ep) ? 7 : 0;
+  },
+  fire(ctx, rng) {
+    const api = sceneApi(ctx, 'grief-two-chairs');
+    const [a, b] = ctx.actors;
+    const sa = pStats(a);
+    const sb = pStats(b);
+    const scores = {
+      'counted-twice': 0.4,
+      'which-one-first': 0.15 + (sa.mental / 10) * 0.3,
+      'what-it-tells-them': 0.15 + (sb.strategic / 10) * 0.35,
+      'no-arithmetic-today': 0.12 + ((10 - sa.temperament) / 10) * 0.25,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((acc, k) => acc + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = 'counted-twice';
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+    const sceneWhy = branch === 'which-one-first' ? 'tried to put the two of them in an order'
+      : branch === 'what-it-tells-them' ? 'read two empty chairs as a decision rather than a loss'
+        : branch === 'no-arithmetic-today' ? 'would not count the room this morning'
+          : 'counted the room twice and got two missing';
+    const note = lineFor(TWO_CHAIRS_LINES[branch],
+      'grief-two-chairs|' + branch + '|' + ctx.ep, { a, b });
+    const bondDelta = branch === 'no-arithmetic-today' ? 1.5 : 1;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const t = api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
+    return { branch, pair: [a, b], speaker: a, respondent: b,
+      topicKind: 'grief-loss', threadId: t?.id, bondDelta };
+  },
+});
+
+// ── THE COFFINS ──────────────────────────────────────────────────────
+//
+// MORNING, NOT DAWN, for `grief-the-last-glass`'s reason: headless.js skips
+// `breakfast-fallout` entirely on a hidden morning, so a scene written for
+// dawn would be unreachable on the only mornings it is about. And NOT ONE
+// NAME in the pool, because the castle has not been given one — the whole
+// point of the night is that it finds out at the funeral.
+const COFFIN_LINES = {
+  'counted-the-missing': [
+    '{a} worked out how many were not at breakfast and then could not work out what to do with the number.',
+    'There were people missing and no list of them, and {b} kept trying to make one anyway.',
+    '{a} and {b} put together who they had seen this morning, which turned out to be a shorter conversation than either wanted.',
+    '{b} counted, got a number, and found the number told them nothing at all.',
+  ],
+  'would-not-guess': [
+    '{a} refused to guess who it was. {b} noticed how hard the refusing was.',
+    '"We find out this afternoon," {b} said, and made it sound like a rule rather than a comfort.',
+    '{a} said they would rather not know for another few hours, and meant it.',
+    'Neither of them would put a name to it, and both of them had one.',
+  ],
+  'said-a-name-anyway': [
+    '{a} said a name out loud and then wished they had not, and {b} would not say whether they had thought the same one.',
+    'It took {a} about four minutes to start guessing, which {b} thought was about three and a half too few.',
+    '{b} had a name ready before the kettle boiled, and {a} did not ask for it.',
+    '{a} guessed, {b} guessed differently, and the two of them fell out about people who might both be alive.',
+  ],
+  'waited-badly': [
+    '{a} spent the morning doing nothing at all, quite intently, and {b} sat with them while they did it.',
+    'The afternoon was hours away and {b} could not find anything to put in front of it.',
+    '{a} kept looking at the door like the door owed them an answer.',
+    'Waiting is a skill and neither {a} nor {b} turned out to have it.',
+  ],
+};
+
+registerEvent({
+  id: 'grief-the-coffins',
+  family: FAMILY,
+  window: 'morning',
+  variationAxes: {
+    outcome: ['ambiguous', 'accepted', 'rejected'],
+    voice: ['temperament', 'intuition', 'boldness'],
+    relationship: ['close-ally', 'neutral'],
+  },
+  weight(ctx) {
+    if (ctx.actors?.length !== 2) return 0;
+    return _hiddenLastNight(ctx.ep) ? 7 : 0;
+  },
+  fire(ctx, rng) {
+    const api = sceneApi(ctx, 'grief-the-coffins');
+    const [a, b] = ctx.actors;
+    const sa = pStats(a);
+    const sb = pStats(b);
+    const scores = {
+      'counted-the-missing': 0.3 + (sa.mental / 10) * 0.25,
+      'would-not-guess': 0.2 + (sa.temperament / 10) * 0.3,
+      'said-a-name-anyway': 0.15 + (sb.boldness / 10) * 0.35,
+      'waited-badly': 0.15 + ((10 - sb.temperament) / 10) * 0.3,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((acc, k) => acc + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = 'counted-the-missing';
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+    const sceneWhy = branch === 'would-not-guess' ? 'would not put a name to who was missing'
+      : branch === 'said-a-name-anyway' ? 'guessed out loud at who was under which lid'
+        : branch === 'waited-badly' ? 'could not get through the morning to the afternoon'
+          : 'counted who was not at breakfast and got no further';
+    const note = lineFor(COFFIN_LINES[branch],
+      'grief-the-coffins|' + branch + '|' + ctx.ep, { a, b });
+    // Guessing out loud at a morning like this costs the pair something; the
+    // rest of it draws them together.
+    const bondDelta = branch === 'said-a-name-anyway' ? -0.5 : 1;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const t = api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
+    // NO NAME ON THE RECORD EITHER. The castle has not been told, and a scene
+    // record carrying the victim is one screen away from printing it.
+    return { branch, pair: [a, b], speaker: a, respondent: b,
+      victim: null, topic: null, topicKind: 'grief-loss', threadId: t?.id, bondDelta };
+  },
+});
+
+// ── IN THIS ROOM ─────────────────────────────────────────────────────
+//
+// The castle is never told HOW, so no line here may say a murder happened at
+// the dinner table. What the room has is the evening itself: they were all in
+// it, all night, and one of them is gone out of the middle of it. Every
+// branch is that fact and the different ways of failing to do anything with
+// it — which, on the night the murder really did happen in front of them, is
+// the format's cruellest available scene.
+const IN_THIS_ROOM_LINES = {
+  'we-were-all-here': [
+    '"We were all here," {a} said. "All of us. All evening." {b} had no answer to that and did not pretend to.',
+    '{b} kept coming back to the fact that nobody had left the room, and to how little that turned out to be worth.',
+    'Nobody went anywhere last night, {a} said, and heard how that sounded as they said it.',
+    '{a} could account for the whole evening and for every person in it, and {v} was gone anyway.',
+  ],
+  'went-round-the-evening': [
+    '{a} and {b} went back through the evening hour by hour and could not find the hole in it.',
+    'They reconstructed the whole night between them, and the reconstruction was perfect, and useless.',
+    '{b} remembered where everybody had been sitting. {a} remembered who had got up, which was everybody.',
+    '{a} asked what the last thing {v} had said was, and between them they could not agree on it.',
+  ],
+  'stopped-looking': [
+    '{b} stopped trying to make the evening explain itself, and told {a} to stop as well.',
+    '{a} decided it did not matter where anybody had been standing, which was the first restful thought of the morning.',
+    'Neither of them wanted the evening back. {b} said so and {a} agreed too quickly.',
+    '{a} had been through it four times before breakfast and put it down in the middle of the fifth.',
+  ],
+  'looked-round-the-table': [
+    '{a} looked round the table at every single face and made themselves keep looking.',
+    '{b} spent breakfast watching the room instead of eating in it.',
+    'Whoever it was had been at that table last night, and {a} was going to be at it again tonight.',
+    '{a} checked the faces one at a time, found nothing in any of them, and did it again anyway.',
+  ],
+};
+
+registerEvent({
+  id: 'grief-in-this-room',
+  family: FAMILY,
+  window: 'dawn',
+  variationAxes: {
+    outcome: ['ambiguous', 'accepted', 'rejected'],
+    voice: ['intuition', 'temperament', 'strategic'],
+    relationship: ['close-ally', 'neutral'],
+  },
+  weight(ctx) {
+    if (ctx.actors?.length !== 2) return 0;
+    return _plainSightLastNight(ctx.ep) ? 7 : 0;
+  },
+  fire(ctx, rng) {
+    const api = sceneApi(ctx, 'grief-in-this-room');
+    const [a, b] = ctx.actors;
+    const night = _plainSightLastNight(ctx.ep);
+    const sa = pStats(a);
+    const sb = pStats(b);
+    const scores = {
+      'we-were-all-here': 0.35,
+      'went-round-the-evening': 0.15 + (sa.mental / 10) * 0.3,
+      'stopped-looking': 0.15 + (sb.temperament / 10) * 0.25,
+      'looked-round-the-table': 0.15 + (sa.intuition / 10) * 0.35,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((acc, k) => acc + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = 'we-were-all-here';
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+    const sceneWhy = branch === 'went-round-the-evening' ? 'took the whole evening apart and found nothing missing from it'
+      : branch === 'stopped-looking' ? 'put the evening down rather than go through it again'
+        : branch === 'looked-round-the-table' ? 'looked at every face at that table on purpose'
+          : 'nobody left that room all evening and somebody is gone anyway';
+    // `{v}` IS ONLY IN TWO OF THE POOLS, and `lineFor` leaves an unused
+    // substitution alone — but the victim is public on this night (the castle
+    // is told at breakfast like any other murder), so naming them is allowed
+    // here in a way it is not on a coffin morning.
+    const note = lineFor(IN_THIS_ROOM_LINES[branch],
+      'grief-in-this-room|' + branch + '|' + ctx.ep, { a, b, v: night ? night.victim : a });
+    const bondDelta = branch === 'looked-round-the-table' ? 0.5 : 1;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const t = api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
+    return { branch, pair: [a, b], speaker: a, respondent: b,
+      victim: night ? night.victim : null, topic: night ? night.victim : null,
+      topicKind: 'grief-loss', threadId: t?.id, bondDelta };
+  },
+});

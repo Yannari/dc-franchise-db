@@ -6,8 +6,8 @@ checked against the Traitors fandom wiki (thetraitors.fandom.com, read through
 first.
 
 **Already in the engine:** On Trial, In Plain Sight, Face to Face, The Dungeon,
-Double Murder, Name Your Own, Recruitment (note and ultimatum), The Armoury,
-Shield, Dagger, Seer.
+Double Murder, Name Your Own, **Hidden Murder** (built 2026-09-17 with The
+Funeral), Recruitment (note and ultimatum), The Armoury, Shield, Dagger, Seer.
 
 ## Night / murder twists
 
@@ -83,17 +83,26 @@ Shield, Dagger, Seer.
   default config skips it; run it with
   `npx vitest run --config vitest.sim.config.js tests/tr-murder.test.js`.
 
-## Missions first (chosen 2026-09-16)
+## Missions — ALL DONE (2026-09-16 → 2026-09-17)
 
-Eight more bespoke missions, from the wiki's mission pages, to reach the
-plan's 12 (Task 11 of `docs/superpowers/plans/2026-08-31-traitors-full-experience.md`).
-Each gets a mockup in `mockup/` for approval before its screen is built.
+Twelve bespoke missions, each from the wiki, each with a mockup approved before
+its screen was built (Task 11 of
+`docs/superpowers/plans/2026-08-31-traitors-full-experience.md`).
 
-1. Buried Alive
-2. Beacon Lighting
-3. Wicker Beasts
-4. The Traitors' Chess
-5. Church Match
-6. Traitors' Monument
-7. ~~The Funeral~~ DONE, with the Hidden Murder night twist (murder variant `hidden`); The Funeral is a follow-up mission forced the day after one
-8. Bonus mission: Roulette / Dinner Party
+The four originals: The Drowned Causeway, The Nightjar Orrery, The Long Account,
+The Ash Vault. Then: Buried Alive, Beacon Lighting, Wicker Beasts, The Traitors'
+Chess, Church Match, Traitors' Monument, The Funeral, The Roulette.
+
+- **The Funeral** is a FOLLOW-UP mission: it runs only the afternoon after a
+  Hidden Murder (murder variant `hidden`), is forced by `runMission`, and is not
+  in the random pool or the timeline dropdown. The twist is only pickable when
+  the funeral can run, so a hidden death is never left unrevealed.
+- **The Roulette** is the wiki's bonus night. A mission may never reduce
+  `gs.tr.pot` (the validator and the pot test both enforce it), so the gamble is
+  over the NIGHT'S purse and the final keep is capped at it.
+- Every mission screen now plays on a STAGE (js/vp-tr/mission-stage.js): a
+  full-width scene above the cards, each step in two beats — suspense, then the
+  answer. A theme adds `stage()`, a card classifier, settle/play, and appends
+  `STAGE_CSS`. `paintSide` takes a `mode` ('next' plays, 'all'/'mount' settles).
+  Watch for `overflow:hidden` on a theme root: it silently kills the sticky
+  stage. Use `overflow:clip`.

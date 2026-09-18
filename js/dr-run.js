@@ -631,6 +631,7 @@ function _config() {
     drAllStars: !!seasonConfig.drAllStars,
     drAllStarsRule: seasonConfig.drAllStarsRule || 'legacy',
     drAllStarsTwist: seasonConfig.drAllStarsTwist || 'none',
+    drAllStarsTwistEp: Number(seasonConfig.drAllStarsTwistEp) || 0,
     drPastSeasons: _pastDragSeasons(),
     // The relationships those seasons actually recorded — never inferred for
     // a pair the franchise has real history on. See `sharedHistory`.

@@ -1336,6 +1336,8 @@ export function saveConfig() {
       ? 'none' : (g('cfg-dr-save')?.value || 'none'),
     // The mode's own season-wide twist (js/dr/season.js).
     drAllStarsTwist: g('cfg-dr-as-twist')?.value || 'none',
+    // 0 = let the show place it (the episode the room halves on).
+    drAllStarsTwistEp: parseInt(g('cfg-dr-as-twist-ep')?.value) || 0,
     drTankLevers:    parseInt(g('cfg-dr-tank-levers')?.value) || 6,
     drTankRetire:    parseInt(g('cfg-dr-tank-retire')?.value) || 8,
     drTankLive:      parseInt(g('cfg-dr-tank-live')?.value) || 1,
@@ -1514,6 +1516,7 @@ export function renderConfig() {
   chk('cfg-dr-double-crown', seasonConfig.drDoubleCrown || false);
   set('cfg-dr-save', seasonConfig.drSave || 'none');
   set('cfg-dr-as-twist', seasonConfig.drAllStarsTwist || 'none');
+  set('cfg-dr-as-twist-ep', String(seasonConfig.drAllStarsTwistEp ?? 0));
   set('cfg-dr-tank-levers', seasonConfig.drTankLevers || 6);
   set('cfg-dr-tank-retire', seasonConfig.drTankRetire || 8);
   set('cfg-dr-tank-live', seasonConfig.drTankLive || 1);
@@ -2371,6 +2374,10 @@ export function drVerdictUI() {
   const twist = document.getElementById('grp-dr-as-twist');
   if (save) save.style.display = mode === 'off' ? '' : 'none';
   if (twist) twist.style.display = mode === 'off' ? 'none' : '';
+  // ...and WHEN it happens is only a question once one is picked.
+  const when = document.getElementById('cfg-dr-as-twist-when');
+  const picked = (document.getElementById('cfg-dr-as-twist')?.value || 'none') !== 'none';
+  if (when) when.style.display = mode !== 'off' && picked ? '' : 'none';
   const el = document.getElementById('sec-dr-fixed-verdict');
   if (!el) return;
   const line = mode === 'legacy'

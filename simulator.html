@@ -392,6 +392,11 @@
                 <option value="revenge">Revenge of the Queens &mdash; the eliminated cast returns and one wins her way back</option>
               </select>
               <div class="hint hint-tight">One episode mid-season: every queen the show has sent home comes back, they lip sync each other out in rounds, and the last one standing is in the competition again &mdash; with her record, and with whatever she remembers about who sent her home. Adds one episode.</div>
+              <div id="cfg-dr-as-twist-when" style="display:none;margin-top:8px">
+                <label class="form-label" style="display:flex;gap:6px;align-items:center">Episode
+                  <input type="number" id="cfg-dr-as-twist-ep" class="form-input" min="0" max="20" value="0" style="width:64px" onchange="saveConfig()"></label>
+                <div class="hint hint-tight">Which episode it is. <b>0 is automatic</b> &mdash; the show runs it once the room has halved, which is where the seasons that did it put it: late enough for the field to be worth watching, early enough that the queen who comes back has a season to play.</div>
+              </div>
             </div>
             <div class="form-group" id="sec-dr-judges">
               <label class="form-label">The panel <span style="font-weight:400;color:var(--muted);font-size:10px">(what each judge is watching)</span></label>

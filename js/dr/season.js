@@ -676,7 +676,17 @@ const TITLE = 'Queen of She Done Already Done Had Herses';
  * having: it is the one night the eliminated queens are the show, and a queen
  * who went home fourth can leave the season with something.
  */
-export function runSmackdown(state, cfg, ctx) {
+export function runSmackdown(state, cfg, ctx, {
+  /* ── THE SAME BRACKET, TWICE OVER ────────────────────────────────────
+     Revenge of the Queens (All Stars, AS2 ep 5) IS this night: every queen
+     the season has sent home comes back and lip syncs the others out in
+     rounds. The only differences are when it happens and what the winner
+     takes — a title at the reunion, or her place in the competition back,
+     mid-season. Reusing it rather than writing a second bracket, because two
+     copies of one rule is this repo's most repeated failure.
+     `salt` keeps the two nights on different dice. */
+  title = TITLE, rejoin = false, salt = 424242,
+} = {}) {
   const { players, bond } = ctx;
   // ITS OWN STREAM, and this is not tidiness. Drawing from the season's rng
   // would consume draws before the finale and change who gets crowned — a
@@ -684,7 +694,7 @@ export function runSmackdown(state, cfg, ctx) {
   // changed the winner of seed 1 from Q11 to Q10. An optional side event that
   // decides the season is the worst kind of bug, because it looks like a
   // feature working.
-  const rng = rngFor((cfg.seed || 1) * 7919 + 424242);
+  const rng = rngFor((cfg.seed || 1) * 7919 + salt);
   const field = [...(state.out || [])].filter(n => players[n]);
   if (field.length < 2) return null;
 
@@ -795,8 +805,20 @@ export function runSmackdown(state, cfg, ctx) {
   }
 
   const champion = alive[0] || null;
+  if (champion && rejoin) {
+    /* SHE IS BACK IN IT. The record she already made stays on the chart, so
+       her row simply continues — and `state.returns` is what the walk-back
+       beats and the franchise ledger both read. */
+    state.out = (state.out || []).filter(n => n !== champion);
+    state.living = [...state.living, champion];
+    state.returns = [...(state.returns || []), {
+      name: champion, asked: null, honoured: true, revenge: true,
+      gap: Math.max(0, (cfg.num || 0) - 1 - (state.record?.[champion] || []).length),
+      episode: cfg.num || 0,
+    }];
+  }
   if (champion) {
-    state.smackdownWinner = champion;
+    if (!rejoin) state.smackdownWinner = champion;
     state.popularity[champion] = (state.popularity[champion] || 0) + 6;
   }
 
@@ -809,7 +831,7 @@ export function runSmackdown(state, cfg, ctx) {
       ep: cfg.num,
       challenge: { id: 'smackdown', name: 'The Lip Sync Smackdown', format: 'solo', stage: 'main' },
       mini: null, judges: [], guest: null,
-      smackdown: { field, duels, winner: champion, title: TITLE },
+      smackdown: { field, duels, winner: champion, title, rejoin },
       popularity: popSnapshot(state),
       storylines: arcSummary(state.storylines || []),
       storylineNeed: {},
@@ -826,7 +848,7 @@ export function runSmackdown(state, cfg, ctx) {
          own seeding order, which is arbitrary — and three of seven duels came
          back reading as upsets, which makes an upset mean nothing. */
       scenes: smackdownScenes({
-        field, duels, champion, title: TITLE, rng,
+        field, duels, champion, title, rng, rejoin,
         expectedOf: n => (state.out || []).indexOf(n),
       }),
     },
@@ -1325,6 +1347,8 @@ export function playDragSeason({
   // A SPLIT PREMIERE runs the cast in two halves with nobody going home, so
   // the season proper starts at episode three with everybody still in.
   let rejoinDue = false;
+  // Revenge of the Queens runs once a season (All Stars).
+  let revengeRun = false;
   if (!resumeAt && premiere === 'split' && cast.length >= 10) {
     const order = [...state.castOrder].sort(() => rng() - 0.5);
     const half = Math.ceil(order.length / 2);
@@ -1641,6 +1665,41 @@ export function playDragSeason({
       live: ledgersNow ? ledgersNow() : null,
     };
     rows.push(weekRow);
+    /* ── REVENGE OF THE QUEENS ──────────────────────────────────────────
+       All Stars' own mid-season night (AS2 ep 5): every queen the season has
+       sent home comes back, they lip sync each other out in rounds, and the
+       last one standing is in the competition again — with the record she
+       already made, so her row on the chart simply continues.
+
+       ONCE, and when the room has halved, which is where the seasons that ran
+       it put it: late enough that the field of returners is worth watching,
+       early enough that the queen who comes back has a season to play. It
+       takes an episode of its own and sends nobody home, so — like a free
+       week — the season simply runs longer.
+
+       It is the same bracket as the Smackdown (`runSmackdown`), on its own
+       dice, because the two nights are the same night with different stakes. */
+    /* WHEN — the author's episode number, or the show's own judgement. The
+       box is 0 by default and that means "you place it": once the room has
+       halved. A number places the Revenge night AT that episode, and it is
+       still refused if the field is too thin or the room is already
+       finale-sized, because an author cannot book a bracket out of two
+       queens. */
+    const revengeWantedEp = Number(config.drAllStarsTwistEp) || 0;
+    const revengeDue = revengeWantedEp
+      ? num === revengeWantedEp
+      : state.living.length <= Math.ceil(cast.length / 2);
+    if (config.drAllStars && config.drAllStarsTwist === 'revenge' && !revengeRun
+      && revengeDue && state.out.length >= 3
+      && state.living.length > finaleSize) {
+      const rev = runSmackdown(state, { num: num++, seed }, ctx, {
+        title: 'Revenge of the Queens', rejoin: true, salt: 31337,
+      });
+      if (rev) {
+        rows.push(beat(state, rev, cast));
+        revengeRun = true;
+      }
+    }
     // No debt is taken on: the loop simply keeps going until the room is
     // finale-sized, so a free week is an extra week.
   }

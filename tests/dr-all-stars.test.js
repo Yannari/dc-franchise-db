@@ -480,3 +480,78 @@ describe('the alliance rail', () => {
     }
   });
 });
+
+describe('Revenge of the Queens', () => {
+  const rev = seed => season(seed, { drAllStars: true, drAllStarsTwist: 'revenge' });
+
+  it('runs once, mid-season, and sends nobody home', () => {
+    for (let s = 300; s < 306; s++) {
+      const res = rev(s);
+      const nights = res.rows.filter(r => r.dr?.smackdown?.rejoin);
+      expect(nights).toHaveLength(1);
+      const night = nights[0];
+      expect(night.exits || []).toHaveLength(0);
+      expect(night.dr.smackdown.title).toBe('Revenge of the Queens');
+      // Mid-season: there is still a season to play afterwards.
+      const at = res.rows.indexOf(night);
+      expect(at).toBeGreaterThan(1);
+      expect(res.rows.length - at).toBeGreaterThan(2);
+    }
+  });
+
+  it('puts the winner back in the competition with her record intact', () => {
+    const res = rev(300);
+    const night = res.rows.find(r => r.dr?.smackdown?.rejoin);
+    const who = night.dr.smackdown.winner;
+    expect(who).toBeTruthy();
+    // She was out before it and she is in the room after it.
+    const before = res.rows[res.rows.indexOf(night) - 1];
+    expect(before.dr.living).not.toContain(who);
+    const after = res.rows.slice(res.rows.indexOf(night) + 1).find(r => r.dr?.living);
+    expect(after.dr.living).toContain(who);
+    // And her chart row continued rather than restarting.
+    expect((res.state.record[who] || []).length).toBeGreaterThan(2);
+  });
+
+  it('never runs without the mode, or without the twist', () => {
+    for (const cfg of [{}, { drAllStars: true }, { drAllStarsTwist: 'revenge' }]) {
+      const res = season(301, cfg);
+      expect(res.rows.filter(r => r.dr?.smackdown?.rejoin)).toHaveLength(0);
+    }
+  });
+
+  it('leaves the reunion Smackdown its own night and its own title', () => {
+    const res = season(302, { drAllStars: true, drAllStarsTwist: 'revenge', drSmackdown: true });
+    const titles = res.rows.filter(r => r.dr?.smackdown).map(r => r.dr.smackdown.title);
+    expect(titles).toHaveLength(2);
+    expect(new Set(titles).size).toBe(2);
+    expect(titles[0]).toBe('Revenge of the Queens');
+  });
+});
+
+describe('when the twist happens', () => {
+  it('is the show\'s call by default — once the room has halved', () => {
+    for (let s = 310; s < 314; s++) {
+      const res = season(s, { drAllStars: true, drAllStarsTwist: 'revenge' });
+      const night = res.rows.find(r => r.dr?.smackdown?.rejoin);
+      const before = res.rows[res.rows.indexOf(night) - 1];
+      // The week before it left the room at half the cast or smaller.
+      expect(before.dr.living.length).toBeLessThanOrEqual(5);
+    }
+  });
+
+  it('or the episode the author asks for', () => {
+    for (const ep of [4, 5, 6]) {
+      const res = season(311, { drAllStars: true, drAllStarsTwist: 'revenge', drAllStarsTwistEp: ep });
+      const night = res.rows.find(r => r.dr?.smackdown?.rejoin);
+      expect(night, `no Revenge night for episode ${ep}`).toBeTruthy();
+      expect(night.num).toBe(ep);
+    }
+  });
+
+  it('and is refused when the field is too thin to make a bracket', () => {
+    // Episode two: at most one queen has ever been sent home.
+    const res = season(311, { drAllStars: true, drAllStarsTwist: 'revenge', drAllStarsTwistEp: 2 });
+    expect(res.rows.filter(r => r.dr?.smackdown?.rejoin)).toHaveLength(0);
+  });
+});

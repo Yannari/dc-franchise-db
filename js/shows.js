@@ -218,6 +218,13 @@ export const SHOWS = {
       // departure reads the ROUND's own exit channel through `exitVerbs()`
       // below, and falls back to `exit` only where a show has just the one.
       exitMurder: 'murdered',
+      // AND THE SAME VERB IN THE FORM YOU GIVE AN INSTRUCTION IN. `exitAction`
+      // is already here for the vote ("voted to banish"), and the murder had
+      // no equivalent — so the host's sign-off, which is a sentence about
+      // something that has NOT happened yet, filled it from `exitMurder` and
+      // told the pact they had "somebody to murdered before morning". Reported
+      // off a played transcript.
+      exitMurderAction: 'murder',
       comp: 'mission', comps: 'missions won', compBeast: 'mission asset',
       compWon: 'missions' },
       // audienceAward is deliberately absent: the format has no in-show award

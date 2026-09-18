@@ -71,7 +71,7 @@
 //      and a branch that never receives the data cannot leak it at all.
 import { seasonConfig, players } from '../core.js';
 import { pronouns } from '../players.js';
-import { exitVerbs, publicBallots } from '../shows.js';
+import { exitVerbs, publicBallots, showWords } from '../shows.js';
 import { HOSTS_BY_FORMAT } from '../shows.js';
 import { PORTRAIT_CSS, TR_NAV_TOP } from './style.js';
 import { _noiseTile, _fieldRng } from './scenery.js';
@@ -82,7 +82,11 @@ const TR = 'traitors';
 /** The show's own word for the door this table opens. Never written out. */
 function _verbs() {
   const [banish, murder] = exitVerbs(TR);
-  return { banish: banish || 'out', murder: murder || banish || 'out' };
+  const w = showWords(TR);
+  return { banish: banish || 'out', murder: murder || banish || 'out',
+    // THE INSTRUCTION FORM, for the one sentence on this screen about a thing
+    // that has not happened yet — see `exitMurderAction` in js/shows.js.
+    doMurder: w.exitMurderAction || w.exitAction || 'it' };
 }
 const _cap = s => String(s || '').charAt(0).toUpperCase() + String(s || '').slice(1);
 
@@ -2864,7 +2868,7 @@ function _buildBeats(v) {
   // Not on a finale table, where there is no night after the vote.
   if (!v.endgame) {
     push('verdict', _hostBand(_fill(_pick(HOST_SENDOFF, key + '|sendoff'),
-      { kill: _esc(_verbs().murder) })), null, { kind: 'sendoff' });
+      { kill: _esc(_verbs().doMurder) })), null, { kind: 'sendoff' });
   }
   return beats;
 }

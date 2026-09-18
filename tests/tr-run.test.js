@@ -36,7 +36,8 @@ import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
 import { isTraitorsSeason, simulateTraitorsEpisode, traitorsEpisodesLeft,
   rerunTraitorsEpisode, traitorsSeasonRecord, lastTraitorsRerunRefusal } from '../js/tr-run.js';
 import { buildTraitorsSeasonDocument } from '../js/tr/export.js';
-import { getEpisodeEliminations, renderEpisodeHistory, renderEpisodeView } from '../js/run-ui.js';
+import { getEpisodeEliminations, renderEpisodeHistory, renderEpisodeView,
+  buildSeasonOverviewModel, buildEpisodeMap } from '../js/run-ui.js';
 import { exitVerbs } from '../js/shows.js';
 import { TRAITORS_SCREENS } from '../js/vp-tr/screens.js';
 import { foreignWordsIn } from './helpers/show-vocabulary.js';
@@ -542,5 +543,52 @@ describe('the season refuses a cast the backgrounds block', () => {
       ? { ...p, backgroundType: 'civilian' } : { ...p })));
     expect(simulateTraitorsEpisode(),
       'a clean cast was refused, so the arm above proves nothing').toBeTruthy();
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// THE NIGHT THAT REMOVED NOBODY, and the tape saying so out loud
+// ══════════════════════════════════════════════════════════════════════
+//
+// Reported as two symptoms of one thing: "why does it say no elimination"
+// and "why does it keep everyone 18 left -> 18 left". Banish or Murder is the
+// first twist that can hold a banishment, and a refused deal on a night the
+// pact was going to recruit rather than kill takes NOBODY — which the timeline
+// reported as a bare "No elimination" beside an unchanged count, with no way
+// to tell it from a bug.
+//
+// Both arms below are about the tape rather than the engine: the engine was
+// right (`exits` carried the murder, and `getEpisodeEliminations` read it),
+// and everything the reader saw came from a projection that did not know the
+// twist and a label that had no reason to give.
+describe('the tape explains a castle night that took nobody', () => {
+  it('projects exactly one exit on a scheduled deal night, not two', () => {
+    // A deal night has two doors and one body: banish with money on it and the
+    // pact stays in, or refuse it and the pact works. Either way, one.
+    castle({ twistSchedule: [{ episode: 4, type: 'tr-banish-or-murder' }] }, SEEDS[0]);
+    const map = buildEpisodeMap();
+    const before = map.find(e => e.ep === 4);
+    const after = map.find(e => e.ep === 5);
+    expect(before && after, 'the projection stopped before episode 5').toBeTruthy();
+    expect(before.active - after.active).toBe(1);
+  });
+
+  it('gives a reason for every night that removed nobody', () => {
+    let empty = 0;
+    for (let seed = 1; seed <= 40 && empty < 3; seed++) {
+      castle({ twistSchedule: [{ episode: 6, type: 'tr-banish-or-murder' }] }, seed);
+      for (let i = 0; i < 60 && simulateTraitorsEpisode(); i++);
+      for (const row of buildSeasonOverviewModel(gsRef, players).timeline) {
+        if (row.eliminated.length) continue;
+        empty++;
+        expect(row.emptyReason,
+          `episode ${row.episode} removed nobody and the tape says nothing about why`)
+          .toBeTruthy();
+      }
+    }
+    // THE ARM THAT KEEPS THE ARM ABOVE HONEST: a sweep with no empty night in
+    // it asserts nothing at all.
+    expect(empty, 'no night in 40 seasons removed nobody, so this proves nothing')
+      .toBeGreaterThan(0);
   });
 });

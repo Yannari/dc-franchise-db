@@ -351,6 +351,23 @@ export function getEpisodeEliminations(ep) {
   return [...new Set(names)];
 }
 
+/**
+ * Why a castle night removed nobody, in the tape's own words, or null.
+ *
+ * Only ever asked of a row that removed nobody — every other night speaks for
+ * itself by naming who left.
+ */
+function _trEmptyReason(ep) {
+  if (!_isCastleRow(ep)) return null;
+  if (getEpisodeEliminations(ep).length) return null;
+  const deal = ep.tr && ep.tr.table && ep.tr.table.deal;
+  const refused = deal && !deal.unanimous;
+  const murdered = (ep.exits || []).some(x => x && x.channel === 'murder');
+  if (refused && !murdered) return 'The deal was refused, and the pact killed nobody';
+  if (refused) return 'The deal was refused — no banishment was held';
+  return null;
+}
+
 export function buildHubAftermath(ep) {
   if (!ep) return null;
   const eliminated = getEpisodeEliminations(ep);
@@ -2639,6 +2656,14 @@ export function buildEpisodeMap() {
       // Traitor has been banished), so it is exempt.
       const isRecruit = trEp !== 1 && (seasonConfig.twistSchedule || [])
         .some(t => t && Number(t.episode) === trEp && t.type === 'tr-recruitment');
+      // THE DEAL AT THE DINNER REMOVES EXACTLY ONE, WHICHEVER WAY IT GOES, and
+      // that is the point of it: the room either banishes somebody with money
+      // on it and the pact does not work that night, or it refuses and there
+      // is no banishment at all. Two doors, one body. Left alone this
+      // projection took two off a deal night and drew the rest of the season a
+      // person short.
+      const isDeal = trEp !== 1 && (seasonConfig.twistSchedule || [])
+        .some(t => t && Number(t.episode) === trEp && t.type === 'tr-banish-or-murder');
       trEps.push({ ep: trEp, active: trActive, phase: 'pre-merge',
         engineType: twistMap[trEp] || null });
       // Episode one: the murder, no banishment. Every later night banishes.
@@ -2647,7 +2672,7 @@ export function buildEpisodeMap() {
       // endgame so the tail stays banishment-only, as the real seasons do) —
       // unless a Recruitment is pinned here, in which case nobody is murdered.
       const canMurder = trEp === 1
-        || (!isRecruit && murderBudget > 0 && trActive - toll - 1 >= endgame);
+        || (!isRecruit && !isDeal && murderBudget > 0 && trActive - toll - 1 >= endgame);
       if (canMurder) {
         toll += 1;
         if (trEp !== 1) murderBudget -= 1;
@@ -4952,6 +4977,16 @@ export function buildSeasonOverviewModel(state = gs, cast = players) {
   const timeline = history.map(ep => ({
     episode: ep.num,
     eliminated: getEpisodeEliminations(ep),
+    // ── AND WHY A NIGHT REMOVED NOBODY, when one did ──────────────────
+    //
+    // "No elimination" is a true sentence and a useless one: a castle night
+    // that takes nobody is RARE and always has a reason, and the reader is
+    // looking at the tape precisely because they want that reason. Reported as
+    // "why does it say no elimination / why does it keep everyone 18 left".
+    // Both doors are read off the record rather than guessed: the deal at the
+    // dinner is the only thing that can hold a banishment, and a night with a
+    // conclave that named nobody is a night the pact spent otherwise.
+    emptyReason: _trEmptyReason(ep),
     immunity: ep.immunityWinner || ep.winner?.name || null,
     merge: !!ep.isMerge,
     voteShape: Object.entries(ep.votes || {}).filter(([, count]) => Number(count) > 0).sort(([, a], [, b]) => b - a).map(([name, count]) => `${name} ${count}`).join(' · '),
@@ -5239,7 +5274,7 @@ function renderMidseasonOverview() {
       <section class="overview-section"><header><div><span>Game read</span><h2>Stories taking shape</h2></div><small>Not promised outcomes</small></header><p class="overview-disclaimer">A concise interpretation of the season-to-date record. Future episodes can reverse any of these threads.</p><ol class="overview-thread-list">${threadsHtml}</ol></section>
       <section class="overview-section"><header><div><span>Recorded</span><h2>Relationship movement</h2></div><small>Largest recent shifts</small></header><div class="overview-relationship-list">${movementHtml}</div></section>
     </div>
-    <section class="overview-section"><header><div><span>Recorded</span><h2>Episode trail</h2></div><small>Click to review</small></header><div class="overview-timeline">${model.timeline.map(item => `<button onclick="showTab('run');viewEpisode(${item.episode})"><b>EP ${String(item.episode).padStart(2, '0')}</b><span class="overview-timeline-faces">${item.eliminated.length ? item.eliminated.slice(0, 2).map(name => _overviewPortrait(name)).join('') : '<i>—</i>'}</span><strong>${item.eliminated.length ? _hubEsc(item.eliminated.join(' + ')) : 'No elimination'}</strong><small>${item.merge ? 'MERGE · ' : ''}${_hubEsc(item.voteShape || 'No standard vote')}</small></button>`).join('')}</div></section>
+    <section class="overview-section"><header><div><span>Recorded</span><h2>Episode trail</h2></div><small>Click to review</small></header><div class="overview-timeline">${model.timeline.map(item => `<button onclick="showTab('run');viewEpisode(${item.episode})"><b>EP ${String(item.episode).padStart(2, '0')}</b><span class="overview-timeline-faces">${item.eliminated.length ? item.eliminated.slice(0, 2).map(name => _overviewPortrait(name)).join('') : '<i>—</i>'}</span><strong>${item.eliminated.length ? _hubEsc(item.eliminated.join(' + ')) : _hubEsc(item.emptyReason || 'No elimination')}</strong><small>${item.merge ? 'MERGE · ' : ''}${_hubEsc(item.voteShape || 'No standard vote')}</small></button>`).join('')}</div></section>
     <section class="overview-section"><header><div><span>Recorded</span><h2>Player ledger</h2></div><small>Season-to-date totals</small></header><div class="overview-table"><div class="overview-table-head"><span>Player</span><span>Wins</span><span>Ballots</span><span>Accuracy</span><span>Votes received</span><span>Votes steered</span></div>${placementRows.map(row => {
       const metric = model.metrics.find(item => item.name === row.name);
       return `<div class="overview-table-row ${metric?.active ? '' : 'eliminated'}"><span>${_overviewPortrait(row.name)}<b>${_hubEsc(row.name)}</b><i>${_hubEsc(row.status)}</i></span><span>${metric?.challengeWins ?? '—'}</span><span>${metric?.ballots ?? '—'}</span><span>${metric?.ballots ? `${Math.round(metric.voteAccuracy * 100)}%` : '—'}</span><span>${metric?.votesReceived ?? '—'}</span><span>${metric?.influence ?? '—'}</span></div>`;
@@ -5309,7 +5344,10 @@ export function buildSeasonRetrospectiveModel(state = gs, cast = players) {
   }));
   const relationshipOutcomes = [...relationshipMap.values()].filter(item => Math.abs(item.delta) >= 1)
     .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta)).slice(0, 8);
-  const timeline = overview.timeline.map(item => ({ ...item, label: item.eliminated.length ? `${item.eliminated.join(' + ')} left` : (item.episode === finaleEp.num ? `${winner || 'A winner'} was crowned` : 'No elimination') }));
+  const timeline = overview.timeline.map(item => ({ ...item,
+    label: item.eliminated.length ? `${item.eliminated.join(' + ')} left`
+      : (item.episode === finaleEp.num ? `${winner || 'A winner'} was crowned`
+        : (item.emptyReason || 'No elimination')) }));
   const voteTotal = Object.values(juryVotes).reduce((sum, value) => sum + Number(value || 0), 0);
   return {
     winner,

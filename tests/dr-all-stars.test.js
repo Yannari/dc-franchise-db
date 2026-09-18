@@ -996,9 +996,60 @@ describe('why she chose that lipstick', () => {
       const c = row.dr.scenes.find(sc => sc.kind === 'legacy:confessional');
       expect(c.data.confessional).toBe(true);
       expect(c.data.who).toBe(row.dr.lipsync.chosenBy);
-      expect(c.text.length).toBeGreaterThan(60);
-      // The queen she ended is named in it.
-      expect(c.text).toContain(row.dr.lipsync.eliminated);
+      expect(c.text.length).toBeGreaterThan(40);
+      // It is her talking, not narration about her.
+      expect(c.text).toMatch(/"/);
+    }
+    /* MOST of them name the queen she ended — not all, because the card sits
+       directly under the reveal that just said the name, and a line forced to
+       repeat it reads like a form being filled in. */
+    const named = rows.filter(r => r.dr.scenes
+      .find(sc => sc.kind === 'legacy:confessional').text.includes(r.dr.lipsync.eliminated));
+    expect(named.length / rows.length).toBeGreaterThan(0.4);
+  });
+
+  it('draws it as a piece to camera, not as a scene in the room', async () => {
+    const { dragScreens } = await import('../js/vp-dr/screens.js');
+    const row = as(7).rows.find(r => (r.dr.scenes || [])
+      .some(sc => sc.kind === 'legacy:confessional'));
+    const html = Object.fromEntries(dragScreens(row).map(x => [x.id, x.html]))['dr-legacy'];
+    expect(html).toContain('dr-conf');
+    expect(html).toContain('confessional');
+  });
+
+  it('does not say the same thing twice in one season', () => {
+    for (const seed of [7, 19, 42]) {
+      const seen = new Map();
+      for (const row of as(seed).rows) {
+        for (const sc of (row.dr.scenes || [])) {
+          if (sc.step !== 'legacy-choice' && !String(sc.kind).startsWith('shadow:')) continue;
+          if (!sc.text) continue;
+          const sig = `${sc.kind}|${sc.text.replace(/Q\d+/g, 'Q')}`;
+          seen.set(sig, (seen.get(sig) || 0) + 1);
+        }
+      }
+      const total = [...seen.values()].reduce((a, b) => a + b, 0);
+      const repeats = [...seen.values()].reduce((a, b) => a + (b - 1), 0);
+      /* The pools draw without replacement across the season, so what is left
+         is a pool genuinely running out — not the same line three times in
+         five episodes, which is what this was. */
+      expect(repeats / total, `seed ${seed}`).toBeLessThan(0.2);
+    }
+  });
+
+  it('is written the way the show speaks', async () => {
+    const { LEGACY_BEATS } = await import('../js/dr/data/legacy-beats.js');
+    for (const [why, pool] of Object.entries(LEGACY_BEATS.confessional)) {
+      expect(pool.length, `${why} has too few variants`).toBeGreaterThan(4);
+      expect(pool.some(l => l.includes('{x}')), `${why} never names the queen she chose`).toBe(true);
+      for (const line of pool) {
+        // Spoken, not written: it is in quotes and it is not a paragraph.
+        expect(line, line.slice(0, 40)).toMatch(/"/);
+        expect(line.length, `too long: ${line.slice(0, 50)}`).toBeLessThan(330);
+      }
+      // No two lines open the same way.
+      const opens = pool.map(l => l.slice(0, 22));
+      expect(new Set(opens).size, `${why} repeats an opening`).toBe(pool.length);
     }
   });
 

@@ -456,6 +456,23 @@ function step(sc, i, suffix, ep, accent) {
   const firstSentence = String(sc.text || '').split(/(?<=[.!?])\s/)[0] || '';
   const opensWithName = first && firstSentence.includes(first);
   const name = first && !opensWithName ? `<b class="dr-disp">${esc(first)}</b> ` : '';
+  /* ── A PIECE TO CAMERA IS NOT A SCENE IN THE ROOM ──────────────────
+     This drew a confessional with exactly the furniture it gives a werk room
+     event — a portrait, a paragraph, the same border — so the one place in
+     the show where somebody says the true version out loud read as narration
+     about her. Reported off the lipstick ceremony: "it doesn't act like a
+     confessional". Every screen on this path gets the treatment, because the
+     flag has always been on the scene. */
+  const confess = !!sc?.data?.confessional || String(sc.kind || '').startsWith('confess:');
+  if (confess) {
+    const her = String(sc?.data?.who || players[0] || '');
+    return `<div class="dr-step" id="dr-step-${suffix}-${i}">
+      <div class="dr-panel dr-conf">
+        <span class="dr-conf-por">${_portrait(her, ep, { size: 64 })}</span>
+        <div><span class="dr-conf-k dr-disp">${esc(her)} &middot; confessional</span>
+          <p>${esc(sc.text || '')}</p></div>
+      </div></div>`;
+  }
   return `<div class="dr-step" id="dr-step-${suffix}-${i}">
     <div class="dr-panel ${accent} dr-scene">
       ${who}<div class="dr-scene-body">${tier}${name}${esc(sc.text || '')}</div>
@@ -463,6 +480,24 @@ function step(sc, i, suffix, ep, accent) {
 }
 
 const EXTRA_CSS = `
+/* ══ THE PIECE TO CAMERA ══ she is alone, the room is not in this shot, and
+   the card says so: a hot key light from the left, her name over the line,
+   and the whole thing leaning in as it arrives. */
+.dr-conf{position:relative;display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center;
+  padding:14px 18px 14px 16px;border-radius:14px;
+  background:linear-gradient(100deg,rgba(123,47,247,.22),rgba(40,10,60,.55) 60%);
+  box-shadow:inset 0 0 0 1px rgba(191,143,255,.35);
+  animation:dr-conf-in .45s cubic-bezier(.2,1.1,.3,1) both}
+@keyframes dr-conf-in{from{opacity:0;transform:translateX(-10px) scale(.985)}}
+.dr-conf::before{content:'';position:absolute;inset:0;border-radius:14px;pointer-events:none;
+  background:radial-gradient(60% 120% at 0% 50%,rgba(203,179,255,.22),transparent 60%)}
+.dr-conf > *{position:relative}
+.dr-conf-por img,.dr-conf-por > span{border-radius:50%;box-shadow:0 0 0 2px rgba(191,143,255,.5),0 0 26px rgba(123,47,247,.45)}
+.dr-conf-k{display:block;font-size:9px;letter-spacing:.22em;text-transform:uppercase;
+  color:#cbb3ff;margin-bottom:5px}
+.dr-conf p{margin:0;color:#f3ecff;font-size:14.5px;line-height:1.5;text-wrap:pretty}
+@media (prefers-reduced-motion: reduce){.dr-conf{animation:none}}
+
 .dr-scene{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start;
   padding:14px 16px 14px 20px}
 .dr-scene:not(:has(.dr-who)){grid-template-columns:1fr}
@@ -755,9 +790,13 @@ function buildSection(sec, row) {
     const lip = row?.dr?.lipsync || {};
     const st = lipstickStage(row, scenes.map(sc => ({
       kind: sc.kind, target: sc?.data?.chosen || lip.eliminated || null, text: sc.text,
+      // Whose piece to camera this is, for the cutaway.
+      who: sc?.data?.who || null,
     })), {
       ep, bottom: row?.dr?.callAtCall?.bottom?.length ? row.dr.callAtCall.bottom : (row?.dr?.call?.bottom || []),
       holder: lip.chosenBy || null, uid: `lg${ep.num}`,
+      weighed: lip.weighed || [], reason: lip.reason || '', why: lip.why || '',
+      spared: lip.spared || null,
     });
     wireStage(sec.suffix, st, ep, _state);
     return `<style>${EXTRA_CSS}${FINALE_STAGE_CSS}${LEGACY_STAGE_CSS}</style>${_shell(

@@ -379,6 +379,10 @@ export function runDragWeek(state, cfg, ctx) {
      She opens it or she does not, and both are a move. It is her own read
      that decides: a bold queen says it, a careful one keeps it, and a queen
      whose name would land on somebody still in the room thinks twice. */
+  /* WHAT THE CEREMONY HAS ALREADY SAID THIS SEASON. An array, not a Set: it
+     rides on the season state and has to survive being saved. */
+  state.legacySaid ||= [];
+  const said = state.legacySaid;
   const shadowFx = e => { applyEventLike(e); werkEvents.push(e); };
   const shadow = state.shadowLipstick;
   if (shadow && shadow.target && living.includes(shadow.holder)) {
@@ -396,7 +400,7 @@ export function runDragWeek(state, cfg, ctx) {
     const sc = (kind, who, pool) => scenes.push({
       step: 'cold-open', kind: `shadow:${kind}`,
       data: { players: who, shadow: true, holder: shadow.holder, told: tells },
-      text: legacyLine(pool, sv, rng),
+      text: legacyLine(pool, sv, rng, said),
     });
     sc('ask', [shadow.holder, shadow.winner].filter(n => living.includes(n)), SHADOW_BEATS.ask);
     if (!tells) {
@@ -1963,7 +1967,7 @@ export function runDragWeek(state, cfg, ctx) {
                  instead of asserting it. */
               reason: choice.reason, spared: choice.spared || null,
               mind: choice.mind, weighed: choice.weighed },
-            text: legacyLine(lines, lv, rng),
+            text: legacyLine(lines, lv, rng, said),
           });
           ceremony('legacy:deliberate', [lc.winner],
             LEGACY_BEATS.deliberate[choice.why] || LEGACY_BEATS.deliberate.panel);
@@ -2012,7 +2016,7 @@ export function runDragWeek(state, cfg, ctx) {
               holder: lc.winner, chosen, why: choice.why },
             text: legacyLine(
               LEGACY_BEATS.confessional[choice.why] || LEGACY_BEATS.confessional.panel,
-              { h: lc.winner, x: chosen, o: other }, rng),
+              { h: lc.winner, x: chosen, o: other }, rng, said),
           });
           ceremony('legacy:room', [chosen], LEGACY_BEATS.roomAnswer);
           ceremony('legacy:last-words', [chosen], LEGACY_BEATS.lastWords);

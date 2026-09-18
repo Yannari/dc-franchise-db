@@ -15,16 +15,31 @@ export const LEGACY_BEATS = {
      the one the night recorded. */
   deliberate: {
     threat: [
+      '{h} is not deliberating. {h} is confirming. There is a difference and it takes about four seconds.',
+      'Backstage the counter is very quiet and {h} is doing arithmetic that has nothing to do with tonight.',
+      '{h} holds one up to the light like she is checking it for something. She is not checking it for anything.',
+      'The tube {h} wants is not the tube the room would pick, and {h} has known that since the critiques.',
+      '{h} does the thing she does before a lip sync: one breath in, hold it, let it go. Then she reaches.',
       '{h} turns the two tubes over in her hands. One of these names is the only queen down there who could take this from her.',
       'Backstage, {h} is not thinking about tonight. She is thinking about the four weeks after it.',
       '{h} lines the lipsticks up on the counter and looks at them the way you look at a bill you have to pay.',
     ],
     panel: [
+      '{h} is out of there in under a minute, which tells the crew everything it needs to know.',
+      'There is nothing to weigh. {h} still stands there a moment, because walking straight back out looks like something.',
+      '{h} reads the names twice. They say the same thing the second time.',
+      '"Easiest one I will ever do," {h} says to the mirror, and then looks like she wishes she had not said it out loud.',
+      '{h} picks up the obvious one and hates a little bit that it is obvious.',
       '{h} does not have to think for long. The panel said who the weakest of them was, out loud, twenty minutes ago.',
       '{h} weighs the tubes and finds the choice already made for her: the room ranked them, and she agrees with the room.',
       '"I’m not going to pretend this is hard," {h} says to the mirror. "They told us."',
     ],
     grudge: [
+      'There is no deliberation. There is a woman picking up something she has been thinking about for weeks.',
+      '{h} smiles at the counter. Nobody is in the room to see it, which is probably for the best.',
+      '{h} takes her time, and the taking of time is the only part of this that is for anybody else.',
+      'Somewhere on the other side of that wall, {x} already knows. {h} is counting on it.',
+      '{h} does not weigh anything. She came backstage with the answer in her mouth.',
       '{h} has waited a long time to hold one of these with {x}’s name on the other end of it.',
       'Backstage, {h} is very calm, and that is the part that should worry {x}.',
       '{h} picks one up without looking at the other.',
@@ -36,21 +51,41 @@ export const LEGACY_BEATS = {
        name. These are that half. `s` is the queen she protected: the reason
        this name is on the tube is that the other one could not be. */
     turn: [
+      '{h} is thinking about weeks that already happened, which is not how anybody else at that counter plays this.',
+      '"It has to be somebody," {h} says to the mirror, and the mirror has heard that sentence from better liars.',
+      '{h} lines the tubes up by how many times each name has been saved. It is not a long line and it is not a fair one.',
+      'There is a queen down there who has had more lives than the rest of them put together, and {h} has decided to be the one who says so.',
+      '{h} does not look conflicted. {h} looks like somebody doing a job nobody else would take.',
       '{h} counts it out on her fingers, which is not a nice thing to watch. Somebody has been carried through this before, and {h} has decided that stops tonight.',
       '"At some point it is just somebody’s turn," {h} says to the mirror, and the mirror does not argue with her.',
       '{h} is not thinking about who was worst tonight. She is thinking about who has already been handed one of these and walked away from it.',
     ],
     friend: [
+      '{h} picks up {s}’s tube, puts it down, and does not pick it up again. That is the whole deliberation.',
+      'One of those names {h} cannot physically write, and knowing that does not make the other one lighter.',
+      '{h} stands there long past the point of deciding. She decided immediately. She is just not ready to walk out yet.',
+      '"Do not make me do this," {h} says, to nobody, about somebody who is not in the room.',
+      '{h} wipes her face carefully, because she is about to be looked at by everybody she knows.',
       '{h} looks at {s}’s name for a long time and then puts that tube down, and everything after that is just paperwork.',
       '"I could not do it to {s}," {h} says quietly, to nobody. "So it has to be the other one, and I have to live with that too."',
       'There was never a version of this where {h} wrote {s}’s name, and {h} knows it, and that is what makes the other tube feel so heavy.',
     ],
     bloc: [
+      'The maths at that counter is very simple and {h} does not pretend otherwise.',
+      '{h} does not even turn {s}’s tube around. Why would she.',
+      '"Everybody is going to know," {h} says to the mirror. She does not sound like somebody who minds.',
+      'There is one name at that counter {h} is protecting and it was decided long before tonight.',
+      '{h} is backstage for ninety seconds and about eighty of them are for show.',
       '{h} does not pretend to deliberate. {s} is one of hers, and you do not end one of yours, and the rest of it follows from that.',
       '"People are going to say I protected {s}." {h} turns the other tube over. "People are going to be right."',
       '{h} weighs them the way you weigh something you have already decided: {s} is family in this competition and the other one is not.',
     ],
     plea: [
+      '{h} is still in that lounge, a little, hearing somebody say please to her in front of the whole cast.',
+      '"I said a thing," {h} tells the mirror. "Now I find out if I am somebody who says things."',
+      '{h} weighs them and keeps landing on a conversation instead of a performance.',
+      'Somebody asked her tonight. {h} has been in this competition long enough to know how rare that is and how much it costs to honour.',
+      '{h} does not look at the tubes much. She is looking at her own face and asking it something.',
       '{h} keeps hearing {s} in that lounge. She asked for it to her face, and {h} said something back, and now {h} has to be the kind of queen who meant it.',
       '"{s} asked me," {h} says. "Nobody else asked me." It is a thin reason and it is the one she is going with.',
       '{h} gave her word in Untucked, quietly, in a room full of people pretending not to listen. This is what that costs.',
@@ -63,39 +98,64 @@ export const LEGACY_BEATS = {
      {x} is the queen whose name she wrote. {o} is the one she did not. */
   confessional: {
     threat: [
-      '"Everybody is going to say {x} was not the worst tonight. {x} was not the worst tonight." A beat. "{x} was the one who beats me in six weeks. {o} is not. That is the whole answer and I am not going to dress it up."',
-      '"I did not come back here to be fair, I came back here to win." {h} shrugs. "{o} cannot catch me. {x} can. Could. Past tense now."',
-      '"You get one of these," {h} says, "and you can spend it on the queen who had a bad night, or on the queen who is going to have a great one. {o} had a bad night. {x} is going to have a great season. I am not an idiot."',
+      '"Everybody is going to say {x} was not the worst tonight." {h} nods. "Correct. {x} was not the worst tonight. {x} is the one who beats me in six weeks. Next question."',
+      '"I did not come back here to be fair. I came back here to WIN." {h} shrugs. "{o} cannot catch me. {x} could. Past tense. Love that for me."',
+      '"You can spend this on the girl who had a bad night, or on the girl who is about to have a great season." {h} looks at the camera. "I can read a room AND a track record."',
+      '"Was it personal? No. That is the part that should scare people." {h} sits back. "{x} was just better than she needed to be in front of me."',
+      '"Girl, I am not sitting here pretending I did not do math." {h} counts on two fingers. "{o}. {x}. One of them is a problem later."',
+      '"{x} has been coming for me since week one and she was GOOD at it." {h} raises an eyebrow. "So. Handled."',
+      '"People are going to call me calculating." {h} laughs. "I was handed a weapon. What did they think I was going to do, cry?"',
+      '"The worst part is I like her." {h} pauses. "That did not save her. It made it take longer."',
+      '"Everybody in that bottom was safe from me except the one who could actually take this." {h} nods once. "{x} knew. She knew when they called her name."',
     ],
     panel: [
-      '"The judges told us who the weakest was tonight. Out loud. In front of everybody." {h} spreads her hands. "I am not going to stand here and pretend I know better than them. {x} was last. {o} was not."',
-      '"If I go against what the panel just said, I am making it about me, and it is not about me." {h} pauses. "{x} had the worst night. That is the job."',
-      '"People want me to play some big game with it." {h} laughs. "The room already did the work. The room said {x}. I wrote down the name the room gave me and I went to bed."',
+      '"The judges said it. Out loud. In front of everybody." {h} spreads her hands. "{x} was last. I am not going to sit here and pretend I know better than four people who do this for a living."',
+      '"If I go against what the panel just said, I am making it about me." {h} shakes her head. "It is not about me. It is about {x} having the worst night."',
+      '"People wanted me to play some big game with it." {h} laughs. "The room already did the work. The room said {x}. I went to bed."',
+      '"Everybody keeps asking if it was hard." {h} looks at the camera. "It was not hard. That is the honest answer and nobody likes it."',
+      '"I am not going to invent a reason to be interesting." {h} shrugs. "{x} was bottom. I sent bottom home. Thrilling television."',
+      '"Could I have gone rogue? Sure." {h} tilts her head. "And then every girl in that room finds out I do not go with what is fair. No thank you."',
+      '"The second they read the critiques I knew." {h} nods. "Everybody in that room knew. Do not act surprised on my behalf."',
+      '"There is a version of me that plays that differently." {h} pauses. "She is not the one holding the lipstick tonight."',
+      '"{x} is going to watch this back and know it was fair. That matters to me." A beat. "A little."',
     ],
     grudge: [
-      '"There is history there and everybody in that room knows there is history there." {h} does not blink. "{x} knew what this was the second she saw who won that song."',
-      '"I am not going to insult anybody by pretending this was about tonight." {h} smiles, briefly. "{x} and I have a thing. Tonight I was the one holding it."',
-      '"{o} has never done anything to me." A pause. "{x} has. I have a long memory and a short lipstick."',
+      '"There is history there. Everybody in that room knows there is history there." {h} does not blink. "{x} knew what this was the second they announced I won."',
+      '"I am not going to insult anybody by pretending this was about tonight." {h} smiles, briefly. "Me and {x} have a thing. Tonight I was the one holding it."',
+      '"{o} has never done a thing to me." A pause. "{x} has. I have a long memory and a short lipstick."',
+      '"Girl, she knows what she did." {h} looks straight down the lens. "And now so does everybody watching."',
+      '"People are going to say I made it personal." {h} nods slowly. "SHE made it personal. I just finally had the pen."',
+      '"I waited a long time to be in this exact position." {h} exhales. "It was worth the wait. I am not going to lie about that either."',
     ],
     turn: [
-      '"{x} has been in the bottom, and been in the bottom, and been in the bottom, and somebody keeps carrying her." {h} shakes her head. "I love her. It was her turn."',
-      '"At some point somebody has to actually go home." {h} says it flatly. "It cannot be {x} getting handed a pass every week while the rest of us fight for it."',
-      '"{o} has not had her chances yet. {x} has had hers, and hers, and hers."',
+      '"{x} has been in the bottom, and the bottom, and the bottom, and somebody keeps carrying her." {h} shakes her head. "I love her. It was her turn."',
+      '"At some point somebody actually has to go home." {h} says it flat. "It cannot be {x} getting a pass every week while the rest of us fight for it."',
+      '"How many times does one girl get saved?" {h} counts, and does not like the number. "That is what I thought."',
+      '"{o} has not had her chances yet. {x} has had hers." A beat. "And hers. And hers."',
+      '"I am not the villain for saying the quiet part." {h} looks at the camera. "Somebody has been getting carried and everybody in that room can name her."',
     ],
     friend: [
-      '"I want to be really honest, because I am not going to be able to lie about this later." {h} looks straight down the lens. "{o} is my friend. I was never going to write my friend’s name. So it was {x}, and {x} did nothing to deserve that except stand next to somebody I love."',
-      '"Could I make a case that {x} deserved it more? Probably." {h} shrugs, and it costs her something. "Could I write {o}? No. Not tonight, not next week, not ever. That is who I am in this competition."',
-      '"Everybody keeps saying play the game, play the game." {h}’s jaw sets. "{o} held my hand in that werk room when I had nothing. So I wrote {x}, and I will take whatever comes to me for it."',
+      '"I am going to be honest, because I will not be able to lie about it later." {h} looks down the lens. "{o} is my friend. I was never writing my friend’s name. So it is {x}, and {x} did nothing except stand next to somebody I love."',
+      '"Could I make a case that {x} deserved it more?" {h} shrugs, and it costs her. "Probably. Could I write {o}? Never. Not tonight, not week ten."',
+      '"Everybody keeps saying play the game, play the game." Her jaw sets. "{o} held my hand in that werk room when I had NOTHING. So I wrote {x}. I will take what comes."',
+      '"I know what this looks like." {h} nods. "It looks exactly like what it is. I picked my person. I am not going to insult you by dressing it up."',
+      '"There was no world where that was {o}." {h} is very still. "I knew it walking backstage. The rest was just choosing how long to stand there."',
+      '"{x} is going to hate me and she is allowed." A pause. "I would hate me too. I would also do it again."',
+      '"People play this game like it is only a game." {h} shakes her head. "I have to look {o} in the face tomorrow. That is not nothing to me."',
     ],
     bloc: [
-      '"{o} is one of mine. That is not a secret and I am not going to make it one now." {h} sits back. "You do not end one of yours. After that it was {x} by default, and {x} knows it."',
-      '"People are going to watch this and say I protected {o}, and that {x} paid for it." {h} nods slowly. "Yes. Both of those are true. If {o} gets one of these next week I expect the same, and she knows it."',
-      '"There are a handful of us left who actually look out for each other, and {o} is one of them." A beat. "{x} is not. I wish that was more complicated than it is."',
+      '"{o} is one of mine. That is not a secret and I am not making it one now." {h} sits back. "You do not end one of yours."',
+      '"People are going to watch this and say I protected {o}, and that {x} paid for it." {h} nods slowly. "Yes. Both. And if {o} is holding it next week I expect the same."',
+      '"There are a handful of us who actually look out for each other." {h} looks at the camera. "{o} is one. {x} never wanted to be."',
+      '"Is it strategy? Is it loyalty?" {h} smiles. "Girl, in here those are the same word."',
+      '"I did not build that little family for nothing." {h} shrugs. "Tonight it cost {x}. Some week it is going to cost me."',
     ],
     plea: [
-      '"{o} asked me. To my face, in that lounge, in front of everybody." {h} exhales. "{x} did not. I said something back to {o} and then I had about twenty minutes to decide whether I am a queen whose word means anything."',
-      '"I gave {o} my word," {h} says. "I could have walked out there and written her name instead of {x}’s and nobody could have done a thing about it. I would have known, though."',
-      '"{x} spent Untucked telling the room she did not need to campaign." {h} raises an eyebrow. "{o} spent Untucked asking me. One of those worked."',
+      '"{o} asked me. To my face, in that lounge, in front of everybody." {h} exhales. "{x} did not. That is the whole story."',
+      '"I gave {o} my word." {h} looks at the camera. "I could have gone out there and written her name instead of {x}’s and nobody could have done a thing. I would have known."',
+      '"{x} spent Untucked telling the room she does not campaign." {h} raises an eyebrow. "Cool. {o} campaigned. One of those worked."',
+      '"Somebody asked me for her life and I said something back." {h} pauses. "Then I had twenty minutes to find out if I meant it."',
+      '"I am not going to be the girl who promises in the lounge and lies on the stage." {h} shakes her head. "You only get to do that once and then you are alone in here."',
     ],
   },
   /* ── THE SECOND BEFORE. She has chosen and nobody knows it yet, and that
@@ -104,6 +164,12 @@ export const LEGACY_BEATS = {
      to want it not to. Says nothing about who: this beat runs one screen
      before the reveal and naming her here is the spoiler. */
   hold: [
+    '{h} comes back out with her hand closed and does not open it, and the room reads that hand for ten straight seconds.',
+    'The walk from the counter to the stage is about nine metres. It has never taken anybody that long before.',
+    'Nobody in the bottom is breathing properly. {h} is breathing perfectly, which is its own kind of answer.',
+    'Somebody says "oh my god" very quietly and the camera does not find out who.',
+    '{h} takes her mark and looks at the three of them and does not let her face do anything at all.',
+    'The music that plays under this is the same every week and it has never once felt this long.',
     '{h} picks one of them up. She does not show it to anybody. She walks back out with it closed in her hand and the room watches her do it.',
     'One tube leaves the counter. Which one is a fact that exists now, in that room, known to exactly one person.',
     '{h} comes back out and the lipstick is already in her hand and every queen on that stage is doing the same arithmetic and getting a different answer.',
@@ -134,6 +200,12 @@ export const LEGACY_BEATS = {
   ],
   /* HOW THE ROOM TAKES IT. Nobody sang, so there is nothing to blame but her. */
   roomAnswer: [
+    'Nobody says anything. That is what the room does now — it has learned that talking through this makes it worse.',
+    'Two queens reach for each other without looking. The third one does not have anybody to reach for.',
+    'The sound in that room is a lot of people deciding at once not to react, and failing at slightly different speeds.',
+    'Somebody laughs. It is the wrong laugh, the kind that comes out sideways when the alternative is crying.',
+    'The queens still standing there do the arithmetic on their own faces and every single one of them gets it wrong.',
+    'A hand goes over a mouth. A shoulder drops. Nobody speaks, because what would you say.',
     'Nobody moves. There was no song to lose, so there is nothing to say about it.',
     'A sound goes through the room that is not quite a gasp — the bottom knew one of them was going and none of them knew which.',
     '{x} nods, once, like she had already worked it out.',
@@ -144,6 +216,12 @@ export const LEGACY_BEATS = {
      lost it. This queen performed nothing: she stood in a line and somebody
      else chose. It is a different exit and it needs its own voice. */
   lastWords: [
+    '"Well." {x} laughs once. "That is one way to go out."',
+    '"I would have written my own name before I wrote hers," {x} says. "That is the difference between us and I am fine with it."',
+    '"Somebody had to." {x} shrugs. "It stings that it was her. It would have stung either way."',
+    '"I do not get a song. That is the part I am going to think about on the flight." {x} nods. "Not the lipstick. The song."',
+    '"Tell her I said congratulations," {x} says, and means about sixty per cent of it.',
+    '"I came here to fight and I am leaving without a fight." {x} exhales. "That is the whole review."',
     '"I didn’t get to fight for it," {x} says. "That’s the part I’ll be chewing on."',
     '"{h} played it exactly the way I’d have played it," {x} says, and almost means it.',
     '"No song, no chance, no hard feelings," {x} says. Two of those are true.',
@@ -223,10 +301,28 @@ export const LEGACY_CAMPAIGN = {
 };
 
 /** One line, names filled. */
-export function legacyLine(pool, vars = {}, rng = Math.random) {
+export function legacyLine(pool, vars = {}, rng = Math.random, used = null) {
   const list = Array.isArray(pool) ? pool : [];
   if (!list.length) return '';
-  const line = list[Math.floor(rng() * list.length) % list.length];
+  /* ── WITHOUT REPLACEMENT, ACROSS THE WHOLE SEASON ──────────────────
+     The ceremony runs ten times a season and two thirds of those nights draw
+     the same tier, so a pool of eight was showing the reader the same
+     sentence three times before the finale — reported as "it's repeating a
+     lot". `used` is an array on the season state (a Set does not survive
+     being saved): lines already spoken are skipped until the pool is
+     exhausted, and then it starts again, which is the same contract the save
+     campaign has had since it was written. */
+    const fresh = Array.isArray(used) ? list.filter(l => !used.includes(l)) : list;
+  const from = fresh.length ? fresh : list;
+  if (from === list && Array.isArray(used)) {
+    // Round two: forget the ones that belong to this pool and start over.
+    for (const l of list) {
+      const at = used.indexOf(l);
+      if (at >= 0) used.splice(at, 1);
+    }
+  }
+  const line = from[Math.floor(rng() * from.length) % from.length];
+  if (Array.isArray(used)) used.push(line);
   return String(line).replace(/\{(\w+)\}/g, (m, k) => (vars[k] != null ? String(vars[k]) : m));
 }
 
@@ -401,6 +497,11 @@ export const AS_INTROS = {
 export const SHADOW_BEATS = {
   // The room brings it up. It always brings it up.
   ask: [
+    'It takes eleven minutes. {h} is still doing her face when somebody finally asks what was in her hand.',
+    '"Okay, nobody else is going to say it," somebody announces to the room, "so I will. {h}. Who did you have?"',
+    'The question has been sitting in that room since the lights went down and it comes out over breakfast, badly.',
+    '{h} knows it is coming. {h} has known since last night. She has had a lot of time to decide what her face is going to do.',
+    'Somebody asks it as a joke, the way you ask a thing you actually want the answer to.',
     'Somebody says it before the coffee is poured. "So who did you have?" {h} does not look up, which is an answer in the shape of not answering.',
     'The werk room has one subject this morning and it is not the maxi challenge. Every queen in it wants to know what was in {h}’s hand.',
     '"I have been thinking about it all night," {h} says, to nobody in particular, and six heads turn at once.',
@@ -408,12 +509,23 @@ export const SHADOW_BEATS = {
   ],
   // She opens it — and it is the same name.
   same: [
+    '"{x}," {h} says, and a couple of shoulders come down. "Same as her. We did not talk about it and we did not need to."',
+    '"You are all waiting for drama and I do not have any for you." {h} shrugs. "I had {x} as well."',
+    '"Honestly? The same." {h} looks at {w}. "You did the thing I was going to do. No notes."',
+    '"{w} and I had the same name." {h} pauses. "That should probably worry the rest of you more than it does."',
+    '"If it had been me, nothing changes." {h} says it plainly, and the room believes her, mostly.',
+    '"Two of us, same name, no conversation." {h} raises an eyebrow. "That is not a coincidence, that is a bottom three."',
     '"Same as her." {h} shrugs. "{x}. It was not complicated and I am not going to pretend it was."',
     '"I had {x} too," {h} says, and the relief that goes round that room is audible. "{w} and I did not talk about it. We did not need to."',
     '"Honestly? {x}." {h} looks at {w}. "You did the thing I was going to do. I have no notes."',
   ],
   // She opens it — and it is somebody else. Somebody still standing there.
   different: [
+    '"{x}," {h} says. {x} is four feet away with a wig in her hands. "You asked. I am not going to lie to you."',
+    '"It would not have been {g}." The room goes quiet at the wrong speed. "It would have been {x}."',
+    '"We are not going to like this conversation." {h} puts her brush down. "I had {x}."',
+    '"Everybody keeps saying how close we all are." {h} half-smiles. "I had {x}’s name in my hand last night."',
+    '"{w} played it her way. I would have played it mine." A beat. "Mine was {x}."',
     '"{x}." {h} says the name and the room stops moving, because {x} is sitting in it. "I am not going to lie to your face. That is who I had."',
     '"{w} had {g}." A pause. "I had {x}." {h} does not soften it and does not look away from her either.',
     '{h} takes her time. "It would have been {x}. You asked. I could have lied to you and I did not."',
@@ -421,6 +533,11 @@ export const SHADOW_BEATS = {
   ],
   // She keeps it shut.
   kept: [
+    '"That is going in the bag with the lipstick," {h} says, and goes back to her mirror.',
+    '"No." {h} smiles at the room. "Not because it is dramatic. Because it is mine."',
+    '"Ask me at the reunion." {h} says it lightly. Four queens make a note to ask her at the reunion.',
+    '"Why would I tell you that?" {h} laughs. "I am still IN this competition."',
+    '{h} does not answer. She lets the question sit there until somebody else changes the subject for her, and everybody notices she let it.',
     '"I am going to keep that to myself." {h} says it pleasantly, which makes it worse. The room now knows there is something to keep.',
     '"Does it matter? I lost." {h} goes back to her mirror and the conversation goes with her, and nobody believes her.',
     '"You will find out if it ever happens again." {h} smiles at the room. Two queens stop smiling back.',
@@ -428,12 +545,22 @@ export const SHADOW_BEATS = {
   ],
   // And what it does to the queen whose name it was.
   hit: [
+    '{x} does not look up. {x} does not need to. The whole room is already looking at her.',
+    '"Good to know," {x} says, in the voice you use when it is not good and you do know.',
+    '{x} nods slowly, the way you nod at a piece of information you are going to be using later.',
+    '"Okay!" {x} says, brightly, and the brightness is doing an enormous amount of work.',
+    '{x} says nothing at all, which is somehow the loudest thing anybody has done this morning.',
     '{x} hears her name and does the thing you do, which is nod and keep your face still and file it somewhere you can reach later.',
     '"Noted," {x} says, and goes back to her sewing. She does not say anything else for a long time.',
     '{x} laughs. It is a real laugh and it is not a warm one. "At least I know."',
   ],
   // The room, after.
   room: [
+    'The werk room finds something else to talk about, badly, and within a minute.',
+    'Three separate conversations start at once and none of them are about that.',
+    'Somebody puts music on. It does not help as much as they wanted it to.',
+    'The room rearranges itself very slightly, and it does not rearrange back for the rest of the week.',
+    'Everybody goes back to their stations. Everybody is thinking about the same sentence.',
     'Two queens look at each other across the room and have an entire conversation without moving their mouths.',
     'The morning goes on. It goes on differently.',
     'Somebody changes the subject, loudly, and everybody lets them.',

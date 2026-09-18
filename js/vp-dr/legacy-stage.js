@@ -217,6 +217,21 @@ export function lipstickStage(row, list, {
       st.spared = line.filter(q => q !== s.target);
       st.mood = 'red';
       st.why = true;
+    } else if (s.kind === 'legacy:confessional') {
+      /* ── AND THE CAMERA CUTS AWAY ──────────────────────────────────
+         The counter is not where she says this: she is in the booth, after,
+         on her own. The stage went on showing the lipstick wall while she
+         talked, so the screen said "still in the room" over a line that only
+         exists because she is not. */
+      st.chosen = s.target || null;
+      st.spared = line.filter(q => q !== s.target);
+      st.mood = 'red';
+      st.why = true;
+      st.phase = 'quote';
+      st.quote = quoteHtml({
+        name: s.who || holder, ep,
+        label: `${s.who || holder} · confessional`, text: s.text,
+      });
     } else if (s.kind === 'legacy:last-words') {
       st.chosen = s.target || null;
       st.spared = line.filter(q => q !== s.target);

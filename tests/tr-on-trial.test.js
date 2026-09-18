@@ -265,6 +265,38 @@ describe('on trial', () => {
     expect(cover / total).toBeLessThan(TRIAL_COVER_P * 1.8);
   });
 
+  // ── THE ECHO, AND IT IS THE REASON THE TWIST IS EVIDENCE AT ALL ──────
+  //
+  // The room leans on this list hard: a name that was on it and lived is
+  // accused at the next table about 58% of the time against 37% for everybody
+  // else. That lean is only worth having if the survivors are actually
+  // enriched in Traitors, and at the first cover rate they were NOT — 13.4%
+  // against a room of 13.5%, a channel pointing at chance while the castle
+  // spent its votes on it. This arm is what noticed, and it is what stops the
+  // cover rate being quietly tuned back down.
+  it('makes the survivors of a list a real read, and never a proof', () => {
+    let survTr = 0, survTot = 0, roomTr = 0, roomTot = 0;
+    for (const { took } of sweep(40)) {
+      if (!took) continue;
+      const d = took.variantData;
+      const survivors = d.names.filter(n => n !== d.taken && !(d.lost || []).includes(n));
+      for (const n of survivors) {
+        survTot++;
+        if (alignmentAt(n, took.ep) === 'traitor') survTr++;
+      }
+      for (const n of (took.living || gs.activePlayers || [])) {
+        roomTot++;
+        if (alignmentAt(n, took.ep) === 'traitor') roomTr++;
+      }
+    }
+    expect(survTot, 'no list survivors to measure').toBeGreaterThan(40);
+    const surv = survTr / survTot;
+    const room = roomTr / roomTot;
+    expect(surv, 'a name off the list says no more than the room does')
+      .toBeGreaterThan(room * 1.6);
+    expect(surv, 'the list is proof, which it must never be').toBeLessThan(0.6);
+  });
+
   it('the list builder never invents a name', () => {
     setPlayers(ROSTER);
     setGs({ activePlayers: CAST.slice(0, 9), bonds: {} });

@@ -57,8 +57,18 @@ const hash01 = (key) => _lineHash(key) / 4294967296;
  * opposite reason: a chair at the card table is a one-in-four chance of dying,
  * and a name on this list is a chance the pact itself controls — they simply
  * do not choose that one tomorrow.
+ *
+ * THIS NUMBER IS THE WHOLE CHANNEL, exactly as `LIST_COVER_P` was before it,
+ * and it was measured rather than guessed. At 0.4 the survivors of a list were
+ * 13.4% Traitor against a room of 13.5% — the room leaning on the list (they
+ * accuse a survivor 53.7% of the time against 36.9% for everybody else) and
+ * getting nothing back for it, which is a machine for suspecting Faithfuls and
+ * is the exact sign error that got `clash-traced` deleted from murderEvidence.
+ * A listed Traitor essentially always survives the collection (the pact only
+ * ever takes a Faithful, so the cover is only ever lost to a banishment), so
+ * the enrichment is this probability almost undiluted.
  */
-export const TRIAL_COVER_P = 0.4;
+export const TRIAL_COVER_P = 0.6;
 
 /** Three names or four, and the show runs both. */
 export function trialSize(ep, aim) {

@@ -58,15 +58,23 @@ const hash01 = (key) => _lineHash(key) / 4294967296;
  * and a name on this list is a chance the pact itself controls — they simply
  * do not choose that one tomorrow.
  *
- * THIS NUMBER IS THE WHOLE CHANNEL, exactly as `LIST_COVER_P` was before it,
- * and it was measured rather than guessed. At 0.4 the survivors of a list were
- * 13.4% Traitor against a room of 13.5% — the room leaning on the list (they
- * accuse a survivor 53.7% of the time against 36.9% for everybody else) and
- * getting nothing back for it, which is a machine for suspecting Faithfuls and
- * is the exact sign error that got `clash-traced` deleted from murderEvidence.
- * A listed Traitor essentially always survives the collection (the pact only
- * ever takes a Faithful, so the cover is only ever lost to a banishment), so
- * the enrichment is this probability almost undiluted.
+ * THIS NUMBER IS THE WHOLE CHANNEL, exactly as `LIST_COVER_P` was before it.
+ * A listed Traitor essentially always survives the collection — the pact only
+ * ever takes a Faithful off its own list, so the cover is lost only to a
+ * banishment — and the survivor set is therefore enriched by this probability,
+ * diluted by however many Faithfuls were written down to make up the number.
+ * Measured live at 0.6: survivors are 31.1% Traitor against a room of 21.0%,
+ * which is a real read and a long way short of proof.
+ *
+ * THE FIRST TWO MEASUREMENTS OF IT WERE BOTH WRONG, in opposite directions,
+ * and the mistake is recorded because it is easy to repeat. The first compared
+ * the survivors against `gs.activePlayers` after a sweep had finished — the
+ * endgame's two or three people, a denominator with half the pact in it — and
+ * reported a 2.4x tell. The second read `gs.episodeHistory` after the same
+ * sweep, which is the last season's history against the first season's names,
+ * and reported the channel pointing backwards. Both numbers were the harness
+ * asking the wrong season. The arm in tests/tr-on-trial.test.js now captures
+ * the room and the survivors inside the sweep, while each season is live.
  */
 export const TRIAL_COVER_P = 0.6;
 

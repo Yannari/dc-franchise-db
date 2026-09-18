@@ -822,6 +822,15 @@ const CO_CSS = `
 .co-host-line{font-family:var(--co-hand);font-style:italic;font-size:19px;line-height:1.5;
   color:var(--co-linen)}
 
+/* the test: audience-only, and it looks like a thing somebody is keeping. */
+.co-test{margin:16px 0 0;padding:13px 16px;border:1px dashed rgba(143,166,194,.4);
+  border-radius:8px;background:rgba(20,30,42,.42)}
+.co-test[data-landed="1"]{border-color:rgba(179,38,51,.55);background:rgba(50,16,20,.4)}
+.co-test b{display:block;font:700 10px/1.6 var(--co-ui,system-ui);letter-spacing:.18em;
+  text-transform:uppercase;color:#8fa6c2;margin-bottom:8px}
+.co-test[data-landed="1"] b{color:#d98a92}
+.co-test p{margin:7px 0 0;font-size:14px;line-height:1.55}
+
 /* the list, read out over breakfast. Bordered rather than murmured: this is
    the one murder-shape fact the castle is TOLD, and it should not look like
    something the audience overheard. */
@@ -1612,6 +1621,10 @@ function _view(ep, observer) {
     arrival: dawn.ofEp == null,
     // PUBLIC (see the pool): the room watched itself vote the murder away.
     bought: !!dawn.bought,
+    // A TEST SOMEBODY SET LAST NIGHT, and it is audience-only for the reason
+    // the play exists: one name went to one person, and if the castle knew
+    // that had happened the test would not be one.
+    test: (isAudience && dawn.test) ? { ...dawn.test } : null,
     // THE LIST, AND IT IS THE ONLY MURDER-SHAPE FACT A PLAYER MAY BE SHOWN.
     // On Trial is read out at breakfast; everybody in the castle knows the
     // names, which is what the whole twist is for.
@@ -1746,6 +1759,31 @@ export function _groupsFor(list, shape) {
   const groups = []; let idx = 0;
   for (const s of sizes) { groups.push(list.slice(idx, idx + s)); idx += s; }
   return groups.filter(g => g.length);
+}
+
+
+/**
+ * THE TEST, and it is the only card on this screen the castle cannot see.
+ *
+ * Somebody gave one name to one person last night and watched the door. The
+ * room is having breakfast; the person who did it is doing arithmetic.
+ */
+function _testCard(t) {
+  if (!t) return '';
+  const landed = t.outcome === 'landed';
+  return '<div class="co-test" data-landed="' + (landed ? '1' : '0') + '">'
+    + '<b>You only &middot; audience &middot; the test</b>'
+    + '<p>' + _esc(t.line || '') + '</p>'
+    + '<p>' + _esc(t.resolvedLine || '') + '</p>'
+    + (landed
+      ? '<p>' + _esc(t.by) + ' has something nobody else in this castle has, and no way '
+        + 'to say how ' + _esc(t.by) + ' got it'
+        + (t.shared ? ' &mdash; except to ' + _esc(t.circleName || 'their own people')
+          + ', who were in on it.' : '. Nobody was told this was happening.')
+      + '</p>'
+      : '<p>A name went out and nothing came back. It is not evidence of anything, '
+        + 'and ' + _esc(t.by) + ' knows it.</p>')
+    + '</div>';
 }
 
 function _buildBeats(v) {
@@ -2070,7 +2108,8 @@ function _buildBeats(v) {
       // AND THE RULE IT RAN UNDER. Printed for whoever is entitled to it, so
       // on a double this reaches a player too — they can see the second empty
       // chair, and the format owes them the sentence that explains it.
-      + (v.variantRule ? '<p class="co-explain">' + _esc(v.variantRule) + '</p>' : '')),
+      + (v.variantRule ? '<p class="co-explain">' + _esc(v.variantRule) + '</p>' : '')
+      + _testCard(v.test)),
     null, { kind: 'after', down: [...v.room], gap: v.missing.map(x => x.name) });
   } else if (!v.arrival) {
     const named = !!(v.trial && v.trial.phase === 'named' && (v.trial.names || []).length);
@@ -2101,6 +2140,7 @@ function _buildBeats(v) {
         + (names.length > 3 ? 'four' : 'three') + ' a day of being looked at.</p>'
         + '</div>';
     }
+    inner += _testCard(v.test);
     // NOT ON A NAMING MORNING. The card above has just said this to the whole
     // castle, and the audience line would be the same fact a second time in a
     // quieter font — the "You only" flag promising a secret that is not one.

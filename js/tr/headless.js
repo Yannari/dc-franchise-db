@@ -28,6 +28,7 @@ import { seedTraitorKnowledge, ballotEvidence, murderEvidence, missionEvidence, 
 import { variantEvidence, hiddenMurderFor } from './murder-variants.js';
 import { _setBanishOrMurderSchedule } from './banish-or-murder.js';
 import { liveTrial, trialToday, closeTrial, rollTrial } from './on-trial.js';
+import { updateCircles, runTests, resolveTests, strategyRecord } from './strategy.js';
 import { runRoundTable } from './roundtable.js';
 import { resolveMurder } from './murder.js';
 import { sceneParticipants, sceneSpeakers, KNOWN_WINDOWS } from './events.js';
@@ -1162,6 +1163,17 @@ function _morning() {
           outcome: t.outcome || null };
       }
       return null;
+    })(),
+    // ── AND WHAT SOMEBODY TRIED LAST NIGHT (js/tr/strategy.js) ──────
+    //
+    // A test is set in the evening and answered by the night, so the morning
+    // after is where it belongs. AUDIENCE ONLY, and it is the one thing on
+    // this screen nobody in the castle knows happened: the whole play is that
+    // one name went to one person and nobody else was told.
+    test: (() => {
+      const p = (gs.tr?.plans || []).find(x => x.resolvedEp === (prev ? prev.num : -1)
+        && (x.outcome === 'landed' || x.outcome === 'quiet'));
+      return p ? { ...p } : null;
     })(),
     bought: !!(prev && (gs.tr?.rounds || [])
       .find(r => r.ep === prev.num)?.banishOrMurder?.unanimous),
@@ -2738,6 +2750,9 @@ function _recordEpisode(ep, { banished = null, night = null, mission = null,
       // The caller captures it before the table sits.
       trial: trial ? { names: [...trial.names], namedEp: trial.namedEp,
         collectEp: trial.collectEp } : null,
+      // THE CASTLE'S OWN SIDE OF THE GAME: the named circles, and any test
+      // that was set tonight with what it came back with.
+      strategy: strategyRecord(ep),
       // ── THE AFTERNOON AND THE OFFER (Plan 8, Task 4) ────────────────
       //
       // Both `null` on plenty of rows and the screens are registered off
@@ -2838,6 +2853,10 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   rerollFromEp = null, rerollSeed = null, rerolls = null, autoDouble = true,
   randomMurderTwists = null, banishOrMurder = false, banishOrMurderSchedule = null,
   endgameReveal = false, autoRecruit = true,
+  // THE FAITHFUL SIDE, off in exactly one place: the ablation arm that proves
+  // a season with circles and tests in it is otherwise the same season. See
+  // js/tr/strategy.js — nothing in the show turns this off.
+  noStrategy = false,
   announceTraitorCount = false } = {}) {
   // ── RE-RUN FROM AN EPISODE ──────────────────────────────────────────
   // The whole season is one deterministic block off `seed`, so a real per-
@@ -2927,6 +2946,7 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   // a shape to it from the timeline. See pickVariant in js/tr/murder-variants.js
   // for why this is opt-in rather than opt-out.
   gs.tr.randomMurderTwists = Array.isArray(randomMurderTwists) ? [...randomMurderTwists] : [];
+  gs.tr.noStrategy = !!noStrategy;
   // THE DEAL AT THE DINNER (js/tr/banish-or-murder.js). Off unless the author
   // asks for it, and pinnable to named episodes the way the murder catalogue
   // and the missions are, so a test can stand on the night rather than hunt
@@ -3245,6 +3265,15 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     missionEvidence(ep, missionRng);
     castleEvents.push(...runCastlePhase('mission-fallout', ep, castleRng)); // journey-back
     castleEvents.push(...runCastlePhase('private-strategy', ep, castleRng)); // evening
+    // ── AND WHAT THE FAITHFULS DO ABOUT IT (js/tr/strategy.js) ────────
+    //
+    // The castle's blocs become named circles, and somebody may set a test:
+    // one name, told to one person, with a Shield holder as the bait. Both run
+    // on the CASTLE stream, after the mission that awards the Shield and
+    // before the table, so no game draw moves and a season with strategy in it
+    // plays the identical numbers as one without.
+    updateCircles(ep);
+    const tests = runTests(ep, castleRng);
     // Voting Plans is shown before the Round Table, so freeze its beliefs now.
     // The reveal cascade inside runRoundTable() creates valid information for
     // tomorrow, but it must not travel backward onto tonight's pre-table screen.
@@ -3324,6 +3353,10 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     // Housekeeping runs either way: a Shield still expires on a night nobody
     // was murdered, and a Dagger still settles on the banishment.
     shieldEvidence(ep, missionRng, night);
+    // What the night said about tonight's test. Beside shieldEvidence, which
+    // reads the same night for the same reason, and on the castle stream.
+    resolveTests(ep, night, castleRng);
+    void tests;
     armouryBlockEvidence(ep, missionRng);
     expireShields(ep);
     settleDaggers(ep);   // see night one: the banished and the murdered, both

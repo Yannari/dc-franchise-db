@@ -969,6 +969,13 @@ export function qsOnFormatChange() {
   renderQuickSetup();
   window.renderTwistCatalog?.();
   window.renderFormatToggle?.();
+  /* ── AND THEN THE CONTROLS THAT HIDE EACH OTHER ──
+     `applyFormatScope` sets `display` on every id it maps, which overrides an
+     inline `display:none` a control was born with. So the main stage's own
+     swap — the save dropdown and the All Stars twist list, which replace one
+     another — has to run AFTER the scope pass or both are drawn on the first
+     paint of a drag season. */
+  window.drVerdictUI?.();
 }
 
 export function hostOptionsForFormat(fmt) {
@@ -1194,9 +1201,10 @@ const CONFIG_SCOPE = {
        the call, the save) and each heading needs scoping or it is drawn on all
        four shows -- see the note below about the explainer rows, which is the
        same bug with a different id. */
-    'sec-dr-panel-label':    ['drag-race'],
+    'sec-dr-basics':         ['drag-race'],
+    'grp-dr-save':           ['drag-race'],
+    'grp-dr-as-twist':       ['drag-race'],
     'sec-dr-call-label':     ['drag-race'],
-    'sec-dr-save-label':     ['drag-race'],
     // ── THE EXPLAINER ROWS, WHICH HAD NO IDS AND SO NO SCOPE ────────
     //
     // Each show's options block opens with a couple of fixed rows stating the

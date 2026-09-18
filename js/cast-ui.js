@@ -1328,7 +1328,14 @@ export function saveConfig() {
     drSmackdown:     g('cfg-dr-smackdown')?.checked || false,
     drDoubleCrown:   g('cfg-dr-double-crown')?.checked || false,
     // The season's save — js/dr/saves.js.
-    drSave:          g('cfg-dr-save')?.value || 'none',
+    /* NOT ON ALL STARS: the mode answers this itself, so the flagship save
+       is forced off rather than left set behind a hidden control — a season
+       that quietly ran a dunk tank because the dropdown still said so would
+       be the worst kind of surprise. */
+    drSave: (g('cfg-dr-all-stars')?.value || 'off') !== 'off'
+      ? 'none' : (g('cfg-dr-save')?.value || 'none'),
+    // The mode's own season-wide twist (js/dr/season.js).
+    drAllStarsTwist: g('cfg-dr-as-twist')?.value || 'none',
     drTankLevers:    parseInt(g('cfg-dr-tank-levers')?.value) || 6,
     drTankRetire:    parseInt(g('cfg-dr-tank-retire')?.value) || 8,
     drTankLive:      parseInt(g('cfg-dr-tank-live')?.value) || 1,
@@ -1506,6 +1513,7 @@ export function renderConfig() {
   chk('cfg-dr-reunion', seasonConfig.drReunion || false);
   chk('cfg-dr-double-crown', seasonConfig.drDoubleCrown || false);
   set('cfg-dr-save', seasonConfig.drSave || 'none');
+  set('cfg-dr-as-twist', seasonConfig.drAllStarsTwist || 'none');
   set('cfg-dr-tank-levers', seasonConfig.drTankLevers || 6);
   set('cfg-dr-tank-retire', seasonConfig.drTankRetire || 8);
   set('cfg-dr-tank-live', seasonConfig.drTankLive || 1);
@@ -2354,9 +2362,17 @@ export function updateShieldUI() {
    row whose whole job is to state the rules the author cannot change has to
    change when they do. */
 export function drVerdictUI() {
+  const mode = document.getElementById('cfg-dr-all-stars')?.value || 'off';
+  /* ── THE SAVE AND THE MODE ANSWER THE SAME QUESTION ──
+     All Stars already decides who is spared and by whom — the lipstick, or
+     the Beaver its `save` rule deals itself — so the flagship save dropdown
+     is not offered beside it. The mode's own list takes its place. */
+  const save = document.getElementById('grp-dr-save');
+  const twist = document.getElementById('grp-dr-as-twist');
+  if (save) save.style.display = mode === 'off' ? '' : 'none';
+  if (twist) twist.style.display = mode === 'off' ? 'none' : '';
   const el = document.getElementById('sec-dr-fixed-verdict');
   if (!el) return;
-  const mode = document.getElementById('cfg-dr-all-stars')?.value || 'off';
   const line = mode === 'legacy'
     ? 'The panel ranks the week and names the top two. They lip sync for their legacy, and the winner of that song alone decides which of the queens up for elimination goes home. Nobody votes.'
     : mode === 'save'

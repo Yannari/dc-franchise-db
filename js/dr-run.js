@@ -630,6 +630,7 @@ function _config() {
        exists to catch and did catch, on this key, the day it was added. */
     drAllStars: !!seasonConfig.drAllStars,
     drAllStarsRule: seasonConfig.drAllStarsRule || 'legacy',
+    drAllStarsTwist: seasonConfig.drAllStarsTwist || 'none',
     drPastSeasons: _pastDragSeasons(),
     // The relationships those seasons actually recorded — never inferred for
     // a pair the franchise has real history on. See `sharedHistory`.

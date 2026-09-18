@@ -362,6 +362,72 @@
                 <button class="gm-btn" id="gm-interactive" onclick="setGameMode('interactive')">Interactive</button>
               </div>
             </div>
+            <!-- ── THE MAIN STAGE'S OWN BASICS ──────────────────────────
+                 What kind of season it is, who is judging it, and what runs
+                 underneath it -- beside the host and the game mode, because
+                 they are the same KIND of decision: made once, before anything
+                 is booked, and true of the whole season. The other column
+                 keeps the per-night rules and the shape of the schedule.
+                 Every id is unchanged; `sec-dr-basics` is scoped in
+                 js/quick-setup.js like every other show-specific heading. -->
+            <div class="setup-section-label" id="sec-dr-basics">MAIN STAGE</div>
+            <div class="form-group">
+              <label class="form-label">All Stars</label>
+              <select id="cfg-dr-all-stars" onchange="saveConfig();drVerdictUI()" class="form-input">
+                <option value="off">Off &mdash; the panel ranks, the host decides</option>
+                <option value="legacy">All Stars: Lip Sync for Your Legacy</option>
+                <option value="save">All Stars: the save (Beaver / Baguette)</option>
+              </select>
+              <div class="hint hint-tight">A returning cast who arrive with a past &mdash; an original season, a rank, and something to prove. On <b>Legacy</b> the top two lip sync and the winner of the song chooses who goes home. On <b>the save</b> the top queen saves one of the bottom three and the song decides the rest.</div>
+            </div>
+            <!-- ── WHAT ELSE THIS ALL STARS SEASON RUNS ──────────────────
+                 The mode's own version of the save dropdown: one season-wide
+                 twist out of this era's own furniture. Hidden entirely when
+                 the mode is off, and it replaces the save rather than sitting
+                 beside it. -->
+            <div class="form-group" id="grp-dr-as-twist" style="display:none">
+              <label class="form-label">All Stars twist</label>
+              <select id="cfg-dr-as-twist" onchange="saveConfig()" class="form-input">
+                <option value="none">None</option>
+                <option value="revenge">Revenge of the Queens &mdash; the eliminated cast returns and one wins her way back</option>
+              </select>
+              <div class="hint hint-tight">One episode mid-season: every queen the show has sent home comes back, they lip sync each other out in rounds, and the last one standing is in the competition again &mdash; with her record, and with whatever she remembers about who sent her home. Adds one episode.</div>
+            </div>
+            <div class="form-group" id="sec-dr-judges">
+              <label class="form-label">The panel <span style="font-weight:400;color:var(--muted);font-size:10px">(what each judge is watching)</span></label>
+              <div id="dr-judges-panel"></div>
+            </div>
+            <!-- The season's save (js/dr/saves.js). One at a time: they all
+                 answer the same question, so two would fight over one night.
+
+                 AND NOT AT ALL ON ALL STARS. That mode answers the same
+                 question with its own rule -- the legacy lipstick, or the
+                 Beaver the `save` rule deals itself -- so a second save
+                 dropdown beside it would be two mechanics arguing over one
+                 night. The All Stars list below replaces it. -->
+            <div class="form-group" id="grp-dr-save">
+              <label class="form-label">The season's save</label>
+              <select id="cfg-dr-save" onchange="saveConfig();drSaveOptionsUI()" class="form-input">
+                <option value="none">None</option>
+                <option value="chocolate">Golden Chocolate Bar — a lip sync loser opens her bar; one is golden</option>
+                <option value="tank">Badonka Dunk Tank — a lip sync loser pulls a lever; one dunks the judge</option>
+                <option value="beaver">Golden Beaver — the maxi winner saves one of a bottom three</option>
+                <option value="baguette">Golden Baguette — the maxi winner hands the save to a queen, who uses it</option>
+              </select>
+              <div class="hint hint-tight" id="cfg-dr-save-hint">A save that runs all season. The bar and the tank are luck, after the lip sync; the bars arrive once the whole cast is in the room, and the tank retires when the room is down to the number below. The beaver and the baguette are a decision made before the lip sync out of a bottom three, every elimination week until the semi-final: the maxi winner holds the beaver, and last week's eliminated queen hands the baguette to whoever she likes.</div>
+              <div id="cfg-dr-tank-opts" style="display:none;margin-top:8px;gap:12px;flex-wrap:wrap">
+                <label class="form-label" style="display:flex;gap:6px;align-items:center">Levers
+                  <input type="number" id="cfg-dr-tank-levers" class="form-input" min="5" max="10" value="6" style="width:64px" onchange="saveConfig()"></label>
+                <label class="form-label" style="display:flex;gap:6px;align-items:center">Live levers
+                  <input type="number" id="cfg-dr-tank-live" class="form-input" min="1" max="3" value="1" style="width:64px" onchange="saveConfig()"></label>
+                <label class="form-label" style="display:flex;gap:6px;align-items:center">Retire when this many queens remain
+                  <input type="number" id="cfg-dr-tank-retire" class="form-input" min="4" max="20" value="8" style="width:64px" onchange="saveConfig()"></label>
+              </div>
+              <div id="cfg-dr-choc-opts" style="display:none;margin-top:8px;gap:12px;flex-wrap:wrap">
+                <label class="form-label" style="display:flex;gap:6px;align-items:center">Golden bars
+                  <input type="number" id="cfg-dr-golden-bars" class="form-input" min="1" max="3" value="1" style="width:64px" onchange="saveConfig()"></label>
+              </div>
+            </div>
             <!-- HOUSE OPTIONS — only the things a Big Brother week actually
                  reads. Anything that would be inert in a house belongs in the
                  Total Drama sections below, which are hidden for this format. -->
@@ -814,15 +880,6 @@
                  tie. -->
             <div class="setup-section-label" id="sec-dr-options">THE SEASON</div>
             <div class="form-group">
-              <label class="form-label">All Stars</label>
-              <select id="cfg-dr-all-stars" onchange="saveConfig();drVerdictUI()" class="form-input">
-                <option value="off">Off &mdash; the panel ranks, the host decides</option>
-                <option value="legacy">All Stars: Lip Sync for Your Legacy</option>
-                <option value="save">All Stars: the save (Beaver / Baguette)</option>
-              </select>
-              <div class="hint hint-tight">A returning cast who arrive with a past &mdash; an original season, a rank, and something to prove. On <b>Legacy</b> the top two lip sync and the winner of the song chooses who goes home. On <b>the save</b> the top queen saves one of the bottom three and the song decides the rest.</div>
-            </div>
-            <div class="form-group">
               <label class="form-label">Premiere</label>
               <select id="cfg-dr-premiere" onchange="saveConfig()" class="form-input">
                 <option value="standard">Standard — a maxi challenge from episode one</option>
@@ -858,11 +915,6 @@
                 <span>LaLaPaRUza Smackdown<div class="hint hint-tight">One episode before the finale: every eliminated queen comes back and lip syncs the others out in rounds for a title of her own. Adds one episode.</div></span>
               </label>
             </div>
-            <div class="setup-section-label" id="sec-dr-panel-label">THE PANEL</div>
-            <div class="form-group" id="sec-dr-judges">
-              <label class="form-label">The panel <span style="font-weight:400;color:var(--muted);font-size:10px">(what each judge is watching)</span></label>
-              <div id="dr-judges-panel"></div>
-            </div>
             <div class="setup-section-label" id="sec-dr-call-label">THE CALL</div>
             <div class="bbopt-fixed" id="sec-dr-fixed-verdict">
               <span class="bbopt-fixed-k">Verdict</span>
@@ -897,32 +949,6 @@
                 <input type="checkbox" id="cfg-dr-double-crown" style="width:14px;height:14px;margin-top:3px" onchange="saveConfig()">
                 <span>Two winners allowed<div class="hint hint-tight">Both finalists take the crown. Like the double shantay it cannot be rolled: only when the last lip sync is a genuine dead heat and both are excellent. It has happened once in the real show's history.</div></span>
               </label>
-            </div>
-            <div class="setup-section-label" id="sec-dr-save-label">THE SEASON'S SAVE</div>
-            <!-- The season's save (js/dr/saves.js). One at a time: they all
-                 answer the same question, so two would fight over one night. -->
-            <div class="form-group">
-              <label class="form-label">The season's save</label>
-              <select id="cfg-dr-save" onchange="saveConfig();drSaveOptionsUI()" class="form-input">
-                <option value="none">None</option>
-                <option value="chocolate">Golden Chocolate Bar — a lip sync loser opens her bar; one is golden</option>
-                <option value="tank">Badonka Dunk Tank — a lip sync loser pulls a lever; one dunks the judge</option>
-                <option value="beaver">Golden Beaver — the maxi winner saves one of a bottom three</option>
-                <option value="baguette">Golden Baguette — the maxi winner hands the save to a queen, who uses it</option>
-              </select>
-              <div class="hint hint-tight" id="cfg-dr-save-hint">A save that runs all season. The bar and the tank are luck, after the lip sync; the bars arrive once the whole cast is in the room, and the tank retires when the room is down to the number below. The beaver and the baguette are a decision made before the lip sync out of a bottom three, every elimination week until the semi-final: the maxi winner holds the beaver, and last week's eliminated queen hands the baguette to whoever she likes.</div>
-              <div id="cfg-dr-tank-opts" style="display:none;margin-top:8px;gap:12px;flex-wrap:wrap">
-                <label class="form-label" style="display:flex;gap:6px;align-items:center">Levers
-                  <input type="number" id="cfg-dr-tank-levers" class="form-input" min="5" max="10" value="6" style="width:64px" onchange="saveConfig()"></label>
-                <label class="form-label" style="display:flex;gap:6px;align-items:center">Live levers
-                  <input type="number" id="cfg-dr-tank-live" class="form-input" min="1" max="3" value="1" style="width:64px" onchange="saveConfig()"></label>
-                <label class="form-label" style="display:flex;gap:6px;align-items:center">Retire when this many queens remain
-                  <input type="number" id="cfg-dr-tank-retire" class="form-input" min="4" max="20" value="8" style="width:64px" onchange="saveConfig()"></label>
-              </div>
-              <div id="cfg-dr-choc-opts" style="display:none;margin-top:8px;gap:12px;flex-wrap:wrap">
-                <label class="form-label" style="display:flex;gap:6px;align-items:center">Golden bars
-                  <input type="number" id="cfg-dr-golden-bars" class="form-input" min="1" max="3" value="1" style="width:64px" onchange="saveConfig()"></label>
-              </div>
             </div>
             <div class="setup-section-label" id="sec-season-options">SEASON OPTIONS</div>
             <!-- Off by default and explicitly switched on, because it is the one

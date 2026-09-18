@@ -631,6 +631,23 @@ const HOST_LINES = {
     + 'holding it.',
     'This is the version with no witnesses inside the pact either.',
   ],
+  // ── AND ON A CHALICE NIGHT ──────────────────────────────────────────
+  //
+  // The pact IS together — the `Plain` pool's "no witnesses inside the pact
+  // either" is false here — but they are in the library, not the turret, and
+  // the night is decided by who can carry a glass across a room.
+  openChalice: [
+    'No turret tonight. The pact is sent to the library instead, to find a cup somebody hid there a long time ago.',
+    'Nobody climbs the stair. There is a chalice behind the plays, and by morning the castle is a glass short.',
+    'The Traitors do not meet tonight. They search. If they find it, somebody is handed a drink and thanks them for it.',
+    'No candles, no vote, no argument. A shelf of Shakespeare, a cup behind it, and a room to carry it across.',
+  ],
+  shortlistChalice: [
+    'There is no shortlist. There is a cup, and the only question is who ends up holding it.',
+    'Nothing is proposed up here, because nobody is up here. Watch the glass rather than the room.',
+    'No debate to follow. This one is decided by whoever can put a drink in a hand without it looking strange.',
+    'This is the version where the murder has to be walked across a room in front of everybody.',
+  ],
   // ── AND ON THE NIGHT THE PACT IS MADE TO NAME ONE OF ITS OWN ────────
   //
   // Same failure as `plain-sight` above, found the same way and reported by a
@@ -739,8 +756,16 @@ function _hostBand(line) {
  * `name-your-own` has no choice. A slot with no suffixed pool falls back at
  * the call site, so adding a variant here does not mean writing eight pools.
  */
+/** "A", "A and B", "A, B and C" — escaped, because these are cast names. */
+function _names(list) {
+  const n = (list || []).map(x => _esc(x));
+  if (n.length <= 1) return n[0] || '';
+  return n.slice(0, -1).join(', ') + ' and ' + n[n.length - 1];
+}
+
 function _hostSuffix(variant) {
   if (variant === 'plain-sight') return 'Plain';
+  if (variant === 'chalice') return 'Chalice';
   if (variant === 'name-your-own') return 'Forced';
   return '';
 }
@@ -907,19 +932,63 @@ function _buildBeats(rec, ep) {
     // Traitor names a target and explains why removing that player would help
     // the pact" at III. Found by dumping five seasons of this screen as text
     // and reading them, which is the only way this class of defect surfaces.
-    const soloTitle = plain ? 'Decided Alone' : (i === 0 ? 'The Shortlist Opens' : a.traitor + ' Answers');
-    const soloLead = plain
-      ? a.traitor + ' does not put this to anybody. The reason exists, and it stays where '
+    // A CHALICE NIGHT IS NOT A SOLO NIGHT, THOUGH IT SHARES THE LAYOUT.
+    // The pact is in the library together and every one of them has a name in
+    // mind; what they do not have is the cup. Rendering their reads through
+    // the plain-sight copy ("does not put this to anybody") said the opposite
+    // of what the record holds the moment the pact disagreed.
+    const holder = chalice && a.traitor === rec.decidedBy;
+    const soloTitle = chalice
+      ? (holder ? a.traitor + ' Has the Cup' : a.traitor + ' Would Rather')
+      : plain ? 'Decided Alone' : (i === 0 ? 'The Shortlist Opens' : a.traitor + ' Answers');
+    const soloLead = chalice
+      ? (holder
+        ? a.traitor + ' is the one who can carry a drink across a room without it looking '
+          + 'strange, so the name in the cup is the name ' + a.traitor + ' is holding.'
+        : a.traitor + ' would put it in front of somebody else, and is not the one holding it.')
+      : plain
+        ? a.traitor + ' does not put this to anybody. The reason exists, and it stays where '
         + 'it is, which is entirely inside ' + a.traitor + '.'
       : (i === 0
         ? 'The first Traitor names a target and explains why removing that player would help the pact.'
         : a.traitor + ' proposes another target and explains the advantage to the pact.');
     push('argue', _card(soloTitle,
-      plain ? 'III. No argument' : 'III. The argument', 'quill',
+      chalice ? 'III. At the shelves' : plain ? 'III. No argument' : 'III. The argument', 'quill',
       '<p>' + soloLead + '</p>'
       + _slip({ target: a.target, by: a.traitor, reason, unsaid, solo: plain })),
     i === 0 ? 'shortlist' : null, 'argue');
   });
+
+  // ── AND WHAT THE LIBRARY COST THE PACT ──
+  //
+  // Two prices, and a chalice night can carry both: a Traitor who wanted
+  // another name and was not holding the cup, and a Traitor who liked the
+  // person who ended up holding it. Both are already in `conclaveTension`;
+  // this is the screen saying so, because a grudge the audience never saw
+  // formed reads like a cheat when it pays out in the endgame.
+  if (chalice && rec.vdata) {
+    const over = rec.vdata.overruled || [];
+    const hurt = (rec.vdata.aggrieved || []).filter(n => n !== rec.decidedBy);
+    const who = rec.decidedBy || 'the pourer';
+    if (over.length || hurt.length) {
+      push('overrule', _card(hurt.length ? 'Not Everybody Wanted This One'
+        : 'Overruled at the Shelves', 'IV. The price', 'seal',
+      (over.length
+        ? '<p>' + _names(over) + ' argued for a different name and lost, which among '
+          + 'bookshelves is not a vote so much as a question of who is carrying the glass. '
+          + who + ' was.</p>'
+        : '')
+      + (hurt.length
+        ? '<p>' + _names(hurt) + ' liked ' + _esc(rec.target) + '. Watching ' + who
+          + ' fill a cup for ' + _esc(rec.target) + ' is the kind of thing a pact does not '
+          + 'get back, and the table is where it comes out.</p>'
+        : '')), null, 'overrule');
+    } else if (argued.length > 1) {
+      push('argue', _card('The Pact Is of One Mind', 'IV. Agreed', 'seal',
+        '<p>Every one of them came to the same name before the cup was even found. '
+        + 'Nobody has anything to hold against anybody in the morning.</p>'), null, 'argue');
+    }
+  }
 
   if (!argued.length) {
     // `name-your-own` argues nothing: one Traitor is handed the choice and the
@@ -1573,7 +1642,11 @@ export function rpBuildConclave(ep, observer = 'audience') {
     // THE LIBRARY. A chalice night has no meeting to draw, so it gets a stage
     // of its own above the beats instead of the turret's furniture.
     + (rec.variant === 'chalice'
-      ? chaliceStage(rec, chaliceStep(st.idx, total)) : '')
+      ? chaliceStage(rec, chaliceStep(st.idx, total), {
+        searcher: rec.vdata?.searcher ? _av(rec.vdata.searcher, 40) : '',
+        pourer: rec.vdata?.pourer ? _av(rec.vdata.pourer, 40) : '',
+        victim: rec.target ? _av(rec.target, 40) : '',
+      }) : '')
     + '<div class="cv-grid">'
     + '<main class="cv-main' + (hasMargin ? '' : ' cv-no-gutter') + '">' + stream + '</main>'
     + '<aside class="cv-side"><div id="cv-sidebar-inner">' + _sidebar(state, st.idx) + '</div></aside>'

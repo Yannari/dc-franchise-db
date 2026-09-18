@@ -86,8 +86,11 @@ function isTraitor(name, ep) { return alignmentAt(name, ep) === 'traitor'; }
  * — which is a fact about the three of them rather than about the castle.
  */
 function tensionTonight(ctx) {
+  // NOT A LIBRARY ROW. A chalice night writes real tension into the same
+  // ledger, but this scene's every line has the losers coming down the turret
+  // stairs, and on that night nobody climbed them.
   return (gs.tr?.conclaveTension || []).filter(t => t && t.ep === ctx.ep
-    && t.winner && t.loser
+    && t.winner && t.loser && !t.library
     && ctx.living?.includes(t.winner) && ctx.living?.includes(t.loser));
 }
 

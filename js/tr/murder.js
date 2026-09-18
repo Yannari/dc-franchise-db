@@ -12,7 +12,7 @@
 // has a date on it instead of a schedule.
 import { gs, players } from '../core.js';
 import { pStats } from '../players.js';
-import { getBond } from '../bonds.js';
+import { getBond, addBond } from '../bonds.js';
 import { livingTraitors, livingFaithfuls } from './roles.js';
 import { murderPreferenceFor, influenceOf } from './state.js';
 import { shieldsSeenBy, daggerSeenBy } from './powers.js';
@@ -704,13 +704,29 @@ function _chalice(ep, rng) {
         argued: [], overruled: [] },
       variant: 'chalice',
       variantData: { searcher, pourer: null, found: false, remembered: false,
-        slow: false, decoys: [], coffins: [] },
+        slow: false, decoys: [], coffins: [],
+        agreed: true, overruled: [], aggrieved: [] },
       variantLine: l.text, variantLineKey: l.key, noMurder: true };
   }
   const pourer = chalicePourer(ep, pact, searcher) || searcher;
-  const pref = formPreference(pourer, ep, rng);
-  if (!pref.target) return null;
+
+  // ── THE LIBRARY IS A CONVERSATION ───────────────────────────────────
+  //
+  // The show sent THREE Traitors to the shelves and they talked about it —
+  // but the moment itself was improvised by whoever could get a glass into
+  // somebody's hand, and Miles handed Diane the wine he did not want. So the
+  // pact forms its reads the way it does at a conclave, and then the person
+  // carrying the cup decides. When they all land on the same name it is a
+  // decision; when they do not, it is one Traitor acting for the others, and
+  // every Traitor who wanted somebody else takes a grudge with a night
+  // attached — the same `conclaveTension` ledger the endgame betrayal reads.
+  const reads = pact.map(t => ({ traitor: t, ...formPreference(t, ep, rng) }))
+    .filter(p => p.target);
+  const pref = reads.find(p => p.traitor === pourer) || reads[0];
+  if (!pref || !pref.target) return null;
   const target = pref.target;
+  const dissent = reads.filter(p => p.traitor !== pourer && p.target !== target);
+  const agreed = dissent.length === 0;
   const cost = murderCost(target, pref.reason, ep);
   const remembered = chaliceRemembered(ep, pourer, target);
   // THE POISON IS SLOW, the way the show's was: the victim does not die in the
@@ -723,15 +739,34 @@ function _chalice(ep, rng) {
     ? [target, ...decoys].sort((a, b) =>
       (_lineHash(`coffin|${ep}|${a}`) - _lineHash(`coffin|${ep}|${b}`)) || (a < b ? -1 : 1))
     : [];
+  // ── AND POISONING A FELLOW'S ALLY COSTS THE POURER ──────────────────
+  //
+  // Ross Carson was still in the room when his mother drank it. A Traitor who
+  // liked the person holding the glass does not forgive the person who filled
+  // it, and that grudge is worth more to the season than a line about it: it
+  // is what makes the pact throw the pourer at the table, which is exactly
+  // how the show's chalice ended.
+  // >= 3 is the repo's "close enough to speak up for them at the table"
+  // threshold (js/tr/roundtable.js, the DEFENDED beat). A Traitor who would
+  // have defended the victim in front of the room is exactly the one who
+  // resents the person who filled the cup.
+  const aggrieved = pact.filter(t => t !== pourer && getBond(t, target) >= 3);
   const data = { searcher, pourer, found: true, remembered,
-    slow: coffins.length > 0, decoys: [...decoys], coffins };
+    slow: coffins.length > 0, decoys: [...decoys], coffins,
+    agreed, overruled: dissent.map(p => p.traitor), aggrieved: [...aggrieved] };
   // A pact of one searches and pours alone, and a line that names the same
   // person twice in a sentence reads like a bug. Name the pact instead.
   const finder = pourer === searcher ? 'The Traitor' : searcher;
   const l = variantLine(data.slow ? 'chalice-slow' : 'chalice', ep,
     { who: pourer, finder, victim: target });
+  // `library: true` on every row this night writes. The castle's turret scene
+  // (js/tr/castle/nightfall.js) narrates a lost argument as one carried DOWN
+  // THE STAIRS, and there was no stair tonight — the flag is what keeps that
+  // scene off a night whose argument happened among the bookshelves.
+  const overruled = dissent.map(p => ({ ep, winner: pourer, loser: p.traitor,
+    target, theirTarget: p.target, library: true }));
   const decision = { decision: 'murder', target, reason: pref.reason, decidedBy: pourer,
-    argued: [{ traitor: pourer, ...pref }], overruled: [] };
+    argued: reads, overruled };
 
   if (isShielded(target)) {
     gs.tr.shieldedThisRound.delete(target);
@@ -742,6 +777,20 @@ function _chalice(ep, rng) {
       variantData: { ...data, slow: false, decoys: [], coffins: [] },
       variantLine: l.text, variantLineKey: l.key };
   }
+  // THE LEDGER IS ONLY WRITTEN ON A NIGHT THAT HAPPENED. A Shield returns
+  // above this line: nobody died, so nobody is owed anything for it.
+  (gs.tr.conclaveTension ||= []).push(...overruled,
+    // The ally's grudge is its own entry, and carries no `theirTarget`: they
+    // were not arguing for a different name, they were arguing for that one to
+    // live. `forced` is false — nobody made the pourer do this.
+    ...aggrieved.filter(t => !dissent.some(p => p.traitor === t))
+      .map(loser => ({ ep, winner: pourer, loser, target, theirTarget: null, library: true })));
+  // And it costs the bond, which is the half that pays out on its own: a
+  // Traitor who no longer likes the pourer defends them less and writes them
+  // down sooner. The room does the rest — the `poured` memory puts accusations
+  // on the pourer, and `burnedFellow` lets the pact spend somebody the table
+  // has already decided about.
+  for (const t of aggrieved) addBond(t, pourer, -2);
   gs.activePlayers = (gs.activePlayers || []).filter(n => n !== target);
   return { target, blocked: false, victim: target, cost, decision, second: null,
     variant: 'chalice', variantData: data, variantLine: l.text, variantLineKey: l.key };

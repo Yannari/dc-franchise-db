@@ -666,3 +666,39 @@ describe('an elimination twist booked on an All Stars episode', () => {
     expect((four.exits || []).length).toBe(0);
   });
 });
+
+describe('the campaign feels like the era', () => {
+  it('runs a dozen beats, not four', () => {
+    let nights = 0; let beats = 0;
+    for (let s = 1; s <= 6; s++) {
+      for (const r of weekly(season(s * 331, { drAllStars: true }))) {
+        if (!r.dr.lipsync?.legacy) continue;
+        nights++;
+        beats += (r.dr.scenes || []).filter(x => x.kind === 'legacy:pitch').length;
+      }
+    }
+    expect(nights).toBeGreaterThan(20);
+    // Measured at 12.6 a night; four was the bug.
+    expect(beats / nights).toBeGreaterThan(8);
+  });
+
+  it('has the room lobbying and somebody playing both sides', () => {
+    const moves = new Set();
+    for (let s = 1; s <= 6; s++) {
+      for (const r of weekly(season(s * 331, { drAllStars: true }))) {
+        for (const x of (r.dr.scenes || []).filter(y => y.kind === 'legacy:pitch')) moves.add(x.data.move);
+      }
+    }
+    for (const m of ['lobby-against', 'lobby-for', 'played-both']) expect(moves.has(m), m).toBe(true);
+  });
+
+  it('and the pinned campaign stage draws on it', async () => {
+    const { dragScreens } = await import('../js/vp-dr/screens.js');
+    const row = weekly(season(777, { drAllStars: true })).find(r => r.dr.legacyCampaign);
+    expect(row).toBeTruthy();
+    const html = Object.fromEntries(dragScreens(row).map(s => [s.id, s.html]))['dr-untucked'];
+    expect(html).toContain('svx-pod');
+    expect(html).toContain('might hold it');
+    expect(html).toContain('the campaign');
+  });
+});

@@ -118,6 +118,24 @@ export const LEGACY_CAMPAIGN = {
     '"{a} has a record," {c} says. "That is the reason to end her, not the reason to keep her."',
     '"Her résumé is the argument against her," {c} says. "Think about who you are sitting beside at the end."',
   ],
+  /* THE ROOM'S OWN LOBBYING, which is half of this era's Untucked. */
+  'lobby-against': [
+    '{a} gets {b} on her own. "I am not in that bottom and I am telling you anyway: it has to be {c}."',
+    '"You want my honest opinion?" {a} does not wait. "{c}. Tonight. While you can."',
+    '{a} makes the case against {c} to {b} quietly, at the bar, with her back to the room.',
+    '"Everybody is too polite to say it," {a} tells {b}. "{c} has been carried for three weeks."',
+  ],
+  'lobby-for': [
+    '"Not {c}," {a} says to {b}. "Anybody but her. I am asking."',
+    '{a} sits down next to {b} and spends four minutes on why {c} deserves another week. She does not mention herself once.',
+    '"If it is {c} tonight I am going to take it personally," {a} tells {b}, smiling, not entirely joking.',
+  ],
+  /* AND THE ONE THAT ONLY EXISTS WITH TWO QUEENS HOLDING THE POWER. */
+  'played-both': [
+    '{b} and {c} compare notes and find out {a} told each of them something different. Neither of them says anything to her. Both of them remember.',
+    '"She told you that?" {b} asks. {c} nods. {a} is across the room being charming at somebody else, and has no idea the two of them just spoke.',
+    '{a} worked {b}, then worked {c}, and the two of them worked out she had worked them both. The room watches it land.',
+  ],
   'debt-called': [
     '"I have carried you twice," {a} says to {b}. "I am asking once."',
     '{a} does not raise her voice. "You owe me this, and you know exactly what for."',

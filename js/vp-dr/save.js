@@ -811,7 +811,13 @@ const upper = t => (t ? t[0].toUpperCase() + t.slice(1) : t);
  */
 export function campaignStage(row, scenes = []) {
   const ep = epOf(row);
-  const hold = row?.dr?.save?.hold;
+  /* EITHER NIGHT THAT HAS A CAMPAIGN IN IT. The Beaver and the Baguette put
+     the power in one queen's hands before the song; All Stars' legacy rule
+     puts it in whichever of two queens wins one. Both are a room working
+     somebody, so both get this stage -- it was gated on `save.hold` alone,
+     which left a legacy Untucked with ordinary lounge cards and none of the
+     pressure the night is made of. */
+  const hold = row?.dr?.save?.hold || row?.dr?.legacyCampaign;
   if (!hold || !scenes.some(sc => sc.data?.campaign)) return '';
   const kind = hold.kind;
   const targets = hold.targets || [hold.holder];
@@ -822,7 +828,8 @@ export function campaignStage(row, scenes = []) {
     return `<div class="svx-pod${power ? ' power' : ''}" data-q="${esc(n)}" style="--i:${i}">
       <span class="svx-bubble"></span>
       <div class="svx-face">${face(n, ep, 96)}</div><b>${esc(n)}</b>
-      ${power ? `<span class="svx-role">${kind === 'baguette' ? 'the favourite' : 'has the beaver'}</span>`
+      ${power ? `<span class="svx-role">${kind === 'legacy' ? 'might hold it'
+    : kind === 'baguette' ? 'the favourite' : 'has the beaver'}</span>`
     : `<span class="svx-meter" data-q="${esc(n)}"><i></i></span>`}
     </div>`;
   }).join('');
@@ -833,7 +840,7 @@ export function campaignStage(row, scenes = []) {
   let last = idle;
   const steps = scenes.map(sc => {
     if (!sc.data?.campaign) return { ...last, caption: undefined, talk: null };
-    if (sc.kind === 'save:campaign-open') {
+    if (sc.kind === 'save:campaign-open' || sc.kind === 'legacy:campaign-open') {
       last = { phase: 'campaign-open', talk: null, meters: { ...meters }, caption: cap('Untucked', sc.text) };
       return last;
     }

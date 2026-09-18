@@ -1435,6 +1435,15 @@ export function runDragWeek(state, cfg, ctx) {
       const camp = runCampaign({
         saves: ledger, targets, pool: call.bottom, living, players,
         bond: ctx.bond, rng, ep: cfg.num, state,
+        /* ── THE ERA'S OWN UNTUCKED ──
+           Every queen in danger works BOTH of the queens who might hold the
+           lipstick (which is where the mind games come from), the room is
+           allowed to push a name, and the pushback cap is lifted — measured
+           against a played season, the legacy campaign was producing four
+           beats in a twenty-five-scene lounge. */
+        eachTarget: true,
+        pushCap: 6,
+        lobby: (call.safe || []).slice(0, 4),
         /* Their premise is a song she will never sing: on this night the TOP
            two perform and the bottom only waits. Found by dumping a season
            and reading it -- "Don't save me, I'll win the lip sync" was being
@@ -1461,6 +1470,18 @@ export function runDragWeek(state, cfg, ctx) {
         });
       }
       legacyPleas = camp.pleas;
+      /* ── AND THE SCREEN NEEDS THE SHAPE OF IT ──
+         `campaignStage` (js/vp-dr/save.js) draws the lounge, a pod per queen
+         and a plea meter that fills as the room works her — and it was gated
+         on `save.hold`, so a legacy night got the lounge's ordinary cards and
+         none of the pressure. Same object, built from this night's own two
+         holders and its bottom. */
+      state._legacyCampaign = {
+        kind: 'legacy', targets, pool: [...call.bottom], holder: targets[0],
+        campaign: camp.events.map(e => ({ id: e.id, round: e.round, a: e.a, b: e.b,
+          c: e.c || null, backfired: !!e.backfired, plea: e.plea || [] })),
+        pleas: camp.pleas,
+      };
     }
   }
 
@@ -2315,6 +2336,10 @@ export function runDragWeek(state, cfg, ctx) {
          every reader that would otherwise infer a lip sync from a bottom
          placement. Null on an ordinary season, so nothing changes there. */
       ...(cfg.legacy ? { allStars: { rule: 'legacy' } } : {}),
+      /* THE CAMPAIGN, AS THE SCREEN NEEDS IT: who was worked, by whom, and
+         what it bought. Shaped like the save's `hold` so one stage draws
+         both nights. */
+      ...(state._legacyCampaign ? { legacyCampaign: state._legacyCampaign } : {}),
       /* THE NIGHT THE ELIMINATED CAST CAME BACK. The pairs, the couples the
          panel put first, and who won her place back — the screen and the
          chart both read it. */

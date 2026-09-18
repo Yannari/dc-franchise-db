@@ -456,6 +456,77 @@ export function runCampaign({
   events.length = 0;
   for (const ev of pitched) events.push(ev, ...(threads.get(ev) || []));
 
+  /* ── ROUND 2b: THE ROOM LOBBIES, AFTER THE THREADS ARE REBUILT ─
+     `events.length = 0` a few lines up rebuilds the list from the pitch
+     threads, so anything pushed before it is silently dropped -- which is
+     exactly what happened to this round the first time: the events were
+     created, the conditions were right, and the array they went into was
+     emptied before the return. Traced by printing the array on both sides
+     of that line.
+     ── ROUND 2b: THE ROOM LOBBIES ────────────────────────────────────
+     Half of All Stars' Untucked is the queens who are SAFE working whoever
+     is about to hold the power — "you have to send her home", "do not send
+     her home" — and none of it existed: only the two queens in danger ever
+     spoke. A safe queen pushes a name when she has a reason to (a rivalry,
+     or a friend in the bottom), and it costs her if the queen she named is
+     standing right there. */
+  for (const n of lobby) {
+    const N = players[n];
+    if (!N) continue;
+    const h = [...targets].filter(t => t !== n).sort((x, y) => B(n, y) - B(n, x))[0];
+    if (!h) continue;
+    /* SHE LOBBIES ON A PREFERENCE, NOT ON A FEUD. The first cut needed a
+       bond of -2 to push a name and +3 to defend one, and measured over a
+       season neither ever fired: early bonds sit near zero, so the round the
+       era is famous for never happened. Any lean will do — the strongest
+       feeling she has about the two queens in danger — and a queen who feels
+       nothing about either of them says nothing, which is also true. */
+    const sorted = [...pool].sort((x, y) => B(n, y) - B(n, x));
+    const friend = sorted[0] && B(n, sorted[0]) >= 1 ? sorted[0] : null;
+    const last = sorted[sorted.length - 1];
+    const enemy = last && B(n, last) <= -1 ? last : null;
+    if (enemy && canScheme(N)) {
+      const ev = { id: 'lobby-against', round: 2, a: n, b: h, c: enemy, bond: [], pop: {} };
+      cur = ev;
+      plea(h, enemy, -0.35 - appOf(h) * 0.35);
+      ev.bond.push([n, enemy, -1.5]);
+      ev.pop[n] = -0.2;
+      events.push(ev);
+    } else if (friend) {
+      const ev = { id: 'lobby-for', round: 2, a: n, b: h, c: friend, bond: [], pop: {} };
+      cur = ev;
+      plea(h, friend, 0.3 + mind(h).fair * 0.4);
+      ev.bond.push([n, friend, 1]);
+      events.push(ev);
+    }
+  }
+
+
+  /* ── AND THE MIND GAME, WHICH ONLY EXISTS WITH TWO HOLDERS ─────────
+     A queen who pitched BOTH of them told two different stories an hour
+     apart, and on a legacy night the two she told are standing next to each
+     other. Only for a queen built to try it. */
+  if (eachTarget && targets.length >= 2) {
+    for (const p of pool) {
+      if (!canScheme(players[p])) continue;
+      const mine = pitched.filter(e => e.a === p);
+      /* TELLING BOTH OF THEM IS THE MOVE. This also required the two
+         pitches to be DIFFERENT lines, and they rarely are — the weights
+         that pick a pitch barely move between two holders, so the round
+         never fired across 79 measured nights. Working both of them is the
+         thing she gets caught for, whatever she said. */
+      if (mine.length < 2) continue;
+      const ev = { id: 'played-both', round: 2, a: p, b: targets[0], c: targets[1], bond: [], pop: {} };
+      cur = ev;
+      for (const t of targets) plea(t, p, -0.45);
+      ev.bond.push([targets[0], p, -1.5]);
+      ev.bond.push([targets[1], p, -1.5]);
+      ev.pop[p] = 0.3;
+      events.push(ev);
+      break;
+    }
+  }
+
   // ── ROUND 3: THE ANSWER ───────────────────────────────────────────
   for (const h of targets) {
     const H = players[h];

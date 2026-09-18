@@ -302,6 +302,24 @@ export const TR_RULES = {
     occursIn: tr => tr.conclave?.variant === 'chalice',
   },
 
+  // EVERYBODY SAW IT, so everybody may be told it: the one vote in this
+  // format that is not secret.
+  'banish-or-murder': {
+    id: 'banish-or-murder',
+    trigger: 'The castle is offered a deal at the table.',
+    explainedAt: 'first-occurrence',
+    observerVisibility: 'all',
+    reminder: 'Tonight the room can banish somebody with money on it, or let the '
+      + 'Traitors murder as normal. The vote is public and it has to be unanimous.',
+    fullRules: 'After the argument and before the slates, the castle votes out loud: '
+      + 'banish, or murder. If every single one of them says banish, the table goes '
+      + 'ahead and the banishment is worth money — the pot gains if the name they '
+      + 'take turns out to be a Traitor, and loses exactly the same if it does not. '
+      + 'One hand up for the murder and no banishment is held at all, and the room '
+      + 'has watched whose hand it was.',
+    occursIn: tr => !!tr.table?.deal,
+  },
+
   'armoury-shield': {
     id: 'armoury-shield',
     trigger: 'The Armoury opens after a mission.',

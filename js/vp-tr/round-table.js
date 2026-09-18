@@ -226,6 +226,11 @@ function _ic(type, size, colour) {
       + '<circle cx="5.6" cy="17.4" r="1.5" fill="' + c + '"/><circle cx="18.4" cy="17.4" r="1.5" fill="' + c + '"/>',
     tally: '<path d="M4.4 5.6v12.8M9 5.6v12.8M13.6 5.6v12.8M18.2 5.6v12.8" stroke="' + c + '" stroke-width="1.5"/>'
       + '<path d="M2.6 18 20 6.6" stroke="' + c + '" stroke-width="1.5"/>',
+    // The deal's own icon: a stack that can be added to or taken off.
+    coin: '<ellipse cx="12" cy="6.6" rx="7.4" ry="3" stroke="' + c + '" stroke-width="1.4" fill="none"/>'
+      + '<path d="M4.6 6.6v3.4c0 1.7 3.3 3 7.4 3s7.4-1.3 7.4-3V6.6" stroke="' + c + '" stroke-width="1.4" fill="none"/>'
+      + '<path d="M4.6 11.4v3.4c0 1.7 3.3 3 7.4 3s7.4-1.3 7.4-3v-3.4" stroke="' + c + '" stroke-width="1.4" fill="none" opacity=".75"/>'
+      + '<path d="M4.6 16.2v1.6c0 1.7 3.3 3 7.4 3s7.4-1.3 7.4-3v-1.6" stroke="' + c + '" stroke-width="1.4" fill="none" opacity=".5"/>',
   };
   return open + (m[type] || '') + '</svg>';
 }
@@ -1208,6 +1213,9 @@ const RT_CSS = `
   line-height:1.6;color:rgba(222,214,196,.68);margin:0}
 
 /* ── CHIPS ──────────────────────────────────────────────────────────── */
+.rt-refuse{display:flex;align-items:center;gap:14px;margin:12px 0;padding:11px 14px;
+  border-left:3px solid rgba(201,40,60,.75);background:rgba(201,40,60,.07);border-radius:0 8px 8px 0}
+.rt-refuse-why{font:400 17px/1.45 var(--tr-body,Georgia,serif);color:#d8cfc2;opacity:.9}
 .rt-chips{display:flex;gap:11px;flex-wrap:wrap;margin-top:16px;padding-top:14px;
   border-top:1px solid rgba(222,214,196,.12)}
 .rt-chip{
@@ -2258,6 +2266,8 @@ function _view(rec, observer) {
     // to cite.
     speeches: (rec.speeches || []).filter(s => s && s.speaker && s.target),
     chosen: rec.chosen || null,
+    // The deal, as it was watched. Public on every layer — see `_tableRecord`.
+    deal: rec.deal ? { ...rec.deal, ballots: (rec.deal.ballots || []).map(b => ({ ...b })) } : null,
     chosenAlignment: endgame ? null : (rec.chosenAlignment || null),
     truth: (isAudience && !endgame) ? (rec.truth || {}) : null,
     betrayals,
@@ -2509,6 +2519,61 @@ function _buildBeats(v) {
     }
   });
 
+  // ── THE DEAL, BETWEEN THE ARGUMENT AND THE CHALK ────────────────────
+  //
+  // Where the show puts it and the only place it can go: the pact is deciding
+  // whether the room is about to take one of them, which is a question about
+  // the argument that has just finished.
+  if (v.deal) {
+    const d = v.deal;
+    const money = '£' + Number(d.stake || 0).toLocaleString('en-GB');
+    push('deal', _card('Banish, Or Let Them Work', 'The deal', 'scales',
+      '<p>Tonight the banishment is worth something. Take a name out of this room '
+      + 'and if it is a Traitor the pot gains ' + money + '; if it is not, the pot '
+      + 'loses the same. And it has to be every single one of them — one hand for '
+      + 'the murder and no banishment is held at all.</p>'
+      + '<div class="rt-chips">' + _chip('unanimous or nothing', 'bad')
+      + _chip(money + ' either way', 'cold')
+      + _chip(d.ballots.length + ' hands', null) + '</div>'),
+    null, { kind: 'deal-open', stake: d.stake });
+
+    // EVERY HAND, NAMED. The refusals are read last and on their own, because
+    // that is the moment the room is watching, and the engine's own reason for
+    // each is printed rather than a screen's guess at one.
+    const yes = d.ballots.filter(b => b.vote === 'banish');
+    push('deal', _card(d.unanimous ? 'Every Hand' : 'Not Every Hand', 'The vote', 'hand',
+      '<div class="rt-faces">' + yes.map(b => _faceChip(b.voter, 28)).join('') + '</div>'
+      + '<div class="rt-chips">' + _chip(yes.length + ' for the banishment', 'good') + '</div>'
+      + (d.refusers.length
+        ? '<p style="margin-top:14px">And then, in front of everybody:</p>'
+          + d.ballots.filter(b => b.vote === 'murder').map(b =>
+            '<div class="rt-refuse">' + _faceChip(b.voter, 34)
+            + '<span class="rt-refuse-why">' + _esc(b.why) + '</span></div>').join('')
+          + '<div class="rt-chips">'
+          + _chip(d.refusers.length === 1 ? 'one hand for the murder' : d.refusers.length + ' hands for the murder', 'bad')
+          + _chip('no banishment is held', 'bad') + '</div>'
+        : '<p style="margin-top:14px">Nobody puts a hand up for the murder. The '
+          + 'money is on the table and the chalk comes out.</p>')),
+    null, { kind: 'deal-result', unanimous: d.unanimous, refusers: [...d.refusers] });
+
+    // A REFUSED DEAL ENDS THE TABLE. There is no chalk, no count and no
+    // verdict — the room goes upstairs with everybody it came down with, and
+    // the pact is about to have the night to itself.
+    if (!d.unanimous) {
+      // THE SHOW'S OWN WORD, from the registry — see `_verbs`. A screen that
+      // writes the verb out is the bug tests/tr-vp.test.js exists to stop, and
+      // it caught this card the day it was written.
+      push('verdict', _card('Nobody Is ' + _cap(V.banish), 'The verdict', 'scales',
+        '<p>No slates, no count, no name. The deal was refused and the rule is '
+        + 'the rule: nobody at this table is ' + _esc(V.banish) + ' tonight. Everybody '
+        + 'in this room goes up those stairs, and not everybody is coming down.</p>'
+        + '<div class="rt-chips">' + _chip('no banishment', 'bad')
+        + _chip('the pot is untouched', 'cold') + '</div>'),
+      'verdict', { kind: 'no-banishment' });
+      return beats;
+    }
+  }
+
   // ── the slates ──────────────────────────────────────────────────────
   // ── AND THE ARGUMENTS THE ROOM ACTUALLY HAD ─────────────────────────
   //
@@ -2730,6 +2795,29 @@ function _buildBeats(v) {
       + '<div class="rt-note">' + _pick(isTraitor ? REVEAL_TRAITOR : REVEAL_FAITHFUL,
         key + '|rv') + '</div>',
       'reveal', { kind: 'reveal', alignment: v.chosenAlignment });
+
+    // AND THE BILL, on a night the room took the deal. It is settled by the
+    // reveal above and by nothing else, which is why it is drawn here rather
+    // than beside the offer: until that card turned over, the money was a
+    // question.
+    if (v.deal && v.deal.settled) {
+      const st = v.deal.settled;
+      const won = st.delta > 0;
+      const amount = '£' + Math.abs(st.delta).toLocaleString('en-GB');
+      push('reveal', _card(won ? 'The Room Is Paid' : 'The Room Pays',
+        'The money', 'coin',
+        '<p>' + (won
+          ? 'They said they could do it and they did it. ' + amount + ' goes into '
+          + 'the pot for a name the room got right.'
+          : 'That is what the deal costs when the room is wrong about somebody. '
+          + amount + ' comes straight back out of the pot, and every person at '
+          + 'this table voted for it to be possible.') + '</p>'
+        + '<div class="rt-chips">'
+        + _chip((won ? '+' : '−') + amount, won ? 'good' : 'bad')
+        + _chip('pot now £' + Number(st.potAfter || 0).toLocaleString('en-GB'), 'cold')
+        + '</div>'),
+      null, { kind: 'deal-settled', delta: st.delta });
+    }
 
     // ── THE ROOM REACTS — the beat the table used to skip ────────────────
     //

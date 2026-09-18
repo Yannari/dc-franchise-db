@@ -26,6 +26,7 @@ import { exitVerbs, roundExits } from '../shows.js';
 import { seedTraitorKnowledge, ballotEvidence, murderEvidence, missionEvidence, followerEvidence,
   alibiEvidence } from './deduction.js';
 import { variantEvidence, hiddenMurderFor } from './murder-variants.js';
+import { _setBanishOrMurderSchedule } from './banish-or-murder.js';
 import { runRoundTable } from './roundtable.js';
 import { resolveMurder } from './murder.js';
 import { sceneParticipants, sceneSpeakers, KNOWN_WINDOWS } from './events.js';
@@ -591,6 +592,20 @@ function _tableRecord(ep, { endgame = false } = {}) {
       hearsayFrom: s.hearsayFrom || null,
       swayed: [...(s.swayed || [])], mindChanges: [...(s.mindChanges || [])] })),
     chosen: round.banished || null,
+    // ── THE DEAL AT THE DINNER (js/tr/banish-or-murder.js) ────────────
+    //
+    // PUBLIC ON EVERY LAYER, and it is the only vote in this format that is:
+    // the room watched every hand go up, which is the whole of the twist. The
+    // alignment of the people who refused is NOT here — that stays where every
+    // other alignment stays — only what they did and the reason the engine
+    // recorded for it.
+    deal: round.banishOrMurder ? {
+      unanimous: !!round.banishOrMurder.unanimous,
+      stake: round.banishOrMurder.stake || 0,
+      ballots: (round.banishOrMurder.ballots || []).map(b => ({ ...b })),
+      refusers: [...(round.banishOrMurder.refusers || [])],
+      settled: round.stake ? { ...round.stake } : null,
+    } : null,
     dagger: round.dagger ? { ...round.dagger } : null,
     speech: round.exitSpeech
       ? { burns: !!round.exitSpeech.burns, target: round.exitSpeech.target || null,
@@ -2698,7 +2713,7 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   murderSchedule = null, missionSchedule = null, armourySchedule = null,
   shieldEpisodes = null, chosenTraitors = null,
   rerollFromEp = null, rerollSeed = null, rerolls = null, autoDouble = true,
-  randomMurderTwists = null,
+  randomMurderTwists = null, banishOrMurder = false, banishOrMurderSchedule = null,
   endgameReveal = false, autoRecruit = true,
   announceTraitorCount = false } = {}) {
   // ── RE-RUN FROM AN EPISODE ──────────────────────────────────────────
@@ -2789,6 +2804,12 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   // a shape to it from the timeline. See pickVariant in js/tr/murder-variants.js
   // for why this is opt-in rather than opt-out.
   gs.tr.randomMurderTwists = Array.isArray(randomMurderTwists) ? [...randomMurderTwists] : [];
+  // THE DEAL AT THE DINNER (js/tr/banish-or-murder.js). Off unless the author
+  // asks for it, and pinnable to named episodes the way the murder catalogue
+  // and the missions are, so a test can stand on the night rather than hunt
+  // for a season that happens to contain one.
+  gs.tr.banishOrMurder = !!banishOrMurder || Array.isArray(banishOrMurderSchedule);
+  _setBanishOrMurderSchedule(banishOrMurderSchedule);
   // Automatic recruitment off, when the Castle Option asks — the pact never
   // recruits on its own, only on a night the author pinned. Defaults to on, so
   // headless callers (calibration, tests) are unchanged.
@@ -3160,7 +3181,12 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     // only mandated nights without a murder are a night the pact spent making
     // an offer instead (js/tr/roles.js — the UK series 1 recruitment), and the
     // finale itself.
-    const night = handOver ? null : _night(ep, rng);
+    // AND A NIGHT THE ROOM BOUGHT OFF. The deal at the dinner is exclusive:
+    // a unanimous castle banishes with money on it AND the pact does not work
+    // tonight. `banished` is the tell — a refused deal records no banishment
+    // and the murder goes ahead exactly as it would have done.
+    const dealTaken = !!(r.banishOrMurder && r.banishOrMurder.unanimous);
+    const night = (handOver || dealTaken) ? null : _night(ep, rng);
     // Same pair, same order, same stream — see the note on night one.
     // Housekeeping runs either way: a Shield still expires on a night nobody
     // was murdered, and a Dagger still settles on the banishment.

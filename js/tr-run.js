@@ -135,6 +135,21 @@ function _armourySchedule() {
  * Forces the Shield-bearing mission archetype that day the same way
  * `_missionScheduleMap` forces a named mission.
  */
+/**
+ * The night the author pinned the deal at the dinner, off the twist schedule.
+ *
+ * A pin is an INSTRUCTION here too: `banishOrMurderTonight` skips its own
+ * hashed choice for a scheduled night. Returns null when nothing is pinned,
+ * and the twist then picks its own night out of the eligible ones.
+ */
+function _banishOrMurderSchedule() {
+  const out = [];
+  for (const t of (seasonConfig.twistSchedule || [])) {
+    if (t && t.episode != null && t.type === 'tr-banish-or-murder') out.push(Number(t.episode));
+  }
+  return out.length ? out : null;
+}
+
 function _shieldEpisodes() {
   const out = {};
   for (const e of (seasonConfig.trShieldEpisodes || [])) {
@@ -230,6 +245,9 @@ function _playWholeSeason(rerollFromEp = null, rerollSeed = null, rerolls = null
       murderSchedule: _murderSchedule(),
       missionSchedule: _missionScheduleMap(),
       armourySchedule: _armourySchedule(),
+      // THE DEAL AT THE DINNER. A pinned night turns it on by itself, so
+      // ticking it on the timeline is the whole of the setup.
+      banishOrMurderSchedule: _banishOrMurderSchedule(),
       shieldEpisodes: _shieldEpisodes(),
       // Auto double murders are on unless the Castle Options toggle turns them
       // off; a pinned Double still runs either way.

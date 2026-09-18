@@ -131,6 +131,18 @@ RUNS.push(season(8, { trShieldSource: 'armoury', trArmourySize: 4 }));
   } finally { _setBespokeMissionsEnabled(false); }
 }
 
+// THE DEAL AT THE DINNER is off unless an author asks for it, and it picks its
+// own night out of the eligible ones — so it is pinned here for the same
+// reason the hidden murder above is: a rule that only fires when somebody
+// switches it on cannot be reached by a sweep that never does.
+{
+  setPlayers(ROSTER);
+  seasonConfig.trShieldSource = 'mission';
+  playTraitorsSeason({ cast: CAST, traitorCount: 3, seed: 3,
+    banishOrMurderSchedule: [5] });
+  RUNS.push({ season: null, episodes: (gs.episodeHistory || []).map(e => ({ ...e })) });
+}
+
 /** Everything the audience sees this episode, as one searchable string. */
 function audienceHtml(ep) {
   let out = '';
@@ -187,6 +199,9 @@ const SURPRISE_CONCEPTS = {
   'recruitment-ultimatum': [/refus/i, /removed|killed|not return|be removed/i],
   'armoury-shield': [/shield/i, /door/i],
   'murder-hidden': [/funeral/i, /not be told|nobody is named/i],
+  // The two facts a viewer cannot work out for themselves: the money cuts both
+  // ways, and one voice is enough to stop the whole thing.
+  'banish-or-murder': [/unanimous|every single one|one hand/i, /pot|money|£/i],
 };
 
 describe('every rule is explained at or before the episode it governs', () => {

@@ -634,3 +634,35 @@ describe('the third queen in the top is not told she is in the top two', () => {
     expect(checked).toBeGreaterThan(2);
   });
 });
+
+describe('an elimination twist booked on an All Stars episode', () => {
+  const play = sched => season(414, { drAllStars: true, drSchedule: sched });
+
+  it('owns its own night, and the legacy rule resumes after it', () => {
+    const res = play([{ episode: 4, doubleElimination: true }]);
+    const rows = weekly(res);
+    const four = rows.find(r => r.num === 4);
+    expect(four.dr.lipsync?.legacy).toBeFalsy();
+    // An author who books a double elimination is owed two queens.
+    expect((four.exits || []).length).toBe(2);
+    // ...and the week after is a legacy night again.
+    const five = rows.find(r => r.num === 5);
+    if (five && (five.dr.living?.length ?? 0) >= 5) expect(five.dr.lipsync?.legacy).toBe(true);
+  });
+
+  it('so a legacy night never loses its LOW to a widened bottom', () => {
+    const res = play([{ episode: 4, doubleElimination: true }]);
+    for (const r of weekly(res)) {
+      if (!r.dr.lipsync?.legacy) continue;
+      expect(r.dr.call.bottom).toHaveLength(2);
+      expect((r.dr.call.low || []).length).toBeGreaterThan(0);
+    }
+  });
+
+  it('and a no-elimination week is not a legacy week either', () => {
+    const res = play([{ episode: 4, noElimination: true }]);
+    const four = weekly(res).find(r => r.num === 4);
+    expect(four.dr.lipsync?.legacy).toBeFalsy();
+    expect((four.exits || []).length).toBe(0);
+  });
+});

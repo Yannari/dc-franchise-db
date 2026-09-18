@@ -938,7 +938,19 @@ export function runDragWeek(state, cfg, ctx) {
      legacy night, where the winner of the song is about to choose somebody
      out of that same bottom and naming them first would announce the pool
      she picks from before she has picked. */
-  const legacy = !!(cfg.legacy && bend.length >= 4);
+  /* ── AN ELIMINATION TWIST BOOKED ON THIS EPISODE OWNS THE NIGHT ──
+     `dr-legacy` is declared incompatible with the double and the no-
+     elimination in TWIST_CATALOG, and the MODE was not enforcing it: a
+     double elimination booked on an All Stars season ran both rules at once.
+     Measured on a played season — the bottom widened to four, which ate the
+     LOW (the reported "three BTM2 and no LOW"), and then the lipstick picked
+     ONE name, so an author who booked a double elimination was owed two and
+     got one.
+     The booking is the specific instruction and it wins for its own night:
+     that week runs the flagship way, with the bottom singing for their
+     lives, and the legacy rule resumes the week after. */
+  const legacy = !!(cfg.legacy && bend.length >= 4
+    && !cfg.doubleElimination && !cfg.noElimination);
   /* What the bottom bought itself in Untucked, on a legacy night. Filled by
      the campaign below; an empty object until then, which is the correct
      reading of a room that said nothing. */

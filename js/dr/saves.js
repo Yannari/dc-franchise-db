@@ -238,7 +238,21 @@ export function campaignTargets({ saves, winners = [], giver = null, pool, livin
  * `pleas[holder][queen]` is what the holder's decision reads. Nothing here
  * decides the save.
  */
-export function runCampaign({ saves, targets, pool, living, players, bond, rng, ep, state = {}, exclude = [] }) {
+export function runCampaign({
+  saves, targets, pool, living, players, bond, rng, ep, state = {}, exclude = [],
+  /* ── THE ALL STARS DIALS ──────────────────────────────────────────
+     A Beaver night has ONE queen holding the save and a bottom of three, so
+     three pitches and a couple of rebuttals fill the lounge. A legacy night
+     has a bottom of TWO and the power belongs to whichever of two queens wins
+     a song — and measured against a played season it produced four beats in
+     a twenty-five-scene Untucked, which is not the era's Untucked at all.
+     `eachTarget` makes every queen in danger work BOTH of them (which is
+     what she would do, and it is where the mind games come from: two
+     different cases, told an hour apart). `lobby` lets the queens who are
+     SAFE push a name, which on All Stars is half the drama in the room.
+     Defaults keep the save's own nights byte-identical. */
+  eachTarget = false, pushCap = 3, lobby = [],
+}) {
   /* Moves whose PREMISE is the song. On an All Stars legacy night nobody in
      the bottom sings — the top two do — so "those two can lip sync, I cannot"
      and "don't save me, I'll win it" describe a mechanic that did not run.
@@ -265,9 +279,13 @@ export function runCampaign({ saves, targets, pool, living, players, bond, rng, 
 
   // ── ROUND 1: THE PITCH ────────────────────────────────────────────
   const pitched = [];
+  const pitchPairs = [];
   for (const p of pool) {
+    const hs = eachTarget ? targets.filter(t => t !== p) : [holderFor(p)].filter(Boolean);
+    for (const h of hs) pitchPairs.push([p, h]);
+  }
+  for (const [p, h] of pitchPairs) {
     const P = players[p];
-    const h = holderFor(p);
     if (!h) continue;
     const others = pool.filter(q => q !== p);
     const b = B(p, h);
@@ -378,7 +396,7 @@ export function runCampaign({ saves, targets, pool, living, players, bond, rng, 
     }
   }
   const threads = new Map(pitched.map(e => [e, []]));
-  const wantPush = Math.min(replies.length, 2 + (rng() < 0.5 ? 1 : 0));
+  const wantPush = Math.min(replies.length, (pushCap - 1) + (rng() < 0.5 ? 1 : 0));
   const usedPair = new Set();
   for (let k = 0; k < wantPush; k++) {
     const o = weighted(rng, replies.filter(x => !usedPair.has(`${x.r}|${x.p}`)));

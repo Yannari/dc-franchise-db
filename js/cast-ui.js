@@ -1336,6 +1336,7 @@ export function saveConfig() {
       ? 'none' : (g('cfg-dr-save')?.value || 'none'),
     // The mode's own season-wide twist (js/dr/season.js).
     drAllStarsTwist: g('cfg-dr-as-twist')?.value || 'none',
+    drAllStarsJury: !!g('cfg-dr-as-jury')?.checked,
     // 0 = let the show place it (the episode the room halves on).
     drAllStarsTwistEp: parseInt(g('cfg-dr-as-twist-ep')?.value) || 0,
     drTankLevers:    parseInt(g('cfg-dr-tank-levers')?.value) || 6,
@@ -1516,6 +1517,8 @@ export function renderConfig() {
   chk('cfg-dr-double-crown', seasonConfig.drDoubleCrown || false);
   set('cfg-dr-save', seasonConfig.drSave || 'none');
   set('cfg-dr-as-twist', seasonConfig.drAllStarsTwist || 'none');
+  const juryBox = document.getElementById('cfg-dr-as-jury');
+  if (juryBox) juryBox.checked = !!seasonConfig.drAllStarsJury;
   set('cfg-dr-as-twist-ep', String(seasonConfig.drAllStarsTwistEp ?? 0));
   set('cfg-dr-tank-levers', seasonConfig.drTankLevers || 6);
   set('cfg-dr-tank-retire', seasonConfig.drTankRetire || 8);
@@ -2378,6 +2381,16 @@ export function drVerdictUI() {
   const when = document.getElementById('cfg-dr-as-twist-when');
   const picked = (document.getElementById('cfg-dr-as-twist')?.value || 'none') !== 'none';
   if (when) when.style.display = mode !== 'off' && picked ? '' : 'none';
+  /* ── AND THE JURY IS ONLY A QUESTION ON A FINALE THAT HAS A CUT ──
+     It replaces the host's narrowing of the field, so on a lip sync bracket
+     — where every finalist sings and nobody is cut — there is nothing for it
+     to replace. Offered only where it does something. */
+  const juryBox = document.getElementById('sec-dr-as-jury');
+  if (juryBox) {
+    const fin = document.getElementById('cfg-dr-finale')?.value || 'top4';
+    const hasCut = fin === 'perform-then-lipsync' || fin === 'perform-then-lipsync-3';
+    juryBox.style.display = mode !== 'off' && hasCut ? '' : 'none';
+  }
   const el = document.getElementById('sec-dr-fixed-verdict');
   if (!el) return;
   const line = mode === 'legacy'

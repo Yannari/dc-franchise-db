@@ -302,13 +302,23 @@ export function runDragWeek(state, cfg, ctx) {
   /* ── THE CIRCLES IN THE ROOM TONIGHT ────────────────────────────────
      Derived from the bonds as they stand this week (js/dr/alliances.js), so
      an alliance that cooled is simply gone next week. It reaches two things:
-     the queen holding an exit finds a circle-mate harder to name, and the
-     sidebar can show the viewer who is actually aligned.
-     All Stars only for now — the mode is where the room has enough history
-     for a circle to mean something on day one. */
-  const alliances = state.allStars
-    ? dragAlliances({ living, bond: (x, y) => Number(ctx.bond?.(x, y)) || 0, players, ep: cfg.num })
-    : [];
+     the queen holding an exit finds a circle-mate harder to name, the room
+     speaks up for her in Untucked, and the sidebar shows the viewer who is
+     actually aligned.
+
+     ── AND NOT ONLY ON ALL STARS ──────────────────────────────────────
+     This was gated on the mode, on the reasoning that a returning cast has
+     the history a circle needs. Half right: the HISTORY is what All Stars
+     brings, and the circles are derived from bonds, which every season has
+     by about week three. A flagship season with the Beaver or the Baguette
+     in it has exactly the room this matters in — somebody is holding a save
+     and the queens in danger have friends — and it was getting an Untucked
+     where being in a circle meant nothing.
+     So it runs on every season now, and what it REACHES is still gated:
+     nothing here changes a night with no save and no lipstick in it. */
+  const alliances = dragAlliances({
+    living, bond: (x, y) => Number(ctx.bond?.(x, y)) || 0, players, ep: cfg.num,
+  });
 
   /* ── THE PAST, STILL IN THE ROOM ────────────────────────────────────
      One callback a week to a season these two already shared. The premiere
@@ -1260,6 +1270,10 @@ export function runDragWeek(state, cfg, ctx) {
     const targets = campaignTargets({ saves, winners, giver, pool: named, living, bond: ctx.bond });
     const camp = runCampaign({
       saves, targets, pool: named, living, players, bond: ctx.bond, rng: saveRng, ep: cfg.num, state,
+      /* THE SAME CIRCLES, ON A SAVE NIGHT. The queen holding the Beaver is
+         being lobbied by a room that has its own alignments, and until now
+         the room could not act on them. */
+      blocs: alliances,
     });
     /* IN UNTUCKED, NOT ON A SCREEN OF ITS OWN. On these nights the call
        comes first and the room walks into the lounge knowing who is in the
@@ -1575,6 +1589,11 @@ export function runDragWeek(state, cfg, ctx) {
         eachTarget: true,
         pushCap: 6,
         lobby: (call.safe || []).slice(0, 4),
+        /* HER CIRCLE, IN THE ROOM WHERE IT MATTERS. The blocs were derived
+           weekly, drawn in the rail and read by the queen holding the
+           lipstick, and did nothing in Untucked — so being in a circle paid
+           only inside somebody else's head. */
+        blocs: alliances,
         /* Their premise is a song she will never sing: on this night the TOP
            two perform and the bottom only waits. Found by dumping a season
            and reading it -- "Don't save me, I'll win the lip sync" was being

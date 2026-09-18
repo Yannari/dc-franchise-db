@@ -264,6 +264,38 @@ export const SAVE_BEATS = {
       '{a} is safe tonight, and spends Untucked telling {b} why {c} deserves it.',
       '"If you save anybody, save {c}," {a} tells {b}. "She has my back every single day."',
     ],
+    /* ── THE CIRCLE, OUT LOUD ── js/dr/alliances.js derives who is aligned
+       with whom every week; these are the four things that does to a room
+       with somebody in danger in it. */
+    'circle-vouch': [
+      '{a} does not wait to be asked. "You know what {c} is to me," she tells {b}. "You know exactly what I am asking."',
+      '"We came in here together and I am not going to sit here quietly," {a} says to {b}. "Save {c}."',
+      '{a} puts a hand on {c}’s knee and looks straight at {b}. Nobody needs it explained.',
+      '"Everybody in this room knows where I stand on {c}." {a} does not raise her voice. "I am saying it anyway."',
+      '{a} makes the case for {c} the way you make a case for somebody you have been standing next to since day one, which is what she is.',
+      '"{c} is mine," {a} tells {b}, and the room goes a little quiet, because that is not a thing anybody says lightly in here.',
+    ],
+    'circle-holder': [
+      '"Let us all be honest about something," {a} says to the room. "{b} and {c} have been joined at the hip since week two. We all know how this ends."',
+      '{a} says it first, so somebody else does not. "{b}, you are not exactly neutral about {c}, are you."',
+      '"I am not accusing anybody of anything." {a} smiles at {b}. "I am just noting that {c} is your girl and you are the one holding it."',
+      '"Everybody is being very polite about the fact that {b} and {c} are a unit." {a} shrugs. "I am not going to be."',
+      '"Can we say the quiet part?" {a} asks. Somebody says no. {a} says it anyway: "{b} is never writing {c}’s name."',
+    ],
+    'circle-split': [
+      '{a} and {b} have protected each other for weeks and tonight they are standing in the same bottom, and both of them have worked out what that means.',
+      '"One of us is going home," {a} says to {b}, quietly. "I hate this."',
+      '{a} and {b} sit together the way you sit with somebody you might have to outlast. Neither of them says much.',
+      'The two of them do not make their cases in front of each other. They take turns leaving the room.',
+      '"We said we would not do this to each other." {b} shakes her head at {a}. "And here we are, and neither of us chose it."',
+    ],
+    'circle-alone': [
+      '{a} makes her case on her own. Nobody gets up. Nobody says a word for her, and she notices.',
+      'Somebody speaks up for every queen in that bottom except {a}, and {a} sits with that.',
+      '"It is fine," {a} says, to nobody. "I did not come here to make friends." She does not sound like she believes it tonight.',
+      '{a} looks around the room and finds out, in real time, exactly how many people she has in it.',
+      'The silence after {a} finishes talking to {b} lasts about two seconds. It is the loudest thing in the lounge.',
+    ],
     stir: [
       '{a} whispers to {b} that {c} called her a fluke this morning. It is not clear that it is true.',
       '{a} makes sure {b} hears what {c} "said" about her last week.',

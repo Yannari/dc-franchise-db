@@ -1749,6 +1749,7 @@ export function defaultConfig() {
        and the winner eliminates. `save` is the Beaver/Baguette, which already
        exists — the mode only makes it reachable from here. */
     drAllStars: false, drAllStarsRule: 'legacy', drAllStarsTwist: 'none', drAllStarsTwistEp: 0,
+    drAllStarsJury: false,
     drDoubleShantay: true, drDoubleSashay: false, drSmackdown: false, drImmunity: false, drTripleLipsync: false,
     drSave: 'none', drTankLevers: 6, drTankRetire: 8, drTankLive: 1, drGoldenBars: 1,
     // The per-episode timeline: maxi, mini, rotating judge, guest, song, twist.

@@ -365,6 +365,16 @@ const SECTIONS = [
   { id: 'dr-finale-showcase', icon: icon('mic'), label: 'The Showcase', suffix: 'finshowcase', phase: 'stage', accent: 'dr-a-score',
     opens: ['finale:finale-showcase-open'], badge: { text: 'SHOWCASE', color: '#FF3D9A' },
     title: 'The Showcase', subtitle: 'individual show-stopping original numbers' },
+  /* ── THE JURY, WHEN THE SEASON BOOKED ONE ──────────────────────────
+     Before the cut, because the jury IS the cut on an All Stars season that
+     runs it: the queens who went home come back, vote, and the host
+     announces what they decided on the screen after this one. */
+  { id: 'dr-finale-jury', icon: icon('speech'), label: 'The Jury', suffix: 'finjury',
+    phase: 'stage', accent: 'dr-a-bond',
+    opens: ['jury:open', 'jury:walk', 'jury:rule', 'jury:agonised', 'jury:ballot',
+      'jury:tally', 'jury:cut', 'jury:cut-words', 'jury:through'],
+    badge: { text: 'THE JURY', color: '#7B2FF7' },
+    title: 'The Jury of Queer Peers', subtitle: 'the queens they sent home decide who sings' },
   { id: 'dr-finale-cut', icon: icon('scissors'), label: 'The Cut', suffix: 'fincut', phase: 'stage', accent: 'dr-a-lip',
     opens: ['finale:finale-cut-suspense', 'finale:finale-cut'], badge: { text: 'THE CUT', color: '#FF294B' },
     title: 'The Cut', subtitle: 'the field becomes two' },

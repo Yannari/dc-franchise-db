@@ -8,6 +8,9 @@
 import { initDragState, refreshStar } from './state.js';
 import { runAudienceVote } from '../audience.js';
 import { renderFinaleBeats, insertCongenialityScene } from './finale.js';
+import { juryVote } from './jury.js';
+import { JURY_BEATS, juryLine } from './data/jury-beats.js';
+import { dragAlliances, sameBloc } from './alliances.js';
 import { PARTNER_COHORTS } from './chal/makeover.js';
 import { RETURNEE_BEATS } from './data/returnee-beats.js';
 import { SPLIT_BEATS } from './data/split-beats.js';
@@ -876,6 +879,20 @@ export function runFinale(state, cfg, ctx) {
      scene on the screen describing a thing the season did not do. Only
      `perform-then-lipsync` narrows the field before the songs. */
   let cutQueens = [];
+  /* ── THE JURY, IF THE SEASON BOOKED ONE ─────────────────────────────
+     All Stars only, and only on the one format that HAS a cut: on a bracket
+     every finalist sings and there is nothing for a jury to decide. The
+     blocs are derived now, from the room as it stood at the end, because a
+     juror who ran with a finalist is not neutral about her. */
+  const jury = !!cfg.jury && (type === 'perform-then-lipsync' || type === 'perform-then-lipsync-3');
+  let juryResult = null;
+  const juryBlocs = jury
+    ? dragAlliances({
+      living: [...(state.out || []), ...finalists],
+      bond: (x, y) => Number(ctx.bond?.(x, y)) || 0,
+      players: ctx.players, ep: 99,
+    })
+    : [];
 
   /* THE SHOWCASE, WHICH EVERY FINALE HAS AND ONLY ONE FORMAT SCORES BY.
      On the modern night the individual original numbers ARE the maxi
@@ -943,13 +960,42 @@ export function runFinale(state, cfg, ctx) {
       resume: resumeOf(n),
     }));
     const ranking = panelRanking(judgeViews(panel, entries, state.memory, rng));
-    const order = hostBend(ranking, { star: state.star, storylineNeed: {}, trackPull: {}, split: false })
+    let order = hostBend(ranking, { star: state.star, storylineNeed: {}, trackPull: {}, split: false })
       .map(x => x.name);
+
+    /* ── THE JURY OF QUEER PEERS (AS3) ─────────────────────────────────
+       The cut is the one decision on this show that is not the host's to
+       begin with — it is a ranking, and a ranking can be somebody else's.
+       So the twist replaces exactly this line and nothing else: the queens
+       the season sent home come back and decide which two sing.
+
+       IT DOES NOT BREAK THE FIRST LAW. `docs/drag-race.md` opens with THERE
+       IS NO VOTE, and the law is that THE ROOM cannot vote anybody out.
+       These queens are already out. They end nobody — everybody on that
+       ballot has survived the whole season — and they choose only who
+       performs last. js/dr/jury.js carries the long version of the argument
+       next to the ballot, for the reader who finds it and assumes the bug is
+       back. */
+    if (jury) {
+      const jurors = [...(state.out || [])];
+      if (jurors.length >= 2) {
+        const allies = Object.fromEntries(jurors.map(j => [j,
+          finalists.filter(n => sameBloc(juryBlocs, j, n))]));
+        const jv = juryVote({
+          jurors, finalists, bond: (x, y) => Number(ctx.bond?.(x, y)) || 0,
+          record: state.record, ledger: state.power || {}, rng,
+          showcase: state.finalePerformance || {}, allies,
+        });
+        order = jv.order;
+        juryResult = jv;
+      }
+    }
+
     const f = duel(state, order[0], order[1], ctx, song(), fctx);
     rounds.push(f);
     placements = [f.winner, f.loser, ...order.slice(2)];
-    // THE ONLY FORMAT WITH A CUT. These queens never sang: the host narrowed
-    // the field on the showcase and sent them to the back before the music.
+    // THE ONLY FORMAT WITH A CUT. These queens never sang: the field was
+    // narrowed before the music — by the host, or by the jury.
     cutQueens = order.slice(2);
   } else {
     // top2, and the fallback for any finale that arrives smaller than its
@@ -997,6 +1043,45 @@ export function runFinale(state, cfg, ctx) {
     state.record[n].push(winners.includes(n) ? 'WINNER' : 'FINALIST');
   }
 
+  /* ── WHAT THE JURY DID, AS SCENES ──────────────────────────────────
+     One card per juror: her ballot and the reason she gave for it, in the
+     order she left the competition. Nothing here decides anything — the
+     ballot already ran — so a screen cannot narrate a different jury from
+     the one the placements came out of. */
+  const juryScenes = [];
+  if (juryResult) {
+    const said = [];
+    const jsc = (kind, who, pool, vars) => juryScenes.push({
+      step: 'main-stage', kind: `jury:${kind}`,
+      data: { players: who, jury: true, ...(vars || {}) },
+      text: juryLine(pool, vars, rng, said),
+    });
+    const top2 = juryResult.order.slice(0, 2);
+    const cutByJury = juryResult.order.slice(2);
+    jsc('open', [], JURY_BEATS.open, {});
+    for (const j of juryResult.reasons.map(r => r.juror)) jsc('walk', [j], JURY_BEATS.walk, { a: j });
+    jsc('rule', [], JURY_BEATS.rule, {});
+    for (const r of juryResult.reasons) {
+      if (r.close) jsc('agonised', [r.juror], JURY_BEATS.agonised, { a: r.juror });
+      juryScenes.push({
+        step: 'main-stage', kind: 'jury:ballot',
+        data: { players: [r.juror, r.voted], jury: true, juror: r.juror, voted: r.voted, why: r.why },
+        text: juryLine(JURY_BEATS.ballot[r.why] || JURY_BEATS.ballot['least-worst'],
+          { a: r.juror, x: r.voted, y: r.over || '' }, rng, said),
+      });
+    }
+    jsc('tally', [], JURY_BEATS.tally, {});
+    for (const y of cutByJury) {
+      jsc('cut', [y], JURY_BEATS.cut, { y });
+      jsc('cut-words', [y], JURY_BEATS.cutWords, { y });
+    }
+    juryScenes.push({
+      step: 'main-stage', kind: 'jury:through',
+      data: { players: top2, jury: true, through: top2, votes: juryResult.votes },
+      text: juryLine(JURY_BEATS.through, { x: top2[0], z: top2[1] }, rng, said),
+    });
+  }
+
   const row = {
     num: cfg.num,
     format: 'drag-race',
@@ -1031,6 +1116,13 @@ export function runFinale(state, cfg, ctx) {
          itself is now between them. */
       scenes: [
         { step: 'main-stage', kind: 'finale-open', data: { finalists, type }, text: '' },
+        /* ── THE JURY'S NIGHT, BEFORE THE CUT IT DECIDES ───────────────
+           Pushed here rather than inside `renderFinaleBeats` because the
+           ballot is not a beat pool: it is a result the finale already has,
+           and these scenes only say it out loud. The cut beats that follow
+           are unchanged — the host still announces it, because on this show
+           the host always announces it. */
+        ...juryScenes,
         ...renderFinaleBeats({
           finalists,
           // Everybody this season sent home, walking back in.
@@ -1764,6 +1856,10 @@ export function playDragSeason({
   const finale = runFinale(state, {
     num: num++, type: finaleType, rotatingId: last.rotatingId, judgeWeights: config.drJudgeWeights,
     doubleCrown: !!config.drDoubleCrown,
+    /* THE JURY IS AN ALL STARS RULE, like the lipstick: it belongs to the
+       mode, not to a week, so it is read off the season config here rather
+       than booked per episode from the designer. */
+    jury: !!(config.drAllStars && config.drAllStarsJury),
   }, ctx);
   /* THE WINNER CANNOT TAKE THE SASH TOO. The vote ran before the crowning,
      so it could not exclude a winner nobody knew yet — if the country's

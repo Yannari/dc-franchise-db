@@ -398,6 +398,15 @@
                 <div class="hint hint-tight">Which episode it is. <b>0 is automatic</b> &mdash; the show runs it once the room has halved, which is where the seasons that did it put it: late enough for the field to be worth watching, early enough that the queen who comes back has a season to play.</div>
               </div>
             </div>
+            <!-- The Jury of Queer Peers (AS3). A season rule rather than a
+                 booked episode: it replaces the finale's CUT, so it only does
+                 anything on a showcase finale. -->
+            <div class="form-group" id="sec-dr-as-jury">
+              <label class="form-label" style="display:flex;gap:8px;align-items:center">
+                <input type="checkbox" id="cfg-dr-as-jury" onchange="saveConfig()">
+                Jury of Queer Peers</label>
+              <div class="hint hint-tight">On finale night the queens this season sent home come back and vote for which two finalists lip sync for the crown &mdash; instead of the host choosing. They vote on who they liked, what she did all season, how she just performed, and against the queen who ended their own run. <b>Needs a showcase finale</b> (&ldquo;the host picks two&rdquo;): a lip sync bracket has no cut for them to make.</div>
+            </div>
             <div class="form-group" id="sec-dr-judges">
               <label class="form-label">The panel <span style="font-weight:400;color:var(--muted);font-size:10px">(what each judge is watching)</span></label>
               <div id="dr-judges-panel"></div>
@@ -899,7 +908,7 @@
             </div>
             <div class="form-group">
               <label class="form-label">Finale</label>
-              <select id="cfg-dr-finale" onchange="saveConfig()" class="form-input">
+              <select id="cfg-dr-finale" onchange="saveConfig();drVerdictUI()" class="form-input">
                 <option value="top4">Top 4 lip sync tournament</option>
                 <option value="top3">Top 3 lip sync tournament</option>
                 <option value="top2">Top 2 lip sync for the crown</option>

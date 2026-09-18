@@ -45,16 +45,32 @@ import { recordStrength } from './season.js';
  */
 export function juryVote({
   jurors = [], finalists = [], bond = () => 0, record = {}, ledger = {}, rng = Math.random,
+  /* WHAT SHE JUST WATCHED. The showcase is the last thing these jurors saw
+     and the only part of the night they are judging live; without it the
+     ballot is a popularity contest about twelve episodes that are already
+     over, and a finalist could kill on that stage and lose the room anyway.
+     Centred on the field, so it reads as "better than the others tonight"
+     rather than as an absolute score nobody can see. */
+  showcase = {},
+  /* AND HER OWN CIRCLE. A juror who was in a bloc with a finalist is not
+     neutral about her, and js/dr/alliances.js already knows who was in whose.
+     `allies[juror]` is the finalists she ran with. */
+  allies = {},
 } = {}) {
   const votes = Object.fromEntries(finalists.map(n => [n, 0]));
   const reasons = [];
   if (!finalists.length) return { order: [], votes, reasons };
 
   const mean = finalists.reduce((t, n) => t + recordStrength(record[n] || []), 0) / finalists.length;
+  const shows = finalists.map(n => Number(showcase[n]) || 0);
+  const showMean = shows.length ? shows.reduce((a, b) => a + b, 0) / shows.length : 0;
   for (const juror of jurors) {
+    const mine = allies[juror] || [];
     const scored = finalists.map(n => {
       const like = Number(bond(juror, n)) || 0;
       const season = recordStrength(record[n] || []) - mean;
+      const tonight = (Number(showcase[n]) || 0) - showMean;
+      const ally = mine.includes(n) ? 1 : 0;
       /* SHE ENDED MY SEASON. On All Stars that is a specific queen holding a
          specific lipstick, and a juror remembers. It does not disqualify the
          finalist — a juror can respect the queen who beat her — it just costs
@@ -63,19 +79,32 @@ export function juryVote({
         .some(g => g.by === juror && g.against === n) ? 1 : 0;
       return {
         n,
-        score: like * 0.35 + season * 0.8 - grudge * 1.2,
-        like, season, grudge,
+        /* The four things a juror is actually weighing, and the grudge is
+           sized to lose to a genuinely better season — she can respect the
+           queen who beat her, she just has to be given a reason. */
+        score: like * 0.35 + season * 0.8 + tonight * 0.5 + ally * 0.6 - grudge * 1.2,
+        like, season, grudge, tonight, ally,
       };
     }).sort((a, b) => b.score - a.score);
     const pick = scored[0];
     votes[pick.n] += 1;
+    /* WHY, from whichever term actually carried it — never from her
+       archetype, which would let the label and the ballot disagree. Checked
+       in the order a juror would say them out loud. */
+    const runnerUp = scored[1];
     reasons.push({
       juror,
       voted: pick.n,
+      over: runnerUp ? runnerUp.n : null,
       // The reason explains a MOVE, not a feeling — the shape rate.js uses.
       why: pick.grudge ? 'respect-despite'
-        : pick.like >= 4 ? 'friend'
-          : pick.season > 0 ? 'season' : 'least-worst',
+        : pick.ally ? 'circle'
+          : pick.like >= 4 ? 'friend'
+            : pick.tonight > 0.6 ? 'tonight'
+              : pick.season > 0 ? 'season' : 'least-worst',
+      /* AND WHETHER IT WAS CLOSE, so the screen can tell a juror who agonised
+         from one who had decided weeks ago. */
+      close: runnerUp ? Math.abs(pick.score - runnerUp.score) < 0.5 : false,
     });
   }
 

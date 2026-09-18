@@ -252,6 +252,9 @@ export function runCampaign({
      SAFE push a name, which on All Stars is half the drama in the room.
      Defaults keep the save's own nights byte-identical. */
   eachTarget = false, pushCap = 3, lobby = [],
+  /* THE CIRCLES AS THEY STAND TONIGHT (js/dr/alliances.js). Empty on a
+     flagship save night, which is why those nights replay unchanged. */
+  blocs = [],
 }) {
   /* Moves whose PREMISE is the song. On an All Stars legacy night nobody in
      the bottom sings — the top two do — so "those two can lip sync, I cannot"
@@ -585,8 +588,86 @@ export function runCampaign({
 
   // ── THE ROOM ─────────────────────────────────────────────────────
   const safe = living.filter(v => !pool.includes(v) && !targets.includes(v));
+
+  /* ── AND THE CIRCLES, WHICH THE ROOM COULD NOT SEE ─────────────────
+     Alliances were derived every week, drawn in the sidebar, and read by the
+     queen holding the lipstick — and they did NOTHING in the room where the
+     lobbying happens. So a queen in a tight circle and a queen with nobody
+     went into the same Untucked and got the same night, and the only place a
+     circle ever paid was a bias inside somebody else's head.
+     `blocs` is js/dr/alliances.js's output. Everything below is the room
+     acting on what it already knows. */
+  const circleWith = (a, b) => blocs.some(x => (x.members || []).includes(a)
+    && (x.members || []).includes(b));
+  const circleOf = q => {
+    const b = blocs.find(x => (x.members || []).includes(q));
+    return (b?.members || []).filter(m => m !== q);
+  };
+
+  /* HER CIRCLE SPEAKS FIRST, and it speaks as a group: the queens who have
+     been with her all season say so, out loud, to the queen holding it. That
+     is worth more than a friendly face — it is the only public evidence in
+     this format that a bloc exists at all. */
+  const spokenFor = new Set();
+  for (const q of pool) {
+    const mates = circleOf(q).filter(m => safe.includes(m));
+    if (!mates.length) continue;
+    const h = holderFor(q) || targets[0];
+    const v = mates.sort((x, y) => B(y, q) - B(x, q))[0];
+    spokenFor.add(q);
+    cur = push({ id: 'circle-vouch', round: 2, a: v, b: h, c: q, w: mates.length,
+      bond: [[v, q, 0.6], [v, h, 0.2]], pop: { [v]: 0.25 } });
+    plea(h, q, 0.6 + Math.min(2, mates.length - 1) * 0.2);
+  }
+
+  /* AND WHEN THE QUEEN HOLDING IT IS IN THAT CIRCLE, the room says so before
+     the ceremony rather than after. It costs her: everybody else in that
+     bottom now knows what they are up against, and so does everybody
+     watching her decide. */
+  for (const h of targets) {
+    const mine = pool.filter(q => circleWith(h, q));
+    if (!mine.length) continue;
+    const q = mine[0];
+    const caller = safe.find(v => !circleWith(v, h)) || pool.find(x => x !== q);
+    if (!caller) continue;
+    cur = push({ id: 'circle-holder', round: 2, a: caller, b: h, c: q,
+      bond: [[caller, h, -0.6], ...pool.filter(x => x !== q).map(x => [x, h, -0.5])],
+      pop: { [caller]: 0.2, [h]: -0.2 } });
+    plea(h, q, 0.5);
+    break;
+  }
+
+  /* TWO OF THE BOTTOM IN ONE CIRCLE. They cannot both be saved and they both
+     know it, and the thing they have been protecting each other with all
+     season is now the thing in the way. */
+  for (const q of pool) {
+    const other = pool.find(x => x !== q && circleWith(q, x));
+    if (!other) continue;
+    cur = push({ id: 'circle-split', round: 2, a: q, b: other, c: holderFor(q) || targets[0],
+      bond: [[q, other, -1]], pop: { [q]: 0.2, [other]: 0.2 } });
+    break;
+  }
+
+  /* AND THE QUEEN NOBODY STOOD UP FOR. The silence is a scene — but only
+     when it IS silence: measured at 198 firings across thirty seasons, it
+     was the most common beat in the room, because most queens are in no
+     circle and the card was reading "nobody spoke for her" on a night nobody
+     spoke for anybody. It needs the contrast to mean anything, so it fires
+     only when the room DID speak for somebody else tonight. */
+  if (spokenFor.size) {
+    for (const q of pool) {
+      if (spokenFor.has(q) || circleOf(q).length) continue;
+      cur = push({ id: 'circle-alone', round: 2, a: q, b: holderFor(q) || targets[0],
+        bond: [], pop: { [q]: -0.25 } });
+      break;
+    }
+  }
+
   const vouchers = [];
-  for (const v of safe) for (const q of pool) if (B(v, q) >= 4) vouchers.push({ v, q });
+  for (const v of safe) for (const q of pool) {
+    if (spokenFor.has(q) || circleWith(v, q)) continue;
+    if (B(v, q) >= 4) vouchers.push({ v, q });
+  }
   if (vouchers.length) {
     const { v, q } = pick(rng, vouchers);
     const h = targets.find(t => t !== q) || targets[0];

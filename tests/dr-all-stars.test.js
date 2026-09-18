@@ -312,8 +312,21 @@ describe('alliances', () => {
     }
   });
 
-  it('never appear on an ordinary season', () => {
-    for (const r of weekly(season(60))) expect(r.dr.alliances).toBeUndefined();
+  /* ── THEY USED TO BE ALL STARS ONLY, AND THAT WAS HALF RIGHT ──────
+     All Stars brings the HISTORY; the circles themselves are derived from
+     bonds, which every season has by about week three. A flagship season
+     with the Beaver in it is exactly the room they matter in — somebody is
+     holding a save and the queens in danger have friends — and it was
+     getting an Untucked where being in a circle meant nothing.
+     So they are derived everywhere now, and what they REACH is what stays
+     gated: on a season with no save and no lipstick there is no campaign for
+     them to change, and nothing about the night moves. */
+  it('are derived on an ordinary season too, and change nothing on a plain night', () => {
+    const rows = weekly(season(60));
+    expect(rows.some(r => (r.dr.alliances || []).length)).toBe(true);
+    for (const r of rows) {
+      expect((r.dr.scenes || []).some(sc => String(sc.kind).includes('circle-'))).toBe(false);
+    }
   });
 
   it('show up in the sidebar', async () => {
@@ -1132,5 +1145,109 @@ describe('the other lipstick', () => {
         for (const x of sh) expect(x.step).toBe('cold-open');
       }
     }
+  });
+});
+
+describe('the Jury of Queer Peers', () => {
+  const jury = seed => season(seed, {
+    drAllStars: true, drAllStarsJury: true, drFinale: 'perform-then-lipsync',
+  });
+  const fin = res => res.rows[res.rows.length - 1];
+
+  it('lets the queens who went home decide who sings for the crown', () => {
+    const res = jury(7);
+    const row = fin(res);
+    const ballots = (row.dr.scenes || []).filter(sc => sc.kind === 'jury:ballot');
+    expect(ballots.length).toBeGreaterThan(2);
+    // Every juror is a queen this season eliminated, and nobody votes twice.
+    const jurors = ballots.map(b => b.data.juror);
+    expect(new Set(jurors).size).toBe(jurors.length);
+    for (const j of jurors) expect(res.state.out).toContain(j);
+    // And every vote is for somebody who is actually in the finale.
+    const finalists = row.dr.finale.placements;
+    for (const b of ballots) expect(finalists).toContain(b.data.voted);
+  });
+
+  it('sends the two best-supported through, and the rest never sing', () => {
+    for (const seed of [7, 19, 42]) {
+      const row = fin(jury(seed));
+      const ballots = (row.dr.scenes || []).filter(sc => sc.kind === 'jury:ballot');
+      if (!ballots.length) continue;
+      const tally = {};
+      for (const b of ballots) tally[b.data.voted] = (tally[b.data.voted] || 0) + 1;
+      const through = (row.dr.scenes || []).find(sc => sc.kind === 'jury:through').data.through;
+      expect(through).toHaveLength(2);
+      // Nobody outside the pair beat either of them on votes.
+      const cut = row.dr.finale.placements.filter(n => !through.includes(n));
+      for (const c of cut) {
+        for (const t of through) {
+          expect((tally[c] || 0), `seed ${seed}: ${c} outpolled ${t}`)
+            .toBeLessThanOrEqual(tally[t] || 0);
+        }
+      }
+      // And the crown came out of the pair the jury chose.
+      expect(through).toContain(row.dr.finale.placements[0]);
+    }
+  });
+
+  it('is off unless the season books it, and needs a finale with a cut', () => {
+    const plain = fin(season(7, { drAllStars: true, drFinale: 'perform-then-lipsync' }));
+    expect((plain.dr.scenes || []).some(sc => String(sc.kind).startsWith('jury:'))).toBe(false);
+    // A bracket has no cut: every finalist sings, so there is nothing to vote on.
+    const bracket = fin(season(7, { drAllStars: true, drAllStarsJury: true, drFinale: 'top4' }));
+    expect((bracket.dr.scenes || []).some(sc => String(sc.kind).startsWith('jury:'))).toBe(false);
+  });
+
+  it('says why each juror voted, and remembers who sent her home', () => {
+    const whys = new Set();
+    for (const seed of [7, 19, 42, 77, 300]) {
+      for (const b of (fin(jury(seed)).dr.scenes || []).filter(sc => sc.kind === 'jury:ballot')) {
+        whys.add(b.data.why);
+        expect(b.text.length).toBeGreaterThan(30);
+      }
+    }
+    expect(whys.size).toBeGreaterThan(2);
+  });
+
+  it('draws it on a screen of its own, before the cut', async () => {
+    const { dragScreens } = await import('../js/vp-dr/screens.js');
+    const row = fin(jury(7));
+    const ids = dragScreens(row).map(x => x.id);
+    expect(ids).toContain('dr-finale-jury');
+    expect(ids.indexOf('dr-finale-jury')).toBeLessThan(ids.indexOf('dr-finale-cut'));
+  });
+});
+
+describe('the circles reach the lounge', () => {
+  it('has her circle speak for her, on All Stars and on a save season', () => {
+    for (const cfg of [{ drAllStars: true }, { drSave: 'beaver' }]) {
+      let circle = 0;
+      for (const seed of [3, 4, 5, 6, 7]) {
+        for (const row of season(seed, cfg).rows) {
+          const camp = row.dr.save?.hold?.campaign || row.dr.legacyCampaign?.campaign
+            || (row.dr.scenes || []).filter(sc => sc.data?.campaign).map(sc => ({ id: sc.kind }));
+          circle += camp.filter(e => String(e.id).includes('circle-')).length;
+        }
+      }
+      expect(circle, JSON.stringify(cfg)).toBeGreaterThan(0);
+    }
+  });
+
+  it('only calls a queen unspoken-for when somebody else was spoken for', async () => {
+    const { runCampaign } = await import('../js/dr/saves.js');
+    const players = Object.fromEntries(['A', 'B', 'C', 'H'].map(n => [n, {
+      name: n, archetype: 'floater', stats: Object.fromEntries(STATS.map(k => [k, 5])),
+    }]));
+    const run = blocs => runCampaign({
+      saves: { uses: [], debts: [], grudges: [], promises: [], hopes: [] },
+      targets: ['H'], pool: ['A', 'B'], living: ['A', 'B', 'C', 'H'], players,
+      bond: () => 0, rng: rngFor(4), ep: 3, state: { record: {} }, blocs,
+    });
+    // Nobody is in a circle: the silence is not a scene, it is just the night.
+    expect(run([]).events.some(e => e.id === 'circle-alone')).toBe(false);
+    // C stands up for A, and now B being alone means something.
+    const withCircle = run([{ members: ['A', 'C'] }]).events;
+    expect(withCircle.some(e => e.id === 'circle-vouch')).toBe(true);
+    expect(withCircle.some(e => e.id === 'circle-alone' && e.a === 'B')).toBe(true);
   });
 });

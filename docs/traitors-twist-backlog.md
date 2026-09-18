@@ -8,10 +8,21 @@ first.
 **Already in the engine:** On Trial, In Plain Sight, Face to Face, The Dungeon,
 Double Murder, Name Your Own, **Hidden Murder** (built 2026-09-17 with The
 Funeral), **The Poisoned Chalice** (2026-09-17), **Death Match** (2026-09-18),
-**Banish or Murder** (2026-09-18), Recruitment (note and
+**Banish or Murder** (2026-09-18), **On Trial** (rebuilt to the
+show's two-night rule 2026-09-18), Recruitment (note and
 ultimatum), The Armoury, Shield, Dagger, Seer.
 
 ## Night / murder twists
+
+**Rebuilt rather than added, and worth the entry:** On Trial shipped first as a
+one-night footnote — the pact murdered as usual and the round also recorded one
+or two "spared" names nobody was ever told about. Reported as "i still dont
+understand what on trial twist do". It is the wiki's mechanic now: three or four
+names written on one night with NOBODY murdered, the castle told at breakfast,
+the named living the day through the mission and the Round Table, and the murder
+the following night confined to what is left of the list. Measured over 60
+seeded seasons: the pact keeps its first choice 54% of collections and is forced
+to settle for another name 45%, because the room banished the one it wanted.
 
 1. **Secret Traitor** (UK S4, US S4) — a fourth Traitor in a red cloak, unknown
    to the other three and to the viewer. The Secret Traitor writes the murder

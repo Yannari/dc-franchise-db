@@ -113,8 +113,12 @@ const hash01 = (key) => _lineHash(key) / 4294967296;
  */
 export const VARIANTS = [
   { id: 'standard', weight: 70, needs: () => true },
+  // TWO NIGHTS AND A LIST OF THREE OR FOUR, so it wants a castle with names to
+  // spare AND a season with a tomorrow in it: a list written on the last
+  // mandated night has nothing to collect on, and an obligation the season
+  // cannot keep is the twist promising a body it never delivers.
   { id: 'on-trial', weight: 5,
-    needs: (l, t, f) => f >= 3 && l >= 5 },
+    needs: (l, t, f) => f >= 4 && l >= 6 && l > ((gs.tr?.endgameSize || 0) + 2) },
   { id: 'plain-sight', weight: 5,
     needs: (l, t, f) => l >= 5 && t >= 1 && f >= 2 },
   { id: 'face-to-face', weight: 5,
@@ -288,43 +292,6 @@ function _hashOrder(names, key) {
   return [...names].sort((a, b) => hash01(`${key}|${a}`) - hash01(`${key}|${b}`));
 }
 
-/**
- * How often a death list carries a Traitor's own name as cover.
- *
- * THIS NUMBER IS THE WHOLE CHANNEL. At 0 the spared are Faithfuls by
- * construction — `formPreference` only ever targets Faithfuls — and the
- * evidence the variant leaves would be enriched in innocence, which is the
- * exact sign error that got `clash-traced` deleted from murderEvidence (0.87x
- * at emission, 0.57x on surviving beliefs). At 1 it is an oracle: every spared
- * name a cloak, and the room reads the pact off a list. Half puts the spared
- * set meaningfully above room density and wrong often enough to argue about.
- */
-const LIST_COVER_P = 0.65;
-
-/**
- * The Death List: the name that dies, and the names that were on it and are
- * still here. Returns `{ list, spared }`, `list` in a stable presentation
- * order so the VP and the ledger read it the same way round.
- */
-export function buildDeathList(ep, victim, decider) {
-  const alive = (gs.activePlayers || []).filter(n => n !== victim);
-  const fellows = livingTraitors(ep).filter(n => n !== decider && n !== victim);
-  const others = alive.filter(n => !fellows.includes(n));
-  // TWO NAMES OR THREE, and the variation is not decoration. The first draft
-  // always wrote three, which left the two-name pool written, registered and
-  // unreachable -- the defect class this project has now shipped several times
-  // and the reason tests/tr-murder.test.js asserts every template is reached.
-  const want = hash01(`list-size|${ep}|${victim}`) < 0.5 ? 1 : 2;
-  const spared = [];
-  const wantCover = fellows.length && hash01(`list-cover|${ep}|${victim}`) < LIST_COVER_P;
-  if (wantCover) spared.push(_hashOrder(fellows, `list-fellow|${ep}|${victim}`)[0]);
-  for (const n of _hashOrder(others, `list-other|${ep}|${victim}`)) {
-    if (spared.length >= want) break;
-    spared.push(n);
-  }
-  return { list: _hashOrder([victim, ...spared], `list-order|${ep}|${victim}`), spared };
-}
-
 /** How it was done, in public, at a table full of people. */
 export const PLAIN_SIGHT_METHODS = [
   'a poisoned glass',
@@ -371,7 +338,8 @@ export function chapelPlea(victim, ep) {
 /**
  * How often the second name down the dungeon stair is one of the pact's own.
  *
- * Same argument as `LIST_COVER_P` and the same reason it is not 1: sending a
+ * Same argument as `TRIAL_COVER_P` (js/tr/on-trial.js) and the same reason it
+ * is not 1: sending a
  * fellow down and bringing them back up is the format's own cover move, and it
  * is what stops "who came back" being a channel that names only Faithfuls.
  */
@@ -519,9 +487,9 @@ export function chooseSacrifice(ep) {
 /**
  * How often the pact seats one of its own at the table.
  *
- * Lower than `LIST_COVER_P` and it has to be: a name on a list is a name on a
- * list, but a chair in this game is a one-in-four chance of being murdered by
- * your own side. A pact does it to look unafraid, and a pact that did it every
+ * Lower than `TRIAL_COVER_P` (js/tr/on-trial.js) and it has to be: a name on a
+ * list is a name the pact can simply decline to choose tomorrow, but a chair in
+ * this game is a one-in-four chance of being murdered by your own side. A pact does it to look unafraid, and a pact that did it every
  * time would be a pact killing itself twice a season.
  */
 const DM_COVER_P = 0.3;
@@ -615,18 +583,44 @@ export function playDeathMatch(ep, players) {
 // of one pool's firings because `_render` had no capitalised forms, and a pool
 // that substitutes only names cannot make that mistake.
 export const VARIANT_LINES = {
-  'on-trial-2': [
-    '{a}, {b} and {c} find their names on a list nobody was supposed to see. One of the three does not come down to breakfast.',
-    'Three names went up. Two of them are eating toast in the morning and cannot look at each other.',
-    'A list of three, and the castle spends the morning working out what it means that two of them are still here.',
-    'The Traitors wrote three names and used one. The other two have to live in a room that has read the list.',
+  // ── ON TRIAL: TWO NIGHTS, AND FOUR FACTS TO KEEP STRAIGHT ──────────
+  //
+  // The pools are split on what actually happened, which here means: did the
+  // list get written, did the day take it apart, did the pact get the name it
+  // wrote the list around, and did the room empty it. A sentence about a plan
+  // that survived the day may not be printed over one the table dismantled.
+  'on-trial-named': [
+    'Three names go down on paper and nobody goes anywhere. {a}, {b} and {c} will find out at breakfast that one of them has until tomorrow night.',
+    'No murder tonight. A list instead — {a}, {b}, {c} — and a whole day for the three of them to live in front of everybody.',
+    'The pact writes {a}, {b} and {c}, and then goes to bed. Every other bed in the castle is safe tonight, which is the part the room will not thank them for.',
+    'Three names, one of whom does not see the night after this one. {a}, {b} and {c} get a day to work out which.',
   ],
-  'on-trial-1': [
-    '{a} and {b} were both on it. Only one of them is at the table in the morning.',
-    'Two names, one body, and a survivor with nothing useful to say about why it was not them.',
-    'A list of two. The castle looks at the one still standing for rather a long time.',
-    'Both names went up the stairs. One came back down, and the room has noticed.',
+  'on-trial-named-four': [
+    'Four names and one night to sleep on them: {a}, {b}, {c} and {d}. The castle wakes up whole and finds out it has a list.',
+    'Nobody is murdered. Instead the pact writes {a}, {b}, {c} and {d}, and hands the castle a day of arithmetic.',
+    'The list runs to four — {a}, {b}, {c}, {d} — which is four people who now have to be interesting in front of a room that knows.',
+    'They write {a}, {b}, {c} and {d}, and leave the choosing until tomorrow. It is the one night in this castle where a locked door means nothing.',
   ],
+  'on-trial-taken': [
+    'They wrote {victim} down last night and they come back for {victim} tonight. A day of it did not change a thing.',
+    'The list had a day to be argued with. {victim} is still the name on it, and now {victim} is not on anything.',
+    'Nothing the castle did all day moved the pact off {victim}. The list closes exactly where it opened.',
+  ],
+  'on-trial-settled': [
+    'The name they wrote the list around is still at breakfast. {victim} is not, and was only ever on that paper to make three.',
+    'The day took {aim} out of their reach, so the pact settled for {victim} — which is what a list is for.',
+    'They wanted {aim}. They got {victim}, because those were the names left, and a list is a promise you have to keep.',
+    'The room saved {aim} without ever knowing it had. {victim} paid for it.',
+  ],
+  // THERE IS NO `on-trial-emptied` POOL, and the absence is a decision. The
+  // branch exists in js/tr/murder.js (a list with nothing takeable left on it)
+  // and it is unreachable by construction: one banishment happens between the
+  // two nights, a list is three or four names, and a pact wiped out overnight
+  // never reaches the collection at all because `_night` returns above it.
+  // Measured at 0 firings in 159 trials. Writing four sentences for it would
+  // be this project's signature bug — content written, registered, and never
+  // once printed — so the branch takes the night with no line rather than
+  // carrying a pool nobody will ever read.
   // NOTE THE SHAPE OF THESE FOUR. `{method}` is never sentence-initial, because
   // the methods are written lower case ('a poisoned glass') and two of the
   // first drafts printed 'an embrace at the door, in a room of people
@@ -910,11 +904,17 @@ export function variantEvidence(ep, rng = Math.random) {
   const victim = round.murderTarget ?? round.murdered;
 
   if (v === 'on-trial') {
-    // THE SPARED, and not the pushers. Enriched above room density only
-    // because the pact sometimes writes one of its own down as cover
-    // (LIST_COVER_P) — without that this channel would be a machine for
-    // suspecting Faithfuls, which is what `clash-traced` turned out to be.
-    for (const name of (d.spared || [])) {
+    // THE SURVIVORS OF THE LIST, and only on the night it was collected. The
+    // naming night says nothing at all — being written down is something that
+    // happened TO you, and the castle knows it happened to four people; what
+    // it cannot let go of is the three who were on it and are still eating
+    // breakfast. Enriched above room density only because the pact writes one
+    // of its own onto the list as cover (TRIAL_COVER_P, and the wiki's "The
+    // Traitors may put themselves on trial also"), which is the only reason
+    // this is evidence rather than a machine for suspecting Faithfuls.
+    if (d.phase !== 'taken' || !victim) return formed;
+    for (const name of (d.names || [])) {
+      if (name === victim) continue;
       _tellRoom(name, V.spared, `was on the list with ${victim} and is still here`,
         ep, rng, formed, 'spared-from-the-list', round.ep);
     }

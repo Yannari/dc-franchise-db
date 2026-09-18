@@ -53,18 +53,26 @@
 // exists for, one clause further in.
 import { seasonConfig, players } from '../core.js';
 import { pronouns, playerAvatarUrl } from '../players.js';
-import { exitVerbs } from '../shows.js';
+import { exitVerbs, showWords } from '../shows.js';
 import { HOSTS_BY_FORMAT } from '../shows.js';
 import { CONCLAVE_CSS } from './style.js';
 import { CHALICE_CSS, chaliceStage } from './conclave-chalice.js';
 import { DEATH_MATCH_CSS, deathMatchStage } from './conclave-death-match.js';
+import { LIST_CSS, listStage } from './conclave-list.js';
 import { _noiseTile, _filterBank, _buildFar, _buildMid, _buildFore,
   _buildHeroScene, _doorway } from './scenery.js';
 
 /** The show's own words for a departure. Never written out below. */
 function _verbs() {
   const [banish, murder] = exitVerbs('traitors');
-  return { banish: banish || 'out', murder: murder || banish || 'out' };
+  const w = showWords('traitors') || {};
+  // THE PAST TENSE AND THE ACTION ARE TWO DIFFERENT WORDS, and this screen now
+  // needs both: "was banished" is what happened, "if the room banishes one of
+  // these names" is a thing that has not happened yet. Writing the second out
+  // of the first produced "if it banishedes one of these names" on the first
+  // On Trial screen rendered — the same defect the Round Table's sign-off had.
+  return { banish: banish || 'out', murder: murder || banish || 'out',
+    doBanish: w.exitAction || 'vote out', doMurder: w.exitMurderAction || 'take' };
 }
 const _cap = s => String(s || '').charAt(0).toUpperCase() + String(s || '').slice(1);
 
@@ -829,6 +837,14 @@ function _buildBeats(rec, ep) {
   // table is an ordinary conclave; what the pact agreed on only bought a chair.
   const dm = rec.variant === 'death-match';
   const dmd = dm ? (rec.vdata || {}) : null;
+  // ON TRIAL RUNS OVER TWO NIGHTS AND THIS SCREEN DRAWS BOTH OF THEM. On the
+  // naming night the pact argues in full and then kills nobody, so the wax and
+  // the letter are replaced by the list; on the collection night the argument
+  // is held over the survivors of that list, and the screen has to show what
+  // the day did to it or the shortened shortlist looks like an engine bug.
+  const naming = rec.trialPhase === 'named';
+  const collecting = rec.trialPhase === 'taken' || rec.trialPhase === 'emptied';
+  const trd = (naming || collecting) ? (rec.vdata || {}) : null;
   const plain = rec.variant === 'plain-sight' || chalice;
   const forced = rec.variant === 'name-your-own';
   // A DOUBLE NIGHT HAS TWO BODIES. The second is the argument the pact lost
@@ -1142,8 +1158,80 @@ function _buildBeats(rec, ep) {
     }
   }
 
+  // ── AND ON A NAMING NIGHT, THE LIST INSTEAD OF A LETTER ──
+  if (naming && trd && (trd.names || []).length) {
+    const names = trd.names || [];
+    push('seal', _card(names.length > 3 ? 'Four Names' : 'Three Names',
+      'VII. The list', 'letter',
+      // THE NIGHT'S OWN SENTENCE, HERE AND NOWHERE ELSE. Every other variant
+      // prints its line on the morning that reports it; a naming night has no
+      // such morning — the castle is TOLD the list out loud at breakfast, and
+      // the audience-only line underneath would be the same fact twice in two
+      // registers. So this shape renders its line on the night itself, which
+      // is also the only screen where it is news.
+      '<p>' + (rec.line ? _esc(rec.line)
+        : 'Nothing is sealed tonight. They write names instead &mdash; '
+        + _names(names) + ' &mdash; and the castle will be read them at breakfast.')
+      + '</p>'
+      + '<div class="cv-tally">'
+      + names.map(n => _tallyRow(n,
+        n === trd.aim ? 'the name they argued for'
+          : n === trd.cover ? 'written on by the pact'
+            : 'written on to make the number',
+        n === trd.aim ? 'chosen' : 'open',
+        n === trd.aim ? 'Their name' : 'On the list')).join('')
+      + '</div>'
+      + (trd.cover
+        ? '<p class="cv-explain">One of those names is one of their own. '
+          + _esc(trd.cover) + ' spends tomorrow being pitied by a room that has '
+          + 'stopped wondering about ' + _pr(trd.cover).obj + ', which is worth '
+          + 'more than a night&rsquo;s sleep.</p>'
+        : '<p class="cv-explain">Every name on it is a Faithful. The pact has '
+          + 'nothing to hide behind tomorrow, and a room that works that out has '
+          + 'learned something.</p>')), null, 'name');
+
+    push('seal', _card('Nobody Dies Tonight', 'VIII. The reprieve', 'hourglass',
+      '<p>This is the one night in the castle where the doors do not matter. '
+      + 'Nobody on that list is touched before morning, and nobody OFF it can be '
+      + 'touched at all &mdash; tomorrow night the pact must come back and take '
+      + 'one of these ' + (names.length > 3 ? 'four' : 'three') + ', and may take '
+      + 'nobody else.</p>'
+      + '<div class="cv-cost" style="justify-content:center">'
+      + '<span class="cv-chip" data-tone="good">' + _icon('hourglass', 13)
+      + 'A whole day to live under it</span>'
+      + '<span class="cv-chip" data-tone="cold">' + _icon('eye', 13)
+      + 'The castle is told at breakfast</span>'
+      + '</div>'
+      + '<p class="cv-explain">Between now and then the room votes. If it '
+      + _esc(_verbs().doBanish) + 'es one of these names, that name comes off '
+      + 'the list and the pact must settle for another.</p>'), null, 'seal');
+  }
+
+  // ── AND ON A COLLECTION NIGHT, WHAT THE DAY LEFT THEM ──
+  if (collecting && trd && (trd.names || []).length) {
+    const lost = trd.lost || [];
+    push('argue', _card('The List, One Day On', 'IV. What is left', 'letter',
+      '<p>' + (lost.length
+        ? 'They wrote ' + _names(trd.names) + ' last night. ' + _names(lost)
+          + (lost.length > 1 ? ' are' : ' is') + ' not at this table any more, so '
+          + 'the argument is about what is left of their own list.'
+        : 'The list survived the day intact: ' + _names(trd.names)
+          + '. Whatever the room did today, it did not take any of these away.')
+      + '</p>'
+      + '<div class="cv-tally">'
+      + (trd.names || []).map(n => _tallyRow(n,
+        lost.includes(n) ? 'gone before tonight' : 'still standing',
+        lost.includes(n) ? 'struck' : 'open',
+        lost.includes(n) ? 'Off the list' : 'Still on it')).join('')
+      + '</div>'), null, 'divide');
+  }
+
   // ── VII. the name ──
-  if (dm && dmd && dmd.loser) {
+  if (naming) {
+    // NOTHING. The list cards above are this night's decision, and a card
+    // headed "The Name" over a night that produced no name is the screen
+    // announcing a murder the engine did not commit.
+  } else if (dm && dmd && dmd.loser) {
     // THE ONE CARD ON THIS SCREEN THAT IS NOT ABOUT A DECISION. The tally
     // still shows what the pact argued for, because that is what happened up
     // there; it is just no longer what decides anything.
@@ -1191,7 +1279,11 @@ function _buildBeats(rec, ep) {
     + _pick(forced ? NAME_TEXT_FORCED : NAME_TEXT, key + '|name') + '</p>'), null, 'name');
 
   // ── VIII. the wax ──
-  push('seal', '<div class="cv-card">'
+  //
+  // A naming night seals nothing: the pact goes to bed with a list and the
+  // castle wakes up whole. The letter, the portrait and "tonight the castle
+  // loses" are all sentences about a body, and there is not one.
+  if (!naming) push('seal', '<div class="cv-card">'
     + '<div class="cv-card-label">' + _icon('seal', 14)
     + (dm ? 'XI. The wax' : 'VIII. The wax') + '</div>'
     + '<h3 class="cv-card-title">Sealed</h3>'
@@ -1489,6 +1581,9 @@ function _reapplyVisibility(suffix, upToIdx, total) {
   // attribute — the beats that belong to the table carry their own step.
   const table = document.querySelector('.dm-stage');
   if (table && last) table.setAttribute('data-dm', last.getAttribute('data-stage') || '0');
+  // And the sheet of paper on an On Trial night, off the same attribute.
+  const sheet = document.querySelector('.ls-stage');
+  if (sheet && last) sheet.setAttribute('data-ls', last.getAttribute('data-stage') || '0');
   if (scroller) scroller.scrollTop = top;
 }
 
@@ -1634,7 +1729,9 @@ export function rpBuildConclave(ep, observer = 'audience') {
   const cssOnce = css + (rec && rec.variant === 'chalice'
     ? '<style>' + CHALICE_CSS + '</style>' : '')
     + (rec && rec.variant === 'death-match'
-      ? '<style>' + DEATH_MATCH_CSS + '</style>' : '') + _filterBank();
+      ? '<style>' + DEATH_MATCH_CSS + '</style>' : '')
+    + (rec && (rec.trialPhase === 'named' || rec.trialPhase === 'taken')
+      ? '<style>' + LIST_CSS + '</style>' : '') + _filterBank();
 
   if (!rec) {
     return '<div class="cv-root" style="' + vars + '" data-ambient="tense">' + cssOnce
@@ -1708,7 +1805,22 @@ export function rpBuildConclave(ep, observer = 'audience') {
   // A DEATH MATCH SAYS IT OUTRIGHT. Its stage and its beats are two different
   // rooms, so the beats that belong to the card table carry their own step and
   // everything before them sits on the summons.
-  const stages = rec.variant === 'death-match'
+  // ON TRIAL WALKS THE SAME WAY, off the beat's own slot: the paper is blank
+  // while they argue, takes the names on the card that lists them, and is
+  // crossed through on the beat that names the body.
+  const trialStage = b => {
+    if (rec.trialPhase === 'named') {
+      if (b.slot === 'name') return 2;
+      if (b.slot === 'seal') return 3;
+      return (b.phase === 'gather' || b.slot === 'climb' || b.slot === 'cloaks') ? 0 : 1;
+    }
+    if (b.slot === 'divide') return 1;
+    if (b.slot === 'name' || b.slot === 'seal') return 3;
+    return (b.phase === 'gather' || b.slot === 'climb' || b.slot === 'cloaks') ? 0 : 2;
+  };
+  const stages = (rec.trialPhase === 'named' || rec.trialPhase === 'taken')
+    ? beats.map(trialStage)
+    : rec.variant === 'death-match'
     ? beats.map(b => (b.stage == null ? 0 : b.stage))
     : rec.variant !== 'chalice' ? null : beats.map((b, i) => {
     if (b.phase === 'argue' || b.phase === 'overrule') return 2;
@@ -1771,7 +1883,15 @@ export function rpBuildConclave(ep, observer = 'audience') {
     + '<div class="cv-eyebrow">The Traitors &middot; Night ' + (rec.ep || epNum) + '</div>'
     + '<h1 class="cv-title">THE CONCLAVE</h1>'
     + '<div class="cv-title-rule"><i></i>' + _icon('seal', 44, '#8f1a26') + '<i></i></div>'
-    + '<p class="cv-sub">' + (rec.variant === 'plain-sight'
+    + '<p class="cv-sub">' + (rec.trialPhase === 'named'
+      ? 'The Traitors meet, and tonight they do not choose a victim &mdash; they '
+      + 'choose a shortlist. Nobody is ' + _esc(_verbs().murder) + ' before morning; '
+      + 'one of the names below will be, the night after.'
+      : rec.trialPhase === 'taken'
+        ? 'The Traitors meet under their own list. The murder tonight must come '
+        + 'from the names they wrote yesterday, and the castle has had a day to '
+        + 'take some of those names away from them.'
+        : rec.variant === 'plain-sight'
       ? 'No meeting tonight. One Traitor chose a name alone, downstairs, in company, '
       + 'and the decision is shown below.'
       : rec.variant === 'name-your-own'
@@ -1780,12 +1900,17 @@ export function rpBuildConclave(ep, observer = 'audience') {
         // things the screen then never showed.
         ? 'The pact has been told the murder must come from inside the cloaks. No '
         + 'player downstairs is eligible tonight; the name comes out of this room.'
-        : 'The Traitors meet in private to choose tonight&rsquo;s target. '
-        + 'Each proposal, disagreement and final decision is shown below.') + '</p>'
+          : 'The Traitors meet in private to choose tonight&rsquo;s target. '
+          + 'Each proposal, disagreement and final decision is shown below.') + '</p>'
     + '</div></div>'
     + '<header class="cv-head">' + observerBadge + '</header>'
     // THE LIBRARY. A chalice night has no meeting to draw, so it gets a stage
     // of its own above the beats instead of the turret's furniture.
+    + ((rec.trialPhase === 'named' || rec.trialPhase === 'taken')
+      ? listStage(rec, (stages && stages[st.idx]) || 0,
+        Object.fromEntries(((rec.vdata && rec.vdata.names) || [])
+          .map(n => [n, _av(n, 40)])), _verbs().murder)
+      : '')
     + (rec.variant === 'death-match'
       ? deathMatchStage(rec, (stages && stages[st.idx]) || 0,
         Object.fromEntries(((rec.vdata && rec.vdata.players) || [])

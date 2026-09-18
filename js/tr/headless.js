@@ -27,6 +27,7 @@ import { seedTraitorKnowledge, ballotEvidence, murderEvidence, missionEvidence, 
   alibiEvidence } from './deduction.js';
 import { variantEvidence, hiddenMurderFor } from './murder-variants.js';
 import { _setBanishOrMurderSchedule } from './banish-or-murder.js';
+import { liveTrial, trialToday, closeTrial, rollTrial } from './on-trial.js';
 import { runRoundTable } from './roundtable.js';
 import { resolveMurder } from './murder.js';
 import { sceneParticipants, sceneSpeakers, KNOWN_WINDOWS } from './events.js';
@@ -340,7 +341,13 @@ function _night(ep, rng) {
   // not pinned, pact thin (rate > 0 is the same "< 3 Traitors" gate) — so the
   // game rng stream does not shift; only the THRESHOLD moved. The toggle and cap
   // gate the RESULT below, after the draw, never the draw itself.
-  const autoRoll = canRecruit(ep) && !forcedRecruit
+  // A PACT WITH A LIST STANDING DOES NOT SPEND THE NIGHT RECRUITING. It owes
+  // the castle a name off that list tonight, and an offer is a night with no
+  // murder in it — which is how 22 lists in 60 seasons used to evaporate. A
+  // PINNED recruitment still wins, because that is an author's instruction; the
+  // list rolls forward a night instead (`rollTrial`, below).
+  const owesATrial = !!liveTrial(ep);
+  const autoRoll = !owesATrial && canRecruit(ep) && !forcedRecruit
     && recruitRate > 0 && rng() < recruitRate;
   // TWO RECRUITS A SEASON AT MOST, ONE PER PACT SIZE. The show recruits as the
   // pact thins — an occasional bolster at two Traitors, and the iconic survival
@@ -387,6 +394,8 @@ function _night(ep, rng) {
       // of a season could be eaten by an offer and never say so. Measured at 8
       // of 40 pinned nights before this line existed.
       _carryTheShape(ep, 'the pact made an offer instead');
+      // And an obligation the author's pinned offer pushed past tonight.
+      rollTrial(ep, 'the pact made an offer instead');
       return { murdered: null, murderTarget: null, blocked: false, recruited,
         executed: offer.executed || null, livingAtMurder: [], conclave: null };
     }
@@ -402,6 +411,10 @@ function _night(ep, rng) {
   // chair missing and the screen would draw two cloaks for a meeting three
   // people attended.
   const turret = livingTraitors(ep);
+  // A LIST STANDING OVER TONIGHT TAKES THE NIGHT (js/tr/murder.js), so a shape
+  // the author pinned to this episode is rained off exactly like one eaten by
+  // an offer, and moves rather than vanishing.
+  if (liveTrial(ep)) _carryTheShape(ep, 'a list was already standing over it');
   const m = resolveMurder(ep, rng);
   // THE CONCLAVE'S OWN BALLOT SET, recorded rather than left in the return
   // value, because the export shape (js/tr/export.js, spec 10.1) models the
@@ -508,7 +521,15 @@ function _downstairs(ep, turret) {
  * and it is the one thing no reader can recover from the body.
  */
 function _conclaveRecord(ep, m, ballots, turret) {
-  if (!m || !m.target) return null;
+  // A NAMING NIGHT HAS NO TARGET AND STILL HAS A MEETING. On Trial night one
+  // is the only shape where the pact argues in full and nobody is chosen to
+  // die, so the `!m.target` guard — written for a chalice the pact never found,
+  // where there was no meeting at all — would have thrown the whole screen
+  // away. The record carries `aim` as the target instead, because it IS the
+  // name they settled on; what it is not is a body, and `murderTarget` on the
+  // round stays null so nothing downstream reasons from a death.
+  const naming = m && m.variantData && m.variantData.phase === 'named';
+  if (!m || (!m.target && !naming)) return null;
   const d = m.decision || {};
   const shield = (gs.tr?.shields || []).find(s => s.ep === ep) || null;
   return {
@@ -523,7 +544,11 @@ function _conclaveRecord(ep, m, ballots, turret) {
     // poured, and whether the poison was the slow kind).
     vdata: m.variantData ? { ...m.variantData } : null,
     turret: [...(turret || [])],
-    target: m.target,
+    target: m.target || (naming ? m.variantData.aim : null),
+    // 'named' on the night the list is written, 'taken' / 'settled' / 'emptied'
+    // on the night it is collected. The conclave screen draws three different
+    // nights off this.
+    trialPhase: (m.variantData && m.variantData.phase) || null,
     decidedBy: d.decidedBy || null,
     reason: d.reason || null,
     blocked: !!m.blocked,
@@ -1119,6 +1144,25 @@ function _morning() {
     // the whole castle. Without it the morning after the best twist in the
     // catalogue drew the ordinary full-table pool, whose sentences are all
     // built on the room NOT knowing why nobody is missing.
+    // ── AND THE LIST, WHICH IS THE ONE THE WHOLE CASTLE IS TOLD ─────
+    //
+    // On Trial is public from the moment the names are read out at breakfast
+    // (the wiki's whole point: the named live the day in front of everybody),
+    // which makes it the only murder shape whose facts a PLAYER may be shown.
+    // `named` is the morning after the list is written; `collected` is the
+    // morning after it was used, when the room is looking at the survivors.
+    trial: (() => {
+      const t = gs.tr && gs.tr.onTrial;
+      if (!t || !prev) return null;
+      if (t.namedEp === prev.num) {
+        return { phase: 'named', names: [...t.names], collectEp: t.collectEp };
+      }
+      if (t.collectEp === prev.num && t.done) {
+        return { phase: 'collected', names: [...t.names], taken: t.taken || null,
+          outcome: t.outcome || null };
+      }
+      return null;
+    })(),
     bought: !!(prev && (gs.tr?.rounds || [])
       .find(r => r.ep === prev.num)?.banishOrMurder?.unanimous),
     // ── HOW LAST NIGHT WAS SHAPED, AND WHY IT IS ON THE MORNING ──────
@@ -2569,7 +2613,7 @@ function _armouryRecord(ep) {
 
 function _recordEpisode(ep, { banished = null, night = null, mission = null,
   castle = null, endgame = false, selection = null, arrival = null,
-  finale = false, beliefs = undefined } = {}) {
+  finale = false, beliefs = undefined, trial = null } = {}) {
   // THE DOOR, NOT JUST THE NAME. docs/ADDING-A-SHOW.md §5 gives `exits[]` a
   // `verb` and a `channel` and this row was writing neither, so every reader
   // of the episode history knew somebody had gone and not which of the show's
@@ -2679,6 +2723,21 @@ function _recordEpisode(ep, { banished = null, night = null, mission = null,
       // that comes down is `cast` minus `goneBefore`, which is the same list
       // the board opens on -- one derivation, two screens.
       dawn: _morning(),
+      // ── THE LIST HANGING OVER TODAY ─────────────────────────────────
+      //
+      // On Trial is the only twist that occupies a whole EPISODE rather than a
+      // night: the names were written last night, the castle is told at
+      // breakfast, and the mission and the Round Table both happen with three
+      // or four people sitting under it. Null on every other episode, which is
+      // what the screens gate on. Read at the top of the episode, before the
+      // table can banish one of the names off it.
+      // PASSED IN, NOT READ HERE. The record is built at the END of the
+      // episode, by which time the night has already collected the list and
+      // closed it — so asking `trialToday` at this point returned null every
+      // time, and the Round Table card the whole twist needs never drew once.
+      // The caller captures it before the table sits.
+      trial: trial ? { names: [...trial.names], namedEp: trial.namedEp,
+        collectEp: trial.collectEp } : null,
       // ── THE AFTERNOON AND THE OFFER (Plan 8, Task 4) ────────────────
       //
       // Both `null` on plenty of rows and the screens are registered off
@@ -3130,6 +3189,12 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     // A HIDDEN MURDER'S MORNING has no fallout (nobody knows who died) and
     // no decoys (they are kept away until the funeral).
     const hiddenToday = hiddenMurderFor(ep);
+    // THE LIST HANGING OVER TODAY, captured BEFORE the table sits. By the time
+    // the episode is recorded the night has collected it and closed it, so
+    // this is the only moment the fact exists — and the mission, the table and
+    // the morning all need it.
+    const trialThisEpisode = (t => t
+      ? { names: [...t.names], namedEp: t.namedEp, collectEp: t.collectEp } : null)(trialToday(ep));
     const castleEvents = hiddenToday ? [] : [
       ...runCastlePhase('breakfast-fallout', ep, castleRng), // dawn
     ];
@@ -3250,7 +3315,10 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     // tonight. `banished` is the tell — a refused deal records no banishment
     // and the murder goes ahead exactly as it would have done.
     const dealTaken = !!(r.banishOrMurder && r.banishOrMurder.unanimous);
-    if (dealTaken) _carryTheShape(ep, 'the room took the deal');
+    if (dealTaken) {
+      _carryTheShape(ep, 'the room took the deal');
+      rollTrial(ep, 'the room took the deal');
+    }
     const night = (handOver || dealTaken) ? null : _night(ep, rng);
     // Same pair, same order, same stream — see the note on night one.
     // Housekeeping runs either way: a Shield still expires on a night nobody
@@ -3279,7 +3347,7 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     // -- and this reads the threads after all of tonight's closing is done.
     scoreStories(ep);
     _recordEpisode(ep, { banished: r.banished, night, mission, castle: castleEvents,
-      beliefs: beliefsBeforeTable });
+      beliefs: beliefsBeforeTable, trial: trialThisEpisode });
     log.push({ ep, banished: r.banished, wasTraitor: r.wasTraitor, ...(night || {}), mission,
       alive: alive.length, aliveAtVote: alive.length, traitorsAtVote: tr,
       castleEvents, budget: { ...gs.tr.roundBudget } });
@@ -3366,6 +3434,12 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
       }
     }
   }
+
+  // A LIST THE SEASON NEVER GOT ROUND TO. Recorded rather than left dangling:
+  // the export, the tape and the twist's own tests all read `gs.tr.trials`, and
+  // a trial that is missing from it because it never resolved is exactly the
+  // kind of silence this engine keeps getting caught by.
+  if (gs.tr.onTrial && !gs.tr.onTrial.done) closeTrial('lapsed');
 
   // DID THE MOVED SHAPE ACTUALLY GET ITS NIGHT? Resolved here, where the whole
   // season exists: a shape carried into the last night before the fire round

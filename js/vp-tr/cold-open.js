@@ -822,6 +822,16 @@ const CO_CSS = `
 .co-host-line{font-family:var(--co-hand);font-style:italic;font-size:19px;line-height:1.5;
   color:var(--co-linen)}
 
+/* the list, read out over breakfast. Bordered rather than murmured: this is
+   the one murder-shape fact the castle is TOLD, and it should not look like
+   something the audience overheard. */
+.co-trial{margin:16px 0 0;padding:13px 16px;border:1px solid rgba(224,160,73,.3);
+  border-radius:8px;background:rgba(224,160,73,.06)}
+.co-trial b{display:block;font:700 10px/1.6 var(--co-ui,system-ui);letter-spacing:.2em;
+  text-transform:uppercase;color:#e0a049;margin-bottom:8px}
+.co-trial p{margin:8px 0 0;font-size:14px;line-height:1.55}
+.co-trial .co-arrivals{margin:0}
+
 /* the low murmur between cards */
 .co-murmur{font-family:var(--co-hand);font-style:italic;font-size:15px;
   color:rgba(233,240,245,.44);text-align:center;margin:14px 0 0;padding:0 30px}
@@ -1113,6 +1123,17 @@ const WHOLE_TEXT = [
   'A full table. The relief lasts about eleven seconds, which is how long it takes somebody to '
   + 'realise that a night with nothing in it is still a night somebody spent choosing.',
 ];
+// A TABLE THAT CAME DOWN WHOLE BECAUSE THERE IS A LIST INSTEAD. Public, like
+// the card underneath it: the names are read out over the toast, so the room is
+// not wondering why nobody is missing — it is looking at three people who now
+// have a day to get through.
+const TRIAL_MORNING_TEXT = [
+  'Everybody comes down, and everybody stays down, because the Traitors did not take anybody last night. They wrote instead.',
+  'A full table, and it lasts exactly as long as it takes for the names to be read out.',
+  'Nobody is missing. The relief in the room has a shape to it this morning, and the shape is a list.',
+  'The places all fill. Then the reading starts, and three of them find out what kind of morning this is.',
+];
+
 // A TABLE THAT CAME DOWN WHOLE BECAUSE THE ROOM PAID FOR IT. Said to
 // everybody, because everybody was there when the hands went up — which is the
 // whole difference between this morning and a blocked one.
@@ -1591,6 +1612,10 @@ function _view(ep, observer) {
     arrival: dawn.ofEp == null,
     // PUBLIC (see the pool): the room watched itself vote the murder away.
     bought: !!dawn.bought,
+    // THE LIST, AND IT IS THE ONLY MURDER-SHAPE FACT A PLAYER MAY BE SHOWN.
+    // On Trial is read out at breakfast; everybody in the castle knows the
+    // names, which is what the whole twist is for.
+    trial: dawn.trial ? { ...dawn.trial, names: [...(dawn.trial.names || [])] } : null,
     isAudience,
     watcher,
     // Was this player in the room to see it? A player who has already left
@@ -2048,14 +2073,38 @@ function _buildBeats(v) {
       + (v.variantRule ? '<p class="co-explain">' + _esc(v.variantRule) + '</p>' : '')),
     null, { kind: 'after', down: [...v.room], gap: v.missing.map(x => x.name) });
   } else if (!v.arrival) {
-    let inner = '<p>' + (v.bought ? _pick(BOUGHT_TEXT, key + '|bought')
-      : _pick(WHOLE_TEXT, key + '|whole')) + '</p>'
+    const named = !!(v.trial && v.trial.phase === 'named' && (v.trial.names || []).length);
+    let inner = '<p>' + (named ? _pick(TRIAL_MORNING_TEXT, key + '|trial')
+      : v.bought ? _pick(BOUGHT_TEXT, key + '|bought')
+        : _pick(WHOLE_TEXT, key + '|whole')) + '</p>'
       + _countStrip([['At the table', String(v.room.length)],
         ['Places laid', String(v.room.length)]]);
     // AND THE SHAPE OF A NIGHT THAT TOOK NOBODY. A chalice the pact never
     // found leaves a full table and no explanation; the audience gets the
     // sentence, the castle does not.
-    if (v.isAudience && v.variantLine && !v.missing.length) {
+    // ── THE NAMES, READ OUT TO EVERYBODY ──────────────────────────
+    //
+    // The reprieve and the sentence in one card, and public: the castle is
+    // told, so a player observer gets exactly what the audience gets. Without
+    // this the morning after a naming night was a full table and a shrug, and
+    // the biggest twist in the catalogue happened entirely off screen.
+    if (named) {
+      const names = v.trial.names;
+      inner += '<div class="co-trial"><b>On trial</b>'
+        + '<div class="co-arrivals">' + names.map(n => _faceChip(n, 26)).join('') + '</div>'
+        + '<p>' + _names(names) + ' are read out over breakfast. Nobody was '
+        + _esc(_verbs().night) + ' last night, and nobody else can be '
+        + _esc(_verbs().night) + ' tomorrow night either: the Traitors must take '
+        + 'one of these ' + (names.length > 3 ? 'four' : 'three') + ' and no one '
+        + 'else.</p>'
+        + '<p>Which gives the castle a day, and gives these '
+        + (names.length > 3 ? 'four' : 'three') + ' a day of being looked at.</p>'
+        + '</div>';
+    }
+    // NOT ON A NAMING MORNING. The card above has just said this to the whole
+    // castle, and the audience line would be the same fact a second time in a
+    // quieter font — the "You only" flag promising a secret that is not one.
+    if (v.isAudience && v.variantLine && !v.missing.length && !named) {
       inner += '<p class="co-shape"><span>You only &middot; audience</span>' + _esc(v.variantLine) + '</p>';
     }
     // THE ONE LINE THIS SCREEN HAS THAT A PLAYER MUST NOT SEE, and it is only

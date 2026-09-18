@@ -86,7 +86,10 @@ function _verbs() {
   return { banish: banish || 'out', murder: murder || banish || 'out',
     // THE INSTRUCTION FORM, for the one sentence on this screen about a thing
     // that has not happened yet — see `exitMurderAction` in js/shows.js.
-    doMurder: w.exitMurderAction || w.exitAction || 'it' };
+    doMurder: w.exitMurderAction || w.exitAction || 'it',
+    // And the same for the banishment, needed by the On Trial card: "a name
+    // this room banishes tonight" is not a thing that has happened yet either.
+    doBanish: w.exitAction || 'vote out' };
 }
 const _cap = s => String(s || '').charAt(0).toUpperCase() + String(s || '').slice(1);
 
@@ -2195,12 +2198,13 @@ function _leaders(t) {
  * refuses to write the field onto a finale record; this refuses again, so
  * neither lock is load-bearing on its own.
  */
-function _view(rec, observer) {
+function _view(rec, observer, trial = null) {
   if (!rec) return null;
   const obs = observer == null ? 'audience' : String(observer);
   const isAudience = obs === 'audience';
   const watcher = obs.indexOf('player:') === 0 ? obs.slice('player:'.length) : null;
   const endgame = !!rec.endgame;
+  const onTrial = trial && Array.isArray(trial.names) ? [...trial.names] : [];
 
   const pub = publicBallots(rec, TR);
   const first = pub.filter(b => b.channel === 'banishment');
@@ -2240,6 +2244,9 @@ function _view(rec, observer) {
     endgame,
     isAudience,
     watcher,
+    // Everybody at this table who is on the standing list, in seating order.
+    // Public, and the seats themselves are marked with it below.
+    onTrial: onTrial.filter(n => (rec.seated || []).includes(n)),
     // Was this player in the room? The table is public and everyone at it saw
     // the same slates, so this changes the strip and not the screen.
     atTable: watcher ? seated.indexOf(watcher) >= 0 : true,
@@ -2309,6 +2316,28 @@ function _buildBeats(v) {
       : 'Whatever anybody has worked out since breakfast has to be said here or not at all.')
     + '</p><div class="rt-faces">' + seats + '</div>'
     + _murmur(key + '|m0')), 'open', { kind: 'gather' });
+
+  // ── AND WHAT IS HANGING OVER IT ─────────────────────────────────────
+  //
+  // A table sitting under an On Trial list is the format's best vote and the
+  // screen has to say so: banishing one of these names takes it off the list
+  // and forces the pact to settle for another, and everybody in the room knows
+  // that while they are writing.
+  if ((v.onTrial || []).length) {
+    const n = v.onTrial.length;
+    const count = n === 1 ? 'One' : n === 2 ? 'Two' : n === 4 ? 'Four' : 'Three';
+    const said = n === 1 ? _esc(v.onTrial[0])
+      : v.onTrial.slice(0, -1).map(_esc).join(', ') + ' and ' + _esc(v.onTrial[n - 1]);
+    push('gather', _card(count + (n === 1 ? ' Of You Is' : ' Of You Are') + ' On The List',
+      'The list', 'slate',
+      '<p>' + said + (n === 1 ? ' is' : ' are')
+      + ' on the list the Traitors wrote last night, and one of the names on it '
+      + 'does not see tomorrow morning. Everybody at this table knows it.</p>'
+      + '<div class="rt-faces">' + v.onTrial.map(x => _faceChip(x, 28)).join('') + '</div>'
+      + '<p>Which makes this vote worth more than usual: a name this room '
+      + _esc(V.doBanish) + 'es tonight is a name the pact cannot use.</p>'),
+    null, { kind: 'gather' });
+  }
 
   // ── AND THE HOST GOES AT SOMEBODY ─────────────────────────────────────
   //
@@ -3407,7 +3436,10 @@ export function rpBuildRoundTable(ep, observer = 'audience') {
       + '</div></div></div></div>';
   }
 
-  const v = _view(rec, observer);
+  // THE LIST, IF THE CASTLE IS SITTING UNDER ONE. Public: On Trial is read out
+  // at breakfast, so the table knows, and a vote taken over a standing list is
+  // a different vote — banishing one of those names takes it off the list.
+  const v = _view(rec, observer, (ep && ep.tr && ep.tr.trial) || null);
   const beats = _buildBeats(v);
   const total = beats.length;
   const epNum = ep.num || v.ep || 0;

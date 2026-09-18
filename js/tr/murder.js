@@ -17,10 +17,12 @@ import { livingTraitors, livingFaithfuls } from './roles.js';
 import { murderPreferenceFor, influenceOf } from './state.js';
 import { shieldsSeenBy, daggerSeenBy } from './powers.js';
 import { armouryHesitation } from './armoury.js';
-import { pickVariant, buildDeathList, dinnerNeighbours, chapelPlea, dungeonCompanion, hiddenDecoys,
+import { pickVariant, dinnerNeighbours, chapelPlea, dungeonCompanion, hiddenDecoys,
   chaliceSearch, chalicePourer, chaliceRemembered, funeralReady,
   dungeonVoice, chooseSacrifice, variantLine, PLAIN_SIGHT_METHODS,
   buildDeathMatch, playDeathMatch } from './murder-variants.js';
+import { buildTrialList, liveTrial, openTrial, closeTrial, trialCandidates }
+  from './on-trial.js';
 import { _lineHash } from './castle/lines.js';
 
 /**
@@ -127,8 +129,16 @@ function _sacrificeTarget(traitor, ep) {
  * that mechanism is real, but it lives in runConclave's social weight, where a
  * high-`social` low-`read` Traitor can out-argue a quieter, better read.
  */
-export function formPreference(traitor, ep, rng = Math.random) {
-  const targets = livingFaithfuls(ep).filter(n => n !== traitor);
+export function formPreference(traitor, ep, rng = Math.random, { pool = null } = {}) {
+  // `pool` RESTRICTS THE CANDIDATES AND NOTHING ELSE. Exactly one caller passes
+  // it — the On Trial collection, where the format says the murder must come
+  // from the list — and it is a restriction of WHO may be considered, not of
+  // how they are weighed: every term below, the Shield penalty included, runs
+  // unchanged on the shorter list. Nothing else may pass it. The note on the
+  // Shield term explains why filtering `targets` casually is a season-wide
+  // re-roll; here the night is a different night by construction.
+  const all = livingFaithfuls(ep).filter(n => n !== traitor);
+  const targets = pool ? all.filter(n => pool.includes(n)) : all;
   if (!targets.length) return { target: null, reason: 'nobody left', conviction: 0 };
   const st = pStats(traitor);
   const read = ((st.strategic || 5) * 0.6 + (st.intuition || 5) * 0.4) / 10;
@@ -337,11 +347,11 @@ function _reasonFor(pick) {
  * best read in the room loses regularly and the Traitors murder the wrong
  * person and then have to live with each other.
  */
-export function runConclave(ep, rng = Math.random) {
+export function runConclave(ep, rng = Math.random, { pool = null } = {}) {
   const traitors = livingTraitors(ep);
   if (!traitors.length) return { decision: 'none', target: null, argued: [], overruled: [] };
 
-  const argued = traitors.map(t => ({ traitor: t, ...formPreference(t, ep, rng) }))
+  const argued = traitors.map(t => ({ traitor: t, ...formPreference(t, ep, rng, { pool }) }))
     .filter(p => p.target);
   if (!argued.length) return { decision: 'none', target: null, argued: [], overruled: [] };
 
@@ -465,6 +475,18 @@ export function isShielded(name) {
  * remembering to record it.
  */
 export function resolveMurder(ep, rng = Math.random) {
+  // ── A LIVE TRIAL COLLECTS, AND IT OUTRANKS THE CALENDAR ─────────────
+  //
+  // "one of whom must be Murdered the following night" is not advice. When a
+  // list is standing, tonight's murder comes off it whatever the author pinned
+  // to this episode — and the pinned shape is moved rather than lost
+  // (js/tr/headless.js `_carryTheShape`), because a twist that was silently
+  // eaten by another twist is the defect this engine has now shipped twice.
+  const standing = liveTrial(ep);
+  if (standing) {
+    const out = _collectTheTrial(ep, rng, standing);
+    if (out) return out;
+  }
   // WHICH SHAPE TONIGHT TAKES, decided before anybody meets, and by a HASH
   // rather than a draw (js/tr/murder-variants.js). A standard night therefore
   // consumes exactly the numbers it consumed before the catalogue existed,
@@ -481,6 +503,11 @@ export function resolveMurder(ep, rng = Math.random) {
     if (out) return out;
   } else if (variant === 'name-your-own') {
     const out = _forcedSacrifice(ep);
+    if (out) return out;
+  } else if (variant === 'on-trial') {
+    // The naming night. It holds a full conclave and then murders nobody,
+    // which no other shape in the catalogue does.
+    const out = _nameTheTrial(ep, rng);
     if (out) return out;
   } else if (variant === 'death-match') {
     // HOLDS A CONCLAVE AND THEN LOSES CONTROL OF IT, which is why it cannot be
@@ -573,13 +600,9 @@ export function resolveMurder(ep, rng = Math.random) {
  */
 function _shapeNight(variant, ep, decision, target, tensionBefore) {
   const std = { variant: 'standard', data: null, line: null, lineKey: null };
-  if (variant === 'on-trial') {
-    const { list, spared } = buildDeathList(ep, target, decision.decidedBy);
-    if (!spared.length) return std;
-    const subs = { a: list[0], b: list[1], c: list[2] };
-    const l = variantLine(`on-trial-${spared.length}`, ep, subs);
-    return { variant, data: { list, spared }, line: l.text, lineKey: l.key };
-  }
+  // `on-trial` IS NOT SHAPED HERE ANY MORE. It stopped being a decoration on
+  // a night the conclave had already decided when it was rebuilt to the show's
+  // rule: it is two nights now, and both of them are handled above.
   if (variant === 'face-to-face') {
     // READ WHILE THEY ARE STILL ALIVE. suspicionBoard walks the living, so a
     // plea taken after the removal would be a plea from somebody who is not in
@@ -802,6 +825,106 @@ function _chalice(ep, rng) {
   gs.activePlayers = (gs.activePlayers || []).filter(n => n !== target);
   return { target, blocked: false, victim: target, cost, decision, second: null,
     variant: 'chalice', variantData: data, variantLine: l.text, variantLineKey: l.key };
+}
+
+/**
+ * ON TRIAL, NIGHT ONE — the pact writes names and kills nobody.
+ *
+ * The conclave runs in full: they argue, somebody wins, and the winner's name
+ * goes on the list along with two or three others. Then everybody goes to bed.
+ * This is the only night in the format where the pact meets, agrees, and the
+ * castle comes down whole in the morning knowing exactly why — and it is the
+ * reprieve the wiki says the twist exists to give.
+ */
+function _nameTheTrial(ep, rng) {
+  const pact = livingTraitors(ep);
+  if (!pact.length) return null;
+  const decision = runConclave(ep, rng);
+  const aim = decision.target;
+  if (!aim) return null;
+  const { names, cover } = buildTrialList(ep, aim, pact);
+  if (names.length < 3) return null;
+  openTrial({ namedEp: ep, collectEp: ep + 1, names: [...names], cover, aim,
+    namedBy: decision.decidedBy || pact[0] });
+  const l = variantLine(names.length > 3 ? 'on-trial-named-four' : 'on-trial-named', ep,
+    { a: names[0], b: names[1], c: names[2], d: names[3] || '' });
+  return {
+    // NO TARGET AND NO BODY. `murderEvidence` gates on `target && !blocked`, so
+    // a naming night that carried its aim in `target` would indict everybody
+    // who had been pushing that name at the table for a murder that has not
+    // happened — the room reasoning from a death nobody died.
+    target: null, blocked: false, victim: null, cost: null, decision,
+    variant: 'on-trial',
+    variantData: { phase: 'named', names: [...names], cover, aim, collectEp: ep + 1 },
+    variantLine: l.text, variantLineKey: l.key, noMurder: true,
+  };
+}
+
+/**
+ * ON TRIAL, NIGHT TWO — and the pact has to choose from what is left.
+ *
+ * Between the two nights the castle has had a whole day with the list: the
+ * table may have banished one of the names, a Shield may have put another out
+ * of reach, and the pact's own preferred name may be the one that went. So the
+ * conclave runs again, restricted to the survivors of its own list, which is
+ * the entire mechanic — "If one of those on trial is banished, the Traitors
+ * must decide between the others whom they nominated."
+ *
+ * A LIST THE ROOM EMPTIED TAKES NOBODY. That is not a failure state to be
+ * routed around: it is the Faithfuls winning a night, and the only way in this
+ * engine to win one on purpose.
+ */
+function _collectTheTrial(ep, rng, trial) {
+  const pact = livingTraitors(ep);
+  const candidates = trialCandidates(trial);
+  // Only the pact's own cover left on it — the room banished everybody else
+  // they had written down. They are not going to murder their own to keep a
+  // list tidy, and the castle gets a second quiet night out of it.
+  const takeable = candidates.filter(n => !pact.includes(n));
+  if (!pact.length || !takeable.length) {
+    // NO LINE. See the note where the pool would have been
+    // (js/tr/murder-variants.js): this branch is unreachable by construction
+    // and a pool written for it would never be printed.
+    closeTrial('emptied');
+    const l = { text: null, key: 'on-trial-emptied' };
+    return { target: null, blocked: false, victim: null, cost: null,
+      decision: { decision: 'none', target: null, reason: 'trial-emptied',
+        decidedBy: trial.namedBy || null, argued: [], overruled: [] },
+      variant: 'on-trial',
+      variantData: { phase: 'emptied', names: [...trial.names], namedEp: trial.namedEp,
+        candidates: [...candidates], taken: null, cover: trial.cover || null },
+      variantLine: l.text, variantLineKey: l.key, noMurder: true };
+  }
+  const decision = runConclave(ep, rng, { pool: takeable });
+  const target = decision.target;
+  if (!target) { closeTrial('emptied'); return null; }
+  const cost = murderCost(target, decision.reason, ep);
+  // WHAT THE DAY DID TO THE LIST, kept for the screen: the names that were
+  // written down and are not standing here any more went somewhere, and the
+  // room watched them go.
+  const lost = (trial.names || []).filter(n => !candidates.includes(n));
+  const data = { phase: 'taken', names: [...trial.names], namedEp: trial.namedEp,
+    candidates: [...candidates], lost, taken: target, aim: trial.aim,
+    cover: trial.cover || null,
+    // Did the pact get the name it wrote the list around, or did the day take
+    // it away from them? The line pool is split on exactly this.
+    kept: target === trial.aim };
+  const l = variantLine(data.kept ? 'on-trial-taken' : 'on-trial-settled', ep,
+    { victim: target, aim: trial.aim });
+
+  if (isShielded(target)) {
+    gs.tr.shieldedThisRound.delete(target);
+    (gs.tr.blockedMurders ||= []).push({ ep, target });
+    closeTrial('blocked');
+    return { target, blocked: true, victim: null, cost, decision,
+      variant: 'on-trial', variantData: { ...data, taken: null, blocked: target },
+      variantLine: l.text, variantLineKey: l.key };
+  }
+  closeTrial('taken', target);
+  gs.activePlayers = (gs.activePlayers || []).filter(n => n !== target);
+  return { target, blocked: false, victim: target, cost, decision, second: null,
+    variant: 'on-trial', variantData: data,
+    variantLine: l.text, variantLineKey: l.key };
 }
 
 /**

@@ -19,7 +19,8 @@ import { shieldsSeenBy, daggerSeenBy } from './powers.js';
 import { armouryHesitation } from './armoury.js';
 import { pickVariant, buildDeathList, dinnerNeighbours, chapelPlea, dungeonCompanion, hiddenDecoys,
   chaliceSearch, chalicePourer, chaliceRemembered, funeralReady,
-  dungeonVoice, chooseSacrifice, variantLine, PLAIN_SIGHT_METHODS } from './murder-variants.js';
+  dungeonVoice, chooseSacrifice, variantLine, PLAIN_SIGHT_METHODS,
+  buildDeathMatch, playDeathMatch } from './murder-variants.js';
 import { _lineHash } from './castle/lines.js';
 
 /**
@@ -481,6 +482,13 @@ export function resolveMurder(ep, rng = Math.random) {
   } else if (variant === 'name-your-own') {
     const out = _forcedSacrifice(ep);
     if (out) return out;
+  } else if (variant === 'death-match') {
+    // HOLDS A CONCLAVE AND THEN LOSES CONTROL OF IT, which is why it cannot be
+    // shaped in `_shapeNight` with the other four: every variant down there
+    // decorates a night the conclave has already decided, and this one
+    // overwrites the name.
+    const out = _deathMatch(ep, rng);
+    if (out) return out;
   }
   // Either the variant was infeasible after all (a feasibility gate reads the
   // room, and the room can be emptier than the gate expected once a
@@ -794,6 +802,63 @@ function _chalice(ep, rng) {
   gs.activePlayers = (gs.activePlayers || []).filter(n => n !== target);
   return { target, blocked: false, victim: target, cost, decision, second: null,
     variant: 'chalice', variantData: data, variantLine: l.text, variantLineKey: l.key };
+}
+
+/**
+ * THE DEATH MATCH — the pact aims, and eight cards decide.
+ *
+ * The conclave runs exactly as it always does, because the pact does still
+ * have to agree on a name: that name is what buys one of the four chairs. Then
+ * the game is played in front of the whole castle and the chair it empties is
+ * the chair it empties. Three nights in four that is not the name they argued
+ * about, and once in a while it is one of their own.
+ *
+ * WHY THE GRUDGE IS AGAINST THE DECIDER AND NOT THE CARDS. A pact that loses a
+ * member to this night lost them to the decision to seat a cloak at that
+ * table, and somebody signed for that decision the same way they sign for a
+ * murder. The ledger it writes is the one the endgame betrayal reads
+ * (`conclaveTension`), so the season carries it to the fire.
+ */
+function _deathMatch(ep, rng) {
+  const pact = livingTraitors(ep);
+  if (!pact.length) return null;
+  const decision = runConclave(ep, rng);
+  const aim = decision.target;
+  if (!aim) return null;
+  const { players, cover } = buildDeathMatch(ep, aim, pact);
+  if (players.length < 4) return null;
+  const game = playDeathMatch(ep, players);
+  const loser = game.loser;
+  if (!loser) return null;
+  const winner = game.finalists.find(n => n !== loser) || null;
+  // FELLOW FIRST. A seated cloak who loses is a Traitor's death however much
+  // the pact wanted somebody else, and the pool that speaks about a plan
+  // going right may not be printed over it.
+  const kind = pact.includes(loser) ? 'fellow' : (loser === aim ? 'aimed' : 'missed');
+  const cost = murderCost(loser, kind === 'aimed' ? decision.reason : 'death-match', ep);
+  const l = variantLine(`death-match-${kind}`, ep, { victim: loser, winner: winner || '' });
+  const data = { players, cover, aim, kind, loser, winner,
+    rounds: game.rounds, safe: game.safe, finalists: game.finalists };
+  // The conclave decided a name and the night took a different one, so the
+  // record says so: `decision.target` is what the pact argued for and is left
+  // alone, and the murder's own target is whoever lost.
+  const record = { ...decision, target: loser, aimedAt: aim };
+
+  if (isShielded(loser)) {
+    gs.tr.shieldedThisRound.delete(loser);
+    (gs.tr.blockedMurders ||= []).push({ ep, target: loser });
+    return { target: loser, blocked: true, victim: null, cost, decision: record,
+      variant: 'death-match', variantData: data, variantLine: l.text, variantLineKey: l.key };
+  }
+  if (kind === 'fellow') {
+    const survivors = pact.filter(n => n !== loser && n !== decision.decidedBy);
+    (gs.tr.conclaveTension ||= []).push(...survivors.map(t => ({
+      ep, winner: decision.decidedBy, loser: t, target: loser, theirTarget: null, forced: true,
+    })));
+  }
+  gs.activePlayers = (gs.activePlayers || []).filter(n => n !== loser);
+  return { target: loser, blocked: false, victim: loser, cost, decision: record, second: null,
+    variant: 'death-match', variantData: data, variantLine: l.text, variantLineKey: l.key };
 }
 
 /**

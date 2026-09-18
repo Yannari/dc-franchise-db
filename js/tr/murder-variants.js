@@ -53,6 +53,14 @@
 //                 until The Funeral that afternoon (js/tr/missions/funeral.js).
 //                 The evidence is the funeral's: who was sure which coffin was
 //                 the right one, and how.
+//   death-match   THE ONE NIGHT THE PACT DOES NOT CHOOSE THE BODY. They choose
+//                 FOUR, and a card game chooses which of the four. So the
+//                 evidence is not about who was picked — it is about the two
+//                 who were left at the end, sitting opposite each other, and
+//                 the one who drew the life card in front of everybody. The
+//                 room watched somebody beat the dead to it. That is the
+//                 loudest coincidence in the format and it is usually just a
+//                 coincidence, which is the whole scene.
 //   name-your-own A TRAITOR DEATH THE ROOM MUST EXPLAIN. It emits nothing of
 //                 its own: the ordinary channel fires and is systematically
 //                 backwards, because the people who pushed the victim were
@@ -139,6 +147,12 @@ export const VARIANTS = [
   // run the next afternoon: a hidden murder nobody ever reveals is not a twist.
   { id: 'hidden', weight: 5,
     needs: (l, t, f) => l >= 7 && f >= 3 && _funeralReady() },
+  // FOUR CHAIRS AND A ROOM TO WATCH THEM. Four players go into the game and
+  // three come out, so the castle needs enough people left over for the loss
+  // to be a loss rather than a quarter of the cast; and the pact needs enough
+  // Faithfuls to fill the four without being forced to seat itself.
+  { id: 'death-match', weight: 5,
+    needs: (l, t, f) => l >= 7 && f >= 4 && t >= 1 },
 ];
 
 // WHETHER THE FUNERAL CAN RUN TOMORROW. js/tr/missions.js registers the probe
@@ -486,6 +500,105 @@ export function chooseSacrifice(ep) {
   return { decider, victim: scored[0].name };
 }
 
+// ── THE DEATH MATCH ───────────────────────────────────────────────────
+//
+// From the wiki (thetraitors.fandom.com/wiki/Death_Match, UK3 / CZ2 / PL3 /
+// NZ3 / IN2) rather than from memory: "The Traitors pick four people (this may
+// include themselves) to play a game of cards... One of the players has a life
+// card, which allows the player to leave the game... Play continues until there
+// are two players left. At this point, all eight cards will be arranged
+// face-down in a circle, and players take turns to draw until a contestant
+// finds the Life Card, at which point the Traitors will murder the losing
+// contestant face-to-face."
+//
+// THE PACT AIMS AND THE CARDS DECIDE, and that is the only murder in this
+// engine where those are two different things. Three nights in four the person
+// they wanted is still at breakfast — and somebody they had no quarrel with is
+// not.
+
+/**
+ * How often the pact seats one of its own at the table.
+ *
+ * Lower than `LIST_COVER_P` and it has to be: a name on a list is a name on a
+ * list, but a chair in this game is a one-in-four chance of being murdered by
+ * your own side. A pact does it to look unafraid, and a pact that did it every
+ * time would be a pact killing itself twice a season.
+ */
+const DM_COVER_P = 0.3;
+
+/**
+ * The four chairs. Returns `{ players, cover }` — `players` in the seating
+ * order the castle sees, `cover` the fellow seated as cover, or null.
+ *
+ * The target is always in it; that is what the pact is buying. The other
+ * chairs are filled the way the show fills them — with people nobody would
+ * miss arguing about, which here means the names furthest from the pact's own
+ * bonds, so a pact does not seat its closest ally by accident.
+ */
+export function buildDeathMatch(ep, target, pact = null) {
+  const fellows = (pact || livingTraitors(ep)).filter(n => n !== target);
+  const alive = (gs.activePlayers || []).filter(n => n !== target);
+  const seated = [target];
+  const wantCover = fellows.length && hash01(`dm-cover|${ep}|${target}`) < DM_COVER_P;
+  if (wantCover) seated.push(_hashOrder(fellows, `dm-fellow|${ep}|${target}`)[0]);
+  const others = alive.filter(n => !seated.includes(n) && !fellows.includes(n));
+  const warmth = n => fellows.reduce((s, t) => s + Math.max(0, getBond(t, n)), 0);
+  const fill = [...others].sort((a, b) =>
+    (warmth(a) - warmth(b)) || (hash01(`dm-fill|${ep}|${a}`) - hash01(`dm-fill|${ep}|${b}`)));
+  for (const n of fill) {
+    if (seated.length >= 4) break;
+    seated.push(n);
+  }
+  if (seated.length < 4) return { players: [], cover: null };
+  return {
+    players: _hashOrder(seated, `dm-seat|${ep}|${target}`),
+    cover: wantCover ? seated[1] : null,
+  };
+}
+
+/**
+ * The game itself, hashed rather than drawn (see the header: not one rng draw
+ * in this file). Returns `{ rounds, safe, finalists, loser }`.
+ *
+ * NEARLY ALL LUCK, AND THE REST IS WATCHING. The only thing a player brings to
+ * a face-down card is whether they can read the person being made to offer it,
+ * so intuition moves the odds by a few points and nothing else moves them at
+ * all. A version where the sharp player survives would be a version where the
+ * pact can aim after all, and then the twist is a murder with a longer scene
+ * in front of it.
+ */
+export function playDeathMatch(ep, players) {
+  const weight = n => {
+    const st = pStats(n);
+    return Math.max(0.35, 1 + ((st.intuition || 5) - 5) * 0.08 + ((st.boldness || 5) - 5) * 0.03);
+  };
+  const pickLucky = (pool, key) => {
+    const total = pool.reduce((s, n) => s + weight(n), 0);
+    let roll = hash01(`${key}|${pool.join(',')}`) * total;
+    for (const n of pool) { roll -= weight(n); if (roll <= 0) return n; }
+    return pool[pool.length - 1];
+  };
+  const rounds = [];
+  const safe = [];
+  let table = [...players];
+  for (let r = 0; table.length > 2; r++) {
+    const won = pickLucky(table, `dm-round|${ep}|${r}`);
+    rounds.push({ players: [...table], won });
+    safe.push(won);
+    table = table.filter(n => n !== won);
+  }
+  // THE CIRCLE. Eight cards face down and one of them is the life card, so the
+  // number turned over before it appears is the whole of the last scene: the
+  // show's own final was won "with three cards to go".
+  const won = pickLucky(table, `dm-final|${ep}`);
+  // HOW MANY WERE STILL FACE DOWN when it turned up, which is how the show
+  // says it: "Leon won with three cards to go."
+  const toGo = 1 + Math.floor(hash01(`dm-draws|${ep}|${table.join(',')}`) * 7);
+  rounds.push({ players: [...table], won, toGo });
+  safe.push(won);
+  return { rounds, safe, finalists: [...table], loser: table.find(n => n !== won) || null };
+}
+
 // ══════════════════════════════════════════════════════════════════════
 // PROSE
 // ══════════════════════════════════════════════════════════════════════
@@ -621,6 +734,30 @@ export const VARIANT_LINES = {
     'They are told the murder must come from inside the cloaks. {victim} is the answer, and the room will spend a week getting it wrong.',
     'A Traitor dies tonight, and the castle will read it as a Faithful and reason accordingly.',
   ],
+  // THREE POOLS AND THE SPLIT IS THE FACT EACH ONE ASSERTS, which on this
+  // night is the same fact three ways: whether the cards agreed with the pact.
+  // A line about a plan that worked may not be printed over a night the pact
+  // lost, and the `missed` pool is the common case rather than the exception —
+  // the target sits down with three other people and walks away three times in
+  // four.
+  'death-match-aimed': [
+    'Four chairs, eight cards, and the one the Traitors came for is the one who runs out of them. {victim} loses the last draw to {winner} and does not see the morning.',
+    'The cards went exactly where the pact wanted them to go. {winner} turns over the life card, {victim} turns over nothing, and the castle calls it bad luck.',
+    '{victim} and {winner} played the circle down to the last few cards. It was the right name, arrived at the wrong way, and it counts the same.',
+    'They seated four and needed one. {victim} was the one, and the deck did not have to be asked twice.',
+  ],
+  'death-match-missed': [
+    'The pact picked four and the cards picked one of the other three. {victim} loses to {winner} on the last draw, having never been the point of the evening.',
+    '{winner} finds the life card and {victim} does not, and somewhere behind a mask a Traitor is watching the wrong person walk away.',
+    'Four sat down. The one the Traitors wanted is at breakfast, and {victim} is not.',
+    'It was a game and games do not take instructions. {victim} goes, {winner} stays, and the plan goes in the fire with the cards.',
+  ],
+  'death-match-fellow': [
+    'They seated one of their own to look brave about it. The deck took {victim} at the last card, and the pact has to murder {victim} in front of everybody or explain why not.',
+    'A cloak sat down at that table for cover and got the cover it asked for. {winner} wins the circle, and the Traitors kill one of themselves to keep the game honest.',
+    'The pact lost a member to eight pieces of card tonight, and will spend the rest of the season being congratulated for the murder.',
+    '{victim} was seated as decoration. The castle will read that body as a Faithful, and the pact will let it.',
+  ],
 };
 
 /**
@@ -688,6 +825,7 @@ const V = {
   companion: 0.30,     // you went down and you came back
   stair: 0.55,         // you heard it yourself — one person, one read
   dyingAgreement: 0.40,// two of the dead had been naming you, independently
+  lastCard: 0.26,      // you were the other chair, and you got up from it
 };
 
 /**
@@ -822,6 +960,24 @@ export function variantEvidence(ep, rng = Math.random) {
       });
       if (belief) formed.push({ observer: d.companion, subject: d.voice.name,
         ep: round.ep, kind: 'voice-on-the-stair' });
+    }
+  } else if (v === 'death-match') {
+    // THE OTHER CHAIR, and only that one. Every one of the four was picked by
+    // the Traitors and three of them lived, so "was in the game" says nothing
+    // — it is the most public set in the format and the least informative.
+    // What the room cannot let go of is the last two: somebody sat opposite
+    // the dead and got up instead of them.
+    //
+    // THE CHEAPEST CHANNEL IN THE FILE, and priced there on purpose. It is
+    // enriched only by the pact seating its own (DM_COVER_P), and a cover
+    // Traitor reaches this chair about as often as anybody else does, so most
+    // of what this writes is a room convicting a Faithful of winning a card
+    // game. That is the scene the show gets out of it; it is not a read, and
+    // it may not be priced like one.
+    const winner = (d.finalists || []).find(n => n !== victim);
+    if (winner) {
+      _tellRoom(winner, V.lastCard, `sat opposite ${victim} and drew the life card`,
+        ep, rng, formed, 'won-the-death-match', round.ep);
     }
   } else if (v === 'double') {
     // THE DEAD AGREEING, and it is not the intersection of who PUSHED THEM.

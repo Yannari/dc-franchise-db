@@ -7,7 +7,8 @@ first.
 
 **Already in the engine:** On Trial, In Plain Sight, Face to Face, The Dungeon,
 Double Murder, Name Your Own, **Hidden Murder** (built 2026-09-17 with The
-Funeral), **The Poisoned Chalice** (2026-09-17), Recruitment (note and
+Funeral), **The Poisoned Chalice** (2026-09-17), **Death Match** (2026-09-18),
+**Banish or Murder** (2026-09-18), Recruitment (note and
 ultimatum), The Armoury, Shield, Dagger, Seer.
 
 ## Night / murder twists
@@ -20,11 +21,16 @@ ultimatum), The Armoury, Shield, Dagger, Seer.
    joins the conclave. The Finnish original reverses the roles: the regular
    Traitors shortlist and the Secret Traitor picks. Biggest of the list: it
    touches roles, the conclave and the reveal.
-2. **Death Match** (UK S3) — the Traitors write four names (they may include
-   themselves). Each player holds two cards; one of the eight is the life card.
-   The holder of the life card leaves each round, down to two players, who then
-   draw from a face-down circle until one finds it. The loser is murdered face
-   to face. The cards decide the victim, not the pact.
+2. ~~**Death Match**~~ **DONE 2026-09-18** (murder variant `death-match`).
+   The pact still meets and still argues, and the name it agrees on only buys
+   a seat: four are summoned, eight cards between them, one life card a round
+   until two are left drawing from a face-down ring. The loser is murdered face
+   to face. Measured over 50 seeded seasons: the pact gets the name it argued
+   about 23% of the time, somebody else 72%, and a Traitor seated for cover
+   loses their own chair 4% — the one night in this engine where the murder is
+   not a decision. Evidence is the cheapest channel in the file (`lastCard`,
+   0.26) and points at the survivor of the head-to-head, who is usually just
+   somebody who won a card game.
 3. **The Sacrifice / safety chain** (US S2 ep 7) — no banishment that night.
    The Shield holders grant safety to one player each, each of those players
    grants it to the next, and so on until five are left unchosen. Only those

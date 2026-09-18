@@ -302,6 +302,27 @@ export const TR_RULES = {
     occursIn: tr => tr.conclave?.variant === 'chalice',
   },
 
+  // PUBLIC, AND LOUDLY SO. Four people were called out of the room and three
+  // came back; there is nothing here the castle did not watch happen. What it
+  // does not know is that the Traitors chose the four, or that the name they
+  // chose them around is still sitting at breakfast.
+  'murder-death-match': {
+    id: 'murder-death-match',
+    trigger: 'Four players are called to a game of cards.',
+    explainedAt: 'first-occurrence',
+    observerVisibility: 'all',
+    reminder: 'Four players were summoned to a card game tonight. The one who loses '
+      + 'it is murdered, and the Traitors chose who sat down.',
+    fullRules: 'The Traitors still meet and still agree on a name — but that name '
+      + 'only buys a seat. Four players are summoned: eight cards between them, one '
+      + 'of which is the life card, and whoever finds it leaves the game safe. When '
+      + 'two are left the cards go face down in a ring and they draw in turn until '
+      + 'the life card appears. The loser is murdered face to face. Three nights in '
+      + 'four that is not the name the pact argued about, and a Traitor who took a '
+      + 'chair for cover can lose it themselves.',
+    occursIn: tr => tr.conclave?.variant === 'death-match',
+  },
+
   // EVERYBODY SAW IT, so everybody may be told it: the one vote in this
   // format that is not secret.
   'banish-or-murder': {
@@ -384,6 +405,7 @@ const VARIANT_RULE = {
   'name-your-own': 'murder-name-your-own',
   hidden: 'murder-hidden',
   chalice: 'murder-chalice',
+  'death-match': 'murder-death-match',
 };
 
 /**

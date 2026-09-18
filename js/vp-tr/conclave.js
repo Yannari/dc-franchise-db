@@ -57,6 +57,7 @@ import { exitVerbs } from '../shows.js';
 import { HOSTS_BY_FORMAT } from '../shows.js';
 import { CONCLAVE_CSS } from './style.js';
 import { CHALICE_CSS, chaliceStage } from './conclave-chalice.js';
+import { DEATH_MATCH_CSS, deathMatchStage } from './conclave-death-match.js';
 import { _noiseTile, _filterBank, _buildFar, _buildMid, _buildFore,
   _buildHeroScene, _doorway } from './scenery.js';
 
@@ -766,6 +767,7 @@ function _names(list) {
 function _hostSuffix(variant) {
   if (variant === 'plain-sight') return 'Plain';
   if (variant === 'chalice') return 'Chalice';
+  if (variant === 'death-match') return 'Cards';
   if (variant === 'name-your-own') return 'Forced';
   return '';
 }
@@ -823,6 +825,10 @@ function _buildBeats(rec, ep) {
   // poisoned chalice and pouring it (chalice). The screen draws both as a
   // night with no climb; only the words change.
   const chalice = rec.variant === 'chalice';
+  // A DEATH MATCH HOLDS THE MEETING AND THEN LOSES IT. Everything above the
+  // table is an ordinary conclave; what the pact agreed on only bought a chair.
+  const dm = rec.variant === 'death-match';
+  const dmd = dm ? (rec.vdata || {}) : null;
   const plain = rec.variant === 'plain-sight' || chalice;
   const forced = rec.variant === 'name-your-own';
   // A DOUBLE NIGHT HAS TWO BODIES. The second is the argument the pact lost
@@ -835,8 +841,14 @@ function _buildBeats(rec, ep) {
   // here rather than pattern-matched out of the markup later: a sidebar that
   // greps its own HTML for a Roman numeral goes wrong the first time a title
   // is edited, silently, in the direction of spoiling the ending.
-  const push = (phase, html, hostSlot, slot) =>
-    beats.push({ phase, html, hostSlot: hostSlot || null, slot: slot || null });
+  // `stage` is the DEATH MATCH stage step this beat belongs to, and only that
+  // night uses it: the chalice derives its step from the phase (below), which
+  // works because its stage and its argument are the same scene. Here they are
+  // two scenes — the pact argues upstairs and the cards are played downstairs —
+  // so the beats that belong to the table say which part of it they are.
+  const push = (phase, html, hostSlot, slot, stage) =>
+    beats.push({ phase, html, hostSlot: hostSlot || null, slot: slot || null,
+      stage: stage == null ? null : stage });
 
   // ── I. the climb ──
   push('gather', _card(chalice ? 'No Climb, A Library' : plain ? 'No Climb Tonight' : forced ? 'The Climb, Told' : 'The Climb',
@@ -1074,8 +1086,94 @@ function _buildBeats(rec, ep) {
       '<div class="cv-ledger"><span class="cv-ledger-h">The ledger</span>'
       + costLines.map(l => '<p>' + l + '</p>').join('') + '</div>'), null, 'cost');
 
+  // ── AND ON A DEATH MATCH NIGHT, THE TABLE DOWNSTAIRS ──
+  //
+  // These sit AFTER the ledger on purpose. Everything above them is the pact
+  // deciding something, and everything below is the pact watching what happens
+  // to their decision; the cards are the hinge, and the stage above the beats
+  // walks through them one reveal at a time.
+  if (dm && dmd && (dmd.players || []).length) {
+    const rounds = dmd.rounds || [];
+    const seated = dmd.players || [];
+    push('seal', _card('Four Chairs', 'VII. The summons', 'door',
+      '<p>The name does not go on a letter tonight. It buys a seat. '
+      + _esc(dmd.aim || rec.target) + ' is summoned to a table, and three other people '
+      + 'are summoned with them. Nobody is told why, and nobody up here gets to say '
+      + 'which of the four it lands on.</p>'
+      + '<div class="cv-tally">'
+      + seated.map(n => _tallyRow(n, n === dmd.aim ? 'the name they argued about'
+        : n === dmd.cover ? 'seated by the pact' : 'seated to fill the table',
+      n === dmd.aim ? 'chosen' : 'open', n === dmd.aim ? 'Their name' : 'Also seated')).join('')
+      + '</div>'
+      + (dmd.cover
+        ? '<p class="cv-explain">One of those chairs is a cloak. '
+          + _esc(dmd.cover) + ' sat down at a table where one of the four is going to be '
+          + _esc(_verbs().murder) + ' before morning, because a pact that seats nobody '
+          + 'looks like a pact.</p>'
+        : '<p class="cv-explain">The Traitors seated nobody they would miss, which is its '
+          + 'own kind of information if anybody downstairs ever works out how to read it.</p>')),
+    null, 'name', 1);
+
+    if (rounds[0] && rounds[1]) {
+      push('seal', _card('Two Get Up', 'VIII. The rounds', 'lantern',
+        '<p>Eight cards, and one of them lets you leave. '
+        + _esc(rounds[0].won) + ' finds it first and is out of the game. '
+        + _esc(rounds[1].won) + ' finds the next one.</p>'
+        + '<div class="cv-tally">'
+        + _tallyRow(rounds[0].won, 'first round', 'struck', 'Safe')
+        + _tallyRow(rounds[1].won, 'second round', 'struck', 'Safe')
+        + '</div>'), null, 'name', 3);
+    }
+
+    const fin = dmd.finalists || [];
+    if (fin.length === 2) {
+      const toGo = (rounds[2] || {}).toGo;
+      push('seal', _card('The Circle', 'IX. The last two', 'hourglass',
+        '<p>All eight go back face down in a ring between '
+        + _esc(fin[0]) + ' and ' + _esc(fin[1])
+        + ', and they take them in turn. Neither of them is playing anything. '
+        + 'They are finding out.</p>'
+        + '<div class="cv-cost" style="justify-content:center">'
+        + '<span class="cv-chip" data-tone="cold">' + _icon('eye', 13)
+        + 'Two chairs, eight cards</span>'
+        + (toGo ? '<span class="cv-chip" data-tone="bad">' + _icon('hourglass', 13)
+          + toGo + ' still face down when it turns up</span>' : '')
+        + '</div>'), null, 'name', 4);
+    }
+  }
+
   // ── VII. the name ──
-  push('seal', _card('The Name', 'VII. The decision', 'letter',
+  if (dm && dmd && dmd.loser) {
+    // THE ONE CARD ON THIS SCREEN THAT IS NOT ABOUT A DECISION. The tally
+    // still shows what the pact argued for, because that is what happened up
+    // there; it is just no longer what decides anything.
+    const hit = dmd.kind === 'aimed';
+    push('seal', _card(hit ? 'The Cards Agree' : dmd.kind === 'fellow' ? 'One of Their Own'
+      : 'The Cards Decide', 'X. The decision', 'letter',
+    '<div class="cv-tally">'
+    + (argued.length
+      ? argued.map(a => _tallyRow(a.target, a.traitor,
+        a.target === dmd.loser ? 'chosen' : 'struck',
+        a.target === dmd.loser ? 'Chosen' : a.target === dmd.aim ? 'Seated, and lived' : 'Overruled')).join('')
+      : '')
+    + (argued.some(a => a.target === dmd.loser) ? ''
+      : _tallyRow(dmd.loser, 'the last card', 'chosen', 'Lost'))
+    + '</div>'
+    + '<p style="margin-top:16px"><b>' + _esc(dmd.loser)
+    + ' is the name tonight, and nobody up here chose it.</b> '
+    + (hit
+      ? 'They argued for that name and they got that name, and not one word of the '
+        + 'argument had anything to do with it. Eight cards would have been just as '
+        + 'happy to hand them somebody else.'
+      : dmd.kind === 'fellow'
+        ? 'The chair belonged to one of their own, seated for cover, and the cover worked '
+          + 'exactly as designed. The castle will bury a Traitor thinking it has lost a '
+          + 'friend, and the pact will have to look sorry about it.'
+        : 'They spent the evening deciding on ' + _esc(dmd.aim || 'somebody')
+          + ', who is going to be at breakfast. The table took '
+          + _esc(dmd.loser) + ' instead.')
+    + '</p>'), null, 'name', 5);
+  } else push('seal', _card('The Name', 'VII. The decision', 'letter',
     '<div class="cv-tally">'
     + (argued.length
       ? argued.map(a => _tallyRow(a.target, a.traitor,
@@ -1094,7 +1192,8 @@ function _buildBeats(rec, ep) {
 
   // ── VIII. the wax ──
   push('seal', '<div class="cv-card">'
-    + '<div class="cv-card-label">' + _icon('seal', 14) + 'VIII. The wax</div>'
+    + '<div class="cv-card-label">' + _icon('seal', 14)
+    + (dm ? 'XI. The wax' : 'VIII. The wax') + '</div>'
     + '<h3 class="cv-card-title">Sealed</h3>'
     + '<p>' + _pick(forced ? SEAL_TEXT_FORCED : SEAL_TEXT, key + '|wax') + '</p>'
     + '<div class="cv-letter"><div class="cv-letter-sheet">'
@@ -1125,7 +1224,7 @@ function _buildBeats(rec, ep) {
     // as a dead Faithful — it does not end up knowing nothing, it ends up
     // knowing something false, and reasoning from it for a week.
     + (forced ? 'The castle will get this wrong' : 'The castle knows nothing') + '</span>'
-    + '</div></div>', null, 'seal');
+    + '</div></div>', null, 'seal', dm ? 6 : null);
 
   // ── AND, ON A CHALICE NIGHT, WHAT FIRST LIGHT LOOKS LIKE ──
   //
@@ -1386,6 +1485,10 @@ function _reapplyVisibility(suffix, upToIdx, total) {
   // of time with the cards however many the argument turned out to be.
   const stage = document.querySelector('.ch-stage');
   if (stage && last) stage.setAttribute('data-ch', last.getAttribute('data-stage') || '0');
+  // The card table does the same on a death match night, off the same
+  // attribute — the beats that belong to the table carry their own step.
+  const table = document.querySelector('.dm-stage');
+  if (table && last) table.setAttribute('data-dm', last.getAttribute('data-stage') || '0');
   if (scroller) scroller.scrollTop = top;
 }
 
@@ -1529,7 +1632,9 @@ export function rpBuildConclave(ep, observer = 'audience') {
   if (rec && !conclaveVisibleTo(rec, observer)) return _shutDoor(observer, css);
 
   const cssOnce = css + (rec && rec.variant === 'chalice'
-    ? '<style>' + CHALICE_CSS + '</style>' : '') + _filterBank();
+    ? '<style>' + CHALICE_CSS + '</style>' : '')
+    + (rec && rec.variant === 'death-match'
+      ? '<style>' + DEATH_MATCH_CSS + '</style>' : '') + _filterBank();
 
   if (!rec) {
     return '<div class="cv-root" style="' + vars + '" data-ambient="tense">' + cssOnce
@@ -1600,7 +1705,12 @@ export function rpBuildConclave(ep, observer = 'audience') {
   // stage was pouring the drink over cards where the pact was still deciding
   // whose it was. Each beat now carries its own step.
   let seals = 0;
-  const stages = rec.variant !== 'chalice' ? null : beats.map((b, i) => {
+  // A DEATH MATCH SAYS IT OUTRIGHT. Its stage and its beats are two different
+  // rooms, so the beats that belong to the card table carry their own step and
+  // everything before them sits on the summons.
+  const stages = rec.variant === 'death-match'
+    ? beats.map(b => (b.stage == null ? 0 : b.stage))
+    : rec.variant !== 'chalice' ? null : beats.map((b, i) => {
     if (b.phase === 'argue' || b.phase === 'overrule') return 2;
     if (b.phase === 'seal') return Math.min(3 + seals++, 5);
     return i === 0 ? 0 : 1;
@@ -1676,6 +1786,11 @@ export function rpBuildConclave(ep, observer = 'audience') {
     + '<header class="cv-head">' + observerBadge + '</header>'
     // THE LIBRARY. A chalice night has no meeting to draw, so it gets a stage
     // of its own above the beats instead of the turret's furniture.
+    + (rec.variant === 'death-match'
+      ? deathMatchStage(rec, (stages && stages[st.idx]) || 0,
+        Object.fromEntries(((rec.vdata && rec.vdata.players) || [])
+          .map(n => [n, _av(n, 40)])))
+      : '')
     + (rec.variant === 'chalice'
       ? chaliceStage(rec, (stages && stages[st.idx]) || 0, {
         searcher: rec.vdata?.searcher ? _av(rec.vdata.searcher, 40) : '',

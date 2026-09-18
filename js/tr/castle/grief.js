@@ -2207,3 +2207,118 @@ registerEvent({
       topicKind: 'grief-loss', threadId: t?.id, bondDelta };
   },
 });
+
+// ── THE OTHER CHAIR ──────────────────────────────────────────────────
+//
+// A death match is the only murder the castle WATCHES HAPPEN. Everything in
+// this scene is public by construction: who was called, who got up, who was
+// still sitting there at the last card. The one thing the room does not know
+// is that the Traitors chose the four and chose them around a name that is
+// having toast this morning.
+//
+// It is also the only grief scene in the file where the pair can be talking
+// about somebody in the room. `_wonTheMatch` is a living player the castle has
+// every reason to look at and no reason at all to suspect, which is the whole
+// scene and the reason the channel in js/tr/murder-variants.js is priced at
+// the bottom of the file.
+function _deathMatchLastNight(ep) {
+  const rounds = gs?.tr?.rounds || [];
+  const round = rounds[rounds.length - 1];
+  if (!round || round.ep !== ep - 1 || round.variant !== 'death-match') return null;
+  const d = round.variantData;
+  if (!d || !round.murdered) return null;
+  const winner = (d.finalists || []).find(n => n !== round.murdered) || null;
+  return { victim: round.murdered, winner, players: d.players || [], safe: d.safe || [] };
+}
+
+const OTHER_CHAIR_LINES = {
+  'cannot-stop-looking': [
+    '{a} had been watching {w} all morning and only noticed doing it when {b} asked what they were looking at.',
+    '"Somebody had to win it," {b} said, and then went back to watching {w} not eat anything.',
+    'Neither of them said {w}’s name. Both of them were talking about {w}.',
+    '{a} kept replaying the last card, and every time it came out the same and meant nothing.',
+    '{b} said out loud that it was a card game, in the tone of somebody arguing with themselves.',
+  ],
+  'it-was-a-card': [
+    '"It was a card," {a} said. "It was a card, {b}." {b} agreed, twice, which was once too many.',
+    '{a} pointed out that {w} could have lost just as easily, and could not make the thought land anywhere useful.',
+    '{b} refused to make anything of it and spent a while refusing quite loudly.',
+    '{a} said that if you go looking for meaning in a shuffled deck you deserve what you find.',
+  ],
+  'who-picked-the-four': [
+    '{a} was not interested in the cards. {a} wanted to know who chose the four of them.',
+    '"Somebody wrote those four names down," {b} said, and the kitchen went quiet for a moment.',
+    '{a} and {b} worked backwards from the four chairs and got as far as knowing the chairs were the point.',
+    'It was {b} who said the useful thing: the game was fair, and the guest list was not.',
+    '{a} listed the four out loud, twice, looking for what they had in common. There was nothing in common.',
+  ],
+  'would-you-have-drawn': [
+    '{a} and {b} spent breakfast deciding which card each of them would have taken, as if it could still matter.',
+    '"I would have gone left," {a} said. {b} said everybody says that.',
+    'They played the circle again with teaspoons and it came out differently, which helped nobody.',
+    '{b} admitted they had been glad not to be called, and hated saying it.',
+  ],
+  'was-in-it': [
+    '{a} had been at that table and could not describe any of it, which {b} found more frightening than a description.',
+    '{a} got up from the game and has not really got up from it since. {b} sat with them anyway.',
+    '"You were there," {b} said. {a} said yes, and that they had been thinking about nothing else.',
+    '{a} kept saying they had been lucky, and each time it sounded less like a word for good things.',
+  ],
+};
+
+registerEvent({
+  id: 'grief-the-other-chair',
+  family: FAMILY,
+  window: 'dawn',
+  variationAxes: {
+    outcome: ['ambiguous', 'accepted', 'rejected'],
+    voice: ['intuition', 'strategic', 'temperament'],
+    relationship: ['close-ally', 'neutral'],
+  },
+  weight(ctx) {
+    if (ctx.actors?.length !== 2) return 0;
+    // `grief-two-chairs`' weight and for its reason: one morning a season at
+    // most, so the number decides whether this is THE scene of that morning.
+    return _deathMatchLastNight(ctx.ep) ? 7 : 0;
+  },
+  fire(ctx, rng) {
+    const api = sceneApi(ctx, 'grief-the-other-chair');
+    const [a, b] = ctx.actors;
+    const night = _deathMatchLastNight(ctx.ep);
+    const seated = night ? night.players : [];
+    const inIt = seated.includes(a) || seated.includes(b);
+    const sa = pStats(a);
+    const sb = pStats(b);
+    const scores = {
+      'cannot-stop-looking': 0.28 + (sa.intuition / 10) * 0.3,
+      'it-was-a-card': Math.max(0.1, 0.42 - (sb.strategic / 10) * 0.28),
+      'who-picked-the-four': 0.16 + ((sa.mental + sb.strategic) / 20) * 0.4,
+      'would-you-have-drawn': 0.2 + ((10 - sa.temperament) / 10) * 0.2,
+      // ONLY WHEN ONE OF THEM PLAYED IT. Scored to zero otherwise rather than
+      // left out of the table, so the pool cannot be reached by a pair with
+      // nothing to say and the branch stays honest about who is speaking.
+      'was-in-it': inIt ? 0.9 : 0,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((acc, k) => acc + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = 'cannot-stop-looking';
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+    // The speaker of a `was-in-it` scene is the one who actually sat down.
+    const first = branch === 'was-in-it' && !seated.includes(a) ? b : a;
+    const second = first === a ? b : a;
+    const sceneWhy = branch === 'it-was-a-card' ? 'insisted the card game was only a card game'
+      : branch === 'who-picked-the-four' ? 'asked who chose the four names'
+        : branch === 'would-you-have-drawn' ? 'played the last round again over breakfast'
+          : branch === 'was-in-it' ? 'had been at that table'
+            : 'could not stop looking at the one who got up';
+    const note = lineFor(OTHER_CHAIR_LINES[branch],
+      'grief-the-other-chair|' + branch + '|' + ctx.ep,
+      { a: first, b: second, w: (night && night.winner) || 'the winner' });
+    const bondDelta = branch === 'it-was-a-card' ? 0.5 : 1;
+    api.addBond(first, second, bondDelta, { source: sceneWhy });
+    const t = api.openArc(FAMILY, [first, second], { source: sceneWhy, seed: note });
+    return { branch, pair: [first, second], speaker: first, respondent: second,
+      victim: night ? night.victim : null, topic: night ? night.victim : null,
+      topicKind: 'grief-loss', threadId: t?.id, bondDelta };
+  },
+});

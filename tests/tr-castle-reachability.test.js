@@ -187,7 +187,7 @@ const ALL_FIRINGS = SEASONS.flat();
 // broke. A SECOND SWEEP does not: it is the same harness with the catalogue
 // switched on, and each id below has to fire in it.
 const VARIANT_GATED = ['grief-the-last-glass', 'grief-two-chairs', 'grief-the-coffins',
-  'grief-in-this-room'];
+  'grief-in-this-room', 'grief-the-other-chair'];
 const TWIST_SEASONS = 80;
 function runTwistSeasons(n, seedBase) {
   const counts = {};
@@ -202,7 +202,7 @@ function runTwistSeasons(n, seedBase) {
     setPlayers(ROSTER);
     seedFranchiseHistory(CAST);
     const res = playTraitorsSeason({ cast: CAST, traitorCount: 3, seed: seedBase + i,
-      randomMurderTwists: ['chalice', 'double', 'hidden', 'plain-sight'] });
+      randomMurderTwists: ['chalice', 'double', 'hidden', 'plain-sight', 'death-match'] });
     for (const round of res.log) {
       for (const ce of (round.castleEvents || [])) {
         counts[ce.event.id] = (counts[ce.event.id] || 0) + 1;
@@ -666,7 +666,7 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // exists at all — this count is the only place the registry size is
     // pinned, and an event that cannot fire in the main sweep still has to be
     // counted here.
-    expect(EVENTS.length).toBe(205);
+    expect(EVENTS.length).toBe(206);
     // 71 -> 73 (TASK 7 STAGE 6), and both are named rather than counted:
     // `susp-misread-tell` and `susp-defensive-overcorrect`. Each was rewritten
     // from a single branch onto `arcContinue`, so each can now genuinely

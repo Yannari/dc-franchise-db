@@ -143,6 +143,17 @@ RUNS.push(season(8, { trShieldSource: 'armoury', trArmourySize: 4 }));
   RUNS.push({ season: null, episodes: (gs.episodeHistory || []).map(e => ({ ...e })) });
 }
 
+// THE DEATH MATCH, pinned for the same reason again: four players are called
+// to a card game, which is the most visible thing that happens in this format
+// and reaches nobody at all unless an author schedules it.
+{
+  setPlayers(ROSTER);
+  seasonConfig.trShieldSource = 'mission';
+  playTraitorsSeason({ cast: CAST, traitorCount: 3, seed: 3,
+    murderSchedule: { 4: 'death-match' } });
+  RUNS.push({ season: null, episodes: (gs.episodeHistory || []).map(e => ({ ...e })) });
+}
+
 /** Everything the audience sees this episode, as one searchable string. */
 function audienceHtml(ep) {
   let out = '';
@@ -202,6 +213,9 @@ const SURPRISE_CONCEPTS = {
   // The two facts a viewer cannot work out for themselves: the money cuts both
   // ways, and one voice is enough to stop the whole thing.
   'banish-or-murder': [/unanimous|every single one|one hand/i, /pot|money|£/i],
+  // The two facts the castle cannot work out from watching: the Traitors chose
+  // who sat down, and the loser of the game is the murder.
+  'murder-death-match': [/card/i, /chose who sat down|Traitors chose|loses/i],
 };
 
 describe('every rule is explained at or before the episode it governs', () => {

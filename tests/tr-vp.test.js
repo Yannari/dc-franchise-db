@@ -351,6 +351,8 @@ describe("the castle may not be described in another show's words", () => {
 describe('the exit verbs come from the registry and nowhere else', () => {
   const SOURCES = [
     'js/vp-tr/conclave.js',
+    'js/vp-tr/conclave-chalice.js',
+    'js/vp-tr/conclave-death-match.js',
     'js/vp-tr/style.js',
     'js/vp-tr/scenery.js',
     'js/vp-tr/round-table.js',

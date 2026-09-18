@@ -122,6 +122,11 @@ export const LEGACY_STAGE_CSS = `
 .lgx-counter{position:relative}
 
 /* ══ HER REASON ══ after the name, never before it. */
+/* HIDDEN MEANS HIDDEN. the hidden attribute only sets display:none in the UA sheet,
+   so a class setting display:flex beats it — and the reason she spent the
+   lipstick was on screen from the moment the ceremony opened, three clicks
+   before the name it explains. */
+.lgx-why[hidden]{display:none}
 .lgx-why{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;justify-content:center;
   max-width:44ch;margin-top:2px;padding:8px 14px;border-radius:12px;
   background:rgba(255,43,109,.10);box-shadow:inset 0 0 0 1px rgba(255,43,109,.35);

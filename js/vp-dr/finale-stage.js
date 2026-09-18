@@ -51,6 +51,21 @@ export const FINALE_STAGE_CSS = `
    a banner) must not set the width of the page: without this one sentence
    on one line pushed the cards and the rail off the screen. */
 .fsx{contain:inline-size;min-width:0;max-width:100%}
+/* ── AND THE CARDS MUST NOT SCROLL UNDERNEATH IT ────────────────────
+   The stage is pinned and 400-odd pixels tall, so a scrollIntoView on a
+   revealed card puts that card exactly where the stage already is: the
+   reveal appears to do nothing, and the reader clicks NEXT into an empty
+   column. Reported off the lipstick screen, where the cards were invisible
+   for the whole ceremony.
+   Three screens fixed this one at a time in their own stylesheets — the
+   call, the challenge and the crowning all carry their own scroll-margin —
+   and every screen built after them inherited the bug. The stage and the
+   cards are siblings on every one of these screens, so the rule belongs
+   here, once, where the pinned stage itself is defined. A screen with its
+   own value still wins on specificity. */
+.fsx ~ * .dr-step{scroll-margin-top:440px}
+@media (max-height: 999px){.fsx ~ * .dr-step{scroll-margin-top:330px}}
+@media (max-width: 760px){.fsx ~ * .dr-step{scroll-margin-top:300px}}
 /* THEMES: the same frame lit for the room it is in. */
 .fsx.th-stage{--fx:#ff7bc8;--fx2:#ffd66b;background:radial-gradient(120% 85% at 50% 0,#4a0a34 0,#1a0414 52%,#08020a 100%);
   box-shadow:0 30px 80px -30px #000,inset 0 0 0 1px rgba(255,123,200,.18)}

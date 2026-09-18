@@ -338,10 +338,30 @@ ten seasons' wikitext.
 | rule | what runs |
 |---|---|
 | `legacy` (AS2–AS4) | the **top two** lip sync; the winner eliminates one of the bottom queens, revealed on a lipstick |
-| `save` (Canada) | the built Golden Beaver / Baguette, reachable from here |
+| `save` (Canada) | the built Golden Beaver / Baguette, reachable from here — the rule DEALS one (the Beaver) if the author has not picked a save, or it would promise a save season and run none |
 
-**The night**: mini → maxi → runway → critiques → **Untucked** → the call (top
-two named, and the bottom named) → the legacy lip sync → the ceremony → exit.
+**The night**: mini → maxi → runway → critiques → **the call** → **Untucked**
+→ the legacy lip sync → the ceremony → exit. The call comes BEFORE the lounge,
+which is the format's own order and the reason All Stars' Untucked is what it
+is: the bottom is working two queens who might be holding the lipstick in
+twenty minutes. (It ran the other way round at first, with the room lobbying
+whoever the critiques had favoured — a guess.) The same reorder the Beaver and
+Baguette nights use, in `week.js` and `screensFor`.
+
+**The call is six**: the top two, one queen in the top who is not one of them,
+one queen in the bottom who is NOT up for elimination, and the two who are.
+The lipstick chooses between exactly those two. It was five with no LOW at all
+until 2026-09-18, because the top-two block emptied `low` and put the whole
+bottom up for elimination.
+
+| result | what it means here |
+|---|---|
+| `WIN` | won the maxi and the Lip Sync for Your Legacy |
+| `TOP2` | the top two — sang for the power and lost it (PPE 4.5) |
+| `HIGH` | in the top, not one of the two |
+| `LOW` | in the bottom, not up for elimination |
+| `BTM2` | up for elimination, not chosen |
+| `ELIM` | up for elimination, and named on the lipstick |
 
 **The cast arrives with a past** (`js/dr/past.js`). Her original season, rank,
 wins and unfinished business: read from a stored `dr-N` season when she really
@@ -376,6 +396,39 @@ her whole night on the wrong person.
 **The ledger** (`js/dr/power.js`) is shared with the season's save: one queen
 sparing another and one queen ending another are the same fact about the same
 relationship.
+
+**The room already knows each other.** Queens out of the same past season
+arrive as friends, rivals, or "she beat me in the song that ended my season"
+(`sharedHistory`). It lands as real bonds through the caller's ledger, so every
+bond-gated thing in the engine sees it, and a sent-home pair writes a grudge the
+lipstick reads. The premiere has the meeting; one callback a week keeps it
+alive after that (least-recently-used pair, draw-without-replacement lines).
+
+**And it never invents over a real record.** A pair whose pasts are BOTH real
+gets only what the franchise holds: the stored season document's own lip syncs
+and All Stars exits (`js/dr/history.js`, fetched once by `loadDragHistory`),
+the ledger's allies and rivals, and otherwise `mates` — the one thing still
+true. The ledger cannot count a drag maxi win (it counts `immunityWinner` and
+`vetoWinner`, which this show never stamps), so a season with no published
+document carries `winsKnown: false` and the wins clause is dropped rather than
+reported as zero. Inventing is for a queen the franchise has never played.
+
+**Alliances** (`js/dr/alliances.js`) are derived from bonds every episode by
+the shared bloc rule in `js/alliance-blocs.js` — the Traitors' own, extracted
+rather than copied. Three to a circle, nothing serialised, and a bloc BIASES a
+queen's decision without ever coordinating, which is what keeps it legal on a
+show with no vote. Drawn in the rail ("Aligned") on the werk room, Untucked,
+the critiques and the call.
+
+**The season says its own name**: the host welcomes them, explains that the top
+two sing and the winner decides, and names the prize; the screens carry a gold
+All Stars chip (`_setAllStars`). The entrances and introductions come from the
+returnee pools — the flagship's are a first-timer's ("I can't believe I'm
+standing here").
+
+**Spending the lipstick costs her.** Every queen still in the room who was close
+to the one named holds it against the holder and pays a bond for it, so the
+choice is a running account rather than a per-week roll.
 
 **Screens**: the arrivals carry her record; the ceremony is its own section
 (`The Lipstick`), a counter with one tube per queen in the bottom and the

@@ -57,6 +57,7 @@ import { recordUse } from './power.js';
 import { runMaxi, applyEvents } from './maxi.js';
 import { showWords } from '../shows.js';
 import { familyForChallenge } from './data/maxi-performance.js';
+import { coldOpen } from './coldopen.js';
 import { chooseResultOrder } from './data/results-order.js';
 import { saveKind, saveLiveTonight, holderSave, holderEffects, luckSave, luckEffects,
   campaignTargets, runCampaign, settleMemory, takeFallout, timesSaved } from './saves.js';
@@ -194,6 +195,7 @@ export function runDragWeek(state, cfg, ctx) {
      left, there is no empty station and no message on the mirror. The
      entrances are the opening. */
   if (!isPremiere) say('cold-open', 'cold-open', { gone });
+
 
 
   /* ── REVENGE OF THE QUEENS: THE DOOR ────────────────────────────────
@@ -393,6 +395,27 @@ export function runDragWeek(state, cfg, ctx) {
      rides on the season state and has to survive being saved. */
   state.legacySaid ||= [];
   const said = state.legacySaid;
+  /* ── AND THEN THEY TALK ABOUT IT ────────────────────────────────────
+     The marker above opens the section; this is the scene. It was ONE werk
+     room event drawn off a single fact — somebody left — so a night with a
+     challenge, a winner, a bottom and a song in it produced a card about an
+     empty chair and the episode was never discussed by the people it
+     happened to. js/dr/coldopen.js reads `state.lastWeek` and writes the
+     morning: the mirror message read out loud, the winner congratulated, the
+     bottom saying how they are about it, and last night's argument finished.
+     Its bond effects go through the same applier as every other scene. */
+  if (!isPremiere && state.lastWeek) {
+    state.morningSaid ||= [];
+    const morning = coldOpen({
+      last: state.lastWeek, living: [...living], players,
+      bond: (x, y) => Number(ctx.bond?.(x, y)) || 0,
+      record: state.record, rng, used: state.morningSaid, gone,
+    });
+    for (const sc of morning.scenes) scenes.push(sc);
+    for (const e of morning.events) { applyEventLike(e); werkEvents.push(e); }
+    if (morning.mirror) state.lastMirror = morning.mirror;
+  }
+
   const shadowFx = e => { applyEventLike(e); werkEvents.push(e); };
   const shadow = state.shadowLipstick;
   if (shadow && shadow.target && living.includes(shadow.holder)) {
@@ -2195,6 +2218,28 @@ export function runDragWeek(state, cfg, ctx) {
   state.living = living.filter(n => !exits.includes(n));
   state.out.push(...exits);
   state.lastWinner = call.win[0] || null;
+  /* ── LAST NIGHT, FOR TOMORROW MORNING ───────────────────────────────
+     The cold open is a conversation about the episode that just happened,
+     and it was being written from `gone` alone — one fact out of a night
+     with a challenge, a winner, a bottom and a song in it. The week closes
+     by leaving the morning what it needs to talk about. */
+  state.lastWeek = {
+    ep: cfg.num,
+    maxi: maxi?.name || '',
+    family: familyForChallenge(maxi.id).family || '',
+    winner: call.win[0] || null,
+    high: [...(call.high || [])].filter(n => !call.win.includes(n)),
+    low: [...(call.low || []), ...(call.atRisk || [])],
+    bottom: [...(call.bottom || [])],
+    sang: lipsync ? [...(lipsync.queens || [])] : [],
+    survived: lipsync && lipsync.loser
+      ? (lipsync.queens || []).filter(n => n !== lipsync.loser) : [],
+    safe: [...(call.safe || [])],
+    gone: [...exits],
+    // The queen who spent the lipstick, on a night that had one.
+    chosenBy: lipsync?.chosenBy || null,
+    legacy: !!lipsync?.legacy,
+  };
   state.memory = judgeMemoryAfter(state.memory, panel, call);
 
   const exitRows = exits.map(n => ({

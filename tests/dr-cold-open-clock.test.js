@@ -20,8 +20,24 @@
 // docs/PROSE-PROMPT-dr-cold-open-clock.md.
 import { describe, expect, it } from 'vitest';
 import { WERK_EVENTS } from '../js/dr/data/werk-events.js';
+import { COLD_BEATS, MIRROR } from '../js/dr/data/cold-open-beats.js';
 
 const coldOpen = () => WERK_EVENTS.filter(e => e.slot === 'cold-open');
+
+/* ── AND THE AUTHORED SCENE, WHICH IS MOST OF THIS SECTION NOW ──────
+   js/dr/coldopen.js writes the whole room — the mirror read out loud, the
+   winner congratulated, the bottom saying how they are — and it is on the
+   same clock as the pool above. It was drafted as "the morning after" and
+   eleven of its lines said morning, breakfast, all night or tomorrow before
+   this guard was pointed at them. */
+const flat = (o, out = []) => {
+  for (const v of Object.values(o || {})) {
+    if (Array.isArray(v)) out.push(...v);
+    else if (v && typeof v === 'object') flat(v, out);
+  }
+  return out;
+};
+const authored = () => [...flat(COLD_BEATS), ...flat(MIRROR)];
 
 /* Words that can only be true the following day. `last night` and
    `yesterday` are here for the same reason "morning" is: on the night
@@ -90,5 +106,16 @@ describe('the cold open happens on the night of', () => {
     const all = coldOpen();
     expect(all.every(e => typeof e.when === 'function'),
       'an event with no `when` cannot be held back from episode one').toBe(true);
+  });
+});
+
+describe('the authored cold open is on the same clock', () => {
+  it('never says morning, breakfast or last night', () => {
+    const bad = authored().filter(l => NEXT_DAY.test(String(l)));
+    expect(bad, `${bad.length} line(s) put the cold open on the wrong day`).toEqual([]);
+  });
+
+  it('is actually written — every pool has lines', () => {
+    expect(authored().length).toBeGreaterThan(60);
   });
 });

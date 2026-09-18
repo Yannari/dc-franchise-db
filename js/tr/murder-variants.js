@@ -145,6 +145,7 @@ export const VARIANTS = [
 // (missions on, the bespoke catalogue on, and The Funeral in it); this file
 // may not import the mission engine, which imports the murder engine.
 let _funeralReady = () => false;
+export function funeralReady() { return _funeralReady(); }
 export function _setFuneralProbe(fn) { _funeralReady = typeof fn === 'function' ? fn : () => false; }
 
 export const VARIANT_IDS = VARIANTS.map(v => v.id);
@@ -438,7 +439,11 @@ export function chaliceRemembered(ep, pourer, victim) {
 export function hiddenMurderFor(ep) {
   const rounds = gs.tr?.rounds || [];
   const r = rounds[rounds.length - 1];
-  if (!r || r.ep !== ep - 1 || r.variant !== 'hidden' || !r.variantData) return null;
+  // A hidden night, or a chalice whose poison was the slow kind: both leave
+  // the castle with coffins to open and nobody named.
+  const hides = !!r && (r.variant === 'hidden'
+    || (r.variant === 'chalice' && r.variantData?.slow));
+  if (!r || r.ep !== ep - 1 || !hides || !r.variantData) return null;
   const victim = r.murdered || null;
   if (!victim) return null;
   return { victim, decoys: [...r.variantData.decoys], coffins: [...r.variantData.coffins] };
@@ -570,6 +575,13 @@ export const VARIANT_LINES = {
     '{a}, {b} and {c} do not come down. Two of them are alive somewhere in the castle, and the room will not find out which two until the funeral.',
     'The castle counts three empty chairs and one murder, and has to eat breakfast without knowing whose chair is whose.',
     'Nobody is named this morning. {a}, {b} and {c} are simply not there, and the host will not say more until the afternoon.',
+  ],
+  // The slow kind: the drink works over a day, so the castle is not told.
+  'chalice-slow': [
+    'No conclave. {finder} finds the chalice among the Shakespeare, {who} pours it, and {victim} drinks it without looking up. It is the slow kind, and the castle will not be told until the funeral.',
+    'They never meet. {who} hands {victim} a fizzy glass at the end of the evening. Nobody falls down; it takes a day, and the room will find out at a graveside.',
+    '{finder} turns the library over and comes out with the chalice. {who} pours, {victim} says thank you, and the poison takes its time.',
+    'It is done with a drink and a smile. {victim} will not be at breakfast, and neither will the others whose chairs are turned over, because nobody is being told who drank what.',
   ],
   // The chalice: found, poured, and drunk without a second thought.
   'chalice': [
@@ -772,8 +784,13 @@ export function variantEvidence(ep, rng = Math.random) {
     // ONE NAME. Not a set of neighbours: the room is trying to remember who
     // put a glass in somebody's hand, and that is either a person or nobody.
     if (d.remembered && d.pourer) {
-      _tellRoom(d.pourer, V.poured, `poured the drink ${victim} was holding`,
-        ep, rng, formed, 'poured-the-drink', round.ep);
+      // On a SLOW night the castle has not been told who drank it yet — the
+      // funeral does that this afternoon — so the memory is of the pouring
+      // alone, with no name attached to the glass.
+      const what = d.slow
+        ? 'poured a drink for somebody at the end of the evening'
+        : `poured the drink ${victim} was holding`;
+      _tellRoom(d.pourer, V.poured, what, ep, rng, formed, 'poured-the-drink', round.ep);
     }
   } else if (v === 'plain-sight') {
     // PROXIMITY. One of these three did it — the room does not know which, and

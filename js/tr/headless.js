@@ -1070,8 +1070,13 @@ function _morning() {
     // coffin order are public (the castle can see who is missing); which of
     // the three is dead is not, and the screen must not say it.
     hidden: (() => {
-      if (!prev || prev.tr?.conclave?.variant !== 'hidden' || prev.tr?.conclave?.blocked) return null;
-      const r = (gs.tr?.rounds || []).find(x => x.ep === prev.tr.conclave.ep && x.variant === 'hidden');
+      const cv = prev && prev.tr?.conclave;
+      if (!cv || cv.blocked) return null;
+      // A hidden night, or a chalice whose poison was slow: both keep the
+      // castle from being told who died until the funeral.
+      if (cv.variant !== 'hidden' && cv.variant !== 'chalice') return null;
+      const r = (gs.tr?.rounds || []).find(x => x.ep === cv.ep
+        && (x.variant === 'hidden' || (x.variant === 'chalice' && x.variantData?.slow)));
       return r && r.variantData
         ? { decoys: [...r.variantData.decoys], coffins: [...r.variantData.coffins] } : null;
     })(),

@@ -63,11 +63,19 @@ describe('who should go home', () => {
       expect(html, `${v.target} was named and is not on the board`).toContain(v.target);
       expect(html, `${voter} named somebody and is not credited`).toContain(voter);
     }
-    // and the count beside each name is the real one
+    /* and the count beside each name is the real one.
+       SEARCHED INSIDE THE BOARD, NOT THE WHOLE SCREEN. `<b>NAME</b>` is not
+       unique to this board — the critiques above it bold every queen's name
+       too — so `indexOf` found her critique row and read a tally of icons
+       (`crx-tally`) where it wanted a number. The board is the only place
+       this assertion is about. */
+    const boardAt = html.indexOf('dr-wsg-board');
+    expect(boardAt, 'no board on the screen').toBeGreaterThan(-1);
+    const board = html.slice(boardAt);
     for (const [name, n] of Object.entries(tally)) {
-      const at = html.indexOf(`<b>${name}</b>`);
+      const at = board.indexOf(`<b>${name}</b>`);
       expect(at, `${name} has no row on the board`).toBeGreaterThan(-1);
-      const row_ = html.slice(at, at + 400);
+      const row_ = board.slice(at, at + 400);
       expect(row_, `${name} is credited with the wrong count`)
         .toContain(`>${n}</span>`);
     }

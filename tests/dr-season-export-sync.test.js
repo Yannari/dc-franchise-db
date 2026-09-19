@@ -225,6 +225,13 @@ describe('the transcript pane on a season that stored none', () => {
     // this asserts the missing-text arm explicitly.
     expect(head).toContain('!epRecord.summaryText');
     expect(src).toContain("const _isDragRow = ep => !!ep && ep.format === DRAG_FORMAT");
-    expect(src).toContain('DRAG_FORMAT } from ');
+    /* AND THE SLUG IS IMPORTED, NOT READ OFF `window`. This matched the
+       literal "DRAG_FORMAT } from ", which only held while DRAG_FORMAT was
+       the LAST name in its import list — adding `TRAITORS_FORMAT` after it
+       broke the assertion without touching anything it was about.
+       js/shows.js is the only source of truth for these slugs, so what
+       matters is that the name arrives from there by import. */
+    expect(src, 'DRAG_FORMAT is no longer imported from shows.js')
+      .toMatch(/import\s*\{[^}]*\bDRAG_FORMAT\b[^}]*\}\s*from\s*'\.\/shows\.js'/);
   });
 });

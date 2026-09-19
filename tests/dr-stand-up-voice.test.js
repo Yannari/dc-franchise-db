@@ -81,7 +81,16 @@ describe('the stand-up speaks for itself', () => {
          "in the number", not "the number": a queen counting how many of them
          are left says a number into the werk room, and that is a sentence
          about the season rather than about a girl group. */
-      const BORROWED = /\broast(ing|ed|s)?\b|\bverse\b|\bbars\b|eight-count|in the number\b|real estate/i;
+      /* AND `bars` HAS TWO MEANINGS, ONLY ONE OF WHICH IS BORROWED. The
+         Rumix sense is a counted unit of writing — "four bars", "the bars
+         were filler", "she writes bars" — and a stand-up must never say it.
+         The other sense is a room with a stage in it, which is exactly where
+         a drag comic learned to do this: "telling these stories in bars for
+         years", "she has done this in bars smaller than the werk room". Both
+         of those are stand-up lines about stand-up and both were failing.
+         The venue sense is excluded by its preposition; every counted-unit
+         use is still caught. */
+      const BORROWED = /\broast(ing|ed|s)?\b|\bverse\b|(?<!\bin )\bbars\b|eight-count|in the number\b|real estate/i;
       const bad = lines.filter(l => BORROWED.test(l));
       expect(bad, `borrowed vocabulary on a stand-up:\n${bad.join('\n')}`).toEqual([]);
     });

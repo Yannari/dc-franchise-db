@@ -1151,6 +1151,23 @@ const CONFIG_SCOPE = {
     // control nothing reads does not belong in this map.
     'cfg-dr-premiere':       ['drag-race'],
     'cfg-dr-finale':         ['drag-race'],
+    /* ── THE ALL STARS CONTROLS, WHICH NOTHING CLAIMED ────────────────
+       Two of these were real leaks, and the same leak twice: the mode
+       dropdown sits in a `.form-group` with NO id, so nothing hid it, and a
+       Total Drama season was being offered "All Stars: Lip Sync for Your
+       Legacy". The Jury group has an id and still was not listed, so a
+       castle was asked whether the queens it sent home should pick the
+       finalists.
+       The other four sit inside `grp-dr-as-twist`, which IS scoped, so they
+       were already invisible — they are here because the rule the guard
+       enforces is that an id naming a show must be claimed by exactly one,
+       and "its parent happens to be scoped" is how the next one of these
+       goes unnoticed. */
+    'cfg-dr-all-stars':      ['drag-race'],
+    'cfg-dr-as-twist':       ['drag-race'],
+    'cfg-dr-as-twist-when':  ['drag-race'],
+    'cfg-dr-as-twist-ep':    ['drag-race'],
+    'cfg-dr-as-jury':        ['drag-race'],
     'cfg-dr-double-shantay': ['drag-race'],
     'cfg-dr-double-sashay':  ['drag-race'],
     'cfg-dr-immunity':       ['drag-race'],
@@ -1204,6 +1221,9 @@ const CONFIG_SCOPE = {
     'sec-dr-basics':         ['drag-race'],
     'grp-dr-save':           ['drag-race'],
     'grp-dr-as-twist':       ['drag-race'],
+    // The Jury of Queer Peers group. Its own `.form-group` with its own id,
+    // and nothing claimed it, so the checkbox drew on all four shows.
+    'sec-dr-as-jury':        ['drag-race'],
     'sec-dr-call-label':     ['drag-race'],
     // ── THE EXPLAINER ROWS, WHICH HAD NO IDS AND SO NO SCOPE ────────
     //

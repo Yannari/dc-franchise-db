@@ -146,23 +146,51 @@ describe('a drag season from before the freeze', () => {
     expect(JSON.stringify(core.gs._drInitBonds)).toBe(bondsBefore);
   });
 
-  it('declines rather than half-writing when checkpoint 1 is gone', () => {
-    /* An older save, or one whose early checkpoints were pruned.
-       A HALF REPAIR IS WORSE THAN NONE. The schedule alone satisfies
-       `dragScheduleRecorded()`, so the re-run would go ahead and replay the
-       season on top of bonds it had already written — §11.5 O, re-created by
-       the thing meant to fix it. Caught by tests/dr-rebook.test.js, whose two
-       "refuses a season whose running order was never recorded" cases went
-       green-to-red the moment the repair wrote a schedule it could not back
-       with bonds. */
+  it('repairs the schedule without checkpoint 1 when the season can resume', () => {
+    /* THIS USED TO BE ALL OR NOTHING, and the rule moved for a reason the
+       engine states in as many words.
+
+       THE OLD RULE: a schedule without the opening bonds is the worse of the
+       two halves, because it satisfies `dragScheduleRecorded()` and the
+       re-run then REPLAYED the season from episode one on top of bonds those
+       same calls had already written — §11.5 O, re-created by the thing
+       meant to fix it.
+
+       WHAT CHANGED: continuing a season is not a replay any more.
+       `simulateDragEpisode` RESUMES — it picks the season up from the state
+       the last aired week carried — and that path never reads `_drInitBonds`
+       at all. So on a resumable season the refusal was guarding against a
+       replay that no longer happens, and its real effect was to make every
+       pin a no-op on saves older than the snapshot.
+       The all-or-nothing rule survives where it still means something, and
+       the case below is that one. */
     play(3);
     age();
     delete core.gsCheckpoints[1];
+    expect(dr.repairOldDragSeason()).toEqual({ bonds: false, schedule: true });
+    expect(core.gs._drSchedule, 'the schedule was not written').toBeTruthy();
+    expect(dr.dragScheduleRecorded()).toBe(true);
+    // And the bonds are still missing: this repaired one half, knowingly.
+    expect(core.gs._drInitBonds).toBeUndefined();
+  });
+
+  it('still declines when the season cannot resume either', () => {
+    /* The half-repair is still wrong for a season that cannot be picked up
+       where it stopped: there, continuing really is a rebuild, and a
+       schedule with no bonds behind it unlocks exactly the drift above.
+       `_canResume` refuses when the last aired row cannot yield a state, so
+       this breaks that row rather than the checkpoint. */
+    play(3);
+    age();
+    delete core.gsCheckpoints[1];
+    const hist = core.gs.episodeHistory;
+    const last = hist[hist.length - 1];
+    // Neither a carried state nor anything to rebuild one from.
+    delete last.dr.state;
+    last.num = 999;
     expect(dr.repairOldDragSeason()).toEqual({ bonds: false, schedule: false });
     expect(core.gs._drSchedule).toBeUndefined();
-    // And the season is left exactly as refusing as it was.
     expect(dr.dragScheduleRecorded()).toBe(false);
-    expect(dr.rerunDragEpisode(2)).toBe(false);
   });
 });
 
@@ -238,15 +266,28 @@ describe('a drag re-run without any checkpoint at all', () => {
   });
 
   it('re-airs a different night each press', () => {
+    /* ACROSS PRESSES, NOT BETWEEN TWO OF THEM. This compared nonce 1 with
+       nonce 2 and demanded a different queen go home. A reroll re-airs the
+       NIGHT; it does not promise a different result, and on a room where one
+       queen is plainly the weakest the same name coming up twice is the
+       mechanic working. Measured over eight presses: exits Q9 Q9 Q8 Q7 Q9 Q7
+       Q1 Q1 — four different queens, and nonces 1 and 2 happen to agree.
+       So the assertion is that the night MOVES, which is falsifiable in the
+       way that matters: a reroll that changed nothing would give one exit
+       and one winner eight times. */
     playNoCheckpoints(3);
-    dr.rerunDragEpisode(3);
-    expect(core.gs._drReroll).toEqual({ from: 3, nonce: 1 });
-    const first = dr.simulateDragEpisode();
-    expect(first.num).toBe(3);
-    dr.rerunDragEpisode(3);
-    expect(core.gs._drReroll.nonce).toBe(2);
-    const second = dr.simulateDragEpisode();
-    expect(second.num).toBe(3);
-    expect(JSON.stringify(second.exits)).not.toBe(JSON.stringify(first.exits));
+    const exits = []; const winners = [];
+    for (let i = 0; i < 8; i += 1) {
+      dr.rerunDragEpisode(3);
+      expect(core.gs._drReroll).toEqual({ from: 3, nonce: i + 1 });
+      const ep = dr.simulateDragEpisode();
+      expect(ep.num).toBe(3);
+      exits.push(JSON.stringify((ep.exits || []).map(e => e.name || e)));
+      winners.push((ep.dr?.call?.win || []).join(','));
+    }
+    expect(new Set(exits).size, `the same queen left every time: ${exits[0]}`)
+      .toBeGreaterThan(2);
+    expect(new Set(winners).size, 'the same queen won every re-air')
+      .toBeGreaterThan(2);
   });
 });

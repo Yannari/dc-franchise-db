@@ -764,7 +764,25 @@ export function runDragWeek(state, cfg, ctx) {
   for (const n of living) {
     if (runwayIsChallenge) {
       const perf = performances[n] ? performances[n].perf : 0;
-      runway[n] = { score: perf, fit: null, walks: [perf], isChallenge: true };
+      /* ── AND IF SHE WALKED MORE THAN ONCE, SAY SO ──────────────────
+         A Ball is three looks and js/dr/chal/ball.js scores all three —
+         they are sitting in `detail.looks`. This branch collapsed them to
+         `[perf]`, the weighted average, so `runway[n].walks` had length 1
+         on the one night of the season built around walking three times.
+         Nothing crashed; the walks just never reached a screen, which is
+         this codebase's signature bug class. js/vp-dr/stage.js prints
+         "N looks tonight" only when there is more than one, so the Ball
+         never said it, and the per-look marks in js/vp-dr/challenge.js had
+         a single mark to draw.
+         `score` stays the weighted average: that is what the panel and the
+         chart read, and the sewn look is deliberately worth double. */
+      const looks = performances[n]?.detail?.looks;
+      runway[n] = {
+        score: perf, fit: null, isChallenge: true,
+        walks: Array.isArray(looks) && looks.length > 1
+          ? looks.map(l => (typeof l === 'number' ? l : l.score))
+          : [perf],
+      };
       continue;
     }
     const scored = walks.map(w => runwayScore({

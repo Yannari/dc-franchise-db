@@ -132,7 +132,14 @@ describe('no screen prints its own answer above the fold', () => {
        carry the `on` class that makes its contents visible. */
     const host = document.createElement('div');
     host.innerHTML = scr.html;
-    const champ = host.querySelector('#sd-champ');
+    /* BY CLASS, NOT BY ID. This read `#sd-champ`, which stopped existing when
+       the tournament was added and the two brackets' ids were namespaced —
+       `sd-sm-champ` for the smackdown, `sd-tm-elim` for the tournament. Here
+       it went red and stayed red, but the usual failure mode of a stale id
+       selector is the quiet one: it matches nothing, the loop below runs
+       zero times, and the test passes over a screen it never looked at. The
+       class is what the stylesheet hides on, so it is the honest anchor. */
+    const champ = host.querySelector('.sd-champ');
     expect(champ, 'no champion plinth').toBeTruthy();
     expect(champ.classList.contains('on'),
       'the champion is revealed before a single duel is read').toBe(false);

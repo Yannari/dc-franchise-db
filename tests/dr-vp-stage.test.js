@@ -108,7 +108,14 @@ describe('the critiques', () => {
     const row = ordinary.find(r => (r.dr.critiques || []).length);
     rpBuildCritiques(row);
     const rail = window._drSidebar.critiques.at(-1);
-    expect(rail).toMatch(/has not decided/i);
+    /* THE DISCLAIMER IS THE PROXY; THE REAL GUARD IS BELOW. This matched
+       only "has not decided", and the rail now says "Nobody has been placed
+       yet" — the same guarantee in the show's own vocabulary, where being
+       PLACED is exactly what the host does and the panel does not. A copy
+       edit turned a spoiler test red without a spoiler existing.
+       Both phrasings are accepted, and nothing vaguer: a disclaimer this
+       test cannot fail is not worth running. */
+    expect(rail).toMatch(/has not decided|nobody has been placed/i);
     // And no cell carries a finalRank that differs from the panel's.
     const bent = (row.dr.bend || []).filter(b => b.panelRank !== b.finalRank);
     const html = rpBuildCritiques(row);

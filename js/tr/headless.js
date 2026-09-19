@@ -74,6 +74,7 @@ import { initCrowd, scoreNight, scoreRecruitment, scoreTable, scoreMission,
 import '../tr/castle/trust.js';
 import '../tr/castle/suspicion.js';
 import '../tr/castle/grief.js';
+import '../tr/castle/plans.js';
 import '../tr/castle/cover.js';
 import '../tr/castle/romance.js';
 import '../tr/castle/callback.js';
@@ -3265,7 +3266,6 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     // Source 4. Same round as the mission it reads, before the table it feeds.
     missionEvidence(ep, missionRng);
     castleEvents.push(...runCastlePhase('mission-fallout', ep, castleRng)); // journey-back
-    castleEvents.push(...runCastlePhase('private-strategy', ep, castleRng)); // evening
     // ── AND WHAT THE FAITHFULS DO ABOUT IT (js/tr/strategy.js) ────────
     //
     // The castle's blocs become named circles, and somebody may set a test:
@@ -3280,6 +3280,10 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     // room actually listens to. Declared before the table, because the table
     // is where it is spent.
     runTruces(ep, castleRng);
+    // AND THE EVENING ITSELF, AFTER THEM. The order is the point: a corridor
+    // scene about a deal (js/tr/castle/plans.js) can only be written once the
+    // deal exists, and the castle's evening is where that corridor is.
+    castleEvents.push(...runCastlePhase('private-strategy', ep, castleRng)); // evening
     // Voting Plans is shown before the Round Table, so freeze its beliefs now.
     // The reveal cascade inside runRoundTable() creates valid information for
     // tomorrow, but it must not travel backward onto tonight's pre-table screen.

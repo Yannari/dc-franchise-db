@@ -25,7 +25,8 @@ import { rpBuildColdOpen } from '../js/vp-tr/cold-open.js';
 import { rpBuildRoundTable } from '../js/vp-tr/round-table.js';
 import { alignmentAt } from '../js/tr/roles.js';
 import { getBond } from '../js/bonds.js';
-import { TEST_LANDED, FREELANCE_COST } from '../js/tr/strategy.js';
+import { TEST_LANDED, FREELANCE_COST, BAIT_PUSH } from '../js/tr/strategy.js';
+import { formPreference } from '../js/tr/murder.js';
 import { alignmentFactId } from '../js/tr/roles.js';
 import { resolveTests } from '../js/tr/strategy.js';
 import { resetKnowledge, recordFact } from '../js/knowledge.js';
@@ -174,22 +175,57 @@ describe('the test', () => {
   });
 
   // ── THE NUMBER THE WHOLE PLAY TURNS ON ───────────────────────────────
-  it('a Traitor takes the bait far more often than a Faithful is attacked by chance', () => {
-    let nTr = 0, hitTr = 0, nFa = 0, hitFa = 0, landed = 0, landedTr = 0;
-    for (const { plan, suspectWasTraitor } of sweep(150)) {
-      const hit = plan.outcome === 'landed';
-      if (hit) { landed++; if (suspectWasTraitor) landedTr++; }
-      if (suspectWasTraitor) { nTr++; if (hit) hitTr++; } else { nFa++; if (hit) hitFa++; }
+  // ── DOES THE BAIT ACTUALLY TEMPT ANYBODY ─────────────────────────────
+  //
+  // THIS WAS A POPULATION ARM AND IT COULD NOT BE ONE. The play needs a live
+  // Shield, somebody who knows about it, a suspicion worth gambling on and the
+  // nerve to act, which is 0.37 tests a season and about 25 tested Traitors in
+  // 250 seasons — of which three to five bite. A ratio built on three events
+  // swings by half a point when one of them goes the other way: the same code
+  // measured 0.22/0.04 before the castle scenes reordered the evening and
+  // 0.13/0.08 after, and neither number is a fact about the engine.
+  //
+  // So the mechanism is asserted where it is deterministic — on
+  // `formPreference` itself, with and without the push — and the population
+  // arm below only asks the questions a small sample can answer.
+  it('puts the baited name in front of the Traitor who was told it', () => {
+    setPlayers(ROSTER);
+    const cast = CAST.slice(0, 8);
+    const [traitor, bait, ...rest] = cast;
+    const world = () => {
+      setGs({ activePlayers: [...cast], bonds: {} });
+      gs.tr = { rounds: [], alignment: { [traitor]: true }, shields: [], murderPrefs: [],
+        standing: {}, voteIntents: [] };
+    };
+    const rng = () => 0.5;
+    world();
+    const before = formPreference(traitor, 4, rng);
+    world();
+    gs.tr.murderPrefs.push({ traitor, target: bait, delta: BAIT_PUSH, ep: 4,
+      sceneId: 'unit', source: 'told in confidence that they were being worked out' });
+    const after = formPreference(traitor, 4, rng);
+    expect(before.target, 'the unit world produced no preference at all').toBeTruthy();
+    // THE WHOLE MECHANISM IN ONE ASSERTION: a name this Traitor was handed in
+    // confidence is the name they reach for. At the push this shipped with
+    // first (1.2, against a scatter of ±1.15) this line failed, which is what
+    // 40 seasons of never once biting had been trying to say.
+    expect(after.target, 'the push does not move the conclave at all').toBe(bait);
+    expect(rest.length).toBeGreaterThan(0);
+  });
+
+  it('lands sometimes, and is never right every time', () => {
+    let landed = 0, landedTr = 0, tested = 0;
+    for (const { plan, suspectWasTraitor } of sweep(250)) {
+      tested++;
+      if (plan.outcome !== 'landed') continue;
+      landed++;
+      if (suspectWasTraitor) landedTr++;
     }
-    expect(nTr, 'no Traitor was ever tested in 150 seasons').toBeGreaterThan(8);
-    expect(landed, 'no test ever landed in 150 seasons').toBeGreaterThan(2);
-    const tpr = hitTr / nTr;
-    const fpr = hitFa / Math.max(1, nFa);
-    // THE ARM THAT CAUGHT THE ORIGINAL BUILD. At the first push these two were
-    // 0.06 and 0.05 — a play whose mechanism did not work, wearing the clothes
-    // of one that did.
-    expect(tpr, 'the bait does not actually tempt anybody').toBeGreaterThan(fpr * 2.5);
-    // And it is never proof: the pact can want that name for its own reasons.
+    expect(tested, 'nobody ran a test in 250 seasons').toBeGreaterThan(40);
+    expect(landed, 'no test ever landed in 250 seasons').toBeGreaterThan(2);
+    // Never proof: the pact can want a name for its own reasons, and a
+    // Faithful who is completely certain and wrong is one of the better things
+    // that can happen to a season.
     expect(landedTr / landed, 'a landed test is always right, which it must not be')
       .toBeLessThan(0.95);
   });

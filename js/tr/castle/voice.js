@@ -636,6 +636,15 @@ export const ADVERSE_OUTCOMES = new Set(['test-exposed', 'failed-maliciously', '
 export const SMOOTH_OUTCOMES = new Set(['denied-convincingly', 'passed-clean',
   'defended-by-history', 'turned-back', 'buried', 'became-showmance']);
 export const ADVERSE_BRANCHES = new Set([
+  // ── THE PLANS BATCH (js/tr/castle/plans.js, 2026-09-18) ─────────────
+  //
+  // Classified by the SIGN OF THE BOND EACH BRANCH PAYS, which is the rule
+  // this list already runs on. Three of the eight cost something: asking
+  // somebody why they have stopped saying a name, noticing it and saying
+  // nothing, and sitting on a thing you cannot explain to the person opposite
+  // you. The last of those sounds like nothing happening and is the scene
+  // where somebody is actively not telling their closest ally something.
+  'they-picked-you', 'asked-outright', 'noticed-quietly', 'cannot-say-it',
   // The alibi scene's one branch that costs the two people doing the checking:
   // they could not reconstruct their own night, let alone anybody else's.
   'two-accounts',
@@ -1076,6 +1085,15 @@ export const ADVERSE_BRANCHES = new Set([
  * them — which is the whole point.
  */
 export const BENIGN_BRANCHES = new Set([
+  // ── THE PLANS BATCH (js/tr/castle/plans.js, 2026-09-18) ─────────────
+  //
+  // The five that pay a positive bond: two people on the same list holding
+  // together, somebody not knowing what to say to a person on it, working the
+  // room to be impossible to give up, both halves of a deal being done, and
+  // telling somebody the whole of what you did.
+  'both-of-us', 'not-me', 'work-the-room',
+  'said-it-straight', 'took-it', 'did-not-say-yes',
+  'said-half', 'told-them-everything',
   // ── THE ALIBI SCENE (js/tr/castle/alibi.js) ─────────────────────────
   //
   // Including `could-not-place-them`, which SOUNDS like the adverse one and is

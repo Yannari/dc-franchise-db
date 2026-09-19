@@ -46,6 +46,7 @@ import { PROBE_CAST, PROBE_EP, forkRng, probeWorld } from './helpers/tr-probe-wo
 import '../js/tr/castle/trust.js';
 import '../js/tr/castle/suspicion.js';
 import '../js/tr/castle/grief.js';
+import '../js/tr/castle/plans.js';
 import '../js/tr/castle/cover.js';
 import '../js/tr/castle/romance.js';
 import '../js/tr/castle/callback.js';

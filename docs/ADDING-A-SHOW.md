@@ -730,6 +730,89 @@ about players that were in the file.
 with no finished season has no board, and that is not an error: `loadRankingBoards()`
 skips a 404 so a new show does not break the pages before it has been ranked.
 
+### 8.2 Cross-season carry-over — REQUIRED, and it already exists
+
+**Every show whose cast can include somebody who has played before MUST take
+its carried relationships from `js/franchise-meta.js`. Writing a second one is
+not an option, and Drag Race is the standing example of doing it anyway.**
+
+The franchise already answers "what are these two to each other before the
+season starts" — `buildFranchiseMeta` → `seededPairs` — and the answer has
+four properties a from-scratch version will not think of:
+
+| `META_WEIGHTS` | what it does |
+|---|---|
+| `bondAllies` 3, `bondRivals` −3 | rode together, or did not |
+| `bondBetrayedVictim` −5 / `bondBetrayedBetrayer` −1.5 | **asymmetric.** Being betrayed and betraying somebody are not the same memory, and one number says they are |
+| `bondBlindsideVictim` −4, `bondShowmanceIntact` 4, `bondShowmanceBroken` −3 | the other things a season does to a pair |
+| `bondOlderSeasonScale` 0.5 | **the tone-down.** The most recent shared season lands at full weight and every older one is halved again (`Math.pow(scale, idx)`), so a friendship three seasons back is worth 0.75, not 3 |
+| `bondClamp` 6 | a seeded bond never starts beyond ±6, and the clamp is asymmetric: it caps the seed's contribution and never pulls a pre-existing out-of-range bond inward |
+
+Repeated kinds stack with diminishing returns (`delta * scale * 0.5` from the
+second on), and a season the user excluded from the ledger seeds nothing.
+
+**How a show opts in.** Two predicates, not one overloaded flag, because they
+come apart on a crossover:
+
+- `p.isReturnee` — "was this player cast as a returnee". Total Drama and Big
+  Brother read this, and it is the right question there: coming back to the
+  same show is what makes a past season relevant.
+- `historyFromLedger: true` in the show's `js/shows.js` entry — "does the
+  ledger know them at all". The Traitors reads this, because everybody has
+  history and nobody is returning to THIS show; requiring twenty ticked boxes
+  to switch on a system that can already read the ledger means the day one is
+  missed, that player walks in with no reputation and nothing says so.
+
+Either way the ledger has the final word — a ticked box over an empty record
+still yields no profile. `buildFranchiseMeta` also requires
+`formatIsRunnable()`, because a format is stamped on a config long before its
+engine exists and the run loop falls through to Total Drama for anything it
+does not recognise: a season stamped with a new show and pressed Run IS a
+Total Drama season, and reading the ledger on the strength of the stamp alone
+gave every veteran in it reputation and grudges no checkbox had asked for.
+
+**What going it alone costs, measured on the show that did.** Drag Race's All
+Stars is in neither path — no `historyFromLedger`, and `isReturnee` appears
+nowhere in `js/dr*.js`. It grew its own carry-over in `js/dr/past.js`
+(`sharedHistory` + `historyBond`), mapping a pair to one of four constants:
+
+    friend +4 · rival −4 · sent-home −2 · mates +1
+
+That is a category, not a value, so:
+
+- **no recency decay.** A friendship from three seasons ago arrives at exactly
+  the same +4 as one from last season. `bondOlderSeasonScale` is the thing a
+  returnee format most obviously needs and the thing a from-scratch version
+  will not think to add.
+- **no clamp**, because there is nothing to clamp — the constant IS the value.
+- **no asymmetry.** "She beat me in the song that ended my season" is −2 on
+  both sides, though only one of them did it. The franchise version has known
+  since Big Brother that a victim and a betrayer remember it differently.
+- **no strength.** Two queens who ended inseparable and two who were merely
+  friendly both arrive at +4.
+
+And it could not be fixed in place without a second change: `js/dr/export.js`
+writes no bonds onto the season document, so the numbers a decay would act on
+are not stored anywhere. A show that opts into the franchise system gets all
+of this for free and stores nothing extra.
+
+**So, when adding a show:**
+
+1. Decide which predicate the show answers — `isReturnee` if players return to
+   this show, `historyFromLedger` if it casts from the whole franchise.
+2. If the latter, add `historyFromLedger: true` to the `js/shows.js` entry.
+   That is the entire opt-in, and it switches itself on the day the engine
+   ships rather than needing a show name added inside `franchise-meta.js`.
+3. Check the ledger can SEE your show's results before relying on it. It
+   counts `immunityWinner` and `vetoWinner` — the other shows' fields — so it
+   reports zero wins for every queen who ever played a drag season, which is
+   the whole reason `js/dr/history.js` exists to read the published document
+   instead. A new show whose wins have a different field name inherits that
+   silently: the profile builds, the résumé is empty, and nothing says so.
+4. If the show needs history the ledger cannot express, ADD IT TO THE LEDGER,
+   or read the season document alongside `seededPairs`. Do not start a
+   parallel table of constants.
+
 ---
 
 ## 9. The duplication you will hit
@@ -831,7 +914,12 @@ Each step leaves the site working.
 7. **Screens** (§6), driven by that season rather than by imagination.
 8. **Ratings signals** (§2.5) — after step 6, because the only way to wire them
    is to print them against a season that really happened.
-9. **AI fills** (§7) last — they are the only step that costs money per run.
+9. **Cross-season carry-over** (§8.2) — the moment the show can cast somebody
+   who has played before, and BEFORE writing any per-show relationship table.
+   It is one flag or one predicate; the alternative is a second carry-over
+   that has no recency decay, no clamp and no asymmetry, and by then it is
+   load-bearing.
+10. **AI fills** (§7) last — they are the only step that costs money per run.
 
 ---
 
@@ -848,6 +936,15 @@ The existing ones that will already catch you:
   ninth copy appeared, and it did appear. Per-show DATA maps are exemptions
   carrying their reason; the surviving two-show ternaries are a ratchet
 - `tests/season-format.test.js` — the export adapter matches the engine's shape
+- **Carried relationships come from ONE place** (§8.2). There is no guard for
+  this yet and it is worth writing, because the failure is silent: a show that
+  grows its own table of per-relationship constants still runs, still seeds
+  bonds, and still looks right on screen — it has simply lost the recency
+  decay, the clamp and the victim/betrayer asymmetry that
+  `js/franchise-meta.js` has had since Big Brother. Drag Race did exactly
+  this and nothing went red. The shape to assert: every runnable show reaches
+  `seededPairs` through one of the two predicates, and no module outside
+  `franchise-meta.js` maps a relationship KIND to a starting bond
 - `tests/wiki.test.js` — each show's article uses its own vocabulary
 - `tests/ratings.test.js` — every registered show declares an `audience`
   overlay (§1), and the same week must not rate identically on two shows
@@ -1330,6 +1427,41 @@ spoiler-free switch does not either.
 often it is the outcome. Compare it to `1 / n`. Do the same for the last item.
 Two lines, and it would have caught this the day the screen shipped.
 
+### Q. A second copy of a system, with the hard-won parts missing
+
+The other duplication class in this document (§9) is about identity maps —
+nine copies of a show list, all obviously the same thing, all found by one
+grep. This one is worse because the copy does not look like a copy.
+
+`js/franchise-meta.js` decides what two players are to each other before a
+season starts. It is not a big function, but every constant in it was paid
+for: the victim of a betrayal carries −5 and the betrayer −1.5, because a
+symmetric number claims they remember it the same way; the most recent shared
+season lands at full weight and older ones are halved again, because without
+that a friendship from four seasons ago is as strong as one from last week;
+seeds clamp at ±6, and the clamp is asymmetric so it caps what the seed adds
+without ever pulling an existing out-of-range bond inward.
+
+Drag Race needed the same thing for All Stars and wrote its own, in
+`js/dr/past.js`: four constants, one per relationship kind. It works. Nothing
+is red. The chart is right, the screens are right, and a season plays fine.
+What it lost is every one of those four properties, and none of them announce
+themselves — you find out by asking "does a friendship from three seasons ago
+arrive weaker?" and discovering there is no code that could make it so.
+
+**Why it happened, and it will happen again.** The per-show module is the
+natural place to answer a per-show question. "What did these two queens do to
+each other last season" feels like drag's business, the way the craft stats
+are. It is not: it is the franchise's business with a drag-shaped input, and
+the giveaway is that the answer has nothing show-specific in it — a betrayal
+decays at the same rate on every show.
+
+**The test.** Before writing any table that maps a relationship, a history or
+a reputation to a number, grep the franchise modules for the thing you are
+about to name. If `franchise-meta.js` already has a weight for it, you are
+writing the second copy. If it nearly does — right idea, wrong field names —
+the fix is to widen the franchise one, not to fork it. See §8.2.
+
 ### What a third show inherits from this work
 
 Wire these up rather than rebuilding them:
@@ -1347,6 +1479,7 @@ Wire these up rather than rebuilding them:
 | The frozen prefix | `playDragSeason`'s `schedule` → `gs._drSchedule` → `_frozenPins()` | re-decide the future without rewriting the past, and refuse when the past cannot be reproduced |
 | A re-run that is a re-run | `gs._drReroll = { from, nonce }`, applied only to units at or after `from` | ↺ gives a different night every press while everything before it is untouched (§11.5 N) |
 | A rebuild that starts where the first play started | `gs._drInitBonds` / `gs._drInitLean`, snapshotted in `initGameState` and restored before a rebuild | the replayed weeks are computed from the state the first play saw, not from the state the season has reached (§11.5 O) |
+| **Carried relationships between seasons** | `buildFranchiseMeta` → `seededPairs`, opted into with `historyFromLedger` or `isReturnee` | allies, rivals, betrayals and showmances become starting bonds — with recency decay, a ±6 clamp and victim/betrayer asymmetry you do not have to rediscover (§8.2, §11.5 Q) |
 
 ---
 

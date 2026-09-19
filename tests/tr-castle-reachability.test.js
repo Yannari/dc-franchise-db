@@ -80,6 +80,7 @@ import roster from '../franchise_roster.json';
 import '../js/tr/castle/trust.js';
 import '../js/tr/castle/suspicion.js';
 import '../js/tr/castle/grief.js';
+import '../js/tr/castle/plans.js';
 import '../js/tr/castle/cover.js';
 import '../js/tr/castle/romance.js';
 import '../js/tr/castle/callback.js';
@@ -187,7 +188,9 @@ const ALL_FIRINGS = SEASONS.flat();
 // broke. A SECOND SWEEP does not: it is the same harness with the catalogue
 // switched on, and each id below has to fire in it.
 const VARIANT_GATED = ['grief-the-last-glass', 'grief-two-chairs', 'grief-the-coffins',
-  'grief-in-this-room', 'grief-the-other-chair'];
+  'grief-in-this-room', 'grief-the-other-chair',
+  // The day the castle spends living under an On Trial list (js/tr/castle/plans.js).
+  'plan-under-the-list'];
 const TWIST_SEASONS = 80;
 function runTwistSeasons(n, seedBase) {
   const counts = {};
@@ -202,7 +205,8 @@ function runTwistSeasons(n, seedBase) {
     setPlayers(ROSTER);
     seedFranchiseHistory(CAST);
     const res = playTraitorsSeason({ cast: CAST, traitorCount: 3, seed: seedBase + i,
-      randomMurderTwists: ['chalice', 'double', 'hidden', 'plain-sight', 'death-match'] });
+      randomMurderTwists: ['chalice', 'double', 'hidden', 'plain-sight', 'death-match',
+        'on-trial'] });
     for (const round of res.log) {
       for (const ce of (round.castleEvents || [])) {
         counts[ce.event.id] = (counts[ce.event.id] || 0) + 1;
@@ -666,7 +670,7 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // exists at all — this count is the only place the registry size is
     // pinned, and an event that cannot fire in the main sweep still has to be
     // counted here.
-    expect(EVENTS.length).toBe(206);
+    expect(EVENTS.length).toBe(209);
     // 71 -> 73 (TASK 7 STAGE 6), and both are named rather than counted:
     // `susp-misread-tell` and `susp-defensive-overcorrect`. Each was rewritten
     // from a single branch onto `arcContinue`, so each can now genuinely
@@ -2162,6 +2166,14 @@ const BRANCHES = [
   'night-what-we-say-in-the-morning:could-not-agree',
   'night-what-we-say-in-the-morning:one-of-them-lied',
   'night-what-we-say-in-the-morning:settled-it',
+  'plan-holding-it:cannot-say-it',
+  'plan-holding-it:said-half',
+  'plan-holding-it:told-them-everything',
+  'plan-the-offer:asked-outright',
+  'plan-the-offer:did-not-say-yes',
+  'plan-the-offer:noticed-quietly',
+  'plan-the-offer:said-it-straight',
+  'plan-the-offer:took-it',
   'quiet-night-full-table:a-message',
   'quiet-night-full-table:counted-twice',
   'quiet-night-full-table:somebody-was-safe',

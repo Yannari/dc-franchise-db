@@ -82,6 +82,7 @@ import roster from '../franchise_roster.json';
 import '../js/tr/castle/trust.js';
 import '../js/tr/castle/suspicion.js';
 import '../js/tr/castle/grief.js';
+import '../js/tr/castle/plans.js';
 import '../js/tr/castle/cover.js';
 import '../js/tr/castle/romance.js';
 import '../js/tr/castle/callback.js';
@@ -249,8 +250,21 @@ describe('CASTLE EVENTS WRITE ZERO BELIEFS (the plan\'s #1 constraint)', () => {
   // doing — the same measurement caught a castle channel this month that read
   // as obviously informative and scored WORSE than a contentless control — and
   // it is a separate job from unblocking a suite that has been red on main.
-  const LEARN_IMPORTERS = ['armoury.js', 'deduction.js', 'murder-variants.js',
-    'powers.js', 'roles.js', 'roundtable.js'];
+  // `banish-or-murder.js` — the deal at the dinner writes ONE channel, and it
+  // is the most public act in the format: the room watched somebody raise a
+  // hand for the murder rather than the banishment. Priced at 0.5 in its own
+  // file, under the alignment ceiling, and swept in tests/tr-banish-or-murder
+  // (the refusal is 0.56-0.77 Traitor against a room of 0.29).
+  //
+  // `strategy.js` — the Faithful side (js/tr/strategy.js). It writes exactly
+  // two things and both come out of a landed test: what the person who ran it
+  // now knows, and what they tell their own circle. Its two COST channels were
+  // written as beliefs first and are deliberately not: only a Faithful ever
+  // runs a test or offers a truce, so a suspicion channel there would indict
+  // an innocent person every single time. That file's own header carries the
+  // measurement.
+  const LEARN_IMPORTERS = ['armoury.js', 'banish-or-murder.js', 'deduction.js',
+    'murder-variants.js', 'powers.js', 'roles.js', 'roundtable.js', 'strategy.js'];
 
   it('only the priced channels import learn(), and the scene API is not one of them', () => {
     const TR_DIR = path.join(HERE, '..', 'js', 'tr');

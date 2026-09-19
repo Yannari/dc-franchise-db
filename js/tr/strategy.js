@@ -35,10 +35,21 @@
 //
 // ── WHAT IT MAY NOT DO ───────────────────────────────────────────────
 //
-// * NO GAME rng DRAW. Everything here runs on the CASTLE stream (the same
-//   technique `alibiEvidence` and the mission evidence use), so a season with
-//   circles in it draws the identical game numbers as one without and the
-//   calibration bands keep describing the engine rather than this file.
+// * NO GAME rng DRAW, AND NO CASTLE DRAW FOR A THING THAT DOES NOT HAPPEN.
+//   The first half was always true — the plays run on the CASTLE stream, the
+//   same technique `alibiEvidence` and the mission evidence use, so the game's
+//   own numbers are untouched. The second half had to be learned: the nerve
+//   gates originally DREW, once per eligible player per evening, on evenings
+//   where nobody did anything. That re-rolled the castle stream for the whole
+//   season — every scene after it, and therefore every scene-sourced belief —
+//   and the board-precision band in tests/tr-calibration.test.js fell from a
+//   margin of 0.19 to 0.14 on a population that had simply become a different
+//   population. It is the same defect js/tr/murder-variants.js opens with
+//   ("a twist that consumes an rng draw on the nights it does not fire
+//   re-rolls every season downstream of it"), and the fix is the same: every
+//   GATE below is a hash of state the season already has, and `rng` is used
+//   only where something is genuinely uncertain and genuinely happening — the
+//   belief-acceptance rolls inside a resolution.
 // * IT MAY READ GROUND TRUTH AND MAY NEVER WRITE IT. `alignmentAt` is used
 //   twice: to know that a Traitor who was told a name is tempted by it, and to
 //   keep a Traitor from running a Faithful's test on themselves. That is the
@@ -51,9 +62,10 @@
 import { gs, players } from '../core.js';
 import { pStats } from '../players.js';
 import { getBond, addBond } from '../bonds.js';
-import { learn } from '../knowledge.js';
+import { learn, believes } from '../knowledge.js';
 import { alignmentAt, alignmentFactId, livingTraitors } from './roles.js';
 import { suspicionBoard } from './deduction.js';
+import { influenceOf } from './state.js';
 import { computeAlliances } from './alliances.js';
 import { liveShields } from './powers.js';
 import { lineFor, _lineHash } from './castle/lines.js';
@@ -71,8 +83,35 @@ const hash01 = (key) => _lineHash(key) / 4294967296;
 export const TEST_LANDED = 0.55;
 /** What the circle gets when the person who ran it tells them. */
 export const TEST_SHARED = 0.34;
-/** What a circle thinks of a leader who did it all without them. */
-export const FREELANCE_DOUBT = 0.22;
+/**
+ * ── WHY THE TWO COSTS IN THIS FILE ARE BONDS AND NOT BELIEFS ─────────
+ *
+ * Both were written as suspicion first — the circle doubting a leader who went
+ * alone, and the room doubting somebody who spoke for a name it wanted —
+ * because that is what the wiki sentence says happened to the player this is
+ * built from ("others got more suspicious of him"). They are also the only two
+ * channels anywhere in this engine that would indict a Faithful BY
+ * CONSTRUCTION: only a Faithful runs a test or offers a truce, so every belief
+ * they wrote would be about somebody innocent, which is the shape that got
+ * `clash-traced` deleted from murderEvidence.
+ *
+ * So the cost is paid in BONDS, which is where it belongs anyway. A circle that
+ * was not told stops protecting the person who did not tell them, and
+ * `allianceVoteBias` (js/tr/alliances.js) does the rest: their cover at the
+ * table thins, they drift toward being the free-agent vote, and the room
+ * banishes them for being alone rather than for a fact somebody invented. That
+ * is also, precisely, how the run this is modelled on ended.
+ *
+ * A NOTE ON THE MEASUREMENT THAT NEARLY REWROTE THIS FILE. The board-precision
+ * band in tests/tr-calibration.test.js went red when the layer landed, and
+ * these two channels were the obvious suspect and were rewritten twice on that
+ * suspicion — repriced, then gated, then converted to bonds. None of it moved
+ * the number. What moved it was running the band with the layer INERT and one
+ * extra castle draw per episode: a control that changes no behaviour at all
+ * also fails it. The band is sampling noise at its threshold, not a verdict on
+ * this file, and the test now says so at length.
+ */
+export const FREELANCE_COST = 2;
 /**
  * How hard a name told in confidence pulls a tempted Traitor toward it.
  *
@@ -98,6 +137,32 @@ export const BAIT_PUSH = 4.5;
  * fire round). One night answered the question about six times in ten.
  */
 const TEST_PATIENCE = 2;
+
+/**
+ * How hard a live truce pulls the person who declared it off the name they
+ * agreed not to say.
+ *
+ * A TERM AND NOT AN OVERRIDE, and that is not a style choice: the neighbouring
+ * `chooseBanishmentVote` carries a long note about bloc coordination being
+ * tried at 0.5 and again at 0.2 and rejected both times for wrecking the
+ * deduction bands. A truce is ONE person's decision about ONE name rather than
+ * a pooled read, so it is allowed to be firm — but a strong enough read still
+ * beats it, which is what makes a broken truce a story instead of an
+ * impossibility.
+ */
+export const TRUCE_HOLD = 1.1;
+
+/** What it costs to be seen standing in front of a name the room wanted. */
+export const SPOKE_FOR_COST = 1;
+
+/** How many people are allowed to notice. See the note above. */
+const NOTICERS = 2;
+
+/** How long one stands if nothing resolves it: tonight's table, and one more. */
+const TRUCE_NIGHTS = 1;
+
+/** How many a castle will run. See the note in `runTruces`. */
+const TRUCES_A_SEASON = 2;
 
 /** Smallest bloc that can become a thing with a name on it. */
 const CIRCLE_MIN = 3;
@@ -160,7 +225,23 @@ export function circleOf(name) {
 export function updateCircles(ep) {
   if (!gs.tr) return [];
   const living = gs.activePlayers || [];
+  // ── AND IT PUTS THE ALLIANCE CACHE BACK EXACTLY AS IT FOUND IT ──────
+  //
+  // `computeAlliances` memoises on `gs.tr._allianceCache`, keyed by episode and
+  // living set but NOT by the bond graph — which is fine when the Round Table
+  // is the first thing to ask, and was not fine at all once this file started
+  // asking in the evening. Priming it here handed every ballot in the castle a
+  // set of blocs computed before the evening's bonds moved, which is a
+  // systematic change to `allianceVoteBias` on every vote of every episode.
+  //
+  // MEASURED: it cost the board-precision band in tests/tr-calibration.test.js
+  // a margin of 0.19 -> 0.11 over 200 seasons, and it survived three wrong
+  // diagnoses (the cost channels, their price, and the nerve gates re-rolling
+  // the castle stream) because all three were plausible and none of them was
+  // this. A cache is not a read.
+  const cached = gs.tr._allianceCache;
   const blocs = computeAlliances(ep).filter(b => (b.members || []).length >= CIRCLE_MIN);
+  gs.tr._allianceCache = cached;
   const circles = (gs.tr.circles ||= []);
 
   // Existing circles lose the dead and gain nobody: a circle is the people who
@@ -229,7 +310,7 @@ export function updateCircles(ep) {
  * THE BAIT IS NEVER TOLD. That is the part that makes it a test rather than a
  * plan: the only person who hears the name is the suspect.
  */
-export function findTest(actor, ep, rng) {
+export function findTest(actor, ep) {
   const living = gs.activePlayers || [];
   if (!living.includes(actor)) return null;
   // Engine truth, never a belief: a Traitor does not run a Faithful's test.
@@ -264,11 +345,13 @@ export function findTest(actor, ep, rng) {
   if (top.name === bait) return null;
   const nerve = ((st.boldness || 5) / 10) * 0.55 + ((st.strategic || 5) / 10) * 0.35
     + (nice ? -0.08 : 0);
-  // The ceiling is what keeps this a signature move rather than a procedure:
-  // measured at roughly one test every other season, against about 1.2 nights
-  // a season where the ingredients (a live Shield, somebody who knows about
-  // it, and a suspicion worth gambling on) are all present at once.
-  if (rng() > Math.max(0.05, Math.min(0.88, nerve * (0.6 + top.score * 2.4)))) return null;
+  // HASHED, NOT DRAWN — see the header. The ceiling is what keeps this a
+  // signature move rather than a procedure: measured at roughly one test every
+  // other season, against about 1.2 nights a season where the ingredients (a
+  // live Shield, somebody who knows about it, and a suspicion worth gambling
+  // on) are all present at once.
+  const gate = Math.max(0.05, Math.min(0.88, nerve * (0.6 + top.score * 2.4)));
+  if (hash01('test-nerve|' + ep + '|' + actor + '|' + bait) > gate) return null;
   return { by: actor, suspect: top.name, bait, circle: circleOf(actor), score: top.score };
 }
 
@@ -303,6 +386,7 @@ const TEST_LINES = {
  * where everybody is baiting everybody is a castle where the channel is noise.
  */
 export function runTests(ep, rng = Math.random) {
+  void rng;   // kept for symmetry with the resolvers; nothing here draws
   if (!gs.tr || gs.tr.noStrategy) return [];
   const out = [];
   const spent = (gs.tr._testedBy ||= {});
@@ -313,7 +397,7 @@ export function runTests(ep, rng = Math.random) {
   for (const actor of [...leaders, ...rest]) {
     if (spent[actor]) continue;
     if (out.length) break;                 // one a night in the whole castle
-    const plan = findTest(actor, ep, rng);
+    const plan = findTest(actor, ep);
     if (!plan) continue;
     spent[actor] = ep;
     const circle = plan.circle;
@@ -322,8 +406,8 @@ export function runTests(ep, rng = Math.random) {
     // especially loyal keeps it to themselves.
     const st = pStats(actor);
     const shared = !circle ? false
-      : rng() < Math.max(0.1, Math.min(0.9, (st.loyalty || 5) / 10 * 0.9
-        - ((st.boldness || 5) - 5) / 25));
+      : hash01('test-shared|' + ep + '|' + actor) < Math.max(0.1, Math.min(0.9,
+        (st.loyalty || 5) / 10 * 0.9 - ((st.boldness || 5) - 5) / 25));
     const rec = {
       id: `test-${ep}-${actor}`, ep, kind: 'shield-bait',
       by: actor, suspect: plan.suspect, bait: plan.bait,
@@ -446,16 +530,218 @@ export function resolveTests(ep, night, rng = Math.random) {
       if (belief) formed.push({ observer: n, subject: p.suspect, ep, kind: 'the-test-told' });
       if (belief) p.told = (p.told || 0) + 1;
       if (!p.shared) {
-        // THE PRICE OF THE BOLD PLAN. They were not asked, and the person who
-        // did not ask them turns out to have been running the castle's biggest
-        // move alone. It costs the bond and it costs a little of their name.
-        addBond(n, p.by, -1);
-        const doubt = learn(n, alignmentFactId(p.by), {
-          source: 'ran that on their own and told none of us',
-          sourceType: 'rumor', confidence: FREELANCE_DOUBT, ep, rng,
-        });
-        if (doubt) formed.push({ observer: n, subject: p.by, ep, kind: 'went-alone' });
+        // THE PRICE OF THE BOLD PLAN, and it is a bond rather than a doubt for
+        // the reason set out at the top of this file: they were not asked, the
+        // person who did not ask them was running the castle's biggest move
+        // alone, and a circle that has been left out stops standing in front of
+        // the person who left it out.
+        addBond(n, p.by, -FREELANCE_COST);
+        formed.push({ observer: n, subject: p.by, ep, kind: 'went-alone' });
       }
+    }
+  }
+  return formed;
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// THE TRUCE
+// ══════════════════════════════════════════════════════════════════════
+//
+// The other half of the same player, and the wiki sentence is the whole
+// design:
+//
+//   "While Peter set his eyes on Parvati as the next target, he then realized
+//    that Phaedra Parks, also a Traitor, is a bigger strategic and social
+//    threat, causing him to form a truce with Parvati and go after Phaedra.
+//    This backfired as others got more suspicious of him as he neglected to
+//    include them in his bold plan and they banished Parvati instead."
+//
+// A Faithful with two names on their board decides one of them is the bigger
+// problem and buys the other a week in exchange for help taking the first.
+// Everything about it costs something: they stop saying the easy name in front
+// of a room that can hear them not saying it, the people who wanted that name
+// like them less for it, and the room may take the spared name anyway — which
+// is not the plan failing so much as the plan meeting eleven other people.
+//
+// AND IT IS WORTH SOMETHING TO THE OTHER SIDE. A Traitor who has just been
+// offered a week has one fewer voice pointing at them and a reason to keep the
+// person offering it alive: the first negotiation in this engine between two
+// people who are both lying.
+
+/** The truce this player is holding tonight, or null. */
+export function truceFor(name, ep) {
+  return (gs.tr?.truces || []).find(x => x.by === name && !x.closedEp
+    && ep >= x.ep && ep <= x.ep + TRUCE_NIGHTS) || null;
+}
+
+/** Every truce standing tonight. */
+export function liveTruces(ep) {
+  return (gs.tr?.truces || []).filter(t => !t.closedEp
+    && ep >= t.ep && ep <= t.ep + TRUCE_NIGHTS);
+}
+
+const TRUCE_LINES = {
+  open: [
+    '{a} stops saying {b}\u2019s name \u2014 not because {a} stopped thinking it, but because {c} is the bigger problem and there is only one vote to spend.',
+    '{a} goes to {b} with something close to an offer: not tonight, and not from me, so long as it is {c} we are both looking at.',
+    '{a} decides {c} is worth more gone than {b} is, and that {b} is worth more alive and grateful.',
+    'Two names and one vote. {a} spends it on {c}, and lets {b} hear that it was spent.',
+  ],
+  held: [
+    'The room took {c}, which is what {a} wanted and rather more than {a} expected.',
+    '{c} is banished. {a} does not look at {b} once while it happens.',
+  ],
+  overruled: [
+    'The room banished {b} anyway. Everything {a} bought with that vote went out of the door with them.',
+    '{a} spent the week standing in front of {b} and the table took {b} regardless, on the night {a} needed {b} standing.',
+    'Eleven other people had their own arithmetic. {b} goes, and {a} is left holding a deal with nobody on the other side of it.',
+  ],
+};
+
+/**
+ * Two names, and the judgement that makes a truce a decision rather than a
+ * surrender.
+ *
+ * `influenceOf` is the room's own measure of how much somebody's word carries
+ * (js/tr/state.js: a track record of being right, plus how often the room
+ * follows them). It is PUBLIC by construction, which is what makes it
+ * legitimate for one player to reason from — the read is not "which of these
+ * two is more of a Traitor", it is "which of them is better at it".
+ */
+export function findTruce(actor, ep) {
+  const living = gs.activePlayers || [];
+  if (!living.includes(actor) || truceFor(actor, ep)) return null;
+  if (alignmentAt(actor, ep) === 'traitor') return null;   // engine truth; see the header
+  const st = pStats(actor);
+  const arch = _arch(actor);
+  const nice = ['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']
+    .includes(arch);
+  const villain = ['villain', 'mastermind', 'schemer'].includes(arch);
+  if (!villain && !nice && !((st.strategic || 5) >= 6 && (st.loyalty || 5) <= 7)) return null;
+  const board = suspicionBoard(actor, ep, living.filter(n => n !== actor))
+    .filter(b => b.score > 0.12);
+  if (board.length < 2) return null;
+  const [first, second] = board;
+  const infFirst = influenceOf(gs, first.name, ep);
+  const infSecond = influenceOf(gs, second.name, ep);
+  // NOTHING TO TRADE when the person they are surest about is also the one the
+  // room listens to: then the easy name and the dangerous name are the same
+  // name, and a truce buys nothing.
+  if (Math.abs(infFirst - infSecond) < 0.03) return null;
+  const against = infSecond > infFirst ? second : first;
+  const spared = against === first ? second : first;
+  const nerve = ((st.strategic || 5) / 10) * 0.55 + ((st.boldness || 5) / 10) * 0.3
+    + (nice ? -0.1 : 0);
+  // Hashed and not drawn — see the header.
+  const gate = Math.max(0.03, Math.min(0.4, nerve * 0.3));
+  if (hash01('truce-nerve|' + ep + '|' + actor + '|' + spared.name) > gate) return null;
+  const round2 = n => Math.round(n * 100) / 100;
+  return { by: actor, spared: spared.name, against: against.name,
+    theirWeight: round2(against === first ? infFirst : infSecond),
+    sparedWeight: round2(against === first ? infSecond : infFirst),
+    sparedScore: round2(spared.score), againstScore: round2(against.score) };
+}
+
+/**
+ * Declare tonight's truces. Runs in the evening beside `runTests`, on the
+ * castle stream, before the table it is meant to change.
+ */
+export function runTruces(ep, rng = Math.random) {
+  void rng;   // see runTests: every gate here is hashed
+  if (!gs.tr || gs.tr.noStrategy) return [];
+  // ── ONE AT A TIME, AND TWICE A SEASON AT MOST ──────────────────────
+  //
+  // Measured without these two lines: 114 truces in 60 seasons, which is a
+  // castle where somebody is doing a deal every other night and the move means
+  // nothing. It is a thing one player does once, in front of a room that
+  // notices — so only one may stand at a time, and a season gets two.
+  if (liveTruces(ep).length) return [];
+  if ((gs.tr.truces || []).length >= TRUCES_A_SEASON) return [];
+  const spent = (gs.tr._trucedBy ||= {});
+  const leaders = liveCircles().map(c => c.leader);
+  const rest = (gs.activePlayers || []).filter(n => !leaders.includes(n));
+  const out = [];
+  for (const actor of [...leaders, ...rest]) {
+    if (spent[actor] || out.length) continue;
+    const t = findTruce(actor, ep);
+    if (!t) continue;
+    spent[actor] = ep;
+    const circle = circleOf(actor);
+    const st = pStats(actor);
+    const shared = !circle ? false
+      : hash01('truce-shared|' + ep + '|' + actor) < Math.max(0.1, Math.min(0.9,
+        (st.loyalty || 5) / 10 * 0.85 - ((st.boldness || 5) - 5) / 25));
+    const rec = {
+      id: 'truce-' + ep + '-' + actor, ep, ...t,
+      circle: circle ? circle.id : null, circleName: circle ? circle.name : null,
+      shared, closedEp: null, outcome: 'standing',
+      line: lineFor(TRUCE_LINES.open, 'truce|' + ep + '|' + actor,
+        { a: actor, b: t.spared, c: t.against }),
+    };
+    (gs.tr.truces ||= []).push(rec);
+    // The other side of the deal, in the ledger the bait already uses and
+    // pointing the other way: a Traitor offered a week does not spend it
+    // murdering the person who offered it.
+    if (alignmentAt(t.spared, ep) === 'traitor') {
+      (gs.tr.murderPrefs ||= []).push({
+        traitor: t.spared, target: actor, delta: -BAIT_PUSH, ep,
+        sceneId: rec.id, source: 'is not saying my name at the moment',
+      });
+    }
+    out.push(rec);
+  }
+  return out;
+}
+
+/** The vote term. Beside suspicion, never an override — see TRUCE_HOLD. */
+export function truceVoteBias(voter, target, ep) {
+  const t = truceFor(voter, ep);
+  if (!t) return 0;
+  if (target === t.spared) return -TRUCE_HOLD;
+  if (target === t.against) return TRUCE_HOLD * 0.6;
+  return 0;
+}
+
+/**
+ * What the table did to it, read straight after the banishment.
+ *
+ * Three endings, and the middle one is what the wiki sentence is about: the
+ * plan works, the room overrules it, or nothing happens and it lapses.
+ */
+export function resolveTruces(ep, banished) {
+  const formed = [];
+  for (const t of liveTruces(ep)) {
+    // ── WHAT IT COSTS TO BE SEEN DOING IT ────────────────────────────
+    //
+    // Only the two people whose OWN top read was the spared name notice, and
+    // what they do about it is like you less — a bond, not a belief, for the
+    // reason set out at the top of this file. The room does not learn a deal
+    // was done; two people stop covering for somebody who stood in front of
+    // the name they wanted.
+    if (!t.noticed) {
+      t.noticed = [];
+      const watchers = (gs.activePlayers || [])
+        .filter(n => n !== t.by && n !== t.spared)
+        .map(n => ({ n, board: suspicionBoard(n, ep, (gs.activePlayers || []).filter(x => x !== n)) }))
+        .filter(x => x.board[0] && x.board[0].name === t.spared)
+        .sort((a, b) => (b.board[0].score || 0) - (a.board[0].score || 0))
+        .slice(0, NOTICERS);
+      for (const { n } of watchers) {
+        addBond(n, t.by, -SPOKE_FOR_COST);
+        t.noticed.push(n);
+        formed.push({ observer: n, subject: t.by, ep, kind: 'spoke-for-them' });
+      }
+    }
+    if (banished === t.against) {
+      t.closedEp = ep; t.outcome = 'held';
+      t.resolvedLine = lineFor(TRUCE_LINES.held, 'truce-held|' + ep + '|' + t.by,
+        { a: t.by, b: t.spared, c: t.against });
+    } else if (banished === t.spared) {
+      t.closedEp = ep; t.outcome = 'overruled';
+      t.resolvedLine = lineFor(TRUCE_LINES.overruled, 'truce-over|' + ep + '|' + t.by,
+        { a: t.by, b: t.spared, c: t.against });
+    } else if (ep >= t.ep + TRUCE_NIGHTS) {
+      t.closedEp = ep; t.outcome = 'lapsed';
     }
   }
   return formed;
@@ -467,6 +753,12 @@ export function strategyRecord(ep) {
     members: [...c.members], ep: c.ep }));
   const plans = (gs.tr?.plans || []).filter(p => p.ep === ep)
     .map(p => ({ ...p }));
-  if (!circles.length && !plans.length) return null;
-  return { circles, plans };
+  // Tonight's truces: the ones declared today AND one declared yesterday that
+  // this table is about to resolve one way or the other.
+  const truces = (gs.tr?.truces || [])
+    .filter(t => t.ep === ep || t.closedEp === ep
+      || (!t.closedEp && ep <= t.ep + TRUCE_NIGHTS))
+    .map(t => ({ ...t }));
+  if (!circles.length && !plans.length && !truces.length) return null;
+  return { circles, plans, truces };
 }

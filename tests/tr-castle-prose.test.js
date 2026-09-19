@@ -72,6 +72,7 @@ import { consensusPhrase } from '../js/tr/knowledge-flow.js';
 import '../js/tr/castle/trust.js';
 import '../js/tr/castle/suspicion.js';
 import '../js/tr/castle/grief.js';
+import '../js/tr/castle/plans.js';
 import '../js/tr/castle/cover.js';
 import '../js/tr/castle/romance.js';
 import '../js/tr/castle/callback.js';
@@ -1843,6 +1844,11 @@ const CONSENSUS_LICENSED = [
   ['Everybody knew what was being asked', 'the mission briefing is a ceremony'],
   ['The split is arbitrary and everybody knows it', 'the teams are drawn in public'],
   ['Then the room has decided', 'the Round Table ballot'],
+  // The deal at the dinner is the one vote in this format that is taken OUT
+  // LOUD and has to be unanimous to pass at all (js/tr/banish-or-murder.js),
+  // so a morning line saying the room voted to a person is not a claim about
+  // what a room believes — it is the rule that produced the morning.
+  ['it voted, out loud and to a', 'the deal at the dinner: a public, unanimous vote'],
   ['Everybody knows one true thing now', 'the banishment reveal'],
   // THE ACT BREAK IN FRONT OF THE UNMASKING. Not a claim about what a room
   // believes — a statement of what the next card literally does: the endgame

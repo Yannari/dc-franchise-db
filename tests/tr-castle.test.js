@@ -34,6 +34,7 @@ import roster from '../franchise_roster.json';
 import '../js/tr/castle/trust.js';
 import '../js/tr/castle/suspicion.js';
 import '../js/tr/castle/grief.js';
+import '../js/tr/castle/plans.js';
 import '../js/tr/castle/cover.js';
 import '../js/tr/castle/romance.js';
 import '../js/tr/castle/callback.js';

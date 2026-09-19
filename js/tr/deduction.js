@@ -28,6 +28,7 @@
 // path. The rumour tier caps only the callers that pass no confidence; the
 // ceiling in learn() is what actually bounds the format.
 import { gs } from '../core.js';
+import { truceVoteBias } from './strategy.js';
 import { recordFact, getFact, learn, believes, effectiveConfidence,
   ALIGNMENT_CRED_CEILING } from '../knowledge.js';
 import { alignmentFactId, livingTraitors, alignmentAt } from './roles.js';
@@ -781,6 +782,13 @@ export function chooseBanishmentVote(voter, candidates, ep, rng = Math.random) {
         // the free-agent vote. A strong read on an ally still beats the instinct
         // to protect them, which is the betrayal the format lives on.
         + allianceVoteBias(voter, name, ep)
+        // THE DEAL THIS VOTER MADE THIS AFTERNOON, if they made one
+        // (js/tr/strategy.js). One person, two names: they are not saying the
+        // one they agreed not to say, and they are pushing the one they think
+        // the room should be looking at instead. A TERM, like everything else
+        // in this expression, and taking no rng draw — the note above on bloc
+        // coordination is exactly why it is not allowed to be an instruction.
+        + truceVoteBias(voter, name, ep)
         // WHERE THE ROOM IS ALREADY GOING, and only a Traitor reads it.
         + bandwagon(voter, name, isTraitor),
     };

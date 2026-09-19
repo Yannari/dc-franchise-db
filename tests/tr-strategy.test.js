@@ -24,7 +24,9 @@ import { playTraitorsSeason } from '../js/tr/headless.js';
 import { rpBuildColdOpen } from '../js/vp-tr/cold-open.js';
 import { rpBuildRoundTable } from '../js/vp-tr/round-table.js';
 import { alignmentAt } from '../js/tr/roles.js';
-import { TEST_LANDED, FREELANCE_DOUBT } from '../js/tr/strategy.js';
+import { getBond } from '../js/bonds.js';
+import { TEST_LANDED, FREELANCE_COST, BAIT_PUSH } from '../js/tr/strategy.js';
+import { formPreference } from '../js/tr/murder.js';
 import { alignmentFactId } from '../js/tr/roles.js';
 import { resolveTests } from '../js/tr/strategy.js';
 import { resetKnowledge, recordFact } from '../js/knowledge.js';
@@ -41,9 +43,24 @@ function play(seed, opts = {}) {
   return {
     circles: gs.tr.circles || [],
     plans: gs.tr.plans || [],
+    truces: gs.tr.truces || [],
     rounds: gs.tr.rounds || [],
     rows: gs.episodeHistory || [],
   };
+}
+
+/** Every truce across `n` seeds, with its season's facts captured live. */
+function truceSweep(n) {
+  const out = [];
+  for (let seed = 1; seed <= n; seed++) {
+    const s = play(seed);
+    for (const t of s.truces) {
+      out.push({ seed, truce: t, ...s,
+        sparedWasTraitor: alignmentAt(t.spared, t.ep) === 'traitor',
+        againstWasTraitor: alignmentAt(t.against, t.ep) === 'traitor' });
+    }
+  }
+  return out;
 }
 
 /**
@@ -158,22 +175,57 @@ describe('the test', () => {
   });
 
   // ── THE NUMBER THE WHOLE PLAY TURNS ON ───────────────────────────────
-  it('a Traitor takes the bait far more often than a Faithful is attacked by chance', () => {
-    let nTr = 0, hitTr = 0, nFa = 0, hitFa = 0, landed = 0, landedTr = 0;
-    for (const { plan, suspectWasTraitor } of sweep(150)) {
-      const hit = plan.outcome === 'landed';
-      if (hit) { landed++; if (suspectWasTraitor) landedTr++; }
-      if (suspectWasTraitor) { nTr++; if (hit) hitTr++; } else { nFa++; if (hit) hitFa++; }
+  // ── DOES THE BAIT ACTUALLY TEMPT ANYBODY ─────────────────────────────
+  //
+  // THIS WAS A POPULATION ARM AND IT COULD NOT BE ONE. The play needs a live
+  // Shield, somebody who knows about it, a suspicion worth gambling on and the
+  // nerve to act, which is 0.37 tests a season and about 25 tested Traitors in
+  // 250 seasons — of which three to five bite. A ratio built on three events
+  // swings by half a point when one of them goes the other way: the same code
+  // measured 0.22/0.04 before the castle scenes reordered the evening and
+  // 0.13/0.08 after, and neither number is a fact about the engine.
+  //
+  // So the mechanism is asserted where it is deterministic — on
+  // `formPreference` itself, with and without the push — and the population
+  // arm below only asks the questions a small sample can answer.
+  it('puts the baited name in front of the Traitor who was told it', () => {
+    setPlayers(ROSTER);
+    const cast = CAST.slice(0, 8);
+    const [traitor, bait, ...rest] = cast;
+    const world = () => {
+      setGs({ activePlayers: [...cast], bonds: {} });
+      gs.tr = { rounds: [], alignment: { [traitor]: true }, shields: [], murderPrefs: [],
+        standing: {}, voteIntents: [] };
+    };
+    const rng = () => 0.5;
+    world();
+    const before = formPreference(traitor, 4, rng);
+    world();
+    gs.tr.murderPrefs.push({ traitor, target: bait, delta: BAIT_PUSH, ep: 4,
+      sceneId: 'unit', source: 'told in confidence that they were being worked out' });
+    const after = formPreference(traitor, 4, rng);
+    expect(before.target, 'the unit world produced no preference at all').toBeTruthy();
+    // THE WHOLE MECHANISM IN ONE ASSERTION: a name this Traitor was handed in
+    // confidence is the name they reach for. At the push this shipped with
+    // first (1.2, against a scatter of ±1.15) this line failed, which is what
+    // 40 seasons of never once biting had been trying to say.
+    expect(after.target, 'the push does not move the conclave at all').toBe(bait);
+    expect(rest.length).toBeGreaterThan(0);
+  });
+
+  it('lands sometimes, and is never right every time', () => {
+    let landed = 0, landedTr = 0, tested = 0;
+    for (const { plan, suspectWasTraitor } of sweep(250)) {
+      tested++;
+      if (plan.outcome !== 'landed') continue;
+      landed++;
+      if (suspectWasTraitor) landedTr++;
     }
-    expect(nTr, 'no Traitor was ever tested in 150 seasons').toBeGreaterThan(8);
-    expect(landed, 'no test ever landed in 150 seasons').toBeGreaterThan(2);
-    const tpr = hitTr / nTr;
-    const fpr = hitFa / Math.max(1, nFa);
-    // THE ARM THAT CAUGHT THE ORIGINAL BUILD. At the first push these two were
-    // 0.06 and 0.05 — a play whose mechanism did not work, wearing the clothes
-    // of one that did.
-    expect(tpr, 'the bait does not actually tempt anybody').toBeGreaterThan(fpr * 2.5);
-    // And it is never proof: the pact can want that name for its own reasons.
+    expect(tested, 'nobody ran a test in 250 seasons').toBeGreaterThan(40);
+    expect(landed, 'no test ever landed in 250 seasons').toBeGreaterThan(2);
+    // Never proof: the pact can want a name for its own reasons, and a
+    // Faithful who is completely certain and wrong is one of the better things
+    // that can happen to a season.
     expect(landedTr / landed, 'a landed test is always right, which it must not be')
       .toBeLessThan(0.95);
   });
@@ -224,8 +276,11 @@ describe('the test', () => {
     expect(formed.some(f => f.kind === 'the-test' && f.observer === tester)).toBe(true);
     expect(formed.some(f => f.kind === 'the-test-told' && f.observer === ally)).toBe(true);
     // AND THE PRICE OF GOING ALONE, which is the Peter ending: the circle was
-    // not told, so the circle now has a question about the person who leads it.
+    // not told, so the circle stops covering for the person who leads it. It is
+    // a bond rather than a suspicion, and the note in js/tr/strategy.js is the
+    // measurement that decided that.
     expect(formed.some(f => f.kind === 'went-alone' && f.subject === tester)).toBe(true);
+    expect(getBond(ally, tester)).toBeLessThan(0);
     const beliefs = (gs.knowledge || {})[alignmentFactId(suspect)]?.beliefs || {};
     expect(beliefs[tester].confidence).toBeLessThanOrEqual(TEST_LANDED + 1e-9);
     expect(beliefs[ally].confidence).toBeLessThan(beliefs[tester].confidence);
@@ -262,7 +317,8 @@ describe('the test', () => {
       // Same receipt rule as above; the store cannot answer this either.
       if (!plan.told) continue;
       checked++;
-      expect(FREELANCE_DOUBT).toBeLessThan(TEST_LANDED);
+      // The cost is a BOND and not a doubt — see the note in js/tr/strategy.js.
+      expect(FREELANCE_COST).toBeGreaterThan(0);
       void beliefsAboutTester;
     }
     // Rare by construction — a landed test, run by a circle's leader, kept from
@@ -325,5 +381,136 @@ describe('the test', () => {
     expect(Math.abs(on.murders - off.murders) / off.murders,
       'the castle is losing a different NUMBER of people, not a different set')
       .toBeLessThan(0.06);
+  });
+});
+
+describe('the truce', () => {
+  it('is one player\u2019s move, twice a season at the outside', () => {
+    const runs = truceSweep(60);
+    expect(runs.length / 60, 'nobody ever did a deal').toBeGreaterThan(0.3);
+    expect(runs.length / 60, 'the castle is doing deals every other night')
+      .toBeLessThan(1.4);
+    for (let seed = 1; seed <= 20; seed++) {
+      const { truces } = play(seed);
+      expect(truces.length).toBeLessThanOrEqual(2);
+      // One at a time: two standing at once is two people each promising a
+      // week to somebody, which is a different mechanic.
+      for (const a of truces) {
+        for (const b of truces) {
+          if (a === b) continue;
+          const overlap = a.ep <= (b.closedEp ?? b.ep + 1) && b.ep <= (a.closedEp ?? a.ep + 1);
+          expect(overlap, 'two truces stood at the same time').toBe(false);
+        }
+      }
+    }
+  });
+
+  it('spares the quieter name and goes after the one the room listens to', () => {
+    for (const { truce } of truceSweep(60)) {
+      expect(truce.spared).not.toBe(truce.against);
+      expect(truce.by).not.toBe(truce.spared);
+      expect(truce.by).not.toBe(truce.against);
+      // THE JUDGEMENT ITSELF, and it is the whole reason the move exists: the
+      // name they go after is the one with more weight in the room, not the
+      // one they are surest about.
+      expect(truce.theirWeight).toBeGreaterThan(truce.sparedWeight);
+    }
+  });
+
+  it('is aimed at people it has a read on, not at the room in general', () => {
+    let trBoth = 0, total = 0, roomTr = 0, roomTot = 0;
+    for (const { truce, sparedWasTraitor, againstWasTraitor, rows } of truceSweep(60)) {
+      total += 2;
+      if (sparedWasTraitor) trBoth++;
+      if (againstWasTraitor) trBoth++;
+      const row = rows.find(e => Number(e.num) === truce.ep);
+      for (const n of ((row && row.tr && row.tr.living) || [])) {
+        roomTot++;
+        if (alignmentAt(n, truce.ep) === 'traitor') roomTr++;
+      }
+    }
+    expect(total).toBeGreaterThan(20);
+    // Both names come off the top of a suspicion board, so both should be
+    // Traitors far more often than a name picked out of the room would be.
+    expect(trBoth / total).toBeGreaterThan((roomTr / roomTot) * 1.5);
+  });
+
+  it('is overruled by the room often enough to be a real risk', () => {
+    const counts = {};
+    for (const { truce } of truceSweep(60)) {
+      counts[truce.outcome] = (counts[truce.outcome] || 0) + 1;
+    }
+    // THE THREE ENDINGS. `overruled` is the one the wiki sentence is about —
+    // the room banishing the very name the deal was protecting — and a version
+    // of this where the plan always works is a version with no story in it.
+    expect(counts.held, 'the plan never once worked').toBeGreaterThan(2);
+    expect(counts.overruled, 'the room never once overruled a deal').toBeGreaterThan(2);
+  });
+
+  it('costs the person who did it their cover at the table', () => {
+    let checked = 0;
+    for (const { truce, seed } of truceSweep(60)) {
+      if (!(truce.noticed || []).length) continue;
+      play(seed);
+      // A BOND AND NOT A BELIEF — the long note in js/tr/strategy.js is the
+      // measurement behind that, and this is the assertion that keeps it: the
+      // people who wanted the spared name like the person who spoke for them
+      // less, and nobody has learned anything false about anybody.
+      for (const n of truce.noticed) expect(getBond(n, truce.by)).toBeLessThan(5);
+      checked++;
+      if (checked >= 3) break;
+    }
+    expect(checked, 'nobody ever noticed a deal in 60 seasons').toBeGreaterThan(0);
+  });
+
+  it('buys the spared Traitor off the person who offered it', () => {
+    let checked = 0;
+    for (const { truce, seed, sparedWasTraitor } of truceSweep(60)) {
+      if (!sparedWasTraitor) continue;
+      play(seed);
+      const pref = (gs.tr.murderPrefs || []).find(x => x.sceneId === truce.id);
+      expect(pref, 'a Traitor was offered a week and it bought nothing').toBeTruthy();
+      expect(pref.traitor).toBe(truce.spared);
+      expect(pref.target).toBe(truce.by);
+      expect(pref.delta).toBeLessThan(0);
+      checked++;
+      if (checked >= 3) break;
+    }
+    expect(checked, 'no Traitor was ever the spared name in 60 seasons').toBeGreaterThan(0);
+  });
+
+  // ── THE SCREEN, WHICH IS THE POINT OF ASKING FOR IT ──────────────────
+  it('shows the table the deal, the arithmetic behind it, and what became of it', () => {
+    let open = 0, closed = 0;
+    for (const { truce, rows } of truceSweep(60)) {
+      const row = rows.find(e => Number(e.num) === truce.ep && e.tr && e.tr.table);
+      if (row && !open) {
+        const html = rpBuildRoundTable(row, 'audience');
+        if (html.includes('the deal</b>')) {
+          open++;
+          expect(html).toContain(truce.by);
+          expect(html).toContain(truce.spared);
+          expect(html).toContain(truce.against);
+          // THE REASONING, not just the result: the weights that decided which
+          // of the two names was worth going after.
+          expect(html).toContain(String(truce.theirWeight));
+          expect(html).toContain(String(truce.sparedWeight));
+          // And a player at that table may not read any of it.
+          const watcher = (row.tr.table.seated || []).find(n => n !== truce.by);
+          expect(rpBuildRoundTable(row, `player:${watcher}`)).not.toContain('the deal</b>');
+        }
+      }
+      if (truce.closedEp && truce.outcome !== 'lapsed' && !closed) {
+        const out = rows.find(e => Number(e.num) === truce.closedEp && e.tr && e.tr.table);
+        if (!out) continue;
+        const html = rpBuildRoundTable(out, 'audience');
+        if (!/the deal (held|is dead)/.test(html)) continue;
+        closed++;
+        expect(html).toContain(truce.outcome === 'held' ? 'the deal held' : 'the deal is dead');
+      }
+      if (open && closed) break;
+    }
+    expect(open, 'the deal never reached a table screen').toBeGreaterThan(0);
+    expect(closed, 'no table ever said what became of a deal').toBeGreaterThan(0);
   });
 });

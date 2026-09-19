@@ -15,13 +15,40 @@
 // so the parser, chapters, run time, results screen, reaction shots and
 // highlight pop-ups all work unchanged.
 import * as island from './stage-sets-island.js';
+import { KITS } from './stage-sets-kits.js';
+import { resolveChallenge } from './stage-challenges.js';
+
+// Total Drama's sets: the island's places plus the challenge kits, in one table.
+Object.assign(island.SETS, KITS);
+const tdSets = { SETS: island.SETS, TIMES: island.TIMES, timeOf: island.timeOf, skySVG: island.skySVG, pickSet: island.pickSet };
 
 export const STAGE_SHOWS = {
   'total-drama': {
     id: 'total-drama',
     name: 'Total Drama',
-    sets: island,
+    sets: tdSets,
     homeSet: 'camp', compSet: 'challenge', exitSet: 'tribal',
+
+    // "[Challenge: Hell's Kitchen]" → the twist's kit (js/stage-challenges.js). Every competition
+    // scene after it is played on that kit unless its header names a spot with a kit of its own.
+    kits: Object.keys(KITS),
+    resolveChallenge,
+    challengeKick: "TODAY'S CHALLENGE",
+    // a competition header's spot → a kit ("Challenge compound — mess tent" is a kitchen)
+    kitSpots: [
+      ['kitchen',    /kitchen|mess (tent|hall)|canteen|cafeteria/i],
+      ['stage',      /\bstage\b|auditorium|theat(er|re)|runway/i],
+      ['arena',      /\bcourt\b|\bgym\b|dojo|\bring\b/i],
+      ['water',      /lake|dock|cliff|canoe race|pool|river|waterfall/i],
+      ['nightwoods', /forest|woods|trail/i],
+      ['spooky',     /mansion|haunted|museum|dungeon|\blab\b|hospital/i],
+      ['desert',     /desert|pyramid|dunes|ruins|dig site/i],
+      ['snow',       /snow|\bice\b|glacier|summit|slope/i],
+      ['bigtop',     /big top|midway|ferris|carousel/i],
+      ['maze',       /maze|labyrinth/i],
+      ['studio',     /soundstage|backlot|film set|studio/i],
+      ['course',     /obstacle|course|canoe hold|drill|finish line|track/i],
+    ],
     // where the votes are cast, one voter at a time ("[SCENE: Tribal council — voting booth — night.]")
     boothSet: 'booth',
 
@@ -86,6 +113,12 @@ export const STAGE_SHOWS = {
     // a challenge ends a player's run without ending their game
     benchLine: /^\W*DISMISSED\b/,
     benchAct: /\b(rings? (it|the bell)|pulls it\b|walks to the bell|walks to the bench)/i,
+    // the host calling people out by name: "Owen, you're out!", "Izzy and Owen are out of the challenge!"
+    benchHost: /\b(is|are|you'?re)\s+(out|done|eliminated|disqualified)\b|\bout of the (challenge|game)\b/i,
+    // a player going out on their own, named in the direction: "Gwen taps out", "Owen falls into the lake"
+    benchFall: /\b(taps out|gives up|drops out|falls (in|into|off|out)|wipes out|faints|passes out|is (out|eliminated|disqualified)|can'?t hold on|lets go)\b/i,
+    // finishing order: "[Owen crosses the finish line first.]", "Gwen finishes second"
+    place: /\b(?:crosses the finish line|finishes|comes in|places)\s+(first|second|third|fourth|fifth|last)\b|\b(first|second|third|last) (?:across|over) the (?:line|finish)\b|\bwins the race\b/i,
 
     chapters: { cold: 'Cold Open', home: 'Camp Life', comp: 'The Challenge', after: 'After the Challenge', exit: 'Tribal Council', epilogue: 'Epilogue' },
     // js/audio.js beds (assets/audio/)

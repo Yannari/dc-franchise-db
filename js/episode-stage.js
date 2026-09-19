@@ -195,6 +195,7 @@ function parse(text, opts = {}){
   };
   const out = { show:'', ep:'', title:'', scenes:[], beats:[], profile: SH };
   let scene = null, conf = null, reading = false, afterCard = false, lastNamed = null, lastActor = null, lastSpeaker = null, tally = {};
+  let curChallenge = null;   // "[Challenge: …]" — the twist being played, until another is named
   const push = b => (out.beats.push(b), b);
   const addP = n => {
     if (!scene || !CAST[n] || scene.present.includes(n)) return;
@@ -221,14 +222,26 @@ function parse(text, opts = {}){
     const fromPlace = pickSet(place), base = fromPlace !== 'island' ? fromPlace : pickSet(inner);
     const subSet = sub && SH.spots.find(([k, re]) => re.test(sub) && !((k === SH.compSet || k === SH.homeSet) && base !== k))?.[0];
     // at the exit, only the booth is a different room; every other spot is the council itself
-    const set = base === SH.exitSet ? (SH.boothSet && subSet === SH.boothSet ? SH.boothSet : SH.exitSet) : subSet || base;
+    let set = base === SH.exitSet ? (SH.boothSet && subSet === SH.boothSet ? SH.boothSet : SH.exitSet) : subSet || base;
+    // a competition is played on a kit: the one its spot names ("— mess tent —" is a kitchen), else the
+    // tagged challenge's, else the place's own set. A kit that only exists at night waits for night.
+    const compScene = base === SH.compSet || !!phase || SH.compPlace.test(place);
+    let spotKit = null;
+    if (compScene && SH.kits){
+      const hour = timeWord ? timeOf(timeWord) : TIME_WORDS.test(head) ? timeOf(head) : null;
+      const fits = k => k && SETS[k] && (!SETS[k].forceTime || !hour || SETS[k].forceTime === hour);
+      spotKit = sub && SH.kitSpots?.find(([k, re]) => re.test(sub) && fits(k))?.[0];
+      if (spotKit) set = spotKit;
+      else if (curChallenge?.kit && fits(curChallenge.kit) && (set === SH.compSet || set === base)) set = curChallenge.kit;
+    }
     // no time in the header → the last scene at this place carries on (a challenge phase keeps its daylight)
     const prevSame = [...out.scenes].reverse().find(s => s.place === place);
     const time = SETS[set].forceTime || (timeWord ? timeOf(timeWord) : TIME_WORDS.test(head) ? timeOf(head) : prevSame ? prevSame.time : timeOf(inner));
     const tribe = tribeOfPlace(place);
     scene = { i:out.scenes.length, header:inner, place, sub, phase, declared, staging, set, time, view:{ set, time }, background:false,
               tribe, groupColor: tribe ? tribeColor(tribe) : null, weather: weatherOf(inner),
-              present:[], listed:[], roles:{}, late:{}, mentionAt:{}, elim:null, stagingDone:false };
+              present:[], listed:[], roles:{}, late:{}, mentionAt:{}, elim:null, stagingDone:false,
+              comp: compScene, challenge: compScene ? curChallenge : null, spotKit: !!spotKit };
     out.scenes.push(scene);
     conf = null; reading = false; afterCard = false; lastNamed = null; lastActor = null; lastSpeaker = null; tally = {};
     push({ t:'scene', scene:scene.i });
@@ -269,6 +282,13 @@ function parse(text, opts = {}){
       const b = push({ t:'dir', scene:scene.i, text:p, who, stay });
       // "Walks to the bell. Rings it." / "walks to the bench" → out of the challenge
       if (SH.benchAct.test(p)) b.out = players[0] || lastActor;
+      // in a competition: somebody named goes out on their own, or finishes in a place
+      if (scene.comp && !b.out && players.length && SH.benchFall?.test(p)) b.out = players[0];
+      const placed = scene.comp && players.length && SH.place ? p.match(SH.place) : null;
+      if (placed){
+        const w = (placed[1] || placed[2] || 'first').toLowerCase();
+        b.place = { name: players[0], label: ({ first:'1ST', second:'2ND', third:'3RD', fourth:'4TH', fifth:'5TH', last:'LAST' })[w] || '1ST' };
+      }
       if (players.length) lastActor = players[0];
       if (write && p.includes(write[0])){
         const target = findName(write[1]);
@@ -298,6 +318,16 @@ function parse(text, opts = {}){
     const clean = stripCues(body);
     // Chef: "DISMISSED!" sends off whoever the scene was just about
     const dismiss = CAST[who]?.host && SH.benchLine.test(clean) ? lastActor : null;
+    // "Owen, you're out!" / "Izzy and Owen are out of the challenge!" — the host names who goes
+    const outMany = scene.comp && CAST[who]?.host && SH.benchHost?.test(clean)
+      ? mentioned(clean).filter(n => !CAST[n].host && scene.present.includes(n)) : [];
+    // the running score, said out loud: "Bass 2, Gophers 1" (two or more name–number pairs)
+    let score = null;
+    if (scene.comp && CAST[who]?.host){
+      const pairs = [...clean.matchAll(/\b([A-Z][A-Za-z']+(?:\s[A-Z][A-Za-z']+)?)\s+(\d{1,3})\b(?!\s*(?:votes?|points? for|seconds?|minutes?))/g)]
+        .filter(m => !/^(Phase|Round|Episode|Season|Level|Part|Day|Vote)\b/i.test(m[1]));
+      if (pairs.length >= 2) score = Object.fromEntries(pairs.map(m => [m[1], +m[2]]));
+    }
     let event = null;
     // an offer on camera, not a report of one in a confessional
     const deal = !conf && !host && clean.match(/\bfinal[- ](two|three|four|2|3|4)\b/i);
@@ -316,7 +346,8 @@ function parse(text, opts = {}){
     const toCam = !conf && !CAST[who]?.host && /\[[^\]]*\bto (the )?camera\b/i.test(body);
     const pushLine = () => pages(body, 190).forEach((p, k) =>
       push({ t:'line', scene:scene.i, speaker:who, text:p, conf:!!conf || toCam, host, mood:mood(stripCues(p), p),
-             ...(k === 0 && dismiss ? { dismiss } : {}), ...(k === 0 && event ? { event } : {}), ...(finalWords ? { finalWords:true } : {}) }));
+             ...(k === 0 && dismiss ? { dismiss } : {}), ...(k === 0 && event ? { event } : {}), ...(finalWords ? { finalWords:true } : {}),
+             ...(k === 0 && outMany.length ? { outMany } : {}), ...(k === 0 && score ? { score } : {}) }));
     if (isExitSet(scene.set) && CAST[who]?.host && !conf && !host){
       if (SH.vote.start.test(clean) || VOTE_ORDINAL.test(clean)) reading = true;
       const nm = mentioned(clean);
@@ -367,6 +398,25 @@ function parse(text, opts = {}){
         continue;
       }
       if (/^confessional/.test(low)){ conf = inner.replace(/^confessional\s*[:\-—]?\s*/i, '').split(/\s+[—–-]\s+/)[0].trim(); continue; }
+      // "[Challenge: Hell's Kitchen]" — which twist this is; it picks the kit and titles the chapter
+      if (/^challenge\s*:/.test(low) && SH.resolveChallenge){
+        curChallenge = SH.resolveChallenge(inner.replace(/^challenge\s*:\s*/i, ''));
+        (out.challenges = out.challenges || []).push(curChallenge);
+        if (scene){
+          // naming a challenge makes this scene a competition, wherever it is (Hell's Kitchen is in the camp's mess hall)
+          scene.comp = true;
+          scene.challenge = curChallenge;
+          // it moves onto a kit: the one its spot names, else this challenge's — unless its spot already chose one
+          const spotKit = scene.sub && SH.kitSpots?.find(([kk, re]) => re.test(scene.sub) && SETS[kk] && (!SETS[kk].forceTime || SETS[kk].forceTime === scene.time))?.[0];
+          const k = scene.spotKit ? null : spotKit || curChallenge.kit;
+          if (k && SETS[k]){
+            scene.set = k; if (SETS[k].forceTime) scene.time = SETS[k].forceTime;
+            scene.view = { set: scene.set, time: scene.time };
+          }
+          push({ t:'card', scene:scene.i, kick: SH.challengeKick || 'THE CHALLENGE', title: curChallenge.name });
+        }
+        continue;
+      }
       if (/^scene\b/.test(low) || /^(tribal council|campfire ceremony)\b/.test(low)){ newScene(inner); continue; }
       if (!scene) continue;
       if (/^phase\s*\d+/.test(low)){
@@ -470,7 +520,7 @@ export const fmtMin = ms => { const m = Math.round(ms / 60000); return m < 1 ? '
 // or competition, EXIT the vote and the walk out.
 export function sceneKind(sc, show = SH){
   if (sc.set === show.exitSet || (show.boothSet && sc.set === show.boothSet) || show.exitPlace.test(sc.place)) return 'exit';
-  if (sc.set === show.compSet || sc.phase || show.compPlace.test(sc.place)) return 'comp';
+  if (sc.set === show.compSet || sc.comp || sc.phase || show.kits?.includes(sc.set) || show.compPlace.test(sc.place)) return 'comp';
   return 'home';
 }
 export function buildChapters(P, runtime = estimateRuntime(P)){
@@ -484,7 +534,7 @@ export function buildChapters(P, runtime = estimateRuntime(P)){
     const kind = sceneKind(sc, show);
     const base = i === 0 && coldOpen ? names.cold
       : kind === 'exit' ? names.exit
-      : kind === 'comp' ? names.comp
+      : kind === 'comp' ? (sc.challenge?.name || names.comp)
       : seenExit ? names.epilogue : seenComp ? names.after : names.home;
     const last = chapters[chapters.length - 1];
     if (last && last.base === base && !(i === 1 && coldOpen)) last.scenes.push(i);
@@ -973,6 +1023,21 @@ canvas.fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z
 .board .br u{display:block;width:.7cqw;height:1.2cqw;background:#f3e6c4;border:.1cqw solid #3b2a14;animation:tallyIn .4s cubic-bezier(.34,1.8,.64,1) backwards}
 .board .br em{font-style:normal;font-family:Bungee;font-size:1.1cqw;color:#c9a227;min-width:1.2cqw;text-align:right}
 
+/* the competition's scoreboard, top centre */
+.score{position:absolute;left:50%;top:2.2%;translate:-50% 0;z-index:24;display:none;gap:.5cqw;padding:.4cqw;border-radius:.9cqw;background:#0b0f1ae8;border:.18cqw solid #ffffff30;box-shadow:0 .8cqw 2cqw #000a;pointer-events:none}
+.score.show{display:flex}
+.score.pop{animation:emotePop .6s cubic-bezier(.34,1.8,.64,1)}
+.score .sc{display:flex;align-items:center;gap:.6cqw;padding:.25cqw .5cqw .25cqw .9cqw;border-radius:.6cqw;background:#ffffff0c;border-left:.35cqw solid var(--t)}
+.score .sc b{font-family:Bungee;font-weight:400;font-size:1cqw;letter-spacing:.06em;color:#fff}
+.score .sc i{font-style:normal;font-family:Bungee;font-size:2cqw;line-height:1;min-width:2.4cqw;text-align:center;color:#111;background:var(--t);border-radius:.4cqw;padding:.15cqw .3cqw}
+.score .sc.bump i{animation:scoreBump .7s cubic-bezier(.34,1.8,.64,1)}
+@keyframes scoreBump{0%{transform:scale(2.2) rotate(-10deg)}100%{transform:none}}
+/* finishing order on the standee */
+.medal{position:absolute;left:-10%;top:-12%;z-index:3;display:none;font-family:Bungee;font-size:1.1cqw;color:#3a2600;padding:.35cqw .55cqw;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#fff3b0,#ffcc33 55%,#b8860b);border:.18cqw solid #6b4e00;box-shadow:0 .3cqw .8cqw #000a}
+.actor.placed .medal{display:block}
+.medal.pop{animation:emotePop .8s cubic-bezier(.34,1.8,.64,1)}
+
 /* final words */
 .dbox.final .panel{border-color:#ff9a3d;box-shadow:0 0 0 .25cqw #000,0 0 3cqw #ff7a1a88,inset 0 0 4cqw #0008}
 .dbox.final .who::after{content:" · FINAL WORDS";color:#7a1f00}
@@ -1118,6 +1183,7 @@ const MARKUP = `<div class="stage" id="stage">
 
   <div class="flash" id="flash"></div>
   <div class="board" id="board"></div>
+  <div class="score" id="score"></div>
   <div class="intro" id="intro"></div>
   <div class="react" id="react"></div>
   <div class="toasts" id="toasts"></div>
@@ -1244,7 +1310,8 @@ export function mountEpisodeStage(host, text, opts = {}){
   const S = { idx:-1, scene:-1, conf:null, typing:null, auto:false, speed:1, sound:true, busy:false,
               tally:{}, gone:new Set(), immune:new Set(), idols:new Set(), lastSpeaker:null, lastShout:null, started:false, timer:null,
               view:{}, home:{}, cur:{}, xs:{}, crowd:false, benched:new Set(),
-              ff:false, inSeq:false, skipSeq:false, openingDone:false, openingAt:0, introduced:new Set(), lastReact:-9, weather:null };
+              ff:false, inSeq:false, skipSeq:false, openingDone:false, openingAt:0, introduced:new Set(), lastReact:-9, weather:null,
+              score:null, places:{} };
 
   // SVG coords (1600×900, layer inset −8%/−6%) → stage fraction
   const toStage = (x,y) => [ -0.08 + 1.16*(x/1600), -0.06 + 1.12*(y/900) ];
@@ -1261,6 +1328,8 @@ export function mountEpisodeStage(host, text, opts = {}){
     $('tint').style.background = T.tint;
     $('glow').style.background = set.glow || (time==='night' ? 'radial-gradient(ellipse at 78% 18%,#9fb2ff44,transparent 50%)'
                                            : time==='dusk' ? 'radial-gradient(ellipse at 68% 58%,#ff9a5c55,transparent 55%)' : 'none');
+    // a new place starts with clean air: the last set's steam and entrance puffs do not follow the cut
+    if (FX.set !== setKey) FX.parts = [];
     FX.kind = set.fx; FX.set = setKey; FX.night = time==='night';
     S.view = { set:setKey, time };
     amb.apply();
@@ -1277,9 +1346,17 @@ export function mountEpisodeStage(host, text, opts = {}){
     camera(0,0,1);
     S.scene = si; S.tally = {}; S.lastSpeaker = null; S.lastShout = null;
     updateBoard(); setWeather(sc.weather);
+    // the scoreboard and medals last as long as the competition does
+    if (!sc.comp){ S.score = null; S.places = {}; }
+    applyCompState();
     // the voting booth holds one voter at a time: everyone waits outside until it is their turn
     if (SH.boothSet && sc.set === SH.boothSet)
       R.querySelectorAll('.actor').forEach(a => { if (!CAST[a.dataset.n].host) a.classList.add('offstage'); });
+  }
+  function applyCompState(){
+    const el = $('score');
+    if (S.score){ updateScore({}, true); } else { el.classList.remove('show'); el.innerHTML = ''; }
+    Object.entries(S.places).forEach(([n, l]) => medal(n, l, true));
   }
   // step a voter up to the urn — alone, large, front and centre
   function boothFocus(n){
@@ -1365,6 +1442,7 @@ export function mountEpisodeStage(host, text, opts = {}){
           ${role==='coach' ? '<div class="role">COACH</div>' : role==='host' ? '<div class="role host">HOST</div>' : ''}
           <div class="item necklace">${NECKLACE}</div>
           <div class="item idol">${IDOL}</div>
+        <div class="medal"></div>
           <div class="stand"></div>
         </div></div>
         <div class="plate">${n.toUpperCase()}</div>
@@ -1451,6 +1529,10 @@ export function mountEpisodeStage(host, text, opts = {}){
     if (k==='dust' && r()<.15) spawn({ x:-10, y:h*(.3+r()*.5), vx:20+r()*30, vy:(r()-.5)*8, max:6, size:1.5+r()*2, color:'#fff2c9aa' });
     if (k==='wind' && r()<.3) spawn({ x:-40, y:h*r()*.8, vx:600+r()*400, vy:(r()-.5)*20, max:1.2, size:1, color:'#ffffff66', type:'streak' });
     if (k==='confetti' && r()<.06) spawn({ x:r()*w, y:-10, vx:(r()-.5)*30, vy:40+r()*40, max:6, size:5, color:['#ffcc33','#e8453c','#3aa0ff','#40c060'][r()*4|0], type:'rect', vr:(r()-.5)*8 });
+    // snow drifting down; steam rising off the pots
+    if (k==='snow' && r()<.5) spawn({ x:r()*w*1.1, y:-8, vx:-10 + r()*20, vy:30 + r()*40, max:9, size:1.5 + r()*2.5, color:'#ffffffdd', type:'glow', wander:true });
+    if (k==='steam' && r()<.08){ const f = FIRE[FX.set] || [.5,.6];
+      spawn({ x:f[0]*w + (r()-.5)*50, y:f[1]*h, vx:(r()-.5)*10, vy:-22 - r()*18, drag:.995, max:2.5 + r()*1.5, size:4 + r()*6, color:'#ffffffaa', type:'smoke' }); }
     // rain: slanted streaks across the whole frame, heavier in a storm
     if (FX.weather) for (let k = 0; k < (FX.weather === 'storm' ? 7 : 4); k++)
       spawn({ x:r()*w*1.3 - w*.15, y:-12, vx:-160, vy:950 + r()*350, max:.8, size:1.1, color:'#d6e6ffb0', type:'streak' });
@@ -1722,6 +1804,8 @@ export function mountEpisodeStage(host, text, opts = {}){
     } else $('conf').classList.add('talking');
     S.lastShout = b.mood==='shout' ? b.speaker : null;
     if (b.dismiss){ if (instant) bench(b.dismiss, true); else setTimeout(() => bench(b.dismiss), 350); }
+    if (b.outMany) b.outMany.forEach((n, k) => instant ? bench(n, true) : setTimeout(() => bench(n), 350 + k * 180));
+    if (b.score) updateScore(b.score, instant);
     typeInto($('txt'), b.text, { speaker:b.speaker, mood:b.mood, instant });
   }
   const rxCache = {};
@@ -1764,6 +1848,7 @@ export function mountEpisodeStage(host, text, opts = {}){
     if (b.write) showWrite(b.write, instant);
     if (b.snuff) eliminate(b.snuff, instant, true);
     if (b.out) bench(b.out, instant);
+    if (b.place) medal(b.place.name, b.place.label, instant);
     typeInto($('txt'), b.text, { narr:true, instant });
   }
 
@@ -1886,6 +1971,14 @@ export function mountEpisodeStage(host, text, opts = {}){
     before.forEach(b => { if (b.scene===si && (b.out || b.dismiss)) bench(b.out || b.dismiss, true); });
     before.forEach(b => { if (b.scene===si && b.t==='vote'){ S.tally[b.name] = (S.tally[b.name]||0)+1; actorEl(b.name)?.querySelector('.tally').insertAdjacentHTML('beforeend','<i></i>'); } });
     updateBoard();
+    // the competition so far: its running score and who has finished where
+    S.score = null; S.places = {};
+    before.forEach(b => {
+      if (!P.scenes[b.scene].comp){ S.score = null; S.places = {}; return; }
+      if (b.score) S.score = { ...(S.score || {}), ...b.score };
+      if (b.place) S.places[b.place.name] = b.place.label;
+    });
+    applyCompState();
     // who has already been introduced, and what the weather has turned to by now
     S.introduced = new Set(before.filter(b => b.t==='line' && !b.conf && !b.host).map(b => b.speaker));
     const wb = before.filter(b => b.scene===si && b.weather).pop();
@@ -2077,6 +2170,27 @@ export function mountEpisodeStage(host, text, opts = {}){
     el.innerHTML = `<div class="bh">THE VOTES</div>` + rows.map(([n, c]) =>
       `<div class="br${c === top ? ' lead' : ''}${S.gone.has(n) ? ' out' : ''}" style="--c:${CAST[n]?.c || '#fff'}"><span class="bp">${portrait(n)}</span><b>${esc(n)}</b><i>${'<u></u>'.repeat(c)}</i><em>${c}</em></div>`).join('');
     el.classList.add('show');
+  }
+
+  // ── the competition's scoreboard and finishing order ──
+  // A score the host says out loud ("Bass 2, Gophers 1") stays up for the whole
+  // competition; a finish ("crosses the finish line first") hangs a medal on the standee.
+  function updateScore(score, instant){
+    const prev = S.score || {};
+    S.score = { ...prev, ...score };
+    const el = $('score');
+    el.innerHTML = Object.entries(S.score).map(([t, n]) => {
+      const c = tribeColor(t.toLowerCase().split(' ').pop()), bump = !instant && prev[t] !== n;
+      return `<div class="sc${bump ? ' bump' : ''}" style="--t:${c}"><b>${esc(t.toUpperCase())}</b><i>${n}</i></div>`;
+    }).join('');
+    el.classList.add('show');
+    if (!instant){ sfx.chime(); retrigger(el, 'pop'); }
+  }
+  function medal(n, label, instant){
+    S.places[n] = label;
+    const a = actorEl(n); if (!a) return;
+    const m = a.querySelector('.medal'); m.textContent = label; a.classList.add('placed');
+    if (!instant){ retrigger(m, 'pop'); burst(S.xs[n]/100, .4, 'gold', 40); sfx.chime(); emote(n, label === 'LAST' ? 'sad' : 'star'); }
   }
 
   // ── weather: rain and storms from the prose, drawn and heard ──

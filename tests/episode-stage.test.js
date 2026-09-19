@@ -43,7 +43,7 @@ describe('episode stage: reading the transcript', () => {
     expect(canoe.phase).toEqual({ n: '1', title: '' });
     expect(canoe.time).toBe('day');                 // inherited from "Challenge compound — day"
     const march = scene('Challenge compound — forest trail');
-    expect(march.set).toBe('jungle');
+    expect(march.set).toBe('nightwoods');           // a forest trail in a competition at night is the night-woods kit
     expect(march.time).toBe('night');               // "Phase 5: Night March"
     expect(P.beats.filter(b => b.t === 'cut')).toEqual([]);   // a named spot is never re-guessed mid-scene
   });
@@ -252,6 +252,44 @@ describe('episode stage: the voting booth', () => {
     // no "read the votes", so nothing is counted — the answer is in "James — that's enough", not the last name said
     expect(Q.beats.filter(b => b.t === 'vote')).toEqual([]);
     expect(Q.beats.filter(b => b.t === 'elim').map(b => b.name)).toEqual(['James']);
+  });
+});
+
+describe('episode stage: challenges', () => {
+  const C = parseEpisode([
+    '[SCENE: Camp Wawanakwa — mess hall — day.] [Present: Owen, Gwen, Heather, Duncan, Izzy. Host: Chris, Chef.]',
+    "[Challenge: Hell's Kitchen]",
+    "Chris: Welcome to Hell's Kitchen!",
+    'Chris: Owen, you\'re out!',
+    '[SCENE: Challenge arena — dodgeball court — afternoon.] [Present: Owen, Gwen, Heather, Duncan, Izzy. Host: Chris.]',
+    '[Challenge: Dodgebrawl]',
+    'Chris: That\'s a point for the Bass! Bass 2, Gophers 1.',
+    '[Izzy falls off the bleachers.]',
+    '[SCENE: Challenge arena — day.] [Present: Owen, Gwen. Host: Chris.]',
+    '[Challenge: Tug of War]',
+    '[Gwen crosses the finish line first.]',
+    '[Owen finishes last.]',
+  ].join('\n'));
+
+  it('plays each named challenge on its kit and titles its chapter', () => {
+    expect(C.scenes.map(s => s.set)).toEqual(['kitchen', 'arena', 'course']);
+    expect(C.beats.filter(b => b.t === 'card').map(b => b.title)).toEqual(["Hell's Kitchen", 'Dodgebrawl', 'Tug of War']);
+    expect(buildChapters(C).map(c => c.title)).toEqual(["Hell's Kitchen", 'Dodgebrawl', 'Tug of War']);
+  });
+
+  it('knows the whole twist catalogue', async () => {
+    const { CHALLENGE_KITS, resolveChallenge } = await import('../js/stage-challenges.js');
+    expect(Object.keys(CHALLENGE_KITS).length).toBe(84);
+    expect(resolveChallenge("Hell's Kitchen — immunity").kit).toBe('kitchen');
+    expect(resolveChallenge('paintball-hunt').name).toBe('Paintball Deer Hunter');
+    expect(resolveChallenge('Giant Snowball Fight').kit).toBe('snow');
+  });
+
+  it('reads the competition itself: who the host calls out, the score, who falls, the finish order', () => {
+    expect(C.beats.find(b => b.outMany)?.outMany).toEqual(['Owen']);
+    expect(C.beats.find(b => b.score)?.score).toEqual({ Bass: 2, Gophers: 1 });
+    expect(C.beats.find(b => b.out)?.out).toBe('Izzy');
+    expect(C.beats.filter(b => b.place).map(b => `${b.place.name}:${b.place.label}`)).toEqual(['Gwen:1ST', 'Owen:LAST']);
   });
 });
 

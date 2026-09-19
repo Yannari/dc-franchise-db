@@ -278,3 +278,5 @@ function pickSet(header){
 }
 
 export { SETS, TIMES, timeOf, skySVG, pickSet };
+// drawing helpers, for the other sets files (js/stage-sets-kits.js)
+export { svg, flame, palm, bush, rock, ocean, torch };

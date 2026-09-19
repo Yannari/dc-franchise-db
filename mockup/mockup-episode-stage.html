@@ -1,0 +1,1532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Episode Stage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Nunito:wght@600;800;900&family=Permanent+Marker&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b0f1a; --ink:#f4f1ea; --dim:#9aa3b5; --panel:#141a2a; --line:#2a3350;
+  --accent:#ffcc33; --danger:#ff4d5e;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Nunito,system-ui,sans-serif}
+body{min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:18px 16px 40px}
+h1.page{font-family:Bungee;font-size:14px;letter-spacing:.2em;color:var(--dim);margin:0 0 10px;font-weight:400}
+
+/* ═══════════ STAGE ═══════════ */
+.stage{position:relative;width:min(1280px,100%);aspect-ratio:16/9;overflow:hidden;border-radius:14px;
+  background:#000;container-type:inline-size;box-shadow:0 30px 80px #000a,0 0 0 1px #ffffff14;user-select:none;cursor:pointer;
+  --camx:0; --camy:0; --zoom:1;}
+.stage.shake{animation:shake .45s cubic-bezier(.36,.07,.19,.97)}
+@keyframes shake{10%,90%{translate:-.4cqw 0}20%,80%{translate:.7cqw .2cqw}30%,50%,70%{translate:-1cqw -.3cqw}40%,60%{translate:1cqw .3cqw}}
+.stage.hit .world{animation:hit .25s ease-out}
+@keyframes hit{0%{filter:brightness(2.2) saturate(0)}100%{filter:none}}
+
+.world{position:absolute;inset:0;transform:scale(var(--zoom)) translate(calc(var(--camx)*1cqw),calc(var(--camy)*1cqw));
+  transition:transform 1.1s cubic-bezier(.22,1,.36,1);transform-origin:50% 70%}
+.layer{position:absolute;inset:-6% -8%;transition:transform 1.1s cubic-bezier(.22,1,.36,1)}
+.layer svg{width:100%;height:100%;display:block}
+.l-sky{transform:translateX(calc(var(--camx)*-.6cqw))}
+.l-far{transform:translateX(calc(var(--camx)*-.35cqw))}
+.l-mid{transform:none}
+.l-fg{transform:translateX(calc(var(--camx)*.9cqw)) scale(1.05);pointer-events:none;z-index:6}
+.tint{position:absolute;inset:0;pointer-events:none;mix-blend-mode:multiply;transition:background 1.4s;z-index:7}
+.glow{position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;transition:opacity 1.4s;z-index:7}
+canvas.fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:8;transform:scale(var(--zoom)) translate(calc(var(--camx)*1cqw),calc(var(--camy)*1cqw));transition:transform 1.1s cubic-bezier(.22,1,.36,1);transform-origin:50% 70%}
+.vignette{position:absolute;inset:0;pointer-events:none;z-index:9;
+  background:radial-gradient(ellipse at 50% 55%,transparent 55%,#000a 100%)}
+.letterbox{position:absolute;left:0;right:0;height:0;background:#000;z-index:30;transition:height .7s cubic-bezier(.22,1,.36,1)}
+.letterbox.top{top:0}.letterbox.bot{bottom:0}
+.stage.cine .letterbox{height:7.5%}
+
+/* ambient set animation hooks (classes inside SVG) */
+.sway{transform-box:fill-box;transform-origin:50% 100%;animation:sway 5s ease-in-out infinite alternate}
+.sway.d2{animation-duration:6.5s;animation-delay:-2s}.sway.d3{animation-duration:4.2s;animation-delay:-1s}
+@keyframes sway{from{rotate:-2.5deg}to{rotate:2.5deg}}
+.wave{animation:wave 4s ease-in-out infinite alternate}.wave.d2{animation-duration:5.5s;animation-delay:-2s}
+@keyframes wave{from{transform:translateX(-2%)}to{transform:translateX(2%)}}
+.flick{transform-box:fill-box;transform-origin:50% 100%;animation:flick .18s steps(2) infinite alternate}
+@keyframes flick{from{transform:scale(1,1)}to{transform:scale(.9,1.12) skewX(3deg)}}
+.flick.slow{animation:flick2 .9s ease-in-out infinite alternate}
+@keyframes flick2{from{transform:scale(1,1);opacity:.9}to{transform:scale(1.06,1.18);opacity:1}}
+.cloud{animation:cloud 60s linear infinite}.cloud.d2{animation-duration:90s;animation-delay:-40s}
+@keyframes cloud{from{transform:translateX(-30%)}to{transform:translateX(130%)}}
+.bob{animation:bob 3s ease-in-out infinite alternate}
+@keyframes bob{from{transform:translateY(0)}to{transform:translateY(-1.2%)}}
+.shimmer{animation:shimmer 2.4s ease-in-out infinite alternate}
+@keyframes shimmer{from{opacity:.25}to{opacity:.8}}
+.twinkle{animation:twinkle 2s ease-in-out infinite alternate}
+@keyframes twinkle{from{opacity:.2}to{opacity:1}}
+
+/* ═══════════ ACTORS (standees) ═══════════ */
+.actors{position:absolute;inset:0;z-index:5}
+.actor{position:absolute;left:var(--x);bottom:var(--floor,17%);width:var(--w,11cqw);margin-left:calc(var(--w,11cqw)/-2);
+  transition:left .7s cubic-bezier(.22,1,.36,1),bottom .7s cubic-bezier(.22,1,.36,1),width .7s cubic-bezier(.22,1,.36,1),margin-left .7s cubic-bezier(.22,1,.36,1),filter .5s,opacity .5s,transform .5s;
+  --c:#fc3;filter:brightness(.62) saturate(.7);transform:scale(.92);z-index:1}
+.actor.back{transform:scale(.8);z-index:0}
+.actor.offstage{opacity:0;transform:translateY(-40%) scale(.5);pointer-events:none}
+.actor.lit{filter:none;transform:scale(1.14) translateY(-4%);z-index:5}
+.actor.back.lit{transform:scale(.98) translateY(-4%)}
+.actor.next{filter:brightness(.85)}
+.actor.gone{filter:grayscale(1) brightness(.45);opacity:.55}
+.actor.enter{animation:dropIn .8s cubic-bezier(.34,1.56,.64,1) backwards}
+@keyframes dropIn{0%{transform:translateY(-120%) scale(.6) rotate(-12deg);opacity:0}60%{opacity:1}}
+.actor .shadow{position:absolute;left:10%;right:10%;bottom:-3%;height:9%;border-radius:50%;background:#000;opacity:.45;filter:blur(3px);
+  animation:shadowPulse 2.6s ease-in-out infinite alternate;animation-delay:var(--ph)}
+@keyframes shadowPulse{to{transform:scaleX(.88);opacity:.32}}
+.actor .rig{transform-origin:50% 100%;animation:breathe 2.6s ease-in-out infinite alternate;animation-delay:var(--ph)}
+@keyframes breathe{from{transform:translateY(0) scaleY(1)}to{transform:translateY(-3%) scaleY(1.015)}}
+.actor .turn{transition:transform .6s cubic-bezier(.22,1,.36,1);transform:perspective(600px) rotateY(var(--ry,0deg));transform-origin:50% 100%}
+.actor.talk .rig{animation:talk .32s ease-in-out infinite alternate}
+@keyframes talk{from{transform:translateY(0) scale(1,1)}to{transform:translateY(-4%) scale(1.03,.97)}}
+.actor.jump .rig{animation:jump .55s cubic-bezier(.3,1.6,.5,1)}
+@keyframes jump{0%{transform:scale(1.15,.8)}35%{transform:translateY(-28%) scale(.9,1.12)}70%{transform:translateY(0) scale(1.1,.9)}100%{transform:none}}
+.actor.recoil .rig{animation:recoil .5s ease-out}
+@keyframes recoil{0%{transform:none}25%{transform:translateX(-9%) rotate(-7deg)}60%{transform:translateX(4%) rotate(3deg)}100%{transform:none}}
+.card{position:relative;aspect-ratio:1;border-radius:18%;overflow:hidden;border:.35cqw solid #111;
+  box-shadow:0 0 0 .3cqw var(--c),0 .6cqw 0 .3cqw #0006;background:var(--c)}
+.card img{width:100%;height:100%;object-fit:cover;display:block}
+.actor.lit .card{box-shadow:0 0 0 .35cqw var(--c),0 0 2.4cqw .4cqw var(--c),0 .6cqw 0 .3cqw #0006}
+.actor .ring{position:absolute;inset:-14%;border-radius:50%;border:.3cqw dashed var(--c);opacity:0;animation:spin 6s linear infinite}
+.actor.lit .ring{opacity:.7}
+@keyframes spin{to{rotate:360deg}}
+.stand{width:40%;height:1.3cqw;margin:-.2cqw auto 0;background:linear-gradient(var(--t,#8a5a33),#0008),var(--t,#8a5a33);background-blend-mode:multiply;border:.2cqw solid #111;border-radius:0 0 .5cqw .5cqw}
+.role{position:absolute;left:50%;bottom:1.2cqw;translate:-50% 0;font-family:Bungee;font-size:.75cqw;letter-spacing:.12em;
+  padding:.1cqw .5cqw;border-radius:.3cqw;background:#111;color:var(--t,#fff);border:.1cqw solid var(--t,#fff);z-index:2}
+.role.host{color:#ffcc33;border-color:#ffcc33}
+.card .initial{display:flex;width:100%;height:100%;align-items:center;justify-content:center;font-family:Bungee;font-size:4cqw;color:#111}
+.actor.spot .plate{opacity:1}
+.world.whip{animation:whip .32s ease-in-out}
+@keyframes whip{0%{filter:none;transform:scale(var(--zoom))}50%{filter:blur(12px) brightness(1.3);transform:scale(var(--zoom)) translateX(-12cqw)}100%{filter:none}}
+.plate{position:absolute;left:50%;top:-2.6cqw;translate:-50% 0;font-family:Bungee;font-size:1.1cqw;letter-spacing:.05em;
+  padding:.25cqw .8cqw;border-radius:99px;background:#111d;color:var(--c);border:.15cqw solid var(--c);white-space:nowrap;
+  opacity:0;transition:opacity .3s,translate .3s}
+.actor.lit .plate,.stage.showNames .plate{opacity:1}
+.actor.lit .plate{translate:-50% -30%}
+.emote{position:absolute;right:-18%;top:-22%;width:4.6cqw;height:4.6cqw;z-index:3;pointer-events:none}
+.emote svg{width:100%;height:100%;overflow:visible}
+.emote.pop{animation:emotePop .9s cubic-bezier(.34,1.8,.64,1) forwards}
+@keyframes emotePop{0%{transform:scale(0) rotate(-40deg)}40%{transform:scale(1.25) rotate(8deg)}60%{transform:scale(.95)}100%{transform:scale(1)}}
+.item{position:absolute;opacity:0;transform:scale(0) rotate(-30deg);transition:transform .6s cubic-bezier(.34,1.8,.64,1),opacity .3s;pointer-events:none;z-index:2}
+.item svg{width:100%;height:100%;display:block;overflow:visible}
+.item.necklace{left:50%;bottom:.4cqw;width:6.2cqw;margin-left:-3.1cqw}
+.item.idol{left:-14%;top:30%;width:3.6cqw;filter:drop-shadow(0 0 .8cqw #ffd84d)}
+.actor.immune .item.necklace,.actor.hasidol .item.idol{opacity:1;transform:none}
+.actor.hasidol .item.idol{animation:idolFloat 2s ease-in-out infinite alternate}
+@keyframes idolFloat{to{translate:0 -20%}}
+.actor.immune .card{box-shadow:0 0 0 .35cqw #ffd84d,0 0 2.2cqw .5cqw #ffd84d99,0 .6cqw 0 .3cqw #0006}
+.tally{position:absolute;left:50%;top:-4.6cqw;translate:-50% 0;display:flex;gap:.3cqw}
+.tally i{width:1.3cqw;height:1.7cqw;background:#f3e6c4;border:.12cqw solid #3b2a14;border-radius:.2cqw;animation:tallyIn .5s cubic-bezier(.34,1.8,.64,1) backwards}
+@keyframes tallyIn{from{transform:translateY(-200%) rotate(-30deg);opacity:0}}
+
+/* speed lines for shouts */
+.speedlines{position:absolute;inset:0;z-index:4;pointer-events:none;opacity:0;
+  background:repeating-conic-gradient(from 0deg at var(--sx,50%) 60%,#fff0 0 3deg,#ffffff26 3deg 4deg);
+  mask:radial-gradient(circle at var(--sx,50%) 60%,transparent 12%,#000 60%)}
+.speedlines.on{animation:lines .7s ease-out}
+@keyframes lines{0%{opacity:0;transform:scale(1.2)}20%{opacity:1}100%{opacity:0;transform:scale(1)}}
+
+/* ═══════════ LOCATION BANNER + TRANSITIONS ═══════════ */
+.iris{position:absolute;inset:0;z-index:40;background:#000;pointer-events:none;clip-path:circle(150% at 50% 55%);
+  transition:clip-path .55s cubic-bezier(.7,0,.3,1)}
+.iris.open{clip-path:circle(0% at 50% 55%)}
+.banner{position:absolute;left:0;right:0;top:33%;z-index:35;pointer-events:none;display:flex;flex-direction:column;align-items:center;opacity:0}
+.banner.show{animation:banner 2.6s cubic-bezier(.22,1,.36,1) forwards}
+@keyframes banner{0%{opacity:0;transform:translateX(-30%) skewX(-12deg)}14%{opacity:1;transform:none}80%{opacity:1;transform:none}100%{opacity:0;transform:translateX(30%) skewX(12deg)}}
+.banner .strip{background:linear-gradient(90deg,transparent,#000c 15%,#000c 85%,transparent);padding:1.2cqw 12cqw;text-align:center}
+.banner .kicker{font-family:Bungee;font-size:1.3cqw;letter-spacing:.4em;color:var(--accent)}
+.banner .place{font-family:Bungee;font-size:5cqw;line-height:1;color:#fff;text-shadow:.3cqw .3cqw 0 #000,0 0 3cqw #ffcc3355}
+.banner .time{font-size:1.4cqw;color:#dfe6ff;font-weight:800;letter-spacing:.15em;margin-top:.6cqw;text-transform:uppercase}
+.titlecard{position:absolute;inset:0;z-index:45;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:radial-gradient(circle at 50% 45%,#2b1c5c,#07060f 70%);transition:opacity .8s}
+.titlecard.hide{opacity:0;pointer-events:none}
+.titlecard .ep{font-family:Bungee;color:var(--accent);letter-spacing:.5em;font-size:1.4cqw}
+.titlecard .name{font-family:Bungee;font-size:6.5cqw;text-align:center;line-height:1;margin:1cqw 6cqw;
+  background:linear-gradient(#fff,#ffd66b 60%,#ff8a3d);-webkit-background-clip:text;color:transparent;
+  filter:drop-shadow(.4cqw .4cqw 0 #000);animation:titleIn 1.2s cubic-bezier(.34,1.56,.64,1)}
+@keyframes titleIn{from{transform:scale(3) rotate(-8deg);opacity:0;filter:blur(10px)}}
+.titlecard .press{margin-top:3cqw;font-family:Bungee;font-size:1.3cqw;letter-spacing:.3em;animation:blink 1.1s steps(2) infinite}
+@keyframes blink{50%{opacity:0}}
+
+/* ═══════════ CAPTION (stage direction) ═══════════ */
+.caption{position:absolute;left:50%;top:5%;translate:-50% 0;z-index:20;max-width:70%;text-align:center;
+  font-size:1.6cqw;font-style:italic;font-weight:800;color:#fff;padding:.8cqw 2cqw;border-radius:.8cqw;
+  background:#0009;border:.12cqw solid #ffffff30;backdrop-filter:blur(4px);opacity:0;transform:translateY(-40%);transition:.35s}
+.caption.show{opacity:1;transform:none}
+.caption::before{content:"";display:inline-block;width:.8cqw;height:.8cqw;background:var(--accent);rotate:45deg;margin-right:.9cqw;vertical-align:middle}
+
+/* ═══════════ DIALOGUE BOX (VN style) ═══════════ */
+.dbox{position:absolute;left:3%;right:3%;bottom:3%;z-index:25;height:19%;display:flex;align-items:stretch;
+  transform:translateY(130%);transition:transform .45s cubic-bezier(.34,1.4,.64,1)}
+.dbox.show{transform:none}
+.stage.cine .dbox{bottom:9%}
+.conf.show ~ .dbox .face{display:none}
+.conf.show ~ .dbox{left:10%;right:10%}
+.dbox .face{position:relative;width:11.5cqw;flex:none;margin-right:-1.4cqw;z-index:2;align-self:flex-end}
+.dbox .face .fc{aspect-ratio:1;border-radius:1.2cqw;overflow:hidden;border:.4cqw solid #111;background:var(--c);
+  box-shadow:0 0 0 .3cqw var(--c),0 1cqw 2cqw #000a;transform:rotate(-3deg);transition:transform .3s}
+.dbox .face .fc img{width:100%;height:100%;object-fit:cover;display:block}
+.dbox .face.swap .fc{animation:faceIn .45s cubic-bezier(.34,1.56,.64,1)}
+@keyframes faceIn{from{transform:translateX(-60%) rotate(-25deg) scale(.6);opacity:0}}
+.dbox.talking .face .fc{animation:faceTalk .25s ease-in-out infinite alternate}
+@keyframes faceTalk{from{transform:rotate(-3deg) translateY(0)}to{transform:rotate(-2deg) translateY(-3%)}}
+.dbox .panel{position:relative;flex:1;background:linear-gradient(#171e33f2,#0c1122f5);border:.25cqw solid var(--c);border-radius:1.2cqw;
+  padding:1.9cqw 2.4cqw 1.2cqw 3cqw;box-shadow:0 0 0 .25cqw #000,0 1.2cqw 3cqw #000c,inset 0 0 4cqw #0008}
+.dbox .panel::after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;
+  background:repeating-linear-gradient(0deg,#ffffff05 0 2px,transparent 2px 4px)}
+.dbox .who{position:absolute;top:-1.5cqw;left:2.4cqw;font-family:Bungee;font-size:1.5cqw;padding:.25cqw 1.4cqw;background:var(--c);color:#111;
+  border:.2cqw solid #111;border-radius:.6cqw;transform:skewX(-10deg);box-shadow:.25cqw .25cqw 0 #000}
+.dbox .txt{font-size:1.9cqw;line-height:1.35;font-weight:800;min-height:3em}
+.dbox .txt.shout{font-size:2.6cqw;font-weight:900;color:#fff4c8;text-transform:none;letter-spacing:.01em}
+.dbox .txt.whisper{font-style:italic;color:#c9d2ee;font-weight:600}
+.dbox .txt .cue{display:inline-block;font-size:.72em;font-style:italic;font-weight:800;color:#111;background:var(--c);opacity:.85;
+  padding:0 .6em;border-radius:99px;margin:0 .3em;vertical-align:.12em}
+.dbox .txt .ch{display:inline-block;animation:chIn .18s ease-out backwards;white-space:pre}
+.dbox .txt.shout .ch{animation:chShout .25s cubic-bezier(.34,2,.64,1) backwards}
+@keyframes chIn{from{opacity:0;transform:translateY(40%)}}
+@keyframes chShout{from{opacity:0;transform:scale(2.2) rotate(-12deg)}}
+.dbox .txt .act{font-style:italic;font-weight:700;color:#aeb8d6;font-size:.9em}
+.dbox .txt.narr{font-weight:700;font-style:italic;color:#dfe5ff;font-size:1.75cqw}
+.dbox.narr .face{width:0;margin-right:0;overflow:hidden}
+.dbox.narr .who{background:#1d2540;color:#9fb3ff;border-color:#9fb3ff55;font-size:1.1cqw;letter-spacing:.2em}
+.dbox.narr .panel{border-style:dashed}
+.dbox .more{position:absolute;right:1.6cqw;bottom:1cqw;width:1.4cqw;height:1.4cqw;opacity:0;
+  border-left:.7cqw solid transparent;border-right:.7cqw solid transparent;border-top:1cqw solid var(--c);width:0;height:0}
+.dbox.done .more{opacity:1;animation:moreBob .6s ease-in-out infinite alternate}
+@keyframes moreBob{to{transform:translateY(40%)}}
+
+/* ═══════════ CONFESSIONAL ═══════════ */
+.conf{position:absolute;inset:0;z-index:22;opacity:0;pointer-events:none;transition:opacity .15s}
+.conf.show{opacity:1}
+.conf .bg{position:absolute;inset:-5%;filter:blur(1.2cqw) saturate(1.3) brightness(.8);transform:scale(1.1)}
+.conf .bokeh{position:absolute;inset:0}
+.conf .bokeh i{position:absolute;border-radius:50%;background:radial-gradient(circle,#fff9 0,#fff0 70%);animation:bokeh 6s ease-in-out infinite alternate}
+@keyframes bokeh{to{transform:translate(2cqw,-1.5cqw) scale(1.3);opacity:.4}}
+.conf .subject{position:absolute;left:58%;bottom:22%;width:30cqw;translate:-50% 0;animation:confPush 8s ease-out forwards}
+@keyframes confPush{from{transform:scale(.94)}to{transform:scale(1.04)}}
+.conf .subject .fc{aspect-ratio:1;border-radius:2cqw;overflow:hidden;border:.5cqw solid #111;background:var(--c);box-shadow:0 2cqw 4cqw #000a}
+.conf .subject .fc img{width:100%;height:100%;object-fit:cover}
+.conf.talking .subject .fc{animation:faceTalk .28s ease-in-out infinite alternate}
+.conf .vf{position:absolute;inset:4%;pointer-events:none}
+.conf .vf b{position:absolute;width:5cqw;height:5cqw;border:.35cqw solid #fff}
+.conf .vf b:nth-child(1){left:0;top:0;border-right:0;border-bottom:0}.conf .vf b:nth-child(2){right:0;top:0;border-left:0;border-bottom:0}
+.conf .vf b:nth-child(3){left:0;bottom:0;border-right:0;border-top:0}.conf .vf b:nth-child(4){right:0;bottom:0;border-left:0;border-top:0}
+.conf .rec{position:absolute;left:7%;top:8%;font-family:Bungee;font-size:1.7cqw;color:#fff;display:flex;align-items:center;gap:.8cqw}
+.conf .rec::before{content:"";width:1.4cqw;height:1.4cqw;border-radius:50%;background:var(--danger);box-shadow:0 0 1.2cqw var(--danger);animation:blink 1s steps(2) infinite}
+.conf .tc{position:absolute;right:7%;top:8%;font-family:Bungee;font-size:1.5cqw;color:#fff;font-variant-numeric:tabular-nums}
+.conf .batt{position:absolute;right:7%;top:13%;width:3.4cqw;height:1.5cqw;border:.2cqw solid #fff;border-radius:.2cqw}
+.conf .batt::after{content:"";position:absolute;inset:.2cqw;right:1.1cqw;background:#7dff8a}
+.conf .lower{position:absolute;left:6%;top:42%;display:flex;flex-direction:column;align-items:flex-start;gap:.3cqw}
+.conf .lower .n{font-family:Bungee;font-size:3.2cqw;color:#111;background:var(--c);padding:.2cqw 1.4cqw;transform:skewX(-10deg);
+  box-shadow:.4cqw .4cqw 0 #000;animation:slideR .5s cubic-bezier(.22,1,.36,1) backwards}
+.conf .lower .t{font-weight:900;font-size:1.3cqw;letter-spacing:.3em;background:#111;color:#fff;padding:.3cqw 1.2cqw;transform:skewX(-10deg);
+  animation:slideR .5s .12s cubic-bezier(.22,1,.36,1) backwards}
+@keyframes slideR{from{transform:translateX(-120%) skewX(-10deg)}}
+.static{position:absolute;inset:0;z-index:41;pointer-events:none;opacity:0;mix-blend-mode:screen}
+.static.on{animation:staticFlash .32s steps(4)}
+@keyframes staticFlash{0%,100%{opacity:0}20%,70%{opacity:1}}
+
+/* ═══════════ TRIBAL / VOTES ═══════════ */
+.vote{position:absolute;left:50%;top:18%;z-index:24;width:22cqw;aspect-ratio:1.45;translate:-50% 0;perspective:1200px;pointer-events:none}
+.vote .paper{position:absolute;inset:0;border-radius:.6cqw;background:
+  radial-gradient(circle at 30% 20%,#fff8e6,#efdcb0 70%,#d9bf86);box-shadow:0 1.5cqw 3cqw #000c,inset 0 0 2cqw #a07a3a66;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;transform-origin:50% 100%;
+  animation:paperIn .9s cubic-bezier(.34,1.3,.64,1) both}
+@keyframes paperIn{0%{transform:translateY(160%) rotateX(80deg) scale(.4);opacity:0}55%{transform:translateY(-6%) rotateX(-8deg) scale(1.02);opacity:1}100%{transform:none}}
+.vote .paper.secret{background:radial-gradient(circle at 30% 20%,#fdf6e3,#e7d4a8 70%,#cdb07a)}
+.vote .paper.secret::after{content:"SECRET";position:absolute;right:6%;top:10%;font-family:Bungee;font-size:1cqw;color:#c0392b;border:.15cqw solid #c0392b;padding:0 .4cqw;rotate:12deg;opacity:.8}
+.vote .paper.out{animation:paperOut .5s ease-in forwards}
+@keyframes paperOut{to{transform:translateX(60%) translateY(-30%) rotate(18deg);opacity:0}}
+.vote .lbl{font-family:Bungee;font-size:1.1cqw;letter-spacing:.3em;color:#7a5a2a}
+.vote .nm{font-family:"Permanent Marker";font-size:4.4cqw;color:#1b1b2a;margin-top:.4cqw;clip-path:inset(0 100% 0 0);
+  animation:write .7s .4s steps(12) forwards}
+@keyframes write{to{clip-path:inset(0 0 0 0)}}
+.spoken{position:absolute;inset:0;z-index:26;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:0}
+.spoken.show{animation:spoken 4s ease forwards}
+@keyframes spoken{0%{opacity:0}10%,85%{opacity:1}100%{opacity:0}}
+.spoken span{font-family:Bungee;font-size:5.5cqw;color:#ff9a3d;text-shadow:0 0 3cqw #ff4d00,.3cqw .3cqw 0 #000;letter-spacing:.05em;
+  animation:spokenIn 1s cubic-bezier(.34,1.56,.64,1)}
+@keyframes spokenIn{from{transform:scale(2.5);filter:blur(8px);opacity:0}}
+
+/* ═══════════ HUD ═══════════ */
+.hud{position:absolute;inset:0;z-index:28;pointer-events:none}
+.chip{position:absolute;top:2.2%;left:2%;display:flex;gap:.8cqw;align-items:center;font-family:Bungee;font-size:1.05cqw;
+  background:#000a;border:.12cqw solid #ffffff2a;padding:.45cqw 1cqw;border-radius:99px;backdrop-filter:blur(4px)}
+.chip .dot{width:.8cqw;height:.8cqw;border-radius:50%;background:var(--accent);box-shadow:0 0 .8cqw var(--accent)}
+.roster{position:absolute;top:2.2%;right:2%;display:flex;gap:.35cqw;background:#000a;padding:.35cqw;border-radius:99px;border:.12cqw solid #ffffff2a}
+.roster img{width:2.4cqw;height:2.4cqw;border-radius:50%;object-fit:cover;border:.15cqw solid var(--t,#0000);opacity:.35;transition:.3s}
+.roster.many img{width:1.75cqw;height:1.75cqw}
+.roster.many{gap:.2cqw}
+.roster img.here{opacity:1;border-color:#fff8}
+.roster img.lit{border-color:var(--accent);transform:scale(1.2)}
+.roster img.gone{filter:grayscale(1);opacity:.2}
+
+/* ═══════════ CONTROLS + TIMELINE ═══════════ */
+.controls{width:min(1280px,100%);margin-top:12px;display:flex;flex-direction:column;gap:10px}
+.timeline{position:relative;height:18px;border-radius:9px;background:var(--panel);border:1px solid var(--line);cursor:pointer;overflow:hidden}
+.timeline .fill{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,#ff8a3d,var(--accent));width:0;transition:width .3s}
+.timeline .mark{position:absolute;top:0;bottom:0;width:2px;background:#fff6}
+.timeline .mark.conf{background:#ff4d5e}.timeline .mark.tribal{background:#ff9a3d;width:4px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn{font-family:Bungee;font-size:13px;letter-spacing:.05em;color:var(--ink);background:var(--panel);border:1px solid var(--line);
+  border-radius:10px;padding:9px 14px;cursor:pointer;transition:transform .1s,background .2s}
+.btn:hover{background:#1d2540}.btn:active{transform:translateY(2px)}
+.btn.on{background:var(--accent);color:#111;border-color:var(--accent)}
+.hint{color:var(--dim);font-size:13px;margin-left:auto}
+.hint kbd{font-family:Bungee;font-size:11px;background:var(--panel);border:1px solid var(--line);border-radius:5px;padding:2px 6px}
+.log{display:none;max-height:260px;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 14px}
+.log.open{display:block}
+.log .ln{padding:4px 0;border-bottom:1px solid #ffffff0a;font-size:14px}
+.log .ln b{font-family:Bungee;font-weight:400;font-size:12px;margin-right:8px}
+.log .ln.dir{color:var(--dim);font-style:italic}
+.log .ln.scene{color:var(--accent);font-family:Bungee;font-size:12px;padding-top:10px}
+.paste{margin-top:6px}
+.paste summary{list-style:none;display:inline-block}
+.paste summary::-webkit-details-marker{display:none}
+.paste textarea{display:block;width:100%;min-height:200px;margin:10px 0;background:var(--panel);color:var(--ink);border:1px solid var(--line);
+  border-radius:10px;padding:12px;font:13px/1.45 ui-monospace,Consolas,monospace;resize:vertical}
+.note{width:min(1280px,100%);margin-top:18px;color:var(--dim);font-size:13px;line-height:1.5}
+.note code{background:var(--panel);padding:1px 6px;border-radius:5px;color:var(--ink)}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<h1 class="page">EPISODE STAGE · MOCKUP</h1>
+
+<div class="stage" id="stage">
+  <div class="world" id="world">
+    <div class="layer l-sky" id="lSky"></div>
+    <div class="layer l-far" id="lFar"></div>
+    <div class="layer l-mid" id="lMid"></div>
+    <div class="actors" id="actors"></div>
+    <div class="speedlines" id="speed"></div>
+    <div class="layer l-fg" id="lFg"></div>
+  </div>
+  <div class="tint" id="tint"></div>
+  <div class="glow" id="glow"></div>
+  <canvas class="fx" id="fx"></canvas>
+  <div class="vignette"></div>
+
+  <div class="conf" id="conf">
+    <div class="bg" id="confBg"></div>
+    <div class="bokeh" id="bokeh"></div>
+    <div class="subject" id="confSubject"><div class="fc"><img alt=""></div></div>
+    <div class="vf"><b></b><b></b><b></b><b></b></div>
+    <div class="rec">REC</div>
+    <div class="tc" id="tc">00:00:00</div>
+    <div class="batt"></div>
+    <div class="lower" id="confLower"></div>
+  </div>
+
+  <div class="vote" id="vote"></div>
+  <div class="spoken" id="spoken"><span>THE TRIBE HAS SPOKEN</span></div>
+  <div class="caption" id="caption"></div>
+
+  <div class="dbox" id="dbox">
+    <div class="face" id="face"><div class="fc"><img alt=""></div></div>
+    <div class="panel"><div class="who" id="who"></div><div class="txt" id="txt"></div><div class="more"></div></div>
+  </div>
+
+  <div class="hud">
+    <div class="chip"><span class="dot"></span><span id="chipScene">—</span></div>
+    <div class="roster" id="roster"></div>
+  </div>
+
+  <div class="banner" id="banner"><div class="strip"><div class="kicker" id="bKick"></div><div class="place" id="bPlace"></div><div class="time" id="bTime"></div></div></div>
+  <div class="letterbox top"></div><div class="letterbox bot"></div>
+  <canvas class="static" id="static"></canvas>
+  <div class="iris open" id="iris"></div>
+  <div class="titlecard" id="titlecard">
+    <div class="ep" id="tEp">TOTAL DRAMA</div>
+    <div class="name" id="tName"></div>
+    <div class="press" id="tPress">CLICK OR PRESS SPACE</div>
+  </div>
+</div>
+
+<div class="controls">
+  <div class="timeline" id="timeline"><div class="fill" id="tlFill"></div></div>
+  <div class="row">
+    <button class="btn" id="bPrev">◀ Back</button>
+    <button class="btn" id="bNext">Next ▶</button>
+    <button class="btn" id="bAuto">Auto</button>
+    <button class="btn" id="bSpeed">Text 1×</button>
+    <button class="btn on" id="bSound">Sound</button>
+    <button class="btn" id="bNames">Names</button>
+    <button class="btn" id="bLog">Log</button>
+    <span class="hint"><kbd>Space</kbd>/<kbd>→</kbd> next · <kbd>←</kbd> back · <kbd>A</kbd> auto · <kbd>L</kbd> log</span>
+  </div>
+  <div class="log" id="log"></div>
+  <details class="paste">
+    <summary class="btn">Paste an episode</summary>
+    <textarea id="pasteBox" placeholder="Paste a full episode transcript here: [SCENE: …] [Present: …] headers, Name: lines, [Confessional: Name]…"></textarea>
+    <div class="row"><button class="btn on" id="bLoad">Play this episode</button><button class="btn" id="bSample">Back to the sample</button><span class="hint" id="parseInfo"></span></div>
+  </details>
+</div>
+
+<div class="note">
+  Mockup of the screenplay reader as a stage. It reads the same transcript format the episode writer produces, plus one new line after each scene header:
+  <code>[Present: Name, Name, Name]</code>. Who stands in a scene = that list + everyone who speaks + any cast name in a stage direction.
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════════════
+//  SETS — island locations, drawn in SVG (viewBox 1600×900).
+//  Ground line sits near y=640 so standees (floor 30%) stand on it.
+// ════════════════════════════════════════════════════════════════
+const VB = 'viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice"';
+const svg = (inner, defs='') => `<svg ${VB} xmlns="http://www.w3.org/2000/svg"><defs>${defs}</defs>${inner}</svg>`;
+
+const TIMES = {
+  morning:  { sky:['#7cc8ff','#ffe9c2'], sea:'#2f8fc4', sun:{x:300,y:260,r:70,c:'#fff3c4'}, tint:'#fff6e8', glow:0,   label:'Morning' },
+  day:      { sky:['#4fb2ff','#bfe6ff'], sea:'#1f7fbf', sun:{x:1200,y:150,r:60,c:'#fffbe0'}, tint:'#ffffff', glow:0,   label:'Midday' },
+  afternoon:{ sky:['#62a9e8','#ffd9a0'], sea:'#2a78b0', sun:{x:1250,y:300,r:70,c:'#ffe7a8'}, tint:'#fff0dc', glow:0,   label:'Afternoon' },
+  dusk:     { sky:['#3d2c73','#ff8f5a'], sea:'#6b4a8a', sun:{x:1100,y:520,r:110,c:'#ffb36b'}, tint:'#ffc9a8', glow:.35, label:'Dusk' },
+  night:    { sky:['#050818','#1b2553'], sea:'#0e1a3d', moon:{x:1250,y:170,r:55}, tint:'#8a98d8', glow:.6, label:'Night' },
+};
+function timeOf(text){
+  const t = (text||'').toLowerCase();
+  if (/night|midnight|tribal/.test(t)) return 'night';
+  if (/dusk|sunset|evening/.test(t)) return 'dusk';
+  if (/afternoon/.test(t)) return 'afternoon';
+  if (/midday|noon|\bday\b|hot/.test(t)) return 'day';
+  return 'morning';
+}
+
+// ── primitives ──
+const rnd = (s => () => (s = (s * 16807) % 2147483647) / 2147483647)(7);
+function palm(x, y, h, flip=1, cls='sway', dark='#1f5a2c'){
+  const lean = 40*flip;
+  const leaves = [-150,-110,-70,-30,10,50].map((a,i)=>{
+    const r=a*Math.PI/180, L=h*.55, ex=Math.cos(r)*L, ey=Math.sin(r)*L*.55;
+    return `<path d="M0 0 Q ${ex*.5} ${ey-60} ${ex} ${ey+40} Q ${ex*.45} ${ey-20} 0 12Z" fill="${i%2?dark:'#2e7d3c'}"/>`;
+  }).join('');
+  return `<g class="${cls}" style="transform-origin:${x}px ${y}px">
+    <path d="M${x} ${y} Q ${x+lean*.4} ${y-h*.5} ${x+lean} ${y-h}" stroke="#6b4a2b" stroke-width="${h*.06}" fill="none" stroke-linecap="round"/>
+    <path d="M${x} ${y} Q ${x+lean*.4} ${y-h*.5} ${x+lean} ${y-h}" stroke="#8a6238" stroke-width="${h*.06}" stroke-dasharray="6 14" fill="none"/>
+    <g transform="translate(${x+lean} ${y-h})">${leaves}<circle cx="-8" cy="8" r="10" fill="#5a3b1c"/><circle cx="9" cy="10" r="9" fill="#6b4726"/></g></g>`;
+}
+function bush(x,y,s,c='#2a6b35'){ return `<g transform="translate(${x} ${y}) scale(${s})"><ellipse cx="0" cy="0" rx="70" ry="40" fill="${c}"/><ellipse cx="-45" cy="10" rx="45" ry="30" fill="${c}" opacity=".85"/><ellipse cx="50" cy="8" rx="50" ry="32" fill="#1f5228"/></g>`; }
+function rock(x,y,s,c='#5b5f6b'){ return `<g transform="translate(${x} ${y}) scale(${s})"><path d="M-80 0 L-60 -55 L-10 -80 L45 -60 L80 0Z" fill="${c}"/><path d="M-10 -80 L45 -60 L80 0 L20 0Z" fill="#000" opacity=".2"/></g>`; }
+function flame(x,y,s){ return `<g transform="translate(${x} ${y}) scale(${s})">
+  <path class="flick" d="M0 0 C -40 -20 -30 -70 0 -120 C 30 -70 40 -20 0 0Z" fill="#ff7a1a"/>
+  <path class="flick slow" d="M0 0 C -24 -14 -18 -50 0 -82 C 18 -50 24 -14 0 0Z" fill="#ffc53d"/>
+  <path class="flick" d="M0 0 C -10 -8 -8 -26 0 -44 C 8 -26 10 -8 0 0Z" fill="#fff6c9"/></g>`; }
+function torch(x,y,h){ return `<g><rect x="${x-6}" y="${y-h}" width="12" height="${h}" fill="#5a3a1f"/><path d="M${x-18} ${y-h} L${x+18} ${y-h} L${x+12} ${y-h+30} L${x-12} ${y-h+30}Z" fill="#3b2a18"/>${flame(x,y-h+2,.55)}</g>`; }
+function ocean(y, c){ return `<rect x="0" y="${y}" width="1600" height="${900-y}" fill="${c}"/>
+  <g class="wave"><path d="M-100 ${y+30} q 50 -14 100 0 t 100 0 t 100 0 t 100 0 t 100 0 t 100 0 t 100 0 t 100 0 t 100 0 t 100 0 t 100 0 t 100 0 t 100 0 t 100 0 t 100 0 t 100 0 t 100 0 t 100 0" stroke="#ffffff55" stroke-width="4" fill="none"/></g>
+  <g class="wave d2"><path d="M-100 ${y+80} q 60 -16 120 0 t 120 0 t 120 0 t 120 0 t 120 0 t 120 0 t 120 0 t 120 0 t 120 0 t 120 0 t 120 0 t 120 0 t 120 0 t 120 0 t 120 0" stroke="#ffffff33" stroke-width="5" fill="none"/></g>`; }
+
+// ── sky (shared) ──
+function skySVG(time){
+  const T = TIMES[time];
+  let body = `<rect width="1600" height="900" fill="url(#sk)"/>`;
+  if (T.moon){
+    for (let i=0;i<90;i++){ const x=rnd()*1600, y=rnd()*520, r=rnd()*2+.6;
+      body += `<circle class="twinkle" style="animation-delay:${-rnd()*2}s" cx="${x}" cy="${y}" r="${r}" fill="#fff"/>`; }
+    body += `<circle cx="${T.moon.x}" cy="${T.moon.y}" r="${T.moon.r*2.4}" fill="#cfd8ff" opacity=".12"/>
+      <circle cx="${T.moon.x}" cy="${T.moon.y}" r="${T.moon.r}" fill="#eef1ff"/><circle cx="${T.moon.x+18}" cy="${T.moon.y-10}" r="${T.moon.r}" fill="#1b2553" opacity=".25"/>`;
+  } else {
+    const s=T.sun;
+    body += `<circle class="shimmer" cx="${s.x}" cy="${s.y}" r="${s.r*2.6}" fill="${s.c}" opacity=".35"/><circle cx="${s.x}" cy="${s.y}" r="${s.r}" fill="${s.c}"/>`;
+    body += `<g class="cloud" opacity=".85"><ellipse cx="0" cy="170" rx="120" ry="34" fill="#fff"/><ellipse cx="60" cy="150" rx="80" ry="38" fill="#fff"/></g>
+             <g class="cloud d2" opacity=".6"><ellipse cx="0" cy="300" rx="160" ry="30" fill="#fff"/><ellipse cx="-70" cy="285" rx="80" ry="30" fill="#fff"/></g>`;
+  }
+  return svg(body, `<linearGradient id="sk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${T.sky[0]}"/><stop offset=".75" stop-color="${T.sky[1]}"/></linearGradient>`);
+}
+
+// ── set library: each returns far / mid / fg SVG + particle kind ──
+const SETS = {
+  camp: {
+    label:'Tribe Camp', match:/camp|shelter|fire pit|firepit|\bfire\b/,
+    fx:'embers',
+    far:t=>svg(`${ocean(470,TIMES[t].sea)}<path d="M1050 470 q 120 -90 260 -20 q 60 -30 110 20Z" fill="#1d4a2e" opacity=".8"/>`),
+    mid:(t,sc)=>svg(`
+      <path d="M0 520 Q 400 480 800 510 T 1600 500 V900 H0Z" fill="#e6c98f"/>
+      <path d="M0 600 Q 500 570 1000 600 T 1600 590 V900 H0Z" fill="#d9b574"/>
+      ${palm(120,560,380,1,'sway')}${palm(1500,560,420,-1,'sway d2')}${bush(1330,560,1.3)}${bush(250,570,1)}
+      <g transform="translate(1120 590)">
+        <path d="M-230 0 L-150 -250 L150 -250 L230 0" fill="none" stroke="#7a5230" stroke-width="18"/>
+        <path d="M-250 -230 L0 -330 L250 -230 L180 -200 L0 -280 L-180 -200Z" fill="#7aa33a"/>
+        <path d="M-250 -230 L0 -330 L250 -230" stroke="#4d6d1f" stroke-width="10" fill="none"/>
+        ${[...Array(9)].map((_,i)=>`<path class="sway d${i%3+1}" style="transform-origin:${-200+i*50}px -225px" d="M${-200+i*50} -225 l -8 60 l 16 0Z" fill="#5f8a2b"/>`).join('')}
+        <rect x="-170" y="-70" width="340" height="18" fill="#8a5a33"/><rect x="-160" y="-52" width="12" height="52" fill="#6b4726"/><rect x="148" y="-52" width="12" height="52" fill="#6b4726"/>
+      </g>
+      <g transform="translate(560 640)">
+        <ellipse cx="0" cy="0" rx="120" ry="30" fill="#6b5a45"/>
+        ${[...Array(10)].map((_,i)=>{const a=i/10*Math.PI*2;return `<ellipse cx="${Math.cos(a)*110}" cy="${Math.sin(a)*26}" rx="24" ry="14" fill="#7d7d86"/>`}).join('')}
+        <path d="M-60 0 L60 -20 M-60 -20 L60 0" stroke="#4a2e17" stroke-width="16"/>
+        ${flame(0,-4,1.1)}
+      </g>
+      <rect x="300" y="700" width="200" height="34" rx="16" fill="#7a4f2a"/><rect x="700" y="710" width="220" height="34" rx="16" fill="#6b4524"/>
+      <g transform="translate(900 470)"><rect x="-4" y="0" width="8" height="160" fill="#5a3a1f"/><path class="sway" style="transform-origin:0 10px" d="M4 8 L110 30 L4 60Z" fill="${TRIBE_COLORS[sc?.tribe] || '#e8453c'}"/></g>`),
+    fg:t=>svg(`<g class="sway d3" style="transform-origin:0 0"><path d="M-40 -40 Q 200 60 330 -30 Q 190 110 -40 90Z" fill="#1c4f27"/></g>
+      <g class="sway d2" style="transform-origin:1600px 0"><path d="M1640 -40 Q 1400 80 1250 -20 Q 1420 130 1640 110Z" fill="#17451f"/></g>`),
+  },
+  beach: {
+    label:'The Beach', match:/beach|shore|sand|coast|boat|arriv|exile|redemption|lake/,
+    fx:'spray',
+    far:t=>svg(`${ocean(430,TIMES[t].sea)}<g class="bob"><path d="M1180 470 l 90 0 l -15 22 l -60 0Z" fill="#8a4b2a"/><path d="M1225 468 L1225 380 L1275 460Z" fill="#f2efe6"/></g>`),
+    mid:t=>svg(`
+      <path d="M0 560 Q 500 520 1000 555 T 1600 540 V900 H0Z" fill="#f0d9a3"/>
+      <path class="shimmer" d="M0 565 Q 500 525 1000 560 T 1600 545" stroke="#fff" stroke-width="10" fill="none"/>
+      <path d="M0 650 Q 600 620 1600 650 V900 H0Z" fill="#e9cc8c"/>
+      ${palm(90,640,480,1,'sway')}${palm(260,650,340,1,'sway d3')}
+      <path d="M1180 700 q 80 -30 180 -8 l 10 18 q -100 -10 -190 12Z" fill="#9b7a55"/>
+      <g transform="translate(700 760)"><ellipse rx="22" ry="14" fill="#e0513a"/><path d="M-20 -6 l -16 -12 M20 -6 l 16 -12" stroke="#e0513a" stroke-width="6"/></g>
+      ${[...Array(14)].map(()=>`<circle cx="${rnd()*1600}" cy="${660+rnd()*220}" r="${2+rnd()*3}" fill="#c9a86a"/>`).join('')}`),
+    fg:t=>svg(`<g class="sway d2" style="transform-origin:1600px 0"><path d="M1640 -40 Q 1380 60 1270 -20 Q 1400 120 1640 100Z" fill="#1c4f27"/></g>`),
+  },
+  jungle: {
+    label:'The Jungle', match:/jungle|trees|treeline|vine|forest|idol|path|banyan/,
+    fx:'fireflies',
+    far:t=>svg(`<rect width="1600" height="900" fill="#0f2d1b" opacity=".6"/>
+      ${[...Array(12)].map((_,i)=>`<rect x="${i*140+rnd()*40}" y="0" width="${40+rnd()*30}" height="900" fill="#173b24"/>`).join('')}
+      <path d="M0 420 Q 200 330 400 400 T 800 380 T 1200 400 T 1600 370 V900 H0Z" fill="#1b4a2b"/>`),
+    mid:t=>svg(`
+      <path d="M0 560 Q 400 530 800 560 T 1600 550 V900 H0Z" fill="#3a5a2a"/>
+      <path d="M0 640 Q 600 610 1600 650 V900 H0Z" fill="#2f4b22"/>
+      <g transform="translate(1150 600)">
+        <path d="M-90 0 Q -80 -300 -40 -520 L 60 -520 Q 90 -300 110 0Z" fill="#5a4330"/>
+        <path d="M-90 0 Q -160 -60 -260 20 M-60 0 Q -110 -30 -170 40 M100 0 Q 170 -50 280 20 M80 0 Q 130 -30 190 40" stroke="#5a4330" stroke-width="24" fill="none" stroke-linecap="round"/>
+        <ellipse cx="5" cy="-210" rx="26" ry="40" fill="#1e140c"/>
+        <ellipse cx="0" cy="-560" rx="330" ry="150" fill="#1f5a2c"/><ellipse cx="-160" cy="-520" rx="180" ry="100" fill="#26683a"/>
+      </g>
+      ${[...Array(9)].map((_,i)=>{const x=80+i*180; return `<path class="sway d${i%3+1}" style="transform-origin:${x}px 0px" d="M${x} -10 Q ${x+20} 200 ${x-10} ${260+rnd()*200}" stroke="#2d6b33" stroke-width="7" fill="none"/>`}).join('')}
+      ${bush(250,640,1.4,'#28602f')}${bush(700,660,1.1,'#2c6a33')}`),
+    fg:t=>svg(`<g class="sway" style="transform-origin:0 900px"><path d="M-60 900 Q 60 560 260 520 Q 180 700 140 900Z" fill="#0f3a1a"/><path d="M-60 900 Q 180 700 420 700 Q 260 800 200 900Z" fill="#134a21"/></g>
+      <g class="sway d2" style="transform-origin:1600px 900px"><path d="M1660 900 Q 1520 600 1300 560 Q 1420 740 1460 900Z" fill="#0f3a1a"/></g>
+      <g class="sway d3" style="transform-origin:800px 0"><path d="M500 -40 Q 800 120 1100 -40Z" fill="#0d3517"/></g>`),
+  },
+  well: {
+    label:'The Well', match:/well|water run|bucket/,
+    fx:'dust',
+    far:t=>svg(`<path d="M0 470 Q 300 380 650 450 T 1300 420 T 1600 440 V900 H0Z" fill="#3f7a3a"/>${palm(1300,480,300,-1,'sway d2')}${palm(300,470,260,1,'sway d3')}`),
+    mid:t=>svg(`
+      <path d="M0 540 Q 500 510 1000 545 T 1600 530 V900 H0Z" fill="#b8a06a"/>
+      <path d="M0 640 Q 700 610 1600 650 V900 H0Z" fill="#a88f5a"/>
+      <g transform="translate(800 620)">
+        <ellipse cx="0" cy="0" rx="190" ry="44" fill="#4b4b55"/>
+        <path d="M-190 0 V -120 A190 44 0 0 1 190 -120 V 0 A190 44 0 0 1 -190 0Z" fill="#8a8a96"/>
+        ${[...Array(4)].map((_,r)=>[...Array(6)].map((_,c)=>`<rect x="${-180+c*60+(r%2)*30}" y="${-112+r*28}" width="56" height="24" rx="5" fill="#9c9ca8" stroke="#5f5f6b" stroke-width="3"/>`).join('')).join('')}
+        <ellipse cx="0" cy="-120" rx="190" ry="44" fill="#6d6d78"/><ellipse cx="0" cy="-120" rx="150" ry="30" fill="#141420"/>
+        <rect x="-170" y="-330" width="20" height="210" fill="#6b4726"/><rect x="150" y="-330" width="20" height="210" fill="#6b4726"/>
+        <path d="M-200 -330 L0 -420 L200 -330Z" fill="#8a3b2a"/><rect x="-160" y="-290" width="320" height="16" rx="8" fill="#7a5230"/>
+        <g class="sway" style="transform-origin:40px -282px"><path d="M40 -282 V -190" stroke="#c9b27a" stroke-width="5"/><path d="M15 -190 h50 l -8 44 h-34Z" fill="#7a5230"/></g>
+      </g>
+      ${rock(250,690,.9,'#7d7a70')}${rock(1350,700,1.1,'#6f6c62')}`),
+    fg:t=>svg(`<g class="sway d3" style="transform-origin:0 900px"><path d="M0 900 L40 760 L70 900 L110 780 L130 900Z" fill="#6f8a3a"/></g>
+      <g class="sway d2" style="transform-origin:1600px 900px"><path d="M1600 900 L1560 740 L1530 900 L1490 790 L1470 900Z" fill="#6f8a3a"/></g>`),
+  },
+  fishing: {
+    label:'The Fishing Rocks', match:/fish|rocks|tide|lagoon|reef/,
+    fx:'spray',
+    far:t=>svg(`${ocean(380,TIMES[t].sea)}${rock(1300,470,1.4,'#3b3f4a')}${rock(1450,460,.8,'#343844')}`),
+    mid:t=>svg(`
+      <rect x="0" y="560" width="1600" height="340" fill="${TIMES[t].sea}"/>
+      <g class="wave"><path d="M-100 600 q 80 -20 160 0 t 160 0 t 160 0 t 160 0 t 160 0 t 160 0 t 160 0 t 160 0 t 160 0 t 160 0 t 160 0 t 160 0" stroke="#ffffff66" stroke-width="6" fill="none"/></g>
+      <path d="M-40 640 L200 520 L520 540 L760 600 L1000 560 L1300 590 L1640 540 V900 H-40Z" fill="#4a4e5a"/>
+      <path d="M-40 700 L400 640 L900 680 L1640 640 V900 H-40Z" fill="#3c404b"/>
+      <path d="M200 520 L520 540 L460 600 L240 590Z" fill="#5a5f6c"/>
+      <ellipse class="shimmer" cx="1000" cy="760" rx="160" ry="30" fill="#6fb8e0"/>
+      <path d="M560 560 Q 700 380 900 330" stroke="#8a6238" stroke-width="8" fill="none"/>
+      <path class="sway" style="transform-origin:900px 330px" d="M900 330 Q 960 480 950 620" stroke="#ddd" stroke-width="2" fill="none"/>
+      <circle class="bob" cx="950" cy="622" r="8" fill="#e8453c"/>`),
+    fg:t=>svg(`${rock(80,900,2.4,'#2b2e36')}${rock(1560,900,2,'#2b2e36')}`),
+  },
+  cliff: {
+    label:'The Cliff', match:/cliff|peak|ledge|summit|mountain|slope|lookout/,
+    fx:'wind',
+    far:t=>svg(`${ocean(620,TIMES[t].sea)}<path d="M0 620 L300 520 L520 620Z" fill="#355a3a" opacity=".6"/>`),
+    mid:t=>svg(`
+      <path d="M-40 900 L-40 560 L300 520 L700 540 L1000 520 L1250 560 L1320 900Z" fill="#6d6155"/>
+      <path d="M-40 620 L300 580 L700 600 L1000 580 L1250 610 L1320 900 L-40 900Z" fill="#5c5147"/>
+      <path d="M1250 560 L1320 900 L1290 900 L1230 600Z" fill="#3d352e"/>
+      ${bush(200,560,.8,'#4d7a3a')}${palm(1150,560,260,-1,'sway')}`),
+    fg:t=>svg(`<g class="cloud" opacity=".35"><ellipse cx="0" cy="760" rx="260" ry="50" fill="#fff"/></g>`),
+  },
+  challenge: {
+    label:'Challenge Arena', match:/challenge|arena|course|crate|immunity|reward/,
+    fx:'confetti',
+    far:t=>svg(`${ocean(480,TIMES[t].sea)}`),
+    mid:t=>svg(`
+      <path d="M0 540 Q 800 500 1600 540 V900 H0Z" fill="#edd39a"/>
+      ${[...Array(7)].map((_,i)=>`<g transform="translate(${130+i*220} 430)"><rect x="-4" y="0" width="8" height="140" fill="#555"/><path class="sway d${i%3+1}" style="transform-origin:4px 4px" d="M4 4 L90 22 L4 44Z" fill="${['#e8453c','#ffcc33','#3aa0ff','#40c060'][i%4]}"/></g>`).join('')}
+      ${[0,1,2].map(k=>{const x=380+k*420; return [...Array(4-k%2)].map((_,j)=>`<g transform="translate(${x+(j%2)*14-60} ${600-j*72})"><rect width="120" height="72" fill="#b7843f" stroke="#6b4524" stroke-width="6"/><path d="M0 0 L120 72 M120 0 L0 72" stroke="#6b4524" stroke-width="5"/></g>`).join('')}).join('')}
+      <g transform="translate(800 250)"><rect x="-6" y="0" width="12" height="130" fill="#444"/><path d="M-40 0 Q 0 -60 40 0Z" fill="#ffcc33" stroke="#8a6a00" stroke-width="5"/></g>
+      <g transform="translate(1440 650)"><path d="M-80 0 L-60 -140 L60 -140 L80 0Z" fill="#7a2230"/><rect x="-95" y="-165" width="190" height="30" rx="6" fill="#a8323f"/><circle cx="0" cy="-80" r="34" fill="#ffcc33"/><path d="M-14 -80 l 10 12 l 20 -26" stroke="#7a2230" stroke-width="8" fill="none"/></g>`),
+    fg:t=>svg(`<path d="M0 820 L1600 820 V900 H0Z" fill="#000" opacity=".15"/>`),
+  },
+  tribal: {
+    label:'Tribal Council', match:/tribal|council|elimination|ceremony|vote/,
+    fx:'embers', forceTime:'night',
+    far:t=>svg(`<rect width="1600" height="900" fill="#0b1224"/>${[...Array(10)].map((_,i)=>`<rect x="${i*170}" y="200" width="60" height="700" fill="#0f1a30"/>`).join('')}`),
+    mid:t=>svg(`
+      <path d="M0 520 L1600 520 V900 H0Z" fill="#2a1f18"/>
+      <ellipse cx="800" cy="700" rx="760" ry="170" fill="#3a2a1e"/>
+      ${[...Array(9)].map((_,i)=>torch(120+i*170, 520, 230+(i%2)*40)).join('')}
+      <g transform="translate(800 520)"><path d="M-260 -380 L-230 0 M260 -380 L230 0" stroke="#4a3320" stroke-width="30"/><path d="M-300 -390 Q 0 -460 300 -390 L 290 -350 Q 0 -410 -290 -350Z" fill="#5a3d24"/>
+        ${[...Array(5)].map((_,i)=>`<path d="M${-220+i*110} -370 l 0 60" stroke="#c9b27a" stroke-width="4"/><circle cx="${-220+i*110}" cy="-300" r="14" fill="#d8cdb0"/>`).join('')}</g>
+      <g transform="translate(800 700)"><ellipse rx="140" ry="36" fill="#1a120c"/>${[...Array(12)].map((_,i)=>{const a=i/12*Math.PI*2;return `<ellipse cx="${Math.cos(a)*130}" cy="${Math.sin(a)*30}" rx="26" ry="14" fill="#6d6d78"/>`}).join('')}${flame(0,-6,1.6)}</g>
+      <g transform="translate(1320 640)"><rect x="-40" y="0" width="80" height="80" fill="#4a3320"/><path d="M-60 0 Q 0 -110 60 0Z" fill="#8a5a33" stroke="#3b2a18" stroke-width="6"/></g>`),
+    fg:t=>svg(`<path d="M-20 900 L60 400 L90 400 L120 900Z" fill="#1a110a"/><path d="M1620 900 L1540 400 L1510 400 L1480 900Z" fill="#1a110a"/>`),
+    glow:'radial-gradient(ellipse at 50% 78%,#ff7a1a66,transparent 60%)',
+  },
+};
+SETS.dock = {
+  label:'The Dock', match:/dock|pier/, fx:'spray',
+  far:t=>svg(`${ocean(420,TIMES[t].sea)}<path d="M1100 425 q 140 -80 300 -10Z" fill="#1d4a2e" opacity=".7"/>`),
+  mid:t=>svg(`
+    <rect x="0" y="520" width="1600" height="380" fill="${TIMES[t].sea}"/>
+    <g class="wave"><path d="M-100 560 q 80 -18 160 0 t 160 0 t 160 0 t 160 0 t 160 0 t 160 0 t 160 0 t 160 0 t 160 0 t 160 0 t 160 0 t 160 0" stroke="#ffffff55" stroke-width="5" fill="none"/></g>
+    <path d="M-60 640 L1450 585 L1480 610 L-60 690Z" fill="#9a6b3c"/>
+    ${[...Array(16)].map((_,i)=>{const x=-40+i*95, y=640-i*3.4; return `<path d="M${x} ${y-2} L${x+4} ${y+50}" stroke="#6b4724" stroke-width="4"/><rect x="${x-8}" y="${y+40}" width="16" height="200" fill="#5a3a1f"/>`}).join('')}
+    <path d="M-60 690 L1480 610 L1480 625 L-60 710Z" fill="#6b4724"/>
+    <circle class="bob" cx="1300" cy="640" r="16" fill="#fff" stroke="#e8453c" stroke-width="7"/>
+    ${palm(1540,590,380,-1,'sway d2')}`),
+  fg:t=>svg(`<g class="sway d3" style="transform-origin:0 0"><path d="M-40 -40 Q 200 60 330 -30 Q 190 110 -40 90Z" fill="#1c4f27"/></g>`),
+};
+SETS.island = { ...SETS.beach, label:'The Island', match:/$^/ };
+function pickSet(header){
+  const h = (header||'').toLowerCase();
+  for (const k of ['tribal','challenge','dock','jungle','well','fishing','cliff','camp','beach']) if (SETS[k].match.test(h)) return k;
+  return 'island';
+}
+// ════════════════════════════════════════════════════════════════
+//  CAST — built from the transcript itself: every speaker plus every
+//  name on a [Present:] list. Portrait = assets/avatars/<slug>.png.
+// ════════════════════════════════════════════════════════════════
+const AV = n => `../assets/avatars/${n}.png`;
+const SLUG = { Chris:'chris-mclean', Chef:'chef-hatchet' };
+const DEFAULT_HOSTS = ['Chris', 'Chef'];
+const HOST_COLORS = { Chris:'#ffcc33', Chef:'#f1f1f1' };
+const TRIBE_COLORS = { green:'#4ade80', blue:'#60a5fa', red:'#f87171', yellow:'#facc15', purple:'#c084fc',
+                       orange:'#fb923c', pink:'#f472b6', black:'#9ca3af', white:'#e5e7eb', gold:'#fbbf24' };
+const TRIBE_RE = new RegExp(`\\b(${Object.keys(TRIBE_COLORS).join('|')})\\b`, 'i');
+const PALETTE = ['#7ec8ff','#ff5fa2','#7dff8a','#8fa2ff','#ffb86b','#c58bff','#5ff2d6','#ff7a6b','#ffe066','#9be15d','#ff9ecd','#8bd3dd'];
+const hashStr = s => Math.abs([...s].reduce((a,c) => (a*31 + c.charCodeAt(0)) | 0, 7));
+let CAST = {};
+function ensureCast(n, role){
+  if (!CAST[n]) CAST[n] = { img:AV(SLUG[n] || n.toLowerCase().replace(/[^a-z0-9]+/g,'-')),
+    c:HOST_COLORS[n] || PALETTE[hashStr(n) % PALETTE.length],
+    host:DEFAULT_HOSTS.includes(n), role:DEFAULT_HOSTS.includes(n) ? 'host' : 'player', tribe:null };
+  if (role === 'host'){ CAST[n].host = true; CAST[n].role = 'host'; }
+  if (role === 'coach' && !CAST[n].host) CAST[n].role = 'coach';
+  return CAST[n];
+}
+
+const SAMPLE = `[Title Card: Nobody Trusts the Well]
+
+[SCENE: Tribe camp — morning. The fire is out. It rained all night.]
+[Present: Owen, Heather, Duncan, Gwen, Julia, Bowie, Mickey, Priya]
+Owen: [shivering] Okay, who was on fire duty? Because the fire is. Not. On.
+Heather: Don't look at me. I was sleeping. Like a normal person.
+Duncan: You were awake. I heard you whispering with Julia at like two in the morning.
+Julia: [...] We were talking about the rain.
+Gwen: Sure. The rain. Very strategic weather.
+Bowie: Can we PLEASE just relight it? I'm cold, I'm hungry, and my hair is doing something I did not approve.
+[Bowie kneels by the pit and starts striking the flint.]
+Owen: GO BOWIE GO!
+[A spark catches. Smoke curls up and the whole tribe cheers.]
+
+[Confessional: Heather]
+Heather: Duncan is paying attention. That's a problem. People who pay attention vote you out.
+Heather: So he goes. Tonight, if I can make it happen.
+
+[SCENE: The well — midday. Hot. Gwen fills a bucket while Duncan leans on the stones.]
+[Present: Gwen, Duncan]
+Duncan: She's coming for me. I know that face.
+Gwen: Heather has one face. It's the coming-for-you face.
+Duncan: [laughs] Okay, fair. But I need numbers. You, me... Owen?
+Gwen: Owen will vote with whoever feeds him.
+Duncan: Then we feed him.
+
+[SCENE: The jungle — afternoon. Julia pushes through the vines alone, checking tree roots.]
+[Present: Julia]
+Julia: [whispers] Hollow tree, hollow tree... come ON.
+[Julia reaches into a knot in a banyan root and pulls out a carved wooden idol.]
+Julia: No way. NO WAY!
+[Mickey steps out onto the path behind her.]
+Mickey: Um. Hi. I didn't see anything. I'm just... here for the. Leaves?
+Julia: Mickey. If you tell ANYONE, I will end you.
+Mickey: [squeaks] Leaves!
+
+[SCENE: Challenge arena — afternoon. Crate towers on the beach. Chris stands at his podium.]
+[Present: Chris, Owen, Heather, Duncan, Gwen, Julia, Bowie, Mickey, Priya]
+Chris: Welcome to today's immunity challenge! Stack the crates, climb the crates, try not to die on the crates.
+Priya: Is "don't die" a rule or a suggestion?
+Chris: Suggestion!
+[Heather's tower wobbles and crashes. Priya climbs hers and slaps the bell.]
+Chris: PRIYA WINS IMMUNITY!
+Heather: Ugh. Rude.
+
+[SCENE: Fishing rocks — dusk. Owen dangles a line. Heather sits down beside him.]
+[Present: Owen, Heather]
+Heather: Owen. Buddy. You know Duncan called you useless this morning?
+Owen: What? He did?
+Heather: Word for word. Useless.
+Owen: [sniffs] ...I caught a fish on day two.
+Heather: I know you did. So vote with me tonight.
+
+[SCENE: Tribal Council — night. Torches. The tribe sits on the log benches.]
+[Present: Owen, Heather, Duncan, Gwen, Julia, Bowie, Mickey, Priya. Host: Chris.]
+Chris: Duncan. Heather says you're a threat. Are you?
+Duncan: I'm a threat to people who lie. So, yeah. To her.
+Heather: Wow!
+Chris: It's time to vote.
+[One by one, they walk to the urn.]
+[Heather writes DUNCAN. She doesn't hesitate.]
+Chris: I'll go tally the votes. [...] I'll read the votes.
+Chris: First vote... Duncan.
+Chris: Heather.
+Chris: Duncan.
+Chris: Heather. Two votes Heather, two votes Duncan.
+Chris: Duncan.
+Chris: The fourth person voted out of the game... Duncan.
+Duncan: [stands] Whatever. Owen, she lied to you, man.
+Chris: Duncan, the tribe has spoken.
+[Duncan's torch goes dark. He walks off into the night.]`;
+
+// ════════════════════════════════════════════════════════════════
+//  PARSER — transcript → scenes + beats
+// ════════════════════════════════════════════════════════════════
+const SPK = /^([A-Z][a-zA-Z'\-]+(?: [A-Z][a-zA-Z'\-]+)?):\s*(.+)$/;
+const NOT_NAMES = /^(present|confessional|scene|title|title card|previously|producer|phase|host|hosts|coach|coaches|note|voting|later|players?)$/i;
+const isName = n => !!n && n !== n.toUpperCase() && !NOT_NAMES.test(n);
+const stripCues = s => s.replace(/\[[^\]]*\]/g, ' ').replace(/\s{2,}/g, ' ').trim();
+const TIME_WORDS = /morning|dawn|sunrise|midday|noon|\bday\b|afternoon|dusk|sunset|evening|night|midnight/i;
+
+// "Natalia, Manu. Coaches: James, Julia. Host: Chris, Chef." → [[name, role]]
+function parsePresent(body){
+  const out = [];
+  body.split(/[.;]\s*(?=[A-Z][a-zA-Z]*\s*:)/).forEach(seg => {
+    const m = seg.match(/^\s*([A-Za-z]+)\s*:\s*(.*)$/);
+    let role = 'player', list = seg;
+    if (m){ const lab = m[1].toLowerCase(); list = m[2]; role = /^host/.test(lab) ? 'host' : /^coach/.test(lab) ? 'coach' : 'player'; }
+    list.split(/,|\band\b/).map(s => s.replace(/[.\s]+$/, '').trim()).filter(isName).forEach(n => out.push([n, role]));
+  });
+  return out;
+}
+
+// Long text becomes several click-through pages, never cut mid-sentence or mid-[cue].
+function sentences(s){ return s.match(/[^.!?…]+(?:[.!?…]+["'”’)]*\s*|$)/g) || [s]; }
+function pages(text, max){
+  const toks = [];
+  text.split(/(\[[^\]]*\])/).forEach(t => {
+    if (!t.trim()) return;
+    if (t.startsWith('[')) toks.push(t.trim()); else sentences(t).forEach(x => x.trim() && toks.push(x.trim()));
+  });
+  const out = []; let cur = [], len = 0;
+  toks.forEach(t => {
+    const l = t.startsWith('[') ? Math.min(t.length, 30) : t.length;
+    if (len && len + l > max){ out.push(cur.join(' ')); cur = []; len = 0; }
+    cur.push(t); len += l;
+  });
+  if (cur.length) out.push(cur.join(' '));
+  // a page that is only a stage cue rides along with the words before it
+  return out.reduce((acc, pg) => { if (acc.length && !stripCues(pg)) acc[acc.length-1] += ' ' + pg; else acc.push(pg); return acc; }, []);
+}
+
+// A stage direction that moves the camera somewhere else inside the same scene:
+// "[At the well. …]", "[Later — the dock. …]", "[Late that night. …]".
+const CUT_LEAD = /^(at the|later|next morning|next day|late that night|late at night|much later|later still|pre-tribal|evening|night|morning|dawn|between phases|full dark|meanwhile|back at)\b/i;
+const LOC_PHRASE = /\b(at|to|near|by|on) the (dock|well|tree ?line|water's edge|beach|shore|fire pit|shelter|urn)\b/i;
+const SUBSETS = [
+  ['dock',      /\b(dock|pier|pilings)\b/i],
+  ['well',      /\bthe well\b/i],
+  ['jungle',    /\b(tree ?line|jungle|forest|trail|woods|vines)\b/i],
+  ['beach',     /\b(water's edge|the beach|the shore|shoreline)\b/i],
+  ['challenge', /\b(compound|mess tent|mess hall|obstacle course)\b/i],
+  ['camp',      /\b(fire pit|the fire|shelter|camp|supply crate|the crate|cabin|bunk)\b/i],
+];
+function subView(text, scene, afterCard){
+  const head = text.slice(0, afterCard ? 400 : 140);
+  const first = sentences(text)[0] || '';
+  if (!afterCard && !CUT_LEAD.test(text) && !LOC_PHRASE.test(first)) return null;
+  const allowed = k => !((k === 'camp' || k === 'challenge') && scene.set !== k);   // only return to the scene's own base
+  let set = null;
+  const named = (head.match(LOC_PHRASE) || [])[2];   // "near the tree line" beats keyword order
+  if (named) set = SUBSETS.find(([k, re]) => re.test('the ' + named) && allowed(k))?.[0] || null;
+  if (!set) for (const [k, re] of SUBSETS){ if (re.test(head) && allowed(k)){ set = k; break; } }
+  const t = head.toLowerCase();
+  const time = /\b(night|dark|moonlight|stars)\b/.test(t) ? 'night' : /\b(dusk|sunset|evening)\b/.test(t) ? 'dusk'
+             : /\b(morning|dawn|sunrise)\b/.test(t) ? 'morning' : /\bafternoon\b/.test(t) ? 'afternoon' : null;
+  if (!set && !time) return null;
+  return { set: set || scene.view.set, time: SETS[scene.set].forceTime || time || scene.view.time };
+}
+
+function parse(text){
+  CAST = {};
+  let lines = text.replace(/\r/g, '').split('\n').map(l => l.trim()).filter(Boolean);
+  // "[SCENE: …] [Present: …]" on one line → two lines
+  lines = lines.flatMap(l => /^\[/.test(l) && !l.replace(/\[[^\]]*\]/g, '').trim() ? l.match(/\[[^\]]*\]/g) : [l]);
+  const speakers = new Set();
+  lines.forEach(l => { const m = l.match(SPK); if (m && isName(m[1])) speakers.add(m[1]); });
+  // "…[He stares at the camera.] James: The goat…" → the second speech on its own line
+  lines = lines.flatMap(l => l.replace(/\]\s+([A-Z][a-zA-Z'\-]+(?: [A-Z][a-zA-Z'\-]+)?):\s/g,
+    (all, n) => speakers.has(n) ? `]\n${n}: ` : all).split('\n'));
+  lines.forEach(l => { const m = l.match(/^\[present\s*:\s*(.*)\]$/i); if (m) parsePresent(m[1]).forEach(([n, r]) => ensureCast(n, r)); });
+  speakers.forEach(n => ensureCast(n));
+
+  const names = Object.keys(CAST);
+  const rx = {}; names.forEach(n => rx[n] = new RegExp(`\\b${n}\\b`));
+  // names as written in prose (case-sensitive, so "the lake" is not Lake), in text order
+  const mentioned = s => names.map(n => [n, s.search(rx[n])]).filter(([,i]) => i >= 0).sort((a,b) => a[1]-b[1]).map(([n]) => n);
+  const findName = w => names.find(n => n.toLowerCase() === w.toLowerCase());
+
+  const out = { show:'', ep:'', title:'', scenes:[], beats:[] };
+  let scene = null, conf = null, reading = false, afterCard = false, lastNamed = null, tally = {};
+  const push = b => (out.beats.push(b), b);
+  const addP = n => {
+    if (!scene || !CAST[n] || scene.present.includes(n)) return;
+    scene.present.push(n);
+    if (scene.listed.length && !scene.listed.includes(n)) scene.late[n] = Math.min(out.beats.length, scene.mentionAt[n] ?? Infinity);
+  };
+
+  const newScene = inner => {
+    inner = inner.replace(/^scene\s*[:\-]?\s*/i, '');
+    const parts = inner.split(/\s+[—–]\s+|\s+-\s+/);
+    const place = parts[0].replace(/\.$/, '').trim();
+    const tail = parts.slice(1).join(' — '), dot = tail.indexOf('.');
+    const timeWord = (dot > 0 ? tail.slice(0, dot) : tail).trim();
+    const staging = dot > 0 ? tail.slice(dot + 1).trim() : '';
+    const fromPlace = pickSet(place), set = fromPlace !== 'island' ? fromPlace : pickSet(inner);
+    const time = SETS[set].forceTime || (TIME_WORDS.test(timeWord) ? timeOf(timeWord) : timeOf(inner));
+    scene = { i:out.scenes.length, header:inner, place, staging, set, time, view:{ set, time },
+              tribe:(place.match(TRIBE_RE) || [])[1]?.toLowerCase() || null,
+              present:[], listed:[], roles:{}, late:{}, mentionAt:{}, elim:null, stagingDone:false };
+    out.scenes.push(scene);
+    conf = null; reading = false; afterCard = false; lastNamed = null; tally = {};
+    push({ t:'scene', scene:scene.i });
+  };
+
+  function dir(text){
+    const prev = out.beats[out.beats.length - 1];
+    const inConf = prev && prev.t === 'line' && (prev.conf || prev.host);
+    const cut = subView(text, scene, afterCard); afterCard = false;
+    if (cut && (cut.set !== scene.view.set || cut.time !== scene.view.time)){
+      scene.view = cut; push({ t:'cut', scene:scene.i, set:cut.set, time:cut.time });
+    }
+    const ms = mentioned(text);
+    if (!scene.listed.length) ms.forEach(addP);
+    else ms.forEach(n => { if (!scene.listed.includes(n) && scene.mentionAt[n] == null) scene.mentionAt[n] = out.beats.length; });
+    const write = text.match(/\b[Ww]rites\s+([A-Z][A-Za-z]+)/);
+    const found = /\b(finds|pulls out|digs up|uncovers|holds up)\b[^.]{0,50}\bidol\b/i.test(text) && !/\bnothing\b/i.test(text);
+    let stay = false;
+    pages(text, 170).forEach(p => {
+      let who = mentioned(p);
+      // after a confessional or host shot, "He grins" is the person on camera, not the last name in the prose
+      if (!who.length && !inConf && /^(he|she|they|his|her|their)\b/i.test(p) && lastNamed) who = [lastNamed];
+      if (who.length) lastNamed = who[0];
+      stay = inConf && !who.length && text.length < 80;
+      const b = push({ t:'dir', scene:scene.i, text:p, who, stay });
+      if (write && p.includes(write[0])){
+        const target = findName(write[1]);
+        if (target) b.write = { voter: mentioned(p.slice(0, p.indexOf(write[0])))[0] || lastNamed, name: target };
+      }
+      if (found && /idol/i.test(p)) b.idol = who[0];
+      if (/snuffs?\b|torch goes (dark|out)/i.test(p)) b.snuff = scene.elim || who[0];
+    });
+    if (!stay) conf = null;
+  }
+
+  function speak(who, body){
+    if (conf && who !== conf) conf = null;
+    const host = !conf && scene.listed.length > 0 && !scene.present.includes(who) && !!CAST[who]?.host;
+    if (!conf && !host) addP(who);
+    const clean = stripCues(body);
+    const pushLine = () => pages(body, 190).forEach(p =>
+      push({ t:'line', scene:scene.i, speaker:who, text:p, conf:!!conf, host, mood:mood(stripCues(p), p) }));
+    if (scene.set === 'tribal' && CAST[who]?.host && !conf && !host){
+      if (/read the votes/i.test(clean)) reading = true;
+      const nm = mentioned(clean);
+      if (/voted out|bring me your torch|that'?s enough/i.test(clean) && !scene.elim){
+        const top = Object.entries(tally).sort((a,b) => b[1] - a[1])[0]?.[0];
+        pushLine(); scene.elim = top || nm[nm.length - 1];
+        if (scene.elim) push({ t:'elim', scene:scene.i, name:scene.elim });
+        if (/tribe has spoken/i.test(clean)) push({ t:'spoken', scene:scene.i });
+        return;
+      }
+      if (/tribe has spoken/i.test(clean)){ pushLine(); push({ t:'spoken', scene:scene.i }); return; }
+      if (reading && nm.length && clean.split(/\s+/).length <= 8){
+        tally[nm[0]] = (tally[nm[0]] || 0) + 1;
+        push({ t:'vote', scene:scene.i, name:nm[0], speaker:who, text:body, mood:'tense' });
+        return;
+      }
+    }
+    pushLine();
+  }
+
+  for (const line of lines){
+    const br = line.match(/^\[(.*)\]$/);
+    if (scene && !scene.stagingDone && !(br && /^present\s*:/i.test(br[1]))){
+      scene.stagingDone = true;
+      if (!scene.listed.length) mentioned(scene.staging).forEach(addP);
+    }
+    if (br){
+      const inner = br[1].trim(), low = inner.toLowerCase();
+      if (/^title( card)?\s*:/.test(low)){ out.title = inner.replace(/^title( card)?\s*:\s*/i, ''); continue; }
+      if (/^present\s*:/.test(low)){
+        if (!scene) continue;
+        parsePresent(inner.replace(/^present\s*:\s*/i, '')).forEach(([n, r]) => {
+          scene.listed.push(n); scene.roles[n] = r; addP(n);
+          if (scene.tribe && r !== 'host' && !CAST[n].tribe) CAST[n].tribe = scene.tribe;
+        });
+        continue;
+      }
+      if (/^confessional/.test(low)){ conf = inner.replace(/^confessional\s*[:\-—]?\s*/i, '').split(/\s+[—–-]\s+/)[0].trim(); continue; }
+      if (/^scene\b/.test(low) || /^(tribal council|campfire ceremony)\b/.test(low)){ newScene(inner); continue; }
+      if (!scene) continue;
+      if (/^phase\s*\d+/.test(low)){
+        const m = inner.match(/^phase\s*(\d+)\s*[:.\-—]?\s*(.*?)\.?$/i);
+        push({ t:'card', scene:scene.i, kick:`PHASE ${m[1]}`, title:m[2] }); afterCard = true; conf = null; continue;
+      }
+      if (/^(voting|the vote|the votes)\.?$/.test(low)){ push({ t:'card', scene:scene.i, kick:scene.place.toUpperCase(), title:inner.replace(/\.$/, '') }); continue; }
+      if (/^fade (to black|out)/.test(low)){ push({ t:'end', scene:scene.i }); continue; }
+      dir(inner);
+      continue;
+    }
+    const m = line.match(SPK);
+    if (m && isName(m[1])){ if (scene) speak(m[1], m[2]); continue; }
+    if (!scene){
+      const e = line.match(/^episode\s+(\d+)\s*[—–:\-]?\s*["“]?(.*?)["”]?\s*$/i);
+      if (e){ out.ep = e[1]; out.title = out.title || e[2]; } else if (!out.show) out.show = line;
+      continue;
+    }
+    if (/^end of episode/i.test(line)){ if (out.beats[out.beats.length-1]?.t !== 'end') push({ t:'end', scene:scene.i }); continue; }
+    dir(line);
+  }
+  return out;
+}
+function mood(text, raw=''){
+  const c = (raw.match(/\[[^\]]*\]/g) || []).join(' ').toLowerCase();
+  if (/whisper|barely audible|mutter|under (his|her|their) breath/.test(c)) return 'whisper';
+  if (/scream|yell|shout/.test(c)) return 'shout';
+  if (/laugh|giggl|grin|snort/.test(c)) return 'laugh';
+  if (/sniff|cry|tear|sob/.test(c)) return 'sad';
+  const caps = (text.match(/\b[A-Z]{3,}\b/g) || []).length;
+  if (/!/.test(text) && (caps || /!!|!$/.test(text) && text.length < 30)) return 'shout';
+  if (caps >= 2) return 'shout';
+  if (/^(ugh|wow|rude|seriously)\b/i.test(text)) return 'angry';
+  if (/^\[(\.\.\.|…)\]/.test(raw.trim()) || /^\.\.\.|^um\b/i.test(text)) return 'hesitate';
+  if (/\?\s*$/.test(text)) return 'question';
+  return 'plain';
+}
+
+// ════════════════════════════════════════════════════════════════
+//  ENGINE 1 — scene, standees, camera, particles, sound
+// ════════════════════════════════════════════════════════════════
+const $ = id => document.getElementById(id);
+const stage = $('stage');
+let P = { show:'', ep:'', title:'', scenes:[], beats:[] };
+const S = { idx:-1, scene:-1, conf:null, typing:null, auto:false, speed:1, sound:true, busy:false,
+            tally:{}, gone:new Set(), immune:new Set(), idols:new Set(), lastSpeaker:null, lastShout:null, started:false, timer:null,
+            view:{}, home:{}, cur:{}, xs:{}, crowd:false };
+
+// SVG coords (1600×900, layer inset −8%/−6%) → stage fraction
+const toStage = (x,y) => [ -0.08 + 1.16*(x/1600), -0.06 + 1.12*(y/900) ];
+const FIRE = { camp:toStage(560,600), tribal:toStage(800,650) };
+
+function renderSet(setKey, time, sc){
+  const set = SETS[setKey], T = TIMES[time];
+  $('lSky').innerHTML = skySVG(time);
+  $('lFar').innerHTML = set.far(time, sc);
+  $('lMid').innerHTML = set.mid(time, sc);
+  $('lFg').innerHTML  = set.fg(time, sc);
+  $('tint').style.background = T.tint;
+  $('glow').style.background = set.glow || (time==='night' ? 'radial-gradient(ellipse at 78% 18%,#9fb2ff44,transparent 50%)'
+                                         : time==='dusk' ? 'radial-gradient(ellipse at 68% 58%,#ff9a5c55,transparent 55%)' : 'none');
+  FX.kind = set.fx; FX.set = setKey; FX.night = time==='night';
+  S.view = { set:setKey, time };
+  const sub = setKey !== sc.set ? ` · ${set.label.toUpperCase()}` : '';
+  $('chipScene').textContent = `${sc.place.toUpperCase()}${sub} · SCENE ${sc.i+1}/${P.scenes.length}`;
+}
+function renderScene(si){
+  const sc = P.scenes[si];
+  renderSet(sc.set, sc.time, sc);
+  buildActors(sc);
+  buildRoster(sc);
+  camera(0,0,1);
+  S.scene = si; S.tally = {}; S.lastSpeaker = null; S.lastShout = null;
+}
+
+const roleOf = (sc, n) => CAST[n].host ? 'host' : (sc.roles[n] && sc.roles[n] !== 'player' ? sc.roles[n] : CAST[n].role);
+// Positions: {x (%), floor (% from bottom), w (cqw), z}. Up to ten people stand in one or two rows;
+// past that the scene is a crowd — tribes in bleacher rows, coaches on a bench, hosts at the podium —
+// and whoever is talking steps down into the spotlight.
+function layout(sc){
+  const ppl = sc.present, pos = {};
+  const hosts = ppl.filter(n => CAST[n].host);
+  const rest = ppl.filter(n => !CAST[n].host);
+  S.crowd = ppl.length > 10;
+  if (!S.crowd){
+    const n = rest.length, left = 13, right = hosts.length ? 72 : 86, two = n > 5;
+    rest.forEach((nm, i) => {
+      const back = two && i % 2 === 1;
+      pos[nm] = { x: n===1 ? 50 : n===2 ? [36,64][i] : left + (right-left)*i/(n-1),
+                  floor: back ? 37 : 28, w: two ? 9 : 11, z: back ? 1 : 3, back };
+    });
+    hosts.forEach((nm, i) => pos[nm] = { x: 84 - i*9, floor: 31, w: two ? 9 : 10, z: 2 });
+    return pos;
+  }
+  const coaches = rest.filter(n => roleOf(sc, n) === 'coach');
+  const players = rest.filter(n => roleOf(sc, n) !== 'coach');
+  const FLOORS = [46, 38, 30];
+  hosts.forEach((nm, i) => pos[nm] = { x: 91 - i*8.5, floor: 30 + i*6, w: 8, z: 4 - i });
+  coaches.forEach((nm, i) => pos[nm] = { x: 7.5 + (i % 2) * 7, floor: FLOORS[Math.floor(i/2) % 3] - 2, w: 5.6, z: Math.floor(i/2) });
+  // players: one block per tribe, three rows deep
+  const tribes = [...new Set(players.map(n => CAST[n].tribe || '~'))];
+  const L = coaches.length ? 21 : 8, R = hosts.length ? 80 : 92, span = R - L;
+  let col0 = 0; const cols = tribes.map(t => Math.ceil(players.filter(n => (CAST[n].tribe || '~') === t).length / 3));
+  const totalCols = cols.reduce((a,b) => a+b, 0) + tribes.length - 1;
+  tribes.forEach((t, k) => {
+    players.filter(n => (CAST[n].tribe || '~') === t).forEach((nm, i) => {
+      const c = col0 + Math.floor(i / 3), r = i % 3;
+      pos[nm] = { x: L + span * (c + .5 + (r===1 ? .25 : 0)) / (totalCols + .5), floor: FLOORS[r], w: 6.2, z: r };
+    });
+    col0 += cols[k] + 1;
+  });
+  return pos;
+}
+function applyPos(){
+  S.xs = {};
+  for (const [n, p] of Object.entries(S.cur)){
+    S.xs[n] = p.x;
+    const a = actorEl(n); if (!a) continue;
+    a.style.setProperty('--x', p.x + '%'); a.style.setProperty('--floor', p.floor + '%'); a.style.setProperty('--w', p.w + 'cqw');
+    a.style.zIndex = p.z; a.classList.toggle('back', !!p.back); a.classList.toggle('spot', !!p.spot);
+  }
+}
+// crowd only: the people this beat is about step forward, everyone else goes back to their seat
+function spotlight(names){
+  if (!S.crowd) return;
+  const who = names.filter(n => S.home[n] && !CAST[n].host && !actorEl(n)?.classList.contains('offstage')).slice(0, 3);
+  const slots = [[50], [40, 60], [34, 50, 66]][who.length - 1] || [];
+  S.cur = { ...S.home };
+  who.forEach((n, i) => S.cur[n] = { x: slots[i], floor: 25, w: 10.5, z: 20, spot: true });
+  applyPos();
+}
+function buildActors(sc){
+  S.home = layout(sc); S.cur = { ...S.home };
+  $('actors').innerHTML = sc.present.map((n, i) => {
+    const c = CAST[n], role = roleOf(sc, n), off = sc.late[n] != null && S.idx < sc.late[n];
+    const tribe = TRIBE_COLORS[c.tribe] || '#8a5a33';
+    const cls = ['actor','enter', S.gone.has(n) && 'gone', S.immune.has(n) && 'immune', S.idols.has(n) && 'hasidol', off && 'offstage'].filter(Boolean).join(' ');
+    return `<div class="${cls}" data-n="${n}" style="--c:${c.c};--t:${tribe};--ph:${-(i*.37)%2.6}s;animation-delay:${.3+Math.min(i,14)*.06}s">
+      <div class="shadow"></div>
+      <div class="turn"><div class="rig">
+        <div class="ring"></div>
+        <div class="card"><img src="${c.img}" alt="${n}" onerror="this.replaceWith(Object.assign(document.createElement('b'),{className:'initial',textContent:'${n[0]}'}))"></div>
+        ${role==='coach' ? '<div class="role">COACH</div>' : role==='host' ? '<div class="role host">HOST</div>' : ''}
+        <div class="item necklace">${NECKLACE}</div>
+        <div class="item idol">${IDOL}</div>
+        <div class="stand"></div>
+      </div></div>
+      <div class="plate">${n.toUpperCase()}</div>
+      <div class="tally"></div>
+      <div class="emote"></div>
+    </div>`;
+  }).join('');
+  applyPos();
+}
+function buildRoster(sc){
+  const all = Object.keys(CAST).filter(n => !CAST[n].host)
+    .sort((a,b) => (CAST[a].tribe||'~').localeCompare(CAST[b].tribe||'~'));
+  $('roster').classList.toggle('many', all.length > 14);
+  $('roster').innerHTML = all.map(n =>
+    `<img src="${CAST[n].img}" data-n="${n}" title="${n}" style="--t:${TRIBE_COLORS[CAST[n].tribe]||'#fff8'}" class="${sc.present.includes(n)?'here':''}${S.gone.has(n)?' gone':''}" onerror="this.style.visibility='hidden'">`).join('');
+}
+const actorEl = n => $('actors').querySelector(`.actor[data-n="${n}"]`);
+// one-shot classes clear themselves so the idle/talk loops on the same element come back
+const ONESHOT = { jump:700, recoil:600, enter:2200, shake:500, hit:300, swap:500, whip:320 };
+function retrigger(el, cls){ if(!el) return; el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls);
+  if (ONESHOT[cls]){ clearTimeout(el['_t'+cls]); el['_t'+cls] = setTimeout(()=>el.classList.remove(cls), ONESHOT[cls]); } }
+function camera(x, y, z){
+  stage.style.setProperty('--camx', x); stage.style.setProperty('--camy', y); stage.style.setProperty('--zoom', z);
+}
+function focusOn(n, z=1.12){
+  const x = S.xs?.[n]; if (x == null) return camera(0,0,1);
+  if (S.crowd) return camera(0, .4, 1.03);   // a crowd stays framed; the spotlight does the pointing
+  camera((50 - x)*0.08, .8, 1 + (z-1)*.5);
+}
+
+// ── emotes (SVG, no emoji) ──
+const EMOTES = {
+  shout:   `<svg viewBox="-50 -50 100 100"><path d="M0 -46 L12 -16 L44 -22 L20 2 L40 30 L8 20 L0 48 L-10 20 L-42 30 L-20 2 L-44 -22 L-12 -16Z" fill="#ff4d5e" stroke="#111" stroke-width="5"/><text x="0" y="14" text-anchor="middle" font-family="Bungee" font-size="40" fill="#fff">!</text></svg>`,
+  surprise:`<svg viewBox="-50 -50 100 100"><circle r="34" fill="#fff" stroke="#111" stroke-width="5"/><text x="0" y="16" text-anchor="middle" font-family="Bungee" font-size="46" fill="#ff4d5e">!</text></svg>`,
+  question:`<svg viewBox="-50 -50 100 100"><circle r="34" fill="#fff" stroke="#111" stroke-width="5"/><text x="0" y="16" text-anchor="middle" font-family="Bungee" font-size="44" fill="#3a6bff">?</text></svg>`,
+  hesitate:`<svg viewBox="-50 -50 100 100"><path d="M10 -40 C 30 -10 34 10 14 26 C -6 38 -24 22 -16 2 Z" fill="#9fd8ff" stroke="#111" stroke-width="5"/><path d="M8 -18 C 16 -4 16 6 8 14" stroke="#fff" stroke-width="5" fill="none"/></svg>`,
+  angry:   `<svg viewBox="-50 -50 100 100"><g stroke="#ff2e3f" stroke-width="10" stroke-linecap="round" fill="none"><path d="M-30 -8 Q -8 -8 -8 -30"/><path d="M30 -8 Q 8 -8 8 -30"/><path d="M-30 8 Q -8 8 -8 30"/><path d="M30 8 Q 8 8 8 30"/></g></svg>`,
+  laugh:   `<svg viewBox="-50 -50 100 100"><g font-family="Bungee" fill="#ffcc33" stroke="#111" stroke-width="3" paint-order="stroke"><text x="-40" y="0" font-size="30" transform="rotate(-14)">HA</text><text x="0" y="30" font-size="26" transform="rotate(10)">HA</text></g></svg>`,
+  whisper: `<svg viewBox="-50 -50 100 100"><g fill="#c9d2ee" stroke="#111" stroke-width="3"><circle cx="-24" cy="10" r="8"/><circle cx="0" cy="10" r="8"/><circle cx="24" cy="10" r="8"/></g></svg>`,
+  sad:     `<svg viewBox="-50 -50 100 100"><path d="M0 -40 C 22 -6 26 12 0 30 C -26 12 -22 -6 0 -40Z" fill="#5fb0ff" stroke="#111" stroke-width="5"/></svg>`,
+  star:    `<svg viewBox="-50 -50 100 100"><path d="M0 -44 L13 -14 L44 -12 L20 8 L28 40 L0 22 L-28 40 L-20 8 L-44 -12 L-13 -14Z" fill="#ffd84d" stroke="#111" stroke-width="5"/></svg>`,
+  heart:   `<svg viewBox="-50 -50 100 100"><path d="M0 36 C -60 -4 -34 -52 0 -20 C 34 -52 60 -4 0 36Z" fill="#ff4f8b" stroke="#111" stroke-width="5"/></svg>`,
+  tense:   `<svg viewBox="-50 -50 100 100"><path d="M-30 -30 L-10 -10 M30 -30 L10 -10 M0 -40 V -14" stroke="#fff" stroke-width="8" stroke-linecap="round"/></svg>`,
+};
+const NECKLACE = `<svg viewBox="-60 -20 120 70"><path d="M-50 -14 Q 0 40 50 -14" stroke="#c9a227" stroke-width="5" fill="none"/>${[-36,-22,-8,8,22,36].map(x=>`<circle cx="${x}" cy="${-14+54*(1-Math.pow(x/50,2))*.62}" r="5" fill="#ffd84d" stroke="#6b4e00" stroke-width="2"/>`).join('')}<path d="M0 22 L14 34 L0 50 L-14 34Z" fill="#ffd84d" stroke="#6b4e00" stroke-width="3"/><circle cy="35" r="5" fill="#e8453c"/></svg>`;
+const IDOL = `<svg viewBox="-30 -50 60 100"><path d="M-18 -30 Q -18 -48 0 -48 Q 18 -48 18 -30 L 16 -8 L 22 40 L -22 40 L -16 -8Z" fill="#9a6a33" stroke="#2b1a0a" stroke-width="4"/><circle cx="-7" cy="-30" r="4" fill="#ffd84d"/><circle cx="7" cy="-30" r="4" fill="#ffd84d"/><path d="M-8 -16 h16" stroke="#2b1a0a" stroke-width="4"/><path d="M-16 6 h32 M-18 22 h36" stroke="#6b4724" stroke-width="4"/></svg>`;
+function emote(n, kind){
+  const el = actorEl(n)?.querySelector('.emote'); if (!el || !EMOTES[kind]) return;
+  el.innerHTML = EMOTES[kind]; retrigger(el,'pop');
+  clearTimeout(el._t); el._t = setTimeout(()=>{ el.innerHTML=''; el.classList.remove('pop'); }, 2400);
+}
+
+// ════════════ PARTICLES ════════════
+const FX = { kind:null, parts:[], w:0, h:0, ctx:$('fx').getContext('2d') };
+function sizeFx(){ const r = stage.getBoundingClientRect(), d = devicePixelRatio||1;
+  FX.w = r.width; FX.h = r.height; $('fx').width = r.width*d; $('fx').height = r.height*d; FX.ctx.setTransform(d,0,0,d,0,0); }
+addEventListener('resize', sizeFx); sizeFx();
+function spawn(p){ FX.parts.push(Object.assign({ life:0, max:2, size:3, vx:0, vy:0, g:0, drag:1, color:'#fff', type:'dot', rot:0, vr:0 }, p)); }
+function ambient(){
+  const {w,h} = FX, k = FX.kind, r = Math.random;
+  if (k==='embers'){ const f = FIRE[FX.set] || [.5,.8];
+    if (r()<.14) spawn({ x:f[0]*w+(r()-.5)*40, y:f[1]*h, vx:(r()-.5)*20, vy:-40-r()*60, max:1.6+r()*1.2, size:1+r()*1.6, color:r()<.5?'#ffb13d':'#ff6a1a', type:'glow' }); }
+  if (k==='fireflies' && r()<.12) spawn({ x:r()*w, y:h*(.3+r()*.5), vx:(r()-.5)*14, vy:(r()-.5)*14, max:4+r()*3, size:2.5, color:'#e8ff7a', type:'glow', wander:true });
+  if (k==='spray' && r()<.25) spawn({ x:r()*w, y:h*(.55+r()*.15), vx:10+r()*20, vy:-20-r()*30, g:40, max:1.2+r(), size:1.5+r()*1.5, color:'#ffffffcc' });
+  if (k==='dust' && r()<.15) spawn({ x:-10, y:h*(.3+r()*.5), vx:20+r()*30, vy:(r()-.5)*8, max:6, size:1.5+r()*2, color:'#fff2c9aa' });
+  if (k==='wind' && r()<.3) spawn({ x:-40, y:h*r()*.8, vx:600+r()*400, vy:(r()-.5)*20, max:1.2, size:1, color:'#ffffff66', type:'streak' });
+  if (k==='confetti' && r()<.06) spawn({ x:r()*w, y:-10, vx:(r()-.5)*30, vy:40+r()*40, max:6, size:5, color:['#ffcc33','#e8453c','#3aa0ff','#40c060'][r()*4|0], type:'rect', vr:(r()-.5)*8 });
+  if (FX.night && r()<.03) spawn({ x:r()*w, y:h*(.2+r()*.5), vx:(r()-.5)*10, vy:(r()-.5)*10, max:3, size:2, color:'#cfe0ff', type:'glow', wander:true });
+}
+function burst(fx, fy, kind, n=40){
+  const {w,h} = FX, r = Math.random, x = fx*w, y = fy*h;
+  for (let i=0;i<n;i++){
+    const a = r()*Math.PI*2, sp = 80+r()*260;
+    if (kind==='confetti') spawn({ x, y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp-200, g:420, drag:.985, max:2.5+r(), size:5+r()*4, type:'rect', vr:(r()-.5)*14, color:['#ffcc33','#e8453c','#3aa0ff','#40c060','#fff'][r()*5|0] });
+    else if (kind==='spark') spawn({ x, y, vx:Math.cos(a)*sp*1.4, vy:Math.sin(a)*sp*1.4, drag:.92, max:.5+r()*.4, size:2+r()*2, type:'streak', color:'#fff3b0' });
+    else if (kind==='smoke') spawn({ x:x+(r()-.5)*40, y, vx:(r()-.5)*30, vy:-30-r()*50, drag:.99, max:2.5+r()*1.5, size:14+r()*20, type:'smoke', color:'#6b6b78' });
+    else if (kind==='gold') spawn({ x, y, vx:Math.cos(a)*sp*.7, vy:Math.sin(a)*sp*.7-60, g:120, drag:.97, max:1.6+r(), size:2+r()*3, type:'glow', color:r()<.5?'#ffe27a':'#fff' });
+    else if (kind==='heart') spawn({ x, y, vx:Math.cos(a)*sp*.5, vy:-60-r()*120, g:-20, drag:.97, max:1.8+r(), size:6+r()*5, type:'heart', color:r()<.5?'#ff4f8b':'#ff9ec4' });
+    else if (kind==='ember') spawn({ x:x+(r()-.5)*60, y, vx:(r()-.5)*120, vy:-150-r()*260, g:60, drag:.98, max:1.2+r(), size:2+r()*2, type:'glow', color:'#ff9a3d' });
+  }
+}
+let lastT = performance.now();
+function tick(t){
+  const dt = Math.min(.05, (t-lastT)/1000); lastT = t;
+  if (!document.hidden) ambient();
+  const c = FX.ctx; c.clearRect(0,0,FX.w,FX.h);
+  FX.parts = FX.parts.filter(p => (p.life += dt) < p.max);
+  for (const p of FX.parts){
+    if (p.wander){ p.vx += (Math.random()-.5)*40*dt; p.vy += (Math.random()-.5)*40*dt; }
+    p.vy += p.g*dt; p.vx *= p.drag; p.vy *= p.drag; p.x += p.vx*dt; p.y += p.vy*dt; p.rot += p.vr*dt;
+    const k = p.life/p.max, a = k<.15 ? k/.15 : 1-(k-.15)/.85;
+    c.globalAlpha = Math.max(0,a);
+    if (p.type==='glow'){ const s = p.size*(p.wander ? 1+.5*Math.sin(p.life*6) : 1);
+      c.fillStyle = p.color; c.shadowColor = p.color; c.shadowBlur = s*5; c.beginPath(); c.arc(p.x,p.y,s,0,7); c.fill(); c.shadowBlur = 0; }
+    else if (p.type==='streak'){ c.strokeStyle = p.color; c.lineWidth = p.size; c.beginPath(); c.moveTo(p.x,p.y); c.lineTo(p.x-p.vx*.04,p.y-p.vy*.04); c.stroke(); }
+    else if (p.type==='rect'){ c.save(); c.translate(p.x,p.y); c.rotate(p.rot); c.fillStyle = p.color; c.fillRect(-p.size/2,-p.size/4,p.size,p.size/2); c.restore(); }
+    else if (p.type==='heart'){ c.fillStyle = p.color; c.font = `${p.size*2.4}px serif`; c.textAlign='center'; c.fillText('♥', p.x, p.y); }
+    else if (p.type==='smoke'){ c.globalAlpha = Math.max(0,a)*.45; c.fillStyle = p.color; c.beginPath(); c.arc(p.x,p.y,p.size*(1+k),0,7); c.fill(); }
+    else { c.fillStyle = p.color; c.beginPath(); c.arc(p.x,p.y,p.size,0,7); c.fill(); }
+  }
+  c.globalAlpha = 1;
+  requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
+
+// static noise for camera cuts
+function staticFlash(){
+  const cv = $('static'), w = cv.width = 320, h = cv.height = 180, c = cv.getContext('2d'), img = c.createImageData(w,h);
+  for (let i=0;i<img.data.length;i+=4){ const v = Math.random()*255; img.data[i]=img.data[i+1]=img.data[i+2]=v; img.data[i+3]=255; }
+  c.putImageData(img,0,0); retrigger(cv,'on'); sfx.noise(.18,.12);
+}
+
+// ════════════ SOUND (WebAudio, synthesised) ════════════
+const sfx = {
+  ctx:null,
+  on(){ if (!this.ctx) try { this.ctx = new (window.AudioContext||window.webkitAudioContext)(); } catch(e){} },
+  tone(f, dur=.05, type='square', vol=.04, slide=0){
+    if (!S.sound || !this.ctx) return; const t = this.ctx.currentTime, o = this.ctx.createOscillator(), g = this.ctx.createGain();
+    o.type = type; o.frequency.setValueAtTime(f,t); if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(30,f+slide),t+dur);
+    g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(.0001,t+dur); o.connect(g).connect(this.ctx.destination); o.start(t); o.stop(t+dur+.02);
+  },
+  noise(dur=.3, vol=.08, from=2000, to=200){
+    if (!S.sound || !this.ctx) return; const t = this.ctx.currentTime, n = this.ctx.sampleRate*dur, b = this.ctx.createBuffer(1,n,this.ctx.sampleRate), d = b.getChannelData(0);
+    for (let i=0;i<n;i++) d[i] = Math.random()*2-1;
+    const s = this.ctx.createBufferSource(), f = this.ctx.createBiquadFilter(), g = this.ctx.createGain();
+    s.buffer = b; f.type='bandpass'; f.frequency.setValueAtTime(from,t); f.frequency.exponentialRampToValueAtTime(to,t+dur);
+    g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(.0001,t+dur); s.connect(f).connect(g).connect(this.ctx.destination); s.start(t);
+  },
+  whoosh(){ this.noise(.5,.12,300,3000); },
+  thump(){ this.tone(70,.35,'sine',.25,-30); },
+  chime(){ [660,880,1320].forEach((f,i)=>setTimeout(()=>this.tone(f,.25,'triangle',.06),i*90)); },
+  sting(){ [392,311,233,156].forEach((f,i)=>setTimeout(()=>this.tone(f,.4,'sawtooth',.05),i*160)); },
+  hit(){ this.tone(140,.2,'square',.08,-90); this.noise(.15,.1,800,100); },
+};
+const voicePitch = n => 180 + ([...n].reduce((a,c)=>a+c.charCodeAt(0),0) % 9) * 38;
+
+// ════════════════════════════════════════════════════════════════
+//  ENGINE 2 — beats, typewriter, confessional, votes, controls
+// ════════════════════════════════════════════════════════════════
+const wait = ms => new Promise(r => setTimeout(r, ms));
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const PAUSE = /^\[(\.\.\.|…|beat|pause|silence)\]$/i;
+
+// "[leaning in] Okay. [He stops.] Fine." → leading cues become chips, later ones
+// italic action typed in place, pause cues become an ellipsis with a held beat.
+function segments(text){
+  const segs = []; let lead = true;
+  text.split(/(\[[^\]]*\])/).forEach(t => {
+    if (!t.trim()) return;
+    if (t.startsWith('[')){
+      if (PAUSE.test(t)) segs.push({ k:'txt', v:'… ' });
+      else segs.push({ k: lead ? 'chip' : 'act', v: t.slice(1, -1).trim() });
+    } else { segs.push({ k:'txt', v:t }); lead = false; }
+  });
+  return segs;
+}
+function typeInto(el, text, { speaker, mood, instant, narr }){
+  clearInterval(S.typing?.iv);
+  el.className = 'txt' + (mood==='shout' ? ' shout' : mood==='whisper' ? ' whisper' : '') + (narr ? ' narr' : '');
+  const segs = segments(text);
+  const done = () => segs.map(s => s.k==='chip' ? `<span class="cue">${esc(s.v)}</span>` : s.k==='act' ? `<span class="act">${esc(s.v)}</span> ` : esc(s.v)).join('');
+  const finish = () => {
+    clearInterval(S.typing?.iv); el.innerHTML = done(); S.typing = null;
+    $('dbox').classList.add('done'); $('dbox').classList.remove('talking'); $('conf').classList.remove('talking');
+    speaker && actorEl(speaker)?.classList.remove('talk'); scheduleAuto(stripCues(text));
+  };
+  $('dbox').classList.remove('done');
+  if (instant) return finish();
+  el.innerHTML = '';
+  const q = [];   // queue of [char|html]
+  segs.forEach(s => {
+    if (s.k==='chip') q.push({ html:`<span class="cue">${esc(s.v)}</span>` });
+    else if (s.k==='act') q.push({ html:`<span class="act">${esc(s.v)}</span> `, hold:260 });
+    else [...s.v].forEach(ch => q.push({ ch }));
+  });
+  let i = 0, hold = 0;
+  const base = (narr ? 20 : mood==='shout' ? 16 : mood==='whisper' ? 36 : 25) / S.speed, pitch = speaker ? voicePitch(speaker) : 300;
+  const iv = setInterval(() => {
+    if (hold > 0){ hold -= base; return; }
+    if (i >= q.length) return finish();
+    const t = q[i++];
+    if (t.html){ el.insertAdjacentHTML('beforeend', t.html); hold = t.hold || 0; return; }
+    const sp = document.createElement('span'); sp.className = 'ch'; sp.textContent = t.ch; el.appendChild(sp);
+    if (/[.!?]/.test(t.ch)) hold = 170; else if (t.ch===',') hold = 80; else if (t.ch==='…') hold = 420;
+    if (!narr && i % 2 && /\w/.test(t.ch)) sfx.tone(pitch*(mood==='shout'?1.25:1)*(.94+Math.random()*.12), .04, mood==='whisper'?'sine':'square', mood==='whisper'?.015:mood==='shout'?.05:.03);
+  }, base);
+  S.typing = { iv, finish };
+}
+function scheduleAuto(text=''){ clearTimeout(S.timer); if (S.auto) S.timer = setTimeout(() => next(), 900 + text.length*28/S.speed); }
+
+function setDbox(speaker){
+  const d = $('dbox'), c = CAST[speaker] || { c:'#ccc', img:'' };
+  d.classList.remove('narr');
+  d.style.setProperty('--c', c.c);
+  const face = $('face');
+  if (d.dataset.who !== speaker){ face.querySelector('img').src = c.img; retrigger(face,'swap'); d.dataset.who = speaker; }
+  $('who').textContent = speaker.toUpperCase();
+  d.classList.add('show','talking');
+}
+function setNarr(){
+  const d = $('dbox'); d.classList.add('show','narr'); d.classList.remove('talking');
+  d.style.setProperty('--c', '#9fb3ff'); d.dataset.who = '';
+  const sc = P.scenes[S.scene]; $('who').textContent = sc ? (S.view.set !== sc.set ? SETS[S.view.set].label : sc.place).toUpperCase() : '';
+}
+function hideDbox(){ $('dbox').classList.remove('show','talking'); }
+
+// ── confessional / host-to-camera cut ──
+function enterConf(who, kind='conf'){
+  const key = kind + ':' + who;
+  if (S.conf === key) return;
+  staticFlash();
+  const cf = $('conf'), c = CAST[who];
+  cf.style.setProperty('--c', c.c);
+  cf.classList.toggle('hostcam', kind==='host');
+  $('confBg').innerHTML = $('lSky').innerHTML + $('lMid').innerHTML;
+  [...$('confBg').children].forEach(s => s.setAttribute('style','position:absolute;inset:0;width:100%;height:100%'));
+  $('bokeh').innerHTML = [...Array(14)].map(() => { const s = 3+Math.random()*9; return `<i style="left:${Math.random()*100}%;top:${Math.random()*80}%;width:${s}cqw;height:${s}cqw;animation-delay:${-Math.random()*6}s"></i>`; }).join('');
+  const subj = $('confSubject'); subj.querySelector('img').src = c.img; subj.style.animation = 'none'; void subj.offsetWidth; subj.style.animation = '';
+  $('confLower').innerHTML = `<div class="n">${esc(who.toUpperCase())}</div><div class="t">${kind==='host' ? 'YOUR HOST' : 'CONFESSIONAL'}</div>`;
+  cf.classList.add('show'); stage.classList.add('cine');
+  S.conf = key; S.tcStart = performance.now();
+}
+function exitConf(){
+  if (!S.conf) return; staticFlash();
+  $('conf').classList.remove('show'); stage.classList.remove('cine'); S.conf = null;
+}
+setInterval(() => { if (!S.conf) return; const s = (performance.now()-S.tcStart)/1000, f = n => String(n|0).padStart(2,'0');
+  $('tc').textContent = `${f(s/60)}:${f(s%60)}:${f((s*24)%24)}`; }, 42);
+
+// ── scene change: iris wipe + location banner ──
+async function sceneTransition(si, animate=true){
+  exitConf(); hideDbox(); $('vote').innerHTML = '';
+  if (animate){ $('iris').classList.remove('open'); sfx.whoosh(); await wait(560); }
+  renderScene(si);
+  if (animate){
+    await wait(80); $('iris').classList.add('open');
+    const sc = P.scenes[si];
+    showBanner(`SCENE ${si+1}`, sc.place.toUpperCase(), [TIMES[sc.time].label, sc.staging].filter(Boolean).join(' · ').slice(0, 110));
+    camera(4, 0, 1.08); await wait(60); camera(0, 0, 1);
+  }
+}
+function showBanner(kick, place, time){
+  $('bKick').textContent = kick; $('bPlace').textContent = place; $('bTime').textContent = time || '';
+  stage.classList.add('cine'); retrigger($('banner'),'show');
+  clearTimeout(S.cineT); S.cineT = setTimeout(() => { if (!S.conf) stage.classList.remove('cine'); }, 2500);
+}
+// a move inside the scene: whip-pan to the new place, same people
+async function stageCut(b, animate){
+  const sc = P.scenes[b.scene];
+  exitConf(); hideDbox();
+  if (animate){ retrigger($('world'),'whip'); sfx.whoosh(); await wait(230); }
+  renderSet(b.set, b.time, sc);
+  if (animate) showBanner(sc.place.toUpperCase(), SETS[b.set].label.toUpperCase(), TIMES[b.time].label);
+  camera(0, 0, 1); spotlight([]);
+  scheduleAuto('xxxxxxxxxxxxxxxxxxxx');
+}
+function stageCard(b, animate){
+  exitConf(); hideDbox(); camera(0, 0, 1); spotlight([]);
+  if (animate){ showBanner(b.kick, b.title.toUpperCase(), ''); sfx.thump(); setTimeout(() => sfx.chime(), 200); retrigger(stage,'hit'); }
+  scheduleAuto('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+}
+function stageEnd(){
+  exitConf(); hideDbox();
+  $('tEp').textContent = [P.show, P.ep && `EPISODE ${P.ep}`].filter(Boolean).join(' · ').toUpperCase();
+  $('tName').textContent = 'End of episode'; $('tPress').textContent = P.title ? `“${P.title}”` : '';
+  $('titlecard').classList.remove('hide'); sfx.sting();
+  S.auto = false; $('bAuto').classList.remove('on');
+}
+
+// ── one line of dialogue ──
+function stageLine(b, instant){
+  const sc = P.scenes[b.scene], present = sc.present;
+  document.querySelectorAll('.actor').forEach(a => a.classList.remove('lit','next','talk'));
+  if (b.host) enterConf(b.speaker, 'host'); else if (b.conf) enterConf(b.speaker, 'conf'); else exitConf();
+  setDbox(b.speaker);
+  if (!b.conf && !b.host){
+    const named = present.filter(n => n!==b.speaker && rxName(n).test(b.text) && actorEl(n) && !actorEl(n).classList.contains('offstage'));
+    const target = named[0] || (S.lastSpeaker && S.lastSpeaker !== b.speaker ? S.lastSpeaker : null);
+    spotlight([b.speaker, target].filter(Boolean));
+    const me = actorEl(b.speaker), mx = S.xs[b.speaker];
+    document.querySelectorAll('.actor').forEach(a => {
+      const n = a.dataset.n, x = S.xs[n];
+      a.style.setProperty('--ry', n===b.speaker ? (target && S.xs[target]!=null ? (S.xs[target]>mx?'22deg':'-22deg') : '0deg') : (x<mx?'16deg':'-16deg'));
+    });
+    if (me){ me.classList.add('lit','talk'); if (!instant) retrigger(me,'jump'); }
+    target && actorEl(target)?.classList.add('next');
+    focusOn(b.speaker, b.mood==='shout' ? 1.2 : 1.12);
+    [...document.querySelectorAll('.roster img')].forEach(i => i.classList.toggle('lit', i.dataset.n===b.speaker));
+    if (!instant){
+      const em = { shout:'shout', question:'question', hesitate:'hesitate', angry:'angry', laugh:'laugh', whisper:'whisper', sad:'sad', tense:'tense' }[b.mood];
+      em && emote(b.speaker, em);
+      if (named[0] && b.mood!=='plain') setTimeout(() => emote(named[0],'surprise'), 350);
+      const win = stripCues(b.text).match(/\b(\w+) WINS IMMUNITY/i);
+      if (win) setTimeout(() => immunityFor(win[1], sc).forEach((n, k) => setTimeout(() => giveItem(n,'immune', k>0), k*90)), 600);
+      if (b.mood==='shout' && S.lastShout !== b.speaker){
+        retrigger(stage,'shake'); retrigger(stage,'hit'); sfx.hit();
+        $('speed').style.setProperty('--sx', (mx ?? 50)+'%'); retrigger($('speed'),'on');
+        burst((mx ?? 50)/100, .5, 'spark', 26);
+        document.querySelectorAll('.actor').forEach(a => { if (a.dataset.n!==b.speaker && Math.abs(S.xs[a.dataset.n]-mx) < 20) retrigger(a,'recoil'); });
+      }
+    }
+    S.lastSpeaker = b.speaker;
+  } else $('conf').classList.add('talking');
+  S.lastShout = b.mood==='shout' ? b.speaker : null;
+  typeInto($('txt'), b.text, { speaker:b.speaker, mood:b.mood, instant });
+}
+const rxCache = {};
+const rxName = n => rxCache[n] || (rxCache[n] = new RegExp(`\\b${n}\\b`));
+// "BLUE WINS IMMUNITY" → every Blue member standing here; "PRIYA WINS IMMUNITY" → Priya
+function immunityFor(word, sc){
+  const w = word.toLowerCase();
+  if (TRIBE_COLORS[w]) return sc.present.filter(n => CAST[n].tribe === w && roleOf(sc, n) !== 'coach');
+  const n = Object.keys(CAST).find(k => k.toLowerCase() === w);
+  return n ? [n] : [];
+}
+
+// ── narration: the stage direction, a page at a time, in the dialogue box ──
+function stageDir(b, instant){
+  if (!b.stay) exitConf();
+  setNarr();
+  document.querySelectorAll('.actor').forEach(a => a.classList.remove('lit','talk','next'));
+  const sc = P.scenes[b.scene], low = b.text.toLowerCase();
+  const who = (b.who || []).filter(n => actorEl(n) && !actorEl(n).classList.contains('offstage'));
+  spotlight(who);
+  who.forEach(n => { const a = actorEl(n); a.classList.add('lit'); if (!instant) retrigger(a,'jump'); });
+  if (who.length === 1) focusOn(who[0], 1.08); else camera(0, 0, 1.02);
+  if (!instant){
+    const x = who.length ? S.xs[who[0]]/100 : .5;
+    if (/spark catches|cheers|erupts/.test(low)){ const f = FIRE[S.view.set] || [.5,.75]; burst(f[0], f[1], 'ember', 50); burst(x, .4, 'confetti', 30); sfx.chime(); sc.present.slice(0, 12).forEach((n,i) => setTimeout(() => retrigger(actorEl(n),'jump'), i*60)); }
+    if (/crash|wobble|trips|falls|buckles|stumbles/.test(low)){ retrigger(stage,'shake'); sfx.hit(); who[0] && retrigger(actorEl(who[0]),'recoil'); }
+    if (/rings? (it|the bell)|pulls it|bell/.test(low)){ sfx.tone(1250,.6,'triangle',.07); setTimeout(() => sfx.tone(1250,.5,'triangle',.05), 180); }
+    if (/\bkiss/.test(low) && who.length >= 2){ burst((S.xs[who[0]]+S.xs[who[1]])/200, .45, 'heart', 26); sfx.chime(); who.forEach(n => emote(n,'heart')); }
+    if (/laugh|howling|dying|snorts/.test(low)) who.forEach(n => emote(n,'laugh'));
+    if (/throws|flicks|clips|dumps|tips/.test(low) && who.length >= 2){ retrigger(actorEl(who[1]),'recoil'); emote(who[1],'angry'); }
+    if (/steps out|appears|walks over|comes back|finds/.test(low)) who.forEach(n => emote(n,'surprise'));
+  }
+  if (b.idol) giveItem(b.idol, 'hasidol', instant);
+  if (b.write) showWrite(b.write, instant);
+  if (b.snuff) eliminate(b.snuff, instant, true);
+  typeInto($('txt'), b.text, { narr:true, instant });
+}
+
+function showWrite(w, instant){
+  $('vote').innerHTML = `<div class="paper secret"><div class="lbl">${esc(w.voter ? w.voter.toUpperCase() + ' VOTES' : 'A VOTE')}</div><div class="nm">${esc(w.name)}</div></div>`;
+  if (!instant){ sfx.tone(520,.08,'triangle',.04); setTimeout(() => sfx.tone(390,.1,'triangle',.04), 500); }
+}
+function stageVote(b, instant){
+  exitConf(); setDbox(b.speaker); camera(0, 0, 1.04); spotlight([b.name]);
+  document.querySelectorAll('.actor').forEach(a => a.classList.remove('lit','talk','next'));
+  const old = $('vote').querySelector('.paper'); old?.classList.add('out');
+  S.tally[b.name] = (S.tally[b.name]||0) + 1;
+  const n = Object.values(S.tally).reduce((a,c) => a+c, 0);
+  setTimeout(() => {
+    $('vote').innerHTML = `<div class="paper"><div class="lbl">VOTE ${n}</div><div class="nm">${esc(b.name)}</div></div>`;
+    const a = actorEl(b.name);
+    if (a){ a.querySelector('.tally').insertAdjacentHTML('beforeend','<i></i>'); a.classList.add('lit'); if (!instant){ retrigger(a,'recoil'); emote(b.name,'tense'); } }
+    if (!instant){ sfx.thump(); setTimeout(() => sfx.thump(), 260); }
+  }, instant ? 0 : old ? 300 : 0);
+  typeInto($('txt'), b.text, { speaker:b.speaker, mood:'tense', instant });
+}
+function eliminate(name, instant, quiet){
+  S.gone.add(name);
+  const a = actorEl(name); if (!a) return;
+  a.classList.add('gone'); a.classList.remove('lit','talk');
+  document.querySelector(`.roster img[data-n="${name}"]`)?.classList.add('gone');
+  if (!instant){ burst(S.xs[name]/100, .5, 'smoke', 30); if (!quiet){ retrigger(stage,'shake'); retrigger(stage,'hit'); sfx.sting(); } }
+}
+function stageElim(b, instant){
+  $('vote').querySelector('.paper')?.classList.add('out');
+  eliminate(b.name, instant); spotlight([b.name]);
+  focusOn(b.name, 1.3); scheduleAuto('');
+}
+function stageSpoken(b, instant){
+  hideDbox(); camera(0, 0, 1);
+  if (!instant){ retrigger($('spoken'),'show'); const f = FIRE.tribal; burst(f[0], f[1], 'ember', 120); sfx.sting(); stage.classList.add('cine'); }
+  scheduleAuto('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+}
+function giveItem(n, cls, quiet){
+  (cls==='immune' ? S.immune : S.idols).add(n);
+  const a = actorEl(n); if (!a) return;
+  a.classList.add(cls);
+  if (!quiet){ retrigger(a,'jump'); burst(S.xs[n]/100, .45, 'gold', 60); sfx.chime(); }
+}
+// people not on the [Present:] list walk in at the beat that first names them
+function arrivals(i, animate){
+  const sc = P.scenes[P.beats[i].scene];
+  for (const [n, at] of Object.entries(sc.late)) if (at <= i){
+    const a = actorEl(n); if (!a?.classList.contains('offstage')) continue;
+    a.classList.remove('offstage');
+    if (animate){ a.style.animationDelay = '0s'; retrigger(a,'enter'); sfx.whoosh(); burst(S.xs[n]/100, .55, 'smoke', 14); }
+  }
+}
+
+async function play(i, animate=true){
+  const b = P.beats[i]; if (!b) return;
+  S.idx = i; updateTimeline(); logBeat(b);
+  if (b.t==='scene'){ S.busy = true; await sceneTransition(b.scene, animate); S.busy = false; scheduleAuto('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'); return; }
+  if (S.scene !== b.scene) await sceneTransition(b.scene, false);
+  arrivals(i, animate);
+  if (b.t==='line') stageLine(b, !animate);
+  else if (b.t==='dir') stageDir(b, !animate);
+  else if (b.t==='vote') stageVote(b, !animate);
+  else if (b.t==='elim') stageElim(b, !animate);
+  else if (b.t==='spoken') stageSpoken(b, !animate);
+  else if (b.t==='cut'){ S.busy = true; await stageCut(b, animate); S.busy = false; }
+  else if (b.t==='card') stageCard(b, animate);
+  else if (b.t==='end') stageEnd();
+}
+async function next(){
+  sfx.on();
+  if (!S.started){ S.started = true; $('titlecard').classList.add('hide'); sfx.whoosh(); await play(0); return; }
+  if (S.busy) return;
+  if (S.typing){ S.typing.finish(); return; }
+  if (S.idx < P.beats.length-1){ $('titlecard').classList.add('hide'); play(S.idx+1); }
+  else { S.auto = false; $('bAuto').classList.remove('on'); }
+}
+// rewind: rebuild the scene as it stood at beat i, with no animation
+async function jump(i){
+  S.started = true; $('titlecard').classList.add('hide');
+  i = Math.max(0, Math.min(P.beats.length-1, i));
+  clearTimeout(S.timer); S.typing?.finish?.();
+  const si = P.beats[i].scene, before = P.beats.slice(0, i);
+  S.gone = new Set(before.filter(b => b.t==='elim' || b.snuff).map(b => b.name || b.snuff));
+  S.immune = new Set(); S.idols = new Set();
+  before.forEach(b => {
+    const win = b.t==='line' && stripCues(b.text).match(/\b(\w+) WINS IMMUNITY/i);
+    if (win) immunityFor(win[1], P.scenes[b.scene]).forEach(n => S.immune.add(n));
+    if (b.idol) S.idols.add(b.idol);
+  });
+  exitConf(); $('vote').innerHTML = ''; S.idx = i; renderScene(si);
+  const cut = before.filter(b => b.scene===si && b.t==='cut').pop();
+  if (cut) renderSet(cut.set, cut.time, P.scenes[si]);
+  document.querySelectorAll('.actor').forEach(a => a.classList.remove('enter'));
+  before.forEach(b => { if (b.scene===si && b.t==='vote'){ S.tally[b.name] = (S.tally[b.name]||0)+1; actorEl(b.name)?.querySelector('.tally').insertAdjacentHTML('beforeend','<i></i>'); } });
+  S.lastSpeaker = before.filter(b => b.t==='line' && !b.conf && !b.host && b.scene===si).pop()?.speaker || null;
+  rebuildLog(i);
+  await play(i, false);
+}
+
+// ── timeline + log ──
+function buildTimeline(){
+  const tl = $('timeline'), L = P.beats.length;
+  tl.querySelectorAll('.mark').forEach(m => m.remove());
+  P.beats.forEach((b, i) => {
+    if (b.t==='scene') tl.insertAdjacentHTML('beforeend', `<div class="mark${P.scenes[b.scene].set==='tribal'?' tribal':''}" style="left:${i/L*100}%" title="${esc(P.scenes[b.scene].place)}"></div>`);
+    if ((b.conf || b.host) && !(P.beats[i-1]?.conf || P.beats[i-1]?.host)) tl.insertAdjacentHTML('beforeend', `<div class="mark conf" style="left:${i/L*100}%" title="Confessional"></div>`);
+  });
+  tl.onclick = e => { const r = tl.getBoundingClientRect(); jump(Math.round((e.clientX-r.left)/r.width*(L-1))); };
+}
+function updateTimeline(){ $('tlFill').style.width = (S.idx/Math.max(1, P.beats.length-1)*100)+'%'; }
+function logHTML(b){
+  if (b.t==='scene') return `<div class="ln scene">▸ ${esc(P.scenes[b.scene].header)}</div>`;
+  if (b.t==='card') return `<div class="ln scene">▸ ${esc(b.kick)} ${esc(b.title)}</div>`;
+  if (b.t==='dir') return `<div class="ln dir">${esc(b.text)}</div>`;
+  if (b.t==='line' || b.t==='vote') return `<div class="ln"><b style="color:${CAST[b.speaker]?.c}">${esc(b.speaker)}${b.conf?' (conf)':''}</b>${esc(b.text)}</div>`;
+  if (b.t==='elim') return `<div class="ln dir">${esc(b.name)} is out.</div>`;
+  return '';
+}
+function logBeat(b){ const l = $('log'); l.insertAdjacentHTML('beforeend', logHTML(b)); l.scrollTop = l.scrollHeight; }
+function rebuildLog(i){ $('log').innerHTML = P.beats.slice(0, i).map(logHTML).join(''); }
+
+// ── controls ──
+stage.addEventListener('click', next);
+$('bNext').onclick = next;
+$('bPrev').onclick = () => jump(S.idx-1);
+$('bAuto').onclick = () => { S.auto = !S.auto; $('bAuto').classList.toggle('on', S.auto); if (S.auto && !S.typing) next(); };
+$('bSpeed').onclick = () => { S.speed = S.speed===1 ? 2 : S.speed===2 ? .6 : 1; $('bSpeed').textContent = `Text ${S.speed}×`; };
+$('bSound').onclick = () => { S.sound = !S.sound; $('bSound').classList.toggle('on', S.sound); sfx.on(); };
+$('bNames').onclick = () => { stage.classList.toggle('showNames'); $('bNames').classList.toggle('on'); };
+$('bLog').onclick = () => { $('log').classList.toggle('open'); $('bLog').classList.toggle('on'); };
+addEventListener('keydown', e => {
+  if (e.target.tagName === 'TEXTAREA') return;
+  if (e.key===' ' || e.key==='ArrowRight' || e.key==='Enter'){ e.preventDefault(); next(); }
+  else if (e.key==='ArrowLeft'){ e.preventDefault(); jump(S.idx-1); }
+  else if (e.key.toLowerCase()==='a') $('bAuto').click();
+  else if (e.key.toLowerCase()==='l') $('bLog').click();
+});
+
+// ── load an episode (pasted or the sample) ──
+const STORE = 'episodeStage.transcript';
+function load(text){
+  clearTimeout(S.timer); clearInterval(S.typing?.iv); exitConf();
+  P = parse(text);
+  if (!P.scenes.length){ $('parseInfo').textContent = 'No [SCENE: …] headers found.'; return false; }
+  Object.assign(S, { idx:-1, scene:-1, conf:null, typing:null, busy:false, started:false, tally:{}, gone:new Set(), immune:new Set(), idols:new Set(), lastSpeaker:null, lastShout:null });
+  $('log').innerHTML = ''; hideDbox(); $('vote').innerHTML = '';
+  $('tEp').textContent = [P.show, P.ep && `EPISODE ${P.ep}`].filter(Boolean).join(' · ').toUpperCase() || 'TOTAL DRAMA';
+  $('tName').textContent = P.title || 'Episode'; $('tPress').textContent = 'CLICK OR PRESS SPACE';
+  $('titlecard').classList.remove('hide');
+  renderScene(0); buildTimeline(); updateTimeline();
+  document.querySelectorAll('.actor').forEach(a => a.classList.remove('enter'));
+  const cast = Object.keys(CAST);
+  $('parseInfo').textContent = `${P.scenes.length} scenes · ${P.beats.length} beats · ${cast.length} people`;
+  return true;
+}
+$('bLoad').onclick = () => {
+  const t = $('pasteBox').value;
+  if (t.trim() && load(t)) try { localStorage.setItem(STORE, t); } catch(e){}
+  stage.scrollIntoView({ behavior:'smooth', block:'start' });
+};
+$('bSample').onclick = () => { $('pasteBox').value = ''; try { localStorage.removeItem(STORE); } catch(e){} load(SAMPLE); };
+
+let saved = ''; try { saved = localStorage.getItem(STORE) || ''; } catch(e){}
+if (saved) $('pasteBox').value = saved;
+load(saved || SAMPLE) || load(SAMPLE);
+</script>
+</body>
+</html>

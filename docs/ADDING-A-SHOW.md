@@ -1686,6 +1686,13 @@ Being honest about the parts this document cannot make easy:
   Total Drama tribal council do not share a screen, and should not.
 - **The episode writer's prompt** is per show. Reusing another show's prompt
   produces episodes in that show's format.
+- **The episode stage** (`js/episode-stage.js`, mounted by `renderEpisode` in
+  `current-season.html`) is Total Drama's: island sets, tribal council, "the
+  tribe has spoken", torches. `renderEpisode` gates it on
+  `_csFormat() === CS_DEFAULT_FORMAT` and every other show gets the script
+  reader. A new show that wants the stage needs its own sets and its own
+  vote/exit vocabulary in that module — widening the gate alone prints Total
+  Drama's words over your show (§11.5 C).
 
 Everything else is a registry entry and a vocabulary block.
 

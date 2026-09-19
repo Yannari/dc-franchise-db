@@ -3855,7 +3855,42 @@ async function generateEpisodeAI() {
     }
     
     const html = parseTranscript(transcript);
-    container.innerHTML = html;
+    // ── TOTAL DRAMA PLAYS ON THE STAGE ──
+    // js/episode-stage.js draws the episode as a scene: the island set its
+    // [SCENE:] header names, the [Present:] cast as standees, confessionals,
+    // ballots, chapters and a run-time estimate. Its sets and its words ("the
+    // tribe has spoken") are Total Drama's, so every other show keeps the script
+    // reader below rather than get one show's vocabulary printed over it. The
+    // script stays one click away for Total Drama too — it is the fast way to
+    // skim or search an episode.
+    if (_csFormat() === CS_DEFAULT_FORMAT && typeof window.__mountEpisodeStage === 'function') {
+      let view = 'stage';
+      try { view = localStorage.getItem('episodeView') || 'stage'; } catch (e) { /* private window */ }
+      container.innerHTML = `
+        <div class="ep-view-toggle">
+          <button class="btn" data-view="stage">🎮 Stage</button>
+          <button class="btn" data-view="script">📜 Script</button>
+        </div>
+        <div id="episode-stage-host"></div>
+        <div id="episode-script-host">${html}</div>`;
+      const stageHost = container.querySelector('#episode-stage-host');
+      const scriptHost = container.querySelector('#episode-script-host');
+      const show = v => {
+        view = v;
+        stageHost.hidden = v !== 'stage';
+        scriptHost.hidden = v !== 'script';
+        container.querySelectorAll('.ep-view-toggle .btn').forEach(b => b.classList.toggle('btn-primary', b.dataset.view === v));
+        try { localStorage.setItem('episodeView', v); } catch (e) { /* private window */ }
+      };
+      container.querySelectorAll('.ep-view-toggle .btn').forEach(b => { b.onclick = () => show(b.dataset.view); });
+      window.__mountEpisodeStage(stageHost, transcript, {
+        portrait: window.portraitFor,
+        showName: (window.__SHOWS && window.__SHOWS.names && window.__SHOWS.names[CS_DEFAULT_FORMAT]) || 'Total Drama',
+      });
+      show(view);
+    } else {
+      container.innerHTML = html;
+    }
     container.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
   
@@ -8563,6 +8598,10 @@ Would you like to:
     // every page: a split season names several winners and no `winner` block.
     import { seasonWinners } from './js/records.js';
     window.__seasonWinners = seasonWinners;
+    // The episode reader's stage (Total Drama). renderEpisode lives in the
+    // classic script and reaches it through window, like everything else here.
+    import { mountEpisodeStage } from './js/episode-stage.js';
+    window.__mountEpisodeStage = mountEpisodeStage;
     const resolve = () => {
       const s = currentShow();
       return (s && s !== ALL && SHOWS[s]) ? s : null;

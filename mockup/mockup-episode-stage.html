@@ -764,6 +764,8 @@ const SUBSETS = [
 ];
 function subView(text, scene, afterCard){
   const head = text.slice(0, afterCard ? 400 : 140);
+  // guessing a move only makes sense around camp — "a compound built on the beach" is the challenge, not a trip to the beach
+  if (!afterCard && (scene.set === 'challenge' || scene.set === 'tribal')) return null;
   const first = sentences(text)[0] || '';
   if (!afterCard && !CUT_LEAD.test(text) && !LOC_PHRASE.test(first)) return null;
   const allowed = k => !((k === 'camp' || k === 'challenge') && scene.set !== k);   // only return to the scene's own base

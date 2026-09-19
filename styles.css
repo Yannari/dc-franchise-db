@@ -1334,6 +1334,13 @@ body.hasSiteHeader .hero .meta{
   color: rgba(255, 255, 255, 0.4);
 }
 
+/* ── Stage / Script switch (Total Drama episodes) ── */
+.ep-view-toggle {
+  display: flex;
+  gap: 8px;
+  margin: 0 0 12px;
+}
+
 /* ── Episode wrapper ─────────────────────── */
 .episode-wrapper {
   border-radius: 20px;

@@ -771,10 +771,35 @@ does not recognise: a season stamped with a new show and pressed Run IS a
 Total Drama season, and reading the ledger on the strength of the stamp alone
 gave every veteran in it reputation and grudges no checkbox had asked for.
 
-**What going it alone costs, measured on the show that did.** Drag Race's All
-Stars is in neither path — no `historyFromLedger`, and `isReturnee` appears
-nowhere in `js/dr*.js`. It grew its own carry-over in `js/dr/past.js`
-(`sharedHistory` + `historyBond`), mapping a pair to one of four constants:
+**Check the ledger can EXPRESS your show's relationships before opting in.**
+This is the step Drag Race actually fell down, and a new show will hit it
+too, because `seededPairs`'s vocabulary is vote-shaped:
+
+| input | derived from | on a drag season |
+|---|---|---|
+| `betrayed` | `ep.votingLog` / `ep.defections` — a ballot that MOVED onto the boot | **structurally impossible.** There is no vote |
+| `allies` | `gs.namedAlliances` | never written — drag's alliances are derived from bonds each episode and nothing is serialised |
+| `showmances` | `gs.showmances` | never written |
+| `rivals` | `gs.bonds[key] <= -4` | works |
+
+A drag All Stars cast opting in as things stand would get exactly ONE
+relationship kind — rivals, −3 — and would lose "she beat me in the song that
+ended my season", which is the most loaded history this format has and the
+whole reason `js/dr/history.js` reads it out of the published season document
+instead.
+
+So the fork was not laziness; it was the only thing available without
+widening the ledger first. That is also why step 4 below says ADD IT TO THE
+LEDGER rather than merely "opt in": a show with no vote needs its own channel
+into `betrayed` and `allies` — a name on a lipstick, the queen who won the
+song that sent her home — and that is a change to `franchise-meta.js`, not a
+licence to keep a private table. The private table is what you get if you
+stop at "the ledger has nothing for me".
+
+**What going it alone cost here.** Drag Race's All Stars is in neither path —
+no `historyFromLedger`, and `isReturnee` appears nowhere in `js/dr*.js`. It
+grew its own carry-over in `js/dr/past.js` (`sharedHistory` + `historyBond`),
+mapping a pair to one of four constants:
 
     friend +4 · rival −4 · sent-home −2 · mates +1
 
@@ -1487,18 +1512,34 @@ What it lost is every one of those four properties, and none of them announce
 themselves — you find out by asking "does a friendship from three seasons ago
 arrive weaker?" and discovering there is no code that could make it so.
 
-**Why it happened, and it will happen again.** The per-show module is the
-natural place to answer a per-show question. "What did these two queens do to
-each other last season" feels like drag's business, the way the craft stats
-are. It is not: it is the franchise's business with a drag-shaped input, and
-the giveaway is that the answer has nothing show-specific in it — a betrayal
-decays at the same rate on every show.
+**Why it happened, and it will happen again.** Not laziness, and this is the
+part worth understanding, because the honest version of the trap is more
+persuasive than the careless one.
+
+`seededPairs` derives a betrayal from `ep.votingLog` — a ballot that moved
+onto the boot — and an alliance from `gs.namedAlliances`. Drag Race has no
+vote at all and never serialises an alliance, so three of the four inputs are
+empty on a drag season and the fourth (`rivals`, read straight off bonds) is
+the only one that fires. Opting in would have produced ONE relationship kind
+and dropped the format's most loaded history: the queen who won the song that
+sent you home. Looking at the franchise system, finding it had nothing to say
+about this show, and writing something that did is a reasonable sequence of
+decisions. It still ended in a second carry-over with no decay and no clamp.
+
+The trap is the step that was skipped, not the one that was taken: "the
+ledger cannot express my show's relationships" is a reason to widen the
+ledger, and it reads exactly like a reason to write your own. The giveaway
+that it is the former is that the *weights* have nothing show-specific in
+them — a betrayal decays at the same rate on every show, even when what
+counts as a betrayal does not.
 
 **The test.** Before writing any table that maps a relationship, a history or
 a reputation to a number, grep the franchise modules for the thing you are
 about to name. If `franchise-meta.js` already has a weight for it, you are
-writing the second copy. If it nearly does — right idea, wrong field names —
-the fix is to widen the franchise one, not to fork it. See §8.2.
+writing the second copy. If it nearly does — right idea, wrong field names,
+or an input your show cannot fill — the fix is to widen the franchise one,
+not to fork it. "It reads a field my show never writes" is the most
+convincing wrong reason available. See §8.2.
 
 ### What a third show inherits from this work
 

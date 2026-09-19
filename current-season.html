@@ -791,7 +791,8 @@ Devin: [flexes] They call me the golden boy. I'm here to prove nice guys can win
         <div class="glass-card" style="padding: 20px; margin-bottom: 20px;">
           <h3 style="margin-top: 0;">📝 Episode Transcript</h3>
           <p style="opacity: 0.8; font-size: 14px; margin-bottom: 16px;">
-            Or paste a manually written episode transcript here.
+            Or paste a manually written episode transcript here. It saves itself as you paste,
+            under the season and episode chosen above — set those first.
           </p>
           <textarea 
             id="episode-input" 
@@ -808,6 +809,7 @@ Owen: I'm so excited!
 [Confessional: Owen]
 Owen: This is going to be amazing!"
             style="width: 100%; min-height: 300px;"></textarea>
+          <div id="episode-save-status" style="margin-top: 6px; font-size: 13px; opacity: .8; min-height: 1.2em;"></div>
         </div>
         
         <!-- Controls -->
@@ -2640,6 +2642,9 @@ Owen: This is going to be amazing!"
       const isResumes = which === "resumes";
       const isRelationships = which === "relationships";
       const isEpisode = which === "episode";
+      // Opening the Episode tab shows this episode's saved transcript — a reload
+      // restores the tab without a click, and used to leave the box empty.
+      if (isEpisode && typeof loadEpisode === 'function') loadEpisode();
 
       els.viewControl.classList.toggle("hidden", !isControl);
       els.viewOverview.classList.toggle("hidden", !isOverview);
@@ -2681,11 +2686,7 @@ Owen: This is going to be amazing!"
     els.tabGameplay.addEventListener("click", () => showTab("gameplay"));
     els.tabResumes.addEventListener("click", () => showTab("resumes"));
     els.tabRelationships.addEventListener("click", () => showTab("relationships"));
-    els.tabEpisode.addEventListener("click", () => {
-      showTab("episode");
-      // Try to auto-load saved episode
-      if (typeof loadEpisode === 'function') loadEpisode();
-    });
+    els.tabEpisode.addEventListener("click", () => showTab("episode"));   // showTab loads the saved episode
 
     // ----------------------------
     // Actions
@@ -3398,20 +3399,63 @@ Owen: This is going to be amazing!"
     renderEpisode();
   }
 
+  // ── AUTOSAVE ──
+  // Episodes are written in a chat and pasted here now, and the old generator
+  // was the only thing that ever saved one without a click: a pasted episode
+  // lived until the next reload. The box saves itself as it changes — under the
+  // season and episode showing WHEN it was typed, so changing the number a
+  // second later cannot file the text under the wrong episode.
+  let _epPending = null, _epTimer = null;
+  function _epSaveStatus(msg) {
+    const el = document.getElementById('episode-save-status');
+    if (el) el.textContent = msg;
+  }
+  function _epLabel() {
+    const s = document.getElementById('aiSeason')?.value || '?';
+    const e = document.getElementById('aiEpisode')?.value || '?';
+    return `Season ${s} · Episode ${e}`;
+  }
+  async function flushEpisodeAutosave() {
+    clearTimeout(_epTimer);
+    const p = _epPending; _epPending = null;
+    if (!p || !p.value.trim()) return;
+    await _csPut(p.key, p.value);
+    _epSaveStatus(`✓ Saved automatically — ${p.label}`);
+  }
+  function _epQueueAutosave() {
+    const input = document.getElementById('episode-input');
+    if (!input) return;
+    _epPending = { key: getEpisodeStorageKey(), value: input.value, label: _epLabel() };
+    _epSaveStatus(input.value.trim() ? 'Saving…' : '');
+    clearTimeout(_epTimer);
+    _epTimer = setTimeout(flushEpisodeAutosave, 700);
+  }
+  (function _epWireAutosave() {
+    const input = document.getElementById('episode-input');
+    if (!input) return;
+    input.addEventListener('input', _epQueueAutosave);
+    input.addEventListener('blur', flushEpisodeAutosave);
+    window.addEventListener('beforeunload', () => { if (_epPending) flushEpisodeAutosave(); });
+  })();
+
   // Load episode from IndexedDB
   async function loadEpisode() {
+    await flushEpisodeAutosave();   // never let a load overwrite text that has not reached storage yet
     const saved = await _csGet(getEpisodeStorageKey());
     if (saved) {
       document.getElementById('episode-input').value = saved;
+      _epSaveStatus(`✓ Saved episode loaded — ${_epLabel()}`);
       renderEpisode();
       return true;
     }
+    _epSaveStatus('');
     return false;
   }
 
   // Clear episode
   async function clearEpisode() {
     if (confirm('⚠️ Clear the current episode? This cannot be undone.')) {
+      clearTimeout(_epTimer); _epPending = null; _epSaveStatus('');
       document.getElementById('episode-input').value = '';
       document.getElementById('episode-rendered').innerHTML = '';
       await _csDelete(getEpisodeStorageKey());

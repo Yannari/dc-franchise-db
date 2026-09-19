@@ -184,6 +184,44 @@ describe('episode stage: the TV layer reads the story', () => {
   });
 });
 
+describe('episode stage: every vote read is counted', () => {
+  const tribal = reads => parseEpisode([
+    '[SCENE: Tribal council — night.] [Present: James, Julia, Natalia, Grett. Host: Chris.]',
+    'Chris: Time to vote.',
+    ...reads,
+  ].join('\n'));
+  const votes = Q => Q.beats.filter(b => b.t === 'vote').map(b => b.name);
+  const out = Q => Q.beats.filter(b => b.t === 'elim').map(b => b.name);
+
+  it('counts a vote however the host words it, and never a recap', () => {
+    const Q = tribal([
+      "Chris: I'll read the votes.",
+      'Chris: First vote... James.',
+      'Chris: Julia. One vote James, one vote Julia.',
+      'Chris: [unfolds it slowly] Natalia.',
+      'Chris: James. That is two votes James, one Julia, one Natalia.',   // long, still a vote
+      'Chris: Two votes James. One vote Julia. One vote Natalia.',         // a recap: not a vote
+      'Chris: Fifth vote... James. That\'s enough. James, bring me your torch.',   // the last vote rides in the exit line
+      'Chris: James. The tribe has spoken.',
+    ]);
+    expect(votes(Q)).toEqual(['James', 'Julia', 'Natalia', 'James', 'James']);
+    expect(out(Q)).toEqual(['James']);
+    expect(Q.beats.find(b => b.t === 'elim').tally).toEqual({ James: 3, Julia: 1, Natalia: 1 });
+  });
+
+  it('counts a vote read in a stage direction', () => {
+    const Q = tribal([
+      '[Chris reads the votes.]',
+      '[Chris unfolds the first parchment: JAMES.]',
+      'Chris: Julia.',
+      '[He holds up the last vote: JAMES.]',
+      "Chris: That's enough. James, bring me your torch.",
+    ]);
+    expect(votes(Q)).toEqual(['James', 'Julia', 'James']);
+    expect(out(Q)).toEqual(['James']);
+  });
+});
+
 describe('episode stage: run time and chapters', () => {
   const RT = estimateRuntime(P);
 

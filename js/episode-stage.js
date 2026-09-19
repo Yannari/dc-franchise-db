@@ -158,6 +158,8 @@ function weatherOf(text){
   return null;
 }
 
+const VOTE_ORDINAL = /^(?:the\s+)?(?:first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|eleventh|twelfth|next|last|final)\s+vote\b[\s.,:;!…—–-]*/i;
+
 function parse(text, opts = {}){
   useShow(opts.show);
   CAST = {};
@@ -179,6 +181,16 @@ function parse(text, opts = {}){
   const mentioned = s => names.map(n => [n, s.search(rx[n])]).filter(([,i]) => i >= 0).sort((a,b) => a[1]-b[1]).map(([n]) => n);
   const findName = w => names.find(n => n.toLowerCase() === w.toLowerCase());
 
+  // A vote is read when a host line OPENS with a player's name, optionally after
+  // "First vote —" / "Next vote…" / "Last vote:". A line that opens with a count
+  // ("Two votes James, one Julia") is a recap, not a vote.
+  const readVote = t => {
+    const ord = t.match(VOTE_ORDINAL);
+    const rest = (ord ? t.slice(ord[0].length) : t).replace(/^[\s“"'.…—–-]+/, '');
+    const m = rest.match(/^([A-Z][a-zA-Z'\-]+(?: [A-Z][a-zA-Z'\-]+)?)\b/);
+    const n = m && (findName(m[1]) || findName(m[1].split(' ')[0]));
+    return n && !CAST[n].host ? { name:n, ordinal:!!ord } : null;
+  };
   const out = { show:'', ep:'', title:'', scenes:[], beats:[], profile: SH };
   let scene = null, conf = null, reading = false, afterCard = false, lastNamed = null, lastActor = null, lastSpeaker = null, tally = {};
   const push = b => (out.beats.push(b), b);
@@ -233,7 +245,18 @@ function parse(text, opts = {}){
     const write = text.match(SH.vote.write);
     const found = SH.find && SH.find.re.test(text) && !/\bnothing\b/i.test(text);
     let stay = false;
+    if (scene.set === SH.exitSet && SH.vote.start.test(text)) reading = true;   // "[Chris reads the votes.]"
     pages(text, 170).forEach(p => {
+      // "[Chris unfolds the next parchment: JULIA.]" — a vote read in a stage direction counts too
+      if (reading && scene.set === SH.exitSet && /\b(vote|parchment|ballot|reads|unfolds|holds up)\b/i.test(p)){
+        const named = (p.match(/\b[A-Z]{2,}\b/g) || []).map(findName).find(n => n && !CAST[n].host);
+        const reader = scene.present.find(n => CAST[n].host) || SH.hosts.find(h => CAST[h]);
+        if (named && reader){
+          tally[named] = (tally[named] || 0) + 1;
+          push({ t:'vote', scene:scene.i, name:named, speaker:reader, text:p, mood:'tense' });
+          return;
+        }
+      }
       let who = mentioned(p);
       // after a confessional or host shot, "He grins" is the person on camera, not the last name in the prose
       if (!who.length && !inConf && /^(he|she|they|his|her|their)\b/i.test(p) && lastNamed) who = [lastNamed];
@@ -289,19 +312,26 @@ function parse(text, opts = {}){
       push({ t:'line', scene:scene.i, speaker:who, text:p, conf:!!conf, host, mood:mood(stripCues(p), p),
              ...(k === 0 && dismiss ? { dismiss } : {}), ...(k === 0 && event ? { event } : {}), ...(finalWords ? { finalWords:true } : {}) }));
     if (scene.set === SH.exitSet && CAST[who]?.host && !conf && !host){
-      if (SH.vote.start.test(clean)) reading = true;
+      if (SH.vote.start.test(clean) || VOTE_ORDINAL.test(clean)) reading = true;
       const nm = mentioned(clean);
+      // the name a vote line opens with: "First vote — James.", "James. That's two votes James…", "“Julia.”"
+      const read = reading ? readVote(clean) : null;
       if (SH.vote.exit.test(clean) && !scene.elim){
+        // "Fourth vote… James. That's enough. Bring me your torch." — the last vote rides in the exit line
+        if (read && read.ordinal){
+          tally[read.name] = (tally[read.name] || 0) + 1;
+          push({ t:'vote', scene:scene.i, name:read.name, speaker:who, text:body, mood:'tense' });
+        } else pushLine();
         const top = Object.entries(tally).sort((a,b) => b[1] - a[1])[0]?.[0];
-        pushLine(); scene.elim = top || nm[nm.length - 1];
+        scene.elim = top || nm[nm.length - 1];
         if (scene.elim) push({ t:'elim', scene:scene.i, name:scene.elim, tally:{ ...tally } });
         if (SH.vote.final.test(clean)) push({ t:'spoken', scene:scene.i });
         return;
       }
       if (SH.vote.final.test(clean)){ pushLine(); push({ t:'spoken', scene:scene.i }); return; }
-      if (reading && nm.length && clean.split(/\s+/).length <= 8){
-        tally[nm[0]] = (tally[nm[0]] || 0) + 1;
-        push({ t:'vote', scene:scene.i, name:nm[0], speaker:who, text:body, mood:'tense' });
+      if (read){
+        tally[read.name] = (tally[read.name] || 0) + 1;
+        push({ t:'vote', scene:scene.i, name:read.name, speaker:who, text:body, mood:'tense' });
         return;
       }
     }

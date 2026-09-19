@@ -61,7 +61,7 @@ export const STAGE_SHOWS = {
 
     // the vote, read by the host at an EXIT scene
     vote: {
-      start: /read the votes/i,
+      start: /\b(reads?|reading) (out )?the votes\b/i,
       exit: /voted out|bring me your torch|that'?s enough/i,
       final: /tribe has spoken/i,
       write: /\b[Ww]rites\s+([A-Z][A-Za-z]+)/,

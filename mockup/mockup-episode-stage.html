@@ -67,6 +67,10 @@ canvas.fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z
   transition:left .7s cubic-bezier(.22,1,.36,1),bottom .7s cubic-bezier(.22,1,.36,1),width .7s cubic-bezier(.22,1,.36,1),margin-left .7s cubic-bezier(.22,1,.36,1),filter .5s,opacity .5s,transform .5s;
   --c:#fc3;filter:brightness(.62) saturate(.7);transform:scale(.92);z-index:1}
 .actor.back{transform:scale(.8);z-index:0}
+.actor.benched,.actor.benched.lit{filter:grayscale(.85) brightness(.5);opacity:.75;transform:scale(.8) translateY(10%)}
+.actor.benched .stand{background:#444}
+.extras{position:absolute;left:0;right:0;bottom:41%;height:10cqw;z-index:0;pointer-events:none}
+.extras svg{position:absolute;bottom:0;fill:#0b0f1a;opacity:.55;animation:bob 2.4s ease-in-out infinite alternate;animation-delay:var(--d)}
 .actor.offstage{opacity:0;transform:translateY(-40%) scale(.5);pointer-events:none}
 .actor.lit{filter:none;transform:scale(1.14) translateY(-4%);z-index:5}
 .actor.back.lit{transform:scale(.98) translateY(-4%)}
@@ -694,7 +698,20 @@ Chris: Duncan, the tribe has spoken.
 // ════════════════════════════════════════════════════════════════
 const SPK = /^([A-Z][a-zA-Z'\-]+(?: [A-Z][a-zA-Z'\-]+)?):\s*(.+)$/;
 const NOT_NAMES = /^(present|confessional|scene|title|title card|previously|producer|phase|host|hosts|coach|coaches|note|voting|later|players?)$/i;
-const isName = n => !!n && n !== n.toUpperCase() && !NOT_NAMES.test(n);
+const NAME_RE = /^[A-Z][a-zA-Z'\-]+(?: [A-Z][a-zA-Z'\-]+)?$/;
+const isName = n => NAME_RE.test(n || '') && n !== n.toUpperCase() && !NOT_NAMES.test(n);
+// the middle of "[SCENE: Green camp — well — morning.]" → which set to draw
+const SUBMAP = [
+  ['tribal',    /tribal|council|urn/i],
+  ['dock',      /dock|pier/i],
+  ['well',      /\bwell\b/i],
+  ['fishing',   /fishing|rocks|tide ?pool|lagoon|reef/i],
+  ['cliff',     /cliff|peak|ledge|lookout/i],
+  ['jungle',    /tree ?line|jungle|forest|trail|woods|vines|clearing/i],
+  ['beach',     /water'?s edge|beach|shore|waterline|lake/i],
+  ['challenge', /compound|mess|obstacle|course|canoe|bench|water station|open area|arena|podium/i],
+  ['camp',      /fire ?pit|campfire|\bfire\b|shelter|cabin|crate|bunk|hammock|camp/i],
+];
 const stripCues = s => s.replace(/\[[^\]]*\]/g, ' ').replace(/\s{2,}/g, ' ').trim();
 const TIME_WORDS = /morning|dawn|sunrise|midday|noon|\bday\b|afternoon|dusk|sunset|evening|night|midnight/i;
 
@@ -704,8 +721,12 @@ function parsePresent(body){
   body.split(/[.;]\s*(?=[A-Z][a-zA-Z]*\s*:)/).forEach(seg => {
     const m = seg.match(/^\s*([A-Za-z]+)\s*:\s*(.*)$/);
     let role = 'player', list = seg;
-    if (m){ const lab = m[1].toLowerCase(); list = m[2]; role = /^host/.test(lab) ? 'host' : /^coach/.test(lab) ? 'coach' : 'player'; }
-    list.split(/,|\band\b/).map(s => s.replace(/[.\s]+$/, '').trim()).filter(isName).forEach(n => out.push([n, role]));
+    if (m){ const lab = m[1].toLowerCase(); list = m[2];
+      role = /^host/.test(lab) ? 'host' : /^coach/.test(lab) ? 'coach' : /^(background|extras?|crowd)/.test(lab) ? 'bg' : 'player'; }
+    const names = list.split(/,|\band\b/).map(s => s.replace(/[.\s]+$/, '').trim()).filter(isName);
+    // "Background: all remaining contestants milling around" → an unnamed crowd
+    if (role === 'bg' && !names.length) out.background = true;
+    names.forEach(n => out.push([n, role]));
   });
   return out;
 }
@@ -777,7 +798,7 @@ function parse(text){
   const findName = w => names.find(n => n.toLowerCase() === w.toLowerCase());
 
   const out = { show:'', ep:'', title:'', scenes:[], beats:[] };
-  let scene = null, conf = null, reading = false, afterCard = false, lastNamed = null, tally = {};
+  let scene = null, conf = null, reading = false, afterCard = false, lastNamed = null, lastActor = null, tally = {};
   const push = b => (out.beats.push(b), b);
   const addP = n => {
     if (!scene || !CAST[n] || scene.present.includes(n)) return;
@@ -787,25 +808,39 @@ function parse(text){
 
   const newScene = inner => {
     inner = inner.replace(/^scene\s*[:\-]?\s*/i, '');
-    const parts = inner.split(/\s+[—–]\s+|\s+-\s+/);
-    const place = parts[0].replace(/\.$/, '').trim();
-    const tail = parts.slice(1).join(' — '), dot = tail.indexOf('.');
-    const timeWord = (dot > 0 ? tail.slice(0, dot) : tail).trim();
-    const staging = dot > 0 ? tail.slice(dot + 1).trim() : '';
-    const fromPlace = pickSet(place), set = fromPlace !== 'island' ? fromPlace : pickSet(inner);
-    const time = SETS[set].forceTime || (TIME_WORDS.test(timeWord) ? timeOf(timeWord) : timeOf(inner));
-    scene = { i:out.scenes.length, header:inner, place, staging, set, time, view:{ set, time },
+    // "Place — spot — time. Staging." / "Place — spot — Phase 3: Dance Drill." / "Place — time. Staging."
+    const dot = inner.search(/\.(\s|$)/);
+    const head = dot > 0 ? inner.slice(0, dot) : inner;
+    const staging = dot > 0 ? inner.slice(dot + 1).trim() : '';
+    const parts = head.split(/\s+[—–]\s+|\s+-\s+/).map(s => s.trim()).filter(Boolean);
+    const place = parts[0];
+    let sub = '', timeWord = '', phase = null, declared = false;
+    parts.slice(1).forEach(pt => {
+      const ph = pt.match(/^phase\s*(\d+)\s*:?\s*(.*)$/i);
+      if (ph){ phase = { n:ph[1], title:ph[2] }; declared = true; return; }
+      if (!timeWord && TIME_WORDS.test(pt)){ timeWord = pt; return; }
+      declared = true;   // the header names a spot, even "various": the writer placed this scene
+      if (!sub && !/^(post|pre)-|between phases|^various$|^later$/i.test(pt)) sub = pt;
+    });
+    const fromPlace = pickSet(place), base = fromPlace !== 'island' ? fromPlace : pickSet(inner);
+    const subSet = sub && SUBMAP.find(([k, re]) => re.test(sub) && !((k === 'challenge' || k === 'camp') && base !== k))?.[0];
+    const set = base === 'tribal' ? 'tribal' : subSet || base;
+    // no time in the header → the last scene at this place carries on (a challenge phase keeps its daylight)
+    const prevSame = [...out.scenes].reverse().find(s => s.place === place);
+    const time = SETS[set].forceTime || (timeWord ? timeOf(timeWord) : TIME_WORDS.test(head) ? timeOf(head) : prevSame ? prevSame.time : timeOf(inner));
+    scene = { i:out.scenes.length, header:inner, place, sub, phase, declared, staging, set, time, view:{ set, time }, background:false,
               tribe:(place.match(TRIBE_RE) || [])[1]?.toLowerCase() || null,
               present:[], listed:[], roles:{}, late:{}, mentionAt:{}, elim:null, stagingDone:false };
     out.scenes.push(scene);
-    conf = null; reading = false; afterCard = false; lastNamed = null; tally = {};
+    conf = null; reading = false; afterCard = false; lastNamed = null; lastActor = null; tally = {};
     push({ t:'scene', scene:scene.i });
   };
 
   function dir(text){
     const prev = out.beats[out.beats.length - 1];
     const inConf = prev && prev.t === 'line' && (prev.conf || prev.host);
-    const cut = subView(text, scene, afterCard); afterCard = false;
+    // a header that names its spot ("Green camp — well") already placed us; only old-style scenes cut mid-scene
+    const cut = scene.declared ? null : subView(text, scene, afterCard); afterCard = false;
     if (cut && (cut.set !== scene.view.set || cut.time !== scene.view.time)){
       scene.view = cut; push({ t:'cut', scene:scene.i, set:cut.set, time:cut.time });
     }
@@ -820,8 +855,12 @@ function parse(text){
       // after a confessional or host shot, "He grins" is the person on camera, not the last name in the prose
       if (!who.length && !inConf && /^(he|she|they|his|her|their)\b/i.test(p) && lastNamed) who = [lastNamed];
       if (who.length) lastNamed = who[0];
+      const players = who.filter(n => !CAST[n].host);
       stay = inConf && !who.length && text.length < 80;
       const b = push({ t:'dir', scene:scene.i, text:p, who, stay });
+      // "Walks to the bell. Rings it." / "walks to the bench" → out of the challenge
+      if (/\b(rings? (it|the bell)|pulls it\b|walks to the bell|walks to the bench)/i.test(p)) b.out = players[0] || lastActor;
+      if (players.length) lastActor = players[0];
       if (write && p.includes(write[0])){
         const target = findName(write[1]);
         if (target) b.write = { voter: mentioned(p.slice(0, p.indexOf(write[0])))[0] || lastNamed, name: target };
@@ -834,11 +873,16 @@ function parse(text){
 
   function speak(who, body){
     if (conf && who !== conf) conf = null;
-    const host = !conf && scene.listed.length > 0 && !scene.present.includes(who) && !!CAST[who]?.host;
+    // an unlisted host talks to camera — unless this is the challenge or tribal, where he simply walks in
+    const onAir = /to camera/i.test(body) || !(['challenge','tribal'].includes(scene.set) || /challenge|compound|arena/i.test(scene.place));
+    const host = !conf && scene.listed.length > 0 && !scene.present.includes(who) && !!CAST[who]?.host && onAir;
     if (!conf && !host) addP(who);
     const clean = stripCues(body);
-    const pushLine = () => pages(body, 190).forEach(p =>
-      push({ t:'line', scene:scene.i, speaker:who, text:p, conf:!!conf, host, mood:mood(stripCues(p), p) }));
+    // Chef: "DISMISSED!" sends off whoever the scene was just about
+    const dismiss = CAST[who]?.host && /^\W*DISMISSED\b/.test(clean) ? lastActor : null;
+    if (!CAST[who]?.host && !conf) lastActor = who;
+    const pushLine = () => pages(body, 190).forEach((p, k) =>
+      push({ t:'line', scene:scene.i, speaker:who, text:p, conf:!!conf, host, mood:mood(stripCues(p), p), ...(k === 0 && dismiss ? { dismiss } : {}) }));
     if (scene.set === 'tribal' && CAST[who]?.host && !conf && !host){
       if (/read the votes/i.test(clean)) reading = true;
       const nm = mentioned(clean);
@@ -870,7 +914,9 @@ function parse(text){
       if (/^title( card)?\s*:/.test(low)){ out.title = inner.replace(/^title( card)?\s*:\s*/i, ''); continue; }
       if (/^present\s*:/.test(low)){
         if (!scene) continue;
-        parsePresent(inner.replace(/^present\s*:\s*/i, '')).forEach(([n, r]) => {
+        const pr = parsePresent(inner.replace(/^present\s*:\s*/i, ''));
+        if (pr.background) scene.background = true;
+        pr.forEach(([n, r]) => {
           scene.listed.push(n); scene.roles[n] = r; addP(n);
           if (scene.tribe && r !== 'host' && !CAST[n].tribe) CAST[n].tribe = scene.tribe;
         });
@@ -923,7 +969,7 @@ const stage = $('stage');
 let P = { show:'', ep:'', title:'', scenes:[], beats:[] };
 const S = { idx:-1, scene:-1, conf:null, typing:null, auto:false, speed:1, sound:true, busy:false,
             tally:{}, gone:new Set(), immune:new Set(), idols:new Set(), lastSpeaker:null, lastShout:null, started:false, timer:null,
-            view:{}, home:{}, cur:{}, xs:{}, crowd:false };
+            view:{}, home:{}, cur:{}, xs:{}, crowd:false, benched:new Set() };
 
 // SVG coords (1600×900, layer inset −8%/−6%) → stage fraction
 const toStage = (x,y) => [ -0.08 + 1.16*(x/1600), -0.06 + 1.12*(y/900) ];
@@ -940,11 +986,12 @@ function renderSet(setKey, time, sc){
                                          : time==='dusk' ? 'radial-gradient(ellipse at 68% 58%,#ff9a5c55,transparent 55%)' : 'none');
   FX.kind = set.fx; FX.set = setKey; FX.night = time==='night';
   S.view = { set:setKey, time };
-  const sub = setKey !== sc.set ? ` · ${set.label.toUpperCase()}` : '';
+  const sub = setKey !== sc.set ? ` · ${set.label.toUpperCase()}` : sc.sub ? ` · ${sc.sub.toUpperCase()}` : '';
   $('chipScene').textContent = `${sc.place.toUpperCase()}${sub} · SCENE ${sc.i+1}/${P.scenes.length}`;
 }
 function renderScene(si){
   const sc = P.scenes[si];
+  S.benched = new Set();
   renderSet(sc.set, sc.time, sc);
   buildActors(sc);
   buildRoster(sc);
@@ -959,8 +1006,11 @@ const roleOf = (sc, n) => CAST[n].host ? 'host' : (sc.roles[n] && sc.roles[n] !=
 function layout(sc){
   const ppl = sc.present, pos = {};
   const hosts = ppl.filter(n => CAST[n].host);
-  const rest = ppl.filter(n => !CAST[n].host);
-  S.crowd = ppl.length > 10;
+  // named "Background:" people stand small at the back, out of the way
+  const bg = ppl.filter(n => !CAST[n].host && roleOf(sc, n) === 'bg');
+  bg.forEach((nm, i) => pos[nm] = { x: 10 + 80 * (i + .5) / bg.length, floor: 44, w: 5.5, z: 0, back: true });
+  const rest = ppl.filter(n => !CAST[n].host && !bg.includes(n));
+  S.crowd = ppl.length - bg.length > 10;
   if (!S.crowd){
     const n = rest.length, left = 13, right = hosts.length ? 72 : 86, two = n > 5;
     rest.forEach((nm, i) => {
@@ -1002,7 +1052,7 @@ function applyPos(){
 // crowd only: the people this beat is about step forward, everyone else goes back to their seat
 function spotlight(names){
   if (!S.crowd) return;
-  const who = names.filter(n => S.home[n] && !CAST[n].host && !actorEl(n)?.classList.contains('offstage')).slice(0, 3);
+  const who = names.filter(n => S.home[n] && !CAST[n].host && !S.benched.has(n) && !actorEl(n)?.classList.contains('offstage')).slice(0, 3);
   const slots = [[50], [40, 60], [34, 50, 66]][who.length - 1] || [];
   S.cur = { ...S.home };
   who.forEach((n, i) => S.cur[n] = { x: slots[i], floor: 25, w: 10.5, z: 20, spot: true });
@@ -1013,7 +1063,7 @@ function buildActors(sc){
   $('actors').innerHTML = sc.present.map((n, i) => {
     const c = CAST[n], role = roleOf(sc, n), off = sc.late[n] != null && S.idx < sc.late[n];
     const tribe = TRIBE_COLORS[c.tribe] || '#8a5a33';
-    const cls = ['actor','enter', S.gone.has(n) && 'gone', S.immune.has(n) && 'immune', S.idols.has(n) && 'hasidol', off && 'offstage'].filter(Boolean).join(' ');
+    const cls = ['actor','enter', S.gone.has(n) && 'gone', S.benched.has(n) && 'benched', S.immune.has(n) && 'immune', S.idols.has(n) && 'hasidol', off && 'offstage'].filter(Boolean).join(' ');
     return `<div class="${cls}" data-n="${n}" style="--c:${c.c};--t:${tribe};--ph:${-(i*.37)%2.6}s;animation-delay:${.3+Math.min(i,14)*.06}s">
       <div class="shadow"></div>
       <div class="turn"><div class="rig">
@@ -1029,6 +1079,9 @@ function buildActors(sc){
       <div class="emote"></div>
     </div>`;
   }).join('');
+  // "Background: everyone milling around" → a row of silhouettes behind the named cast
+  if (sc.background) $('actors').insertAdjacentHTML('afterbegin', `<div class="extras">${[...Array(11)].map((_, i) =>
+    `<svg style="left:${4 + i*8.6 + (i%2)*2}%;--d:${-i*.4}s;height:${7 + (i%3)*1.2}cqw" viewBox="0 0 40 60"><circle cx="20" cy="14" r="10"/><path d="M2 60 Q2 30 20 28 Q38 30 38 60Z"/></svg>`).join('')}</div>`);
   applyPos();
 }
 function buildRoster(sc){
@@ -1254,12 +1307,17 @@ setInterval(() => { if (!S.conf) return; const s = (performance.now()-S.tcStart)
 // ── scene change: iris wipe + location banner ──
 async function sceneTransition(si, animate=true){
   exitConf(); hideDbox(); $('vote').innerHTML = '';
-  if (animate){ $('iris').classList.remove('open'); sfx.whoosh(); await wait(560); }
+  const sc = P.scenes[si], prev = P.scenes[S.scene];
+  // another spot at the same place is a whip-pan, not a full iris wipe
+  const near = animate && prev && prev.place === sc.place;
+  if (near){ retrigger($('world'),'whip'); sfx.whoosh(); await wait(200); }
+  else if (animate){ $('iris').classList.remove('open'); sfx.whoosh(); await wait(560); }
   renderScene(si);
   if (animate){
-    await wait(80); $('iris').classList.add('open');
-    const sc = P.scenes[si];
-    showBanner(`SCENE ${si+1}`, sc.place.toUpperCase(), [TIMES[sc.time].label, sc.staging].filter(Boolean).join(' · ').slice(0, 110));
+    if (!near){ await wait(80); $('iris').classList.add('open'); }
+    const timeLine = [TIMES[sc.time].label, sc.staging].filter(Boolean).join(' · ').slice(0, 110);
+    if (sc.phase){ showBanner(`PHASE ${sc.phase.n}`, (sc.phase.title || sc.sub || sc.place).toUpperCase(), sc.sub || ''); sfx.thump(); setTimeout(() => sfx.chime(), 200); retrigger(stage,'hit'); }
+    else showBanner(`${sc.place.toUpperCase()} · SCENE ${si+1}`, (sc.sub || sc.place).toUpperCase(), timeLine);
     camera(4, 0, 1.08); await wait(60); camera(0, 0, 1);
   }
 }
@@ -1326,6 +1384,7 @@ function stageLine(b, instant){
     S.lastSpeaker = b.speaker;
   } else $('conf').classList.add('talking');
   S.lastShout = b.mood==='shout' ? b.speaker : null;
+  if (b.dismiss){ if (instant) bench(b.dismiss, true); else setTimeout(() => bench(b.dismiss), 350); }
   typeInto($('txt'), b.text, { speaker:b.speaker, mood:b.mood, instant });
 }
 const rxCache = {};
@@ -1361,6 +1420,7 @@ function stageDir(b, instant){
   if (b.idol) giveItem(b.idol, 'hasidol', instant);
   if (b.write) showWrite(b.write, instant);
   if (b.snuff) eliminate(b.snuff, instant, true);
+  if (b.out) bench(b.out, instant);
   typeInto($('txt'), b.text, { narr:true, instant });
 }
 
@@ -1388,6 +1448,15 @@ function eliminate(name, instant, quiet){
   a.classList.add('gone'); a.classList.remove('lit','talk');
   document.querySelector(`.roster img[data-n="${name}"]`)?.classList.add('gone');
   if (!instant){ burst(S.xs[name]/100, .5, 'smoke', 30); if (!quiet){ retrigger(stage,'shake'); retrigger(stage,'hit'); sfx.sting(); } }
+}
+// out of the challenge (rang the bell, dismissed) — greyed and sat down, not eliminated
+function bench(n, instant){
+  if (!n || S.benched.has(n)) return;
+  S.benched.add(n);
+  const a = actorEl(n); if (!a) return;
+  a.classList.add('benched'); a.classList.remove('lit','talk','spot');
+  if (S.crowd){ S.cur[n] = S.home[n]; applyPos(); }
+  if (!instant){ sfx.tone(1250,.6,'triangle',.07); setTimeout(() => sfx.tone(940,.7,'triangle',.05), 200); burst(S.xs[n]/100, .5, 'smoke', 12); emote(n,'sad'); }
 }
 function stageElim(b, instant){
   $('vote').querySelector('.paper')?.classList.add('out');
@@ -1455,6 +1524,7 @@ async function jump(i){
   const cut = before.filter(b => b.scene===si && b.t==='cut').pop();
   if (cut) renderSet(cut.set, cut.time, P.scenes[si]);
   document.querySelectorAll('.actor').forEach(a => a.classList.remove('enter'));
+  before.forEach(b => { if (b.scene===si && (b.out || b.dismiss)) bench(b.out || b.dismiss, true); });
   before.forEach(b => { if (b.scene===si && b.t==='vote'){ S.tally[b.name] = (S.tally[b.name]||0)+1; actorEl(b.name)?.querySelector('.tally').insertAdjacentHTML('beforeend','<i></i>'); } });
   S.lastSpeaker = before.filter(b => b.t==='line' && !b.conf && !b.host && b.scene===si).pop()?.speaker || null;
   rebuildLog(i);
@@ -1506,7 +1576,7 @@ function load(text){
   clearTimeout(S.timer); clearInterval(S.typing?.iv); exitConf();
   P = parse(text);
   if (!P.scenes.length){ $('parseInfo').textContent = 'No [SCENE: …] headers found.'; return false; }
-  Object.assign(S, { idx:-1, scene:-1, conf:null, typing:null, busy:false, started:false, tally:{}, gone:new Set(), immune:new Set(), idols:new Set(), lastSpeaker:null, lastShout:null });
+  Object.assign(S, { idx:-1, scene:-1, conf:null, typing:null, busy:false, started:false, tally:{}, gone:new Set(), benched:new Set(), immune:new Set(), idols:new Set(), lastSpeaker:null, lastShout:null });
   $('log').innerHTML = ''; hideDbox(); $('vote').innerHTML = '';
   $('tEp').textContent = [P.show, P.ep && `EPISODE ${P.ep}`].filter(Boolean).join(' · ').toUpperCase() || 'TOTAL DRAMA';
   $('tName').textContent = P.title || 'Episode'; $('tPress').textContent = 'CLICK OR PRESS SPACE';

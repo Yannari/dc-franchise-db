@@ -22,7 +22,11 @@
 // Pure pieces (parseEpisode, estimateRuntime, buildChapters) are exported for
 // the tests; mountEpisodeStage(host, text, opts) draws into a shadow root so
 // the page's .btn/.card/.scene rules and these never touch each other.
-
+//
+// MUSIC is the simulator's own: js/audio.js's ambient beds (the mp3s in
+// assets/audio/) and its cues, through the same singleton, so the music
+// on/off and volume a viewer set in the simulator hold here too.
+import { audio } from './audio.js';
 
 // ════════════════════════════════════════════════════════════════
 //  SETS — island locations, drawn in SVG (viewBox 1600×900).
@@ -113,7 +117,7 @@ const SETS = {
         ${flame(0,-4,1.1)}
       </g>
       <rect x="300" y="700" width="200" height="34" rx="16" fill="#7a4f2a"/><rect x="700" y="710" width="220" height="34" rx="16" fill="#6b4524"/>
-      <g transform="translate(900 470)"><rect x="-4" y="0" width="8" height="160" fill="#5a3a1f"/><path class="sway" style="transform-origin:0 10px" d="M4 8 L110 30 L4 60Z" fill="${TRIBE_COLORS[sc?.tribe] || '#e8453c'}"/></g>`),
+      <g transform="translate(900 470)"><rect x="-4" y="0" width="8" height="160" fill="#5a3a1f"/><path class="sway" style="transform-origin:0 10px" d="M4 8 L110 30 L4 60Z" fill="${sc?.tribe ? tribeColor(sc.tribe) : '#e8453c'}"/></g>`),
     fg:t=>svg(`<g class="sway d3" style="transform-origin:0 0"><path d="M-40 -40 Q 200 60 330 -30 Q 190 110 -40 90Z" fill="#1c4f27"/></g>
       <g class="sway d2" style="transform-origin:1600px 0"><path d="M1640 -40 Q 1400 80 1250 -20 Q 1420 130 1640 110Z" fill="#17451f"/></g>`),
   },
@@ -262,6 +266,25 @@ const TRIBE_COLORS = { green:'#4ade80', blue:'#60a5fa', red:'#f87171', yellow:'#
 const TRIBE_RE = new RegExp(`\\b(${Object.keys(TRIBE_COLORS).join('|')})\\b`, 'i');
 const PALETTE = ['#7ec8ff','#ff5fa2','#7dff8a','#8fa2ff','#ffb86b','#c58bff','#5ff2d6','#ff7a6b','#ffe066','#9be15d','#ff9ecd','#8bd3dd'];
 const hashStr = s => Math.abs([...s].reduce((a,c) => (a*31 + c.charCodeAt(0)) | 0, 7));
+// "Green camp", "Kinosa camp", "Blue tribe's beach" → the tribe. A colour word gets its colour;
+// any other tribe name gets a steady colour of its own.
+const NOT_TRIBES = /^(the|main|tribe|challenge|exile|redemption|tribal|jury|merge|merged|losers?|winners?|home|base|boot|island)$/i;
+function tribeOfPlace(place){
+  const m = place.match(/^(?:the\s+)?([A-Za-z][\w'-]*?)(?:'s)?\s+(?:camp|tribe|beach|shelter)\b/i);
+  if (m && !NOT_TRIBES.test(m[1])) return m[1].toLowerCase();
+  return (place.match(TRIBE_RE) || [])[1]?.toLowerCase() || null;
+}
+// "30" from an authored age, else worked out from a birthdate; nothing rather than a guess.
+export function ageOf(p, today = new Date()){
+  if (!p) return null;
+  if (p.age != null && p.age !== '' && Number.isFinite(Number(p.age))) return Number(p.age);
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(p.birthdate || '');
+  if (!m) return null;
+  let a = today.getFullYear() - +m[1];
+  if (today.getMonth() + 1 < +m[2] || (today.getMonth() + 1 === +m[2] && today.getDate() < +m[3])) a--;
+  return a;
+}
+export const tribeColor = t => TRIBE_COLORS[t] || (t ? PALETTE[hashStr(t) % PALETTE.length] : '#8a5a33');
 let CAST = {};
 function ensureCast(n, role){
   if (!CAST[n]) CAST[n] = { img:portraitOf(n),
@@ -413,7 +436,7 @@ function parse(text, opts = {}){
     const prevSame = [...out.scenes].reverse().find(s => s.place === place);
     const time = SETS[set].forceTime || (timeWord ? timeOf(timeWord) : TIME_WORDS.test(head) ? timeOf(head) : prevSame ? prevSame.time : timeOf(inner));
     scene = { i:out.scenes.length, header:inner, place, sub, phase, declared, staging, set, time, view:{ set, time }, background:false,
-              tribe:(place.match(TRIBE_RE) || [])[1]?.toLowerCase() || null,
+              tribe:tribeOfPlace(place),
               present:[], listed:[], roles:{}, late:{}, mentionAt:{}, elim:null, stagingDone:false };
     out.scenes.push(scene);
     conf = null; reading = false; afterCard = false; lastNamed = null; lastActor = null; tally = {};
@@ -842,6 +865,17 @@ canvas.fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z
   box-shadow:.4cqw .4cqw 0 #000;animation:slideR .5s cubic-bezier(.22,1,.36,1) backwards}
 .conf .lower .t{font-weight:900;font-size:1.3cqw;letter-spacing:.3em;background:#111;color:#fff;padding:.3cqw 1.2cqw;transform:skewX(-10deg);
   animation:slideR .5s .12s cubic-bezier(.22,1,.36,1) backwards}
+.conf .lower .d{font-weight:900;font-size:1.6cqw;color:#fff;background:#000d;padding:.25cqw 1.3cqw;transform:skewX(-10deg);
+  box-shadow:.3cqw .3cqw 0 #0008;animation:slideR .5s .06s cubic-bezier(.22,1,.36,1) backwards}
+.conf .lower .t.tribe{background:var(--t);color:#111;box-shadow:.3cqw .3cqw 0 #000;animation-delay:.14s}
+.conf .rec small{font-size:.7em;letter-spacing:.25em;opacity:.85}
+.conf.hostcam .rec,.conf.hostcam .tc,.conf.hostcam .batt{display:none}
+.chip .team{display:flex;align-items:center;gap:.3cqw}
+.chip .team:empty{display:none}
+.chip .team i{font-style:normal;font-size:.9cqw;letter-spacing:.08em;padding:.15cqw .65cqw;border-radius:99px;background:var(--t);color:#111;box-shadow:0 0 .8cqw var(--t)}
+.chip .team b{width:.9cqw;height:.9cqw;border-radius:50%;background:var(--t);box-shadow:0 0 .6cqw var(--t)}
+.chip .team.pop{animation:teamPop .5s cubic-bezier(.34,1.8,.64,1)}
+@keyframes teamPop{0%{transform:scale(.4);opacity:0}100%{transform:none;opacity:1}}
 @keyframes slideR{from{transform:translateX(-120%) skewX(-10deg)}}
 .static{position:absolute;inset:0;z-index:41;pointer-events:none;opacity:0;mix-blend-mode:screen}
 .static.on{animation:staticFlash .32s steps(4)}
@@ -870,7 +904,8 @@ canvas.fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z
 @keyframes spokenIn{from{transform:scale(2.5);filter:blur(8px);opacity:0}}
 
 /* ═══════════ HUD ═══════════ */
-.hud{position:absolute;inset:0;z-index:28;pointer-events:none}
+.hud{position:absolute;inset:0;z-index:28;pointer-events:none;transition:opacity .3s}
+.stage.cine .hud{opacity:0}
 .chip{position:absolute;top:2.2%;left:2%;display:flex;gap:.8cqw;align-items:center;font-family:Bungee;font-size:1.05cqw;
   background:#000a;border:.12cqw solid #ffffff2a;padding:.45cqw 1cqw;border-radius:99px;backdrop-filter:blur(4px)}
 .chip .dot{width:.8cqw;height:.8cqw;border-radius:50%;background:var(--accent);box-shadow:0 0 .8cqw var(--accent)}
@@ -893,6 +928,7 @@ canvas.fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z
   border-radius:10px;padding:9px 14px;cursor:pointer;transition:transform .1s,background .2s}
 .btn:hover{background:#1d2540}.btn:active{transform:translateY(2px)}
 .btn.on{background:var(--accent);color:#111;border-color:var(--accent)}
+.vol{width:90px;accent-color:var(--accent);cursor:pointer}
 .hint{color:var(--dim);font-size:13px;margin-left:auto}
 .hint kbd{font-family:Bungee;font-size:11px;background:var(--panel);border:1px solid var(--line);border-radius:5px;padding:2px 6px}
 .log{display:none;max-height:260px;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 14px}
@@ -958,7 +994,7 @@ const MARKUP = `<div class="stage" id="stage">
     <div class="bokeh" id="bokeh"></div>
     <div class="subject" id="confSubject"><div class="fc"><img alt=""></div></div>
     <div class="vf"><b></b><b></b><b></b><b></b></div>
-    <div class="rec">REC</div>
+    <div class="rec">REC <small>CONFESSIONAL</small></div>
     <div class="tc" id="tc">00:00:00</div>
     <div class="batt"></div>
     <div class="lower" id="confLower"></div>
@@ -974,7 +1010,7 @@ const MARKUP = `<div class="stage" id="stage">
   </div>
 
   <div class="hud">
-    <div class="chip"><span class="dot"></span><span id="chipScene">—</span></div>
+    <div class="chip"><span class="team" id="team"></span><span class="dot"></span><span id="chipScene">—</span></div>
     <div class="roster" id="roster"></div>
     <div class="chnow" id="chNow"></div>
   </div>
@@ -1002,11 +1038,13 @@ const MARKUP = `<div class="stage" id="stage">
     <button class="btn" id="bAuto">Auto</button>
     <button class="btn" id="bSpeed">Text 1×</button>
     <button class="btn on" id="bSound">Sound</button>
+    <button class="btn" id="bMusic">Music</button>
+    <input class="vol" id="vol" type="range" min="0" max="100" title="Music volume">
     <button class="btn" id="bNames">Names</button>
     <button class="btn" id="bLog">Log</button>
     <button class="btn" id="bChapters">Chapters</button>
     <span class="rt" id="rt"></span>
-    <span class="hint"><kbd>Space</kbd>/<kbd>→</kbd> next · <kbd>←</kbd> back · <kbd>A</kbd> auto · <kbd>L</kbd> log · <kbd>C</kbd> chapters</span>
+    <span class="hint"><kbd>Space</kbd>/<kbd>→</kbd> next · <kbd>←</kbd> back · <kbd>A</kbd> auto · <kbd>L</kbd> log · <kbd>C</kbd> chapters · <kbd>M</kbd> music</span>
   </div>
   <div class="log" id="log"></div>
   <div class="chpanel" id="chPanel"><div class="chlist" id="chList"></div></div>
@@ -1016,6 +1054,9 @@ const MARKUP = `<div class="stage" id="stage">
 // ════════════════════════════════════════════════════════════════
 //  MOUNT — one stage per host element, torn down when replaced
 // ════════════════════════════════════════════════════════════════
+// the audio engine is one per page; whichever stage last asked for a bed owns it
+let bedOwner = null;
+
 function ensureFonts(){
   if (document.getElementById('es-fonts')) return;
   const l = document.createElement('link');
@@ -1040,7 +1081,7 @@ export function mountEpisodeStage(host, text, opts = {}){
   let raf = 0, dead = false, visible = true;
   const on = (t, ev, fn, o) => { t.addEventListener(ev, fn, o); listeners.push([t, ev, fn, o]); };
   const io = typeof IntersectionObserver === 'function'
-    ? new IntersectionObserver(([en]) => { visible = en.isIntersecting; }, { threshold: .25 }) : null;
+    ? new IntersectionObserver(([en]) => { visible = en.isIntersecting; syncBed(); }, { threshold: .25 }) : null;
   io?.observe(host);
   function destroy(){
     if (dead) return; dead = true;
@@ -1049,8 +1090,33 @@ export function mountEpisodeStage(host, text, opts = {}){
     listeners.forEach(([t, ev, fn, o]) => t.removeEventListener(ev, fn, o));
     io?.disconnect(); disposers.forEach(f => f());
     try { sfx.ctx?.close(); } catch(e){}
+    if (bedOwner === api) { audio.ambient(null); bedOwner = null; }   // the page moved on: stop our music
     if (host.__episodeStage === api) delete host.__episodeStage;
   }
+
+  // ── music: the simulator's beds, chosen by what is on screen ──
+  // Camp by day or night, the challenge, tribal. The end card gets the
+  // aftermath lounge. Only while the stage is on screen and has been started —
+  // a stage hidden behind the Script toggle or scrolled away is silent.
+  let bed = null;
+  function bedFor(i){
+    const b = P.beats[i]; if (!b) return null;
+    if (b.t === 'end') return 'aftermath';
+    const sc = P.scenes[b.scene], kind = sceneKind(sc);
+    if (kind === 'tribal') return 'tribal-tension';
+    if (kind === 'challenge') return 'challenge';
+    const t = (S.view && S.view.time) || sc.time;
+    return t === 'night' || t === 'dusk' ? 'camp-night' : 'camp-day';
+  }
+  function syncBed(){
+    if (dead) return;
+    const want = visible && S.started ? bed : null;   // music on/off itself is audio.js's, shared with the simulator
+    if (want) bedOwner = api;
+    if (want || bedOwner === api) audio.ambient(want);
+  }
+  function setBed(name){ bed = name; syncBed(); }
+  // one of the simulator's cues, when this stage's sound is on
+  const cue = name => { if (S.sound) audio.sfx(name); };
 
   // ════════════════════════════════════════════════════════════════
   //  ENGINE 1 — scene, standees, camera, particles, sound
@@ -1059,6 +1125,11 @@ export function mountEpisodeStage(host, text, opts = {}){
   const stage = $('stage');
   const P = parse(text, { portrait: opts.portrait });
   const CAST = P.cast;
+  // who they are, for the confessional caption: { name: { age, birthdate, occupation } }.
+  // The page hands a promise (the roster loads while the title card is up).
+  let PROFILES = {};
+  Promise.resolve(typeof opts.profiles === 'function' ? opts.profiles() : opts.profiles)
+    .then(m => { if (m && typeof m === 'object') PROFILES = m; }).catch(() => {});
   const S = { idx:-1, scene:-1, conf:null, typing:null, auto:false, speed:1, sound:true, busy:false,
               tally:{}, gone:new Set(), immune:new Set(), idols:new Set(), lastSpeaker:null, lastShout:null, started:false, timer:null,
               view:{}, home:{}, cur:{}, xs:{}, crowd:false, benched:new Set() };
@@ -1087,6 +1158,7 @@ export function mountEpisodeStage(host, text, opts = {}){
     renderSet(sc.set, sc.time, sc);
     buildActors(sc);
     buildRoster(sc);
+    updateTeam(sc);
     camera(0,0,1);
     S.scene = si; S.tally = {}; S.lastSpeaker = null; S.lastShout = null;
   }
@@ -1154,7 +1226,7 @@ export function mountEpisodeStage(host, text, opts = {}){
     S.home = layout(sc); S.cur = { ...S.home };
     $('actors').innerHTML = sc.present.map((n, i) => {
       const c = CAST[n], role = roleOf(sc, n), off = sc.late[n] != null && S.idx < sc.late[n];
-      const tribe = TRIBE_COLORS[c.tribe] || '#8a5a33';
+      const tribe = tribeColor(c.tribe);
       const cls = ['actor','enter', S.gone.has(n) && 'gone', S.benched.has(n) && 'benched', S.immune.has(n) && 'immune', S.idols.has(n) && 'hasidol', off && 'offstage'].filter(Boolean).join(' ');
       return `<div class="${cls}" data-n="${n}" style="--c:${c.c};--t:${tribe};--ph:${-(i*.37)%2.6}s;animation-delay:${.3+Math.min(i,14)*.06}s">
         <div class="shadow"></div>
@@ -1176,16 +1248,29 @@ export function mountEpisodeStage(host, text, opts = {}){
       `<svg style="left:${4 + i*8.6 + (i%2)*2}%;--d:${-i*.4}s;height:${7 + (i%3)*1.2}cqw" viewBox="0 0 40 60"><circle cx="20" cy="14" r="10"/><path d="M2 60 Q2 30 20 28 Q38 30 38 60Z"/></svg>`).join('')}</div>`);
     applyPos();
   }
+  // WHOSE STORY THIS IS: the tribe whose camp we are in, else the tribes of the
+  // people standing here (every tribe at a challenge; one at a two-person scene
+  // on the dock). Hidden when nobody here has a tribe on file (a merge, Exile).
+  function teamsOf(sc){
+    if (sc.tribe) return [sc.tribe];
+    return [...new Set(sc.present.filter(n => !CAST[n].host && roleOf(sc, n) !== 'bg').map(n => CAST[n].tribe).filter(Boolean))];
+  }
+  function updateTeam(sc){
+    const ts = teamsOf(sc), el = $('team');
+    const html = ts.length > 2 ? `<i style="--t:#fff">ALL TRIBES</i>${ts.map(t => `<b style="--t:${tribeColor(t)}"></b>`).join('')}`
+      : ts.map(t => `<i style="--t:${tribeColor(t)}">${esc(t.toUpperCase())}</i>`).join('');
+    if (el.innerHTML !== html){ el.innerHTML = html; retrigger(el, 'pop'); }
+  }
   function buildRoster(sc){
     const all = Object.keys(CAST).filter(n => !CAST[n].host)
       .sort((a,b) => (CAST[a].tribe||'~').localeCompare(CAST[b].tribe||'~'));
     $('roster').classList.toggle('many', all.length > 14);
     $('roster').innerHTML = all.map(n =>
-      `<img src="${CAST[n].img}" data-n="${n}" title="${n}" style="--t:${TRIBE_COLORS[CAST[n].tribe]||'#fff8'}" class="${sc.present.includes(n)?'here':''}${S.gone.has(n)?' gone':''}" onerror="this.style.visibility='hidden'">`).join('');
+      `<img src="${CAST[n].img}" data-n="${n}" title="${n}" style="--t:${CAST[n].tribe ? tribeColor(CAST[n].tribe) : '#fff8'}" class="${sc.present.includes(n)?'here':''}${S.gone.has(n)?' gone':''}" onerror="this.style.visibility='hidden'">`).join('');
   }
   const actorEl = n => $('actors').querySelector(`.actor[data-n="${n}"]`);
   // one-shot classes clear themselves so the idle/talk loops on the same element come back
-  const ONESHOT = { jump:700, recoil:600, enter:2200, shake:500, hit:300, swap:500, whip:320 };
+  const ONESHOT = { jump:700, recoil:600, enter:2200, shake:500, hit:300, swap:500, whip:320, pop:600 };
   function retrigger(el, cls){ if(!el) return; el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls);
     if (ONESHOT[cls]){ clearTimeout(el['_t'+cls]); el['_t'+cls] = setTimeout(()=>el.classList.remove(cls), ONESHOT[cls]); } }
   function camera(x, y, z){
@@ -1389,7 +1474,17 @@ export function mountEpisodeStage(host, text, opts = {}){
     [...$('confBg').children].forEach(s => s.setAttribute('style','position:absolute;inset:0;width:100%;height:100%'));
     $('bokeh').innerHTML = [...Array(14)].map(() => { const s = 3+Math.random()*9; return `<i style="left:${Math.random()*100}%;top:${Math.random()*80}%;width:${s}cqw;height:${s}cqw;animation-delay:${-Math.random()*6}s"></i>`; }).join('');
     const subj = $('confSubject'); subj.querySelector('img').src = c.img; subj.style.animation = 'none'; void subj.offsetWidth; subj.style.animation = '';
-    $('confLower').innerHTML = `<div class="n">${esc(who.toUpperCase())}</div><div class="t">${kind==='host' ? 'YOUR HOST' : 'CONFESSIONAL'}</div>`;
+    // Like the real thing: NAME, then "30 · Publicist", then the tribe tag.
+    if (kind === 'host') $('confLower').innerHTML = `<div class="n">${esc(who.toUpperCase())}</div><div class="t">YOUR HOST</div>`;
+    else {
+      const pr = PROFILES[who] || {}, age = ageOf(pr);
+      const detail = [age, pr.occupation].filter(v => v != null && v !== '').map(v => esc(String(v))).join(' · ');
+      const tribe = c.tribe, coach = roleOf(P.scenes[S.scene] || { roles:{} }, who) === 'coach';
+      const tag = tribe ? `${coach ? 'COACH · ' : ''}${esc(tribe.toUpperCase())} TRIBE` : coach ? 'COACH' : '';
+      $('confLower').innerHTML = `<div class="n">${esc(who.toUpperCase())}</div>`
+        + (detail ? `<div class="d">${detail}</div>` : '')
+        + (tag ? `<div class="t tribe" style="--t:${tribeColor(tribe)}">${tag}</div>` : '');
+    }
     cf.classList.add('show'); stage.classList.add('cine');
     S.conf = key; S.tcStart = performance.now();
   }
@@ -1490,7 +1585,7 @@ export function mountEpisodeStage(host, text, opts = {}){
   // "BLUE WINS IMMUNITY" → every Blue member standing here; "PRIYA WINS IMMUNITY" → Priya
   function immunityFor(word, sc){
     const w = word.toLowerCase();
-    if (TRIBE_COLORS[w]) return sc.present.filter(n => CAST[n].tribe === w && roleOf(sc, n) !== 'coach');
+    if (Object.values(CAST).some(c => c.tribe === w)) return sc.present.filter(n => CAST[n].tribe === w && roleOf(sc, n) !== 'coach');
     const n = Object.keys(CAST).find(k => k.toLowerCase() === w);
     return n ? [n] : [];
   }
@@ -1536,7 +1631,7 @@ export function mountEpisodeStage(host, text, opts = {}){
       $('vote').innerHTML = `<div class="paper"><div class="lbl">VOTE ${n}</div><div class="nm">${esc(b.name)}</div></div>`;
       const a = actorEl(b.name);
       if (a){ a.querySelector('.tally').insertAdjacentHTML('beforeend','<i></i>'); a.classList.add('lit'); if (!instant){ retrigger(a,'recoil'); emote(b.name,'tense'); } }
-      if (!instant){ sfx.thump(); setTimeout(() => sfx.thump(), 260); }
+      if (!instant){ cue('vote-tick'); sfx.thump(); setTimeout(() => cue('tension-drum'), 260); }
     }, instant ? 0 : old ? 300 : 0);
     typeInto($('txt'), b.text, { speaker:b.speaker, mood:'tense', instant });
   }
@@ -1545,7 +1640,7 @@ export function mountEpisodeStage(host, text, opts = {}){
     const a = actorEl(name); if (!a) return;
     a.classList.add('gone'); a.classList.remove('lit','talk');
     R.querySelector(`.roster img[data-n="${name}"]`)?.classList.add('gone');
-    if (!instant){ burst(S.xs[name]/100, .5, 'smoke', 30); if (!quiet){ retrigger(stage,'shake'); retrigger(stage,'hit'); sfx.sting(); } }
+    if (!instant){ burst(S.xs[name]/100, .5, 'smoke', 30); if (quiet) cue('torch-snuff'); else { retrigger(stage,'shake'); retrigger(stage,'hit'); cue('elimination-gong'); } }
   }
   // out of the challenge (rang the bell, dismissed) — greyed and sat down, not eliminated
   function bench(n, instant){
@@ -1563,14 +1658,14 @@ export function mountEpisodeStage(host, text, opts = {}){
   }
   function stageSpoken(b, instant){
     hideDbox(); camera(0, 0, 1);
-    if (!instant){ retrigger($('spoken'),'show'); const f = FIRE.tribal; burst(f[0], f[1], 'ember', 120); sfx.sting(); stage.classList.add('cine'); }
+    if (!instant){ retrigger($('spoken'),'show'); const f = FIRE.tribal; burst(f[0], f[1], 'ember', 120); cue('torch-snuff'); stage.classList.add('cine'); }
     scheduleAuto('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
   }
   function giveItem(n, cls, quiet){
     (cls==='immune' ? S.immune : S.idols).add(n);
     const a = actorEl(n); if (!a) return;
     a.classList.add(cls);
-    if (!quiet){ retrigger(a,'jump'); burst(S.xs[n]/100, .45, 'gold', 60); sfx.chime(); }
+    if (!quiet){ retrigger(a,'jump'); burst(S.xs[n]/100, .45, 'gold', 60); cue(cls === 'immune' ? 'win-fanfare' : 'idol-sting'); }
   }
   // people not on the [Present:] list walk in at the beat that first names them
   function arrivals(i, animate){
@@ -1589,6 +1684,7 @@ export function mountEpisodeStage(host, text, opts = {}){
     if (b.t==='scene'){
       S.busy = true; await sceneTransition(b.scene, animate); S.busy = false;
       if (animate && i > 0 && chapterStarts.has(i)) chapterCard(chapterStarts.get(i));   // crossing into a new chapter
+      setBed(bedFor(i));
       scheduleAuto('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'); return; }
     if (S.scene !== b.scene) await sceneTransition(b.scene, false);
     arrivals(i, animate);
@@ -1600,9 +1696,10 @@ export function mountEpisodeStage(host, text, opts = {}){
     else if (b.t==='cut'){ S.busy = true; await stageCut(b, animate); S.busy = false; }
     else if (b.t==='card') stageCard(b, animate);
     else if (b.t==='end') stageEnd();
+    setBed(bedFor(i));
   }
   async function next(){
-    sfx.on();
+    sfx.on(); audio.unlock();
     if (!S.started){ S.started = true; $('titlecard').classList.add('hide'); sfx.whoosh(); await play(0); return; }
     if (S.busy) return;
     if (S.typing){ S.typing.finish(); return; }
@@ -1611,7 +1708,7 @@ export function mountEpisodeStage(host, text, opts = {}){
   }
   // rewind: rebuild the scene as it stood at beat i, with no animation
   async function jump(i){
-    S.started = true; $('titlecard').classList.add('hide');
+    audio.unlock(); S.started = true; $('titlecard').classList.add('hide');
     i = Math.max(0, Math.min(P.beats.length-1, i));
     clearTimeout(S.timer); S.typing?.finish?.();
     const si = P.beats[i].scene, before = P.beats.slice(0, i);
@@ -1662,6 +1759,12 @@ export function mountEpisodeStage(host, text, opts = {}){
   $('bAuto').onclick = () => { S.auto = !S.auto; $('bAuto').classList.toggle('on', S.auto); if (S.auto && !S.typing) next(); };
   $('bSpeed').onclick = () => { S.speed = S.speed===1 ? 2 : S.speed===2 ? .6 : 1; $('bSpeed').textContent = `Text ${S.speed}×`; };
   $('bSound').onclick = () => { S.sound = !S.sound; $('bSound').classList.toggle('on', S.sound); sfx.on(); };
+  // Music on/off and volume are the simulator's settings (js/audio.js keeps them), not this stage's.
+  const syncMusicBtn = () => $('bMusic').classList.toggle('on', audio.isMusicEnabled());
+  $('bMusic').onclick = () => { audio.unlock(); audio.setMusicEnabled(!audio.isMusicEnabled()); syncMusicBtn(); syncBed(); };
+  $('vol').value = String(Math.round(audio.getVolume() * 100));
+  $('vol').oninput = e => audio.setVolume(Number(e.target.value) / 100);
+  syncMusicBtn();
   $('bNames').onclick = () => { stage.classList.toggle('showNames'); $('bNames').classList.toggle('on'); };
   $('bLog').onclick = () => { $('log').classList.toggle('open'); $('bLog').classList.toggle('on'); };
   on(document, 'keydown', e => {
@@ -1674,6 +1777,7 @@ export function mountEpisodeStage(host, text, opts = {}){
     else if (e.key.toLowerCase()==='a') $('bAuto').click();
     else if (e.key.toLowerCase()==='l') $('bLog').click();
     else if (e.key.toLowerCase()==='c') $('bChapters').click();
+  else if (e.key.toLowerCase()==='m') $('bMusic').click();
   });
 
   // ── run time + chapters ──

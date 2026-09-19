@@ -9,7 +9,7 @@ import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { parseEpisode, estimateRuntime, buildChapters, RUNTIME_TARGET } from '../js/episode-stage.js';
+import { parseEpisode, estimateRuntime, buildChapters, RUNTIME_TARGET, ageOf } from '../js/episode-stage.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const EP = fs.readFileSync(path.join(ROOT, 'tests/fixtures/episode-stage-basic-straining.txt'), 'utf8');
@@ -102,6 +102,28 @@ describe('episode stage: reading the transcript', () => {
   });
 });
 
+describe('episode stage: whose story, and who is talking', () => {
+  it('reads the tribe from any "<Name> camp", not only colour words', () => {
+    const Q = parseEpisode([
+      '[SCENE: Kinosa camp — morning.] [Present: Owen, Gwen.]', 'Owen: Hi.',
+      '[SCENE: Tribe camp — night.] [Present: Owen.]', 'Owen: Bye.',
+      '[SCENE: Challenge arena — day.] [Present: Owen, Gwen. Host: Chris.]', 'Chris: KINOSA WINS IMMUNITY!',
+    ].join('\n'));
+    expect(Q.scenes.map(s => s.tribe)).toEqual(['kinosa', null, null]);
+    expect(Q.cast.Owen.tribe).toBe('kinosa');
+    expect(Q.cast.Kinosa).toBeUndefined();
+  });
+
+  it('gives the confessional an age from the roster: the authored age, else the birthdate, else nothing', () => {
+    const today = new Date('2026-09-19');
+    expect(ageOf({ age: 30, birthdate: '1990-01-01' }, today)).toBe(30);
+    expect(ageOf({ birthdate: '2000-05-12' }, today)).toBe(26);
+    expect(ageOf({ birthdate: '2000-12-01' }, today)).toBe(25);
+    expect(ageOf({ occupation: 'Actor' }, today)).toBe(null);
+    expect(ageOf(null, today)).toBe(null);
+  });
+});
+
 describe('episode stage: run time and chapters', () => {
   const RT = estimateRuntime(P);
 
@@ -151,6 +173,7 @@ describe('current-season.html plays Total Drama on the stage', () => {
     const fn = html.slice(html.indexOf('function renderEpisode()'), html.indexOf('function parseTranscript('));
     expect(fn).toMatch(/_csFormat\(\) === CS_DEFAULT_FORMAT && typeof window\.__mountEpisodeStage === 'function'/);
     expect(fn).toContain('portrait: window.portraitFor');
+    expect(fn).toContain('profiles: _csRosterProfiles()');
     expect(fn).toContain('data-view="script"');
   });
 });

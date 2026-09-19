@@ -3837,6 +3837,26 @@ async function generateEpisodeAI() {
 }
   
   // Render episode from transcript
+  // The stage's confessional caption ("NATALIA · 30 · Publicist · GREEN TRIBE")
+  // reads age and occupation from the roster. Fetched once, on first render;
+  // a player with neither simply gets their name and tribe.
+  let _csProfiles = null;
+  function _csRosterProfiles() {
+    if (!_csProfiles) {
+      _csProfiles = fetch('franchise_roster.json')
+        .then(r => (r.ok ? r.json() : null))
+        .then(j => {
+          const m = {};
+          ((j && j.players) || []).forEach(p => {
+            if (p && p.name) m[p.name] = { age: p.age, birthdate: p.birthdate, occupation: p.occupation };
+          });
+          return m;
+        })
+        .catch(() => ({}));
+    }
+    return _csProfiles;
+  }
+
   function renderEpisode() {
     const transcript = document.getElementById('episode-input').value;
     const container = document.getElementById('episode-rendered');
@@ -3885,6 +3905,7 @@ async function generateEpisodeAI() {
       container.querySelectorAll('.ep-view-toggle .btn').forEach(b => { b.onclick = () => show(b.dataset.view); });
       window.__mountEpisodeStage(stageHost, transcript, {
         portrait: window.portraitFor,
+        profiles: _csRosterProfiles(),
         showName: (window.__SHOWS && window.__SHOWS.names && window.__SHOWS.names[CS_DEFAULT_FORMAT]) || 'Total Drama',
       });
       show(view);

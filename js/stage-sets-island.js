@@ -222,6 +222,38 @@ SETS.dock = {
     ${palm(1540,590,380,-1,'sway d2')}`),
   fg:t=>svg(`<g class="sway d3" style="transform-origin:0 0"><path d="M-40 -40 Q 200 60 330 -30 Q 190 110 -40 90Z" fill="#1c4f27"/></g>`),
 };
+// The voting booth: a dark bamboo hut off the council, one torch, the urn on a stump table,
+// a parchment and a marker. One voter at a time stands here.
+SETS.booth = {
+  label:'The Voting Booth', match:/voting booth|\bbooth\b/, fx:'embers', forceTime:'night', indoor:true,
+  glow:'radial-gradient(ellipse at 30% 45%,#ff8a2a55,transparent 55%),radial-gradient(ellipse at 62% 70%,#ffb45a33,transparent 45%)',
+  far:t=>svg(`<rect width="1600" height="900" fill="#1a0f08"/>
+    ${[...Array(24)].map((_,i)=>`<rect x="${i*68}" y="0" width="60" height="900" fill="${i%2?'#2c1a0e':'#24150b'}"/><path d="M${i*68+30} 0 V900" stroke="#3a2412" stroke-width="3" opacity=".6"/>`).join('')}
+    ${[160,330,500].map(y=>`<rect x="0" y="${y}" width="1600" height="14" fill="#3b2412" opacity=".8"/>`).join('')}`),
+  mid:t=>svg(`
+    <path d="M0 610 L1600 610 V900 H0Z" fill="#2a1c12"/>
+    <path d="M0 610 L1600 610" stroke="#4a3220" stroke-width="6"/>
+    ${[...Array(9)].map((_,i)=>`<ellipse cx="${90+i*180}" cy="${700+(i%2)*60}" rx="70" ry="16" fill="#241810"/>`).join('')}
+    <g transform="translate(440 300)"><rect x="-10" y="0" width="20" height="130" fill="#4a3220"/><path d="M-26 0 L26 0 L18 34 L-18 34Z" fill="#3b2a18"/>${flame(0,2,.8)}</g>
+    <g transform="translate(1000 610)">
+      <path d="M-170 0 L-150 -170 L150 -170 L170 0Z" fill="#5a3a20"/>
+      <ellipse cx="0" cy="-170" rx="160" ry="30" fill="#7a5230"/>
+      ${[...Array(6)].map((_,i)=>`<ellipse cx="0" cy="-170" rx="${140-i*22}" ry="${26-i*4}" fill="none" stroke="#5a3a20" stroke-width="3"/>`).join('')}
+      <g transform="translate(60 -178)">
+        <path d="M-58 0 C -78 -40 -64 -110 -36 -130 L36 -130 C 64 -110 78 -40 58 0Z" fill="#9a5a2e" stroke="#2b1a0a" stroke-width="5"/>
+        <ellipse cx="0" cy="-130" rx="38" ry="10" fill="#1a0f08" stroke="#2b1a0a" stroke-width="4"/>
+        <path d="M-60 -70 Q 0 -54 60 -70" stroke="#c9a227" stroke-width="5" fill="none"/>
+        <path d="M-52 -40 Q 0 -26 52 -40" stroke="#6b3a1a" stroke-width="4" fill="none"/>
+      </g>
+      <g transform="translate(-80 -186) rotate(-8)"><rect x="-44" y="-16" width="88" height="54" rx="4" fill="#efdcb0" stroke="#a08050" stroke-width="3"/>
+        <path d="M-30 -2 h52 M-30 10 h40" stroke="#b09060" stroke-width="3"/></g>
+      <g transform="translate(-10 -196) rotate(28)"><rect x="-4" y="-40" width="8" height="70" rx="3" fill="#222"/><path d="M-4 30 L0 42 L4 30Z" fill="#111"/></g>
+    </g>`),
+  fg:t=>svg(`<rect x="0" y="0" width="70" height="900" fill="#120a05"/><rect x="1530" y="0" width="70" height="900" fill="#120a05"/>
+    <path d="M0 0 H1600 V60 H0Z" fill="#120a05"/>`),
+};
+SETS.booth.fire = [440, 300];
+SETS.booth.amb = ['fire'];
 SETS.island = { ...SETS.beach, label:'The Island', match:/$^/ };
 // where the fire burns on a set (SVG coordinates) — embers rise from here
 SETS.camp.fire = [560, 600];
@@ -241,7 +273,7 @@ SETS.tribal.amb = ['fire'];
 SETS.dock.amb = ['waves'];
 function pickSet(header){
   const h = (header||'').toLowerCase();
-  for (const k of ['tribal','challenge','dock','jungle','well','fishing','cliff','camp','beach']) if (SETS[k].match.test(h)) return k;
+  for (const k of ['booth','tribal','challenge','dock','jungle','well','fishing','cliff','camp','beach']) if (SETS[k].match.test(h)) return k;
   return 'island';
 }
 

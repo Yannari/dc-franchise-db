@@ -222,6 +222,39 @@ describe('episode stage: every vote read is counted', () => {
   });
 });
 
+describe('episode stage: the voting booth', () => {
+  const Q = parseEpisode([
+    '[SCENE: Tribal council — night.] [Present: Natalia, Manu, Nura, Grett. Coaches: James, Julia. Host: Chris.]',
+    'Chris: Time to vote.',
+    '[SCENE: Tribal council — voting booth — night.]',
+    '[Natalia walks to the urn. Writes JAMES.]',
+    "Natalia: [to camera, quiet] He's got his hands on too much of this tribe. So yeah.",
+    '[Manu walks to the urn. Writes JULIA. Folds it. Drops it in.]',
+    '[Nura walks to the urn. Writes NATALIA.]',
+    "Nura: [to camera] Her knee's hurt. She rang the bell.",
+    '[Grett walks to the urn. Writes JAMES. Quick. Drops it.]',
+    '[SCENE: Tribal council — night.] [Present: Natalia, Manu, Nura, Grett. Coaches: James, Julia. Host: Chris.]',
+    'Chris: The tribe has voted.',
+    'Chris: Two votes James. One vote Julia. One vote Natalia. James — that\'s enough. Bring me your torch.',
+  ].join('\n'));
+
+  it('draws the booth as its own room, part of the tribal council', () => {
+    expect(Q.scenes[1].set).toBe('booth');
+    expect(Q.scenes.map(s => buildChapters(Q).find(c => c.scenes.includes(s.i)).title)).toEqual(['Tribal Council', 'Tribal Council', 'Tribal Council']);
+    expect(Q.beats.filter(b => b.write).map(b => `${b.write.voter}>${b.write.name}`)).toEqual(['Natalia>James', 'Manu>Julia', 'Nura>Natalia', 'Grett>James']);
+  });
+
+  it('plays a [to camera] line at the urn as a voting confessional', () => {
+    expect(Q.beats.filter(b => b.t === 'line' && b.conf).map(b => b.speaker)).toEqual(['Natalia', 'Nura']);
+  });
+
+  it('sends home the person the exit line names, even with no vote read aloud', () => {
+    // no "read the votes", so nothing is counted — the answer is in "James — that's enough", not the last name said
+    expect(Q.beats.filter(b => b.t === 'vote')).toEqual([]);
+    expect(Q.beats.filter(b => b.t === 'elim').map(b => b.name)).toEqual(['James']);
+  });
+});
+
 describe('episode stage: run time and chapters', () => {
   const RT = estimateRuntime(P);
 

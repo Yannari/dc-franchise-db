@@ -36,6 +36,8 @@ export { hasStage };
 let SH = stageShow();
 let SETS, TIMES, timeOf, skySVG, pickSet;
 function useShow(id){ SH = stageShow(id); ({ SETS, TIMES, timeOf, skySVG, pickSet } = SH.sets); return SH; }
+// the exit and its voting booth are one ceremony: votes cast in one are read in either
+const isExitSet = set => set === SH.exitSet || (!!SH.boothSet && set === SH.boothSet);
 useShow();
 
 // ════════════════════════════════════════════════════════════════
@@ -135,7 +137,7 @@ function pages(text, max){
 function subView(text, scene, afterCard){
   const head = text.slice(0, afterCard ? 400 : 140);
   // guessing a move only makes sense at home — "a compound built on the beach" is the challenge, not a trip to the beach
-  if (!afterCard && (scene.set === SH.compSet || scene.set === SH.exitSet)) return null;
+  if (!afterCard && (scene.set === SH.compSet || isExitSet(scene.set))) return null;
   const first = sentences(text)[0] || '';
   if (!afterCard && !SH.cutLead.test(text) && !SH.locPhrase.test(first)) return null;
   const allowed = k => !((k === SH.homeSet || k === SH.compSet) && scene.set !== k);   // only return to the scene's own base
@@ -218,7 +220,8 @@ function parse(text, opts = {}){
     });
     const fromPlace = pickSet(place), base = fromPlace !== 'island' ? fromPlace : pickSet(inner);
     const subSet = sub && SH.spots.find(([k, re]) => re.test(sub) && !((k === SH.compSet || k === SH.homeSet) && base !== k))?.[0];
-    const set = base === SH.exitSet ? SH.exitSet : subSet || base;
+    // at the exit, only the booth is a different room; every other spot is the council itself
+    const set = base === SH.exitSet ? (SH.boothSet && subSet === SH.boothSet ? SH.boothSet : SH.exitSet) : subSet || base;
     // no time in the header → the last scene at this place carries on (a challenge phase keeps its daylight)
     const prevSame = [...out.scenes].reverse().find(s => s.place === place);
     const time = SETS[set].forceTime || (timeWord ? timeOf(timeWord) : TIME_WORDS.test(head) ? timeOf(head) : prevSame ? prevSame.time : timeOf(inner));
@@ -245,10 +248,10 @@ function parse(text, opts = {}){
     const write = text.match(SH.vote.write);
     const found = SH.find && SH.find.re.test(text) && !/\bnothing\b/i.test(text);
     let stay = false;
-    if (scene.set === SH.exitSet && SH.vote.start.test(text)) reading = true;   // "[Chris reads the votes.]"
+    if (isExitSet(scene.set) && SH.vote.start.test(text)) reading = true;   // "[Chris reads the votes.]"
     pages(text, 170).forEach(p => {
       // "[Chris unfolds the next parchment: JULIA.]" — a vote read in a stage direction counts too
-      if (reading && scene.set === SH.exitSet && /\b(vote|parchment|ballot|reads|unfolds|holds up)\b/i.test(p)){
+      if (reading && isExitSet(scene.set) && /\b(vote|parchment|ballot|reads|unfolds|holds up)\b/i.test(p)){
         const named = (p.match(/\b[A-Z]{2,}\b/g) || []).map(findName).find(n => n && !CAST[n].host);
         const reader = scene.present.find(n => CAST[n].host) || SH.hosts.find(h => CAST[h]);
         if (named && reader){
@@ -280,7 +283,7 @@ function parse(text, opts = {}){
       // what an audience would clip: a kiss, a blindside
       if (!b.event && /\bkiss(es|ed|ing)?\b/i.test(p) && players.length >= 2)
         b.event = { kind:'kiss', label: /spin the bottle|cheek|peck/i.test(p) ? 'SMOOCH!' : 'SHOWMANCE ALERT', names:players.slice(0, 2) };
-      if (!b.event && scene.set === SH.exitSet && /\b(not expecting|wasn't expecting|blindside\w*|didn't see (it|this) coming|jaw drops)\b/i.test(p) && players.length)
+      if (!b.event && isExitSet(scene.set) && /\b(not expecting|wasn't expecting|blindside\w*|didn't see (it|this) coming|jaw drops)\b/i.test(p) && players.length)
         b.event = { kind:'blindside', label:'BLINDSIDE!', names:players.slice(0, 1) };
     });
     if (!stay) conf = null;
@@ -305,13 +308,16 @@ function parse(text, opts = {}){
     // admitting to the camera what they told someone else
     if (conf && /\b(didn'?t say that|never said that|i lied|lying to|fake quote|made (it|that|this) up|there is no \w+ plan|there is no plan|wasn'?t true)\b/i.test(clean))
       event = { kind:'lie', label:'LIE TOLD', names:[who] };
-    const finalWords = !!scene.elim && who === scene.elim && scene.set === SH.exitSet;
+    const finalWords = !!scene.elim && who === scene.elim && isExitSet(scene.set);
     if (!CAST[who]?.host && !conf) lastActor = who;
     if (!conf && !host) lastSpeaker = who;
+    // "Natalia: [to camera, quiet] …" is a confessional line even without a [Confessional:] header
+    // (the voting confessional at the urn, a quick aside mid-scene)
+    const toCam = !conf && !CAST[who]?.host && /\[[^\]]*\bto (the )?camera\b/i.test(body);
     const pushLine = () => pages(body, 190).forEach((p, k) =>
-      push({ t:'line', scene:scene.i, speaker:who, text:p, conf:!!conf, host, mood:mood(stripCues(p), p),
+      push({ t:'line', scene:scene.i, speaker:who, text:p, conf:!!conf || toCam, host, mood:mood(stripCues(p), p),
              ...(k === 0 && dismiss ? { dismiss } : {}), ...(k === 0 && event ? { event } : {}), ...(finalWords ? { finalWords:true } : {}) }));
-    if (scene.set === SH.exitSet && CAST[who]?.host && !conf && !host){
+    if (isExitSet(scene.set) && CAST[who]?.host && !conf && !host){
       if (SH.vote.start.test(clean) || VOTE_ORDINAL.test(clean)) reading = true;
       const nm = mentioned(clean);
       // the name a vote line opens with: "First vote — James.", "James. That's two votes James…", "“Julia.”"
@@ -322,8 +328,11 @@ function parse(text, opts = {}){
           tally[read.name] = (tally[read.name] || 0) + 1;
           push({ t:'vote', scene:scene.i, name:read.name, speaker:who, text:body, mood:'tense' });
         } else pushLine();
+        // who is out: the name the exit line itself gives ("James — that's enough") beats any count,
+        // then the count, then (last resort) the last name in the line
+        const said = SH.vote.exitName?.map(re => clean.match(re)?.[1]).map(n => n && findName(n)).find(n => n && !CAST[n].host);
         const top = Object.entries(tally).sort((a,b) => b[1] - a[1])[0]?.[0];
-        scene.elim = top || nm[nm.length - 1];
+        scene.elim = said || top || nm[nm.length - 1];
         if (scene.elim) push({ t:'elim', scene:scene.i, name:scene.elim, tally:{ ...tally } });
         if (SH.vote.final.test(clean)) push({ t:'spoken', scene:scene.i });
         return;
@@ -460,7 +469,7 @@ export const fmtMin = ms => { const m = Math.round(ms / 60000); return m < 1 ? '
 // which place names are which. HOME is the camp or the house, COMP a challenge
 // or competition, EXIT the vote and the walk out.
 export function sceneKind(sc, show = SH){
-  if (sc.set === show.exitSet || show.exitPlace.test(sc.place)) return 'exit';
+  if (sc.set === show.exitSet || (show.boothSet && sc.set === show.boothSet) || show.exitPlace.test(sc.place)) return 'exit';
   if (sc.set === show.compSet || sc.phase || show.compPlace.test(sc.place)) return 'comp';
   return 'home';
 }
@@ -1268,6 +1277,19 @@ export function mountEpisodeStage(host, text, opts = {}){
     camera(0,0,1);
     S.scene = si; S.tally = {}; S.lastSpeaker = null; S.lastShout = null;
     updateBoard(); setWeather(sc.weather);
+    // the voting booth holds one voter at a time: everyone waits outside until it is their turn
+    if (SH.boothSet && sc.set === SH.boothSet)
+      R.querySelectorAll('.actor').forEach(a => { if (!CAST[a.dataset.n].host) a.classList.add('offstage'); });
+  }
+  // step a voter up to the urn — alone, large, front and centre
+  function boothFocus(n){
+    const sc = P.scenes[S.scene];
+    if (!SH.boothSet || !sc || sc.set !== SH.boothSet || !actorEl(n) || CAST[n].host) return;
+    const was = !actorEl(n).classList.contains('offstage');
+    R.querySelectorAll('.actor').forEach(a => { if (!CAST[a.dataset.n].host) a.classList.toggle('offstage', a.dataset.n !== n); });
+    S.cur = { ...S.home, [n]: { x: 36, floor: 27, w: 15, z: 6 } };
+    applyPos();
+    if (!was){ const a = actorEl(n); a.style.animationDelay = '0s'; retrigger(a, 'enter'); sfx.whoosh(); }
   }
 
   const roleOf = (sc, n) => CAST[n].host ? 'host' : (sc.roles[n] && sc.roles[n] !== 'player' ? sc.roles[n] : CAST[n].role);
@@ -1662,6 +1684,7 @@ export function mountEpisodeStage(host, text, opts = {}){
     R.querySelectorAll('.actor').forEach(a => a.classList.remove('lit','next','talk'));
     if (b.host) enterConf(b.speaker, 'host'); else if (b.conf) enterConf(b.speaker, 'conf'); else exitConf();
     setDbox(b.speaker);
+    boothFocus(b.speaker);   // at the urn, whoever speaks is the one voting
     $('dbox').classList.toggle('final', !!b.finalWords);
     if (!b.conf && !b.host) introduce(b.speaker, instant);
     if (!b.conf && !b.host){
@@ -1715,6 +1738,7 @@ export function mountEpisodeStage(host, text, opts = {}){
   function stageDir(b, instant){
     if (!b.stay) exitConf();
     setNarr();
+    if (b.write?.voter) boothFocus(b.write.voter);
     R.querySelectorAll('.actor').forEach(a => a.classList.remove('lit','talk','next'));
     const sc = P.scenes[b.scene], low = b.text.toLowerCase();
     const who = (b.who || []).filter(n => actorEl(n) && !actorEl(n).classList.contains('offstage'));

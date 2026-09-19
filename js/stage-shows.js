@@ -22,6 +22,8 @@ export const STAGE_SHOWS = {
     name: 'Total Drama',
     sets: island,
     homeSet: 'camp', compSet: 'challenge', exitSet: 'tribal',
+    // where the votes are cast, one voter at a time ("[SCENE: Tribal council — voting booth — night.]")
+    boothSet: 'booth',
 
     hosts: ['Chris', 'Chef'],
     hostColors: { Chris: '#ffcc33', Chef: '#f1f1f1' },
@@ -37,6 +39,7 @@ export const STAGE_SHOWS = {
 
     // the middle of "[SCENE: Green camp — well — morning.]" → which set to draw
     spots: [
+      ['booth',     /booth|voting|the urn/i],
       ['tribal',    /tribal|council|urn/i],
       ['dock',      /dock|pier/i],
       ['well',      /\bwell\b/i],
@@ -61,8 +64,15 @@ export const STAGE_SHOWS = {
 
     // the vote, read by the host at an EXIT scene
     vote: {
-      start: /\b(reads?|reading) (out )?the votes\b/i,
+      start: /\b(reads?|reading) (out )?the votes\b|\btally the votes\b|\bthe votes are in\b/i,
       exit: /voted out|bring me your torch|that'?s enough/i,
+      // who the exit line names, which beats any count: "James — that's enough", "James, bring me
+      // your torch", "voted out of the game… James". Tried in order; the name must be a player.
+      exitName: [
+        /([A-Z][a-zA-Z'\-]+)\s*[—–,.-]+\s*that'?s enough/,
+        /([A-Z][a-zA-Z'\-]+)[,.]?\s+bring me your torch/,
+        /voted out[^.!?]*?(?:\.\.\.|…|—|–|:|,)\s*([A-Z][a-zA-Z'\-]+)/,
+      ],
       final: /tribe has spoken/i,
       write: /\b[Ww]rites\s+([A-Z][A-Za-z]+)/,
       snuff: /snuffs?\b|torch goes (dark|out)/i,

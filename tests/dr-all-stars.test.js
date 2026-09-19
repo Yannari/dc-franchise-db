@@ -399,19 +399,163 @@ describe('the lipstick is not spoiled', () => {
     expect(checked).toBeGreaterThan(5);
   });
 
-  it('and the ceremony still names her exactly once', () => {
+  it('and the ceremony still names her exactly once — per lipstick', () => {
     let checked = 0;
+    let doubles = 0;
     for (let s = 90; s < 96; s++) {
       for (const r of weekly(season(s, { drAllStars: true }))) {
         const lip = r.dr.lipsync;
         if (!lip?.legacy || !lip.eliminated) continue;
         const reveal = (r.dr.scenes || []).filter(x => x.kind === 'legacy:reveal');
-        expect(reveal).toHaveLength(1);
-        expect(reveal[0].text).toContain(lip.eliminated);
+        /* ONE REVEAL PER TUBE. An ordinary night has one holder and one
+           reveal, which is what this always asserted. A double win (AS4)
+           has two of each — and the point of the assertion is unchanged:
+           a ceremony must not announce the same lipstick twice, and each
+           reveal must name the queen ITS OWN holder actually wrote. */
+        const spends = lip.spentBy || [{ holder: lip.chosenBy, chosen: lip.eliminated }];
+        expect(reveal).toHaveLength(spends.length);
+        for (const sp of spends) {
+          const hers = reveal.filter(x => (x.data?.players || [])[0] === sp.holder);
+          expect(hers, `${sp.holder} revealed ${hers.length} times`).toHaveLength(1);
+          expect(hers[0].text).toContain(sp.chosen);
+        }
+        if (lip.doubleWin) doubles++;
         checked++;
       }
     }
     expect(checked).toBeGreaterThan(5);
+    /* Not asserted as a rate — it is rare by design. This only records that
+       the double path was actually exercised by these seeds, so the branch
+       above is not passing because it never ran. */
+    expect(doubles).toBeGreaterThan(0);
+  });
+});
+
+describe('both of them won it (All Stars 4)', () => {
+  /* THE RULE IS THE WIKI'S, NOT OURS. AS4's chart legend: "The contestant
+     was in the Top 2 and they both won the Lip Sync for your Legacy. They
+     won $5,000 and the power to eliminate another contestant." Half the
+     prize each, and a lipstick each.
+
+     WHAT THE WIKI DOES NOT SHOW is two lipsticks being SPENT — the one
+     episode it happened on recorded "Eliminated: None", because the
+     LaLaPaRuZa ran the following week and superseded both powers. So the
+     resolution below is ours: they choose independently, and two holders
+     make two exits POSSIBLE rather than mandatory. */
+  const doubles = [];
+  for (let s = 1; s <= 40 && doubles.length < 6; s += 1) {
+    for (const r of weekly(season(s, { drAllStars: true }))) {
+      if (r.dr?.lipsync?.doubleWin) doubles.push({ seed: s, row: r });
+    }
+  }
+
+  it('happens at all, and stays rare', () => {
+    let nights = 0; let hits = 0;
+    for (let s = 1; s <= 40; s += 1) {
+      for (const r of weekly(season(s, { drAllStars: true }))) {
+        if (!r.dr?.lipsync?.legacy) continue;
+        nights += 1;
+        if (r.dr.lipsync.doubleWin) hits += 1;
+      }
+    }
+    expect(nights).toBeGreaterThan(50);
+    expect(hits).toBeGreaterThan(0);
+    /* It reads the same fact the double shantay does — both of them over
+       7.0 and inside 0.6 — so it cannot become common without the stage
+       having stopped meaning anything. Measured 2.8% over 60 seasons. */
+    expect(hits / nights).toBeLessThan(0.15);
+  });
+
+  it('gives the week to both of them, and neither drops back to HIGH', () => {
+    expect(doubles.length).toBeGreaterThan(0);
+    for (const { row } of doubles) {
+      const lip = row.dr.lipsync;
+      expect(lip.winners).toHaveLength(2);
+      for (const q of lip.winners) {
+        expect(row.dr.call.win).toContain(q);
+        expect(row.dr.call.high || []).not.toContain(q);
+      }
+    }
+  });
+
+  it('two lipsticks are two exits only when they wrote different names', () => {
+    expect(doubles.length).toBeGreaterThan(0);
+    for (const { row } of doubles) {
+      const lip = row.dr.lipsync;
+      const out = lip.eliminatedAll || [];
+      expect(lip.spentBy).toHaveLength(2);
+      expect(out).toHaveLength(lip.agreed ? 1 : 2);
+      // Nobody is sent home twice, and nobody leaves who was not named.
+      expect(new Set(out).size).toBe(out.length);
+      for (const n of out) expect(lip.spentBy.map(s => s.chosen)).toContain(n);
+      /* AND SHE IS ONLY EVER NAMED OUT OF THE BOTTOM THE HOST CALLED —
+         the oldest bug on this night, when the holder picked out of the
+         whole room and a queen called safe went home recorded SAFE. */
+      for (const n of out) expect(row.dr.call.bottom || []).toContain(n);
+    }
+  });
+
+  it('leaves no shadow lipstick: nobody lost, so nobody is holding one', () => {
+    /* The shadow is the LOSER of the song keeping the name she would have
+       written. On a double both tubes were turned around on the stage, so
+       next week has nothing to open — and without the guard the loop's
+       second pass sealed the FIRST holder's own name as a secret.
+
+       READ OFF THE NIGHT, NOT OFF `state`. `state.shadowLipstick` is one
+       slot overwritten every week, so at the end of a season it holds only
+       the last one; the first version of this test asked it and PASSED with
+       the bug planted back in. `lipsync.shadowSealed` is the night's own
+       record of what it did. */
+    let singles = 0; let doubleNights = 0;
+    for (let s = 1; s <= 40; s += 1) {
+      for (const r of weekly(season(s, { drAllStars: true }))) {
+        const lip = r.dr?.lipsync;
+        if (!lip?.legacy || !lip.eliminated) continue;
+        if (lip.doubleWin) {
+          doubleNights += 1;
+          expect(lip.shadowSealed, 'a double win sealed a shadow lipstick').toBeFalsy();
+        } else if (lip.shadowSealed) singles += 1;
+      }
+    }
+    expect(doubleNights).toBeGreaterThan(0);
+    // A CONTROL ARM: an ordinary legacy night DOES seal one, so the
+    // assertion above is not passing because nothing ever seals anything.
+    expect(singles).toBeGreaterThan(10);
+  });
+
+  it('says out loud that both won, and what the tubes said', () => {
+    expect(doubles.length).toBeGreaterThan(0);
+    for (const { row } of doubles) {
+      const scenes = row.dr.scenes || [];
+      const kinds = scenes.map(s => s.kind);
+      expect(kinds).toContain('legacy:double-both');
+      expect(kinds).toContain(row.dr.lipsync.agreed
+        ? 'legacy:double-agreed' : 'legacy:double-split');
+      /* THE MARKER OPENS THE SECTION AND EVERY SCENE FOLLOWS IT.
+         `sceneSections` files by POSITION, so the double's opening beat
+         landing before the marker would file the ceremony under the song —
+         the bug that emptied "Elimination Day" on eight episodes of nine. */
+      const marker = kinds.indexOf('legacy-choice');
+      expect(marker).toBeGreaterThanOrEqual(0);
+      for (const k of ['legacy:double-both', 'legacy:reveal']) {
+        expect(kinds.indexOf(k)).toBeGreaterThan(marker);
+      }
+      /* AND NOBODY SAYS GOODBYE UNTIL EVERY TUBE HAS BEEN TURNED. Inside
+         the loop, a split sent the first holder's queen off with her last
+         words while the second lipstick was still closed. */
+      const verdict = Math.max(kinds.indexOf('legacy:double-agreed'),
+        kinds.indexOf('legacy:double-split'));
+      expect(kinds.indexOf('legacy:last-words')).toBeGreaterThan(verdict);
+    }
+  });
+
+  it('never leaves a name unfilled in the new beats', () => {
+    expect(doubles.length).toBeGreaterThan(0);
+    for (const { row } of doubles) {
+      for (const sc of (row.dr.scenes || []).filter(s => String(s.kind).startsWith('legacy:'))) {
+        expect(sc.text, sc.kind).not.toMatch(/\{\w+\}/);
+      }
+    }
   });
 });
 

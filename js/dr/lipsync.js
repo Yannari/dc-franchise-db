@@ -118,8 +118,14 @@ export const CONFIDENCE_CAP = 0.4;
    It rises on its own as queens are authored.
 
    AWFUL is untouched — the double sashay is off unless a season asks. */
-const GREAT = 7.0;
-const CLOSE = 0.6;
+/* EXPORTED because the All Stars double win asks the same question of the
+   same stage: were BOTH of them extraordinary, and was it too close to
+   separate them? A legacy night resolves its own call (week.js) rather than
+   going through `lipsyncCall`, so it needs these numbers, and a second copy
+   of 7.0/0.6 in week.js would be two thresholds to tune and one of them
+   would get missed. */
+export const GREAT = 7.0;
+export const CLOSE = 0.6;
 const AWFUL = 3.5;
 
 /**

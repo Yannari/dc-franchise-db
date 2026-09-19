@@ -47,7 +47,7 @@ import { runMini, applyMiniEvents } from './mini.js';
 import { critiqueLines, runReactions, whoShouldGoHome, rateAQueen } from './critiques.js';
 import { renderStageBeats, runUntucked, applyUntuckedScene, renderChallengeBeats,
   renderMaxiEventScenes } from './stage.js';
-import { lipsyncScore, lipsyncCall } from './lipsync.js';
+import { lipsyncScore, lipsyncCall, GREAT, CLOSE } from './lipsync.js';
 import { chooseElimination } from './legacy.js';
 import { revengePairs, revengeReentry, revengeLine, pairJudging } from './revenge.js';
 import { REVENGE_BEATS } from './data/revenge-beats.js';
@@ -1835,6 +1835,30 @@ export function runDragWeek(state, cfg, ctx) {
        `noElimination` alone, a legacy lip sync fell through to an ordinary
        shantay and sent the RUNNER-UP home as well as the queen the winner
        chose: two exits on a single elimination night. */
+    /* ── BOTH OF THEM WON IT (AS4) ──────────────────────────────────────
+       The chart legend for All Stars 4 spells the rule out: "The contestant
+       was in the Top 2 and they both won the Lip Sync for your Legacy. They
+       won $5,000 and the power to eliminate another contestant." Half the
+       prize each, and a lipstick each.
+
+       IT READS THE SAME FACT AS THE DOUBLE SHANTAY, and for the same reason:
+       whether both of them were extraordinary is a fact about the stage, not
+       a decision the host's agenda gets to manufacture. So it uses the RAW
+       scores and the same two thresholds, and the host's lean cannot reach
+       it. The season has to be able to afford it too — `living.length >= 7`
+       is the guard the double Beaver already uses, and for the same reason:
+       two lipsticks can cost two queens.
+
+       WHAT THE SHOW DID THAT THIS CANNOT: AS4's double night was called with
+       a bottom FOUR where its neighbours had a bottom two. We cannot widen
+       the bottom to match, because our host names it AT THE CALL — before
+       the song — so a bottom that grew because both queens won would be a
+       call that already knew the result. Both holders choose from the bottom
+       as the host named it, which is also why they can land on one name. */
+    const doubleLegacy = !!(legacy && living.length >= 7
+      && sa.score >= GREAT && sb.score >= GREAT
+      && Math.abs(sa.score - sb.score) < CLOSE);
+
     const lc = (cfg.noElimination || legacy)
       /* ITS OWN CALL, NOT 'shantay'. The stage picks its prose by this value,
          and `shantay` is the tier that says one queen stays and one goes — so
@@ -1842,8 +1866,16 @@ export function runDragWeek(state, cfg, ctx) {
          somebody stays and the half where somebody goes" over an empty exit
          list. A night with no elimination is a different call and says so. */
       ? {
-        call: legacy ? 'legacy' : (topTwoSing ? 'for-the-win' : 'no-elimination'),
+        call: doubleLegacy ? 'legacy-double'
+          : legacy ? 'legacy' : (topTwoSing ? 'for-the-win' : 'no-elimination'),
+        /* `winner` STAYS A NAME even on a double. Everything downstream of
+           here — the week's WIN, the stage prose, the screens — reads a
+           single `winner`, and turning it null to mean "both" is how a night
+           with two winners renders as a night with none. She is the queen
+           who scored higher; `winners` is the pair, and the ceremony below
+           is what actually runs twice. */
         winner: sa.score >= sb.score ? a : b, loser: null, losers: [],
+        winners: doubleLegacy ? [a, b] : null,
         gap: sa.score - sb.score,
       }
       : lipsyncCall({
@@ -1864,6 +1896,7 @@ export function runDragWeek(state, cfg, ctx) {
       stunts: { [a]: sa.stunt, [b]: sb.stunt },
       call: lc.call, winner: lc.winner, loser: lc.loser, gap: lc.gap,
       ...(topTwoSing ? { forTheWin: true } : {}),
+      ...(doubleLegacy ? { doubleWin: true, winners: [a, b] } : {}),
     };
 
     /* AND ON A TOP-TWO NIGHT THE SONG AWARDS THE WEEK. The record is written
@@ -1899,11 +1932,15 @@ export function runDragWeek(state, cfg, ctx) {
          partner's night was counted — and the other couple's competing half
          stays HIGH, which is what she was called. */
       const weekWinner = reentry ? (reentry.mate[lc.winner] || lc.winner) : lc.winner;
-      call.win = [weekWinner];
+      /* ON A DOUBLE, NOBODY DROPS BACK TO HIGH. Both of them won the song,
+         so both take the week — and the `filter` below would otherwise put
+         the second winner back in `high`, which is the chart recording a
+         queen as HIGH on a night the host handed her a lipstick. */
+      call.win = doubleLegacy ? [a, b] : [weekWinner];
       /* The queen the panel called HIGH is still HIGH — she was in the top
          and she never sang. Only the two singers move. */
-      call.high = [...call.high.filter(n => n !== weekWinner && !call.singers.includes(n)),
-        ...(reentry ? [] : [a, b].filter(n => n !== lc.winner))];
+      call.high = [...call.high.filter(n => !call.win.includes(n) && !call.singers.includes(n)),
+        ...(reentry || doubleLegacy ? [] : [a, b].filter(n => n !== lc.winner))];
       state.lastWinner = weekWinner;
       if (reentry) {
         const rv = (kind, who, pool, vars) => scenes.push({
@@ -1958,32 +1995,99 @@ export function runDragWeek(state, cfg, ctx) {
            named. What the room did in Untucked arrives as `legacyPleas`, a
            weight on her own read, and nothing else is counted. */
         state.power ||= { uses: [], debts: [], grudges: [], promises: [], hopes: [] };
-        const choice = chooseElimination({
-          winner: lc.winner, pool,
-          players: Object.fromEntries(living.map(n => [n, P(n)])),
-          bond: (x, y) => Number(ctx.bond?.(x, y)) || 0,
-          state, ledger: state.power, pleas: legacyPleas, panelOrder: pool, rng,
-          // Her own circle is harder to end. A bias, never a veto.
-          allies: pool.filter(q => sameBloc(alliances, lc.winner, q)),
-        });
-        const chosen = choice.target;
-        if (chosen) {
-          exits.push(chosen);
-          lipsync.eliminated = chosen;
-          lipsync.chosenBy = lc.winner;
+        /* ── ONE LIPSTICK, OR TWO ──────────────────────────────────────
+           On an ordinary legacy night this list has one queen in it and the
+           loop below runs once, which is the night this file has always
+           played. On a double (AS4) both of them hold one.
+
+           THEY CHOOSE INDEPENDENTLY, and that is the whole drama of it: the
+           lipsticks are turned around at the same moment, so neither queen
+           knows what the other wrote. Same rule, same inputs, different
+           woman reading them — her bonds, her grudges, who pleaded with HER
+           in Untucked. Handing the second holder the first one's name would
+           be a conference, and a conference is the vote this show does not
+           have. */
+        const holders = doubleLegacy ? [a, b] : [lc.winner];
+        const spends = holders.map(holder => ({
+          holder,
+          choice: chooseElimination({
+            winner: holder, pool,
+            players: Object.fromEntries(living.map(n => [n, P(n)])),
+            bond: (x, y) => Number(ctx.bond?.(x, y)) || 0,
+            state, ledger: state.power, pleas: legacyPleas, panelOrder: pool, rng,
+            // Her own circle is harder to end. A bias, never a veto.
+            allies: pool.filter(q => sameBloc(alliances, holder, q)),
+          }),
+        })).filter(s => s.choice.target);
+        /* AND IF THEY WROTE THE SAME NAME, one queen goes home. Two holders
+           do not make two exits mandatory — they make two exits POSSIBLE,
+           which is a different and better night. `agreed` is what the
+           ceremony says about it. */
+        const named = [...new Set(spends.map(s => s.choice.target))];
+        const agreed = spends.length > 1 && named.length === 1;
+        /* ── THE MARKER, ONCE, BEFORE ANY OF IT ────────────────────────
+           `sceneSections` files a scene by its POSITION — a scene pushed
+           before its own marker lands in the previous section, which is the
+           bug that left "Elimination Day" empty on eight episodes of nine.
+           The double's opening beat has to come after the marker and before
+           the first holder's weighing, so the marker moves out here rather
+           than being emitted per holder. */
+        if (spends.length) {
+          const f = spends[0];
+          say('legacy-choice', 'legacy-choice', {
+            winner: f.holder, eliminated: f.choice.target, pool,
+            why: f.choice.why, reason: f.choice.reason,
+            ...(doubleLegacy ? { double: true, holders } : {}),
+          });
+          if (doubleLegacy) {
+            scenes.push({
+              step: 'legacy-choice', kind: 'legacy:double-both',
+              data: { players: [...holders], double: true, holders: [...holders] },
+              text: legacyLine(WEIGH_BEATS.double.both,
+                { h: holders[0], g: holders[1] }, rng, said),
+            });
+          }
+        }
+        for (const { holder, choice } of spends) {
+          const chosen = choice.target;
+          /* A queen already sent home by the other lipstick cannot be sent
+             home twice; the second holder's ceremony still plays, because
+             she did write that name and the room watched her do it. */
+          const already = exits.includes(chosen);
+          if (chosen) {
+          if (!already) exits.push(chosen);
+          /* THE SINGULAR FIELDS STILL SAY WHAT THEY ALWAYS SAID, and they
+             belong to the FIRST holder — the queen who scored higher. Every
+             reader downstream of this (the chart, the stage, the exports,
+             the social pack) takes `eliminated` and `chosenBy` as one name
+             each, and quietly turning them into arrays here is how a feature
+             lands on nine screens as `undefined`. The double adds fields; it
+             does not change the shape of the old ones. */
+          if (!lipsync.eliminated) {
+            lipsync.eliminated = chosen;
+            lipsync.chosenBy = holder;
+            lipsync.why = choice.why;
+            lipsync.reason = choice.reason;
+            lipsync.spared = choice.spared || null;
+            lipsync.mind = choice.mind;
+            lipsync.close = !!choice.close;
+            lipsync.gap = choice.gap;
+            lipsync.weighed = choice.weighed;
+          }
           lipsync.legacy = true;
-          lipsync.why = choice.why;
-          lipsync.reason = choice.reason;
-          lipsync.spared = choice.spared || null;
-          lipsync.mind = choice.mind;
-          lipsync.close = !!choice.close;
-          lipsync.gap = choice.gap;
-          lipsync.weighed = choice.weighed;
+          if (doubleLegacy) {
+            lipsync.agreed = agreed;
+            (lipsync.spentBy ||= []).push({
+              holder, chosen, why: choice.why, reason: choice.reason,
+              spared: choice.spared || null,
+            });
+            lipsync.eliminatedAll = [...new Set([...(lipsync.eliminatedAll || []), chosen])];
+          }
           /* ONE PICK PER QUEEN, because `timesSpared` counts picks whose
              `saved` is a NAME — the shape the Beaver writes. A single entry
              carrying an array would count as nobody. */
           recordUse(state.power, {
-            ep: cfg.num, holder: lc.winner,
+            ep: cfg.num, holder,
             picks: pool.filter(n => n !== chosen).map(n => ({ saved: n, eliminated: chosen })),
           });
           /* ── AND SPENDING IT COSTS HER ──────────────────────────────
@@ -1997,33 +2101,28 @@ export function runDragWeek(state, cfg, ctx) {
              Her own bond with them pays for it too: this is the cost of the
              power, and a holder who keeps spending it ends up alone. */
           for (const q of living) {
-            if (q === chosen || q === lc.winner) continue;
+            if (q === chosen || q === holder) continue;
             const close = Number(ctx.bond?.(q, chosen)) || 0;
             if (close < 4) continue;
-            if (!state.power.grudges.some(g => g.by === q && g.against === lc.winner)) {
-              state.power.grudges.push({ by: q, against: lc.winner, ep: cfg.num, over: chosen });
+            if (!state.power.grudges.some(g => g.by === q && g.against === holder)) {
+              state.power.grudges.push({ by: q, against: holder, ep: cfg.num, over: chosen });
             }
-            werkEvents.push({ type: 'legacy:fallout', players: [q, lc.winner],
-              bond: [[q, lc.winner, -2]], pop: {}, state: {}, data: {} });
+            werkEvents.push({ type: 'legacy:fallout', players: [q, holder],
+              bond: [[q, holder, -2]], pop: {}, state: {}, data: {} });
           }
-          /* THE MARKER FIRST, THEN ITS SCENES. `sceneSections` files a scene
-             by its position in the array, so a scene pushed before its own
-             marker lands in the previous section -- which left "Elimination
-             Day" empty on eight episodes of nine, once. */
-          say('legacy-choice', 'legacy-choice', {
-            winner: lc.winner, eliminated: chosen, pool,
-            why: choice.why, reason: choice.reason,
-          });
+          /* THE MARKER IS ALREADY OPEN — it is emitted once, above the loop,
+             for the reason written there. Everything from here is filed
+             under it. */
           /* `s` is the queen she PROTECTED, when the choice turned on one —
              a friend, one of her circle, or a queen who asked her for it in
              Untucked. Null on a night the pick was simply the pick. */
-          const lv = { h: lc.winner, x: chosen, p: pool.join(', '), s: choice.spared || '' };
+          const lv = { h: holder, x: chosen, p: pool.join(', '), s: choice.spared || '' };
           const ceremony = (kind, who, lines) => scenes.push({
             step: 'legacy-choice', kind,
             /* `chosen`, not `target`: a campaign scene already uses `target`
                for the queen being lobbied, and one word meaning two things is
                how a spoiler test cannot tell a pitch from a verdict. */
-            data: { players: who, holder: lc.winner, chosen, why: choice.why,
+            data: { players: who, holder: holder, chosen, why: choice.why,
               /* WHAT SHE WEIGHED, so the ceremony can show the decision
                  instead of asserting it. */
               reason: choice.reason, spared: choice.spared || null,
@@ -2051,7 +2150,7 @@ export function runDragWeek(state, cfg, ctx) {
             if (isLast) return 'panel-last';
             return 'plain';
           };
-          ceremony(choice.close ? 'legacy:weigh-close' : 'legacy:weigh-clear', [lc.winner],
+          ceremony(choice.close ? 'legacy:weigh-close' : 'legacy:weigh-clear', [holder],
             choice.close ? WEIGH_BEATS.open.close : WEIGH_BEATS.open.clear);
           /* ONE BEAT PER QUEEN, in the order the host named them, so the
              cards read down the line the way the call did. Capped at three:
@@ -2060,18 +2159,18 @@ export function runDragWeek(state, cfg, ctx) {
             const tier = salience(q);
             scenes.push({
               step: 'legacy-choice', kind: `legacy:weigh-${tier}`,
-              data: { players: [lc.winner, q], holder: lc.winner, about: q, salience: tier },
+              data: { players: [holder, q], holder: holder, about: q, salience: tier },
               text: legacyLine(WEIGH_BEATS.queen[tier] || WEIGH_BEATS.queen.plain,
-                { h: lc.winner, x: q, y: pool.find(n => n !== q) || '' }, rng, said),
+                { h: holder, x: q, y: pool.find(n => n !== q) || '' }, rng, said),
             });
           }
-          ceremony('legacy:deliberate', [lc.winner],
+          ceremony('legacy:deliberate', [holder],
             LEGACY_BEATS.deliberate[choice.why] || LEGACY_BEATS.deliberate.panel);
           /* THE SECOND BEFORE, on its own screen: she is holding one and
              nobody knows which. `players` is her alone — the chosen queen is
              not in this scene, because the scene is about not knowing. */
-          ceremony('legacy:hold', [lc.winner], LEGACY_BEATS.hold);
-          ceremony('legacy:reveal', [lc.winner, chosen], LEGACY_BEATS.reveal);
+          ceremony('legacy:hold', [holder], LEGACY_BEATS.hold);
+          ceremony('legacy:reveal', [holder, chosen], LEGACY_BEATS.reveal);
           /* ── AND THE OTHER ONE'S LIPSTICK ───────────────────────────
              The queen who LOST that song had a name in her head too, and on
              this format she is the only person alive who knows what it was.
@@ -2081,8 +2180,16 @@ export function runDragWeek(state, cfg, ctx) {
              it: `state.shadowLipstick` is opened in next week's cold open,
              where she can say it out loud or keep it, and where a different
              name is a problem for everybody still standing.
-             It cannot change tonight's exit. She did not win. */
-          const runnerUp = [a, b].find(n => n !== lc.winner) || null;
+             It cannot change tonight's exit. She did not win.
+
+             THERE IS NO SHADOW ON A DOUBLE. Both of them won, both of them
+             wrote a name, and both names were turned around on the stage —
+             so there is no queen left holding a secret, and nothing for next
+             week's cold open to open. Without this guard the loop's second
+             pass overwrote `state.shadowLipstick` with the FIRST holder's
+             own name and next week asked her to confess a lipstick the whole
+             room had already watched her spend. */
+          const runnerUp = doubleLegacy ? null : ([a, b].find(n => n !== lc.winner) || null);
           if (runnerUp && living.includes(runnerUp)) {
             const hers = chooseElimination({
               winner: runnerUp, pool,
@@ -2099,6 +2206,13 @@ export function runDragWeek(state, cfg, ctx) {
                  she is agreeing with it or contradicting it. */
               wentHome: chosen, pool: [...pool],
             };
+            /* AND THE NIGHT RECORDS THAT IT SEALED ONE. `state.shadowLipstick`
+               is a single slot overwritten every week, so by the end of a
+               season it only remembers the LAST one — which makes it useless
+               for asking "did THIS night seal a shadow?". A guard written
+               against the state slot passed with the bug planted back in.
+               This is the per-night fact, on the night. */
+            lipsync.shadowSealed = runnerUp;
           }
           /* HER OWN ACCOUNT OF IT, to camera, after the fact. `o` is the
              queen she did NOT write — the one the decision was actually
@@ -2108,27 +2222,59 @@ export function runDragWeek(state, cfg, ctx) {
             || pool.filter(n => n !== chosen)[0] || '';
           scenes.push({
             step: 'legacy-choice', kind: 'legacy:confessional',
-            data: { players: [lc.winner], who: lc.winner, confessional: true,
-              holder: lc.winner, chosen, why: choice.why },
+            data: { players: [holder], who: holder, confessional: true,
+              holder: holder, chosen, why: choice.why },
             text: legacyLine(
               LEGACY_BEATS.confessional[choice.why] || LEGACY_BEATS.confessional.panel,
-              { h: lc.winner, x: chosen, o: other }, rng, said),
+              { h: holder, x: chosen, o: other }, rng, said),
           });
           /* AND WHAT IT COSTS HER, once she has watched it land. The
              confessional above says why; this says what she is walking back
              into, which is the half the ceremony never had. */
-          const costTier = choice.spared || (Number(ctx.bond?.(lc.winner, chosen)) || 0) >= 4
+          const costTier = choice.spared || (Number(ctx.bond?.(holder, chosen)) || 0) >= 4
             ? 'friend'
             : choice.why === 'threat' || choice.why === 'own-read' ? 'strategy'
               : choice.close ? 'room' : 'none';
           scenes.push({
             step: 'legacy-choice', kind: 'legacy:cost',
-            data: { players: [lc.winner], who: lc.winner, confessional: true,
-              holder: lc.winner, chosen, cost: costTier },
-            text: legacyLine(WEIGH_BEATS.cost[costTier], { h: lc.winner, x: chosen }, rng, said),
+            data: { players: [holder], who: holder, confessional: true,
+              holder: holder, chosen, cost: costTier },
+            text: legacyLine(WEIGH_BEATS.cost[costTier], { h: holder, x: chosen }, rng, said),
           });
-          ceremony('legacy:room', [chosen], LEGACY_BEATS.roomAnswer);
-          ceremony('legacy:last-words', [chosen], LEGACY_BEATS.lastWords);
+          }
+        }
+        /* ── AND THEN THE TUBES CAME AROUND ────────────────────────────
+           NOBODY SAYS GOODBYE UNTIL EVERY LIPSTICK HAS BEEN TURNED. Inside
+           the loop, a split sent the first holder's queen off with her last
+           words while the second holder had not yet revealed hers — the room
+           mourning one exit before it knew there were two. So the verdict
+           and the goodbyes live out here, after every ceremony has played.
+
+           On an ordinary night this is one queen and the scenes sit exactly
+           where they always sat, because there is nothing after them in the
+           loop to move. */
+        if (doubleLegacy && spends.length) {
+          const [x, y] = named;
+          scenes.push({
+            step: 'legacy-choice', kind: agreed ? 'legacy:double-agreed' : 'legacy:double-split',
+            data: { players: [...named], double: true, agreed, holders: [...holders], chosen: x },
+            text: legacyLine(agreed ? WEIGH_BEATS.double.agreed : WEIGH_BEATS.double.split,
+              { h: holders[0], g: holders[1], x, y: y || pool.find(n => n !== x) || '' }, rng, said),
+          });
+        }
+        for (const gone of named) {
+          if (!exits.includes(gone)) continue;
+          /* `{h}` IN `lastWords` IS THE QUEEN WHO WROTE HER NAME, so on a
+             split each goodbye has to find its own holder rather than
+             assuming the first one. Dropping it left a bare `{h}` on the
+             card. */
+          const by = (spends.find(s => s.choice.target === gone) || {}).holder || holders[0];
+          scenes.push({ step: 'legacy-choice', kind: 'legacy:room',
+            data: { players: [gone], holder: by, chosen: gone },
+            text: legacyLine(LEGACY_BEATS.roomAnswer, { h: by, x: gone }, rng, said) });
+          scenes.push({ step: 'legacy-choice', kind: 'legacy:last-words',
+            data: { players: [gone], holder: by, chosen: gone },
+            text: legacyLine(LEGACY_BEATS.lastWords, { h: by, x: gone }, rng, said) });
         }
       }
     }

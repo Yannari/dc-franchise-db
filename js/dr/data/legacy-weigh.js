@@ -99,6 +99,40 @@ export const WEIGH_BEATS = {
     ],
   },
 
+  /* ── AND THE NIGHT BOTH OF THEM WON IT (AS4) ──────────────────────
+     Two queens, two tubes, and neither of them knows what the other wrote
+     until they are turned around together. {h} is the first holder, {g} the
+     second, {x} the name that went home and {y} the other one. */
+  double: {
+    /* The host tells them, and the bottom works out what it means. */
+    both: [
+      '"I could not separate you," the host says. "So I am not going to. You BOTH won that lip sync — and you both have the power."',
+      '"Two winners." The host lets it sit. "Two lipsticks. Ladies, the rest of you might want to hold onto something."',
+      '"{h}. {g}. Neither of you lost that." The host smiles. "Which means neither of you is walking away empty-handed, and somebody down there is going to feel it."',
+      '"In the herstory of this competition that has happened exactly once," the host says. "Congratulations. You are about to make it twice."',
+      'Nobody in the bottom moves. Two lipsticks and this many of them standing there is arithmetic anybody can do.',
+    ],
+    /* They wrote the same name. One queen goes home, and the room has just
+       watched two women arrive at her independently. */
+    agreed: [
+      'Both tubes come around at the same time, and they say the same thing. {x} closes her eyes before the host can.',
+      'Two lipsticks, one name. {h} and {g} look at each other and neither of them looks surprised.',
+      '"Well," the host says, looking at the two of them. "You did not need to discuss it, did you."',
+      'The room makes a noise, because the room has just watched two queens who never compared notes reach the exact same conclusion about {x}.',
+      '"{x}." "{x}." It lands twice and it only needed to land once.',
+      '{y} works out what has happened about a second before anybody else does, and the relief goes through her like weather.',
+    ],
+    /* Two names. Two queens go. */
+    split: [
+      'The tubes come around and there are two different names on them. The bottom does the arithmetic and the arithmetic is bad.',
+      '"{x}." A beat. "And {y}." The host does not soften it. "Ladies, I am sorry. Both of you."',
+      'Two lipsticks, two names, and nobody in that line-up had worked out this was possible until exactly now.',
+      '{h} wrote one name and {g} wrote another and neither of them knew, and that is how this competition loses two queens in a night.',
+      '"That is not what I expected either," the host says quietly, looking at the two tubes.',
+      'Somewhere behind the two of them a queen who was on neither lipstick sits down, because her legs have stopped working.',
+    ],
+  },
+
   /* AND WHAT IT COSTS HER, after the room has seen her do it. */
   cost: {
     friend: [

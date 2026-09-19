@@ -435,6 +435,168 @@ choice is a running account rather than a per-week roll.
 chosen one turning around. Measurements: `npm run audit:dr-spec`, the "forty
 All Stars seasons" block.
 
+#### The weighing (`js/dr/data/legacy-weigh.js`)
+
+The ceremony was one line of deliberation and one of confession, so a season
+of them read identically — "boring and repetitive", with no sense of the
+struggle or of the absence of one. It is a scene now, in three parts:
+
+* **whether it is hard.** `chooseElimination` returns `close`, the raw gap
+  between the name she wrote and the one she nearly wrote. Under 0.4 she
+  agonises (≈35% of nights), over it she does not, and `open.close` vs
+  `open.clear` are different nights of television. The first version scaled
+  the gap against the pool spread, which on a bottom of two is always 1.0 —
+  so "she agonised" never fired once.
+* **what each name is to her.** One beat per queen in that bottom, keyed on
+  what is actually true tonight: `threat`, `friend`, `pleaded`, `spared`,
+  `panel-last`, `cold`, `plain`.
+* **what it costs**, to camera, after the room has watched her do it —
+  keyed on what she actually spent (`friend` / `strategy` / `room` / `none`).
+
+`threatOf` reads the season body, not just the trophies. It counted wins,
+highs and last season's placement and nothing else, so the queen it named
+"the biggest threat" had the LOWER points per episode 48% of the time, with
+both numbers printed on the chart beside the sentence. PPE is 28% of the read
+now, centred so SAFE is ordinary rather than evidence: disagreement 48% → 14%,
+guarded at 25% in `tests/dr-all-stars.test.js`.
+
+The reason label is also gated on the panel agreeing. `panel` claimed the
+judges' verdict about a queen the panel had ranked HIGHER on 6% of nights;
+it now falls through to the real term, or to `own-read`.
+
+#### Both of them won it (AS4)
+
+The chart legend for All Stars 4, verbatim: *"The contestant was in the Top 2
+and they both won the Lip Sync for your Legacy. They won $5,000 and the power
+to eliminate another contestant."* Half the prize each, and a lipstick each.
+No flag — it is the legacy rule's own, and it is rare on its own terms.
+
+**It reads the same fact as the double shantay**, and for the same reason:
+whether both of them were extraordinary is a fact about the stage, not
+something the host's agenda gets to manufacture. So it uses the RAW scores and
+the same two thresholds (`GREAT` 7.0, `CLOSE` 0.6, now exported from
+`lipsync.js` rather than copied). Guarded on `living.length >= 7`, which is
+the guard the double Beaver already uses, for the same reason: two lipsticks
+can cost two queens. **Measured: 2.8% of legacy nights** over 60 seasons — 13
+doubles, 8 of them agreeing and 5 splitting.
+
+**What the wiki does not show is two lipsticks being SPENT.** The one episode
+it happened on (AS4 ep 5, "Roast in Peace") recorded *Eliminated: None*,
+because the LaLaPaRuZa ran the following week and superseded both powers. So
+the resolution is ours:
+
+* **they choose independently.** Same rule, same inputs, different woman
+  reading them — her bonds, her grudges, who pleaded with HER in Untucked.
+  Handing the second holder the first one's name would be a conference, and a
+  conference is the vote this show does not have.
+* **two holders make two exits POSSIBLE, not mandatory.** Same name on both
+  tubes and one queen goes home, having just been named independently by two
+  women who never compared notes (`legacy:double-agreed`). Different names and
+  the season loses two (`legacy:double-split`).
+* **nobody says goodbye until every tube is turned.** The exit beats moved out
+  of the per-holder loop; inside it, a split sent the first queen off with her
+  last words while the second lipstick was still closed.
+* **no shadow lipstick.** Nobody lost, so nobody is left holding a secret for
+  next week's cold open. `lipsync.shadowSealed` is the night's own record of
+  whether it sealed one — `state.shadowLipstick` is a single slot overwritten
+  every week, and the first guard written against it passed with the bug
+  planted back in.
+
+**What the show did that this cannot**: AS4's double night was called with a
+bottom FOUR where its neighbours had a bottom two. We cannot widen the bottom
+to match, because our host names it AT THE CALL, before the song — a bottom
+that grew because both queens won would be a call that already knew the
+result. Both holders choose from the bottom as named, which is also why they
+can land on one name.
+
+The singular fields are unchanged: `eliminated` and `chosenBy` are still one
+name each, belonging to the higher-scoring holder, because the chart, the
+stage, the exports and the social pack all read them that way. The double
+ADDS `winners`, `spentBy`, `eliminatedAll` and `agreed`.
+
+#### Revenge of the Queens (`js/dr/revenge.js`, `drAllStarsTwist: 'revenge'`)
+
+AS2 episode 5, read off the wikitext. The first build was a lip sync bracket
+on an episode of its own, which is the reunion Smackdown wearing a different
+name. What it really is:
+
+1. every queen the season sent home **walks back in**, in reverse elimination
+   order — last boot first
+2. each is **paired** with a queen still competing, by bond: her closest ally
+   in the room. A leftover joins an existing returner as a trio (`second`)
+3. the maxi is performed in those pairs and **judged on the pair**
+   (`pairJudging`, the mate's craft folded in at weight 0.45), so a returner
+   can carry the queen she stands with or sink her — which is the only thing
+   that makes the pairing a stake rather than a staging note
+4. the panel names the **top two couples**. The bottom couples lose, and
+   their returning halves are out for good — they are not in the call
+5. the two returners from the top couples **lip sync against each other**.
+   That duel is the night's only song; the bottom does not sing and the top
+   two do not either, because the queens fighting for a season back are the
+   ones with something to win
+6. the winner is back in the room **and takes the night's WIN on her chart**
+   (`1:BTM2 2:BTM2 3:SAFE 4:ELIM 5:OUT 6:WIN 7:SAFE 8:FINALIST`). The record
+   loop walks the ROOM, and she was not in it, so she used to get a blank
+   cell on the night she came back
+7. and the night still has a bottom and still sends somebody home
+
+The pairing is drawn everywhere it matters: a pair rail in the sidebar
+(`_pairRail`), on the critiques, and on the call — without it the viewer had
+no way to tell an eliminated queen from an active one on any of three screens.
+One episode, `drAllStarsTwistEp` to pin it.
+
+#### The Jury of Queer Peers (`js/dr/jury.js`, `drAllStarsJury`)
+
+AS3's rule: the queens already out come back on finale night and choose which
+two finalists sing for the crown. **This is the only ballot on this show and
+it does not break the first law** — the ROOM never votes, and these queens are
+not the room. They are already out, they end nobody, and every finalist they
+vote on has survived the whole season. That argument lives in the file header
+too, because a reader who finds a ballot in `js/dr/` will assume the bug is
+back.
+
+A juror votes for the queen she likes, adjusted by what she thinks of the
+season that queen played, and against the queen who ended her own run — bonds,
+the chart and the power ledger, so the ballot is deterministic and consumes no
+game rng. The tier that carried it names the beat she speaks
+(`friend` / `season` / `tonight` / `circle` / `respect-despite` /
+`least-worst`, in `js/dr/data/jury-beats.js`), and a close ballot draws
+`agonised`. The finalist the jury does not send through gets a chart cell of
+her own and the last word (`cutWords`). Checkbox gated on a showcase finale.
+
+#### The cold open (`js/dr/coldopen.js`)
+
+It was ONE werk event drawn off a single fact — somebody left — so a night
+with a challenge, a winner, a bottom and a song in it produced a card about an
+empty chair, and the episode that had just happened was never discussed by the
+people it happened to. It is a written scene now, built from `state.lastWeek`:
+
+somebody **reads the mirror message** out loud (`MIRROR`, five kinds, built
+from 117 real farewell messages off the wiki: warm, blessing, shade, joke,
+defiant), the room **talks about the challenge**, **congratulates the winner**
+— who answers gracious, hungry or guilty — the **bottom says how it felt**
+(sad, angry, fine, or genuinely not bothered), somebody **airs the drama**,
+and somebody says what **being safe** costs her.
+
+**A bottom queen did not necessarily sing.** On a legacy night the top two
+sing and the bottom waits to hear a name, so every line that assumes a song
+carries a `when` tag. This shipped broken once ("I sang for my life and I am
+still in this competition", from a queen who never took the stage) and the
+first guard for it was unfailable — its word boundaries arrived from a bash
+heredoc as literal backspace characters, so the pattern matched nothing and
+the test passed forever on a pool with an offender in it.
+
+#### The Untucked campaign (`js/dr/saves.js`)
+
+The lounge is where the bottom works the queen holding the power, and it runs
+BEFORE the song on an All Stars night, so a queen can spend her whole night on
+the wrong person. The circle rounds are `circle-vouch`, `circle-holder`,
+`circle-split` and `circle-alone` — the last gated on `spokenFor.size`, which
+took it from 198 firings to 67, because a queen "standing alone" while three
+people had just spoken for her was the most common beat in the lounge. Blocs
+(`js/dr/alliances.js`) bias who speaks up. The same improvement runs on the
+Beaver and Baguette nights, which share the reordered week.
+
 ### TODO
 
 Four saves shipped outside this list: the chocolate bar, the dunk tank, the
@@ -475,10 +637,13 @@ same feature twice by not looking.
 
 **Expensive — a format, not a twist**
 
-7. ~~**All Stars season type.**~~ **PASS 1 SHIPPED** — see "All Stars" below.
-   The mode, the returning cast with a past, the legacy rule, the lipstick
-   ceremony and its screen. Pass 2 is the era's extras, locked to the mode:
-   Revenge of the Queens, the Jury of Queer Peers, and the double win.
+7. ~~**All Stars season type.**~~ **PASS 1 AND 2 SHIPPED** — see "All Stars"
+   above. Pass 1 was the mode, the returning cast with a past, the legacy rule
+   and the lipstick ceremony; pass 2 was Revenge of the Queens, the Jury of
+   Queer Peers, the weighing, the cold open, the Untucked campaign and the
+   **double win** (both queens take the Legacy lip sync and a lipstick each).
+   The era is done. A double CROWN at the finale is a different feature and is
+   still item 9.
 8. **Audience save / fan vote.** The edit layer already tracks popularity and
    screen time, so the input exists. The question is whether a viewer vote can
    overturn the panel, which is the same authority question as item 6.

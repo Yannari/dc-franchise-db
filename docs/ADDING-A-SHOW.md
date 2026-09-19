@@ -1687,12 +1687,15 @@ Being honest about the parts this document cannot make easy:
 - **The episode writer's prompt** is per show. Reusing another show's prompt
   produces episodes in that show's format.
 - **The episode stage** (`js/episode-stage.js`, mounted by `renderEpisode` in
-  `current-season.html`) is Total Drama's: island sets, tribal council, "the
-  tribe has spoken", torches. `renderEpisode` gates it on
-  `_csFormat() === CS_DEFAULT_FORMAT` and every other show gets the script
-  reader. A new show that wants the stage needs its own sets and its own
-  vote/exit vocabulary in that module — widening the gate alone prints Total
-  Drama's words over your show (§11.5 C).
+  `current-season.html`) is show-blind; each show that has one gets a
+  **profile** in `js/stage-shows.js` (hosts, the word for a team, how a vote is
+  read and an exit announced, chapter names, music beds, "found" items) and a
+  **sets file** (`js/stage-sets-island.js` is Total Drama's). `renderEpisode`
+  turns the stage on for any format `hasStage()` knows and gives every other
+  show the script reader. Titles, ad breaks, reaction shots, pop-ups,
+  captions, the vote board, weather, room sound and the results screen all
+  come for free. Never borrow another show's profile to switch the stage on —
+  that prints its words over yours (§11.5 C).
 
 Everything else is a registry entry and a vocabulary block.
 

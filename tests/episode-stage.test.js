@@ -9,7 +9,7 @@ import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { parseEpisode, estimateRuntime, buildChapters, RUNTIME_TARGET, ageOf } from '../js/episode-stage.js';
+import { parseEpisode, estimateRuntime, buildChapters, RUNTIME_TARGET, ageOf, episodeSummary, pickTeaser, hasStage } from '../js/episode-stage.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const EP = fs.readFileSync(path.join(ROOT, 'tests/fixtures/episode-stage-basic-straining.txt'), 'utf8');
@@ -124,6 +124,66 @@ describe('episode stage: whose story, and who is talking', () => {
   });
 });
 
+describe('episode stage: the TV layer reads the story', () => {
+  const E = parseEpisode([
+    '[SCENE: Red camp — fire pit — night. The rain is pouring down.] [Present: Aubrey, Ren, Bruno, Gabby.]',
+    'Aubrey: Final two. You and me?',
+    'Ren: ...Why me?',
+    '[Bruno leans over and kisses Gabby. The camp erupts.]',
+    '[Confessional: Bruno]',
+    'Bruno: Thom didn\'t say that. Obviously. I made it up.',
+    '[SCENE: Tribal council — night.] [Present: Aubrey, Ren, Bruno. Host: Chris.]',
+    'Chris: I\'ll read the votes.',
+    'Chris: First vote... Bruno.',
+    '[Bruno blinks. He was not expecting to see his own name.]',
+    'Chris: Bruno.',
+    'Chris: Bruno — that\'s enough. Bring me your torch.',
+    'Bruno: I guess the coaching worked.',
+    'Chris: Bruno. The tribe has spoken.',
+  ].join('\n'));
+  const events = E.beats.filter(b => b.event).map(b => `${b.event.kind}:${b.event.names.join('+')}`);
+
+  it('clips the moments an audience would: a deal offered on camera, a kiss, a lie told to the camera, a blindside', () => {
+    expect(events).toEqual(['deal:Aubrey+Ren', 'kiss:Bruno+Gabby', 'lie:Bruno', 'blindside:Bruno']);
+    expect(E.beats.find(b => b.event?.kind === 'deal').event.label).toBe('FINAL-TWO DEAL');
+  });
+
+  it('knows rain that is falling now, and the final words after the torch is asked for', () => {
+    expect(E.scenes[0].weather).toBe('rain');
+    expect(P.scenes[0].weather).toBe(null);   // "It rained all night" style prose is not falling now
+    expect(E.beats.filter(b => b.finalWords).map(b => b.speaker)).toEqual(['Bruno']);
+  });
+
+  it('sums the episode up for the results screen', () => {
+    const sm = episodeSummary(P);
+    expect(sm.exits).toEqual([{ name: 'James', tally: { James: 2, Julia: 1, Natalia: 1 } }]);
+    expect(sm.wins[0].team).toBe('blue');
+    expect(sm.wins).toHaveLength(1);                       // "last tribe standing wins immunity" is the rules, not a win
+    expect(sm.wins[0].names).toEqual(['Lake', 'Spencer', 'Sami']);   // Blue players on the trail; coach Bowie excluded
+    expect(sm.screen[0][1]).toBeGreaterThanOrEqual(sm.screen[sm.screen.length - 1][1]);
+    expect(sm.screen.some(([n]) => P.cast[n].host)).toBe(false);
+    expect(sm.quote && sm.quote.text.length).toBeGreaterThan(20);
+    expect(episodeSummary(E).finalWords).toBe('I guess the coaching worked.');
+  });
+
+  it('teases each ad break with a line from the chapter ahead, never the host', () => {
+    buildChapters(P).forEach(c => {
+      const t = pickTeaser(P, c);
+      if (!t) return;
+      const i = P.beats.indexOf(t);
+      expect(i).toBeGreaterThanOrEqual(c.start);
+      expect(i).toBeLessThanOrEqual(c.end);
+      expect(P.cast[t.speaker].host).toBe(false);
+    });
+  });
+
+  it('only turns the stage on for shows that have a stage profile', () => {
+    expect(hasStage('total-drama')).toBe(true);
+    expect(hasStage('big-brother')).toBe(false);
+    expect(P.profile.exitCard).toBe('THE TRIBE HAS SPOKEN');
+  });
+});
+
 describe('episode stage: run time and chapters', () => {
   const RT = estimateRuntime(P);
 
@@ -166,12 +226,14 @@ describe('episode stage: run time and chapters', () => {
   });
 });
 
-describe('current-season.html plays Total Drama on the stage', () => {
+describe('current-season.html plays a show with a stage profile on the stage', () => {
   const html = fs.readFileSync(path.join(ROOT, 'current-season.html'), 'utf8');
   it('imports the stage and mounts it for Total Drama only, keeping the script view', () => {
-    expect(html).toMatch(/import \{ mountEpisodeStage \} from '\.\/js\/episode-stage\.js'/);
+    expect(html).toMatch(/import \{ mountEpisodeStage, hasStage \} from '\.\/js\/episode-stage\.js'/);
     const fn = html.slice(html.indexOf('function renderEpisode()'), html.indexOf('function parseTranscript('));
-    expect(fn).toMatch(/_csFormat\(\) === CS_DEFAULT_FORMAT && typeof window\.__mountEpisodeStage === 'function'/);
+    // gated on the show having a stage profile, not on one show's name
+    expect(fn).toMatch(/window\.__hasStage\(fmt\)/);
+    expect(fn).toContain('show: fmt');
     expect(fn).toContain('portrait: window.portraitFor');
     expect(fn).toContain('profiles: _csRosterProfiles()');
     expect(fn).toContain('data-view="script"');

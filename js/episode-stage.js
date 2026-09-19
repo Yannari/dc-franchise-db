@@ -28,228 +28,16 @@
 // on/off and volume a viewer set in the simulator hold here too.
 import { audio } from './audio.js';
 
-// ════════════════════════════════════════════════════════════════
-//  SETS — island locations, drawn in SVG (viewBox 1600×900).
-//  Ground line sits near y=640 so standees (floor 30%) stand on it.
-// ════════════════════════════════════════════════════════════════
-const VB = 'viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice"';
-const svg = (inner, defs='') => `<svg ${VB} xmlns="http://www.w3.org/2000/svg"><defs>${defs}</defs>${inner}</svg>`;
+import { stageShow, hasStage } from './stage-shows.js';
+export { hasStage };
 
-const TIMES = {
-  morning:  { sky:['#7cc8ff','#ffe9c2'], sea:'#2f8fc4', sun:{x:300,y:260,r:70,c:'#fff3c4'}, tint:'#fff6e8', glow:0,   label:'Morning' },
-  day:      { sky:['#4fb2ff','#bfe6ff'], sea:'#1f7fbf', sun:{x:1200,y:150,r:60,c:'#fffbe0'}, tint:'#ffffff', glow:0,   label:'Midday' },
-  afternoon:{ sky:['#62a9e8','#ffd9a0'], sea:'#2a78b0', sun:{x:1250,y:300,r:70,c:'#ffe7a8'}, tint:'#fff0dc', glow:0,   label:'Afternoon' },
-  dusk:     { sky:['#3d2c73','#ff8f5a'], sea:'#6b4a8a', sun:{x:1100,y:520,r:110,c:'#ffb36b'}, tint:'#ffc9a8', glow:.35, label:'Dusk' },
-  night:    { sky:['#050818','#1b2553'], sea:'#0e1a3d', moon:{x:1250,y:170,r:55}, tint:'#8a98d8', glow:.6, label:'Night' },
-};
-function timeOf(text){
-  const t = (text||'').toLowerCase();
-  if (/night|midnight|tribal/.test(t)) return 'night';
-  if (/dusk|sunset|evening/.test(t)) return 'dusk';
-  if (/afternoon/.test(t)) return 'afternoon';
-  if (/midday|noon|\bday\b|hot/.test(t)) return 'day';
-  return 'morning';
-}
+// The show whose episode this is — its sets, words and rules (js/stage-shows.js).
+// parse() switches it; the engine reads the same bindings after.
+let SH = stageShow();
+let SETS, TIMES, timeOf, skySVG, pickSet;
+function useShow(id){ SH = stageShow(id); ({ SETS, TIMES, timeOf, skySVG, pickSet } = SH.sets); return SH; }
+useShow();
 
-// ── primitives ──
-const rnd = (s => () => (s = (s * 16807) % 2147483647) / 2147483647)(7);
-function palm(x, y, h, flip=1, cls='sway', dark='#1f5a2c'){
-  const lean = 40*flip;
-  const leaves = [-150,-110,-70,-30,10,50].map((a,i)=>{
-    const r=a*Math.PI/180, L=h*.55, ex=Math.cos(r)*L, ey=Math.sin(r)*L*.55;
-    return `<path d="M0 0 Q ${ex*.5} ${ey-60} ${ex} ${ey+40} Q ${ex*.45} ${ey-20} 0 12Z" fill="${i%2?dark:'#2e7d3c'}"/>`;
-  }).join('');
-  return `<g class="${cls}" style="transform-origin:${x}px ${y}px">
-    <path d="M${x} ${y} Q ${x+lean*.4} ${y-h*.5} ${x+lean} ${y-h}" stroke="#6b4a2b" stroke-width="${h*.06}" fill="none" stroke-linecap="round"/>
-    <path d="M${x} ${y} Q ${x+lean*.4} ${y-h*.5} ${x+lean} ${y-h}" stroke="#8a6238" stroke-width="${h*.06}" stroke-dasharray="6 14" fill="none"/>
-    <g transform="translate(${x+lean} ${y-h})">${leaves}<circle cx="-8" cy="8" r="10" fill="#5a3b1c"/><circle cx="9" cy="10" r="9" fill="#6b4726"/></g></g>`;
-}
-function bush(x,y,s,c='#2a6b35'){ return `<g transform="translate(${x} ${y}) scale(${s})"><ellipse cx="0" cy="0" rx="70" ry="40" fill="${c}"/><ellipse cx="-45" cy="10" rx="45" ry="30" fill="${c}" opacity=".85"/><ellipse cx="50" cy="8" rx="50" ry="32" fill="#1f5228"/></g>`; }
-function rock(x,y,s,c='#5b5f6b'){ return `<g transform="translate(${x} ${y}) scale(${s})"><path d="M-80 0 L-60 -55 L-10 -80 L45 -60 L80 0Z" fill="${c}"/><path d="M-10 -80 L45 -60 L80 0 L20 0Z" fill="#000" opacity=".2"/></g>`; }
-function flame(x,y,s){ return `<g transform="translate(${x} ${y}) scale(${s})">
-  <path class="flick" d="M0 0 C -40 -20 -30 -70 0 -120 C 30 -70 40 -20 0 0Z" fill="#ff7a1a"/>
-  <path class="flick slow" d="M0 0 C -24 -14 -18 -50 0 -82 C 18 -50 24 -14 0 0Z" fill="#ffc53d"/>
-  <path class="flick" d="M0 0 C -10 -8 -8 -26 0 -44 C 8 -26 10 -8 0 0Z" fill="#fff6c9"/></g>`; }
-function torch(x,y,h){ return `<g><rect x="${x-6}" y="${y-h}" width="12" height="${h}" fill="#5a3a1f"/><path d="M${x-18} ${y-h} L${x+18} ${y-h} L${x+12} ${y-h+30} L${x-12} ${y-h+30}Z" fill="#3b2a18"/>${flame(x,y-h+2,.55)}</g>`; }
-function ocean(y, c){ return `<rect x="0" y="${y}" width="1600" height="${900-y}" fill="${c}"/>
-  <g class="wave"><path d="M-100 ${y+30} q 50 -14 100 0 t 100 0 t 100 0 t 100 0 t 100 0 t 100 0 t 100 0 t 100 0 t 100 0 t 100 0 t 100 0 t 100 0 t 100 0 t 100 0 t 100 0 t 100 0 t 100 0 t 100 0" stroke="#ffffff55" stroke-width="4" fill="none"/></g>
-  <g class="wave d2"><path d="M-100 ${y+80} q 60 -16 120 0 t 120 0 t 120 0 t 120 0 t 120 0 t 120 0 t 120 0 t 120 0 t 120 0 t 120 0 t 120 0 t 120 0 t 120 0 t 120 0 t 120 0" stroke="#ffffff33" stroke-width="5" fill="none"/></g>`; }
-
-// ── sky (shared) ──
-function skySVG(time){
-  const T = TIMES[time];
-  let body = `<rect width="1600" height="900" fill="url(#sk)"/>`;
-  if (T.moon){
-    for (let i=0;i<90;i++){ const x=rnd()*1600, y=rnd()*520, r=rnd()*2+.6;
-      body += `<circle class="twinkle" style="animation-delay:${-rnd()*2}s" cx="${x}" cy="${y}" r="${r}" fill="#fff"/>`; }
-    body += `<circle cx="${T.moon.x}" cy="${T.moon.y}" r="${T.moon.r*2.4}" fill="#cfd8ff" opacity=".12"/>
-      <circle cx="${T.moon.x}" cy="${T.moon.y}" r="${T.moon.r}" fill="#eef1ff"/><circle cx="${T.moon.x+18}" cy="${T.moon.y-10}" r="${T.moon.r}" fill="#1b2553" opacity=".25"/>`;
-  } else {
-    const s=T.sun;
-    body += `<circle class="shimmer" cx="${s.x}" cy="${s.y}" r="${s.r*2.6}" fill="${s.c}" opacity=".35"/><circle cx="${s.x}" cy="${s.y}" r="${s.r}" fill="${s.c}"/>`;
-    body += `<g class="cloud" opacity=".85"><ellipse cx="0" cy="170" rx="120" ry="34" fill="#fff"/><ellipse cx="60" cy="150" rx="80" ry="38" fill="#fff"/></g>
-             <g class="cloud d2" opacity=".6"><ellipse cx="0" cy="300" rx="160" ry="30" fill="#fff"/><ellipse cx="-70" cy="285" rx="80" ry="30" fill="#fff"/></g>`;
-  }
-  return svg(body, `<linearGradient id="sk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${T.sky[0]}"/><stop offset=".75" stop-color="${T.sky[1]}"/></linearGradient>`);
-}
-
-// ── set library: each returns far / mid / fg SVG + particle kind ──
-const SETS = {
-  camp: {
-    label:'Tribe Camp', match:/camp|shelter|fire pit|firepit|\bfire\b/,
-    fx:'embers',
-    far:t=>svg(`${ocean(470,TIMES[t].sea)}<path d="M1050 470 q 120 -90 260 -20 q 60 -30 110 20Z" fill="#1d4a2e" opacity=".8"/>`),
-    mid:(t,sc)=>svg(`
-      <path d="M0 520 Q 400 480 800 510 T 1600 500 V900 H0Z" fill="#e6c98f"/>
-      <path d="M0 600 Q 500 570 1000 600 T 1600 590 V900 H0Z" fill="#d9b574"/>
-      ${palm(120,560,380,1,'sway')}${palm(1500,560,420,-1,'sway d2')}${bush(1330,560,1.3)}${bush(250,570,1)}
-      <g transform="translate(1120 590)">
-        <path d="M-230 0 L-150 -250 L150 -250 L230 0" fill="none" stroke="#7a5230" stroke-width="18"/>
-        <path d="M-250 -230 L0 -330 L250 -230 L180 -200 L0 -280 L-180 -200Z" fill="#7aa33a"/>
-        <path d="M-250 -230 L0 -330 L250 -230" stroke="#4d6d1f" stroke-width="10" fill="none"/>
-        ${[...Array(9)].map((_,i)=>`<path class="sway d${i%3+1}" style="transform-origin:${-200+i*50}px -225px" d="M${-200+i*50} -225 l -8 60 l 16 0Z" fill="#5f8a2b"/>`).join('')}
-        <rect x="-170" y="-70" width="340" height="18" fill="#8a5a33"/><rect x="-160" y="-52" width="12" height="52" fill="#6b4726"/><rect x="148" y="-52" width="12" height="52" fill="#6b4726"/>
-      </g>
-      <g transform="translate(560 640)">
-        <ellipse cx="0" cy="0" rx="120" ry="30" fill="#6b5a45"/>
-        ${[...Array(10)].map((_,i)=>{const a=i/10*Math.PI*2;return `<ellipse cx="${Math.cos(a)*110}" cy="${Math.sin(a)*26}" rx="24" ry="14" fill="#7d7d86"/>`}).join('')}
-        <path d="M-60 0 L60 -20 M-60 -20 L60 0" stroke="#4a2e17" stroke-width="16"/>
-        ${flame(0,-4,1.1)}
-      </g>
-      <rect x="300" y="700" width="200" height="34" rx="16" fill="#7a4f2a"/><rect x="700" y="710" width="220" height="34" rx="16" fill="#6b4524"/>
-      <g transform="translate(900 470)"><rect x="-4" y="0" width="8" height="160" fill="#5a3a1f"/><path class="sway" style="transform-origin:0 10px" d="M4 8 L110 30 L4 60Z" fill="${sc?.tribe ? tribeColor(sc.tribe) : '#e8453c'}"/></g>`),
-    fg:t=>svg(`<g class="sway d3" style="transform-origin:0 0"><path d="M-40 -40 Q 200 60 330 -30 Q 190 110 -40 90Z" fill="#1c4f27"/></g>
-      <g class="sway d2" style="transform-origin:1600px 0"><path d="M1640 -40 Q 1400 80 1250 -20 Q 1420 130 1640 110Z" fill="#17451f"/></g>`),
-  },
-  beach: {
-    label:'The Beach', match:/beach|shore|sand|coast|boat|arriv|exile|redemption|lake/,
-    fx:'spray',
-    far:t=>svg(`${ocean(430,TIMES[t].sea)}<g class="bob"><path d="M1180 470 l 90 0 l -15 22 l -60 0Z" fill="#8a4b2a"/><path d="M1225 468 L1225 380 L1275 460Z" fill="#f2efe6"/></g>`),
-    mid:t=>svg(`
-      <path d="M0 560 Q 500 520 1000 555 T 1600 540 V900 H0Z" fill="#f0d9a3"/>
-      <path class="shimmer" d="M0 565 Q 500 525 1000 560 T 1600 545" stroke="#fff" stroke-width="10" fill="none"/>
-      <path d="M0 650 Q 600 620 1600 650 V900 H0Z" fill="#e9cc8c"/>
-      ${palm(90,640,480,1,'sway')}${palm(260,650,340,1,'sway d3')}
-      <path d="M1180 700 q 80 -30 180 -8 l 10 18 q -100 -10 -190 12Z" fill="#9b7a55"/>
-      <g transform="translate(700 760)"><ellipse rx="22" ry="14" fill="#e0513a"/><path d="M-20 -6 l -16 -12 M20 -6 l 16 -12" stroke="#e0513a" stroke-width="6"/></g>
-      ${[...Array(14)].map(()=>`<circle cx="${rnd()*1600}" cy="${660+rnd()*220}" r="${2+rnd()*3}" fill="#c9a86a"/>`).join('')}`),
-    fg:t=>svg(`<g class="sway d2" style="transform-origin:1600px 0"><path d="M1640 -40 Q 1380 60 1270 -20 Q 1400 120 1640 100Z" fill="#1c4f27"/></g>`),
-  },
-  jungle: {
-    label:'The Jungle', match:/jungle|trees|treeline|vine|forest|idol|path|banyan/,
-    fx:'fireflies',
-    far:t=>svg(`<rect width="1600" height="900" fill="#0f2d1b" opacity=".6"/>
-      ${[...Array(12)].map((_,i)=>`<rect x="${i*140+rnd()*40}" y="0" width="${40+rnd()*30}" height="900" fill="#173b24"/>`).join('')}
-      <path d="M0 420 Q 200 330 400 400 T 800 380 T 1200 400 T 1600 370 V900 H0Z" fill="#1b4a2b"/>`),
-    mid:t=>svg(`
-      <path d="M0 560 Q 400 530 800 560 T 1600 550 V900 H0Z" fill="#3a5a2a"/>
-      <path d="M0 640 Q 600 610 1600 650 V900 H0Z" fill="#2f4b22"/>
-      <g transform="translate(1150 600)">
-        <path d="M-90 0 Q -80 -300 -40 -520 L 60 -520 Q 90 -300 110 0Z" fill="#5a4330"/>
-        <path d="M-90 0 Q -160 -60 -260 20 M-60 0 Q -110 -30 -170 40 M100 0 Q 170 -50 280 20 M80 0 Q 130 -30 190 40" stroke="#5a4330" stroke-width="24" fill="none" stroke-linecap="round"/>
-        <ellipse cx="5" cy="-210" rx="26" ry="40" fill="#1e140c"/>
-        <ellipse cx="0" cy="-560" rx="330" ry="150" fill="#1f5a2c"/><ellipse cx="-160" cy="-520" rx="180" ry="100" fill="#26683a"/>
-      </g>
-      ${[...Array(9)].map((_,i)=>{const x=80+i*180; return `<path class="sway d${i%3+1}" style="transform-origin:${x}px 0px" d="M${x} -10 Q ${x+20} 200 ${x-10} ${260+rnd()*200}" stroke="#2d6b33" stroke-width="7" fill="none"/>`}).join('')}
-      ${bush(250,640,1.4,'#28602f')}${bush(700,660,1.1,'#2c6a33')}`),
-    fg:t=>svg(`<g class="sway" style="transform-origin:0 900px"><path d="M-60 900 Q 60 560 260 520 Q 180 700 140 900Z" fill="#0f3a1a"/><path d="M-60 900 Q 180 700 420 700 Q 260 800 200 900Z" fill="#134a21"/></g>
-      <g class="sway d2" style="transform-origin:1600px 900px"><path d="M1660 900 Q 1520 600 1300 560 Q 1420 740 1460 900Z" fill="#0f3a1a"/></g>
-      <g class="sway d3" style="transform-origin:800px 0"><path d="M500 -40 Q 800 120 1100 -40Z" fill="#0d3517"/></g>`),
-  },
-  well: {
-    label:'The Well', match:/well|water run|bucket/,
-    fx:'dust',
-    far:t=>svg(`<path d="M0 470 Q 300 380 650 450 T 1300 420 T 1600 440 V900 H0Z" fill="#3f7a3a"/>${palm(1300,480,300,-1,'sway d2')}${palm(300,470,260,1,'sway d3')}`),
-    mid:t=>svg(`
-      <path d="M0 540 Q 500 510 1000 545 T 1600 530 V900 H0Z" fill="#b8a06a"/>
-      <path d="M0 640 Q 700 610 1600 650 V900 H0Z" fill="#a88f5a"/>
-      <g transform="translate(800 620)">
-        <ellipse cx="0" cy="0" rx="190" ry="44" fill="#4b4b55"/>
-        <path d="M-190 0 V -120 A190 44 0 0 1 190 -120 V 0 A190 44 0 0 1 -190 0Z" fill="#8a8a96"/>
-        ${[...Array(4)].map((_,r)=>[...Array(6)].map((_,c)=>`<rect x="${-180+c*60+(r%2)*30}" y="${-112+r*28}" width="56" height="24" rx="5" fill="#9c9ca8" stroke="#5f5f6b" stroke-width="3"/>`).join('')).join('')}
-        <ellipse cx="0" cy="-120" rx="190" ry="44" fill="#6d6d78"/><ellipse cx="0" cy="-120" rx="150" ry="30" fill="#141420"/>
-        <rect x="-170" y="-330" width="20" height="210" fill="#6b4726"/><rect x="150" y="-330" width="20" height="210" fill="#6b4726"/>
-        <path d="M-200 -330 L0 -420 L200 -330Z" fill="#8a3b2a"/><rect x="-160" y="-290" width="320" height="16" rx="8" fill="#7a5230"/>
-        <g class="sway" style="transform-origin:40px -282px"><path d="M40 -282 V -190" stroke="#c9b27a" stroke-width="5"/><path d="M15 -190 h50 l -8 44 h-34Z" fill="#7a5230"/></g>
-      </g>
-      ${rock(250,690,.9,'#7d7a70')}${rock(1350,700,1.1,'#6f6c62')}`),
-    fg:t=>svg(`<g class="sway d3" style="transform-origin:0 900px"><path d="M0 900 L40 760 L70 900 L110 780 L130 900Z" fill="#6f8a3a"/></g>
-      <g class="sway d2" style="transform-origin:1600px 900px"><path d="M1600 900 L1560 740 L1530 900 L1490 790 L1470 900Z" fill="#6f8a3a"/></g>`),
-  },
-  fishing: {
-    label:'The Fishing Rocks', match:/fish|rocks|tide|lagoon|reef/,
-    fx:'spray',
-    far:t=>svg(`${ocean(380,TIMES[t].sea)}${rock(1300,470,1.4,'#3b3f4a')}${rock(1450,460,.8,'#343844')}`),
-    mid:t=>svg(`
-      <rect x="0" y="560" width="1600" height="340" fill="${TIMES[t].sea}"/>
-      <g class="wave"><path d="M-100 600 q 80 -20 160 0 t 160 0 t 160 0 t 160 0 t 160 0 t 160 0 t 160 0 t 160 0 t 160 0 t 160 0 t 160 0 t 160 0" stroke="#ffffff66" stroke-width="6" fill="none"/></g>
-      <path d="M-40 640 L200 520 L520 540 L760 600 L1000 560 L1300 590 L1640 540 V900 H-40Z" fill="#4a4e5a"/>
-      <path d="M-40 700 L400 640 L900 680 L1640 640 V900 H-40Z" fill="#3c404b"/>
-      <path d="M200 520 L520 540 L460 600 L240 590Z" fill="#5a5f6c"/>
-      <ellipse class="shimmer" cx="1000" cy="760" rx="160" ry="30" fill="#6fb8e0"/>
-      <path d="M560 560 Q 700 380 900 330" stroke="#8a6238" stroke-width="8" fill="none"/>
-      <path class="sway" style="transform-origin:900px 330px" d="M900 330 Q 960 480 950 620" stroke="#ddd" stroke-width="2" fill="none"/>
-      <circle class="bob" cx="950" cy="622" r="8" fill="#e8453c"/>`),
-    fg:t=>svg(`${rock(80,900,2.4,'#2b2e36')}${rock(1560,900,2,'#2b2e36')}`),
-  },
-  cliff: {
-    label:'The Cliff', match:/cliff|peak|ledge|summit|mountain|slope|lookout/,
-    fx:'wind',
-    far:t=>svg(`${ocean(620,TIMES[t].sea)}<path d="M0 620 L300 520 L520 620Z" fill="#355a3a" opacity=".6"/>`),
-    mid:t=>svg(`
-      <path d="M-40 900 L-40 560 L300 520 L700 540 L1000 520 L1250 560 L1320 900Z" fill="#6d6155"/>
-      <path d="M-40 620 L300 580 L700 600 L1000 580 L1250 610 L1320 900 L-40 900Z" fill="#5c5147"/>
-      <path d="M1250 560 L1320 900 L1290 900 L1230 600Z" fill="#3d352e"/>
-      ${bush(200,560,.8,'#4d7a3a')}${palm(1150,560,260,-1,'sway')}`),
-    fg:t=>svg(`<g class="cloud" opacity=".35"><ellipse cx="0" cy="760" rx="260" ry="50" fill="#fff"/></g>`),
-  },
-  challenge: {
-    label:'Challenge Arena', match:/challenge|arena|course|crate|immunity|reward/,
-    fx:'confetti',
-    far:t=>svg(`${ocean(480,TIMES[t].sea)}`),
-    mid:t=>svg(`
-      <path d="M0 540 Q 800 500 1600 540 V900 H0Z" fill="#edd39a"/>
-      ${[...Array(7)].map((_,i)=>`<g transform="translate(${130+i*220} 430)"><rect x="-4" y="0" width="8" height="140" fill="#555"/><path class="sway d${i%3+1}" style="transform-origin:4px 4px" d="M4 4 L90 22 L4 44Z" fill="${['#e8453c','#ffcc33','#3aa0ff','#40c060'][i%4]}"/></g>`).join('')}
-      ${[0,1,2].map(k=>{const x=380+k*420; return [...Array(4-k%2)].map((_,j)=>`<g transform="translate(${x+(j%2)*14-60} ${600-j*72})"><rect width="120" height="72" fill="#b7843f" stroke="#6b4524" stroke-width="6"/><path d="M0 0 L120 72 M120 0 L0 72" stroke="#6b4524" stroke-width="5"/></g>`).join('')}).join('')}
-      <g transform="translate(800 250)"><rect x="-6" y="0" width="12" height="130" fill="#444"/><path d="M-40 0 Q 0 -60 40 0Z" fill="#ffcc33" stroke="#8a6a00" stroke-width="5"/></g>
-      <g transform="translate(1440 650)"><path d="M-80 0 L-60 -140 L60 -140 L80 0Z" fill="#7a2230"/><rect x="-95" y="-165" width="190" height="30" rx="6" fill="#a8323f"/><circle cx="0" cy="-80" r="34" fill="#ffcc33"/><path d="M-14 -80 l 10 12 l 20 -26" stroke="#7a2230" stroke-width="8" fill="none"/></g>`),
-    fg:t=>svg(`<path d="M0 820 L1600 820 V900 H0Z" fill="#000" opacity=".15"/>`),
-  },
-  tribal: {
-    label:'Tribal Council', match:/tribal|council|elimination|ceremony|vote/,
-    fx:'embers', forceTime:'night',
-    far:t=>svg(`<rect width="1600" height="900" fill="#0b1224"/>${[...Array(10)].map((_,i)=>`<rect x="${i*170}" y="200" width="60" height="700" fill="#0f1a30"/>`).join('')}`),
-    mid:t=>svg(`
-      <path d="M0 520 L1600 520 V900 H0Z" fill="#2a1f18"/>
-      <ellipse cx="800" cy="700" rx="760" ry="170" fill="#3a2a1e"/>
-      ${[...Array(9)].map((_,i)=>torch(120+i*170, 520, 230+(i%2)*40)).join('')}
-      <g transform="translate(800 520)"><path d="M-260 -380 L-230 0 M260 -380 L230 0" stroke="#4a3320" stroke-width="30"/><path d="M-300 -390 Q 0 -460 300 -390 L 290 -350 Q 0 -410 -290 -350Z" fill="#5a3d24"/>
-        ${[...Array(5)].map((_,i)=>`<path d="M${-220+i*110} -370 l 0 60" stroke="#c9b27a" stroke-width="4"/><circle cx="${-220+i*110}" cy="-300" r="14" fill="#d8cdb0"/>`).join('')}</g>
-      <g transform="translate(800 700)"><ellipse rx="140" ry="36" fill="#1a120c"/>${[...Array(12)].map((_,i)=>{const a=i/12*Math.PI*2;return `<ellipse cx="${Math.cos(a)*130}" cy="${Math.sin(a)*30}" rx="26" ry="14" fill="#6d6d78"/>`}).join('')}${flame(0,-6,1.6)}</g>
-      <g transform="translate(1320 640)"><rect x="-40" y="0" width="80" height="80" fill="#4a3320"/><path d="M-60 0 Q 0 -110 60 0Z" fill="#8a5a33" stroke="#3b2a18" stroke-width="6"/></g>`),
-    fg:t=>svg(`<path d="M-20 900 L60 400 L90 400 L120 900Z" fill="#1a110a"/><path d="M1620 900 L1540 400 L1510 400 L1480 900Z" fill="#1a110a"/>`),
-    glow:'radial-gradient(ellipse at 50% 78%,#ff7a1a66,transparent 60%)',
-  },
-};
-SETS.dock = {
-  label:'The Dock', match:/dock|pier/, fx:'spray',
-  far:t=>svg(`${ocean(420,TIMES[t].sea)}<path d="M1100 425 q 140 -80 300 -10Z" fill="#1d4a2e" opacity=".7"/>`),
-  mid:t=>svg(`
-    <rect x="0" y="520" width="1600" height="380" fill="${TIMES[t].sea}"/>
-    <g class="wave"><path d="M-100 560 q 80 -18 160 0 t 160 0 t 160 0 t 160 0 t 160 0 t 160 0 t 160 0 t 160 0 t 160 0 t 160 0 t 160 0 t 160 0" stroke="#ffffff55" stroke-width="5" fill="none"/></g>
-    <path d="M-60 640 L1450 585 L1480 610 L-60 690Z" fill="#9a6b3c"/>
-    ${[...Array(16)].map((_,i)=>{const x=-40+i*95, y=640-i*3.4; return `<path d="M${x} ${y-2} L${x+4} ${y+50}" stroke="#6b4724" stroke-width="4"/><rect x="${x-8}" y="${y+40}" width="16" height="200" fill="#5a3a1f"/>`}).join('')}
-    <path d="M-60 690 L1480 610 L1480 625 L-60 710Z" fill="#6b4724"/>
-    <circle class="bob" cx="1300" cy="640" r="16" fill="#fff" stroke="#e8453c" stroke-width="7"/>
-    ${palm(1540,590,380,-1,'sway d2')}`),
-  fg:t=>svg(`<g class="sway d3" style="transform-origin:0 0"><path d="M-40 -40 Q 200 60 330 -30 Q 190 110 -40 90Z" fill="#1c4f27"/></g>`),
-};
-SETS.island = { ...SETS.beach, label:'The Island', match:/$^/ };
-function pickSet(header){
-  const h = (header||'').toLowerCase();
-  for (const k of ['tribal','challenge','dock','jungle','well','fishing','cliff','camp','beach']) if (SETS[k].match.test(h)) return k;
-  return 'island';
-}
 // ════════════════════════════════════════════════════════════════
 //  CAST — built from the transcript itself: every speaker plus every
 //  name on a [Present:] list. Portrait = assets/avatars/<slug>.png.
@@ -259,19 +47,18 @@ function pickSet(header){
 // slug cannot know which of a returnee's looks this season used, and guessing draws
 // the wrong face confidently. With no resolver, a standee shows its initial.
 let portraitOf = () => '';
-const DEFAULT_HOSTS = ['Chris', 'Chef'];
-const HOST_COLORS = { Chris:'#ffcc33', Chef:'#f1f1f1' };
 const TRIBE_COLORS = { green:'#4ade80', blue:'#60a5fa', red:'#f87171', yellow:'#facc15', purple:'#c084fc',
                        orange:'#fb923c', pink:'#f472b6', black:'#9ca3af', white:'#e5e7eb', gold:'#fbbf24' };
 const TRIBE_RE = new RegExp(`\\b(${Object.keys(TRIBE_COLORS).join('|')})\\b`, 'i');
 const PALETTE = ['#7ec8ff','#ff5fa2','#7dff8a','#8fa2ff','#ffb86b','#c58bff','#5ff2d6','#ff7a6b','#ffe066','#9be15d','#ff9ecd','#8bd3dd'];
 const hashStr = s => Math.abs([...s].reduce((a,c) => (a*31 + c.charCodeAt(0)) | 0, 7));
-// "Green camp", "Kinosa camp", "Blue tribe's beach" → the tribe. A colour word gets its colour;
-// any other tribe name gets a steady colour of its own.
-const NOT_TRIBES = /^(the|main|tribe|challenge|exile|redemption|tribal|jury|merge|merged|losers?|winners?|home|base|boot|island)$/i;
+// "Green camp", "Kinosa camp" → the team (the show's profile says what a team's
+// place looks like). Internally every show's team is `tribe`; the words on
+// screen come from the profile. A colour word gets its colour, any other team
+// name a steady colour of its own.
 function tribeOfPlace(place){
-  const m = place.match(/^(?:the\s+)?([A-Za-z][\w'-]*?)(?:'s)?\s+(?:camp|tribe|beach|shelter)\b/i);
-  if (m && !NOT_TRIBES.test(m[1])) return m[1].toLowerCase();
+  const m = place.match(SH.groupPlace);
+  if (m && !SH.notGroups.test(m[1])) return m[1].toLowerCase();
   return (place.match(TRIBE_RE) || [])[1]?.toLowerCase() || null;
 }
 // "30" from an authored age, else worked out from a birthdate; nothing rather than a guess.
@@ -288,8 +75,8 @@ export const tribeColor = t => TRIBE_COLORS[t] || (t ? PALETTE[hashStr(t) % PALE
 let CAST = {};
 function ensureCast(n, role){
   if (!CAST[n]) CAST[n] = { img:portraitOf(n),
-    c:HOST_COLORS[n] || PALETTE[hashStr(n) % PALETTE.length],
-    host:DEFAULT_HOSTS.includes(n), role:DEFAULT_HOSTS.includes(n) ? 'host' : 'player', tribe:null };
+    c:SH.hostColors[n] || PALETTE[hashStr(n) % PALETTE.length],
+    host:SH.hosts.includes(n), role:SH.hosts.includes(n) ? 'host' : 'player', tribe:null };
   if (role === 'host'){ CAST[n].host = true; CAST[n].role = 'host'; }
   if (role === 'coach' && !CAST[n].host) CAST[n].role = 'coach';
   return CAST[n];
@@ -304,18 +91,6 @@ const SPK = /^([A-Z][a-zA-Z'\-]+(?: [A-Z][a-zA-Z'\-]+)?):\s*(.+)$/;
 const NOT_NAMES = /^(present|confessional|scene|title|title card|previously|producer|phase|host|hosts|coach|coaches|note|voting|later|players?)$/i;
 const NAME_RE = /^[A-Z][a-zA-Z'\-]+(?: [A-Z][a-zA-Z'\-]+)?$/;
 const isName = n => NAME_RE.test(n || '') && n !== n.toUpperCase() && !NOT_NAMES.test(n);
-// the middle of "[SCENE: Green camp — well — morning.]" → which set to draw
-const SUBMAP = [
-  ['tribal',    /tribal|council|urn/i],
-  ['dock',      /dock|pier/i],
-  ['well',      /\bwell\b/i],
-  ['fishing',   /fishing|rocks|tide ?pool|lagoon|reef/i],
-  ['cliff',     /cliff|peak|ledge|lookout/i],
-  ['jungle',    /tree ?line|jungle|forest|trail|woods|vines|clearing/i],
-  ['beach',     /water'?s edge|beach|shore|waterline|lake/i],
-  ['challenge', /compound|mess|obstacle|course|canoe|bench|water station|open area|arena|podium/i],
-  ['camp',      /fire ?pit|campfire|\bfire\b|shelter|cabin|crate|bunk|hammock|camp/i],
-];
 const stripCues = s => s.replace(/\[[^\]]*\]/g, ' ').replace(/\s{2,}/g, ' ').trim();
 const TIME_WORDS = /morning|dawn|sunrise|midday|noon|\bday\b|afternoon|dusk|sunset|evening|night|midnight/i;
 
@@ -356,27 +131,18 @@ function pages(text, max){
 
 // A stage direction that moves the camera somewhere else inside the same scene:
 // "[At the well. …]", "[Later — the dock. …]", "[Late that night. …]".
-const CUT_LEAD = /^(at the|later|next morning|next day|late that night|late at night|much later|later still|pre-tribal|evening|night|morning|dawn|between phases|full dark|meanwhile|back at)\b/i;
-const LOC_PHRASE = /\b(at|to|near|by|on) the (dock|well|tree ?line|water's edge|beach|shore|fire pit|shelter|urn)\b/i;
-const SUBSETS = [
-  ['dock',      /\b(dock|pier|pilings)\b/i],
-  ['well',      /\bthe well\b/i],
-  ['jungle',    /\b(tree ?line|jungle|forest|trail|woods|vines)\b/i],
-  ['beach',     /\b(water's edge|the beach|the shore|shoreline)\b/i],
-  ['challenge', /\b(compound|mess tent|mess hall|obstacle course)\b/i],
-  ['camp',      /\b(fire pit|the fire|shelter|camp|supply crate|the crate|cabin|bunk)\b/i],
-];
+// (the cues and spot names are the show's: SH.cutLead, SH.locPhrase, SH.cutSpots)
 function subView(text, scene, afterCard){
   const head = text.slice(0, afterCard ? 400 : 140);
-  // guessing a move only makes sense around camp — "a compound built on the beach" is the challenge, not a trip to the beach
-  if (!afterCard && (scene.set === 'challenge' || scene.set === 'tribal')) return null;
+  // guessing a move only makes sense at home — "a compound built on the beach" is the challenge, not a trip to the beach
+  if (!afterCard && (scene.set === SH.compSet || scene.set === SH.exitSet)) return null;
   const first = sentences(text)[0] || '';
-  if (!afterCard && !CUT_LEAD.test(text) && !LOC_PHRASE.test(first)) return null;
-  const allowed = k => !((k === 'camp' || k === 'challenge') && scene.set !== k);   // only return to the scene's own base
+  if (!afterCard && !SH.cutLead.test(text) && !SH.locPhrase.test(first)) return null;
+  const allowed = k => !((k === SH.homeSet || k === SH.compSet) && scene.set !== k);   // only return to the scene's own base
   let set = null;
-  const named = (head.match(LOC_PHRASE) || [])[2];   // "near the tree line" beats keyword order
-  if (named) set = SUBSETS.find(([k, re]) => re.test('the ' + named) && allowed(k))?.[0] || null;
-  if (!set) for (const [k, re] of SUBSETS){ if (re.test(head) && allowed(k)){ set = k; break; } }
+  const named = (head.match(SH.locPhrase) || [])[2];   // "near the tree line" beats keyword order
+  if (named) set = SH.cutSpots.find(([k, re]) => re.test('the ' + named) && allowed(k))?.[0] || null;
+  if (!set) for (const [k, re] of SH.cutSpots){ if (re.test(head) && allowed(k)){ set = k; break; } }
   const t = head.toLowerCase();
   const time = /\b(night|dark|moonlight|stars)\b/.test(t) ? 'night' : /\b(dusk|sunset|evening)\b/.test(t) ? 'dusk'
              : /\b(morning|dawn|sunrise)\b/.test(t) ? 'morning' : /\bafternoon\b/.test(t) ? 'afternoon' : null;
@@ -384,7 +150,16 @@ function subView(text, scene, afterCard){
   return { set: set || scene.view.set, time: SETS[scene.set].forceTime || time || scene.view.time };
 }
 
+// The weather a scene opens in — only when the prose says it is happening now
+// ("it rained all night" is yesterday). A stage direction can start or stop it.
+function weatherOf(text){
+  if (/\b(storm(y|ing)?|thunder\w*|lightning)\b/i.test(text)) return 'storm';
+  if (/\b(raining|pouring|downpour|drizzl\w*|rain (falls|pours|hammers|lashes|comes down)|in the rain)\b/i.test(text)) return 'rain';
+  return null;
+}
+
 function parse(text, opts = {}){
+  useShow(opts.show);
   CAST = {};
   portraitOf = opts.portrait || (() => '');
   let lines = text.replace(/\r/g, '').split('\n').map(l => l.trim()).filter(Boolean);
@@ -404,8 +179,8 @@ function parse(text, opts = {}){
   const mentioned = s => names.map(n => [n, s.search(rx[n])]).filter(([,i]) => i >= 0).sort((a,b) => a[1]-b[1]).map(([n]) => n);
   const findName = w => names.find(n => n.toLowerCase() === w.toLowerCase());
 
-  const out = { show:'', ep:'', title:'', scenes:[], beats:[] };
-  let scene = null, conf = null, reading = false, afterCard = false, lastNamed = null, lastActor = null, tally = {};
+  const out = { show:'', ep:'', title:'', scenes:[], beats:[], profile: SH };
+  let scene = null, conf = null, reading = false, afterCard = false, lastNamed = null, lastActor = null, lastSpeaker = null, tally = {};
   const push = b => (out.beats.push(b), b);
   const addP = n => {
     if (!scene || !CAST[n] || scene.present.includes(n)) return;
@@ -430,16 +205,17 @@ function parse(text, opts = {}){
       if (!sub && !/^(post|pre)-|between phases|^various$|^later$/i.test(pt)) sub = pt;
     });
     const fromPlace = pickSet(place), base = fromPlace !== 'island' ? fromPlace : pickSet(inner);
-    const subSet = sub && SUBMAP.find(([k, re]) => re.test(sub) && !((k === 'challenge' || k === 'camp') && base !== k))?.[0];
-    const set = base === 'tribal' ? 'tribal' : subSet || base;
+    const subSet = sub && SH.spots.find(([k, re]) => re.test(sub) && !((k === SH.compSet || k === SH.homeSet) && base !== k))?.[0];
+    const set = base === SH.exitSet ? SH.exitSet : subSet || base;
     // no time in the header → the last scene at this place carries on (a challenge phase keeps its daylight)
     const prevSame = [...out.scenes].reverse().find(s => s.place === place);
     const time = SETS[set].forceTime || (timeWord ? timeOf(timeWord) : TIME_WORDS.test(head) ? timeOf(head) : prevSame ? prevSame.time : timeOf(inner));
+    const tribe = tribeOfPlace(place);
     scene = { i:out.scenes.length, header:inner, place, sub, phase, declared, staging, set, time, view:{ set, time }, background:false,
-              tribe:tribeOfPlace(place),
+              tribe, groupColor: tribe ? tribeColor(tribe) : null, weather: weatherOf(inner),
               present:[], listed:[], roles:{}, late:{}, mentionAt:{}, elim:null, stagingDone:false };
     out.scenes.push(scene);
-    conf = null; reading = false; afterCard = false; lastNamed = null; lastActor = null; tally = {};
+    conf = null; reading = false; afterCard = false; lastNamed = null; lastActor = null; lastSpeaker = null; tally = {};
     push({ t:'scene', scene:scene.i });
   };
 
@@ -454,8 +230,8 @@ function parse(text, opts = {}){
     const ms = mentioned(text);
     if (!scene.listed.length) ms.forEach(addP);
     else ms.forEach(n => { if (!scene.listed.includes(n) && scene.mentionAt[n] == null) scene.mentionAt[n] = out.beats.length; });
-    const write = text.match(/\b[Ww]rites\s+([A-Z][A-Za-z]+)/);
-    const found = /\b(finds|pulls out|digs up|uncovers|holds up)\b[^.]{0,50}\bidol\b/i.test(text) && !/\bnothing\b/i.test(text);
+    const write = text.match(SH.vote.write);
+    const found = SH.find && SH.find.re.test(text) && !/\bnothing\b/i.test(text);
     let stay = false;
     pages(text, 170).forEach(p => {
       let who = mentioned(p);
@@ -466,41 +242,63 @@ function parse(text, opts = {}){
       stay = inConf && !who.length && text.length < 80;
       const b = push({ t:'dir', scene:scene.i, text:p, who, stay });
       // "Walks to the bell. Rings it." / "walks to the bench" → out of the challenge
-      if (/\b(rings? (it|the bell)|pulls it\b|walks to the bell|walks to the bench)/i.test(p)) b.out = players[0] || lastActor;
+      if (SH.benchAct.test(p)) b.out = players[0] || lastActor;
       if (players.length) lastActor = players[0];
       if (write && p.includes(write[0])){
         const target = findName(write[1]);
         if (target) b.write = { voter: mentioned(p.slice(0, p.indexOf(write[0])))[0] || lastNamed, name: target };
       }
-      if (found && /idol/i.test(p)) b.idol = who[0];
-      if (/snuffs?\b|torch goes (dark|out)/i.test(p)) b.snuff = scene.elim || who[0];
+      if (found && SH.find.word.test(p)){ b.idol = who[0]; if (who[0]) b.event = { kind:'find', label:SH.find.label, names:[who[0]] }; }
+      if (SH.vote.snuff.test(p)) b.snuff = scene.elim || who[0];
+      // the weather turns
+      if (/\b(starts?|begins?) to (rain|pour)|rain (starts|begins)|the sky opens\b/i.test(p)) b.weather = 'rain';
+      else if (/\b(thunder|lightning)\b/i.test(p) && !scene.weather) b.weather = 'storm';
+      else if (/\b(rain|storm) (stops|lets up|clears|passes)\b/i.test(p)) b.weather = 'clear';
+      // what an audience would clip: a kiss, a blindside
+      if (!b.event && /\bkiss(es|ed|ing)?\b/i.test(p) && players.length >= 2)
+        b.event = { kind:'kiss', label: /spin the bottle|cheek|peck/i.test(p) ? 'SMOOCH!' : 'SHOWMANCE ALERT', names:players.slice(0, 2) };
+      if (!b.event && scene.set === SH.exitSet && /\b(not expecting|wasn't expecting|blindside\w*|didn't see (it|this) coming|jaw drops)\b/i.test(p) && players.length)
+        b.event = { kind:'blindside', label:'BLINDSIDE!', names:players.slice(0, 1) };
     });
     if (!stay) conf = null;
   }
 
   function speak(who, body){
     if (conf && who !== conf) conf = null;
-    // an unlisted host talks to camera — unless this is the challenge or tribal, where he simply walks in
-    const onAir = /to camera/i.test(body) || !(['challenge','tribal'].includes(scene.set) || /challenge|compound|arena/i.test(scene.place));
+    // an unlisted host talks to camera — unless this is a competition or an exit, where they simply walk in
+    const onAir = /to camera/i.test(body) || !([SH.compSet, SH.exitSet].includes(scene.set) || SH.compPlace.test(scene.place));
     const host = !conf && scene.listed.length > 0 && !scene.present.includes(who) && !!CAST[who]?.host && onAir;
     if (!conf && !host) addP(who);
     const clean = stripCues(body);
     // Chef: "DISMISSED!" sends off whoever the scene was just about
-    const dismiss = CAST[who]?.host && /^\W*DISMISSED\b/.test(clean) ? lastActor : null;
+    const dismiss = CAST[who]?.host && SH.benchLine.test(clean) ? lastActor : null;
+    let event = null;
+    // an offer on camera, not a report of one in a confessional
+    const deal = !conf && !host && clean.match(/\bfinal[- ](two|three|four|2|3|4)\b/i);
+    // (who it was offered to: somebody named in it, else whoever answers — filled in after the loop)
+    if (deal && /(you and me|me and you|with me|deal|\?)/i.test(clean))
+      event = { kind:'deal', label:`FINAL-${({ '2':'TWO', '3':'THREE', '4':'FOUR' }[deal[1]] || deal[1].toUpperCase())} DEAL`,
+                names: [who, mentioned(clean).find(n => n !== who && scene.present.includes(n))].filter(Boolean) };
+    // admitting to the camera what they told someone else
+    if (conf && /\b(didn'?t say that|never said that|i lied|lying to|fake quote|made (it|that|this) up|there is no \w+ plan|there is no plan|wasn'?t true)\b/i.test(clean))
+      event = { kind:'lie', label:'LIE TOLD', names:[who] };
+    const finalWords = !!scene.elim && who === scene.elim && scene.set === SH.exitSet;
     if (!CAST[who]?.host && !conf) lastActor = who;
+    if (!conf && !host) lastSpeaker = who;
     const pushLine = () => pages(body, 190).forEach((p, k) =>
-      push({ t:'line', scene:scene.i, speaker:who, text:p, conf:!!conf, host, mood:mood(stripCues(p), p), ...(k === 0 && dismiss ? { dismiss } : {}) }));
-    if (scene.set === 'tribal' && CAST[who]?.host && !conf && !host){
-      if (/read the votes/i.test(clean)) reading = true;
+      push({ t:'line', scene:scene.i, speaker:who, text:p, conf:!!conf, host, mood:mood(stripCues(p), p),
+             ...(k === 0 && dismiss ? { dismiss } : {}), ...(k === 0 && event ? { event } : {}), ...(finalWords ? { finalWords:true } : {}) }));
+    if (scene.set === SH.exitSet && CAST[who]?.host && !conf && !host){
+      if (SH.vote.start.test(clean)) reading = true;
       const nm = mentioned(clean);
-      if (/voted out|bring me your torch|that'?s enough/i.test(clean) && !scene.elim){
+      if (SH.vote.exit.test(clean) && !scene.elim){
         const top = Object.entries(tally).sort((a,b) => b[1] - a[1])[0]?.[0];
         pushLine(); scene.elim = top || nm[nm.length - 1];
-        if (scene.elim) push({ t:'elim', scene:scene.i, name:scene.elim });
-        if (/tribe has spoken/i.test(clean)) push({ t:'spoken', scene:scene.i });
+        if (scene.elim) push({ t:'elim', scene:scene.i, name:scene.elim, tally:{ ...tally } });
+        if (SH.vote.final.test(clean)) push({ t:'spoken', scene:scene.i });
         return;
       }
-      if (/tribe has spoken/i.test(clean)){ pushLine(); push({ t:'spoken', scene:scene.i }); return; }
+      if (SH.vote.final.test(clean)){ pushLine(); push({ t:'spoken', scene:scene.i }); return; }
       if (reading && nm.length && clean.split(/\s+/).length <= 8){
         tally[nm[0]] = (tally[nm[0]] || 0) + 1;
         push({ t:'vote', scene:scene.i, name:nm[0], speaker:who, text:body, mood:'tense' });
@@ -551,6 +349,25 @@ function parse(text, opts = {}){
     if (/^end of episode/i.test(line)){ if (out.beats[out.beats.length-1]?.t !== 'end') push({ t:'end', scene:scene.i }); continue; }
     dir(line);
   }
+  // a deal offered to nobody by name was offered to whoever answers it
+  out.beats.forEach((b, i) => {
+    if (b.event?.kind !== 'deal' || b.event.names.length > 1) return;
+    const reply = out.beats.slice(i + 1).find(x => x.scene !== b.scene || (x.t === 'line' && !x.conf && !x.host && x.speaker !== b.speaker && !CAST[x.speaker]?.host));
+    if (reply && reply.scene === b.scene) b.event.names.push(reply.speaker);
+    else delete b.event;   // nobody took it up: not a deal, just talk
+  });
+  // a competition win names a person or a whole team
+  out.beats.forEach(b => {
+    const w = b.t === 'line' && stripCues(b.text).match(SH.compWin);
+    if (!w) return;
+    const word = w[1].toLowerCase(), sc = out.scenes[b.scene];
+    const team = Object.values(CAST).some(c => c.tribe === word);
+    const person = findName(w[1]);
+    if (!team && !person) return;   // "last tribe standing wins immunity" is the rules, not a result
+    b.win = team ? { team: word, names: sc.present.filter(n => CAST[n].tribe === word && (sc.roles[n] || CAST[n].role) !== 'coach') }
+                 : { names: [person] };
+    b.event = b.event || { kind:'win', label:`${w[1].toUpperCase()} WINS ${SH.compPrize}`, names: b.win.names.slice(0, 6), team: b.win.team };
+  });
   out.cast = CAST;
   return out;
 }
@@ -609,31 +426,35 @@ export const fmtMin = ms => { const m = Math.round(ms / 60000); return m < 1 ? '
 // anything past the vote is the Epilogue. A first scene that carries the
 // host's "Previously on…" is the Cold Open. A second challenge or a second
 // tribal is numbered rather than folded into the first.
-export function sceneKind(sc){
-  if (sc.set === 'tribal' || /tribal|council|campfire ceremony|elimination ceremony/i.test(sc.place)) return 'tribal';
-  if (sc.set === 'challenge' || sc.phase || /challenge|compound|arena|obstacle course/i.test(sc.place)) return 'challenge';
-  return 'camp';
+// Every show has the same three kinds of scene; the profile says which set and
+// which place names are which. HOME is the camp or the house, COMP a challenge
+// or competition, EXIT the vote and the walk out.
+export function sceneKind(sc, show = SH){
+  if (sc.set === show.exitSet || show.exitPlace.test(sc.place)) return 'exit';
+  if (sc.set === show.compSet || sc.phase || show.compPlace.test(sc.place)) return 'comp';
+  return 'home';
 }
 export function buildChapters(P, runtime = estimateRuntime(P)){
+  const show = P.profile || SH, names = show.chapters;
   const sceneStart = [];
   P.beats.forEach((b, i) => { if (b.t === 'scene') sceneStart[b.scene] = i; });
   const coldOpen = P.scenes.length > 1 && P.beats.some(b => b.scene === 0 && b.host);
   const chapters = [], used = {};
-  let seenChallenge = false, seenTribal = false;
+  let seenComp = false, seenExit = false;
   P.scenes.forEach((sc, i) => {
-    const kind = sceneKind(sc);
-    const base = i === 0 && coldOpen ? 'Cold Open'
-      : kind === 'tribal' ? 'Tribal Council'
-      : kind === 'challenge' ? 'The Challenge'
-      : seenTribal ? 'Epilogue' : seenChallenge ? 'After the Challenge' : 'Camp Life';
+    const kind = sceneKind(sc, show);
+    const base = i === 0 && coldOpen ? names.cold
+      : kind === 'exit' ? names.exit
+      : kind === 'comp' ? names.comp
+      : seenExit ? names.epilogue : seenComp ? names.after : names.home;
     const last = chapters[chapters.length - 1];
     if (last && last.base === base && !(i === 1 && coldOpen)) last.scenes.push(i);
     else {
       used[base] = (used[base] || 0) + 1;
-      chapters.push({ base, title: used[base] > 1 ? `${base} ${used[base]}` : base, kind, scenes: [i] });
+      chapters.push({ base, title: used[base] > 1 ? `${base} ${used[base]}` : base, kind: i === 0 && coldOpen ? 'cold' : kind, scenes: [i] });
     }
-    if (kind === 'challenge') seenChallenge = true;
-    if (kind === 'tribal') seenTribal = true;
+    if (kind === 'comp') seenComp = true;
+    if (kind === 'exit') seenExit = true;
   });
   chapters.forEach((c, k) => {
     c.n = k + 1;
@@ -644,6 +465,59 @@ export function buildChapters(P, runtime = estimateRuntime(P)){
   return chapters;
 }
 export const chapterAt = (chapters, i) => chapters.find(c => i >= c.start && i <= c.end) || chapters[0];
+
+// ════════════════════════════════════════════════════════════════
+//  WHAT AN EDITOR WOULD PICK — teasers and the end-of-episode screen
+// ════════════════════════════════════════════════════════════════
+// "Coming up" before an ad break is the loudest, most pointed line of the
+// segment ahead: a shout, a line with somebody's name in it, a clip-worthy
+// moment. Hosts are the frame, not the tease.
+function teaserScore(P, b){
+  if (b.t !== 'line' || P.cast[b.speaker]?.host) return -1;
+  const t = stripCues(b.text);
+  if (t.length < 12 || t.length > 120) return -1;
+  return (b.event ? 3 : 0) + (b.mood === 'shout' ? 2 : 0) + (b.mood === 'angry' ? 1.5 : 0) + (b.mood === 'question' ? .5 : 0)
+    + (Object.keys(P.cast).some(n => n !== b.speaker && t.includes(n)) ? 1 : 0) + (b.conf ? .5 : 0) + (t.length < 70 ? .5 : 0);
+}
+export function pickTeaser(P, chapter){
+  let best = null, top = 0;
+  for (let i = chapter.start; i <= chapter.end; i++){
+    const s = teaserScore(P, P.beats[i]);
+    if (s > top){ top = s; best = P.beats[i]; }
+  }
+  return best;
+}
+
+// The results screen: who left and how the votes fell, who won the
+// competition, who the episode was about (screen time is what they said, in
+// characters; confessionals are counted as sessions, not pages), the
+// moments, and a line of the night.
+export function episodeSummary(P){
+  const screen = {}, confs = {};
+  P.beats.forEach((b, i) => {
+    if (b.t !== 'line' || P.cast[b.speaker]?.host) return;
+    screen[b.speaker] = (screen[b.speaker] || 0) + stripCues(b.text).length;
+    const prev = P.beats[i - 1];
+    if (b.conf && !(prev && prev.conf && prev.speaker === b.speaker)) confs[b.speaker] = (confs[b.speaker] || 0) + 1;
+  });
+  const lineScore = b => {
+    if (b.t !== 'line' || P.cast[b.speaker]?.host) return -1;
+    const t = stripCues(b.text);
+    if (t.length < 24 || t.length > 150) return -1;
+    return (b.conf ? 2 : 0) + (b.finalWords ? 2.5 : 0) + (b.event ? 2 : 0) + (b.mood === 'shout' ? 1 : 0) + (/[.!?]$/.test(t) ? .5 : 0) + Math.min(1, t.length / 120);
+  };
+  let quote = null;
+  P.beats.forEach(b => { if (lineScore(b) > (quote ? lineScore(quote) : 0)) quote = b; });
+  return {
+    screen: Object.entries(screen).sort((a, b) => b[1] - a[1]),
+    confs,
+    exits: P.beats.filter(b => b.t === 'elim').map(b => ({ name: b.name, tally: b.tally || {} })),
+    wins: P.beats.filter(b => b.win).map(b => b.win),
+    moments: P.beats.filter(b => b.event).map(b => b.event),
+    finalWords: P.beats.filter(b => b.finalWords).map(b => stripCues(b.text)).join(' '),
+    quote: quote ? { speaker: quote.speaker, text: stripCues(quote.text), conf: !!quote.conf } : null,
+  };
+}
 
 const STYLE = `
 :host{
@@ -973,6 +847,192 @@ canvas.fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z
 .tresume:empty{display:none}
 .tbtn{font-family:Bungee;font-size:1.2cqw;padding:.8cqw 1.6cqw;border-radius:.8cqw;border:.15cqw solid var(--accent);background:var(--accent);color:#111;cursor:pointer}
 .tbtn.ghost{background:transparent;color:var(--accent)}
+
+/* ═══════════ TV LAYER ═══════════ */
+/* full-screen sequences: opening titles, ad breaks */
+.tv{position:absolute;inset:0;z-index:44;display:none;align-items:center;justify-content:center;flex-direction:column;overflow:hidden;cursor:pointer}
+.tv.show{display:flex}
+.tv.op{background:radial-gradient(circle at 50% 40%,#2c1a66,#07060f 72%)}
+.tv.op::before{content:"";position:absolute;inset:-50%;background:repeating-conic-gradient(from 0deg,#ffcc3314 0 6deg,transparent 6deg 12deg);animation:spin 18s linear infinite}
+.op-logo{position:relative;display:flex;flex-direction:column;align-items:center;animation:logoIn 1.2s cubic-bezier(.34,1.56,.64,1)}
+.op-logo b{font-family:Bungee;font-size:8cqw;line-height:.95;text-align:center;background:linear-gradient(#fff,#ffd66b 55%,#ff7a1a);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(.5cqw .5cqw 0 #000)}
+.op-logo span{font-family:Bungee;font-size:2.2cqw;letter-spacing:.35em;color:#fff;margin-top:1cqw;padding:.4cqw 1.6cqw;background:#e8453c;transform:skewX(-12deg);box-shadow:.3cqw .3cqw 0 #000;animation:slideR .6s .5s cubic-bezier(.22,1,.36,1) backwards}
+@keyframes logoIn{0%{transform:scale(3) rotate(-10deg);opacity:0;filter:blur(12px)}100%{transform:none}}
+.op-grid{position:relative;display:grid;grid-template-columns:repeat(auto-fill,minmax(9.5cqw,1fr));gap:1.1cqw;width:84%;align-content:center}
+.op-card{display:flex;flex-direction:column;align-items:center;gap:.4cqw;animation:cardIn .6s var(--d) cubic-bezier(.34,1.56,.64,1) backwards}
+.op-card img,.op-card .initial{width:8cqw;height:8cqw;border-radius:1cqw;object-fit:cover;border:.3cqw solid #111;box-shadow:0 0 0 .25cqw var(--t),0 .5cqw 1cqw #000a;background:var(--c)}
+.op-card span{font-family:Bungee;font-size:1cqw;color:#fff;text-shadow:.15cqw .15cqw 0 #000}
+@keyframes cardIn{0%{transform:translateY(60%) rotate(-12deg) scale(.4);opacity:0}}
+.op-hosts{position:relative;margin-top:1.8cqw;font-family:Bungee;font-size:1.5cqw;letter-spacing:.3em;color:var(--accent);animation:slideR .6s .8s backwards}
+.op-ep{position:relative;display:flex;flex-direction:column;align-items:center;animation:logoIn 1s cubic-bezier(.34,1.56,.64,1)}
+.op-ep small{font-family:Bungee;font-size:1.6cqw;letter-spacing:.5em;color:var(--accent)}
+.op-ep b{font-family:Bungee;font-size:6.5cqw;color:#fff;text-shadow:.4cqw .4cqw 0 #000;text-align:center;line-height:1}
+.tv.cu-on{background:#05040bea}
+.tv.cu-on::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,#ffffff08 0 2px,transparent 2px 4px);animation:vhs .2s steps(2) infinite}
+@keyframes vhs{to{transform:translateY(3px)}}
+.cu{display:flex;flex-direction:column;align-items:center;gap:1.6cqw;width:78%}
+.cu-k{font-family:Bungee;font-size:3.4cqw;color:#fff;background:#e8453c;padding:.3cqw 2cqw;transform:skewX(-12deg);box-shadow:.4cqw .4cqw 0 #000;animation:slideR .5s cubic-bezier(.22,1,.36,1) backwards}
+.cu-q{display:flex;align-items:center;gap:2cqw;animation:fadeUp .6s .25s ease backwards}
+.cu-f img,.cu-f .initial{width:13cqw;height:13cqw;border-radius:1.2cqw;object-fit:cover;border:.4cqw solid #111;box-shadow:0 0 0 .3cqw var(--c);background:var(--c)}
+.cu-q b{font-family:Bungee;font-size:1.6cqw;color:var(--c)}
+.cu-q p{font-size:2.6cqw;font-weight:900;font-style:italic;color:#fff;margin:.4cqw 0 0;line-height:1.25}
+@keyframes fadeUp{from{opacity:0;transform:translateY(30%)}}
+.tv.ad-on{background:#000}
+.ad{display:flex;flex-direction:column;align-items:center;gap:1cqw;animation:logoIn .7s ease}
+.ad b{font-family:Bungee;font-size:6cqw;color:var(--accent);text-shadow:.35cqw .35cqw 0 #e8453c}
+.ad span{font-family:Bungee;font-size:1.6cqw;letter-spacing:.5em;color:#fff}
+.tv.wb-on{background:radial-gradient(circle,#ffcc33,#ff7a1a 70%)}
+.wb span{display:block;font-family:Bungee;font-size:7cqw;color:#111;text-shadow:.35cqw .35cqw 0 #fff;animation:wbIn .9s cubic-bezier(.34,1.56,.64,1)}
+@keyframes wbIn{0%{transform:scale(.2) rotate(-20deg);opacity:0}60%{transform:scale(1.1) rotate(3deg)}100%{transform:none}}
+
+/* reaction shot */
+.react{position:absolute;left:2.5%;top:17%;z-index:27;width:15cqw;opacity:0;transform:translateX(-130%) rotate(-8deg);transition:transform .35s cubic-bezier(.34,1.56,.64,1),opacity .2s;pointer-events:none}
+.react.show{opacity:1;transform:rotate(-3deg)}
+.react .rf img,.react .rf .initial{display:block;width:100%;aspect-ratio:1;object-fit:cover;border-radius:1cqw;border:.35cqw solid #fff;box-shadow:0 0 0 .3cqw var(--c),0 1cqw 2cqw #000c;background:var(--c)}
+.react .rn{position:absolute;left:-6%;bottom:-6%;font-family:Bungee;font-size:1.1cqw;background:var(--c);color:#111;padding:.2cqw .8cqw;border:.15cqw solid #111;transform:skewX(-10deg)}
+.react .re{position:absolute;right:-14%;top:-14%;width:5.5cqw;height:5.5cqw;animation:emotePop .8s cubic-bezier(.34,1.8,.64,1) backwards}
+.react .re svg{width:100%;height:100%;overflow:visible}
+.react.show .rf{animation:zoomPunch .5s ease-out}
+@keyframes zoomPunch{0%{transform:scale(1.35)}100%{transform:none}}
+
+/* highlight pop-ups */
+.toasts{position:absolute;right:2%;top:11%;z-index:29;display:flex;flex-direction:column;gap:.7cqw;align-items:flex-end;pointer-events:none}
+.toast{display:flex;align-items:center;gap:.9cqw;padding:.6cqw 1.2cqw .6cqw .6cqw;min-width:20cqw;border-radius:1cqw;background:linear-gradient(90deg,#1a1236f2,#0b0f1af2);border:.2cqw solid var(--accent);box-shadow:0 .6cqw 1.6cqw #000c,0 0 1.4cqw #ffcc3355;animation:toastIn .55s cubic-bezier(.34,1.56,.64,1) backwards}
+.toast.out{animation:toastOut .45s ease-in forwards}
+@keyframes toastIn{from{transform:translateX(120%) scale(.8);opacity:0}}
+@keyframes toastOut{to{transform:translateX(120%);opacity:0}}
+.toast .ti{width:3.6cqw;height:3.6cqw;flex:none;animation:emotePop .8s .15s cubic-bezier(.34,1.8,.64,1) backwards}
+.toast .ti svg{width:100%;height:100%;overflow:visible}
+.toast b{display:block;font-family:Bungee;font-size:1.25cqw;color:var(--accent);letter-spacing:.04em}
+.toast .tn{display:flex;align-items:center;gap:.3cqw;margin-top:.2cqw}
+.toast .tp img,.toast .tp .initial{display:block;width:1.9cqw;height:1.9cqw;border-radius:50%;object-fit:cover;border:.12cqw solid var(--c);background:var(--c)}
+.toast small{font-weight:800;font-size:.95cqw;color:#dfe6ff;margin-left:.3cqw}
+.toast.k-kiss{border-color:#ff5fa2;box-shadow:0 .6cqw 1.6cqw #000c,0 0 1.6cqw #ff5fa266}.toast.k-kiss b{color:#ff8fc0}
+.toast.k-blindside{border-color:#ffe14d}.toast.k-lie{border-color:#c084fc}.toast.k-lie b{color:#d8b4fe}
+.toast.k-deal{border-color:#7dff8a}.toast.k-deal b{color:#a7ffb0}
+
+/* first-time name caption */
+.intro{position:absolute;left:3.5%;bottom:26%;z-index:26;display:flex;flex-direction:column;align-items:flex-start;gap:.25cqw;pointer-events:none;opacity:0}
+.intro.show{opacity:1}
+.intro b{font-family:Bungee;font-size:2.2cqw;color:#111;background:var(--c);padding:.1cqw 1cqw;transform:skewX(-10deg);box-shadow:.3cqw .3cqw 0 #000;animation:slideR .45s cubic-bezier(.22,1,.36,1) backwards}
+.intro .d{font-weight:900;font-size:1.2cqw;color:#fff;background:#000d;padding:.2cqw .9cqw;transform:skewX(-10deg);animation:slideR .45s .06s cubic-bezier(.22,1,.36,1) backwards}
+.intro .g{font-weight:900;font-size:1cqw;letter-spacing:.25em;color:#111;background:var(--t);padding:.2cqw .9cqw;transform:skewX(-10deg);animation:slideR .45s .12s cubic-bezier(.22,1,.36,1) backwards}
+.stage.cine .intro{opacity:0}
+
+/* the vote board */
+.board{position:absolute;right:2%;top:30%;z-index:23;min-width:17cqw;padding:.8cqw 1cqw;border-radius:.8cqw;background:#120c06e6;border:.2cqw solid #c9a227;box-shadow:0 1cqw 2cqw #000c;opacity:0;transform:translateX(120%);transition:.4s cubic-bezier(.34,1.3,.64,1);pointer-events:none}
+.board.show{opacity:1;transform:none}
+.board .bh{font-family:Bungee;font-size:1cqw;letter-spacing:.35em;color:#c9a227;margin-bottom:.5cqw}
+.board .br{display:flex;align-items:center;gap:.6cqw;padding:.3cqw 0;font-size:1.2cqw;color:#fff;transition:.3s}
+.board .br.lead b{color:#ffcc33}
+.board .br.out{opacity:.45;text-decoration:line-through}
+.board .bp img,.board .bp .initial{display:block;width:2cqw;height:2cqw;border-radius:50%;object-fit:cover;border:.12cqw solid var(--c);background:var(--c)}
+.board .br b{flex:1;font-weight:900}
+.board .br i{display:flex;gap:.2cqw}
+.board .br u{display:block;width:.7cqw;height:1.2cqw;background:#f3e6c4;border:.1cqw solid #3b2a14;animation:tallyIn .4s cubic-bezier(.34,1.8,.64,1) backwards}
+.board .br em{font-style:normal;font-family:Bungee;font-size:1.1cqw;color:#c9a227;min-width:1.2cqw;text-align:right}
+
+/* final words */
+.dbox.final .panel{border-color:#ff9a3d;box-shadow:0 0 0 .25cqw #000,0 0 3cqw #ff7a1a88,inset 0 0 4cqw #0008}
+.dbox.final .who::after{content:" · FINAL WORDS";color:#7a1f00}
+
+/* weather */
+.flash{position:absolute;inset:0;z-index:9;background:#eef4ff;opacity:0;pointer-events:none;mix-blend-mode:screen}
+.flash.on{animation:flashAnim .5s steps(3)}
+@keyframes flashAnim{0%{opacity:0}20%{opacity:.85}40%{opacity:.1}60%{opacity:.6}100%{opacity:0}}
+.stage.rain .world{filter:saturate(.75) brightness(.85)}
+.stage.storm .world{filter:saturate(.6) brightness(.7)}
+.stage.ff::after{content:"\\25B6\\25B6";position:absolute;right:2.5%;bottom:24%;z-index:30;font-family:Bungee;font-size:2cqw;color:#fff;text-shadow:0 0 1cqw #000;animation:blink .6s steps(2) infinite}
+
+/* results */
+.results{position:absolute;inset:0;z-index:46;display:none;flex-direction:column;gap:1.4cqw;padding:3cqw 4cqw;overflow:auto;cursor:default;
+  background:radial-gradient(circle at 50% 0%,#2b1c5c,#07060f 75%)}
+.results.show{display:flex;animation:fadeUp .6s ease}
+.results small{display:block;font-family:Bungee;font-size:1cqw;letter-spacing:.3em;color:var(--dim)}
+.rh{text-align:center}
+.rh b{display:block;font-family:Bungee;font-size:4.4cqw;color:#fff;text-shadow:.3cqw .3cqw 0 #000;line-height:1.05}
+.rh span{display:inline-block;margin-top:.5cqw;font-family:Bungee;font-size:1.2cqw;letter-spacing:.3em;color:#111;background:var(--accent);padding:.2cqw 1cqw;transform:skewX(-10deg)}
+.rgrid{display:grid;grid-template-columns:1fr 1fr;gap:1.6cqw}
+.rcol{display:flex;flex-direction:column;gap:1.2cqw}
+.rx,.rw,.rq,.rbox{background:#141a2ae6;border:.15cqw solid var(--line);border-radius:1cqw;padding:1.2cqw;animation:fadeUp .6s ease backwards}
+.rx{display:flex;gap:1.2cqw;border-color:#ff4d5e88}
+.rxf img,.rxf .initial{width:9cqw;height:9cqw;border-radius:1cqw;object-fit:cover;border:.3cqw solid #111;box-shadow:0 0 0 .25cqw #ff4d5e;background:var(--c);animation:greyIn 2s ease forwards}
+@keyframes greyIn{to{filter:grayscale(1) brightness(.8)}}
+.rx b,.rw b{display:block;font-family:Bungee;font-size:2.4cqw;color:#fff}
+.rx small{color:#ff8a95}
+.rv{display:flex;flex-wrap:wrap;gap:.4cqw .8cqw;margin-top:.4cqw;font-size:1.2cqw;color:#dfe6ff}
+.rv b{display:inline;font-size:1.2cqw;color:#ffcc33}
+.fw{margin:.6cqw 0 0;font-size:1.2cqw;font-style:italic;color:#ffcfa0}
+.rw{border-color:#c9a22788;animation-delay:.1s}
+.rw small{color:#e0c060}
+.rwp{display:flex;gap:.4cqw;margin-top:.5cqw}
+.rwp img,.rwp .initial{display:block;width:3.2cqw;height:3.2cqw;border-radius:50%;object-fit:cover;border:.15cqw solid var(--c);background:var(--c)}
+.rq{display:flex;gap:1.2cqw;animation-delay:.2s}
+.rqf img,.rqf .initial{width:6cqw;height:6cqw;border-radius:.8cqw;object-fit:cover;border:.25cqw solid var(--c);background:var(--c)}
+.rq p{margin:.3cqw 0;font-size:1.5cqw;font-weight:900;font-style:italic;color:#fff;line-height:1.3}
+.rq b{font-size:1.1cqw;color:var(--c)}
+.rbox{animation-delay:.15s}
+.rs{display:grid;grid-template-columns:2.4cqw 7cqw 1fr 4.5cqw;align-items:center;gap:.7cqw;margin-top:.5cqw;font-size:1.2cqw;color:#fff}
+.rsp img,.rsp .initial{display:block;width:2.4cqw;height:2.4cqw;border-radius:50%;object-fit:cover;border:.15cqw solid var(--c);background:var(--c)}
+.rs b{font-weight:900;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rs i{height:1.1cqw;border-radius:99px;background:#ffffff14;overflow:hidden}
+.rs u{display:block;height:100%;width:var(--w);background:var(--c);border-radius:99px;animation:barGrow 1s var(--d) cubic-bezier(.22,1,.36,1) backwards}
+@keyframes barGrow{from{width:0}}
+.rs em{font-style:normal;font-family:Bungee;font-size:.8cqw;color:var(--dim);text-align:right}
+.rms{display:flex;flex-wrap:wrap;gap:.6cqw;margin-top:.6cqw}
+.rm{font-family:Bungee;font-size:.95cqw;padding:.35cqw .8cqw;border-radius:99px;background:#ffcc3322;color:var(--accent);border:.12cqw solid #ffcc3366}
+.rm.k-kiss{background:#ff5fa222;color:#ff8fc0;border-color:#ff5fa266}.rm.k-lie{background:#c084fc22;color:#d8b4fe;border-color:#c084fc66}
+.rm.k-deal{background:#7dff8a22;color:#a7ffb0;border-color:#7dff8a66}.rm.k-blindside{background:#ffe14d22;color:#ffe14d}
+.rbtns{display:flex;gap:1cqw;justify-content:center;padding-bottom:1cqw}
+
+/* ═══════════ PHONE WIDTH ═══════════ */
+/* cqw sizes the stage like a TV at desktop widths; on a phone that makes text
+   unreadable, so the stage turns portrait and the words get pixel floors. */
+.es{container-type:inline-size;container-name:es}
+@container es (max-width: 700px){
+  .stage{aspect-ratio:3/4;border-radius:10px}
+  .actor{width:calc(var(--w,11cqw) * 1.5);margin-left:calc(var(--w,11cqw) * -.75)}
+  .dbox{height:25%;left:2%;right:2%;bottom:2.5%}
+  .dbox .face{width:17cqw}
+  .dbox .panel{padding:16px 12px 10px 18px}
+  .dbox .txt{font-size:14px;line-height:1.35}
+  .dbox .txt.narr{font-size:13px}
+  .dbox .txt.shout{font-size:16px}
+  .dbox .who{font-size:12px;top:-12px}
+  .chip{font-size:9px;gap:4px;padding:3px 8px}
+  .chip .team i{font-size:8px}
+  .chnow{font-size:8px;top:calc(2.2% + 22px)}
+  .roster{display:none}
+  .plate{font-size:9px}
+  .banner .kicker,.banner .time{font-size:10px}
+  .banner .place{font-size:9cqw}
+  .conf .lower .n{font-size:20px} .conf .lower .d{font-size:12px} .conf .lower .t{font-size:10px}
+  .conf .subject{width:56cqw;left:62%}
+  .conf .rec{font-size:11px} .conf .tc{font-size:11px}
+  .titlecard .name{font-size:10cqw} .titlecard .ep,.titlecard .tmeta,.titlecard .press{font-size:10px}
+  .tbtn{font-size:11px;padding:8px 12px}
+  .intro b{font-size:15px} .intro .d,.intro .g{font-size:10px}
+  .intro{bottom:30%}
+  .toast{min-width:0;max-width:70cqw} .toast b{font-size:11px} .toast small{font-size:9px}
+  .toast .ti{width:22px;height:22px} .toast .tp img{width:16px;height:16px}
+  .react{width:28cqw}
+  .react .rn{font-size:10px}
+  .board{min-width:0;top:14%} .board .br{font-size:11px} .board .bh{font-size:9px} .board .bp img{width:16px;height:16px}
+  .chap .ck,.chap .cm{font-size:10px} .chap .ct{font-size:9cqw}
+  .op-grid{grid-template-columns:repeat(4,1fr)} .op-card img,.op-card .initial{width:15cqw;height:15cqw} .op-card span{font-size:9px}
+  .op-logo b{font-size:12cqw} .op-logo span,.op-hosts,.op-ep small,.ad span{font-size:10px}
+  .cu{width:90%} .cu-k{font-size:16px} .cu-q p{font-size:14px} .cu-q b{font-size:11px}
+  .results{padding:14px}
+  .results small{font-size:9px} .rh b{font-size:24px} .rh span{font-size:10px}
+  .rgrid{grid-template-columns:1fr}
+  .rx b,.rw b{font-size:18px} .rv,.rv b,.fw,.rs{font-size:12px} .rq p{font-size:13px} .rq b{font-size:11px}
+  .rs{grid-template-columns:20px 64px 1fr 40px} .rs em,.rm{font-size:9px} .rs i{height:8px}
+  .rsp img,.rsp .initial{width:20px;height:20px}
+  .hint{display:none}
+  .btn{padding:8px 10px;font-size:11px}
+  .chseg span{font-size:10px}
+  .stage.ff::after{font-size:14px}
+}
 `;
 
 const MARKUP = `<div class="stage" id="stage">
@@ -1001,7 +1061,7 @@ const MARKUP = `<div class="stage" id="stage">
   </div>
 
   <div class="vote" id="vote"></div>
-  <div class="spoken" id="spoken"><span>THE TRIBE HAS SPOKEN</span></div>
+  <div class="spoken" id="spoken"><span id="spokenText"></span></div>
   <div class="caption" id="caption"></div>
 
   <div class="dbox" id="dbox">
@@ -1015,6 +1075,13 @@ const MARKUP = `<div class="stage" id="stage">
     <div class="chnow" id="chNow"></div>
   </div>
 
+  <div class="flash" id="flash"></div>
+  <div class="board" id="board"></div>
+  <div class="intro" id="intro"></div>
+  <div class="react" id="react"></div>
+  <div class="toasts" id="toasts"></div>
+  <div class="tv" id="tv"></div>
+  <div class="results" id="results"></div>
   <div class="banner" id="banner"><div class="strip"><div class="kicker" id="bKick"></div><div class="place" id="bPlace"></div><div class="time" id="bTime"></div></div></div>
   <div class="letterbox top"></div><div class="letterbox bot"></div>
   <canvas class="static" id="static"></canvas>
@@ -1036,6 +1103,8 @@ const MARKUP = `<div class="stage" id="stage">
     <button class="btn" id="bPrev">◀ Back</button>
     <button class="btn" id="bNext">Next ▶</button>
     <button class="btn" id="bAuto">Auto</button>
+    <button class="btn" id="bFF" title="Hold to fast-forward (or hold Shift)">&#9193; Hold</button>
+    <button class="btn" id="bSkip" title="Skip to the next scene (S)">Skip scene</button>
     <button class="btn" id="bSpeed">Text 1×</button>
     <button class="btn on" id="bSound">Sound</button>
     <button class="btn" id="bMusic">Music</button>
@@ -1044,7 +1113,7 @@ const MARKUP = `<div class="stage" id="stage">
     <button class="btn" id="bLog">Log</button>
     <button class="btn" id="bChapters">Chapters</button>
     <span class="rt" id="rt"></span>
-    <span class="hint"><kbd>Space</kbd>/<kbd>→</kbd> next · <kbd>←</kbd> back · <kbd>A</kbd> auto · <kbd>L</kbd> log · <kbd>C</kbd> chapters · <kbd>M</kbd> music</span>
+    <span class="hint"><kbd>Space</kbd>/<kbd>→</kbd> next · <kbd>←</kbd> back · <kbd>A</kbd> auto · <kbd>L</kbd> log · <kbd>C</kbd> chapters · <kbd>M</kbd> music · hold <kbd>Shift</kbd> fast · <kbd>S</kbd> skip</span>
   </div>
   <div class="log" id="log"></div>
   <div class="chpanel" id="chPanel"><div class="chlist" id="chList"></div></div>
@@ -1101,18 +1170,19 @@ export function mountEpisodeStage(host, text, opts = {}){
   let bed = null;
   function bedFor(i){
     const b = P.beats[i]; if (!b) return null;
-    if (b.t === 'end') return 'aftermath';
+    if (b.t === 'end') return SH.beds.end;
     const sc = P.scenes[b.scene], kind = sceneKind(sc);
-    if (kind === 'tribal') return 'tribal-tension';
-    if (kind === 'challenge') return 'challenge';
+    if (kind === 'exit') return SH.beds.exit;
+    if (kind === 'comp') return SH.beds.comp;
     const t = (S.view && S.view.time) || sc.time;
-    return t === 'night' || t === 'dusk' ? 'camp-night' : 'camp-day';
+    return t === 'night' || t === 'dusk' ? SH.beds.night : SH.beds.day;
   }
   function syncBed(){
     if (dead) return;
     const want = visible && S.started ? bed : null;   // music on/off itself is audio.js's, shared with the simulator
     if (want) bedOwner = api;
     if (want || bedOwner === api) audio.ambient(want);
+    amb.apply();
   }
   function setBed(name){ bed = name; syncBed(); }
   // one of the simulator's cues, when this stage's sound is on
@@ -1123,7 +1193,7 @@ export function mountEpisodeStage(host, text, opts = {}){
   // ════════════════════════════════════════════════════════════════
   const $ = id => R.getElementById(id);
   const stage = $('stage');
-  const P = parse(text, { portrait: opts.portrait });
+  const P = parse(text, { portrait: opts.portrait, show: opts.show });
   const CAST = P.cast;
   // who they are, for the confessional caption: { name: { age, birthdate, occupation } }.
   // The page hands a promise (the roster loads while the title card is up).
@@ -1132,11 +1202,14 @@ export function mountEpisodeStage(host, text, opts = {}){
     .then(m => { if (m && typeof m === 'object') PROFILES = m; }).catch(() => {});
   const S = { idx:-1, scene:-1, conf:null, typing:null, auto:false, speed:1, sound:true, busy:false,
               tally:{}, gone:new Set(), immune:new Set(), idols:new Set(), lastSpeaker:null, lastShout:null, started:false, timer:null,
-              view:{}, home:{}, cur:{}, xs:{}, crowd:false, benched:new Set() };
+              view:{}, home:{}, cur:{}, xs:{}, crowd:false, benched:new Set(),
+              ff:false, inSeq:false, skipSeq:false, openingDone:false, openingAt:0, introduced:new Set(), lastReact:-9, weather:null };
 
   // SVG coords (1600×900, layer inset −8%/−6%) → stage fraction
   const toStage = (x,y) => [ -0.08 + 1.16*(x/1600), -0.06 + 1.12*(y/900) ];
-  const FIRE = { camp:toStage(560,600), tribal:toStage(800,650) };
+  // where each set's fire burns (the sets file says), for embers and flares
+  const FIRE = {};
+  Object.entries(SETS).forEach(([k, st]) => { if (st.fire) FIRE[k] = toStage(...st.fire); });
 
   function renderSet(setKey, time, sc){
     const set = SETS[setKey], T = TIMES[time];
@@ -1149,6 +1222,7 @@ export function mountEpisodeStage(host, text, opts = {}){
                                            : time==='dusk' ? 'radial-gradient(ellipse at 68% 58%,#ff9a5c55,transparent 55%)' : 'none');
     FX.kind = set.fx; FX.set = setKey; FX.night = time==='night';
     S.view = { set:setKey, time };
+    amb.apply();
     const sub = setKey !== sc.set ? ` · ${set.label.toUpperCase()}` : sc.sub ? ` · ${sc.sub.toUpperCase()}` : '';
     $('chipScene').textContent = `${sc.place.toUpperCase()}${sub} · SCENE ${sc.i+1}/${P.scenes.length}`;
   }
@@ -1161,6 +1235,7 @@ export function mountEpisodeStage(host, text, opts = {}){
     updateTeam(sc);
     camera(0,0,1);
     S.scene = si; S.tally = {}; S.lastSpeaker = null; S.lastShout = null;
+    updateBoard(); setWeather(sc.weather);
   }
 
   const roleOf = (sc, n) => CAST[n].host ? 'host' : (sc.roles[n] && sc.roles[n] !== 'player' ? sc.roles[n] : CAST[n].role);
@@ -1257,7 +1332,7 @@ export function mountEpisodeStage(host, text, opts = {}){
   }
   function updateTeam(sc){
     const ts = teamsOf(sc), el = $('team');
-    const html = ts.length > 2 ? `<i style="--t:#fff">ALL TRIBES</i>${ts.map(t => `<b style="--t:${tribeColor(t)}"></b>`).join('')}`
+    const html = ts.length > 2 ? `<i style="--t:#fff">ALL ${esc(SH.groups.toUpperCase())}</i>${ts.map(t => `<b style="--t:${tribeColor(t)}"></b>`).join('')}`
       : ts.map(t => `<i style="--t:${tribeColor(t)}">${esc(t.toUpperCase())}</i>`).join('');
     if (el.innerHTML !== html){ el.innerHTML = html; retrigger(el, 'pop'); }
   }
@@ -1322,6 +1397,9 @@ export function mountEpisodeStage(host, text, opts = {}){
     if (k==='dust' && r()<.15) spawn({ x:-10, y:h*(.3+r()*.5), vx:20+r()*30, vy:(r()-.5)*8, max:6, size:1.5+r()*2, color:'#fff2c9aa' });
     if (k==='wind' && r()<.3) spawn({ x:-40, y:h*r()*.8, vx:600+r()*400, vy:(r()-.5)*20, max:1.2, size:1, color:'#ffffff66', type:'streak' });
     if (k==='confetti' && r()<.06) spawn({ x:r()*w, y:-10, vx:(r()-.5)*30, vy:40+r()*40, max:6, size:5, color:['#ffcc33','#e8453c','#3aa0ff','#40c060'][r()*4|0], type:'rect', vr:(r()-.5)*8 });
+    // rain: slanted streaks across the whole frame, heavier in a storm
+    if (FX.weather) for (let k = 0; k < (FX.weather === 'storm' ? 7 : 4); k++)
+      spawn({ x:r()*w*1.3 - w*.15, y:-12, vx:-160, vy:950 + r()*350, max:.8, size:1.1, color:'#d6e6ffb0', type:'streak' });
     if (FX.night && r()<.03) spawn({ x:r()*w, y:h*(.2+r()*.5), vx:(r()-.5)*10, vy:(r()-.5)*10, max:3, size:2, color:'#cfe0ff', type:'glow', wander:true });
   }
   function burst(fx, fy, kind, n=40){
@@ -1423,7 +1501,8 @@ export function mountEpisodeStage(host, text, opts = {}){
       speaker && actorEl(speaker)?.classList.remove('talk'); scheduleAuto(stripCues(text));
     };
     $('dbox').classList.remove('done');
-    if (instant) return finish();
+    // fast-forward shows each line whole: a typewriter cannot tick faster than the browser's timer floor
+    if (instant || S.ff) return finish();
     el.innerHTML = '';
     const q = [];   // queue of [char|html]
     segs.forEach(s => {
@@ -1432,7 +1511,7 @@ export function mountEpisodeStage(host, text, opts = {}){
       else [...s.v].forEach(ch => q.push({ ch }));
     });
     let i = 0, hold = 0;
-    const base = (narr ? 20 : mood==='shout' ? 16 : mood==='whisper' ? 36 : 25) / S.speed, pitch = speaker ? voicePitch(speaker) : 300;
+    const base = (narr ? 20 : mood==='shout' ? 16 : mood==='whisper' ? 36 : 25) / (S.speed * (S.ff ? 5 : 1)), pitch = speaker ? voicePitch(speaker) : 300;
     const iv = setInterval(() => {
       if (hold > 0){ hold -= base; return; }
       if (i >= q.length) return finish();
@@ -1444,7 +1523,11 @@ export function mountEpisodeStage(host, text, opts = {}){
     }, base);
     S.typing = { iv, finish };
   }
-  function scheduleAuto(text=''){ clearTimeout(S.timer); if (S.auto) S.timer = setTimeout(() => next(), 900 + text.length*28/S.speed); }
+  function scheduleAuto(text=''){
+    clearTimeout(S.timer);
+    if (S.ff) S.timer = setTimeout(() => next(), 320);          // holding fast-forward: a beat every third of a second
+    else if (S.auto) S.timer = setTimeout(() => next(), 900 + text.length*28/S.speed);
+  }
 
   function setDbox(speaker){
     const d = $('dbox'), c = CAST[speaker] || { c:'#ccc', img:'' };
@@ -1480,17 +1563,19 @@ export function mountEpisodeStage(host, text, opts = {}){
       const pr = PROFILES[who] || {}, age = ageOf(pr);
       const detail = [age, pr.occupation].filter(v => v != null && v !== '').map(v => esc(String(v))).join(' · ');
       const tribe = c.tribe, coach = roleOf(P.scenes[S.scene] || { roles:{} }, who) === 'coach';
-      const tag = tribe ? `${coach ? 'COACH · ' : ''}${esc(tribe.toUpperCase())} TRIBE` : coach ? 'COACH' : '';
+      const tag = tribe ? `${coach ? 'COACH · ' : ''}${esc(tribe.toUpperCase())} ${esc(SH.group.toUpperCase())}` : coach ? 'COACH' : '';
       $('confLower').innerHTML = `<div class="n">${esc(who.toUpperCase())}</div>`
         + (detail ? `<div class="d">${detail}</div>` : '')
         + (tag ? `<div class="t tribe" style="--t:${tribeColor(tribe)}">${tag}</div>` : '');
     }
     cf.classList.add('show'); stage.classList.add('cine');
     S.conf = key; S.tcStart = performance.now();
+    amb.apply();   // the confessional room is quiet
   }
   function exitConf(){
     if (!S.conf) return; staticFlash();
     $('conf').classList.remove('show'); stage.classList.remove('cine'); S.conf = null;
+    amb.apply();
   }
   timers.push(setInterval(() => { if (!S.conf) return; const s = (performance.now()-S.tcStart)/1000, f = n => String(n|0).padStart(2,'0');
     $('tc').textContent = `${f(s/60)}:${f(s%60)}:${f((s*24)%24)}`; }, 42));
@@ -1533,14 +1618,11 @@ export function mountEpisodeStage(host, text, opts = {}){
     scheduleAuto('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
   }
   function stageEnd(){
-    exitConf(); hideDbox();
-    $('tEp').textContent = [P.show || opts.showName, P.ep && `EPISODE ${P.ep}`].filter(Boolean).join(' · ').toUpperCase();
-    clearProgress(); $('tResume').innerHTML = '';
-    $('tMeta').textContent = `${plural(CH.length, 'chapter')} · about ${fmtMin(RT.ms)}`;
-    $('tName').textContent = 'End of episode'; $('tPress').textContent = P.title ? `“${P.title}”` : '';
-    $('titlecard').classList.remove('hide'); sfx.sting();
-    S.auto = false; $('bAuto').classList.remove('on');
+    exitConf(); hideDbox(); clearProgress(); $('tResume').innerHTML = '';
+    S.auto = false; $('bAuto').classList.remove('on'); setFF(false);
+    showResults();   // the game's round-end screen, not a blank card
   }
+
 
   // ── one line of dialogue ──
   function stageLine(b, instant){
@@ -1548,6 +1630,8 @@ export function mountEpisodeStage(host, text, opts = {}){
     R.querySelectorAll('.actor').forEach(a => a.classList.remove('lit','next','talk'));
     if (b.host) enterConf(b.speaker, 'host'); else if (b.conf) enterConf(b.speaker, 'conf'); else exitConf();
     setDbox(b.speaker);
+    $('dbox').classList.toggle('final', !!b.finalWords);
+    if (!b.conf && !b.host) introduce(b.speaker, instant);
     if (!b.conf && !b.host){
       const named = present.filter(n => n!==b.speaker && rxName(n).test(b.text) && actorEl(n) && !actorEl(n).classList.contains('offstage'));
       const target = named[0] || (S.lastSpeaker && S.lastSpeaker !== b.speaker ? S.lastSpeaker : null);
@@ -1565,8 +1649,13 @@ export function mountEpisodeStage(host, text, opts = {}){
         const em = { shout:'shout', question:'question', hesitate:'hesitate', angry:'angry', laugh:'laugh', whisper:'whisper', sad:'sad', tense:'tense' }[b.mood];
         em && emote(b.speaker, em);
         if (named[0] && b.mood!=='plain') setTimeout(() => emote(named[0],'surprise'), 350);
-        const win = stripCues(b.text).match(/\b(\w+) WINS IMMUNITY/i);
-        if (win) setTimeout(() => immunityFor(win[1], sc).forEach((n, k) => setTimeout(() => giveItem(n,'immune', k>0), k*90)), 600);
+        // the reaction shot: a pointed line cuts to the face it landed on (not every line — every third at most)
+        if (named[0] && S.idx - S.lastReact >= 3 && (b.mood !== 'plain' || /\byou\b/i.test(stripCues(b.text)))){
+          S.lastReact = S.idx;
+          const rk = { shout:'surprise', angry:'angry', question:'hesitate', laugh:'laugh', whisper:'hesitate', sad:'sad' }[b.mood] || 'surprise';
+          setTimeout(() => react(named[0], rk), 700);
+        }
+        if (b.win) setTimeout(() => b.win.names.forEach((n, k) => setTimeout(() => giveItem(n,'immune', k>0), k*90)), 600);
         if (b.mood==='shout' && S.lastShout !== b.speaker){
           retrigger(stage,'shake'); retrigger(stage,'hit'); sfx.hit();
           $('speed').style.setProperty('--sx', (mx ?? 50)+'%'); retrigger($('speed'),'on');
@@ -1609,7 +1698,12 @@ export function mountEpisodeStage(host, text, opts = {}){
       if (/laugh|howling|dying|snorts/.test(low)) who.forEach(n => emote(n,'laugh'));
       if (/throws|flicks|clips|dumps|tips/.test(low) && who.length >= 2){ retrigger(actorEl(who[1]),'recoil'); emote(who[1],'angry'); }
       if (/steps out|appears|walks over|comes back|finds/.test(low)) who.forEach(n => emote(n,'surprise'));
+      // a face doing something is a reaction shot too
+      if (who[0] && S.idx - S.lastReact >= 2 && /\b(eyes (widen|narrow)|jaw (drops|tightens|works)|freezes|stares|gasps|goes (quiet|still|pale|white|scarlet|red)|blinks|face (goes|is doing)|mouth (drops|twitches))\b/.test(low)){
+        S.lastReact = S.idx; setTimeout(() => react(who[0], /narrow|tightens|works/.test(low) ? 'angry' : 'surprise'), 400);
+      }
     }
+    if (b.weather) setWeather(b.weather === 'clear' ? null : b.weather);
     if (b.idol) giveItem(b.idol, 'hasidol', instant);
     if (b.write) showWrite(b.write, instant);
     if (b.snuff) eliminate(b.snuff, instant, true);
@@ -1631,6 +1725,7 @@ export function mountEpisodeStage(host, text, opts = {}){
       $('vote').innerHTML = `<div class="paper"><div class="lbl">VOTE ${n}</div><div class="nm">${esc(b.name)}</div></div>`;
       const a = actorEl(b.name);
       if (a){ a.querySelector('.tally').insertAdjacentHTML('beforeend','<i></i>'); a.classList.add('lit'); if (!instant){ retrigger(a,'recoil'); emote(b.name,'tense'); } }
+      updateBoard();
       if (!instant){ cue('vote-tick'); sfx.thump(); setTimeout(() => cue('tension-drum'), 260); }
     }, instant ? 0 : old ? 300 : 0);
     typeInto($('txt'), b.text, { speaker:b.speaker, mood:'tense', instant });
@@ -1640,6 +1735,7 @@ export function mountEpisodeStage(host, text, opts = {}){
     const a = actorEl(name); if (!a) return;
     a.classList.add('gone'); a.classList.remove('lit','talk');
     R.querySelector(`.roster img[data-n="${name}"]`)?.classList.add('gone');
+    updateBoard();
     if (!instant){ burst(S.xs[name]/100, .5, 'smoke', 30); if (quiet) cue('torch-snuff'); else { retrigger(stage,'shake'); retrigger(stage,'hit'); cue('elimination-gong'); } }
   }
   // out of the challenge (rang the bell, dismissed) — greyed and sat down, not eliminated
@@ -1657,8 +1753,8 @@ export function mountEpisodeStage(host, text, opts = {}){
     focusOn(b.name, 1.3); scheduleAuto('');
   }
   function stageSpoken(b, instant){
-    hideDbox(); camera(0, 0, 1);
-    if (!instant){ retrigger($('spoken'),'show'); const f = FIRE.tribal; burst(f[0], f[1], 'ember', 120); cue('torch-snuff'); stage.classList.add('cine'); }
+    hideDbox(); camera(0, 0, 1); $('board').classList.remove('show');
+    if (!instant){ retrigger($('spoken'),'show'); const f = FIRE[SH.exitSet] || [.5, .8]; burst(f[0], f[1], 'ember', 120); cue('torch-snuff'); stage.classList.add('cine'); }
     scheduleAuto('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
   }
   function giveItem(n, cls, quiet){
@@ -1682,8 +1778,14 @@ export function mountEpisodeStage(host, text, opts = {}){
     S.idx = i; updateTimeline(); logBeat(b);
     if (b.t !== 'end') saveProgress(i);
     if (b.t==='scene'){
+      const ch = chapterStarts.get(i);
+      // the opening titles run once, after the cold open (or before the first scene);
+      // every other chapter boundary is an ad break: "coming up", the break, "welcome back"
+      if (animate && !S.openingDone && i === S.openingAt){ S.openingDone = true; await runSequence(openingSteps()); }
+      else if (animate && ch && i > 0) await runSequence(bumperSteps(ch));
+      if (S.idx !== i || dead) return;   // the viewer jumped away during the sequence
       S.busy = true; await sceneTransition(b.scene, animate); S.busy = false;
-      if (animate && i > 0 && chapterStarts.has(i)) chapterCard(chapterStarts.get(i));   // crossing into a new chapter
+      if (animate && i > 0 && ch) chapterCard(ch);   // crossing into a new chapter
       setBed(bedFor(i));
       scheduleAuto('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'); return; }
     if (S.scene !== b.scene) await sceneTransition(b.scene, false);
@@ -1696,10 +1798,12 @@ export function mountEpisodeStage(host, text, opts = {}){
     else if (b.t==='cut'){ S.busy = true; await stageCut(b, animate); S.busy = false; }
     else if (b.t==='card') stageCard(b, animate);
     else if (b.t==='end') stageEnd();
+    if (animate && b.event) setTimeout(() => toast(b.event), 450);
     setBed(bedFor(i));
   }
   async function next(){
     sfx.on(); audio.unlock();
+    if (S.inSeq){ skipSequence(); return; }   // a click skips the titles or the ad break
     if (!S.started){ S.started = true; $('titlecard').classList.add('hide'); sfx.whoosh(); await play(0); return; }
     if (S.busy) return;
     if (S.typing){ S.typing.finish(); return; }
@@ -1708,15 +1812,15 @@ export function mountEpisodeStage(host, text, opts = {}){
   }
   // rewind: rebuild the scene as it stood at beat i, with no animation
   async function jump(i){
-    audio.unlock(); S.started = true; $('titlecard').classList.add('hide');
+    audio.unlock(); S.started = true; $('titlecard').classList.add('hide'); $('results').classList.remove('show');
+    if (S.inSeq) skipSequence();
     i = Math.max(0, Math.min(P.beats.length-1, i));
     clearTimeout(S.timer); S.typing?.finish?.();
     const si = P.beats[i].scene, before = P.beats.slice(0, i);
     S.gone = new Set(before.filter(b => b.t==='elim' || b.snuff).map(b => b.name || b.snuff));
     S.immune = new Set(); S.idols = new Set();
     before.forEach(b => {
-      const win = b.t==='line' && stripCues(b.text).match(/\b(\w+) WINS IMMUNITY/i);
-      if (win) immunityFor(win[1], P.scenes[b.scene]).forEach(n => S.immune.add(n));
+      if (b.win) b.win.names.forEach(n => S.immune.add(n));
       if (b.idol) S.idols.add(b.idol);
     });
     exitConf(); $('vote').innerHTML = ''; S.idx = i; renderScene(si);
@@ -1725,6 +1829,12 @@ export function mountEpisodeStage(host, text, opts = {}){
     R.querySelectorAll('.actor').forEach(a => a.classList.remove('enter'));
     before.forEach(b => { if (b.scene===si && (b.out || b.dismiss)) bench(b.out || b.dismiss, true); });
     before.forEach(b => { if (b.scene===si && b.t==='vote'){ S.tally[b.name] = (S.tally[b.name]||0)+1; actorEl(b.name)?.querySelector('.tally').insertAdjacentHTML('beforeend','<i></i>'); } });
+    updateBoard();
+    // who has already been introduced, and what the weather has turned to by now
+    S.introduced = new Set(before.filter(b => b.t==='line' && !b.conf && !b.host).map(b => b.speaker));
+    const wb = before.filter(b => b.scene===si && b.weather).pop();
+    setWeather(wb ? (wb.weather === 'clear' ? null : wb.weather) : P.scenes[si].weather);
+    S.lastReact = i;
     S.lastSpeaker = before.filter(b => b.t==='line' && !b.conf && !b.host && b.scene===si).pop()?.speaker || null;
     rebuildLog(i);
     await play(i, false);
@@ -1735,7 +1845,7 @@ export function mountEpisodeStage(host, text, opts = {}){
     const tl = $('timeline'), L = P.beats.length;
     tl.querySelectorAll('.mark').forEach(m => m.remove());
     P.beats.forEach((b, i) => {
-      if (b.t==='scene') tl.insertAdjacentHTML('beforeend', `<div class="mark${P.scenes[b.scene].set==='tribal'?' tribal':''}" style="left:${i/L*100}%" title="${esc(P.scenes[b.scene].place)}"></div>`);
+      if (b.t==='scene') tl.insertAdjacentHTML('beforeend', `<div class="mark${sceneKind(P.scenes[b.scene])==='exit'?' tribal':''}" style="left:${i/L*100}%" title="${esc(P.scenes[b.scene].place)}"></div>`);
       if ((b.conf || b.host) && !(P.beats[i-1]?.conf || P.beats[i-1]?.host)) tl.insertAdjacentHTML('beforeend', `<div class="mark conf" style="left:${i/L*100}%" title="Confessional"></div>`);
     });
     tl.onclick = e => { const r = tl.getBoundingClientRect(); jump(Math.round((e.clientX-r.left)/r.width*(L-1))); };
@@ -1758,7 +1868,14 @@ export function mountEpisodeStage(host, text, opts = {}){
   $('bPrev').onclick = () => jump(S.idx-1);
   $('bAuto').onclick = () => { S.auto = !S.auto; $('bAuto').classList.toggle('on', S.auto); if (S.auto && !S.typing) next(); };
   $('bSpeed').onclick = () => { S.speed = S.speed===1 ? 2 : S.speed===2 ? .6 : 1; $('bSpeed').textContent = `Text ${S.speed}×`; };
-  $('bSound').onclick = () => { S.sound = !S.sound; $('bSound').classList.toggle('on', S.sound); sfx.on(); };
+  $('bSound').onclick = () => { S.sound = !S.sound; $('bSound').classList.toggle('on', S.sound); sfx.on(); amb.apply(); };
+  // hold to fast-forward (button or Shift); S or the button skips to the next scene
+  const ffOn = e => { e.preventDefault(); sfx.on(); audio.unlock(); setFF(true); }, ffOff = () => setFF(false);
+  $('bFF').addEventListener('pointerdown', ffOn);
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => $('bFF').addEventListener(ev, ffOff));
+  $('bSkip').onclick = () => { sfx.on(); audio.unlock(); skipScene(); };
+  on(document, 'keyup', e => { if (e.key === 'Shift') setFF(false); });
+  on(window, 'blur', () => setFF(false));
   // Music on/off and volume are the simulator's settings (js/audio.js keeps them), not this stage's.
   const syncMusicBtn = () => $('bMusic').classList.toggle('on', audio.isMusicEnabled());
   $('bMusic').onclick = () => { audio.unlock(); audio.setMusicEnabled(!audio.isMusicEnabled()); syncMusicBtn(); syncBed(); };
@@ -1778,7 +1895,264 @@ export function mountEpisodeStage(host, text, opts = {}){
     else if (e.key.toLowerCase()==='l') $('bLog').click();
     else if (e.key.toLowerCase()==='c') $('bChapters').click();
   else if (e.key.toLowerCase()==='m') $('bMusic').click();
+    else if (e.key === 'Shift' && !e.repeat && S.started){ sfx.on(); setFF(true); }
+    else if (e.key.toLowerCase()==='s') $('bSkip').click();
   });
+
+  // ════════════════════════════════════════════════════════════════
+  //  ENGINE 3 — the TV layer: titles, ad breaks, reaction shots, pop-ups,
+  //  name captions, the vote board, weather, room sound, fast-forward and
+  //  the results screen. Show-blind: every word is the profile's (SH) or
+  //  the transcript's.
+  // ════════════════════════════════════════════════════════════════
+  const showTitle = () => P.show || opts.showName || SH.name;
+  const portrait = n => CAST[n]?.img ? `<img src="${CAST[n].img}" alt="">` : `<b class="initial">${esc((n || '?')[0])}</b>`;
+  function whoLine(n){
+    const c = CAST[n] || {}, pr = PROFILES[n] || {}, age = ageOf(pr);
+    if (c.host) return { detail: '', tag: 'HOST', color: '#ffcc33' };
+    const coach = roleOf(P.scenes[S.scene] || { roles:{} }, n) === 'coach';
+    return {
+      detail: [age, pr.occupation].filter(v => v != null && v !== '').join(' · '),
+      tag: c.tribe ? `${coach ? 'COACH · ' : ''}${c.tribe.toUpperCase()} ${SH.group.toUpperCase()}` : coach ? 'COACH' : '',
+      color: c.tribe ? tribeColor(c.tribe) : '#fff',
+    };
+  }
+
+  // ── full-screen sequences (titles, ad breaks): each step skippable with a click ──
+  let seqDone = null;
+  function tvStep(html, ms, cls){
+    return new Promise(res => {
+      const el = $('tv'); el.className = `tv show ${cls || ''}`; el.innerHTML = html;
+      const t = setTimeout(end, S.ff ? Math.min(ms, 300) : ms);
+      function end(){ clearTimeout(t); seqDone = null; res(); }
+      seqDone = end;
+    });
+  }
+  async function runSequence(steps){
+    S.busy = true; S.inSeq = true; S.skipSeq = false;
+    for (const st of steps){
+      if (S.skipSeq || dead) break;
+      st.fx && st.fx();
+      await tvStep(st.html, st.ms, st.cls);
+    }
+    $('tv').className = 'tv'; $('tv').innerHTML = '';
+    S.inSeq = false; S.busy = false;
+  }
+  function skipSequence(){ S.skipSeq = true; seqDone && seqDone(); }
+
+  // The opening titles: the show's name, the cast by team, the episode.
+  function openingSteps(){
+    const seen = n => P.scenes.some(sc => sc.present.includes(n)) || P.beats.some(b => b.speaker === n);
+    // by team, and anyone without a team on file last
+    const teamKey = n => CAST[n].tribe ? '0' + CAST[n].tribe : '1';
+    const cast = Object.keys(CAST).filter(n => !CAST[n].host && seen(n))
+      .sort((a, b) => teamKey(a) < teamKey(b) ? -1 : teamKey(a) > teamKey(b) ? 1 : 0);
+    const hosts = Object.keys(CAST).filter(n => CAST[n].host && seen(n));
+    const [main, sub] = showTitle().split(/:\s*/);
+    const cards = cast.map((n, i) => `<div class="op-card" style="--c:${CAST[n].c};--t:${CAST[n].tribe ? tribeColor(CAST[n].tribe) : '#fff'};--d:${(i * .06).toFixed(2)}s">${portrait(n)}<span>${esc(n.toUpperCase())}</span></div>`).join('');
+    return [
+      { html: `<div class="op-logo"><b>${esc(main.toUpperCase())}</b>${sub ? `<span>${esc(sub.toUpperCase())}</span>` : ''}</div>`, ms: 2000, cls: 'op',
+        fx: () => { setBed(SH.beds.titles); retrigger(stage, 'hit'); sfx.whoosh(); } },
+      { html: `<div class="op-grid">${cards}</div>${hosts.length ? `<div class="op-hosts">HOSTED BY ${hosts.map(h => esc(h.toUpperCase())).join(' &amp; ')}</div>` : ''}`,
+        ms: Math.min(4400, 1800 + cast.length * 110), cls: 'op' },
+      { html: `<div class="op-ep">${P.ep ? `<small>EPISODE ${esc(P.ep)}</small>` : ''}<b>${esc((P.title || '').toUpperCase())}</b></div>`, ms: 1900, cls: 'op',
+        fx: () => cue('win-fanfare') },
+    ];
+  }
+  // The ad break between chapters: a line from what's coming, the break, the welcome back.
+  function bumperSteps(ch){
+    const t = pickTeaser(P, ch), steps = [];
+    if (t) steps.push({ html: `<div class="cu"><div class="cu-k">COMING UP</div><div class="cu-q" style="--c:${CAST[t.speaker].c}"><div class="cu-f">${portrait(t.speaker)}</div><div><b>${esc(t.speaker.toUpperCase())}</b><p>“${esc(stripCues(t.text))}”</p></div></div></div>`,
+      ms: 3000, cls: 'cu-on', fx: () => sfx.whoosh() });
+    steps.push({ html: `<div class="ad"><b>${esc(showTitle().split(/:\s*/)[0].toUpperCase())}</b><span>WE'LL BE RIGHT BACK</span></div>`, ms: 1500, cls: 'ad-on',
+      fx: () => { if (bedOwner === api) audio.ambient(null); cue('reveal-whoosh'); } });
+    steps.push({ html: `<div class="wb"><span>WELCOME BACK</span></div>`, ms: 1100, cls: 'wb-on', fx: () => sfx.whoosh() });
+    return steps;
+  }
+
+  // ── reaction shot: cut to the face of whoever a line just landed on ──
+  function react(n, kind){
+    if (!n || !CAST[n] || S.ff) return;
+    const el = $('react');
+    el.style.setProperty('--c', CAST[n].c);
+    el.innerHTML = `<div class="rf">${portrait(n)}</div><div class="rn">${esc(n.toUpperCase())}</div><div class="re">${EMOTES[kind] || EMOTES.surprise}</div>`;
+    retrigger(el, 'show'); clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('show'), 1900);
+    sfx.tone(880, .05, 'triangle', .03);
+  }
+
+  // ── pop-ups for the moments an audience would clip ──
+  const TOAST_ICONS = {
+    kiss: EMOTES.heart,
+    deal: `<svg viewBox="-50 -50 100 100"><circle cx="-13" r="22" fill="#7dff8a" stroke="#111" stroke-width="5"/><circle cx="13" r="22" fill="#ffcc33" stroke="#111" stroke-width="5" fill-opacity=".92"/></svg>`,
+    lie: `<svg viewBox="-50 -50 100 100"><path d="M-40 -14 Q 0 -34 40 -14 Q 34 24 0 30 Q -34 24 -40 -14Z" fill="#c084fc" stroke="#111" stroke-width="5"/><ellipse cx="-15" cy="-4" rx="8" ry="5" fill="#111"/><ellipse cx="15" cy="-4" rx="8" ry="5" fill="#111"/></svg>`,
+    blindside: `<svg viewBox="-50 -50 100 100"><path d="M8 -46 L-26 6 L-2 6 L-12 46 L28 -10 L4 -10Z" fill="#ffe14d" stroke="#111" stroke-width="5" stroke-linejoin="round"/></svg>`,
+    find: EMOTES.star, win: EMOTES.star,
+  };
+  function toast(ev){
+    if (!ev || S.ff) return;
+    const el = document.createElement('div'); el.className = `toast k-${ev.kind}`;
+    const names = ev.names || [];
+    el.innerHTML = `<div class="ti">${TOAST_ICONS[ev.kind] || EMOTES.star}</div><div class="tt"><b>${esc(ev.label)}</b>`
+      + `<div class="tn">${names.slice(0, 4).map(n => `<span class="tp" style="--c:${CAST[n]?.c || '#fff'}">${portrait(n)}</span>`).join('')}<small>${esc(ev.team ? '' : names.join(' + '))}</small></div></div>`;
+    $('toasts').appendChild(el);
+    setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 500); }, 3300);
+    if (ev.kind === 'blindside') cue('tension-drum');
+    else if (ev.kind === 'lie' || ev.kind === 'deal') cue('reveal-whoosh');
+    else if (ev.kind === 'kiss') sfx.chime();
+  }
+
+  // ── a name caption the first time somebody speaks this episode ──
+  function introduce(n, instant){
+    if (!n || S.introduced.has(n)) return;
+    S.introduced.add(n);
+    if (instant || S.ff) return;
+    const w = whoLine(n), el = $('intro');
+    el.style.setProperty('--c', CAST[n].c); el.style.setProperty('--t', w.color);
+    el.innerHTML = `<b>${esc(n.toUpperCase())}</b>${w.detail ? `<span class="d">${esc(w.detail)}</span>` : ''}${w.tag ? `<span class="g">${esc(w.tag)}</span>` : ''}`;
+    retrigger(el, 'show'); clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('show'), 2700);
+  }
+
+  // ── the vote board, while the votes are read ──
+  function updateBoard(){
+    const rows = Object.entries(S.tally).sort((a, b) => b[1] - a[1]);
+    const el = $('board');
+    if (!rows.length){ el.classList.remove('show'); return; }
+    const top = rows[0][1];
+    el.innerHTML = `<div class="bh">THE VOTES</div>` + rows.map(([n, c]) =>
+      `<div class="br${c === top ? ' lead' : ''}${S.gone.has(n) ? ' out' : ''}" style="--c:${CAST[n]?.c || '#fff'}"><span class="bp">${portrait(n)}</span><b>${esc(n)}</b><i>${'<u></u>'.repeat(c)}</i><em>${c}</em></div>`).join('');
+    el.classList.add('show');
+  }
+
+  // ── weather: rain and storms from the prose, drawn and heard ──
+  function setWeather(w){
+    S.weather = w || null;
+    stage.classList.toggle('rain', !!S.weather);
+    stage.classList.toggle('storm', S.weather === 'storm');
+    FX.weather = S.weather;
+    amb.apply();
+  }
+  timers.push(setInterval(() => {
+    if (S.weather !== 'storm' || !visible || dead || Math.random() > .16) return;
+    retrigger($('flash'), 'on');
+    if (S.sound && sfx.ctx) setTimeout(() => sfx.noise(1.8, .2, 260, 50), 250 + Math.random() * 900);
+  }, 1000));
+
+  // ── room sound: the set's own ambience (waves, fire, birds, wind), crickets at night, rain ──
+  function noiseSrc(ctx){
+    const b = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate), d = b.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    const s = ctx.createBufferSource(); s.buffer = b; s.loop = true; return s;
+  }
+  function noiseBed(ctx, dest, { type = 'lowpass', f = 800, q = .7, g = .03, lfo = 0, depth = .6 }){
+    const s = noiseSrc(ctx), fl = ctx.createBiquadFilter(), gn = ctx.createGain();
+    fl.type = type; fl.frequency.value = f; fl.Q.value = q; gn.gain.value = g;
+    s.connect(fl).connect(gn).connect(dest); s.start();
+    let o = null;
+    if (lfo){ o = ctx.createOscillator(); const og = ctx.createGain(); o.frequency.value = lfo; og.gain.value = g * depth; o.connect(og).connect(gn.gain); o.start(); }
+    return { stop(){ try { s.stop(); o && o.stop(); } catch(e){} } };
+  }
+  function ticker(fn, min, max){
+    let t, alive = true;
+    const loop = () => { if (!alive) return; try { fn(); } catch(e){} t = setTimeout(loop, min + Math.random() * (max - min)); };
+    t = setTimeout(loop, min);
+    return { stop(){ alive = false; clearTimeout(t); } };
+  }
+  const AMB = {
+    waves: (ctx, d) => noiseBed(ctx, d, { f: 480, g: .035, lfo: .09, depth: .8 }),
+    wind:  (ctx, d) => noiseBed(ctx, d, { type: 'bandpass', f: 420, q: .6, g: .03, lfo: .13, depth: .7 }),
+    rain:  (ctx, d) => noiseBed(ctx, d, { type: 'highpass', f: 1300, g: .045 }),
+    hum:   (ctx, d) => noiseBed(ctx, d, { f: 140, g: .02 }),
+    fire:  (ctx, d) => {
+      const low = noiseBed(ctx, d, { f: 170, g: .02 });
+      const crack = ticker(() => {
+        const t = ctx.currentTime, s = noiseSrc(ctx), f = ctx.createBiquadFilter(), g = ctx.createGain();
+        f.type = 'highpass'; f.frequency.value = 2400;
+        g.gain.setValueAtTime(.05 * Math.random() + .01, t); g.gain.exponentialRampToValueAtTime(.0001, t + .04);
+        s.connect(f).connect(g).connect(d); s.start(t); s.stop(t + .05);
+      }, 60, 280);
+      return { stop(){ low.stop(); crack.stop(); } };
+    },
+    crickets: (ctx, d) => ticker(() => {
+      const t0 = ctx.currentTime;
+      for (let k = 0; k < 3; k++){
+        const o = ctx.createOscillator(), g = ctx.createGain(), t = t0 + k * .07;
+        o.frequency.value = 4300 + Math.random() * 200;
+        g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.006, t + .01); g.gain.linearRampToValueAtTime(0, t + .05);
+        o.connect(g).connect(d); o.start(t); o.stop(t + .06);
+      }
+    }, 500, 1300),
+    birds: (ctx, d) => ticker(() => {
+      const t = ctx.currentTime, o = ctx.createOscillator(), g = ctx.createGain(), f0 = 2200 + Math.random() * 1800;
+      o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f0 * 1.4, t + .08); o.frequency.exponentialRampToValueAtTime(f0 * .9, t + .16);
+      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.008, t + .02); g.gain.linearRampToValueAtTime(0, t + .18);
+      o.connect(g).connect(d); o.start(t); o.stop(t + .2);
+    }, 1400, 4200),
+  };
+  const amb = {
+    parts: [], key: '',
+    stop(){ this.parts.forEach(p => p.stop()); this.parts = []; this.key = ''; },
+    apply(){
+      if (dead) return;
+      const ctx = sfx.ctx, set = SETS[S.view.set] || {};
+      let kinds = S.started && visible && S.sound && !S.conf && !S.inSeq ? [...(set.amb || [])] : [];
+      if (kinds.length && FX.night) kinds = kinds.map(k => k === 'birds' ? 'crickets' : k).concat(set.indoor ? [] : ['crickets']);
+      if (kinds.length && S.weather && !set.indoor) kinds.push('rain');
+      kinds = [...new Set(kinds)];
+      const key = kinds.join(',');
+      if (key === this.key) return;
+      this.stop(); this.key = key;
+      if (!ctx || !kinds.length) return;
+      const out = ctx.createGain(), t = ctx.currentTime;
+      out.gain.setValueAtTime(0, t); out.gain.linearRampToValueAtTime(1, t + 1.2); out.connect(ctx.destination);
+      this.parts.push({ stop(){ try { out.gain.cancelScheduledValues(ctx.currentTime); out.gain.linearRampToValueAtTime(0, ctx.currentTime + .5); setTimeout(() => out.disconnect(), 600); } catch(e){} } });
+      kinds.forEach(k => AMB[k] && this.parts.push(AMB[k](ctx, out)));
+    },
+  };
+  disposers.push(() => amb.stop());
+
+  // ── hold to fast-forward, skip a scene ──
+  function setFF(on){
+    if (S.ff === on) return;
+    S.ff = on; $('bFF').classList.toggle('on', on); stage.classList.toggle('ff', on);
+    if (!on) return;
+    if (S.inSeq) skipSequence();
+    if (S.typing) S.typing.finish(); else if (!S.busy) next();
+  }
+  async function skipScene(){
+    const nx = P.beats.findIndex((b, k) => k > S.idx && b.t === 'scene');
+    if (nx < 0) return;
+    if (S.inSeq) skipSequence();
+    await jump(nx - 1);
+    play(nx);
+  }
+
+  // ── the results screen: how the episode ended, who it was about ──
+  function showResults(){
+    const sm = episodeSummary(P);
+    const maxS = sm.screen[0]?.[1] || 1;
+    const exits = sm.exits.map(x => {
+      const votes = Object.entries(x.tally).sort((a, b) => b[1] - a[1]).map(([n, c]) => `<span>${esc(n)} <b>${c}</b></span>`).join('');
+      return `<div class="rx" style="--c:${CAST[x.name]?.c || '#fff'}"><div class="rxf">${portrait(x.name)}</div><div><small>${esc(SH.exitWord.toUpperCase())}</small><b>${esc(x.name.toUpperCase())}</b>`
+        + (votes ? `<div class="rv">${votes}</div>` : '')
+        + (sm.finalWords ? `<p class="fw">“${esc(sm.finalWords.length > 150 ? sm.finalWords.slice(0, 147) + '…' : sm.finalWords)}”</p>` : '') + `</div></div>`;
+    }).join('');
+    const wins = sm.wins.map(w => `<div class="rw"><small>${esc(SH.compPrize)}</small><b>${esc((w.team ? `${w.team} ${SH.group}` : w.names.join(' & ')).toUpperCase())}</b>`
+      + `<div class="rwp">${w.names.slice(0, 9).map(n => `<span style="--c:${CAST[n]?.c}">${portrait(n)}</span>`).join('')}</div></div>`).join('');
+    const bars = sm.screen.slice(0, 8).map(([n, v], k) => `<div class="rs" style="--c:${CAST[n].c};--w:${Math.max(4, Math.round(v / maxS * 100))}%;--d:${(k * .07).toFixed(2)}s">`
+      + `<span class="rsp">${portrait(n)}</span><b>${esc(n)}</b><i><u></u></i>${sm.confs[n] ? `<em>${sm.confs[n]} CONF</em>` : '<em></em>'}</div>`).join('');
+    const moments = sm.moments.map(m => `<span class="rm k-${m.kind}">${esc(m.label)}${m.names?.length && !m.team ? ` · ${esc(m.names.join(' + '))}` : ''}</span>`).join('');
+    const quote = sm.quote ? `<div class="rq" style="--c:${CAST[sm.quote.speaker].c}"><div class="rqf">${portrait(sm.quote.speaker)}</div><div><small>LINE OF THE NIGHT</small>`
+      + `<p>“${esc(sm.quote.text)}”</p><b>— ${esc(sm.quote.speaker)}${sm.quote.conf ? ', in confessional' : ''}</b></div></div>` : '';
+    $('results').innerHTML = `<div class="rh"><small>${esc([showTitle(), P.ep && 'EPISODE ' + P.ep].filter(Boolean).join(' · ').toUpperCase())}</small>`
+      + `<b>${esc((P.title || 'Episode').toUpperCase())}</b><span>THAT'S THE EPISODE</span></div>`
+      + `<div class="rgrid"><div class="rcol">${exits}${wins}${quote}</div><div class="rcol"><div class="rbox"><small>SCREEN TIME</small>${bars}</div>`
+      + (moments ? `<div class="rbox"><small>HIGHLIGHTS</small><div class="rms">${moments}</div></div>` : '') + `</div></div>`
+      + `<div class="rbtns"><button class="tbtn" id="bAgain">↺ Watch again</button><button class="tbtn ghost" id="bResCh">Chapters</button></div>`;
+    $('results').classList.add('show'); $('results').scrollTop = 0;
+    cue('win-fanfare');
+    $('bAgain').onclick = e => { e.stopPropagation(); $('results').classList.remove('show'); S.openingDone = false; jump(0); };
+    $('bResCh').onclick = e => { e.stopPropagation(); $('bChapters').click(); };
+  }
 
   // ── run time + chapters ──
   const RT = estimateRuntime(P);
@@ -1827,6 +2201,9 @@ export function mountEpisodeStage(host, text, opts = {}){
     stage.style.pointerEvents = 'none';
   } else {
     $('tMeta').textContent = `${plural(P.scenes.length, 'scene')} · ${plural(CH.length, 'chapter')} · about ${fmtMin(RT.ms)}`;
+    $('spokenText').textContent = SH.exitCard;
+    // the titles roll after the cold open when there is one, else before the first scene
+    S.openingAt = CH[0]?.kind === 'cold' && CH[1] ? CH[1].start : 0;
     renderScene(0); buildTimeline(); buildChapterStrip(); updateTimeline();
     R.querySelectorAll('.actor').forEach(a => a.classList.remove('enter'));
     const saved = loadProgress();
@@ -1838,7 +2215,7 @@ export function mountEpisodeStage(host, text, opts = {}){
     }
   }
 
-  const api = { destroy, parsed: P, runtime: RT, chapters: CH, jump, next };
+  const api = { destroy, parsed: P, runtime: RT, chapters: CH, jump, next, state: S };
   host.__episodeStage = api;
   return api;
 }

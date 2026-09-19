@@ -814,6 +814,8 @@ canvas.fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 
 :host{display:block}
+/* the page's Stage / Script switch hides the host with [hidden]; :host{display} would win over it */
+:host([hidden]){display:none}
 .es{display:flex;flex-direction:column;align-items:center}
 .chapters{display:flex;gap:3px;height:24px}
 .chseg{min-width:0;border:1px solid var(--line);background:var(--panel);color:var(--dim);border-radius:6px;font:800 11px Nunito,system-ui,sans-serif;padding:0 7px;cursor:pointer;text-align:left;transition:background .2s,color .2s}

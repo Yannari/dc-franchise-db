@@ -1172,7 +1172,20 @@ Five ways a test has lied in this repo, all worth checking for in a new one:
    returned the same night on every press. **Roll back the way the caller rolls
    back**, clone and all, or you are testing a state transition that never
    happens.
-5. **Modelling the caller instead of reading it.** Once a guard models a
+5. **Asserting a ratio the sample cannot carry.** A Faithful play that baits a
+   Traitor into a murder was guarded by "a Traitor takes the bait more often
+   than a Faithful is attacked by chance" — a true statement about the
+   mechanism and an unmeasurable one, because the play needs a live Shield,
+   somebody who knows about it, a suspicion worth gambling on and the nerve to
+   act. That is 0.37 tests a season and three to five bites per 250 seasons,
+   and one bite either way swings the ratio by half a point: the same code read
+   0.22/0.04 and then 0.13/0.08 on two samples, and neither number is a fact
+   about the engine. **Count the events your assertion divides by before you
+   write it.** The fix was to assert the mechanism where it is deterministic —
+   `formPreference` called twice, with and without the push, asserting the
+   baited name comes out on top — which is exactly the assertion that fails on
+   the build that did not work, and takes no seasons at all.
+6. **Modelling the caller instead of reading it.** Once a guard models a
    sequence rather than invoking it, the sequence can change underneath and the
    guard stays green. In §11.5 N the ORDER of two lines was the entire bug and
    it lived in `js/run-ui.js`, which nothing the model could reach. Pair the
@@ -1293,6 +1306,31 @@ week without passing `cast`, the argument that excludes the competing queens
 from the guest pool, so a week added after a double shantay could fly in a
 queen to judge her own season. **Splitting a stream is a coverage change.**
 Expect it to fail guards that had never met their failing case.
+
+**And the other half of the same class: a pin the season accepts and then
+rains off.** M above is an author's choice written somewhere nothing reads.
+This is one that is read, honoured, and then overtaken by a night that never
+happened. Traitors schedules a murder SHAPE onto an episode, and three things
+can cancel the night before anything asks what shape it is: the room buys it
+off with a unanimous banishment, the pact spends the night making a
+recruitment offer instead, or the pact is already wiped out. All three are the
+format working correctly. What was wrong is that the twist then evaporated in
+silence — the timeline said Death Match, the season played, and nothing
+anywhere said the night it was booked on never happened. Measured: with a shape
+and a deal pinned to the same episode, 16 seasons in 30 lost the shape; with a
+shape pinned anywhere in the back half of a season, 9 of 40 nights were eaten
+by an offer, because a confident board and `canRecruit` both need a banished
+Traitor and so arrive together.
+
+The fix is two lines of rule rather than a special case: **a rained-off pin
+moves to the next night, and every one of them leaves a receipt** — here
+`gs.tr.shapesMoved`, carrying `{ shape, from, to, why, ran }`, with `ran`
+resolved at the end of the season because whether tomorrow's night happens is
+not knowable when the pin is moved. It never writes over a night the author had
+already booked; that pin is a decision and a rained-off one is not. A twist
+that owes the castle something (an On Trial list promising a body tomorrow)
+carries forward the same way, and lapses only when the season genuinely runs
+out — 22 lists in 60 seasons used to evaporate before that rule existed.
 
 ### N. A replay that is a re-air, and the rollback that eats what you write
 
@@ -1480,6 +1518,118 @@ Wire these up rather than rebuilding them:
 | A re-run that is a re-run | `gs._drReroll = { from, nonce }`, applied only to units at or after `from` | ↺ gives a different night every press while everything before it is untouched (§11.5 N) |
 | A rebuild that starts where the first play started | `gs._drInitBonds` / `gs._drInitLean`, snapshotted in `initGameState` and restored before a rebuild | the replayed weeks are computed from the state the first play saw, not from the state the season has reached (§11.5 O) |
 | **Carried relationships between seasons** | `buildFranchiseMeta` → `seededPairs`, opted into with `historyFromLedger` or `isReturnee` | allies, rivals, betrayals and showmances become starting bonds — with recency decay, a ±6 clamp and victim/betrayer asymmetry you do not have to rediscover (§8.2, §11.5 Q) |
+
+### R. A guard that fails on a population it did not change
+
+Sections J and L are about guards that are too green. This is the opposite and
+it costs more, because a red guard is believed.
+
+A Faithful strategy layer landed on Traitors and the BOARD PRECISION band went
+red — the band that asks whether a Faithful holding a read is holding a better
+read than pure noise. The feature was rewritten three times on the assumption
+that it was the cause: its two cost channels were repriced, then gated so they
+could only deepen a doubt somebody already held, then converted from beliefs
+into bonds. The number did not move.
+
+What settled it was a NULL CONTROL: the same band, with the feature switched
+off at its own flag, and **one extra rng draw per episode** on the castle
+stream. No behaviour change whatever — a different population of seasons and
+nothing else. It scores 1.62 against 1.48 and fails, on the same floor.
+
+The floor was 0.15 and had been set when the engine measured 1.94–2.11x against
+a shipped placebo of 1.70x. It now measures 1.62–1.66x against 1.48–1.51x: the
+margin had drifted to 0.19 against a requirement of 0.15, which is four
+hundredths of headroom on a statistic whose own comment reports it moving 0.17
+between disjoint 200-season blocks. Any feature landing after that drift would
+have been blamed for it.
+
+**The rule: before you change a feature to satisfy a guard, perturb the
+population without changing behaviour and see whether the guard still fails.**
+One extra draw on a stream nothing else reads is enough. If the control fails
+too, the guard is measuring its sample and the fix belongs in the guard — with
+the control experiment written into it, so the next person does not repeat the
+three rewrites. And when you rebase a floor, rebase it against the measurement
+and say what you measured, because the numbers in the comment above it are the
+ones that drifted.
+
+### S. A harness that measures the absence of the thing it is named after
+
+`tests/tr-murder.test.js` is the guard for the murder catalogue. Eight of its
+arms were red for weeks and every one of them was a true sentence about an
+empty population: *"on-trial is written, registered and effectively
+unreachable"*, *"no plain-sight nights to measure"*, *"the variant channels
+wrote nothing at all"*.
+
+Nothing was wrong with the engine. The catalogue had become OPT-IN — a played
+season turned up a twist nobody had asked for, so random twists now fire only
+from a list the author ticks — and this harness predates that change. It went
+on calling `playTraitorsSeason` without the flag, so every season it played was
+a standard night every night, and the file that exists to measure the catalogue
+was measuring its absence. Two murder shapes shipped in the interval with
+nothing in there checking them, and a third was rebuilt.
+
+This is not L (a guard that never ran). These ran, on every season, and
+reported honestly on a population from which the feature had been removed by a
+default that changed in a different file.
+
+**The rule: making something opt-in is a change to every harness that plays a
+season.** Grep for the entry point, not for the flag — the harnesses that break
+are the ones that never mentioned it. And when you switch it back on, expect
+the arms to fail for real reasons: turning it on here found a shape table with
+no entry for a variant that had shipped, a field an earlier rebuild had
+deleted, seeds swept from the old population, and four floors that had been
+calibrated when the draw was shared between fewer shapes.
+
+### T. The sweep that asks the last season about the first
+
+The most expensive measurement bug in this repo, three times in two days, and
+it nearly caused a working channel to be deleted.
+
+A sweep plays N seeded seasons and collects records — rounds, plans, whatever
+the arm is about. Then, after the loop, it asks a question of live state:
+`alignmentAt(name, ep)`, `gs.episodeHistory`, `gs.activePlayers`, the Shield
+ledger, the belief store. **`gs` is whichever season ran last.** Season 250 is
+being asked about season 1's people.
+
+It does not look wrong and it does not throw. It produces a number:
+
+* a list-survivor channel was reported as a 2.4x tell, because the denominator
+  was `gs.activePlayers` after the sweep — the endgame's two or three people,
+  half of them Traitors;
+* the same channel then read as pointing BACKWARDS, because the fix used
+  `gs.episodeHistory` — season 250's history against season 1's names. Live it
+  is 1.5x, which is neither of the numbers that were about to be acted on;
+* a bait arm looked the Shield ledger up after the sweep and "proved" the play
+  had baited somebody who was not holding one.
+
+**The rule: a sweep helper returns pre-captured facts, not records.** Read
+everything the arm will assert on inside the loop, while that season is still
+the live one — the alignment, the room that night, the ledger row, the belief.
+And a matching trap in the same place: `learn()` keeps the source that CREATED
+a belief, so reading the store at season end tests the ORDER of the season
+rather than your channel. Assert on a receipt the engine writes, or call the
+resolver on a synthetic world.
+
+### U. A read that is a write, because something downstream memoises
+
+A new caller asked an existing derivation a question, in a new place, and every
+ballot in the castle changed.
+
+`computeAlliances(ep)` derives the castle's voting blocs from the bond graph
+and memoises them on `(ep, living set)` — not on the bonds, which is fine while
+the Round Table is the first thing to ask. A new evening feature called it to
+decide which blocs had become named alliances. That primed the cache, so the
+table then voted on blocs computed BEFORE the evening's bonds had moved.
+
+Nothing about the call looked like a mutation. It took a `const` and returned
+an array.
+
+**The rule: a memoised derivation keyed on less than it derives from is a
+write, and asking it earlier in the day is a change to everything that asks it
+later.** Either restore the cache around your call — save it, ask, put it back,
+with a comment saying why — or move your call to where the existing one already
+happens. The same question applies to any per-episode cache a new system
+touches out of order.
 
 ---
 

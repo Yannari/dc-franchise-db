@@ -31,9 +31,11 @@ screen, a screen showing live state on a replayed episode, a speech that knows
 what the character does not, an average that hides the one event it should
 show, a constant calibrated for a different season length, an author's pin
 accepted by a season already decided, a replay button that re-airs instead of
-re-running, and five ways a test has passed against the bug it was written
-for. Each entry carries the
-measurement that found it.
+re-running, six ways a test has passed against the bug it was written for, and
+three ways one has FAILED for reasons that had nothing to do with the code —
+a guard measuring its own sample, a harness measuring the absence of the
+feature it is named after, and a sweep asking the last season about the first.
+Each entry carries the measurement that found it.
 
 ## Architecture
 - `simulator.html` — CSS + HTML shell (no JS, loads `js/main.js`)

@@ -516,7 +516,14 @@ export function checkIdolPlays(tribalPlayers, votesObj, ep, voteLog = []) {
   const _legacyAdvs = gs.advantages.filter(a => a.type === 'legacy' && tribalPlayers.includes(a.holder)
     && (!isCoach(a.holder) || coachCanPlay('legacy')));
   _legacyAdvs.forEach(adv => {
-    if (!adv.activatesAt?.includes(gs.activePlayers.length)) return;
+    // DUE, not merely equal. The number is the night it fires — but a season
+    // steps over numbers (a double elimination, a multi-tribal, an advantage
+    // that cancels an elimination), and on the last-chance tribal every other
+    // advantage is forced out or destroyed. A legacy whose number is this
+    // tribal, or already behind it, fires now rather than evaporating.
+    const _due = adv.activatesAt?.includes(gs.activePlayers.length)
+      || (ep._forceAdvantages && adv.activatesAt?.some(n => n >= gs.activePlayers.length));
+    if (!_due) return;
     // Legacy fires — grants immunity like an idol
     const holder = adv.holder;
     const voteCount = votesObj[holder] || 0;

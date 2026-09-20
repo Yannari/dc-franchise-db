@@ -4741,7 +4741,16 @@ export function simulateEpisode() {
       // Force-play extra votes, vote steals, and KiP
       ep._forceAdvantages = true;
       // Remove advantages that can't be used at tribal (they expire at F5)
-      const _expireTypes = ['kip', 'legacy', 'amulet', 'safetyNoPower', 'secondLife'];
+      //
+      // NOT THE LEGACY. It was on this list, and the default legacy activates
+      // at F5 — so the season deleted it on the exact night it was written to
+      // fire. Measured: eight seasons, eight legacy advantages found, zero
+      // ever activated. It is not an advantage that cannot be used at tribal,
+      // it is the one advantage that can ONLY be used at tribal, and
+      // checkIdolPlays fires it below (ep._forceAdvantages tells it this is
+      // the last chance). A legacy whose number is already behind the count
+      // still expires — that is what the `_due` check there decides.
+      const _expireTypes = ['kip', 'amulet', 'safetyNoPower', 'secondLife'];
       // KiP: force-fire before idol plays (checkIdolPlays handles it, _forceAdvantages makes it auto-fire)
       // For other non-tribal advantages, just consume them
       gs.advantages = gs.advantages.filter(a => {

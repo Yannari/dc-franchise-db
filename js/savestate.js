@@ -170,6 +170,8 @@ export function patchEpisodeHistory(ep) {
   if (!h.idolExposureReads && ep.idolExposureReads?.length) h.idolExposureReads = ep.idolExposureReads;
   if (!h.kipSteal && ep.kipSteal) h.kipSteal = ep.kipSteal;
   if (!h.superIdolPlayed && ep.superIdolPlayed) h.superIdolPlayed = ep.superIdolPlayed;
+  // a multi-tribal night sends two people to the island, each with their own call
+  if (!h.multiTribalRIChoices && ep.multiTribalRIChoices) h.multiTribalRIChoices = ep.multiTribalRIChoices;
   if (!h.votesBeforeSuperIdol && ep.votesBeforeSuperIdol) h.votesBeforeSuperIdol = ep.votesBeforeSuperIdol;
   if (!h.spiritIslandEvents && ep.spiritIslandEvents) h.spiritIslandEvents = ep.spiritIslandEvents;
   // Misc

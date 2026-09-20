@@ -5405,14 +5405,25 @@ export function simulateEpisode() {
       if (tResult.eliminated) multiElims.push(tResult.eliminated);
     });
     // Eliminate all
+    //
+    // EACH OF THEM MAKES THE CHOICE, AND EACH CHOICE IS RECORDED. Every other
+    // path writes `ep.riChoice` and the viewer draws a screen off it; this one
+    // made the call and threw the answer away, so a multi-tribal night showed
+    // no RI decision at all — the same shape as the save card that fired
+    // without a screen. Two people leave here, so one field cannot hold it:
+    // the list is what the viewer reads, and `ep.riChoice` still carries the
+    // last one for every reader written against a single boot.
+    const _mtRiChoices = [];
     multiElims.forEach(elim => {
       if (isRIStillActive()) {
         if (cfg.riFormat === 'rescue') {
           gs.riPlayers.push(elim);
           if (!gs.riArrivalEp) gs.riArrivalEp = {};
           gs.riArrivalEp[elim] = epNum;
+          _mtRiChoices.push({ name: elim, choice: 'RESCUE ISLAND' });
         } else {
           const c = simulateRIChoice(elim);
+          _mtRiChoices.push({ name: elim, choice: c });
           if (c === 'REDEMPTION ISLAND') gs.riPlayers.push(elim);
           else { gs.eliminated.push(elim); if (gs.isMerged) gs.jury.push(elim); }
         }
@@ -5424,6 +5435,11 @@ export function simulateEpisode() {
     });
     ep.eliminated = multiElims[multiElims.length - 1] || null;
     ep.multiTribalElims = multiElims;
+    if (_mtRiChoices.length) {
+      ep.multiTribalRIChoices = _mtRiChoices;
+      // the single field keeps pointing at ep.eliminated, which is the last boot
+      ep.riChoice = _mtRiChoices.find(c => c.name === ep.eliminated)?.choice || ep.riChoice || null;
+    }
     // Set primary votes/log from first losing tribe for compatibility
     const firstMT = ep.multiTribalResults[0] || {};
     ep.votes = firstMT.votes || {}; ep.votingLog = firstMT.log || [];
@@ -5463,6 +5479,7 @@ export function simulateEpisode() {
     gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false, coachCardCommits: ep.coachCardCommits || null, coachSaveRefusals: ep.coachSaveRefusals || null, coachCardNotPlayed: ep.coachCardNotPlayed || null, coachElimination: ep.coachElimination || null, coachPromotions: ep.coachPromotions || null, coachSaves: ep.coachSaves || null,
         lateArrival: ep.lateArrival || null,
       num: epNum, eliminated: ep.eliminated, riChoice: ep.riChoice || null,
+      multiTribalRIChoices: ep.multiTribalRIChoices || null,
       immunityWinner: null, challengeType: 'multi-tribal', isMerge: ep.isMerge,
       challengeLabel: ep.challengeLabel || null, challengeCategory: ep.challengeCategory || null,
       challengeDesc: ep.challengeDesc || '', challengePlacements: ep.challengePlacements || null,

@@ -100,6 +100,16 @@ describe('the save card on a multi-tribal night', () => {
     expect(htmlOf('votes-Green')).not.toContain('Bowie');
   });
 
+  it('gives each person sent to the island their own decision screen', () => {
+    // two councils, two boots, two calls — and one `ep.riChoice` between them,
+    // which is why the engine now records the list and this screen reads it
+    vpScreensMod.buildVPScreens({ ...multiTribalEpisode(),
+      multiTribalRIChoices: [{ name: 'P2', choice: 'REDEMPTION ISLAND' }, { name: 'P6', choice: 'WENT HOME' }] });
+    const got = vpScreensMod.vpScreens.map(s => s.id);
+    expect(got).toContain('ri-choice-P2');
+    expect(got).toContain('ri-choice-P6');
+  });
+
   it('says on the votes screen that the card was used', () => {
     expect(htmlOf('votes-Green')).toContain("COACH'S SAVE CARD");
     // and who goes instead — the card is never free

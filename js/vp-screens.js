@@ -15379,7 +15379,19 @@ export function buildVPScreens(epRecord) {
       vpScreens.push({ id:`votes-${r.tribe}`,  label:`${r.tribe} Votes`,  html: rpBuildVotes(subEp) });
     });
     // RI/Rescue screens after all multi-tribal votes
-    if (ep.riChoice) { const _rcH = rpBuildRIChoice(ep); if (_rcH) vpScreens.push({ id:'ri-choice', label:'RI Choice', html: _rcH }); }
+    //
+    // ONE DECISION SCREEN PER PERSON WHO LEFT. Two councils send two people to
+    // the island and each makes their own call, but the single `ep.riChoice`
+    // can only describe one of them — and until the engine started recording
+    // the list, it described none, so this screen never appeared on a
+    // multi-tribal night at all.
+    const _mtChoices = ep.multiTribalRIChoices?.length ? ep.multiTribalRIChoices
+      : (ep.riChoice && ep.eliminated ? [{ name: ep.eliminated, choice: ep.riChoice }] : []);
+    for (const _c of _mtChoices) {
+      const _rcH = rpBuildRIChoice({ ...ep, eliminated: _c.name, riChoice: _c.choice });
+      if (_rcH) vpScreens.push({ id:`ri-choice-${_c.name}`,
+        label: _mtChoices.length > 1 ? `${_c.name}'s Choice` : 'RI Choice', html: _rcH });
+    }
     if (ep.riLifeEvents?.length || ep.riDuel) {
       const _mtRiLife = rpBuildRILife(ep);
       if (_mtRiLife) vpScreens.push({ id:'ri-life', label:'Redemption Island', html: _mtRiLife });

@@ -1607,7 +1607,8 @@ export function rpBuildEmissaryScouting(ep) {
   const emTC = tribeColor(ep.emissary.tribe);
   const loseTC = tribeColor(ep.emissary.targetTribe);
 
-  let html = `<div class="rp-page bb-room ${accent === '#f85149' ? 'bb-live' : accent === '#3fb950' ? 'bb-open' : 'bb-power'}">
+  // the scouting day at the rival camp, running into the council at dusk (the choice screen is deepnight)
+  let html = `<div class="rp-page tod-dusk">
     <div class="rp-eyebrow">Episode ${ep.num}</div>
     <div style="font-family:var(--font-display);font-size:28px;letter-spacing:2px;text-align:center;color:#f0a500;text-shadow:0 0 20px rgba(240,165,0,0.3);margin-bottom:6px">🕵️ THE EMISSARY</div>
     <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:20px">${ep.emissary.tribe} sends an emissary to ${ep.emissary.targetTribe}'s tribal council.</div>`;

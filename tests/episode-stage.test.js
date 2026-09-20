@@ -248,6 +248,24 @@ describe('episode stage: the voting booth', () => {
     expect(Q.beats.filter(b => b.t === 'line' && b.conf).map(b => b.speaker)).toEqual(['Natalia', 'Nura']);
   });
 
+  it('cuts back to the council when the votes are read inside the booth scene', () => {
+    // the writer never reopened the council: the host reads the urn under the booth header
+    const B = parseEpisode([
+      '[SCENE: Tribal council — voting booth — night.] [Present: Natalia, Manu. Host: Chris.]',
+      '[Natalia walks to the urn. Writes MANU.]',
+      '[Chris reads the votes.]',
+      'Chris: Manu.',
+      "Chris: Manu — that's enough. Bring me your torch.",
+    ].join('\n'));
+    const cut = B.beats.find(b => b.t === 'cut');
+    expect(cut?.set).toBe('tribal');
+    // the read, the vote and the exit all land after the camera has moved
+    const at = t => B.beats.findIndex(b => b.t === t);
+    expect(B.beats.indexOf(cut)).toBeLessThan(at('vote'));
+    expect(at('vote')).toBeLessThan(at('elim'));
+    expect(B.beats.filter(b => b.t === 'elim').map(b => b.name)).toEqual(['Manu']);
+  });
+
   it('sends home the person the exit line names, even with no vote read aloud', () => {
     // no "read the votes", so nothing is counted — the answer is in "James — that's enough", not the last name said
     expect(Q.beats.filter(b => b.t === 'vote')).toEqual([]);

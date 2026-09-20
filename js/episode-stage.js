@@ -247,6 +247,15 @@ function parse(text, opts = {}){
     push({ t:'scene', scene:scene.i });
   };
 
+  // The booth is where a vote is WRITTEN, one player at a time. The moment one is read
+  // aloud the ceremony is back at the urn — a host reading the votes in an empty booth is
+  // a room nobody is in. Any read, exit or snuff cuts the camera back to the council.
+  const backToCouncil = () => {
+    if (!SH.boothSet || !scene || scene.view.set !== SH.boothSet) return;
+    scene.view = { set: SH.exitSet, time: scene.view.time };
+    push({ t:'cut', scene:scene.i, set:SH.exitSet, time:scene.view.time });
+  };
+
   function dir(text){
     const prev = out.beats[out.beats.length - 1];
     const inConf = prev && prev.t === 'line' && (prev.conf || prev.host);
@@ -261,7 +270,8 @@ function parse(text, opts = {}){
     const write = text.match(SH.vote.write);
     const found = SH.find && SH.find.re.test(text) && !/\bnothing\b/i.test(text);
     let stay = false;
-    if (isExitSet(scene.set) && SH.vote.start.test(text)) reading = true;   // "[Chris reads the votes.]"
+    if (isExitSet(scene.set) && SH.vote.start.test(text)){ reading = true; backToCouncil(); }   // "[Chris reads the votes.]"
+    if (isExitSet(scene.set) && (SH.vote.snuff.test(text) || SH.vote.exit.test(text))) backToCouncil();
     pages(text, 170).forEach(p => {
       // "[Chris unfolds the next parchment: JULIA.]" — a vote read in a stage direction counts too
       if (reading && isExitSet(scene.set) && /\b(vote|parchment|ballot|reads|unfolds|holds up)\b/i.test(p)){
@@ -350,6 +360,7 @@ function parse(text, opts = {}){
              ...(k === 0 && outMany.length ? { outMany } : {}), ...(k === 0 && score ? { score } : {}) }));
     if (isExitSet(scene.set) && CAST[who]?.host && !conf && !host){
       if (SH.vote.start.test(clean) || VOTE_ORDINAL.test(clean)) reading = true;
+      if (reading || SH.vote.exit.test(clean) || SH.vote.final.test(clean)) backToCouncil();
       const nm = mentioned(clean);
       // the name a vote line opens with: "First vote — James.", "James. That's two votes James…", "“Julia.”"
       const read = reading ? readVote(clean) : null;
@@ -1330,6 +1341,11 @@ export function mountEpisodeStage(host, text, opts = {}){
                                            : time==='dusk' ? 'radial-gradient(ellipse at 68% 58%,#ff9a5c55,transparent 55%)' : 'none');
     // a new place starts with clean air: the last set's steam and entrance puffs do not follow the cut
     if (FX.set !== setKey) FX.parts = [];
+    // leaving the booth ends its one-voter-at-a-time rule — the tribe is back around the fire
+    if (SH.boothSet && FX.set === SH.boothSet && setKey !== SH.boothSet){
+      R.querySelectorAll('.actor').forEach(a => a.classList.remove('offstage'));
+      S.cur = { ...S.home }; applyPos();
+    }
     FX.kind = set.fx; FX.set = setKey; FX.night = time==='night';
     S.view = { set:setKey, time };
     amb.apply();
@@ -1361,7 +1377,7 @@ export function mountEpisodeStage(host, text, opts = {}){
   // step a voter up to the urn — alone, large, front and centre
   function boothFocus(n){
     const sc = P.scenes[S.scene];
-    if (!SH.boothSet || !sc || sc.set !== SH.boothSet || !actorEl(n) || CAST[n].host) return;
+    if (!SH.boothSet || !sc || S.view?.set !== SH.boothSet || !actorEl(n) || CAST[n].host) return;
     const was = !actorEl(n).classList.contains('offstage');
     R.querySelectorAll('.actor').forEach(a => { if (!CAST[a.dataset.n].host) a.classList.toggle('offstage', a.dataset.n !== n); });
     S.cur = { ...S.home, [n]: { x: 36, floor: 27, w: 15, z: 6 } };

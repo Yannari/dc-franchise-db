@@ -11,7 +11,7 @@ import { hasSocialRole, perceivedRoles } from './social-status.js';
 import { addRelationshipDimension } from './relationships.js';
 import { recordBetrayal } from './relationship-events.js';
 import { idolSuspicionModifier, splitVotePreference } from './adaptation.js';
-import { coachesOf, coachRecord, isCoach, tribeCardHeld } from './coaches.js';
+import { activeCoaches, coachesOf, coachRecord, isCoach, tribeCardHeld } from './coaches.js';
 import { aweOf } from './coach-agenda.js';
 
 const _arch = (n) => players.find(p => p.name === n)?.archetype || 'floater';
@@ -992,7 +992,19 @@ export function formAlliances(members, tribeLabel, challengeLabel) {
   // attack, form a bloc, or vote themselves. Appended only to the second
   // (victims) argument of pickTarget below — never to `majority`/`minority`/
   // `naMembers`, which double as attacker lists elsewhere in this function.
-  const _coachVictims = tribeLabel ? coachesOf(tribeLabel).map(c => c.name) : [];
+  // A COUNCIL IS NOT ALWAYS A TRIBE. `tribeLabel` is the tribe's own name on an
+  // ordinary night, but a double-tribal council is labelled "Bass + Gophers" and
+  // coachesOf() knows no such tribe — so no bloc could name a coach, on exactly
+  // the night two tribes are voting together. The coaches were still reachable
+  // as vote targets (episode.js passes them in), so a coach could be voted out
+  // at a council where nobody was ever recorded as aiming at them, which is also
+  // what their save card reads to decide whether to commit.
+  // Fall back to the coaches whose tribe has people at this council.
+  const _labelled = tribeLabel ? coachesOf(tribeLabel).map(c => c.name) : [];
+  const _coachVictims = _labelled.length ? _labelled
+    : activeCoaches().filter(c => (gs.tribes || [])
+        .find(t => (t.name ?? t.tribeName) === c.tribe)?.members?.some(m => members.includes(m)))
+      .map(c => c.name);
   // Persistent strategy starts as a tribe-survival read before merge and may
   // later expand. It must exist before organizers choose names in either phase.
   prepareIntentionsForVote();

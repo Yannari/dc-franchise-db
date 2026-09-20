@@ -4471,7 +4471,18 @@ export function simulateEpisode() {
     // The save card commits HERE — before a single vote is read, like an idol.
     // A coach reads the blocs aiming at them and decides; the peers' signatures
     // are cast privately and stay sealed until tribal.
-    commitSaveCards(ep, tribeLabel, allianceSet);
+    //
+    // EVERY TRIBE WITH A COACH AT THIS COUNCIL, not the outer `tribeLabel`.
+    // That closure variable is null on a multi-tribal or double-tribal night —
+    // the two paths that call runTribal directly, and that already have to pass
+    // their coaches in by hand as vote targets. Reading it alone sealed nothing
+    // on those nights: no commit, so maybeSaveCoach found nothing to resolve
+    // and the coach went home with a live card, which is what a 3-tribe season
+    // running Multi-Tribal reported. Deriving the tribes from the coaches who
+    // can actually be voted for here means a future council shape gets the card
+    // by passing its coaches, which it must do anyway.
+    const _cardTribes = [...new Set([tribeLabel, ...coachTargets.map(n => coachRecordFn(n)?.tribe)].filter(Boolean))];
+    for (const _cardTribe of _cardTribes) commitSaveCards(ep, _cardTribe, allianceSet);
     const { votes, log, defections, voteMiscommunications, votePitches: _vpResult, pitchIntel:_pitchIntelResult, pitchCounterplay:_pitchCounterplayResult, knowledgeEvents:_knowledgeEventsResult, emotionalDefectionDiagnostics, voteCommitmentDiagnostics } = simulateVotes(tribalPlayers, _allImmune, allianceSet, gs.lostVotes, ep.openVote, coachTargets);
     if (emotionalDefectionDiagnostics?.length) ep.emotionalDefectionDiagnostics = emotionalDefectionDiagnostics;
     if (voteCommitmentDiagnostics?.length) ep.voteCommitmentDiagnostics = voteCommitmentDiagnostics;

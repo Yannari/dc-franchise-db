@@ -102,7 +102,7 @@ function makeCast(n) {
  * one more loop iteration mutates gs.activePlayers/gs.tribes/gs.phase out
  * from under a later call) and stores the result on `episodes[i].text`.
  */
-export async function runHeadlessSeason({ twist, coachesPerTribe = 0, castSize = 16, mergeAt = 10, captureText = false, teams = 2 } = {}) {
+export async function runHeadlessSeason({ twist, coachesPerTribe = 0, castSize = 16, mergeAt = 10, captureText = false, teams = 2, config = {} } = {}) {
   core.setPlayers(makeCast(castSize));
   const twistSchedule = [];
   if (twist === 'coaches') {
@@ -113,6 +113,8 @@ export async function runHeadlessSeason({ twist, coachesPerTribe = 0, castSize =
     finaleFormat: 'traditional', jurySize: 7, romance: 'disabled', aftermath: 'disabled',
     popularityEnabled: false, advantages: { idol: { enabled: true } },
     twistSchedule,
+    // anything else the season under test needs — Rescue Island, for one
+    ...config,
   });
   const ok = savestateMod.initGameState();
   if (!ok) throw new Error('initGameState failed');
@@ -144,6 +146,10 @@ export async function runHeadlessSeason({ twist, coachesPerTribe = 0, castSize =
   let guard = 0;
   while (core.gs.phase !== 'complete' && core.gs.activePlayers.length > 1 && guard++ < 80) {
     sync();
+    // the field as it stands BEFORE the episode decides anything: contestants plus the
+    // coaches, who are people still in the game (js/coaches.js) — what merge and
+    // re-entry thresholds are measured against
+    const fieldAtStart = core.gs.activePlayers.length + coachesMod.activeCoaches().length;
     const ep = core.gs.phase === 'finale' ? finaleMod.simulateFinale() : episodeMod.simulateEpisode();
     if (!ep) break;
     const hist = core.gs.episodeHistory[core.gs.episodeHistory.length - 1] || {};
@@ -158,6 +164,9 @@ export async function runHeadlessSeason({ twist, coachesPerTribe = 0, castSize =
       coachPromotions: ep.coachPromotions || null,
       coachElimination: ep.coachElimination || null,
       isMerge: ep.isMerge || false,
+      isRIReentry: ep.isRIReentry || false,
+      riReentrants: ep.riReentrants || null,
+      fieldAtStart,
       activePlayersAfter: [...core.gs.activePlayers],
       ep, // full episode record
       text,

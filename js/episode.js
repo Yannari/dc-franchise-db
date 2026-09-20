@@ -1418,9 +1418,16 @@ export function simulateEpisode() {
 
   // ── RI RE-ENTRY (fires FIRST so returnee participates in twists, challenge, camp, tribal) ──
   if (!gs.riReturnCount) gs.riReturnCount = 0;
+  // COACHES COUNT TOWARD THE RE-ENTRY, exactly as they count toward the merge
+  // (see the ── MERGE CHECK ── note above). They are not in `gs.activePlayers`
+  // — that array means "competes and votes" — but they are people still in the
+  // game, and every one becomes a full player at the merge. Counting only
+  // contestants fired the return at a camp of sixteen when riReentryAt said
+  // twelve, which is early by however many coaches the season has.
+  const _fieldSize = gs.activePlayers.length + activeCoaches().length;
   const isReentry = cfg.ri && gs.riPlayers.length > 0 && (
-    (gs.riReturnCount === 0 && gs.activePlayers.length <= cfg.riReentryAt) ||
-    (gs.riReturnCount === 1 && (cfg.riReturnPoints || 1) >= 2 && gs.activePlayers.length <= (cfg.riSecondReturnAt || 5))
+    (gs.riReturnCount === 0 && _fieldSize <= cfg.riReentryAt) ||
+    (gs.riReturnCount === 1 && (cfg.riReturnPoints || 1) >= 2 && _fieldSize <= (cfg.riSecondReturnAt || 5))
   );
   if (isReentry) {
     ep.isRIReentry = true;

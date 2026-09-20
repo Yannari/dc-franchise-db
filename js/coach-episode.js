@@ -389,13 +389,15 @@ export function maybeSaveCoach(ep, result) {
     (c.covers ? c.covers.includes(result.eliminated) : c.coach === result.eliminated)
     && (!c.tribe || c.tribe === record.tribe));
   if (!commit) {
+    // the tribe rides along: a multi-tribal night draws one set of screens PER
+    // tribe, and without it every tribe's screen shows every tribe's card
     ep.coachCardNotPlayed = [...(ep.coachCardNotPlayed || []), { coach: result.eliminated,
-      held: tribeCardHeld(record.tribe) }];
+      tribe: record.tribe, held: tribeCardHeld(record.tribe) }];
     return false;
   }
   if (!commit.signed) {
     ep.coachSaveRefusals = [...(ep.coachSaveRefusals || []), { coach: commit.coach,
-      refusedBy: commit.refusedBy, reason: commit.votes.find(v => !v.consents)?.reason,
+      tribe: commit.tribe, refusedBy: commit.refusedBy, reason: commit.votes.find(v => !v.consents)?.reason,
       doomed: commit.votes.find(v => !v.consents)?.doomed || null,
       votes: commit.votes, noPeers: commit.noPeers }];
     return false;

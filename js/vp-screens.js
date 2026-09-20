@@ -15359,8 +15359,23 @@ export function buildVPScreens(epRecord) {
         isRockDraw: r.isRockDraw || false,
         sidFreshVote: r.sidFreshVote || false,
         // Clear fields from other tribes so they don't bleed
-        firstEliminated: null, votes2: null, votingLog2: null, alliances2: null };
+        firstEliminated: null, votes2: null, votingLog2: null, alliances2: null,
+        // ── THE COACH'S CARD IS THIS TRIBE'S ────────────────────────────────
+        // A multi-tribal night draws a Tribal and a Votes screen per tribe, and
+        // every card record carries the tribe it belongs to — so each tribe's
+        // screens show its own card and not the other councils'.
+        coachCardCommits: (ep.coachCardCommits || []).filter(c => c.tribe === r.tribe),
+        coachSaves: (ep.coachSaves || []).filter(c => c.tribe === r.tribe),
+        coachCardNotPlayed: (ep.coachCardNotPlayed || []).filter(c => c.tribe === r.tribe),
+        coachSaveRefusals: (ep.coachSaveRefusals || []).filter(c => c.tribe === r.tribe) };
       vpScreens.push({ id:`tribal-${r.tribe}`, label:`${r.tribe} Tribal`, html: rpBuildTribal(subEp) });
+      // Sealed before a ballot was read, so it is read before the votes — the
+      // same order the ordinary tribal uses. This screen was only ever built on
+      // that branch, so on a multi-tribal night the card committed, saved a
+      // coach, and the viewer was never told any of it happened.
+      if (subEp.coachCardCommits.length) {
+        vpScreens.push({ id:`cb-sigs-${r.tribe}`, label:`${r.tribe} Signatures`, html: rpBuildCoachSignatures(subEp) });
+      }
       vpScreens.push({ id:`votes-${r.tribe}`,  label:`${r.tribe} Votes`,  html: rpBuildVotes(subEp) });
     });
     // RI/Rescue screens after all multi-tribal votes

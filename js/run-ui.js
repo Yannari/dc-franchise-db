@@ -2527,7 +2527,7 @@ export function buildEpisodeMap() {
     // The reunion sits between the last elimination and the crowning, which is
     // where the show's own track record chart puts it.
     if (smackdown) eps.push({ ep: ep++, active, phase: 'main', engineType: 'dr-smackdown' });
-    eps.push({ ep, active: finale, phase: 'finale', engineType: null });
+    eps.push({ ep, active: finale, phase: 'finale', engineType: null, tribes: 1 });
     return eps;
   }
 
@@ -2704,6 +2704,23 @@ export function buildEpisodeMap() {
   let _campStartEp = 0;
   let _campReturnUsed = false;
 
+  // ── HOW MANY TRIBES THERE ARE ON A GIVEN NIGHT ──────────────────────
+  //
+  // `seasonConfig.teams` is how many the season STARTED with, and a season
+  // changes that: a Tribe Expansion makes a third out of two, a Tribe Dissolve
+  // folds one back in, and the merge ends tribes altogether. Everything that
+  // asked "can Multi-Tribal run here?" read the starting number, so a season
+  // expanded from two to three was still told it had two and the twist stayed
+  // greyed out with "needs 3+ tribes" — while the ENGINE, which reads
+  // `gs.tribes.length`, would have run it perfectly well.
+  //
+  // So the projection carries the count the same way it carries `active`:
+  // start at the authored number, snap to the live one when the season has
+  // actually reached this episode (an expansion that already fired is a fact,
+  // not a forecast), and apply what the schedule books from there.
+  const _liveEp = Number(gs?.episode) || 0;
+  const _liveTribes = !gs?.isMerged && Array.isArray(gs?.tribes) ? gs.tribes.length : 0;
+  let tribes = Math.max(1, seasonConfig.teams || 2);
   // What the episode just pushed actually removed — see the extra-night note.
   let _lastElims = 1;
   while (active > finale && ep <= 100) {
@@ -2712,6 +2729,12 @@ export function buildEpisodeMap() {
     // runs, however the ones before it turned out.
     const etype = twistMap[ep] || null;
     const _allTypes = twistMapAll[ep] || [];
+
+    // the tribe count this night runs with (see the note above the loop):
+    // a team twist fires before the challenge, so its episode already has the new number
+    if (_liveTribes && ep === Math.max(1, _liveEp)) tribes = _liveTribes;
+    if (_allTypes.includes('tribe-expansion')) tribes += 1;
+    if (_allTypes.includes('tribe-dissolve')) tribes = Math.max(2, tribes - 1);
 
     // How many players leave/return this episode?
     // Check ALL twists on this episode (not just the last one)
@@ -2725,7 +2748,8 @@ export function buildEpisodeMap() {
     // Account for Team Swap advantages that cancelled eliminations mid-season
     if (gs?.skippedEliminationEps?.includes(ep)) elims = 0;
     if (_allTypes.includes('double-elim')) elims = Math.max(elims, 2);
-    if (_allTypes.includes('multi-tribal') && !merged) elims = Math.max(elims, Math.max(2, (seasonConfig.teams || 2) - 1));
+    // every tribe but the winner votes: the count is however many tribes there are THAT night
+    if (_allTypes.includes('multi-tribal') && !merged) elims = Math.max(elims, Math.max(2, tribes - 1));
     if (_allTypes.includes('slasher-night')) elims = Math.max(elims, 1);
     if (_allTypes.includes('monster-cash')) elims = Math.max(elims, 1);
     if (_allTypes.includes('mine-over-matter')) elims = Math.max(elims, 1);
@@ -2866,7 +2890,7 @@ export function buildEpisodeMap() {
     if (!merged && active <= mergeAt) merged = true;
 
     const activeWithReturns = active + returns + riReturn;
-    eps.push({ ep, active: activeWithReturns, phase: merged ? 'post-merge' : 'pre-merge', engineType: etype });
+    eps.push({ ep, active: activeWithReturns, phase: merged ? 'post-merge' : 'pre-merge', engineType: etype, tribes: merged ? 1 : tribes });
     active = Math.max(finale, activeWithReturns - elims);
     _lastElims = elims;
     ep++;
@@ -2889,7 +2913,7 @@ export function buildEpisodeMap() {
     // the turn above has counted it.
     if (_lastElims > 0 && gs?.skippedEliminationEps?.includes(ep - 1) && active > finale) {
       if (!merged && active <= mergeAt) merged = true;
-      eps.push({ ep, active, phase: merged ? 'post-merge' : 'pre-merge', engineType: null });
+      eps.push({ ep, active, phase: merged ? 'post-merge' : 'pre-merge', engineType: null, tribes: merged ? 1 : tribes });
       active = Math.max(finale, active - 1);
       ep++;
     }
@@ -2897,13 +2921,13 @@ export function buildEpisodeMap() {
     // Exile Duel: insert extra episode for the duel resolution (1 elim, no twist)
     if (_allTypes.includes('exile-duel') && active > finale) {
       if (!merged && active <= mergeAt) merged = true;
-      eps.push({ ep, active, phase: merged ? 'post-merge' : 'pre-merge', engineType: null });
+      eps.push({ ep, active, phase: merged ? 'post-merge' : 'pre-merge', engineType: null, tribes: merged ? 1 : tribes });
       active = Math.max(finale, active - 1); // duel resolves — 1 person eliminated
       ep++;
     }
   }
 
-  eps.push({ ep, active: finale, phase: 'finale', engineType: null });
+  eps.push({ ep, active: finale, phase: 'finale', engineType: null, tribes: 1 });
   return eps;
 }
 
@@ -4128,7 +4152,12 @@ export function renderTwistCatalog() {
     // catalog entry is the whole of the work for any future one.
     const modeClashes = canAssign ? twistModeClashes(t, seasonConfig) : [];
     const modeBlocked = modeClashes.length > 0;
-    const tribeBlocked = canAssign && t.minTribes && (seasonConfig.teams || 2) < t.minTribes;
+    // how many tribes the SELECTED night has, not how many the season started with —
+    // a Tribe Expansion booked earlier (or already run) makes Multi-Tribal legal from there on
+    const tribeBlocked = canAssign && t.minTribes && [...selectedEpisodes].some(epN => {
+      const epInfo = epMap.find(e => e.ep === Number(epN));
+      return (epInfo?.tribes ?? (seasonConfig.teams || 2)) < t.minTribes;
+    });
     const riBlocked = canAssign && (t.id === 'second-chance') && seasonConfig.ri;
     const popBlocked = canAssign && t.id === 'second-chance' && !seasonConfig.popularityEnabled;
     const exileBlocked = canAssign && t.id === 'exile-island' && seasonConfig.exile;
@@ -4556,7 +4585,8 @@ function _shuffle(arr) {
 
 const _EVEN_PLAYER_IDS = new Set(['tied-destinies','tri-armed-triathlon','crouching-courtney','bridal-brawls','wheel-of-misfortune']);
 function _canPlace(chal, epInfo, teams) {
-  if (chal.minTribes && teams < chal.minTribes) return false;
+  // the night's own tribe count (a Tribe Expansion earlier in the schedule raises it), not the season's opening one
+  if (chal.minTribes && (epInfo.tribes ?? teams) < chal.minTribes) return false;
   if (chal.minPlayers && epInfo.active < chal.minPlayers) return false;
   if (chal.phase === 'pre-merge' && epInfo.phase !== 'pre-merge') return false;
   if (chal.phase === 'post-merge' && epInfo.phase !== 'post-merge') return false;

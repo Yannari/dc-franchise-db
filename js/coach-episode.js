@@ -823,9 +823,25 @@ export function coachCardTalk(ep, tribe, roll = Math.random) {
 
     // Exposed: the tribe does not like them much, or they have been ignoring
     // most of it. Both are the states that get a coach voted out.
-    const avgBond = members.reduce((s, m) => s + getBond(c.name, m), 0) / members.length;
-    const trained = Object.keys(gs.coachTraining?.[c.name] || {}).length;
-    const exposure = Math.max(0, -avgBond) * 0.12 + Math.max(0, members.length - trained) * 0.05;
+    //
+    // THIS ONLY EVER FELL. `members.length - trained` is how many of the camp
+    // the coach has not worked with YET, and a coach works with their whole
+    // camp by the second episode — so the score was 0.45 in week one, zero
+    // ever after, and the card was discussed once and then never mentioned
+    // again for the rest of the season. Reported exactly that way.
+    //
+    // The same mistake the card's own danger reading had: measure the thing
+    // that gets you voted out. `vulnerabilityOf` is the tribe's feeling about
+    // this coach, it moves both ways all season, and it is already the term
+    // the coaching agenda uses to decide when a coach starts playing for their
+    // own life. The untrained share stays as a smaller second term — being the
+    // coach who ignores people is its own kind of exposed — and a floor keeps
+    // the card in the conversation even for a coach nobody is coming for,
+    // because a card nobody ever mentions is a card the tribe forgets exists.
+    const vuln = vulnerabilityOf(c.name, tribe);
+    const untrainedShare = Math.max(0, members.length - Object.keys(gs.coachTraining?.[c.name] || {}).length)
+      / members.length;
+    const exposure = 0.12 + vuln * 0.55 + untrainedShare * 0.2;
     if (roll() >= Math.min(0.7, exposure)) continue;
 
     const peers = coaches.filter(p => p.name !== c.name);

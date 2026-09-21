@@ -305,13 +305,32 @@ export function reassignCoaches(tribes) {
 
   // The save card belongs to a staff. If its camp is gone, it travels with
   // them; a card keyed to a tribe nobody is on can never be played again.
-  if (gs.coachCards) {
-    for (const key of Object.keys(gs.coachCards)) {
-      if (names.includes(key)) continue;
-      const dest = moved.find(m => m.from === key)?.to;
-      if (dest && !gs.coachCards[dest]) gs.coachCards[dest] = gs.coachCards[key];
-      delete gs.coachCards[key];
-    }
+  //
+  // A SPENT CARD MUST NOT POISON A CAMP THAT STILL HAD ITS OWN. This copied
+  // whatever the dead tribe's entry said onto any destination without one —
+  // and "without one" is exactly how an unspent card is stored, since
+  // tribeCardState() reads a missing key as 'unused'. So a tribe that folded
+  // after playing its card handed 'used' to the camp it merged into, and that
+  // camp's staff silently lost a card they had never played: no discussion of
+  // it at camp, nothing to commit at tribal, for the rest of the season.
+  // Reported as the save card working during the multi-tribal weeks and
+  // stopping the moment the tribes dissolved.
+  //
+  // One card per staff, so the merged staff holds one if EITHER side still
+  // did. Spent only beats spent.
+  // Walk the MOVES, not the card map: an unspent card is stored as the absence
+  // of a key, so a map walk can only ever see the spent ones — which is how a
+  // staff arriving with a live card ended up adopting the destination's spent
+  // one, the same bug in the other direction.
+  if (!gs.coachCards) gs.coachCards = {};
+  for (const m of moved) {
+    if (names.includes(m.from)) continue;      // their old camp still exists: nothing merges
+    const held = t => (gs.coachCards[t] || 'unused') === 'unused';
+    if (held(m.from) || held(m.to)) delete gs.coachCards[m.to];
+    else gs.coachCards[m.to] = 'used';
+  }
+  for (const key of Object.keys(gs.coachCards)) {
+    if (!names.includes(key)) delete gs.coachCards[key];   // a camp nobody is on
   }
   return moved;
 }

@@ -4481,7 +4481,19 @@ export function simulateEpisode() {
     // running Multi-Tribal reported. Deriving the tribes from the coaches who
     // can actually be voted for here means a future council shape gets the card
     // by passing its coaches, which it must do anyway.
-    const _cardTribes = [...new Set([tribeLabel, ...coachTargets.map(n => coachRecordFn(n)?.tribe)].filter(Boolean))];
+    // Derived from WHO IS AT THIS COUNCIL, not only from the label and the
+    // target list. Both of those are empty on a night the label is null, and a
+    // coach can still be voted out on such a night because formAlliances finds
+    // them through their tribe's members — so the card was never sealed for a
+    // tribe whose coach was about to be voted out.
+    const _cardTribes = [...new Set([
+      tribeLabel,
+      ...coachTargets.map(n => coachRecordFn(n)?.tribe),
+      ...activeCoaches()
+        .filter(c => (gs.tribes || []).find(t => (t.name ?? t.tribeName) === c.tribe)
+          ?.members?.some(m => tribalPlayers.includes(m)))
+        .map(c => c.tribe),
+    ].filter(Boolean))];
     for (const _cardTribe of _cardTribes) commitSaveCards(ep, _cardTribe, allianceSet);
 
     // WHO IS ACTUALLY AT THIS COUNCIL, AND WHO CANNOT BE SENT HOME FROM IT.

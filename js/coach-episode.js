@@ -319,12 +319,16 @@ export function saveCardVerdict(voterCoach, endangered) {
  * on their tribe they like least. Exported because the decision to SIGN turns
  * on it: a peer needs to know who dies before agreeing to it.
  */
-export function predictedReplacement(coachName) {
+export function predictedReplacement(coachName, eligible = null) {
   const rec = coachRecord(coachName);
   if (!rec) return null;
   const tribe = (gs.tribes || []).find(t => (t.name ?? t.tribeName) === rec.tribe);
-  return (tribe?.members || [])
-    .filter(m => !isCoach(m))
+  // At a council, `eligible` is who that council could actually send home —
+  // immunity and absence already taken out. At camp, where this is a coach
+  // thinking ahead rather than naming anybody, there is no council yet and the
+  // whole camp is the answer.
+  const pool = eligible || (tribe?.members || []).filter(m => !isCoach(m));
+  return pool
     .slice()
     .sort((a, b) => getBond(coachName, a) - getBond(coachName, b))[0] || null;
 }
@@ -405,10 +409,38 @@ export function maybeSaveCoach(ep, result) {
 
   // The coach actually being saved names the replacement, not whoever called
   // for the card.
-  const replacement = predictedReplacement(result.eliminated)
-    || (tribeObj.members || []).filter(m => !isCoach(m))
-        .slice().sort((a, b) => getBond(result.eliminated, a) - getBond(result.eliminated, b))[0];
-  if (!replacement) return false;
+  //
+  // ONLY SOMEBODY THIS COUNCIL COULD ACTUALLY SEND HOME. This read the tribe's
+  // whole roster, so the card could name a player holding immunity — and did
+  // name one who had played a Safety Without Power, left the council before a
+  // vote was read and could not legally be voted for at all. She was announced
+  // as the boot from a tribal she was not at.
+  //
+  // Three things disqualify a name: not being at this council (runTribal
+  // records the attendance on ep._councilPool), holding immunity of any kind
+  // (the necklace, extra immunity, a power that walked them out), and having
+  // been covered by an idol played tonight — which lands after the pool is
+  // recorded, so it is read from the plays themselves.
+  const pool = ep?._councilPool;
+  const idolProtected = new Set((ep?.idolPlays || [])
+    .filter(p => !p.fake && (p.votesNegated || 0) >= 0)
+    .map(p => p.playedFor || p.player)
+    .filter(Boolean));
+  const eligible = (tribeObj.members || []).filter(m =>
+    !isCoach(m)
+    && m !== result.eliminated
+    && !idolProtected.has(m)
+    && (!pool || (pool.attendees.includes(m) && !pool.immune.includes(m))));
+
+  const replacement = predictedReplacement(result.eliminated, eligible)
+    || eligible.slice().sort((a, b) => getBond(result.eliminated, a) - getBond(result.eliminated, b))[0];
+  // A card with nobody left to name cannot be played. Recorded rather than
+  // returned silently — an unexplained survival is how this twist hides bugs.
+  if (!replacement) {
+    ep.coachCardNotPlayed = [...(ep.coachCardNotPlayed || []), { coach: result.eliminated,
+      tribe: record.tribe, held: tribeCardHeld(record.tribe), noReplacement: true }];
+    return false;
+  }
 
   ep.coachSaves = [...(ep.coachSaves || []), { coach: result.eliminated, tribe: commit.tribe,
     calledBy: commit.calledBy || commit.coach, replacement, votes: commit.votes }];

@@ -4483,6 +4483,15 @@ export function simulateEpisode() {
     // by passing its coaches, which it must do anyway.
     const _cardTribes = [...new Set([tribeLabel, ...coachTargets.map(n => coachRecordFn(n)?.tribe)].filter(Boolean))];
     for (const _cardTribe of _cardTribes) commitSaveCards(ep, _cardTribe, allianceSet);
+
+    // WHO IS ACTUALLY AT THIS COUNCIL, AND WHO CANNOT BE SENT HOME FROM IT.
+    // The save card names somebody to leave in the coach's place, and it was
+    // picking from the tribe's whole roster — so it named a player holding
+    // immunity, and once named a player who had already left the council on a
+    // Safety Without Power and could not be voted for at all. Only this scope
+    // knows the attendance and the immunity, so it records both for whoever
+    // resolves the night.
+    ep._councilPool = { attendees: [...tribalPlayers], immune: [..._allImmune] };
     const { votes, log, defections, voteMiscommunications, votePitches: _vpResult, pitchIntel:_pitchIntelResult, pitchCounterplay:_pitchCounterplayResult, knowledgeEvents:_knowledgeEventsResult, emotionalDefectionDiagnostics, voteCommitmentDiagnostics } = simulateVotes(tribalPlayers, _allImmune, allianceSet, gs.lostVotes, ep.openVote, coachTargets);
     if (emotionalDefectionDiagnostics?.length) ep.emotionalDefectionDiagnostics = emotionalDefectionDiagnostics;
     if (voteCommitmentDiagnostics?.length) ep.voteCommitmentDiagnostics = voteCommitmentDiagnostics;

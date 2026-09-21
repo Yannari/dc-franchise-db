@@ -25,7 +25,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import * as core from '../js/core.js';
 import { addCoach, reassignCoaches, tribeCardHeld, spendTribeCard } from '../js/coaches.js';
 import { coachCardTalk } from '../js/coach-episode.js';
-import { addBond } from '../js/bonds.js';
+import { addBond, getBond } from '../js/bonds.js';
 import { seedGs, seedPlayers } from './helpers/setup.js';
 
 const GREEN = ['G1', 'G2', 'G3', 'G4'];
@@ -109,6 +109,26 @@ describe('raising the card at camp', () => {
     // a roll this high only clears the threshold when vulnerability lifts it
     const events = coachCardTalk({ num: 5 }, tribe, () => 0.33);
     expect(events.some(e => e.players.includes('Millie'))).toBe(true);
+  });
+
+  it('gives a lone coach a scene of their own', () => {
+    // Measured over four seasons with one coach per tribe: the card sealed,
+    // saved a coach, and was discussed exactly zero times — the old gate
+    // returned early because there was no peer to ask. A staff of one has
+    // nobody to ask and nothing to negotiate; what it has is a decision about
+    // who gets told, and telling somebody is what makes the card deter anyone.
+    addCoach({ name: 'Millie', tribe: 'Red' });
+    for (const m of RED) addBond('Millie', m, 1);
+    addBond('Millie', 'R3', 2);                       // the one she trusts most
+    const tribe = core.gs.tribes.find(t => t.name === 'Red');
+    const before = getBond('Millie', 'R3');
+
+    const events = coachCardTalk({ num: 4 }, tribe, () => 0.05);
+    expect(events).toHaveLength(1);
+    expect(events[0].players).toEqual(['Millie', 'R3']);
+    expect(events[0].badgeText).toBe('THE CARD, SHOWN');
+    // the deep end of the bond scale saturates, so this is measured well short of it
+    expect(getBond('Millie', 'R3'), 'being trusted with it moves the bond').toBeGreaterThan(before);
   });
 
   it('says nothing once the card is spent', () => {

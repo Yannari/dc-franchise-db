@@ -845,7 +845,13 @@ export function coachCardTalk(ep, tribe, roll = Math.random) {
   const tribeName = tribe?.name ?? tribe?.tribeName;
   if (!tribeName) return events;
   const coaches = coachesOf(tribeName);
-  if (coaches.length < 2) return events;   // nobody to ask, nothing to discuss
+  // A LONE COACH STILL HAS A CARD, and this used to return here — no peer to
+  // ask, so nothing was ever said about it. Measured over four seasons with one
+  // coach per tribe: the card sealed, saved a coach, and was discussed exactly
+  // zero times, so the only sign it existed was the night it fired. A staff of
+  // one gets its own scene below, because holding a card nobody can refuse is
+  // a different thing from holding one that needs a signature.
+  if (!coaches.length) return events;
   const members = (tribe.members || []).filter(m => !isCoach(m));
   if (!members.length) return events;
 
@@ -877,6 +883,34 @@ export function coachCardTalk(ep, tribe, roll = Math.random) {
     if (roll() >= Math.min(0.7, exposure)) continue;
 
     const peers = coaches.filter(p => p.name !== c.name);
+
+    // ── A STAFF OF ONE ──────────────────────────────────────────────────
+    //
+    // Nobody to ask, and nobody to spend it on but themselves: the card is
+    // already theirs and no signature can be refused. So the scene is not a
+    // negotiation, it is a decision about who gets told — and telling somebody
+    // is the whole point, because a card the camp does not know about deters
+    // nobody. It costs something too: the person told knows this coach cannot
+    // be got rid of cheaply, which is exactly the kind of thing that travels.
+    if (!peers.length) {
+      const confidant = members.slice().sort((a, b) => getBond(c.name, b) - getBond(c.name, a))[0];
+      if (!confidant) continue;
+      const soloPool = [
+        `${c.name} has nobody to countersign. The card is already ${c.name}'s to spend, which is the only comfort in holding it alone — so ${confidant} is shown it, because a card nobody knows about frightens nobody.`,
+        `${c.name} shows ${confidant} the card. No peer to promise anything, no signature to wait on: just one person who now knows ${c.name} cannot be got rid of cheaply.`,
+        `The card comes out once, for ${confidant}, and goes back in ${c.name}'s pocket. It is not a favour. It is a rumour, planted where it will travel.`,
+        `"There's nobody to ask." ${c.name} says it to ${confidant} like a complaint, and lets ${confidant} work out what it means: the card needs no permission at all.`,
+      ];
+      events.push({
+        type: 'coachCardTalk', players: [c.name, confidant],
+        badgeText: 'THE CARD, SHOWN', badgeClass: 'green',
+        text: soloPool[Math.floor(roll() * soloPool.length)],
+      });
+      // Being trusted with it is worth something to both of them.
+      addBond(c.name, confidant, 0.5);
+      break;  // one card conversation per tribe per episode
+    }
+
     const peer = peers[Math.floor(roll() * peers.length)] || peers[0];
     const verdict = saveCardVerdict(peer.name, c.name);
     const pool = verdict.consents

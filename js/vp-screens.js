@@ -12531,7 +12531,16 @@ export function rpBuildVotes(ep) {
   for (const _cm of (ep.coachCardCommits || [])) {
     const _wasSaved = (ep.coachSaves || []).some(v => v.coach === _cm.coach);
     const _wasRefused = (ep.coachSaveRefusals || []).some(v => v.coach === _cm.coach);
-    if (_wasSaved || _wasRefused) continue;
+    // AN UNSIGNED CARD IS NEVER SPENT. commitSaveCards only calls
+    // spendTribeCard when every peer signs, so a refused card is still in the
+    // staff's pocket — and the Signatures screen has already said so. This
+    // skipped only commits with a RECORDED refusal, and refusals are recorded
+    // by maybeSaveCoach, which runs only when a coach is actually eliminated.
+    // So on a night the card was called for, refused, and the votes went to a
+    // contestant, the screen announced the card burned and gone while the
+    // screen before it said it was never played. Reported as exactly that
+    // contradiction: "why would the card be played when julia refused".
+    if (_wasSaved || _wasRefused || !_cm.signed) continue;
     _coachCardHtml += `<div class="tv-advantage-play" style="border-color:rgba(139,148,158,0.35)">
       <div class="tv-advantage-play-left">${rpPortrait(_cm.coach)}</div>
       <div class="tv-advantage-play-body">

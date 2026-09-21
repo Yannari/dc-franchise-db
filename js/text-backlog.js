@@ -1989,6 +1989,9 @@ export function _textWhyVote(ep, ln, sec) {
   (ep.coachCardCommits || []).forEach(cm => {
     if ((ep.coachSaves || []).some(v => v.coach === cm.coach)) return;
     if ((ep.coachSaveRefusals || []).some(v => v.coach === cm.coach)) return;
+    // Unsigned is not spent — the card was refused, not burned. See the note
+    // on the same test in js/vp-screens.js.
+    if (!cm.signed) return;
     ln(`SAVE CARD BURNED — ${cm.calledBy || cm.coach} committed the card before the votes were read and it covered ${(cm.covers || [cm.coach]).join(' and ')}. The votes went to a contestant instead. It is gone.`);
   });
   (ep.coachCardNotPlayed || []).forEach(np => {

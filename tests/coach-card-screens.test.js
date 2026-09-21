@@ -110,6 +110,23 @@ describe('the save card on a multi-tribal night', () => {
     expect(got).toContain('ri-choice-P6');
   });
 
+  it('does not say a refused card was burned', () => {
+    // Reported from a played episode: the Signatures screen said Julia refused
+    // and the card "is still there to ask about again", and the Votes screen
+    // directly below it announced SAVE CARD BURNED, the card gone. An unsigned
+    // card is never spent — commitSaveCards only calls spendTribeCard when
+    // every peer signs — so the burn line was fiction.
+    const ep = multiTribalEpisode();
+    ep.coachCardCommits = [{ tribe: 'Green', calledBy: 'Julia', coach: 'Julia', covers: ['Julia', 'Thom'],
+      votes: [{ coach: 'Thom', consents: false, reason: 'strategic' }], signed: false, refusedBy: 'Thom' }];
+    ep.coachSaves = [];                       // the votes went to a contestant
+    ep.coachSaveRefusals = [];                // nobody was eliminated, so nothing was recorded
+    vpScreensMod.buildVPScreens(ep);
+    const votes = vpScreensMod.vpScreens.find(s => s.id === 'votes-Green')?.html || '';
+    expect(votes).not.toContain('SAVE CARD BURNED');
+    expect(votes).not.toContain('The card is gone');
+  });
+
   it('says on the votes screen that the card was used', () => {
     expect(htmlOf('votes-Green')).toContain("COACH'S SAVE CARD");
     // and who goes instead — the card is never free

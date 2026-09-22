@@ -158,7 +158,12 @@ export const KINDS = {
     salience: 0.2,
     cast: (s, rng) => {
       const a = pick(rng, s.villa);
-      const b = a && pick(rng, roomMates(s, a).filter(n => n !== partnerOf(s, a)));
+      // Villa friendships are mostly between people who don't fancy each
+      // other (on a straight cast, the girls and the lads), and they grow:
+      // somebody you already get on with is who you go and find. Read from
+      // attraction, never from gender, so any cast works.
+      const b = a && weighted(rng, roomMates(s, a).filter(n => n !== partnerOf(s, a))
+        .map(n => [n, (attr(s, a, n) == null ? 3 : 1) * (1 + Math.max(0, getBond(a, n)) / 4)]));
       return b ? { players: [a, b] } : null;
     },
     apply: (s, ev) => {

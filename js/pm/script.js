@@ -26,7 +26,7 @@ export { HUT };
 export const SPEAKERS = ['a', 'b', 'c', 'dior', 'narrator'];
 export const FACT_KEYS = ['rung', 'thinks', 'persona', 'intent', 'attachment', 'mood', 'bombshell',
   'early', 'coupled', 'gap', 'knows', 'faking', 'bPersona', 'bMood', 'bRung', 'stance', 'family',
-  'choice', 'cause', 'channel', 'stole', 'bTaken', 'archetype', 'taken', 'loyal', 'late', 'gender', 'bGender', 'myRung', 'phase', 'kind', 'role', 'withB'];
+  'choice', 'cause', 'channel', 'stole', 'bTaken', 'archetype', 'taken', 'loyal', 'late', 'gender', 'bGender', 'myRung', 'phase', 'kind', 'role', 'withB', 'newArrival'];
 
 // Archetype groups a pool may name instead of listing them (CLAUDE.md).
 export const VILLAINS = ['villain', 'mastermind', 'schemer'];
@@ -88,7 +88,9 @@ export function factsFor(state, ev) {
     gender: players.find(p => p.name === a)?.gender || null,
     bGender: b ? players.find(p => p.name === b)?.gender || null : null,
   };
-  f.phase = ev.phase || null;          // morning, day, event (the challenge), evening, firepit…
+  f.phase = ev.phase || null;
+  // Somebody walked in today (a bombshell, Casa's arrivals) — not day one.
+  f.newArrival = state.ep > 1 && (state.villa || []).some(n => state.ledger?.firstEp?.[n] === state.ep);          // morning, day, event (the challenge), evening, firepit…
   for (const k of ['choice', 'cause', 'channel', 'stole']) if (ev.extra?.[k] != null) f[k] = ev.extra[k];
   return f;
 }
@@ -155,9 +157,12 @@ const hostName = () => SHOWS['perfect-match'].words.host;
 export const narratorName = () => SHOWS['perfect-match'].words.narratorName;
 const pro = name => pronounsOf(players.find(p => p.name === name)?.gender || 'nb');
 
-export function fill(text, ps) {
-  const names = { a: ps[0], b: ps[1], c: ps[2] };
-  return text.replace(/\{([abc])(?:\.(sub|obj|pos|posAdj|ref|Sub|Obj|PosAdj))?\}/g, (m, who, form) => {
+// {pa} and {pb} are a's and b's own partners — for friends talking about
+// their couples. A pool may only use one behind `taken` / `bTaken`, so the
+// partner is always there to name (tests/pm-lines.test.js).
+export function fill(text, ps, partners = {}) {
+  const names = { a: ps[0], b: ps[1], c: ps[2], pa: partners.pa, pb: partners.pb };
+  return text.replace(/\{(pa|pb|a|b|c)(?:\.(sub|obj|pos|posAdj|ref|Sub|Obj|PosAdj))?\}/g, (m, who, form) => {
     const n = names[who];
     if (!n) return m;
     return form ? pro(n)[form] : n;
@@ -191,6 +196,8 @@ function pickVariant(state, block, ps) {
 }
 
 export function renderScript(entry, ps, state = null) {
+  const partners = state ? { pa: partnerOf(state, ps[0]), pb: ps[1] ? partnerOf(state, ps[1]) : null } : {};
+  const f = text => fill(text, ps, partners);
   const lines = [];
   let beat = entry.beat || null;
   const picked = [];
@@ -203,9 +210,9 @@ export function renderScript(entry, ps, state = null) {
   }
   return {
     id: picked.length ? `${entry.id}:${picked.join('.')}` : entry.id,
-    stage: entry.stage ? fill(entry.stage, ps) : null,
-    lines: lines.map(([who, text]) => ({ who: speakerName(who, ps), text: fill(text, ps) })),
-    beat: beat ? fill(beat, ps) : null,
+    stage: entry.stage ? f(entry.stage) : null,
+    lines: lines.map(([who, text]) => ({ who: speakerName(who, ps), text: f(text) })),
+    beat: beat ? f(beat) : null,
   };
 }
 

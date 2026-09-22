@@ -13,6 +13,7 @@ import { CHAT } from './day/chat.js';
 import { DEEP_CHAT } from './day/deep-chat.js';
 import { KISS } from './day/kiss.js';
 import { FRIENDSHIP } from './day/friendship.js';
+import { FRIEND_TALK } from './day/friend-talk.js';
 import { GOSSIP } from './day/gossip.js';
 import { COMEDY } from './day/comedy.js';
 import { LOYALTY } from './day/loyalty.js';
@@ -193,7 +194,7 @@ export const DAY = {
   chat: CHAT,
   'deep-chat': DEEP_CHAT,
   kiss: KISS,
-  friendship: FRIENDSHIP,
+  friendship: [...FRIENDSHIP, ...FRIEND_TALK],
   gossip: GOSSIP,
   comedy: COMEDY,
   ick: ICK,

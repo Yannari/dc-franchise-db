@@ -46,8 +46,28 @@ describe('the pools are well-formed', () => {
       if (k.startsWith('hut:')) continue;
       const size = CAST[k] || 2;
       const allowed = ['a', 'b', 'c'].slice(0, size);
-      for (const x of texts(e)) for (const [, who] of x.matchAll(/\{([abc])/g)) expect(allowed, `${k} ${e.id}: ${x}`).toContain(who);
+      for (const x of texts(e)) for (const [, who] of x.matchAll(/\{([abc])[.}]/g)) expect(allowed, `${k} ${e.id}: ${x}`).toContain(who);
       for (const [who] of turns(e)) if (['a', 'b', 'c'].includes(who)) expect(allowed, `${k} ${e.id}`).toContain(who);
+    }
+  });
+  it("{pa} and {pb} only appear where that partner exists", () => {
+    // {pa} is a's partner: the entry (or a's own reply) must require `taken`.
+    // {pb} is b's partner: the entry must require `bTaken`, or b's own reply `taken`.
+    const has = (x, slot) => new RegExp(`\{${slot}[.}]`).test(x);
+    for (const [k, e] of ENTRIES) {
+      const own = [e.stage, e.beat, ...(e.turns || []).filter(Array.isArray).map(t => t[1])].filter(Boolean);
+      for (const x of own) {
+        if (has(x, 'pa')) expect(e.when?.taken, `${k} ${e.id}: ${x}`).toBe(true);
+        if (has(x, 'pb')) expect(e.when?.bTaken, `${k} ${e.id}: ${x}`).toBe(true);
+      }
+      for (const blk of (e.turns || []).filter(t => !Array.isArray(t))) for (const v of blk.vary) {
+        for (const x of [v.beat, ...v.turns.map(t => t[1])].filter(Boolean)) {
+          const aOk = e.when?.taken || (blk.by === 'a' && v.when?.taken);
+          const bOk = e.when?.bTaken || (blk.by === 'b' && v.when?.taken);
+          if (has(x, 'pa')) expect(!!aOk, `${k} ${e.id}: ${x}`).toBe(true);
+          if (has(x, 'pb')) expect(!!bOk, `${k} ${e.id}: ${x}`).toBe(true);
+        }
+      }
     }
   });
   it('every day-to-day pool has at least three scenes anyone can get', () => {
@@ -73,7 +93,7 @@ describe('the words follow the rules', () => {
     for (const [k, e] of ENTRIES) for (const x of texts(e)) {
       // A capitalised word straight after a placeholder slot's usual place would be a name;
       // the practical check is that nothing but {a}/{b}/{c} forms appear in braces.
-      for (const [m] of x.matchAll(/\{[^}]*\}/g)) expect(m, `${k} ${e.id}`).toMatch(/^\{[abc](\.(obj|pos|posAdj|ref|Obj|PosAdj))?\}$/);
+      for (const [m] of x.matchAll(/\{[^}]*\}/g)) expect(m, `${k} ${e.id}`).toMatch(/^\{(pa|pb|a|b|c)(\.(obj|pos|posAdj|ref|Obj|PosAdj))?\}$/);
       expect(x, `${k} ${e.id}`).not.toMatch(/\bDior\b/);
     }
   });

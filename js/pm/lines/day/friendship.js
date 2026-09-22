@@ -273,8 +273,8 @@ export const FRIENDSHIP = [
   { id: 'friendship.32',
     turns: [
       ['a', "I've got a rule. No crying before lunch."],
-      ['b', 'Why before lunch?'],
-      ['a', "Because after lunch it's fair game."],
+      ['b', 'What happens after lunch?'],
+      ['a', "After lunch, you can cry wherever you like. I'll bring the tissues."],
     ],
     beat: '{b} writes it on the fridge in eyeliner.' },
   { id: 'friendship.33', when: { mood: 'lonely' },

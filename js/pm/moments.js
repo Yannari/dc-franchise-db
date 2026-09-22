@@ -93,9 +93,11 @@ function recoupleNight(state, rng, { dumpSingles }) {
   for (const pk of r.picks) if (pk.stole) breakHeart(state, pk.stole, pk.picked, 5 * romance(pk.stole, pk.picked) / 10);
   state.couples = r.couples;
   if (!dumpSingles || !r.single.length) return { events, exits: [], ballots: r.ballots };
-  // At most two go on a recoupling night: the real show leaves the rest
-  // single in the villa rather than emptying it in one ceremony.
-  const dumped = r.single.slice(0, 2);
+  // At most two go on a recoupling night, and only one once the villa is
+  // down to ten: the real show leaves the rest single rather than emptying
+  // the place a ceremony at a time. Measured: without the second cap, a
+  // thin season arrived at the final with two couples instead of four.
+  const dumped = r.single.slice(0, state.villa.length > 10 ? 2 : 1);
   const scene = dumpingScene(state, rng, { atRisk: [], dumped, ballots: [], channel: 'recoupling' });
   return { events: [...events, ...scene.events], exits: scene.exits, ballots: r.ballots };
 }

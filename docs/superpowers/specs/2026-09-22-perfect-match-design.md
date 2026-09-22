@@ -753,6 +753,88 @@ dispatched in both places, with the audit. 5. Export. 6. Publish one season.
 7. Screens against that season. 8. Ratings signals. 9. Franchise carry-over
 (exes, returning Casa islanders). 10. AI fills last.
 
+## 16.5 The voice — what an event actually contains
+
+Approved 2026-09-22 after two rounds of samples. **An event is a short SCENE,
+not a sentence about a scene.** The engine picks a script and fills `{a}` /
+`{b}` at render time; names never live in a pool.
+
+Shape: at most one line of staging, then three to five turns of real
+dialogue, then a short beat of consequence. Not every line is a punchline —
+let somebody answer plainly, pause, or walk off. A speaker may only say what
+that islander could know (§7).
+
+The two corrections that set the standard: a line that DESCRIBES a
+conversation ("{a} says it like a joke so {b} can take it either way") is not
+a scene, and the idiom has to be right ("Don't tell me how I should feel", not
+"how I feel").
+
+Approved samples:
+
+**An argument**
+> **{b}:** "Don't tell me how I should feel."
+> **{a}:** "I'm not doing that, I'm just saying—"
+> **{b}:** "You are. Every time. You decide what the problem is, then you tell me I'm the problem for having it."
+> **{a}:** "Alright. Then tell me what it is, because I've been guessing all day."
+>
+> {b} walks off toward the kitchen. {a} stays where they are, which is new.
+
+**Grafting on someone who is taken**
+> **{a}:** "Can I be honest with you? Properly honest."
+> **{b}:** "Go on."
+> **{a}:** "If you'd walked in on day one, I don't think you'd be sat on that bed with them."
+> **{b}:** "You can't say stuff like that to me."
+> **{a}:** "I know. I've said it now."
+>
+> {b} doesn't get up, and they both notice.
+
+**Closing off**
+> **{a}:** "I want to say something before I lose my nerve. I'm closing myself off."
+> **{b}:** "Are you asking me or telling me?"
+> **{a}:** "Telling you. You can do what you want with it."
+> **{b}:** "I don't want anyone else either."
+
+**The exclusive ask, declined**
+> **{a}:** "I don't want to share you. Be exclusive with me."
+> **{b}:** "…"
+> **{a}:** "That pause is an answer, by the way."
+> **{b}:** "I'm not there yet. I'd rather say that than tell you what you want to hear."
+>
+> It isn't fair, and {a} sits with it for the rest of the night.
+
+**Coming back from Casa Amor**
+> **{b}:** "Are you serious?"
+> **{a}:** "Let me explain."
+> **{b}:** "You're holding her hand while you explain."
+> **{a}:** "I didn't plan it."
+> **{b}:** "I came back on my own. I sat in that villa and I came back on my own."
+
+**Beach hut, two-faced**
+> **{a}:** "Everyone keeps saying we're solid. And yeah, on paper. But paper's not a person, is it. I'll see how this week goes and then I'll decide."
+
+**Dior at the firepit**
+> **Dior:** "Islanders. Tonight the girls are choosing, and one of the boys is going home. {a}, you're up first. Take your time."
+
+**Jealousy, confronted**
+> **{a}:** "I watched you do it. I'm not inventing it."
+> **{b}:** "It was a chat."
+> **{a}:** "It was a chat with your hand on her leg."
+> **{b}:** "Right, so you were counting."
+> **{a}:** "Apparently I was, yeah."
+
+**Reassurance**
+> **{a}:** "Are we alright?"
+> **{b}:** "We're alright."
+> **{a}:** "Say it like you mean it and I'll drop it."
+> **{b}:** "We're alright. I'm not going anywhere. Go to sleep."
+
+This changes the event shape: a pool entry is a `script` (staging plus
+dialogue turns), not one `tpl` string. Plan 1 ships two placeholder lines per
+kind; the writing plan replaces them and adds the repetition guard the audit
+already measures (45% of line-and-cast pairs repeat within a season today).
+
+---
+
 ## 17. Out of scope for v1
 
 Are You The One mode (later, on this engine via the registry-entry pattern),

@@ -21,7 +21,11 @@ describe('relationships are one-way and layered, and reach the row', () => {
   it('every villa episode snapshots relationships and labels', () => {
     const { rows } = season(1);
     for (const r of rows.filter(x => x.moment !== 'reunion')) {
-      expect(Object.keys(r.pm.relationships).length).toBeGreaterThan(10);
+      // Everybody in the villa has at least one relationship on the row —
+      // a count threshold would only measure how big the villa was that week.
+      for (const n of r.pm.villa) {
+        expect(Object.keys(r.pm.relationships).some(k => k.startsWith(`${n}→`)), `${n} ep${r.num}`).toBe(true);
+      }
       expect(Array.isArray(r.pm.relLabels)).toBe(true);
     }
   });

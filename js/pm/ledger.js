@@ -18,6 +18,23 @@ export const FIRST_WINDOW = 3;
 // This show is sold on the vote: a scene moves gs.popularity twice as far as
 // the same scene on Total Drama.
 export const POP_SCALE = 2;
+/*
+ * HOW FAR ONE AIRED SCENE MOVES THE COUNTRY.
+ *
+ * Measured at 1.0 over a hundred seasons: NOT ONE season produced a Fan
+ * Favourite or a Villain by episode 8 (the spec asks for most of them) and
+ * 53% of the villa sat on "Invisible" all season (the spec asks for about a
+ * quarter). Per-scene weights are fractions, so eight episodes of them never
+ * reached ±60 — the labels existed and nothing could ever earn them.
+ * Measured again at 2.6 (still only 2% of seasons) and 3.6 (14%). At 5.0 the
+ * hundred seasons give: both a fan favourite and a villain by ep 8 in 33% and
+ * by ep 12 in 70%, a fan favourite in 99%, an "Invisible" share of 26% (the
+ * spec asks for about a quarter), and end-of-season labels spread across all
+ * seven tiers — 574 liked, 497 fan favourite, 435 loved, 236 invisible, 194
+ * divisive, 139 disliked, 125 villain. No saturation. The per-episode caps
+ * (12 / 24 / 35) still decide how fast anybody can move.
+ */
+export const SCENE_GAIN = 5.0;
 export const LABEL_ORDER = ['villain', 'disliked', 'divisive', 'invisible', 'liked', 'loved',
   'fan-favourite'];
 const BANDS = [[60, 'fan-favourite'], [25, 'loved'], [5, 'liked'], [-5, 'invisible'],
@@ -46,7 +63,7 @@ export function noteArrival(L, name, ep) {
 
 export function recordAired(L, { who, approval = 0, fame = 0, major = false }) {
   if (!who || L.firstEp[who] == null) return;
-  L.raw[who] = (L.raw[who] || 0) + approval;
+  L.raw[who] = (L.raw[who] || 0) + approval * SCENE_GAIN;
   L.fameRaw[who] = (L.fameRaw[who] || 0) + Math.max(0, fame);
   if (major) L.major[who] = true;
 }

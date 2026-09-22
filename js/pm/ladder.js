@@ -110,11 +110,13 @@ export function decideLadder(state, rng, attachmentOf = null) {
     const both = Math.min(at(stepOf(state, a, b)), at(stepOf(state, b, a)));
     if (both >= at('open') && both < at('exclusive') && at(stepOf(state, asker, askee)) >= at('open')
       && rng() < rAsk * 0.5) {
-      const yes = rng() < clamp(0.15 + rYes * 1.1, 0, 0.97);
+      // Measured: 70% of asks were being declined. Most asks land on the
+      // real show; a decline is the exception that hurts.
+      const yes = rng() < clamp(0.35 + rYes * 1.4, 0, 0.97);
       if (yes) { setStep(state, a, b, 'exclusive'); setStep(state, b, a, 'exclusive'); tellStep(state, a, b); tellStep(state, b, a); }
       out.push({ kind: 'exclusive-ask', from: asker, to: askee, yes });
     } else if (both === at('exclusive') && rng() < rAsk * 0.35) {
-      const yes = rng() < clamp(0.1 + rYes * 1.15, 0, 0.97);
+      const yes = rng() < clamp(0.3 + rYes * 1.4, 0, 0.97);
       if (yes) { setStep(state, a, b, 'official'); setStep(state, b, a, 'official'); tellStep(state, a, b); tellStep(state, b, a); }
       out.push({ kind: 'official-ask', from: asker, to: askee, yes });
     }

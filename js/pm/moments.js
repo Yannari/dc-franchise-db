@@ -204,9 +204,15 @@ export const MOMENTS = {
     const hidden = state.history.filter(e => !e.aired && e.kind !== 'loyalty')
       .map(e => [e, Object.values(e.pop).reduce((a, p) => a + Math.abs(p.approval || 0), 0)])
       .sort((a, b) => b[1] - a[1]).slice(0, 5).map(([e]) => e);
-    for (const e of hidden) airLater(state, e);
-    const events = hidden.map(e => makeEvent(state, ctx.rng, { phase: 'reunion', kind: 'reveal', players: e.players,
-      aired: true, extra: { revealed: e.id, pop: {} } }));
+    const events = hidden.map(e => {
+      const touched = Object.keys(e.pop);
+      airLater(state, e);
+      // The reveal names everyone the clip moves, so the row can explain the
+      // approval it just cost them: a major moment nobody could see on the
+      // screen is the "computed, drawn nowhere" bug class (§11.5 A).
+      return makeEvent(state, ctx.rng, { phase: 'reunion', kind: 'reveal', players: e.players,
+        aired: true, major: touched, extra: { revealed: e.id, pop: {} } });
+    });
     return { events, exits: [], ballots: [], extra: { revealed: hidden.map(e => e.id) } };
   },
 };

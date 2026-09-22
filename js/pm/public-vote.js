@@ -39,7 +39,10 @@ export function splitOrSteal(state, couple, { rng }) {
   const holder = couple[Math.floor(rng() * couple.length)];
   const other = couple[0] === holder ? couple[1] : couple[0];
   const prof = state.profiles[holder];
-  const p = Math.max(0, Math.min(0.9, 0.02 + (prof.intent === 'money' ? 0.25 : 0)
-    + 0.1 * (1 - (prof.stats.loyalty ?? 5) / 10) + 0.1 * (1 - romance(holder, other) / 10)));
+  // Measured at the first weights: 17% of winners stole. No UK winner ever
+  // has, so the whole curve is a third of what it was — a `money` islander
+  // who never fell for them is still the one who might.
+  const p = Math.max(0, Math.min(0.9, (0.01 + (prof.intent === 'money' ? 0.2 : 0)
+    + 0.06 * (1 - (prof.stats.loyalty ?? 5) / 10) + 0.06 * (1 - romance(holder, other) / 10)) * 0.4));
   return { holder, choice: rng() < p ? 'steal' : 'split', p };
 }

@@ -325,6 +325,10 @@ export function airLater(state, ev) {
   if (ev.aired) return;
   ev.aired = true;
   ev.airedLate = state.ep;
+  // Airing late IS the major moment, so the event has to say so: the ledger
+  // lifts its cap for everybody in it, and a row that did not record them
+  // left a three-tier label jump with nothing on screen to explain it.
+  for (const who of Object.keys(ev.pop)) if (!ev.major.includes(who)) ev.major.push(who);
   writeLedger(state, ev, true);
 }
 

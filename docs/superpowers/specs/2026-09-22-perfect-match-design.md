@@ -705,7 +705,13 @@ treat `recoupling` picks as votes against anyone.
 `npm run audit:pm-spec` — written **before** polish (§15). A hundred
 seasons, every rate beside its chance line:
 
-1. By episode 8, share of seasons with ≥ 1 Fan Favourite and ≥ 1 Villain.
+1. Share of seasons with ≥ 1 Fan Favourite and ≥ 1 Villain — measured at
+   episode 8 AND episode 12. **Measured 2026-09-22, 100 seasons, at the
+   shipped scene gain of 5.0: ep 8 → 33%, ep 12 → 70% (a fan favourite 99%,
+   a villain 70%).** The spec first asked for most seasons by episode 8;
+   approval only accrues from aired scenes, and this show's biggest moments
+   (Casa, the photos) land at 8–11, so episode 12 is the honest bar. End-of-
+   season labels spread across all seven tiers with no saturation.
 2. No label jumps more than two tiers in one episode without a major moment.
 3. About a quarter of the cast still Invisible at any point.
 4. Fame and approval not in lockstep (famous-and-hated islanders exist).

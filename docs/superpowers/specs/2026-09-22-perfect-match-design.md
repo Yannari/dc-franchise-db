@@ -56,15 +56,15 @@ What the format actually is:
 | name / short | Perfect Match / PM |
 | venue | The Villa |
 | runnableFlag | `_pmRunnable`, set at the bottom of `js/pm-run.js` |
-| roundsPath | `pm.episodes` |
+| roundsPath | `episodeHistory` (one row per episode, stamped `format`; villa state on `gs.pm`) |
 | roundShape | `ballots` (see §13) |
 | hasJury | `false` |
 | words | player `islander`, players `islanders`, round `Episode`, exit `dumped`, exitAction `dump`, second exit verb `walked`, quietRound `A normal day in the villa`, `audienceAward` `Fan Favourite Islander`, `fanWords` (recoupling, bombshell, casa, graft, mugged, firepit, text, dumped, villa, ick) |
 | audience | romance and mess high, strategy low — set after the first played season, per §2.5 |
 | careerStats | couplings, times stolen, public votes survived, final placement — only fields the engine really writes |
 
-**Host: Dior** (inspired by Ariana Madix). Portrait `assets/avatars/dior.png`
-(not yet on disk; the path is a HOST literal, which the portrait guard
+**Host: Dior** (inspired by Ariana Madix). Portrait `assets/avatars/dior.jpg`
+(the path is a HOST literal, which the portrait guard
 allows). Her own voice, never borrowed catchphrases. Runs every coupling,
 dumping and the final, and makes surprise appearances for big twists.
 

@@ -1,0 +1,799 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Perfect Match VP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Yellowtail&family=Outfit:wght@300;400;600;800&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════════════════════════════════
+   PERFECT MATCH — viewing-party mockup
+   A pinned stage above the cards; every click plays on it (ADDING-A-SHOW
+   §6.5). The visual vocabulary is this show's alone: heart-rope links,
+   neon script that buzzes on and dies letter by letter, the text phone,
+   a wicker beach-hut cutaway, the heart-rate trace, raw "didn't air" tape.
+   No stamps, no spotlight cones, no confetti: those are Drag Race's.
+   ══════════════════════════════════════════════════════════════════════ */
+:root{
+  --pink:#ff2e88; --hot:#ff4fa0; --coral:#ff7a59; --sun:#ffc15e; --lav:#b388ff;
+  --teal:#18d4c7; --night:#1a0b2e; --pearl:#fff4f8; --ink:#2a0f24; --muted:#9a7d90;
+  --card:#fff; --line:#f3d3e3; --bg:#fff0f6; --good:#22c55e; --bad:#ef4444;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --card:#241329; --line:#43263f; --bg:#140a18; --ink:#fbe7f1; --muted:#b597ab; --pearl:#2c1630; }
+}
+:root[data-theme="dark"]{ --card:#241329; --line:#43263f; --bg:#140a18; --ink:#fbe7f1; --muted:#b597ab; --pearl:#2c1630; }
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 Outfit,system-ui,sans-serif}
+.wrap{max-width:1180px;margin:0 auto;padding:14px 16px 90px}
+header.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:10px}
+.logo{font:44px/1 Yellowtail,cursive;color:var(--pink);text-shadow:0 0 10px #ff2e8866}
+.logo small{display:block;font:600 11px Outfit;letter-spacing:.3em;color:var(--muted);text-transform:uppercase}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
+.tabs button{border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 14px;font:600 13px Outfit;cursor:pointer}
+.tabs button.on{background:var(--pink);border-color:var(--pink);color:#fff;box-shadow:0 4px 14px #ff2e8855}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:16px;align-items:start}
+@media (max-width:900px){.layout{grid-template-columns:minmax(0,1fr)}}
+
+/* ── THE STAGE ─────────────────────────────────────────────────────── */
+.stage{position:sticky;top:6px;z-index:5;contain:inline-size;min-width:0;max-width:100%;
+  aspect-ratio:1000/420;border-radius:22px;overflow:hidden;box-shadow:0 18px 40px #7a1d4a44,inset 0 0 0 2px #ffffff22;
+  isolation:isolate;transition:filter .5s}
+.stage .layer{position:absolute;inset:0}
+.stage svg.bg{width:100%;height:100%;display:block}
+.stage.raw{filter:grayscale(.85) contrast(1.1) brightness(.9)}
+.stage .grain{position:absolute;inset:0;opacity:0;pointer-events:none;mix-blend-mode:overlay;
+  background:repeating-radial-gradient(circle at 30% 40%,#fff3 0 1px,#0000 1px 3px);transition:opacity .4s}
+.stage.raw .grain{opacity:.7;animation:grain .3s steps(3) infinite}
+@keyframes grain{to{transform:translate(2px,-3px)}}
+.slate{position:absolute;left:12px;top:12px;z-index:9;display:none;gap:8px;align-items:center;
+  background:#111d;color:#eee;font:13px 'Bebas Neue';letter-spacing:.12em;padding:5px 10px;border-radius:6px}
+.stage.raw .slate{display:flex}
+.slate svg{width:18px;height:18px}
+.headpill{position:absolute;right:12px;top:12px;z-index:9;background:#ffffffe6;color:#2a0f24;border-radius:999px;
+  padding:5px 12px;font:600 12px Outfit;max-width:52%;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;
+  box-shadow:0 4px 12px #0003;opacity:0;transition:opacity .3s}
+.headpill.on{opacity:1}
+.stage.shake{animation:shake .45s}
+@keyframes shake{15%,85%{transform:translateX(-3px)}35%,65%{transform:translateX(5px)}50%{transform:translateX(-5px)}}
+
+/* fairy lights */
+.bulb{fill:#ffe9a8;filter:drop-shadow(0 0 4px #ffc15e);animation:bulb 1.4s infinite}
+.bulb.n{fill:#ffd1f0;filter:drop-shadow(0 0 5px #ff4fa0)}
+@keyframes bulb{50%{opacity:.35}}
+
+/* faces */
+.face{position:absolute;width:7.2%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;
+  background:linear-gradient(135deg,#ffd1e6,#c9a7ff);border:3px solid #fff;box-shadow:0 6px 14px #0004;
+  transition:left .8s cubic-bezier(.3,1.3,.5,1),top .8s cubic-bezier(.3,1.3,.5,1),filter .4s,transform .4s,opacity .6s,box-shadow .4s;z-index:3}
+.face img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;position:relative;z-index:1}
+.face span{position:absolute;inset:0;display:grid;place-items:center;font:800 1.1em Outfit;color:#5b1f45}
+.face b{position:absolute;left:50%;top:104%;transform:translateX(-50%);white-space:nowrap;font:600 clamp(8px,1.05vw,12px) Outfit;
+  color:#fff;text-shadow:0 1px 3px #000c;letter-spacing:.02em}
+.face.dim{filter:brightness(.45) saturate(.6)}
+.face.lit{box-shadow:0 0 0 3px var(--sun),0 0 22px 6px #ffc15ecc;filter:none;transform:translate(-50%,-58%) scale(1.08);z-index:6}
+.face.red{box-shadow:0 0 0 3px var(--bad),0 0 20px 6px #ef4444aa}
+.face.gone{opacity:0;transform:translate(-50%,-50%) scale(.4)}
+.face.big{width:10.5%}
+.face.host{border-color:#ffe3f1;box-shadow:0 0 0 4px #fff,0 0 26px 8px #ff4fa0aa}
+.face.pearl::after{content:'';position:absolute;left:8%;right:8%;bottom:-9%;height:14%;z-index:2;
+  background:radial-gradient(circle at 10% 50%,#fff 0 22%,#0000 24%) 0 0/16% 100% repeat-x;filter:drop-shadow(0 1px 1px #0006)}
+
+/* ropes (hearts on a string) */
+svg.ropes{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none;overflow:visible}
+.rope path.str{fill:none;stroke:url(#ropeGrad);stroke-width:4;stroke-linecap:round}
+.rope .heart{fill:var(--pink);stroke:#fff;stroke-width:2;transform-box:fill-box;transform-origin:center}
+.rope.draw path.str{stroke-dasharray:600;stroke-dashoffset:600;animation:draw 1s ease forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.rope.warm .heart{animation:beat 1.1s infinite}
+@keyframes beat{0%,100%{transform:scale(1)}15%{transform:scale(1.3)}30%{transform:scale(1)}45%{transform:scale(1.18)}}
+.rope.secret path.str{stroke:#ffffffaa;stroke-dasharray:4 7;stroke-width:2.5}
+.rope.secret .heart{fill:none;stroke:#ffffffbb;stroke-dasharray:3 3}
+.rope.hot path.str{stroke:var(--bad);animation:jitter .18s infinite}
+.rope.hot .heart{fill:var(--bad)}
+@keyframes jitter{50%{transform:translateY(1.5px)}}
+.rope.cracked .heart{fill:#6b1030}
+.rope .crack{stroke:#fff;stroke-width:2;fill:none;opacity:0}
+.rope.cracked .crack{opacity:1}
+.rope.snap{animation:snap .9s forwards}
+@keyframes snap{0%{opacity:1}40%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(30px)}}
+
+/* neon signs */
+.neon{position:absolute;z-index:7;transform:translate(-50%,-50%);font:clamp(22px,5vw,58px)/1 Yellowtail,cursive;white-space:nowrap;
+  color:#ffffff22;-webkit-text-stroke:1px #ffffff55;pointer-events:none}
+.neon i{font-style:normal;transition:color .15s,text-shadow .15s}
+.neon.on i{color:#fff;-webkit-text-stroke:0;text-shadow:0 0 4px #fff,0 0 12px var(--glow,#ff2e88),0 0 28px var(--glow,#ff2e88),0 0 50px var(--glow,#ff2e88);
+  animation:buzz 3s infinite}
+.neon.on.fresh i{animation:strike .5s both,buzz 3s .6s infinite;animation-delay:calc(var(--k)*70ms),calc(.6s + var(--k)*70ms)}
+@keyframes strike{0%,30%,50%{opacity:.15}40%,60%,100%{opacity:1}}
+@keyframes buzz{0%,92%,100%{opacity:1}94%{opacity:.6}96%{opacity:1}97%{opacity:.75}}
+.neon.dying i{animation:die .35s forwards;animation-delay:calc(var(--k)*140ms)}
+@keyframes die{0%{opacity:1}30%{opacity:.2}45%{opacity:1}100%{opacity:.08;text-shadow:none;color:#fff3}}
+
+/* phone: "I got a text!" */
+.phone{position:absolute;right:4%;bottom:6%;width:22%;aspect-ratio:9/16;z-index:8;border-radius:22px;background:#111;
+  box-shadow:0 20px 40px #0008,inset 0 0 0 3px #333;padding:1.4% 1.2%;transform:translateY(160%);visibility:hidden;
+  transition:transform .6s cubic-bezier(.3,1.4,.5,1),visibility 0s .6s}
+.phone.up{transform:none;visibility:visible;transition:transform .6s cubic-bezier(.3,1.4,.5,1)}
+.phone.buzz{animation:vib .09s 8}
+@keyframes vib{50%{transform:translateX(3px) rotate(1deg)}}
+.phone .scr{height:100%;border-radius:14px;background:linear-gradient(180deg,#ff4fa0,#ff7a59);padding:10% 8%;color:#fff;
+  display:flex;flex-direction:column;gap:6%}
+.phone .scr h4{margin:0;font:clamp(12px,2vw,22px)/1 'Bebas Neue';letter-spacing:.06em}
+.phone .scr p{margin:0;background:#fff;color:#2a0f24;border-radius:10px 10px 10px 2px;padding:7%;font:600 clamp(7px,1vw,12px)/1.3 Outfit}
+.phone .scr .tag{font:600 clamp(6px,.85vw,10px) Outfit;opacity:.9}
+
+/* beach hut cutaway */
+.hut{position:absolute;inset:0;z-index:8;display:grid;grid-template-columns:34% 1fr;align-items:center;gap:3%;padding:3% 5%;
+  opacity:0;pointer-events:none;transition:opacity .35s;background:
+  repeating-linear-gradient(45deg,#c98a4b 0 6px,#e0a866 6px 12px),repeating-linear-gradient(-45deg,#0000 0 6px,#8a5a2b55 6px 12px);
+  background-blend-mode:multiply}
+.hut.on{opacity:1}
+.hut .chair{position:relative;aspect-ratio:1;border-radius:50% 50% 12% 12%;background:
+  radial-gradient(circle at 50% 55%,#0000 55%,#7a4a1c 56% 60%,#0000 61%),repeating-conic-gradient(from 0deg at 50% 100%,#d9a05c 0 4deg,#b27a3c 4deg 8deg);
+  box-shadow:inset 0 0 0 6px #6d3f14,0 10px 20px #0006;display:grid;place-items:center}
+.hut .chair .face{position:relative;left:auto;top:auto;transform:none;width:58%}
+.hut .q{background:#fffdf7;color:#2a0f24;border-radius:18px;padding:4% 5%;font:600 clamp(12px,1.9vw,22px)/1.3 Outfit;box-shadow:0 10px 24px #0005;position:relative}
+.hut .q small{display:block;font:clamp(10px,1.2vw,14px) 'Bebas Neue';letter-spacing:.2em;color:var(--pink);margin-bottom:4px}
+.hut .q::before{content:'';position:absolute;left:-14px;top:40%;border:10px solid #0000;border-right-color:#fffdf7}
+.hut .rec{position:absolute;right:4%;bottom:6%;font:clamp(12px,1.6vw,18px) 'Bebas Neue';color:#fff;letter-spacing:.2em;display:flex;align-items:center;gap:6px}
+.hut .rec::before{content:'';width:10px;height:10px;border-radius:50%;background:#f33;animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.2}}
+
+/* narrator lower third */
+.narr{position:absolute;left:4%;right:30%;bottom:5%;z-index:8;display:flex;gap:10px;align-items:center;
+  background:#111e;color:#ffe;border-left:6px solid var(--sun);border-radius:6px;padding:8px 12px;
+  font:italic 600 clamp(10px,1.4vw,15px)/1.3 Outfit;transform:translateY(160%);transition:transform .45s cubic-bezier(.3,1.4,.5,1)}
+.narr.on{transform:none}
+.narr svg{flex:none;width:clamp(18px,2.4vw,28px);height:auto}
+.narr em{font-style:normal;font:clamp(10px,1.2vw,13px) 'Bebas Neue';letter-spacing:.18em;color:var(--sun);display:block}
+
+/* heart-rate */
+.ecg{position:absolute;left:3%;right:3%;bottom:2%;height:22%;z-index:4;opacity:0;transition:opacity .4s;pointer-events:none}
+.ecg.on{opacity:1}
+.ecg polyline{fill:none;stroke:#7dffb0;stroke-width:3;filter:drop-shadow(0 0 4px #7dffb0);stroke-dasharray:1400;stroke-dashoffset:1400}
+.ecg.on polyline{animation:draw 1.6s linear forwards}
+.bpm{position:absolute;right:3%;bottom:24%;z-index:5;font:clamp(14px,2.4vw,30px) 'Bebas Neue';color:#7dffb0;text-shadow:0 0 8px #7dffb0;opacity:0;transition:opacity .3s}
+.bpm.on{opacity:1}
+
+/* ballot tiles */
+.tiles{position:absolute;left:47%;top:36%;transform:translateX(-50%);z-index:7;display:flex;gap:1.4%;width:62%;justify-content:center}
+.tile{width:26%;aspect-ratio:16/7;perspective:500px}
+.tile>div{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .7s}
+.tile.flip>div{transform:rotateY(180deg)}
+.tile .f,.tile .b{position:absolute;inset:0;backface-visibility:hidden;border-radius:10px;display:grid;place-items:center;text-align:center;padding:6%}
+.tile .f{background:repeating-linear-gradient(45deg,#ff4fa0 0 8px,#ff2e88 8px 16px);box-shadow:0 6px 14px #0006}
+.tile .f svg{width:50%}
+.tile .b{transform:rotateY(180deg);background:#fffdf7;color:#2a0f24;font:600 clamp(7px,1vw,12px)/1.2 Outfit;box-shadow:0 6px 14px #0006}
+.tile .b strong{display:block;font:clamp(9px,1.4vw,17px) 'Bebas Neue';color:var(--pink);letter-spacing:.05em}
+
+/* walk out */
+.steps{position:absolute;right:2%;top:10%;width:16%;height:78%;perspective:300px;z-index:1}
+.steps .fl{position:absolute;inset:0;transform:rotateX(55deg);transform-origin:bottom;background:repeating-linear-gradient(0deg,#fbe7d3 0 14px,#e8c9ac 14px 16px);border-radius:6px 6px 0 0}
+.gate{position:absolute;right:5.5%;top:4%;width:9%;height:22%;z-index:2;border-radius:40px 40px 0 0;background:#2a1030;box-shadow:inset 0 0 0 4px #fff;transition:background .6s}
+.gate.open{background:radial-gradient(circle at 50% 70%,#fff8,#ffc15e 40%,#ff7a59)}
+.suitcase{position:absolute;width:3.2%;z-index:4;opacity:0;transition:all .9s cubic-bezier(.3,1.2,.5,1);transform:translate(-50%,-50%)}
+.suitcase.on{opacity:1}
+
+/* casa split + door + choice cards */
+.door{position:absolute;left:76%;top:30%;width:11%;height:50%;transform:translate(-50%,-50%);z-index:2}
+.door .arch{position:absolute;inset:0;border-radius:60px 60px 4px 4px;border:4px solid #fff;background:#0b1830;overflow:hidden}
+.door .leaf{position:absolute;inset:0;background:linear-gradient(90deg,#ff4fa0,#b388ff);transform-origin:left;transition:transform .8s;border-radius:56px 56px 0 0}
+.door.open .leaf{transform:perspective(400px) rotateY(-80deg)}
+.door .arch::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 60%,#fff,#ffc15e 30%,#0000 70%);opacity:0;transition:opacity .8s}
+.door.open .arch::after{opacity:1}
+.choice{position:absolute;right:3%;top:20%;width:12%;aspect-ratio:5/7;perspective:600px;z-index:8}
+.choice>div{position:absolute;inset:0;transform-style:preserve-3d;transition:transform .8s}
+.choice.show>div{transform:rotateY(180deg)}
+.choice .f,.choice .b{position:absolute;inset:0;border-radius:12px;backface-visibility:hidden;display:grid;place-items:center;box-shadow:0 8px 18px #0007}
+.choice .f{background:repeating-linear-gradient(135deg,#18d4c7 0 10px,#12a89e 10px 20px)}
+.choice .f svg{width:55%}
+.choice .b{transform:rotateY(180deg);background:#fff;font:clamp(18px,3.4vw,42px) 'Bebas Neue';letter-spacing:.06em}
+.choice .b.stick{color:#18a86a}.choice .b.twist{color:var(--pink)}
+
+/* the final: the voting app */
+.app{position:absolute;right:3%;top:13%;width:30%;height:82%;z-index:6;border-radius:26px;background:#111;padding:1.6%;box-shadow:0 20px 40px #0008}
+.app .scr{height:100%;border-radius:20px;background:linear-gradient(180deg,#fff,#ffe3f0);padding:6% 7%;display:flex;flex-direction:column;gap:5%;color:#2a0f24}
+.app h5{margin:0;font:clamp(12px,2vw,24px)/1 'Bebas Neue';letter-spacing:.08em;color:var(--pink)}
+.app .row{display:grid;grid-template-columns:1fr auto;gap:4px;font:600 clamp(8px,1.1vw,13px) Outfit}
+.app .bar{grid-column:1/-1;height:clamp(6px,1.1vw,12px);border-radius:99px;background:#f7cfe0;overflow:hidden}
+.app .bar i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#ff7a59,#ff2e88);transition:width 1.1s cubic-bezier(.3,1.2,.5,1)}
+.app .row.win .bar i{background:linear-gradient(90deg,#ffc15e,#ff2e88)}
+.app .row .pc{opacity:0;transition:opacity .4s .6s}
+.app .row.shown .pc{opacity:1}
+.petal{position:absolute;z-index:9;width:2.2%;aspect-ratio:1;opacity:0;pointer-events:none}
+.stage.burst .petal{animation:petal 2.4s ease-out forwards;animation-delay:var(--dl)}
+@keyframes petal{0%{opacity:1;transform:translate(0,0) rotate(0)}100%{opacity:0;transform:translate(var(--x),var(--y)) rotate(var(--r))}}
+.envelope{position:absolute;left:34%;top:52%;width:20%;z-index:8;transform:translate(-50%,-50%) scale(.6);opacity:0;transition:all .6s cubic-bezier(.3,1.4,.5,1)}
+.envelope.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
+.envelope .flap{transform-origin:50% 0;transform-box:fill-box;transition:transform .7s .3s}
+.envelope.open .flap{transform:scaleY(-1)}
+.envelope .card{transition:transform .8s .8s;transform-box:fill-box}
+.envelope.open .card{transform:translateY(-44px)}
+
+/* ── CARDS ─────────────────────────────────────────────────────────── */
+.cards{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.card{scroll-margin-top:calc((min(1180px,100vw) - 300px) * .42 + 20px);background:var(--card);border:2px solid var(--line);border-radius:16px;padding:11px 14px;
+  display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center;position:relative;animation:pop .45s cubic-bezier(.3,1.5,.5,1)}
+@keyframes pop{from{opacity:0;transform:translateY(12px) scale(.97)}}
+.card .fx{display:flex}
+.card .fx .mini{width:38px;height:38px;border-radius:50%;border:2px solid #fff;margin-right:-10px;overflow:hidden;background:linear-gradient(135deg,#ffd1e6,#c9a7ff);display:grid;place-items:center;font:800 13px Outfit;color:#5b1f45;box-shadow:0 2px 6px #0003}
+.card .fx .mini img{width:100%;height:100%;object-fit:cover}
+.card .k{font:12px 'Bebas Neue';letter-spacing:.16em;color:var(--pink)}
+.card p{margin:2px 0 0}
+.card .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.chip{font:600 11px Outfit;padding:2px 8px;border-radius:99px;background:#ffe3f0;color:#9b1458}
+.chip.up{background:#dcfce7;color:#166534}.chip.down{background:#fee2e2;color:#991b1b}.chip.fame{background:#fef3c7;color:#92400e}
+.card.pull{border-color:#ffb3d4;background:linear-gradient(90deg,#fff0f7,var(--card) 60%)}
+.card.fight{border-color:#fca5a5;background:linear-gradient(90deg,#fff1f1,var(--card) 60%);clip-path:polygon(0 0,100% 0,100% 88%,97% 100%,93% 90%,89% 100%,0 100%)}
+.card.hutc{border-color:#d9a05c;background:repeating-linear-gradient(45deg,#fff8ec 0 8px,#fdf0dc 8px 16px)}
+.card.narr{background:#171017;color:#ffe;border-color:var(--sun);font-style:italic}
+.card.narr .k{color:var(--sun)}
+.card.text{border-color:#ff7a59;background:linear-gradient(135deg,#fff3ec,var(--card))}
+.card.host{border-color:#ff4fa0;background:linear-gradient(135deg,#ffe3f1,var(--card))}
+.card.dump{background:#1c0a1c;color:#fde7f3;border-color:#ff2e88}
+.card.dump .k{color:#ff8cc4}
+.card.big{border-width:3px;box-shadow:0 8px 22px #ff2e8833}
+.card.unaired{border-style:dashed;filter:saturate(.35)}
+.tape{position:absolute;right:-8px;top:10px;transform:rotate(4deg);background:#f2e8c9;color:#5a4a1e;font:12px 'Bebas Neue';letter-spacing:.14em;
+  padding:3px 12px;box-shadow:0 2px 4px #0003;display:flex;align-items:center;gap:6px}
+.tape svg{width:14px}
+.tape.revealed{background:#ffd1e6;color:#9b1458}
+.phase-rail{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap}
+.phase-rail span{flex:1;min-width:90px;text-align:center;font:12px 'Bebas Neue';letter-spacing:.14em;padding:6px;border-radius:10px;background:var(--card);border:2px solid var(--line);color:var(--muted)}
+.phase-rail span.on{border-color:var(--pink);color:var(--pink);background:#ffe3f0}
+.phase-rail span.done{color:var(--ink)}
+
+/* controls */
+.controls{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;gap:10px;justify-content:center;padding:10px;
+  background:linear-gradient(0deg,var(--bg),#0000)}
+.controls button{border:0;border-radius:999px;padding:11px 22px;font:800 14px Outfit;cursor:pointer;box-shadow:0 6px 16px #ff2e8844}
+.controls .next{background:var(--pink);color:#fff}
+.controls .all,.controls .reset{background:var(--card);color:var(--ink);border:2px solid var(--line)}
+.controls .count{align-self:center;font:600 13px Outfit;color:var(--muted)}
+
+/* sidebar: the public mood */
+aside.mood{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:12px;position:sticky;top:8px}
+aside.mood h3{margin:0 0 2px;font:26px/1 Yellowtail,cursive;color:var(--pink)}
+aside.mood p.note{margin:0 0 10px;font-size:12px;color:var(--muted)}
+.mrow{display:grid;grid-template-columns:30px 1fr;gap:8px;align-items:center;margin-bottom:8px}
+.mrow .mini{width:30px;height:30px;border-radius:50%;overflow:hidden;background:linear-gradient(135deg,#ffd1e6,#c9a7ff);display:grid;place-items:center;font:800 11px Outfit;color:#5b1f45}
+.mrow .mini img{width:100%;height:100%;object-fit:cover}
+.mrow .nm{display:flex;justify-content:space-between;font:600 12px Outfit}
+.lab{font:10px 'Bebas Neue';letter-spacing:.12em;padding:1px 7px;border-radius:99px;color:#fff}
+.lab.ff{background:linear-gradient(90deg,#ffc15e,#ff2e88)}.lab.loved{background:#ff4fa0}.lab.liked{background:#fb7fb8}
+.lab.invisible{background:#b8a6b1}.lab.divisive{background:#c084fc}.lab.disliked{background:#f87171}.lab.villain{background:#7f1d1d}
+.gauge{position:relative;height:7px;border-radius:99px;background:linear-gradient(90deg,#7f1d1d33,#b8a6b133 50%,#ff2e8833)}
+.gauge::after{content:'';position:absolute;left:50%;top:-2px;bottom:-2px;width:2px;background:#0003}
+.gauge i{position:absolute;top:0;bottom:0;border-radius:99px;transition:all .8s cubic-bezier(.3,1.2,.5,1)}
+.mrow.gone{opacity:.35}
+.fame{font:10px Outfit;color:var(--muted)}
+
+@media (max-height:999px){ .face b{font-size:clamp(7px,.9vw,11px)} }
+@media (max-width:640px){
+  .face{width:9%} .face b{display:none} .phone{width:30%} .app{width:42%} .headpill{max-width:60%}
+  .hut{grid-template-columns:30% 1fr} .narr{right:4%}
+}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .rope.draw path.str{stroke-dashoffset:0}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="logo">Perfect Match<small>Viewing party · mockup · season 1</small></div>
+    <nav class="tabs" id="tabs"></nav>
+  </header>
+  <div class="layout">
+    <main>
+      <div class="stage" id="stage"></div>
+      <div class="phase-rail" id="rail"></div>
+      <div class="cards" id="cards"></div>
+    </main>
+    <aside class="mood" id="mood"></aside>
+  </div>
+</div>
+<div class="controls">
+  <button class="reset" id="reset">Restart</button>
+  <button class="next" id="next">Next</button>
+  <button class="all" id="all">Reveal all</button>
+  <span class="count" id="count"></span>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════════
+// Data. A mockup season, hand-written so every beat is one we want to see.
+// ══════════════════════════════════════════════════════════════════════
+const AV = '../assets/avatars/';
+const CAST = {
+  Alejandro:'alejandro', Bridgette:'bridgette', Courtney:'courtney', Duncan:'duncan', Geoff:'geoff',
+  Gwen:'gwen', Heather:'heather', Mike:'mike', Priya:'priya', Scott:'scott', Theo:null, Zoey:'zoey',
+  Jake:'jake', Kelly:'kelly', Ella:'ella', Dior:'dior.jpg',
+};
+const src = n => CAST[n] ? AV + (CAST[n].includes('.') ? CAST[n] : CAST[n] + '.png') : null;
+const initials = n => n.slice(0, 2).toUpperCase();
+const imgTag = n => src(n) ? `<img src="${src(n)}" alt="" onerror="this.remove()">` : '';
+const mini = n => `<div class="mini" title="${n}">${imgTag(n) || initials(n)}</div>`;
+
+// Icons: inline SVG only.
+const IC = {
+  heart: '<svg viewBox="-20 -14 40 30"><path d="M0,-3 C-6,-13 -19,-3 0,11 C19,-3 6,-13 0,-3Z" fill="#fff"/></svg>',
+  mic: '<svg viewBox="0 0 24 32"><rect x="7" y="1" width="10" height="17" rx="5" fill="#ffc15e"/><path d="M3 14a9 9 0 0018 0M12 23v7M7 30h10" stroke="#ffc15e" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>',
+  tape: '<svg viewBox="0 0 24 16"><rect x="1" y="1" width="22" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="8" cy="8" r="3" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="16" cy="8" r="3" fill="none" stroke="currentColor" stroke-width="2"/></svg>',
+  scissors: '<svg viewBox="0 0 24 24"><circle cx="6" cy="18" r="3" fill="none" stroke="#fff" stroke-width="2"/><circle cx="6" cy="6" r="3" fill="none" stroke="#fff" stroke-width="2"/><path d="M8.5 7.5L21 19M8.5 16.5L21 5" stroke="#fff" stroke-width="2"/></svg>',
+  suitcase: '<svg viewBox="0 0 40 36"><rect x="3" y="9" width="34" height="25" rx="5" fill="#ff4fa0" stroke="#fff" stroke-width="2.5"/><path d="M14 9V5a3 3 0 013-3h6a3 3 0 013 3v4" fill="none" stroke="#fff" stroke-width="2.5"/><path d="M3 20h34" stroke="#fff" stroke-width="2"/></svg>',
+  petal: '<svg viewBox="-20 -14 40 30"><path d="M0,-3 C-6,-13 -19,-3 0,11 C19,-3 6,-13 0,-3Z" fill="#ff4fa0" stroke="#fff" stroke-width="1.5"/></svg>',
+};
+
+// ══════════════════════════════════════════════════════════════════════
+// Backdrops: SVG scenery, one per room. viewBox 1000 x 420.
+// ══════════════════════════════════════════════════════════════════════
+const palm = (x, y, s, fill) => `<g transform="translate(${x} ${y}) scale(${s})" fill="${fill}">
+  <path d="M0 0 C 6 -60 2 -120 10 -170 L 16 -170 C 10 -120 14 -60 10 0Z"/>
+  <path d="M13 -170 C -30 -190 -70 -170 -90 -140 C -50 -165 -20 -165 13 -162Z"/>
+  <path d="M13 -170 C 50 -195 95 -180 115 -150 C 75 -170 45 -168 13 -163Z"/>
+  <path d="M13 -172 C -10 -210 -45 -225 -70 -222 C -35 -205 -10 -190 12 -168Z"/>
+  <path d="M13 -172 C 35 -212 70 -226 95 -220 C 60 -205 35 -190 14 -168Z"/>
+  <path d="M13 -168 C 20 -130 40 -110 60 -100 C 35 -125 25 -145 16 -166Z"/></g>`;
+const lights = (y, n, cls = '') => {
+  let s = `<path d="M0 ${y} Q 250 ${y + 34} 500 ${y + 6} T 1000 ${y + 10}" stroke="#3a1a30" stroke-width="2" fill="none"/>`;
+  for (let i = 0; i < n; i++) {
+    const t = i / (n - 1), x = t * 1000;
+    const yy = y + (t < .5 ? 34 * 4 * t * (1 - 2 * t) * 0 + Math.sin(t * Math.PI * 2) * 16 + 14 : Math.sin(t * Math.PI * 2) * 10 + 10);
+    s += `<circle cx="${x.toFixed(0)}" cy="${yy.toFixed(0)}" r="4.5" class="bulb ${cls}" style="animation-delay:${(i % 3) * .4}s"/>`;
+  }
+  return s;
+};
+const BACKDROP = {
+  day: `<svg class="bg" viewBox="0 0 1000 420" preserveAspectRatio="xMidYMid slice"><defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff9a8b"/><stop offset=".45" stop-color="#ffb88c"/><stop offset=".7" stop-color="#ffd6a5"/><stop offset="1" stop-color="#ffe9c7"/></linearGradient>
+    <linearGradient id="pool" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3fd9e6"/><stop offset="1" stop-color="#1590c9"/></linearGradient>
+    <radialGradient id="sunG"><stop offset="0" stop-color="#fff6d5"/><stop offset=".5" stop-color="#ffd27a"/><stop offset="1" stop-color="#ffb35c00"/></radialGradient>
+    <linearGradient id="ropeGrad" x1="0" x2="1"><stop offset="0" stop-color="#ff7a59"/><stop offset="1" stop-color="#ff2e88"/></linearGradient>
+    <pattern id="caust" width="60" height="30" patternUnits="userSpaceOnUse"><path d="M0 15 Q15 5 30 15 T60 15" stroke="#ffffff66" stroke-width="2" fill="none"><animate attributeName="d" dur="3s" repeatCount="indefinite" values="M0 15 Q15 5 30 15 T60 15;M0 15 Q15 25 30 15 T60 15;M0 15 Q15 5 30 15 T60 15"/></path></pattern></defs>
+    <rect width="1000" height="420" fill="url(#sky)"/>
+    <circle cx="760" cy="150" r="110" fill="url(#sunG)"/>
+    <g fill="#fff" opacity=".7"><ellipse cx="200" cy="70" rx="70" ry="14"><animate attributeName="cx" dur="40s" values="200;260;200" repeatCount="indefinite"/></ellipse><ellipse cx="560" cy="48" rx="50" ry="10"><animate attributeName="cx" dur="50s" values="560;500;560" repeatCount="indefinite"/></ellipse></g>
+    <path d="M0 230 L120 200 L260 215 L380 190 L520 205 L700 185 L860 200 L1000 190 L1000 260 L0 260Z" fill="#e79a7d" opacity=".6"/>
+    <g fill="#fffaf3" stroke="#e8cdb8" stroke-width="2"><rect x="300" y="150" width="400" height="95"/><rect x="340" y="110" width="220" height="45"/></g>
+    <g fill="#8fd1e8" opacity=".85"><rect x="320" y="170" width="70" height="55"/><rect x="410" y="170" width="70" height="55"/><rect x="500" y="170" width="70" height="55"/><rect x="590" y="170" width="90" height="55"/><rect x="360" y="120" width="80" height="28"/><rect x="460" y="120" width="80" height="28"/></g>
+    ${palm(90, 260, 1, '#6b2f4a')}${palm(930, 255, .95, '#6b2f4a')}${palm(240, 250, .6, '#8a3d5c')}
+    <rect x="0" y="245" width="1000" height="30" fill="#f4dcc6"/>
+    <rect x="0" y="272" width="1000" height="148" fill="url(#pool)"/><rect x="0" y="272" width="1000" height="148" fill="url(#caust)"/>
+    <g>${lights(18, 22)}</g></svg>`,
+  night: `<svg class="bg" viewBox="0 0 1000 420" preserveAspectRatio="xMidYMid slice"><defs>
+    <linearGradient id="nsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#140828"/><stop offset=".6" stop-color="#3a1450"/><stop offset="1" stop-color="#6a2358"/></linearGradient>
+    <radialGradient id="fireGlow"><stop offset="0" stop-color="#ffb35c"/><stop offset=".4" stop-color="#ff5c3a88"/><stop offset="1" stop-color="#ff2e8800"/></radialGradient>
+    <linearGradient id="ropeGrad" x1="0" x2="1"><stop offset="0" stop-color="#ffc15e"/><stop offset="1" stop-color="#ff2e88"/></linearGradient></defs>
+    <rect width="1000" height="420" fill="url(#nsky)"/>
+    <g fill="#fff">${Array.from({ length: 40 }, (_, i) => `<circle cx="${(i * 97) % 1000}" cy="${(i * 53) % 180}" r="${i % 3 ? 1 : 1.8}"><animate attributeName="opacity" values="1;.2;1" dur="${2 + (i % 4)}s" repeatCount="indefinite"/></circle>`).join('')}</g>
+    ${palm(60, 300, 1.1, '#1b0a24')}${palm(960, 300, 1.05, '#1b0a24')}
+    <ellipse cx="500" cy="360" rx="330" ry="60" fill="#2b0f33"/>
+    <g stroke="#f3d9b8" stroke-width="3" fill="#4a2340"><path d="M180 350 Q500 300 820 350 L820 372 Q500 322 180 372Z"/></g>
+    <circle cx="500" cy="330" r="150" fill="url(#fireGlow)"><animate attributeName="r" values="140;160;140" dur="1.8s" repeatCount="indefinite"/></circle>
+    <g transform="translate(500 350)"><ellipse rx="70" ry="16" fill="#2a1a22" stroke="#caa" stroke-width="2"/>
+      <g class="flames"><path d="M-40 0 C-50 -40 -20 -60 -10 -95 C0 -60 30 -50 20 0Z" fill="#ff5c3a"><animateTransform attributeName="transform" type="scale" values="1 1;1 1.12;1 .95;1 1" dur=".7s" repeatCount="indefinite"/></path>
+      <path d="M-15 0 C-25 -35 0 -55 5 -120 C15 -70 40 -40 25 0Z" fill="#ffb35c"><animateTransform attributeName="transform" type="scale" values="1 1;1 .9;1 1.1;1 1" dur=".55s" repeatCount="indefinite"/></path>
+      <path d="M-5 0 C-10 -25 5 -40 8 -70 C14 -40 22 -25 15 0Z" fill="#fff1c1"><animateTransform attributeName="transform" type="scale" values="1 1;1 1.15;1 1" dur=".45s" repeatCount="indefinite"/></path></g></g>
+    <g>${lights(22, 20, 'n')}</g></svg>`,
+  casa: `<svg class="bg" viewBox="0 0 1000 420" preserveAspectRatio="xMidYMid slice"><defs>
+    <linearGradient id="csky" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ff8f73"/><stop offset=".48" stop-color="#ff5fa2"/><stop offset=".52" stop-color="#2b1a5a"/><stop offset="1" stop-color="#0a2a4a"/></linearGradient>
+    <linearGradient id="ropeGrad" x1="0" x2="1"><stop offset="0" stop-color="#ff7a59"/><stop offset="1" stop-color="#18d4c7"/></linearGradient></defs>
+    <rect width="1000" height="420" fill="url(#csky)"/>
+    <path d="M500 0 L520 0 L480 420 L460 420Z" fill="#fff" opacity=".85"/>
+    ${palm(70, 320, 1, '#6b2f4a')}${palm(960, 320, 1, '#07313b')}
+    <rect x="0" y="330" width="1000" height="90" fill="#2a1030" opacity=".55"/>
+    <g fill="#18d4c7" opacity=".25">${Array.from({ length: 12 }, (_, i) => `<circle cx="${560 + (i * 37) % 420}" cy="${40 + (i * 61) % 240}" r="${3 + i % 4}"><animate attributeName="opacity" values=".2;1;.2" dur="${2 + i % 3}s" repeatCount="indefinite"/></circle>`).join('')}</g>
+    <text x="250" y="70" text-anchor="middle" font-family="Bebas Neue" font-size="30" fill="#fff" opacity=".85" letter-spacing="6">MAIN VILLA</text></svg>`,
+  app: `<svg class="bg" viewBox="0 0 1000 420" preserveAspectRatio="xMidYMid slice"><defs>
+    <linearGradient id="fsky" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3a0f3f"/><stop offset=".5" stop-color="#8a1e5c"/><stop offset="1" stop-color="#ff7a59"/></linearGradient>
+    <linearGradient id="ropeGrad" x1="0" x2="1"><stop offset="0" stop-color="#ffc15e"/><stop offset="1" stop-color="#ff2e88"/></linearGradient></defs>
+    <rect width="1000" height="420" fill="url(#fsky)"/>
+    <g fill="#ffffff14">${Array.from({ length: 9 }, (_, i) => `<circle cx="${i * 120 + 40}" cy="${380 - (i % 3) * 40}" r="${60 + (i % 4) * 20}"/>`).join('')}</g>
+    ${palm(40, 330, 1, '#2a0a2c')}
+    <g>${lights(16, 22)}</g></svg>`,
+};
+
+// ══════════════════════════════════════════════════════════════════════
+// Screens. Each has faces at rest (alphabetical, unlit), and a step list.
+// A step is { card, fx(ctx, fresh), mood }. The stage is rebuilt from
+// step 0 every paint, so any jump (reveal all, tab switch) lands right.
+// ══════════════════════════════════════════════════════════════════════
+const MOOD0 = { Alejandro: 18, Bridgette: 42, Courtney: 12, Duncan: 20, Geoff: 38, Gwen: 30, Heather: -22,
+  Mike: 6, Priya: 8, Scott: 4, Theo: 24, Zoey: 0 };
+
+const SCREENS = {
+  villa: {
+    tab: 'The Villa', scene: 'day', sub: 'Episode 3 · days 6–8 · a normal day in the villa',
+    faces: { Bridgette: [130, 175], Geoff: [212, 175], Priya: [420, 175], Alejandro: [502, 175],
+      Gwen: [700, 175], Duncan: [782, 175], Courtney: [230, 322], Scott: [312, 322],
+      Heather: [560, 322], Mike: [642, 322], Theo: [860, 322], Zoey: [955, 60] },
+    ropes: [['Bridgette', 'Geoff'], ['Priya', 'Alejandro'], ['Gwen', 'Duncan'], ['Courtney', 'Scott'], ['Heather', 'Mike']],
+    hidden: ['Zoey'],
+    steps: [
+      { card: { cls: 'chat', k: 'Morning', who: ['Bridgette', 'Geoff'], t: 'Bridgette and Geoff wake up wrapped round each other and refuse to get up for breakfast.', chips: [['up', '+ approval'], ['fame', 'airtime']] },
+        pill: 'Morning in the villa', fx: c => { c.lit('Bridgette', 'Geoff'); c.rope('Bridgette', 'Geoff', 'warm'); }, mood: { Bridgette: 2, Geoff: 2 } },
+      { card: { cls: 'pull', k: 'Can I borrow you?', who: ['Priya', 'Alejandro'], t: 'Priya takes Alejandro to the daybeds. "So. Where do you see yourself in five years?"', chips: [['fame', 'airtime']] },
+        pill: 'Priya pulls Alejandro', fx: c => { c.lit('Priya', 'Alejandro'); } },
+      { card: { cls: 'hutc', k: 'Beach hut', who: ['Priya'], t: 'Priya, in the beach hut: "If he says \'go with the flow\' one more time I am going home."', chips: [['up', '+ approval'], ['fame', 'airtime']] },
+        pill: 'Beach hut', fx: (c, f) => c.hut('Priya', 'If he says “go with the flow” one more time I am going home.', f), mood: { Priya: 3 } },
+      { card: { cls: 'pull', k: 'Can I borrow you?', who: ['Theo', 'Courtney'], t: 'Behind the kitchen, Theo tells Courtney she is "the best-looking girl this side of the county line". She doesn\'t walk away.', unaired: true, secret: 'Scott doesn\'t know' },
+        pill: 'Unaired footage', fx: c => { c.raw(); c.lit('Theo', 'Courtney'); c.rope('Theo', 'Courtney', 'secret'); c.dim('Scott'); } },
+      { card: { cls: 'narr', k: 'Narrator', who: ['Theo'], t: '“Theo, a man who has never once read a room, is now attempting to read the menu. It is upside down.”', chips: [['up', '+ approval'], ['fame', 'airtime']] },
+        pill: 'Comedy', fx: (c, f) => { c.lit('Theo'); c.narr('Theo, a man who has never once read a room, is now attempting to read the menu. It is upside down.', f); }, mood: { Theo: 3 } },
+      { card: { cls: 'fight', k: 'Argument', who: ['Heather', 'Mike'], t: 'Heather tells Mike his impressions are "a cry for help". Mike does one of Heather. The whole terrace hears it.', chips: [['down', '− approval'], ['fame', 'airtime']] },
+        pill: 'Heather and Mike row', fx: (c, f) => { c.red('Heather'); c.lit('Mike'); c.rope('Heather', 'Mike', 'hot'); if (f) c.shake(); }, mood: { Heather: -4, Mike: 1 } },
+      { card: { cls: 'text', k: 'I got a text!', who: ['Gwen'], t: '"Islanders, tonight you will be joined by someone who has had their eyes on this villa. #bombshell #steptoit"' },
+        pill: 'I got a text!', fx: (c, f) => c.phone('Gwen', 'Islanders, tonight you will be joined by someone who has had their eyes on this villa.', '#bombshell #steptoit', f) },
+      { card: { cls: 'host big', k: 'Bombshell', who: ['Zoey'], t: 'Zoey walks down the villa steps. Duncan stops mid-sentence. Theo stands up. Gwen sits down.', chips: [['up', 'first impression'], ['fame', 'major moment']] },
+        pill: 'We have a bombshell', fx: (c, f) => { c.show('Zoey'); c.move('Zoey', 870, 175); c.lit('Zoey'); c.neon('Bombshell', 500, 80, '#ff7a59', f); c.ecg('Duncan', 128, f); }, mood: { Zoey: 8 } },
+      { card: { cls: 'fight big', k: 'Mugged off', who: ['Gwen', 'Scott', 'Theo'], t: 'Gwen sits Scott down: "You need to know what Theo said to Courtney behind the kitchen." The footage from this afternoon surfaces.', chips: [['down', 'Theo − approval'], ['up', 'Scott sympathy'], ['fame', 'major moment']] },
+        pill: 'Mugged off', reveals: 3, fx: (c, f) => { c.lit('Gwen', 'Scott'); c.red('Theo', 'Courtney'); c.rope('Courtney', 'Scott', 'cracked'); c.rope('Theo', 'Courtney', 'hot'); c.neon('Mugged off', 500, 80, '#ef4444', f); if (f) c.shake(); }, mood: { Theo: -8, Scott: 5, Courtney: -6, Gwen: 2 } },
+    ],
+  },
+
+  recouple: {
+    tab: 'Recoupling', scene: 'night', sub: 'Episode 4 · the firepit · the girls are choosing',
+    faces: { Dior: [90, 230], Alejandro: [300, 150], Duncan: [390, 150], Geoff: [480, 150], Mike: [570, 150], Scott: [660, 150], Theo: [750, 150],
+      Bridgette: [230, 320], Courtney: [320, 320], Gwen: [410, 320], Heather: [590, 320], Priya: [680, 320], Zoey: [770, 320] },
+    big: ['Dior'], host: ['Dior'],
+    steps: [
+      { card: { cls: 'host', k: 'Dior', who: ['Dior'], t: '"Islanders, it\'s time to recouple. Tonight, the girls are choosing. And ladies — choose wisely."' },
+        pill: "It's time to recouple", fx: (c, f) => { c.lit('Dior'); c.neon('Recoupling', 500, 62, '#ff2e88', f); } },
+      { card: { cls: 'chat', k: 'Bridgette chooses', who: ['Bridgette', 'Geoff'], t: '"He makes me laugh every single day. The boy I want to couple up with is… Geoff."', chips: [['up', '+ approval']] },
+        pill: 'Bridgette → Geoff', fx: (c, f) => { c.forward('Bridgette'); c.lit('Bridgette', 'Geoff'); c.rope('Bridgette', 'Geoff', 'warm', f); }, mood: { Bridgette: 1, Geoff: 1 } },
+      { card: { cls: 'chat', k: 'Priya chooses', who: ['Priya', 'Alejandro'], t: '"You\'ve got potential, and I didn\'t come here to waste it. Alejandro."' },
+        pill: 'Priya → Alejandro', fx: (c, f) => { c.forward('Priya'); c.lit('Priya', 'Alejandro'); c.rope('Priya', 'Alejandro', 'warm', f); } },
+      { card: { cls: 'chat', k: 'Gwen chooses', who: ['Gwen', 'Duncan'], t: '"It\'s been him since day one. Duncan."' },
+        pill: 'Gwen → Duncan', fx: (c, f) => { c.forward('Gwen'); c.lit('Gwen', 'Duncan'); c.rope('Gwen', 'Duncan', 'warm', f); } },
+      { card: { cls: 'fight big', k: 'A steal', who: ['Zoey', 'Duncan', 'Gwen'], t: 'Zoey: "I know I\'m stepping on toes. Duncan." Dior: "Duncan — two girls have chosen you. You have to decide." Duncan walks to Zoey.', chips: [['down', 'Zoey − approval'], ['up', 'Gwen sympathy'], ['fame', 'major moment']] },
+        pill: 'Zoey steals Duncan', fx: (c, f) => { c.forward('Zoey'); c.lit('Zoey', 'Duncan'); c.red('Gwen'); c.rope('Gwen', 'Duncan', 'snap', f); c.rope('Zoey', 'Duncan', 'warm', f); if (f) c.shake(); }, mood: { Zoey: -7, Gwen: 9, Duncan: -3 } },
+      { card: { cls: 'chat', k: 'Courtney chooses', who: ['Courtney', 'Scott'], t: '"He deserves a second chance. And so do I. Scott."' },
+        pill: 'Courtney → Scott', fx: (c, f) => { c.forward('Courtney'); c.lit('Courtney', 'Scott'); c.rope('Courtney', 'Scott', 'warm', f); }, mood: { Courtney: 2 } },
+      { card: { cls: 'pull big', k: 'Heather chooses', who: ['Heather', 'Theo'], t: '"Nobody saw this coming, which is exactly why I\'m doing it. Theo." The firepit gasps. Mike doesn\'t.', chips: [['fame', 'airtime']] },
+        pill: 'Heather → Theo', fx: (c, f) => { c.forward('Heather'); c.lit('Heather', 'Theo'); c.rope('Heather', 'Theo', 'warm', f); c.dim('Mike'); } },
+      { card: { cls: 'dump big', k: 'Single', who: ['Gwen', 'Mike'], t: 'Dior: "Gwen. Mike. You are both single. That means you have been dumped from the island."', chips: [['up', 'sympathy'], ['fame', 'major moment']] },
+        pill: 'Dumped from the island', fx: (c, f) => { c.lit('Gwen', 'Mike'); c.dimAllBut('Gwen', 'Mike', 'Dior'); c.neonDie('Single', 500, 62, '#ff2e88', f); }, mood: { Gwen: 4, Mike: 5 } },
+    ],
+  },
+
+  dumping: {
+    tab: 'The Dumping', scene: 'night', sub: 'Episode 5 · the public has voted · the villa decides',
+    faces: { Dior: [90, 230], Bridgette: [330, 92], Courtney: [410, 92], Duncan: [490, 92], Geoff: [570, 92], Zoey: [650, 92],
+      Scott: [730, 92], Alejandro: [300, 300], Priya: [380, 300], Heather: [560, 300], Theo: [640, 300] },
+    big: ['Dior'], host: ['Dior'], walkout: true,
+    phases: ['Build-up', 'Verdict', 'Reaction', 'Goodbye', 'Fallout'],
+    steps: [
+      { phase: 0, card: { cls: 'host', k: 'The bottom couples', who: ['Dior'], t: '"The public have been voting for their favourite couple. The two couples with the fewest votes are…"' },
+        pill: 'The public has voted', fx: (c, f) => { c.lit('Dior'); c.dimAllBut('Dior'); c.neon('The results', 500, 50, '#b388ff', f); } },
+      { phase: 0, card: { cls: 'chat', k: 'At risk', who: ['Priya', 'Alejandro'], t: 'Priya and Alejandro. Priya\'s jaw sets. Alejandro reaches for her hand; she lets him.' },
+        pill: 'At risk: Priya & Alejandro', fx: c => { c.dimAllBut('Dior'); c.lit('Priya', 'Alejandro'); c.rope('Priya', 'Alejandro', 'warm'); } },
+      { phase: 0, card: { cls: 'chat', k: 'At risk', who: ['Heather', 'Theo'], t: 'Heather and Theo. Theo: "Is this bad?" It is bad.' },
+        pill: 'At risk: Heather & Theo', fx: c => { c.lit('Priya', 'Alejandro', 'Heather', 'Theo'); c.rope('Heather', 'Theo', 'warm'); } },
+      { phase: 1, card: { cls: 'host', k: 'The boys have chosen', who: ['Dior'], t: '"Boys, you had to choose one girl to dump from the bottom couples. The girl you have chosen to dump is…"' },
+        pill: 'The boys have chosen', fx: c => { c.lit('Dior', 'Priya', 'Heather'); } },
+      { phase: 1, card: { cls: 'dump big', k: 'Dumped', who: ['Heather'], t: '"…Heather." Heather doesn\'t move. Then she laughs, once.', chips: [['fame', 'major moment']] },
+        pill: 'Heather is dumped', fx: (c, f) => { c.red('Heather'); c.neon('Dumped', 500, 50, '#ff2e88', f); if (f) c.shake(); }, mood: { Heather: 4 } },
+      { phase: 1, card: { cls: 'dump', k: 'The votes', who: ['Duncan', 'Geoff', 'Scott'], t: 'The boys\' ballots, one by one: Duncan — Heather. Geoff — Heather. Scott — Priya.' },
+        pill: 'Who voted for whom', fx: (c, f) => { c.red('Heather'); c.tiles([['Duncan', 'Heather'], ['Geoff', 'Heather'], ['Scott', 'Priya']], f); }, mood: { Scott: -2 } },
+      { phase: 1, card: { cls: 'dump big', k: 'Dumped', who: ['Theo'], t: 'The girls chose too. "…Theo." Theo takes his hat off, which somehow makes it worse.', chips: [['up', 'sympathy'], ['fame', 'major moment']] },
+        pill: 'Theo is dumped', fx: (c, f) => { c.red('Heather', 'Theo'); c.neon('Dumped', 500, 50, '#ff2e88', false); c.rope('Heather', 'Theo', 'cracked'); }, mood: { Theo: 6 } },
+      { phase: 2, card: { cls: 'narr', k: 'Narrator', who: ['Theo'], t: '“Theo, asked how he feels: ‘Gutted.’ Theo, ten minutes later, asking a runner if there’s a buffet on the way out.”' },
+        pill: 'Reaction', fx: (c, f) => { c.lit('Theo'); c.narr('Theo, asked how he feels: “Gutted.” Theo, ten minutes later, asking a runner if there’s a buffet on the way out.', f); }, mood: { Theo: 2 } },
+      { phase: 3, card: { cls: 'chat', k: 'Goodbye', who: ['Heather', 'Courtney'], t: 'Heather hugs Courtney for a long time and says something nobody else hears.', chips: [['up', '+ approval']] },
+        pill: 'Goodbyes', fx: c => { c.lit('Heather', 'Courtney'); }, mood: { Heather: 3, Courtney: 1 } },
+      { phase: 3, card: { cls: 'dump big', k: 'The walk', who: ['Heather', 'Theo'], t: 'They take their cases up the villa steps together. Theo waves until the gate closes.' },
+        pill: 'Up the villa steps', fx: (c, f) => { c.walkOut(['Heather', 'Theo'], f); }, mood: { Heather: 2, Theo: 2 } },
+      { phase: 4, card: { cls: 'fight big', k: 'Fallout', who: ['Courtney', 'Duncan'], t: 'Courtney corners Duncan by the pool: "You voted her out and you didn\'t even look at me."', chips: [['down', 'Duncan − approval'], ['fame', 'airtime']] },
+        pill: 'Fallout', fx: (c, f) => { c.lit('Courtney'); c.red('Duncan'); c.rope('Courtney', 'Duncan', 'hot'); if (f) c.shake(); }, mood: { Duncan: -3, Courtney: 2 } },
+    ],
+  },
+
+  casa: {
+    tab: 'Casa Amor', scene: 'casa', sub: 'Episode 10 · stick or twist · the girls are back',
+    faces: { Alejandro: [110, 250], Duncan: [200, 250], Geoff: [290, 250], Scott: [380, 250],
+      Kelly: [110, 340], Ella: [380, 340], Bridgette: [760, 240], Courtney: [760, 240], Priya: [760, 240], Zoey: [760, 240], Jake: [760, 240] },
+    hidden: ['Kelly', 'Ella', 'Bridgette', 'Courtney', 'Priya', 'Zoey', 'Jake'],
+    steps: [
+      { card: { cls: 'host', k: 'Dior', who: ['Dior'], t: '"Boys. The girls are back from Casa Amor. And they might not be alone." Then: the boys\' own choices, sitting beside them.' },
+        pill: 'The girls are back', fx: (c, f) => { c.neon('Casa Amor', 760, 60, '#18d4c7', f); c.show('Kelly', 'Ella'); c.lit('Kelly', 'Ella'); c.rope('Alejandro', 'Kelly', 'warm'); c.rope('Scott', 'Ella', 'warm'); } },
+      { card: { cls: 'chat big', k: 'Stick', who: ['Bridgette', 'Geoff'], t: 'Bridgette walks through the door alone. Geoff is on his feet before she\'s down the step.', chips: [['up', '+ approval'], ['up', 'belief']] },
+        pill: 'Bridgette sticks', fx: (c, f) => { c.door(f); c.show('Bridgette'); c.move('Bridgette', 290, 150); c.lit('Bridgette', 'Geoff'); c.rope('Bridgette', 'Geoff', 'warm', f); c.choice('stick', f); }, mood: { Bridgette: 5, Geoff: 5 } },
+      { card: { cls: 'pull big', k: 'Twist', who: ['Priya', 'Jake'], t: 'Priya walks in holding Jake\'s hand. Alejandro, sitting with Kelly, starts to say something and doesn\'t.', chips: [['fame', 'major moment']] },
+        pill: 'Priya twists', fx: (c, f) => { c.door(f); c.show('Priya', 'Jake'); c.move('Priya', 620, 330); c.move('Jake', 700, 330); c.lit('Priya', 'Jake', 'Alejandro'); c.rope('Priya', 'Jake', 'warm', f); c.choice('twist', f); }, mood: { Priya: 1, Alejandro: -2 } },
+      { card: { cls: 'fight big', k: 'Stick — and mugged off', who: ['Courtney', 'Scott', 'Ella'], t: 'Courtney walks in alone and sees Scott with his arm round Ella. "Are you serious?" She is single, and safe. He is neither.', chips: [['down', 'Scott − approval'], ['up', 'Courtney sympathy'], ['fame', 'major moment']] },
+        pill: 'Courtney stuck. Scott didn\'t.', fx: (c, f) => { c.door(f); c.show('Courtney'); c.move('Courtney', 470, 150); c.lit('Courtney'); c.red('Scott'); c.choice('stick', f); c.neon('Mugged off', 250, 60, '#ef4444', f); if (f) c.shake(); }, mood: { Scott: -11, Courtney: 10 } },
+      { card: { cls: 'chat big', k: 'Stick', who: ['Zoey', 'Duncan'], t: 'Zoey walks in alone. Duncan stuck too. Nobody expected this couple to be the loyal one, least of all them.', chips: [['up', '+ approval'], ['up', 'belief']] },
+        pill: 'Zoey sticks', fx: (c, f) => { c.door(f); c.show('Zoey'); c.move('Zoey', 200, 150); c.lit('Zoey', 'Duncan'); c.rope('Zoey', 'Duncan', 'warm', f); c.choice('stick', f); }, mood: { Zoey: 7, Duncan: 6 } },
+      { card: { cls: 'text', k: 'I got a text!', who: ['Courtney'], t: '"Islanders, some of the girls have been sent pictures from Casa Amor. #whathappenedincasa"' },
+        pill: 'The photos are coming', fx: (c, f) => c.phone('Courtney', 'Islanders, some of the girls have been sent pictures from Casa Amor.', '#whathappenedincasa', f) },
+    ],
+  },
+
+  final: {
+    tab: 'The Final', scene: 'app', sub: 'Episode 15 · the public decides',
+    faces: { Bridgette: [120, 90], Geoff: [205, 90], Duncan: [120, 190], Zoey: [205, 190], Jake: [120, 290], Priya: [205, 290],
+      Alejandro: [390, 140], Kelly: [475, 140], Dior: [430, 300] },
+    big: ['Dior'], host: ['Dior'],
+    app: [['Alejandro & Kelly', 7.9], ['Jake & Priya', 17.4], ['Duncan & Zoey', 26.3], ['Bridgette & Geoff', 48.4]],
+    steps: [
+      { card: { cls: 'host', k: 'Dior', who: ['Dior'], t: '"Four couples. One vote. The public have chosen their Perfect Match. In fourth place…"' },
+        pill: 'The final vote', fx: (c, f) => { c.lit('Dior'); c.neon('The Final', 700, 40, '#ffc15e', f); c.appShow(0); } },
+      { card: { cls: 'chat', k: 'Fourth', who: ['Alejandro', 'Kelly'], t: 'Alejandro and Kelly — 7.9%. Alejandro applauds the result like it happened to someone else.' },
+        pill: 'Fourth place', fx: c => { c.appShow(1); c.lit('Alejandro', 'Kelly'); c.rope('Alejandro', 'Kelly', 'warm'); } },
+      { card: { cls: 'chat', k: 'Third', who: ['Priya', 'Jake'], t: 'Priya and Jake — 17.4%. Priya: "Third is a podium." Jake: "Is it?"' },
+        pill: 'Third place', fx: c => { c.appShow(2); c.lit('Priya', 'Jake'); c.rope('Jake', 'Priya', 'warm'); } },
+      { card: { cls: 'chat', k: 'Runners-up', who: ['Duncan', 'Zoey'], t: 'Duncan and Zoey — 26.3%. The steal the country forgave.' },
+        pill: 'Runners-up', fx: c => { c.appShow(3); c.lit('Duncan', 'Zoey'); c.rope('Duncan', 'Zoey', 'warm'); } },
+      { card: { cls: 'host big', k: 'Your Perfect Match', who: ['Bridgette', 'Geoff'], t: 'Bridgette and Geoff — 48.4%. Day one, every recoupling, walked back in alone from Casa. The villa\'s first couple is its last.', chips: [['up', 'Fan Favourite'], ['fame', 'winners']] },
+        pill: 'Bridgette & Geoff win', fx: (c, f) => { c.appShow(4); c.lit('Bridgette', 'Geoff'); c.rope('Bridgette', 'Geoff', 'warm'); c.neon('Perfect Match', 330, 40, '#ff2e88', f); c.petals(f); }, mood: { Bridgette: 6, Geoff: 6 } },
+      { card: { cls: 'host big', k: 'The envelope', who: ['Geoff'], t: 'Geoff opens the envelope. It holds the money. "Split. Obviously. Bridge, it was always split."', chips: [['up', '+ approval']] },
+        pill: 'Split or steal', fx: (c, f) => { c.lit('Geoff'); c.envelope(f); }, mood: { Geoff: 3 } },
+    ],
+  },
+};
+
+// ══════════════════════════════════════════════════════════════════════
+// The stage engine. apply(idx): reset, replay steps 0..idx, the last one
+// fresh. One-shot effects play only on a fresh step (ADDING-A-SHOW §6.5).
+// ══════════════════════════════════════════════════════════════════════
+let cur = 'villa', idx = -1;
+const $ = s => document.querySelector(s);
+const stage = $('#stage');
+
+function buildStage(S) {
+  const faces = Object.entries(S.faces).map(([n, [x, y]]) => {
+    const real = n.replace(/\d+$/, '');
+    const cls = ['face', (S.big || []).includes(n) ? 'big' : '', (S.host || []).includes(n) ? 'host pearl' : ''].join(' ');
+    return `<div class="${cls}" data-n="${n}" style="left:${x / 10}%;top:${y / 4.2}%">${imgTag(real)}<span>${initials(real)}</span><b>${real}</b></div>`;
+  }).join('');
+  const petals = Array.from({ length: 26 }, (_, i) => {
+    const a = (i * 137.5) * Math.PI / 180, d = 180 + (i % 5) * 60;
+    return `<div class="petal" style="left:33%;top:30%;--x:${(Math.cos(a) * d).toFixed(0)}px;--y:${(Math.sin(a) * d * .6 + 120).toFixed(0)}px;--r:${(i * 47) % 360}deg;--dl:${(i % 7) * 60}ms">${IC.petal}</div>`;
+  }).join('');
+  stage.innerHTML = `<div class="layer">${BACKDROP[S.scene]}</div>
+    ${S.walkout ? '<div class="steps"><div class="fl"></div></div><div class="gate"></div>' : ''}
+    ${S.scene === 'casa' ? `<div class="door"><div class="arch"><div class="leaf"></div></div></div>
+      <div class="choice"><div><div class="f">${IC.heart}</div><div class="b"></div></div></div>` : ''}
+    <svg class="ropes" viewBox="0 0 1000 420" preserveAspectRatio="none"></svg>
+    ${faces}
+    <div class="neon" data-neon></div>
+    <div class="tiles"></div>
+    ${S.app ? `<div class="app"><div class="scr"><h5>Vote for your Perfect Match</h5>
+      ${S.app.map(([n, p]) => `<div class="row"><span>${n}</span><span class="pc">${p}%</span><div class="bar"><i></i></div></div>`).join('')}</div></div>
+      <svg class="envelope" viewBox="0 0 200 140"><rect class="card" x="30" y="20" width="140" height="90" rx="6" fill="#fffdf7" stroke="#ff2e88" stroke-width="3"/>
+      <text class="card" x="100" y="72" text-anchor="middle" font-family="Bebas Neue" font-size="36" fill="#ff2e88">SPLIT</text>
+      <rect x="10" y="40" width="180" height="96" rx="10" fill="#ff4fa0" stroke="#fff" stroke-width="3"/>
+      <path class="flap" d="M10 40 L100 100 L190 40Z" fill="#ff2e88" stroke="#fff" stroke-width="3"/>
+      <circle cx="100" cy="98" r="12" fill="#fff4f8" stroke="#e6c3d3" stroke-width="2"/></svg>${petals}` : ''}
+    <div class="suitcase" data-case="0">${IC.suitcase}</div><div class="suitcase" data-case="1">${IC.suitcase}</div>
+    <svg class="ecg" viewBox="0 0 1000 100" preserveAspectRatio="none"><polyline points=""/></svg><div class="bpm"></div>
+    <div class="phone"><div class="scr"><h4>I got a text!</h4><div class="tag"></div><p></p><div class="tag h"></div></div></div>
+    <div class="hut"><div class="chair"></div><div class="q"><small>Beach hut</small><span></span></div><div class="rec">Beach hut</div></div>
+    <div class="narr">${IC.mic}<div><em>Narrator</em><span></span></div></div>
+    <div class="slate">${IC.scissors} Unaired footage · 14:22:07</div>
+    <div class="headpill"></div><div class="grain"></div>`;
+}
+
+function ctxFor(S) {
+  const F = n => stage.querySelector(`.face[data-n="${n}"]`);
+  const pos = n => { const el = F(n); return [parseFloat(el.style.left) * 10, parseFloat(el.style.top) * 4.2]; };
+  const ropes = stage.querySelector('svg.ropes');
+  return {
+    lit: (...ns) => ns.forEach(n => F(n)?.classList.add('lit')),
+    red: (...ns) => ns.forEach(n => { F(n)?.classList.add('red'); F(n)?.classList.remove('lit'); }),
+    dim: (...ns) => ns.forEach(n => F(n)?.classList.add('dim')),
+    dimAllBut: (...keep) => stage.querySelectorAll('.face').forEach(el => { if (!keep.includes(el.dataset.n) && !el.classList.contains('lit')) el.classList.add('dim'); }),
+    show: (...ns) => ns.forEach(n => F(n)?.classList.remove('gone')),
+    move: (n, x, y) => { const el = F(n); if (el) { el.style.left = x / 10 + '%'; el.style.top = y / 4.2 + '%'; } },
+    forward: n => { const el = F(n); if (el) el.style.top = (parseFloat(el.style.top) - 8) + '%'; },
+    rope(a, b, mode, fresh = false) {
+      const id = [a, b].sort().join('~');
+      ropes.querySelector(`[data-r="${id}"]`)?.remove();
+      const [x1, y1] = pos(a), [x2, y2] = pos(b);
+      const cls = ['rope', mode === 'snap' ? 'warm' : mode, fresh && mode !== 'snap' ? 'draw' : '', mode === 'snap' && fresh ? 'snap' : ''].join(' ');
+      if (mode === 'snap' && !fresh) return;
+      // Same row: a string that sags between the two, under the faces.
+      // Different rows: face to face, the heart at the middle.
+      const sameRow = Math.abs(y1 - y2) < 40;
+      let d, mx, my;
+      if (sameRow) {
+        mx = (x1 + x2) / 2; my = Math.max(y1, y2) + 34;
+        d = `M${x1} ${y1 + 22} Q ${mx} ${my + 10} ${x2} ${y2 + 22}`;
+      } else {
+        const len = Math.hypot(x2 - x1, y2 - y1) || 1, ux = (x2 - x1) / len, uy = (y2 - y1) / len, r = 34;
+        const sx = x1 + ux * r, sy = y1 + uy * r, ex = x2 - ux * r, ey = y2 - uy * r;
+        mx = (sx + ex) / 2; my = (sy + ey) / 2;
+        d = `M${sx} ${sy} Q ${mx + uy * 18} ${my - ux * 18} ${ex} ${ey}`;
+      }
+      ropes.insertAdjacentHTML('beforeend', `<g class="${cls}" data-r="${id}">
+        <path class="str" d="${d}"/>
+        <path class="heart" transform="translate(${mx} ${my - 2}) scale(1.7)" d="M0,-3 C-6,-13 -19,-3 0,11 C19,-3 6,-13 0,-3Z"/>
+        <path class="crack" d="M${mx - 2} ${my - 12} l5 6 l-5 5 l5 6"/></g>`);
+    },
+    neon(text, x, y, glow, fresh) {
+      const el = stage.querySelector('[data-neon]');
+      el.style.left = x / 10 + '%'; el.style.top = y / 4.2 + '%'; el.style.setProperty('--glow', glow);
+      el.innerHTML = [...text].map((ch, k) => `<i style="--k:${k}">${ch === ' ' ? '&nbsp;' : ch}</i>`).join('');
+      el.className = 'neon on' + (fresh ? ' fresh' : '');
+    },
+    neonDie(text, x, y, glow, fresh) {
+      this.neon(text, x, y, glow, false);
+      stage.querySelector('[data-neon]').className = 'neon ' + (fresh ? 'on dying' : '');
+    },
+    phone(who, text, tag, fresh) {
+      const p = stage.querySelector('.phone');
+      p.querySelector('.tag').textContent = `To: ${who}`;
+      p.querySelector('p').textContent = text;
+      p.querySelector('.tag.h').textContent = tag;
+      p.classList.add('up'); if (fresh) p.classList.add('buzz');
+    },
+    hut(who, quote, fresh) {
+      const h = stage.querySelector('.hut');
+      h.querySelector('.chair').innerHTML = `<div class="face" style="position:relative">${imgTag(who)}<span>${initials(who)}</span></div>`;
+      h.querySelector('.q span').textContent = `“${quote}”`;
+      h.classList.add('on');
+    },
+    narr(text, fresh) { const n = stage.querySelector('.narr'); n.querySelector('span').textContent = text; n.classList.add('on'); },
+    raw() { stage.classList.add('raw'); },
+    shake() { stage.classList.remove('shake'); void stage.offsetWidth; stage.classList.add('shake'); },
+    ecg(who, bpm, fresh) {
+      const pts = []; for (let x = 0; x <= 1000; x += 10) {
+        const t = x % 200; const y = t === 100 ? 5 : t === 110 ? 95 : t === 90 ? 70 : 60 + Math.sin(x / 13) * 3;
+        pts.push(`${x},${x > 600 && t === 100 ? 0 : y}`);
+      }
+      const e = stage.querySelector('.ecg'); e.querySelector('polyline').setAttribute('points', pts.join(' ')); e.classList.add('on');
+      const b = stage.querySelector('.bpm'); b.textContent = `${who} · ${bpm} BPM`; b.classList.add('on');
+    },
+    tiles(pairs, fresh) {
+      const t = stage.querySelector('.tiles');
+      t.innerHTML = pairs.map(([v, tg], i) => `<div class="tile" style="--i:${i}"><div><div class="f">${IC.heart}</div>
+        <div class="b"><div>${v}<strong>${tg}</strong></div></div></div></div>`).join('');
+      const flip = () => t.querySelectorAll('.tile').forEach((el, i) => setTimeout(() => el.classList.add('flip'), fresh ? 300 + i * 450 : 0));
+      fresh ? requestAnimationFrame(flip) : t.querySelectorAll('.tile').forEach(el => el.classList.add('flip'));
+    },
+    walkOut(names, fresh) {
+      const gate = stage.querySelector('.gate');
+      names.forEach((n, i) => {
+        const el = F(n), cs = stage.querySelector(`[data-case="${i}"]`);
+        const go = () => { el.style.left = (91 + i * 3) + '%'; el.style.top = '14%'; el.style.transform = 'translate(-50%,-50%) scale(.55)';
+          cs.style.left = (92 + i * 3) + '%'; cs.style.top = '19%'; cs.classList.add('on'); gate.classList.add('open'); };
+        cs.style.left = el.style.left; cs.style.top = el.style.top;
+        if (fresh) { cs.classList.add('on'); setTimeout(go, 150 + i * 300); } else go();
+      });
+      if (fresh) setTimeout(() => { names.forEach(n => F(n).classList.add('gone')); gate.classList.remove('open'); }, 2600);
+      else names.forEach(n => F(n).classList.add('gone'));
+    },
+    door(fresh) {
+      const d = stage.querySelector('.door'); d.classList.add('open');
+      if (fresh) setTimeout(() => d.classList.remove('open'), 1800); else d.classList.remove('open');
+    },
+    choice(kind, fresh) {
+      const c = stage.querySelector('.choice'), b = c.querySelector('.b');
+      b.className = 'b ' + kind; b.textContent = kind === 'stick' ? 'STICK' : 'TWIST';
+      c.classList.remove('show'); if (fresh) requestAnimationFrame(() => requestAnimationFrame(() => c.classList.add('show'))); else c.classList.add('show');
+    },
+    appShow(n) {
+      const rows = [...stage.querySelectorAll('.app .row')];
+      rows.forEach((r, i) => {                   // rows are listed 4th → 1st
+        const on = i < n; r.classList.toggle('shown', on); r.classList.toggle('win', on && i === rows.length - 1);
+        r.querySelector('i').style.width = on ? (S.app[i][1] * 1.8) + '%' : '0';
+      });
+    },
+    petals(fresh) { if (fresh) { stage.classList.remove('burst'); void stage.offsetWidth; stage.classList.add('burst'); } },
+    envelope(fresh) {
+      const e = stage.querySelector('.envelope'); e.classList.add('on');
+      if (fresh) setTimeout(() => e.classList.add('open'), 200); else e.classList.add('open');
+    },
+  };
+}
+
+function resetStage(S) {
+  stage.className = 'stage';
+  buildStage(S);
+  (S.hidden || []).forEach(n => stage.querySelector(`.face[data-n="${n}"]`)?.classList.add('gone'));
+  const ctx = ctxFor(S);
+  (S.ropes || []).forEach(([a, b]) => ctx.rope(a, b, 'warm'));
+  return ctx;
+}
+
+function apply(i, fresh) {
+  const S = SCREENS[cur];
+  // Transient overlays belong to one step only: rebuild from rest every time.
+  const ctx = resetStage(S);
+  for (let k = 0; k <= i; k++) {
+    const st = S.steps[k];
+    const isLast = k === i;
+    // Only the CURRENT step's overlay stays up: a hut, a phone, a narrator,
+    // raw footage and a lit face all belong to one moment.
+    if (!isLast) {
+      st.fx(ctx, false);
+      stage.querySelectorAll('.face.lit,.face.red,.face.dim').forEach(el => el.classList.remove('lit', 'red', 'dim'));
+      stage.classList.remove('raw');
+      ['.hut', '.narr', '.phone', '.ecg', '.bpm', '.envelope'].forEach(sel => stage.querySelector(sel)?.classList.remove('on', 'up'));
+      stage.querySelector('.tiles') && (stage.querySelector('.tiles').innerHTML = '');
+      const neon = stage.querySelector('[data-neon]'); neon.className = 'neon';
+      stage.querySelector('.choice')?.classList.remove('show');
+    } else st.fx(ctx, fresh);
+  }
+  const pill = stage.querySelector('.headpill');
+  if (i >= 0) { pill.textContent = S.steps[i].pill || ''; pill.classList.add('on'); }
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// Cards, rail, sidebar, controls.
+// ══════════════════════════════════════════════════════════════════════
+function cardHtml(st, i) {
+  const c = st.card, S = SCREENS[cur];
+  const revealed = S.steps.some((x, j) => j <= idx && x.reveals === i);
+  const tape = c.unaired
+    ? `<div class="tape ${revealed ? 'revealed' : ''}">${IC.tape} ${revealed ? 'Aired later · Mugged off' : "Didn't air · " + c.secret}</div>` : '';
+  return `<div class="card ${c.cls} ${c.unaired && !revealed ? 'unaired' : ''}" id="card-${i}">
+    <div class="fx">${c.who.map(mini).join('')}</div>
+    <div><div class="k">${c.k}</div><p>${c.t}</p>${c.chips ? `<div class="chips">${c.chips.map(([k, t]) => `<span class="chip ${k}">${t}</span>`).join('')}</div>` : ''}</div>${tape}</div>`;
+}
+
+function labelOf(a) {
+  if (a >= 60) return ['ff', 'Fan favourite']; if (a >= 25) return ['loved', 'Loved']; if (a >= 5) return ['liked', 'Liked'];
+  if (a >= -5) return ['invisible', 'Invisible']; if (a >= -25) return ['divisive', 'Divisive']; if (a >= -60) return ['disliked', 'Disliked'];
+  return ['villain', 'Villain'];
+}
+
+function renderMood() {
+  const S = SCREENS[cur];
+  const m = { ...MOOD0 };
+  // The mood carries across screens in order, then up to this click on this one.
+  for (const key of Object.keys(SCREENS)) {
+    const steps = SCREENS[key].steps;
+    const upto = key === cur ? idx : (Object.keys(SCREENS).indexOf(key) < Object.keys(SCREENS).indexOf(cur) ? steps.length - 1 : -1);
+    for (let k = 0; k <= upto; k++) for (const [n, d] of Object.entries(steps[k].mood || {})) m[n] = (m[n] ?? 0) + d * 1.6;
+  }
+  const gone = cur === 'casa' || cur === 'final' ? ['Gwen', 'Mike', 'Heather', 'Theo'] : cur === 'dumping' ? ['Gwen', 'Mike'] : [];
+  const names = Object.keys(m).sort();
+  $('#mood').innerHTML = `<h3>The public mood</h3><p class="note">What the country has seen so far. Nothing ahead of the last click.</p>` +
+    names.map(n => {
+      const a = Math.max(-100, Math.min(100, m[n])), [cls, lab] = labelOf(a);
+      const left = a >= 0 ? 50 : 50 + a / 2, width = Math.abs(a) / 2;
+      const col = a >= 0 ? 'linear-gradient(90deg,#ff7a59,#ff2e88)' : 'linear-gradient(90deg,#7f1d1d,#f87171)';
+      return `<div class="mrow ${gone.includes(n) ? 'gone' : ''}">${mini(n)}<div><div class="nm"><span>${n}</span><span class="lab ${cls}">${lab}</span></div>
+        <div class="gauge"><i style="left:${left}%;width:${width}%;background:${col}"></i></div></div></div>`;
+    }).join('');
+}
+
+function renderRail() {
+  const S = SCREENS[cur], rail = $('#rail');
+  if (!S.phases) { rail.innerHTML = ''; return; }
+  const at = idx >= 0 ? S.steps[idx].phase : -1;
+  rail.innerHTML = S.phases.map((p, i) => `<span class="${i === at ? 'on' : i < at ? 'done' : ''}">${i + 1}. ${p}</span>`).join('');
+}
+
+function paint(fresh) {
+  const S = SCREENS[cur];
+  const y = window.scrollY;
+  apply(idx, fresh);
+  $('#cards').innerHTML = `<div class="card host"><div class="fx">${mini('Dior')}</div><div><div class="k">${S.tab}</div><p>${S.sub}</p></div></div>` +
+    S.steps.slice(0, idx + 1).map((st, i) => cardHtml(st, i)).join('');
+  renderRail(); renderMood();
+  $('#count').textContent = `${Math.max(0, idx + 1)} / ${S.steps.length}`;
+  $('#next').disabled = idx >= S.steps.length - 1;
+  window.scrollTo(0, y);
+  if (fresh) document.getElementById(`card-${idx}`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function tabs() {
+  $('#tabs').innerHTML = Object.entries(SCREENS).map(([k, s]) => `<button data-k="${k}" class="${k === cur ? 'on' : ''}">${s.tab}</button>`).join('');
+  $('#tabs').querySelectorAll('button').forEach(b => b.onclick = () => { cur = b.dataset.k; idx = -1; tabs(); paint(false); });
+}
+$('#next').onclick = () => { const S = SCREENS[cur]; if (idx < S.steps.length - 1) { idx++; paint(true); } };
+$('#all').onclick = () => { idx = SCREENS[cur].steps.length - 1; paint(false); };
+$('#reset').onclick = () => { idx = -1; paint(false); };
+document.addEventListener('keydown', e => { if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); $('#next').click(); } });
+window.step = k => { idx = k; paint(true); };
+window.show = k => { cur = k; idx = -1; tabs(); paint(false); };
+tabs(); paint(false);
+</script>
+</body>
+</html>

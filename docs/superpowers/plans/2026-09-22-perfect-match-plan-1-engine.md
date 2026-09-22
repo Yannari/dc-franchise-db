@@ -221,7 +221,7 @@ Change the return line of `exitVerbs`:
 ```
 In `HOSTS_BY_FORMAT`:
 ```js
-  // One host. Portrait assets/avatars/dior.png (a HOST literal, which the
+  // One host. Portrait assets/avatars/dior.jpg (a HOST literal, which the
   // portrait guard allows). Inspired by Ariana Madix; her own voice.
   'perfect-match': [
     { value: 'Dior', label: 'Dior' },

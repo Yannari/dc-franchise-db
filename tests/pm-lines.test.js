@@ -44,13 +44,15 @@ describe('the pools are well-formed', () => {
     // comedy casts one islander, gossip three, everything else two. A {b}
     // in a one-person scene renders as a raw placeholder, or as nobody.
     const CAST = { comedy: 1, gossip: 3, 'head-turned': 1, 'jealous-sulk': 1, overthinking: 1,
-      'jealous-confront': 3, 'jealous-retaliate': 3, advice: 3 };
+      'jealous-confront': 3, 'jealous-retaliate': 3, advice: 3,
+      entrance: 1, steal: 3, 'recouple-pick': 3, 'dump-verdict': 1, 'dump-fallout': 1, 'snog-marry-pie': 4,
+      'movie-night': 2, reveal: 2 };
     for (const [k, e] of ENTRIES) {
       if (k.startsWith('hut:')) continue;
       const size = CAST[k] || 2;
-      const allowed = ['a', 'b', 'c'].slice(0, size);
-      for (const x of texts(e)) for (const [, who] of x.matchAll(/\{([abc])[.}]/g)) expect(allowed, `${k} ${e.id}: ${x}`).toContain(who);
-      for (const [who] of turns(e)) if (['a', 'b', 'c'].includes(who)) expect(allowed, `${k} ${e.id}`).toContain(who);
+      const allowed = ['a', 'b', 'c', 'd'].slice(0, size);
+      for (const x of texts(e)) for (const [, who] of x.matchAll(/\{([abcd])[.}]/g)) expect(allowed, `${k} ${e.id}: ${x}`).toContain(who);
+      for (const [who] of turns(e)) if (['a', 'b', 'c', 'd'].includes(who)) expect(allowed, `${k} ${e.id}`).toContain(who);
     }
   });
   it("{pa} and {pb} only appear where that partner exists", () => {
@@ -96,7 +98,7 @@ describe('the words follow the rules', () => {
     for (const [k, e] of ENTRIES) for (const x of texts(e)) {
       // A capitalised word straight after a placeholder slot's usual place would be a name;
       // the practical check is that nothing but {a}/{b}/{c} forms appear in braces.
-      for (const [m] of x.matchAll(/\{(?!~)[^}]*\}/g)) expect(m, `${k} ${e.id}`).toMatch(/^\{(pa|pb|a|b|c)(\.(obj|pos|posAdj|ref|Obj|PosAdj|gf))?\}$/);
+      for (const [m] of x.matchAll(/\{(?!~)[^}]*\}/g)) expect(m, `${k} ${e.id}`).toMatch(/^\{(quote|quoteWho|(pa|pb|a|b|c|d)(\.(obj|pos|posAdj|ref|Obj|PosAdj|gf))?)\}$/);
       expect(x, `${k} ${e.id}`).not.toMatch(/\bDior\b/);
     }
   });

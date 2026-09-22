@@ -30,8 +30,9 @@ function removeFromVilla(state, names) {
 export function dumpingScene(state, rng, { atRisk = [], dumped, ballots = [], channel }) {
   const events = [];
   const solidarityWalk = [];
+  // Every phase knows which vote it came from, so Dior says the right thing.
   const ev = (kind, players, pop, major = []) => events.push(makeEvent(state, rng,
-    { phase: 'dumping', kind, players, aired: true, major, extra: { pop } }));
+    { phase: 'dumping', kind, players, aired: true, major, extra: { pop, channel } }));
   const partners = Object.fromEntries(dumped.map(n => [n, partnerOf(state, n)]));
   // 1. build-up
   for (const c of atRisk) ev('dump-buildup', c, Object.fromEntries(c.map(n => [n, { approval: 0, fame: 0.5 }])));
@@ -88,7 +89,7 @@ function recoupleNight(state, rng, { dumpSingles }) {
   const events = r.picks.map(pk => makeEvent(state, rng, { phase: 'firepit', kind: 'recouple-pick',
     players: [pk.picker, pk.picked, ...(pk.stole ? [pk.stole] : [])], aired: true,
     major: pk.stole ? [pk.picker, pk.stole] : [],
-    extra: { stole: pk.stole, pop: { [pk.picker]: { approval: pk.stole ? -1 : 0.2, fame: 1 },
+    extra: { stole: pk.stole, reason: pk.reason, pop: { [pk.picker]: { approval: pk.stole ? -1 : 0.2, fame: 1 },
       ...(pk.stole ? { [pk.stole]: { approval: 1.5, fame: 2 } } : {}) } } }));
   for (const pk of r.picks) if (pk.stole) breakHeart(state, pk.stole, pk.picked, 5 * romance(pk.stole, pk.picked) / 10);
   state.couples = r.couples;

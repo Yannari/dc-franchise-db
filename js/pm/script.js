@@ -20,17 +20,19 @@ import { romance, shown } from './feelings.js';
 import { DAY } from './lines/day.js';
 import { LADDER } from './lines/ladder.js';
 import { FEELINGS } from './lines/feelings.js';
+import { MOMENTS as MOMENT_LINES } from './lines/moments.js';
 import { HUT } from './lines/hut.js';
 import { DIALECTS, slotWord, US_SPELLING, US_SPELLERS, ESL_EXPANSIONS } from './lines/dialect.js';
 
-export const POOLS = { ...DAY, ...LADDER, ...FEELINGS };
+export const POOLS = { ...DAY, ...LADDER, ...FEELINGS, ...MOMENT_LINES };
 export { HUT };
 
 export const SPEAKERS = ['a', 'b', 'c', 'dior', 'narrator'];
 export const FACT_KEYS = ['rung', 'thinks', 'persona', 'intent', 'attachment', 'mood', 'bombshell',
   'early', 'coupled', 'gap', 'knows', 'faking', 'bPersona', 'bMood', 'bRung', 'stance', 'family',
   'choice', 'cause', 'channel', 'stole', 'bTaken', 'archetype', 'taken', 'loyal', 'late', 'gender', 'bGender', 'myRung', 'phase', 'kind', 'role', 'withB', 'newArrival', 'dialect',
-  'comfortedYesterday', 'rowedBefore', 'rowedToday', 'feels', 'of', 'knowsB', 'verdict', 'noticed'];
+  'comfortedYesterday', 'rowedBefore', 'rowedToday', 'feels', 'of', 'knowsB', 'verdict', 'noticed',
+  'reason', 'split', 'guessed', 'stoleFrom', 'full', 'hasQuote'];
 
 // Archetype groups a pool may name instead of listing them (CLAUDE.md).
 export const VILLAINS = ['villain', 'mastermind', 'schemer'];
@@ -106,7 +108,14 @@ export function factsFor(state, ev) {
   // How much a feels for b, in words a line can lean on (narration only):
   // "not yet" is somebody who cares; a real no is somebody who doesn't.
   if (b) { const r = romance(a, b); f.feels = r >= 6 ? 'strong' : r >= 3 ? 'some' : 'little'; } else f.feels = null;
-  for (const k of ['choice', 'cause', 'channel', 'stole', 'of', 'noticed']) if (ev.extra?.[k] != null) f[k] = ev.extra[k];
+  for (const k of ['choice', 'cause', 'channel', 'of', 'noticed', 'reason', 'guessed']) if (ev.extra?.[k] != null) f[k] = ev.extra[k];
+  // A steal at the recoupling: {c} is the one who loses {b}.
+  f.stoleFrom = !!ev.extra?.stole;
+  f.split = !!state.split;             // Casa Amor is on
+  f.withB = !!b;                       // somebody else is in the scene
+  f.hasQuote = !!clipSlots(state, ev).quote;   // the replayed clip has a line to quote
+  // Snog Marry Pie with all three answers ({b} snog, {c} marry, {d} pie).
+  f.full = ev.kind === 'snog-marry-pie' && !!(ev.extra?.snog && ev.extra?.marry && ev.extra?.pie);
   // Has a SEEN what b did, or only feels it? "I saw you" needs the first.
   f.knowsB = !!b && knowsAbout(state, a, b);
   // A friend's read on somebody's partner, in words (advice scenes).
@@ -206,8 +215,10 @@ const pro = name => pronounsOf(players.find(p => p.name === name)?.gender || 'nb
 // their couples. A pool may only use one behind `taken` / `bTaken`, so the
 // partner is always there to name (tests/pm-lines.test.js).
 export function fill(text, ps, partners = {}) {
-  const names = { a: ps[0], b: ps[1], c: ps[2], pa: partners.pa, pb: partners.pb };
-  return text.replace(/\{(pa|pb|a|b|c)(?:\.(sub|obj|pos|posAdj|ref|Sub|Obj|PosAdj|gf))?\}/g, (m, who, form) => {
+  const names = { a: ps[0], b: ps[1], c: ps[2], d: ps[3], pa: partners.pa, pb: partners.pb };
+  // {quote}: the first thing said in the clip being replayed (Movie Night, the reunion).
+  if (partners.quote != null) text = text.replace(/\{quote\}/g, partners.quote).replace(/\{quoteWho\}/g, partners.quoteWho);
+  return text.replace(/\{(pa|pb|a|b|c|d)(?:\.(sub|obj|pos|posAdj|ref|Sub|Obj|PosAdj|gf))?\}/g, (m, who, form) => {
     const n = names[who];
     if (!n) return m;
     // {b.gf}: what you ask {b} to be — from the roster, never guessed.
@@ -253,7 +264,7 @@ export function speak(text, dialect) {
 }
 
 const speakerName = (who, ps) => who === 'dior' ? hostName() : who === 'narrator' ? narratorName()
-  : ps[{ a: 0, b: 1, c: 2 }[who]];
+  : ps[{ a: 0, b: 1, c: 2, d: 3 }[who]];
 
 // ── replies that depend on who is replying ───────────────────────────
 // A turn may be a VARIANT BLOCK instead of [speaker, text]:
@@ -262,7 +273,7 @@ const speakerName = (who, ps) => who === 'dior' ? hostName() : who === 'narrator
 // view — `persona` is b's persona, `taken` is b's partner — so the opener
 // stays and the answer is the character's. One option has no `when`; it is
 // the plain reply, and it has to be good, because it is the one seen most.
-const ORDER = { a: 0, b: 1, c: 2 };
+const ORDER = { a: 0, b: 1, c: 2, d: 3 };
 function asSpeaker(ps, by) {
   const i = ORDER[by] ?? 0;
   return [ps[i], ...ps.filter((_, j) => j !== i)];
@@ -278,8 +289,8 @@ function pickVariant(state, block, ps) {
   return top[Math.floor(scriptRng(state)() * top.length)];
 }
 
-export function renderScript(entry, ps, state = null) {
-  const partners = state ? { pa: partnerOf(state, ps[0]), pb: ps[1] ? partnerOf(state, ps[1]) : null } : {};
+export function renderScript(entry, ps, state = null, slots = {}) {
+  const partners = { ...(state ? { pa: partnerOf(state, ps[0]), pb: ps[1] ? partnerOf(state, ps[1]) : null } : {}), ...slots };
   const f = text => fill(text, ps, partners);
   const lines = [];
   let beat = entry.beat || null;
@@ -309,10 +320,26 @@ const placeholder = kind => ({ id: `${kind}.0`, stage: `{a} — ${kind}.` });
 /** The scene for one event. */
 export function scriptFor(state, ev) {
   const pool = POOLS[ev.kind];
-  const entry = pool?.length ? pickScript(state, pool, ev.players, factsFor(state, ev)) : null;
+  const ps = castOf(ev);
+  const entry = pool?.length ? pickScript(state, pool, ps, factsFor(state, { ...ev, players: ps })) : null;
   const e = entry || placeholder(ev.kind);
-  noteUse(state, e, ev.players);
-  return renderScript(e, ev.players, state);
+  noteUse(state, e, ps);
+  return renderScript(e, ps, state, clipSlots(state, ev));
+}
+
+/** Who {a}..{d} are. Snog Marry Pie keeps its answers in place even when one is missing. */
+function castOf(ev) {
+  if (ev.kind === 'snog-marry-pie') return [ev.players[0], ev.extra?.snog, ev.extra?.marry, ev.extra?.pie];
+  return ev.players;
+}
+
+/** A replayed clip is quoted, so the villa reacts to what is actually on the screen. */
+function clipSlots(state, ev) {
+  const id = ev.extra?.clip || ev.extra?.revealed;
+  if (!id) return {};
+  const clip = (state.history || []).find(e => e.id === id);
+  const line = clip?.script?.lines?.[0];
+  return line ? { quote: line.text, quoteWho: line.who } : {};
 }
 
 /** The beach-hut cutaway: one speaker, straight to camera. */
@@ -339,7 +366,8 @@ const FAMILIES = {
     'notes', 'families'],
   gossip: ['gossip', 'confession', 'loyalty'],
   dumping: ['recouple-pick', 'dump-buildup', 'dump-verdict', 'ballot-reveal', 'dump-reaction',
-    'dump-goodbye', 'dump-fallout', 'walk', 'final-result', 'envelope', 'reveal'],
+    'dump-goodbye', 'dump-fallout', 'steal'],
+  finale: ['declaration', 'final-result', 'envelope', 'reveal', 'walk'],
   casa: ['casa-return', 'photos'],
 };
 export function familyOf(kind) {

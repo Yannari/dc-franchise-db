@@ -46,6 +46,23 @@ function desire(state, p, c, { rng, taken }) {
     + stay - stealCost + (rng() - 0.5) * 0.2;
 }
 
+/**
+ * Which of those terms carried the pick — so the speech at the fire pit says
+ * the real reason (a strategy pick never claims a spark). Reads the same
+ * inputs as desire(), draws no dice.
+ */
+export function pickReason(state, p, c) {
+  const prof = state.profiles[p], s = prof.stats;
+  const w = INTENT_WEIGHTS[prof.intent] || INTENT_WEIGHTS.love;
+  const parts = {
+    connection: w.conn * (romance(p, c) + Math.max(0, friendship(p, c)) * 0.5) / 10,
+    attraction: w.attr * (attr(state, p, c) ?? 0) / 10,
+    safety: w.safe * (believed(state, p, c) / 10) * (s.strategic / 10),
+    loyalty: partnerOf(state, p) === c ? 0.25 + 0.5 * s.loyalty / 10 : 0,
+  };
+  return Object.entries(parts).sort((x, y) => y[1] - x[1])[0][0];
+}
+
 export function runRecoupling(state, { rng, pickerGender }) {
   const room = state.villa.filter(n => !(state.split && state.casa.includes(n)));
   const pickers = shuffle(rng, room.filter(n => state.profiles[n].gender === pickerGender));
@@ -62,9 +79,9 @@ export function runRecoupling(state, { rng, pickerGender }) {
         // The picked islander decides between the two.
         const keep = desire(state, best, holder, ctx) >= desire(state, best, p, ctx);
         if (keep) { options = options.filter(c => c !== best); continue; }
-        picks.push({ picker: p, picked: best, stole: holder });
+        picks.push({ picker: p, picked: best, stole: holder, reason: pickReason(state, p, best) });
       } else {
-        picks.push({ picker: p, picked: best, stole: null });
+        picks.push({ picker: p, picked: best, stole: null, reason: pickReason(state, p, best) });
       }
       taken.set(best, p);
       break;

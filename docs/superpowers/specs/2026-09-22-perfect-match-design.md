@@ -248,24 +248,134 @@ mugs off; one slow-burn path with an animal-loving, loyal girl.
 
 ---
 
-## 6. Attraction and connection
+## 6. Relationships
 
-Two numbers per ordered pair, gated by `romanticCompat` (open pairing, per
-the existing rule).
+The show is its relationships, so this is the biggest system in it. The user's
+rule: **relationships are not always bilateral.** Romance at 8 with friendship
+at −2 (the Sims "romance 80, friendship −20"), friends and never anything
+more, a one-way crush, a hidden crush, and somebody pretending to feel what
+they don't, all have to be expressible and all have to drive play.
 
-- **Attraction** (instant, set on meeting): type-on-paper match (look tags +
-  vibes read from the other's stats) + a seeded **spark** roll + shared
-  interests (+ bonus interest) − icks. Moves slowly afterwards (a kiss, an
-  ick, a glow-up date).
-- **Connection** = the existing bond (`addBond`), grown by time together:
-  chats, dates, loyalty moments, surviving Casa. Starts at 0.
+### 6.1 One store, widened — never a second one
 
-| Attraction | Connection | On TV |
+`js/relationships.js` already holds **directional, multidimensional**
+relationships: one record per ORDERED pair (`A→B` is not `B→A`) with
+`affection`, `trust`, `strategicRespect`, `fear`, `obligation`, `resentment`
+and `attraction`. Perfect Match reads and writes that store. It does not keep
+a private attraction table (ADDING-A-SHOW §11.5 Q). It widens the store by one
+dimension:
+
+- **`love`** (0–10): having fallen for somebody, as against fancying them.
+  Grows slowly from time together, only where there is attraction to grow
+  from; does not decay on its own; drops on betrayal. It is added to
+  `RELATIONSHIP_DIMENSIONS`, defaults to 0, and changes nothing for the other
+  shows.
+
+What each dimension means in the villa:
+
+| Dimension | Villa meaning |
+|---|---|
+| `attraction` | the spark — "my type on paper", set on meeting (§6.2) |
+| `love` | falling for them |
+| `affection` | friendship, −10…+10 |
+| `trust` | "is this real?" |
+| `resentment` | being mugged off, grudges |
+| `obligation` | owing them (they saved you at a recoupling) |
+| `strategicRespect`, `fear` | the game players' view of each other |
+
+**Romance** = `max(0.9 × attraction, 0.5 × attraction + 0.6 × love)`, 0–10,
+is the one number a reader sees as the romance bar: a crush is mostly spark,
+and falling for someone lifts it past what the spark gives. Friendship is
+`affection`.
+
+The engine must not call `decayRelationshipDimensions` on a villa season
+without deciding it wants that: its 10% per episode fade of `attraction` was
+written for camps where attraction is incidental.
+
+### 6.2 Attraction on meeting
+
+Set when two islanders first share the villa, one direction at a time, gated
+by `romanticCompat`: type-on-paper match (look tags + vibes read from the
+other's stats) + a seeded **spark** + shared interests (+ bonus interest) −
+icks. Afterwards it moves only through events (a kiss, an ick, a glow-up).
+Connection is `affection` and `love`, grown by time together. The gap between
+the spark and the connection is the show:
+
+| Spark | Connection | On TV |
 |---|---|---|
 | High | Low | The bombshell who turns heads and goes nowhere |
 | Low | High | The slow burn the public loves |
 | High | High | The couple that wins |
 | Low | Low | Couple for survival; the public can smell it |
+
+### 6.3 Three layers per direction: feels, shows, believes
+
+| Layer | What it is | Where it lives | Who sees it |
+|---|---|---|---|
+| **Feels** | what A truly feels for B | `js/relationships.js` | the reader; the public only through aired beach huts |
+| **Shows** | the romance A acts out toward B | `gs.pm.shows["A→B"]`, absent = honest | everyone in the room |
+| **Believes** | what B thinks A feels | `gs.pm.believes["B:A→B"]` | B alone |
+
+Belief moves every episode toward what A shows, plus a leak of the truth
+scaled by B's `intuition` (and dulled by A's `social`); gossip, the photos,
+Movie Night and a confession set it to the truth. Every decision an islander
+makes reads **their own feelings** and **their beliefs about the other
+person** — never the other person's true feelings (§7).
+
+### 6.4 The relationships this produces
+
+Derived from the three layers, both directions, and whether the pair is
+coupled. The labels are narration, so thresholds are allowed here:
+
+| Label | Shape | Real example |
+|---|---|---|
+| Head over heels | coupled, romance high both ways | |
+| All in — alone / Not feeling it | coupled, one high, one low | Curtis and Amy (UK S5): "not a physical attraction" |
+| Couple for survival | coupled, low both ways, openly | |
+| Faking it | shown romance far above felt | the "is it real?" question over most finals |
+| Hidden crush | romance high, shown low | Rob's secret crush on JaNa (US S6) |
+| Fancies but can't stand | romance high, friendship negative | |
+| Mutual spark | uncoupled, high both ways | |
+| One-way crush | high one way, low the other | |
+| Friend-zoning | friendship high, romance ~0, the other's romance high | |
+| Just friends | friendship high both ways, no romance | |
+| Can't stand / rivals | friendship strongly negative, or both after one person | |
+| Exes | an authored `ex` (§5.4), seeded through `franchise-meta.js` | Emma Munro and Harry Cooksley (2025) |
+
+### 6.5 Who may do what
+
+- **Hiding a crush is not scheming.** Any archetype may show less than they
+  feel: out of loyalty to their couple, or because the one they fancy is a
+  friend's partner (girl code). Hiding costs them nothing but slows the crush.
+- **Faking feelings is a scheme**, so it needs a scheme-eligible islander
+  (villain, mastermind, schemer, or a neutral with `strategic >= 6 &&
+  loyalty <= 4`): shown romance well above felt, to stay coupled through a
+  recoupling or for fame or money.
+- **Emotional manipulation** is two scheme events, both on that same gate:
+  **love-bombing** (a burst of shown romance that raises the target's belief
+  and love faster than the truth deserves) and **gaslighting** (when the
+  target confronts them with the truth, they turn it back on the target —
+  "you're being paranoid" — pulling the target's belief back up while the
+  target's `trust` falls). The model is Adam and Rosie (UK S4), where Women's
+  Aid named the gaslighting. On air it is a major moment and a heavy approval
+  cost; nobody nice ever does it.
+- **The beach hut airs the truth.** A hut line is the Feels layer. So the
+  public often knows somebody is faking before their partner does, and the
+  approval ledger pays for it — which is what makes the reunion reel land.
+
+### 6.6 What the reader sees
+
+- The **heart map**: couples, one-way crushes as arrows sized by strength,
+  hidden crushes as dotted purple arrows, secret flirting, rivals, couples on
+  the rocks.
+- The **relationship viewer**: pick any islander (from a face row or the heart
+  map) to list everybody they have a story with, strongest first — romance and
+  friendship bars in both directions, a label each way, and a line wherever
+  somebody shows something they don't feel or believes something untrue.
+- The **Debug** tab (its own screen): public mood, airtime, and the one-way
+  romance and friendship grids.
+
+Mockup: `mockup/mockup-pm-vp-v2.html`.
 
 ---
 
@@ -277,7 +387,8 @@ the existing rule).
 | **The public** | Aired events only |
 | **The islanders** | What they witnessed, were told, or were shown |
 
-Islanders decide from `getPerceivedBond`, never true bonds, and **never read
+Islanders decide from **their own feelings and their beliefs about the other
+person** (§6.3), never the other person's true feelings, and **never read
 approval or fame**. Public opinion reaches the villa only as Dior's
 announcements ("the fewest votes"). **Bombshells** are the one exception: they
 watched the aired episodes, so their eyes-on list and first reads may use
@@ -478,6 +589,12 @@ seasons, every rate beside its chance line:
 8. Split-or-steal steal rate (should be low).
 9. Every screen's rendered text measured (claimed-but-empty screens, §15).
 10. Events per episode ≈ 100; no line repeats within a season.
+11. Relationship variety: per season, how many pairs ever carry each §6.4
+    label (hidden crush, faking it, one-sided couple, friend-zoning, just
+    friends, fancies-but-can't-stand). Every label should appear in most
+    seasons; a label at zero is a system that runs and reaches no screen.
+12. Faking and manipulation only ever come from scheme-eligible islanders
+    (rule: 0 violations).
 
 Guards: vocabulary both directions (§14.10), ledger reader list (§8 rule
 change), islander decisions never read approval/fame, bombshell reads aired

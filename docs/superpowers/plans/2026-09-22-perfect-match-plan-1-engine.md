@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking. **This user's standing rule: work inline, no subagents** — use executing-plans.
 
-**Goal:** Register the fifth show and build a headless Perfect Match engine that plays a whole 16-episode season — islander profiles, attraction, ~100 events an episode, recouplings, bombshells, Casa Amor, public and villa dumpings, the aired-only popularity ledgers, the final and the reunion — measured by `npm run audit:pm-spec`.
+**Goal:** Register the fifth show and build a headless Perfect Match engine that plays a whole 16-episode season — islander profiles, one-way layered relationships (feels / shows / believes, on the shared `js/relationships.js` store), ~100 events an episode, recouplings, bombshells, Casa Amor, public and villa dumpings, the aired-only popularity ledgers, the final and the reunion — measured by `npm run audit:pm-spec`.
 
 **Architecture:** Same shape as The Traitors: a headless `playPerfectMatchSeason()` that replaces `gs` with its own, writes one `gs.episodeHistory` row per episode stamped `format: 'perfect-match'`, and keeps villa state on `gs.pm`. Every decision takes its dice from `streamFor(seed, salt)` so one episode's draws never move another's. Connection is the shared bond store (`addBond` / `getPerceivedBond`); attraction, the ledgers and secrets are Perfect Match state.
 
@@ -22,7 +22,9 @@
 
 - Only the nine stats exist: `physical, endurance, mental, social, strategic, loyalty, boldness, intuition, temperament`. No new stats.
 - Gameplay is proportional (`stat × factor`); thresholds only pick narration labels (persona, approval label).
-- Archetypes: the 15 franchise archetypes only. Nice archetypes (hero, loyal-soldier, social-butterfly, showmancer, underdog, goat) never scheme; nothing in this plan writes a lie or a sabotage.
+- Archetypes: the 15 franchise archetypes only. Nice archetypes (hero, loyal-soldier, social-butterfly, showmancer, underdog, goat) never scheme. Faking feelings, love-bombing and gaslighting are schemes (scheme-eligible islanders only); hiding a crush is not.
+- Relationships live in `js/relationships.js` — one record per DIRECTION, widened with `love`. No Perfect Match copy of any relationship number (ADDING-A-SHOW §11.5 Q).
+- An islander's decision reads their OWN feelings and their BELIEF about the other person (`romance(me, you)`, `believed(state, me, you)`), never the other person's truth.
 - No `Math.random()` anywhere under `js/pm/` — dice come from `streamFor(seed, salt)` (`js/dr/rng.js`).
 - Islander decisions never read approval or fame. Only `js/pm/ledger.js`, `js/pm/public-vote.js`, `js/pm/arrivals.js` and `js/pm/season.js` may reference the ledger readers (guarded in Task 10).
 - Only aired events write approval or fame.
@@ -41,7 +43,9 @@
 | `js/quick-setup.js`, `js/settings.js`, `js/social/adapter.js`, `simulator.html` (modify) | picker tag, host Dior, the villa setting, social words, the setup option |
 | `tests/helpers/show-vocabulary.js` (modify) | the show's own words |
 | `js/pm/profile.js` | islander profile: stats, intent, type, looks, icks, interests, persona |
-| `js/pm/chemistry.js` | attraction between two profiles, stored per ordered pair |
+| `js/relationships.js` (modify) | the shared one-way relationship store gains `love` |
+| `js/pm/chemistry.js` | attraction on meeting, written into the shared store; `attr` / `nudgeAttraction` views |
+| `js/pm/feelings.js` | the three layers — feels, shows, believes; love growth; masks; relationship labels |
 | `js/pm/ledger.js` | approval + fame, caps, labels, couple score, followers |
 | `js/pm/events.js` | the event kinds, the ~100-event episode, airing, hut cutaways, secrets |
 | `js/pm/recoupling.js` | a recoupling ceremony |
@@ -583,21 +587,32 @@ git commit -m "feat(perfect-match): islander profiles from the nine stats"
 
 ---
 
-### Task 3: Attraction
+### Task 3: Attraction, on the shared relationship store
 
 **Files:**
+- Modify: `js/relationships.js` (`RELATIONSHIP_DIMENSIONS` gains `love`)
 - Create: `js/pm/chemistry.js`
 - Test: `tests/pm-chemistry.test.js`
 
+**Why this shape (spec §6.1):** `js/relationships.js` already stores one-way,
+multidimensional relationships, `attraction` included. A Perfect Match table of
+its own would be the second copy §11.5 Q warns about. So attraction is written
+INTO the shared store, and the store is widened by one dimension, `love`.
+`chemistry.js` keeps its small API (`attr`, `nudgeAttraction`,
+`seedAttraction`) so every later task reads the same names — but those names
+are now views onto `js/relationships.js`.
+
 **Interfaces:**
-- Consumes: `Profile`, `vibeScore`, `ickScore` (Task 2); `romanticallyCompatible` (`js/attraction.js`); `streamFor` (`js/dr/rng.js`).
-- Produces: `typeFit(me, them) → 0..1`, `ickHit(me, them) → 0..1`, `interestBonus(me, them) → number`, `attractionOf(me, them, rng) → number 0..10 | null`, `seedAttraction(state, name, seed)`, `attr(state, a, b) → number | null`, `nudgeAttraction(state, a, b, d)`. `state.attraction` is `{ 'a>b': number|null }`.
+- Consumes: `Profile`, `vibeScore`, `ickScore` (Task 2); `romanticallyCompatible` (`js/attraction.js`); `streamFor` (`js/dr/rng.js`); `getRelationshipDimension`, `setRelationshipDimension`, `addRelationshipDimension` (`js/relationships.js`).
+- Produces: `typeFit(me, them) → 0..1`, `ickHit(me, them) → 0..1`, `interestBonus(me, them) → number`, `attractionOf(me, them, rng) → number 0..10 | null`, `seedAttraction(state, name, seed)`, `compatible(state, a, b) → boolean`, `attr(state, a, b) → number | null` (null = not compatible), `nudgeAttraction(state, a, b, d)`. There is NO `state.attraction`; test fixtures in later tasks that still create `attraction: {}` are harmless and may drop it.
 
 - [ ] **Step 1: Write the failing test** — `tests/pm-chemistry.test.js`
 
 ```js
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { setGs, gs } from '../js/core.js';
 import { streamFor } from '../js/dr/rng.js';
+import { RELATIONSHIP_DIMENSIONS, getRelationshipDimension } from '../js/relationships.js';
 import { attractionOf, typeFit, ickHit, interestBonus, seedAttraction, attr,
   nudgeAttraction } from '../js/pm/chemistry.js';
 
@@ -607,6 +622,15 @@ const base = (name, gender, over = {}) => ({
     boldness: 5, intuition: 5, temperament: 5 },
   type: { looks: [], vibes: ['funny'] }, looks: [], icks: [], interests: ['food', 'travel'],
   bonusInterest: null, ...over,
+});
+
+beforeEach(() => setGs({ bonds: {}, relationshipDimensions: {} }));
+
+describe('the shared store is widened, not forked', () => {
+  it('has a love dimension that defaults to 0', () => {
+    expect(RELATIONSHIP_DIMENSIONS).toContain('love');
+    expect(getRelationshipDimension('A', 'B', 'love')).toBe(0);
+  });
 });
 
 describe('attraction', () => {
@@ -634,17 +658,19 @@ describe('attraction', () => {
       .toBeGreaterThan(typeFit(me, base('D', 'm', { looks: [] })));
   });
 
-  it('stays inside 0..10 and seeds both directions for a newcomer', () => {
-    const state = { villa: ['A', 'B'], attraction: {},
+  it('seeds both directions INTO js/relationships.js, one-way each', () => {
+    const state = { villa: ['A', 'B'],
       profiles: { A: base('A', 'm'), B: base('B', 'f'), C: base('C', 'f') } };
     seedAttraction(state, 'B', 1);
     state.villa.push('C');
     seedAttraction(state, 'C', 1);
-    for (const k of ['A>B', 'B>A', 'A>C', 'C>A']) {
-      expect(state.attraction[k]).toBeGreaterThanOrEqual(0);
-      expect(state.attraction[k]).toBeLessThanOrEqual(10);
+    for (const [a, b] of [['A', 'B'], ['B', 'A'], ['A', 'C'], ['C', 'A']]) {
+      expect(attr(state, a, b)).toBeGreaterThanOrEqual(0);
+      expect(attr(state, a, b)).toBeLessThanOrEqual(10);
+      expect(gs.relationshipDimensions[`${a}→${b}`].attraction).toBe(attr(state, a, b));
     }
-    expect(attr(state, 'B', 'C')).toBeNull();
+    expect(attr(state, 'A', 'B')).not.toBe(attr(state, 'B', 'A'));   // not bilateral
+    expect(attr(state, 'B', 'C')).toBeNull();                          // incompatible
     nudgeAttraction(state, 'A', 'B', 50);
     expect(attr(state, 'A', 'B')).toBe(10);
   });
@@ -654,23 +680,48 @@ describe('attraction', () => {
 - [ ] **Step 2: Run it to verify it fails**
 
 Run: `npx vitest run tests/pm-chemistry.test.js`
-Expected: FAIL — module not found.
+Expected: FAIL — `love` is not in `RELATIONSHIP_DIMENSIONS`, and the module is missing.
 
-- [ ] **Step 3: Implement** — `js/pm/chemistry.js`
+- [ ] **Step 3: Widen the shared store** — in `js/relationships.js`, replace the dimension list:
+
+```js
+export const RELATIONSHIP_DIMENSIONS = Object.freeze([
+  'affection', 'trust', 'strategicRespect', 'fear',
+  'obligation', 'resentment', 'attraction',
+  // Having fallen for somebody, as against fancying them (Perfect Match,
+  // spec §6.1). Grows slowly, never decays on its own. 0 for every other show.
+  'love',
+]);
+```
+
+and `defaultRelationshipDimensions`:
+
+```js
+  return { affection: bond, trust: bond, strategicRespect: 0, fear: 0,
+    obligation: 0, resentment: Math.max(0, -bond), attraction: 0, love: 0 };
+```
+
+Run the existing relationship tests to prove nothing else moved:
+`npx vitest run tests/ -t relationship` — expected: the same pass/fail as before this change.
+
+- [ ] **Step 4: Implement** — `js/pm/chemistry.js`
 
 ```js
 // ══════════════════════════════════════════════════════════════════════
 // pm/chemistry.js — who fancies whom ("my type on paper")
 // ══════════════════════════════════════════════════════════════════════
 //
-// Attraction is instant and directional, set when two islanders meet (spec
-// §6). Connection is NOT here: connection is the shared bond store. The gap
-// between the two is the show.
+// Attraction lives in the SHARED relationship store (js/relationships.js),
+// one record per direction — A fancying B says nothing about B fancying A.
+// This file computes the spark on meeting and offers a small API over the
+// store; it keeps no table of its own (ADDING-A-SHOW §11.5 Q, spec §6.1).
 //
 // `romanticallyCompatible` (js/attraction.js) gates everything: no attraction
 // without compatibility, same rule the rest of the franchise uses.
 import { romanticallyCompatible } from '../attraction.js';
 import { streamFor } from '../dr/rng.js';
+import { getRelationshipDimension, setRelationshipDimension, addRelationshipDimension }
+  from '../relationships.js';
 import { vibeScore, ickScore } from './profile.js';
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
@@ -704,39 +755,311 @@ export function attractionOf(me, them, rng) {
   return Math.round(clamp(raw * 10, 0, 10) * 100) / 100;
 }
 
+export function compatible(state, a, b) {
+  const pa = state.profiles[a], pb = state.profiles[b];
+  return !!pa && !!pb && a !== b && romanticallyCompatible(pa, pb);
+}
+
 /** Attraction both ways between `name` and everybody already in the villa. */
 export function seedAttraction(state, name, seed) {
-  const me = state.profiles[name];
   for (const other of state.villa) {
     if (other === name) continue;
-    const them = state.profiles[other];
-    state.attraction[`${name}>${other}`] = attractionOf(me, them, streamFor(seed, `spark:${name}>${other}`));
-    state.attraction[`${other}>${name}`] = attractionOf(them, me, streamFor(seed, `spark:${other}>${name}`));
+    for (const [a, b] of [[name, other], [other, name]]) {
+      const v = attractionOf(state.profiles[a], state.profiles[b], streamFor(seed, `spark:${a}>${b}`));
+      if (v != null) setRelationshipDimension(a, b, 'attraction', v);
+    }
   }
 }
 
+/** A→B attraction, or null when the pair can never be romantic. */
 export function attr(state, a, b) {
-  const v = state.attraction[`${a}>${b}`];
-  return v == null ? null : v;
+  return compatible(state, a, b) ? getRelationshipDimension(a, b, 'attraction') : null;
 }
 
 export function nudgeAttraction(state, a, b, d) {
-  const k = `${a}>${b}`;
-  if (state.attraction[k] == null) return;
-  state.attraction[k] = Math.round(clamp(state.attraction[k] + d, 0, 10) * 100) / 100;
+  if (!compatible(state, a, b)) return;
+  addRelationshipDimension(a, b, 'attraction', d);
+}
+```
+
+- [ ] **Step 5: Run it to verify it passes**
+
+Run: `npx vitest run tests/pm-chemistry.test.js`
+Expected: PASS (5 tests).
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add js/relationships.js js/pm/chemistry.js tests/pm-chemistry.test.js
+git commit -m "feat(perfect-match): attraction on the shared relationship store, plus a love dimension"
+```
+
+---
+
+### Task 3b: Feels, shows, believes
+
+**Files:**
+- Create: `js/pm/feelings.js`
+- Test: `tests/pm-feelings.test.js`
+
+**Interfaces:**
+- Consumes: `attr`, `compatible` (Task 3); `getRelationshipDimension`, `addRelationshipDimension` (`js/relationships.js`).
+- Produces:
+  - `romance(a, b) → 0..10` (= max(0.9 × attraction, 0.5 × attraction + 0.6 × love), the truth)
+  - `friendship(a, b) → -10..10` (= affection)
+  - `shown(state, a, b) → 0..10` (what A acts out; honest when unset)
+  - `believed(state, viewer, a) → 0..10` (what `viewer` thinks A feels for `viewer`)
+  - `setMask(state, a, b, value | null)`, `revealTruth(state, viewer, a)` (sets the belief to the truth)
+  - `schemeEligible(profile) → boolean`
+  - `growLove(state, couples)`, `updateBeliefs(state)`, `decideMasks(state, rng)`
+  - `relationshipLabel(state, a, b) → [kind, text] | null`
+  - state fields: `state.shows = { 'A→B': number }`, `state.believes = { 'V:A→V': number }`
+
+- [ ] **Step 1: Write the failing test** — `tests/pm-feelings.test.js`
+
+```js
+import { beforeEach, describe, expect, it } from 'vitest';
+import { setGs, setPlayers } from '../js/core.js';
+import { setRelationshipDimension } from '../js/relationships.js';
+import { streamFor } from '../js/dr/rng.js';
+import { romance, shown, believed, setMask, revealTruth, schemeEligible, updateBeliefs,
+  decideMasks, relationshipLabel, growLove } from '../js/pm/feelings.js';
+
+const P = (name, gender, archetype, stats = {}) => ({ name, gender, sexuality: 'straight', archetype,
+  stats: { physical: 5, endurance: 5, mental: 5, social: 5, strategic: 5, loyalty: 5, boldness: 5,
+    intuition: 5, temperament: 5, ...stats } });
+let state;
+beforeEach(() => {
+  const cast = [P('Heather', 'f', 'villain', { strategic: 8, loyalty: 3 }), P('Mike', 'm', 'underdog'),
+    P('Gwen', 'f', 'loyal-soldier', { intuition: 9 }), P('Duncan', 'm', 'hothead')];
+  setPlayers(cast);
+  setGs({ bonds: {}, relationshipDimensions: {} });
+  state = { villa: cast.map(p => p.name), profiles: Object.fromEntries(cast.map(p => [p.name, p])),
+    couples: [['Heather', 'Mike'], ['Gwen', 'Duncan']], shows: {}, believes: {}, secrets: [] };
+});
+const feel = (a, b, att, aff = 0, love = 0) => {
+  setRelationshipDimension(a, b, 'attraction', att); setRelationshipDimension(a, b, 'affection', aff);
+  setRelationshipDimension(a, b, 'love', love);
+};
+
+describe('three layers, one direction at a time', () => {
+  it('romance is not bilateral', () => {
+    feel('Mike', 'Gwen', 9, 5); feel('Gwen', 'Mike', 0, 5);
+    expect(romance('Mike', 'Gwen')).toBeGreaterThan(4);
+    expect(romance('Gwen', 'Mike')).toBe(0);
+  });
+  it('shown is honest until masked; belief follows what is shown', () => {
+    feel('Heather', 'Mike', 2, 1);
+    expect(shown(state, 'Heather', 'Mike')).toBeCloseTo(romance('Heather', 'Mike'), 5);
+    setMask(state, 'Heather', 'Mike', 8);
+    for (let i = 0; i < 6; i++) updateBeliefs(state);
+    expect(believed(state, 'Mike', 'Heather')).toBeGreaterThan(romance('Heather', 'Mike') + 2);
+    revealTruth(state, 'Mike', 'Heather');
+    expect(believed(state, 'Mike', 'Heather')).toBeCloseTo(romance('Heather', 'Mike'), 5);
+  });
+  it('an intuitive islander sees through more of a mask', () => {
+    feel('Duncan', 'Gwen', 2, 5); setMask(state, 'Duncan', 'Gwen', 8);
+    feel('Heather', 'Mike', 2, 1); setMask(state, 'Heather', 'Mike', 8);
+    for (let i = 0; i < 6; i++) updateBeliefs(state);
+    expect(believed(state, 'Gwen', 'Duncan')).toBeLessThan(believed(state, 'Mike', 'Heather'));
+  });
+});
+
+describe('who may do what', () => {
+  it('only scheme-eligible islanders ever fake; anybody may hide', () => {
+    expect(schemeEligible(state.profiles.Heather)).toBe(true);
+    expect(schemeEligible(state.profiles.Gwen)).toBe(false);
+    feel('Gwen', 'Duncan', 1, 4); feel('Heather', 'Mike', 1, 1);
+    feel('Gwen', 'Mike', 9, 3);          // a crush on somebody else's partner
+    for (let s = 0; s < 20; s++) decideMasks(state, streamFor(s * 7919 + 13, 'mask'));
+    expect(shown(state, 'Gwen', 'Duncan')).toBeLessThanOrEqual(romance('Gwen', 'Duncan') + 0.01);
+    expect(shown(state, 'Gwen', 'Mike')).toBeLessThan(romance('Gwen', 'Mike'));
+    expect(shown(state, 'Heather', 'Mike')).toBeGreaterThan(romance('Heather', 'Mike'));
+  });
+});
+
+describe('labels', () => {
+  it('reads the shapes the spec names', () => {
+    feel('Heather', 'Mike', 1, 1); setMask(state, 'Heather', 'Mike', 8);
+    expect(relationshipLabel(state, 'Heather', 'Mike')[1]).toBe('Faking it');
+    feel('Mike', 'Gwen', 9, 5); setMask(state, 'Mike', 'Gwen', 1);
+    expect(relationshipLabel(state, 'Mike', 'Gwen')[1]).toBe('Hidden crush');
+    feel('Gwen', 'Mike', 0, 7);
+    expect(relationshipLabel(state, 'Gwen', 'Mike')[1]).toBe('Friend-zoning');
+    feel('Duncan', 'Heather', 9, -4);
+    expect(relationshipLabel(state, 'Duncan', 'Heather')[1]).toBe("Fancies, can't stand");
+  });
+  it('love grows only where there is attraction to grow from', () => {
+    feel('Gwen', 'Duncan', 8, 6); feel('Duncan', 'Gwen', 0, 6);
+    for (let i = 0; i < 5; i++) growLove(state, state.couples);
+    expect(romance('Gwen', 'Duncan')).toBeGreaterThan(romance('Duncan', 'Gwen'));
+  });
+});
+```
+
+- [ ] **Step 2: Run it to verify it fails**
+
+Run: `npx vitest run tests/pm-feelings.test.js`
+Expected: FAIL — module not found.
+
+- [ ] **Step 3: Implement** — `js/pm/feelings.js`
+
+```js
+// ══════════════════════════════════════════════════════════════════════
+// pm/feelings.js — what they feel, what they show, what the other believes
+// ══════════════════════════════════════════════════════════════════════
+//
+// Spec §6.3. Three layers, one DIRECTION at a time:
+//   Feels    — js/relationships.js (attraction, love, affection...), the truth
+//   Shows    — state.shows["A→B"]: the romance A acts out toward B; absent = honest
+//   Believes — state.believes["V:A→V"]: what V thinks A feels for V
+// Every islander decision reads its own feelings and its beliefs — never the
+// other person's truth (spec §7).
+//
+// Hiding is not scheming; faking and manipulating are (spec §6.5).
+import { getRelationshipDimension, addRelationshipDimension } from '../relationships.js';
+import { compatible } from './chemistry.js';
+
+const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+const NICE = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
+const VILLAIN = new Set(['villain', 'mastermind', 'schemer']);
+
+/**
+ * The romance bar. A crush is mostly spark, so attraction alone can carry it
+ * (x0.9); falling for someone lifts it past what the spark gives on its own.
+ */
+export function romance(a, b) {
+  const att = getRelationshipDimension(a, b, 'attraction'), love = getRelationshipDimension(a, b, 'love');
+  return Math.round(clamp(Math.max(0.9 * att, 0.5 * att + 0.6 * love), 0, 10) * 100) / 100;
+}
+export const friendship = (a, b) => getRelationshipDimension(a, b, 'affection');
+
+export function shown(state, a, b) {
+  const m = state.shows?.[`${a}→${b}`];
+  return m == null ? romance(a, b) : m;
+}
+export function setMask(state, a, b, value) {
+  state.shows ||= {};
+  if (value == null) delete state.shows[`${a}→${b}`];
+  else state.shows[`${a}→${b}`] = clamp(value, 0, 10);
+}
+
+export function believed(state, viewer, a) {
+  const v = state.believes?.[`${viewer}:${a}→${viewer}`];
+  return v == null ? shown(state, a, viewer) : v;
+}
+export function revealTruth(state, viewer, a) {
+  state.believes ||= {};
+  state.believes[`${viewer}:${a}→${viewer}`] = romance(a, viewer);
+}
+
+/** The franchise's scheming gate (CLAUDE.md), unchanged. */
+export function schemeEligible(p) {
+  if (!p || NICE.has(p.archetype)) return false;
+  if (VILLAIN.has(p.archetype)) return true;
+  return (p.stats?.strategic ?? 5) >= 6 && (p.stats?.loyalty ?? 5) <= 4;
+}
+
+const partnerOf = (state, n) => {
+  const c = state.couples.find(x => x.includes(n));
+  return c ? (c[0] === n ? c[1] : c[0]) : null;
+};
+
+/** Love grows from time together, only where there is attraction, scaled by loyalty. */
+export function growLove(state, couples) {
+  for (const [a, b] of couples) {
+    for (const [x, y] of [[a, b], [b, a]]) {
+      const att = getRelationshipDimension(x, y, 'attraction');
+      const aff = Math.max(0, friendship(x, y));
+      const loy = state.profiles[x]?.stats?.loyalty ?? 5;
+      addRelationshipDimension(x, y, 'love', 0.12 * (att / 10) * (1 + aff / 10) * (0.5 + loy / 10) * 4);
+    }
+  }
+}
+
+/**
+ * Belief drifts toward what is shown, plus a leak of the truth: the viewer's
+ * intuition sees through it, the actor's social skill covers it.
+ */
+export function updateBeliefs(state) {
+  state.believes ||= {};
+  for (const v of state.villa) for (const a of state.villa) {
+    if (a === v || !compatible(state, a, v)) continue;
+    const key = `${v}:${a}→${v}`;
+    const truth = romance(a, v), show = shown(state, a, v);
+    const see = ((state.profiles[v]?.stats?.intuition ?? 5) / 10) * (1 - 0.5 * (state.profiles[a]?.stats?.social ?? 5) / 10);
+    const target = show + (truth - show) * see;
+    const cur = state.believes[key] ?? show;
+    state.believes[key] = Math.round((cur + (target - cur) * 0.35) * 100) / 100;
+  }
+}
+
+/**
+ * Each episode, each islander decides what to show. Proportional in every
+ * term; the gate is the only yes/no, and it is the franchise's scheming rule.
+ *   Hide  — any archetype: a crush on someone who is not their partner, while
+ *           coupled (loyalty) or when the crush is a friend's partner.
+ *   Fake  — scheme-eligible only: coupled, low real romance, a reason to stay.
+ */
+export function decideMasks(state, rng) {
+  for (const a of state.villa) {
+    const prof = state.profiles[a], s = prof.stats, mine = partnerOf(state, a);
+    for (const b of state.villa) {
+      if (a === b || !compatible(state, a, b)) continue;
+      const truth = romance(a, b);
+      if (b !== mine) {
+        const theirs = partnerOf(state, b);
+        const friendsPartner = theirs && friendship(a, theirs) > 3;
+        const masked = state.shows?.[`${a}→${b}`];
+        const reason = (mine ? s.loyalty / 10 : 0) + (friendsPartner ? 0.5 : 0);
+        // A hidden crush, once hidden, stays hidden while the reason stands;
+        // it comes out on its own only when the reason goes (single again,
+        // the friend's couple over).
+        if (!reason) { if (masked != null && masked < truth) setMask(state, a, b, null); }
+        else if (masked != null && masked < truth) setMask(state, a, b, truth * (1 - s.loyalty / 12));
+        else if (truth >= 3 && rng() < truth / 10 * reason) setMask(state, a, b, truth * (1 - s.loyalty / 12));
+      } else if (schemeEligible(prof)) {
+        const reason = ['win', 'money', 'fame'].includes(prof.intent) ? 0.4 : 0.2;
+        const fakeP = (1 - truth / 10) * (s.strategic / 10) * (reason + 0.3);
+        if (truth < 5 && rng() < fakeP) setMask(state, a, b, Math.min(10, truth + 3 + s.social / 3));
+      }
+    }
+  }
+}
+
+/** Narration label for A's side of the pair (spec §6.4). Thresholds are allowed: this is text. */
+export function relationshipLabel(state, a, b) {
+  const me = romance(a, b), them = romance(b, a), show = shown(state, a, b), fr = friendship(a, b);
+  const coupled = state.couples.some(c => c.includes(a) && c.includes(b));
+  if (show - me >= 4 && me <= 3) return ['fake', 'Faking it'];
+  if (coupled) {
+    if (me >= 7 && them >= 7) return ['love', 'Head over heels'];
+    if (me >= 6 && them <= 3) return ['alone', 'All in — alone'];
+    if (me <= 3 && them >= 6) return ['surv', 'Not feeling it'];
+    if (me <= 3 && them <= 3) return ['surv', 'Couple for survival'];
+    return ['love', 'Coupled'];
+  }
+  if (me >= 6 && show <= 2) return ['hidden', 'Hidden crush'];
+  if (me >= 6 && fr <= -2) return ['mixed', "Fancies, can't stand"];
+  if (me >= 6 && them >= 6) return ['crush', 'Mutual spark'];
+  if (me >= 5) return ['crush', 'One-way crush'];
+  if (me <= 1 && fr >= 5 && them >= 6) return ['zone', 'Friend-zoning'];
+  if (fr <= -5) return ['rival', "Can't stand"];
+  if (fr >= 6 && me <= 1) return ['friend', 'Just friends'];
+  return null;
 }
 ```
 
 - [ ] **Step 4: Run it to verify it passes**
 
-Run: `npx vitest run tests/pm-chemistry.test.js`
-Expected: PASS (4 tests).
+Run: `npx vitest run tests/pm-feelings.test.js`
+Expected: PASS (7 tests). If "an intuitive islander sees through more" fails, check `see`: Gwen's intuition is 9 and Mike's is 5, with the same mask and truth on both sides.
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add js/pm/chemistry.js tests/pm-chemistry.test.js
-git commit -m "feat(perfect-match): attraction from type, spark, interests and icks"
+git add js/pm/feelings.js tests/pm-feelings.test.js
+git commit -m "feat(perfect-match): feels, shows and believes, one direction at a time"
 ```
 
 ---
@@ -2518,6 +2841,258 @@ git commit -m "feat(perfect-match): the sixteen-episode season loop, dumping sce
 
 ---
 
+### Task 9b: Wire the three layers into every decision, and the two manipulation events
+
+Tasks 6–9 were written against `getPerceivedBond` and a single attraction
+number. This task switches every islander decision onto spec §6.3 — **my own
+feelings, and what I believe you feel** — adds the two scheme events, and
+snapshots relationships per episode so the viewer can replay an old episode
+(ADDING-A-SHOW §11.5 B).
+
+**Files:**
+- Modify: `js/pm/recoupling.js` (`desire`)
+- Modify: `js/pm/casa.js` (twist score)
+- Modify: `js/pm/villa-vote.js` (`affinity`)
+- Modify: `js/pm/events.js` (gossip reveals truth; `love-bomb`, `gaslight`; faking huts)
+- Modify: `js/pm/season.js` (layers each episode; relationship snapshot on the row)
+- Test: `tests/pm-relationships.test.js`
+
+**Interfaces:**
+- Consumes: `romance`, `friendship`, `shown`, `believed`, `setMask`, `revealTruth`, `schemeEligible`, `growLove`, `updateBeliefs`, `decideMasks`, `relationshipLabel` (Task 3b).
+- Produces: `row.pm.relationships = { 'A→B': [romance, friendship, shown, believedByB] }` for every compatible or non-neutral pair, and `row.pm.relLabels = [[a, b, kind, text], ...]`.
+
+- [ ] **Step 1: Write the failing test** — `tests/pm-relationships.test.js`
+
+```js
+import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { setPlayers } from '../js/core.js';
+import { playPerfectMatchSeason } from '../js/pm/season.js';
+import { schemeEligible } from '../js/pm/feelings.js';
+import { makeIslanders, roleSetup } from './helpers/pm-cast.js';
+
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
+const strip = s => s.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\r\n]*/g, '');
+
+function season(seed) {
+  const cast = makeIslanders(22, seed);
+  setPlayers(cast);
+  const names = cast.map(p => p.name);
+  return playPerfectMatchSeason({ cast: names, setup: roleSetup(names), seed });
+}
+
+describe('relationships are one-way and layered, and reach the row', () => {
+  it('every villa episode snapshots relationships and labels', () => {
+    const { rows } = season(1);
+    for (const r of rows.filter(x => x.moment !== 'reunion')) {
+      expect(Object.keys(r.pm.relationships).length).toBeGreaterThan(10);
+      expect(Array.isArray(r.pm.relLabels)).toBe(true);
+    }
+  });
+
+  it('romance is not symmetric: most pairs differ by direction', () => {
+    const { rows } = season(2);
+    const rel = rows[6].pm.relationships;
+    let pairs = 0, differ = 0;
+    for (const [k, [r]] of Object.entries(rel)) {
+      const [a, b] = k.split('→'); const back = rel[`${b}→${a}`];
+      if (!back || a > b) continue;
+      pairs++; if (Math.abs(r - back[0]) >= 1) differ++;
+    }
+    expect(differ / pairs).toBeGreaterThan(0.5);
+  });
+
+  it('over ten seasons, the relationship shapes all appear', () => {
+    const seen = new Set();
+    for (let s = 1; s <= 10; s++) for (const r of season(s).rows) for (const [, , , text] of r.pm.relLabels) seen.add(text);
+    for (const want of ['Hidden crush', 'One-way crush', 'Just friends', 'Coupled']) expect(seen).toContain(want);
+  });
+
+  it('faking and manipulation only ever come from scheme-eligible islanders', () => {
+    for (let s = 1; s <= 10; s++) {
+      const { rows, state } = season(s);
+      for (const r of rows) {
+        for (const [a, , , text] of r.pm.relLabels) if (text === 'Faking it') expect(schemeEligible(state.profiles[a]), a).toBe(true);
+        for (const e of r.pm.events.filter(e => e.kind === 'love-bomb' || e.kind === 'gaslight')) {
+          expect(schemeEligible(state.profiles[e.players[0]]), e.players[0]).toBe(true);
+        }
+      }
+    }
+  });
+
+  it('no decision file reads another islander\'s true romance toward the decider', () => {
+    // A decision may call romance(me, you) and believed(state, me, you) — never romance(you, me).
+    for (const f of ['recoupling.js', 'casa.js', 'villa-vote.js']) {
+      const src = strip(readFileSync(join(ROOT, 'js', 'pm', f), 'utf8'));
+      expect(src, f).not.toMatch(/romance\(\s*c\s*,\s*p\s*\)|romance\(\s*p\s*,\s*o\s*\)/);
+      expect(src, f).not.toMatch(/getPerceivedBond/);
+    }
+  });
+});
+```
+
+- [ ] **Step 2: Run it to verify it fails**
+
+Run: `npx vitest run tests/pm-relationships.test.js`
+Expected: FAIL — `row.pm.relationships` is undefined.
+
+- [ ] **Step 3: Recoupling reads my feelings and my belief** — in `js/pm/recoupling.js`, replace the import of `getPerceivedBond` with:
+
+```js
+import { romance, friendship, believed } from './feelings.js';
+```
+
+replace the three lines that compute `conn`, `att` and `safety` in `desire` with:
+
+```js
+  // My feelings for you, and what I BELIEVE you feel for me (spec §6.3).
+  const conn = (romance(p, c) + Math.max(0, friendship(p, c)) * 0.5) / 10;
+  const att = (attr(state, p, c) ?? 0) / 10;
+  const safety = (believed(state, p, c) / 10) * (s.strategic / 10);
+```
+
+and change the signature and call sites from `{ bond, rng, taken }` to `{ rng, taken }`:
+`function desire(state, p, c, { rng, taken }) {`, `export function runRecoupling(state, { rng, pickerGender }) {`, `const ctx = { rng, taken };`.
+
+In `tests/pm-recoupling.test.js`, the loyal-couple case now sets feelings instead of a bond — replace `setBond(f, m, 9);` with:
+
+```js
+    setRelationshipDimension(f, m, 'attraction', 9); setRelationshipDimension(f, m, 'love', 8);
+    setRelationshipDimension(m, f, 'attraction', 9); setRelationshipDimension(m, f, 'love', 8);
+```
+
+and its import line `import { setBond } from '../js/bonds.js';` with
+`import { setRelationshipDimension } from '../js/relationships.js';`.
+
+- [ ] **Step 4: Casa reads my feelings and what I believe** — in `js/pm/casa.js`, replace `import { getPerceivedBond } from '../bonds.js';` with `import { romance, believed } from './feelings.js';`, the signature with `export function stickOrTwist(state, { rng }) {`, and the `conn` / `fear` lines with:
+
+```js
+    const conn = p ? romance(o, p) / 10 : 0;
+    // Fear: I know they strayed, or I believe they feel less than I do.
+    const fear = p ? (state.secrets.some(x => x.known && x.who === p && x.partner === o) ? 0.25 : 0)
+      + 0.2 * Math.max(0, romance(o, p) - believed(state, o, p)) / 10 : 0;
+```
+
+- [ ] **Step 5: Villa votes read friendship** — in `js/pm/villa-vote.js`, replace `import { getPerceivedBond } from '../bonds.js';` with `import { friendship } from './feelings.js';`, drop the `bond` parameter everywhere (`affinity(state, v, t)`, `villaDumping(state, { format, bottom, rng })`), and make `affinity` return `friendship(v, t) - threat`.
+
+- [ ] **Step 6: Events — gossip reveals the truth; faking huts; the two scheme events** — in `js/pm/events.js`:
+
+Add the import:
+```js
+import { romance, shown, setMask, revealTruth, schemeEligible } from './feelings.js';
+```
+
+In `gossip.apply`, after `if (sec) sec.known = true;` add:
+```js
+      revealTruth(s, p, x);                 // p now knows what x feels
+```
+
+In `makeEvent`, change the stance line so a faker's hut is two-faced too:
+```js
+    const faking = players.some(o => o !== who && shown(state, who, o) - romance(who, o) >= 3);
+    const stance = faking || state.secrets.some(x => !x.known && x.who === who) ? 'two-faced' : 'honest';
+```
+
+Add two kinds to `KINDS` (before the moment kinds):
+```js
+  // ── EMOTIONAL MANIPULATION — scheme-eligible only (spec §6.5) ─────────
+  'love-bomb': {
+    salience: 0.55,
+    tpl: ['{a} tells {b} this is the realest thing {a} has ever felt.', '{a} plans {b} a surprise on the terrace, candles and all.'],
+    cast: (s, rng) => pick(rng, s.couples.flatMap(([x, y]) => [[x, y], [y, x]])
+      .filter(([a, b]) => schemeEligible(s.profiles[a]) && shown(s, a, b) - romance(a, b) >= 3)),
+    apply: (s, ev) => {
+      const [a, b] = ev.players;
+      setMask(s, a, b, shown(s, a, b) + 1);
+      const bel = (s.believes ||= {});
+      bel[`${b}:${a}→${b}`] = Math.min(10, (bel[`${b}:${a}→${b}`] ?? shown(s, a, b)) + 1.5);
+      addRelationshipDimension(b, a, 'love', 0.6);
+      return { pop: { ...pop1(a, 0.3, 1.5), ...pop1(b, 0.2, 1) } };
+    },
+  },
+  gaslight: {
+    salience: 0.9,
+    tpl: ['{b} confronts {a}. {a}: "You\'re being paranoid. This is why I pulled away."', '{a} tells {b} the jealousy is the problem, not what {a} did.'],
+    cast: (s, rng) => pick(rng, s.secrets.filter(x => x.known && schemeEligible(s.profiles[x.who])
+      && s.couples.some(c => c.includes(x.who) && c.includes(x.partner))).map(x => [x.who, x.partner])),
+    apply: (s, ev) => {
+      const [a, b] = ev.players;
+      const key = `${b}:${a}→${b}`;
+      const bel = (s.believes ||= {});
+      bel[key] = Math.min(10, (bel[key] ?? 0) + 2);   // pulled back into doubting herself
+      addRelationshipDimension(b, a, 'trust', -1.5);
+      return { pop: { ...pop1(a, -3, 2), ...pop1(b, 1, 1.5) }, major: [a, b] };
+    },
+  },
+```
+
+and add them to the evening phase:
+```js
+  evening: [['kiss', 3], ['deep-chat', 2], ['pull', 2], ['argument', 1.5], ['gossip', 1.5], ['friendship', 1],
+    ['love-bomb', 0.8], ['gaslight', 0.8]],
+```
+
+Also import `addRelationshipDimension`: `import { addRelationshipDimension } from '../relationships.js';`.
+
+- [ ] **Step 7: The season runs the layers and snapshots them** — in `js/pm/season.js`:
+
+Add imports:
+```js
+import { romance, friendship, shown, believed, growLove, updateBeliefs, decideMasks,
+  relationshipLabel } from './feelings.js';
+import { compatible } from './chemistry.js';
+```
+
+In `initState`, add `shows: {}, believes: {},` to the state object.
+
+In the loop, right after `state.history.push(...day);` add:
+```js
+    // Feelings move once a day's worth of events has happened: love grows in
+    // couples, masks are chosen, beliefs drift toward what was shown.
+    const mrng = streamFor(seed, `mask:${entry.ep}`);
+    growLove(state, state.couples);
+    decideMasks(state, mrng);
+    updateBeliefs(state);
+```
+
+Add this function above `playPerfectMatchSeason`:
+```js
+/** Per-episode relationship snapshot, so an old episode replays its own hearts (§11.5 B). */
+function relationshipSnapshot(state) {
+  const rel = {}, labels = [];
+  for (const a of state.villa) for (const b of state.villa) {
+    if (a === b) continue;
+    const r = romance(a, b), f = friendship(a, b);
+    if (!compatible(state, a, b) && Math.abs(f) < 3) continue;
+    rel[`${a}→${b}`] = [r, Math.round(f * 100) / 100, shown(state, a, b), believed(state, b, a)];
+    const l = relationshipLabel(state, a, b);
+    if (l) labels.push([a, b, l[0], l[1]]);
+  }
+  return { rel, labels };
+}
+```
+
+and in the row's `pm:` object add:
+```js
+        ...(({ rel, labels }) => ({ relationships: rel, relLabels: labels }))(relationshipSnapshot(state)),
+```
+
+- [ ] **Step 8: Run the relationship tests and every pm test**
+
+Run: `npx vitest run tests/pm-`
+Expected: all pass. If "the relationship shapes all appear" misses `Hidden crush`, print the label counts per season: `decideMasks` needs coupled islanders with a crush on someone else, so check that `growLove`/events are not pinning every attraction toward the partner.
+
+- [ ] **Step 9: Commit**
+
+```bash
+git add js/pm/recoupling.js js/pm/casa.js js/pm/villa-vote.js js/pm/events.js js/pm/season.js tests/pm-relationships.test.js tests/pm-recoupling.test.js
+git commit -m "feat(perfect-match): decisions read my feelings and my beliefs; love-bombing and gaslighting"
+```
+
+---
+
 ### Task 10: The ledger-reader rule, as a guard
 
 **Files:**
@@ -2649,6 +3224,7 @@ import { describe, expect, it } from 'vitest';
 import { setPlayers } from '../js/core.js';
 import { playPerfectMatchSeason } from '../js/pm/season.js';
 import { LABEL_ORDER } from '../js/pm/ledger.js';
+import { schemeEligible } from '../js/pm/feelings.js';
 import { makeIslanders, roleSetup } from './helpers/pm-cast.js';
 
 const SEASONS = 100;
@@ -2660,7 +3236,9 @@ describe('Perfect Match spec audit', () => {
     const m = { ffAndVillainBy8: 0, jumps: 0, jumpChecks: 0, invisibleShare: [], famousHated: 0,
       famousTotal: 0, carriedSafe: 0, carriedAtVote: 0, lastPickDecides: 0, recouplingNights: 0,
       twists: { low: [0, 0], high: [0, 0] }, photosSurfaced: 0, steals: 0, envelopes: 0,
-      eventsPerEp: [], repeatLines: 0, lines: 0 };
+      eventsPerEp: [], repeatLines: 0, lines: 0, relSeasons: {}, schemeViolations: 0 };
+    const REL_LABELS = ['Hidden crush', 'Faking it', 'All in — alone', 'Not feeling it', 'Friend-zoning',
+      'Just friends', "Fancies, can't stand", 'One-way crush', 'Mutual spark', 'Couple for survival'];
     for (let s = 1; s <= SEASONS; s++) {
       const cast = makeIslanders(22, s);
       setPlayers(cast);
@@ -2724,6 +3302,14 @@ describe('Perfect Match spec audit', () => {
         const key = `${e.tpl}|${e.players.join(',')}`;
         m.lines++; if (seen.has(key)) m.repeatLines++; seen.set(key, true);
       }
+      // 11. relationship variety — which shapes this season ever produced
+      const had = new Set(rows.flatMap(r => r.pm.relLabels.map(l => l[3])));
+      for (const l of REL_LABELS) if (had.has(l)) m.relSeasons[l] = (m.relSeasons[l] || 0) + 1;
+      // 12. faking and manipulation from scheme-eligible islanders only
+      for (const r of rows) {
+        for (const [a, , , text] of r.pm.relLabels) if (text === 'Faking it' && !schemeEligible(state.profiles[a])) m.schemeViolations++;
+        for (const e of r.pm.events) if ((e.kind === 'love-bomb' || e.kind === 'gaslight') && !schemeEligible(state.profiles[e.players[0]])) m.schemeViolations++;
+      }
     }
     const mean = a => a.reduce((x, y) => x + y, 0) / (a.length || 1);
     console.log(`
@@ -2739,9 +3325,13 @@ PERFECT MATCH — ${SEASONS} seasons
  8. envelope steals ................. ${pct(m.steals, m.envelopes)}  (real UK: 0)
 10. events per villa episode ........ mean ${mean(m.eventsPerEp).toFixed(1)}, min ${Math.min(...m.eventsPerEp)}
     repeated line+cast in a season .. ${pct(m.repeatLines, m.lines)}  (Plan 3's pools drive this toward 0)
+11. seasons producing each relationship shape (spec: most seasons; 0 = a system that reaches no screen)
+${REL_LABELS.map(l => `    ${l.padEnd(24, '.')} ${pct(m.relSeasons[l] || 0, SEASONS)}`).join('\n')}
+12. faking / manipulation by a non-schemer  ${m.schemeViolations}  (rule: 0)
 `);
     // Rules only. Tuned numbers are read, not asserted.
     expect(m.jumps).toBe(0);
+    expect(m.schemeViolations).toBe(0);
     expect(Math.min(...m.eventsPerEp)).toBeGreaterThanOrEqual(80);
     expect(m.twists.low[0] / (m.twists.low[1] || 1)).toBeGreaterThan(m.twists.high[0] / (m.twists.high[1] || 1));
   });
@@ -2770,5 +3360,6 @@ git commit -m "test(perfect-match): audit:pm-spec, a hundred seasons against the
 ## Self-review notes (done while writing)
 
 - Spec coverage for this plan: §2 identity (Task 1), §5 islanders (Task 2), §6 attraction/connection (Tasks 3, 5), §7 knowing (secrets + perceived bonds, Tasks 5–8; guard Task 10), §8 popularity (Task 4, guard Task 10), §9.1–9.6 decisions (Tasks 6–9), §10 dumping scene (Task 9), §11 reunion (Task 9), §15 audit (Task 12). Deferred by the roadmap, not dropped: §12 the tab and §14 run/edit-layer wiring (Plan 3), §4 screens and stage (Plans 2 and 4), §13 export (Plan 5), families visit and Movie Night (Plan 3 event pools).
-- Types checked across tasks: `Profile`, `Event`, `state` fields (`villa`, `casa`, `split`, `couples`, `profiles`, `attraction`, `ledger`, `secrets`, `seq`, `recouplings`, `history`, `casaArrivals`) are created in `initState` (Task 9) and in each test's fixture.
+- Types checked across tasks: `Profile`, `Event`, `state` fields (`villa`, `casa`, `split`, `couples`, `profiles`, `ledger`, `secrets`, `seq`, `recouplings`, `history`, `casaArrivals`, and from Task 9b `shows`, `believes`) are created in `initState` and in each test's fixture. Attraction, love, friendship and trust are NOT on `state` — they are `gs.relationshipDimensions`, through `js/relationships.js`; fixtures that still pass `attraction: {}` are harmless.
+- Spec §6 coverage: store widened (Task 3), three layers and labels (Task 3b), every decision on my-feelings-and-my-beliefs, love-bombing and gaslighting, per-episode relationship snapshots (Task 9b), variety and the scheming rule measured (Task 12).
 - `closeEpisode` is called exactly once per episode: by `MOMENTS.final` (which sets `ctx.closed`) or by the loop.

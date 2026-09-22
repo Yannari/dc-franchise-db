@@ -19,17 +19,18 @@ import { emo, attachmentLabel } from './emotions.js';
 import { romance, shown } from './feelings.js';
 import { DAY } from './lines/day.js';
 import { LADDER } from './lines/ladder.js';
+import { FEELINGS } from './lines/feelings.js';
 import { HUT } from './lines/hut.js';
 import { DIALECTS, slotWord, US_SPELLING, US_SPELLERS, ESL_EXPANSIONS } from './lines/dialect.js';
 
-export const POOLS = { ...DAY, ...LADDER };
+export const POOLS = { ...DAY, ...LADDER, ...FEELINGS };
 export { HUT };
 
 export const SPEAKERS = ['a', 'b', 'c', 'dior', 'narrator'];
 export const FACT_KEYS = ['rung', 'thinks', 'persona', 'intent', 'attachment', 'mood', 'bombshell',
   'early', 'coupled', 'gap', 'knows', 'faking', 'bPersona', 'bMood', 'bRung', 'stance', 'family',
   'choice', 'cause', 'channel', 'stole', 'bTaken', 'archetype', 'taken', 'loyal', 'late', 'gender', 'bGender', 'myRung', 'phase', 'kind', 'role', 'withB', 'newArrival', 'dialect',
-  'comfortedYesterday', 'rowedBefore', 'rowedToday', 'feels', 'of'];
+  'comfortedYesterday', 'rowedBefore', 'rowedToday', 'feels', 'of', 'knowsB', 'verdict', 'noticed'];
 
 // Archetype groups a pool may name instead of listing them (CLAUDE.md).
 export const VILLAINS = ['villain', 'mastermind', 'schemer'];
@@ -105,7 +106,11 @@ export function factsFor(state, ev) {
   // How much a feels for b, in words a line can lean on (narration only):
   // "not yet" is somebody who cares; a real no is somebody who doesn't.
   if (b) { const r = romance(a, b); f.feels = r >= 6 ? 'strong' : r >= 3 ? 'some' : 'little'; } else f.feels = null;
-  for (const k of ['choice', 'cause', 'channel', 'stole', 'of']) if (ev.extra?.[k] != null) f[k] = ev.extra[k];
+  for (const k of ['choice', 'cause', 'channel', 'stole', 'of', 'noticed']) if (ev.extra?.[k] != null) f[k] = ev.extra[k];
+  // Has a SEEN what b did, or only feels it? "I saw you" needs the first.
+  f.knowsB = !!b && knowsAbout(state, a, b);
+  // A friend's read on somebody's partner, in words (advice scenes).
+  if (typeof ev.extra?.verdict === 'number') f.verdict = ev.extra.verdict > 0.2 ? 'good' : ev.extra.verdict < 0 ? 'bad' : 'unsure';   // ~35 / 25 / 40, measured
   return f;
 }
 

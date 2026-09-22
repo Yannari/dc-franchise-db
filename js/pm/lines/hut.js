@@ -18,6 +18,7 @@
 // FAKER is the giveaway (§6.5): the audience hears what the villa does not.
 const B = { withB: true };
 const K = (kind, more = {}) => ({ kind, ...more });
+const T = { taken: true };
 export const HUT = {
   honest: [
     // chat
@@ -109,11 +110,48 @@ export const HUT = {
     { id: 'hut.kiss.h6', when: K('kiss', B), turns: [['a', "I don't care who saw that. I'd do it again."]] },
     { id: 'hut.argument.h8', when: K('argument', { ...B, role: 1 }), turns: [['a', "I'm not going to shout back. That's what {b} wants. I'm going to wait until it's calmed down."]] },
     { id: 'hut.deep.h7', when: K('deep-chat', B), turns: [['a', "I feel lighter. I didn't know I was carrying all that until I put it down."]] },
+    // the ladder
+    { id: 'hut.close.h1', when: K('close-off', { ...B, role: 0 }), turns: [['a', "I've never closed myself off for anyone before. It's terrifying. I'm glad I did it."]] },
+    { id: 'hut.close.h2', when: K('close-off', { ...B, role: 1 }), turns: [['a', "{b} closed off for me. I didn't know I needed to hear it until I heard it."]] },
+    { id: 'hut.close.h3', when: K('close-off', { ...B, role: 1, feels: 'little' }), turns: [['a', "{b} closed off for me today. I don't feel the same yet, and I don't know what to do with that."]] },
+    { id: 'hut.open.h1', when: K('keeping-open', { ...B, role: 0 }), turns: [['a', "I'd rather be honest now than hurt {b} later. I'm not ready to close off."]] },
+    { id: 'hut.open.h2', when: K('keeping-open', { ...B, role: 1 }), turns: [['a', "{b} is keeping options open. Fine. I heard it. I don't like it."]] },
+    { id: 'hut.reopen.h1', when: K('open-back-up', { ...B, role: 0 }), turns: [['a', "That was the hardest conversation I've had in here. {b} didn't deserve it. I still had to have it."]] },
+    { id: 'hut.reopen.h2', when: K('open-back-up', { ...B, role: 1 }), turns: [['a', "{b} told me I was the one. A week ago. I don't know what to believe any more."]] },
+    { id: 'hut.turned.h1', when: K('head-turned'), turns: [['a', "I'm happy where I am. I keep saying it. I'm starting to wonder who I'm saying it for."]] },
+    { id: 'hut.turned.h2', when: K('head-turned', { taken: true }), turns: [['a', "{pa} hasn't done anything wrong. That's what makes it so hard."]] },
+    { id: 'hut.ask.h1', when: K('exclusive-ask', { ...B, role: 0 }), turns: [['a', "I was so nervous. My hands were shaking. And {b} said yes."]] },
+    { id: 'hut.ask.h2', when: K('exclusive-ask', { ...B, role: 1 }), turns: [['a', "{b} asked me to be exclusive. I've been smiling for about an hour."]] },
+    { id: 'hut.ask.h3', when: K('official-ask', { ...B, role: 0 }), turns: [['a', "{b} is my {b.gf}. I'm going to be saying that a lot."]] },
+    { id: 'hut.ask.h4', when: K('official-ask', { ...B, role: 1 }), turns: [['a', "Candles. Petals. Half the villa hiding in the kitchen. And {b}, asking me that. I'll never forget it."]] },
+    { id: 'hut.declined.h1', when: K('ask-declined', { ...B, role: 0 }), turns: [['a', "{b} said no. Not yet, anyway. I asked too soon, maybe. It still hurts."]] },
+    { id: 'hut.declined.h2', when: K('ask-declined', { ...B, role: 1 }), turns: [['a', "I couldn't say yes to {b}. Not when I don't feel it yet. I hate that I hurt {b}."]] },
+    { id: 'hut.love.h1', when: K('love-said', B), turns: [['a', "I said it, and {b} said it back. I don't think I've ever been this happy."]] },
+    { id: 'hut.love.h2', when: K('love-hanging', { ...B, role: 0 }), turns: [['a', "I told {b} I love {b.obj}. And {b} didn't say it back. I shouldn't have said it."]] },
+    { id: 'hut.love.h3', when: K('love-hanging', { ...B, role: 1 }), turns: [['a', "{b} said the L word. I couldn't say it back. I wasn't going to lie about something like that."]] },
+    { id: 'hut.hide.h1', when: K('hideaway', B), turns: [['a', "A night in the hideaway with {b}. I'm not telling you anything else."]] },
+    // the feelings
+    { id: 'hut.torch.h1', when: K('torch', B), turns: [['a', "Seeing {b} go in there with someone else — I thought I was over that. I'm not."]] },
+    { id: 'hut.confront.h1', when: K('jealous-confront', { ...B, role: 0 }), turns: [['a', "I had to say something to {b}. I'd have exploded if I didn't."]] },
+    { id: 'hut.confront.h2', when: K('jealous-confront', { ...B, role: 1 }), turns: [['a', "{b} thinks I've got something going on. I haven't. At least, I don't think I have."]] },
+    { id: 'hut.sulk.h1', when: K('jealous-sulk', T), turns: [['a', "I'm not going to cause a scene. I'm just going to sit here and be upset quietly."]] },
+    { id: 'hut.sulk.h2', when: K('jealous-sulk', T), turns: [['a', "If {pa} can't see why I'm upset, that's a problem in itself."]] },
+    { id: 'hut.retaliate.h1', when: K('jealous-retaliate', { role: 0 }), turns: [['a', "Two can play that game. I know it's childish. I'm doing it anyway."]] },
+    { id: 'hut.retaliate.h2', when: K('jealous-retaliate', { ...B, role: 1 }), turns: [['a', "I know {b} was only talking to me to make a point. I'm not stupid. It was still nice."]] },
+    { id: 'hut.reassure.h1', when: K('reassurance', { ...B, role: 0 }), turns: [['a', "I needed to hear that from {b}. I feel like I can breathe again."]] },
+    { id: 'hut.reassure.h2', when: K('reassurance', { ...B, role: 1 }), turns: [['a', "{b} worries. I get it. I'll say it as many times as {b} needs to hear it."]] },
+    { id: 'hut.reassure.h3', when: K('reassurance', { ...B, role: 1, attachment: 'avoidant' }), turns: [['a', "I love {b}. I just can't keep having the same conversation every night."]] },
+    { id: 'hut.overthink.h1', when: K('overthinking', T), turns: [['a', "Nothing's even happened. That's the worst bit. My head's just making things up."]] },
+    { id: 'hut.confess.h1', when: K('confession', { ...B, role: 0 }), turns: [['a', "I told {b}. I feel sick. But I couldn't carry it any more."]] },
+    { id: 'hut.confess.h2', when: K('confession', { ...B, role: 1 }), turns: [['a', "At least {b} told me. That's the only thing I can say for {b.obj} right now."]] },
+    { id: 'hut.advice.h1', when: K('advice', { ...B, role: 0 }), turns: [['a', "I'd rather {b} hears it from a friend than finds out the hard way."]] },
+    { id: 'hut.advice.h2', when: K('advice', { ...B, role: 1 }), turns: [['a', "When someone who knows me that well says something, I have to listen. Even if I don't want to."]] },
+    { id: 'hut.double.h1', when: K('double-standard', B), turns: [['a', "Everyone keeps saying they're not judging. They're judging. Just not {b}."]] },
     // the ladder and the feelings (their own scenes are written in Task 3)
-    { id: 'hut.couple.h1', when: { family: 'couple', ...B }, turns: [['a', "I didn't expect to like {b} this much. It's annoying, actually. I had a whole plan."]] },
-    { id: 'hut.couple.h2', when: { family: 'couple', ...B, rung: ['exclusive', 'official'] }, turns: [['a', "I don't look up any more when someone new walks in. That's how I know."]] },
-    { id: 'hut.couple.h3', when: { family: 'couple', ...B, rung: 'official' }, turns: [['a', "I'm official. On {~telly}. There's no taking that back now, and I don't want to."]] },
-    { id: 'hut.jealous.h1', when: { family: 'jealousy', role: 0 }, turns: [['a', "I know I'm being jealous. Knowing doesn't make it stop."]] },
+    { id: 'hut.couple.h1', when: { kind: ['chat', 'deep-chat', 'kiss', 'challenge-win'], ...B }, turns: [['a', "I didn't expect to like {b} this much. It's annoying, actually. I had a whole plan."]] },
+    { id: 'hut.couple.h2', when: { kind: ['chat', 'deep-chat', 'kiss', 'challenge-win'], ...B, rung: ['exclusive', 'official'] }, turns: [['a', "I don't look up any more when someone new walks in. That's how I know."]] },
+    { id: 'hut.couple.h3', when: { kind: ['chat', 'deep-chat', 'kiss', 'challenge-win'], ...B, rung: 'official' }, turns: [['a', "I'm official. On {~telly}. There's no taking that back now, and I don't want to."]] },
+    { id: 'hut.jealous.h1', when: { kind: ['argument', 'jealous-confront'], role: 0 }, turns: [['a', "I know I'm being jealous. Knowing doesn't make it stop."]] },
     // the moments (their own scenes are written in Task 4)
     { id: 'hut.dump.h1', when: { family: 'dumping' }, turns: [['a', "The fire pit is the worst place in the world. It's also where everything gets decided."]] },
     { id: 'hut.dump.h2', when: { family: 'dumping' }, turns: [['a', "My hands are still shaking. Look at them."]] },
@@ -171,10 +209,19 @@ export const HUT = {
     { id: 'hut.comedy.t2', when: K('comedy', { mood: 'guilty' }), turns: [['a', "I've been the funny one all day. It's easier than being the one with something to say."]] },
     { id: 'hut.cwin.t2', when: K('challenge-win', { ...B, mood: 'guilty' }), turns: [['a', "{b} hugged me after we won and said we're the best couple in here. I couldn't look at {b}."]] },
     { id: 'hut.ckiss.t2', when: K('challenge-kiss', { ...B, role: 1 }), turns: [['a', "The whole villa thinks that was for the points. It wasn't all for the points."]] },
+    // the ladder and the feelings
+    { id: 'hut.close.t1', when: K('close-off', { ...B, role: 0 }), turns: [['a', "I told {b} I've closed off. I have. Mostly."]] },
+    { id: 'hut.ask.t1', when: K('exclusive-ask', { ...B, role: 1 }), turns: [['a', "I said yes to {b}. Now I just have to make sure nothing else comes out."]] },
+    { id: 'hut.love.t1', when: K('love-said', B), turns: [['a', "I said it back. I think I mean it. I want to mean it."]] },
+    { id: 'hut.confront.t1', when: K('jealous-confront', { ...B, role: 1 }), turns: [['a', "{b} hasn't got the whole story. And I'm not going to be the one to give it."]] },
+    { id: 'hut.reassure.t1', when: K('reassurance', { ...B, role: 1 }), turns: [['a', "{b} needed to hear it, so I said it. Whether it's still true is another question."]] },
+    { id: 'hut.confess.t1', when: K('confession', { ...B, role: 0 }), turns: [['a', "I told {b} some of it. Not all of it. The rest can wait."]] },
+    { id: 'hut.advice.t1', when: K('advice', { ...B, role: 0 }), turns: [['a', "I told {b} what I think of {b.posAdj} partner. I didn't say why I care so much."]] },
+    { id: 'hut.hide.t1', when: K('hideaway', B), turns: [['a', "The hideaway was lovely. I kept thinking about what {b} would say if {b} knew."]] },
     // the ladder, feelings and moments (Tasks 3 and 4)
-    { id: 'hut.couple.t1', when: { family: 'couple', ...B }, turns: [['a', "Everyone keeps saying we're solid. And {~yeah}, on paper. But paper's not a person, is it. I'll see how this week goes and then I'll decide."]] },
-    { id: 'hut.couple.t2', when: { family: 'couple', ...B, rung: ['closed-off', 'exclusive'] }, turns: [['a', "I told {b} I'd closed myself off. I have. Mostly. There's a {~little} window I haven't shut."]] },
-    { id: 'hut.jealous.t1', when: { family: 'jealousy' }, turns: [['a', "I'm going to act like I'm upset about this. And I am. Just not for the reason they think."]] },
+    { id: 'hut.couple.t1', when: { kind: ['chat', 'deep-chat', 'kiss', 'challenge-win'], ...B }, turns: [['a', "Everyone keeps saying we're solid. And {~yeah}, on paper. But paper's not a person, is it. I'll see how this week goes and then I'll decide."]] },
+    { id: 'hut.couple.t2', when: { kind: ['chat', 'deep-chat', 'kiss', 'challenge-win'], ...B, rung: ['closed-off', 'exclusive'] }, turns: [['a', "I told {b} I'd closed myself off. I have. Mostly. There's a {~little} window I haven't shut."]] },
+    { id: 'hut.jealous.t1', when: { kind: ['argument', 'jealous-confront', 'jealous-sulk'] }, turns: [['a', "I'm going to act like I'm upset about this. And I am. Just not for the reason they think."]] },
     { id: 'hut.dump.t1', when: { family: 'dumping' }, turns: [['a', "I stood there looking sad. I was a bit sad. I was mostly relieved it wasn't me."]] },
     { id: 'hut.dump.t2', when: { kind: 'recouple-pick', role: 0 }, turns: [['a', "Did I pick with my heart or my head? I picked with the bit that wants to stay in the villa."]] },
     { id: 'hut.casa.t1', when: { family: 'casa' }, turns: [['a', "What happens at Casa stays at Casa. That's what everyone says, isn't it?"]] },

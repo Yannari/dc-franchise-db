@@ -43,7 +43,8 @@ describe('the pools are well-formed', () => {
   it('a scene only names the people its kind casts', () => {
     // comedy casts one islander, gossip three, everything else two. A {b}
     // in a one-person scene renders as a raw placeholder, or as nobody.
-    const CAST = { comedy: 1, gossip: 3 };
+    const CAST = { comedy: 1, gossip: 3, 'head-turned': 1, 'jealous-sulk': 1, overthinking: 1,
+      'jealous-confront': 3, 'jealous-retaliate': 3, advice: 3 };
     for (const [k, e] of ENTRIES) {
       if (k.startsWith('hut:')) continue;
       const size = CAST[k] || 2;

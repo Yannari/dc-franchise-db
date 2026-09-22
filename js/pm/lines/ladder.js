@@ -1,14 +1,185 @@
 // pm/lines/ladder.js — the ladder's scenes (Plan 3, Task 3). Data only.
 //
-// Cast: [a, b]. a is the one who moves (asks, says it, closes off); b is the
-// one it is said to. The engine has already decided the answer — `yes` on an
-// ask, `ask-declined` when it was no — and these only say it.
+// Cast: [a, b]. a is the one who moves (asks, says it, closes off, opens back
+// up); b is the one it is said to. The engine has already decided the answer
+// — `yes` on an ask, `ask-declined` when it was no — and these only say it.
 //
 // A refusal is b's own: "not yet" from somebody who cares (`feels` some or
 // strong, read from b's side), a real no from somebody who doesn't. `of` says
 // which ask was refused. {b.gf} is girlfriend / boyfriend / partner from the
-// roster, never guessed.
+// roster, never guessed. head-turned is a's alone: nobody has been told.
 export const LADDER = {
+  'close-off': [
+    { id: 'close-off.01',
+      turns: [
+        ['a', "I want to say something before I lose my nerve. I'm closing myself off."],
+        ['b', 'Are you asking me or telling me?'],
+        ['a', 'Telling you. You can do what you want with it.'],
+        { by: 'b', vary: [
+          { turns: [['b', "I don't want anyone else either."]], beat: '{a} lets out a breath, and laughs.' },
+          { when: { feels: 'little' },
+            turns: [['b', "Okay. That's a big thing to say."], ['a', "I know. I mean it."]],
+            beat: "{b} nods, and doesn't say it back." },
+          { when: { attachment: 'avoidant' },
+            turns: [['b', "That's… a lot. In a good way. I think."]],
+            beat: '{a} waits, and {b} takes {a.posAdj} hand.' },
+        ] },
+      ] },
+    { id: 'close-off.02',
+      turns: [
+        ['a', "If someone new walks in tomorrow, I'm not interested. I just wanted you to know that."],
+        ['b', 'You mean that?'],
+        ['a', "I've never meant anything more in here."],
+      ],
+      beat: '{b} pulls {a} in for a hug.' },
+    { id: 'close-off.03', when: { persona: 'hopeless-romantic' },
+      turns: [
+        ['a', "I'm done looking. I found what I was looking for."],
+        ['b', "That's so cheesy."],
+        ['a', "I know. It's also true."],
+      ] },
+    { id: 'close-off.04', when: { persona: 'checklist' },
+      turns: [
+        ['a', "I've thought about it properly, and I'm closing off. I don't do that lightly."],
+        ['b', "I know you don't. That's why it means something."],
+      ] },
+    { id: 'close-off.05', when: { bombshell: true },
+      turns: [
+        ['a', 'I came in here to shake things up. I didn\'t expect to stop at you.'],
+        ['b', "What are you saying?"],
+        ['a', "I'm saying I'm not looking at anyone else."],
+      ] },
+    { id: 'close-off.06',
+      stage: 'At the fire pit, in front of everyone.',
+      turns: [
+        ['a', "I just want everyone to know. I'm closed off. {b} is it for me in here."],
+      ],
+      beat: 'The villa cheers, and {b} hides {b.posAdj} face in {b.posAdj} hands.' },
+    { id: 'close-off.07', when: { early: true },
+      turns: [
+        ['a', "I know it's early. I don't care. I don't want to get to know anyone else."],
+        ['b', "Nobody closes off this early."],
+        ['a', 'Then I\'ll be the first.'],
+      ] },
+    { id: 'close-off.08', when: { gap: true },
+      turns: [
+        ['a', "I've closed myself off. I don't need you to say it back."],
+        ['b', "…Thank you. I'm still working out where I am."],
+        ['a', "Take the time you need."],
+      ],
+      beat: "{a} smiles, and doesn't look at {b} for a moment." },
+  ],
+  'keeping-open': [
+    { id: 'keeping-open.01',
+      turns: [
+        ['a', "I like you. I really do. But I'm not closing myself off yet."],
+        { by: 'b', vary: [
+          { turns: [['b', "Okay. At least you're being honest."]], beat: '{b} goes to get a drink, and takes a while about it.' },
+          { when: { attachment: 'anxious' },
+            turns: [['b', "Why not? Is there someone else?"], ['a', "No. I just don't want to rush it."]],
+            beat: "{b} nods, but doesn't let go of it all evening." },
+          { when: { feels: 'little' },
+            turns: [['b', "Same, to be honest."]], beat: 'They both look a bit relieved.' },
+        ] },
+      ] },
+    { id: 'keeping-open.02',
+      turns: [
+        ['a', "Can I be straight with you? My head could still be turned."],
+        ['b', 'By who?'],
+        ['a', 'Nobody yet. But it could be.'],
+      ],
+      beat: '{b} laughs, but it comes out short.' },
+    { id: 'keeping-open.03', when: { persona: 'fuckboy' },
+      turns: [
+        ['a', "I'm not the closing-off type. You knew that."],
+        ['b', 'I did know that. I was hoping you\'d changed.'],
+      ] },
+    { id: 'keeping-open.04', when: { intent: ['fun', 'fame', 'win', 'money', 'stir'] },
+      turns: [
+        ['a', "I'm having a good time with you. I just don't want to make promises I can't keep."],
+        ['b', 'Nobody asked you for a promise.'],
+        ['a', 'You were about to.'],
+      ] },
+    { id: 'keeping-open.05', when: { early: true },
+      turns: [
+        ['a', "It's early, isn't it? I think we should both keep our options open for now."],
+        ['b', "If that's what you want."],
+      ],
+      beat: '{b} says it quietly, and changes the subject.' },
+    { id: 'keeping-open.06', when: { persona: 'game-player' },
+      turns: [
+        ['a', "I'm with you. But I'd be stupid to close off before the next recoupling."],
+        ['b', "Is that what I am? A recoupling plan?"],
+        ['a', "No. You're the plan I'd like to keep."],
+      ] },
+  ],
+  'open-back-up': [
+    { id: 'open-back-up.01',
+      turns: [
+        ['a', "I have to tell you something, and you're not going to like it."],
+        ['b', 'Go on.'],
+        ['a', "I'm opening myself back up. I need to see if there's something with someone else."],
+        { by: 'b', vary: [
+          { turns: [['b', "You told me you were closed off."], ['a', "I know. I meant it then."]],
+            beat: "{b} gets up and walks away before {a} can say anything else." },
+          { when: { archetype: 'hothead' },
+            turns: [['b', "You're joking. After everything you said?"]], beat: 'Half the villa hears the next part.' },
+          { when: { attachment: 'avoidant' },
+            turns: [['b', "Fine. Do what you want."]], beat: "{b} doesn't look at {a.obj} for the rest of the night." },
+        ] },
+      ] },
+    { id: 'open-back-up.02',
+      turns: [
+        ['a', "I don't want to lie to you. My head's been turned."],
+        ['b', 'By who?'],
+        ['a', "Does it matter?"],
+        ['b', "It matters to me."],
+      ] },
+    { id: 'open-back-up.03', when: { persona: 'hopeless-romantic' },
+      turns: [
+        ['a', "I thought it was you. I really did. I'm so sorry."],
+        ['b', "Don't. Don't say sorry like that."],
+      ],
+      beat: 'They both end up crying, in different rooms.' },
+    { id: 'open-back-up.04', when: { bRung: ['exclusive', 'official'] },
+      turns: [
+        ['a', "I need to be honest. I'm not in the same place as you any more."],
+        ['b', "We're meant to be exclusive."],
+        ['a', "I know. That's why I'm telling you before anything happens."],
+      ] },
+    { id: 'open-back-up.05',
+      turns: [
+        ['a', "I'm not closing myself off to anyone any more. Including you."],
+        ['b', "So what are we, then?"],
+        ['a', "I don't know. That's the honest answer."],
+      ] },
+    { id: 'open-back-up.06', when: { persona: 'game-player' },
+      turns: [
+        ['a', "I think we both know this isn't going anywhere."],
+        ['b', "I didn't know that. I thought it was going somewhere."],
+      ],
+      beat: '{a} shrugs.' },
+  ],
+  'head-turned': [
+    { id: 'head-turned.01',
+      stage: '{a} is watching the new arrival from across the lawn, and not listening to the conversation beside {a.obj}.' ,
+      turns: [['a', '…Sorry, what? I was miles away.']] },
+    { id: 'head-turned.02',
+      stage: 'In the dressing room, {a} is talking to the mirror more than to anyone else.',
+      turns: [['a', "I'm happy where I am. I am. I just keep thinking about someone else."]] },
+    { id: 'head-turned.03',
+      stage: 'At breakfast, {a} keeps looking up every time someone new walks past.',
+      turns: [['a', "What? Nothing. I'm just tired."]] },
+    { id: 'head-turned.04',
+      stage: 'By the pool, to whoever is closest.',
+      turns: [['a', "Can you like two people at once? I'm just asking."]] },
+    { id: 'head-turned.05',
+      stage: '{a} goes quiet at dinner, and pushes the food around the plate.',
+      turns: [['a', "I'm fine. My head's just all over the place today."]] },
+    { id: 'head-turned.06',
+      stage: 'On the daybeds, {a} is staring at the other end of the garden.',
+      turns: [['a', "I haven't done anything. I'm just thinking. You're allowed to think."]] },
+  ],
   'exclusive-ask': [
     { id: 'exclusive-ask.01',
       stage: '{a} waits until the two of them are alone on the terrace.',
@@ -35,10 +206,38 @@ export const LADDER = {
         ['b', 'Then yes.'],
       ],
       beat: 'They tell the villa at dinner, and the whole table cheers.' },
+    { id: 'exclusive-ask.03', when: { persona: 'villa-clown' },
+      stage: '{a} has written something on a paper plate.',
+      turns: [
+        ['a', 'I made you a sign. It says "exclusive?" with two boxes. You have to tick one.'],
+        ['b', 'Where did you even get a pen?'],
+        ['a', "That's not the question. Tick a box."],
+      ],
+      beat: '{b} ticks yes, and keeps the plate.' },
+    { id: 'exclusive-ask.04', when: { persona: 'checklist' },
+      turns: [
+        ['a', "I've given this a lot of thought. I'd like us to be exclusive."],
+        ['b', "You sound like you're asking for a loan."],
+        ['a', "I'm nervous. Is that a yes?"],
+        ['b', "That's a yes."],
+      ] },
+    { id: 'exclusive-ask.05', when: { attachment: 'anxious' },
+      turns: [
+        ['a', "I need to know where I stand. Will you be exclusive with me?"],
+        ['b', 'Yes. You never needed to ask.'],
+        ['a', 'I did, though. I needed to hear it.'],
+      ],
+      beat: '{b} says it again, so {a} can hear it twice.' },
+    { id: 'exclusive-ask.06', when: { late: true },
+      turns: [
+        ['a', "We've been in here long enough. I want to make it serious. Just us."],
+        ['b', "I've been waiting for you to say that."],
+      ],
+      beat: 'They shake on it, and then kiss.' },
   ],
   'official-ask': [
     { id: 'official-ask.01',
-      stage: 'With the villa\'s help, {a} has covered the terrace in candles and petals.',
+      stage: "With the villa's help, {a} has covered the terrace in candles and petals.",
       turns: [
         ['a', "I know we're already exclusive. But I want to do this properly."],
         ['a', 'Will you be my {b.gf}?'],
@@ -49,10 +248,31 @@ export const LADDER = {
             turns: [['b', "…Yes. I can't believe you did all this."]],
             beat: '{b} cries a bit, and then laughs at {b.ref} for crying.' },
           { when: { attachment: 'avoidant' },
-            turns: [['b', "Yes. Now get me out of here before everyone sees me like this."]],
+            turns: [['b', 'Yes. Now get me out of here before everyone sees me like this.']],
             beat: '{a} laughs, and holds on to {b.obj} a bit longer anyway.' },
         ] },
       ] },
+    { id: 'official-ask.02',
+      stage: '{a} has spelled out a question in rose petals on the lawn.',
+      turns: [
+        ['b', 'Is that… is that for me?'],
+        ['a', "It's for you. Will you be my {b.gf}?"],
+        ['b', 'Yes. Yes, obviously.'],
+      ],
+      beat: 'Everyone on the terrace screams.' },
+    { id: 'official-ask.03', when: { persona: 'wallflower' },
+      turns: [
+        ['a', "I'm not good at big speeches, so I'm just going to ask. Will you be my {b.gf}?"],
+        ['b', 'That was the best speech anyone has ever given me.'],
+        ['a', 'Is that a yes?'],
+        ['b', "It's a yes."],
+      ] },
+    { id: 'official-ask.04', when: { late: true },
+      turns: [
+        ['a', "I don't want to leave here with you as anything other than my {b.gf}."],
+        ['b', 'Then you won\'t.'],
+      ],
+      beat: '{a} picks {b} up, and the villa goes wild.' },
   ],
   'ask-declined': [
     { id: 'ask-declined.01', when: { of: 'exclusive-ask' },
@@ -77,7 +297,29 @@ export const LADDER = {
             beat: '{a} blows out the candles on the way back in.' },
           { when: { feels: 'little' },
             turns: [['b', "I can't say yes to that. Not when I don't feel it."], ['a', 'Right.']],
-            beat: "{a} walks back in without looking at anyone." },
+            beat: '{a} walks back in without looking at anyone.' },
+        ] },
+      ] },
+    { id: 'ask-declined.03', when: { of: 'exclusive-ask' },
+      turns: [
+        ['a', 'Will you be exclusive with me?'],
+        { by: 'b', vary: [
+          { turns: [['b', "Can I have a bit more time? I don't want to say yes until I mean it."], ['a', "Take all the time you need."]],
+            beat: '{a} squeezes {b.posAdj} hand, and goes to get a drink.' },
+          { when: { attachment: 'avoidant' },
+            turns: [['b', "I'm not good with labels. Can we just keep going as we are?"], ['a', "…If that's what you want."]] },
+          { when: { feels: 'little' },
+            turns: [['b', "I don't think we want the same thing. I'm sorry."]],
+            beat: '{a} goes to bed early.' },
+        ] },
+      ] },
+    { id: 'ask-declined.04', when: { of: 'official-ask' },
+      turns: [
+        ['a', "I want to ask you properly. Will you be my {b.gf}?"],
+        { by: 'b', vary: [
+          { turns: [['b', "Not in here. Ask me again when we're outside, and I'll know it's real."]] },
+          { when: { feels: 'little' },
+            turns: [['b', "I'm sorry. I don't feel the same way."]], beat: 'The villa, watching from the kitchen, goes silent.' },
         ] },
       ] },
   ],
@@ -95,6 +337,26 @@ export const LADDER = {
             beat: '{a} laughs into {b.posAdj} shoulder.' },
         ] },
       ] },
+    { id: 'love-said.02', when: { phase: 'evening' },
+      stage: 'In bed, after the lights have gone off.',
+      turns: [
+        ['a', "Are you awake?"],
+        ['b', 'Yes.'],
+        ['a', 'I love you.'],
+        ['b', "…I love you too. I've wanted to say it all week."],
+      ] },
+    { id: 'love-said.03', when: { attachment: 'avoidant' },
+      turns: [
+        ['a', "I don't say this. I've never said this in here. I love you."],
+        ['b', 'I love you too.'],
+        ['a', "Okay. Good. I'm going to go and lie down now."],
+      ],
+      beat: '{b} laughs, and pulls {a} back down onto the daybed.' },
+    { id: 'love-said.04', when: { late: true },
+      turns: [
+        ['a', "Whatever happens at the final, I need you to know I love you."],
+        ['b', "I love you. I don't care about the final."],
+      ] },
   ],
   'love-hanging': [
     { id: 'love-hanging.01',
@@ -111,5 +373,65 @@ export const LADDER = {
             beat: "{a} nods, and doesn't say it again." },
         ] },
       ] },
+    { id: 'love-hanging.02',
+      turns: [
+        ['a', 'I love you.'],
+        ['b', 'Thank you.'],
+        ['a', '…Thank you?'],
+      ],
+      beat: '{b} tries to explain, and makes it worse.' },
+    { id: 'love-hanging.03', when: { attachment: 'anxious' },
+      turns: [
+        ['a', "I'm in love with you. You don't have to say it back."],
+        ['b', "Okay."],
+      ],
+      beat: "{a} waits for more. There isn't any." },
+    { id: 'love-hanging.04', when: { phase: 'evening' },
+      stage: 'In bed, after the lights have gone off.',
+      turns: [
+        ['a', 'I love you.'],
+      ],
+      beat: '{b} pretends to be asleep, and {a} can tell.' },
+  ],
+  hideaway: [
+    { id: 'hideaway.01',
+      stage: 'The hideaway, with the door shut and nobody else for once.',
+      turns: [
+        ['a', "It's so quiet."],
+        ['b', "I'd forgotten what quiet sounds like."],
+      ] },
+    { id: 'hideaway.02',
+      turns: [
+        ['a', 'A whole night. Just us.'],
+        ['b', 'No microphones by the bed.'],
+        ['a', "There are definitely microphones by the bed."],
+      ],
+      beat: 'They laugh, and then they stop talking.' },
+    { id: 'hideaway.03', when: { rung: ['exclusive', 'official'] },
+      turns: [
+        ['a', "This is the first time I've felt like we're a normal couple."],
+        ['b', 'A normal couple in a villa with cameras in the ceiling.'],
+        ['a', "Still counts."],
+      ] },
+    { id: 'hideaway.04',
+      stage: 'The morning after the hideaway.',
+      turns: [
+        ['a', "Everyone's going to ask."],
+        ['b', "Then we'll tell them we talked."],
+        ['a', 'We did talk.'],
+        ['b', 'We did talk.'],
+      ],
+      beat: 'The whole villa is waiting for them at breakfast.' },
+    { id: 'hideaway.05', when: { persona: 'hopeless-romantic' },
+      turns: [
+        ['a', "I want to remember tonight. All of it."],
+        ['b', 'You will.'],
+      ] },
+    { id: 'hideaway.06', when: { gap: true },
+      turns: [
+        ['a', 'Tonight means something to me.'],
+        ['b', "It means something to me too."],
+      ],
+      beat: '{a} smiles. {b} looks up at the ceiling.' },
   ],
 };

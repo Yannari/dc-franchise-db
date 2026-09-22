@@ -202,3 +202,14 @@ describe('the reply is the replier\'s own', () => {
     expect(renderScript(entry, ['A', 'B'], state('checklist')).lines[1].text).toBe('plain');
   });
 });
+
+describe('a confessional is about its scene', () => {
+  it('every hut line names the scene it answers — there is no general fallback', () => {
+    for (const [stance, pool] of Object.entries(HUT)) for (const e of pool) {
+      expect(!!(e.when?.kind || e.when?.family), `${stance} ${e.id}`).toBe(true);
+    }
+  });
+  it('a solo scene sets the scene: who is there, and who is being spoken to', () => {
+    for (const e of POOLS.comedy) expect(e.stage, e.id).toBeTruthy();
+  });
+});

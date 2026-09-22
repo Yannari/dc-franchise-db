@@ -50,3 +50,6 @@ assets/gallery/
 .env*
 !.env.example
 .nightly/
+
+# Perfect Match season transcripts (npm run pm:transcript): generated to read, never committed.
+transcripts/

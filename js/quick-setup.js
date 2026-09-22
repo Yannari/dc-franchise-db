@@ -484,6 +484,7 @@ const SHOW_TAGS = {
   'big-brother': 'One house, HOH, veto, live eviction',
   'traitors':    'A castle, a round table, a murder every night',
   'drag-race':   'Werk room, runway, lip sync for your life',
+  'perfect-match': 'A villa, recouplings, and the public decides',
 };
 export const SHOWS = Object.keys(SHOW_REGISTRY).map(id => ({
   id, name: showName(id), icon: showIcon(id), tag: SHOW_TAGS[id] || '',

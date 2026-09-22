@@ -242,6 +242,41 @@ const SHOW_WORDS = {
       { id: 'robbed', text: 'Who was robbed this week?' },
     ],
   },
+  'perfect-match': {
+    name: 'Perfect Match',
+    short: 'PM',
+    episode: 'episode',
+    Episode: 'Episode',
+    episodeShort: 'Ep',
+    elimination: 'dumping',
+    eliminated: 'dumped',
+    challenge: 'challenge',
+    home: 'villa',
+    // The public votes for couples and the villa votes at a dumping; a
+    // recoupling pick is a choice of partner, not a vote against anyone.
+    vote: 'public vote',
+    finalVote: 'final vote',
+    comps: ['challenge'],
+    danger: 'the bottom couples',
+    Danger: 'The bottom couples',
+    onDanger: 'in the bottom couples',
+    nominated: 'landed in the bottom couples',
+    Pawn: 'A safe couple',
+    Ceremony: 'The firepit',
+    nominee: 'a bottom couple',
+    pawn: 'a safe couple',
+    ceremony: 'the firepit',
+    // No jury. This is the prose finale takes interpolate (`${w.jury} agreed`),
+    // and on this show the country decides.
+    jury: 'the public',
+    safe: 'safe',
+    nominationLabel: 'Bottom couple',
+    polls: [
+      { id: 'favourite', text: 'Who is your favourite couple?' },
+      { id: 'dumped', text: 'Who gets dumped next?' },
+      { id: 'casa', text: 'Who twists at Casa Amor?' },
+    ],
+  },
 };
 
 /** The words this show uses. Unknown formats get the generic set, never a crash. */

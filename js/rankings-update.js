@@ -829,6 +829,38 @@ export const RU_SHOW = {
       strategicScore: 0,
     }),
   },
+
+  // ── PERFECT MATCH — PROVISIONAL until a season has been played ──────
+  //
+  // Declared so the villa is not ranked as a camp (the test over the
+  // registry). The prices are placeholders on purpose: ADDING-A-SHOW §14.9
+  // says a currency priced before it is measured is usually placement
+  // measured twice, and this show has not played a season yet. The public
+  // decides who stays and who wins, and placement already pays for that.
+  //   comp1  challenges won. They carry no immunity here, so priced thin.
+  //   comp2  times the stolen-from islander survived — none yet; null.
+  //   social times in the bottom couples and survived: SHOWN, NOT SCORED,
+  //          the Drag Race precedent, because surviving is placement again.
+  // Fields are written by the export (Plan 5) under `pm.`.
+  'perfect-match': {
+    comp1: { label: 'Challenges', weight: 0.3, title: '+0.3 per challenge won (provisional)' },
+    comp2: null,
+    comp3: null,
+    adv: null,
+    strat: { weight: 0, scale: 10 },
+    social: { kind: 'survived', label: 'Bottom', weight: 0, cap: 6,
+      title: 'Times in the bottom couples and survived · shown, not scored (provisional)',
+      prose: { zero: 'never in the bottom couples', one: 'in the bottom couples once',
+        many: n => `in the bottom couples ${n} times` } },
+    read: (p) => ({
+      comp1: p.pm?.challengeWins ?? 0,
+      comp2: 0,
+      comp3: 0,
+      social: p.pm?.publicVotesSurvived ?? 0,
+      advFound: 0, advPlayed: 0, advWasted: 0, advHeld: 0,
+      strategicScore: 0,
+    }),
+  },
 };
 
 /**

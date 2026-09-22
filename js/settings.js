@@ -29,6 +29,7 @@ export const SETTINGS_BY_FORMAT = {
   // same scoping so the dropdown draws the right thing and `defaultSettingFor`
   // has an answer that is not a summer camp.
   'drag-race': ['dr-werkroom'],
+  'perfect-match': ['pm-villa'],
 };
 
 export function settingsForFormat(fmt) {
@@ -374,6 +375,21 @@ export const SEASON_SETTINGS = {
     arrival: { vehicle: 'werk room door', verb: 'walks through the werk room door', point: 'the werk room',
                onPoint: 'in the werk room', headline: 'One workroom. One crown.',
                groupCall: 'Ladies, to the main stage!' },
+    reskin: {},
+    atmosphere: [],
+  },
+
+  // ── PERFECT MATCH ──────────────────────────────────────────────────
+  // One venue. The engine writes its own scenes and draws nothing from the
+  // camp reskin pools; this exists so the dropdown has something true.
+  'pm-villa': {
+    label: 'The Villa', emoji: '🌴',
+    blurb: 'A hillside villa with a pool, a firepit, a terrace of daybeds, one bedroom of doubles and a beach hut at the end of the garden.',
+    vocab: { place: 'the villa', shelter: 'the bedroom', gather: 'the firepit',
+             water: 'the pool', sleep: 'the bedroom', downtime: 'the daybeds', foodSource: 'the kitchen' },
+    arrival: { vehicle: 'villa steps', verb: 'walks down the villa steps', point: 'the villa',
+               onPoint: 'in the villa', headline: 'One villa. One perfect match.',
+               groupCall: 'Islanders, meet me at the firepit.' },
     reskin: {},
     atmosphere: [],
   },

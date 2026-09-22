@@ -88,6 +88,19 @@ export const VOCAB = {
     // so does this show; a word two formats both own cannot be exclusive to
     // either, and listing it would fail every Big Brother page.
   },
+  'perfect-match': {
+    // Phrases, not bare words, where a bare word is ordinary English on the
+    // other shows: Total Drama's romance says "dumped", so the exclusive form
+    // is "dumped from the island". "Island" and "beach" are Total Drama's too,
+    // and this show says both ("dumped from the island", "beach hut"), so it
+    // owns them as well — which keeps them forbidden only where they are false.
+    own: [
+      'islander', 'islanders', 'villa', 'recoupling', 'recouple', 'bombshell',
+      'bombshells', 'casa amor', 'dumped from the island', 'grafting',
+      'mugged off', 'firepit', 'hideaway', 'beach hut', 'island', 'beach',
+      'challenge', 'challenges',
+    ],
+  },
 };
 
 /** Everything a given format is not allowed to say. */

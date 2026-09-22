@@ -359,6 +359,62 @@ export const SHOWS = {
     polls: ['Who wins the next maxi challenge?', 'Who lip syncs next week?',
       'Who was robbed this week?', 'Who takes the crown?'],
   },
+
+  // ── THE FIFTH SHOW: PERFECT MATCH ────────────────────────────────────
+  //
+  // A Love Island-style villa. The islanders decide who is with whom; the
+  // public decides who stays and who wins. Two doors out: dumped (by a
+  // recoupling, the public or the villa) and walked. Rounds are ballots on
+  // channels, the Traitors pattern (ADDING-A-SHOW.md §5): recoupling picks,
+  // the public's bottom couples, the villa's dumping ballots, Casa choices.
+  //
+  // Spec: docs/superpowers/specs/2026-09-22-perfect-match-design.md
+  'perfect-match': {
+    prefix: 'pm', name: 'Perfect Match', short: 'PM', emoji: '💘', accent: '#ff6b9d',
+    venue: { label: 'The Villa', icon: '🌴' },
+    // Set at the bottom of js/pm-run.js (Plan 3). Absent until then, which is
+    // deliberate: the setup screen must refuse a show with no run loop.
+    runnableFlag: '_pmRunnable',
+    airNight: 6,
+    rosterPlace: 'VILLA',
+    hasJury: false,
+    roundsPath: 'episodeHistory',
+    /* WHAT SHAPE THIS SHOW'S ROUNDS ARE IN -- see roundShape() below.
+       Ballots on channels, so no fourth shape and no new season_ref branches. */
+    roundShape: 'ballots',
+    words: {
+      quietRound: 'A normal day in the villa',
+      player: 'islander', players: 'islanders', round: 'Episode',
+      exit: 'dumped', exitAction: 'dump',
+      // THE SECOND EXIT VERB, read through exitVerbs(). An islander who walks
+      // was not dumped, and saying so is the "evicted over a camp" bug class.
+      exitWalk: 'walked',
+      challenge: 'challenge', comp: 'challenge', comps: 'challenges won',
+      compBeast: 'challenge star', compWon: 'challenges',
+      milestone: 'the final',
+      audienceAward: 'Fan Favourite Islander',
+      fanWords: ['recoupling', 'bombshell', 'casa amor', 'grafting', 'mugged off',
+        'firepit', 'hideaway', 'beach hut', 'villa', 'dumped from the island'],
+      host: 'Dior',
+    },
+    // PROVISIONAL until a season has been played and the signals printed
+    // (§2.5). A dating show sells romance and mess; strategy is the smallest.
+    audience: { strategy: 0.5, blindside: 0.9, mess: 1.4, predictable: 0.8,
+      steamroll: 1.0, showmance: 1.6, twist: 1.1 },
+    // Written by the export (Plan 5). Declared now so the article rows exist.
+    careerStats: [
+      ['pm.couplings',            'totalCouplings'],
+      ['pm.timesStolen',          'totalTimesStolen'],
+      ['pm.publicVotesSurvived',  'totalPublicVotesSurvived'],
+    ],
+    articleStats: {
+      career: [['couplings', 'Couplings'], ['publicVotesSurvived', 'Public votes survived']],
+      season: [['pm.couplings', 'Couplings'], ['pm.publicVotesSurvived', 'Public votes survived']],
+      comps: [['pm.couplings', 'Couplings'], ['pm.timesStolen', 'Times stolen']],
+    },
+    polls: ['Who is your favourite couple?', 'Who gets dumped next?',
+      'Who twists at Casa Amor?', 'Who wins the villa?'],
+  },
 };
 
 /** The default for anything that predates formats — every old season is this. */
@@ -381,6 +437,7 @@ export const DEFAULT_FORMAT = 'total-drama';
 export const DRAG_FORMAT = 'drag-race';
 export const TRAITORS_FORMAT = 'traitors';
 export const BB_FORMAT = 'big-brother';
+export const PERFECT_MATCH_FORMAT = 'perfect-match';
 
 const BY_PREFIX = Object.fromEntries(
   Object.entries(SHOWS).map(([format, show]) => [show.prefix, format]));
@@ -425,7 +482,7 @@ export function exitVerbs(format) {
   // The show's own verbs, in the order it uses them: the ordinary one first,
   // then whatever second door that format declares. A show with none of the
   // extras returns a list of one, which is what two of the four do.
-  return [w.exit, w.exitMurder, w.exitDq].filter(Boolean);
+  return [w.exit, w.exitMurder, w.exitDq, w.exitWalk].filter(Boolean);
 }
 
 /**
@@ -658,5 +715,10 @@ export const HOSTS_BY_FORMAT = {
   // stage) — see js/dr/data/judges.js, which owns both.
   'drag-race': [
     { value: 'RuPaul', label: 'RuPaul' },
+  ],
+  // One host. Portrait assets/avatars/dior.jpg (a HOST literal, which the
+  // portrait guard allows). Inspired by Ariana Madix; her own voice.
+  'perfect-match': [
+    { value: 'Dior', label: 'Dior' },
   ],
 };

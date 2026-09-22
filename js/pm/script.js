@@ -26,7 +26,7 @@ export { HUT };
 export const SPEAKERS = ['a', 'b', 'c', 'dior', 'narrator'];
 export const FACT_KEYS = ['rung', 'thinks', 'persona', 'intent', 'attachment', 'mood', 'bombshell',
   'early', 'coupled', 'gap', 'knows', 'faking', 'bPersona', 'bMood', 'bRung', 'stance', 'family',
-  'choice', 'cause', 'channel', 'stole'];
+  'choice', 'cause', 'channel', 'stole', 'bTaken'];
 
 const partnerOf = (state, n) => { const c = state.couples.find(x => x.includes(n)); return c ? (c[0] === n ? c[1] : c[0]) : null; };
 
@@ -72,6 +72,7 @@ export function factsFor(state, ev) {
     bPersona: pb?.persona || null,
     bMood: b ? moodOf(state, b) : null,
     bRung: b ? stepOf(state, b, a) : null,
+    bTaken: !!b && !!partnerOf(state, b) && partnerOf(state, b) !== a,
   };
   for (const k of ['choice', 'cause', 'channel', 'stole']) if (ev.extra?.[k] != null) f[k] = ev.extra[k];
   return f;

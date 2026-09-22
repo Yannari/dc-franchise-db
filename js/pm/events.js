@@ -289,10 +289,20 @@ export function makeEvent(state, rng, { phase, kind, players, extra = {}, aired 
     const who = pick(rng, players);
     // A faker's hut gives them away too: the hut is the Feels layer (spec §6.5).
     const faking = players.some(o => o !== who && shown(state, who, o) - romance(who, o) >= 3);
-    const stance = faking || state.secrets.some(x => !x.known && x.who === who) ? 'two-faced' : 'honest';
-    ev.hut = { who, stance, script: hutFor(state, ev, who, stance) };
-    const p = (ev.pop[who] ||= { approval: 0, fame: 0 });
-    if (stance === 'two-faced') { p.approval -= 0.5; p.fame += 0.5; } else p.fame += 0.3;
+    // Two-faced is what the speaker is hiding NOW: a mask, or a secret from
+    // this episode or the last. Every hidden kiss from week one made every
+    // hut two-faced by week five (80-97% of cutaways, measured).
+    const fresh = state.secrets.some(x => !x.known && x.who === who && x.ep >= state.ep - 1);
+    const stance = faking || fresh ? 'two-faced' : 'honest';
+    const script = hutFor(state, ev, who, stance);
+    // Nothing left to say this episode that hasn't been said: no cutaway.
+    if (script) {
+      ev.hut = { who, stance, script };
+      const p = (ev.pop[who] ||= { approval: 0, fame: 0 });
+      // Rarer and always about something real since the stance fix, so it
+      // costs more: -0.5 left villains at 56% of seasons by ep 12.
+      if (stance === 'two-faced') { p.approval -= 1.0; p.fame += 0.5; } else p.fame += 0.3;
+    }
   }
   if (ev.aired) writeLedger(state, ev, false);
   return ev;

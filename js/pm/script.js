@@ -26,7 +26,7 @@ export { HUT };
 export const SPEAKERS = ['a', 'b', 'c', 'dior', 'narrator'];
 export const FACT_KEYS = ['rung', 'thinks', 'persona', 'intent', 'attachment', 'mood', 'bombshell',
   'early', 'coupled', 'gap', 'knows', 'faking', 'bPersona', 'bMood', 'bRung', 'stance', 'family',
-  'choice', 'cause', 'channel', 'stole', 'bTaken', 'archetype', 'taken', 'loyal', 'late', 'gender', 'bGender', 'myRung', 'phase'];
+  'choice', 'cause', 'channel', 'stole', 'bTaken', 'archetype', 'taken', 'loyal', 'late', 'gender', 'bGender', 'myRung', 'phase', 'kind', 'role', 'withB'];
 
 // Archetype groups a pool may name instead of listing them (CLAUDE.md).
 export const VILLAINS = ['villain', 'mastermind', 'schemer'];
@@ -134,14 +134,17 @@ function scriptRng(state) {
   return state._scriptRng;
 }
 
-export function pickScript(state, pool, ps, facts) {
+export function pickScript(state, pool, ps, facts, { allowRepeat = true } = {}) {
   const fits = pool.filter(e => matches(e.when, facts));
   const cands = fits.length ? fits : pool.filter(e => !e.when);
   if (!cands.length) return null;
   const rng = scriptRng(state);
   let ws = cands.map(e => weightFor(state, e, ps, facts));
   // Every entry already spent on this pair: allow a repeat rather than silence.
-  if (!ws.some(w => w > 0)) ws = cands.map(() => 1);
+  if (!ws.some(w => w > 0)) {
+    if (!allowRepeat) return null;
+    ws = cands.map(() => 1);
+  }
   let r = rng() * ws.reduce((s, w) => s + w, 0);
   for (let i = 0; i < cands.length; i++) { r -= ws[i]; if (r <= 0) return cands[i]; }
   return cands[cands.length - 1];
@@ -222,8 +225,12 @@ export function scriptFor(state, ev) {
 export function hutFor(state, ev, who, stance) {
   const others = ev.players.filter(n => n !== who);
   const ps = [who, ...others];
-  const facts = { ...factsFor(state, { ...ev, players: ps }), stance, family: familyOf(ev.kind) };
-  const entry = pickScript(state, HUT[stance], [who], facts);
+  // role: 0 started the scene, 1 was on the receiving end, 2 was talked about.
+  const facts = { ...factsFor(state, { ...ev, players: ps }), stance, family: familyOf(ev.kind),
+    kind: ev.kind, role: ev.players.indexOf(who), withB: others.length > 0 };
+  // A cutaway is optional: better none than the same line twice in an episode.
+  const entry = pickScript(state, HUT[stance], [who], facts, { allowRepeat: false });
+  if (!entry) return null;
   noteUse(state, entry, [who]);
   return renderScript(entry, ps, state);
 }

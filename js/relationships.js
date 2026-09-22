@@ -5,6 +5,9 @@ import { gs } from './core.js';
 export const RELATIONSHIP_DIMENSIONS = Object.freeze([
   'affection', 'trust', 'strategicRespect', 'fear',
   'obligation', 'resentment', 'attraction',
+  // Having fallen for somebody, as against fancying them (Perfect Match,
+  // spec §6.1). Grows slowly, never decays on its own. 0 for every other show.
+  'love',
 ]);
 const SIGNED = new Set(['affection', 'trust', 'strategicRespect']);
 const clamp = (v, min, max) => Math.max(min, Math.min(max, Number.isFinite(Number(v)) ? Number(v) : 0));
@@ -16,7 +19,7 @@ function validateDimension(d) {
 export function defaultRelationshipDimensions(legacyBond = 0) {
   const bond = clamp(legacyBond, -10, 10);
   return { affection: bond, trust: bond, strategicRespect: 0, fear: 0,
-    obligation: 0, resentment: Math.max(0, -bond), attraction: 0 };
+    obligation: 0, resentment: Math.max(0, -bond), attraction: 0, love: 0 };
 }
 function store() {
   if (!gs) return null;

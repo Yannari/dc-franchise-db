@@ -95,10 +95,10 @@ export function decideLadder(state, rng, attachmentOf = null) {
       if (cur === 'coupled' && rng() < r * 0.9) {
         setStep(state, x, y, 'cracking-on'); tellStep(state, y, x);
         out.push({ kind: 'cracking-on', from: x, to: y });
-      } else if (cur === 'cracking-on' && rng() < 0.5) {
+      } else if (cur === 'cracking-on' && rng() < 0.6) {
         if (turned > -1) { setStep(state, x, y, 'open'); tellStep(state, y, x); out.push({ kind: 'keeping-open', from: x, to: y }); }
-        else if (rng() < r * 0.6) { setStep(state, x, y, 'closed-off'); tellStep(state, y, x); out.push({ kind: 'close-off', from: x, to: y }); }
-      } else if (cur === 'open' && turned < 0 && rng() < r * 0.45) {
+        else if (rng() < r * 1.2) { setStep(state, x, y, 'closed-off'); tellStep(state, y, x); out.push({ kind: 'close-off', from: x, to: y }); }
+      } else if (cur === 'open' && turned < 0 && rng() < r * 0.9) {
         setStep(state, x, y, 'closed-off'); tellStep(state, y, x);
         out.push({ kind: 'close-off', from: x, to: y });
       }
@@ -108,12 +108,12 @@ export function decideLadder(state, rng, attachmentOf = null) {
     const [asker, askee] = ra + state.profiles[a].stats.boldness / 20 >= rb + state.profiles[b].stats.boldness / 20 ? [a, b] : [b, a];
     const rAsk = Math.max(ra, rb), rYes = readiness(state, askee, asker, attachmentOf);
     const both = Math.min(at(stepOf(state, a, b)), at(stepOf(state, b, a)));
-    if (both >= at('open') && both < at('exclusive') && at(stepOf(state, asker, askee)) >= at('closed-off')
-      && rng() < rAsk * 0.35) {
+    if (both >= at('open') && both < at('exclusive') && at(stepOf(state, asker, askee)) >= at('open')
+      && rng() < rAsk * 0.5) {
       const yes = rng() < clamp(0.15 + rYes * 1.1, 0, 0.97);
       if (yes) { setStep(state, a, b, 'exclusive'); setStep(state, b, a, 'exclusive'); tellStep(state, a, b); tellStep(state, b, a); }
       out.push({ kind: 'exclusive-ask', from: asker, to: askee, yes });
-    } else if (both === at('exclusive') && rng() < rAsk * 0.22) {
+    } else if (both === at('exclusive') && rng() < rAsk * 0.35) {
       const yes = rng() < clamp(0.1 + rYes * 1.15, 0, 0.97);
       if (yes) { setStep(state, a, b, 'official'); setStep(state, b, a, 'official'); tellStep(state, a, b); tellStep(state, b, a); }
       out.push({ kind: 'official-ask', from: asker, to: askee, yes });

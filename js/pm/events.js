@@ -10,9 +10,13 @@
 // Templates carry {a}/{b}/{c}; names are filled at render time, never here.
 // Plan 1 ships two lines per kind. The prose pools are Plan 3.
 import { addBond, getBond } from '../bonds.js';
+import { addRelationshipDimension } from '../relationships.js';
 import { attr, nudgeAttraction, ickHit } from './chemistry.js';
 import { recordAired, nudgeBelief } from './ledger.js';
-import { romance, shown } from './feelings.js';
+import { romance, shown, revealTruth } from './feelings.js';
+import { closedness, betrayalWeight } from './ladder.js';
+import { feel, jealousyHit } from './emotions.js';
+import { girlCode, judgement } from './circle.js';
 
 export const PHASE_BUDGETS = { morning: 12, day: 40, event: 18, evening: 23 };
 export const HUT_RATE = 0.25;
@@ -81,8 +85,9 @@ export const KINDS = {
     salience: 0.6,
     tpl: ['{a} pulls {b} for a chat.', '"Can I borrow you?" {a} asks {b}.'],
     cast: (s, rng) => {
+      // Somebody who has closed off does not go looking (spec §6.7).
       const a = weighted(rng, s.villa.filter(n => compatibleMates(s, n).length)
-        .map(n => [n, S(s, n).boldness]));
+        .map(n => [n, S(s, n).boldness * (1 - 0.8 * closedness(s, n, partnerOf(s, n)))]));
       if (!a) return null;
       const b = weighted(rng, compatibleMates(s, a).filter(n => n !== partnerOf(s, a))
         .map(n => [n, attr(s, a, n)]));
@@ -104,9 +109,21 @@ export const KINDS = {
         if (!p || p === y) continue;
         const witnesses = roomMates(s, x).filter(n => n !== y && n !== p)
           .filter(() => rng() < 0.25);
-        s.secrets.push({ id: `sec${s.secrets.length + 1}`, who: x, partner: p, with: y,
-          severity: sev, ep: s.ep, witnesses, known: false, eventId: ev.id, casa: s.split });
+        const secret = { id: `sec${s.secrets.length + 1}`, who: x, partner: p, with: y,
+          severity: sev, ep: s.ep, witnesses, known: false, eventId: ev.id, casa: s.split };
+        s.secrets.push(secret);
         if (ev.aired) nudgeBelief(s.ledger, x, p, -3);
+        // Stepping out while you have closed off weighs on you.
+        feel(s, x, 'guilt', 2 * sev * closedness(s, x, p));
+        // The partner may simply see it happen.
+        if (roomMates(s, x).includes(p) && rng() < 0.35) {
+          secret.known = true;
+          jealousyHit(s, p, x, y, 3 * sev, { confirmed: true });
+          addRelationshipDimension(p, x, 'resentment', sev * betrayalWeight(s, p, x));
+        }
+        // Grafting on somebody else's couple costs you with their friends.
+        const py = partnerOf(s, y);
+        if (py && py !== x) girlCode(s, x, [y, py]);
       }
       return { pop: { ...pop1(a, partnerOf(s, a) ? -0.8 : 0.2, 1.5),
         ...pop1(b, partnerOf(s, b) ? -0.4 : 0.1, 1) } };
@@ -176,6 +193,12 @@ export const KINDS = {
       if (sec) sec.known = true;
       const sev = sec?.severity || 1;
       addBond(x, p, -1.5 * sev); nudgeAttraction(s, p, x, -1.0 * sev); addBond(w, x, -0.5);
+      // p now knows what x feels, and it lands by the rung p believed they were on.
+      revealTruth(s, p, x);
+      jealousyHit(s, p, x, sec?.with || x, 5 * sev, { confirmed: true });
+      addRelationshipDimension(p, x, 'resentment', 1.2 * sev * betrayalWeight(s, p, x));
+      // The messenger is judged by how much the exposed one liked them anyway.
+      addRelationshipDimension(x, w, 'resentment', 0.8 * judgement(s, x, w));
       if (ev.aired && partnerOf(s, p) === x) nudgeBelief(s.ledger, x, p, -6);
       return { pop: { ...pop1(w, 0.3, 1.5), ...pop1(p, 1.5, 2), ...pop1(x, -2, 2) }, major: [p, x] };
     },
@@ -241,7 +264,13 @@ export const KINDS = {
   // `extra.pop` and the major moments in `extra.majorPop`.
   ...Object.fromEntries(['entrance', 'date', 'steal', 'recouple-pick', 'dump-buildup',
     'dump-verdict', 'ballot-reveal', 'dump-reaction', 'dump-goodbye', 'dump-fallout',
-    'casa-return', 'photos', 'declaration', 'final-result', 'envelope', 'walk', 'reveal']
+    'casa-return', 'photos', 'declaration', 'final-result', 'envelope', 'walk', 'reveal',
+    // the ladder, the feelings, the friendships and the villa's rituals
+    'close-off', 'keeping-open', 'open-back-up', 'head-turned', 'exclusive-ask', 'official-ask',
+    'ask-declined', 'love-said', 'love-hanging', 'hideaway', 'torch', 'jealous-confront',
+    'jealous-sulk', 'jealous-retaliate', 'reassurance', 'overthinking', 'confession', 'advice',
+    'heart-rate', 'snog-marry-pie', 'movie-night', 'double-standard', 'notes', 'families',
+    'solidarity']
     .map(k => [k, { salience: 1, tpl: [`{a} — ${k}.`], cast: () => null,
       apply: (s, ev) => ({ pop: ev.extra.pop || {}, major: ev.extra.majorPop || [] }) }])),
 };

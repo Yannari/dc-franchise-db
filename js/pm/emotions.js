@@ -92,7 +92,12 @@ export function tickEmotions(state) {
     e.guilt *= 0.85;
     e.heartbreak *= 0.88;
     e.loneliness = clamp(e.loneliness + (partner ? -0.6 : 0.8), 0, 10);
-    const target = partner ? clamp(0.6 * believed(state, n, partner) + 3 * believedCloseness(state, n, partner), 0, 10) : 3;
+    // Security is RECIPROCITY, not romance: do they seem as into me as I am
+    // into them? An even couple sits at 5; being the keener one pulls it down.
+    const target = partner
+      ? clamp(5 + 5 * (believed(state, n, partner) - romance(n, partner)) / 10
+        + 3 * believedCloseness(state, n, partner), 0, 10)
+      : 3;
     e.security = clamp(e.security + (target - e.security) * 0.25, 0, 10);
     e.confidence = clamp(e.confidence + (5 - e.confidence) * 0.1, 0, 10);
   }

@@ -26,7 +26,11 @@ export { HUT };
 export const SPEAKERS = ['a', 'b', 'c', 'dior', 'narrator'];
 export const FACT_KEYS = ['rung', 'thinks', 'persona', 'intent', 'attachment', 'mood', 'bombshell',
   'early', 'coupled', 'gap', 'knows', 'faking', 'bPersona', 'bMood', 'bRung', 'stance', 'family',
-  'choice', 'cause', 'channel', 'stole', 'bTaken'];
+  'choice', 'cause', 'channel', 'stole', 'bTaken', 'archetype', 'taken', 'loyal'];
+
+// Archetype groups a pool may name instead of listing them (CLAUDE.md).
+export const VILLAINS = ['villain', 'mastermind', 'schemer'];
+export const NICE = ['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat'];
 
 const partnerOf = (state, n) => { const c = state.couples.find(x => x.includes(n)); return c ? (c[0] === n ? c[1] : c[0]) : null; };
 
@@ -73,6 +77,10 @@ export function factsFor(state, ev) {
     bMood: b ? moodOf(state, b) : null,
     bRung: b ? stepOf(state, b, a) : null,
     bTaken: !!b && !!partnerOf(state, b) && partnerOf(state, b) !== a,
+    archetype: players.find(p => p.name === a)?.archetype || null,
+    taken: !!partnerOf(state, a) && partnerOf(state, a) !== b,
+    // Narration only: a threshold picks words, never an outcome (CLAUDE.md).
+    loyal: (pa?.stats?.loyalty ?? 5) >= 7,
   };
   for (const k of ['choice', 'cause', 'channel', 'stole']) if (ev.extra?.[k] != null) f[k] = ev.extra[k];
   return f;
@@ -147,12 +155,45 @@ export function fill(text, ps) {
 const speakerName = (who, ps) => who === 'dior' ? hostName() : who === 'narrator' ? narratorName()
   : ps[{ a: 0, b: 1, c: 2 }[who]];
 
-export function renderScript(entry, ps) {
+// ── replies that depend on who is replying ───────────────────────────
+// A turn may be a VARIANT BLOCK instead of [speaker, text]:
+//   { by: 'b', vary: [ { when?, turns: [[speaker, text], …], beat? }, … ] }
+// The block's `when` is tested from the REPLYING speaker's own point of
+// view — `persona` is b's persona, `taken` is b's partner — so the opener
+// stays and the answer is the character's. One option has no `when`; it is
+// the plain reply, and it has to be good, because it is the one seen most.
+const ORDER = { a: 0, b: 1, c: 2 };
+function asSpeaker(ps, by) {
+  const i = ORDER[by] ?? 0;
+  return [ps[i], ...ps.filter((_, j) => j !== i)];
+}
+function pickVariant(state, block, ps) {
+  const opts = block.vary;
+  if (!state) return opts.find(o => !o.when) || opts[0];
+  const facts = factsFor(state, { players: asSpeaker(ps, block.by), extra: {} });
+  const fits = opts.filter(o => o.when && matches(o.when, facts));
+  if (!fits.length) return opts.find(o => !o.when) || opts[0];
+  const best = Math.max(...fits.map(o => Object.keys(o.when).length));
+  const top = fits.filter(o => Object.keys(o.when).length === best);
+  return top[Math.floor(scriptRng(state)() * top.length)];
+}
+
+export function renderScript(entry, ps, state = null) {
+  const lines = [];
+  let beat = entry.beat || null;
+  const picked = [];
+  for (const turn of entry.turns || []) {
+    if (Array.isArray(turn)) { lines.push(turn); continue; }
+    const v = pickVariant(state, turn, ps);
+    picked.push(turn.vary.indexOf(v));
+    lines.push(...v.turns);
+    if (v.beat) beat = v.beat;
+  }
   return {
-    id: entry.id,
+    id: picked.length ? `${entry.id}:${picked.join('.')}` : entry.id,
     stage: entry.stage ? fill(entry.stage, ps) : null,
-    lines: (entry.turns || []).map(([who, text]) => ({ who: speakerName(who, ps), text: fill(text, ps) })),
-    beat: entry.beat ? fill(entry.beat, ps) : null,
+    lines: lines.map(([who, text]) => ({ who: speakerName(who, ps), text: fill(text, ps) })),
+    beat: beat ? fill(beat, ps) : null,
   };
 }
 
@@ -165,7 +206,7 @@ export function scriptFor(state, ev) {
   const entry = pool?.length ? pickScript(state, pool, ev.players, factsFor(state, ev)) : null;
   const e = entry || placeholder(ev.kind);
   noteUse(state, e, ev.players);
-  return renderScript(e, ev.players);
+  return renderScript(e, ev.players, state);
 }
 
 /** The beach-hut cutaway: one speaker, straight to camera. */
@@ -175,7 +216,7 @@ export function hutFor(state, ev, who, stance) {
   const facts = { ...factsFor(state, { ...ev, players: ps }), stance, family: familyOf(ev.kind) };
   const entry = pickScript(state, HUT[stance], [who], facts);
   noteUse(state, entry, [who]);
-  return renderScript(entry, ps);
+  return renderScript(entry, ps, state);
 }
 
 const FAMILIES = {

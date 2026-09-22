@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { setPlayers } from '../js/core.js';
-import { POOLS, HUT, SPEAKERS, FACT_KEYS, renderScript } from '../js/pm/script.js';
+import { POOLS, HUT, SPEAKERS, FACT_KEYS, renderScript, speak } from '../js/pm/script.js';
+import { SLOTS, REGIONAL_WORDS } from '../js/pm/lines/dialect.js';
 import { foreignWordsIn } from './helpers/show-vocabulary.js';
 
 // Every entry in every pool, with its variant blocks opened out.
@@ -93,17 +94,64 @@ describe('the words follow the rules', () => {
     for (const [k, e] of ENTRIES) for (const x of texts(e)) {
       // A capitalised word straight after a placeholder slot's usual place would be a name;
       // the practical check is that nothing but {a}/{b}/{c} forms appear in braces.
-      for (const [m] of x.matchAll(/\{[^}]*\}/g)) expect(m, `${k} ${e.id}`).toMatch(/^\{(pa|pb|a|b|c)(\.(obj|pos|posAdj|ref|Obj|PosAdj))?\}$/);
+      for (const [m] of x.matchAll(/\{(?!~)[^}]*\}/g)) expect(m, `${k} ${e.id}`).toMatch(/^\{(pa|pb|a|b|c)(\.(obj|pos|posAdj|ref|Obj|PosAdj))?\}$/);
       expect(x, `${k} ${e.id}`).not.toMatch(/\bDior\b/);
     }
   });
   it("no other show's vocabulary", () => {
     for (const [k, e] of ENTRIES) for (const x of texts(e)) expect(foreignWordsIn(x, 'perfect-match'), `${k} ${e.id}: ${x}`).toEqual([]);
   });
+  it('no line built to be clever', () => {
+    // Found reading played seasons (user: "trying too much to be clever … like
+    // a translation"). A beat that undercuts the scene for a laugh, or a reply
+    // written as an epigram. Grows every read-through.
+    const CLEVER = ['it takes another', 'nobody can argue', 'within the hour', 'rest of the series', 'lasts about',
+      'there was nothing on', 'counts it as', "that's how i knew", "that's the whole plan", 'just maths',
+      'but on purpose', "that's just my face", 'nobody said everyone', 'i\'ve been doing the maths',
+      'finds their plates', 'for all the wrong reasons', 'the bar is on the floor', 'this is how it ends',
+      'i will die on this hill', 'less obviously', "that's the secret", 'better. worse. both'];
+    const bad = [];
+    for (const [k, e] of ENTRIES) for (const x of texts(e)) for (const c of CLEVER) if (x.toLowerCase().includes(c)) bad.push(`${k} ${e.id}: "${c}"`);
+    expect(bad).toEqual([]);
+  });
   it('no sting endings', () => {
     for (const [k, e] of ENTRIES) for (const x of [...beats(e), ...turns(e).filter(([w]) => w === 'narrator').map(t => t[1])]) {
       for (const s of STINGS) expect(x.toLowerCase(), `${k} ${e.id}`).not.toContain(s);
     }
+  });
+});
+
+describe('every islander talks like where they are from', () => {
+  const narration = e => [e.stage, e.beat, ...(e.turns || []).filter(t => !Array.isArray(t)).flatMap(b => b.vary.map(v => v.beat))].filter(Boolean);
+  it('slots are only in spoken lines, and every slot exists', () => {
+    for (const [k, e] of ENTRIES) {
+      for (const x of narration(e)) expect(x, `${k} ${e.id}: narration is neutral`).not.toMatch(/\{~/);
+      for (const [, x] of turns(e)) for (const [, key] of x.matchAll(/\{~([A-Za-z-]+)\}/g)) expect(SLOTS, `${k} ${e.id}`).toHaveProperty(key.toLowerCase());
+    }
+  });
+  it('no regional word is written straight into a line', () => {
+    const bare = x => x.replace(/\{~[A-Za-z-]+\}/g, ' ').toLowerCase();
+    const bad = [];
+    for (const [k, e] of ENTRIES) {
+      if (whens(e).some(w => w.dialect)) continue;   // a line written for one dialect may use its words
+      for (const x of texts(e)) for (const w of REGIONAL_WORDS) {
+        if (new RegExp(`\\b${w}\\b`).test(bare(x))) bad.push(`${k} ${e.id}: "${w}" in: ${x}`);
+      }
+    }
+    expect(bad).toEqual([]);
+  });
+  it('no British-only grammar in a neutral line ("I was sat", "was stood")', () => {
+    for (const [k, e] of ENTRIES) for (const x of texts(e)) {
+      expect(x, `${k} ${e.id}`).not.toMatch(/\b(was|were|be|been|is|am|are|'m|'re|'s)\s+(sat|stood)\b/i);
+      expect(x, `${k} ${e.id}: a bare "Course" is British; say "Of course"`).not.toMatch(/(^|[.!?…]\s+)Course\b/);
+    }
+  });
+  it('the speaker, not the scene, decides the words', () => {
+    expect(speak("Mate, my {~mum} loves {~telly}. It's my favourite.", 'us')).toBe("Mate, my mom loves TV. It's my favorite.");
+    expect(speak('My {~mum} loves {~telly}.', 'uk')).toBe('My mum loves the telly.');
+    expect(speak('{~Mate}, {~oh-my-days}.', 'uk')).toBe('Mate, oh my days.');
+    expect(speak('{~Mate}, {~oh-my-days}.', 'us')).toBe('Man, oh my God.');
+    expect(speak('I promise.', 'us')).toBe('I promise.');
   });
 });
 

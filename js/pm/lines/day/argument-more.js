@@ -22,7 +22,7 @@ export const ARGUMENT_MORE = [
         { turns: [['b', "Because they said something funny. That's what laughing is."]],
           beat: '{a} goes inside and slams the door, and it swings back open.' },
         { when: { archetype: 'hothead' },
-          turns: [['b', "Oh my days. I'm not allowed to laugh now?"]], beat: 'They are both shouting by the end of it.' },
+          turns: [['b', "{~Oh-my-days}. I'm not allowed to laugh now?"]], beat: 'They are both shouting by the end of it.' },
         { when: { attachment: 'secure' },
           turns: [['b', "Come here. Nobody makes me laugh like you do. You know that."]], beat: '{a} lets {b} pull {a.obj} in for a hug.' },
       ] },
@@ -33,7 +33,7 @@ export const ARGUMENT_MORE = [
       ['b', "I wasn't talking over you."],
       ['a', 'You just did it again.'],
     ],
-    beat: 'The rest of the table suddenly finds their plates very interesting.' },
+    beat: 'Nobody else at the table says a word.' },
   { id: 'argument.09', when: { coupled: false },
     turns: [
       ['a', "I know what you said about me."],
@@ -101,7 +101,7 @@ export const ARGUMENT_MORE = [
       ['a', 'To get a drink! I was coming back!'],
       ['b', "How was I meant to know that?"],
     ],
-    beat: 'Somebody else takes the straighteners while they argue.' },
+    beat: 'It goes on until somebody tells them both to stop.' },
   { id: 'argument.16', when: { coupled: true, rung: ['exclusive', 'official'] },
     turns: [
       ['a', "We're meant to be exclusive, and you're still flirting with everyone."],
@@ -174,7 +174,7 @@ export const ARGUMENT_MORE = [
       ['b', "And I did it the day before that."],
       ['a', "Once! You did it once!"],
     ],
-    beat: 'By the time they have finished, somebody else has done it.' },
+    beat: 'Nobody does the washing up.' },
   { id: 'argument.25', when: { coupled: true, attachment: 'anxious' },
     turns: [
       ['a', "Where were you? I looked everywhere."],
@@ -188,7 +188,7 @@ export const ARGUMENT_MORE = [
       ['a', "Do you want to say that again?"],
       ['b', "I don't need to. You heard me."],
     ],
-    beat: 'Two of the lads step in between them before it goes any further.' },
+    beat: 'Two of the others step in between them before it goes any further.' },
   { id: 'argument.27',
     turns: [
       ['a', "Stop telling me to calm down."],

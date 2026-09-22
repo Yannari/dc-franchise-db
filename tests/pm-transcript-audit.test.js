@@ -43,7 +43,14 @@ it('writes a season transcript', () => {
   const cast = makeIslanders(22, seed).map((p, i) => ({ ...p, name: (i % 2 === 0 ? F : M)[Math.floor(i / 2)] }));
   setPlayers(cast);
   const names = cast.map(p => p.name);
-  const { rows } = playPerfectMatchSeason({ cast: names, setup: roleSetup(names), seed });
+  // A mixed villa, so the dialects can be heard side by side (cast setup's
+  // "where they're from"; blank would take the season default, UK).
+  const MIX = ['uk', 'us', 'uk', 'au', 'ie', 'us', 'uk'];
+  const setup = roleSetup(names);
+  names.forEach((n, i) => { setup[n].dialect = MIX[i % MIX.length]; });
+  const { rows } = playPerfectMatchSeason({ cast: names, setup, seed });
+  const FROM = { uk: 'UK', us: 'US', au: 'Australia', ie: 'Ireland' };
+  const castList = names.map(n => `${esc(n)} <span class="from">${FROM[setup[n].dialect]}</span>`).join(' · ');
 
   const eps = rows.map(r => {
     const byPhase = [];
@@ -71,6 +78,7 @@ details{background:var(--card);border:1px solid var(--line);border-radius:12px;m
 summary{font:600 17px system-ui,sans-serif;cursor:pointer;padding:8px 0}.count{color:var(--soft);font-weight:400;font-size:13px;margin-left:8px}
 h3{font:600 12px system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--pink);margin:22px 0 6px}
 .couples{font:14px system-ui,sans-serif;color:var(--soft)}
+.cast{font:14px/1.9 system-ui,sans-serif;margin:0 0 8px}.from{color:var(--soft);font-size:12px}
 .scene{border-top:1px solid var(--line);padding:10px 0}.scene.hidden{opacity:.6}
 .meta{font:12px system-ui,sans-serif;color:var(--soft);margin-bottom:4px}.id{float:right;opacity:.6}
 .stage,.beat{font-style:italic;color:var(--soft);margin:4px 0}.line{margin:3px 0}
@@ -78,6 +86,7 @@ h3{font:600 12px system-ui,sans-serif;letter-spacing:.12em;text-transform:upperc
 .hut p{margin:2px 0}.tag{font:11px system-ui,sans-serif;color:var(--soft);display:block}.tag.unaired{display:inline;color:var(--pink);margin-left:6px}
 </style></head><body>
 <h1>Perfect Match — season ${seed}</h1>
+<p class="cast">${castList}</p>
 <p class="sub">Synthetic cast, first names for reading. Faded scenes didn't air: the public never saw them. The id on the right is the script that was used.</p>
 ${eps}
 </body></html>`;

@@ -26,9 +26,9 @@ import { ARGUMENT_MORE } from './day/argument-more.js';
 const PULL_05 = [
     { id: 'pull.01', when: { bTaken: true },
       turns: [
-        ['a', 'Can I be honest with you? Properly honest.'],
+        ['a', 'Can I be honest with you? Really honest.'],
         ['b', 'Go on.'],
-        ['a', "If you'd walked in on day one, I don't think you'd be sat on that bed with them."],
+        ['a', "If you'd walked in on day one, I don't think you'd be sitting on that bed with them."],
         { by: 'b', vary: [
           { turns: [['b', "You can't say stuff like that to me."], ['a', "I know. I've said it now."]],
             beat: "{b} doesn't get up." },
@@ -91,7 +91,7 @@ const PULL_05 = [
       turns: [
         ['a', 'Can I borrow you for a minute?'],
         { by: 'b', vary: [
-          { turns: [['b', 'Me? Go on, then.'], ['a', "I feel like we haven't had a proper chat yet, and I wanted one."],
+          { turns: [['b', 'Me? Go on, then.'], ['a', "I feel like we haven't had a real chat yet, and I wanted one."],
             ['b', "That's actually really sweet."]],
             beat: '{b} follows {a.obj} out to the daybeds, smiling.' },
           { when: { persona: 'hopeless-romantic' },

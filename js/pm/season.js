@@ -64,10 +64,12 @@ function relationshipSnapshot(state) {
 }
 
 export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = SEASON_TEMPLATE,
-  splitOrStealOn = false } = {}) {
+  splitOrStealOn = false, dialect = 'uk' } = {}) {
   setGs({ bonds: {}, perceivedBonds: {}, relationshipDimensions: {}, activePlayers: [],
     episodeHistory: [], popularity: {} });
   const state = initState(cast, setup, seed);
+  // The season's default voice, for any islander whose cast setup left it blank.
+  state.dialect = dialect;
   gs.pm = state;
   const queues = queuesFor(state, cast);
   let final = null;

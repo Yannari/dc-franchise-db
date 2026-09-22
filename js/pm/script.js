@@ -19,6 +19,7 @@ import { emo, attachmentLabel } from './emotions.js';
 import { romance, shown } from './feelings.js';
 import { DAY } from './lines/day.js';
 import { HUT } from './lines/hut.js';
+import { SLOTS, US_SPELLING } from './lines/dialect.js';
 
 export const POOLS = { ...DAY };
 export { HUT };
@@ -26,7 +27,7 @@ export { HUT };
 export const SPEAKERS = ['a', 'b', 'c', 'dior', 'narrator'];
 export const FACT_KEYS = ['rung', 'thinks', 'persona', 'intent', 'attachment', 'mood', 'bombshell',
   'early', 'coupled', 'gap', 'knows', 'faking', 'bPersona', 'bMood', 'bRung', 'stance', 'family',
-  'choice', 'cause', 'channel', 'stole', 'bTaken', 'archetype', 'taken', 'loyal', 'late', 'gender', 'bGender', 'myRung', 'phase', 'kind', 'role', 'withB', 'newArrival'];
+  'choice', 'cause', 'channel', 'stole', 'bTaken', 'archetype', 'taken', 'loyal', 'late', 'gender', 'bGender', 'myRung', 'phase', 'kind', 'role', 'withB', 'newArrival', 'dialect'];
 
 // Archetype groups a pool may name instead of listing them (CLAUDE.md).
 export const VILLAINS = ['villain', 'mastermind', 'schemer'];
@@ -89,6 +90,7 @@ export function factsFor(state, ev) {
     bGender: b ? players.find(p => p.name === b)?.gender || null : null,
   };
   f.phase = ev.phase || null;
+  f.dialect = dialectOf(state, a);
   // Somebody walked in today (a bombshell, Casa's arrivals) — not day one.
   f.newArrival = state.ep > 1 && (state.villa || []).some(n => state.ledger?.firstEp?.[n] === state.ep);          // morning, day, event (the challenge), evening, firepit…
   for (const k of ['choice', 'cause', 'channel', 'stole']) if (ev.extra?.[k] != null) f[k] = ev.extra[k];
@@ -169,6 +171,29 @@ export function fill(text, ps, partners = {}) {
   });
 }
 
+/** Where a speaker is from: their cast setup, else the season's default. */
+export function dialectOf(state, name) {
+  return state?.profiles?.[name]?.dialect || state?.dialect || 'uk';
+}
+// The host and the voiceover have their own voices (the registry says whose).
+const HOST_DIALECT = () => SHOWS['perfect-match'].words.hostDialect || 'us';
+const NARRATOR_DIALECT = () => SHOWS['perfect-match'].words.narratorDialect || 'uk';
+
+/** Fill `{~slot}` for this speaker's dialect, then American spelling if it applies. */
+export function speak(text, dialect) {
+  let out = text.replace(/\{~([A-Za-z-]+)\}/g, (m, key) => {
+    const slot = SLOTS[key.toLowerCase()];
+    if (!slot) return m;
+    const word = slot[dialect] || slot.uk;
+    return key[0] === key[0].toUpperCase() ? word[0].toUpperCase() + word.slice(1) : word;
+  });
+  if (dialect === 'us') out = out.replace(/[A-Za-z]+/g, w => {
+    const us = US_SPELLING[w.toLowerCase()];
+    return us ? (w[0] === w[0].toUpperCase() ? us[0].toUpperCase() + us.slice(1) : us) : w;
+  });
+  return out;
+}
+
 const speakerName = (who, ps) => who === 'dior' ? hostName() : who === 'narrator' ? narratorName()
   : ps[{ a: 0, b: 1, c: 2 }[who]];
 
@@ -211,7 +236,11 @@ export function renderScript(entry, ps, state = null) {
   return {
     id: picked.length ? `${entry.id}:${picked.join('.')}` : entry.id,
     stage: entry.stage ? f(entry.stage) : null,
-    lines: lines.map(([who, text]) => ({ who: speakerName(who, ps), text: f(text) })),
+    lines: lines.map(([who, text]) => {
+      const d = who === 'dior' ? HOST_DIALECT() : who === 'narrator' ? NARRATOR_DIALECT()
+        : dialectOf(state, ps[ORDER[who]]);
+      return { who: speakerName(who, ps), text: speak(f(text), d) };
+    }),
     beat: beat ? f(beat) : null,
   };
 }

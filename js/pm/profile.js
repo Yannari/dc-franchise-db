@@ -10,6 +10,11 @@
 // Each islander rolls off their OWN stream (`profile:<name>`), so authoring
 // one islander's intent never re-rolls anybody else.
 
+// Where an islander is from, for how they talk (pm/lines/dialect.js). Authored
+// in cast setup or left blank — blank takes the season's default, never a
+// roll: a voice nobody chose is a character the author never met.
+export const DIALECTS = ['uk', 'us', 'au', 'ie'];
+
 export const INTENTS = ['love', 'settle-down', 'first-love', 'fresh-start', 'fun', 'stir',
   'fame', 'win', 'money'];
 // Real islanders mostly say love; the weights are the roll, not a rule.
@@ -151,5 +156,6 @@ export function resolveIslander(player, setup = {}, rng) {
     persona: typeof setup.persona === 'string' && setup.persona
       ? setup.persona : derivePersona(stats, { late }),
     mug: isMug(stats),
+    dialect: DIALECTS.includes(setup.dialect) ? setup.dialect : null,
   };
 }

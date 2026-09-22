@@ -98,7 +98,7 @@ export const KISS = [
       ['b', "That's the third goodnight."],
       ['a', "I'm doing it properly this time."],
     ],
-    beat: 'It takes another four.' },
+    beat: '{b} kisses {a.obj} goodnight, and rolls over.' },
   { id: 'kiss.14', when: { early: true },
     turns: [
       ['b', "Was that alright?"],
@@ -115,7 +115,7 @@ export const KISS = [
       ['a', "We've got about thirty seconds before someone comes in."],
       ['b', "Then stop talking."],
     ],
-    beat: 'Someone comes in after ten.' },
+    beat: 'Someone walks in, and they jump apart.' },
   { id: 'kiss.16', when: { mood: 'secure' },
     turns: [
       ['a', 'What was that for?'],
@@ -146,7 +146,7 @@ export const KISS = [
       ['b', 'Where?'],
       ['a', "I'll get it."],
     ],
-    beat: 'There was nothing on {b.posAdj} lip.' },
+    beat: '{a} kisses {b.obj}.' },
   { id: 'kiss.21', when: { rung: ['closed-off', 'exclusive', 'official'] },
     turns: [
       ['a', 'Do you know what I like about kissing you?'],
@@ -170,6 +170,6 @@ export const KISS = [
       ['a', 'Do you remember our first kiss?'],
       ['b', 'You bumped my nose.'],
       ['a', "I didn't bump your nose."],
-      ['b', 'You properly bumped it. This is much better.'],
+      ['b', 'You really did. This is much better.'],
     ] },
 ];

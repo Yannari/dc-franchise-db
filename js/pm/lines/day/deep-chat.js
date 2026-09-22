@@ -5,7 +5,7 @@ export const DEEP_CHAT = [
   { id: 'deep-chat.01',
     turns: [
       ['a', "Can I tell you something I haven't told anyone in here?"],
-      ['b', 'Course.'],
+      ['b', 'Of course.'],
       ['a', 'The last time I let someone in, it went really badly. So if I go quiet sometimes, that\'s why.'],
       { by: 'b', vary: [
         { turns: [['b', "Thank you for telling me. I'm not going to rush you."]],
@@ -119,7 +119,7 @@ export const DEEP_CHAT = [
       ['a', "What does a good relationship look like to you?"],
       ['b', 'Boring. Honestly. Nobody guessing.'],
       ['a', 'Boring?'],
-      ['b', "Boring's underrated. Boring means you're safe."],
+      ['b', 'I mean safe. Knowing where I stand, every day.'],
     ] },
   { id: 'deep-chat.15', when: { persona: 'hopeless-romantic' },
     turns: [
@@ -198,11 +198,10 @@ export const DEEP_CHAT = [
   { id: 'deep-chat.24', when: { phase: 'evening' },
     turns: [
       ['a', "What's the kindest thing anyone's ever done for you?"],
-      ['b', "That's a big question for a Tuesday."],
-      ['a', 'Is it Tuesday?'],
-      ['b', "I have no idea. Ask me again tomorrow."],
+      ['b', "That's a big question."],
+      ['a', 'Take your time.'],
     ],
-    beat: 'They talk until the lights go off, and it never gets answered.' },
+    beat: 'They talk until the lights go off.' },
   { id: 'deep-chat.25', when: { attachment: 'secure' },
     turns: [
       ['a', "I'm not going to play games with you. I just want you to know that."],
@@ -237,8 +236,8 @@ export const DEEP_CHAT = [
     turns: [
       ['a', "Tell me about home. Not the facts. What it feels like."],
       ['b', "Loud. Busy. Everyone in everyone's business."],
-      ['a', "So, like the villa."],
-      ['b', "Like the villa, but with rain."],
+      ['a', 'So, a bit like the villa.'],
+      ['b', 'A bit. But at home I can go to my room and shut the door.'],
     ] },
   { id: 'deep-chat.30', when: { mood: 'lonely' },
     turns: [

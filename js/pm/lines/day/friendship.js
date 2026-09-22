@@ -15,7 +15,7 @@ export const FRIENDSHIP = [
     turns: [
       ['a', 'Why are you awake?'],
       ['b', 'Somebody in our room snores like a boiler. Why are you awake?'],
-      ['a', "Same somebody."],
+      ['a', "Same. It's unbearable."],
     ],
     beat: 'They make a pot of tea and drink all of it before anyone else gets up.' },
   { id: 'friendship.03', when: { gender: 'f', bGender: 'f' },
@@ -35,10 +35,10 @@ export const FRIENDSHIP = [
       ['b', "Nobody's watching."],
       ['a', "I'm watching. Two more."],
     ],
-    beat: '{b} does one, and {a} counts it as two.' },
+    beat: '{b} manages one more, and collapses on the mat.' },
   { id: 'friendship.05',
     turns: [
-      ['a', 'Can I say something? As your mate?'],
+      ['a', 'Can I say something? As your {~a-mate}?'],
       ['b', 'That always ends well.'],
       ['a', "You're allowed to want more than you're getting. That's all."],
       { by: 'b', vary: [
@@ -58,7 +58,7 @@ export const FRIENDSHIP = [
       ['a', "That was a learning experience."],
       ['b', "I'll help. I'm doing the knife bit, though."],
     ],
-    beat: 'The smoke alarm stays quiet, just about.' },
+    beat: 'They manage it without setting off the smoke alarm.' },
   { id: 'friendship.07', when: { persona: 'villa-clown' },
     turns: [
       ['a', "I've made a decision. Today I'm going to be mysterious."],
@@ -67,7 +67,7 @@ export const FRIENDSHIP = [
       ['b', 'Everyone always knows what you\'re thinking. You say it out loud.'],
       ['a', 'Not today.'],
     ],
-    beat: '{a} lasts about four minutes.' },
+    beat: '{a} is doing impressions again by lunch.' },
   { id: 'friendship.08',
     turns: [
       ['a', "You're my favourite person in here that I'm not kissing."],
@@ -88,7 +88,7 @@ export const FRIENDSHIP = [
       ['a', 'Who in here would you trust with a secret? Really trust.'],
       ['b', 'You. Maybe one other person.'],
       ['a', 'Who?'],
-      ['b', "That's the secret."],
+      ['b', "I'm not saying."],
     ] },
   { id: 'friendship.11',
     turns: [
@@ -142,7 +142,7 @@ export const FRIENDSHIP = [
       ['b', 'And then what?'],
       ['a', "And then I deal with it, and you don't have to."],
       ['b', "You'd do that?"],
-      ['a', "I'd do it before breakfast."],
+      ['a', 'Straight away. I mean it.'],
     ] },
   { id: 'friendship.17',
     turns: [
@@ -184,7 +184,7 @@ export const FRIENDSHIP = [
   { id: 'friendship.21', when: { persona: 'wallflower' },
     turns: [
       ['a', "Is it alright if I sit here? Everyone else is being loud."],
-      ['b', 'Course it is.'],
+      ['b', 'Of course it is.'],
       ['a', 'You don\'t have to talk to me.'],
       ['b', "I wasn't going to."],
     ],
@@ -250,23 +250,23 @@ export const FRIENDSHIP = [
     beat: '{a} gives {b.obj} a minute, and then a hug.' },
   { id: 'friendship.29',
     turns: [
-      ['a', 'I just won the argument about the washing up.'],
-      ['b', 'Who with?'],
-      ['a', "Nobody. I just did it myself. That's how you win."],
+      ['a', "I've done the washing up. All of it."],
+      ['b', 'Why?'],
+      ['a', "Because nobody else was going to, and I couldn't look at it any more."],
     ] },
   { id: 'friendship.30',
     turns: [
-      ['a', "Who's the worst at hiding it when they fancy someone?"],
+      ['a', "Who's the worst at hiding it when they {~fancy} someone?"],
       ['b', 'You.'],
       ['a', "I'm not hiding anything."],
       ['b', 'Exactly.'],
     ] },
   { id: 'friendship.31', when: { gender: 'm', bGender: 'm' },
     turns: [
-      ['a', 'Be honest, lad. Am I overdoing it?'],
+      ['a', 'Be honest, {~mate}. Am I overdoing it?'],
       ['b', 'With what?'],
       ['a', 'All of it. The compliments, the tea, the bringing breakfast to bed.'],
-      ['b', "Mate, you brought someone a croissant with a flower in it."],
+      ['b', "{~Mate}, you brought someone a croissant with a flower in it."],
       ['a', 'Was that too much?'],
       ['b', "It was a bit much. It worked, though."],
     ] },
@@ -298,7 +298,7 @@ export const FRIENDSHIP = [
       ['a', "I said don't look!"],
       ['b', "You can't say that and expect me not to look."],
     ],
-    beat: 'They both look.' },
+    beat: 'They both turn round to look.' },
   { id: 'friendship.36',
     turns: [
       ['a', 'Thanks for yesterday.'],

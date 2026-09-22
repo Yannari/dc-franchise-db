@@ -53,7 +53,7 @@ export const PULL_MORE = [
     stage: '{a} brings {b} a drink without being asked.',
     turns: [
       ['b', "What's this for?"],
-      ['a', "It's for you. That's the whole plan."],
+      ['a', "It's for you. That's it. No catch."],
     ] },
   { id: 'pull.12', when: { persona: 'hopeless-romantic' },
     turns: [
@@ -74,7 +74,7 @@ export const PULL_MORE = [
       ['b', "Where? It's a garden."],
       ['a', 'Round it. Twice, if it goes well.'],
     ],
-    beat: 'They go round three times.' },
+    beat: 'They walk round it slowly, and nobody interrupts them.' },
   { id: 'pull.15', when: { persona: 'villa-clown' },
     turns: [
       ['a', "I've been sent by the villa to find out if you're single."],
@@ -85,7 +85,7 @@ export const PULL_MORE = [
     turns: [
       ['a', "Can I steal you? Just for ten minutes."],
       { by: 'b', vary: [
-        { turns: [['b', 'Ten minutes. I\'m timing you.']], beat: 'It is forty minutes before either of them comes back.' },
+        { turns: [['b', 'Ten minutes. I\'m timing you.']], beat: '{b} goes with {a.obj} to the swing seat.' },
         { when: { taken: true, loyal: true },
           turns: [['b', "In front of everyone? Fine. Here's fine."]], beat: '{b} does not move from the bench.' },
       ] },
@@ -117,7 +117,7 @@ export const PULL_MORE = [
     turns: [
       ['a', "I should have done this weeks ago."],
       ['b', 'Done what?'],
-      ['a', 'Asked you for a proper chat. Not a group one. Just us.'],
+      ['a', 'Asked you for a real chat. Not a group one. Just us.'],
     ],
     beat: '{b} goes with {a.obj} to the swing seat.' },
   { id: 'pull.21',
@@ -138,17 +138,18 @@ export const PULL_MORE = [
     turns: [
       ['a', 'You laughed at my joke earlier.'],
       ['b', 'It was a good joke.'],
-      ['a', "It wasn't. That's how I knew."],
+      ['a', "It wasn't that good. You were being nice."],
+      ['b', 'Maybe I wanted to be nice to you.'],
     ] },
   { id: 'pull.24', when: { mood: 'lonely' },
     turns: [
       ['a', "Can I sit with you? I haven't really got anyone to sit with."],
-      ['b', 'Course you can.'],
+      ['b', 'Of course you can.'],
     ],
     beat: 'They sit together until the others come back from the gym.' },
   { id: 'pull.25',
     turns: [
-      ['a', "Can I be cheeky and ask you something?"],
+      ['a', "Can I ask you something? You don't have to answer."],
       ['b', "You're going to anyway."],
       ['a', 'If you were picking tonight, who would it be?'],
       { by: 'b', vary: [

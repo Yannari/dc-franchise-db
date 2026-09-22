@@ -12,7 +12,7 @@ export const GOSSIP = [
       ['b', 'Say what?'],
       ['a', "Earlier, on the daybeds. {c} was all over someone else, and it wasn't a chat."],
       { by: 'b', vary: [
-        { turns: [['b', '{c}? You saw that?'], ['a', 'I was sat right there.']],
+        { turns: [['b', '{c}? You saw that?'], ['a', 'I was sitting right there.']],
           beat: '{b} looks over at the pool, where {c} is laughing at something.' },
         { when: { archetype: 'hothead' },
           turns: [['b', "Where's {c}?"]], beat: '{b} is already walking.' },
@@ -37,7 +37,7 @@ export const GOSSIP = [
     turns: [
       ['a', "I'm telling you this because I love you, not because I want drama."],
       ['b', "What's happened?"],
-      ['a', "{c} was cracking on with someone else while you were in the shower. I watched it."],
+      ['a', "{c} was getting close with someone else while you were in the shower. I watched it."],
       ['b', 'How long for?'],
       ['a', 'Long enough.'],
     ],
@@ -88,8 +88,8 @@ export const GOSSIP = [
     ] },
   { id: 'gossip.08', when: K,
     turns: [
-      ['a', "You're my mate. So I'm not going to watch you get mugged off and say nothing."],
-      ['b', "Who's mugging me off?"],
+      ['a', "You're my {~a-mate}. So I'm not going to watch you get {~mugged-off} and say nothing."],
+      ['b', 'Who?'],
       ['a', '{c}.'],
     ],
     beat: "{b} laughs, and then sees {a.posAdj} face, and stops." },
@@ -144,7 +144,7 @@ export const GOSSIP = [
     ] },
   { id: 'gossip.15', when: { ...K, late: true },
     turns: [
-      ['a', "We've been in here a long time, and I've never grassed on anyone. So listen to me."],
+      ['a', "We've been in here a long time, and I've never {~grassed} on anyone. So listen to me."],
       ['b', "I'm listening."],
       ['a', "{c} isn't who you think. Not after what I saw."],
     ] },
@@ -201,7 +201,7 @@ export const GOSSIP = [
     ] },
   { id: 'gossip.23', when: K,
     turns: [
-      ['a', "I'd rather you hate me for telling you than find out on the telly."],
+      ['a', "I'd rather you hate me for telling you than find out on {~telly}."],
       ['b', 'Find out what?'],
       ['a', "What {c}'s been doing when you're not looking."],
     ] },

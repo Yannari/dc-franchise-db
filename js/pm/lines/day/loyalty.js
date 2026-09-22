@@ -78,10 +78,10 @@ export const LOYALTY = [
     ] },
   { id: 'loyalty.10', when: { persona: 'villa-clown' },
     turns: [
-      ['b', 'Fancy a chat?'],
-      ['a', "I'd love to, but I'm spoken for. I'm like a parking space."],
-      ['b', 'A parking space?'],
-      ['a', 'Reserved. Try round the back.'],
+      ['b', 'Got a minute for a chat?'],
+      ['a', "I'm flattered. I really am. But I'm spoken for."],
+      ['b', 'Worth a try.'],
+      ['a', 'Worth a try.'],
     ] },
   { id: 'loyalty.11',
     turns: [
@@ -99,9 +99,9 @@ export const LOYALTY = [
   { id: 'loyalty.13',
     turns: [
       ['b', 'Can I steal you?'],
-      ['a', "I'm not a pen."],
-      ['b', 'For a chat, I mean.'],
-      ['a', "I know what you mean. Still no."],
+      ['a', 'If it\'s for what I think it\'s for, no.'],
+      ['b', "It's just a chat."],
+      ['a', "I know what kind of chat. Still no."],
     ] },
   { id: 'loyalty.14', when: { myRung: ['exclusive', 'official'] },
     turns: [

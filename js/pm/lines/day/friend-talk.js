@@ -41,16 +41,16 @@ export const FRIEND_TALK = [
       ['a', 'And whoever happens to be looking.'],
     ] },
   { id: 'friendship.40', when: { gender: 'm', bGender: 'm' },
-    stage: 'The lads, round the fire pit.',
+    stage: 'Round the fire pit, just the boys.',
     turns: [
-      ['a', 'Have you cracked on with anyone yet?'],
+      ['a', 'Have you made a move on anyone yet?'],
       { by: 'b', vary: [
         { turns: [['b', 'Not yet. Waiting for the right one to walk through that door.'], ['a', 'You said that last week.'],
           ['b', "And I meant it last week."]] },
         { when: { taken: true },
-          turns: [['b', "Mate, I'm with {pb}. I'm not cracking on with anyone."], ['a', 'Just checking.']] },
+          turns: [['b', "{~Mate}, I'm with {pb}. I'm not making a move on anyone."], ['a', 'Just checking.']] },
         { when: { taken: true, persona: 'fuckboy' },
-          turns: [['b', "Define cracking on."], ['a', 'You know what I mean.'], ['b', "Then no. Mostly."]] },
+          turns: [['b', 'Define "a move".'], ['a', 'You know what I mean.'], ['b', "Then no. Mostly."]] },
       ] },
     ] },
   { id: 'friendship.41', when: { newArrival: true },
@@ -81,7 +81,7 @@ export const FRIEND_TALK = [
       ['b', "I've had one."],
       ['a', 'Then half a dance.'],
     ],
-    beat: '{b} does a whole one.' },
+    beat: '{b} ends up dancing for the rest of the song.' },
   { id: 'friendship.44', when: { taken: true },
     turns: [
       ['a', "Can I ask your opinion on something? It's about {pa}."],
@@ -99,7 +99,7 @@ export const FRIEND_TALK = [
   { id: 'friendship.45',
     turns: [
       ['a', "What's the first thing you're eating when you get out?"],
-      ['b', 'A proper roast.'],
+      ['b', 'A roast dinner. The full thing.'],
       ['a', 'In the middle of summer?'],
       ['b', 'In the middle of summer. With gravy.'],
     ] },
@@ -119,15 +119,15 @@ export const FRIEND_TALK = [
     ],
     beat: 'Nobody laughs. {b} reaches over and holds {a.posAdj} hand.' },
   { id: 'friendship.48', when: { gender: 'm', bGender: 'm', taken: true },
-    stage: "The lads' chat, late, by the fire pit.",
+    stage: 'Late, by the fire pit, just the boys.',
     turns: [
       ['a', "Can I say something and you won't laugh?"],
       ['b', 'No promises.'],
-      ['a', "I think I'm properly falling for {pa}."],
+      ['a', "I think I'm really falling for {pa}."],
       { by: 'b', vary: [
-        { turns: [['b', "I'm not laughing. I'm buzzing for you."]], beat: '{b} pulls {a} in for a hug.' },
+        { turns: [['b', "I'm not laughing. I'm {~buzzing} for you."]], beat: '{b} pulls {a} in for a hug.' },
         { when: { persona: 'villa-clown' },
-          turns: [['b', "I'm laughing a bit. But I'm buzzing for you."]], beat: '{b} pulls {a} in for a hug anyway.' },
+          turns: [['b', "I'm laughing a bit. But I'm {~buzzing} for you."]], beat: '{b} pulls {a} in for a hug anyway.' },
       ] },
     ] },
   { id: 'friendship.49', when: { bTaken: true, phase: 'morning' },
@@ -139,9 +139,10 @@ export const FRIEND_TALK = [
     beat: '{b} throws a pillow at {a.obj}.' },
   { id: 'friendship.50', when: { taken: false },
     turns: [
-      ['a', "Everyone's coupled up with someone they fancy, and I'm coupled up with a sunlounger."],
-      ['b', 'The sunlounger is lovely.'],
-      ['a', "The sunlounger doesn't cuddle."],
+      ['a', "Everyone's coupled up with someone they {~fancy}, and I'm on my own."],
+      ['b', 'Not for long.'],
+      ['a', 'You have to say that.'],
+      ['b', "I don't have to say anything. I mean it."],
     ],
     beat: '{b} gives {a.obj} a cuddle instead.' },
   { id: 'friendship.51',
@@ -159,7 +160,7 @@ export const FRIEND_TALK = [
     ] },
   { id: 'friendship.53', when: { early: true },
     turns: [
-      ['a', "I didn't think I'd make a proper mate in here."],
+      ['a', "I didn't think I'd make a real friend in here."],
       ['b', 'Same. I thought it would all be about the couples.'],
       ['a', "It is all about the couples. You're a bonus."],
     ] },
@@ -199,7 +200,7 @@ export const FRIEND_TALK = [
       ['a', 'Double date when we get out? Us, {pa} and {pb}.'],
       ['b', '{pb} would love that. {pb} loves you.'],
       ['a', 'Everyone loves me.'],
-      ['b', 'Nobody said everyone.'],
+      ['b', 'They do, to be fair.'],
     ] },
   { id: 'friendship.59', when: { phase: ['morning', 'day'] },
     turns: [
@@ -224,7 +225,7 @@ export const FRIEND_TALK = [
     ] },
   { id: 'friendship.62', when: { bTaken: true },
     turns: [
-      ['a', 'Is {pb} being nice to you? Properly nice?'],
+      ['a', 'Is {pb} being nice to you? Really nice?'],
       { by: 'b', vary: [
         { turns: [['b', 'Yeah. Really nice.'], ['a', 'Good. Because I was ready to have a word.']] },
         { when: { attachment: 'anxious' },
@@ -239,15 +240,15 @@ export const FRIEND_TALK = [
     ] },
   { id: 'friendship.64', when: { gender: 'm', bGender: 'm' },
     turns: [
-      ['a', "I'm not being funny, but you're the only lad in here I'd actually go for a pint with."],
+      ['a', "Honestly, you're the only {~lad} in here I'd actually go for {~pint} with."],
       ['b', "That's the nicest thing you've ever said to me."],
       ['a', "Don't make it weird."],
     ] },
   { id: 'friendship.65',
     turns: [
-      ['a', 'Promise me something. Whatever happens in here, we stay mates.'],
+      ['a', 'Promise me something. Whatever happens in here, we stay friends.'],
       ['b', 'Obviously.'],
       ['a', 'Even if we end up fancying the same person.'],
-      ['b', '…Less obviously. But yes.'],
+      ['b', "…That one I'd have to think about."],
     ] },
 ];

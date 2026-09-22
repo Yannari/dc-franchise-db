@@ -23,7 +23,7 @@ export const ICK = [
     beat: '{a} watches, and stops smiling.' },
   { id: 'ick.04',
     turns: [
-      ['b', "I'm not being funny, but I think I'd win in a fight against most of the lads in here."],
+      ['b', "Honestly, I think I'd win a fight against most of {~lads} in here."],
       ['a', 'Why would you ever need to know that?'],
     ],
     beat: '{a} moves along the sofa, a few inches.' },
@@ -184,11 +184,10 @@ export const CHALLENGE_WIN = [
     turns: [['a', 'I had a strategy, you know.'], ['b', 'You had a strategy for a foam slide?'], ['a', 'And it worked.']] },
   { id: 'challenge-win.10',
     stage: 'Everyone else is soaked and losing.',
-    turns: [['b', 'Look at them.'], ['a', "Don't gloat."], ['b', "I'm not gloating. I'm glowing."]] },
+    turns: [['b', 'Look at them.'], ['a', "Don't gloat."], ['b', "I'm not gloating. I'm just happy."]] },
   { id: 'challenge-win.11', when: { gap: true },
     turns: [['a', 'We make a good team.'], ['b', 'In the challenges, yeah.']],
     beat: "{a} lets the 'in the challenges' go." },
   { id: 'challenge-win.12',
-    turns: [['a', 'Winners do the washing up, is that right?'], ['b', "Absolutely not."]],
-    beat: 'They make the losers do it.' },
+    turns: [['a', 'Did you see their faces?'], ['b', "I did. I'll be nice about it tomorrow."]] },
 ];

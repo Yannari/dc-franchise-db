@@ -398,6 +398,10 @@ export const SHOWS = {
       host: 'Dior',
       // The voiceover. Unnamed until the user names him; one line to change.
       narratorName: 'The Narrator',
+      // Dior is modelled on the US show's host; the voiceover is British on
+      // both shows. Islanders speak in their own dialect (pm/lines/dialect.js).
+      hostDialect: 'us',
+      narratorDialect: 'uk',
     },
     // PROVISIONAL until a season has been played and the signals printed
     // (§2.5). A dating show sells romance and mess; strategy is the smallest.

@@ -301,9 +301,27 @@ export const FRIENDSHIP = [
     beat: 'They both turn round to look.' },
   { id: 'friendship.36', when: { comfortedYesterday: true },
     turns: [
-      ['a', 'Thanks for yesterday. When I was in a state.'],
-      ['b', "What did I do?"],
-      ['a', 'You sat with me. You didn\'t try to fix it.'],
-      ['b', "{~Yeah}, well. It didn't need fixing. You just needed someone there."],
+      ['a', 'Thanks for yesterday, by the way.'],
+      ['b', 'What for?'],
+      ['a', "For sitting with me when I was upset. You didn't try to fix it."],
+      ['b', "It didn't need fixing. You just needed someone there."],
     ] },
+  // The same kindness, happening now — so it needs no history, and it is the
+  // one most seasons see (friendship.36 is the day after one of these).
+  { id: 'friendship.66', when: { mood: ['heartbroken', 'stressed', 'lonely', 'jealous'] },
+    stage: '{a} is sitting on the edge of the pool on {a.posAdj} own.',
+    turns: [
+      ['b', 'Mind if I sit here?'],
+      ['a', "I'm not really in the mood for talking."],
+      ['b', "That's fine. I'll just sit."],
+    ],
+    beat: '{b} sits down next to {a.obj}, and neither of them says anything for a while.' },
+  { id: 'friendship.67',
+    turns: [
+      ['a', "Are you alright? You've gone quiet."],
+      ['b', 'Just tired.'],
+      ['a', 'Do you want some company, or do you want to be left alone?'],
+      ['b', "Company. Just don't make me talk."],
+    ],
+    beat: '{a} sits down next to {b.obj} and stays quiet.' },
 ];

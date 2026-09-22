@@ -20,6 +20,7 @@ import { LOYALTY } from './day/loyalty.js';
 import { ICK, CHALLENGE_KISS, CHALLENGE_WIN } from './day/challenge.js';
 import { PULL_MORE } from './day/pull-more.js';
 import { ARGUMENT_MORE } from './day/argument-more.js';
+import { MAKING_UP } from './day/making-up.js';
 
 
 // The first five of each, written for the voice check (spec §16.5).
@@ -191,15 +192,15 @@ const ARGUMENT_05 = [
   ];
 
 export const DAY = {
-  chat: CHAT,
-  'deep-chat': DEEP_CHAT,
-  kiss: KISS,
+  chat: [...CHAT, ...MAKING_UP.chat],
+  'deep-chat': [...DEEP_CHAT, ...MAKING_UP['deep-chat']],
+  kiss: [...KISS, ...MAKING_UP.kiss],
   friendship: [...FRIENDSHIP, ...FRIEND_TALK],
   gossip: GOSSIP,
   comedy: COMEDY,
   ick: ICK,
   'challenge-kiss': CHALLENGE_KISS,
-  'challenge-win': CHALLENGE_WIN,
+  'challenge-win': [...CHALLENGE_WIN, ...MAKING_UP['challenge-win']],
   loyalty: LOYALTY,
   pull: [...PULL_05, ...PULL_MORE],
   argument: [...ARGUMENT_05, ...ARGUMENT_MORE],

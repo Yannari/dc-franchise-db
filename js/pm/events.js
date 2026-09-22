@@ -42,6 +42,25 @@ export function roomMates(state, name) {
   return state.villa.filter(n => n !== name && inCasa(state, n) === here);
 }
 const couplesInRoom = state => state.couples.filter(([a, b]) => inCasa(state, a) === inCasa(state, b));
+
+// ── the day remembers itself ─────────────────────────────────────────
+// A couple who rowed this morning does not have a cosy chat on the daybed at
+// lunch (read in a played episode: a tender chat, "I can't do anything
+// right", then "this feels different", all in one afternoon). After a row,
+// warm scenes between the two are off for that part of the day and the next;
+// after that, the scene they get is a making-up one (the `rowedToday` fact).
+const PHASE_ORDER = ['morning', 'day', 'event', 'evening'];
+export function today(state) {
+  return (state._today || []).filter(e => e.ep === state.ep);
+}
+export function rowedToday(state, a, b) {
+  return today(state).filter(e => e.kind === 'argument' && e.players.includes(a) && e.players.includes(b));
+}
+function cooling(state, a, b) {
+  const now = PHASE_ORDER.indexOf(state.phase);
+  return rowedToday(state, a, b).some(e => now - PHASE_ORDER.indexOf(e.phase) <= 1);
+}
+const warmCouples = state => couplesInRoom(state).filter(([a, b]) => !cooling(state, a, b));
 const compatibleMates = (state, a) => roomMates(state, a).filter(b => attr(state, a, b) != null);
 const openSecret = (state, n) => state.secrets.some(s => !s.known && (s.who === n || s.partner === n));
 
@@ -52,7 +71,7 @@ const pop1 = (who, approval, fame) => ({ [who]: { approval, fame } });
 export const KINDS = {
   chat: {
     salience: 0.25,
-    cast: (s, rng) => pick(rng, couplesInRoom(s)),
+    cast: (s, rng) => pick(rng, warmCouples(s)),
     apply: (s, ev) => {
       const [a, b] = ev.players;
       addBond(a, b, 0.2 + 0.03 * ((S(s, a).loyalty + S(s, b).loyalty) / 2));
@@ -61,7 +80,7 @@ export const KINDS = {
   },
   'deep-chat': {
     salience: 0.45,
-    cast: (s, rng) => pick(rng, couplesInRoom(s).filter(([a, b]) =>
+    cast: (s, rng) => pick(rng, warmCouples(s).filter(([a, b]) =>
       ['love', 'settle-down', 'first-love'].includes(s.profiles[a].intent) || getBond(a, b) > 2)),
     apply: (s, ev) => {
       const [a, b] = ev.players;
@@ -71,7 +90,7 @@ export const KINDS = {
   },
   kiss: {
     salience: 0.55,
-    cast: (s, rng) => pick(rng, couplesInRoom(s)),
+    cast: (s, rng) => pick(rng, warmCouples(s)),
     apply: (s, ev) => {
       const [a, b] = ev.players;
       addBond(a, b, 0.3); nudgeAttraction(s, a, b, 0.2); nudgeAttraction(s, b, a, 0.2);
@@ -246,7 +265,7 @@ export const KINDS = {
   },
   'challenge-win': {
     salience: 0.35,
-    cast: (s, rng) => pick(rng, couplesInRoom(s)),
+    cast: (s, rng) => pick(rng, warmCouples(s)),
     apply: (s, ev) => {
       const [a, b] = ev.players;
       addBond(a, b, 0.2);
@@ -289,6 +308,8 @@ export function makeEvent(state, rng, { phase, kind, players, extra = {}, aired 
     // How everyone in it felt going in, so a later line can say "thanks for
     // yesterday" only when yesterday really happened (pm/script.js history).
     moods: Object.fromEntries(players.map(n => [n, moodOf(state, n)])) };
+  // Kept for the rest of the day, so later scenes know what already happened.
+  state._today = [...today(state), ev];
   const res = def.apply(state, ev, rng) || {};
   ev.pop = res.pop || {};
   ev.script = scriptFor(state, ev);
@@ -339,6 +360,7 @@ export function airLater(state, ev) {
 export function generateEpisodeEvents(state, rng, budgets = PHASE_BUDGETS) {
   const out = [];
   for (const [phase, budget] of Object.entries(budgets)) {
+    state.phase = phase;
     // Casa nights are temptation nights: pulls weigh double while split.
     const kinds = PHASE_KINDS[phase].map(([k, w]) => [k, k === 'pull' && state.split ? w * 2 : w]);
     let made = 0, tries = 0;

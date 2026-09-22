@@ -28,7 +28,7 @@ export const SPEAKERS = ['a', 'b', 'c', 'dior', 'narrator'];
 export const FACT_KEYS = ['rung', 'thinks', 'persona', 'intent', 'attachment', 'mood', 'bombshell',
   'early', 'coupled', 'gap', 'knows', 'faking', 'bPersona', 'bMood', 'bRung', 'stance', 'family',
   'choice', 'cause', 'channel', 'stole', 'bTaken', 'archetype', 'taken', 'loyal', 'late', 'gender', 'bGender', 'myRung', 'phase', 'kind', 'role', 'withB', 'newArrival', 'dialect',
-  'comfortedYesterday', 'rowedBefore'];
+  'comfortedYesterday', 'rowedBefore', 'rowedToday'];
 
 // Archetype groups a pool may name instead of listing them (CLAUDE.md).
 export const VILLAINS = ['villain', 'mastermind', 'schemer'];
@@ -95,6 +95,10 @@ export function factsFor(state, ev) {
   // What really happened between these two, from the record — the only way a
   // line may mention an earlier moment (user: "fix what? … is this even true?").
   Object.assign(f, b ? historyFacts(state, a, b) : { comfortedYesterday: false, rowedBefore: false });
+  // They argued earlier today — this scene is the making up, not a fresh start.
+  // (An argument scene itself is excluded: it IS the row.)
+  f.rowedToday = !!b && (state._today || []).some(e => e.ep === state.ep && e !== ev && e.kind === 'argument'
+    && e.players.includes(a) && e.players.includes(b));
   // Somebody walked in today (a bombshell, Casa's arrivals) — not day one.
   f.newArrival = state.ep > 1 && (state.villa || []).some(n => state.ledger?.firstEp?.[n] === state.ep);          // morning, day, event (the challenge), evening, firepit…
   for (const k of ['choice', 'cause', 'channel', 'stole']) if (ev.extra?.[k] != null) f[k] = ev.extra[k];
@@ -159,7 +163,16 @@ function scriptRng(state) {
   return state._scriptRng;
 }
 
+// Facts that, when true, must lead: a couple who rowed this morning gets a
+// making-up scene, never a fresh cosy one that ignores the row.
+const LEADING = ['rowedToday'];
+
 export function pickScript(state, pool, ps, facts, { allowRepeat = true } = {}) {
+  for (const k of LEADING) {
+    if (!facts[k]) continue;
+    const led = pool.filter(e => e.when?.[k] && matches(e.when, facts));
+    if (led.length) { pool = led; break; }
+  }
   const fits = pool.filter(e => matches(e.when, facts));
   const cands = fits.length ? fits : pool.filter(e => !e.when);
   if (!cands.length) return null;

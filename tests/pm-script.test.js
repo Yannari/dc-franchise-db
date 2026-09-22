@@ -105,3 +105,29 @@ describe('a line that mentions an earlier moment only runs when it happened', ()
     expect(thanks + repeats).toBeGreaterThan(0);   // the guard must see the lines it guards
   });
 });
+
+describe('the day remembers itself', () => {
+  // Read in a played episode: a tender chat, "I can't do anything right",
+  // then "this feels different", all in one afternoon.
+  const WARM = ['chat', 'deep-chat', 'kiss', 'challenge-win'];
+  const ORDER = ['morning', 'day', 'event', 'evening'];
+  it('no cosy scene straight after a row, and the next one is making up', () => {
+    let rows = 0;
+    for (let s = 1; s <= 6; s++) {
+      for (const r of season(s).rows) {
+        const evs = r.pm.events;
+        evs.forEach((e, i) => {
+          if (e.kind !== 'argument') return;
+          const [a, b] = e.players;
+          for (const w of evs.slice(i + 1).filter(x => WARM.includes(x.kind) && x.players.includes(a) && x.players.includes(b))) {
+            const gap = ORDER.indexOf(w.phase) - ORDER.indexOf(e.phase);
+            if (ORDER.includes(w.phase)) expect(gap, `${a}+${b} ep ${r.num}: ${w.kind} in ${w.phase} after a row in ${e.phase}`).toBeGreaterThan(1);
+            expect(w.script.id, `${a}+${b} ep ${r.num}`).toMatch(/\.up\d/);
+            rows++;
+          }
+        });
+      }
+    }
+    expect(rows).toBeGreaterThan(0);   // it saw couples make up at all
+  });
+});

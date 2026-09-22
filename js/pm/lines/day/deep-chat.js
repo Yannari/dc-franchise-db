@@ -176,7 +176,7 @@ export const DEEP_CHAT = [
     turns: [
       ['a', "I don't think I've ever been this honest with anyone."],
       ['b', "Why now?"],
-      ['a', "No phone. No escape. It's just you and me and a pool."],
+      ['a', "There's nothing to hide behind in here. No phone, nothing. Just us."],
     ] },
   { id: 'deep-chat.22', when: { persona: 'checklist' },
     turns: [

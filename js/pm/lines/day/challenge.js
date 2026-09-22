@@ -175,7 +175,7 @@ export const CHALLENGE_WIN = [
     turns: [['b', "Well, that's one way to find out we work."], ['a', 'Are you saying we work?'], ['b', 'On a slide, at least.']] },
   { id: 'challenge-win.07', when: { persona: 'villa-clown' },
     stage: '{a} climbs up onto the podium.',
-    turns: [['a', "I'd like to thank my partner, my legs, and the foam."]],
+    turns: [['a', "I'd like to thank my partner, who basically carried me the whole way."]],
     beat: '{b} pulls {a} down, laughing.' },
   { id: 'challenge-win.08',
     turns: [['a', "You didn't let go once."], ['b', "I wasn't going to."]],
@@ -187,7 +187,7 @@ export const CHALLENGE_WIN = [
     turns: [['b', 'Look at them.'], ['a', "Don't gloat."], ['b', "I'm not gloating. I'm just happy."]] },
   { id: 'challenge-win.11', when: { gap: true },
     turns: [['a', 'We make a good team.'], ['b', 'In the challenges, {~yeah}.']],
-    beat: "{a} lets the 'in the challenges' go." },
+    beat: '{a} goes quiet.' },
   { id: 'challenge-win.12',
     turns: [['a', 'Did you see their faces?'], ['b', "I did. I'll be nice about it tomorrow."]] },
 ];

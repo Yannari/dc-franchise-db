@@ -72,14 +72,14 @@ export const PULL_MORE = [
     turns: [
       ['a', 'Walk with me?'],
       ['b', "Where? It's a garden."],
-      ['a', 'Round it. Twice, if it goes well.'],
+      ['a', 'Round it. Just the two of us.'],
     ],
     beat: 'They walk round it slowly, and nobody interrupts them.' },
   { id: 'pull.15', when: { persona: 'villa-clown' },
     turns: [
-      ['a', "I've been sent by the villa to find out if you're single."],
-      ['b', "Have you?"],
-      ['a', 'No. I sent myself. Are you?'],
+      ['a', "I've got a very serious question. Are you single?"],
+      ['b', 'Why is that serious?'],
+      ['a', "Because I'm hoping the answer's yes."],
     ] },
   { id: 'pull.16',
     turns: [
@@ -161,8 +161,8 @@ export const PULL_MORE = [
   { id: 'pull.26', when: { persona: 'checklist' },
     turns: [
       ['a', 'I want to get to know you. Properly. Where you see yourself in five years, that sort of thing.'],
-      ['b', 'That is a job interview.'],
-      ['a', "It's a really nice job."],
+      ['b', 'That sounds like a job interview.'],
+      ['a', "It's not. I just want to know you."],
     ] },
   { id: 'pull.27', when: { mood: 'jealous' },
     turns: [
@@ -181,7 +181,7 @@ export const PULL_MORE = [
     turns: [
       ['a', "I'm not trying to cause trouble."],
       ['b', 'You always are.'],
-      ['a', "Not with you. With you I'm trying to cause something else."],
+      ['a', "Not with you. With you I mean it."],
     ],
     beat: '{b} laughs, and then stops, because {b.posAdj} partner is watching from the kitchen.' },
   { id: 'pull.30',

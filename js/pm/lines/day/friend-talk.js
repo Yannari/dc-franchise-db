@@ -45,8 +45,8 @@ export const FRIEND_TALK = [
     turns: [
       ['a', 'Have you made a move on anyone yet?'],
       { by: 'b', vary: [
-        { turns: [['b', 'Not yet. Waiting for the right one to walk through that door.'], ['a', 'You said that last week.'],
-          ['b', "And I meant it last week."]] },
+        { turns: [['b', "Not yet. I'm waiting for the right one to walk through that door."], ['a', 'You might be waiting a while.'],
+          ['b', "Then I'll wait."]] },
         { when: { taken: true },
           turns: [['b', "{~Mate}, I'm with {pb}. I'm not making a move on anyone."], ['a', 'Just checking.']] },
         { when: { taken: true, persona: 'fuckboy' },
@@ -65,7 +65,7 @@ export const FRIEND_TALK = [
     turns: [
       ['a', 'Who are you picking tonight?'],
       { by: 'b', vary: [
-        { turns: [['b', "I've changed my mind three times since breakfast."], ['a', "And now?"], ['b', 'Four times.']] },
+        { turns: [['b', "I've changed my mind three times since breakfast."], ['a', 'And?'], ['b', 'And I still don\'t know.']] },
         { when: { taken: true, loyal: true },
           turns: [['b', '{pb}. Obviously. Why, who are you picking?']] },
         { when: { persona: 'game-player' },
@@ -77,9 +77,7 @@ export const FRIEND_TALK = [
     turns: [
       ['a', 'Come on. One dance.'],
       ['b', "I don't dance."],
-      ['a', 'Everyone dances after the second drink.'],
-      ['b', "I've had one."],
-      ['a', 'Then half a dance.'],
+      ['a', 'Just one song. Please.'],
     ],
     beat: '{b} ends up dancing for the rest of the song.' },
   { id: 'friendship.44', when: { taken: true },
@@ -106,8 +104,8 @@ export const FRIEND_TALK = [
   { id: 'friendship.46',
     turns: [
       ['a', 'Which couple do you think is actually going to last?'],
-      ['b', 'Not the ones who kiss the most.'],
-      ['a', "That's… a lot of the couples in here."],
+      ['b', "Honestly? The quiet ones. The couples who are all over each other on day one never seem to make it."],
+      ['a', "That's half the villa."],
       ['b', 'I know.'],
     ] },
   { id: 'friendship.47', when: { gender: 'f', bGender: 'f', phase: 'evening' },

@@ -141,7 +141,7 @@ export const ARGUMENT_MORE = [
         { turns: [['b', "Because you're being serious about a spoon."], ['a', "It's not about the spoon."]],
           beat: '{a} puts the spoon down and walks off.' },
         { when: { persona: 'villa-clown' },
-          turns: [['b', "I'm sorry. I'm sorry. I'll be serious."], ['a', 'Thank you.'], ['b', '…Seriously sorry.']],
+          turns: [['b', "I'm sorry. I'm sorry. I'll be serious."], ['a', 'Thank you.'], ['b', "…I am sorry, though."]],
           beat: '{a} throws the spoon at {b.obj}, and misses.' },
       ] },
     ] },

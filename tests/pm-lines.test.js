@@ -109,7 +109,11 @@ describe('the words follow the rules', () => {
       'there was nothing on', 'counts it as', "that's how i knew", "that's the whole plan", 'just maths',
       'but on purpose', "that's just my face", 'nobody said everyone', 'i\'ve been doing the maths',
       'finds their plates', 'for all the wrong reasons', 'the bar is on the floor', 'this is how it ends',
-      'i will die on this hill', 'less obviously', "that's the secret", 'better. worse. both'];
+      'i will die on this hill', 'less obviously', "that's the secret", 'better. worse. both',
+      // round 5: jokes you have to decode (user: "whats the knife bit")
+      'the knife bit', 'four times.', 'half a dance', 'i sent myself', 'my legs, and the foam', "partner's face knows",
+      'better than the right thing', 'a reason face', "it's for drinking", 'turn heads', 'twice, if it goes well',
+      'cause something else', 'a really nice job'];
     const bad = [];
     for (const [k, e] of ENTRIES) for (const x of texts(e)) for (const c of CLEVER) if (x.toLowerCase().includes(c)) bad.push(`${k} ${e.id}: "${c}"`);
     expect(bad).toEqual([]);

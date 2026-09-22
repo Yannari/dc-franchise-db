@@ -114,7 +114,7 @@ export const LOYALTY = [
       ['b', 'I think I tick all your boxes.'],
       ['a', "You tick most of them."],
       ['b', 'So?'],
-      ['a', "So there's one you don't, and it's the one that says 'isn't trying to break up my couple'."],
+      ['a', "But you're trying to break up my couple, and that's the one that matters."],
     ] },
   { id: 'loyalty.16',
     turns: [

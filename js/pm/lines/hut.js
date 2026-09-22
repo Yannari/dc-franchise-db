@@ -91,7 +91,7 @@ export const HUT = {
     { id: 'hut.ick.h2', when: K('ick', { ...B, role: 0 }), turns: [['a', "I feel awful. {b} hasn't done anything wrong. It's just gone."]] },
     { id: 'hut.ick.h3', when: K('ick', { ...B, role: 1 }), turns: [['a', "{b}'s gone a bit quiet on me. I don't know what I've done."]] },
     // challenge-kiss
-    { id: 'hut.ckiss.h1', when: K('challenge-kiss', { ...B, role: 0, taken: true }), turns: [['a', "It was a game. My partner knows it was a game. I just hope my partner's face knows."]] },
+    { id: 'hut.ckiss.h1', when: K('challenge-kiss', { ...B, role: 0, taken: true }), turns: [['a', "It was a game. My partner knows it was a game. I just hope my partner sees it that way."]] },
     { id: 'hut.ckiss.h2', when: K('challenge-kiss', { ...B, role: 0, taken: false }), turns: [['a', "I got to kiss {b} and call it a challenge. Best day in here so far."]] },
     { id: 'hut.ckiss.h3', when: K('challenge-kiss', { ...B, role: 1 }), turns: [['a', "Out of everyone in that line, {b} picked me. I'm going to be thinking about that all night."]] },
     { id: 'hut.ckiss.h4', when: K('challenge-kiss', { ...B, role: 1, taken: true }), turns: [['a', "I didn't pick it. I didn't stop it, either. I'll have some explaining to do."]] },
@@ -122,7 +122,7 @@ export const HUT = {
     { id: 'hut.casa.h1', when: { family: 'casa' }, turns: [['a', "Casa Amor is where couples go to die. I just didn't think it would be mine."]] },
     { id: 'hut.casa.h2', when: { kind: 'casa-return', role: 0 }, turns: [['a', "I walked back in on my own. Whatever's waiting for me, I can look it in the eye."]] },
     { id: 'hut.casa.h3', when: { kind: 'photos', role: 0 }, turns: [['a', "You can say you trust someone all you want. Then there's a photo, and it's in your hand."]] },
-    { id: 'hut.flirt.h1', when: { family: 'flirting', ...B, bombshell: true }, turns: [['a', "I came in to turn heads. {b}'s is the one I want."]] },
+    { id: 'hut.flirt.h1', when: { family: 'flirting', ...B, bombshell: true }, turns: [['a', "I came in here for {b}. I'm not going to pretend I didn't."]] },
   ],
   'two-faced': [
     // chat
@@ -154,7 +154,7 @@ export const HUT = {
     // comedy
     { id: 'hut.comedy.t1', when: K('comedy'), turns: [['a', "If everyone's laughing, nobody's asking questions. Works every time."]] },
     // ick, challenge
-    { id: 'hut.ick.t1', when: K('ick', { ...B, role: 0 }), turns: [['a', "The ick's real. It's also quite handy, if I'm being honest with you. Which I'm not, with {b}."]] },
+    { id: 'hut.ick.t1', when: K('ick', { ...B, role: 0 }), turns: [['a', "The ick's real. It's also a good excuse, and I'm not going to tell {b} why I need one."]] },
     { id: 'hut.ckiss.t1', when: K('challenge-kiss', { ...B, role: 0 }), turns: [['a', "It's a challenge. That's my excuse, and I'm sticking to it."]] },
     { id: 'hut.cwin.t1', when: K('challenge-win', B), turns: [['a', "Winning with {b} felt great. It'd feel better if I wasn't keeping something from {b}."]] },
     // more for the scenes the villa has most of
@@ -166,7 +166,7 @@ export const HUT = {
     { id: 'hut.pull.t5', when: K('pull', { ...B, role: 1 }), turns: [['a', "I told {b} I'm happy where I am. I didn't say how happy. There's a difference."]] },
     { id: 'hut.friend.t3', when: K('friendship', B), turns: [['a', "{b} asked me straight out if I'd done anything. I said no. I hated saying no."]] },
     { id: 'hut.friend.t4', when: K('friendship', { ...B, taken: true }), turns: [['a', "If {b} finds out before my partner does, it's over. So {b} can't find out."]] },
-    { id: 'hut.argument.t3', when: K('argument', { ...B, role: 1 }), turns: [['a', "{b} was shouting at me for the wrong thing. I just let {b}. It's better than the right thing."]] },
+    { id: 'hut.argument.t3', when: K('argument', { ...B, role: 1 }), turns: [['a', "{b} was shouting at me about the wrong thing. I let {b}. Better that than {b} finding out what I actually did."]] },
     { id: 'hut.loyalty.t2', when: K('loyalty', { ...B, role: 1 }), turns: [['a', "{b} said no today. That doesn't mean no tomorrow."]] },
     { id: 'hut.comedy.t2', when: K('comedy', { mood: 'guilty' }), turns: [['a', "I've been the funny one all day. It's easier than being the one with something to say."]] },
     { id: 'hut.cwin.t2', when: K('challenge-win', { ...B, mood: 'guilty' }), turns: [['a', "{b} hugged me after we won and said we're the best couple in here. I couldn't look at {b}."]] },

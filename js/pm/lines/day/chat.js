@@ -110,7 +110,7 @@ export const CHAT = [
   { id: 'chat.12',
     turns: [
       ['a', 'What do you miss most? From outside.'],
-      ['b', 'My own bed. Being able to shut a door. Toast that nobody else has touched.'],
+      ['b', 'My own bed. Being able to shut a door. Making toast without twelve people in the kitchen.'],
       ['a', 'Not your phone?'],
       ['b', "I thought I would. I don't really."],
     ],
@@ -311,7 +311,7 @@ export const CHAT = [
     turns: [
       ['a', "Can you believe we've been in here this long?"],
       ['b', "No. I can't remember what I used to do all day."],
-      ['a', 'Me neither. Look at my phone, probably.'],
+      ['a', 'Me neither. Probably just looked at my phone.'],
       ['b', 'All day, every day.'],
     ] },
   { id: 'chat.36', when: { late: true, rung: ['exclusive', 'official'] },

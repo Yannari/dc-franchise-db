@@ -38,7 +38,7 @@ export const KISS = [
     stage: '{a} comes back from the kitchen with two drinks.',
     turns: [
       ['b', "What's that for?"],
-      ['a', "It's a drink. It's for drinking."],
+      ['a', "Nothing. It's just a drink."],
       ['b', 'No, the face. Why are you looking at me like that?'],
       ['a', 'No reason.'],
     ],
@@ -124,7 +124,7 @@ export const KISS = [
   { id: 'kiss.17', when: { bombshell: true },
     turns: [
       ['a', 'I came in here thinking I\'d have to work for this.'],
-      ['b', "Who says you're not working for it?"],
+      ['b', 'You still might have to.'],
     ],
     beat: '{b} kisses {a.obj}, and then walks off before {a} can say anything.' },
   { id: 'kiss.18',

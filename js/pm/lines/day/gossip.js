@@ -59,7 +59,7 @@ export const GOSSIP = [
       ['a', "Have you and {c} been alright?"],
       ['b', '{~Yeah}. Why?'],
       ['a', "No reason."],
-      ['b', "That's not no reason. That's a reason face."],
+      ['b', "That's not no reason. I can see it on your face."],
       ['a', "…Okay. I saw something."],
     ],
     beat: '{b} sits down to hear it.' },

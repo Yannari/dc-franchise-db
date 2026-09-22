@@ -56,7 +56,7 @@ export const FRIENDSHIP = [
       ['a', "Right. I'm cooking tonight."],
       ['b', "Since when do you cook?"],
       ['a', "Since today. How hard can it be?"],
-      ['b', "I'll help. I'm doing the knife bit, though."],
+      ['b', "I'll help you. I'll do the chopping."],
     ],
     beat: 'They manage it without setting off the smoke alarm.' },
   { id: 'friendship.07', when: { persona: 'villa-clown' },
@@ -132,9 +132,8 @@ export const FRIENDSHIP = [
     turns: [
       ['a', "I'm so glad it's you in the next bed."],
       ['b', 'Why?'],
-      ['a', "Because you don't talk in the morning. I don't talk in the morning."],
-      ['b', '…'],
-      ['a', 'Exactly.'],
+      ['a', "Because you don't talk to me before I've had a tea."],
+      ['b', 'Nobody should talk to anyone before a tea.'],
     ] },
   { id: 'friendship.16', when: { persona: 'girls-girl' },
     turns: [
@@ -257,9 +256,9 @@ export const FRIENDSHIP = [
   { id: 'friendship.30',
     turns: [
       ['a', "Who's the worst at hiding it when they {~fancy} someone?"],
-      ['b', 'You.'],
-      ['a', "I'm not hiding anything."],
-      ['b', 'Exactly.'],
+      ['b', "You. It's written all over your face."],
+      ['a', 'It is not.'],
+      ['b', 'It really is.'],
     ] },
   { id: 'friendship.31', when: { gender: 'm', bGender: 'm' },
     turns: [

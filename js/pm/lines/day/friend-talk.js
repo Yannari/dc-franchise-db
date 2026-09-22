@@ -24,7 +24,7 @@ export const FRIEND_TALK = [
       { by: 'b', vary: [
         { turns: [['b', "Not yet. I'm not going to push it."], ['a', "You're allowed to push it a {~little} bit."]] },
         { when: { myRung: 'official' },
-          turns: [['b', "We're official. Where have you been?"], ['a', 'Since when?'], ['b', 'Since yesterday!']],
+          turns: [['b', "We're official. Where have you been?"], ['a', 'Since when?'], ['b', 'Keep up!']],
           beat: '{a} hits {b.obj} with a pillow for not saying.' },
         { when: { attachment: 'anxious' },
           turns: [['b', "No. And every day it doesn't come up, I get a bit more worried."]],

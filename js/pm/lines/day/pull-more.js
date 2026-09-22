@@ -155,7 +155,7 @@ export const PULL_MORE = [
       { by: 'b', vary: [
         { turns: [['b', "I'm not answering that."], ['a', "That's an answer."], ['b', "It's not."]], beat: '{b} changes the subject.' },
         { when: { taken: true, loyal: true },
-          turns: [['b', 'The person I picked last time.']] },
+          turns: [['b', "The person I'm with. Obviously."]] },
       ] },
     ] },
   { id: 'pull.26', when: { persona: 'checklist' },

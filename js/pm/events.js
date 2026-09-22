@@ -17,7 +17,7 @@ import { romance, shown, revealTruth } from './feelings.js';
 import { closedness, betrayalWeight } from './ladder.js';
 import { feel, jealousyHit } from './emotions.js';
 import { girlCode, judgement } from './circle.js';
-import { scriptFor, hutFor } from './script.js';
+import { scriptFor, hutFor, moodOf } from './script.js';
 
 export const PHASE_BUDGETS = { morning: 12, day: 40, event: 18, evening: 23 };
 export const HUT_RATE = 0.25;
@@ -285,7 +285,10 @@ export function makeEvent(state, rng, { phase, kind, players, extra = {}, aired 
   const airP = clamp(0.2 + 0.6 * def.salience + heat, 0.1, 0.95);
   const ev = { id: `${state.ep}-${state.seq}`, ep: state.ep, phase, kind, players: [...players],
     aired: aired == null ? rng() < airP : !!aired, major: [...major],
-    hut: null, pop: {}, extra };
+    hut: null, pop: {}, extra,
+    // How everyone in it felt going in, so a later line can say "thanks for
+    // yesterday" only when yesterday really happened (pm/script.js history).
+    moods: Object.fromEntries(players.map(n => [n, moodOf(state, n)])) };
   const res = def.apply(state, ev, rng) || {};
   ev.pop = res.pop || {};
   ev.script = scriptFor(state, ev);

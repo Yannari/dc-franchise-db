@@ -27,7 +27,8 @@ export { HUT };
 export const SPEAKERS = ['a', 'b', 'c', 'dior', 'narrator'];
 export const FACT_KEYS = ['rung', 'thinks', 'persona', 'intent', 'attachment', 'mood', 'bombshell',
   'early', 'coupled', 'gap', 'knows', 'faking', 'bPersona', 'bMood', 'bRung', 'stance', 'family',
-  'choice', 'cause', 'channel', 'stole', 'bTaken', 'archetype', 'taken', 'loyal', 'late', 'gender', 'bGender', 'myRung', 'phase', 'kind', 'role', 'withB', 'newArrival', 'dialect'];
+  'choice', 'cause', 'channel', 'stole', 'bTaken', 'archetype', 'taken', 'loyal', 'late', 'gender', 'bGender', 'myRung', 'phase', 'kind', 'role', 'withB', 'newArrival', 'dialect',
+  'comfortedYesterday', 'rowedBefore'];
 
 // Archetype groups a pool may name instead of listing them (CLAUDE.md).
 export const VILLAINS = ['villain', 'mastermind', 'schemer'];
@@ -91,10 +92,30 @@ export function factsFor(state, ev) {
   };
   f.phase = ev.phase || null;
   f.dialect = dialectOf(state, a);
+  // What really happened between these two, from the record — the only way a
+  // line may mention an earlier moment (user: "fix what? … is this even true?").
+  Object.assign(f, b ? historyFacts(state, a, b) : { comfortedYesterday: false, rowedBefore: false });
   // Somebody walked in today (a bombshell, Casa's arrivals) — not day one.
   f.newArrival = state.ep > 1 && (state.villa || []).some(n => state.ledger?.firstEp?.[n] === state.ep);          // morning, day, event (the challenge), evening, firepit…
   for (const k of ['choice', 'cause', 'channel', 'stole']) if (ev.extra?.[k] != null) f[k] = ev.extra[k];
   return f;
+}
+
+const LOW = ['heartbroken', 'stressed', 'lonely', 'jealous'];
+const COMFORT = ['friendship', 'advice', 'solidarity', 'chat', 'deep-chat'];
+function historyFacts(state, a, b) {
+  // The record holds finished episodes (season.js pushes a day when it ends),
+  // so "yesterday" is the last episode: one villa day is one episode.
+  const out = { comfortedYesterday: false, rowedBefore: false };
+  const h = state.history || [];
+  for (let i = h.length - 1; i >= 0 && h[i].ep >= state.ep - 1; i--) {
+    const e = h[i];
+    if (e.ep !== state.ep - 1 || !e.players.includes(a) || !e.players.includes(b)) continue;
+    // b was there for a while a was low: a real scene, yesterday.
+    if (COMFORT.includes(e.kind) && LOW.includes(e.moods?.[a])) out.comfortedYesterday = true;
+  }
+  for (const e of h) if (e.kind === 'argument' && e.ep < state.ep && e.players.includes(a) && e.players.includes(b)) { out.rowedBefore = true; break; }
+  return out;
 }
 
 function matches(when, facts) {

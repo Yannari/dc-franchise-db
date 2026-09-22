@@ -36,9 +36,9 @@ export const ARGUMENT_MORE = [
     beat: 'Nobody else at the table says a word.' },
   { id: 'argument.09', when: { coupled: false },
     turns: [
-      ['a', "I know what you said about me."],
-      ['b', 'What did I say?'],
-      ['a', "You know what you said."],
+      ['a', "Someone told me what you've been saying about me."],
+      ['b', 'What have I been saying?'],
+      ['a', "You tell me."],
       { by: 'b', vary: [
         { turns: [['b', "I really don't. So either tell me or drop it."]], beat: '{a} walks off without telling {b.obj}.' },
         { when: { archetype: ['villain', 'mastermind', 'schemer'] },
@@ -210,7 +210,7 @@ export const ARGUMENT_MORE = [
       ['a', "I'm listening. I just don't agree."],
       ['b', "Then say you don't agree! Don't just sit there nodding."],
     ] },
-  { id: 'argument.30', when: { phase: 'evening' },
+  { id: 'argument.30', when: { phase: 'evening', rowedBefore: true },
     turns: [
       ['a', "I'm not having this argument again."],
       ['b', "Then don't start it again."],

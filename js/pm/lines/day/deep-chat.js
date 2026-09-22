@@ -162,7 +162,7 @@ export const DEEP_CHAT = [
     turns: [
       ['a', "Can I be honest about something small?"],
       ['b', 'Always.'],
-      ['a', "When you went off with the others last night, I missed you. It was an hour. I still missed you."],
+      ['a', "When you go off with the others, even for an hour, I miss you."],
       ['b', "That's not small."],
     ] },
   { id: 'deep-chat.20', when: { rung: 'official' },
@@ -227,7 +227,7 @@ export const DEEP_CHAT = [
     ] },
   { id: 'deep-chat.28', when: { bombshell: true },
     turns: [
-      ['a', "I know I walked in and messed everything up for you."],
+      ['a', "I know I walked in and turned everything upside down."],
       ['b', 'You did a bit.'],
       ['a', "Do you regret it?"],
       ['b', 'No. That\'s the problem.'],

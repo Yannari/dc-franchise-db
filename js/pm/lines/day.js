@@ -36,7 +36,7 @@ const PULL_05 = [
             turns: [['b', "Don't. I mean it. I'm happy."], ['a', 'Are you, though?'], ['b', '{~Yeah}. I am.']],
             beat: '{b} gets up and goes back to {b.posAdj} partner.' },
           { when: { mood: 'lonely' },
-            turns: [['b', '…Why are you telling me this now?'], ['a', "Because I didn't have the guts yesterday."]],
+            turns: [['b', '…Why are you telling me this now?'], ['a', "Because I didn't have the guts before."]],
             beat: "{b} doesn't get up." },
         ] },
       ] },

@@ -77,3 +77,31 @@ describe('a speaker only says what they could know', () => {
     }
   });
 });
+
+describe('a line that mentions an earlier moment only runs when it happened', () => {
+  // Re-checked from the rows, not trusted from the picker (user, on "Thanks
+  // for yesterday": "fix what? whats the context and is this even true?").
+  const LOW = ['heartbroken', 'stressed', 'lonely', 'jealous'];
+  const COMFORT = ['friendship', 'advice', 'solidarity', 'chat', 'deep-chat'];
+  const both = (e, a, b) => e.players.includes(a) && e.players.includes(b);
+  it('"thanks for yesterday" follows a real yesterday, and a repeat row follows a real row', () => {
+    let thanks = 0, repeats = 0;
+    for (let s = 1; s <= 8; s++) {
+      const { rows } = season(s);
+      const all = rows.flatMap(r => r.pm.events);
+      for (const e of all) {
+        const [a, b] = e.players;
+        if (e.script.id.startsWith('friendship.36')) {
+          thanks++;
+          expect(all.some(x => x.ep === e.ep - 1 && COMFORT.includes(x.kind) && both(x, a, b) && LOW.includes(x.moods?.[a])),
+            `${a} thanks ${b} in ep ${e.ep}`).toBe(true);
+        }
+        if (e.script.id.startsWith('argument.30')) {
+          repeats++;
+          expect(all.some(x => x.ep < e.ep && x.kind === 'argument' && both(x, a, b)), `${a} and ${b} ep ${e.ep}`).toBe(true);
+        }
+      }
+    }
+    expect(thanks + repeats).toBeGreaterThan(0);   // the guard must see the lines it guards
+  });
+});

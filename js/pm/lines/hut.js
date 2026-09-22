@@ -142,7 +142,7 @@ export const HUT = {
     // loyalty
     { id: 'hut.loyalty.t1', when: K('loyalty', { ...B, role: 0 }), turns: [['a', "I said no to {b} in front of everyone. It helps if people think I'm loyal. Especially this week."]] },
     // argument
-    { id: 'hut.argument.t1', when: K('argument', B), turns: [['a', "An argument's handy, actually. Nobody asks where you were last night if you're busy shouting."]] },
+    { id: 'hut.argument.t1', when: K('argument', B), turns: [['a', "An argument's handy, actually. Nobody asks where you've been if you're busy shouting."]] },
     { id: 'hut.argument.t2', when: K('argument', { ...B, role: 0 }), turns: [['a', "I'm upset with {b}. I'm also aware I'm not really in a position to be upset. Both things are true."]] },
     // friendship
     { id: 'hut.friend.t1', when: K('friendship', B), turns: [['a', "{b} tells me everything. That's useful. That's also why I'm not telling {b} everything."]] },

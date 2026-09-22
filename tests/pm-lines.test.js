@@ -1,13 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { setPlayers } from '../js/core.js';
-import { POOLS, HUT, SPEAKERS, FACT_KEYS, renderScript, speak } from '../js/pm/script.js';
+import { POOLS, HUT, NARRATOR, SPEAKERS, FACT_KEYS, renderScript, speak } from '../js/pm/script.js';
 import { SLOTS, REGIONAL_WORDS } from '../js/pm/lines/dialect.js';
 import { DAY } from '../js/pm/lines/day.js';
 import { foreignWordsIn } from './helpers/show-vocabulary.js';
 
 // Every entry in every pool, with its variant blocks opened out.
 const ENTRIES = [...Object.entries(POOLS).flatMap(([k, pool]) => pool.map(e => [k, e])),
-  ...Object.entries(HUT).flatMap(([k, pool]) => pool.map(e => [`hut:${k}`, e]))];
+  ...Object.entries(HUT).flatMap(([k, pool]) => pool.map(e => [`hut:${k}`, e])),
+  ...Object.entries(NARRATOR).flatMap(([k, pool]) => pool.map(e => [`narrator:${k}`, e]))];
 function texts(e) {
   const out = [e.stage, e.beat];
   for (const t of e.turns || []) {
@@ -48,7 +49,7 @@ describe('the pools are well-formed', () => {
       entrance: 1, steal: 3, 'recouple-pick': 3, 'dump-verdict': 1, 'dump-fallout': 1, 'snog-marry-pie': 4,
       'movie-night': 2, reveal: 2 };
     for (const [k, e] of ENTRIES) {
-      if (k.startsWith('hut:')) continue;
+      if (k.startsWith('hut:') || k.startsWith('narrator:')) continue;
       const size = CAST[k] || 2;
       const allowed = ['a', 'b', 'c', 'd'].slice(0, size);
       for (const x of texts(e)) for (const [, who] of x.matchAll(/\{([abcd])[.}]/g)) expect(allowed, `${k} ${e.id}: ${x}`).toContain(who);
@@ -98,7 +99,7 @@ describe('the words follow the rules', () => {
     for (const [k, e] of ENTRIES) for (const x of texts(e)) {
       // A capitalised word straight after a placeholder slot's usual place would be a name;
       // the practical check is that nothing but {a}/{b}/{c} forms appear in braces.
-      for (const [m] of x.matchAll(/\{(?!~)[^}]*\}/g)) expect(m, `${k} ${e.id}`).toMatch(/^\{(quote|quoteWho|(pa|pb|a|b|c|d)(\.(obj|pos|posAdj|ref|Obj|PosAdj|gf))?)\}$/);
+      for (const [m] of x.matchAll(/\{(?!~)[^}]*\}/g)) expect(m, `${k} ${e.id}`).toMatch(/^\{(quote|quoteWho|day|(pa|pb|a|b|c|d)(\.(obj|pos|posAdj|ref|Obj|PosAdj|gf))?)\}$/);
       expect(x, `${k} ${e.id}`).not.toMatch(/\bDior\b/);
     }
   });

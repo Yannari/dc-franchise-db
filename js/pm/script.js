@@ -22,10 +22,11 @@ import { LADDER } from './lines/ladder.js';
 import { FEELINGS } from './lines/feelings.js';
 import { MOMENTS as MOMENT_LINES } from './lines/moments.js';
 import { HUT } from './lines/hut.js';
+import { NARRATOR } from './lines/narrator.js';
 import { DIALECTS, slotWord, US_SPELLING, US_SPELLERS, ESL_EXPANSIONS } from './lines/dialect.js';
 
 export const POOLS = { ...DAY, ...LADDER, ...FEELINGS, ...MOMENT_LINES };
-export { HUT };
+export { HUT, NARRATOR };
 
 export const SPEAKERS = ['a', 'b', 'c', 'dior', 'narrator'];
 export const FACT_KEYS = ['rung', 'thinks', 'persona', 'intent', 'attachment', 'mood', 'bombshell',
@@ -217,6 +218,7 @@ const pro = name => pronounsOf(players.find(p => p.name === name)?.gender || 'nb
 export function fill(text, ps, partners = {}) {
   const names = { a: ps[0], b: ps[1], c: ps[2], d: ps[3], pa: partners.pa, pb: partners.pb };
   // {quote}: the first thing said in the clip being replayed (Movie Night, the reunion).
+  if (partners.day != null) text = text.replace(/\{day\}/g, String(partners.day));
   if (partners.quote != null) text = text.replace(/\{quote\}/g, partners.quote).replace(/\{quoteWho\}/g, partners.quoteWho);
   return text.replace(/\{(pa|pb|a|b|c|d)(?:\.(sub|obj|pos|posAdj|ref|Sub|Obj|PosAdj|gf))?\}/g, (m, who, form) => {
     const n = names[who];
@@ -340,6 +342,28 @@ function clipSlots(state, ev) {
   const clip = (state.history || []).find(e => e.id === id);
   const line = clip?.script?.lines?.[0];
   return line ? { quote: line.text, quoteWho: line.who } : {};
+}
+
+// ── the voiceover ────────────────────────────────────────────────────
+// About six times an episode, after a scene that aired: he knows what the
+// public saw and nothing more. Words only — his own dice, no effect on play.
+export const NARRATOR_PER_EPISODE = 6;
+const NARRATOR_CHANCE = 0.09;    // spread over the whole day, not spent by breakfast (measured)
+export function narratorFor(state, ev) {
+  if (!ev.aired) return null;
+  const pool = NARRATOR[ev.kind];
+  if (!pool?.length) return null;
+  const said = ((state._narrated ||= {})[state.ep] ||= 0);
+  if (said >= NARRATOR_PER_EPISODE) return null;
+  if (scriptRng(state)() >= NARRATOR_CHANCE) return null;
+  const ps = castOf(ev);
+  // A voiceover line is heard at most twice a season, whoever it is about.
+  const fresh = pool.filter(e => (usage(state)[e.id]?.eps.length || 0) < 2);
+  const entry = pickScript(state, fresh, ps, factsFor(state, { ...ev, players: ps }), { allowRepeat: false });
+  if (!entry) return null;
+  noteUse(state, entry, ps);
+  state._narrated[state.ep] = said + 1;
+  return renderScript(entry, ps, state, { day: state.day || state.ep });
 }
 
 /** The beach-hut cutaway: one speaker, straight to camera. */

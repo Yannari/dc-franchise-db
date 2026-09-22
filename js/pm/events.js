@@ -17,7 +17,7 @@ import { romance, shown, revealTruth } from './feelings.js';
 import { closedness, betrayalWeight } from './ladder.js';
 import { feel, jealousyHit } from './emotions.js';
 import { girlCode, judgement } from './circle.js';
-import { scriptFor, hutFor, moodOf } from './script.js';
+import { scriptFor, hutFor, moodOf, narratorFor } from './script.js';
 
 export const PHASE_BUDGETS = { morning: 12, day: 40, event: 18, evening: 23 };
 export const HUT_RATE = 0.25;
@@ -333,6 +333,8 @@ export function makeEvent(state, rng, { phase, kind, players, extra = {}, aired 
       if (stance === 'two-faced') { p.approval -= 1.0; p.fame += 0.5; } else p.fame += 0.3;
     }
   }
+  // The voiceover, over what the public just watched. No ledger effect.
+  ev.narrator = narratorFor(state, ev);
   if (ev.aired) writeLedger(state, ev, false);
   return ev;
 }

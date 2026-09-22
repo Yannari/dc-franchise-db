@@ -36,6 +36,7 @@ function scene(e) {
   ].join('');
   const hut = e.hut ? `<div class="hut ${e.hut.stance}"><span class="tag">beach hut · ${esc(e.hut.stance)}</span>${
     e.hut.script.lines.map(l => `<p><b>${esc(l.who)}:</b> “${esc(l.text)}”</p>`).join('')}</div>` : '';
+  const narr = e.narrator ? `<p class="narr">${e.narrator.lines.map(l => `<b>${esc(l.who)}:</b> “${esc(l.text)}”`).join(' ')}</p>` : '';
   const aired = e.aired ? '' : '<span class="tag unaired">didn\'t air</span>';
   // What the public made of it. Only an aired scene counts; these numbers are
   // before the episode's caps (spec §8), which the episode header shows after.
@@ -48,7 +49,7 @@ function scene(e) {
   const pop = e.aired
     ? (moves ? `<div class="pop">public: ${moves}${e.major?.length ? ' <span class="major">major moment</span>' : ''}</div>` : '')
     : '<div class="pop">not seen by the public: no effect</div>';
-  return `<div class="scene${e.aired ? '' : ' hidden'}"><div class="meta">${esc(e.kind)} ${aired}<span class="id">${esc(s.id)}</span></div>${lines}${hut}${pop}</div>`;
+  return `<div class="scene${e.aired ? '' : ' hidden'}"><div class="meta">${esc(e.kind)} ${aired}<span class="id">${esc(s.id)}</span></div>${lines}${narr}${hut}${pop}</div>`;
 }
 
 it('writes a season transcript', () => {
@@ -107,6 +108,7 @@ h3{font:600 12px system-ui,sans-serif;letter-spacing:.12em;text-transform:upperc
 .cast{font:14px/1.9 system-ui,sans-serif;margin:0 0 8px}.from{color:var(--soft);font-size:12px}
 .pop,.public{font:12px system-ui,sans-serif;color:var(--soft);margin:6px 0 0}.public{font-size:13px;margin:4px 0 10px}
 .up{color:#1f9d55}.down{color:#d64545}.flat{color:var(--soft)}.air{opacity:.8}
+.narr{font-style:italic;color:var(--pink);margin:6px 0}
 .major{background:var(--pink);color:#fff;border-radius:4px;padding:0 5px;margin-left:4px}
 .scene{border-top:1px solid var(--line);padding:10px 0}.scene.hidden{opacity:.6}
 .meta{font:12px system-ui,sans-serif;color:var(--soft);margin-bottom:4px}.id{float:right;opacity:.6}

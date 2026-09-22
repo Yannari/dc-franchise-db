@@ -18,9 +18,9 @@ describe('engine rules', () => {
       for (const [, key] of src.matchAll(/stats\??\.([a-zA-Z]+)/g)) expect(VALID_STATS, `${f}: stats.${key}`).toContain(key);
     });
   }
-  it('every template uses placeholders, never a name', () => {
-    for (const [kind, def] of Object.entries(KINDS)) {
-      for (const t of def.tpl) expect(t, kind).toMatch(/\{a\}/);
-    }
+  it('the words are picked after the event, never inside a kind', () => {
+    // Prose renders what happened (pm/script.js); a kind carrying its own
+    // template is how a line starts deciding things.
+    for (const [kind, def] of Object.entries(KINDS)) expect(def.tpl, kind).toBeUndefined();
   });
 });

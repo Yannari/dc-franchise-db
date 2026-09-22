@@ -7,8 +7,8 @@
 // television it is; only aired events write the public ledger (spec §8).
 // The reader sees every event; unaired ones carry `aired: false`.
 //
-// Templates carry {a}/{b}/{c}; names are filled at render time, never here.
-// Plan 1 ships two lines per kind. The prose pools are Plan 3.
+// The words live in pm/lines/* and are picked by pm/script.js AFTER the
+// event has happened, on their own dice: prose renders, it never decides.
 import { addBond, getBond } from '../bonds.js';
 import { addRelationshipDimension } from '../relationships.js';
 import { attr, nudgeAttraction, ickHit } from './chemistry.js';
@@ -17,6 +17,7 @@ import { romance, shown, revealTruth } from './feelings.js';
 import { closedness, betrayalWeight } from './ladder.js';
 import { feel, jealousyHit } from './emotions.js';
 import { girlCode, judgement } from './circle.js';
+import { scriptFor, hutFor } from './script.js';
 
 export const PHASE_BUDGETS = { morning: 12, day: 40, event: 18, evening: 23 };
 export const HUT_RATE = 0.25;
@@ -51,7 +52,6 @@ const pop1 = (who, approval, fame) => ({ [who]: { approval, fame } });
 export const KINDS = {
   chat: {
     salience: 0.25,
-    tpl: ['{a} and {b} talk on the daybeds about home.', '{a} and {b} have a quiet chat by the pool.'],
     cast: (s, rng) => pick(rng, couplesInRoom(s)),
     apply: (s, ev) => {
       const [a, b] = ev.players;
@@ -61,7 +61,6 @@ export const KINDS = {
   },
   'deep-chat': {
     salience: 0.45,
-    tpl: ['{a} opens up to {b} about the last time {a} got hurt.', '{a} tells {b} this feels different.'],
     cast: (s, rng) => pick(rng, couplesInRoom(s).filter(([a, b]) =>
       ['love', 'settle-down', 'first-love'].includes(s.profiles[a].intent) || getBond(a, b) > 2)),
     apply: (s, ev) => {
@@ -72,7 +71,6 @@ export const KINDS = {
   },
   kiss: {
     salience: 0.55,
-    tpl: ['{a} and {b} kiss on the terrace.', '{b} pulls {a} in for a kiss under the fairy lights.'],
     cast: (s, rng) => pick(rng, couplesInRoom(s)),
     apply: (s, ev) => {
       const [a, b] = ev.players;
@@ -83,7 +81,6 @@ export const KINDS = {
   },
   pull: {
     salience: 0.6,
-    tpl: ['{a} pulls {b} for a chat.', '"Can I borrow you?" {a} asks {b}.'],
     cast: (s, rng) => {
       // Somebody who has closed off does not go looking (spec §6.7).
       const a = weighted(rng, s.villa.filter(n => compatibleMates(s, n).length)
@@ -131,7 +128,6 @@ export const KINDS = {
   },
   loyalty: {
     salience: 0.6,
-    tpl: ['{a} turns {b} down: "I\'m happy where I am."', '{a} tells {b} straight that nothing is happening.'],
     cast: () => null,   // only ever reached through a rebuffed pull
     apply: (s, ev) => {
       const [a, b] = ev.players;
@@ -142,7 +138,6 @@ export const KINDS = {
   },
   argument: {
     salience: 0.85,
-    tpl: ['{a} and {b} row on the terrace.', '{a} snaps at {b} in front of the whole villa.'],
     cast: (s, rng) => {
       const a = weighted(rng, s.villa.map(n => [n, (10 - S(s, n).temperament) + S(s, n).boldness / 2]));
       if (!a) return null;
@@ -161,7 +156,6 @@ export const KINDS = {
   },
   friendship: {
     salience: 0.2,
-    tpl: ['{a} and {b} make breakfast together.', '{a} and {b} are thick as thieves on the lilos.'],
     cast: (s, rng) => {
       const a = pick(rng, s.villa);
       const b = a && pick(rng, roomMates(s, a).filter(n => n !== partnerOf(s, a)));
@@ -175,7 +169,6 @@ export const KINDS = {
   },
   gossip: {
     salience: 0.8,
-    tpl: ['{a} tells {b} what {c} did.', '{a} sits {b} down: "You need to know something about {c}."'],
     cast: (s, rng) => {
       const options = [];
       for (const sec of s.secrets.filter(x => !x.known)) {
@@ -205,7 +198,6 @@ export const KINDS = {
   },
   comedy: {
     salience: 0.7,
-    tpl: ['{a} does an impression of the whole villa at breakfast.', '{a} narrates the lads\' workout like a nature documentary.'],
     cast: (s, rng) => {
       const a = weighted(rng, s.villa.map(n => [n, Math.max(0, S(s, n).social + S(s, n).temperament - 9)]));
       return a ? { players: [a] } : null;
@@ -219,7 +211,6 @@ export const KINDS = {
   },
   ick: {
     salience: 0.7,
-    tpl: ['{a} gets the ick when {b} does that laugh again.', '{a} tells the girls {b} has given {a} the ick.'],
     cast: (s, rng) => {
       const opts = couplesInRoom(s).flatMap(([a, b]) => [[[a, b], ickHit(s.profiles[a], s.profiles[b])],
         [[b, a], ickHit(s.profiles[b], s.profiles[a])]]);
@@ -234,7 +225,6 @@ export const KINDS = {
   },
   'challenge-kiss': {
     salience: 0.8,
-    tpl: ['In the challenge, {a} picks {b} to kiss.', '{a} kisses {b} for the points, and the villa screams.'],
     cast: (s, rng) => {
       const a = pick(rng, s.villa.filter(n => compatibleMates(s, n).length));
       const b = a && weighted(rng, compatibleMates(s, a).filter(n => n !== partnerOf(s, a))
@@ -251,7 +241,6 @@ export const KINDS = {
   },
   'challenge-win': {
     salience: 0.35,
-    tpl: ['{a} and {b} win the challenge.', '{a} and {b} take the points and a night in the hideaway.'],
     cast: (s, rng) => pick(rng, couplesInRoom(s)),
     apply: (s, ev) => {
       const [a, b] = ev.players;
@@ -271,7 +260,7 @@ export const KINDS = {
     'jealous-sulk', 'jealous-retaliate', 'reassurance', 'overthinking', 'confession', 'advice',
     'heart-rate', 'snog-marry-pie', 'movie-night', 'double-standard', 'notes', 'families',
     'solidarity']
-    .map(k => [k, { salience: 1, tpl: [`{a} — ${k}.`], cast: () => null,
+    .map(k => [k, { salience: 1, cast: () => null,
       apply: (s, ev) => ({ pop: ev.extra.pop || {}, major: ev.extra.majorPop || [] }) }])),
 };
 
@@ -283,11 +272,6 @@ const PHASE_KINDS = {
   evening: [['kiss', 3], ['deep-chat', 2], ['pull', 2], ['argument', 1.5], ['gossip', 1.5], ['friendship', 1]],
 };
 
-const HUT_TPL = {
-  honest: ['{a}, in the beach hut: "I know what I want."', '{a}, in the beach hut: "I\'m actually really happy."'],
-  'two-faced': ['{a}, in the beach hut: "I\'m keeping my options open."', '{a}, in the beach hut: "What they don\'t know won\'t hurt them."'],
-};
-
 /** Create one event: decide airing, apply it, attach a hut cutaway, write the ledger. */
 export function makeEvent(state, rng, { phase, kind, players, extra = {}, aired = null, major = [] }) {
   const def = KINDS[kind];
@@ -295,17 +279,18 @@ export function makeEvent(state, rng, { phase, kind, players, extra = {}, aired 
   const heat = players.some(n => openSecret(state, n)) ? 0.1 : 0;
   const airP = clamp(0.2 + 0.6 * def.salience + heat, 0.1, 0.95);
   const ev = { id: `${state.ep}-${state.seq}`, ep: state.ep, phase, kind, players: [...players],
-    tpl: pick(rng, def.tpl), aired: aired == null ? rng() < airP : !!aired, major: [...major],
+    aired: aired == null ? rng() < airP : !!aired, major: [...major],
     hut: null, pop: {}, extra };
   const res = def.apply(state, ev, rng) || {};
   ev.pop = res.pop || {};
+  ev.script = scriptFor(state, ev);
   for (const n of res.major || []) if (!ev.major.includes(n)) ev.major.push(n);
   if (players.length && rng() < HUT_RATE) {
     const who = pick(rng, players);
     // A faker's hut gives them away too: the hut is the Feels layer (spec §6.5).
     const faking = players.some(o => o !== who && shown(state, who, o) - romance(who, o) >= 3);
     const stance = faking || state.secrets.some(x => !x.known && x.who === who) ? 'two-faced' : 'honest';
-    ev.hut = { who, stance, tpl: pick(rng, HUT_TPL[stance]) };
+    ev.hut = { who, stance, script: hutFor(state, ev, who, stance) };
     const p = (ev.pop[who] ||= { approval: 0, fame: 0 });
     if (stance === 'two-faced') { p.approval -= 0.5; p.fame += 0.5; } else p.fame += 0.3;
   }

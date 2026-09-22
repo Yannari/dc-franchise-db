@@ -166,6 +166,7 @@ export const MOMENTS = {
       .sort((a, b) => b.severity - a.severity).slice(0, 6);
     for (const sec of shown) {
       sec.known = true;
+      sec.public = true;              // the whole villa saw the photos
       if (!state.villa.includes(sec.who) || !state.villa.includes(sec.partner)) continue;
       addBond(sec.who, sec.partner, -1.5 * sec.severity);
       const hidden = state.history.find(e => e.id === sec.eventId);

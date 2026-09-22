@@ -27,7 +27,7 @@ import { MOMENTS } from './moments.js';
 function initState(cast, setup, seed) {
   const state = { ep: 0, day: 0, villa: [], casa: [], split: false, couples: [], profiles: {},
     ledger: createLedger(), secrets: [], seq: 0, recouplings: 0, history: [], casaArrivals: [],
-    shows: {}, believes: {}, ladder: {}, ladderBelief: {}, coupledSince: {}, loveSaid: {}, emo: {} };
+    shows: {}, believes: {}, ladder: {}, ladderBelief: {}, coupledSince: {}, loveSaid: {}, emo: {}, seed };
   for (const name of cast) {
     const player = players.find(p => p.name === name) || { name };
     state.profiles[name] = resolveIslander(player, setup[name] || {}, streamFor(seed, `profile:${name}`));
@@ -105,12 +105,24 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
     if (entry.moment !== 'reunion' && entry.moment !== 'final') {
       const walker = maybeWalk(state, rng);
       if (walker) {
+        const before = state.couples.map(c => [...c]);
         const ev = makeEvent(state, rng, { phase: 'firepit', kind: 'walk', players: [walker.name], aired: true,
           major: [walker.name], extra: { cause: walker.cause, pop: { [walker.name]: { approval: 3, fame: 2 } } } });
         m.events.push(ev); state.history.push(ev);
         state.villa = state.villa.filter(n => n !== walker.name);
         state.couples = state.couples.filter(c => !c.includes(walker.name));
         exits.push({ name: walker.name, verb: 'walked', channel: 'walk', cause: walker.cause });
+        // With no recoupling left, the one left behind can never be coupled
+        // again, and the final is couples only: they leave with their partner.
+        const left = before.find(c => c.includes(walker.name))?.find(n => n !== walker.name) || null;
+        const recoupleAhead = schedule.slice(schedule.indexOf(entry) + 1).some(e => e.moment === 'recoupling');
+        if (left && !recoupleAhead && state.villa.includes(left)) {
+          const ev2 = makeEvent(state, rng, { phase: 'firepit', kind: 'walk', players: [left, walker.name], aired: true,
+            major: [left], extra: { cause: 'solidarity', pop: { [left]: { approval: 2, fame: 1.5 } } } });
+          m.events.push(ev2); state.history.push(ev2);
+          state.villa = state.villa.filter(n => n !== left);
+          exits.push({ name: left, verb: 'walked', channel: 'walk', cause: 'solidarity' });
+        }
       }
     }
     if (m.extra?.final) final = m.extra.final;

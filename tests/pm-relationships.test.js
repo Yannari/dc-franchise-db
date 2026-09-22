@@ -31,14 +31,17 @@ describe('relationships are one-way and layered, and reach the row', () => {
   });
 
   it('romance is not symmetric: most pairs differ by direction', () => {
-    const { rows } = season(2);
-    const rel = rows[6].pm.relationships;
+    // Pooled over seasons: one season's episode 7 is one sample, and a guard
+    // that measures one sample passes or fails on the seed (§11.5).
     let pairs = 0, differ = 0;
-    for (const [k, [r]] of Object.entries(rel)) {
-      const [a, b] = k.split('→');
-      const back = rel[`${b}→${a}`];
-      if (!back || a > b) continue;
-      pairs++; if (Math.abs(r - back[0]) >= 1) differ++;
+    for (let s = 1; s <= 6; s++) {
+      const rel = season(s).rows[6].pm.relationships;
+      for (const [k, [r]] of Object.entries(rel)) {
+        const [a, b] = k.split('→');
+        const back = rel[`${b}→${a}`];
+        if (!back || a > b) continue;
+        pairs++; if (Math.abs(r - back[0]) >= 1) differ++;
+      }
     }
     expect(differ / pairs).toBeGreaterThan(0.5);
   });

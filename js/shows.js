@@ -396,6 +396,8 @@ export const SHOWS = {
       fanWords: ['recoupling', 'bombshell', 'casa amor', 'grafting', 'mugged off',
         'firepit', 'hideaway', 'beach hut', 'villa', 'dumped from the island'],
       host: 'Dior',
+      // The voiceover. Unnamed until the user names him; one line to change.
+      narratorName: 'The Narrator',
     },
     // PROVISIONAL until a season has been played and the signals printed
     // (§2.5). A dating show sells romance and mess; strategy is the smallest.

@@ -99,7 +99,7 @@ describe('Perfect Match spec audit', () => {
       }
       const seen = new Map();
       for (const e of rows.flatMap(r => r.pm.events)) {
-        const key = `${e.tpl}|${e.players.join(',')}`;
+        const key = `${e.script.id}|${[...e.players].sort().join(',')}`;
         m.lines++; if (seen.has(key)) m.repeatLines++; seen.set(key, true);
       }
       // 11. relationship variety — which shapes this season ever produced

@@ -34,11 +34,12 @@ describe('an episode of villa events', () => {
     expect(new Set(evs.map(e => e.phase))).toEqual(new Set(['morning', 'day', 'event', 'evening']));
   });
 
-  it('every event is a known kind, names real islanders and keeps names out of the template', () => {
+  it('every event is a known kind, names real islanders and renders a scene', () => {
     for (const ev of generateEpisodeEvents(state, streamFor(2, 'ep:2'))) {
       expect(KINDS[ev.kind]).toBeTruthy();
       expect(ev.players.every(n => state.villa.includes(n))).toBe(true);
-      for (const n of state.villa) expect(ev.tpl.includes(n)).toBe(false);
+      expect(ev.script?.id, ev.kind).toBeTruthy();
+      for (const l of ev.script.lines) expect(l.text).not.toMatch(/\{[abc]/);
     }
   });
 

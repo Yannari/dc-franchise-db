@@ -46,6 +46,10 @@
 | `js/relationships.js` (modify) | the shared one-way relationship store gains `love` |
 | `js/pm/chemistry.js` | attraction on meeting, written into the shared store; `attr` / `nudgeAttraction` views |
 | `js/pm/feelings.js` | the three layers — feels, shows, believes; love growth; masks; relationship labels |
+| `js/pm/ladder.js` | what we are to each other: cracking on → open → closed off → exclusive → official, one side at a time |
+| `js/pm/emotions.js` | security, confidence, loneliness, guilt, heartbreak, stress, jealousy; attachment from the nine stats |
+| `js/pm/circle.js` | confidants, girl code, peer pressure, the double standard |
+| `js/pm/villa-day.js` | the ladder, the feelings and the friendships as scenes, plus the villa's rituals |
 | `js/pm/ledger.js` | approval + fame, caps, labels, couple score, followers |
 | `js/pm/events.js` | the event kinds, the ~100-event episode, airing, hut cutaways, secrets |
 | `js/pm/recoupling.js` | a recoupling ceremony |
@@ -972,7 +976,8 @@ export function growLove(state, couples) {
       const att = getRelationshipDimension(x, y, 'attraction');
       const aff = Math.max(0, friendship(x, y));
       const loy = state.profiles[x]?.stats?.loyalty ?? 5;
-      addRelationshipDimension(x, y, 'love', 0.12 * (att / 10) * (1 + aff / 10) * (0.5 + loy / 10) * 4);
+      // Villa time runs fast (spec §6.8): a day there does the work of a week outside.
+      addRelationshipDimension(x, y, 'love', 0.12 * (att / 10) * (1 + aff / 10) * (0.5 + loy / 10) * 7);
     }
   }
 }
@@ -3093,6 +3098,1104 @@ git commit -m "feat(perfect-match): decisions read my feelings and my beliefs; l
 
 ---
 
+### Task 9c: The ladder — what we are to each other
+
+Spec §6.7. Each side declares its own step; each side believes something about
+the other's; the asks can be declined; steps can go back down; jealousy and
+the villa read the rung you BELIEVE you are on.
+
+**Files:**
+- Create: `js/pm/ladder.js`
+- Test: `tests/pm-ladder.test.js`
+
+**Interfaces:**
+- Consumes: `romance` (Task 3b), `getRelationshipDimension` (`js/relationships.js`).
+- Produces:
+  - `STEPS = ['coupled','cracking-on','open','closed-off','exclusive','official']`, `BETRAYAL` (step → weight)
+  - `stepOf(state, a, b)`, `setStep(state, a, b, step)`, `believedStep(state, viewer, a)`, `tellStep(state, viewer, a)`, `believeStep(state, viewer, a, step)`
+  - `syncLadder(state)` (couples gained get `coupled`; couples lost are cleared)
+  - `closedness(state, a, b) → 0..1`, `believedCloseness(state, viewer, partner) → 0..1`, `betrayalWeight(state, viewer, partner)`, `coupleStrength(state, a, b) → 0..1`, `situationship(state, a, b) → boolean`
+  - `readiness(state, a, b, attachmentOf?) → 0..1`, `headTurn(state, a, b) → 0..10`
+  - `decideLadder(state, rng, attachmentOf?) → Decision[]` where `Decision = { kind, from, to, yes?, told?, was? }` and `kind ∈ cracking-on | keeping-open | close-off | open-back-up | exclusive-ask | official-ask | love-said | love-hanging`
+  - state fields: `state.ladder = { 'A→B': step }`, `state.ladderBelief = { 'V:A→V': step }`, `state.coupledSince = { 'A|B': day }`, `state.loveSaid = { 'A→B': day }`, `state.day`
+
+- [ ] **Step 1: Write the failing test** — `tests/pm-ladder.test.js`
+
+```js
+import { beforeEach, describe, expect, it } from 'vitest';
+import { setGs, setPlayers } from '../js/core.js';
+import { setRelationshipDimension } from '../js/relationships.js';
+import { streamFor } from '../js/dr/rng.js';
+import { STEPS, stepOf, setStep, believedStep, believeStep, syncLadder, closedness, betrayalWeight,
+  coupleStrength, situationship, decideLadder, readiness } from '../js/pm/ladder.js';
+
+const P = (name, gender, archetype, stats = {}, intent = 'love') => ({ name, gender, sexuality: 'straight', archetype, intent,
+  stats: { physical: 5, endurance: 5, mental: 5, social: 5, strategic: 5, loyalty: 5, boldness: 5, intuition: 5, temperament: 5, ...stats } });
+let state;
+const feel = (a, b, att, love = 0, trust = 0) => {
+  setRelationshipDimension(a, b, 'attraction', att); setRelationshipDimension(a, b, 'love', love);
+  setRelationshipDimension(a, b, 'trust', trust);
+};
+beforeEach(() => {
+  const cast = [P('Bridgette', 'f', 'hero', { loyalty: 9 }), P('Geoff', 'm', 'loyal-soldier', { loyalty: 9 }),
+    P('Theo', 'm', 'wildcard', { loyalty: 2 }, 'fun'), P('Zoey', 'f', 'underdog'), P('Duncan', 'm', 'hothead')];
+  setPlayers(cast);
+  setGs({ bonds: {}, relationshipDimensions: {} });
+  state = { day: 1, villa: cast.map(p => p.name), profiles: Object.fromEntries(cast.map(p => [p.name, p])),
+    couples: [['Bridgette', 'Geoff'], ['Zoey', 'Theo']], shows: {}, believes: {} };
+  syncLadder(state);
+});
+
+describe('the ladder is one-way', () => {
+  it('a couple starts on `coupled`, each side separately', () => {
+    expect(stepOf(state, 'Bridgette', 'Geoff')).toBe('coupled');
+    setStep(state, 'Bridgette', 'Geoff', 'closed-off');
+    expect(stepOf(state, 'Geoff', 'Bridgette')).toBe('coupled');
+    expect(closedness(state, 'Bridgette', 'Geoff')).toBeGreaterThan(closedness(state, 'Geoff', 'Bridgette'));
+  });
+  it('jealousy weight follows the rung you BELIEVE they are on', () => {
+    believeStep(state, 'Zoey', 'Theo', 'open');
+    const open = betrayalWeight(state, 'Zoey', 'Theo');
+    believeStep(state, 'Zoey', 'Theo', 'exclusive');
+    expect(betrayalWeight(state, 'Zoey', 'Theo')).toBeGreaterThan(open);
+  });
+  it('a situationship is one side believing a rung the other never climbed', () => {
+    setStep(state, 'Theo', 'Zoey', 'open');
+    believeStep(state, 'Zoey', 'Theo', 'exclusive');
+    expect(situationship(state, 'Theo', 'Zoey')).toBe(true);
+    expect(situationship(state, 'Zoey', 'Theo')).toBe(false);
+  });
+  it('uncoupling clears the ladder', () => {
+    state.couples = [['Zoey', 'Theo']];
+    syncLadder(state);
+    expect(stepOf(state, 'Bridgette', 'Geoff')).toBeNull();
+  });
+});
+
+describe('climbing, declining, stepping back', () => {
+  it('a loyal couple in love climbs to exclusive or official over a season of days', () => {
+    feel('Bridgette', 'Geoff', 9, 8, 8); feel('Geoff', 'Bridgette', 9, 8, 8);
+    let top = 0;
+    for (let d = 1; d <= 30; d++) { state.day = d; decideLadder(state, streamFor(d, 'l')); top = Math.max(top, STEPS.indexOf(stepOf(state, 'Bridgette', 'Geoff'))); }
+    expect(top).toBeGreaterThanOrEqual(STEPS.indexOf('exclusive'));
+  });
+  it('a `fun` islander with no love climbs far less', () => {
+    feel('Theo', 'Zoey', 6, 0, 0); feel('Zoey', 'Theo', 8, 5, 5);
+    expect(readiness(state, 'Theo', 'Zoey')).toBeLessThan(readiness(state, 'Zoey', 'Theo'));
+  });
+  it('a turned head steps back down to open', () => {
+    feel('Bridgette', 'Geoff', 4, 2, 5); setStep(state, 'Bridgette', 'Geoff', 'closed-off');
+    feel('Bridgette', 'Duncan', 10, 0, 0);
+    let back = false;
+    for (let d = 1; d <= 20 && !back; d++) back = decideLadder(state, streamFor(d * 7919 + 13, 'l')).some(x => x.kind === 'open-back-up' && x.from === 'Bridgette');
+    expect(back).toBe(true);
+    expect(stepOf(state, 'Bridgette', 'Geoff')).toBe('open');
+  });
+  it('the villa sees a strong couple as the lower of the two steps', () => {
+    setStep(state, 'Bridgette', 'Geoff', 'official'); setStep(state, 'Geoff', 'Bridgette', 'exclusive');
+    expect(coupleStrength(state, 'Bridgette', 'Geoff')).toBeCloseTo(STEPS.indexOf('exclusive') / 5, 5);
+  });
+});
+```
+
+- [ ] **Step 2: Run it to verify it fails**
+
+Run: `npx vitest run tests/pm-ladder.test.js`
+Expected: FAIL — module not found.
+
+- [ ] **Step 3: Implement** — `js/pm/ladder.js`
+
+```js
+// ══════════════════════════════════════════════════════════════════════
+// pm/ladder.js — what we are to each other (spec §6.7)
+// ══════════════════════════════════════════════════════════════════════
+//
+// Pure state; the scenes are made in villa-day.js. Most rungs are ONE
+// person's declaration: "closed off" is unilateral (Tyla; Molly and Zach),
+// "exclusive" and "official" are an ask and a yes (Zach asked Kayda, Bryce
+// asked Trinity — US S8). Each side also BELIEVES something about the other's
+// rung, and the gap between the two is a situationship.
+import { romance } from './feelings.js';
+import { getRelationshipDimension } from '../relationships.js';
+
+export const STEPS = ['coupled', 'cracking-on', 'open', 'closed-off', 'exclusive', 'official'];
+// How much a partner's straying hurts, by the rung you believe they are on.
+export const BETRAYAL = { coupled: 0.3, 'cracking-on': 0.4, open: 0.5, 'closed-off': 1.0, exclusive: 1.3, official: 1.6 };
+const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+const at = s => Math.max(0, STEPS.indexOf(s || 'coupled'));
+const pair = (a, b) => [a, b].sort().join('|');
+
+export const stepOf = (state, a, b) => state.ladder?.[`${a}→${b}`] || null;
+export function setStep(state, a, b, step) { (state.ladder ||= {})[`${a}→${b}`] = step; }
+export function believedStep(state, viewer, a) {
+  const v = state.ladderBelief?.[`${viewer}:${a}→${viewer}`];
+  return v ?? stepOf(state, a, viewer);
+}
+export function believeStep(state, viewer, a, step) { (state.ladderBelief ||= {})[`${viewer}:${a}→${viewer}`] = step; }
+/** `a` tells `viewer` where they stand — the belief becomes the truth. */
+export function tellStep(state, viewer, a) { believeStep(state, viewer, a, stepOf(state, a, viewer)); }
+
+/** Couples that formed start on `coupled`; couples that ended leave the ladder. */
+export function syncLadder(state) {
+  const live = new Set(state.couples.map(([a, b]) => pair(a, b)));
+  for (const key of Object.keys(state.ladder || {})) {
+    const [a, b] = key.split('→');
+    if (!live.has(pair(a, b))) { delete state.ladder[key]; delete state.ladderBelief?.[`${b}:${a}→${b}`]; }
+  }
+  for (const key of Object.keys(state.coupledSince || {})) if (!live.has(key)) delete state.coupledSince[key];
+  for (const [a, b] of state.couples) {
+    for (const [x, y] of [[a, b], [b, a]]) if (!stepOf(state, x, y)) { setStep(state, x, y, 'coupled'); tellStep(state, y, x); }
+    (state.coupledSince ||= {})[pair(a, b)] ??= state.day || 0;
+  }
+}
+
+export const closedness = (state, a, b) => clamp((at(stepOf(state, a, b)) - 2) / 3, 0, 1);
+export const believedCloseness = (state, viewer, partner) => clamp((at(believedStep(state, viewer, partner)) - 2) / 3, 0, 1);
+export const betrayalWeight = (state, viewer, partner) => BETRAYAL[believedStep(state, viewer, partner) || 'coupled'];
+/** How settled a couple looks to the villa: the LOWER of the two rungs. */
+export const coupleStrength = (state, a, b) =>
+  clamp(Math.min(at(stepOf(state, a, b)), at(stepOf(state, b, a))) / (STEPS.length - 1), 0, 1);
+/** b believes a is at least two rungs further up than a is. */
+export const situationship = (state, a, b) => at(believedStep(state, b, a)) - at(stepOf(state, a, b)) >= 2;
+
+const INTENT_PACE = { love: 1.2, 'settle-down': 1.35, 'first-love': 1.25, 'fresh-start': 0.9, fun: 0.5,
+  stir: 0.45, fame: 0.8, win: 0.85, money: 0.7 };
+
+/** How ready A is to climb toward B, 0..1. Proportional in every term. */
+export function readiness(state, a, b, attachmentOf = null) {
+  const p = state.profiles[a], s = p.stats;
+  const rom = romance(a, b) / 10, love = getRelationshipDimension(a, b, 'love') / 10;
+  const trust = (getRelationshipDimension(a, b, 'trust') + 10) / 20;
+  const since = state.coupledSince?.[pair(a, b)] ?? state.day ?? 0;
+  const days = Math.max(0, (state.day || 0) - since);
+  const att = attachmentOf ? attachmentOf(p) : { anxiety: 0, avoidance: 0 };
+  return clamp(rom * (0.45 + 0.55 * love) * (0.5 + 0.5 * trust) * (0.6 + 0.4 * s.loyalty / 10)
+    * (INTENT_PACE[p.intent] ?? 1) * (1 + 0.4 * att.anxiety - 0.45 * att.avoidance)
+    * Math.min(1, 0.35 + days / 12), 0, 1);
+}
+
+/** The strongest pull A feels toward anybody but B — a turned head. */
+export function headTurn(state, a, b) {
+  let best = 0;
+  for (const o of state.villa) if (o !== a && o !== b) best = Math.max(best, romance(a, o));
+  return best;
+}
+
+/**
+ * One day of ladder decisions for every couple, as plain records. The asks
+ * can be declined; a turned head steps back down and may not say so.
+ */
+export function decideLadder(state, rng, attachmentOf = null) {
+  const out = [];
+  for (const [a, b] of state.couples) {
+    for (const [x, y] of [[a, b], [b, a]]) {
+      const cur = stepOf(state, x, y) || 'coupled';
+      const r = readiness(state, x, y, attachmentOf);
+      const turned = headTurn(state, x, y) - romance(x, y);
+      if (at(cur) >= at('closed-off') && turned > 1 && rng() < clamp(turned / 8, 0, 0.6)) {
+        setStep(state, x, y, 'open');
+        // Telling your partner you've opened back up takes loyalty.
+        const told = rng() < 0.1 + 0.8 * state.profiles[x].stats.loyalty / 10;
+        if (told) tellStep(state, y, x);
+        out.push({ kind: 'open-back-up', from: x, to: y, told, was: cur });
+        continue;
+      }
+      if (cur === 'coupled' && rng() < r * 0.9) {
+        setStep(state, x, y, 'cracking-on'); tellStep(state, y, x);
+        out.push({ kind: 'cracking-on', from: x, to: y });
+      } else if (cur === 'cracking-on' && rng() < 0.5) {
+        if (turned > -1) { setStep(state, x, y, 'open'); tellStep(state, y, x); out.push({ kind: 'keeping-open', from: x, to: y }); }
+        else if (rng() < r * 0.6) { setStep(state, x, y, 'closed-off'); tellStep(state, y, x); out.push({ kind: 'close-off', from: x, to: y }); }
+      } else if (cur === 'open' && turned < 0 && rng() < r * 0.45) {
+        setStep(state, x, y, 'closed-off'); tellStep(state, y, x);
+        out.push({ kind: 'close-off', from: x, to: y });
+      }
+    }
+    // The asks: at most one per couple per day, made by the readier, bolder one.
+    const ra = readiness(state, a, b, attachmentOf), rb = readiness(state, b, a, attachmentOf);
+    const [asker, askee] = ra + state.profiles[a].stats.boldness / 20 >= rb + state.profiles[b].stats.boldness / 20 ? [a, b] : [b, a];
+    const rAsk = Math.max(ra, rb), rYes = readiness(state, askee, asker, attachmentOf);
+    const both = Math.min(at(stepOf(state, a, b)), at(stepOf(state, b, a)));
+    if (both >= at('open') && both < at('exclusive') && at(stepOf(state, asker, askee)) >= at('closed-off')
+      && rng() < rAsk * 0.35) {
+      const yes = rng() < clamp(0.15 + rYes * 1.1, 0, 0.97);
+      if (yes) { setStep(state, a, b, 'exclusive'); setStep(state, b, a, 'exclusive'); tellStep(state, a, b); tellStep(state, b, a); }
+      out.push({ kind: 'exclusive-ask', from: asker, to: askee, yes });
+    } else if (both === at('exclusive') && rng() < rAsk * 0.22) {
+      const yes = rng() < clamp(0.1 + rYes * 1.15, 0, 0.97);
+      if (yes) { setStep(state, a, b, 'official'); setStep(state, b, a, 'official'); tellStep(state, a, b); tellStep(state, b, a); }
+      out.push({ kind: 'official-ask', from: asker, to: askee, yes });
+    }
+    // "I love you" — said once, returned or left hanging.
+    for (const [x, y] of [[a, b], [b, a]]) {
+      if (state.loveSaid?.[`${x}→${y}`] != null) continue;
+      const love = getRelationshipDimension(x, y, 'love');
+      const att = attachmentOf ? attachmentOf(state.profiles[x]) : { anxiety: 0, avoidance: 0 };
+      if (rng() < clamp((love - 5) / 10 * (0.6 + att.anxiety - 0.5 * att.avoidance), 0, 0.5)) {
+        (state.loveSaid ||= {})[`${x}→${y}`] = state.day;
+        const back = getRelationshipDimension(y, x, 'love') >= 6;
+        if (back) state.loveSaid[`${y}→${x}`] = state.day;
+        out.push({ kind: back ? 'love-said' : 'love-hanging', from: x, to: y });
+      }
+    }
+  }
+  return out;
+}
+```
+
+- [ ] **Step 4: Run it to verify it passes**
+
+Run: `npx vitest run tests/pm-ladder.test.js`
+Expected: PASS (8 tests).
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add js/pm/ladder.js tests/pm-ladder.test.js
+git commit -m "feat(perfect-match): the relationship ladder, one side at a time"
+```
+
+---
+
+### Task 9d: Emotions and attachment
+
+Spec §6.8. Every islander carries feelings that move only on what they
+witnessed, were told, or believe. Attachment is read continuously from the
+nine stats and shapes jealousy the way the research found it.
+
+**Files:**
+- Create: `js/pm/emotions.js`
+- Test: `tests/pm-emotions.test.js`
+
+**Interfaces:**
+- Consumes: `romance`, `believed` (Task 3b); `betrayalWeight`, `believedCloseness` (Task 9c).
+- Produces:
+  - `FEELINGS`, `attachment(profile) → { anxiety, avoidance, secure }` (each 0..1), `attachmentLabel(profile)` (text)
+  - `emo(state, name)` (creates `{ security, confidence, loneliness, guilt, heartbreak, stress, jealousy: { rival: n }, heartbreakFrom }`), `feel(state, name, key, delta)`
+  - `effectiveTemperament(state, name)`
+  - `jealousyHit(state, viewer, partner, rival, raw, { confirmed }) → amount`
+  - `jealousyOutlet(state, viewer, rng) → 'confront' | 'sulk' | 'retaliate' | 'reassure' | 'hidden'`
+  - `breakHeart(state, name, by, amount)`, `rebounding(state, name) → boolean`
+  - `tickEmotions(state)` (one day), `walkRisk(state, name) → { p, cause }`
+
+- [ ] **Step 1: Write the failing test** — `tests/pm-emotions.test.js`
+
+```js
+import { beforeEach, describe, expect, it } from 'vitest';
+import { setGs, setPlayers } from '../js/core.js';
+import { setRelationshipDimension } from '../js/relationships.js';
+import { streamFor } from '../js/dr/rng.js';
+import { syncLadder, believeStep } from '../js/pm/ladder.js';
+import { attachment, attachmentLabel, emo, jealousyHit, jealousyOutlet, tickEmotions, breakHeart,
+  rebounding, walkRisk, effectiveTemperament } from '../js/pm/emotions.js';
+
+const P = (name, gender, archetype, stats = {}) => ({ name, gender, sexuality: 'straight', archetype, intent: 'love',
+  stats: { physical: 5, endurance: 5, mental: 5, social: 5, strategic: 5, loyalty: 5, boldness: 5, intuition: 5, temperament: 5, ...stats } });
+let state;
+beforeEach(() => {
+  const cast = [P('Anx', 'f', 'underdog', { loyalty: 9, temperament: 2 }), P('Sec', 'f', 'hero', { loyalty: 6, temperament: 9 }),
+    P('Avo', 'f', 'mastermind', { loyalty: 1, strategic: 9, temperament: 6 }), P('M1', 'm', 'floater'), P('M2', 'm', 'floater'),
+    P('M3', 'm', 'floater'), P('R', 'f', 'floater')];
+  setPlayers(cast);
+  setGs({ bonds: {}, relationshipDimensions: {} });
+  state = { day: 5, villa: cast.map(p => p.name), profiles: Object.fromEntries(cast.map(p => [p.name, p])),
+    couples: [['Anx', 'M1'], ['Sec', 'M2'], ['Avo', 'M3']], shows: {}, believes: {} };
+  syncLadder(state);
+  for (const [f, m] of state.couples) { setRelationshipDimension(f, m, 'attraction', 8); setRelationshipDimension(f, m, 'love', 7); }
+});
+
+describe('attachment, from the stats', () => {
+  it('reads anxious, secure and avoidant', () => {
+    expect(attachmentLabel(state.profiles.Anx)).toBe('anxious');
+    expect(attachmentLabel(state.profiles.Sec)).toBe('secure');
+    expect(attachmentLabel(state.profiles.Avo)).toBe('avoidant');
+    expect(attachment(state.profiles.Anx).anxiety).toBeGreaterThan(attachment(state.profiles.Sec).anxiety);
+  });
+});
+
+describe('jealousy, the way the research found it', () => {
+  it('before a threat is confirmed, the anxious feel it far more than the secure', () => {
+    const anx = jealousyHit(state, 'Anx', 'M1', 'R', 4, { confirmed: false });
+    const sec = jealousyHit(state, 'Sec', 'M2', 'R', 4, { confirmed: false });
+    expect(anx).toBeGreaterThan(sec * 2);
+  });
+  it('once confirmed, the secure feel it fully', () => {
+    const before = jealousyHit(state, 'Sec', 'M2', 'R', 4, { confirmed: false });
+    const after = jealousyHit(state, 'Sec', 'M2', 'R', 4, { confirmed: true });
+    expect(after).toBeGreaterThan(before * 2);
+  });
+  it('the rung you believe you are on scales it', () => {
+    believeStep(state, 'Anx', 'M1', 'open');
+    const open = jealousyHit(state, 'Anx', 'M1', 'R', 4, { confirmed: true });
+    believeStep(state, 'Anx', 'M1', 'official');
+    expect(jealousyHit(state, 'Anx', 'M1', 'R', 4, { confirmed: true })).toBeGreaterThan(open);
+  });
+  it('avoidant islanders retaliate more, anxious ones seek reassurance more', () => {
+    const count = (who, kind) => { let n = 0; for (let i = 0; i < 200; i++) if (jealousyOutlet(state, who, streamFor(i * 7919 + 13, 'o')) === kind) n++; return n; };
+    expect(count('Avo', 'retaliate')).toBeGreaterThan(count('Anx', 'retaliate'));
+    expect(count('Anx', 'reassure')).toBeGreaterThan(count('Avo', 'reassure'));
+  });
+});
+
+describe('the days wear on them', () => {
+  it('stress rises through a season and lowers effective temperament', () => {
+    const t0 = effectiveTemperament(state, 'Sec');
+    for (let d = 0; d < 30; d++) tickEmotions(state);
+    expect(emo(state, 'Sec').stress).toBeGreaterThan(5);
+    expect(effectiveTemperament(state, 'Sec')).toBeLessThan(t0);
+  });
+  it('a single islander gets lonely; jealousy fades', () => {
+    state.couples = state.couples.filter(c => !c.includes('R'));
+    jealousyHit(state, 'Anx', 'M1', 'R', 6, { confirmed: true });
+    for (let d = 0; d < 6; d++) tickEmotions(state);
+    expect(emo(state, 'R').loneliness).toBeGreaterThan(4);
+    expect(emo(state, 'Anx').jealousy.R || 0).toBeLessThan(1);
+  });
+  it('heartbreak with the ex cracking on nearby is a walk risk; it makes a rebound likely', () => {
+    breakHeart(state, 'R', 'M1', 9);
+    expect(rebounding(state, 'R')).toBe(true);
+    const w = walkRisk(state, 'R');
+    expect(w.cause).toBe('heartbreak');
+    expect(w.p).toBeGreaterThan(0);
+  });
+});
+```
+
+- [ ] **Step 2: Run it to verify it fails**
+
+Run: `npx vitest run tests/pm-emotions.test.js`
+Expected: FAIL — module not found.
+
+- [ ] **Step 3: Implement** — `js/pm/emotions.js`
+
+```js
+// ══════════════════════════════════════════════════════════════════════
+// pm/emotions.js — how they feel, day to day (spec §6.8)
+// ══════════════════════════════════════════════════════════════════════
+//
+// Season state, not stats: nine stats only (§5.1). Every feeling here moves on
+// what the islander WITNESSED, WAS TOLD, or BELIEVES — callers pass only
+// perceived events in. Pure state; the scenes are made in villa-day.js.
+//
+// Research this follows (spec §6.8): secure people are not very jealous until
+// a threat is confirmed, then very; anxious people are jealous early and often,
+// with intrusive thoughts and checking; avoidant people feel less but answer a
+// threat with jealousy induction and revenge. Sleep loss and the pressure
+// cooker turn feelings up as the season goes on.
+import { romance, believed } from './feelings.js';
+import { betrayalWeight, believedCloseness } from './ladder.js';
+
+export const FEELINGS = ['security', 'confidence', 'loneliness', 'guilt', 'heartbreak', 'stress'];
+const NICE = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
+const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+function weighted(rng, entries) {
+  const live = entries.filter(([, w]) => w > 0);
+  let r = rng() * live.reduce((s, [, w]) => s + w, 0);
+  for (const [v, w] of live) { r -= w; if (r <= 0) return v; }
+  return live[live.length - 1][0];
+}
+const partnerOf = (state, n) => { const c = state.couples.find(x => x.includes(n)); return c ? (c[0] === n ? c[1] : c[0]) : null; };
+
+/** Continuous, from the nine stats. The label is narration only. */
+export function attachment(p) {
+  const s = p.stats;
+  const anxiety = clamp(1.6 * (s.loyalty / 10) * (1 - s.temperament / 10), 0, 1);
+  const avoidance = clamp(1.3 * (1 - s.loyalty / 10) * (0.4 + 0.6 * s.strategic / 10), 0, 1);
+  return { anxiety, avoidance, secure: clamp(1 - Math.max(anxiety, avoidance), 0, 1) };
+}
+export function attachmentLabel(p) {
+  const a = attachment(p);
+  if (a.anxiety >= 0.5 && a.anxiety >= a.avoidance) return 'anxious';
+  if (a.avoidance >= 0.5) return 'avoidant';
+  return 'secure';
+}
+
+export function emo(state, n) {
+  return ((state.emo ||= {})[n] ||= { security: 5, confidence: 5, loneliness: 1, guilt: 0, heartbreak: 0,
+    stress: 1, jealousy: {}, heartbreakFrom: null });
+}
+export function feel(state, n, key, d) { const e = emo(state, n); e[key] = clamp(e[key] + d, 0, 10); return e[key]; }
+
+/** Stress wears the temper down: the same slight lands harder in week five. */
+export const effectiveTemperament = (state, n) => clamp(state.profiles[n].stats.temperament - 0.35 * emo(state, n).stress, 0, 10);
+
+/** A threat to my couple, as I perceive it. Returns the jealousy it added. */
+export function jealousyHit(state, viewer, partner, rival, raw, { confirmed = false } = {}) {
+  const a = attachment(state.profiles[viewer]);
+  const love = romance(viewer, partner) / 10;
+  const style = a.secure * (confirmed ? 1 : 0.25) + a.anxiety * (0.8 + 0.6 * a.anxiety) + a.avoidance * 0.5;
+  const e = emo(state, viewer);
+  const amount = clamp(raw * love * betrayalWeight(state, viewer, partner) * style * (1 + 0.08 * e.stress), 0, 10);
+  e.jealousy[rival] = clamp((e.jealousy[rival] || 0) + amount, 0, 10);
+  feel(state, viewer, 'security', -0.6 * amount);
+  feel(state, viewer, 'stress', 0.2 * amount);
+  return amount;
+}
+
+/** How the jealousy comes out. Proportional weights; one is drawn. */
+export function jealousyOutlet(state, viewer, rng) {
+  const p = state.profiles[viewer], s = p.stats, a = attachment(p), t = effectiveTemperament(state, viewer) / 10;
+  return weighted(rng, [
+    ['confront', (s.boldness / 10) * (1 - t) + 0.05],
+    ['sulk', (1 - s.boldness / 10) * 0.5 * (1 - t) + 0.05],
+    // Making them jealous back is not a scheme, but nice archetypes rarely do it.
+    ['retaliate', a.avoidance * 0.8 * (NICE.has(p.archetype) ? 0.3 : 1)],
+    ['reassure', a.anxiety * 0.8 + 0.05],
+    ['hidden', t * 0.6 * a.secure + 0.05],
+  ]);
+}
+
+export function breakHeart(state, n, by, amount) {
+  const e = emo(state, n);
+  feel(state, n, 'heartbreak', amount);
+  e.heartbreakFrom = by;
+  feel(state, n, 'confidence', -0.4 * amount);
+  feel(state, n, 'security', -amount);
+}
+export const rebounding = (state, n) => emo(state, n).heartbreak > 3;
+
+/** One villa day. Stress builds; jealousy, guilt and heartbreak fade; security drifts to what they believe. */
+export function tickEmotions(state) {
+  for (const n of state.villa) {
+    const e = emo(state, n), partner = partnerOf(state, n);
+    e.stress = clamp(e.stress + 0.25, 0, 10);
+    for (const r of Object.keys(e.jealousy)) { e.jealousy[r] *= 0.55; if (e.jealousy[r] < 0.05) delete e.jealousy[r]; }
+    e.guilt *= 0.85;
+    e.heartbreak *= 0.88;
+    e.loneliness = clamp(e.loneliness + (partner ? -0.6 : 0.8), 0, 10);
+    const target = partner ? clamp(0.6 * believed(state, n, partner) + 3 * believedCloseness(state, n, partner), 0, 10) : 3;
+    e.security = clamp(e.security + (target - e.security) * 0.25, 0, 10);
+    e.confidence = clamp(e.confidence + (5 - e.confidence) * 0.1, 0, 10);
+  }
+}
+
+/** Why somebody might walk, and how likely it is today. */
+export function walkRisk(state, n) {
+  const e = emo(state, n);
+  const ex = e.heartbreakFrom;
+  const exMovedOn = ex && state.villa.includes(ex) && !!partnerOf(state, ex);
+  const heartbreak = exMovedOn || (ex && state.villa.includes(ex))
+    ? 0.05 * (e.heartbreak / 10) * (1.3 - effectiveTemperament(state, n) / 10) * (exMovedOn ? 1.5 : 1) : 0;
+  const homesick = 0.03 * (e.loneliness / 10) * (e.stress / 10);
+  return heartbreak >= homesick ? { p: heartbreak, cause: 'heartbreak' } : { p: homesick, cause: 'homesick' };
+}
+```
+
+- [ ] **Step 4: Run it to verify it passes**
+
+Run: `npx vitest run tests/pm-emotions.test.js`
+Expected: PASS (8 tests).
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add js/pm/emotions.js tests/pm-emotions.test.js
+git commit -m "feat(perfect-match): emotions and attachment, from what each islander perceives"
+```
+
+---
+
+### Task 9e: Friends, the villa's rituals, and wiring it all into the day
+
+Spec §6.9 and the hooks §6.7–6.8 promise. A new `villa-day.js` turns ladder
+decisions, feelings and friendships into scenes with consequences, runs the
+villa's rituals on their scheduled nights, and every decision file learns the
+ladder and the feelings.
+
+**Files:**
+- Create: `js/pm/circle.js`, `js/pm/villa-day.js`
+- Modify: `js/pm/events.js` (pull: closed-off islanders pull less; a partner may see it; guilt; girl code — gossip: jealousy and a double standard)
+- Modify: `js/pm/recoupling.js`, `js/pm/casa.js`, `js/pm/villa-vote.js`, `js/pm/moments.js`, `js/pm/arrivals.js` (family verdict), `js/pm/schedule.js`, `js/pm/season.js`
+- Test: `tests/pm-circle.test.js`, `tests/pm-villa-day.test.js`
+
+**Interfaces:**
+- Consumes: Tasks 3b, 9c, 9d.
+- Produces:
+  - `circle.js`: `confidantOf(state, n) → name|null`, `verdict(state, judge, target) → -1..1`, `judgement(state, judge, actor) → 0.5..1.5`, `girlCode(state, grafter, couple) → string[]` (who turned on the grafter), `peerPressure(state, n, decisions) → number`
+  - `villa-day.js`: `runVillaDay(state, rng, entry) → Event[]` (ladder scenes, jealousy outlets, confessions, advice, hideaway nights, and the rituals `heart-rate`, `snog-marry-pie`, `movie-night`, `notes`, `families`)
+  - `arrivals.js`: `familyVerdict(state, name, partner) → -1..1` (families watched the aired show — the §7 exception, like bombshells)
+  - rows: `row.pm.ladder = { 'A→B': step }`, `row.pm.emotions = { name: { security, confidence, loneliness, guilt, heartbreak, stress, jealousy } }`, `row.pm.attachment = { name: label }` (episode 1 only)
+
+- [ ] **Step 1: Write the failing tests**
+
+`tests/pm-circle.test.js`:
+
+```js
+import { beforeEach, describe, expect, it } from 'vitest';
+import { setGs, setPlayers } from '../js/core.js';
+import { setRelationshipDimension, getRelationshipDimension } from '../js/relationships.js';
+import { syncLadder, setStep } from '../js/pm/ladder.js';
+import { confidantOf, verdict, judgement, girlCode, peerPressure } from '../js/pm/circle.js';
+
+const P = (name, gender, stats = {}) => ({ name, gender, sexuality: 'straight', archetype: 'floater', intent: 'love',
+  stats: { physical: 5, endurance: 5, mental: 5, social: 5, strategic: 5, loyalty: 5, boldness: 5, intuition: 5, temperament: 5, ...stats } });
+let state;
+const fr = (a, b, v) => { setRelationshipDimension(a, b, 'affection', v); setRelationshipDimension(a, b, 'trust', v); };
+beforeEach(() => {
+  const cast = [P('Gwen', 'f'), P('Bridgette', 'f'), P('Courtney', 'f'), P('Duncan', 'm'), P('Geoff', 'm'), P('Theo', 'm', { loyalty: 2 })];
+  setPlayers(cast);
+  setGs({ bonds: {}, relationshipDimensions: {} });
+  state = { day: 9, villa: cast.map(p => p.name), profiles: Object.fromEntries(cast.map(p => [p.name, p])),
+    couples: [['Bridgette', 'Geoff'], ['Gwen', 'Duncan']], shows: {}, believes: {} };
+  syncLadder(state);
+});
+
+describe('friends', () => {
+  it('a confidant is the closest trusted friend who is not the partner', () => {
+    fr('Gwen', 'Bridgette', 8); fr('Gwen', 'Courtney', 3); fr('Gwen', 'Duncan', 9);
+    expect(confidantOf(state, 'Gwen')).toBe('Bridgette');
+  });
+  it('a friend is judged more softly than a rival — the double standard', () => {
+    fr('Gwen', 'Bridgette', 8); fr('Gwen', 'Theo', -6);
+    expect(judgement(state, 'Gwen', 'Bridgette')).toBeLessThan(judgement(state, 'Gwen', 'Theo'));
+    expect(verdict(state, 'Gwen', 'Theo')).toBeLessThan(0);
+  });
+  it('grafting on a friend\'s official couple costs friendship across her circle', () => {
+    fr('Courtney', 'Bridgette', 8); fr('Gwen', 'Bridgette', 7);
+    setStep(state, 'Bridgette', 'Geoff', 'official'); setStep(state, 'Geoff', 'Bridgette', 'official');
+    const before = getRelationshipDimension('Courtney', 'Theo', 'affection');
+    const turned = girlCode(state, 'Theo', ['Bridgette', 'Geoff']);
+    expect(turned).toContain('Courtney');
+    expect(getRelationshipDimension('Courtney', 'Theo', 'affection')).toBeLessThan(before);
+  });
+  it('friends who twisted push a disloyal islander toward twisting', () => {
+    fr('Theo', 'Geoff', 8); fr('Theo', 'Duncan', 8);
+    const p = peerPressure(state, 'Theo', [{ name: 'Geoff', choice: 'twist' }, { name: 'Duncan', choice: 'twist' }]);
+    expect(p).toBeGreaterThan(0);
+    expect(peerPressure(state, 'Theo', [{ name: 'Geoff', choice: 'stick' }, { name: 'Duncan', choice: 'stick' }])).toBeLessThan(0);
+  });
+});
+```
+
+`tests/pm-villa-day.test.js`:
+
+```js
+import { describe, expect, it } from 'vitest';
+import { setPlayers } from '../js/core.js';
+import { playPerfectMatchSeason } from '../js/pm/season.js';
+import { makeIslanders, roleSetup } from './helpers/pm-cast.js';
+
+function seasons(n) {
+  const out = [];
+  for (let s = 1; s <= n; s++) {
+    const cast = makeIslanders(22, s); setPlayers(cast);
+    const names = cast.map(p => p.name);
+    const res = playPerfectMatchSeason({ cast: names, setup: roleSetup(names), seed: s });
+    out.push({ rows: res.rows, kinds: new Set(res.rows.flatMap(r => r.pm.events.map(e => e.kind))), res });
+  }
+  return out;
+}
+
+describe('the day, the ladder and the feelings reach the rows', () => {
+  const all = seasons(12);
+  it('every villa episode carries ladder and emotion snapshots', () => {
+    for (const { rows } of all) for (const r of rows.filter(x => x.moment !== 'reunion')) {
+      expect(r.pm.emotions).toBeTruthy();
+      expect(Object.keys(r.pm.emotions).length).toBeGreaterThan(5);
+      expect(r.pm.ladder).toBeTruthy();
+    }
+  });
+  it('across twelve seasons, the ladder and the feelings all produce scenes', () => {
+    const kinds = new Set(all.flatMap(x => [...x.kinds]));
+    for (const k of ['close-off', 'exclusive-ask', 'jealous-confront', 'reassurance', 'advice',
+      'heart-rate', 'snog-marry-pie', 'movie-night', 'families', 'love-said']) expect(kinds, k).toContain(k);
+  });
+  it('stress is higher in week five than in week one', () => {
+    const mean = r => { const v = Object.values(r.pm.emotions).map(e => e.stress); return v.reduce((a, b) => a + b, 0) / v.length; };
+    let up = 0;
+    for (const { rows } of all) if (mean(rows[11]) > mean(rows[1])) up++;
+    expect(up).toBe(all.length);
+  });
+  it('walks carry a cause', () => {
+    for (const { rows } of all) for (const r of rows) for (const x of r.exits.filter(e => e.verb === 'walked')) {
+      expect(['heartbreak', 'homesick', 'solidarity']).toContain(x.cause);
+    }
+  });
+});
+```
+
+- [ ] **Step 2: Run them to verify they fail**
+
+Run: `npx vitest run tests/pm-circle.test.js tests/pm-villa-day.test.js`
+Expected: FAIL — `circle.js` missing; the season rows carry no `emotions`.
+
+- [ ] **Step 3: Implement** — `js/pm/circle.js`
+
+```js
+// ══════════════════════════════════════════════════════════════════════
+// pm/circle.js — friends, and the villa as a group (spec §6.9)
+// ══════════════════════════════════════════════════════════════════════
+//
+// Confidants carry opinions ("the girls don't rate him"); girl code and the
+// boys' code punish grafting on a friend's couple; friends at Casa pull each
+// other ("it's a lads' holiday"); and how harshly the villa judges an act
+// depends on how much it likes the one who did it — the double standard
+// Movie Night gets accused of.
+import { friendship } from './feelings.js';
+import { getRelationshipDimension, addRelationshipDimension } from '../relationships.js';
+import { coupleStrength } from './ladder.js';
+
+const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+const partnerOf = (state, n) => { const c = state.couples.find(x => x.includes(n)); return c ? (c[0] === n ? c[1] : c[0]) : null; };
+
+export function confidantOf(state, n) {
+  let best = null, score = 2;
+  for (const o of state.villa) {
+    if (o === n || o === partnerOf(state, n)) continue;
+    const s = friendship(n, o) + 0.5 * getRelationshipDimension(n, o, 'trust');
+    if (s > score) { best = o; score = s; }
+  }
+  return best;
+}
+
+/** What `judge` thinks of `target`, -1..1. */
+export const verdict = (state, judge, target) =>
+  clamp((friendship(judge, target) + 0.5 * getRelationshipDimension(judge, target, 'trust')) / 10, -1, 1);
+
+/** How harshly `judge` reads what `actor` did: 0.5 for a close friend, 1.5 for a rival. */
+export const judgement = (state, judge, actor) => 1 - 0.5 * clamp(friendship(judge, actor) / 10, -1, 1);
+
+/** Grafting on a couple costs the grafter with everyone who protects that couple. */
+export function girlCode(state, grafter, [x, y]) {
+  const turned = [];
+  const strength = coupleStrength(state, x, y);
+  for (const v of state.villa) {
+    if (v === grafter || v === x || v === y) continue;
+    const protective = Math.max(friendship(v, x), friendship(v, y)) / 10;
+    if (protective <= 0.3) continue;
+    const hit = -(0.8 + 1.2 * strength) * protective * judgement(state, v, grafter);
+    addRelationshipDimension(v, grafter, 'affection', hit);
+    addRelationshipDimension(v, grafter, 'resentment', -hit * 0.5);
+    turned.push(v);
+  }
+  return turned;
+}
+
+/** Friends' Casa choices so far pull this islander, weighted by how little loyalty holds them. */
+export function peerPressure(state, n, decisions) {
+  const friends = decisions.filter(d => d.name !== n && friendship(n, d.name) > 4);
+  if (!friends.length) return 0;
+  const twisted = friends.filter(d => d.choice === 'twist').length / friends.length;
+  return (twisted - 0.5) * (1 - state.profiles[n].stats.loyalty / 10) * 0.5;
+}
+```
+
+- [ ] **Step 4: Implement the family verdict** — append to `js/pm/arrivals.js` (a file already allowed to read the aired ledger):
+
+```js
+/**
+ * What an islander's family thinks of their partner. Families watched the
+ * AIRED show from home, like a bombshell did (spec §7), so they may read the
+ * public ledger — and only here. -1..1.
+ */
+export function familyVerdict(state, name, partner) {
+  const a = readApproval(state.ledger, partner) / 100;
+  const belief = coupleScore(state.ledger, name, partner) / 100;
+  return Math.max(-1, Math.min(1, 0.6 * a + 0.4 * belief));
+}
+```
+
+- [ ] **Step 5: Implement the day** — `js/pm/villa-day.js`
+
+```js
+// ══════════════════════════════════════════════════════════════════════
+// pm/villa-day.js — the ladder, the feelings and the friendships as scenes
+// ══════════════════════════════════════════════════════════════════════
+//
+// Runs once per episode after the day's events: the ladder moves, feelings
+// come out (a confrontation, a sulk, a staged flirt, a reassurance chat, or
+// nothing but an overthinking beach hut), guilt confesses, confidants advise,
+// Hideaway nights happen, and the scheduled ritual runs. Every scene has a
+// consequence and takes only what its people could know (spec §6.8, §7).
+import { addRelationshipDimension, getRelationshipDimension } from '../relationships.js';
+import { makeEvent, partnerOf, roomMates, airLater } from './events.js';
+import { romance, friendship, revealTruth, setMask, shown } from './feelings.js';
+import { nudgeAttraction, attr } from './chemistry.js';
+import { syncLadder, decideLadder, closedness, stepOf } from './ladder.js';
+import { attachment, emo, feel, jealousyHit, jealousyOutlet, breakHeart, tickEmotions } from './emotions.js';
+import { confidantOf, verdict, judgement } from './circle.js';
+import { familyVerdict } from './arrivals.js';
+
+const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+const pick = (rng, arr) => (arr.length ? arr[Math.floor(rng() * arr.length)] : null);
+const pop = (...rows) => Object.fromEntries(rows.map(([n, approval, fame]) => [n, { approval, fame }]));
+const scene = (state, rng, kind, players, extra = {}, { aired = null, major = [], phase = 'evening' } = {}) =>
+  makeEvent(state, rng, { phase, kind, players, aired, major, extra });
+
+function ladderScenes(state, rng) {
+  const out = [];
+  for (const d of decideLadder(state, rng, attachment)) {
+    const { from: a, to: b } = d;
+    const love = romance(a, b) / 10, loveBack = romance(b, a) / 10;
+    if (d.kind === 'close-off') {
+      feel(state, b, 'security', 1.5 * loveBack);
+      out.push(scene(state, rng, 'close-off', [a, b], { pop: pop([a, 0.4, 1], [b, 0.2, 0.5]) }));
+    } else if (d.kind === 'keeping-open') {
+      feel(state, b, 'security', -1 * loveBack);
+      out.push(scene(state, rng, 'keeping-open', [a, b], { pop: pop([a, -0.1, 1]) }));
+    } else if (d.kind === 'open-back-up') {
+      if (d.told) {
+        breakHeart(state, b, a, 3 * loveBack * (0.5 + closedness(state, b, a)));
+        addRelationshipDimension(b, a, 'resentment', 1.5 * loveBack);
+        out.push(scene(state, rng, 'open-back-up', [a, b], { pop: pop([a, -1, 2], [b, 1, 1.5]) }, { aired: true, major: [a, b] }));
+      } else {
+        // Nobody was told: a situationship now, and it will surface.
+        out.push(scene(state, rng, 'head-turned', [a], { pop: pop([a, -0.3, 1]) }, { phase: 'day' }));
+      }
+    } else if (d.kind === 'exclusive-ask' || d.kind === 'official-ask') {
+      const big = d.kind === 'official-ask';
+      if (d.yes) {
+        for (const n of [a, b]) { feel(state, n, 'security', big ? 3 : 2); feel(state, n, 'confidence', 1); }
+        addRelationshipDimension(a, b, 'trust', 1); addRelationshipDimension(b, a, 'trust', 1);
+        out.push(scene(state, rng, d.kind, [a, b], { yes: true, pop: pop([a, big ? 3 : 1.5, 3], [b, big ? 3 : 1.5, 3]) },
+          { aired: true, major: big ? [a, b] : [] }));
+        out.push(...hideaway(state, rng, a, b));
+      } else {
+        breakHeart(state, a, b, (big ? 3 : 2) * love);
+        feel(state, b, 'guilt', 1);
+        out.push(scene(state, rng, 'ask-declined', [a, b], { of: d.kind, pop: pop([a, 1.5, 2], [b, -0.5, 1.5]) },
+          { aired: true, major: [a] }));
+      }
+    } else if (d.kind === 'love-said' || d.kind === 'love-hanging') {
+      if (d.kind === 'love-said') {
+        for (const n of [a, b]) feel(state, n, 'security', 2.5);
+        addRelationshipDimension(a, b, 'love', 0.5); addRelationshipDimension(b, a, 'love', 0.5);
+        out.push(scene(state, rng, 'love-said', [a, b], { pop: pop([a, 2, 2.5], [b, 2, 2.5]) }, { aired: true, major: [a, b] }));
+      } else {
+        breakHeart(state, a, b, 2.5 * love);
+        out.push(scene(state, rng, 'love-hanging', [a, b], { pop: pop([a, 1.5, 2], [b, -0.5, 1.5]) }, { aired: true, major: [a] }));
+      }
+    }
+  }
+  return out;
+}
+
+function hideaway(state, rng, a, b) {
+  addRelationshipDimension(a, b, 'love', 0.8); addRelationshipDimension(b, a, 'love', 0.8);
+  const out = [scene(state, rng, 'hideaway', [a, b], { pop: pop([a, 0.5, 2], [b, 0.5, 2]) }, { aired: true })];
+  // Anyone still carrying a torch for either of them feels it, unconfirmed.
+  for (const o of state.villa) {
+    if (o === a || o === b) continue;
+    for (const t of [a, b]) if (romance(o, t) >= 6) {
+      breakHeart(state, o, t, 0.8 * romance(o, t) / 10);
+      out.push(scene(state, rng, 'torch', [o, t], { pop: pop([o, 0.3, 0.5]) }, { phase: 'evening' }));
+    }
+  }
+  return out;
+}
+
+/** Jealousy has to come out somewhere. */
+function feelingScenes(state, rng) {
+  const out = [];
+  for (const n of state.villa) {
+    const e = emo(state, n), partner = partnerOf(state, n);
+    if (!partner) continue;
+    const [rival, j] = Object.entries(e.jealousy).sort((x, y) => y[1] - x[1])[0] || [null, 0];
+    if (!rival || rng() >= clamp(j / 10, 0, 0.9)) continue;
+    const how = jealousyOutlet(state, n, rng);
+    if (how === 'confront') {
+      addRelationshipDimension(n, partner, 'trust', -0.5);
+      addRelationshipDimension(partner, n, 'resentment', 0.3 * (1 - (emo(state, partner).guilt / 10)));
+      e.jealousy[rival] *= 0.5;
+      out.push(scene(state, rng, 'jealous-confront', [n, partner, rival], { pop: pop([n, -0.3, 2], [partner, 0, 1.5]) }, { aired: true }));
+    } else if (how === 'sulk') {
+      feel(state, n, 'security', -0.5);
+      const noticed = rng() < state.profiles[partner].stats.intuition / 10;
+      out.push(scene(state, rng, 'jealous-sulk', [n], { noticed, pop: pop([n, 0.1, 0.8]) }, { phase: 'day' }));
+      if (noticed) out.push(reassurance(state, rng, n, partner));
+    } else if (how === 'retaliate') {
+      const bait = pick(rng, roomMates(state, n).filter(o => o !== partner && attr(state, n, o) != null));
+      if (bait) {
+        nudgeAttraction(state, bait, n, 0.4);
+        jealousyHit(state, partner, n, bait, 3, { confirmed: true });
+        out.push(scene(state, rng, 'jealous-retaliate', [n, bait, partner], { pop: pop([n, -0.6, 2], [bait, 0, 1]) }, { aired: true }));
+      }
+    } else if (how === 'reassure') {
+      out.push(reassurance(state, rng, n, partner));
+    } else {
+      feel(state, n, 'stress', 0.5);
+      out.push(scene(state, rng, 'overthinking', [n], { pop: pop([n, 0.3, 0.6]) }, { phase: 'day' }));
+    }
+  }
+  return out;
+}
+
+function reassurance(state, rng, n, partner) {
+  const e = emo(state, n);
+  const real = romance(partner, n) / 10;
+  const avo = attachment(state.profiles[partner]).avoidance;
+  feel(state, n, 'security', 3 * real - 0.5);
+  for (const r of Object.keys(e.jealousy)) e.jealousy[r] *= 1 - 0.6 * real;
+  // An avoidant partner can find the checking-in wearing.
+  if (avo > 0.4) nudgeAttraction(state, partner, n, -0.3 * avo);
+  return scene(state, rng, 'reassurance', [n, partner], { pop: pop([n, 0.2, 1], [partner, 0.2 * real, 0.8]) });
+}
+
+/** Guilt that has grown heavy enough gets confessed — loyalty decides it. */
+function confessions(state, rng) {
+  const out = [];
+  for (const n of state.villa) {
+    const partner = partnerOf(state, n), e = emo(state, n);
+    if (!partner || rng() >= (e.guilt / 10) * (state.profiles[n].stats.loyalty / 10)) continue;
+    const secrets = state.secrets.filter(s => !s.known && s.who === n && s.partner === partner);
+    for (const s of secrets) s.known = true;
+    revealTruth(state, partner, n);
+    jealousyHit(state, partner, n, secrets[0]?.with || n, 4, { confirmed: true });
+    addRelationshipDimension(partner, n, 'trust', -1);
+    addRelationshipDimension(partner, n, 'resentment', 0.8);    // less than being caught
+    e.guilt = Math.max(0, e.guilt - 3);
+    out.push(scene(state, rng, 'confession', [n, partner], { pop: pop([n, 0.5, 2], [partner, 0.8, 1.5]) }, { aired: true, major: [partner] }));
+  }
+  return out;
+}
+
+/** Confidants say what they think of the partner, and it moves them. */
+function advice(state, rng) {
+  const out = [];
+  for (const n of state.villa) {
+    const partner = partnerOf(state, n), c = confidantOf(state, n);
+    if (!partner || !c || rng() >= 0.3) continue;
+    const v = verdict(state, c, partner);
+    nudgeAttraction(state, n, partner, 0.6 * v);
+    addRelationshipDimension(n, partner, 'trust', 0.5 * v);
+    feel(state, n, 'security', v);
+    out.push(scene(state, rng, 'advice', [c, n, partner], { verdict: v, pop: pop([c, 0.1, 0.8]) }, { phase: 'day' }));
+  }
+  return out;
+}
+
+// ── The villa's rituals ────────────────────────────────────────────────
+const RITUALS = {
+  // The monitor airs who really gets their heart going — hidden crushes included.
+  'heart-rate': (state, rng) => state.villa.flatMap(x => {
+    const top = state.villa.filter(o => attr(state, x, o) != null).sort((a, b) => romance(x, b) - romance(x, a))[0];
+    if (!top) return [];
+    const partner = partnerOf(state, x);
+    const out = [scene(state, rng, 'heart-rate', [x, top], { partner, pop: pop([x, 0.2, 1.5]) }, { phase: 'event', aired: true })];
+    if (partner && top !== partner) {
+      setMask(state, x, top, null);
+      jealousyHit(state, partner, x, top, 3, { confirmed: true });
+      revealTruth(state, partner, x);
+    }
+    return out;
+  }),
+  'snog-marry-pie': (state, rng) => state.villa.flatMap(x => {
+    const partner = partnerOf(state, x);
+    const others = state.villa.filter(o => o !== x);
+    const snog = others.filter(o => o !== partner && attr(state, x, o) != null).sort((a, b) => romance(x, b) - romance(x, a))[0];
+    const marry = partner || others.filter(o => attr(state, x, o) != null).sort((a, b) => romance(x, b) - romance(x, a))[0];
+    const pie = others.filter(o => o !== partner).sort((a, b) => friendship(x, a) - friendship(x, b))[0];
+    if (pie) { addRelationshipDimension(pie, x, 'resentment', 1.5); feel(state, pie, 'confidence', -1); }
+    if (snog && partner) jealousyHit(state, partner, x, snog, 3, { confirmed: true });
+    if (marry) feel(state, marry, 'security', 1.5);
+    return [scene(state, rng, 'snog-marry-pie', [x, snog, marry, pie].filter(Boolean), { snog, marry, pie, pop: pop([x, 0, 1.5]) },
+      { phase: 'event', aired: true })];
+  }),
+  // Unaired moments played to the villa; the partners find out, and the
+  // villa is accused of judging friends more softly than rivals.
+  'movie-night': (state, rng) => {
+    const clips = state.history.filter(e => !e.aired && e.players.some(n => partnerOf(state, n)))
+      .sort((a, b) => b.players.length - a.players.length).slice(0, 4);
+    const out = [];
+    for (const c of clips) {
+      airLater(state, c);
+      for (const n of c.players) {
+        const p = partnerOf(state, n);
+        if (!p || c.players.includes(p)) continue;
+        revealTruth(state, p, n);
+        const other = c.players.find(o => o !== n) || n;
+        jealousyHit(state, p, n, other, 5, { confirmed: true });
+        addRelationshipDimension(p, n, 'trust', -1.5);
+      }
+      out.push(scene(state, rng, 'movie-night', c.players, { clip: c.id, pop: {} }, { phase: 'evening', aired: true, major: c.players }));
+    }
+    const judges = state.villa.filter(v => clips.length >= 2);
+    const gap = judges.length ? Math.max(...judges.map(v => Math.abs(judgement(state, v, clips[0].players[0]) - judgement(state, v, clips[1].players[0])))) : 0;
+    if (gap > 0.4) out.push(scene(state, rng, 'double-standard', [clips[0].players[0], clips[1].players[0]], { pop: {} }, { aired: true }));
+    return out;
+  },
+  // Anonymous notes: said out loud, then everyone guesses who wrote it.
+  notes: (state, rng) => state.villa.flatMap(x => {
+    const t = state.villa.filter(o => o !== x).sort((a, b) => friendship(x, a) - friendship(x, b))[0];
+    if (!t) return [];
+    feel(state, t, 'confidence', -1.5); feel(state, t, 'stress', 1);
+    const guess = state.villa.filter(o => o !== t).sort((a, b) => friendship(t, a) - friendship(t, b))[0];
+    if (guess === x && rng() < state.profiles[t].stats.intuition / 10) addRelationshipDimension(t, x, 'resentment', 1.5);
+    return [scene(state, rng, 'notes', [x, t], { guessed: guess === x, pop: pop([t, 0.3, 1]) }, { phase: 'event', aired: true })];
+  }),
+  // The families watched the aired show; what they think lands on the couple.
+  families: (state, rng) => state.couples.flatMap(([a, b]) => [[a, b], [b, a]].map(([x, y]) => {
+    const v = familyVerdict(state, x, y);
+    nudgeAttraction(state, x, y, 0.8 * v);
+    addRelationshipDimension(x, y, 'trust', v);
+    feel(state, x, 'security', 1.5 * v);
+    return scene(state, rng, 'families', [x, y], { verdict: v, pop: pop([x, 0.8, 1.5], [y, 0.5 * v, 1]) }, { phase: 'event', aired: true });
+  })),
+};
+
+export function runVillaDay(state, rng, entry) {
+  syncLadder(state);
+  const out = [...ladderScenes(state, rng), ...feelingScenes(state, rng), ...confessions(state, rng), ...advice(state, rng)];
+  for (const r of entry.rituals || []) out.push(...(RITUALS[r]?.(state, rng) || []));
+  tickEmotions(state);
+  return out;
+}
+```
+
+Add the new scene kinds to the moment-kind list in `js/pm/events.js` (the `...Object.fromEntries([...])` list):
+
+```js
+    'close-off', 'keeping-open', 'open-back-up', 'head-turned', 'exclusive-ask', 'official-ask',
+    'ask-declined', 'love-said', 'love-hanging', 'hideaway', 'torch', 'jealous-confront', 'jealous-sulk',
+    'jealous-retaliate', 'reassurance', 'overthinking', 'confession', 'advice', 'heart-rate',
+    'snog-marry-pie', 'movie-night', 'double-standard', 'notes', 'families', 'solidarity',
+```
+
+- [ ] **Step 6: Wire the ladder and feelings into the existing decisions**
+
+`js/pm/events.js` — add imports:
+```js
+import { closedness, betrayalWeight } from './ladder.js';
+import { feel, jealousyHit } from './emotions.js';
+import { girlCode, judgement } from './circle.js';
+```
+In `pull.cast`, scale who initiates by how closed off they are:
+```js
+      const a = weighted(rng, s.villa.filter(n => compatibleMates(s, n).length)
+        .map(n => [n, S(s, n).boldness * (1 - 0.8 * closedness(s, n, partnerOf(s, n)))]));
+```
+In `pull.apply`, inside the `for (const [x, y, sev] ...)` loop after the secret is pushed, add:
+```js
+        // Stepping out while you've closed off weighs on you.
+        feel(s, x, 'guilt', 2 * sev * closedness(s, x, p));
+        // The partner may see it happen.
+        if (roomMates(s, x).includes(p) && rng() < 0.35) {
+          jealousyHit(s, p, x, y, 3 * sev, { confirmed: true });
+          s.secrets[s.secrets.length - 1].known = true;
+        }
+        // Grafting on somebody else's couple costs you with their friends.
+        const py = partnerOf(s, y);
+        if (py && py !== x && (ev.aired || witnesses.length)) girlCode(s, x, [y, py]);
+```
+In `gossip.apply`, after `revealTruth(s, p, x);` add:
+```js
+      jealousyHit(s, p, x, sec?.with || x, 5 * sev, { confirmed: true });
+      addRelationshipDimension(p, x, 'resentment', 1.2 * sev * betrayalWeight(s, p, x));
+      // The villa judges the messenger by how much it likes the one exposed.
+      addRelationshipDimension(x, w, 'resentment', 0.8 * judgement(s, x, w));
+```
+
+`js/pm/recoupling.js` — import `closedness` from `./ladder.js` and `emo, rebounding` from `./emotions.js`; in `desire` replace the `stay` and `stealCost` lines:
+```js
+  const stay = partnerOf(state, p) === c ? 0.25 + 0.5 * s.loyalty / 10 + 0.4 * closedness(state, p, c) : 0;
+  const e = emo(state, p);
+  const stealCost = taken.has(c) ? (0.4 - 0.3 * s.boldness / 10) * (1.4 - e.confidence / 10) : 0;
+```
+and multiply the attraction term by loneliness and rebound:
+```js
+  const att = ((attr(state, p, c) ?? 0) / 10) * (1 + e.loneliness / 20) * (rebounding(state, p) && c !== e.heartbreakFrom ? 1.2 : 1);
+```
+
+`js/pm/casa.js` — import `closedness` from `./ladder.js`, `emo` from `./emotions.js`, `peerPressure` from `./circle.js`. In the score, subtract the ladder and security, add heartbreak:
+```js
+    const e = emo(state, o);
+    const ladder = p ? -0.35 * closedness(state, o, p) : 0;
+    const feelings = -0.15 * e.security / 10 + 0.2 * e.heartbreak / 10;
+```
+add `+ ladder + feelings` to the `twistP` sum, and in the decision loop draw against the pressure of friends who already chose:
+```js
+    const pressure = peerPressure(state, o, decisions);
+    if (free.length && rng() < Math.min(0.95, Math.max(0.02, twistP + pressure))) { ... }
+```
+After the couples are rebuilt, break the hearts that Casa broke — add before `state.couples = next;`:
+```js
+  for (const n of singleSafe) {
+    const ex = scored.find(x => x.o === n)?.p;
+    if (ex) breakHeart(state, n, ex, 6 * romance(n, ex) / 10);
+  }
+```
+(import `breakHeart` from `./emotions.js` and `romance` from `./feelings.js` — already imported in Task 9b).
+
+`js/pm/villa-vote.js` — import `coupleStrength` from `./ladder.js`; in `affinity` add the couple the voter would be splitting:
+```js
+  const theirs = partnerOf(state, t);
+  const protect = theirs ? 3 * coupleStrength(state, t, theirs) : 0;
+  return friendship(v, t) - threat + protect;
+```
+
+`js/pm/moments.js` — import `breakHeart`, `emo` from `./emotions.js` and `closedness` from `./ladder.js` and `romance` from `./feelings.js`. In `dumpingScene` step 3 (reaction), for the partner left behind:
+```js
+    breakHeart(state, p, n, 5 * romance(p, n) / 10);
+    // Some leave with them.
+    const solidarity = (romance(p, n) / 10) ** 2 * (state.profiles[p].stats.loyalty / 10) * (0.3 + 0.7 * closedness(state, p, n));
+    if (rng() < solidarity * 0.5) { solidarityWalk.push(p); ev('solidarity', [p, n], { [p]: { approval: 2.5, fame: 2 } }, [p]); }
+```
+declare `const solidarityWalk = [];` at the top of `dumpingScene`, and return the walkers as exits:
+```js
+  removeFromVilla(state, [...dumped, ...solidarityWalk]);
+  ...
+  return { events, exits: [...dumped.map(name => ({ name, verb: EXIT, channel })),
+    ...solidarityWalk.map(name => ({ name, verb: 'walked', channel: 'walk', cause: 'solidarity' }))] };
+```
+(replace the existing `removeFromVilla(state, dumped);` and `return`). In `recoupleNight`, when a pick steals, break the stolen-from islander's heart:
+```js
+  for (const pk of r.picks) if (pk.stole) breakHeart(state, pk.stole, pk.picked, 5 * romance(pk.stole, pk.picked) / 10);
+```
+
+`js/pm/schedule.js` — add rituals to the template:
+```js
+  { ep: 3, days: [6, 8], moment: 'bombshell', arrivals: { bombshell: 1 }, rituals: ['heart-rate'] },
+  { ep: 7, days: [18, 20], moment: 'recoupling', rituals: ['snog-marry-pie'] },
+  { ep: 11, days: [29, 31], moment: 'photos', arrivals: { bombshell: 1 }, rituals: ['movie-night'] },
+  { ep: 13, days: [35, 37], moment: 'recoupling', arrivals: { bombshell: 1 }, rituals: ['notes'] },
+  { ep: 14, days: [38, 40], moment: 'semi-final', rituals: ['families'] },
+```
+(replacing those five entries).
+
+`js/pm/season.js`:
+- import `runVillaDay` from `./villa-day.js`, `emo, attachmentLabel, walkRisk` from `./emotions.js`, `stepOf` from `./ladder.js`;
+- set `state.day = entry.days ? entry.days[1] : state.day;` next to `gs.episode = entry.ep;`;
+- after the Task 9b layer block, run the day and keep its scenes with the day's events:
+```js
+    const vday = entry.moment === 'reunion' ? [] : runVillaDay(state, streamFor(seed, `day:${entry.ep}`), entry);
+    day.push(...vday); state.history.push(...vday);
+```
+- replace `maybeWalk` with feelings: 
+```js
+function maybeWalk(state, rng) {
+  for (const n of state.villa) {
+    const { p, cause } = walkRisk(state, n);
+    if (rng() < p) return { name: n, cause };
+  }
+  return null;
+}
+```
+  and at its call site use `walker.name` / `walker.cause`, pushing `{ name: walker.name, verb: 'walked', channel: 'walk', cause: walker.cause }`.
+- in the row's `pm:` add:
+```js
+        ladder: { ...(state.ladder || {}) },
+        emotions: Object.fromEntries(state.villa.map(n => { const e = emo(state, n);
+          return [n, { security: e.security, confidence: e.confidence, loneliness: e.loneliness, guilt: e.guilt,
+            heartbreak: e.heartbreak, stress: e.stress, jealousy: Math.max(0, ...Object.values(e.jealousy)) }]; })),
+        ...(entry.ep === 1 ? { attachment: Object.fromEntries(state.villa.map(n => [n, attachmentLabel(state.profiles[n])])) } : {}),
+```
+
+Add `circle.js`, `villa-day.js`, `ladder.js`, `emotions.js` to nothing in Task 10's allowed list — none of them may read the ledger, and `familyVerdict` lives in `arrivals.js`, which already may.
+
+- [ ] **Step 7: Run every pm test**
+
+Run: `npx vitest run tests/pm-`
+Expected: all pass. If a ritual kind is missing from "all produce scenes", print `rows[entry.ep - 1].pm.events.map(e => e.kind)` for that episode: a ritual with no eligible islanders returns nothing, which usually means the schedule entry lost its `rituals` field.
+
+- [ ] **Step 8: Commit**
+
+```bash
+git add js/pm/circle.js js/pm/villa-day.js js/pm/events.js js/pm/recoupling.js js/pm/casa.js js/pm/villa-vote.js js/pm/moments.js js/pm/arrivals.js js/pm/schedule.js js/pm/season.js tests/pm-circle.test.js tests/pm-villa-day.test.js
+git commit -m "feat(perfect-match): friends, rituals, and the ladder and feelings in every decision"
+```
+
+---
+
 ### Task 10: The ledger-reader rule, as a guard
 
 **Files:**
@@ -3236,7 +4339,9 @@ describe('Perfect Match spec audit', () => {
     const m = { ffAndVillainBy8: 0, jumps: 0, jumpChecks: 0, invisibleShare: [], famousHated: 0,
       famousTotal: 0, carriedSafe: 0, carriedAtVote: 0, lastPickDecides: 0, recouplingNights: 0,
       twists: { low: [0, 0], high: [0, 0] }, photosSurfaced: 0, steals: 0, envelopes: 0,
-      eventsPerEp: [], repeatLines: 0, lines: 0, relSeasons: {}, schemeViolations: 0 };
+      eventsPerEp: [], repeatLines: 0, lines: 0, relSeasons: {}, schemeViolations: 0,
+      rungs: {}, asksDeclined: 0, asks: 0, stepBacks: 0, outlets: {}, walks: {}, rebounds: 0,
+      stressUp: 0, jealousyBy: { anxious: [], secure: [], avoidant: [] } };
     const REL_LABELS = ['Hidden crush', 'Faking it', 'All in — alone', 'Not feeling it', 'Friend-zoning',
       'Just friends', "Fancies, can't stand", 'One-way crush', 'Mutual spark', 'Couple for survival'];
     for (let s = 1; s <= SEASONS; s++) {
@@ -3305,6 +4410,29 @@ describe('Perfect Match spec audit', () => {
       // 11. relationship variety — which shapes this season ever produced
       const had = new Set(rows.flatMap(r => r.pm.relLabels.map(l => l[3])));
       for (const l of REL_LABELS) if (had.has(l)) m.relSeasons[l] = (m.relSeasons[l] || 0) + 1;
+      // 13. the ladder: rungs reached, asks declined, steps back down
+      for (const r of rows) {
+        for (const step of Object.values(r.pm.ladder || {})) m.rungs[step] = (m.rungs[step] || 0) + 1;
+        for (const e of r.pm.events) {
+          if (e.kind === 'exclusive-ask' || e.kind === 'official-ask') { m.asks++; if (!e.extra.yes) m.asksDeclined++; }
+          if (e.kind === 'ask-declined') m.asksDeclined++;
+          if (e.kind === 'open-back-up' || e.kind === 'head-turned') m.stepBacks++;
+          if (e.kind.startsWith('jealous-') || e.kind === 'reassurance' || e.kind === 'overthinking') {
+            m.outlets[e.kind] = (m.outlets[e.kind] || 0) + 1;
+          }
+        }
+        for (const x of r.exits) if (x.verb === 'walked') m.walks[x.cause || 'none'] = (m.walks[x.cause || 'none'] || 0) + 1;
+      }
+      // 14. jealousy by attachment band, and 15. stress across the season
+      const att = rows[0].pm.attachment || {};
+      const peak = {};
+      for (const r of rows) for (const [n, e] of Object.entries(r.pm.emotions || {})) {
+        peak[n] = Math.max(peak[n] || 0, e.jealousy || 0);
+        if ((e.heartbreak || 0) > 3) m.rebounds++;
+      }
+      for (const [n, band] of Object.entries(att)) if (m.jealousyBy[band]) m.jealousyBy[band].push(peak[n] || 0);
+      const stressAt = r => { const v = Object.values(r.pm.emotions || {}).map(e => e.stress); return v.reduce((a, b) => a + b, 0) / (v.length || 1); };
+      if (stressAt(rows[11]) > stressAt(rows[1])) m.stressUp++;
       // 12. faking and manipulation from scheme-eligible islanders only
       for (const r of rows) {
         for (const [a, , , text] of r.pm.relLabels) if (text === 'Faking it' && !schemeEligible(state.profiles[a])) m.schemeViolations++;
@@ -3328,10 +4456,19 @@ PERFECT MATCH — ${SEASONS} seasons
 11. seasons producing each relationship shape (spec: most seasons; 0 = a system that reaches no screen)
 ${REL_LABELS.map(l => `    ${l.padEnd(24, '.')} ${pct(m.relSeasons[l] || 0, SEASONS)}`).join('\n')}
 12. faking / manipulation by a non-schemer  ${m.schemeViolations}  (rule: 0)
+13. rungs held across all episodes .. ${Object.entries(m.rungs).map(([k, v]) => `${k} ${v}`).join(' · ')}
+    asks declined ................... ${pct(m.asksDeclined, m.asks)} of ${m.asks}
+    steps back down ................. ${m.stepBacks}
+14. how jealousy came out .......... ${Object.entries(m.outlets).map(([k, v]) => `${k.replace('jealous-', '')} ${v}`).join(' · ')}
+    peak jealousy, anxious/secure/avoidant  ${['anxious', 'secure', 'avoidant'].map(b => `${b} ${mean(m.jealousyBy[b]).toFixed(1)}`).join(' · ')}
+    walks by cause ................. ${Object.entries(m.walks).map(([k, v]) => `${k} ${v}`).join(' · ') || 'none'}
+15. stress higher in wk5 than wk1 .. ${pct(m.stressUp, SEASONS)}  (rule: every season)
 `);
     // Rules only. Tuned numbers are read, not asserted.
     expect(m.jumps).toBe(0);
     expect(m.schemeViolations).toBe(0);
+    expect(m.stressUp).toBe(SEASONS);
+    expect(mean(m.jealousyBy.anxious)).toBeGreaterThan(mean(m.jealousyBy.secure));
     expect(Math.min(...m.eventsPerEp)).toBeGreaterThanOrEqual(80);
     expect(m.twists.low[0] / (m.twists.low[1] || 1)).toBeGreaterThan(m.twists.high[0] / (m.twists.high[1] || 1));
   });

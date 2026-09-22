@@ -377,6 +377,134 @@ coupled. The labels are narration, so thresholds are allowed here:
 
 Mockup: `mockup/mockup-pm-vp-v2.html`.
 
+### 6.7 The ladder: what we are to each other
+
+Sources: US S8's label debate (Yahoo), "closed off" explained (Tyla), the
+Molly/Zach toast (UK S10), Amy's "half-boyfriend" (UK S5).
+
+The real show climbs a ladder, and most rungs are **one person's
+declaration**, not a pair's:
+
+| Step | Who sets it | What it promises | Real example |
+|---|---|---|---|
+| `coupled` | the firepit | nothing — a pairing | every day 1 |
+| `cracking-on` | each, by behaviour | interest, no promise | |
+| `open` ("getting to know people") | each, aloud | "my head can still be turned" | |
+| `closed-off` | ONE person, unilaterally | "I won't look at anyone new" — not a promise from the other | Molly told Kady she and Zach were closed off; Zach denied it |
+| `exclusive` | an ask and a yes | only each other | Zach asked Kayda (US S8) |
+| `official` | a boyfriend/girlfriend ask, with a gesture | the villa's marriage | Bryce asked Trinity (US S8) |
+
+Plus two milestones that ride beside the ladder: the first **"I love you"**
+(said, and either returned or left hanging) and a **Hideaway** night.
+
+Each side has its own step **and a belief about the other's**. When they
+disagree it is a *situationship*, and it surfaces as a scene: the toast that
+outs a status, "I thought we were closed off", "we never said we were
+exclusive".
+
+**Moving up** is proportional: romance both ways, love, trust, days together,
+and who they are — high `loyalty` climbs faster; `fun`/`stir` intents slower;
+anxious attachment (§6.8) closes off early and asks early; avoidant waits and
+may decline. An ask can be declined ("I'm not there yet"), which hurts in
+proportion to the asker's love. **Moving down** happens too: after Casa or a
+turned head, "I need to open myself back up" — a major moment for a partner
+still closed off.
+
+**Jealousy depends on the rung you believe you're on.** A partner grafting
+while you believe they are `open` stings by how much you love them; while
+you believe they're `closed-off`, `exclusive` or `official`, it is a
+betrayal, with resentment and a trust collapse scaled up the ladder. And "we
+said we were open" is a real defence the islanders use.
+
+**The villa reads the ladder.** At villa dumpings islanders protect strong
+couples ("you don't split a real couple"), so `exclusive` and `official`
+couples draw fewer dumping votes; grafting on them breaks girl code (§6.9);
+bombshells aim at open couples. The public rewards an official ask
+(approval, and belief in the couple).
+
+### 6.8 Emotions: how they feel, day to day
+
+Sources: therapy and psychology write-ups on the villa (time distortion, sleep
+loss, comparison, loss aversion); attachment and jealousy research (cognitive,
+emotional and behavioural jealousy by attachment style); rebound research;
+Amy Hart's walk (UK S5).
+
+The villa is built to speed attachment up and turn feelings up, and the
+engine simulates both. Every islander carries an **emotional state**. It's
+season state, not stats (§5.1), and every value moves only on things that
+islander witnessed, was told, or believes (§7):
+
+| Feeling | Rises with | Falls with | Drives |
+|---|---|---|---|
+| `security` in their couple | reassurance, climbing the ladder, being picked | believed straying, a rival's arrival, a status mismatch | reassurance-seeking, overthinking, jealousy |
+| `jealousy` (acute, per rival) | a witnessed or reported flirt with their partner, scaled by the ladder | reassurance, time | confrontation, sulking, retaliation |
+| `confidence` | being picked, pulled for chats, chosen in challenges, a date | being pied, left single, not picked, a bombshell choosing someone else | boldness in pulls and steals |
+| `loneliness` | being single, friends dumped, the partner at Casa | a new connection, a close friend | rebounds, walking out |
+| `guilt` | grafting while `closed-off` or higher; Casa | confessing | confessing, or defensiveness and gaslighting (schemers only) |
+| `heartbreak` | dumped by a partner, a partner who twisted | time, a rebound | withdrawing, walking, a rebound |
+| `stress` | the season going on, sleep loss, conflicts, at-risk nights | quiet days, wins | every feeling above running hotter |
+
+**Time runs fast.** Each villa day counts for more than an outside day
+(§6.3's love growth scales with days together), and `stress` builds over the
+season: it lowers effective `temperament`, so the same slight lands harder in
+week five than in week one.
+
+**Attachment, from the nine stats** (continuous, never a category; the label
+is narration):
+- *anxiety* rises with high `loyalty` and low `temperament`;
+- *avoidance* rises with low `loyalty` and high `strategic`;
+- *secure* is low on both.
+
+It shapes jealousy the way the research found it:
+- **Secure** islanders barely feel it until a threat is confirmed, then feel
+  it fully.
+- **Anxious** islanders feel it early and often, with intrusive thoughts
+  (overthinking in the beach hut), checking up and reassurance-seeking.
+- **Avoidant** islanders feel less, but answer a threat by making their
+  partner jealous (a pull staged in sight of them) and with revenge.
+
+**How a feeling comes out** is its own choice, proportional to `temperament`,
+`boldness` and attachment. Jealousy can come out as:
+- a confrontation at the firepit;
+- a sulk in the bedroom;
+- a retaliatory flirt, to make them jealous back;
+- a reassurance chat;
+- or nothing visible at all, which then leaks into the beach hut.
+
+**Heartbreak and exits.** A heartbroken islander who has to watch the ex
+crack on can **walk** (Amy Hart). A partner of someone dumped, with high love
+and loyalty, can walk **in solidarity**. Deep loneliness with high stress can
+become **homesickness** and a walk. A **rebound** is likely after
+heartbreak, and it restores confidence: people who rebounded fast reported
+better self-esteem.
+
+### 6.9 Friends and the villa as a group
+
+- **Confidants.** Each islander's closest trusted friend is who hears their
+  secrets and whose opinion moves them: "the girls don't rate him" lowers
+  attraction and trust; a friend backing the couple raises security. A
+  **family visit** works the same way at one remove (Kyra's father's doubts
+  shook her, UK).
+- **Girl code / the boys' code.** Grafting on a friend's partner, or on an
+  `exclusive`/`official` couple, costs friendship across the grafter's
+  circle, and the villa splits into sides. Alliances form "for protection".
+- **Peer pressure.** At Casa, friends who twist make twisting likelier ("it's
+  a lads' holiday"); friends who stay loyal make sticking likelier.
+- **Double standards.** How harshly the villa judges an act depends on how
+  much it likes the actor: gossip about a friend is softened, about a rival
+  sharpened. At Movie Night that gets called out ("double standard"). The
+  public sees both sides.
+- **The villa's rituals** exist to surface truth and feeling, and each is an
+  engine event with consequences:
+  - the **heart-rate challenge** airs who really fancies whom, so a hidden
+    crush can be caught on a monitor;
+  - **Snog, Marry, Pie** and anonymous **notes** make private opinions
+    public;
+  - **Movie Night** plays unaired clips to the villa;
+  - **Meet the families**;
+  - the **Hideaway**;
+  - **final dates** and **declarations**.
+
 ---
 
 ## 7. Three levels of knowing
@@ -595,6 +723,14 @@ seasons, every rate beside its chance line:
     seasons; a label at zero is a system that runs and reaches no screen.
 12. Faking and manipulation only ever come from scheme-eligible islanders
     (rule: 0 violations).
+13. The ladder: per season, couples reaching each step; asks declined;
+    status mismatches surfaced; steps back down. Every rung should be
+    reached in most seasons, `official` in a minority.
+14. Emotions: jealousy episodes by attachment band (anxious > secure before
+    a threat is confirmed; secure ≈ anxious after), how each came out
+    (confront / sulk / retaliate / reassure / hidden), walks by cause
+    (heartbreak / solidarity / homesick), rebounds after heartbreak.
+15. Stress rises across the season (mean stress in week 5 above week 1).
 
 Guards: vocabulary both directions (§14.10), ledger reader list (§8 rule
 change), islander decisions never read approval/fame, bombshell reads aired

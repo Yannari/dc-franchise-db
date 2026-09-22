@@ -769,6 +769,8 @@ conversation ("{a} says it like a joke so {b} can take it either way") is not
 a scene, and the idiom has to be right ("Don't tell me how I should feel", not
 "how I feel").
 
+**Fluent, not clever** (round 3). The tells of prose that reads like a translation: internet-meme constructions ("with the energy of someone planning a murder", "Nobody asked for this") and ending every scene on a knowing sting ("It doesn't help.", "which is new"). The closing beat shows an action and does not comment on it. The narrator's joke comes from the situation, said the way a person talks. Test: would a 24-year-old say it out loud? Pronouns are placeholders too (`{c.posAdj}`) — a pool never guesses a gender.
+
 Approved samples:
 
 **An argument**
@@ -777,7 +779,7 @@ Approved samples:
 > **{b}:** "You are. Every time. You decide what the problem is, then you tell me I'm the problem for having it."
 > **{a}:** "Alright. Then tell me what it is, because I've been guessing all day."
 >
-> {b} walks off toward the kitchen. {a} stays where they are, which is new.
+> {b} walks off toward the kitchen. {a} doesn't follow.
 
 **Grafting on someone who is taken**
 > **{a}:** "Can I be honest with you? Properly honest."
@@ -786,7 +788,7 @@ Approved samples:
 > **{b}:** "You can't say stuff like that to me."
 > **{a}:** "I know. I've said it now."
 >
-> {b} doesn't get up, and they both notice.
+> {b} doesn't get up.
 
 **Closing off**
 > **{a}:** "I want to say something before I lose my nerve. I'm closing myself off."
@@ -800,12 +802,12 @@ Approved samples:
 > **{a}:** "That pause is an answer, by the way."
 > **{b}:** "I'm not there yet. I'd rather say that than tell you what you want to hear."
 >
-> It isn't fair, and {a} sits with it for the rest of the night.
+> {a} nods. Neither of them says anything else for a while.
 
 **Coming back from Casa Amor**
 > **{b}:** "Are you serious?"
 > **{a}:** "Let me explain."
-> **{b}:** "You're holding her hand while you explain."
+> **{b}:** "You're holding {c.posAdj} hand while you explain."
 > **{a}:** "I didn't plan it."
 > **{b}:** "I came back on my own. I sat in that villa and I came back on my own."
 
@@ -827,6 +829,18 @@ Approved samples:
 > **{b}:** "We're alright."
 > **{a}:** "Say it like you mean it and I'll drop it."
 > **{b}:** "We're alright. I'm not going anywhere. Go to sleep."
+
+**The narrator**
+> **Narrator:** "It's day nine, and {a}'s decided to take up yoga. On the lawn. At seven in the morning."
+
+> **Narrator:** "Meanwhile, {b}'s in the kitchen making a cup of tea, and nobody's brave enough to go in there."
+
+**"I love you", left hanging**
+> **{a}:** "I think I'm falling in love with you."
+> **{b}:** "…You're amazing, you know that?"
+> **{a}:** "That's not really what I said, though."
+>
+> {b} leans in and kisses {a}. {a} kisses back, but pulls away first.
 
 This changes the event shape: a pool entry is a `script` (staging plus
 dialogue turns), not one `tpl` string. Plan 1 ships two placeholder lines per

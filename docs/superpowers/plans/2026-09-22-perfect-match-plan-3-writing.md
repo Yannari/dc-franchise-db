@@ -20,6 +20,9 @@ can hide.
 - `feedback_writing_rules_episodes` and `feedback_scenes_with_real_dialogue`
   (memory).
 - Spec §16.5.
+- **Fluent, not clever** (§16.5, round 3). A closing beat shows an action and
+  does not comment on it. No meme constructions. The narrator is funny from
+  the situation, not from a phrase.
 - `docs/ADDING-A-SHOW.md` §11.5: a speech that knows what the character does
   not; one show's vocabulary printed over another's. This show has no
   eviction, no tribal, no jury and no nominations. "Dumped" is the word.
@@ -253,6 +256,11 @@ The content rules:
   out, torch snuffed, sashay. The list comes from
   `tests/helpers/show-vocabulary.js`.
 - No invented stat words (CLAUDE.md list) and no invented archetypes.
+- A **sting denylist** is checked on every `beat` and narrator line: "the
+  energy of", "nobody asked for", "which is new", "it doesn't help", "and they
+  both notice", "sits with it", "main character", "understood the
+  assignment". The list grows as the read-throughs find more. No two beats
+  in one pool may end on the same three words.
 - Every `when` key is in `FACT_KEYS`.
 - Every pool has at least 3 entries with no `when`.
 - Scheme lines come only from the scheme-eligible. Every script tagged

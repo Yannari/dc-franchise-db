@@ -153,6 +153,28 @@ describe('every islander talks like where they are from', () => {
     expect(speak('{~Mate}, {~oh-my-days}.', 'us')).toBe('Man, oh my God.');
     expect(speak('I promise.', 'us')).toBe('I promise.');
   });
+  it('a region only says what differs, and falls back to its base', () => {
+    expect(speak('{~Mate}, look at {~telly}.', 'scot')).toBe('Pal, look at the telly.');       // telly from uk
+    expect(speak('My {~mum} is {~buzzing}.', 'geordie')).toBe('My mam is buzzing.');
+    expect(speak('{~Mate}, my {~mum} loves {~telly}.', 'ca')).toBe('Buddy, my mom loves TV.');  // mom, TV from us
+    expect(speak('I am {~buzzing}, {~bro}.', 'nz')).toBe('I am stoked, bro.');                    // stoked from au
+    expect(speak('It is my favourite colour.', 'ca')).toBe('It is my favourite colour.');        // Canada spells like the UK
+    expect(speak('{~Oh-my-days}.', 'za')).toBe('Eish.');
+  });
+  it('a second-language speaker gets plain words and their own, never broken English', () => {
+    expect(speak("{~Mate}, I'm {~knackered}.", 'es')).toMatch(/my friend|My friend/);
+    expect(speak('{~Oh-my-days}.', 'it')).toBe('Mamma mia.');
+    // The shaping is decided by the line, so it never changes between renders.
+    const lines = ["I'm not going anywhere, and I mean it.", "That's not what I said to you last night.",
+      "Honestly, I don't know what I want right now.", "You're the only one I talk to like this."];
+    for (const x of lines) expect(speak(x, 'fr')).toBe(speak(x, 'fr'));
+    // Across many lines some get their own word, and none loses a word it needs.
+    const sample = Array.from({ length: 200 }, (_, i) => `I think this is line number ${i} and it is fine.`);
+    const opened = sample.map(x => speak(x, 'fr')).filter(x => /^(Bon|Enfin|Oh là là),/.test(x));
+    expect(opened.length).toBeGreaterThan(5);
+    expect(opened.length).toBeLessThan(80);
+    for (const x of opened) expect(x).toMatch(/ I think this is line number \d+ and it is fine\.$/);
+  });
 });
 
 describe('the reply is the replier\'s own', () => {

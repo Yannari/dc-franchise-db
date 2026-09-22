@@ -203,7 +203,7 @@ export const FRIENDSHIP = [
       ['b', 'Go on.'],
       ['a', "Do we look happy? From the outside?"],
       { by: 'b', vary: [
-        { turns: [['b', 'Yeah. You look happy.'], ['a', 'Really?'], ['b', "I wouldn't say it if I didn't think it."]] },
+        { turns: [['b', '{~Yeah}. You look happy.'], ['a', 'Really?'], ['b', "I wouldn't say it if I didn't think it."]] },
         { when: { persona: 'girls-girl' },
           turns: [['b', 'You look happy. Whether you actually are is a different question, and you should ask yourself that one.']],
           beat: "{a} doesn't answer straight away." },
@@ -289,7 +289,7 @@ export const FRIENDSHIP = [
     turns: [
       ['a', "I'm going to miss this. The mornings."],
       ['b', 'What, the queue for the mirror?'],
-      ['a', 'Yeah. Even that.'],
+      ['a', '{~Yeah}. Even that.'],
     ] },
   { id: 'friendship.35', when: { persona: 'messy' },
     turns: [
@@ -304,6 +304,6 @@ export const FRIENDSHIP = [
       ['a', 'Thanks for yesterday.'],
       ['b', "What did I do?"],
       ['a', 'You sat with me. You didn\'t try to fix it.'],
-      ['b', "Yeah, well. It didn't need fixing. You just needed someone there."],
+      ['b', "{~Yeah}, well. It didn't need fixing. You just needed someone there."],
     ] },
 ];

@@ -14,6 +14,7 @@ import { fileURLToPath } from 'node:url';
 import { setPlayers } from '../js/core.js';
 import { playPerfectMatchSeason } from '../js/pm/season.js';
 import { makeIslanders, roleSetup } from './helpers/pm-cast.js';
+import { DIALECTS } from '../js/pm/lines/dialect.js';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 // Readable stand-ins for the synthetic cast (alternating f/m, as pm-cast makes them).
@@ -45,12 +46,13 @@ it('writes a season transcript', () => {
   const names = cast.map(p => p.name);
   // A mixed villa, so the dialects can be heard side by side (cast setup's
   // "where they're from"; blank would take the season default, UK).
-  const MIX = ['uk', 'us', 'uk', 'au', 'ie', 'us', 'uk'];
+  // Casa Amor's arrivals come from abroad, as they do on the show.
+  const HOME = ['uk', 'us', 'scot', 'au', 'ie', 'essex', 'ca', 'geordie', 'nz', 'za', 'uk', 'us', 'uk', 'au', 'scot', 'uk'];
+  const ABROAD = ['es', 'it', 'fr', 'br', 'de', 'es'];
   const setup = roleSetup(names);
-  names.forEach((n, i) => { setup[n].dialect = MIX[i % MIX.length]; });
+  names.forEach((n, i) => { setup[n].dialect = setup[n].role === 'casa' ? ABROAD[i % ABROAD.length] : HOME[i % HOME.length]; });
   const { rows } = playPerfectMatchSeason({ cast: names, setup, seed });
-  const FROM = { uk: 'UK', us: 'US', au: 'Australia', ie: 'Ireland' };
-  const castList = names.map(n => `${esc(n)} <span class="from">${FROM[setup[n].dialect]}</span>`).join(' · ');
+  const castList = names.map(n => `${esc(n)} <span class="from">${DIALECTS[setup[n].dialect].label}</span>`).join(' · ');
 
   const eps = rows.map(r => {
     const byPhase = [];

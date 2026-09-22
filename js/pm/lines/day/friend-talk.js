@@ -22,7 +22,7 @@ export const FRIEND_TALK = [
     turns: [
       ['a', 'Has {pb} said anything yet? About being exclusive?'],
       { by: 'b', vary: [
-        { turns: [['b', "Not yet. I'm not going to push it."], ['a', "You're allowed to push it a little bit."]] },
+        { turns: [['b', "Not yet. I'm not going to push it."], ['a', "You're allowed to push it a {~little} bit."]] },
         { when: { myRung: 'official' },
           turns: [['b', "We're official. Where have you been?"], ['a', 'Since when?'], ['b', 'Since yesterday!']],
           beat: '{a} hits {b.obj} with a pillow for not saying.' },
@@ -193,7 +193,7 @@ export const FRIEND_TALK = [
       ['a', "What are you going to miss most?"],
       ['b', 'You. Obviously. Then the pool.'],
       ['a', 'In that order?'],
-      ['b', "Some days, yeah."],
+      ['b', "Some days, {~yeah}."],
     ] },
   { id: 'friendship.58', when: { taken: true, bTaken: true },
     turns: [
@@ -227,7 +227,7 @@ export const FRIEND_TALK = [
     turns: [
       ['a', 'Is {pb} being nice to you? Really nice?'],
       { by: 'b', vary: [
-        { turns: [['b', 'Yeah. Really nice.'], ['a', 'Good. Because I was ready to have a word.']] },
+        { turns: [['b', '{~Yeah}. Really nice.'], ['a', 'Good. Because I was ready to have a word.']] },
         { when: { attachment: 'anxious' },
           turns: [['b', 'Most of the time. I just wish {pb} said it more.'], ['a', 'Then tell {pb} that.']] },
       ] },

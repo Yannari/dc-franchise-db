@@ -19,7 +19,7 @@ import { emo, attachmentLabel } from './emotions.js';
 import { romance, shown } from './feelings.js';
 import { DAY } from './lines/day.js';
 import { HUT } from './lines/hut.js';
-import { SLOTS, US_SPELLING } from './lines/dialect.js';
+import { DIALECTS, slotWord, US_SPELLING, US_SPELLERS, ESL_EXPANSIONS } from './lines/dialect.js';
 
 export const POOLS = { ...DAY };
 export { HUT };
@@ -179,18 +179,31 @@ export function dialectOf(state, name) {
 const HOST_DIALECT = () => SHOWS['perfect-match'].words.hostDialect || 'us';
 const NARRATOR_DIALECT = () => SHOWS['perfect-match'].words.narratorDialect || 'uk';
 
-/** Fill `{~slot}` for this speaker's dialect, then American spelling if it applies. */
+/** Fill `{~slot}` for this speaker's dialect, then spelling and second-language shaping. */
+const hashOf = s => [...s].reduce((h, c) => (Math.imul(h, 31) + c.charCodeAt(0)) >>> 0, 7);
 export function speak(text, dialect) {
+  const info = DIALECTS[dialect] || DIALECTS.uk;
   let out = text.replace(/\{~([A-Za-z-]+)\}/g, (m, key) => {
-    const slot = SLOTS[key.toLowerCase()];
-    if (!slot) return m;
-    const word = slot[dialect] || slot.uk;
+    const word = slotWord(key.toLowerCase(), dialect);
+    if (word == null) return m;
     return key[0] === key[0].toUpperCase() ? word[0].toUpperCase() + word.slice(1) : word;
   });
-  if (dialect === 'us') out = out.replace(/[A-Za-z]+/g, w => {
+  if (US_SPELLERS.includes(dialect)) out = out.replace(/[A-Za-z]+/g, w => {
     const us = US_SPELLING[w.toLowerCase()];
     return us ? (w[0] === w[0].toUpperCase() ? us[0].toUpperCase() + us.slice(1) : us) : w;
   });
+  if (info.esl) {
+    // Decided by the line itself, so the same line always comes out the same.
+    const h = hashOf(text);
+    if (h % 10 < 5) out = out.replace(/\b(I'm|you're|it's|that's|don't|can't|I've|I'd|we're|isn't)\b/gi,
+      w => { const x = ESL_EXPANSIONS[w] ?? ESL_EXPANSIONS[w[0].toLowerCase() + w.slice(1)];
+        return x ? (w[0] === w[0].toUpperCase() ? x[0].toUpperCase() + x.slice(1) : x) : w; });
+    const own = info.own || [];
+    if (own.length && Math.floor(h / 10) % 7 === 0 && out.split(' ').length >= 4 && /^[A-Z]/.test(out)) {
+      const rest = /^I\b/.test(out) ? out : out[0].toLowerCase() + out.slice(1);
+      out = `${own[Math.floor(h / 70) % own.length]} ${rest}`;
+    }
+  }
   return out;
 }
 

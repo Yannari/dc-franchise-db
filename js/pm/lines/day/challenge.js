@@ -8,7 +8,7 @@
 export const ICK = [
   { id: 'ick.01',
     stage: '{b} laughs at {b.posAdj} own joke, again.',
-    turns: [['a', "…Yeah. That's funny."]],
+    turns: [['a', "…{~Yeah}. That's funny."]],
     beat: "{a} doesn't laugh." },
   { id: 'ick.02',
     turns: [
@@ -145,7 +145,7 @@ export const CHALLENGE_KISS = [
     turns: [['a', "I'm going to do a really dramatic one. Stand still."], ['b', "Oh no."]],
     beat: '{a} dips {b} like an old film. The villa is in bits.' },
   { id: 'challenge-kiss.13', when: { persona: 'wallflower' },
-    turns: [['a', 'Is that… Is that okay?'], ['b', "Yeah, it's okay."]],
+    turns: [['a', 'Is that… Is that okay?'], ['b', "{~Yeah}, it's okay."]],
     beat: "It's the shyest kiss of the day." },
   { id: 'challenge-kiss.14',
     turns: [['a', "Don't get any ideas."], ['b', 'Too late.']] },
@@ -186,7 +186,7 @@ export const CHALLENGE_WIN = [
     stage: 'Everyone else is soaked and losing.',
     turns: [['b', 'Look at them.'], ['a', "Don't gloat."], ['b', "I'm not gloating. I'm just happy."]] },
   { id: 'challenge-win.11', when: { gap: true },
-    turns: [['a', 'We make a good team.'], ['b', 'In the challenges, yeah.']],
+    turns: [['a', 'We make a good team.'], ['b', 'In the challenges, {~yeah}.']],
     beat: "{a} lets the 'in the challenges' go." },
   { id: 'challenge-win.12',
     turns: [['a', 'Did you see their faces?'], ['b', "I did. I'll be nice about it tomorrow."]] },

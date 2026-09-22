@@ -43,7 +43,7 @@ export const DEEP_CHAT = [
     turns: [
       ['a', "Can you tell me if something changes? Before it changes. Not after."],
       { by: 'b', vary: [
-        { turns: [['b', "Yeah. I'll tell you. I promise."], ['a', 'Even if it\'s bad?'], ['b', "Especially if it's bad."]] },
+        { turns: [['b', "{~Yeah}. I'll tell you. I promise."], ['a', 'Even if it\'s bad?'], ['b', "Especially if it's bad."]] },
         { when: { attachment: 'avoidant' },
           turns: [['b', "I'll try. I'm not great at knowing myself till it's happened."]],
           beat: "{a} nods, and doesn't say anything for a while." },
@@ -81,7 +81,7 @@ export const DEEP_CHAT = [
   { id: 'deep-chat.10', when: { rung: ['exclusive', 'official'] },
     turns: [
       ['a', "I want you to meet my family."],
-      ['b', "Yeah?"],
+      ['b', "{~Yeah}?"],
       ['a', "I've never said that to anyone this early."],
       ['b', "I'd like that. I'll be terrified, but I'd like that."],
     ] },

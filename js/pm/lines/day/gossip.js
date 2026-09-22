@@ -57,7 +57,7 @@ export const GOSSIP = [
   { id: 'gossip.05', when: K,
     turns: [
       ['a', "Have you and {c} been alright?"],
-      ['b', 'Yeah. Why?'],
+      ['b', '{~Yeah}. Why?'],
       ['a', "No reason."],
       ['b', "That's not no reason. That's a reason face."],
       ['a', "…Okay. I saw something."],

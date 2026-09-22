@@ -43,7 +43,7 @@ A pool entry is a **script**:
     ['a', "I'm not doing that, I'm just saying—"],
     ['b', "You are. Every time. You decide what the problem is, then you tell me I'm the problem for having it."],
   ],
-  beat: '{b} walks off toward the kitchen. {a} stays where they are, which is new.',
+  beat: '{b} walks off toward the kitchen. {a} doesn't follow.',
 }
 ```
 

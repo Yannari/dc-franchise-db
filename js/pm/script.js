@@ -18,17 +18,18 @@ import { stepOf, believedStep, situationship } from './ladder.js';
 import { emo, attachmentLabel } from './emotions.js';
 import { romance, shown } from './feelings.js';
 import { DAY } from './lines/day.js';
+import { LADDER } from './lines/ladder.js';
 import { HUT } from './lines/hut.js';
 import { DIALECTS, slotWord, US_SPELLING, US_SPELLERS, ESL_EXPANSIONS } from './lines/dialect.js';
 
-export const POOLS = { ...DAY };
+export const POOLS = { ...DAY, ...LADDER };
 export { HUT };
 
 export const SPEAKERS = ['a', 'b', 'c', 'dior', 'narrator'];
 export const FACT_KEYS = ['rung', 'thinks', 'persona', 'intent', 'attachment', 'mood', 'bombshell',
   'early', 'coupled', 'gap', 'knows', 'faking', 'bPersona', 'bMood', 'bRung', 'stance', 'family',
   'choice', 'cause', 'channel', 'stole', 'bTaken', 'archetype', 'taken', 'loyal', 'late', 'gender', 'bGender', 'myRung', 'phase', 'kind', 'role', 'withB', 'newArrival', 'dialect',
-  'comfortedYesterday', 'rowedBefore', 'rowedToday'];
+  'comfortedYesterday', 'rowedBefore', 'rowedToday', 'feels', 'of'];
 
 // Archetype groups a pool may name instead of listing them (CLAUDE.md).
 export const VILLAINS = ['villain', 'mastermind', 'schemer'];
@@ -101,7 +102,10 @@ export function factsFor(state, ev) {
     && e.players.includes(a) && e.players.includes(b));
   // Somebody walked in today (a bombshell, Casa's arrivals) — not day one.
   f.newArrival = state.ep > 1 && (state.villa || []).some(n => state.ledger?.firstEp?.[n] === state.ep);          // morning, day, event (the challenge), evening, firepit…
-  for (const k of ['choice', 'cause', 'channel', 'stole']) if (ev.extra?.[k] != null) f[k] = ev.extra[k];
+  // How much a feels for b, in words a line can lean on (narration only):
+  // "not yet" is somebody who cares; a real no is somebody who doesn't.
+  if (b) { const r = romance(a, b); f.feels = r >= 6 ? 'strong' : r >= 3 ? 'some' : 'little'; } else f.feels = null;
+  for (const k of ['choice', 'cause', 'channel', 'stole', 'of']) if (ev.extra?.[k] != null) f[k] = ev.extra[k];
   return f;
 }
 
@@ -198,9 +202,11 @@ const pro = name => pronounsOf(players.find(p => p.name === name)?.gender || 'nb
 // partner is always there to name (tests/pm-lines.test.js).
 export function fill(text, ps, partners = {}) {
   const names = { a: ps[0], b: ps[1], c: ps[2], pa: partners.pa, pb: partners.pb };
-  return text.replace(/\{(pa|pb|a|b|c)(?:\.(sub|obj|pos|posAdj|ref|Sub|Obj|PosAdj))?\}/g, (m, who, form) => {
+  return text.replace(/\{(pa|pb|a|b|c)(?:\.(sub|obj|pos|posAdj|ref|Sub|Obj|PosAdj|gf))?\}/g, (m, who, form) => {
     const n = names[who];
     if (!n) return m;
+    // {b.gf}: what you ask {b} to be — from the roster, never guessed.
+    if (form === 'gf') return { f: 'girlfriend', m: 'boyfriend' }[players.find(p => p.name === n)?.gender] || 'partner';
     return form ? pro(n)[form] : n;
   });
 }

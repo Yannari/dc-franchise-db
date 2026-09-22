@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { setPlayers } from '../js/core.js';
 import { POOLS, HUT, SPEAKERS, FACT_KEYS, renderScript, speak } from '../js/pm/script.js';
 import { SLOTS, REGIONAL_WORDS } from '../js/pm/lines/dialect.js';
+import { DAY } from '../js/pm/lines/day.js';
 import { foreignWordsIn } from './helpers/show-vocabulary.js';
 
 // Every entry in every pool, with its variant blocks opened out.
@@ -74,7 +75,7 @@ describe('the pools are well-formed', () => {
   it('every day-to-day pool has at least three scenes anyone can get', () => {
     // A condition that matches nobody must still find a scene. Gossip is cast
     // only for a witness, so `knows` is always true there and counts as none.
-    for (const [k, pool] of Object.entries(POOLS)) {
+    for (const [k, pool] of Object.entries(DAY)) {
       const open = pool.filter(e => !e.when || (k === 'gossip' && Object.keys(e.when).join() === 'knows'));
       expect(open.length, k).toBeGreaterThanOrEqual(3);
     }
@@ -94,7 +95,7 @@ describe('the words follow the rules', () => {
     for (const [k, e] of ENTRIES) for (const x of texts(e)) {
       // A capitalised word straight after a placeholder slot's usual place would be a name;
       // the practical check is that nothing but {a}/{b}/{c} forms appear in braces.
-      for (const [m] of x.matchAll(/\{(?!~)[^}]*\}/g)) expect(m, `${k} ${e.id}`).toMatch(/^\{(pa|pb|a|b|c)(\.(obj|pos|posAdj|ref|Obj|PosAdj))?\}$/);
+      for (const [m] of x.matchAll(/\{(?!~)[^}]*\}/g)) expect(m, `${k} ${e.id}`).toMatch(/^\{(pa|pb|a|b|c)(\.(obj|pos|posAdj|ref|Obj|PosAdj|gf))?\}$/);
       expect(x, `${k} ${e.id}`).not.toMatch(/\bDior\b/);
     }
   });

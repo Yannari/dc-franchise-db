@@ -1,0 +1,922 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Perfect Match VP v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Yellowtail&family=Outfit:wght@300;400;600;800&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════════════════════════════════
+   PERFECT MATCH — viewing party, v2 (visual-novel stage)
+   The stage plays like the dating game it is: busts that slide in, a
+   dialogue box that types, a camera that pushes in on whoever is talking
+   with everyone else out of focus, heart-iris wipes between rooms, pops
+   for every feeling that moved, toasts for the big moments.
+   Scenery is LIGHT, not drawings: sky, bloom, haze, bokeh, leaf shadow,
+   embers, beams. Neon script is the only "object".
+   ══════════════════════════════════════════════════════════════════════ */
+:root{
+  --pink:#ff2e88; --hot:#ff4fa0; --coral:#ff7a59; --sun:#ffc15e; --lav:#a78bfa; --teal:#14c8bb;
+  --bg:#fff4f8; --bg2:#ffe7f1; --card:#ffffff; --card2:#fff9fb; --ink:#2b1026; --muted:#8a6b80; --line:#f4d6e4;
+  --glass:rgba(255,255,255,.78); --glassInk:#2b1026; --glassLine:rgba(255,255,255,.9); --shadow:0 18px 40px rgba(160,40,100,.18);
+}
+:root[data-theme="dark"]{
+  --bg:#12081a; --bg2:#1b0d25; --card:#1f1029; --card2:#261433; --ink:#fbe8f3; --muted:#b596ab; --line:#3a2244;
+  --glass:rgba(24,10,34,.72); --glassInk:#fbe8f3; --glassLine:rgba(255,120,190,.35); --shadow:0 18px 40px rgba(0,0,0,.5);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#12081a; --bg2:#1b0d25; --card:#1f1029; --card2:#261433; --ink:#fbe8f3; --muted:#b596ab; --line:#3a2244;
+    --glass:rgba(24,10,34,.72); --glassInk:#fbe8f3; --glassLine:rgba(255,120,190,.35); --shadow:0 18px 40px rgba(0,0,0,.5);
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:radial-gradient(1200px 600px at 80% -10%,var(--bg2),var(--bg));color:var(--ink);font:15px/1.45 Outfit,system-ui,sans-serif;min-height:100vh}
+.wrap{max-width:1220px;margin:0 auto;padding:14px 16px 96px}
+header.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:12px}
+.logo{font:46px/1 Yellowtail,cursive;color:var(--pink);text-shadow:0 0 18px #ff2e8855}
+.logo small{display:block;font:600 11px Outfit;letter-spacing:.32em;color:var(--muted);text-transform:uppercase;margin-top:2px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto;align-items:center}
+.tabs button,.themeBtn{border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:7px 15px;font:600 13px Outfit;cursor:pointer;transition:all .2s}
+.tabs button.on{background:linear-gradient(135deg,var(--coral),var(--pink));border-color:transparent;color:#fff;box-shadow:0 6px 16px #ff2e8855}
+.themeBtn{display:flex;align-items:center;gap:6px}
+.themeBtn svg{width:16px;height:16px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:18px;align-items:start}
+@media (max-width:960px){.layout{grid-template-columns:minmax(0,1fr)}}
+
+/* ── STAGE ─────────────────────────────────────────────────────────── */
+.stage{position:sticky;top:8px;z-index:5;contain:inline-size;min-width:0;max-width:100%;aspect-ratio:16/8.4;
+  border-radius:24px;overflow:hidden;isolation:isolate;box-shadow:var(--shadow),0 0 0 1px #ffffff22 inset;background:#000;user-select:none}
+.cam{position:absolute;inset:0;transition:transform 1.1s cubic-bezier(.2,.8,.2,1);transform-origin:var(--ox,50%) 70%}
+.cam.close{transform:scale(1.14)}
+.scene{position:absolute;inset:-4%;transition:opacity .6s}
+
+/* scenes are light, not drawings */
+.sc-day{background:
+  radial-gradient(40% 55% at 72% 34%,#fff8dccc,#ffd89a66 40%,#0000 70%),
+  linear-gradient(180deg,#ff9fb0 0%,#ffb99a 32%,#ffd6a8 52%,#9fe6ee 53%,#56c4df 70%,#2c8fc4 100%)}
+.sc-terrace{background:
+  radial-gradient(60% 50% at 30% 20%,#ffb3d966,#0000 70%),
+  linear-gradient(180deg,#4d1d66 0%,#b1407e 45%,#ff8a7a 75%,#ffc39a 100%)}
+.sc-night{background:
+  radial-gradient(55% 45% at 50% 100%,#ff7a3a99,#ff2e8833 45%,#0000 70%),
+  linear-gradient(180deg,#0c0620 0%,#26103f 50%,#4a1747 100%)}
+.sc-hut{background:
+  radial-gradient(45% 60% at 50% 40%,#ffe6b8,#e0a45c 45%,#6a3a15 100%)}
+.sc-casa{background:
+  radial-gradient(50% 60% at 75% 30%,#14c8bb55,#0000 70%),radial-gradient(40% 50% at 20% 70%,#a78bfa55,#0000 70%),
+  linear-gradient(180deg,#07142c,#132a52 60%,#1b0f3a)}
+.sc-final{background:
+  radial-gradient(60% 60% at 50% 110%,#ff2e8899,#0000 70%),linear-gradient(180deg,#1a0624,#4b0f45 60%,#8a1e5c)}
+.stage .sun{position:absolute;left:66%;top:18%;width:16%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,#fffbe9,#ffe2a1 45%,#ffc86b00 70%);filter:blur(2px);animation:bloom 6s ease-in-out infinite}
+@keyframes bloom{50%{transform:scale(1.08);opacity:.85}}
+.stage .shimmer{position:absolute;left:0;right:0;top:53%;bottom:0;background:repeating-linear-gradient(180deg,#ffffff00 0 9px,#ffffff33 9px 10px);
+  mask:linear-gradient(180deg,#000,#0000);animation:shim 5s linear infinite;opacity:.6}
+@keyframes shim{to{background-position:0 40px}}
+.stage .gobo{position:absolute;inset:0;pointer-events:none;mix-blend-mode:multiply;opacity:.32;filter:blur(6px);
+  background:
+   radial-gradient(18% 5% at 12% 18%,#2b1026 60%,#0000 61%),radial-gradient(22% 5% at 20% 10%,#2b1026 60%,#0000 61%),
+   radial-gradient(16% 4% at 6% 30%,#2b1026 60%,#0000 61%),radial-gradient(20% 5% at 90% 12%,#2b1026 60%,#0000 61%),
+   radial-gradient(15% 4% at 96% 26%,#2b1026 60%,#0000 61%);
+  transform-origin:10% 0;animation:sway 7s ease-in-out infinite}
+@keyframes sway{50%{transform:rotate(2.2deg) translateX(1%)}}
+.stage .bokeh{position:absolute;inset:0;pointer-events:none}
+.stage .bokeh i{position:absolute;border-radius:50%;background:radial-gradient(circle,#fff,#fff0 70%);opacity:.0;filter:blur(1px);animation:bok var(--t) ease-in-out infinite;animation-delay:var(--d)}
+@keyframes bok{0%,100%{opacity:0;transform:translateY(8px)}50%{opacity:var(--o);transform:translateY(-8px)}}
+.stage .string i{background:radial-gradient(circle,#fff1c9,#ffcf7a55 45%,#fff0 70%)}
+.stage .embers i{border-radius:50%;background:#ffb35c;box-shadow:0 0 8px #ff7a3a;opacity:0;animation:ember var(--t) linear infinite;animation-delay:var(--d)}
+@keyframes ember{0%{opacity:0;transform:translate(0,0)}15%{opacity:1}100%{opacity:0;transform:translate(var(--x),-260px)}}
+.stage .glow{position:absolute;left:50%;bottom:-18%;width:60%;aspect-ratio:2;transform:translateX(-50%);border-radius:50%;
+  background:radial-gradient(closest-side,#ffb35ccc,#ff5c3a66 45%,#0000);animation:flick 1.3s ease-in-out infinite}
+@keyframes flick{0%,100%{opacity:.85;transform:translateX(-50%) scale(1)}40%{opacity:1;transform:translateX(-50%) scale(1.05)}70%{opacity:.75}}
+.stage .beams{position:absolute;inset:0;background:
+  conic-gradient(from 200deg at 20% -10%,#0000 0 8deg,#ffffff22 10deg 14deg,#0000 16deg 360deg),
+  conic-gradient(from 150deg at 80% -10%,#0000 0 8deg,#ffffff22 10deg 14deg,#0000 16deg 360deg);animation:beam 6s ease-in-out infinite alternate}
+@keyframes beam{to{filter:hue-rotate(40deg);transform:translateX(2%)}}
+.stage .weave{position:absolute;inset:0;opacity:.35;mix-blend-mode:multiply;background:
+  repeating-linear-gradient(45deg,#8a4b1a 0 3px,#0000 3px 9px),repeating-linear-gradient(-45deg,#8a4b1a 0 3px,#0000 3px 9px)}
+.stage .vign{position:absolute;inset:0;pointer-events:none;background:radial-gradient(120% 90% at 50% 45%,#0000 55%,#0008)}
+:root[data-theme="light"] .stage .vign{background:radial-gradient(120% 90% at 50% 45%,#0000 60%,#6a1d4a55)}
+
+/* raw, unaired */
+.stage.raw .cam{filter:grayscale(.9) contrast(1.15) brightness(.85)}
+.stage .grain{position:absolute;inset:0;pointer-events:none;opacity:0;mix-blend-mode:overlay;background:repeating-radial-gradient(circle at 20% 30%,#fff4 0 1px,#0000 1px 3px)}
+.stage.raw .grain{opacity:.8;animation:grain .25s steps(3) infinite}
+@keyframes grain{to{transform:translate(3px,-2px)}}
+
+/* busts */
+.bust{position:absolute;bottom:27%;width:19%;aspect-ratio:4/5;transform:translate(-50%,6%);transition:left .9s cubic-bezier(.2,1.2,.3,1),transform .7s cubic-bezier(.2,1.3,.3,1),filter .5s,opacity .5s;z-index:3}
+.bust .frame{position:absolute;inset:0;border-radius:26px;overflow:hidden;
+  box-shadow:0 0 0 3px #ffffffcc,0 20px 40px #0007;background:linear-gradient(160deg,var(--c1,#ffd1e6),var(--c2,#c4a6ff))}
+.bust img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 22%}
+.bust .ini{position:absolute;inset:0;display:grid;place-items:center;font:800 clamp(24px,5vw,60px) Outfit;color:#fff9}
+.bust .frame::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,#0000 55%,#0006)}
+.bust .rim{position:absolute;inset:-3px;border-radius:28px;pointer-events:none;opacity:0;transition:opacity .4s;
+  box-shadow:0 0 0 3px var(--rim,#ffc15e),0 0 38px 10px var(--rim,#ffc15e)}
+.bust.speak{z-index:4;filter:none;transform:translate(-50%,0) scale(1.04);animation:breathe 3.2s ease-in-out infinite}
+.bust.speak .rim{opacity:.9}
+.bust.back{filter:blur(2.5px) brightness(.62) saturate(.8);transform:translate(-50%,10%) scale(.94)}
+.bust.hurt{--rim:#ef4444}.bust.hurt .rim{opacity:.9}
+.bust.hurt.speak{animation:none}
+.bust.off{opacity:0}
+.bust.offL{left:-20%!important}.bust.offR{left:120%!important}
+@keyframes breathe{50%{transform:translate(-50%,-1%) scale(1.045)}}
+
+/* dialogue box */
+.dlg{position:absolute;left:4%;right:4%;bottom:4%;z-index:8;min-height:25%;border-radius:20px;padding:2.6% 3% 2.2%;
+  background:var(--glass);color:var(--glassInk);backdrop-filter:blur(14px) saturate(1.4);-webkit-backdrop-filter:blur(14px) saturate(1.4);
+  border:1.5px solid var(--glassLine);box-shadow:0 14px 34px #0005;transition:transform .45s cubic-bezier(.2,1.3,.3,1),opacity .3s}
+.dlg.hide{transform:translateY(130%);opacity:0}
+.dlg .plate{position:absolute;left:3%;top:0;transform:translateY(-58%);padding:5px 16px;border-radius:12px;
+  font:700 clamp(12px,1.5vw,17px) Outfit;color:#fff;background:linear-gradient(135deg,var(--pc1,#ff7a59),var(--pc2,#ff2e88));box-shadow:0 6px 14px #0004;letter-spacing:.02em}
+.dlg .plate em{font-style:normal;font:clamp(10px,1.1vw,12px) 'Bebas Neue';letter-spacing:.18em;opacity:.85;margin-left:8px}
+.dlg .txt{font:500 clamp(13px,1.75vw,20px)/1.4 Outfit;min-height:2.8em}
+.dlg .txt.narr{font-style:italic;color:inherit}
+.dlg .nxt{position:absolute;right:2.4%;bottom:12%;width:14px;height:14px;animation:nudge 1s ease-in-out infinite;opacity:.8}
+@keyframes nudge{50%{transform:translateX(4px)}}
+.dlg.hut{background:linear-gradient(135deg,#fff7ea,#ffe9cc);color:#3a200c;border-color:#e8b77a}
+.dlg.dior .plate{--pc1:#ff8cc6;--pc2:#ff2e88;box-shadow:0 0 0 2px #fff,0 0 22px #ff4fa0aa}
+.dlg.narrator .plate{--pc1:#2b2b2b;--pc2:#111;color:var(--sun)}
+
+/* HUD */
+.hud{position:absolute;left:3%;top:4%;z-index:9;display:flex;gap:8px;align-items:center}
+.hud .pill{background:#0009;color:#fff;border-radius:999px;padding:5px 12px;font:clamp(11px,1.3vw,15px) 'Bebas Neue';letter-spacing:.14em;backdrop-filter:blur(6px)}
+.hud .air{display:flex;align-items:center;gap:6px}
+.hud .air::before{content:'';width:9px;height:9px;border-radius:50%;background:#ff3b3b;box-shadow:0 0 8px #f33;animation:blink 1.2s infinite}
+.stage.raw .hud .air::before{background:#aaa;box-shadow:none;animation:none}
+@keyframes blink{50%{opacity:.25}}
+.hud .scissors{display:none}
+.stage.raw .hud .scissors{display:inline-flex}
+.headline{position:absolute;right:3%;top:4%;z-index:9;max-width:46%;background:var(--glass);color:var(--glassInk);backdrop-filter:blur(8px);
+  border-radius:999px;padding:6px 14px;font:700 clamp(11px,1.25vw,14px) Outfit;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;opacity:0;transition:opacity .3s}
+.headline.on{opacity:1}
+
+/* neon */
+.neon{position:absolute;left:50%;top:22%;z-index:7;transform:translate(-50%,-50%);font:clamp(28px,6.4vw,78px)/1 Yellowtail,cursive;white-space:nowrap;pointer-events:none;color:#fff2;-webkit-text-stroke:1px #fff4}
+.neon i{font-style:normal}
+.neon.on i{color:#fff;-webkit-text-stroke:0;text-shadow:0 0 4px #fff,0 0 14px var(--glow),0 0 30px var(--glow),0 0 60px var(--glow);animation:buzz 3s infinite}
+.neon.on.fresh i{animation:strike .55s both,buzz 3s .7s infinite;animation-delay:calc(var(--k)*65ms),calc(.7s + var(--k)*65ms)}
+.neon.dying i{animation:die .4s forwards;animation-delay:calc(var(--k)*150ms)}
+.neon.off{opacity:0}
+@keyframes strike{0%,30%,50%{opacity:.15}40%,60%,100%{opacity:1}}
+@keyframes buzz{0%,92%,100%{opacity:1}94%{opacity:.6}97%{opacity:.8}}
+@keyframes die{0%{opacity:1}30%{opacity:.15}45%{opacity:1}100%{opacity:.06;text-shadow:none;color:#fff3}}
+
+/* pops */
+.pops{position:absolute;inset:0;z-index:9;pointer-events:none}
+.pop{position:absolute;transform:translate(-50%,0);display:flex;align-items:center;gap:6px;padding:5px 11px 5px 7px;border-radius:999px;
+  font:700 clamp(10px,1.2vw,14px) Outfit;color:#fff;background:linear-gradient(135deg,#ff7a59,#ff2e88);box-shadow:0 8px 18px #0005;white-space:nowrap;
+  animation:rise 2.4s cubic-bezier(.2,1,.3,1) forwards;animation-delay:var(--d,0s);opacity:0}
+.pop svg{width:1.3em;height:1.3em}
+.pop.down{background:linear-gradient(135deg,#6b7280,#374151)}
+.pop.red{background:linear-gradient(135deg,#f87171,#b91c1c)}
+.pop.gold{background:linear-gradient(135deg,#ffc15e,#ff7a59);color:#3a1600}
+.pop.teal{background:linear-gradient(135deg,#2dd4bf,#0e7490)}
+@keyframes rise{0%{opacity:0;transform:translate(-50%,20px) scale(.7)}15%{opacity:1;transform:translate(-50%,0) scale(1.08)}25%{transform:translate(-50%,-4px) scale(1)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-50px)}}
+.stage:not(.fresh) .pop{display:none}
+
+/* toast */
+.toast{position:absolute;left:50%;top:40%;z-index:10;transform:translate(-50%,-50%) skewX(-8deg);padding:10px 34px;opacity:0;pointer-events:none;
+  font:clamp(20px,3.6vw,44px)/1 'Bebas Neue';letter-spacing:.12em;color:#fff;background:linear-gradient(90deg,#ff2e88,#ff7a59);box-shadow:0 14px 34px #0007;overflow:hidden}
+.toast::after{content:'';position:absolute;top:0;bottom:0;width:40%;left:-60%;background:linear-gradient(90deg,#fff0,#fff9,#fff0);transform:skewX(-20deg)}
+.toast.go{animation:toast 2.3s cubic-bezier(.2,1,.3,1) forwards}
+.toast.go::after{animation:sheen 1s .35s}
+.toast small{display:block;font:600 clamp(9px,1vw,12px) Outfit;letter-spacing:.3em;opacity:.9;text-align:center}
+@keyframes toast{0%{opacity:0;transform:translate(-160%,-50%) skewX(-8deg)}14%{opacity:1;transform:translate(-50%,-50%) skewX(-8deg)}80%{opacity:1;transform:translate(-50%,-50%) skewX(-8deg)}100%{opacity:0;transform:translate(60%,-50%) skewX(-8deg)}}
+@keyframes sheen{to{left:130%}}
+
+/* heart iris wipe */
+.wipe{position:absolute;inset:0;z-index:11;pointer-events:none;display:grid;place-items:center;opacity:0}
+.wipe svg{width:12%;fill:#ff2e88;filter:drop-shadow(0 0 30px #ff2e88)}
+.wipe.go{animation:wipeFade 1s ease forwards}
+.wipe.go svg{animation:wipeGrow 1s cubic-bezier(.6,0,.4,1) forwards}
+@keyframes wipeFade{0%,55%{opacity:1}100%{opacity:0}}
+@keyframes wipeGrow{0%{transform:scale(.1)}55%{transform:scale(22)}100%{transform:scale(22)}}
+
+/* phone */
+.phone{position:absolute;right:6%;bottom:9%;width:21%;aspect-ratio:9/17;z-index:9;border-radius:26px;background:linear-gradient(145deg,#2a2a2e,#0c0c0e);padding:2.2% 1.6%;
+  box-shadow:0 30px 50px #0009,inset 0 0 0 2px #444;transform:translateY(260%) rotate(8deg);visibility:hidden;transition:transform .7s cubic-bezier(.2,1.3,.3,1),visibility 0s .7s}
+.phone.up{transform:translateY(0) rotate(-4deg);visibility:visible;transition:transform .7s cubic-bezier(.2,1.3,.3,1)}
+.phone.buzz{animation:vib .08s 10}
+@keyframes vib{50%{margin-left:4px}}
+.phone .scr{height:100%;border-radius:18px;background:linear-gradient(180deg,#ff4fa0,#ff7a59);padding:12% 8%;color:#fff;display:flex;flex-direction:column;gap:7%}
+.phone h4{margin:0;font:clamp(14px,2.2vw,26px)/1 'Bebas Neue';letter-spacing:.06em}
+.phone p{margin:0;background:#fff;color:#2b1026;border-radius:12px 12px 12px 3px;padding:8%;font:600 clamp(8px,1.05vw,13px)/1.35 Outfit;box-shadow:0 6px 12px #0003}
+.phone .tag{font:600 clamp(7px,.9vw,11px) Outfit;opacity:.92}
+
+/* heart rate */
+.ecg{position:absolute;left:0;right:0;top:34%;height:22%;z-index:6;opacity:0;pointer-events:none}
+.ecg.on{opacity:1}
+.ecg polyline{fill:none;stroke:#7dffb0;stroke-width:3;filter:drop-shadow(0 0 6px #7dffb0);stroke-dasharray:1600;stroke-dashoffset:1600}
+.stage.fresh .ecg.on polyline{animation:draw 1.8s linear forwards}
+.stage:not(.fresh) .ecg.on polyline{stroke-dashoffset:0}
+.bpm{position:absolute;right:4%;top:30%;z-index:7;font:clamp(16px,2.6vw,32px) 'Bebas Neue';color:#7dffb0;text-shadow:0 0 10px #7dffb0;opacity:0}
+.bpm.on{opacity:1}
+@keyframes draw{to{stroke-dashoffset:0}}
+
+/* game cards: ballots, stick/twist */
+.deal{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);z-index:9;display:flex;gap:2%;width:72%;justify-content:center;pointer-events:none}
+.gc{width:24%;aspect-ratio:5/7;perspective:700px}
+.gc>div{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .8s cubic-bezier(.3,1.3,.4,1)}
+.gc.flip>div{transform:rotateY(180deg)}
+.gc .f,.gc .b{position:absolute;inset:0;border-radius:16px;backface-visibility:hidden;box-shadow:0 16px 30px #0007;display:grid;place-items:center;overflow:hidden}
+.gc .f{background:linear-gradient(135deg,#ff4fa0,#a855f7);border:3px solid #fff}
+.gc .f::before{content:'';position:absolute;inset:8%;border:2px solid #fff8;border-radius:10px}
+.gc .f svg{width:42%;fill:#fff;filter:drop-shadow(0 4px 8px #0004)}
+.gc .b{transform:rotateY(180deg);background:linear-gradient(180deg,#fff,#ffeef6);border:3px solid #fff;color:#2b1026;text-align:center;padding:8%}
+.gc .b .who{font:700 clamp(9px,1.2vw,14px) Outfit;color:#8a6b80}
+.gc .b .what{font:clamp(18px,3vw,38px)/1 'Bebas Neue';letter-spacing:.04em;color:var(--pink);margin-top:6%}
+.gc .b .what.stick{color:#10a36b}.gc .b .what.twist{color:#ff2e88}
+.gc .b .face{width:52%;aspect-ratio:1;border-radius:50%;overflow:hidden;margin:0 auto 6%;border:3px solid #ffd1e6;background:#ffd1e6}
+.gc .b .face img{width:100%;height:100%;object-fit:cover}
+.gc.in{animation:dealIn .6s cubic-bezier(.2,1.3,.3,1) both;animation-delay:var(--dl)}
+@keyframes dealIn{from{opacity:0;transform:translateY(-60%) rotate(-12deg)}}
+
+/* vote board */
+.board{position:absolute;right:5%;top:15%;width:38%;z-index:8;background:var(--glass);color:var(--glassInk);backdrop-filter:blur(14px);border:1.5px solid var(--glassLine);border-radius:18px;padding:2% 2.6%;box-shadow:0 20px 40px #0006}
+.board h5{margin:0 0 2.4%;font:clamp(13px,1.8vw,22px)/1 'Bebas Neue';letter-spacing:.1em;color:var(--pink)}
+.board .row{display:grid;grid-template-columns:1fr auto;gap:2px 8px;margin-bottom:2.2%;font:700 clamp(9px,1.1vw,13px) Outfit}
+.board .bar{grid-column:1/-1;height:clamp(8px,1.2vw,14px);border-radius:99px;background:#ff2e8822;overflow:hidden}
+.board .bar i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#ff7a59,#ff2e88);transition:width 1.3s cubic-bezier(.2,1.2,.3,1)}
+.board .row .pc{opacity:0;transition:opacity .4s .7s}
+.board .row.shown .pc{opacity:1}
+.board .row.win .bar i{background:linear-gradient(90deg,#ffc15e,#ff2e88);box-shadow:0 0 14px #ffc15e}
+.board.hide{display:none}
+.petals{position:absolute;inset:0;z-index:10;pointer-events:none}
+.petals i{position:absolute;left:50%;top:40%;width:2.4%;aspect-ratio:1;opacity:0}
+.petals i svg{width:100%;fill:var(--pk,#ff4fa0)}
+.stage.fresh .petals.go i{animation:petal 2.8s cubic-bezier(.2,.8,.3,1) forwards;animation-delay:var(--dl)}
+@keyframes petal{0%{opacity:1;transform:translate(0,0) rotate(0) scale(.5)}100%{opacity:0;transform:translate(var(--x),var(--y)) rotate(var(--r)) scale(1.1)}}
+
+/* the envelope */
+.env{position:absolute;left:50%;top:44%;width:26%;z-index:9;transform:translate(-50%,-50%) scale(.5);opacity:0;transition:all .7s cubic-bezier(.2,1.3,.3,1)}
+.env.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
+.env .flap{transform-origin:50% 0;transform-box:fill-box;transition:transform .7s .4s}
+.env.open .flap{transform:scaleY(-1)}
+.env .card{transform-box:fill-box;transition:transform .9s .9s}
+.env.open .card{transform:translateY(-52px)}
+
+/* shake */
+.stage.shake .cam{animation:shake .5s}
+@keyframes shake{15%,85%{transform:translateX(-4px)}35%,65%{transform:translateX(6px)}50%{transform:translateX(-6px)}}
+
+/* ── transcript cards ─────────────────────────────────────────────── */
+.rail{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap}
+.rail span{flex:1;min-width:92px;text-align:center;font:13px 'Bebas Neue';letter-spacing:.14em;padding:7px;border-radius:12px;background:var(--card);border:1.5px solid var(--line);color:var(--muted)}
+.rail span.on{border-color:var(--pink);color:#fff;background:linear-gradient(135deg,var(--coral),var(--pink))}
+.rail span.done{color:var(--ink)}
+.cards{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.card{scroll-margin-top:52vw;background:var(--card);border:1.5px solid var(--line);border-radius:18px;padding:12px 14px;display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center;position:relative;
+  animation:pop .45s cubic-bezier(.2,1.4,.3,1);box-shadow:0 4px 14px #a0286410}
+@keyframes pop{from{opacity:0;transform:translateY(12px) scale(.98)}}
+.card .fx{display:flex}
+.mini{width:38px;height:38px;border-radius:50%;border:2px solid var(--card);margin-right:-10px;overflow:hidden;background:linear-gradient(135deg,#ffd1e6,#c4a6ff);display:grid;place-items:center;font:800 13px Outfit;color:#5b1f45;flex:none}
+.mini img{width:100%;height:100%;object-fit:cover}
+.card .k{font:12px 'Bebas Neue';letter-spacing:.16em;color:var(--pink)}
+.card p{margin:2px 0 0}
+.card .who{font-weight:700}
+.card.big{border-width:2px;border-color:var(--pink);box-shadow:0 8px 24px #ff2e8826}
+.card.unaired{border-style:dashed;opacity:.8}
+.card.narr p{font-style:italic}
+.card.hutc{background:linear-gradient(135deg,var(--card),#ffe9cc33)}
+.tape{position:absolute;right:10px;top:-9px;transform:rotate(3deg);background:#efe3bf;color:#5a4a1e;font:12px 'Bebas Neue';letter-spacing:.14em;padding:3px 12px;box-shadow:0 2px 4px #0003}
+.tape.revealed{background:#ffd1e6;color:#9b1458}
+
+/* ── sidebar: the heart map + a closed debug drawer ───────────────── */
+aside{display:flex;flex-direction:column;gap:14px;position:sticky;top:8px}
+.panel{background:var(--card);border:1.5px solid var(--line);border-radius:20px;padding:14px;box-shadow:0 6px 18px #a0286412}
+.panel h3{margin:0;font:28px/1 Yellowtail,cursive;color:var(--pink)}
+.panel .note{margin:4px 0 8px;font-size:12px;color:var(--muted)}
+svg.map{width:100%;height:auto;display:block;overflow:visible}
+.map .edge{fill:none;transition:all .6s}
+.map .couple{stroke:url(#gCouple);stroke-width:4.5}
+.map .crush{stroke:#ff4fa0;stroke-width:var(--w,1.6);opacity:.85}
+.map .flirt{stroke:#a855f7;stroke-width:2;stroke-dasharray:4 4;animation:dash 1s linear infinite}
+.map .rival{stroke:#ef4444;stroke-width:2.2;stroke-dasharray:1 5;stroke-linecap:round}
+.map .strained{stroke:#f59e0b;stroke-width:3;stroke-dasharray:10 4}
+.map .new{animation:mapIn .8s ease}
+@keyframes mapIn{from{opacity:0;stroke-width:9}}
+@keyframes dash{to{stroke-dashoffset:-8}}
+.map .node circle.ring{fill:none;stroke:var(--card);stroke-width:3}
+.map .node text{font:600 9.5px Outfit;fill:var(--ink);text-anchor:middle}
+.map .node.gone{opacity:.28}
+.map .node.hot circle.ring{stroke:#ffc15e;stroke-width:3.5}
+.legend{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px;margin-top:8px;font-size:11px;color:var(--muted)}
+.legend span{display:flex;align-items:center;gap:6px}
+.legend i{width:20px;height:0;border-top:3px solid;display:inline-block}
+.who-likes{margin-top:10px;display:flex;flex-direction:column;gap:5px;max-height:190px;overflow:auto}
+.who-likes div{display:flex;align-items:center;gap:6px;font-size:12px}
+.who-likes .mini{width:22px;height:22px;margin:0;font-size:9px}
+.who-likes b{font-weight:700}
+.who-likes .hearts{margin-left:auto;display:flex;gap:1px}
+.who-likes .hearts svg{width:11px;fill:#ff4fa0}
+.who-likes .hearts svg.e{fill:#ff4fa033}
+details.debug{background:var(--card);border:1.5px dashed var(--line);border-radius:18px;padding:10px 14px}
+details.debug summary{cursor:pointer;font:13px 'Bebas Neue';letter-spacing:.2em;color:var(--muted);list-style:none;display:flex;align-items:center;gap:8px}
+details.debug summary::before{content:'';width:8px;height:8px;border-right:2px solid;border-bottom:2px solid;transform:rotate(-45deg);transition:transform .2s}
+details.debug[open] summary::before{transform:rotate(45deg)}
+.dtabs{display:flex;gap:4px;margin:10px 0 8px}
+.dtabs button{flex:1;border:1.5px solid var(--line);background:var(--card2);color:var(--ink);border-radius:10px;padding:5px;font:600 11px Outfit;cursor:pointer}
+.dtabs button.on{border-color:var(--pink);color:var(--pink)}
+.mrow{display:grid;grid-template-columns:24px 1fr;gap:8px;align-items:center;margin-bottom:7px}
+.mrow .mini{width:24px;height:24px;margin:0;font-size:9px}
+.mrow .nm{display:flex;justify-content:space-between;font:600 11.5px Outfit}
+.lab{font:10px 'Bebas Neue';letter-spacing:.12em;padding:1px 7px;border-radius:99px;color:#fff}
+.lab.ff{background:linear-gradient(90deg,#ffc15e,#ff2e88)}.lab.loved{background:#ff4fa0}.lab.liked{background:#fb7fb8}
+.lab.invisible{background:#a893a1}.lab.divisive{background:#a855f7}.lab.disliked{background:#f87171}.lab.villain{background:#7f1d1d}
+.gauge{position:relative;height:6px;border-radius:99px;background:var(--line)}
+.gauge::after{content:'';position:absolute;left:50%;top:-2px;bottom:-2px;width:2px;background:var(--muted);opacity:.4}
+.gauge i{position:absolute;top:0;bottom:0;border-radius:99px;transition:all .8s}
+.mrow.gone{opacity:.35}
+.matrix{font:11px Outfit;border-collapse:collapse;width:100%}
+.matrix td,.matrix th{padding:2px 3px;text-align:center;border-bottom:1px solid var(--line)}
+
+/* controls */
+.controls{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;gap:10px;justify-content:center;align-items:center;padding:12px;
+  background:linear-gradient(0deg,var(--bg) 40%,#0000)}
+.controls button{border:0;border-radius:999px;padding:12px 24px;font:800 14px Outfit;cursor:pointer}
+.controls .next{background:linear-gradient(135deg,var(--coral),var(--pink));color:#fff;box-shadow:0 8px 20px #ff2e8866;min-width:120px}
+.controls .next:active{transform:scale(.96)}
+.controls .ghost{background:var(--card);color:var(--ink);border:1.5px solid var(--line)}
+.controls .count{font:600 13px Outfit;color:var(--muted)}
+
+@media (max-width:640px){
+  .stage{aspect-ratio:4/5}
+  .bust{width:36%;bottom:30%} .dlg{left:3%;right:3%;min-height:24%} .phone{width:38%;bottom:30%} .headline{display:none}
+  .board{width:88%;right:6%;top:12%} .gc{width:30%} .deal{width:94%;top:36%} .neon{top:14%}
+  .ecg{top:30%} .env{width:52%;top:40%}
+}
+@media (prefers-reduced-motion: reduce){ *,*::before,*::after{animation:none!important;transition:none!important} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="logo">Perfect Match<small>Viewing party · mockup v2</small></div>
+    <nav class="tabs" id="tabs"></nav>
+    <button class="themeBtn" id="theme" title="Light or dark"></button>
+  </header>
+  <div class="layout">
+    <main>
+      <div class="stage" id="stage"></div>
+      <div class="rail" id="rail"></div>
+      <div class="cards" id="cards"></div>
+    </main>
+    <aside>
+      <div class="panel">
+        <h3>Heart map</h3>
+        <p class="note">Who likes whom, as of the last click. You see everything — the villa doesn't.</p>
+        <div id="map"></div>
+        <div class="legend">
+          <span><i style="border-color:#ff2e88"></i>Coupled</span>
+          <span><i style="border-color:#ff4fa0;border-top-width:2px"></i>Fancies →</span>
+          <span><i style="border-color:#a855f7;border-top-style:dashed"></i>Flirting (secret)</span>
+          <span><i style="border-color:#ef4444;border-top-style:dotted"></i>Rivals</span>
+          <span><i style="border-color:#f59e0b;border-top-style:dashed"></i>On the rocks</span>
+        </div>
+        <div class="who-likes" id="likes"></div>
+      </div>
+      <details class="debug" id="debug">
+        <summary>Debug</summary>
+        <div class="dtabs" id="dtabs"></div>
+        <div id="dbody"></div>
+      </details>
+    </aside>
+  </div>
+</div>
+<div class="controls">
+  <button class="ghost" id="reset">Restart</button>
+  <button class="next" id="next">Next</button>
+  <button class="ghost" id="all">Reveal all</button>
+  <span class="count" id="count"></span>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════════
+// Cast, colours, icons
+// ══════════════════════════════════════════════════════════════════════
+const AV = '../assets/avatars/';
+const FILE = { Alejandro:'alejandro.png', Bridgette:'bridgette.png', Courtney:'courtney.png', Duncan:'duncan.png', Geoff:'geoff.png',
+  Gwen:'gwen.png', Heather:'heather.png', Mike:'mike.png', Priya:'priya.png', Scott:'scott.png', Theo:null, Zoey:'zoey.png',
+  Jake:'jake.png', Kelly:'kelly.png', Ella:'ella.png', Dior:'dior.jpg' };
+const COLOR = { Alejandro:['#f59e0b','#b45309'], Bridgette:['#60a5fa','#2563eb'], Courtney:['#34d399','#047857'], Duncan:['#4ade80','#15803d'],
+  Geoff:['#fbbf24','#d97706'], Gwen:['#818cf8','#4338ca'], Heather:['#f472b6','#be185d'], Mike:['#2dd4bf','#0f766e'], Priya:['#22d3ee','#0e7490'],
+  Scott:['#fb923c','#c2410c'], Theo:['#d6a36b','#8a5a2b'], Zoey:['#f87171','#b91c1c'], Jake:['#93c5fd','#1d4ed8'], Kelly:['#fcd34d','#b45309'],
+  Ella:['#f9a8d4','#db2777'], Dior:['#ff8cc6','#ff2e88'] };
+const src = n => FILE[n] ? AV + FILE[n] : null;
+const ini = n => n.slice(0, 2).toUpperCase();
+const img = n => src(n) ? `<img src="${src(n)}" alt="" onerror="this.remove()">` : '';
+const mini = n => `<span class="mini" title="${n}">${img(n) || ini(n)}</span>`;
+const HEART = 'M0,-3 C-6,-13 -19,-3 0,11 C19,-3 6,-13 0,-3Z';
+const IC = {
+  heart: `<svg viewBox="-20 -14 40 27"><path d="${HEART}"/></svg>`,
+  heartW: `<svg viewBox="-20 -14 40 27"><path d="${HEART}" fill="#fff"/></svg>`,
+  crack: `<svg viewBox="-20 -14 40 27"><path d="${HEART}" fill="#fff"/><path d="M-1 -4 l4 5 -4 4 4 5" stroke="#b91c1c" stroke-width="2.4" fill="none"/></svg>`,
+  spark: `<svg viewBox="0 0 24 24"><path d="M12 1l2.6 7.4L22 11l-7.4 2.6L12 21l-2.6-7.4L2 11l7.4-2.6z" fill="#fff"/></svg>`,
+  eye: `<svg viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" fill="none" stroke="#fff" stroke-width="2"/><circle cx="12" cy="12" r="3.5" fill="#fff"/></svg>`,
+  star: `<svg viewBox="0 0 24 24"><path d="M12 2l3 7 7 .6-5.3 4.7 1.6 7.2L12 17.8 5.7 21.5l1.6-7.2L2 9.6 9 9z" fill="#fff"/></svg>`,
+  next: `<svg viewBox="0 0 16 16"><path d="M4 2l8 6-8 6z" fill="currentColor"/></svg>`,
+  scissors: `<svg viewBox="0 0 24 24" width="14" height="14"><circle cx="6" cy="18" r="3" fill="none" stroke="#fff" stroke-width="2"/><circle cx="6" cy="6" r="3" fill="none" stroke="#fff" stroke-width="2"/><path d="M8.5 7.5L21 19M8.5 16.5L21 5" stroke="#fff" stroke-width="2"/></svg>`,
+  sun: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 1v3M12 20v3M1 12h3M20 12h3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></g></svg>`,
+  moon: `<svg viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 019.5 4 8.5 8.5 0 1020 14.5z" fill="currentColor"/></svg>`,
+};
+
+// ══════════════════════════════════════════════════════════════════════
+// The mockup season. A step:
+//   bg      scene ('day','terrace','night','hut','casa','final')
+//   cast    [[name, x%, 'speak'|'back'|'hurt'|'off'|'offL'|'offR'], ...]
+//   say     [speaker, text, kind?]  kind: 'dior' | 'narrator' | 'hut' | 'text'
+//   close   push the camera in on the speaker
+//   pops    [[name, text, style, icon], ...]   (on a fresh click only)
+//   rel     relationship ops for the heart map
+//   fx      extra: neon, toast, phone, ecg, deal, board, env, petals, shake, raw
+//   card    { k, t, big, unaired, secret, reveals }
+//   mood    { name: delta } — the public, for the Debug drawer only
+// ══════════════════════════════════════════════════════════════════════
+const X = { l2: 15, l: 30, c: 50, r: 70, r2: 85 };
+const MOOD0 = { Alejandro: 18, Bridgette: 42, Courtney: 12, Duncan: 20, Geoff: 38, Gwen: 30, Heather: -22,
+  Mike: 6, Priya: 8, Scott: 4, Theo: 24, Zoey: 0, Jake: 0, Kelly: 0, Ella: 0 };
+
+const SCREENS = {
+  villa: {
+    tab: 'The Villa', hud: 'Day 7 · Episode 3', sub: 'A normal day in the villa',
+    cast: ['Alejandro', 'Bridgette', 'Courtney', 'Duncan', 'Geoff', 'Gwen', 'Heather', 'Mike', 'Priya', 'Scott', 'Theo', 'Zoey'],
+    away: ['Zoey'],
+    rel: [['couple', 'Bridgette', 'Geoff'], ['couple', 'Priya', 'Alejandro'], ['couple', 'Gwen', 'Duncan'], ['couple', 'Courtney', 'Scott'],
+      ['couple', 'Heather', 'Mike'], ['crush', 'Theo', 'Courtney', 2], ['crush', 'Theo', 'Heather', 1], ['crush', 'Mike', 'Gwen', 1]],
+    steps: [
+      { bg: 'day', cast: [['Bridgette', X.l, 'speak'], ['Geoff', X.r, 'back']], say: ['Bridgette', 'Five more minutes. Or five more days. I genuinely don\'t mind which.'],
+        pops: [['Geoff', 'Connection +', 'heart']], rel: [['warm', 'Bridgette', 'Geoff']],
+        card: { k: 'Morning', t: 'Bridgette and Geoff refuse to get up for breakfast.' }, mood: { Bridgette: 2, Geoff: 2 } },
+      { bg: 'day', close: true, cast: [['Priya', X.l, 'speak'], ['Alejandro', X.r, 'back']], say: ['Priya', 'So. Where do you see yourself in five years? Honestly. Not the answer you give your mum.'],
+        pops: [['Alejandro', 'Put on the spot', 'down']], card: { k: 'Can I borrow you?', t: 'Priya takes Alejandro to the daybeds and asks about his five-year plan.' } },
+      { bg: 'hut', cast: [['Priya', X.c, 'speak']], say: ['Priya', 'If he says "go with the flow" one more time, I am going home. I have a flow. It is a spreadsheet.', 'hut'],
+        pops: [['Priya', 'Attraction to Alejandro −', 'down']], rel: [['crushSet', 'Priya', 'Alejandro', 1]],
+        card: { k: 'Beach hut', t: 'Priya: "If he says go with the flow one more time I am going home."', cls: 'hutc' }, mood: { Priya: 3 } },
+      { bg: 'terrace', raw: true, cast: [['Theo', X.l, 'speak'], ['Courtney', X.r, 'back']], say: ['Theo', 'You\'re the best-lookin\' girl this side of the county line, darlin\'. And I\'ve seen a lot of county.'],
+        pops: [['Courtney', 'Attraction to Theo +', 'heart'], ['Theo', 'Secret', 'down', 'eye']], rel: [['flirt', 'Theo', 'Courtney'], ['crush', 'Courtney', 'Theo', 1]],
+        card: { k: 'Behind the kitchen', t: 'Theo tells Courtney she is "the best-lookin\' girl this side of the county line". She doesn\'t walk away.', unaired: true, secret: 'Scott doesn\'t know' } },
+      { bg: 'day', cast: [['Theo', X.c, 'speak']], say: ['Narrator', 'Theo, a man who has never once read a room, is now attempting to read the menu. It is upside down. It is also a coaster.', 'narrator'],
+        card: { k: 'Narrator', t: 'Theo attempts to read the menu. It is a coaster.', cls: 'narr' }, mood: { Theo: 3 } },
+      { bg: 'terrace', close: true, cast: [['Heather', X.l, 'speak'], ['Mike', X.r, 'hurt']], say: ['Heather', 'Your impressions aren\'t funny, Mike. They\'re a cry for help, and I\'m not a helpline.'],
+        pops: [['Mike', 'Connection −−', 'red', 'crack']], rel: [['strain', 'Heather', 'Mike']], fx: { shake: true },
+        card: { k: 'Argument', t: 'Heather calls Mike\'s impressions "a cry for help". The whole terrace hears.' }, mood: { Heather: -4, Mike: 1 } },
+      { bg: 'day', cast: [['Gwen', X.l, 'speak']], say: ['Gwen', 'I GOT A TEXT!', 'text'], fx: { phone: ['Gwen', 'Islanders, tonight you will be joined by someone who has had their eyes on this villa.', '#bombshell #steptoit'] },
+        card: { k: 'I got a text!', t: '"Islanders, tonight you will be joined by someone who has had their eyes on this villa."' } },
+      { bg: 'day', cast: [['Theo', X.l2, 'back'], ['Zoey', X.c, 'speak'], ['Duncan', X.r2, 'back']], say: ['Zoey', 'Hiya, villa. So — who\'s single? And who thinks they are?'],
+        pops: [['Duncan', 'Attraction to Zoey ++', 'heart'], ['Theo', 'Attraction to Zoey +', 'heart'], ['Zoey', 'Eyes on Duncan', 'gold', 'eye']],
+        rel: [['arrive', 'Zoey'], ['crush', 'Duncan', 'Zoey', 2], ['crush', 'Theo', 'Zoey', 2], ['crush', 'Zoey', 'Duncan', 3]],
+        fx: { neon: ['Bombshell', '#ff7a59'], toast: ['New arrival', 'A bombshell has entered the villa'], ecg: ['Duncan', 131] },
+        card: { k: 'Bombshell', t: 'Zoey walks down the villa steps. Duncan stops mid-sentence. Theo stands up. Gwen sits down.', big: true }, mood: { Zoey: 8 } },
+      { bg: 'terrace', close: true, cast: [['Gwen', X.l, 'speak'], ['Scott', X.r, 'hurt'], ['Theo', X.r2, 'back']], say: ['Gwen', 'Scott. You need to know what Theo said to Courtney behind the kitchen this afternoon.'],
+        pops: [['Scott', 'Connection with Courtney −−−', 'red', 'crack'], ['Gwen', 'Friendship with Scott +', 'teal', 'star']],
+        rel: [['reveal', 'Theo', 'Courtney'], ['strain', 'Courtney', 'Scott'], ['rival', 'Scott', 'Theo']], reveals: 3,
+        fx: { neon: ['Mugged off', '#ef4444'], toast: ['Major moment', 'Mugged off'], shake: true },
+        card: { k: 'Mugged off', t: 'Gwen tells Scott what happened behind the kitchen. The afternoon\'s footage airs at last.', big: true }, mood: { Theo: -8, Scott: 5, Courtney: -6, Gwen: 2 } },
+    ],
+  },
+
+  recouple: {
+    tab: 'Recoupling', hud: 'Day 9 · Episode 4', sub: 'The firepit · the girls are choosing',
+    cast: ['Alejandro', 'Bridgette', 'Courtney', 'Duncan', 'Geoff', 'Gwen', 'Heather', 'Mike', 'Priya', 'Scott', 'Theo', 'Zoey'],
+    rel: [['couple', 'Bridgette', 'Geoff'], ['couple', 'Priya', 'Alejandro'], ['couple', 'Gwen', 'Duncan'], ['couple', 'Courtney', 'Scott'],
+      ['strain', 'Courtney', 'Scott'], ['couple', 'Heather', 'Mike'], ['strain', 'Heather', 'Mike'], ['crush', 'Zoey', 'Duncan', 3],
+      ['crush', 'Duncan', 'Zoey', 2], ['crush', 'Heather', 'Theo', 2], ['crush', 'Theo', 'Zoey', 2]],
+    steps: [
+      { bg: 'night', cast: [['Dior', X.c, 'speak']], say: ['Dior', 'Islanders — it\'s time to recouple. Tonight, the girls are choosing. And ladies… choose wisely.', 'dior'],
+        fx: { neon: ['Recoupling', '#ff2e88'] }, card: { k: 'Dior', t: 'It\'s time to recouple. The girls are choosing.' } },
+      { bg: 'night', cast: [['Bridgette', X.l, 'speak'], ['Geoff', X.r, 'back']], say: ['Bridgette', 'He makes me laugh every single day. The boy I want to couple up with is… Geoff.'],
+        pops: [['Geoff', 'Chosen', 'gold', 'heartW']], card: { k: 'Bridgette chooses', t: 'Geoff.' } },
+      { bg: 'night', cast: [['Priya', X.l, 'speak'], ['Alejandro', X.r, 'back']], say: ['Priya', 'You\'ve got potential, and I didn\'t come here to waste it. Alejandro.'],
+        pops: [['Alejandro', 'Chosen — on probation', 'gold', 'heartW']], card: { k: 'Priya chooses', t: 'Alejandro, "on probation".' } },
+      { bg: 'night', cast: [['Gwen', X.l, 'speak'], ['Duncan', X.r, 'back']], say: ['Gwen', 'It\'s been him since day one. Duncan.'],
+        pops: [['Duncan', 'Chosen', 'gold', 'heartW']], card: { k: 'Gwen chooses', t: 'Duncan.' } },
+      { bg: 'night', close: true, cast: [['Gwen', X.l2, 'hurt'], ['Duncan', X.c, 'back'], ['Zoey', X.r, 'speak']], say: ['Zoey', 'I know I\'m stepping on toes. But I came here for one person. Duncan.'],
+        pops: [['Gwen', 'Stolen from', 'red', 'crack'], ['Zoey', 'Steal!', 'gold', 'spark']],
+        rel: [['uncouple', 'Gwen', 'Duncan'], ['couple', 'Zoey', 'Duncan'], ['rival', 'Gwen', 'Zoey']],
+        fx: { toast: ['Major moment', 'A steal'], shake: true },
+        card: { k: 'A steal', t: 'Zoey picks Duncan. Dior: "Duncan, two girls have chosen you." He walks to Zoey.', big: true }, mood: { Zoey: -7, Gwen: 9, Duncan: -3 } },
+      { bg: 'night', cast: [['Courtney', X.l, 'speak'], ['Scott', X.r, 'back']], say: ['Courtney', 'He deserves a second chance. So do I. Scott.'],
+        pops: [['Scott', 'Chosen — just', 'gold', 'heartW']], card: { k: 'Courtney chooses', t: 'Scott, "a second chance".' }, mood: { Courtney: 2 } },
+      { bg: 'night', close: true, cast: [['Mike', X.l2, 'hurt'], ['Heather', X.c, 'speak'], ['Theo', X.r, 'back']], say: ['Heather', 'Nobody saw this coming, which is exactly why I\'m doing it. Theo.'],
+        pops: [['Theo', 'Chosen?!', 'gold', 'spark'], ['Mike', 'Left standing', 'down']],
+        rel: [['uncouple', 'Heather', 'Mike'], ['couple', 'Heather', 'Theo']], card: { k: 'Heather chooses', t: 'Theo. The firepit gasps. Mike doesn\'t.', big: true } },
+      { bg: 'night', cast: [['Gwen', X.l, 'hurt'], ['Dior', X.c, 'speak'], ['Mike', X.r, 'hurt']], say: ['Dior', 'Gwen. Mike. You are both single — which means you have been dumped from the island.', 'dior'],
+        rel: [['leave', 'Gwen'], ['leave', 'Mike']], fx: { neonDie: ['Single', '#ff2e88'] },
+        card: { k: 'Dumped', t: 'Gwen and Mike are single, and dumped from the island.', big: true }, mood: { Gwen: 4, Mike: 5 } },
+    ],
+  },
+
+  dumping: {
+    tab: 'The Dumping', hud: 'Day 14 · Episode 5', sub: 'The public has voted · the villa decides',
+    phases: ['Build-up', 'Verdict', 'Reaction', 'Goodbye', 'Fallout'],
+    cast: ['Alejandro', 'Bridgette', 'Courtney', 'Duncan', 'Geoff', 'Gwen', 'Heather', 'Mike', 'Priya', 'Scott', 'Theo', 'Zoey'],
+    gone: ['Gwen', 'Mike'],
+    rel: [['couple', 'Bridgette', 'Geoff'], ['couple', 'Priya', 'Alejandro'], ['couple', 'Zoey', 'Duncan'], ['couple', 'Courtney', 'Scott'],
+      ['couple', 'Heather', 'Theo'], ['crush', 'Theo', 'Zoey', 1], ['rival', 'Scott', 'Theo']],
+    steps: [
+      { phase: 0, bg: 'night', cast: [['Dior', X.c, 'speak']], say: ['Dior', 'The public have been voting for their favourite couple. The two couples with the fewest votes are…', 'dior'],
+        fx: { neon: ['The results', '#a78bfa'] }, card: { k: 'The bottom couples', t: 'The public have voted.' } },
+      { phase: 0, bg: 'night', cast: [['Priya', X.l, 'speak'], ['Alejandro', X.r, 'back']], say: ['Narrator', 'Priya and Alejandro. Priya\'s jaw sets like wet concrete. Alejandro reaches for her hand, and — astonishingly — gets it.', 'narrator'],
+        pops: [['Priya', 'At risk', 'red']], card: { k: 'At risk', t: 'Priya and Alejandro.' } },
+      { phase: 0, bg: 'night', cast: [['Heather', X.l, 'back'], ['Theo', X.r, 'speak']], say: ['Theo', 'Is this bad? This feels bad. Is this the bad one?'],
+        pops: [['Theo', 'At risk', 'red']], card: { k: 'At risk', t: 'Heather and Theo. "Is this bad?" It is bad.' } },
+      { phase: 1, bg: 'night', close: true, cast: [['Dior', X.c, 'speak']], say: ['Dior', 'Boys — you had to choose one girl to dump from the bottom couples. The girl you have chosen to dump is…', 'dior'],
+        card: { k: 'The boys have chosen', t: 'One girl from the bottom couples.' } },
+      { phase: 1, bg: 'night', cast: [['Heather', X.c, 'hurt']], say: ['Dior', '…Heather.', 'dior'], pops: [['Heather', 'Dumped', 'red', 'crack']],
+        fx: { neon: ['Dumped', '#ff2e88'], shake: true }, rel: [['leave', 'Heather']],
+        card: { k: 'Dumped', t: 'Heather doesn\'t move. Then she laughs, once.', big: true }, mood: { Heather: 4 } },
+      { phase: 1, bg: 'night', cast: [['Heather', X.c, 'back']], say: ['Narrator', 'And the envelopes, please. Everyone loves a paper trail.', 'narrator'],
+        fx: { deal: [['Duncan', 'Heather'], ['Geoff', 'Heather'], ['Scott', 'Priya']] }, rel: [['rival', 'Heather', 'Duncan']],
+        card: { k: 'The votes', t: 'Duncan — Heather. Geoff — Heather. Scott — Priya.' }, mood: { Scott: -2 } },
+      { phase: 1, bg: 'night', cast: [['Theo', X.c, 'hurt']], say: ['Dior', 'Girls, you chose one boy. The boy you have chosen to dump is… Theo.', 'dior'],
+        pops: [['Theo', 'Dumped', 'red', 'crack']], rel: [['leave', 'Theo']],
+        card: { k: 'Dumped', t: 'Theo takes his hat off, which somehow makes it worse.', big: true }, mood: { Theo: 6 } },
+      { phase: 2, bg: 'night', cast: [['Theo', X.c, 'speak']], say: ['Narrator', 'Theo, asked how he feels: "Gutted." Theo, ten minutes later, asking a runner if there\'s a buffet on the way out.', 'narrator'],
+        card: { k: 'Reaction', t: 'Gutted. Briefly.', cls: 'narr' }, mood: { Theo: 2 } },
+      { phase: 3, bg: 'night', close: true, cast: [['Heather', X.l, 'speak'], ['Courtney', X.r, 'back']], say: ['Heather', 'Don\'t let them make you small in here. Promise me.'],
+        pops: [['Courtney', 'Friendship with Heather +', 'teal', 'star']], card: { k: 'Goodbye', t: 'Heather hugs Courtney for a long time.' }, mood: { Heather: 3 } },
+      { phase: 3, bg: 'day', cast: [['Heather', X.l, 'offR'], ['Theo', X.r, 'offR']], say: ['Narrator', 'Up the villa steps they go. Theo waves until the gate closes. Then waves at the gate.', 'narrator'],
+        fx: { toast: ['Dumped from the island', 'Heather & Theo'] }, card: { k: 'The walk', t: 'Up the villa steps, together.', big: true } },
+      { phase: 4, bg: 'terrace', close: true, cast: [['Courtney', X.l, 'speak'], ['Duncan', X.r, 'hurt']], say: ['Courtney', 'You voted her out and you couldn\'t even look at me while you did it.'],
+        pops: [['Duncan', 'Friendship with Courtney −', 'red']], rel: [['rival', 'Courtney', 'Duncan']], fx: { shake: true },
+        card: { k: 'Fallout', t: 'Courtney corners Duncan by the pool.', big: true }, mood: { Duncan: -3, Courtney: 2 } },
+    ],
+  },
+
+  casa: {
+    tab: 'Casa Amor', hud: 'Day 27 · Episode 10', sub: 'Stick or twist · the girls are back',
+    cast: ['Alejandro', 'Bridgette', 'Courtney', 'Duncan', 'Geoff', 'Priya', 'Scott', 'Zoey', 'Jake', 'Kelly', 'Ella'],
+    rel: [['couple', 'Bridgette', 'Geoff'], ['couple', 'Priya', 'Alejandro'], ['couple', 'Zoey', 'Duncan'], ['couple', 'Courtney', 'Scott'],
+      ['flirt', 'Alejandro', 'Kelly'], ['flirt', 'Scott', 'Ella'], ['flirt', 'Priya', 'Jake'], ['crush', 'Jake', 'Priya', 3], ['crush', 'Priya', 'Jake', 2],
+      ['crush', 'Ella', 'Scott', 2], ['crush', 'Kelly', 'Alejandro', 2]],
+    steps: [
+      { bg: 'casa', cast: [['Dior', X.c, 'speak']], say: ['Dior', 'Boys. The girls are back from Casa Amor… and they might not be alone.', 'dior'],
+        fx: { neon: ['Casa Amor', '#14c8bb'] }, card: { k: 'Dior', t: 'The girls are back from Casa Amor.' } },
+      { bg: 'night', cast: [['Geoff', X.l, 'back'], ['Bridgette', X.r, 'speak']], say: ['Narrator', 'Bridgette walks through the door alone. Geoff is on his feet before she\'s down the step, which for Geoff is a personal best.', 'narrator'],
+        pops: [['Geoff', 'Connection +++', 'heart']], fx: { deal1: ['Bridgette', 'stick'] }, rel: [['warm', 'Bridgette', 'Geoff']],
+        card: { k: 'Stick', t: 'Bridgette, alone. Geoff stuck too.', big: true }, mood: { Bridgette: 5, Geoff: 5 } },
+      { bg: 'night', close: true, cast: [['Alejandro', X.l, 'hurt'], ['Priya', X.c, 'speak'], ['Jake', X.r, 'back']], say: ['Priya', 'I did what I said I\'d do. I followed the spreadsheet.'],
+        pops: [['Priya', 'Twisted', 'gold', 'spark'], ['Alejandro', 'Also twisted', 'down']], fx: { deal1: ['Priya', 'twist'] },
+        rel: [['uncouple', 'Priya', 'Alejandro'], ['couple', 'Priya', 'Jake'], ['couple', 'Alejandro', 'Kelly']],
+        card: { k: 'Twist', t: 'Priya walks in holding Jake\'s hand. Alejandro, beside Kelly, starts to say something and doesn\'t.', big: true } },
+      { bg: 'night', close: true, cast: [['Courtney', X.l, 'hurt'], ['Scott', X.c, 'back'], ['Ella', X.r, 'back']], say: ['Courtney', 'Are you actually serious right now?'],
+        pops: [['Courtney', 'Mugged off', 'red', 'crack'], ['Scott', 'Villain edit', 'down']], fx: { deal1: ['Courtney', 'stick'], toast: ['Major moment', 'She stuck. He didn\'t.'], shake: true },
+        rel: [['uncouple', 'Courtney', 'Scott'], ['couple', 'Scott', 'Ella'], ['rival', 'Courtney', 'Scott']],
+        card: { k: 'Stick — and mugged off', t: 'Courtney walks in alone to Scott with his arm round Ella. Single, and safe.', big: true }, mood: { Scott: -11, Courtney: 10 } },
+      { bg: 'night', cast: [['Duncan', X.l, 'back'], ['Zoey', X.r, 'speak']], say: ['Zoey', 'Turns out the girl who stole you is the one who stays loyal. Who knew?'],
+        pops: [['Duncan', 'Connection +++', 'heart']], fx: { deal1: ['Zoey', 'stick'] }, rel: [['warm', 'Zoey', 'Duncan']],
+        card: { k: 'Stick', t: 'Zoey, alone. Duncan stuck too.', big: true }, mood: { Zoey: 7, Duncan: 6 } },
+      { bg: 'day', cast: [['Courtney', X.l, 'speak']], say: ['Courtney', 'I GOT A TEXT!', 'text'], fx: { phone: ['Courtney', 'Islanders, some of the girls have been sent pictures from Casa Amor.', '#whathappenedincasa'] },
+        card: { k: 'I got a text!', t: '"Some of the girls have been sent pictures from Casa Amor."' } },
+    ],
+  },
+
+  final: {
+    tab: 'The Final', hud: 'Day 43 · Episode 15', sub: 'The public decides',
+    cast: ['Alejandro', 'Bridgette', 'Duncan', 'Geoff', 'Jake', 'Kelly', 'Priya', 'Zoey'],
+    rel: [['couple', 'Bridgette', 'Geoff'], ['warm', 'Bridgette', 'Geoff'], ['couple', 'Zoey', 'Duncan'], ['couple', 'Priya', 'Jake'], ['couple', 'Alejandro', 'Kelly']],
+    board: [['Alejandro & Kelly', 7.9], ['Jake & Priya', 17.4], ['Duncan & Zoey', 26.3], ['Bridgette & Geoff', 48.4]],
+    steps: [
+      { bg: 'final', cast: [['Dior', X.l, 'speak']], say: ['Dior', 'Four couples. One vote. The public have chosen their Perfect Match. In fourth place…', 'dior'],
+        fx: { board: 0, neon: ['The Final', '#ffc15e'] }, card: { k: 'The final vote', t: 'Four couples. One vote.' } },
+      { bg: 'final', cast: [['Alejandro', X.l2, 'speak'], ['Kelly', X.l, 'back']], say: ['Narrator', 'Alejandro and Kelly, 7.9%. Alejandro applauds the result like it happened to somebody else.', 'narrator'],
+        fx: { board: 1 }, card: { k: 'Fourth', t: 'Alejandro & Kelly — 7.9%' } },
+      { bg: 'final', cast: [['Priya', X.l2, 'speak'], ['Jake', X.l, 'back']], say: ['Priya', 'Third is a podium.'], fx: { board: 2 },
+        card: { k: 'Third', t: 'Jake & Priya — 17.4%. "Third is a podium." "Is it?"' } },
+      { bg: 'final', cast: [['Duncan', X.l2, 'back'], ['Zoey', X.l, 'speak']], say: ['Narrator', 'Duncan and Zoey, 26.3%. The steal the country forgave.', 'narrator'], fx: { board: 3 },
+        card: { k: 'Runners-up', t: 'Duncan & Zoey — 26.3%' } },
+      { bg: 'final', close: true, cast: [['Bridgette', X.l2, 'speak'], ['Geoff', X.l, 'speak']], say: ['Dior', 'Bridgette and Geoff — you are this year\'s Perfect Match.', 'dior'],
+        pops: [['Bridgette', 'Winners', 'gold', 'star'], ['Geoff', 'Winners', 'gold', 'star']],
+        fx: { board: 4, neon: ['Perfect Match', '#ff2e88'], petals: true, toast: ['Winners', '48.4% of the vote'] },
+        card: { k: 'Your Perfect Match', t: 'Bridgette & Geoff — 48.4%. Day one to the final.', big: true }, mood: { Bridgette: 6, Geoff: 6 } },
+      { bg: 'final', cast: [['Geoff', X.c, 'speak']], say: ['Geoff', 'Split. Obviously. Bridge, it was always going to be split.'],
+        fx: { env: true }, pops: [['Geoff', 'Split', 'gold', 'heartW']], card: { k: 'The envelope', t: 'Geoff holds the money, and splits it.' }, mood: { Geoff: 3 } },
+    ],
+  },
+};
+
+// ══════════════════════════════════════════════════════════════════════
+// Relationship state (the heart map) — replayed from the screen's rest
+// state through every step up to the last click.
+// ══════════════════════════════════════════════════════════════════════
+function relAt(S, upto) {
+  const R = { couples: [], crush: {}, flirt: [], rival: [], strain: [], warm: [], gone: new Set([...(S.gone || [])]), away: new Set(S.away || []), fresh: new Set() };
+  const k = (a, b) => [a, b].sort().join('|');
+  const ops = [...S.rel.map(o => [o, false])];
+  S.steps.forEach((st, i) => { if (i <= upto) (st.rel || []).forEach(o => ops.push([o, i === upto])); });
+  for (const [[op, a, b, v], isNew] of ops) {
+    const key = b ? k(a, b) : a;
+    if (isNew) R.fresh.add(op === 'crush' || op === 'crushSet' ? `${a}>${b}` : key);
+    if (op === 'couple') { R.couples = R.couples.filter(x => !x.includes(a) && !x.includes(b)); R.couples.push(key); R.flirt = R.flirt.filter(x => x !== key); }
+    if (op === 'uncouple') { R.couples = R.couples.filter(x => x !== key); R.strain = R.strain.filter(x => x !== key); R.warm = R.warm.filter(x => x !== key); }
+    if (op === 'crush') R.crush[`${a}>${b}`] = Math.max(R.crush[`${a}>${b}`] || 0, v);
+    if (op === 'crushSet') R.crush[`${a}>${b}`] = v;
+    if (op === 'flirt' && !R.flirt.includes(key)) R.flirt.push(key);
+    if (op === 'reveal') R.flirt = R.flirt.filter(x => x !== key);
+    if (op === 'rival' && !R.rival.includes(key)) R.rival.push(key);
+    if (op === 'strain' && !R.strain.includes(key)) R.strain.push(key);
+    if (op === 'warm') { R.strain = R.strain.filter(x => x !== key); if (!R.warm.includes(key)) R.warm.push(key); }
+    if (op === 'leave') { R.gone.add(a); R.couples = R.couples.filter(x => !x.split('|').includes(a)); }
+    if (op === 'arrive') R.away.delete(a);
+  }
+  return R;
+}
+
+function drawMap(S, R) {
+  const names = S.cast, n = names.length, cx = 140, cy = 132, rad = 104;
+  const P = Object.fromEntries(names.map((nm, i) => {
+    const a = -Math.PI / 2 + i * 2 * Math.PI / n; return [nm, [cx + Math.cos(a) * rad, cy + Math.sin(a) * rad]];
+  }));
+  const live = nm => !R.gone.has(nm) && !R.away.has(nm);
+  const edge = (a, b, cls, extra = '', bend = 0, marker = '') => {
+    const [x1, y1] = P[a], [x2, y2] = P[b];
+    const mx = (x1 + x2) / 2, my = (y1 + y2) / 2, dx = x2 - x1, dy = y2 - y1, len = Math.hypot(dx, dy) || 1;
+    const qx = mx + (-dy / len) * bend + (cx - mx) * .18, qy = my + (dx / len) * bend + (cy - my) * .18;
+    // stop short of the node so arrowheads show
+    const sx = x1 + dx / len * 16, sy = y1 + dy / len * 16, ex = x2 - dx / len * 18, ey = y2 - dy / len * 18;
+    return `<path class="edge ${cls}" ${extra} d="M${sx} ${sy} Q${qx} ${qy} ${ex} ${ey}" ${marker}/>`;
+  };
+  let e = '';
+  for (const key of R.rival) { const [a, b] = key.split('|'); if (live(a) && live(b)) e += edge(a, b, 'rival' + (R.fresh.has(key) ? ' new' : ''), '', 0); }
+  for (const [ab, v] of Object.entries(R.crush)) {
+    const [a, b] = ab.split('>'); if (!live(a) || !live(b) || v <= 0) continue;
+    const coupled = R.couples.includes([a, b].sort().join('|'));
+    if (coupled) continue;
+    e += edge(a, b, 'crush' + (R.fresh.has(ab) ? ' new' : ''), `style="--w:${.8 + v * .9}"`, 14, 'marker-end="url(#arr)"');
+  }
+  for (const key of R.flirt) { const [a, b] = key.split('|'); if (live(a) && live(b)) e += edge(a, b, 'flirt' + (R.fresh.has(key) ? ' new' : ''), '', -10); }
+  for (const key of R.couples) {
+    const [a, b] = key.split('|'); if (!live(a) || !live(b)) continue;
+    const cls = R.strain.includes(key) ? 'strained' : 'couple';
+    e += edge(a, b, cls + (R.fresh.has(key) ? ' new' : ''), '', 0);
+    const [x1, y1] = P[a], [x2, y2] = P[b], mx = (x1 + x2) / 2 + (cx - (x1 + x2) / 2) * .09, my = (y1 + y2) / 2 + (cy - (y1 + y2) / 2) * .09;
+    e += `<path d="${HEART}" transform="translate(${mx} ${my}) scale(.5)" fill="${cls === 'strained' ? '#f59e0b' : '#ff2e88'}" stroke="#fff" stroke-width="2">${R.warm.includes(key) ? '<animateTransform attributeName="transform" type="scale" additive="sum" values="1;1.35;1;1.2;1" dur="1.2s" repeatCount="indefinite"/>' : ''}</path>`;
+  }
+  const nodes = names.map((nm, i) => {
+    const [x, y] = P[nm], id = 'c' + i;
+    const cls = R.gone.has(nm) ? 'gone' : R.away.has(nm) ? 'gone' : '';
+    return `<g class="node ${cls}"><clipPath id="${id}"><circle cx="${x}" cy="${y}" r="14"/></clipPath>
+      <circle cx="${x}" cy="${y}" r="14" fill="${(COLOR[nm] || ['#ffd1e6'])[0]}"/>
+      ${src(nm) ? `<image href="${src(nm)}" x="${x - 14}" y="${y - 14}" width="28" height="28" clip-path="url(#${id})" preserveAspectRatio="xMidYMid slice"/>` : `<text x="${x}" y="${y + 3.5}" style="font-weight:800;fill:#fff">${ini(nm)}</text>`}
+      <circle class="ring" cx="${x}" cy="${y}" r="14"/><text x="${x}" y="${y + (y > cy ? 27 : -19)}">${nm}</text></g>`;
+  }).join('');
+  document.getElementById('map').innerHTML = `<svg class="map" viewBox="0 0 280 270"><defs>
+    <linearGradient id="gCouple" x1="0" x2="1"><stop offset="0" stop-color="#ff7a59"/><stop offset="1" stop-color="#ff2e88"/></linearGradient>
+    <marker id="arr" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#ff4fa0"/></marker></defs>${e}${nodes}</svg>`;
+
+  // who fancies whom, strongest first
+  const rows = Object.entries(R.crush).filter(([ab, v]) => { const [a, b] = ab.split('>'); return v > 0 && live(a) && live(b); })
+    .sort((x, y) => y[1] - x[1]).slice(0, 8);
+  const hearts = v => [1, 2, 3].map(i => `<svg viewBox="-20 -14 40 27" class="${i <= v ? '' : 'e'}"><path d="${HEART}"/></svg>`).join('');
+  document.getElementById('likes').innerHTML = rows.map(([ab, v]) => { const [a, b] = ab.split('>');
+    return `<div>${mini(a)}<b>${a}</b>&nbsp;fancies&nbsp;<b>${b}</b><span class="hearts">${hearts(v)}</span></div>`; }).join('')
+    + R.flirt.filter(k => k.split('|').every(live)).map(k => { const [a, b] = k.split('|');
+      return `<div>${mini(a)}<b>${a}</b>&nbsp;&amp;&nbsp;<b>${b}</b>&nbsp;<span style="color:#a855f7;font-weight:700">flirting in secret</span></div>`; }).join('');
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// The stage
+// ══════════════════════════════════════════════════════════════════════
+let cur = 'villa', idx = -1, typing = null, dtab = 'mood';
+const $ = s => document.querySelector(s);
+const stage = $('#stage');
+
+function sceneHtml(bg) {
+  const rnd = (i, m) => ((i * 9301 + 49297) % 233280) / 233280 * m;
+  const bokeh = (n, cls, y0, y1, size) => `<div class="bokeh ${cls}">${Array.from({ length: n }, (_, i) =>
+    `<i style="left:${rnd(i + 1, 100).toFixed(1)}%;top:${(y0 + rnd(i + 7, y1 - y0)).toFixed(1)}%;width:${(size * (0.5 + rnd(i + 3, 1))).toFixed(1)}%;aspect-ratio:1;--o:${(.3 + rnd(i + 5, .6)).toFixed(2)};--t:${(4 + rnd(i + 2, 5)).toFixed(1)}s;--d:${(-rnd(i + 4, 6)).toFixed(1)}s"></i>`).join('')}</div>`;
+  const string = y => `<div class="bokeh string">${Array.from({ length: 16 }, (_, i) => {
+    const t = i / 15, sag = Math.sin(t * Math.PI) * 9;
+    return `<i style="left:${(t * 100).toFixed(1)}%;top:${(y + sag).toFixed(1)}%;width:2.2%;aspect-ratio:1;--o:.9;--t:${(2 + (i % 3)).toFixed(1)}s;--d:-${(i % 4) * .5}s"></i>`; }).join('')}</div>`;
+  const embers = `<div class="bokeh embers">${Array.from({ length: 22 }, (_, i) =>
+    `<i style="left:${(38 + rnd(i + 1, 24)).toFixed(1)}%;bottom:4%;width:${(.4 + rnd(i + 2, .5)).toFixed(2)}%;aspect-ratio:1;--x:${(rnd(i + 3, 80) - 40).toFixed(0)}px;--t:${(2.4 + rnd(i + 4, 2.4)).toFixed(1)}s;--d:-${rnd(i + 5, 4).toFixed(1)}s"></i>`).join('')}</div>`;
+  const inner = {
+    day: `<div class="sun"></div><div class="shimmer"></div>${bokeh(14, '', 5, 50, 5)}${string(6)}`,
+    terrace: `${bokeh(26, 'string', 4, 60, 4)}`,
+    night: `${bokeh(18, '', 2, 40, 1.6)}<div class="glow"></div>${embers}${string(5)}`,
+    hut: `<div class="weave"></div>${bokeh(8, 'string', 10, 50, 6)}`,
+    casa: `${bokeh(24, '', 5, 80, 3)}`,
+    final: `<div class="beams"></div>${bokeh(20, 'string', 5, 70, 3)}`,
+  }[bg] || '';
+  return `<div class="scene sc-${bg}">${inner}</div>`;
+}
+
+function buildStage(S, st) {
+  const petals = Array.from({ length: 30 }, (_, i) => { const a = i * 137.5 * Math.PI / 180, d = 160 + (i % 5) * 70;
+    return `<i style="--x:${(Math.cos(a) * d).toFixed(0)}px;--y:${(Math.sin(a) * d * .7 - 40).toFixed(0)}px;--r:${(i * 53) % 360}deg;--dl:${(i % 8) * 50}ms;--pk:${['#ff4fa0', '#ffc15e', '#ff7a59', '#fff'][i % 4]}">${IC.heart}</i>`; }).join('');
+  stage.innerHTML = `<div class="cam">${sceneHtml(st?.bg || 'day')}<div class="busts"></div></div>
+    <div class="vign"></div><div class="grain"></div>
+    <div class="neon off" id="neon"></div>
+    <svg class="ecg" viewBox="0 0 1000 100" preserveAspectRatio="none"><polyline/></svg><div class="bpm"></div>
+    <div class="deal"></div>
+    ${S.board ? `<div class="board hide"><h5>Vote for your Perfect Match</h5>${S.board.map(([n, p]) => `<div class="row"><span>${n}</span><span class="pc">${p}%</span><div class="bar"><i></i></div></div>`).join('')}</div>` : ''}
+    <svg class="env" viewBox="0 0 200 150"><g class="card"><rect x="30" y="24" width="140" height="92" rx="8" fill="#fffdf7" stroke="#ff2e88" stroke-width="3"/>
+      <text x="100" y="80" text-anchor="middle" font-family="Bebas Neue" font-size="40" fill="#ff2e88">SPLIT</text></g>
+      <rect x="8" y="44" width="184" height="100" rx="12" fill="#ff4fa0" stroke="#fff" stroke-width="3"/>
+      <path class="flap" d="M8 44 L100 106 L192 44Z" fill="#ff2e88" stroke="#fff" stroke-width="3"/><path d="${HEART}" transform="translate(100 104) scale(.9)" fill="#fff"/></svg>
+    <div class="phone"><div class="scr"><h4>I got a text!</h4><div class="tag"></div><p></p><div class="tag h"></div></div></div>
+    <div class="petals">${petals}</div>
+    <div class="pops"></div>
+    <div class="toast"></div>
+    <div class="dlg hide"><div class="plate"></div><div class="txt"></div><span class="nxt">${IC.next}</span></div>
+    <div class="hud"><span class="pill">${S.hud}</span><span class="pill air"><span class="scissors">${IC.scissors}</span><span class="airtxt">On air</span></span></div>
+    <div class="headline"></div>
+    <div class="wipe"><svg viewBox="-20 -14 40 27"><path d="${HEART}"/></svg></div>`;
+}
+
+function paintStage(S, i, fresh, prevBg) {
+  const st = S.steps[i];
+  buildStage(S, st);
+  if (!st) return;
+  stage.classList.toggle('fresh', !!fresh);
+  stage.classList.toggle('raw', !!st.raw);
+  stage.querySelector('.airtxt').textContent = st.raw ? 'Unaired footage' : 'On air';
+  if (fresh && prevBg && prevBg !== st.bg) { const w = stage.querySelector('.wipe'); w.classList.add('go'); }
+
+  // busts
+  const speaker = (st.cast.find(c => c[2] === 'speak') || st.cast[0] || [])[0];
+  const b = stage.querySelector('.busts');
+  b.innerHTML = st.cast.map(([n, x, mode]) => {
+    const [c1, c2] = COLOR[n] || ['#ffd1e6', '#c4a6ff'];
+    const cls = ['bust', mode === 'speak' ? 'speak' : '', mode === 'back' ? 'back' : '', mode === 'hurt' ? 'hurt back' : '',
+      /off/.test(mode) && !fresh ? 'off ' + mode : ''].join(' ');
+    return `<div class="${cls}" data-n="${n}" style="left:${fresh && mode !== 'offR' && mode !== 'offL' ? (x < 50 ? -15 : x > 50 ? 115 : x) : x}%;--c1:${c1};--c2:${c2}">
+      <div class="frame">${img(n) || `<div class="ini">${ini(n)}</div>`}</div><div class="rim"></div></div>`;
+  }).join('');
+  // slide in (fresh), or slide out for exits
+  if (fresh) requestAnimationFrame(() => requestAnimationFrame(() => {
+    st.cast.forEach(([n, x, mode]) => { const el = b.querySelector(`[data-n="${n}"]`); el.style.left = x + '%';
+      if (/off/.test(mode)) setTimeout(() => el.classList.add('off', mode), 1300); });
+  }));
+  // camera
+  const cam = stage.querySelector('.cam');
+  const sp = st.cast.find(c => c[0] === speaker);
+  cam.style.setProperty('--ox', (sp ? sp[1] : 50) + '%');
+  if (st.close) { if (fresh) setTimeout(() => cam.classList.add('close'), 250); else cam.classList.add('close'); }
+  if (st.fx?.shake && fresh) setTimeout(() => stage.classList.add('shake'), 350);
+
+  // dialogue
+  const [who, text, kind] = st.say || [];
+  const dlg = stage.querySelector('.dlg');
+  if (who) {
+    dlg.classList.remove('hide');
+    dlg.classList.toggle('dior', kind === 'dior'); dlg.classList.toggle('narrator', kind === 'narrator'); dlg.classList.toggle('hut', kind === 'hut');
+    const [c1, c2] = COLOR[who] || ['#ff7a59', '#ff2e88'];
+    const plate = dlg.querySelector('.plate');
+    plate.style.setProperty('--pc1', c1); plate.style.setProperty('--pc2', c2);
+    plate.innerHTML = `${who}${kind === 'hut' ? '<em>Beach hut</em>' : kind === 'narrator' ? '<em>Voiceover</em>' : kind === 'dior' ? '<em>Host</em>' : kind === 'text' ? '<em>Text</em>' : ''}`;
+    const t = dlg.querySelector('.txt'); t.classList.toggle('narr', kind === 'narrator');
+    clearInterval(typing);
+    if (fresh) { let k = 0; t.textContent = ''; typing = setInterval(() => { t.textContent = text.slice(0, ++k); if (k >= text.length) clearInterval(typing); }, 18); }
+    else t.textContent = text;
+  }
+
+  // neon
+  const nn = stage.querySelector('#neon');
+  const ne = st.fx?.neon || st.fx?.neonDie;
+  if (ne) {
+    nn.style.setProperty('--glow', ne[1]);
+    nn.innerHTML = [...ne[0]].map((ch, k) => `<i style="--k:${k}">${ch === ' ' ? '&nbsp;' : ch}</i>`).join('');
+    nn.className = 'neon on' + (fresh ? ' fresh' : '') + (st.fx.neonDie && fresh ? ' dying' : '') + (st.fx.neonDie && !fresh ? ' off' : '');
+    if (st.fx.neonDie && fresh) { nn.className = 'neon on'; setTimeout(() => nn.classList.add('dying'), 900); }
+  }
+  // text phone
+  if (st.fx?.phone) {
+    const [to, msg, tag] = st.fx.phone, p = stage.querySelector('.phone');
+    p.querySelector('.tag').textContent = `To: ${to}`; p.querySelector('p').textContent = msg; p.querySelector('.tag.h').textContent = tag;
+    if (fresh) setTimeout(() => { p.classList.add('up'); p.classList.add('buzz'); }, 300); else p.classList.add('up');
+  }
+  // heart rate
+  if (st.fx?.ecg) {
+    const [n, bpm] = st.fx.ecg, pts = [];
+    for (let x = 0; x <= 1000; x += 8) { const t = x % 160; const spike = x > 520;
+      pts.push(`${x},${t === 80 ? (spike ? 2 : 22) : t === 88 ? (spike ? 98 : 80) : t === 72 ? 64 : 55 + Math.sin(x / 11) * 2}`); }
+    stage.querySelector('.ecg polyline').setAttribute('points', pts.join(' '));
+    stage.querySelector('.ecg').classList.add('on');
+    const el = stage.querySelector('.bpm'); el.textContent = `${n} · ${bpm} bpm`; el.classList.add('on');
+  }
+  // cards dealt: ballots, or one stick/twist
+  const deal = stage.querySelector('.deal');
+  const cards = st.fx?.deal ? st.fx.deal.map(([v, t]) => ({ who: `${v} voted`, face: t, what: t, cls: '' }))
+    : st.fx?.deal1 ? [{ who: st.fx.deal1[0], face: st.fx.deal1[0], what: st.fx.deal1[1].toUpperCase(), cls: st.fx.deal1[1] }] : [];
+  if (cards.length) {
+    deal.innerHTML = cards.map((c, k) => `<div class="gc ${fresh ? 'in' : 'flip'}" style="--dl:${k * 180}ms"><div><div class="f">${IC.heart}</div>
+      <div class="b"><div><div class="face">${img(c.face) || ''}</div><div class="who">${c.who}</div><div class="what ${c.cls}">${c.what}</div></div></div></div></div>`).join('');
+    if (fresh) deal.querySelectorAll('.gc').forEach((el, k) => setTimeout(() => el.classList.add('flip'), 900 + k * 520));
+  }
+  // vote board
+  if (st.fx?.board != null) {
+    const bd = stage.querySelector('.board'); bd.classList.remove('hide');
+    const rows = [...bd.querySelectorAll('.row')], n = st.fx.board;
+    const show = () => rows.forEach((r, k) => { const on = k < n; r.classList.toggle('shown', on); r.classList.toggle('win', on && k === rows.length - 1);
+      r.querySelector('i').style.width = on ? S.board[k][1] * 1.9 + '%' : '0'; });
+    const prev = () => rows.forEach((r, k) => { const on = k < n - 1; r.classList.toggle('shown', on); r.querySelector('i').style.width = on ? S.board[k][1] * 1.9 + '%' : '0'; });
+    if (fresh) { prev(); setTimeout(show, 400); } else show();
+  }
+  if (st.fx?.env) { const e = stage.querySelector('.env'); e.classList.add('on'); if (fresh) setTimeout(() => e.classList.add('open'), 300); else e.classList.add('open'); }
+  if (st.fx?.petals && fresh) setTimeout(() => stage.querySelector('.petals').classList.add('go'), 500);
+  if (st.fx?.toast && fresh) {
+    const t = stage.querySelector('.toast'); t.innerHTML = `${st.fx.toast[1]}<small>${st.fx.toast[0]}</small>`; setTimeout(() => t.classList.add('go'), 600);
+  }
+  // pops rise from the busts they belong to
+  if (fresh && st.pops) {
+    stage.querySelector('.pops').innerHTML = st.pops.map(([n, t, style = '', icon = 'heartW'], k) => {
+      const c = st.cast.find(x => x[0] === n); const x = c ? c[1] : 50;
+      return `<div class="pop ${style === 'heart' ? '' : style}" style="left:${x}%;top:${22 + (k % 2) * 8}%;--d:${.7 + k * .35}s">${IC[icon] || IC.heartW}${t}</div>`;
+    }).join('');
+  }
+  const hl = stage.querySelector('.headline'); hl.textContent = st.card.k; hl.classList.add('on');
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// Transcript, rail, heart map, debug, controls
+// ══════════════════════════════════════════════════════════════════════
+function labelOf(a) {
+  if (a >= 60) return ['ff', 'Fan favourite']; if (a >= 25) return ['loved', 'Loved']; if (a >= 5) return ['liked', 'Liked'];
+  if (a >= -5) return ['invisible', 'Invisible']; if (a >= -25) return ['divisive', 'Divisive']; if (a >= -60) return ['disliked', 'Disliked'];
+  return ['villain', 'Villain'];
+}
+function moodAt() {
+  const order = Object.keys(SCREENS), m = { ...MOOD0 }, air = {};
+  for (const key of order) {
+    const steps = SCREENS[key].steps;
+    const upto = key === cur ? idx : order.indexOf(key) < order.indexOf(cur) ? steps.length - 1 : -1;
+    for (let k = 0; k <= upto; k++) {
+      for (const [n, d] of Object.entries(steps[k].mood || {})) m[n] = (m[n] ?? 0) + d * 1.6;
+      if (!steps[k].raw) for (const [n] of steps[k].cast) air[n] = (air[n] || 0) + 1;
+    }
+  }
+  return { m, air };
+}
+function renderDebug() {
+  const S = SCREENS[cur], R = relAt(S, idx), { m, air } = moodAt();
+  $('#dtabs').innerHTML = [['mood', 'Public mood'], ['air', 'Airtime'], ['attr', 'Attraction']].map(([k, l]) => `<button data-k="${k}" class="${dtab === k ? 'on' : ''}">${l}</button>`).join('');
+  $('#dtabs').querySelectorAll('button').forEach(b => b.onclick = () => { dtab = b.dataset.k; renderDebug(); });
+  const names = [...S.cast].filter(n => n !== 'Dior').sort();
+  if (dtab === 'mood') $('#dbody').innerHTML = `<p class="note">What the country thinks, from aired footage only. Never read by the islanders.</p>` + names.map(n => {
+    const a = Math.max(-100, Math.min(100, m[n] ?? 0)), [c, l] = labelOf(a);
+    return `<div class="mrow ${R.gone.has(n) ? 'gone' : ''}">${mini(n)}<div><div class="nm"><span>${n}</span><span class="lab ${c}">${l}</span></div>
+      <div class="gauge"><i style="left:${a >= 0 ? 50 : 50 + a / 2}%;width:${Math.abs(a) / 2}%;background:${a >= 0 ? 'linear-gradient(90deg,#ff7a59,#ff2e88)' : 'linear-gradient(90deg,#7f1d1d,#f87171)'}"></i></div></div></div>`; }).join('');
+  if (dtab === 'air') { const max = Math.max(1, ...Object.values(air));
+    $('#dbody').innerHTML = `<p class="note">Aired scenes each islander appeared in so far.</p>` + names.map(n => `<div class="mrow">${mini(n)}<div><div class="nm"><span>${n}</span><span>${air[n] || 0}</span></div>
+      <div class="gauge"><i style="left:0;width:${100 * (air[n] || 0) / max}%;background:linear-gradient(90deg,#ffc15e,#ff7a59)"></i></div></div></div>`).join(''); }
+  if (dtab === 'attr') {
+    const rows = Object.entries(R.crush).sort((a, b) => b[1] - a[1]);
+    $('#dbody').innerHTML = `<p class="note">Raw attraction, 0–3 in this mockup (0–10 in the engine).</p><table class="matrix"><tr><th>From</th><th>To</th><th>Level</th></tr>${rows.map(([ab, v]) => { const [a, b] = ab.split('>'); return `<tr><td>${a}</td><td>${b}</td><td>${v}</td></tr>`; }).join('')}</table>`;
+  }
+}
+function cardHtml(st, i) {
+  const S = SCREENS[cur], c = st.card;
+  const revealed = S.steps.some((x, j) => j <= idx && x.reveals === i);
+  const who = st.say ? st.say[0] : '';
+  return `<div class="card ${c.cls || ''} ${c.big ? 'big' : ''} ${c.unaired && !revealed ? 'unaired' : ''}" id="card-${i}">
+    <div class="fx">${st.cast.map(x => mini(x[0])).join('')}</div>
+    <div><div class="k">${c.k}</div><p>${who && !['Narrator'].includes(who) && st.say[2] !== 'text' ? `<span class="who">${who}:</span> ` : ''}${st.say ? st.say[1].replace(/^I GOT A TEXT!$/, c.t) : c.t}</p></div>
+    ${c.unaired ? `<div class="tape ${revealed ? 'revealed' : ''}">${revealed ? 'Aired later' : "Didn't air · " + c.secret}</div>` : ''}</div>`;
+}
+function renderRail() {
+  const S = SCREENS[cur];
+  if (!S.phases) { $('#rail').innerHTML = ''; return; }
+  const at = idx >= 0 ? S.steps[idx].phase : -1;
+  $('#rail').innerHTML = S.phases.map((p, i) => `<span class="${i === at ? 'on' : i < at ? 'done' : ''}">${i + 1}. ${p}</span>`).join('');
+}
+let lastBg = null;
+function paint(fresh) {
+  const S = SCREENS[cur], y = window.scrollY;
+  if (idx < 0) { buildStage(S, { bg: S.steps[0].bg }); const hl = stage.querySelector('.headline'); hl.textContent = S.sub; hl.classList.add('on'); }
+  else paintStage(S, idx, fresh, lastBg);
+  lastBg = idx >= 0 ? S.steps[idx].bg : null;
+  $('#cards').innerHTML = `<div class="card"><div class="fx">${mini('Dior')}</div><div><div class="k">${S.tab} · ${S.hud}</div><p>${S.sub}</p></div></div>`
+    + S.steps.slice(0, idx + 1).map(cardHtml).join('');
+  renderRail(); drawMap(S, relAt(S, idx)); renderDebug();
+  $('#count').textContent = `${Math.max(0, idx + 1)} / ${S.steps.length}`;
+  window.scrollTo(0, y);
+  if (fresh) document.getElementById(`card-${idx}`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+function tabs() {
+  $('#tabs').innerHTML = Object.entries(SCREENS).map(([k, s]) => `<button data-k="${k}" class="${k === cur ? 'on' : ''}">${s.tab}</button>`).join('');
+  $('#tabs').querySelectorAll('button').forEach(b => b.onclick = () => { cur = b.dataset.k; idx = -1; lastBg = null; tabs(); paint(false); });
+}
+function theme(set) {
+  const root = document.documentElement;
+  const dark = set ?? !(root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches);
+  root.dataset.theme = dark ? 'dark' : 'light';
+  try { localStorage.setItem('pm-theme', root.dataset.theme); } catch {}
+  $('#theme').innerHTML = dark ? `${IC.sun} Light` : `${IC.moon} Dark`;
+}
+$('#theme').onclick = () => theme();
+try { const t = localStorage.getItem('pm-theme'); if (t) theme(t === 'dark'); else theme(matchMedia('(prefers-color-scheme: dark)').matches); } catch { theme(false); }
+$('#next').onclick = () => { if (idx < SCREENS[cur].steps.length - 1) { idx++; paint(true); } };
+$('#all').onclick = () => { idx = SCREENS[cur].steps.length - 1; paint(false); };
+$('#reset').onclick = () => { idx = -1; lastBg = null; paint(false); };
+document.addEventListener('keydown', e => { if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); $('#next').click(); } });
+window.step = k => { lastBg = k > 0 ? SCREENS[cur].steps[k - 1].bg : null; idx = k; paint(true); };
+window.show = k => { cur = k; idx = -1; lastBg = null; tabs(); paint(false); };
+window.theme = theme;
+tabs(); paint(false);
+</script>
+</body>
+</html>

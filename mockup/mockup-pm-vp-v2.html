@@ -32,6 +32,7 @@
   }
 }
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html,body{margin:0}
 body{background:radial-gradient(1200px 600px at 80% -10%,var(--bg2),var(--bg));color:var(--ink);font:15px/1.45 Outfit,system-ui,sans-serif;min-height:100vh}
 .wrap{max-width:1220px;margin:0 auto;padding:14px 16px 96px}
@@ -285,7 +286,8 @@ header.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom
 .tape.revealed{background:#ffd1e6;color:#9b1458}
 
 /* ── sidebar: the heart map + a closed debug drawer ───────────────── */
-aside{display:flex;flex-direction:column;gap:14px;position:sticky;top:8px}
+aside{display:flex;flex-direction:column;gap:14px;position:sticky;top:8px;max-height:calc(100vh - 16px);overflow:auto;scrollbar-width:thin;padding-bottom:70px}
+@media (max-width:960px){aside{position:static;max-height:none;overflow:visible}}
 .panel{background:var(--card);border:1.5px solid var(--line);border-radius:20px;padding:14px;box-shadow:0 6px 18px #a0286412}
 .panel h3{margin:0;font:28px/1 Yellowtail,cursive;color:var(--pink)}
 .panel .note{margin:4px 0 8px;font-size:12px;color:var(--muted)}
@@ -333,6 +335,52 @@ details.debug[open] summary::before{transform:rotate(45deg)}
 .matrix{font:11px Outfit;border-collapse:collapse;width:100%}
 .matrix td,.matrix th{padding:2px 3px;text-align:center;border-bottom:1px solid var(--line)}
 
+/* relationship viewer */
+.picker{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px}
+.picker button{border:0;padding:0;background:none;cursor:pointer;border-radius:50%;position:relative}
+.picker .mini{width:30px;height:30px;margin:0;border:2px solid var(--card);transition:transform .15s}
+.picker button.on .mini{box-shadow:0 0 0 2.5px var(--pink);transform:scale(1.12)}
+.picker button.gone{opacity:.35}
+.relhead{display:flex;align-items:center;gap:10px;margin:4px 0 10px}
+.relhead .mini{width:44px;height:44px;margin:0}
+.relhead b{font:800 18px Outfit}
+.relhead span{display:block;font-size:12px;color:var(--muted)}
+.rrow{border:1.5px solid var(--line);border-radius:14px;padding:8px 10px;margin-bottom:8px;background:var(--card2)}
+.rrow .top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.rrow .top .mini{width:26px;height:26px;margin:0;font-size:9px}
+.rrow .top b{font:700 13px Outfit}
+.tagx{font:10px 'Bebas Neue';letter-spacing:.1em;padding:2px 8px;border-radius:99px;color:#fff;background:#b8a6b1;white-space:nowrap}
+.tagx.love{background:linear-gradient(90deg,#ff7a59,#ff2e88)}.tagx.crush{background:#ff4fa0}.tagx.hidden{background:#a855f7}
+.tagx.fake{background:#111;color:#ffc15e}.tagx.friend{background:#14b8a6}.tagx.zone{background:#0ea5e9}.tagx.rival{background:#dc2626}
+.tagx.mixed{background:#f59e0b}.tagx.surv{background:#64748b}.tagx.alone{background:#db2777}
+.dir{display:grid;grid-template-columns:62px 1fr 1fr;gap:4px 8px;align-items:center;margin-top:6px;font-size:10.5px;color:var(--muted)}
+.dir .lbl{font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar2{position:relative;height:7px;border-radius:99px;background:var(--line);overflow:hidden}
+.bar2 i{position:absolute;top:0;bottom:0;border-radius:99px}
+.bar2.rom i{left:0;background:linear-gradient(90deg,#ff7a59,#ff2e88)}
+.bar2.fr::after{content:'';position:absolute;left:50%;top:0;bottom:0;width:1.5px;background:var(--muted);opacity:.5}
+.bar2 .ghost{position:absolute;top:-2px;bottom:-2px;width:2.5px;background:#a855f7;border-radius:2px}
+.dirh{display:grid;grid-template-columns:62px 1fr 1fr;gap:8px;font:10px 'Bebas Neue';letter-spacing:.14em;color:var(--muted);margin-top:6px}
+.belief{margin-top:6px;font-size:11.5px;display:flex;gap:6px;align-items:flex-start;color:var(--ink)}
+.belief svg{flex:none;width:14px;height:14px;margin-top:1px}
+.belief.shows svg{color:#a855f7}.belief.thinks svg{color:#f59e0b}
+.rest{font-size:12px;color:var(--muted);margin-top:4px}
+.map .node{cursor:pointer}
+.map .edge.faded{opacity:.1}
+.map .node.sel circle.ring{stroke:var(--pink);stroke-width:4}
+
+/* the debug screen */
+.debugScreen{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.debugScreen .panel h3{font:20px/1 'Bebas Neue';letter-spacing:.14em;color:var(--pink)}
+.debugScreen .wide{grid-column:1/-1}
+@media (max-width:760px){.debugScreen{grid-template-columns:1fr}}
+.heat{border-collapse:collapse;font:10.5px Outfit;width:100%}
+.heat th{font-weight:700;padding:3px;color:var(--muted)}
+.heat th.rot{height:70px;vertical-align:bottom}
+.heat th.rot span{display:inline-block;transform:rotate(-55deg);transform-origin:left bottom;white-space:nowrap;width:14px}
+.heat td{width:30px;height:26px;text-align:center;border:1px solid var(--card);font-weight:700;color:#fff;text-shadow:0 1px 2px #0006}
+.heat td.self{background:var(--line)}
+
 /* controls */
 .controls{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;gap:10px;justify-content:center;align-items:center;padding:12px;
   background:linear-gradient(0deg,var(--bg) 40%,#0000)}
@@ -360,6 +408,7 @@ details.debug[open] summary::before{transform:rotate(45deg)}
   </header>
   <div class="layout">
     <main>
+      <div id="debugScreen" class="debugScreen" hidden></div>
       <div class="stage" id="stage"></div>
       <div class="rail" id="rail"></div>
       <div class="cards" id="cards"></div>
@@ -372,17 +421,18 @@ details.debug[open] summary::before{transform:rotate(45deg)}
         <div class="legend">
           <span><i style="border-color:#ff2e88"></i>Coupled</span>
           <span><i style="border-color:#ff4fa0;border-top-width:2px"></i>Fancies →</span>
+          <span><i style="border-color:#a855f7;border-top-style:dotted"></i>Hidden crush →</span>
           <span><i style="border-color:#a855f7;border-top-style:dashed"></i>Flirting (secret)</span>
           <span><i style="border-color:#ef4444;border-top-style:dotted"></i>Rivals</span>
           <span><i style="border-color:#f59e0b;border-top-style:dashed"></i>On the rocks</span>
         </div>
-        <div class="who-likes" id="likes"></div>
       </div>
-      <details class="debug" id="debug">
-        <summary>Debug</summary>
-        <div class="dtabs" id="dtabs"></div>
-        <div id="dbody"></div>
-      </details>
+      <div class="panel" id="relPanel">
+        <h3>Relationships</h3>
+        <p class="note">Pick anyone — here, or a face on the heart map.</p>
+        <div class="picker" id="picker"></div>
+        <div id="rel"></div>
+      </div>
     </aside>
   </div>
 </div>
@@ -446,6 +496,19 @@ const SCREENS = {
     away: ['Zoey'],
     rel: [['couple', 'Bridgette', 'Geoff'], ['couple', 'Priya', 'Alejandro'], ['couple', 'Gwen', 'Duncan'], ['couple', 'Courtney', 'Scott'],
       ['couple', 'Heather', 'Mike'], ['crush', 'Theo', 'Courtney', 2], ['crush', 'Theo', 'Heather', 1], ['crush', 'Mike', 'Gwen', 1]],
+    // Feels (r romance 0-10, f friendship -10..10), Shows (s), and what the
+    // OTHER one believes this person feels (t). s and t default to r.
+    D: { 'Bridgette>Geoff': { r: 8, f: 7 }, 'Geoff>Bridgette': { r: 8, f: 7 },
+      'Priya>Alejandro': { r: 5, f: 3 }, 'Alejandro>Priya': { r: 6, f: 4 },
+      'Gwen>Duncan': { r: 7, f: 6 }, 'Duncan>Gwen': { r: 4, f: 6, s: 6, t: 7 },
+      'Courtney>Scott': { r: 4, f: 4 }, 'Scott>Courtney': { r: 5, f: 3 },
+      'Heather>Mike': { r: 2, f: 1, s: 6, t: 6 }, 'Mike>Heather': { r: 3, f: 0 },
+      'Mike>Gwen': { r: 6, f: 5, s: 1, t: 1 }, 'Gwen>Mike': { r: 0, f: 5 },
+      'Heather>Theo': { r: 6, f: -3, s: 1, t: 1 }, 'Theo>Heather': { r: 3, f: 1 },
+      'Theo>Courtney': { r: 6, f: 3 }, 'Courtney>Theo': { r: 1, f: 2 },
+      'Gwen>Bridgette': { r: 0, f: 8 }, 'Bridgette>Gwen': { r: 0, f: 8 },
+      'Theo>Geoff': { r: 0, f: 7 }, 'Geoff>Theo': { r: 0, f: 7 },
+      'Courtney>Heather': { r: 0, f: 6 }, 'Heather>Courtney': { r: 0, f: 4 } },
     steps: [
       { bg: 'day', cast: [['Bridgette', X.l, 'speak'], ['Geoff', X.r, 'back']], say: ['Bridgette', 'Five more minutes. Or five more days. I genuinely don\'t mind which.'],
         pops: [['Geoff', 'Connection +', 'heart']], rel: [['warm', 'Bridgette', 'Geoff']],
@@ -462,17 +525,20 @@ const SCREENS = {
         card: { k: 'Narrator', t: 'Theo attempts to read the menu. It is a coaster.', cls: 'narr' }, mood: { Theo: 3 } },
       { bg: 'terrace', close: true, cast: [['Heather', X.l, 'speak'], ['Mike', X.r, 'hurt']], say: ['Heather', 'Your impressions aren\'t funny, Mike. They\'re a cry for help, and I\'m not a helpline.'],
         pops: [['Mike', 'Connection −−', 'red', 'crack']], rel: [['strain', 'Heather', 'Mike']], fx: { shake: true },
+        d: { 'Heather>Mike': { f: -3 }, 'Mike>Heather': { f: -2, r: 1 } },
         card: { k: 'Argument', t: 'Heather calls Mike\'s impressions "a cry for help". The whole terrace hears.' }, mood: { Heather: -4, Mike: 1 } },
       { bg: 'day', cast: [['Gwen', X.l, 'speak']], say: ['Gwen', 'I GOT A TEXT!', 'text'], fx: { phone: ['Gwen', 'Islanders, tonight you will be joined by someone who has had their eyes on this villa.', '#bombshell #steptoit'] },
         card: { k: 'I got a text!', t: '"Islanders, tonight you will be joined by someone who has had their eyes on this villa."' } },
       { bg: 'day', cast: [['Theo', X.l2, 'back'], ['Zoey', X.c, 'speak'], ['Duncan', X.r2, 'back']], say: ['Zoey', 'Hiya, villa. So — who\'s single? And who thinks they are?'],
         pops: [['Duncan', 'Attraction to Zoey ++', 'heart'], ['Theo', 'Attraction to Zoey +', 'heart'], ['Zoey', 'Eyes on Duncan', 'gold', 'eye']],
         rel: [['arrive', 'Zoey'], ['crush', 'Duncan', 'Zoey', 2], ['crush', 'Theo', 'Zoey', 2], ['crush', 'Zoey', 'Duncan', 3]],
+        d: { 'Duncan>Zoey': { s: 2, t: 2 }, 'Zoey>Duncan': { f: 1 }, 'Gwen>Zoey': { f: -2 } },
         fx: { neon: ['Bombshell', '#ff7a59'], toast: ['New arrival', 'A bombshell has entered the villa'], ecg: ['Duncan', 131] },
         card: { k: 'Bombshell', t: 'Zoey walks down the villa steps. Duncan stops mid-sentence. Theo stands up. Gwen sits down.', big: true }, mood: { Zoey: 8 } },
       { bg: 'terrace', close: true, cast: [['Gwen', X.l, 'speak'], ['Scott', X.r, 'hurt'], ['Theo', X.r2, 'back']], say: ['Gwen', 'Scott. You need to know what Theo said to Courtney behind the kitchen this afternoon.'],
         pops: [['Scott', 'Connection with Courtney −−−', 'red', 'crack'], ['Gwen', 'Friendship with Scott +', 'teal', 'star']],
         rel: [['reveal', 'Theo', 'Courtney'], ['strain', 'Courtney', 'Scott'], ['rival', 'Scott', 'Theo']], reveals: 3,
+        d: { 'Scott>Courtney': { r: 2, f: -2 }, 'Scott>Theo': { r: 0, f: -6 }, 'Scott>Gwen': { r: 0, f: 5 }, 'Courtney>Gwen': { r: 0, f: -4 } },
         fx: { neon: ['Mugged off', '#ef4444'], toast: ['Major moment', 'Mugged off'], shake: true },
         card: { k: 'Mugged off', t: 'Gwen tells Scott what happened behind the kitchen. The afternoon\'s footage airs at last.', big: true }, mood: { Theo: -8, Scott: 5, Courtney: -6, Gwen: 2 } },
     ],
@@ -484,6 +550,11 @@ const SCREENS = {
     rel: [['couple', 'Bridgette', 'Geoff'], ['couple', 'Priya', 'Alejandro'], ['couple', 'Gwen', 'Duncan'], ['couple', 'Courtney', 'Scott'],
       ['strain', 'Courtney', 'Scott'], ['couple', 'Heather', 'Mike'], ['strain', 'Heather', 'Mike'], ['crush', 'Zoey', 'Duncan', 3],
       ['crush', 'Duncan', 'Zoey', 2], ['crush', 'Heather', 'Theo', 2], ['crush', 'Theo', 'Zoey', 2]],
+    D: { 'Bridgette>Geoff': { r: 8, f: 7 }, 'Geoff>Bridgette': { r: 8, f: 7 }, 'Priya>Alejandro': { r: 3, f: 3 }, 'Alejandro>Priya': { r: 6, f: 4 },
+      'Gwen>Duncan': { r: 7, f: 6 }, 'Duncan>Gwen': { r: 3, f: 5, s: 6, t: 7 }, 'Duncan>Zoey': { r: 7, f: 2, s: 2, t: 2 }, 'Zoey>Duncan': { r: 9, f: 1 },
+      'Courtney>Scott': { r: 3, f: 2 }, 'Scott>Courtney': { r: 2, f: -2 }, 'Heather>Mike': { r: 1, f: -3, s: 5, t: 5 }, 'Mike>Heather': { r: 1, f: -2 },
+      'Mike>Gwen': { r: 6, f: 5, s: 1, t: 1 }, 'Gwen>Mike': { r: 0, f: 5 }, 'Heather>Theo': { r: 6, f: -3, s: 1, t: 1 }, 'Theo>Heather': { r: 3, f: 1 },
+      'Theo>Zoey': { r: 6, f: 1 }, 'Gwen>Bridgette': { r: 0, f: 8 }, 'Bridgette>Gwen': { r: 0, f: 8 }, 'Scott>Theo': { r: 0, f: -6 }, 'Theo>Geoff': { r: 0, f: 7 }, 'Geoff>Theo': { r: 0, f: 7 } },
     steps: [
       { bg: 'night', cast: [['Dior', X.c, 'speak']], say: ['Dior', 'Islanders — it\'s time to recouple. Tonight, the girls are choosing. And ladies… choose wisely.', 'dior'],
         fx: { neon: ['Recoupling', '#ff2e88'] }, card: { k: 'Dior', t: 'It\'s time to recouple. The girls are choosing.' } },
@@ -496,13 +567,14 @@ const SCREENS = {
       { bg: 'night', close: true, cast: [['Gwen', X.l2, 'hurt'], ['Duncan', X.c, 'back'], ['Zoey', X.r, 'speak']], say: ['Zoey', 'I know I\'m stepping on toes. But I came here for one person. Duncan.'],
         pops: [['Gwen', 'Stolen from', 'red', 'crack'], ['Zoey', 'Steal!', 'gold', 'spark']],
         rel: [['uncouple', 'Gwen', 'Duncan'], ['couple', 'Zoey', 'Duncan'], ['rival', 'Gwen', 'Zoey']],
+        d: { 'Duncan>Zoey': { s: 7, t: 7 }, 'Duncan>Gwen': { s: 3, t: 3 }, 'Gwen>Duncan': { f: -2 }, 'Gwen>Zoey': { f: -6 }, 'Zoey>Gwen': { f: -1 } },
         fx: { toast: ['Major moment', 'A steal'], shake: true },
         card: { k: 'A steal', t: 'Zoey picks Duncan. Dior: "Duncan, two girls have chosen you." He walks to Zoey.', big: true }, mood: { Zoey: -7, Gwen: 9, Duncan: -3 } },
       { bg: 'night', cast: [['Courtney', X.l, 'speak'], ['Scott', X.r, 'back']], say: ['Courtney', 'He deserves a second chance. So do I. Scott.'],
         pops: [['Scott', 'Chosen — just', 'gold', 'heartW']], card: { k: 'Courtney chooses', t: 'Scott, "a second chance".' }, mood: { Courtney: 2 } },
       { bg: 'night', close: true, cast: [['Mike', X.l2, 'hurt'], ['Heather', X.c, 'speak'], ['Theo', X.r, 'back']], say: ['Heather', 'Nobody saw this coming, which is exactly why I\'m doing it. Theo.'],
         pops: [['Theo', 'Chosen?!', 'gold', 'spark'], ['Mike', 'Left standing', 'down']],
-        rel: [['uncouple', 'Heather', 'Mike'], ['couple', 'Heather', 'Theo']], card: { k: 'Heather chooses', t: 'Theo. The firepit gasps. Mike doesn\'t.', big: true } },
+        rel: [['uncouple', 'Heather', 'Mike'], ['couple', 'Heather', 'Theo']], d: { 'Heather>Theo': { s: 6, t: 6 }, 'Mike>Heather': { f: -4 } }, card: { k: 'Heather chooses', t: 'Theo. The firepit gasps. Mike doesn\'t.', big: true } },
       { bg: 'night', cast: [['Gwen', X.l, 'hurt'], ['Dior', X.c, 'speak'], ['Mike', X.r, 'hurt']], say: ['Dior', 'Gwen. Mike. You are both single — which means you have been dumped from the island.', 'dior'],
         rel: [['leave', 'Gwen'], ['leave', 'Mike']], fx: { neonDie: ['Single', '#ff2e88'] },
         card: { k: 'Dumped', t: 'Gwen and Mike are single, and dumped from the island.', big: true }, mood: { Gwen: 4, Mike: 5 } },
@@ -516,6 +588,10 @@ const SCREENS = {
     gone: ['Gwen', 'Mike'],
     rel: [['couple', 'Bridgette', 'Geoff'], ['couple', 'Priya', 'Alejandro'], ['couple', 'Zoey', 'Duncan'], ['couple', 'Courtney', 'Scott'],
       ['couple', 'Heather', 'Theo'], ['crush', 'Theo', 'Zoey', 1], ['rival', 'Scott', 'Theo']],
+    D: { 'Bridgette>Geoff': { r: 9, f: 8 }, 'Geoff>Bridgette': { r: 9, f: 8 }, 'Priya>Alejandro': { r: 3, f: 4 }, 'Alejandro>Priya': { r: 5, f: 4 },
+      'Zoey>Duncan': { r: 8, f: 4 }, 'Duncan>Zoey': { r: 7, f: 4 }, 'Courtney>Scott': { r: 3, f: 2 }, 'Scott>Courtney': { r: 2, f: -1, s: 4, t: 4 },
+      'Heather>Theo': { r: 6, f: -1 }, 'Theo>Heather': { r: 3, f: 2 }, 'Courtney>Heather': { r: 0, f: 7 }, 'Heather>Courtney': { r: 0, f: 6 },
+      'Scott>Theo': { r: 0, f: -6 }, 'Theo>Geoff': { r: 0, f: 7 }, 'Geoff>Theo': { r: 0, f: 7 } },
     steps: [
       { phase: 0, bg: 'night', cast: [['Dior', X.c, 'speak']], say: ['Dior', 'The public have been voting for their favourite couple. The two couples with the fewest votes are…', 'dior'],
         fx: { neon: ['The results', '#a78bfa'] }, card: { k: 'The bottom couples', t: 'The public have voted.' } },
@@ -530,6 +606,7 @@ const SCREENS = {
         card: { k: 'Dumped', t: 'Heather doesn\'t move. Then she laughs, once.', big: true }, mood: { Heather: 4 } },
       { phase: 1, bg: 'night', cast: [['Heather', X.c, 'back']], say: ['Narrator', 'And the envelopes, please. Everyone loves a paper trail.', 'narrator'],
         fx: { deal: [['Duncan', 'Heather'], ['Geoff', 'Heather'], ['Scott', 'Priya']] }, rel: [['rival', 'Heather', 'Duncan']],
+        d: { 'Heather>Duncan': { f: -5 }, 'Priya>Scott': { f: -4 }, 'Courtney>Duncan': { f: -2 } },
         card: { k: 'The votes', t: 'Duncan — Heather. Geoff — Heather. Scott — Priya.' }, mood: { Scott: -2 } },
       { phase: 1, bg: 'night', cast: [['Theo', X.c, 'hurt']], say: ['Dior', 'Girls, you chose one boy. The boy you have chosen to dump is… Theo.', 'dior'],
         pops: [['Theo', 'Dumped', 'red', 'crack']], rel: [['leave', 'Theo']],
@@ -552,6 +629,10 @@ const SCREENS = {
     rel: [['couple', 'Bridgette', 'Geoff'], ['couple', 'Priya', 'Alejandro'], ['couple', 'Zoey', 'Duncan'], ['couple', 'Courtney', 'Scott'],
       ['flirt', 'Alejandro', 'Kelly'], ['flirt', 'Scott', 'Ella'], ['flirt', 'Priya', 'Jake'], ['crush', 'Jake', 'Priya', 3], ['crush', 'Priya', 'Jake', 2],
       ['crush', 'Ella', 'Scott', 2], ['crush', 'Kelly', 'Alejandro', 2]],
+    D: { 'Bridgette>Geoff': { r: 9, f: 8 }, 'Geoff>Bridgette': { r: 9, f: 8 }, 'Zoey>Duncan': { r: 8, f: 5 }, 'Duncan>Zoey': { r: 7, f: 5 },
+      'Priya>Jake': { r: 7, f: 4 }, 'Jake>Priya': { r: 8, f: 5 }, 'Priya>Alejandro': { r: 2, f: 4 }, 'Alejandro>Priya': { r: 3, f: 4 },
+      'Alejandro>Kelly': { r: 5, f: 3 }, 'Kelly>Alejandro': { r: 7, f: 4 }, 'Scott>Ella': { r: 6, f: 2 }, 'Ella>Scott': { r: 5, f: 2 },
+      'Courtney>Scott': { r: 5, f: 4 }, 'Scott>Courtney': { r: 1, f: 1, s: 5, t: 5 } },
     steps: [
       { bg: 'casa', cast: [['Dior', X.c, 'speak']], say: ['Dior', 'Boys. The girls are back from Casa Amor… and they might not be alone.', 'dior'],
         fx: { neon: ['Casa Amor', '#14c8bb'] }, card: { k: 'Dior', t: 'The girls are back from Casa Amor.' } },
@@ -565,6 +646,7 @@ const SCREENS = {
       { bg: 'night', close: true, cast: [['Courtney', X.l, 'hurt'], ['Scott', X.c, 'back'], ['Ella', X.r, 'back']], say: ['Courtney', 'Are you actually serious right now?'],
         pops: [['Courtney', 'Mugged off', 'red', 'crack'], ['Scott', 'Villain edit', 'down']], fx: { deal1: ['Courtney', 'stick'], toast: ['Major moment', 'She stuck. He didn\'t.'], shake: true },
         rel: [['uncouple', 'Courtney', 'Scott'], ['couple', 'Scott', 'Ella'], ['rival', 'Courtney', 'Scott']],
+        d: { 'Scott>Courtney': { s: 0, t: 1 }, 'Courtney>Scott': { r: 1, f: -7 }, 'Courtney>Ella': { f: -3 } },
         card: { k: 'Stick — and mugged off', t: 'Courtney walks in alone to Scott with his arm round Ella. Single, and safe.', big: true }, mood: { Scott: -11, Courtney: 10 } },
       { bg: 'night', cast: [['Duncan', X.l, 'back'], ['Zoey', X.r, 'speak']], say: ['Zoey', 'Turns out the girl who stole you is the one who stays loyal. Who knew?'],
         pops: [['Duncan', 'Connection +++', 'heart']], fx: { deal1: ['Zoey', 'stick'] }, rel: [['warm', 'Zoey', 'Duncan']],
@@ -578,6 +660,9 @@ const SCREENS = {
     tab: 'The Final', hud: 'Day 43 · Episode 15', sub: 'The public decides',
     cast: ['Alejandro', 'Bridgette', 'Duncan', 'Geoff', 'Jake', 'Kelly', 'Priya', 'Zoey'],
     rel: [['couple', 'Bridgette', 'Geoff'], ['warm', 'Bridgette', 'Geoff'], ['couple', 'Zoey', 'Duncan'], ['couple', 'Priya', 'Jake'], ['couple', 'Alejandro', 'Kelly']],
+    D: { 'Bridgette>Geoff': { r: 10, f: 9 }, 'Geoff>Bridgette': { r: 10, f: 9 }, 'Zoey>Duncan': { r: 8, f: 6 }, 'Duncan>Zoey': { r: 8, f: 6 },
+      'Priya>Jake': { r: 6, f: 5 }, 'Jake>Priya': { r: 8, f: 6 }, 'Alejandro>Kelly': { r: 3, f: 4, s: 7, t: 7 }, 'Kelly>Alejandro': { r: 7, f: 5 },
+      'Priya>Alejandro': { r: 0, f: 5 }, 'Alejandro>Priya': { r: 2, f: 5 } },
     board: [['Alejandro & Kelly', 7.9], ['Jake & Priya', 17.4], ['Duncan & Zoey', 26.3], ['Bridgette & Geoff', 48.4]],
     steps: [
       { bg: 'final', cast: [['Dior', X.l, 'speak']], say: ['Dior', 'Four couples. One vote. The public have chosen their Perfect Match. In fourth place…', 'dior'],
@@ -625,7 +710,53 @@ function relAt(S, upto) {
   return R;
 }
 
+// ── The relationship store: one record per DIRECTION (A>B is not B>A).
+// r romance 0-10 · f friendship -10..10 · s what A SHOWS · t what B THINKS A feels.
+// Crush ops from the heart-map data write here too, so there is one store.
+function dimsAt(S, upto) {
+  const D = {};
+  const put = (key, patch) => { const cur = D[key] || { r: 0, f: 0 }; D[key] = { ...cur, ...patch }; };
+  for (const [k, v] of Object.entries(S.D || {})) put(k, v);
+  const ops = [...S.rel];
+  S.steps.forEach((st, i) => {
+    if (i > upto) return;
+    (st.rel || []).forEach(o => ops.push(o));
+    for (const [k, v] of Object.entries(st.d || {})) put(k, v);
+  });
+  for (const [op, a, b, v] of ops) {
+    if (op === 'crush') put(`${a}>${b}`, { r: Math.max(D[`${a}>${b}`]?.r || 0, v * 3) });
+    if (op === 'crushSet') put(`${a}>${b}`, { r: v * 3 });
+  }
+  for (const rec of Object.values(D)) { if (rec.s == null) rec.s = rec.r; if (rec.t == null) rec.t = rec.s; }
+  return D;
+}
+const dim = (D, a, b) => D[`${a}>${b}`] || { r: 0, f: 0, s: 0, t: 0 };
+
+/* The label is NARRATION, so thresholds are fine here (CLAUDE.md). It reads
+   the truth both ways, what is shown, and whether the pair is coupled. */
+function relLabel(D, R, a, b) {
+  const me = dim(D, a, b), them = dim(D, b, a);
+  const coupled = R.couples.includes([a, b].sort().join('|'));
+  if (me.s - me.r >= 4 && me.r <= 3) return ['fake', 'Faking it'];
+  if (coupled) {
+    if (me.r >= 7 && them.r >= 7) return ['love', 'Head over heels'];
+    if (me.r >= 6 && them.r <= 3) return ['alone', 'All in — alone'];
+    if (me.r <= 3 && them.r >= 6) return ['surv', 'Not feeling it'];
+    if (me.r <= 3 && them.r <= 3) return ['surv', 'Couple for survival'];
+    return ['love', 'Coupled'];
+  }
+  if (me.r >= 6 && me.s <= 2) return ['hidden', 'Hidden crush'];
+  if (me.r >= 6 && me.f <= -2) return ['mixed', "Fancies, can't stand"];
+  if (me.r >= 6 && them.r >= 6) return ['crush', 'Mutual spark'];
+  if (me.r >= 5) return ['crush', 'One-way crush'];
+  if (me.r <= 1 && me.f >= 5 && them.r >= 6) return ['zone', 'Friend-zoning'];
+  if (me.f <= -5) return ['rival', 'Can\'t stand'];
+  if (me.f >= 6 && me.r <= 1) return ['friend', 'Just friends'];
+  return null;
+}
+
 function drawMap(S, R) {
+  const D = dimsAt(S, idx);
   const names = S.cast, n = names.length, cx = 140, cy = 132, rad = 104;
   const P = Object.fromEntries(names.map((nm, i) => {
     const a = -Math.PI / 2 + i * 2 * Math.PI / n; return [nm, [cx + Math.cos(a) * rad, cy + Math.sin(a) * rad]];
@@ -637,15 +768,16 @@ function drawMap(S, R) {
     const qx = mx + (-dy / len) * bend + (cx - mx) * .18, qy = my + (dx / len) * bend + (cy - my) * .18;
     // stop short of the node so arrowheads show
     const sx = x1 + dx / len * 16, sy = y1 + dy / len * 16, ex = x2 - dx / len * 18, ey = y2 - dy / len * 18;
-    return `<path class="edge ${cls}" ${extra} d="M${sx} ${sy} Q${qx} ${qy} ${ex} ${ey}" ${marker}/>`;
+    return `<path class="edge ${cls}" data-a="${a}" data-b="${b}" ${extra} d="M${sx} ${sy} Q${qx} ${qy} ${ex} ${ey}" ${marker}/>`;
   };
   let e = '';
   for (const key of R.rival) { const [a, b] = key.split('|'); if (live(a) && live(b)) e += edge(a, b, 'rival' + (R.fresh.has(key) ? ' new' : ''), '', 0); }
-  for (const [ab, v] of Object.entries(R.crush)) {
-    const [a, b] = ab.split('>'); if (!live(a) || !live(b) || v <= 0) continue;
-    const coupled = R.couples.includes([a, b].sort().join('|'));
-    if (coupled) continue;
-    e += edge(a, b, 'crush' + (R.fresh.has(ab) ? ' new' : ''), `style="--w:${.8 + v * .9}"`, 14, 'marker-end="url(#arr)"');
+  for (const [ab, rec] of Object.entries(D)) {
+    const [a, b] = ab.split('>'); if (!live(a) || !live(b) || rec.r < 5) continue;
+    if (!S.cast.includes(a) || !S.cast.includes(b)) continue;
+    if (R.couples.includes([a, b].sort().join('|'))) continue;
+    const hidden = rec.s <= 2 ? ' style-hidden' : '';
+    e += edge(a, b, 'crush' + hidden + (R.fresh.has(ab) ? ' new' : ''), `style="--w:${.6 + rec.r * .32};${rec.s <= 2 ? 'stroke:#a855f7;stroke-dasharray:2 3' : ''}"`, 14, 'marker-end="url(#arr)"');
   }
   for (const key of R.flirt) { const [a, b] = key.split('|'); if (live(a) && live(b)) e += edge(a, b, 'flirt' + (R.fresh.has(key) ? ' new' : ''), '', -10); }
   for (const key of R.couples) {
@@ -657,8 +789,8 @@ function drawMap(S, R) {
   }
   const nodes = names.map((nm, i) => {
     const [x, y] = P[nm], id = 'c' + i;
-    const cls = R.gone.has(nm) ? 'gone' : R.away.has(nm) ? 'gone' : '';
-    return `<g class="node ${cls}"><clipPath id="${id}"><circle cx="${x}" cy="${y}" r="14"/></clipPath>
+    const cls = (R.gone.has(nm) ? 'gone' : R.away.has(nm) ? 'gone' : '') + (nm === sel ? ' sel' : '');
+    return `<g class="node ${cls}" data-n="${nm}"><clipPath id="${id}"><circle cx="${x}" cy="${y}" r="14"/></clipPath>
       <circle cx="${x}" cy="${y}" r="14" fill="${(COLOR[nm] || ['#ffd1e6'])[0]}"/>
       ${src(nm) ? `<image href="${src(nm)}" x="${x - 14}" y="${y - 14}" width="28" height="28" clip-path="url(#${id})" preserveAspectRatio="xMidYMid slice"/>` : `<text x="${x}" y="${y + 3.5}" style="font-weight:800;fill:#fff">${ini(nm)}</text>`}
       <circle class="ring" cx="${x}" cy="${y}" r="14"/><text x="${x}" y="${y + (y > cy ? 27 : -19)}">${nm}</text></g>`;
@@ -667,20 +799,60 @@ function drawMap(S, R) {
     <linearGradient id="gCouple" x1="0" x2="1"><stop offset="0" stop-color="#ff7a59"/><stop offset="1" stop-color="#ff2e88"/></linearGradient>
     <marker id="arr" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#ff4fa0"/></marker></defs>${e}${nodes}</svg>`;
 
-  // who fancies whom, strongest first
-  const rows = Object.entries(R.crush).filter(([ab, v]) => { const [a, b] = ab.split('>'); return v > 0 && live(a) && live(b); })
-    .sort((x, y) => y[1] - x[1]).slice(0, 8);
-  const hearts = v => [1, 2, 3].map(i => `<svg viewBox="-20 -14 40 27" class="${i <= v ? '' : 'e'}"><path d="${HEART}"/></svg>`).join('');
-  document.getElementById('likes').innerHTML = rows.map(([ab, v]) => { const [a, b] = ab.split('>');
-    return `<div>${mini(a)}<b>${a}</b>&nbsp;fancies&nbsp;<b>${b}</b><span class="hearts">${hearts(v)}</span></div>`; }).join('')
-    + R.flirt.filter(k => k.split('|').every(live)).map(k => { const [a, b] = k.split('|');
-      return `<div>${mini(a)}<b>${a}</b>&nbsp;&amp;&nbsp;<b>${b}</b>&nbsp;<span style="color:#a855f7;font-weight:700">flirting in secret</span></div>`; }).join('');
+  // Focus: with somebody picked, everything that is not theirs fades.
+  const svg = document.querySelector('#map svg');
+  if (sel && S.cast.includes(sel)) svg.querySelectorAll('path.edge').forEach(p => {
+    if (p.dataset.a !== sel && p.dataset.b !== sel) p.classList.add('faded');
+  });
+  svg.querySelectorAll('.node').forEach(g => g.onclick = () => { sel = g.dataset.n; renderAside(); });
+  renderRel(S, R, D);
+}
+
+// ── The relationship viewer: one islander, everybody they have a story with.
+const EYE = '<svg viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3.5" fill="currentColor"/></svg>';
+const MASK = '<svg viewBox="0 0 24 24"><path d="M2 7c4-2 16-2 20 0-1 7-4 10-6 10-2 0-3-3-4-3s-2 3-4 3c-2 0-5-3-6-10z" fill="currentColor"/><circle cx="8" cy="10" r="1.6" fill="#fff"/><circle cx="16" cy="10" r="1.6" fill="#fff"/></svg>';
+function renderRel(S, R, D) {
+  const names = S.cast.filter(n => n !== 'Dior');
+  if (!sel || !names.includes(sel)) sel = names[0];
+  document.getElementById('picker').innerHTML = names.map(n =>
+    `<button class="${n === sel ? 'on' : ''} ${R.gone.has(n) || R.away.has(n) ? 'gone' : ''}" data-n="${n}" title="${n}">${mini(n)}</button>`).join('');
+  document.querySelectorAll('#picker button').forEach(b => b.onclick = () => { sel = b.dataset.n; renderAside(); });
+  const X = sel;
+  const bars = (rec) => `<div class="bar2 rom"><i style="width:${rec.r * 10}%"></i>${rec.s !== rec.r ? `<span class="ghost" style="left:calc(${rec.s * 10}% - 1px)" title="shows"></span>` : ''}</div>
+    <div class="bar2 fr"><i style="${rec.f >= 0 ? `left:50%;width:${rec.f * 5}%;background:#14b8a6` : `left:${50 + rec.f * 5}%;width:${-rec.f * 5}%;background:#ef4444`}"></i></div>`;
+  const others = names.filter(n => n !== X).map(Y => {
+    const out = dim(D, X, Y), inc = dim(D, Y, X);
+    const known = D[`${X}>${Y}`] || D[`${Y}>${X}`];
+    const coupled = R.couples.includes([X, Y].sort().join('|'));
+    const weight = (coupled ? 100 : 0) + out.r * 3 + inc.r * 2 + Math.abs(out.f) + Math.abs(inc.f);
+    return { Y, out, inc, known, coupled, weight };
+  }).filter(o => o.known).sort((a, b) => b.weight - a.weight);
+  const coupledWith = names.find(n => R.couples.includes([X, n].sort().join('|')));
+  const rows = others.map(({ Y, out, inc }) => {
+    const lab = relLabel(D, R, X, Y), back = relLabel(D, R, Y, X);
+    const notes = [];
+    if (out.s !== out.r && Math.abs(out.s - out.r) >= 3) notes.push(`<div class="belief shows">${MASK}<span>${X} <b>shows</b> ${out.s}/10 romance to ${Y} — really feels ${out.r}.</span></div>`);
+    if (Math.abs(inc.t - inc.r) >= 3) notes.push(`<div class="belief thinks">${EYE}<span>${X} <b>believes</b> ${Y} is at ${inc.t}/10 — really ${inc.r}.</span></div>`);
+    if (Math.abs(out.t - out.r) >= 3 && out.t !== out.s) notes.push(`<div class="belief thinks">${EYE}<span>${Y} <b>believes</b> ${X} is at ${out.t}/10 — really ${out.r}.</span></div>`);
+    else if (Math.abs(out.t - out.r) >= 3) notes.push(`<div class="belief thinks">${EYE}<span>${Y} <b>believes</b> ${X} is at ${out.t}/10.</span></div>`);
+    return `<div class="rrow"><div class="top">${mini(Y)}<b>${Y}</b>
+      ${lab ? `<span class="tagx ${lab[0]}" title="${X} → ${Y}">${lab[1]}</span>` : ''}
+      ${back && (!lab || back[1] !== lab[1]) ? `<span class="tagx ${back[0]}" style="opacity:.75" title="${Y} → ${X}">${Y}: ${back[1]}</span>` : ''}</div>
+      <div class="dirh"><span></span><span>Romance</span><span>Friendship</span></div>
+      <div class="dir"><span class="lbl">${X} →</span>${bars(out)}</div>
+      <div class="dir"><span class="lbl">← ${Y}</span>${bars(inc)}</div>${notes.join('')}</div>`;
+  }).join('');
+  document.getElementById('rel').innerHTML = `<div class="relhead">${mini(X)}<div><b>${X}</b>
+    <span>${R.gone.has(X) ? 'Dumped' : coupledWith ? `Coupled with ${coupledWith}` : 'Single'} · ${others.length} people with a story</span></div></div>
+    ${rows || '<p class="rest">Nobody yet.</p>'}<p class="rest">Everyone else: acquaintances.</p>`;
 }
 
 // ══════════════════════════════════════════════════════════════════════
 // The stage
 // ══════════════════════════════════════════════════════════════════════
-let cur = 'villa', idx = -1, typing = null, dtab = 'mood';
+let cur = 'villa', idx = -1, typing = null, sel = null;
+// The Debug tab reports on the last screen you were watching, at your last click.
+let watched = { screen: 'villa', idx: -1 };
 const $ = s => document.querySelector(s);
 const stage = $('#stage');
 
@@ -839,11 +1011,11 @@ function labelOf(a) {
   if (a >= -5) return ['invisible', 'Invisible']; if (a >= -25) return ['divisive', 'Divisive']; if (a >= -60) return ['disliked', 'Disliked'];
   return ['villain', 'Villain'];
 }
-function moodAt() {
+function moodAt(screen = cur, at = idx) {
   const order = Object.keys(SCREENS), m = { ...MOOD0 }, air = {};
   for (const key of order) {
     const steps = SCREENS[key].steps;
-    const upto = key === cur ? idx : order.indexOf(key) < order.indexOf(cur) ? steps.length - 1 : -1;
+    const upto = key === screen ? at : order.indexOf(key) < order.indexOf(screen) ? steps.length - 1 : -1;
     for (let k = 0; k <= upto; k++) {
       for (const [n, d] of Object.entries(steps[k].mood || {})) m[n] = (m[n] ?? 0) + d * 1.6;
       if (!steps[k].raw) for (const [n] of steps[k].cast) air[n] = (air[n] || 0) + 1;
@@ -851,22 +1023,31 @@ function moodAt() {
   }
   return { m, air };
 }
-function renderDebug() {
-  const S = SCREENS[cur], R = relAt(S, idx), { m, air } = moodAt();
-  $('#dtabs').innerHTML = [['mood', 'Public mood'], ['air', 'Airtime'], ['attr', 'Attraction']].map(([k, l]) => `<button data-k="${k}" class="${dtab === k ? 'on' : ''}">${l}</button>`).join('');
-  $('#dtabs').querySelectorAll('button').forEach(b => b.onclick = () => { dtab = b.dataset.k; renderDebug(); });
+// ── THE DEBUG SCREEN: its own tab, like the other shows' debug screens.
+// It reports on the screen you were last watching, at your last click.
+function renderDebugScreen() {
+  const S = SCREENS[watched.screen], at = watched.idx, R = relAt(S, at), D = dimsAt(S, at), { m, air } = moodAt(watched.screen, at);
   const names = [...S.cast].filter(n => n !== 'Dior').sort();
-  if (dtab === 'mood') $('#dbody').innerHTML = `<p class="note">What the country thinks, from aired footage only. Never read by the islanders.</p>` + names.map(n => {
+  const mood = names.map(n => {
     const a = Math.max(-100, Math.min(100, m[n] ?? 0)), [c, l] = labelOf(a);
-    return `<div class="mrow ${R.gone.has(n) ? 'gone' : ''}">${mini(n)}<div><div class="nm"><span>${n}</span><span class="lab ${c}">${l}</span></div>
+    return `<div class="mrow ${R.gone.has(n) ? 'gone' : ''}">${mini(n)}<div><div class="nm"><span>${n}</span><span class="lab ${c}">${l} · ${Math.round(a)}</span></div>
       <div class="gauge"><i style="left:${a >= 0 ? 50 : 50 + a / 2}%;width:${Math.abs(a) / 2}%;background:${a >= 0 ? 'linear-gradient(90deg,#ff7a59,#ff2e88)' : 'linear-gradient(90deg,#7f1d1d,#f87171)'}"></i></div></div></div>`; }).join('');
-  if (dtab === 'air') { const max = Math.max(1, ...Object.values(air));
-    $('#dbody').innerHTML = `<p class="note">Aired scenes each islander appeared in so far.</p>` + names.map(n => `<div class="mrow">${mini(n)}<div><div class="nm"><span>${n}</span><span>${air[n] || 0}</span></div>
-      <div class="gauge"><i style="left:0;width:${100 * (air[n] || 0) / max}%;background:linear-gradient(90deg,#ffc15e,#ff7a59)"></i></div></div></div>`).join(''); }
-  if (dtab === 'attr') {
-    const rows = Object.entries(R.crush).sort((a, b) => b[1] - a[1]);
-    $('#dbody').innerHTML = `<p class="note">Raw attraction, 0–3 in this mockup (0–10 in the engine).</p><table class="matrix"><tr><th>From</th><th>To</th><th>Level</th></tr>${rows.map(([ab, v]) => { const [a, b] = ab.split('>'); return `<tr><td>${a}</td><td>${b}</td><td>${v}</td></tr>`; }).join('')}</table>`;
-  }
+  const max = Math.max(1, ...Object.values(air));
+  const airRows = names.map(n => `<div class="mrow">${mini(n)}<div><div class="nm"><span>${n}</span><span>${air[n] || 0} scenes</span></div>
+      <div class="gauge"><i style="left:0;width:${100 * (air[n] || 0) / max}%;background:linear-gradient(90deg,#ffc15e,#ff7a59)"></i></div></div></div>`).join('');
+  const heat = (key, colour) => `<table class="heat"><tr><th></th>${names.map(n => `<th class="rot"><span>${n}</span></th>`).join('')}</tr>
+    ${names.map(a => `<tr><th style="text-align:right">${a}</th>${names.map(b => {
+      if (a === b) return '<td class="self"></td>';
+      const v = dim(D, a, b)[key];
+      return `<td style="background:${colour(v)}" title="${a} → ${b}: ${v}">${v || ''}</td>`; }).join('')}</tr>`).join('')}</table>`;
+  const rom = v => v ? `rgba(255,46,136,${.15 + v / 11})` : 'transparent';
+  const fr = v => v > 0 ? `rgba(20,184,166,${.15 + v / 11})` : v < 0 ? `rgba(239,68,68,${.15 - v / 11})` : 'transparent';
+  $('#debugScreen').innerHTML = `
+    <div class="panel wide"><h3>Debug · ${S.tab} · ${at >= 0 ? `after click ${at + 1}` : 'at rest'}</h3><p class="note">Engine numbers. The islanders never see any of this, and the public sees only the first two.</p></div>
+    <div class="panel"><h3>Public mood</h3><p class="note">Approval from aired footage only.</p>${mood}</div>
+    <div class="panel"><h3>Airtime</h3><p class="note">Aired scenes so far.</p>${airRows}</div>
+    <div class="panel wide"><h3>Romance · row feels for column</h3><p class="note">One-way: read across a row for what that islander feels.</p>${heat('r', rom)}</div>
+    <div class="panel wide"><h3>Friendship · row feels for column</h3>${heat('f', fr)}</div>`;
 }
 function cardHtml(st, i) {
   const S = SCREENS[cur], c = st.card;
@@ -884,21 +1065,31 @@ function renderRail() {
   $('#rail').innerHTML = S.phases.map((p, i) => `<span class="${i === at ? 'on' : i < at ? 'done' : ''}">${i + 1}. ${p}</span>`).join('');
 }
 let lastBg = null;
+function renderAside() { const S = SCREENS[cur === 'debug' ? watched.screen : cur]; drawMap(S, relAt(S, cur === 'debug' ? watched.idx : idx)); }
 function paint(fresh) {
+  const isDebug = cur === 'debug';
+  $('#debugScreen').hidden = !isDebug;
+  ['#stage', '#rail', '#cards'].forEach(s => { $(s).hidden = isDebug; });
+  document.querySelector('.controls').style.visibility = isDebug ? 'hidden' : '';
+  if (isDebug) { renderDebugScreen(); renderAside(); return; }
+  watched = { screen: cur, idx };
   const S = SCREENS[cur], y = window.scrollY;
   if (idx < 0) { buildStage(S, { bg: S.steps[0].bg }); const hl = stage.querySelector('.headline'); hl.textContent = S.sub; hl.classList.add('on'); }
   else paintStage(S, idx, fresh, lastBg);
   lastBg = idx >= 0 ? S.steps[idx].bg : null;
   $('#cards').innerHTML = `<div class="card"><div class="fx">${mini('Dior')}</div><div><div class="k">${S.tab} · ${S.hud}</div><p>${S.sub}</p></div></div>`
     + S.steps.slice(0, idx + 1).map(cardHtml).join('');
-  renderRail(); drawMap(S, relAt(S, idx)); renderDebug();
+  if (fresh) { const sp = S.steps[idx]?.cast.find(c => c[2] === 'speak'); if (sp && sp[0] !== 'Dior' && S.cast.includes(sp[0])) sel = sp[0]; }
+  renderRail(); renderAside();
   $('#count').textContent = `${Math.max(0, idx + 1)} / ${S.steps.length}`;
   window.scrollTo(0, y);
   if (fresh) document.getElementById(`card-${idx}`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 function tabs() {
-  $('#tabs').innerHTML = Object.entries(SCREENS).map(([k, s]) => `<button data-k="${k}" class="${k === cur ? 'on' : ''}">${s.tab}</button>`).join('');
-  $('#tabs').querySelectorAll('button').forEach(b => b.onclick = () => { cur = b.dataset.k; idx = -1; lastBg = null; tabs(); paint(false); });
+  $('#tabs').innerHTML = Object.entries(SCREENS).map(([k, s]) => `<button data-k="${k}" class="${k === cur ? 'on' : ''}">${s.tab}</button>`).join('')
+    + `<button data-k="debug" class="${cur === 'debug' ? 'on' : ''}" style="border-style:dashed">Debug</button>`;
+  $('#tabs').querySelectorAll('button').forEach(b => b.onclick = () => {
+    const k = b.dataset.k; cur = k; if (k !== 'debug') { idx = -1; lastBg = null; } tabs(); paint(false); });
 }
 function theme(set) {
   const root = document.documentElement;
@@ -909,8 +1100,8 @@ function theme(set) {
 }
 $('#theme').onclick = () => theme();
 try { const t = localStorage.getItem('pm-theme'); if (t) theme(t === 'dark'); else theme(matchMedia('(prefers-color-scheme: dark)').matches); } catch { theme(false); }
-$('#next').onclick = () => { if (idx < SCREENS[cur].steps.length - 1) { idx++; paint(true); } };
-$('#all').onclick = () => { idx = SCREENS[cur].steps.length - 1; paint(false); };
+$('#next').onclick = () => { if (cur !== 'debug' && idx < SCREENS[cur].steps.length - 1) { idx++; paint(true); } };
+$('#all').onclick = () => { if (cur === 'debug') return; idx = SCREENS[cur].steps.length - 1; paint(false); };
 $('#reset').onclick = () => { idx = -1; lastBg = null; paint(false); };
 document.addEventListener('keydown', e => { if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); $('#next').click(); } });
 window.step = k => { lastBg = k > 0 ? SCREENS[cur].steps[k - 1].bg : null; idx = k; paint(true); };

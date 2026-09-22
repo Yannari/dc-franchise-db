@@ -68,9 +68,12 @@ What the format actually is:
 allows). Her own voice, never borrowed catchphrases. Runs every coupling,
 dumping and the final, and makes surprise appearances for big twists.
 
-**Narrator:** a comic voiceover alongside Dior, mocking the villa over the
-action. Name and voice are an author setting with a default voice; the
-narrator only ever describes what is on screen (no knowledge the edit lacks).
+**Narrator:** a British comic voiceover alongside Dior, in the spirit of Iain
+Stirling — dry, sarcastic, fond of the islanders while mocking them, and
+never mean about anyone the show is treating as a victim. An original
+character with his own lines, not borrowed catchphrases. His name is an
+author setting. He only ever describes what is on screen (no knowledge the
+edit lacks).
 
 **Texts** ("I got a text!") are anonymous, as on the real show.
 
@@ -293,8 +296,16 @@ Reuses the Traitors two-ledger pattern (`js/tr/crowd.js`, §14.8) and
 
 - **Approval** −100…+100: decides votes. Written into `gs.popularity`
   (scaled ×2 against Total Drama — this show is sold on the vote).
-- **Fame** ≥ 0, never decreases: how much of you aired. The "leave famous"
-  number; career pages read both. Kept on its own ledger.
+- **Fame** ≥ 0, never decreases: **screen time**, any tone. Kept on its own
+  ledger. A villain with a huge edit is very famous; a sweetheart nobody
+  filmed is not.
+- **Followers** (what the islander leaves with) are derived, not a third
+  ledger: `followers ∝ fame × (1 + 0.6 × approval / 100)`, so the multiplier
+  runs 0.4 (hated) to 1.6 (adored). With equal screen time the loved islander
+  gains the most, but a heavily aired villain still out-gains a quiet
+  favourite — hate-follows are real, brand deals are not. Career pages read
+  followers; the post-show life layer can read approval for which offers
+  arrive.
 - **Only aired events write either ledger.** Each event type has a weight;
   per-event approval moves 0.3–1.5, major moments 4–8. Drama earns fame on
   its own and approval when magnetic (the villain-wins case, UK series 8).
@@ -369,7 +380,9 @@ rate is zero).
 
 ## 10. The dumping scene
 
-Its own screen, not a line.
+Its own screen, not a line. The five items below are **phases**, each
+carrying as many events as the night produces (a big dumping runs to
+20–30 events), with confessional cutaways throughout.
 
 1. **Build-up** — Dior's pause, at-risk couples standing, faces lit one at a
    time; order carries no result.

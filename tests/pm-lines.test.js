@@ -38,6 +38,26 @@ describe('the pools are well-formed', () => {
       expect(FACT_KEYS, `${k} ${e.id}: ${key}`).toContain(key);
     }
   });
+  it('a scene only names the people its kind casts', () => {
+    // comedy casts one islander, gossip three, everything else two. A {b}
+    // in a one-person scene renders as a raw placeholder, or as nobody.
+    const CAST = { comedy: 1, gossip: 3 };
+    for (const [k, e] of ENTRIES) {
+      if (k.startsWith('hut:')) continue;
+      const size = CAST[k] || 2;
+      const allowed = ['a', 'b', 'c'].slice(0, size);
+      for (const x of texts(e)) for (const [, who] of x.matchAll(/\{([abc])/g)) expect(allowed, `${k} ${e.id}: ${x}`).toContain(who);
+      for (const [who] of turns(e)) if (['a', 'b', 'c'].includes(who)) expect(allowed, `${k} ${e.id}`).toContain(who);
+    }
+  });
+  it('every day-to-day pool has at least three scenes anyone can get', () => {
+    // A condition that matches nobody must still find a scene. Gossip is cast
+    // only for a witness, so `knows` is always true there and counts as none.
+    for (const [k, pool] of Object.entries(POOLS)) {
+      const open = pool.filter(e => !e.when || (k === 'gossip' && Object.keys(e.when).join() === 'knows'));
+      expect(open.length, k).toBeGreaterThanOrEqual(3);
+    }
+  });
   it('every variant block has a plain reply with no condition', () => {
     for (const [k, e] of ENTRIES) for (const t of e.turns || []) {
       if (!Array.isArray(t)) expect(t.vary.some(v => !v.when), `${k} ${e.id}`).toBe(true);

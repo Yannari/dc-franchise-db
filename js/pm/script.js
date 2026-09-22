@@ -26,7 +26,7 @@ export { HUT };
 export const SPEAKERS = ['a', 'b', 'c', 'dior', 'narrator'];
 export const FACT_KEYS = ['rung', 'thinks', 'persona', 'intent', 'attachment', 'mood', 'bombshell',
   'early', 'coupled', 'gap', 'knows', 'faking', 'bPersona', 'bMood', 'bRung', 'stance', 'family',
-  'choice', 'cause', 'channel', 'stole', 'bTaken', 'archetype', 'taken', 'loyal'];
+  'choice', 'cause', 'channel', 'stole', 'bTaken', 'archetype', 'taken', 'loyal', 'late', 'gender', 'bGender', 'myRung', 'phase'];
 
 // Archetype groups a pool may name instead of listing them (CLAUDE.md).
 export const VILLAINS = ['villain', 'mastermind', 'schemer'];
@@ -79,9 +79,16 @@ export function factsFor(state, ev) {
     bTaken: !!b && !!partnerOf(state, b) && partnerOf(state, b) !== a,
     archetype: players.find(p => p.name === a)?.archetype || null,
     taken: !!partnerOf(state, a) && partnerOf(state, a) !== b,
+    // Where a stands with a's OWN partner — for scenes where b is somebody else.
+    myRung: partnerOf(state, a) ? stepOf(state, a, partnerOf(state, a)) : null,
     // Narration only: a threshold picks words, never an outcome (CLAUDE.md).
     loyal: (pa?.stats?.loyalty ?? 5) >= 7,
+    late: state.ep >= 9,                     // "weeks" is only true from here
+    // A line says "the girls" or "the lads" only when the roster says so.
+    gender: players.find(p => p.name === a)?.gender || null,
+    bGender: b ? players.find(p => p.name === b)?.gender || null : null,
   };
+  f.phase = ev.phase || null;          // morning, day, event (the challenge), evening, firepit…
   for (const k of ['choice', 'cause', 'channel', 'stole']) if (ev.extra?.[k] != null) f[k] = ev.extra[k];
   return f;
 }
@@ -96,8 +103,8 @@ function matches(when, facts) {
 }
 
 // ── the repetition guard ─────────────────────────────────────────────
-// Never the same entry twice for one pair in a season; an entry used this
-// episode or lately is heavily discounted, so a pool is walked, not looped.
+// Never the same entry twice for one pair in a season, never twice in one
+// episode, and discounted for three episodes after: a pool is walked, not looped.
 const pairKey = ps => [...ps].sort().join('+');
 function usage(state) { return (state.usedScripts ||= {}); }
 function weightFor(state, entry, ps, facts) {
@@ -105,8 +112,10 @@ function weightFor(state, entry, ps, facts) {
   let w = 1 + Object.keys(entry.when || {}).length;          // the more it fits, the likelier
   if (!u) return w;
   if (u.pairs.includes(pairKey(ps))) return 0;
+  // Twice in one episode is a repeat the viewer sees, whoever says it.
   const last = u.eps[u.eps.length - 1];
-  if (last === state.ep) w *= 0.1; else if (state.ep - last <= 3) w *= 0.4;
+  if (last === state.ep) return 0;
+  if (state.ep - last <= 3) w *= 0.4;
   return w;
 }
 function noteUse(state, entry, ps) {

@@ -743,6 +743,27 @@ change), islander decisions never read approval/fame, bombshell reads aired
 only, reveal-order spoilers, stage at rest shows nothing, replay freezes aired
 episodes. Each verified by breaking the thing it guards (§11.5 J).
 
+**After Plan 3 (the writing), 100 seasons, 2026-09-22:**
+
+| measure | Plan 1 | Plan 3 |
+|---|---|---|
+| Fan Favourite + Villain by ep 8 | 33% | 38% |
+| … by ep 12 | 70% | 79% |
+| repeated line + cast in a season | 45% | 7.5% |
+| hut cutaways per episode | 24.9% | 19.1% — fewer, every one about its scene |
+| two-faced share of cutaways | 80–97% by mid-season | ~40%, peaking at Casa |
+| four couples at the final | 76% | 74% |
+| narrator lines per episode | — | 4–6, spread over the day |
+| placeholder scenes left in a season | all moments | 0 |
+
+What moved the engine numbers, all found by reading a played season rather
+than by a red test: two-faced huts had gone stale (any secret, however old),
+the stance now reads this episode and the last; friendships were cast at
+random, they now favour islanders who aren't attracted to each other; a
+couple could be cosy an hour after a row, warm scenes now cool off and the
+next one is a making-up scene; a late walker could leave a single in a
+couples-only final, the partner now leaves with them.
+
 ---
 
 ## 16. Order of work (§10)

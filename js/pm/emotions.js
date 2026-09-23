@@ -43,6 +43,8 @@ export function emo(state, n) {
   return ((state.emo ||= {})[n] ||= { security: 5, confidence: 5, loneliness: 1, guilt: 0, heartbreak: 0,
     stress: 1, jealousy: {}, heartbreakFrom: null });
 }
+/** Jealousy is of somebody: `who` grows jealous of `rival` (a keyed map, not a number). */
+export function jealousOf(state, who, rival, d) { const e = emo(state, who); e.jealousy[rival] = clamp((e.jealousy[rival] || 0) + d, 0, 10); }
 export function feel(state, n, key, d) { const e = emo(state, n); e[key] = clamp(e[key] + d, 0, 10); return e[key]; }
 
 /** Stress wears the temper down: the same slight lands harder in week five. */

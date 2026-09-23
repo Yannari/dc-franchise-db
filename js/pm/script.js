@@ -254,6 +254,15 @@ export function fill(text, ps, partners = {}) {
   const names = { a: ps[0], b: ps[1], c: ps[2], d: ps[3], pa: partners.pa, pb: partners.pb };
   // {quote}: the first thing said in the clip being replayed (Movie Night, the reunion).
   if (partners.day != null) text = text.replace(/\{day\}/g, String(partners.day));
+  // Night one's two sides, from the scene: who stands in the line (`side`)
+  // and who walks in to it. The pools never say "the girls" outright, so the
+  // season can bring either side in first (Villa options).
+  if (partners.side) {
+    const [sides, one, walkers, walkerOne] = partners.side === 'm' ? ['boys', 'boy', 'girls', 'girl'] : ['girls', 'girl', 'boys', 'boy'];
+    const cap = w => w[0].toUpperCase() + w.slice(1);
+    text = text.replace(/\{side\}/g, sides).replace(/\{Side\}/g, cap(sides)).replace(/\{sideOne\}/g, one)
+      .replace(/\{walkers\}/g, walkers).replace(/\{Walkers\}/g, cap(walkers)).replace(/\{walkerOne\}/g, walkerOne);
+  }
   if (partners.quote != null) text = text.replace(/\{quote\}/g, partners.quote).replace(/\{quoteWho\}/g, partners.quoteWho);
   return text.replace(/\{(pa|pb|a|b|c|d)(?:\.(sub|obj|pos|posAdj|ref|Sub|Obj|PosAdj|gf))?\}/g, (m, who, form) => {
     const n = names[who];
@@ -395,6 +404,7 @@ function castOf(ev) {
 
 /** A replayed clip is quoted, so the villa reacts to what is actually on the screen. */
 function clipSlots(state, ev) {
+  if (ev.extra?.side) return { side: ev.extra.side };
   // Look Who's Talking reads out a beach-hut line: the quote travels with the scene.
   if (ev.extra?.quote) return { quote: ev.extra.quote, quoteWho: ev.extra.quoteWho };
   const id = ev.extra?.clip || ev.extra?.revealed;

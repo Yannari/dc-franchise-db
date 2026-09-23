@@ -33,6 +33,8 @@ export const KIND_LABEL = {
   chat: 'A chat', 'deep-chat': 'A deep chat', kiss: 'A kiss', pull: 'Can I borrow you?', loyalty: 'Loyal',
   argument: 'An argument', friendship: 'Friends', gossip: 'Gossip', comedy: 'Villa life', ick: 'The ick',
   'challenge-kiss': 'A challenge kiss', 'challenge-win': 'Winners', entrance: 'A new arrival', date: 'The date',
+  'arrival-chat': 'Getting to know each other', 'first-toast': 'A toast', debrief: 'The debrief', 'bombshell-text': 'I got a text!',
+  'bombshell-guess': 'Who is it?', 'bombshell-react': 'All eyes on the steps',
   steal: 'A steal', 'recouple-pick': 'The recoupling', 'dump-buildup': 'At risk', 'dump-verdict': 'Dumped',
   'ballot-reveal': 'The vote', 'dump-reaction': 'The reaction', 'dump-goodbye': 'Goodbye', 'dump-fallout': 'Fallout',
   'casa-return': 'Stick or twist', photos: 'The photos', declaration: 'The declaration', 'final-result': 'The result',
@@ -146,7 +148,9 @@ function fxFor(row, e, first) {
   if (k === 'casa-return') fx.deal1 = [e.players[0], e.extra?.choice === 'twist' ? 'twist' : 'stick'];
   if (k === 'ballot-reveal' || k === 'ex-ballot' || k === 'save-vote') fx.deal = [[e.players[0], e.players[1]]];
   if (k === 'heart-rate') fx.ecg = [e.players[0]];
-  if (k === 'challenge-text' || k === 'mission-brief') fx.phone = true;
+  if (k === 'challenge-text' || k === 'mission-brief' || k === 'bombshell-text') fx.phone = true;
+  // The bombshell comes down the steps as a silhouette and lights up (stage.js).
+  if (k === 'entrance' && e.extra?.of === 'bombshell') fx.reveal = true;
   if (k === 'steal' || k === 'argument' || k === 'jealous-confront' || k === 'photos' || k === 'snogger-row') fx.shake = true;
   if (k === 'photos') fx.neon = ['Mugged off', '#ef4444'];
   if (k === 'movie-night' || k === 'reveal') fx.raw = true;
@@ -293,7 +297,11 @@ function finalSteps(row) {
 }
 
 // ── cutting a part of the day into screens ────────────────────────────
-function cut(scenes) {
+// Night one's parts are one screen each, however long (user: "the arrivals is
+// cut for no reason — 1 screen for the girls, 1 for the boys, then the coupling").
+const WHOLE = new Set(['arrival', 'arrival-2', 'coupling', 'debrief']);
+function cut(scenes, phase) {
+  if (WHOLE.has(phase)) return [scenes];
   const total = scenes.reduce((s, x) => s + x.steps.length, 0);
   if (total <= MAX_STEPS + 4) return [scenes];
   const n = Math.ceil(total / MAX_STEPS), target = total / n;
@@ -337,7 +345,7 @@ export function episodeScreens(row, opts = {}) {
       return { steps, big: steps[0].big };
     });
     const hasDump = evs.some(e => RAIL_OF[e.kind] != null);
-    cut(scenes).forEach((chunk, i) => {
+    cut(scenes, phase).forEach((chunk, i) => {
       const steps = chunk.flatMap(sc => sc.steps);
       if (hasDump) {
         let at = 0;

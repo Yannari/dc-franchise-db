@@ -143,6 +143,9 @@ export function paintStage(el, screen, idx, { fresh = false, hud = '' } = {}) {
     return `<div class="${cls}" data-n="${esc(n)}" style="left:${enters ? (x < 50 ? -15 : x > 50 ? 115 : x) : x}%;--c1:${c1};--c2:${c2}">
       <div class="${P('frame')}">${img(n) || `<div class="${P('ini')}">${esc(initials(n))}</div>`}</div><div class="${P('rim')}"></div></div>`;
   }).join('');
+  // The bombshell: a silhouette at the top of the steps under a spotlight,
+  // then the lights come up on the face (fresh only; a jump lands lit).
+  el.classList.toggle(P('revealing'), !!(fresh && st.fx?.reveal && st.sceneStart));
   if (fresh && st.sceneStart) requestAnimationFrame(() => requestAnimationFrame(() => {
     for (const [n, x] of st.cast) { const b = busts.querySelector(`[data-n="${CSS.escape(n)}"]`); if (b) b.style.left = x + '%'; }
   }));

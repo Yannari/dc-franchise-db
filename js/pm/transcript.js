@@ -16,7 +16,7 @@ import { roundExits, PERFECT_MATCH_FORMAT } from '../shows.js';
 
 const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-export const PM_PHASE_LABEL = { arrival: 'The arrivals', coupling: 'The first coupling',
+export const PM_PHASE_LABEL = { arrival: 'The arrivals', 'arrival-2': 'The arrivals', coupling: 'The first coupling', debrief: 'The debrief',
   morning: 'Morning', day: 'The day', event: 'The challenge', evening: 'Evening',
   firepit: 'The fire pit', dumping: 'The dumping', reunion: 'The reunion' };
 export const PM_MOMENT_TITLE = { 'first-coupling': 'The first coupling', bombshell: 'A bombshell arrives',
@@ -102,11 +102,16 @@ export function phasesOf(row) {
   // head turned) are built after the whole day, from how it left everyone,
   // and carry the part of the day they happen in — listed as they were built
   // they would open a second "The day" after the evening.
-  const ORDER = { arrival: -2, coupling: -1, morning: 0, day: 1, challenge: 1.5, event: 2, evening: 3 };
+  const ORDER = { arrival: -2, 'arrival-2': -1.5, coupling: -1, debrief: -0.5, morning: 0, day: 1, challenge: 1.5, event: 2, evening: 3 };
   const villa = events.slice(0, from).map((e, i) => [e, i])
     .sort((x, y) => ((ORDER[x[0].phase] ?? 4) - (ORDER[y[0].phase] ?? 4)) || x[1] - y[1]).map(([e]) => e);
   // The named challenge's screen carries its name (Couple Goals, the talent show).
-  const out = groupByPhase(villa, ph => (ph === 'challenge' && CHALLENGE_NAMES[row.pm?.challenge]) || PM_PHASE_LABEL[ph] || ph);
+  // Night one names its sides: "The girls arrive", then "The boys arrive"
+  // (or the other way round, when the season sends the boys in first).
+  const firstBoys = row?.pm?.firstIn === 'm';
+  const sideLabel = ph => ph === 'arrival' ? (firstBoys ? 'The boys arrive' : 'The girls arrive')
+    : ph === 'arrival-2' ? (firstBoys ? 'The girls arrive' : 'The boys arrive') : null;
+  const out = groupByPhase(villa, ph => sideLabel(ph) || (ph === 'challenge' && CHALLENGE_NAMES[row.pm?.challenge]) || PM_PHASE_LABEL[ph] || ph);
   const moment = events.slice(from);
   if (!moment.length) return out;
   // Night one's coupling opened the episode; its night is the bombshell's.

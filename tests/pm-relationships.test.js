@@ -33,8 +33,10 @@ describe('relationships are one-way and layered, and reach the row', () => {
   it('romance is not symmetric: most pairs differ by direction', () => {
     // Pooled over seasons: one season's episode 7 is one sample, and a guard
     // that measures one sample passes or fails on the seed (§11.5).
+    // Six seasons read 49% on the 2026-09-23 night-one rebuild while twenty
+    // read 55% both before and after it: the sample, not the engine. Twelve.
     let pairs = 0, differ = 0;
-    for (let s = 1; s <= 6; s++) {
+    for (let s = 1; s <= 12; s++) {
       const rel = season(s).rows[6].pm.relationships;
       for (const [k, [r]] of Object.entries(rel)) {
         const [a, b] = k.split('→');

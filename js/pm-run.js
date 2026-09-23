@@ -232,6 +232,7 @@ function _inputs() {
   return {
     setup: perfectMatchSetup(), picks: perfectMatchPicks(), bookings: perfectMatchBookings(),
     splitOrStealOn: seasonConfig.pmSplitOrSteal === true,
+    firstIn: seasonConfig.pmFirstIn === 'm' ? 'm' : 'f',
     dialect: Object.hasOwn(DIALECTS, seasonConfig.pmDialect || '') ? seasonConfig.pmDialect : 'uk',
     roleCounts: { ...(seasonConfig.pmRoleCounts || {}) },
     // The author's length, or null for automatic (from the cast).
@@ -281,7 +282,7 @@ function _build(inputs, rerolls) {
   let result, inner;
   try {
     result = playPerfectMatchSeason({ cast, setup: resolved, seed, picks: inputs.picks, bookings: inputs.bookings || {}, rerolls,
-      splitOrStealOn: inputs.splitOrStealOn, dialect: inputs.dialect, episodes: inputs.episodes });
+      splitOrStealOn: inputs.splitOrStealOn, dialect: inputs.dialect, episodes: inputs.episodes, firstIn: inputs.firstIn });
     inner = gs;
   } finally { setGs(outer); }
   return { cast, resolved, seed, rows: inner.episodeHistory || [], winners: result.winners || [], inner };

@@ -103,12 +103,14 @@ function villaDayEvents(state, rng, entry, seed) {
  * the new night the way it would have from any night.
  */
 export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = null, picks = {}, bookings = {}, rerolls = {},
-  splitOrStealOn = false, dialect = 'uk', episodes = null } = {}) {
+  splitOrStealOn = false, dialect = 'uk', episodes = null, firstIn = 'f' } = {}) {
   setGs({ bonds: {}, perceivedBonds: {}, relationshipDimensions: {}, activePlayers: [],
     episodeHistory: [], popularity: {} });
   const state = initState(cast, setup, seed);
   // The season's default voice, for any islander whose cast setup left it blank.
   state.dialect = dialect;
+  // Who walks in first on night one (Villa options): the girls unless the author says the boys.
+  state.firstIn = firstIn === 'm' ? 'm' : 'f';
   gs.pm = state;
   const queues = queuesFor(state, cast);
   // Every bombshell and Casa arrival the author cast gets a night to walk in.
@@ -205,7 +207,7 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
       exits, votes: m.ballots,
       pm: { events: [...day, ...m.events], momentFrom: day.length, dumpFormat: m.extra && 'dumpFormat' in m.extra ? m.extra.dumpFormat : (entry.dumpFormat || null),
         arrivalRule: m.extra?.arrivalRule || null, firstFormat: m.extra?.firstFormat || null,
-        oneOff: m.extra?.oneOff || null, challenge: day.some(e => e.phase === 'challenge') ? entry.challenge : null, immune: m.extra?.immune || null, returned: m.extra?.returned || null, couples: state.couples.map(c => [...c]), villa: [...state.villa],
+        oneOff: m.extra?.oneOff || null, ...(entry.ep === 1 ? { firstIn: state.firstIn } : {}), challenge: day.some(e => e.phase === 'challenge') ? entry.challenge : null, immune: m.extra?.immune || null, returned: m.extra?.returned || null, couples: state.couples.map(c => [...c]), villa: [...state.villa],
         shares: m.extra?.shares || null, bottom: m.extra?.bottom || null,
         // A tied save-one night keeps what settled it (the public's shares), so
         // a screen can say why the one with as many saves went home.

@@ -231,7 +231,8 @@ export function pmTheme() {
   const next = cur === 'dark' ? 'light' : 'dark';
   try { localStorage.setItem('pm-theme', next); } catch { /* fine */ }
   document.querySelectorAll('.pmv').forEach(r => { r.dataset.pmtheme = next; });
-  document.querySelectorAll('.pmv-themeBtn').forEach(b => { b.innerHTML = themeBtn(next); });
+  // Only the theme button: the TV button wears the same style (it was relabelled Light/Dark).
+  document.querySelectorAll('.pmv-themeBtn:not(.pmv-tvBtn)').forEach(b => { b.innerHTML = themeBtn(next); });
 }
 
 // ── the Debug screen ───────────────────────────────────────────────────

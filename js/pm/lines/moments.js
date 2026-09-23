@@ -85,6 +85,7 @@
 // Dior hosts the dumpings, the final and the reunion — warm, dry, and never a
 // word ahead of the result she is reading out. Everything else happens by text.
 import { MORE_MOMENTS } from './day/more-b.js';
+import { NIGHT_ONE } from './night-one.js';
 const ch = channel => ({ channel });
 export const MOMENTS = {
   'intro-look': [
@@ -369,11 +370,11 @@ export const MOMENTS = {
   ],
   'host-first': [
     { id: 'host-first.01', when: { of: 'step-forward' },
-      stage: 'The girls line up at the fire pit, and the host joins them.',
-      turns: [['dior', "Girls, it's time to meet the boys. They'll walk in one at a time. If you like what you see, step forward."], ['dior', "And then he chooses."]] },
+      stage: 'The {side} line up at the fire pit, and the host joins them.',
+      turns: [['dior', "{Side}, it's time to meet the {walkers}. They'll walk in one at a time. If you like what you see, step forward."], ['dior', "And then whoever walks in chooses."]] },
     { id: 'host-first.02', when: { of: 'step-forward' },
-      stage: 'The host stands in front of the girls at the fire pit.',
-      turns: [['dior', "Ladies, your boys are on their way. Step forward if you're interested. No pressure. A little pressure."]] },
+      stage: 'The host stands in front of the {side} at the fire pit.',
+      turns: [['dior', "{Side}, your {walkers} are on their way. Step forward if you're interested. No pressure. A little pressure."]] },
     { id: 'host-first.03', when: { of: 'profiles' },
       stage: 'Everyone gathers at the fire pit, where the host is holding a stack of cards.',
       turns: [['dior', "Islanders, you won't be meeting each other properly before you couple up tonight. You'll be choosing from a dating profile."], ['dior', "A name, a few facts, and a first line. Choose well."]] },
@@ -472,14 +473,14 @@ export const MOMENTS = {
   ],
   'step-forward': [
     { id: 'step-forward.01', when: { of: 'several' },
-      stage: '{a} walks into the villa, and the girls are asked to step forward if they like the look of {a.obj}. More than one does.',
+      stage: '{a} walks into the villa, and the {side} are asked to step forward if they like the look of {a.obj}. More than one does.',
       turns: [['a', "Wow. Okay. This is harder than I thought."], ['a', "I'm going to go with {b}."]],
       beat: '{b} smiles and takes {a.posAdj} hand.' },
     { id: 'step-forward.02', when: { of: 'several' },
-      stage: '{a} comes down the steps, and several girls step forward straight away.',
+      stage: '{a} comes down the steps, and several {side} step forward straight away.',
       turns: [['a', "No pressure, then."], ['a', "{b}. It has to be {b}."], ['b', "Come here, then!"]] },
     { id: 'step-forward.03', when: { of: 'several' },
-      stage: 'The girls step forward for {a}, and {a} takes a long look at every one of them.',
+      stage: 'The {side} step forward for {a}, and {a} takes a long look at every one of them.',
       turns: [['a', "You're all stunning. I'm sorry. {b}, would you like to couple up?"], ['b', "I'd love to."]] },
     { id: 'step-forward.04', when: { of: 'one' },
       stage: '{a} walks in. Only {b} steps forward.',
@@ -490,9 +491,9 @@ export const MOMENTS = {
     { id: 'step-forward.06', when: { of: 'nobody' },
       stage: '{a} walks in, and nobody steps forward.',
       turns: [['a', "Oh. Okay. That's fine. I'll just stand here, then."]],
-      beat: 'The girls look at each other, and a couple of them laugh.' },
+      beat: 'The {side} look at each other, and a couple of them laugh.' },
     { id: 'step-forward.07', when: { of: 'nobody' },
-      stage: '{a} comes down the steps with a big smile. Not one girl moves.',
+      stage: '{a} comes down the steps with a big smile. Not one {sideOne} moves.',
       turns: [['a', "Tough crowd."]],
       beat: '{a} goes and stands at the side, still smiling, just about.' },
   ],
@@ -504,7 +505,7 @@ export const MOMENTS = {
       stage: 'The last two left at the fire pit are {a} and {b}.',
       turns: [['a', "Hi. So, we're a couple now."], ['b', "Apparently so. Let's give it a go."]] },
     { id: 'step-last.03',
-      stage: '{b} walks over to {a}, the last girl standing.',
+      stage: '{b} walks over to {a}, the last {sideOne} standing.',
       turns: [['b', "Nobody stepped forward for me, and I think that worked out."], ['a', "Charming. Come on, then."]] },
   ],
   'first-arrival': [
@@ -1671,3 +1672,5 @@ export const MOMENTS = {
 
 // Second pools (lines/day/more-*.js): appended, so every kind has room not to repeat.
 for (const [k, v] of Object.entries(MORE_MOMENTS)) MOMENTS[k] = [...(MOMENTS[k] || []), ...v];
+// Night one's conversations and the bombshell's entrance (lines/night-one.js).
+for (const [k, v] of Object.entries(NIGHT_ONE)) MOMENTS[k] = [...(MOMENTS[k] || []), ...v];

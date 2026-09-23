@@ -8,12 +8,12 @@
 // too, which is the other read in here (`familyVerdict`). A steal from a
 // couple the public loves costs the bombshell approval.
 import { addBond } from '../bonds.js';
-import { seedAttraction, attr } from './chemistry.js';
+import { seedAttraction, attr, nudgeAttraction } from './chemistry.js';
 import { noteArrival, readApproval, coupleScore, BETRAYAL } from './ledger.js';
 import { makeEvent, partnerOf } from './events.js';
 import { romance, friendship } from './feelings.js';
 import { closedness } from './ladder.js';
-import { breakHeart } from './emotions.js';
+import { breakHeart, feel, jealousOf } from './emotions.js';
 
 export function arriveIslander(state, name, { ep, seed, room = 'villa' }) {
   if (!state.villa.includes(name)) state.villa.push(name);
@@ -31,17 +31,82 @@ export function eyesOnFor(state, name) {
 }
 
 export function arriveBombshell(state, name, { ep, seed, rng }) {
+  // Who was already here, before the new face: they get the text, they guess,
+  // and they watch the steps.
+  const before = state.villa.filter(n => n !== name && !(state.split && state.casa.includes(n)));
   arriveIslander(state, name, { ep, seed });
   const eyesOn = eyesOnFor(state, name);
   state.profiles[name].eyesOnResolved = eyesOn;
-  const events = [makeEvent(state, rng, { phase: 'event', kind: 'entrance', players: [name],
-    aired: true, major: [name], extra: { pop: { [name]: { approval: 0.5, fame: 3 } } } })];
+  // THE ENTRANCE, as the show plays it (user: "a bombshell arriving is a whole
+  // scene with a narrator, suspense and animation like the real show"): the
+  // text, the guessing, the new islander's own clip, the walk down the steps,
+  // and the faces watching it.
+  const events = bombshellBuildUp(state, rng, name, before);
+  events.push(makeEvent(state, rng, { phase: 'event', kind: 'entrance', players: [name],
+    aired: true, major: [name], extra: { of: 'bombshell', pop: { [name]: { approval: 0.5, fame: 3 } } } }));
+  events.push(...bombshellReactions(state, rng, name, before));
   for (const t of eyesOn.slice(0, 2)) {
     addBond(name, t, 0.3 + 0.4 * ((attr(state, t, name) ?? 0) / 10));
     events.push(makeEvent(state, rng, { phase: 'event', kind: 'date', players: [name, t],
       extra: { pop: { [name]: { approval: 0.2, fame: 1.5 }, [t]: { approval: 0, fame: 1 } } } }));
   }
   return { eyesOn, events };
+}
+
+const pickOne = (rng, xs) => xs[Math.floor(rng() * xs.length)];
+function bombshellBuildUp(state, rng, name, before) {
+  const out = [];
+  if (!before.length) return out;
+  // The text lands on one phone, read out to whoever is nearest.
+  const reader = pickOne(rng, before);
+  const next = pickOne(rng, before.filter(n => n !== reader)) || null;
+  out.push(makeEvent(state, rng, { phase: 'event', kind: 'bombshell-text', players: next ? [reader, next] : [reader], aired: true,
+    extra: { pop: { [reader]: { approval: 0, fame: 0.5 } } } }));
+  // Who is it? A coupled islander worries; a single one hopes. The worry is
+  // real: it is stress, and it is on camera.
+  const coupled = before.filter(n => partnerOf(state, n)), single = before.filter(n => !partnerOf(state, n));
+  const guessers = [pickOne(rng, coupled), pickOne(rng, single)].filter(Boolean);
+  for (const a of guessers) {
+    const b = partnerOf(state, a) || pickOne(rng, before.filter(n => n !== a));
+    if (partnerOf(state, a)) feel(state, a, 'stress', 0.8 * (1 - (state.profiles[a].stats?.temperament ?? 5) / 20));
+    out.push(makeEvent(state, rng, { phase: 'event', kind: 'bombshell-guess', players: b ? [a, b] : [a], aired: true,
+      extra: { pop: { [a]: { approval: 0.1, fame: 0.8 } } } }));
+  }
+  // The new islander's own clip, as every islander's first night has one.
+  out.push(makeEvent(state, rng, { phase: 'event', kind: 'intro', players: [name], aired: true,
+    extra: { parts: introParts(state, name, rng), pop: { [name]: { approval: 0.2, fame: 1 } } } }));
+  return out;
+}
+/**
+ * The faces on the lawn as the bombshell comes down. Whoever fancies them
+ * most shows it — and when that islander is coupled, the partner sees it,
+ * and it lands as jealousy (a consequence, not a caption). A coupled islander
+ * whose partner is the one staring says so.
+ */
+function bombshellReactions(state, rng, name, before) {
+  const out = [];
+  const drawn = before.filter(n => attr(state, n, name) != null)
+    .sort((x, y) => attr(state, y, name) - attr(state, x, name));
+  const stunned = drawn[0];
+  if (stunned) {
+    nudgeAttraction(state, stunned, name, 0.4);
+    const p = partnerOf(state, stunned);
+    if (p) { jealousOf(state, p, name, 1.2); addBond(p, name, -0.3); }
+    out.push(makeEvent(state, rng, { phase: 'event', kind: 'bombshell-react', players: p ? [stunned, name, p] : [stunned, name], aired: true,
+      major: p ? [stunned] : [], extra: { of: 'stunned', pop: { [stunned]: { approval: p ? -0.4 : 0.2, fame: 1.5 } } } }));
+    // The partner who saw it.
+    if (p) {
+      out.push(makeEvent(state, rng, { phase: 'event', kind: 'bombshell-react', players: [p, stunned, name], aired: true,
+        extra: { of: 'worried', pop: { [p]: { approval: 0.3, fame: 1 } } } }));
+    }
+  }
+  // Somebody the new face does nothing for, which is its own kind of news.
+  const cool = drawn.length > 2 ? drawn[drawn.length - 1] : null;
+  if (cool && cool !== stunned) {
+    out.push(makeEvent(state, rng, { phase: 'event', kind: 'bombshell-react', players: [cool, name], aired: true,
+      extra: { of: 'unbothered', pop: { [cool]: { approval: 0.1, fame: 0.5 } } } }));
+  }
+  return out;
 }
 
 export function bombshellSteal(state, name, { rng }) {
@@ -246,4 +311,36 @@ export function returnIslander(state, { ep, seed, rng }) {
       extra: { pop: { [pick]: { approval: 0.2, fame: 1.5 }, [t2]: { approval: 0, fame: 1 } } } }));
   }
   return { name: pick, events };
+}
+
+/**
+ * WHAT AN INTRODUCTION SAYS, from the islander's own profile (user: "what
+ * are the presentations based off — archetype, country, looking for,
+ * persona, type, icks, interests, eyes on, ex, stats?"). Three lines, the
+ * way the real show's intro clips run: who they are and what they want
+ * (intent, persona, archetype — and the stats, through the persona), their
+ * type (a look they go for, or else the vibe), and one more thing — the
+ * person they already have their eye on or the ex they hope stays away
+ * when there is one, otherwise where they're from, an ick or an interest.
+ * Names never: the villa does not know yet, and neither does the viewer.
+ */
+export function introParts(state, a, rng) {
+  const p = state.profiles[a];
+  const parts = [['intro', null]];
+  // Any part of their type, not always the first: two islanders who both go
+  // for tall should not both lead with it.
+  const looks = p.type?.looks || [], vibes = p.type?.vibes || [];
+  const pickOf = xs => xs[Math.floor(rng() * xs.length)];
+  parts.push(looks.length && (!vibes.length || rng() < 0.6) ? ['intro-look', pickOf(looks)] : ['intro-vibe', pickOf(vibes) || 'funny']);
+  if (p.eyesOn?.length) parts.push(['intro-eyes', 'set']);
+  else if (p.ex) parts.push(['intro-ex', 'set']);
+  else {
+    // Where they're from only when it is THEIRS: the season's default voice is
+    // everybody's, and on an American season every islander said "I'm American".
+    const options = [['intro-from', p.dialect], ['intro-ick', p.icks?.[0]], ['intro-ick', p.icks?.[1]],
+      ['intro-interest', p.interests?.[0]], ['intro-interest', p.interests?.[1]]]
+      .filter(o => o[1]);
+    parts.push(options[Math.floor(rng() * options.length)]);
+  }
+  return parts;
 }

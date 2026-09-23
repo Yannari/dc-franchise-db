@@ -47,7 +47,8 @@ describe('an episode is a dozen or more screens', () => {
       for (const s of screens) {
         // One scene can be longer than a screen on its own; a screen of several is not.
         const scenes = new Set(s.steps.map(x => x.ev)).size;
-        if (scenes > 1) expect(s.steps.length, `s${seed} e${row.num} ${s.label}`).toBeLessThanOrEqual(MAX_STEPS * 1.6);
+        // Night one's parts are one screen each by design (the user's call), however long.
+        if (scenes > 1 && !['arrival', 'arrival-2', 'coupling', 'debrief'].includes(s.phase)) expect(s.steps.length, `s${seed} e${row.num} ${s.label}`).toBeLessThanOrEqual(MAX_STEPS * 1.6);
       }
     }
     const mean = counts.reduce((a, b) => a + b, 0) / counts.length;

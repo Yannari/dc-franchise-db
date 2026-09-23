@@ -449,6 +449,14 @@ details.pmv-debug[open] summary::before{transform:rotate(45deg)}
 .pmv-identBreak b{font:clamp(34px,7vw,90px)/1 'Bebas Neue',sans-serif;letter-spacing:.2em;color:#fff;text-shadow:0 0 30px #ff2e88,0 0 60px #ff2e8888;
   animation:pmv-slam 1.9s cubic-bezier(.22,1,.36,1) forwards}
 @keyframes pmv-slam{0%{opacity:0;transform:scale(2.4)}14%{opacity:1;transform:scale(.96)}22%{transform:scale(1)}62%{opacity:1}74%,100%{opacity:0}}
+/* ── THE BOMBSHELL: a silhouette on the steps, a spotlight, the lights up ── */
+.pmv-stage.pmv-revealing::before{content:'';position:absolute;inset:0;z-index:4;pointer-events:none;
+  background:radial-gradient(ellipse 22% 60% at var(--ox,50%) 45%,#fff5 0%,#fff0 70%),linear-gradient(#000c,#0006);animation:pmv-spot 2.6s ease forwards}
+.pmv-stage.pmv-revealing .pmv-bust .pmv-frame{animation:pmv-silhouette 2.6s ease forwards}
+.pmv-stage.pmv-revealing .pmv-bust{transition-duration:1.6s!important}
+@keyframes pmv-spot{0%,45%{opacity:1}100%{opacity:0}}
+@keyframes pmv-silhouette{0%,35%{filter:brightness(0) drop-shadow(0 0 18px #ff7a59)}70%{filter:brightness(1.4) drop-shadow(0 0 30px #ffc15e)}100%{filter:none}}
+
 /* ── THE TEASER: quick cuts ── */
 .pmv-stage.pmv-teaser::after{content:attr(data-bug);position:absolute;left:3%;top:15%;z-index:12;font:clamp(12px,1.6vw,18px)/1 'Bebas Neue',sans-serif;
   letter-spacing:.18em;color:#fff;background:#ff2e88;padding:.35em .7em;border-radius:4px;box-shadow:0 0 18px #ff2e8899;animation:pmv-blink 1.2s steps(2) infinite}

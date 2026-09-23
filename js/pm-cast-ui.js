@@ -31,6 +31,35 @@ const ROLE_SHORT = { starter: 'Starter', bombshell: 'Bombshell', casa: 'Casa Amo
 // How many of each a field keeps (the same caps resolveIslander applies).
 const LIMIT = { 'type.looks': 3, 'type.vibes': 2, looks: 4, icks: 2, interests: 4, eyesOn: 3 };
 
+// The die on each chip section (user: "a mini button to randomize it … when
+// I'm lazy"): the same counts resolveIslander rolls for a blank field, written
+// in as the author's pick so it shows and stays. Eyes-on is left to the hand:
+// a crush drawn at random ignores who the islander is into.
+const ROLL = {
+  'type.looks': [LOOK_TAGS, 1, 3], 'type.vibes': [VIBES, 1, 2], looks: [LOOK_TAGS, 2, 3],
+  icks: [ICKS, 1, 2], interests: [INTERESTS, 2, 4],
+};
+function rollField(field, current = []) {
+  const [pool, lo, hi] = ROLL[field];
+  let pick = [];
+  // A reroll that lands on the same set is no reroll: try a few times.
+  for (let t = 0; t < 6; t++) {
+    const n = lo + Math.floor(Math.random() * (hi - lo + 1));
+    pick = [...pool].sort(() => Math.random() - 0.5).slice(0, n);
+    if (pick.slice().sort().join() !== [...current].sort().join()) break;
+  }
+  return pick;
+}
+const DIE = '<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><rect x="1.5" y="1.5" width="13" height="13" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/>'
+  + '<circle cx="5" cy="5" r="1.3" fill="currentColor"/><circle cx="8" cy="8" r="1.3" fill="currentColor"/><circle cx="11" cy="11" r="1.3" fill="currentColor"/></svg>';
+function sectionHead(name, field, label, current) {
+  const has = Array.isArray(current) && current.length;
+  return `<div class="pm-sec-head"><span class="pm-field-k">${esc(label)}</span>`
+    + (ROLL[field] ? `<button type="button" class="pm-roll" data-name="${esc(name)}" data-roll="${field}" title="Randomize">${DIE}</button>` : '')
+    + (has ? `<button type="button" class="pm-roll pm-clear" data-name="${esc(name)}" data-clear="${field}" title="Clear — leave it to the season">×</button>` : '')
+    + '</div>';
+}
+
 const setupOf = name => ((seasonConfig.pmSetup ||= {})[name] ||= {});
 
 function getPath(obj, path) { return path.split('.').reduce((o, k) => (o ? o[k] : undefined), obj); }
@@ -180,12 +209,13 @@ export function renderPerfectMatchCastSetup() {
       </div>
       <details class="pm-isl-more"><summary>Type, icks, interests, eyes on, ex</summary>
         <div class="pm-isl-grid">
-          <div><div class="pm-field-k">Their type — looks, up to 3</div>${chips(n, 'type.looks', LOOK_TAGS.map(x => [x, words(x)]), getPath(s, 'type.looks'))}</div>
-          <div><div class="pm-field-k">Their type — vibe, up to 2</div>${chips(n, 'type.vibes', VIBES.map(x => [x, words(x)]), getPath(s, 'type.vibes'))}</div>
-          <div><div class="pm-field-k">Their own looks</div>${chips(n, 'looks', LOOK_TAGS.map(x => [x, words(x)]), s.looks)}</div>
-          <div><div class="pm-field-k">Icks — up to 2</div>${chips(n, 'icks', ICKS.map(x => [x, words(x)]), s.icks)}</div>
-          <div><div class="pm-field-k">Interests — 2 to 4</div>${chips(n, 'interests', INTERESTS.map(x => [x, words(x)]), s.interests)}</div>
-          <div><div class="pm-field-k">Eyes on — who they've come in for, up to 3</div>${chips(n, 'eyesOn', others, s.eyesOn)}</div>
+          <div class="pm-sec-head pm-roll-all-row"><button type="button" class="pm-roll pm-roll-all" data-name="${esc(n)}" data-roll="*">${DIE} Roll all</button></div>
+          <div>${sectionHead(n, 'type.looks', 'Their type — looks, up to 3', getPath(s, 'type.looks'))}${chips(n, 'type.looks', LOOK_TAGS.map(x => [x, words(x)]), getPath(s, 'type.looks'))}</div>
+          <div>${sectionHead(n, 'type.vibes', 'Their type — vibe, up to 2', getPath(s, 'type.vibes'))}${chips(n, 'type.vibes', VIBES.map(x => [x, words(x)]), getPath(s, 'type.vibes'))}</div>
+          <div>${sectionHead(n, 'looks', 'Their own looks', s.looks)}${chips(n, 'looks', LOOK_TAGS.map(x => [x, words(x)]), s.looks)}</div>
+          <div>${sectionHead(n, 'icks', 'Icks — up to 2', s.icks)}${chips(n, 'icks', ICKS.map(x => [x, words(x)]), s.icks)}</div>
+          <div>${sectionHead(n, 'interests', 'Interests — 2 to 4', s.interests)}${chips(n, 'interests', INTERESTS.map(x => [x, words(x)]), s.interests)}</div>
+          <div>${sectionHead(n, 'eyesOn', "Eyes on — who they've come in for, up to 3", s.eyesOn)}${chips(n, 'eyesOn', others, s.eyesOn)}</div>
           <label class="pm-field"><span class="pm-field-k">An ex in the villa</span>${select(n, 'ex', others, s.ex, 'No ex')}</label>
         </div>
       </details>
@@ -199,6 +229,17 @@ export function renderPerfectMatchCastSetup() {
     host.dataset.wired = '1';
     host.addEventListener('change', onChange);
     host.addEventListener('click', ev => {
+      const r = ev.target?.closest?.('.pm-roll');
+      if (r) {
+        ev.preventDefault();
+        const s = setupOf(r.dataset.name);
+        if (r.dataset.clear) setPath(s, r.dataset.clear, null);
+        else for (const f of r.dataset.roll === '*' ? Object.keys(ROLL) : [r.dataset.roll]) setPath(s, f, rollField(f, getPath(s, f)));
+        if (!Object.keys(s.type || {}).length) delete s.type;
+        try { window.saveConfig?.(); } catch { /* the panel keeps its own state */ }
+        renderPerfectMatchCastSetup();
+        return;
+      }
       const b = ev.target?.closest?.('.pm-seg');
       if (!b) return;
       const s = setupOf(b.dataset.name);

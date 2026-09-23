@@ -273,6 +273,8 @@ export const CHALLENGE_NAMES = {
   'couple-goals': 'Couple Goals', 'knowing-me': 'Knowing Me, Knowing You', talent: 'The talent show',
   baby: 'The baby dolls', 'couple-of-sorts': 'Couple of Sorts', grafties: 'The Grafties',
   'lie-detector': 'The Lie Detector',
+  'suck-blow': 'Suck and Blow', 'lip-service': 'Lip Service', tower: 'Tower of Truths', 'lads-course': "The Lads' Course",
+  'girls-course': "The Girls' Course", 'blind-course': 'The Blindfold Course', 'sports-day': 'Sports Day', headlines: 'The Headlines',
 };
 const VILLA_DAYS = new Set(['recoupling', 'bombshell', 'public-vote', 'photos', 'semi-final']);
 export const CHALLENGE_DRAWS = [
@@ -296,6 +298,17 @@ export const CHALLENGE_DRAWS = [
   // dropped over welfare concerns — here an occasional late game. Drawn last,
   // so adding it moved none of the draws above.
   ['lie-detector', 0.3, at => at > 0.55],
+  // The eight more (pm/challenges-more.js), from UK 5-9's tables: how many of
+  // those five seasons played each, on the part of the season they played it.
+  // Drawn last, so no draw above moved.
+  ['girls-course', 0.9, at => at < 0.95],         // every season, often twice
+  ['lads-course', 0.9, at => at < 0.95],          // every season, often twice
+  ['lip-service', 0.8, at => at > 0.2 && at < 0.55],   // four of five, days 15-16
+  ['suck-blow', 0.4, at => at > 0.2 && at < 0.85],     // UK 5 d15, UK 8 d42
+  ['tower', 0.3, at => at < 0.3],                 // UK 5 d6
+  ['blind-course', 0.4, at => at > 0.45 && at < 0.9],  // UK 5 d44, UK 6 d30
+  ['sports-day', 0.4, at => at > 0.45 && at < 0.9],    // UK 7 d28, UK 9 d46
+  ['headlines', 0.5, at => at > 0.35],            // UK 5 d24 and d50, UK 6 d32
 ];
 // Which nights can have one at all, for the Season Timeline too.
 export const CHALLENGE_NIGHTS = [...VILLA_DAYS];
@@ -390,6 +403,8 @@ export function withBookings(schedule, byEp = {}) {
     if (b.oneOff) out.oneOff = b.oneOff;
     if (b.immunity && e.moment === 'public-vote') out.immunity = true;
     if (b.challenge && VILLA_DAYS.has(e.moment)) out.challenge = b.challenge;
+    // "No challenge" on the timeline: the night's drawn one does not play.
+    if (out.challenge === 'none') delete out.challenge;
     if (out.arrivalRule === undefined) delete out.arrivalRule;
     return out;
   });

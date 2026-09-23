@@ -45,9 +45,11 @@ describe('the challenges are drawn like the real show', () => {
         if (e.challenge === 'grafties') expect(e.moment).toBe('public-vote');
       }
     }
-    // Four to six a season, like UK 10-13.
-    expect(drawn / 60).toBeGreaterThan(3.5);
-    expect(drawn / 60).toBeLessThan(7);
+    // Four to six a season from the first ten (UK 10-13's tables); with the
+    // eight from UK 5-9 (pm/challenges-more.js, user: "write more named
+    // challenges") about seven and a half — the real show names ten or more.
+    expect(drawn / 60).toBeGreaterThan(5);
+    expect(drawn / 60).toBeLessThan(11);
   });
   it('the draws come after every other, so no earlier draw moved', () => {
     // Every episode's dumping / arrival rule / night one / one-off /

@@ -198,6 +198,22 @@ export function perfectMatchVillaCounts() {
  * episode ({ 6: { arrivalRule: 'stand-up' } }). A booking on a night of the
  * wrong kind is ignored rather than moved.
  */
+/**
+ * The challenge each night DRAWS, before any booking: what "As drawn" means on
+ * the Season Timeline's picker. Empty before the season has a seed.
+ */
+export function perfectMatchDrawnChallenges() {
+  const seed = gs?.pm?.seed;
+  if (!seed) return new Map();
+  const saved = Array.isArray(gs?.pm?.castOrder) && gs.pm.castOrder.length ? gs.pm.castOrder : null;
+  const cast = saved || (players || []).map(p => p.name).filter(Boolean);
+  const roles = perfectMatchRoles(cast, perfectMatchSetup());
+  const count = r => roles.filter(x => x === r).length;
+  const episodes = Number(seasonConfig.pmEpisodes) > 0 ? Number(seasonConfig.pmEpisodes) : null;
+  return new Map(perfectMatchScheduleFor(seed, { bombshells: count('bombshell'), casa: count('casa'), episodes })
+    .filter(e => e.challenge).map(e => [e.ep, e.challenge]));
+}
+
 export function perfectMatchBookings() {
   const mine = new Map(twistsForFormat({ format: PERFECT_MATCH_FORMAT }).filter(t => t.pmOn).map(t => [t.id, t]));
   const booked = (seasonConfig.twistSchedule || []).filter(b => b && (mine.has(b.type) || mine.has(b.id)));

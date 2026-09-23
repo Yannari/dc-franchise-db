@@ -23,8 +23,8 @@ import { isTraitorsSeason, simulateTraitorsEpisode, rerunTraitorsEpisode,
   lastTraitorsRerunRefusal } from './tr-run.js';
 import { isPerfectMatchSeason, simulatePerfectMatchEpisode, perfectMatchCanRerun,
   lastPerfectMatchRefusal, rerunPerfectMatchEpisode, perfectMatchPendingChange, perfectMatchSeasonShape,
-  perfectMatchSlots, perfectMatchVillaCounts, perfectMatchEpisodes, perfectMatchNights } from './pm-run.js';
-import { EPISODE_WORDS as PM_EPISODE_WORDS, SLOT_NAMES as PM_SLOT_NAMES, seasonSchedule as pmDrawSchedule, CHALLENGE_NAMES as PM_CHALLENGE_NAMES, RITUAL_NAMES as PM_RITUAL_NAMES } from './pm/schedule.js';
+  perfectMatchSlots, perfectMatchVillaCounts, perfectMatchEpisodes, perfectMatchNights, perfectMatchDrawnChallenges } from './pm-run.js';
+import { EPISODE_WORDS as PM_EPISODE_WORDS, SLOT_NAMES as PM_SLOT_NAMES, seasonSchedule as pmDrawSchedule, CHALLENGE_NAMES as PM_CHALLENGE_NAMES, RITUAL_NAMES as PM_RITUAL_NAMES, CHALLENGE_NIGHTS as PM_CHALLENGE_NIGHTS } from './pm/schedule.js';
 import { episodeText as pmEpisodeText, momentTitle as pmMomentTitle } from './pm/transcript.js';
 import { isDragSeason, simulateDragEpisode, invalidateDragQueue,
   dragEpisodesAired, dragScheduleRecorded, rerunDragEpisode, dragCanRerun } from './dr-run.js';
@@ -1978,6 +1978,15 @@ let _pmNoticeShown = null;
  * draws the same way when it plays (user: "I don't know when to schedule a
  * twist — should we have a preset?").
  */
+/** The villa tile's challenge picker: '' as drawn, 'random', an id, or 'none'. */
+export function pmSetChallenge(ep, value) {
+  const games = new Set(TWIST_CATALOG.filter(t => t.category === 'games' && t.format === 'perfect-match').map(t => t.id));
+  seasonConfig.twistSchedule = (seasonConfig.twistSchedule || []).filter(b => !(b && Number(b.episode) === Number(ep) && games.has(b.type)));
+  if (value) seasonConfig.twistSchedule.push({ id: `tw-${Date.now()}-${ep}`, episode: Number(ep), type: 'pm-villa-challenge', pmGame: value === 'random' ? '' : value });
+  localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
+  renderTimeline();
+}
+
 function _randomizeVilla() {
   const mine = TWIST_CATALOG.filter(t => t.pmFormat || t.pmApply);
   const ids = new Set(mine.map(t => t.id));
@@ -3824,6 +3833,7 @@ export function renderTimeline() {
   // What each night does to the villa (arrivals, dumpings, walk-outs), from
   // the season the badge counts — a still number said nothing about either.
   const _pmNights = _pmEps ? perfectMatchNights() : null;
+  const _pmDrawnGames = _pmEps ? perfectMatchDrawnChallenges() : null;
 
   let html = '';
   epMap.forEach(({ ep, active, phase }) => {
@@ -3833,7 +3843,9 @@ export function renderTimeline() {
     const isJuryEp   = juryOpensAt !== null && active === juryOpensAt && !isFinale;
     const isSelected = selectedEpisodes.has(ep);
     const twists     = schedule.filter(t => Number(t.episode) === ep);
-    const twistTags  = twists.map(t => {
+    // The villa's challenge has its own picker on the tile (below), not a tag.
+    const tagTwists  = _pmEps ? twists.filter(t => t.type !== 'pm-villa-challenge') : twists;
+    const twistTags  = tagTwists.map(t => {
       const cat = TWIST_CATALOG.find(c => c.id === t.type);
       if (t.type === 'returning-player') {
         const rc = t.returnCount || 1;
@@ -4185,7 +4197,7 @@ export function renderTimeline() {
         return `<span class="fd-ep-twist-tag" style="font-style:italic;opacity:0.7" onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')">🔒 ${phaseTag} ×</span>`;
       }
       return `<span class="fd-ep-twist-tag" onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')">${cat ? cat.emoji : '🔀'} ${cat ? cat.name : t.type} ×</span>`;
-    }).map((html, k) => _fdThemeMark(twists[k], html)).join('');
+    }).map((html, k) => _fdThemeMark(tagTwists[k], html)).join('');
 
     const markerClass = isFinale ? 'fd-ep-marker finale'
       : isJuryEp ? 'fd-ep-marker jury'
@@ -4254,14 +4266,26 @@ export function renderTimeline() {
       .map(([k, n]) => `−${n} ${k}`) : [];
     const _pmBooked = twists.some(x => { const c = TWIST_CATALOG.find(k => k.id === x.type); return c?.pmFormat || c?.pmOn; });
     const _pmDraws = _pmEp && (_pmEp.slot || _pmEp.moment === 'bombshell' || _pmEp.moment === 'first-coupling');
-    // The afternoon's named challenge, drawn or booked (resolveRandomGames
-    // runs when the season plays, so a Random booking says so).
-    const _pmGame = _pmEp?.challenge ? (_pmEp.challenge === 'random' ? 'a random challenge' : PM_CHALLENGE_NAMES[_pmEp.challenge] || _pmEp.challenge) : null;
+    // The afternoon's named challenge: a picker on every villa day (user: "let
+    // me change the challenge in the season timeline"). As drawn, Random, any
+    // challenge by name, or none.
+    let _pmGame = '';
+    if (_pmEp && PM_CHALLENGE_NIGHTS.includes(_pmEp.moment)) {
+      const bk = twists.find(t => t.type === 'pm-villa-challenge');
+      const val = !bk ? '' : bk.pmGame === '' || bk.pmGame == null ? 'random' : bk.pmGame;
+      const drawn = _pmDrawnGames?.get(ep);
+      const opt = (v, label) => `<option value="${v}" ${v === val ? 'selected' : ''}>${_hubEsc(label)}</option>`;
+      _pmGame = `<label style="display:inline-flex;align-items:center;gap:4px;color:#22d3ee;font-weight:700">Challenge
+        <select onchange="event.stopPropagation();pmSetChallenge(${ep},this.value)" onclick="event.stopPropagation()" style="font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(34,211,238,0.35);border-radius:3px;padding:1px 2px;max-width:100%">
+          ${opt('', drawn ? `As drawn: ${PM_CHALLENGE_NAMES[drawn] || drawn}` : 'As drawn: none')}${opt('random', 'Random — one that fits the day')}
+          ${Object.entries(PM_CHALLENGE_NAMES).map(([id, n]) => opt(id, n)).join('')}${opt('none', 'No challenge')}
+        </select></label>`;
+    }
     const villaRow = _pmEp && (_pmArr || _pmDraws || _pmLeft.length || _pmGame)
       ? `<div class="fd-ep-comps" style="display:flex;gap:6px;flex-wrap:wrap;min-width:0;margin-top:5px;padding-top:5px;border-top:1px solid rgba(224,70,124,0.18);font-size:10.5px;color:var(--muted,#7d8590)">
           ${_pmArr ? `<span style="color:#f59e0b;font-weight:700">+${_pmArr} arriving</span>` : ''}
           ${_pmLeft.map(s => `<span style="color:#e0467c;font-weight:700">${_hubEsc(s)}</span>`).join('')}
-          ${_pmGame ? `<span style="color:#22d3ee;font-weight:700">Challenge: ${_hubEsc(_pmGame)}</span>` : ''}
+          ${_pmGame}
           ${_pmEp.slot ? `<span>${_hubEsc(PM_SLOT_NAMES[_pmEp.slot] || 'an extra public vote')}${_pmBooked ? '' : ' · drawn at random'}</span>`
             : _pmDraws && !_pmBooked ? '<span>drawn at random</span>' : ''}
         </div>`

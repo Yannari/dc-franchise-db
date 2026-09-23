@@ -21,7 +21,7 @@ import { romance, friendship, shown, believed, growLove, updateBeliefs, decideMa
 import { syncLadder, stepOf } from './ladder.js';
 import { emo, attachmentLabel, walkRisk } from './emotions.js';
 import { runVillaDay } from './villa-day.js';
-import { seasonSchedule, withPicks, buildSchedule, FINAL_COUPLES } from './schedule.js';
+import { seasonSchedule, withPicks, withBookings, buildSchedule, FINAL_COUPLES } from './schedule.js';
 import { MOMENTS } from './moments.js';
 
 function initState(cast, setup, seed) {
@@ -77,7 +77,7 @@ export const perfectMatchScheduleFor = (seed, shape = {}) =>
  * so every earlier episode replays exactly, and every later one follows from
  * the new night the way it would have from any night.
  */
-export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = null, picks = {}, rerolls = {},
+export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = null, picks = {}, bookings = {}, rerolls = {},
   splitOrStealOn = false, dialect = 'uk', episodes = null } = {}) {
   setGs({ bonds: {}, perceivedBonds: {}, relationshipDimensions: {}, activePlayers: [],
     episodeHistory: [], popularity: {} });
@@ -87,8 +87,8 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
   gs.pm = state;
   const queues = queuesFor(state, cast);
   // Every bombshell and Casa arrival the author cast gets a night to walk in.
-  schedule = schedule || withPicks(perfectMatchScheduleFor(seed,
-    { bombshells: queues.bombshell.length, casa: queues.casa.length, episodes }), picks);
+  schedule = schedule || withBookings(withPicks(perfectMatchScheduleFor(seed,
+    { bombshells: queues.bombshell.length, casa: queues.casa.length, episodes }), picks), bookings);
   let final = null;
 
   for (const entry of schedule) {
@@ -167,7 +167,8 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
       num: entry.ep, format: PERFECT_MATCH_FORMAT, days: entry.days, moment: entry.moment,
       eliminated: exits.find(x => x.verb === 'dumped')?.name || null,
       exits, votes: m.ballots,
-      pm: { events: [...day, ...m.events], momentFrom: day.length, dumpFormat: m.extra && 'dumpFormat' in m.extra ? m.extra.dumpFormat : (entry.dumpFormat || null), couples: state.couples.map(c => [...c]), villa: [...state.villa],
+      pm: { events: [...day, ...m.events], momentFrom: day.length, dumpFormat: m.extra && 'dumpFormat' in m.extra ? m.extra.dumpFormat : (entry.dumpFormat || null),
+        arrivalRule: m.extra?.arrivalRule || null, firstFormat: m.extra?.firstFormat || null, couples: state.couples.map(c => [...c]), villa: [...state.villa],
         shares: m.extra?.shares || null, bottom: m.extra?.bottom || null,
         majors: [...new Set([...day, ...m.events].flatMap(e => e.aired ? e.major : []))],
         labels: snap.label, approval: snap.approval, fame: snap.fame,

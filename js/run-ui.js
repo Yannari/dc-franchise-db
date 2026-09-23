@@ -23,8 +23,8 @@ import { isTraitorsSeason, simulateTraitorsEpisode, rerunTraitorsEpisode,
   lastTraitorsRerunRefusal } from './tr-run.js';
 import { isPerfectMatchSeason, simulatePerfectMatchEpisode, perfectMatchCanRerun,
   lastPerfectMatchRefusal, rerunPerfectMatchEpisode, perfectMatchPendingChange, perfectMatchSeasonShape,
-  perfectMatchSlots } from './pm-run.js';
-import { EPISODE_WORDS as PM_EPISODE_WORDS, SLOT_NAMES as PM_SLOT_NAMES } from './pm/schedule.js';
+  perfectMatchSlots, perfectMatchVillaCounts, perfectMatchEpisodes } from './pm-run.js';
+import { EPISODE_WORDS as PM_EPISODE_WORDS, SLOT_NAMES as PM_SLOT_NAMES, seasonSchedule as pmDrawSchedule } from './pm/schedule.js';
 import { episodeText as pmEpisodeText, momentTitle as pmMomentTitle } from './pm/transcript.js';
 import { isDragSeason, simulateDragEpisode, invalidateDragQueue,
   dragEpisodesAired, dragScheduleRecorded, rerunDragEpisode, dragCanRerun } from './dr-run.js';
@@ -1969,6 +1969,44 @@ export function replayEpisode(epNum) {
  * a re-run that fails changes nothing.
  */
 let _pmNoticeShown = null;
+/**
+ * THE VILLA'S PRESET. One press draws a season the way the real show would
+ * for THIS cast and length — a format on every vote night, a rule on every
+ * bombshell night, a first coupling — and books it on the timeline, where it
+ * can be read, changed or removed. The villa's earlier bookings are replaced;
+ * every other booking is left alone. Nothing needs pressing: an unbooked night
+ * draws the same way when it plays (user: "I don't know when to schedule a
+ * twist — should we have a preset?").
+ */
+function _randomizeVilla() {
+  const mine = TWIST_CATALOG.filter(t => t.pmFormat || t.pmApply);
+  const ids = new Set(mine.map(t => t.id));
+  const had = (seasonConfig.twistSchedule || []).filter(b => b && ids.has(b.type)).length;
+  if (had && !confirm(`Replace the ${had} villa twist${had === 1 ? '' : 's'} on the timeline with a new random season?`)) return;
+  const drawn = pmDrawSchedule(Math.random, perfectMatchEpisodes());
+  const idFor = e => mine.find(t => t.pmFormat && t.pmFormat === e.dumpFormat && t.pmSlots?.includes(e.slot))?.id;
+  const book = [];
+  for (const e of drawn) {
+    if (e.slot && DUMP_SLOT_OK(e.slot)) { const id = idFor(e); if (id) book.push([e.ep, id]); }
+    if (e.moment === 'bombshell') {
+      const rule = e.arrivalRule || 'dates';
+      const id = mine.find(t => t.pmApply?.arrivalRule === rule)?.id;
+      if (id) book.push([e.ep, id]);
+    }
+    if (e.moment === 'first-coupling') {
+      const id = mine.find(t => t.pmApply?.firstFormat === e.firstFormat)?.id;
+      if (id) book.push([e.ep, id]);
+    }
+  }
+  const keep = (seasonConfig.twistSchedule || []).filter(b => b && !ids.has(b.type));
+  seasonConfig.twistSchedule = [...keep, ...book.map(([ep, type], i) => ({ id: `tw-${Date.now()}-${i}`, episode: ep, type }))];
+  localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
+  renderTimeline();
+  renderTwistCatalog();
+}
+// An extra vote in a big cast has no catalogue twist of its own: it draws.
+const DUMP_SLOT_OK = slot => slot === 'vote1' || slot === 'vote2' || slot === 'semi';
+
 function _replayVillaEpisode(epNum) {
   const laterEps = (gs.episodeHistory || []).filter(e => e.num > epNum);
   const msg = laterEps.length
@@ -2593,13 +2631,9 @@ export function buildEpisodeMap() {
      perfectMatchSeasonShape, the same answer the season plays. Played nights report their own villa;
      the rest carry the last count forward (the public decides the rest). */
   if (isPerfectMatchSeason()) {
-    const played = new Map((gs?.episodeHistory || []).filter(r => r?.format === PERFECT_MATCH_FORMAT).map(r => [r.num, r]));
-    let active = (players || []).length;
-    return perfectMatchSeasonShape().schedule.map(e => {
-      const r = played.get(e.ep);
-      if (r) active = (r.pm?.villa || []).length || active;
-      return { ep: e.ep, active, phase: e.moment === 'final' || e.moment === 'reunion' ? 'finale' : 'main', engineType: null, tribes: 1 };
-    });
+    const counts = perfectMatchVillaCounts();
+    return perfectMatchSeasonShape().schedule.map(e => ({ ep: e.ep, active: counts.get(e.ep) ?? (players || []).length,
+      phase: e.moment === 'final' || e.moment === 'reunion' ? 'finale' : 'main', engineType: null, tribes: 1 }));
   }
   /* ── THE MAIN STAGE PROJECTS ITSELF ──
      Everything below this branch is a Total Drama season: a merge, Rescue
@@ -4178,11 +4212,13 @@ export function renderTimeline() {
 
     // The villa's own row: arrivals, and the vote slot this night is.
     const _pmArr = _pmEp?.arrivals?.bombshell || 0;
-    const _pmBooked = _pmEp?.slot && twists.some(x => TWIST_CATALOG.find(c => c.id === x.type)?.pmFormat);
-    const villaRow = _pmEp && (_pmArr || _pmEp.slot)
+    const _pmBooked = twists.some(x => { const c = TWIST_CATALOG.find(k => k.id === x.type); return c?.pmFormat || c?.pmOn; });
+    const _pmDraws = _pmEp && (_pmEp.slot || _pmEp.moment === 'bombshell' || _pmEp.moment === 'first-coupling');
+    const villaRow = _pmEp && (_pmArr || _pmDraws)
       ? `<div class="fd-ep-comps" style="display:flex;gap:6px;flex-wrap:wrap;min-width:0;margin-top:5px;padding-top:5px;border-top:1px solid rgba(224,70,124,0.18);font-size:10.5px;color:var(--muted,#7d8590)">
           ${_pmArr ? `<span style="color:#f59e0b;font-weight:700">+${_pmArr} arriving</span>` : ''}
-          ${_pmEp.slot ? `<span>${_hubEsc(PM_SLOT_NAMES[_pmEp.slot] || 'an extra public vote')}${_pmBooked ? '' : ' · drawn at random'}</span>` : ''}
+          ${_pmEp.slot ? `<span>${_hubEsc(PM_SLOT_NAMES[_pmEp.slot] || 'an extra public vote')}${_pmBooked ? '' : ' · drawn at random'}</span>`
+            : _pmDraws && !_pmBooked ? '<span>drawn at random</span>' : ''}
         </div>`
       : '';
 
@@ -4330,6 +4366,7 @@ export function renderTwistCatalog() {
   // Which vote slot each villa episode is (only asked when the catalogue has
   // a twist that needs one): a dumping books onto the nights it can play.
   const _pmSlotAt = catalog.some(c => c.pmSlots) ? new Map(perfectMatchSlots().map(e => [e.ep, e.slot])) : new Map();
+  const _pmKindAt = catalog.some(c => c.pmOn) ? new Map(perfectMatchEpisodes().map(e => [e.ep, e.moment])) : new Map();
   // Check which twist types already exist on selected episodes (for incompatibility)
   const _existingOnSelected = new Set();
   if (canAssign) {
@@ -4380,9 +4417,11 @@ export function renderTwistCatalog() {
     });
     // Rescue Island Life interlude requires Rescue Island to be enabled
     const _rilBlocked = canAssign && t.id === 'rescue-island-life' && !seasonConfig.ri;
-    const _slotBlocked = canAssign && t.pmSlots && [...selectedEpisodes].some(epN => !t.pmSlots.includes(_pmSlotAt.get(Number(epN))));
+    const _slotBlocked = canAssign && ((t.pmSlots && [...selectedEpisodes].some(epN => !t.pmSlots.includes(_pmSlotAt.get(Number(epN)))))
+      || (t.pmOn && [...selectedEpisodes].some(epN => !t.pmOn.includes(_pmKindAt.get(Number(epN))))));
     const blocked = phaseBlocked || incompBlocked || modeBlocked || tribeBlocked || riBlocked || popBlocked || exileBlocked || _tdEvenBlocked || _taOddBlocked || _ccEvenBlocked || _bbEvenBlocked || _womEvenBlocked || _rilBlocked || _slotBlocked;
-    const blockReason = _slotBlocked ? ` ⚠️ only on ${t.pmSlots.map(s => PM_SLOT_NAMES[s]).join(' or ')}`
+    const blockReason = _slotBlocked ? ` ⚠️ only on ${t.pmSlots ? t.pmSlots.map(s => PM_SLOT_NAMES[s]).join(' or ')
+        : t.pmOn.map(k => (PM_EPISODE_WORDS[k] || k).toLowerCase() + ' nights').join(' or ')}`
       : phaseBlocked ? ' ⚠️ wrong phase' : incompBlocked ? ' ⚠️ conflicts with existing twist'
       : modeBlocked ? ` ⚠️ cannot run alongside ${modeClashes.join(' and ')}` : tribeBlocked ? ` ⚠️ needs ${t.minTribes}+ tribes` : riBlocked ? ' ⚠️ incompatible with 2nd Chance Isle' : exileBlocked ? ' ⚠️ incompatible with Exile Format' : popBlocked ? ' ⚠️ requires Popularity enabled' : _rilBlocked ? ' ⚠️ requires Rescue Island enabled' : _tdEvenBlocked ? ' ⚠️ needs even player count' : _taOddBlocked ? ' ⚠️ needs even player count' : _ccEvenBlocked ? ' ⚠️ needs even player count for pairs' : _bbEvenBlocked ? ' ⚠️ needs even player count for pairs' : _womEvenBlocked ? ' ⚠️ needs even player count for pairs' : '';
     return `
@@ -4391,7 +4430,8 @@ export function renderTwistCatalog() {
         <span class="twist-card-emoji">${t.emoji}</span>
         <div class="twist-card-info">
           <span class="twist-card-name">${t.name}</span>
-          <span class="twist-phase">${t.pmSlots ? t.pmSlots.map(s => PM_SLOT_NAMES[s]).join(' · ') : t.phase}${t.chalSeries ? ` · ${t.chalSeries === 'island' ? '🏝️ Island' : t.chalSeries === 'action' ? '🎬 Action' : t.chalSeries === 'world-tour' ? '✈️ World Tour' : t.chalSeries === 'revenge' ? '☢️ Revenge' : t.chalSeries}` : ''}${blockReason}</span>
+          <span class="twist-phase">${t.pmSlots ? t.pmSlots.map(s => PM_SLOT_NAMES[s]).join(' · ')
+            : t.pmOn ? t.pmOn.map(k => `${PM_EPISODE_WORDS[k] || k} nights`).join(' · ') : t.phase}${t.chalSeries ? ` · ${t.chalSeries === 'island' ? '🏝️ Island' : t.chalSeries === 'action' ? '🎬 Action' : t.chalSeries === 'world-tour' ? '✈️ World Tour' : t.chalSeries === 'revenge' ? '☢️ Revenge' : t.chalSeries}` : ''}${blockReason}</span>
         </div>
         <button class="twist-add-btn" ${canAssign && !blocked ? '' : 'disabled'} onclick="event.stopPropagation();${blocked ? '' : `assignTwist('${t.id}')`}">+</button>
       </div>
@@ -4421,11 +4461,13 @@ export function assignTwist(twistId) {
   const blocked = [];
 
   const _pmSlotAt = twist?.pmSlots ? new Map(perfectMatchSlots().map(e => [e.ep, e.slot])) : null;
+  const _pmKindAt = twist?.pmOn ? new Map(perfectMatchEpisodes().map(e => [e.ep, e.moment])) : null;
   const slotBlocked = [];
   selectedEpisodes.forEach(ep => {
     const epPhase = epLookup[ep] || 'pre-merge';
     // A villa dumping plays only on a vote night of its own kind.
     if (_pmSlotAt && !twist.pmSlots.includes(_pmSlotAt.get(Number(ep)))) { slotBlocked.push(ep); return; }
+    if (_pmKindAt && !twist.pmOn.includes(_pmKindAt.get(Number(ep)))) { slotBlocked.push(ep); return; }
     // Phase check
     if (twist?.phase === 'pre-merge' && epPhase !== 'pre-merge') {
       blocked.push(ep); return;
@@ -4459,7 +4501,8 @@ export function assignTwist(twistId) {
   });
 
   if (slotBlocked.length) {
-    alert(`"${twist?.name}" can only be booked on ${twist.pmSlots.map(s => PM_SLOT_NAMES[s]).join(' or ')}.\n`
+    alert(`"${twist?.name}" can only be booked on ${twist.pmSlots ? twist.pmSlots.map(s => PM_SLOT_NAMES[s]).join(' or ')
+      : twist.pmOn.map(k => (PM_EPISODE_WORDS[k] || k).toLowerCase() + ' nights').join(' or ')}.\n`
       + `Not booked on episode${slotBlocked.length > 1 ? 's' : ''}: ${slotBlocked.join(', ')}.`);
   }
   if (blocked.length) {
@@ -4973,6 +5016,7 @@ export function _clearBBComps() {
 export function showRandomizerPanel() {
   const existing = document.getElementById('randomizer-panel');
   if (existing) { existing.remove(); return; }
+  if (isPerfectMatchSeason()) { _randomizeVilla(); return; }
 
   // A house has no Island, no Action and no World Tour, and no slot for a
   // TWIST_CATALOG challenge twist. Offering the Total Drama panel here was

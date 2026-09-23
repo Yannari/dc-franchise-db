@@ -109,6 +109,28 @@ singles (UK 12 d9, US 6 d27, US 8 d10) · the public couples the bombshells
 (US 7 d11, US 8 d10) · first-coupling formats: profiles on podiums (UK 12),
 public-picked (UK 10), a "most to least" ranking (UK 11), doors (US 8).
 
+### Phase 2 — shipped
+
+- **New arrivals pick first** at every recoupling after they walk in: the
+  norm, not a twist (UK 9, 10, 11, 13; US 8 say it in those words).
+- **Bombshell nights** draw one of: just dates (usual), stand up to be chosen,
+  the bombshell saves one of the singles, the public couple the bombshell —
+  never the same rule twice a season (`ARRIVAL_DRAWS`).
+- **Night one** draws step forward (usual), dating profiles, the public's
+  couples, or most-to-least (`FIRST_DRAWS`).
+- All of it is catalogue twists (Dumpings / Arrivals / Night One) booked on
+  the Season Timeline, each refused on a night of the wrong kind. Nothing needs
+  booking: an unbooked night draws. The timeline's **Randomize** stamps a
+  whole drawn season onto the timeline to read and edit (user: "I don't know
+  when to schedule a twist — should we have a preset?").
+- The timeline's villa counts are projected on the season's pace (they read
+  the cast size on every episode before).
+
+Sixty seasons: exits 14.1, four couples at 95% of finals (audit). Found by
+reading: two bombshells arriving the same night stood up for each other
+(tonight's arrivals are now apart), and night one's pools were too short for
+five couples.
+
 ## Phase 3 — one-off twists (at most once a season)
 
 Returning islander (UK 10 Molly, UK 12 Blu and Megan) · the host's secret

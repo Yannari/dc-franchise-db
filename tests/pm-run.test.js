@@ -17,7 +17,7 @@ function freshSeason(n = 22, extra = {}) {
   setPlayers(makeIslanders(n, 5));
   // A fixed seed: the run's own is partly random, so every test run would
   // otherwise play a different season.
-  setGs({ initialized: true, episodeHistory: [], popularity: {}, activePlayers: [], pm: { seed: 3001 } });
+  setGs({ initialized: true, episodeHistory: [], popularity: {}, activePlayers: [], pm: { seed: 3004 } });
 }
 
 function playAll() {

@@ -337,6 +337,8 @@ export const TWIST_CATEGORIES = [
   { id: 'team', label: 'Team Dynamics' },
   // The villa's dumpings: how a vote night decides who leaves (Perfect Match).
   { id: 'dumping', label: 'Dumpings' },
+  { id: 'arrivals', label: 'Arrivals' },
+  { id: 'first', label: 'Night One' },
   { id: 'immunity', label: 'Immunity' },
   { id: 'power', label: 'Power & Nominations' },
   { id: 'elim', label: 'Elimination' },
@@ -1054,6 +1056,43 @@ export const TWIST_CATALOG = [
     category:'returns', phase:'any', engineType:'dr-returnee', episodeField:'returnee',
     dataFields:['returneeName'],
     desc:'A queen already sent home walks back into the werk room and back into the competition. Pick her from the dropdown or leave it on Random and the show decides — weighted toward the queens who went out with the most left to prove. She keeps the record she made before she left, rejoins from that episode, and the season runs ONE EPISODE LONGER because the room she walked into just got bigger. If the queen you picked is somehow still competing when the episode arrives, the show falls back to a random eliminated queen rather than doing nothing.' },
+  /* ── HOW THE VILLA'S ARRIVALS PLAY (Perfect Match, Plan 4.5 phase 2) ──
+     Booked on a bombshell night (`pmOn`) or on night one. `pmApply` is what
+     the booking writes onto that episode of the schedule (js/pm/schedule.js
+     withBookings). Nothing booked: the night draws its rule the way the real
+     show does (ARRIVAL_DRAWS / FIRST_DRAWS), and never the same rule twice. */
+  { id:'pm-bombshell-dates', emoji:'\u{1F339}', name:'Just Dates', format:'perfect-match',
+    category:'arrivals', phase:'any', engineType:'pm-bombshell-dates', pmOn:['bombshell'], pmApply:{ arrivalRule:'dates' },
+    desc:'The usual bombshell night, pinned so nothing sharper is drawn. The new arrival walks in, takes two islanders they have their eye on out on dates, and nobody has to couple up tonight — the steals wait for the next recoupling, where the newest arrivals choose first.',
+    incompatible:['pm-stand-up','pm-bombshell-saves','pm-public-matches'] },
+  { id:'pm-stand-up', emoji:'\u{1F64B}', name:'Stand Up To Be Chosen', format:'perfect-match',
+    category:'arrivals', phase:'any', engineType:'pm-stand-up', pmOn:['bombshell'], pmApply:{ arrivalRule:'stand-up' },
+    desc:'The new arrival asks the other side to stand if they want to get to know them — in front of everyone, partners included. The bombshell can only choose from the islanders who stood, and couples up with one on the spot, leaving that islander\'s partner single. Standing up beside your partner costs the couple, and if nobody stands, the bombshell is single and vulnerable.',
+    incompatible:['pm-bombshell-dates','pm-bombshell-saves','pm-public-matches'] },
+  { id:'pm-bombshell-saves', emoji:'\u{1F6DF}', name:'The Bombshell Saves One', format:'perfect-match',
+    category:'arrivals', phase:'any', engineType:'pm-bombshell-saves', pmOn:['bombshell'], pmApply:{ arrivalRule:'saves' },
+    desc:'The single islanders on the other side are told they are vulnerable, and that someone they have never met will decide their fate. The new arrival takes them on dates, then chooses one to couple up with and save. The rest are dumped from the island. It needs two singles to be a choice; with fewer, the night is only dates.',
+    incompatible:['pm-bombshell-dates','pm-stand-up','pm-public-matches'] },
+  { id:'pm-public-matches', emoji:'\u{1F4F2}', name:'The Public Couple Them', format:'perfect-match',
+    category:'arrivals', phase:'any', engineType:'pm-public-matches', pmOn:['bombshell'], pmApply:{ arrivalRule:'public-matches' },
+    desc:'The public have been voting for who the new arrival should couple up with, and the host reads it out: the bombshell is coupled with the islander the country chose — usually someone the public like, and someone the bombshell was seen to fancy. Whoever that islander was with is left single on the spot.',
+    incompatible:['pm-bombshell-dates','pm-stand-up','pm-bombshell-saves'] },
+  { id:'pm-first-step-forward', emoji:'\u{1F463}', name:'Step Forward', format:'perfect-match',
+    category:'first', phase:'any', engineType:'pm-first-step-forward', pmOn:['first-coupling'], pmApply:{ firstFormat:'step-forward' },
+    desc:'The classic first night. The boys walk in one at a time, and the girls step forward if they fancy him; if more than one steps forward, he chooses. Everyone ends the night in a couple, and the first bombshell arrives straight after to steal one of them.',
+    incompatible:['pm-first-profiles','pm-first-public','pm-first-ranking'] },
+  { id:'pm-first-profiles', emoji:'\u{1F4C7}', name:'Dating Profiles', format:'perfect-match',
+    category:'first', phase:'any', engineType:'pm-first-profiles', pmOn:['first-coupling'], pmApply:{ firstFormat:'profiles' },
+    desc:'The girls meet the boys\' dating profiles before they meet the boys: a name, an age, a height and a quote on a podium. Each girl stands by the profile she likes the sound of, and couples up with whoever walks out. Looks count for almost nothing, so the first couples are close to chance.',
+    incompatible:['pm-first-step-forward','pm-first-public','pm-first-ranking'] },
+  { id:'pm-first-public', emoji:'\u{1F4FA}', name:'The Public Choose', format:'perfect-match',
+    category:'first', phase:'any', engineType:'pm-first-public', pmOn:['first-coupling'], pmApply:{ firstFormat:'public' },
+    desc:'Before the villa opens, the public vote for the first couples from the islanders\' introductions, and the islanders meet their partners already coupled up. The country pairs up the islanders most likely to fancy each other both ways round.',
+    incompatible:['pm-first-step-forward','pm-first-profiles','pm-first-ranking'] },
+  { id:'pm-first-ranking', emoji:'\u{1F4CA}', name:'Most To Least', format:'perfect-match',
+    category:'first', phase:'any', engineType:'pm-first-ranking', pmOn:['first-coupling'], pmApply:{ firstFormat:'ranking' },
+    desc:'Each side ranks the other from most to least boyfriend or girlfriend material, and the islanders are coupled by position: the top girl with the top boy, and so on down. Everyone finds out where they came, so the couples at the bottom start the season knowing it.',
+    incompatible:['pm-first-step-forward','pm-first-profiles','pm-first-public'] },
   /* ── THE VILLA'S DUMPINGS (Perfect Match, Plan 4.5) ──
      How a vote night decides who leaves, booked on the Season Timeline like
      every other show's twists. `pmFormat` is the engine's own name for it and

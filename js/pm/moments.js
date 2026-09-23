@@ -14,7 +14,8 @@ import { breakHeart } from './emotions.js';
 import { runRecoupling } from './recoupling.js';
 import { publicVote, publicVoteIslanders, finalVote, splitOrSteal } from './public-vote.js';
 import { villaDumping, topCouplePicks, saveOne, couplesVote, returningExes, exIslandersVote } from './villa-vote.js';
-import { arriveBombshell, bombshellSteal, openCasa } from './arrivals.js';
+import { arriveBombshell, bombshellSteal, openCasa, standUp, bombshellSaves, publicMatch } from './arrivals.js';
+import { attr } from './chemistry.js';
 import { stickOrTwist } from './casa.js';
 import { closeEpisode, BETRAYAL } from './ledger.js';
 import { FINAL_COUPLES } from './schedule.js';
@@ -261,16 +262,75 @@ function exIslandersNight(state, ctx, singles, over, exes) {
   return { events, exits, ballots: exv.ballots, extra: { bottom: cv.vulnerable, exes, dumpFormat: 'ex-islanders' } };
 }
 
+// ── NIGHT ONE (Plan 4.5 phase 2) ─────────────────────────────────────
+// The girls stepping forward is the usual first coupling (recoupleNight).
+// The other three are one real season each: dating profiles on podiums (UK
+// 12 d1), the public's own couples before anyone met (UK 10), and a "most to
+// least" ranking that couples the same positions (UK 11 d1). Nobody has met
+// on night one, so each reads only looks-and-type attraction — never feelings.
+function firstCouples(state, rng, format) {
+  const g = n => state.profiles[n].gender;
+  const girls = state.villa.filter(n => g(n) === 'f'), boys = state.villa.filter(n => g(n) === 'm');
+  const pairs = [];
+  const free = new Set(boys);
+  const pickFor = (a, score) => [...free].filter(b => attr(state, a, b) != null)
+    .map(b => [b, score(a, b)]).sort((x, y) => y[1] - x[1])[0]?.[0];
+  if (format === 'ranking') {
+    // Ranked by how the other side sees them, and coupled by position.
+    const rank = (side, other) => [...side].sort((x, y) =>
+      other.reduce((s, o) => s + (attr(state, o, y) ?? 0), 0) - other.reduce((s, o) => s + (attr(state, o, x) ?? 0), 0));
+    const rg = rank(girls, boys), rb = rank(boys, girls);
+    rg.forEach((a, i) => { if (rb[i] && attr(state, a, rb[i]) != null) { pairs.push([a, rb[i]]); free.delete(rb[i]); } });
+  } else {
+    const order = [...girls].sort(() => rng() - 0.5);
+    const score = format === 'public'
+      // The public ship the couples: both ways round, and a little chance.
+      ? (a, b) => (attr(state, a, b) ?? 0) + (attr(state, b, a) ?? 0) + (rng() - 0.5) * 2
+      // A profile is a name, a height and a quote: mostly chance.
+      : (a, b) => 0.3 * (attr(state, a, b) ?? 0) + rng() * 6;
+    for (const a of order) { const b = pickFor(a, score); if (b) { pairs.push([a, b]); free.delete(b); } }
+  }
+  state.couples = pairs.map(([a, b]) => [a, b]);
+  state.recouplings++;
+  state.lastRecoupleEp = state.ep;
+  const kind = { profiles: 'profile-pick', public: 'public-couple', ranking: 'ranking-couple' }[format];
+  const events = pairs.map(([a, b], i) => makeEvent(state, rng, { phase: 'firepit', kind, players: [a, b], aired: true,
+    extra: { rank: format === 'ranking' ? i + 1 : null, pop: { [a]: { approval: 0.2, fame: 1 }, [b]: { approval: 0.2, fame: 1 } } } }));
+  return { events, exits: [], ballots: [] };
+}
+
+/** What a bombshell night's rule does, for each bombshell who walked in tonight. */
+function arrivalRule(state, ctx, rule, fresh) {
+  const events = [], exits = [];
+  let played = null;
+  for (const name of fresh) {
+    const tonight = fresh;
+    const r = rule === 'stand-up' ? standUp(state, name, { rng: ctx.rng, tonight })
+      : rule === 'saves' ? bombshellSaves(state, name, { rng: ctx.rng, spare: ctx.pace >= 0.5, tonight })
+      : rule === 'public-matches' ? publicMatch(state, name, { rng: ctx.rng, tonight }) : null;
+    if (!r) continue;
+    played = rule;
+    events.push(...r.events);
+    if (r.dumped?.length) {
+      const scene = dumpingScene(state, ctx.rng, { dumped: r.dumped, channel: 'bombshell' });
+      events.push(...scene.events); exits.push(...scene.exits);
+    }
+  }
+  return { events, exits, played };
+}
+
 export const MOMENTS = {
   'first-coupling': (state, ctx) => {
-    const first = recoupleNight(state, ctx.rng, { dumpSingles: false });
+    const fmt = ctx.entry.firstFormat;
+    const first = fmt && fmt !== 'step-forward' ? firstCouples(state, ctx.rng, fmt)
+      : recoupleNight(state, ctx.rng, { dumpSingles: false });
     const events = [...first.events, ...arrivals(state, ctx, ctx.entry.arrivals?.bombshell || 0)];
     for (const name of state.villa.filter(n => state.ledger.firstEp[n] === state.ep
       && state.profiles[n].role === 'bombshell')) {
       const st = bombshellSteal(state, name, { rng: ctx.rng });
       if (st) events.push(...st.events);
     }
-    return { events, exits: [], ballots: first.ballots };
+    return { events, exits: [], ballots: first.ballots, extra: { firstFormat: fmt || 'step-forward' } };
   },
   recoupling: (state, ctx) => {
     const pre = arrivals(state, ctx, ctx.entry.arrivals?.bombshell || 0);
@@ -279,7 +339,16 @@ export const MOMENTS = {
     const r = recoupleNight(state, ctx.rng, { dumpSingles: !ctx.entry.keepSingles, pace: ctx.pace });
     return { events: [...pre, ...r.events], exits: r.exits, ballots: r.ballots };
   },
-  bombshell: (state, ctx) => ({ events: arrivals(state, ctx, ctx.entry.arrivals?.bombshell || 0), exits: [], ballots: [] }),
+  bombshell: (state, ctx) => {
+    const before = new Set(state.villa);
+    const events = arrivals(state, ctx, ctx.entry.arrivals?.bombshell || 0);
+    const fresh = state.villa.filter(n => !before.has(n));
+    const rule = ctx.entry.arrivalRule;
+    if (!rule) return { events, exits: [], ballots: [], extra: { arrivalRule: null } };
+    const r = arrivalRule(state, ctx, rule, fresh);
+    // The row says which rule PLAYED: a save with fewer than two singles was a night of dates.
+    return { events: [...events, ...r.events], exits: r.exits, ballots: [], extra: { arrivalRule: r.played } };
+  },
   'public-vote': (state, ctx) => {
     // A small villa can reach a vote night with two couples or fewer: a vote
     // would send one of the last couples home before the final. The night

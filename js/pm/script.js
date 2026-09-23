@@ -33,7 +33,7 @@ export const FACT_KEYS = ['rung', 'thinks', 'persona', 'intent', 'attachment', '
   'early', 'coupled', 'gap', 'knows', 'faking', 'bPersona', 'bMood', 'bRung', 'stance', 'family',
   'choice', 'cause', 'channel', 'grudge', 'stole', 'bTaken', 'archetype', 'taken', 'loyal', 'late', 'gender', 'bGender', 'myRung', 'phase', 'kind', 'role', 'withB', 'newArrival', 'dialect',
   'comfortedYesterday', 'rowedBefore', 'rowedToday', 'feels', 'of', 'knowsB', 'verdict', 'noticed',
-  'reason', 'split', 'guessed', 'stoleFrom', 'full', 'hasQuote'];
+  'reason', 'split', 'guessed', 'stoleFrom', 'full', 'hasQuote', 'rank'];
 
 // Archetype groups a pool may name instead of listing them (CLAUDE.md).
 export const VILLAINS = ['villain', 'mastermind', 'schemer'];
@@ -112,6 +112,8 @@ export function factsFor(state, ev) {
   for (const k of ['choice', 'cause', 'channel', 'grudge', 'of', 'noticed', 'reason', 'guessed']) if (ev.extra?.[k] != null) f[k] = ev.extra[k];
   // A steal at the recoupling: {c} is the one who loses {b}.
   f.stoleFrom = !!ev.extra?.stole;
+  // Night one's ranking: the pair at the top, or anybody below it.
+  f.rank = ev.extra?.rank == null ? null : ev.extra.rank === 1 ? 'top' : 'lower';
   f.split = !!state.split;             // Casa Amor is on
   f.withB = !!b;                       // somebody else is in the scene
   f.hasQuote = !!clipSlots(state, ev).quote;   // the replayed clip has a line to quote

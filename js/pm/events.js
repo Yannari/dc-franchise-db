@@ -285,7 +285,10 @@ export const KINDS = {
     'heart-rate', 'snog-marry-pie', 'movie-night', 'double-standard', 'notes', 'families',
     'solidarity',
     // the dumping formats of Plan 4.5
-    'dump-at-risk', 'dump-verdict-couple', 'dump-verdict-singles', 'group-entrance', 'save-vote', 'top-couple-pick', 'couples-vote', 'ex-return', 'ex-ballot']
+    'dump-at-risk', 'dump-verdict-couple', 'dump-verdict-singles', 'group-entrance',
+    // the arrivals of Plan 4.5 phase 2
+    'stand-up', 'nobody-stands', 'stand-up-pick', 'save-setup', 'bombshell-save', 'public-match',
+    'profile-pick', 'public-couple', 'ranking-couple', 'save-vote', 'top-couple-pick', 'couples-vote', 'ex-return', 'ex-ballot']
     .map(k => [k, { salience: 1, cast: () => null,
       apply: (s, ev) => ({ pop: ev.extra.pop || {}, major: ev.extra.majorPop || [] }) }])),
 };

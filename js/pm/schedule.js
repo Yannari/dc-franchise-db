@@ -237,16 +237,38 @@ function draw(rng, options) {
   return options[options.length - 1];
 }
 
+// ── HOW THE ARRIVALS PLAY (Plan 4.5 phase 2) ──────────────────────────
+// A bombshell night is usually dates and nothing else; the real show turns
+// about one a season into something sharper, and never the same one twice.
+// Read from the same eight seasons: a stand-up steal (UK 12 d24, US 7 d3,
+// US 8 d3), a bombshell who saves one of the singles (UK 12 d9, US 6 d27,
+// US 8 d10), the public coupling the bombshells (US 7 d11, US 8 d10).
+export const ARRIVAL_DRAWS = [['dates', 6], ['stand-up', 1.5], ['saves', 1.5], ['public-matches', 1]];
+// Night one: the girls stepping forward is the usual; the others are one
+// season each (UK 12 profiles, UK 10 the public, UK 11 most-to-least).
+export const FIRST_DRAWS = [['step-forward', 5], ['profiles', 1], ['public', 1], ['ranking', 1]];
+
 /** The season's formats, drawn once from its own stream: same seed, same season. */
 export function seasonSchedule(rng, template = SEASON_TEMPLATE) {
-  return template.map(e => {
+  const out = template.map(e => {
     const opts = e.slot && drawsFor(e.slot);
     if (!opts) return { ...e };
     const [dumpFormat, , bottom] = draw(rng, opts);
-    const out = { ...e, dumpFormat };
-    if (bottom) out.bottom = bottom; else delete out.bottom;
-    return out;
+    const row = { ...e, dumpFormat };
+    if (bottom) row.bottom = bottom; else delete row.bottom;
+    return row;
   });
+  // The arrivals draw AFTER every vote, so adding them moved no season's
+  // dumpings. A rule that has played once this season is not drawn again.
+  const used = new Set();
+  for (const e of out) {
+    if (e.moment === 'first-coupling') e.firstFormat = draw(rng, FIRST_DRAWS)[0];
+    if (e.moment === 'bombshell') {
+      const rule = draw(rng, ARRIVAL_DRAWS.filter(([r]) => r === 'dates' || !used.has(r)))[0];
+      if (rule !== 'dates') { used.add(rule); e.arrivalRule = rule; }
+    }
+  }
+  return out;
 }
 
 // ── THE AUTHOR'S PICKS ────────────────────────────────────────────────
@@ -267,6 +289,24 @@ export const PICK_LABELS = {
   // four couples and still has singles to lose.
   singles: 'The single islanders face the public',
 };
+
+/**
+ * Bookings from the Season Timeline that are not a vote slot's format: an
+ * arrival rule or a first-coupling format, by episode ({ 6: { arrivalRule:
+ * 'stand-up' } }). The caller has already checked the episode is the right
+ * kind of night; an unknown key is ignored.
+ */
+export function withBookings(schedule, byEp = {}) {
+  return schedule.map(e => {
+    const b = byEp?.[e.ep];
+    if (!b) return e;
+    const out = { ...e };
+    if (b.arrivalRule && e.moment === 'bombshell') out.arrivalRule = b.arrivalRule === 'dates' ? undefined : b.arrivalRule;
+    if (b.firstFormat && e.moment === 'first-coupling') out.firstFormat = b.firstFormat;
+    if (out.arrivalRule === undefined) delete out.arrivalRule;
+    return out;
+  });
+}
 
 export function withPicks(schedule, picks = {}) {
   return schedule.map(e => {

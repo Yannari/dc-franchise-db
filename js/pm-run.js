@@ -23,7 +23,7 @@
 import { gs, setGs, players, seasonConfig, seasonFormat, twistsForFormat } from './core.js';
 import { PERFECT_MATCH_FORMAT } from './shows.js';
 import { playPerfectMatchSeason, perfectMatchScheduleFor } from './pm/season.js';
-import { assignRoles, buildSchedule, withPicks } from './pm/schedule.js';
+import { assignRoles, buildSchedule, withPicks, withBookings } from './pm/schedule.js';
 import { DIALECTS } from './pm/lines/dialect.js';
 
 export const isPerfectMatchSeason = () => seasonFormat(seasonConfig) === PERFECT_MATCH_FORMAT;
@@ -98,7 +98,7 @@ export function perfectMatchSeasonShape() {
   const seed = gs?.pm?.seed;
   const schedule = seed ? perfectMatchScheduleFor(seed, shape) : buildSchedule(shape);
   return { ...shape, starters: count('starter'), auto: buildSchedule({ ...shape, episodes: null }).length,
-    schedule: withPicks(schedule, perfectMatchPicks()) };
+    schedule: withBookings(withPicks(schedule, perfectMatchPicks()), perfectMatchBookings()) };
 }
 
 /**
@@ -122,6 +122,72 @@ export function perfectMatchPicks() {
     if (slot && tw.pmSlots.includes(slot)) picks[slot] = tw.pmFormat;
   }
   return picks;
+}
+
+/**
+ * How many islanders are in the villa going into each episode, for the Season
+ * Timeline. Aired episodes use the villa they actually had; the rest are
+ * projected on the season's own pace (pm/season.js): arrivals come in, each
+ * dumping night takes its share of the islanders the villa has to lose to
+ * reach four couples, stick or twist sends most of Casa Amor home, and the
+ * semi-final trims to the final's four couples. The map used to carry the
+ * cast size forward, so every episode read "18 left" and nobody went home.
+ */
+export function perfectMatchVillaCounts() {
+  const shape = perfectMatchSeasonShape();
+  const aired = new Map((gs?.episodeHistory || []).filter(r => r && r.format === PERFECT_MATCH_FORMAT).map(r => [r.num, r]));
+  const FINAL = 8;
+  let count = shape.starters;
+  let bombsLeft = shape.bombshells;
+  const out = new Map();
+  shape.schedule.forEach((e, i) => {
+    const arriving = e.moment === 'casa-open' ? shape.casa : (e.arrivals?.bombshell || 0);
+    if (e.moment !== 'casa-open') bombsLeft -= arriving;
+    count += arriving;
+    out.set(e.ep, count);
+    const row = aired.get(e.ep);
+    if (row) { count = (row.pm?.villa || []).length || count; return; }
+    const ahead = shape.schedule.slice(i);
+    const nights = ahead.filter(x => (x.moment === 'recoupling' && !x.keepSingles) || x.moment === 'public-vote').length;
+    const pace = (count + bombsLeft - FINAL) / (nights + 1);
+    const before = count;
+    if (e.moment === 'stick-or-twist') count -= Math.round(shape.casa * 0.8);
+    else if (e.moment === 'recoupling' && !e.keepSingles && pace >= 0.5) count -= Math.max(1, Math.round(pace));
+    else if (e.moment === 'public-vote' && pace >= 0.8) count -= Math.max(2, Math.round(pace));
+    else if (e.moment === 'semi-final') count = Math.min(count, FINAL);
+    // A night never takes the villa below the final's four couples.
+    if (before >= FINAL) count = Math.max(count, FINAL);
+  });
+  return out;
+}
+
+/**
+ * The arrival rules and night-one format booked on the Season Timeline, by
+ * episode ({ 6: { arrivalRule: 'stand-up' } }). A booking on a night of the
+ * wrong kind is ignored rather than moved.
+ */
+export function perfectMatchBookings() {
+  const mine = new Map(twistsForFormat({ format: PERFECT_MATCH_FORMAT }).filter(t => t.pmOn).map(t => [t.id, t]));
+  const booked = (seasonConfig.twistSchedule || []).filter(b => b && (mine.has(b.type) || mine.has(b.id)));
+  if (!booked.length) return {};
+  const kindAt = new Map(perfectMatchEpisodes().map(e => [e.ep, e.moment]));
+  const out = {};
+  for (const b of booked) {
+    const tw = mine.get(b.type) || mine.get(b.id);
+    const ep = Number(b.episode);
+    if (tw.pmOn.includes(kindAt.get(ep))) out[ep] = { ...(out[ep] || {}), ...tw.pmApply };
+  }
+  return out;
+}
+
+/** Every episode's kind, for this cast and length (bookings do not move them). */
+export function perfectMatchEpisodes() {
+  const saved = Array.isArray(gs?.pm?.castOrder) && gs.pm.castOrder.length ? gs.pm.castOrder : null;
+  const cast = saved || (players || []).map(p => p.name).filter(Boolean);
+  const roles = perfectMatchRoles(cast, perfectMatchSetup());
+  const episodes = Number(seasonConfig.pmEpisodes) > 0 ? Number(seasonConfig.pmEpisodes) : null;
+  return buildSchedule({ bombshells: roles.filter(r => r === 'bombshell').length,
+    casa: roles.filter(r => r === 'casa').length, episodes });
 }
 
 /** Which episode is which vote slot, for this cast and length (picks do not move them). */
@@ -155,7 +221,7 @@ function _firstChanged(aired, rows) {
 
 function _inputs() {
   return {
-    setup: perfectMatchSetup(), picks: perfectMatchPicks(),
+    setup: perfectMatchSetup(), picks: perfectMatchPicks(), bookings: perfectMatchBookings(),
     splitOrStealOn: seasonConfig.pmSplitOrSteal === true,
     dialect: Object.hasOwn(DIALECTS, seasonConfig.pmDialect || '') ? seasonConfig.pmDialect : 'uk',
     roleCounts: { ...(seasonConfig.pmRoleCounts || {}) },
@@ -184,7 +250,7 @@ function _build(inputs, rerolls) {
   const outer = gs;
   let result, inner;
   try {
-    result = playPerfectMatchSeason({ cast, setup: resolved, seed, picks: inputs.picks, rerolls,
+    result = playPerfectMatchSeason({ cast, setup: resolved, seed, picks: inputs.picks, bookings: inputs.bookings || {}, rerolls,
       splitOrStealOn: inputs.splitOrStealOn, dialect: inputs.dialect, episodes: inputs.episodes });
     inner = gs;
   } finally { setGs(outer); }

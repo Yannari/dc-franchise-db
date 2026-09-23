@@ -63,15 +63,34 @@ export function pickReason(state, p, c) {
   return Object.entries(parts).sort((x, y) => y[1] - x[1])[0][0];
 }
 
+/**
+ * NEW ARRIVALS PICK FIRST. "As new arrivals, Ellie and Spencer were given
+ * first choice at the recoupling" — five of the eight seasons read say it in
+ * those words (UK 9, 10, 11, 13; US 8). Anyone who walked in since the last
+ * recoupling chooses before the picking side, whichever side they are on;
+ * the picking side then chooses from who is left. The first coupling has no
+ * last recoupling, so it plays exactly as it always did.
+ */
 export function runRecoupling(state, { rng, pickerGender }) {
   const room = state.villa.filter(n => !(state.split && state.casa.includes(n)));
-  const pickers = shuffle(rng, room.filter(n => state.profiles[n].gender === pickerGender));
-  const candidates = room.filter(n => !pickers.includes(n));
+  const last = state.lastRecoupleEp;
+  const fresh = last == null ? [] : shuffle(rng, room.filter(n => (state.ledger.firstEp?.[n] ?? 0) > last));
+  const regular = shuffle(rng, room.filter(n => state.profiles[n].gender === pickerGender && !fresh.includes(n)));
+  const pickers = [...fresh, ...regular];
+  const isPicker = new Set(pickers);
   const taken = new Map();            // candidate -> picker
   const picks = [];
   const ctx = { rng, taken };
+  const pickedSomeone = new Set();
   for (const p of pickers) {
-    let options = candidates.filter(c => attr(state, p, c) != null);
+    // Chosen already by a new arrival: coupled, and not choosing.
+    if (taken.has(p)) continue;
+    // A new arrival picks from the other side, who are the pickers; a regular
+    // picker picks from the side that is not picking — never a new arrival
+    // who has already chosen.
+    let options = room.filter(c => c !== p && !pickedSomeone.has(c)
+      && (fresh.includes(p) ? !fresh.includes(c) : !isPicker.has(c))
+      && attr(state, p, c) != null);
     for (let attempt = 0; attempt < 2 && options.length; attempt++) {
       const best = options.map(c => [c, desire(state, p, c, ctx)]).sort((x, y) => y[1] - x[1])[0][0];
       const holder = taken.get(best);
@@ -79,14 +98,17 @@ export function runRecoupling(state, { rng, pickerGender }) {
         // The picked islander decides between the two.
         const keep = desire(state, best, holder, ctx) >= desire(state, best, p, ctx);
         if (keep) { options = options.filter(c => c !== best); continue; }
-        picks.push({ picker: p, picked: best, stole: holder, reason: pickReason(state, p, best) });
+        picks.push({ picker: p, picked: best, stole: holder, reason: pickReason(state, p, best), first: fresh.includes(p) });
+        pickedSomeone.delete(holder);
       } else {
-        picks.push({ picker: p, picked: best, stole: null, reason: pickReason(state, p, best) });
+        picks.push({ picker: p, picked: best, stole: null, reason: pickReason(state, p, best), first: fresh.includes(p) });
       }
       taken.set(best, p);
+      pickedSomeone.add(p);
       break;
     }
   }
+  state.lastRecoupleEp = state.ep;
   const couples = [...taken].map(([c, p]) => [p, c]);
   const coupled = new Set(couples.flat());
   return {

@@ -196,6 +196,7 @@ import { MORE_A } from './day/more-a.js';
 import { MORE_B } from './day/more-b.js';
 import { MORE_C } from './day/more-c.js';
 import { HEARD } from './debrief.js';
+import { SECRET_LINES } from './secrets.js';
 const JM = k => JUST_MET[k] || [];
 export const DAY = {
   chat: [...CHAT, ...MAKING_UP.chat, ...JM('chat')],
@@ -217,3 +218,5 @@ for (const [k, v] of Object.entries({ ...MORE_A, ...MORE_B })) DAY[k] = [...(DAY
 for (const [k, v] of Object.entries(MORE_C)) DAY[k] = [...(DAY[k] || []), ...v];
 // Gossip carrying what was SAID in a debrief (lines/debrief.js): `heard` leads.
 DAY.gossip = [...DAY.gossip, ...HEARD];
+// A pull that went further (lines/secrets.js): `kissed` leads.
+DAY.pull = [...DAY.pull, ...SECRET_LINES.pull];

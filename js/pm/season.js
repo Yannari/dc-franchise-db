@@ -172,7 +172,9 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
     growLove(state, state.couples);
     decideMasks(state, mrng);
     updateBeliefs(state);
-    const vday = entry.moment === 'reunion' ? [] : runVillaDay(state, streamFor(seed, `day:${entry.ep}${state.epSalt}`), entry);
+    // Nothing happens in the villa after the final's vote is counted: those
+    // scenes' approval landed on the reunion with nothing there to explain it.
+    const vday = entry.moment === 'reunion' || entry.moment === 'final' ? [] : runVillaDay(state, streamFor(seed, `day:${entry.ep}${state.epSalt}`), entry);
     day.push(...vday);
     state.history.push(...vday);
 

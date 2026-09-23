@@ -15,6 +15,7 @@ import { closedness } from './ladder.js';
 import { emo, breakHeart, feel, jealousOf } from './emotions.js';
 import { addBond } from '../bonds.js';
 import { confrontation } from './movie-night.js';
+import { noteBreakup } from './exes.js';
 import { peerPressure } from './circle.js';
 import { BETRAYAL } from './ledger.js';
 
@@ -56,8 +57,8 @@ function returnCeremony(state, rng, decisions) {
     if (of === ONE.both) { addBond(p, d.name, -0.4); }
     out.push(ev('casa-react', [who, other, third].filter(Boolean), { of,
       pop: { [who]: { approval: of === ONE.relief ? 1 : 2, fame: 2 } } }, of === ONE.relief ? [] : [who]));
-    if (of === ONE.devastated) rows.push([p, d.name]);
-    if (of === ONE.turned) rows.push([d.name, p]);
+    if (of === ONE.devastated) { rows.push([p, d.name]); noteBreakup(state, { ender: p, wrong: d.name, severity: 1, cause: 'casa' }); }
+    if (of === ONE.turned) { rows.push([d.name, p]); noteBreakup(state, { ender: d.name, wrong: p, severity: 1, cause: 'casa' }); }
   }
   // The rows, the same night: the one who stuck and the one who didn't.
   for (const [stuck, twister] of rows) {

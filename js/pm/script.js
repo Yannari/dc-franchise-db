@@ -34,7 +34,7 @@ export const FACT_KEYS = ['rung', 'thinks', 'persona', 'intent', 'attachment', '
   'early', 'coupled', 'gap', 'knows', 'faking', 'bPersona', 'bMood', 'bRung', 'stance', 'family',
   'choice', 'cause', 'channel', 'grudge', 'stole', 'bTaken', 'archetype', 'taken', 'loyal', 'late', 'gender', 'bGender', 'myRung', 'phase', 'kind', 'role', 'withB', 'newArrival', 'dialect',
   'comfortedYesterday', 'rowedBefore', 'rowedToday', 'feels', 'of', 'knowsB', 'verdict', 'noticed',
-  'reason', 'split', 'guessed', 'stoleFrom', 'full', 'hasQuote', 'rank', 'cast', 'justMet', 'rebuffed', 'heard'];
+  'reason', 'split', 'guessed', 'stoleFrom', 'full', 'hasQuote', 'rank', 'cast', 'justMet', 'rebuffed', 'heard', 'kissed'];
 
 // Archetype groups a pool may name instead of listing them (CLAUDE.md).
 export const VILLAINS = ['villain', 'mastermind', 'schemer'];
@@ -123,6 +123,7 @@ export function factsFor(state, ev) {
   const arrivedNow = n => n != null && (state.ledger?.firstEp?.[n] ?? state.ep) === state.ep;
   f.justMet = arrivedNow(a) || (!!b && arrivedNow(b));
   f.rebuffed = !!ev.extra?.rebuffed;   // a pull b turned down (events.js decides)
+  f.kissed = !!ev.extra?.kissed;       // a pull (or a Casa bed) that went further
   // Gossip carrying a debrief: the teller heard it said (pm/debrief.js), never saw it.
   f.heard = !!(ev.extra?.secret && state.secrets?.find(s => s.id === ev.extra.secret)?.said);
   f.cast = ev.players.filter(Boolean).length;   // how many are in it, when one is optional
@@ -207,7 +208,7 @@ function scriptRng(state) {
 // `justMet` leads too: two islanders who met today talk like it (pm/lines/day/just-met.js).
 // `rebuffed` leads first: a pull b turned down is a no, whatever else is true.
 // `heard`: gossip about something SAID in a debrief, not something seen.
-const LEADING = ['rebuffed', 'heard', 'rowedToday', 'justMet'];
+const LEADING = ['rebuffed', 'heard', 'kissed', 'rowedToday', 'justMet'];
 
 export function pickScript(state, pool, ps, facts, { allowRepeat = true } = {}) {
   // Candidates at each width, narrowest first: the leading pool, then every

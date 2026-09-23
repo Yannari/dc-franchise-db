@@ -89,6 +89,7 @@ import { NIGHT_ONE } from './night-one.js';
 import { DEBRIEF } from './debrief.js';
 import { MOVIE_NIGHT } from './movie-night.js';
 import { CASA_LINES } from './casa.js';
+import { SECRET_LINES } from './secrets.js';
 const ch = channel => ({ channel });
 export const MOMENTS = {
   'intro-look': [
@@ -1683,3 +1684,5 @@ MOMENTS.debrief = [...(MOMENTS.debrief || []), ...DEBRIEF];
 for (const [k, v] of Object.entries(MOVIE_NIGHT)) MOMENTS[k] = [...(MOMENTS[k] || []), ...v];
 // Casa Amor's return and the photos (lines/casa.js).
 for (const [k, v] of Object.entries(CASA_LINES)) MOMENTS[k] = [...(MOMENTS[k] || []), ...v];
+// The secrets and the second chance (lines/secrets.js). `pull` lives in DAY.
+for (const [k, v] of Object.entries(SECRET_LINES)) if (k !== 'pull') MOMENTS[k] = [...(MOMENTS[k] || []), ...v];

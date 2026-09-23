@@ -29,6 +29,7 @@ import { makeEvent, partnerOf, airLater } from './events.js';
 import { romance, revealTruth } from './feelings.js';
 import { emo, feel, jealousyHit, breakHeart } from './emotions.js';
 import { BETRAYAL } from './ledger.js';
+import { noteBreakup } from './exes.js';
 
 const LOOKBACK = 3;          // episodes of footage the producers pick from
 const MAX_CLIPS = 4;
@@ -66,7 +67,7 @@ function candidates(state) {
       if (!e.players.includes(x) || e.players.includes(p)) continue;
       const sec = state.secrets.find(s => s.eventId === e.id && s.who === x && s.partner === p && !s.known);
       // A secret: the pull, the kiss, the night in the hideaway.
-      if (sec) out.push({ e, x, p, sev: sec.severity, what: e.kind, sec, rival: sec.with });
+      if (sec) out.push({ e, x, p, sev: sec.severity, what: sec.kind === 'kiss' ? 'kiss' : sec.kind === 'bed' ? 'hideaway' : sec.kind === 'said' ? 'debrief' : e.kind, sec, rival: sec.with });
       // What was said in a debrief, about the partner in the audience.
       else if (e.kind === 'debrief' && e.players[0] === x && ['meh', 'bomb-fancy', 'rather'].includes(e.extra?.of) && partnerOf(state, x) === p)
         out.push({ e, x, p, sev: 0.7, what: 'debrief', rival: e.players[2] || null });
@@ -177,6 +178,7 @@ export function confrontation(state, rng, { p, x, sev, rowKind, splitKind, phase
   if (rng() < pEnd) {
     state.couples = state.couples.filter(k => !(k.includes(p) && k.includes(x)));
     state._splitEp = state.ep;
+    noteBreakup(state, { ender: p, wrong: x, severity: sev, cause: splitKind });
     breakHeart(state, x, p, 3 * romance(x, p) / 10);
     out.push(makeEvent(state, rng, { phase, kind: splitKind, players: [p, x], aired: true, major: [p, x],
       extra: { pop: { [p]: { approval: 2, fame: 2.5 }, [x]: { approval: -1.5, fame: 2.5 } } } }));

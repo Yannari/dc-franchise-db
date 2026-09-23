@@ -39,6 +39,7 @@ export const KIND_LABEL = {
   'movie-row': 'After the screening', 'movie-split': "It's over",
   'casa-host': 'The Casa Amor recoupling', 'casa-react': 'The moment', 'casa-row': 'After the fire pit', 'photo-text': 'Post from Casa',
   'photo-row': 'The photo', 'photo-split': "It's over",
+  'bed-share': 'Lights out', vent: 'Letting off steam', apology: 'The apology', reunite: 'Back together', 'apology-rejected': 'Not this time',
   steal: 'A steal', 'recouple-pick': 'The recoupling', 'dump-buildup': 'At risk', 'dump-verdict': 'Dumped',
   'ballot-reveal': 'The vote', 'dump-reaction': 'The reaction', 'dump-goodbye': 'Goodbye', 'dump-fallout': 'Fallout',
   'casa-return': 'Stick or twist', photos: 'The photos', declaration: 'The declaration', 'final-result': 'The result',
@@ -160,6 +161,8 @@ function fxFor(row, e, first) {
   // The photos: a Polaroid of the real moment drops on the stage and develops.
   if (k === 'photos') fx.polaroid = { faces: e.extra?.faces || [e.players[1]], ep: e.extra?.photoEp ?? null };
   if (k === 'photo-text') fx.phone = true;
+  if (k === 'reunite') { fx.petals = true; fx.neon = ['Back together', '#ff2e88']; }
+  if (k === 'apology-rejected' && e.extra?.of === 'final') fx.neonDie = ['Over', '#a78bfa'];
   if (k === 'photo-row' && e.extra?.of === 'deny') fx.shake = true;
   if (k === 'photo-split') { fx.neonDie = ["It's over", '#ff2e88']; fx.shake = true; }
   if (k === 'ballot-reveal' || k === 'ex-ballot' || k === 'save-vote') fx.deal = [[e.players[0], e.players[1]]];
@@ -195,6 +198,7 @@ function relOps(e) {
   if (k === 'dump-verdict-couple' || k === 'dump-verdict-singles') return p.map(n => ['leave', n]);
   if (k === 'walk') return [['leave', p[0]]];
   if (k === 'movie-split' || k === 'photo-split') return [['single', p[0]], ['single', p[1]]];
+  if (k === 'reunite') return [['couple', p[1], p[0]]];
   if (k === 'entrance' || k === 'group-entrance' || k === 'return-entrance') return p.map(n => ['arrive', n]);
   if (k === 'first-arrival') return [['arrive', p[0]]];
   // The boy walks in, and walks out coupled (or waiting).

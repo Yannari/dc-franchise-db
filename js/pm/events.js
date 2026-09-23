@@ -135,13 +135,25 @@ export const KINDS = {
       if (rebuffed) nudgeAttraction(s, a, b, -0.1);
       else { nudgeAttraction(s, b, a, 0.3 * S(s, a).social / 10); nudgeAttraction(s, a, b, 0.1); }
       addBond(a, b, rebuffed ? -0.1 : 0.3);
+      // A pull that goes further (user: "pull shouldn't be the only thing
+      // creating secrets — a kiss…"): both have to fancy it, and the one who
+      // pulled is held back by their own loyalty and how closed-off they are.
+      const pa = partnerOf(s, a);
+      const kissed = !rebuffed && rng() < light * 0.35 * ((attr(s, a, b) ?? 0) / 10) * ((attr(s, b, a) ?? 0) / 10)
+        * (1 - 0.6 * S(s, a).loyalty / 10) * (1 - 0.4 * (pa ? closedness(s, a, pa) : 0));
+      ev.extra.kissed = kissed;
+      if (kissed) { nudgeAttraction(s, a, b, 0.4); nudgeAttraction(s, b, a, 0.4); }
+      // A kiss weighs more than a chat — 1.3, not 1.6: at 1.6, with the
+      // bad-mouthing, four-couple finals fell 97% → 93% (measured, each alone).
+      const weight = kissed ? 1.3 : 1;
       // Only a pull b went along with is b's secret; a made the move either way.
-      for (const [x, y, sev] of rebuffed ? [[a, b, 1]] : [[a, b, 1], [b, a, 0.7]]) {
+      for (const [x, y, sev0] of rebuffed ? [[a, b, 1]] : [[a, b, 1], [b, a, 0.7]]) {
+        const sev = sev0 * weight;
         const p = partnerOf(s, x);
         if (!p || p === y) continue;
         const witnesses = roomMates(s, x).filter(n => n !== y && n !== p)
           .filter(() => rng() < 0.25);
-        const secret = { id: `sec${s.secrets.length + 1}`, who: x, partner: p, with: y,
+        const secret = { id: `sec${s.secrets.length + 1}`, who: x, partner: p, with: y, kind: kissed ? 'kiss' : 'pull',
           severity: sev * light, ep: s.ep, witnesses, known: false, eventId: ev.id, casa: s.split };
         s.secrets.push(secret);
         if (ev.aired) nudgeBelief(s.ledger, x, p, -3);
@@ -159,6 +171,65 @@ export const KINDS = {
       }
       return { pop: { ...pop1(a, partnerOf(s, a) ? -0.8 * light : 0.2, 1.5),
         ...pop1(b, rebuffed ? (partnerOf(s, b) ? 0.3 : 0) : partnerOf(s, b) ? -0.4 * light : 0.1, 1) } };
+    },
+  },
+  // Casa Amor week: sharing a bed with a new arrival — the show's classic
+  // (and sometimes more). Only while the villas are split; loyalty holds it back.
+  'bed-share': {
+    salience: 0.75,
+    cast: (s, rng) => {
+      if (!s.split) return null;
+      const fresh = new Set(s.casaArrivals || []);
+      const opts = [];
+      for (const o of s.villa.filter(n => !fresh.has(n) && partnerOf(s, n))) {
+        for (const c of roomMates(s, o).filter(n => fresh.has(n) && !partnerOf(s, n))) {
+          const w = (attr(s, o, c) ?? 0) * (1 - 0.7 * S(s, o).loyalty / 10);
+          if (w > 0) opts.push([[o, c], w]);
+        }
+      }
+      return weighted(rng, opts);
+    },
+    apply: (s, ev, rng) => {
+      const [o, c] = ev.players;
+      const p = partnerOf(s, o);
+      // How far it goes: the one who is coupled's pull, and whether the new one wants it too.
+      const kissed = rng() < 0.55 * ((attr(s, o, c) ?? 0) / 10) * (0.4 + (attr(s, c, o) ?? 0) / 16);
+      ev.extra.kissed = kissed;
+      ev.extra.of = kissed ? 'kiss' : 'bed';
+      nudgeAttraction(s, o, c, kissed ? 0.6 : 0.3); nudgeAttraction(s, c, o, 0.3);
+      addBond(o, c, 0.4);
+      if (p) {
+        const sev = kissed ? 1.7 : 0.9;
+        const witnesses = roomMates(s, o).filter(n => n !== c && n !== p).filter(() => rng() < 0.4);
+        s.secrets.push({ id: `sec${s.secrets.length + 1}`, who: o, partner: p, with: c, kind: kissed ? 'kiss' : 'bed',
+          severity: sev, ep: s.ep, witnesses, known: false, eventId: ev.id, casa: true });
+        feel(s, o, 'guilt', 1.5 * sev * closedness(s, o, p));
+      }
+      return { pop: { ...pop1(o, p ? (kissed ? -1.4 : -0.7) : 0.2, 2), ...pop1(c, 0, 1.5) } };
+    },
+  },
+  // Moaning about your partner to a friend (user: "bad-mouthing your
+  // partner"): said out loud, in front of a witness, so it can travel.
+  vent: {
+    salience: 0.55,
+    cast: (s, rng) => {
+      // Only about a partner of a while: day one has no "same chat every day".
+      if (s.ep < 2) return null;
+      const a = weighted(rng, s.villa.filter(n => partnerOf(s, n) && !metToday(s, n, partnerOf(s, n)))
+        .map(n => [n, Math.max(0, 10 - romance(n, partnerOf(s, n))) + S(s, n).boldness / 3]));
+      if (!a) return null;
+      const g = s.profiles[a]?.gender;
+      const b = roomMates(s, a).filter(n => n !== partnerOf(s, a) && s.profiles[n]?.gender === g)
+        .sort((x, y) => getBond(a, y) - getBond(a, x))[0];
+      return b ? { players: [a, b] } : null;
+    },
+    apply: (s, ev) => {
+      const [a, b] = ev.players;
+      const p = partnerOf(s, a);
+      addBond(a, b, 0.3);
+      if (p) s.secrets.push({ id: `sec${s.secrets.length + 1}`, who: a, partner: p, with: null, kind: 'said', said: true,
+        severity: 0.5, ep: s.ep, witnesses: [b], known: false, eventId: ev.id, casa: !!s.split });
+      return { pop: { ...pop1(a, -0.3, 1), ...pop1(b, 0, 0.5) } };
     },
   },
   loyalty: {
@@ -340,7 +411,7 @@ export const KINDS = {
     'challenge-text', 'receipt', 'look-who',
     // night one's opening
     'first-arrival', 'first-look', 'step-forward', 'step-last', 'host-open', 'host-first', 'intro', 'snogger-kiss', 'snogger-win', 'snogger-row', 'couple-goals', 'couple-goals-row',
-    'knowing-me', 'knowing-row', 'talent-act', 'talent-win', 'talent-snub', 'baby-doll', 'sorts-podium', 'grafties-award', 'save-vote', 'save-tie', 'casa-host', 'casa-react', 'casa-row', 'photo-text', 'photo-row', 'photo-split', 'movie-text', 'movie-seat', 'movie-clip', 'movie-react', 'movie-row', 'movie-split', 'arrival-chat', 'first-toast', 'debrief', 'bombshell-text', 'bombshell-guess', 'bombshell-react', 'top-couple-pick', 'couples-vote', 'ex-return', 'ex-ballot']
+    'knowing-me', 'knowing-row', 'talent-act', 'talent-win', 'talent-snub', 'baby-doll', 'sorts-podium', 'grafties-award', 'save-vote', 'save-tie', 'apology', 'reunite', 'apology-rejected', 'casa-host', 'casa-react', 'casa-row', 'photo-text', 'photo-row', 'photo-split', 'movie-text', 'movie-seat', 'movie-clip', 'movie-react', 'movie-row', 'movie-split', 'arrival-chat', 'first-toast', 'debrief', 'bombshell-text', 'bombshell-guess', 'bombshell-react', 'top-couple-pick', 'couples-vote', 'ex-return', 'ex-ballot']
     .map(k => [k, { salience: 1, cast: () => null,
       apply: (s, ev) => ({ pop: ev.extra.pop || {}, major: ev.extra.majorPop || [] }) }])),
 };
@@ -351,9 +422,10 @@ export const PHASE_KINDS = {
   // a line nobody hears (tests/pm-lines.test.js found six).
   morning: [['chat', 4], ['kiss', 2], ['friendship', 3], ['comedy', 1], ['ick', 0.5], ['argument', 0.5], ['pull', 0.5]],
   day: [['chat', 3], ['deep-chat', 2], ['pull', 3], ['friendship', 3], ['gossip', 1.5],
-    ['comedy', 1.5], ['argument', 1], ['ick', 0.8]],
+    ['comedy', 1.5], ['argument', 1], ['ick', 0.8], ['vent', 0.15]],
   event: [['challenge-kiss', 3], ['challenge-win', 1], ['comedy', 1], ['argument', 0.5]],
-  evening: [['kiss', 3], ['deep-chat', 2], ['pull', 2], ['argument', 1.5], ['gossip', 1.5], ['friendship', 1], ['chat', 0.5], ['comedy', 0.5]],
+  evening: [['kiss', 3], ['deep-chat', 2], ['pull', 2], ['argument', 1.5], ['gossip', 1.5], ['friendship', 1], ['chat', 0.5], ['comedy', 0.5],
+    ['bed-share', 1.2], ['vent', 0.05]],
 };
 
 /** Create one event: decide airing, apply it, attach a hut cutaway, write the ledger. */

@@ -629,7 +629,12 @@ function voteNight(state, ctx) {
       // come is somebody's partner (measured: dumping those cost the
       // 16-islander cast its four-couple finals, 18 of 20 down to 13).
       const singles = state.villa.filter(n => !partnerOf(state, n));
-      const toCome = (ctx.queues?.bombshell?.length || 0) + (ctx.queues?.casa?.length || 0);
+      // Counting everyone still to arrive left four singles "all spoken for"
+      // on 22-islander seed 9, and its first vote skipped.
+      // …and on the first vote nobody is held back at all: the bombshells are
+      // cast to whichever side the villa is short of (arrivals()), so a
+      // single facing the public never strands an arrival.
+      const toCome = firstSingles ? 0 : (ctx.queues?.bombshell?.length || 0) + (ctx.queues?.casa?.length || 0);
       const spare = Math.min(firstSingles ? Math.max(1, Math.round(ctx.pace)) : Math.round(ctx.pace), singles.length - toCome,
         firstSingles ? ctx.surplus : Infinity);
       if (spare > 0 && (paceOk || firstSingles)) return singlesVoteNight(state, ctx, singles, spare);
@@ -699,7 +704,7 @@ Object.assign(MOMENTS, {
       if (hidden) airLater(state, hidden);
       events.push(makeEvent(state, ctx.rng, { phase: 'firepit', kind: 'photos', players: [sec.partner, sec.who],
         aired: true, major: [sec.partner, sec.who],
-        extra: { secret: sec.id, faces: [sec.who, sec.with].filter(Boolean), photoEp: sec.ep,
+        extra: { secret: sec.id, of: sec.kind || 'pull', faces: [sec.who, sec.with].filter(Boolean), photoEp: sec.ep,
           pop: { [sec.partner]: { approval: 1.5, fame: 2 }, [sec.who]: { approval: -BETRAYAL.photos, fame: 2 } } } }));
       // …and the row that follows, while everyone is still holding the photos.
       if (partnerOf(state, sec.who) === sec.partner) {

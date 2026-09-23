@@ -17,6 +17,7 @@ import { confidantOf, verdict, judgement } from './circle.js';
 import { familyVerdict } from './arrivals.js';
 import { BETRAYAL } from './ledger.js';
 import { movieNight } from './movie-night.js';
+import { secondChances } from './exes.js';
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 const pick = (rng, arr) => (arr.length ? arr[Math.floor(rng() * arr.length)] : null);
@@ -234,7 +235,7 @@ export function runVillaDay(state, rng, entry) {
   syncLadder(state);
   const days = entry.days ? Math.max(1, entry.days[1] - entry.days[0] + 1) : 1;
   const out = [...ladderScenes(state, rng, days), ...feelingScenes(state, rng),
-    ...confessions(state, rng), ...advice(state, rng)];
+    ...confessions(state, rng), ...advice(state, rng), ...secondChances(state, rng, entry)];
   for (const r of entry.rituals || []) out.push(...(RITUALS[r]?.(state, rng) || []));
   tickEmotions(state);
   return out;

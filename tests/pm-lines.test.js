@@ -51,7 +51,7 @@ describe('the pools are well-formed', () => {
       'stand-up': 3, 'nobody-stands': 1, 'stand-up-pick': 3, 'bombshell-save': 3, 'public-match': 3,
       'return-entrance': 1, 'return-ex': 3, 'mission-brief': 1, 'mission-dump': 3, 'sleepover-invite': 3, 'sleepover-choice': 3,
       'challenge-text': 1, 'first-arrival': 2, 'step-forward': 2, 'host-open': 0, 'host-first': 0, intro: 1, receipt: 4, 'look-who': 3, 'snogger-row': 3, 'couple-goals': 4, 'couple-goals-row': 3, 'talent-snub': 3,
-      'arrival-chat': 3, 'first-toast': 3, debrief: 3, 'bombshell-react': 3, 'movie-react': 3 };
+      'arrival-chat': 3, 'first-toast': 3, debrief: 3, 'bombshell-react': 3, 'movie-react': 3, 'casa-host': 0, 'casa-react': 3, 'casa-return': 2, 'photo-text': 1 };
     for (const [k, e] of ENTRIES) {
       if (k.startsWith('hut:') || k.startsWith('narrator:')) continue;
       const size = CAST[k] || 2;

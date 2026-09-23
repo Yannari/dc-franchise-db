@@ -491,6 +491,22 @@ details.pmv-debug[open] summary::before{transform:rotate(45deg)}
 .pmv-poster.pmv-go::after{content:'';position:absolute;inset:-7px;border-radius:14px;border:3px dotted #fff3b0;animation:pmv-chase .35s linear infinite}
 @keyframes pmv-chase{50%{border-color:#ff8cc6}}
 
+/* ── THE CASA PHOTOS: a Polaroid of the real moment, developing ── */
+.pmv-polaroid{position:absolute;left:50%;top:4%;width:25%;z-index:11;opacity:0;pointer-events:none;
+  background:#fbfaf6;padding:3% 3% 9%;border-radius:4px;box-shadow:0 18px 50px #000a,0 0 0 1px #0001;transform:translate(-50%,0) rotate(-4deg)}
+.pmv-polaroid.pmv-on{opacity:1}
+.pmv-polaroid.pmv-develop{animation:pmv-poldrop 1.1s cubic-bezier(.2,1.3,.3,1) both}
+@keyframes pmv-poldrop{0%{opacity:0;transform:translate(-50%,-70%) rotate(18deg) scale(1.2)}60%{opacity:1}100%{opacity:1;transform:translate(-50%,0) rotate(-4deg)}}
+.pmv-pol-photo{position:relative;aspect-ratio:1;display:flex;overflow:hidden;background:#1d1a1f}
+.pmv-pol-photo span{position:relative;flex:1;overflow:hidden}
+.pmv-pol-photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 22%;filter:saturate(1.1) contrast(1.05) sepia(.18)}
+.pmv-pol-photo i{position:absolute;inset:0;display:grid;place-items:center;font:800 clamp(16px,3vw,40px) Outfit;color:#fff8;font-style:normal;
+  background:linear-gradient(160deg,#6d3a5c,#1f2d4f)}
+.pmv-pol-photo::after{content:'';position:absolute;inset:0;background:#fbfaf6;opacity:0;pointer-events:none}
+.pmv-polaroid.pmv-develop .pmv-pol-photo::after{animation:pmv-develop 2.6s ease-out .5s both}
+@keyframes pmv-develop{0%{opacity:1;background:#fbfaf6}40%{opacity:.85;background:#d9c8b0}100%{opacity:0;background:#2a1f24}}
+.pmv-pol-cap{position:absolute;left:0;right:0;bottom:2.2%;text-align:center;font:clamp(12px,1.9vw,24px)/1 'Yellowtail',cursive;color:#2b1d24}
+
 /* ── THE BOMBSHELL: a silhouette on the steps, a spotlight, the lights up ── */
 .pmv-stage.pmv-revealing::before{content:'';position:absolute;inset:0;z-index:4;pointer-events:none;
   background:radial-gradient(ellipse 22% 60% at var(--ox,50%) 45%,#fff5 0%,#fff0 70%),linear-gradient(#000c,#0006);animation:pmv-spot 2.6s ease forwards}

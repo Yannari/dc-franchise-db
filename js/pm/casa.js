@@ -12,11 +12,59 @@ import { attr } from './chemistry.js';
 import { romance, believed } from './feelings.js';
 import { makeEvent, partnerOf } from './events.js';
 import { closedness } from './ladder.js';
-import { emo, breakHeart } from './emotions.js';
+import { emo, breakHeart, feel, jealousOf } from './emotions.js';
+import { addBond } from '../bonds.js';
+import { confrontation } from './movie-night.js';
 import { peerPressure } from './circle.js';
 import { BETRAYAL } from './ledger.js';
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+
+const ONE = { relief: 'relief', devastated: 'devastated', both: 'both', turned: 'turned' };
+function returnCeremony(state, rng, decisions) {
+  const decided = Object.fromEntries(decisions.map(d => [d.name, d]));
+  const before = Object.fromEntries(decisions.map(d => [d.name, partnerOf(state, d.name)]));
+  const goers = decisions.filter(d => state.casa.includes(d.name));
+  const stayers = decisions.filter(d => !state.casa.includes(d.name));
+  const ev = (kind, players, extra, major = []) => makeEvent(state, rng, { phase: 'firepit', kind, players, aired: true, major, extra });
+  const ret = (d, side) => {
+    const partner = before[d.name];
+    const players = [d.name, d.with || partner].filter(Boolean);
+    return ev('casa-return', players, { choice: d.choice, of: side, pop: d.choice === 'twist'
+      ? { [d.name]: { approval: partner ? -BETRAYAL.casaTwist : 0.5, fame: 3 }, ...(partner ? { [partner]: { approval: 3, fame: 3 } } : {}) }
+      : { [d.name]: { approval: partner ? 2 : 0, fame: 1.5 } } },
+    d.choice === 'twist' ? players.concat(partner ? [partner] : []) : []);
+  };
+  const out = [ev('casa-host', [], { pop: {} })];
+  // The ones who stayed choose first, and sit with that choice.
+  for (const d of stayers) out.push(ret(d, 'stayed'));
+  // Then the doors open.
+  const rows = [];
+  for (const d of goers) {
+    out.push(ret(d, 'returned'));
+    const p = before[d.name];
+    const pd = p ? decided[p] : null;
+    if (!p || !pd) continue;
+    const of = d.choice === 'stick' && pd.choice === 'stick' ? ONE.relief
+      : d.choice === 'twist' && pd.choice !== 'twist' ? ONE.devastated
+      : d.choice === 'twist' ? ONE.both : ONE.turned;
+    // Who reacts: the one left holding nothing.
+    const [who, other, third] = of === ONE.turned ? [d.name, p, pd.with] : [p, d.name, of === ONE.relief ? null : d.with];
+    if (of === ONE.relief) { addBond(p, d.name, 0.8); feel(state, p, 'security', 1); feel(state, d.name, 'security', 1); }
+    if (of === ONE.devastated) jealousOf(state, p, d.with, 1.5);
+    if (of === ONE.turned) jealousOf(state, d.name, pd.with, 1.5);
+    if (of === ONE.both) { addBond(p, d.name, -0.4); }
+    out.push(ev('casa-react', [who, other, third].filter(Boolean), { of,
+      pop: { [who]: { approval: of === ONE.relief ? 1 : 2, fame: 2 } } }, of === ONE.relief ? [] : [who]));
+    if (of === ONE.devastated) rows.push([p, d.name]);
+    if (of === ONE.turned) rows.push([d.name, p]);
+  }
+  // The rows, the same night: the one who stuck and the one who didn't.
+  for (const [stuck, twister] of rows) {
+    out.push(...confrontation(state, rng, { p: stuck, x: twister, sev: 1, rowKind: 'casa-row', splitKind: null, phase: 'firepit', split: false }));
+  }
+  return out;
+}
 
 export function stickOrTwist(state, { rng }) {
   const arrivals = new Set(state.casaArrivals || []);
@@ -66,15 +114,11 @@ export function stickOrTwist(state, { rng }) {
   for (const d of decisions) if (d.choice === 'twist') next.push([d.name, d.with]);
   const dumped = [...arrivals].filter(c => !taken.has(c));
 
-  const events = decisions.map(d => {
-    const partner = partnerOf(state, d.name);
-    const players = [d.name, d.with || partner].filter(Boolean);
-    return makeEvent(state, rng, { phase: 'firepit', kind: 'casa-return', players, aired: true,
-      major: d.choice === 'twist' ? players.concat(partner ? [partner] : []) : [],
-      extra: { choice: d.choice, pop: d.choice === 'twist'
-        ? { [d.name]: { approval: partner ? -BETRAYAL.casaTwist : 0.5, fame: 3 }, ...(partner ? { [partner]: { approval: 3, fame: 3 } } : {}) }
-        : { [d.name]: { approval: partner ? 2 : 0, fame: 1.5 } } } });
-  });
+  // THE RETURN, as the show plays it (user: "casa returns … and all the drama
+  // it causes, it's absolutely necessary"): the host at the fire pit; the ones
+  // who stayed, each sitting alone or beside someone new; then the Casa
+  // islanders walking back in one at a time — and the face of the one waiting.
+  const events = returnCeremony(state, rng, decisions);
 
   // Whoever stuck while their partner twisted is safe, and heartbroken.
   for (const n of singleSafe) {

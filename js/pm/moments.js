@@ -10,7 +10,7 @@ import { addBond, getBond } from '../bonds.js';
 import { makeEvent, partnerOf, roomMates, airLater } from './events.js';
 import { romance } from './feelings.js';
 import { closedness } from './ladder.js';
-import { breakHeart, feel, jealousOf } from './emotions.js';
+import { breakHeart, feel, jealousOf, jealousyHit } from './emotions.js';
 import { runRecoupling } from './recoupling.js';
 import { publicVote, publicVoteIslanders, finalVote, splitOrSteal } from './public-vote.js';
 import { villaDumping, topCouplePicks, saveOne, couplesVote, returningExes, exIslandersVote } from './villa-vote.js';
@@ -18,6 +18,8 @@ import { arriveBombshell, bombshellSteal, openCasa, standUp, bombshellSaves, pub
 import { secretMission, sleepover, immunityChallenge } from './one-offs.js';
 import { attr, nudgeAttraction } from './chemistry.js';
 import { stickOrTwist } from './casa.js';
+import { confrontation } from './movie-night.js';
+import { addRelationshipDimension } from '../relationships.js';
 import { closeEpisode, BETRAYAL } from './ledger.js';
 import { FINAL_COUPLES } from './schedule.js';
 
@@ -677,18 +679,32 @@ Object.assign(MOMENTS, {
   photos: (state, ctx) => {
     const events = [];
     // The photos are a scene, not an inbox: the worst half-dozen get shown.
+    // Every photo is a real moment from Casa Amor somebody kept quiet about
+    // (user: "don't invent things") — it lands as a Polaroid (vp-pm/stage.js).
     const shown = state.secrets.filter(x => x.casa && !x.known)
       .sort((a, b) => b.severity - a.severity).slice(0, 6);
+    const live = shown.filter(sec => state.villa.includes(sec.who) && state.villa.includes(sec.partner));
+    if (live.length) {
+      const reader = live[0].partner;
+      events.push(makeEvent(state, ctx.rng, { phase: 'firepit', kind: 'photo-text', players: [reader], aired: true, extra: { pop: {} } }));
+    }
     for (const sec of shown) {
       sec.known = true;
       sec.public = true;              // the whole villa saw the photos
       if (!state.villa.includes(sec.who) || !state.villa.includes(sec.partner)) continue;
       addBond(sec.who, sec.partner, -1.5 * sec.severity);
+      jealousyHit(state, sec.partner, sec.who, sec.with || sec.who, 4 * sec.severity, { confirmed: true });
+      addRelationshipDimension(sec.partner, sec.who, 'trust', -1.5 * sec.severity);
       const hidden = state.history.find(e => e.id === sec.eventId);
       if (hidden) airLater(state, hidden);
       events.push(makeEvent(state, ctx.rng, { phase: 'firepit', kind: 'photos', players: [sec.partner, sec.who],
         aired: true, major: [sec.partner, sec.who],
-        extra: { secret: sec.id, pop: { [sec.partner]: { approval: 1.5, fame: 2 }, [sec.who]: { approval: -BETRAYAL.photos, fame: 2 } } } }));
+        extra: { secret: sec.id, faces: [sec.who, sec.with].filter(Boolean), photoEp: sec.ep,
+          pop: { [sec.partner]: { approval: 1.5, fame: 2 }, [sec.who]: { approval: -BETRAYAL.photos, fame: 2 } } } }));
+      // …and the row that follows, while everyone is still holding the photos.
+      if (partnerOf(state, sec.who) === sec.partner) {
+        events.push(...confrontation(state, ctx.rng, { p: sec.partner, x: sec.who, sev: sec.severity, rowKind: 'photo-row', splitKind: 'photo-split', phase: 'firepit' }));
+      }
     }
     return { events: [...events, ...arrivals(state, ctx, ctx.entry.arrivals?.bombshell || 0)], exits: [], ballots: [] };
   },
@@ -745,9 +761,9 @@ Object.assign(MOMENTS, {
       const steal = envelope.choice === 'steal';
       events.push(makeEvent(state, ctx.rng, { phase: 'final', kind: 'envelope', players: [envelope.holder, other], aired: true,
         major: [envelope.holder, other],
-        extra: { choice: envelope.choice, pop: {
-          [envelope.holder]: { approval: steal ? -BETRAYAL.steal * 2 : 1, fame: 4 },
-          [other]: { approval: steal ? 3 : 1, fame: 3 } } } }));
+        // Fame only: the public's approval closed with the vote, and a swing
+        // here landed on the reunion with nothing on screen to explain it.
+        extra: { choice: envelope.choice, pop: { [envelope.holder]: { approval: 0, fame: 4 }, [other]: { approval: 0, fame: 3 } } } }));
       if (steal) { addBond(envelope.holder, other, -6); breakHeart(state, other, envelope.holder, 6); }
     }
     return { events, exits: [], ballots: [], extra: { final, envelope, shares: final.map(f => ({ couple: f.couple, share: f.share })) } };

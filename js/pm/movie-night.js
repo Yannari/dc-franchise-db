@@ -142,28 +142,44 @@ export function movieNight(state, rng) {
   }
 
   // After the screen goes dark: the rows (user: "big fights … let it stem from
-  // jealousy, cheating"). The one caught owns it or denies it — their own
-  // loyalty and temper against their strategy — and some couples end there.
+  // jealousy, cheating").
   for (const c of picked.filter(k => !k.good)) {
-    const { x, p } = c;
-    if (partnerOf(state, x) !== p) continue;
-    const S = state.profiles[x]?.stats || {};
-    const honest = ((S.loyalty ?? 5) + (S.temperament ?? 5)) / 20;
-    const sly = (S.strategic ?? 5) / 10;
-    const r = rng();
-    const of = r < honest * 0.7 ? 'own-it' : r < honest * 0.7 + sly * 0.5 ? 'deny' : 'walk-off';
-    if (of === 'own-it') { addRelationshipDimension(p, x, 'trust', 0.5); addBond(p, x, -0.3); }
-    if (of === 'deny') { addRelationshipDimension(p, x, 'trust', -1.0); addBond(p, x, -0.8); }
-    if (of === 'walk-off') feel(state, p, 'stress', 1.0);
-    ev('movie-row', [p, x], { of, pop: { [x]: { approval: of === 'deny' ? -2 : of === 'own-it' ? 0.5 : -0.5, fame: 2 }, [p]: { approval: 0.5, fame: 1.5 } } }, [p, x]);
-    // Ending it: what they saw, against what they feel.
-    const jealous = Object.values(emo(state, p).jealousy || {}).reduce((m, v) => Math.max(m, v), 0);
-    const pEnd = Math.max(0, Math.min(0.8, 0.1 + 0.35 * c.sev + 0.03 * jealous + (of === 'deny' ? 0.15 : 0) - 0.05 * romance(p, x)));
-    if (rng() < pEnd) {
-      state.couples = state.couples.filter(k => !(k.includes(p) && k.includes(x)));
-      breakHeart(state, x, p, 3 * romance(x, p) / 10);
-      ev('movie-split', [p, x], { pop: { [p]: { approval: 2, fame: 2.5 }, [x]: { approval: -1.5, fame: 2.5 } } }, [p, x]);
-    }
+    if (partnerOf(state, c.x) !== c.p) continue;
+    events.push(...confrontation(state, rng, { p: c.p, x: c.x, sev: c.sev, rowKind: 'movie-row', splitKind: 'movie-split', phase: 'cinema' }));
   }
   return events;
+}
+
+/**
+ * The row after a betrayal comes out (Movie Night, the photos, Casa Amor):
+ * the one caught owns it, denies it or is walked away from — their own
+ * loyalty and temper against their strategy — and the one hurt may end it
+ * there: what they found out, against what they feel.
+ */
+export function confrontation(state, rng, { p, x, sev, rowKind, splitKind, phase, split = true }) {
+  const out = [];
+  const S = state.profiles[x]?.stats || {};
+  const honest = ((S.loyalty ?? 5) + (S.temperament ?? 5)) / 20;
+  const sly = (S.strategic ?? 5) / 10;
+  const r = rng();
+  const of = r < honest * 0.7 ? 'own-it' : r < honest * 0.7 + sly * 0.5 ? 'deny' : 'walk-off';
+  if (of === 'own-it') { addRelationshipDimension(p, x, 'trust', 0.5); addBond(p, x, -0.3); }
+  if (of === 'deny') { addRelationshipDimension(p, x, 'trust', -1.0); addBond(p, x, -0.8); }
+  if (of === 'walk-off') feel(state, p, 'stress', 1.0);
+  out.push(makeEvent(state, rng, { phase, kind: rowKind, players: [p, x], aired: true, major: [p, x],
+    extra: { of, pop: { [x]: { approval: of === 'deny' ? -2 : of === 'own-it' ? 0.5 : -0.5, fame: 2 }, [p]: { approval: 0.5, fame: 1.5 } } } }));
+  // One couple ends a night, at most: Movie Night and the photos share the
+  // same evening, and four break-ups at once (measured) emptied the villa
+  // too late for any recoupling to mend it — three-couple finals.
+  if (!split || partnerOf(state, x) !== p || state._splitEp === state.ep) return out;
+  const jealous = Object.values(emo(state, p).jealousy || {}).reduce((m, v) => Math.max(m, v), 0);
+  const pEnd = Math.max(0, Math.min(0.8, 0.1 + 0.35 * sev + 0.03 * jealous + (of === 'deny' ? 0.15 : 0) - 0.05 * romance(p, x)));
+  if (rng() < pEnd) {
+    state.couples = state.couples.filter(k => !(k.includes(p) && k.includes(x)));
+    state._splitEp = state.ep;
+    breakHeart(state, x, p, 3 * romance(x, p) / 10);
+    out.push(makeEvent(state, rng, { phase, kind: splitKind, players: [p, x], aired: true, major: [p, x],
+      extra: { pop: { [p]: { approval: 2, fame: 2.5 }, [x]: { approval: -1.5, fame: 2.5 } } } }));
+  }
+  return out;
 }

@@ -178,7 +178,10 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
 
     const exits = [...m.exits];
     if (!ctx.closed) closeEpisode(state.ledger, state.ep, gs.popularity);
-    if (entry.moment !== 'reunion' && entry.moment !== 'final') {
+    // Nobody walks on the semi-final night either: it is the night the villa
+    // is trimmed to its finalists, and a walkout after it (with the partner
+    // following) left 40-islander finals with three couples (17 of 20).
+    if (entry.moment !== 'reunion' && entry.moment !== 'final' && entry.moment !== 'semi-final') {
       const walker = maybeWalk(state, rng);
       if (walker) {
         const before = state.couples.map(c => [...c]);

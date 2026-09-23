@@ -88,6 +88,7 @@ import { MORE_MOMENTS } from './day/more-b.js';
 import { NIGHT_ONE } from './night-one.js';
 import { DEBRIEF } from './debrief.js';
 import { MOVIE_NIGHT } from './movie-night.js';
+import { CASA_LINES } from './casa.js';
 const ch = channel => ({ channel });
 export const MOMENTS = {
   'intro-look': [
@@ -1452,34 +1453,34 @@ export const MOMENTS = {
       turns: [['a', "Right. I'm single. So everyone's back on the table."]] },
   ],
   'casa-return': [
-    { id: 'casa-return.01', when: { choice: 'stick', withB: true },
+    { id: 'casa-return.01', when: { of: 'returned', choice: 'stick', withB: true },
       stage: 'The Casa Amor recoupling. {b} is waiting at the fire pit.',
       turns: [['a', 'I came back on my own.'], ['b', '…You came back on your own.']],
       beat: '{b} runs to {a.obj}, and they nearly knock each other over.' },
-    { id: 'casa-return.02', when: { choice: 'stick', withB: true },
+    { id: 'casa-return.02', when: { of: 'returned', choice: 'stick', withB: true },
       turns: [['b', "I didn't know if you'd come back for me."], ['a', "There was never any doubt. Not once."]] },
-    { id: 'casa-return.03', when: { choice: 'stick', withB: true, mood: 'guilty' },
+    { id: 'casa-return.03', when: { of: 'returned', choice: 'stick', withB: true, mood: 'guilty' },
       turns: [['a', "I came back on my own."], ['b', "I know. Thank you."]],
       beat: "{a} holds {b} tight, and doesn't meet anyone else's eye." },
-    { id: 'casa-return.04', when: { choice: 'twist', taken: true },
+    { id: 'casa-return.04', when: { of: 'returned', choice: 'twist', taken: true },
       stage: '{a} walks in holding hands with {b}. {pa} is waiting at the fire pit.',
       turns: [['a', "I'm sorry. I had to follow my heart."]],
       beat: '{pa} gets up and walks straight into the villa without a word.' },
-    { id: 'casa-return.05', when: { choice: 'twist', taken: true },
+    { id: 'casa-return.05', when: { of: 'returned', choice: 'twist', taken: true },
       stage: '{a} walks in with {b}.',
       turns: [['a', "I didn't go in there looking for this. It just happened."]],
       beat: '{pa} laughs, and then starts crying.' },
-    { id: 'casa-return.06', when: { choice: 'twist', taken: true, persona: 'fuckboy' },
+    { id: 'casa-return.06', when: { of: 'returned', choice: 'twist', taken: true, persona: 'fuckboy' },
       stage: '{a} walks in with {b}, and doesn\'t let go of {b.posAdj} hand.',
       turns: [['a', "Look, I'm not going to lie. I had a great time at Casa."]],
       beat: 'Nobody at the fire pit says anything.' },
-    { id: 'casa-return.08', when: { choice: 'stick', withB: false },
+    { id: 'casa-return.08', when: { of: 'returned', choice: 'stick', withB: false },
       stage: '{a} walks back into the villa on {a.posAdj} own.',
       turns: [['a', "Nobody at Casa was for me. I'd rather come back single than pretend."]] },
-    { id: 'casa-return.09', when: { choice: 'stick', withB: false },
+    { id: 'casa-return.09', when: { of: 'returned', choice: 'stick', withB: false },
       stage: 'The last of the Casa islanders comes back through the door. {a} is alone.',
       turns: [['a', "I'm back. On my own. I'm fine with that."]] },
-    { id: 'casa-return.07', when: { choice: 'twist', taken: false },
+    { id: 'casa-return.07', when: { of: 'returned', choice: 'twist', taken: false },
       stage: '{a} walks back in with {b}.',
       turns: [['a', "I was single when I left, and I'm not single now."]],
       beat: 'The villa cheers for them.' },
@@ -1489,8 +1490,8 @@ export const MOMENTS = {
       stage: 'At the fire pit, the photos from Casa Amor are handed round. {a} is holding one of {b}.',
       turns: [['a', "I'm going to be sick."], ['b', "It's not what it looks like."], ['a', "It's exactly what it looks like."]] },
     { id: 'photos.02',
-      stage: 'A photo of {b}, on a daybed at Casa, much too close to somebody.',
-      turns: [['a', 'You told me nothing happened.'], ['b', 'Nothing did happen. Not really.'], ['a', '"Not really."']],
+      stage: 'A photo of {b}, on a daybed during Casa week, much too close to somebody.',
+      turns: [['a', 'You never said a word about this.'], ['b', 'Nothing happened. Not really.'], ['a', '"Not really."']],
       beat: '{a} puts the photo face down on the bench.' },
     { id: 'photos.03', when: { archetype: 'hothead' },
       stage: '{a} stares at the photo of {b}.',
@@ -1498,7 +1499,7 @@ export const MOMENTS = {
       beat: 'Two people have to get between them.' },
     { id: 'photos.04', when: { attachment: 'anxious' },
       stage: '{a} looks at the photo of {b} for a long time.',
-      turns: [['a', "I trusted you. I sat here every night and trusted you."]],
+      turns: [['a', "I trusted you. Every single night, I trusted you."]],
       beat: "{a} can't finish the sentence." },
     { id: 'photos.05', when: { attachment: 'avoidant' },
       stage: '{a} glances at the photo of {b}, and hands it straight back.',
@@ -1680,3 +1681,5 @@ for (const [k, v] of Object.entries(NIGHT_ONE)) MOMENTS[k] = [...(MOMENTS[k] || 
 MOMENTS.debrief = [...(MOMENTS.debrief || []), ...DEBRIEF];
 // Movie Night around the clips (lines/movie-night.js; the clips are the real scenes).
 for (const [k, v] of Object.entries(MOVIE_NIGHT)) MOMENTS[k] = [...(MOMENTS[k] || []), ...v];
+// Casa Amor's return and the photos (lines/casa.js).
+for (const [k, v] of Object.entries(CASA_LINES)) MOMENTS[k] = [...(MOMENTS[k] || []), ...v];

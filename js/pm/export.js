@@ -77,7 +77,10 @@ export function pmVotingHistory(rows = []) {
       shares: (row.pm?.shares || []).map(s => ({ couple: [...s.couple], share: Math.round(s.share * 1000) / 1000 })),
       bottom: (row.pm?.bottom || []).map(c => (Array.isArray(c) ? [...c] : c)),
       couples: (row.pm?.couples || []).map(c => [...c]),
-      arrivals: [...new Set(events.filter(e => /entrance/.test(e.kind) || e.kind === 'step-forward').map(e => e.players[0]))],
+      // Who walked in as a new arrival: a bombshell, or Casa Amor. Not night
+      // one's line-up, and not a returning islander (that is `returned`).
+      arrivals: [...new Set(events.filter(e => e.kind === 'entrance' || e.kind === 'group-entrance').flatMap(e => e.players))],
+      returned: row.pm?.returned || null,
       challenge: row.pm?.challenge ? { id: row.pm.challenge, name: CHALLENGE_NAMES[row.pm.challenge] || row.pm.challenge } : null,
       steals: events.filter(e => e.kind === 'steal' || (e.kind === 'recouple-pick' && e.extra?.stole))
         .map(e => ({ by: e.players[0], took: e.players[1], from: e.kind === 'steal' ? e.players[2] : e.extra.stole })),

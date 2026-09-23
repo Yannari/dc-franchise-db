@@ -1,0 +1,49 @@
+PERFECT MATCH — IDEAS PARKED FOR LATER
+======================================
+Not built. Kept here until the current show is audited and improved (user,
+2026-09-23: "keep queer version in an idea txt, we gonna audit and improve
+what we got rn first").
+
+
+1. A QUEER VERSION
+------------------
+
+What the real shows did
+  - Love Island UK: never a queer season. One same-sex couple in twelve series
+    (Sophie and Katie, 2016). Producers have said the format's coupling rules
+    don't fit a mixed villa.
+  - I Kissed a Boy (BBC Three, 2023) / I Kissed a Girl (2024), host Dannii
+    Minogue: an all-gay-men or all-queer-women villa. Islanders couple with a
+    kiss the moment they meet; the rest runs close to Love Island.
+  - Are You The One? season 8 (2019): everyone sexually fluid, anyone can
+    match anyone. The hardest season of that show to solve, because the
+    possible pairings explode.
+
+The idea
+  Give each islander a "who they're into" field in cast setup: men / women /
+  everyone. Blank = the current straight rules, so existing seasons do not
+  change. The two real-show styles then fall out as presets:
+    - one-gender villa (I Kissed a Boy / Girl)
+    - everyone into everyone (AYTO 8)
+
+What would have to change
+  - Who can couple with whom: attraction, the first coupling and every
+    recoupling follow each islander's preference, not gender. Coupling stops
+    being boy-girl pairs and becomes a general matching.
+  - Who picks at a recoupling: "the girls pick" means nothing in an all-boys
+    villa, so picking goes by turn or by popularity.
+  - Bombshells: balanced today by gender; would be balanced by who the villa
+    is short of for the people already in it.
+  - Dumping formats: cross-gender only works in a mixed villa, so it drops out
+    elsewhere.
+  - Lines and the host: every "the boys" / "the girls", and the gendered word
+    slots ({~Girl} etc.), need an all-one-gender reading.
+  - Eyes-on: could finally get a die on the Villa card, because it would know
+    who each islander actually likes.
+  - Step Forward (night one) assumes one side steps forward for the other;
+    needs a one-gender version.
+
+Before building
+  Read the real shows first (I Kissed a Boy episode structure especially),
+  then write a spec. Build the per-islander field first; both presets come
+  out of it.

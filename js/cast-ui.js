@@ -1296,6 +1296,8 @@ export function saveConfig() {
     // panel (js/pm-cast-ui.js) and carried here the way the chosen pact is,
     // because it is a grid of choices, not one field.
     pmSetup: seasonConfig.pmSetup || {},
+    // Pinned dumping formats by episode ({ 5: 'save-one' }), from VILLA OPTIONS.
+    pmPicks: seasonConfig.pmPicks || {},
     pmDialect: g('cfg-pm-dialect')?.value || 'uk',
     pmSplitOrSteal: g('cfg-pm-split-or-steal') ? g('cfg-pm-split-or-steal').checked : false,
     trAutoDouble: g('cfg-tr-auto-double') ? g('cfg-tr-auto-double').checked : true,

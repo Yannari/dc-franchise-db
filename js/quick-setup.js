@@ -1232,6 +1232,7 @@ const CONFIG_SCOPE = {
     'sec-pm-options':        ['perfect-match'],
     'sec-pm-dialect':        ['perfect-match'],
     'sec-pm-envelope':       ['perfect-match'],
+    'sec-pm-shape':          ['perfect-match'],
     'sec-pm-cast':           ['perfect-match'],
     'cfg-pm-dialect':        ['perfect-match'],
     'cfg-pm-split-or-steal': ['perfect-match'],

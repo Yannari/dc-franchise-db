@@ -59,3 +59,31 @@ export function seasonSchedule(rng) {
     return { ...e, dumpFormat, ...(bottom ? { bottom } : {}) };
   });
 }
+
+// ── THE AUTHOR'S PICKS ────────────────────────────────────────────────
+// Any drawn slot can be pinned from the Setup tab (VILLA OPTIONS). The draw
+// still runs in full first, so pinning episode 5 never moves what episode 12
+// would have drawn. A pick is LIVE, not a promise made at the premiere: the
+// run tab rebuilds the unaired episodes when one changes, and a pick for an
+// episode that already aired takes effect when that episode is re-run.
+export const PICK_LABELS = {
+  'cross-gender': 'Public bottom per side; the other side dumps one each',
+  'top-couple-picks': "The public's favourite couple decides",
+  'save-one': "The public's bottom three; the other side saves one",
+  public: 'Straight public vote',
+  'safe-pick-couple': 'Public bottom couples; the safe islanders pick',
+  'couples-vote': 'No public: the couples name the least compatible',
+  'ex-islanders': 'The dumped islanders come back and decide',
+};
+
+export function withPicks(schedule, picks = {}) {
+  return schedule.map(e => {
+    const want = picks?.[e.ep];
+    const opt = want && DUMP_DRAWS[e.ep]?.find(o => o[0] === want);
+    if (!opt) return e;
+    const [dumpFormat, , bottom] = opt;
+    const out = { ...e, dumpFormat };
+    if (bottom) out.bottom = bottom; else delete out.bottom;
+    return out;
+  });
+}

@@ -8,11 +8,12 @@
 import { describe, expect, it } from 'vitest';
 import { gs, setGs, setPlayers, seasonConfig, formatIsRunnable } from '../js/core.js';
 import { isPerfectMatchSeason, simulatePerfectMatchEpisode, perfectMatchEpisodesLeft,
-  perfectMatchCastProblem, lastPerfectMatchRefusal, perfectMatchCanRerun } from '../js/pm-run.js';
+  perfectMatchCastProblem, lastPerfectMatchRefusal, perfectMatchCanRerun, rerunPerfectMatchEpisode,
+  perfectMatchPendingChange } from '../js/pm-run.js';
 import { makeIslanders } from './helpers/pm-cast.js';
 
 function freshSeason(n = 22, extra = {}) {
-  Object.assign(seasonConfig, { format: 'perfect-match', seasonNumber: 3, pmSetup: {}, ...extra });
+  Object.assign(seasonConfig, { format: 'perfect-match', seasonNumber: 3, pmSetup: {}, pmPicks: {}, ...extra });
   setPlayers(makeIslanders(n, 5));
   setGs({ initialized: true, episodeHistory: [], popularity: {}, activePlayers: [] });
 }
@@ -64,7 +65,7 @@ describe('a season plays through the run path', () => {
   it("never saves the engine's working state — only what the screens read", () => {
     freshSeason();
     playAll();
-    expect(Object.keys(gs.pm).sort()).toEqual(['castOrder', 'seed', 'setup', 'winners']);
+    expect(Object.keys(gs.pm).sort()).toEqual(['built', 'castOrder', 'picks', 'rerolls', 'seed', 'setup', 'winners']);
     const size = JSON.stringify({ ...gs, _pmQueue: undefined }).length;
     // A played season is its rows: about 1MB, measured. The engine's `state`
     // would double it, and a page that saves on every episode notices 3.
@@ -91,8 +92,60 @@ describe('a cast that cannot start a villa is refused, with the reason', () => {
     setPlayers(cast);
     expect(perfectMatchCastProblem(cast.map(p => p.name), setup)).toMatch(/won't all couple/);
   });
-  it('re-running is refused rather than faked', () => {
-    expect(perfectMatchCanRerun()).toBe(false);
+});
+
+// ── NOTHING IS DECIDED UNTIL IT AIRS ──────────────────────────────────
+// The user: "the decision is not decided and can be changed". A re-run is a
+// different night; a pick changed mid-season reaches every unaired episode;
+// a change that would rewrite an aired one says which episode to re-run.
+const fp = r => JSON.stringify([r.pm.couples, r.exits.map(x => x.name), r.pm.events.map(e => e.kind + e.players.join())]);
+
+describe('an episode can be re-run, and only it changes', () => {
+  it('re-running episode 7 keeps 1-6 exactly and deals a different 7', () => {
+    freshSeason();
+    for (let i = 0; i < 9; i++) simulatePerfectMatchEpisode();
+    const before = gs.episodeHistory.map(fp);
+    expect(perfectMatchCanRerun()).toBe(true);
+    expect(rerunPerfectMatchEpisode(7)).toBe(true);
+    expect(gs.episodeHistory.length).toBe(6);
+    expect(gs.episodeHistory.map(fp)).toEqual(before.slice(0, 6));
+    const seven = simulatePerfectMatchEpisode();
+    expect(seven.num).toBe(7);
+    expect(fp(seven)).not.toBe(before[6]);
+  });
+  it('re-running the same episode twice deals it a third way', () => {
+    freshSeason();
+    for (let i = 0; i < 4; i++) simulatePerfectMatchEpisode();
+    const first = fp(gs.episodeHistory[3]);
+    rerunPerfectMatchEpisode(4); const second = fp(simulatePerfectMatchEpisode());
+    rerunPerfectMatchEpisode(4); const third = fp(simulatePerfectMatchEpisode());
+    expect(new Set([first, second, third]).size).toBe(3);
+  });
+});
+
+describe('a pick is live until its episode airs', () => {
+  it('a pick for an unaired episode reaches it, and the aired ones do not move', () => {
+    freshSeason();
+    for (let i = 0; i < 3; i++) simulatePerfectMatchEpisode();
+    const aired = gs.episodeHistory.map(fp);
+    seasonConfig.pmPicks = { 12: 'couples-vote' };
+    simulatePerfectMatchEpisode();
+    expect(gs.episodeHistory.slice(0, 3).map(fp)).toEqual(aired);
+    expect(gs._pmQueue.find(r => r.num === 12).pm.dumpFormat).toBe('couples-vote');
+    expect(perfectMatchPendingChange()).toBe(null);
+  });
+  it('a pick for an aired episode waits for its re-run, and says so', () => {
+    freshSeason();
+    for (let i = 0; i < 6; i++) simulatePerfectMatchEpisode();
+    const drawn = gs.episodeHistory[4].pm.dumpFormat;
+    const want = drawn === 'save-one' ? 'public' : 'save-one';
+    seasonConfig.pmPicks = { 5: want };
+    const aired = gs.episodeHistory.map(fp);
+    simulatePerfectMatchEpisode();
+    expect(gs.episodeHistory.slice(0, 6).map(fp)).toEqual(aired);
+    expect(perfectMatchPendingChange()).toMatch(/episode 5/);
+    expect(rerunPerfectMatchEpisode(5)).toBe(true);
+    expect(simulatePerfectMatchEpisode().pm.dumpFormat).toBe(want);
   });
 });
 

@@ -22,7 +22,7 @@ import { coachCanPlay } from './advantages.js';
 import { isTraitorsSeason, simulateTraitorsEpisode, rerunTraitorsEpisode,
   lastTraitorsRerunRefusal } from './tr-run.js';
 import { isPerfectMatchSeason, simulatePerfectMatchEpisode, perfectMatchCanRerun,
-  lastPerfectMatchRefusal } from './pm-run.js';
+  lastPerfectMatchRefusal, rerunPerfectMatchEpisode, perfectMatchPendingChange } from './pm-run.js';
 import { SEASON_TEMPLATE as PM_SCHEDULE } from './pm/schedule.js';
 import { episodeText as pmEpisodeText, momentTitle as pmMomentTitle } from './pm/transcript.js';
 import { isDragSeason, simulateDragEpisode, invalidateDragQueue,
@@ -714,6 +714,8 @@ export function renderRunTab() {
      so after pressing Play it kept whatever phase it last drew — a villa and a
      castle read "PRE-MERGE" all season. Every show, from here. */
   try { window.updateBroadcastBar?.(); } catch { /* the bar is chrome */ }
+  // The villa's dumping menus say what each slot aired as, so they follow the run.
+  try { if (isPerfectMatchSeason()) window.renderPerfectMatchShape?.(); } catch { /* optional chrome */ }
   renderGameState();
   renderSeasonHub();
   const empty   = document.getElementById('run-empty');
@@ -1642,6 +1644,10 @@ export function simulateNext() {
           : 'Add islanders to Cast Builder first.');
       return;
     }
+    // A pick or cast-setup change that would rewrite an aired episode is not
+    // applied behind the viewer's back — they are told once which to re-run.
+    const pending = perfectMatchPendingChange();
+    if (pending && pending !== _pmNoticeShown) { _pmNoticeShown = pending; alert(pending); }
     saveGameState();
     _refreshFeed();
     _autoRevealSpoiler(pmEp.num);
@@ -1840,12 +1846,10 @@ export function replayEpisode(epNum) {
   // so it works after a reload too, and every earlier episode reproduces
   // exactly while this night onward is a genuinely different season.
   if (isTraitorsSeason()) { _replayTraitorsEpisode(epNum); return; }
-  // A villa episode cannot be re-rolled yet, and a replay that re-airs the same
-  // night is §11.5 N — so it says so instead of doing either.
-  if (isPerfectMatchSeason()) {
-    alert(`Episode ${epNum} can't be re-run yet: villa episodes play as they were dealt.`);
-    return;
-  }
+  // The villa re-runs FOR REAL, like the castle: episode N's own dice turn
+  // once more with the current picks and cast setup, every earlier episode
+  // stays exactly as it aired, and the later ones are simulated again.
+  if (isPerfectMatchSeason()) { _replayVillaEpisode(epNum); return; }
   /* THE MAIN STAGE, WHICH NO LONGER NEEDS ONE EITHER. `rerunDragEpisode`
      rolls the season back off the rows that aired, so a drag re-run survives
      a reload and a browser that never managed to write a checkpoint. The
@@ -1963,6 +1967,41 @@ export function replayEpisode(epNum) {
  * off `gs`, so it survives a reload — and the whole gs is snapshotted first so
  * a re-run that fails changes nothing.
  */
+let _pmNoticeShown = null;
+function _replayVillaEpisode(epNum) {
+  const laterEps = (gs.episodeHistory || []).filter(e => e.num > epNum);
+  const msg = laterEps.length
+    ? `Re-run Episode ${epNum}?
+
+Episode ${epNum} will be dealt again, with your current picks and cast setup, and Episodes ${epNum + 1}–${epNum + laterEps.length} will be cleared — simulate them again from there. Every earlier episode stays exactly as it is.`
+    : `Re-run Episode ${epNum} into a different night?`;
+  if (!confirm(msg)) return;
+  const before = snapshotGs();
+  let ep = null, failure = null, refused = null;
+  try {
+    if (rerunPerfectMatchEpisode(epNum)) ep = simulatePerfectMatchEpisode();
+    if (!ep) refused = lastPerfectMatchRefusal();
+  } catch (e) { failure = e; }
+  if (!ep) {
+    gs = before;
+    repairGsSets(gs);
+    try { renderRunTab(); } catch { /* state is already back */ }
+    const why = failure ? (failure.message || String(failure)) : refused;
+    alert(`Episode ${epNum} could not be re-run, so nothing was changed.${why ? `
+
+${why}` : ''}`);
+    return;
+  }
+  for (const k of Object.keys(gsCheckpoints)) {
+    if (Number(k) >= epNum) { delete gsCheckpoints[k]; _idbDelete('cp_' + k); }
+  }
+  _refreshFeed({ rebuild: true });
+  _autoRevealSpoiler(ep.num);
+  viewingEpNum = ep.num;
+  renderRunTab();
+  const rm = document.getElementById('run-main'); if (rm) rm.scrollTop = 0;
+}
+
 function _replayTraitorsEpisode(epNum) {
   if (!gs || !gs._trSeed) {
     alert(`Episode ${epNum} cannot be re-run — this castle was not started in this browser, so there is no season to re-roll.`);

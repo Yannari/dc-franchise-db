@@ -21,7 +21,7 @@ import { romance, friendship, shown, believed, growLove, updateBeliefs, decideMa
 import { syncLadder, stepOf } from './ladder.js';
 import { emo, attachmentLabel, walkRisk } from './emotions.js';
 import { runVillaDay } from './villa-day.js';
-import { seasonSchedule } from './schedule.js';
+import { seasonSchedule, withPicks } from './schedule.js';
 import { MOMENTS } from './moments.js';
 
 function initState(cast, setup, seed) {
@@ -66,8 +66,15 @@ function relationshipSnapshot(state) {
 /** The shape a seed's season plays: drawn from its own stream (pm/schedule.js). */
 export const perfectMatchScheduleFor = seed => seasonSchedule(streamFor(seed, 'schedule'));
 
-export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = perfectMatchScheduleFor(seed),
+/**
+ * `picks` pins drawn slots ({ 5: 'save-one' }). `rerolls` re-deals one
+ * episode ({ 7: 2 } = episode 7's third deal): only that episode's dice move,
+ * so every earlier episode replays exactly, and every later one follows from
+ * the new night the way it would have from any night.
+ */
+export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = null, picks = {}, rerolls = {},
   splitOrStealOn = false, dialect = 'uk' } = {}) {
+  schedule = schedule || withPicks(perfectMatchScheduleFor(seed), picks);
   setGs({ bonds: {}, perceivedBonds: {}, relationshipDimensions: {}, activePlayers: [],
     episodeHistory: [], popularity: {} });
   const state = initState(cast, setup, seed);
@@ -83,7 +90,9 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
     // addBond's depth ceiling grows with `gs.episode` (js/bonds.js). Left at 0
     // it would cap every villa bond at +4.5 all season — the §11.5 O trap.
     gs.episode = entry.ep;
-    const rng = streamFor(seed, `ep:${entry.ep}`);
+    // A re-dealt episode salts its own streams, and only its own.
+    state.epSalt = rerolls[entry.ep] ? `:r${rerolls[entry.ep]}` : '';
+    const rng = streamFor(seed, `ep:${entry.ep}${state.epSalt}`);
     if (entry.ep === 1) {
       for (const n of queues.starter) {
         state.villa.push(n); noteArrival(state.ledger, n, 1); seedAttraction(state, n, seed);
@@ -97,11 +106,11 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
     syncLadder(state);
     // Feelings move once a day's worth of events has happened: love grows in
     // couples, masks are chosen, beliefs drift toward what was shown.
-    const mrng = streamFor(seed, `mask:${entry.ep}`);
+    const mrng = streamFor(seed, `mask:${entry.ep}${state.epSalt}`);
     growLove(state, state.couples);
     decideMasks(state, mrng);
     updateBeliefs(state);
-    const vday = entry.moment === 'reunion' ? [] : runVillaDay(state, streamFor(seed, `day:${entry.ep}`), entry);
+    const vday = entry.moment === 'reunion' ? [] : runVillaDay(state, streamFor(seed, `day:${entry.ep}${state.epSalt}`), entry);
     day.push(...vday);
     state.history.push(...vday);
 

@@ -176,7 +176,7 @@ function noteUse(state, entry, ps) {
 /** The words have their own dice: a line can never change what happened. */
 function scriptRng(state) {
   if (state._scriptRngEp !== state.ep) {
-    state._scriptRng = streamFor(state.seed ?? 1, `script:${state.ep}`);
+    state._scriptRng = streamFor(state.seed ?? 1, `script:${state.ep}${state.epSalt || ''}`);
     state._scriptRngEp = state.ep;
   }
   return state._scriptRng;

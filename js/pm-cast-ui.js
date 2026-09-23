@@ -12,7 +12,10 @@
 // One delegated listener on the panel, and data attributes on every control,
 // so an islander's name never goes into an inline handler (an apostrophe in a
 // name would break the page).
-import { players, seasonConfig } from './core.js';
+import { players, seasonConfig, gs } from './core.js';
+import { DUMP_DRAWS, PICK_LABELS } from './pm/schedule.js';
+import { PERFECT_MATCH_FORMAT } from './shows.js';
+import { perfectMatchScheduleFor } from './pm/season.js';
 import { ROLES, INTENTS, PERSONAS, LOOK_TAGS, VIBES, ICKS, INTERESTS } from './pm/profile.js';
 import { DIALECTS } from './pm/lines/dialect.js';
 import { perfectMatchCastProblem } from './pm-run.js';
@@ -48,8 +51,52 @@ function chips(name, field, options, current = []) {
       on.has(v) ? ' checked' : ''}>${esc(label)}</label>`).join('')}</div>`;
 }
 
+const SLOT_NAMES = { 5: 'Episode 5 — the first public vote', 12: 'Episode 12 — the second public vote',
+  14: 'Episode 14 — the semi-final' };
+
+/**
+ * VILLA OPTIONS: one menu per drawn slot. Random is the default; a season in
+ * progress shows what each slot drew or aired as, and a pick for an episode
+ * that already aired says it waits for that episode's re-run.
+ */
+export function renderPerfectMatchShape() {
+  const host = typeof document !== 'undefined' && document.getElementById('pm-shape');
+  if (!host) return;
+  const picks = seasonConfig.pmPicks || {};
+  const seed = gs?.pm?.seed;
+  const drawn = seed ? perfectMatchScheduleFor(seed) : null;
+  const aired = new Map((gs?.episodeHistory || []).filter(r => r?.format === PERFECT_MATCH_FORMAT).map(r => [r.num, r]));
+  host.innerHTML = Object.entries(DUMP_DRAWS).map(([ep, opts]) => {
+    const row = aired.get(Number(ep));
+    const randomLabel = drawn ? `Random (this season drew: ${PICK_LABELS[drawn.find(e => e.ep === Number(ep))?.dumpFormat] || '—'})` : 'Random';
+    const note = row
+      ? (row.pm?.dumpFormat
+        ? `Aired as: ${PICK_LABELS[row.pm.dumpFormat]}.${picks[ep] && picks[ep] !== row.pm.dumpFormat ? ' Re-run this episode to play your pick.' : ''}`
+        : 'Aired with no vote: four couples or fewer were left.')
+      : ep === '14' && picks[ep] === 'ex-islanders' ? 'Needs five or more couples at the semi-final; with four, nobody is voted out.' : '';
+    return `<div class="pm-cs-row"><div class="form-label">${esc(SLOT_NAMES[ep] || `Episode ${ep}`)}</div>
+      <select class="form-input pm-cs-sel" data-pick="${esc(ep)}">
+        <option value="">${esc(randomLabel)}</option>
+        ${opts.map(([f]) => `<option value="${esc(f)}"${picks[ep] === f ? ' selected' : ''}>${esc(PICK_LABELS[f])}</option>`).join('')}
+      </select>${note ? `<div class="hint hint-tight">${esc(note)}</div>` : ''}</div>`;
+  }).join('');
+  if (!host.dataset.wired) {
+    host.dataset.wired = '1';
+    host.addEventListener('change', ev => {
+      const ep = ev.target?.dataset?.pick;
+      if (!ep) return;
+      const next = { ...(seasonConfig.pmPicks || {}) };
+      if (ev.target.value) next[ep] = ev.target.value; else delete next[ep];
+      seasonConfig.pmPicks = next;
+      try { window.saveConfig?.(); } catch { /* the menu keeps its own state */ }
+      renderPerfectMatchShape();
+    });
+  }
+}
+
 /** Draw the panel. Safe to call when the page has no panel (tests, other shows). */
 export function renderPerfectMatchCastSetup() {
+  renderPerfectMatchShape();
   const host = typeof document !== 'undefined' && document.getElementById('pm-cast-setup');
   if (!host) return;
   // The season default's options come from the registry of dialects, once.

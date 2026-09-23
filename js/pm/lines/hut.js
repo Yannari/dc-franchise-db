@@ -16,11 +16,13 @@
 // `stance` picks the pool: honest says what the speaker feels; two-faced is
 // somebody hiding something (a fresh secret, or a mask). The honest hut of a
 // FAKER is the giveaway (§6.5): the audience hears what the villa does not.
+import { JUST_MET_HUT } from './day/just-met.js';
 const B = { withB: true };
 const K = (kind, more = {}) => ({ kind, ...more });
 const T = { taken: true };
 export const HUT = {
   honest: [
+    ...JUST_MET_HUT.honest,
     // chat
     { id: 'hut.chat.h1', when: K('chat', B), turns: [['a', "I could sit on that daybed with {b} all day. I basically have."]] },
     { id: 'hut.chat.h2', when: K('chat', B), turns: [['a', "It's the little chats with {b} I like the most. Nobody else is in them."]] },
@@ -177,6 +179,7 @@ export const HUT = {
     { id: 'hut.flirt.h1', when: { family: 'flirting', ...B, bombshell: true }, turns: [['a', "I came in here for {b}. I'm not going to pretend I didn't."]] },
   ],
   'two-faced': [
+    ...JUST_MET_HUT['two-faced'],
     // chat
     { id: 'hut.chat.t1', when: K('chat', B), turns: [['a', "{b} asked me if everything's okay. I said yes. It's mostly yes."]] },
     { id: 'hut.chat.t2', when: K('chat', B), turns: [['a', "Sitting there with {b}, all I could think about was earlier. I can't tell {b} that."]] },

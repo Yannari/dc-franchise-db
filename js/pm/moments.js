@@ -353,12 +353,18 @@ export function nightOneOpening(state, ctx) {
 function introParts(state, a, rng) {
   const p = state.profiles[a];
   const parts = [['intro', null]];
-  const look = p.type?.looks?.[0], vibe = p.type?.vibes?.[0];
-  parts.push(look ? ['intro-look', look] : ['intro-vibe', vibe || 'funny']);
+  // Any part of their type, not always the first: two islanders who both go
+  // for tall should not both lead with it.
+  const looks = p.type?.looks || [], vibes = p.type?.vibes || [];
+  const pickOf = xs => xs[Math.floor(rng() * xs.length)];
+  parts.push(looks.length && (!vibes.length || rng() < 0.6) ? ['intro-look', pickOf(looks)] : ['intro-vibe', pickOf(vibes) || 'funny']);
   if (p.eyesOn?.length) parts.push(['intro-eyes', 'set']);
   else if (p.ex) parts.push(['intro-ex', 'set']);
   else {
-    const options = [['intro-from', p.dialect || state.dialect || 'uk'], ['intro-ick', p.icks?.[0]], ['intro-interest', p.interests?.[0]]]
+    // Where they're from only when it is THEIRS: the season's default voice is
+    // everybody's, and on an American season every islander said "I'm American".
+    const options = [['intro-from', p.dialect], ['intro-ick', p.icks?.[0]], ['intro-ick', p.icks?.[1]],
+      ['intro-interest', p.interests?.[0]], ['intro-interest', p.interests?.[1]]]
       .filter(o => o[1]);
     parts.push(options[Math.floor(rng() * options.length)]);
   }

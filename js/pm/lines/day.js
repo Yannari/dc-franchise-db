@@ -191,17 +191,19 @@ const ARGUMENT_05 = [
       ] },
   ];
 
+import { JUST_MET } from './day/just-met.js';
+const JM = k => JUST_MET[k] || [];
 export const DAY = {
-  chat: [...CHAT, ...MAKING_UP.chat],
-  'deep-chat': [...DEEP_CHAT, ...MAKING_UP['deep-chat']],
-  kiss: [...KISS, ...MAKING_UP.kiss],
-  friendship: [...FRIENDSHIP, ...FRIEND_TALK],
-  gossip: GOSSIP,
-  comedy: COMEDY,
-  ick: ICK,
-  'challenge-kiss': CHALLENGE_KISS,
-  'challenge-win': [...CHALLENGE_WIN, ...MAKING_UP['challenge-win']],
-  loyalty: LOYALTY,
-  pull: [...PULL_05, ...PULL_MORE],
-  argument: [...ARGUMENT_05, ...ARGUMENT_MORE],
+  chat: [...CHAT, ...MAKING_UP.chat, ...JM('chat')],
+  'deep-chat': [...DEEP_CHAT, ...MAKING_UP['deep-chat'], ...JM('deep-chat')],
+  kiss: [...KISS, ...MAKING_UP.kiss, ...JM('kiss')],
+  friendship: [...FRIENDSHIP, ...FRIEND_TALK, ...JM('friendship')],
+  gossip: [...GOSSIP, ...JM('gossip')],
+  comedy: [...COMEDY, ...JM('comedy')],
+  ick: [...ICK, ...JM('ick')],
+  'challenge-kiss': [...CHALLENGE_KISS, ...JM('challenge-kiss')],
+  'challenge-win': [...CHALLENGE_WIN, ...MAKING_UP['challenge-win'], ...JM('challenge-win')],
+  loyalty: [...LOYALTY, ...JM('loyalty')],
+  pull: [...PULL_05, ...PULL_MORE, ...JM('pull')],
+  argument: [...ARGUMENT_05, ...ARGUMENT_MORE, ...JM('argument')],
 };

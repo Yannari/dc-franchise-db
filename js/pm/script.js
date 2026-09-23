@@ -34,7 +34,7 @@ export const FACT_KEYS = ['rung', 'thinks', 'persona', 'intent', 'attachment', '
   'early', 'coupled', 'gap', 'knows', 'faking', 'bPersona', 'bMood', 'bRung', 'stance', 'family',
   'choice', 'cause', 'channel', 'grudge', 'stole', 'bTaken', 'archetype', 'taken', 'loyal', 'late', 'gender', 'bGender', 'myRung', 'phase', 'kind', 'role', 'withB', 'newArrival', 'dialect',
   'comfortedYesterday', 'rowedBefore', 'rowedToday', 'feels', 'of', 'knowsB', 'verdict', 'noticed',
-  'reason', 'split', 'guessed', 'stoleFrom', 'full', 'hasQuote', 'rank', 'cast'];
+  'reason', 'split', 'guessed', 'stoleFrom', 'full', 'hasQuote', 'rank', 'cast', 'justMet'];
 
 // Archetype groups a pool may name instead of listing them (CLAUDE.md).
 export const VILLAINS = ['villain', 'mastermind', 'schemer'];
@@ -118,6 +118,10 @@ export function factsFor(state, ev) {
   // Night one's ranking: the pair at the top, or anybody below it.
   f.rank = ev.extra?.rank == null ? null : ev.extra.rank === 1 ? 'top' : 'lower';
   f.split = !!state.split;             // Casa Amor is on
+  // One of them walked in THIS episode: night one for everybody, a bombshell's
+  // first day. They have known each other for hours.
+  const arrivedNow = n => n != null && (state.ledger?.firstEp?.[n] ?? state.ep) === state.ep;
+  f.justMet = arrivedNow(a) || (!!b && arrivedNow(b));
   f.cast = ev.players.filter(Boolean).length;   // how many are in it, when one is optional
   f.withB = !!b;                       // somebody else is in the scene
   f.hasQuote = !!clipSlots(state, ev).quote;   // the replayed clip has a line to quote
@@ -190,7 +194,8 @@ function scriptRng(state) {
 
 // Facts that, when true, must lead: a couple who rowed this morning gets a
 // making-up scene, never a fresh cosy one that ignores the row.
-const LEADING = ['rowedToday'];
+// `justMet` leads too: two islanders who met today talk like it (pm/lines/day/just-met.js).
+const LEADING = ['rowedToday', 'justMet'];
 
 export function pickScript(state, pool, ps, facts, { allowRepeat = true } = {}) {
   for (const k of LEADING) {

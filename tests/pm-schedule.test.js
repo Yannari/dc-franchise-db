@@ -8,7 +8,7 @@
 import { describe, expect, it } from 'vitest';
 import { setPlayers } from '../js/core.js';
 import { playPerfectMatchSeason } from '../js/pm/season.js';
-import { SEASON_TEMPLATE, buildSchedule, defaultRoleSplit, defaultRoleFor, minimumEpisodes } from '../js/pm/schedule.js';
+import { SEASON_TEMPLATE, buildSchedule, defaultRoleSplit, defaultRoleFor, minimumEpisodes, assignRoles } from '../js/pm/schedule.js';
 import { makeIslanders } from './helpers/pm-cast.js';
 
 const arrivals = s => s.reduce((t, e) => t + (e.arrivals?.bombshell || 0), 0);
@@ -41,6 +41,26 @@ describe('the builder', () => {
     expect(len(40)).toBeGreaterThan(len(30));
     expect(len(30)).toBeGreaterThan(len(22));
     expect(len(12)).toBeLessThan(len(22));
+  });
+});
+
+describe('Starters / Bombshells / Casa Amor (VILLA OPTIONS)', () => {
+  const tally = r => ['starter', 'bombshell', 'casa'].map(k => r.filter(x => x === k).length);
+  it('all automatic is exactly the automatic split', () => {
+    for (const n of [8, 12, 22, 26, 40]) {
+      expect(assignRoles(Array(n).fill(null))).toEqual(Array.from({ length: n }, (_, i) => defaultRoleFor(i, n)));
+    }
+  });
+  it('the counts place everyone left on Auto; a role set on an islander stands', () => {
+    expect(tally(assignRoles(Array(26).fill(null), { starters: 10, bombshells: 8, casa: 8 }))).toEqual([10, 8, 8]);
+    const fixed = Array(26).fill(null); fixed[0] = 'casa'; fixed[25] = 'starter';
+    const r = assignRoles(fixed, { starters: 10, bombshells: 8, casa: 8 });
+    expect(r[0]).toBe('casa'); expect(r[25]).toBe('starter');
+    expect(tally(r)).toEqual([10, 8, 8]);
+  });
+  it('a count left automatic shares what is left, and automatic starters stay even', () => {
+    expect(tally(assignRoles(Array(26).fill(null), { casa: 8 }))).toEqual([10, 8, 8]);
+    for (let casa = 0; casa <= 12; casa++) expect(tally(assignRoles(Array(26).fill(null), { casa }))[0] % 2).toBe(0);
   });
 });
 

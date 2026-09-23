@@ -13,12 +13,12 @@
 // so an islander's name never goes into an inline handler (an apostrophe in a
 // name would break the page).
 import { players, seasonConfig, gs } from './core.js';
-import { DUMP_DRAWS, PICK_LABELS, SLOT_NAMES, defaultRoleFor, minimumEpisodes } from './pm/schedule.js';
+import { DUMP_DRAWS, PICK_LABELS, SLOT_NAMES, minimumEpisodes } from './pm/schedule.js';
 import { PERFECT_MATCH_FORMAT } from './shows.js';
 import { perfectMatchScheduleFor } from './pm/season.js';
 import { ROLES, INTENTS, PERSONAS, LOOK_TAGS, VIBES, ICKS, INTERESTS } from './pm/profile.js';
 import { DIALECTS } from './pm/lines/dialect.js';
-import { perfectMatchCastProblem, perfectMatchSeasonShape } from './pm-run.js';
+import { perfectMatchCastProblem, perfectMatchSeasonShape, perfectMatchRoles } from './pm-run.js';
 
 const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const words = s => String(s).replace(/-/g, ' ');
@@ -60,6 +60,27 @@ export function renderPerfectMatchShape() {
   const host = typeof document !== 'undefined' && document.getElementById('pm-shape');
   if (!host) return;
   const shape = perfectMatchSeasonShape();
+  // Starters / Bombshells / Casa Amor: blank is automatic, and the
+  // placeholder says what automatic comes to with the cast as it stands.
+  const COUNTS = [['cfg-pm-starters', 'starters'], ['cfg-pm-bombshells', 'bombshells'], ['cfg-pm-casa', 'casa']];
+  const counts = seasonConfig.pmRoleCounts || {};
+  for (const [id, key] of COUNTS) {
+    const el = document.getElementById(id);
+    if (!el) continue;
+    el.placeholder = `Automatic (${shape[key]})`;
+    if (document.activeElement !== el) el.value = Number.isInteger(counts[key]) ? String(counts[key]) : '';
+    if (!el.dataset.wired) {
+      el.dataset.wired = '1';
+      el.addEventListener('change', () => {
+        const v = el.value === '' ? null : Math.max(0, Math.round(Number(el.value)));
+        const next = { ...(seasonConfig.pmRoleCounts || {}) };
+        if (v == null || Number.isNaN(v)) delete next[key]; else next[key] = v;
+        seasonConfig.pmRoleCounts = next;
+        try { window.saveConfig?.(); } catch { /* kept on seasonConfig */ }
+        renderPerfectMatchCastSetup();
+      });
+    }
+  }
   const len = document.getElementById('cfg-pm-episodes');
   if (len) {
     len.placeholder = `Automatic (${shape.auto})`;
@@ -131,13 +152,15 @@ export function renderPerfectMatchCastSetup() {
   if (!cast.length) { host.innerHTML = '<div class="hint">Add islanders on the Cast tab first.</div>'; return; }
   const dialects = Object.entries(DIALECTS).filter(([k]) => k !== 'esl').map(([k, d]) => [k, d.label]);
   const personas = PERSONAS.map(([id]) => [id, words(id)]);
+  // What Auto means for each row: the counts in VILLA OPTIONS, or the split.
+  const autoRoles = perfectMatchRoles(cast, Object.fromEntries(cast.map(n => [n, setupOf(n)])));
   const rows = cast.map((n, i) => {
     const s = setupOf(n);
     const others = cast.filter(o => o !== n).map(o => [o, o]);
     return `<div class="pm-cs-row">
       <div class="pm-cs-head">
         <strong class="pm-cs-name">${esc(n)}</strong>
-        ${select(n, 'role', ROLES.map(r => [r, ROLE_WORDS[r]]), s.role, `Auto: ${ROLE_WORDS[defaultRoleFor(i, cast.length)]}`)}
+        ${select(n, 'role', ROLES.map(r => [r, ROLE_WORDS[r]]), s.role, `Auto: ${ROLE_WORDS[autoRoles[i]]}`)}
         ${select(n, 'dialect', dialects, s.dialect, "From: season's default")}
         ${select(n, 'intent', INTENTS.map(x => [x, words(x)]), s.intent, 'Looking for: roll')}
         ${select(n, 'persona', personas, s.persona, 'Persona: from stats')}
@@ -155,8 +178,8 @@ export function renderPerfectMatchCastSetup() {
       </details>
     </div>`;
   }).join('');
-  const problem = perfectMatchCastProblem(cast, Object.fromEntries(cast.map((n, i) => [n, { ...setupOf(n), role: setupOf(n).role || defaultRoleFor(i, cast.length) }])));
-  const count = r => cast.filter((n, i) => (setupOf(n).role || defaultRoleFor(i, cast.length)) === r).length;
+  const problem = perfectMatchCastProblem(cast, Object.fromEntries(cast.map(n => [n, { ...setupOf(n) }])));
+  const count = r => autoRoles.filter(x => x === r).length;
   host.innerHTML = `<div class="pm-cs-status ${problem ? 'bad' : 'ok'}">${problem
     ? `This cast can't start a villa yet: ${esc(problem)}.`
     : `Ready: ${count('starter')} starters, ${count('bombshell')} bombshells, ${count('casa')} Casa Amor arrivals — ${perfectMatchSeasonShape().schedule.length} episodes.`}</div>

@@ -52,6 +52,42 @@ export function defaultRoleFor(i, n) {
   return i < starters ? 'starter' : i < starters + bombshells ? 'bombshell' : 'casa';
 }
 
+const COUNT_KEY = { starter: 'starters', bombshell: 'bombshells', casa: 'casa' };
+/**
+ * Every islander's role. `fixed[i]` is the role the author set on islander i
+ * (Cast tab), or null. `counts` is VILLA OPTIONS' Starters / Bombshells /
+ * Casa Amor, each a number or null (automatic). Set roles always stand; the
+ * rest are filled in cast order — starters, then bombshells, then Casa —
+ * to the counts, with any count left automatic sharing what is left in the
+ * automatic proportions. All automatic is exactly defaultRoleFor.
+ */
+export function assignRoles(fixed, counts = {}) {
+  const n = fixed.length;
+  const auto = defaultRoleSplit(n);
+  const num = k => (Number.isInteger(counts?.[k]) && counts[k] >= 0 ? counts[k] : null);
+  const want = { starters: num('starters'), bombshells: num('bombshells'), casa: num('casa') };
+  const open = Object.keys(want).filter(k => want[k] == null);
+  const left = Math.max(0, n - Object.values(want).reduce((s, v) => s + (v || 0), 0));
+  const autoTotal = open.reduce((s, k) => s + auto[k], 0);
+  let rem = left;
+  open.forEach((k, i) => {
+    want[k] = i === open.length - 1 ? rem : Math.round(left * (autoTotal ? auto[k] / autoTotal : 1 / open.length));
+    rem -= want[k];
+  });
+  // Starters left automatic stay even (they couple up on night one): the odd
+  // one out becomes a bombshell.
+  if (open.includes('starters') && want.starters % 2 === 1) { want.starters--; want.bombshells++; }
+  const need = { ...want };
+  for (const r of fixed) if (r) need[COUNT_KEY[r]]--;
+  return fixed.map(r => {
+    if (r) return r;
+    for (const role of ['starter', 'bombshell', 'casa']) if (need[COUNT_KEY[role]] > 0) { need[COUNT_KEY[role]]--; return role; }
+    // More islanders than the counts place: the spares are bombshells, who
+    // always have a night to walk in on.
+    return 'bombshell';
+  });
+}
+
 // ── THE BUILDER ───────────────────────────────────────────────────────
 // A week is one episode. Bombshells fill the arrival slots in running order;
 // a slot's `cap` is how many walk in there at most.

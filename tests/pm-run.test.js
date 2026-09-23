@@ -13,7 +13,7 @@ import { isPerfectMatchSeason, simulatePerfectMatchEpisode, perfectMatchEpisodes
 import { makeIslanders } from './helpers/pm-cast.js';
 
 function freshSeason(n = 22, extra = {}) {
-  Object.assign(seasonConfig, { format: 'perfect-match', seasonNumber: 3, pmSetup: {}, pmPicks: {}, ...extra });
+  Object.assign(seasonConfig, { format: 'perfect-match', seasonNumber: 3, pmSetup: {}, pmPicks: {}, pmRoleCounts: {}, ...extra });
   setPlayers(makeIslanders(n, 5));
   // A fixed seed: the run's own is partly random, so every test run would
   // otherwise play a different season.
@@ -87,6 +87,12 @@ describe('a cast that cannot start a villa is refused, with the reason', () => {
     freshSeason(4);
     expect(simulatePerfectMatchEpisode()).toBe(null);
     expect(lastPerfectMatchRefusal()).toMatch(/at least six starters/);
+  });
+  it('counts that do not add up to the cast', () => {
+    freshSeason(22, { pmRoleCounts: { starters: 10, bombshells: 6, casa: 8 } });
+    expect(simulatePerfectMatchEpisode()).toBe(null);
+    expect(lastPerfectMatchRefusal()).toMatch(/add up to 24, but the cast has 22/);
+    seasonConfig.pmRoleCounts = {};
   });
   it('starters that cannot all pair up on night one', () => {
     const cast = makeIslanders(22, 5);

@@ -23,7 +23,7 @@
 import { gs, setGs, players, seasonConfig, seasonFormat } from './core.js';
 import { PERFECT_MATCH_FORMAT } from './shows.js';
 import { playPerfectMatchSeason, perfectMatchScheduleFor } from './pm/season.js';
-import { defaultRoleFor, buildSchedule, withPicks } from './pm/schedule.js';
+import { assignRoles, buildSchedule, withPicks } from './pm/schedule.js';
 import { DIALECTS } from './pm/lines/dialect.js';
 
 export const isPerfectMatchSeason = () => seasonFormat(seasonConfig) === PERFECT_MATCH_FORMAT;
@@ -50,15 +50,25 @@ export function perfectMatchSetup() {
 }
 
 /**
+ * Every islander's role, in cast order: the ones set on the Cast tab stand,
+ * and VILLA OPTIONS' counts (or the automatic split) place the rest.
+ */
+export function perfectMatchRoles(cast, setup = perfectMatchSetup(), counts = seasonConfig.pmRoleCounts || {}) {
+  return assignRoles(cast.map(n => setup[n]?.role || null), counts);
+}
+
+/**
  * The first reason this cast cannot start a villa, or null. The engine needs
  * starters to couple up on night one, and an even split of them.
  */
 export function perfectMatchCastProblem(cast = (players || []).map(p => p.name).filter(Boolean),
   setup = perfectMatchSetup()) {
-  const roleOf = n => setup[n]?.role || null;
-  // Unassigned islanders take the default split, by position and cast size
-  // (pm/schedule.js defaultRoleSplit: 10 / 6 / 6 at 22).
-  const roles = cast.map((n, i) => roleOf(n) || defaultRoleFor(i, cast.length));
+  const roles = perfectMatchRoles(cast, setup);
+  const c = seasonConfig.pmRoleCounts || {};
+  const set = ['starters', 'bombshells', 'casa'].map(k => (Number.isInteger(c[k]) ? c[k] : null));
+  if (set.every(v => v != null) && set.reduce((a, b) => a + b, 0) !== cast.length) {
+    return `the starters, bombshells and Casa Amor arrivals add up to ${set.reduce((a, b) => a + b, 0)}, but the cast has ${cast.length}`;
+  }
   const starters = cast.filter((_, i) => roles[i] === 'starter');
   if (starters.length < 6) return `a villa needs at least six starters to couple up on night one, and this cast has ${starters.length}`;
   const g = n => players.find(p => p.name === n)?.gender;
@@ -81,7 +91,7 @@ export function perfectMatchSeasonShape() {
   const saved = Array.isArray(gs?.pm?.castOrder) && gs.pm.castOrder.length ? gs.pm.castOrder : null;
   const cast = saved || (players || []).map(p => p.name).filter(Boolean);
   const setup = perfectMatchSetup();
-  const roles = cast.map((n, i) => setup[n]?.role || defaultRoleFor(i, cast.length));
+  const roles = perfectMatchRoles(cast, setup);
   const count = r => roles.filter(x => x === r).length;
   const episodes = Number(seasonConfig.pmEpisodes) > 0 ? Number(seasonConfig.pmEpisodes) : null;
   const shape = { bombshells: count('bombshell'), casa: count('casa'), episodes };
@@ -120,6 +130,7 @@ function _inputs() {
     setup: perfectMatchSetup(), picks: perfectMatchPicks(),
     splitOrStealOn: seasonConfig.pmSplitOrSteal === true,
     dialect: Object.hasOwn(DIALECTS, seasonConfig.pmDialect || '') ? seasonConfig.pmDialect : 'uk',
+    roleCounts: { ...(seasonConfig.pmRoleCounts || {}) },
     // The author's length, or null for automatic (from the cast).
     episodes: Number(seasonConfig.pmEpisodes) > 0 ? Number(seasonConfig.pmEpisodes) : null,
   };
@@ -137,10 +148,8 @@ function _build(inputs, rerolls) {
   const cast = saved || (players || []).map(p => p.name).filter(Boolean);
   // Roles the author left blank take the default split, so the engine always
   // gets a starter, bombshell or Casa arrival for everybody.
-  const resolved = Object.fromEntries(cast.map((n, i) => [n, {
-    ...(inputs.setup[n] || {}),
-    role: inputs.setup[n]?.role || defaultRoleFor(i, cast.length),
-  }]));
+  const roles = perfectMatchRoles(cast, inputs.setup, inputs.roleCounts);
+  const resolved = Object.fromEntries(cast.map((n, i) => [n, { ...(inputs.setup[n] || {}), role: roles[i] }]));
   const problem = perfectMatchCastProblem(cast, resolved);
   if (problem) { _refuse(problem); return null; }
   const seed = _seed();

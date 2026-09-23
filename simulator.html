@@ -807,6 +807,15 @@
                 </span>
               </label>
             </div>
+            <div class="form-group" id="sec-pm-roles">
+              <div class="form-label">Who arrives when</div>
+              <div class="pm-role-counts" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
+                <label><span class="hint hint-tight">Starters</span><input type="number" class="form-input" id="cfg-pm-starters" min="6" step="2" placeholder="Automatic"></label>
+                <label><span class="hint hint-tight">Bombshells</span><input type="number" class="form-input" id="cfg-pm-bombshells" min="0" step="1" placeholder="Automatic"></label>
+                <label><span class="hint hint-tight">Casa Amor</span><input type="number" class="form-input" id="cfg-pm-casa" min="0" step="1" placeholder="Automatic"></label>
+              </div>
+              <div class="hint hint-tight">Blank is automatic. A role set on an islander in the Cast tab always stands; these numbers place everyone left on Auto, in cast order. Starters have to be half women and half men to couple up on night one.</div>
+            </div>
             <div class="form-group" id="sec-pm-length">
               <label class="form-label" for="cfg-pm-episodes">Episodes</label>
               <input type="number" class="form-input" id="cfg-pm-episodes" min="11" max="40" step="1" placeholder="Automatic">

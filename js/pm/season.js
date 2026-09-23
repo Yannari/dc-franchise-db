@@ -135,7 +135,7 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
       num: entry.ep, format: PERFECT_MATCH_FORMAT, days: entry.days, moment: entry.moment,
       eliminated: exits.find(x => x.verb === 'dumped')?.name || null,
       exits, votes: m.ballots,
-      pm: { events: [...day, ...m.events], couples: state.couples.map(c => [...c]), villa: [...state.villa],
+      pm: { events: [...day, ...m.events], momentFrom: day.length, couples: state.couples.map(c => [...c]), villa: [...state.villa],
         shares: m.extra?.shares || null, bottom: m.extra?.bottom || null,
         majors: [...new Set([...day, ...m.events].flatMap(e => e.aired ? e.major : []))],
         labels: snap.label, approval: snap.approval, fame: snap.fame,

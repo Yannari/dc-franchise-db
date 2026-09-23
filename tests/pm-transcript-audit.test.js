@@ -14,7 +14,7 @@ import { setPlayers } from '../js/core.js';
 import { playPerfectMatchSeason } from '../js/pm/season.js';
 import { makeIslanders, roleSetup } from './helpers/pm-cast.js';
 import { DIALECTS } from '../js/pm/lines/dialect.js';
-import { PM_TRANSCRIPT_CSS, PM_PHASE_LABEL, PM_MOMENT_TITLE, episodeHeaderHtml, phasesOf, _sceneHtml } from '../js/pm/transcript.js';
+import { PM_TRANSCRIPT_CSS, PM_MOMENT_TITLE, episodeHeaderHtml, phasesOf, _sceneHtml } from '../js/pm/transcript.js';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 // Readable stand-ins for the synthetic cast (alternating f/m, as pm-cast makes them).
@@ -39,7 +39,7 @@ it('writes a season transcript', () => {
   const eps = rows.map((r, i) => `<details${r.num === 1 ? ' open' : ''}><summary>Episode ${r.num} — ${
     esc(PM_MOMENT_TITLE[r.moment] || 'A day in the villa')} <span class="pm-sub">${r.pm.events.length} scenes</span></summary>
     ${episodeHeaderHtml(r, rows[i - 1] || null)}
-    ${phasesOf(r).map(([ph, evs]) => `<h3>${esc(PM_PHASE_LABEL[ph] || ph)}</h3>${evs.map(_sceneHtml).join('')}`).join('')}
+    ${phasesOf(r).map(([, evs, label]) => `<h3>${esc(label)}</h3>${evs.map(_sceneHtml).join('')}`).join('')}
   </details>`).join('\n');
 
   const html = `<!doctype html><html lang="en"><head><meta charset="utf-8">

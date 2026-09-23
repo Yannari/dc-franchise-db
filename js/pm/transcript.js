@@ -64,14 +64,54 @@ function sceneHtml(e) {
     e.aired ? '' : '<span class="pm-unaired">didn\'t air</span>'}</div>${lines}${narr}${hut}${pop}</div>`;
 }
 
-/** The episode's scenes, grouped by part of the day, in order. */
-export function phasesOf(row) {
+// The parts of the night a moment has of its own. A moment's other scenes
+// borrow a villa-day phase (the first coupling's steal is an `event`, Casa's
+// advice a `day`) and are shown with the part of the night beside them.
+const MOMENT_PHASES = new Set(['firepit', 'dumping', 'reunion']);
+
+function groupByPhase(events, label) {
   const out = [];
-  for (const e of row?.pm?.events || []) {
-    if (!out.length || out[out.length - 1][0] !== e.phase) out.push([e.phase, []]);
+  for (const e of events) {
+    if (!out.length || out[out.length - 1][0] !== e.phase) out.push([e.phase, [], label(e.phase)]);
     out[out.length - 1][1].push(e);
   }
   return out;
+}
+
+/** The episode's scenes, grouped by part of the day, in order, as
+ *  [phase, events, label]: the villa day by its parts, then the moment — by
+ *  its own parts of the night, or as one screen named after the moment when it
+ *  has none (a bombshell's dates, Casa Amor). Two screens both called "The
+ *  day" read as the same part twice. */
+export function phasesOf(row) {
+  const events = row?.pm?.events || [];
+  const from = row?.pm?.momentFrom ?? events.length;
+  // The villa day in the order of the day. Its reactions (a sulk, advice, a
+  // head turned) are built after the whole day, from how it left everyone,
+  // and carry the part of the day they happen in — listed as they were built
+  // they would open a second "The day" after the evening.
+  const ORDER = { morning: 0, day: 1, event: 2, evening: 3 };
+  const villa = events.slice(0, from).map((e, i) => [e, i])
+    .sort((x, y) => ((ORDER[x[0].phase] ?? 4) - (ORDER[y[0].phase] ?? 4)) || x[1] - y[1]).map(([e]) => e);
+  const out = groupByPhase(villa, ph => PM_PHASE_LABEL[ph] || ph);
+  const moment = events.slice(from);
+  if (!moment.length) return out;
+  const title = PM_MOMENT_TITLE[row.moment] || 'The night';
+  if (!moment.some(e => MOMENT_PHASES.has(e.phase))) return [...out, ['moment', moment, title]];
+  const groups = [];
+  let pending = [];
+  for (const e of moment) {
+    if (!MOMENT_PHASES.has(e.phase)) { (groups.length ? groups[groups.length - 1][1] : pending).push(e); continue; }
+    if (!groups.length || groups[groups.length - 1][0] !== e.phase) {
+      groups.push([e.phase, [...pending], PM_PHASE_LABEL[e.phase]]);
+      pending = [];
+    }
+    groups[groups.length - 1][1].push(e);
+  }
+  // The first part of the night carries the moment's name: "The first
+  // coupling", not a bare "The fire pit".
+  groups[0][2] = title;
+  return [...out, ...groups];
 }
 
 /** Couples, exits and who rose and fell with the public, after the caps. */
@@ -92,9 +132,9 @@ export function episodeHeaderHtml(row, prev = null) {
 
 /** One screen per part of the day, the header on the first. */
 export function perfectMatchScreens(row, prev = null) {
-  return phasesOf(row).map(([phase, evs], i) => ({
+  return phasesOf(row).map(([phase, evs, label], i) => ({
     id: `pm-${phase}-${i}`,
-    label: PM_PHASE_LABEL[phase] || phase,
+    label,
     html: `<style>${PM_TRANSCRIPT_CSS}</style><div class="pm-tx">${i === 0 ? episodeHeaderHtml(row, prev) : ''}${
       evs.map(sceneHtml).join('')}</div>`,
   }));
@@ -103,8 +143,8 @@ export function perfectMatchScreens(row, prev = null) {
 /** The same content as plain text, for the text backlog. */
 export function episodeText(row) {
   const out = [`EPISODE ${row.num} — ${(PM_MOMENT_TITLE[row.moment] || 'A day in the villa').toUpperCase()}`];
-  for (const [phase, evs] of phasesOf(row)) {
-    out.push('', `— ${PM_PHASE_LABEL[phase] || phase} —`);
+  for (const [, evs, label] of phasesOf(row)) {
+    out.push('', `— ${label} —`);
     for (const e of evs) {
       const s = e.script || { lines: [] };
       if (s.stage) out.push(`(${s.stage})`);

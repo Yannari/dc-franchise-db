@@ -68,11 +68,13 @@ export function breakdowns(state, rng, entry = null) {
     const load = 1.3 * e.heartbreak * loved + 0.6 * e.stress + 0.6 * e.loneliness + 0.9 * e.guilt;
     // In proportion to the load and who they are, held back by a steady
     // temper and feeling safe.
-    // (The user's call: three or four a season — one every four or five
-    // episodes. The real show's big ones run six to ten a series (UK 5's
-    // Amber, Anna, Amy, Yewande, Joanna), but here every dumping, Casa
-    // return and Movie Night already has someone in tears in its own scene.)
-    const p = Math.max(0, Math.min(0.6, (load - 3.3) / 11.5 * (1.3 - temper / 10) * (1.2 - e.security / 12) * proneness(state, a)));
+    // (The user's call: "one or two every four episodes", with crying that
+    // is not a breakdown more common — every dumping, Casa return and Movie
+    // Night already has someone in tears in its own scene, ~20 a season.
+    // Measured ~4.6 a season: almost none in the first four episodes, then
+    // 0.7 / 2.1 / 1.7 per block of four as feelings build. The real show's
+    // big ones run six to ten a series — UK 5's Amber, Anna, Amy, Yewande.)
+    const p = Math.max(0, Math.min(0.6, (load - 2.6) / 9.5 * (1.3 - temper / 10) * (1.2 - e.security / 12) * proneness(state, a)));
     if (p > 0 && weight > 0) cands.push({ a, cause, p, load });
   }
   cands.sort((x, y) => y.load - x.load);

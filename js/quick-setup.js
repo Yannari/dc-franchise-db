@@ -51,7 +51,22 @@ export function blueprintFor(config = {}, castSize = 0) {
   const house = seasonFormat(config) === 'big-brother';
   const castle = seasonFormat(config) === 'traitors';
   const stage = seasonFormat(config) === 'drag-race';
+  const villa = seasonFormat(config) === 'perfect-match';
   const segs = [];
+
+  // ── THE VILLA ─────────────────────────────────────────────────────
+  // No tribes, no merge, no jury: a number of islanders, one villa, sixteen
+  // episodes, and a final the public decides. Cast noun from the registry.
+  if (villa) {
+    const w = showWords('perfect-match');
+    const castOk = N >= 12 && N <= 30;
+    segs.push({ label: `${N} ${N === 1 ? w.player : w.players}`, ok: castOk,
+      why: castOk ? undefined : `Cast 12 to 30 ${w.players} (22 is a full villa with bombshells and Casa Amor)` });
+    segs.push({ label: 'one villa', ok: true });
+    segs.push({ label: '16 episodes', ok: true });
+    segs.push({ label: 'final: four couples, public vote', ok: true });
+    return segs;
+  }
 
   // ── THE MAIN STAGE, BEFORE THE SHARED CHIPS ──────────────────────
   //
@@ -1211,6 +1226,15 @@ const CONFIG_SCOPE = {
     'sec-formats-twists-divider':  ['total-drama'],
     // The castle's traitor-count/selection/pot controls and their heading.
     'sec-tr-options':        ['traitors'],
+    // The villa's options and each islander's cast setup — every one read by
+    // js/pm-run.js or js/pm/profile.js, and nothing else shows on a villa.
+    'sec-pm-divider':        ['perfect-match'],
+    'sec-pm-options':        ['perfect-match'],
+    'sec-pm-dialect':        ['perfect-match'],
+    'sec-pm-envelope':       ['perfect-match'],
+    'sec-pm-cast':           ['perfect-match'],
+    'cfg-pm-dialect':        ['perfect-match'],
+    'cfg-pm-split-or-steal': ['perfect-match'],
     'sec-tr-divider':        ['traitors'],
     'sec-dr-options':        ['drag-race'],
     'sec-dr-divider':        ['drag-race'],

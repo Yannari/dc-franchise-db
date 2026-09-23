@@ -1290,6 +1290,12 @@ export function saveConfig() {
     // portrait grid, not a field.
     trTraitorMode: g('cfg-tr-traitor-mode')?.value || 'random',
     trChosenTraitors: seasonConfig.trChosenTraitors || [],
+    // The villa's. `pmSetup` is each islander's cast setup, edited on the
+    // panel (js/pm-cast-ui.js) and carried here the way the chosen pact is,
+    // because it is a grid of choices, not one field.
+    pmSetup: seasonConfig.pmSetup || {},
+    pmDialect: g('cfg-pm-dialect')?.value || 'uk',
+    pmSplitOrSteal: g('cfg-pm-split-or-steal') ? g('cfg-pm-split-or-steal').checked : false,
     trAutoDouble: g('cfg-tr-auto-double') ? g('cfg-tr-auto-double').checked : true,
     trEndgameReveal: g('cfg-tr-endgame-reveal') ? g('cfg-tr-endgame-reveal').checked : false,
     trEndgameSize: parseInt(g('cfg-tr-endgame-size')?.value) || 3,
@@ -1484,6 +1490,9 @@ export function renderConfig() {
   if (g('cfg-franchise-meta-autorecord')) g('cfg-franchise-meta-autorecord').checked = seasonConfig.franchiseMetaAutoRecord !== false;
   set('cfg-jury',    seasonConfig.jurySize || 9);
   set('cfg-tr-traitor-count', seasonConfig.traitorCount || 3);
+  set('cfg-pm-dialect', seasonConfig.pmDialect || 'uk');
+  if (g('cfg-pm-split-or-steal')) g('cfg-pm-split-or-steal').checked = seasonConfig.pmSplitOrSteal === true;
+  try { window.renderPerfectMatchCastSetup?.(); } catch { /* the panel is optional chrome */ }
   set('cfg-tr-traitor-mode', seasonConfig.trTraitorMode || 'random');
   if (g('cfg-tr-auto-double')) g('cfg-tr-auto-double').checked = seasonConfig.trAutoDouble !== false;
   if (g('cfg-tr-endgame-reveal')) g('cfg-tr-endgame-reveal').checked = seasonConfig.trEndgameReveal === true;

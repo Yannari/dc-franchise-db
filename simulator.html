@@ -782,6 +782,29 @@
                  every readiness check. That is the same failure as a screen
                  that is built and never registered — the show was choosable
                  and not configurable, with every test green. -->
+            <!-- THE VILLA'S OPTIONS, and each islander's cast setup. Scoped to
+                 perfect-match in CONFIG_SCOPE: every control here is one the
+                 engine reads (js/pm-run.js, js/pm/profile.js). -->
+            <div class="divider" id="sec-pm-divider"></div>
+            <div class="setup-section-label" id="sec-pm-options">VILLA OPTIONS</div>
+            <div class="form-group" id="sec-pm-dialect">
+              <label class="form-label">Where the islanders are from, by default</label>
+              <select id="cfg-pm-dialect" class="form-input" onchange="saveConfig()"></select>
+              <div class="hint hint-tight">Anyone whose own setup leaves it blank talks like this: "mate" or "man", "the telly" or "TV". Set it per islander below.</div>
+            </div>
+            <div class="form-group" id="sec-pm-envelope">
+              <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer">
+                <input type="checkbox" id="cfg-pm-split-or-steal" style="width:14px;height:14px;margin-top:3px" onchange="saveConfig()">
+                <span>
+                  <span class="form-label" style="margin:0">Split or steal</span>
+                  <div class="hint hint-tight">The winning couple gets an envelope: one of them chooses to share the money or keep it. The US show still does this; the UK dropped it.</div>
+                </span>
+              </label>
+            </div>
+            <div class="form-group" id="sec-pm-cast">
+              <label class="form-label">The islanders</label>
+              <div id="pm-cast-setup"></div>
+            </div>
             <div class="divider" id="sec-tr-divider"></div>
             <div class="setup-section-label" id="sec-tr-options">CASTLE OPTIONS</div>
             <div class="bbopt-fixed" id="sec-tr-fixed-ties">

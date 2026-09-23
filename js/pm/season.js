@@ -23,7 +23,7 @@ import { syncLadder, stepOf } from './ladder.js';
 import { emo, attachmentLabel, walkRisk } from './emotions.js';
 import { runVillaDay } from './villa-day.js';
 import { seasonSchedule, withPicks, withBookings, buildSchedule, FINAL_COUPLES } from './schedule.js';
-import { MOMENTS } from './moments.js';
+import { MOMENTS, nightOneOpening } from './moments.js';
 import { returnIslander } from './arrivals.js';
 
 function initState(cast, setup, seed) {
@@ -81,6 +81,11 @@ export const perfectMatchScheduleFor = (seed, shape = {}) =>
  * dinner, and the night's moment is decided on it.
  */
 function villaDayEvents(state, rng, entry, seed) {
+  // Night one has no morning before it: they arrive in the afternoon.
+  if (entry.moment === 'first-coupling') {
+    const { day, event, evening } = PHASE_BUDGETS;
+    return generateEpisodeEvents(state, rng, { day, event, evening });
+  }
   if (!entry.challenge) return generateEpisodeEvents(state, rng);
   const { morning, day, evening } = PHASE_BUDGETS;
   const out = generateEpisodeEvents(state, rng, { morning, day });
@@ -136,7 +141,9 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
     const surplus = state.villa.length + queues.bombshell.length - 2 * FINAL_COUPLES;
     const pace = surplus / (nights + 1);
     const ctx = { rng, entry, seed, queues, popularity: gs.popularity, splitOrStealOn, closed: false, pace };
-    const day = entry.moment === 'reunion' ? [] : villaDayEvents(state, rng, entry, seed);
+    // Episode one opens on the arrivals and the first coupling, before the day.
+    if (entry.moment === 'first-coupling') ctx.opening = nightOneOpening(state, ctx);
+    const day = entry.moment === 'reunion' ? [] : [...(ctx.opening?.events || []), ...villaDayEvents(state, rng, entry, seed)];
     state.history.push(...day);
     // A returning islander walks back in before the night's moment, so at a
     // recoupling they are a new arrival and choose first (pm/arrivals.js).

@@ -134,6 +134,15 @@ export function perfectMatchPicks() {
  * cast size forward, so every episode read "18 left" and nobody went home.
  */
 export function perfectMatchVillaCounts() {
+  // THE SEASON ITSELF, not a guess at it (user: "not sure the 10 left badge
+  // is actually working"). The seed is fixed once chosen, so the season a
+  // headless build plays with today's inputs is the season that will air:
+  // each episode's badge is everybody in the villa that night, its arrivals
+  // and its departures included. Aired rows are the record; the rest come
+  // from the queue if it is current, or a preview built and kept until an
+  // input changes. The formula below is only for a cast that cannot start.
+  const real = _seasonRows();
+  if (real) return new Map(real.map(r => [r.num, (r.pm?.villa || []).length + (r.exits || []).length]));
   const shape = perfectMatchSeasonShape();
   const aired = new Map((gs?.episodeHistory || []).filter(r => r && r.format === PERFECT_MATCH_FORMAT).map(r => [r.num, r]));
   const FINAL = 8;
@@ -236,6 +245,27 @@ const _sig = inputs => JSON.stringify(inputs);
  * `gs`. `playPerfectMatchSeason` replaces `gs` (it is a headless harness), so
  * the outer one is held aside and put back.
  */
+let _preview = null;
+/** Every episode's row — aired, queued, or previewed — or null if the cast cannot start. */
+function _seasonRows() {
+  const aired = (gs?.episodeHistory || []).filter(r => r && r.format === PERFECT_MATCH_FORMAT);
+  let inputs;
+  try { inputs = _inputs(); } catch { return null; }
+  const sig = _sig(inputs);
+  if (Array.isArray(gs?._pmQueue) && gs.pm?.built === sig) return [...aired, ...gs._pmQueue];
+  const rerolls = { ...(gs?.pm?.rerolls || {}) };
+  const key = `${sig}|${JSON.stringify(rerolls)}|${gs?.pm?.seed || ''}|${(players || []).map(p => p?.name).join(',')}`;
+  if (_preview?.key !== key) {
+    let built = null;
+    try { built = _build(inputs, rerolls); } catch { built = null; }
+    _preview = { key, rows: built ? built.rows : null };
+  }
+  if (!_preview.rows) return null;
+  // What aired stays what aired; the preview supplies the nights still to come.
+  const airedNums = new Set(aired.map(r => r.num));
+  return [...aired, ..._preview.rows.filter(r => !airedNums.has(r.num))];
+}
+
 function _build(inputs, rerolls) {
   _lastRefusal = null;
   const saved = Array.isArray(gs.pm?.castOrder) && gs.pm.castOrder.length ? gs.pm.castOrder : null;

@@ -28,6 +28,7 @@ const words = () => SHOWS['perfect-match'].words;
 
 // ── what each scene is called on the headline pill ────────────────────
 export const KIND_LABEL = {
+  'first-arrival': 'The arrivals', 'first-look': 'First impressions', 'step-forward': 'Step forward', 'step-last': 'The last two',
   chat: 'A chat', 'deep-chat': 'A deep chat', kiss: 'A kiss', pull: 'Can I borrow you?', loyalty: 'Loyal',
   argument: 'An argument', friendship: 'Friends', gossip: 'Gossip', comedy: 'Villa life', ick: 'The ick',
   'challenge-kiss': 'A challenge kiss', 'challenge-win': 'Winners', entrance: 'A new arrival', date: 'The date',
@@ -74,6 +75,7 @@ const SPOTS = { 1: [50], 2: [30, 70], 3: [20, 50, 80], 4: [14, 38, 62, 86], 5: [
 // ── what a scene does, said as the pops over the busts ────────────────
 // [cast slot, words, style, icon]. Styles: '' warm · down · red · gold · teal.
 const POPS = {
+  'first-look': [[1, 'Attraction +', '', 'heart']],
   kiss: [[0, 'Connection +', '', 'heart'], [1, 'Connection +', '', 'heart']],
   'deep-chat': [[1, 'Connection +', '', 'heart']],
   pull: [[1, 'Head turned?', 'gold', 'eye']],
@@ -85,6 +87,7 @@ const POPS = {
   date: [[1, 'Attraction +', '', 'heart']],
   steal: [[0, 'Steal!', 'gold', 'spark'], [2, 'Stolen from', 'red', 'crack']],
   'recouple-pick': [[1, 'Chosen', 'gold', 'heartW']],
+  'step-forward': [[1, 'Chosen', 'gold', 'heartW']],
   'dump-verdict': [[0, 'Dumped', 'red', 'crack']],
   'dump-verdict-couple': [[0, 'Dumped', 'red', 'crack'], [1, 'Dumped', 'red', 'crack']],
   'dump-fallout': [[0, 'Single', 'down', 'crack']],
@@ -125,15 +128,17 @@ const POPS = {
 const HURT_STYLES = new Set(['red']);
 // A pop only where the scene did the thing: a receipt that read out "falling
 // for you" exposed nobody.
-const POPS_WHEN = { receipt: e => ['secret', 'pull', 'head-turned'].includes(e.extra?.of),
+const POPS_WHEN = { 'first-look': e => e.extra?.of === 'spark', receipt: e => ['secret', 'pull', 'head-turned'].includes(e.extra?.of),
   'casa-return': () => false, 'dump-reaction': () => true };
 
 // ── the night's big effects ───────────────────────────────────────────
 function fxFor(row, e, first) {
   const fx = {};
   const k = e.kind;
+  if (k === 'first-arrival' && first) fx.neon = ['Perfect Match', '#ff2e88'];
   if (k === 'entrance' || k === 'group-entrance') fx.neon = [row.moment === 'casa-open' ? 'Casa Amor' : 'Bombshell', '#ff7a59'];
   if (k === 'return-entrance') fx.neon = ['Back', '#ffc15e'];
+  if (k === 'step-forward' && first) fx.neon = ['Step forward', '#ff2e88'];
   if (k === 'recouple-pick' && first) fx.neon = [row.moment === 'first-coupling' ? 'First coupling' : 'Recoupling', '#ff2e88'];
   if (k === 'dump-buildup' && first) fx.neon = ['The results', '#a78bfa'];
   if (k === 'dump-verdict' || k === 'dump-verdict-couple' || k === 'dump-verdict-singles') { fx.neonDie = ['Dumped', '#ff2e88']; fx.shake = true; }
@@ -149,7 +154,7 @@ function fxFor(row, e, first) {
 }
 
 // ── the Heart Map's changes ───────────────────────────────────────────
-const COUPLES_BY = { 'recouple-pick': [0, 1], steal: [0, 1], 'stand-up-pick': [0, 1], 'public-match': [0, 1],
+const COUPLES_BY = { 'step-last': [0, 1], 'recouple-pick': [0, 1], steal: [0, 1], 'stand-up-pick': [0, 1], 'public-match': [0, 1],
   'bombshell-save': [0, 1], 'profile-pick': [0, 1], 'public-couple': [0, 1], 'ranking-couple': [0, 1] };
 function relOps(e) {
   const k = e.kind, p = e.players;
@@ -160,6 +165,9 @@ function relOps(e) {
   if (k === 'dump-verdict-couple' || k === 'dump-verdict-singles') return p.map(n => ['leave', n]);
   if (k === 'walk') return [['leave', p[0]]];
   if (k === 'entrance' || k === 'group-entrance' || k === 'return-entrance') return p.map(n => ['arrive', n]);
+  if (k === 'first-arrival') return [['arrive', p[0]]];
+  // The boy walks in, and walks out coupled (or waiting).
+  if (k === 'step-forward') return p[1] ? [['arrive', p[0]], ['couple', p[0], p[1]]] : [['arrive', p[0]]];
   return [];
 }
 
@@ -343,7 +351,8 @@ function nameFor(label, chunk, screens) {
 export function startOfEpisode(row, prev) {
   if (prev?.pm) return { villa: [...prev.pm.villa], couples: prev.pm.couples.map(c => [...c]) };
   // Night one: everybody who did not walk in during the episode, nobody coupled.
-  const arrived = new Set((row.pm.events || []).filter(e => e.kind === 'entrance' || e.kind === 'group-entrance').flatMap(e => e.players));
+  const arrived = new Set((row.pm.events || []).flatMap(e => (e.kind === 'entrance' || e.kind === 'group-entrance' ? e.players
+    : e.kind === 'first-arrival' || e.kind === 'step-forward' ? [e.players[0]] : [])));
   return { villa: (row.pm.villa || []).filter(n => !arrived.has(n)), couples: [] };
 }
 

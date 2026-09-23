@@ -201,3 +201,13 @@ describe('an aired episode can be watched and read', () => {
     }
   });
 });
+
+describe('the Season Timeline\'s "N left" is the season that plays', () => {
+  it('before the first press, every episode\'s count is what that episode then has in the villa', async () => {
+    const { perfectMatchVillaCounts } = await import('../js/pm-run.js');
+    freshSeason();
+    const before = perfectMatchVillaCounts();
+    const aired = playAll();
+    for (const r of aired) expect(before.get(r.num), `ep ${r.num}`).toBe(r.pm.villa.length + r.exits.length);
+  });
+});

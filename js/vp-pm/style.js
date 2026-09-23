@@ -37,7 +37,7 @@ export const PMV_CSS = `/* ═════════════════�
 @media (max-width:960px){.pmv-layout{grid-template-columns:minmax(0,1fr)}}
 
 /* ── STAGE ─────────────────────────────────────────────────────────── */
-.pmv-stage{position:sticky;top:8px;z-index:5;contain:inline-size;min-width:0;max-width:100%;aspect-ratio:16/9.2;
+.pmv-stage{position:sticky;top:8px;z-index:5;contain:inline-size;min-width:0;max-width:100%;aspect-ratio:16/9.2;width:min(100%, calc(42vh * 16 / 9.2));margin:0 auto;
   border-radius:24px;overflow:hidden;isolation:isolate;box-shadow:var(--shadow),0 0 0 1px #ffffff22 inset;background:#000;user-select:none}
 .pmv-cam{position:absolute;inset:0;transition:transform 1.1s cubic-bezier(.2,.8,.2,1);transform-origin:var(--ox,50%) 70%}
 .pmv-cam.pmv-close{transform:scale(1.14)}
@@ -258,7 +258,7 @@ export const PMV_CSS = `/* ═════════════════�
 .pmv-rail span.pmv-on{border-color:var(--pink);color:#fff;background:linear-gradient(135deg,var(--coral),var(--pink))}
 .pmv-rail span.pmv-done{color:var(--ink)}
 .pmv-cards{display:flex;flex-direction:column;gap:10px;margin-top:14px}
-.pmv-card{scroll-margin-top:52vw;background:var(--card);border:1.5px solid var(--line);border-radius:18px;padding:12px 14px;display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center;position:relative;
+.pmv-card{scroll-margin-top:calc(42vh + 24px);background:var(--card);border:1.5px solid var(--line);border-radius:18px;padding:12px 14px;display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center;position:relative;
   animation:pmv-pop .45s cubic-bezier(.2,1.4,.3,1);box-shadow:0 4px 14px #a0286410}
 @keyframes pmv-pop{from{opacity:0;transform:translateY(12px) scale(.98)}}
 .pmv-card .pmv-fx{display:flex}
@@ -423,7 +423,7 @@ details.pmv-debug[open] summary::before{transform:rotate(45deg)}
 .pmv-emo{display:grid;grid-template-columns:repeat(6,1fr);gap:3px;font-size:10.5px}
 .pmv-emo span{text-align:center}
 @media (max-width:640px){
-  .pmv-stage{aspect-ratio:4/5}
+  .pmv-stage{aspect-ratio:4/5;width:min(100%, calc(44vh * 4 / 5))}
   .pmv-bust{width:36%;bottom:30%} .pmv-dlg{left:3%;right:3%;min-height:24%} .pmv-phone{width:38%;bottom:30%} .pmv-headline{display:none}
   .pmv-board{width:88%;right:6%;top:12%} .pmv-gc{width:30%} .pmv-deal{width:94%;top:36%} .pmv-neon{top:14%}
   .pmv-ecg{top:30%} .pmv-env{width:52%;top:40%}
@@ -433,7 +433,7 @@ details.pmv-debug[open] summary::before{transform:rotate(45deg)}
 /* COMPACT, LAST (ADDING-A-SHOW §6.5 rule 1): a short window gets a shorter stage. */
 @media (max-height: 820px) and (min-width: 641px){
   .pmv-stage{aspect-ratio:16/7}
-  .pmv-card{scroll-margin-top:40vw}
+  .pmv-card{scroll-margin-top:calc(36vh + 24px)}
   .pmv-dlg{min-height:22%}
 }
 `;

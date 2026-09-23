@@ -16,7 +16,7 @@ import { publicVote, publicVoteIslanders, finalVote, splitOrSteal } from './publ
 import { villaDumping, topCouplePicks, saveOne, couplesVote, returningExes, exIslandersVote } from './villa-vote.js';
 import { arriveBombshell, bombshellSteal, openCasa, standUp, bombshellSaves, publicMatch } from './arrivals.js';
 import { secretMission, sleepover, immunityChallenge } from './one-offs.js';
-import { attr } from './chemistry.js';
+import { attr, nudgeAttraction } from './chemistry.js';
 import { stickOrTwist } from './casa.js';
 import { closeEpisode, BETRAYAL } from './ledger.js';
 import { FINAL_COUPLES } from './schedule.js';
@@ -269,6 +269,104 @@ function exIslandersNight(state, ctx, singles, over, exes) {
 // 12 d1), the public's own couples before anyone met (UK 10), and a "most to
 // least" ranking that couples the same positions (UK 11 d1). Nobody has met
 // on night one, so each reads only looks-and-type attraction — never feelings.
+/**
+ * NIGHT ONE OPENS THE EPISODE (user: "where's the arrival ceremony on the
+ * first episode … the first coupling … get to meet each other"). The real
+ * show's first minutes: the islanders walk in one at a time — the girls
+ * first, then the boys (UK 5-13) — say hello to whoever is already there,
+ * size each other up, and couple up that same afternoon. The whole first day
+ * is then played as couples, and the night belongs to the bombshell.
+ *
+ * Returns the arrivals and the coupling as scenes of their own parts of the
+ * day ('arrival', 'coupling'), which the transcript puts before everything.
+ */
+export function nightOneOpening(state, ctx) {
+  const rng = ctx.rng;
+  const g = n => state.profiles[n].gender;
+  const fmt = ctx.entry.firstFormat || 'step-forward';
+  // STEP FORWARD (the UK default): the girls arrive and meet each other, and
+  // each boy walks in to the fire pit as they stand in a line — so the boys'
+  // entrance IS the coupling. Every other night-one format has everybody
+  // arrive first, and a few first chats before they are put together.
+  const stepping = fmt === 'step-forward';
+  const order = stepping ? state.villa.filter(n => g(n) === 'f')
+    : [...state.villa.filter(n => g(n) === 'f'), ...state.villa.filter(n => g(n) !== 'f')];
+  const events = [];
+  const here = [];
+  for (const a of order) {
+    // Whoever is nearest the steps says hello: someone from the same side first.
+    const same = here.filter(n => g(n) === g(a));
+    const b = (same.length ? same : here)[Math.floor(rng() * Math.max(1, (same.length ? same : here).length))] || null;
+    if (b) addBond(a, b, 0.3);
+    events.push(makeEvent(state, rng, { phase: 'arrival', kind: 'first-arrival', players: b ? [a, b] : [a], aired: true,
+      extra: { of: here.length ? 'arrive' : 'first', pop: { [a]: { approval: 0.3, fame: 1.5 } } } }));
+    here.push(a);
+  }
+  // First impressions: the strongest pulls in the villa, said out loud.
+  const pairs = [];
+  for (const a of order) for (const b of order) {
+    if (a === b || g(a) === g(b) || attr(state, a, b) == null) continue;
+    pairs.push([a, b, attr(state, a, b) + rng() * 2]);
+  }
+  pairs.sort((x, y) => y[2] - x[2]);
+  const met = new Set();
+  for (const [a, b] of stepping ? [] : pairs) {
+    if (met.has(a) || met.has(b) || met.size >= 8) continue;
+    met.add(a); met.add(b);
+    // Whether it lands is the other one's attraction, not the asker's.
+    const spark = (attr(state, b, a) ?? 0) >= 5;
+    if (spark) { nudgeAttraction(state, b, a, 0.3); nudgeAttraction(state, a, b, 0.2); }
+    else addBond(a, b, 0.2);
+    events.push(makeEvent(state, rng, { phase: 'arrival', kind: 'first-look', players: [a, b], aired: true,
+      extra: { of: spark ? 'spark' : 'polite', pop: { [a]: { approval: 0.2, fame: 1 } } } }));
+  }
+  const first = stepping ? stepForward(state, rng) : firstCouples(state, rng, fmt);
+  // The first coupling is in daylight, the same afternoon they arrived.
+  for (const e of first.events) e.phase = 'coupling';
+  return { events: [...events, ...first.events], ballots: first.ballots, firstFormat: fmt };
+}
+
+/**
+ * The boys walk in one at a time; the girls who like the look of him step
+ * forward, and he chooses between them. Nobody stepping forward leaves him
+ * waiting at the side, and whoever is left at the end is put together. How
+ * likely a girl is to step is how much she is drawn to him (proportional);
+ * who he picks is how much he is drawn to her. No steals: it is minutes in.
+ */
+function stepForward(state, rng) {
+  const g = n => state.profiles[n].gender;
+  const free = new Set(state.villa.filter(n => g(n) === 'f'));
+  const boys = state.villa.filter(n => g(n) !== 'f');
+  const pairs = [], waiting = [], events = [];
+  for (const b of boys) {
+    const stepped = [...free].filter(f => attr(state, f, b) != null && rng() < 0.15 + 0.7 * (attr(state, f, b) || 0) / 10);
+    if (!stepped.length) {
+      waiting.push(b);
+      events.push(makeEvent(state, rng, { phase: 'coupling', kind: 'step-forward', players: [b], aired: true,
+        extra: { of: 'nobody', pop: { [b]: { approval: 0.8, fame: 1.5 } } } }));
+      continue;
+    }
+    const pick = stepped.map(f => [f, (attr(state, b, f) ?? 0) + rng()]).sort((x, y) => y[1] - x[1])[0][0];
+    free.delete(pick); pairs.push([pick, b]);
+    // The ones he walked past noticed.
+    for (const f of stepped) if (f !== pick) addBond(f, pick, -0.2);
+    events.push(makeEvent(state, rng, { phase: 'coupling', kind: 'step-forward', players: [b, pick], aired: true,
+      extra: { of: stepped.length > 1 ? 'several' : 'one', pop: { [b]: { approval: 0.2, fame: 1 }, [pick]: { approval: 0.3, fame: 1 } } } }));
+  }
+  // Whoever is left: put together, best-matched first.
+  for (const b of waiting) {
+    const f = [...free].filter(x => attr(state, x, b) != null).sort((x, y) => (attr(state, y, b) ?? 0) - (attr(state, x, b) ?? 0))[0];
+    if (!f) continue;
+    free.delete(f); pairs.push([f, b]);
+    events.push(makeEvent(state, rng, { phase: 'coupling', kind: 'step-last', players: [f, b], aired: true,
+      extra: { pop: { [f]: { approval: 0.2, fame: 0.8 }, [b]: { approval: 0.4, fame: 0.8 } } } }));
+  }
+  state.couples = pairs.map(([a, b]) => [a, b]);
+  state.recouplings++;
+  state.lastRecoupleEp = state.ep;
+  return { events, exits: [], ballots: [] };
+}
+
 function firstCouples(state, rng, format) {
   const g = n => state.profiles[n].gender;
   const girls = state.villa.filter(n => g(n) === 'f'), boys = state.villa.filter(n => g(n) === 'm');
@@ -322,10 +420,13 @@ function arrivalRule(state, ctx, rule, fresh) {
 
 export const MOMENTS = {
   'first-coupling': (state, ctx) => {
+    // The couples were made at the start of the episode (nightOneOpening);
+    // the night is the bombshell's. Without an opening (a direct call) the
+    // coupling happens here, as it used to.
     const fmt = ctx.entry.firstFormat;
-    const first = fmt && fmt !== 'step-forward' ? firstCouples(state, ctx.rng, fmt)
-      : recoupleNight(state, ctx.rng, { dumpSingles: false });
-    const events = [...first.events, ...arrivals(state, ctx, ctx.entry.arrivals?.bombshell || 0)];
+    const first = ctx.opening || (fmt && fmt !== 'step-forward' ? firstCouples(state, ctx.rng, fmt)
+      : recoupleNight(state, ctx.rng, { dumpSingles: false }));
+    const events = [...(ctx.opening ? [] : first.events), ...arrivals(state, ctx, ctx.entry.arrivals?.bombshell || 0)];
     for (const name of state.villa.filter(n => state.ledger.firstEp[n] === state.ep
       && state.profiles[n].role === 'bombshell')) {
       const st = bombshellSteal(state, name, { rng: ctx.rng });

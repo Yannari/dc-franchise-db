@@ -31,7 +31,7 @@ export { HUT, NARRATOR };
 export const SPEAKERS = ['a', 'b', 'c', 'dior', 'narrator'];
 export const FACT_KEYS = ['rung', 'thinks', 'persona', 'intent', 'attachment', 'mood', 'bombshell',
   'early', 'coupled', 'gap', 'knows', 'faking', 'bPersona', 'bMood', 'bRung', 'stance', 'family',
-  'choice', 'cause', 'channel', 'stole', 'bTaken', 'archetype', 'taken', 'loyal', 'late', 'gender', 'bGender', 'myRung', 'phase', 'kind', 'role', 'withB', 'newArrival', 'dialect',
+  'choice', 'cause', 'channel', 'grudge', 'stole', 'bTaken', 'archetype', 'taken', 'loyal', 'late', 'gender', 'bGender', 'myRung', 'phase', 'kind', 'role', 'withB', 'newArrival', 'dialect',
   'comfortedYesterday', 'rowedBefore', 'rowedToday', 'feels', 'of', 'knowsB', 'verdict', 'noticed',
   'reason', 'split', 'guessed', 'stoleFrom', 'full', 'hasQuote'];
 
@@ -109,7 +109,7 @@ export function factsFor(state, ev) {
   // How much a feels for b, in words a line can lean on (narration only):
   // "not yet" is somebody who cares; a real no is somebody who doesn't.
   if (b) { const r = romance(a, b); f.feels = r >= 6 ? 'strong' : r >= 3 ? 'some' : 'little'; } else f.feels = null;
-  for (const k of ['choice', 'cause', 'channel', 'of', 'noticed', 'reason', 'guessed']) if (ev.extra?.[k] != null) f[k] = ev.extra[k];
+  for (const k of ['choice', 'cause', 'channel', 'grudge', 'of', 'noticed', 'reason', 'guessed']) if (ev.extra?.[k] != null) f[k] = ev.extra[k];
   // A steal at the recoupling: {c} is the one who loses {b}.
   f.stoleFrom = !!ev.extra?.stole;
   f.split = !!state.split;             // Casa Amor is on

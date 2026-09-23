@@ -283,7 +283,9 @@ export const KINDS = {
     'ask-declined', 'love-said', 'love-hanging', 'hideaway', 'torch', 'jealous-confront',
     'jealous-sulk', 'jealous-retaliate', 'reassurance', 'overthinking', 'confession', 'advice',
     'heart-rate', 'snog-marry-pie', 'movie-night', 'double-standard', 'notes', 'families',
-    'solidarity']
+    'solidarity',
+    // the dumping formats of Plan 4.5
+    'dump-at-risk', 'dump-verdict-couple', 'dump-verdict-singles', 'save-vote', 'top-couple-pick', 'couples-vote', 'ex-return', 'ex-ballot']
     .map(k => [k, { salience: 1, cast: () => null,
       apply: (s, ev) => ({ pop: ev.extra.pop || {}, major: ev.extra.majorPop || [] }) }])),
 };

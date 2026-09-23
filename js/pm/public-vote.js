@@ -5,7 +5,7 @@
 // ONE OF THE FILES ALLOWED TO READ THE PUBLIC LEDGER (spec §8, and
 // tests/pm-ledger-readers.test.js). The public votes on what AIRED, which is
 // all the ledger holds. Nothing an islander decides lives in this file.
-import { coupleScore } from './ledger.js';
+import { coupleScore, readApproval } from './ledger.js';
 import { romance } from './feelings.js';
 
 // How the country's votes split. A couple's share is proportional to its
@@ -36,6 +36,22 @@ export function publicVote(state, { rng, bottom = 2 }) {
     shares: rows.map(r => ({ couple: r.couple, share: r.share })),
     bottom: ranked.slice(0, Math.min(bottom, rows.length)).map(r => r.couple),
   };
+}
+
+/**
+ * "The public have been voting for their favourite boy and girl" (UK 9 d9,
+ * UK 12 d19): one side's islanders, each on their OWN approval — the couple
+ * does not carry them. The fewest votes come first.
+ */
+export function publicVoteIslanders(state, { rng, gender, bottom = 2 }) {
+  const side = state.villa.filter(n => state.profiles[n].gender === gender);
+  const rows = side.map(n => ({ name: n, score: readApproval(state.ledger, n) + (rng() - 0.5) * 6 }));
+  const w = rows.map(r => FLOOR + 8 * Math.log1p(Math.exp((r.score + BASE) / 8)));
+  const sum = w.reduce((a, b) => a + b, 0) || 1;
+  rows.forEach((r, i) => { r.share = w[i] / sum; });
+  const ranked = [...rows].sort((a, b) => a.share - b.share);
+  return { shares: rows.map(r => ({ name: r.name, share: r.share })),
+    bottom: ranked.slice(0, Math.min(bottom, rows.length)).map(r => r.name) };
 }
 
 export function finalVote(state, { rng }) {

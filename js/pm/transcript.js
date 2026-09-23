@@ -21,6 +21,12 @@ export const PM_MOMENT_TITLE = { 'first-coupling': 'The first coupling', bombshe
   'stick-or-twist': 'Stick or twist', photos: 'The photos', 'semi-final': 'Semi-final', final: 'The final',
   reunion: 'Reunion' };
 
+/** The episode's title from what PLAYED: a couples' vote has no public in it. */
+export function momentTitle(row, fallback = 'A day in the villa') {
+  if (row?.pm?.dumpFormat === 'couples-vote') return 'The villa votes';
+  return PM_MOMENT_TITLE[row?.moment] || fallback;
+}
+
 /** Scoped styles for the screens, both themes. */
 export const PM_TRANSCRIPT_CSS = `
 .pm-tx{--pm-ink:#2b1d24;--pm-soft:#7a6470;--pm-line:#f0dde4;--pm-pink:#e0467c;--pm-hut:#fff1d6;--pm-hut2:#ffe0e0;
@@ -96,7 +102,7 @@ export function phasesOf(row) {
   const out = groupByPhase(villa, ph => PM_PHASE_LABEL[ph] || ph);
   const moment = events.slice(from);
   if (!moment.length) return out;
-  const title = PM_MOMENT_TITLE[row.moment] || 'The night';
+  const title = momentTitle(row, 'The night');
   if (!moment.some(e => MOMENT_PHASES.has(e.phase))) return [...out, ['moment', moment, title]];
   const groups = [];
   let pending = [];
@@ -124,7 +130,7 @@ export function episodeHeaderHtml(row, prev = null) {
   const labelsBefore = prev?.pm?.labels || {};
   const moved = Object.entries(row.pm?.labels || {}).filter(([n, l]) => labelsBefore[n] && labelsBefore[n] !== l)
     .map(([n, l]) => `${esc(n)}: ${esc(labelsBefore[n])} → <b>${esc(l)}</b>`);
-  return `<h2>Episode ${row.num} — ${esc(PM_MOMENT_TITLE[row.moment] || 'A day in the villa')}</h2>
+  return `<h2>Episode ${row.num} — ${esc(momentTitle(row))}</h2>
     <p class="pm-sub"><b>Couples:</b> ${couples}${exits ? `<br><b>Left:</b> ${exits}` : ''}${
       shifts.length ? `<br><b>With the public:</b> ${shifts.map(([n, d]) => `<span class="${d > 0 ? 'up' : 'down'}">${esc(n)} ${d > 0 ? '+' : ''}${d}</span>`).join(' · ')}` : ''}${
       moved.length ? `<br><b>Now seen as:</b> ${moved.join(' · ')}` : ''}</p>`;
@@ -144,7 +150,7 @@ export function perfectMatchScreens(row, prev = null) {
 
 /** The same content as plain text, for the text backlog. */
 export function episodeText(row) {
-  const out = [`EPISODE ${row.num} — ${(PM_MOMENT_TITLE[row.moment] || 'A day in the villa').toUpperCase()}`];
+  const out = [`EPISODE ${row.num} — ${momentTitle(row).toUpperCase()}`];
   for (const [, evs, label] of phasesOf(row)) {
     out.push('', `— ${label} —`);
     for (const e of evs) {

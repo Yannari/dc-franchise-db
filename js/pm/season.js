@@ -21,7 +21,7 @@ import { romance, friendship, shown, believed, growLove, updateBeliefs, decideMa
 import { syncLadder, stepOf } from './ladder.js';
 import { emo, attachmentLabel, walkRisk } from './emotions.js';
 import { runVillaDay } from './villa-day.js';
-import { SEASON_TEMPLATE } from './schedule.js';
+import { seasonSchedule } from './schedule.js';
 import { MOMENTS } from './moments.js';
 
 function initState(cast, setup, seed) {
@@ -63,7 +63,10 @@ function relationshipSnapshot(state) {
   return { rel, labels };
 }
 
-export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = SEASON_TEMPLATE,
+/** The shape a seed's season plays: drawn from its own stream (pm/schedule.js). */
+export const perfectMatchScheduleFor = seed => seasonSchedule(streamFor(seed, 'schedule'));
+
+export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = perfectMatchScheduleFor(seed),
   splitOrStealOn = false, dialect = 'uk' } = {}) {
   setGs({ bonds: {}, perceivedBonds: {}, relationshipDimensions: {}, activePlayers: [],
     episodeHistory: [], popularity: {} });
@@ -111,6 +114,7 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
         const ev = makeEvent(state, rng, { phase: 'firepit', kind: 'walk', players: [walker.name], aired: true,
           major: [walker.name], extra: { cause: walker.cause, pop: { [walker.name]: { approval: 3, fame: 2 } } } });
         m.events.push(ev); state.history.push(ev);
+        (state.gone ||= []).push({ name: walker.name, ep: state.ep });
         state.villa = state.villa.filter(n => n !== walker.name);
         state.couples = state.couples.filter(c => !c.includes(walker.name));
         exits.push({ name: walker.name, verb: 'walked', channel: 'walk', cause: walker.cause });
@@ -122,6 +126,7 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
           const ev2 = makeEvent(state, rng, { phase: 'firepit', kind: 'walk', players: [left, walker.name], aired: true,
             major: [left], extra: { cause: 'solidarity', pop: { [left]: { approval: 2, fame: 1.5 } } } });
           m.events.push(ev2); state.history.push(ev2);
+          (state.gone ||= []).push({ name: left, ep: state.ep });
           state.villa = state.villa.filter(n => n !== left);
           exits.push({ name: left, verb: 'walked', channel: 'walk', cause: 'solidarity' });
         }
@@ -135,7 +140,7 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
       num: entry.ep, format: PERFECT_MATCH_FORMAT, days: entry.days, moment: entry.moment,
       eliminated: exits.find(x => x.verb === 'dumped')?.name || null,
       exits, votes: m.ballots,
-      pm: { events: [...day, ...m.events], momentFrom: day.length, couples: state.couples.map(c => [...c]), villa: [...state.villa],
+      pm: { events: [...day, ...m.events], momentFrom: day.length, dumpFormat: m.extra && 'dumpFormat' in m.extra ? m.extra.dumpFormat : (entry.dumpFormat || null), couples: state.couples.map(c => [...c]), villa: [...state.villa],
         shares: m.extra?.shares || null, bottom: m.extra?.bottom || null,
         majors: [...new Set([...day, ...m.events].flatMap(e => e.aired ? e.major : []))],
         labels: snap.label, approval: snap.approval, fame: snap.fame,

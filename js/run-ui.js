@@ -24,7 +24,7 @@ import { isTraitorsSeason, simulateTraitorsEpisode, rerunTraitorsEpisode,
 import { isPerfectMatchSeason, simulatePerfectMatchEpisode, perfectMatchCanRerun,
   lastPerfectMatchRefusal } from './pm-run.js';
 import { SEASON_TEMPLATE as PM_SCHEDULE } from './pm/schedule.js';
-import { episodeText as pmEpisodeText, PM_MOMENT_TITLE } from './pm/transcript.js';
+import { episodeText as pmEpisodeText, momentTitle as pmMomentTitle } from './pm/transcript.js';
 import { isDragSeason, simulateDragEpisode, invalidateDragQueue,
   dragEpisodesAired, dragScheduleRecorded, rerunDragEpisode, dragCanRerun } from './dr-run.js';
 import { dragBadges } from './dr/badges.js';
@@ -391,7 +391,8 @@ export function buildHubAftermath(ep) {
     // dumps whoever nobody picked — each exit says which door it went through.
     const exits = roundExits(ep, PERFECT_MATCH_FORMAT);
     const DOOR = { public: 'by the public', villa: 'by the villa', recoupling: 'after nobody picked them',
-      casa: 'after Casa Amor', walk: '' };
+      casa: 'after Casa Amor', walk: '', 'top-couple': "by the public's favourite couple",
+      save: 'when nobody saved them', couples: 'by the other couples', exes: 'by the dumped islanders' };
     // The reunion is after the villa has closed: "nobody left" is true of a
     // night nobody was there.
     const winners = gs.pm?.winners || gs.pmWinners || [];
@@ -1022,7 +1023,7 @@ export function renderEpisodeView(epRecord) {
     card.innerHTML = `<div class="ep-result">
       <div class="ep-result-header">
         <span class="ep-result-num">Episode ${epRecord.num}</span>
-        <span class="ep-result-phase" style="color:#e0467c">${_hubEsc(PM_MOMENT_TITLE[epRecord.moment] || 'The villa')}</span>
+        <span class="ep-result-phase" style="color:#e0467c">${_hubEsc(pmMomentTitle(epRecord, 'The villa'))}</span>
       </div>
       <div class="ep-facts">
         <div class="ep-fact ep-eliminated"><label>${won ? 'Winners' : 'Left the villa'}</label><span>${

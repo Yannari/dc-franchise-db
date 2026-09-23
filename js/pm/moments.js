@@ -12,8 +12,8 @@ import { romance } from './feelings.js';
 import { closedness } from './ladder.js';
 import { breakHeart } from './emotions.js';
 import { runRecoupling } from './recoupling.js';
-import { publicVote, finalVote, splitOrSteal } from './public-vote.js';
-import { villaDumping } from './villa-vote.js';
+import { publicVote, publicVoteIslanders, finalVote, splitOrSteal } from './public-vote.js';
+import { villaDumping, topCouplePicks, saveOne, couplesVote, returningExes, exIslandersVote } from './villa-vote.js';
 import { arriveBombshell, bombshellSteal, openCasa } from './arrivals.js';
 import { stickOrTwist } from './casa.js';
 import { closeEpisode, BETRAYAL } from './ledger.js';
@@ -22,28 +22,80 @@ import { FINAL_COUPLES } from './schedule.js';
 const EXIT = 'dumped';
 
 function removeFromVilla(state, names) {
+  // Who has gone, and when: the ex-islanders who come back to vote are read
+  // from here (villa-vote.js returningExes).
+  for (const n of names) if (state.villa.includes(n) || state.casa.includes(n)) (state.gone ||= []).push({ name: n, ep: state.ep });
   state.villa = state.villa.filter(n => !names.includes(n));
   state.casa = state.casa.filter(n => !names.includes(n));
   state.couples = state.couples.filter(c => !c.some(n => names.includes(n)));
 }
 
-export function dumpingScene(state, rng, { atRisk = [], dumped, ballots = [], channel }) {
+export function dumpingScene(state, rng, { atRisk = [], dumped, ballots = [], channel, decision = null }) {
   const events = [];
   const solidarityWalk = [];
   // Every phase knows which vote it came from, so Dior says the right thing.
   const ev = (kind, players, pop, major = []) => events.push(makeEvent(state, rng,
     { phase: 'dumping', kind, players, aired: true, major, extra: { pop, channel } }));
   const partners = Object.fromEntries(dumped.map(n => [n, partnerOf(state, n)]));
-  // 1. build-up
-  for (const c of atRisk) ev('dump-buildup', c, Object.fromEntries(c.map(n => [n, { approval: 0, fame: 0.5 }])));
-  // 2. verdict, and the ballots in front of everyone
-  for (const n of dumped) ev('dump-verdict', [n], { [n]: { approval: 0, fame: 2 } }, [n]);
+  // What the dumped will remember if they are ever asked back: who voted them
+  // out, and the partner they left behind (villa-vote.js grudgeOf).
+  for (const n of dumped) {
+    (state.dumpedBy ||= {})[n] = ballots.filter(b => !b.save && (b.target === n || b.couple?.includes(n))).map(b => b.voter);
+    if (partners[n]) (state.leftBehind ||= {})[n] = partners[n];
+  }
+  // 1. build-up: a couple at risk, or one islander on their own (save-one)
+  for (const c of atRisk) ev(c.length === 1 ? 'dump-at-risk' : 'dump-buildup', c, Object.fromEntries(c.map(n => [n, { approval: 0, fame: 0.5 }])));
+  // …then the decision, when somebody makes it in front of the villa
+  if (decision) events.push(...decision());
+  // 2. the ballots in front of everyone, THEN the verdict they add up to
+  // (the verdict read first had Dior announcing a count nobody had cast).
   for (const b of ballots) {
+    // A vote to SAVE (save-one): the saved islander owes the voter.
+    if (b.save) {
+      addBond(b.target, b.voter, 0.6);
+      ev('save-vote', [b.voter, b.target], { [b.voter]: { approval: 0.1, fame: 0.8 } });
+      continue;
+    }
+    // A ballot with its own scene (an ex-islander's) is shown whether or not
+    // it carried: every ex stands up and says it. The ex is gone again by
+    // morning, so only the one voted against carries the bond.
+    if (b.kind) {
+      addBond(b.target, b.voter, -0.8);
+      events.push(makeEvent(state, rng, { phase: 'dumping', kind: b.kind, players: [b.voter, b.target], aired: true,
+        extra: { channel, grudge: b.grudge || null, pop: { [b.voter]: { approval: 0, fame: 1 } } } }));
+      continue;
+    }
     if (!dumped.includes(b.target)) continue;
+    // Decided in a scene of its own (the favourite couple's pick): the bond,
+    // not a second reveal.
+    if (b.silent) {
+      for (const n of b.couple || [b.target]) addBond(n, b.voter, -0.8);
+      continue;
+    }
     addBond(b.target, b.voter, -0.8);
     const p = partners[b.target];
     if (p && p !== b.voter && !dumped.includes(p)) addBond(p, b.voter, -0.5);
     ev('ballot-reveal', [b.voter, b.target], { [b.voter]: { approval: -0.2, fame: 1 } });
+  }
+  // A couple dumped together hears it once, together; several singles left
+  // over hear it once, as a group ("X is the only one still standing" over
+  // five people standing was false, and five times over).
+  const done = new Set();
+  const lone = dumped.filter(n => !(partners[n] && dumped.includes(partners[n])));
+  if (channel === 'recoupling' && lone.length > 1) {
+    ev('dump-verdict-singles', lone, Object.fromEntries(lone.map(n => [n, { approval: 0, fame: 2 }])), lone);
+    for (const n of lone) done.add(n);
+  }
+  for (const n of dumped) {
+    if (done.has(n)) continue;
+    const p = partners[n];
+    if (p && dumped.includes(p)) {
+      done.add(n); done.add(p);
+      ev('dump-verdict-couple', [n, p], { [n]: { approval: 0, fame: 2 }, [p]: { approval: 0, fame: 2 } }, [n, p]);
+    } else {
+      done.add(n);
+      ev('dump-verdict', [n], { [n]: { approval: 0, fame: 2 } }, [n]);
+    }
   }
   // 3. reaction: the partner left behind, and the ones who cannot stay without them
   for (const n of dumped) {
@@ -58,9 +110,11 @@ export function dumpingScene(state, rng, { atRisk = [], dumped, ballots = [], ch
       ev('solidarity', [p, n], { [p]: { approval: 2.5, fame: 2 } }, [p]);
     }
   }
-  // 4. goodbye: hugs from the friends
+  // 4. goodbye: hugs from the friends — fewer each when many are going, or
+  // a five-way dumping is twenty goodbyes from seven lines.
+  const hugs = dumped.length > 2 ? 1 : dumped.length > 1 ? 2 : 3;
   for (const n of dumped) {
-    const friends = roomMates(state, n).filter(m => getBond(n, m) > 1).slice(0, 3);
+    const friends = roomMates(state, n).filter(m => getBond(n, m) > 1).slice(0, hugs);
     for (const f of friends) { addBond(n, f, 0.2); ev('dump-goodbye', [n, f], { [n]: { approval: 0.5, fame: 0.5 } }); }
     ev('dump-goodbye', [n], { [n]: { approval: 1.5, fame: 1 } });
   }
@@ -122,6 +176,75 @@ function arrivals(state, ctx, count) {
   return out;
 }
 
+// ── the dumping formats of Plan 4.5 ──────────────────────────────────
+// Each reads its real-show night: who is at risk, who decides, and the scene
+// where they decide it, before the verdict.
+
+/** The public's favourite couple picks which bottom couple goes. */
+function topCoupleNight(state, ctx, pv, top) {
+  const tp = topCouplePicks(state, { bottom: pv.bottom, pickers: top, rng: ctx.rng });
+  const decision = () => [makeEvent(state, ctx.rng, { phase: 'dumping', kind: 'top-couple-pick',
+    players: [top[0], top[1], tp.dumped[0], tp.dumped[1]], aired: true, major: [...top],
+    extra: { channel: 'top-couple', pop: Object.fromEntries(top.map(n => [n, { approval: -0.3, fame: 1.5 }])) } })];
+  const ballots = tp.ballots.map(b => ({ ...b, silent: true }));
+  const scene = dumpingScene(state, ctx.rng, { atRisk: pv.bottom, dumped: tp.dumped, ballots, channel: 'top-couple', decision });
+  return { events: scene.events, exits: scene.exits, ballots: tp.ballots,
+    extra: { shares: pv.shares, bottom: pv.bottom, deciders: [...top], dumpFormat: 'top-couple-picks' } };
+}
+
+/** The public's bottom boys (or girls); the other side saves one. */
+function saveOneNight(state, ctx) {
+  // The larger side is the one at risk, so the night evens the villa out.
+  const count = g => state.villa.filter(n => state.profiles[n].gender === g).length;
+  const side = count('f') === count('m') ? (ctx.rng() < 0.5 ? 'f' : 'm') : count('f') > count('m') ? 'f' : 'm';
+  const pv = publicVoteIslanders(state, { rng: ctx.rng, gender: side, bottom: ctx.entry.bottom || 3 });
+  const so = saveOne(state, { atRisk: pv.bottom, rng: ctx.rng });
+  const scene = dumpingScene(state, ctx.rng, { atRisk: pv.bottom.map(n => [n]), dumped: so.dumped,
+    ballots: so.ballots, channel: 'save' });
+  return { events: scene.events, exits: scene.exits, ballots: so.ballots,
+    extra: { islanderShares: pv.shares, bottom: pv.bottom.map(n => [n]), saved: so.saved, dumpFormat: 'save-one' } };
+}
+
+/** Each couple names the least compatible couple, in front of everyone. */
+function coupleVoteScenes(state, rng, cv) {
+  return cv.votes.map(v => {
+    for (const x of v.couple) for (const y of v.target) addBond(y, x, -0.3);
+    return makeEvent(state, rng, { phase: 'firepit', kind: 'couples-vote', players: [...v.couple, ...v.target], aired: true,
+      extra: { pop: Object.fromEntries(v.couple.map(n => [n, { approval: 0, fame: 0.5 }])) } });
+  });
+}
+
+/** No public vote at all: the villa names two couples, and the safe islanders pick. */
+function couplesVoteNight(state, ctx) {
+  const cv = couplesVote(state, { rng: ctx.rng, atRisk: ctx.entry.bottom || 2 });
+  const named = coupleVoteScenes(state, ctx.rng, cv);
+  const vd = villaDumping(state, { format: 'safe-pick-couple', bottom: cv.vulnerable, rng: ctx.rng });
+  const scene = dumpingScene(state, ctx.rng, { atRisk: cv.vulnerable, dumped: vd.dumped, ballots: vd.ballots, channel: 'couples' });
+  return { events: [...named, ...scene.events], exits: scene.exits, ballots: vd.ballots,
+    extra: { bottom: cv.vulnerable, dumpFormat: 'couples-vote' } };
+}
+
+/** The semi-final the dumped islanders decide. */
+function exIslandersNight(state, ctx, singles, over, exes) {
+  const events = [];
+  const exits = [];
+  if (singles.length) {
+    const s = dumpingScene(state, ctx.rng, { dumped: singles, channel: 'recoupling' });
+    events.push(...s.events); exits.push(...s.exits);
+  }
+  const cv = couplesVote(state, { rng: ctx.rng, atRisk: Math.min(state.couples.length, over + 1) });
+  events.push(...coupleVoteScenes(state, ctx.rng, cv));
+  const exv = exIslandersVote(state, { exes, vulnerable: cv.vulnerable, rng: ctx.rng, dump: over });
+  // One entrance for the group, led by the most recent: eight separate
+  // arrivals from four lines read as the same scene twice (measured).
+  const decision = () => [makeEvent(state, ctx.rng, { phase: 'dumping', kind: 'ex-return', players: [exes[0]],
+    aired: true, extra: { channel: 'exes', pop: Object.fromEntries(exes.map(ex => [ex, { approval: 0, fame: 1 }])) } })];
+  const scene = dumpingScene(state, ctx.rng, { atRisk: cv.vulnerable, dumped: exv.dumped,
+    ballots: exv.ballots.map(b => ({ ...b, kind: 'ex-ballot' })), channel: 'exes', decision });
+  events.push(...scene.events); exits.push(...scene.exits);
+  return { events, exits, ballots: exv.ballots, extra: { bottom: cv.vulnerable, exes, dumpFormat: 'ex-islanders' } };
+}
+
 export const MOMENTS = {
   'first-coupling': (state, ctx) => {
     const first = recoupleNight(state, ctx.rng, { dumpSingles: false });
@@ -142,11 +265,23 @@ export const MOMENTS = {
   },
   bombshell: (state, ctx) => ({ events: arrivals(state, ctx, ctx.entry.arrivals?.bombshell || 0), exits: [], ballots: [] }),
   'public-vote': (state, ctx) => {
+    const fmt = ctx.entry.dumpFormat;
+    if (fmt === 'save-one') return saveOneNight(state, ctx);
+    if (fmt === 'couples-vote') return couplesVoteNight(state, ctx);
     const pv = publicVote(state, { rng: ctx.rng, bottom: ctx.entry.bottom || 2 });
-    const vd = villaDumping(state, { format: ctx.entry.dumpFormat, bottom: pv.bottom, rng: ctx.rng });
+    if (fmt === 'top-couple-picks') {
+      const top = [...pv.shares].sort((a, b) => b.share - a.share).map(s => s.couple).find(c => !pv.bottom.includes(c));
+      if (top) return topCoupleNight(state, ctx, pv, top);
+    }
+    // A favourite couple is needed to pick; when every couple is in the
+    // bottom there is none, and the public's own vote stands. The row says
+    // which format PLAYED, never only the one that was drawn.
+    const played = fmt === 'top-couple-picks' ? 'public' : fmt;
+    const vd = villaDumping(state, { format: played, bottom: pv.bottom, rng: ctx.rng });
     const scene = dumpingScene(state, ctx.rng, { atRisk: pv.bottom, dumped: vd.dumped, ballots: vd.ballots,
-      channel: ctx.entry.dumpFormat === 'public' ? 'public' : 'villa' });
-    return { events: scene.events, exits: scene.exits, ballots: vd.ballots, extra: { shares: pv.shares, bottom: pv.bottom } };
+      channel: played === 'public' ? 'public' : 'villa' });
+    return { events: scene.events, exits: scene.exits, ballots: vd.ballots,
+      extra: { shares: pv.shares, bottom: pv.bottom, dumpFormat: played } };
   },
   'casa-open': (state, ctx) => {
     const names = ctx.queues.casa.splice(0);
@@ -180,15 +315,28 @@ export const MOMENTS = {
   },
   'semi-final': (state, ctx) => {
     // Nobody goes to the final alone: anyone still single leaves, and the
-    // public trims the couples down to four.
+    // couples are trimmed down to four — by the public, or by the islanders
+    // the villa already dumped (UK 11 d55, UK 12 d56, UK 13 d46).
     const singles = state.villa.filter(n => !partnerOf(state, n));
     const over = state.couples.length - FINAL_COUPLES;
+    const exes = ctx.entry.dumpFormat === 'ex-islanders' && over > 0 ? returningExes(state) : [];
+    if (exes.length) return exIslandersNight(state, ctx, singles, over, exes);
+    // The singles first, and in the words of a night nobody picked them:
+    // "the public have voted" over somebody nobody voted on was false.
+    const events = [], exits = [];
+    if (singles.length) {
+      const s = dumpingScene(state, ctx.rng, { dumped: singles, channel: 'recoupling' });
+      events.push(...s.events); exits.push(...s.exits);
+    }
     const pv = over > 0 ? publicVote(state, { rng: ctx.rng, bottom: over }) : null;
-    const dumped = [...singles, ...(pv ? pv.bottom.flat() : [])];
-    if (!dumped.length) return { events: [], exits: [], ballots: [] };
-    const scene = dumpingScene(state, ctx.rng, { atRisk: pv?.bottom || [], dumped, channel: 'public' });
-    return { events: scene.events, exits: scene.exits, ballots: [],
-      extra: { shares: pv?.shares || null, bottom: pv?.bottom || null } };
+    if (pv) {
+      const s = dumpingScene(state, ctx.rng, { atRisk: pv.bottom, dumped: pv.bottom.flat(), channel: 'public' });
+      events.push(...s.events); exits.push(...s.exits);
+    }
+    // Four couples or fewer: nobody votes, so no format played (an ex-islander
+    // night that was drawn and never happened must not claim it did).
+    return { events, exits, ballots: [],
+      extra: { shares: pv?.shares || null, bottom: pv?.bottom || null, dumpFormat: pv ? 'public' : null } };
   },
   final: (state, ctx) => {
     const events = state.couples.map(([a, b]) => makeEvent(state, ctx.rng, { phase: 'firepit', kind: 'declaration',

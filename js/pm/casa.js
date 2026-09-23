@@ -84,6 +84,8 @@ export function stickOrTwist(state, { rng }) {
 
   const before = Object.fromEntries(scored.map(x => [x.o, x.p]));
   state.couples = next;
+  // Recorded like every other exit, so the ex-islanders' vote can ask them back.
+  for (const n of dumped) (state.gone ||= []).push({ name: n, ep: state.ep });
   state.villa = state.villa.filter(n => !dumped.includes(n));
   state.split = false;
   state.casa = [];

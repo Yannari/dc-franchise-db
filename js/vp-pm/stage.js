@@ -98,6 +98,7 @@ function frame(bg, hud, board) {
     <div class="${P('phone')}"><div class="${P('scr')}"><h4>I got a text!</h4><div class="${P('tag')}"></div><p></p></div></div>
     <div class="${P('polaroid')}"><div class="${P('pol-photo')}"></div><div class="${P('pol-cap')}"></div></div>
     <div class="${P('crack')}"></div>
+    <svg class="${P('tri')}" viewBox="0 0 300 226" preserveAspectRatio="xMidYMid meet"></svg>
     <div class="${P('tug')}"><div class="${P('tug-a')}"></div><div class="${P('tug-bar')}"><i></i></div><div class="${P('tug-b')}"></div></div>
     <div class="${P('petals')}">${petalsHtml()}</div>
     <div class="${P('pops')}"></div>
@@ -169,7 +170,7 @@ export function paintStage(el, screen, idx, { fresh = false, hud = '' } = {}) {
   // the caption (the staging) and the dialogue
   const cap = q('caption');
   // A clip's caption is its title, and the marquee already says it.
-  if (st.caption && !st.clipOn && !st.fx?.polaroid && !st.fx?.sides) { cap.textContent = st.caption; cap.classList.add(P('on')); }
+  if (st.caption && !st.clipOn && !st.fx?.polaroid && !st.fx?.sides && !st.fx?.triangle) { cap.textContent = st.caption; cap.classList.add(P('on')); }
   const dlg = q('dlg');
   dlg.classList.remove(P('hide'));
   const voice = st.voice || '';
@@ -221,6 +222,25 @@ export function paintStage(el, screen, idx, { fresh = false, hud = '' } = {}) {
     tug.querySelector('.' + P('tug-bar') + ' i').style.left = `${Math.round(share * 100)}%`;
     tug.classList.add(P('on'));
     if (fresh) { tug.classList.remove(P('pulse')); void tug.offsetWidth; tug.classList.add(P('pulse')); }
+  }
+  // The love triangle: three faces, the one in the middle at the top, a line
+  // to each as thick as the pull, and the teams counted under each side.
+  if (st.fx?.triangle) {
+    const T = st.fx.triangle, svg = q('tri');
+    const pts = { h: [150, 38], x: [58, 160], y: [242, 160] };
+    const w = v => (1 + 1.1 * Math.max(0, v || 0)).toFixed(1);
+    const line = (a, b, v, cls) => `<line x1="${pts[a][0]}" y1="${pts[a][1]}" x2="${pts[b][0]}" y2="${pts[b][1]}" stroke-width="${w(v)}" class="${P(cls)}"/>`;
+    const face = (k, n) => { const u = portraitUrl(n); const [cx, cy] = pts[k];
+      return `<clipPath id="tri-${k}"><circle cx="${cx}" cy="${cy}" r="24"/></clipPath>
+        <circle cx="${cx}" cy="${cy}" r="27" class="${P(T.won === n ? 'tri-won' : 'tri-ring')}"/>
+        ${u ? `<image href="${esc(u)}" x="${cx - 24}" y="${cy - 24}" width="48" height="48" clip-path="url(#tri-${k})" preserveAspectRatio="xMidYMid slice"/>` : `<circle cx="${cx}" cy="${cy}" r="24" fill="#3b2140"/><text x="${cx}" y="${cy + 6}" text-anchor="middle" class="${P('tri-ini')}">${esc(initials(n))}</text>`}
+        <text x="${cx}" y="${cy + 42}" text-anchor="middle" class="${P('tri-name')}">${esc(n)}</text>`; };
+    const teams = T.teams ? `<text x="58" y="222" text-anchor="middle" class="${P('tri-team')}">Team ${esc(T.x)} · ${T.teams.X.length}</text>
+      <text x="242" y="222" text-anchor="middle" class="${P('tri-team')}">Team ${esc(T.y)} · ${T.teams.Y.length}</text>` : '';
+    svg.innerHTML = `${line('h', 'x', T.ax, 'tri-pull')}${line('h', 'y', T.ay, 'tri-pull')}${line('x', 'y', 3, 'tri-rival')}
+      ${face('h', T.h)}${face('x', T.x)}${face('y', T.y)}${teams}`;
+    svg.classList.add(P('on'));
+    if (fresh) { svg.classList.remove(P('draw')); void svg.getBoundingClientRect(); svg.classList.add(P('draw')); }
   }
   // The Casa photo: a Polaroid of the real moment, dropped on the stage, developing.
   if (st.fx?.polaroid) {

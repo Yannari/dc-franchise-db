@@ -92,6 +92,7 @@ import { CASA_LINES } from './casa.js';
 import { SECRET_LINES } from './secrets.js';
 import { BLOWUP_LINES } from './blowup.js';
 import { BREAKDOWN_LINES } from './breakdown.js';
+import { TRIANGLE_LINES } from './triangle.js';
 const ch = channel => ({ channel });
 export const MOMENTS = {
   'intro-look': [
@@ -1692,3 +1693,5 @@ for (const [k, v] of Object.entries(SECRET_LINES)) if (k !== 'pull') MOMENTS[k] 
 for (const [k, v] of Object.entries(BLOWUP_LINES)) MOMENTS[k] = [...(MOMENTS[k] || []), ...v];
 // When it all gets too much (lines/breakdown.js).
 for (const [k, v] of Object.entries(BREAKDOWN_LINES)) MOMENTS[k] = [...(MOMENTS[k] || []), ...v];
+// The love triangle (lines/triangle.js).
+for (const [k, v] of Object.entries(TRIANGLE_LINES)) MOMENTS[k] = [...(MOMENTS[k] || []), ...v];

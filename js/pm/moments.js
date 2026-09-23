@@ -771,6 +771,10 @@ Object.assign(MOMENTS, {
         extra: { choice: envelope.choice, pop: { [envelope.holder]: { approval: 0, fame: 4 }, [other]: { approval: 0, fame: 3 } } } }));
       if (steal) { addBond(envelope.holder, other, -6); breakHeart(state, other, envelope.holder, 6); }
     }
+    // These scenes come after the ledger closed: their fame carries into the
+    // reunion, their major flag must not (season 4: a winner's label jumped
+    // three tiers at the reunion, on a row with no major moment for them).
+    state.ledger.major = {};
     return { events, exits: [], ballots: [], extra: { final, envelope, shares: final.map(f => ({ couple: f.couple, share: f.share })) } };
   },
   reunion: (state, ctx) => {

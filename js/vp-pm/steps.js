@@ -40,6 +40,8 @@ export const KIND_LABEL = {
   'casa-host': 'The Casa Amor recoupling', 'casa-react': 'The moment', 'casa-row': 'After the fire pit', 'photo-text': 'Post from Casa',
   'photo-row': 'The photo', 'photo-split': "It's over",
   breakdown: 'It all gets too much', comfort: 'Someone comes', 'no-show': 'Where were you?',
+  'triangle-torn': 'Torn', 'triangle-rivals': 'The rivals', 'triangle-case': 'Making the case', 'triangle-ultimatum': 'Choose',
+  'triangle-teams': 'Pick a side', 'triangle-choice': 'The choice',
   blowup: 'It kicks off', 'pile-in': 'Taking sides', 'villa-divided': 'The villa divided', 'cold-shoulder': 'The cold shoulder', 'clear-the-air': 'Clearing the air',
   'bed-share': 'Lights out', vent: 'Letting off steam', apology: 'The apology', reunite: 'Back together', 'apology-rejected': 'Not this time',
   steal: 'A steal', 'recouple-pick': 'The recoupling', 'dump-buildup': 'At risk', 'dump-verdict': 'Dumped',
@@ -78,6 +80,7 @@ export function bgFor(row, phase) {
   if (phase === 'evening' || phase === 'debrief') return 'terrace';
   if (phase === 'cinema') return 'cinema';
   if (phase === 'breakdown') return 'night';
+  if (phase === 'triangle') return 'terrace';
   return 'day';
 }
 
@@ -173,6 +176,11 @@ function fxFor(row, e, first) {
   if (k === 'clear-the-air' && e.extra?.of === 'peace') fx.petals = true;
   // A breakdown: the stage goes cold and quiet, and lights drift down (stage.js).
   if (k === 'breakdown') fx.tears = true;
+  // A love triangle: the three of them on the stage, the lines as strong as
+  // the one in the middle's pull to each (stage.js).
+  if (k.startsWith('triangle-') && e.extra?.tri) fx.triangle = { ...e.extra.tri, teams: e.extra.teams || null, won: k === 'triangle-choice' ? e.players[1] : null };
+  if (k === 'triangle-rivals' && e.extra?.of === 'clash') fx.shake = true;
+  if (k === 'triangle-choice' && e.extra?.of === 'pick') fx.neon = ['The choice', '#ff2e88'];
   if (k === 'comfort') fx.tears = 'warm';
   if (k === 'apology-rejected' && e.extra?.of === 'final') fx.neonDie = ['Over', '#a78bfa'];
   if (k === 'photo-row' && e.extra?.of === 'deny') fx.shake = true;
@@ -350,7 +358,7 @@ function finalSteps(row) {
 // ── cutting a part of the day into screens ────────────────────────────
 // Night one's parts are one screen each, however long (user: "the arrivals is
 // cut for no reason — 1 screen for the girls, 1 for the boys, then the coupling").
-const WHOLE = new Set(['arrival', 'arrival-2', 'coupling', 'debrief', 'cinema', 'blowup', 'breakdown']);
+const WHOLE = new Set(['arrival', 'arrival-2', 'coupling', 'debrief', 'cinema', 'blowup', 'breakdown', 'triangle']);
 function cut(scenes, phase) {
   if (WHOLE.has(phase)) return [scenes];
   const total = scenes.reduce((s, x) => s + x.steps.length, 0);

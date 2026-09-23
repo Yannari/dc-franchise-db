@@ -59,6 +59,8 @@ function grievances(state, tonight = []) {
     // Old rows feed the next one only a little (measured: at full weight
     // they fed themselves, 12.5 blow-ups a season, most of them about nothing new).
     if (e.kind === 'argument') { add(p[0], p[1], 0.35 * fade, 'history'); add(p[1], p[0], 0.35 * fade, 'history'); }
+    // Two after the same one: the rivals of a love triangle.
+    if (e.kind === 'triangle-rivals') { add(p[0], p[1], 1.6 * fade, 'jealousy'); add(p[1], p[0], 1.6 * fade, 'jealousy'); }
   }
   // Jealousy of a rival is a grievance of its own: the one who has been
   // eyeing their partner, whatever the record says.

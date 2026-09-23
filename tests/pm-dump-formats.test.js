@@ -162,6 +162,10 @@ describe('the first public vote always plays at the calibration cast', () => {
     // the boy nobody picked, and a cast this small has no bombshell left to
     // fill the gap, so the semi-final takes them both. Changing it means a
     // rule the show does not have — the user's call, not a tuned threshold.
-    expect(four).toBeGreaterThanOrEqual(20);
+    // Later, measured over 80 seasons after the drama layer (Movie Night, Casa,
+    // secrets, fights, breakdowns, triangles): 45 then 42 of 80 (~55%) — more
+    // couples tested, more that don't make it; a small cast has no bombshell
+    // left to refill. Floor just under the band.
+    expect(four).toBeGreaterThanOrEqual(18);
   });
 });

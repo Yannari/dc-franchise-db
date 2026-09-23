@@ -504,6 +504,21 @@ details.pmv-debug[open] summary::before{transform:rotate(45deg)}
 .pmv-stage.pmv-warmth .pmv-scene{filter:saturate(.7) brightness(.9);transition:filter 1.4s}
 .pmv-stage.pmv-warmth .pmv-vign{background:radial-gradient(90% 75% at 50% 55%,#ffb35c33 0%,#0000 45%,#1a0a20bb)}
 
+/* ── A LOVE TRIANGLE: three faces, the pull to each, the rivals' line ── */
+.pmv-tri{position:absolute;left:50%;top:6%;width:42%;height:auto;aspect-ratio:300/226;z-index:11;transform:translateX(-50%);pointer-events:none;display:none;overflow:visible}
+.pmv-tri.pmv-on{display:block}
+.pmv-tri .pmv-tri-pull{stroke:#ff4fa0;stroke-linecap:round;filter:drop-shadow(0 0 6px #ff4fa0)}
+.pmv-tri .pmv-tri-rival{stroke:#ef4444;stroke-dasharray:6 7;stroke-linecap:round;opacity:.85}
+.pmv-tri.pmv-draw line{stroke-dasharray:400;stroke-dashoffset:400;animation:pmv-tridraw 1.2s ease-out forwards}
+.pmv-tri.pmv-draw .pmv-tri-rival{animation:pmv-tridraw 1.2s ease-out .5s forwards}
+@keyframes pmv-tridraw{to{stroke-dashoffset:0}}
+.pmv-tri .pmv-tri-ring{fill:#1b1020;stroke:#fff;stroke-width:2.5}
+.pmv-tri .pmv-tri-won{fill:#1b1020;stroke:#ffc15e;stroke-width:4;filter:drop-shadow(0 0 10px #ffc15e)}
+.pmv-tri .pmv-tri-name{font:700 11px Outfit,sans-serif;fill:#fff;paint-order:stroke;stroke:#000a;stroke-width:3px}
+.pmv-tri .pmv-tri-ini{font:800 16px Outfit,sans-serif;fill:#fff9}
+.pmv-tri .pmv-tri-team{font:12px 'Bebas Neue',sans-serif;letter-spacing:.12em;fill:#ffe6a8;paint-order:stroke;stroke:#000a;stroke-width:3px}
+.pmv-stage:has(.pmv-tri.pmv-on) .pmv-busts{opacity:.25}
+
 /* ── A BLOW-UP: the tug of war, and the crack down the middle ── */
 .pmv-crack{position:absolute;left:50%;top:0;bottom:0;width:3px;z-index:4;pointer-events:none;opacity:0;transform:translateX(-50%);
   background:linear-gradient(180deg,#0000,#ff3b3b 20%,#ff3b3b 80%,#0000);box-shadow:0 0 18px #ff3b3b,0 0 40px #ff3b3b88;

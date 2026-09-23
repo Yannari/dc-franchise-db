@@ -20,6 +20,7 @@ import { movieNight } from './movie-night.js';
 import { secondChances } from './exes.js';
 import { blowups } from './blowup.js';
 import { breakdowns } from './breakdown.js';
+import { triangles } from './triangle.js';
 import { streamFor } from '../dr/rng.js';
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
@@ -240,6 +241,9 @@ export function runVillaDay(state, rng, entry) {
   const out = [...ladderScenes(state, rng, days), ...feelingScenes(state, rng),
     ...confessions(state, rng), ...advice(state, rng), ...secondChances(state, rng, entry)];
   for (const r of entry.rituals || []) out.push(...(RITUALS[r]?.(state, rng) || []));
+  // The love triangles (pm/triangle.js), each a story over episodes — on
+  // their own dice, before the fights (a rivalry can boil over tonight).
+  out.push(...triangles(state, streamFor(state.seed ?? 1, `triangle:${state.ep}${state.epSalt || ''}`), entry));
   // When it kicks off (pm/blowup.js): after the night's reveals — Movie Night
   // included — never before them.
   out.push(...blowups(state, rng, entry, out));

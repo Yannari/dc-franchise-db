@@ -78,7 +78,7 @@ export const JUST_MET = {
   friendship: [
     { id: 'jm.friend.01', when: J, turns: [['a', "I'm so glad you're here. I was worried I wouldn't get on with anyone."], ['b', "Same. Stick with me."]] },
     { id: 'jm.friend.02', when: J, turns: [['a', "You're going to be my person in here, I can tell."], ['b', "Already? It's been a day."], ['a', "I know these things."]] },
-    { id: 'jm.friend.03', when: J, turns: [['a', "Can you help me with my hair before the fire pit?"], ['b', "Only if you tell me what you really think of everyone."]] },
+    { id: 'jm.friend.03', when: { ...J, phase: 'evening' }, turns: [['a', "Can you help me with my hair before the fire pit?"], ['b', "Only if you tell me what you really think of everyone."]] },
     { id: 'jm.friend.04', when: J, turns: [['a', "First impressions of the villa. Go."], ['b', "Beautiful. Terrifying. Mostly terrifying."]] },
     { id: 'jm.friend.05', when: J, turns: [['a', "Who do you think is going to be trouble?"], ['b', "Honestly? Probably me."]], beat: 'They both laugh.' },
     { id: 'jm.friend.06', when: J, turns: [['a', "I didn't think I'd make a friend on the first day."], ['b', "You haven't. You've made a best friend."]] },

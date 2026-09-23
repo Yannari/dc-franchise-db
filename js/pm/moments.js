@@ -32,7 +32,7 @@ function removeFromVilla(state, names) {
   state.couples = state.couples.filter(c => !c.some(n => names.includes(n)));
 }
 
-export function dumpingScene(state, rng, { atRisk = [], dumped, ballots = [], channel, decision = null }) {
+export function dumpingScene(state, rng, { atRisk = [], dumped, ballots = [], channel, decision = null, afterVotes = null }) {
   const events = [];
   const solidarityWalk = [];
   // Every phase knows which vote it came from, so Dior says the right thing.
@@ -79,6 +79,8 @@ export function dumpingScene(state, rng, { atRisk = [], dumped, ballots = [], ch
     if (p && p !== b.voter && !dumped.includes(p)) addBond(p, b.voter, -0.5);
     ev('ballot-reveal', [b.voter, b.target], { [b.voter]: { approval: -0.2, fame: 1 } });
   }
+  // …and what the votes left to settle (a tie), before anyone is told.
+  if (afterVotes) events.push(...afterVotes());
   // A couple dumped together hears it once, together; several singles left
   // over hear it once, as a group ("X is the only one still standing" over
   // five people standing was false, and five times over).
@@ -213,11 +215,15 @@ function saveOneNight(state, ctx) {
   const count = g => state.villa.filter(n => state.profiles[n].gender === g).length;
   const side = count('f') === count('m') ? (ctx.rng() < 0.5 ? 'f' : 'm') : count('f') > count('m') ? 'f' : 'm';
   const pv = publicVoteIslanders(state, { rng: ctx.rng, gender: side, bottom: ctx.entry.bottom || 3, immune: ctx.immune || [] });
-  const so = saveOne(state, { atRisk: pv.bottom, rng: ctx.rng });
+  const so = saveOne(state, { atRisk: pv.bottom, rng: ctx.rng, shares: pv.shares });
+  // A tie: the host says so, and the public's votes settle it on screen.
+  const afterVotes = so.tie ? () => [makeEvent(state, ctx.rng, { phase: 'dumping', kind: 'save-tie',
+    players: [so.saved, ...so.tie.filter(n => n !== so.saved)], aired: true, major: [...so.tie],
+    extra: { channel: 'save', pop: { [so.saved]: { approval: 0, fame: 1.5 } } } })] : null;
   const scene = dumpingScene(state, ctx.rng, { atRisk: pv.bottom.map(n => [n]), dumped: so.dumped,
-    ballots: so.ballots, channel: 'save' });
+    ballots: so.ballots, channel: 'save', afterVotes });
   return { events: scene.events, exits: scene.exits, ballots: so.ballots,
-    extra: { islanderShares: pv.shares, bottom: pv.bottom.map(n => [n]), saved: so.saved, dumpFormat: 'save-one' } };
+    extra: { islanderShares: pv.shares, bottom: pv.bottom.map(n => [n]), saved: so.saved, tie: so.tie, dumpFormat: 'save-one' } };
 }
 
 /** The single islanders face the public; the fewest votes go. */
@@ -519,7 +525,9 @@ export const MOMENTS = {
       events.push(...r.events); exits.push(...r.exits); played = r.played;
     }
     if (ctx.entry.oneOff === 'mission' && fresh.length) {
-      const m = secretMission(state, fresh[0], { rng: ctx.rng, tonight: fresh });
+      // Never one the arrival rule already sent home tonight (it picked a
+      // dumped boy, and the "nobody goes home" night had him gone).
+      const m = secretMission(state, fresh[0], { rng: ctx.rng, tonight: [...fresh, ...exits.map(e => e.name)] });
       if (m) { oneOff = 'mission'; events.push(...m.events); }
     }
     // The row says which rule PLAYED: a save with fewer than two singles was a night of dates.
@@ -662,6 +670,30 @@ Object.assign(MOMENTS, {
     ctx.closed = true;
     const final = finalVote(state, { rng: ctx.rng });
     const envelope = ctx.splitOrStealOn ? splitOrSteal(state, final[0].couple, { rng: ctx.rng }) : null;
+    // THE RESULT, on screen. The vote was counted and exported and never
+    // shown: every final went from the declarations to the reunion with no
+    // winner named (read in season 11, 2026-09-23 — §11.5's system that runs
+    // and reaches no screen). The host reads it bottom first, as the show does.
+    const PLACE = { 1: 'first', 2: 'second', 3: 'third', 4: 'fourth' };
+    for (const f of [...final].reverse()) {
+      const [a, b] = f.couple;
+      const won = f.placement === 1;
+      events.push(makeEvent(state, ctx.rng, { phase: 'final', kind: 'final-result', players: [a, b], aired: true,
+        major: won ? [a, b] : [],
+        extra: { of: PLACE[f.placement] || 'fourth', pop: { [a]: { approval: 0, fame: won ? 6 : 2 }, [b]: { approval: 0, fame: won ? 6 : 2 } } } }));
+    }
+    // The envelope: one of the winners chooses to split the prize or keep it.
+    // A steal is the biggest betrayal the show has — the public turn at once.
+    if (envelope) {
+      const other = final[0].couple.find(n => n !== envelope.holder);
+      const steal = envelope.choice === 'steal';
+      events.push(makeEvent(state, ctx.rng, { phase: 'final', kind: 'envelope', players: [envelope.holder, other], aired: true,
+        major: [envelope.holder, other],
+        extra: { choice: envelope.choice, pop: {
+          [envelope.holder]: { approval: steal ? -BETRAYAL.steal * 2 : 1, fame: 4 },
+          [other]: { approval: steal ? 3 : 1, fame: 3 } } } }));
+      if (steal) { addBond(envelope.holder, other, -6); breakHeart(state, other, envelope.holder, 6); }
+    }
     return { events, exits: [], ballots: [], extra: { final, envelope, shares: final.map(f => ({ couple: f.couple, share: f.share })) } };
   },
   reunion: (state, ctx) => {

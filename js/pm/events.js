@@ -127,10 +127,16 @@ export const KINDS = {
     apply: (s, ev, rng) => {
       const [a, b] = ev.players;
       const light = metToday(s, a, b) ? DAY_ONE : 1;
-      nudgeAttraction(s, b, a, 0.3 * S(s, a).social / 10);
-      nudgeAttraction(s, a, b, 0.1);
-      addBond(a, b, 0.3);
-      for (const [x, y, sev] of [[a, b, 1], [b, a, 0.7]]) {
+      // Turned down: the engine decides, from how much b fancies a — the
+      // scene then says so. Before, half the pull lines had b say no while
+      // the engine recorded a flirtation, and gossip later called it one.
+      const rebuffed = rng() < Math.max(0, Math.min(0.7, 0.7 - 0.175 * (attr(s, b, a) ?? 0)));
+      ev.extra.rebuffed = rebuffed;
+      if (rebuffed) nudgeAttraction(s, a, b, -0.1);
+      else { nudgeAttraction(s, b, a, 0.3 * S(s, a).social / 10); nudgeAttraction(s, a, b, 0.1); }
+      addBond(a, b, rebuffed ? -0.1 : 0.3);
+      // Only a pull b went along with is b's secret; a made the move either way.
+      for (const [x, y, sev] of rebuffed ? [[a, b, 1]] : [[a, b, 1], [b, a, 0.7]]) {
         const p = partnerOf(s, x);
         if (!p || p === y) continue;
         const witnesses = roomMates(s, x).filter(n => n !== y && n !== p)
@@ -152,7 +158,7 @@ export const KINDS = {
         if (py && py !== x) girlCode(s, x, [y, py]);
       }
       return { pop: { ...pop1(a, partnerOf(s, a) ? -0.8 * light : 0.2, 1.5),
-        ...pop1(b, partnerOf(s, b) ? -0.4 * light : 0.1, 1) } };
+        ...pop1(b, rebuffed ? (partnerOf(s, b) ? 0.3 : 0) : partnerOf(s, b) ? -0.4 * light : 0.1, 1) } };
     },
   },
   loyalty: {
@@ -211,6 +217,10 @@ export const KINDS = {
       if (s._gossipN >= GOSSIP_PER_EPISODE) return null;
       const options = [];
       for (const sec of s.secrets.filter(x => !x.known)) {
+        // Only news about a couple that still exists: season 11 told Amber
+        // about Ryan three episodes after Ryan was dumped (with a hut from
+        // Ryan, who was not there), and Priya about Jordan the same way.
+        if (!s.villa.includes(sec.who) || partnerOf(s, sec.partner) !== sec.who) continue;
         for (const w of sec.witnesses) {
           if (!s.villa.includes(w) || !roomMates(s, w).includes(sec.partner)) continue;
           options.push([{ players: [w, sec.partner, sec.who], secret: sec.id },
@@ -330,17 +340,20 @@ export const KINDS = {
     'challenge-text', 'receipt', 'look-who',
     // night one's opening
     'first-arrival', 'first-look', 'step-forward', 'step-last', 'host-open', 'host-first', 'intro', 'snogger-kiss', 'snogger-win', 'snogger-row', 'couple-goals', 'couple-goals-row',
-    'knowing-me', 'knowing-row', 'talent-act', 'talent-win', 'talent-snub', 'baby-doll', 'sorts-podium', 'grafties-award', 'save-vote', 'top-couple-pick', 'couples-vote', 'ex-return', 'ex-ballot']
+    'knowing-me', 'knowing-row', 'talent-act', 'talent-win', 'talent-snub', 'baby-doll', 'sorts-podium', 'grafties-award', 'save-vote', 'save-tie', 'top-couple-pick', 'couples-vote', 'ex-return', 'ex-ballot']
     .map(k => [k, { salience: 1, cast: () => null,
       apply: (s, ev) => ({ pop: ev.extra.pop || {}, major: ev.extra.majorPop || [] }) }])),
 };
 
-const PHASE_KINDS = {
-  morning: [['chat', 4], ['kiss', 2], ['friendship', 3], ['comedy', 1], ['ick', 0.5], ['argument', 0.5]],
+export const PHASE_KINDS = {
+  // The small slots (a morning pull, an evening chat or joke) are there for
+  // the lines written for them: a gate on a phase its kind never plays at is
+  // a line nobody hears (tests/pm-lines.test.js found six).
+  morning: [['chat', 4], ['kiss', 2], ['friendship', 3], ['comedy', 1], ['ick', 0.5], ['argument', 0.5], ['pull', 0.5]],
   day: [['chat', 3], ['deep-chat', 2], ['pull', 3], ['friendship', 3], ['gossip', 1.5],
     ['comedy', 1.5], ['argument', 1], ['ick', 0.8]],
   event: [['challenge-kiss', 3], ['challenge-win', 1], ['comedy', 1], ['argument', 0.5]],
-  evening: [['kiss', 3], ['deep-chat', 2], ['pull', 2], ['argument', 1.5], ['gossip', 1.5], ['friendship', 1]],
+  evening: [['kiss', 3], ['deep-chat', 2], ['pull', 2], ['argument', 1.5], ['gossip', 1.5], ['friendship', 1], ['chat', 0.5], ['comedy', 0.5]],
 };
 
 /** Create one event: decide airing, apply it, attach a hut cutaway, write the ledger. */

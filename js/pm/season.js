@@ -207,6 +207,9 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
         arrivalRule: m.extra?.arrivalRule || null, firstFormat: m.extra?.firstFormat || null,
         oneOff: m.extra?.oneOff || null, challenge: day.some(e => e.phase === 'challenge') ? entry.challenge : null, immune: m.extra?.immune || null, returned: m.extra?.returned || null, couples: state.couples.map(c => [...c]), villa: [...state.villa],
         shares: m.extra?.shares || null, bottom: m.extra?.bottom || null,
+        // A tied save-one night keeps what settled it (the public's shares), so
+        // a screen can say why the one with as many saves went home.
+        ...(m.extra?.tie ? { tie: m.extra.tie, saved: m.extra.saved, tieShares: m.extra.islanderShares } : {}),
         majors: [...new Set([...day, ...m.events].flatMap(e => e.aired ? e.major : []))],
         labels: snap.label, approval: snap.approval, fame: snap.fame,
         envelope: m.extra?.envelope || null, revealed: m.extra?.revealed || null,

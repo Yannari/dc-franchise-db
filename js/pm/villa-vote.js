@@ -89,14 +89,24 @@ export function topCouplePicks(state, { bottom, pickers, rng }) {
 }
 
 /** One side saves one of the other side's bottom islanders; the rest go. */
-export function saveOne(state, { atRisk, rng }) {
+export function saveOne(state, { atRisk, rng, shares = null }) {
   const g = n => state.profiles[n].gender;
   const voters = state.villa.filter(v => !atRisk.includes(v) && g(v) !== g(atRisk[0]));
   if (!voters.length) return { dumped: atRisk.slice(1), saved: atRisk[0], ballots: [] };
   const ballots = voters.map(v => ({ voter: v, save: true, channel: 'villa',
     target: [...atRisk].sort((x, y) => affinity(state, v, y) - affinity(state, v, x))[0] }));
-  const saved = tally(ballots, rng);
-  return { dumped: atRisk.filter(n => n !== saved), saved, ballots };
+  // A tie is broken in the open, by the public's own votes, never by a
+  // silent coin: season 11 saved Callum on two saves to Jordan's two, and the
+  // host then told Jordan "you weren't saved".
+  const count = new Map();
+  for (const b of ballots) count.set(b.target, (count.get(b.target) || 0) + 1);
+  const top = Math.max(...count.values());
+  const tied = [...count].filter(([, c]) => c === top).map(([n]) => n);
+  const pub = n => shares?.find(s => s.name === n)?.share ?? 0;
+  const saved = tied.length > 1
+    ? [...tied].sort((x, y) => pub(y) - pub(x) || rng() - 0.5)[0]
+    : tied[0];
+  return { dumped: atRisk.filter(n => n !== saved), saved, ballots, tie: tied.length > 1 ? tied : null };
 }
 
 /**

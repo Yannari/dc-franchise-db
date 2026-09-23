@@ -56,6 +56,20 @@ describe('each format plays as the real show does', () => {
       }
     }
   });
+  it('save-one: a tie is said out loud and settled by the public, before the verdict', () => {
+    // Season 11: two saves each, a silent coin, and "you weren't saved" to
+    // the one with as many saves as the islander who stayed.
+    let ties = 0;
+    for (const { row } of nights.filter(n => n.row.pm.dumpFormat === 'save-one' && n.row.pm.tie)) {
+      ties++;
+      const k = kinds(row);
+      expect(k.indexOf('save-tie')).toBeGreaterThan(k.lastIndexOf('save-vote'));
+      expect(k.indexOf('save-tie')).toBeLessThan(k.indexOf('dump-verdict'));
+      const share = n => row.pm.tieShares.find(s => s.name === n)?.share ?? 0;
+      expect(Math.max(...row.pm.tie.map(share))).toBe(share(row.pm.saved));
+    }
+    expect(ties).toBeGreaterThan(0);
+  });
   it('couples-vote: every couple names one, and nobody hears "public" that night', () => {
     for (const { seed, row, prev } of nights.filter(n => n.row.pm.dumpFormat === 'couples-vote')) {
       expect(kinds(row).filter(k => k === 'couples-vote').length, `s${seed}`).toBe(prev.pm.couples.length);
@@ -124,7 +138,7 @@ describe('the first public vote always plays at the calibration cast', () => {
     // a format that dumps one of a pair cost 12-islander finals (15 of 20 to
     // 10), so the forced night is the public's own vote and a whole couple goes.
     let skipped = 0, four = 0;
-    for (let seed = 1; seed <= 20; seed++) {
+    for (let seed = 1; seed <= 40; seed++) {
       const cast = makeIslanders(12, seed); setPlayers(cast);
       const names = cast.map(p => p.name);
       const rows = playPerfectMatchSeason({ cast: names, setup: roleSetup(names), seed }).rows;
@@ -133,11 +147,11 @@ describe('the first public vote always plays at the calibration cast', () => {
     }
     expect(skipped).toBe(0);
     // Four-couple finals at twelve: 59 of 80 before the 2026-09-23 audit
-    // fixes, 52 of 80 after (the band 12-15 of 20). The loss is one real-show
+    // fixes, 52 then 48 of 80 after; twenty seasons swing 10-15, so forty. The loss is one real-show
     // rule: a girl stolen from at the recoupling of eight is left single with
     // the boy nobody picked, and a cast this small has no bombshell left to
     // fill the gap, so the semi-final takes them both. Changing it means a
     // rule the show does not have — the user's call, not a tuned threshold.
-    expect(four).toBeGreaterThanOrEqual(11);
+    expect(four).toBeGreaterThanOrEqual(20);
   });
 });

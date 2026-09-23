@@ -10,7 +10,7 @@ export const MORE_B = {
     { id: 'co2.03', stage: '{a} sings in the shower, loudly, and the whole garden joins in the chorus.', turns: [['a', "I didn't know you could all hear that."]] },
     { id: 'co2.04', stage: '{a} tries to cook pasta and sets off the smoke alarm.', turns: [['a', "It's fine! It's fine. Everybody stay calm."]] },
     { id: 'co2.05', stage: '{a} falls asleep on a sunbed and wakes up with a very clear tan line.', turns: [['a', "Why did nobody wake me up?"]] },
-    { id: 'co2.06', stage: '{a} does an impression of the host at breakfast. It is not a good impression.', turns: [['a', "Okay, that one needs work."]] },
+    { id: 'co2.06', when: { phase: 'morning' }, stage: '{a} does an impression of the host at breakfast. It is not a good impression.', turns: [['a', "Okay, that one needs work."]] },
     { id: 'co2.07', stage: '{a} tries to open a coconut with a spoon.', turns: [['a', "I've seen it done. On the internet."]] },
     { id: 'co2.08', stage: '{a} walks straight into the glass door. Again.', turns: [['a', "Who keeps cleaning it? Stop cleaning it."]] },
     { id: 'co2.09', stage: '{a} explains the rules of a card game nobody has ever heard of.', turns: [['a', "No, you're not listening. The joker is worth nine."]] },
@@ -61,11 +61,11 @@ export const MORE_B = {
     { id: 'ks2.01', turns: [['a', "Come here."], ['b', "Everyone's watching."], ['a', "Good."]] },
     { id: 'ks2.02', stage: '{a} kisses {b} in the middle of a sentence.', turns: [['b', "I was talking."], ['a', "I know."]] },
     { id: 'ks2.03', stage: 'A kiss by the pool as the lights come on.', turns: [['b', "That was nice."], ['a', "Just nice?"], ['b', "Very nice."]] },
-    { id: 'ks2.04', turns: [['a', "Morning kiss?"], ['b', "I haven't brushed my teeth."], ['a', "I don't care."]] },
+    { id: 'ks2.04', when: { phase: 'morning' }, turns: [['a', "Morning kiss?"], ['b', "I haven't brushed my teeth."], ['a', "I don't care."]] },
     { id: 'ks2.05', stage: 'They kiss in the kitchen while the kettle boils.', turns: [['b', "The kettle's done."], ['a', "Let it wait."]] },
     { id: 'ks2.06', stage: '{a} kisses {b} on the forehead on the way past.', turns: [['b', "What was that for?"], ['a', "Nothing. Just because."]] },
     { id: 'ks2.07', turns: [['a', "I've been wanting to do that all day."], ['b', "Then why did you wait?"]] },
-    { id: 'ks2.08', stage: 'A quick kiss before the fire pit.', turns: [['a', "For luck."], ['b', "We don't need luck."]] },
+    { id: 'ks2.08', when: { phase: 'evening' }, stage: 'A quick kiss before the fire pit.', turns: [['a', "For luck."], ['b', "We don't need luck."]] },
     { id: 'ks2.09', stage: '{a} goes in for a kiss and {b} pulls away slightly.', turns: [['a', "Everything okay?"], ['b', "Yeah. Just not in front of everyone."]], beat: '{a} nods, and does not believe it.' },
     { id: 'ks2.10', stage: 'The kiss is short, and neither of them says anything after it.', turns: [['a', "Are we good?"], ['b', "We're fine."]] },
     { id: 'ks2.11', stage: '{a} kisses {b}, who is still looking over at someone else.', turns: [['a', "Hello? I'm here."], ['b', "Sorry. Sorry."]] },
@@ -73,7 +73,7 @@ export const MORE_B = {
     { id: 'ks2.13', stage: 'They kiss on the daybed until someone throws a pillow at them.', turns: [['b', "Rude."], ['a', "Ignore them."]] },
     { id: 'ks2.14', stage: 'A long kiss by the fire pit after everyone else has gone to bed.', turns: [['a', "I don't want tonight to end."], ['b', "It doesn't have to yet."]] },
     { id: 'ks2.15', when: { late: true }, turns: [['a', "Do you know how many times we've done that now?"], ['b', "Not enough."]] },
-    { id: 'ks2.16', when: { feels: 'little' }, stage: 'A kiss that feels more like a habit than anything else.', turns: [['b', "Night, then."], ['a', "Night."]] },
+    { id: 'ks2.16', when: { phase: 'evening', feels: 'little' }, stage: 'A kiss that feels more like a habit than anything else.', turns: [['b', "Night, then."], ['a', "Night."]] },
     { id: 'ks2.17', when: { phase: 'evening' }, stage: 'They kiss on the terrace with the whole villa below them.', turns: [['b', "Best view in here."], ['a', "The villa's not bad either."]] },
     { id: 'ks2.18', stage: '{a} kisses {b} after a row that was about nothing.', turns: [['b', "We're still arguing, by the way."], ['a', "I know."]] },
   ],
@@ -145,6 +145,45 @@ export const MORE_B = {
 
 // ── the moments that repeat (lines/moments.js pools) ────────────────────
 export const MORE_MOMENTS = {
+
+  // save-tie [a, b(, c)]: a is saved on the public's votes; b (and c) tied with a.
+  'save-tie': [
+    { id: 'st.01', turns: [['dior', "We have a tie. {a} and {b} have the same number of saves."], ['dior', "So the public's votes decide. And the islander the public saved is… {a}."]], beat: '{b} nods slowly, and does not look at anyone.' },
+    { id: 'st.02', turns: [['dior', "It's level. Nobody in the villa can split {a} and {b}."], ['dior', "The public can. Of the two, they voted for {a}."]] },
+    { id: 'st.03', turns: [['dior', "Islanders, the saves are tied between {a} and {b}."], ['dior', "The tie goes to whoever the public voted for the most, and that's {a}."]], beat: '{a} breathes out. {b} gets a hug from the islanders either side.' },
+    { id: 'st.04', turns: [['dior', "{a}, {b}: a tie."], ['dior', "Which means it comes down to the public. {a}, you are safe."]], beat: '{b} manages a smile, just.' },
+  ],
+
+  // final-result [a, b]: the couple, by placing (`of`), read out bottom first.
+  'final-result': [
+    { id: 'fr.4.01', when: { of: 'fourth' }, turns: [['dior', "In fourth place, it's {a} and {b}."]], beat: 'They hug each other, and then everybody else.' },
+    { id: 'fr.4.02', when: { of: 'fourth' }, turns: [['dior', "The couple in fourth place… {a} and {b}."], ['a', "Honestly, just being in the final is enough."]] },
+    { id: 'fr.4.03', when: { of: 'fourth' }, turns: [['dior', "{a} and {b}, you're in fourth place."], ['b', "We'll take it. We're going home together."]] },
+    { id: 'fr.4.04', when: { of: 'fourth' }, turns: [['dior', "In fourth place… {a} and {b}."]], beat: '{a} looks disappointed for about a second, then kisses {b}.' },
+    { id: 'fr.3.01', when: { of: 'third' }, turns: [['dior', "In third place, it's {a} and {b}."], ['a', "Third! That's not bad at all."]] },
+    { id: 'fr.3.02', when: { of: 'third' }, turns: [['dior', "The couple in third place is… {a} and {b}."]], beat: '{b} squeezes {a.posAdj} hand, and they both smile.' },
+    { id: 'fr.3.03', when: { of: 'third' }, turns: [['dior', "{a} and {b}. You're in third place."], ['b', "Thank you to everyone who voted for us."]] },
+    { id: 'fr.3.04', when: { of: 'third' }, turns: [['dior', "In third place… {a} and {b}."], ['a', "I'm disappointed and I'm happy at the same time."]] },
+    { id: 'fr.2.01', when: { of: 'second' }, turns: [['dior', "Which means our runners-up are… {a} and {b}."]], beat: 'The other couple is already screaming.' },
+    { id: 'fr.2.02', when: { of: 'second' }, turns: [['dior', "It's the final two. And in second place… {a} and {b}."], ['a', "That's okay. That's okay. Well done, you two."]] },
+    { id: 'fr.2.03', when: { of: 'second' }, turns: [['dior', "Our runners-up… {a} and {b}."], ['b', "We came so close."], ['a', "We did. And I've still got you."]] },
+    { id: 'fr.2.04', when: { of: 'second' }, turns: [['dior', "{a} and {b}, you're our runners-up."]], beat: '{a} hugs the winners first, before anyone else can.' },
+    { id: 'fr.1.01', when: { of: 'first' }, turns: [['dior', "The winners of Perfect Match are… {a} and {b}!"]], beat: 'The fire pit erupts. {a} lifts {b} right off the ground.' },
+    { id: 'fr.1.02', when: { of: 'first' }, turns: [['dior', "The couple the public voted to win is… {a} and {b}!"], ['a', "No. No way. Are you serious?"], ['b', "We won! We actually won!"]] },
+    { id: 'fr.1.03', when: { of: 'first' }, turns: [['dior', "{a}, {b}. You're the winners."]], beat: '{b} bursts into tears. {a} is laughing and crying at the same time.' },
+    { id: 'fr.1.04', when: { of: 'first' }, turns: [['dior', "And the winners are… {a} and {b}!"], ['b', "I can't believe it. I can't believe it's us."], ['a', "Believe it."]] },
+    { id: 'fr.1.05', when: { of: 'first', late: true }, turns: [['dior', "After everything, the winners of Perfect Match are {a} and {b}!"], ['a', "I came in here for this. For you."]], beat: 'Fireworks go off over the villa.' },
+  ],
+  // envelope [a, b]: winner a holds the envelope; b is a's partner (`choice`).
+  envelope: [
+    { id: 'env.s.01', when: { choice: 'split' }, stage: '{a} holds the envelope, and the whole villa goes silent.', turns: [['a', "There was never any question."], ['a', "I'm splitting it."]], beat: '{b} is crying before {a} has finished the sentence.' },
+    { id: 'env.s.02', when: { choice: 'split' }, stage: 'The host hands {a} the envelope.', turns: [['dior', "{a}, split or steal?"], ['a', "Split. Obviously. I'd have split it with {b} on day one."]] },
+    { id: 'env.s.03', when: { choice: 'split' }, stage: '{a} opens the envelope slowly, drawing it out.', turns: [['b', "Stop it. Stop it, I can't breathe."], ['a', "Split."]], beat: '{b} hits {a.obj} on the arm, then kisses {a.obj}.' },
+    { id: 'env.s.04', when: { choice: 'split' }, stage: '{a} takes the envelope and looks straight at {b}.', turns: [['a', "We did this together. We're sharing it together."]] },
+    { id: 'env.t.01', when: { choice: 'steal' }, stage: '{a} holds the envelope for a long time.', turns: [['a', "I'm sorry. I'm stealing."]], beat: '{b} stares at {a}, and does not say a word. The fire pit goes completely silent.' },
+    { id: 'env.t.02', when: { choice: 'steal' }, stage: 'The host hands {a} the envelope.', turns: [['dior', "{a}, split or steal?"], ['a', "…Steal."], ['b', "You're joking. Tell me you're joking."]] },
+    { id: 'env.t.03', when: { choice: 'steal' }, stage: '{a} opens the envelope, and cannot look at {b}.', turns: [['a', "I need this money. I'm sorry."], ['b', "After everything?"]], beat: 'The whole villa turns to look at {a}.' },
+  ],
   // step-forward [a, b]: boy a walks in; b is the girl he couples with (`of`).
   'step-forward': [
     { id: 'sf2.01', when: { of: 'one' }, stage: '{a} reaches the fire pit. {b} is the only one to step forward.', turns: [['a', "Just you?"], ['b', "Just me. Is that a problem?"], ['a', "Not at all."]] },

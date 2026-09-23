@@ -34,7 +34,7 @@ export const FACT_KEYS = ['rung', 'thinks', 'persona', 'intent', 'attachment', '
   'early', 'coupled', 'gap', 'knows', 'faking', 'bPersona', 'bMood', 'bRung', 'stance', 'family',
   'choice', 'cause', 'channel', 'grudge', 'stole', 'bTaken', 'archetype', 'taken', 'loyal', 'late', 'gender', 'bGender', 'myRung', 'phase', 'kind', 'role', 'withB', 'newArrival', 'dialect',
   'comfortedYesterday', 'rowedBefore', 'rowedToday', 'feels', 'of', 'knowsB', 'verdict', 'noticed',
-  'reason', 'split', 'guessed', 'stoleFrom', 'full', 'hasQuote', 'rank', 'cast', 'justMet'];
+  'reason', 'split', 'guessed', 'stoleFrom', 'full', 'hasQuote', 'rank', 'cast', 'justMet', 'rebuffed'];
 
 // Archetype groups a pool may name instead of listing them (CLAUDE.md).
 export const VILLAINS = ['villain', 'mastermind', 'schemer'];
@@ -122,6 +122,7 @@ export function factsFor(state, ev) {
   // first day. They have known each other for hours.
   const arrivedNow = n => n != null && (state.ledger?.firstEp?.[n] ?? state.ep) === state.ep;
   f.justMet = arrivedNow(a) || (!!b && arrivedNow(b));
+  f.rebuffed = !!ev.extra?.rebuffed;   // a pull b turned down (events.js decides)
   f.cast = ev.players.filter(Boolean).length;   // how many are in it, when one is optional
   f.withB = !!b;                       // somebody else is in the scene
   f.hasQuote = !!clipSlots(state, ev).quote;   // the replayed clip has a line to quote
@@ -202,7 +203,8 @@ function scriptRng(state) {
 // Facts that, when true, must lead: a couple who rowed this morning gets a
 // making-up scene, never a fresh cosy one that ignores the row.
 // `justMet` leads too: two islanders who met today talk like it (pm/lines/day/just-met.js).
-const LEADING = ['rowedToday', 'justMet'];
+// `rebuffed` leads first: a pull b turned down is a no, whatever else is true.
+const LEADING = ['rebuffed', 'rowedToday', 'justMet'];
 
 export function pickScript(state, pool, ps, facts, { allowRepeat = true } = {}) {
   // Candidates at each width, narrowest first: the leading pool, then every

@@ -108,7 +108,11 @@ describe('the one-offs (phase 3)', () => {
       const r = season(seed, { 6: { oneOff: 'mission' } })[5];
       if (r.pm.oneOff !== 'mission') continue;
       const [, girl, boy] = r.pm.events.find(e => e.kind === 'mission-dump').players;
-      expect(r.pm.villa).toEqual(expect.arrayContaining([girl, boy]));
+      // The mission sends nobody home. Walking out afterwards is the
+      // islander's own choice (seed 5: Isl10 walked, heartbroken), not the task's.
+      const walked = new Set(r.exits.filter(e => e.channel === 'walk').map(e => e.name));
+      expect(r.pm.villa).toEqual(expect.arrayContaining([girl, boy].filter(n => !walked.has(n))));
+      expect(r.exits.filter(e => [girl, boy].includes(e.name) && e.channel !== 'walk')).toEqual([]);
     }
   });
   it('the sleepover villa dumps only the new arrivals nobody chose', () => {

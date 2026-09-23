@@ -50,7 +50,7 @@ export const COMEDY = [
   { id: 'comedy.12', when: { late: true },
     stage: '{a} is lying on a sunbed, talking to whoever is nearest.',
     turns: [['a', "I've been in here so long I've forgotten what it's like to wear shoes."]] },
-  { id: 'comedy.13',
+  { id: 'comedy.13', when: { phase: 'morning' },
     stage: 'At breakfast, {a} says it to the whole table.',
     turns: [['a', 'Does anyone else feel like this is the longest job interview of their life?']],
     beat: 'The whole kitchen agrees.' },

@@ -43,8 +43,9 @@ export function publicVote(state, { rng, bottom = 2 }) {
  * UK 12 d19): one side's islanders, each on their OWN approval — the couple
  * does not carry them. The fewest votes come first.
  */
-export function publicVoteIslanders(state, { rng, gender, bottom = 2 }) {
-  const side = state.villa.filter(n => state.profiles[n].gender === gender);
+export function publicVoteIslanders(state, { rng, gender = null, names = null, bottom = 2 }) {
+  // One side ("favourite girl"), or a named group (the single islanders).
+  const side = names || state.villa.filter(n => state.profiles[n].gender === gender);
   const rows = side.map(n => ({ name: n, score: readApproval(state.ledger, n) + (rng() - 0.5) * 6 }));
   const w = rows.map(r => FLOOR + 8 * Math.log1p(Math.exp((r.score + BASE) / 8)));
   const sum = w.reduce((a, b) => a + b, 0) || 1;

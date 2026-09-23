@@ -1298,6 +1298,8 @@ export function saveConfig() {
     pmSetup: seasonConfig.pmSetup || {},
     // Pinned dumping formats by episode ({ 5: 'save-one' }), from VILLA OPTIONS.
     pmPicks: seasonConfig.pmPicks || {},
+    // The season's length: null is automatic (from the cast).
+    pmEpisodes: Number(seasonConfig.pmEpisodes) > 0 ? Number(seasonConfig.pmEpisodes) : null,
     pmDialect: g('cfg-pm-dialect')?.value || 'uk',
     pmSplitOrSteal: g('cfg-pm-split-or-steal') ? g('cfg-pm-split-or-steal').checked : false,
     trAutoDouble: g('cfg-tr-auto-double') ? g('cfg-tr-auto-double').checked : true,

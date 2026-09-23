@@ -15,7 +15,9 @@ import { makeIslanders } from './helpers/pm-cast.js';
 function freshSeason(n = 22, extra = {}) {
   Object.assign(seasonConfig, { format: 'perfect-match', seasonNumber: 3, pmSetup: {}, pmPicks: {}, ...extra });
   setPlayers(makeIslanders(n, 5));
-  setGs({ initialized: true, episodeHistory: [], popularity: {}, activePlayers: [] });
+  // A fixed seed: the run's own is partly random, so every test run would
+  // otherwise play a different season.
+  setGs({ initialized: true, episodeHistory: [], popularity: {}, activePlayers: [], pm: { seed: 3001 } });
 }
 
 function playAll() {
@@ -128,7 +130,7 @@ describe('a pick is live until its episode airs', () => {
     freshSeason();
     for (let i = 0; i < 3; i++) simulatePerfectMatchEpisode();
     const aired = gs.episodeHistory.map(fp);
-    seasonConfig.pmPicks = { 12: 'couples-vote' };
+    seasonConfig.pmPicks = { vote2: 'couples-vote' };
     simulatePerfectMatchEpisode();
     expect(gs.episodeHistory.slice(0, 3).map(fp)).toEqual(aired);
     expect(gs._pmQueue.find(r => r.num === 12).pm.dumpFormat).toBe('couples-vote');
@@ -139,7 +141,7 @@ describe('a pick is live until its episode airs', () => {
     for (let i = 0; i < 6; i++) simulatePerfectMatchEpisode();
     const drawn = gs.episodeHistory[4].pm.dumpFormat;
     const want = drawn === 'save-one' ? 'public' : 'save-one';
-    seasonConfig.pmPicks = { 5: want };
+    seasonConfig.pmPicks = { vote1: want };
     const aired = gs.episodeHistory.map(fp);
     simulatePerfectMatchEpisode();
     expect(gs.episodeHistory.slice(0, 6).map(fp)).toEqual(aired);

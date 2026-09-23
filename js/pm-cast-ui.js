@@ -13,12 +13,12 @@
 // so an islander's name never goes into an inline handler (an apostrophe in a
 // name would break the page).
 import { players, seasonConfig, gs } from './core.js';
-import { DUMP_DRAWS, PICK_LABELS } from './pm/schedule.js';
+import { DUMP_DRAWS, PICK_LABELS, SLOT_NAMES, defaultRoleFor, minimumEpisodes } from './pm/schedule.js';
 import { PERFECT_MATCH_FORMAT } from './shows.js';
 import { perfectMatchScheduleFor } from './pm/season.js';
 import { ROLES, INTENTS, PERSONAS, LOOK_TAGS, VIBES, ICKS, INTERESTS } from './pm/profile.js';
 import { DIALECTS } from './pm/lines/dialect.js';
-import { perfectMatchCastProblem } from './pm-run.js';
+import { perfectMatchCastProblem, perfectMatchSeasonShape } from './pm-run.js';
 
 const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const words = s => String(s).replace(/-/g, ' ');
@@ -27,7 +27,6 @@ const ROLE_WORDS = { starter: 'Starter (night one)', bombshell: 'Bombshell', cas
 const LIMIT = { 'type.looks': 3, 'type.vibes': 2, looks: 4, icks: 2, interests: 4, eyesOn: 3 };
 
 const setupOf = name => ((seasonConfig.pmSetup ||= {})[name] ||= {});
-const defaultRole = i => (i < 10 ? 'starter' : i < 16 ? 'bombshell' : 'casa');
 
 function getPath(obj, path) { return path.split('.').reduce((o, k) => (o ? o[k] : undefined), obj); }
 function setPath(obj, path, value) {
@@ -51,44 +50,66 @@ function chips(name, field, options, current = []) {
       on.has(v) ? ' checked' : ''}>${esc(label)}</label>`).join('')}</div>`;
 }
 
-const SLOT_NAMES = { 5: 'Episode 5 — the first public vote', 12: 'Episode 12 — the second public vote',
-  14: 'Episode 14 — the semi-final' };
-
 /**
- * VILLA OPTIONS: one menu per drawn slot. Random is the default; a season in
- * progress shows what each slot drew or aired as, and a pick for an episode
- * that already aired says it waits for that episode's re-run.
+ * VILLA OPTIONS: the season's length (automatic from the cast, or set), and
+ * one menu per drawn slot at THIS season's episode numbers. Random is the
+ * default; a season in progress shows what each slot drew or aired as, and a
+ * pick for an episode that already aired says it waits for its re-run.
  */
 export function renderPerfectMatchShape() {
   const host = typeof document !== 'undefined' && document.getElementById('pm-shape');
   if (!host) return;
+  const shape = perfectMatchSeasonShape();
+  const len = document.getElementById('cfg-pm-episodes');
+  if (len) {
+    len.placeholder = `Automatic (${shape.auto})`;
+    len.min = String(minimumEpisodes(shape.casa));
+    if (document.activeElement !== len) len.value = Number(seasonConfig.pmEpisodes) > 0 ? String(seasonConfig.pmEpisodes) : '';
+    const hint = document.getElementById('pm-episodes-hint');
+    if (hint) hint.textContent = `This cast makes ${shape.auto} episodes (${shape.starters} starters, ${shape.bombshells} bombshells, `
+      + `${shape.casa} Casa Amor arrivals). Set a number to change it: shorter packs the arrivals into fewer nights, `
+      + `longer adds quiet recoupling weeks. The shortest a season can be is ${minimumEpisodes(shape.casa)}.`
+      + (shape.episodes && shape.episodes < shape.auto
+        ? ` At ${shape.episodes}, there are fewer dumping nights than this cast needs: whoever is left over goes at the semi-final, several at once.` : '');
+  }
   const picks = seasonConfig.pmPicks || {};
-  const seed = gs?.pm?.seed;
-  const drawn = seed ? perfectMatchScheduleFor(seed) : null;
+  const started = !!gs?.pm?.seed;
   const aired = new Map((gs?.episodeHistory || []).filter(r => r?.format === PERFECT_MATCH_FORMAT).map(r => [r.num, r]));
-  host.innerHTML = Object.entries(DUMP_DRAWS).map(([ep, opts]) => {
-    const row = aired.get(Number(ep));
-    const randomLabel = drawn ? `Random (this season drew: ${PICK_LABELS[drawn.find(e => e.ep === Number(ep))?.dumpFormat] || '—'})` : 'Random';
+  const drawnBySlot = Object.fromEntries(started
+    ? perfectMatchScheduleFor(gs.pm.seed, shape).filter(e => e.slot).map(e => [e.slot, e.dumpFormat]) : []);
+  host.innerHTML = shape.schedule.filter(e => DUMP_DRAWS[e.slot]).map(e => {
+    const opts = DUMP_DRAWS[e.slot];
+    const row = aired.get(e.ep);
+    const randomLabel = drawnBySlot[e.slot] ? `Random (this season drew: ${PICK_LABELS[drawnBySlot[e.slot]]})` : 'Random';
     const note = row
       ? (row.pm?.dumpFormat
-        ? `Aired as: ${PICK_LABELS[row.pm.dumpFormat]}.${picks[ep] && picks[ep] !== row.pm.dumpFormat ? ' Re-run this episode to play your pick.' : ''}`
+        ? `Aired as: ${PICK_LABELS[row.pm.dumpFormat]}.${picks[e.slot] && picks[e.slot] !== row.pm.dumpFormat ? ' Re-run this episode to play your pick.' : ''}`
         : 'Aired with no vote: four couples or fewer were left.')
-      : ep === '14' && picks[ep] === 'ex-islanders' ? 'Needs five or more couples at the semi-final; with four, nobody is voted out.' : '';
-    return `<div class="pm-cs-row"><div class="form-label">${esc(SLOT_NAMES[ep] || `Episode ${ep}`)}</div>
-      <select class="form-input pm-cs-sel" data-pick="${esc(ep)}">
+      : e.slot === 'semi' && picks.semi === 'ex-islanders' ? 'Needs five or more couples at the semi-final; with four, nobody is voted out.' : '';
+    return `<div class="pm-cs-row"><div class="form-label">Episode ${e.ep} — ${esc(SLOT_NAMES[e.slot])}</div>
+      <select class="form-input pm-cs-sel" data-pick="${esc(e.slot)}">
         <option value="">${esc(randomLabel)}</option>
-        ${opts.map(([f]) => `<option value="${esc(f)}"${picks[ep] === f ? ' selected' : ''}>${esc(PICK_LABELS[f])}</option>`).join('')}
+        ${opts.map(([f]) => `<option value="${esc(f)}"${picks[e.slot] === f ? ' selected' : ''}>${esc(PICK_LABELS[f])}</option>`).join('')}
       </select>${note ? `<div class="hint hint-tight">${esc(note)}</div>` : ''}</div>`;
   }).join('');
   if (!host.dataset.wired) {
     host.dataset.wired = '1';
     host.addEventListener('change', ev => {
-      const ep = ev.target?.dataset?.pick;
-      if (!ep) return;
+      const slot = ev.target?.dataset?.pick;
+      if (!slot) return;
       const next = { ...(seasonConfig.pmPicks || {}) };
-      if (ev.target.value) next[ep] = ev.target.value; else delete next[ep];
+      if (ev.target.value) next[slot] = ev.target.value; else delete next[slot];
       seasonConfig.pmPicks = next;
       try { window.saveConfig?.(); } catch { /* the menu keeps its own state */ }
+      renderPerfectMatchShape();
+    });
+  }
+  if (len && !len.dataset.wired) {
+    len.dataset.wired = '1';
+    len.addEventListener('change', () => {
+      const v = Math.round(Number(len.value));
+      seasonConfig.pmEpisodes = v > 0 ? v : null;
+      try { window.saveConfig?.(); } catch { /* kept on seasonConfig */ }
       renderPerfectMatchShape();
     });
   }
@@ -116,7 +137,7 @@ export function renderPerfectMatchCastSetup() {
     return `<div class="pm-cs-row">
       <div class="pm-cs-head">
         <strong class="pm-cs-name">${esc(n)}</strong>
-        ${select(n, 'role', ROLES.map(r => [r, ROLE_WORDS[r]]), s.role, `Auto: ${ROLE_WORDS[defaultRole(i)]}`)}
+        ${select(n, 'role', ROLES.map(r => [r, ROLE_WORDS[r]]), s.role, `Auto: ${ROLE_WORDS[defaultRoleFor(i, cast.length)]}`)}
         ${select(n, 'dialect', dialects, s.dialect, "From: season's default")}
         ${select(n, 'intent', INTENTS.map(x => [x, words(x)]), s.intent, 'Looking for: roll')}
         ${select(n, 'persona', personas, s.persona, 'Persona: from stats')}
@@ -134,11 +155,11 @@ export function renderPerfectMatchCastSetup() {
       </details>
     </div>`;
   }).join('');
-  const problem = perfectMatchCastProblem(cast, Object.fromEntries(cast.map((n, i) => [n, { ...setupOf(n), role: setupOf(n).role || defaultRole(i) }])));
-  const count = r => cast.filter((n, i) => (setupOf(n).role || defaultRole(i)) === r).length;
+  const problem = perfectMatchCastProblem(cast, Object.fromEntries(cast.map((n, i) => [n, { ...setupOf(n), role: setupOf(n).role || defaultRoleFor(i, cast.length) }])));
+  const count = r => cast.filter((n, i) => (setupOf(n).role || defaultRoleFor(i, cast.length)) === r).length;
   host.innerHTML = `<div class="pm-cs-status ${problem ? 'bad' : 'ok'}">${problem
     ? `This cast can't start a villa yet: ${esc(problem)}.`
-    : `Ready: ${count('starter')} starters, ${count('bombshell')} bombshells, ${count('casa')} Casa Amor arrivals.`}</div>
+    : `Ready: ${count('starter')} starters, ${count('bombshell')} bombshells, ${count('casa')} Casa Amor arrivals — ${perfectMatchSeasonShape().schedule.length} episodes.`}</div>
     <div class="hint hint-tight">Leave anything blank and the villa decides: roles by cast order, the rest rolled from each islander's stats. Only what you set is fixed.</div>
     ${rows}`;
   if (!host.dataset.wired) {

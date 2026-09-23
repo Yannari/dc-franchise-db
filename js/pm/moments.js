@@ -138,7 +138,7 @@ function pickerGender(state) {
   return g;
 }
 
-function recoupleNight(state, rng, { dumpSingles }) {
+function recoupleNight(state, rng, { dumpSingles, pace = 1.5 }) {
   const r = runRecoupling(state, { rng, pickerGender: pickerGender(state) });
   const events = r.picks.map(pk => makeEvent(state, rng, { phase: 'firepit', kind: 'recouple-pick',
     players: [pk.picker, pk.picked, ...(pk.stole ? [pk.stole] : [])], aired: true,
@@ -152,7 +152,14 @@ function recoupleNight(state, rng, { dumpSingles }) {
   // down to ten: the real show leaves the rest single rather than emptying
   // the place a ceremony at a time. Measured: without the second cap, a
   // thin season arrived at the final with two couples instead of four.
-  const dumped = r.single.slice(0, state.villa.length > 10 ? 2 : 1);
+  // …and the season's pace moves that: nobody goes when the villa has no one
+  // to spare, and more go when a short season has more to lose (season.js).
+  // Under half an islander a night to spare, the singles stay and try again;
+  // under one, a night dumps one at most.
+  const base = state.villa.length > 10 ? 2 : 1;
+  const cap = pace < 0.5 ? 0 : pace < 1 ? 1 : Math.max(base, Math.ceil(pace - 0.5));
+  if (!cap) return { events, exits: [], ballots: r.ballots };
+  const dumped = r.single.slice(0, cap);
   const scene = dumpingScene(state, rng, { atRisk: [], dumped, ballots: [], channel: 'recoupling' });
   return { events: [...events, ...scene.events], exits: scene.exits, ballots: r.ballots };
 }
@@ -203,6 +210,15 @@ function saveOneNight(state, ctx) {
     ballots: so.ballots, channel: 'save' });
   return { events: scene.events, exits: scene.exits, ballots: so.ballots,
     extra: { islanderShares: pv.shares, bottom: pv.bottom.map(n => [n]), saved: so.saved, dumpFormat: 'save-one' } };
+}
+
+/** The single islanders face the public; the fewest votes go. */
+function singlesVoteNight(state, ctx, singles, n) {
+  const pv = publicVoteIslanders(state, { rng: ctx.rng, names: singles, bottom: singles.length });
+  const dumped = pv.bottom.slice(0, n);
+  const scene = dumpingScene(state, ctx.rng, { atRisk: singles.map(x => [x]), dumped, channel: 'public' });
+  return { events: scene.events, exits: scene.exits, ballots: [],
+    extra: { islanderShares: pv.shares, bottom: singles.map(x => [x]), dumpFormat: 'singles' } };
 }
 
 /** Each couple names the least compatible couple, in front of everyone. */
@@ -260,11 +276,33 @@ export const MOMENTS = {
     const pre = arrivals(state, ctx, ctx.entry.arrivals?.bombshell || 0);
     // The last recoupling is about who is with whom, not about emptying the
     // villa: the semi-final vote does that next week.
-    const r = recoupleNight(state, ctx.rng, { dumpSingles: !ctx.entry.keepSingles });
+    const r = recoupleNight(state, ctx.rng, { dumpSingles: !ctx.entry.keepSingles, pace: ctx.pace });
     return { events: [...pre, ...r.events], exits: r.exits, ballots: r.ballots };
   },
   bombshell: (state, ctx) => ({ events: arrivals(state, ctx, ctx.entry.arrivals?.bombshell || 0), exits: [], ballots: [] }),
   'public-vote': (state, ctx) => {
+    // A small villa can reach a vote night with two couples or fewer: a vote
+    // would send one of the last couples home before the final. The night
+    // plays without one, and the row says no format played.
+    // And a villa already down to the final's four couples keeps them, as
+    // does one with nobody to spare: a vote sends two or three home, so it
+    // needs about one islander to spare a night. Letting a four-couple villa
+    // vote because arrivals were still to come was measured, and it cost
+    // four-couple finals (15 of 20 at the calibration cast, against 18).
+    if (state.couples.length < 3 || state.couples.length <= FINAL_COUPLES || ctx.pace < 0.8) {
+      // …unless the villa has single islanders to lose: then the singles face
+      // the public (measured: at the calibration cast a quarter of second
+      // votes met four couples and three or four singles, who then all went
+      // at once at the semi-final).
+      // Only the singles nobody is left to arrive for: a bombshell still to
+      // come is somebody's partner (measured: dumping those cost the
+      // 16-islander cast its four-couple finals, 18 of 20 down to 13).
+      const singles = state.villa.filter(n => !partnerOf(state, n));
+      const toCome = (ctx.queues?.bombshell?.length || 0) + (ctx.queues?.casa?.length || 0);
+      const spare = Math.min(Math.round(ctx.pace), singles.length - toCome);
+      if (spare > 0 && ctx.pace >= 0.8) return singlesVoteNight(state, ctx, singles, spare);
+      return { events: [], exits: [], ballots: [], extra: { dumpFormat: null } };
+    }
     const fmt = ctx.entry.dumpFormat;
     if (fmt === 'save-one') return saveOneNight(state, ctx);
     if (fmt === 'couples-vote') return couplesVoteNight(state, ctx);

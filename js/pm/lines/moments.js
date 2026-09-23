@@ -3,6 +3,8 @@
 // and villa-day.js — and what each one already decided:
 //
 //   entrance       [a]          a walks in (a bombshell; with `split`, Casa's).
+//   group-entrance [a, b…]      the rest of a big Casa Amor walk in together;
+//                                {a} and {b} are the first two of them.
 //   date           [a, b]       new arrival a on a date with b.
 //   steal          [a, b, c]    a takes b; c is left single.
 //   recouple-pick  [a, b, (c)]  a picks b for the `reason` that carried it
@@ -75,9 +77,31 @@ export const MOMENTS = {
     { id: 'entrance.07', when: { split: true, persona: 'fuckboy' },
       stage: 'At Casa Amor, {a} walks straight to the daybeds and sits in the middle of them.',
       turns: [['a', "I'm {a}. Nobody here is single, right? That's fine. I like a challenge."]] },
+    { id: 'entrance.09', when: { split: true },
+      stage: 'At Casa Amor, {a} walks out onto the terrace and does a little twirl.',
+      turns: [['a', "Right. Who's first?"]] },
+    { id: 'entrance.10', when: { split: true },
+      stage: '{a} arrives at Casa Amor and heads straight for the drinks.',
+      turns: [['a', "I've been told you're all taken. We'll see about that."]] },
+    { id: 'entrance.11', when: { split: true },
+      stage: 'The Casa Amor door opens, and in walks {a}.',
+      turns: [['a', "Hello! Sorry, I'm really nervous. I always talk too much when I'm nervous."]] },
     { id: 'entrance.08', when: { split: true, persona: 'hopeless-romantic' },
       stage: 'At Casa Amor, {a} arrives with a bunch of flowers.',
       turns: [['a', "I'm {a}. I brought flowers. Is that too much? It's too much."]] },
+  ],
+  'group-entrance': [
+    { id: 'group-entrance.01',
+      stage: 'The door opens again, and the rest of the new arrivals walk in together, {a} and {b} at the front.',
+      turns: [['a', "Hi, everyone! We're the fun ones."], ['b', "Speak for yourself."]],
+      beat: 'Nobody knows who to look at first.' },
+    { id: 'group-entrance.02',
+      stage: 'A whole group of new faces comes down the steps at once, led by {a}.',
+      turns: [['a', "Don't mind us. We're just going to get to know everyone."]],
+      beat: '{b} is already waving at somebody across the garden.' },
+    { id: 'group-entrance.03',
+      stage: '{a}, {b} and the others arrive together, laughing about something from the car.',
+      turns: [['b', "We've only known each other an hour and we're already best friends."]] },
   ],
   date: [
     { id: 'date.01',
@@ -275,6 +299,15 @@ export const MOMENTS = {
     { id: 'dump-at-risk.03', when: { channel: 'save' },
       turns: [['dior', "{a}, please come and stand next to me."]],
       beat: '{a} walks up, trying to smile.' },
+    { id: 'dump-at-risk.05', when: { channel: 'public' },
+      turns: [['dior', "The public have been voting for their favourite single islander. {a}, you're one of the islanders at risk."]],
+      beat: '{a} stands up slowly.' },
+    { id: 'dump-at-risk.06', when: { channel: 'public' },
+      turns: [['dior', "Everyone who is single tonight is vulnerable. {a}, please stand."]],
+      beat: '{a} looks round at the couples on the benches.' },
+    { id: 'dump-at-risk.07', when: { channel: 'public' },
+      stage: '{a} stands with the other single islanders.',
+      turns: [['a', "Being single in here is the worst place to be."]] },
     { id: 'dump-at-risk.04', when: { channel: 'save' },
       stage: '{a} is called to the front.',
       turns: [['a', "I knew it. I just knew it."]] },

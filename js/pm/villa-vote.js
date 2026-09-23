@@ -118,6 +118,12 @@ export function couplesVote(state, { rng, atRisk = 2 }) {
   for (const v of votes) { const k = v.target.join('|'); count.set(k, (count.get(k) || 0) + 1); }
   const vulnerable = [...count].sort((x, y) => y[1] - x[1] || rng() - 0.5).slice(0, atRisk)
     .map(([k]) => state.couples.find(c => c.join('|') === k));
+  // Fewer couples named than places at risk (eight couples can name three):
+  // the rest are the weakest-looking of the unnamed, or a semi-final that
+  // has to trim to four could not (measured: a 40-islander final of five).
+  const unnamed = state.couples.filter(c => !vulnerable.includes(c))
+    .sort((x, y) => coupleStrength(state, x[0], x[1]) - coupleStrength(state, y[0], y[1]));
+  while (vulnerable.length < atRisk && unnamed.length) vulnerable.push(unnamed.shift());
   return { votes, vulnerable };
 }
 

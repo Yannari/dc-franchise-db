@@ -22,6 +22,7 @@ import { TWIST_CATALOG, twistModeClashes, seasonConfig, players, seasonFormat, f
 import { SEASON_SETTINGS, settingsForFormat, defaultSettingFor } from './settings.js';
 import { SHOWS as SHOW_REGISTRY, showName, showIcon, showWords, HOSTS_BY_FORMAT } from './shows.js';
 import { houseStructure } from './bb-run.js';
+import { buildSchedule, defaultRoleSplit } from './pm/schedule.js';
 import { SEASON_OBJECTIVES } from './franchise-meta.js';
 
 // ══════════════════════════════════════════════════════════════════════
@@ -55,15 +56,18 @@ export function blueprintFor(config = {}, castSize = 0) {
   const segs = [];
 
   // ── THE VILLA ─────────────────────────────────────────────────────
-  // No tribes, no merge, no jury: a number of islanders, one villa, sixteen
-  // episodes, and a final the public decides. Cast noun from the registry.
+  // No tribes, no merge, no jury: a number of islanders, one villa, and a
+  // final the public decides. A minimum and no maximum: the season's length
+  // follows the cast (pm/schedule.js), or the author's number. Cast noun
+  // from the registry.
   if (villa) {
     const w = showWords('perfect-match');
-    const castOk = N >= 12 && N <= 30;
+    const castOk = N >= 8;
     segs.push({ label: `${N} ${N === 1 ? w.player : w.players}`, ok: castOk,
-      why: castOk ? undefined : `Cast 12 to 30 ${w.players} (22 is a full villa with bombshells and Casa Amor)` });
+      why: castOk ? undefined : `A villa needs at least 8 ${w.players}: six to couple up on night one, and a bombshell each side` });
     segs.push({ label: 'one villa', ok: true });
-    segs.push({ label: '16 episodes', ok: true });
+    const eps = Number(config.pmEpisodes) > 0 ? Number(config.pmEpisodes) : buildSchedule(defaultRoleSplit(N)).length;
+    segs.push({ label: `${eps} episodes`, ok: true });
     segs.push({ label: 'final: four couples, public vote', ok: true });
     return segs;
   }
@@ -1233,6 +1237,8 @@ const CONFIG_SCOPE = {
     'sec-pm-dialect':        ['perfect-match'],
     'sec-pm-envelope':       ['perfect-match'],
     'sec-pm-shape':          ['perfect-match'],
+    'sec-pm-length':         ['perfect-match'],
+    'cfg-pm-episodes':       ['perfect-match'],
     'sec-pm-cast':           ['perfect-match'],
     'cfg-pm-dialect':        ['perfect-match'],
     'cfg-pm-split-or-steal': ['perfect-match'],

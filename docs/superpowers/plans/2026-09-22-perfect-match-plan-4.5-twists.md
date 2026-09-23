@@ -62,6 +62,45 @@ Defects found by printing the nights and reading them, each now a guard in
 - A couple dumped together heard Dior's line twice, once each.
 - A couples' vote night was titled "Public vote"; titles follow what played.
 
+### The cast decides the season's length
+
+User: "freedom of the cast — a minimum but no maximum", and "automatic, with an
+option of setting it myself". The fixed sixteen episodes had six arrival
+slots; a seventh bombshell never walked in, and a 40-islander Casa arrived in
+one night of 24.
+
+`buildSchedule({ bombshells, casa, episodes })` builds the season from the
+spine: every bombshell pair past six adds a week (an arrival, then a dumping
+— every second one a public vote), alternating before and after Casa. The
+22-islander cast builds EXACTLY the sixteen episodes the season was tuned on
+(`tests/pm-schedule.test.js`). A set length packs arrivals into fewer nights
+or adds quiet recoupling weeks; the spine is the floor (11 with Casa).
+Default roles scale with the cast (`defaultRoleSplit`: 10 / 6 / 6 at 22).
+
+THE PACE. Each dumping night reads how many islanders the villa still has
+to lose to reach four couples, over the dumping nights left: a recoupling
+dumps nobody under half an islander a night to spare, and more on a short
+season; a vote night needs about one, and a villa already at four couples
+keeps them — unless it has singles nobody is left to arrive for, who then
+face the public (`singles`). Measured over twenty seeds each, four couples
+at the final:
+
+| cast | length | four couples | note |
+|---|---|---|---|
+| 8 | 11 | 9 / 20 | every islander must couple for four |
+| 12 | 12 | 10 / 20 | |
+| 16 | 14 | 18 / 20 | |
+| 22 | 16 | 18 / 20 | the calibration cast; audit 92% |
+| 22 | 12 (set) | 20 / 20 | ~10 go at the semi-final at once — the hint says so |
+| 22 | 22 (set) | 9 / 20 | long seasons lose more to walks |
+| 30 | 20 | 20 / 20 | |
+| 40 | 28 | 20 / 20 | |
+
+Found by reading a 40-islander season: eleven Casa entrances from four lines
+(now four solo entrances and a group per villa), and a couples' vote that put
+only the three NAMED couples at risk, so the semi-final could not trim eight
+couples to four (the unnamed weakest now fill the places).
+
 ## Phase 2 — arrival rules
 
 New arrivals get first pick at the recoupling (UK 9, 10, 11, 13; US 8) ·

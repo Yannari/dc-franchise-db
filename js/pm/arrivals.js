@@ -64,11 +64,24 @@ export function openCasa(state, casaNames, { ep, seed, rng, movingGender = 'f' }
   state.casa = [...movers];
   state.casaArrivals = [...casaNames];
   const events = [];
-  for (const n of casaNames) {
+  // The first few walk in one at a time; a big Casa's rest arrive together,
+  // one group per villa. Eleven single entrances from a handful of lines read
+  // as the same scene six times (measured at a 40-islander cast).
+  const SOLO = 4;
+  const rest = { villa: [], casa: [] };
+  casaNames.forEach((n, i) => {
     const room = state.profiles[n].gender === movingGender ? 'villa' : 'casa';
     arriveIslander(state, n, { ep, seed, room });
-    events.push(makeEvent(state, rng, { phase: 'event', kind: 'entrance', players: [n], aired: true,
-      major: [n], extra: { pop: { [n]: { approval: 0.3, fame: 2 } } } }));
+    if (i < SOLO) {
+      events.push(makeEvent(state, rng, { phase: 'event', kind: 'entrance', players: [n], aired: true,
+        major: [n], extra: { pop: { [n]: { approval: 0.3, fame: 2 } } } }));
+    } else rest[room].push(n);
+  });
+  for (const group of Object.values(rest)) {
+    if (!group.length) continue;
+    events.push(makeEvent(state, rng, { phase: 'event', kind: group.length > 1 ? 'group-entrance' : 'entrance',
+      players: group, aired: true, major: [...group],
+      extra: { pop: Object.fromEntries(group.map(n => [n, { approval: 0.3, fame: 1.5 }])) } }));
   }
   return events;
 }

@@ -21,7 +21,7 @@ import { romance, friendship, shown, believed, growLove, updateBeliefs, decideMa
 import { syncLadder, stepOf } from './ladder.js';
 import { emo, attachmentLabel, walkRisk } from './emotions.js';
 import { runVillaDay } from './villa-day.js';
-import { seasonSchedule, withPicks } from './schedule.js';
+import { seasonSchedule, withPicks, buildSchedule, FINAL_COUPLES } from './schedule.js';
 import { MOMENTS } from './moments.js';
 
 function initState(cast, setup, seed) {
@@ -63,8 +63,13 @@ function relationshipSnapshot(state) {
   return { rel, labels };
 }
 
-/** The shape a seed's season plays: drawn from its own stream (pm/schedule.js). */
-export const perfectMatchScheduleFor = seed => seasonSchedule(streamFor(seed, 'schedule'));
+/**
+ * The episodes a season plays: built from its cast (how many bombshells and
+ * Casa arrivals) and the author's length, then its formats drawn from its own
+ * stream — same seed, same cast, same season (pm/schedule.js).
+ */
+export const perfectMatchScheduleFor = (seed, shape = {}) =>
+  seasonSchedule(streamFor(seed, 'schedule'), buildSchedule(shape));
 
 /**
  * `picks` pins drawn slots ({ 5: 'save-one' }). `rerolls` re-deals one
@@ -73,8 +78,7 @@ export const perfectMatchScheduleFor = seed => seasonSchedule(streamFor(seed, 's
  * the new night the way it would have from any night.
  */
 export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = null, picks = {}, rerolls = {},
-  splitOrStealOn = false, dialect = 'uk' } = {}) {
-  schedule = schedule || withPicks(perfectMatchScheduleFor(seed), picks);
+  splitOrStealOn = false, dialect = 'uk', episodes = null } = {}) {
   setGs({ bonds: {}, perceivedBonds: {}, relationshipDimensions: {}, activePlayers: [],
     episodeHistory: [], popularity: {} });
   const state = initState(cast, setup, seed);
@@ -82,6 +86,9 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
   state.dialect = dialect;
   gs.pm = state;
   const queues = queuesFor(state, cast);
+  // Every bombshell and Casa arrival the author cast gets a night to walk in.
+  schedule = schedule || withPicks(perfectMatchScheduleFor(seed,
+    { bombshells: queues.bombshell.length, casa: queues.casa.length, episodes }), picks);
   let final = null;
 
   for (const entry of schedule) {
@@ -98,7 +105,18 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
         state.villa.push(n); noteArrival(state.ledger, n, 1); seedAttraction(state, n, seed);
       }
     }
-    const ctx = { rng, entry, seed, queues, popularity: gs.popularity, splitOrStealOn, closed: false };
+    // THE PACE. How many islanders the villa still has to lose to reach four
+    // couples at the final, over the dumping nights left (the semi-final
+    // takes a share too). Measured: with fixed caps, a 12-islander cast
+    // reached the final with two couples, a 22-islander season stretched to
+    // 22 episodes with one, and one squeezed into 12 sent eight home at the
+    // semi-final. At the calibration cast the pace sits at 1-2 a night, which
+    // leaves every cap where it was tuned.
+    const ahead = schedule.slice(schedule.indexOf(entry));
+    const nights = ahead.filter(e => (e.moment === 'recoupling' && !e.keepSingles) || e.moment === 'public-vote').length;
+    const surplus = state.villa.length + queues.bombshell.length - 2 * FINAL_COUPLES;
+    const pace = surplus / (nights + 1);
+    const ctx = { rng, entry, seed, queues, popularity: gs.popularity, splitOrStealOn, closed: false, pace };
     const day = entry.moment === 'reunion' ? [] : generateEpisodeEvents(state, rng);
     state.history.push(...day);
     const m = MOMENTS[entry.moment](state, ctx);
@@ -168,6 +186,6 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
         bonds: Object.fromEntries(state.couples.map(([a, b]) => [`${a}|${b}`, romance(a, b)])) },
     });
   }
-  const winners = final ? [...final[0].couple] : [];
+  const winners = final?.[0] ? [...final[0].couple] : [];
   return { rows: gs.episodeHistory, winners, final, state };
 }

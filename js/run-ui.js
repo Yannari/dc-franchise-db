@@ -22,8 +22,7 @@ import { coachCanPlay } from './advantages.js';
 import { isTraitorsSeason, simulateTraitorsEpisode, rerunTraitorsEpisode,
   lastTraitorsRerunRefusal } from './tr-run.js';
 import { isPerfectMatchSeason, simulatePerfectMatchEpisode, perfectMatchCanRerun,
-  lastPerfectMatchRefusal, rerunPerfectMatchEpisode, perfectMatchPendingChange } from './pm-run.js';
-import { SEASON_TEMPLATE as PM_SCHEDULE } from './pm/schedule.js';
+  lastPerfectMatchRefusal, rerunPerfectMatchEpisode, perfectMatchPendingChange, perfectMatchSeasonShape } from './pm-run.js';
 import { episodeText as pmEpisodeText, momentTitle as pmMomentTitle } from './pm/transcript.js';
 import { isDragSeason, simulateDragEpisode, invalidateDragQueue,
   dragEpisodesAired, dragScheduleRecorded, rerunDragEpisode, dragCanRerun } from './dr-run.js';
@@ -2588,13 +2587,13 @@ export function runFanVote() {
 // Returns an array of { ep, active, phase, engineType } for every episode in the season
 export function buildEpisodeMap() {
   /* ── THE VILLA IS ITS SCHEDULE ──
-     Sixteen episodes, fixed by js/pm/schedule.js — the moments do not move,
-     only who is in the villa for them. Played nights report their own villa;
+     As many episodes as the cast makes (or the author set) — js/pm-run.js
+     perfectMatchSeasonShape, the same answer the season plays. Played nights report their own villa;
      the rest carry the last count forward (the public decides the rest). */
   if (isPerfectMatchSeason()) {
     const played = new Map((gs?.episodeHistory || []).filter(r => r?.format === PERFECT_MATCH_FORMAT).map(r => [r.num, r]));
     let active = (players || []).length;
-    return PM_SCHEDULE.map(e => {
+    return perfectMatchSeasonShape().schedule.map(e => {
       const r = played.get(e.ep);
       if (r) active = (r.pm?.villa || []).length || active;
       return { ep: e.ep, active, phase: e.moment === 'final' || e.moment === 'reunion' ? 'finale' : 'main', engineType: null, tribes: 1 };

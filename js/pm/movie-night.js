@@ -66,7 +66,8 @@ function candidates(state) {
     if (!state.villa.includes(x) || !state.villa.includes(p)) continue;
     for (const e of recent) {
       if (!e.players.includes(x) || e.players.includes(p)) continue;
-      const sec = state.secrets.find(s => s.eventId === e.id && s.who === x && s.partner === p && !s.known);
+      // Casa Amor's secrets are the photos' to show (moments.js photos), until they have been.
+      const sec = state.secrets.find(s => s.eventId === e.id && s.who === x && s.partner === p && !s.known && (!s.casa || state.photosShown));
       // A secret: the pull, the kiss, the night in the hideaway.
       if (sec) out.push({ e, x, p, sev: sec.severity, what: sec.kind === 'kiss' ? 'kiss' : sec.kind === 'bed' ? 'hideaway' : sec.kind === 'said' ? 'debrief' : sec.kind === 'promise' ? 'promise' : e.kind, sec, rival: sec.with });
       // What was said in a debrief, about the partner in the audience.

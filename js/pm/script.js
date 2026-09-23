@@ -35,7 +35,7 @@ export const FACT_KEYS = ['rung', 'thinks', 'persona', 'intent', 'attachment', '
   'early', 'coupled', 'gap', 'knows', 'faking', 'bPersona', 'bMood', 'bRung', 'stance', 'family',
   'choice', 'cause', 'channel', 'grudge', 'stole', 'bTaken', 'archetype', 'taken', 'loyal', 'late', 'gender', 'bGender', 'myRung', 'phase', 'kind', 'role', 'withB', 'newArrival', 'dialect',
   'comfortedYesterday', 'rowedBefore', 'rowedToday', 'feels', 'of', 'knowsB', 'verdict', 'noticed',
-  'reason', 'split', 'guessed', 'stoleFrom', 'full', 'hasQuote', 'rank', 'cast', 'justMet', 'rebuffed', 'heard', 'kissed', 'promised', 'sec', 'lastBy'];
+  'reason', 'split', 'guessed', 'stoleFrom', 'full', 'hasQuote', 'rank', 'cast', 'justMet', 'rebuffed', 'heard', 'kissed', 'promised', 'sec', 'lastBy', 'theirs'];
 
 // Archetype groups a pool may name instead of listing them (CLAUDE.md).
 export const VILLAINS = ['villain', 'mastermind', 'schemer'];
@@ -113,7 +113,7 @@ export function factsFor(state, ev) {
   // How much a feels for b, in words a line can lean on (narration only):
   // "not yet" is somebody who cares; a real no is somebody who doesn't.
   if (b) { const r = romance(a, b); f.feels = r >= 6 ? 'strong' : r >= 3 ? 'some' : 'little'; } else f.feels = null;
-  for (const k of ['choice', 'cause', 'channel', 'grudge', 'of', 'noticed', 'reason', 'guessed']) if (ev.extra?.[k] != null) f[k] = ev.extra[k];
+  for (const k of ['choice', 'cause', 'channel', 'grudge', 'of', 'noticed', 'reason', 'guessed', 'theirs']) if (ev.extra?.[k] != null) f[k] = ev.extra[k];
   // A steal at the recoupling: {c} is the one who loses {b}.
   f.stoleFrom = !!ev.extra?.stole;
   // Night one's ranking: the pair at the top, or anybody below it.
@@ -213,7 +213,10 @@ function scriptRng(state) {
 // `justMet` leads too: two islanders who met today talk like it (pm/lines/day/just-met.js).
 // `rebuffed` leads first: a pull b turned down is a no, whatever else is true.
 // `heard`: gossip about something SAID in a debrief, not something seen.
-const LEADING = ['rebuffed', 'heard', 'kissed', 'promised', 'rowedToday', 'justMet'];
+// `stoleFrom` first of all: a pick that takes someone from another islander is
+// a steal, whatever else carried it (season 31: "I'm picking Ellie, again" over
+// Ellie being taken back from the one who had just picked her).
+const LEADING = ['stoleFrom', 'rebuffed', 'heard', 'kissed', 'promised', 'rowedToday', 'justMet'];
 
 export function pickScript(state, pool, ps, facts, { allowRepeat = true } = {}) {
   // Candidates at each width, narrowest first: the leading pool, then every
@@ -401,7 +404,9 @@ const NO_ANSWER = new Set(['argument', 'loyalty']);
 function closed(state, ev, entry, opened, ps) {
   const pool = POOLS[`${ev.kind}-close`];
   const close = ev.extra?.close;
-  if (!pool || !close || opened.lines.length >= 5 || (entry.turns || []).some(t => !Array.isArray(t))
+  // Four lines is a scene already (measured: with the bar at five, nearly
+  // every friendship got an ending, and nine endings played 300 times).
+  if (!pool || !close || opened.lines.length >= 4 || (entry.turns || []).some(t => !Array.isArray(t))
     || (opened.beat && EXIT.test(opened.beat))) return opened;
   const facts = factsFor(state, { ...ev, players: ps });
   const last = opened.lines[opened.lines.length - 1];
@@ -410,7 +415,10 @@ function closed(state, ev, entry, opened, ps) {
   const add = [];
   const take = (key, of) => {
     const p = POOLS[key];
-    const got = p?.length ? pickScript(state, p, ps, { ...facts, lastBy, of }) : null;
+    // An ending that is only an action never follows an opener that already
+    // ended on its own beat: two closing actions in a row.
+    const pool2 = opened.beat ? p?.filter(e => (e.turns || []).length) : p;
+    const got = pool2?.length ? pickScript(state, pool2, ps, { ...facts, lastBy, of }) : null;
     if (got) { noteUse(state, got, ps); add.push(renderScript(got, ps, state)); }
   };
   if (ev.kind === 'gossip') { if (!entry.told) take('gossip-what', facts.sec || 'pull'); }

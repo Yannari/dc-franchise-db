@@ -686,8 +686,15 @@ Object.assign(MOMENTS, {
     // The photos are a scene, not an inbox: the worst half-dozen get shown.
     // Every photo is a real moment from Casa Amor somebody kept quiet about
     // (user: "don't invent things") — it lands as a Polaroid (vp-pm/stage.js).
+    state.photosShown = true;
+    // One photo a couple — the worst of it — and only to somebody still with
+    // the one in it (season 31: two photos each for the same three couples,
+    // and photos shown to exes who had split at the Casa return).
+    const pairs = new Set();
     const shown = state.secrets.filter(x => x.casa && !x.known)
-      .sort((a, b) => b.severity - a.severity).slice(0, 6);
+      .sort((a, b) => b.severity - a.severity)
+      .filter(x => { const k = `${x.who}|${x.partner}`; if (pairs.has(k)) { x.known = true; return false; } pairs.add(k); return true; })
+      .slice(0, 6);
     const live = shown.filter(sec => state.villa.includes(sec.who) && state.villa.includes(sec.partner));
     if (live.length) {
       const reader = live[0].partner;
@@ -696,7 +703,7 @@ Object.assign(MOMENTS, {
     for (const sec of shown) {
       sec.known = true;
       sec.public = true;              // the whole villa saw the photos
-      if (!state.villa.includes(sec.who) || !state.villa.includes(sec.partner)) continue;
+      if (!state.villa.includes(sec.who) || !state.villa.includes(sec.partner) || partnerOf(state, sec.who) !== sec.partner) continue;
       addBond(sec.who, sec.partner, -1.5 * sec.severity);
       jealousyHit(state, sec.partner, sec.who, sec.with || sec.who, 4 * sec.severity, { confirmed: true });
       addRelationshipDimension(sec.partner, sec.who, 'trust', -1.5 * sec.severity);

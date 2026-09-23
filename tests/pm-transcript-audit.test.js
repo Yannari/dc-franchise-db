@@ -2,6 +2,7 @@
 //
 //     npm run pm:transcript              seed 7
 //     PM_SEED=12 npm run pm:transcript   any other seed
+//     PM_CAST=26 PM_ROLES=10,8,8 …        another cast: size, then starters,bombshells,casa
 //
 // Writes transcripts/pm-season-<seed>.html (gitignored) and prints the path.
 // It uses js/pm/transcript.js — the SAME renderer as the simulator's episode
@@ -18,13 +19,14 @@ import { PM_TRANSCRIPT_CSS, momentTitle, episodeHeaderHtml, phasesOf, _sceneHtml
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 // Readable stand-ins for the synthetic cast (alternating f/m, as pm-cast makes them).
-const F = ['Priya', 'Amber', 'Chloe', 'Jess', 'Mia', 'Tasha', 'Ellie', 'Nadia', 'Sophie', 'Leah', 'Keisha'];
-const M = ['Theo', 'Jordan', 'Callum', 'Ryan', 'Marcus', 'Josh', 'Kai', 'Liam', 'Dan', 'Reece', 'Elliot'];
+const F = ['Priya', 'Amber', 'Chloe', 'Jess', 'Mia', 'Tasha', 'Ellie', 'Nadia', 'Sophie', 'Leah', 'Keisha', 'Gemma', 'Ruby', 'Faye', 'Lana', 'Zara', 'Cara', 'Olivia', 'Molly', 'Tanya'];
+const M = ['Theo', 'Jordan', 'Callum', 'Ryan', 'Marcus', 'Josh', 'Kai', 'Liam', 'Dan', 'Reece', 'Elliot', 'Sammy', 'Luca', 'Jake', 'Tom', 'Finn', 'Adam', 'Ovie', 'Shaq', 'Will'];
 const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
 it('writes a season transcript', () => {
   const seed = Number(process.env.PM_SEED) || 7;
-  const cast = makeIslanders(22, seed).map((p, i) => ({ ...p, name: (i % 2 === 0 ? F : M)[Math.floor(i / 2)] }));
+  const size = Number(process.env.PM_CAST) || 22;
+  const cast = makeIslanders(size, seed).map((p, i) => ({ ...p, name: (i % 2 === 0 ? F : M)[Math.floor(i / 2)] }));
   setPlayers(cast);
   const names = cast.map(p => p.name);
   // A mixed villa, so the dialects can be heard side by side. Casa Amor's
@@ -32,6 +34,11 @@ it('writes a season transcript', () => {
   const HOME = ['uk', 'us', 'scot', 'au', 'ie', 'essex', 'ca', 'geordie', 'nz', 'za', 'uk', 'us', 'uk', 'au', 'scot', 'uk'];
   const ABROAD = ['es', 'it', 'fr', 'br', 'de', 'es'];
   const setup = roleSetup(names);
+  // Roles by position, alternating f/m, so each side gets its share.
+  if (process.env.PM_ROLES) {
+    const [st, bo] = process.env.PM_ROLES.split(',').map(Number);
+    names.forEach((n, i) => { setup[n].role = i < st ? 'starter' : i < st + bo ? 'bombshell' : 'casa'; });
+  }
   names.forEach((n, i) => { setup[n].dialect = setup[n].role === 'casa' ? ABROAD[i % ABROAD.length] : HOME[i % HOME.length]; });
   const { rows } = playPerfectMatchSeason({ cast: names, setup, seed });
   const castList = names.map(n => `${esc(n)} <span class="pm-sub">${DIALECTS[setup[n].dialect].label}</span>`).join(' · ');
@@ -62,5 +69,15 @@ ${eps}
   const out = resolve(ROOT, 'transcripts', `pm-season-${seed}.html`);
   mkdirSync(dirname(out), { recursive: true });
   writeFileSync(out, html);
+  // …and a plain-text copy, for reading straight through.
+  const line = l => l.action ? `  (${l.text})` : `  ${l.who}: ${l.text}`;
+  const txt = rows.map(r => [`\n==== Episode ${r.num} — ${momentTitle(r)} (day ${(r.calendar || r.days || ['-'])[0]}) ====`,
+    ...phasesOf(r).flatMap(([, evs, label]) => [`\n-- ${label} --`, ...evs.flatMap(e => [
+      `[${e.kind}${e.extra?.of ? ' ' + e.extra.of : ''}${e.aired ? '' : ' · not aired'}]${e.script?.stage ? ' ' + e.script.stage : ''}`,
+      ...(e.script?.lines || []).map(line), ...(e.script?.beat ? [`  (${e.script.beat})`] : []),
+      ...(e.narrator?.lines || []).map(l => `  NARRATOR: ${l.text}`),
+      ...(e.hut?.script?.lines || []).map(l => `  HUT ${e.hut.who}: ${l.text}`)])]),
+    `  exits: ${(r.exits || []).map(x => `${x.name} (${x.verb}${x.channel ? ' ' + x.channel : ''})`).join(', ') || 'none'} · couples: ${(r.pm.couples || []).map(c => c.join('+')).join(', ')}`]).flat().join('\n');
+  writeFileSync(out.replace(/\.html$/, '.txt'), txt);
   process.stdout.write(`\n  transcript: ${out}\n\n`);
 });

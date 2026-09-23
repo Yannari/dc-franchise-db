@@ -31,7 +31,10 @@ function returnCeremony(state, rng, decisions) {
   const ret = (d, side) => {
     const partner = before[d.name];
     const players = [d.name, d.with || partner].filter(Boolean);
-    return ev('casa-return', players, { choice: d.choice, of: side, pop: d.choice === 'twist'
+    // What the one waiting decided, so a walk-in alone to a partner who has
+    // moved on is not "I told you I'd come back" / "Get over here".
+    const theirs = partner ? decided[partner]?.choice || null : null;
+    return ev('casa-return', players, { choice: d.choice, theirs, of: side, pop: d.choice === 'twist'
       ? { [d.name]: { approval: partner ? -BETRAYAL.casaTwist : 0.5, fame: 3 }, ...(partner ? { [partner]: { approval: 3, fame: 3 } } : {}) }
       : { [d.name]: { approval: partner ? 2 : 0, fame: 1.5 } } },
     d.choice === 'twist' ? players.concat(partner ? [partner] : []) : []);

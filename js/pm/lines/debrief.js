@@ -76,7 +76,7 @@ export const DEBRIEF = [
     ['b', "No. But {c} would want you to stay and win this."], ['a', "{c} would want me to stay and be annoying about it."]],
     beat: 'They both laugh, and it is the first laugh all night.' },
   { id: 'dn.ms.02', when: C3({ of: 'miss' }), turns: [
-    ['b', "How are you doing?"], ['a', "I keep looking round for {c}."], ['b', "Me too, honestly."],
+    ['b', "How are you doing?"], ['a', "I keep looking round for {c}."], ['b', "That's normal. It's only been a few hours."],
     ['a', "{c} was the one I told everything to."], ['b', "Then tell me instead. I'm not going anywhere."],
     ['a', "You don't know that."], ['b', "Then I'm not going anywhere tonight."]] },
   { id: 'dn.ms.03', when: C3({ of: 'miss' }), turns: [

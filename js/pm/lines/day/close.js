@@ -1,3 +1,4 @@
+import { CLOSE_MORE } from './close-more.js';
 // pm/lines/day/close.js — how a conversation ENDS. Data only.
 //
 // User (2026-09-23, reading a season): "a lot of discussions don't really
@@ -181,3 +182,6 @@ export const ANSWER = {
     { id: 'gw.pr.02', when: { of: 'promise' }, turns: [['a', "I heard {c} promise someone a date on the outside. Someone who isn't you."]] },
   ],
 };
+
+// The second pool of endings, sized past what an episode uses (close-more.js).
+for (const [k, v] of Object.entries(CLOSE_MORE)) CLOSE[k] = [...(CLOSE[k] || []), ...v];

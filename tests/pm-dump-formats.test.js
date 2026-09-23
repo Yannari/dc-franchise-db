@@ -82,7 +82,8 @@ describe('each format plays as the real show does', () => {
   });
   it('couples-vote: every couple names one, and nobody hears "public" that night', () => {
     for (const { seed, row, prev } of nights.filter(n => n.row.pm.dumpFormat === 'couples-vote')) {
-      expect(kinds(row).filter(k => k === 'couples-vote').length, `s${seed}`).toBe(prev.pm.couples.length);
+      // The couples as the vote found them: the day plays before it, and can split one.
+      expect(kinds(row).filter(k => k === 'couples-vote').length, `s${seed}`).toBe((row.pm.couplesBefore || prev.pm.couples).length);
       const said = row.pm.events.slice(row.pm.momentFrom).flatMap(e => e.script.lines.map(l => l.text)).join(' ');
       expect(said, `s${seed} e${row.num}`).not.toMatch(/the public/i);
     }

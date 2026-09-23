@@ -158,6 +158,17 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
     if (entry.moment === 'first-coupling') ctx.opening = nightOneOpening(state, ctx);
     const day = entry.moment === 'reunion' ? [] : [...(ctx.opening?.events || []), ...villaDayEvents(state, rng, entry, seed)];
     state.history.push(...day);
+    // The rest of the villa's day — the ladder, feelings, the rituals, the
+    // triangles, the fights, the breakdowns — BEFORE the night's moment, as
+    // the show runs: the day, then the fire pit, then the debrief. It used to
+    // run after the moment and be shown before it (a season-31 read: a close-off
+    // with a partner from a recoupling that had not happened yet on screen, a
+    // breakdown over photos that came later). What a fire pit causes plays out
+    // the next day, and the debrief carries the night itself.
+    // Nothing on the final's day either: that night is the declarations.
+    const vday = entry.moment === 'reunion' || entry.moment === 'final' ? [] : runVillaDay(state, streamFor(seed, `day:${entry.ep}${state.epSalt}`), entry);
+    day.push(...vday);
+    state.history.push(...vday);
     // A returning islander walks back in before the night's moment, so at a
     // recoupling they are a new arrival and choose first (pm/arrivals.js).
     const back = entry.oneOff === 'return' ? returnIslander(state, { ep: entry.ep, seed, rng }) : null;
@@ -176,11 +187,6 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
     growLove(state, state.couples);
     decideMasks(state, mrng);
     updateBeliefs(state);
-    // Nothing happens in the villa after the final's vote is counted: those
-    // scenes' approval landed on the reunion with nothing there to explain it.
-    const vday = entry.moment === 'reunion' || entry.moment === 'final' ? [] : runVillaDay(state, streamFor(seed, `day:${entry.ep}${state.epSalt}`), entry);
-    day.push(...vday);
-    state.history.push(...vday);
 
     const exits = [...m.exits];
     if (!ctx.closed) closeEpisode(state.ledger, state.ep, gs.popularity);
@@ -223,6 +229,8 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
       pm: { events: [...day, ...m.events], momentFrom: day.length, dumpFormat: m.extra && 'dumpFormat' in m.extra ? m.extra.dumpFormat : (entry.dumpFormat || null),
         arrivalRule: m.extra?.arrivalRule || null, firstFormat: m.extra?.firstFormat || null,
         oneOff: m.extra?.oneOff || null, ...(entry.ep === 1 ? { firstIn: state.firstIn } : {}), challenge: day.some(e => e.phase === 'challenge') ? entry.challenge : null, immune: m.extra?.immune || null, returned: m.extra?.returned || null, couples: state.couples.map(c => [...c]), villa: [...state.villa],
+        // The couples as the night's moment found them (the day plays first now).
+        couplesBefore: pre.couples.map(c => [...c]),
         shares: m.extra?.shares || null, bottom: m.extra?.bottom || null,
         // A tied save-one night keeps what settled it (the public's shares), so
         // a screen can say why the one with as many saves went home.

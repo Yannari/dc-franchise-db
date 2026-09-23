@@ -125,6 +125,29 @@ export function perfectMatchPicks() {
 }
 
 /**
+ * What each night does to the villa, for the Season Timeline (user: "I see 11
+ * left, then 11 again and again … I don't know when the dumpings are"). The
+ * count alone sat still because a bombshell walked in the night after
+ * somebody was dumped. From the same season the badge reads: who was there,
+ * who walked in, who left and how. null when no season can be built yet.
+ */
+export function perfectMatchNights() {
+  const real = _seasonRows();
+  if (!real) return null;
+  const out = new Map();
+  // Night one starts from the starters: a bombshell who walks in that night is an arrival too.
+  let prev = perfectMatchSeasonShape().starters || null;
+  for (const r of real) {
+    const end = (r.pm?.villa || []).length, left = r.exits || [];
+    const peak = end + left.length;
+    out.set(r.num, { start: prev ?? peak, peak, end, arrived: prev == null ? 0 : Math.max(0, peak - prev), moment: r.moment,
+      left: left.map(x => ({ verb: x.verb, channel: x.channel || null })) });
+    prev = end;
+  }
+  return out;
+}
+
+/**
  * How many islanders are in the villa going into each episode, for the Season
  * Timeline. Aired episodes use the villa they actually had; the rest are
  * projected on the season's own pace (pm/season.js): arrivals come in, each

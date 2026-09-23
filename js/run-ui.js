@@ -23,7 +23,7 @@ import { isTraitorsSeason, simulateTraitorsEpisode, rerunTraitorsEpisode,
   lastTraitorsRerunRefusal } from './tr-run.js';
 import { isPerfectMatchSeason, simulatePerfectMatchEpisode, perfectMatchCanRerun,
   lastPerfectMatchRefusal, rerunPerfectMatchEpisode, perfectMatchPendingChange, perfectMatchSeasonShape,
-  perfectMatchSlots, perfectMatchVillaCounts, perfectMatchEpisodes } from './pm-run.js';
+  perfectMatchSlots, perfectMatchVillaCounts, perfectMatchEpisodes, perfectMatchNights } from './pm-run.js';
 import { EPISODE_WORDS as PM_EPISODE_WORDS, SLOT_NAMES as PM_SLOT_NAMES, seasonSchedule as pmDrawSchedule, CHALLENGE_NAMES as PM_CHALLENGE_NAMES, RITUAL_NAMES as PM_RITUAL_NAMES } from './pm/schedule.js';
 import { episodeText as pmEpisodeText, momentTitle as pmMomentTitle } from './pm/transcript.js';
 import { isDragSeason, simulateDragEpisode, invalidateDragQueue,
@@ -2001,6 +2001,20 @@ function _randomizeVilla() {
     if (e.immunity) { const id = mine.find(t => t.pmApply?.immunity)?.id; if (id) book.push([e.ep, id]); }
     if (e.challenge) book.push([e.ep, 'pm-villa-challenge', { pmGame: e.challenge }]);
   }
+  // Movie Night, somewhere in the back half, as the real show moves it
+  // (after Casa Amor most years, but not always): any villa night from about
+  // halfway to the week before the final.
+  const last = Math.max(1, ...drawn.map(e => e.ep));
+  const mnOn = TWIST_CATALOG.find(t => t.id === 'pm-movie-night')?.pmOn || [];
+  const mnNights = drawn.filter(e => mnOn.includes(e.moment) && e.moment !== 'semi-final' && (e.ep - 1) / last >= 0.5 && (e.ep - 1) / last <= 0.85);
+  if (mnNights.length) book.push([mnNights[Math.floor(Math.random() * mnNights.length)].ep, 'pm-movie-night']);
+  // The Villa options with a choice in them: who walks in first on night one
+  // (the girls, most years) and the envelope at the final (most seasons since
+  // it arrived).
+  seasonConfig.pmFirstIn = Math.random() < 0.7 ? 'f' : 'm';
+  seasonConfig.pmSplitOrSteal = Math.random() < 0.8;
+  const fi = document.getElementById('cfg-pm-first-in'); if (fi) fi.value = seasonConfig.pmFirstIn;
+  const ss = document.getElementById('cfg-pm-split-or-steal'); if (ss) ss.checked = seasonConfig.pmSplitOrSteal;
   const keep = (seasonConfig.twistSchedule || []).filter(b => b && !ids.has(b.type));
   seasonConfig.twistSchedule = [...keep, ...book.map(([ep, type, more], i) => ({ id: `tw-${Date.now()}-${i}`, episode: ep, type, ...(more || {}) }))];
   localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
@@ -3807,6 +3821,9 @@ export function renderTimeline() {
   // recoupling, a bombshell, a vote — so the tile says which, how many walk
   // in, and on a vote night what a dumping booked here would decide.
   const _pmEps = isPerfectMatchSeason() ? new Map(perfectMatchSeasonShape().schedule.map(e => [e.ep, e])) : null;
+  // What each night does to the villa (arrivals, dumpings, walk-outs), from
+  // the season the badge counts — a still number said nothing about either.
+  const _pmNights = _pmEps ? perfectMatchNights() : null;
 
   let html = '';
   epMap.forEach(({ ep, active, phase }) => {
@@ -4173,7 +4190,9 @@ export function renderTimeline() {
     const markerClass = isFinale ? 'fd-ep-marker finale'
       : isJuryEp ? 'fd-ep-marker jury'
         : isMergeEp ? 'fd-ep-marker merge' : 'fd-ep-marker';
-    const markerText  = isFinale ? 'FINALE'
+    const _pmN = _pmNights?.get(ep) || null;
+    const markerText  = _pmN && !isFinale ? (_pmN.end !== _pmN.start ? `${_pmN.start} → ${_pmN.end} in the villa` : `${_pmN.end} in the villa`)
+      : isFinale ? 'FINALE'
       : isJuryEp ? `JURY · ${active} left`
         : isMergeEp ? `MERGE · ${active} left` : `${active} left`;
     // A castle has no tribes and no merge, so it has no PRE/POST to stamp — the
@@ -4225,12 +4244,24 @@ export function renderTimeline() {
       : '';
 
     // The villa's own row: arrivals, and the vote slot this night is.
-    const _pmArr = _pmEp?.arrivals?.bombshell || 0;
+    const _pmArr = _pmN ? _pmN.arrived : (_pmEp?.arrivals?.bombshell || 0);
+    // Who leaves tonight, and how: the public, the recoupling, a walk-out.
+    const _pmHow = { recoupling: 'at the recoupling', public: 'by the public', singles: 'by the public', save: 'at the vote',
+      'top-couple': 'by the top couple', couples: 'by the couples', exes: 'by the exes', casa: 'from Casa Amor' };
+    const _pmLeft = _pmN?.left?.length ? Object.entries(_pmN.left.reduce((m, x) => {
+      const k = x.verb === 'walked' ? 'walked out' : _pmN.moment === 'semi-final' ? 'dumped at the semi-final'
+        : `dumped ${_pmHow[x.channel] || 'at the vote'}`; m[k] = (m[k] || 0) + 1; return m; }, {}))
+      .map(([k, n]) => `−${n} ${k}`) : [];
     const _pmBooked = twists.some(x => { const c = TWIST_CATALOG.find(k => k.id === x.type); return c?.pmFormat || c?.pmOn; });
     const _pmDraws = _pmEp && (_pmEp.slot || _pmEp.moment === 'bombshell' || _pmEp.moment === 'first-coupling');
-    const villaRow = _pmEp && (_pmArr || _pmDraws)
+    // The afternoon's named challenge, drawn or booked (resolveRandomGames
+    // runs when the season plays, so a Random booking says so).
+    const _pmGame = _pmEp?.challenge ? (_pmEp.challenge === 'random' ? 'a random challenge' : PM_CHALLENGE_NAMES[_pmEp.challenge] || _pmEp.challenge) : null;
+    const villaRow = _pmEp && (_pmArr || _pmDraws || _pmLeft.length || _pmGame)
       ? `<div class="fd-ep-comps" style="display:flex;gap:6px;flex-wrap:wrap;min-width:0;margin-top:5px;padding-top:5px;border-top:1px solid rgba(224,70,124,0.18);font-size:10.5px;color:var(--muted,#7d8590)">
           ${_pmArr ? `<span style="color:#f59e0b;font-weight:700">+${_pmArr} arriving</span>` : ''}
+          ${_pmLeft.map(s => `<span style="color:#e0467c;font-weight:700">${_hubEsc(s)}</span>`).join('')}
+          ${_pmGame ? `<span style="color:#22d3ee;font-weight:700">Challenge: ${_hubEsc(_pmGame)}</span>` : ''}
           ${_pmEp.slot ? `<span>${_hubEsc(PM_SLOT_NAMES[_pmEp.slot] || 'an extra public vote')}${_pmBooked ? '' : ' · drawn at random'}</span>`
             : _pmDraws && !_pmBooked ? '<span>drawn at random</span>' : ''}
         </div>`

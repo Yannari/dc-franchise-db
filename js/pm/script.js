@@ -22,11 +22,12 @@ import { LADDER } from './lines/ladder.js';
 import { FEELINGS } from './lines/feelings.js';
 import { MOMENTS as MOMENT_LINES } from './lines/moments.js';
 import { CHALLENGE_LINES } from './lines/challenges.js';
+import { CLOSE, ANSWER } from './lines/day/close.js';
 import { HUT } from './lines/hut.js';
 import { NARRATOR } from './lines/narrator.js';
 import { DIALECTS, slotWord, US_SPELLING, US_SPELLERS, ESL_EXPANSIONS } from './lines/dialect.js';
 
-export const POOLS = { ...DAY, ...LADDER, ...FEELINGS, ...MOMENT_LINES, ...CHALLENGE_LINES };
+export const POOLS = { ...DAY, ...LADDER, ...FEELINGS, ...MOMENT_LINES, ...CHALLENGE_LINES, ...CLOSE, ...ANSWER };
 export { HUT, NARRATOR };
 
 export const SPEAKERS = ['a', 'b', 'c', 'dior', 'narrator'];
@@ -34,7 +35,7 @@ export const FACT_KEYS = ['rung', 'thinks', 'persona', 'intent', 'attachment', '
   'early', 'coupled', 'gap', 'knows', 'faking', 'bPersona', 'bMood', 'bRung', 'stance', 'family',
   'choice', 'cause', 'channel', 'grudge', 'stole', 'bTaken', 'archetype', 'taken', 'loyal', 'late', 'gender', 'bGender', 'myRung', 'phase', 'kind', 'role', 'withB', 'newArrival', 'dialect',
   'comfortedYesterday', 'rowedBefore', 'rowedToday', 'feels', 'of', 'knowsB', 'verdict', 'noticed',
-  'reason', 'split', 'guessed', 'stoleFrom', 'full', 'hasQuote', 'rank', 'cast', 'justMet', 'rebuffed', 'heard', 'kissed', 'promised'];
+  'reason', 'split', 'guessed', 'stoleFrom', 'full', 'hasQuote', 'rank', 'cast', 'justMet', 'rebuffed', 'heard', 'kissed', 'promised', 'sec', 'lastBy'];
 
 // Archetype groups a pool may name instead of listing them (CLAUDE.md).
 export const VILLAINS = ['villain', 'mastermind', 'schemer'];
@@ -127,6 +128,9 @@ export function factsFor(state, ev) {
   f.promised = !!ev.extra?.promised;   // a pull that ended in plans for the outside
   // Gossip carrying a debrief: the teller heard it said (pm/debrief.js), never saw it.
   f.heard = !!(ev.extra?.secret && state.secrets?.find(s => s.id === ev.extra.secret)?.said);
+  // Gossip: what kind of thing it was (pull · kiss · bed · said · promise), so
+  // a line only says "kissed" about a kiss (lines/day.js SEC_OF).
+  f.sec = ev.extra?.secret ? state.secrets?.find(s => s.id === ev.extra.secret)?.kind || null : null;
   f.cast = ev.players.filter(Boolean).length;   // how many are in it, when one is optional
   f.withB = !!b;                       // somebody else is in the scene
   f.hasQuote = !!clipSlots(state, ev).quote;   // the replayed clip has a line to quote
@@ -380,7 +384,43 @@ export function scriptFor(state, ev) {
   const entry = pool?.length ? pickScript(state, pool, ps, factsFor(state, { ...ev, players: ps })) : null;
   const e = entry || placeholder(ev.kind);
   noteUse(state, e, ps);
-  return renderScript(e, ps, state, clipSlots(state, ev));
+  const opened = renderScript(e, ps, state, clipSlots(state, ev));
+  return entry ? closed(state, ev, entry, opened, ps) : opened;
+}
+
+// ── how a conversation ends (lines/day/close.js) ──────────────────────
+// A talking scene that opened short gets an ending: the question it stopped
+// on answered, then a close picked by what the engine decided the scene did
+// (ev.extra.close). The opener's own beat stays where it happened, as an
+// action between the lines. A long opener, one with its own branching
+// replies, or one that already ends with somebody leaving, is already a scene.
+// An ending already there: somebody leaves, or the words run out on the page.
+const EXIT = /\b(walks?|walking|goes|gets up|storms|leaves|already on|is up off|goes to bed|rest of the|says anything else|another word|doesn't speak|does not speak)\b/i;
+// An argument's question is rhetorical ("Both of them?"): it is answered by the ending, not by a reply.
+const NO_ANSWER = new Set(['argument', 'loyalty']);
+function closed(state, ev, entry, opened, ps) {
+  const pool = POOLS[`${ev.kind}-close`];
+  const close = ev.extra?.close;
+  if (!pool || !close || opened.lines.length >= 5 || (entry.turns || []).some(t => !Array.isArray(t))
+    || (opened.beat && EXIT.test(opened.beat))) return opened;
+  const facts = factsFor(state, { ...ev, players: ps });
+  const last = opened.lines[opened.lines.length - 1];
+  const lastBy = !last ? null : last.who === speakerName('a', ps) ? 'a' : last.who === speakerName('b', ps) ? 'b' : null;
+  const asked = !!last && !!lastBy && /\?["”]?\s*$/.test(last.text);
+  const add = [];
+  const take = (key, of) => {
+    const p = POOLS[key];
+    const got = p?.length ? pickScript(state, p, ps, { ...facts, lastBy, of }) : null;
+    if (got) { noteUse(state, got, ps); add.push(renderScript(got, ps, state)); }
+  };
+  if (ev.kind === 'gossip') { if (!entry.told) take('gossip-what', facts.sec || 'pull'); }
+  else if (asked && !NO_ANSWER.has(ev.kind)) take('answer-close', null);
+  take(`${ev.kind}-close`, close === true ? null : close);
+  if (!add.length) return opened;
+  const act = text => ({ who: '', text, action: true });
+  const lines = [...opened.lines, ...(opened.beat ? [act(opened.beat)] : [])];
+  add.forEach((s, i) => { lines.push(...s.lines); if (s.beat && i < add.length - 1) lines.push(act(s.beat)); });
+  return { id: [opened.id, ...add.map(s => s.id)].join('+'), stage: opened.stage, lines, beat: add[add.length - 1].beat };
 }
 
 /**
@@ -487,5 +527,5 @@ export function familyOf(kind) {
 /** Flatten a scene to plain text — for the text backlog, the audit and any reader that wants one string. */
 export function scriptText(s) {
   if (!s) return '';
-  return [s.stage, ...s.lines.map(l => `${l.who}: "${l.text}"`), s.beat].filter(Boolean).join('\n');
+  return [s.stage, ...s.lines.map(l => l.action ? l.text : `${l.who}: "${l.text}"`), s.beat].filter(Boolean).join('\n');
 }

@@ -223,3 +223,27 @@ DAY.gossip = [...DAY.gossip, ...HEARD];
 DAY.pull = [...DAY.pull, ...SECRET_LINES.pull];
 // A pull that ended in plans for the outside (lines/breakdown.js): `promised` leads.
 DAY.pull = [...DAY.pull, ...PROMISE_LINES];
+// Gossip says only what the secret was (user: "don't invent things"): a line
+// that says "kissed" needs a kiss, "all over someone" something physical,
+// "I saw" something seen rather than said. `sec` is the secret's kind
+// (pm/script.js factsFor); the openers not listed fit any of them.
+const PHYSICAL = ['kiss', 'bed'], CLOSE_TO = ['pull', 'kiss', 'bed', 'promise'], FLIRT = ['pull', 'kiss', 'promise'];
+const SEC_OF = {
+  'gossip.01': PHYSICAL, 'jm.gossip.04': PHYSICAL, 'gossip.12': ['kiss'], 'gs2.04': ['kiss'], 'gs2.02': ['bed'], 'gossip.22': ['bed'],
+  'gossip.03': CLOSE_TO, 'gossip.09': CLOSE_TO, 'gossip.11': CLOSE_TO, 'gs2.03': ['kiss', 'bed', 'promise'],
+  'jm.gossip.01': FLIRT, 'jm.gossip.05': FLIRT, 'gs2.11': FLIRT, 'gossip.24': FLIRT, 'gs2.01': ['pull', 'promise'], 'gs2.09': ['pull', 'promise'],
+  // "I saw …": seen, so never what was only said
+  'gossip.02': CLOSE_TO, 'gossip.04': CLOSE_TO, 'gossip.05': CLOSE_TO, 'gossip.06': CLOSE_TO, 'gossip.07': CLOSE_TO, 'gossip.13': CLOSE_TO,
+  'gossip.14': CLOSE_TO, 'gossip.15': CLOSE_TO, 'gossip.16': CLOSE_TO, 'gossip.21': CLOSE_TO, 'gossip.23': CLOSE_TO,
+  'gs2.06': CLOSE_TO, 'gs2.13': CLOSE_TO, 'jm.gossip.02': CLOSE_TO,
+};
+// The openers that SAY what it was ("{c} kissed someone") are `told`; the rest
+// get the line that says it (lines/day/close.js gossip-what), so no telling
+// ends on "It's about {c}" and nothing else.
+const TOLD = new Set(['gossip.01', 'gossip.03', 'gossip.09', 'gossip.11', 'gossip.12', 'gossip.22', 'gossip.24', 'jm.gossip.01', 'jm.gossip.04',
+  'jm.gossip.05', 'gs2.01', 'gs2.02', 'gs2.03', 'gs2.04', 'gs2.09', 'gs2.11']);
+DAY.gossip = DAY.gossip.map(e => {
+  const out = SEC_OF[e.id] ? { ...e, when: { ...(e.when || {}), sec: SEC_OF[e.id] } } : { ...e };
+  if (TOLD.has(e.id) || e.when?.heard) out.told = true;
+  return out;
+});

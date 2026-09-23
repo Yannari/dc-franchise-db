@@ -57,7 +57,7 @@ function sceneHtml(e) {
   const s = e.script || { lines: [] };
   const lines = [
     s.stage ? `<p class="pm-stage">${esc(s.stage)}</p>` : '',
-    ...s.lines.map(l => `<p class="pm-line"><b>${esc(l.who)}:</b> “${esc(l.text)}”</p>`),
+    ...s.lines.map(l => l.action ? `<p class="pm-stage">${esc(l.text)}</p>` : `<p class="pm-line"><b>${esc(l.who)}:</b> “${esc(l.text)}”</p>`),
     s.beat ? `<p class="pm-beat">${esc(s.beat)}</p>` : '',
   ].join('');
   const narr = e.narrator ? `<p class="pm-narr">${e.narrator.lines.map(l => `<b>${esc(l.who)}:</b> “${esc(l.text)}”`).join(' ')}</p>` : '';
@@ -164,7 +164,7 @@ export function episodeText(row) {
     for (const e of evs) {
       const s = e.script || { lines: [] };
       if (s.stage) out.push(`(${s.stage})`);
-      for (const l of s.lines) out.push(`${l.who}: "${l.text}"`);
+      for (const l of s.lines) out.push(l.action ? l.text : `${l.who}: "${l.text}"`);
       if (s.beat) out.push(`(${s.beat})`);
       if (e.narrator) for (const l of e.narrator.lines) out.push(`${l.who}: "${l.text}"`);
       if (e.hut) for (const l of e.hut.script.lines) out.push(`  [beach hut] ${l.who}: "${l.text}"`);

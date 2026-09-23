@@ -23,7 +23,10 @@ import { phasesOf, momentTitle } from '../pm/transcript.js';
 import { CHALLENGE_NAMES } from '../pm/schedule.js';
 import { SHOWS } from '../shows.js';
 
-export const MAX_STEPS = 20;
+// 20 until the conversations got their endings (lines/day/close.js, 2026-09-23):
+// a talking scene roughly doubled, and at 20 an episode ran 28 screens. The
+// extra length goes into each part of the day, not into more screens.
+export const MAX_STEPS = 30;
 const words = () => SHOWS['perfect-match'].words;
 
 // ── what each scene is called on the headline pill ────────────────────
@@ -271,6 +274,8 @@ export function sceneSteps(row, e, evIndex, bg) {
   };
   if (!lines.length) make('stage', null, s.stage || KIND_LABEL[e.kind] || e.kind, 'stage');
   lines.forEach((l, i) => {
+    // An action between the lines (a conversation's own beat, before its ending).
+    if (l.action) { make('action', null, l.text, 'stage', { line: i }); return; }
     const voice = l.who === host ? 'dior' : l.who === narrator ? 'narrator' : e.kind === 'challenge-text' && i === 0 ? 'text' : '';
     make('line', l.who, l.text, voice, { line: i });
   });

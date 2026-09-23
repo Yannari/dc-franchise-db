@@ -26,7 +26,8 @@ describe('an event becomes a scene', () => {
       const all = [e.script, e.hut?.script].filter(Boolean);
       for (const s of all) {
         expect(scriptText(s), `${e.kind} ${s.id}`).not.toMatch(/\{[abc]/);
-        for (const l of s.lines) expect(l.who, s.id).toBeTruthy();
+        // An action between the lines (a conversation's own beat) has no speaker.
+        for (const l of s.lines) if (!l.action) expect(l.who, s.id).toBeTruthy();
       }
     }
   });

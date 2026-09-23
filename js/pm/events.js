@@ -15,7 +15,8 @@ import { attr, nudgeAttraction, ickHit } from './chemistry.js';
 import { recordAired, nudgeBelief, BETRAYAL } from './ledger.js';
 import { romance, shown, revealTruth } from './feelings.js';
 import { closedness, betrayalWeight } from './ladder.js';
-import { feel, jealousyHit } from './emotions.js';
+import { feel, jealousyHit, attachment } from './emotions.js';
+import { streamFor } from '../dr/rng.js';
 import { girlCode, judgement } from './circle.js';
 import { scriptFor, hutFor, moodOf, narratorFor } from './script.js';
 
@@ -420,6 +421,52 @@ export const KINDS = {
       apply: (s, ev) => ({ pop: ev.extra.pop || {}, major: ev.extra.majorPop || [] }) }])),
 };
 
+// ── how a conversation ends ───────────────────────────────────────────
+// User: "a lot of discussions don't really finish". Each talking kind ends one
+// way or another, and the ending does something: an argument that is made up
+// gives back some of what it cost; one that ends in a walk-off costs more;
+// gossip that is taken quietly leaves them lonely, angrily leaves them
+// stressed, gratefully brings them closer to the one who told them.
+const T = (s, n) => S(s, n).temperament ?? 5;
+const ENDINGS = {
+  chat: (s, ev) => {
+    const [a, b] = ev.players;
+    const r = (romance(a, b) + romance(b, a)) / 2;       // words only: the chat's own bond already moved
+    // The day they met, nobody knows yet whether it is clicking.
+    if (metToday(s, a, b)) return r >= 4 ? 'warm' : 'easy';
+    return r >= 5 ? 'warm' : r >= 2.5 ? 'easy' : 'flat';
+  },
+  'deep-chat': (s, ev, rng) => {
+    const [a, b] = ev.players;
+    // In proportion to how much b keeps people out.
+    if (rng() < 0.8 * attachment(s.profiles[b]).avoidance) { feel(s, a, 'security', -0.3); return 'guarded'; }
+    addRelationshipDimension(a, b, 'trust', 0.3); addRelationshipDimension(b, a, 'trust', 0.3);
+    return 'open';
+  },
+  friendship: (s, ev) => { addRelationshipDimension(ev.players[0], ev.players[1], 'trust', 0.2); return true; },
+  pull: (s, ev) => ev.extra.rebuffed ? 'turned-down' : ev.extra.kissed ? 'kissed' : ev.extra.promised ? 'promised' : 'flirt',
+  loyalty: () => true,
+  argument: (s, ev, rng) => {
+    const [a, b] = ev.players;
+    const calm = (T(s, a) + T(s, b)) / 20, hot = (10 - Math.min(T(s, a), T(s, b))) / 10;
+    const r = rng(), pm = 0.1 + 0.55 * calm, pw = 0.1 + 0.4 * hot;
+    if (r < pm) { addBond(a, b, 0.4); return 'make-up'; }
+    if (r < pm + pw) { addBond(a, b, -0.2); feel(s, a, 'stress', 0.4); feel(s, b, 'stress', 0.4); return 'walk-off'; }
+    addRelationshipDimension(a, b, 'resentment', 0.3); addRelationshipDimension(b, a, 'resentment', 0.3);
+    return 'simmer';
+  },
+  gossip: (s, ev, rng) => {
+    const [w, p, x] = ev.players;
+    const hot = (10 - T(s, p)) / 10 * 0.5 + (S(s, p).boldness ?? 5) / 10 * 0.3;
+    const inward = attachment(s.profiles[p]).avoidance * 0.5 + (1 - (S(s, p).boldness ?? 5) / 10) * 0.3;
+    const r = rng() * (hot + inward + 0.5);
+    if (r < hot) { feel(s, p, 'stress', 0.6); addRelationshipDimension(p, x, 'resentment', 0.4); return 'angry'; }
+    if (r < hot + inward) { feel(s, p, 'loneliness', 0.5); return 'quiet'; }
+    addBond(p, w, 0.4);
+    return 'thanks';
+  },
+};
+
 export const PHASE_KINDS = {
   // The small slots (a morning pull, an evening chat or joke) are there for
   // the lines written for them: a gate on a phase its kind never plays at is
@@ -448,6 +495,10 @@ export function makeEvent(state, rng, { phase, kind, players, extra = {}, aired 
   state._today = [...today(state), ev];
   const res = def.apply(state, ev, rng) || {};
   ev.pop = res.pop || {};
+  // How the conversation ends, decided here with what it does — the words
+  // follow (pm/script.js closed). Its own dice, so no other draw moves.
+  const endOf = ENDINGS[kind];
+  if (endOf) ev.extra.close = endOf(state, ev, streamFor(state.seed || 1, `close:${ev.id}`));
   ev.script = scriptFor(state, ev);
   for (const n of res.major || []) if (!ev.major.includes(n)) ev.major.push(n);
   if (players.length && rng() < HUT_RATE) {

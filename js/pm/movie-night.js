@@ -54,7 +54,7 @@ function titleFor(c, used) {
 /** The clip's own words, as they were said: the only thing Movie Night shows. */
 function footage(e, hutOnly) {
   const src = hutOnly ? e.hut?.script : e.script;
-  const lines = (src?.lines || []).map(l => ({ who: l.who, text: l.text }));
+  const lines = (src?.lines || []).map(l => ({ who: l.who, text: l.text, ...(l.action ? { action: true } : {}) }));
   return { lines, stage: hutOnly ? null : src?.stage || null, beat: hutOnly ? null : src?.beat || null };
 }
 

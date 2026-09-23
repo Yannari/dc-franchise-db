@@ -421,6 +421,7 @@ details.pmv-debug[open] summary::before{transform:rotate(45deg)}
 /* the Debug screen */
 .pmv-debug .pmv-panel h3{font:20px/1 'Bebas Neue';letter-spacing:.14em;color:var(--pink)}
 .pmv-emo{display:grid;grid-template-columns:repeat(6,1fr);gap:3px;font-size:10.5px}
+.pmv-attach{display:grid;grid-template-columns:auto 1fr auto 1fr;gap:4px 8px;align-items:center;font-size:10.5px;color:var(--muted)}
 .pmv-emo span{text-align:center}
 @media (max-width:640px){
   .pmv-stage{aspect-ratio:4/5;width:min(100%, calc(44vh * 4 / 5))}

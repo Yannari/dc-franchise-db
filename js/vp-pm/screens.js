@@ -251,6 +251,11 @@ function debugHtml(row) {
   const emoRows = villa.map(n => { const e = emo[n] || {};
     return `<div class="${P('mrow')}">${mini(n)}<div><div class="${P('nm')}"><span>${esc(n)}</span></div><div class="${P('emo')}">${
       ['security', 'confidence', 'stress', 'jealousy', 'heartbreak', 'guilt'].map(k => `<span title="${k}">${k.slice(0, 4)} ${Math.round((e[k] || 0) * 10) / 10}</span>`).join('')}</div></div></div>`; }).join('');
+  const att = row.pm.attach || {};
+  const bar = (v, c) => `<div class="${P('gauge')}"><i style="left:0;width:${Math.round(100 * Math.min(1, v || 0))}%;background:${c}"></i></div>`;
+  const attachRows = villa.map(n => { const a = att[n] || {};
+    return `<div class="${P('mrow')}">${mini(n)}<div><div class="${P('nm')}"><span>${esc(n)}</span><span class="${P('lab')}">${esc(a.label || '—')} · ${esc(String(a.persona || '').replace(/-/g, ' '))} · prone ×${a.prone ?? '—'}</span></div>
+      <div class="${P('attach')}"><span>anxious</span>${bar(a.anxiety, 'linear-gradient(90deg,#fbbf24,#f97316)')}<span>avoidant</span>${bar(a.avoidance, 'linear-gradient(90deg,#60a5fa,#6366f1)')}</div></div></div>`; }).join('');
   const heat = (i, colour) => `<table class="${P('heat')}"><tr><th></th>${villa.map(n => `<th class="${P('rot')}"><span>${esc(n)}</span></th>`).join('')}</tr>
     ${villa.map(a => `<tr><th style="text-align:right">${esc(a)}</th>${villa.map(b => {
       if (a === b) return `<td class="${P('self')}"></td>`;
@@ -267,6 +272,7 @@ function debugHtml(row) {
       <div class="${P('panel')}"><h3>Public approval</h3>${mood}</div>
       <div class="${P('panel')}"><h3>Fame</h3>${fameRows}</div>
       <div class="${P('panel')} ${P('wide')}"><h3>Feelings</h3>${emoRows}</div>
+      <div class="${P('panel')} ${P('wide')}"><h3>Attachment · who breaks</h3><p class="${P('note')}">Worked out from the stats: anxious = loyalty × a short fuse (cares a lot, reacts hard); avoidant = low loyalty × strategy (keeps a distance). Proneness scales the chance of a breakdown — attachment, persona and archetype — 1 is average.</p>${attachRows}</div>
       <div class="${P('panel')} ${P('wide')}"><h3>Romance · row feels for column</h3>${heat(0, rom)}</div>
       <div class="${P('panel')} ${P('wide')}"><h3>Friendship · row feels for column</h3>${heat(1, fr)}</div>
     </div></div>`;

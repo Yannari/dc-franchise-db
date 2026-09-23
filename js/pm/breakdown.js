@@ -33,7 +33,7 @@ const PERSONA_PRONE = { 'hopeless-romantic': 1.3, wallflower: 1.2, messy: 1.15, 
 // give everything feel it most.
 const ARCH_PRONE = { villain: 0.7, mastermind: 0.7, schemer: 0.75, 'challenge-beast': 0.85, hero: 0.95, floater: 1,
   hothead: 1.1, 'loyal-soldier': 1.15, underdog: 1.15, showmancer: 1.2, 'social-butterfly': 1.05, goat: 1.05 };
-function proneness(state, a) {
+export function proneness(state, a) {
   const prof = state.profiles[a];
   const att = prof ? attachment(prof) : { anxiety: 0, avoidance: 0 };
   const arch = players.find(p => p.name === a)?.archetype;
@@ -45,15 +45,15 @@ function causeOf(state, a) {
   const jea = Math.max(0, ...Object.values(e.jealousy || {}));
   // Heartbreak and guilt lead (measured: stress at full weight was the cause
   // of 16 breakdowns in 19 — it builds all season and drowned the rest).
-  const parts = [['heartbreak', e.heartbreak * 1.4], ['stress', e.stress * 0.6], ['lonely', e.loneliness * 0.9],
-    ['guilt', e.guilt * 1.2], ['jealousy', jea * 0.8]];
+  const parts = [['heartbreak', e.heartbreak * 2], ['stress', e.stress * 0.45], ['lonely', e.loneliness * 0.9],
+    ['guilt', e.guilt * 1.3], ['jealousy', jea * 0.9]];
   // Homesick: somebody lonely and low who has been in the villa a long time.
   const days = state.ep - (state.ledger?.firstEp?.[a] ?? state.ep);
   if (days >= 5) parts.push(['homesick', 0.5 * e.loneliness + 0.4 * (10 - e.security) / 2]);
   return parts.sort((x, y) => y[1] - x[1])[0];
 }
 
-/** At most one breakdown an episode, and never at the final or the reunion. */
+/** At most one breakdown an episode; never at the final or the reunion. */
 export function breakdowns(state, rng, entry = null) {
   if (entry && (entry.moment === 'final' || entry.moment === 'reunion')) return [];
   const last = state.lastBreakdown ||= {};
@@ -68,7 +68,11 @@ export function breakdowns(state, rng, entry = null) {
     const load = 1.3 * e.heartbreak * loved + 0.6 * e.stress + 0.6 * e.loneliness + 0.9 * e.guilt;
     // In proportion to the load and who they are, held back by a steady
     // temper and feeling safe.
-    const p = Math.max(0, Math.min(0.6, (load - 4) / 16 * (1.3 - temper / 10) * (1.2 - e.security / 12) * proneness(state, a)));
+    // (The user's call: three or four a season — one every four or five
+    // episodes. The real show's big ones run six to ten a series (UK 5's
+    // Amber, Anna, Amy, Yewande, Joanna), but here every dumping, Casa
+    // return and Movie Night already has someone in tears in its own scene.)
+    const p = Math.max(0, Math.min(0.6, (load - 3.3) / 11.5 * (1.3 - temper / 10) * (1.2 - e.security / 12) * proneness(state, a)));
     if (p > 0 && weight > 0) cands.push({ a, cause, p, load });
   }
   cands.sort((x, y) => y.load - x.load);

@@ -21,7 +21,8 @@ import { runChallenge } from './challenges.js';
 import { romance, friendship, shown, believed, growLove, updateBeliefs, decideMasks,
   relationshipLabel } from './feelings.js';
 import { syncLadder, stepOf } from './ladder.js';
-import { emo, attachmentLabel, walkRisk } from './emotions.js';
+import { emo, attachment, attachmentLabel, walkRisk } from './emotions.js';
+import { proneness } from './breakdown.js';
 import { runVillaDay } from './villa-day.js';
 import { seasonSchedule, withPicks, withBookings, buildSchedule, FINAL_COUPLES } from './schedule.js';
 import { MOMENTS, nightOneOpening } from './moments.js';
@@ -233,6 +234,14 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
           return [n, { security: e.security, confidence: e.confidence, loneliness: e.loneliness,
             guilt: e.guilt, heartbreak: e.heartbreak, stress: e.stress,
             jealousy: Math.max(0, ...Object.values(e.jealousy), 0) }];
+        })),
+        // Who they are underneath, for the Debug screen (user: "can I see the
+        // attachment somewhere, like in debug?"): attachment from the stats,
+        // persona, and how prone the model makes them to a breakdown.
+        attach: Object.fromEntries(state.villa.map(n => {
+          const a = attachment(state.profiles[n]);
+          return [n, { anxiety: Math.round(a.anxiety * 100) / 100, avoidance: Math.round(a.avoidance * 100) / 100,
+            label: attachmentLabel(state.profiles[n]), persona: state.profiles[n].persona, prone: Math.round(proneness(state, n) * 100) / 100 }];
         })),
         ...(entry.ep === 1
           ? { attachment: Object.fromEntries(state.villa.map(n => [n, attachmentLabel(state.profiles[n])])) }

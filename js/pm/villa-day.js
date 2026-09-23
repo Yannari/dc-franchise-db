@@ -19,6 +19,8 @@ import { BETRAYAL } from './ledger.js';
 import { movieNight } from './movie-night.js';
 import { secondChances } from './exes.js';
 import { blowups } from './blowup.js';
+import { breakdowns } from './breakdown.js';
+import { streamFor } from '../dr/rng.js';
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 const pick = (rng, arr) => (arr.length ? arr[Math.floor(rng() * arr.length)] : null);
@@ -241,6 +243,9 @@ export function runVillaDay(state, rng, entry) {
   // When it kicks off (pm/blowup.js): after the night's reveals — Movie Night
   // included — never before them.
   out.push(...blowups(state, rng, entry, out));
+  // …and when it all gets too much (pm/breakdown.js): after the night's hurt.
+  // (On its own dice, so the rest of the day plays exactly as it did without it.)
+  out.push(...breakdowns(state, streamFor(state.seed ?? 1, `breakdown:${state.ep}${state.epSalt || ''}`), entry));
   tickEmotions(state);
   return out;
 }

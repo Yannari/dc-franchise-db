@@ -491,6 +491,18 @@ details.pmv-debug[open] summary::before{transform:rotate(45deg)}
 .pmv-poster.pmv-go::after{content:'';position:absolute;inset:-7px;border-radius:14px;border:3px dotted #fff3b0;animation:pmv-chase .35s linear infinite}
 @keyframes pmv-chase{50%{border-color:#ff8cc6}}
 
+/* ── A BREAKDOWN: the stage goes cold and still; warmth when someone comes ── */
+.pmv-stage.pmv-tears .pmv-scene{filter:saturate(.35) brightness(.72) hue-rotate(-12deg);transition:filter 1.4s}
+.pmv-stage.pmv-tears .pmv-vign{background:radial-gradient(90% 75% at 50% 45%,#0000 35%,#0a1030dd)}
+.pmv-stage.pmv-tears .pmv-cam{transform:scale(1.1);transition:transform 6s ease-out}
+.pmv-stage.pmv-tears::after{content:'';position:absolute;inset:0;z-index:6;pointer-events:none;opacity:.55;
+  background-image:radial-gradient(1.5px 5px at 12% 10%,#cfe2ffcc,#0000),radial-gradient(1.5px 5px at 32% 30%,#cfe2ffaa,#0000),
+  radial-gradient(1.5px 5px at 58% 5%,#cfe2ffcc,#0000),radial-gradient(1.5px 5px at 78% 22%,#cfe2ffaa,#0000),radial-gradient(1.5px 5px at 90% 45%,#cfe2ff99,#0000);
+  background-size:100% 100%;animation:pmv-drift 5s linear infinite}
+@keyframes pmv-drift{from{background-position:0 -40%}to{background-position:0 140%}}
+.pmv-stage.pmv-warmth .pmv-scene{filter:saturate(.7) brightness(.9);transition:filter 1.4s}
+.pmv-stage.pmv-warmth .pmv-vign{background:radial-gradient(90% 75% at 50% 55%,#ffb35c33 0%,#0000 45%,#1a0a20bb)}
+
 /* ── A BLOW-UP: the tug of war, and the crack down the middle ── */
 .pmv-crack{position:absolute;left:50%;top:0;bottom:0;width:3px;z-index:4;pointer-events:none;opacity:0;transform:translateX(-50%);
   background:linear-gradient(180deg,#0000,#ff3b3b 20%,#ff3b3b 80%,#0000);box-shadow:0 0 18px #ff3b3b,0 0 40px #ff3b3b88;

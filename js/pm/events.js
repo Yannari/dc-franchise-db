@@ -143,9 +143,13 @@ export const KINDS = {
         * (1 - 0.6 * S(s, a).loyalty / 10) * (1 - 0.4 * (pa ? closedness(s, a, pa) : 0));
       ev.extra.kissed = kissed;
       if (kissed) { nudgeAttraction(s, a, b, 0.4); nudgeAttraction(s, b, a, 0.4); }
-      // A kiss weighs more than a chat — 1.3, not 1.6: at 1.6, with the
-      // bad-mouthing, four-couple finals fell 97% → 93% (measured, each alone).
-      const weight = kissed ? 1.3 : 1;
+      // A kiss weighs more than a chat (1.3 — see the measurement in git history).
+      // …or no kiss, but a promise: plans for the outside with somebody else
+      // (the show's "chats about life outside the villa" — emotional cheating).
+      const promised = !kissed && !rebuffed && !!pa && rng() < light * 0.25 * ((attr(s, a, b) ?? 0) / 10) * ((attr(s, b, a) ?? 0) / 10)
+        * (1 - 0.6 * S(s, a).loyalty / 10);
+      ev.extra.promised = promised;
+      const weight = kissed ? 1.3 : promised ? 1.15 : 1;
       // Only a pull b went along with is b's secret; a made the move either way.
       for (const [x, y, sev0] of rebuffed ? [[a, b, 1]] : [[a, b, 1], [b, a, 0.7]]) {
         const sev = sev0 * weight;
@@ -153,7 +157,7 @@ export const KINDS = {
         if (!p || p === y) continue;
         const witnesses = roomMates(s, x).filter(n => n !== y && n !== p)
           .filter(() => rng() < 0.25);
-        const secret = { id: `sec${s.secrets.length + 1}`, who: x, partner: p, with: y, kind: kissed ? 'kiss' : 'pull',
+        const secret = { id: `sec${s.secrets.length + 1}`, who: x, partner: p, with: y, kind: kissed ? 'kiss' : promised && x === a ? 'promise' : 'pull',
           severity: sev * light, ep: s.ep, witnesses, known: false, eventId: ev.id, casa: s.split };
         s.secrets.push(secret);
         if (ev.aired) nudgeBelief(s.ledger, x, p, -3);
@@ -411,7 +415,7 @@ export const KINDS = {
     'challenge-text', 'receipt', 'look-who',
     // night one's opening
     'first-arrival', 'first-look', 'step-forward', 'step-last', 'host-open', 'host-first', 'intro', 'snogger-kiss', 'snogger-win', 'snogger-row', 'couple-goals', 'couple-goals-row',
-    'knowing-me', 'knowing-row', 'talent-act', 'talent-win', 'talent-snub', 'baby-doll', 'sorts-podium', 'grafties-award', 'save-vote', 'save-tie', 'blowup', 'pile-in', 'villa-divided', 'cold-shoulder', 'clear-the-air', 'apology', 'reunite', 'apology-rejected', 'casa-host', 'casa-react', 'casa-row', 'photo-text', 'photo-row', 'photo-split', 'movie-text', 'movie-seat', 'movie-clip', 'movie-react', 'movie-row', 'movie-split', 'arrival-chat', 'first-toast', 'debrief', 'bombshell-text', 'bombshell-guess', 'bombshell-react', 'top-couple-pick', 'couples-vote', 'ex-return', 'ex-ballot']
+    'knowing-me', 'knowing-row', 'talent-act', 'talent-win', 'talent-snub', 'baby-doll', 'sorts-podium', 'grafties-award', 'save-vote', 'save-tie', 'breakdown', 'comfort', 'no-show', 'blowup', 'pile-in', 'villa-divided', 'cold-shoulder', 'clear-the-air', 'apology', 'reunite', 'apology-rejected', 'casa-host', 'casa-react', 'casa-row', 'photo-text', 'photo-row', 'photo-split', 'movie-text', 'movie-seat', 'movie-clip', 'movie-react', 'movie-row', 'movie-split', 'arrival-chat', 'first-toast', 'debrief', 'bombshell-text', 'bombshell-guess', 'bombshell-react', 'top-couple-pick', 'couples-vote', 'ex-return', 'ex-ballot']
     .map(k => [k, { salience: 1, cast: () => null,
       apply: (s, ev) => ({ pop: ev.extra.pop || {}, major: ev.extra.majorPop || [] }) }])),
 };

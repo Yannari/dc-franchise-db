@@ -42,6 +42,7 @@ const TITLES = {
   'head-turned': ['Wandering Eyes', 'Second Thoughts'], 'challenge-kiss': ['Game On', 'Just a Game?'],
   date: ['The Date', 'Table for Two'], debrief: ['What They Said', 'Off the Record', 'Loose Lips'],
   hut: ['Confessions', 'Two Faces', 'Straight to Camera'], loyalty: ['The Loyal One', 'Faithful', 'Hands Off'],
+  promise: ['Big Plans', 'See You Outside', 'Future Talk'],
 };
 function titleFor(c, used) {
   const pool = TITLES[c.e.extra?.rebuffed ? 'rebuffed' : c.what] || ['Unseen'];
@@ -67,7 +68,7 @@ function candidates(state) {
       if (!e.players.includes(x) || e.players.includes(p)) continue;
       const sec = state.secrets.find(s => s.eventId === e.id && s.who === x && s.partner === p && !s.known);
       // A secret: the pull, the kiss, the night in the hideaway.
-      if (sec) out.push({ e, x, p, sev: sec.severity, what: sec.kind === 'kiss' ? 'kiss' : sec.kind === 'bed' ? 'hideaway' : sec.kind === 'said' ? 'debrief' : e.kind, sec, rival: sec.with });
+      if (sec) out.push({ e, x, p, sev: sec.severity, what: sec.kind === 'kiss' ? 'kiss' : sec.kind === 'bed' ? 'hideaway' : sec.kind === 'said' ? 'debrief' : sec.kind === 'promise' ? 'promise' : e.kind, sec, rival: sec.with });
       // What was said in a debrief, about the partner in the audience.
       else if (e.kind === 'debrief' && e.players[0] === x && ['meh', 'bomb-fancy', 'rather'].includes(e.extra?.of) && partnerOf(state, x) === p)
         out.push({ e, x, p, sev: 0.7, what: 'debrief', rival: e.players[2] || null });

@@ -210,6 +210,8 @@ export function paintStage(el, screen, idx, { fresh = false, hud = '' } = {}) {
   // A blow-up: the villa takes sides. The tug of war fills face by face and
   // leans to the bigger camp; a red crack splits the stage down the middle.
   el.classList.toggle(P('divided'), !!st.fx?.sides);
+  el.classList.toggle(P('tears'), st.fx?.tears === true);
+  el.classList.toggle(P('warmth'), st.fx?.tears === 'warm');
   if (st.fx?.sides) {
     const tug = q('tug');
     const { A = [], B = [] } = st.fx.sides;

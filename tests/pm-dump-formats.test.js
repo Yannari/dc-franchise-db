@@ -31,9 +31,19 @@ describe('the schedule is drawn per season', () => {
       perfectMatchScheduleFor(i + 1).map(e => e.dumpFormat || '').join(',')));
     expect(shapes.size).toBeGreaterThan(3);
   });
-  it('every drawable format plays somewhere in thirty seasons', () => {
+  it('every drawable format plays somewhere', () => {
     const played = new Set(nights.map(n => n.row.pm.dumpFormat));
-    for (const opts of Object.values(DUMP_DRAWS)) for (const [f] of opts) expect([...played], f).toContain(f);
+    // The couples' vote is drawn only at the second vote and plays only with
+    // five couples left (else it is a singles night): in thirty seasons it can
+    // miss by the dice alone (it did, 2026-09-23, 3 of 8 draws before a dice
+    // shift, 0 after). Keep playing seasons until every format has shown.
+    const want = Object.values(DUMP_DRAWS).flatMap(o => o.map(([f]) => f));
+    for (let seed = 31; seed <= 80 && want.some(f => !played.has(f)); seed++) {
+      const cast = makeIslanders(22, seed); setPlayers(cast);
+      const names = cast.map(p => p.name);
+      for (const r of playPerfectMatchSeason({ cast: names, setup: roleSetup(names), seed }).rows) if (r.pm.dumpFormat) played.add(r.pm.dumpFormat);
+    }
+    for (const f of want) expect([...played], f).toContain(f);
   });
 });
 

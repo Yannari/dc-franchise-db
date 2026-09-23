@@ -112,7 +112,7 @@ export const CLOSE = {
   'argument-close': [
     // make-up: somebody takes it back
     { id: 'acl.m.01', when: { of: 'make-up' }, turns: [['a', "Look. I'm sorry. I didn't mean to have a go at you."], ['b', "I know. I'm sorry too."], ['a', "Are we okay?"], ['b', "We're okay."]] },
-    { id: 'acl.m.02', when: { of: 'make-up' }, turns: [['b', "This is stupid. We're arguing about nothing."], ['a', "…Yeah. We are."], ['b', "Truce?"], ['a', "Truce."]] },
+    { id: 'acl.m.02', when: { of: 'make-up' }, turns: [['b', "This is stupid. We're going round in circles."], ['a', "…Yeah. We are."], ['b', "Truce?"], ['a', "Truce."]] },
     { id: 'acl.m.03', when: { of: 'make-up' }, turns: [['a', "I'm tired and I took it out on you. That's not fair."], ['b', "Thank you for saying that."]], beat: 'They hug, a bit stiffly at first.' },
     { id: 'acl.m.04', when: { of: 'make-up' }, turns: [['b', "Can we start this conversation again?"], ['a', "Please."]], beat: 'They sit down, and the second go is a lot calmer.' },
     { id: 'acl.m.05', when: { of: 'make-up', coupled: true }, turns: [['a', "I hate fighting with you."], ['b', "Then let's stop."], ['a', "Come here."]] },
@@ -124,7 +124,7 @@ export const CLOSE = {
     { id: 'acl.w.04', when: { of: 'walk-off' }, turns: [['a', "Don't talk to me for a bit."], ['b', "Happily."]], beat: 'They go to opposite ends of the garden and stay there.' },
     { id: 'acl.w.05', when: { of: 'walk-off' }, turns: [['b', "We're not going to agree, are we?"], ['a', "No."], ['b', "Then I'm going to bed."]] },
     // simmer: nobody leaves and nothing is fixed
-    { id: 'acl.s.01', when: { of: 'simmer' }, turns: [['a', "Let's just leave it."], ['b', "Fine."], ['a', "Fine."]], beat: 'It is not fine, and everyone at the table can tell.' },
+    { id: 'acl.s.01', when: { of: 'simmer' }, turns: [['a', "Let's just leave it."], ['b', "Fine."], ['a', "Fine."]], beat: 'It is not fine, and everyone nearby can tell.' },
     { id: 'acl.s.02', when: { of: 'simmer' }, turns: [['b', "We'll talk about it later."], ['a', "Will we?"], ['b', "Later."]] },
     { id: 'acl.s.03', when: { of: 'simmer' }, turns: [['a', "I'm not going to say sorry for something I didn't do."], ['b', "Nobody asked you to."], ['a', "Good."]], beat: 'They sit in silence until somebody else changes the subject.' },
     { id: 'acl.s.04', when: { of: 'simmer' }, turns: [['b', "Can we not do this in front of everyone?"], ['a', "You started it."], ['b', "And I'm ending it. For now."]] },
@@ -147,7 +147,7 @@ export const CLOSE = {
     // quiet: b goes inward
     { id: 'gc.q.01', when: { of: 'quiet' }, turns: [['b', "Okay."], ['a', "Okay? Is that it?"], ['b', "I don't know what else to say yet."]], beat: '{a} stays with {b} until {b} is ready to go back.' },
     { id: 'gc.q.02', when: { of: 'quiet' }, turns: [['b', "I think I knew. I just didn't want to."], ['a', "That's the worst bit, isn't it?"], ['b', "Yeah."]] },
-    { id: 'gc.q.03', when: { of: 'quiet' }, turns: [['b', "Can you not tell anyone else? Just for tonight."], ['a', "I won't say a word."]], beat: '{b} goes to bed early and faces the wall.' },
+    { id: 'gc.q.03', when: { of: 'quiet' }, turns: [['b', "Can you not tell anyone else? Just for now."], ['a', "I won't say a word."]], beat: '{b} goes to bed early and faces the wall.' },
     { id: 'gc.q.04', when: { of: 'quiet' }, turns: [['b', "I need a minute on my own."], ['a', "Of course. Shout if you need me."]] },
     { id: 'gc.q.05', when: { of: 'quiet' }, turns: [['b', "I really thought {c} was different."], ['a', "I know you did."]], beat: '{b} does not cry. Not yet.' },
   ],
@@ -169,7 +169,7 @@ export const ANSWER = {
     { id: 'an.b.03', when: { lastBy: 'b' }, turns: [['a', "I'll tell you. Just not today."]] },
   ],
   'gossip-what': [
-    { id: 'gw.p.01', when: { of: 'pull' }, turns: [['a', "{c} pulled someone else for a chat. It went on a lot longer than a chat."]] },
+    { id: 'gw.p.01', when: { of: 'pull' }, turns: [['a', "{c} pulled someone else for a chat. It went on a lot longer than a normal chat."]] },
     { id: 'gw.p.02', when: { of: 'pull' }, turns: [['a', "{c} took someone off for a chat, away from everyone. It didn't look like nothing."]] },
     { id: 'gw.k.01', when: { of: 'kiss' }, turns: [['a', "I saw {c} kiss someone else."], ['b', "Kiss? Actually kiss?"], ['a', "Actually kiss."]] },
     { id: 'gw.k.02', when: { of: 'kiss' }, turns: [['a', "{c} kissed someone. I was right there."]] },

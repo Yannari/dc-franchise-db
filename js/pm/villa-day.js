@@ -154,7 +154,8 @@ function confessions(state, rng) {
     addRelationshipDimension(partner, n, 'trust', -1);
     addRelationshipDimension(partner, n, 'resentment', 0.8);    // less than being caught
     e.guilt = Math.max(0, e.guilt - 3);
-    out.push(scene(state, rng, 'confession', [n, partner], { pop: pop([n, 0.5, 2], [partner, 0.8, 1.5]) }, { aired: true, major: [partner] }));
+    // The secret rides along, so the words say what it was (a kiss is not a chat).
+    out.push(scene(state, rng, 'confession', [n, partner], { secret: secrets[0].id, pop: pop([n, 0.5, 2], [partner, 0.8, 1.5]) }, { aired: true, major: [partner] }));
   }
   return out;
 }

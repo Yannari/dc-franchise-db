@@ -196,7 +196,7 @@ export const LADDER = {
             beat: "{b} can't stop smiling." },
           { when: { attachment: 'avoidant' },
             turns: [['b', "Yes. I'm a bit scared, but yes."]],
-            beat: '{a} takes {b.posAdj} hand, and {b} lets {a.obj}.' },
+            beat: '{a} takes {b.posAdj} hand, and {b} lets {a.obj} hold it.' },
         ] },
       ] },
     { id: 'exclusive-ask.02',

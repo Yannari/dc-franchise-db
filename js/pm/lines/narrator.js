@@ -30,7 +30,7 @@ export const NARRATOR = {
   ],
   chat: [
     { id: 'nar.chat.x1', turns: [['narrator', "{a} and {b}, on the daybed, doing absolutely nothing. It's their favourite thing."]] },
-    { id: 'nar.chat.x2', turns: [['narrator', "While the rest of the villa argues about the washing up, {a} and {b} are having a lovely time."]] },
+    { id: 'nar.chat.x2', turns: [['narrator', "While the rest of the villa rushes about, {a} and {b} are having a lovely time."]] },
     { id: 'nar.chat.x3', turns: [['narrator', "{a} is telling {b} a story. {b} has heard it before, and is laughing anyway."]] },
     { id: 'nar.chat.1', turns: [['narrator', "Meanwhile, {a} and {b} have been on that daybed so long they've left a dent in it."]] },
     { id: 'nar.chat.2', turns: [['narrator', "Day {day} in the villa, and {a} and {b} still haven't run out of things to say."]] },
@@ -59,7 +59,7 @@ export const NARRATOR = {
     { id: 'nar.argument.x2', turns: [['narrator', "The villa has gone quiet. That means {a} and {b} are at it again."]] },
     { id: 'nar.argument.x3', turns: [['narrator', "{a} has raised {a.posAdj} voice. {b} has raised {b.posAdj} eyebrows. It's going well."]] },
     { id: 'nar.argument.1', turns: [['narrator', "For the next hour, nobody goes anywhere near {a}."]] },
-    { id: 'nar.argument.2', turns: [['narrator', "That started over nothing, and it's still going."]] },
+    { id: 'nar.argument.2', turns: [['narrator', "Nobody's quite sure how that one started, and it's still going."]] },
     { id: 'nar.argument.3', when: { coupled: true }, turns: [['narrator', "{a} and {b}. Coupled up, and currently not speaking."]] },
     { id: 'nar.argument.4', when: { coupled: false }, turns: [['narrator', "{a} and {b} have never really got on. Today, the whole villa found out."]] },
   ],
@@ -103,10 +103,10 @@ export const NARRATOR = {
     { id: 'nar.ask.1', turns: [['narrator', "{a} and {b} are exclusive. Which means, for the next few days at least, nobody else is getting a look in."]] },
   ],
   'official-ask': [
-    { id: 'nar.official.1', turns: [['narrator', "Candles, petals, and half the villa hiding behind the kitchen door. {a} and {b} are official."]] },
+    { id: 'nar.official.1', turns: [['narrator', "{a} asked, {b} said yes, and the whole villa came running. {a} and {b} are official."]] },
   ],
   'ask-declined': [
-    { id: 'nar.declined.1', turns: [['narrator', "{a} asked. {b} said not yet. Somebody quietly blows out the candles."]] },
+    { id: 'nar.declined.1', turns: [['narrator', "{a} asked. {b} said not yet. Nobody in the villa quite knows where to look."]] },
   ],
   'love-said': [
     { id: 'nar.love-said.x1', turns: [['narrator', "Somewhere between the pool and the fire pit, {a} and {b} have fallen in love."]] },
@@ -116,7 +116,7 @@ export const NARRATOR = {
     { id: 'nar.hang.1', turns: [['narrator', "{a} has just told {b} exactly how {a} feels. {b} has changed the subject."]] },
   ],
   'jealous-confront': [
-    { id: 'nar.confront.1', turns: [['narrator', "{a} has been watching {b} with {c} all afternoon. {a} has finally said something."]] },
+    { id: 'nar.confront.1', turns: [['narrator', "{a} has been watching {b} with {c}, and has finally said something."]] },
   ],
   'jealous-retaliate': [
     { id: 'nar.retaliate.1', turns: [['narrator', "{a} is sitting very close to {b}. And {c} is watching every second of it."]] },

@@ -32,7 +32,7 @@ export const MOVIE_NIGHT = {
     { id: 'mr.h.01', when: { of: 'hurt' }, turns: [['a', "…Wow."]], beat: '{a} stares at the screen long after the clip has ended.' },
     { id: 'mr.h.02', when: { of: 'hurt' }, turns: [['a', "Can someone pause it? I need a second."]], beat: 'Nobody pauses it.' },
     { id: 'mr.h.03', when: { of: 'hurt', cast: 3 }, turns: [['c', "Are you okay?"], ['a', "No. I'm really not."]], beat: '{c} takes {a.posAdj} hand. {b} does not look up.' },
-    { id: 'mr.h.04', when: { of: 'hurt' }, turns: [['a', "I asked you. I asked you straight out, and you said nothing happened."]], beat: '{b} looks at the floor.' },
+    { id: 'mr.h.04', when: { of: 'hurt' }, turns: [['a', "You looked me in the eye every day, and you never said a word."]], beat: '{b} looks at the floor.' },
     { id: 'mr.h.05', when: { of: 'hurt', cast: 3 }, turns: [['a', "Did you know about this?"], ['c', "No. I swear I didn't."]], beat: '{a} gets up and moves to a different beanbag.' },
     { id: 'mr.h.06', when: { of: 'hurt' }, turns: [['a', "I feel sick."]], beat: 'The popcorn goes down, untouched.' },
     // fury
@@ -59,11 +59,11 @@ export const MOVIE_NIGHT = {
       ['a', "I want you to give me some space."]] },
     { id: 'mw.o.03', when: { of: 'own-it' }, stage: 'By the pool, away from the others.', turns: [
       ['b', "I'm not going to pretend it was edited."], ['a', "Good, because it wasn't."], ['b', "I messed up."],
-      ['a', "You did. And I had to find out on a massive screen in front of everyone."], ['b', "That's the worst part, isn't it."],
+      ['a', "You did. And I had to find out on a massive screen in front of everyone."], ['b', "That's the worst part, isn't it?"],
       ['a', "That's the worst part."]] },
     // denying it
     { id: 'mw.d.01', when: { of: 'deny' }, stage: 'The garden, the minute the screen goes dark.', turns: [
-      ['a', "Explain that."], ['b', "It was edited. They've made it look worse than it was."], ['a', "I heard you say it."],
+      ['a', "Explain that."], ['b', "It was edited. They've made it look worse than it was."], ['a', "I watched it."],
       ['b', "Out of context."], ['a', "What context makes that okay?"], ['b', "You're overreacting."],
       ['a', "Don't you dare tell me I'm overreacting."]], beat: 'Half the villa is pretending not to listen. Nobody is managing it.' },
     { id: 'mw.d.02', when: { of: 'deny' }, turns: [
@@ -85,8 +85,8 @@ export const MOVIE_NIGHT = {
   ],
   'movie-split': [
     { id: 'mx.01', turns: [['a', "I can't do this any more. We're done."], ['b', "You don't mean that."], ['a', "I've never meant anything more."]], beat: 'The villa goes completely silent.' },
-    { id: 'mx.02', turns: [['a', "I'm not going to be the one who gets made a fool of on a screen twice."], ['b', "So that's it?"], ['a', "That's it."]] },
-    { id: 'mx.03', turns: [['a', "I'm closing this off. Tonight."], ['b', "Over one clip?"], ['a', "Over what the clip showed me about you."]], beat: '{b} watches {a} walk away.' },
+    { id: 'mx.02', turns: [['a', "I'm not letting you make a fool of me again."], ['b', "So that's it?"], ['a', "That's it."]] },
+    { id: 'mx.03', turns: [['a', "I'm ending this. Tonight."], ['b', "Over one clip?"], ['a', "Over what the clip showed me about you."]], beat: '{b} watches {a} walk away.' },
     { id: 'mx.04', turns: [['a', "I trusted you more than anyone in here."], ['b', "I know."], ['a', "Then you know why I'm done."]] },
   ],
 };

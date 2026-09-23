@@ -24,7 +24,7 @@ export const CASA_LINES = {
     // the walk back in, alone (a returned; b is the partner waiting)
     { id: 'cs.r.01', when: { of: 'returned', choice: 'stick', withB: true }, stage: 'A figure at the top of the steps, alone.', turns: [['narrator', "One islander. No hand to hold. Look at that face at the fire pit."], ['a', "Hi."]], beat: '{b} is already on {b.posAdj} feet.' },
     { id: 'cs.r.02', when: { of: 'returned', choice: 'stick', withB: true }, stage: '{a} walks in on {a.posAdj} own, looking straight at {b}.', turns: [['a', "I told you I'd come back."], ['b', "You did. You actually did."]] },
-    { id: 'cs.r.03', when: { of: 'returned', choice: 'stick', withB: true }, stage: '{a} comes down the steps slowly, alone.', turns: [['a', "Five days, and I didn't even look at anyone."], ['b', "Come here."]] },
+    { id: 'cs.r.03', when: { of: 'returned', choice: 'stick', withB: true }, stage: '{a} comes down the steps slowly, alone.', turns: [['a', "All that time, and I didn't even look at anyone."], ['b', "Come here."]] },
     { id: 'cs.r.04', when: { of: 'returned', choice: 'stick', withB: true }, stage: '{a} appears at the top of the steps, and stops to find {b} in the crowd.', turns: [['a', "Is that seat still mine?"], ['b', "It never stopped being yours."]] },
     { id: 'cs.r.05', when: { of: 'returned', choice: 'stick', withB: true }, stage: 'The door opens. {a} is on {a.posAdj} own.', turns: [['narrator', "Alone. The best word {b} has heard all week."], ['a', "Did you miss me?"], ['b', "Don't even joke."]] },
     { id: 'cs.r.06', when: { of: 'returned', choice: 'stick', withB: true }, stage: '{a} walks back in, alone, grinning.', turns: [['a', "Nobody over there even came close."], ['b', "Good. Get over here."]] },
@@ -38,7 +38,7 @@ export const CASA_LINES = {
     { id: 'cs.s.01', when: { of: 'stayed', choice: 'stick' }, stage: '{a} sits alone on the fire pit bench, staring at the steps.', turns: [['a', "I stuck. Whatever happens now, I stuck."]] },
     { id: 'cs.s.02', when: { of: 'stayed', choice: 'stick' }, stage: '{a} waits on the bench with an empty space beside {a.obj}.', turns: [['a', "That space is theirs. I just need them to walk back in and take it."]] },
     { id: 'cs.s.03', when: { of: 'stayed', choice: 'stick' }, stage: '{a} is on {a.posAdj} own at the fire pit, hands shaking.', turns: [['a', "Please come back alone. Please."]] },
-    { id: 'cs.s.04', when: { of: 'stayed', choice: 'stick' }, turns: [['a', "I've had five days to think about it, and I only thought about one person."]], beat: '{a} keeps looking at the steps.' },
+    { id: 'cs.s.04', when: { of: 'stayed', choice: 'stick' }, turns: [['a', "I've had days to think about it, and I only thought about one person."]], beat: '{a} keeps looking at the steps.' },
     { id: 'cs.t.01', when: { of: 'stayed', choice: 'twist', withB: true }, stage: '{a} sits at the fire pit, and {b} sits down right beside {a.obj}.', turns: [['a', "I know what this looks like. I've made my choice."]], beat: '{b} takes {a.posAdj} hand.' },
     { id: 'cs.t.02', when: { of: 'stayed', choice: 'twist', withB: true }, stage: '{a} is waiting on the bench, and {b} is next to {a.obj}.', turns: [['b', "Are you sure about this?"], ['a', "No. But I'm sure about how I feel."]] },
     { id: 'cs.t.03', when: { of: 'stayed', choice: 'twist', withB: true }, stage: 'The bench, and {a} next to {b}, not quite looking at the steps.', turns: [['a', "They'll understand. Or they won't. Either way, it's done."]] },
@@ -49,11 +49,11 @@ export const CASA_LINES = {
     { id: 'cr.r.01', when: { of: 'relief' }, turns: [['a', "You came back for me."], ['b', "I was always coming back for you."]], beat: '{b} runs down the last of the steps, straight into {a.posAdj} arms.' },
     { id: 'cr.r.02', when: { of: 'relief' }, turns: [['a', "Oh my God. Oh my God."]], beat: '{a} bursts into tears before {b} has even reached the bench.' },
     { id: 'cr.r.03', when: { of: 'relief' }, turns: [['b', "Did you stick?"], ['a', "Of course I stuck."], ['b', "So did I."]], beat: 'The whole fire pit cheers for them.' },
-    { id: 'cr.r.04', when: { of: 'relief' }, turns: [['a', "I've been sick with nerves for five days."], ['b', "Never again. I'm not leaving your side again."]] },
+    { id: 'cr.r.04', when: { of: 'relief' }, turns: [['a', "I've been sick with nerves for days."], ['b', "Never again. I'm not leaving your side again."]] },
     // devastated: b came back with c
     { id: 'cr.d.01', when: { of: 'devastated', cast: 3 }, turns: [['a', "…Wow."], ['b', "I'm sorry."], ['a', "No. Don't. Not in front of everyone."]], beat: '{a} stares at {c} for a long time, and then at the floor.' },
     { id: 'cr.d.02', when: { of: 'devastated', cast: 3 }, turns: [['a', "I sat here on my own. I turned people down for you."], ['b', "I didn't ask you to."], ['a', "You didn't have to ask."]], beat: '{c} looks away.' },
-    { id: 'cr.d.03', when: { of: 'devastated', cast: 3 }, turns: [['a', "Five days. That's all it took?"]], beat: '{a} gets up and walks straight into the villa. Nobody follows at first.' },
+    { id: 'cr.d.03', when: { of: 'devastated', cast: 3 }, turns: [['a', "A few days. That's all it took?"]], beat: '{a} gets up and walks straight into the villa. Nobody follows at first.' },
     { id: 'cr.d.04', when: { of: 'devastated', cast: 3 }, turns: [['a', "I'm not going to cry. I'm not going to cry."]], beat: '{a} cries. Everyone is round {a.obj} in seconds.' },
     { id: 'cr.d.05', when: { of: 'devastated', cast: 3 }, turns: [['a', "Are you serious? With {c}?"], ['b', "I didn't plan it."], ['a', "You didn't plan it. Great. That makes it so much better."]] },
     // both twisted
@@ -68,7 +68,7 @@ export const CASA_LINES = {
   ],
   'casa-row': [
     { id: 'cw.o.01', when: { of: 'own-it' }, stage: 'Later, by the pool, away from the fire pit.', turns: [
-      ['a', "I need to know why."], ['b', "Because I felt something over there I haven't felt here."], ['a', "In five days?"],
+      ['a', "I need to know why."], ['b', "Because I felt something over there I haven't felt here."], ['a', "In a few days?"],
       ['b', "I know how it sounds."], ['a', "It sounds like I wasn't enough."], ['b', "It's not that. It's that it wasn't right."],
       ['a', "It was right for me."]], beat: '{a} walks away before {b} can answer.' },
     { id: 'cw.o.02', when: { of: 'own-it' }, turns: [
@@ -78,15 +78,15 @@ export const CASA_LINES = {
       ['a', "Did you think about me at all?"], ['b', "Every day."], ['a', "Then how?"],
       ['b', "Because thinking about you wasn't the same as feeling it."], ['a', "Wow."], ['b', "I'm sorry. I'm really sorry."]] },
     { id: 'cw.d.01', when: { of: 'deny' }, turns: [
-      ['a', "You told me I was the one."], ['b', "I didn't know what Casa would be like."], ['a', "That's not an answer."],
-      ['b', "Nothing even happened until the last night."], ['a', "Something happened. You walked back in with them."],
+      ['a', "You said you'd come back for me."], ['b', "I didn't know what Casa would be like."], ['a', "That's not an answer."],
+      ['b', "I didn't plan any of it."], ['a', "Something happened. You walked back in with them."],
       ['b', "You're making this into something it's not."]], beat: 'Half the villa has to step in.' },
     { id: 'cw.d.02', when: { of: 'deny' }, stage: 'On the terrace, voices carrying across the whole villa.', turns: [
       ['a', "Say it to my face."], ['b', "Say what?"], ['a', "That you got bored of me."],
       ['b', "That's not what happened."], ['a', "Then what did happen?"], ['b', "You wouldn't understand."],
       ['a', "Try me."]] },
     { id: 'cw.w.01', when: { of: 'walk-off' }, turns: [
-      ['b', "Can we talk?"], ['a', "You've had five days to talk."]], beat: '{a} goes into the dressing room and shuts the door.' },
+      ['b', "Can we talk?"], ['a', "You've had days to talk."]], beat: '{a} goes into the dressing room and shuts the door.' },
     { id: 'cw.w.02', when: { of: 'walk-off' }, turns: [
       ['b', "Please. Just let me explain."], ['a', "I don't want your explanation. I want you to leave me alone."]], beat: '{b} stands on the lawn on {b.posAdj} own.' },
   ],
@@ -126,7 +126,7 @@ export const CASA_LINES = {
   'photo-split': [
     { id: 'px.01', turns: [['a', "We're done. I'm not doing this."], ['b', "Over one photo?"], ['a', "Over one photo, and every day you let me not know about it."]] },
     { id: 'px.02', turns: [['a', "I stuck for you. I'm not sticking any more."]], beat: '{b} watches {a} walk away across the lawn.' },
-    { id: 'px.03', turns: [['a', "You had five days to be honest and you chose a photo to do it for you."], ['b', "I'm sorry."], ['a', "I'm done."]] },
+    { id: 'px.03', turns: [['a', "You had days to be honest, and you let a photo do it for you."], ['b', "I'm sorry."], ['a', "I'm done."]] },
   ],
 };
 

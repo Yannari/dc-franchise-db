@@ -10,7 +10,7 @@ export const TRIANGLE_LINES = {
   'triangle-torn': [
     { id: 'tt.01', turns: [['a', "Can I tell you something mad?"], ['b', "Always."], ['a', "I like two people. Properly like them. Both."], ['b', "Oh no."], ['a', "Oh yes."]] },
     { id: 'tt.02', turns: [['b', "You've got that look."], ['a', "What look?"], ['b', "The look of someone who can't make their mind up."], ['a', "…I really can't."]] },
-    { id: 'tt.03', stage: 'The dressing room, late.', turns: [['a', "Every time I'm with one of them, I'm thinking about the other one."], ['b', "That's not a good sign."], ['a', "Or it's two good signs."]] },
+    { id: 'tt.03', stage: 'The dressing room, late.', turns: [['a', "Every time I'm with one of them, I'm thinking about the other one."], ['b', "That's not a good sign."], ['a', "Or it just means I really like them both."]] },
     { id: 'tt.04', turns: [['a', "How do you choose between two people who both make you laugh?"], ['b', "You don't. One of them chooses for you, usually."]], beat: '{a} does not like that answer.' },
     { id: 'tt.05', turns: [['a', "I feel awful. I've got two people after me and I'm leading them both on."], ['b', "Are you?"], ['a', "I don't mean to be."]] },
     { id: 'tt.06', stage: 'On the daybeds, whispering.', turns: [['b', "So who is it? Really?"], ['a', "That's the problem. It's both of them. It changes every hour."]] },

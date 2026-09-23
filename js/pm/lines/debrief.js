@@ -15,7 +15,7 @@ export const DEBRIEF = [
     beat: '{a} laughs, and then does cry, a little.' },
   { id: 'dn.rb.02', when: C3({ of: 'robbed' }), stage: '{Where}. Nobody else is talking.', turns: [
     ['a', "Did you know? Be honest."], ['b', "No. I promise. I'd have told you."],
-    ['a', "Then how did {c} know it would work?"], ['b', "Because {c} has been working on it since day one."],
+    ['a', "Then how did {c} know it would work?"], ['b', "Because {c} saw a chance and took it."],
     ['a', "I feel so stupid."], ['b', "You're not stupid. You trusted people. That's not the same thing."]] },
   { id: 'dn.rb.03', when: C3({ of: 'robbed' }), turns: [
     ['b', "Are you okay?"], ['a', "No. Ask me tomorrow."], ['b', "What are you going to say to {c}?"],
@@ -142,7 +142,7 @@ export const DEBRIEF = [
     ['b', "What's the worst that happens?"], ['a', "{pa} goes off with {c} and I'm the one crying at the fire pit."],
     ['b', "And the best?"], ['a', "{pa} tells {c} to leave it."], ['b', "Hold on to the best one."]] },
   // ── bomb-fancy: a fancies the bombshell c ──
-  { id: 'dn.bf.01', when: C3({ of: 'bomb-fancy' }), turns: [
+  { id: 'dn.bf.01', when: C3({ of: 'bomb-fancy', taken: true }), turns: [
     ['a', "Can I tell you something?"], ['b', "Is it about {c}?"], ['a', "…How did you know?"],
     ['b', "You haven't stopped looking since {c} walked in."], ['a', "Is it that obvious?"],
     ['b', "To everyone. Including whoever you're coupled with."]], beat: '{a} goes very red.' },
@@ -190,19 +190,19 @@ export const HEARD = [
 const K = (kind, more = {}) => ({ kind, ...more });
 export const DEBRIEF_HUT = {
   honest: [
-    { id: 'hut.dn.h1', when: K('debrief', { of: 'robbed' }), turns: [['a', "Tonight hurt. I'm not going to pretend it didn't."]] },
-    { id: 'hut.dn.h2', when: K('debrief', { of: 'stole' }), turns: [['a', "I know half the villa hates me right now. I'd still do it again."]] },
-    { id: 'hut.dn.h3', when: K('debrief', { of: 'twisted-on' }), turns: [['a', "I stuck. I'd stick again. That's who I am, and I'm proud of it."]] },
-    { id: 'hut.dn.h4', when: K('debrief', { of: 'miss' }), turns: [['a', "The villa feels smaller tonight. I miss them already."]] },
-    { id: 'hut.dn.h5', when: K('debrief', { of: 'blame' }), turns: [['a', "I will be having a word. Maybe several words."]] },
-    { id: 'hut.dn.h6', when: K('debrief', { of: 'next' }), turns: [['a', "Every dumping, I think it's going to be me. One day I'll be right."]] },
-    { id: 'hut.dn.h7', when: K('debrief', { of: 'eyeing' }), turns: [['a', "I saw that look. I'm going to keep my eyes open."]] },
-    { id: 'hut.dn.h8', when: K('debrief', { of: 'picked' }), turns: [['a', "When my name got called, I actually felt my legs go."]] },
+    { id: 'hut.dn.h1', when: K('debrief', { of: 'robbed', role: 0 }), turns: [['a', "Tonight hurt. I'm not going to pretend it didn't."]] },
+    { id: 'hut.dn.h2', when: K('debrief', { of: 'stole', role: 0 }), turns: [['a', "I know half the villa hates me right now. I'd still do it again."]] },
+    { id: 'hut.dn.h3', when: K('debrief', { of: 'twisted-on', role: 0 }), turns: [['a', "I stuck. I'd stick again. That's who I am, and I'm proud of it."]] },
+    { id: 'hut.dn.h4', when: K('debrief', { of: 'miss', role: 0 }), turns: [['a', "The villa feels smaller tonight. I miss them already."]] },
+    { id: 'hut.dn.h5', when: K('debrief', { of: 'blame', role: 0 }), turns: [['a', "I will be having a word. Maybe several words."]] },
+    { id: 'hut.dn.h6', when: K('debrief', { of: 'next', role: 0 }), turns: [['a', "Every dumping, I think it's going to be me. One day I'll be right."]] },
+    { id: 'hut.dn.h7', when: K('debrief', { of: 'eyeing', role: 0 }), turns: [['a', "I saw that look. I'm going to keep my eyes open."]] },
+    { id: 'hut.dn.h8', when: K('debrief', { of: 'picked', role: 0 }), turns: [['a', "When my name got called, I actually felt my legs go."]] },
     { id: 'hut.dn.h9', when: K('debrief', { role: 1 }), turns: [['a', "I love a debrief. You find out who really thinks what."]] },
   ],
   'two-faced': [
-    { id: 'hut.dn.t1', when: K('debrief', { of: 'meh' }), turns: [['a', "I shouldn't have said that in front of everyone. In here, nothing stays in the room."]] },
-    { id: 'hut.dn.t2', when: K('debrief', { of: 'bomb-fancy' }), turns: [['a', "I told one person. In this villa, that's the same as telling everyone."]] },
-    { id: 'hut.dn.t3', when: K('debrief', { of: 'stole' }), turns: [['a', "I said sorry to everyone's face. I'm not actually sorry."]] },
+    { id: 'hut.dn.t1', when: K('debrief', { of: 'meh', role: 0 }), turns: [['a', "I shouldn't have said that in front of everyone. In here, nothing stays in the room."]] },
+    { id: 'hut.dn.t2', when: K('debrief', { of: 'bomb-fancy', role: 0 }), turns: [['a', "I told one person. In this villa, that's the same as telling everyone."]] },
+    { id: 'hut.dn.t3', when: K('debrief', { of: 'stole', role: 0 }), turns: [['a', "I said sorry to everyone's face. I'm not actually sorry."]] },
   ],
 };

@@ -47,9 +47,9 @@ export const FEELINGS = {
       turns: [
         ['a', "I watched you do it. I'm not making it up."],
         ['b', 'It was a chat.'],
-        ['a', "It was a chat with your hand on {c.posAdj} leg."],
+        ['a', "It didn't look like a chat from where I was standing."],
         { by: 'b', vary: [
-          { turns: [['b', 'Right, so you were counting.'], ['a', 'Apparently I was, {~yeah}.']] },
+          { turns: [['b', 'So you were watching me.'], ['a', 'Apparently I was, {~yeah}.']] },
           { when: { mood: 'guilty' },
             turns: [['b', "…I'm sorry. It shouldn't have happened."]], beat: '{a} walks off before {b} can say any more.' },
           { when: { archetype: ['villain', 'mastermind', 'schemer'] },
@@ -252,7 +252,7 @@ export const FEELINGS = {
     { id: 'overthinking.04', when: T,
       stage: '{a} has been sitting with the same cup of tea for twenty minutes.',
       turns: [['a', "I'm fine. I'm just thinking. I'm always thinking."]] },
-    { id: 'overthinking.05', when: { ...T, attachment: 'anxious' },
+    { id: 'overthinking.05', when: { ...T, attachment: 'anxious', newArrival: true },
       stage: 'By the pool, {a} is counting on {a.posAdj} fingers.',
       turns: [['a', "{pa} has talked to the new one three times today. Three. Is three a lot?"]] },
     { id: 'overthinking.06', when: T,
@@ -260,7 +260,7 @@ export const FEELINGS = {
       turns: [['a', "Everything was fine this morning. So why don't I feel fine?"]] },
   ],
   confession: [
-    { id: 'confession.01',
+    { id: 'confession.01', when: { sec: ['pull', 'kiss', 'bed', 'promise'] },
       turns: [
         ['a', "I need to tell you something before you hear it from someone else."],
         ['b', "…Okay. What?"],
@@ -275,7 +275,7 @@ export const FEELINGS = {
             beat: 'They sit in silence for a long time.' },
         ] },
       ] },
-    { id: 'confession.02',
+    { id: 'confession.02', when: { sec: ['kiss', 'bed'] },
       turns: [
         ['a', "I can't keep it in any more. I kissed someone else."],
         { by: 'b', vary: [
@@ -286,7 +286,7 @@ export const FEELINGS = {
             turns: [['b', 'Right. Okay.']], beat: "{b} walks inside, and doesn't come back out that night." },
         ] },
       ] },
-    { id: 'confession.03',
+    { id: 'confession.03', when: { sec: ['pull', 'kiss', 'bed', 'promise'] },
       stage: '{a} asks {b} to come to the terrace, away from everyone.',
       turns: [
         ['a', "I've been lying to you. Not in words. But I've been lying."],
@@ -308,11 +308,25 @@ export const FEELINGS = {
             turns: [['b', "Honestly? I'm not even that surprised."]], beat: '{a} has nothing to say to that.' },
         ] },
       ] },
+    // said: what a said about b when b wasn't there (a debrief, a chat)
+    { id: 'confession.07', when: { sec: 'said' },
+      turns: [
+        ['a', "I need to tell you something. I said things about you when you weren't there."],
+        ['b', "What things?"],
+        ['a', "That I wasn't sure about us. I said it to the others before I said it to you."],
+      ],
+      beat: '{b} takes a long time to say anything at all.' },
+    { id: 'confession.08', when: { sec: 'said' },
+      turns: [
+        ['a', "You're going to hear it anyway, so I'd rather you heard it from me."],
+        ['b', "Heard what?"],
+        ['a', "I talked about you behind your back. It wasn't kind, and it wasn't fair."],
+      ] },
     { id: 'confession.06', when: { rung: ['exclusive', 'official'] },
       turns: [
         ['a', "We said we were exclusive. And I broke that. I'm sorry."],
-        ['b', "You broke it. And you're telling me in the garden."],
-        ['a', 'I didn\'t know where else to tell you.'],
+        ['b', "You broke it. And you're only telling me now."],
+        ['a', "I couldn't carry it any more."],
       ] },
   ],
   advice: [

@@ -8,7 +8,7 @@
 export const BLOWUP_LINES = {
   blowup: [
     // cheating: b was the other one, or the partner who did it
-    { id: 'bu.c.01', when: { of: 'cheating', cause: 'rival' }, stage: 'The garden, the second the screen goes dark.', turns: [
+    { id: 'bu.c.01', when: { of: 'cheating', cause: 'rival' }, stage: 'The garden, and it starts the second they see each other.', turns: [
       ['a', "Did you know they were in a couple?"], ['b', "Everyone knew. So what?"], ['a', "So what? You looked me in the eye every day."],
       ['b', "I didn't owe you anything."], ['a', "You owed me the truth!"], ['b', "Take it up with them, not me."],
       ['a', "Oh, I will. But I'm starting with you."]], beat: 'The whole garden has stopped pretending not to watch.' },
@@ -48,13 +48,13 @@ export const BLOWUP_LINES = {
     { id: 'bu.k.01', when: { of: 'casa', cause: 'partner' }, stage: 'The morning after Casa Amor, and nobody has slept.', turns: [
       ['a', "You walked in holding hands with someone and you can't even look at me."], ['b', "What do you want me to say?"],
       ['a', "Anything! Anything at all!"], ['b', "I'm sorry it happened like that."], ['a', "Like what? In front of everyone?"],
-      ['b', "Yes."], ['a', "That's not an apology. That's a weather report."]] },
+      ['b', "Yes."], ['a', "That's not an apology. That's just telling me what happened."]] },
     { id: 'bu.k.02', when: { of: 'casa', cause: 'partner' }, turns: [
       ['a', "I stayed loyal for you. Every single day."], ['b', "I never asked you to."],
       ['a', "You didn't have to! That's what being in a couple means!"], ['b', "Maybe we weren't as solid as you thought."],
       ['a', "Say that again. Say it to my face."]], beat: 'The fire pit goes completely silent.' },
     { id: 'bu.k.03', when: { of: 'casa', cause: 'partner' }, stage: 'The lawn, the new arrival hovering by the pool.', turns: [
-      ['a', "Five days. Five days, and you're a different person."], ['b', "Or maybe this is who I've been all along."],
+      ['a', "A few days. A few days, and you're a different person."], ['b', "Or maybe this is who I've been all along."],
       ['a', "Then who have I been talking to for weeks?"], ['b', "I don't know. Someone you wanted me to be."]] },
     // told: b exposed a
     { id: 'bu.t.01', when: { of: 'told' }, stage: 'The daybeds, and it gets loud fast.', turns: [
@@ -77,7 +77,7 @@ export const BLOWUP_LINES = {
     // jealousy
     { id: 'bu.j.01', when: { of: 'jealousy', taken: true }, stage: 'By the pool, after one look too many.', turns: [
       ['a', "Why are you always all over them?"], ['b', "I'm not all over anyone."], ['a', "You were sitting on their sunbed."],
-      ['b', "It's a sunbed!"], ['a', "It's MY partner's sunbed."], ['b', "Honestly, you need to calm down."],
+      ['b', "It's a sunbed!"], ['a', "In here, it's never just a sunbed."], ['b', "Honestly, you need to calm down."],
       ['a', "Don't tell me to calm down."]] },
     { id: 'bu.j.02', when: { of: 'jealousy', bTaken: false }, turns: [
       ['a', "Keep your eyes on your own couple."], ['b', "I haven't got a couple."], ['a', "I know. And it shows."]], beat: 'That one lands, and everyone hears it land.' },

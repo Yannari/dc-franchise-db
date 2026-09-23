@@ -431,6 +431,7 @@ export function renderCastRoom() {
     // so it can never stack on top. Re-enabling rebuilds + re-adopts from scratch.
     _setDrawerOpen(false);
     _restoreForm();
+    _restoreVillaPanel();
     document.getElementById('tab-cast')?.classList.remove('cast-room-active');
     document.getElementById('cast-room')?.remove();
     return;
@@ -469,6 +470,21 @@ export function renderCastRoom() {
   if (!window._crKeepDrawerOpen) _setDrawerOpen(false);
 
   crRenderGrid();
+  _adoptVillaPanel(room);
+}
+
+// The villa's islander panel (js/pm-cast-ui.js) sits under the cast it sets up.
+// It lives in the legacy cast panel, which this room hides, so it is ADOPTED —
+// moved, ids and listener intact — exactly as the edit form is, and handed back
+// when the room is switched off. CONFIG_SCOPE still hides it on other shows.
+function _adoptVillaPanel(room) {
+  const sec = document.getElementById('sec-pm-cast');
+  if (sec && sec.parentElement !== room) room.appendChild(sec);
+}
+function _restoreVillaPanel() {
+  const sec = document.getElementById('sec-pm-cast');
+  const home = document.querySelector('#tab-cast .cast-panel');
+  if (sec && home && sec.parentElement !== home) home.appendChild(sec);
 }
 
 function _shellHTML() {

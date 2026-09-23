@@ -1016,6 +1016,8 @@ export function renderCast() {
   renderBackgroundPanel();
   window.renderHouseStructure?.();
   try { window.renderCastRoom?.(); } catch {}   // Visual Casting Room (additive; legacy UI is the fallback)
+  // A villa season's islander panel follows the cast it sets up.
+  try { window.renderPerfectMatchCastSetup?.(); } catch { /* optional chrome */ }
 }
 export function renderCard(p) {
   const ov=overall(p.stats), th=parseFloat(threat(p.stats)), tier=threatTier(th), tc=tribeColor(p.tribe);

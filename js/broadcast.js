@@ -42,6 +42,8 @@ export function broadcastState(g = gs, cfg = seasonConfig) {
     // than borrowing one that describes nothing about it. Set by
     // simulateTraitorsEpisode (js/tr-run.js) on every night but the last.
     : g.phase === 'castle' ? 'The Castle'
+    // The villa carries its own too (js/pm-run.js), for the same reason.
+    : g.phase === 'villa' ? 'The Villa'
     : g.phase === 'pre-merge' ? 'Pre-Merge'
       : g.phase === 'post-merge' ? 'Post-Merge'
         : g.phase === 'finale' ? 'Finale'

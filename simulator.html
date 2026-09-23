@@ -236,6 +236,12 @@
           <div class="cast-meta"><strong id="cast-count">0</strong> players <span id="cast-tribe-summary"></span></div>
         </div>
         <div class="cast-grid" id="cast-grid"></div>
+        <!-- Each islander's cast setup (user: "in cast setup, not season setup").
+             Villa seasons only (CONFIG_SCOPE); js/pm-cast-ui.js draws it. -->
+        <section class="form-group" id="sec-pm-cast" style="margin-top:16px">
+          <div class="cast-title">The islanders</div>
+          <div id="pm-cast-setup"></div>
+        </section>
       </main>
     </div>
 
@@ -800,10 +806,6 @@
                   <div class="hint hint-tight">The winning couple gets an envelope: one of them chooses to share the money or keep it. The US show still does this; the UK dropped it.</div>
                 </span>
               </label>
-            </div>
-            <div class="form-group" id="sec-pm-cast">
-              <label class="form-label">The islanders</label>
-              <div id="pm-cast-setup"></div>
             </div>
             <div class="divider" id="sec-tr-divider"></div>
             <div class="setup-section-label" id="sec-tr-options">CASTLE OPTIONS</div>

@@ -8,12 +8,22 @@
 import { coupleScore } from './ledger.js';
 import { romance } from './feelings.js';
 
-const TEMP = 10;
+// How the country's votes split. A couple's share is proportional to its
+// approval plus a floor every couple with fans gets (BASE): that is what the
+// real UK series 5 final looks like — 48.8 / 25.6 / 18.2 / 7.4 — and it is
+// what this gives for approvals around 80 / 45 / 35 / 15 (46 / 26 / 20 / 9).
+// A softmax over the same scores (the first version) handed a leading couple
+// 98% of a mid-season vote and 91% of a final. Only the shares move with this:
+// the ORDER, so the bottom couples and the winners, is the same either way.
+const BASE = 40;
+const FLOOR = 8;
 
 function shares(state, couples, rng) {
   const rows = couples.map(c => ({ couple: c, score: coupleScore(state.ledger, c[0], c[1]) + (rng() - 0.5) * 6 }));
-  const max = Math.max(...rows.map(r => r.score));
-  const w = rows.map(r => Math.exp((r.score - max) / TEMP));
+  // Softplus rather than a hard clamp, so two disliked couples still rank
+  // apart; FLOOR is the core fans even the villains' couple keeps (the real
+  // bottom couple still took 7.4%).
+  const w = rows.map(r => FLOOR + 8 * Math.log1p(Math.exp((r.score + BASE) / 8)));
   const sum = w.reduce((a, b) => a + b, 0);
   rows.forEach((r, i) => { r.share = w[i] / sum; });
   return rows;

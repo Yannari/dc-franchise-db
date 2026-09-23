@@ -379,7 +379,10 @@ export function buildHubAftermath(ep) {
   const eliminatedLabel = eliminated.join(' + ');
   const voteEntries = Object.entries(ep.votes || {}).filter(([, count]) => Number(count) > 0)
     .sort(([, a], [, b]) => Number(b) - Number(a));
-  const voteShape = voteEntries.map(([name, count]) => `${name} ${count}`).join(' · ') || 'No standard vote';
+  // A public vote has shares, not ballots: the villa's rows carry them.
+  const voteShape = ep.pm?.shares?.length
+    ? [...ep.pm.shares].sort((x, y) => y.share - x.share).map(s => `${s.couple.join(" & ")} ${Math.round(s.share * 100)}%`).join(" · ")
+    : voteEntries.map(([name, count]) => `${name} ${count}`).join(' · ') || 'No standard vote';
   const votesNegated = (ep.idolPlays || []).reduce((sum, play) => sum + Math.max(0, Number(play.votesNegated || 0)), 0);
   const decidingVoters = [...new Set((ep.votingLog || []).filter(vote => eliminated.includes(vote.voted) && !vote.sitdSacrificed).map(vote => vote.voter))];
   let why = eliminatedLabel ? `${eliminatedLabel} received the highest valid total after the ballots were resolved.` : 'The episode ended without a standard elimination vote.';
@@ -499,7 +502,8 @@ export function buildSeasonHubModel(state = gs, config = seasonConfig, cast = pl
   const nextEpisode = initialized ? Number(latest?.num ?? displayState.episode ?? state.episode ?? 0) + 1 : 1;
   const nextScheduled = (config?.twistSchedule || []).filter(Boolean).find(t => Number(t.episode) === nextEpisode);
   const catalogEntry = nextScheduled && typeof TWIST_CATALOG !== 'undefined' ? TWIST_CATALOG.find(t => t.id === nextScheduled.type) : null;
-  const twistLabel = nextScheduled
+  const twistLabel = lifecycle === 'complete' ? 'The season is over — there is no next episode'
+    : nextScheduled
     ? nextScheduled.spoilerFree ? 'Production surprise scheduled' : (catalogEntry?.name || String(nextScheduled.type || 'Special episode').replace(/-/g, ' '))
     : `${showWords(_hubFmt).quietRound} — no scheduled twist`;
   /* EVERY SHOW'S OWN EXIT WORDS, from the registry. This asked `roundExits`
@@ -510,9 +514,12 @@ export function buildSeasonHubModel(state = gs, config = seasonConfig, cast = pl
   const _hubExits = latest ? roundExits(latest, _hubFmt) : [];
   const latestOutcome = _hubExits.length
     ? _hubExits.map(x => `${x.name} was ${x.verb}`).join(' · ')
+    // A final the PUBLIC decided names its winners (the row carries the vote).
+    : latest?.pm?.shares?.length && latest.moment === 'final' ? `${latest.pm.shares[0].couple.join(' & ')} won the public vote`
     : latest ? (getEpisodeEliminations(latest).length
       ? `${getEpisodeEliminations(latest).join(' + ')} left the game`
-      : 'The game moved without a vote') : '';
+      // "Without a vote" is Total Drama's quiet night; each show says its own.
+      : showWords(_hubFmt).noExitLine || 'The game moved without a vote') : '';
   const _hubHouse = typeof isBigBrotherSeason === 'function' && isBigBrotherSeason();
   const groups = !initialized ? []
     /* ONE VENUE, FROM THE FIRST DAY TO THE LAST. No tribes, no merge, and
@@ -545,7 +552,9 @@ export function buildSeasonHubModel(state = gs, config = seasonConfig, cast = pl
   if (latest?.isMerge) publicStatuses.push('The cast is now competing as one merged group.');
   if ((displayState.riPlayers || []).length) publicStatuses.push('A public second-chance route remains active.');
   storylines.push(...publicStatuses);
-  if (!storylines.length && initialized) storylines.push('The opening relationships are in place. The first loss will reveal which promises matter.');
+  // A finished season has no "first loss" coming; every show opens in its own words.
+  if (!storylines.length && initialized && !complete) storylines.push(showWords(_hubFmt).openingStoryline
+    || 'The opening relationships are in place. The first loss will reveal which promises matter.');
 
   return {
     lifecycle, setting, title: config?.name || 'Untitled Season', seasonNumber: config?.seasonNumber || null,
@@ -694,6 +703,10 @@ export function initRunTab() {
 }
 
 export function renderRunTab() {
+  /* THE HEADER BAR FOLLOWS THE SEASON. It was refreshed on a tab switch only,
+     so after pressing Play it kept whatever phase it last drew — a villa and a
+     castle read "PRE-MERGE" all season. Every show, from here. */
+  try { window.updateBroadcastBar?.(); } catch { /* the bar is chrome */ }
   renderGameState();
   renderSeasonHub();
   const empty   = document.getElementById('run-empty');
@@ -781,8 +794,10 @@ export function renderGameState() {
     <div class="gs-stat"><label>Episode</label><strong>${d.episode}</strong></div>
     <div class="gs-stat"><label>Phase</label><strong>${phaseLabel}</strong></div>
     <div class="gs-stat"><label>Active</label><strong>${d.activePlayers.length}</strong></div>
-    <div class="gs-stat"><label>On RI</label><strong style="color:${d.riPlayers.length?'#f97316':'var(--muted)'}">${d.riPlayers.length}</strong></div>
+    ${_hubNoMerge ? '' : `<div class="gs-stat"><label>On RI</label><strong style="color:${d.riPlayers.length?'#f97316':'var(--muted)'}">${d.riPlayers.length}</strong></div>`}
   </div>`;
+  /* RESCUE ISLAND IS TOTAL DRAMA'S. A show with one venue has no second-chance
+     island, and "On RI 0" sat on every castle, house-less villa and werk room. */
 
   if (_spoilerFree) {
     html += `<div style="margin-top:12px;font-size:11px;color:var(--muted);font-style:italic;text-align:center">Spoiler-free mode — open Visual Player to watch the episode</div>`;

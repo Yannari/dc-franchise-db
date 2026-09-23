@@ -202,7 +202,7 @@ export const SHOWS = {
     // "Accusation" events. Declared here so a fourth show with a private
     // ballot names its own channel instead of somebody adding a branch.
     privateBallotChannels: ['murder'],
-    words: { seasonComplete: 'The castle has made its final choice.', player: 'player', players: 'players', round: 'Episode', exit: 'banished',
+    words: { seasonComplete: 'The castle has made its final choice.', noExitLine: 'The castle closed the night with nobody leaving', openingStoryline: 'The Faithful have their suspicions. The Traitors have their first target.', player: 'player', players: 'players', round: 'Episode', exit: 'banished',
       // What an ordinary round is called when nothing is scheduled. The
       // season hub printed this, and read it off a chain of slug comparisons
       // until a fourth show made the chain the thing the guard is for.
@@ -306,7 +306,7 @@ export const SHOWS = {
        Declared, because the alternative is every screen asking which array
        came back non-empty, and a show that exports neither is drawn nothing. */
     roundShape: 'placements',
-    words: { seasonComplete: 'The season is complete. The crown has been placed.',
+    words: { seasonComplete: 'The season is complete. The crown has been placed.', noExitLine: 'Nobody went home tonight', openingStoryline: 'The queens have met the werk room. The judges are watching every one of them.',
       // What an ordinary round is called when nothing is scheduled. The
       // season hub printed this, and read it off a chain of slug comparisons
       // until a fourth show made the chain the thing the guard is for.
@@ -382,7 +382,7 @@ export const SHOWS = {
     /* WHAT SHAPE THIS SHOW'S ROUNDS ARE IN -- see roundShape() below.
        Ballots on channels, so no fourth shape and no new season_ref branches. */
     roundShape: 'ballots',
-    words: { seasonComplete: 'The season is complete. The public has chosen its winners.',
+    words: { seasonComplete: 'The season is complete. The public has chosen its winners.', noExitLine: 'Nobody left the villa', openingStoryline: 'The couples are set, and the public is watching every one of them.',
       quietRound: 'A normal day in the villa',
       player: 'islander', players: 'islanders', round: 'Episode',
       exit: 'dumped', exitAction: 'dump',

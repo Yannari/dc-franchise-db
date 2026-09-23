@@ -544,7 +544,13 @@ function voteNight(state, ctx) {
     // first vote was skipped in 23 seasons of 100, always a villa of ten).
     const toComeAll = (ctx.queues?.bombshell?.length || 0) + (ctx.queues?.casa?.length || 0);
     const roomy = state.villa.length >= 2 * (FINAL_COUPLES + 1) && toComeAll >= 2 && state.couples.length >= FINAL_COUPLES;
-    if (state.couples.length < 3 || (state.couples.length <= FINAL_COUPLES && !roomy) || ctx.pace < 0.8) {
+    // The first vote of the season plays whenever the villa has a couple to
+    // spare, whatever the pace: at 10 and 12 islanders the pace sat under 0.8
+    // and the first vote was skipped in 40 seasons of 40 (measured 2026-09-23),
+    // so a small cast never met the public until the semi-final.
+    const firstCall = !!ctx.firstVote && (ctx.surplus ?? 0) >= 2;
+    const paceOk = ctx.pace >= 0.8 || firstCall;
+    if (state.couples.length < 3 || (state.couples.length <= FINAL_COUPLES && !roomy) || !paceOk) {
       // …unless the villa has single islanders to lose: then the singles face
       // the public (measured: at the calibration cast a quarter of second
       // votes met four couples and three or four singles, who then all went
@@ -554,11 +560,18 @@ function voteNight(state, ctx) {
       // 16-islander cast its four-couple finals, 18 of 20 down to 13).
       const singles = state.villa.filter(n => !partnerOf(state, n));
       const toCome = (ctx.queues?.bombshell?.length || 0) + (ctx.queues?.casa?.length || 0);
-      const spare = Math.min(Math.round(ctx.pace), singles.length - toCome);
-      if (spare > 0 && ctx.pace >= 0.8) return singlesVoteNight(state, ctx, singles, spare);
+      const spare = Math.min(firstCall ? Math.max(1, Math.round(ctx.pace)) : Math.round(ctx.pace), singles.length - toCome);
+      if (spare > 0 && paceOk) return singlesVoteNight(state, ctx, singles, spare);
       return { events: [], exits: [], ballots: [], extra: { dumpFormat: null } };
     }
-    const fmt = ctx.entry.dumpFormat;
+    // A vote that plays only because it is the first (the pace alone would
+    // have skipped it) can spare one couple and nobody else. A format that
+    // dumps one of a pair leaves the other single with nobody to re-couple
+    // with, and the semi-final then takes the singles: measured at 12
+    // islanders, four-couple finals fell from 15 of 20 to 10 until the forced
+    // night played as the public's own vote, which sends a whole couple.
+    const forced = firstCall && ctx.pace < 0.8;
+    const fmt = forced ? 'public' : ctx.entry.dumpFormat;
     if (fmt === 'save-one') return saveOneNight(state, ctx);
     if (fmt === 'couples-vote') return couplesVoteNight(state, ctx);
     const pv = publicVote(state, { rng: ctx.rng, bottom: ctx.entry.bottom || 2, immune: ctx.immune || [] });

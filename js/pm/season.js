@@ -141,7 +141,11 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
     const surplus = state.villa.length + queues.bombshell.length - 2 * FINAL_COUPLES;
     const pace = surplus / (nights + 1);
     const votesAhead = ahead.filter(e => e !== entry && e.moment === 'public-vote').length;
-    const ctx = { rng, entry, seed, queues, popularity: gs.popularity, splitOrStealOn, closed: false, pace, votesAhead };
+    // The season's first booked vote, and whether the villa can spare a couple
+    // for it: a small cast's pace sits under a vote a night, and the pace rule
+    // alone skipped its first vote every time (voteNight).
+    const firstVote = entry.moment === 'public-vote' && !schedule.slice(0, schedule.indexOf(entry)).some(e => e.moment === 'public-vote');
+    const ctx = { rng, entry, seed, queues, popularity: gs.popularity, splitOrStealOn, closed: false, pace, votesAhead, firstVote, surplus };
     // Episode one opens on the arrivals and the first coupling, before the day.
     if (entry.moment === 'first-coupling') ctx.opening = nightOneOpening(state, ctx);
     const day = entry.moment === 'reunion' ? [] : [...(ctx.opening?.events || []), ...villaDayEvents(state, rng, entry, seed)];

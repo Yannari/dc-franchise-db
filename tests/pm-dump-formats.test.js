@@ -118,4 +118,20 @@ describe('the first public vote always plays at the calibration cast', () => {
     }
     expect(skipped).toBe(0);
   });
+  it('a small cast meets the public too, and still reaches the final with four couples', () => {
+    // Measured 2026-09-23: at 10 and 12 islanders the pace sat under a vote a
+    // night and the first vote was skipped in 40 seasons of 40. Forced to play,
+    // a format that dumps one of a pair cost 12-islander finals (15 of 20 to
+    // 10), so the forced night is the public's own vote and a whole couple goes.
+    let skipped = 0, four = 0;
+    for (let seed = 1; seed <= 20; seed++) {
+      const cast = makeIslanders(12, seed); setPlayers(cast);
+      const names = cast.map(p => p.name);
+      const rows = playPerfectMatchSeason({ cast: names, setup: roleSetup(names), seed }).rows;
+      if (!rows.find(r => r.moment === 'public-vote').pm.dumpFormat) skipped++;
+      if ((rows.find(r => r.moment === 'final')?.pm.couples?.length || 0) >= 4) four++;
+    }
+    expect(skipped).toBe(0);
+    expect(four).toBeGreaterThanOrEqual(14);
+  });
 });

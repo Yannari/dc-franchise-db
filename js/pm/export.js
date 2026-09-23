@@ -166,16 +166,16 @@ export function buildPerfectMatchSeasonDocument(rows = [], { seasonNumber = 1 } 
   const history = pmVotingHistory(rows);
   const final = finalOf(rows);
   const placements = pmPlacements(rows).map(p => {
-    const stats = pmCareerStats(rows, p.name);
+    const career = pmCareerStats(rows, p.name);
     // THE PAIR, where it outlived the villa: a finalist couple, or a couple
     // who left together (js/life-hook.js reads `showmance` off the appearance).
     const finalCouple = final.find(s => s.couple.includes(p.name))?.couple;
-    const leftWith = !finalCouple && stats.lastPartner && history.some(h => h.exits.some(x => x.name === p.name)
-      && h.exits.some(x => x.name === stats.lastPartner)) ? stats.lastPartner : null;
+    const leftWith = !finalCouple && career.lastPartner && history.some(h => h.exits.some(x => x.name === p.name)
+      && h.exits.some(x => x.name === career.lastPartner)) ? career.lastPartner : null;
     const partner = finalCouple ? finalCouple.find(n => n !== p.name) : leftWith;
     return { ...p, ...(partner ? { showmance: partner, showmanceEnded: 'intact' } : {}),
-      pm: { couplings: stats.couplings, timesStolen: stats.timesStolen, publicVotesSurvived: stats.publicVotesSurvived,
-        finalApproval: stats.finalApproval, label: stats.label } };
+      pm: { couplings: career.couplings, timesStolen: career.timesStolen, publicVotesSurvived: career.publicVotesSurvived,
+        finalApproval: career.finalApproval, label: career.label } };
   });
   const last = rows[rows.length - 1]?.pm || {};
   const winners = (final[0]?.couple || []).map(n => ({ name: n, playerSlug: slug(n), share: Math.round(final[0].share * 1000) / 1000 }));

@@ -50,7 +50,7 @@ describe('the pools are well-formed', () => {
       'movie-night': 2, reveal: 2, 'dump-at-risk': 1, 'ex-return': 1, 'top-couple-pick': 4, 'couples-vote': 4, 'dump-verdict-couple': 2, 'dump-verdict-singles': 2, 'group-entrance': 2,
       'stand-up': 3, 'nobody-stands': 1, 'stand-up-pick': 3, 'bombshell-save': 3, 'public-match': 3,
       'return-entrance': 1, 'return-ex': 3, 'mission-brief': 1, 'mission-dump': 3, 'sleepover-invite': 3, 'sleepover-choice': 3,
-      'challenge-text': 1, 'first-arrival': 2, 'step-forward': 2, receipt: 4, 'look-who': 3, 'snogger-row': 3, 'couple-goals': 4, 'couple-goals-row': 3, 'talent-snub': 3 };
+      'challenge-text': 1, 'first-arrival': 2, 'step-forward': 2, 'host-open': 0, 'host-first': 0, intro: 1, receipt: 4, 'look-who': 3, 'snogger-row': 3, 'couple-goals': 4, 'couple-goals-row': 3, 'talent-snub': 3 };
     for (const [k, e] of ENTRIES) {
       if (k.startsWith('hut:') || k.startsWith('narrator:')) continue;
       const size = CAST[k] || 2;

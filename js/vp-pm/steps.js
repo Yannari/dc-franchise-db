@@ -28,6 +28,7 @@ const words = () => SHOWS['perfect-match'].words;
 
 // ── what each scene is called on the headline pill ────────────────────
 export const KIND_LABEL = {
+  'host-open': 'Welcome to Perfect Match', 'host-first': 'The first coupling', intro: 'Meet the islander',
   'first-arrival': 'The arrivals', 'first-look': 'First impressions', 'step-forward': 'Step forward', 'step-last': 'The last two',
   chat: 'A chat', 'deep-chat': 'A deep chat', kiss: 'A kiss', pull: 'Can I borrow you?', loyalty: 'Loyal',
   argument: 'An argument', friendship: 'Friends', gossip: 'Gossip', comedy: 'Villa life', ick: 'The ick',
@@ -338,8 +339,9 @@ const drama = sc => (sc.big ? 100 : 0) + (QUIET.includes(sc.steps[0].kind) ? QUI
 function nameFor(label, chunk, screens) {
   const taken = new Set(screens.map(s => s.label));
   for (const sc of [...chunk].sort((a, b) => drama(b) - drama(a))) {
-    const name = `${label} · ${sc.steps[0].headline || 'more'}`;
-    if (!taken.has(name)) return name;
+    const h = sc.steps[0].headline;
+    const name = `${label} · ${h || 'more'}`;
+    if (h && h !== label && !taken.has(name)) return name;
   }
   let n = 2;
   while (taken.has(`${label} · part ${n}`)) n++;

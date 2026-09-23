@@ -65,6 +65,8 @@ const faking = (state, a, b) => b != null && shown(state, a, b) - romance(a, b) 
 
 /** The only facts a script's `when` may test. */
 export function factsFor(state, ev) {
+  // The host alone (her opening, her explanations): nobody's facts to read.
+  if (!ev.players.length) return { phase: ev.phase || null, of: ev.extra?.of ?? null, cast: 0 };
   const [a, b, c] = ev.players;
   const pa = state.profiles[a], pb = b ? state.profiles[b] : null;
   const firstEp = state.ledger?.firstEp?.[a] ?? state.ep;

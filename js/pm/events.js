@@ -297,7 +297,7 @@ export const KINDS = {
     // the named challenges of phase 4
     'challenge-text', 'receipt', 'look-who',
     // night one's opening
-    'first-arrival', 'first-look', 'step-forward', 'step-last', 'snogger-kiss', 'snogger-win', 'snogger-row', 'couple-goals', 'couple-goals-row',
+    'first-arrival', 'first-look', 'step-forward', 'step-last', 'host-open', 'host-first', 'intro', 'snogger-kiss', 'snogger-win', 'snogger-row', 'couple-goals', 'couple-goals-row',
     'knowing-me', 'knowing-row', 'talent-act', 'talent-win', 'talent-snub', 'baby-doll', 'sorts-podium', 'grafties-award', 'save-vote', 'top-couple-pick', 'couples-vote', 'ex-return', 'ex-ballot']
     .map(k => [k, { salience: 1, cast: () => null,
       apply: (s, ev) => ({ pop: ev.extra.pop || {}, major: ev.extra.majorPop || [] }) }])),

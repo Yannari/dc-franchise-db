@@ -291,9 +291,14 @@ export function nightOneOpening(state, ctx) {
   const stepping = fmt === 'step-forward';
   const order = stepping ? state.villa.filter(n => g(n) === 'f')
     : [...state.villa.filter(n => g(n) === 'f'), ...state.villa.filter(n => g(n) !== 'f')];
-  const events = [];
+  // The show opens on its host (user: "where is she, and where are the
+  // presentations?"), and every islander is introduced before they walk in.
+  const events = [makeEvent(state, rng, { phase: 'arrival', kind: 'host-open', players: [], aired: true, extra: { pop: {} } })];
+  const intro = (a, phase) => makeEvent(state, rng, { phase, kind: 'intro', players: [a], aired: true,
+    extra: { pop: { [a]: { approval: 0.2, fame: 1 } } } });
   const here = [];
   for (const a of order) {
+    events.push(intro(a, 'arrival'));
     // Whoever is nearest the steps says hello: someone from the same side first.
     const same = here.filter(n => g(n) === g(a));
     const b = (same.length ? same : here)[Math.floor(rng() * Math.max(1, (same.length ? same : here).length))] || null;
@@ -320,10 +325,12 @@ export function nightOneOpening(state, ctx) {
     events.push(makeEvent(state, rng, { phase: 'arrival', kind: 'first-look', players: [a, b], aired: true,
       extra: { of: spark ? 'spark' : 'polite', pop: { [a]: { approval: 0.2, fame: 1 } } } }));
   }
-  const first = stepping ? stepForward(state, rng) : firstCouples(state, rng, fmt);
+  // Dior explains the night's coupling at the fire pit, then it happens.
+  const host = makeEvent(state, rng, { phase: 'coupling', kind: 'host-first', players: [], aired: true, extra: { of: fmt, pop: {} } });
+  const first = stepping ? stepForward(state, rng, intro) : firstCouples(state, rng, fmt);
   // The first coupling is in daylight, the same afternoon they arrived.
   for (const e of first.events) e.phase = 'coupling';
-  return { events: [...events, ...first.events], ballots: first.ballots, firstFormat: fmt };
+  return { events: [...events, host, ...first.events], ballots: first.ballots, firstFormat: fmt };
 }
 
 /**
@@ -333,12 +340,14 @@ export function nightOneOpening(state, ctx) {
  * likely a girl is to step is how much she is drawn to him (proportional);
  * who he picks is how much he is drawn to her. No steals: it is minutes in.
  */
-function stepForward(state, rng) {
+function stepForward(state, rng, intro = null) {
   const g = n => state.profiles[n].gender;
   const free = new Set(state.villa.filter(n => g(n) === 'f'));
   const boys = state.villa.filter(n => g(n) !== 'f');
   const pairs = [], waiting = [], events = [];
   for (const b of boys) {
+    // Each boy is introduced as he reaches the top of the steps.
+    if (intro) events.push(intro(b, 'coupling'));
     const stepped = [...free].filter(f => attr(state, f, b) != null && rng() < 0.15 + 0.7 * (attr(state, f, b) || 0) / 10);
     if (!stepped.length) {
       waiting.push(b);

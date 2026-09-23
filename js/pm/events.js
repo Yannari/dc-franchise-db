@@ -12,7 +12,7 @@
 import { addBond, getBond } from '../bonds.js';
 import { addRelationshipDimension } from '../relationships.js';
 import { attr, nudgeAttraction, ickHit } from './chemistry.js';
-import { recordAired, nudgeBelief } from './ledger.js';
+import { recordAired, nudgeBelief, BETRAYAL } from './ledger.js';
 import { romance, shown, revealTruth } from './feelings.js';
 import { closedness, betrayalWeight } from './ladder.js';
 import { feel, jealousyHit } from './emotions.js';
@@ -217,7 +217,7 @@ export const KINDS = {
       // The messenger is judged by how much the exposed one liked them anyway.
       addRelationshipDimension(x, w, 'resentment', 0.8 * judgement(s, x, w));
       if (ev.aired && partnerOf(s, p) === x) nudgeBelief(s.ledger, x, p, -6);
-      return { pop: { ...pop1(w, 0.3, 1.5), ...pop1(p, 1.5, 2), ...pop1(x, -2, 2) }, major: [p, x] };
+      return { pop: { ...pop1(w, 0.3, 1.5), ...pop1(p, 1.5, 2), ...pop1(x, -BETRAYAL.exposed, 2) }, major: [p, x] };
     },
   },
   comedy: {

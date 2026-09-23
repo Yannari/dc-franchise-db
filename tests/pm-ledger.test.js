@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { createLedger, noteArrival, recordAired, closeEpisode, coupleScore, followers,
-  labelFor, nudgeBelief, readApproval, CAP, FIRST_CAP, MAJOR_CAP, SCENE_GAIN, POP_SCALE } from '../js/pm/ledger.js';
+  labelFor, nudgeBelief, readApproval, CAP, FIRST_CAP, MAJOR_CAP, SCENE_GAIN, POP_SCALE, FIRST_WINDOW } from '../js/pm/ledger.js';
+
+const S = FIRST_WINDOW;   // the first episode after the first-impression window is S + 1
 
 const settled = () => {           // an islander past the first-impression window
   const L = createLedger();
   noteArrival(L, 'A', 1);
-  for (let ep = 1; ep <= 3; ep++) closeEpisode(L, ep);
+  for (let ep = 1; ep <= S; ep++) closeEpisode(L, ep);
   return L;
 };
 
@@ -13,7 +15,7 @@ describe('per-episode caps', () => {
   it('holds an ordinary episode to the cap', () => {
     const L = settled();
     recordAired(L, { who: 'A', approval: 80 });
-    expect(closeEpisode(L, 4).A.applied).toBe(CAP);
+    expect(closeEpisode(L, S + 1).A.applied).toBe(CAP);
   });
   it('doubles it in the first-impression window', () => {
     const L = createLedger(); noteArrival(L, 'A', 1);
@@ -23,13 +25,13 @@ describe('per-episode caps', () => {
   it('lifts it for a major moment', () => {
     const L = settled();
     recordAired(L, { who: 'A', approval: -90, major: true });
-    expect(closeEpisode(L, 4).A.applied).toBe(-MAJOR_CAP);
+    expect(closeEpisode(L, S + 1).A.applied).toBe(-MAJOR_CAP);
   });
   it('writes gs.popularity at the show scale', () => {
     const L = settled(); const pop = {};
     const scene = 1 / SCENE_GAIN;                    // one scene's worth of raw
     recordAired(L, { who: 'A', approval: 4 * scene });
-    const { applied } = closeEpisode(L, 4, pop).A;   // 0.75 * 4 = 3
+    const { applied } = closeEpisode(L, S + 1, pop).A;   // 0.75 * 4 = 3
     expect(applied).toBe(3);
     expect(pop.A).toBe(3 * POP_SCALE);
   });
@@ -40,21 +42,21 @@ describe('labels hold for two episodes before they change', () => {
     const L = settled();
     L.approval.A = 30; L.label.A = 'loved';
     recordAired(L, { who: 'A', approval: -40 });  // capped at -12 → 18: liked
-    expect(closeEpisode(L, 4).A.label).toBe('loved');
-    expect(closeEpisode(L, 5).A.label).toBe('liked');
+    expect(closeEpisode(L, S + 1).A.label).toBe('loved');
+    expect(closeEpisode(L, S + 2).A.label).toBe('liked');
   });
   it('never moves more than two tiers at once without a major moment', () => {
     const L = settled();
     L.approval.A = 30; L.label.A = 'loved'; L.pending.A = 'disliked';
     L.approval.A = -30;                             // held in "disliked" for the second close
-    expect(closeEpisode(L, 4).A.label).toBe('invisible');   // loved → invisible, two tiers
+    expect(closeEpisode(L, S + 1).A.label).toBe('invisible');   // loved → invisible, two tiers
   });
   it('a major moment moves the label at once, however far', () => {
     const L = settled();
     L.approval.A = 30; L.label.A = 'loved';
     L.approval.A = 0;
     recordAired(L, { who: 'A', approval: -90, major: true });   // -35 → -35: disliked
-    expect(closeEpisode(L, 4).A.label).toBe('disliked');
+    expect(closeEpisode(L, S + 1).A.label).toBe('disliked');
   });
   it('bands match the spec', () => {
     expect(labelFor(60)).toBe('fan-favourite');

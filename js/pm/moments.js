@@ -16,7 +16,7 @@ import { publicVote, finalVote, splitOrSteal } from './public-vote.js';
 import { villaDumping } from './villa-vote.js';
 import { arriveBombshell, bombshellSteal, openCasa } from './arrivals.js';
 import { stickOrTwist } from './casa.js';
-import { closeEpisode } from './ledger.js';
+import { closeEpisode, BETRAYAL } from './ledger.js';
 import { FINAL_COUPLES } from './schedule.js';
 
 const EXIT = 'dumped';
@@ -89,7 +89,7 @@ function recoupleNight(state, rng, { dumpSingles }) {
   const events = r.picks.map(pk => makeEvent(state, rng, { phase: 'firepit', kind: 'recouple-pick',
     players: [pk.picker, pk.picked, ...(pk.stole ? [pk.stole] : [])], aired: true,
     major: pk.stole ? [pk.picker, pk.stole] : [],
-    extra: { stole: pk.stole, reason: pk.reason, pop: { [pk.picker]: { approval: pk.stole ? -1 : 0.2, fame: 1 },
+    extra: { stole: pk.stole, reason: pk.reason, pop: { [pk.picker]: { approval: pk.stole ? -BETRAYAL.steal : 0.2, fame: 1 },
       ...(pk.stole ? { [pk.stole]: { approval: 1.5, fame: 2 } } : {}) } } }));
   for (const pk of r.picks) if (pk.stole) breakHeart(state, pk.stole, pk.picked, 5 * romance(pk.stole, pk.picked) / 10);
   state.couples = r.couples;
@@ -174,7 +174,7 @@ export const MOMENTS = {
       if (hidden) airLater(state, hidden);
       events.push(makeEvent(state, ctx.rng, { phase: 'firepit', kind: 'photos', players: [sec.partner, sec.who],
         aired: true, major: [sec.partner, sec.who],
-        extra: { secret: sec.id, pop: { [sec.partner]: { approval: 1.5, fame: 2 }, [sec.who]: { approval: -2.5, fame: 2 } } } }));
+        extra: { secret: sec.id, pop: { [sec.partner]: { approval: 1.5, fame: 2 }, [sec.who]: { approval: -BETRAYAL.photos, fame: 2 } } } }));
     }
     return { events: [...events, ...arrivals(state, ctx, ctx.entry.arrivals?.bombshell || 0)], exits: [], ballots: [] };
   },

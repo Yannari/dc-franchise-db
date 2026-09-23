@@ -12,9 +12,24 @@
 // tests/pm-ledger-readers.test.js enforces it over the source.
 
 export const CAP = 12;
-export const FIRST_CAP = 24;
+// First impressions: the real public decides who it likes inside a week or
+// two (our episodes 2-4). At 24 over three episodes the first Fan Favourite
+// landed at episode 5 on the median, measured over forty seasons.
+export const FIRST_CAP = 30;
 export const MAJOR_CAP = 35;
-export const FIRST_WINDOW = 3;
+export const FIRST_WINDOW = 4;
+// …and a good first impression lands harder: an audience that knows nothing
+// else about you warms to you fast. At 1.0 the top islander climbed ~15 a week
+// and the first Fan Favourite landed at episode 5 (measured, forty seasons).
+export const FIRST_WEIGHT = 1.5;
+/*
+ * WHAT A BETRAYAL COSTS, in scene weights (x SCENE_GAIN). On the real show a
+ * mugging-off at a recoupling makes a villain overnight; here a steal cost
+ * one small scene's worth, and the first Villain arrived at episode 10 on the
+ * median (after Casa), with one season in eight never getting one. Each of
+ * these is a major moment already, so the label can move at once.
+ */
+export const BETRAYAL = { steal: 3, bombshellSteal: 1.5, casaTwist: 4, exposed: 2.75, photos: 3, movieNight: 2 };
 // This show is sold on the vote: a scene moves gs.popularity twice as far as
 // the same scene on Total Drama.
 export const POP_SCALE = 2;
@@ -98,15 +113,23 @@ export function closeEpisode(L, ep, popularity = null) {
   for (const name of Object.keys(L.firstEp)) {
     const wasMajor = !!L.major[name];
     const cap = capFor(L, name, ep);
-    const raw = L.raw[name] || 0;
+    const fresh = (ep - L.firstEp[name]) < FIRST_WINDOW;
+    // Only the good impression is quickened: turning on somebody takes a
+    // moment the public saw (BETRAYAL), not a first week of being noticed.
+    const r0 = L.raw[name] || 0;
+    const raw = fresh && r0 > 0 ? r0 * FIRST_WEIGHT : r0;
     const applied = Math.round(clamp(0.75 * raw + 0.25 * (L.lastApplied[name] || 0), -cap, cap) * 100) / 100;
     L.approval[name] = clamp((L.approval[name] || 0) + applied, -100, 100);
     L.lastApplied[name] = applied;
     L.fame[name] = (L.fame[name] || 0) + (L.fameRaw[name] || 0);
     if (popularity && applied) popularity[name] = (popularity[name] || 0) + applied * POP_SCALE;
     const band = labelFor(L.approval[name]);
+    // A first impression has nothing to hold against: in an islander's first
+    // episodes the label follows the public straight away. The hold and the
+    // two-step limit are for an image that already exists (measured: with
+    // them from day one the first Fan Favourite waited until episode 5).
     if (band === L.label[name]) L.pending[name] = null;
-    else if (wasMajor) { L.label[name] = band; L.pending[name] = null; }
+    else if (wasMajor || fresh) { L.label[name] = band; L.pending[name] = null; }
     else if (L.pending[name] === band) { L.label[name] = stepToward(L.label[name], band, 2); L.pending[name] = null; }
     else L.pending[name] = band;
     out[name] = { approval: L.approval[name], applied, label: L.label[name], fame: L.fame[name] };

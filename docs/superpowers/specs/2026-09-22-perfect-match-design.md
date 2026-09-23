@@ -747,8 +747,11 @@ episodes. Each verified by breaking the thing it guards (§11.5 J).
 
 | measure | Plan 1 | Plan 3 |
 |---|---|---|
-| Fan Favourite + Villain by ep 8 | 33% | 38% |
-| … by ep 12 | 70% | 79% |
+| Fan Favourite + Villain by ep 8 | 33% | 38% → 59% after the label recalibration |
+| … by ep 12 | 70% | 79% → 91% |
+| first Fan Favourite (median episode) | 5 | 3 — week one or two, as on the real show |
+| first Villain (median episode) | 10 | 7 — by Casa Amor |
+| seasons with no Villain | 12% | 0% |
 | repeated line + cast in a season | 45% | 7.5% |
 | hut cutaways per episode | 24.9% | 19.1% — fewer, every one about its scene |
 | two-faced share of cutaways | 80–97% by mid-season | ~40%, peaking at Casa |
@@ -763,6 +766,20 @@ random, they now favour islanders who aren't attracted to each other; a
 couple could be cosy an hour after a row, warm scenes now cool off and the
 next one is a making-up scene; a late walker could leave a single in a
 couples-only final, the partner now leaves with them.
+
+**The label recalibration (user: "shouldn't it be sooner … based on real
+love island").** Our sixteen episodes are a real series' eight weeks, so the
+median first Fan Favourite at episode 5 was week three, and the first Villain
+at episode 10 was after Casa. Three changes, the per-episode caps kept:
+first impressions are wider (30 over an islander's first four episodes, the
+label following straight away with no hold) and a GOOD first impression
+lands 1.5x — turning on somebody still takes a moment the public saw; and a
+betrayal is priced like one (`BETRAYAL` in pm/ledger.js: a steal, a Casa
+twist on a waiting partner, being exposed, the photos, Movie Night). Every
+new Villain in three read seasons came straight after one of those, or a
+two-faced hut. Cost: "invisible" falls to ~15% (the spec guessed a quarter;
+two of a villa of twelve is what a real series has), and 2.8 islanders a
+season are ever a Villain, briefly-bad bombshells included.
 
 ---
 

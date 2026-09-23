@@ -14,6 +14,7 @@ import { makeEvent, partnerOf } from './events.js';
 import { closedness } from './ladder.js';
 import { emo, breakHeart } from './emotions.js';
 import { peerPressure } from './circle.js';
+import { BETRAYAL } from './ledger.js';
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
@@ -71,7 +72,7 @@ export function stickOrTwist(state, { rng }) {
     return makeEvent(state, rng, { phase: 'firepit', kind: 'casa-return', players, aired: true,
       major: d.choice === 'twist' ? players.concat(partner ? [partner] : []) : [],
       extra: { choice: d.choice, pop: d.choice === 'twist'
-        ? { [d.name]: { approval: partner ? -3 : 0.5, fame: 3 }, ...(partner ? { [partner]: { approval: 3, fame: 3 } } : {}) }
+        ? { [d.name]: { approval: partner ? -BETRAYAL.casaTwist : 0.5, fame: 3 }, ...(partner ? { [partner]: { approval: 3, fame: 3 } } : {}) }
         : { [d.name]: { approval: partner ? 2 : 0, fame: 1.5 } } } });
   });
 

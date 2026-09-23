@@ -15,6 +15,7 @@ import { syncLadder, decideLadder, closedness } from './ladder.js';
 import { attachment, emo, feel, jealousyHit, jealousyOutlet, breakHeart, tickEmotions } from './emotions.js';
 import { confidantOf, verdict, judgement } from './circle.js';
 import { familyVerdict } from './arrivals.js';
+import { BETRAYAL } from './ledger.js';
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 const pick = (rng, arr) => (arr.length ? arr[Math.floor(rng() * arr.length)] : null);
@@ -210,7 +211,11 @@ const RITUALS = {
         jealousyHit(state, p, n, other, 5, { confirmed: true });
         addRelationshipDimension(p, n, 'trust', -1.5);
       }
-      out.push(scene(state, rng, 'movie-night', c.players, { clip: c.id, pop: {} }, { phase: 'evening', aired: true, major: c.players }));
+      // Caught on screen behind a partner's back: that is the moment itself.
+      const caught = c.players.filter(n => partnerOf(state, n) && !c.players.includes(partnerOf(state, n)));
+      out.push(scene(state, rng, 'movie-night', c.players,
+        { clip: c.id, pop: Object.fromEntries(caught.map(n => [n, { approval: -BETRAYAL.movieNight, fame: 1.5 }])) },
+        { phase: 'evening', aired: true, major: c.players }));
     }
     if (clips.length >= 2) {
       const gap = Math.max(...state.villa.map(v =>

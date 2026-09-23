@@ -9,7 +9,7 @@
 // couple the public loves costs the bombshell approval.
 import { addBond } from '../bonds.js';
 import { seedAttraction, attr } from './chemistry.js';
-import { noteArrival, readApproval, coupleScore } from './ledger.js';
+import { noteArrival, readApproval, coupleScore, BETRAYAL } from './ledger.js';
 import { makeEvent, partnerOf } from './events.js';
 
 export function arriveIslander(state, name, { ep, seed, room = 'villa' }) {
@@ -52,7 +52,7 @@ export function bombshellSteal(state, name, { rng }) {
   state.couples.push([name, stole]);
   const ev = makeEvent(state, rng, { phase: 'event', kind: 'steal', players: [name, stole, leftSingle],
     aired: true, major: [name, stole, leftSingle],
-    extra: { pop: { [name]: { approval: -0.05 * loved, fame: 3 },
+    extra: { pop: { [name]: { approval: -(BETRAYAL.bombshellSteal + 0.05 * loved), fame: 3 },
       [stole]: { approval: 0, fame: 2 }, [leftSingle]: { approval: 1.5, fame: 2 } } } });
   return { stole, leftSingle, events: [ev] };
 }

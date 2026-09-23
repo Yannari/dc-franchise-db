@@ -462,6 +462,117 @@ function readPlacementSignals(ep, prev, opts) {
   };
 }
 
+/* ══════════════════════════════════════════════════════════════════════
+   THE VILLA'S READER (Perfect Match)
+   ══════════════════════════════════════════════════════════════════════
+   A villa night has ballots, but the vote reader below reads none of what
+   this show writes: `votingLog`, `gs.showmances`, the camp's events. Every
+   signal came back zero, which is a rating that looks plausible and is
+   wrong for ever (docs/ADDING-A-SHOW.md §2.5). So the registry names this
+   reader (`signals: 'villa'`), and it reads the row the engine wrote:
+   `pm.events` (what aired, and its kind), the exits, the public's shares
+   and approval. Counted by KIND, because the kinds are this show's own
+   words — a steal and a Casa twist are what a villa is watched for, and
+   neither classifies as a "tone". */
+const VILLA_BLINDSIDE = new Set(['steal', 'photos', 'movie-night', 'mission-dump', 'open-back-up', 'receipt']);
+// A pull is grafting, and grafting is romance here: Casa Amor's nights are
+// almost nothing but pulls and challenge kisses.
+const VILLA_ROMANCE = new Set(['pull', 'challenge-kiss', 'stand-up', 'kiss', 'deep-chat', 'hideaway', 'love-said', 'exclusive-ask', 'official-ask',
+  'close-off', 'date', 'first-look', 'step-forward', 'sleepover-night', 'declaration', 'reassurance']);
+const VILLA_MESS = new Set(['argument', 'jealous-confront', 'jealous-retaliate', 'ick', 'confession', 'photos',
+  'movie-night', 'snogger-row', 'couple-goals-row', 'talent-snub', 'knowing-row', 'double-standard', 'notes', 'dump-fallout']);
+const VILLA_SCHEMING = new Set(['gossip', 'loyalty', 'head-turned', 'keeping-open', 'mission-dump', 'couples-vote', 'top-couple-pick']);
+
+function readVillaSignals(ep, prev, opts) {
+  const { format } = opts;
+  const pm = ep.pm || {};
+  const aired = (pm.events || []).filter(e => e.aired);
+  const count = set => aired.filter(e => set.has(e.kind)).length;
+  const approval = pm.approval || {};
+  const villa = pm.villa || [];
+  const exits = (ep.exits || []).map(x => x.name);
+
+  // ── blindside: the steal, the Casa twist, the photos, the exposure ──
+  const twisted = aired.filter(e => e.kind === 'casa-return' && e.extra?.choice === 'twist').length;
+  const stolen = aired.filter(e => e.kind === 'recouple-pick' && e.extra?.stole).length;
+  // Scaled for a villa: about a hundred scenes a night, so counts run high.
+  const blindside = clamp01(norm(count(VILLA_BLINDSIDE) + stolen + twisted, 6) * 0.7);
+
+  // ── predictable: the ones the public liked least went home ──
+  const ranked = [...villa, ...exits].sort((a, b) => (approval[a] ?? 0) - (approval[b] ?? 0));
+  const bottomThird = new Set(ranked.slice(0, Math.max(1, Math.ceil(ranked.length / 3))));
+  // Capped: the unpicked are usually the least-liked, which is the format, not a dull night.
+  const predictable = exits.length ? clamp01(0.7 * exits.filter(n => bottomThird.has(n)).length / exits.length) : 0.3;
+
+  // ── steamroll: the villa gone stale ──
+  // A favourite couple the public loves all summer is the show working, not
+  // one bloc deciding everything. What the villa's audience complains about
+  // is a week where NOTHING moved — no arrival, no exit, no new couple, no
+  // twist at Casa — the reason the show sends bombshells in. Stable couples
+  // alone are the show working (the couples are supposed to last). Smoothed.
+  const keyOf = c => [...c].sort().join('+');
+  const couplesNow = (pm.couples || []).map(keyOf);
+  const before = new Set(prev?.couples || []);
+  const newCouples = before.size ? couplesNow.filter(k => !before.has(k)).length : 0;
+  const arrivedNow = aired.filter(e => /entrance/.test(e.kind)).length;
+  const moved = exits.length + arrivedNow + newCouples + twisted;
+  const stale = clamp01(1 - moved / 3);
+  const steamroll = clamp01((prev?.steamroll || 0) * 0.45 + stale * 0.45);
+  const coupleScore = c => (approval[c[0]] ?? 0) + (approval[c[1]] ?? 0);
+  const top = [...(pm.couples || [])].sort((a, b) => coupleScore(b) - coupleScore(a))[0] || null;
+  const topKey = top ? keyOf(top) : null;
+
+  // ── powerShift: the public's favourite changed ──
+  const fav = [...villa].sort((a, b) => (approval[b] ?? 0) - (approval[a] ?? 0))[0] || null;
+  const powerShift = prev ? (fav && prev.fav && fav !== prev.fav ? (prev.topThree || []).includes(fav) ? 0.35 : 0.7 : 0) : 0.35;
+  const topThree = [...villa].sort((a, b) => (approval[b] ?? 0) - (approval[a] ?? 0)).slice(0, 3);
+
+  // ── showmance: what the villa is for ──
+  const showmance = clamp01(norm(count(VILLA_ROMANCE), 45) * 0.7);
+
+  // ── twist: what the schedule and the timeline played tonight ──
+  const played = [pm.oneOff, pm.challenge, pm.arrivalRule, pm.immune?.length ? 'immunity' : null,
+    pm.dumpFormat && !['cross-gender', 'public', 'singles'].includes(pm.dumpFormat) ? pm.dumpFormat : null,
+    ['casa-open', 'stick-or-twist', 'photos'].includes(ep.moment) ? ep.moment : null,
+    // A bombshell walking in is this show's twist.
+    ep.moment === 'bombshell' ? 'bombshell' : null].filter(Boolean).length;
+  const twist = clamp01(norm(played, 2));
+
+  // ── returns: somebody walked back in ──
+  const returns = pm.returned ? 1 : 0;
+
+  // ── likability: how much the country likes who is left ──
+  const biggest = Math.max(1, ...Object.values(approval).map(v => Math.abs(Number(v) || 0)));
+  const mean = villa.length ? villa.reduce((s, n) => s + (Number(approval[n]) || 0), 0) / villa.length : 0;
+  const likability = clamp01(0.5 + 0.5 * (mean / biggest));
+
+  // ── villainy: the aired scenes the public held against somebody ──
+  const cost = aired.filter(e => Object.values(e.pop || {}).some(p => (p.approval || 0) <= -1)).length;
+  const arche = opts.players || {};
+  const archOf = n => (Array.isArray(arche) ? arche.find(p => p.name === n)?.archetype : arche[n]?.archetype) || archetypeOf(n);
+  const dirty = villa.length ? villa.filter(n => DIRTY.has(archOf(n))).length / villa.length : 0;
+  const villainy = clamp01(norm(cost, 30) * 0.3 + dirty * 0.25);
+
+  // ── mess ──
+  const comic = aired.filter(e => e.kind === 'comedy' || e.kind === 'baby-doll' || e.kind === 'talent-act').length;
+  const mess = clamp01(norm(count(VILLA_MESS), 70) * 0.8 + norm(comic, 60) * 0.2);
+
+  // ── strategy: this show's smallest — grafting, gossip, the villa's votes ──
+  const strategy = clamp01(norm(count(VILLA_SCHEMING), 25) * 0.6);
+
+  return {
+    ep: ep.num ?? 0,
+    format,
+    blindside, predictable, steamroll, powerShift, showmance,
+    twist, returns, likability, villainy, mess, strategy,
+    // Carried for next week's memory, not scored themselves.
+    topCouple: topKey, fav, topThree, couples: couplesNow,
+    bloc: [], holder: fav, target: null,
+    boot: exits[0] || null,
+    nominees: (pm.bottom || []).flat(),
+  };
+}
+
 export function readSignals(ep, prev, opts = {}) {
   if (!ep) return null;
   const format = opts.format || ep.format || seasonConfig?.format || DEFAULT_FORMAT;
@@ -481,6 +592,8 @@ export function readSignals(ep, prev, opts = {}) {
   if (roundShape(format) === 'placements') {
     return readPlacementSignals(ep, prev, { ...opts, format, events, tones, pop, house });
   }
+  // A show that names its own reader in the registry gets it (Perfect Match).
+  if (SHOWS[format]?.signals === 'villa') return readVillaSignals(ep, prev, { ...opts, format });
 
   const log = ep.votingLog || [];
   const voters = log.length || 1;

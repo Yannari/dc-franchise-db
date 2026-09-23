@@ -403,10 +403,15 @@ export const SHOWS = {
       hostDialect: 'us',
       narratorDialect: 'uk',
     },
-    // PROVISIONAL until a season has been played and the signals printed
-    // (§2.5). A dating show sells romance and mess; strategy is the smallest.
+    // A dating show sells romance and mess; strategy is the smallest. Checked
+    // against played seasons 2026-09-23 (tests/pm-ratings.test.js): a season
+    // rates 35-41 where a headless Total Drama one rates 43-50, the young
+    // audiences carry it and the older two are put off by the mess.
     audience: { strategy: 0.5, blindside: 0.9, mess: 1.4, predictable: 0.8,
       steamroll: 1.0, showmance: 1.6, twist: 1.1 },
+    // Which reader turns an episode into ratings signals (js/ratings.js). The
+    // vote reader finds none of what a villa writes and reads zeros (§2.5).
+    signals: 'villa',
     // Written by the export (Plan 5). Declared now so the article rows exist.
     careerStats: [
       ['pm.couplings',            'totalCouplings'],

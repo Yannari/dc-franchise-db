@@ -7,7 +7,8 @@ import { pStats } from './players.js';
 import { bKey, getBond } from './bonds.js';
 import { seasonRecord, recordLines, vetoSavedIn } from './analysis/game-record.js';
 import { buildDragSeasonDocument } from './dr/export.js';
-import { DRAG_FORMAT, TRAITORS_FORMAT } from './shows.js';
+import { buildPerfectMatchSeasonDocument } from './pm/export.js';
+import { DRAG_FORMAT, TRAITORS_FORMAT, PERFECT_MATCH_FORMAT } from './shows.js';
 import { SHOWS, seasonId, formatPrefix, DEFAULT_FORMAT } from './shows.js';
 import { villainBoard } from './villain-score.js';
 import { seasonFormat } from './core.js';
@@ -3664,6 +3665,158 @@ export async function exportDragRaceSeason(onStatus) {
   return doc;
 }
 registerSeasonExporter('drag-race', exportDragRaceSeason);
+
+/**
+ * Perfect Match. The document is js/pm/export.js; this is the publish step,
+ * guarded the same two ways the drag exporter is: the rows must be this
+ * show's, and there must be a season at all.
+ */
+export async function exportPerfectMatchSeason(onStatus) {
+  const _status = onStatus || (() => {});
+  const rows = (gs.episodeHistory || []).filter(r => r && r.pm);
+  if (!rows.length) {
+    throw new Error(`No ${SHOWS[PERFECT_MATCH_FORMAT].name} season to export: gs.episodeHistory has no `
+      + 'episodes with a `pm` block. Play a season first.');
+  }
+  const foreign = (gs.episodeHistory || []).filter(r => r && r.format && r.format !== PERFECT_MATCH_FORMAT);
+  if (foreign.length) {
+    throw new Error(`This season's history contains ${foreign.length} episode(s) tagged `
+      + `"${foreign[0].format}" — refusing to publish them under a ${PERFECT_MATCH_FORMAT} id.`);
+  }
+  const seasonNum = _getSeasonNumber();
+  if (!seasonNum) return;
+  _status('Building the season document...');
+  const doc = buildPerfectMatchSeasonDocument(rows, { seasonNumber: seasonNum });
+  _status(`Built ${doc.seasonId}: ${doc.castSize} islanders, ${doc.episodeCount} episodes.`);
+
+  _status('Merging databases...');
+  let playersDb = null; let seasonsDb = null;
+  try {
+    const [playersResp, seasonsResp] = await Promise.all([
+      fetch('players_database.json').catch(() => null),
+      fetch('seasons_database.json').catch(() => null),
+    ]);
+    const playersExisting = playersResp?.ok ? await playersResp.json() : { franchise: {}, players: [] };
+    const seasonsExisting = seasonsResp?.ok ? await seasonsResp.json() : { franchise: {}, seasons: [] };
+    playersDb = mergePerfectMatchSeason(playersExisting, doc);
+    seasonsDb = mergePerfectMatchSeasonsDatabase(seasonsExisting, doc);
+    if (seasonsDb && playersDb?.players) {
+      seasonsDb.franchise = seasonsDb.franchise || {};
+      seasonsDb.franchise.totalPlayers = playersDb.players.length;
+    }
+  } catch (err) {
+    throw new Error(`Could not merge the databases: ${err.message || err}`);
+  }
+  const published = await _publishSeasonToSite({
+    seasonNumber: seasonNum, format: PERFECT_MATCH_FORMAT, season: doc, players: playersDb, seasons: seasonsDb,
+  }, onStatus);
+  if (published) { _status('Done.'); return published; }
+  _status('Downloading files...');
+  _downloadJSON(doc, `${seasonId(PERFECT_MATCH_FORMAT, seasonNum)}-data.json`);
+  if (playersDb) setTimeout(() => _downloadJSON(playersDb, 'players_database.json'), 500);
+  if (seasonsDb) setTimeout(() => _downloadJSON(seasonsDb, 'seasons_database.json'), 1000);
+  _status('Done.');
+  return doc;
+}
+
+/**
+ * A villa season into players_database.json. BOTH winners win: each gets the
+ * win and the badge, the way every taker of a shared pot does. The villa's
+ * ballots against somebody are `votesReceived`; a recoupling pick is a choice
+ * FOR somebody and never counts. No jury votes: the show has no jury.
+ */
+export function mergePerfectMatchSeason(existing, seasonDoc) {
+  if (!seasonDoc || seasonDoc.format !== PERFECT_MATCH_FORMAT) {
+    throw new Error(`mergePerfectMatchSeason expects a ${PERFECT_MATCH_FORMAT} season document`);
+  }
+  const seasonNum = seasonDoc.seasonNumber;
+  if (!seasonNum) throw new Error('Perfect Match season document has no seasonNumber');
+  const db = JSON.parse(JSON.stringify(existing || {}));
+  if (!db.players) db.players = [];
+  _stripSeasonFromAll(db, seasonNum, PERFECT_MATCH_FORMAT);
+  for (const entry of seasonDoc.placements || []) {
+    const name = entry.name;
+    if (!name) continue;
+    const slug = entry.playerSlug || _slug(name);
+    let player = db.players.find(x => x.id === slug || x.name === name);
+    if (!player) {
+      player = { id: slug, name, seasons: [], totalSeasons: 0, bestPlacement: null,
+        wins: 0, totalChallengeWins: 0, totalImmunityWins: 0, totalRewardWins: 0,
+        totalVotesAgainst: 0, totalIdolsFound: 0, totalJuryVotes: 0, tier: '', badges: [], seasonDetails: [] };
+      db.players.push(player);
+    }
+    if (!player.seasonDetails) player.seasonDetails = [];
+    if (!player.seasons) player.seasons = [];
+    _stripSeasonFromPlayer(player, seasonNum, PERFECT_MATCH_FORMAT);
+    const votes = entry.votesReceived || 0;
+    if (!player.seasons.includes(seasonNum)) player.seasons.push(seasonNum);
+    if (entry.status === 'Winner') player.wins = (player.wins || 0) + 1;
+    player.totalVotesAgainst = (player.totalVotesAgainst || 0) + votes;
+    player.seasonDetails.push(_tagSeasonDetail({
+      season: seasonNum, placement: entry.placement, status: entry.status,
+      exit: entry.exit || null, exitEpisode: entry.exitEpisode ?? null,
+      challengeWins: 0, votesReceived: votes,
+      ...(entry.showmance ? { showmance: entry.showmance, showmanceEnded: entry.showmanceEnded || 'intact' } : {}),
+      ...(entry.fanFavourite ? { fanFavourite: true } : {}),
+      pm: { ...(entry.pm || {}) },
+      notes: [], gameplayStyle: '', keyMoments: [],
+    }, PERFECT_MATCH_FORMAT));
+    const places = player.seasonDetails.map(sd => sd.placement).filter(x => x && x < 99);
+    player.avgPlacement = places.length ? Math.round(places.reduce((t, v) => t + v, 0) / places.length * 100) / 100 : null;
+    player.bestPlacement = places.length ? Math.min(...places) : null;
+    _rebuildByShow(player);
+    if (entry.status === 'Winner') {
+      player.badges = player.badges || [];
+      const badge = _winnerBadge(seasonNum, PERFECT_MATCH_FORMAT);
+      if (!player.badges.includes(badge)) player.badges.push(badge);
+    }
+  }
+  db.franchise = db.franchise || {};
+  db.franchise.totalSeasons = Math.max(db.franchise.totalSeasons || 0, seasonNum);
+  db.franchise.totalPlayers = db.players.length;
+  return db;
+}
+
+/** A villa season into seasons_database.json: the winning couple on `winners[]`. */
+export function mergePerfectMatchSeasonsDatabase(existing, seasonDoc) {
+  if (!seasonDoc || seasonDoc.format !== PERFECT_MATCH_FORMAT) {
+    throw new Error(`mergePerfectMatchSeasonsDatabase expects a ${PERFECT_MATCH_FORMAT} season document`);
+  }
+  const seasonNum = seasonDoc.seasonNumber;
+  if (!seasonNum) throw new Error('Perfect Match season document has no seasonNumber');
+  const db = JSON.parse(JSON.stringify(existing || {}));
+  if (!db.seasons) db.seasons = [];
+  const airWindow = _airWindowFor(db, PERFECT_MATCH_FORMAT, seasonNum);
+  const priorRatings = (db.seasons.find(x => x.seasonNumber === seasonNum && x.format === PERFECT_MATCH_FORMAT) || {}).ratings || null;
+  db.seasons = db.seasons.filter(x => !(x.seasonNumber === seasonNum && x.format === PERFECT_MATCH_FORMAT));
+  const winners = (seasonDoc.winners || []).filter(w => w && w.name)
+    .map(w => ({ name: w.name, playerSlug: w.playerSlug || _slug(w.name), share: w.share ?? null }));
+  const fav = seasonDoc.fanFavourite;
+  db.seasons.push({
+    ratings: seasonDoc?.ratings || priorRatings || undefined,
+    seasonNumber: seasonNum,
+    format: PERFECT_MATCH_FORMAT,
+    seasonId: seasonId(PERFECT_MATCH_FORMAT, seasonNum),
+    title: _clean(seasonDoc.title, `${SHOWS[PERFECT_MATCH_FORMAT].name} ${seasonNum}`),
+    subtitle: _clean(seasonDoc.subtitle),
+    castSize: seasonDoc.castSize,
+    episodeCount: seasonDoc.episodeCount,
+    // A couple won; nobody's single name goes in the one-winner block.
+    winner: null,
+    winners,
+    finalVote: seasonDoc.finalVote || [],
+    awards: { fanFavorite: fav?.name ? { name: fav.name, playerSlug: fav.playerSlug || _slug(fav.name) } : null },
+    theme: _clean(seasonDoc.seasonNarrative, _clean(seasonDoc.subtitle)),
+    status: 'Complete',
+    castPhotoPath: `assets/cast/${seasonId(PERFECT_MATCH_FORMAT, seasonNum)}-cast.png`,
+    emoji: _clean(seasonDoc.emoji),
+    ...airWindow,
+  });
+  db.franchise = db.franchise || {};
+  db.franchise.totalSeasons = Math.max(db.franchise.totalSeasons || 0, seasonNum);
+  return db;
+}
+registerSeasonExporter(PERFECT_MATCH_FORMAT, exportPerfectMatchSeason);
 
 export async function exportSeason(onStatus) {
   const out = await seasonExporterFor(seasonFormat(seasonConfig) || DEFAULT_FORMAT)(onStatus);

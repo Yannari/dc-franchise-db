@@ -541,6 +541,28 @@ details.pmv-debug[open] summary::before{transform:rotate(45deg)}
 .pmv-stage.pmv-warmth .pmv-vign{background:radial-gradient(90% 75% at 50% 55%,#ffb35c33 0%,#0000 45%,#1a0a20bb)}
 
 /* ── A LOVE TRIANGLE: three faces, the pull to each, the rivals' line ── */
+.pmv-poly{position:absolute;right:3%;bottom:33%;z-index:8;width:25%;display:none;align-items:stretch;gap:6px;padding:6px;border-radius:12px;
+  background:#0b1220e6;border:1.5px solid #22d3ee66;box-shadow:0 10px 30px #0008,0 0 18px #22d3ee33}
+.pmv-poly.pmv-on{display:flex}
+.pmv-poly-scr{position:relative;flex:1;border-radius:8px;overflow:hidden;background:
+  repeating-linear-gradient(90deg,#22d3ee14 0 1px,#0000 1px 12px),repeating-linear-gradient(0deg,#22d3ee14 0 1px,#0000 1px 12px),#050a14}
+.pmv-poly-scr svg{position:absolute;inset:0;width:200%;height:100%;animation:pmv-polyScroll 2.4s linear infinite}
+.pmv-poly-trace{fill:none;stroke:#7dd3fc;stroke-width:1.6;vector-effect:non-scaling-stroke;filter:drop-shadow(0 0 3px #22d3ee)}
+@keyframes pmv-polyScroll{to{transform:translateX(-50%)}}
+.pmv-poly-scr small{position:absolute;left:6px;top:4px;font:700 9px/1 Outfit;letter-spacing:.12em;text-transform:uppercase;color:#7dd3fcaa}
+.pmv-poly-lamp{width:30%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.pmv-poly-lamp i{width:70%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fde68a,#f59e0b 55%,#78350f);
+  box-shadow:0 0 12px #f59e0b88;animation:pmv-blink 0.9s infinite}
+.pmv-poly-lamp b{font:400 clamp(11px,1.5vw,17px)/1 'Bebas Neue',Outfit;letter-spacing:.08em;color:#fde68a}
+.pmv-poly[data-light="green"] .pmv-poly-lamp i{background:radial-gradient(circle at 35% 30%,#bbf7d0,#22c55e 55%,#14532d);box-shadow:0 0 26px #22c55e;animation:none}
+.pmv-poly[data-light="green"] .pmv-poly-lamp b{color:#86efac}
+.pmv-poly[data-light="red"] .pmv-poly-lamp i{background:radial-gradient(circle at 35% 30%,#fecaca,#ef4444 55%,#7f1d1d);box-shadow:0 0 30px #ef4444;animation:none}
+.pmv-poly[data-light="red"] .pmv-poly-lamp b{color:#fca5a5}
+.pmv-poly[data-light="red"] .pmv-poly-trace{stroke:#fca5a5;filter:drop-shadow(0 0 3px #ef4444)}
+.pmv-poly[data-light="blue"] .pmv-poly-lamp i{background:radial-gradient(circle at 35% 30%,#bfdbfe,#3b82f6 55%,#1e3a8a);box-shadow:0 0 26px #3b82f6;animation:none}
+.pmv-poly[data-light="blue"] .pmv-poly-lamp b{color:#93c5fd}
+.pmv-poly.pmv-flash{animation:pmv-polyHit .7s ease}
+@keyframes pmv-polyHit{0%{transform:scale(1)}25%{transform:scale(1.12)}100%{transform:scale(1)}}
 .pmv-tri{position:absolute;left:50%;top:6%;width:42%;height:auto;aspect-ratio:300/226;z-index:11;transform:translateX(-50%);pointer-events:none;display:none;overflow:visible}
 .pmv-tri.pmv-on{display:block}
 .pmv-tri .pmv-tri-pull{stroke:#ff4fa0;stroke-linecap:round;filter:drop-shadow(0 0 6px #ff4fa0)}

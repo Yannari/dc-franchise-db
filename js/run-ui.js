@@ -24,7 +24,7 @@ import { isTraitorsSeason, simulateTraitorsEpisode, rerunTraitorsEpisode,
 import { isPerfectMatchSeason, simulatePerfectMatchEpisode, perfectMatchCanRerun,
   lastPerfectMatchRefusal, rerunPerfectMatchEpisode, perfectMatchPendingChange, perfectMatchSeasonShape,
   perfectMatchSlots, perfectMatchVillaCounts, perfectMatchEpisodes } from './pm-run.js';
-import { EPISODE_WORDS as PM_EPISODE_WORDS, SLOT_NAMES as PM_SLOT_NAMES, seasonSchedule as pmDrawSchedule } from './pm/schedule.js';
+import { EPISODE_WORDS as PM_EPISODE_WORDS, SLOT_NAMES as PM_SLOT_NAMES, seasonSchedule as pmDrawSchedule, CHALLENGE_NAMES as PM_CHALLENGE_NAMES } from './pm/schedule.js';
 import { episodeText as pmEpisodeText, momentTitle as pmMomentTitle } from './pm/transcript.js';
 import { isDragSeason, simulateDragEpisode, invalidateDragQueue,
   dragEpisodesAired, dragScheduleRecorded, rerunDragEpisode, dragCanRerun } from './dr-run.js';
@@ -1999,10 +1999,10 @@ function _randomizeVilla() {
     }
     if (e.oneOff) { const id = mine.find(t => t.pmApply?.oneOff === e.oneOff)?.id; if (id) book.push([e.ep, id]); }
     if (e.immunity) { const id = mine.find(t => t.pmApply?.immunity)?.id; if (id) book.push([e.ep, id]); }
-    if (e.challenge) { const id = mine.find(t => t.pmApply?.challenge === e.challenge)?.id; if (id) book.push([e.ep, id]); }
+    if (e.challenge) book.push([e.ep, 'pm-villa-challenge', { pmGame: e.challenge }]);
   }
   const keep = (seasonConfig.twistSchedule || []).filter(b => b && !ids.has(b.type));
-  seasonConfig.twistSchedule = [...keep, ...book.map(([ep, type], i) => ({ id: `tw-${Date.now()}-${i}`, episode: ep, type }))];
+  seasonConfig.twistSchedule = [...keep, ...book.map(([ep, type, more], i) => ({ id: `tw-${Date.now()}-${i}`, episode: ep, type, ...(more || {}) }))];
   localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
   renderTimeline();
   renderTwistCatalog();
@@ -4070,6 +4070,16 @@ export function renderTimeline() {
         h += `</select>`;
         return `<span class="fd-ep-twist-tag" style="display:flex;align-items:center;gap:2px;flex-wrap:wrap;max-width:100%;min-width:0">${cat.emoji} ${cat.name} ${h} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
       }
+      if (t.type === 'pm-villa-challenge') {
+        // WHICH GAME. Random lets the show pick one that fits that part of the
+        // season (pm/schedule.js resolveRandomGames); a name plays that one.
+        const chosen = t.pmGame || '';
+        let h = `<select onchange="event.stopPropagation();updateTwist('${t.id}','pmGame',this.value)" onclick="event.stopPropagation()" title="Which challenge" style="font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(99,102,241,0.3);border-radius:3px;padding:1px 2px;margin-left:4px;min-width:0;max-width:100%">`;
+        h += `<option value="" ${chosen === '' ? 'selected' : ''}>Random — one that fits the day</option>`;
+        for (const [id, name] of Object.entries(PM_CHALLENGE_NAMES)) h += `<option value="${id}" ${id === chosen ? 'selected' : ''}>${name}</option>`;
+        h += `</select>`;
+        return `<span class="fd-ep-twist-tag" style="display:flex;align-items:center;gap:2px;flex-wrap:wrap;max-width:100%;min-width:0">${cat.emoji} ${cat.name} ${h} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
+      }
       if (t.type === 'dr-returnee') {
         /* WHO WALKS BACK IN. The whole cast is offered rather than only the
            queens who are out, because a season is BOOKED BEFORE IT IS
@@ -4297,8 +4307,8 @@ export function renderTwistCatalog() {
   // Only ever show twists belonging to the show being designed. A Tribe Swap
   // means nothing in a house and an HOH means nothing on a beach, so the
   // catalogue is scoped to the format rather than filtered by the reader.
-  const catalog = (typeof twistsForFormat === 'function' && typeof seasonConfig !== 'undefined')
-    ? twistsForFormat(seasonConfig) : TWIST_CATALOG;
+  const catalog = ((typeof twistsForFormat === 'function' && typeof seasonConfig !== 'undefined')
+    ? twistsForFormat(seasonConfig) : TWIST_CATALOG).filter(t => !t.pmHidden);
 
   // ── the filter bar, built from what this format actually has ──
   //
@@ -4490,6 +4500,7 @@ export function assignTwist(twistId) {
     const entry = { id: 'tw-' + Date.now() + '-' + ep, episode: ep, type: twistId };
     if (twistId === 'returning-player') { entry.returnCount = 1; entry.returnReasons = ['random']; }
     if (twistId === 'dr-returnee') entry.returneeName = '';
+    if (twistId === 'pm-villa-challenge') entry.pmGame = '';
     if (twistId === 'bb-pandoras-box') entry.prize = 'diamond-veto';
     if (twistId === 'bb-app-store') entry.shelf = 'all';
     if (twistId === 'bb-den-of-temptation') entry.offer = 'random';

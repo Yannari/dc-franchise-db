@@ -268,6 +268,7 @@ export const CHALLENGE_NAMES = {
   receipts: 'Got the Receipts', 'look-who': "Look Who's Talking", snogger: 'Sauciest Snogger',
   'couple-goals': 'Couple Goals', 'knowing-me': 'Knowing Me, Knowing You', talent: 'The talent show',
   baby: 'The baby dolls', 'couple-of-sorts': 'Couple of Sorts', grafties: 'The Grafties',
+  'lie-detector': 'The Lie Detector',
 };
 const VILLA_DAYS = new Set(['recoupling', 'bombshell', 'public-vote', 'photos', 'semi-final']);
 export const CHALLENGE_DRAWS = [
@@ -287,6 +288,10 @@ export const CHALLENGE_DRAWS = [
   ['baby', 0.35, at => at > 0.7],
   // the awards night: one season, on a vote
   ['grafties', 0.2, (at, e) => at > 0.5 && e.moment === 'public-vote'],
+  // The Lie Detector: every season 2015-2018 (UK 1-4 d34-51, AU 1 d37), then
+  // dropped over welfare concerns — here an occasional late game. Drawn last,
+  // so adding it moved none of the draws above.
+  ['lie-detector', 0.3, at => at > 0.55],
 ];
 // Which nights can have one at all, for the Season Timeline too.
 export const CHALLENGE_NIGHTS = [...VILLA_DAYS];
@@ -375,6 +380,28 @@ export function withBookings(schedule, byEp = {}) {
     if (b.immunity && e.moment === 'public-vote') out.immunity = true;
     if (b.challenge && VILLA_DAYS.has(e.moment)) out.challenge = b.challenge;
     if (out.arrivalRule === undefined) delete out.arrivalRule;
+    return out;
+  });
+}
+
+/**
+ * A night booked as "a random challenge" (the Season Timeline's Villa
+ * Challenge card, left on Random): one that fits that part of the season and
+ * is not already on the schedule, drawn on its own dice. Nothing fits: the
+ * one fewest nights already have.
+ */
+export function resolveRandomGames(schedule, rng) {
+  const last = Math.max(1, ...schedule.map(e => e.ep));
+  const taken = new Set(schedule.map(e => e.challenge).filter(c => c && c !== 'random'));
+  return schedule.map(e => {
+    if (e.challenge !== 'random') return e;
+    const at = (e.ep - 1) / last;
+    const fits = CHALLENGE_DRAWS.filter(([id, , ok]) => !taken.has(id) && ok(at, e)).map(([id]) => id);
+    const pool = fits.length ? fits : CHALLENGE_DRAWS.map(([id]) => id).filter(id => !taken.has(id));
+    const id = pool.length ? pool[Math.floor(rng() * pool.length)] : null;
+    if (id) taken.add(id);
+    const out = { ...e };
+    if (id) out.challenge = id; else delete out.challenge;
     return out;
   });
 }

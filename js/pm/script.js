@@ -402,7 +402,11 @@ function partsScript(state, ev) {
   if (!picked.length) return renderScript(placeholder(ev.kind), ps, state);
   const merged = { id: picked.map(e => e.id).join('+'), stage: picked[0].stage,
     turns: picked.flatMap(e => e.turns || []), beat: picked[picked.length - 1].beat };
-  return renderScript(merged, ps, state);
+  // Where each part's lines start, so a screen can time its business to one
+  // (the lie detector's light comes on at the reading, not before).
+  let at = 0;
+  const partAt = picked.map(e => { const s = at; at += (e.turns || []).length; return s; });
+  return { ...renderScript(merged, ps, state), partAt };
 }
 
 /** Who {a}..{d} are. Snog Marry Pie keeps its answers in place even when one is missing. */

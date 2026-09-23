@@ -42,6 +42,7 @@ export const KIND_LABEL = {
   breakdown: 'It all gets too much', comfort: 'Someone comes', 'no-show': 'Where were you?',
   'triangle-torn': 'Torn', 'triangle-rivals': 'The rivals', 'triangle-case': 'Making the case', 'triangle-ultimatum': 'Choose',
   'triangle-teams': 'Pick a side', 'triangle-choice': 'The choice',
+  'lie-write': 'The questions', 'lie-question': 'The Lie Detector', 'lie-row': 'After the test',
   blowup: 'It kicks off', 'pile-in': 'Taking sides', 'villa-divided': 'The villa divided', 'cold-shoulder': 'The cold shoulder', 'clear-the-air': 'Clearing the air',
   'bed-share': 'Lights out', vent: 'Letting off steam', apology: 'The apology', reunite: 'Back together', 'apology-rejected': 'Not this time',
   steal: 'A steal', 'recouple-pick': 'The recoupling', 'dump-buildup': 'At risk', 'dump-verdict': 'Dumped',
@@ -181,6 +182,8 @@ function fxFor(row, e, first) {
   if (k.startsWith('triangle-') && e.extra?.tri) fx.triangle = { ...e.extra.tri, teams: e.extra.teams || null, won: k === 'triangle-choice' ? e.players[1] : null };
   if (k === 'triangle-rivals' && e.extra?.of === 'clash') fx.shake = true;
   if (k === 'triangle-choice' && e.extra?.of === 'pick') fx.neon = ['The choice', '#ff2e88'];
+  if (k === 'lie-question' && first) fx.neon = ['Lie Detector', '#22d3ee'];
+  if (k === 'lie-row') { fx.shake = e.extra?.of === 'own-it'; }
   if (k === 'comfort') fx.tears = 'warm';
   if (k === 'apology-rejected' && e.extra?.of === 'final') fx.neonDie = ['Over', '#a78bfa'];
   if (k === 'photo-row' && e.extra?.of === 'deny') fx.shake = true;
@@ -293,6 +296,13 @@ export function sceneSteps(row, e, evIndex, bg) {
       s.bg = 'vt'; s.vt = { name: a, tag };
       s.cast = [[a, 50, s.voice === 'narrator' ? 'back' : 'speak']];
     }
+  }
+  // The lie detector: the machine is on screen for every line of the
+  // question, reading, and its light comes on with the line that reads it.
+  if (e.kind === 'lie-question') {
+    const readAt = s.partAt?.[2] ?? Infinity;
+    for (const st of out) if (st.part === 'line' || st.part === 'stage')
+      st.poly = { who: e.players[0], light: (st.line ?? -1) >= readAt ? e.extra?.read || null : null };
   }
   // One-shot business rides on the scene's first step; the Heart Map moves on its last.
   const first = out[0];

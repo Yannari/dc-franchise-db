@@ -184,7 +184,9 @@ export function perfectMatchBookings() {
   for (const b of booked) {
     const tw = mine.get(b.type) || mine.get(b.id);
     const ep = Number(b.episode);
-    if (tw.pmOn.includes(kindAt.get(ep))) out[ep] = { ...(out[ep] || {}), ...tw.pmApply };
+    // The Villa Challenge card carries its game in the booking ('' = random).
+    const game = tw.pmApply.challenge === 'random' && b.pmGame ? { challenge: b.pmGame } : {};
+    if (tw.pmOn.includes(kindAt.get(ep))) out[ep] = { ...(out[ep] || {}), ...tw.pmApply, ...game };
   }
   return out;
 }

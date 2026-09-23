@@ -25,6 +25,7 @@ import { SECRET_HUT } from './secrets.js';
 import { BLOWUP_HUT } from './blowup.js';
 import { BREAKDOWN_HUT } from './breakdown.js';
 import { TRIANGLE_HUT } from './triangle.js';
+import { LIE_HUT } from './lie-detector.js';
 const B = { withB: true };
 const K = (kind, more = {}) => ({ kind, ...more });
 const T = { taken: true };
@@ -39,6 +40,7 @@ export const HUT = {
     ...BLOWUP_HUT.honest,
     ...BREAKDOWN_HUT.honest,
     ...TRIANGLE_HUT.honest,
+    ...LIE_HUT.honest,
     // chat
     { id: 'hut.chat.h1', when: K('chat', B), turns: [['a', "I could sit on that daybed with {b} all day. I basically have."]] },
     { id: 'hut.chat.h2', when: K('chat', B), turns: [['a', "It's the little chats with {b} I like the most. Nobody else is in them."]] },
@@ -204,6 +206,7 @@ export const HUT = {
     ...BLOWUP_HUT['two-faced'],
     ...BREAKDOWN_HUT['two-faced'],
     ...TRIANGLE_HUT['two-faced'],
+    ...LIE_HUT['two-faced'],
     // chat
     { id: 'hut.chat.t1', when: K('chat', B), turns: [['a', "{b} asked me if everything's okay. I said yes. It's mostly yes."]] },
     { id: 'hut.chat.t2', when: K('chat', B), turns: [['a', "Sitting there with {b}, all I could think about was earlier. I can't tell {b} that."]] },

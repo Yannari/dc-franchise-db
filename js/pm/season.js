@@ -24,7 +24,7 @@ import { syncLadder, stepOf } from './ladder.js';
 import { emo, attachment, attachmentLabel, walkRisk } from './emotions.js';
 import { proneness } from './breakdown.js';
 import { runVillaDay } from './villa-day.js';
-import { seasonSchedule, withPicks, withBookings, buildSchedule, FINAL_COUPLES } from './schedule.js';
+import { seasonSchedule, withPicks, withBookings, resolveRandomGames, buildSchedule, FINAL_COUPLES } from './schedule.js';
 import { MOMENTS, nightOneOpening } from './moments.js';
 import { returnIslander } from './arrivals.js';
 
@@ -118,6 +118,7 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
   // Every bombshell and Casa arrival the author cast gets a night to walk in.
   schedule = schedule || withBookings(withPicks(perfectMatchScheduleFor(seed,
     { bombshells: queues.bombshell.length, casa: queues.casa.length, episodes }), picks), bookings);
+  schedule = resolveRandomGames(schedule, streamFor(seed, 'random-games'));
   let final = null;
 
   for (const entry of schedule) {

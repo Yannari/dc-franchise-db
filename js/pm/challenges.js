@@ -22,6 +22,7 @@ import { coupleStrength } from './ladder.js';
 import { emo, feel, jealousyHit } from './emotions.js';
 import { publicSorts, publicAwards } from './public-vote.js';
 import { CHALLENGE_NAMES } from './schedule.js';
+import { lieDetector } from './lie-detector.js';
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 const pop = (...rows) => Object.fromEntries(rows.filter(r => r[0]).map(([n, approval, fame]) => [n, { approval, fame }]));
@@ -437,7 +438,8 @@ function grafties(state, rng) {
 
 // The names, and when each is drawn, live in schedule.js (data only).
 export const CHALLENGES = { receipts, 'look-who': lookWho, snogger, 'couple-goals': coupleGoals,
-  'knowing-me': knowingMe, talent: talentShow, baby: babyDolls, 'couple-of-sorts': coupleOfSorts, grafties };
+  'knowing-me': knowingMe, talent: talentShow, baby: babyDolls, 'couple-of-sorts': coupleOfSorts, grafties,
+  'lie-detector': lieDetector };
 export { CHALLENGE_NAMES };
 
 /** The day's named challenge, or [] when the villa cannot play it tonight. */

@@ -102,6 +102,7 @@ function frame(bg, hud, board) {
     <div class="${P('polaroid')}"><div class="${P('pol-photo')}"></div><div class="${P('pol-cap')}"></div></div>
     <div class="${P('crack')}"></div>
     <svg class="${P('tri')}" viewBox="0 0 300 226" preserveAspectRatio="xMidYMid meet"></svg>
+    <div class="${P('poly')}"><div class="${P('poly-scr')}"><svg viewBox="0 0 200 60" preserveAspectRatio="none"><polyline class="${P('poly-trace')}"/></svg><small></small></div><div class="${P('poly-lamp')}"><i></i><b></b></div></div>
     <div class="${P('tug')}"><div class="${P('tug-a')}"></div><div class="${P('tug-bar')}"><i></i></div><div class="${P('tug-b')}"></div></div>
     <div class="${P('petals')}">${petalsHtml()}</div>
     <div class="${P('pops')}"></div>
@@ -242,6 +243,23 @@ export function paintStage(el, screen, idx, { fresh = false, hud = '' } = {}) {
     tug.querySelector('.' + P('tug-bar') + ' i').style.left = `${Math.round(share * 100)}%`;
     tug.classList.add(P('on'));
     if (fresh) { tug.classList.remove(P('pulse')); void tug.offsetWidth; tug.classList.add(P('pulse')); }
+  }
+  // The lie detector: the needle while the question is asked and answered,
+  // then the light. The trace is jumpier on a lie — the machine's reading, not
+  // the viewer's spoiler: it only shows on the reading's own line.
+  if (st.poly) {
+    const pg = q('poly'), L = st.poly.light;
+    let d = '';
+    for (let i = 0; i <= 80; i++) {
+      const x = i * 2.5, amp = L === 'red' ? 22 : L ? 9 : 14;
+      d += `${x},${(30 + Math.sin(i * 0.9) * amp * Math.sin(i * 0.23) + ((i * 37) % 11 - 5) * (L === 'red' ? 1.4 : 0.6)).toFixed(1)} `;
+    }
+    pg.querySelector('.' + P('poly-trace')).setAttribute('points', d);
+    pg.querySelector('small').textContent = st.poly.who;
+    pg.classList.add(P('on'));
+    pg.dataset.light = L || 'reading';
+    pg.querySelector('b').textContent = { green: 'Truth', red: 'Lie', blue: 'Unsure' }[L] || 'Reading';
+    if (fresh && L) { pg.classList.remove(P('flash')); void pg.offsetWidth; pg.classList.add(P('flash')); }
   }
   // The love triangle: three faces, the one in the middle at the top, a line
   // to each as thick as the pull, and the teams counted under each side.

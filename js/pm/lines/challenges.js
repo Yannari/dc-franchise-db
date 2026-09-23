@@ -32,6 +32,7 @@
 //                                  least); b is a's partner (`coupled`).
 //
 // Nobody hosts a challenge: a text sets it up and the islanders run it.
+import { LIE_LINES } from './lie-detector.js';
 export const CHALLENGE_LINES = {
   'challenge-text': [
     { id: 'challenge-text.receipts.1', when: { of: 'receipts' },
@@ -499,3 +500,5 @@ export const CHALLENGE_LINES = {
       beat: '{b} puts an arm round {a}.' },
   ],
 };
+// The Lie Detector (pm/lie-detector.js), merged in; its challenge-text joins the others.
+for (const [k, v] of Object.entries(LIE_LINES)) CHALLENGE_LINES[k] = [...(CHALLENGE_LINES[k] || []), ...v];

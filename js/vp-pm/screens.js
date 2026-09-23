@@ -126,7 +126,7 @@ const railHtml = (screen, idx) => (screen.rail ? `<div class="${P('rail')}">${sc
 }).join('')}</div>` : '');
 
 // The day the episode STARTS on: its first scene is that morning, or night one's arrivals.
-function hudOf(row) { return `${row.days ? `Day ${row.days[0]} · ` : ''}Episode ${row.num}`; }
+function hudOf(row) { const d = row.calendar || row.days; return `${d ? `Day ${d[0]} · ` : ''}Episode ${row.num}`; }
 
 function screenHtml(uid, row, prev, screens, si) {
   const screen = screens[si];

@@ -488,7 +488,7 @@ export function narratorFor(state, ev) {
   if (!entry) return null;
   noteUse(state, entry, ps);
   state._narrated[state.ep] = said + 1;
-  return renderScript(entry, ps, state, { day: state.day || state.ep });
+  return renderScript(entry, ps, state, { day: state.calendarDay || state.day || state.ep });
 }
 
 /** The beach-hut cutaway: one speaker, straight to camera. */

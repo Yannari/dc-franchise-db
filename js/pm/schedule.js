@@ -37,6 +37,8 @@ export const SEASON_TEMPLATE = [
   { ep: 16, days: null, moment: 'reunion' },
 ];
 export const FINAL_COUPLES = 4;
+/** The day the final ends on, as the real series (UK: 56-59 days). */
+export const SERIES_DAYS = 57;
 
 // ── WHO IS WHO, WHEN THE AUTHOR LEFT IT BLANK ─────────────────────────
 // By cast position: about 45% start the villa (6 to 12, always even), Casa
@@ -183,11 +185,21 @@ export function buildSchedule({ bombshells = BASE_BOMBSHELLS, casa = 6, episodes
   }
 
   // Number them, and give them days: two for the first night and the Casa
-  // recoupling, three for the rest; the reunion has none.
+  // recoupling, three for the rest; the reunion has none. These are the
+  // ENGINE's days — the ladder moves once a day and readiness grows with days
+  // coupled, all calibrated on them.
   let day = 0;
+  const lens = out.map((w, i) => w.days ?? (i === 0 ? 2 : 3));
+  // The CALENDAR is the day the show says it is (user: "spread the days so
+  // it's 8 weeks"): the real UK series runs 56-59 days, so the final ends on
+  // day 57 whatever the cast size, and every episode stretches in proportion.
+  // Only the labels read it; nothing that decides anything does.
+  const total = lens.reduce((s, n) => s + n, 0) || 1;
+  const k = SERIES_DAYS / total;
   return out.map((w, i) => {
-    const len = w.days ?? (i === 0 ? 2 : 3);
+    const len = lens[i];
     const e = { ep: i + 1, days: len ? [day + 1, day + len] : null, moment: w.moment };
+    if (len) e.calendar = [Math.round(day * k) + 1, Math.round((day + len) * k)];
     day += len;
     if (w.cap != null && w.arrive != null && (w.moment !== 'bombshell' || w.arrive)) {
       if (w.arrive || w.moment === 'first-coupling' || w.moment === 'photos' || w.keepSingles) e.arrivals = { bombshell: w.arrive || 0 };

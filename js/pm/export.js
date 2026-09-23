@@ -67,7 +67,7 @@ export function pmVotingHistory(rows = []) {
       episode: row.num,
       moment: row.moment,
       title: momentTitle(row),
-      days: row.days || null,
+      days: row.calendar || row.days || null,
       eliminated: first?.name || null,
       eliminatedSlug: first ? first.slug : '',
       exits,

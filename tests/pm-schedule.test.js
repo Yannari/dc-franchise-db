@@ -16,8 +16,18 @@ const arrivals = s => s.reduce((t, e) => t + (e.arrivals?.bombshell || 0), 0);
 describe('the builder', () => {
   it('builds EXACTLY the calibration season for the 22-islander cast', () => {
     const strip = s => s.map(({ dumpFormat, bottom, ...e }) => e);
-    expect(buildSchedule({ bombshells: 6, casa: 6 })).toEqual(strip(SEASON_TEMPLATE));
+    // The engine's days are the calibration's; the calendar is only the labels.
+    expect(buildSchedule({ bombshells: 6, casa: 6 }).map(({ calendar, ...e }) => e)).toEqual(strip(SEASON_TEMPLATE));
     expect(defaultRoleSplit(22)).toEqual({ starters: 10, casa: 6, bombshells: 6 });
+  });
+  it(`the calendar runs eight weeks whatever the cast (user: "spread the days so it's 8 weeks")`, () => {
+    for (const sh of [{ bombshells: 8, casa: 8 }, { bombshells: 6, casa: 6 }, { bombshells: 4, casa: 0 }, { bombshells: 6, casa: 6, episodes: 24 }]) {
+      const cal = buildSchedule(sh).filter(e => e.calendar).map(e => e.calendar);
+      expect(cal[0][0], JSON.stringify(sh)).toBe(1);
+      expect(cal[cal.length - 1][1], JSON.stringify(sh)).toBe(57);
+      // No gaps, no overlaps: each episode starts the day after the last one ended.
+      for (let i = 1; i < cal.length; i++) expect(cal[i][0], JSON.stringify(sh)).toBe(cal[i - 1][1] + 1);
+    }
   });
   it('every bombshell has a night to walk in, at every size and length', () => {
     for (let b = 0; b <= 24; b++) for (const casa of [0, 6, 12]) for (const episodes of [null, 12, 18, 30]) {

@@ -124,6 +124,8 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
   for (const entry of schedule) {
     state.ep = entry.ep;
     if (entry.days) state.day = entry.days[1];
+    // The day the show says it is (schedule.js calendar); lines read this one.
+    state.calendarDay = entry.calendar?.[1] ?? state.day;
     // addBond's depth ceiling grows with `gs.episode` (js/bonds.js). Left at 0
     // it would cap every villa bond at +4.5 all season — the §11.5 O trap.
     gs.episode = entry.ep;
@@ -215,7 +217,7 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
     const { rel, labels } = relationshipSnapshot(state);
     gs.activePlayers = [...state.villa];
     gs.episodeHistory.push({
-      num: entry.ep, format: PERFECT_MATCH_FORMAT, days: entry.days, moment: entry.moment,
+      num: entry.ep, format: PERFECT_MATCH_FORMAT, days: entry.days, calendar: entry.calendar || entry.days, moment: entry.moment,
       eliminated: exits.find(x => x.verb === 'dumped')?.name || null,
       exits, votes: m.ballots,
       pm: { events: [...day, ...m.events], momentFrom: day.length, dumpFormat: m.extra && 'dumpFormat' in m.extra ? m.extra.dumpFormat : (entry.dumpFormat || null),

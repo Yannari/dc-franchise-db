@@ -18,9 +18,27 @@
 import { addBond, getBond } from '../bonds.js';
 import { addRelationshipDimension } from '../relationships.js';
 import { makeEvent, partnerOf } from './events.js';
-import { emo, feel } from './emotions.js';
+import { emo, feel, attachment } from './emotions.js';
+import { romance } from './feelings.js';
+import { players } from '../core.js';
 
 const COOLDOWN = 2;          // episodes between one islander's breakdowns
+
+// Who is prone to it (user: "some people are more prone to a breakdown —
+// some archetypes, and whether they really loved the person — but it's all
+// probability"). Each one scales the chance; none of them decides it.
+const PERSONA_PRONE = { 'hopeless-romantic': 1.3, wallflower: 1.2, messy: 1.15, 'girls-girl': 1.05, 'villa-clown': 0.95,
+  checklist: 0.95, bombshell: 0.9, 'game-player': 0.7, fuckboy: 0.75 };
+// Villains keep it in (and cry, if they do, where no camera is); the ones who
+// give everything feel it most.
+const ARCH_PRONE = { villain: 0.7, mastermind: 0.7, schemer: 0.75, 'challenge-beast': 0.85, hero: 0.95, floater: 1,
+  hothead: 1.1, 'loyal-soldier': 1.15, underdog: 1.15, showmancer: 1.2, 'social-butterfly': 1.05, goat: 1.05 };
+function proneness(state, a) {
+  const prof = state.profiles[a];
+  const att = prof ? attachment(prof) : { anxiety: 0, avoidance: 0 };
+  const arch = players.find(p => p.name === a)?.archetype;
+  return (1 + 0.5 * att.anxiety - 0.35 * att.avoidance) * (PERSONA_PRONE[prof?.persona] ?? 1) * (ARCH_PRONE[arch] ?? 1);
+}
 
 function causeOf(state, a) {
   const e = emo(state, a);
@@ -45,9 +63,12 @@ export function breakdowns(state, rng, entry = null) {
     const e = emo(state, a);
     const [cause, weight] = causeOf(state, a);
     const temper = state.profiles[a]?.stats?.temperament ?? 5;
-    const load = 1.3 * e.heartbreak + 0.6 * e.stress + 0.6 * e.loneliness + 0.9 * e.guilt;
-    // In proportion to the load, held back by a steady temper and feeling safe.
-    const p = Math.max(0, Math.min(0.6, (load - 4) / 16 * (1.3 - temper / 10) * (1.2 - e.security / 12)));
+    // Heartbreak weighs by how much they loved the one who caused it.
+    const loved = e.heartbreakFrom ? 0.6 + 0.8 * Math.max(0, romance(a, e.heartbreakFrom)) / 10 : 1;
+    const load = 1.3 * e.heartbreak * loved + 0.6 * e.stress + 0.6 * e.loneliness + 0.9 * e.guilt;
+    // In proportion to the load and who they are, held back by a steady
+    // temper and feeling safe.
+    const p = Math.max(0, Math.min(0.6, (load - 4) / 16 * (1.3 - temper / 10) * (1.2 - e.security / 12) * proneness(state, a)));
     if (p > 0 && weight > 0) cands.push({ a, cause, p, load });
   }
   cands.sort((x, y) => y.load - x.load);

@@ -44,7 +44,7 @@ export const SHOWS = {
     // finalist WON, and a Big Brother jury does not sit through challenges or
     // hand out immunity. A juror was saying "three individual immunities" and
     // "challenge beast" about a houseguest's Heads of Household.
-    words: { player: 'contestant', players: 'contestants', round: 'Episode', exit: 'voted out',
+    words: { seasonComplete: 'The season is complete. The jury has spoken.', player: 'contestant', players: 'contestants', round: 'Episode', exit: 'voted out',
       // What an ordinary round is called when nothing is scheduled. The
       // season hub printed this, and read it off a chain of slug comparisons
       // until a fourth show made the chain the thing the guard is for.
@@ -122,7 +122,7 @@ export const SHOWS = {
        Declared, because the alternative is every screen asking which array
        came back non-empty, and a show that exports neither is drawn nothing. */
     roundShape: 'weeks',
-    words: { player: 'houseguest', players: 'houseguests', round: 'Week', exit: 'evicted',
+    words: { seasonComplete: 'The season is complete. The jury has spoken.', player: 'houseguest', players: 'houseguests', round: 'Week', exit: 'evicted',
       // What an ordinary round is called when nothing is scheduled. The
       // season hub printed this, and read it off a chain of slug comparisons
       // until a fourth show made the chain the thing the guard is for.
@@ -202,7 +202,7 @@ export const SHOWS = {
     // "Accusation" events. Declared here so a fourth show with a private
     // ballot names its own channel instead of somebody adding a branch.
     privateBallotChannels: ['murder'],
-    words: { player: 'player', players: 'players', round: 'Episode', exit: 'banished',
+    words: { seasonComplete: 'The castle has made its final choice.', player: 'player', players: 'players', round: 'Episode', exit: 'banished',
       // What an ordinary round is called when nothing is scheduled. The
       // season hub printed this, and read it off a chain of slug comparisons
       // until a fourth show made the chain the thing the guard is for.
@@ -306,7 +306,7 @@ export const SHOWS = {
        Declared, because the alternative is every screen asking which array
        came back non-empty, and a show that exports neither is drawn nothing. */
     roundShape: 'placements',
-    words: {
+    words: { seasonComplete: 'The season is complete. The crown has been placed.',
       // What an ordinary round is called when nothing is scheduled. The
       // season hub printed this, and read it off a chain of slug comparisons
       // until a fourth show made the chain the thing the guard is for.
@@ -382,7 +382,7 @@ export const SHOWS = {
     /* WHAT SHAPE THIS SHOW'S ROUNDS ARE IN -- see roundShape() below.
        Ballots on channels, so no fourth shape and no new season_ref branches. */
     roundShape: 'ballots',
-    words: {
+    words: { seasonComplete: 'The season is complete. The public has chosen its winners.',
       quietRound: 'A normal day in the villa',
       player: 'islander', players: 'islanders', round: 'Episode',
       exit: 'dumped', exitAction: 'dump',

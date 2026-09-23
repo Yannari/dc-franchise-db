@@ -21,6 +21,10 @@ import { coachCanPlay } from './advantages.js';
 // where a missing global fails silently at the moment somebody presses Play.
 import { isTraitorsSeason, simulateTraitorsEpisode, rerunTraitorsEpisode,
   lastTraitorsRerunRefusal } from './tr-run.js';
+import { isPerfectMatchSeason, simulatePerfectMatchEpisode, perfectMatchCanRerun,
+  lastPerfectMatchRefusal } from './pm-run.js';
+import { SEASON_TEMPLATE as PM_SCHEDULE } from './pm/schedule.js';
+import { episodeText as pmEpisodeText, PM_MOMENT_TITLE } from './pm/transcript.js';
 import { isDragSeason, simulateDragEpisode, invalidateDragQueue,
   dragEpisodesAired, dragScheduleRecorded, rerunDragEpisode, dragCanRerun } from './dr-run.js';
 import { dragBadges } from './dr/badges.js';
@@ -34,7 +38,8 @@ import { PARTNER_COHORTS, cohortLabel, makeoverShows } from './dr/chal/makeover.
 import { JUDGES as DR_JUDGES } from './dr/data/judges.js';
 import { SONGS as DR_SONGS } from './dr/data/songs.js';
 import { GROUP_THEMES as DR_GG_THEMES } from './dr/chal/girl-group.js';
-import { roundExits, exitVerbs, SHOWS, showWords, showName, DEFAULT_FORMAT, DRAG_FORMAT, TRAITORS_FORMAT } from './shows.js';
+import { roundExits, exitVerbs, SHOWS, showWords, showName, DEFAULT_FORMAT, DRAG_FORMAT, TRAITORS_FORMAT,
+  PERFECT_MATCH_FORMAT } from './shows.js';
 import { seasonFormat } from './core.js';
 import { loadRankingBoards } from './ranking-boards.js';
 import { TRAITORS_SCREENS } from './vp-tr/screens.js';
@@ -378,7 +383,18 @@ export function buildHubAftermath(ep) {
   const votesNegated = (ep.idolPlays || []).reduce((sum, play) => sum + Math.max(0, Number(play.votesNegated || 0)), 0);
   const decidingVoters = [...new Set((ep.votingLog || []).filter(vote => eliminated.includes(vote.voted) && !vote.sitdSacrificed).map(vote => vote.voter))];
   let why = eliminatedLabel ? `${eliminatedLabel} received the highest valid total after the ballots were resolved.` : 'The episode ended without a standard elimination vote.';
-  if (seasonFormat(ep) === DRAG_FORMAT) {
+  if (seasonFormat(ep) === PERFECT_MATCH_FORMAT) {
+    // The public votes, the villa sometimes finishes it, and a recoupling
+    // dumps whoever nobody picked — each exit says which door it went through.
+    const exits = roundExits(ep, PERFECT_MATCH_FORMAT);
+    const DOOR = { public: 'by the public', villa: 'by the villa', recoupling: 'after nobody picked them',
+      casa: 'after Casa Amor', walk: '' };
+    why = ep.moment === 'final' && ep.pm?.shares?.length
+      ? `${ep.pm.shares[0].couple.join(' & ')} won the public vote.`
+      : exits.length
+        ? exits.map(x => `${x.name} ${x.verb}${DOOR[x.channel] ? ` ${DOOR[x.channel]}` : ''}.`).join(' ')
+        : 'Nobody left the villa tonight.';
+  } else if (seasonFormat(ep) === DRAG_FORMAT) {
     // No vote to explain: the panel ranked the week and the host decided.
     const exits = roundExits(ep, 'drag-race');
     why = ep.dr && ep.dr.finale
@@ -557,7 +573,7 @@ export function renderSeasonHub() {
   const _bbSeason = isBigBrotherSeason();
   // A castle has no tribes and no merge either, so Total Drama's phase names
   // describe nothing about it. What it has is a number of people left.
-  const phaseLabel = (_bbSeason || isTraitorsSeason())
+  const phaseLabel = (_bbSeason || isTraitorsSeason() || isPerfectMatchSeason())
     ? (model.phase === 'complete' ? 'Complete' : model.remaining ? 'Final ' + model.remaining : 'Setup')
     : model.phase === 'pre-merge' ? 'Pre-Merge' : model.phase === 'post-merge' ? 'Post-Merge' : model.phase === 'finale' ? 'Finale' : model.phase === 'complete' ? 'Complete' : 'Setup';
   const primaryClick = model.primaryAction === 'results' ? "showTab('results')" : model.primaryAction === 'current' ? `viewEpisode(${model.liveEpisode})` : 'simulateNext()';
@@ -617,7 +633,8 @@ export function renderSeasonHub() {
   const headlineStatus = _spoilerFree && model.latest
     ? `Episode ${model.latest.num} is ready to watch · outcome hidden`
     : model.isHistorical ? `Reviewing Episode ${model.latest.num} · ${model.remaining} contestants remained afterward`
-    : model.lifecycle === 'complete' ? (isTraitorsSeason() ? 'The castle has made its final choice.' : 'The season is complete. The jury has spoken.') : `Episode ${model.nextEpisode} is ready · ${model.remaining} of ${model.originalCount} contestants remain`;
+    // Each show says how its own season ends: a jury, a castle, a crown, the public.
+    : model.lifecycle === 'complete' ? (showWords(seasonFormat(seasonConfig)).seasonComplete || 'The season is complete.') : `Episode ${model.nextEpisode} is ready · ${model.remaining} of ${model.originalCount} contestants remain`;
   const publicStorylines = _spoilerFree && model.latest
     ? ['The game state will update here after you reveal the episode outcome.']
     : model.storylines;
@@ -975,6 +992,30 @@ export function renderEpisodeView(epRecord) {
   // another's night, which is the recurring bug the show registry exists to
   // stop. Every word here comes from `exitVerbs()` and every name from
   // `roundExits()`, so a registry change reaches both.
+  // ── THE VILLA'S CARD ──────────────────────────────────────────────
+  // Same reason as the castle's below: Total Drama's card asks for Immunity
+  // and a Tribal. The villa's facts are its moment, its couples and its doors.
+  if (epRecord && epRecord.format === PERFECT_MATCH_FORMAT) {
+    const exits = roundExits(epRecord, PERFECT_MATCH_FORMAT);
+    const won = epRecord.moment === 'final' && epRecord.pm?.shares?.length ? epRecord.pm.shares[0].couple.join(' & ') : null;
+    card.innerHTML = `<div class="ep-result">
+      <div class="ep-result-header">
+        <span class="ep-result-num">Episode ${epRecord.num}</span>
+        <span class="ep-result-phase" style="color:#e0467c">${_hubEsc(PM_MOMENT_TITLE[epRecord.moment] || 'The villa')}</span>
+      </div>
+      <div class="ep-facts">
+        <div class="ep-fact ep-eliminated"><label>${won ? 'Winners' : 'Left the villa'}</label><span>${
+          _spoilerFree ? '???' : _hubEsc(won || exits.map(x => `${x.name} (${x.verb})`).join(', ') || '—')}</span></div>
+        <div class="ep-fact"><label>Couples</label><span>${(epRecord.pm?.couples || []).length}</span></div>
+        <div class="ep-fact"><label>In the villa</label><span>${(epRecord.pm?.villa || []).length}</span></div>
+      </div>
+      ${_spoilerFree ? `<div style="margin-top:8px;font-size:11px;color:var(--muted);font-style:italic;text-align:center">Spoiler-free mode — open Visual Player to watch the episode</div>` : ''}
+    </div>`;
+    const _tEl = document.getElementById('ep-output-text');
+    _tEl.value = _spoilerFree ? '' : pmEpisodeText(epRecord);
+    _tEl.style.display = '';
+    return;
+  }
   if (_isCastleRow(epRecord)) {
     const [banishWord, murderWord] = exitVerbs('traitors');
     const exits = roundExits(epRecord, 'traitors');
@@ -1274,6 +1315,23 @@ function _traitorsBadges(ep) {
   return out;
 }
 
+/**
+ * The villa's pills: the night's moment, and its doors. A recoupling, the
+ * public and the villa each dump through their own door, and a walk is its
+ * own word — never a vote (roundExits reads the row's own exits).
+ */
+const PM_MOMENT_PILL = { 'first-coupling': 'First coupling', recoupling: 'Recoupling', bombshell: 'Bombshell',
+  'public-vote': 'Public vote', 'casa-open': 'Casa Amor', 'casa-nights': 'Casa Amor', 'stick-or-twist': 'Stick or twist',
+  photos: 'The photos', 'semi-final': 'Semi-final', final: 'Final', reunion: 'Reunion' };
+function _villaBadges(ep) {
+  const pill = (text, color) => `<span class="ep-hist-tag" style="background:${color}22;color:${color}">${text}</span>`;
+  let out = PM_MOMENT_PILL[ep.moment] ? pill(PM_MOMENT_PILL[ep.moment], '#e0467c') : '';
+  const exits = roundExits(ep, PERFECT_MATCH_FORMAT);
+  if (exits.some(x => x.verb === 'walked')) out += pill('Walked', '#f59e0b');
+  if (ep.moment === 'final') out += pill('Winners', '#10b981');
+  return out;
+}
+
 export function renderEpisodeHistory() {
   const grid = document.getElementById('ep-history-grid');
   const history = gs.episodeHistory;
@@ -1295,6 +1353,17 @@ export function renderEpisodeHistory() {
           ? `<button class="ep-hist-replay" title="Re-run this episode" onclick="event.stopPropagation();replayEpisode(${ep.num})">↺</button>` : ''}</div>
         <div class="ep-hist-elim">${gone}</div>
         <div>${_spoilerFree ? '' : dragBadges(ep)}</div>
+      </div>`;
+    }
+    if (ep && ep.format === PERFECT_MATCH_FORMAT) {
+      const won = ep.moment === 'final' && ep.pm?.shares?.length ? ep.pm.shares[0].couple.join(' & ') : null;
+      const gone = _spoilerFree ? '???'
+        : won ? `${won} won`
+          : (roundExits(ep, PERFECT_MATCH_FORMAT).map(x => x.name).join(' + ') || '—');
+      return `<div class="ep-hist-card ${ep.num === currentNum ? 'active' : ''}" onclick="viewEpisode(${ep.num})">
+        <div class="ep-hist-ep">Episode ${ep.num}</div>
+        <div class="ep-hist-elim">${gone}</div>
+        <div>${_spoilerFree ? '' : _villaBadges(ep)}</div>
       </div>`;
     }
     if (_isCastleRow(ep)) {
@@ -1536,6 +1605,29 @@ export function simulateNext() {
   // The whole season is played on the first press and the rows are queued —
   // see js/dr-run.js for why an engine whose finale depends on the whole run
   // cannot be asked for one night at a time.
+  // ── THE VILLA ─────────────────────────────────────────────────────
+  //
+  // Fifth engine, fifth branch, on the FORMAT alone like the four before it.
+  // The whole season plays on the first press (js/pm-run.js); popularity is
+  // the engine's own two ledgers, written from what aired, so updatePopularity
+  // — which reads a Total Drama episode — is skipped, and the save is not.
+  if (isPerfectMatchSeason()) {
+    const pmEp = simulatePerfectMatchEpisode();
+    if (!pmEp) {
+      const why = lastPerfectMatchRefusal();
+      alert(why ? `This cast can't start a villa yet: ${why}.`
+        : gs.activePlayers && gs.activePlayers.length ? 'This season is already complete.'
+          : 'Add islanders to Cast Builder first.');
+      return;
+    }
+    saveGameState();
+    _refreshFeed();
+    _autoRevealSpoiler(pmEp.num);
+    viewingEpNum = pmEp.num;
+    renderRunTab();
+    document.getElementById('run-main').scrollTop = 0;
+    return;
+  }
   if (isDragSeason()) {
     _saveEpisodeCheckpoint();
     const drEp = simulateDragEpisode();
@@ -1709,6 +1801,8 @@ export function simulateMultipleEpisodes(count) {
  */
 function _canReplay(epNum) {
   if (isTraitorsSeason()) return !!(gs && gs._trSeed);
+  // The villa has no re-roll yet; the button stays away rather than re-airing.
+  if (isPerfectMatchSeason()) return perfectMatchCanRerun();
   /* THE MAIN STAGE ASKS THE SAME QUESTION THE CASTLE DOES. It used to ask
      "is there a checkpoint", which made the button a property of THIS BROWSER
      SESSION rather than of the season: it vanished on reload, and vanished
@@ -1724,6 +1818,12 @@ export function replayEpisode(epNum) {
   // so it works after a reload too, and every earlier episode reproduces
   // exactly while this night onward is a genuinely different season.
   if (isTraitorsSeason()) { _replayTraitorsEpisode(epNum); return; }
+  // A villa episode cannot be re-rolled yet, and a replay that re-airs the same
+  // night is §11.5 N — so it says so instead of doing either.
+  if (isPerfectMatchSeason()) {
+    alert(`Episode ${epNum} can't be re-run yet: villa episodes play as they were dealt.`);
+    return;
+  }
   /* THE MAIN STAGE, WHICH NO LONGER NEEDS ONE EITHER. `rerunDragEpisode`
      rolls the season back off the rows that aired, so a drag re-run survives
      a reload and a browser that never managed to write a checkpoint. The
@@ -2426,6 +2526,19 @@ export function runFanVote() {
 
 // Returns an array of { ep, active, phase, engineType } for every episode in the season
 export function buildEpisodeMap() {
+  /* ── THE VILLA IS ITS SCHEDULE ──
+     Sixteen episodes, fixed by js/pm/schedule.js — the moments do not move,
+     only who is in the villa for them. Played nights report their own villa;
+     the rest carry the last count forward (the public decides the rest). */
+  if (isPerfectMatchSeason()) {
+    const played = new Map((gs?.episodeHistory || []).filter(r => r?.format === PERFECT_MATCH_FORMAT).map(r => [r.num, r]));
+    let active = (players || []).length;
+    return PM_SCHEDULE.map(e => {
+      const r = played.get(e.ep);
+      if (r) active = (r.pm?.villa || []).length || active;
+      return { ep: e.ep, active, phase: e.moment === 'final' || e.moment === 'reunion' ? 'finale' : 'main', engineType: null, tribes: 1 };
+    });
+  }
   /* ── THE MAIN STAGE PROJECTS ITSELF ──
      Everything below this branch is a Total Drama season: a merge, Rescue
      Island, a fan vote, `seasonConfig.finaleSize`. A drag season has none of

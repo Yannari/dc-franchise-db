@@ -32,6 +32,7 @@ import { traitorsScreens } from './vp-tr/screens.js';
 import { rpBuildTraitorsDebug } from './vp-tr/debug.js';
 import { rpBuildDragSummary } from './vp-dr/summary.js';
 import { dragScreens } from './vp-dr/screens.js';
+import { perfectMatchScreens } from './pm/transcript.js';
 import { DRAG_FORMAT } from './shows.js';
 import { rpBuildBBCarePackagePlay } from './vp-bb-twists.js';
 import { rpBuildBBCarePackage } from './vp-bb-care-package.js';
@@ -14061,6 +14062,15 @@ export function buildVPScreens(epRecord) {
   //
   // ONE SCREEN, and deliberately a readout rather than a designed one — the
   // real sixteen are Plan 5. See js/vp-dr/summary.js.
+  // ── THE VILLA ─────────────────────────────────────────────────────
+  // Interim screens until Plan 5 builds the designed ones: the episode read
+  // out one part of the day at a time, so nothing the engine wrote goes
+  // unseen (§11.5 A). Assigned AND returned — callers ignore the return.
+  if (epRecord.format === 'perfect-match') {
+    const prev = ((typeof window !== 'undefined' && window.gs?.episodeHistory) || []).find(r => r && r.format === 'perfect-match' && r.num === epRecord.num - 1) || null;
+    vpScreens = perfectMatchScreens(epRecord, prev);
+    return vpScreens;
+  }
   if (epRecord.format === DRAG_FORMAT) {
     /* THE REGISTRY, not a screen list built here. js/vp-dr/screens.js is read
        by the text backlog too, so a screen added there appears in both and a

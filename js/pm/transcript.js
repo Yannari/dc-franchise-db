@@ -1,0 +1,124 @@
+// ══════════════════════════════════════════════════════════════════════
+// pm/transcript.js — an episode, written out to read
+// ══════════════════════════════════════════════════════════════════════
+//
+// ONE renderer for three readers: the interim VP screens (one per part of the
+// day), the text backlog, and `npm run pm:transcript`. A second copy is how a
+// transcript quietly stops mentioning something (§11.5 Q). The real screens
+// are Plan 5; until then nothing the engine writes goes unseen (§11.5 A).
+//
+// Every scene is shown, aired or not — the reader sees what the public didn't
+// — with its beach-hut cutaway, the narrator, and what the public made of it.
+import { SCENE_GAIN } from './ledger.js';
+import { roundExits, PERFECT_MATCH_FORMAT } from '../shows.js';
+
+const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+export const PM_PHASE_LABEL = { morning: 'Morning', day: 'The day', event: 'The challenge', evening: 'Evening',
+  firepit: 'The fire pit', dumping: 'The dumping', reunion: 'The reunion' };
+export const PM_MOMENT_TITLE = { 'first-coupling': 'The first coupling', bombshell: 'A bombshell arrives',
+  recoupling: 'Recoupling', 'public-vote': 'Public vote', 'casa-open': 'Casa Amor opens', 'casa-nights': 'Casa Amor',
+  'stick-or-twist': 'Stick or twist', photos: 'The photos', 'semi-final': 'Semi-final', final: 'The final',
+  reunion: 'Reunion' };
+
+/** Scoped styles for the screens, both themes. */
+export const PM_TRANSCRIPT_CSS = `
+.pm-tx{--pm-ink:#2b1d24;--pm-soft:#7a6470;--pm-line:#f0dde4;--pm-pink:#e0467c;--pm-hut:#fff1d6;--pm-hut2:#ffe0e0;
+  color:var(--pm-ink);font:15px/1.55 Georgia,serif;max-width:760px;margin:0 auto;padding:4px 16px 40px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .pm-tx{--pm-ink:#f6e9ee;--pm-soft:#b39aa6;--pm-line:#3a2a31;--pm-pink:#ff6f9f;--pm-hut:#3a3020;--pm-hut2:#3d2226}}
+:root[data-theme="dark"] .pm-tx{--pm-ink:#f6e9ee;--pm-soft:#b39aa6;--pm-line:#3a2a31;--pm-pink:#ff6f9f;--pm-hut:#3a3020;--pm-hut2:#3d2226}
+.pm-tx h2{font:600 22px system-ui,sans-serif;color:var(--pm-pink);margin:8px 0 4px}
+.pm-tx .pm-sub{font:13px system-ui,sans-serif;color:var(--pm-soft);margin:0 0 12px}
+.pm-tx .pm-scene{border-top:1px solid var(--pm-line);padding:10px 0}.pm-tx .pm-scene.pm-hidden{opacity:.6}
+.pm-tx .pm-meta{font:12px system-ui,sans-serif;color:var(--pm-soft);margin-bottom:4px}
+.pm-tx .pm-stage,.pm-tx .pm-beat{font-style:italic;color:var(--pm-soft);margin:4px 0}.pm-tx .pm-line{margin:3px 0}
+.pm-tx .pm-hut{background:var(--pm-hut);border-radius:8px;padding:6px 10px;margin:8px 0 2px 18px;font-size:14px}
+.pm-tx .pm-hut.two-faced{background:var(--pm-hut2)}.pm-tx .pm-hut p{margin:2px 0}
+.pm-tx .pm-tag{font:11px system-ui,sans-serif;color:var(--pm-soft);display:block}
+.pm-tx .pm-unaired{display:inline;color:var(--pm-pink);margin-left:6px}
+.pm-tx .pm-narr{font-style:italic;color:var(--pm-pink);margin:6px 0}
+.pm-tx .pm-pop{font:12px system-ui,sans-serif;color:var(--pm-soft);margin-top:6px}
+.pm-tx .up{color:#1f9d55}.pm-tx .down{color:#d64545}
+.pm-tx .pm-major{background:var(--pm-pink);color:#fff;border-radius:4px;padding:0 5px;margin-left:4px}`;
+
+function sceneHtml(e) {
+  const s = e.script || { lines: [] };
+  const lines = [
+    s.stage ? `<p class="pm-stage">${esc(s.stage)}</p>` : '',
+    ...s.lines.map(l => `<p class="pm-line"><b>${esc(l.who)}:</b> “${esc(l.text)}”</p>`),
+    s.beat ? `<p class="pm-beat">${esc(s.beat)}</p>` : '',
+  ].join('');
+  const narr = e.narrator ? `<p class="pm-narr">${e.narrator.lines.map(l => `<b>${esc(l.who)}:</b> “${esc(l.text)}”`).join(' ')}</p>` : '';
+  const hut = e.hut ? `<div class="pm-hut ${esc(e.hut.stance)}"><span class="pm-tag">beach hut · ${esc(e.hut.stance)}</span>${
+    e.hut.script.lines.map(l => `<p><b>${esc(l.who)}:</b> “${esc(l.text)}”</p>`).join('')}</div>` : '';
+  // What the public made of it: only an aired scene counts. Before the
+  // episode's caps (spec §8), which the header shows after.
+  const moves = Object.entries(e.pop || {}).map(([who, p]) => {
+    const ap = Math.round((p.approval || 0) * SCENE_GAIN * 10) / 10;
+    return `<span class="${ap > 0 ? 'up' : ap < 0 ? 'down' : ''}">${esc(who)} ${ap > 0 ? '▲ +' + ap : ap < 0 ? '▼ ' + ap : '±0'}</span>`;
+  }).join(' · ');
+  const pop = e.aired
+    ? (moves ? `<div class="pm-pop">public: ${moves}${e.major?.length ? ' <span class="pm-major">major moment</span>' : ''}</div>` : '')
+    : '<div class="pm-pop">not seen by the public: no effect</div>';
+  return `<div class="pm-scene${e.aired ? '' : ' pm-hidden'}"><div class="pm-meta">${esc(e.kind)}${
+    e.aired ? '' : '<span class="pm-unaired">didn\'t air</span>'}</div>${lines}${narr}${hut}${pop}</div>`;
+}
+
+/** The episode's scenes, grouped by part of the day, in order. */
+export function phasesOf(row) {
+  const out = [];
+  for (const e of row?.pm?.events || []) {
+    if (!out.length || out[out.length - 1][0] !== e.phase) out.push([e.phase, []]);
+    out[out.length - 1][1].push(e);
+  }
+  return out;
+}
+
+/** Couples, exits and who rose and fell with the public, after the caps. */
+export function episodeHeaderHtml(row, prev = null) {
+  const couples = (row.pm?.couples || []).map(c => c.map(esc).join(' &amp; ')).join(' · ') || '—';
+  const exits = roundExits(row, PERFECT_MATCH_FORMAT).map(x => `${esc(x.name)} (${esc(x.verb)})`).join(', ');
+  const before = prev?.pm?.approval || {}, after = row.pm?.approval || {};
+  const shifts = Object.keys(after).map(n => [n, Math.round((after[n] - (before[n] || 0)) * 10) / 10])
+    .filter(([, d]) => d).sort((x, y) => Math.abs(y[1]) - Math.abs(x[1])).slice(0, 8);
+  const labelsBefore = prev?.pm?.labels || {};
+  const moved = Object.entries(row.pm?.labels || {}).filter(([n, l]) => labelsBefore[n] && labelsBefore[n] !== l)
+    .map(([n, l]) => `${esc(n)}: ${esc(labelsBefore[n])} → <b>${esc(l)}</b>`);
+  return `<h2>Episode ${row.num} — ${esc(PM_MOMENT_TITLE[row.moment] || 'A day in the villa')}</h2>
+    <p class="pm-sub"><b>Couples:</b> ${couples}${exits ? `<br><b>Left:</b> ${exits}` : ''}${
+      shifts.length ? `<br><b>With the public:</b> ${shifts.map(([n, d]) => `<span class="${d > 0 ? 'up' : 'down'}">${esc(n)} ${d > 0 ? '+' : ''}${d}</span>`).join(' · ')}` : ''}${
+      moved.length ? `<br><b>Now seen as:</b> ${moved.join(' · ')}` : ''}</p>`;
+}
+
+/** One screen per part of the day, the header on the first. */
+export function perfectMatchScreens(row, prev = null) {
+  return phasesOf(row).map(([phase, evs], i) => ({
+    id: `pm-${phase}-${i}`,
+    label: PM_PHASE_LABEL[phase] || phase,
+    html: `<style>${PM_TRANSCRIPT_CSS}</style><div class="pm-tx">${i === 0 ? episodeHeaderHtml(row, prev) : ''}${
+      evs.map(sceneHtml).join('')}</div>`,
+  }));
+}
+
+/** The same content as plain text, for the text backlog. */
+export function episodeText(row) {
+  const out = [`EPISODE ${row.num} — ${(PM_MOMENT_TITLE[row.moment] || 'A day in the villa').toUpperCase()}`];
+  for (const [phase, evs] of phasesOf(row)) {
+    out.push('', `— ${PM_PHASE_LABEL[phase] || phase} —`);
+    for (const e of evs) {
+      const s = e.script || { lines: [] };
+      if (s.stage) out.push(`(${s.stage})`);
+      for (const l of s.lines) out.push(`${l.who}: "${l.text}"`);
+      if (s.beat) out.push(`(${s.beat})`);
+      if (e.narrator) for (const l of e.narrator.lines) out.push(`${l.who}: "${l.text}"`);
+      if (e.hut) for (const l of e.hut.script.lines) out.push(`  [beach hut] ${l.who}: "${l.text}"`);
+      if (!e.aired) out.push('  (not aired)');
+      out.push('');
+    }
+  }
+  const exits = roundExits(row, PERFECT_MATCH_FORMAT);
+  if (exits.length) out.push(`Left the villa: ${exits.map(x => `${x.name} (${x.verb})`).join(', ')}`);
+  return out.join('\n');
+}
+
+export { sceneHtml as _sceneHtml };

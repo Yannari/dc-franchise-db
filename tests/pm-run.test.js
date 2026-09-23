@@ -95,3 +95,20 @@ describe('a cast that cannot start a villa is refused, with the reason', () => {
     expect(perfectMatchCanRerun()).toBe(false);
   });
 });
+
+describe('an aired episode can be watched and read', () => {
+  it('opens on the villa screens, one per part of the day, and the backlog has every scene', async () => {
+    const { perfectMatchScreens, episodeText } = await import('../js/pm/transcript.js');
+    freshSeason();
+    playAll();
+    for (const row of gs.episodeHistory) {
+      const screens = perfectMatchScreens(row);
+      expect(screens.length, `ep ${row.num}`).toBeGreaterThan(0);
+      const html = screens.map(s => s.html).join('');
+      expect(html.match(/class="pm-scene/g)?.length, `ep ${row.num}`).toBe(row.pm.events.length);
+      // The backlog carries every spoken line the screens do.
+      const text = episodeText(row);
+      for (const e of row.pm.events) for (const l of e.script.lines) expect(text, `ep ${row.num}`).toContain(l.text);
+    }
+  });
+});

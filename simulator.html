@@ -238,9 +238,38 @@
         <div class="cast-grid" id="cast-grid"></div>
         <!-- Each islander's cast setup (user: "in cast setup, not season setup").
              Villa seasons only (CONFIG_SCOPE); js/pm-cast-ui.js draws it. -->
-        <section class="form-group" id="sec-pm-cast" style="margin-top:16px">
-          <div class="cast-title">The islanders</div>
-          <div id="pm-cast-setup"></div>
+        <section class="pm-studio" id="sec-pm-cast">
+          <header class="pm-studio-head">
+            <div>
+              <div class="pm-kicker">Perfect Match</div>
+              <h2 class="pm-studio-title">The villa</h2>
+            </div>
+            <div class="pm-studio-summary" id="pm-studio-summary"></div>
+          </header>
+
+          <div class="pm-studio-grid">
+            <div class="pm-card" id="sec-pm-roles">
+              <div class="pm-card-head"><span class="pm-card-title">Who arrives when</span></div>
+              <div class="pm-counts">
+                <label class="pm-count"><span class="pm-count-k">Starters</span><input type="number" class="pm-count-in" id="cfg-pm-starters" min="6" step="2" placeholder="Automatic"><span class="pm-count-note">night one</span></label>
+                <label class="pm-count"><span class="pm-count-k">Bombshells</span><input type="number" class="pm-count-in" id="cfg-pm-bombshells" min="0" step="1" placeholder="Automatic"><span class="pm-count-note">walk in later</span></label>
+                <label class="pm-count"><span class="pm-count-k">Casa Amor</span><input type="number" class="pm-count-in" id="cfg-pm-casa" min="0" step="1" placeholder="Automatic"><span class="pm-count-note">the second villa</span></label>
+              </div>
+              <div class="pm-hint">Blank is automatic. A role set on an islander below always stands; these numbers place everyone left on Auto, in cast order. Starters have to be half women and half men to couple up on night one.</div>
+            </div>
+
+            <div class="pm-card" id="sec-pm-dialect">
+              <div class="pm-card-head"><span class="pm-card-title">Voices</span></div>
+              <label class="pm-field"><span class="pm-field-k">Where the islanders are from, by default</span>
+                <select id="cfg-pm-dialect" class="pm-select" onchange="saveConfig()"></select></label>
+              <div class="pm-hint">Anyone left blank below talks like this: "mate" or "man", "the telly" or "TV".</div>
+            </div>
+          </div>
+
+          <div class="pm-card pm-card-islanders">
+            <div class="pm-card-head"><span class="pm-card-title">The islanders</span><span class="pm-card-sub">Everything is optional: leave it blank and the villa decides from their stats.</span></div>
+            <div id="pm-cast-setup"></div>
+          </div>
         </section>
       </main>
     </div>
@@ -793,39 +822,28 @@
                  engine reads (js/pm-run.js, js/pm/profile.js). -->
             <div class="divider" id="sec-pm-divider"></div>
             <div class="setup-section-label" id="sec-pm-options">VILLA OPTIONS</div>
-            <div class="form-group" id="sec-pm-dialect">
-              <label class="form-label">Where the islanders are from, by default</label>
-              <select id="cfg-pm-dialect" class="form-input" onchange="saveConfig()"></select>
-              <div class="hint hint-tight">Anyone whose own setup leaves it blank talks like this: "mate" or "man", "the telly" or "TV". Set it per islander below.</div>
-            </div>
-            <div class="form-group" id="sec-pm-envelope">
-              <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer">
-                <input type="checkbox" id="cfg-pm-split-or-steal" style="width:14px;height:14px;margin-top:3px" onchange="saveConfig()">
-                <span>
-                  <span class="form-label" style="margin:0">Split or steal</span>
-                  <div class="hint hint-tight">The winning couple gets an envelope: one of them chooses to share the money or keep it. The US show still does this; the UK dropped it.</div>
-                </span>
-              </label>
-            </div>
-            <div class="form-group" id="sec-pm-roles">
-              <div class="form-label">Who arrives when</div>
-              <div class="pm-role-counts" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
-                <label><span class="hint hint-tight">Starters</span><input type="number" class="form-input" id="cfg-pm-starters" min="6" step="2" placeholder="Automatic"></label>
-                <label><span class="hint hint-tight">Bombshells</span><input type="number" class="form-input" id="cfg-pm-bombshells" min="0" step="1" placeholder="Automatic"></label>
-                <label><span class="hint hint-tight">Casa Amor</span><input type="number" class="form-input" id="cfg-pm-casa" min="0" step="1" placeholder="Automatic"></label>
+            <section class="pm-studio pm-studio-season" id="sec-pm-season">
+              <div class="pm-studio-grid pm-season-grid">
+              <div class="pm-card" id="sec-pm-length">
+                <div class="pm-card-head"><label class="pm-card-title" for="cfg-pm-episodes">Episodes</label></div>
+                <input type="number" class="pm-count-in pm-count-wide" id="cfg-pm-episodes" min="11" max="40" step="1" placeholder="Automatic">
+                <div class="pm-hint" id="pm-episodes-hint">Automatic follows the cast: every bombshell and Casa Amor arrival gets a night to walk in.</div>
               </div>
-              <div class="hint hint-tight">Blank is automatic. A role set on an islander in the Cast tab always stands; these numbers place everyone left on Auto, in cast order. Starters have to be half women and half men to couple up on night one.</div>
-            </div>
-            <div class="form-group" id="sec-pm-length">
-              <label class="form-label" for="cfg-pm-episodes">Episodes</label>
-              <input type="number" class="form-input" id="cfg-pm-episodes" min="11" max="40" step="1" placeholder="Automatic">
-              <div class="hint hint-tight" id="pm-episodes-hint">Automatic follows the cast: every bombshell and Casa Amor arrival gets a night to walk in.</div>
-            </div>
-            <div class="form-group" id="sec-pm-shape">
-              <div class="form-label">How the dumpings play</div>
-              <div class="hint hint-tight">Random draws each one the way the real show does, weighted by how often it has. A pick can be changed any time: episodes that haven't aired use it at once, and an aired one uses it when you re-run it.</div>
-              <div id="pm-shape"></div>
-            </div>
+              <div class="pm-card" id="sec-pm-shape">
+                <div class="pm-card-head"><span class="pm-card-title">How the dumpings play</span></div>
+                <div class="pm-hint">Book them on the <b>Season Timeline</b> (Episode Format), under <b>Dumpings</b>, like any twist: pick a vote night and choose how it plays. A vote night with nothing booked draws its format the way the real show does. A booking can change any time: episodes that haven't aired use it at once, and an aired one uses it when you re-run it.</div>
+              </div>
+                <div class="pm-card" id="sec-pm-extras">
+                  <div class="pm-card-head"><span class="pm-card-title">The final</span></div>
+                  <label class="pm-toggle" id="sec-pm-envelope">
+                    <input type="checkbox" id="cfg-pm-split-or-steal" onchange="saveConfig()">
+                    <span class="pm-toggle-ui"></span>
+                    <span><span class="pm-field-k">Split or steal</span>
+                      <span class="pm-hint">The winning couple gets an envelope: one of them chooses to share the money or keep it. The US show still does this; the UK dropped it.</span></span>
+                  </label>
+                </div>
+              </div>
+            </section>
             <div class="divider" id="sec-tr-divider"></div>
             <div class="setup-section-label" id="sec-tr-options">CASTLE OPTIONS</div>
             <div class="bbopt-fixed" id="sec-tr-fixed-ties">

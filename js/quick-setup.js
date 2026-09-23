@@ -1234,6 +1234,7 @@ const CONFIG_SCOPE = {
     // js/pm-run.js or js/pm/profile.js, and nothing else shows on a villa.
     'sec-pm-divider':        ['perfect-match'],
     'sec-pm-options':        ['perfect-match'],
+    'sec-pm-pointer':        ['perfect-match'],
     'sec-pm-dialect':        ['perfect-match'],
     'sec-pm-envelope':       ['perfect-match'],
     'sec-pm-shape':          ['perfect-match'],

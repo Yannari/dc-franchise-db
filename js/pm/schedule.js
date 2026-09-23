@@ -221,6 +221,13 @@ export const DUMP_DRAWS = {
 };
 // A big cast's extra public votes draw from the second vote's formats.
 const drawsFor = slot => DUMP_DRAWS[slot === 'vote-extra' ? 'vote2' : slot] || null;
+// What each episode is called on the Season Timeline, and its colour family.
+export const EPISODE_WORDS = { 'first-coupling': 'First coupling', recoupling: 'Recoupling', bombshell: 'Bombshell',
+  'public-vote': 'Vote', 'casa-open': 'Casa opens', 'casa-nights': 'Casa Amor', 'stick-or-twist': 'Stick or twist',
+  photos: 'The photos', 'semi-final': 'Semi-final', final: 'Final', reunion: 'Reunion' };
+export const EPISODE_KIND = { 'first-coupling': 'couple', recoupling: 'couple', bombshell: 'bomb', 'public-vote': 'vote',
+  'casa-open': 'casa', 'casa-nights': 'casa', 'stick-or-twist': 'casa', photos: 'casa', 'semi-final': 'end',
+  final: 'end', reunion: 'quiet' };
 export const SLOT_NAMES = { vote1: 'the first public vote', vote2: 'the second public vote', semi: 'the semi-final' };
 
 function draw(rng, options) {

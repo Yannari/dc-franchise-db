@@ -1296,8 +1296,6 @@ export function saveConfig() {
     // panel (js/pm-cast-ui.js) and carried here the way the chosen pact is,
     // because it is a grid of choices, not one field.
     pmSetup: seasonConfig.pmSetup || {},
-    // Pinned dumping formats by episode ({ 5: 'save-one' }), from VILLA OPTIONS.
-    pmPicks: seasonConfig.pmPicks || {},
     // Starters / bombshells / Casa Amor counts: a missing key is automatic.
     pmRoleCounts: seasonConfig.pmRoleCounts || {},
     // The season's length: null is automatic (from the cast).

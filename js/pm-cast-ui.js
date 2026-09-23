@@ -1,5 +1,5 @@
 // ══════════════════════════════════════════════════════════════════════
-// pm-cast-ui.js — each islander's cast setup, on the Setup tab
+// pm-cast-ui.js — the Villa view: the season, its options, every islander
 // ══════════════════════════════════════════════════════════════════════
 //
 // Everything here is what js/pm/profile.js `resolveIslander` reads, written to
@@ -9,20 +9,25 @@
 // panel never has to be filled in for a season to play. It is where the
 // author's choices go when there are any (user: "cast setup, not season setup").
 //
+// It is one page, switched to from the Casting Room (Grid | Villa — user:
+// "in another tab switchable, not at the bottom of the page"): a summary, the
+// season as a strip of episodes, four option cards, and a card per islander.
+//
 // One delegated listener on the panel, and data attributes on every control,
 // so an islander's name never goes into an inline handler (an apostrophe in a
 // name would break the page).
-import { players, seasonConfig, gs } from './core.js';
-import { DUMP_DRAWS, PICK_LABELS, SLOT_NAMES, minimumEpisodes } from './pm/schedule.js';
-import { PERFECT_MATCH_FORMAT } from './shows.js';
-import { perfectMatchScheduleFor } from './pm/season.js';
+import { players, seasonConfig } from './core.js';
+import { minimumEpisodes } from './pm/schedule.js';
 import { ROLES, INTENTS, PERSONAS, LOOK_TAGS, VIBES, ICKS, INTERESTS } from './pm/profile.js';
 import { DIALECTS } from './pm/lines/dialect.js';
 import { perfectMatchCastProblem, perfectMatchSeasonShape, perfectMatchRoles } from './pm-run.js';
+import { playerAvatarUrl } from './players.js';
 
 const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const words = s => String(s).replace(/-/g, ' ');
 const ROLE_WORDS = { starter: 'Starter (night one)', bombshell: 'Bombshell', casa: 'Casa Amor' };
+const ROLE_SHORT = { starter: 'Starter', bombshell: 'Bombshell', casa: 'Casa Amor' };
+
 // How many of each a field keeps (the same caps resolveIslander applies).
 const LIMIT = { 'type.looks': 3, 'type.vibes': 2, looks: 4, icks: 2, interests: 4, eyesOn: 3 };
 
@@ -37,7 +42,7 @@ function setPath(obj, path, value) {
 }
 
 function select(name, field, options, current, blankLabel) {
-  return `<select class="form-input pm-cs-sel" data-name="${esc(name)}" data-field="${field}">
+  return `<select class="pm-select" data-name="${esc(name)}" data-field="${field}">
     <option value="">${esc(blankLabel)}</option>
     ${options.map(([v, label]) => `<option value="${esc(v)}"${v === current ? ' selected' : ''}>${esc(label)}</option>`).join('')}
   </select>`;
@@ -51,14 +56,11 @@ function chips(name, field, options, current = []) {
 }
 
 /**
- * VILLA OPTIONS: the season's length (automatic from the cast, or set), and
- * one menu per drawn slot at THIS season's episode numbers. Random is the
- * default; a season in progress shows what each slot drew or aired as, and a
- * pick for an episode that already aired says it waits for its re-run.
+ * The counts (Cast → Villa) and the length (Setup → Villa options). How each
+ * dumping plays is booked on the Season Timeline like every show's twists.
  */
 export function renderPerfectMatchShape() {
-  const host = typeof document !== 'undefined' && document.getElementById('pm-shape');
-  if (!host) return;
+  if (typeof document === 'undefined') return;
   const shape = perfectMatchSeasonShape();
   // Starters / Bombshells / Casa Amor: blank is automatic, and the
   // placeholder says what automatic comes to with the cast as it stands.
@@ -67,7 +69,12 @@ export function renderPerfectMatchShape() {
   for (const [id, key] of COUNTS) {
     const el = document.getElementById(id);
     if (!el) continue;
-    el.placeholder = `Automatic (${shape[key]})`;
+    el.placeholder = String(shape[key]);
+    const note = el.parentElement?.querySelector('.pm-count-note');
+    if (note) {
+      note.dataset.base ||= note.textContent;
+      note.innerHTML = `${esc(note.dataset.base)} · ${Number.isInteger(counts[key]) ? 'set' : '<span class="pm-auto">automatic</span>'}`;
+    }
     if (document.activeElement !== el) el.value = Number.isInteger(counts[key]) ? String(counts[key]) : '';
     if (!el.dataset.wired) {
       el.dataset.wired = '1';
@@ -78,6 +85,7 @@ export function renderPerfectMatchShape() {
         seasonConfig.pmRoleCounts = next;
         try { window.saveConfig?.(); } catch { /* kept on seasonConfig */ }
         renderPerfectMatchCastSetup();
+        try { window.renderTimeline?.(); } catch { /* the timeline is on another tab */ }
       });
     }
   }
@@ -93,50 +101,42 @@ export function renderPerfectMatchShape() {
       + (shape.episodes && shape.episodes < shape.auto
         ? ` At ${shape.episodes}, there are fewer dumping nights than this cast needs: whoever is left over goes at the semi-final, several at once.` : '');
   }
-  const picks = seasonConfig.pmPicks || {};
-  const started = !!gs?.pm?.seed;
-  const aired = new Map((gs?.episodeHistory || []).filter(r => r?.format === PERFECT_MATCH_FORMAT).map(r => [r.num, r]));
-  const drawnBySlot = Object.fromEntries(started
-    ? perfectMatchScheduleFor(gs.pm.seed, shape).filter(e => e.slot).map(e => [e.slot, e.dumpFormat]) : []);
-  host.innerHTML = shape.schedule.filter(e => DUMP_DRAWS[e.slot]).map(e => {
-    const opts = DUMP_DRAWS[e.slot];
-    const row = aired.get(e.ep);
-    const randomLabel = drawnBySlot[e.slot] ? `Random (this season drew: ${PICK_LABELS[drawnBySlot[e.slot]]})` : 'Random';
-    const note = row
-      ? (row.pm?.dumpFormat
-        ? `Aired as: ${PICK_LABELS[row.pm.dumpFormat]}.${picks[e.slot] && picks[e.slot] !== row.pm.dumpFormat ? ' Re-run this episode to play your pick.' : ''}`
-        : 'Aired with no vote: four couples or fewer were left.')
-      : e.slot === 'semi' && picks.semi === 'ex-islanders' ? 'Needs five or more couples at the semi-final; with four, nobody is voted out.' : '';
-    return `<div class="pm-cs-row"><div class="form-label">Episode ${e.ep} — ${esc(SLOT_NAMES[e.slot])}</div>
-      <select class="form-input pm-cs-sel" data-pick="${esc(e.slot)}">
-        <option value="">${esc(randomLabel)}</option>
-        ${opts.map(([f]) => `<option value="${esc(f)}"${picks[e.slot] === f ? ' selected' : ''}>${esc(PICK_LABELS[f])}</option>`).join('')}
-      </select>${note ? `<div class="hint hint-tight">${esc(note)}</div>` : ''}</div>`;
-  }).join('');
-  if (!host.dataset.wired) {
-    host.dataset.wired = '1';
-    host.addEventListener('change', ev => {
-      const slot = ev.target?.dataset?.pick;
-      if (!slot) return;
-      const next = { ...(seasonConfig.pmPicks || {}) };
-      if (ev.target.value) next[slot] = ev.target.value; else delete next[slot];
-      seasonConfig.pmPicks = next;
-      try { window.saveConfig?.(); } catch { /* the menu keeps its own state */ }
-      renderPerfectMatchShape();
-    });
-  }
   if (len && !len.dataset.wired) {
     len.dataset.wired = '1';
     len.addEventListener('change', () => {
       const v = Math.round(Number(len.value));
       seasonConfig.pmEpisodes = v > 0 ? v : null;
       try { window.saveConfig?.(); } catch { /* kept on seasonConfig */ }
-      renderPerfectMatchShape();
+      renderPerfectMatchCastSetup();
+      // The Season Timeline is this season's episodes: a new length redraws it.
+      try { window.renderTimeline?.(); } catch { /* the timeline is on another tab */ }
     });
   }
 }
 
-/** Draw the panel. Safe to call when the page has no panel (tests, other shows). */
+/** The summary chips, from the same answer the season plays. */
+function renderStudioHead(shape, problem, total) {
+  const sum = document.getElementById('pm-studio-summary');
+  if (sum) {
+    const chip = (n, k, cls = '') => `<span class="pm-chip ${cls}"><b>${n}</b> ${esc(k)}</span>`;
+    sum.innerHTML = [
+      chip(total, total === 1 ? 'islander' : 'islanders'),
+      chip(shape.starters, 'starters', 'r-starter'), chip(shape.bombshells, 'bombshells', 'r-bombshell'),
+      chip(shape.casa, 'Casa Amor', 'r-casa'), chip(shape.schedule.length, 'episodes'),
+    ].join('') + `<div class="pm-status ${problem ? 'bad' : 'ok'}">${problem
+      ? `Can't start yet: ${esc(problem)}.` : 'Ready to play'}</div>`;
+  }
+}
+
+function roleSwitch(name, set, auto) {
+  const opt = (v, label) => `<button type="button" class="pm-seg${(set || '') === v ? ' on' : ''}" data-name="${esc(name)}" data-field="role" data-val="${v}">${esc(label)}</button>`;
+  // Auto is pressed; the role it comes to is marked underneath, not pressed.
+  const btns = ['starter', 'bombshell', 'casa'].map(r => opt(r, ROLE_SHORT[r])
+    .replace('class="pm-seg"', `class="pm-seg${!set && r === auto ? ' auto' : ''}"`)).join('');
+  return `<div class="pm-segs" role="group" aria-label="Role" title="${set ? '' : `Auto: ${esc(ROLE_WORDS[auto])}`}">${opt('', 'Auto')}${btns}</div>`;
+}
+
+/** Draw the Villa view. Safe to call when the page has no panel (tests, other shows). */
 export function renderPerfectMatchCastSetup() {
   renderPerfectMatchShape();
   const host = typeof document !== 'undefined' && document.getElementById('pm-cast-setup');
@@ -149,45 +149,63 @@ export function renderPerfectMatchCastSetup() {
     def.value = seasonConfig.pmDialect || 'uk';
   }
   const cast = (players || []).map(p => p.name).filter(Boolean);
-  if (!cast.length) { host.innerHTML = '<div class="hint">Add islanders on the Cast tab first.</div>'; return; }
+  const shape = perfectMatchSeasonShape();
+  const problem = cast.length ? perfectMatchCastProblem(cast, Object.fromEntries(cast.map(n => [n, { ...setupOf(n) }]))) : 'there are no islanders yet';
+  renderStudioHead(shape, problem, cast.length);
+  if (!cast.length) { host.innerHTML = '<div class="pm-empty">Add islanders in the Grid view first.</div>'; return; }
   const dialects = Object.entries(DIALECTS).filter(([k]) => k !== 'esl').map(([k, d]) => [k, d.label]);
   const personas = PERSONAS.map(([id]) => [id, words(id)]);
-  // What Auto means for each row: the counts in VILLA OPTIONS, or the split.
+  // What Auto means for each card: the counts above, or the automatic split.
   const autoRoles = perfectMatchRoles(cast, Object.fromEntries(cast.map(n => [n, setupOf(n)])));
-  const rows = cast.map((n, i) => {
+  const cards = cast.map((n, i) => {
     const s = setupOf(n);
+    const p = players.find(x => x.name === n) || {};
     const others = cast.filter(o => o !== n).map(o => [o, o]);
-    return `<div class="pm-cs-row">
-      <div class="pm-cs-head">
-        <strong class="pm-cs-name">${esc(n)}</strong>
-        ${select(n, 'role', ROLES.map(r => [r, ROLE_WORDS[r]]), s.role, `Auto: ${ROLE_WORDS[autoRoles[i]]}`)}
-        ${select(n, 'dialect', dialects, s.dialect, "From: season's default")}
-        ${select(n, 'intent', INTENTS.map(x => [x, words(x)]), s.intent, 'Looking for: roll')}
-        ${select(n, 'persona', personas, s.persona, 'Persona: from stats')}
+    const role = s.role || autoRoles[i];
+    const set = ['dialect', 'intent', 'persona'].filter(k => s[k]).length
+      + ['type', 'looks', 'icks', 'interests', 'eyesOn', 'ex'].filter(k => s[k] && (!Array.isArray(s[k]) || s[k].length)).length;
+    let avatar = '';
+    try { avatar = playerAvatarUrl(p.name ? p : n); } catch { avatar = ''; }
+    return `<article class="pm-isl r-${role}">
+      <div class="pm-isl-top">
+        <div class="pm-isl-face">${avatar ? `<img src="${esc(avatar)}" alt="" loading="lazy" onerror="this.remove()">` : ''}<span>${esc(n.slice(0, 1))}</span></div>
+        <div class="pm-isl-id"><div class="pm-isl-name">${esc(n)}</div>
+          <div class="pm-isl-meta">${esc(words(p.archetype || ''))}${p.gender ? ` · ${p.gender === 'f' ? 'woman' : p.gender === 'm' ? 'man' : ''}` : ''}${set ? ` · <span class="pm-isl-set">${set} set</span>` : ''}</div></div>
       </div>
-      <details class="pm-cs-more"><summary>Type, icks, interests, eyes on, ex</summary>
-        <div class="pm-cs-grid">
-          <div><div class="form-label">Their type (looks, up to 3)</div>${chips(n, 'type.looks', LOOK_TAGS.map(x => [x, words(x)]), getPath(s, 'type.looks'))}</div>
-          <div><div class="form-label">Their type (vibe, up to 2)</div>${chips(n, 'type.vibes', VIBES.map(x => [x, words(x)]), getPath(s, 'type.vibes'))}</div>
-          <div><div class="form-label">Their own looks</div>${chips(n, 'looks', LOOK_TAGS.map(x => [x, words(x)]), s.looks)}</div>
-          <div><div class="form-label">Icks (up to 2)</div>${chips(n, 'icks', ICKS.map(x => [x, words(x)]), s.icks)}</div>
-          <div><div class="form-label">Interests (2 to 4)</div>${chips(n, 'interests', INTERESTS.map(x => [x, words(x)]), s.interests)}</div>
-          <div><div class="form-label">Eyes on (up to 3) — who they've come in for</div>${chips(n, 'eyesOn', others, s.eyesOn)}</div>
-          <div><div class="form-label">An ex in the villa</div>${select(n, 'ex', others, s.ex, 'No ex')}</div>
+      ${roleSwitch(n, s.role, autoRoles[i])}
+      <div class="pm-isl-fields">
+        <label class="pm-field"><span class="pm-field-k">From</span>${select(n, 'dialect', dialects, s.dialect, 'Default')}</label>
+        <label class="pm-field"><span class="pm-field-k">Looking for</span>${select(n, 'intent', INTENTS.map(x => [x, words(x)]), s.intent, 'Rolled')}</label>
+        <label class="pm-field"><span class="pm-field-k">Persona</span>${select(n, 'persona', personas, s.persona, 'Auto')}</label>
+      </div>
+      <details class="pm-isl-more"><summary>Type, icks, interests, eyes on, ex</summary>
+        <div class="pm-isl-grid">
+          <div><div class="pm-field-k">Their type — looks, up to 3</div>${chips(n, 'type.looks', LOOK_TAGS.map(x => [x, words(x)]), getPath(s, 'type.looks'))}</div>
+          <div><div class="pm-field-k">Their type — vibe, up to 2</div>${chips(n, 'type.vibes', VIBES.map(x => [x, words(x)]), getPath(s, 'type.vibes'))}</div>
+          <div><div class="pm-field-k">Their own looks</div>${chips(n, 'looks', LOOK_TAGS.map(x => [x, words(x)]), s.looks)}</div>
+          <div><div class="pm-field-k">Icks — up to 2</div>${chips(n, 'icks', ICKS.map(x => [x, words(x)]), s.icks)}</div>
+          <div><div class="pm-field-k">Interests — 2 to 4</div>${chips(n, 'interests', INTERESTS.map(x => [x, words(x)]), s.interests)}</div>
+          <div><div class="pm-field-k">Eyes on — who they've come in for, up to 3</div>${chips(n, 'eyesOn', others, s.eyesOn)}</div>
+          <label class="pm-field"><span class="pm-field-k">An ex in the villa</span>${select(n, 'ex', others, s.ex, 'No ex')}</label>
         </div>
       </details>
-    </div>`;
+    </article>`;
   }).join('');
-  const problem = perfectMatchCastProblem(cast, Object.fromEntries(cast.map(n => [n, { ...setupOf(n) }])));
-  const count = r => autoRoles.filter(x => x === r).length;
-  host.innerHTML = `<div class="pm-cs-status ${problem ? 'bad' : 'ok'}">${problem
-    ? `This cast can't start a villa yet: ${esc(problem)}.`
-    : `Ready: ${count('starter')} starters, ${count('bombshell')} bombshells, ${count('casa')} Casa Amor arrivals — ${perfectMatchSeasonShape().schedule.length} episodes.`}</div>
-    <div class="hint hint-tight">Leave anything blank and the villa decides: roles by cast order, the rest rolled from each islander's stats. Only what you set is fixed.</div>
-    ${rows}`;
+  // Keep open "more" drawers open across the re-render a change triggers.
+  const open = new Set([...host.querySelectorAll('details.pm-isl-more[open]')].map(d => d.closest('.pm-isl')?.querySelector('.pm-isl-name')?.textContent));
+  host.innerHTML = `<div class="pm-isls">${cards}</div>`;
+  if (open.size) host.querySelectorAll('.pm-isl').forEach(c => { if (open.has(c.querySelector('.pm-isl-name')?.textContent)) c.querySelector('details')?.setAttribute('open', ''); });
   if (!host.dataset.wired) {
     host.dataset.wired = '1';
     host.addEventListener('change', onChange);
+    host.addEventListener('click', ev => {
+      const b = ev.target?.closest?.('.pm-seg');
+      if (!b) return;
+      const s = setupOf(b.dataset.name);
+      setPath(s, 'role', b.dataset.val || null);
+      try { window.saveConfig?.(); } catch { /* the panel keeps its own state */ }
+      renderPerfectMatchCastSetup();
+    });
   }
 }
 

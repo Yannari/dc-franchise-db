@@ -13,7 +13,7 @@ import { isPerfectMatchSeason, simulatePerfectMatchEpisode, perfectMatchEpisodes
 import { makeIslanders } from './helpers/pm-cast.js';
 
 function freshSeason(n = 22, extra = {}) {
-  Object.assign(seasonConfig, { format: 'perfect-match', seasonNumber: 3, pmSetup: {}, pmPicks: {}, pmRoleCounts: {}, ...extra });
+  Object.assign(seasonConfig, { format: 'perfect-match', seasonNumber: 3, pmSetup: {}, twistSchedule: [], pmRoleCounts: {}, ...extra });
   setPlayers(makeIslanders(n, 5));
   // A fixed seed: the run's own is partly random, so every test run would
   // otherwise play a different season.
@@ -132,11 +132,21 @@ describe('an episode can be re-run, and only it changes', () => {
 });
 
 describe('a pick is live until its episode airs', () => {
+  it('a booking only pins a vote night that format can play', async () => {
+    const { perfectMatchPicks } = await import('../js/pm-run.js');
+    freshSeason();
+    seasonConfig.twistSchedule = [{ id: 'a', episode: 5, type: 'pm-save-one' }, { id: 'b', episode: 3, type: 'pm-public-vote' },
+      { id: 'c', episode: 12, type: 'pm-save-one' }, { id: 'd', episode: 14, type: 'pm-ex-islanders' }];
+    // ep 3 is a bombshell night; save-one is not a second-vote format.
+    expect(perfectMatchPicks()).toEqual({ vote1: 'save-one', semi: 'ex-islanders' });
+    seasonConfig.twistSchedule = [];
+  });
   it('a pick for an unaired episode reaches it, and the aired ones do not move', () => {
     freshSeason();
     for (let i = 0; i < 3; i++) simulatePerfectMatchEpisode();
     const aired = gs.episodeHistory.map(fp);
-    seasonConfig.pmPicks = { vote2: 'couples-vote' };
+    // Booked on the Season Timeline: episode 12 is the second vote at 22.
+    seasonConfig.twistSchedule = [{ id: 't1', episode: 12, type: 'pm-couples-vote' }];
     simulatePerfectMatchEpisode();
     expect(gs.episodeHistory.slice(0, 3).map(fp)).toEqual(aired);
     expect(gs._pmQueue.find(r => r.num === 12).pm.dumpFormat).toBe('couples-vote');
@@ -147,7 +157,7 @@ describe('a pick is live until its episode airs', () => {
     for (let i = 0; i < 6; i++) simulatePerfectMatchEpisode();
     const drawn = gs.episodeHistory[4].pm.dumpFormat;
     const want = drawn === 'save-one' ? 'public' : 'save-one';
-    seasonConfig.pmPicks = { vote1: want };
+    seasonConfig.twistSchedule = [{ id: 't1', episode: 5, type: want === 'public' ? 'pm-public-vote' : 'pm-save-one' }];
     const aired = gs.episodeHistory.map(fp);
     simulatePerfectMatchEpisode();
     expect(gs.episodeHistory.slice(0, 6).map(fp)).toEqual(aired);

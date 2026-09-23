@@ -22,7 +22,9 @@ import { coachCanPlay } from './advantages.js';
 import { isTraitorsSeason, simulateTraitorsEpisode, rerunTraitorsEpisode,
   lastTraitorsRerunRefusal } from './tr-run.js';
 import { isPerfectMatchSeason, simulatePerfectMatchEpisode, perfectMatchCanRerun,
-  lastPerfectMatchRefusal, rerunPerfectMatchEpisode, perfectMatchPendingChange, perfectMatchSeasonShape } from './pm-run.js';
+  lastPerfectMatchRefusal, rerunPerfectMatchEpisode, perfectMatchPendingChange, perfectMatchSeasonShape,
+  perfectMatchSlots } from './pm-run.js';
+import { EPISODE_WORDS as PM_EPISODE_WORDS, SLOT_NAMES as PM_SLOT_NAMES } from './pm/schedule.js';
 import { episodeText as pmEpisodeText, momentTitle as pmMomentTitle } from './pm/transcript.js';
 import { isDragSeason, simulateDragEpisode, invalidateDragQueue,
   dragEpisodesAired, dragScheduleRecorded, rerunDragEpisode, dragCanRerun } from './dr-run.js';
@@ -714,7 +716,7 @@ export function renderRunTab() {
      castle read "PRE-MERGE" all season. Every show, from here. */
   try { window.updateBroadcastBar?.(); } catch { /* the bar is chrome */ }
   // The villa's dumping menus say what each slot aired as, so they follow the run.
-  try { if (isPerfectMatchSeason()) window.renderPerfectMatchShape?.(); } catch { /* optional chrome */ }
+  try { if (isPerfectMatchSeason()) window.renderPerfectMatchCastSetup?.(); } catch { /* optional chrome */ }
   renderGameState();
   renderSeasonHub();
   const empty   = document.getElementById('run-empty');
@@ -3764,6 +3766,11 @@ export function renderTimeline() {
     ? Number(seasonConfig.jurySize) + 2
     : null;
 
+  // THE VILLA'S NIGHTS. Every villa episode is a known moment — a
+  // recoupling, a bombshell, a vote — so the tile says which, how many walk
+  // in, and on a vote night what a dumping booked here would decide.
+  const _pmEps = isPerfectMatchSeason() ? new Map(perfectMatchSeasonShape().schedule.map(e => [e.ep, e])) : null;
+
   let html = '';
   epMap.forEach(({ ep, active, phase }) => {
     const isFinale   = phase === 'finale';
@@ -4125,7 +4132,9 @@ export function renderTimeline() {
     // A castle has no tribes and no merge, so it has no PRE/POST to stamp — the
     // episode map hands every season a pre/post split it shares with Total
     // Drama, and left alone it would print a meaningless PRE on every night.
-    const phaseLabel  = isTraitorsSeason() ? ''
+    const _pmEp = _pmEps?.get(ep) || null;
+    const phaseLabel  = _pmEp ? (PM_EPISODE_WORDS[_pmEp.moment] || '').toUpperCase()
+      : isTraitorsSeason() ? ''
       : phase === 'ri-duel' ? 'RI DUEL' : phase === 'finale' ? '' : phase === 'pre-merge' ? 'PRE' : 'POST';
 
     // Competition pinning: every Big Brother week has an HOH and a veto, so
@@ -4167,13 +4176,23 @@ export function renderTimeline() {
           </div>`
       : '';
 
+    // The villa's own row: arrivals, and the vote slot this night is.
+    const _pmArr = _pmEp?.arrivals?.bombshell || 0;
+    const _pmBooked = _pmEp?.slot && twists.some(x => TWIST_CATALOG.find(c => c.id === x.type)?.pmFormat);
+    const villaRow = _pmEp && (_pmArr || _pmEp.slot)
+      ? `<div class="fd-ep-comps" style="display:flex;gap:6px;flex-wrap:wrap;min-width:0;margin-top:5px;padding-top:5px;border-top:1px solid rgba(224,70,124,0.18);font-size:10.5px;color:var(--muted,#7d8590)">
+          ${_pmArr ? `<span style="color:#f59e0b;font-weight:700">+${_pmArr} arriving</span>` : ''}
+          ${_pmEp.slot ? `<span>${_hubEsc(PM_SLOT_NAMES[_pmEp.slot] || 'an extra public vote')}${_pmBooked ? '' : ' · drawn at random'}</span>` : ''}
+        </div>`
+      : '';
+
     html += `<div class="fd-episode ${isSelected ? 'selected' : ''} ${isFinale ? 'finale' : ''} ${phase === 'ri-duel' ? 'ri-ep' : ''}" onclick="${isFinale ? '' : `toggleEpisode(${ep})`}" ${isFinale ? 'style="opacity:.6;cursor:default"' : ''}>
       <div class="fd-ep-header">
         <span class="fd-ep-num">Ep. ${ep} <span class="fd-ep-phase-label">${phaseLabel}</span></span>
         <span class="${markerClass}">${markerText}</span>
       </div>
       ${twistTags ? `<div class="fd-ep-twists">${twistTags}</div>` : ''}
-      ${compRow}${missionRow}${stageRow}
+      ${compRow}${missionRow}${stageRow}${villaRow}
     </div>`;
   });
 
@@ -4308,6 +4327,9 @@ export function renderTwistCatalog() {
   const selPhases = new Set([...selectedEpisodes].map(ep => epLookup[ep] || 'pre-merge'));
 
   const canAssign = selectedEpisodes.size > 0;
+  // Which vote slot each villa episode is (only asked when the catalogue has
+  // a twist that needs one): a dumping books onto the nights it can play.
+  const _pmSlotAt = catalog.some(c => c.pmSlots) ? new Map(perfectMatchSlots().map(e => [e.ep, e.slot])) : new Map();
   // Check which twist types already exist on selected episodes (for incompatibility)
   const _existingOnSelected = new Set();
   if (canAssign) {
@@ -4358,8 +4380,10 @@ export function renderTwistCatalog() {
     });
     // Rescue Island Life interlude requires Rescue Island to be enabled
     const _rilBlocked = canAssign && t.id === 'rescue-island-life' && !seasonConfig.ri;
-    const blocked = phaseBlocked || incompBlocked || modeBlocked || tribeBlocked || riBlocked || popBlocked || exileBlocked || _tdEvenBlocked || _taOddBlocked || _ccEvenBlocked || _bbEvenBlocked || _womEvenBlocked || _rilBlocked;
-    const blockReason = phaseBlocked ? ' ⚠️ wrong phase' : incompBlocked ? ' ⚠️ conflicts with existing twist'
+    const _slotBlocked = canAssign && t.pmSlots && [...selectedEpisodes].some(epN => !t.pmSlots.includes(_pmSlotAt.get(Number(epN))));
+    const blocked = phaseBlocked || incompBlocked || modeBlocked || tribeBlocked || riBlocked || popBlocked || exileBlocked || _tdEvenBlocked || _taOddBlocked || _ccEvenBlocked || _bbEvenBlocked || _womEvenBlocked || _rilBlocked || _slotBlocked;
+    const blockReason = _slotBlocked ? ` ⚠️ only on ${t.pmSlots.map(s => PM_SLOT_NAMES[s]).join(' or ')}`
+      : phaseBlocked ? ' ⚠️ wrong phase' : incompBlocked ? ' ⚠️ conflicts with existing twist'
       : modeBlocked ? ` ⚠️ cannot run alongside ${modeClashes.join(' and ')}` : tribeBlocked ? ` ⚠️ needs ${t.minTribes}+ tribes` : riBlocked ? ' ⚠️ incompatible with 2nd Chance Isle' : exileBlocked ? ' ⚠️ incompatible with Exile Format' : popBlocked ? ' ⚠️ requires Popularity enabled' : _rilBlocked ? ' ⚠️ requires Rescue Island enabled' : _tdEvenBlocked ? ' ⚠️ needs even player count' : _taOddBlocked ? ' ⚠️ needs even player count' : _ccEvenBlocked ? ' ⚠️ needs even player count for pairs' : _bbEvenBlocked ? ' ⚠️ needs even player count for pairs' : _womEvenBlocked ? ' ⚠️ needs even player count for pairs' : '';
     return `
     <div class="twist-card ${canAssign && !blocked ? 'assignable' : ''} ${blocked ? 'phase-blocked' : ''}" onclick="${blocked ? '' : `assignTwist('${t.id}')`}">
@@ -4367,7 +4391,7 @@ export function renderTwistCatalog() {
         <span class="twist-card-emoji">${t.emoji}</span>
         <div class="twist-card-info">
           <span class="twist-card-name">${t.name}</span>
-          <span class="twist-phase">${t.phase}${t.chalSeries ? ` · ${t.chalSeries === 'island' ? '🏝️ Island' : t.chalSeries === 'action' ? '🎬 Action' : t.chalSeries === 'world-tour' ? '✈️ World Tour' : t.chalSeries === 'revenge' ? '☢️ Revenge' : t.chalSeries}` : ''}${blockReason}</span>
+          <span class="twist-phase">${t.pmSlots ? t.pmSlots.map(s => PM_SLOT_NAMES[s]).join(' · ') : t.phase}${t.chalSeries ? ` · ${t.chalSeries === 'island' ? '🏝️ Island' : t.chalSeries === 'action' ? '🎬 Action' : t.chalSeries === 'world-tour' ? '✈️ World Tour' : t.chalSeries === 'revenge' ? '☢️ Revenge' : t.chalSeries}` : ''}${blockReason}</span>
         </div>
         <button class="twist-add-btn" ${canAssign && !blocked ? '' : 'disabled'} onclick="event.stopPropagation();${blocked ? '' : `assignTwist('${t.id}')`}">+</button>
       </div>
@@ -4396,8 +4420,12 @@ export function assignTwist(twistId) {
   if (!seasonConfig.twistSchedule) seasonConfig.twistSchedule = [];
   const blocked = [];
 
+  const _pmSlotAt = twist?.pmSlots ? new Map(perfectMatchSlots().map(e => [e.ep, e.slot])) : null;
+  const slotBlocked = [];
   selectedEpisodes.forEach(ep => {
     const epPhase = epLookup[ep] || 'pre-merge';
+    // A villa dumping plays only on a vote night of its own kind.
+    if (_pmSlotAt && !twist.pmSlots.includes(_pmSlotAt.get(Number(ep)))) { slotBlocked.push(ep); return; }
     // Phase check
     if (twist?.phase === 'pre-merge' && epPhase !== 'pre-merge') {
       blocked.push(ep); return;
@@ -4430,6 +4458,10 @@ export function assignTwist(twistId) {
     seasonConfig.twistSchedule.push(entry);
   });
 
+  if (slotBlocked.length) {
+    alert(`"${twist?.name}" can only be booked on ${twist.pmSlots.map(s => PM_SLOT_NAMES[s]).join(' or ')}.\n`
+      + `Not booked on episode${slotBlocked.length > 1 ? 's' : ''}: ${slotBlocked.join(', ')}.`);
+  }
   if (blocked.length) {
     const phaseName = twist?.phase === 'pre-merge' ? 'pre-merge' : 'post-merge';
     alert(`"${twist?.name}" is a ${phaseName}-only twist.\nBlocked on episode${blocked.length > 1 ? 's' : ''}: ${blocked.join(', ')}.`);

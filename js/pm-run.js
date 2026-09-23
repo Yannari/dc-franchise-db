@@ -20,7 +20,7 @@
 // IMPORTING THIS MODULE IS THE WIRING: it sets `window._pmRunnable`, which
 // `formatIsRunnable()` reads. Drop the import from js/main.js and the show
 // silently un-ships with every test still green.
-import { gs, setGs, players, seasonConfig, seasonFormat } from './core.js';
+import { gs, setGs, players, seasonConfig, seasonFormat, twistsForFormat } from './core.js';
 import { PERFECT_MATCH_FORMAT } from './shows.js';
 import { playPerfectMatchSeason, perfectMatchScheduleFor } from './pm/season.js';
 import { assignRoles, buildSchedule, withPicks } from './pm/schedule.js';
@@ -101,9 +101,37 @@ export function perfectMatchSeasonShape() {
     schedule: withPicks(schedule, perfectMatchPicks()) };
 }
 
-/** The author's pinned formats (VILLA OPTIONS), by slot: { vote1: 'save-one' }. */
+/**
+ * The author's pinned formats, by slot ({ vote1: 'save-one' }), read off the
+ * Season Timeline: a villa dumping twist booked on an episode pins the vote
+ * slot that episode is. The same array every show books into
+ * (`seasonConfig.twistSchedule`), translated here in the engine's own words —
+ * the Drag Race pattern (js/dr-run.js _twistsToSchedule). A booking on an
+ * episode that is not a vote night, or not one that format can play, is
+ * ignored rather than moved.
+ */
 export function perfectMatchPicks() {
-  return { ...(seasonConfig.pmPicks || {}) };
+  const mine = new Map(twistsForFormat({ format: PERFECT_MATCH_FORMAT }).filter(t => t.pmFormat).map(t => [t.id, t]));
+  const booked = (seasonConfig.twistSchedule || []).filter(b => b && (mine.has(b.type) || mine.has(b.id)));
+  if (!booked.length) return {};
+  const slotAt = new Map(perfectMatchSlots().map(e => [e.ep, e.slot]));
+  const picks = {};
+  for (const b of booked) {
+    const tw = mine.get(b.type) || mine.get(b.id);
+    const slot = slotAt.get(Number(b.episode));
+    if (slot && tw.pmSlots.includes(slot)) picks[slot] = tw.pmFormat;
+  }
+  return picks;
+}
+
+/** Which episode is which vote slot, for this cast and length (picks do not move them). */
+export function perfectMatchSlots() {
+  const saved = Array.isArray(gs?.pm?.castOrder) && gs.pm.castOrder.length ? gs.pm.castOrder : null;
+  const cast = saved || (players || []).map(p => p.name).filter(Boolean);
+  const roles = perfectMatchRoles(cast, perfectMatchSetup());
+  const episodes = Number(seasonConfig.pmEpisodes) > 0 ? Number(seasonConfig.pmEpisodes) : null;
+  return buildSchedule({ bombshells: roles.filter(r => r === 'bombshell').length,
+    casa: roles.filter(r => r === 'casa').length, episodes }).filter(e => e.slot);
 }
 
 // ── NOTHING IS DECIDED UNTIL IT AIRS ──────────────────────────────────

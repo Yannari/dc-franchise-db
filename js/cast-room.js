@@ -463,8 +463,7 @@ export function renderCastRoom() {
   _adoptForm(room);
 
   // View toggle active state
-  const view = window._crView || 'grid';
-  room.querySelectorAll('.cr-viewbtn').forEach(b => b.classList.toggle('active', b.dataset.view === view));
+  _syncViewButtons(room);
 
   // Drawer visual state — close on data-render unless a keep flag is set.
   if (!window._crKeepDrawerOpen) _setDrawerOpen(false);
@@ -498,6 +497,7 @@ function _shellHTML() {
         <div class="cr-viewtoggle" role="tablist" aria-label="Cast view">
           <button class="cr-viewbtn active" data-view="grid" onclick="crSetView('grid')">Grid</button>
           <button class="cr-viewbtn" data-view="tribes" onclick="crSetView('tribes')">Tribes</button>
+          <button class="cr-viewbtn" data-view="villa" onclick="crSetView('villa')" hidden>Villa</button>
         </div>
         <button class="cr-viewbtn cr-statsbtn${typeof window !== 'undefined' && window._crShowAllStats ? ' active' : ''}" id="cr-statsbtn"
           onclick="crToggleStats()" title="Show all 9 stats on every card" aria-pressed="${typeof window !== 'undefined' && !!window._crShowAllStats}">⚏ Stats</button>
@@ -640,8 +640,29 @@ export function crCardKey(e) {
 export function crSetView(view) {
   window._crView = view;
   const room = document.getElementById('cast-room');
-  if (room) room.querySelectorAll('.cr-viewbtn').forEach(b => b.classList.toggle('active', b.dataset.view === view));
+  if (room) _syncViewButtons(room);
   crRenderGrid();
+  if (room?.dataset.view === 'villa') { try { window.renderPerfectMatchCastSetup?.(); } catch { /* optional panel */ } }
+}
+
+// ── THE VILLA VIEW ─────────────────────────────────────────────────────
+// A villa season swaps Tribes (it has none) for Villa: the season's shape,
+// its options and every islander's setup on one page (js/pm-cast-ui.js),
+// switched to rather than scrolled to. Asked by FUNCTION, not by slug — the
+// villa's run module says whether this is a villa season.
+function _isVilla() {
+  try { return !!window.isPerfectMatchSeason?.(); } catch { return false; }
+}
+function _syncViewButtons(room) {
+  const villa = _isVilla();
+  let view = window._crView || 'grid';
+  if ((view === 'villa' && !villa) || (view === 'tribes' && villa)) view = 'grid';
+  room.dataset.view = view;
+  room.querySelectorAll('.cr-viewbtn[data-view]').forEach(b => {
+    b.classList.toggle('active', b.dataset.view === view);
+    if (b.dataset.view === 'villa') b.hidden = !villa;
+    if (b.dataset.view === 'tribes') b.hidden = villa;
+  });
 }
 
 // Filter input handler: persist DOM values into state, then re-render the grid only
@@ -753,6 +774,9 @@ const CR_CSS = `
 #tab-cast:not(.cast-room-active) #cast-room { display: none !important; }
 
 #cast-room { color: var(--text); }
+/* The Villa view replaces the grid and its filters; the grid hides the villa. */
+#cast-room[data-view="villa"] #cr-body, #cast-room[data-view="villa"] #cr-filterwrap { display:none; }
+#cast-room:not([data-view="villa"]) #sec-pm-cast { display:none !important; }
 .cr-topbar { display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:14px; }
 .cr-title-wrap { display:flex; align-items:baseline; gap:12px; }
 .cr-title { font-family:var(--font-display,sans-serif); font-size:26px; letter-spacing:.5px; margin:0; text-transform:uppercase; }

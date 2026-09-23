@@ -335,6 +335,8 @@ export function resolveTwistSchedule(ids, cfg, { isException = () => false } = {
  */
 export const TWIST_CATEGORIES = [
   { id: 'team', label: 'Team Dynamics' },
+  // The villa's dumpings: how a vote night decides who leaves (Perfect Match).
+  { id: 'dumping', label: 'Dumpings' },
   { id: 'immunity', label: 'Immunity' },
   { id: 'power', label: 'Power & Nominations' },
   { id: 'elim', label: 'Elimination' },
@@ -1052,6 +1054,40 @@ export const TWIST_CATALOG = [
     category:'returns', phase:'any', engineType:'dr-returnee', episodeField:'returnee',
     dataFields:['returneeName'],
     desc:'A queen already sent home walks back into the werk room and back into the competition. Pick her from the dropdown or leave it on Random and the show decides — weighted toward the queens who went out with the most left to prove. She keeps the record she made before she left, rejoins from that episode, and the season runs ONE EPISODE LONGER because the room she walked into just got bigger. If the queen you picked is somehow still competing when the episode arrives, the show falls back to a random eliminated queen rather than doing nothing.' },
+  /* ── THE VILLA'S DUMPINGS (Perfect Match, Plan 4.5) ──
+     How a vote night decides who leaves, booked on the Season Timeline like
+     every other show's twists. `pmFormat` is the engine's own name for it and
+     `pmSlots` the vote nights it can be booked on (js/pm/schedule.js
+     DUMP_DRAWS) — js/pm-run.js turns a booking into that slot's pick. A vote
+     night with nothing booked draws its format the way the real show does. */
+  { id:'pm-cross-gender', emoji:'\u{1F46B}', name:'Each Side Dumps One', format:'perfect-match',
+    category:'dumping', phase:'any', engineType:'pm-cross-gender', pmFormat:'cross-gender', pmSlots:['vote1'],
+    desc:'The public have been voting for their favourite couples, and the ones with the fewest votes are at risk. Then the villa finishes it: the girls choose one of the boys at risk to send home, and the boys choose one of the girls, each vote read out at the fire pit. Two islanders leave, from two different couples, and both partners they leave behind are suddenly single.',
+    incompatible:['pm-top-couple-picks','pm-save-one','pm-public-vote','pm-safe-pick-couple','pm-couples-vote','pm-ex-islanders'] },
+  { id:'pm-top-couple-picks', emoji:'\u{1F451}', name:'The Favourites Decide', format:'perfect-match',
+    category:'dumping', phase:'any', engineType:'pm-top-couple-picks', pmFormat:'top-couple-picks', pmSlots:['vote1','vote2'],
+    desc:'The public vote for their favourite couple. The three with the fewest votes stand at the fire pit, and the couple with the MOST votes is told they will decide which of them goes. They talk it over in front of everyone and name one couple, who are dumped together. It costs the favourites a little with the public, and the dumped couple remember who chose them.',
+    incompatible:['pm-cross-gender','pm-save-one','pm-public-vote','pm-safe-pick-couple','pm-couples-vote','pm-ex-islanders'] },
+  { id:'pm-save-one', emoji:'\u{1F6DF}', name:'Save One', format:'perfect-match',
+    category:'dumping', phase:'any', engineType:'pm-save-one', pmFormat:'save-one', pmSlots:['vote1'],
+    desc:'The public vote for their favourite boy or girl — whichever side the villa has more of. The three with the fewest votes are called to the front, and the other side votes to SAVE one of them, one at a time and out loud. The one saved stays; the other two are dumped. Anyone whose partner is at risk saves their partner.',
+    incompatible:['pm-cross-gender','pm-top-couple-picks','pm-public-vote','pm-safe-pick-couple','pm-couples-vote','pm-ex-islanders'] },
+  { id:'pm-public-vote', emoji:'\u{1F4F1}', name:'Straight Public Vote', format:'perfect-match',
+    category:'dumping', phase:'any', engineType:'pm-public-vote', pmFormat:'public', pmSlots:['vote1','vote2','semi'],
+    desc:'The public vote for their favourite couple, and nobody in the villa has a say: the couple with the fewest votes is dumped, read out by the host at the fire pit. At the semi-final it trims the villa to the four couples who go to the final.',
+    incompatible:['pm-cross-gender','pm-top-couple-picks','pm-save-one','pm-safe-pick-couple','pm-couples-vote','pm-ex-islanders'] },
+  { id:'pm-safe-pick-couple', emoji:'\u{1F6E1}', name:'The Safe Islanders Pick', format:'perfect-match',
+    category:'dumping', phase:'any', engineType:'pm-safe-pick-couple', pmFormat:'safe-pick-couple', pmSlots:['vote2'],
+    desc:'The public vote for their favourite couple, and the three with the fewest votes are at risk. Every islander who is safe then stands up in turn and says which of those couples should go. The couple with the most votes from their friends is dumped, and every vote cast against them is remembered.',
+    incompatible:['pm-cross-gender','pm-top-couple-picks','pm-save-one','pm-public-vote','pm-couples-vote','pm-ex-islanders'] },
+  { id:'pm-couples-vote', emoji:'\u{1F5F3}', name:'Least Compatible', format:'perfect-match',
+    category:'dumping', phase:'any', engineType:'pm-couples-vote', pmFormat:'couples-vote', pmSlots:['vote2'],
+    desc:'No public vote at all. Each couple stands up and names the couple they think is least compatible. The two couples named most are at risk, and the islanders who are safe decide which of them goes home. The episode is called The villa votes, and every name said out loud costs a friendship.',
+    incompatible:['pm-cross-gender','pm-top-couple-picks','pm-save-one','pm-public-vote','pm-safe-pick-couple','pm-ex-islanders'] },
+  { id:'pm-ex-islanders', emoji:'\u{1F519}', name:'The Exes Decide', format:'perfect-match',
+    category:'dumping', phase:'any', engineType:'pm-ex-islanders', pmFormat:'ex-islanders', pmSlots:['semi'],
+    desc:'The semi-final. The couples name the least compatible couples, and then the islanders already dumped walk back through the door for one night to decide which of them leaves. They vote from what they lived in the villa — who voted them out, who moved on from them — and the couples they vote for go home until four are left for the final. It needs five or more couples at the semi-final; with four, nobody goes and the night plays without it.',
+    incompatible:['pm-cross-gender','pm-top-couple-picks','pm-save-one','pm-public-vote','pm-safe-pick-couple','pm-couples-vote'] },
 ];
 
 // ── Triple Dog Dare — dare pools by category ──

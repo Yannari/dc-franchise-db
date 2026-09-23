@@ -6582,17 +6582,126 @@
    named so it is obvious why it is there. */
 .portrait-opt-off{display:block;font-style:normal;font-size:9px;letter-spacing:.3px;color:#e5843e}
 
-/* ── Perfect Match: each islander's cast setup (js/pm-cast-ui.js) ── */
-.pm-cs-status{font-size:13px;padding:8px 10px;border-radius:8px;margin:4px 0 8px}
-.pm-cs-status.ok{background:rgba(16,185,129,.12);color:#10b981}
-.pm-cs-status.bad{background:rgba(224,70,124,.12);color:#e0467c}
-.pm-cs-row{border:1px solid var(--border,rgba(127,127,127,.25));border-radius:10px;padding:8px 10px;margin:6px 0}
-.pm-cs-head{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
-.pm-cs-name{min-width:110px;font-size:14px}
-.pm-cs-head .pm-cs-sel{flex:1 1 150px;min-width:0;font-size:12px;padding:4px 6px}
-.pm-cs-more summary{cursor:pointer;font-size:12px;color:var(--muted,#888);margin-top:6px}
-.pm-cs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;margin-top:8px}
-.pm-cs-chips{display:flex;flex-wrap:wrap;gap:4px}
-.pm-cs-chip{font-size:11px;padding:2px 8px;border-radius:999px;border:1px solid var(--border,rgba(127,127,127,.3));cursor:pointer;user-select:none}
+/* ── Perfect Match: the Villa view (js/pm-cast-ui.js, Cast → Villa) ──
+   One page: a summary, the season as a strip of episodes, four option cards
+   and a card per islander. Colours are the villa's pink over the site's own
+   surface tokens, so both themes follow; role and episode families carry a
+   hue each, used at low alpha on backgrounds and full on edges and numbers. */
+.pm-studio{--pm:#e0467c;--pm-soft:rgba(224,70,124,.12);--r-starter:#10b981;--r-bombshell:#f59e0b;--r-casa:#8b5cf6;
+  --k-vote:#ef4444;--k-end:#ec4899;display:flex;flex-direction:column;gap:16px;margin:4px 0 24px}
+.pm-studio-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  padding:18px 20px;border-radius:16px;border:1px solid var(--border);
+  background:linear-gradient(120deg,rgba(224,70,124,.16),rgba(245,158,11,.08) 55%,rgba(139,92,246,.10))}
+.pm-kicker{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--pm);font-weight:700}
+.pm-studio-title{margin:2px 0 0;font-family:var(--font-display,inherit);font-size:30px;line-height:1.05;letter-spacing:.02em}
+.pm-studio-summary{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:flex-end}
+.pm-chip{font-size:12px;padding:5px 10px;border-radius:999px;background:var(--surface);border:1px solid var(--border);color:var(--muted);white-space:nowrap}
+.pm-chip b{color:var(--text);font-size:14px;margin-right:2px}
+.pm-chip.r-starter b{color:var(--r-starter)}.pm-chip.r-bombshell b{color:var(--r-bombshell)}.pm-chip.r-casa b{color:var(--r-casa)}
+.pm-status{font-size:12px;font-weight:600;padding:5px 12px;border-radius:999px}
+.pm-status.ok{background:rgba(16,185,129,.14);color:#10b981}
+.pm-status.bad{background:var(--pm-soft);color:var(--pm);white-space:normal;max-width:420px}
+
+.pm-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.pm-card-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.pm-card-title{font-size:12px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--text)}
+.pm-card-sub{font-size:12px;color:var(--muted)}
+.pm-hint{font-size:12px;line-height:1.45;color:var(--muted)}
+.pm-studio-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;align-items:start}
+/* Wide screens. Cast → Villa: who arrives when, beside the voices. Setup →
+   Villa options: the length, the final, and where the dumpings are booked. */
+@media (min-width:1100px){
+  #sec-pm-cast .pm-studio-grid{grid-template-columns:2fr 1fr}
+  .pm-season-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+.pm-studio-season{margin:0 0 8px}
+
+/* the season strip */
+.pm-strip{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:6px}
+.pm-ep{position:relative;border-radius:10px;padding:8px 8px 7px;min-height:58px;display:flex;flex-direction:column;gap:2px;
+  background:var(--surface2);border:1px solid var(--border);border-top:3px solid var(--muted)}
+.pm-ep-num{font-size:11px;color:var(--muted);font-family:var(--font-mono,monospace)}
+.pm-ep-name{font-size:12px;font-weight:600;line-height:1.2}
+.pm-ep-fmt{font-size:10.5px;color:var(--muted);line-height:1.2}
+.pm-ep-in{position:absolute;top:6px;right:6px;font-size:10px;font-weight:700;padding:1px 6px;border-radius:999px;
+  background:rgba(245,158,11,.18);color:var(--r-bombshell)}
+.pm-ep.k-couple{border-top-color:var(--pm)}.pm-ep.k-bomb{border-top-color:var(--r-bombshell)}
+.pm-ep.k-vote{border-top-color:var(--k-vote)}.pm-ep.k-casa{border-top-color:var(--r-casa)}
+.pm-ep.k-end{border-top-color:var(--k-end);background:linear-gradient(180deg,rgba(236,72,153,.10),var(--surface2))}
+.pm-ep.aired{opacity:.55}.pm-ep.aired .pm-ep-num::after{content:' · aired'}
+.pm-legend{display:flex;flex-wrap:wrap;gap:14px;font-size:11px;color:var(--muted)}
+.pm-legend span{display:inline-flex;align-items:center;gap:6px}
+.pm-dot{width:9px;height:9px;border-radius:3px;display:inline-block;background:var(--muted)}
+.pm-dot.k-couple{background:var(--pm)}.pm-dot.k-bomb{background:var(--r-bombshell)}.pm-dot.k-vote{background:var(--k-vote)}
+.pm-dot.k-casa{background:var(--r-casa)}.pm-dot.k-end{background:var(--k-end)}
+
+/* option cards */
+.pm-counts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.pm-count{display:flex;flex-direction:column;gap:4px;padding:10px;border-radius:10px;background:var(--surface2);border:1px solid var(--border)}
+.pm-count-k{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.pm-count:nth-child(1) .pm-count-k{color:var(--r-starter)}.pm-count:nth-child(2) .pm-count-k{color:var(--r-bombshell)}.pm-count:nth-child(3) .pm-count-k{color:var(--r-casa)}
+.pm-count-note{font-size:11px;color:var(--muted)}
+.pm-count-note .pm-auto{color:var(--pm);font-weight:600}
+.pm-count-in{width:100%;box-sizing:border-box;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:8px;
+  padding:6px 8px;font-size:18px;font-weight:700;font-family:inherit}
+.pm-count-in::placeholder{font-size:12px;font-weight:500;color:var(--muted)}
+.pm-count-in:focus,.pm-select:focus{outline:none;border-color:var(--pm);box-shadow:0 0 0 3px var(--pm-soft)}
+.pm-count-wide{max-width:180px}
+.pm-field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.pm-field-k{font-size:11px;color:var(--muted);font-weight:600}
+.pm-select{width:100%;box-sizing:border-box;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:8px;
+  padding:6px 8px;font-size:12.5px;font-family:inherit;min-width:0}
+.pm-pick{display:flex;flex-direction:column;gap:6px;padding:10px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--k-vote)}
+.pm-pick + .pm-pick{margin-top:8px}.pm-pick.aired{border-left-color:var(--muted)}
+.pm-pick-head{display:flex;align-items:center;gap:8px}
+.pm-ep-badge{font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:6px;background:rgba(239,68,68,.14);color:var(--k-vote);font-family:var(--font-mono,monospace)}
+.pm-pick-name{font-size:12.5px;font-weight:600}
+.pm-toggle{display:flex;align-items:flex-start;gap:10px;cursor:pointer;padding-top:8px;border-top:1px solid var(--border)}
+.pm-toggle input{position:absolute;opacity:0;pointer-events:none}
+.pm-toggle-ui{flex:none;width:34px;height:20px;border-radius:999px;background:var(--surface2);border:1px solid var(--border);position:relative;transition:background .15s}
+.pm-toggle-ui::after{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--muted);transition:transform .15s,background .15s}
+.pm-toggle input:checked + .pm-toggle-ui{background:var(--pm-soft);border-color:var(--pm)}
+.pm-toggle input:checked + .pm-toggle-ui::after{transform:translateX(14px);background:var(--pm)}
+.pm-toggle input:focus-visible + .pm-toggle-ui{box-shadow:0 0 0 3px var(--pm-soft)}
+.pm-toggle > span:last-child{display:flex;flex-direction:column;gap:2px}
+
+/* the islanders */
+.pm-isls{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.pm-isl{background:var(--surface2);border:1px solid var(--border);border-left:4px solid var(--muted);border-radius:12px;padding:12px;
+  display:flex;flex-direction:column;gap:10px;min-width:0}
+.pm-isl.r-starter{border-left-color:var(--r-starter)}.pm-isl.r-bombshell{border-left-color:var(--r-bombshell)}.pm-isl.r-casa{border-left-color:var(--r-casa)}
+.pm-isl-top{display:flex;align-items:center;gap:10px}
+.pm-isl-face{position:relative;flex:none;width:44px;height:44px;border-radius:50%;overflow:hidden;background:var(--pm-soft);display:grid;place-items:center;
+  font-weight:700;color:var(--pm)}
+.pm-isl-face img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.pm-isl-name{font-weight:700;font-size:14.5px}
+.pm-isl-meta{font-size:11.5px;color:var(--muted);text-transform:capitalize}
+.pm-isl-set{color:var(--pm);text-transform:none}
+.pm-segs{display:grid;grid-template-columns:.8fr 1fr 1.15fr 1.1fr;border:1px solid var(--border);border-radius:9px;overflow:hidden}
+.pm-seg{background:transparent;border:0;border-right:1px solid var(--border);color:var(--muted);padding:6px 4px;font-size:11.5px;cursor:pointer;font-family:inherit;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pm-seg:last-child{border-right:0}
+.pm-seg:hover{color:var(--text)}
+.pm-seg.on{background:var(--pm-soft);color:var(--pm);font-weight:700}
+.pm-seg[data-val="starter"].on{background:rgba(16,185,129,.14);color:var(--r-starter)}
+.pm-seg[data-val="bombshell"].on{background:rgba(245,158,11,.16);color:var(--r-bombshell)}
+.pm-seg[data-val="casa"].on{background:rgba(139,92,246,.16);color:var(--r-casa)}
+/* On Auto, the role it comes to is marked, not pressed. */
+.pm-seg.auto{box-shadow:inset 0 -2px 0 currentColor}
+.pm-seg[data-val="starter"].auto{color:var(--r-starter)}.pm-seg[data-val="bombshell"].auto{color:var(--r-bombshell)}.pm-seg[data-val="casa"].auto{color:var(--r-casa)}
+.pm-isl-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.pm-isl-fields .pm-select{padding:6px 4px;font-size:12px}
+.pm-isl-more summary{cursor:pointer;font-size:12px;color:var(--muted)}
+.pm-isl-more summary:hover{color:var(--text)}
+.pm-isl-grid{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+.pm-empty{padding:24px;text-align:center;color:var(--muted);font-size:13px}
+.pm-cs-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.pm-cs-chip{font-size:11px;padding:3px 9px;border-radius:999px;border:1px solid var(--border);cursor:pointer;user-select:none;color:var(--muted);background:var(--surface)}
+.pm-cs-chip:hover{color:var(--text)}
 .pm-cs-chip input{display:none}
-.pm-cs-chip.on{background:rgba(224,70,124,.15);border-color:#e0467c;color:#e0467c}
+.pm-cs-chip.on{background:var(--pm-soft);border-color:var(--pm);color:var(--pm)}
+@media (max-width:640px){
+  .pm-studio-head{padding:14px 16px}.pm-studio-title{font-size:24px}
+  .pm-counts,.pm-isl-fields{grid-template-columns:1fr}
+  .pm-isls{grid-template-columns:1fr}
+  .pm-studio-summary{justify-content:flex-start}
+}

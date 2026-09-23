@@ -228,6 +228,10 @@ export const EPISODE_WORDS = { 'first-coupling': 'First coupling', recoupling: '
 export const EPISODE_KIND = { 'first-coupling': 'couple', recoupling: 'couple', bombshell: 'bomb', 'public-vote': 'vote',
   'casa-open': 'casa', 'casa-nights': 'casa', 'stick-or-twist': 'casa', photos: 'casa', 'semi-final': 'end',
   final: 'end', reunion: 'quiet' };
+// The villa's set pieces, by name, for the Season Timeline (user: "when is
+// movie night? there's no indication").
+export const RITUAL_NAMES = { 'heart-rate': 'Heart Rate', 'snog-marry-pie': 'Snog Marry Pie', 'movie-night': 'Movie Night',
+  notes: 'The notes', families: 'The families' };
 export const SLOT_NAMES = { vote1: 'the first public vote', vote2: 'the second public vote', semi: 'the semi-final' };
 
 function draw(rng, options) {
@@ -369,9 +373,16 @@ export const PICK_LABELS = {
 export function withBookings(schedule, byEp = {}) {
   // A challenge booked on one night is not also played on the night it was drawn for.
   const booked = new Set(Object.values(byEp || {}).map(b => b?.challenge).filter(Boolean));
+  // A set piece booked somewhere (Movie Night) moves there: its own night loses it.
+  const ritualsBooked = new Set(Object.values(byEp || {}).flatMap(b => b?.rituals || []));
   return schedule.map(e => {
     const b = byEp?.[e.ep];
     if (!b?.challenge && booked.has(e.challenge)) { e = { ...e }; delete e.challenge; }
+    if (ritualsBooked.size && (e.rituals || []).some(r => ritualsBooked.has(r))) {
+      e = { ...e, rituals: e.rituals.filter(r => !ritualsBooked.has(r)) };
+      if (!e.rituals.length) delete e.rituals;
+    }
+    if (b?.rituals && VILLA_DAYS.has(e.moment)) e = { ...e, rituals: [...new Set([...(e.rituals || []), ...b.rituals])] };
     if (!b) return e;
     const out = { ...e };
     if (b.arrivalRule && e.moment === 'bombshell') out.arrivalRule = b.arrivalRule === 'dates' ? undefined : b.arrivalRule;

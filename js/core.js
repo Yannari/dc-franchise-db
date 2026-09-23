@@ -340,6 +340,7 @@ export const TWIST_CATEGORIES = [
   { id: 'arrivals', label: 'Arrivals' },
   { id: 'first', label: 'Night One' },
   { id: 'games', label: 'Villa Challenges' },
+  { id: 'nights', label: 'Villa Nights' },
   { id: 'immunity', label: 'Immunity' },
   { id: 'power', label: 'Power & Nominations' },
   { id: 'elim', label: 'Elimination' },
@@ -1094,6 +1095,12 @@ export const TWIST_CATALOG = [
     category:'first', phase:'any', engineType:'pm-first-ranking', pmOn:['first-coupling'], pmApply:{ firstFormat:'ranking' },
     desc:'Each side ranks the other from most to least boyfriend or girlfriend material, and the islanders are coupled by position: the top girl with the top boy, and so on down. Everyone finds out where they came, so the couples at the bottom start the season knowing it.',
     incompatible:['pm-first-step-forward','pm-first-profiles','pm-first-public'] },
+  /* Movie Night (pm/movie-night.js). It plays on the Casa photos night, or on
+     the second vote without Casa; booked, it moves to the night you pick. */
+  { id:'pm-movie-night', emoji:'\u{1F3AC}', name:'Movie Night', format:'perfect-match',
+    category:'nights', phase:'any', engineType:'pm-movie-night', pmOn:['recoupling','bombshell','public-vote','photos','semi-final'], pmApply:{ rituals:['movie-night'] },
+    desc:"The islanders sit down on the lawn for a night at the cinema, and the film is them. The producers pick clips from the last few days, the real scenes in their own words: a pull or a kiss behind a partner's back, what somebody said about their partner in the debrief, a two-faced beach hut, and, as the show always mixes in, one islander turning a pull down. The partner in the audience watches it for the first time, in front of everyone. What goes wrong is everything after the screen goes dark: the confrontations, the denials, sometimes a couple ending there and then. Without a booking it plays on the photos night after Casa Amor (or the second public vote when there is no Casa); booked, it moves to this night. It needs something to show: with no clips from the last few days, the night passes without one.",
+    incompatible:[] },
   /* The one card on the Villa Challenges shelf (user: "a dropdown to choose a
      challenge, random or specific"): booked on a villa day, it plays the
      challenge picked in its dropdown, or on Random one that fits that part of

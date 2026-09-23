@@ -24,7 +24,7 @@ import { isTraitorsSeason, simulateTraitorsEpisode, rerunTraitorsEpisode,
 import { isPerfectMatchSeason, simulatePerfectMatchEpisode, perfectMatchCanRerun,
   lastPerfectMatchRefusal, rerunPerfectMatchEpisode, perfectMatchPendingChange, perfectMatchSeasonShape,
   perfectMatchSlots, perfectMatchVillaCounts, perfectMatchEpisodes } from './pm-run.js';
-import { EPISODE_WORDS as PM_EPISODE_WORDS, SLOT_NAMES as PM_SLOT_NAMES, seasonSchedule as pmDrawSchedule, CHALLENGE_NAMES as PM_CHALLENGE_NAMES } from './pm/schedule.js';
+import { EPISODE_WORDS as PM_EPISODE_WORDS, SLOT_NAMES as PM_SLOT_NAMES, seasonSchedule as pmDrawSchedule, CHALLENGE_NAMES as PM_CHALLENGE_NAMES, RITUAL_NAMES as PM_RITUAL_NAMES } from './pm/schedule.js';
 import { episodeText as pmEpisodeText, momentTitle as pmMomentTitle } from './pm/transcript.js';
 import { isDragSeason, simulateDragEpisode, invalidateDragQueue,
   dragEpisodesAired, dragScheduleRecorded, rerunDragEpisode, dragCanRerun } from './dr-run.js';
@@ -4180,7 +4180,8 @@ export function renderTimeline() {
     // episode map hands every season a pre/post split it shares with Total
     // Drama, and left alone it would print a meaningless PRE on every night.
     const _pmEp = _pmEps?.get(ep) || null;
-    const phaseLabel  = _pmEp ? (PM_EPISODE_WORDS[_pmEp.moment] || '').toUpperCase()
+    // …and the night's set piece, so Movie Night and the rest are on the map.
+    const phaseLabel  = _pmEp ? [PM_EPISODE_WORDS[_pmEp.moment] || '', ...(_pmEp.rituals || []).map(r => PM_RITUAL_NAMES[r] || r)].filter(Boolean).join(' · ').toUpperCase()
       : isTraitorsSeason() ? ''
       : phase === 'ri-duel' ? 'RI DUEL' : phase === 'finale' ? '' : phase === 'pre-merge' ? 'PRE' : 'POST';
 

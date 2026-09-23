@@ -192,7 +192,7 @@ export const HUT = {
     { id: 'hut.date.h2', when: { kind: 'date', ...B, role: 1 }, turns: [['a', "I went on a date with {b}. It was nice. I don't know what it means yet."]] },
     { id: 'hut.ritual.h1', when: { kind: 'heart-rate' }, turns: [['a', "You can't lie to a heart monitor. I've just found that out the hard way."]] },
     { id: 'hut.ritual.h2', when: { kind: 'movie-night', role: 0 }, turns: [['a', "I didn't think anyone would ever see that. Now everyone has."]] },
-    { id: 'hut.ritual.h3', when: { kind: 'families', ...B }, turns: [['a', "Seeing my family with {b} made it all feel real."]] },
+    { id: 'hut.ritual.h3', when: { kind: 'families', ...B, role: 0 }, turns: [['a', "Seeing my family with {b} made it all feel real."]] },
     { id: 'hut.ritual.h4', when: { kind: 'notes', role: 1 }, turns: [['a', "Whoever wrote that note, I hope you're happy. I'm not."]] },
     { id: 'hut.flirt.h1', when: { family: 'flirting', ...B, bombshell: true }, turns: [['a', "I came in here for {b}. I'm not going to pretend I didn't."]] },
   ],

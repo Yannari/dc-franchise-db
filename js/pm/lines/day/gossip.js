@@ -195,7 +195,7 @@ export const GOSSIP = [
     beat: '{a} starts crying before {b} does.' },
   { id: 'gossip.22', when: K,
     turns: [
-      ['a', 'Where were you earlier? When the lights went off?'],
+      ['a', 'Where were you last night, after the lights went off?'],
       ['b', 'Asleep. Why?'],
       ['a', "Because {c} wasn't."],
     ] },

@@ -14,7 +14,7 @@ export const FRIENDSHIP = [
     stage: '{a} and {b} are the only two up.',
     turns: [
       ['a', 'Why are you awake?'],
-      ['b', 'Somebody in our room snores like a boiler. Why are you awake?'],
+      ['b', 'Somebody in our room snores like a lawnmower. Why are you awake?'],
       ['a', "Same. It's unbearable."],
     ],
     beat: 'They make a pot of tea and drink all of it before anyone else gets up.' },
@@ -173,8 +173,8 @@ export const FRIENDSHIP = [
     turns: [
       ['a', "What do you think people at home think of me?"],
       { by: 'b', vary: [
-        { turns: [['b', "They think you're funny, and they think you need to stop eating everyone's crisps."]],
-          beat: '{a} puts the crisps down.' },
+        { turns: [['b', "They think you're funny, and they think you're a good friend. Because you are."]],
+          beat: '{a} looks very pleased with that.' },
         { when: { persona: 'checklist' },
           turns: [['b', "Honestly? I think they're still making their minds up. Give them something."]],
           beat: '{a} thinks about that for the rest of the afternoon.' },
@@ -192,10 +192,10 @@ export const FRIENDSHIP = [
     turns: [
       ['a', 'Dance with me.'],
       ['b', "There's no music."],
-      ['a', "There's always music if you're brave enough."],
-      ['b', "That doesn't mean anything."],
+      ['a', 'Then I will hum something.'],
+      ['b', "Please don't."],
     ],
-    beat: '{a} dances anyway, and after a while {b} joins in.' },
+    beat: '{a} hums anyway and starts dancing, and after a while {b} joins in.' },
   { id: 'friendship.23', when: { taken: true },
     turns: [
       ['a', 'Can I ask you something about my couple?'],

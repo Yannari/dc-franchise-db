@@ -111,7 +111,7 @@ export const DEEP_CHAT = [
       ['a', "Do you think people can change? Like, actually change?"],
       ['b', 'Why?'],
       ['a', "No reason. I just want to be better. For you."],
-      ['b', "You're already fine for me."],
+      ['b', "You don't need to change for me."],
     ],
     beat: "{a} looks away first." },
   { id: 'deep-chat.14',
@@ -170,7 +170,7 @@ export const DEEP_CHAT = [
       ['a', "I don't want this to end when we leave."],
       ['b', "It won't."],
       ['a', "People always say that in here."],
-      ['b', "I'm not people. I'm me, and I'm saying it."],
+      ['b', "I'm not everyone. I mean it."],
     ] },
   { id: 'deep-chat.21',
     turns: [
@@ -229,8 +229,8 @@ export const DEEP_CHAT = [
     turns: [
       ['a', "I know I walked in and turned everything upside down."],
       ['b', 'You did a bit.'],
-      ['a', "Do you regret it?"],
-      ['b', 'No. That\'s the problem.'],
+      ['a', "Do you wish I hadn't?"],
+      ['b', "No. I'm really glad you did."],
     ] },
   { id: 'deep-chat.29',
     turns: [

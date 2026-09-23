@@ -73,7 +73,7 @@ export const FRIEND_TALK = [
       ] },
     ] },
   { id: 'friendship.43', when: { phase: 'evening' },
-    stage: "The music's on, and it's the first night nobody's being careful.",
+    stage: "The music's on, and everyone's in a good mood.",
     turns: [
       ['a', 'Come on. One dance.'],
       ['b', "I don't dance."],
@@ -142,7 +142,7 @@ export const FRIEND_TALK = [
       ['a', 'You have to say that.'],
       ['b', "I don't have to say anything. I mean it."],
     ],
-    beat: '{b} gives {a.obj} a cuddle instead.' },
+    beat: '{b} gives {a.obj} a cuddle.' },
   { id: 'friendship.51',
     stage: 'At the weights.',
     turns: [

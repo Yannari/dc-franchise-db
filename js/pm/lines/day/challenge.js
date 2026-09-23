@@ -21,7 +21,7 @@ export const ICK = [
     stage: '{b} is doing a little dance while brushing {b.posAdj} teeth.',
     turns: [['a', 'Do you do that every morning?'], ['b', 'Do what?']],
     beat: '{a} watches, and stops smiling.' },
-  { id: 'ick.04',
+  { id: 'ick.04', when: { bGender: 'm' },
     turns: [
       ['b', "Honestly, I think I'd win a fight against most of {~lads} in here."],
       ['a', 'Why would you ever need to know that?'],

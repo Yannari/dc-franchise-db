@@ -87,7 +87,7 @@ export const PULL_MORE = [
       { by: 'b', vary: [
         { turns: [['b', 'Ten minutes. I\'m timing you.']], beat: '{b} goes with {a.obj} to the swing seat.' },
         { when: { taken: true, loyal: true },
-          turns: [['b', "In front of everyone? Fine. Here's fine."]], beat: '{b} does not move from the bench.' },
+          turns: [['b', "We can talk here, in front of everyone. Not anywhere private."]], beat: '{b} does not move from the bench.' },
       ] },
     ] },
   { id: 'pull.17', when: { persona: 'fuckboy' },
@@ -129,7 +129,7 @@ export const PULL_MORE = [
     ] },
   { id: 'pull.22', when: { taken: true, persona: 'messy' },
     turns: [
-      ['a', "My couple's not going anywhere. I think everyone can see it."],
+      ['a', "My couple isn't working. I think everyone can see it."],
       ['b', "Then say that to them, not me."],
       ['a', "I'm saying it to you because you're the one I'd rather be with."],
     ],
@@ -181,7 +181,7 @@ export const PULL_MORE = [
     turns: [
       ['a', "I'm not trying to cause trouble."],
       ['b', 'You always are.'],
-      ['a', "Not with you. With you I mean it."],
+      ['a', "Not with you. With you, I mean it."],
     ],
     beat: '{b} laughs, and then stops, because {b.posAdj} partner is watching from the kitchen.' },
   { id: 'pull.30',

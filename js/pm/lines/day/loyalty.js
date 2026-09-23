@@ -131,10 +131,10 @@ export const LOYALTY = [
     beat: '{a} takes {a.posAdj} drink to the far end of the lawn.' },
   { id: 'loyalty.18',
     turns: [
-      ['b', "Can we talk? It's important."],
-      ['a', "Is it about us?"],
-      ['b', 'Sort of.'],
-      ['a', "Then there's no us. That's the whole conversation."],
+      ['b', "Can we talk? It's about you and me."],
+      ['a', "There isn't a you and me."],
+      ['b', "There could be."],
+      ['a', "There isn't. That's the whole conversation."],
     ] },
   { id: 'loyalty.19', when: { early: true },
     turns: [

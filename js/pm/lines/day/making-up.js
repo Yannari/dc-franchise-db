@@ -40,7 +40,7 @@ export const MAKING_UP = {
         ['b', 'From where?'],
         ['a', 'From before I opened my mouth.'],
       ],
-      beat: '{b} laughs for the first time since, and moves up to make room.' },
+      beat: '{b} laughs for the first time since the argument, and moves up to make room.' },
     { id: 'chat.up5', when: R,
       turns: [
         ['a', 'I was out of order before.'],
@@ -99,7 +99,7 @@ export const MAKING_UP = {
     { id: 'challenge-win.up1', when: R,
       turns: [
         ['a', 'We just won, and earlier we were barely talking.'],
-        ['b', "That's us, isn't it."],
+        ['b', "That's us, isn't it?"],
       ],
       beat: 'They hug for a long time.' },
   ],

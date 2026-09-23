@@ -25,7 +25,7 @@ export const CHAT = [
       ['a', 'That was you?'],
       ['b', 'That was me.'],
     ],
-    beat: '{a} laughs and takes a handful.' },
+    beat: '{a} laughs.' },
   { id: 'chat.03', when: { phase: 'day' },
     turns: [
       ['a', 'I love this bit of the day.'],
@@ -155,9 +155,9 @@ export const CHAT = [
   { id: 'chat.16', when: { early: false },
     turns: [
       ['a', "Tell me something nobody in here knows."],
-      ['b', 'I cried after the first recoupling.'],
+      ['b', 'I cried on my first night.'],
       ['a', 'Really?'],
-      ['b', 'In the bathroom. Nobody saw. I thought nobody was ever going to pick me.'],
+      ['b', 'In the bathroom. Nobody saw. I was so scared nobody would pick me.'],
     ],
     beat: '{a} takes {b.posAdj} hand and keeps hold of it.' },
   { id: 'chat.17',

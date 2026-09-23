@@ -48,7 +48,7 @@ export const ARGUMENT_MORE = [
   { id: 'argument.10', when: { coupled: true, mood: 'jealous' },
     turns: [
       ['a', "You've been with them all afternoon."],
-      ['b', "We were on the same sunbeds. There's four sunbeds."],
+      ['b', "We were on the same sunbeds. There are four sunbeds."],
       ['a', "And you picked that one."],
       ['b', "Because it was in the shade!"],
     ],

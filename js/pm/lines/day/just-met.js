@@ -117,7 +117,7 @@ export const JUST_MET = {
   ],
   // ── day one's friction: no spark, the ick, a bad first impression ──
   ick: [
-    { id: 'jm.ick.01', when: J, turns: [['a', "Did you just click your fingers at the waiter?"], ['b', "What waiter? There's no waiter."], ['a', "In your story. Just now."]], beat: '{a} goes very quiet.' },
+    { id: 'jm.ick.01', when: J, turns: [['b', "So I clicked my fingers at the waiter, and he came straight over."], ['a', "You clicked your fingers? At a waiter?"]], beat: '{a} goes very quiet.' },
     { id: 'jm.ick.02', when: J, stage: '{b} tells {a} the same joke for the second time in an hour.', turns: [['a', "…Yeah. You said."]] },
     { id: 'jm.ick.03', when: J, stage: '{b} checks {b.posAdj} reflection in the pool while {a} is talking.', turns: [['a', "Am I keeping you?"], ['b', "Sorry, what?"]] },
     { id: 'jm.ick.04', when: J, turns: [['b', "I'm not really into feelings and all that."], ['a', "Right. On a dating show."]] },

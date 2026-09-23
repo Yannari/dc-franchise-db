@@ -78,6 +78,11 @@ const DAY_ONE = 0.25;
 const GOSSIP_PER_EPISODE = 3;
 const metToday = (s, ...ns) => ns.some(n => n != null && (s.ledger?.firstEp?.[n] ?? s.ep) === s.ep);
 
+// The roles a kind's scene talks ABOUT rather than includes (their index in
+// ev.players): never the one who goes to the beach hut about it.
+const HUT_ABSENT = { debrief: [2], gossip: [2], advice: [2], 'triangle-case': [2], 'triangle-torn': [], 'lie-write': [2],
+  'tower-q': [2], 'bombshell-react': [], 'movie-react': [], confession: [2] };
+
 export const KINDS = {
   chat: {
     salience: 0.25,
@@ -502,7 +507,12 @@ export function makeEvent(state, rng, { phase, kind, players, extra = {}, aired 
   ev.script = scriptFor(state, ev);
   for (const n of res.major || []) if (!ev.major.includes(n)) ev.major.push(n);
   if (players.length && rng() < HUT_RATE) {
-    const who = pick(rng, players);
+    // Only somebody who was THERE goes to the hut about it: the one a debrief
+    // or a telling is about is not in the room (user, reading night one: "say
+    // what out loud, when Mickey wasn't even the one talking").
+    const absent = HUT_ABSENT[kind] || [];
+    const present = players.filter((_, i) => !absent.includes(i));
+    const who = pick(rng, present.length ? present : players);
     // A faker's hut gives them away too: the hut is the Feels layer (spec §6.5).
     const faking = players.some(o => o !== who && shown(state, who, o) - romance(who, o) >= 3);
     // Two-faced is what the speaker is hiding NOW: a mask, or a secret from

@@ -166,9 +166,9 @@ export const NIGHT_ONE_HUT = {
     { id: 'hut.ac.h5', when: K('arrival-chat', { withB: true, of: 'nerves' }), turns: [['a', "I was so nervous, and {b} just made it normal. I needed that."]] },
     { id: 'hut.ac.h6', when: K('arrival-chat', { withB: true }), turns: [['a', "Honestly, I didn't expect to like everyone this much on day one."]] },
     { id: 'hut.ft.h1', when: K('first-toast'), turns: [['a', "That toast. That's the moment it felt real. We're actually doing this."]] },
-    { id: 'hut.db.h1', when: K('debrief', { of: 'happy' }), turns: [['a', "I got who I wanted. I'm trying not to look too pleased with myself."]] },
-    { id: 'hut.db.h2', when: K('debrief', { of: 'unsure' }), turns: [['a', "It's not that I don't like them. I just need more than a first night."]] },
-    { id: 'hut.db.h3', when: K('debrief', { of: 'rather' }), turns: [['a', "I shouldn't have said that out loud. It's true, though."]] },
+    { id: 'hut.db.h1', when: K('debrief', { of: 'happy', role: 0 }), turns: [['a', "I got who I wanted. I'm trying not to look too pleased with myself."]] },
+    { id: 'hut.db.h2', when: K('debrief', { of: 'unsure', role: 0 }), turns: [['a', "It's not that I don't like them. I just need more than a first night."]] },
+    { id: 'hut.db.h3', when: K('debrief', { of: 'rather', role: 0 }), turns: [['a', "I shouldn't have said that out loud. It's true, though."]] },
     { id: 'hut.db.h4', when: K('debrief', { of: 'rather-yours', role: 1 }), turns: [['a', "One hour in and someone's already told me they like my partner. Great start."]] },
     { id: 'hut.db.h5', when: K('debrief', { of: 'rather-yours', role: 0 }), turns: [['a', "Maybe I should have kept that to myself. Too late now."]] },
     { id: 'hut.bg.h1', when: K('bombshell-guess'), turns: [['a', "Every time that phone goes off, my heart stops."]] },
@@ -181,8 +181,8 @@ export const NIGHT_ONE_HUT = {
   'two-faced': [
     { id: 'hut.ac.t1', when: K('arrival-chat', { withB: true }), turns: [['a', "{b} is lovely. {b} is also exactly who I'd be worried about. Both things."]] },
     { id: 'hut.ac.t2', when: K('arrival-chat', { withB: true, of: 'same-type' }), turns: [['a', "We said no drama. I said no drama. I didn't say I'd step aside."]] },
-    { id: 'hut.db.t1', when: K('debrief', { of: 'happy' }), turns: [['a', "I told everyone I'm happy. I am. Mostly. For now."]] },
-    { id: 'hut.db.t2', when: K('debrief', { of: 'rather' }), turns: [['a', "I've got a partner. I've also got a plan."]] },
+    { id: 'hut.db.t1', when: K('debrief', { of: 'happy', role: 0 }), turns: [['a', "I told everyone I'm happy. I am. Mostly. For now."]] },
+    { id: 'hut.db.t2', when: K('debrief', { of: 'rather', role: 0 }), turns: [['a', "I've got a partner. I've also got a plan."]] },
     { id: 'hut.br.t1', when: K('bombshell-react', { of: 'stunned', role: 0 }), turns: [['a', "My partner's right there. I know. I still looked."]] },
   ],
 };

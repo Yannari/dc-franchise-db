@@ -473,7 +473,12 @@ function clipSlots(state, ev) {
   const id = ev.extra?.clip || ev.extra?.revealed;
   if (!id) return {};
   const clip = (state.history || []).find(e => e.id === id);
-  const line = clip?.script?.lines?.[0];
+  // The line that gives the scene away, not its opener (season 31's reunion
+  // gasped at "Can I have a word? Not here."): the longest thing the scene's
+  // own islander said, so the one quoted is the one asked to explain.
+  const spoken = (clip?.script?.lines || []).filter(l => !l.action && l.who);
+  const own = spoken.filter(l => l.who === (clip?.players || [])[0]);
+  const line = [...(own.length ? own : spoken)].sort((x, y) => y.text.length - x.text.length)[0];
   return line ? { quote: line.text, quoteWho: line.who } : {};
 }
 

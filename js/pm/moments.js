@@ -786,8 +786,12 @@ Object.assign(MOMENTS, {
   },
   reunion: (state, ctx) => {
     // What they didn't show you: the biggest hidden events, aired at last.
-    const hidden = state.history.filter(e => !e.aired && e.kind !== 'loyalty')
-      .map(e => [e, Object.values(e.pop).reduce((a, p) => a + Math.abs(p.approval || 0), 0)])
+    // The reunion's clips are the scandal (a pull, a kiss, a shared bed, a
+    // partner run down behind their back), not somebody telling on it: season
+    // 31 aired five tellings and asked the tellers to explain themselves.
+    const SCANDAL = new Set(['pull', 'bed-share', 'vent', 'kiss', 'challenge-kiss', 'head-turned', 'jealous-retaliate', 'argument', 'ick']);
+    const hidden = state.history.filter(e => !e.aired && SCANDAL.has(e.kind))
+      .map(e => [e, Object.values(e.pop).reduce((a, p) => a + Math.abs(p.approval || 0), 0) * (state.secrets.some(s => s.eventId === e.id) ? 3 : 1)])
       .sort((a, b) => b[1] - a[1]).slice(0, 5).map(([e]) => e);
     const events = hidden.map(e => {
       const touched = Object.keys(e.pop);

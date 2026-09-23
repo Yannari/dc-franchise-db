@@ -104,3 +104,18 @@ describe('the dumping reads in order', () => {
     }
   });
 });
+
+describe('the first public vote always plays at the calibration cast', () => {
+  it('never skipped: a villa of ten with singles about still has a couple to spare', () => {
+    // Measured 2026-09-23: the early recouplings left four couples and two
+    // singles, and the vote refused to run in 23 seasons of 100.
+    let skipped = 0;
+    for (let seed = 1; seed <= 30; seed++) {
+      const cast = makeIslanders(22, seed); setPlayers(cast);
+      const names = cast.map(p => p.name);
+      const rows = playPerfectMatchSeason({ cast: names, setup: roleSetup(names), seed }).rows;
+      if (!rows.find(r => r.moment === 'public-vote').pm.dumpFormat) skipped++;
+    }
+    expect(skipped).toBe(0);
+  });
+});

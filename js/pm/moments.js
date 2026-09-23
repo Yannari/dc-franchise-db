@@ -140,7 +140,7 @@ function pickerGender(state) {
   return g;
 }
 
-function recoupleNight(state, rng, { dumpSingles, pace = 1.5 }) {
+function recoupleNight(state, rng, { dumpSingles, pace = 1.5, votesAhead = 0 }) {
   const r = runRecoupling(state, { rng, pickerGender: pickerGender(state) });
   const events = r.picks.map(pk => makeEvent(state, rng, { phase: 'firepit', kind: 'recouple-pick',
     players: [pk.picker, pk.picked, ...(pk.stole ? [pk.stole] : [])], aired: true,
@@ -159,7 +159,13 @@ function recoupleNight(state, rng, { dumpSingles, pace = 1.5 }) {
   // Under half an islander a night to spare, the singles stay and try again;
   // under one, a night dumps one at most.
   const base = state.villa.length > 10 ? 2 : 1;
-  const cap = pace < 0.5 ? 0 : pace < 1 ? 1 : Math.max(base, Math.ceil(pace - 0.5));
+  // …and never below five couples while a public vote is still to come: the
+  // vote needs a couple to spare, and a villa emptied to the final's four by
+  // the early recouplings skipped the first vote in 24 seasons of 100
+  // (measured 2026-09-23). The singles stay single and try again next time.
+  const floor = votesAhead ? 2 * (FINAL_COUPLES + 1) : 0;
+  const cap = Math.min(pace < 0.5 ? 0 : pace < 1 ? 1 : Math.max(base, Math.ceil(pace - 0.5)),
+    Math.max(0, state.villa.length - floor));
   if (!cap) return { events, exits: [], ballots: r.ballots };
   const dumped = r.single.slice(0, cap);
   const scene = dumpingScene(state, rng, { atRisk: [], dumped, ballots: [], channel: 'recoupling' });
@@ -295,7 +301,7 @@ export function nightOneOpening(state, ctx) {
   // presentations?"), and every islander is introduced before they walk in.
   const events = [makeEvent(state, rng, { phase: 'arrival', kind: 'host-open', players: [], aired: true, extra: { pop: {} } })];
   const intro = (a, phase) => makeEvent(state, rng, { phase, kind: 'intro', players: [a], aired: true,
-    extra: { pop: { [a]: { approval: 0.2, fame: 1 } } } });
+    extra: { parts: introParts(state, a, rng), pop: { [a]: { approval: 0.2, fame: 1 } } } });
   const here = [];
   for (const a of order) {
     events.push(intro(a, 'arrival'));
@@ -331,6 +337,32 @@ export function nightOneOpening(state, ctx) {
   // The first coupling is in daylight, the same afternoon they arrived.
   for (const e of first.events) e.phase = 'coupling';
   return { events: [...events, host, ...first.events], ballots: first.ballots, firstFormat: fmt };
+}
+
+/**
+ * WHAT AN INTRODUCTION SAYS, from the islander's own profile (user: "what
+ * are the presentations based off — archetype, country, looking for,
+ * persona, type, icks, interests, eyes on, ex, stats?"). Three lines, the
+ * way the real show's intro clips run: who they are and what they want
+ * (intent, persona, archetype — and the stats, through the persona), their
+ * type (a look they go for, or else the vibe), and one more thing — the
+ * person they already have their eye on or the ex they hope stays away
+ * when there is one, otherwise where they're from, an ick or an interest.
+ * Names never: the villa does not know yet, and neither does the viewer.
+ */
+function introParts(state, a, rng) {
+  const p = state.profiles[a];
+  const parts = [['intro', null]];
+  const look = p.type?.looks?.[0], vibe = p.type?.vibes?.[0];
+  parts.push(look ? ['intro-look', look] : ['intro-vibe', vibe || 'funny']);
+  if (p.eyesOn?.length) parts.push(['intro-eyes', 'set']);
+  else if (p.ex) parts.push(['intro-ex', 'set']);
+  else {
+    const options = [['intro-from', p.dialect || state.dialect || 'uk'], ['intro-ick', p.icks?.[0]], ['intro-interest', p.interests?.[0]]]
+      .filter(o => o[1]);
+    parts.push(options[Math.floor(rng() * options.length)]);
+  }
+  return parts;
 }
 
 /**
@@ -447,7 +479,7 @@ export const MOMENTS = {
     const pre = arrivals(state, ctx, ctx.entry.arrivals?.bombshell || 0);
     // The last recoupling is about who is with whom, not about emptying the
     // villa: the semi-final vote does that next week.
-    const r = recoupleNight(state, ctx.rng, { dumpSingles: !ctx.entry.keepSingles, pace: ctx.pace });
+    const r = recoupleNight(state, ctx.rng, { dumpSingles: !ctx.entry.keepSingles, pace: ctx.pace, votesAhead: ctx.votesAhead || 0 });
     return { events: [...pre, ...r.events], exits: r.exits, ballots: r.ballots };
   },
   'public-vote': (state, ctx) => {
@@ -500,7 +532,13 @@ function voteNight(state, ctx) {
     // needs about one islander to spare a night. Letting a four-couple villa
     // vote because arrivals were still to come was measured, and it cost
     // four-couple finals (15 of 20 at the calibration cast, against 18).
-    if (state.couples.length < 3 || state.couples.length <= FINAL_COUPLES || ctx.pace < 0.8) {
+    // A villa of ten or more with the final's four couples and singles about
+    // is not a villa with nobody to spare: the singles re-couple with the
+    // arrivals still to come. It votes (measured 2026-09-23: without this the
+    // first vote was skipped in 23 seasons of 100, always a villa of ten).
+    const toComeAll = (ctx.queues?.bombshell?.length || 0) + (ctx.queues?.casa?.length || 0);
+    const roomy = state.villa.length >= 2 * (FINAL_COUPLES + 1) && toComeAll >= 2 && state.couples.length >= FINAL_COUPLES;
+    if (state.couples.length < 3 || (state.couples.length <= FINAL_COUPLES && !roomy) || ctx.pace < 0.8) {
       // …unless the villa has single islanders to lose: then the singles face
       // the public (measured: at the calibration cast a quarter of second
       // votes met four couples and three or four singles, who then all went

@@ -140,7 +140,8 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
     const nights = ahead.filter(e => (e.moment === 'recoupling' && !e.keepSingles) || e.moment === 'public-vote').length;
     const surplus = state.villa.length + queues.bombshell.length - 2 * FINAL_COUPLES;
     const pace = surplus / (nights + 1);
-    const ctx = { rng, entry, seed, queues, popularity: gs.popularity, splitOrStealOn, closed: false, pace };
+    const votesAhead = ahead.filter(e => e !== entry && e.moment === 'public-vote').length;
+    const ctx = { rng, entry, seed, queues, popularity: gs.popularity, splitOrStealOn, closed: false, pace, votesAhead };
     // Episode one opens on the arrivals and the first coupling, before the day.
     if (entry.moment === 'first-coupling') ctx.opening = nightOneOpening(state, ctx);
     const day = entry.moment === 'reunion' ? [] : [...(ctx.opening?.events || []), ...villaDayEvents(state, rng, entry, seed)];

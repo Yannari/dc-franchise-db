@@ -327,12 +327,35 @@ const placeholder = kind => ({ id: `${kind}.0`, stage: `{a} — ${kind}.` });
 
 /** The scene for one event. */
 export function scriptFor(state, ev) {
+  if (Array.isArray(ev.extra?.parts)) return partsScript(state, ev);
   const pool = POOLS[ev.kind];
   const ps = castOf(ev);
   const entry = pool?.length ? pickScript(state, pool, ps, factsFor(state, { ...ev, players: ps })) : null;
   const e = entry || placeholder(ev.kind);
   noteUse(state, e, ps);
   return renderScript(e, ps, state, clipSlots(state, ev));
+}
+
+/**
+ * A scene built from several pools, one line each (an islander's
+ * introduction): every part is picked from its own pool on the facts plus
+ * the part's own value as `of`, and the turns run in order under the first
+ * part's staging.
+ */
+function partsScript(state, ev) {
+  const ps = ev.players;
+  const facts = factsFor(state, { ...ev, players: ps });
+  const picked = [];
+  for (const [key, of] of ev.extra.parts) {
+    const pool = POOLS[key];
+    if (!pool?.length) continue;
+    const e = pickScript(state, pool, ps, { ...facts, of });
+    if (e) { noteUse(state, e, ps); picked.push(e); }
+  }
+  if (!picked.length) return renderScript(placeholder(ev.kind), ps, state);
+  const merged = { id: picked.map(e => e.id).join('+'), stage: picked[0].stage,
+    turns: picked.flatMap(e => e.turns || []), beat: picked[picked.length - 1].beat };
+  return renderScript(merged, ps, state);
 }
 
 /** Who {a}..{d} are. Snog Marry Pie keeps its answers in place even when one is missing. */

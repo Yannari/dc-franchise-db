@@ -133,7 +133,9 @@ export function episodeHeaderHtml(row, prev = null) {
 /** One screen per part of the day, the header on the first. */
 export function perfectMatchScreens(row, prev = null) {
   return phasesOf(row).map(([phase, evs, label], i) => ({
-    id: `pm-${phase}-${i}`,
+    // `villa-`, not `pm-`: that is the season-id prefix (bb-, tr-, dr-, pm-),
+    // and a screen id that reads as a season is a show list waiting to happen.
+    id: `villa-${phase}-${i}`,
     label,
     html: `<style>${PM_TRANSCRIPT_CSS}</style><div class="pm-tx">${i === 0 ? episodeHeaderHtml(row, prev) : ''}${
       evs.map(sceneHtml).join('')}</div>`,

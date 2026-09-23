@@ -1708,10 +1708,13 @@ built from, so a difference means the code moved and this file did not.
 
 ```bash
 # Ignore vendored and worktree copies in all of these, or the counts inflate.
-EX='node_modules|\.claude/'
+# .worktrees/ too: a checkout of every branch in progress sits there, and
+# without it the importer count read 244 instead of 90 at the fifth show.
+EX='node_modules|\.claude/|\.worktrees/'
 
-# Everything that imports the registry (§1). Expect 67 lines — 66 non-test
-# files plus js/shows.js itself, and 100 counting tests. It was 36 before the
+# Everything that imports the registry (§1). Expect 90 lines — 89 non-test
+# files plus js/shows.js itself, and 134 counting tests (re-derived at the
+# fifth show, 2026-09-22; it was 67 and 100 at the fourth). It was 36 before the
 # fourth show; drag added roughly thirty files that legitimately ask the
 # registry what show they are rendering, which is the number going UP being
 # the healthy outcome.
@@ -1769,6 +1772,14 @@ grep -rc "big-brother" --include=*.js --include=*.html .   | grep -Ev "$EX" | gr
 # The guards that already enforce per-show correctness (§11).
 ls tests | grep -E "format|show|season-format"
 ```
+
+**Re-derived 2026-09-22 at the fifth show (Perfect Match):** 50 non-test files
+mention `big-brother`; `js/core.js` 38, `js/quick-setup.js` 25,
+`js/stats-export.js` 20, `js/bb/week.js` 16. Map-shaped duplicates are now
+eight files — `js/stage-shows.js` (the episode stage's per-show sets) joined
+the seven. The ternary grep finds 9 across 6 files (js/cast-ui.js 1, js/run-ui.js
+none). The guard's comparison backlog moved `js/quick-setup.js` 8 → 9 and
+`js/vp-screens.js` 7 → 8 for the villa, each with its reason beside it.
 
 **Counts, re-derived 2026-08-25 on the Traitors branch:** 47 non-test files
 mention `big-brother`; the heaviest are `js/core.js` (35 — the twist catalog),

@@ -14067,7 +14067,7 @@ export function buildVPScreens(epRecord) {
   // out one part of the day at a time, so nothing the engine wrote goes
   // unseen (§11.5 A). Assigned AND returned — callers ignore the return.
   if (epRecord.format === 'perfect-match') {
-    const prev = ((typeof window !== 'undefined' && window.gs?.episodeHistory) || []).find(r => r && r.format === 'perfect-match' && r.num === epRecord.num - 1) || null;
+    const prev = ((typeof window !== 'undefined' && window.gs?.episodeHistory) || []).find(r => r && r.num === epRecord.num - 1) || null;
     vpScreens = perfectMatchScreens(epRecord, prev);
     return vpScreens;
   }

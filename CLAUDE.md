@@ -5,7 +5,7 @@ ES modules, no build step. Open `simulator.html` in a browser.
 **Four shows run on this engine**: Total Drama (`total-drama`), Big Brother
 (`big-brother`), The Traitors (`traitors`) and Drag Race (`drag-race`).
 `js/shows.js` is the ONLY source of truth for slugs, prefixes, names and
-per-show vocabulary — 66 non-test files import it, 100 counting tests. A bare
+per-show vocabulary — 89 non-test files import it, 134 counting tests. A bare
 integer in a URL, filename or storage key is Total Drama, permanently; every
 other show is prefixed (`bb-1`, `tr-1`, `dr-1`, `bb_episode_s1_e1`).
 

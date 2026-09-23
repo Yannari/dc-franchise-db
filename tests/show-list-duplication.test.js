@@ -171,10 +171,14 @@ const COMPARISON_BACKLOG = {
   // the `house ? 'houseguest' : 'player'` ternary, so this commit adds one
   // comparison and no ternary.
   //
+  // 8 -> 9 for the villa's blueprint (Perfect Match, Plan 4): a cast size and
+  // no tribes, merge or jury — the same per-show diagram as the other four,
+  // returning before the shared chips like the drag branch does.
+  //
   // THE REAL FIX, when somebody has a reason to touch all four: let each
   // registry entry declare its own blueprint builder, which would take this
   // row to 0 rather than to 9 the next time a show is added.
-  'js/quick-setup.js':            8,
+  'js/quick-setup.js':            9,
   'js/rankings-update.js':        1,
   'js/romance.js':                3,
   // 9 -> 11 for the castle's run wiring (Plan 8, Task 7), and the two are two
@@ -234,7 +238,9 @@ const COMPARISON_BACKLOG = {
   // and the alternative — a builder reference in js/shows.js — would put UI
   // into the identity table this file exists to keep clean. Raised
   // deliberately, in the commit that spends it, which is what a ratchet is for.
-  'js/vp-screens.js':             7,
+  // 7 -> 8 for the villa's screen dispatch (Perfect Match, Plan 4), in the
+  // same shape and for the same reason as the castle's above.
+  'js/vp-screens.js':             8,
   'js/vp-ui.js':                  1,
   'js/wiki-fill-run.js':          0,
   'js/wiki-view.js':              7,

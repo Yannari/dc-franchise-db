@@ -46,6 +46,7 @@ const _PM_DAY = new Set(['morning', 'day', 'challenge', 'event', 'evening']);
 function _pmPhaseForScreen(id) {
   const phase = id.slice(6).replace(/-\d+$/, '');
   if (phase === 'reunion') return { id:'pm-reunion', label:'Reunion', icon:'■' };
+  if (phase === 'debug') return { id:'debug', label:'Debug', icon:'⚙' };
   if (_PM_DAY.has(phase)) return { id:'pm-villa', label:'The Villa', icon:'☀' };
   return { id:'pm-night', label:'The Night', icon:'☾' };
 }

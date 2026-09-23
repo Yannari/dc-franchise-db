@@ -163,6 +163,7 @@ import * as drRunMod from './dr-run.js';
 // The run loop's villa branch, and the module that sets window._pmRunnable.
 // Same rule as the two above: importing it IS the wiring.
 import * as pmRunMod from './pm-run.js';
+import * as pmVpMod from './vp-pm/screens.js';
 import * as pmCastUiMod from './pm-cast-ui.js';
 import * as drJudgesUiMod from './dr/judges-ui.js';
 import * as bbRunMod from './bb-run.js';
@@ -269,7 +270,7 @@ const extractedModules = [
   brunchMod, luckyHuntMod, sayUncleMod, tripleDogDareMod, slasherNightMod, monsterCashMod, mineOverMatterMod, treasureIslandMod, operationClassifiedMod, hideAndBeSneakyMod, offTheChainMod, alienEggMod, beachBlanketBogusMod, crazytownMod, chefshankMod, oneFluMod, mastersOfDisastersMod, fullMetalDramaMod, oceansHeistMod, millionBucksBCMod, sportsMarathonMod, superHeroldMod, hauntedHouseMod, hungOutMod, merryGoRoundMod, mazeOfTheFallenMod, demonsPlainerVpMod, princessPrideMod, getAClueMod, rockNRuleMod, crouchingCourtneyMod, houstonMod, topDogMod, walkEgyptMod, crazyFunTimeMod, frozenCrossingMod, vikingSourMod, bridalBrawlsMod, greatFakeOutMod, africanLyingSafariMod, rapaPhooeyMod, drumhellerMod, planesTrainsMod, picnicHangingDorkMod, slapSlapRevMod, broadwayBabyMod, amazonRaceMod, nightMuseumMod, brutalerMod,
   truthOrSharkMod, rockTheDockMod, tropicalTakedownMod, midnightManhuntMod, greecesPiecesMod, hangarBlackMod, iceIceBabyMod, findersCreepersMod, backstabbersAhoyMod, projectRunawayMod, hawaiianPunchMod, aftermayhemMod, socialManipMod, auctionVpMod, settingsMod, themesMod, campEventsMod, twistsMod, rescueIslandMod,
   episodeMod, finaleMod, textBacklogMod, aftermathMod,
-  castUiMod, castRoomMod, studioMod, quickSetupMod, trArrivalMod, trConclaveMod, trRoundTableMod, trColdOpenMod, trHouseStatusMod, trMissionMod, trArmouryMod, trRecruitmentMod, trEndgameMod, trCastleDayMod, trSelectionMod, trSuspicionMod, trConfessionalsMod, trDebugMod, trRunMod, drRunMod, pmRunMod, pmCastUiMod, drJudgesUiMod, vpDrRevealMod, vpDrScreensMod, vpDrChartMod, vpDrWerkMod, vpDrArrivalsMod, vpDrChalMod, vpDrStageMod, vpDrResultsMod, bbRunMod, rivalsMod, runUiMod, vpScreensMod, vpFinaleMod, vpUiMod, vpCoachesMod,
+  castUiMod, castRoomMod, studioMod, quickSetupMod, trArrivalMod, trConclaveMod, trRoundTableMod, trColdOpenMod, trHouseStatusMod, trMissionMod, trArmouryMod, trRecruitmentMod, trEndgameMod, trCastleDayMod, trSelectionMod, trSuspicionMod, trConfessionalsMod, trDebugMod, trRunMod, drRunMod, pmRunMod, pmVpMod, pmCastUiMod, drJudgesUiMod, vpDrRevealMod, vpDrScreensMod, vpDrChartMod, vpDrWerkMod, vpDrArrivalsMod, vpDrChalMod, vpDrStageMod, vpDrResultsMod, bbRunMod, rivalsMod, runUiMod, vpScreensMod, vpFinaleMod, vpUiMod, vpCoachesMod,
   savestateMod,
   statsExportMod,
   audioMod,

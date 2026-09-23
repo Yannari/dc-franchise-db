@@ -2,10 +2,11 @@
 // pm/transcript.js — an episode, written out to read
 // ══════════════════════════════════════════════════════════════════════
 //
-// ONE renderer for three readers: the interim VP screens (one per part of the
-// day), the text backlog, and `npm run pm:transcript`. A second copy is how a
-// transcript quietly stops mentioning something (§11.5 Q). The real screens
-// are Plan 5; until then nothing the engine writes goes unseen (§11.5 A).
+// The ORDER of an episode (`phasesOf`) for every reader — the viewing party's
+// designed screens (js/vp-pm/steps.js cuts these parts into beats), the text
+// backlog and `npm run pm:transcript` — and the words of the last two. A
+// second copy of the order is how a reader quietly stops mentioning a scene
+// (§11.5 Q).
 //
 // Every scene is shown, aired or not — the reader sees what the public didn't
 // — with its beach-hut cutaway, the narrator, and what the public made of it.
@@ -141,17 +142,8 @@ export function episodeHeaderHtml(row, prev = null) {
       moved.length ? `<br><b>Now seen as:</b> ${moved.join(' · ')}` : ''}</p>`;
 }
 
-/** One screen per part of the day, the header on the first. */
-export function perfectMatchScreens(row, prev = null) {
-  return phasesOf(row).map(([phase, evs, label], i) => ({
-    // `villa-`, not `pm-`: that is the season-id prefix (bb-, tr-, dr-, pm-),
-    // and a screen id that reads as a season is a show list waiting to happen.
-    id: `villa-${phase}-${i}`,
-    label,
-    html: `<style>${PM_TRANSCRIPT_CSS}</style><div class="pm-tx">${i === 0 ? episodeHeaderHtml(row, prev) : ''}${
-      evs.map(sceneHtml).join('')}</div>`,
-  }));
-}
+// The viewing party's screens are js/vp-pm/screens.js (Plan 5); this file
+// still writes the text backlog and `npm run pm:transcript`.
 
 /** The same content as plain text, for the text backlog. */
 export function episodeText(row) {

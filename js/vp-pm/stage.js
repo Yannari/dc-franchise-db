@@ -1,0 +1,235 @@
+// ══════════════════════════════════════════════════════════════════════
+// vp-pm/stage.js — the visual-novel stage (Plan 5)
+// ══════════════════════════════════════════════════════════════════════
+//
+// Mockup v2's stage, driven by vp-pm/steps.js. `paintStage(el, screen, idx)`
+// paints the WHOLE state of step idx every time (ADDING-A-SHOW §6.5): a jump,
+// "Reveal all" and a re-render all land on the same picture, and the one-shot
+// business (a bust sliding in, the dialogue typing, a pop rising, a toast, a
+// shake, the neon striking) plays only on a fresh step.
+//
+// At rest (idx -1) the stage shows the set and the screen's name, and nobody:
+// no bust, no line, no board (the spoiler rules).
+import { playerAvatarUrl } from '../players.js';
+import { SHOWS } from '../shows.js';
+
+// The host is not a player: no catalogue entry, one portrait (shows.js, HOSTS_BY_FORMAT).
+const HOST_PORTRAIT = 'assets/avatars/dior.jpg';
+const hostName = () => SHOWS['perfect-match'].words.host;
+const P = c => `pmv-${c}`;
+const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+export const HEART = 'M0,-3 C-6,-13 -19,-3 0,11 C19,-3 6,-13 0,-3Z';
+export const IC = {
+  heart: `<svg viewBox="-20 -14 40 27"><path d="${HEART}"/></svg>`,
+  heartW: `<svg viewBox="-20 -14 40 27"><path d="${HEART}" fill="#fff"/></svg>`,
+  crack: `<svg viewBox="-20 -14 40 27"><path d="${HEART}" fill="#fff"/><path d="M-1 -4 l4 5 -4 4 4 5" stroke="#b91c1c" stroke-width="2.4" fill="none"/></svg>`,
+  spark: `<svg viewBox="0 0 24 24"><path d="M12 1l2.6 7.4L22 11l-7.4 2.6L12 21l-2.6-7.4L2 11l7.4-2.6z" fill="#fff"/></svg>`,
+  eye: `<svg viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" fill="none" stroke="#fff" stroke-width="2"/><circle cx="12" cy="12" r="3.5" fill="#fff"/></svg>`,
+  star: `<svg viewBox="0 0 24 24"><path d="M12 2l3 7 7 .6-5.3 4.7 1.6 7.2L12 17.8 5.7 21.5l1.6-7.2L2 9.6 9 9z" fill="#fff"/></svg>`,
+  next: `<svg viewBox="0 0 16 16"><path d="M4 2l8 6-8 6z" fill="currentColor"/></svg>`,
+  scissors: `<svg viewBox="0 0 24 24" width="14" height="14"><circle cx="6" cy="18" r="3" fill="none" stroke="#fff" stroke-width="2"/><circle cx="6" cy="6" r="3" fill="none" stroke="#fff" stroke-width="2"/><path d="M8.5 7.5L21 19M8.5 16.5L21 5" stroke="#fff" stroke-width="2"/></svg>`,
+  sun: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 1v3M12 20v3M1 12h3M20 12h3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></g></svg>`,
+  moon: `<svg viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 019.5 4 8.5 8.5 0 1020 14.5z" fill="currentColor"/></svg>`,
+};
+
+// ── faces ──────────────────────────────────────────────────────────────
+export function portraitUrl(name) {
+  if (name === hostName()) return HOST_PORTRAIT;
+  try { return playerAvatarUrl(name) || null; } catch { return null; }
+}
+// Every islander has a colour pair of their own, from their name.
+const PALETTE = [['#f59e0b', '#b45309'], ['#60a5fa', '#2563eb'], ['#34d399', '#047857'], ['#f472b6', '#be185d'],
+  ['#818cf8', '#4338ca'], ['#2dd4bf', '#0f766e'], ['#22d3ee', '#0e7490'], ['#fb923c', '#c2410c'], ['#d6a36b', '#8a5a2b'],
+  ['#f87171', '#b91c1c'], ['#fcd34d', '#b45309'], ['#f9a8d4', '#db2777'], ['#a3e635', '#4d7c0f'], ['#c084fc', '#7e22ce']];
+export function colourOf(name) {
+  if (name === hostName()) return ['#ff8cc6', '#ff2e88'];
+  let h = 7;
+  for (const ch of String(name)) h = (Math.imul(h, 31) + ch.charCodeAt(0)) >>> 0;
+  return PALETTE[h % PALETTE.length];
+}
+const initials = n => String(n || '?').slice(0, 2).toUpperCase();
+const img = n => { const u = portraitUrl(n); return u ? `<img src="${esc(u)}" alt="" onerror="this.remove()">` : ''; };
+export const mini = n => `<span class="${P('mini')}" title="${esc(n)}">${img(n) || esc(initials(n))}</span>`;
+
+// ── the sets: light, never drawings ────────────────────────────────────
+function sceneHtml(bg) {
+  const rnd = (i, m) => ((i * 9301 + 49297) % 233280) / 233280 * m;
+  const bokeh = (n, cls, y0, y1, size) => `<div class="${P('bokeh')} ${cls ? P(cls) : ''}">${Array.from({ length: n }, (_, i) =>
+    `<i style="left:${rnd(i + 1, 100).toFixed(1)}%;top:${(y0 + rnd(i + 7, y1 - y0)).toFixed(1)}%;width:${(size * (0.5 + rnd(i + 3, 1))).toFixed(1)}%;aspect-ratio:1;--o:${(.3 + rnd(i + 5, .6)).toFixed(2)};--t:${(4 + rnd(i + 2, 5)).toFixed(1)}s;--d:${(-rnd(i + 4, 6)).toFixed(1)}s"></i>`).join('')}</div>`;
+  const string = y => `<div class="${P('bokeh')} ${P('string')}">${Array.from({ length: 16 }, (_, i) => {
+    const t = i / 15, sag = Math.sin(t * Math.PI) * 9;
+    return `<i style="left:${(t * 100).toFixed(1)}%;top:${(y + sag).toFixed(1)}%;width:2.2%;aspect-ratio:1;--o:.9;--t:${(2 + (i % 3)).toFixed(1)}s;--d:-${(i % 4) * .5}s"></i>`; }).join('')}</div>`;
+  const embers = `<div class="${P('bokeh')} ${P('embers')}">${Array.from({ length: 22 }, (_, i) =>
+    `<i style="left:${(38 + rnd(i + 1, 24)).toFixed(1)}%;bottom:4%;width:${(.4 + rnd(i + 2, .5)).toFixed(2)}%;aspect-ratio:1;--x:${(rnd(i + 3, 80) - 40).toFixed(0)}px;--t:${(2.4 + rnd(i + 4, 2.4)).toFixed(1)}s;--d:-${rnd(i + 5, 4).toFixed(1)}s"></i>`).join('')}</div>`;
+  const inner = {
+    day: `<div class="${P('sun')}"></div><div class="${P('shimmer')}"></div>${bokeh(14, '', 5, 50, 5)}${string(6)}`,
+    terrace: `${bokeh(26, 'string', 4, 60, 4)}`,
+    night: `${bokeh(18, '', 2, 40, 1.6)}<div class="${P('glow')}"></div>${embers}${string(5)}`,
+    hut: `<div class="${P('weave')}"></div>${bokeh(8, 'string', 10, 50, 6)}`,
+    casa: `${bokeh(24, '', 5, 80, 3)}`,
+    final: `<div class="${P('beams')}"></div>${bokeh(20, 'string', 5, 70, 3)}`,
+  }[bg] || '';
+  return `<div class="${P('scene')} ${P('sc-' + bg)}">${inner}</div>`;
+}
+
+const petalsHtml = () => Array.from({ length: 30 }, (_, i) => {
+  const a = i * 137.5 * Math.PI / 180, d = 160 + (i % 5) * 70;
+  return `<i style="--x:${(Math.cos(a) * d).toFixed(0)}px;--y:${(Math.sin(a) * d * .7 - 40).toFixed(0)}px;--r:${(i * 53) % 360}deg;--dl:${(i % 8) * 50}ms;--pk:${['#ff4fa0', '#ffc15e', '#ff7a59', '#fff'][i % 4]}">${IC.heart}</i>`;
+}).join('');
+
+function frame(bg, hud, board) {
+  return `<div class="${P('cam')}">${sceneHtml(bg)}<div class="${P('busts')}"></div></div>
+    <div class="${P('vign')}"></div><div class="${P('grain')}"></div>
+    <div class="${P('neon')} ${P('off')}"></div>
+    <svg class="${P('ecg')}" viewBox="0 0 1000 100" preserveAspectRatio="none"><polyline/></svg><div class="${P('bpm')}"></div>
+    <div class="${P('deal')}"></div>
+    ${board ? `<div class="${P('board')} ${P('hide')}"><h5>Vote for your Perfect Match</h5>${board.map(([n, p]) =>
+      `<div class="${P('row')}"><span>${esc(n)}</span><span class="${P('pc')}">${p}%</span><div class="${P('bar')}"><i></i></div></div>`).join('')}</div>` : ''}
+    <svg class="${P('env')}" viewBox="0 0 200 150"><g class="${P('envcard')}"><rect x="30" y="24" width="140" height="92" rx="8" fill="#fffdf7" stroke="#ff2e88" stroke-width="3"/>
+      <text class="${P('envword')}" x="100" y="80" text-anchor="middle" font-family="Bebas Neue" font-size="40" fill="#ff2e88"></text></g>
+      <rect x="8" y="44" width="184" height="100" rx="12" fill="#ff4fa0" stroke="#fff" stroke-width="3"/>
+      <path class="${P('flap')}" d="M8 44 L100 106 L192 44Z" fill="#ff2e88" stroke="#fff" stroke-width="3"/><path d="${HEART}" transform="translate(100 104) scale(.9)" fill="#fff"/></svg>
+    <div class="${P('phone')}"><div class="${P('scr')}"><h4>I got a text!</h4><div class="${P('tag')}"></div><p></p></div></div>
+    <div class="${P('petals')}">${petalsHtml()}</div>
+    <div class="${P('pops')}"></div>
+    <div class="${P('toast')}"></div>
+    <div class="${P('caption')}"></div>
+    <div class="${P('dlg')} ${P('hide')}"><div class="${P('plate')}"></div><div class="${P('txt')}"></div><div class="${P('beat')}"></div><span class="${P('nxt')}">${IC.next}</span></div>
+    <div class="${P('hud')}"><span class="${P('pill')}">${esc(hud)}</span><span class="${P('pill')} ${P('air')}"><span class="${P('scissors')}">${IC.scissors}</span><span class="${P('airtxt')}">On air</span></span></div>
+    <div class="${P('headline')}"></div>
+    <div class="${P('wipe')}"><svg viewBox="-20 -14 40 27"><path d="${HEART}"/></svg></div>`;
+}
+
+/** The stage at rest: the set, the HUD and the screen's name. Nobody on it. */
+export function stageHtml(id, screen, hud) {
+  const board = screen.steps.find(s => s.board)?.board || null;
+  return `<div class="${P('stage')}" id="${esc(id)}" data-bg="${esc(screen.bg)}">${frame(screen.bg, hud, board)
+    .replace(`<div class="${P('headline')}"></div>`, `<div class="${P('headline')} ${P('on')}">${esc(screen.label)}</div>`)}</div>`;
+}
+
+const timers = new WeakMap();
+const later = (el, ms, fn) => { const t = setTimeout(fn, ms); (timers.get(el) || timers.set(el, []).get(el)).push(t); };
+function clearTimers(el) { for (const t of timers.get(el) || []) clearTimeout(t); timers.set(el, []); }
+
+/** Paint step `idx` of `screen` onto the stage element: the whole state. */
+export function paintStage(el, screen, idx, { fresh = false, hud = '' } = {}) {
+  if (!el) return;
+  clearTimers(el);
+  const st = screen.steps[idx] || null;
+  const prev = idx > 0 ? screen.steps[idx - 1] : null;
+  const board = screen.steps.find(s => s.board)?.board || null;
+  el.innerHTML = frame(st?.bg || screen.bg, hud, board);
+  const q = s => el.querySelector('.' + P(s));
+  el.classList.toggle(P('fresh'), !!(fresh && st));
+  el.classList.toggle(P('raw'), !!(st?.raw || st?.fx?.raw));
+  el.classList.remove(P('shake'));
+  const hl = q('headline');
+  if (!st) { hl.textContent = screen.label; hl.classList.add(P('on')); return; }
+  q('airtxt').textContent = st.raw ? 'Unaired footage' : st.fx?.raw ? 'Aired at last' : 'On air';
+  if (fresh && prev && prev.bg !== st.bg) q('wipe').classList.add(P('go'));
+
+  // the busts
+  const busts = q('busts');
+  busts.innerHTML = st.cast.map(([n, x, mode]) => {
+    const [c1, c2] = colourOf(n);
+    const cls = [P('bust'), mode === 'speak' ? P('speak') : '', mode === 'back' ? P('back') : '', mode === 'hurt' ? `${P('hurt')} ${P('back')}` : ''].join(' ');
+    // A new face slides in from its side on a fresh step; a jump lands it in place.
+    const enters = fresh && st.sceneStart;
+    return `<div class="${cls}" data-n="${esc(n)}" style="left:${enters ? (x < 50 ? -15 : x > 50 ? 115 : x) : x}%;--c1:${c1};--c2:${c2}">
+      <div class="${P('frame')}">${img(n) || `<div class="${P('ini')}">${esc(initials(n))}</div>`}</div><div class="${P('rim')}"></div></div>`;
+  }).join('');
+  if (fresh && st.sceneStart) requestAnimationFrame(() => requestAnimationFrame(() => {
+    for (const [n, x] of st.cast) { const b = busts.querySelector(`[data-n="${CSS.escape(n)}"]`); if (b) b.style.left = x + '%'; }
+  }));
+
+  // the camera pushes in on the speaker
+  const cam = q('cam');
+  const sp = st.cast.find(c => c[2] === 'speak');
+  cam.style.setProperty('--ox', (sp ? sp[1] : 50) + '%');
+  if (st.close || (st.fx && st.big)) { if (fresh) later(el, 250, () => cam.classList.add(P('close'))); else cam.classList.add(P('close')); }
+  if (st.fx?.shake && fresh) later(el, 350, () => el.classList.add(P('shake')));
+
+  // the caption (the staging) and the dialogue
+  const cap = q('caption');
+  if (st.caption) { cap.textContent = st.caption; cap.classList.add(P('on')); }
+  const dlg = q('dlg');
+  dlg.classList.remove(P('hide'));
+  const voice = st.voice || '';
+  for (const v of ['dior', 'narrator', 'hut', 'stagev']) dlg.classList.toggle(P(v), voice === v || (v === 'stagev' && voice === 'stage'));
+  const plate = q('plate');
+  const [c1, c2] = colourOf(st.who || '');
+  plate.style.setProperty('--pc1', c1); plate.style.setProperty('--pc2', c2);
+  const tag = { hut: 'Beach hut', narrator: 'Voiceover', dior: 'Host', text: 'Text' }[voice];
+  plate.innerHTML = `${esc(st.who || '')}${tag ? `<em>${tag}</em>` : ''}`;
+  const txt = q('txt');
+  txt.classList.toggle(P('narr'), voice === 'narrator' || voice === 'stage');
+  if (fresh) {
+    let k = 0; txt.textContent = '';
+    const text = st.text || '';
+    const tick = () => { txt.textContent = text.slice(0, ++k); if (k < text.length) later(el, 16, tick); };
+    tick();
+  } else txt.textContent = st.text || '';
+  const beat = q('beat');
+  beat.textContent = st.beat || '';
+
+  // the neon, for the night's moment
+  const ne = st.fx?.neon || st.fx?.neonDie;
+  if (ne) {
+    const nn = q('neon');
+    nn.style.setProperty('--glow', ne[1]);
+    nn.innerHTML = [...ne[0]].map((ch, k) => `<i style="--k:${k}">${ch === ' ' ? '&nbsp;' : esc(ch)}</i>`).join('');
+    nn.className = `${P('neon')} ${P('on')}${fresh ? ' ' + P('fresh') : ''}${st.fx.neonDie && !fresh ? ' ' + P('off') : ''}`;
+    if (st.fx.neonDie && fresh) later(el, 900, () => nn.classList.add(P('dying')));
+  }
+  // the text
+  if (st.fx?.phone) {
+    const [to, msg] = st.fx.phone, ph = q('phone');
+    ph.querySelector('.' + P('tag')).textContent = `To: ${to}`;
+    ph.querySelector('p').textContent = msg;
+    if (fresh) later(el, 300, () => { ph.classList.add(P('up')); ph.classList.add(P('buzz')); }); else ph.classList.add(P('up'));
+  }
+  // the heart rate
+  if (st.fx?.ecg) {
+    const pts = [];
+    for (let x = 0; x <= 1000; x += 8) { const t = x % 160, spike = x > 520;
+      pts.push(`${x},${t === 80 ? (spike ? 2 : 22) : t === 88 ? (spike ? 98 : 80) : t === 72 ? 64 : 55 + Math.sin(x / 11) * 2}`); }
+    q('ecg').querySelector('polyline').setAttribute('points', pts.join(' '));
+    q('ecg').classList.add(P('on'));
+    const bpm = q('bpm'); bpm.textContent = `${st.fx.ecg[0]}`; bpm.classList.add(P('on'));
+  }
+  // cards dealt: a ballot, or one stick / twist
+  const deal = q('deal');
+  const cards = st.fx?.deal ? st.fx.deal.map(([v, t]) => ({ who: `${v} votes`, face: t, what: t, cls: '' }))
+    : st.fx?.deal1 ? [{ who: st.fx.deal1[0], face: st.fx.deal1[0], what: st.fx.deal1[1].toUpperCase(), cls: st.fx.deal1[1] }] : [];
+  if (cards.length) {
+    deal.innerHTML = cards.map((c, k) => `<div class="${P('gc')} ${fresh ? P('in') : P('flip')}" style="--dl:${k * 180}ms"><div><div class="${P('f')}">${IC.heart}</div>
+      <div class="${P('b')}"><div><div class="${P('face')}">${img(c.face)}</div><div class="${P('who')}">${esc(c.who)}</div><div class="${P('what')} ${c.cls ? P(c.cls) : ''}">${esc(c.what)}</div></div></div></div></div>`).join('');
+    if (fresh) deal.querySelectorAll('.' + P('gc')).forEach((g, k) => later(el, 900 + k * 520, () => g.classList.add(P('flip'))));
+  }
+  // the final's board
+  if (st.fx?.board != null && board) {
+    const bd = q('board'); bd.classList.remove(P('hide'));
+    const rows = [...bd.querySelectorAll('.' + P('row'))], n = st.fx.board;
+    const show = upto => rows.forEach((r, k) => { const on = k < upto; r.classList.toggle(P('shown'), on);
+      r.classList.toggle(P('win'), on && k === rows.length - 1 && upto === rows.length);
+      r.querySelector('i').style.width = on ? board[k][1] * 1.9 + '%' : '0'; });
+    if (fresh) { show(n - 1); later(el, 400, () => show(n)); } else show(n);
+  }
+  if (st.fx?.env) {
+    const env = q('env'); env.querySelector('.' + P('envword')).textContent = st.fx.env;
+    env.classList.add(P('on')); if (fresh) later(el, 300, () => env.classList.add(P('open'))); else env.classList.add(P('open'));
+  }
+  if (st.fx?.petals && fresh) later(el, 500, () => q('petals').classList.add(P('go')));
+  if (st.fx?.toast && fresh) {
+    const t = q('toast'); t.innerHTML = `${esc(st.fx.toast[1])}<small>${esc(st.fx.toast[0])}</small>`; later(el, 600, () => t.classList.add(P('go')));
+  }
+  // pops rise from the busts they belong to
+  if (fresh && st.pops?.length) {
+    q('pops').innerHTML = st.pops.map(([n, t, style, icon], k) => {
+      const c = st.cast.find(x => x[0] === n), x = c ? c[1] : 50;
+      return `<div class="${P('pop')} ${style ? P(style) : ''}" style="left:${x}%;top:${22 + (k % 2) * 8}%;--d:${.7 + k * .35}s">${IC[icon] || IC.heartW}${esc(t)}</div>`;
+    }).join('');
+  }
+  hl.textContent = st.headline || screen.label; hl.classList.add(P('on'));
+}

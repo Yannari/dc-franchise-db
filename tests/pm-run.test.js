@@ -172,14 +172,16 @@ describe('a pick is live until its episode airs', () => {
 });
 
 describe('an aired episode can be watched and read', () => {
-  it('opens on the villa screens, one per part of the day, and the backlog has every scene', async () => {
-    const { perfectMatchScreens, episodeText } = await import('../js/pm/transcript.js');
+  it('opens on the designed villa screens, and the backlog has every scene', async () => {
+    const { episodeText } = await import('../js/pm/transcript.js');
+    const { perfectMatchVpScreens } = await import('../js/vp-pm/screens.js');
     window.matchMedia ||= () => ({ matches: false, addEventListener() {}, addListener() {} });  // vp-ui reads it on import
     const { _vpPhaseForScreen } = await import('../js/vp-ui.js');
     freshSeason();
     playAll();
     for (const row of gs.episodeHistory) {
-      const screens = perfectMatchScreens(row);
+      const prev = gs.episodeHistory.find(r => r.num === row.num - 1) || null;
+      const screens = perfectMatchVpScreens(row, prev);
       expect(screens.length, `ep ${row.num}`).toBeGreaterThan(0);
       // Casa Amor's own scenes are tagged `day` after the day has aired: two
       // screens called "The day" read as the same part twice.
@@ -188,8 +190,11 @@ describe('an aired episode can be watched and read', () => {
       // And the rail groups them in the villa's words, never Total Drama's
       // "Camp" — the fallthrough every unknown screen id lands in.
       for (const s of screens) expect(['pm-villa', 'pm-night', 'pm-reunion'], s.id).toContain(_vpPhaseForScreen(s.id).id);
+      // Every scene has its card, and every spoken line is on one.
       const html = screens.map(s => s.html).join('');
-      expect(html.match(/class="pm-scene/g)?.length, `ep ${row.num}`).toBe(row.pm.events.length);
+      expect(html.match(/class="pmv-card[ "]/g)?.length, `ep ${row.num}`).toBe(row.pm.events.length + (row.moment === 'final' ? screens.at(-1).html.match(/class="pmv-card[ "]/g).length : 0));
+      const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      for (const e of row.pm.events) for (const l of e.script.lines) expect(html, `ep ${row.num}`).toContain(esc(l.text));
       // The backlog carries every spoken line the screens do.
       const text = episodeText(row);
       for (const e of row.pm.events) for (const l of e.script.lines) expect(text, `ep ${row.num}`).toContain(l.text);

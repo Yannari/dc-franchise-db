@@ -145,11 +145,15 @@ describe('a pick is live until its episode airs', () => {
     freshSeason();
     for (let i = 0; i < 3; i++) simulatePerfectMatchEpisode();
     const aired = gs.episodeHistory.map(fp);
-    // Booked on the Season Timeline: episode 12 is the second vote at 22.
-    seasonConfig.twistSchedule = [{ id: 't1', episode: 12, type: 'pm-couples-vote' }];
+    // Booked on the Season Timeline: episode 5 is the first vote at 22. (Not
+    // the second: whether a late vote plays at all depends on how many
+    // couples are left, which is the season's business, not the booking's.)
+    const drawn = gs._pmQueue.find(r => r.num === 5).pm.dumpFormat;
+    const want = drawn === 'save-one' ? 'public' : 'save-one';
+    seasonConfig.twistSchedule = [{ id: 't1', episode: 5, type: want === 'public' ? 'pm-public-vote' : 'pm-save-one' }];
     simulatePerfectMatchEpisode();
     expect(gs.episodeHistory.slice(0, 3).map(fp)).toEqual(aired);
-    expect(gs._pmQueue.find(r => r.num === 12).pm.dumpFormat).toBe('couples-vote');
+    expect(gs._pmQueue.find(r => r.num === 5).pm.dumpFormat).toBe(want);
     expect(perfectMatchPendingChange()).toBe(null);
   });
   it('a pick for an aired episode waits for its re-run, and says so', () => {

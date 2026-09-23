@@ -10,6 +10,7 @@
 // Every scene is shown, aired or not — the reader sees what the public didn't
 // — with its beach-hut cutaway, the narrator, and what the public made of it.
 import { SCENE_GAIN } from './ledger.js';
+import { CHALLENGE_NAMES } from './schedule.js';
 import { roundExits, PERFECT_MATCH_FORMAT } from '../shows.js';
 
 const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -99,10 +100,11 @@ export function phasesOf(row) {
   // head turned) are built after the whole day, from how it left everyone,
   // and carry the part of the day they happen in — listed as they were built
   // they would open a second "The day" after the evening.
-  const ORDER = { morning: 0, day: 1, event: 2, evening: 3 };
+  const ORDER = { morning: 0, day: 1, challenge: 1.5, event: 2, evening: 3 };
   const villa = events.slice(0, from).map((e, i) => [e, i])
     .sort((x, y) => ((ORDER[x[0].phase] ?? 4) - (ORDER[y[0].phase] ?? 4)) || x[1] - y[1]).map(([e]) => e);
-  const out = groupByPhase(villa, ph => PM_PHASE_LABEL[ph] || ph);
+  // The named challenge's screen carries its name (Couple Goals, the talent show).
+  const out = groupByPhase(villa, ph => (ph === 'challenge' && CHALLENGE_NAMES[row.pm?.challenge]) || PM_PHASE_LABEL[ph] || ph);
   const moment = events.slice(from);
   if (!moment.length) return out;
   const title = momentTitle(row, 'The night');

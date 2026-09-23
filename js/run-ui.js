@@ -1999,6 +1999,7 @@ function _randomizeVilla() {
     }
     if (e.oneOff) { const id = mine.find(t => t.pmApply?.oneOff === e.oneOff)?.id; if (id) book.push([e.ep, id]); }
     if (e.immunity) { const id = mine.find(t => t.pmApply?.immunity)?.id; if (id) book.push([e.ep, id]); }
+    if (e.challenge) { const id = mine.find(t => t.pmApply?.challenge === e.challenge)?.id; if (id) book.push([e.ep, id]); }
   }
   const keep = (seasonConfig.twistSchedule || []).filter(b => b && !ids.has(b.type));
   seasonConfig.twistSchedule = [...keep, ...book.map(([ep, type], i) => ({ id: `tw-${Date.now()}-${i}`, episode: ep, type }))];

@@ -42,7 +42,7 @@ const _TR_PHASES = {
 
 // The villa's screens are `villa-<phase>-<i>` (js/pm/transcript.js): the day's
 // parts, then the night's moment. Before this they fell through to "CAMP".
-const _PM_DAY = new Set(['morning', 'day', 'event', 'evening']);
+const _PM_DAY = new Set(['morning', 'day', 'challenge', 'event', 'evening']);
 function _pmPhaseForScreen(id) {
   const phase = id.slice(6).replace(/-\d+$/, '');
   if (phase === 'reunion') return { id:'pm-reunion', label:'Reunion', icon:'■' };

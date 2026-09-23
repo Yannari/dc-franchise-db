@@ -170,3 +170,55 @@ talent show · the baby dolls · Knowing Me Knowing You · the Grafties.
 
 Every twist is a scene with real dialogue in the Plan 3 style, has a
 consequence (bonds, beliefs or approval), and is shown on its own screen.
+
+### Shipped
+
+Read from the challenge tables of UK 10-13 (loveisland.fandom.com): the
+kissing challenge, Couple Goals, the partner quiz and a guess-who-it-was card
+game are in all four; the talent show in three; Couple of Sorts in two; the
+baby dolls and the Grafties in one each.
+
+- `js/pm/challenges.js` — the nine games. The afternoon of a villa day (not a
+  Casa day, not the first coupling, the final or the reunion; never the
+  heart-rate or Snog Marry Pie day). It plays between the day and the
+  evening from its own stream (`chal:N`), so the evening and the night are
+  decided on what it brought out. Every game opens with the text that starts
+  it (`challenge-text`, with its hashtag).
+- `schedule.js` `CHALLENGE_DRAWS`: each drawn with the chance and at the point
+  in the season the four seasons played it, one a day, each at most once,
+  drawn LAST so no earlier draw moved (held against commit 1429d091's draws
+  in `tests/pm-challenges.test.js`). `CHALLENGE_NAMES` names the screen.
+- Timeline: nine catalogue twists under **Villa Challenges** (`pmApply:
+  { challenge }`), all mutually incompatible; Randomize stamps them. A game
+  booked on one night is taken off the night it was drawn for.
+- Couple of Sorts and the Grafties bring the public's view in: the ranking is
+  `publicSorts` / `publicAwards` in public-vote.js (a ledger reader); what the
+  islanders make of it is in challenges.js, which reads no approval.
+
+What each one does: receipts read a secret out to the partner (one a game)
+and a wrong guess is a kiss in front of yours; Look Who's Talking quotes a
+beach-hut line that NAMES somebody still in the villa, from an earlier day,
+and they learn what the speaker really feels; the Snogger's scores are heard,
+and the biggest gap (two points or more) is the row; Couple Goals costs the
+namers resentment, more from friends, and the closest friend gets the
+confrontation after the game; Knowing Me moves every couple by its score, and
+"who is more likely to stray" lands as guilt or hurt; the talent show's
+show of hands exposes a partner who voted elsewhere; the baby dolls show who
+did the work; Couple of Sorts' last place costs security and the less
+invested partner's interest; the Grafties' grafter award worries a partner.
+
+Measured, 100 seasons of the default 22: per season receipts 0.77 · Couple
+Goals 0.80 · Knowing Me 0.70 · Snogger 0.88 · talent 0.47 · Couple of Sorts
+0.35 · Look Who's 0.40 · baby 0.14 · Grafties 0.04. Audit against the commit
+before: exits 14.5 → 14.4, four couples at the final 95% → 97%, 0 jumps,
+invisible share 14.0% → 13.8%, repeated lines 5.9% → 5.6%. Casts of 10, 16
+and 30 play them too (small casts rarely reach the late ones).
+
+Found by reading: every receipt in a game was the same secret line, and a
+game could expose four affairs at once; the subject's own partner could be
+the one guessing; "Nine" printed over an eight; "nearly every board" over two
+of five; Look Who's Talking said "that's about me" over a quote that named
+nobody, and called a cold line sweet; the Couple Goals confrontation landed
+between two questions; the Snogger had a row in 160% of games (it is one
+now, the biggest gap); the dolls' "we lost the baby" outnumbered couples who
+managed.

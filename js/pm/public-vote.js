@@ -5,7 +5,7 @@
 // ONE OF THE FILES ALLOWED TO READ THE PUBLIC LEDGER (spec §8, and
 // tests/pm-ledger-readers.test.js). The public votes on what AIRED, which is
 // all the ledger holds. Nothing an islander decides lives in this file.
-import { coupleScore, readApproval } from './ledger.js';
+import { coupleScore, readApproval, beliefOf } from './ledger.js';
 import { romance } from './feelings.js';
 
 // How the country's votes split. A couple's share is proportional to its
@@ -60,6 +60,39 @@ export function finalVote(state, { rng }) {
   return shares(state, state.couples, rng)
     .sort((a, b) => b.share - a.share)
     .map((r, i) => ({ couple: r.couple, share: r.share, placement: i + 1 }));
+}
+
+/**
+ * COUPLE OF SORTS (UK 11 d52, UK 12 d38): the public have ranked the couples,
+ * and the villa has to guess the order. Two of the real categories: the
+ * public's favourite couple (what they think of the pair) and the couple
+ * most likely to last on the outside (whether they believe in it — the
+ * ledger's belief, what the aired show made of the two of them). Every
+ * couple, best first.
+ */
+export function publicSorts(state, { rng }) {
+  const L = state.ledger, jitter = () => (rng() - 0.5) * 4;
+  const order = score => state.couples.map(c => [c, score(c) + jitter()]).sort((a, b) => b[1] - a[1]).map(r => r[0]);
+  return {
+    favourite: order(([a, b]) => coupleScore(L, a, b)),
+    last: order(([a, b]) => 2 * beliefOf(L, a, b) + 0.3 * coupleScore(L, a, b)),
+  };
+}
+
+/**
+ * THE GRAFTIES (UK 11 d49): an awards night the public voted for. Their
+ * favourite couple, the islander they rate as the biggest grafter (the most
+ * talked-about who is still single or only just coupled — fame), and the one
+ * they like least. Names only; what the villa makes of it is theirs.
+ */
+export function publicAwards(state, { rng }) {
+  const L = state.ledger, jitter = () => (rng() - 0.5) * 3;
+  const couple = [...state.couples].sort((x, y) => coupleScore(L, y[0], y[1]) - coupleScore(L, x[0], x[1]))[0] || null;
+  const byFame = [...state.villa].map(n => [n, (L.fame[n] || 0) + jitter()]).sort((a, b) => b[1] - a[1]);
+  const grafter = byFame.find(([n]) => !couple?.includes(n))?.[0] || null;
+  const least = [...state.villa].filter(n => !couple?.includes(n) && n !== grafter)
+    .map(n => [n, readApproval(L, n) + jitter()]).sort((a, b) => a[1] - b[1])[0]?.[0] || null;
+  return { couple, grafter, least };
 }
 
 /** The envelope. Measured in the audit: the real UK show never saw a steal. */

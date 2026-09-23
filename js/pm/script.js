@@ -21,11 +21,12 @@ import { DAY } from './lines/day.js';
 import { LADDER } from './lines/ladder.js';
 import { FEELINGS } from './lines/feelings.js';
 import { MOMENTS as MOMENT_LINES } from './lines/moments.js';
+import { CHALLENGE_LINES } from './lines/challenges.js';
 import { HUT } from './lines/hut.js';
 import { NARRATOR } from './lines/narrator.js';
 import { DIALECTS, slotWord, US_SPELLING, US_SPELLERS, ESL_EXPANSIONS } from './lines/dialect.js';
 
-export const POOLS = { ...DAY, ...LADDER, ...FEELINGS, ...MOMENT_LINES };
+export const POOLS = { ...DAY, ...LADDER, ...FEELINGS, ...MOMENT_LINES, ...CHALLENGE_LINES };
 export { HUT, NARRATOR };
 
 export const SPEAKERS = ['a', 'b', 'c', 'dior', 'narrator'];
@@ -33,7 +34,7 @@ export const FACT_KEYS = ['rung', 'thinks', 'persona', 'intent', 'attachment', '
   'early', 'coupled', 'gap', 'knows', 'faking', 'bPersona', 'bMood', 'bRung', 'stance', 'family',
   'choice', 'cause', 'channel', 'grudge', 'stole', 'bTaken', 'archetype', 'taken', 'loyal', 'late', 'gender', 'bGender', 'myRung', 'phase', 'kind', 'role', 'withB', 'newArrival', 'dialect',
   'comfortedYesterday', 'rowedBefore', 'rowedToday', 'feels', 'of', 'knowsB', 'verdict', 'noticed',
-  'reason', 'split', 'guessed', 'stoleFrom', 'full', 'hasQuote', 'rank'];
+  'reason', 'split', 'guessed', 'stoleFrom', 'full', 'hasQuote', 'rank', 'cast'];
 
 // Archetype groups a pool may name instead of listing them (CLAUDE.md).
 export const VILLAINS = ['villain', 'mastermind', 'schemer'];
@@ -115,6 +116,7 @@ export function factsFor(state, ev) {
   // Night one's ranking: the pair at the top, or anybody below it.
   f.rank = ev.extra?.rank == null ? null : ev.extra.rank === 1 ? 'top' : 'lower';
   f.split = !!state.split;             // Casa Amor is on
+  f.cast = ev.players.filter(Boolean).length;   // how many are in it, when one is optional
   f.withB = !!b;                       // somebody else is in the scene
   f.hasQuote = !!clipSlots(state, ev).quote;   // the replayed clip has a line to quote
   // Snog Marry Pie with all three answers ({b} snog, {c} marry, {d} pie).
@@ -339,6 +341,8 @@ function castOf(ev) {
 
 /** A replayed clip is quoted, so the villa reacts to what is actually on the screen. */
 function clipSlots(state, ev) {
+  // Look Who's Talking reads out a beach-hut line: the quote travels with the scene.
+  if (ev.extra?.quote) return { quote: ev.extra.quote, quoteWho: ev.extra.quoteWho };
   const id = ev.extra?.clip || ev.extra?.revealed;
   if (!id) return {};
   const clip = (state.history || []).find(e => e.id === id);

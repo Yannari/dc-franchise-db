@@ -57,8 +57,10 @@ export function rowedToday(state, a, b) {
   return today(state).filter(e => e.kind === 'argument' && e.players.includes(a) && e.players.includes(b));
 }
 function cooling(state, a, b) {
-  const now = PHASE_ORDER.indexOf(state.phase);
-  return rowedToday(state, a, b).some(e => now - PHASE_ORDER.indexOf(e.phase) <= 1);
+  // The named challenge (pm/challenges.js) is the afternoon's event.
+  const at = p => PHASE_ORDER.indexOf(p === 'challenge' ? 'event' : p);
+  const now = at(state.phase);
+  return rowedToday(state, a, b).some(e => now - at(e.phase) <= 1);
 }
 const warmCouples = state => couplesInRoom(state).filter(([a, b]) => !cooling(state, a, b));
 const compatibleMates = (state, a) => roomMates(state, a).filter(b => attr(state, a, b) != null);
@@ -291,7 +293,10 @@ export const KINDS = {
     'profile-pick', 'public-couple', 'ranking-couple',
     // the one-offs of phase 3
     'return-entrance', 'return-ex', 'mission-brief', 'mission-dump', 'mission-return', 'sleepover-invite',
-    'sleepover-choice', 'sleepover-night', 'immunity-win', 'save-vote', 'top-couple-pick', 'couples-vote', 'ex-return', 'ex-ballot']
+    'sleepover-choice', 'sleepover-night', 'immunity-win',
+    // the named challenges of phase 4
+    'challenge-text', 'receipt', 'look-who', 'snogger-kiss', 'snogger-win', 'snogger-row', 'couple-goals', 'couple-goals-row',
+    'knowing-me', 'knowing-row', 'talent-act', 'talent-win', 'talent-snub', 'baby-doll', 'sorts-podium', 'grafties-award', 'save-vote', 'top-couple-pick', 'couples-vote', 'ex-return', 'ex-ballot']
     .map(k => [k, { salience: 1, cast: () => null,
       apply: (s, ev) => ({ pop: ev.extra.pop || {}, major: ev.extra.majorPop || [] }) }])),
 };

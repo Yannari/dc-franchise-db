@@ -259,6 +259,39 @@ export const ONE_OFF_DRAWS = [
 ];
 export const MAX_ONE_OFFS = 2;
 
+// Phase 4: the afternoon's named challenge (pm/challenges.js). Each is drawn
+// for a season with the chance four real seasons (UK 10-13) played it, on a
+// day in the part of the season they played it in — `at` is how far through
+// the season, 0 to 1, from their day numbers against a ~57-day series. One a
+// day. The heart-rate and Snog Marry Pie days already have their game.
+export const CHALLENGE_NAMES = {
+  receipts: 'Got the Receipts', 'look-who': "Look Who's Talking", snogger: 'Sauciest Snogger',
+  'couple-goals': 'Couple Goals', 'knowing-me': 'Knowing Me, Knowing You', talent: 'The talent show',
+  baby: 'The baby dolls', 'couple-of-sorts': 'Couple of Sorts', grafties: 'The Grafties',
+};
+const VILLA_DAYS = new Set(['recoupling', 'bombshell', 'public-vote', 'photos', 'semi-final']);
+export const CHALLENGE_DRAWS = [
+  // guess-who cards: all four seasons, days 2-21
+  ['receipts', 0.75, at => at < 0.4],
+  ['look-who', 0.4, at => at < 0.55],
+  // the kissing challenge: all four, days 12-41
+  ['snogger', 0.85, at => at > 0.15 && at < 0.8],
+  // the partner quiz: all four, days 15-52
+  ['knowing-me', 0.7, at => at > 0.3],
+  // Couple Goals: all four, days 31-50
+  ['couple-goals', 0.85, at => at > 0.5],
+  // the public's rankings: UK 11 d52, UK 12 d38
+  ['couple-of-sorts', 0.4, at => at > 0.55],
+  // the last week's entertainment: talent (three of four), dolls (one)
+  ['talent', 0.65, at => at > 0.7],
+  ['baby', 0.35, at => at > 0.7],
+  // the awards night: one season, on a vote
+  ['grafties', 0.2, (at, e) => at > 0.5 && e.moment === 'public-vote'],
+];
+// Which nights can have one at all, for the Season Timeline too.
+export const CHALLENGE_NIGHTS = [...VILLA_DAYS];
+const hasGame = e => (e.rituals || []).some(r => r === 'heart-rate' || r === 'snog-marry-pie');
+
 /** The season's formats, drawn once from its own stream: same seed, same season. */
 export function seasonSchedule(rng, template = SEASON_TEMPLATE) {
   const out = template.map(e => {
@@ -291,6 +324,15 @@ export function seasonSchedule(rng, template = SEASON_TEMPLATE) {
     if (kind === 'immunity') e.immunity = true; else e.oneOff = kind;
     taken++;
   }
+  // …and the challenges last of all, so no earlier draw moved.
+  const last = Math.max(1, ...out.map(e => e.ep));
+  for (const [id, chance, fits] of CHALLENGE_DRAWS) {
+    const roll = rng(), where = rng();
+    if (roll >= chance) continue;
+    const days = out.filter(e => VILLA_DAYS.has(e.moment) && !e.challenge && !hasGame(e) && fits((e.ep - 1) / last, e));
+    if (!days.length) continue;
+    days[Math.floor(where * days.length)].challenge = id;
+  }
   return out;
 }
 
@@ -320,14 +362,18 @@ export const PICK_LABELS = {
  * kind of night; an unknown key is ignored.
  */
 export function withBookings(schedule, byEp = {}) {
+  // A challenge booked on one night is not also played on the night it was drawn for.
+  const booked = new Set(Object.values(byEp || {}).map(b => b?.challenge).filter(Boolean));
   return schedule.map(e => {
     const b = byEp?.[e.ep];
+    if (!b?.challenge && booked.has(e.challenge)) { e = { ...e }; delete e.challenge; }
     if (!b) return e;
     const out = { ...e };
     if (b.arrivalRule && e.moment === 'bombshell') out.arrivalRule = b.arrivalRule === 'dates' ? undefined : b.arrivalRule;
     if (b.firstFormat && e.moment === 'first-coupling') out.firstFormat = b.firstFormat;
     if (b.oneOff) out.oneOff = b.oneOff;
     if (b.immunity && e.moment === 'public-vote') out.immunity = true;
+    if (b.challenge && VILLA_DAYS.has(e.moment)) out.challenge = b.challenge;
     if (out.arrivalRule === undefined) delete out.arrivalRule;
     return out;
   });

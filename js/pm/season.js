@@ -15,7 +15,8 @@ import { PERFECT_MATCH_FORMAT } from '../shows.js';
 import { resolveIslander } from './profile.js';
 import { seedAttraction, attr, compatible } from './chemistry.js';
 import { createLedger, noteArrival, closeEpisode, ledgerSnapshot } from './ledger.js';
-import { generateEpisodeEvents, makeEvent, partnerOf } from './events.js';
+import { generateEpisodeEvents, makeEvent, partnerOf, PHASE_BUDGETS } from './events.js';
+import { runChallenge } from './challenges.js';
 import { romance, friendship, shown, believed, growLove, updateBeliefs, decideMasks,
   relationshipLabel } from './feelings.js';
 import { syncLadder, stepOf } from './ladder.js';
@@ -73,6 +74,23 @@ export const perfectMatchScheduleFor = (seed, shape = {}) =>
   seasonSchedule(streamFor(seed, 'schedule'), buildSchedule(shape));
 
 /**
+ * The day before the night. With a named challenge (pm/challenges.js) it is
+ * the afternoon: the morning and the day play first, then the challenge from
+ * its own stream, then a shorter round of the usual event-phase moments and
+ * the evening — so what the challenge brought out is already in the air by
+ * dinner, and the night's moment is decided on it.
+ */
+function villaDayEvents(state, rng, entry, seed) {
+  if (!entry.challenge) return generateEpisodeEvents(state, rng);
+  const { morning, day, evening } = PHASE_BUDGETS;
+  const out = generateEpisodeEvents(state, rng, { morning, day });
+  const chal = runChallenge(state, streamFor(seed, `chal:${entry.ep}${state.epSalt}`), entry.challenge);
+  out.push(...chal);
+  out.push(...generateEpisodeEvents(state, rng, { event: chal.length ? 6 : PHASE_BUDGETS.event, evening }));
+  return out;
+}
+
+/**
  * `picks` pins drawn slots ({ 5: 'save-one' }). `rerolls` re-deals one
  * episode ({ 7: 2 } = episode 7's third deal): only that episode's dice move,
  * so every earlier episode replays exactly, and every later one follows from
@@ -118,7 +136,7 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
     const surplus = state.villa.length + queues.bombshell.length - 2 * FINAL_COUPLES;
     const pace = surplus / (nights + 1);
     const ctx = { rng, entry, seed, queues, popularity: gs.popularity, splitOrStealOn, closed: false, pace };
-    const day = entry.moment === 'reunion' ? [] : generateEpisodeEvents(state, rng);
+    const day = entry.moment === 'reunion' ? [] : villaDayEvents(state, rng, entry, seed);
     state.history.push(...day);
     // A returning islander walks back in before the night's moment, so at a
     // recoupling they are a new arrival and choose first (pm/arrivals.js).
@@ -174,7 +192,7 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
       exits, votes: m.ballots,
       pm: { events: [...day, ...m.events], momentFrom: day.length, dumpFormat: m.extra && 'dumpFormat' in m.extra ? m.extra.dumpFormat : (entry.dumpFormat || null),
         arrivalRule: m.extra?.arrivalRule || null, firstFormat: m.extra?.firstFormat || null,
-        oneOff: m.extra?.oneOff || null, immune: m.extra?.immune || null, returned: m.extra?.returned || null, couples: state.couples.map(c => [...c]), villa: [...state.villa],
+        oneOff: m.extra?.oneOff || null, challenge: day.some(e => e.phase === 'challenge') ? entry.challenge : null, immune: m.extra?.immune || null, returned: m.extra?.returned || null, couples: state.couples.map(c => [...c]), villa: [...state.villa],
         shares: m.extra?.shares || null, bottom: m.extra?.bottom || null,
         majors: [...new Set([...day, ...m.events].flatMap(e => e.aired ? e.major : []))],
         labels: snap.label, approval: snap.approval, fame: snap.fame,

@@ -206,3 +206,44 @@ export function publicMatch(state, name, { rng, tonight = [] }) {
   coupleWith(state, name, pick);
   return { events, coupled: pick };
 }
+
+/**
+ * A RETURNING ISLANDER (UK 10: Molly back during Casa; UK 12: Blu and Megan
+ * back for the last week). Producers bring back who the public want back, so
+ * the choice reads what AIRED — approval — and the islander must have lived
+ * in the villa (a Casa arrival who never coupled is not a comeback). They walk
+ * back in single, with everything they left: their ex, and whoever voted them
+ * out, are still in there.
+ */
+export function returnIslander(state, { ep, seed, rng }) {
+  const gone = [...new Set((state.gone || []).map(x => x.name))]
+    .filter(n => !state.villa.includes(n) && (state.gone.find(x => x.name === n).ep > (state.ledger.firstEp?.[n] ?? 0)));
+  if (!gone.length) return null;
+  // The side the villa is short of, as a bombshell would be.
+  const count = g => state.villa.filter(n => state.profiles[n].gender === g).length;
+  const need = count('f') === count('m') ? null : count('f') < count('m') ? 'f' : 'm';
+  const pool = need ? gone.filter(n => state.profiles[n].gender === need) : gone;
+  const pick = (pool.length ? pool : gone).map(n => [n, readApproval(state.ledger, n) / 20 + rng()])
+    .sort((a, b) => b[1] - a[1])[0][0];
+  arriveIslander(state, pick, { ep, seed });
+  (state.returnedEp ||= {})[pick] = ep;
+  const events = [makeEvent(state, rng, { phase: 'event', kind: 'return-entrance', players: [pick], aired: true, major: [pick],
+    extra: { pop: { [pick]: { approval: 1, fame: 3 } } } })];
+  // The ex they left behind, if the ex is still here — and who they are with now.
+  const ex = state.leftBehind?.[pick];
+  if (ex && state.villa.includes(ex)) {
+    const now = partnerOf(state, ex);
+    addBond(pick, ex, romance(pick, ex) > 3 ? 0.5 : -0.5);
+    if (now) addBond(pick, now, -1);
+    events.push(makeEvent(state, rng, { phase: 'event', kind: 'return-ex', players: now ? [pick, ex, now] : [pick, ex], aired: true,
+      major: [pick, ex], extra: { stole: now || null, pop: { [pick]: { approval: 0.3, fame: 2 }, [ex]: { approval: 0, fame: 1.5 } } } }));
+  }
+  // Whoever voted them out has to face them.
+  for (const v of (state.dumpedBy?.[pick] || []).filter(v => state.villa.includes(v))) addBond(pick, v, -0.6);
+  for (const t2 of eyesOnFor(state, pick).slice(0, 2)) {
+    addBond(pick, t2, 0.3 + 0.4 * ((attr(state, t2, pick) ?? 0) / 10));
+    events.push(makeEvent(state, rng, { phase: 'event', kind: 'date', players: [pick, t2],
+      extra: { pop: { [pick]: { approval: 0.2, fame: 1.5 }, [t2]: { approval: 0, fame: 1 } } } }));
+  }
+  return { name: pick, events };
+}

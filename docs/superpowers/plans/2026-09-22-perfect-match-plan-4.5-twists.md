@@ -137,6 +137,31 @@ Returning islander (UK 10 Molly, UK 12 Blu and Megan) · the host's secret
 mission to dump two, who get a second chance (UK 13 d3) · the sleepover villa
 (UK 12 d15–17) · immunity from a challenge (US 8 karaoke).
 
+### Phase 3 — shipped
+
+At most two a season (`ONE_OFF_DRAWS`, drawn after everything else so no
+earlier draw moved), or booked on the timeline:
+
+- **Returning islander** (30%): a dumped islander the public most want back
+  walks in single, before the night's moment — so at a recoupling they pick
+  first. Their ex (and who the ex is with now) and whoever voted them out are
+  still there. Chosen in arrivals.js, the ledger reader, because it is the
+  public's choice.
+- **The secret task** (15%): a new arrival is told to dump a boy and a girl,
+  names them at the fire pit, and the two get a second chance. Nobody leaves;
+  the bonds pay for it. ("Task", not "mission": the vocabulary guard keeps
+  the castle's word out of the villa.)
+- **The sleepover villa** (20%, nights with 2+ arrivals): each arrival takes a
+  coupled islander away for two nights; each chooses to stick or twist. An
+  arrival nobody chose is dumped.
+- **Immunity** (25%, vote nights): a couples' challenge on stats; the winners
+  cannot be at risk in any format.
+
+Sixty seasons: exits 14.4, four couples at 59 of 60 finals; audit 95%.
+Found by reading: the secret task's text arrived "before they walked in",
+after they had; the sleepover's nights reused the date pool, so a pair had
+the same exchange twice in one episode (it has its own scenes now).
+
 ## Phase 4 — the challenge pool
 
 Got the Receipts · Look Who's Talking · Couple of Sorts (guess the public's

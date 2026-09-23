@@ -288,7 +288,10 @@ export const KINDS = {
     'dump-at-risk', 'dump-verdict-couple', 'dump-verdict-singles', 'group-entrance',
     // the arrivals of Plan 4.5 phase 2
     'stand-up', 'nobody-stands', 'stand-up-pick', 'save-setup', 'bombshell-save', 'public-match',
-    'profile-pick', 'public-couple', 'ranking-couple', 'save-vote', 'top-couple-pick', 'couples-vote', 'ex-return', 'ex-ballot']
+    'profile-pick', 'public-couple', 'ranking-couple',
+    // the one-offs of phase 3
+    'return-entrance', 'return-ex', 'mission-brief', 'mission-dump', 'mission-return', 'sleepover-invite',
+    'sleepover-choice', 'sleepover-night', 'immunity-win', 'save-vote', 'top-couple-pick', 'couples-vote', 'ex-return', 'ex-ballot']
     .map(k => [k, { salience: 1, cast: () => null,
       apply: (s, ev) => ({ pop: ev.extra.pop || {}, major: ev.extra.majorPop || [] }) }])),
 };

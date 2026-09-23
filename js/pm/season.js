@@ -23,6 +23,7 @@ import { emo, attachmentLabel, walkRisk } from './emotions.js';
 import { runVillaDay } from './villa-day.js';
 import { seasonSchedule, withPicks, withBookings, buildSchedule, FINAL_COUPLES } from './schedule.js';
 import { MOMENTS } from './moments.js';
+import { returnIslander } from './arrivals.js';
 
 function initState(cast, setup, seed) {
   const state = { ep: 0, day: 0, villa: [], casa: [], split: false, couples: [], profiles: {},
@@ -119,7 +120,11 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
     const ctx = { rng, entry, seed, queues, popularity: gs.popularity, splitOrStealOn, closed: false, pace };
     const day = entry.moment === 'reunion' ? [] : generateEpisodeEvents(state, rng);
     state.history.push(...day);
+    // A returning islander walks back in before the night's moment, so at a
+    // recoupling they are a new arrival and choose first (pm/arrivals.js).
+    const back = entry.oneOff === 'return' ? returnIslander(state, { ep: entry.ep, seed, rng }) : null;
     const m = MOMENTS[entry.moment](state, ctx);
+    if (back) { m.events = [...back.events, ...m.events]; m.extra = { ...(m.extra || {}), oneOff: 'return', returned: back.name }; }
     state.history.push(...m.events);
     syncLadder(state);
     // Feelings move once a day's worth of events has happened: love grows in
@@ -168,7 +173,8 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
       eliminated: exits.find(x => x.verb === 'dumped')?.name || null,
       exits, votes: m.ballots,
       pm: { events: [...day, ...m.events], momentFrom: day.length, dumpFormat: m.extra && 'dumpFormat' in m.extra ? m.extra.dumpFormat : (entry.dumpFormat || null),
-        arrivalRule: m.extra?.arrivalRule || null, firstFormat: m.extra?.firstFormat || null, couples: state.couples.map(c => [...c]), villa: [...state.villa],
+        arrivalRule: m.extra?.arrivalRule || null, firstFormat: m.extra?.firstFormat || null,
+        oneOff: m.extra?.oneOff || null, immune: m.extra?.immune || null, returned: m.extra?.returned || null, couples: state.couples.map(c => [...c]), villa: [...state.villa],
         shares: m.extra?.shares || null, bottom: m.extra?.bottom || null,
         majors: [...new Set([...day, ...m.events].flatMap(e => e.aired ? e.major : []))],
         labels: snap.label, approval: snap.approval, fame: snap.fame,

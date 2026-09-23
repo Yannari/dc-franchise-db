@@ -105,7 +105,7 @@ export function saveOne(state, { atRisk, rng }) {
  * low rung — and when they have no reason to protect it. The two couples
  * named most are at risk.
  */
-export function couplesVote(state, { rng, atRisk = 2 }) {
+export function couplesVote(state, { rng, atRisk = 2, immune = [] }) {
   const votes = [];
   for (const c of state.couples) {
     const others = state.couples.filter(o => o !== c);
@@ -116,12 +116,13 @@ export function couplesVote(state, { rng, atRisk = 2 }) {
   }
   const count = new Map();
   for (const v of votes) { const k = v.target.join('|'); count.set(k, (count.get(k) || 0) + 1); }
-  const vulnerable = [...count].sort((x, y) => y[1] - x[1] || rng() - 0.5).slice(0, atRisk)
-    .map(([k]) => state.couples.find(c => c.join('|') === k));
+  const safe = c => !c.some(n => immune.includes(n));
+  const vulnerable = [...count].sort((x, y) => y[1] - x[1] || rng() - 0.5)
+    .map(([k]) => state.couples.find(c => c.join('|') === k)).filter(c => c && safe(c)).slice(0, atRisk);
   // Fewer couples named than places at risk (eight couples can name three):
   // the rest are the weakest-looking of the unnamed, or a semi-final that
   // has to trim to four could not (measured: a 40-islander final of five).
-  const unnamed = state.couples.filter(c => !vulnerable.includes(c))
+  const unnamed = state.couples.filter(c => !vulnerable.includes(c) && safe(c))
     .sort((x, y) => coupleStrength(state, x[0], x[1]) - coupleStrength(state, y[0], y[1]));
   while (vulnerable.length < atRisk && unnamed.length) vulnerable.push(unnamed.shift());
   return { votes, vulnerable };
@@ -139,9 +140,10 @@ export function grudgeOf(state, ex, n) {
 
 /** The dumped islanders who come back to vote: those who lived here, most recent first. */
 export function returningExes(state, max = 8) {
-  return [...(state.gone || [])].reverse()
-    .filter(x => x.ep > (state.ledger.firstEp?.[x.name] ?? x.ep))
-    .map(x => x.name).slice(0, max);
+  // Not anyone back in the villa already (a returning islander), and nobody twice.
+  return [...new Set([...(state.gone || [])].reverse()
+    .filter(x => x.ep > (state.ledger.firstEp?.[x.name] ?? x.ep) && !state.villa.includes(x.name))
+    .map(x => x.name))].slice(0, max);
 }
 
 /** The exes vote which of the vulnerable couples leaves; the most-voted goes. */

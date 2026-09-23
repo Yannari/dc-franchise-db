@@ -29,9 +29,10 @@ function shares(state, couples, rng) {
   return rows;
 }
 
-export function publicVote(state, { rng, bottom = 2 }) {
+export function publicVote(state, { rng, bottom = 2, immune = [] }) {
   const rows = shares(state, state.couples, rng);
-  const ranked = [...rows].sort((a, b) => a.share - b.share);
+  // Immunity: the couple who won tonight's challenge cannot be in the bottom.
+  const ranked = [...rows].sort((a, b) => a.share - b.share).filter(r => !r.couple.some(n => immune.includes(n)));
   return {
     shares: rows.map(r => ({ couple: r.couple, share: r.share })),
     bottom: ranked.slice(0, Math.min(bottom, rows.length)).map(r => r.couple),
@@ -43,9 +44,9 @@ export function publicVote(state, { rng, bottom = 2 }) {
  * UK 12 d19): one side's islanders, each on their OWN approval — the couple
  * does not carry them. The fewest votes come first.
  */
-export function publicVoteIslanders(state, { rng, gender = null, names = null, bottom = 2 }) {
+export function publicVoteIslanders(state, { rng, gender = null, names = null, bottom = 2, immune = [] }) {
   // One side ("favourite girl"), or a named group (the single islanders).
-  const side = names || state.villa.filter(n => state.profiles[n].gender === gender);
+  const side = (names || state.villa.filter(n => state.profiles[n].gender === gender)).filter(n => !immune.includes(n));
   const rows = side.map(n => ({ name: n, score: readApproval(state.ledger, n) + (rng() - 0.5) * 6 }));
   const w = rows.map(r => FLOOR + 8 * Math.log1p(Math.exp((r.score + BASE) / 8)));
   const sum = w.reduce((a, b) => a + b, 0) || 1;

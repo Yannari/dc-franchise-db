@@ -15,6 +15,7 @@ import { runRecoupling } from './recoupling.js';
 import { publicVote, publicVoteIslanders, finalVote, splitOrSteal } from './public-vote.js';
 import { villaDumping, topCouplePicks, saveOne, couplesVote, returningExes, exIslandersVote } from './villa-vote.js';
 import { arriveBombshell, bombshellSteal, openCasa, standUp, bombshellSaves, publicMatch } from './arrivals.js';
+import { secretMission, sleepover, immunityChallenge } from './one-offs.js';
 import { attr } from './chemistry.js';
 import { stickOrTwist } from './casa.js';
 import { closeEpisode, BETRAYAL } from './ledger.js';
@@ -205,7 +206,7 @@ function saveOneNight(state, ctx) {
   // The larger side is the one at risk, so the night evens the villa out.
   const count = g => state.villa.filter(n => state.profiles[n].gender === g).length;
   const side = count('f') === count('m') ? (ctx.rng() < 0.5 ? 'f' : 'm') : count('f') > count('m') ? 'f' : 'm';
-  const pv = publicVoteIslanders(state, { rng: ctx.rng, gender: side, bottom: ctx.entry.bottom || 3 });
+  const pv = publicVoteIslanders(state, { rng: ctx.rng, gender: side, bottom: ctx.entry.bottom || 3, immune: ctx.immune || [] });
   const so = saveOne(state, { atRisk: pv.bottom, rng: ctx.rng });
   const scene = dumpingScene(state, ctx.rng, { atRisk: pv.bottom.map(n => [n]), dumped: so.dumped,
     ballots: so.ballots, channel: 'save' });
@@ -233,7 +234,7 @@ function coupleVoteScenes(state, rng, cv) {
 
 /** No public vote at all: the villa names two couples, and the safe islanders pick. */
 function couplesVoteNight(state, ctx) {
-  const cv = couplesVote(state, { rng: ctx.rng, atRisk: ctx.entry.bottom || 2 });
+  const cv = couplesVote(state, { rng: ctx.rng, atRisk: ctx.entry.bottom || 2, immune: ctx.immune || [] });
   const named = coupleVoteScenes(state, ctx.rng, cv);
   const vd = villaDumping(state, { format: 'safe-pick-couple', bottom: cv.vulnerable, rng: ctx.rng });
   const scene = dumpingScene(state, ctx.rng, { atRisk: cv.vulnerable, dumped: vd.dumped, ballots: vd.ballots, channel: 'couples' });
@@ -339,17 +340,48 @@ export const MOMENTS = {
     const r = recoupleNight(state, ctx.rng, { dumpSingles: !ctx.entry.keepSingles, pace: ctx.pace });
     return { events: [...pre, ...r.events], exits: r.exits, ballots: r.ballots };
   },
+  'public-vote': (state, ctx) => {
+    // Immunity (US 8): a challenge before the vote, and its winners are safe.
+    const imm = ctx.entry.immunity ? immunityChallenge(state, { rng: ctx.rng }) : null;
+    ctx.immune = imm?.immune || [];
+    const r = voteNight(state, ctx);
+    if (imm) { r.events = [...imm.events, ...r.events]; r.extra = { ...(r.extra || {}), immune: imm.immune }; }
+    return r;
+  },
   bombshell: (state, ctx) => {
     const before = new Set(state.villa);
     const events = arrivals(state, ctx, ctx.entry.arrivals?.bombshell || 0);
     const fresh = state.villa.filter(n => !before.has(n));
+    const exits = [];
+    let oneOff = null;
+    // The sleepover villa takes the whole night: it is the arrivals' rule.
+    if (ctx.entry.oneOff === 'sleepover' && fresh.length >= 2) {
+      const s = sleepover(state, fresh, { rng: ctx.rng });
+      if (s) {
+        oneOff = 'sleepover';
+        events.push(...s.events);
+        if (s.dumped.length) { const d = dumpingScene(state, ctx.rng, { dumped: s.dumped, channel: 'sleepover' }); events.push(...d.events); exits.push(...d.exits); }
+        return { events, exits, ballots: [], extra: { arrivalRule: null, oneOff } };
+      }
+    }
     const rule = ctx.entry.arrivalRule;
-    if (!rule) return { events, exits: [], ballots: [], extra: { arrivalRule: null } };
-    const r = arrivalRule(state, ctx, rule, fresh);
+    let played = null;
+    if (rule) {
+      const r = arrivalRule(state, ctx, rule, fresh);
+      events.push(...r.events); exits.push(...r.exits); played = r.played;
+    }
+    if (ctx.entry.oneOff === 'mission' && fresh.length) {
+      const m = secretMission(state, fresh[0], { rng: ctx.rng, tonight: fresh });
+      if (m) { oneOff = 'mission'; events.push(...m.events); }
+    }
     // The row says which rule PLAYED: a save with fewer than two singles was a night of dates.
-    return { events: [...events, ...r.events], exits: r.exits, ballots: [], extra: { arrivalRule: r.played } };
+    return { events, exits, ballots: [], extra: { arrivalRule: played, oneOff } };
   },
-  'public-vote': (state, ctx) => {
+};
+
+/** A vote night, in whatever format it plays (see 'public-vote' above for immunity). */
+function voteNight(state, ctx) {
+  {
     // A small villa can reach a vote night with two couples or fewer: a vote
     // would send one of the last couples home before the final. The night
     // plays without one, and the row says no format played.
@@ -375,7 +407,7 @@ export const MOMENTS = {
     const fmt = ctx.entry.dumpFormat;
     if (fmt === 'save-one') return saveOneNight(state, ctx);
     if (fmt === 'couples-vote') return couplesVoteNight(state, ctx);
-    const pv = publicVote(state, { rng: ctx.rng, bottom: ctx.entry.bottom || 2 });
+    const pv = publicVote(state, { rng: ctx.rng, bottom: ctx.entry.bottom || 2, immune: ctx.immune || [] });
     if (fmt === 'top-couple-picks') {
       const top = [...pv.shares].sort((a, b) => b.share - a.share).map(s => s.couple).find(c => !pv.bottom.includes(c));
       if (top) return topCoupleNight(state, ctx, pv, top);
@@ -389,7 +421,11 @@ export const MOMENTS = {
       channel: played === 'public' ? 'public' : 'villa' });
     return { events: scene.events, exits: scene.exits, ballots: vd.ballots,
       extra: { shares: pv.shares, bottom: pv.bottom, dumpFormat: played } };
-  },
+  }
+}
+
+// The rest of the season's moments.
+Object.assign(MOMENTS, {
   'casa-open': (state, ctx) => {
     const names = ctx.queues.casa.splice(0);
     return { events: names.length ? openCasa(state, names, { ep: state.ep, seed: ctx.seed, rng: ctx.rng }) : [],
@@ -472,4 +508,4 @@ export const MOMENTS = {
     });
     return { events, exits: [], ballots: [], extra: { revealed: hidden.map(e => e.id) } };
   },
-};
+});

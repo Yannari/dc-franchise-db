@@ -247,6 +247,17 @@ export const ARRIVAL_DRAWS = [['dates', 6], ['stand-up', 1.5], ['saves', 1.5], [
 // Night one: the girls stepping forward is the usual; the others are one
 // season each (UK 12 profiles, UK 10 the public, UK 11 most-to-least).
 export const FIRST_DRAWS = [['step-forward', 5], ['profiles', 1], ['public', 1], ['ranking', 1]];
+// Phase 3: the twists a season plays at most once, with the chance a season
+// gets each and the nights it can land on. At most two a season. Read from
+// the same eight: returning islanders in 2 (UK 10, UK 12), the secret mission
+// in 1 (UK 13), the sleepover villa in 1 (UK 12), immunity in 1 (US 8).
+export const ONE_OFF_DRAWS = [
+  ['return', 0.3, e => (e.moment === 'bombshell' || e.moment === 'recoupling') && e.ep >= 4],
+  ['mission', 0.15, e => e.moment === 'bombshell'],
+  ['sleepover', 0.2, e => e.moment === 'bombshell' && (e.arrivals?.bombshell || 0) >= 2],
+  ['immunity', 0.25, e => e.moment === 'public-vote'],
+];
+export const MAX_ONE_OFFS = 2;
 
 /** The season's formats, drawn once from its own stream: same seed, same season. */
 export function seasonSchedule(rng, template = SEASON_TEMPLATE) {
@@ -267,6 +278,18 @@ export function seasonSchedule(rng, template = SEASON_TEMPLATE) {
       const rule = draw(rng, ARRIVAL_DRAWS.filter(([r]) => r === 'dates' || !used.has(r)))[0];
       if (rule !== 'dates') { used.add(rule); e.arrivalRule = rule; }
     }
+  }
+  // …and the one-offs after those, for the same reason: each on a night of
+  // its kind nobody else has taken, and never more than two a season.
+  let taken = 0;
+  for (const [kind, chance, fits] of ONE_OFF_DRAWS) {
+    const roll = rng(), where = rng();
+    if (taken >= MAX_ONE_OFFS || roll >= chance) continue;
+    const nights = out.filter(e => fits(e) && !e.oneOff && !e.immunity);
+    if (!nights.length) continue;
+    const e = nights[Math.floor(where * nights.length)];
+    if (kind === 'immunity') e.immunity = true; else e.oneOff = kind;
+    taken++;
   }
   return out;
 }
@@ -303,6 +326,8 @@ export function withBookings(schedule, byEp = {}) {
     const out = { ...e };
     if (b.arrivalRule && e.moment === 'bombshell') out.arrivalRule = b.arrivalRule === 'dates' ? undefined : b.arrivalRule;
     if (b.firstFormat && e.moment === 'first-coupling') out.firstFormat = b.firstFormat;
+    if (b.oneOff) out.oneOff = b.oneOff;
+    if (b.immunity && e.moment === 'public-vote') out.immunity = true;
     if (out.arrivalRule === undefined) delete out.arrivalRule;
     return out;
   });

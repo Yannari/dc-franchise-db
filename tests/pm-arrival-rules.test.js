@@ -87,3 +87,48 @@ describe('new arrivals choose first at the recoupling', () => {
     expect(checked).toBeGreaterThan(3);
   });
 });
+
+describe('the one-offs (phase 3)', () => {
+  it('a returning islander was dumped before, and walks back in single', () => {
+    let played = 0;
+    for (let seed = 1; seed <= 8; seed++) {
+      const rows = season(seed, { 7: { oneOff: 'return' } });
+      const r = rows[6];
+      if (r.pm.oneOff !== 'return') continue;
+      played++;
+      const back = r.pm.returned;
+      expect(rows.slice(0, 6).some(x => x.exits.some(e => e.name === back)), `s${seed}`).toBe(true);
+      expect(rows[5].pm.villa).not.toContain(back);
+      expect(r.pm.events[r.pm.momentFrom].kind).toBe('return-entrance');
+    }
+    expect(played).toBeGreaterThan(4);
+  });
+  it('the secret task sends nobody home', () => {
+    for (let seed = 1; seed <= 6; seed++) {
+      const r = season(seed, { 6: { oneOff: 'mission' } })[5];
+      if (r.pm.oneOff !== 'mission') continue;
+      const [, girl, boy] = r.pm.events.find(e => e.kind === 'mission-dump').players;
+      expect(r.pm.villa).toEqual(expect.arrayContaining([girl, boy]));
+    }
+  });
+  it('the sleepover villa dumps only the new arrivals nobody chose', () => {
+    for (let seed = 1; seed <= 8; seed++) {
+      const r = season(seed, { 6: { oneOff: 'sleepover' } })[5];
+      if (r.pm.oneOff !== 'sleepover') continue;
+      const arrived = r.pm.events.filter(e => e.kind === 'entrance').map(e => e.players[0]);
+      for (const x of r.exits.filter(e => e.channel === 'sleepover')) expect(arrived).toContain(x.name);
+    }
+  });
+  it('the immune couple is never at risk that night', () => {
+    let played = 0;
+    for (let seed = 1; seed <= 10; seed++) {
+      const r = season(seed, { 5: { immunity: true }, 12: { immunity: true } }).filter(x => x.pm.immune);
+      for (const x of r) {
+        played++;
+        expect((x.pm.bottom || []).flat().some(n => x.pm.immune.includes(n)), `s${seed} e${x.num}`).toBe(false);
+        expect(x.exits.some(e => x.pm.immune.includes(e.name) && e.channel !== 'walk')).toBe(false);
+      }
+    }
+    expect(played).toBeGreaterThan(5);
+  });
+});

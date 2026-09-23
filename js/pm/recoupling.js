@@ -74,7 +74,8 @@ export function pickReason(state, p, c) {
 export function runRecoupling(state, { rng, pickerGender }) {
   const room = state.villa.filter(n => !(state.split && state.casa.includes(n)));
   const last = state.lastRecoupleEp;
-  const fresh = last == null ? [] : shuffle(rng, room.filter(n => (state.ledger.firstEp?.[n] ?? 0) > last));
+  const fresh = last == null ? [] : shuffle(rng, room.filter(n => (state.ledger.firstEp?.[n] ?? 0) > last
+    || (state.returnedEp?.[n] ?? 0) > last));
   const regular = shuffle(rng, room.filter(n => state.profiles[n].gender === pickerGender && !fresh.includes(n)));
   const pickers = [...fresh, ...regular];
   const isPicker = new Set(pickers);

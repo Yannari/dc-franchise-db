@@ -34,7 +34,7 @@ export const FACT_KEYS = ['rung', 'thinks', 'persona', 'intent', 'attachment', '
   'early', 'coupled', 'gap', 'knows', 'faking', 'bPersona', 'bMood', 'bRung', 'stance', 'family',
   'choice', 'cause', 'channel', 'grudge', 'stole', 'bTaken', 'archetype', 'taken', 'loyal', 'late', 'gender', 'bGender', 'myRung', 'phase', 'kind', 'role', 'withB', 'newArrival', 'dialect',
   'comfortedYesterday', 'rowedBefore', 'rowedToday', 'feels', 'of', 'knowsB', 'verdict', 'noticed',
-  'reason', 'split', 'guessed', 'stoleFrom', 'full', 'hasQuote', 'rank', 'cast', 'justMet', 'rebuffed'];
+  'reason', 'split', 'guessed', 'stoleFrom', 'full', 'hasQuote', 'rank', 'cast', 'justMet', 'rebuffed', 'heard'];
 
 // Archetype groups a pool may name instead of listing them (CLAUDE.md).
 export const VILLAINS = ['villain', 'mastermind', 'schemer'];
@@ -123,6 +123,8 @@ export function factsFor(state, ev) {
   const arrivedNow = n => n != null && (state.ledger?.firstEp?.[n] ?? state.ep) === state.ep;
   f.justMet = arrivedNow(a) || (!!b && arrivedNow(b));
   f.rebuffed = !!ev.extra?.rebuffed;   // a pull b turned down (events.js decides)
+  // Gossip carrying a debrief: the teller heard it said (pm/debrief.js), never saw it.
+  f.heard = !!(ev.extra?.secret && state.secrets?.find(s => s.id === ev.extra.secret)?.said);
   f.cast = ev.players.filter(Boolean).length;   // how many are in it, when one is optional
   f.withB = !!b;                       // somebody else is in the scene
   f.hasQuote = !!clipSlots(state, ev).quote;   // the replayed clip has a line to quote
@@ -204,7 +206,8 @@ function scriptRng(state) {
 // making-up scene, never a fresh cosy one that ignores the row.
 // `justMet` leads too: two islanders who met today talk like it (pm/lines/day/just-met.js).
 // `rebuffed` leads first: a pull b turned down is a no, whatever else is true.
-const LEADING = ['rebuffed', 'rowedToday', 'justMet'];
+// `heard`: gossip about something SAID in a debrief, not something seen.
+const LEADING = ['rebuffed', 'heard', 'rowedToday', 'justMet'];
 
 export function pickScript(state, pool, ps, facts, { allowRepeat = true } = {}) {
   // Candidates at each width, narrowest first: the leading pool, then every
@@ -257,6 +260,10 @@ export function fill(text, ps, partners = {}) {
   // Night one's two sides, from the scene: who stands in the line (`side`)
   // and who walks in to it. The pools never say "the girls" outright, so the
   // season can bring either side in first (Villa options).
+  if (partners.where) {
+    const W = { terrace: ['up on the terrace', 'Up on the terrace'], 'dressing-room': ['in the dressing room', 'In the dressing room'] }[partners.where] || ['on the daybeds', 'On the daybeds'];
+    text = text.replace(/\{where\}/g, W[0]).replace(/\{Where\}/g, W[1]);
+  }
   if (partners.side) {
     const [sides, one, walkers, walkerOne] = partners.side === 'm' ? ['boys', 'boy', 'girls', 'girl'] : ['girls', 'girl', 'boys', 'boy'];
     const cap = w => w[0].toUpperCase() + w.slice(1);
@@ -405,6 +412,8 @@ function castOf(ev) {
 /** A replayed clip is quoted, so the villa reacts to what is actually on the screen. */
 function clipSlots(state, ev) {
   if (ev.extra?.side) return { side: ev.extra.side };
+  // A debrief's room: the boys' terrace or the girls' dressing room.
+  if (ev.extra?.where) return { where: ev.extra.where };
   // Look Who's Talking reads out a beach-hut line: the quote travels with the scene.
   if (ev.extra?.quote) return { quote: ev.extra.quote, quoteWho: ev.extra.quoteWho };
   const id = ev.extra?.clip || ev.extra?.revealed;

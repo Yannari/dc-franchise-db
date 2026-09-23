@@ -112,11 +112,15 @@ export function phasesOf(row) {
   const sideLabel = ph => ph === 'arrival' ? (firstBoys ? 'The boys arrive' : 'The girls arrive')
     : ph === 'arrival-2' ? (firstBoys ? 'The girls arrive' : 'The boys arrive') : null;
   const out = groupByPhase(villa, ph => sideLabel(ph) || (ph === 'challenge' && CHALLENGE_NAMES[row.pm?.challenge]) || PM_PHASE_LABEL[ph] || ph);
-  const moment = events.slice(from);
-  if (!moment.length) return out;
+  const all = events.slice(from);
+  // The night's debrief is its own screen, after everything else the night did.
+  const debrief = all.filter(e => e.phase === 'debrief');
+  const moment = all.filter(e => e.phase !== 'debrief');
+  const tail = debrief.length ? [['debrief', debrief, PM_PHASE_LABEL.debrief]] : [];
+  if (!moment.length) return [...out, ...tail];
   // Night one's coupling opened the episode; its night is the bombshell's.
   const title = row.moment === 'first-coupling' && villa.some(e => e.phase === 'coupling') ? 'The first night' : momentTitle(row, 'The night');
-  if (!moment.some(e => MOMENT_PHASES.has(e.phase))) return [...out, ['moment', moment, title]];
+  if (!moment.some(e => MOMENT_PHASES.has(e.phase))) return [...out, ['moment', moment, title], ...tail];
   const groups = [];
   let pending = [];
   for (const e of moment) {
@@ -130,7 +134,7 @@ export function phasesOf(row) {
   // The first part of the night carries the moment's name: "The first
   // coupling", not a bare "The fire pit".
   groups[0][2] = title;
-  return [...out, ...groups];
+  return [...out, ...groups, ...tail];
 }
 
 /** Couples, exits and who rose and fell with the public, after the caps. */

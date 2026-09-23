@@ -68,7 +68,7 @@ export function bgFor(row, phase) {
   if (phase === 'hut') return 'hut';
   if (CASA_NIGHTS.has(row.moment) && (phase === 'evening' || phase === 'firepit')) return 'casa';
   if (phase === 'firepit' || phase === 'dumping') return 'night';
-  if (phase === 'evening') return 'terrace';
+  if (phase === 'evening' || phase === 'debrief') return 'terrace';
   return 'day';
 }
 
@@ -369,7 +369,7 @@ const DRAWN_BY_FINAL = new Set(['final-result', 'envelope']);
 // The show cuts to a break on a cliffhanger: a few seconds of what is still
 // to come, each line cut off before it lands. A teaser never shows how
 // anything ends — no verdict, no pick, no goodbye, nothing that didn't air.
-const NO_TEASE = new Set(['dump-verdict', 'dump-verdict-couple', 'dump-verdict-singles', 'dump-reaction', 'dump-goodbye',
+const NO_TEASE = new Set(['debrief', 'dump-verdict', 'dump-verdict-couple', 'dump-verdict-singles', 'dump-reaction', 'dump-goodbye',
   'dump-fallout', 'recouple-pick', 'steal', 'final-result', 'envelope', 'save-tie', 'walk', 'ballot-reveal', 'save-vote',
   'top-couple-pick', 'reveal', 'result', 'stick-or-twist', 'casa-return', 'immunity-win', 'couples-vote', 'ex-ballot']);
 const TEASE = new Set(['argument', 'gossip', 'pull', 'entrance', 'group-entrance', 'head-turned', 'jealous-confront',

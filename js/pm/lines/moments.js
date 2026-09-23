@@ -86,6 +86,7 @@
 // word ahead of the result she is reading out. Everything else happens by text.
 import { MORE_MOMENTS } from './day/more-b.js';
 import { NIGHT_ONE } from './night-one.js';
+import { DEBRIEF } from './debrief.js';
 const ch = channel => ({ channel });
 export const MOMENTS = {
   'intro-look': [
@@ -1674,3 +1675,5 @@ export const MOMENTS = {
 for (const [k, v] of Object.entries(MORE_MOMENTS)) MOMENTS[k] = [...(MOMENTS[k] || []), ...v];
 // Night one's conversations and the bombshell's entrance (lines/night-one.js).
 for (const [k, v] of Object.entries(NIGHT_ONE)) MOMENTS[k] = [...(MOMENTS[k] || []), ...v];
+// The night's debrief after a big moment (lines/debrief.js; engine pm/debrief.js).
+MOMENTS.debrief = [...(MOMENTS.debrief || []), ...DEBRIEF];

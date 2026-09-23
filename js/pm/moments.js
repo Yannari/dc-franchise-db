@@ -608,6 +608,10 @@ function voteNight(state, ctx) {
     // and the first vote was skipped in 40 seasons of 40 (measured 2026-09-23),
     // so a small cast never met the public until the semi-final.
     const firstCall = !!ctx.firstVote && (ctx.surplus ?? 0) >= 2;
+    // …and the singles can face it with one to spare: a singles vote sends one
+    // home, a couples vote two (seed 2 at twelve: a walkout left nine, four
+    // couples and a single, and the first vote skipped).
+    const firstSingles = !!ctx.firstVote && (ctx.surplus ?? 0) >= 1;
     const paceOk = ctx.pace >= 0.8 || firstCall;
     // The first vote with the final's four couples and bombshells still to
     // come (counted in the surplus) plays too: the arrivals refill the villa
@@ -624,8 +628,9 @@ function voteNight(state, ctx) {
       // 16-islander cast its four-couple finals, 18 of 20 down to 13).
       const singles = state.villa.filter(n => !partnerOf(state, n));
       const toCome = (ctx.queues?.bombshell?.length || 0) + (ctx.queues?.casa?.length || 0);
-      const spare = Math.min(firstCall ? Math.max(1, Math.round(ctx.pace)) : Math.round(ctx.pace), singles.length - toCome);
-      if (spare > 0 && paceOk) return singlesVoteNight(state, ctx, singles, spare);
+      const spare = Math.min(firstSingles ? Math.max(1, Math.round(ctx.pace)) : Math.round(ctx.pace), singles.length - toCome,
+        firstSingles ? ctx.surplus : Infinity);
+      if (spare > 0 && (paceOk || firstSingles)) return singlesVoteNight(state, ctx, singles, spare);
       return { events: [], exits: [], ballots: [], extra: { dumpFormat: null } };
     }
     // A vote that plays only because it is the first (the pace alone would

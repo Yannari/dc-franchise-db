@@ -16,6 +16,7 @@ import { resolveIslander } from './profile.js';
 import { seedAttraction, attr, compatible } from './chemistry.js';
 import { createLedger, noteArrival, closeEpisode, ledgerSnapshot } from './ledger.js';
 import { generateEpisodeEvents, makeEvent, partnerOf, PHASE_BUDGETS } from './events.js';
+import { nightDebrief } from './debrief.js';
 import { runChallenge } from './challenges.js';
 import { romance, friendship, shown, believed, growLove, updateBeliefs, decideMasks,
   relationshipLabel } from './feelings.js';
@@ -156,8 +157,13 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
     // A returning islander walks back in before the night's moment, so at a
     // recoupling they are a new arrival and choose first (pm/arrivals.js).
     const back = entry.oneOff === 'return' ? returnIslander(state, { ep: entry.ep, seed, rng }) : null;
+    // The villa as the night's moment finds it: the debrief reads what changed.
+    const pre = { villa: [...state.villa], couples: state.couples.map(c => [...c]) };
     const m = MOMENTS[entry.moment](state, ctx);
     if (back) { m.events = [...back.events, ...m.events]; m.extra = { ...(m.extra || {}), oneOff: 'return', returned: back.name }; }
+    // THE DEBRIEF after a big night (pm/debrief.js), on its own dice, so the
+    // rest of the season plays exactly as it did without it.
+    m.events.push(...nightDebrief(state, streamFor(seed, `debrief:${entry.ep}${state.epSalt}`), entry, pre, m));
     state.history.push(...m.events);
     syncLadder(state);
     // Feelings move once a day's worth of events has happened: love grows in

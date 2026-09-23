@@ -18,6 +18,7 @@ import { familyVerdict } from './arrivals.js';
 import { BETRAYAL } from './ledger.js';
 import { movieNight } from './movie-night.js';
 import { secondChances } from './exes.js';
+import { blowups } from './blowup.js';
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 const pick = (rng, arr) => (arr.length ? arr[Math.floor(rng() * arr.length)] : null);
@@ -237,6 +238,9 @@ export function runVillaDay(state, rng, entry) {
   const out = [...ladderScenes(state, rng, days), ...feelingScenes(state, rng),
     ...confessions(state, rng), ...advice(state, rng), ...secondChances(state, rng, entry)];
   for (const r of entry.rituals || []) out.push(...(RITUALS[r]?.(state, rng) || []));
+  // When it kicks off (pm/blowup.js): after the night's reveals — Movie Night
+  // included — never before them.
+  out.push(...blowups(state, rng, entry, out));
   tickEmotions(state);
   return out;
 }

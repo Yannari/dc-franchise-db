@@ -39,6 +39,7 @@ export const KIND_LABEL = {
   'movie-row': 'After the screening', 'movie-split': "It's over",
   'casa-host': 'The Casa Amor recoupling', 'casa-react': 'The moment', 'casa-row': 'After the fire pit', 'photo-text': 'Post from Casa',
   'photo-row': 'The photo', 'photo-split': "It's over",
+  blowup: 'It kicks off', 'pile-in': 'Taking sides', 'villa-divided': 'The villa divided', 'cold-shoulder': 'The cold shoulder', 'clear-the-air': 'Clearing the air',
   'bed-share': 'Lights out', vent: 'Letting off steam', apology: 'The apology', reunite: 'Back together', 'apology-rejected': 'Not this time',
   steal: 'A steal', 'recouple-pick': 'The recoupling', 'dump-buildup': 'At risk', 'dump-verdict': 'Dumped',
   'ballot-reveal': 'The vote', 'dump-reaction': 'The reaction', 'dump-goodbye': 'Goodbye', 'dump-fallout': 'Fallout',
@@ -162,6 +163,12 @@ function fxFor(row, e, first) {
   if (k === 'photos') fx.polaroid = { faces: e.extra?.faces || [e.players[1]], ep: e.extra?.photoEp ?? null };
   if (k === 'photo-text') fx.phone = true;
   if (k === 'reunite') { fx.petals = true; fx.neon = ['Back together', '#ff2e88']; }
+  // A blow-up: the stage splits red down the middle, and the tug of war
+  // fills as the villa takes sides (stage.js).
+  if (k === 'blowup') { fx.shake = true; fx.flash = true; fx.neon = ["It's kicking off", '#ef4444']; fx.sides = { A: [e.players[0]], B: [e.players[1]] }; }
+  if (k === 'pile-in') { fx.shake = true; fx.sides = e.extra?.sides || null; }
+  if (k === 'villa-divided') { fx.neon = ['Villa divided', '#ef4444']; fx.sides = e.extra?.sides || null; }
+  if (k === 'clear-the-air' && e.extra?.of === 'peace') fx.petals = true;
   if (k === 'apology-rejected' && e.extra?.of === 'final') fx.neonDie = ['Over', '#a78bfa'];
   if (k === 'photo-row' && e.extra?.of === 'deny') fx.shake = true;
   if (k === 'photo-split') { fx.neonDie = ["It's over", '#ff2e88']; fx.shake = true; }
@@ -338,7 +345,7 @@ function finalSteps(row) {
 // ── cutting a part of the day into screens ────────────────────────────
 // Night one's parts are one screen each, however long (user: "the arrivals is
 // cut for no reason — 1 screen for the girls, 1 for the boys, then the coupling").
-const WHOLE = new Set(['arrival', 'arrival-2', 'coupling', 'debrief', 'cinema']);
+const WHOLE = new Set(['arrival', 'arrival-2', 'coupling', 'debrief', 'cinema', 'blowup']);
 function cut(scenes, phase) {
   if (WHOLE.has(phase)) return [scenes];
   const total = scenes.reduce((s, x) => s + x.steps.length, 0);
@@ -408,7 +415,7 @@ const DRAWN_BY_FINAL = new Set(['final-result', 'envelope']);
 // The show cuts to a break on a cliffhanger: a few seconds of what is still
 // to come, each line cut off before it lands. A teaser never shows how
 // anything ends — no verdict, no pick, no goodbye, nothing that didn't air.
-const NO_TEASE = new Set(['debrief', 'dump-verdict', 'dump-verdict-couple', 'dump-verdict-singles', 'dump-reaction', 'dump-goodbye',
+const NO_TEASE = new Set(['debrief', 'villa-divided', 'clear-the-air', 'dump-verdict', 'dump-verdict-couple', 'dump-verdict-singles', 'dump-reaction', 'dump-goodbye',
   'dump-fallout', 'recouple-pick', 'steal', 'final-result', 'envelope', 'save-tie', 'walk', 'ballot-reveal', 'save-vote',
   'top-couple-pick', 'reveal', 'result', 'stick-or-twist', 'casa-return', 'immunity-win', 'couples-vote', 'ex-ballot']);
 const TEASE = new Set(['argument', 'gossip', 'pull', 'entrance', 'group-entrance', 'head-turned', 'jealous-confront',

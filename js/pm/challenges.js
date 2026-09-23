@@ -365,7 +365,9 @@ function babyDolls(state, rng) {
       for (const n of [a, b]) { feel(state, n, 'security', 1); addRelationshipDimension(n, partnerOf(state, n), 'trust', 0.4); }
       out.push(scene(state, rng, 'baby-doll', [a, b], { of: 'team', pop: pop([a, 0.5, 1], [b, 0.5, 1]) }));
     } else if (Math.max(ea, eb) < 4) {
-      // Neither of them is ready. The villa finds this very funny.
+      // Neither of them is ready. The villa finds this very funny, and so,
+      // eventually, do they: failing at it together still counts for something.
+      addBond(a, b, 0.25);
       out.push(scene(state, rng, 'baby-doll', [a, b], { of: 'lost', pop: pop([a, 0.2, 1.5], [b, 0.2, 1.5]) }));
     } else {
       // They got through it, and nobody filmed anything worth showing.

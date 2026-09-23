@@ -97,6 +97,8 @@ function frame(bg, hud, board) {
       <path class="${P('flap')}" d="M8 44 L100 106 L192 44Z" fill="#ff2e88" stroke="#fff" stroke-width="3"/><path d="${HEART}" transform="translate(100 104) scale(.9)" fill="#fff"/></svg>
     <div class="${P('phone')}"><div class="${P('scr')}"><h4>I got a text!</h4><div class="${P('tag')}"></div><p></p></div></div>
     <div class="${P('polaroid')}"><div class="${P('pol-photo')}"></div><div class="${P('pol-cap')}"></div></div>
+    <div class="${P('crack')}"></div>
+    <div class="${P('tug')}"><div class="${P('tug-a')}"></div><div class="${P('tug-bar')}"><i></i></div><div class="${P('tug-b')}"></div></div>
     <div class="${P('petals')}">${petalsHtml()}</div>
     <div class="${P('pops')}"></div>
     <div class="${P('toast')}"></div>
@@ -167,7 +169,7 @@ export function paintStage(el, screen, idx, { fresh = false, hud = '' } = {}) {
   // the caption (the staging) and the dialogue
   const cap = q('caption');
   // A clip's caption is its title, and the marquee already says it.
-  if (st.caption && !st.clipOn && !st.fx?.polaroid) { cap.textContent = st.caption; cap.classList.add(P('on')); }
+  if (st.caption && !st.clipOn && !st.fx?.polaroid && !st.fx?.sides) { cap.textContent = st.caption; cap.classList.add(P('on')); }
   const dlg = q('dlg');
   dlg.classList.remove(P('hide'));
   const voice = st.voice || '';
@@ -205,6 +207,19 @@ export function paintStage(el, screen, idx, { fresh = false, hud = '' } = {}) {
     }
   }
   if (st.fx?.flash && fresh) { el.classList.remove(P('flash')); void el.offsetWidth; el.classList.add(P('flash')); }
+  // A blow-up: the villa takes sides. The tug of war fills face by face and
+  // leans to the bigger camp; a red crack splits the stage down the middle.
+  el.classList.toggle(P('divided'), !!st.fx?.sides);
+  if (st.fx?.sides) {
+    const tug = q('tug');
+    const { A = [], B = [] } = st.fx.sides;
+    tug.querySelector('.' + P('tug-a')).innerHTML = A.map(mini).join('');
+    tug.querySelector('.' + P('tug-b')).innerHTML = B.map(mini).join('');
+    const share = A.length / Math.max(1, A.length + B.length);
+    tug.querySelector('.' + P('tug-bar') + ' i').style.left = `${Math.round(share * 100)}%`;
+    tug.classList.add(P('on'));
+    if (fresh) { tug.classList.remove(P('pulse')); void tug.offsetWidth; tug.classList.add(P('pulse')); }
+  }
   // The Casa photo: a Polaroid of the real moment, dropped on the stage, developing.
   if (st.fx?.polaroid) {
     const po = q('polaroid');

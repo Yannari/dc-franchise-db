@@ -491,6 +491,25 @@ details.pmv-debug[open] summary::before{transform:rotate(45deg)}
 .pmv-poster.pmv-go::after{content:'';position:absolute;inset:-7px;border-radius:14px;border:3px dotted #fff3b0;animation:pmv-chase .35s linear infinite}
 @keyframes pmv-chase{50%{border-color:#ff8cc6}}
 
+/* ── A BLOW-UP: the tug of war, and the crack down the middle ── */
+.pmv-crack{position:absolute;left:50%;top:0;bottom:0;width:3px;z-index:4;pointer-events:none;opacity:0;transform:translateX(-50%);
+  background:linear-gradient(180deg,#0000,#ff3b3b 20%,#ff3b3b 80%,#0000);box-shadow:0 0 18px #ff3b3b,0 0 40px #ff3b3b88;
+  clip-path:polygon(0 0,100% 0,100% 18%,0 26%,100% 40%,0 55%,100% 68%,0 82%,100% 100%,0 100%)}
+.pmv-stage.pmv-divided .pmv-crack{opacity:1;animation:pmv-crack .5s ease-out}
+@keyframes pmv-crack{0%{transform:translateX(-50%) scaleY(0)}100%{transform:translateX(-50%) scaleY(1)}}
+.pmv-stage.pmv-divided .pmv-scene{filter:saturate(.8) contrast(1.1)}
+.pmv-stage.pmv-divided .pmv-vign{background:radial-gradient(120% 90% at 50% 45%,#0000 50%,#5a0000aa)}
+.pmv-tug{position:absolute;left:50%;top:36%;width:74%;z-index:12;transform:translateX(-50%);display:none;align-items:center;gap:1.4%;pointer-events:none}
+.pmv-tug.pmv-on{display:flex}
+.pmv-tug-a,.pmv-tug-b{flex:1;display:flex;gap:3px;flex-wrap:wrap}
+.pmv-tug-a{justify-content:flex-end}.pmv-tug-b{justify-content:flex-start}
+.pmv-tug .pmv-mini{width:clamp(18px,2.6vw,30px);height:clamp(18px,2.6vw,30px);box-shadow:0 0 0 2px #fff,0 4px 10px #0008}
+.pmv-tug-a .pmv-mini{box-shadow:0 0 0 2px #ff7a59,0 4px 10px #0008}.pmv-tug-b .pmv-mini{box-shadow:0 0 0 2px #7aa2ff,0 4px 10px #0008}
+.pmv-tug-bar{position:relative;flex:0 0 24%;height:10px;border-radius:99px;background:linear-gradient(90deg,#ff7a59,#ff3b3b 50%,#7aa2ff);box-shadow:0 0 14px #ff3b3b88}
+.pmv-tug-bar i{position:absolute;top:50%;width:16px;height:16px;border-radius:50%;background:#fff;transform:translate(-50%,-50%);box-shadow:0 0 12px #fff;transition:left .8s cubic-bezier(.2,1.4,.3,1)}
+.pmv-tug.pmv-pulse .pmv-tug-bar{animation:pmv-tugpulse .6s ease-out}
+@keyframes pmv-tugpulse{30%{transform:scaleY(1.9);filter:brightness(1.5)}}
+
 /* ── THE CASA PHOTOS: a Polaroid of the real moment, developing ── */
 .pmv-polaroid{position:absolute;left:50%;top:4%;width:25%;z-index:11;opacity:0;pointer-events:none;
   background:#fbfaf6;padding:3% 3% 9%;border-radius:4px;box-shadow:0 18px 50px #000a,0 0 0 1px #0001;transform:translate(-50%,0) rotate(-4deg)}

@@ -85,7 +85,7 @@ export const DEBRIEF = [
     beat: '{b} puts an arm round {a} and leaves it there.' },
   { id: 'dn.ms.04', when: C3({ of: 'miss' }), stage: '{Where}, {a} is holding the jumper {c} left behind.', turns: [
     ['b', "Are you keeping that?"], ['a', "{c} will want it back."], ['b', "{c} will want you to have it."],
-    ['a', "It still smells of {c}'s aftershave."], ['b', "Okay. Now you're just being sad on purpose."],
+    ['a', "It still smells like {c}."], ['b', "Okay. Now you're just being sad on purpose."],
     ['a', "A little bit."]] },
   // ── blame: c voted a's partner or friend out ──
   { id: 'dn.bl.01', when: C3({ of: 'blame' }), stage: '{Where}, and {a} is not quiet about it.', turns: [

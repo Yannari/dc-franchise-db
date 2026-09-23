@@ -14,6 +14,7 @@ import { makeEvent, partnerOf } from './events.js';
 import { romance, friendship } from './feelings.js';
 import { closedness } from './ladder.js';
 import { breakHeart, feel, jealousOf } from './emotions.js';
+import { streamFor } from '../dr/rng.js';
 
 export function arriveIslander(state, name, { ep, seed, room = 'villa' }) {
   if (!state.villa.includes(name)) state.villa.push(name);
@@ -137,10 +138,15 @@ export function openCasa(state, casaNames, { ep, seed, rng, movingGender = 'f' }
   // as the same scene six times (measured at a 40-islander cast).
   const SOLO = 4;
   const rest = { villa: [], casa: [] };
+  // Each one walking in alone gets their intro tape first, like every other
+  // new islander — on its own dice, so the rest of the night plays the same.
+  const irng = streamFor(seed, `casa-intro:${ep}${state.epSalt || ''}`);
   casaNames.forEach((n, i) => {
     const room = state.profiles[n].gender === movingGender ? 'villa' : 'casa';
     arriveIslander(state, n, { ep, seed, room });
     if (i < SOLO) {
+      events.push(makeEvent(state, irng, { phase: 'event', kind: 'intro', players: [n], aired: true,
+        extra: { parts: introParts(state, n, irng), pop: { [n]: { approval: 0.2, fame: 1 } } } }));
       events.push(makeEvent(state, rng, { phase: 'event', kind: 'entrance', players: [n], aired: true,
         major: [n], extra: { pop: { [n]: { approval: 0.3, fame: 2 } } } }));
     } else rest[room].push(n);

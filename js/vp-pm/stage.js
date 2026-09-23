@@ -68,6 +68,9 @@ function sceneHtml(bg) {
     night: `${bokeh(18, '', 2, 40, 1.6)}<div class="${P('glow')}"></div>${embers}${string(5)}`,
     hut: `<div class="${P('weave')}"></div>${bokeh(8, 'string', 10, 50, 6)}`,
     casa: `${bokeh(24, '', 5, 80, 3)}`,
+    // The intro tape: a studio, not the villa — a colour wall, the show's
+    // heart outlined huge behind them, stripes of light going past.
+    vt: `<div class="${P('vt-stripes')}"></div><svg class="${P('vt-heart')}" viewBox="-20 -14 40 27"><path d="${HEART}"/></svg>${bokeh(10, '', 5, 90, 5)}`,
     final: `<div class="${P('beams')}"></div>${bokeh(20, 'string', 5, 70, 3)}`,
     // Movie Night: an outdoor cinema on the lawn — the projector's beam from
     // behind the audience, fairy lights, and the beanbags in rows.
@@ -104,10 +107,12 @@ function frame(bg, hud, board) {
     <div class="${P('pops')}"></div>
     <div class="${P('toast')}"></div>
     <div class="${P('caption')}"></div>
+    <div class="${P('l3')}"><small></small><b></b></div>
     <div class="${P('dlg')} ${P('hide')}"><div class="${P('plate')}"></div><div class="${P('txt')}"></div><div class="${P('beat')}"></div><span class="${P('nxt')}">${IC.next}</span></div>
     <div class="${P('hud')}"><span class="${P('pill')}">${esc(hud)}</span><span class="${P('pill')} ${P('air')}"><span class="${P('scissors')}">${IC.scissors}</span><span class="${P('airtxt')}">On air</span></span></div>
     <div class="${P('headline')}"></div>
-    <div class="${P('wipe')}"><svg viewBox="-20 -14 40 27"><path d="${HEART}"/></svg></div>`;
+    <div class="${P('wipe')}"><svg viewBox="-20 -14 40 27"><path d="${HEART}"/></svg></div>
+    <div class="${P('switch')}"><i></i><span></span></div>`;
 }
 
 /** The stage at rest: the set, the HUD and the screen's name. Nobody on it. */
@@ -139,8 +144,23 @@ export function paintStage(el, screen, idx, { fresh = false, hud = '' } = {}) {
   if (fresh && st?.fx?.teaser) { void el.offsetWidth; el.classList.add(P('flash')); }
   const hl = q('headline');
   if (!st) { hl.textContent = screen.label; hl.classList.add(P('on')); return; }
-  q('airtxt').textContent = st.raw ? 'Unaired footage' : st.fx?.raw ? 'Aired at last' : 'On air';
-  if (fresh && prev && prev.bg !== st.bg) q('wipe').classList.add(P('go'));
+  const tape = st.bg === 'vt';
+  el.classList.toggle(P('vt'), tape);
+  q('airtxt').textContent = tape ? 'Intro tape' : st.raw ? 'Unaired footage' : st.fx?.raw ? 'Aired at last' : 'On air';
+  // Between the intro tape and the villa: a channel switch, not a wipe —
+  // static, a roll, and where we are now.
+  const from = prev ? prev.bg : screen.bg;
+  if (fresh && from !== st.bg && (tape || from === 'vt')) {
+    const sw = q('switch');
+    sw.querySelector('span').textContent = tape ? 'Meet the islander' : 'In the villa';
+    sw.classList.add(P('go'));
+  } else if (fresh && prev && prev.bg !== st.bg) q('wipe').classList.add(P('go'));
+  if (st.vt) {
+    const l3 = q('l3');
+    l3.querySelector('small').textContent = st.vt.tag;
+    l3.querySelector('b').textContent = st.vt.name;
+    if (fresh && st.sceneStart) later(el, 500, () => l3.classList.add(P('on'))); else l3.classList.add(P('on'));
+  }
 
   // the busts
   const busts = q('busts');
@@ -170,7 +190,7 @@ export function paintStage(el, screen, idx, { fresh = false, hud = '' } = {}) {
   // the caption (the staging) and the dialogue
   const cap = q('caption');
   // A clip's caption is its title, and the marquee already says it.
-  if (st.caption && !st.clipOn && !st.fx?.polaroid && !st.fx?.sides && !st.fx?.triangle) { cap.textContent = st.caption; cap.classList.add(P('on')); }
+  if (st.caption && !st.clipOn && !st.fx?.polaroid && !st.fx?.sides && !st.fx?.triangle && !st.vt) { cap.textContent = st.caption; cap.classList.add(P('on')); }
   const dlg = q('dlg');
   dlg.classList.remove(P('hide'));
   const voice = st.voice || '';

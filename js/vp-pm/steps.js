@@ -282,6 +282,18 @@ export function sceneSteps(row, e, evIndex, bg) {
     out.push({ ...base, part: 'hut', who: e.hut.who, text: l.text, voice: 'hut', cast: [[e.hut.who, 50, 'speak']], bg: 'hut',
       stance: e.hut.stance, headline: 'Beach hut' });
   }
+  // The intro tape (user: "a screen switcher to make a difference between the
+  // presentation at arrival and the live person in the villa"): recorded before
+  // they ever saw the villa, on its own set, alone, straight to camera, with
+  // their name on a caption. The walk-in after it is back in the villa.
+  if (e.kind === 'intro' && out.length) {
+    const a = e.players[0];
+    const tag = row.moment === 'casa-open' ? 'Casa Amor' : row.moment === 'first-coupling' ? 'Islander' : 'Bombshell';
+    for (const s of out) {
+      s.bg = 'vt'; s.vt = { name: a, tag };
+      s.cast = [[a, 50, s.voice === 'narrator' ? 'back' : 'speak']];
+    }
+  }
   // One-shot business rides on the scene's first step; the Heart Map moves on its last.
   const first = out[0];
   first.fx = fxFor(row, e, evIndex === firstOfKind(row, e));

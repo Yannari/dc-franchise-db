@@ -184,6 +184,42 @@ export const PMV_CSS = `/* ═════════════════�
 .pmv-wipe.pmv-go svg{animation:pmv-wipeGrow 1s cubic-bezier(.6,0,.4,1) forwards}
 @keyframes pmv-wipeFade{0%,55%{opacity:1}100%{opacity:0}}
 @keyframes pmv-wipeGrow{0%{transform:scale(.1)}55%{transform:scale(22)}100%{transform:scale(22)}}
+/* the intro tape: a studio, recorded before the villa */
+.pmv-sc-vt{background:
+  radial-gradient(55% 70% at 50% 45%,#fff3,#0000 70%),
+  linear-gradient(120deg,#ff2e88 0%,#ff5f7a 45%,#ff9a5a 75%,#ffc15e 100%)}
+.pmv-stage .pmv-vt-stripes{position:absolute;inset:-20%;opacity:.22;
+  background:repeating-linear-gradient(115deg,#fff0 0 60px,#fff 60px 64px,#fff0 64px 140px);animation:pmv-vtSlide 9s linear infinite}
+@keyframes pmv-vtSlide{to{transform:translateX(140px)}}
+.pmv-stage .pmv-vt-heart{position:absolute;left:50%;top:44%;width:62%;transform:translate(-50%,-50%);fill:none;stroke:#fff;stroke-width:.9;opacity:.5;
+  filter:drop-shadow(0 0 12px #fff8);animation:pmv-vtBeat 2.4s ease-in-out infinite}
+@keyframes pmv-vtBeat{50%{transform:translate(-50%,-50%) scale(1.05);opacity:.7}}
+.pmv-stage.pmv-vt .pmv-bust{width:27%;bottom:30%}
+.pmv-stage.pmv-vt .pmv-bust .pmv-frame{border-radius:14px;box-shadow:0 0 0 4px #fff,0 18px 40px #7a103c66}
+.pmv-stage.pmv-vt .pmv-hud .pmv-air::before{background:#fff;box-shadow:0 0 6px #fff;animation:none;border-radius:2px}
+.pmv-stage.pmv-vt .pmv-vign{background:radial-gradient(120% 90% at 50% 45%,#0000 62%,#5a0a2e66)}
+.pmv-stage.pmv-vt .pmv-grain{opacity:.5}
+/* the name caption on the tape */
+.pmv-l3{position:absolute;left:4%;bottom:40%;z-index:8;display:flex;flex-direction:column;align-items:flex-start;gap:2px;
+  opacity:0;transform:translateX(-30px);transition:opacity .45s,transform .6s cubic-bezier(.2,1.2,.3,1);pointer-events:none}
+.pmv-l3.pmv-on{opacity:1;transform:none}
+.pmv-l3 small{font:800 11px/1 Outfit;letter-spacing:.18em;text-transform:uppercase;background:#fff;color:#ff2e88;padding:5px 9px;border-radius:6px 6px 6px 0}
+.pmv-l3 b{font:400 clamp(26px,4.4vw,52px)/1 'Bebas Neue',Outfit;letter-spacing:.04em;color:#fff;background:#1a0624d9;padding:6px 14px 4px;border-radius:0 8px 8px 8px;
+  box-shadow:0 8px 24px #0005}
+/* the channel switch between the tape and the villa */
+.pmv-switch{position:absolute;inset:0;z-index:12;pointer-events:none;opacity:0;display:grid;place-items:center;overflow:hidden}
+.pmv-switch i{position:absolute;inset:-50%;background:
+  repeating-linear-gradient(0deg,#0000 0 2px,#0007 2px 4px),
+  url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 1'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E"),#333;
+  background-size:100% 4px,160px 160px;filter:contrast(2.2) grayscale(1)}
+.pmv-switch span{position:relative;font:400 clamp(22px,4vw,46px) 'Bebas Neue',Outfit;letter-spacing:.08em;color:#fff;background:#ff2e88;
+  padding:6px 18px 3px;border-radius:8px;box-shadow:0 0 30px #ff2e88;opacity:0}
+.pmv-switch.pmv-go{animation:pmv-swFade 1.05s ease forwards}
+.pmv-switch.pmv-go i{animation:pmv-swStatic .12s steps(3) infinite}
+.pmv-switch.pmv-go span{animation:pmv-swLabel 1.05s ease forwards}
+@keyframes pmv-swFade{0%{opacity:1;transform:scaleY(1)}35%{opacity:1;transform:scaleY(1)}48%{opacity:1;transform:scaleY(.02)}62%{opacity:0;transform:scaleY(.02)}100%{opacity:0}}
+@keyframes pmv-swStatic{to{transform:translate(9px,-7px)}}
+@keyframes pmv-swLabel{0%,10%{opacity:0;transform:scale(.8)}20%,38%{opacity:1;transform:none}48%,100%{opacity:0}}
 
 /* phone */
 .pmv-phone{position:absolute;right:6%;bottom:9%;width:21%;aspect-ratio:9/17;z-index:9;border-radius:26px;background:linear-gradient(145deg,#2a2a2e,#0c0c0e);padding:2.2% 1.6%;

@@ -106,7 +106,7 @@ export const CHALLENGE_KISS = [
       { by: 'b', vary: [
         { turns: [['b', "Go on, then."]], beat: "{a} kisses {b}, and it goes on longer than anybody needed it to." },
         { when: { taken: true, loyal: true },
-          turns: [['b', 'Quick one. Cheek. I mean it.']], beat: '{a} goes for the cheek.' },
+          turns: [['b', 'Just a quick one on the cheek. I mean it.']], beat: '{a} goes for the cheek.' },
         { when: { persona: 'fuckboy' },
           turns: [['b', "About time."]], beat: '{b} kisses {a.obj} first, and the villa screams.' },
       ] },

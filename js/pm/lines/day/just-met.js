@@ -28,7 +28,7 @@ export const JUST_MET = {
     { id: 'jm.chat.nospark.01', when: { ...J, feels: 'little' }, turns: [['a', "So… do you like the villa?"], ['b', "Yeah. It's nice."], ['a', "Yeah."]], beat: 'The silence goes on a bit too long.' },
     { id: 'jm.chat.nospark.02', when: { ...J, feels: 'little' }, turns: [['a', "What do you do for fun?"], ['b', "Gym, mainly."], ['a', "Right. I don't really do the gym."]], beat: 'They both look over at the others for something to say.' },
     { id: 'jm.chat.nospark.03', when: { ...J, feels: 'little' }, turns: [['a', "I think we've been put together because we were the last two."], ['b', "Probably."], ['a', "No offence."], ['b', "None taken."]] },
-    { id: 'jm.chat.nospark.04', when: { ...J, feels: 'little' }, turns: [['a', "Are you having a good day?"], ['b', "It's been long."]], beat: '{a} nods and looks at the pool.' },
+    { id: 'jm.chat.nospark.04', when: { ...J, feels: 'little' }, turns: [['a', "Are you having a good day?"], ['b', "It's been a long one."]], beat: '{a} nods and looks at the pool.' },
     { id: 'jm.chat.nospark.05', when: { ...J, feels: 'little' }, turns: [['a', "We should probably get to know each other."], ['b', "We should."]], beat: 'Neither of them starts.' },
     { id: 'jm.chat.nospark.06', when: { ...J, feels: 'little' }, turns: [['a', "You keep looking over there."], ['b', "Do I? Sorry. What were you saying?"]] },
     { id: 'jm.chat.14', when: J, turns: [['a', "What did your friends say when you told them you were coming here?"], ['b', "They laughed. For quite a long time."]] },
@@ -36,7 +36,7 @@ export const JUST_MET = {
   'deep-chat': [
     { id: 'jm.deep.01', when: J, turns: [['a', "Can I ask why you're single? You seem like you'd be snapped up."], ['b', "Bad timing, mostly. And maybe I've been picking the wrong people."]] },
     { id: 'jm.deep.02', when: J, turns: [['a', "What's the most important thing to you in someone?"], ['b', "That they're honest. Even when it's awkward."], ['a', "Okay. I can do honest."]] },
-    { id: 'jm.deep.03', when: J, turns: [['a', "Have you ever been in love?"], ['b', "Once. I think. How would I know?"], ['a', "I think you'd know."]] },
+    { id: 'jm.deep.03', when: J, turns: [['a', "Have you ever been in love?"], ['b', "I think so, once. But how would you ever know for sure?"], ['a', "I think you'd know."]] },
     { id: 'jm.deep.04', when: J, turns: [['a', "I don't usually open up this fast."], ['b', "Me neither. It's something about this place."], ['a', "Or something about you."]] },
     { id: 'jm.deep.05', when: J, turns: [['a', "What went wrong with your last relationship? You don't have to tell me."], ['b', "We wanted different things. It took us too long to say it."]], beat: '{a} nods and does not push.' },
     { id: 'jm.deep.06', when: J, turns: [['a', "What are you most scared of in here?"], ['b', "Being the one nobody picks."], ['a', "I picked you."], ['b', "Today, you did."]] },
@@ -60,7 +60,7 @@ export const JUST_MET = {
     { id: 'jm.kiss.09', when: J, stage: 'After a long chat on the swing seat, {a} leans in.', turns: [['b', "First day and you've already got me on the swing."], ['a', "It's a very romantic swing."]] },
     { id: 'jm.kiss.awk.01', when: { ...J, feels: 'little' }, turns: [['a', "That was… nice."], ['b', "Yeah. Nice."]], beat: 'They both look away at the same time.' },
     { id: 'jm.kiss.awk.02', when: { ...J, feels: 'little' }, stage: 'A first kiss that neither of them seems sure about.', turns: [['b', "Should we try that again?"], ['a', "Maybe later."]] },
-    { id: 'jm.kiss.awk.03', when: { ...J, feels: 'little' }, stage: '{a} goes in for a kiss, and {b} gives {a.obj} a cheek.', turns: [['a', "Oh. Okay."], ['b', "Sorry. It's just a bit soon."]] },
+    { id: 'jm.kiss.awk.03', when: { ...J, feels: 'little' }, stage: '{a} goes in for a kiss, and {b} turns so it lands on {b.posAdj} cheek.', turns: [['a', "Oh. Okay."], ['b', "Sorry. It's just a bit soon."]] },
     { id: 'jm.kiss.10', when: J, turns: [['a', "I'm terrible at first kisses."], ['b', "You're really not."]] },
   ],
   pull: [

@@ -126,7 +126,7 @@ export const LOYALTY = [
   { id: 'loyalty.17', when: { attachment: 'avoidant' },
     turns: [
       ['b', "You seem like you need a bit of space from them."],
-      ['a', "I do. From everyone. Including you."],
+      ['a', "I do. From everyone, including you."],
     ],
     beat: '{a} takes {a.posAdj} drink to the far end of the lawn.' },
   { id: 'loyalty.18',

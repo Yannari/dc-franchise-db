@@ -82,7 +82,7 @@ export const FEELINGS = {
       turns: [
         ['a', 'Everyone saw you with {c}. Everyone. Do you know how that made me look?'],
         ['b', 'This is about how it made you look?'],
-        ['a', "It's about how it made me feel. And look. Both."],
+        ['a', "It's about how it made me feel, and how it looked. Both."],
       ] },
     { id: 'jealous-confront.05', when: { attachment: 'anxious' },
       turns: [

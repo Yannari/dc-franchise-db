@@ -30,7 +30,7 @@ export const TRIANGLE_LINES = {
     { id: 'tc.02', turns: [['a', "What does {c} have that I don't?"], ['b', "It's not like that."], ['a', "Then what's it like?"], ['b', "Confusing."]] },
     { id: 'tc.03', turns: [['a', "I'm not going to play games. I like you, and I want you to pick me."], ['b', "You're very direct."], ['a', "I've watched {c} be sweet all week. I'd rather be honest."]] },
     { id: 'tc.04', stage: 'The daybeds, away from everyone.', turns: [['a', "Can I just say one thing, and then I'll leave you alone?"], ['b', "Go on."], ['a', "When you're with me, you laugh. I've seen you with {c}. You smile. It's not the same."]] },
-    { id: 'tc.05', turns: [['a', "I'm not asking you to choose tonight."], ['b', "Then what are you asking?"], ['a', "Just to think about how you feel when I walk in. Not {c}. Me."]] },
+    { id: 'tc.05', turns: [['a', "I'm not asking you to choose tonight."], ['b', "Then what are you asking?"], ['a', "Just think about how you feel when I walk in. Not when {c} does."]] },
     { id: 'tc.06', turns: [['a', "I can wait. I just need to know I'm not waiting for nothing."], ['b', "You're not waiting for nothing."]], beat: '{a} walks away grinning, and {c} sees it.' },
   ],
   'triangle-ultimatum': [

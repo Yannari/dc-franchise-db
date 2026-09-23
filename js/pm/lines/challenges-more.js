@@ -78,7 +78,7 @@ export const MORE_CHALLENGE_LINES = {
     { id: 'tq.oh.01', when: { of: 'other-honest' }, stage: '{b} pulls a block and reads it.', turns: [['b', "'Who would you go for in here, if you weren't with me?'"], ['a', "…Honestly? {c}."], ['b', "Right. Okay."]], beat: '{c} looks up from across the lawn.' },
     { id: 'tq.oh.02', when: { of: 'other-honest' }, turns: [['b', "Who would you pick if it wasn't me?"], ['a', "Do you want the truth?"], ['b', "That's the game."], ['a', "{c}."]], beat: 'The tower wobbles. So does {b}.' },
     { id: 'tq.oh.03', when: { of: 'other-honest' }, turns: [['b', "'Who else in here do you find attractive?'"], ['a', "I'm not going to lie. {c}."], ['b', "At least you said it."]] },
-    { id: 'tq.d.01', when: { of: 'dodge' }, turns: [['b', "'Who would you go for in here, if you weren't with me?'"], ['a', "Nobody. You. Obviously."], ['b', "Good answer."]] },
+    { id: 'tq.d.01', when: { of: 'dodge' }, turns: [['b', "'Who would you go for in here, if you weren't with me?'"], ['a', "Nobody. It's you, obviously."], ['b', "Good answer."]] },
     { id: 'tq.d.02', when: { of: 'dodge' }, turns: [['b', "Who would you pick if it wasn't me?"], ['a', "That's a trick question. It's you."]], beat: '{b} smiles and moves on.' },
     { id: 'tq.ds.01', when: { of: 'dodge-seen' }, turns: [['b', "'Who would you go for in here, if you weren't with me?'"], ['a', "Nobody. You."], ['b', "You took a long time to say nobody."]] },
     { id: 'tq.ds.02', when: { of: 'dodge-seen' }, turns: [['b', "Who would you pick if it wasn't me?"], ['a', "No one."], ['b', "You looked somewhere before you said that."]], beat: '{a} has no answer to that.' },

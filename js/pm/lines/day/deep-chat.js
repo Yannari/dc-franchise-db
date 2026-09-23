@@ -117,7 +117,7 @@ export const DEEP_CHAT = [
   { id: 'deep-chat.14',
     turns: [
       ['a', "What does a good relationship look like to you?"],
-      ['b', 'Boring. Honestly. Nobody guessing.'],
+      ['b', 'Boring, honestly. Nobody has to guess.'],
       ['a', 'Boring?'],
       ['b', 'I mean safe. Knowing where I stand, every day.'],
     ] },

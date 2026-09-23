@@ -530,7 +530,7 @@ export const MOMENTS = {
       turns: [['a', "I've been so nervous all day."], ['b', "Me too. It gets easier. Well, I hope it does."]] },
     { id: 'first-arrival.05', when: { of: 'arrive', cast: 2 },
       stage: '{a} comes down the steps, and {b} waves from the daybeds.',
-      turns: [['b', "Come and sit down! Where are you from?"], ['a', "I'll tell you everything. Give me one second to take this in."]] },
+      turns: [['b', "Come and sit down! How are you feeling?"], ['a', "Honestly? Like I'm dreaming. Give me a second to take it all in."]] },
     { id: 'first-arrival.06', when: { of: 'arrive', cast: 2 },
       stage: '{a} walks into the garden with a big grin, and {b} is the first to say hello.',
       turns: [['a', "Right. What have I missed?"], ['b', "Nothing yet. You're just in time."]] },

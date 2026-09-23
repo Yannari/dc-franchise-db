@@ -4275,8 +4275,10 @@ export function renderTimeline() {
       const val = !bk ? '' : bk.pmGame === '' || bk.pmGame == null ? 'random' : bk.pmGame;
       const drawn = _pmDrawnGames?.get(ep);
       const opt = (v, label) => `<option value="${v}" ${v === val ? 'selected' : ''}>${_hubEsc(label)}</option>`;
-      _pmGame = `<label style="display:inline-flex;align-items:center;gap:4px;color:#22d3ee;font-weight:700">Challenge
-        <select onchange="event.stopPropagation();pmSetChallenge(${ep},this.value)" onclick="event.stopPropagation()" style="font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(34,211,238,0.35);border-radius:3px;padding:1px 2px;max-width:100%">
+      // A full row of its own: on a narrow tile the select shrinks into the
+      // space left, rather than running past the edge (user screenshot).
+      _pmGame = `<label onclick="event.stopPropagation()" style="display:flex;align-items:center;gap:6px;flex:1 1 100%;min-width:0;color:#22d3ee;font-weight:700">Challenge
+        <select onchange="event.stopPropagation();pmSetChallenge(${ep},this.value)" onclick="event.stopPropagation()" style="flex:1 1 0;min-width:0;width:100%;font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(34,211,238,0.35);border-radius:3px;padding:1px 2px;text-overflow:ellipsis">
           ${opt('', drawn ? `As drawn: ${PM_CHALLENGE_NAMES[drawn] || drawn}` : 'As drawn: none')}${opt('random', 'Random — one that fits the day')}
           ${Object.entries(PM_CHALLENGE_NAMES).map(([id, n]) => opt(id, n)).join('')}${opt('none', 'No challenge')}
         </select></label>`;

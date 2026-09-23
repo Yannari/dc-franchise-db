@@ -168,7 +168,7 @@ export const PULL_MORE = [
     turns: [
       ['a', "Can we chat? I need to talk to someone who isn't in the middle of it."],
       ['b', 'Middle of what?'],
-      ['a', "Everything. My couple. I'm not okay."],
+      ['a', "Everything. My couple. I'm just not okay."],
     ],
     beat: '{b} makes {a.obj} a tea, and listens.' },
   { id: 'pull.28',

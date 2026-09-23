@@ -84,6 +84,7 @@
 //
 // Dior hosts the dumpings, the final and the reunion — warm, dry, and never a
 // word ahead of the result she is reading out. Everything else happens by text.
+import { MORE_MOMENTS } from './day/more-b.js';
 const ch = channel => ({ channel });
 export const MOMENTS = {
   'intro-look': [
@@ -1416,7 +1417,7 @@ export const MOMENTS = {
       turns: [['b', "I'm going to miss you so much."], ['a', 'Stay in touch. I mean it.']],
       beat: 'They hug for a long time.' },
     { id: 'dump-goodbye.02', when: { withB: true },
-      turns: [['b', 'Win this for me.'], ['a', "It's you that has to win it now."]] },
+      turns: [['a', 'Win this for me.'], ['b', "I'll do my best. For both of us."]] },
     { id: 'dump-goodbye.03', when: { withB: true },
       turns: [['b', "This place won't be the same."], ['a', "Look after everyone for me."]] },
     { id: 'dump-goodbye.04', when: { withB: true, gender: 'f', bGender: 'f' },
@@ -1667,3 +1668,6 @@ export const MOMENTS = {
       turns: [['dior', "{b}, you look very surprised."], ['b', "I'm surprised they filmed it."]] },
   ],
 };
+
+// Second pools (lines/day/more-*.js): appended, so every kind has room not to repeat.
+for (const [k, v] of Object.entries(MORE_MOMENTS)) MOMENTS[k] = [...(MOMENTS[k] || []), ...v];

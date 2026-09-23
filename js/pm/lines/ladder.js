@@ -8,6 +8,7 @@
 // strong, read from b's side), a real no from somebody who doesn't. `of` says
 // which ask was refused. {b.gf} is girlfriend / boyfriend / partner from the
 // roster, never guessed. head-turned is a's alone: nobody has been told.
+import { MORE_LADDER } from './day/more-b.js';
 export const LADDER = {
   'close-off': [
     { id: 'close-off.01',
@@ -435,3 +436,6 @@ export const LADDER = {
       beat: '{a} smiles. {b} looks up at the ceiling.' },
   ],
 };
+
+// Second pools (lines/day/more-*.js): appended, so every kind has room not to repeat.
+for (const [k, v] of Object.entries(MORE_LADDER)) LADDER[k] = [...(LADDER[k] || []), ...v];

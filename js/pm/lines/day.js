@@ -192,6 +192,8 @@ const ARGUMENT_05 = [
   ];
 
 import { JUST_MET } from './day/just-met.js';
+import { MORE_A } from './day/more-a.js';
+import { MORE_B } from './day/more-b.js';
 const JM = k => JUST_MET[k] || [];
 export const DAY = {
   chat: [...CHAT, ...MAKING_UP.chat, ...JM('chat')],
@@ -207,3 +209,6 @@ export const DAY = {
   pull: [...PULL_05, ...PULL_MORE, ...JM('pull')],
   argument: [...ARGUMENT_05, ...ARGUMENT_MORE, ...JM('argument')],
 };
+
+// Second pools (lines/day/more-*.js): appended, so every kind has room not to repeat.
+for (const [k, v] of Object.entries({ ...MORE_A, ...MORE_B })) DAY[k] = [...(DAY[k] || []), ...v];

@@ -17,6 +17,7 @@
 //                                 c (`verdict` good / bad / unsure).
 //   double-standard    [a, b]    after Movie Night: a was judged harder than b.
 const T = { taken: true };
+import { MORE_FEELINGS } from './day/more-b.js';
 export const FEELINGS = {
   torch: [
     { id: 'torch.01',
@@ -440,3 +441,6 @@ export const FEELINGS = {
       beat: 'The villa goes quiet, and some of them look at {b}.' },
   ],
 };
+
+// Second pools (lines/day/more-*.js): appended, so every kind has room not to repeat.
+for (const [k, v] of Object.entries(MORE_FEELINGS)) FEELINGS[k] = [...(FEELINGS[k] || []), ...v];

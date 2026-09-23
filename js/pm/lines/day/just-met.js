@@ -127,12 +127,12 @@ export const JUST_MET = {
     { id: 'jm.ick.08', when: J, turns: [['b', "Honestly, I'm only really here for the experience."], ['a', "Oh. Okay. Good to know."]] },
   ],
   gossip: [
-    { id: 'jm.gossip.01', when: J, turns: [['a', "Can I tell you something? I saw {c} flirting with someone else already."], ['b', "It's the first day!"], ['a', "That's what I said."]] },
-    { id: 'jm.gossip.02', when: J, turns: [['a', "I don't want to cause trouble on day one, but you should keep an eye on {c}."], ['b', "What did you see?"]] },
-    { id: 'jm.gossip.03', when: J, turns: [['a', "{c} is not as into you as you think. I'm just saying."], ['b', "We've been a couple for about five hours."]] },
-    { id: 'jm.gossip.04', when: J, turns: [['a', "I thought you'd want to know. {c} was all over someone else by the pool."], ['b', "Right."]], beat: '{b} does not say another word for a while.' },
-    { id: 'jm.gossip.05', when: J, turns: [['a', "Day one and {c} already has a wandering eye."], ['b', "Are you sure?"], ['a', "I know what I saw."]] },
-    { id: 'jm.gossip.06', when: J, turns: [['a', "I don't know if I should say this."], ['b', "If it's about {c}, say it."]] },
+    { id: 'jm.gossip.01', when: { ...J, knows: true }, turns: [['a', "Can I tell you something? I saw {c} flirting with someone else already."], ['b', "It's the first day!"], ['a', "That's what I said."]] },
+    { id: 'jm.gossip.02', when: { ...J, knows: true }, turns: [['a', "I don't want to cause trouble on day one, but you should keep an eye on {c}."], ['b', "What did you see?"]] },
+    { id: 'jm.gossip.03', when: { ...J, knows: true }, turns: [['a', "{c} is not as into you as you think. I'm just saying."], ['b', "We've been a couple for about five hours."]] },
+    { id: 'jm.gossip.04', when: { ...J, knows: true }, turns: [['a', "I thought you'd want to know. {c} was all over someone else by the pool."], ['b', "Right."]], beat: '{b} does not say another word for a while.' },
+    { id: 'jm.gossip.05', when: { ...J, knows: true }, turns: [['a', "Day one and {c} already has a wandering eye."], ['b', "Are you sure?"], ['a', "I know what I saw."]] },
+    { id: 'jm.gossip.06', when: { ...J, knows: true }, turns: [['a', "I don't know if I should say this."], ['b', "If it's about {c}, say it."]] },
   ],
   'challenge-kiss': [
     { id: 'jm.ckiss.01', when: J, turns: [['a', "I don't even know your surname and I've just kissed you."], ['b', "It's a challenge. It doesn't count."], ['a', "It counted a bit."]] },

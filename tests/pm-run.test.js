@@ -189,10 +189,15 @@ describe('an aired episode can be watched and read', () => {
       expect(new Set(labels).size, `ep ${row.num}: ${labels.join(', ')}`).toBe(labels.length);
       // And the rail groups them in the villa's words, never Total Drama's
       // "Camp" — the fallthrough every unknown screen id lands in.
-      for (const s of screens) expect(['pm-villa', 'pm-night', 'pm-reunion'], s.id).toContain(_vpPhaseForScreen(s.id).id);
-      // Every scene has its card, and every spoken line is on one.
+      // (The breaks — "Coming up", "Next time" — are stops of their own.)
+      for (const s of screens) expect(['pm-villa', 'pm-night', 'pm-reunion', 'pm-break', 'pm-next'], s.id).toContain(_vpPhaseForScreen(s.id).id);
+      // Every scene has its card, and every spoken line is on one. The
+      // breaks' teaser cards and the winners' opening card are not scenes.
       const html = screens.map(s => s.html).join('');
-      expect(html.match(/class="pmv-card[ "]/g)?.length, `ep ${row.num}`).toBe(row.pm.events.length + (row.moment === 'final' ? screens.at(-1).html.match(/class="pmv-card[ "]/g).length : 0));
+      const cardsOf = s => s.html.match(/class="pmv-card[ "]/g)?.length || 0;
+      const extra = screens.filter(s => /^villa-(comingup|nexttime)-/.test(s.id)).reduce((n, s) => n + cardsOf(s), 0)
+        + (row.moment === 'final' && row.pm.shares?.length ? 1 : 0);
+      expect(html.match(/class="pmv-card[ "]/g)?.length, `ep ${row.num}`).toBe(row.pm.events.length + extra);
       const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
       for (const e of row.pm.events) for (const l of e.script.lines) expect(html, `ep ${row.num}`).toContain(esc(l.text));
       // The backlog carries every spoken line the screens do.

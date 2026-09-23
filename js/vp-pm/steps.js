@@ -246,9 +246,23 @@ function finalSteps(row) {
   const steps = [{ part: 'result', who: host, voice: 'dior', bg: 'final', headline: 'The final vote', cast: [[host, 50, 'speak']],
     text: `The public have been voting for their Perfect Match, and the votes are in. Let's find out who has won.`,
     fx: { board: 0, neon: ['The Final', '#ffc15e'] }, board, sceneStart: true, sceneEnd: true, ev: -1 }];
+  // The engine's own result scenes (moments.js final): the host's words and
+  // the couple's reaction from the pools, with the board lit on the first.
+  const evs = row.pm.events || [];
+  const sceneOf = (kind, match) => { const i = evs.findIndex(e => e.kind === kind && match(e)); return i < 0 ? null : sceneSteps(row, evs[i], i, 'final'); };
   shares.forEach((s, i) => {
     const place = shares.length - i, win = place === 1;
     const [a, b] = s.couple;
+    const played = sceneOf('final-result', e => e.players.every(n => s.couple.includes(n)));
+    if (played) {
+      const f = played[0];
+      Object.assign(f, { board, headline: win ? 'Your Perfect Match' : `In ${ORDINAL[place - 1]} place`, big: win,
+        fx: { ...(f.fx || {}), board: i + 1, ...(win ? { petals: true, neon: ['Perfect Match', '#ff2e88'], toast: ['Winners', `${pct(s)} of the vote`] } : {}) },
+        pops: win ? [[a, 'Winners', 'gold', 'star'], [b, 'Winners', 'gold', 'star']] : f.pops });
+      for (const st of played) st.board = board;
+      steps.push(...played);
+      return;
+    }
     steps.push({ part: 'result', who: host, voice: 'dior', bg: 'final', ev: -1, board, sceneStart: true, sceneEnd: true,
       headline: win ? 'Your Perfect Match' : `In ${ORDINAL[place - 1]} place`, big: win,
       cast: [[a, 26, win ? 'speak' : 'back'], [host, 50, 'speak'], [b, 74, win ? 'speak' : 'back']],
@@ -258,7 +272,14 @@ function finalSteps(row) {
       pops: win ? [[a, 'Winners', 'gold', 'star'], [b, 'Winners', 'gold', 'star']] : [] });
   });
   const env = row.pm.envelope;
-  if (env?.holder) {
+  const opened = env?.holder ? sceneOf('envelope', e => e.players[0] === env.holder) : null;
+  if (opened) {
+    const steal = env.choice === 'steal';
+    Object.assign(opened[0], { headline: 'The envelope', big: steal,
+      fx: { ...(opened[0].fx || {}), env: steal ? 'STEAL' : 'SPLIT', ...(steal ? { shake: true } : {}) },
+      pops: [[env.holder, steal ? 'Steal' : 'Split', steal ? 'red' : 'gold', steal ? 'crack' : 'heartW']] });
+    steps.push(...opened);
+  } else if (env?.holder) {
     const other = shares[shares.length - 1].couple.find(n => n !== env.holder);
     const steal = env.choice === 'steal';
     steps.push({ part: 'result', who: env.holder, voice: '', bg: 'final', ev: -1, sceneStart: true, sceneEnd: true,
@@ -297,12 +318,16 @@ function cut(scenes) {
  * The episode's screens: [{ key, label, bg, rail, steps }]. Step `i` of a
  * screen is card line `i`, stage state `i` and Heart Map state `i`.
  */
-export function episodeScreens(row) {
+export function episodeScreens(row, opts = {}) {
   if (!row?.pm) return [];
   const events = row.pm.events || [];
   const index = new Map(events.map((e, i) => [e, i]));
   const screens = [];
-  for (const [phase, evs, label] of phasesOf(row)) {
+  for (const [phase, all, label] of phasesOf(row)) {
+    // The final's result and envelope are the engine's record (the transcript
+    // reads them); on screen, finalSteps draws them with the board.
+    const evs = all.filter(e => !DRAWN_BY_FINAL.has(e.kind));
+    if (!evs.length) continue;
     const night = MOMENT_PHASE.has(phase) || phase === 'moment';
     const scenes = evs.map(e => {
       // A scene of the night is at the fire pit whatever part of the day it borrowed.
@@ -327,9 +352,91 @@ export function episodeScreens(row) {
     const steps = finalSteps(row);
     if (steps.length) screens.push({ key: `result-${screens.length}`, phase: 'result', label: 'The winners', bg: 'final', rail: null, steps });
   }
-  return screens;
+  return opts.breaks === false ? screens : withBreaks(row, screens, opts.next);
 }
 const MOMENT_PHASE = new Set(['firepit', 'dumping', 'reunion']);
+const DRAWN_BY_FINAL = new Set(['final-result', 'envelope']);
+
+// ── the breaks: "Coming up" and "Next time" ───────────────────────────
+// The show cuts to a break on a cliffhanger: a few seconds of what is still
+// to come, each line cut off before it lands. A teaser never shows how
+// anything ends — no verdict, no pick, no goodbye, nothing that didn't air.
+const NO_TEASE = new Set(['dump-verdict', 'dump-verdict-couple', 'dump-verdict-singles', 'dump-reaction', 'dump-goodbye',
+  'dump-fallout', 'recouple-pick', 'steal', 'final-result', 'envelope', 'save-tie', 'walk', 'ballot-reveal', 'save-vote',
+  'top-couple-pick', 'reveal', 'result', 'stick-or-twist', 'casa-return', 'immunity-win', 'couples-vote', 'ex-ballot']);
+const TEASE = new Set(['argument', 'gossip', 'pull', 'entrance', 'group-entrance', 'head-turned', 'jealous-confront',
+  'confession', 'hideaway', 'photos', 'movie-night', 'dump-at-risk', 'dump-buildup', 'challenge-kiss', 'exclusive-ask',
+  'official-ask', 'love-said', 'declaration', 'date', 'snog-marry-pie', 'heart-rate', 'notes', 'mission-dump', 'loyalty']);
+const OPENERS = {
+  comingup: ['Still to come tonight…', 'Coming up after the break…', 'Later on Perfect Match…', 'Coming up…'],
+  nexttime: ['Next time on Perfect Match…', 'Tomorrow night…'],
+};
+/** A line cut off before it lands: the teaser's whole trick. */
+export function cutLine(text) {
+  const w = String(text || '').split(/\s+/).filter(Boolean);
+  if (w.length <= 5) return w.join(' ');
+  return w.slice(0, Math.ceil(w.length * 0.6)).join(' ').replace(/[.,!?;:…'"”]+$/, '') + '—';
+}
+function clipsFrom(screens, max = 3) {
+  const cands = [];
+  screens.forEach((sc, si) => sc.steps.forEach((st, k) => {
+    if (!st.sceneStart || st.raw || NO_TEASE.has(st.kind) || st.part === 'result') return;
+    // The scene's first spoken line: what the teaser cuts off.
+    const line = sc.steps.slice(k).find(x => x.text && x.voice !== 'stage' && x.part !== 'stage' && x.part !== 'hut' && x.who);
+    if (!line || String(line.text).length < 14) return;
+    const score = (st.big ? 3 : 0) + (st.fx?.neon || st.fx?.phone || st.fx?.shake ? 2 : 0) + (TEASE.has(st.kind) ? 2 : 0);
+    if (score < 2) return;
+    cands.push({ st, line, score, at: si * 1000 + k });
+  }));
+  const kinds = new Set(), out = [];
+  for (const c of [...cands].sort((a, b) => b.score - a.score || a.at - b.at)) {
+    if (out.length >= max) break;
+    if (kinds.has(c.st.kind) && cands.length > max) continue;
+    kinds.add(c.st.kind); out.push(c);
+  }
+  return out.sort((a, b) => a.at - b.at);
+}
+function breakScreen(kind, row, clips, bg, title = null, label = kind === 'comingup' ? 'Coming up' : 'Next time') {
+  const pick = OPENERS[kind][(row.num || 0) % OPENERS[kind].length];
+  const narr = words().narratorName || 'The Narrator';
+  const steps = [{ part: 'teaser', kind: 'teaser', who: narr, voice: 'narrator', bg, headline: label, cast: [],
+    text: pick, fx: { teaser: kind, neon: [label, kind === 'comingup' ? '#ff2e88' : '#ffc15e'] }, sceneStart: true, sceneEnd: true, ev: -1 }];
+  for (const { st, line } of clips) {
+    steps.push({ part: 'teaser', kind: 'teaser', who: line.who, voice: line.voice === 'hut' ? 'hut' : line.voice || '', bg: st.bg,
+      headline: label, text: cutLine(line.text),
+      cast: (st.cast || []).slice(0, 3).map(([n, x]) => [n, x, n === line.who ? 'speak' : '']),
+      fx: { teaser: kind }, sceneStart: true, sceneEnd: true, ev: -1 });
+  }
+  if (title) steps.push({ part: 'teaser', kind: 'teaser', who: narr, voice: 'narrator', bg: 'night', headline: label, cast: [],
+    text: title, fx: { teaser: kind, neon: [title, '#ffc15e'] }, big: true, sceneStart: true, sceneEnd: true, ev: -1 });
+  return { key: `${kind}-${row.num}`, phase: kind, label, bg, rail: null, steps, teaser: kind };
+}
+/**
+ * The breaks, placed as the show places them: one before the evening when
+ * the day has run long, one before the night's moment, and "Next time" at the
+ * end — from the next episode as it played (a rewatch), or from the schedule,
+ * which says what the night will be without anyone having seen it.
+ */
+function withBreaks(row, screens, next) {
+  if (row.moment === 'reunion' || !screens.length) return screens;
+  const isNight = s => MOMENT_PHASE.has(s.phase) || s.phase === 'moment' || s.phase === 'result';
+  const out = [...screens];
+  const night = out.findIndex(isNight);
+  const evening = out.findIndex(s => s.phase === 'evening');
+  const cuts = [];
+  if (evening >= 3 && (night < 0 || evening < night)) cuts.push([evening, night < 0 ? out.length : night, 'Coming up']);
+  if (night > 0) cuts.push([night, out.length, 'Coming up tonight']);
+  for (const [at, to, label] of [...cuts].reverse()) {
+    const clips = clipsFrom(out.slice(at, to));
+    if (clips.length >= 2) out.splice(at, 0, breakScreen('comingup', row, clips, out[at].bg, null, label));
+  }
+  if (row.moment === 'final') return out;
+  if (next?.row?.pm) {
+    const clips = clipsFrom(episodeScreens(next.row, { breaks: false }));
+    if (clips.length) out.push(breakScreen('nexttime', row, clips, 'night'));
+  } else if (next?.title) out.push(breakScreen('nexttime', row, [], 'night', next.title));
+  return out;
+}
 
 // A later screen of the same part of the day is named after its most
 // dramatic scene — a major moment first, then the kinds that move a story —

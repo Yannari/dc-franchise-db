@@ -47,6 +47,10 @@ function _pmPhaseForScreen(id) {
   const phase = id.slice(6).replace(/-\d+$/, '');
   if (phase === 'reunion') return { id:'pm-reunion', label:'Reunion', icon:'■' };
   if (phase === 'debug') return { id:'debug', label:'Debug', icon:'⚙' };
+  // The breaks (vp-pm/steps.js withBreaks): each one is its own stop in the
+  // running order, as an ad break is.
+  if (phase === 'comingup') return { id:'pm-break', label:'Coming up', icon:'▶' };
+  if (phase === 'nexttime') return { id:'pm-next', label:'Next time', icon:'▶' };
   if (_PM_DAY.has(phase)) return { id:'pm-villa', label:'The Villa', icon:'☀' };
   return { id:'pm-night', label:'The Night', icon:'☾' };
 }

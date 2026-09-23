@@ -430,9 +430,52 @@ details.pmv-debug[open] summary::before{transform:rotate(45deg)}
 }
 @media (prefers-reduced-motion: reduce){ *,*::before,*::after{animation:none!important;transition:none!important} }
 
+/* ── THE IDENT: a screen opens like a segment of the show ── */
+.pmv-ident{position:absolute;inset:0;z-index:40;pointer-events:none;display:grid;place-items:center;
+  background:radial-gradient(circle at 50% 45%,#ff2e88,#7a0b44 60%,#1a0612);animation:pmv-identOut 1.9s cubic-bezier(.7,0,.3,1) forwards}
+.pmv-identLogo{display:flex;flex-direction:column;align-items:center;gap:.4em;color:#fff;animation:pmv-identLogo 1.9s cubic-bezier(.22,1,.36,1) forwards}
+.pmv-identLogo svg{width:clamp(40px,6vw,96px);fill:#fff;filter:drop-shadow(0 0 18px #fff8);animation:pmv-identBeat .6s ease-in-out 2}
+.pmv-identLogo b{font:clamp(26px,5.4vw,64px)/1 'Bebas Neue',sans-serif;letter-spacing:.14em;text-shadow:0 0 24px #ff8cc6}
+.pmv-identWhere{position:absolute;left:4%;bottom:9%;display:flex;flex-direction:column;gap:2px;color:#fff;
+  padding:.5em 1.1em;border-left:4px solid #ffc15e;background:#0006;backdrop-filter:blur(6px);animation:pmv-identWhere 1.9s cubic-bezier(.22,1,.36,1) forwards}
+.pmv-identWhere span{font:clamp(16px,2.4vw,28px)/1 'Bebas Neue',sans-serif;letter-spacing:.12em}
+.pmv-identWhere small{font-size:clamp(10px,1.1vw,13px);opacity:.8;letter-spacing:.06em}
+@keyframes pmv-identOut{0%,62%{opacity:1;clip-path:circle(150% at 50% 50%)}100%{opacity:1;clip-path:circle(0% at 50% 50%)}}
+@keyframes pmv-identLogo{0%{opacity:0;transform:scale(.6)}18%{opacity:1;transform:scale(1.04)}30%{transform:scale(1)}62%{opacity:1}75%{opacity:0;transform:scale(1.2)}100%{opacity:0}}
+@keyframes pmv-identWhere{0%,20%{opacity:0;transform:translateX(-30px)}34%{opacity:1;transform:none}62%{opacity:1}72%,100%{opacity:0}}
+@keyframes pmv-identBeat{50%{transform:scale(1.18)}}
+/* the break's own ident: a hard slam, not the logo */
+.pmv-identBreak{background:#0b0508}
+.pmv-identBreak b{font:clamp(34px,7vw,90px)/1 'Bebas Neue',sans-serif;letter-spacing:.2em;color:#fff;text-shadow:0 0 30px #ff2e88,0 0 60px #ff2e8888;
+  animation:pmv-slam 1.9s cubic-bezier(.22,1,.36,1) forwards}
+@keyframes pmv-slam{0%{opacity:0;transform:scale(2.4)}14%{opacity:1;transform:scale(.96)}22%{transform:scale(1)}62%{opacity:1}74%,100%{opacity:0}}
+/* ── THE TEASER: quick cuts ── */
+.pmv-stage.pmv-teaser::after{content:attr(data-bug);position:absolute;left:3%;top:15%;z-index:12;font:clamp(12px,1.6vw,18px)/1 'Bebas Neue',sans-serif;
+  letter-spacing:.18em;color:#fff;background:#ff2e88;padding:.35em .7em;border-radius:4px;box-shadow:0 0 18px #ff2e8899;animation:pmv-blink 1.2s steps(2) infinite}
+.pmv-stage.pmv-teaser .pmv-cam{filter:saturate(1.25) contrast(1.08)}
+.pmv-stage.pmv-flash::before{content:'';position:absolute;inset:0;z-index:13;background:#fff;pointer-events:none;animation:pmv-flashCut .45s ease-out forwards}
+@keyframes pmv-flashCut{0%{opacity:.9}100%{opacity:0}}
+/* ── TV MODE: no cards, no Heart Map, the stage as big as the window ──
+   Keyed on the PLAYER (#visual-player.pm-tv), which survives every screen:
+   the screens' HTML is built once, before anyone toggles anything. */
+.pm-tv .pmv .pmv-cards,.pm-tv .pmv .pmv-aside,.pm-tv .pmv .pmv-rail{display:none}
+.pm-tv .pmv .pmv-layout{grid-template-columns:minmax(0,1fr)}
+.pm-tv .pmv .pmv-stage{position:relative;top:auto;aspect-ratio:16/9;width:min(100%, calc((100vh - 230px) * 16 / 9));cursor:pointer}
+.pm-tv .pmv .pmv-top{margin-bottom:6px}
+.pm-tv .pmv .pmv-dlg{font-size:1.18em}
+#visual-player.pm-tv:has(.pmv) #vp-sidebar{display:none}
+#visual-player:fullscreen{overflow:auto;background:#0b0508}
+#visual-player:fullscreen .pmv .pmv-stage{width:min(100%, calc((100vh - 170px) * 16 / 9))}
+.pmv-tvBtn{margin-left:auto}
+.pmv-tvBtn + .pmv-themeBtn{margin-left:0}
+.pmv-tvBtn .pmv-tvOff{display:none}
+.pm-tv .pmv-tvBtn .pmv-tvOn{display:none}.pm-tv .pmv-tvBtn .pmv-tvOff{display:inline}
+@media (max-width:640px){ .pm-tv .pmv .pmv-stage{aspect-ratio:4/5;width:min(100%, calc((100vh - 150px) * 4 / 5))} }
+
 /* COMPACT, LAST (ADDING-A-SHOW §6.5 rule 1): a short window gets a shorter stage. */
 @media (max-height: 820px) and (min-width: 641px){
-  .pmv-stage{aspect-ratio:16/7}
+  .pmv .pmv-stage{aspect-ratio:16/7}
+  .pm-tv .pmv .pmv-stage{aspect-ratio:16/9}
   .pmv-card{scroll-margin-top:calc(36vh + 24px)}
   .pmv-dlg{min-height:22%}
 }

@@ -124,6 +124,10 @@ export function paintStage(el, screen, idx, { fresh = false, hud = '' } = {}) {
   el.classList.toggle(P('fresh'), !!(fresh && st));
   el.classList.toggle(P('raw'), !!(st?.raw || st?.fx?.raw));
   el.classList.remove(P('shake'));
+  // A teaser: quick cuts, each line cut off, the break's bug in the corner.
+  el.classList.toggle(P('teaser'), !!st?.fx?.teaser);
+  el.classList.remove(P('flash'));
+  if (fresh && st?.fx?.teaser) { void el.offsetWidth; el.classList.add(P('flash')); }
   const hl = q('headline');
   if (!st) { hl.textContent = screen.label; hl.classList.add(P('on')); return; }
   q('airtxt').textContent = st.raw ? 'Unaired footage' : st.fx?.raw ? 'Aired at last' : 'On air';

@@ -33,6 +33,7 @@ import { rpBuildTraitorsDebug } from './vp-tr/debug.js';
 import { rpBuildDragSummary } from './vp-dr/summary.js';
 import { dragScreens } from './vp-dr/screens.js';
 import { perfectMatchVpScreens } from './vp-pm/screens.js';
+import { momentTitle as pmMomentTitle } from './pm/transcript.js';
 import { DRAG_FORMAT } from './shows.js';
 import { rpBuildBBCarePackagePlay } from './vp-bb-twists.js';
 import { rpBuildBBCarePackage } from './vp-bb-care-package.js';
@@ -14071,7 +14072,18 @@ export function buildVPScreens(epRecord) {
     const prev = ((typeof window !== 'undefined' && window.gs?.episodeHistory) || []).find(r => r && r.num === epRecord.num - 1) || null;
     let debug = false;
     try { debug = window.localStorage?.getItem('vp_debug') === 'true'; } catch { /* storage can throw */ }
-    vpScreens = perfectMatchVpScreens(epRecord, prev, { debug });
+    // "Next time": the next episode as it played, on a rewatch; otherwise
+    // only what the schedule says the night will be, which spoils nothing.
+    let next = null;
+    try {
+      const played = (window.gs?.episodeHistory || []).find(r => r && r.num === epRecord.num + 1 && r.pm);
+      if (played) next = { row: played };
+      else {
+        const entry = window.perfectMatchSeasonShape?.()?.schedule?.[epRecord.num];
+        if (entry) next = { title: pmMomentTitle({ moment: entry.moment }) };
+      }
+    } catch { /* no schedule to read: no "Next time" */ }
+    vpScreens = perfectMatchVpScreens(epRecord, prev, { debug, next });
     return vpScreens;
   }
   if (epRecord.format === DRAG_FORMAT) {

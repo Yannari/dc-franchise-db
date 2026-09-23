@@ -129,3 +129,32 @@ describe('the stage at rest names nobody, and each click shows exactly its line'
     }
   });
 });
+
+describe('the breaks: "Coming up" and "Next time"', () => {
+  it('a teaser cuts its line off, never shows how anything ends, and nothing that did not air', async () => {
+    const { cutLine } = await import('../js/vp-pm/steps.js');
+    expect(cutLine("I've been wanting to tell you something for days now.")).toMatch(/—$/);
+    let breaks = 0;
+    for (const seed of [1, 2]) {
+      const rows = season(seed);
+      rows.forEach((row, i) => {
+        const screens = episodeScreens(row, { next: rows[i + 1] ? { row: rows[i + 1] } : null });
+        const teasers = screens.filter(s => s.teaser);
+        breaks += teasers.length;
+        // A break is never the first screen, and the final has no "Next time".
+        expect(screens[0].teaser, `e${row.num}`).toBeFalsy();
+        if (row.moment === 'final' || row.moment === 'reunion') expect(teasers.some(s => s.teaser === 'nexttime')).toBe(false);
+        for (const s of teasers) for (const st of s.steps) {
+          expect(st.ev, `e${row.num}`).toBe(-1);
+          if (st.voice === 'narrator') continue;
+          // Every clip is a line from a scene that aired, cut before it lands.
+          const said = screens.flatMap(x => x.steps).concat(rows[i + 1] ? episodeScreens(rows[i + 1], { breaks: false }).flatMap(x => x.steps) : [])
+            .filter(x => !x.fx?.teaser && x.who === st.who && x.text && cutLine(x.text) === st.text);
+          expect(said.length, `e${row.num} "${st.text}"`).toBeGreaterThan(0);
+          expect(said.some(x => !x.raw), `e${row.num} "${st.text}"`).toBe(true);
+        }
+      });
+    }
+    expect(breaks).toBeGreaterThan(10);
+  });
+});

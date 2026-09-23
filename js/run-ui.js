@@ -392,8 +392,13 @@ export function buildHubAftermath(ep) {
     const exits = roundExits(ep, PERFECT_MATCH_FORMAT);
     const DOOR = { public: 'by the public', villa: 'by the villa', recoupling: 'after nobody picked them',
       casa: 'after Casa Amor', walk: '' };
+    // The reunion is after the villa has closed: "nobody left" is true of a
+    // night nobody was there.
+    const winners = gs.pm?.winners || gs.pmWinners || [];
     why = ep.moment === 'final' && ep.pm?.shares?.length
-      ? `${ep.pm.shares[0].couple.join(' & ')} won the public vote.`
+      ? `${[...ep.pm.shares].sort((x, y) => y.share - x.share)[0].couple.join(' & ')} won the public vote.`
+      : ep.moment === 'reunion'
+        ? `The villa has closed. The reunion brings everyone back${winners.length ? ` — ${winners.join(' & ')} as the winners` : ''}.`
       : exits.length
         ? exits.map(x => `${x.name} ${x.verb}${DOOR[x.channel] ? ` ${DOOR[x.channel]}` : ''}.`).join(' ')
         : 'Nobody left the villa tonight.';
@@ -515,7 +520,8 @@ export function buildSeasonHubModel(state = gs, config = seasonConfig, cast = pl
   const latestOutcome = _hubExits.length
     ? _hubExits.map(x => `${x.name} was ${x.verb}`).join(' · ')
     // A final the PUBLIC decided names its winners (the row carries the vote).
-    : latest?.pm?.shares?.length && latest.moment === 'final' ? `${latest.pm.shares[0].couple.join(' & ')} won the public vote`
+    : latest?.pm?.shares?.length && latest.moment === 'final' ? `${[...latest.pm.shares].sort((x, y) => y.share - x.share)[0].couple.join(' & ')} won the public vote`
+    : latest?.moment === 'reunion' ? 'The reunion: the villa has closed'
     : latest ? (getEpisodeEliminations(latest).length
       ? `${getEpisodeEliminations(latest).join(' + ')} left the game`
       // "Without a vote" is Total Drama's quiet night; each show says its own.

@@ -58,7 +58,7 @@ export const NARRATOR = {
     { id: 'nar.argument.x1', turns: [['narrator', "{a} and {b} are having words. Everyone else is suddenly very busy with their drinks."]] },
     { id: 'nar.argument.x2', turns: [['narrator', "The villa has gone quiet. That means {a} and {b} are at it again."]] },
     { id: 'nar.argument.x3', turns: [['narrator', "{a} has raised {a.posAdj} voice. {b} has raised {b.posAdj} eyebrows. It's going well."]] },
-    { id: 'nar.argument.1', turns: [['narrator', "Meanwhile, {a}'s in the kitchen making a cup of tea, and nobody's brave enough to go in there."]] },
+    { id: 'nar.argument.1', turns: [['narrator', "For the next hour, nobody goes anywhere near {a}."]] },
     { id: 'nar.argument.2', turns: [['narrator', "That started over nothing, and it's still going."]] },
     { id: 'nar.argument.3', when: { coupled: true }, turns: [['narrator', "{a} and {b}. Coupled up, and currently not speaking."]] },
     { id: 'nar.argument.4', when: { coupled: false }, turns: [['narrator', "{a} and {b} have never really got on. Today, the whole villa found out."]] },

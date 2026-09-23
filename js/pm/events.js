@@ -69,6 +69,13 @@ const openSecret = (state, n) => state.secrets.some(s => !s.known && (s.who === 
 // ── the kinds ─────────────────────────────────────────────────────────
 // cast(state, rng) → { players, kind? } | null. apply(state, ev, rng) → { pop, major }.
 const pop1 = (who, approval, fame) => ({ [who]: { approval, fame } });
+// Either of them walked in this episode: night one, or a bombshell's first
+// day. Talking to everybody is what that day is FOR, so a pull weighs a
+// quarter — with the public and as a secret (season 7: Theo, pulled twice on
+// night one, was told on three times and ended the night at -28).
+const DAY_ONE = 0.25;
+const GOSSIP_PER_EPISODE = 3;
+const metToday = (s, ...ns) => ns.some(n => n != null && (s.ledger?.firstEp?.[n] ?? s.ep) === s.ep);
 
 export const KINDS = {
   chat: {
@@ -119,6 +126,7 @@ export const KINDS = {
     },
     apply: (s, ev, rng) => {
       const [a, b] = ev.players;
+      const light = metToday(s, a, b) ? DAY_ONE : 1;
       nudgeAttraction(s, b, a, 0.3 * S(s, a).social / 10);
       nudgeAttraction(s, a, b, 0.1);
       addBond(a, b, 0.3);
@@ -128,7 +136,7 @@ export const KINDS = {
         const witnesses = roomMates(s, x).filter(n => n !== y && n !== p)
           .filter(() => rng() < 0.25);
         const secret = { id: `sec${s.secrets.length + 1}`, who: x, partner: p, with: y,
-          severity: sev, ep: s.ep, witnesses, known: false, eventId: ev.id, casa: s.split };
+          severity: sev * light, ep: s.ep, witnesses, known: false, eventId: ev.id, casa: s.split };
         s.secrets.push(secret);
         if (ev.aired) nudgeBelief(s.ledger, x, p, -3);
         // Stepping out while you have closed off weighs on you.
@@ -143,8 +151,8 @@ export const KINDS = {
         const py = partnerOf(s, y);
         if (py && py !== x) girlCode(s, x, [y, py]);
       }
-      return { pop: { ...pop1(a, partnerOf(s, a) ? -0.8 : 0.2, 1.5),
-        ...pop1(b, partnerOf(s, b) ? -0.4 : 0.1, 1) } };
+      return { pop: { ...pop1(a, partnerOf(s, a) ? -0.8 * light : 0.2, 1.5),
+        ...pop1(b, partnerOf(s, b) ? -0.4 * light : 0.1, 1) } };
     },
   },
   loyalty: {
@@ -196,6 +204,11 @@ export const KINDS = {
   gossip: {
     salience: 0.8,
     cast: (s, rng) => {
+      // A few tellings a night, not a dozen: season 7 ran 8-14 an episode,
+      // each a confrontation, and the villa did nothing else. What is left
+      // untold waits for tomorrow, or for the photos and Movie Night.
+      if (s._gossipEp !== s.ep) { s._gossipEp = s.ep; s._gossipN = 0; }
+      if (s._gossipN >= GOSSIP_PER_EPISODE) return null;
       const options = [];
       for (const sec of s.secrets.filter(x => !x.known)) {
         for (const w of sec.witnesses) {
@@ -208,9 +221,16 @@ export const KINDS = {
     },
     apply: (s, ev) => {
       const [w, p, x] = ev.players;
+      s._gossipN = (s._gossipEp === s.ep ? s._gossipN || 0 : 0) + 1; s._gossipEp = s.ep;
       const sec = s.secrets.find(z => z.id === ev.extra.secret);
+      // The news lands once: telling p about x tells p everything x has been
+      // doing behind p's back so far, so the next islander has nothing new
+      // to carry (season 7: Priya was told about Theo three times in a day,
+      // each one a full major moment). The heaviest of it is what stings.
+      const told = s.secrets.filter(z => !z.known && z.who === x && z.partner === p);
+      for (const z of told) z.known = true;
       if (sec) sec.known = true;
-      const sev = sec?.severity || 1;
+      const sev = Math.max(sec?.severity || 0, ...told.map(z => z.severity)) || 1;
       addBond(x, p, -1.5 * sev); nudgeAttraction(s, p, x, -1.0 * sev); addBond(w, x, -0.5);
       // p now knows what x feels, and it lands by the rung p believed they were on.
       revealTruth(s, p, x);
@@ -219,7 +239,11 @@ export const KINDS = {
       // The messenger is judged by how much the exposed one liked them anyway.
       addRelationshipDimension(x, w, 'resentment', 0.8 * judgement(s, x, w));
       if (ev.aired && partnerOf(s, p) === x) nudgeBelief(s.ledger, x, p, -6);
-      return { pop: { ...pop1(w, 0.3, 1.5), ...pop1(p, 1.5, 2), ...pop1(x, -BETRAYAL.exposed, 2) }, major: [p, x] };
+      // Scaled by what x actually did: being pulled for a chat is not making
+      // the move, and a day-one chat is barely anything. Only a full-weight
+      // secret is a major moment — 9-11 a night, measured, when every telling was.
+      return { pop: { ...pop1(w, 0.3, 1.5), ...pop1(p, 1.5 * Math.min(1, sev), 2), ...pop1(x, -BETRAYAL.exposed * Math.min(1, sev), 2) },
+        major: sev >= 1 ? [p, x] : [] };
     },
   },
   comedy: {
@@ -267,7 +291,15 @@ export const KINDS = {
   },
   'challenge-win': {
     salience: 0.35,
-    cast: (s, rng) => pick(rng, warmCouples(s)),
+    // One challenge, one winning couple: drawn once an episode and kept, so a
+    // second "we won!" is never a different couple (season 7 night one crowned
+    // two, one of them three times). A named challenge has its own win scene.
+    cast: (s, rng) => {
+      if (s._namedChallengeEp === s.ep) return null;
+      if (s._chalWinEp !== s.ep) { s._chalWinEp = s.ep; s._chalWin = pick(rng, warmCouples(s)) || null; }
+      const w = s._chalWin;
+      return w && partnerOf(s, w[0]) === w[1] ? w : null;
+    },
     apply: (s, ev) => {
       const [a, b] = ev.players;
       addBond(a, b, 0.2);
@@ -374,20 +406,34 @@ export function airLater(state, ev) {
 }
 
 /** The villa's day: roughly PHASE_BUDGETS events, in phase order. */
+// The same kind with the same people: once a part of the day, twice an
+// episode. Season 7's night one had Chloe and Marcus kiss six times in one
+// evening and Mia in eight comedy scenes — the cast was drawn fresh each time,
+// with nothing to say who had just been on screen doing the same thing.
+const PER_PHASE = 1, PER_EPISODE = 2;
 export function generateEpisodeEvents(state, rng, budgets = PHASE_BUDGETS) {
   const out = [];
+  if (state._castSeenEp !== state.ep) { state._castSeen = {}; state._castSeenEp = state.ep; }
+  const seenEp = state._castSeen;
   for (const [phase, budget] of Object.entries(budgets)) {
     state.phase = phase;
+    const seenPhase = {};
     // Casa nights are temptation nights: pulls weigh double while split.
     const kinds = PHASE_KINDS[phase].map(([k, w]) => [k, k === 'pull' && state.split ? w * 2 : w]);
     let made = 0, tries = 0;
-    while (made < budget && tries < budget * 4) {
+    // Eight tries a slot: the same-cast cap turns some draws away, and four
+    // left the thinnest episode at 75 scenes (91 before the cap).
+    while (made < budget && tries < budget * 8) {
       tries++;
       const kind = weighted(rng, kinds);
       const got = KINDS[kind].cast(state, rng);
       if (!got) continue;
       const players = Array.isArray(got) ? got : got.players;
       const realKind = Array.isArray(got) ? kind : (got.kind || kind);
+      const key = realKind + '|' + [...players].sort().join('+');
+      if ((seenPhase[key] || 0) >= PER_PHASE || (seenEp[key] || 0) >= PER_EPISODE) continue;
+      seenPhase[key] = (seenPhase[key] || 0) + 1;
+      seenEp[key] = (seenEp[key] || 0) + 1;
       const extra = Array.isArray(got) ? {} : { secret: got.secret };
       out.push(makeEvent(state, rng, { phase, kind: realKind, players, extra }));
       made++;

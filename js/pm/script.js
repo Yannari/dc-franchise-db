@@ -181,6 +181,13 @@ function noteUse(state, entry, ps) {
   if (u.eps[u.eps.length - 1] !== state.ep) u.eps.push(state.ep);
   const k = pairKey(ps);
   if (!u.pairs.includes(k)) u.pairs.push(k);
+  (u.pairEp ||= {})[k] = state.ep;
+}
+// A spent leading pool may lend a line again, only never to the same pair
+// twice in one episode (what the viewer would hear as a loop).
+function relaxedWeight(state, entry, ps) {
+  const u = usage(state)[entry.id];
+  return u?.pairEp?.[pairKey(ps)] === state.ep ? 0 : 1;
 }
 
 /** The words have their own dice: a line can never change what happened. */
@@ -198,19 +205,34 @@ function scriptRng(state) {
 const LEADING = ['rowedToday', 'justMet'];
 
 export function pickScript(state, pool, ps, facts, { allowRepeat = true } = {}) {
+  // Candidates at each width, narrowest first: the leading pool, then every
+  // entry that fits. A spent leading pool widens before it repeats: a couple
+  // who rowed and made up five times in one evening heard the same
+  // "I hate fighting with you" five times (season 7, night one) because the
+  // making-up pool ran dry and the repeat rule fired inside it.
+  const widths = [];
   for (const k of LEADING) {
     if (!facts[k]) continue;
     const led = pool.filter(e => e.when?.[k] && matches(e.when, facts));
-    if (led.length) { pool = led; break; }
+    if (led.length) { widths.push(led); break; }
   }
   const fits = pool.filter(e => matches(e.when, facts));
-  const cands = fits.length ? fits : pool.filter(e => !e.when);
-  if (!cands.length) return null;
+  widths.push(fits.length ? fits : pool.filter(e => !e.when));
+  if (!widths[widths.length - 1].length && !widths[0].length) return null;
   const rng = scriptRng(state);
-  let ws = cands.map(e => weightFor(state, e, ps, facts));
+  let cands = null, ws = null;
+  for (const [i, w] of widths.entries()) {
+    if (!w.length) continue;
+    let weights = w.map(e => weightFor(state, e, ps, facts));
+    // The leading pool is the scene's truth (a row is followed by making up):
+    // spent, it lends a line again before a wider pool forgets the row.
+    if (!weights.some(x => x > 0) && i === 0 && widths.length > 1) weights = w.map(e => relaxedWeight(state, e, ps));
+    if (weights.some(x => x > 0)) { cands = w; ws = weights; break; }
+  }
   // Every entry already spent on this pair: allow a repeat rather than silence.
-  if (!ws.some(w => w > 0)) {
+  if (!cands) {
     if (!allowRepeat) return null;
+    cands = widths.find(w => w.length);
     ws = cands.map(() => 1);
   }
   let r = rng() * ws.reduce((s, w) => s + w, 0);

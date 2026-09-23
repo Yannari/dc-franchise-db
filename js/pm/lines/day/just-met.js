@@ -92,7 +92,7 @@ export const JUST_MET = {
     { id: 'jm.comedy.02', when: J, stage: '{a} gets lost looking for the bathroom.', turns: [['a', "How is this villa so big? I've been round it three times."]] },
     { id: 'jm.comedy.03', when: J, stage: "{a} unpacks, and it's mostly shoes.", turns: [['a', "I thought it would be cold at night. It's not cold at night."]] },
     { id: 'jm.comedy.04', when: J, stage: '{a} jumps into the pool, forgetting the microphone.', turns: [['a', "Oh no. Is this waterproof? Please say this is waterproof."]] },
-    { id: 'jm.comedy.05', when: J, stage: "{a} introduces themselves to someone for the third time today.", turns: [['a', "I know. I know we've met. I'm just very bad with names."]] },
+    { id: 'jm.comedy.05', when: J, stage: "{a} introduces {a.ref} to someone for the third time today.", turns: [['a', "I know. I know we've met. I'm just very bad with names."]] },
     { id: 'jm.comedy.06', when: J, stage: '{a} sits down on a daybed that is already wet.', turns: [['a', "Great. Brilliant. First impressions."]] },
     { id: 'jm.comedy.07', when: J, stage: '{a} spends ten minutes trying to open the fridge.', turns: [['a', "It's a push one. Of course it's a push one."]] },
     { id: 'jm.comedy.08', when: J, stage: '{a} practises a chat-up line in the mirror, out loud.', turns: [['a', "No. Too much. Again."]] },

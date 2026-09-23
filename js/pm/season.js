@@ -90,6 +90,7 @@ function villaDayEvents(state, rng, entry, seed) {
   const { morning, day, evening } = PHASE_BUDGETS;
   const out = generateEpisodeEvents(state, rng, { morning, day });
   const chal = runChallenge(state, streamFor(seed, `chal:${entry.ep}${state.epSalt}`), entry.challenge);
+  if (chal.length) state._namedChallengeEp = entry.ep;
   out.push(...chal);
   out.push(...generateEpisodeEvents(state, rng, { event: chal.length ? 6 : PHASE_BUDGETS.event, evening }));
   return out;

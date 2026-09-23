@@ -132,6 +132,12 @@ describe('the first public vote always plays at the calibration cast', () => {
       if ((rows.find(r => r.moment === 'final')?.pm.couples?.length || 0) >= 4) four++;
     }
     expect(skipped).toBe(0);
-    expect(four).toBeGreaterThanOrEqual(14);
+    // Four-couple finals at twelve: 59 of 80 before the 2026-09-23 audit
+    // fixes, 52 of 80 after (the band 12-15 of 20). The loss is one real-show
+    // rule: a girl stolen from at the recoupling of eight is left single with
+    // the boy nobody picked, and a cast this small has no bombshell left to
+    // fill the gap, so the semi-final takes them both. Changing it means a
+    // rule the show does not have — the user's call, not a tuned threshold.
+    expect(four).toBeGreaterThanOrEqual(11);
   });
 });

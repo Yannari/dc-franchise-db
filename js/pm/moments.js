@@ -550,7 +550,12 @@ function voteNight(state, ctx) {
     // so a small cast never met the public until the semi-final.
     const firstCall = !!ctx.firstVote && (ctx.surplus ?? 0) >= 2;
     const paceOk = ctx.pace >= 0.8 || firstCall;
-    if (state.couples.length < 3 || (state.couples.length <= FINAL_COUPLES && !roomy) || !paceOk) {
+    // The first vote with the final's four couples and bombshells still to
+    // come (counted in the surplus) plays too: the arrivals refill the villa
+    // (season 7 audit, seed 6: nine islanders, four couples, the one single
+    // held for a bombshell — the first vote skipped).
+    const firstRoom = firstCall && state.couples.length >= FINAL_COUPLES && toComeAll >= 1;
+    if (state.couples.length < 3 || (state.couples.length <= FINAL_COUPLES && !roomy && !firstRoom) || !paceOk) {
       // …unless the villa has single islanders to lose: then the singles face
       // the public (measured: at the calibration cast a quarter of second
       // votes met four couples and three or four singles, who then all went

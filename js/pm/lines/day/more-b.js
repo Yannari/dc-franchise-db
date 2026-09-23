@@ -145,6 +145,42 @@ export const MORE_B = {
 
 // ── the moments that repeat (lines/moments.js pools) ────────────────────
 export const MORE_MOMENTS = {
+  // step-forward [a, b]: boy a walks in; b is the girl he couples with (`of`).
+  'step-forward': [
+    { id: 'sf2.01', when: { of: 'one' }, stage: '{a} reaches the fire pit. {b} is the only one to step forward.', turns: [['a', "Just you?"], ['b', "Just me. Is that a problem?"], ['a', "Not at all."]] },
+    { id: 'sf2.02', when: { of: 'one' }, stage: '{b} steps forward the second {a} comes into view.', turns: [['b', "Sorry. I didn't even wait. I just went."], ['a', "I'm glad you did."]] },
+    { id: 'sf2.03', when: { of: 'one' }, stage: '{a} walks in, and {b} takes one step forward, a little nervously.', turns: [['a', "Hi. I'm {a}."], ['b', "I know. We all heard. Hi."]], beat: 'They both laugh, and it breaks the ice.' },
+    { id: 'sf2.04', when: { of: 'one' }, stage: 'Only {b} steps forward for {a}.', turns: [['a', "Right. Well. Nice to meet you, {b}."], ['b', "You don't sound very excited."], ['a', "I'm excited. I'm just nervous."]], beat: '{b} is not completely sure.' },
+    { id: 'sf2.05', when: { of: 'one' }, stage: '{a} comes down the steps, and {b} steps forward straight away.', turns: [['b', "You're exactly my type. I'm not going to pretend."], ['a', "Well, now I'm blushing."]] },
+    { id: 'sf2.06', when: { of: 'one' }, stage: '{b} steps forward for {a}. Nobody else moves.', turns: [['a', "Looks like we're a couple, then."], ['b', "Looks like it. Come and stand with me."]] },
+    { id: 'sf2.07', when: { of: 'one' }, stage: '{a} arrives, and after a long pause {b} steps forward.', turns: [['a', "That was a long wait."], ['b', "I was thinking about it."], ['a', "And?"], ['b', "And here I am."]] },
+    { id: 'sf2.08', when: { of: 'one' }, stage: '{b} steps forward for {a} and grins at the others.', turns: [['b', "I'll take this one, thanks."], ['a', "Do I get a say?"], ['b', "You can say yes."], ['a', "Yes."]] },
+    { id: 'sf2.09', when: { of: 'several' }, stage: 'Three girls step forward for {a} at once.', turns: [['a', "Oh no. Oh no, this is hard."], ['a', "{b}. Sorry, everyone."]], beat: 'The girls who stepped forward go back into line, not all of them smiling.' },
+    { id: 'sf2.10', when: { of: 'several' }, stage: '{a} walks in, and more than one girl steps forward.', turns: [['a', "I didn't think anyone would step forward, and now I've got to choose."], ['a', "I'm going with my gut. {b}."]] },
+    { id: 'sf2.11', when: { of: 'several' }, stage: 'Several girls step forward for {a}, and the fire pit goes quiet.', turns: [['a', "I've had my eye on one person since I walked in. {b}."], ['b', "I was hoping you'd say that."]] },
+    { id: 'sf2.12', when: { of: 'several' }, stage: 'More than one girl steps forward, and {a} takes a long time to decide.', turns: [['a', "Can I have a minute?"], ['a', "Okay. {b}."]], beat: 'One of the girls left in the line rolls her eyes.' },
+    { id: 'sf2.13', when: { of: 'several' }, stage: '{a} looks along the line of girls who stepped forward.', turns: [['a', "This is the best and worst moment of my life."], ['a', "{b}, would you be my partner?"], ['b', "Go on, then."]] },
+    { id: 'sf2.14', when: { of: 'several' }, stage: 'The girls step forward for {a}, and {a} goes straight to {b}.', turns: [['a', "Sorry. There was never really a choice."], ['b', "Good answer."]] },
+    { id: 'sf2.15', when: { of: 'several' }, stage: 'Several girls step forward, and {a} laughs nervously.', turns: [['a', "I feel like I'm going to make enemies whatever I do."], ['a', "{b}."]], beat: '{a} is right about the enemies, for tonight at least.' },
+    { id: 'sf2.16', when: { of: 'several' }, stage: '{a} walks along the girls who stepped forward, and stops at {b}.', turns: [['a', "You. If that's okay."], ['b', "It's more than okay."]] },
+    { id: 'sf2.17', when: { of: 'nobody' }, stage: '{a} walks in, waits, and nobody steps forward.', turns: [['a', "Not even one? Wow."]], beat: '{a} laughs, but goes a bit red.' },
+    { id: 'sf2.18', when: { of: 'nobody' }, stage: 'Not one girl steps forward for {a}.', turns: [['a', "That's fine. I'm a grower, not a shower."]], beat: 'That gets a laugh, at least.' },
+    { id: 'sf2.19', when: { of: 'nobody' }, stage: '{a} comes down the steps. Nobody moves.', turns: [['a', "Was it the shirt? It's the shirt, isn't it."]] },
+    { id: 'sf2.20', when: { of: 'nobody' }, stage: '{a} waits at the fire pit, and the line of girls stays exactly where it is.', turns: [['a', "Right. I'll just wait over there, then."]], beat: '{a} goes and stands at the side, trying hard to look relaxed.' },
+    { id: 'sf2.21', when: { of: 'nobody' }, stage: 'Nobody steps forward for {a}, and the silence goes on a bit too long.', turns: [['a', "This is fine. This is character building."]] },
+    { id: 'sf2.22', when: { of: 'nobody' }, stage: '{a} walks in with a big smile, and nobody steps forward.', turns: [['a', "Okay. Well. You'll all be sorry when you get to know me."]], beat: 'A couple of the girls look like they might be.' },
+    { id: 'sf2.23', when: { of: 'nobody' }, stage: 'The girls look at {a}, and at each other, and nobody moves.', turns: [['a', "Honestly, that's the most nervous I've ever been, for nothing."]] },
+    { id: 'sf2.24', when: { of: 'nobody' }, stage: 'Nobody steps forward for {a}.', turns: [['a', "No? Nobody? Okay."]], beat: 'The host gives {a} a sympathetic little smile.' },
+  ],
+  // step-last [a, b]: girl a and boy b, put together at the end.
+  'step-last': [
+    { id: 'sl2.01', stage: 'That leaves {a} and {b}, and nobody else to choose from.', turns: [['b', "So. It's us."], ['a', "It's us. Don't look so worried."]] },
+    { id: 'sl2.02', stage: '{a} and {b} are the last two standing, and they couple up.', turns: [['a', "I'll be honest, I'm not sure about this."], ['b', "Neither am I. Let's see."]], beat: 'They stand together, not quite touching.' },
+    { id: 'sl2.03', stage: '{b} walks over to {a}, the only girl left.', turns: [['b', "I would have picked you anyway."], ['a', "You're only saying that."], ['b', "Maybe. Let's find out."]] },
+    { id: 'sl2.04', stage: 'The last couple of the night is {a} and {b}.', turns: [['a', "At least we'll have a lot to talk about."], ['b', "Like how nobody wanted us?"], ['a', "Like that."]] },
+    { id: 'sl2.05', stage: '{a} and {b} end up together, by default.', turns: [['b', "Well, this wasn't the plan."], ['a', "Plans are overrated."]] },
+    { id: 'sl2.06', stage: '{b} and {a} are the last two at the fire pit.', turns: [['a', "Hi. I think we're stuck with each other."], ['b', "There are worse people to be stuck with."]] },
+  ],
   // dump-goodbye [a, b] / [a]: b hugs a (who is leaving) goodbye / a to everyone.
   'dump-goodbye': [
     { id: 'dg2.01', when: { withB: true }, turns: [['a', "Don't let them forget me."], ['b', "Nobody could forget you."]], beat: 'They hold on to each other for a long time.' },

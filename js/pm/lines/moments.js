@@ -87,6 +87,7 @@
 import { MORE_MOMENTS } from './day/more-b.js';
 import { NIGHT_ONE } from './night-one.js';
 import { DEBRIEF } from './debrief.js';
+import { MOVIE_NIGHT } from './movie-night.js';
 const ch = channel => ({ channel });
 export const MOMENTS = {
   'intro-look': [
@@ -1677,3 +1678,5 @@ for (const [k, v] of Object.entries(MORE_MOMENTS)) MOMENTS[k] = [...(MOMENTS[k] 
 for (const [k, v] of Object.entries(NIGHT_ONE)) MOMENTS[k] = [...(MOMENTS[k] || []), ...v];
 // The night's debrief after a big moment (lines/debrief.js; engine pm/debrief.js).
 MOMENTS.debrief = [...(MOMENTS.debrief || []), ...DEBRIEF];
+// Movie Night around the clips (lines/movie-night.js; the clips are the real scenes).
+for (const [k, v] of Object.entries(MOVIE_NIGHT)) MOMENTS[k] = [...(MOMENTS[k] || []), ...v];

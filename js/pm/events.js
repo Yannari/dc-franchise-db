@@ -340,7 +340,7 @@ export const KINDS = {
     'challenge-text', 'receipt', 'look-who',
     // night one's opening
     'first-arrival', 'first-look', 'step-forward', 'step-last', 'host-open', 'host-first', 'intro', 'snogger-kiss', 'snogger-win', 'snogger-row', 'couple-goals', 'couple-goals-row',
-    'knowing-me', 'knowing-row', 'talent-act', 'talent-win', 'talent-snub', 'baby-doll', 'sorts-podium', 'grafties-award', 'save-vote', 'save-tie', 'arrival-chat', 'first-toast', 'debrief', 'bombshell-text', 'bombshell-guess', 'bombshell-react', 'top-couple-pick', 'couples-vote', 'ex-return', 'ex-ballot']
+    'knowing-me', 'knowing-row', 'talent-act', 'talent-win', 'talent-snub', 'baby-doll', 'sorts-podium', 'grafties-award', 'save-vote', 'save-tie', 'movie-text', 'movie-seat', 'movie-clip', 'movie-react', 'movie-row', 'movie-split', 'arrival-chat', 'first-toast', 'debrief', 'bombshell-text', 'bombshell-guess', 'bombshell-react', 'top-couple-pick', 'couples-vote', 'ex-return', 'ex-ballot']
     .map(k => [k, { salience: 1, cast: () => null,
       apply: (s, ev) => ({ pop: ev.extra.pop || {}, major: ev.extra.majorPop || [] }) }])),
 };

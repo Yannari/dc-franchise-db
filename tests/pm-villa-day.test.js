@@ -28,7 +28,7 @@ describe('the day, the ladder and the feelings reach the rows', () => {
   it('across twelve seasons, the ladder and the feelings all produce scenes', () => {
     const kinds = new Set(all.flatMap(x => [...x.kinds]));
     for (const k of ['close-off', 'exclusive-ask', 'jealous-confront', 'reassurance', 'advice',
-      'heart-rate', 'snog-marry-pie', 'movie-night', 'families', 'notes']) expect(kinds, k).toContain(k);
+      'heart-rate', 'snog-marry-pie', 'movie-clip', 'movie-react', 'families', 'notes']) expect(kinds, k).toContain(k);
   });
 
   it('stress is higher in week five than in week one', () => {

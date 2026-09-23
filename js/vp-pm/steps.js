@@ -35,6 +35,8 @@ export const KIND_LABEL = {
   'challenge-kiss': 'A challenge kiss', 'challenge-win': 'Winners', entrance: 'A new arrival', date: 'The date',
   'arrival-chat': 'Getting to know each other', 'first-toast': 'A toast', debrief: 'The debrief', 'bombshell-text': 'I got a text!',
   'bombshell-guess': 'Who is it?', 'bombshell-react': 'All eyes on the steps',
+  'movie-text': 'Movie Night', 'movie-seat': 'Taking their seats', 'movie-clip': 'Now showing', 'movie-react': 'The reaction',
+  'movie-row': 'After the screening', 'movie-split': "It's over",
   steal: 'A steal', 'recouple-pick': 'The recoupling', 'dump-buildup': 'At risk', 'dump-verdict': 'Dumped',
   'ballot-reveal': 'The vote', 'dump-reaction': 'The reaction', 'dump-goodbye': 'Goodbye', 'dump-fallout': 'Fallout',
   'casa-return': 'Stick or twist', photos: 'The photos', declaration: 'The declaration', 'final-result': 'The result',
@@ -69,6 +71,7 @@ export function bgFor(row, phase) {
   if (CASA_NIGHTS.has(row.moment) && (phase === 'evening' || phase === 'firepit')) return 'casa';
   if (phase === 'firepit' || phase === 'dumping') return 'night';
   if (phase === 'evening' || phase === 'debrief') return 'terrace';
+  if (phase === 'cinema') return 'cinema';
   return 'day';
 }
 
@@ -148,7 +151,16 @@ function fxFor(row, e, first) {
   if (k === 'casa-return') fx.deal1 = [e.players[0], e.extra?.choice === 'twist' ? 'twist' : 'stick'];
   if (k === 'ballot-reveal' || k === 'ex-ballot' || k === 'save-vote') fx.deal = [[e.players[0], e.players[1]]];
   if (k === 'heart-rate') fx.ecg = [e.players[0]];
-  if (k === 'challenge-text' || k === 'mission-brief' || k === 'bombshell-text') fx.phone = true;
+  if (k === 'challenge-text' || k === 'mission-brief' || k === 'bombshell-text' || k === 'movie-text') fx.phone = true;
+  // Movie Night: the clip plays INSIDE the big screen (stage.js), under a
+  // marquee with its title on the first line; the audience watches from the
+  // beanbags. Fury shakes the cinema; a break-up kills the lights.
+  if (k === 'movie-clip') { fx.clip = { title: e.extra?.title || 'Now showing', ep: e.extra?.clipEp ?? null, faces: [...e.players] }; fx.poster = e.extra?.title || 'Now showing'; }
+  if (k === 'movie-text') fx.neon = ['Movie Night', '#ffc15e'];
+  if (k === 'movie-react' && e.extra?.of === 'fury') { fx.shake = true; fx.flash = true; }
+  if (k === 'movie-react' && e.extra?.of === 'hurt') fx.flash = true;
+  if (k === 'movie-row' && e.extra?.of === 'deny') fx.shake = true;
+  if (k === 'movie-split') { fx.neonDie = ["It's over", '#ff2e88']; fx.shake = true; }
   // The bombshell comes down the steps as a silhouette and lights up (stage.js).
   if (k === 'entrance' && e.extra?.of === 'bombshell') fx.reveal = true;
   if (k === 'steal' || k === 'argument' || k === 'jealous-confront' || k === 'photos' || k === 'snogger-row') fx.shake = true;
@@ -169,6 +181,7 @@ function relOps(e) {
   if (k === 'dump-verdict') return [['leave', p[0]]];
   if (k === 'dump-verdict-couple' || k === 'dump-verdict-singles') return p.map(n => ['leave', n]);
   if (k === 'walk') return [['leave', p[0]]];
+  if (k === 'movie-split') return [['single', p[0]], ['single', p[1]]];
   if (k === 'entrance' || k === 'group-entrance' || k === 'return-entrance') return p.map(n => ['arrive', n]);
   if (k === 'first-arrival') return [['arrive', p[0]]];
   // The boy walks in, and walks out coupled (or waiting).
@@ -204,6 +217,14 @@ export function sceneSteps(row, e, evIndex, bg) {
     big: !!(e.aired && e.major?.length) };
   const out = [];
   const make = (part, who, text, voice, extra = {}) => {
+    // Movie Night's clip: the audience on the beanbags (the partner watching,
+    // the one on screen), the clip's own faces and words inside the screen.
+    if (e.kind === 'movie-clip') {
+      const aud = (e.extra?.audience || []).map((n, i) => [n, [32, 68][i] ?? 50, 'back']);
+      out.push({ ...base, part, who, text, voice: 'clip', cast: aud, bg, seated: true,
+        clipOn: { faces: [...e.players], speaker: who, ep: e.extra?.clipEp ?? null, title: e.extra?.title || '' }, ...extra });
+      return;
+    }
     const cast = voice === 'narrator' ? castOf(e, null, host).map(c => [c[0], c[1], 'back']) : castOf(e, who, host);
     for (const c of cast) if (hurt.has(c[0]) && c[2] !== 'speak') c[2] = 'hurt';
     out.push({ ...base, part, who, text, voice, cast, bg, ...extra });
@@ -230,7 +251,8 @@ export function sceneSteps(row, e, evIndex, bg) {
   first.pops = pops;
   if (first.fx.phone) first.fx.phone = [e.players[0], (lines[0]?.text || s.stage || '')];
   // A big scene stays pushed in for all of its lines.
-  const close = !!(first.big || first.fx.shake);
+  // (Movie Night's clip keeps the wide shot: the screen is the picture.)
+  const close = e.kind !== 'movie-clip' && !!(first.big || first.fx.shake);
   for (const s of out) s.close = close;
   first.sceneStart = true;
   out[out.length - 1].rel = relOps(e);
@@ -299,7 +321,7 @@ function finalSteps(row) {
 // ── cutting a part of the day into screens ────────────────────────────
 // Night one's parts are one screen each, however long (user: "the arrivals is
 // cut for no reason — 1 screen for the girls, 1 for the boys, then the coupling").
-const WHOLE = new Set(['arrival', 'arrival-2', 'coupling', 'debrief']);
+const WHOLE = new Set(['arrival', 'arrival-2', 'coupling', 'debrief', 'cinema']);
 function cut(scenes, phase) {
   if (WHOLE.has(phase)) return [scenes];
   const total = scenes.reduce((s, x) => s + x.steps.length, 0);

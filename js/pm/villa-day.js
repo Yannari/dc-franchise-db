@@ -16,6 +16,7 @@ import { attachment, emo, feel, jealousyHit, jealousyOutlet, breakHeart, tickEmo
 import { confidantOf, verdict, judgement } from './circle.js';
 import { familyVerdict } from './arrivals.js';
 import { BETRAYAL } from './ledger.js';
+import { movieNight } from './movie-night.js';
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 const pick = (rng, arr) => (arr.length ? arr[Math.floor(rng() * arr.length)] : null);
@@ -197,30 +198,16 @@ const RITUALS = {
   }),
   // Unaired moments played to the villa; the partners find out, and the
   // villa is accused of judging friends more softly than rivals.
+  // Movie Night (pm/movie-night.js): the text, the seats, clips of what really
+  // happened in their own words, the faces, and the rows after.
   'movie-night': (state, rng) => {
-    const clips = state.history.filter(e => !e.aired && e.players.some(n => partnerOf(state, n)))
-      .sort((a, b) => b.players.length - a.players.length).slice(0, 4);
-    const out = [];
-    for (const c of clips) {
-      airLater(state, c);
-      for (const n of c.players) {
-        const p = partnerOf(state, n);
-        if (!p || c.players.includes(p)) continue;
-        revealTruth(state, p, n);
-        const other = c.players.find(o => o !== n) || n;
-        jealousyHit(state, p, n, other, 5, { confirmed: true });
-        addRelationshipDimension(p, n, 'trust', -1.5);
-      }
-      // Caught on screen behind a partner's back: that is the moment itself.
-      const caught = c.players.filter(n => partnerOf(state, n) && !c.players.includes(partnerOf(state, n)));
-      out.push(scene(state, rng, 'movie-night', c.players,
-        { clip: c.id, pop: Object.fromEntries(caught.map(n => [n, { approval: -BETRAYAL.movieNight, fame: 1.5 }])) },
-        { phase: 'evening', aired: true, major: c.players }));
-    }
-    if (clips.length >= 2) {
-      const gap = Math.max(...state.villa.map(v =>
-        Math.abs(judgement(state, v, clips[0].players[0]) - judgement(state, v, clips[1].players[0]))));
-      if (gap > 0.4) out.push(scene(state, rng, 'double-standard', [clips[0].players[0], clips[1].players[0]], { pop: {} }, { aired: true }));
+    const out = movieNight(state, rng);
+    // Two islanders caught doing the same thing, judged differently by the
+    // villa: the double standard, said out loud.
+    const caught = out.filter(e => e.kind === 'movie-clip' && e.extra.of !== 'loyalty').map(e => e.extra.audience[1]);
+    if (caught.length >= 2) {
+      const gap = Math.max(...state.villa.map(v => Math.abs(judgement(state, v, caught[0]) - judgement(state, v, caught[1]))));
+      if (gap > 0.4) out.push(scene(state, rng, 'double-standard', [caught[0], caught[1]], { pop: {} }, { aired: true, phase: 'cinema' }));
     }
     return out;
   },

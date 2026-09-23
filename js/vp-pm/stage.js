@@ -69,6 +69,9 @@ function sceneHtml(bg) {
     hut: `<div class="${P('weave')}"></div>${bokeh(8, 'string', 10, 50, 6)}`,
     casa: `${bokeh(24, '', 5, 80, 3)}`,
     final: `<div class="${P('beams')}"></div>${bokeh(20, 'string', 5, 70, 3)}`,
+    // Movie Night: an outdoor cinema on the lawn — the projector's beam from
+    // behind the audience, fairy lights, and the beanbags in rows.
+    cinema: `<div class="${P('beam')}"></div>${string(4)}${bokeh(10, '', 2, 30, 1.4)}<div class="${P('beanbags')}"><i></i><i></i><i></i><i></i><i></i></div>`,
   }[bg] || '';
   return `<div class="${P('scene')} ${P('sc-' + bg)}">${inner}</div>`;
 }
@@ -79,7 +82,9 @@ const petalsHtml = () => Array.from({ length: 30 }, (_, i) => {
 }).join('');
 
 function frame(bg, hud, board) {
-  return `<div class="${P('cam')}">${sceneHtml(bg)}<div class="${P('busts')}"></div></div>
+  const screen = bg === 'cinema' ? `<div class="${P('bigscreen')}"><div class="${P('bs-in')}"><b>Movie Night</b></div><div class="${P('bs-rec')}"></div><div class="${P('bs-sub')}"></div></div>
+    <div class="${P('poster')}"><small>Now showing</small><b></b></div>` : '';
+  return `<div class="${P('cam')}">${sceneHtml(bg)}${screen}<div class="${P('busts')}"></div></div>
     <div class="${P('vign')}"></div><div class="${P('grain')}"></div>
     <div class="${P('neon')} ${P('off')}"></div>
     <svg class="${P('ecg')}" viewBox="0 0 1000 100" preserveAspectRatio="none"><polyline/></svg><div class="${P('bpm')}"></div>
@@ -137,7 +142,8 @@ export function paintStage(el, screen, idx, { fresh = false, hud = '' } = {}) {
   const busts = q('busts');
   busts.innerHTML = st.cast.map(([n, x, mode]) => {
     const [c1, c2] = colourOf(n);
-    const cls = [P('bust'), mode === 'speak' ? P('speak') : '', mode === 'back' ? P('back') : '', mode === 'hurt' ? `${P('hurt')} ${P('back')}` : ''].join(' ');
+    const cls = [P('bust'), mode === 'speak' ? P('speak') : '', mode === 'back' ? P('back') : '', mode === 'hurt' ? `${P('hurt')} ${P('back')}` : '',
+      st.seated ? P('seated') : ''].join(' ');
     // A new face slides in from its side on a fresh step; a jump lands it in place.
     const enters = fresh && st.sceneStart;
     return `<div class="${cls}" data-n="${esc(n)}" style="left:${enters ? (x < 50 ? -15 : x > 50 ? 115 : x) : x}%;--c1:${c1};--c2:${c2}">
@@ -159,7 +165,8 @@ export function paintStage(el, screen, idx, { fresh = false, hud = '' } = {}) {
 
   // the caption (the staging) and the dialogue
   const cap = q('caption');
-  if (st.caption) { cap.textContent = st.caption; cap.classList.add(P('on')); }
+  // A clip's caption is its title, and the marquee already says it.
+  if (st.caption && !st.clipOn) { cap.textContent = st.caption; cap.classList.add(P('on')); }
   const dlg = q('dlg');
   dlg.classList.remove(P('hide'));
   const voice = st.voice || '';
@@ -167,7 +174,7 @@ export function paintStage(el, screen, idx, { fresh = false, hud = '' } = {}) {
   const plate = q('plate');
   const [c1, c2] = colourOf(st.who || '');
   plate.style.setProperty('--pc1', c1); plate.style.setProperty('--pc2', c2);
-  const tag = { hut: 'Beach hut', narrator: 'Voiceover', dior: 'Host', text: 'Text' }[voice];
+  const tag = { hut: 'Beach hut', narrator: 'Voiceover', dior: 'Host', text: 'Text', clip: 'On screen' }[voice];
   plate.innerHTML = `${esc(st.who || '')}${tag ? `<em>${tag}</em>` : ''}`;
   const txt = q('txt');
   txt.classList.toggle(P('narr'), voice === 'narrator' || voice === 'stage');
@@ -179,6 +186,24 @@ export function paintStage(el, screen, idx, { fresh = false, hud = '' } = {}) {
   } else txt.textContent = st.text || '';
   const beat = q('beat');
   beat.textContent = st.beat || '';
+
+  // Movie Night's screen: the clip plays inside it, in its own words.
+  const bs = q('bigscreen');
+  if (bs) {
+    el.classList.toggle(P('playing'), !!st.clipOn);
+    if (st.clipOn) {
+      const faces = [...new Set(st.clipOn.faces)].slice(0, 3);
+      bs.querySelector('.' + P('bs-in')).innerHTML = faces.map(n => `<span class="${P('bs-face')}${n === st.clipOn.speaker ? ' ' + P('on') : ''}">${img(n) || `<i>${esc(initials(n))}</i>`}</span>`).join('');
+      bs.querySelector('.' + P('bs-rec')).textContent = `REC${st.clipOn.ep != null ? ` · Episode ${st.clipOn.ep}` : ''}`;
+      bs.querySelector('.' + P('bs-sub')).textContent = st.text ? `${st.who ? st.who + ': ' : ''}${st.text}` : '';
+    }
+    // The marquee: the clip's title, on the first line of it.
+    if (st.fx?.poster && fresh) {
+      const po = q('poster'); po.querySelector('b').textContent = st.fx.poster;
+      po.classList.add(P('go'));
+    }
+  }
+  if (st.fx?.flash && fresh) { el.classList.remove(P('flash')); void el.offsetWidth; el.classList.add(P('flash')); }
 
   // the neon, for the night's moment
   const ne = st.fx?.neon || st.fx?.neonDie;

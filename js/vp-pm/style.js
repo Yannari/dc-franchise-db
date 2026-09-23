@@ -449,6 +449,48 @@ details.pmv-debug[open] summary::before{transform:rotate(45deg)}
 .pmv-identBreak b{font:clamp(34px,7vw,90px)/1 'Bebas Neue',sans-serif;letter-spacing:.2em;color:#fff;text-shadow:0 0 30px #ff2e88,0 0 60px #ff2e8888;
   animation:pmv-slam 1.9s cubic-bezier(.22,1,.36,1) forwards}
 @keyframes pmv-slam{0%{opacity:0;transform:scale(2.4)}14%{opacity:1;transform:scale(.96)}22%{transform:scale(1)}62%{opacity:1}74%,100%{opacity:0}}
+/* ── MOVIE NIGHT: an outdoor cinema on the lawn ── */
+.pmv-sc-cinema{background:
+  radial-gradient(70% 30% at 50% 100%,#1b0b2a,#0000 70%),
+  linear-gradient(180deg,#04030b 0%,#0d0820 45%,#1a0d2c 75%,#0b0612 100%)}
+.pmv-stage .pmv-beam{position:absolute;left:50%;bottom:-10%;width:120%;height:95%;transform:translateX(-50%);pointer-events:none;
+  background:conic-gradient(from 180deg at 50% 100%,#0000 0deg 158deg,#bfd4ff22 172deg,#fff5 180deg,#bfd4ff22 188deg,#0000 202deg 360deg);
+  filter:blur(6px);mix-blend-mode:screen;animation:pmv-beamflick 3.2s steps(12) infinite}
+@keyframes pmv-beamflick{0%,100%{opacity:.85}40%{opacity:.7}60%{opacity:.95}}
+.pmv-stage .pmv-beanbags{position:absolute;left:0;right:0;bottom:-2%;height:22%;display:flex;justify-content:space-around;align-items:flex-end}
+.pmv-stage .pmv-beanbags i{width:15%;height:62%;border-radius:50% 50% 38% 38%;background:radial-gradient(60% 50% at 50% 30%,#3a2350,#130a1e 70%);filter:blur(1px);opacity:.9}
+.pmv-bigscreen{position:absolute;left:20%;right:20%;top:15%;height:46%;z-index:2;border-radius:6px;overflow:hidden;
+  background:radial-gradient(90% 90% at 50% 40%,#2b2f55,#0a0b1a);box-shadow:0 0 0 3px #1c1330,0 0 60px #9fb6ff55,0 0 140px #9fb6ff33}
+.pmv-bigscreen::after{content:'';position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(180deg,#fff1 0 1px,#0000 1px 3px),radial-gradient(120% 90% at 50% 50%,#0000 60%,#000a);mix-blend-mode:overlay}
+.pmv-bs-in{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:4%}
+.pmv-bs-in b{font:clamp(18px,3.6vw,46px)/1 'Bebas Neue',sans-serif;letter-spacing:.2em;color:#fff;text-shadow:0 0 22px #9fb6ff}
+.pmv-bs-face{position:relative;height:66%;aspect-ratio:4/5;border-radius:10px;overflow:hidden;background:#222;filter:grayscale(.35) brightness(.7);transition:filter .4s,transform .4s}
+.pmv-bs-face img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 22%}
+.pmv-bs-face i{position:absolute;inset:0;display:grid;place-items:center;font:800 clamp(14px,2.4vw,30px) Outfit;color:#fff9;font-style:normal}
+.pmv-bs-face.pmv-on{filter:none;transform:scale(1.08);box-shadow:0 0 0 2px #fff8,0 0 24px #9fb6ff}
+.pmv-bs-rec{position:absolute;left:3%;top:5%;font:600 clamp(9px,1vw,12px)/1 ui-monospace,monospace;letter-spacing:.12em;color:#ff4d4d}
+.pmv-stage.pmv-playing .pmv-bs-rec::before{content:'';display:inline-block;width:.7em;height:.7em;border-radius:50%;background:#ff4d4d;margin-right:.5em;animation:pmv-blink 1s steps(2) infinite}
+.pmv-bs-sub{position:absolute;left:6%;right:6%;bottom:6%;text-align:center;font:600 clamp(10px,1.35vw,16px)/1.3 Outfit,sans-serif;color:#fff;
+  text-shadow:0 1px 2px #000,0 0 8px #000}
+.pmv-stage.pmv-playing .pmv-bigscreen{animation:pmv-screenflick .18s steps(2) infinite}
+@keyframes pmv-screenflick{50%{filter:brightness(1.07)}}
+/* the audience, seated on the beanbags in front of the screen */
+.pmv-bust.pmv-seated{bottom:18%;width:15%;transform:translate(-50%,10%) scale(.9)}
+.pmv-bust.pmv-seated.pmv-back{filter:brightness(.55) saturate(.7)}
+/* the marquee: NOW SHOWING, lights chasing round the title */
+.pmv-poster{position:absolute;left:50%;top:18%;z-index:12;transform:translate(-50%,0) scale(.6);opacity:0;pointer-events:none;text-align:center;
+  padding:.9em 2.2em;border-radius:10px;background:#12060f;color:#ffe6a8;
+  box-shadow:0 0 0 4px #7a1e46,0 0 40px #ff2e8866;border:3px dotted #ffd36b}
+.pmv-poster small{display:block;font:clamp(10px,1.2vw,14px)/1 'Bebas Neue';letter-spacing:.34em;color:#ff8cc6}
+.pmv-poster b{display:block;font:clamp(22px,4.4vw,56px)/1.05 'Bebas Neue',sans-serif;letter-spacing:.08em;text-shadow:0 0 18px #ffd36b}
+.pmv-poster.pmv-go{animation:pmv-marquee 2.2s cubic-bezier(.22,1,.36,1) forwards}
+@keyframes pmv-marquee{0%{opacity:0;transform:translate(-50%,0) scale(.6)}14%{opacity:1;transform:translate(-50%,0) scale(1.05)}22%{transform:translate(-50%,0) scale(1)}
+  78%{opacity:1}100%{opacity:0;transform:translate(-50%,-10%) scale(.96)}}
+.pmv-poster.pmv-go{animation-name:pmv-marquee}
+.pmv-poster.pmv-go::after{content:'';position:absolute;inset:-7px;border-radius:14px;border:3px dotted #fff3b0;animation:pmv-chase .35s linear infinite}
+@keyframes pmv-chase{50%{border-color:#ff8cc6}}
+
 /* ── THE BOMBSHELL: a silhouette on the steps, a spotlight, the lights up ── */
 .pmv-stage.pmv-revealing::before{content:'';position:absolute;inset:0;z-index:4;pointer-events:none;
   background:radial-gradient(ellipse 22% 60% at var(--ox,50%) 45%,#fff5 0%,#fff0 70%),linear-gradient(#000c,#0006);animation:pmv-spot 2.6s ease forwards}

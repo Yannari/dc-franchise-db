@@ -497,11 +497,13 @@ function feelingsAmong(state, players) {
   }
   return out;
 }
-function changedFeelings(before, after) {
+function changedFeelings(state, now) {
+  if (state._relMark?.ep !== state.ep) state._relMark = { ep: state.ep, seen: {} };
+  const seen = state._relMark.seen;
   let out = null;
-  for (const [k, v] of Object.entries(after)) {
-    const w = before[k];
-    if (!w || v.some((x, i) => Math.abs(x - w[i]) >= 0.01)) (out ||= {})[k] = v;
+  for (const [k, v] of Object.entries(now)) {
+    const w = seen[k];
+    if (!w || v.some((x, i) => Math.abs(x - w[i]) >= 0.01)) { (out ||= {})[k] = v; seen[k] = v; }
   }
   return out;
 }
@@ -526,13 +528,15 @@ export function makeEvent(state, rng, { phase, kind, players, extra = {}, aired 
     moods: Object.fromEntries(players.map(n => [n, moodOf(state, n)])) };
   // Kept for the rest of the day, so later scenes know what already happened.
   state._today = [...today(state), ev];
-  const feltBefore = feelingsAmong(state, players);
   const res = def.apply(state, ev, rng) || {};
-  // Where the people in it stand with each other now, for the pairs the scene
-  // moved: the relationships panel moves scene by scene as the episode is
-  // watched (user: "I see people kiss but in relationship is still nobody
-  // yet"). Recorded, not decided: it draws nothing.
-  const moved = changedFeelings(feltBefore, feelingsAmong(state, players));
+  // Where the people in it stand with each other now: the relationships
+  // panel moves scene by scene as the episode is watched (user: "I see people
+  // kiss but in relationship is still nobody yet"). Against the last value
+  // the screens were given for that pair this episode, not the moment before
+  // the scene — a first look nudges attraction just before its scene is
+  // made, a ceremony just after — so nothing a pair went through is lost.
+  // Recorded, not decided: it draws nothing.
+  const moved = changedFeelings(state, feelingsAmong(state, players));
   if (moved) ev.rel = moved;
   ev.pop = res.pop || {};
   // How the conversation ends, decided here with what it does — the words

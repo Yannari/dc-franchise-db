@@ -33,6 +33,7 @@ export function castOfEpisode(row, prev) {
  */
 function feelingsAt(row, prev, atEnd, seen = []) {
   if (atEnd) return { rel: row.pm?.relationships || {}, labels: row.pm?.relLabels || [] };
+  // (Episode one starts from nobody: nobody has met.)
   const rel = { ...(prev?.pm?.relationships || {}) };
   const evs = row.pm?.events || [];
   for (const i of seen) Object.assign(rel, evs[i]?.rel || {});

@@ -197,13 +197,17 @@ export function voiceTick(who, voice, ch, k, text = '') {
  */
 const SITUATION = {
   // Night one: the starters walking in, meeting, the first coupling.
-  starters: ['host-open', 'first-arrival', 'arrival-chat', 'first-toast', 'first-look', 'host-first', 'step-forward', 'step-last'],
+  // …and night one's kissing games, which are how that coupling is played.
+  starters: ['host-open', 'first-arrival', 'arrival-chat', 'first-toast', 'first-look', 'host-first', 'step-forward', 'step-last',
+    'icebreaker', 'lady-luck-kiss', 'kiss-pick', 'lady-luck-pick'],
   intro: ['intro'],
   arrival: ['entrance', 'group-entrance', 'bombshell-react', 'casa-host'],
   ex: ['return-entrance', 'return-ex', 'ex-return'],
-  kiss: ['icebreaker', 'lady-luck-kiss'],
+  // The first REAL kiss of a couple only (musicOf, below): never a game's kiss
+  // (user: "first kiss doesn't count challenge kiss, like real first kiss").
+  kiss: [],
   // Romance without a first kiss in it: silent until it has a track.
-  romance: ['date', 'love-said', 'official-ask', 'exclusive-ask', 'reunite', 'hideaway', 'kiss-pick', 'lady-luck-pick', 'snogger-kiss'],
+  romance: ['date', 'love-said', 'official-ask', 'exclusive-ask', 'reunite', 'hideaway'],
   cheating: ['photos', 'head-turned', 'bed-share'],
   drama: ['argument', 'blowup', 'pile-in', 'villa-divided', 'jealous-confront', 'jealous-retaliate', 'cold-shoulder',
     'casa-row', 'photo-row', 'movie-row', 'lie-row', 'triangle-rivals', 'triangle-ultimatum', 'apology-rejected'],
@@ -233,7 +237,8 @@ export function musicOf(e) {
   if (e.extra?.secret && ['kiss', 'pull', 'bed-share', 'vent', 'hideaway'].includes(e.kind)) return 'cheating';
   if (e.kind === 'movie-clip') return e.extra?.of === 'loyalty' ? null : 'cheating';
   if (e.kind === 'casa-react') return ['devastated', 'turned', 'both'].includes(e.extra?.of) ? 'cheating' : null;
-  // A couple's FIRST kiss is the moment (events.js records it); the tenth is a chat.
+  // A couple's FIRST kiss is the moment (events.js records it, counting only
+  // real kisses — a challenge's kiss is not one); the tenth is a chat.
   if (e.kind === 'kiss') return e.extra?.firstKiss ? 'kiss' : null;
   // Night one's presentation tapes are part of the starters walking in; a
   // bombshell's or Casa's tape is its own.

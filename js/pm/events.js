@@ -11,9 +11,9 @@
 // event has happened, on their own dice: prose renders, it never decides.
 import { addBond, getBond } from '../bonds.js';
 import { addRelationshipDimension } from '../relationships.js';
-import { attr, nudgeAttraction, ickHit } from './chemistry.js';
+import { attr, nudgeAttraction, ickHit, compatible } from './chemistry.js';
 import { recordAired, nudgeBelief, BETRAYAL } from './ledger.js';
-import { romance, shown, revealTruth } from './feelings.js';
+import { romance, shown, revealTruth, friendship, believed } from './feelings.js';
 import { closedness, betrayalWeight } from './ladder.js';
 import { feel, jealousyHit, attachment } from './emotions.js';
 import { streamFor } from '../dr/rng.js';
@@ -484,6 +484,28 @@ export const PHASE_KINDS = {
     ['bed-share', 1.2], ['vent', 0.05]],
 };
 
+/** [romance, friendship, shown, believed] for every pair within `players`, as the episode snapshot keeps them. */
+function feelingsAmong(state, players) {
+  const out = {};
+  const ps = [...new Set(players.filter(Boolean))].slice(0, 5);
+  for (const a of ps) for (const b of ps) {
+    if (a === b || !state.profiles[a] || !state.profiles[b]) continue;
+    const f = friendship(a, b);
+    if (!compatible(state, a, b) && Math.abs(f) < 3) continue;
+    const r2 = v => Math.round(v * 100) / 100;
+    out[`${a}→${b}`] = [r2(romance(a, b)), r2(f), r2(shown(state, a, b)), r2(believed(state, b, a))];
+  }
+  return out;
+}
+function changedFeelings(before, after) {
+  let out = null;
+  for (const [k, v] of Object.entries(after)) {
+    const w = before[k];
+    if (!w || v.some((x, i) => Math.abs(x - w[i]) >= 0.01)) (out ||= {})[k] = v;
+  }
+  return out;
+}
+
 /** Create one event: decide airing, apply it, attach a hut cutaway, write the ledger. */
 export function makeEvent(state, rng, { phase, kind, players, extra = {}, aired = null, major = [] }) {
   const def = KINDS[kind];
@@ -504,7 +526,14 @@ export function makeEvent(state, rng, { phase, kind, players, extra = {}, aired 
     moods: Object.fromEntries(players.map(n => [n, moodOf(state, n)])) };
   // Kept for the rest of the day, so later scenes know what already happened.
   state._today = [...today(state), ev];
+  const feltBefore = feelingsAmong(state, players);
   const res = def.apply(state, ev, rng) || {};
+  // Where the people in it stand with each other now, for the pairs the scene
+  // moved: the relationships panel moves scene by scene as the episode is
+  // watched (user: "I see people kiss but in relationship is still nobody
+  // yet"). Recorded, not decided: it draws nothing.
+  const moved = changedFeelings(feltBefore, feelingsAmong(state, players));
+  if (moved) ev.rel = moved;
   ev.pop = res.pop || {};
   // How the conversation ends, decided here with what it does — the words
   // follow (pm/script.js closed). Its own dice, so no other draw moves.

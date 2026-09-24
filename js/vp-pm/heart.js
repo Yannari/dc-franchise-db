@@ -25,10 +25,27 @@ export function castOfEpisode(row, prev) {
   return [...new Set([...s.villa, ...arrived, ...(row.pm.villa || [])])].sort();
 }
 
-/** The feelings on the map: the previous episode's, until the last click. */
-function feelingsAt(row, prev, atEnd) {
-  const src = atEnd ? row.pm : prev?.pm;
-  return { rel: src?.relationships || {}, labels: src?.relLabels || [] };
+/**
+ * The feelings on the map: the previous episode's, moved by every scene
+ * clicked so far (each event records the pairs it changed, events.js), and
+ * the episode's own at the last click. Never ahead of the reveal: a scene
+ * not yet shown moves nothing.
+ */
+function feelingsAt(row, prev, atEnd, seen = []) {
+  if (atEnd) return { rel: row.pm?.relationships || {}, labels: row.pm?.relLabels || [] };
+  const rel = { ...(prev?.pm?.relationships || {}) };
+  const evs = row.pm?.events || [];
+  for (const i of seen) Object.assign(rel, evs[i]?.rel || {});
+  return { rel, labels: prev?.pm?.relLabels || [] };
+}
+/** The engine events the viewer has seen: every step up to this one, in the order they happened. */
+function seenEvents(screens, si, upto) {
+  const out = new Set();
+  screens.forEach((sc, i) => {
+    if (i > si) return;
+    sc.steps.forEach((st, j) => { if ((i < si || j <= upto) && st.ev >= 0) out.add(st.ev); });
+  });
+  return [...out].sort((a, b) => a - b);
 }
 const dim = (rel, a, b) => {
   const v = rel[`${a}→${b}`];
@@ -131,11 +148,11 @@ export function asideHtml(row, prev, screens, si, upto, sel = null) {
   const names = castOfEpisode(row, prev);
   const state = villaAt(row, prev, screens, si, upto);
   const last = si === screens.length - 1 && upto >= screens[si].steps.length - 1;
-  const { rel, labels } = feelingsAt(row, prev, last);
+  const { rel, labels } = feelingsAt(row, prev, last, seenEvents(screens, si, upto));
   const pick = sel && names.includes(sel) ? sel : null;
   const shown = pick || state.villa.slice().sort()[0] || names[0];
   return `<div class="${P('panel')}"><h3>Heart map</h3><p class="${P('note')}">${last ? 'How the villa ends the episode.'
-    : 'How the villa stood at the start of the episode, and every coupling and dumping clicked so far.'} You see everything; the villa doesn't.</p>
+    : 'How the villa stood at the start of the episode, and every scene clicked so far.'} You see everything; the villa doesn't.</p>
     ${mapSvg(names, state, rel, pick)}
     <div class="${P('legend')}"><span><i style="border-color:#ff2e88"></i>Coupled</span><span><i style="border-color:#ff4fa0;border-top-width:2px"></i>Fancies →</span>
       <span><i style="border-color:#a855f7;border-top-style:dotted"></i>Hidden crush →</span><span><i style="border-color:#ef4444;border-top-style:dotted"></i>Rivals</span>

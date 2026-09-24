@@ -7,7 +7,7 @@
 // carrying as many events as the night produces. Every beat moves bonds, and
 // a partner left behind can be heartbroken enough to walk out with them.
 import { addBond, getBond } from '../bonds.js';
-import { makeEvent, partnerOf, roomMates, airLater } from './events.js';
+import { makeEvent, partnerOf, roomMates, airLater, today } from './events.js';
 import { romance } from './feelings.js';
 import { closedness } from './ladder.js';
 import { breakHeart, feel, jealousOf, jealousyHit } from './emotions.js';
@@ -37,7 +37,78 @@ function removeFromVilla(state, names) {
   state.couples = state.couples.filter(c => !c.some(n => names.includes(n)));
 }
 
-export function dumpingScene(state, rng, { atRisk = [], dumped, ballots = [], channel, decision = null, afterVotes = null }) {
+// ── THE NIGHT BEFORE THE VERDICT ──────────────────────────────────────
+// User: "the build-up during the elimination is non-existent … who's in
+// danger … the host doesn't explain step by step what we're doing … where
+// was the text notification … no host announcement, no little talk, no recap,
+// no suspense". The show's own order (UK 5, 8 July 2019, HuffPost; US 7 ep 32,
+// Deadline): a text sends the villa to the fire pit; nerves while they wait;
+// the host arrives, says what has happened, and explains exactly how tonight
+// works; the SAFE couples are read out one at a time, so the ones left
+// standing are the ones at risk; and whoever decides is told it is their turn.
+const VOTE_NIGHTS = new Set(['public', 'villa', 'top-couple', 'save', 'couples', 'exes']);
+// The villa decides (after the at-risk plead their case); the public do not.
+const VILLA_DECIDES = new Set(['villa', 'top-couple', 'save', 'couples', 'exes']);
+// What the host can recap: the day's biggest moment, if one aired.
+const RECAP = ['steal', 'blowup', 'photo-split', 'movie-split', 'official-ask', 'love-said', 'argument', 'entrance', 'kiss'];
+
+function fireBuildUp(state, rng, { atRisk, channel, format, dumped }) {
+  const out = [];
+  // What tonight is, for the text and the host: the public's singles, a
+  // double dumping, or the format the night plays.
+  const couplesGoing = dumped.filter(n => { const p = partnerOf(state, n); return p && dumped.includes(p); }).length / 2;
+  const tonight = channel === 'public' && atRisk.every(c => c.length === 1) ? 'singles'
+    : channel === 'public' && couplesGoing >= 2 ? 'public-double' : format || channel;
+  const push = (kind, players, extra = {}, major = []) => out.push(makeEvent(state, rng,
+    { phase: 'dumping', kind, players, aired: true, major, extra: { channel, ...extra } }));
+  const villa = state.villa.filter(n => !(state.split && state.casa.includes(n)));
+  const coupled = villa.filter(n => partnerOf(state, n));
+  // 1. The text. Nobody knows yet who is at risk: the whole villa feels it.
+  const reader = coupled[Math.floor(rng() * coupled.length)] || villa[0];
+  const other = partnerOf(state, reader) || villa.find(n => n !== reader);
+  for (const n of villa) feel(state, n, 'stress', 0.3 * (1 - (state.profiles[n].stats?.temperament ?? 5) / 20));
+  push('dump-text', other ? [reader, other] : [reader], { of: tonight, pop: { [reader]: { approval: 0, fame: 0.5 } } });
+  // 2. Waiting to go down: the couple least sure of where they stand.
+  const pairs = state.couples.filter(([a, b]) => villa.includes(a) && villa.includes(b));
+  const shaky = [...pairs].sort((x, y) => Math.min(romance(x[0], x[1]), romance(x[1], x[0])) - Math.min(romance(y[0], y[1]), romance(y[1], y[0])))[0];
+  if (shaky) {
+    addBond(shaky[0], shaky[1], 0.2);
+    feel(state, shaky[0], 'stress', 0.3); feel(state, shaky[1], 'stress', 0.3);
+    push('dump-nerves', [...shaky], { pop: { [shaky[0]]: { approval: 0.1, fame: 0.6 } } });
+  }
+  // 3. The host, the day, and the rules of the night.
+  push('dump-open', [], { of: tonight, pop: {} });
+  // Never a secret: a kiss is only recapped between partners, where the villa saw it.
+  const big = today(state).filter(e => e.aired && !e.extra?.secret && RECAP.includes(e.kind)
+    && e.players.every(n => villa.includes(n) || e.kind === 'steal')
+    && (e.kind !== 'kiss' || partnerOf(state, e.players[0]) === e.players[1]))
+    .sort((x, y) => RECAP.indexOf(x.kind) - RECAP.indexOf(y.kind))[0];
+  if (big) push('dump-recap', big.players.slice(0, 3), { of: big.kind, pop: {} });
+  // 4. The safe couples, one at a time, when the public has ranked them all.
+  if (['public', 'villa', 'top-couple'].includes(channel) && atRisk.every(c => c.length === 2)) {
+    const risky = new Set(atRisk.flat());
+    const safe = pairs.filter(c => !c.some(n => risky.has(n)));
+    for (let i = safe.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [safe[i], safe[j]] = [safe[j], safe[i]]; }
+    safe.forEach((c, i) => {
+      for (const n of c) { feel(state, n, 'security', 0.4); feel(state, n, 'stress', -0.4); }
+      push('dump-safe', [...c], { nth: i === 0 ? 'first' : i === safe.length - 1 ? 'last' : 'next',
+        pop: Object.fromEntries(c.map(n => [n, { approval: 0, fame: 0.4 }])) });
+    });
+  }
+  return out;
+}
+
+/** The at-risk make their case to whoever decides, before a single vote. */
+function pleas(state, rng, atRisk, channel) {
+  return atRisk.map(c => {
+    const a = c[0];
+    const s = state.profiles[a].stats?.social ?? 5;
+    return makeEvent(state, rng, { phase: 'dumping', kind: 'dump-plea', players: [...c], aired: true,
+      extra: { channel, of: c.length === 1 ? 'one' : 'couple', pop: { [a]: { approval: 0.1 + 0.05 * (s - 5), fame: 0.6 } } } });
+  });
+}
+
+export function dumpingScene(state, rng, { atRisk = [], dumped, ballots = [], channel, decision = null, afterVotes = null, format = null, nominate = null }) {
   const events = [];
   const solidarityWalk = [];
   const kinWalk = new Set();
@@ -52,6 +123,14 @@ export function dumpingScene(state, rng, { atRisk = [], dumped, ballots = [], ch
   const going = goingCouples >= 2 ? goingCouples : null;
   let told = 0;
   const order = () => (going ? { going, nth: told++ ? 'next' : 'first' } : {});
+  // Who is at risk is named in turn: the first, the next, or the only one.
+  let named = 0;
+  const riskOrder = () => (going ? order() : { nth: atRisk.length === 1 ? 'only' : named++ ? 'next' : 'first' });
+  const voteNight = atRisk.length && VOTE_NIGHTS.has(channel);
+  // 0. the text, the wait, the host, the safe couples (fireBuildUp)
+  if (voteNight) events.push(...fireBuildUp(state, rng, { atRisk, channel, format, dumped }));
+  // …the villa's own nominations, when it names who is at risk
+  if (nominate) events.push(...nominate);
   // What the dumped will remember if they are ever asked back: who voted them
   // out, and the partner they left behind (villa-vote.js grudgeOf).
   for (const n of dumped) {
@@ -59,9 +138,18 @@ export function dumpingScene(state, rng, { atRisk = [], dumped, ballots = [], ch
     if (partners[n]) (state.leftBehind ||= {})[n] = partners[n];
   }
   // 1. build-up: a couple at risk, or one islander on their own (save-one)
-  for (const c of atRisk) ev(c.length === 1 ? 'dump-at-risk' : 'dump-buildup', c, Object.fromEntries(c.map(n => [n, { approval: 0, fame: 0.5 }])),
-    [], c.length === 1 ? {} : order());
+  for (const c of atRisk) {
+    for (const n of c) feel(state, n, 'stress', 0.6);
+    ev(c.length === 1 ? 'dump-at-risk' : 'dump-buildup', c, Object.fromEntries(c.map(n => [n, { approval: 0, fame: 0.5 }])),
+      [], c.length === 1 ? {} : riskOrder());
+  }
   told = 0;
+  // …what happens next, and whose turn it is to decide
+  if (voteNight && VILLA_DECIDES.has(channel)) {
+    events.push(...pleas(state, rng, atRisk, channel));
+    events.push(makeEvent(state, rng, { phase: 'dumping', kind: 'dump-decide', players: [], aired: true,
+      extra: { channel, of: format || channel, pop: {} } }));
+  }
   // …then the decision, when somebody makes it in front of the villa
   if (decision) events.push(...decision());
   // 2. the ballots in front of everyone, THEN the verdict they add up to
@@ -307,8 +395,8 @@ function couplesVoteNight(state, ctx) {
   const cv = couplesVote(state, { rng: ctx.rng, atRisk: ctx.entry.bottom || 2, immune: ctx.immune || [] });
   const named = coupleVoteScenes(state, ctx.rng, cv);
   const vd = villaDumping(state, { format: 'safe-pick-couple', bottom: cv.vulnerable, rng: ctx.rng });
-  const scene = dumpingScene(state, ctx.rng, { atRisk: cv.vulnerable, dumped: vd.dumped, ballots: vd.ballots, channel: 'couples' });
-  return { events: [...named, ...scene.events], exits: scene.exits, ballots: vd.ballots,
+  const scene = dumpingScene(state, ctx.rng, { atRisk: cv.vulnerable, dumped: vd.dumped, ballots: vd.ballots, channel: 'couples', nominate: named });
+  return { events: scene.events, exits: scene.exits, ballots: vd.ballots,
     extra: { bottom: cv.vulnerable, dumpFormat: 'couples-vote' } };
 }
 
@@ -321,14 +409,14 @@ function exIslandersNight(state, ctx, singles, over, exes) {
     events.push(...s.events); exits.push(...s.exits);
   }
   const cv = couplesVote(state, { rng: ctx.rng, atRisk: Math.min(state.couples.length, over + 1) });
-  events.push(...coupleVoteScenes(state, ctx.rng, cv));
+  const named = coupleVoteScenes(state, ctx.rng, cv);
   const exv = exIslandersVote(state, { exes, vulnerable: cv.vulnerable, rng: ctx.rng, dump: over });
   // One entrance for the group, led by the most recent: eight separate
   // arrivals from four lines read as the same scene twice (measured).
   const decision = () => [makeEvent(state, ctx.rng, { phase: 'dumping', kind: 'ex-return', players: [exes[0]],
     aired: true, extra: { channel: 'exes', pop: Object.fromEntries(exes.map(ex => [ex, { approval: 0, fame: 1 }])) } })];
   const scene = dumpingScene(state, ctx.rng, { atRisk: cv.vulnerable, dumped: exv.dumped,
-    ballots: exv.ballots.map(b => ({ ...b, kind: 'ex-ballot' })), channel: 'exes', decision });
+    ballots: exv.ballots.map(b => ({ ...b, kind: 'ex-ballot' })), channel: 'exes', decision, nominate: named });
   events.push(...scene.events); exits.push(...scene.exits);
   return { events, exits, ballots: exv.ballots, extra: { bottom: cv.vulnerable, exes, dumpFormat: 'ex-islanders' } };
 }
@@ -808,7 +896,7 @@ function coupleFormatNight(state, ctx, fmt) {
     const played = fmt === 'top-couple-picks' ? 'public' : fmt;
     const vd = villaDumping(state, { format: played, bottom: pv.bottom, rng: ctx.rng });
     const scene = dumpingScene(state, ctx.rng, { atRisk: pv.bottom, dumped: vd.dumped, ballots: vd.ballots,
-      channel: played === 'public' ? 'public' : 'villa' });
+      channel: played === 'public' ? 'public' : 'villa', format: played });
     return { events: scene.events, exits: scene.exits, ballots: vd.ballots,
       extra: { shares: pv.shares, bottom: pv.bottom, dumpFormat: played } };
   }

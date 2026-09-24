@@ -221,7 +221,7 @@ const SITUATION = {
   // The dumped saying goodbye, and anyone walking out.
   goodbye: ['dump-goodbye', 'walk', 'solidarity', 'kin-goodbye', 'kin-walk'],
   comedy: ['comedy', 'blow-dare', 'blow-slip', 'baby-doll', 'talent-act'],
-  suspense: ['dump-buildup', 'dump-at-risk', 'ballot-reveal', 'save-vote', 'save-tie', 'top-couple-pick', 'couples-vote',
+  suspense: ['dump-open', 'dump-safe', 'dump-plea', 'dump-decide', 'dump-buildup', 'dump-at-risk', 'ballot-reveal', 'save-vote', 'save-tie', 'top-couple-pick', 'couples-vote',
     'ex-ballot', 'final-recoupling', 'recouple-pick', 'steal'],
   // The final: the declarations and the places under the wait, then the
   // winners (steps.js finalSteps marks which is which).

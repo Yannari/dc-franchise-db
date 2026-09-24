@@ -137,7 +137,9 @@ describe('the stage at rest names nobody, and each click shows exactly its line'
 describe('the breaks: "Coming up" and "Next time"', () => {
   it('a teaser cuts its line off, never shows how anything ends, and nothing that did not air', async () => {
     const { cutLine } = await import('../js/vp-pm/steps.js');
-    expect(cutLine("I've been wanting to tell you something for days now.")).toMatch(/—$/);
+    // Cut before it lands: at a sentence when there is more to come, never mid-word.
+    expect(cutLine("I've been wanting to tell you something for days now.")).toMatch(/…$/);
+    expect(cutLine("I'm going to be honest with you. I'd pick you at the recoupling.")).toBe("I'm going to be honest with you…");
     let breaks = 0;
     for (const seed of [1, 2]) {
       const rows = season(seed);

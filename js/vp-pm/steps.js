@@ -55,6 +55,7 @@ export const KIND_LABEL = {
   blowup: 'It kicks off', 'pile-in': 'Taking sides', 'villa-divided': 'The villa divided', 'cold-shoulder': 'The cold shoulder', 'clear-the-air': 'Clearing the air',
   'bed-share': 'Lights out', vent: 'Letting off steam', apology: 'The apology', reunite: 'Back together', 'apology-rejected': 'Not this time',
   steal: 'A steal', 'final-recoupling': 'The final recoupling', 'challenge-rules': 'How it works', 'date-text': 'I got a text!', 'date-picked': 'The dates', 'date-back': 'Back from the date', 'recouple-pick': 'The recoupling', 'dump-buildup': 'At risk', 'dump-verdict': 'Dumped',
+  'dump-text': 'I got a text!', 'dump-nerves': 'Getting ready', 'dump-open': 'The fire pit', 'dump-recap': 'The host', 'dump-safe': 'Safe', 'dump-plea': 'Making their case', 'dump-decide': 'The decision',
   'ballot-reveal': 'The vote', 'dump-reaction': 'The reaction', 'dump-goodbye': 'Goodbye', 'dump-fallout': 'Fallout',
   'casa-return': 'Stick or twist', photos: 'The photos', declaration: 'The declaration', 'final-result': 'The result',
   envelope: 'The envelope', walk: 'Leaving the villa', reveal: "What you didn't see", 'close-off': 'Closing off',
@@ -123,6 +124,8 @@ const POPS = {
   'dump-fallout': [[0, 'Single', 'down', 'crack']],
   'dump-reaction': [[0, 'Heartbroken', 'red', 'crack']],
   'close-off': [[1, 'Security +', '', 'heart']],
+  'dump-safe': [[0, 'Safe', 'teal', 'star'], [1, 'Safe', 'teal', 'star']],
+  'dump-buildup': [[0, 'At risk', 'red', 'crack'], [1, 'At risk', 'red', 'crack']],
   'kin-heart': [[0, 'Bond +', 'teal', 'star'], [1, 'Bond +', 'teal', 'star']],
   'casa-miss': [[0, 'Missing them', '', 'heart']],
   'ex-partner': [[0, 'Security −', 'down', 'crack']],
@@ -187,7 +190,10 @@ function fxFor(row, e, first) {
   // The sign lights on the first boy, whichever way his turn went.
   if ((k === 'step-forward' || k === 'step-reveal') && (row.pm.events || []).find(x => x.kind === 'step-forward' || x.kind === 'step-reveal') === e) fx.neon = ['Step forward', '#ff2e88'];
   if (k === 'recouple-pick' && first) fx.neon = [row.moment === 'first-coupling' ? 'First coupling' : 'Recoupling', '#ff2e88'];
-  if (k === 'dump-buildup' && first) fx.neon = ['The results', '#a78bfa'];
+  if (k === 'dump-buildup' && first && !(row.pm.events || []).some(x => x.kind === 'dump-open')) fx.neon = ['The results', '#a78bfa'];
+  if (k === 'dump-open') fx.neon = ['The fire pit', '#a78bfa'];
+  if (k === 'dump-text') fx.phone = true;
+  if (k === 'dump-buildup' && e.extra?.nth !== 'next') fx.shake = true;
   if (k === 'dump-verdict' || k === 'dump-verdict-couple' || k === 'dump-verdict-singles') { fx.neonDie = ['Dumped', '#ff2e88']; fx.shake = true; }
   if (k === 'casa-return') fx.deal1 = [e.players[0], e.extra?.choice === 'twist' ? 'twist' : 'stick'];
   // Casa: the walk back in is a silhouette at the top of the steps.
@@ -271,7 +277,7 @@ function relOps(e) {
 
 // ── the dumping's five phases ─────────────────────────────────────────
 export const DUMP_RAIL = ['Build-up', 'Verdict', 'Reaction', 'Goodbye', 'Fallout'];
-const RAIL_OF = { 'dump-buildup': 0, 'dump-at-risk': 0, 'save-setup': 0, 'ex-return': 0,
+const RAIL_OF = { 'dump-text': 0, 'dump-nerves': 0, 'dump-open': 0, 'dump-recap': 0, 'dump-safe': 0, 'dump-plea': 0, 'dump-decide': 1, 'dump-buildup': 0, 'dump-at-risk': 0, 'save-setup': 0, 'ex-return': 0,
   'ballot-reveal': 1, 'save-vote': 1, 'top-couple-pick': 1, 'couples-vote': 1, 'ex-ballot': 1,
   'dump-verdict': 1, 'dump-verdict-couple': 1, 'dump-verdict-singles': 1,
   'dump-reaction': 2, solidarity: 2, 'kin-goodbye': 3, 'kin-walk': 2, 'dump-goodbye': 3, 'dump-fallout': 4 };
@@ -564,21 +570,45 @@ const DRAWN_BY_FINAL = new Set(['final-result', 'envelope']);
 // The show cuts to a break on a cliffhanger: a few seconds of what is still
 // to come, each line cut off before it lands. A teaser never shows how
 // anything ends — no verdict, no pick, no goodbye, nothing that didn't air.
-const NO_TEASE = new Set(['debrief', 'villa-divided', 'clear-the-air', 'dump-verdict', 'dump-verdict-couple', 'dump-verdict-singles', 'dump-reaction', 'dump-goodbye',
+const NO_TEASE = new Set(['dump-at-risk', 'dump-buildup', 'dump-safe', 'dump-plea', 'dump-decide', 'dump-recap', 'dump-nerves', 'debrief', 'villa-divided', 'clear-the-air', 'dump-verdict', 'dump-verdict-couple', 'dump-verdict-singles', 'dump-reaction', 'dump-goodbye',
   'dump-fallout', 'recouple-pick', 'steal', 'final-result', 'envelope', 'save-tie', 'walk', 'ballot-reveal', 'save-vote',
   'top-couple-pick', 'reveal', 'result', 'stick-or-twist', 'casa-return', 'immunity-win', 'couples-vote', 'ex-ballot']);
 const TEASE = new Set(['argument', 'gossip', 'pull', 'entrance', 'group-entrance', 'head-turned', 'jealous-confront',
-  'confession', 'hideaway', 'photos', 'movie-night', 'dump-at-risk', 'dump-buildup', 'challenge-kiss', 'exclusive-ask',
+  'confession', 'hideaway', 'photos', 'movie-night', 'dump-text', 'dump-open', 'challenge-kiss', 'exclusive-ask',
   'official-ask', 'love-said', 'declaration', 'date', 'snog-marry-pie', 'heart-rate', 'notes', 'mission-dump', 'loyalty']);
 const OPENERS = {
   comingup: ['Still to come tonight…', 'Coming up after the break…', 'Later on Perfect Match…', 'Coming up…'],
   nexttime: ['Next time on Perfect Match…', 'Tomorrow night…'],
 };
-/** A line cut off before it lands: the teaser's whole trick. */
+/**
+ * A line cut off before it lands: the teaser's whole trick. At the end of its
+ * first sentence when there is more to come (user: "I'd—" read as a broken
+ * line, not a cliffhanger), otherwise before its last words.
+ */
 export function cutLine(text) {
-  const w = String(text || '').split(/\s+/).filter(Boolean);
+  const t = String(text || '').trim();
+  const w = t.split(/\s+/).filter(Boolean);
   if (w.length <= 5) return w.join(' ');
-  return w.slice(0, Math.ceil(w.length * 0.6)).join(' ').replace(/[.,!?;:…'"”]+$/, '') + '—';
+  const first = t.match(/^[^.!?…]+[.!?…]+/)?.[0];
+  if (first && first.length < t.length - 2 && first.split(/\s+/).length >= 3) return first.replace(/[.!?…]+$/, '') + '…';
+  return w.slice(0, Math.ceil(w.length * 0.6)).join(' ').replace(/[.,!?;:…'"”]+$/, '') + '…';
+}
+
+/**
+ * What the break says is still to come, from what the rest of the night IS —
+ * never who (user: "no real build-up … no suspense"). Night moments first.
+ */
+function hookFor(row, kind, label) {
+  if (kind !== 'comingup') return null;
+  const has = k => (row.pm?.events || []).some(e => e.kind === k);
+  const tonight = label === 'Coming up tonight';
+  if (has('dump-open')) return tonight ? "Still to come tonight: the fire pit, the results, and somebody's time in the villa is up." : 'Later: a text, and the fire pit.';
+  if (row.moment === 'recoupling' || row.moment === 'first-coupling') return "Still to come: a recoupling, and not everyone will be picked.";
+  if (row.moment === 'bombshell') return 'Still to come: a new face walks into the villa.';
+  if (row.moment === 'casa-open') return 'Still to come: the villa splits in two.';
+  if (row.moment === 'stick-or-twist') return 'Still to come: stick, or twist?';
+  if (row.moment === 'photos') return "Still to come: the photos from Casa Amor.";
+  return null;
 }
 function clipsFrom(screens, max = 3) {
   const cands = [];
@@ -600,7 +630,7 @@ function clipsFrom(screens, max = 3) {
   return out.sort((a, b) => a.at - b.at);
 }
 function breakScreen(kind, row, clips, bg, title = null, label = kind === 'comingup' ? 'Coming up' : 'Next time') {
-  const pick = OPENERS[kind][(row.num || 0) % OPENERS[kind].length];
+  const pick = hookFor(row, kind, label) || OPENERS[kind][(row.num || 0) % OPENERS[kind].length];
   const narr = words().narratorName || 'The Narrator';
   const steps = [{ part: 'teaser', kind: 'teaser', who: narr, voice: 'narrator', bg, headline: label, cast: [],
     text: pick, fx: { teaser: kind, neon: [label, kind === 'comingup' ? '#ff2e88' : '#ffc15e'] }, sceneStart: true, sceneEnd: true, ev: -1 }];

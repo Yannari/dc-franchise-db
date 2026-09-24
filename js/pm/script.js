@@ -30,6 +30,7 @@ import { RULES_LINES } from './lines/challenge-rules.js';
 import { MORE_D } from './lines/day/more-d.js';
 import { JOURNEY_LINES } from './lines/journey.js';
 import { KIN_LINES } from './lines/kin.js';
+import { FIREPIT_LINES } from './lines/firepit.js';
 import { DIALECTS, slotWord, US_SPELLING, US_SPELLERS, ESL_EXPANSIONS } from './lines/dialect.js';
 
 export const POOLS = { ...DAY, ...LADDER, ...FEELINGS, ...MOMENT_LINES, ...CHALLENGE_LINES, ...CLOSE, ...ANSWER, ...KISS_LINES, ...RULES_LINES };
@@ -39,6 +40,8 @@ for (const [k, v] of Object.entries(MORE_D)) POOLS[k] = [...(POOLS[k] || []), ..
 for (const [k, v] of Object.entries(JOURNEY_LINES)) POOLS[k] = [...(POOLS[k] || []), ...v];
 // The islanders who knew each other before the villa (lines/kin.js).
 for (const [k, v] of Object.entries(KIN_LINES)) POOLS[k] = [...(POOLS[k] || []), ...v];
+// The night before a dumping's verdict (lines/firepit.js).
+for (const [k, v] of Object.entries(FIREPIT_LINES)) POOLS[k] = [...(POOLS[k] || []), ...v];
 export { HUT, NARRATOR };
 
 export const SPEAKERS = ['a', 'b', 'c', 'dior', 'narrator'];

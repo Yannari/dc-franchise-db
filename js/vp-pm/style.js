@@ -629,6 +629,11 @@ details.pmv-debug[open] summary::before{transform:rotate(45deg)}
 .pmv-stage.pmv-teaser::after{content:attr(data-bug);position:absolute;left:3%;top:15%;z-index:12;font:clamp(12px,1.6vw,18px)/1 'Bebas Neue',sans-serif;
   letter-spacing:.18em;color:#fff;background:#ff2e88;padding:.35em .7em;border-radius:4px;box-shadow:0 0 18px #ff2e8899;animation:pmv-blink 1.2s steps(2) infinite}
 .pmv-stage.pmv-teaser .pmv-cam{filter:saturate(1.25) contrast(1.08)}
+.pmv-stage.pmv-teaser-card::after{display:none}
+/* The clips play letterboxed, as a montage does: a different kind of screen from a scene. */
+.pmv-stage.pmv-teaser:not(.pmv-teaser-card) .pmv-cam::before,.pmv-stage.pmv-teaser:not(.pmv-teaser-card) .pmv-cam::after{content:'';position:absolute;left:0;right:0;height:9%;background:#000;z-index:4;pointer-events:none;animation:pmv-bars .35s ease-out}
+.pmv-stage.pmv-teaser:not(.pmv-teaser-card) .pmv-cam::before{top:0}.pmv-stage.pmv-teaser:not(.pmv-teaser-card) .pmv-cam::after{bottom:0}
+@keyframes pmv-bars{from{height:0}}
 .pmv-stage.pmv-flash::before{content:'';position:absolute;inset:0;z-index:13;background:#fff;pointer-events:none;animation:pmv-flashCut .45s ease-out forwards}
 @keyframes pmv-flashCut{0%{opacity:.9}100%{opacity:0}}
 /* ── TV MODE: no cards, no Heart Map, the stage as big as the window ──

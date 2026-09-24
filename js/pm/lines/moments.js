@@ -1209,66 +1209,7 @@ export const MOMENTS = {
       ],
       beat: 'The fire pit goes completely silent.' },
   ],
-  'dump-buildup': [
-    // A double dumping: said up front, then the couples named in turn.
-    { id: 'dump-buildup.d1', when: { channel: 'public', going: 2, nth: 'first' },
-      turns: [
-        ['dior', "Islanders. Tonight, not one but two couples will be dumped from the island."],
-        ['dior', "The public have been voting for their favourite couple. The first couple with the fewest votes is…"],
-        ['dior', "…{a} and {b}."],
-      ],
-      beat: '{a} and {b} stand up and walk to the front.' },
-    { id: 'dump-buildup.d2', when: { channel: 'public', going: 2, nth: 'first' },
-      turns: [
-        ['dior', "Two couples are leaving the villa tonight, and the public have decided who."],
-        ['dior', "The first of them is {a} and {b}."],
-      ],
-      beat: '{b} grips {a.posAdj} hand.' },
-    { id: 'dump-buildup.d3', when: { channel: 'public', going: 2, nth: 'next' },
-      turns: [['dior', "And the second couple is…"], ['dior', "…{a} and {b}."]],
-      beat: '{a} lets out a breath and stands up.' },
-    { id: 'dump-buildup.d4', when: { channel: 'public', going: 2, nth: 'next' },
-      turns: [['dior', "The other couple with the fewest votes is {a} and {b}."]],
-      beat: '{b} shuts {b.posAdj} eyes for a second.' },
-    { id: 'dump-buildup.01', when: ch('public'),
-      turns: [
-        ['dior', "Islanders. The public have been voting for their favourite couple."],
-        ['dior', "{a}. {b}. You have received the fewest votes."],
-      ],
-      beat: '{b} takes {a.posAdj} hand, and neither of them looks at anyone else.' },
-    { id: 'dump-buildup.02', when: ch('public'),
-      turns: [
-        ['dior', "The couples with the fewest public votes are at risk of being dumped from the island. The first of those couples…"],
-        ['dior', "…is {a} and {b}."],
-      ] },
-    { id: 'dump-buildup.03', when: ch('villa'),
-      turns: [
-        ['dior', "{a} and {b}. The public have put you at risk. Now the islanders will decide who stays."],
-      ],
-      beat: '{a} looks along the bench at the people who are about to vote.' },
-    { id: 'dump-buildup.04', when: ch('villa'),
-      turns: [
-        ['dior', "Good evening, islanders. Tonight, your fate is in each other's hands. {a}, {b}, please stand."],
-      ] },
-    { id: 'dump-buildup.05', when: ch('top-couple'),
-      turns: [
-        ['dior', "The public have been voting for their favourite couple. {a} and {b}, you're one of the couples with the fewest votes."],
-      ],
-      beat: '{a} squeezes {b.posAdj} hand.' },
-    { id: 'dump-buildup.06', when: ch('top-couple'),
-      turns: [['dior', "{a}. {b}. You're at risk tonight. And it won't be me or the public who decides what happens next."]] },
-    { id: 'dump-buildup.07', when: ch('couples'),
-      turns: [['dior', "{a} and {b}. Your fellow islanders have voted you one of the least compatible couples in the villa."]],
-      beat: "{b} can't look at anyone." },
-    { id: 'dump-buildup.08', when: ch('couples'),
-      stage: 'The names are read out, and {a} and {b} stand up together.',
-      turns: [['a', "I honestly didn't see that coming."], ['b', 'Me neither.']] },
-    { id: 'dump-buildup.09', when: ch('exes'),
-      turns: [['dior', "{a} and {b}. The islanders have voted you one of the least compatible couples, so you're at risk of being dumped."]] },
-    { id: 'dump-buildup.10', when: ch('exes'),
-      stage: '{a} and {b} stand together at the front of the fire pit.',
-      turns: [['a', "Whatever happens, I'm glad I came in here and met you."], ['b', "Don't say it like that. We're not going anywhere."]] },
-  ],
+  // 'dump-buildup' is in lines/firepit.js, with the rest of the night before the verdict.
   // Plan 4.5: who decides tonight is the first thing Dior says.
   'dump-at-risk': [
     { id: 'dump-at-risk.01', when: { channel: 'save', gender: 'm' },

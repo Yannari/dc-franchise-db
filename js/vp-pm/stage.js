@@ -215,6 +215,8 @@ export function paintStage(el, screen, idx, { fresh = false, hud = '' } = {}) {
   el.classList.remove(P('shake'));
   // A teaser: quick cuts, each line cut off, the break's bug in the corner.
   el.classList.toggle(P('teaser'), !!st?.fx?.teaser);
+  // The break's own card carries its name in neon: no corner bug over it.
+  el.classList.toggle(P('teaser-card'), !!(st?.fx?.teaser && st?.fx?.neon));
   el.classList.remove(P('flash'));
   if (fresh && st?.fx?.teaser) { void el.offsetWidth; el.classList.add(P('flash')); }
   const hl = q('headline');

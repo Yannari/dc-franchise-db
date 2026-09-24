@@ -25,9 +25,11 @@ import { CHALLENGE_LINES } from './lines/challenges.js';
 import { CLOSE, ANSWER } from './lines/day/close.js';
 import { HUT } from './lines/hut.js';
 import { NARRATOR } from './lines/narrator.js';
+import { KISS_LINES, ICEBREAKER_CARDS } from './lines/kiss-games.js';
+import { RULES_LINES } from './lines/challenge-rules.js';
 import { DIALECTS, slotWord, US_SPELLING, US_SPELLERS, ESL_EXPANSIONS } from './lines/dialect.js';
 
-export const POOLS = { ...DAY, ...LADDER, ...FEELINGS, ...MOMENT_LINES, ...CHALLENGE_LINES, ...CLOSE, ...ANSWER };
+export const POOLS = { ...DAY, ...LADDER, ...FEELINGS, ...MOMENT_LINES, ...CHALLENGE_LINES, ...CLOSE, ...ANSWER, ...KISS_LINES, ...RULES_LINES };
 export { HUT, NARRATOR };
 
 export const SPEAKERS = ['a', 'b', 'c', 'dior', 'narrator'];
@@ -266,6 +268,7 @@ export function fill(text, ps, partners = {}) {
   const names = { a: ps[0], b: ps[1], c: ps[2], d: ps[3], pa: partners.pa, pb: partners.pb };
   // {quote}: the first thing said in the clip being replayed (Movie Night, the reunion).
   if (partners.day != null) text = text.replace(/\{day\}/g, String(partners.day));
+  if (partners.card != null) text = text.replace(/\{card\}/g, partners.card);
   // Night one's two sides, from the scene: who stands in the line (`side`)
   // and who walks in to it. The pools never say "the girls" outright, so the
   // season can bring either side in first (Villa options).
@@ -466,6 +469,8 @@ function castOf(ev) {
 /** A replayed clip is quoted, so the villa reacts to what is actually on the screen. */
 function clipSlots(state, ev) {
   if (ev.extra?.side) return { side: ev.extra.side };
+  // Icebreakers: the question frozen in the ice.
+  if (ev.extra?.card != null) return { card: ICEBREAKER_CARDS[ev.extra.card] || '' };
   // A debrief's room: the boys' terrace or the girls' dressing room.
   if (ev.extra?.where) return { where: ev.extra.where };
   // Look Who's Talking reads out a beach-hut line: the quote travels with the scene.

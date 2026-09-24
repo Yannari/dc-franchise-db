@@ -54,7 +54,7 @@ describe('the pools are well-formed', () => {
       'arrival-chat': 3, 'first-toast': 3, debrief: 3, 'bombshell-react': 3, 'movie-react': 3, 'casa-host': 0, 'casa-react': 3, 'casa-return': 2, 'photo-text': 1, 'pile-in': 3, breakdown: 1, 'triangle-rivals': 3, 'triangle-case': 3, 'triangle-ultimatum': 3, 'triangle-teams': 3, 'triangle-choice': 3,
       'lie-write': 3, 'lie-ask': 4, 'lie-answer': 1, 'lie-read': 2, 'lie-react': 3,
       'gossip-close': 3, 'gossip-what': 3,
-      'blow-slip': 2, 'blow-dare': 3, 'lip-watch': 3, 'tower-q': 3, 'course-run': 1, 'course-pick': 3, 'course-win': 2, 'sports-win': 4, 'sports-sore': 2, headline: 4 };
+      'blow-slip': 2, 'blow-dare': 3, 'lip-watch': 3, 'tower-q': 3, 'course-run': 1, 'course-pick': 3, 'course-win': 2, 'sports-win': 4, 'sports-sore': 2, headline: 4, 'lady-luck-pick': 3 };
     for (const [k, e] of ENTRIES) {
       if (k.startsWith('hut:') || k.startsWith('narrator:')) continue;
       const size = CAST[k] || 2;
@@ -106,7 +106,7 @@ describe('the words follow the rules', () => {
     for (const [k, e] of ENTRIES) for (const x of texts(e)) {
       // A capitalised word straight after a placeholder slot's usual place would be a name;
       // the practical check is that nothing but {a}/{b}/{c} forms appear in braces.
-      for (const [m] of x.matchAll(/\{(?!~)[^}]*\}/g)) expect(m, `${k} ${e.id}`).toMatch(/^\{(quote|quoteWho|day|side|Side|sideOne|walkers|Walkers|walkerOne|where|Where|(pa|pb|a|b|c|d)(\.(obj|pos|posAdj|ref|Obj|PosAdj|gf))?)\}$/);
+      for (const [m] of x.matchAll(/\{(?!~)[^}]*\}/g)) expect(m, `${k} ${e.id}`).toMatch(/^\{(quote|quoteWho|day|card|side|Side|sideOne|walkers|Walkers|walkerOne|where|Where|(pa|pb|a|b|c|d)(\.(obj|pos|posAdj|ref|Obj|PosAdj|gf))?)\}$/);
       expect(x, `${k} ${e.id}`).not.toMatch(/\bDior\b/);
     }
   });

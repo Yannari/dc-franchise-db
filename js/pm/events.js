@@ -410,10 +410,10 @@ export const KINDS = {
     'heart-rate', 'snog-marry-pie', 'movie-night', 'double-standard', 'notes', 'families',
     'solidarity',
     // the dumping formats of Plan 4.5
-    'dump-at-risk', 'dump-verdict-couple', 'dump-verdict-singles', 'group-entrance', 'final-recoupling',
+    'dump-at-risk', 'dump-verdict-couple', 'dump-verdict-singles', 'group-entrance', 'final-recoupling', 'challenge-rules',
     // the arrivals of Plan 4.5 phase 2
     'stand-up', 'nobody-stands', 'stand-up-pick', 'save-setup', 'bombshell-save', 'public-match',
-    'profile-pick', 'public-couple', 'ranking-couple',
+    'profile-pick', 'public-couple', 'ranking-couple', 'icebreaker', 'kiss-pick', 'lady-luck-kiss', 'lady-luck-pick',
     // the one-offs of phase 3
     'return-entrance', 'return-ex', 'mission-brief', 'mission-dump', 'mission-return', 'sleepover-invite',
     'sleepover-choice', 'sleepover-night', 'immunity-win',

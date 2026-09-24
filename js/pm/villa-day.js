@@ -176,9 +176,17 @@ function advice(state, rng) {
 }
 
 // ── The villa's rituals ────────────────────────────────────────────────
+// The two that are games open on how they work, like every named challenge
+// (lines/challenge-rules.js). Made after the game, so its dice are the ones
+// it always had; shown first.
+function withRules(state, rng, id, out) {
+  if (!out.length) return out;
+  return [scene(state, rng, 'challenge-rules', [], { of: id, pop: {} }, { phase: 'event', aired: true }), ...out];
+}
+
 const RITUALS = {
   // The monitor airs who really gets their heart going — hidden crushes included.
-  'heart-rate': (state, rng) => state.villa.flatMap(x => {
+  'heart-rate': (state, rng) => withRules(state, rng, 'heart-rate', state.villa.flatMap(x => {
     const top = state.villa.filter(o => attr(state, x, o) != null).sort((a, b) => romance(x, b) - romance(x, a))[0];
     if (!top) return [];
     const partner = partnerOf(state, x);
@@ -189,8 +197,8 @@ const RITUALS = {
       revealTruth(state, partner, x);
     }
     return out;
-  }),
-  'snog-marry-pie': (state, rng) => state.villa.flatMap(x => {
+  })),
+  'snog-marry-pie': (state, rng) => withRules(state, rng, 'snog-marry-pie', state.villa.flatMap(x => {
     const partner = partnerOf(state, x);
     const others = state.villa.filter(o => o !== x);
     const snog = others.filter(o => o !== partner && attr(state, x, o) != null).sort((a, b) => romance(x, b) - romance(x, a))[0];
@@ -201,7 +209,7 @@ const RITUALS = {
     if (marry) feel(state, marry, 'security', 1.5);
     return [scene(state, rng, 'snog-marry-pie', [x, snog, marry, pie].filter(Boolean), { snog, marry, pie, pop: pop([x, 0, 1.5]) },
       { phase: 'event', aired: true })];
-  }),
+  })),
   // Unaired moments played to the villa; the partners find out, and the
   // villa is accused of judging friends more softly than rivals.
   // Movie Night (pm/movie-night.js): the text, the seats, clips of what really

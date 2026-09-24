@@ -287,6 +287,11 @@ export const ARRIVAL_DRAWS = [['dates', 6], ['stand-up', 1.5], ['saves', 1.5], [
 // Night one: the girls stepping forward is the usual; the others are one
 // season each (UK 12 profiles, UK 10 the public, UK 11 most-to-least).
 export const FIRST_DRAWS = [['step-forward', 5], ['profiles', 1], ['public', 1], ['ranking', 1]];
+// …and two more, each one US season, where the islanders kiss before they
+// choose: Icebreakers (US 6) and Lady Luck (US 7) — pm/kiss-games.js. They
+// came later, so they are drawn after everything else, out of what was a
+// step-forward night: about two in seven of those, one of each.
+export const KISS_FIRST_DRAWS = [['step-forward', 5], ['icebreakers', 1], ['lady-luck', 1]];
 // Phase 3: the twists a season plays at most once, with the chance a season
 // gets each and the nights it can land on. At most two a season. Read from
 // the same eight: returning islanders in 2 (UK 10, UK 12), the secret mission
@@ -401,6 +406,15 @@ export function seasonSchedule(rng, template = SEASON_TEMPLATE) {
     days[Math.floor(where * days.length)].challenge = id;
   }
   for (const e of out) if (late(e)) drawVote(e);
+  for (const e of out) if (e.firstFormat === 'step-forward') e.firstFormat = draw(rng, KISS_FIRST_DRAWS)[0];
+  // EVERY VILLA DAY HAS ITS CHALLENGE. The draws above give a season the
+  // real show's named ones at their real rate; the days left used to play a
+  // generic "challenge" of kisses and a win with no name, no rules and no
+  // start (user: "where are the rules, where's the start … what's happening
+  // exactly here"). Now each gets a named one from the library, in its part
+  // of the season when one fits, never twice. Drawn last, so no earlier
+  // draw moved.
+  fillChallenges(out, rng);
   return out;
 }
 
@@ -462,6 +476,21 @@ export function withBookings(schedule, byEp = {}) {
  * is not already on the schedule, drawn on its own dice. Nothing fits: the
  * one fewest nights already have.
  */
+/** Give every villa day without a game a named challenge nobody has played yet this season. */
+function fillChallenges(out, rng) {
+  const last = Math.max(1, ...out.map(e => e.ep));
+  const taken = new Set(out.map(e => e.challenge).filter(Boolean));
+  for (const e of out) {
+    if (!VILLA_DAYS.has(e.moment) || e.challenge || hasGame(e)) continue;
+    const at = (e.ep - 1) / last;
+    const fits = CHALLENGE_DRAWS.filter(([id, , ok]) => !taken.has(id) && ok(at, e)).map(([id]) => id);
+    const pool = fits.length ? fits : CHALLENGE_DRAWS.map(([id]) => id).filter(id => !taken.has(id));
+    if (!pool.length) continue;
+    e.challenge = pool[Math.floor(rng() * pool.length)];
+    taken.add(e.challenge);
+  }
+}
+
 export function resolveRandomGames(schedule, rng) {
   const last = Math.max(1, ...schedule.map(e => e.ep));
   const taken = new Set(schedule.map(e => e.challenge).filter(c => c && c !== 'random'));

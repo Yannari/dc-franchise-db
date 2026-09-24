@@ -113,7 +113,11 @@ export function phasesOf(row) {
   const firstBoys = row?.pm?.firstIn === 'm';
   const sideLabel = ph => ph === 'arrival' ? (firstBoys ? 'The boys arrive' : 'The girls arrive')
     : ph === 'arrival-2' ? (firstBoys ? 'The girls arrive' : 'The boys arrive') : null;
-  const out = groupByPhase(villa, ph => sideLabel(ph) || (ph === 'challenge' && CHALLENGE_NAMES[row.pm?.challenge]) || PM_PHASE_LABEL[ph] || ph);
+  // The villa's own two games play in the afternoon slot, under their names.
+  const game = villa.find(e => e.phase === 'event' && (e.kind === 'heart-rate' || e.kind === 'snog-marry-pie'))?.kind;
+  const GAME = { 'heart-rate': 'The Heart Rate Challenge', 'snog-marry-pie': 'Snog Marry Pie' };
+  const out = groupByPhase(villa, ph => sideLabel(ph) || (ph === 'challenge' && CHALLENGE_NAMES[row.pm?.challenge])
+    || (ph === 'event' && GAME[game]) || PM_PHASE_LABEL[ph] || ph);
   const all = events.slice(from);
   // The night's debrief is its own screen, after everything else the night did.
   const debrief = all.filter(e => e.phase === 'debrief');

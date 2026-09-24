@@ -84,17 +84,20 @@ export const perfectMatchScheduleFor = (seed, shape = {}) =>
  */
 function villaDayEvents(state, rng, entry, seed) {
   // Night one has no morning before it: they arrive in the afternoon.
-  if (entry.moment === 'first-coupling') {
-    const { day, event, evening } = PHASE_BUDGETS;
-    return generateEpisodeEvents(state, rng, { day, event, evening });
-  }
-  if (!entry.challenge) return generateEpisodeEvents(state, rng);
-  const { morning, day, evening } = PHASE_BUDGETS;
+  // There is no unnamed challenge any more: a day's challenge is a named one
+  // with its rules (schedule.js fills every villa day), and the time the
+  // generic one took is ordinary villa time — its kisses and "winners" had
+  // no name, no rules and no start, and read as scenes from nowhere.
+  const { morning, day, event, evening } = PHASE_BUDGETS;
+  if (entry.moment === 'first-coupling') return generateEpisodeEvents(state, rng, { day: day + event, evening });
+  if (!entry.challenge) return generateEpisodeEvents(state, rng, { morning, day: day + event, evening });
   const out = generateEpisodeEvents(state, rng, { morning, day });
   const chal = runChallenge(state, streamFor(seed, `chal:${entry.ep}${state.epSalt}`), entry.challenge);
   if (chal.length) state._namedChallengeEp = entry.ep;
   out.push(...chal);
-  out.push(...generateEpisodeEvents(state, rng, { event: chal.length ? 6 : PHASE_BUDGETS.event, evening }));
+  // A challenge that could not play (too few couples) leaves the afternoon
+  // to the villa.
+  out.push(...generateEpisodeEvents(state, rng, chal.length ? { evening } : { day: event, evening }));
   return out;
 }
 

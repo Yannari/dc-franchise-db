@@ -1,0 +1,78 @@
+// pm/lines/challenge-rules.js — how each game works, said on screen. Data only.
+//
+//   challenge-rules  []   the narrator, straight after the challenge's text:
+//                         `of` is the challenge (schedule.js CHALLENGE_NAMES),
+//                         or 'heart-rate' / 'snog-marry-pie' for the villa's own.
+//
+// User: "where are the rules, where's the start … what's happening exactly
+// here, I don't understand." A game's text is a tease; this is the part that
+// says what they are about to do: the set-up, what they do, what goes wrong,
+// and how it is won — or that nobody wins, when nobody does. It says only
+// what the game in the code does (pm/challenges.js, challenges-more.js,
+// lie-detector.js, villa-day.js).
+const rules = (id, ...lines) => ({ id: `challenge-rules.${id}`, when: { of: id }, turns: lines.map(l => ['narrator', l]) });
+
+export const RULES_LINES = {
+  'challenge-rules': [
+    rules('receipts',
+      "Here's how it works. Every card has something an islander on the other side has done this week, and the cameras saw all of it.",
+      "You read your card, decide who it's about, and kiss them to say so. Then the card is turned over, and everyone finds out whose it really was."),
+    rules('look-who',
+      "The cards in this box are things the islanders have said about each other in the beach hut.",
+      "One islander reads a card out and has to guess who said it. Then the answer is read out. Nobody wins anything. Somebody just finds out what was said about them."),
+    rules('snogger',
+      "The boys sit in a row with blindfolds on, and the girls take turns to kiss every one of them.",
+      "Each boy scores each kiss out of ten without knowing whose it was, and then every score is read out, in front of everyone. The girl with the highest total wins."),
+    rules('couple-goals',
+      "Every couple gets a board and a pen. For each question, like most likely to get married, or first to break up on the outside, they write down another couple.",
+      "All the boards are turned round at the same time. Nobody wins. Everyone finds out what their friends really think of them."),
+    rules('knowing-me',
+      "The couples sit back to back, each with a board, and answer questions about each other.",
+      "Then the boards are turned round, and every answer that matches scores a point. The couple who know each other best win. The last question is always the dangerous one."),
+    rules('talent',
+      "Every islander has to perform something on the terrace: a song, a dance, a trick, anything at all.",
+      "When the acts are done, the villa votes with a show of hands, in front of everyone. The act with the most hands wins."),
+    rules('baby',
+      "Every couple is given a baby doll that cries, and they have to look after it day and night: the feeds, the changes, the wake-up at three in the morning.",
+      "Nobody wins. What everybody finds out is who gets up, and who rolls over."),
+    rules('couple-of-sorts',
+      "The public have ranked the couples, and nobody in the villa knows the order.",
+      "Each couple stands on the podium where they think they came. Then the real ranking is read out, from the public's favourite couple all the way down to the bottom."),
+    rules('grafties',
+      "Tonight is an awards night, and the public have voted for every award: their favourite couple, the grafter of the year, and last of all, the islander they like least.",
+      "The winners come up to collect their award and make a speech."),
+    rules('lie-detector',
+      "One of each couple is strapped into the machine. Their partner has written the questions, but another islander reads them out.",
+      "Green means the truth. Red means a lie. Blue means the machine can't tell. And the whole villa is watching the light."),
+    rules('suck-blow',
+      "The islanders stand in a line, boy, girl, boy, girl, and pass a card from one mouth to the next with nothing but breath.",
+      "Whoever drops the card has to do the dare written on it. Nobody wins. The dares are the whole point."),
+    rules('lip-service',
+      "The couples pass a cocktail across the terrace, one ingredient at a time, mouth to mouth, over a floor covered in something very slippery. No hands allowed.",
+      "The couple who get the most into their glass by the end win."),
+    rules('tower',
+      "Each couple takes turns pulling a block out of the tower. Every block has a question on it, and they have to ask it to the person they're coupled with, out loud.",
+      "There's no prize. Most of the questions are harmless. One of them isn't."),
+    rules('lads-course',
+      "The boys put on costumes and run an obstacle course, one at a time.",
+      "At the end, each boy rescues a girl of his choice, and it doesn't have to be the one he's coupled with. Then the girls pick the winner."),
+    rules('girls-course',
+      "The girls put on costumes and run an obstacle course, one at a time.",
+      "At the end, each girl rescues a boy of her choice, and it doesn't have to be the one she's coupled with. Then the boys pick the winner."),
+    rules('blind-course',
+      "One of each couple wears a blindfold. The other one stands at the side and shouts directions all the way round the course.",
+      "The first couple round wins. The couples who don't trust each other usually end up in the pool."),
+    rules('sports-day',
+      "The villa splits into two teams for a string of school sports-day races.",
+      "Every race counts, and the team with the best score at the end wins."),
+    rules('headlines',
+      "Every card is a newspaper headline about somebody in the villa, written from what the public have seen.",
+      "The islander who reads it out throws a drink over whoever they think it's about. Get it wrong, and somebody innocent gets soaked."),
+    rules('heart-rate',
+      "Everyone is wearing a heart monitor. One at a time, the islanders get up and dance for the others.",
+      "Every heart rate goes up on the screen for the whole villa to see, and the one that spikes highest is the one that counts."),
+    rules('snog-marry-pie',
+      "One by one, each islander stands up in front of everyone and names three people.",
+      "The one they'd snog, the one they'd marry, and the one who gets a custard pie in the face. The pie is not optional."),
+  ],
+};

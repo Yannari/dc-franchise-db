@@ -452,5 +452,10 @@ export function runChallenge(state, rng, id) {
   if (!events.length) return [];
   // Every game starts with a text, read out by whoever gets to the phone.
   const reader = state.villa[Math.floor(rng() * state.villa.length)];
-  return [scene(state, rng, 'challenge-text', [reader], { of: id, pop: pop([reader, 0, 0.3]) }), ...events];
+  const text = scene(state, rng, 'challenge-text', [reader], { of: id, pop: pop([reader, 0, 0.3]) });
+  // …and then how it works: the set-up, what they do, how it is won
+  // (lines/challenge-rules.js). The text alone left the viewer asking what
+  // was happening.
+  const how = scene(state, rng, 'challenge-rules', [], { of: id, pop: {} });
+  return [text, how, ...events];
 }

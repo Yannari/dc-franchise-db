@@ -18,6 +18,7 @@ import { arriveBombshell, bombshellSteal, openCasa, standUp, bombshellSaves, pub
 import { secretMission, sleepover, immunityChallenge } from './one-offs.js';
 import { attr, nudgeAttraction } from './chemistry.js';
 import { stickOrTwist } from './casa.js';
+import { kissFirst } from './kiss-games.js';
 import { confrontation } from './movie-night.js';
 import { addRelationshipDimension } from '../relationships.js';
 import { closeEpisode, BETRAYAL } from './ledger.js';
@@ -360,7 +361,8 @@ export function nightOneOpening(state, ctx) {
   }
   // Dior explains the night's coupling at the fire pit, then it happens.
   const host = makeEvent(state, rng, { phase: 'coupling', kind: 'host-first', players: [], aired: true, extra: { of: fmt, side: firstIn, pop: {} } });
-  const first = stepping ? stepForward(state, rng, intro, firstIn) : firstCouples(state, rng, fmt);
+  const first = stepping ? stepForward(state, rng, intro, firstIn)
+    : fmt === 'icebreakers' || fmt === 'lady-luck' ? kissFirst(state, rng, fmt, firstIn) : firstCouples(state, rng, fmt);
   // The first coupling is in daylight, the same afternoon they arrived.
   for (const e of first.events) e.phase = 'coupling';
   // THE DEBRIEF (user: "the debrief is really important"): straight after the
@@ -555,7 +557,9 @@ export const MOMENTS = {
     // the night is the bombshell's. Without an opening (a direct call) the
     // coupling happens here, as it used to.
     const fmt = ctx.entry.firstFormat;
-    const first = ctx.opening || (fmt && fmt !== 'step-forward' ? firstCouples(state, ctx.rng, fmt)
+    const kissing = fmt === 'icebreakers' || fmt === 'lady-luck';
+    const first = ctx.opening || (kissing ? kissFirst(state, ctx.rng, fmt, state.firstIn === 'm' ? 'm' : 'f')
+      : fmt && fmt !== 'step-forward' ? firstCouples(state, ctx.rng, fmt)
       : recoupleNight(state, ctx.rng, { dumpSingles: false }));
     const events = [...(ctx.opening ? [] : first.events), ...arrivals(state, ctx, ctx.entry.arrivals?.bombshell || 0)];
     for (const name of state.villa.filter(n => state.ledger.firstEp[n] === state.ep

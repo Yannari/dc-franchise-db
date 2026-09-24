@@ -51,7 +51,7 @@ export const KIND_LABEL = {
   'sports-captains': 'The captains', 'sports-win': 'Sports Day winners', 'sports-sore': 'Sore losers', headline: 'The headline',
   blowup: 'It kicks off', 'pile-in': 'Taking sides', 'villa-divided': 'The villa divided', 'cold-shoulder': 'The cold shoulder', 'clear-the-air': 'Clearing the air',
   'bed-share': 'Lights out', vent: 'Letting off steam', apology: 'The apology', reunite: 'Back together', 'apology-rejected': 'Not this time',
-  steal: 'A steal', 'final-recoupling': 'The final recoupling', 'recouple-pick': 'The recoupling', 'dump-buildup': 'At risk', 'dump-verdict': 'Dumped',
+  steal: 'A steal', 'final-recoupling': 'The final recoupling', 'challenge-rules': 'How it works', 'recouple-pick': 'The recoupling', 'dump-buildup': 'At risk', 'dump-verdict': 'Dumped',
   'ballot-reveal': 'The vote', 'dump-reaction': 'The reaction', 'dump-goodbye': 'Goodbye', 'dump-fallout': 'Fallout',
   'casa-return': 'Stick or twist', photos: 'The photos', declaration: 'The declaration', 'final-result': 'The result',
   envelope: 'The envelope', walk: 'Leaving the villa', reveal: "What you didn't see", 'close-off': 'Closing off',
@@ -65,7 +65,7 @@ export const KIND_LABEL = {
   'dump-verdict-couple': 'Dumped', 'dump-verdict-singles': 'Dumped', 'group-entrance': 'New arrivals',
   'stand-up': 'Standing up', 'nobody-stands': 'Nobody stands', 'stand-up-pick': 'The pick', 'save-setup': 'At risk',
   'bombshell-save': 'Saved', 'public-match': 'The public decide', 'profile-pick': 'The profiles',
-  'public-couple': 'The public decide', 'ranking-couple': 'The ranking', 'return-entrance': 'Back in the villa',
+  'public-couple': 'The public decide', 'ranking-couple': 'The ranking', icebreaker: 'Icebreakers', 'kiss-pick': 'The first coupling', 'lady-luck-kiss': 'Lady Luck', 'lady-luck-pick': 'The choice', 'return-entrance': 'Back in the villa',
   'return-ex': 'The ex', 'mission-brief': 'A secret task', 'mission-dump': 'The secret task', 'mission-return': 'A second chance',
   'sleepover-invite': 'The sleepover', 'sleepover-night': 'The sleepover villa', 'sleepover-choice': 'The choice',
   'immunity-win': 'Safe tonight', 'challenge-text': 'I got a text!', receipt: 'The receipt', 'look-who': 'Who said it?',
@@ -106,6 +106,8 @@ const POPS = {
   friendship: [[1, 'Friendship +', 'teal', 'star']],
   ick: [[0, 'The ick', 'down', 'crack']],
   'challenge-kiss': [[1, 'Attraction +', '', 'heart']],
+  icebreaker: [[1, 'Attraction +', '', 'heart']], 'lady-luck-kiss': [[1, 'Attraction +', '', 'heart']],
+  'kiss-pick': [[1, 'Chosen', 'gold', 'heartW']], 'lady-luck-pick': [[1, 'Chosen', 'gold', 'heartW']],
   date: [[1, 'Attraction +', '', 'heart']],
   steal: [[0, 'Steal!', 'gold', 'spark'], [2, 'Stolen from', 'red', 'crack']],
   'recouple-pick': [[1, 'Chosen', 'gold', 'heartW']],
@@ -150,7 +152,9 @@ const POPS = {
 const HURT_STYLES = new Set(['red']);
 // A pop only where the scene did the thing: a receipt that read out "falling
 // for you" exposed nobody.
-const POPS_WHEN = { 'first-look': e => e.extra?.of === 'spark', receipt: e => ['secret', 'pull', 'head-turned'].includes(e.extra?.of),
+const POPS_WHEN = { 'first-look': e => e.extra?.of === 'spark',
+  // A kiss that fell flat moved nothing up worth a chip.
+  icebreaker: e => e.extra?.choice === 'spark', 'lady-luck-kiss': e => e.extra?.choice === 'spark', receipt: e => ['secret', 'pull', 'head-turned'].includes(e.extra?.of),
   'casa-return': () => false, 'dump-reaction': () => true };
 
 // ── the night's big effects ───────────────────────────────────────────
@@ -217,7 +221,7 @@ function fxFor(row, e, first) {
 
 // ── the Heart Map's changes ───────────────────────────────────────────
 const COUPLES_BY = { 'step-last': [0, 1], 'recouple-pick': [0, 1], steal: [0, 1], 'stand-up-pick': [0, 1], 'public-match': [0, 1],
-  'bombshell-save': [0, 1], 'profile-pick': [0, 1], 'public-couple': [0, 1], 'ranking-couple': [0, 1] };
+  'bombshell-save': [0, 1], 'profile-pick': [0, 1], 'public-couple': [0, 1], 'ranking-couple': [0, 1], 'kiss-pick': [0, 1], 'lady-luck-pick': [0, 1] };
 function relOps(e) {
   const k = e.kind, p = e.players;
   if (COUPLES_BY[k]) return [['couple', p[0], p[1]]];

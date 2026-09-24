@@ -45,11 +45,25 @@ describe('the challenges are drawn like the real show', () => {
         if (e.challenge === 'grafties') expect(e.moment).toBe('public-vote');
       }
     }
-    // Four to six a season from the first ten (UK 10-13's tables); with the
-    // eight from UK 5-9 (pm/challenges-more.js, user: "write more named
-    // challenges") about seven and a half — the real show names ten or more.
-    expect(drawn / 60).toBeGreaterThan(5);
-    expect(drawn / 60).toBeLessThan(11);
+    // Every villa day without a game of its own has a named one now: the
+    // unnamed "challenge" is gone (user: "where are the rules, where's the
+    // start"). The draws above still set which ones, at the real rate.
+    expect(drawn / 60).toBeGreaterThan(9);
+  });
+  it('every villa day has a named challenge, unless its game is the heart-rate or Snog Marry Pie', () => {
+    for (let seed = 1; seed <= 30; seed++) {
+      for (const e of perfectMatchScheduleFor(seed, SHAPE).filter(x => CHALLENGE_NIGHTS.includes(x.moment))) {
+        const game = (e.rituals || []).some(r => r === 'heart-rate' || r === 'snog-marry-pie');
+        expect(!!e.challenge, `seed ${seed} ep ${e.ep}`).toBe(!game);
+      }
+    }
+  });
+  it('no scene from the old unnamed challenge is played', () => {
+    for (let seed = 1; seed <= 4; seed++) {
+      const { rows } = season(seed);
+      const loose = rows.flatMap(r => r.pm.events).filter(e => e.phase === 'event' && (e.kind === 'challenge-kiss' || e.kind === 'challenge-win'));
+      expect(loose.map(e => `${e.ep} ${e.kind}`), `seed ${seed}`).toEqual([]);
+    }
   });
   it('the draws come after every other, so no earlier draw moved', () => {
     // Every episode's dumping / arrival rule / night one / one-off /

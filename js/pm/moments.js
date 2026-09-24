@@ -472,7 +472,19 @@ function stepForward(state, rng, intro = null, stand = 'f') {
   for (const b of boys) {
     // Each boy is introduced as he reaches the top of the steps.
     if (intro) events.push(intro(b, 'coupling'));
-    const stepped = [...free].filter(f => attr(state, f, b) != null && rng() < 0.15 + 0.7 * (attr(state, f, b) || 0) / 10);
+    // Whether she steps forward is how much she fancies HIM against the rest
+    // of the side walking in, and her nerve: night one's attraction is looks
+    // alone and low for everyone, so a fixed bar left most boys with one
+    // girl or none, and the choosing — the moment the night is for — never
+    // happened (season 7: five boys, never two steppers).
+    const stepped = [...free].filter(f => {
+      const v = attr(state, f, b);
+      if (v == null) return false;
+      const rest = boys.map(o => attr(state, f, o)).filter(x => x != null);
+      const usual = rest.length ? rest.reduce((t, x) => t + x, 0) / rest.length : v;
+      const p = Math.max(0.05, Math.min(0.9, 0.4 + 0.3 * (v - usual) + 0.3 * ((state.profiles[f].stats?.boldness ?? 5) - 5) / 10));
+      return rng() < p;
+    });
     if (!stepped.length) {
       waiting.push(b);
       events.push(makeEvent(state, rng, { phase: 'coupling', kind: 'step-forward', players: [b], aired: true,
@@ -483,8 +495,26 @@ function stepForward(state, rng, intro = null, stand = 'f') {
     free.delete(pick); pairs.push([pick, b]);
     // The ones he walked past noticed.
     for (const f of stepped) if (f !== pick) addBond(f, pick, -0.2);
-    events.push(makeEvent(state, rng, { phase: 'coupling', kind: 'step-forward', players: [b, pick], aired: true,
-      extra: { of: stepped.length > 1 ? 'several' : 'one', side: stand, pop: { [b]: { approval: 0.2, fame: 1 }, [pick]: { approval: 0.3, fame: 1 } } } }));
+    if (stepped.length === 1) {
+      events.push(makeEvent(state, rng, { phase: 'coupling', kind: 'step-forward', players: [b, pick], aired: true,
+        extra: { of: 'one', side: stand, pop: { [b]: { approval: 0.2, fame: 1 }, [pick]: { approval: 0.3, fame: 1 } } } }));
+      continue;
+    }
+    // MORE THAN ONE STEPPED (user: "the first coupling is still quick and
+    // boring"): the moment the show lives on is its own three scenes — who
+    // stepped, named; the choice, with the ones not chosen still standing
+    // there; and the one who steps back into the line. Those passed over lose
+    // a little confidence, in proportion to how much they fancied him.
+    const others = stepped.filter(f => f !== pick).sort((x, y) => (attr(state, y, b) ?? 0) - (attr(state, x, b) ?? 0));
+    const count = stepped.length === 2 ? 'two' : 'three';
+    events.push(makeEvent(state, rng, { phase: 'coupling', kind: 'step-reveal', players: [b, ...[pick, ...others].slice(0, 3)], aired: true,
+      extra: { of: count, side: stand, pop: Object.fromEntries(stepped.map(f => [f, { approval: 0.1, fame: 0.6 }])) } }));
+    events.push(makeEvent(state, rng, { phase: 'coupling', kind: 'step-choose', players: [b, pick, ...others.slice(0, 2)], aired: true,
+      extra: { of: count, side: stand, pop: { [b]: { approval: 0.2, fame: 1 }, [pick]: { approval: 0.3, fame: 1 } } } }));
+    for (const f of others) feel(state, f, 'confidence', -0.6 * (attr(state, f, b) ?? 5) / 10);
+    feel(state, pick, 'confidence', 0.4);
+    events.push(makeEvent(state, rng, { phase: 'coupling', kind: 'step-back', players: [others[0], pick], aired: true,
+      extra: { side: stand, pop: { [others[0]]: { approval: 0.4, fame: 0.8 } } } }));
   }
   // Whoever is left: put together, best-matched first.
   for (const b of waiting) {

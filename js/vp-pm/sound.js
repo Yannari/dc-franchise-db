@@ -199,6 +199,7 @@ const SITUATION = {
   // Night one: the starters walking in, meeting, the first coupling.
   // …and night one's kissing games, which are how that coupling is played.
   starters: ['host-open', 'first-arrival', 'arrival-chat', 'first-toast', 'first-look', 'host-first', 'step-forward', 'step-last',
+    'step-reveal', 'step-choose', 'step-back',
     'icebreaker', 'lady-luck-kiss', 'kiss-pick', 'lady-luck-pick'],
   intro: ['intro'],
   arrival: ['entrance', 'group-entrance', 'bombshell-react', 'casa-host'],

@@ -33,7 +33,7 @@ const words = () => SHOWS['perfect-match'].words;
 // ── what each scene is called on the headline pill ────────────────────
 export const KIND_LABEL = {
   'host-open': 'Welcome to Perfect Match', 'host-first': 'The first coupling', intro: 'Meet the islander',
-  'first-arrival': 'The arrivals', 'first-look': 'First impressions', 'step-forward': 'Step forward', 'step-last': 'The last two',
+  'first-arrival': 'The arrivals', 'first-look': 'First impressions', 'step-forward': 'Step forward', 'step-reveal': 'Step forward', 'step-choose': 'The choice', 'step-back': 'Stepping back', 'step-last': 'The last two',
   chat: 'A chat', 'deep-chat': 'A deep chat', kiss: 'A kiss', pull: 'Can I borrow you?', loyalty: 'Loyal',
   argument: 'An argument', friendship: 'Friends', gossip: 'Gossip', comedy: 'Villa life', ick: 'The ick',
   'challenge-kiss': 'A challenge kiss', 'challenge-win': 'Winners', entrance: 'A new arrival', date: 'The date',
@@ -112,7 +112,8 @@ const POPS = {
   date: [[1, 'Attraction +', '', 'heart']],
   steal: [[0, 'Steal!', 'gold', 'spark'], [2, 'Stolen from', 'red', 'crack']],
   'recouple-pick': [[1, 'Chosen', 'gold', 'heartW']],
-  'step-forward': [[1, 'Chosen', 'gold', 'heartW']],
+  'step-forward': [[1, 'Chosen', 'gold', 'heartW']], 'step-choose': [[1, 'Chosen', 'gold', 'heartW']],
+  'step-back': [[0, 'Passed over', 'down', 'crack']],
   'dump-verdict': [[0, 'Dumped', 'red', 'crack']],
   'dump-verdict-couple': [[0, 'Dumped', 'red', 'crack'], [1, 'Dumped', 'red', 'crack']],
   'dump-fallout': [[0, 'Single', 'down', 'crack']],
@@ -165,7 +166,8 @@ function fxFor(row, e, first) {
   if (k === 'first-arrival' && first) fx.neon = ['Perfect Match', '#ff2e88'];
   if (k === 'entrance' || k === 'group-entrance') fx.neon = [row.moment === 'casa-open' ? 'Casa Amor' : 'Bombshell', '#ff7a59'];
   if (k === 'return-entrance') fx.neon = ['Back', '#ffc15e'];
-  if (k === 'step-forward' && first) fx.neon = ['Step forward', '#ff2e88'];
+  // The sign lights on the first boy, whichever way his turn went.
+  if ((k === 'step-forward' || k === 'step-reveal') && (row.pm.events || []).find(x => x.kind === 'step-forward' || x.kind === 'step-reveal') === e) fx.neon = ['Step forward', '#ff2e88'];
   if (k === 'recouple-pick' && first) fx.neon = [row.moment === 'first-coupling' ? 'First coupling' : 'Recoupling', '#ff2e88'];
   if (k === 'dump-buildup' && first) fx.neon = ['The results', '#a78bfa'];
   if (k === 'dump-verdict' || k === 'dump-verdict-couple' || k === 'dump-verdict-singles') { fx.neonDie = ['Dumped', '#ff2e88']; fx.shake = true; }
@@ -237,6 +239,8 @@ function relOps(e) {
   if (k === 'first-arrival') return [['arrive', p[0]]];
   // The boy walks in, and walks out coupled (or waiting).
   if (k === 'step-forward') return p[1] ? [['arrive', p[0]], ['couple', p[0], p[1]]] : [['arrive', p[0]]];
+  if (k === 'step-reveal') return [['arrive', p[0]]];
+  if (k === 'step-choose') return [['couple', p[0], p[1]]];
   return [];
 }
 

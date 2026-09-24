@@ -97,16 +97,6 @@ export const JUST_MET = {
     { id: 'jm.comedy.07', when: J, stage: '{a} spends ten minutes trying to open the fridge.', turns: [['a', "It's a push one. Of course it's a push one."]] },
     { id: 'jm.comedy.08', when: J, stage: '{a} practises a chat-up line in the mirror, out loud.', turns: [['a', "No. Too much. Again."]] },
   ],
-  argument: [
-    { id: 'jm.arg.01', when: J, turns: [['a', "You've taken my bed."], ['b', "Your bed? We got here four hours ago."], ['a', "And I put my bag on it four hours ago."]] },
-    { id: 'jm.arg.02', when: J, turns: [['a', "Do you always talk over people?"], ['b', "Do you always take things this personally?"]], beat: 'The first frosty silence of the series.' },
-    { id: 'jm.arg.03', when: J, turns: [['a', "I don't think you like me very much."], ['b', "I don't know you very much. That's different."]] },
-    { id: 'jm.arg.04', when: J, turns: [['a', "You rolled your eyes at me at the fire pit."], ['b', "I didn't. I had something in my eye."], ['a', "Both of them?"]] },
-    { id: 'jm.arg.05', when: J, turns: [['a', "We've been here one day and you're already telling everyone what to do."], ['b', "Somebody has to organise the kitchen."]] },
-    { id: 'jm.arg.06', when: J, turns: [['a', "That was a bit rude, what you said earlier."], ['b', "It was a joke. You'll get my sense of humour eventually."], ['a', "I'm not sure I will."]] },
-    { id: 'jm.arg.07', when: J, turns: [['a', "You could have waited until everyone was in before starting on the drinks."], ['b', "It's a party. Relax."]], beat: '{a} goes and sits at the other end of the terrace.' },
-    { id: 'jm.arg.08', when: J, turns: [['a', "I heard what you said about me."], ['b', "I said you were loud. You are loud."], ['a', "You've known me for six hours."]] },
-  ],
   loyalty: [
     { id: 'jm.loyal.01', when: J, turns: [['b', "Can I get to know you a bit?"], ['a', "I'm coupled up, and I want to see where it goes. Sorry."]] },
     { id: 'jm.loyal.02', when: J, turns: [['b', "Want a chat by the pool?"], ['a', "Maybe another day. I'm giving this one a real chance first."]] },

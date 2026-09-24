@@ -285,6 +285,10 @@ function headlines(state, rng) {
     }
     if (right && c.of === 'love' && p) feel(state, p, 'security', 0.6);
     if (!right && soaked) addRelationshipDimension(soaked, reader, 'resentment', 0.2);
+    // Named in front of everyone and soaked for it, whatever the headline:
+    // it stings, and so does the one who threw it (a right guess on a row's
+    // headline used to change nothing at all).
+    if (right) { feel(state, c.who, 'confidence', -0.4); addBond(c.who, reader, -0.3); }
     out.push(scene(state, rng, 'headline', [reader, soaked, c.who, ...(p && c.of === 'pull' ? [p] : [])],
       { of: c.of, guessed: right, pop: pop([c.who, c.of === 'pull' ? -0.4 : c.of === 'love' ? 0.3 : 0, 1.5], [reader, 0.1, 1]) },
       right && c.of === 'pull' ? [c.who] : []));

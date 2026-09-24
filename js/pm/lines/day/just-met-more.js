@@ -53,17 +53,6 @@ export const JUST_MET_MORE = {
     { id: 'jm.ckiss.20', when: J, turns: [['a', "Sorry! Sorry. The rules."], ['b', "Stop apologising."]] },
   ],
 
-  argument: [
-    { id: 'jm.arg.09', when: J, turns: [['a', "You finished the hot water."], ['b', "I didn't know there was a limit."], ['a', "There's always a limit."]] },
-    { id: 'jm.arg.10', when: J, turns: [['a', "You keep interrupting me."], ['b', "I'm joining in."], ['a', "It's not joining in if I haven't finished."]] },
-    { id: 'jm.arg.11', when: J, turns: [['a', "Why did you say I was the one to watch?"], ['b', "Because you are. It was a compliment."], ['a', "It didn't sound like one."]] },
-    { id: 'jm.arg.12', when: J, turns: [['a', "You moved my stuff off the side."], ['b', "It was on my side."], ['a', "We don't have sides. It's day one."]] },
-    { id: 'jm.arg.13', when: J, turns: [['a', "You don't have to be so loud about everything."], ['b', "And you don't have to be so quiet."]], beat: 'The kitchen goes very still.' },
-    { id: 'jm.arg.14', when: J, turns: [['a', "You laughed when I fell over."], ['b', "Everyone laughed."], ['a', "You laughed the longest."]] },
-    { id: 'jm.arg.15', when: J, turns: [['a', "You've been talking about me."], ['b', "I said one thing."], ['a', "One thing is talking about me."]] },
-    { id: 'jm.arg.16', when: J, turns: [['a', "You didn't have to make that comment about my outfit."], ['b', "I said it was brave."], ['a', "Exactly."]] },
-  ],
-
   pull: [
     { id: 'jm.pull.11', when: J, turns: [['a', "Have you got five minutes?"], ['b', "For you? Maybe three."], ['a', "I'll talk fast."]] },
     { id: 'jm.pull.12', when: J, turns: [['a', "I wanted to talk to you before tonight."], ['b', "Why before tonight?"], ['a', "Just in case."]] },

@@ -19,7 +19,7 @@ import { COMEDY } from './day/comedy.js';
 import { LOYALTY } from './day/loyalty.js';
 import { ICK, CHALLENGE_KISS, CHALLENGE_WIN } from './day/challenge.js';
 import { PULL_MORE } from './day/pull-more.js';
-import { ARGUMENT_MORE } from './day/argument-more.js';
+import { ARGUMENTS } from './day/arguments.js';
 import { MAKING_UP } from './day/making-up.js';
 
 
@@ -110,86 +110,6 @@ const PULL_05 = [
         ] },
       ] },
 ];
-const ARGUMENT_05 = [
-    { id: 'argument.01', when: { coupled: true },
-      turns: [
-        ['b', "Don't tell me how I should feel."],
-        ['a', "I'm not doing that, I'm just saying—"],
-        ['b', "You are. Every time. You decide what the problem is, then you tell me I'm the problem for having it."],
-        { by: 'a', vary: [
-          { turns: [['a', "Alright. Then tell me what it is, because I've been guessing all day."]],
-            beat: "{b} walks off toward the kitchen. {a} doesn't follow." },
-          { when: { archetype: 'hothead' },
-            turns: [['a', 'Oh, here we go. Go on, then. What have I done now?']],
-            beat: '{b} walks off toward the kitchen. {a} kicks a cushion off the daybed.' },
-          { when: { attachment: 'avoidant' },
-            turns: [['a', "I'm not doing this right now."]],
-            beat: '{a} goes to the gym and stays there for an hour.' },
-          { when: { archetype: ['hero', 'loyal-soldier'] },
-            turns: [['a', "…You're right. I do that. I'm sorry."]],
-            beat: '{b} stops halfway to the kitchen and comes back.' },
-        ] },
-      ] },
-    { id: 'argument.02', when: { coupled: true, mood: 'jealous' },
-      stage: '{a} finds {b} at the fire pit.',
-      turns: [
-        ['a', 'Were you going to tell me, or was I meant to hear it from someone else?'],
-        ['b', 'Tell you what? Nothing happened.'],
-        ['a', 'Then why is everyone being weird with me?'],
-        { by: 'b', vary: [
-          { turns: [['b', "Because you're being weird with everyone. I've not done anything."]],
-            beat: '{a} starts to answer, then heads up to bed instead.' },
-          { when: { archetype: ['villain', 'mastermind', 'schemer'] },
-            turns: [['b', 'Go and ask them, then, if you trust them more than me.']],
-            beat: '{a} starts to answer, then heads up to bed instead.' },
-          { when: { mood: 'guilty' },
-            turns: [['b', '…Who said something?'], ['a', 'So there is something.']],
-            beat: "{b} doesn't answer." },
-        ] },
-      ] },
-    { id: 'argument.03', when: { mood: 'stressed' },
-      turns: [
-        ['b', "You've bitten my head off three times today."],
-        ['a', "Because you keep asking me if I'm alright."],
-        ['b', "Because you're clearly not."],
-        ['a', "I'm tired, I'm hot, and there's nowhere in this villa to be on my own. I'm allowed to be in a mood."],
-        { by: 'b', vary: [
-          { turns: [['b', "You are. You're just not allowed to take it out on me."]],
-            beat: '{a} goes quiet and starts clearing the plates.' },
-          { when: { loyal: true, coupled: true },
-            turns: [['b', 'Then come here. Sit down with me for five minutes.']],
-            beat: '{a} sits down next to {b.obj}.' },
-        ] },
-      ] },
-    { id: 'argument.04', when: { coupled: false },
-      stage: 'It starts over who used the last of the hot water.',
-      turns: [
-        ['a', "Five minutes. That's all I'm asking. Five minutes in the shower like a normal person."],
-        ['b', 'I was in there ten minutes, tops.'],
-        ['a', "You were in there so long I thought you'd moved in."],
-        { by: 'b', vary: [
-          { turns: [['b', 'Say it to my face next time, instead of to the whole kitchen.'], ['a', 'I am saying it to your face.']],
-            beat: 'Half the villa has stopped eating to watch.' },
-          { when: { persona: 'villa-clown' },
-            turns: [['b', "I'm sorry, is this an intervention? Should I sit down?"], ['a', "It's not funny."],
-              ['b', "It's a bit funny."]],
-            beat: 'Somebody at the table laughs, and {a} gives up.' },
-        ] },
-      ] },
-    { id: 'argument.05', when: { persona: 'messy' },
-      turns: [
-        ['a', "No, we're doing this now. In front of everyone. I don't care."],
-        ['b', 'Can we not? Please. Not here.'],
-        ['a', 'Why, so you can tell your side first?'],
-        { by: 'b', vary: [
-          { turns: [['b', "There aren't sides. I just don't want to do this with everyone watching."]],
-            beat: '{b} gets up and walks inside. {a} follows, still talking.' },
-          { when: { archetype: 'hothead' },
-            turns: [['b', "Fine. You want to do it in front of everyone? Let's do it."]],
-            beat: 'Nobody else at the table moves.' },
-        ] },
-      ] },
-  ];
 
 import { JUST_MET } from './day/just-met.js';
 import { MORE_A } from './day/more-a.js';
@@ -212,7 +132,6 @@ export const DAY = {
   'challenge-win': [...CHALLENGE_WIN, ...MAKING_UP['challenge-win'], ...JM('challenge-win')],
   loyalty: [...LOYALTY, ...JM('loyalty')],
   pull: [...PULL_05, ...PULL_MORE, ...JM('pull')],
-  argument: [...ARGUMENT_05, ...ARGUMENT_MORE, ...JM('argument')],
 };
 
 // Night one's second pool (lines/day/just-met-more.js): sized past the most each kind plays that night.
@@ -220,6 +139,8 @@ for (const [k, v] of Object.entries(JUST_MET_MORE)) DAY[k] = [...(DAY[k] || []),
 // Second pools (lines/day/more-*.js): appended, so every kind has room not to repeat.
 for (const [k, v] of Object.entries({ ...MORE_A, ...MORE_B })) DAY[k] = [...(DAY[k] || []), ...v];
 for (const [k, v] of Object.entries(MORE_C)) DAY[k] = [...(DAY[k] || []), ...v];
+// The arguments are written by what they are about (lines/day/arguments.js), one pool.
+DAY.argument = ARGUMENTS;
 // Gossip carrying what was SAID in a debrief (lines/debrief.js): `heard` leads.
 DAY.gossip = [...DAY.gossip, ...HEARD];
 // A pull that went further (lines/secrets.js): `kissed` leads.

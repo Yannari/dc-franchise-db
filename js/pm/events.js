@@ -15,7 +15,7 @@ import { attr, nudgeAttraction, ickHit, compatible } from './chemistry.js';
 import { recordAired, nudgeBelief, BETRAYAL } from './ledger.js';
 import { romance, shown, revealTruth, friendship, believed } from './feelings.js';
 import { closedness, betrayalWeight } from './ladder.js';
-import { feel, jealousyHit, attachment } from './emotions.js';
+import { feel, jealousyHit, attachment, emo } from './emotions.js';
 import { streamFor } from '../dr/rng.js';
 import { girlCode, judgement } from './circle.js';
 import { scriptFor, hutFor, moodOf, narratorFor } from './script.js';
@@ -43,6 +43,60 @@ export function roomMates(state, name) {
   return state.villa.filter(n => n !== name && inCasa(state, n) === here);
 }
 const couplesInRoom = state => state.couples.filter(([a, b]) => inCasa(state, a) === inCasa(state, b));
+
+// ── why two islanders argue ───────────────────────────────────────────
+// Every reason is something that happened, weighted in proportion to how
+// much of it there is. A partner's flirting only counts when it was done in
+// front of the villa (a secret kiss is a secret); a steal, a vote or a
+// telling fades with the episodes since.
+const FLIRTS = new Set(['pull', 'kiss', 'head-turned', 'date', 'hideaway']);
+function argumentReasons(s, a) {
+  const out = [];
+  const here = roomMates(s, a);
+  const p = partnerOf(s, a);
+  const since = e => 1 / (1 + Math.max(0, s.ep - (e.ep ?? s.ep)));
+  if (p && here.includes(p)) {
+    // Jealous: the partner flirting with somebody else today, openly.
+    const seen = today(s).find(e => FLIRTS.has(e.kind) && !e.extra?.secret && e.players.includes(p)
+      && !e.players.includes(a) && e.players.some(n => n !== p && here.includes(n)));
+    if (seen) out.push({ cause: 'jealous', b: p, about: seen.players.find(n => n !== p), w: 3 });
+    // One of them further in than the other.
+    const gap = romance(a, p) - romance(p, a);
+    if (gap > 1) out.push({ cause: 'mismatch', b: p, w: 0.6 * (gap - 1) });
+    // Snapping from stress, at whoever is nearest: the partner.
+    out.push({ cause: 'stress', b: p, w: 0.3 * emo(s, a).stress });
+    // The small stuff, in the moment.
+    out.push({ cause: 'bicker', b: p, w: 0.6 });
+  }
+  // Envy: coupled with the one a fancies.
+  const crush = here.filter(n => n !== p && (attr(s, a, n) ?? 0) >= 6).sort((x, y) => (attr(s, a, y) ?? 0) - (attr(s, a, x) ?? 0))[0];
+  const holder = crush && partnerOf(s, crush);
+  if (holder && holder !== a && here.includes(holder)) out.push({ cause: 'envy', b: holder, about: crush, w: 2 });
+  // A rival: somebody after a's partner.
+  if (p) {
+    const eyeing = here.find(n => n !== p && (attr(s, n, p) ?? 0) >= 6 && (attr(s, n, p) ?? 0) > (attr(s, p, a) ?? 0) - 1);
+    if (eyeing) out.push({ cause: 'rival', b: eyeing, about: p, w: 1.2 });
+  }
+  const past = s.history || [];
+  // Stole my partner: a recoupling pick or a bombshell's steal.
+  for (const e of past) {
+    const took = e.kind === 'recouple-pick' && e.extra?.stole === a ? { b: e.players[0], x: e.players[1] }
+      : e.kind === 'steal' && e.players[2] === a ? { b: e.players[0], x: e.players[1] } : null;
+    if (took && here.includes(took.b)) out.push({ cause: 'stole', b: took.b, about: took.x, w: 2.5 * since(e) });
+  }
+  // Voted against me at the fire pit, and I'm still here.
+  for (const e of past) {
+    if (e.kind === 'ballot-reveal' && e.players[1] === a && here.includes(e.players[0])) out.push({ cause: 'voted', b: e.players[0], w: 1.5 * since(e) });
+  }
+  // Told on me: the gossip that took my secret to my partner, today.
+  for (const e of today(s)) {
+    if (e.kind === 'gossip' && e.players[2] === a && here.includes(e.players[0])) out.push({ cause: 'told', b: e.players[0], about: e.players[1], w: 3 });
+  }
+  // Two who just don't get on, over something in front of them.
+  const cold = here.filter(n => n !== p).sort((x, y) => getBond(a, x) - getBond(a, y))[0];
+  if (cold) out.push({ cause: 'clash', b: cold, w: 0.8 + Math.max(0, -getBond(a, cold)) / 3 });
+  return out;
+}
 
 // ── the day remembers itself ─────────────────────────────────────────
 // A couple who rowed this morning does not have a cosy chat on the daybed at
@@ -254,14 +308,19 @@ export const KINDS = {
   },
   argument: {
     salience: 0.85,
+    // WHY they argue is decided here, from what really happened, and the
+    // lines are written per reason (user: "these arguments seem dumb and make
+    // no sense"). With no reason recorded, every row had to invent one — "you
+    // laughed when I fell over", "what you said last night" — that never
+    // happened. `about` is the third person a row is about, named in the
+    // lines but not in the scene.
     cast: (s, rng) => {
       const a = weighted(rng, s.villa.map(n => [n, (10 - S(s, n).temperament) + S(s, n).boldness / 2]));
       if (!a) return null;
-      const p = partnerOf(s, a);
-      const mates = roomMates(s, a);
-      const b = p && mates.includes(p) && rng() < 0.7 ? p
-        : mates.slice().sort((x, y) => getBond(a, x) - getBond(a, y))[0];
-      return b ? { players: [a, b] } : null;
+      const why = argumentReasons(s, a);
+      const got = weighted(rng, why.map(r => [r, r.w]));
+      if (!got) return null;
+      return { players: [a, got.b], extra: { cause: got.cause, ...(got.about ? { about: got.about } : {}) } };
     },
     apply: (s, ev) => {
       const [a, b] = ev.players;
@@ -623,7 +682,7 @@ export function generateEpisodeEvents(state, rng, budgets = PHASE_BUDGETS) {
       if ((seenPhase[key] || 0) >= PER_PHASE || (seenEp[key] || 0) >= PER_EPISODE) continue;
       seenPhase[key] = (seenPhase[key] || 0) + 1;
       seenEp[key] = (seenEp[key] || 0) + 1;
-      const extra = Array.isArray(got) ? {} : { secret: got.secret };
+      const extra = Array.isArray(got) ? {} : { secret: got.secret, ...(got.extra || {}) };
       out.push(makeEvent(state, rng, { phase, kind: realKind, players, extra }));
       made++;
     }

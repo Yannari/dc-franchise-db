@@ -87,6 +87,14 @@ describe('the pools are well-formed', () => {
     // A condition that matches nobody must still find a scene. Gossip is cast
     // only for a witness, so `knows` is always true there and counts as none.
     for (const [k, pool] of Object.entries(DAY)) {
+      // An argument always carries its reason (events.js argumentReasons), so
+      // each reason is its own "anyone": three scenes for every one of them.
+      if (k === 'argument') {
+        for (const c of ['jealous', 'mismatch', 'stress', 'bicker', 'rival', 'envy', 'stole', 'voted', 'told', 'clash']) {
+          expect(pool.filter(e => e.when?.cause === c).length, `argument ${c}`).toBeGreaterThanOrEqual(3);
+        }
+        continue;
+      }
       const open = pool.filter(e => !e.when || (k === 'gossip' && Object.keys(e.when).join() === 'knows'));
       expect(open.length, k).toBeGreaterThanOrEqual(3);
     }
@@ -106,7 +114,7 @@ describe('the words follow the rules', () => {
     for (const [k, e] of ENTRIES) for (const x of texts(e)) {
       // A capitalised word straight after a placeholder slot's usual place would be a name;
       // the practical check is that nothing but {a}/{b}/{c} forms appear in braces.
-      for (const [m] of x.matchAll(/\{(?!~)[^}]*\}/g)) expect(m, `${k} ${e.id}`).toMatch(/^\{(quote|quoteWho|day|card|side|Side|sideOne|walkers|Walkers|walkerOne|where|Where|(pa|pb|a|b|c|d)(\.(obj|pos|posAdj|ref|Obj|PosAdj|gf))?)\}$/);
+      for (const [m] of x.matchAll(/\{(?!~)[^}]*\}/g)) expect(m, `${k} ${e.id}`).toMatch(/^\{(quote|quoteWho|day|card|about|side|Side|sideOne|walkers|Walkers|walkerOne|where|Where|(pa|pb|a|b|c|d)(\.(obj|pos|posAdj|ref|Obj|PosAdj|gf))?)\}$/);
       expect(x, `${k} ${e.id}`).not.toMatch(/\bDior\b/);
     }
   });

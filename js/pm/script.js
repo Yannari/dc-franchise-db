@@ -269,6 +269,7 @@ export function fill(text, ps, partners = {}) {
   // {quote}: the first thing said in the clip being replayed (Movie Night, the reunion).
   if (partners.day != null) text = text.replace(/\{day\}/g, String(partners.day));
   if (partners.card != null) text = text.replace(/\{card\}/g, partners.card);
+  if (partners.about != null) text = text.replace(/\{about\}/g, partners.about);
   // Night one's two sides, from the scene: who stands in the line (`side`)
   // and who walks in to it. The pools never say "the girls" outright, so the
   // season can bring either side in first (Villa options).
@@ -420,7 +421,11 @@ function closed(state, ev, entry, opened, ps) {
     const p = POOLS[key];
     // An ending that is only an action never follows an opener that already
     // ended on its own beat: two closing actions in a row.
-    const pool2 = opened.beat ? p?.filter(e => (e.turns || []).length) : p;
+    let pool2 = opened.beat ? p?.filter(e => (e.turns || []).length) : p;
+    // …and never one that opens with the speaker of the last line, answering
+    // their own line ("You laughed the longest." / "Whatever." — both Alejandro).
+    const other = pool2?.filter(e => !e.turns?.length || !Array.isArray(e.turns[0]) || e.turns[0][0] !== lastBy);
+    if (lastBy && other?.length) pool2 = other;
     const got = pool2?.length ? pickScript(state, pool2, ps, { ...facts, lastBy, of }) : null;
     if (got) { noteUse(state, got, ps); add.push(renderScript(got, ps, state)); }
   };
@@ -469,6 +474,8 @@ function castOf(ev) {
 /** A replayed clip is quoted, so the villa reacts to what is actually on the screen. */
 function clipSlots(state, ev) {
   if (ev.extra?.side) return { side: ev.extra.side };
+  // An argument's third person: who the row is about (events.js argumentReasons).
+  if (ev.extra?.about) return { about: ev.extra.about };
   // Icebreakers: the question frozen in the ice.
   if (ev.extra?.card != null) return { card: ICEBREAKER_CARDS[ev.extra.card] || '' };
   // A debrief's room: the boys' terrace or the girls' dressing room.

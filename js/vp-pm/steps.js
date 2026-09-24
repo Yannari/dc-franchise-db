@@ -22,6 +22,7 @@
 import { phasesOf, momentTitle } from '../pm/transcript.js';
 import { CHALLENGE_NAMES } from '../pm/schedule.js';
 import { SHOWS } from '../shows.js';
+import { musicOf } from './sound.js';
 
 // 20 until the conversations got their endings (lines/day/close.js, 2026-09-23):
 // a talking scene roughly doubled, and at 20 an episode ran 28 screens. The
@@ -263,7 +264,8 @@ export function sceneSteps(row, e, evIndex, bg) {
   const lines = s.lines || [];
   const pops = (POPS_WHEN[e.kind]?.(e) === false ? [] : POPS[e.kind] || []).map(([slot, t, style, icon]) => [e.players[slot], t, style, icon]).filter(p => p[0]);
   const hurt = new Set(pops.filter(p => HURT_STYLES.has(p[2])).map(p => p[0]));
-  const base = { ev: evIndex, kind: e.kind, raw: !e.aired, headline: KIND_LABEL[e.kind] || null,
+  // The situation the scene is, for its music (vp-pm/sound.js); null plays in silence.
+  const base = { ev: evIndex, kind: e.kind, music: musicOf(e), raw: !e.aired, headline: KIND_LABEL[e.kind] || null,
     big: !!(e.aired && e.major?.length) };
   const out = [];
   const make = (part, who, text, voice, extra = {}) => {

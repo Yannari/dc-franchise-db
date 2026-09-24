@@ -83,8 +83,9 @@ export function stingFor(st, { switched = false } = {}) {
   if (fx.shake) return 'pm-thud';
   if (fx.tears === true) return 'pm-sad';
   if (fx.petals || fx.tears === 'warm') return 'pm-warm';
-  if (fx.neon) return 'pm-sparkle';
+  // A text is the phone first, whatever else the moment is.
   if (fx.phone || (st?.sceneStart && st?.voice === 'text')) return 'pm-ping';
+  if (fx.neon) return 'pm-sparkle';
   return null;
 }
 export function playSting(name) { if (name) engine.sfx(name); }
@@ -169,17 +170,61 @@ export function voiceTick(who, voice, ch, k, text = '') {
   } catch { /* a bad voice must never break the player */ }
 }
 
-// ── the cutaways: your own music between the parts of the day ─────────
-// User: "those cuts between scenes with music". A few seconds of a track
-// from assets/audio/mine/manifest.json (local only, gitignored: your music,
-// licensed to you, not handed out) whenever the episode moves on to another
-// part of the day — morning to the day, the day to the challenge, evening to
-// the fire pit, and every Coming up / Next time break. Each clip starts on
-// one of its track's strong points (`at`), fades in fast and out slowly, and
-// the tracks take turns. No manifest, or no files: silence.
+// ── THE MUSIC: a track for a situation, never a background ───────────
+// User: "remove the music that's not for a particular occasion … an
+// arrival is a situation, major events (comedy / drama / cheating / cry /
+// kiss) all have particular music". So an ordinary chat plays in silence,
+// and a scene that IS a situation starts that situation's track under the
+// dialogue: it carries on while the scenes after it are the same situation
+// and fades when the situation ends. Two are one-shots: a text arriving (the
+// phone, then a few seconds of its tune — user: "I got a text, can I have a
+// music, a notification sound and a transition music") and the cutaway
+// between the parts of the day. The suspense is the one the verdict cuts dead.
+//
+// The tracks are the viewer's own, in assets/audio/mine/manifest.json — local
+// only, gitignored (music licensed to the viewer, not handed out) — each
+// situation a list of { file, at: [start seconds], loopFrom, loopTo }, taken
+// in turn. A situation with no track is silence.
+
+/** Which situation a scene is, by its kind. */
+const SITUATION = {
+  text: ['bombshell-text', 'challenge-text', 'movie-text', 'photo-text', 'mission-brief'],
+  intro: ['intro'],
+  arrival: ['entrance', 'group-entrance', 'return-entrance', 'casa-host'],
+  kiss: ['kiss', 'date', 'love-said', 'official-ask', 'exclusive-ask', 'declaration', 'reunite', 'hideaway', 'kiss-pick',
+    'lady-luck-pick', 'snogger-kiss'],
+  cheating: ['photos', 'head-turned', 'bed-share'],
+  drama: ['argument', 'blowup', 'pile-in', 'villa-divided', 'jealous-confront', 'jealous-retaliate', 'cold-shoulder',
+    'casa-row', 'photo-row', 'movie-row', 'lie-row', 'triangle-rivals', 'triangle-ultimatum', 'apology-rejected'],
+  cry: ['breakdown', 'comfort', 'dump-reaction', 'dump-goodbye', 'photo-split', 'movie-split', 'walk', 'torch', 'ask-declined', 'jealous-sulk'],
+  comedy: ['comedy', 'blow-dare', 'blow-slip', 'baby-doll', 'talent-act'],
+  suspense: ['dump-buildup', 'dump-at-risk', 'ballot-reveal', 'save-vote', 'save-tie', 'top-couple-pick', 'couples-vote',
+    'ex-return', 'ex-ballot', 'final-recoupling', 'recouple-pick', 'steal'],
+  winner: ['final-result', 'envelope'],
+};
+const BY_KIND = Object.fromEntries(Object.entries(SITUATION).flatMap(([sit, ks]) => ks.map(k => [k, sit])));
+const ONE_SHOT = new Set(['text', 'transition']);
+const CUTS_BEFORE = new Set(['dump-verdict', 'dump-verdict-couple', 'dump-verdict-singles']);
+/**
+ * The situation of one event, from what the engine recorded (words only),
+ * for steps.js to carry on each step. A kiss, a pull or a bed shared behind a
+ * partner's back is cheating, not romance; a Movie Night clip or a Casa
+ * reaction is cheating when it exposes someone; a night-one kiss is romance
+ * only when it landed.
+ */
+export function musicOf(e) {
+  if (!e?.kind) return null;
+  if (e.extra?.secret && ['kiss', 'pull', 'bed-share', 'vent', 'hideaway'].includes(e.kind)) return 'cheating';
+  if (e.kind === 'movie-clip') return e.extra?.of === 'loyalty' ? null : 'cheating';
+  if (e.kind === 'casa-react') return ['devastated', 'turned', 'both'].includes(e.extra?.of) ? 'cheating' : null;
+  if (e.kind === 'icebreaker' || e.kind === 'lady-luck-kiss') return e.extra?.choice === 'spark' ? 'kiss' : null;
+  return BY_KIND[e.kind] || null;
+}
+
 const MINE = 'assets/audio/mine/';
-const CLIP = 5.5, FADE_IN = 0.12, FADE_OUT = 1.8, CLIP_VOL = 0.55;
-let manifest, turn = 0, playing = null, lastPart = null;
+const CLIP = 5.5, FADE_IN = 0.12, FADE_OUT = 1.8, CLIP_VOL = 0.55, BED_VOL = 0.32;
+let manifest, lastPart = null, bed = null, shot = null;
+const turns = {};
 const buffers = {};
 async function loadManifest() {
   if (manifest !== undefined) return manifest;
@@ -197,22 +242,40 @@ async function bufferOf(c, file) {
   } catch { buffers[file] = null; }
   return buffers[file];
 }
-export async function playTransition() {
-  if (!musicWanted()) return;
+// Music on/off is the simulator's (the header's music button), shared with every show.
+const musicWanted = () => (engine.isMusicEnabled ? engine.isMusicEnabled() : true);
+/** The situation's next track, and where in it to start, in turn. */
+async function nextTrack(sit) {
+  const list = (await loadManifest())?.[sit] || [];
+  if (!list.length) return null;
+  const n = turns[sit] = (turns[sit] || 0) + 1;
+  const pick = list[(n - 1) % list.length];
+  const at = pick.at?.length ? pick.at[Math.floor((n - 1) / list.length) % pick.at.length] : 0;
+  return { ...pick, start: at };
+}
+function fadeOut(node, t) {
+  if (!node?.src) return;
+  try {
+    const c = node.src.context, now = c.currentTime;
+    node.g.gain.cancelScheduledValues(now);
+    node.g.gain.setValueAtTime(Math.max(0.0001, node.g.gain.value), now);
+    node.g.gain.exponentialRampToValueAtTime(0.0001, now + t);
+    node.src.stop(now + t + 0.05);
+  } catch { /* already stopped */ }
+}
+
+/** A one-shot: a few seconds of the situation's tune, fast in and slow out. */
+async function playShot(sit) {
+  if (!musicWanted() || !engine.output?.()) return;
+  const pick = await nextTrack(sit);
   const out = engine.output?.();
-  if (!out) return;
-  const list = (await loadManifest())?.transition || [];
-  if (!list.length) return;
-  const pick = list[turn % list.length];
-  const at = pick.at?.length ? pick.at[Math.floor(turn / list.length) % pick.at.length] : 0;
-  turn++;
+  if (!pick || !out) return;
   const { ctx: c, dest } = out;
   const buf = await bufferOf(c, pick.file);
   if (!buf) return;
   try {
     const now = c.currentTime;
-    // One clip at a time: the last one bows out quickly.
-    if (playing) { try { playing.g.gain.cancelScheduledValues(now); playing.g.gain.setTargetAtTime(0.0001, now, 0.08); playing.src.stop(now + 0.4); } catch { /* ended */ } }
+    if (shot) fadeOut(shot, 0.25);
     const src = c.createBufferSource(); src.buffer = buf;
     const g = c.createGain();
     g.gain.setValueAtTime(0.0001, now);
@@ -220,80 +283,68 @@ export async function playTransition() {
     g.gain.setValueAtTime(CLIP_VOL, now + CLIP - FADE_OUT);
     g.gain.exponentialRampToValueAtTime(0.0001, now + CLIP);
     src.connect(g); g.connect(dest);
-    src.start(now, Math.min(at, Math.max(0, buf.duration - CLIP)), CLIP + 0.1);
-    playing = { src, g };
+    src.start(now, Math.min(pick.start, Math.max(0, buf.duration - CLIP)), CLIP + 0.1);
+    shot = { src, g };
   } catch { /* never break the player */ }
 }
-// Music on/off is the simulator's (the header's music button), shared with every show.
-const musicWanted = () => (engine.isMusicEnabled ? engine.isMusicEnabled() : true);
+export const playTransition = () => playShot('transition');
 
-// ── the suspense: under a dumping or a recoupling, cut before the name ──
-// As the real show scores it: the music builds under the host while the
-// couples stand at the fire pit, and stops dead a beat before the verdict.
-// A track from the manifest's `suspense`, starting at its first `at` (the
-// quiet opening) and, if the ceremony outlasts it, looping loopFrom-loopTo
-// (the building middle) rather than playing its ending.
-const SUSPENSE_KINDS = new Set(['dump-buildup', 'dump-at-risk', 'ballot-reveal', 'save-vote', 'save-tie', 'top-couple-pick',
-  'couples-vote', 'ex-return', 'ex-ballot', 'final-recoupling', 'recouple-pick', 'steal']);
-const VERDICT_KINDS = new Set(['dump-verdict', 'dump-verdict-couple', 'dump-verdict-singles', 'final-result']);
-const BED_VOL = 0.32;
-let bed = null;
-async function startSuspense() {
-  if (bed || !musicWanted()) return;
+/** The situation's track under the scene, looping its middle if the scene outlasts it. */
+async function startBed(sit) {
+  if (bed?.sit === sit) return;
+  stopBed();
+  if (!musicWanted() || !engine.output?.()) return;
+  const mine = bed = { sit, pending: true };
+  const pick = await nextTrack(sit);
   const out = engine.output?.();
-  if (!out) return;
-  const pick = ((await loadManifest())?.suspense || [])[0];
-  if (!pick || bed) return;
+  if (!pick || !out || bed !== mine) { if (bed === mine) bed = { sit, pending: false }; return; }
   const { ctx: c, dest } = out;
-  bed = { pending: true };
   const buf = await bufferOf(c, pick.file);
-  if (!buf || !bed?.pending) { bed = null; return; }
+  if (!buf || bed !== mine) { if (bed === mine) bed = { sit, pending: false }; return; }
   try {
     const now = c.currentTime;
     const src = c.createBufferSource(); src.buffer = buf;
     if (pick.loopTo) { src.loop = true; src.loopStart = pick.loopFrom || 0; src.loopEnd = Math.min(pick.loopTo, buf.duration); }
     const g = c.createGain();
     g.gain.setValueAtTime(0.0001, now);
-    g.gain.exponentialRampToValueAtTime(BED_VOL, now + 1.5);
+    g.gain.exponentialRampToValueAtTime(BED_VOL, now + 1.2);
     src.connect(g); g.connect(dest);
-    src.start(now, pick.at?.[0] || 0);
-    bed = { src, g };
-  } catch { bed = null; }
+    src.start(now, Math.min(pick.start, Math.max(0, buf.duration - 1)));
+    mine.src = src; mine.g = g; mine.pending = false;
+  } catch { if (bed === mine) bed = null; }
 }
-/** Stop the suspense: `cut` is the dead stop before a verdict, otherwise a fade. */
-function stopSuspense(cut = false) {
-  if (!bed) return;
+/** Stop the situation's track: `cut` is the dead stop before a verdict, otherwise a fade. */
+function stopBed(cut = false) {
   const b = bed; bed = null;
-  if (b.pending || !b.src) return;
-  try {
-    const c = b.src.context, now = c.currentTime, t = cut ? 0.06 : 1.2;
-    b.g.gain.cancelScheduledValues(now);
-    b.g.gain.setValueAtTime(b.g.gain.value, now);
-    b.g.gain.exponentialRampToValueAtTime(0.0001, now + t);
-    b.src.stop(now + t + 0.05);
-  } catch { /* already stopped */ }
+  if (b && !b.pending) fadeOut(b, cut ? 0.06 : 1.2);
 }
-/** A step of the episode just played: start, keep or cut the suspense. */
+
+/** A step of the episode just played: start, keep, change or cut the music. */
 export function moodStep(st) {
   if (!st) return;
-  if (VERDICT_KINDS.has(st.kind)) { stopSuspense(true); return; }
-  if (SUSPENSE_KINDS.has(st.kind)) startSuspense();
+  // The name is read out in silence.
+  if (CUTS_BEFORE.has(st.kind)) { stopBed(true); return; }
+  if (!st.sceneStart) return;
+  const sit = st.music || null;
+  if (sit && ONE_SHOT.has(sit)) { stopBed(); playShot(sit); return; }
+  if (!sit) { stopBed(); return; }
+  startBed(sit);
 }
 
 /** A Perfect Match screen opened: a cutaway when the part of the day changed. */
 export function pmScreenOpened(id) {
   const part = String(id || '').replace(/^villa-/, '').replace(/-\d+$/, '');
-  if (!part || part === 'debug') { stopSuspense(); return; }
+  if (!part || part === 'debug') { stopBed(); return; }
   // A ceremony split over two screens keeps its music; anywhere else lets it go.
-  if (part !== lastPart) { stopSuspense(); playTransition(); }
+  if (part !== lastPart) { stopBed(); playTransition(); }
   lastPart = part;
 }
 if (typeof document !== 'undefined' && !globalThis.__pmCutaways) {
   globalThis.__pmCutaways = true;
   document.addEventListener('vp:screen', e => {
     if (String(e.detail?.id || '').startsWith('villa-')) pmScreenOpened(e.detail.id);
-    else { stopSuspense(); lastPart = null; }
+    else { stopBed(); lastPart = null; }
   });
   // Leaving the Viewing Party takes the music with it.
-  document.addEventListener('vp:close', () => { stopSuspense(); lastPart = null; });
+  document.addEventListener('vp:close', () => { stopBed(); lastPart = null; });
 }

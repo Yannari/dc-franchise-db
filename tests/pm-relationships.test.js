@@ -42,6 +42,9 @@ describe('relationships are one-way and layered, and reach the row', () => {
         const [a, b] = k.split('→');
         const back = rel[`${b}→${a}`];
         if (!back || a > b) continue;
+        // Only pairs with a romance in them to differ: friends who could never
+        // fancy each other are in the snapshot too now, at 0 both ways.
+        if (r === 0 && back[0] === 0) continue;
         pairs++; if (Math.abs(r - back[0]) >= 1) differ++;
       }
     }

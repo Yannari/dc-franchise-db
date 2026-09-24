@@ -59,7 +59,10 @@ function relationshipSnapshot(state) {
   for (const a of state.villa) for (const b of state.villa) {
     if (a === b) continue;
     const r = romance(a, b), f = friendship(a, b);
-    if (!compatible(state, a, b) && Math.abs(f) < 3) continue;
+    // Friends who could never fancy each other count from the first real
+    // friendship (user: "between boys and girls friendship is important too,
+    // bromance, girlmance"): at 3 the panel hid every one of them until week two.
+    if (!compatible(state, a, b) && Math.abs(f) < 1) continue;
     rel[`${a}→${b}`] = [r, Math.round(f * 100) / 100, shown(state, a, b), believed(state, b, a)];
     const l = relationshipLabel(state, a, b);
     if (l) labels.push([a, b, l[0], l[1]]);

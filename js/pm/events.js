@@ -343,7 +343,9 @@ export const KINDS = {
     },
     apply: (s, ev) => {
       const [a, b] = ev.players;
-      addBond(a, b, 0.4);
+      // A friendship deepens faster the closer the two already are: the
+      // villa's bromances and best friends are made in a week, not a season.
+      addBond(a, b, 0.4 + 0.06 * Math.max(0, getBond(a, b)));
       return { pop: { ...pop1(a, 0.2, 0.5), ...pop1(b, 0.2, 0.5) } };
     },
   },
@@ -550,7 +552,7 @@ function feelingsAmong(state, players) {
   for (const a of ps) for (const b of ps) {
     if (a === b || !state.profiles[a] || !state.profiles[b]) continue;
     const f = friendship(a, b);
-    if (!compatible(state, a, b) && Math.abs(f) < 3) continue;
+    if (!compatible(state, a, b) && Math.abs(f) < 1) continue;
     const r2 = v => Math.round(v * 100) / 100;
     out[`${a}→${b}`] = [r2(romance(a, b)), r2(f), r2(shown(state, a, b)), r2(believed(state, b, a))];
   }

@@ -53,8 +53,12 @@ export const PMV_CSS = `/* ═════════════════�
 .pmv-sc-night{background:
   radial-gradient(55% 45% at 50% 100%,#ff7a3a99,#ff2e8833 45%,#0000 70%),
   linear-gradient(180deg,#0c0620 0%,#26103f 50%,#4a1747 100%)}
-.pmv-sc-hut{background:
-  radial-gradient(45% 60% at 50% 40%,#ffe6b8,#e0a45c 45%,#6a3a15 100%)}
+.pmv-sc-hut{background:#d9307a}
+.pmv-stage .pmv-hutset{position:absolute;inset:0;width:100%;height:100%}
+.pmv-stage .pmv-hutneon{animation:pmv-neon 5s steps(1) infinite}
+@keyframes pmv-neon{0%,100%{opacity:1}91%{opacity:1}92%{opacity:.35}93%{opacity:1}95%{opacity:.5}96%{opacity:1}}
+/* The hut is a close-up: one islander, bigger, sat in the chair's fan. */
+.pmv-sc-hut ~ .pmv-busts .pmv-bust{width:25%;bottom:30%}
 .pmv-sc-casa{background:
   radial-gradient(50% 60% at 75% 30%,#14c8bb55,#0000 70%),radial-gradient(40% 50% at 20% 70%,#a78bfa55,#0000 70%),
   linear-gradient(180deg,#07142c,#132a52 60%,#1b0f3a)}

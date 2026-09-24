@@ -210,6 +210,7 @@ function fxFor(row, e, first) {
   if (k === 'clear-the-air' && e.extra?.of === 'peace') fx.petals = true;
   // A breakdown: the stage goes cold and quiet, and lights drift down (stage.js).
   if (k === 'breakdown') fx.tears = true;
+  if (k === 'casa-miss' && e.extra?.of === 'tears') fx.tears = 'warm';
   // A love triangle: the three of them on the stage, the lines as strong as
   // the one in the middle's pull to each (stage.js).
   if (k.startsWith('triangle-') && e.extra?.tri) fx.triangle = { ...e.extra.tri, teams: e.extra.teams || null, won: k === 'triangle-choice' ? e.players[1] : null };
@@ -327,10 +328,14 @@ export function sceneSteps(row, e, evIndex, bg) {
   }
   for (const l of e.narrator?.lines || []) make('narr', l.who, l.text, 'narrator');
   // The beach hut: its own set, one face, straight to camera.
-  for (const l of e.hut?.script?.lines || []) {
-    out.push({ ...base, part: 'hut', who: e.hut.who, text: l.text, voice: 'hut', cast: [[e.hut.who, 50, 'speak']], bg: 'hut',
-      stance: e.hut.stance, headline: 'Beach hut' });
-  }
+  // Its stage direction and beat too ("already crying", "wipes her eyes").
+  const hs = e.hut?.script;
+  const cry = e.kind === 'casa-miss' && e.extra?.of === 'tears' ? { fx: { tears: true } } : {};
+  const hutStep = (text, voice, pose) => out.push({ ...base, part: 'hut', who: voice === 'hut' ? e.hut.who : null, text, voice,
+    cast: [[e.hut.who, 50, pose]], bg: 'hut', stance: e.hut.stance, headline: 'Beach hut', ...cry });
+  if (hs?.stage) hutStep(hs.stage, 'stage', 'back');
+  for (const l of hs?.lines || []) hutStep(l.text, 'hut', 'speak');
+  if (hs?.beat) hutStep(hs.beat, 'stage', 'speak');
   // The intro tape (user: "a screen switcher to make a difference between the
   // presentation at arrival and the live person in the villa"): recorded before
   // they ever saw the villa, on its own set, alone, straight to camera, with

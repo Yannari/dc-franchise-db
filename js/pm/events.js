@@ -23,6 +23,8 @@ import { scriptFor, hutFor, moodOf, narratorFor } from './script.js';
 
 export const PHASE_BUDGETS = { morning: 12, day: 40, event: 18, evening: 23 };
 export const HUT_RATE = 0.25;
+// Scenes whose beach hut is the point of them: always cut away.
+const ALWAYS_HUT = new Set(['casa-miss']);
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 const pick = (rng, arr) => (arr.length ? arr[Math.floor(rng() * arr.length)] : null);
@@ -135,7 +137,7 @@ const metToday = (s, ...ns) => ns.some(n => n != null && (s.ledger?.firstEp?.[n]
 
 // The roles a kind's scene talks ABOUT rather than includes (their index in
 // ev.players): never the one who goes to the beach hut about it.
-const HUT_ABSENT = { debrief: [2], gossip: [2], advice: [2], 'triangle-case': [2], 'triangle-torn': [], 'lie-write': [2],
+const HUT_ABSENT = { 'casa-miss': [1], debrief: [2], gossip: [2], advice: [2], 'triangle-case': [2], 'triangle-torn': [], 'lie-write': [2],
   'tower-q': [2], 'bombshell-react': [], 'movie-react': [], confession: [2] };
 
 export const KINDS = {
@@ -286,8 +288,11 @@ export const KINDS = {
       for (const o of s.villa.filter(n => !fresh.has(n))) {
         const p = partnerOf(s, o);
         if (!p || roomMates(s, o).includes(p) || (s.casaMissed?.[o] || 0) >= 2) continue;
-        // Already cheated this Casa: not pining.
+        // Already cheated this Casa: not pining. The cheating touches only the
+        // one who did it until the other finds out (user): the partner at home
+        // goes on missing them, right up to the photo.
         if (s.secrets.some(x => x.who === o && x.casa && x.with && x.ep >= (s.splitEp ?? 0))) continue;
+        if (s.secrets.some(x => x.who === p && x.partner === o && x.casa && x.with && x.known && x.ep >= (s.splitEp ?? 0))) continue;
         const feels = romance(o, p) / 10;
         // Whoever else is on their mind, set against the partner.
         const toP = attr(s, o, p) ?? 0;
@@ -306,17 +311,22 @@ export const KINDS = {
       const [o, friend, p] = got;
       // Anxious, or unsure of them: the missing turns into wondering.
       const worry = attachment(s.profiles[o]).anxiety * 0.6 + (1 - emo(s, o).security / 10) * 0.6 + (rng() - 0.5) * 0.4 > 0.55;
-      return { players: [o, friend], extra: { of: worry ? 'worries' : 'aches', about: p } };
+      // …and the ones who feel it most, and hold it in least, cry (user:
+      // "crying in the confessional because she missed her partner").
+      const feels = romance(o, p) / 10, T = S(s, o).temperament / 10;
+      const tears = rng() < feels * feels * (0.3 + emo(s, o).loneliness / 10) * (1.2 - T) * 0.9;
+      return { players: [o, friend], extra: { of: tears ? 'tears' : worry ? 'worries' : 'aches', about: p } };
     },
     apply: (s, ev) => {
       const [o, friend] = ev.players, p = ev.extra.about;
       (s.casaMissed ||= {})[o] = (s.casaMissed[o] || 0) + 1;
       feel(s, o, 'loneliness', 0.8);
       if (ev.extra.of === 'worries') feel(s, o, 'security', -0.6);
+      if (ev.extra.of === 'tears') { feel(s, o, 'stress', 0.5); addBond(o, friend, 0.3); }
       // Absence, and the heart growing fonder: and Casa's pull a little weaker.
       nudgeAttraction(s, o, p, 0.3);
       addBond(o, friend, 0.3);
-      return { pop: { ...pop1(o, 0.8, 1) } };
+      return { pop: { ...pop1(o, ev.extra.of === 'tears' ? 1.2 : 0.8, ev.extra.of === 'tears' ? 1.5 : 1) } };
     },
   },
   // Moaning about your partner to a friend (user: "bad-mouthing your
@@ -775,7 +785,7 @@ export function makeEvent(state, rng, { phase, kind, players, extra = {}, aired 
   ev.script = scriptFor(state, ev);
   for (const n of res.major || []) if (!ev.major.includes(n)) ev.major.push(n);
   // No beach hut in the middle of a couple watching their own film.
-  if (players.length && !NO_HUT.has(kind) && rng() < HUT_RATE) {
+  if (players.length && !NO_HUT.has(kind) && (ALWAYS_HUT.has(kind) || rng() < HUT_RATE)) {
     // Only somebody who was THERE goes to the hut about it: the one a debrief
     // or a telling is about is not in the room (user, reading night one: "say
     // what out loud, when Mickey wasn't even the one talking").

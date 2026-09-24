@@ -54,6 +54,52 @@ const img = n => { const u = portraitUrl(n); return u ? `<img src="${esc(u)}" al
 export const mini = n => `<span class="${P('mini')}" title="${esc(n)}">${img(n) || esc(initials(n))}</span>`;
 
 // ── the sets: light, never drawings ────────────────────────────────────
+
+// The beach hut (user: "use the real Love Island US confessional style"):
+// a loud tropical-print wall, the big rattan peacock chair every hut is
+// built around with the islander framed inside its fan, a neon heart on the
+// wall, a lamp and a plant either side, shot tight.
+const HUT_SET = `<svg class="${P('hutset')}" viewBox="0 0 160 90" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+  <defs>
+    <linearGradient id="pmvHutWall" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff8a5c"/><stop offset=".55" stop-color="#ff4f7b"/><stop offset="1" stop-color="#d9307a"/></linearGradient>
+    <pattern id="pmvHutLeaf" width="34" height="30" patternUnits="userSpaceOnUse" patternTransform="rotate(-12)">
+      <path d="M6 26 C4 16 10 6 20 3 C18 12 14 20 6 26Z" fill="#ffb36b" opacity=".55"/>
+      <path d="M6 26 C10 18 14 11 20 3" stroke="#ff6a4d" stroke-width=".6" fill="none" opacity=".7"/>
+      <path d="M22 28 C20 22 24 15 31 13 C30 20 27 25 22 28Z" fill="#1fb5a3" opacity=".45"/>
+      <path d="M28 8 C25 4 26 0 30 -1 C31 3 30 6 28 8Z" fill="#ffd166" opacity=".5"/>
+      <circle cx="15" cy="21" r="1.1" fill="#fff3" />
+    </pattern>
+    <pattern id="pmvCane" width="3.2" height="3.2" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <rect width="3.2" height="3.2" fill="#d9a35f"/><rect width="1.3" height="3.2" fill="#c38843"/><rect width="3.2" height="1.3" fill="#e8bb7b" opacity=".7"/>
+    </pattern>
+    <radialGradient id="pmvHutLamp" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(138 44) scale(48)"><stop offset="0" stop-color="#ffe7a8" stop-opacity=".75"/><stop offset="1" stop-color="#ffe7a8" stop-opacity="0"/></radialGradient>
+    <filter id="pmvNeon" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="1.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <rect width="160" height="90" fill="url(#pmvHutWall)"/>
+  <rect width="160" height="90" fill="url(#pmvHutLeaf)"/>
+  <rect y="66" width="160" height="24" fill="#7a1f4a"/><rect y="66" width="160" height="1.2" fill="#ffb3c9" opacity=".5"/>
+  <rect width="160" height="90" fill="url(#pmvHutLamp)"/>
+  <g class="${P('hutneon')}" filter="url(#pmvNeon)" transform="translate(28 20) scale(.62)">
+    <path d="${HEART}" fill="none" stroke="#fff" stroke-width="2.2"/>
+    <path d="${HEART}" fill="none" stroke="#ff4fd8" stroke-width="1" transform="scale(1.18)"/>
+  </g>
+  <g class="${P('hutchair')}">
+    <path d="M80 70 C47 70 38 46 40 28 C42 9 60 -3 80 -3 C100 -3 118 9 120 28 C122 46 113 70 80 70Z" fill="url(#pmvCane)" stroke="#9c5f26" stroke-width="2.4"/>
+    <path d="M80 70 C54 70 47 48 49 31 C51 15 64 5 80 5 C96 5 109 15 111 31 C113 48 106 70 80 70Z" fill="none" stroke="#b77636" stroke-width=".9" opacity=".8"/>
+    ${Array.from({ length: 11 }, (_, i) => { const a = Math.PI * (1.08 + i * 0.084); return `<path d="M80 62 L${(80 + Math.cos(a) * 44).toFixed(1)} ${(40 + Math.sin(a) * 46).toFixed(1)}" stroke="#a86a2d" stroke-width=".7" opacity=".55"/>`; }).join('')}
+    <ellipse cx="80" cy="66" rx="31" ry="6.5" fill="#fff4e4"/><ellipse cx="80" cy="64.5" rx="27" ry="3.6" fill="#ffe0bd"/>
+    <rect x="62" y="70" width="36" height="5" rx="2" fill="#9c5f26"/><path d="M66 75 L63 90 M94 75 L97 90" stroke="#9c5f26" stroke-width="2.4"/>
+  </g>
+  <g class="${P('hutlamp')}">
+    <rect x="130" y="58" width="18" height="3" rx="1" fill="#f3e3c7"/><path d="M133 61 L131 90 M145 61 L147 90" stroke="#e6d1ad" stroke-width="1.6"/>
+    <path d="M139 58 L139 46" stroke="#caa56b" stroke-width="1.2"/><path d="M132 47 L146 47 L142 36 L136 36Z" fill="#fff1c9"/>
+  </g>
+  <g class="${P('hutplant')}" fill="#157a5f">
+    <path d="M18 66 C8 56 6 42 14 34 C16 46 20 56 18 66Z"/><path d="M18 66 C22 52 30 44 38 42 C32 52 26 60 18 66Z" fill="#1c9474"/>
+    <path d="M18 66 C12 54 2 50 -4 52 C4 58 10 64 18 66Z" fill="#12664f"/><path d="M18 66 C20 50 20 38 26 28 C28 42 24 56 18 66Z" fill="#23a47f"/>
+    <path d="M10 66 L26 66 L24 78 L12 78Z" fill="#f0d9b5"/>
+  </g>
+</svg>`;
 function sceneHtml(bg) {
   const rnd = (i, m) => ((i * 9301 + 49297) % 233280) / 233280 * m;
   const bokeh = (n, cls, y0, y1, size) => `<div class="${P('bokeh')} ${cls ? P(cls) : ''}">${Array.from({ length: n }, (_, i) =>
@@ -67,7 +113,7 @@ function sceneHtml(bg) {
     day: `<div class="${P('sun')}"></div><div class="${P('shimmer')}"></div>${bokeh(14, '', 5, 50, 5)}${string(6)}`,
     terrace: `${bokeh(26, 'string', 4, 60, 4)}`,
     night: `${bokeh(18, '', 2, 40, 1.6)}<div class="${P('glow')}"></div>${embers}${string(5)}`,
-    hut: `<div class="${P('weave')}"></div>${bokeh(8, 'string', 10, 50, 6)}`,
+    hut: `${HUT_SET}${bokeh(6, '', 5, 60, 3)}`,
     casa: `${bokeh(24, '', 5, 80, 3)}`,
     // The intro tape: a studio, not the villa — a colour wall, the show's
     // heart outlined huge behind them, stripes of light going past.

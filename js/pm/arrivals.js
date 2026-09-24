@@ -11,7 +11,7 @@ import { addBond } from '../bonds.js';
 import { seedAttraction, attr, nudgeAttraction } from './chemistry.js';
 import { noteArrival, readApproval, coupleScore, BETRAYAL } from './ledger.js';
 import { makeEvent, partnerOf } from './events.js';
-import { romance, friendship } from './feelings.js';
+import { romance, friendship, schemeEligible } from './feelings.js';
 import { closedness } from './ladder.js';
 import { breakHeart, feel, jealousOf, jealousyHit } from './emotions.js';
 import { addRelationshipDimension } from '../relationships.js';
@@ -40,17 +40,23 @@ export function arriveBombshell(state, name, { ep, seed, rng }) {
   // and they watch the steps.
   const before = state.villa.filter(n => n !== name && !(state.split && state.casa.includes(n)));
   arriveIslander(state, name, { ep, seed });
-  const eyesOn = eyesOnFor(state, name);
+  // An ex already in the villa (the Relationships tab): the night is theirs.
+  const ex = kinFor(state, name).find(k => k.kin === 'exes' && before.includes(k.other))?.other || null;
+  const eyesOn = ex ? exDates(state, rng, name, ex) : eyesOnFor(state, name);
   state.profiles[name].eyesOnResolved = eyesOn;
   // THE ENTRANCE, as the show plays it (user: "a bombshell arriving is a whole
   // scene with a narrator, suspense and animation like the real show"): the
   // text, the guessing, the new islander's own clip, the walk down the steps,
   // and the faces watching it.
-  const events = bombshellBuildUp(state, rng, name, before);
+  const events = bombshellBuildUp(state, rng, name, before, ex);
   events.push(makeEvent(state, rng, { phase: 'event', kind: 'entrance', players: [name],
     aired: true, major: [name], extra: { of: 'bombshell', pop: { [name]: { approval: 0.5, fame: 3 } } } }));
-  events.push(...bombshellReactions(state, rng, name, before));
-  events.push(...bombshellDates(state, rng, name, eyesOn.slice(0, 2)));
+  const exNight = ex ? exReveal(state, rng, name, ex) : null;
+  if (exNight) events.push(...exNight.now);
+  events.push(...bombshellReactions(state, rng, name, before.filter(n => n !== ex)));
+  events.push(...bombshellDates(state, rng, name, eyesOn.slice(0, 2), ex));
+  // …and once everyone has gone to bed, the two of them.
+  if (exNight) events.push(...exNight.later);
   return { eyesOn, events };
 }
 
@@ -63,7 +69,7 @@ export function arriveBombshell(state, name, { ep, seed, rng }) {
  * taken out fancies the new arrival against their own partner; a spark
  * costs the couple trust, a date that went nowhere settles the partner.
  */
-function bombshellDates(state, rng, name, dates) {
+function bombshellDates(state, rng, name, dates, ex = null) {
   const out = [];
   if (!dates.length) return out;
   out.push(makeEvent(state, rng, { phase: 'event', kind: 'date-text', players: [name, ...dates], aired: true,
@@ -80,7 +86,7 @@ function bombshellDates(state, rng, name, dates) {
   for (const t of dates) {
     addBond(name, t, 0.3 + 0.4 * ((attr(state, t, name) ?? 0) / 10));
     out.push(makeEvent(state, rng, { phase: 'event', kind: 'date', players: [name, t], aired: true,
-      extra: { pop: { [name]: { approval: 0.2, fame: 1.5 }, [t]: { approval: 0, fame: 1 } } } }));
+      extra: { ...(t === ex ? { exes: true } : {}), pop: { [name]: { approval: 0.2, fame: 1.5 }, [t]: { approval: 0, fame: 1 } } } }));
   }
   // Back from the date: the partner asks.
   for (const t of dates) {
@@ -90,7 +96,7 @@ function bombshellDates(state, rng, name, dates) {
     if (keen) { jealousyHit(state, p, t, name, 1.5); addRelationshipDimension(p, t, 'trust', -0.3); }
     else feel(state, p, 'security', 0.4);
     out.push(makeEvent(state, rng, { phase: 'event', kind: 'date-back', players: [p, t, name], aired: true,
-      extra: { of: keen ? 'keen' : 'loyal', pop: { [t]: { approval: keen ? -0.3 : 0.3, fame: 0.8 } } } }));
+      extra: { of: keen ? 'keen' : 'loyal', ...(t === ex ? { exes: true } : {}), pop: { [t]: { approval: keen ? -0.3 : 0.3, fame: 0.8 } } } }));
   }
   return out;
 }
@@ -133,13 +139,14 @@ export function arrivePair(state, names, { ep, seed, rng, kin }) {
 }
 
 const pickOne = (rng, xs) => xs[Math.floor(rng() * xs.length)];
-function bombshellBuildUp(state, rng, name, before) {
+function bombshellBuildUp(state, rng, name, before, ex = null) {
   const out = [];
   if (!before.length) return out;
-  // The text lands on one phone, read out to whoever is nearest.
-  const reader = pickOne(rng, before);
-  const next = pickOne(rng, before.filter(n => n !== reader)) || null;
-  out.push(makeEvent(state, rng, { phase: 'event', kind: 'bombshell-text', players: next ? [reader, next] : [reader], aired: true,
+  // The text lands on one phone, read out to whoever is nearest. An ex's
+  // text hints at it, and the ex is the one who goes quiet.
+  const reader = pickOne(rng, before.filter(n => n !== ex)) || pickOne(rng, before);
+  const next = ex && ex !== reader ? ex : pickOne(rng, before.filter(n => n !== reader)) || null;
+  out.push(makeEvent(state, rng, { phase: 'event', kind: ex ? 'ex-text' : 'bombshell-text', players: next ? [reader, next] : [reader], aired: true,
     extra: { pop: { [reader]: { approval: 0, fame: 0.5 } } } }));
   // Who is it? A coupled islander worries; a single one hopes. The worry is
   // real: it is stress, and it is on camera.
@@ -156,6 +163,56 @@ function bombshellBuildUp(state, rng, name, before) {
     extra: { parts: introParts(state, name, rng), pop: { [name]: { approval: 0.2, fame: 1 } } } }));
   return out;
 }
+/**
+ * AN EX WALKS IN (user: "how is an ex bombshell presented"). The ex already
+ * in the villa sees who it is: how they take it is how much is left between
+ * them. Their partner learns the two have history, on the lawn, and that
+ * night the two exes have it out, or fall back into it.
+ */
+function exReveal(state, rng, name, ex) {
+  const out = [], later = [];
+  const p = partnerOf(state, ex);
+  const left = (attr(state, ex, name) ?? 0) + (attr(state, name, ex) ?? 0);
+  const spark = left + (rng() - 0.5) * 3 > 10;
+  feel(state, ex, 'stress', 1.2 * (1 - (state.profiles[ex].stats?.temperament ?? 5) / 20));
+  (state.exArrived ||= {})[ex] = state.ep;
+  state.exArrived[name] = state.ep;
+  out.push(makeEvent(state, rng, { phase: 'event', kind: 'ex-reveal', players: [ex, name], aired: true, major: [ex, name],
+    extra: { of: spark ? 'spark' : 'cold', pop: { [ex]: { approval: 0.2, fame: 2.5 }, [name]: { approval: 0, fame: 2 } } } }));
+  if (p && p !== name) {
+    // Their partner, finding out on the lawn with everybody watching.
+    feel(state, p, 'security', -0.9);
+    jealousOf(state, p, name, spark ? 1.4 : 0.8);
+    addRelationshipDimension(p, ex, 'trust', spark ? -0.5 : -0.2);
+    out.push(makeEvent(state, rng, { phase: 'event', kind: 'ex-partner', players: [p, ex, name], aired: true, major: [p],
+      extra: { of: spark ? 'spark' : 'cold', pop: { [p]: { approval: 0.4, fame: 1.5 } } } }));
+  }
+  // That night: what are you doing here?
+  if (spark) {
+    nudgeAttraction(state, ex, name, 0.4); nudgeAttraction(state, name, ex, 0.4);
+    if (p && p !== name) jealousyHit(state, p, ex, name, 1);
+  } else {
+    addBond(ex, name, -0.6);
+  }
+  later.push(makeEvent(state, rng, { phase: 'event', kind: 'ex-confront', players: [ex, name], aired: true,
+    extra: { of: spark ? 'spark' : 'cold', pop: { [ex]: { approval: 0, fame: 1.5 }, [name]: { approval: spark ? -0.2 : 0, fame: 1.5 } } } }));
+  return { now: out, later };
+}
+
+/**
+ * An ex bombshell's dates: still keen on the ex, they take the ex out; a
+ * schemer who is over them takes the ex's partner out instead, which is the
+ * stir (only a schemer: the franchise's gate). Otherwise, whoever they fancy.
+ */
+function exDates(state, rng, name, ex) {
+  const eyes = eyesOnFor(state, name).filter(n => n !== ex);
+  if ((attr(state, name, ex) ?? 0) >= 6) return [ex, ...eyes].slice(0, 3);
+  const p = partnerOf(state, ex);
+  const boldness = (state.profiles[name].stats?.boldness ?? 5) / 10;
+  if (p && p !== name && schemeEligible(state.profiles[name]) && rng() < boldness) return [p, ...eyes.filter(n => n !== p)].slice(0, 3);
+  return eyes;
+}
+
 /**
  * The faces on the lawn as the bombshell comes down. Whoever fancies them
  * most shows it — and when that islander is coupled, the partner sees it,
@@ -419,10 +476,16 @@ export function introParts(state, a, rng) {
   parts.push(looks.length && (!vibes.length || rng() < 0.6) ? ['intro-look', pickOf(looks)] : ['intro-vibe', pickOf(vibes) || 'funny']);
   // Somebody they already know is in the cast (the Relationships tab): the
   // tape says so, as twins' and best friends' tapes do.
-  const known = kinFor(state, a).find(k => onYourSide(k.kin) || k.kin === 'exes');
-  if (known) parts.push(['intro-kin', kinGroup(known.kin)]);
+  // Only somebody they know is coming: a starter has no idea an ex will
+  // walk in weeks later, and a bombshell's ex already inside is a surprise.
+  const known = kinFor(state, a).find(k => (onYourSide(k.kin) || k.kin === 'exes')
+    && (p.role === 'starter' ? state.profiles[k.other]?.role === 'starter' : true));
+  if (known) {
+    const inside = p.role !== 'starter' && state.villa.includes(known.other) && known.kin === 'exes';
+    parts.push(['intro-kin', inside ? 'ex-in' : kinGroup(known.kin)]);
+  }
   if (p.eyesOn?.length) parts.push(['intro-eyes', 'set']);
-  else if (p.ex) parts.push(['intro-ex', 'set']);
+  else if (p.ex && !known) parts.push(['intro-ex', 'set']);
   else {
     // Where they're from only when it is THEIRS: the season's default voice is
     // everybody's, and on an American season every islander said "I'm American".

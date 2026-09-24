@@ -62,6 +62,35 @@ describe('relations from before the villa', () => {
     expect(rows[0].pm.kin.map(k => k.slice(0, 3).join('|')).sort()).toEqual(['Isl01|Isl02|siblings', 'Isl03|Isl04|exes', 'Isl11|Isl13|twins']);
   });
 
+  it('an ex who walks in as a bombshell: the hint, the reveal, the partner, their dates, then the two of them', () => {
+    let played = 0;
+    for (const seed of [1, 2, 3, 4, 5, 6, 7, 8]) {
+      for (const ex of ['Isl01', 'Isl03', 'Isl05']) {
+        const { rows } = play(seed, [{ a: ex, b: 'Isl12', kin: 'exes' }]);
+        const night = rows.find(r => r.pm.events.some(e => e.kind === 'ex-reveal'));
+        if (!night) continue;
+        played++;
+        const ev = night.pm.events, at = k => ev.findIndex(e => e.kind === k);
+        expect(at('ex-text')).toBeGreaterThanOrEqual(0);
+        expect(ev[at('ex-text')].players).toContain(ex);
+        const walkIn = ev.findIndex(e => /entrance/.test(e.kind) && e.players.includes('Isl12'));
+        expect(at('ex-text')).toBeLessThan(walkIn);
+        expect(walkIn).toBeLessThan(at('ex-reveal'));
+        expect(ev[at('ex-reveal')].players).toEqual([ex, 'Isl12']);
+        // The night's last word between them comes after every date.
+        const lastDate = Math.max(...ev.map((e, i) => ((e.kind === 'date' && e.players[0] === 'Isl12') || (e.kind === 'date-back' && e.players[2] === 'Isl12') ? i : -1)));
+        expect(at('ex-confront')).toBeGreaterThan(lastDate);
+        // A date with the ex is played as one.
+        for (const d of ev.filter(e => e.kind === 'date' && e.players.includes(ex) && e.players.includes('Isl12'))) expect(d.extra.exes).toBe(true);
+        // The starter's night-one tape never knew the ex was coming.
+        const tape = rows[0].pm.events.find(e => e.kind === 'intro' && e.players[0] === ex);
+        expect(tape.extra.parts.some(([k, of]) => k === 'intro-kin')).toBe(false);
+        break;
+      }
+    }
+    expect(played).toBeGreaterThanOrEqual(3);
+  });
+
   it('a season without relations is exactly the season it always was', () => {
     const sig = rows => rows.map(r => `${r.num}:${r.exits.map(x => x.name).join(',')}:${r.pm.events.length}`).join('|');
     const a = sig(play(9, []).rows);

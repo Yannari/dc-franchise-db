@@ -67,6 +67,8 @@ export function loadKin(state, cast, given = null, setup = {}) {
   for (const r of rows) state.kin[key(r.a, r.b)] = r.kin;
   for (const r of rows) {
     setBond(r.a, r.b, START[r.kin]);
+    // The Lie Detector's "your ex" question reads the profile.
+    if (r.kin === 'exes') for (const [x, y] of [[r.a, r.b], [r.b, r.a]]) if (state.profiles[x] && !state.profiles[x].ex) state.profiles[x].ex = y;
     if (r.kin === 'exes') {
       // Something left, and something unforgiven, on both sides.
       for (const [x, y] of [[r.a, r.b], [r.b, r.a]]) addRelationshipDimension(x, y, 'resentment', 2);

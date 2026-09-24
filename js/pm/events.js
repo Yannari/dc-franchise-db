@@ -627,7 +627,7 @@ export const KINDS = {
     // the dumping formats of Plan 4.5
     'dump-at-risk', 'dump-verdict-couple', 'dump-verdict-singles', 'group-entrance', 'final-recoupling', 'challenge-rules', 'date-text', 'date-picked', 'date-back',
     'final-date', 'journey-open', 'journey-clip', 'journey-react', 'journey-end', 'speech',
-    'pair-text', 'kin-entrance', 'kin-goodbye', 'kin-walk',
+    'pair-text', 'kin-entrance', 'kin-goodbye', 'kin-walk', 'ex-text', 'ex-reveal', 'ex-partner', 'ex-confront',
     // the arrivals of Plan 4.5 phase 2
     'stand-up', 'nobody-stands', 'stand-up-pick', 'save-setup', 'bombshell-save', 'public-match',
     'profile-pick', 'public-couple', 'ranking-couple', 'step-reveal', 'step-choose', 'step-back', 'icebreaker', 'kiss-pick', 'lady-luck-kiss', 'lady-luck-pick',
@@ -853,6 +853,8 @@ export function generateEpisodeEvents(state, rng, budgets = PHASE_BUDGETS) {
     // The relations' own scenes join the day only in a season that has
     // relations: a cast without them plays exactly as it always did.
     const kinds = [...PHASE_KINDS[phase], ...(Object.keys(state.kin || {}).length ? KIN_PHASE_KINDS[phase] || [] : []),
+      // …and the days after an ex walks in, when it is all anyone talks about.
+      ...(Object.values(state.exArrived || {}).some(e => state.ep - e <= 2) ? [['ex-awkward', 2]] : []),
       // …and missing the other villa, only while it is the other villa.
       ...(state.split ? [['casa-miss', phase === 'evening' ? 2.4 : 1.4]] : [])]
       .map(([k, w]) => [k, k === 'pull' && state.split ? w * 2 : w]);
@@ -874,7 +876,8 @@ export function generateEpisodeEvents(state, rng, budgets = PHASE_BUDGETS) {
       // each kind then rests the episodes KIN_GAP gives it.
       if (KIN_KINDS.has(realKind)) {
         const last = (state.kinLastEp ||= {})[realKind];
-        if (last != null && state.ep - last <= KIN_GAP[realKind]) continue;
+        const exFresh = realKind === 'ex-awkward' && players.some(n => state.ep - (state.exArrived?.[n] ?? -9) <= 2);
+        if (last != null && state.ep - last <= (exFresh ? 0 : KIN_GAP[realKind])) continue;
         state.kinLastEp[realKind] = state.ep;
       }
       seenPhase[key] = (seenPhase[key] || 0) + 1;

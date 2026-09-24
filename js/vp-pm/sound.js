@@ -206,7 +206,7 @@ const SITUATION = {
     'icebreaker', 'lady-luck-kiss', 'kiss-pick', 'lady-luck-pick'],
   intro: ['intro'],
   arrival: ['entrance', 'group-entrance', 'bombshell-react', 'casa-host', 'kin-entrance'],
-  ex: ['return-entrance', 'return-ex', 'ex-return', 'ex-awkward', 'ex-jealous'],
+  ex: ['return-entrance', 'return-ex', 'ex-return', 'ex-awkward', 'ex-jealous', 'ex-reveal', 'ex-partner', 'ex-confront'],
   // The first REAL kiss of a couple only (musicOf, below): never a game's kiss
   // (user: "first kiss doesn't count challenge kiss, like real first kiss").
   kiss: [],

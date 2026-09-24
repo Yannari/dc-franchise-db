@@ -143,6 +143,16 @@ export const CASA_HUT = {
     { id: 'hut.ca.h4', when: K('casa-return', { of: 'stayed', choice: 'stick', role: 0 }), turns: [['a', "Sitting on that bench on my own was the longest minute of my life."]] },
     { id: 'hut.ca.h5', when: K('photos', { role: 0 }), turns: [['a', "A photo. I found out from a photo."]] },
     { id: 'hut.ca.h6', when: K('photo-row', { of: 'own-it', role: 1 }), turns: [['a', "I should have told them the second I walked back in."]] },
+    // An ex walks in (arrivals.js exReveal).
+    { id: 'hut.xr.h1', when: K('ex-reveal', { of: 'cold', role: 0 }), turns: [['a', "Of all the villas in all the world. {b}. Honestly."]] },
+    { id: 'hut.xr.h2', when: K('ex-reveal', { of: 'cold', role: 0 }), turns: [['a', "We didn't end well. I'm not going to pretend we did."]] },
+    { id: 'hut.xr.h3', when: K('ex-reveal', { of: 'spark', role: 0 }), turns: [['a', "My heart went. I'm not proud of it, but it did."]] },
+    { id: 'hut.xr.h4', when: K('ex-reveal', { role: 1 }), turns: [['a', "The look on {b}'s face. I'll remember that forever."]] },
+    { id: 'hut.xp.h1', when: K('ex-partner', { role: 0 }), turns: [['a', "Nobody wants their partner's ex walking in. Nobody."]] },
+    { id: 'hut.xp.h2', when: K('ex-partner', { of: 'spark', role: 0 }), turns: [['a', "I saw how {b} looked at them. I'm not blind."]] },
+    { id: 'hut.xc.h1', when: K('ex-confront', { of: 'cold' }), turns: [['a', "There's a reason we broke up, and it's all still there."]] },
+    { id: 'hut.xc.h2', when: K('ex-confront', { of: 'spark' }), turns: [['a', "I thought I was over it. Then we actually talked."]] },
+    { id: 'hut.xc.h3', when: K('ex-confront', { of: 'spark' }), turns: [['a', "This is either the best thing that could have happened, or the worst."]] },
     // Missing the one in the other villa (events.js casa-miss): {pa} is who.
     { id: 'hut.ca.m1', when: K('casa-miss', { of: 'aches', role: 0, taken: true }), turns: [['a', "Everyone keeps asking if my head's been turned. It hasn't. I just want {pa} back."]] },
     { id: 'hut.ca.m2', when: K('casa-miss', { of: 'aches', role: 0, taken: true }), turns: [['a', "You don't know what you've got until it's in a different villa."]] },

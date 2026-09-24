@@ -43,7 +43,7 @@ export const KIND_LABEL = {
   'movie-row': 'After the screening', 'movie-split': "It's over",
   'casa-host': 'The Casa Amor recoupling', 'casa-react': 'The moment', 'casa-row': 'After the fire pit', 'photo-text': 'Post from Casa',
   'photo-row': 'The photo', 'photo-split': "It's over",
-  'casa-miss': 'Missing them', 'pair-text': 'I got a text!', 'kin-entrance': 'Two new arrivals', 'kin-heart': 'Family', 'kin-vet': 'The once-over',
+  'casa-miss': 'Missing them', 'pair-text': 'I got a text!', 'ex-text': 'I got a text!', 'ex-reveal': 'The ex', 'ex-partner': 'You two know each other?', 'ex-confront': 'What are you doing here?', 'kin-entrance': 'Two new arrivals', 'kin-heart': 'Family', 'kin-vet': 'The once-over',
   'kin-protect': 'Stepping in', 'ex-awkward': 'The ex', 'ex-jealous': 'The ex, moved on', 'kin-goodbye': 'Saying goodbye', 'kin-walk': 'Leaving together',
   breakdown: 'It all gets too much', comfort: 'Someone comes', 'no-show': 'Where were you?',
   'triangle-torn': 'Torn', 'triangle-rivals': 'The rivals', 'triangle-case': 'Making the case', 'triangle-ultimatum': 'Choose',
@@ -125,6 +125,8 @@ const POPS = {
   'close-off': [[1, 'Security +', '', 'heart']],
   'kin-heart': [[0, 'Bond +', 'teal', 'star'], [1, 'Bond +', 'teal', 'star']],
   'casa-miss': [[0, 'Missing them', '', 'heart']],
+  'ex-partner': [[0, 'Security −', 'down', 'crack']],
+  'ex-confront': [[0, 'Old feelings?', 'gold', 'eye'], [1, 'Old feelings?', 'gold', 'eye']],
   'kin-vet': [[1, 'Approved', 'teal', 'star']],
   'kin-protect': [[1, 'Warned', 'red', 'crack']],
   'ex-awkward': [[0, 'Old feelings?', 'gold', 'eye']],
@@ -165,7 +167,7 @@ const POPS = {
 const HURT_STYLES = new Set(['red']);
 // A pop only where the scene did the thing: a receipt that read out "falling
 // for you" exposed nobody.
-const POPS_WHEN = { 'first-look': e => e.extra?.of === 'spark', 'kin-vet': e => e.extra?.of === 'approve', 'ex-awkward': e => e.extra?.of === 'spark',
+const POPS_WHEN = { 'first-look': e => e.extra?.of === 'spark', 'ex-confront': e => e.extra?.of === 'spark', 'kin-vet': e => e.extra?.of === 'approve', 'ex-awkward': e => e.extra?.of === 'spark',
   // A kiss that fell flat moved nothing up worth a chip.
   icebreaker: e => e.extra?.choice === 'spark', 'lady-luck-kiss': e => e.extra?.choice === 'spark', receipt: e => ['secret', 'pull', 'head-turned'].includes(e.extra?.of),
   'casa-return': () => false, 'dump-reaction': () => true };
@@ -178,7 +180,9 @@ function fxFor(row, e, first) {
   if (k === 'entrance' || k === 'group-entrance') fx.neon = [row.moment === 'casa-open' ? 'Casa Amor' : 'Bombshell', '#ff7a59'];
   if (k === 'return-entrance') fx.neon = ['Back', '#ffc15e'];
   if (k === 'kin-entrance') { fx.neon = [e.extra?.of === 'twins' ? 'Twins' : 'Double bombshell', '#ff7a59']; fx.reveal = true; }
-  if (k === 'pair-text') fx.phone = true;
+  if (k === 'pair-text' || k === 'ex-text') fx.phone = true;
+  if (k === 'ex-reveal') { fx.neon = ['The ex', '#ef4444']; fx.shake = e.extra?.of === 'cold'; fx.flash = true; }
+  if (k === 'ex-confront' && e.extra?.of === 'cold') fx.sides = { A: [e.players[0]], B: [e.players[1]] };
   if (k === 'kin-protect' || k === 'ex-jealous') fx.sides = { A: [e.players[0]], B: [e.players[1]] };
   // The sign lights on the first boy, whichever way his turn went.
   if ((k === 'step-forward' || k === 'step-reveal') && (row.pm.events || []).find(x => x.kind === 'step-forward' || x.kind === 'step-reveal') === e) fx.neon = ['Step forward', '#ff2e88'];

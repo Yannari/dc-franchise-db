@@ -15,6 +15,55 @@
 // gendered one: "my twin", "family", "my best friend" — the tab says
 // siblings, not sisters.
 export const KIN_LINES = {
+  // An ex walks in as a bombshell (arrivals.js exReveal).
+  //   ex-text      [a, b]     the text hints at it; b is the ex already inside
+  //   ex-reveal    [a, b]     a, inside, sees b walk in. `of`: spark · cold
+  //   ex-partner   [a, b, c]  a finds out their partner b used to be with c
+  //   ex-confront  [a, b]     that night, the two of them. `of`: spark · cold
+  'ex-text': [
+    { id: 'xt.01', stage: "{a}'s phone goes off.", turns: [['a', "Islanders, a new arrival is on the way, and one of you is about to get a blast from the past. #Awkward"], ['a', "Who's got a past?"]], beat: '{b} goes very quiet.' },
+    { id: 'xt.02', turns: [['a', "I got a text! Islanders, tonight someone new walks in, and they're no stranger to one of you. #HistoryRepeats"], ['b', "What does that mean? What does that mean?"]] },
+    { id: 'xt.03', stage: 'Everyone crowds round {a}.', turns: [['a', "Islanders, get ready for a familiar face. #YouAgain"]], beat: 'Nobody notices {b} put down {b.posAdj} drink.' },
+    { id: 'xt.04', turns: [['a', "Islanders, your next bombshell knows one of you very well. Very, very well. #BlastFromThePast"], ['b', "Oh, I don't like that."]] },
+  ],
+  'ex-reveal': [
+    { id: 'xr.c1', when: { of: 'cold' }, stage: '{a} sees who it is, and the smile drops.', turns: [['a', "No. No way."], ['b', "Hi, {a}. Long time."]], beat: 'The whole lawn turns to look at {a}.' },
+    { id: 'xr.c2', when: { of: 'cold' }, turns: [['a', "You have got to be kidding me."], ['b', "Nice to see you too."]] },
+    { id: 'xr.c3', when: { of: 'cold' }, stage: '{a} stands up, sits back down, and stands up again.', turns: [['a', "That's my ex. That is actually my ex."]] },
+    { id: 'xr.c4', when: { of: 'cold' }, turns: [['b', "Surprise."], ['a', "What are you doing here?"], ['b', "Same as you. Looking for love."]] },
+    { id: 'xr.s1', when: { of: 'spark' }, stage: '{a} goes bright red before {b} reaches the bottom of the steps.', turns: [['a', "Oh my God."], ['b', "Hello, you."]], beat: 'Nobody on the lawn misses how {a} is looking at {b}.' },
+    { id: 'xr.s2', when: { of: 'spark' }, turns: [['a', "Everyone, this is my ex."], ['b', "Hi. I'm the ex."]], beat: 'They are both trying not to smile.' },
+    { id: 'xr.s3', when: { of: 'spark' }, stage: '{a} puts both hands over {a.posAdj} face.', turns: [['a', "I can't believe you're here."], ['b', "Did you miss me?"]] },
+  ],
+  'ex-partner': [
+    { id: 'xp.01', turns: [['a', "Wait. You two know each other?"], ['b', "We used to go out."], ['a', "And you didn't think to mention that?"]] },
+    { id: 'xp.02', stage: '{a} looks from {b} to {c} and back again.', turns: [['a', "So that's your ex."], ['b', "It was a long time ago."], ['a', "It didn't look like a long time ago."]] },
+    { id: 'xp.03', turns: [['a', "Is there anything else I should know? Anyone else about to walk in?"], ['b', "It's not a big deal."], ['a', "It's a big deal to me."]] },
+    { id: 'xp.04', when: { of: 'spark' }, turns: [['a', "Why are you smiling like that?"], ['b', "I'm not smiling."], ['a', "You are. You're smiling at {c}."]] },
+    { id: 'xp.05', when: { of: 'cold' }, turns: [['a', "Are you okay?"], ['b', "I'm fine. I just didn't expect to see {c} ever again."], ['a', "Well, I'm here. Remember that."]] },
+  ],
+  'ex-confront': [
+    { id: 'xc.c1', when: { of: 'cold' }, stage: '{a} finds {b} by the pool, away from the others.', turns: [['a', "What are you actually doing here?"], ['b', "I didn't come in for you, if that's what you're asking."], ['a', "Good."]] },
+    { id: 'xc.c2', when: { of: 'cold' }, turns: [['a', "Please don't make this weird."], ['b', "You made it weird when you ended it."], ['a', "We both ended it."]] },
+    { id: 'xc.c3', when: { of: 'cold' }, turns: [['b', "Can we at least be civil?"], ['a', "Civil I can do. Friends, I'm not sure."]] },
+    { id: 'xc.c4', when: { of: 'cold' }, stage: '{a} and {b} end up alone in the kitchen, which neither of them wanted.', turns: [['a', "Just stay out of my way."], ['b', "It's a villa. There's nowhere to go."]] },
+    { id: 'xc.s1', when: { of: 'spark' }, stage: '{a} and {b} end up alone on the swing seat.', turns: [['b', "So. This is weird."], ['a', "So weird."], ['b', "You look happy, though."], ['a', "Don't do that."]] },
+    { id: 'xc.s2', when: { of: 'spark' }, turns: [['a', "Why did you really come in?"], ['b', "Honestly? I don't know. Maybe to see if there was anything left."], ['a', "And?"], ['b', "Ask me in a week."]] },
+    { id: 'xc.s3', when: { of: 'spark' }, turns: [['b', "Do you ever think we gave up too early?"], ['a', "Every single day. Now go away before somebody sees us."]] },
+  ],
+  // A bombshell taking their ex out (arrivals.js bombshellDates, `exes`).
+  date: [
+    { id: 'xd.01', when: { exes: true }, stage: 'The date is at a beach bar, and neither of them knows where to start.', turns: [['b', "So this is happening."], ['a', "I picked you. I wanted to talk properly."], ['b', "We've never been good at talking properly."]] },
+    { id: 'xd.02', when: { exes: true }, turns: [['a', "This is the first time we've sat across a table since we broke up."], ['b', "Don't make it a thing."], ['a', "It's already a thing."]], beat: 'They are both laughing now.' },
+    { id: 'xd.03', when: { exes: true }, stage: 'The date is on a boat, which leaves nowhere to storm off to.', turns: [['b', "Why me? Out of everyone in there."], ['a', "Because I needed to know if there's still something."], ['b', "And?"], ['a', "You tell me."]] },
+    { id: 'xd.04', when: { exes: true }, turns: [['b', "Are you here to win me back?"], ['a', "I'm here to find out if I want to."]] },
+  ],
+  'date-back': [
+    { id: 'xdb.k1', when: { exes: true, of: 'keen' }, turns: [['a', "So? How was the date with your ex?"], ['b', "It was fine."], ['a', "Just fine?"], ['b', "It was a lot of old stuff coming up."]] },
+    { id: 'xdb.k2', when: { exes: true, of: 'keen' }, stage: '{a} is waiting on the daybed when {b} gets back.', turns: [['a', "You were gone ages."], ['b', "We had a lot to talk about."], ['a', "That's what I'm worried about."]] },
+    { id: 'xdb.l1', when: { exes: true, of: 'loyal' }, turns: [['b', "It was good to clear the air with {c}. That's all it was."], ['a', "Promise?"], ['b', "It's over. It's been over for ages."]] },
+    { id: 'xdb.l2', when: { exes: true, of: 'loyal' }, stage: '{b} comes straight back to {a}.', turns: [['b', "Now I know. There's nothing there any more."], ['a', "You needed a date to find that out?"], ['b', "I needed to be sure."]] },
+  ],
   // Casa Amor: missing the one in the other villa, to a friend in this one.
   // `of`: aches (just misses them) · worries (and wonders what they're doing).
   'casa-miss': [
@@ -119,6 +168,9 @@ export const KIN_LINES = {
     { id: 'ik.f2', when: { of: 'family' }, turns: [['a', "Family comes first, even in there. Especially in there."]] },
     { id: 'ik.fr1', when: { of: 'friends' }, turns: [['a', "My best friend is going in as well. We've done everything together, so why not this?"]] },
     { id: 'ik.fr2', when: { of: 'friends' }, turns: [['a', "The good news is my best friend is going in with me. The bad news is they know all my secrets."]] },
+    { id: 'ik.x1', when: { of: 'ex-in' }, turns: [['a', "There's someone in there who is going to be very surprised to see me."]] },
+    { id: 'ik.x2', when: { of: 'ex-in' }, turns: [['a', "I know exactly who's in that villa. And one of them used to be mine."]] },
+    { id: 'ik.x3', when: { of: 'ex-in' }, turns: [['a', "Let's just say I've got unfinished business in there. Or finished business. We'll see."]] },
     { id: 'ik.e1', when: { of: 'ex' }, turns: [['a', "Let's just say I know someone going in. I used to know them very well."]] },
     { id: 'ik.e2', when: { of: 'ex' }, turns: [['a', "My ex is going in too. I'm fine about it. I'm totally fine."]] },
   ],

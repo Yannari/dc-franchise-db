@@ -208,6 +208,7 @@ export function bombshellSteal(state, name, { rng }) {
 export function openCasa(state, casaNames, { ep, seed, rng, movingGender = 'f' }) {
   const movers = state.villa.filter(n => state.profiles[n].gender === movingGender);
   state.split = true;
+  state.splitEp = state.ep;
   state.casa = [...movers];
   state.casaArrivals = [...casaNames];
   const events = [];

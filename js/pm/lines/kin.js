@@ -15,6 +15,21 @@
 // gendered one: "my twin", "family", "my best friend" — the tab says
 // siblings, not sisters.
 export const KIN_LINES = {
+  // Casa Amor: missing the one in the other villa, to a friend in this one.
+  // `of`: aches (just misses them) · worries (and wonders what they're doing).
+  'casa-miss': [
+    { id: 'cm.a1', when: { of: 'aches' }, stage: '{a} is lying on a sunbed, staring at nothing.', turns: [['b', "You're thinking about {about} again."], ['a', "I can't help it. It's too quiet without them."]] },
+    { id: 'cm.a2', when: { of: 'aches' }, turns: [['a', "Is it weird that I miss {about} already?"], ['b', "It hasn't been that long."], ['a', "I know. That's what's weird."]] },
+    { id: 'cm.a3', when: { of: 'aches' }, stage: '{a} keeps looking at the empty side of the bed.', turns: [['a', "I didn't realise how used to {about} I'd got."], ['b', "That's a good sign, though."]] },
+    { id: 'cm.a4', when: { of: 'aches' }, turns: [['b', "Anyone catching your eye in here?"], ['a', "Honestly? No. I just want {about} back."]], beat: '{b} smiles. That was the right answer.' },
+    { id: 'cm.a5', when: { of: 'aches' }, stage: '{a} is making two coffees before remembering.', turns: [['a', "Oh. Force of habit."], ['b', "You've got it bad."], ['a', "I've got it really bad."]] },
+    { id: 'cm.a6', when: { of: 'aches' }, turns: [['a', "The first thing I'm doing when this is over is running straight to {about}."], ['b', "Running?"], ['a', "Sprinting."]] },
+    { id: 'cm.w1', when: { of: 'worries' }, stage: '{a} has not touched breakfast.', turns: [['a', "What do you think {about} is doing right now?"], ['b', "Probably sitting there missing you."], ['a', "Or probably not."]] },
+    { id: 'cm.w2', when: { of: 'worries' }, turns: [['a', "I'm being good in here. I just don't know if {about} is being good over there."], ['b', "You have to trust it."], ['a', "I'm trying."]] },
+    { id: 'cm.w3', when: { of: 'worries' }, stage: '{a} hardly slept last night.', turns: [['a', "Do you think someone's turned {about}'s head?"], ['b', "Stop torturing yourself."], ['a', "I can't help it."]] },
+    { id: 'cm.w4', when: { of: 'worries' }, turns: [['a', "The worst bit is not knowing."], ['b', "You'll know soon enough."], ['a', "That's what I'm scared of."]] },
+    { id: 'cm.w5', when: { of: 'worries' }, stage: '{a} keeps glancing at the gate as if it might open.', turns: [['b', "They're not coming through there, you know."], ['a', "I know. I just want to know {about} still wants me."]] },
+  ],
   'pair-text': [
     { id: 'pair-text.01', stage: '{a} reads the text out, and then reads it again.', turns: [['a', "Islanders, not one, but TWO new arrivals are about to walk in. #DoubleTrouble"]], beat: 'The whole villa goes quiet.' },
     { id: 'pair-text.02', stage: "{a}'s phone buzzes.", turns: [['a', "Two bombshells. Tonight. Together. As in, they know each other?"]] },

@@ -248,7 +248,7 @@ export const KINDS = {
       const opts = [];
       for (const o of s.villa.filter(n => !fresh.has(n) && partnerOf(s, n))) {
         for (const c of roomMates(s, o).filter(n => fresh.has(n) && !partnerOf(s, n))) {
-          const w = (attr(s, o, c) ?? 0) * (1 - 0.7 * S(s, o).loyalty / 10);
+          const w = (attr(s, o, c) ?? 0) * (1 - 0.7 * S(s, o).loyalty / 10) * (1 - 0.25 * (s.casaMissed?.[o] || 0));
           if (w > 0) opts.push([[o, c], w]);
         }
       }
@@ -271,6 +271,52 @@ export const KINDS = {
         feel(s, o, 'guilt', 1.5 * sev * closedness(s, o, p));
       }
       return { pop: { ...pop1(o, p ? (kissed ? -1.4 : -0.7) : 0.2, 2), ...pop1(c, 0, 1.5) } };
+    },
+  },
+  // Missing the one in the other villa (user: "do they miss each other in
+  // Casa? depending on whether they actually like them, aren't actively
+  // cheating, and don't have someone else occupying their thoughts"). Told to
+  // a friend in the same villa; the partner is only `about`, never on stage.
+  'casa-miss': {
+    salience: 0.6,
+    cast: (s, rng) => {
+      if (!s.split) return null;
+      const fresh = new Set(s.casaArrivals || []);
+      const opts = [];
+      for (const o of s.villa.filter(n => !fresh.has(n))) {
+        const p = partnerOf(s, o);
+        if (!p || roomMates(s, o).includes(p) || (s.casaMissed?.[o] || 0) >= 2) continue;
+        // Already cheated this Casa: not pining.
+        if (s.secrets.some(x => x.who === o && x.casa && x.with && x.ep >= (s.splitEp ?? 0))) continue;
+        const feels = romance(o, p) / 10;
+        // Whoever else is on their mind, set against the partner.
+        const toP = attr(s, o, p) ?? 0;
+        const other = Math.max(0, ...roomMates(s, o).filter(n => n !== o).map(n => attr(s, o, n) ?? 0));
+        const occupied = toP > 0 ? Math.min(1, other / toP) : 1;
+        const w = feels * feels * (1 - 0.85 * occupied);
+        if (w <= 0.02) continue;
+        const g = s.profiles[o]?.gender;
+        const friend = roomMates(s, o).filter(n => n !== o && !fresh.has(n) && s.profiles[n]?.gender === g)
+          .sort((x, y) => getBond(o, y) - getBond(o, x))[0]
+          || roomMates(s, o).filter(n => n !== o && !fresh.has(n)).sort((x, y) => getBond(o, y) - getBond(o, x))[0];
+        if (friend) opts.push([[o, friend, p], w]);
+      }
+      const got = weighted(rng, opts);
+      if (!got) return null;
+      const [o, friend, p] = got;
+      // Anxious, or unsure of them: the missing turns into wondering.
+      const worry = attachment(s.profiles[o]).anxiety * 0.6 + (1 - emo(s, o).security / 10) * 0.6 + (rng() - 0.5) * 0.4 > 0.55;
+      return { players: [o, friend], extra: { of: worry ? 'worries' : 'aches', about: p } };
+    },
+    apply: (s, ev) => {
+      const [o, friend] = ev.players, p = ev.extra.about;
+      (s.casaMissed ||= {})[o] = (s.casaMissed[o] || 0) + 1;
+      feel(s, o, 'loneliness', 0.8);
+      if (ev.extra.of === 'worries') feel(s, o, 'security', -0.6);
+      // Absence, and the heart growing fonder: and Casa's pull a little weaker.
+      nudgeAttraction(s, o, p, 0.3);
+      addBond(o, friend, 0.3);
+      return { pop: { ...pop1(o, 0.8, 1) } };
     },
   },
   // Moaning about your partner to a friend (user: "bad-mouthing your
@@ -794,7 +840,9 @@ export function generateEpisodeEvents(state, rng, budgets = PHASE_BUDGETS) {
     // Casa nights are temptation nights: pulls weigh double while split.
     // The relations' own scenes join the day only in a season that has
     // relations: a cast without them plays exactly as it always did.
-    const kinds = [...PHASE_KINDS[phase], ...(Object.keys(state.kin || {}).length ? KIN_PHASE_KINDS[phase] || [] : [])]
+    const kinds = [...PHASE_KINDS[phase], ...(Object.keys(state.kin || {}).length ? KIN_PHASE_KINDS[phase] || [] : []),
+      // …and missing the other villa, only while it is the other villa.
+      ...(state.split ? [['casa-miss', phase === 'evening' ? 2.4 : 1.4]] : [])]
       .map(([k, w]) => [k, k === 'pull' && state.split ? w * 2 : w]);
     let made = 0, tries = 0;
     // Eight tries a slot: the same-cast cap turns some draws away, and four

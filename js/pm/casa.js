@@ -138,6 +138,7 @@ export function stickOrTwist(state, { rng }) {
   state.split = false;
   state.casa = [];
   state.casaArrivals = [];
+  state.casaMissed = {};
   return {
     decisions, dumped, singleSafe, events,
     ballots: decisions.map(d => ({ voter: d.name, target: d.with || before[d.name] || null, channel: 'casa', choice: d.choice })),

@@ -186,24 +186,40 @@ export function voiceTick(who, voice, ch, k, text = '') {
 // situation a list of { file, at: [start seconds], loopFrom, loopTo }, taken
 // in turn. A situation with no track is silence.
 
-/** Which situation a scene is, by its kind. */
+/**
+ * Which situation a scene is, by its kind — named as the viewer's own
+ * folder names them (user, 2026-09-24: arrival-onlystarters,
+ * arrival-onlyforbombshell, ex-arrival, intro, first-kiss, cheating,
+ * drama-conflict, comedy, sad, the goodbye message, elimination suspense,
+ * winner waiting for the reveal / after the reveal, the transition songs).
+ * A text arriving has no music: the phone's ping is the whole of it (user:
+ * "for text just build the notification ping, forget the 5 s music").
+ */
 const SITUATION = {
-  text: ['bombshell-text', 'challenge-text', 'movie-text', 'photo-text', 'mission-brief'],
+  // Night one: the starters walking in, meeting, the first coupling.
+  starters: ['host-open', 'first-arrival', 'arrival-chat', 'first-toast', 'first-look', 'host-first', 'step-forward', 'step-last'],
   intro: ['intro'],
-  arrival: ['entrance', 'group-entrance', 'return-entrance', 'casa-host'],
-  kiss: ['kiss', 'date', 'love-said', 'official-ask', 'exclusive-ask', 'declaration', 'reunite', 'hideaway', 'kiss-pick',
-    'lady-luck-pick', 'snogger-kiss'],
+  arrival: ['entrance', 'group-entrance', 'bombshell-react', 'casa-host'],
+  ex: ['return-entrance', 'return-ex', 'ex-return'],
+  kiss: ['icebreaker', 'lady-luck-kiss'],
+  // Romance without a first kiss in it: silent until it has a track.
+  romance: ['date', 'love-said', 'official-ask', 'exclusive-ask', 'reunite', 'hideaway', 'kiss-pick', 'lady-luck-pick', 'snogger-kiss'],
   cheating: ['photos', 'head-turned', 'bed-share'],
   drama: ['argument', 'blowup', 'pile-in', 'villa-divided', 'jealous-confront', 'jealous-retaliate', 'cold-shoulder',
     'casa-row', 'photo-row', 'movie-row', 'lie-row', 'triangle-rivals', 'triangle-ultimatum', 'apology-rejected'],
-  cry: ['breakdown', 'comfort', 'dump-reaction', 'dump-goodbye', 'photo-split', 'movie-split', 'walk', 'torch', 'ask-declined', 'jealous-sulk'],
+  cry: ['breakdown', 'comfort', 'dump-reaction', 'photo-split', 'movie-split', 'torch', 'ask-declined', 'jealous-sulk'],
+  // The dumped saying goodbye, and anyone walking out.
+  goodbye: ['dump-goodbye', 'walk', 'solidarity'],
   comedy: ['comedy', 'blow-dare', 'blow-slip', 'baby-doll', 'talent-act'],
   suspense: ['dump-buildup', 'dump-at-risk', 'ballot-reveal', 'save-vote', 'save-tie', 'top-couple-pick', 'couples-vote',
-    'ex-return', 'ex-ballot', 'final-recoupling', 'recouple-pick', 'steal'],
+    'ex-ballot', 'final-recoupling', 'recouple-pick', 'steal'],
+  // The final: the declarations and the places under the wait, then the
+  // winners (steps.js finalSteps marks which is which).
+  'final-wait': ['declaration'],
   winner: ['final-result', 'envelope'],
 };
 const BY_KIND = Object.fromEntries(Object.entries(SITUATION).flatMap(([sit, ks]) => ks.map(k => [k, sit])));
-const ONE_SHOT = new Set(['text', 'transition']);
+const ONE_SHOT = new Set(['transition']);
 const CUTS_BEFORE = new Set(['dump-verdict', 'dump-verdict-couple', 'dump-verdict-singles']);
 /**
  * The situation of one event, from what the engine recorded (words only),
@@ -217,7 +233,11 @@ export function musicOf(e) {
   if (e.extra?.secret && ['kiss', 'pull', 'bed-share', 'vent', 'hideaway'].includes(e.kind)) return 'cheating';
   if (e.kind === 'movie-clip') return e.extra?.of === 'loyalty' ? null : 'cheating';
   if (e.kind === 'casa-react') return ['devastated', 'turned', 'both'].includes(e.extra?.of) ? 'cheating' : null;
-  if (e.kind === 'icebreaker' || e.kind === 'lady-luck-kiss') return e.extra?.choice === 'spark' ? 'kiss' : null;
+  // A couple's FIRST kiss is the moment (events.js records it); the tenth is a chat.
+  if (e.kind === 'kiss') return e.extra?.firstKiss ? 'kiss' : null;
+  // Night one's presentation tapes are part of the starters walking in; a
+  // bombshell's or Casa's tape is its own.
+  if (e.kind === 'intro') return ['arrival', 'arrival-2', 'coupling'].includes(e.phase) ? 'starters' : 'intro';
   return BY_KIND[e.kind] || null;
 }
 
@@ -328,6 +348,8 @@ export function moodStep(st) {
   const sit = st.music || null;
   if (sit && ONE_SHOT.has(sit)) { stopBed(); playShot(sit); return; }
   if (!sit) { stopBed(); return; }
+  // The winners' names cut the wait dead, as the verdict cuts the suspense.
+  if (sit === 'winner' && bed?.sit === 'final-wait') stopBed(true);
   startBed(sit);
 }
 

@@ -490,6 +490,12 @@ export function makeEvent(state, rng, { phase, kind, players, extra = {}, aired 
   state.seq = (state.seq || 0) + 1;
   const heat = players.some(n => openSecret(state, n)) ? 0.1 : 0;
   const airP = clamp(0.2 + 0.6 * def.salience + heat, 0.1, 0.95);
+  // A couple's first kiss is recorded as such, for the screens to mark (its
+  // music, vp-pm/sound.js). Read from what happened; draws nothing.
+  if (kind === 'kiss' && players.length >= 2) {
+    const pair = e => e.kind === 'kiss' && e.players.includes(players[0]) && e.players.includes(players[1]);
+    if (!(state.history || []).some(pair) && !today(state).some(pair)) extra = { ...extra, firstKiss: true };
+  }
   const ev = { id: `${state.ep}-${state.seq}`, ep: state.ep, phase, kind, players: [...players],
     aired: aired == null ? rng() < airP : !!aired, major: [...major],
     hut: null, pop: {}, extra,

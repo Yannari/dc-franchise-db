@@ -344,7 +344,7 @@ function finalSteps(row) {
   const board = [...shares].map(s => [s.couple.join(' & '), Math.round(s.share * 1000) / 10]);
   const steps = [{ part: 'result', who: host, voice: 'dior', bg: 'final', headline: 'The final vote', cast: [[host, 50, 'speak']],
     text: `The public have been voting for their Perfect Match, and the votes are in. Let's find out who has won.`,
-    fx: { board: 0, neon: ['The Final', '#ffc15e'] }, board, sceneStart: true, sceneEnd: true, ev: -1 }];
+    fx: { board: 0, neon: ['The Final', '#ffc15e'] }, board, sceneStart: true, sceneEnd: true, ev: -1, music: 'final-wait' }];
   // The engine's own result scenes (moments.js final): the host's words and
   // the couple's reaction from the pools, with the board lit on the first.
   const evs = row.pm.events || [];
@@ -358,11 +358,13 @@ function finalSteps(row) {
       Object.assign(f, { board, headline: win ? 'Your Perfect Match' : `In ${ORDINAL[place - 1]} place`, big: win,
         fx: { ...(f.fx || {}), board: i + 1, ...(win ? { petals: true, neon: ['Perfect Match', '#ff2e88'], toast: ['Winners', `${pct(s)} of the vote`] } : {}) },
         pops: win ? [[a, 'Winners', 'gold', 'star'], [b, 'Winners', 'gold', 'star']] : f.pops });
-      for (const st of played) st.board = board;
+      // The places are read under the wait; the winners' names change the music.
+      for (const st of played) { st.board = board; st.music = win ? 'winner' : 'final-wait'; }
       steps.push(...played);
       return;
     }
     steps.push({ part: 'result', who: host, voice: 'dior', bg: 'final', ev: -1, board, sceneStart: true, sceneEnd: true,
+      music: win ? 'winner' : 'final-wait',
       headline: win ? 'Your Perfect Match' : `In ${ORDINAL[place - 1]} place`, big: win,
       cast: [[a, 26, win ? 'speak' : 'back'], [host, 50, 'speak'], [b, 74, win ? 'speak' : 'back']],
       text: win ? `${a} and ${b}, with ${pct(s)} of the vote… you are this year's Perfect Match!`
@@ -381,7 +383,7 @@ function finalSteps(row) {
   } else if (env?.holder) {
     const other = shares[shares.length - 1].couple.find(n => n !== env.holder);
     const steal = env.choice === 'steal';
-    steps.push({ part: 'result', who: env.holder, voice: '', bg: 'final', ev: -1, sceneStart: true, sceneEnd: true,
+    steps.push({ part: 'result', who: env.holder, voice: '', bg: 'final', ev: -1, sceneStart: true, sceneEnd: true, music: 'winner',
       headline: 'The envelope', big: steal, cast: [[env.holder, 34, 'speak'], [other, 66, steal ? 'hurt' : 'back']],
       caption: `${env.holder} opens the envelope. Inside is a choice: split the prize money with ${other}, or steal all of it.`,
       text: steal ? `I'm sorry. I'm stealing it.` : `Split. Of course it's split.`,

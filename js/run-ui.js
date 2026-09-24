@@ -1980,7 +1980,8 @@ let _pmNoticeShown = null;
  */
 /** The villa tile's challenge picker: '' as drawn, 'random', an id, or 'none'. */
 export function pmSetChallenge(ep, value) {
-  const games = new Set(TWIST_CATALOG.filter(t => t.category === 'games' && t.format === 'perfect-match').map(t => t.id));
+  // The cards that book a villa challenge say so themselves (pmApply.challenge).
+  const games = new Set(TWIST_CATALOG.filter(t => t.pmApply && 'challenge' in t.pmApply).map(t => t.id));
   seasonConfig.twistSchedule = (seasonConfig.twistSchedule || []).filter(b => !(b && Number(b.episode) === Number(ep) && games.has(b.type)));
   if (value) seasonConfig.twistSchedule.push({ id: `tw-${Date.now()}-${ep}`, episode: Number(ep), type: 'pm-villa-challenge', pmGame: value === 'random' ? '' : value });
   localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));

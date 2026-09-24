@@ -73,6 +73,8 @@ function sceneHtml(bg) {
     // heart outlined huge behind them, stripes of light going past.
     vt: `<div class="${P('vt-stripes')}"></div><svg class="${P('vt-heart')}" viewBox="-20 -14 40 27"><path d="${HEART}"/></svg>${bokeh(10, '', 5, 90, 5)}`,
     final: `<div class="${P('beams')}"></div>${bokeh(20, 'string', 5, 70, 3)}`,
+    // The final date: golden hour, a low sun over the water, lights strung above.
+    date: `<div class="${P('sun')}"></div><div class="${P('shimmer')}"></div>${string(8)}${bokeh(12, '', 5, 45, 3)}`,
     // Movie Night: an outdoor cinema on the lawn — the projector's beam from
     // behind the audience, fairy lights, and the beanbags in rows.
     cinema: `<div class="${P('beam')}"></div>${string(4)}${bokeh(10, '', 2, 30, 1.4)}<div class="${P('beanbags')}"><i></i><i></i><i></i><i></i><i></i></div>`,
@@ -107,6 +109,8 @@ function frame(bg, hud, board) {
     <div class="${P('tug')}"><div class="${P('tug-a')}"></div><div class="${P('tug-bar')}"><i></i></div><div class="${P('tug-b')}"></div></div>
     <div class="${P('petals')}">${petalsHtml()}</div>
     <div class="${P('kissfx')}"></div>
+    <svg class="${P('curve')}" viewBox="0 0 320 170"></svg>
+    <div class="${P('fireworks')}">${fireworksHtml()}</div>
     <div class="${P('pops')}"></div>
     <div class="${P('toast')}"></div>
     <div class="${P('caption')}"></div>
@@ -139,6 +143,13 @@ function kissFxHtml(size) {
   const ring = size === 'first' ? `<div class="${P('kring')}"></div><div class="${P('kname')}">First kiss</div>` : '';
   return `${ring}${heartSvg(P('kbig'), '#ff2e88')}<div class="${P('kminis')}">${minis(size === 'first' ? 7 : 5)}</div>`;
 }
+
+// The winners: fireworks over the villa, five bursts at their own heights and times.
+const fireworksHtml = () => [[22, 26, 0], [70, 20, 350], [46, 12, 700], [84, 34, 1100], [12, 38, 1450]].map(([x, y, d], k) =>
+  `<div class="${P('fw')}" style="left:${x}%;top:${y}%;--d:${d}ms">${Array.from({ length: 14 }, (_, i) => {
+    const a = i / 14 * Math.PI * 2, r = 70 + (k % 2) * 25;
+    return `<i style="--x:${(Math.cos(a) * r).toFixed(0)}px;--y:${(Math.sin(a) * r).toFixed(0)}px;--c:${['#ff4fa0', '#ffc15e', '#fff', '#7dd3fc', '#ff7a59'][(i + k) % 5]}"></i>`;
+  }).join('')}</div>`).join('');
 
 const timers = new WeakMap();
 const later = (el, ms, fn) => { const t = setTimeout(fn, ms); (timers.get(el) || timers.set(el, []).get(el)).push(t); };
@@ -330,9 +341,31 @@ export function paintStage(el, screen, idx, { fresh = false, hud = '' } = {}) {
     const po = q('polaroid');
     po.querySelector('.' + P('pol-photo')).innerHTML = st.fx.polaroid.faces.slice(0, 2)
       .map(n => `<span>${img(n) || `<i>${esc(initials(n))}</i>`}</span>`).join('');
-    po.querySelector('.' + P('pol-cap')).textContent = `Casa Amor${st.fx.polaroid.ep != null ? ` · Episode ${st.fx.polaroid.ep}` : ''}`;
+    po.querySelector('.' + P('pol-cap')).textContent = st.fx.polaroid.caption
+      || `Casa Amor${st.fx.polaroid.ep != null ? ` · Episode ${st.fx.polaroid.ep}` : ''}`;
     po.classList.add(P('on'));
     if (fresh) po.classList.add(P('develop'));
+  }
+
+  // The chart at the end of a couple's film: how each felt about the other,
+  // episode by episode — the ups and downs, drawn left to right.
+  const cv = q('curve');
+  cv.classList.remove(P('on'), P('draw'));
+  if (st.fx?.curve) {
+    const { a, b, pts } = st.fx.curve;
+    const n = pts.length, x = i => 28 + (n > 1 ? i / (n - 1) : 0) * 272, y = v => 138 - Math.max(0, Math.min(10, v ?? 0)) * 11.5;
+    const line = k => pts.map((p, i) => `${x(i).toFixed(1)},${y(p[k]).toFixed(1)}`).join(' ');
+    const [ca] = colourOf(a), [cb] = colourOf(b);
+    cv.innerHTML = `<rect x="0" y="0" width="320" height="170" rx="14" fill="rgba(20,10,20,.88)"/>
+      <text x="16" y="20" class="${P('cv-t')}">How they felt, episode by episode</text>
+      <line x1="28" y1="138" x2="300" y2="138" stroke="#fff4" /><line x1="28" y1="23" x2="28" y2="138" stroke="#fff2"/>
+      <polyline class="${P('cv-l')}" points="${line(1)}" stroke="${ca}"/>
+      <polyline class="${P('cv-l')} ${P('cv-l2')}" points="${line(2)}" stroke="${cb}"/>
+      <text x="28" y="156" class="${P('cv-k')}" fill="${ca}">${esc(a)} → ${esc(b)}</text>
+      <text x="300" y="156" text-anchor="end" class="${P('cv-k')}" fill="${cb}">${esc(b)} → ${esc(a)}</text>
+      <text x="28" y="166" class="${P('cv-e')}">Ep ${pts[0][0]}</text><text x="300" y="166" text-anchor="end" class="${P('cv-e')}">Ep ${pts[n - 1][0]}</text>`;
+    cv.classList.add(P('on'));
+    if (fresh) later(el, 350, () => cv.classList.add(P('draw'))); else cv.classList.add(P('draw'));
   }
 
   // the neon, for the night's moment
@@ -383,6 +416,7 @@ export function paintStage(el, screen, idx, { fresh = false, hud = '' } = {}) {
     env.classList.add(P('on')); if (fresh) later(el, 300, () => env.classList.add(P('open'))); else env.classList.add(P('open'));
   }
   if (st.fx?.petals && fresh) later(el, 500, () => q('petals').classList.add(P('go')));
+  if (st.fx?.fireworks && fresh) later(el, 300, () => q('fireworks').classList.add(P('go')));
   if (st.fx?.toast && fresh) {
     const t = q('toast'); t.innerHTML = `${esc(st.fx.toast[1])}<small>${esc(st.fx.toast[0])}</small>`; later(el, 600, () => t.classList.add(P('go')));
   }

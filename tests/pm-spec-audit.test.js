@@ -94,7 +94,8 @@ describe('Perfect Match spec audit', () => {
       if (env) { m.envelopes++; if (env.choice === 'steal') m.steals++; }
       // 10. events per episode, repeated lines, and how many carried a hut
       for (const r of rows.filter(x => x.moment !== 'reunion')) {
-        m.eventsPerEp.push(r.pm.events.length);
+        // The final is its dates, not a villa day (pm/journey.js): not a villa episode's count.
+        if (r.moment !== 'final') m.eventsPerEp.push(r.pm.events.length);
         m.hutRate.push(r.pm.events.filter(e => e.hut).length / r.pm.events.length);
       }
       const seen = new Map();

@@ -28,11 +28,14 @@ import { NARRATOR } from './lines/narrator.js';
 import { KISS_LINES, ICEBREAKER_CARDS } from './lines/kiss-games.js';
 import { RULES_LINES } from './lines/challenge-rules.js';
 import { MORE_D } from './lines/day/more-d.js';
+import { JOURNEY_LINES } from './lines/journey.js';
 import { DIALECTS, slotWord, US_SPELLING, US_SPELLERS, ESL_EXPANSIONS } from './lines/dialect.js';
 
 export const POOLS = { ...DAY, ...LADDER, ...FEELINGS, ...MOMENT_LINES, ...CHALLENGE_LINES, ...CLOSE, ...ANSWER, ...KISS_LINES, ...RULES_LINES };
 // The pools a season ran dry of (lines/day/more-d.js), added to whichever pool holds the kind.
 for (const [k, v] of Object.entries(MORE_D)) POOLS[k] = [...(POOLS[k] || []), ...v];
+// The final dates and each couple's film (lines/journey.js).
+for (const [k, v] of Object.entries(JOURNEY_LINES)) POOLS[k] = [...(POOLS[k] || []), ...v];
 export { HUT, NARRATOR };
 
 export const SPEAKERS = ['a', 'b', 'c', 'dior', 'narrator'];
@@ -483,6 +486,20 @@ function castOf(ev) {
 
 /** A replayed clip is quoted, so the villa reacts to what is actually on the screen. */
 function clipSlots(state, ev) {
+  // The final dates' film: the footage's line, its day, and who else is in it,
+  // all at once (pm/journey.js).
+  if (ev.kind === 'journey-clip') {
+    const got = { ...(ev.extra?.about ? { about: ev.extra.about } : {}), ...(ev.extra?.day != null ? { day: ev.extra.day } : {}) };
+    const clip = (state.history || []).find(e => e.id === ev.extra?.clip);
+    // Only the couple's own words: the film is theirs (season 41 quoted the
+    // host, and another couple's islander, in two couples' films).
+    const theirs = new Set(ev.players.slice(0, 2));
+    const spoken = (clip?.script?.lines || []).filter(l => !l.action && theirs.has(l.who) && l.text.length > 12);
+    const line = spoken.sort((x, y) => y.text.length - x.text.length)[0];
+    return line ? { ...got, quote: line.text, quoteWho: line.who } : got;
+  }
+  // A declaration's moment, and the day it was.
+  if (ev.kind === 'speech') return ev.extra?.day != null ? { day: ev.extra.day } : {};
   if (ev.extra?.side) return { side: ev.extra.side };
   // An argument's third person: who the row is about (events.js argumentReasons).
   if (ev.extra?.about) return { about: ev.extra.about };

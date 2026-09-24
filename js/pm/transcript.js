@@ -18,7 +18,7 @@ const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').re
 
 export const PM_PHASE_LABEL = { arrival: 'The arrivals', 'arrival-2': 'The arrivals', coupling: 'The first coupling', debrief: 'The debrief', cinema: 'Movie Night', blowup: 'It kicks off', breakdown: 'It all gets too much', triangle: 'The love triangle',
   morning: 'Morning', day: 'The day', event: 'The challenge', evening: 'Evening',
-  firepit: 'The fire pit', dumping: 'The dumping', reunion: 'The reunion' };
+  firepit: 'The fire pit', dumping: 'The dumping', reunion: 'The reunion', 'final-date': 'The final dates', final: 'The final vote' };
 export const PM_MOMENT_TITLE = { 'first-coupling': 'The first coupling', bombshell: 'A bombshell arrives',
   recoupling: 'Recoupling', 'public-vote': 'Public vote', 'casa-open': 'Casa Amor opens', 'casa-nights': 'Casa Amor',
   'stick-or-twist': 'Stick or twist', photos: 'The photos', 'semi-final': 'Semi-final', final: 'The final',
@@ -81,7 +81,7 @@ function sceneHtml(e) {
 // The parts of the night a moment has of its own. A moment's other scenes
 // borrow a villa-day phase (the first coupling's steal is an `event`, Casa's
 // advice a `day`) and are shown with the part of the night beside them.
-const MOMENT_PHASES = new Set(['firepit', 'dumping', 'reunion']);
+const MOMENT_PHASES = new Set(['firepit', 'dumping', 'reunion', 'final-date', 'final']);
 
 function groupByPhase(events, label) {
   const out = [];
@@ -139,7 +139,10 @@ export function phasesOf(row) {
   }
   // The first part of the night carries the moment's name: "The first
   // coupling", not a bare "The fire pit".
-  groups[0][2] = title;
+  // …except the final, whose parts each have their own name: the dates, the
+  // declarations, the vote.
+  if (row.moment === 'final') { for (const g of groups) if (g[0] === 'firepit') g[2] = 'The declarations'; }
+  else groups[0][2] = title;
   return [...out, ...groups, ...tail];
 }
 

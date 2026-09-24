@@ -132,6 +132,8 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
     if (entry.days) state.day = entry.days[1];
     // The day the show says it is (schedule.js calendar); lines read this one.
     state.calendarDay = entry.calendar?.[1] ?? state.day;
+    // The day each episode began on, for the final's film to say when a moment was.
+    (state.epDay ||= {})[entry.ep] = entry.calendar?.[0] ?? entry.days?.[0] ?? null;
     // addBond's depth ceiling grows with `gs.episode` (js/bonds.js). Left at 0
     // it would cap every villa bond at +4.5 all season — the §11.5 O trap.
     gs.episode = entry.ep;
@@ -167,7 +169,10 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
     const ctx = { rng, entry, seed, queues, popularity: gs.popularity, splitOrStealOn, closed: false, pace, votesAhead, coupledAhead, plainNights: nights, firstVote, surplus };
     // Episode one opens on the arrivals and the first coupling, before the day.
     if (entry.moment === 'first-coupling') ctx.opening = nightOneOpening(state, ctx);
-    const day = entry.moment === 'reunion' ? [] : [...(ctx.opening?.events || []), ...villaDayEvents(state, rng, entry, seed)];
+    // The final's day is the final dates (pm/journey.js): no ordinary villa
+    // day before it — season 41's last morning had a pull, a row over the hot
+    // water and an ick, hours before the declarations.
+    const day = entry.moment === 'reunion' || entry.moment === 'final' ? [] : [...(ctx.opening?.events || []), ...villaDayEvents(state, rng, entry, seed)];
     state.history.push(...day);
     // The rest of the villa's day — the ladder, feelings, the rituals, the
     // triangles, the fights, the breakdowns — BEFORE the night's moment, as

@@ -472,6 +472,7 @@ export const KINDS = {
     'solidarity',
     // the dumping formats of Plan 4.5
     'dump-at-risk', 'dump-verdict-couple', 'dump-verdict-singles', 'group-entrance', 'final-recoupling', 'challenge-rules', 'date-text', 'date-picked', 'date-back',
+    'final-date', 'journey-open', 'journey-clip', 'journey-react', 'journey-end', 'speech',
     // the arrivals of Plan 4.5 phase 2
     'stand-up', 'nobody-stands', 'stand-up-pick', 'save-setup', 'bombshell-save', 'public-match',
     'profile-pick', 'public-couple', 'ranking-couple', 'step-reveal', 'step-choose', 'step-back', 'icebreaker', 'kiss-pick', 'lady-luck-kiss', 'lady-luck-pick',
@@ -569,6 +570,8 @@ function changedFeelings(state, now) {
   return out;
 }
 
+const NO_HUT = new Set(['final-date', 'journey-open', 'journey-clip', 'journey-react', 'journey-end', 'speech']);
+
 /** Create one event: decide airing, apply it, attach a hut cutaway, write the ledger. */
 export function makeEvent(state, rng, { phase, kind, players, extra = {}, aired = null, major = [] }) {
   const def = KINDS[kind];
@@ -606,7 +609,8 @@ export function makeEvent(state, rng, { phase, kind, players, extra = {}, aired 
   if (endOf) ev.extra.close = endOf(state, ev, streamFor(state.seed || 1, `close:${ev.id}`));
   ev.script = scriptFor(state, ev);
   for (const n of res.major || []) if (!ev.major.includes(n)) ev.major.push(n);
-  if (players.length && rng() < HUT_RATE) {
+  // No beach hut in the middle of a couple watching their own film.
+  if (players.length && !NO_HUT.has(kind) && rng() < HUT_RATE) {
     // Only somebody who was THERE goes to the hut about it: the one a debrief
     // or a telling is about is not in the room (user, reading night one: "say
     // what out loud, when Mickey wasn't even the one talking").

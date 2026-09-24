@@ -24,9 +24,13 @@ describe('a whole Perfect Match season', () => {
 
   it('villa episodes carry about a hundred events', () => {
     const { rows } = play(2);
-    for (const r of rows.filter(r => r.moment !== 'reunion')) {
+    // The final is its dates, not a villa day (pm/journey.js): held to its own count below.
+    for (const r of rows.filter(r => r.moment !== 'reunion' && r.moment !== 'final')) {
       expect(r.pm.events.length, `episode ${r.num}`).toBeGreaterThanOrEqual(80);
     }
+    // …every finalist couple's date and film: at least a date, an opening, three chapters and an ending each.
+    const fin = rows.find(r => r.moment === 'final');
+    expect(fin.pm.events.filter(e => e.kind === 'journey-clip').length).toBeGreaterThanOrEqual(3 * fin.pm.couples.length);
   });
 
   it("every exit uses the show's verbs and nobody leaves twice", () => {

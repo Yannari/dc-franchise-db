@@ -23,10 +23,13 @@ describe('every word the engine wrote is a click', () => {
       row.pm.events.forEach((e, i) => {
         const mine = steps.filter(s => s.ev === i);
         expect(mine.length, `s${seed} e${row.num} ${e.kind}`).toBeGreaterThan(0);
-        const said = mine.filter(s => s.part !== 'stage').map(s => s.text);
+        const said = mine.filter(s => s.part !== 'stage' && s.part !== 'footage').map(s => s.text);
         expect(said, `s${seed} e${row.num} ${e.kind}`).toEqual(allLines(e).map(l => l.text));
-        // …and the staging and the beat, on its first and last click.
-        if (e.script?.stage && e.script.lines?.length) expect(mine[0].caption).toBe(e.script.stage);
+        // …and the staging and the beat, on its first and last click. A film
+        // chapter's staging is its footage line, played on screen (steps.js).
+        const footage = mine.find(s => s.part === 'footage');
+        if (footage) expect(e.script.stage).toBe(`${footage.who}: "${footage.text}"`);
+        else if (e.script?.stage && e.script.lines?.length) expect(mine[0].caption).toBe(e.script.stage);
         if (e.script?.beat) expect(mine.filter(s => s.beat).map(s => s.beat)).toEqual([e.script.beat]);
       });
       // Every scene is on screen once: no step for a scene belongs to two screens.

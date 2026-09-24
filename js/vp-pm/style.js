@@ -645,6 +645,24 @@ details.pmv-debug[open] summary::before{transform:rotate(45deg)}
 .pmv-bust.pmv-kissAway{transform:translate(-38%,4%) rotate(9deg) scale(.98)!important}
 .pmv-bust.pmv-kissAway.pmv-kissL{transform:translate(-62%,4%) rotate(-9deg) scale(.98)!important}
 .pmv-bust.pmv-kissBlush .pmv-rim{opacity:1;--rim:#ff8fb8}
+/* the final date: golden hour */
+.pmv-sc-date{background:linear-gradient(180deg,#3b1d4a 0%,#b84a62 38%,#f39a5b 62%,#ffd28a 74%,#2a6f8f 75%,#123a52 100%)}
+.pmv-sc-date .pmv-sun{background:radial-gradient(circle,#fff3c4 0 30%,#ffb35c 55%,transparent 72%);top:52%}
+/* the winners: fireworks */
+.pmv-fireworks{position:absolute;inset:0;z-index:7;pointer-events:none}
+.pmv-fw{position:absolute;width:0;height:0}
+.pmv-fw i{position:absolute;left:0;top:0;width:6px;height:6px;margin:-3px;border-radius:50%;background:var(--c);box-shadow:0 0 10px var(--c);opacity:0}
+.pmv-fireworks.pmv-go .pmv-fw i{animation:pmv-fw 1.6s cubic-bezier(.1,.7,.3,1) var(--d) 2 both}
+@keyframes pmv-fw{0%{opacity:0;transform:translate(0,0) scale(.3)}10%{opacity:1}70%{opacity:1}100%{opacity:0;transform:translate(var(--x),calc(var(--y) + 30px)) scale(.6)}}
+/* the chart at the end of a couple's film */
+.pmv-curve{position:absolute;left:50%;top:10%;width:min(62%,460px);transform:translateX(-50%) scale(.9);opacity:0;z-index:9;transition:opacity .5s,transform .6s cubic-bezier(.2,1.3,.3,1);pointer-events:none}
+.pmv-curve.pmv-on{opacity:1;transform:translateX(-50%) scale(1)}
+.pmv-curve .pmv-cv-l{fill:none;stroke-width:3.2;stroke-linejoin:round;stroke-linecap:round;stroke-dasharray:900;stroke-dashoffset:900}
+.pmv-curve.pmv-draw .pmv-cv-l{transition:stroke-dashoffset 2.4s ease-out;stroke-dashoffset:0}
+.pmv-curve.pmv-draw .pmv-cv-l2{transition-delay:.5s}
+.pmv-curve .pmv-cv-t{font:600 11px Outfit;fill:#fff;letter-spacing:.08em;text-transform:uppercase}
+.pmv-curve .pmv-cv-k{font:600 11px Outfit}
+.pmv-curve .pmv-cv-e{font:10px Outfit;fill:#fff9}
 .pmv-kissfx{position:absolute;bottom:66%;width:0;height:0;z-index:8;pointer-events:none;opacity:0}
 .pmv-kissfx.pmv-go{opacity:1}
 .pmv-kissfx svg{position:absolute;overflow:visible}

@@ -19,6 +19,7 @@ import { secretMission, sleepover, immunityChallenge } from './one-offs.js';
 import { attr, nudgeAttraction } from './chemistry.js';
 import { stickOrTwist } from './casa.js';
 import { kissFirst } from './kiss-games.js';
+import { finalDate, speechChapters } from './journey.js';
 import { confrontation } from './movie-night.js';
 import { addRelationshipDimension } from '../relationships.js';
 import { closeEpisode, BETRAYAL } from './ledger.js';
@@ -903,9 +904,23 @@ Object.assign(MOMENTS, {
       extra: { shares: pv?.shares || null, bottom: pv?.bottom || null, dumpFormat: pv ? 'public' : null } };
   },
   final: (state, ctx) => {
-    const events = state.couples.map(([a, b]) => makeEvent(state, ctx.rng, { phase: 'firepit', kind: 'declaration',
-      players: [a, b], aired: true, extra: { pop: {
-        [a]: { approval: 2 * romance(a, b) / 10, fame: 2 }, [b]: { approval: 2 * romance(b, a) / 10, fame: 2 } } } }));
+    // THE FINAL DATES (pm/journey.js): each couple on their last date, shown
+    // their own story — then the declarations, which speak from it.
+    const events = [];
+    const dates = state.couples.map(([a, b], n) => { const d = finalDate(state, ctx.rng, [a, b], n); events.push(...d.events); return d; });
+    // THE DECLARATIONS: both of them speak, as the show has it — each opens on
+    // the shape of their story and then speaks of one real moment from it
+    // (the chapter their film showed), never the same one as their partner.
+    state.couples.forEach(([a, b], n) => {
+      const { shape, chapters } = dates[n];
+      const talk = speechChapters(chapters);
+      [[a, b, talk[0]], [b, a, talk[1]]].forEach(([x, y, ch]) => {
+        events.push(makeEvent(state, ctx.rng, { phase: 'firepit', kind: 'declaration', players: [x, y], aired: true,
+          extra: { of: shape, pop: { [x]: { approval: 2 * romance(x, y) / 10, fame: 2 } } } }));
+        if (ch) events.push(makeEvent(state, ctx.rng, { phase: 'firepit', kind: 'speech', players: [x, y], aired: true,
+          extra: { of: ch.type, day: state.epDay?.[ch.event.ep] ?? null, pop: { [x]: { approval: 0.5 * romance(x, y) / 10, fame: 0.6 } } } }));
+      });
+    });
     // Declarations count toward the vote: close the ledger before the country votes.
     closeEpisode(state.ledger, state.ep, ctx.popularity);
     ctx.closed = true;

@@ -80,6 +80,8 @@ export const KIND_LABEL = {
 // ── the set, from the part of the day ─────────────────────────────────
 const CASA_NIGHTS = new Set(['casa-open', 'casa-nights']);
 export function bgFor(row, phase) {
+  // The final dates: golden hour, away from the villa.
+  if (phase === 'final-date') return 'date';
   if (row.moment === 'final' && phase === 'firepit') return 'final';
   if (phase === 'reunion' || row.moment === 'reunion') return 'final';
   if (phase === 'hut') return 'hut';
@@ -181,6 +183,12 @@ function fxFor(row, e, first) {
   // The photos: a Polaroid of the real moment drops on the stage and develops.
   if (k === 'photos') fx.polaroid = { faces: e.extra?.faces || [e.players[1]], ep: e.extra?.photoEp ?? null };
   if (k === 'photo-text') fx.phone = true;
+  // The film of their story: each chapter a polaroid with its day on it, and
+  // at the end, how they felt about each other, episode by episode.
+  if (k === 'journey-clip') fx.polaroid = { faces: e.extra?.about ? [e.players[0], e.extra.about] : e.players.slice(0, 2), ep: e.extra?.clipEp ?? null,
+    caption: e.extra?.day != null ? `Day ${e.extra.day}` : 'The villa' };
+  if (k === 'journey-end' && e.extra?.curve?.length > 1) fx.curve = { a: e.players[0], b: e.players[1], pts: e.extra.curve };
+  if (k === 'final-date') fx.neon = ['The final date', '#ffc15e'];
   if (k === 'reunite') { fx.petals = true; fx.neon = ['Back together', '#ff2e88']; }
   // A blow-up: the stage splits red down the middle, and the tug of war
   // fills as the villa takes sides (stage.js).
@@ -297,6 +305,14 @@ export function sceneSteps(row, e, evIndex, bg) {
     if (lines.length && s.stage) out[0].caption = s.stage;
     if (s.beat) out[out.length - 1].beat = s.beat;
   }
+  // A chapter of a couple's film: the footage's own line is heard, on screen,
+  // after the narrator — not a caption the polaroid covers.
+  const footage = e.kind === 'journey-clip' && s.stage && s.stage.match(/^(.+?): "(.*)"$/);
+  if (footage && out.length) {
+    out[0].caption = null;
+    const who = footage[1];
+    out.push({ ...base, part: 'footage', who, text: footage[2], voice: 'clip', cast: castOf(e, who, host), bg });
+  }
   for (const l of e.narrator?.lines || []) make('narr', l.who, l.text, 'narrator');
   // The beach hut: its own set, one face, straight to camera.
   for (const l of e.hut?.script?.lines || []) {
@@ -350,6 +366,8 @@ export function sceneSteps(row, e, evIndex, bg) {
   first.fx = fxFor(row, e, evIndex === firstOfKind(row, e));
   first.pops = pops;
   if (first.fx.phone) first.fx.phone = [e.players[0], (lines[0]?.text || s.stage || '')];
+  // A film chapter's polaroid stays up while its footage line plays.
+  if (first.fx.polaroid) for (const st of out) if (st.part === 'footage') st.fx = { polaroid: first.fx.polaroid };
   // A big scene stays pushed in for all of its lines.
   // (Movie Night's clip keeps the wide shot: the screen is the picture.)
   const close = e.kind !== 'movie-clip' && !!(first.big || first.fx.shake);
@@ -400,7 +418,7 @@ function finalSteps(row) {
     if (played) {
       const f = played[0];
       Object.assign(f, { board, headline: win ? 'Your Perfect Match' : `In ${ORDINAL[place - 1]} place`, big: win,
-        fx: { ...(f.fx || {}), board: i + 1, ...(win ? { petals: true, neon: ['Perfect Match', '#ff2e88'], toast: ['Winners', `${pct(s)} of the vote`] } : {}) },
+        fx: { ...(f.fx || {}), board: i + 1, ...(win ? { petals: true, fireworks: true, neon: ['Perfect Match', '#ff2e88'], toast: ['Winners', `${pct(s)} of the vote`] } : {}) },
         pops: win ? [[a, 'Winners', 'gold', 'star'], [b, 'Winners', 'gold', 'star']] : f.pops });
       // The places are read under the wait; the winners' names change the music.
       for (const st of played) { st.board = board; st.music = win ? 'winner' : 'final-wait'; }
@@ -413,7 +431,7 @@ function finalSteps(row) {
       cast: [[a, 26, win ? 'speak' : 'back'], [host, 50, 'speak'], [b, 74, win ? 'speak' : 'back']],
       text: win ? `${a} and ${b}, with ${pct(s)} of the vote… you are this year's Perfect Match!`
         : `In ${ORDINAL[place - 1]} place, with ${pct(s)} of the vote… ${a} and ${b}.`,
-      fx: { board: i + 1, ...(win ? { petals: true, neon: ['Perfect Match', '#ff2e88'], toast: ['Winners', `${pct(s)} of the vote`] } : {}) },
+      fx: { board: i + 1, ...(win ? { petals: true, fireworks: true, neon: ['Perfect Match', '#ff2e88'], toast: ['Winners', `${pct(s)} of the vote`] } : {}) },
       pops: win ? [[a, 'Winners', 'gold', 'star'], [b, 'Winners', 'gold', 'star']] : [] });
   });
   const env = row.pm.envelope;
@@ -486,6 +504,22 @@ export function episodeScreens(row, opts = {}) {
       return { steps, big: steps[0].big };
     });
     const hasDump = evs.some(e => RAIL_OF[e.kind] != null);
+    // The final dates: one screen for each couple's date and their film.
+    if (phase === 'final-date') {
+      let group = null;
+      evs.forEach((e, k) => {
+        const key = e.players.slice(0, 2).sort().join('&');
+        if (!group || group.key !== key) { group = { key, names: e.players.slice(0, 2), scenes: [] }; screens.push(group); }
+        group.scenes.push(scenes[k]);
+      });
+      for (let g = screens.length - 1; g >= 0; g--) {
+        const grp = screens[g];
+        if (!grp.scenes) continue;
+        screens[g] = { key: `final-date-${g}`, phase, label: `The final date · ${grp.names.join(' & ')}`, bg: 'date', rail: null,
+          steps: grp.scenes.flatMap(sc => sc.steps) };
+      }
+      continue;
+    }
     cut(scenes, phase).forEach((chunk, i) => {
       const steps = chunk.flatMap(sc => sc.steps);
       if (hasDump) {

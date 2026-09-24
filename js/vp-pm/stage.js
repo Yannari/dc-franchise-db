@@ -312,7 +312,7 @@ export function paintStage(el, screen, idx, { fresh = false, hud = '' } = {}) {
     tick();
   } else txt.textContent = st.text || '';
   const beat = q('beat');
-  beat.textContent = st.beat || '';
+  beat.textContent = st.beat || st.hutBeat || '';
 
   // Movie Night's screen: the clip plays inside it, in its own words.
   const bs = q('bigscreen');

@@ -328,14 +328,13 @@ export function sceneSteps(row, e, evIndex, bg) {
   }
   for (const l of e.narrator?.lines || []) make('narr', l.who, l.text, 'narrator');
   // The beach hut: its own set, one face, straight to camera.
-  // Its stage direction and beat too ("already crying", "wipes her eyes").
+  // Its stage direction and beat too ("already crying", "wipes her eyes"),
+  // on its first and last click, as a scene's are.
   const hs = e.hut?.script;
   const cry = e.kind === 'casa-miss' && e.extra?.of === 'tears' ? { fx: { tears: true } } : {};
-  const hutStep = (text, voice, pose) => out.push({ ...base, part: 'hut', who: voice === 'hut' ? e.hut.who : null, text, voice,
-    cast: [[e.hut.who, 50, pose]], bg: 'hut', stance: e.hut.stance, headline: 'Beach hut', ...cry });
-  if (hs?.stage) hutStep(hs.stage, 'stage', 'back');
-  for (const l of hs?.lines || []) hutStep(l.text, 'hut', 'speak');
-  if (hs?.beat) hutStep(hs.beat, 'stage', 'speak');
+  (hs?.lines || []).forEach((l, i, all) => out.push({ ...base, part: 'hut', who: e.hut.who, text: l.text, voice: 'hut',
+    cast: [[e.hut.who, 50, 'speak']], bg: 'hut', stance: e.hut.stance, headline: 'Beach hut', ...cry,
+    ...(i === 0 && hs.stage ? { caption: hs.stage } : {}), ...(i === all.length - 1 && hs.beat ? { hutBeat: hs.beat } : {}) }));
   // The intro tape (user: "a screen switcher to make a difference between the
   // presentation at arrival and the live person in the villa"): recorded before
   // they ever saw the villa, on its own set, alone, straight to camera, with

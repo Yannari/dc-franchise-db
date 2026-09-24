@@ -147,6 +147,9 @@ export const CASA_HUT = {
     { id: 'hut.ca.m1', when: K('casa-miss', { of: 'aches', role: 0, taken: true }), turns: [['a', "Everyone keeps asking if my head's been turned. It hasn't. I just want {pa} back."]] },
     { id: 'hut.ca.m2', when: K('casa-miss', { of: 'aches', role: 0, taken: true }), turns: [['a', "You don't know what you've got until it's in a different villa."]] },
     { id: 'hut.ca.m3', when: K('casa-miss', { of: 'aches', role: 0, taken: true }), turns: [['a', "I've been good. I've been so good. {pa}, if you're watching this one day, I've been good."]] },
+    { id: 'hut.ca.m11', when: K('casa-miss', { of: 'aches', role: 0, taken: true }), turns: [['a', "Everyone in here is lovely. None of them are {pa}, though."]] },
+    { id: 'hut.ca.m12', when: K('casa-miss', { of: 'aches', role: 0, taken: true }), turns: [['a', "I never thought I'd be the one on my own at a party. I just miss {pa}."]] },
+    { id: 'hut.ca.m13', when: K('casa-miss', { of: 'aches', role: 0, taken: true }), turns: [['a', "This week is a test. And I'm passing it, because all I can think about is {pa}."]] },
     { id: 'hut.ca.m4', when: K('casa-miss', { of: 'worries', role: 0, taken: true }), turns: [['a', "I trust {pa}. I do. It's everyone else in that villa I don't trust."]] },
     { id: 'hut.ca.m5', when: K('casa-miss', { of: 'worries', role: 0, taken: true }), turns: [['a', "What if I'm sitting here being loyal, and {pa} is over there having the time of their life?"]] },
     { id: 'hut.ca.m6', when: K('casa-miss', { of: 'worries', role: 0, taken: true }), turns: [['a', "The not knowing is the worst bit. I'd honestly rather know."]] },
@@ -158,5 +161,11 @@ export const CASA_HUT = {
   'two-faced': [
     { id: 'hut.ca.t1', when: K('casa-return', { of: 'returned', choice: 'stick', role: 0 }), turns: [['a', "I came back on my own. What happened at Casa can stay at Casa."]] },
     { id: 'hut.ca.t2', when: K('photo-row', { of: 'deny', role: 1 }), turns: [['a', "It's one photo. I'm not letting one photo end this."]] },
+    // Missing them, with something of their own still hidden.
+    { id: 'hut.ca.mt1', when: K('casa-miss', { role: 0, taken: true }), turns: [['a', "I do miss {pa}. I do. And there are things {pa} doesn't need to hear about."]] },
+    { id: 'hut.ca.mt2', when: K('casa-miss', { role: 0, taken: true }), turns: [['a', "I'm allowed to miss {pa} and still keep a few things to myself."]] },
+    { id: 'hut.ca.mt4', when: K('casa-miss', { role: 0, taken: true }), turns: [['a', "Being apart from {pa} has made me think. About us. About what I did before we came here."]] },
+    { id: 'hut.ca.mt5', when: K('casa-miss', { role: 0, taken: true }), turns: [['a', "When {pa} gets back, we start again. Clean slate. {pa} never has to know."]] },
+    { id: 'hut.ca.mt3', when: K('casa-miss', { of: 'tears', role: 0, taken: true }), turns: [['a', "I'm crying because I miss {pa}. I'm also crying because I've not been perfect."]] },
   ],
 };

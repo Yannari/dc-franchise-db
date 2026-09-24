@@ -314,7 +314,7 @@ export const KINDS = {
       // …and the ones who feel it most, and hold it in least, cry (user:
       // "crying in the confessional because she missed her partner").
       const feels = romance(o, p) / 10, T = S(s, o).temperament / 10;
-      const tears = rng() < feels * feels * (0.3 + emo(s, o).loneliness / 10) * (1.2 - T) * 0.9;
+      const tears = rng() < feels * (0.3 + emo(s, o).loneliness / 10) * (1.2 - T) * 1.8 * (1 + 0.5 * (s.casaMissed?.[o] || 0));
       return { players: [o, friend], extra: { of: tears ? 'tears' : worry ? 'worries' : 'aches', about: p } };
     },
     apply: (s, ev) => {
@@ -797,7 +797,9 @@ export function makeEvent(state, rng, { phase, kind, players, extra = {}, aired 
     // Two-faced is what the speaker is hiding NOW: a mask, or a secret from
     // this episode or the last. Every hidden kiss from week one made every
     // hut two-faced by week five (80-97% of cutaways, measured).
-    const fresh = state.secrets.some(x => !x.known && x.who === who && x.ep >= state.ep - 1);
+    // Missing a partner is only two-faced over a real betrayal (a kiss, a bed),
+    // not a moan about them to a friend or a chat somebody pulled them for.
+    const fresh = state.secrets.some(x => !x.known && x.who === who && x.ep >= state.ep - 1 && (kind !== 'casa-miss' || (x.with && x.kind !== 'pull')));
     const stance = faking || fresh ? 'two-faced' : 'honest';
     const script = hutFor(state, ev, who, stance);
     // Nothing left to say this episode that hasn't been said: no cutaway.

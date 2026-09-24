@@ -52,7 +52,7 @@ export const KIND_LABEL = {
   'sports-captains': 'The captains', 'sports-win': 'Sports Day winners', 'sports-sore': 'Sore losers', headline: 'The headline',
   blowup: 'It kicks off', 'pile-in': 'Taking sides', 'villa-divided': 'The villa divided', 'cold-shoulder': 'The cold shoulder', 'clear-the-air': 'Clearing the air',
   'bed-share': 'Lights out', vent: 'Letting off steam', apology: 'The apology', reunite: 'Back together', 'apology-rejected': 'Not this time',
-  steal: 'A steal', 'final-recoupling': 'The final recoupling', 'challenge-rules': 'How it works', 'recouple-pick': 'The recoupling', 'dump-buildup': 'At risk', 'dump-verdict': 'Dumped',
+  steal: 'A steal', 'final-recoupling': 'The final recoupling', 'challenge-rules': 'How it works', 'date-text': 'I got a text!', 'date-picked': 'The dates', 'date-back': 'Back from the date', 'recouple-pick': 'The recoupling', 'dump-buildup': 'At risk', 'dump-verdict': 'Dumped',
   'ballot-reveal': 'The vote', 'dump-reaction': 'The reaction', 'dump-goodbye': 'Goodbye', 'dump-fallout': 'Fallout',
   'casa-return': 'Stick or twist', photos: 'The photos', declaration: 'The declaration', 'final-result': 'The result',
   envelope: 'The envelope', walk: 'Leaving the villa', reveal: "What you didn't see", 'close-off': 'Closing off',
@@ -203,7 +203,7 @@ function fxFor(row, e, first) {
   if (k === 'photo-split') { fx.neonDie = ["It's over", '#ff2e88']; fx.shake = true; }
   if (k === 'ballot-reveal' || k === 'ex-ballot' || k === 'save-vote') fx.deal = [[e.players[0], e.players[1]]];
   if (k === 'heart-rate') fx.ecg = [e.players[0]];
-  if (k === 'challenge-text' || k === 'mission-brief' || k === 'bombshell-text' || k === 'movie-text') fx.phone = true;
+  if (k === 'challenge-text' || k === 'mission-brief' || k === 'bombshell-text' || k === 'movie-text' || k === 'date-text') fx.phone = true;
   // Movie Night: the clip plays INSIDE the big screen (stage.js), under a
   // marquee with its title on the first line; the audience watches from the
   // beanbags. Fury shakes the cinema; a break-up kills the lights.

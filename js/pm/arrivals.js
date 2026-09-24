@@ -13,7 +13,8 @@ import { noteArrival, readApproval, coupleScore, BETRAYAL } from './ledger.js';
 import { makeEvent, partnerOf } from './events.js';
 import { romance, friendship } from './feelings.js';
 import { closedness } from './ladder.js';
-import { breakHeart, feel, jealousOf } from './emotions.js';
+import { breakHeart, feel, jealousOf, jealousyHit } from './emotions.js';
+import { addRelationshipDimension } from '../relationships.js';
 import { streamFor } from '../dr/rng.js';
 
 export function arriveIslander(state, name, { ep, seed, room = 'villa' }) {
@@ -46,12 +47,49 @@ export function arriveBombshell(state, name, { ep, seed, rng }) {
   events.push(makeEvent(state, rng, { phase: 'event', kind: 'entrance', players: [name],
     aired: true, major: [name], extra: { of: 'bombshell', pop: { [name]: { approval: 0.5, fame: 3 } } } }));
   events.push(...bombshellReactions(state, rng, name, before));
-  for (const t of eyesOn.slice(0, 2)) {
+  events.push(...bombshellDates(state, rng, name, eyesOn.slice(0, 2)));
+  return { eyesOn, events };
+}
+
+/**
+ * THE DATES, as the show runs them (user: "there's no announcement of a
+ * date, we just get pushed into it … no announcement of who the bombshell
+ * chose and the reactions of the others"): the text that names who the new
+ * arrival is taking out, the partners hearing it, the dates themselves, and
+ * the partner asking how it went. Whether a date sparked is how much the one
+ * taken out fancies the new arrival against their own partner; a spark
+ * costs the couple trust, a date that went nowhere settles the partner.
+ */
+function bombshellDates(state, rng, name, dates) {
+  const out = [];
+  if (!dates.length) return out;
+  out.push(makeEvent(state, rng, { phase: 'event', kind: 'date-text', players: [name, ...dates], aired: true,
+    extra: { of: dates.length === 1 ? 'one' : 'two', pop: { [name]: { approval: 0, fame: 0.8 } } } }));
+  // The partners, as the names are read out.
+  for (const t of dates) {
+    const p = partnerOf(state, t);
+    if (!p || p === name) continue;
+    jealousOf(state, p, name, 0.8);
+    feel(state, p, 'stress', 0.4);
+    out.push(makeEvent(state, rng, { phase: 'event', kind: 'date-picked', players: [p, t, name], aired: true,
+      extra: { pop: { [p]: { approval: 0.2, fame: 0.8 } } } }));
+  }
+  for (const t of dates) {
     addBond(name, t, 0.3 + 0.4 * ((attr(state, t, name) ?? 0) / 10));
-    events.push(makeEvent(state, rng, { phase: 'event', kind: 'date', players: [name, t],
+    out.push(makeEvent(state, rng, { phase: 'event', kind: 'date', players: [name, t], aired: true,
       extra: { pop: { [name]: { approval: 0.2, fame: 1.5 }, [t]: { approval: 0, fame: 1 } } } }));
   }
-  return { eyesOn, events };
+  // Back from the date: the partner asks.
+  for (const t of dates) {
+    const p = partnerOf(state, t);
+    if (!p || p === name) continue;
+    const keen = (attr(state, t, name) ?? 0) + (rng() - 0.5) > Math.max(romance(t, p), attr(state, t, p) ?? 0);
+    if (keen) { jealousyHit(state, p, t, name, 1.5); addRelationshipDimension(p, t, 'trust', -0.3); }
+    else feel(state, p, 'security', 0.4);
+    out.push(makeEvent(state, rng, { phase: 'event', kind: 'date-back', players: [p, t, name], aired: true,
+      extra: { of: keen ? 'keen' : 'loyal', pop: { [t]: { approval: keen ? -0.3 : 0.3, fame: 0.8 } } } }));
+  }
+  return out;
 }
 
 const pickOne = (rng, xs) => xs[Math.floor(rng() * xs.length)];

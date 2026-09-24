@@ -691,6 +691,21 @@ export function renderSeasonHub() {
   </section>`;
 }
 
+// Two villa cards are ALTERNATIVES when they answer the same question for the
+// same night — how night one couples up, how a bombshell's arrival plays,
+// how a dumping is decided, which game the afternoon has. They are marked
+// incompatible (a night has one answer), and booking one swaps the other out
+// instead of being refused (user: "why is only Step Forward schedulable?" —
+// Randomize had booked it, and every other night-one format read as a
+// conflict). The question a card answers is what it sets: a dumping format,
+// or the one key of its pmApply.
+const _pmChoiceOf = t => (t?.pmFormat ? 'dumping' : t?.pmApply ? Object.keys(t.pmApply).sort().join('|') : null);
+function _pmAlternatives(a, b) {
+  const ta = TWIST_CATALOG.find(c => c.id === a), tb = TWIST_CATALOG.find(c => c.id === b);
+  const k = _pmChoiceOf(ta);
+  return !!k && k === _pmChoiceOf(tb);
+}
+
 // Sudden Death is a format modifier that may co-fire with ONE scoring twist
 // challenge (it eliminates that challenge's last-place finisher). The runtime
 // allows that pairing, so the scheduler UI shouldn't flag it as incompatible.
@@ -4450,7 +4465,7 @@ export function renderTwistCatalog() {
   container.innerHTML = filtered.map(t => {
     const phaseBlocked = canAssign && t.phase !== 'any' &&
       [...selPhases].every(ph => ph !== t.phase);
-    const incompBlocked = canAssign && (t.incompatible || []).some(ic => _existingOnSelected.has(ic) && !_sdChalPair(t.id, ic));
+    const incompBlocked = canAssign && (t.incompatible || []).some(ic => _existingOnSelected.has(ic) && !_sdChalPair(t.id, ic) && !_pmAlternatives(t.id, ic));
     // A twist can also clash with a season MODE rather than another card —
     // see SEASON_MODES. Generic on purpose: declaring incompatibleModes on the
     // catalog entry is the whole of the work for any future one.
@@ -4547,6 +4562,8 @@ export function assignTwist(twistId) {
     if (twist?.phase === 'post-merge' && epPhase !== 'post-merge') {
       blocked.push(ep); return;
     }
+    // An alternative already booked for the same question on this night is swapped out.
+    seasonConfig.twistSchedule = seasonConfig.twistSchedule.filter(t => !(Number(t.episode) === ep && t.type !== twistId && _pmAlternatives(twistId, t.type)));
     // Duplicate check: same twist type already on this episode — skip
     const existingOnEp = seasonConfig.twistSchedule.filter(t => Number(t.episode) === ep);
     if (existingOnEp.some(t => t.type === twistId)) return;

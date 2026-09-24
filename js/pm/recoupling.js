@@ -97,8 +97,14 @@ export function runRecoupling(state, { rng, pickerGender, repick = false }) {
     // A new arrival picks from the other side, who are the pickers; a regular
     // picker picks from the side that is not picking — never a new arrival
     // who has already chosen.
+    // …or from their own side, when the two can fancy each other both ways
+    // (attr is null otherwise) and the other has not chosen yet: the show has
+    // done it (UK 2, day 37: girls' choice, and Katie chose Sophie). The one
+    // chosen then stands with them instead of choosing, as anyone chosen does.
+    const g = n => state.profiles[n].gender;
+    const ownSide = c => isPicker.has(c) && !fresh.includes(c) && g(c) === g(p);
     let options = room.filter(c => c !== p && !pickedSomeone.has(c)
-      && (fresh.includes(p) ? !fresh.includes(c) : !isPicker.has(c))
+      && (fresh.includes(p) ? !fresh.includes(c) : (!isPicker.has(c) || ownSide(c)))
       && attr(state, p, c) != null);
     // Two tries, then the picker stands alone — except at the final
     // recoupling, where standing alone is going home: there they ask on

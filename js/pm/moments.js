@@ -211,9 +211,13 @@ function recoupleNight(state, rng, { dumpSingles, pace = 1.5, votesAhead = 0, al
 function arrivals(state, ctx, count) {
   const out = [];
   for (let i = 0; i < count && ctx.queues.bombshell.length; i++) {
-    const need = ['f', 'm'].sort((a, b) =>
-      state.villa.filter(n => state.profiles[n].gender === a).length
-      - state.villa.filter(n => state.profiles[n].gender === b).length)[0];
+    // …counting nobody in a same-sex couple: they need no one from either side
+    // (UK 2: Katie and Sophie coupled up, two boys were left, and the show
+    // sent in a girl to choose between them).
+    const gen = n => state.profiles[n].gender;
+    const paired = new Set(state.couples.filter(([x, y]) => gen(x) === gen(y)).flat());
+    const count = g => state.villa.filter(n => gen(n) === g && !paired.has(n)).length;
+    const need = ['f', 'm'].sort((a, b) => count(a) - count(b))[0];
     const idx = Math.max(0, ctx.queues.bombshell.findIndex(n => state.profiles[n].gender === need));
     const [name] = ctx.queues.bombshell.splice(idx, 1);
     out.push(...arriveBombshell(state, name, { ep: state.ep, seed: ctx.seed, rng: ctx.rng }).events);
@@ -747,15 +751,19 @@ function voteNight(state, ctx) {
 
 /** How many couples the villa could form, the arrivals to come joining whichever side is short. */
 function couplesPossible(state, toCome) {
+  // A same-sex couple is a couple already, and takes nobody from either side.
+  const gen = x => state.profiles[x].gender;
+  const same = state.couples.filter(([a, b]) => gen(a) === gen(b));
+  const inSame = new Set(same.flat());
   const n = { f: 0, m: 0 };
-  for (const x of state.villa) n[state.profiles[x].gender]++;
+  for (const x of state.villa) if (!inSame.has(x)) n[gen(x)]++;
   const left = { f: 0, m: 0 };
   for (const x of toCome) left[state.profiles[x]?.gender || 'f']++;
   for (let i = 0; i < toCome.length; i++) {
     const g = n.f <= n.m ? (left.f ? 'f' : 'm') : (left.m ? 'm' : 'f');
     n[g]++; left[g]--;
   }
-  return Math.min(n.f, n.m);
+  return Math.min(n.f, n.m) + same.length;
 }
 
 /** A vote night in the drawn format; every format but save-one sends one couple home. */

@@ -1,0 +1,196 @@
+{
+  "note": "The user's royalty-free soundtrack (from Downloads/music-test), published with the site. Each situation is a list of tracks taken in turn: { file, at: [seconds it may start from], loopFrom, loopTo }. transition is a ~5 s one-shot between the parts of the day; every other situation plays under its scenes, looping loopFrom-loopTo if they run long. suspense is cut dead before a verdict, final-wait when the winners are named. A situation with no tracks is silence.",
+  "starters": [
+    {
+      "file": "starters/arrival-onlystarters.mp3",
+      "at": [
+        1.0
+      ],
+      "loopFrom": 17.5,
+      "loopTo": 80
+    }
+  ],
+  "intro": [
+    {
+      "file": "intro/intro.mp3",
+      "at": [
+        1.5
+      ],
+      "loopFrom": 2,
+      "loopTo": 60
+    }
+  ],
+  "arrival": [
+    {
+      "file": "arrival/arrival-onlyforbombshell.mp3",
+      "at": [
+        0.5
+      ],
+      "loopFrom": 1,
+      "loopTo": 35
+    }
+  ],
+  "ex": [
+    {
+      "file": "ex/ex-arrival.mp3",
+      "at": [
+        4.0
+      ],
+      "loopFrom": 5,
+      "loopTo": 140
+    }
+  ],
+  "kiss": [
+    {
+      "file": "kiss/first-kiss.mp3",
+      "at": [
+        2.0
+      ],
+      "loopFrom": 2,
+      "loopTo": 175
+    },
+    {
+      "file": "kiss/first-kiss-2.mp3",
+      "at": [
+        0
+      ],
+      "loopFrom": 0,
+      "loopTo": 100
+    }
+  ],
+  "romance": [
+    {
+      "file": "kiss/first-kiss-2.mp3",
+      "at": [
+        0,
+        40
+      ],
+      "loopFrom": 0,
+      "loopTo": 100
+    },
+    {
+      "file": "kiss/first-kiss.mp3",
+      "at": [
+        34,
+        74
+      ],
+      "loopFrom": 2,
+      "loopTo": 175
+    }
+  ],
+  "cheating": [
+    {
+      "file": "cheating/cheating.mp3",
+      "at": [
+        0
+      ],
+      "loopFrom": 12.5,
+      "loopTo": 350
+    }
+  ],
+  "drama": [
+    {
+      "file": "drama/drama-conflict.mp3",
+      "at": [
+        0
+      ],
+      "loopFrom": 7,
+      "loopTo": 110
+    }
+  ],
+  "cry": [
+    {
+      "file": "suspense/elimination-suspense-2.mp3",
+      "at": [
+        40
+      ],
+      "loopFrom": 30,
+      "loopTo": 125
+    }
+  ],
+  "goodbye": [
+    {
+      "file": "goodbye/sad-2-goodbye-message.mp3",
+      "at": [
+        0
+      ],
+      "loopFrom": 0,
+      "loopTo": 120
+    }
+  ],
+  "comedy": [
+    {
+      "file": "comedy/comedy.mp3",
+      "at": [
+        0
+      ],
+      "loopFrom": 3.5,
+      "loopTo": 60
+    }
+  ],
+  "suspense": [
+    {
+      "file": "suspense/elimination-suspense-2.mp3",
+      "at": [
+        1.0
+      ],
+      "loopFrom": 2,
+      "loopTo": 125
+    }
+  ],
+  "final-wait": [
+    {
+      "file": "final-wait/winner-waitingforthereveal-1.mp3",
+      "at": [
+        0.5
+      ],
+      "loopFrom": 9.5,
+      "loopTo": 100
+    },
+    {
+      "file": "final-wait/winner-waitingforeveal-2.mp3",
+      "at": [
+        0
+      ],
+      "loopFrom": 0,
+      "loopTo": 82
+    },
+    {
+      "file": "final-wait/winner-waitingfor-reval-4.mp3",
+      "at": [
+        0
+      ],
+      "loopFrom": 0,
+      "loopTo": 72
+    }
+  ],
+  "winner": [
+    {
+      "file": "kiss/first-kiss.mp3",
+      "at": [
+        2.0
+      ],
+      "loopFrom": 2,
+      "loopTo": 175
+    }
+  ],
+  "transition": [
+    {
+      "file": "transition/transition-song.mp3",
+      "at": [
+        0,
+        24,
+        68.5,
+        92.5
+      ]
+    },
+    {
+      "file": "transition/transition-song-2.mp3",
+      "at": [
+        3.5,
+        10.5,
+        25
+      ]
+    }
+  ]
+}

@@ -181,10 +181,10 @@ export function voiceTick(who, voice, ch, k, text = '') {
 // music, a notification sound and a transition music") and the cutaway
 // between the parts of the day. The suspense is the one the verdict cuts dead.
 //
-// The tracks are the viewer's own, in assets/audio/mine/manifest.json — local
-// only, gitignored (music licensed to the viewer, not handed out) — each
-// situation a list of { file, at: [start seconds], loopFrom, loopTo }, taken
-// in turn. A situation with no track is silence.
+// The tracks are the user's, in assets/audio/mine/manifest.json — royalty
+// free, chosen and named by the user for their moments, and published with
+// the site — each situation a list of { file, at: [start seconds], loopFrom,
+// loopTo }, taken in turn. A situation with no track is silence.
 
 /**
  * Which situation a scene is, by its kind — named as the viewer's own

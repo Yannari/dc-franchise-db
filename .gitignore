@@ -23,8 +23,6 @@ node_modules/
 
 # Uncompressed audio — convert to .mp3 before committing (keeps the repo lean)
 assets/audio/*.wav
-# Your own music for the episode player (vp-pm/sound.js): licensed for your use, not to hand out as files
-assets/audio/mine/
 
 # Local D1 state. `wrangler dev --local` and `d1 execute --local` write a whole
 # SQLite database in here; it is scratch, it is large, and committing it would put

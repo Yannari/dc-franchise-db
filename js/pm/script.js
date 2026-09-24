@@ -27,9 +27,12 @@ import { HUT } from './lines/hut.js';
 import { NARRATOR } from './lines/narrator.js';
 import { KISS_LINES, ICEBREAKER_CARDS } from './lines/kiss-games.js';
 import { RULES_LINES } from './lines/challenge-rules.js';
+import { MORE_D } from './lines/day/more-d.js';
 import { DIALECTS, slotWord, US_SPELLING, US_SPELLERS, ESL_EXPANSIONS } from './lines/dialect.js';
 
 export const POOLS = { ...DAY, ...LADDER, ...FEELINGS, ...MOMENT_LINES, ...CHALLENGE_LINES, ...CLOSE, ...ANSWER, ...KISS_LINES, ...RULES_LINES };
+// The pools a season ran dry of (lines/day/more-d.js), added to whichever pool holds the kind.
+for (const [k, v] of Object.entries(MORE_D)) POOLS[k] = [...(POOLS[k] || []), ...v];
 export { HUT, NARRATOR };
 
 export const SPEAKERS = ['a', 'b', 'c', 'dior', 'narrator'];
@@ -198,7 +201,9 @@ function noteUse(state, entry, ps) {
 // twice in one episode (what the viewer would hear as a loop).
 function relaxedWeight(state, entry, ps) {
   const u = usage(state)[entry.id];
-  return u?.pairEp?.[pairKey(ps)] === state.ep ? 0 : 1;
+  if (u?.pairEp?.[pairKey(ps)] === state.ep) return 0;
+  // …and one not yet heard this episode, when there is one.
+  return u?.eps[u.eps.length - 1] === state.ep ? 0.05 : 1;
 }
 
 /** The words have their own dice: a line can never change what happened. */
@@ -245,11 +250,16 @@ export function pickScript(state, pool, ps, facts, { allowRepeat = true } = {}) 
     if (!weights.some(x => x > 0) && i === 0 && widths.length > 1) weights = w.map(e => relaxedWeight(state, e, ps));
     if (weights.some(x => x > 0)) { cands = w; ws = weights; break; }
   }
-  // Every entry already spent on this pair: allow a repeat rather than silence.
+  // Every entry already spent on this pair: allow a repeat rather than silence
+  // — the one heard longest ago, never one already heard this episode while
+  // another is left (season 41: 36 lines twice in one episode, each a pool
+  // that ran dry and then drew at random).
   if (!cands) {
     if (!allowRepeat) return null;
     cands = widths.find(w => w.length);
-    ws = cands.map(() => 1);
+    const lastEp = e => { const u = usage(state)[e.id]; return u ? u.eps[u.eps.length - 1] : -Infinity; };
+    const oldest = Math.min(...cands.map(lastEp));
+    ws = cands.map(e => (lastEp(e) === oldest ? 1 : lastEp(e) === state.ep ? 0.02 : 0.2));
   }
   let r = rng() * ws.reduce((s, w) => s + w, 0);
   for (let i = 0; i < cands.length; i++) { r -= ws[i]; if (r <= 0) return cands[i]; }

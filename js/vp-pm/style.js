@@ -639,6 +639,43 @@ details.pmv-debug[open] summary::before{transform:rotate(45deg)}
 #visual-player:fullscreen .pmv .pmv-stage{width:min(100%, calc((100vh - 170px) * 16 / 9))}
 .pmv-tvBtn{margin-left:auto}
 .pmv-tvBtn + .pmv-themeBtn{margin-left:0}
+/* the kiss: the two lean in, and what pops between them */
+.pmv-bust.pmv-kissL{transform:translate(-50%,0) rotate(7deg) scale(1.03)!important;filter:none!important;animation:none!important;z-index:5}
+.pmv-bust.pmv-kissR{transform:translate(-50%,0) rotate(-7deg) scale(1.03)!important;filter:none!important;animation:none!important;z-index:5}
+.pmv-bust.pmv-kissAway{transform:translate(-38%,4%) rotate(9deg) scale(.98)!important}
+.pmv-bust.pmv-kissAway.pmv-kissL{transform:translate(-62%,4%) rotate(-9deg) scale(.98)!important}
+.pmv-bust.pmv-kissBlush .pmv-rim{opacity:1;--rim:#ff8fb8}
+.pmv-kissfx{position:absolute;bottom:66%;width:0;height:0;z-index:8;pointer-events:none;opacity:0}
+.pmv-kissfx.pmv-go{opacity:1}
+.pmv-kissfx svg{position:absolute;overflow:visible}
+.pmv-kissfx .pmv-kbig{width:64px;height:44px;left:-32px;top:-22px;transform:scale(0)}
+.pmv-kissfx.pmv-go .pmv-kbig{animation:pmv-kpop 1.6s cubic-bezier(.2,1.5,.35,1) forwards}
+.pmv-kissfx.pmv-k-peck .pmv-kbig,.pmv-kissfx.pmv-k-cheek .pmv-kbig{width:34px;height:24px;left:-17px;top:-12px}
+.pmv-kissfx.pmv-k-first .pmv-kbig{width:88px;height:60px;left:-44px;top:-30px}
+@keyframes pmv-kpop{0%{transform:scale(0)}25%{transform:scale(1.25)}40%{transform:scale(.95)}55%{transform:scale(1.05)}80%{opacity:1;transform:scale(1) translateY(-6px)}100%{opacity:0;transform:scale(1.1) translateY(-26px)}}
+.pmv-kminis i{position:absolute;left:0;top:0;opacity:0}
+.pmv-kminis svg{width:18px;height:13px;left:-9px;top:-6px}
+.pmv-kissfx.pmv-go .pmv-kminis i{animation:pmv-kfloat 1.9s ease-out var(--d) forwards}
+@keyframes pmv-kfloat{0%{opacity:0;transform:translate(0,0) scale(.4)}20%{opacity:1}100%{opacity:0;transform:translate(var(--x),-120px) scale(1)}}
+.pmv-kring{position:absolute;left:-60px;top:-60px;width:120px;height:120px;border-radius:50%;border:3px solid #ffc15e;opacity:0;box-shadow:0 0 24px #ffc15e}
+.pmv-kissfx.pmv-go .pmv-kring{animation:pmv-kring 1.4s ease-out forwards}
+@keyframes pmv-kring{0%{opacity:.9;transform:scale(.2)}100%{opacity:0;transform:scale(2.2)}}
+.pmv-kname{position:absolute;left:0;top:-88px;transform:translateX(-50%);white-space:nowrap;font:26px/1 Yellowtail,cursive;color:#ff2e88;text-shadow:0 0 12px #fff,0 0 18px #ff2e8888;opacity:0}
+.pmv-kissfx.pmv-go .pmv-kname{animation:pmv-kname 2.2s ease-out .25s forwards}
+@keyframes pmv-kname{0%{opacity:0;transform:translate(-50%,10px)}20%{opacity:1;transform:translate(-50%,0)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-14px)}}
+.pmv-kblush b{position:absolute;top:8px;width:16px;height:9px;border-radius:50%;background:#ff8fb8;filter:blur(3px);opacity:0}
+.pmv-kblush b:first-child{left:-30px}.pmv-kblush b:last-child{left:14px}
+.pmv-kissfx.pmv-go .pmv-kblush b{animation:pmv-kblush 1.8s ease-out forwards}
+@keyframes pmv-kblush{0%{opacity:0}30%{opacity:.9}100%{opacity:0}}
+.pmv-kcrack{position:absolute;left:0;top:0}
+.pmv-kcrack svg{width:40px;height:28px;left:-20px;top:-14px}
+.pmv-kcrack .pmv-kl{clip-path:polygon(0 0,52% 0,44% 40%,56% 62%,48% 100%,0 100%)}
+.pmv-kcrack .pmv-kr{clip-path:polygon(52% 0,100% 0,100% 100%,48% 100%,56% 62%,44% 40%)}
+.pmv-kissfx.pmv-go .pmv-kl{animation:pmv-kcl 1.5s ease-in forwards}
+.pmv-kissfx.pmv-go .pmv-kr{animation:pmv-kcr 1.5s ease-in forwards}
+@keyframes pmv-kcl{0%,35%{transform:none;opacity:1}100%{transform:translate(-14px,30px) rotate(-24deg);opacity:0}}
+@keyframes pmv-kcr{0%,35%{transform:none;opacity:1}100%{transform:translate(14px,30px) rotate(24deg);opacity:0}}
+@media (prefers-reduced-motion:reduce){.pmv-kissfx.pmv-go *{animation-duration:.01s!important}}
 /* the voices switch: the speaker, crossed out when the talking blips are off */
 .pmv-sound{margin-left:auto;display:flex;align-items:center;gap:6px}
 .pmv-sound .pmv-themeBtn{margin-left:0}

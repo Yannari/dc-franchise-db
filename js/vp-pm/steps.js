@@ -322,6 +322,29 @@ export function sceneSteps(row, e, evIndex, bg) {
     for (const st of out) if (st.part === 'line' || st.part === 'stage')
       st.poly = { who: e.players[0], light: (st.line ?? -1) >= readAt ? e.extra?.read || null : null };
   }
+  // THE KISS (user: "can we have a kiss animation, even for challenges and
+  // couplings like Icebreakers"): the two lean in and a heart pops between
+  // them, on the step where the words have them kiss. The night-one games
+  // kiss after the card is read, so on their last step; a villa kiss is the
+  // scene, so on its first. A kiss that landed is a bigger heart than a peck,
+  // and a couple's first real kiss gets the sparkle.
+  const kiss = kissOf(e);
+  if (kiss && out.length) {
+    const said = out.filter(st => st.part !== 'hut' && st.part !== 'narr');
+    // What HAPPENS: the stage directions and the actions, never the dialogue
+    // ("After that kiss, there wasn't really a choice" is not a kiss).
+    const words = st => [st.caption, st.part === 'action' ? st.text : null, st.beat].filter(Boolean).join(' ');
+    const at = LAST_KISS.has(e.kind) ? said[said.length - 1]
+      : said.find(st => KISS_WORD.test(words(st))) || (ALWAYS_KISS.has(e.kind) ? said[0] : null);
+    // …and the words say what kind of kiss it was (user: "also the peck, or a
+    // cheek kiss, or a forced kiss"): a kiss on the cheek, a peck, or one
+    // that only one of them wanted.
+    const said2 = at ? words(at) + ' ' + (s.stage || '') + ' ' + (s.beat || '') : '';
+    const style = /\bcheek\b/i.test(said2) && !/real one|properly/i.test(said2) ? 'cheek'
+      : /awkward|pulls? (away|back)|not into it|does not kiss|doesn't kiss|recoils|flinch/i.test(said2) ? 'awkward'
+      : /\bpeck\b|quick kiss|kiss is quick/i.test(said2) ? 'peck' : kiss;
+    if (at) at.kiss = { a: e.players[0], b: e.players[1], size: style };
+  }
   // One-shot business rides on the scene's first step; the Heart Map moves on its last.
   const first = out[0];
   first.fx = fxFor(row, e, evIndex === firstOfKind(row, e));
@@ -337,6 +360,23 @@ export function sceneSteps(row, e, evIndex, bg) {
   return out;
 }
 const firstOfKind = (row, e) => (row.pm.events || []).findIndex(x => x.kind === e.kind);
+
+// Which scenes kiss, and how big. ALWAYS: the kiss is the scene. LAST: the
+// games that kiss after reading the card. Anything else kisses only when its
+// words say so (a reunion, a date, a rescue on the course).
+const KISS_WORD = /\bkiss(es|ed|ing)?\b|\blips\b/i;
+const ALWAYS_KISS = new Set(['kiss', 'snogger-kiss', 'icebreaker', 'lady-luck-kiss', 'blow-slip']);
+const LAST_KISS = new Set(['icebreaker', 'lady-luck-kiss']);
+const MAYBE_KISS = new Set(['reunite', 'date', 'course-pick', 'kiss-pick', 'love-said', 'official-ask', 'declaration', 'hideaway',
+  'bed-share', 'make-up', 'lip-race', 'snogger-row']);
+function kissOf(e) {
+  if (!e.players?.[1]) return null;
+  if (e.kind === 'kiss') return e.extra?.firstKiss ? 'first' : 'spark';
+  if (e.kind === 'icebreaker' || e.kind === 'lady-luck-kiss') return e.extra?.choice === 'spark' ? 'spark' : 'peck';
+  if (e.kind === 'blow-slip') return 'peck';
+  if (ALWAYS_KISS.has(e.kind)) return 'spark';
+  return MAYBE_KISS.has(e.kind) ? 'spark' : null;
+}
 
 // ── the final: the board, then the envelope ───────────────────────────
 const ORDINAL = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth'];

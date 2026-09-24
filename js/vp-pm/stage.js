@@ -106,6 +106,7 @@ function frame(bg, hud, board) {
     <div class="${P('poly')}"><div class="${P('poly-scr')}"><svg viewBox="0 0 200 60" preserveAspectRatio="none"><polyline class="${P('poly-trace')}"/></svg><small></small></div><div class="${P('poly-lamp')}"><i></i><b></b></div></div>
     <div class="${P('tug')}"><div class="${P('tug-a')}"></div><div class="${P('tug-bar')}"><i></i></div><div class="${P('tug-b')}"></div></div>
     <div class="${P('petals')}">${petalsHtml()}</div>
+    <div class="${P('kissfx')}"></div>
     <div class="${P('pops')}"></div>
     <div class="${P('toast')}"></div>
     <div class="${P('caption')}"></div>
@@ -122,6 +123,21 @@ export function stageHtml(id, screen, hud) {
   const board = screen.steps.find(s => s.board)?.board || null;
   return `<div class="${P('stage')}" id="${esc(id)}" data-bg="${esc(screen.bg)}">${frame(screen.bg, hud, board)
     .replace(`<div class="${P('headline')}"></div>`, `<div class="${P('headline')} ${P('on')}">${esc(screen.label)}</div>`)}</div>`;
+}
+
+// ── the kiss ──────────────────────────────────────────────────────────
+// What pops between the two, by the kind of kiss (steps.js kissOf): a heart
+// and a spray of small ones for a kiss that landed, the sparkle and a name
+// for a couple's first, one small heart for a peck, a blush for the cheek,
+// and a heart that cracks in two when only one of them wanted it.
+const heartSvg = (cls, fill) => `<svg class="${cls}" viewBox="-20 -14 40 27"><path d="${HEART}" fill="${fill}" stroke="#fff" stroke-width="1.6"/></svg>`;
+function kissFxHtml(size) {
+  const minis = n => Array.from({ length: n }, (_, i) => `<i style="--x:${((i - (n - 1) / 2) * 34).toFixed(0)}px;--d:${i * 90}ms">${heartSvg('', ['#ff4fa0', '#ff7a59', '#ffc15e'][i % 3])}</i>`).join('');
+  if (size === 'awkward') return `<div class="${P('kcrack')}">${heartSvg(P('kl'), '#ff7aa8')}${heartSvg(P('kr'), '#ff7aa8')}</div>`;
+  if (size === 'cheek') return `<div class="${P('kblush')}"><b></b><b></b></div>${heartSvg(P('kbig'), '#ff9cc2')}`;
+  if (size === 'peck') return heartSvg(P('kbig'), '#ff4fa0');
+  const ring = size === 'first' ? `<div class="${P('kring')}"></div><div class="${P('kname')}">First kiss</div>` : '';
+  return `${ring}${heartSvg(P('kbig'), '#ff2e88')}<div class="${P('kminis')}">${minis(size === 'first' ? 7 : 5)}</div>`;
 }
 
 const timers = new WeakMap();
@@ -184,6 +200,30 @@ export function paintStage(el, screen, idx, { fresh = false, hud = '' } = {}) {
   if (fresh && st.sceneStart) requestAnimationFrame(() => requestAnimationFrame(() => {
     for (const [n, x] of st.cast) { const b = busts.querySelector(`[data-n="${CSS.escape(n)}"]`); if (b) b.style.left = x + '%'; }
   }));
+
+  // THE KISS: the two slide together and lean in, then the heart. For a kiss
+  // only one of them wanted, the other leans away.
+  if (st.kiss && fresh) {
+    const at = n => st.cast.find(c => c[0] === n)?.[1];
+    const xa = at(st.kiss.a), xb = at(st.kiss.b);
+    const ba = busts.querySelector(`[data-n="${CSS.escape(st.kiss.a)}"]`), bb = busts.querySelector(`[data-n="${CSS.escape(st.kiss.b)}"]`);
+    if (ba && bb && xa != null && xb != null) {
+      const size = st.kiss.size || 'spark';
+      const mid = (xa + xb) / 2, gap = size === 'awkward' ? 8.5 : size === 'cheek' ? 6.5 : 5.2;
+      const [L, R] = xa <= xb ? [ba, bb] : [bb, ba];
+      later(el, 450, () => {
+        L.style.left = (mid - gap) + '%'; R.style.left = (mid + gap) + '%';
+        L.classList.add(P('kissL')); R.classList.add(P('kissR'));
+        if (size === 'awkward') bb.classList.add(P('kissAway'));
+        if (size === 'cheek') bb.classList.add(P('kissBlush'));
+        const fx = q('kissfx');
+        fx.className = `${P('kissfx')} ${P('k-' + size)}`;
+        fx.style.left = mid + '%';
+        fx.innerHTML = kissFxHtml(size);
+        later(el, 520, () => { fx.classList.add(P('go')); playSting(size === 'awkward' ? 'pm-kiss-awkward' : 'pm-kiss'); });
+      });
+    }
+  }
 
   // the camera pushes in on the speaker
   const cam = q('cam');

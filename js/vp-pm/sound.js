@@ -71,6 +71,9 @@ const PM_CUES = {
   'pm-shutter': { duck: false, build: (c, d, n) => { noise(c, d, n, { dur: 0.05, from: 3000, to: 5000, type: 'highpass', vol: 0.28 }); noise(c, d, n, { t: 0.08, dur: 0.06, from: 2500, to: 4000, type: 'highpass', vol: 0.22 }); } },
   'pm-ping': { duck: false, build: (c, d, n) => { tone(c, d, n, { f: 1319, dur: 0.12, vol: 0.11 }); tone(c, d, n, { f: 1760, t: 0.13, dur: 0.18, vol: 0.11 }); } },
   'pm-static': { duck: false, build: (c, d, n) => noise(c, d, n, { dur: 0.35, from: 1200, to: 1400, q: 0.3, vol: 0.12 }) },
+  // A kiss: a soft rising two-note; one only one of them wanted: a deflating slide.
+  'pm-kiss': { duck: false, build: (c, d, n) => { tone(c, d, n, { f: 660, f2: 880, dur: 0.12, vol: 0.09 }); tone(c, d, n, { f: 988, t: 0.1, dur: 0.3, vol: 0.07 }); } },
+  'pm-kiss-awkward': { duck: false, build: (c, d, n) => tone(c, d, n, { f: 520, f2: 260, dur: 0.45, type: 'triangle', vol: 0.09 }) },
 };
 Object.assign(CUE_CATALOG, PM_CUES);
 

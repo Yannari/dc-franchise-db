@@ -12,7 +12,7 @@
 // no bust, no line, no board (the spoiler rules).
 import { playerAvatarUrl } from '../players.js';
 import { SHOWS } from '../shows.js';
-import { voiceTick, stingFor, playSting } from './sound.js';
+import { voiceTick, stingFor, playSting, moodStep } from './sound.js';
 
 // The host is not a player: no catalogue entry, one portrait (shows.js, HOSTS_BY_FORMAT).
 const HOST_PORTRAIT = 'assets/avatars/dior.jpg';
@@ -154,7 +154,7 @@ export function paintStage(el, screen, idx, { fresh = false, hud = '' } = {}) {
   const from = prev ? prev.bg : screen.bg;
   const switched = fresh && from !== st.bg && (tape || from === 'vt');
   // The moment's sting, the one the staging calls for (vp-pm/sound.js).
-  if (fresh) playSting(stingFor(st, { switched }));
+  if (fresh) { playSting(stingFor(st, { switched })); moodStep(st); }
   if (switched) {
     const sw = q('switch');
     sw.querySelector('span').textContent = tape ? 'Meet the islander' : 'In the villa';

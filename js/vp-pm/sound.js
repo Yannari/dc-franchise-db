@@ -227,14 +227,73 @@ export async function playTransition() {
 // Music on/off is the simulator's (the header's music button), shared with every show.
 const musicWanted = () => (engine.isMusicEnabled ? engine.isMusicEnabled() : true);
 
+// ── the suspense: under a dumping or a recoupling, cut before the name ──
+// As the real show scores it: the music builds under the host while the
+// couples stand at the fire pit, and stops dead a beat before the verdict.
+// A track from the manifest's `suspense`, starting at its first `at` (the
+// quiet opening) and, if the ceremony outlasts it, looping loopFrom-loopTo
+// (the building middle) rather than playing its ending.
+const SUSPENSE_KINDS = new Set(['dump-buildup', 'dump-at-risk', 'ballot-reveal', 'save-vote', 'save-tie', 'top-couple-pick',
+  'couples-vote', 'ex-return', 'ex-ballot', 'final-recoupling', 'recouple-pick', 'steal']);
+const VERDICT_KINDS = new Set(['dump-verdict', 'dump-verdict-couple', 'dump-verdict-singles', 'final-result']);
+const BED_VOL = 0.32;
+let bed = null;
+async function startSuspense() {
+  if (bed || !musicWanted()) return;
+  const out = engine.output?.();
+  if (!out) return;
+  const pick = ((await loadManifest())?.suspense || [])[0];
+  if (!pick || bed) return;
+  const { ctx: c, dest } = out;
+  bed = { pending: true };
+  const buf = await bufferOf(c, pick.file);
+  if (!buf || !bed?.pending) { bed = null; return; }
+  try {
+    const now = c.currentTime;
+    const src = c.createBufferSource(); src.buffer = buf;
+    if (pick.loopTo) { src.loop = true; src.loopStart = pick.loopFrom || 0; src.loopEnd = Math.min(pick.loopTo, buf.duration); }
+    const g = c.createGain();
+    g.gain.setValueAtTime(0.0001, now);
+    g.gain.exponentialRampToValueAtTime(BED_VOL, now + 1.5);
+    src.connect(g); g.connect(dest);
+    src.start(now, pick.at?.[0] || 0);
+    bed = { src, g };
+  } catch { bed = null; }
+}
+/** Stop the suspense: `cut` is the dead stop before a verdict, otherwise a fade. */
+function stopSuspense(cut = false) {
+  if (!bed) return;
+  const b = bed; bed = null;
+  if (b.pending || !b.src) return;
+  try {
+    const c = b.src.context, now = c.currentTime, t = cut ? 0.06 : 1.2;
+    b.g.gain.cancelScheduledValues(now);
+    b.g.gain.setValueAtTime(b.g.gain.value, now);
+    b.g.gain.exponentialRampToValueAtTime(0.0001, now + t);
+    b.src.stop(now + t + 0.05);
+  } catch { /* already stopped */ }
+}
+/** A step of the episode just played: start, keep or cut the suspense. */
+export function moodStep(st) {
+  if (!st) return;
+  if (VERDICT_KINDS.has(st.kind)) { stopSuspense(true); return; }
+  if (SUSPENSE_KINDS.has(st.kind)) startSuspense();
+}
+
 /** A Perfect Match screen opened: a cutaway when the part of the day changed. */
 export function pmScreenOpened(id) {
   const part = String(id || '').replace(/^villa-/, '').replace(/-\d+$/, '');
-  if (!part || part === 'debug') return;
-  if (part !== lastPart) playTransition();
+  if (!part || part === 'debug') { stopSuspense(); return; }
+  // A ceremony split over two screens keeps its music; anywhere else lets it go.
+  if (part !== lastPart) { stopSuspense(); playTransition(); }
   lastPart = part;
 }
 if (typeof document !== 'undefined' && !globalThis.__pmCutaways) {
   globalThis.__pmCutaways = true;
-  document.addEventListener('vp:screen', e => { if (String(e.detail?.id || '').startsWith('villa-')) pmScreenOpened(e.detail.id); });
+  document.addEventListener('vp:screen', e => {
+    if (String(e.detail?.id || '').startsWith('villa-')) pmScreenOpened(e.detail.id);
+    else { stopSuspense(); lastPart = null; }
+  });
+  // Leaving the Viewing Party takes the music with it.
+  document.addEventListener('vp:close', () => { stopSuspense(); lastPart = null; });
 }

@@ -1039,6 +1039,7 @@ export function closeVisualPlayer() {
   if (typeof window._slasherAudioDestroy === 'function') window._slasherAudioDestroy();
   if (typeof window._aeAudioDestroy === 'function') window._aeAudioDestroy();
   audio.ambient(null);   // stop the ambient bed when leaving the Viewing Party
+  try { document.dispatchEvent(new CustomEvent('vp:close')); } catch (e) {}
   document.getElementById('visual-player').style.display = 'none';
   document.body.style.overflow = '';
 }

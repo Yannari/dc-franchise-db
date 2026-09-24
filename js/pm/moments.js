@@ -14,7 +14,8 @@ import { breakHeart, feel, jealousOf, jealousyHit } from './emotions.js';
 import { runRecoupling } from './recoupling.js';
 import { publicVote, publicVoteIslanders, finalVote, splitOrSteal } from './public-vote.js';
 import { villaDumping, topCouplePicks, saveOne, couplesVote, returningExes, exIslandersVote } from './villa-vote.js';
-import { arriveBombshell, bombshellSteal, openCasa, standUp, bombshellSaves, publicMatch, introParts } from './arrivals.js';
+import { arriveBombshell, arrivePair, bombshellSteal, openCasa, standUp, bombshellSaves, publicMatch, introParts } from './arrivals.js';
+import { kinFor, onYourSide, BLOOD } from './kin.js';
 import { secretMission, sleepover, immunityChallenge } from './one-offs.js';
 import { attr, nudgeAttraction } from './chemistry.js';
 import { stickOrTwist } from './casa.js';
@@ -39,6 +40,7 @@ function removeFromVilla(state, names) {
 export function dumpingScene(state, rng, { atRisk = [], dumped, ballots = [], channel, decision = null, afterVotes = null }) {
   const events = [];
   const solidarityWalk = [];
+  const kinWalk = new Set();
   // Every phase knows which vote it came from, so Dior says the right thing.
   const ev = (kind, players, pop, major = [], more = {}) => events.push(makeEvent(state, rng,
     { phase: 'dumping', kind, players, aired: true, major, extra: { pop, channel, ...more } }));
@@ -127,6 +129,20 @@ export function dumpingScene(state, rng, { atRisk = [], dumped, ballots = [], ch
       ev('solidarity', [p, n], { [p]: { approval: 2.5, fame: 2 } }, [p]);
     }
   }
+  // 3b. family, or a best friend, watching them go (pm/kin.js): it hurts,
+  // and a loyal one may walk out with them.
+  for (const n of dumped) {
+    for (const k of kinFor(state, n)) {
+      if (!onYourSide(k.kin) || dumped.includes(k.other) || !state.villa.includes(k.other) || solidarityWalk.includes(k.other)) continue;
+      feel(state, k.other, 'stress', 1); feel(state, k.other, 'loneliness', 1.2);
+      ev('kin-goodbye', [k.other, n], { [k.other]: { approval: 0.6, fame: 1.2 } }, [], { of: BLOOD.has(k.kin) ? 'family' : 'friends' });
+      const walks = (state.profiles[k.other].stats.loyalty / 10) ** 2 * 0.12 * (BLOOD.has(k.kin) ? 1 : 0.5);
+      if (rng() < walks && !partnerOf(state, k.other)) {
+        solidarityWalk.push(k.other); kinWalk.add(k.other);
+        ev('kin-walk', [k.other, n], { [k.other]: { approval: 2, fame: 2 } }, [k.other], { of: BLOOD.has(k.kin) ? 'family' : 'friends' });
+      }
+    }
+  }
   // 4. goodbye: hugs from the friends — fewer each when many are going, or
   // a five-way dumping is twenty goodbyes from seven lines.
   const hugs = dumped.length > 2 ? 1 : dumped.length > 1 ? 2 : 3;
@@ -146,7 +162,7 @@ export function dumpingScene(state, rng, { atRisk = [], dumped, ballots = [], ch
     events,
     exits: [
       ...dumped.map(name => ({ name, verb: EXIT, channel })),
-      ...solidarityWalk.map(name => ({ name, verb: 'walked', channel: 'walk', cause: 'solidarity' })),
+      ...solidarityWalk.map(name => ({ name, verb: 'walked', channel: 'walk', cause: kinWalk.has(name) ? 'kin' : 'solidarity' })),
     ],
   };
 }
@@ -221,6 +237,15 @@ function arrivals(state, ctx, count) {
     const need = ['f', 'm'].sort((a, b) => count(a) - count(b))[0];
     const idx = Math.max(0, ctx.queues.bombshell.findIndex(n => state.profiles[n].gender === need));
     const [name] = ctx.queues.bombshell.splice(idx, 1);
+    // A relative or best friend still waiting to come in walks in with them
+    // (pm/kin.js): the second is one of the season's own bombshells, taken
+    // from a later night, so every bombshell still arrives exactly once.
+    const mate = kinFor(state, name).find(k => onYourSide(k.kin) && ctx.queues.bombshell.includes(k.other));
+    if (mate) {
+      ctx.queues.bombshell.splice(ctx.queues.bombshell.indexOf(mate.other), 1);
+      out.push(...arrivePair(state, [name, mate.other], { ep: state.ep, seed: ctx.seed, rng: ctx.rng, kin: mate.kin }).events);
+      continue;
+    }
     out.push(...arriveBombshell(state, name, { ep: state.ep, seed: ctx.seed, rng: ctx.rng }).events);
   }
   return out;

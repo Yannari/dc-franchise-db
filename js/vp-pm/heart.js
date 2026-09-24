@@ -53,7 +53,7 @@ const dim = (rel, a, b) => {
   return v ? { r: v[0], f: v[1], s: v[2], t: v[3] } : null;
 };
 
-function mapSvg(names, state, rel, sel) {
+function mapSvg(names, state, rel, sel, kin = []) {
   const n = names.length, cx = 140, cy = 132, rad = 104;
   const Pt = Object.fromEntries(names.map((nm, i) => {
     const a = -Math.PI / 2 + i * 2 * Math.PI / Math.max(1, n); return [nm, [cx + Math.cos(a) * rad, cy + Math.sin(a) * rad]];
@@ -73,6 +73,11 @@ function mapSvg(names, state, rel, sel) {
     if (a >= b || !live.has(a) || !live.has(b)) continue;
     const ab = dim(rel, a, b), ba = dim(rel, b, a);
     if (ab && ba && ab.f <= -4 && ba.f <= -4) e += edge(a, b, P('rival'));
+  }
+  // who knew each other before the villa: family and friends teal, exes grey
+  for (const [a, b, k] of kin) {
+    if (!live.has(a) || !live.has(b) || !Pt[a] || !Pt[b] || couples.has(key(a, b))) continue;
+    e += edge(a, b, P(k === 'exes' || k === 'ex-friends' || k === 'estranged' ? 'kinex' : 'kin'), '', -10);
   }
   // crushes: one-way arrows, the hidden ones dotted purple
   for (const [k2, v] of Object.entries(rel)) {
@@ -112,25 +117,27 @@ const EYE = '<svg viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7
 const MASK = '<svg viewBox="0 0 24 24"><path d="M2 7c4-2 16-2 20 0-1 7-4 10-6 10-2 0-3-3-4-3s-2 3-4 3c-2 0-5-3-6-10z" fill="currentColor"/><circle cx="8" cy="10" r="1.6" fill="#fff"/><circle cx="16" cy="10" r="1.6" fill="#fff"/></svg>';
 const r1 = v => Math.round(v * 10) / 10;
 
-function relPanel(names, state, rel, labels, sel) {
+function relPanel(names, state, rel, labels, sel, kin = []) {
   const X = sel;
+  const kinWith = Y => kin.find(([a, b]) => (a === X && b === Y) || (a === Y && b === X)) || null;
   const labelOf = (a, b) => labels.find(l => l[0] === a && l[1] === b);
   const bars = rec => `<div class="${P('bar2')} ${P('rom')}"><i style="width:${Math.max(0, rec.r) * 10}%"></i>${Math.abs(rec.s - rec.r) >= 1 ? `<span class="${P('ghost')}" style="left:calc(${rec.s * 10}% - 1px)" title="shows"></span>` : ''}</div>
     <div class="${P('bar2')} ${P('fr')}"><i style="${rec.f >= 0 ? `left:50%;width:${Math.min(50, rec.f * 5)}%;background:#14b8a6` : `left:${Math.max(0, 50 + rec.f * 5)}%;width:${Math.min(50, -rec.f * 5)}%;background:#ef4444`}"></i></div>`;
   const others = names.filter(n => n !== X).map(Y => {
     const out = dim(rel, X, Y), inc = dim(rel, Y, X);
-    if (!out && !inc) return null;
+    if (!out && !inc && !kinWith(Y)) return null;
     const coupled = state.couples.some(c => c.includes(X) && c.includes(Y));
     const o = out || { r: 0, f: 0, s: 0, t: 0 }, i = inc || { r: 0, f: 0, s: 0, t: 0 };
-    return { Y, out: o, inc: i, coupled, weight: (coupled ? 100 : 0) + o.r * 3 + i.r * 2 + Math.abs(o.f) + Math.abs(i.f) };
+    return { Y, out: o, inc: i, coupled, weight: (coupled ? 100 : 0) + (kinWith(Y) ? 50 : 0) + o.r * 3 + i.r * 2 + Math.abs(o.f) + Math.abs(i.f) };
   }).filter(Boolean).sort((a, b) => b.weight - a.weight).slice(0, 8);
   const partner = state.couples.find(c => c.includes(X))?.find(n => n !== X) || null;
   const rows = others.map(({ Y, out, inc }) => {
-    const lab = labelOf(X, Y), back = labelOf(Y, X);
+    const lab = labelOf(X, Y), back = labelOf(Y, X), kn = kinWith(Y);
     const notes = [];
     if (Math.abs(out.s - out.r) >= 3) notes.push(`<div class="${P('belief')} ${P('shows')}">${MASK}<span>${esc(X)} <b>shows</b> ${r1(out.s)}/10 romance to ${esc(Y)}, and really feels ${r1(out.r)}.</span></div>`);
     if (Math.abs(inc.t - inc.r) >= 3) notes.push(`<div class="${P('belief')} ${P('thinks')}">${EYE}<span>${esc(X)} <b>believes</b> ${esc(Y)} is at ${r1(inc.t)}/10. Really: ${r1(inc.r)}.</span></div>`);
     return `<div class="${P('rrow')}"><div class="${P('top')}">${mini(Y)}<b>${esc(Y)}</b>
+      ${kn ? `<span class="${P('tagx')} ${P(['exes', 'ex-friends', 'estranged'].includes(kn[2]) ? 'kinex' : 'kin')}" title="Before the villa">${esc(kn[3])}</span>` : ''}
       ${lab ? `<span class="${P('tagx')} ${P(lab[2])}" title="${esc(X)} → ${esc(Y)}">${esc(lab[3])}</span>` : ''}
       ${back && (!lab || back[3] !== lab[3]) ? `<span class="${P('tagx')} ${P(back[2])}" style="opacity:.75" title="${esc(Y)} → ${esc(X)}">${esc(Y)}: ${esc(back[3])}</span>` : ''}</div>
       <div class="${P('dirh')}"><span></span><span>Romance</span><span>Friendship</span></div>
@@ -154,9 +161,9 @@ export function asideHtml(row, prev, screens, si, upto, sel = null) {
   const shown = pick || state.villa.slice().sort()[0] || names[0];
   return `<div class="${P('panel')}"><h3>Heart map</h3><p class="${P('note')}">${last ? 'How the villa ends the episode.'
     : 'How the villa stood at the start of the episode, and every scene clicked so far.'} You see everything; the villa doesn't.</p>
-    ${mapSvg(names, state, rel, pick)}
+    ${mapSvg(names, state, rel, pick, row.pm.kin || [])}
     <div class="${P('legend')}"><span><i style="border-color:#ff2e88"></i>Coupled</span><span><i style="border-color:#ff4fa0;border-top-width:2px"></i>Fancies →</span>
       <span><i style="border-color:#a855f7;border-top-style:dotted"></i>Hidden crush →</span><span><i style="border-color:#ef4444;border-top-style:dotted"></i>Rivals</span>
-      <span><i style="border-color:#f59e0b;border-top-style:dashed"></i>On the rocks</span></div></div>
-    <div class="${P('panel')}"><h3>Relationships</h3><p class="${P('note')}">Pick anyone, here or on the map.</p>${relPanel(names, state, rel, labels, shown)}</div>`;
+      <span><i style="border-color:#f59e0b;border-top-style:dashed"></i>On the rocks</span>${(row.pm.kin || []).length ? '<span><i style="border-color:#14b8a6;border-top-style:dashed"></i>Knew each other</span>' : ''}</div></div>
+    <div class="${P('panel')}"><h3>Relationships</h3><p class="${P('note')}">Pick anyone, here or on the map.</p>${relPanel(names, state, rel, labels, shown, row.pm.kin || [])}</div>`;
 }

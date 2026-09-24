@@ -9,6 +9,7 @@ import { friendship } from './feelings.js';
 import { attr } from './chemistry.js';
 import { partnerOf } from './events.js';
 import { coupleStrength } from './ladder.js';
+import { kinOf, onYourSide } from './kin.js';
 
 // The last four are Plan 4.5 (docs/superpowers/plans/…-plan-4.5-twists.md),
 // each read from real seasons: the favourite couple picks (UK 9, 11, 12, 13),
@@ -22,6 +23,10 @@ function affinity(state, v, t) {
   // Your own partner, always: a boy whose girlfriend is at risk saves her.
   // Measured: without it, Marcus saved Amber and left his own Chloe to go.
   if (mine === t) return 100;
+  // …and family, or a best friend, next: never a vote against your own
+  // (the Relationships tab, pm/kin.js).
+  const kin = kinOf(state, v, t);
+  if (kin && onYourSide(kin)) return 90;
   const threat = mine && (attr(state, t, mine) ?? 0) > 6 ? 2 : 0;
   const theirs = partnerOf(state, t);
   // The villa protects a couple that has made it official.

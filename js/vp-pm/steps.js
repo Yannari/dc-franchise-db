@@ -43,6 +43,8 @@ export const KIND_LABEL = {
   'movie-row': 'After the screening', 'movie-split': "It's over",
   'casa-host': 'The Casa Amor recoupling', 'casa-react': 'The moment', 'casa-row': 'After the fire pit', 'photo-text': 'Post from Casa',
   'photo-row': 'The photo', 'photo-split': "It's over",
+  'pair-text': 'I got a text!', 'kin-entrance': 'Two new arrivals', 'kin-heart': 'Family', 'kin-vet': 'The once-over',
+  'kin-protect': 'Stepping in', 'ex-awkward': 'The ex', 'ex-jealous': 'The ex, moved on', 'kin-goodbye': 'Saying goodbye', 'kin-walk': 'Leaving together',
   breakdown: 'It all gets too much', comfort: 'Someone comes', 'no-show': 'Where were you?',
   'triangle-torn': 'Torn', 'triangle-rivals': 'The rivals', 'triangle-case': 'Making the case', 'triangle-ultimatum': 'Choose',
   'triangle-teams': 'Pick a side', 'triangle-choice': 'The choice',
@@ -121,6 +123,12 @@ const POPS = {
   'dump-fallout': [[0, 'Single', 'down', 'crack']],
   'dump-reaction': [[0, 'Heartbroken', 'red', 'crack']],
   'close-off': [[1, 'Security +', '', 'heart']],
+  'kin-heart': [[0, 'Bond +', 'teal', 'star'], [1, 'Bond +', 'teal', 'star']],
+  'kin-vet': [[1, 'Approved', 'teal', 'star']],
+  'kin-protect': [[1, 'Warned', 'red', 'crack']],
+  'ex-awkward': [[0, 'Old feelings?', 'gold', 'eye']],
+  'ex-jealous': [[0, 'Jealous', 'red', 'crack']],
+  'kin-walk': [[0, 'Walked out', 'gold', 'star']],
   'keeping-open': [[1, 'Security −', 'down', 'crack']],
   'open-back-up': [[1, 'Heartbroken', 'red', 'crack']],
   'exclusive-ask': [[0, 'Exclusive', 'gold', 'heartW'], [1, 'Exclusive', 'gold', 'heartW']],
@@ -156,7 +164,7 @@ const POPS = {
 const HURT_STYLES = new Set(['red']);
 // A pop only where the scene did the thing: a receipt that read out "falling
 // for you" exposed nobody.
-const POPS_WHEN = { 'first-look': e => e.extra?.of === 'spark',
+const POPS_WHEN = { 'first-look': e => e.extra?.of === 'spark', 'kin-vet': e => e.extra?.of === 'approve', 'ex-awkward': e => e.extra?.of === 'spark',
   // A kiss that fell flat moved nothing up worth a chip.
   icebreaker: e => e.extra?.choice === 'spark', 'lady-luck-kiss': e => e.extra?.choice === 'spark', receipt: e => ['secret', 'pull', 'head-turned'].includes(e.extra?.of),
   'casa-return': () => false, 'dump-reaction': () => true };
@@ -168,6 +176,9 @@ function fxFor(row, e, first) {
   if (k === 'first-arrival' && first) fx.neon = ['Perfect Match', '#ff2e88'];
   if (k === 'entrance' || k === 'group-entrance') fx.neon = [row.moment === 'casa-open' ? 'Casa Amor' : 'Bombshell', '#ff7a59'];
   if (k === 'return-entrance') fx.neon = ['Back', '#ffc15e'];
+  if (k === 'kin-entrance') { fx.neon = [e.extra?.of === 'twins' ? 'Twins' : 'Double bombshell', '#ff7a59']; fx.reveal = true; }
+  if (k === 'pair-text') fx.phone = true;
+  if (k === 'kin-protect' || k === 'ex-jealous') fx.sides = { A: [e.players[0]], B: [e.players[1]] };
   // The sign lights on the first boy, whichever way his turn went.
   if ((k === 'step-forward' || k === 'step-reveal') && (row.pm.events || []).find(x => x.kind === 'step-forward' || x.kind === 'step-reveal') === e) fx.neon = ['Step forward', '#ff2e88'];
   if (k === 'recouple-pick' && first) fx.neon = [row.moment === 'first-coupling' ? 'First coupling' : 'Recoupling', '#ff2e88'];
@@ -240,10 +251,10 @@ function relOps(e) {
   if (k === 'sleepover-choice' && p[1]) return [['couple', p[0], p[1]]];
   if (k === 'dump-verdict') return [['leave', p[0]]];
   if (k === 'dump-verdict-couple' || k === 'dump-verdict-singles') return p.map(n => ['leave', n]);
-  if (k === 'walk') return [['leave', p[0]]];
+  if (k === 'walk' || k === 'kin-walk' || k === 'solidarity') return [['leave', p[0]]];
   if (k === 'movie-split' || k === 'photo-split') return [['single', p[0]], ['single', p[1]]];
   if (k === 'reunite') return [['couple', p[1], p[0]]];
-  if (k === 'entrance' || k === 'group-entrance' || k === 'return-entrance') return p.map(n => ['arrive', n]);
+  if (k === 'entrance' || k === 'group-entrance' || k === 'return-entrance' || k === 'kin-entrance') return p.map(n => ['arrive', n]);
   if (k === 'first-arrival') return [['arrive', p[0]]];
   // The boy walks in, and walks out coupled (or waiting).
   if (k === 'step-forward') return p[1] ? [['arrive', p[0]], ['couple', p[0], p[1]]] : [['arrive', p[0]]];
@@ -257,7 +268,7 @@ export const DUMP_RAIL = ['Build-up', 'Verdict', 'Reaction', 'Goodbye', 'Fallout
 const RAIL_OF = { 'dump-buildup': 0, 'dump-at-risk': 0, 'save-setup': 0, 'ex-return': 0,
   'ballot-reveal': 1, 'save-vote': 1, 'top-couple-pick': 1, 'couples-vote': 1, 'ex-ballot': 1,
   'dump-verdict': 1, 'dump-verdict-couple': 1, 'dump-verdict-singles': 1,
-  'dump-reaction': 2, solidarity: 2, 'dump-goodbye': 3, 'dump-fallout': 4 };
+  'dump-reaction': 2, solidarity: 2, 'kin-goodbye': 3, 'kin-walk': 2, 'dump-goodbye': 3, 'dump-fallout': 4 };
 
 function castOf(e, who, host) {
   const names = e.players.filter(Boolean).slice(0, 5);
@@ -643,7 +654,7 @@ function nameFor(label, chunk, screens) {
 export function startOfEpisode(row, prev) {
   if (prev?.pm) return { villa: [...prev.pm.villa], couples: prev.pm.couples.map(c => [...c]) };
   // Night one: everybody who did not walk in during the episode, nobody coupled.
-  const arrived = new Set((row.pm.events || []).flatMap(e => (e.kind === 'entrance' || e.kind === 'group-entrance' ? e.players
+  const arrived = new Set((row.pm.events || []).flatMap(e => (e.kind === 'entrance' || e.kind === 'group-entrance' || e.kind === 'kin-entrance' ? e.players
     : e.kind === 'first-arrival' || e.kind === 'step-forward' ? [e.players[0]] : [])));
   return { villa: (row.pm.villa || []).filter(n => !arrived.has(n)), couples: [] };
 }

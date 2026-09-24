@@ -27,6 +27,7 @@ import { runVillaDay } from './villa-day.js';
 import { seasonSchedule, withPicks, withBookings, resolveRandomGames, buildSchedule, FINAL_COUPLES } from './schedule.js';
 import { MOMENTS, nightOneOpening } from './moments.js';
 import { returnIslander } from './arrivals.js';
+import { loadKin, seedKinAttraction, kinLabel } from './kin.js';
 
 function initState(cast, setup, seed) {
   const state = { ep: 0, day: 0, villa: [], casa: [], split: false, couples: [], profiles: {},
@@ -111,10 +112,12 @@ function villaDayEvents(state, rng, entry, seed) {
  * the new night the way it would have from any night.
  */
 export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = null, picks = {}, bookings = {}, rerolls = {},
-  splitOrStealOn = false, dialect = 'uk', episodes = null, firstIn = 'f' } = {}) {
+  splitOrStealOn = false, dialect = 'uk', episodes = null, firstIn = 'f', kinship = null } = {}) {
   setGs({ bonds: {}, perceivedBonds: {}, relationshipDimensions: {}, activePlayers: [],
     episodeHistory: [], popularity: {} });
   const state = initState(cast, setup, seed);
+  // Who knew whom before the villa (the Relationships tab, pm/kin.js).
+  loadKin(state, cast, kinship, setup);
   // The season's default voice, for any islander whose cast setup left it blank.
   state.dialect = dialect;
   // Who walks in first on night one (Villa options): the girls unless the author says the boys.
@@ -142,7 +145,7 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
     const rng = streamFor(seed, `ep:${entry.ep}${state.epSalt}`);
     if (entry.ep === 1) {
       for (const n of queues.starter) {
-        state.villa.push(n); noteArrival(state.ledger, n, 1); seedAttraction(state, n, seed);
+        state.villa.push(n); noteArrival(state.ledger, n, 1); seedAttraction(state, n, seed); seedKinAttraction(state, n);
       }
     }
     // THE PACE. How many islanders the villa still has to lose to reach four
@@ -250,6 +253,8 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
       pm: { events: [...day, ...m.events], momentFrom: day.length, dumpFormat: m.extra && 'dumpFormat' in m.extra ? m.extra.dumpFormat : (entry.dumpFormat || null),
         arrivalRule: m.extra?.arrivalRule || null, firstFormat: m.extra?.firstFormat || null,
         oneOff: m.extra?.oneOff || null, ...(entry.ep === 1 ? { firstIn: state.firstIn } : {}), challenge: day.some(e => e.phase === 'challenge') ? entry.challenge : null, immune: m.extra?.immune || null, returned: m.extra?.returned || null, couples: state.couples.map(c => [...c]), villa: [...state.villa],
+        // Who knew whom before the villa (the Relationships tab): [a, b, relation, words].
+        ...(Object.keys(state.kin || {}).length ? { kin: Object.entries(state.kin).map(([k, v]) => [...k.split('|'), v, kinLabel(v)]) } : {}),
         // The couples as the night's moment found them (the day plays first now).
         couplesBefore: pre.couples.map(c => [...c]),
         // The night the singles all go, and the couples-only week after it.

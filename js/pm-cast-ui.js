@@ -16,7 +16,7 @@
 // One delegated listener on the panel, and data attributes on every control,
 // so an islander's name never goes into an inline handler (an apostrophe in a
 // name would break the page).
-import { players, seasonConfig } from './core.js';
+import { players, seasonConfig, kinshipPairs } from './core.js';
 import { minimumEpisodes } from './pm/schedule.js';
 import { ROLES, INTENTS, PERSONAS, LOOK_TAGS, VIBES, ICKS, INTERESTS } from './pm/profile.js';
 import { DIALECTS } from './pm/lines/dialect.js';
@@ -157,6 +157,24 @@ function renderStudioHead(shape, problem, total) {
   }
 }
 
+
+/**
+ * Who this islander already knows: read from Setup → Relationships, which is
+ * where twins, siblings, best friends and exes are set (pm/kin.js reads the
+ * same rows). The card used to have its own "An ex in the villa"; an ex set
+ * there still counts, and shows here.
+ */
+function knownHtml(n, cast, s) {
+  const inCast = new Set(cast);
+  const rows = kinshipPairs().filter(r => (r.a === n || r.b === n) && inCast.has(r.a) && inCast.has(r.b))
+    .map(r => [r.a === n ? r.b : r.a, r.label]);
+  if (s.ex && inCast.has(s.ex) && !rows.some(([o]) => o === s.ex)) rows.push([s.ex, 'Exes']);
+  const list = rows.length ? rows.map(([o, l]) => `<span class="pm-known"><b>${esc(o)}</b> · ${esc(l)}</span>`).join('')
+    : '<span class="pm-known pm-known-none">Nobody in the villa</span>';
+  return `<div class="pm-field pm-field-known"><span class="pm-field-k">Knows before the villa</span><div class="pm-known-list">${list}</div>
+    <button type="button" class="pm-known-go" onclick="showSetupPanel('rels')">Twins, siblings, best friends, exes: set in Setup → Relationships</button></div>`;
+}
+
 function roleSwitch(name, set, auto) {
   const opt = (v, label) => `<button type="button" class="pm-seg${(set || '') === v ? ' on' : ''}" data-name="${esc(name)}" data-field="role" data-val="${v}">${esc(label)}</button>`;
   // Auto is pressed; the role it comes to is marked underneath, not pressed.
@@ -192,7 +210,7 @@ export function renderPerfectMatchCastSetup() {
     const others = cast.filter(o => o !== n).map(o => [o, o]);
     const role = s.role || autoRoles[i];
     const set = ['dialect', 'intent', 'persona'].filter(k => s[k]).length
-      + ['type', 'looks', 'icks', 'interests', 'eyesOn', 'ex'].filter(k => s[k] && (!Array.isArray(s[k]) || s[k].length)).length;
+      + ['type', 'looks', 'icks', 'interests', 'eyesOn'].filter(k => s[k] && (!Array.isArray(s[k]) || s[k].length)).length;
     let avatar = '';
     try { avatar = playerAvatarUrl(p.name ? p : n); } catch { avatar = ''; }
     return `<article class="pm-isl r-${role}">
@@ -207,7 +225,7 @@ export function renderPerfectMatchCastSetup() {
         <label class="pm-field"><span class="pm-field-k">Looking for</span>${select(n, 'intent', INTENTS.map(x => [x, words(x)]), s.intent, 'Rolled')}</label>
         <label class="pm-field"><span class="pm-field-k">Persona</span>${select(n, 'persona', personas, s.persona, 'Auto')}</label>
       </div>
-      <details class="pm-isl-more"><summary>Type, icks, interests, eyes on, ex</summary>
+      <details class="pm-isl-more"><summary>Type, icks, interests, eyes on, who they know</summary>
         <div class="pm-isl-grid">
           <div class="pm-sec-head pm-roll-all-row"><button type="button" class="pm-roll pm-roll-all" data-name="${esc(n)}" data-roll="*">${DIE} Roll all</button></div>
           <div>${sectionHead(n, 'type.looks', 'Their type — looks, up to 3', getPath(s, 'type.looks'))}${chips(n, 'type.looks', LOOK_TAGS.map(x => [x, words(x)]), getPath(s, 'type.looks'))}</div>
@@ -216,7 +234,7 @@ export function renderPerfectMatchCastSetup() {
           <div>${sectionHead(n, 'icks', 'Icks — up to 2', s.icks)}${chips(n, 'icks', ICKS.map(x => [x, words(x)]), s.icks)}</div>
           <div>${sectionHead(n, 'interests', 'Interests — 2 to 4', s.interests)}${chips(n, 'interests', INTERESTS.map(x => [x, words(x)]), s.interests)}</div>
           <div>${sectionHead(n, 'eyesOn', "Eyes on — who they've come in for, up to 3", s.eyesOn)}${chips(n, 'eyesOn', others, s.eyesOn)}</div>
-          <label class="pm-field"><span class="pm-field-k">An ex in the villa</span>${select(n, 'ex', others, s.ex, 'No ex')}</label>
+          ${knownHtml(n, cast, s)}
         </div>
       </details>
     </article>`;

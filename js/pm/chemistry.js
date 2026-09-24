@@ -46,8 +46,12 @@ export function attractionOf(me, them, rng) {
   return Math.round(clamp(raw * 10, 0, 10) * 100) / 100;
 }
 
+// Family by blood (the Relationships tab, pm/kin.js): never romantic, whatever
+// else is true of the two of them.
+export const BLOOD = new Set(['twins', 'siblings', 'step-siblings', 'parent-child', 'grandparent', 'aunt-uncle', 'cousins', 'in-laws', 'estranged']);
 export function compatible(state, a, b) {
   const pa = state.profiles[a], pb = state.profiles[b];
+  if (BLOOD.has(state.kin?.[[a, b].sort().join('|')])) return false;
   return !!pa && !!pb && a !== b && romanticallyCompatible(pa, pb);
 }
 

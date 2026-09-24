@@ -6649,6 +6649,10 @@
 .pm-count-wide{max-width:180px}
 .pm-field{display:flex;flex-direction:column;gap:4px;min-width:0}
 .pm-field-k{font-size:11px;color:var(--muted);font-weight:600}
+.pm-field-known{grid-column:1/-1}.pm-known-list{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0}
+.pm-known{font-size:12px;padding:3px 9px;border-radius:999px;background:color-mix(in srgb,#14b8a6 16%,transparent);border:1px solid color-mix(in srgb,#14b8a6 40%,transparent)}
+.pm-known-none{background:none;border-style:dashed;color:var(--muted)}
+.pm-known-go{background:none;border:0;padding:0;color:var(--pm);font-size:11px;cursor:pointer;text-align:left;text-decoration:underline}
 .pm-select{width:100%;box-sizing:border-box;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:8px;
   padding:6px 8px;font-size:12.5px;font-family:inherit;min-width:0}
 .pm-pick{display:flex;flex-direction:column;gap:6px;padding:10px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--k-vote)}

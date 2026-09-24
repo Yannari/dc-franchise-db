@@ -205,8 +205,8 @@ const SITUATION = {
     'step-reveal', 'step-choose', 'step-back',
     'icebreaker', 'lady-luck-kiss', 'kiss-pick', 'lady-luck-pick'],
   intro: ['intro'],
-  arrival: ['entrance', 'group-entrance', 'bombshell-react', 'casa-host'],
-  ex: ['return-entrance', 'return-ex', 'ex-return'],
+  arrival: ['entrance', 'group-entrance', 'bombshell-react', 'casa-host', 'kin-entrance'],
+  ex: ['return-entrance', 'return-ex', 'ex-return', 'ex-awkward', 'ex-jealous'],
   // The first REAL kiss of a couple only (musicOf, below): never a game's kiss
   // (user: "first kiss doesn't count challenge kiss, like real first kiss").
   kiss: [],
@@ -216,10 +216,10 @@ const SITUATION = {
     'final-date', 'journey-open', 'journey-clip', 'journey-react', 'journey-end'],
   cheating: ['photos', 'head-turned', 'bed-share'],
   drama: ['argument', 'blowup', 'pile-in', 'villa-divided', 'jealous-confront', 'jealous-retaliate', 'cold-shoulder',
-    'casa-row', 'photo-row', 'movie-row', 'lie-row', 'triangle-rivals', 'triangle-ultimatum', 'apology-rejected'],
+    'casa-row', 'photo-row', 'movie-row', 'lie-row', 'triangle-rivals', 'triangle-ultimatum', 'apology-rejected', 'kin-protect'],
   cry: ['breakdown', 'comfort', 'dump-reaction', 'photo-split', 'movie-split', 'torch', 'ask-declined', 'jealous-sulk'],
   // The dumped saying goodbye, and anyone walking out.
-  goodbye: ['dump-goodbye', 'walk', 'solidarity'],
+  goodbye: ['dump-goodbye', 'walk', 'solidarity', 'kin-goodbye', 'kin-walk'],
   comedy: ['comedy', 'blow-dare', 'blow-slip', 'baby-doll', 'talent-act'],
   suspense: ['dump-buildup', 'dump-at-risk', 'ballot-reveal', 'save-vote', 'save-tie', 'top-couple-pick', 'couples-vote',
     'ex-ballot', 'final-recoupling', 'recouple-pick', 'steal'],

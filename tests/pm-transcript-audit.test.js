@@ -3,6 +3,7 @@
 //     npm run pm:transcript              seed 7
 //     PM_SEED=12 npm run pm:transcript   any other seed
 //     PM_CAST=26 PM_ROLES=10,8,8 …        another cast: size, then starters,bombshells,casa
+//     PM_KIN=1+2:siblings,11+13:twins …    relations (the Relationships tab's kinds)
 //
 // Writes transcripts/pm-season-<seed>.html (gitignored) and prints the path.
 // It uses js/pm/transcript.js — the SAME renderer as the simulator's episode
@@ -40,7 +41,9 @@ it('writes a season transcript', () => {
     names.forEach((n, i) => { setup[n].role = i < st ? 'starter' : i < st + bo ? 'bombshell' : 'casa'; });
   }
   names.forEach((n, i) => { setup[n].dialect = setup[n].role === 'casa' ? ABROAD[i % ABROAD.length] : HOME[i % HOME.length]; });
-  const { rows } = playPerfectMatchSeason({ cast: names, setup, seed });
+  // PM_KIN=1+2:siblings,11+13:twins (cast positions, or names) — relations from before the villa (pm/kin.js).
+  const kinship = process.env.PM_KIN ? process.env.PM_KIN.split(',').map(x => { const [ab, kin] = x.split(':'); const [a, b] = ab.split('+').map(x => (/^\d+$/.test(x) ? names[x - 1] : x)); return { a, b, kin }; }) : null;
+  const { rows } = playPerfectMatchSeason({ cast: names, setup, seed, kinship });
   const castList = names.map(n => `${esc(n)} <span class="pm-sub">${DIALECTS[setup[n].dialect].label}</span>`).join(' · ');
 
   const eps = rows.map((r, i) => `<details${r.num === 1 ? ' open' : ''}><summary>Episode ${r.num} — ${

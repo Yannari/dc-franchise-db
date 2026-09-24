@@ -16,6 +16,7 @@ import { recordAired, nudgeBelief, BETRAYAL } from './ledger.js';
 import { romance, shown, revealTruth, friendship, believed } from './feelings.js';
 import { closedness, betrayalWeight } from './ladder.js';
 import { feel, jealousyHit, attachment, emo } from './emotions.js';
+import { onYourSide, BLOOD } from './kin.js';
 import { streamFor } from '../dr/rng.js';
 import { girlCode, judgement } from './circle.js';
 import { scriptFor, hutFor, moodOf, narratorFor } from './script.js';
@@ -329,6 +330,103 @@ export const KINDS = {
       return { pop: { ...pop1(a, -1.0, 2), ...pop1(b, 0.3, 1.5) } };
     },
   },
+  // ── the islanders who knew each other before (pm/kin.js) ────────────
+  // Only cast when the season has relations; each is what the relation IS.
+  // A sibling or best friend: a moment that is only theirs.
+  'kin-heart': {
+    salience: 0.5,
+    cast: (s, rng) => {
+      const pairs = kinPairs(s).filter(([a, b, k]) => onYourSide(k));
+      const got = pick(rng, pairs);
+      return got ? { players: [got[0], got[1]], extra: { of: kinGroup(got[2]) } } : null;
+    },
+    apply: (s, ev) => {
+      const [a, b] = ev.players;
+      addBond(a, b, 0.4);
+      feel(s, a, 'stress', -0.4); feel(s, b, 'stress', -0.4);
+      return { pop: { ...pop1(a, 0.3, 0.8), ...pop1(b, 0.3, 0.8) } };
+    },
+  },
+  // Sizing up a sibling's (or best friend's) partner.
+  'kin-vet': {
+    salience: 0.7,
+    cast: (s, rng) => {
+      const opts = kinPairs(s).flatMap(([x, y, k]) => onYourSide(k) ? [[x, y], [y, x]] : [])
+        .map(([k, sib]) => [k, sib, partnerOf(s, sib)]).filter(([k, sib, p]) => p && p !== k && roomMates(s, k).includes(p) && !onceFor(s, `vet:${k}>${p}`));
+      const got = pick(rng, opts);
+      if (!got) return null;
+      const [k, sib, p] = got;
+      // Approval is how the vetter already gets on with the partner, and how
+      // much the partner plainly feels for their sibling.
+      const approve = 0.3 * getBond(k, p) + 0.5 * romance(p, sib) + (rng() - 0.5) * 2 > 2.5;
+      return { players: [k, p, sib], extra: { of: approve ? 'approve' : 'doubt' } };
+    },
+    apply: (s, ev) => {
+      const [k, p, sib] = ev.players;
+      markOnce(s, `vet:${k}>${p}`);
+      if (ev.extra.of === 'approve') { addBond(k, p, 0.6); feel(s, sib, 'security', 0.5); }
+      else { addBond(k, p, -0.8); addRelationshipDimension(sib, p, 'trust', -0.4); feel(s, sib, 'stress', 0.4); }
+      return { pop: { ...pop1(k, 0.2, 1), ...pop1(p, ev.extra.of === 'approve' ? 0.3 : -0.2, 1) } };
+    },
+  },
+  // Stepping in: the partner who was seen flirting today answers to the family.
+  'kin-protect': {
+    salience: 0.85,
+    cast: (s, rng) => {
+      const opts = kinPairs(s).flatMap(([x, y, k]) => onYourSide(k) ? [[x, y, k], [y, x, k]] : []).map(([k, sib, kin]) => {
+        const p = partnerOf(s, sib);
+        if (!p || p === k || !roomMates(s, k).includes(p)) return null;
+        const seen = today(s).find(e => FLIRTS.has(e.kind) && !e.extra?.secret && e.players.includes(p) && !e.players.includes(sib)
+          && e.players.some(n => n !== p && n !== k));
+        const about = seen?.players.find(n => n !== p);
+        return seen && !onceFor(s, `protect:${k}>${p}>${about}`) ? { players: [k, p, sib], extra: { of: kinGroup(kin), about } } : null;
+      }).filter(Boolean);
+      return pick(rng, opts);
+    },
+    apply: (s, ev) => {
+      const [k, p, sib] = ev.players;
+      markOnce(s, `protect:${k}>${p}>${ev.extra.about}`);
+      addBond(k, p, -1.2 - 0.06 * (10 - S(s, k).temperament));
+      jealousyHit(s, sib, p, ev.extra.about, 1);
+      return { pop: { ...pop1(k, 0.4, 1.5), ...pop1(p, -0.5, 1) } };
+    },
+  },
+  // Exes, in the same villa.
+  'ex-awkward': {
+    salience: 0.6,
+    cast: (s, rng) => {
+      const got = pick(rng, kinPairs(s).filter(([, , k]) => k === 'exes'));
+      if (!got) return null;
+      const [a, b] = got;
+      const spark = (attr(s, a, b) ?? 0) + (attr(s, b, a) ?? 0) > 10;
+      return { players: [a, b], extra: { of: spark ? 'spark' : 'cold' } };
+    },
+    apply: (s, ev) => {
+      const [a, b] = ev.players;
+      if (ev.extra.of === 'spark') { nudgeAttraction(s, a, b, 0.3); nudgeAttraction(s, b, a, 0.3); }
+      else { addBond(a, b, -0.3); feel(s, a, 'stress', 0.3); }
+      // Their partners notice.
+      for (const [x, y] of [[a, b], [b, a]]) { const p = partnerOf(s, x); if (p && ev.extra.of === 'spark') jealousyHit(s, p, x, y, 1); }
+      return { pop: { ...pop1(a, 0, 1.2), ...pop1(b, 0, 1.2) } };
+    },
+  },
+  // Watching an ex with someone new.
+  'ex-jealous': {
+    salience: 0.75,
+    cast: (s, rng) => {
+      const opts = kinPairs(s).filter(([, , k]) => k === 'exes').flatMap(([x, y]) => [[x, y], [y, x]])
+        .map(([a, ex]) => [a, ex, partnerOf(s, ex)]).filter(([a, ex, np]) => np && np !== a && (attr(s, a, ex) ?? 0) >= 4 && roomMates(s, a).includes(np) && !onceFor(s, `exj:${a}>${np}`));
+      const got = pick(rng, opts);
+      return got ? { players: got } : null;
+    },
+    apply: (s, ev) => {
+      const [a, ex, np] = ev.players;
+      markOnce(s, `exj:${a}>${np}`);
+      jealousyHit(s, a, ex, np, 1.2);
+      addBond(a, np, -0.5);
+      return { pop: { ...pop1(a, -0.1, 1.2) } };
+    },
+  },
   friendship: {
     salience: 0.2,
     cast: (s, rng) => {
@@ -473,6 +571,7 @@ export const KINDS = {
     // the dumping formats of Plan 4.5
     'dump-at-risk', 'dump-verdict-couple', 'dump-verdict-singles', 'group-entrance', 'final-recoupling', 'challenge-rules', 'date-text', 'date-picked', 'date-back',
     'final-date', 'journey-open', 'journey-clip', 'journey-react', 'journey-end', 'speech',
+    'pair-text', 'kin-entrance', 'kin-goodbye', 'kin-walk',
     // the arrivals of Plan 4.5 phase 2
     'stand-up', 'nobody-stands', 'stand-up-pick', 'save-setup', 'bombshell-save', 'public-match',
     'profile-pick', 'public-couple', 'ranking-couple', 'step-reveal', 'step-choose', 'step-back', 'icebreaker', 'kiss-pick', 'lady-luck-kiss', 'lady-luck-pick',
@@ -533,6 +632,26 @@ const ENDINGS = {
     return 'thanks';
   },
 };
+
+// The relations' scenes, by the part of the day (pm/kin.js).
+const KIN_PHASE_KINDS = {
+  morning: [['kin-heart', 0.5]],
+  day: [['kin-heart', 0.5], ['kin-vet', 0.8], ['kin-protect', 1], ['ex-awkward', 0.6], ['ex-jealous', 0.6]],
+  evening: [['kin-heart', 0.4], ['kin-protect', 0.8], ['ex-jealous', 0.6]],
+};
+// Episodes a kind rests after it airs: 0 is every episode at most once.
+const KIN_GAP = { 'kin-heart': 1, 'kin-vet': 0, 'kin-protect': 1, 'ex-awkward': 1, 'ex-jealous': 0 };
+const KIN_KINDS = new Set(Object.keys(KIN_GAP));
+// What only happens once between the same people: sizing up a partner, the
+// ex's new partner, a flirt answered for.
+const onceFor = (s, tag) => (s.kinOnce ||= []).includes(tag);
+const markOnce = (s, tag) => { (s.kinOnce ||= []).push(tag); };
+/** The pairs with a relation, both in the villa and in the same room. */
+function kinPairs(s) {
+  return Object.entries(s.kin || {}).map(([k, kin]) => [...k.split('|'), kin])
+    .filter(([a, b]) => s.villa.includes(a) && s.villa.includes(b) && roomMates(s, a).includes(b));
+}
+const kinGroup = kin => (BLOOD.has(kin) ? 'family' : 'friends');
 
 export const PHASE_KINDS = {
   // The small slots (a morning pull, an evening chat or joke) are there for
@@ -673,7 +792,10 @@ export function generateEpisodeEvents(state, rng, budgets = PHASE_BUDGETS) {
     state.phase = phase;
     const seenPhase = {};
     // Casa nights are temptation nights: pulls weigh double while split.
-    const kinds = PHASE_KINDS[phase].map(([k, w]) => [k, k === 'pull' && state.split ? w * 2 : w]);
+    // The relations' own scenes join the day only in a season that has
+    // relations: a cast without them plays exactly as it always did.
+    const kinds = [...PHASE_KINDS[phase], ...(Object.keys(state.kin || {}).length ? KIN_PHASE_KINDS[phase] || [] : [])]
+      .map(([k, w]) => [k, k === 'pull' && state.split ? w * 2 : w]);
     let made = 0, tries = 0;
     // Eight tries a slot: the same-cast cap turns some draws away, and four
     // left the thinnest episode at 75 scenes (91 before the cap).
@@ -686,6 +808,15 @@ export function generateEpisodeEvents(state, rng, budgets = PHASE_BUDGETS) {
       const realKind = Array.isArray(got) ? kind : (got.kind || kind);
       const key = realKind + '|' + [...players].sort().join('+');
       if ((seenPhase[key] || 0) >= PER_PHASE || (seenEp[key] || 0) >= PER_EPISODE) continue;
+      // A relation's scene, once an episode per kind (season 41 with four
+      // relations drew 52 kin-protects and 50 kin-hearts from pools of five).
+      // Once an episode per kind is still one sibling moment every night:
+      // each kind then rests the episodes KIN_GAP gives it.
+      if (KIN_KINDS.has(realKind)) {
+        const last = (state.kinLastEp ||= {})[realKind];
+        if (last != null && state.ep - last <= KIN_GAP[realKind]) continue;
+        state.kinLastEp[realKind] = state.ep;
+      }
       seenPhase[key] = (seenPhase[key] || 0) + 1;
       seenEp[key] = (seenEp[key] || 0) + 1;
       const extra = Array.isArray(got) ? {} : { secret: got.secret, ...(got.extra || {}) };

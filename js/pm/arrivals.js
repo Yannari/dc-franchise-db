@@ -16,12 +16,15 @@ import { closedness } from './ladder.js';
 import { breakHeart, feel, jealousOf, jealousyHit } from './emotions.js';
 import { addRelationshipDimension } from '../relationships.js';
 import { streamFor } from '../dr/rng.js';
+import { seedKinAttraction, kinFor, kinGroup, onYourSide } from './kin.js';
 
 export function arriveIslander(state, name, { ep, seed, room = 'villa' }) {
   if (!state.villa.includes(name)) state.villa.push(name);
   if (room === 'casa' && !state.casa.includes(name)) state.casa.push(name);
   noteArrival(state.ledger, name, ep);
   seedAttraction(state, name, seed);
+  // An ex, or a partner they came in with, is not a stranger (pm/kin.js).
+  seedKinAttraction(state, name);
 }
 
 export function eyesOnFor(state, name) {
@@ -90,6 +93,43 @@ function bombshellDates(state, rng, name, dates) {
       extra: { of: keen ? 'keen' : 'loyal', pop: { [t]: { approval: keen ? -0.3 : 0.3, fame: 0.8 } } } }));
   }
   return out;
+}
+
+/**
+ * TWO WHO WALK IN TOGETHER (user: "do that twin twist bombshell"): a pair
+ * the cast's Relationships tab says belong together — twins, siblings, best
+ * friends — arrives as one entrance, the way Jess and Eve Gale did on UK 6:
+ * "introduced as a pair, but technically separate contestants who would
+ * separately couple up". One text for the two of them, both their tapes, the
+ * walk down the steps side by side, the faces, and a date each (never the
+ * same islander).
+ */
+export function arrivePair(state, names, { ep, seed, rng, kin }) {
+  const before = state.villa.filter(n => !names.includes(n) && !(state.split && state.casa.includes(n)));
+  for (const n of names) arriveIslander(state, n, { ep, seed });
+  const eyes = names.map(n => {
+    const e = eyesOnFor(state, n).filter(x => !names.includes(x));
+    state.profiles[n].eyesOnResolved = e;
+    return e;
+  });
+  const events = [];
+  if (before.length) {
+    const reader = pickOne(rng, before);
+    const next = pickOne(rng, before.filter(n => n !== reader)) || null;
+    events.push(makeEvent(state, rng, { phase: 'event', kind: 'pair-text', players: next ? [reader, next] : [reader], aired: true,
+      extra: { pop: { [reader]: { approval: 0, fame: 0.5 } } } }));
+  }
+  for (const n of names) events.push(makeEvent(state, rng, { phase: 'event', kind: 'intro', players: [n], aired: true,
+    extra: { parts: introParts(state, n, rng), pop: { [n]: { approval: 0.2, fame: 1 } } } }));
+  events.push(makeEvent(state, rng, { phase: 'event', kind: 'kin-entrance', players: [...names], aired: true, major: [...names],
+    extra: { of: kinGroup(kin), pop: Object.fromEntries(names.map(n => [n, { approval: 0.6, fame: 3.5 }])) } }));
+  events.push(...bombshellReactions(state, rng, names[0], before));
+  // A date each, and not the same islander twice.
+  const first = eyes[0][0] || null;
+  const second = eyes[1].find(x => x !== first) || null;
+  if (first) events.push(...bombshellDates(state, rng, names[0], [first]));
+  if (second) events.push(...bombshellDates(state, rng, names[1], [second]));
+  return { events };
 }
 
 const pickOne = (rng, xs) => xs[Math.floor(rng() * xs.length)];
@@ -376,6 +416,10 @@ export function introParts(state, a, rng) {
   const looks = p.type?.looks || [], vibes = p.type?.vibes || [];
   const pickOf = xs => xs[Math.floor(rng() * xs.length)];
   parts.push(looks.length && (!vibes.length || rng() < 0.6) ? ['intro-look', pickOf(looks)] : ['intro-vibe', pickOf(vibes) || 'funny']);
+  // Somebody they already know is in the cast (the Relationships tab): the
+  // tape says so, as twins' and best friends' tapes do.
+  const known = kinFor(state, a).find(k => onYourSide(k.kin) || k.kin === 'exes');
+  if (known) parts.push(['intro-kin', kinGroup(known.kin)]);
   if (p.eyesOn?.length) parts.push(['intro-eyes', 'set']);
   else if (p.ex) parts.push(['intro-ex', 'set']);
   else {

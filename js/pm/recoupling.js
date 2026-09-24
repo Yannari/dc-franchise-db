@@ -10,6 +10,8 @@
 import { attr } from './chemistry.js';
 import { romance, friendship, believed } from './feelings.js';
 import { partnerOf } from './events.js';
+import { kinFor, onYourSide } from './kin.js';
+import { getBond } from '../bonds.js';
 
 // How much each intent weighs connection, attraction and safety.
 export const INTENT_WEIGHTS = {
@@ -42,8 +44,12 @@ function desire(state, p, c, { rng, taken }) {
   const stealCost = taken.has(c) ? 0.4 - 0.3 * s.boldness / 10 : 0;
   const archConn = prof.archetype === 'showmancer' ? 1.15 : 1;
   const archSafe = prof.archetype === 'villain' || prof.archetype === 'schemer' ? 1.3 : 1;
+  // A sister's (or a best friend's) opinion of the one they are picking:
+  // small, and in proportion to how the relative gets on with them.
+  const family = kinFor(state, p).filter(k => onYourSide(k.kin) && state.villa.includes(k.other) && k.other !== c)
+    .reduce((t, k) => t + 0.02 * getBond(k.other, c), 0);
   return w.conn * conn * archConn + w.attr * att + w.safe * safety * archSafe
-    + stay - stealCost + (rng() - 0.5) * 0.2;
+    + stay - stealCost + family + (rng() - 0.5) * 0.2;
 }
 
 /**

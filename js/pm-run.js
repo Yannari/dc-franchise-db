@@ -20,7 +20,7 @@
 // IMPORTING THIS MODULE IS THE WIRING: it sets `window._pmRunnable`, which
 // `formatIsRunnable()` reads. Drop the import from js/main.js and the show
 // silently un-ships with every test still green.
-import { gs, setGs, players, seasonConfig, seasonFormat, twistsForFormat } from './core.js';
+import { gs, setGs, players, seasonConfig, seasonFormat, twistsForFormat, relationships } from './core.js';
 import { PERFECT_MATCH_FORMAT } from './shows.js';
 import { playPerfectMatchSeason, perfectMatchScheduleFor } from './pm/season.js';
 import { assignRoles, buildSchedule, withPicks, withBookings } from './pm/schedule.js';
@@ -87,6 +87,14 @@ export function perfectMatchCastProblem(cast = (players || []).map(p => p.name).
  * seed the formats are not drawn yet — only the shape is known. The run tab's
  * timeline, the cast panel and the pick menus all read this one answer.
  */
+/** How many walk in on each bombshell night, by its place among them ({ 2: 3 }), from the Season Timeline. */
+export function perfectMatchArrivalCounts() {
+  const c = seasonConfig.pmArrivalCounts;
+  if (!c || typeof c !== 'object') return null;
+  const out = Object.fromEntries(Object.entries(c).filter(([k, v]) => Number(k) >= 1 && Number(v) >= 1).map(([k, v]) => [k, Number(v)]));
+  return Object.keys(out).length ? out : null;
+}
+
 export function perfectMatchSeasonShape() {
   const saved = Array.isArray(gs?.pm?.castOrder) && gs.pm.castOrder.length ? gs.pm.castOrder : null;
   const cast = saved || (players || []).map(p => p.name).filter(Boolean);
@@ -94,10 +102,12 @@ export function perfectMatchSeasonShape() {
   const roles = perfectMatchRoles(cast, setup);
   const count = r => roles.filter(x => x === r).length;
   const episodes = Number(seasonConfig.pmEpisodes) > 0 ? Number(seasonConfig.pmEpisodes) : null;
-  const shape = { bombshells: count('bombshell'), casa: count('casa'), episodes };
+  const shape = { bombshells: count('bombshell'), casa: count('casa'), episodes, counts: perfectMatchArrivalCounts() };
   const seed = gs?.pm?.seed;
   const schedule = seed ? perfectMatchScheduleFor(seed, shape) : buildSchedule(shape);
   return { ...shape, starters: count('starter'), auto: buildSchedule({ ...shape, episodes: null }).length,
+    // What the nights would be with nobody's counts: the timeline's "as scheduled".
+    plain: buildSchedule({ ...shape, counts: null }),
     schedule: withBookings(withPicks(schedule, perfectMatchPicks()), perfectMatchBookings()) };
 }
 
@@ -240,7 +250,7 @@ export function perfectMatchEpisodes() {
   const roles = perfectMatchRoles(cast, perfectMatchSetup());
   const episodes = Number(seasonConfig.pmEpisodes) > 0 ? Number(seasonConfig.pmEpisodes) : null;
   return buildSchedule({ bombshells: roles.filter(r => r === 'bombshell').length,
-    casa: roles.filter(r => r === 'casa').length, episodes });
+    casa: roles.filter(r => r === 'casa').length, episodes, counts: perfectMatchArrivalCounts() });
 }
 
 /** Which episode is which vote slot, for this cast and length (picks do not move them). */
@@ -250,7 +260,7 @@ export function perfectMatchSlots() {
   const roles = perfectMatchRoles(cast, perfectMatchSetup());
   const episodes = Number(seasonConfig.pmEpisodes) > 0 ? Number(seasonConfig.pmEpisodes) : null;
   return buildSchedule({ bombshells: roles.filter(r => r === 'bombshell').length,
-    casa: roles.filter(r => r === 'casa').length, episodes }).filter(e => e.slot);
+    casa: roles.filter(r => r === 'casa').length, episodes, counts: perfectMatchArrivalCounts() }).filter(e => e.slot);
 }
 
 // ── NOTHING IS DECIDED UNTIL IT AIRS ──────────────────────────────────
@@ -281,6 +291,11 @@ function _inputs() {
     roleCounts: { ...(seasonConfig.pmRoleCounts || {}) },
     // The author's length, or null for automatic (from the cast).
     episodes: Number(seasonConfig.pmEpisodes) > 0 ? Number(seasonConfig.pmEpisodes) : null,
+    // How many walk in on each bombshell night (the Season Timeline).
+    arrivalCounts: perfectMatchArrivalCounts(),
+    // Who knew whom before the villa (Setup → Relationships): an edit there
+    // rebuilds the season like any other input.
+    relationships: (relationships || []).filter(Boolean).map(({ a, b, kin, bond }) => [a, b, kin || '', Number(bond) || 0]),
   };
 }
 const _sig = inputs => JSON.stringify(inputs);
@@ -326,7 +341,8 @@ function _build(inputs, rerolls) {
   let result, inner;
   try {
     result = playPerfectMatchSeason({ cast, setup: resolved, seed, picks: inputs.picks, bookings: inputs.bookings || {}, rerolls,
-      splitOrStealOn: inputs.splitOrStealOn, dialect: inputs.dialect, episodes: inputs.episodes, firstIn: inputs.firstIn });
+      splitOrStealOn: inputs.splitOrStealOn, dialect: inputs.dialect, episodes: inputs.episodes, firstIn: inputs.firstIn,
+      arrivalCounts: inputs.arrivalCounts });
     inner = gs;
   } finally { setGs(outer); }
   return { cast, resolved, seed, rows: inner.episodeHistory || [], winners: result.winners || [], inner };

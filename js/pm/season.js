@@ -112,7 +112,7 @@ function villaDayEvents(state, rng, entry, seed) {
  * the new night the way it would have from any night.
  */
 export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = null, picks = {}, bookings = {}, rerolls = {},
-  splitOrStealOn = false, dialect = 'uk', episodes = null, firstIn = 'f', kinship = null } = {}) {
+  splitOrStealOn = false, dialect = 'uk', episodes = null, firstIn = 'f', kinship = null, arrivalCounts = null } = {}) {
   setGs({ bonds: {}, perceivedBonds: {}, relationshipDimensions: {}, activePlayers: [],
     episodeHistory: [], popularity: {} });
   const state = initState(cast, setup, seed);
@@ -126,7 +126,7 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
   const queues = queuesFor(state, cast);
   // Every bombshell and Casa arrival the author cast gets a night to walk in.
   schedule = schedule || withBookings(withPicks(perfectMatchScheduleFor(seed,
-    { bombshells: queues.bombshell.length, casa: queues.casa.length, episodes }), picks), bookings);
+    { bombshells: queues.bombshell.length, casa: queues.casa.length, episodes, counts: arrivalCounts }), picks), bookings);
   schedule = resolveRandomGames(schedule, streamFor(seed, 'random-games'));
   let final = null;
 

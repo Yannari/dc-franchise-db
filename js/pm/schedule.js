@@ -98,6 +98,8 @@ export function assignRoles(fixed, counts = {}) {
 // a slot's `cap` is how many walk in there at most.
 const BASE_BOMBSHELLS = 6;   // the arrival slots of the calibration season
 const MAX_EPISODES = 40;
+// The most the author may send in on one bombshell night (Season Timeline).
+export const MAX_PER_NIGHT = 4;
 
 function baseWeeks(casa) {
   const pre = [
@@ -156,8 +158,16 @@ function insertWeek(weeks, week, pre) {
 /**
  * The season's episodes for a cast of `bombshells` and `casa` arrivals.
  * `episodes` (optional) is the author's length; otherwise it is automatic.
+ * `counts` (optional) is how many walk in on the Nth bombshell night
+ * ({ 2: 3 }: three on the second), set on the Season Timeline (user: "the
+ * option to choose the number of bombshells entering, and the timeline adapts
+ * with it"). More on a night empties the LAST bombshell nights, which drop
+ * out; fewer sends the rest to new bombshell weeks before the last vote, as a
+ * big cast's extra weeks go. Keyed by the night's place among the bombshell
+ * nights, not its episode: that place survives every re-flow, because the
+ * running order only ever loses nights at its end and gains them after it.
  */
-export function buildSchedule({ bombshells = BASE_BOMBSHELLS, casa = 6, episodes = null } = {}) {
+export function buildSchedule({ bombshells = BASE_BOMBSHELLS, casa = 6, episodes = null, counts = null } = {}) {
   const weeks = baseWeeks(casa);
   // More bombshells than the calibration season has slots for: a week each
   // pair — a bombshell night, then a recoupling — alternating before and
@@ -178,9 +188,20 @@ export function buildSchedule({ bombshells = BASE_BOMBSHELLS, casa = 6, episodes
     if (pre) { insertWeek(weeks, dump, true); insertWeek(weeks, bomb, true); }
     else { insertWeek(weeks, bomb, false); insertWeek(weeks, dump, false); }
   }
-  // Fill the arrival slots in running order.
+  // Fill the arrival slots in running order, the author's counts first.
+  const want = new Map(Object.entries(counts || {}).map(([k, v]) => [Number(k), Math.round(Number(v))])
+    .filter(([k, v]) => k >= 1 && v >= 1).map(([k, v]) => [k, Math.min(MAX_PER_NIGHT, v)]));
   let left = bombshells;
-  for (const w of weeks) if (w.cap) { w.arrive = Math.min(w.cap, left); left -= w.arrive; }
+  for (let guard = 0; guard < 40; guard++) {
+    let nth = 0;
+    for (const w of weeks) if (w.moment === 'bombshell') { nth++; if (want.has(nth)) w.cap = want.get(nth); }
+    left = bombshells;
+    for (const w of weeks) if (w.cap) { w.arrive = Math.min(w.cap, left); left -= w.arrive; }
+    if (left <= 0) break;
+    // Not enough room left: another bombshell night and a dumping after it.
+    insertWeek(weeks, { moment: 'bombshell', cap: 2, extra: true }, casa === 0);
+    insertWeek(weeks, { moment: 'recoupling', extra: true }, casa === 0);
+  }
   // A bombshell night nobody arrives on is not an episode.
   let out = weeks.filter(w => !(w.moment === 'bombshell' && !w.arrive));
 

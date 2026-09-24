@@ -1993,6 +1993,60 @@ let _pmNoticeShown = null;
  * draws the same way when it plays (user: "I don't know when to schedule a
  * twist — should we have a preset?").
  */
+/**
+ * Where every villa booking lands after the season's shape changes (user: "I
+ * want the season timeline to always adapt with every twist and modification
+ * I do"). A booking is on a night, not a number: the same night in the new
+ * schedule is the same kind of week at the same place — counted from the end
+ * through the stretch both schedules end with (the last vote, the final
+ * recoupling, the couples' week, the final), and from the start before it.
+ * A night that no longer exists takes its bookings with it.
+ */
+function _pmRemapBookings(before, after) {
+  let tail = 0;
+  while (tail < before.length && tail < after.length
+    && before[before.length - 1 - tail].moment === after[after.length - 1 - tail].moment) tail++;
+  const keys = list => {
+    const seen = {};
+    return list.map((e, i) => {
+      if (i >= list.length - tail) return `end#${list.length - i}`;
+      seen[e.moment] = (seen[e.moment] || 0) + 1;
+      return `${e.moment}#${seen[e.moment]}`;
+    });
+  };
+  const oldKey = new Map(before.map((e, i) => [e.ep, keys(before)[i]]));
+  const newEp = new Map(after.map((e, i) => [keys(after)[i], e.ep]));
+  const mine = new Set(TWIST_CATALOG.filter(t => t.format === 'perfect-match').map(t => t.id));
+  seasonConfig.twistSchedule = (seasonConfig.twistSchedule || []).flatMap(b => {
+    if (!b || !mine.has(b.type)) return [b];
+    const to = newEp.get(oldKey.get(Number(b.episode)));
+    return to ? [{ ...b, episode: to }] : [];
+  });
+}
+
+/**
+ * The villa tile's bombshell count (user: "make the double bombshell a
+ * schedulable twist too, just the option to choose the number of bombshells
+ * entering"): '' is the season's own, 1 to 4 pins it. The season re-flows —
+ * more tonight empties the last bombshell nights, fewer adds new ones — and
+ * every booking follows its night.
+ */
+export function pmSetArrivals(ep, value) {
+  const before = perfectMatchEpisodes();
+  const nth = before.filter(e => e.moment === 'bombshell' && e.ep <= Number(ep)).length;
+  if (!nth || before.find(e => e.ep === Number(ep))?.moment !== 'bombshell') return;
+  const counts = { ...(seasonConfig.pmArrivalCounts || {}) };
+  if (value) counts[nth] = Number(value); else delete counts[nth];
+  seasonConfig.pmArrivalCounts = counts;
+  _pmRemapBookings(before, perfectMatchEpisodes());
+  // A count for a night past the last one left is nobody's: dropped.
+  const left = perfectMatchEpisodes().filter(e => e.moment === 'bombshell').length;
+  for (const k of Object.keys(counts)) if (Number(k) > left) delete counts[k];
+  seasonConfig.pmArrivalCounts = counts;
+  localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
+  renderTimeline();
+}
+
 /** The villa tile's challenge picker: '' as drawn, 'random', an id, or 'none'. */
 export function pmSetChallenge(ep, value) {
   // The cards that book a villa challenge say so themselves (pmApply.challenge).
@@ -3845,7 +3899,11 @@ export function renderTimeline() {
   // THE VILLA'S NIGHTS. Every villa episode is a known moment — a
   // recoupling, a bombshell, a vote — so the tile says which, how many walk
   // in, and on a vote night what a dumping booked here would decide.
-  const _pmEps = isPerfectMatchSeason() ? new Map(perfectMatchSeasonShape().schedule.map(e => [e.ep, e])) : null;
+  const _pmShape = isPerfectMatchSeason() ? perfectMatchSeasonShape() : null;
+  const _pmEps = _pmShape ? new Map(_pmShape.schedule.map(e => [e.ep, e])) : null;
+  // Each bombshell night's place among them, and what it takes with nobody's count on it.
+  const _pmBombNth = _pmShape ? new Map(_pmShape.schedule.filter(e => e.moment === 'bombshell').map((e, i) => [e.ep, i + 1])) : null;
+  const _pmPlainBomb = _pmShape ? _pmShape.plain.filter(e => e.moment === 'bombshell').map(e => e.arrivals?.bombshell || 0) : null;
   // What each night does to the villa (arrivals, dumpings, walk-outs), from
   // the season the badge counts — a still number said nothing about either.
   const _pmNights = _pmEps ? perfectMatchNights() : null;
@@ -4299,9 +4357,23 @@ export function renderTimeline() {
           ${Object.entries(PM_CHALLENGE_NAMES).map(([id, n]) => opt(id, n)).join('')}${opt('none', 'No challenge')}
         </select></label>`;
     }
-    const villaRow = _pmEp && (_pmArr || _pmDraws || _pmLeft.length || _pmGame)
+    // How many walk in tonight: the season's own, or the author's (1 to 4).
+    let _pmCount = '';
+    if (_pmEp?.moment === 'bombshell') {
+      const nth = _pmBombNth.get(ep);
+      const set = seasonConfig.pmArrivalCounts?.[nth];
+      const auto = _pmPlainBomb[nth - 1] || 1;
+      const WORD = { 1: 'one bombshell', 2: 'double bombshell', 3: 'triple bombshell', 4: 'four bombshells' };
+      const opt = (v, label) => `<option value="${v}" ${String(v) === String(set ?? '') ? 'selected' : ''}>${_hubEsc(label)}</option>`;
+      _pmCount = `<label onclick="event.stopPropagation()" style="display:flex;align-items:center;gap:6px;flex:1 1 100%;min-width:0;color:#f59e0b;font-weight:700">Bombshells
+        <select onchange="event.stopPropagation();pmSetArrivals(${ep},this.value)" onclick="event.stopPropagation()" title="How many walk in tonight. The rest of the season re-flows around it." style="flex:1 1 0;min-width:0;width:100%;font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(245,158,11,0.4);border-radius:3px;padding:1px 2px;text-overflow:ellipsis">
+          ${opt('', `As scheduled: ${auto}`)}${[1, 2, 3, 4].map(n => opt(n, `${n} — ${WORD[n]}`)).join('')}
+        </select></label>`;
+    }
+    const villaRow = _pmEp && (_pmArr || _pmDraws || _pmLeft.length || _pmGame || _pmCount)
       ? `<div class="fd-ep-comps" style="display:flex;gap:6px;flex-wrap:wrap;min-width:0;margin-top:5px;padding-top:5px;border-top:1px solid rgba(224,70,124,0.18);font-size:10.5px;color:var(--muted,#7d8590)">
           ${_pmArr ? `<span style="color:#f59e0b;font-weight:700">+${_pmArr} arriving</span>` : ''}
+          ${_pmCount}
           ${_pmLeft.map(s => `<span style="color:#e0467c;font-weight:700">${_hubEsc(s)}</span>`).join('')}
           ${_pmGame}
           ${_pmEp.slot ? `<span>${_hubEsc(PM_SLOT_NAMES[_pmEp.slot] || 'an extra public vote')}${_pmBooked ? '' : ' · drawn at random'}</span>`

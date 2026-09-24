@@ -51,7 +51,7 @@ export const KIND_LABEL = {
   'sports-captains': 'The captains', 'sports-win': 'Sports Day winners', 'sports-sore': 'Sore losers', headline: 'The headline',
   blowup: 'It kicks off', 'pile-in': 'Taking sides', 'villa-divided': 'The villa divided', 'cold-shoulder': 'The cold shoulder', 'clear-the-air': 'Clearing the air',
   'bed-share': 'Lights out', vent: 'Letting off steam', apology: 'The apology', reunite: 'Back together', 'apology-rejected': 'Not this time',
-  steal: 'A steal', 'recouple-pick': 'The recoupling', 'dump-buildup': 'At risk', 'dump-verdict': 'Dumped',
+  steal: 'A steal', 'final-recoupling': 'The final recoupling', 'recouple-pick': 'The recoupling', 'dump-buildup': 'At risk', 'dump-verdict': 'Dumped',
   'ballot-reveal': 'The vote', 'dump-reaction': 'The reaction', 'dump-goodbye': 'Goodbye', 'dump-fallout': 'Fallout',
   'casa-return': 'Stick or twist', photos: 'The photos', declaration: 'The declaration', 'final-result': 'The result',
   envelope: 'The envelope', walk: 'Leaving the villa', reveal: "What you didn't see", 'close-off': 'Closing off',

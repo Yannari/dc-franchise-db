@@ -2031,7 +2031,7 @@ function _randomizeVilla() {
   renderTwistCatalog();
 }
 // An extra vote in a big cast has no catalogue twist of its own: it draws.
-const DUMP_SLOT_OK = slot => slot === 'vote1' || slot === 'vote2' || slot === 'semi';
+const DUMP_SLOT_OK = slot => slot === 'vote1' || slot === 'vote2' || slot === 'vote-post' || slot === 'vote3' || slot === 'semi';
 
 function _replayVillaEpisode(epNum) {
   const laterEps = (gs.episodeHistory || []).filter(e => e.num > epNum);
@@ -4212,7 +4212,7 @@ export function renderTimeline() {
     // Drama, and left alone it would print a meaningless PRE on every night.
     const _pmEp = _pmEps?.get(ep) || null;
     // …and the night's set piece, so Movie Night and the rest are on the map.
-    const phaseLabel  = _pmEp ? [PM_EPISODE_WORDS[_pmEp.moment] || '', ...(_pmEp.rituals || []).map(r => PM_RITUAL_NAMES[r] || r)].filter(Boolean).join(' · ').toUpperCase()
+    const phaseLabel  = _pmEp ? [(_pmEp.finalRecoupling ? 'Final recoupling' : PM_EPISODE_WORDS[_pmEp.moment]) || '', ...(_pmEp.rituals || []).map(r => PM_RITUAL_NAMES[r] || r)].filter(Boolean).join(' · ').toUpperCase()
       : isTraitorsSeason() ? ''
       : phase === 'ri-duel' ? 'RI DUEL' : phase === 'finale' ? '' : phase === 'pre-merge' ? 'PRE' : 'POST';
 

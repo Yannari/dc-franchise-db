@@ -43,7 +43,7 @@ describe('the builder', () => {
     }
   });
   it("the author's length is kept, within the spine's minimum", () => {
-    for (const episodes of [11, 14, 20, 27]) expect(buildSchedule({ bombshells: 6, casa: 6, episodes }).length).toBe(episodes);
+    for (const episodes of [13, 14, 20, 27]) expect(buildSchedule({ bombshells: 6, casa: 6, episodes }).length).toBe(episodes);
     expect(buildSchedule({ bombshells: 6, casa: 6, episodes: 3 }).length).toBe(minimumEpisodes(6));
   });
   it('a bigger cast makes a longer season, a smaller one a shorter', () => {

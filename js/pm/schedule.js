@@ -11,7 +11,7 @@
 // then packed into fewer episodes, or quiet recoupling weeks added.
 //
 // THE CALIBRATION CASE. The default 22-islander cast (10 starters, 6
-// bombshells, 6 Casa arrivals) builds EXACTLY the sixteen episodes the season
+// bombshells, 6 Casa arrivals) builds EXACTLY the nineteen episodes the season
 // was tuned on — SEASON_TEMPLATE below, which tests/pm-schedule.test.js holds
 // the builder to. Everything else is that season stretched or shrunk.
 //
@@ -31,10 +31,13 @@ export const SEASON_TEMPLATE = [
   { ep: 10, days: [27, 28], moment: 'stick-or-twist' },
   { ep: 11, days: [29, 31], moment: 'photos', arrivals: { bombshell: 1 }, rituals: ['movie-night'] },
   { ep: 12, days: [32, 34], moment: 'public-vote', slot: 'vote2', dumpFormat: 'safe-pick-couple', bottom: 3 },
-  { ep: 13, days: [35, 37], moment: 'recoupling', arrivals: { bombshell: 1 }, rituals: ['notes'], keepSingles: true },
-  { ep: 14, days: [38, 40], moment: 'semi-final', slot: 'semi', rituals: ['families'] },
-  { ep: 15, days: [41, 43], moment: 'final' },
-  { ep: 16, days: null, moment: 'reunion' },
+  { ep: 13, days: [35, 37], moment: 'recoupling' },
+  { ep: 14, days: [38, 40], moment: 'public-vote', slot: 'vote-post', dumpFormat: 'safe-pick-couple', bottom: 3 },
+  { ep: 15, days: [41, 43], moment: 'recoupling', arrivals: { bombshell: 1 }, rituals: ['notes'], finalRecoupling: true },
+  { ep: 16, days: [44, 46], moment: 'public-vote', slot: 'vote3', coupled: true },
+  { ep: 17, days: [47, 49], moment: 'semi-final', slot: 'semi', rituals: ['families'], coupled: true },
+  { ep: 18, days: [50, 52], moment: 'final' },
+  { ep: 19, days: null, moment: 'reunion' },
 ];
 export const FINAL_COUPLES = 4;
 /** The day the final ends on, as the real series (UK: 56-59 days). */
@@ -115,18 +118,36 @@ function baseWeeks(casa) {
   // With no Casa there are no photos to show: Movie Night moves to the vote.
   const post = [
     { moment: 'public-vote', slot: 'vote2', fixed: true, ...(casa > 0 ? {} : { rituals: ['movie-night'] }) },
+    // Two more villa weeks between Casa Amor and the final recoupling, as the
+    // real show has (UK 11: Casa ended day 30, the final recoupling was day
+    // 44, with three dumpings between). Without them the villa came out of
+    // Casa with eight couples and had one vote to lose four of them in.
+    // The extra weeks of a big cast go in before this vote, so it is always
+    // the last night before the final recoupling and sees the villa as that
+    // recoupling will find it.
+    { moment: 'recoupling', postCasa: true },
+    { moment: 'public-vote', slot: 'vote-post', fixed: true, anchorPost: true },
+    // THE FINAL RECOUPLING. Everyone left single goes home, however many that
+    // is, and from here the villa is couples only: each night after it sends
+    // one couple home until four are left (user: "the 2 weeks before the
+    // finale everybody is coupled and always a couple eliminated"). The wiki
+    // agrees — UK 10 recoupled on day 44, then dumped a couple on days 52 and
+    // 56; UK 11 recoupled on day 44, then dumped a couple on 49, 52 and 54.
+    // It used to keep its singles for the semi-final, which then sent seven
+    // home in one night (season 31: three singles and two couples).
     // Without Casa the photos' arrival slot is gone, so this night takes two.
-    { moment: 'recoupling', cap: casa > 0 ? 1 : 2, rituals: ['notes'], keepSingles: true, fixed: true, anchorPost: true },
+    { moment: 'recoupling', cap: casa > 0 ? 1 : 2, rituals: ['notes'], finalRecoupling: true, fixed: true },
+    { moment: 'public-vote', slot: 'vote3', coupled: true, fixed: true },
   ];
   const end = [
-    { moment: 'semi-final', slot: 'semi', rituals: ['families'], fixed: true },
+    { moment: 'semi-final', slot: 'semi', rituals: ['families'], coupled: true, fixed: true },
     { moment: 'final', fixed: true },
     { moment: 'reunion', fixed: true, days: 0 },
   ];
   return [...pre, ...casaWeeks, ...post, ...end];
 }
 
-/** Insert `week` before the anchor (pre-Casa or the last recoupling), alternating. */
+/** Insert `week` before the anchor (pre-Casa, or the last vote before the final recoupling), alternating. */
 function insertWeek(weeks, week, pre) {
   const at = weeks.findIndex(w => (pre ? w.anchorPre : w.anchorPost));
   weeks.splice(at < 0 ? weeks.length - 3 : at, 0, week);
@@ -153,7 +174,7 @@ export function buildSchedule({ bombshells = BASE_BOMBSHELLS, casa = 6, episodes
     const bomb = { moment: 'bombshell', cap: 2, extra: true };
     // Both go in before the side's anchor, in the order that keeps the weeks
     // alternating: before Casa the anchor follows a bombshell night, so the
-    // dumping goes first; after it the anchor follows a vote, so the arrival does.
+    // dumping goes first; after it the anchor follows a recoupling, so the arrival does.
     if (pre) { insertWeek(weeks, dump, true); insertWeek(weeks, bomb, true); }
     else { insertWeek(weeks, bomb, false); insertWeek(weeks, dump, false); }
   }
@@ -202,12 +223,13 @@ export function buildSchedule({ bombshells = BASE_BOMBSHELLS, casa = 6, episodes
     if (len) e.calendar = [Math.round(day * k) + 1, Math.round((day + len) * k)];
     day += len;
     if (w.cap != null && w.arrive != null && (w.moment !== 'bombshell' || w.arrive)) {
-      if (w.arrive || w.moment === 'first-coupling' || w.moment === 'photos' || w.keepSingles) e.arrivals = { bombshell: w.arrive || 0 };
+      if (w.arrive || w.moment === 'first-coupling' || w.moment === 'photos' || w.finalRecoupling) e.arrivals = { bombshell: w.arrive || 0 };
     }
     if (w.moment === 'bombshell') e.arrivals = { bombshell: w.arrive };
     if (w.slot) e.slot = w.slot;
     if (w.rituals) e.rituals = [...w.rituals];
-    if (w.keepSingles) e.keepSingles = true;
+    if (w.finalRecoupling) e.finalRecoupling = true;
+    if (w.coupled) e.coupled = true;
     return e;
   });
 }
@@ -229,10 +251,12 @@ export function minimumEpisodes(casa = 6) {
 export const DUMP_DRAWS = {
   vote1: [['cross-gender', 3, 2], ['top-couple-picks', 3, 3], ['save-one', 2, 3], ['public', 1, 2]],
   vote2: [['safe-pick-couple', 2, 3], ['top-couple-picks', 3, 3], ['couples-vote', 2, 2], ['public', 2, 3]],
+  // The couples-only week: every format sends exactly one couple home.
+  vote3: [['safe-pick-couple', 2, 3], ['top-couple-picks', 3, 3], ['couples-vote', 2, 2], ['public', 2, 3]],
   semi: [['public', 1], ['ex-islanders', 1]],
 };
 // A big cast's extra public votes draw from the second vote's formats.
-const drawsFor = slot => DUMP_DRAWS[slot === 'vote-extra' ? 'vote2' : slot] || null;
+const drawsFor = slot => DUMP_DRAWS[slot === 'vote-extra' || slot === 'vote-post' ? 'vote2' : slot] || null;
 // What each episode is called on the Season Timeline, and its colour family.
 export const EPISODE_WORDS = { 'first-coupling': 'First coupling', recoupling: 'Recoupling', bombshell: 'Bombshell',
   'public-vote': 'Vote', 'casa-open': 'Casa opens', 'casa-nights': 'Casa Amor', 'stick-or-twist': 'Stick or twist',
@@ -244,7 +268,7 @@ export const EPISODE_KIND = { 'first-coupling': 'couple', recoupling: 'couple', 
 // movie night? there's no indication").
 export const RITUAL_NAMES = { 'heart-rate': 'Heart Rate', 'snog-marry-pie': 'Snog Marry Pie', 'movie-night': 'Movie Night',
   notes: 'The notes', families: 'The families' };
-export const SLOT_NAMES = { vote1: 'the first public vote', vote2: 'the second public vote', semi: 'the semi-final' };
+export const SLOT_NAMES = { vote1: 'the first public vote', vote2: 'the second public vote', 'vote-post': 'the third public vote', vote3: 'the vote before the semi-final', semi: 'the semi-final' };
 
 function draw(rng, options) {
   const total = options.reduce((s, o) => s + o[1], 0);
@@ -268,10 +292,14 @@ export const FIRST_DRAWS = [['step-forward', 5], ['profiles', 1], ['public', 1],
 // the same eight: returning islanders in 2 (UK 10, UK 12), the secret mission
 // in 1 (UK 13), the sleepover villa in 1 (UK 12), immunity in 1 (US 8).
 export const ONE_OFF_DRAWS = [
-  ['return', 0.3, e => (e.moment === 'bombshell' || e.moment === 'recoupling') && e.ep >= 4],
+  // Never on the final recoupling: a returning islander there walked into
+  // the couples-only week as a couple nobody had counted on.
+  ['return', 0.3, e => (e.moment === 'bombshell' || e.moment === 'recoupling') && e.ep >= 4 && !e.finalRecoupling],
   ['mission', 0.15, e => e.moment === 'bombshell'],
   ['sleepover', 0.2, e => e.moment === 'bombshell' && (e.arrivals?.bombshell || 0) >= 2],
-  ['immunity', 0.25, e => e.moment === 'public-vote'],
+  // Not on the votes added after Casa Amor either: they came later, and
+  // offering them moved the immunity night seasons had already drawn.
+  ['immunity', 0.25, e => e.moment === 'public-vote' && !e.coupled && e.slot !== 'vote-post'],
 ];
 export const MAX_ONE_OFFS = 2;
 
@@ -328,12 +356,17 @@ const hasGame = e => (e.rituals || []).some(r => r === 'heart-rate' || r === 'sn
 
 /** The season's formats, drawn once from its own stream: same seed, same season. */
 export function seasonSchedule(rng, template = SEASON_TEMPLATE) {
+  const drawVote = e => {
+    const [dumpFormat, , bottom] = draw(rng, drawsFor(e.slot));
+    e.dumpFormat = dumpFormat;
+    if (bottom) e.bottom = bottom; else delete e.bottom;
+  };
+  // The votes added after Casa Amor draw at the very end (below): they came
+  // after every other draw, and moved none of them.
+  const late = e => e.slot === 'vote3' || e.slot === 'vote-post';
   const out = template.map(e => {
-    const opts = e.slot && drawsFor(e.slot);
-    if (!opts) return { ...e };
-    const [dumpFormat, , bottom] = draw(rng, opts);
-    const row = { ...e, dumpFormat };
-    if (bottom) row.bottom = bottom; else delete row.bottom;
+    const row = { ...e };
+    if (e.slot && drawsFor(e.slot) && !late(e)) drawVote(row);
     return row;
   });
   // The arrivals draw AFTER every vote, so adding them moved no season's
@@ -367,6 +400,7 @@ export function seasonSchedule(rng, template = SEASON_TEMPLATE) {
     if (!days.length) continue;
     days[Math.floor(where * days.length)].challenge = id;
   }
+  for (const e of out) if (late(e)) drawVote(e);
   return out;
 }
 

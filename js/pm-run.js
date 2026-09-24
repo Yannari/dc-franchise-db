@@ -180,13 +180,16 @@ export function perfectMatchVillaCounts() {
     const row = aired.get(e.ep);
     if (row) { count = (row.pm?.villa || []).length || count; return; }
     const ahead = shape.schedule.slice(i);
-    const nights = ahead.filter(x => (x.moment === 'recoupling' && !x.keepSingles) || x.moment === 'public-vote').length;
-    const pace = (count + bombsLeft - FINAL) / (nights + 1);
+    const coupledAhead = ahead.filter(x => x !== e && x.coupled).length;
+    const nights = ahead.filter(x => !x.coupled && (x.moment === 'recoupling' || x.moment === 'public-vote')).length;
+    const pace = (count + bombsLeft - FINAL - 2 * coupledAhead) / Math.max(1, nights);
     const before = count;
     if (e.moment === 'stick-or-twist') count -= Math.round(shape.casa * 0.8);
-    else if (e.moment === 'recoupling' && !e.keepSingles && pace >= 0.5) count -= Math.max(1, Math.round(pace));
+    // The final recoupling takes every single; each night after it, one couple.
+    else if (e.finalRecoupling) count = Math.min(count, FINAL + 2 * coupledAhead);
+    else if (e.coupled) count = Math.min(count, Math.max(FINAL + 2 * coupledAhead, count - 2));
+    else if (e.moment === 'recoupling' && pace >= 0.5) count -= Math.max(1, Math.round(pace));
     else if (e.moment === 'public-vote' && pace >= 0.8) count -= Math.max(2, Math.round(pace));
-    else if (e.moment === 'semi-final') count = Math.min(count, FINAL);
     // A night never takes the villa below the final's four couples.
     if (before >= FINAL) count = Math.max(count, FINAL);
   });

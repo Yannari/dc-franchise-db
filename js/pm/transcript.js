@@ -26,6 +26,8 @@ export const PM_MOMENT_TITLE = { 'first-coupling': 'The first coupling', bombshe
 
 /** The episode's title from what PLAYED: a couples' vote has no public in it. */
 export function momentTitle(row, fallback = 'A day in the villa') {
+  if (row?.pm?.finalRecoupling) return 'The final recoupling';
+  if (row?.pm?.double) return 'A double dumping';
   if (row?.pm?.dumpFormat === 'couples-vote') return 'The villa votes';
   if (row?.pm?.dumpFormat === 'singles') return 'The singles face the public';
   // A vote night the villa could not spare anyone on plays as a villa day.

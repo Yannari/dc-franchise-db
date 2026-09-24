@@ -71,7 +71,7 @@ export function pickReason(state, p, c) {
  * the picking side then chooses from who is left. The first coupling has no
  * last recoupling, so it plays exactly as it always did.
  */
-export function runRecoupling(state, { rng, pickerGender }) {
+export function runRecoupling(state, { rng, pickerGender, repick = false }) {
   const room = state.villa.filter(n => !(state.split && state.casa.includes(n)));
   const last = state.lastRecoupleEp;
   const fresh = last == null ? [] : shuffle(rng, room.filter(n => (state.ledger.firstEp?.[n] ?? 0) > last
@@ -83,7 +83,15 @@ export function runRecoupling(state, { rng, pickerGender }) {
   const picks = [];
   const ctx = { rng, taken };
   const pickedSomeone = new Set();
-  for (const p of pickers) {
+  // At the final recoupling anyone left single goes home, so an islander
+  // whose pick was taken from them picks again from who is left, at the end
+  // of the line. Without it the night paired a couple fewer than the villa
+  // could make in about four seasons of ten, and the couples-only week that
+  // follows came up a couple short.
+  const queue = [...pickers];
+  const again = new Set();
+  for (let qi = 0; qi < queue.length; qi++) {
+    const p = queue[qi];
     // Chosen already by a new arrival: coupled, and not choosing.
     if (taken.has(p)) continue;
     // A new arrival picks from the other side, who are the pickers; a regular
@@ -92,7 +100,10 @@ export function runRecoupling(state, { rng, pickerGender }) {
     let options = room.filter(c => c !== p && !pickedSomeone.has(c)
       && (fresh.includes(p) ? !fresh.includes(c) : !isPicker.has(c))
       && attr(state, p, c) != null);
-    for (let attempt = 0; attempt < 2 && options.length; attempt++) {
+    // Two tries, then the picker stands alone — except at the final
+    // recoupling, where standing alone is going home: there they ask on
+    // until somebody says yes or nobody is left.
+    for (let attempt = 0; (repick || attempt < 2) && options.length; attempt++) {
       const best = options.map(c => [c, desire(state, p, c, ctx)]).sort((x, y) => y[1] - x[1])[0][0];
       const holder = taken.get(best);
       if (holder) {
@@ -101,6 +112,7 @@ export function runRecoupling(state, { rng, pickerGender }) {
         if (keep) { options = options.filter(c => c !== best); continue; }
         picks.push({ picker: p, picked: best, stole: holder, reason: pickReason(state, p, best), first: fresh.includes(p) });
         pickedSomeone.delete(holder);
+        if (repick && !again.has(holder)) { again.add(holder); queue.push(holder); }
       } else {
         picks.push({ picker: p, picked: best, stole: null, reason: pickReason(state, p, best), first: fresh.includes(p) });
       }

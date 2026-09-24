@@ -233,7 +233,7 @@ export const MORE_MOMENTS = {
     { id: 'dg2.09', when: { withB: true }, turns: [['b', "I don't know what I'm going to do without you in the mornings."], ['a', "Sleep in, probably."]] },
     { id: 'dg2.10', when: { withB: true }, turns: [['a', "Tell them I said goodbye properly. I haven't got time to do everyone."], ['b', "I'll tell them."]] },
     { id: 'dg2.11', when: { withB: false }, stage: '{a} hugs everyone at the fire pit, one at a time.', turns: [['a', "I've had the best time. I mean it. Thank you, all of you."]] },
-    { id: 'dg2.12', when: { withB: false }, stage: '{a} picks up the suitcase and turns round at the steps.', turns: [['a', "Don't do anything I wouldn't do. That leaves you quite a lot."]] },
+    { id: 'dg2.12', when: { withB: false }, stage: '{a} picks up {a.posAdj} suitcase and turns round at the steps.', turns: [['a', "Don't do anything I wouldn't do. That leaves you quite a lot."]] },
     { id: 'dg2.13', when: { withB: false }, stage: '{a} waves from the top of the steps.', turns: [['a', "Go and get your person, all of you. I'll be watching."]] },
     { id: 'dg2.14', when: { withB: false }, stage: 'The villa gathers round as {a} leaves.', turns: [['a', "No tears. I said no tears. Okay, a few tears."]] },
   ],

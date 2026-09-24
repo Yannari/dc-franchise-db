@@ -982,6 +982,29 @@ export const MOMENTS = {
       ],
       beat: '{b} squeezes {c.posAdj} arm on the way past.' },
   ],
+  // The final recoupling is announced before anyone stands: after it the
+  // villa is couples only, and nobody left single stays (moments.js).
+  'final-recoupling': [
+    { id: 'final-recoupling.01',
+      stage: 'A text arrives at the fire pit, and {a} reads it out.',
+      turns: [
+        ['a', "Islanders, tonight is the final recoupling. Anyone left single at the end of it will be dumped from the island. #LastChance"],
+        ['b', "Final? As in, the last one ever?"],
+      ],
+      beat: 'Nobody on the benches says anything for a moment.' },
+    { id: 'final-recoupling.02',
+      turns: [
+        ['dior', "Islanders, tonight is the final recoupling. Whoever you're coupled with tonight is who you'll stay with until the end."],
+        ['dior', "And anyone who is not picked will be dumped from the island."],
+      ],
+      beat: '{a} and {b} look at each other.' },
+    { id: 'final-recoupling.03',
+      stage: 'The islanders walk down to the fire pit for the last recoupling of the summer.',
+      turns: [
+        ['a', "This is it. After tonight, whoever we're with is who we go to the end with."],
+        ['b', "No pressure, then."],
+      ] },
+  ],
   'recouple-pick': [
     // connection
     { id: 'recouple-pick.01', when: { reason: 'connection' },
@@ -1070,6 +1093,26 @@ export const MOMENTS = {
       beat: 'The fire pit goes completely silent.' },
   ],
   'dump-buildup': [
+    // A double dumping: said up front, then the couples named in turn.
+    { id: 'dump-buildup.d1', when: { channel: 'public', going: 2, nth: 'first' },
+      turns: [
+        ['dior', "Islanders. Tonight, not one but two couples will be dumped from the island."],
+        ['dior', "The public have been voting for their favourite couple. The first couple with the fewest votes is…"],
+        ['dior', "…{a} and {b}."],
+      ],
+      beat: '{a} and {b} stand up and walk to the front.' },
+    { id: 'dump-buildup.d2', when: { channel: 'public', going: 2, nth: 'first' },
+      turns: [
+        ['dior', "Two couples are leaving the villa tonight, and the public have decided who."],
+        ['dior', "The first of them is {a} and {b}."],
+      ],
+      beat: '{b} grips {a.posAdj} hand.' },
+    { id: 'dump-buildup.d3', when: { channel: 'public', going: 2, nth: 'next' },
+      turns: [['dior', "And the second couple is…"], ['dior', "…{a} and {b}."]],
+      beat: '{a} lets out a breath and stands up.' },
+    { id: 'dump-buildup.d4', when: { channel: 'public', going: 2, nth: 'next' },
+      turns: [['dior', "The other couple with the fewest votes is {a} and {b}."]],
+      beat: '{b} shuts {b.posAdj} eyes for a second.' },
     { id: 'dump-buildup.01', when: ch('public'),
       turns: [
         ['dior', "Islanders. The public have been voting for their favourite couple."],
@@ -1147,6 +1190,12 @@ export const MOMENTS = {
       turns: [['b', "I think I knew this morning."], ['a', "Yeah. Me too."]] },
   ],
   'dump-verdict-couple': [
+    { id: 'dump-verdict-couple.d1', when: { channel: 'public', going: 2, nth: 'first' },
+      turns: [['dior', "{a} and {b}. I'm sorry, but you have been dumped from the island."]],
+      beat: '{a} and {b} hold on to each other.' },
+    { id: 'dump-verdict-couple.d2', when: { channel: 'public', going: 2, nth: 'next' },
+      turns: [['dior', "And {a} and {b}, that means you have been dumped from the island too."]],
+      beat: 'Nobody on the benches says a word.' },
     { id: 'dump-verdict-couple.01', when: ch('public'),
       turns: [['dior', "{a} and {b}. The public have voted, and I'm sorry, but you have been dumped from the island."]],
       beat: '{a} takes {b.posAdj} hand, and they stand up together.' },
@@ -1451,10 +1500,10 @@ export const MOMENTS = {
       turns: [['a', "Love you all. Don't do anything I wouldn't do."]],
       beat: 'The villa waves until {a} is out of sight.' },
     { id: 'dump-goodbye.06', when: { withB: false, early: false },
-      stage: '{a} picks up the suitcase.',
+      stage: '{a} picks up {a.posAdj} suitcase.',
       turns: [['a', "Thank you for everything. Honestly. It's been the best few weeks of my life."]] },
     { id: 'dump-goodbye.07', when: { withB: false, early: true },
-      stage: '{a} picks up the suitcase.',
+      stage: '{a} picks up {a.posAdj} suitcase.',
       turns: [['a', "I didn't even get to unpack properly."]],
       beat: 'Everyone laughs, and it helps a little.' },
   ],

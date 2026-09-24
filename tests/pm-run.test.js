@@ -40,12 +40,12 @@ describe('the villa can be started', () => {
 });
 
 describe('a season plays through the run path', () => {
-  it('sixteen episodes, one a press, stamped, and it ends complete with winners', () => {
+  it('nineteen episodes, one a press, stamped, and it ends complete with winners', () => {
     freshSeason();
     const aired = playAll();
-    expect(aired.length).toBe(16);
+    expect(aired.length).toBe(19);
     expect(aired.every(r => r.format === 'perfect-match')).toBe(true);
-    expect(gs.episodeHistory.length).toBe(16);
+    expect(gs.episodeHistory.length).toBe(19);
     expect(gs.phase).toBe('complete');
     expect(gs.pmWinners?.length).toBe(2);
     expect(perfectMatchEpisodesLeft()).toBe(0);
@@ -136,7 +136,7 @@ describe('a pick is live until its episode airs', () => {
     const { perfectMatchPicks } = await import('../js/pm-run.js');
     freshSeason();
     seasonConfig.twistSchedule = [{ id: 'a', episode: 5, type: 'pm-save-one' }, { id: 'b', episode: 3, type: 'pm-public-vote' },
-      { id: 'c', episode: 12, type: 'pm-save-one' }, { id: 'd', episode: 14, type: 'pm-ex-islanders' }];
+      { id: 'c', episode: 12, type: 'pm-save-one' }, { id: 'd', episode: 17, type: 'pm-ex-islanders' }];
     // ep 3 is a bombshell night; save-one is not a second-vote format.
     expect(perfectMatchPicks()).toEqual({ vote1: 'save-one', semi: 'ex-islanders' });
     seasonConfig.twistSchedule = [];

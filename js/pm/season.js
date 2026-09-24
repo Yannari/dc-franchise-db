@@ -145,15 +145,20 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
     // semi-final. At the calibration cast the pace sits at 1-2 a night, which
     // leaves every cap where it was tuned.
     const ahead = schedule.slice(schedule.indexOf(entry));
-    const nights = ahead.filter(e => (e.moment === 'recoupling' && !e.keepSingles) || e.moment === 'public-vote').length;
-    const surplus = state.villa.length + queues.bombshell.length - 2 * FINAL_COUPLES;
-    const pace = surplus / (nights + 1);
-    const votesAhead = ahead.filter(e => e !== entry && e.moment === 'public-vote').length;
+    // The couples-only week after the final recoupling sends one couple home a
+    // night, so the villa has to reach it with a couple for each of those nights.
+    const coupledAhead = ahead.filter(e => e !== entry && e.coupled).length;
+    const nights = ahead.filter(e => !e.coupled && (e.moment === 'recoupling' || e.moment === 'public-vote')).length;
+    const surplus = state.villa.length + queues.bombshell.length - 2 * (FINAL_COUPLES + coupledAhead);
+    // The couples-only week takes its own share (a couple a night), so the
+    // rest is spread over the nights before it, the final recoupling included.
+    const pace = surplus / Math.max(1, nights);
+    const votesAhead = ahead.filter(e => e !== entry && !e.coupled && e.moment === 'public-vote').length;
     // The season's first booked vote, and whether the villa can spare a couple
     // for it: a small cast's pace sits under a vote a night, and the pace rule
     // alone skipped its first vote every time (voteNight).
     const firstVote = entry.moment === 'public-vote' && !schedule.slice(0, schedule.indexOf(entry)).some(e => e.moment === 'public-vote');
-    const ctx = { rng, entry, seed, queues, popularity: gs.popularity, splitOrStealOn, closed: false, pace, votesAhead, firstVote, surplus };
+    const ctx = { rng, entry, seed, queues, popularity: gs.popularity, splitOrStealOn, closed: false, pace, votesAhead, coupledAhead, plainNights: nights, firstVote, surplus };
     // Episode one opens on the arrivals and the first coupling, before the day.
     if (entry.moment === 'first-coupling') ctx.opening = nightOneOpening(state, ctx);
     const day = entry.moment === 'reunion' ? [] : [...(ctx.opening?.events || []), ...villaDayEvents(state, rng, entry, seed)];
@@ -193,7 +198,12 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
     // Nobody walks on the semi-final night either: it is the night the villa
     // is trimmed to its finalists, and a walkout after it (with the partner
     // following) left 40-islander finals with three couples (17 of 20).
-    if (entry.moment !== 'reunion' && entry.moment !== 'final' && entry.moment !== 'semi-final') {
+    // …nor in the couples-only week, nor on the two nights that set it up
+    // (the last vote and the final recoupling): a walkout then took a night's
+    // dumping with it, and a vote night went by with nobody sent home
+    // (season 31: Sophie walked the night of the last vote).
+    if (entry.moment !== 'reunion' && entry.moment !== 'final' && !entry.coupled && !entry.finalRecoupling
+      && entry.slot !== 'vote-post') {
       const walker = maybeWalk(state, rng);
       if (walker) {
         const before = state.couples.map(c => [...c]);
@@ -231,6 +241,9 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
         oneOff: m.extra?.oneOff || null, ...(entry.ep === 1 ? { firstIn: state.firstIn } : {}), challenge: day.some(e => e.phase === 'challenge') ? entry.challenge : null, immune: m.extra?.immune || null, returned: m.extra?.returned || null, couples: state.couples.map(c => [...c]), villa: [...state.villa],
         // The couples as the night's moment found them (the day plays first now).
         couplesBefore: pre.couples.map(c => [...c]),
+        // The night the singles all go, and the couples-only week after it.
+        ...(entry.finalRecoupling ? { finalRecoupling: true } : {}), ...(entry.coupled ? { coupled: true } : {}),
+        ...(m.extra?.double ? { double: true } : {}),
         shares: m.extra?.shares || null, bottom: m.extra?.bottom || null,
         // A tied save-one night keeps what settled it (the public's shares), so
         // a screen can say why the one with as many saves went home.

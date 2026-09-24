@@ -38,9 +38,16 @@ export function dumpingScene(state, rng, { atRisk = [], dumped, ballots = [], ch
   const events = [];
   const solidarityWalk = [];
   // Every phase knows which vote it came from, so Dior says the right thing.
-  const ev = (kind, players, pop, major = []) => events.push(makeEvent(state, rng,
-    { phase: 'dumping', kind, players, aired: true, major, extra: { pop, channel } }));
+  const ev = (kind, players, pop, major = [], more = {}) => events.push(makeEvent(state, rng,
+    { phase: 'dumping', kind, players, aired: true, major, extra: { pop, channel, ...more } }));
   const partners = Object.fromEntries(dumped.map(n => [n, partnerOf(state, n)]));
+  // A night that sends two couples or more home says so, and names them in
+  // order (a double dumping read as two separate nights, each "the couple
+  // leaving tonight").
+  const goingCouples = dumped.filter(n => partners[n] && dumped.includes(partners[n])).length / 2;
+  const going = goingCouples >= 2 ? goingCouples : null;
+  let told = 0;
+  const order = () => (going ? { going, nth: told++ ? 'next' : 'first' } : {});
   // What the dumped will remember if they are ever asked back: who voted them
   // out, and the partner they left behind (villa-vote.js grudgeOf).
   for (const n of dumped) {
@@ -48,7 +55,9 @@ export function dumpingScene(state, rng, { atRisk = [], dumped, ballots = [], ch
     if (partners[n]) (state.leftBehind ||= {})[n] = partners[n];
   }
   // 1. build-up: a couple at risk, or one islander on their own (save-one)
-  for (const c of atRisk) ev(c.length === 1 ? 'dump-at-risk' : 'dump-buildup', c, Object.fromEntries(c.map(n => [n, { approval: 0, fame: 0.5 }])));
+  for (const c of atRisk) ev(c.length === 1 ? 'dump-at-risk' : 'dump-buildup', c, Object.fromEntries(c.map(n => [n, { approval: 0, fame: 0.5 }])),
+    [], c.length === 1 ? {} : order());
+  told = 0;
   // …then the decision, when somebody makes it in front of the villa
   if (decision) events.push(...decision());
   // 2. the ballots in front of everyone, THEN the verdict they add up to
@@ -97,7 +106,7 @@ export function dumpingScene(state, rng, { atRisk = [], dumped, ballots = [], ch
     const p = partners[n];
     if (p && dumped.includes(p)) {
       done.add(n); done.add(p);
-      ev('dump-verdict-couple', [n, p], { [n]: { approval: 0, fame: 2 }, [p]: { approval: 0, fame: 2 } }, [n, p]);
+      ev('dump-verdict-couple', [n, p], { [n]: { approval: 0, fame: 2 }, [p]: { approval: 0, fame: 2 } }, [n, p], order());
     } else {
       done.add(n);
       ev('dump-verdict', [n], { [n]: { approval: 0, fame: 2 } }, [n]);
@@ -120,7 +129,9 @@ export function dumpingScene(state, rng, { atRisk = [], dumped, ballots = [], ch
   // a five-way dumping is twenty goodbyes from seven lines.
   const hugs = dumped.length > 2 ? 1 : dumped.length > 1 ? 2 : 3;
   for (const n of dumped) {
-    const friends = roomMates(state, n).filter(m => getBond(n, m) > 1).slice(0, hugs);
+    // …from the ones staying: on a double dumping, one leaver told another
+    // "don't let anyone mess you about once I'm gone" (season 31).
+    const friends = roomMates(state, n).filter(m => getBond(n, m) > 1 && !dumped.includes(m)).slice(0, hugs);
     for (const f of friends) { addBond(n, f, 0.2); ev('dump-goodbye', [n, f], { [n]: { approval: 0.5, fame: 0.5 } }); }
     ev('dump-goodbye', [n], { [n]: { approval: 1.5, fame: 1 } });
   }
@@ -144,16 +155,30 @@ function pickerGender(state) {
   return g;
 }
 
-function recoupleNight(state, rng, { dumpSingles, pace = 1.5, votesAhead = 0 }) {
-  const r = runRecoupling(state, { rng, pickerGender: pickerGender(state) });
-  const events = r.picks.map(pk => makeEvent(state, rng, { phase: 'firepit', kind: 'recouple-pick',
+function recoupleNight(state, rng, { dumpSingles, pace = 1.5, votesAhead = 0, all = false }) {
+  // The final recoupling says so first: who reads the text, and the one
+  // they turn to.
+  const open = [];
+  if (all && state.villa.length >= 2) {
+    const a = state.villa[Math.floor(rng() * state.villa.length)];
+    const b = partnerOf(state, a) || state.villa.find(x => x !== a);
+    open.push(makeEvent(state, rng, { phase: 'firepit', kind: 'final-recoupling', players: [a, b], aired: true,
+      extra: { pop: { [a]: { approval: 0, fame: 0.5 }, [b]: { approval: 0, fame: 0.3 } } } }));
+  }
+  const r = runRecoupling(state, { rng, pickerGender: pickerGender(state), repick: all });
+  const events = [...open, ...r.picks.map(pk => makeEvent(state, rng, { phase: 'firepit', kind: 'recouple-pick',
     players: [pk.picker, pk.picked, ...(pk.stole ? [pk.stole] : [])], aired: true,
     major: pk.stole ? [pk.picker, pk.stole] : [],
     extra: { stole: pk.stole, reason: pk.reason, pop: { [pk.picker]: { approval: pk.stole ? -BETRAYAL.steal : 0.2, fame: 1 },
-      ...(pk.stole ? { [pk.stole]: { approval: 1.5, fame: 2 } } : {}) } } }));
+      ...(pk.stole ? { [pk.stole]: { approval: 1.5, fame: 2 } } : {}) } } }))];
   for (const pk of r.picks) if (pk.stole) breakHeart(state, pk.stole, pk.picked, 5 * romance(pk.stole, pk.picked) / 10);
   state.couples = r.couples;
   if (!dumpSingles || !r.single.length) return { events, exits: [], ballots: r.ballots };
+  // The final recoupling: nobody single stays, whatever the pace.
+  if (all) {
+    const scene = dumpingScene(state, rng, { atRisk: [], dumped: [...r.single], ballots: [], channel: 'recoupling' });
+    return { events: [...events, ...scene.events], exits: scene.exits, ballots: r.ballots };
+  }
   // At most two go on a recoupling night, and only one once the villa is
   // down to ten: the real show leaves the rest single rather than emptying
   // the place a ceremony at a time. Measured: without the second cap, a
@@ -542,16 +567,16 @@ export const MOMENTS = {
   },
   recoupling: (state, ctx) => {
     const pre = arrivals(state, ctx, ctx.entry.arrivals?.bombshell || 0);
-    // The last recoupling is about who is with whom, not about emptying the
-    // villa: the semi-final vote does that next week.
-    const r = recoupleNight(state, ctx.rng, { dumpSingles: !ctx.entry.keepSingles, pace: ctx.pace, votesAhead: ctx.votesAhead || 0 });
+    // The final recoupling sends every single home (schedule.js).
+    const r = recoupleNight(state, ctx.rng, { dumpSingles: true, pace: ctx.pace, votesAhead: ctx.votesAhead || 0,
+      all: !!ctx.entry.finalRecoupling });
     return { events: [...pre, ...r.events], exits: r.exits, ballots: r.ballots };
   },
   'public-vote': (state, ctx) => {
     // Immunity (US 8): a challenge before the vote, and its winners are safe.
     const imm = ctx.entry.immunity ? immunityChallenge(state, { rng: ctx.rng }) : null;
     ctx.immune = imm?.immune || [];
-    const r = voteNight(state, ctx);
+    const r = ctx.entry.coupled ? coupledNight(state, ctx) : voteNight(state, ctx);
     if (imm) { r.events = [...imm.events, ...r.events]; r.extra = { ...(r.extra || {}), immune: imm.immune }; }
     return r;
   },
@@ -591,6 +616,18 @@ export const MOMENTS = {
 /** A vote night, in whatever format it plays (see 'public-vote' above for immunity). */
 function voteNight(state, ctx) {
   {
+    // What counts on the last votes before the final recoupling is how many
+    // couples the villa CAN make — the smaller side, with the bombshells still
+    // to come filling it — since that recoupling pairs up everyone it can and
+    // only the rest go home. Voting a couple out of a villa that can make no
+    // more than the week needs left it a couple short.
+    const can = couplesPossible(state, ctx.queues?.bombshell || []);
+    const lastVotes = (ctx.votesAhead || 0) <= 1;
+    // The couples a vote must leave. On the last two: the final's four, and
+    // one for each night of the couples-only week. Earlier, the final's four,
+    // as it always was — the arrivals still to come refill the villa.
+    const target = FINAL_COUPLES + (lastVotes ? ctx.coupledAhead || 0 : 0);
+    const enough = lastVotes ? can <= target : state.couples.length <= target;
     // A small villa can reach a vote night with two couples or fewer: a vote
     // would send one of the last couples home before the final. The night
     // plays without one, and the row says no format played.
@@ -604,7 +641,7 @@ function voteNight(state, ctx) {
     // arrivals still to come. It votes (measured 2026-09-23: without this the
     // first vote was skipped in 23 seasons of 100, always a villa of ten).
     const toComeAll = (ctx.queues?.bombshell?.length || 0) + (ctx.queues?.casa?.length || 0);
-    const roomy = state.villa.length >= 2 * (FINAL_COUPLES + 1) && toComeAll >= 2 && state.couples.length >= FINAL_COUPLES;
+    const roomy = state.villa.length >= 2 * (target + 1) && toComeAll >= 2 && state.couples.length >= target;
     // The first vote of the season plays whenever the villa has a couple to
     // spare, whatever the pace: at 10 and 12 islanders the pace sat under 0.8
     // and the first vote was skipped in 40 seasons of 40 (measured 2026-09-23),
@@ -614,13 +651,15 @@ function voteNight(state, ctx) {
     // home, a couples vote two (seed 2 at twelve: a walkout left nine, four
     // couples and a single, and the first vote skipped).
     const firstSingles = !!ctx.firstVote && (ctx.surplus ?? 0) >= 1;
-    const paceOk = ctx.pace >= 0.8 || firstCall;
+    // …and the last votes before the final recoupling play whenever the villa
+    // can make more couples than the week after it needs, whatever the pace.
+    const paceOk = ctx.pace >= 0.8 || firstCall || (lastVotes && can > target);
     // The first vote with the final's four couples and bombshells still to
     // come (counted in the surplus) plays too: the arrivals refill the villa
     // (season 7 audit, seed 6: nine islanders, four couples, the one single
     // held for a bombshell — the first vote skipped).
-    const firstRoom = firstCall && state.couples.length >= FINAL_COUPLES && toComeAll >= 1;
-    if (state.couples.length < 3 || (state.couples.length <= FINAL_COUPLES && !roomy && !firstRoom) || !paceOk) {
+    const firstRoom = firstCall && state.couples.length >= target && toComeAll >= 1;
+    if (state.couples.length < 3 || (enough && !roomy && !firstRoom) || !paceOk) {
       // …unless the villa has single islanders to lose: then the singles face
       // the public (measured: at the calibration cast a quarter of second
       // votes met four couples and three or four singles, who then all went
@@ -628,7 +667,16 @@ function voteNight(state, ctx) {
       // Only the singles nobody is left to arrive for: a bombshell still to
       // come is somebody's partner (measured: dumping those cost the
       // 16-islander cast its four-couple finals, 18 of 20 down to 13).
-      const singles = state.villa.filter(n => !partnerOf(state, n));
+      let singles = state.villa.filter(n => !partnerOf(state, n));
+      // On the last votes, only the singles of the side with more islanders:
+      // they are the ones the final recoupling cannot pair. Dumping a single
+      // from the short side cost the villa a couple it needed (26 islanders,
+      // three seasons of thirty).
+      if (lastVotes) {
+        const g = x => state.profiles[x].gender;
+        const nf = state.villa.filter(x => g(x) === 'f').length, nm = state.villa.length - nf;
+        if (nf !== nm) singles = singles.filter(x => g(x) === (nf > nm ? 'f' : 'm'));
+      }
       // Counting everyone still to arrive left four singles "all spoken for"
       // on 22-islander seed 9, and its first vote skipped.
       // …and on the first vote nobody is held back at all: the bombshells are
@@ -646,8 +694,39 @@ function voteNight(state, ctx) {
     // with, and the semi-final then takes the singles: measured at 12
     // islanders, four-couple finals fell from 15 of 20 to 10 until the forced
     // night played as the public's own vote, which sends a whole couple.
-    const forced = firstCall && ctx.pace < 0.8;
-    const fmt = forced ? 'public' : ctx.entry.dumpFormat;
+    // (The pace runs lower since the couples-only week took its own share of
+    // the dumpings: at 0.8 every first vote at 22 islanders was forced.)
+    const forced = firstCall && ctx.pace < 0.5;
+    // A DOUBLE DUMPING: a villa too full for the nights left sends two
+    // couples home, as the real show does when it runs short of time. The
+    // couples-only week can then keep to a couple a night; before this, a
+    // villa of eight couples reached it and lost three in one night.
+    const votesLeft = (ctx.votesAhead || 0) + 1;
+    if (!forced && lastVotes && can - target > votesLeft && can - 2 >= target && state.couples.length >= 2) {
+      const pv = publicVote(state, { rng: ctx.rng, bottom: 2, immune: ctx.immune || [] });
+      const s = dumpingScene(state, ctx.rng, { atRisk: pv.bottom, dumped: pv.bottom.flat(), channel: 'public' });
+      return { events: s.events, exits: s.exits, ballots: [], extra: { shares: pv.shares, bottom: pv.bottom, dumpFormat: 'public', double: true } };
+    }
+    return coupleFormatNight(state, ctx, forced ? 'public' : ctx.entry.dumpFormat);
+  }
+}
+
+/** How many couples the villa could form, the arrivals to come joining whichever side is short. */
+function couplesPossible(state, toCome) {
+  const n = { f: 0, m: 0 };
+  for (const x of state.villa) n[state.profiles[x].gender]++;
+  const left = { f: 0, m: 0 };
+  for (const x of toCome) left[state.profiles[x]?.gender || 'f']++;
+  for (let i = 0; i < toCome.length; i++) {
+    const g = n.f <= n.m ? (left.f ? 'f' : 'm') : (left.m ? 'm' : 'f');
+    n[g]++; left[g]--;
+  }
+  return Math.min(n.f, n.m);
+}
+
+/** A vote night in the drawn format; every format but save-one sends one couple home. */
+function coupleFormatNight(state, ctx, fmt) {
+  {
     if (fmt === 'save-one') return saveOneNight(state, ctx);
     if (fmt === 'couples-vote') return couplesVoteNight(state, ctx);
     const pv = publicVote(state, { rng: ctx.rng, bottom: ctx.entry.bottom || 2, immune: ctx.immune || [] });
@@ -665,6 +744,41 @@ function voteNight(state, ctx) {
     return { events: scene.events, exits: scene.exits, ballots: vd.ballots,
       extra: { shares: pv.shares, bottom: pv.bottom, dumpFormat: played } };
   }
+}
+
+/**
+ * How many couples a night of the couples-only week sends home: one, with the
+ * semi-final taking whatever is left over the final's four. A villa that
+ * reached the week one couple short keeps its couples tonight and loses one
+ * at the semi-final, so nobody arrives at the final with three.
+ */
+export function coupledDumps(couples, later) {
+  const excess = couples - FINAL_COUPLES;
+  if (excess <= 0) return 0;
+  if (!later) return excess;
+  return excess > later ? Math.max(1, excess - later) : 0;
+}
+
+/** Anyone single on a couples-only night leaves first: nobody stays in the villa alone now. */
+function singlesLeave(state, ctx) {
+  const singles = state.villa.filter(n => !partnerOf(state, n));
+  if (!singles.length) return { events: [], exits: [] };
+  return dumpingScene(state, ctx.rng, { dumped: singles, channel: 'recoupling' });
+}
+
+/** The vote before the semi-final: couples only, and one couple goes. */
+function coupledNight(state, ctx) {
+  const pre = singlesLeave(state, ctx);
+  const n = coupledDumps(state.couples.length, ctx.coupledAhead || 0);
+  if (!n) return { events: pre.events, exits: pre.exits, ballots: [], extra: { dumpFormat: null } };
+  let r;
+  if (n === 1) r = coupleFormatNight(state, ctx, ctx.entry.dumpFormat || 'public');
+  else {
+    const pv = publicVote(state, { rng: ctx.rng, bottom: n });
+    const s = dumpingScene(state, ctx.rng, { atRisk: pv.bottom, dumped: pv.bottom.flat(), channel: 'public' });
+    r = { events: s.events, exits: s.exits, ballots: [], extra: { shares: pv.shares, bottom: pv.bottom, dumpFormat: 'public' } };
+  }
+  return { ...r, events: [...pre.events, ...r.events], exits: [...pre.exits, ...r.exits] };
 }
 
 // The rest of the season's moments.
@@ -722,10 +836,11 @@ Object.assign(MOMENTS, {
   },
   'semi-final': (state, ctx) => {
     // Nobody goes to the final alone: anyone still single leaves, and the
-    // couples are trimmed down to four — by the public, or by the islanders
-    // the villa already dumped (UK 11 d55, UK 12 d56, UK 13 d46).
+    // couples are trimmed down to four — one couple, normally, since the
+    // final recoupling already took the singles — by the public, or by the
+    // islanders the villa already dumped (UK 11 d55, UK 12 d56, UK 13 d46).
     const singles = state.villa.filter(n => !partnerOf(state, n));
-    const over = state.couples.length - FINAL_COUPLES;
+    const over = coupledDumps(state.couples.length, 0);
     const exes = ctx.entry.dumpFormat === 'ex-islanders' && over > 0 ? returningExes(state) : [];
     if (exes.length) return exIslandersNight(state, ctx, singles, over, exes);
     // The singles first, and in the words of a night nobody picked them:

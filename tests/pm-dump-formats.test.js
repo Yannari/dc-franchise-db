@@ -148,15 +148,21 @@ describe('the first public vote always plays at the calibration cast', () => {
     // night and the first vote was skipped in 40 seasons of 40. Forced to play,
     // a format that dumps one of a pair cost 12-islander finals (15 of 20 to
     // 10), so the forced night is the public's own vote and a whole couple goes.
+    // Since the couples-only week (a couple a night after the final
+    // recoupling, user 2026-09-23) twelve islanders are exactly its six
+    // couples: nobody is spare before it, so the early votes stand down and
+    // the villa meets the public in that week. It must meet it there.
     let skipped = 0, four = 0;
     for (let seed = 1; seed <= 40; seed++) {
       const cast = makeIslanders(12, seed); setPlayers(cast);
       const names = cast.map(p => p.name);
       const rows = playPerfectMatchSeason({ cast: names, setup: roleSetup(names), seed }).rows;
-      if (!rows.find(r => r.moment === 'public-vote').pm.dumpFormat) skipped++;
+      if (!rows.some(r => (r.moment === 'public-vote' || r.moment === 'semi-final') && r.pm.dumpFormat)) skipped++;
       if ((rows.find(r => r.moment === 'final')?.pm.couples?.length || 0) >= 4) four++;
     }
     expect(skipped).toBe(0);
+    // Since the couples-only week: 30 of 30, measured 2026-09-23.
+    expect(four).toBeGreaterThanOrEqual(34);
     // Four-couple finals at twelve: 59 of 80 before the 2026-09-23 audit
     // fixes, 52 then 48 of 80 after; twenty seasons swing 10-15, so forty. The loss is one real-show
     // rule: a girl stolen from at the recoupling of eight is left single with

@@ -12,6 +12,7 @@
 // no bust, no line, no board (the spoiler rules).
 import { playerAvatarUrl } from '../players.js';
 import { SHOWS } from '../shows.js';
+import { voiceTick, stingFor, playSting } from './sound.js';
 
 // The host is not a player: no catalogue entry, one portrait (shows.js, HOSTS_BY_FORMAT).
 const HOST_PORTRAIT = 'assets/avatars/dior.jpg';
@@ -151,7 +152,10 @@ export function paintStage(el, screen, idx, { fresh = false, hud = '' } = {}) {
   // Between the intro tape and the villa: a channel switch, not a wipe —
   // static, a roll, and where we are now.
   const from = prev ? prev.bg : screen.bg;
-  if (fresh && from !== st.bg && (tape || from === 'vt')) {
+  const switched = fresh && from !== st.bg && (tape || from === 'vt');
+  // The moment's sting, the one the staging calls for (vp-pm/sound.js).
+  if (fresh) playSting(stingFor(st, { switched }));
+  if (switched) {
     const sw = q('switch');
     sw.querySelector('span').textContent = tape ? 'Meet the islander' : 'In the villa';
     sw.classList.add(P('go'));
@@ -206,7 +210,8 @@ export function paintStage(el, screen, idx, { fresh = false, hud = '' } = {}) {
   if (fresh) {
     let k = 0; txt.textContent = '';
     const text = st.text || '';
-    const tick = () => { txt.textContent = text.slice(0, ++k); if (k < text.length) later(el, 16, tick); };
+    // Each letter as it types, and a voice blip every few (vp-pm/sound.js).
+    const tick = () => { txt.textContent = text.slice(0, ++k); voiceTick(st.who, voice, text[k - 1], k, text); if (k < text.length) later(el, 16, tick); };
     tick();
   } else txt.textContent = st.text || '';
   const beat = q('beat');

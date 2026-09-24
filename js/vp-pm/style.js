@@ -639,6 +639,14 @@ details.pmv-debug[open] summary::before{transform:rotate(45deg)}
 #visual-player:fullscreen .pmv .pmv-stage{width:min(100%, calc((100vh - 170px) * 16 / 9))}
 .pmv-tvBtn{margin-left:auto}
 .pmv-tvBtn + .pmv-themeBtn{margin-left:0}
+/* the voices switch: the speaker, crossed out when the talking blips are off */
+.pmv-sound{margin-left:auto;display:flex;align-items:center;gap:6px}
+.pmv-sound .pmv-themeBtn{margin-left:0}
+.pmv-sound + .pmv-tvBtn{margin-left:0}
+.pmv-soundBtn .pmv-cross{display:none}
+.pmv-soundBtn.pmv-muted .pmv-cross{display:inline}.pmv-soundBtn.pmv-muted .pmv-waves{display:none}
+.pmv-soundBtn.pmv-muted{opacity:.6}
+
 .pmv-tvBtn .pmv-tvOff{display:none}
 .pm-tv .pmv-tvBtn .pmv-tvOn{display:none}.pm-tv .pmv-tvBtn .pmv-tvOff{display:inline}
 @media (max-width:640px){ .pm-tv .pmv .pmv-stage{aspect-ratio:4/5;width:min(100%, calc((100vh - 150px) * 4 / 5))} }

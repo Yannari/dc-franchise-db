@@ -866,6 +866,8 @@ export function renderVPScreen() {
   if (_bed) audio.ambient(_bed);
   audio.sfx('screen-swoosh');
   if (_VP_STING[cur.id]) audio.sfx(_VP_STING[cur.id]);
+  // Any show's screens can hear a screen open (Perfect Match's cutaway music, vp-pm/sound.js).
+  try { document.dispatchEvent(new CustomEvent('vp:screen', { detail: { id: cur.id } })); } catch (e) {}
   document.querySelector('.rp-main').scrollTop = 0;
   vpUpdateParticleProfile();
   // Beach Blanket Bogus ambient audio switching

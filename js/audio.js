@@ -165,6 +165,13 @@ export class AudioEngine {
     if (this._catalogOverride && this._catalogOverride[name]) return this._catalogOverride[name];
     return resolveCue(name);
   }
+  // The live context and master channel, for a caller that plays its own
+  // tones (Perfect Match's talking blips, vp-pm/sound.js): null while muted or
+  // locked, so it obeys the same mute and volume as every cue.
+  output() {
+    if (this._muted || !this._unlocked || !this._ctx) return null;
+    return { ctx: this._ctx, dest: this._master };
+  }
   sfx(name) {
     if (this._muted || !this._unlocked || !this._ctx) return;
     const cue = this._resolveCue(name);

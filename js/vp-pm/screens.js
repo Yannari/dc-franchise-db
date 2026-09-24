@@ -18,6 +18,8 @@ import { stageHtml, paintStage, mini, IC } from './stage.js';
 import { asideHtml } from './heart.js';
 import { PMV_CSS, PMV_FONTS } from './style.js';
 import { momentTitle } from '../pm/transcript.js';
+import { clickSound, voicesOn, pmVoices } from './sound.js';
+export { pmVoices };
 
 const P = c => `pmv-${c}`;
 const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -32,6 +34,10 @@ function themeAttr() {
   return site === 'dark' || site === 'light' ? site : '';
 }
 const themeBtn = t => (t === 'dark' ? `${IC.sun} Light` : `${IC.moon} Dark`);
+// The talking blips' own switch (mute and volume are the simulator header's,
+// js/audio.js): the speaker is crossed out when the voices are off.
+const SPEAKER = '<svg viewBox="0 0 24 24" width="14" height="14"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path class="pmv-waves" d="M16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path class="pmv-cross" d="M16 9l6 6M22 9l-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+const soundCtl = () => `<span class="pmv-sound"><button type="button" class="pmv-themeBtn pmv-soundBtn${voicesOn() ? '' : ' pmv-muted'}" onclick="pmVoices()" title="The islanders' talking blips on / off (mute and volume are in the header)">${SPEAKER} Voices</button></span>`;
 
 // ── TV mode: no cards, no sidebar, the stage as big as the window ─────
 // (user: "the fullscreen option to not have cards and just a bigger screen").
@@ -137,6 +143,7 @@ function screenHtml(uid, row, prev, screens, si) {
   return `<style>${PMV_FONTS}${PMV_CSS}</style>
   <div class="pmv${screen.teaser ? ' ' + P('isBreak') : ''}" data-uid="${esc(uid)}"${theme ? ` data-pmtheme="${theme}"` : ''}>
     <div class="${P('top')}"><div class="${P('logo')}">Perfect Match<small>${esc(hudOf(row))} · ${esc(momentTitle(row))}</small></div>
+      ${soundCtl()}
       <button type="button" class="${P('themeBtn')} ${P('tvBtn')}" onclick="pmTv()">${tvBtn()}</button>
       <button type="button" class="${P('themeBtn')}" onclick="pmTheme()">${themeBtn(theme)}</button></div>
     <div class="${P('layout')}">
@@ -196,9 +203,11 @@ export function pmRevealNext(uid) {
   // The last line of a screen: the show rolls on to the next one, the way a
   // programme cuts to its next segment rather than stopping on a page.
   if (S.idx >= S.screens[S.si].steps.length - 1) {
+    // (vp-ui.js plays the screen change's whoosh.)
     if (typeof window !== 'undefined' && typeof window.vpNext === 'function') window.vpNext();
     return;
   }
+  clickSound();
   S.idx++;
   // The speaker becomes the one the relationships panel is about.
   const sp = S.screens[S.si].steps[S.idx].cast.find(c => c[2] === 'speak')?.[0];

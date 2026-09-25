@@ -49,7 +49,7 @@ export const FACT_KEYS = ['rung', 'thinks', 'persona', 'intent', 'attachment', '
   'early', 'coupled', 'gap', 'knows', 'faking', 'bPersona', 'bMood', 'bRung', 'stance', 'family',
   'choice', 'cause', 'channel', 'grudge', 'stole', 'bTaken', 'archetype', 'taken', 'loyal', 'late', 'gender', 'bGender', 'myRung', 'phase', 'kind', 'role', 'withB', 'newArrival', 'dialect',
   'comfortedYesterday', 'rowedBefore', 'rowedToday', 'feels', 'of', 'knowsB', 'verdict', 'noticed',
-  'reason', 'split', 'guessed', 'stoleFrom', 'full', 'hasQuote', 'rank', 'cast', 'justMet', 'rebuffed', 'heard', 'kissed', 'promised', 'sec', 'lastBy', 'theirs', 'going', 'nth', 'exes', 'leaving'];
+  'reason', 'split', 'guessed', 'stoleFrom', 'full', 'hasQuote', 'rank', 'cast', 'justMet', 'rebuffed', 'heard', 'kissed', 'promised', 'sec', 'lastBy', 'theirs', 'going', 'nth', 'exes', 'leaving', 'what'];
 
 // Archetype groups a pool may name instead of listing them (CLAUDE.md).
 export const VILLAINS = ['villain', 'mastermind', 'schemer'];
@@ -127,7 +127,7 @@ export function factsFor(state, ev) {
   // How much a feels for b, in words a line can lean on (narration only):
   // "not yet" is somebody who cares; a real no is somebody who doesn't.
   if (b) { const r = romance(a, b); f.feels = r >= 6 ? 'strong' : r >= 3 ? 'some' : 'little'; } else f.feels = null;
-  for (const k of ['choice', 'cause', 'channel', 'grudge', 'of', 'noticed', 'reason', 'guessed', 'theirs', 'going', 'nth', 'exes']) if (ev.extra?.[k] != null) f[k] = ev.extra[k];
+  for (const k of ['choice', 'cause', 'channel', 'grudge', 'of', 'noticed', 'reason', 'guessed', 'theirs', 'going', 'nth', 'exes', 'what']) if (ev.extra?.[k] != null) f[k] = ev.extra[k];
   // A steal at the recoupling: {c} is the one who loses {b}.
   f.stoleFrom = !!ev.extra?.stole;
   // Night one's ranking: the pair at the top, or anybody below it.
@@ -303,6 +303,7 @@ export function fill(text, ps, partners = {}) {
       .replace(/\{walkers\}/g, walkers).replace(/\{Walkers\}/g, cap(walkers)).replace(/\{walkerOne\}/g, walkerOne);
   }
   if (partners.quote != null) text = text.replace(/\{quote\}/g, partners.quote).replace(/\{quoteWho\}/g, partners.quoteWho);
+  if (partners.exchange != null) text = text.replace(/\{exchange\}/g, partners.exchange);
   return text.replace(/\{(pa|pb|a|b|c|d)(?:\.(sub|obj|pos|posAdj|ref|Sub|Obj|PosAdj|gf))?\}/g, (m, who, form) => {
     const n = names[who];
     if (!n) return m;
@@ -491,6 +492,9 @@ function castOf(ev) {
 }
 
 /** A replayed clip is quoted, so the villa reacts to what is actually on the screen. */
+/** The line the reunion would quote from a hidden scene, words only (moments.js reunion). */
+export const revealExchange = (state, id) => clipSlots(state, { players: [], extra: { revealed: id } }).quote || null;
+
 function clipSlots(state, ev) {
   // The final dates' film: the footage's line, its day, and who else is in it,
   // all at once (pm/journey.js).
@@ -521,10 +525,21 @@ function clipSlots(state, ev) {
   // The line that gives the scene away, not its opener (season 31's reunion
   // gasped at "Can I have a word? Not here."): the longest thing the scene's
   // own islander said, so the one quoted is the one asked to explain.
+  // …and not the longest either, which in a pull is the ask ("Can I ask you
+  // something? You don't have to answer." — season 57): the last thing they
+  // said that has any length to it, which is where a scene lands.
   const spoken = (clip?.script?.lines || []).filter(l => !l.action && l.who);
   const own = spoken.filter(l => l.who === (clip?.players || [])[0]);
-  const line = [...(own.length ? own : spoken)].sort((x, y) => y.text.length - x.text.length)[0];
-  return line ? { quote: line.text, quoteWho: line.who } : {};
+  const pool = own.length ? own : spoken;
+  const line = [...pool].reverse().find(l => l.text.length >= 20) || [...pool].sort((x, y) => y.text.length - x.text.length)[0];
+  if (!line) return {};
+  // …with what it answered, when it is an answer: {exchange} is the two lines.
+  // A question is played with its answer; anything else with what it answered.
+  const at = spoken.indexOf(line);
+  const next = spoken[at + 1], prev = spoken[at - 1];
+  const exchange = /\?$/.test(line.text) && next && next.who !== line.who ? `${line.who}: "${line.text}" ${next.who}: "${next.text}"`
+    : (prev && prev.who !== line.who ? `${prev.who}: "${prev.text}" ` : '') + `${line.who}: "${line.text}"`;
+  return { quote: line.text, quoteWho: line.who, exchange };
 }
 
 // ── the voiceover ────────────────────────────────────────────────────

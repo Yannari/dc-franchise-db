@@ -8,6 +8,7 @@
 // a partner left behind can be heartbroken enough to walk out with them.
 import { addBond, getBond } from '../bonds.js';
 import { makeEvent, partnerOf, roomMates, airLater, today } from './events.js';
+import { revealExchange } from './script.js';
 import { romance } from './feelings.js';
 import { closedness } from './ladder.js';
 import { breakHeart, feel, jealousOf, jealousyHit } from './emotions.js';
@@ -1092,17 +1093,32 @@ Object.assign(MOMENTS, {
     // partner run down behind their back), not somebody telling on it: season
     // 31 aired five tellings and asked the tellers to explain themselves.
     const SCANDAL = new Set(['pull', 'bed-share', 'vent', 'kiss', 'challenge-kiss', 'head-turned', 'jealous-retaliate', 'argument', 'ick']);
+    // …and never two clips the same scene was written for: two pulls that drew
+    // the same lines played the same exchange twice (season 57).
+    const shownScripts = new Set();
     const hidden = state.history.filter(e => !e.aired && SCANDAL.has(e.kind))
       .map(e => [e, Object.values(e.pop).reduce((a, p) => a + Math.abs(p.approval || 0), 0) * (state.secrets.some(s => s.eventId === e.id) ? 3 : 1)])
-      .sort((a, b) => b[1] - a[1]).slice(0, 5).map(([e]) => e);
+      .sort((a, b) => b[1] - a[1]).map(([e]) => e)
+      .filter(e => { const k = revealExchange(state, e.id); if (k && shownScripts.has(k)) return false; if (k) shownScripts.add(k); return true; })
+      .slice(0, 5);
     const events = hidden.map(e => {
       const touched = Object.keys(e.pop);
       airLater(state, e);
       // The reveal names everyone the clip moves, so the row can explain the
       // approval it just cost them: a major moment nobody could see on the
       // screen is the "computed, drawn nowhere" bug class (§11.5 A).
-      return makeEvent(state, ctx.rng, { phase: 'reunion', kind: 'reveal', players: e.players,
-        aired: true, major: touched, extra: { revealed: e.id, pop: {} } });
+      // How bad it is, for how the studio takes it: a secret, a shared bed or
+      // a partner run down is a scandal; a row, an ick or a single islander's
+      // chat is not (season 57's studio gasped at "Can I ask you something?").
+      const sec = state.secrets.filter(s => s.eventId === e.id).sort((x, y) => (y.severity || 0) - (x.severity || 0))[0];
+      const scandal = !!sec || e.kind === 'bed-share' || e.kind === 'vent';
+      // What the clip WAS, said before it plays (season 57's reunion quoted
+      // "None. I'll get over it." and nobody could tell what it was about):
+      // who did it, who with, and who they were coupled with at the time.
+      const what = sec ? (sec.kind || (sec.said ? 'said' : 'pull')) : e.kind === 'bed-share' ? 'bed' : e.kind;
+      const cast = sec ? [...new Set([sec.who, sec.with || e.players.find(n => n !== sec.who), sec.partner].filter(Boolean))] : e.players;
+      return makeEvent(state, ctx.rng, { phase: 'reunion', kind: 'reveal', players: cast,
+        aired: true, major: touched, extra: { revealed: e.id, of: scandal ? 'scandal' : 'mild', what, pop: {} } });
     });
     return { events, exits: [], ballots: [], extra: { revealed: hidden.map(e => e.id) } };
   },

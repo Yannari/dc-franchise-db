@@ -84,7 +84,9 @@ function fireBuildUp(state, rng, { atRisk, channel, format, dumped }) {
     && e.players.every(n => villa.includes(n) || e.kind === 'steal')
     && (e.kind !== 'kiss' || partnerOf(state, e.players[0]) === e.players[1]))
     .sort((x, y) => RECAP.indexOf(x.kind) - RECAP.indexOf(y.kind))[0];
-  if (big) push('dump-recap', big.players.slice(0, 3), { of: big.kind, pop: {} });
+  // A row between two who are not a couple is not "you might need each other".
+  const apart = big && ['argument', 'blowup'].includes(big.kind) && partnerOf(state, big.players[0]) !== big.players[1];
+  if (big) push('dump-recap', big.players.slice(0, 3), { of: big.kind + (apart ? '-apart' : ''), pop: {} });
   // 4. The safe couples, one at a time, when the public has ranked them all.
   if (['public', 'villa', 'top-couple'].includes(channel) && atRisk.every(c => c.length === 2)) {
     const risky = new Set(atRisk.flat());
@@ -173,7 +175,8 @@ export function dumpingScene(state, rng, { atRisk = [], dumped, ballots = [], ch
         extra: { channel, grudge: b.grudge || null, pop: { [b.voter]: { approval: 0, fame: 1 } } } }));
       continue;
     }
-    if (!dumped.includes(b.target)) continue;
+    // Every vote is read out, not only the ones against whoever went: a 5-0
+    // on screen was really 5-4 (season 88), and the count IS the suspense.
     // Decided in a scene of its own (the favourite couple's pick): the bond,
     // not a second reveal.
     if (b.silent) {
@@ -403,7 +406,7 @@ function singlesVoteNight(state, ctx, singles, n) {
 function coupleVoteScenes(state, rng, cv) {
   return cv.votes.map(v => {
     for (const x of v.couple) for (const y of v.target) addBond(y, x, -0.3);
-    return makeEvent(state, rng, { phase: 'firepit', kind: 'couples-vote', players: [...v.couple, ...v.target], aired: true,
+    return makeEvent(state, rng, { phase: 'dumping', kind: 'couples-vote', players: [...v.couple, ...v.target], aired: true,
       extra: { pop: Object.fromEntries(v.couple.map(n => [n, { approval: 0, fame: 0.5 }])) } });
   });
 }

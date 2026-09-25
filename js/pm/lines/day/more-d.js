@@ -32,7 +32,16 @@ export const MORE_D = {
     { id: 'fm2.06', when: { verdict: 'bad' }, stage: "{a}'s family ask {b} a lot of questions, and don't seem to like the answers.", turns: [['b', "I don't think I passed."], ['a', "It's not a test."], ['b', "It felt like one."]] },
     { id: 'fm2.07', when: { verdict: 'unsure' }, stage: "{a}'s family are friendly with {b}, but careful.", turns: [['b', "Did I do okay?"], ['a', "You did fine. They just want to get to know you."]] },
     { id: 'fm2.08', when: { verdict: 'unsure' }, stage: "{a}'s family spend the whole visit asking {a} questions, and hardly any of {b}.", turns: [['b', "They barely spoke to me."], ['a', "They'll get there."]] },
-    { id: 'fm2.09', when: { verdict: 'unsure' }, stage: "{a}'s sister gives {b} a long look across the terrace.", turns: [['b', "What was that look?"], ['a', "That's just her face. I think."]] },
+    { id: 'fm2.09', when: { verdict: 'unsure' }, stage: "One of {a}'s family gives {b} a long look across the terrace.", turns: [['b', "What was that look?"], ['a', "That's just how they look. I think."]] },
+    { id: 'fm2.10', when: { verdict: 'good' }, stage: "{a}'s family bring a photo album, and {b} is delighted.", turns: [['a', "Please put that away."], ['b', "Absolutely not. Look at your little face."]] },
+    { id: 'fm2.11', when: { verdict: 'good' }, turns: [['b', "Your family are lovely."], ['a', "They said the same about you. Word for word."]], beat: '{a} is grinning.' },
+    { id: 'fm2.12', when: { verdict: 'good' }, stage: "{a}'s family have one question for {b}, and it is about the wedding.", turns: [['b', "We haven't even left the villa yet."], ['a', "That's never stopped them."]] },
+    { id: 'fm2.13', when: { verdict: 'good' }, stage: "By the end of the visit, {a}'s family are calling {b} by a nickname.", turns: [['a', "They don't do that with anyone."], ['b', "I'll take it."]] },
+    { id: 'fm2.14', when: { verdict: 'good' }, turns: [['a', "I've never seen them like that with anyone I've brought home."], ['b', "I'm not just anyone."], ['a', "No. You're not."]] },
+    { id: 'fm2.15', when: { verdict: 'bad' }, turns: [['b', "They hate me."], ['a', "They don't hate you. They just don't know you yet."], ['b', "That sounds worse."]] },
+    { id: 'fm2.16', when: { verdict: 'bad' }, stage: "{a}'s family keep bringing up something {b} said on the show.", turns: [['b', "I knew that would come back."], ['a', "They'll get over it. Eventually."]] },
+    { id: 'fm2.17', when: { verdict: 'unsure' }, turns: [['a', "I think they liked you. I think."], ['b', "That's two 'I thinks'."]] },
+    { id: 'fm2.18', when: { verdict: 'unsure' }, stage: "{a}'s family are warm with {b}, and quiet about the future.", turns: [['b', "They didn't say much."], ['a', "They never do. It's a good sign. Probably."]] },
   ],
   // notes [a, b]: a wrote an anonymous note about b. guessed: whether b knows it was a.
   notes: [

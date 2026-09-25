@@ -53,6 +53,8 @@ export const FIREPIT_LINES = {
     { id: 'dr.st', when: pub('steal'), turns: [['dior', "It's been quite a day. {a} walked in, and {b} and {c} are not a couple any more."]] },
     { id: 'dr.bl', when: pub('blowup'), turns: [['dior', "I hear things got a bit heated earlier. {a}, {b}, I think the whole villa heard you."]], beat: '{a} looks at the floor.' },
     { id: 'dr.ar', when: pub('argument'), turns: [['dior', "{a}, {b}, I hear you two had words today. I hope you've made up, because tonight you might need each other."]] },
+    { id: 'dr.ap', when: pub('argument-apart'), turns: [['dior', "{a}, {b}, I hear there were words between you two today. I hope the air's been cleared."]], beat: '{a} and {b} do not look at each other.' },
+    { id: 'dr.bp', when: pub('blowup-apart'), turns: [['dior', "I hear things got heated today. {a}, {b}, the whole villa heard you."]], beat: 'Somebody on the benches coughs.' },
     { id: 'dr.sp', when: pub('photo-split'), turns: [['dior', "{a}, {b}, I know it's been a hard day. I'm sorry."]] },
     { id: 'dr.ms', when: pub('movie-split'), turns: [['dior', "{a}, {b}, I know that was a hard thing to watch. I'm sorry."]] },
     { id: 'dr.oa', when: pub('official-ask'), turns: [['dior', "And I hear congratulations are in order. {a} and {b}, you're official!"]], beat: 'The villa cheers.' },

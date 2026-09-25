@@ -393,7 +393,7 @@ export const FEELINGS = {
       ] },
     { id: 'advice.10', when: { verdict: 'good' },
       turns: [
-        ['b', "Am I mad to be this into {c} already?"],
+        ['b', "Am I mad to be this into {c}?"],
         ['a', "No. {c} is into you too. Anyone can see it."],
       ],
       beat: '{b} smiles into {b.posAdj} drink.' },

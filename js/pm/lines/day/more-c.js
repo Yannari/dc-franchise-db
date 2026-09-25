@@ -52,7 +52,7 @@ export const MORE_C = {
     { id: 'fr3.41', when: { early: true }, turns: [['a', "I don't know anyone yet. Can I stick with you for a bit?"], ['b', "Please do. I don't know anyone either."]] },
     { id: 'fr3.42', when: { early: true }, turns: [['a', "Who have you got your eye on?"], ['b', "Too early. Ask me in a week."]] },
     { id: 'fr3.43', when: { late: true }, turns: [['a', "Remember how nervous we were on the first day?"], ['b', "I was terrified. You looked so calm."], ['a', "I wasn't."]] },
-    { id: 'fr3.44', when: { late: true }, turns: [['a', "It's going to be so strange waking up without you."], ['b', "I'll call you every morning. You'll be sick of me."]] },
+    { id: 'fr3.44', when: { late: true }, turns: [['a', "When this is all over, it's going to be so strange waking up without you."], ['b', "I'll call you every morning. You'll be sick of me."]] },
     { id: 'fr3.45', when: { mood: 'heartbroken' }, turns: [['b', "Do you want to talk about it, or do you want me to take your mind off it?"], ['a', "The second one. Please."]], beat: '{b} tells {a} a very long story about a holiday, and it works.' },
     { id: 'fr3.46', when: { mood: 'heartbroken' }, turns: [['a', "I feel so stupid."], ['b', "You're not stupid. You liked someone. That's allowed."]] },
     { id: 'fr3.47', when: { mood: 'lonely' }, turns: [['a', "I feel like I'm on the outside of everything."], ['b', "Then come inside it. Sit here."]] },

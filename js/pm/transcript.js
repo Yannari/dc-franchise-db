@@ -114,8 +114,10 @@ export function phasesOf(row) {
   const sideLabel = ph => ph === 'arrival' ? (firstBoys ? 'The boys arrive' : 'The girls arrive')
     : ph === 'arrival-2' ? (firstBoys ? 'The girls arrive' : 'The boys arrive') : null;
   // The villa's own two games play in the afternoon slot, under their names.
-  const game = villa.find(e => e.phase === 'event' && (e.kind === 'heart-rate' || e.kind === 'snog-marry-pie'))?.kind;
-  const GAME = { 'heart-rate': 'The Heart Rate Challenge', 'snog-marry-pie': 'Snog Marry Pie' };
+  // …and the set pieces that are not a challenge at all (season 88 played
+  // the semi-final's families visit under "The challenge").
+  const GAME = { 'heart-rate': 'The Heart Rate Challenge', 'snog-marry-pie': 'Snog Marry Pie', families: 'The families', notes: 'Anonymous notes' };
+  const game = villa.find(e => e.phase === 'event' && GAME[e.kind])?.kind;
   const out = groupByPhase(villa, ph => sideLabel(ph) || (ph === 'challenge' && CHALLENGE_NAMES[row.pm?.challenge])
     || (ph === 'event' && GAME[game]) || PM_PHASE_LABEL[ph] || ph);
   const all = events.slice(from);

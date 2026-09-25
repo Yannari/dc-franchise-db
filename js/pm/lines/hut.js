@@ -269,7 +269,7 @@ export const HUT = {
     { id: 'hut.couple.t1', when: { kind: ['chat', 'deep-chat', 'kiss', 'challenge-win'], ...B }, turns: [['a', "Everyone keeps saying we're solid. On paper, maybe. I'll see how this week goes, and then I'll decide."]] },
     { id: 'hut.couple.t2', when: { kind: ['chat', 'deep-chat', 'kiss', 'challenge-win'], ...B, rung: ['closed-off', 'exclusive'] }, turns: [['a', "I told {b} I'd closed myself off. I have. Mostly. There's a {~little} window I haven't shut."]] },
     { id: 'hut.jealous.t1', when: { kind: ['argument', 'jealous-confront', 'jealous-sulk'] }, turns: [['a', "I'm going to act like I'm upset about this. And I am. Just not for the reason they think."]] },
-    { id: 'hut.dump.t1', when: { family: 'dumping', leaving: false }, turns: [['a', "I stood there looking sad. I was a bit sad. I was mostly relieved it wasn't me."]] },
+    { id: 'hut.dump.t1', when: { kind: ['dump-verdict', 'dump-verdict-couple', 'dump-verdict-singles', 'dump-reaction', 'dump-goodbye', 'dump-fallout'], leaving: false }, turns: [['a', "I stood there looking sad. I was a bit sad. I was mostly relieved it wasn't me."]] },
     { id: 'hut.dump.t2', when: { kind: 'recouple-pick', role: 0 }, turns: [['a', "Did I pick with my heart or my head? I picked with the bit that wants to stay in the villa."]] },
     { id: 'hut.casa.t1', when: { kind: 'casa-return', role: 0, choice: 'stick', of: 'returned' }, turns: [['a', "What happens at Casa stays at Casa. That's what everyone says, isn't it?"]] },
   ],

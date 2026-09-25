@@ -108,3 +108,21 @@ describe('on the Season Timeline', () => {
     seasonConfig.pmArrivalCounts = {};
   });
 });
+
+describe('a pair on a counted night', () => {
+  it('counts as two of the night, and never leaves a later bombshell night with nobody', () => {
+    for (const seed of [1, 2, 3, 4]) {
+      const cast = makeIslanders(24, seed);
+      setPlayers(cast);
+      const names = cast.map(p => p.name);
+      // Isl11 and Isl13 are best friends; three on the second bombshell night.
+      const { rows } = playPerfectMatchSeason({ cast: names, setup: roleSetup(names), seed, arrivalCounts: { 2: 3 },
+        kinship: [{ a: 'Isl11', b: 'Isl13', kin: 'best-friends' }] });
+      const walkedIn = r => r.pm.events.filter(e => /entrance/.test(e.kind) && e.kind !== 'return-entrance').flatMap(e => e.players)
+        .filter(n => roleSetup(names)[n]?.role === 'bombshell');
+      const nights = rows.filter(r => r.moment === 'bombshell');
+      expect(new Set(walkedIn(nights[1])).size, `seed ${seed}`).toBeLessThanOrEqual(3);
+      for (const r of nights) expect(walkedIn(r).length, `seed ${seed} e${r.num}`).toBeGreaterThan(0);
+    }
+  });
+});

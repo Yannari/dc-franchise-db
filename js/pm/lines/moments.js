@@ -1605,7 +1605,7 @@ export const MOMENTS = {
       stage: '{a} walks back into the villa on {a.posAdj} own.',
       turns: [['a', "Nobody at Casa was for me. I'd rather come back single than pretend."]] },
     { id: 'casa-return.09', when: { of: 'returned', choice: 'stick', withB: false },
-      stage: 'The last of the Casa islanders comes back through the door. {a} is alone.',
+      stage: 'The door opens, and {a} comes through it alone.',
       turns: [['a', "I'm back. On my own. I'm fine with that."]] },
     { id: 'casa-return.07', when: { of: 'returned', choice: 'twist', taken: false },
       stage: '{a} walks back in with {b}.',

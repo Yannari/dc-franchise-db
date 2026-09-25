@@ -63,13 +63,17 @@ function argumentReasons(s, a) {
     const seen = today(s).find(e => FLIRTS.has(e.kind) && !e.extra?.secret && e.players.includes(p)
       && !e.players.includes(a) && e.players.some(n => n !== p && here.includes(n)));
     if (seen) out.push({ cause: 'jealous', b: p, about: seen.players.find(n => n !== p), w: 3 });
-    // One of them further in than the other.
-    const gap = romance(a, p) - romance(p, a);
-    if (gap > 1) out.push({ cause: 'mismatch', b: p, w: 0.6 * (gap - 1) });
-    // Snapping from stress, at whoever is nearest: the partner.
-    out.push({ cause: 'stress', b: p, w: 0.3 * emo(s, a).stress });
-    // The small stuff, in the moment.
-    out.push({ cause: 'bicker', b: p, w: 0.6 });
+    // A couple of a day has no "you always" in it yet (season 57's night one:
+    // "You always save me a seat"): the rows of a couple wait for episode two.
+    if (s.ep >= 2) {
+      // One of them further in than the other.
+      const gap = romance(a, p) - romance(p, a);
+      if (gap > 1) out.push({ cause: 'mismatch', b: p, w: 0.6 * (gap - 1) });
+      // Snapping from stress, at whoever is nearest: the partner.
+      out.push({ cause: 'stress', b: p, w: 0.3 * emo(s, a).stress });
+      // The small stuff, in the moment.
+      out.push({ cause: 'bicker', b: p, w: 0.6 });
+    }
   }
   // Envy: coupled with the one a fancies.
   const crush = here.filter(n => n !== p && (attr(s, a, n) ?? 0) >= 6).sort((x, y) => (attr(s, a, y) ?? 0) - (attr(s, a, x) ?? 0))[0];
@@ -97,7 +101,7 @@ function argumentReasons(s, a) {
   }
   // Two who just don't get on, over something in front of them.
   const cold = here.filter(n => n !== p).sort((x, y) => getBond(a, x) - getBond(a, y))[0];
-  if (cold) out.push({ cause: 'clash', b: cold, w: 0.8 + Math.max(0, -getBond(a, cold)) / 3 });
+  if (cold) out.push({ cause: 'clash', b: cold, w: (0.8 + Math.max(0, -getBond(a, cold)) / 3) * (s.ep === 1 ? 0.3 : 1) });
   return out;
 }
 
@@ -699,6 +703,8 @@ const KIN_PHASE_KINDS = {
 // Episodes a kind rests after it airs: 0 is every episode at most once.
 const KIN_GAP = { 'kin-heart': 1, 'kin-vet': 0, 'kin-protect': 1, 'ex-awkward': 1, 'ex-jealous': 0 };
 const KIN_KINDS = new Set(Object.keys(KIN_GAP));
+// The most of a kind one episode's villa day holds, aired or not.
+const EP_CAP = { argument: 3, ick: 3 };
 // What only happens once between the same people: sizing up a partner, the
 // ex's new partner, a flirt answered for.
 const onceFor = (s, tag) => (s.kinOnce ||= []).includes(tag);
@@ -714,11 +720,11 @@ export const PHASE_KINDS = {
   // The small slots (a morning pull, an evening chat or joke) are there for
   // the lines written for them: a gate on a phase its kind never plays at is
   // a line nobody hears (tests/pm-lines.test.js found six).
-  morning: [['chat', 4], ['kiss', 2], ['friendship', 3], ['comedy', 1], ['ick', 0.5], ['argument', 0.5], ['pull', 0.5]],
+  morning: [['chat', 4], ['kiss', 2], ['friendship', 3], ['comedy', 1], ['ick', 0.5], ['argument', 0.3], ['pull', 0.5]],
   day: [['chat', 3], ['deep-chat', 2], ['pull', 3], ['friendship', 3], ['gossip', 1.5],
-    ['comedy', 1.5], ['argument', 1], ['ick', 0.8], ['vent', 0.15]],
-  event: [['challenge-kiss', 3], ['challenge-win', 1], ['comedy', 1], ['argument', 0.5]],
-  evening: [['kiss', 3], ['deep-chat', 2], ['pull', 2], ['argument', 1.5], ['gossip', 1.5], ['friendship', 1], ['chat', 0.5], ['comedy', 0.5],
+    ['comedy', 1.5], ['argument', 0.6], ['ick', 0.8], ['vent', 0.15]],
+  event: [['challenge-kiss', 3], ['challenge-win', 1], ['comedy', 1], ['argument', 0.3]],
+  evening: [['kiss', 3], ['deep-chat', 2], ['pull', 2], ['argument', 0.9], ['gossip', 1.5], ['friendship', 1], ['chat', 0.5], ['comedy', 0.5],
     ['bed-share', 1.2], ['vent', 0.05]],
 };
 
@@ -875,6 +881,9 @@ export function generateEpisodeEvents(state, rng, budgets = PHASE_BUDGETS) {
       // relations drew 52 kin-protects and 50 kin-hearts from pools of five).
       // Once an episode per kind is still one sibling moment every night:
       // each kind then rests the episodes KIN_GAP gives it.
+      // A villa day has a row or two in it, not ten (season 57: 7-13 an episode).
+      if (EP_CAP[realKind] && (seenEp['#n' + realKind] || 0) >= EP_CAP[realKind]) continue;
+      if (EP_CAP[realKind]) seenEp['#n' + realKind] = (seenEp['#n' + realKind] || 0) + 1;
       if (KIN_KINDS.has(realKind)) {
         const last = (state.kinLastEp ||= {})[realKind];
         const exFresh = realKind === 'ex-awkward' && players.some(n => state.ep - (state.exArrived?.[n] ?? -9) <= 2);

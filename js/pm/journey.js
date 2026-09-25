@@ -99,9 +99,14 @@ export function shapeOf(chapters, state, a, b) {
   if (has('split')) return 'way-back';
   // One row is a couple; two hard moments are a rocky road (season 41 called
   // all four finalist couples rocky on a row each).
-  if (['row', 'tested', 'photos', 'casa', 'at-risk'].filter(has).length >= 2) return 'rocky';
+  // Casa Amor is not a hard moment for a couple who came back to each other
+  // (season 57: every finalist couple went through Casa, so all four were
+  // "rocky"); a couple who only met late needs more than two to be rocky.
+  const hard = ['row', 'tested', 'photos', 'at-risk'].filter(has).length;
   const start = chapters[0]?.event.ep ?? 1;
-  if (start > (state.ep || 1) * 0.5) return 'late';
+  const late = start > (state.ep || 1) * 0.5;
+  if (hard >= (late ? 3 : 2)) return 'rocky';
+  if (late) return 'late';
   return 'steady';
 }
 

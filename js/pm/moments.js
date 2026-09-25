@@ -112,6 +112,8 @@ export function dumpingScene(state, rng, { atRisk = [], dumped, ballots = [], ch
   const events = [];
   const solidarityWalk = [];
   const kinWalk = new Set();
+  // Who is going home tonight, for the beach hut (script.js hutFor `leaving`).
+  state._leaving = [...dumped];
   // Every phase knows which vote it came from, so Dior says the right thing.
   const ev = (kind, players, pop, major = [], more = {}) => events.push(makeEvent(state, rng,
     { phase: 'dumping', kind, players, aired: true, major, extra: { pop, channel, ...more } }));
@@ -242,6 +244,7 @@ export function dumpingScene(state, rng, { atRisk = [], dumped, ballots = [], ch
     ev('dump-goodbye', [n], { [n]: { approval: 1.5, fame: 1 } });
   }
   removeFromVilla(state, [...dumped, ...solidarityWalk]);
+  state._leaving = null;
   // 5. fallout: whoever is newly single panics
   for (const p of Object.values(partners)) {
     if (p && state.villa.includes(p) && !partnerOf(state, p)) ev('dump-fallout', [p], { [p]: { approval: 0.2, fame: 1 } });
@@ -315,6 +318,14 @@ function recoupleNight(state, rng, { dumpSingles, pace = 1.5, votesAhead = 0, al
  */
 function arrivals(state, ctx, count) {
   const out = [];
+  // A pair counts as two of tonight's arrivals. With no room left tonight it
+  // takes the season's LAST arrival place (the queue runs in order, so that
+  // is the one left short), and only if that leaves no bombshell night with
+  // nobody: the final recoupling's or the photos night's, or a bombshell
+  // night that still has someone. Otherwise another bombshell walks in
+  // tonight and the pair waits for a night with room.
+  const spare = () => { const l = (ctx.slotsAhead || []).filter(x => x.n > 0).at(-1); return l && (l.moment !== 'bombshell' || l.n >= 2) ? l : null; };
+  const mateOf = n => kinFor(state, n).find(k => onYourSide(k.kin) && ctx.queues.bombshell.includes(k.other));
   for (let i = 0; i < count && ctx.queues.bombshell.length; i++) {
     // …counting nobody in a same-sex couple: they need no one from either side
     // (UK 2: Katie and Sophie coupled up, two boys were left, and the show
@@ -323,14 +334,20 @@ function arrivals(state, ctx, count) {
     const paired = new Set(state.couples.filter(([x, y]) => gen(x) === gen(y)).flat());
     const count = g => state.villa.filter(n => gen(n) === g && !paired.has(n)).length;
     const need = ['f', 'm'].sort((a, b) => count(a) - count(b))[0];
-    const idx = Math.max(0, ctx.queues.bombshell.findIndex(n => state.profiles[n].gender === need));
+    const room = i + 1 < count || !!spare();
+    const fits = n => state.profiles[n].gender === need && (room || !mateOf(n));
+    let idx = ctx.queues.bombshell.findIndex(fits);
+    if (idx < 0) idx = Math.max(0, ctx.queues.bombshell.findIndex(n => room || !mateOf(n)));
+    if (idx < 0) idx = 0;
     const [name] = ctx.queues.bombshell.splice(idx, 1);
     // A relative or best friend still waiting to come in walks in with them
     // (pm/kin.js): the second is one of the season's own bombshells, taken
     // from a later night, so every bombshell still arrives exactly once.
-    const mate = kinFor(state, name).find(k => onYourSide(k.kin) && ctx.queues.bombshell.includes(k.other));
+    const mate = room ? mateOf(name) : null;
     if (mate) {
       ctx.queues.bombshell.splice(ctx.queues.bombshell.indexOf(mate.other), 1);
+      if (i + 1 < count) i++;
+      else { const s = spare(); if (s) s.n--; }
       out.push(...arrivePair(state, [name, mate.other], { ep: state.ep, seed: ctx.seed, rng: ctx.rng, kin: mate.kin }).events);
       continue;
     }

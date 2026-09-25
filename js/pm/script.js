@@ -49,7 +49,7 @@ export const FACT_KEYS = ['rung', 'thinks', 'persona', 'intent', 'attachment', '
   'early', 'coupled', 'gap', 'knows', 'faking', 'bPersona', 'bMood', 'bRung', 'stance', 'family',
   'choice', 'cause', 'channel', 'grudge', 'stole', 'bTaken', 'archetype', 'taken', 'loyal', 'late', 'gender', 'bGender', 'myRung', 'phase', 'kind', 'role', 'withB', 'newArrival', 'dialect',
   'comfortedYesterday', 'rowedBefore', 'rowedToday', 'feels', 'of', 'knowsB', 'verdict', 'noticed',
-  'reason', 'split', 'guessed', 'stoleFrom', 'full', 'hasQuote', 'rank', 'cast', 'justMet', 'rebuffed', 'heard', 'kissed', 'promised', 'sec', 'lastBy', 'theirs', 'going', 'nth', 'exes'];
+  'reason', 'split', 'guessed', 'stoleFrom', 'full', 'hasQuote', 'rank', 'cast', 'justMet', 'rebuffed', 'heard', 'kissed', 'promised', 'sec', 'lastBy', 'theirs', 'going', 'nth', 'exes', 'leaving'];
 
 // Archetype groups a pool may name instead of listing them (CLAUDE.md).
 export const VILLAINS = ['villain', 'mastermind', 'schemer'];
@@ -555,7 +555,9 @@ export function hutFor(state, ev, who, stance) {
   const ps = [who, ...others];
   // role: 0 started the scene, 1 was on the receiving end, 2 was talked about.
   const facts = { ...factsFor(state, { ...ev, players: ps }), stance, family: familyOf(ev.kind),
-    kind: ev.kind, role: ev.players.indexOf(who), withB: others.length > 0 };
+    kind: ev.kind, role: ev.players.indexOf(who), withB: others.length > 0,
+    // Going home tonight (moments.js dumpingScene): a leaver is never "relieved it wasn't me".
+    leaving: !!state._leaving?.includes(who) };
   // A cutaway is optional: better none than the same line twice in an episode.
   const entry = pickScript(state, HUT[stance], [who], facts, { allowRepeat: false });
   if (!entry) return null;

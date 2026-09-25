@@ -73,8 +73,7 @@ export const FIREPIT_LINES = {
     // A double dumping: said up front, then the couples named in turn.
     { id: 'dump-buildup.d1', when: { channel: 'public', going: 2, nth: 'first' },
       turns: [
-        ['dior', "Islanders. Tonight, not one but two couples will be dumped from the island."],
-        ['dior', "The first couple with the fewest votes is…"],
+        ['dior', "Which leaves two couples. The first of them, with the fewest votes of all, is…"],
         ['dior', "…{a} and {b}."],
       ],
       beat: '{a} and {b} stand up and walk to the front.' },
@@ -101,8 +100,13 @@ export const FIREPIT_LINES = {
     { id: 'dpl.c2', when: pub('couple'), turns: [['b', "I know we're not the loudest couple in here, but what we've got is real."], ['a', "It really is."]] },
     { id: 'dpl.c3', when: pub('couple'), turns: [['a', "Whatever you decide, I just want to say I love every one of you."], ['b', "Mostly."]], beat: 'A nervous laugh goes round the benches.' },
     { id: 'dpl.c4', when: pub('couple'), turns: [['b', "I came in here to find someone, and I found them. Please don't send us home yet."]] },
-    { id: 'dpl.o1', when: pub('one'), turns: [['a', "I haven't found my person yet. I just need a bit more time."]] },
+    { id: 'dpl.o1', when: { of: 'one', taken: false }, turns: [['a', "I haven't found my person yet. I just need a bit more time."]] },
+    { id: 'dpl.o3', when: { of: 'one', taken: false }, turns: [['a', "I know I'm single, and I know how that looks. But I haven't stopped trying."]] },
+    { id: 'dpl.o4', when: { of: 'one', taken: true }, turns: [['a', "{pa} and I are only just getting started. Please don't make that the end of it."]] },
+    { id: 'dpl.o5', when: { of: 'one', taken: true }, stage: '{a} looks straight at {pa} on the bench.', turns: [['a', "I've got something real with {pa}. I want the chance to see where it goes."]] },
+    { id: 'dpl.o6', when: { of: 'one', taken: true }, turns: [['a', "I'm not ready to leave {pa}. That's all I've got."]] },
     { id: 'dpl.o2', when: pub('one'), stage: '{a} stands at the front, alone.', turns: [['a', "I've given this villa everything. I'd really love to stay."]] },
+    { id: 'dpl.o7', when: pub('one'), turns: [['a', "Whatever you decide, thank you. I mean it. You've all been amazing."]] },
   ],
   'dump-decide': [
     { id: 'dd.sp', when: pub('safe-pick-couple'), turns: [['dior', "Safe islanders, it's time. One at a time, please stand up, tell us which of these couples you want to dump, and why."]] },

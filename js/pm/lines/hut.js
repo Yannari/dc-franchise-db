@@ -175,6 +175,9 @@ export const HUT = {
     // the moments (their own scenes are written in Task 4)
     { id: 'hut.dump.h1', when: { family: 'dumping' }, turns: [['a', "The fire pit is the worst place in the world. It's also where everything gets decided."]] },
     { id: 'hut.dump.h2', when: { family: 'dumping' }, turns: [['a', "My hands are still shaking. Look at them."]] },
+    { id: 'hut.dump.l1', when: { family: 'dumping', leaving: true }, turns: [['a', "I'm heartbroken. I'm not going to pretend I'm not. But I'm going home with my head held high."]] },
+    { id: 'hut.dump.l2', when: { family: 'dumping', leaving: true }, turns: [['a', "I came in for love, and I'm leaving with a lot of friends. That's not nothing."]] },
+    { id: 'hut.dump.l3', when: { family: 'dumping', leaving: true }, turns: [['a', "I wasn't ready. I don't think you ever are."]] },
     { id: 'hut.dump.h3', when: { kind: 'recouple-pick', role: 0 }, turns: [['a', "I stood up there and said it out loud. Whatever happens now, I said it."]] },
     { id: 'hut.dump.h4', when: { kind: 'recouple-pick', role: 1 }, turns: [['a', "I didn't know until my name came out. I was holding my breath the whole speech."]] },
     { id: 'hut.casa.h1', when: { kind: 'photos', role: 0 }, turns: [['a', "Casa Amor is where couples go to die. I just didn't think it would be mine."]] },
@@ -266,7 +269,7 @@ export const HUT = {
     { id: 'hut.couple.t1', when: { kind: ['chat', 'deep-chat', 'kiss', 'challenge-win'], ...B }, turns: [['a', "Everyone keeps saying we're solid. On paper, maybe. I'll see how this week goes, and then I'll decide."]] },
     { id: 'hut.couple.t2', when: { kind: ['chat', 'deep-chat', 'kiss', 'challenge-win'], ...B, rung: ['closed-off', 'exclusive'] }, turns: [['a', "I told {b} I'd closed myself off. I have. Mostly. There's a {~little} window I haven't shut."]] },
     { id: 'hut.jealous.t1', when: { kind: ['argument', 'jealous-confront', 'jealous-sulk'] }, turns: [['a', "I'm going to act like I'm upset about this. And I am. Just not for the reason they think."]] },
-    { id: 'hut.dump.t1', when: { family: 'dumping' }, turns: [['a', "I stood there looking sad. I was a bit sad. I was mostly relieved it wasn't me."]] },
+    { id: 'hut.dump.t1', when: { family: 'dumping', leaving: false }, turns: [['a', "I stood there looking sad. I was a bit sad. I was mostly relieved it wasn't me."]] },
     { id: 'hut.dump.t2', when: { kind: 'recouple-pick', role: 0 }, turns: [['a', "Did I pick with my heart or my head? I picked with the bit that wants to stay in the villa."]] },
     { id: 'hut.casa.t1', when: { kind: 'casa-return', role: 0, choice: 'stick', of: 'returned' }, turns: [['a', "What happens at Casa stays at Casa. That's what everyone says, isn't it?"]] },
   ],

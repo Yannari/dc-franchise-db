@@ -476,13 +476,16 @@ export function introParts(state, a, rng) {
   parts.push(looks.length && (!vibes.length || rng() < 0.6) ? ['intro-look', pickOf(looks)] : ['intro-vibe', pickOf(vibes) || 'funny']);
   // Somebody they already know is in the cast (the Relationships tab): the
   // tape says so, as twins' and best friends' tapes do.
-  // Only somebody they know is coming: a starter has no idea an ex will
-  // walk in weeks later, and a bombshell's ex already inside is a surprise.
+  // Only somebody who is there: walking in tonight too ("going in with me"),
+  // or already inside ("they have no idea I'm coming"). Never an ex who has
+  // gone home (season 57: "My ex is going in too" weeks after she was dumped),
+  // and never a bombshell who has not arrived yet.
+  const firstEp = n => state.ledger?.firstEp?.[n];
   const known = kinFor(state, a).find(k => (onYourSide(k.kin) || k.kin === 'exes')
-    && (p.role === 'starter' ? state.profiles[k.other]?.role === 'starter' : true));
+    && state.villa.includes(k.other) && firstEp(k.other) != null);
   if (known) {
-    const inside = p.role !== 'starter' && state.villa.includes(known.other) && known.kin === 'exes';
-    parts.push(['intro-kin', inside ? 'ex-in' : kinGroup(known.kin)]);
+    const inside = firstEp(known.other) < state.ep;
+    parts.push(['intro-kin', kinGroup(known.kin) + (inside ? '-in' : '')]);
   }
   if (p.eyesOn?.length) parts.push(['intro-eyes', 'set']);
   else if (p.ex && !known) parts.push(['intro-ex', 'set']);

@@ -36,6 +36,7 @@ import { RIVALRY_LINES } from './lines/rivalry.js';
 import { CAMP_LINES } from './lines/camps.js';
 import { FEUD_LINES } from './lines/feuds.js';
 import { GAME_LINES } from './lines/game.js';
+import { ARC_LINES } from './lines/arcs.js';
 import { FIREPIT_LINES } from './lines/firepit.js';
 import { HIDEAWAY_LINES } from './lines/hideaway.js';
 import { HEAT_LINES } from './lines/day/heat.js';
@@ -58,6 +59,7 @@ for (const [k, v] of Object.entries(RIVALRY_LINES)) POOLS[k] = [...(POOLS[k] || 
 for (const [k, v] of Object.entries(CAMP_LINES)) POOLS[k] = [...(POOLS[k] || []), ...v];
 for (const [k, v] of Object.entries(FEUD_LINES)) POOLS[k] = [...(POOLS[k] || []), ...v];
 for (const [k, v] of Object.entries(GAME_LINES)) POOLS[k] = [...(POOLS[k] || []), ...v];
+for (const [k, v] of Object.entries(ARC_LINES)) POOLS[k] = [...(POOLS[k] || []), ...v];
 // The night before a dumping's verdict (lines/firepit.js).
 for (const [k, v] of Object.entries(FIREPIT_LINES)) POOLS[k] = [...(POOLS[k] || []), ...v];
 // The Hideaway night (lines/hideaway.js).

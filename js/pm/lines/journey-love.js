@@ -85,3 +85,48 @@ export const JOURNEY_LOVE = {
     { id: 'dec.fr2', when: { of: 'friends' }, turns: [['a', "Everyone in here saw it before we did. I'm glad they were right."]], beat: 'The fire pit cheers.' },
   ],
 };
+
+// Two more (pm/arcs.js): underdog — one of them left again and again, until
+// the other picked them (Amber: left for Joanna, then Greg, and the winners,
+// UK 5); second-chance — exes, back together in the villa. Chapters `found`
+// (the night they were picked) and `second` (the second chance). Either of
+// them may speak, so nothing says which one was the one left.
+const MORE = {
+  'journey-open': [
+    { id: 'jo.ud1', when: { of: 'underdog' }, stage: 'The film starts with a lot of fire pits, and a lot of nights left on the bench.', turns: [['a', "Oh, they showed all of that."], ['b', "It makes the ending better."]] },
+    { id: 'jo.ud2', when: { of: 'underdog' }, turns: [['b', "Do you remember how it felt, before?"], ['a', "Like it was never going to happen."]] },
+    { id: 'jo.sc1', when: { of: 'second-chance' }, stage: 'The film starts, and it starts with the two of them, the first time round.', turns: [['a', "We've done this before."], ['b', "And we're better at it now."]] },
+    { id: 'jo.sc2', when: { of: 'second-chance' }, turns: [['b', "Second time lucky."], ['a', "Second time right."]] },
+  ],
+  'journey-end': [
+    { id: 'je.ud1', when: { of: 'underdog' }, turns: [['a', "All those nights on the bench."], ['b', "And then you got me."], ['a', "And then I got you."]] },
+    { id: 'je.ud2', when: { of: 'underdog' }, stage: 'The film ends on the two of them at the fire pit, holding hands.', turns: [['b', "Worth the wait?"], ['a', "Every bit of it."]] },
+    { id: 'je.sc1', when: { of: 'second-chance' }, turns: [['b', "I'm glad we didn't give up on each other."], ['a', "Twice."]] },
+    { id: 'je.sc2', when: { of: 'second-chance' }, turns: [['a', "It wasn't right the first time."], ['b', "It's right now."]] },
+  ],
+  'journey-clip': [
+    N('jc.fd1', 'found', '{quoteWho}: "{quote}"', "Day {day}. After all the nights left out, someone chose.", { when: Q }),
+    N('jc.fd2', 'found', 'The footage: the moment it finally happened.', "Day {day}. Not the first choice for anyone. Until now."),
+    N('jc.sc1', 'second', '{quoteWho}: "{quote}"', "Day {day}. They'd been together before. They decided to try again.", { when: Q }),
+    N('jc.sc2', 'second', 'The footage: two exes, and a second chance.', "Day {day}. Round two."),
+  ],
+  'journey-react': [
+    { id: 'jr.fd1', when: { of: 'found' }, turns: [['a', "That's the night everything changed."], ['b', "I knew as soon as I said it."]] },
+    { id: 'jr.fd2', when: { of: 'found' }, turns: [['b', "Look at your face."], ['a', "I couldn't believe it."]] },
+    { id: 'jr.sc1', when: { of: 'second' }, turns: [['a', "Were we mad to try again?"], ['b', "Probably. I'm glad we did."]] },
+    { id: 'jr.sc2', when: { of: 'second' }, turns: [['b', "Round two."], ['a', "Best round."]] },
+  ],
+  speech: [
+    { id: 'sp.fd.1', when: { of: 'found' }, turns: [['a', "For so long in here it felt like it was never going to be me. And then there was you, and it was us."]] },
+    { id: 'sp.fd.2', when: { of: 'found' }, turns: [['a', "On day {day} everything changed. I've never been so glad to be wrong about something."]] },
+    { id: 'sp.sc.1', when: { of: 'second' }, turns: [['a', "We had our chance once and it didn't work. I'm so glad we got another one."]] },
+    { id: 'sp.sc.2', when: { of: 'second' }, turns: [['a', "Most people don't get a second go. We did, and I'm not wasting it."]] },
+  ],
+  declaration: [
+    { id: 'dec.ud1', when: { of: 'underdog' }, stage: '{a} stands up at the fire pit, where it used to be so hard.', turns: [['a', "{b}, I used to dread this fire pit. Every time, it wasn't me. You made it me. I'll never forget that."]], beat: '{b} is already crying.' },
+    { id: 'dec.ud2', when: { of: 'underdog' }, turns: [['a', "People kept telling me my person hadn't walked in yet. They were right. It was you."]] },
+    { id: 'dec.sc1', when: { of: 'second-chance' }, stage: '{a} takes {b}\'s hands.', turns: [['a', "We've done this once already and we got it wrong. This time I'm not letting go."]] },
+    { id: 'dec.sc2', when: { of: 'second-chance' }, turns: [['a', "{b}, some things are worth a second go. You're the only one I'd ever say that about."]], beat: 'The fire pit cheers.' },
+  ],
+};
+for (const [k, v] of Object.entries(MORE)) JOURNEY_LOVE[k] = [...(JOURNEY_LOVE[k] || []), ...v];

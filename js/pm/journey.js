@@ -103,12 +103,16 @@ export function storyOf(state, a, b) {
   if (friendly.length >= 2) add('friends', friendly[0]);
   // One of them wanted the other first, and wasn't wanted back — yet.
   add('crush', seen.find(e => (e.kind === 'crush-move' || e.kind === 'crush-plea' || e.kind === 'crush-confide') && both(e, a, b)));
+  // Mugged off, then found love: the night one of them was finally picked.
+  add('found', seen.find(e => e.kind === 'found-love' && both(e, a, b)));
+  // Exes, and a second chance.
+  add('second', seen.find(e => e.kind === 'exw-back' && both(e, a, b)));
   // They came out of a rivalry: one of them was fought over, and chose.
   add('fought', seen.find(e => e.kind === 'rival-won' && [e.players[0], e.players[2]].includes(a) && [e.players[0], e.players[2]].includes(b)));
   // In order, the beginning always kept, and no more than the film has room for.
   found.sort((x, y) => at(x.event) - at(y.event));
   if (found.length > MAX_CHAPTERS) {
-    const keep = new Set(['night-one', 'met', 'date-met', 'coupled', 'first-kiss', 'love', 'split', 'back', 'enemies', 'friends', 'crush', 'fought']);
+    const keep = new Set(['night-one', 'met', 'date-met', 'coupled', 'first-kiss', 'love', 'split', 'back', 'enemies', 'friends', 'crush', 'fought', 'found', 'second']);
     const must = found.filter(c => keep.has(c.type));
     const rest = found.filter(c => !keep.has(c.type)).slice(0, Math.max(0, MAX_CHAPTERS - must.length));
     return found.filter(c => must.includes(c) || rest.includes(c)).slice(0, MAX_CHAPTERS);
@@ -176,6 +180,8 @@ export function shapesOf(state, couples) {
     // The love stories, when their record holds one: they fought before
     // they fell; they were fought over; one fell first and the other fell
     // harder; they were friends first.
+    if (has(x, 'second')) return 'second-chance';
+    if (has(x, 'found')) return 'underdog';
     if (has(x, 'enemies')) return 'enemies';
     if (has(x, 'fought')) return 'fought-for';
     if (has(x, 'crush')) {
@@ -254,7 +260,7 @@ export function finalDate(state, rng, [a, b], n, given = null) {
 }
 
 // What a declaration can point back to, best first: the moments a speech is made of.
-const SPEAKS_OF = ['back', 'enemies', 'fought', 'crush', 'casa', 'photos', 'split', 'at-risk', 'friends', 'row', 'love', 'first-kiss', 'night-one', 'date-met', 'coupled', 'met'];
+const SPEAKS_OF = ['back', 'second', 'found', 'enemies', 'fought', 'crush', 'casa', 'photos', 'split', 'at-risk', 'friends', 'row', 'love', 'first-kiss', 'night-one', 'date-met', 'coupled', 'met'];
 /** The chapter each of them talks about in their speech: never the same one twice. */
 export function speechChapters(chapters) {
   const ranked = SPEAKS_OF.map(t => chapters.find(c => c.type === t)).filter(Boolean);

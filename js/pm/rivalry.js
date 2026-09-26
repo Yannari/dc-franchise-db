@@ -440,7 +440,7 @@ export function campsOf(state, t) {
 }
 const sidesOf = (state, t) => { const c = campsOf(state, t); return { A: [t.x, ...c.X], B: [t.y, ...c.Y] }; };
 
-function stepCamp(state, rng, t, ev) {
+export function stepCamp(state, rng, t, ev) {
   const { h, x, y } = t;
   const camps = campsOf(state, t);
   const prev = t.camps || { X: [], Y: [] };

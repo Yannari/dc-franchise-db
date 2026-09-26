@@ -53,6 +53,9 @@ export const KIND_LABEL = {
   'camp-rally': 'Rallying round', 'camp-confront': 'Stepping in', 'camp-clash': 'Two sides', 'camp-lobby': 'A word in the ear', 'camp-split': 'The villa divided', 'camp-switch': 'Changing sides', 'camp-after': 'After the choice',
   'feud-confront': 'Having it out', 'feud-interrupt': 'Walking in on them', 'feud-shade': 'The new one', 'feud-ick': 'The ick', 'feud-closure': 'Talking it out',
   'game-plan': 'The plan', 'game-latch': 'Working it', 'game-two-faced': 'Two faces', 'game-suspect': 'Is it a game?', 'game-called': 'Called out', 'game-fallout': 'After', 'game-end': 'The game player',
+  'betray-see': 'Finding out', 'betray-confront': 'A friend?', 'betray-end': 'The friendship', 'mugged-low': 'Always the one left', 'found-love': 'Finally', 'villa-happy': 'So happy for them',
+  'redeem-reflect': 'Looking back', 'redeem-act': 'Saying sorry', 'redeem-doubt': 'For the cameras?', 'grass-talk': 'The one who tells', 'grass-frozen': 'Gone quiet', 'grass-confront': 'You told them',
+  'parents-named': 'Mum and Dad', 'parents-advice': 'Ask Mum and Dad', 'parents-mediate': 'Stepping in', 'parents-wobble': 'Even Mum and Dad', 'exw-stir': 'The ex is back', 'exw-partner': 'Should I be worried?', 'exw-talk': 'The talk', 'exw-back': 'A second chance',
   'lie-write': 'The questions', 'lie-question': 'The Lie Detector', 'lie-row': 'After the test',
   'blow-slip': 'A slip', 'blow-dare': 'The dare', 'lip-race': 'Lip Service', 'lip-watch': 'Watching', 'tower-q': 'Tower of Truths',
   'course-run': 'The course', 'course-pick': 'The rescue', 'course-win': 'The winner', 'blind-run': 'Blindfolded',
@@ -251,6 +254,10 @@ function fxFor(row, e, first) {
   if (k === 'feud-confront' && e.extra?.of === 'furious') { fx.shake = true; fx.neon = ['Exes at war', '#ef4444']; }
   if (k.startsWith('feud-') && e.extra?.sides) fx.sides = e.extra.sides;
   if (k === 'game-called') { fx.shake = true; fx.neon = ["It's a game", '#ef4444']; }
+  if (k === 'betray-confront' && e.extra?.sides) fx.sides = e.extra.sides;
+  if (k === 'betray-end' && e.extra?.of === 'over') fx.neon = ['Friendship over', '#ef4444'];
+  if (k === 'found-love') fx.neon = ['Finally', '#ff2e88'];
+  if (k === 'exw-back') fx.neon = ['A second chance', '#ff2e88'];
   if (k === 'triangle-choice' && e.extra?.of === 'pick') fx.neon = ['The choice', '#ff2e88'];
   if (k === 'lie-question' && first) fx.neon = ['Lie Detector', '#22d3ee'];
   if (k === 'lie-row') { fx.shake = e.extra?.of === 'own-it'; }

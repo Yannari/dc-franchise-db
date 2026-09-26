@@ -213,12 +213,12 @@ const SITUATION = {
   // Romance without a first kiss in it: silent until it has a track.
   romance: ['date', 'love-said', 'official-ask', 'exclusive-ask', 'reunite', 'hideaway',
     // the final dates and each couple's film
-    'final-date', 'journey-open', 'journey-clip', 'journey-react', 'journey-end', 'casa-miss', 'hideaway-win', 'game-kiss'],
+    'final-date', 'journey-open', 'journey-clip', 'journey-react', 'journey-end', 'casa-miss', 'hideaway-win', 'game-kiss', 'found-love', 'exw-back'],
   cheating: ['photos', 'head-turned', 'bed-share'],
   drama: ['argument', 'blowup', 'pile-in', 'villa-divided', 'jealous-confront', 'jealous-retaliate', 'cold-shoulder',
     'casa-row', 'photo-row', 'movie-row', 'lie-row', 'triangle-rivals', 'triangle-ultimatum', 'apology-rejected', 'kin-protect',
-    'rival-shade', 'rival-row', 'code-call', 'rival-won', 'crush-watch', 'camp-confront', 'camp-clash', 'camp-split', 'camp-switch', 'feud-confront', 'feud-interrupt', 'feud-shade', 'game-called', 'game-fallout'],
-  cry: ['crush-move', 'crush-over', 'crush-plea', 'casa-goodbye', 'breakdown', 'comfort', 'dump-reaction', 'photo-split', 'movie-split', 'torch', 'ask-declined', 'jealous-sulk'],
+    'rival-shade', 'rival-row', 'code-call', 'rival-won', 'crush-watch', 'camp-confront', 'camp-clash', 'camp-split', 'camp-switch', 'feud-confront', 'feud-interrupt', 'feud-shade', 'game-called', 'game-fallout', 'betray-see', 'betray-confront', 'grass-confront', 'parents-wobble'],
+  cry: ['mugged-low', 'betray-end', 'redeem-act', 'crush-move', 'crush-over', 'crush-plea', 'casa-goodbye', 'breakdown', 'comfort', 'dump-reaction', 'photo-split', 'movie-split', 'torch', 'ask-declined', 'jealous-sulk'],
   // The dumped saying goodbye, and anyone walking out.
   goodbye: ['dump-goodbye', 'walk', 'solidarity', 'kin-goodbye', 'kin-walk'],
   comedy: ['comedy', 'blow-dare', 'blow-slip', 'baby-doll', 'talent-act'],

@@ -673,7 +673,8 @@ export const KINDS = {
     'rival-shade', 'rival-play', 'code-call', 'rival-row', 'rival-step-back', 'rival-won', 'crush-confide', 'crush-watch', 'crush-move', 'crush-plea', 'crush-over',
     'camp-rally', 'camp-confront', 'camp-clash', 'camp-lobby', 'camp-split', 'camp-switch', 'camp-after',
     'feud-confront', 'feud-interrupt', 'feud-shade', 'feud-ick', 'feud-closure',
-    'game-plan', 'game-latch', 'game-two-faced', 'game-suspect', 'game-called', 'game-fallout', 'game-end']
+    'game-plan', 'game-latch', 'game-two-faced', 'game-suspect', 'game-called', 'game-fallout', 'game-end',
+    'betray-see', 'betray-confront', 'betray-end', 'mugged-low', 'found-love', 'villa-happy', 'redeem-reflect', 'redeem-act', 'redeem-doubt', 'grass-talk', 'grass-frozen', 'grass-confront', 'parents-named', 'parents-advice', 'parents-mediate', 'parents-wobble', 'exw-stir', 'exw-partner', 'exw-talk', 'exw-back']
     .map(k => [k, { salience: 1, cast: () => null,
       apply: (s, ev) => ({ pop: ev.extra.pop || {}, major: ev.extra.majorPop || [] }) }])),
 };

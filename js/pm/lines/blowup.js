@@ -12,14 +12,14 @@ export const BLOWUP_LINES = {
       ['a', "Did you know they were in a couple?"], ['b', "Everyone knew. So what?"], ['a', "So what? You looked me in the eye every day."],
       ['b', "I didn't owe you anything."], ['a', "You owed me the truth!"], ['b', "Take it up with them, not me."],
       ['a', "Oh, I will. But I'm starting with you."]], beat: 'The whole garden has stopped pretending not to watch.' },
-    { id: 'bu.c.02', when: { of: 'cheating', cause: 'rival', kissed: true }, stage: 'The kitchen. It starts quiet, and it does not stay quiet.', turns: [
+    { id: 'bu.c.02', when: { of: 'cheating', cause: 'rival', kissed: true }, stage: "The kitchen. It starts quiet, and it doesn't stay quiet.", turns: [
       ['a', "Can I have a word?"], ['b', "Here's fine."], ['a', "You kissed my partner."],
       ['b', "Your partner kissed me."], ['a', "Don't do that. Don't twist it."], ['b', "I'm not twisting anything. I'm telling you what happened."],
-      ['a', "You smiled at me at breakfast the next morning!"], ['b', "What was I meant to do? Cry?"]], beat: 'Somebody takes the knives off the counter. Just in case.' },
+      ['a', "You smiled at me at breakfast the next morning!"], ['b', "What was I meant to do? Cry?"]], beat: 'Somebody moves between them.' },
     { id: 'bu.c.03', when: { of: 'cheating', cause: 'partner' }, turns: [
       ['a', "I'm so disappointed in you."], ['b', "It's not what you think."], ['a', "I saw it. We all saw it."],
       ['b', "It was one moment."], ['a', "One moment you kept secret for days."], ['b', "I was going to tell you."],
-      ['a', "When? After the final?"]], beat: '{a} is shaking. {b} cannot look up.' },
+      ['a', "When? After the final?"]], beat: "{a} is shaking. {b} can't look up." },
     { id: 'bu.c.04', when: { of: 'cheating', cause: 'partner' }, stage: 'By the fire pit, loud enough for the terrace to hear.', turns: [
       ['a', "You don't get to be the victim here."], ['b', "I'm not being the victim."], ['a', "Then stop crying!"],
       ['b', "I'm crying because you're screaming at me!"], ['a', "I'm screaming because you went behind my back!"],
@@ -63,7 +63,7 @@ export const BLOWUP_LINES = {
       ['a', "You've been waiting for this since day one."], ['b', "I've been waiting for you to be honest since day one."]] },
     { id: 'bu.t.02', when: { of: 'told' }, turns: [
       ['a', "You just couldn't keep your mouth shut, could you?"], ['b', "I'm a friend. To them."],
-      ['a', "And what am I?"], ['b', "Someone who should have kept their hands to themselves."]], beat: 'Half the villa gasps. The other half pretends not to.' },
+      ['a', "And what am I?"], ['b', "Someone who should have kept their hands to themselves."]], beat: 'Half the villa gasps.' },
     { id: 'bu.t.03', when: { of: 'told' }, stage: 'The kitchen, where it has been brewing all afternoon.', turns: [
       ['b', "I didn't make anything up."], ['a', "You didn't have to. You just made sure everyone heard."],
       ['b', "Would you rather they found out on a screen?"], ['a', "I'd rather you minded your own business!"]] },
@@ -80,7 +80,7 @@ export const BLOWUP_LINES = {
       ['b', "It's a sunbed!"], ['a', "In here, it's never just a sunbed."], ['b', "Honestly, you need to calm down."],
       ['a', "Don't tell me to calm down."]] },
     { id: 'bu.j.02', when: { of: 'jealousy', bTaken: false }, turns: [
-      ['a', "Keep your eyes on your own couple."], ['b', "I haven't got a couple."], ['a', "I know. And it shows."]], beat: 'That one lands, and everyone hears it land.' },
+      ['a', "Keep your eyes on your own couple."], ['b', "I haven't got a couple."], ['a', "I know. And it shows."]], beat: 'That one hurts, and everyone hears it.' },
     { id: 'bu.j.03', when: { of: 'jealousy' }, stage: 'The dressing room, then the corridor, then the whole villa.', turns: [
       ['a', "I've watched you all week."], ['b', "Then you've been watching the wrong person."],
       ['a', "Every time they laugh, you're there."], ['b', "People laugh around me. I'm funny."], ['a', "You're not that funny."]] },
@@ -103,11 +103,11 @@ export const BLOWUP_LINES = {
     { id: 'pi.03', turns: [['a', "Everyone's thinking it, so I'll say it. {b} is right."]], beat: 'That splits the room down the middle.' },
     { id: 'pi.04', turns: [['a', "I'm sorry, but I've got {b}'s back on this one."], ['c', "Of course you have."]] },
     { id: 'pi.05', turns: [['a', "Can we all just calm down? {b} hasn't done anything wrong."], ['c', "Are you joking?"]] },
-    { id: 'pi.06', turns: [['a', "You don't get to talk to {b} like that. Not in front of me."]], beat: '{c} laughs, and {a} does not.' },
+    { id: 'pi.06', turns: [['a', "You don't get to talk to {b} like that. Not in front of me."]], beat: "{c} laughs, and {a} doesn't." },
     { id: 'pi.07', turns: [['a', "Honestly, {c}, look at yourself right now."], ['c', "Look at myself? Look at {b}!"]] },
-    { id: 'pi.08', turns: [['a', "I'm with {b}. I'm sorry, {c}. I am."]], beat: '{c} looks at {a} like {a} has just picked a side for good. {a} has.' },
+    { id: 'pi.08', turns: [['a', "I'm with {b}. I'm sorry, {c}. I am."]], beat: '{c} stares at {a}. {a} has picked a side.' },
     { id: 'pi.09', turns: [['a', "You've been wanting a go at {b} all week, {c}. Don't pretend this is about anything else."]] },
-    { id: 'pi.10', turns: [['a', "{b}, come with me. Come on. You don't have to listen to this."]], beat: '{a} leads {b} away, and {c} is left shouting at nobody.' },
+    { id: 'pi.10', turns: [['a', "{b}, come with me. Come on. You don't have to listen to this."]], beat: '{a} leads {b} away, and {c} is left shouting on {c.posAdj} own.' },
   ],
   'villa-divided': [
     { id: 'vd.01', turns: [['narrator', "And just like that, there are two villas in one. One on the terrace, one in the kitchen."]], beat: 'Nobody crosses the lawn for the rest of the night.' },
@@ -118,10 +118,10 @@ export const BLOWUP_LINES = {
   ],
   'cold-shoulder': [
     { id: 'cs2.01', turns: [['a', "Morning."]], beat: '{b} looks straight through {a} and keeps walking.' },
-    { id: 'cs2.02', turns: [['a', "Can you pass the milk?"], ['b', "It's right there."]], beat: 'Neither of them moves for the milk.' },
+    { id: 'cs2.02', turns: [['a', "Can you pass the milk?"], ['b', "It's right there."]], beat: 'Neither of them moves.' },
     { id: 'cs2.03', stage: 'The kitchen goes quiet when {a} walks in and {b} is already there.', turns: [['b', "I'll come back later."]] },
     { id: 'cs2.04', turns: [['a', "Are we really not talking?"], ['b', "You made your choice the other night."]] },
-    { id: 'cs2.05', stage: '{a} sits down on the daybeds, and {b} gets up.', turns: [['a', "Seriously?"]], beat: '{b} does not turn round.' },
+    { id: 'cs2.05', stage: '{a} sits down on the daybeds, and {b} gets up.', turns: [['a', "Seriously?"]], beat: "{b} doesn't turn round." },
     { id: 'cs2.06', turns: [['b', "I heard what you said about me, by the way."], ['a', "Then you heard the truth."]] },
   ],
   'clear-the-air': [
@@ -133,7 +133,7 @@ export const BLOWUP_LINES = {
       ['a', "Clean slate?"], ['b', "Clean-ish slate."]], beat: 'The whole kitchen breathes out.' },
     { id: 'ca.p.03', when: { of: 'peace' }, stage: 'By the pool, late.', turns: [
       ['b', "I think we're more alike than we want to admit."], ['a', "That's what scares me."],
-      ['b', "Truce?"], ['a', "Truce."]], beat: 'They shake on it. Somebody on the terrace actually claps.' },
+      ['b', "Truce?"], ['a', "Truce."]], beat: 'They shake on it. Somebody on the terrace claps.' },
     { id: 'ca.a.01', when: { of: 'still-angry' }, turns: [
       ['a', "I wanted to clear the air."], ['b', "Then say sorry."], ['a', "I'm not saying sorry for being right."],
       ['b', "Then we've got nothing to talk about."]], beat: 'Neither of them budges an inch.' },

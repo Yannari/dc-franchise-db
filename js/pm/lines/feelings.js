@@ -65,7 +65,7 @@ export const FEELINGS = {
           { when: { attachment: 'secure' },
             turns: [['b', "Nothing. Come here. You don't need to worry about {c}."]], beat: '{a} lets {b.obj} pull {a.obj} in.' },
           { when: { mood: 'guilty' },
-            turns: [['b', 'Why? Has someone said something?']], beat: '{a} notices that it isn\'t a no.' },
+            turns: [['b', 'Why? Has someone said something?']], beat: "{a} notices {b} didn't say no." },
         ] },
       ] },
     { id: 'jealous-confront.03',
@@ -231,7 +231,7 @@ export const FEELINGS = {
         ['a', "Are you sure about us?"],
         ['b', "I asked you to be exclusive. I don't do that for fun."],
       ],
-      beat: '{a} laughs, and it sounds like relief.' },
+      beat: '{a} laughs, relieved.' },
     { id: 'reassurance.08',
       turns: [
         ['a', "I don't like feeling like this. All worried."],

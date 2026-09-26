@@ -14,7 +14,7 @@ export const PULL_MORE = [
       { by: 'b', vary: [
         { turns: [['b', 'I noticed.'], ['a', 'And?'], ['b', "And I didn't mind."]] },
         { when: { persona: 'wallflower' },
-          turns: [['b', '…Me?'], ['a', 'You.']], beat: '{b} looks at the floor, and smiles at it.' },
+          turns: [['b', '…Me?'], ['a', 'You.']], beat: '{b} looks at the floor and smiles.' },
         { when: { taken: true, loyal: true },
           turns: [['b', "Then stop. I'm happy where I am."]], beat: '{b} walks back to {b.posAdj} partner.' },
       ] },
@@ -87,7 +87,7 @@ export const PULL_MORE = [
       { by: 'b', vary: [
         { turns: [['b', 'Ten minutes. I\'m timing you.']], beat: '{b} goes with {a.obj} to the swing seat.' },
         { when: { taken: true, loyal: true },
-          turns: [['b', "We can talk here, in front of everyone. Not anywhere private."]], beat: '{b} does not move from the bench.' },
+          turns: [['b', "We can talk here, in front of everyone. Not anywhere private."]], beat: "{b} doesn't move from the bench." },
       ] },
     ] },
   { id: 'pull.17', when: { persona: 'fuckboy' },
@@ -96,7 +96,7 @@ export const PULL_MORE = [
       ['b', 'Is that meant to be a compliment?'],
       ['a', 'It came out wrong. You\'re better than my type.'],
       { by: 'b', vary: [
-        { turns: [['b', "Save it."]], beat: "{b} goes back to {b.posAdj} book, but doesn't turn the page." },
+        { turns: [['b', "Save it."]], beat: '{b} goes back to {b.posAdj} book, still smiling.' },
         { when: { persona: 'hopeless-romantic' },
           turns: [['b', '…Really?']], beat: '{a} grins.' },
       ] },

@@ -32,13 +32,13 @@ export const CASA_LINES = {
     // the walk back in, alone, to a partner who has moved on (the react follows)
     { id: 'cs.r.t1', when: { of: 'returned', choice: 'stick', withB: true, theirs: 'twist' }, stage: '{a} walks in alone, smiling, and then sees {b} on the bench with somebody new.', turns: [['a', "…Oh."]], beat: 'The smile goes, all at once.' },
     { id: 'cs.r.t2', when: { of: 'returned', choice: 'stick', withB: true, theirs: 'twist' }, stage: '{a} comes down the steps on {a.posAdj} own and looks for {b} in the crowd.', turns: [['a', "Why is everyone looking at me like that?"]], beat: 'Then {a} sees who {b} is sitting with.' },
-    { id: 'cs.r.t3', when: { of: 'returned', choice: 'stick', withB: true, theirs: 'twist' }, stage: 'The door opens. {a} is on {a.posAdj} own.', turns: [['narrator', "Alone. Loyal. And about to find out that not everybody was."]], beat: '{b} cannot look up.' },
+    { id: 'cs.r.t3', when: { of: 'returned', choice: 'stick', withB: true, theirs: 'twist' }, stage: 'The door opens. {a} is on {a.posAdj} own.', turns: [['narrator', "Alone. Loyal. And about to find out that not everybody was."]], beat: "{b} can't look up." },
     // the walk back in, with somebody new (a twisted; b is the new one)
-    { id: 'cs.w.01', when: { of: 'returned', choice: 'twist', taken: true }, stage: 'Two shadows at the top of the steps.', turns: [['narrator', "Two sets of footsteps. Somebody at the fire pit knows exactly what that means."], ['a', "Hi, everyone. This is {b}."]], beat: '{pa} does not move.' },
+    { id: 'cs.w.01', when: { of: 'returned', choice: 'twist', taken: true }, stage: 'Two shadows at the top of the steps.', turns: [['narrator', "Two sets of footsteps. Somebody at the fire pit knows exactly what that means."], ['a', "Hi, everyone. This is {b}."]], beat: "{pa} doesn't move." },
     { id: 'cs.w.02', when: { of: 'returned', choice: 'twist', taken: true }, stage: '{a} comes down the steps holding {b.posAdj} hand.', turns: [['a', "I'm sorry. I couldn't pretend."]], beat: '{pa} stares at the floor, and then at {b}.' },
-    { id: 'cs.w.03', when: { of: 'returned', choice: 'twist', taken: true }, stage: '{a} and {b} walk in together, and the fire pit goes silent.', turns: [['a', "I know this isn't what you wanted to see."]], beat: '{pa} laughs once, and it is not a laugh.' },
+    { id: 'cs.w.03', when: { of: 'returned', choice: 'twist', taken: true }, stage: '{a} and {b} walk in together, and the fire pit goes silent.', turns: [['a', "I know this isn't what you wanted to see."]], beat: '{pa} lets out a short laugh and looks away.' },
     { id: 'cs.w.04', when: { of: 'returned', choice: 'twist', taken: true }, stage: '{a} stops halfway down the steps with {b}.', turns: [['narrator', "And that is the sound of a couple ending."], ['a', "I had to follow what I felt."]] },
-    { id: 'cs.w.05', when: { of: 'returned', choice: 'twist', taken: true }, stage: '{b} walks in first. {a} follows, and cannot look at {pa}.', turns: [['a', "I didn't go there looking for this."]], beat: '{pa} gets up and walks off before anyone can stop them.' },
+    { id: 'cs.w.05', when: { of: 'returned', choice: 'twist', taken: true }, stage: "{b} walks in first. {a} follows, and can't look at {pa}.", turns: [['a', "I didn't go there looking for this."]], beat: '{pa} gets up and walks off before anyone can stop them.' },
     { id: 'cs.s.01', when: { of: 'stayed', choice: 'stick' }, stage: '{a} sits alone on the fire pit bench, staring at the steps.', turns: [['a', "I stuck. Whatever happens now, I stuck."]] },
     { id: 'cs.s.02', when: { of: 'stayed', choice: 'stick' }, stage: '{a} waits on the bench with an empty space beside {a.obj}.', turns: [['a', "That space is theirs. I just need them to walk back in and take it."]] },
     { id: 'cs.s.03', when: { of: 'stayed', choice: 'stick' }, stage: '{a} is on {a.posAdj} own at the fire pit, hands shaking.', turns: [['a', "Please come back alone. Please."]] },
@@ -61,13 +61,13 @@ export const CASA_LINES = {
     { id: 'cr.d.04', when: { of: 'devastated', cast: 3 }, turns: [['a', "I'm not going to cry. I'm not going to cry."]], beat: '{a} cries. Everyone is round {a.obj} in seconds.' },
     { id: 'cr.d.05', when: { of: 'devastated', cast: 3 }, turns: [['a', "Are you serious? With {c}?"], ['b', "I didn't plan it."], ['a', "You didn't plan it. Great. That makes it so much better."]] },
     // both twisted
-    { id: 'cr.b.01', when: { of: 'both', cast: 3 }, turns: [['b', "You too?"], ['a', "Don't look at me like that. You walked in holding hands."]], beat: 'The fire pit does not know where to look.' },
+    { id: 'cr.b.01', when: { of: 'both', cast: 3 }, turns: [['b', "You too?"], ['a', "Don't look at me like that. You walked in holding hands."]], beat: "The fire pit doesn't know where to look." },
     { id: 'cr.b.02', when: { of: 'both', cast: 3 }, turns: [['a', "Well. I suppose that answers that."], ['b', "I suppose it does."]], beat: 'Somebody laughs, nervously, and then stops.' },
     { id: 'cr.b.03', when: { of: 'both', cast: 3 }, turns: [['a', "I thought I was going to feel guilty."], ['b', "And?"], ['a', "And I don't. Not now."]] },
     // turned: a came back alone to b sitting with c
-    { id: 'cr.t.01', when: { of: 'turned', cast: 3 }, stage: '{a} walks back in alone, and stops dead at the top of the steps.', turns: [['a', "…No."], ['b', "I'm sorry. I didn't think you'd come back on your own."]], beat: '{a} does not move for a long time.' },
+    { id: 'cr.t.01', when: { of: 'turned', cast: 3 }, stage: '{a} walks back in alone, and stops dead at the top of the steps.', turns: [['a', "…No."], ['b', "I'm sorry. I didn't think you'd come back on your own."]], beat: "{a} doesn't move for a long time." },
     { id: 'cr.t.02', when: { of: 'turned', cast: 3 }, turns: [['a', "I stayed loyal. For you. And you're sitting there with {c}?"], ['b', "I thought you'd twist."], ['a', "You thought wrong."]] },
-    { id: 'cr.t.03', when: { of: 'turned', cast: 3 }, turns: [['a', "I turned down someone amazing because of you."]], beat: '{b} cannot look at {a}. {c} squeezes {b.posAdj} hand.' },
+    { id: 'cr.t.03', when: { of: 'turned', cast: 3 }, turns: [['a', "I turned down someone amazing because of you."]], beat: "{b} can't look at {a}. {c} squeezes {b.posAdj} hand." },
     { id: 'cr.t.04', when: { of: 'turned', cast: 3 }, turns: [['a', "I came back for you. I actually came back for you."], ['b', "I know. I'm so sorry."]], beat: 'The whole villa goes silent.' },
   ],
   'casa-row': [
@@ -103,9 +103,9 @@ export const CASA_LINES = {
   photos: [
     { id: 'ph.2.01', stage: '{a} turns the photo over.', turns: [['a', "Is that you?"], ['b', "Let me see."], ['a', "No. You don't need to see. You were there."]], beat: '{a} drops the photo on the bench.' },
     { id: 'ph.2.02', stage: '{a} holds the photo very still.', turns: [['a', "Look how close you are."], ['b', "We were only talking."], ['a', "Talking doesn't look like that."]] },
-    { id: 'ph.2.03', stage: 'The photo goes round the fire pit, and stops at {a}.', turns: [['a', "I thought about you every night that week. And you were doing that."]], beat: '{b} does not say anything.' },
+    { id: 'ph.2.03', stage: 'The photo goes round the fire pit, and stops at {a}.', turns: [['a', "I thought about you every night that week. And you were doing that."]], beat: "{b} doesn't say anything." },
     { id: 'ph.2.04', stage: '{a} stares at the photo, and then at {b}.', turns: [['a', "When was this?"], ['b', "During Casa."], ['a', "While I was sitting there missing you?"]] },
-    { id: 'ph.2.05', stage: '{a} laughs at the photo, and it is not a happy laugh.', turns: [['a', "Great. Brilliant. Thanks for that."], ['b', "It's not what it looks like."], ['a', "It's always what it looks like."]] },
+    { id: 'ph.2.05', stage: "{a} laughs at the photo, and it isn't a happy laugh.", turns: [['a', "Great. Brilliant. Thanks for that."], ['b', "It's not what it looks like."], ['a', "It's always what it looks like."]] },
     { id: 'ph.2.06', stage: '{a} holds up the photo so the whole fire pit can see it.', turns: [['a', "Anyone want to explain this one? No?"]], beat: '{b} stands up, and then sits back down.' },
   ],
   'photo-row': [

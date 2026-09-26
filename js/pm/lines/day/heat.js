@@ -127,7 +127,7 @@ export const HEAT_LINES = {
       ['a', "I've been trying to get you on your own all day."], ['b', "I knew it."],
       ['a', "You did not know it."], ['b', "I had a strong feeling."],
       ['a', "Is it working?"], ['b', "Ask me again in five minutes."]],
-      beat: 'They are both laughing when someone walks past.' },
+      beat: "They're both laughing when someone walks past." },
     { id: 'ht.f7', stage: 'The terrace, just the two of them.', turns: [
       ['b', "What would we be doing right now, if we were on the outside?"], ['a', "Dinner. Somewhere nice."],
       ['b', "You'd pay?"], ['a', "I'd offer to pay."], ['b', "And then?"],

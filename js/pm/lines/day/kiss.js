@@ -8,7 +8,7 @@ export const KISS = [
       { by: 'b', vary: [
         { turns: [['b', "You've been asking me with your eyes since lunch. Yes."]], beat: '{a} does.' },
         { when: { persona: 'wallflower' },
-          turns: [['b', '…Yeah.']], beat: '{a} does, and {b} is smiling before it is over.' },
+          turns: [['b', '…Yeah.']], beat: "{a} does, and {b} is smiling before it's over." },
         { when: { persona: 'villa-clown' },
           turns: [['b', 'Took you long enough.']], beat: '{b} kisses {a.obj} first.' },
       ] },
@@ -106,7 +106,7 @@ export const KISS = [
         { turns: [['a', 'That was more than alright.']], beat: '{b} grins and hides {b.posAdj} face in {a.posAdj} neck.' },
         { when: { persona: 'checklist' },
           turns: [['a', "It was good. I'll give it an eight."], ['b', 'An eight?'], ['a', "There's room to improve."]],
-          beat: '{b} improves on it straight away.' },
+          beat: '{b} kisses {a.obj} back, harder.' },
       ] },
     ] },
   { id: 'kiss.15',

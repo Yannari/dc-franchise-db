@@ -10,7 +10,7 @@ export const MORE_B = {
     { id: 'co2.03', stage: '{a} sings in the shower, loudly, and the whole garden joins in the chorus.', turns: [['a', "I didn't know you could all hear that."]] },
     { id: 'co2.04', stage: '{a} tries to cook pasta and sets off the smoke alarm.', turns: [['a', "It's fine! It's fine. Everybody stay calm."]] },
     { id: 'co2.05', stage: '{a} falls asleep on a sunbed and wakes up with a very clear tan line.', turns: [['a', "Why did nobody wake me up?"]] },
-    { id: 'co2.06', when: { phase: 'morning' }, stage: '{a} does an impression of the host at breakfast. It is not a good impression.', turns: [['a', "Okay, that one needs work."]] },
+    { id: 'co2.06', when: { phase: 'morning' }, stage: "{a} does an impression of the host at breakfast. It isn't a good impression.", turns: [['a', "Okay, that one needs work."]] },
     { id: 'co2.07', stage: '{a} tries to open a coconut with a spoon.', turns: [['a', "I've seen it done. On the internet."]] },
     { id: 'co2.08', stage: '{a} walks straight into the glass door. Again.', turns: [['a', "Who keeps cleaning it? Stop cleaning it."]] },
     { id: 'co2.09', stage: '{a} explains the rules of a card game nobody has ever heard of.', turns: [['a', "No, you're not listening. The joker is worth nine."]] },
@@ -66,7 +66,7 @@ export const MORE_B = {
     { id: 'ks2.06', stage: '{a} kisses {b} on the forehead on the way past.', turns: [['b', "What was that for?"], ['a', "Nothing. Just because."]] },
     { id: 'ks2.07', turns: [['a', "I've been wanting to do that all day."], ['b', "Then why did you wait?"]] },
     { id: 'ks2.08', when: { phase: 'evening' }, stage: 'A quick kiss before the fire pit.', turns: [['a', "For luck."], ['b', "We don't need luck."]] },
-    { id: 'ks2.09', stage: '{a} goes in for a kiss and {b} pulls away slightly.', turns: [['a', "Everything okay?"], ['b', "Yeah. Just not in front of everyone."]], beat: '{a} nods, and does not believe it.' },
+    { id: 'ks2.09', stage: '{a} goes in for a kiss and {b} pulls away slightly.', turns: [['a', "Everything okay?"], ['b', "Yeah. Just not in front of everyone."]], beat: "{a} nods, and doesn't believe it." },
     { id: 'ks2.10', stage: 'The kiss is short, and neither of them says anything after it.', turns: [['a', "Are we good?"], ['b', "We're fine."]] },
     { id: 'ks2.11', stage: '{a} kisses {b}, who is still looking over at someone else.', turns: [['a', "Hello? I'm here."], ['b', "Sorry. Sorry."]] },
     { id: 'ks2.12', turns: [['a', "You taste like sun cream."], ['b', "That's the most romantic thing you've ever said."]] },
@@ -80,11 +80,11 @@ export const MORE_B = {
   // gossip [a, b, c]: a saw it, b is c's partner, c did it. Always `knows`.
   gossip: [
     { id: 'gs2.01', when: { knows: true }, turns: [['a', "I'm only telling you because I'd want to know."], ['b', "What happened?"], ['a', "{c} was by the pool with someone for a long time."]] },
-    { id: 'gs2.02', when: { knows: true }, turns: [['a', "I don't want to cause drama. But I saw {c} in the hideaway."], ['b', "With who?"]], beat: '{a} does not answer straight away.' },
+    { id: 'gs2.02', when: { knows: true }, turns: [['a', "I don't want to cause drama. But I saw {c} in the hideaway."], ['b', "With who?"]], beat: "{a} doesn't answer straight away." },
     { id: 'gs2.03', when: { knows: true }, turns: [['a', "Can I have a word? It's about {c}."], ['b', "Just tell me."], ['a', "It wasn't just a chat last night."]] },
     { id: 'gs2.04', when: { knows: true }, turns: [['a', "You're one of my best friends in here. So I have to say it."], ['b', "Say what?"], ['a', "{c} kissed someone."]] },
     { id: 'gs2.05', when: { knows: true }, turns: [['a', "I've been going back and forth about telling you."], ['b', "Is this about {c}?"], ['a', "Yeah."]] },
-    { id: 'gs2.06', when: { knows: true }, turns: [['a', "I saw something I wasn't meant to see."], ['b', "Please don't say it's {c}."]], beat: '{a} says nothing, which says enough.' },
+    { id: 'gs2.06', when: { knows: true }, turns: [['a', "I saw something I wasn't meant to see."], ['b', "Please don't say it's {c}."]], beat: '{a} says nothing.' },
     { id: 'gs2.07', when: { knows: true }, turns: [['a', "{c} isn't being honest with you."], ['b', "How do you know?"], ['a', "Because I was there."]] },
     { id: 'gs2.08', when: { knows: true }, turns: [['a', "I think you deserve better than someone who does that behind your back."], ['b', "Does what?"]] },
     { id: 'gs2.09', when: { knows: true }, turns: [['a', "I'm sorry. I thought you already knew."], ['b', "Knew what?"], ['a', "About {c} and the late-night chat."]] },
@@ -139,7 +139,7 @@ export const MORE_B = {
     { id: 'ik2.09', stage: '{b} says "babe" at the end of every sentence.', turns: [['a', "Can you stop saying babe for five minutes?"], ['b', "Why, babe?"]] },
     { id: 'ik2.10', stage: '{b} sulks after losing a game of volleyball.', turns: [['a', "It's volleyball. We lost. It's fine."]] },
     { id: 'ik2.11', stage: '{b} drinks straight out of the milk carton.', turns: [['a', "There are cups. There are loads of cups."]] },
-    { id: 'ik2.12', stage: '{b} sneezes and does not cover it.', turns: [['a', "Right. I'm going for a swim."]] },
+    { id: 'ik2.12', stage: "{b} sneezes and doesn't cover it.", turns: [['a', "Right. I'm going for a swim."]] },
   ],
 };
 
@@ -148,7 +148,7 @@ export const MORE_MOMENTS = {
 
   // save-tie [a, b(, c)]: a is saved on the public's votes; b (and c) tied with a.
   'save-tie': [
-    { id: 'st.01', turns: [['dior', "We have a tie. {a} and {b} have the same number of saves."], ['dior', "So the public's votes decide. And the islander the public saved is… {a}."]], beat: '{b} nods slowly, and does not look at anyone.' },
+    { id: 'st.01', turns: [['dior', "We have a tie. {a} and {b} have the same number of saves."], ['dior', "So the public's votes decide. And the islander the public saved is… {a}."]], beat: "{b} nods slowly, and doesn't look at anyone." },
     { id: 'st.02', turns: [['dior', "It's level. Nobody in the villa can split {a} and {b}."], ['dior', "The public can. Of the two, they voted for {a}."]] },
     { id: 'st.03', turns: [['dior', "Islanders, the saves are tied between {a} and {b}."], ['dior', "The tie goes to whoever the public voted for the most, and that's {a}."]], beat: '{a} breathes out. {b} gets a hug from the islanders either side.' },
     { id: 'st.04', turns: [['dior', "{a}, {b}: a tie."], ['dior', "Which means it comes down to the public. {a}, you are safe."]], beat: '{b} manages a smile, just.' },
@@ -180,16 +180,16 @@ export const MORE_MOMENTS = {
     { id: 'env.s.02', when: { choice: 'split' }, stage: 'The host hands {a} the envelope.', turns: [['dior', "{a}, split or steal?"], ['a', "Split. Obviously. I'd have split it with {b} on day one."]] },
     { id: 'env.s.03', when: { choice: 'split' }, stage: '{a} opens the envelope slowly, drawing it out.', turns: [['b', "Stop it. Stop it, I can't breathe."], ['a', "Split."]], beat: '{b} hits {a.obj} on the arm, then kisses {a.obj}.' },
     { id: 'env.s.04', when: { choice: 'split' }, stage: '{a} takes the envelope and looks straight at {b}.', turns: [['a', "We did this together. We're sharing it together."]] },
-    { id: 'env.t.01', when: { choice: 'steal' }, stage: '{a} holds the envelope for a long time.', turns: [['a', "I'm sorry. I'm stealing."]], beat: '{b} stares at {a}, and does not say a word. The fire pit goes completely silent.' },
+    { id: 'env.t.01', when: { choice: 'steal' }, stage: '{a} holds the envelope for a long time.', turns: [['a', "I'm sorry. I'm stealing."]], beat: "{b} stares at {a}, and doesn't say a word. The fire pit goes completely silent." },
     { id: 'env.t.02', when: { choice: 'steal' }, stage: 'The host hands {a} the envelope.', turns: [['dior', "{a}, split or steal?"], ['a', "…Steal."], ['b', "You're joking. Tell me you're joking."]] },
-    { id: 'env.t.03', when: { choice: 'steal' }, stage: '{a} opens the envelope, and cannot look at {b}.', turns: [['a', "I need this money. I'm sorry."], ['b', "After everything?"]], beat: 'The whole villa turns to look at {a}.' },
+    { id: 'env.t.03', when: { choice: 'steal' }, stage: "{a} opens the envelope, and can't look at {b}.", turns: [['a', "I need this money. I'm sorry."], ['b', "After everything?"]], beat: 'The whole villa turns to look at {a}.' },
   ],
   // step-forward [a, b]: boy a walks in; b is the girl he couples with (`of`).
   'step-forward': [
     { id: 'sf2.01', when: { of: 'one' }, stage: '{a} reaches the fire pit. {b} is the only one to step forward.', turns: [['a', "Just you?"], ['b', "Just me. Is that a problem?"], ['a', "Not at all."]] },
     { id: 'sf2.02', when: { of: 'one' }, stage: '{b} steps forward the second {a} comes into view.', turns: [['b', "Sorry. I didn't even wait. I just went."], ['a', "I'm glad you did."]] },
     { id: 'sf2.03', when: { of: 'one' }, stage: '{a} walks in, and {b} takes one step forward, a little nervously.', turns: [['a', "Hi. I'm {a}."], ['b', "I know. We all heard. Hi."]], beat: 'They both laugh, and it breaks the ice.' },
-    { id: 'sf2.04', when: { of: 'one' }, stage: 'Only {b} steps forward for {a}.', turns: [['a', "Right. Well. Nice to meet you, {b}."], ['b', "You don't sound very excited."], ['a', "I'm excited. I'm just nervous."]], beat: '{b} is not completely sure.' },
+    { id: 'sf2.04', when: { of: 'one' }, stage: 'Only {b} steps forward for {a}.', turns: [['a', "Right. Well. Nice to meet you, {b}."], ['b', "You don't sound very excited."], ['a', "I'm excited. I'm just nervous."]], beat: "{b} isn't completely sure." },
     { id: 'sf2.05', when: { of: 'one' }, stage: '{a} comes down the steps, and {b} steps forward straight away.', turns: [['b', "You're exactly my type. I'm not going to pretend."], ['a', "Well, now I'm blushing."]] },
     { id: 'sf2.06', when: { of: 'one' }, stage: '{b} steps forward for {a}. Nobody else moves.', turns: [['a', "Looks like we're a couple, then."], ['b', "Looks like it. Come and stand with me."]] },
     { id: 'sf2.07', when: { of: 'one' }, stage: '{a} arrives, and after a long pause {b} steps forward.', turns: [['a', "That was a long wait."], ['b', "I was thinking about it."], ['a', "And?"], ['b', "And here I am."]] },
@@ -246,7 +246,7 @@ export const MORE_MOMENTS = {
   ],
   // notes [a, b]: a wrote an anonymous note about b; `guessed`.
   notes: [
-    { id: 'nt2.01', when: { guessed: true }, stage: 'The note about {b} says they are playing a game.', turns: [['b', "I know exactly who wrote that."]], beat: '{b} stares straight at {a}.' },
+    { id: 'nt2.01', when: { guessed: true }, stage: "The note about {b} says they're playing a game.", turns: [['b', "I know exactly who wrote that."]], beat: '{b} stares straight at {a}.' },
     { id: 'nt2.02', when: { guessed: false }, stage: 'A note is read out: someone thinks {b} is fake.', turns: [['b', "Fake? I've been nothing but myself."]], beat: '{a} keeps very still.' },
     { id: 'nt2.03', when: { guessed: false }, stage: "The note says {b} is only nice to the people who can help them.", turns: [['b', "That's not true. That's really not true."]] },
     { id: 'nt2.04', when: { guessed: true }, stage: 'A note says {b} talks behind people\'s backs.', turns: [['b', "Funny, coming from you."], ['a', "What makes you think it was me?"]] },
@@ -279,10 +279,10 @@ export const MORE_MOMENTS = {
   ],
   // snog-marry-pie [a, b, c, d]: a snogs b, marries c, pies d (`full`).
   'snog-marry-pie': [
-    { id: 'smp2.01', when: { full: true }, turns: [['a', "Pie first, because I've been waiting all day. {d}."], ['a', "Snog, {b}. Marry, {c}."]], beat: '{d} did not see it coming, and wipes the cream off slowly.' },
+    { id: 'smp2.01', when: { full: true }, turns: [['a', "Pie first, because I've been waiting all day. {d}."], ['a', "Snog, {b}. Marry, {c}."]], beat: "{d} didn't see it coming, and wipes the cream off slowly." },
     { id: 'smp2.02', when: { full: true }, turns: [['a', "This is so hard. Okay. Marry {c}, because {c} makes me laugh."], ['a', "Snog {b}. And {d}, come here."]], beat: '{d} gets up, knowing exactly what is coming.' },
-    { id: 'smp2.03', when: { full: true, taken: true }, turns: [['a', "I'm marrying {c}. The snog is {b}, and that's all I'll say about that."], ['a', "Pie, {d}."]], beat: '{pa} does not laugh along.' },
-    { id: 'smp2.04', when: { full: true }, turns: [['a', "{d}, you know why. Pie."]], beat: '{d} does know why, and the cream goes everywhere.' },
+    { id: 'smp2.03', when: { full: true, taken: true }, turns: [['a', "I'm marrying {c}. The snog is {b}, and that's all I'll say about that."], ['a', "Pie, {d}."]], beat: "{pa} doesn't laugh along." },
+    { id: 'smp2.04', when: { full: true }, turns: [['a', "{d}, you know why. Pie."]], beat: '{d} laughs, and the cream goes everywhere.' },
   ],
 };
 
@@ -295,11 +295,11 @@ export const MORE_FEELINGS = {
     { id: 'ad2.03', when: { verdict: 'good' }, turns: [['a', "I was wrong about {c}, by the way."], ['b', "What did you think?"], ['a', "That {c} was playing a game. I don't think that any more."]] },
     { id: 'ad2.04', when: { verdict: 'good' }, turns: [['b', "Should I tell {c} how I feel?"], ['a', "Tonight. Don't wait for a better moment. There isn't one."]] },
     { id: 'ad2.05', when: { verdict: 'good' }, turns: [['a', "{c} asked me what you're like when you're sad."], ['b', "What did you say?"], ['a', "The truth. And {c} listened to every word."]] },
-    { id: 'ad2.06', when: { verdict: 'bad' }, turns: [['a', "I've watched {c} when you're not around."], ['b', "And?"], ['a', "It's a different person. That's all I'll say."]], beat: '{b} does not ask for more, and thinks about it all day.' },
+    { id: 'ad2.06', when: { verdict: 'bad' }, turns: [['a', "I've watched {c} when you're not around."], ['b', "And?"], ['a', "It's a different person. That's all I'll say."]], beat: "{b} doesn't ask for more, and thinks about it all day." },
     { id: 'ad2.07', when: { verdict: 'bad' }, turns: [['b', "You don't like {c}, do you?"], ['a', "I don't like how {c} treats you. That's different."]] },
     { id: 'ad2.08', when: { verdict: 'bad' }, turns: [['a', "Do you actually feel happy with {c}? Or just safe?"], ['b', "Why can't it be both?"], ['a', "It can. I just don't think it is."]] },
     { id: 'ad2.09', when: { verdict: 'bad' }, turns: [['a', "You keep making excuses for {c}."], ['b', "I don't."], ['a', "You just did one. Before I'd even finished."]] },
-    { id: 'ad2.10', when: { verdict: 'bad' }, turns: [['b', "Just tell me what you think."], ['a', "I think you'd be happier on your own than with {c}."]], beat: '{b} does not speak to {a} for the rest of the afternoon.' },
+    { id: 'ad2.10', when: { verdict: 'bad' }, turns: [['b', "Just tell me what you think."], ['a', "I think you'd be happier on your own than with {c}."]], beat: "{b} doesn't speak to {a} for the rest of the afternoon." },
     { id: 'ad2.11', when: { verdict: 'unsure' }, turns: [['b', "I can't read {c} at all."], ['a', "Neither can I. Which is probably worth talking about."]] },
     { id: 'ad2.12', when: { verdict: 'unsure' }, turns: [['a', "Can I ask you something? Do you like {c}, or do you like having someone?"], ['b', "…I don't know."], ['a', "That's alright. Just work it out before the next recoupling."]] },
     { id: 'ad2.13', when: { verdict: 'unsure' }, turns: [['b', "Everyone keeps saying {c} is great."], ['a', "What do you say?"], ['b', "I say {c} is great. I just don't feel it yet."]] },
@@ -313,10 +313,10 @@ export const MORE_LADDER = {
     { id: 'ko2.01', turns: [['a', "I'm not saying no. I'm saying not yet."], ['b', "How long is not yet?"], ['a', "I don't know. That's the honest answer."]], beat: '{b} goes to bed early.' },
     { id: 'ko2.02', turns: [['a', "If someone new walks in, I want to be able to talk to them."], ['b', "Talk. Right."], ['a', "Just talk."]] },
     { id: 'ko2.03', turns: [['a', "I've been hurt before by rushing. I'm not doing it again."], ['b', "I get that. I just wish it wasn't me paying for it."]] },
-    { id: 'ko2.04', turns: [['a', "You're the one I'm most interested in. I'm just not closed off."], ['b', "Most interested. Okay."]], beat: '{b} repeats it to a friend later, twice.' },
+    { id: 'ko2.04', turns: [['a', "You're the one I'm most interested in. I'm just not closed off."], ['b', "Most interested. Okay."]], beat: '{b} tells a friend about it later, grinning.' },
     { id: 'ko2.05', turns: [['b', "Are you keeping your options open?"], ['a', "A little bit. Is that bad?"], ['b', "It's not bad. It's just not what I wanted to hear."]] },
-    { id: 'ko2.06', when: { feels: 'little' }, turns: [['a', "I don't think I'm ready to close off."], ['b', "Honestly, me neither."]], beat: 'They shake on it, which is not very romantic.' },
-    { id: 'ko2.07', when: { attachment: 'anxious' }, turns: [['a', "I just want to see what else is out there."], ['b', "So I'm not enough."], ['a', "That's not what I said."]], beat: '{b} does not believe it all evening.' },
+    { id: 'ko2.06', when: { feels: 'little' }, turns: [['a', "I don't think I'm ready to close off."], ['b', "Honestly, me neither."]], beat: 'They shake on it, and both laugh.' },
+    { id: 'ko2.07', when: { attachment: 'anxious' }, turns: [['a', "I just want to see what else is out there."], ['b', "So I'm not enough."], ['a', "That's not what I said."]], beat: "{b} doesn't really believe it." },
     { id: 'ko2.08', when: { late: true }, turns: [['b', "We're this far in and you're still open?"], ['a', "I know how it sounds."], ['b', "I don't think you do."]] },
   ],
 };

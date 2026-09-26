@@ -104,7 +104,7 @@ export const CHALLENGE_KISS = [
     turns: [
       ['a', "I'm going for points."],
       { by: 'b', vary: [
-        { turns: [['b', "Go on, then."]], beat: "{a} kisses {b}, and it goes on longer than anybody needed it to." },
+        { turns: [['b', "Go on, then."]], beat: "{a} kisses {b}, and it's a long one." },
         { when: { taken: true, loyal: true },
           turns: [['b', 'Just a quick one on the cheek. I mean it.']], beat: '{a} goes for the cheek.' },
         { when: { persona: 'fuckboy' },
@@ -114,7 +114,7 @@ export const CHALLENGE_KISS = [
   { id: 'challenge-kiss.03', when: { taken: true },
     stage: "{a} looks at {a.posAdj} partner, then walks straight past.",
     turns: [['a', "It's for the challenge."]],
-    beat: '{a} kisses {b}, and does not look back.' },
+    beat: "{a} kisses {b}, and doesn't look back." },
   { id: 'challenge-kiss.04',
     turns: [['b', 'Me? Seriously?'], ['a', "Seriously."]],
     beat: 'The kiss gets the loudest scream of the day.' },
@@ -130,7 +130,7 @@ export const CHALLENGE_KISS = [
     beat: '{a} walks up to {b} without breaking stride.' },
   { id: 'challenge-kiss.08', when: { persona: 'game-player' },
     turns: [['a', 'Might as well make it count.']],
-    beat: '{a} takes {b.posAdj} face in both hands, for the cameras as much as anyone.' },
+    beat: '{a} takes {b.posAdj} face in both hands and kisses {b.obj}.' },
   { id: 'challenge-kiss.09',
     turns: [['b', 'Everyone is watching.'], ['a', "That's sort of the point."]] },
   { id: 'challenge-kiss.10', when: { taken: true, loyal: true },

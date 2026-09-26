@@ -48,7 +48,7 @@ export const GOSSIP = [
       ['b', "Then why have you brought me out here?"],
       ['a', "Because you deserve better than {c}. And after what I saw, I think you know it too."],
       { by: 'b', vary: [
-        { turns: [['b', 'What did you see?']], beat: '{a} tells {b.obj}, and makes it sound slightly worse than it was.' },
+        { turns: [['b', 'What did you see?']], beat: '{a} tells {b.obj}, and makes it sound worse than it was.' },
         { when: { persona: 'checklist' },
           turns: [['b', "Why do you care what I deserve?"], ['a', "I just do."], ['b', 'Hm.']],
           beat: "{b} listens to all of it, and watches {a} the whole time." },

@@ -14,7 +14,7 @@ export const KISS_ROUND_LINES = {
   'tod-truth': [
     { id: 'tt.nc1', when: { of: 'named-coupled' }, stage: '{a} picks truth. The card: who in here, apart from your partner, would you most like to kiss?', turns: [['a', "…Honestly? {b}."], ['c', "Wow. Okay."]], beat: '{b} looks pleased.' },
     { id: 'tt.nc2', when: { of: 'named-coupled' }, stage: "{a}'s card asks who {a} would pull if {a} was single.", turns: [['a', "It's got to be {b}."]], beat: '{c} puts {c.posAdj} drink down.' },
-    { id: 'tt.nc3', when: { of: 'named-coupled' }, turns: [['a', "Truth. Go on."], ['a', "Who would I go for, apart from {c}? …{b}. Sorry. It's the truth."]], beat: 'The villa gasps. {c} does not say a word.' },
+    { id: 'tt.nc3', when: { of: 'named-coupled' }, turns: [['a', "Truth. Go on."], ['a', "Who would I go for, apart from {c}? …{b}. Sorry. It's the truth."]], beat: "The villa gasps. {c} doesn't say a word." },
     { id: 'tt.ns1', when: { of: 'named-single' }, stage: '{a} picks truth. Who would you most like to couple up with?', turns: [['a', "{b}. I've never hidden it."], ['b', "Oh. Okay then."]], beat: 'The villa whoops.' },
     { id: 'tt.ns2', when: { of: 'named-single' }, turns: [['a', "You want the truth? It's {b}. It's been {b} for days."]], beat: '{b} goes pink.' },
     { id: 'tt.d1', when: { of: 'dodge' }, stage: '{a} reads the card for a long time.', turns: [['a', "Can I take a dare instead?"], ['b', "Why can't you answer it?"]], beat: '{b} notices.' },
@@ -39,14 +39,14 @@ export const KISS_ROUND_LINES = {
     // ── crush: the one they actually fancy ──
     { id: 'gk.c1', when: { of: 'crush', taken: true }, stage: "{a} walks right past {pa} and kisses {b}.", turns: [['a', "It's a game. It's a game!"]], beat: '{pa} has stopped smiling.' },
     { id: 'gk.c2', when: { of: 'crush', taken: true }, stage: '{a} kisses {b} for a long time.', turns: [['a', "…What? That's the challenge."]], beat: 'The whole villa turns to look at {pa}.' },
-    { id: 'gk.c3', when: { of: 'crush', taken: false }, stage: '{a} goes for {b}, and does not hold back.', turns: [['b', "Well. Hello."], ['a', "I've been waiting all day to do that."]], beat: 'The villa screams.' },
+    { id: 'gk.c3', when: { of: 'crush', taken: false }, stage: "{a} goes for {b}, and doesn't hold back.", turns: [['b', "Well. Hello."], ['a', "I've been waiting all day to do that."]], beat: 'The villa screams.' },
     { id: 'gk.c4', when: { of: 'crush' }, turns: [['a', "I'm not going to lie. I've wanted to do that for a while."], ['b', "I could tell."]], beat: 'The whole lawn whoops.' },
     { id: 'gk.c5', when: { of: 'crush', bTaken: true }, stage: '{a} kisses {b}, with {pb} standing right there.', turns: [['b', "Oh my God."]], beat: "{pb} is staring at the floor." },
     { id: 'gk.c6', when: { of: 'crush', game: 'snogger' }, stage: "{b} is blindfolded and doesn't know who it is. Everyone else does.", turns: [['b', "Whoever that was… wow."]], beat: '{a} walks back to the line, not looking at anyone.' },
     { id: 'gk.c7', when: { of: 'crush' }, stage: '{a} and {b} kiss for a long time.', turns: [['a', "Sorry. Got carried away."], ['b', "Don't be sorry."]] },
     // ── stir: on purpose, to shake a couple ──
     { id: 'gk.s1', when: { of: 'stir', bTaken: true }, stage: '{a} looks straight at {pb}, and then kisses {b}.', turns: [['a', "What? It's only a game."]], beat: '{pb} goes quiet.' },
-    { id: 'gk.s2', when: { of: 'stir', bTaken: true }, turns: [['a', "I'm picking {b}. Sorry, {pb}. Not sorry."]], beat: 'There is a gasp from the benches.' },
+    { id: 'gk.s2', when: { of: 'stir', bTaken: true }, turns: [['a', "I'm picking {b}. Sorry, {pb}. Not sorry."]], beat: "There's a gasp from the benches." },
     { id: 'gk.s3', when: { of: 'stir' }, stage: '{a} takes {a.posAdj} time choosing. Everyone is watching.', turns: [['a', "I think I'll go with… {b}."]], beat: '{a} is smiling. Nobody else is.' },
     { id: 'gk.s4', when: { of: 'stir', bTaken: true }, stage: '{a} kisses {b} for a long time, then looks at {pb}.', turns: [['a', "Just having fun."]], beat: "{pb} isn't laughing." },
     { id: 'gk.s5', when: { of: 'stir' }, turns: [['a', "It's a challenge. Everyone's so sensitive."]], beat: '{a} wipes {a.posAdj} lipstick off {b} in front of everyone.' },

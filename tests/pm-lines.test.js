@@ -137,7 +137,11 @@ describe('the words follow the rules', () => {
       'cause something else', 'a really nice job',
       // round 6: the steamy narrator's quips (user: "'Theo's hands would like a word' — this isn't good writing, we talked about this")
       'would like a word', 'very much on', 'doing a lot of work', 'extremely well', 'it was not a yes', 'not broken',
-      'with extra steps', 'is not sleeping'];
+      'with extra steps', 'is not sleeping',
+      // round 7: the old library in plain talk (user: "go through the old ones too … just talk normally")
+      'which says enough', 'which is an answer', 'least of all', 'a second too long', 'longer than it needed',
+      'longer than anybody needed', 'hide your partners', 'pass the rest of the villa', 'nobody knew they were',
+      'very, very quiet', 'somehow that', 'a dent in it', 'is proof of that', 'looks very pleased with fate'];
     const bad = [];
     for (const [k, e] of ENTRIES) for (const x of texts(e)) for (const c of CLEVER) if (x.toLowerCase().includes(c)) bad.push(`${k} ${e.id}: "${c}"`);
     expect(bad).toEqual([]);

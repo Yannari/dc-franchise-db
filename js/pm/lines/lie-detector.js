@@ -83,7 +83,7 @@ export const LIE_LINES = {
   ],
 
   'lie-react': [
-    { id: 'lx.rl.01', when: { of: 'relief' }, turns: [['c', "Oh, thank God."]], beat: '{c} breathes out for what feels like the first time all day.' },
+    { id: 'lx.rl.01', when: { of: 'relief' }, turns: [['c', "Oh, thank God."]], beat: '{c} lets out a long breath.' },
     { id: 'lx.rl.02', when: { of: 'relief' }, turns: [['c', "See? I knew it."]], beat: 'The villa claps. {a} looks over and grins.' },
     { id: 'lx.rl.03', when: { of: 'relief' }, turns: [['a', "Told you."], ['c', "I believed you. I just wanted to hear it."]] },
     { id: 'lx.rl.04', when: { of: 'relief' }, beat: '{c} puts a hand on {c.posAdj} chest and smiles for the first time today.' },
@@ -91,15 +91,15 @@ export const LIE_LINES = {
     { id: 'lx.h.02', when: { of: 'hurt' }, turns: [['c', "Wow."]], beat: '{c} stares at the floor. Somebody reaches for {c.posAdj} hand.' },
     { id: 'lx.h.03', when: { of: 'hurt' }, turns: [['a', "I swear to you, that's not true."], ['c', "Don't. Not in front of everyone."]] },
     { id: 'lx.h.04', when: { of: 'hurt' }, turns: [['c', "Okay. Next question."]], beat: '{c} is trying very hard not to cry, and everyone can see it.' },
-    { id: 'lx.s.01', when: { of: 'stung' }, turns: [['c', "At least you were honest."]], beat: 'It is clearly not much comfort.' },
+    { id: 'lx.s.01', when: { of: 'stung' }, turns: [['c', "At least you were honest."]], beat: "It's clearly not much comfort." },
     { id: 'lx.s.02', when: { of: 'stung' }, turns: [['a', "I'm sorry. I wasn't going to lie."], ['c', "No. I know. Thank you."]] },
-    { id: 'lx.s.03', when: { of: 'stung' }, beat: '{c} nods too many times. The light is green, and somehow that is worse.' },
+    { id: 'lx.s.03', when: { of: 'stung' }, beat: "The light is green. {c} nods, but doesn't look happy." },
     { id: 'lx.l.01', when: { of: 'laugh' }, turns: [['c', "I knew it!"]], beat: 'The whole villa is laughing, {a} included.' },
     { id: 'lx.l.02', when: { of: 'laugh' }, turns: [['a', "Okay, maybe a bit."]], beat: 'Everyone cracks up.' },
     { id: 'lx.l.03', when: { of: 'laugh' }, turns: [['c', "Of course it did."]], beat: '{a} holds {a.posAdj} hands up, laughing.' },
     { id: 'lx.c.01', when: { of: 'confused' }, turns: [['a', "So I'm not lying, but I'm not telling the truth either?"], ['c', "That's worse."]] },
     { id: 'lx.c.02', when: { of: 'confused' }, turns: [['c', "Blue? What am I meant to do with blue?"]], beat: 'Nobody has an answer.' },
-    { id: 'lx.c.03', when: { of: 'confused' }, beat: '{c} looks at {a}. {a} shrugs. The machine does not help.' },
+    { id: 'lx.c.03', when: { of: 'confused' }, beat: '{c} looks at {a}. {a} shrugs.' },
   ],
 
   'lie-row': [
@@ -113,11 +113,11 @@ export const LIE_LINES = {
       ['b', "Just tell me. Now. Everything."], ['a', "Okay. Okay. There was something, and I should have told you."]], beat: 'By the end of it, {b} is shaking.' },
     { id: 'lrw.d.01', when: { of: 'deny' }, stage: 'The terrace, after.', turns: [
       ['b', "Why did it go red?"], ['a', "Because I was nervous. Everyone was staring at me."], ['b', "You didn't look nervous."],
-      ['a', "I'm telling you the truth."]], beat: '{b} wants to believe it, and does not look as if it is working.' },
+      ['a', "I'm telling you the truth."]], beat: "{b} wants to believe it, but doesn't look sure." },
     { id: 'lrw.d.02', when: { of: 'deny' }, turns: [
       ['a', "It's a machine. It's for TV. You can't trust it over me."], ['b', "I don't know what to trust any more."]] },
     { id: 'lrw.d.03', when: { of: 'deny' }, turns: [
-      ['b', "Look me in the eye and tell me it was wrong."], ['a', "It was wrong."]], beat: 'It takes {a} a second too long to say it.' },
+      ['b', "Look me in the eye and tell me it was wrong."], ['a', "It was wrong."]], beat: '{a} takes a moment to say it.' },
     { id: 'lrw.b.01', when: { of: 'broken' }, stage: 'The daybeds. {a} is still pulling the tape off {a.posAdj} fingers.', turns: [
       ['a', "I was telling the truth. I swear on everything."], ['b', "Then why did it go red?"],
       ['a', "I don't know. Maybe because I've never wanted anything to go green so much."]] },
@@ -125,7 +125,7 @@ export const LIE_LINES = {
       ['a', "That thing is broken. Everyone knows those machines get it wrong."], ['b', "I want to believe you."],
       ['a', "Then believe me."]] },
     { id: 'lrw.b.03', when: { of: 'broken' }, turns: [
-      ['b', "Are we okay?"], ['a', "We're okay. I promise you, it was wrong."]], beat: '{b} leans into {a}. It is not entirely settled.' },
+      ['b', "Are we okay?"], ['a', "We're okay. I promise you, it was wrong."]], beat: '{b} leans into {a}, but still looks unsure.' },
   ],
 
   'challenge-text': [

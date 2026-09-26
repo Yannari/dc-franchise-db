@@ -65,7 +65,7 @@ export const FIREPIT_LINES = {
     { id: 'rt.m1', when: { of: 'm' }, stage: "{a}'s phone goes off by the pool.", turns: [['a', "I got a text! Islanders, tonight there will be a recoupling. The boys will choose which girl they want to couple up with. #DecisionTime"], ['b', "Here we go again."]] },
     { id: 'rt.f2', when: { of: 'f' }, turns: [['a', "Islanders, please get ready for a recoupling. Tonight, the girls are choosing. #ChooseWisely"], ['b', "Why does my stomach hurt already?"]] },
     { id: 'rt.m2', when: { of: 'm' }, turns: [['a', "Islanders, please get ready for a recoupling. Tonight, the boys are choosing. #ChooseWisely"], ['b', "Why does my stomach hurt already?"]] },
-    { id: 'rt.3', stage: 'Everyone crowds round {a} and the phone.', turns: [['a', "Islanders, it's time to recouple. Please gather at the fire pit. #WhoWillItBe"]], beat: 'Nobody looks at their partner for a second too long.' },
+    { id: 'rt.3', stage: 'Everyone crowds round {a} and the phone.', turns: [['a', "Islanders, it's time to recouple. Please gather at the fire pit. #WhoWillItBe"]], beat: 'Nobody looks at their partner.' },
   ],
   'recouple-nerves': [
     { id: 'rn.s1', when: { taken: false }, turns: [['a', "What if nobody picks me?"], ['b', "Somebody will."], ['a', "You don't know that."], ['b', "No. But I'd pick you, if it was me choosing."]] },
@@ -89,7 +89,7 @@ export const FIREPIT_LINES = {
   'casa-text': [
     { id: 'ct.f1', when: { of: 'f' }, stage: "{a}'s phone goes off in the dressing room.", turns: [['a', "Girls, pack your bags. You're going on a little trip. #CasaAmor"], ['b', "Casa. It's Casa. Oh my God, it's Casa."]] },
     { id: 'ct.m1', when: { of: 'm' }, stage: "{a}'s phone goes off on the terrace.", turns: [['a', "Boys, pack your bags. You're going on a little trip. #CasaAmor"], ['b', "Casa. It's Casa. Oh my God, it's Casa."]] },
-    { id: 'ct.2', turns: [['a', "Islanders, it's time for Casa Amor. Some of you are leaving tonight. #PackYourBags"]], beat: 'The whole villa goes very, very quiet.' },
+    { id: 'ct.2', turns: [['a', "Islanders, it's time for Casa Amor. Some of you are leaving tonight. #PackYourBags"]], beat: 'The whole villa goes quiet.' },
   ],
   'casa-goodbye': [
     { id: 'cg.1', stage: '{a} and {b} hold on to each other by the gate.', turns: [['b', "Don't forget about me."], ['a', "As if I could."]] },
@@ -105,11 +105,11 @@ export const FIREPIT_LINES = {
   'vote-safe': [
     { id: 'vs.01', stage: "{a}'s phone goes off at the fire pit.", turns: [['a', "Islanders, the public have been voting, and tonight, nobody will be dumped. #SafeForNow"], ['b', "Nobody? Say that again."]], beat: 'The whole villa cheers.' },
     { id: 'vs.02', turns: [['a', "I got a text! Islanders, the votes are in. You are all safe… for now. #EnjoyItWhileItLasts"], ['b', "For now. I hate 'for now'."]] },
-    { id: 'vs.03', stage: 'Everyone gathers at the fire pit, holding hands, for a text that never comes to a dumping.', turns: [['a', "Islanders, the public have spoken, and tonight everybody stays. #BreatheOut"]], beat: 'Somebody lets out a breath nobody knew they were holding.' },
+    { id: 'vs.03', stage: 'Everyone gathers at the fire pit, holding hands, for a text that never comes to a dumping.', turns: [['a', "Islanders, the public have spoken, and tonight everybody stays. #BreatheOut"]], beat: 'Somebody lets out a breath.' },
     { id: 'vs.04', turns: [['a', "Islanders, tonight's results are in, and there will be no dumping. But the next one is closer than you think. #WatchThisSpace"], ['b', "Why do they always have to add the last bit?"]] },
   ],
   'dump-nerves': [
-    { id: 'dn.01', stage: 'The dressing room. {a} is doing {a.posAdj} make-up very, very slowly.', turns: [['b', "Are you scared?"], ['a', "Terrified. You?"], ['b', "I can't even think about it."]] },
+    { id: 'dn.01', stage: 'The dressing room. {a} is doing {a.posAdj} make-up slowly.', turns: [['b', "Are you scared?"], ['a', "Terrified. You?"], ['b', "I can't even think about it."]] },
     { id: 'dn.02', stage: '{a} and {b} sit on the edge of the bed, dressed and ready, and neither of them gets up.', turns: [['a', "Whatever happens down there, I'm glad it was you."], ['b', "Don't talk like we're going."]] },
     { id: 'dn.03', when: { channel: ['public', 'villa', 'top-couple', 'save'] }, turns: [['a', "Do you think the public like us?"], ['b', "I think they like you."], ['a', "That's not an answer."]] },
     { id: 'dn.04', stage: 'On the terrace, {a} holds {b.posAdj} hand a little too tight.', turns: [['b', "Breathe."], ['a', "I am breathing. I'm just breathing very fast."]] },
@@ -133,7 +133,7 @@ export const FIREPIT_LINES = {
     { id: 'dr.st', when: pub('steal'), turns: [['dior', "It's been quite a day. {a} walked in, and {b} and {c} are not a couple any more."]] },
     { id: 'dr.bl', when: pub('blowup'), turns: [['dior', "I hear things got a bit heated earlier. {a}, {b}, I think the whole villa heard you."]], beat: '{a} looks at the floor.' },
     { id: 'dr.ar', when: pub('argument'), turns: [['dior', "{a}, {b}, I hear you two had words today. I hope you've made up, because tonight you might need each other."]] },
-    { id: 'dr.ap', when: pub('argument-apart'), turns: [['dior', "{a}, {b}, I hear there were words between you two today. I hope the air's been cleared."]], beat: '{a} and {b} do not look at each other.' },
+    { id: 'dr.ap', when: pub('argument-apart'), turns: [['dior', "{a}, {b}, I hear there were words between you two today. I hope the air's been cleared."]], beat: "{a} and {b} don't look at each other." },
     { id: 'dr.bp', when: pub('blowup-apart'), turns: [['dior', "I hear things got heated today. {a}, {b}, the whole villa heard you."]], beat: 'Somebody on the benches coughs.' },
     { id: 'dr.sp', when: pub('photo-split'), turns: [['dior', "{a}, {b}, I know it's been a hard day. I'm sorry."]] },
     { id: 'dr.ms', when: pub('movie-split'), turns: [['dior', "{a}, {b}, I know that was a hard thing to watch. I'm sorry."]] },

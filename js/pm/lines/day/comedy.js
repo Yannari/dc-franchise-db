@@ -16,7 +16,7 @@ export const COMEDY = [
   { id: 'comedy.03',
     stage: '{a} comes out into the garden, hopping.',
     turns: [['a', "Has anyone seen my other flip-flop? I've been walking round in one all morning."]],
-    beat: 'It turns up on the roof of the hideaway, and nobody will say how.' },
+    beat: 'Somebody finds it on the roof later.' },
   { id: 'comedy.04',
     stage: '{a} does an impression of the text alarm.',
     turns: [['a', 'Beep beep! Islanders, somebody has eaten the last yoghurt!']],

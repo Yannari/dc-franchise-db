@@ -26,7 +26,7 @@ export const HIDEAWAY_LINES = {
     { id: 'hw.w3', stage: "It's {a} and {b}. The villa goes wild.", turns: [['a', "Thank you, everyone. We won't tell you anything tomorrow."]], beat: 'Nobody believes that for a second.' },
   ],
   'hideaway-snub': [
-    { id: 'hw.s1', stage: '{a} and {b} did not get a single vote.', turns: [['a', "Not one. Not one vote."], ['b', "It doesn't matter what they think."], ['a', "It matters a bit."]] },
+    { id: 'hw.s1', stage: "{a} and {b} didn't get a single vote.", turns: [['a', "Not one. Not one vote."], ['b', "It doesn't matter what they think."], ['a', "It matters a bit."]] },
     { id: 'hw.s2', turns: [['b', "I thought we were the obvious couple."], ['a', "Apparently not."]], beat: '{b} goes to bed early.' },
     { id: 'hw.s3', stage: 'While the villa celebrates, {a} and {b} sit a little apart from everyone.', turns: [['a', "We'll get our turn."], ['b', "Will we?"]] },
   ],

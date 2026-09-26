@@ -70,7 +70,7 @@ export const ARGUMENTS = [
     turns: [['b', "Can you at least look at me when I'm talking to you?"], ['a', "I am looking at you."], ['b', "You're looking at the pool."]] },
   { id: 'arg.b.03', when: C('bicker'),
     turns: [['a', "You're not listening to a word I'm saying."], ['b', "I'm listening. I just don't agree."], ['a', "Then say you don't agree. Don't just nod."]] },
-  { id: 'arg.b.04', when: C('bicker'), stage: 'It starts over whose turn it is to make the drinks.',
+  { id: 'arg.b.04', when: C('bicker'), stage: "It starts over whose turn it's to make the drinks.",
     turns: [['a', "I made them last time."], ['b', "And I made them the time before that."], ['a', "You made one. For yourself."]] },
   { id: 'arg.b.05', when: C('bicker'),
     turns: [['a', "Why do you always make a joke when I'm being serious?"], ['b', "I'm trying to cheer you up."], ['a', "It's not working."]] },
@@ -114,7 +114,7 @@ export const ARGUMENTS = [
   // ── voted ──
   { id: 'arg.v.01', when: C('voted'),
     turns: [['a', "You voted for me to go home."], ['b', "It wasn't about you. It was a hard choice."], ['a', "You made it look very easy."]] },
-  { id: 'arg.v.02', when: C('voted'), stage: '{a} brings it up the second they are alone.',
+  { id: 'arg.v.02', when: C('voted'), stage: "{a} brings it up the second they're alone.",
     turns: [['a', "I thought we were friends."], ['b', "We are."], ['a', "Friends don't stand up at the fire pit and say my name."]] },
   { id: 'arg.v.03', when: C('voted'),
     turns: [['b', "Are you still annoyed about the vote?"], ['a', "Would you be?"], ['b', "Probably. But I had to pick someone."]] },

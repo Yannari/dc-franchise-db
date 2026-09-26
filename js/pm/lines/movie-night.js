@@ -21,7 +21,7 @@ export const MOVIE_NIGHT = {
   'movie-seat': [
     { id: 'ms.g.01', when: { of: 'guilty' }, stage: 'The lawn has become an outdoor cinema: a huge screen, beanbags, blankets, popcorn.', turns: [['b', "You're very quiet."], ['a', "Just tired."], ['b', "You're holding that popcorn like it's going to save you."]] },
     { id: 'ms.g.02', when: { of: 'guilty' }, stage: 'Couples find their beanbags in front of the big screen.', turns: [['b', "Is there anything on there I should know about?"], ['a', "No. Nothing. Why would there be?"], ['b', "You said nothing three times."]] },
-    { id: 'ms.g.03', when: { of: 'guilty' }, stage: 'The fairy lights dim and the screen starts to glow.', turns: [['a', "Whatever's on there, just remember it's edited."], ['b', "Why are you saying that before it's even started?"]], beat: '{a} does not answer.' },
+    { id: 'ms.g.03', when: { of: 'guilty' }, stage: 'The fairy lights dim and the screen starts to glow.', turns: [['a', "Whatever's on there, just remember it's edited."], ['b', "Why are you saying that before it's even started?"]], beat: "{a} doesn't answer." },
     { id: 'ms.g.04', when: { of: 'guilty' }, turns: [['b', "Why are you sitting so far away?"], ['a', "I'm not."], ['b', "You're practically on the next beanbag."]] },
     { id: 'ms.e.01', when: { of: 'easy' }, stage: 'The lawn is full of beanbags and blankets, and the big screen lights up.', turns: [['a', "I've got nothing to worry about."], ['b', "Good. Neither have I."], ['a', "Then why are we both holding hands this tight?"]] },
     { id: 'ms.e.02', when: { of: 'easy' }, stage: 'Popcorn goes round. Nobody eats any.', turns: [['b', "Pass the popcorn."], ['a', "You haven't eaten any of the last bowl."], ['b', "I'm nervous-holding it."]] },
@@ -31,7 +31,7 @@ export const MOVIE_NIGHT = {
     // hurt
     { id: 'mr.h.01', when: { of: 'hurt' }, turns: [['a', "…Wow."]], beat: '{a} stares at the screen long after the clip has ended.' },
     { id: 'mr.h.02', when: { of: 'hurt' }, turns: [['a', "Can someone pause it? I need a second."]], beat: 'Nobody pauses it.' },
-    { id: 'mr.h.03', when: { of: 'hurt', cast: 3 }, turns: [['c', "Are you okay?"], ['a', "No. I'm really not."]], beat: '{c} takes {a.posAdj} hand. {b} does not look up.' },
+    { id: 'mr.h.03', when: { of: 'hurt', cast: 3 }, turns: [['c', "Are you okay?"], ['a', "No. I'm really not."]], beat: "{c} takes {a.posAdj} hand. {b} doesn't look up." },
     { id: 'mr.h.04', when: { of: 'hurt' }, turns: [['a', "You looked me in the eye every day, and you never said a word."]], beat: '{b} looks at the floor.' },
     { id: 'mr.h.05', when: { of: 'hurt', cast: 3 }, turns: [['a', "Did you know about this?"], ['c', "No. I swear I didn't."]], beat: '{a} gets up and moves to a different beanbag.' },
     { id: 'mr.h.06', when: { of: 'hurt' }, turns: [['a', "I feel sick."]], beat: 'The popcorn goes down, untouched.' },
@@ -45,7 +45,7 @@ export const MOVIE_NIGHT = {
     { id: 'mr.r.01', when: { of: 'relief' }, turns: [['a', "You said no. You actually said no."], ['b', "Of course I did."]], beat: '{a} kisses {b} in front of the whole cinema.' },
     { id: 'mr.r.02', when: { of: 'relief' }, turns: [['a', "I didn't even know that happened."], ['b', "I didn't think it was worth mentioning."], ['a', "It was worth mentioning."]] },
     { id: 'mr.r.03', when: { of: 'relief' }, turns: [['a', "Okay, that's the best thing I've ever seen on a screen."]], beat: 'The villa cheers.' },
-    { id: 'mr.r.04', when: { of: 'relief' }, turns: [['a', "Come here."]], beat: '{a} pulls {b} into a hug and does not let go.' },
+    { id: 'mr.r.04', when: { of: 'relief' }, turns: [['a', "Come here."]], beat: "{a} pulls {b} into a hug and doesn't let go." },
   ],
   'movie-row': [
     // owning it
@@ -65,7 +65,7 @@ export const MOVIE_NIGHT = {
     { id: 'mw.d.01', when: { of: 'deny' }, stage: 'The garden, the minute the screen goes dark.', turns: [
       ['a', "Explain that."], ['b', "It was edited. They've made it look worse than it was."], ['a', "I watched it."],
       ['b', "Out of context."], ['a', "What context makes that okay?"], ['b', "You're overreacting."],
-      ['a', "Don't you dare tell me I'm overreacting."]], beat: 'Half the villa is pretending not to listen. Nobody is managing it.' },
+      ['a', "Don't you dare tell me I'm overreacting."]], beat: 'Half the villa is listening in.' },
     { id: 'mw.d.02', when: { of: 'deny' }, turns: [
       ['b', "Nothing happened."], ['a', "I just watched it happen."], ['b', "It was a chat."],
       ['a', "Then why didn't you tell me about the chat?"], ['b', "Because I knew you'd do this."],

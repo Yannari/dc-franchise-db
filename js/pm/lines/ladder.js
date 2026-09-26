@@ -75,7 +75,7 @@ export const LADDER = {
       turns: [
         ['a', "I like you. I really do. But I'm not closing myself off yet."],
         { by: 'b', vary: [
-          { turns: [['b', "Okay. At least you're being honest."]], beat: '{b} goes to get a drink, and takes a while about it.' },
+          { turns: [['b', "Okay. At least you're being honest."]], beat: '{b} goes to get a drink, and stays in the kitchen for a while.' },
           { when: { attachment: 'anxious' },
             turns: [['b', "Why not? Is there someone else?"], ['a', "No. I just don't want to rush it."]],
             beat: "{b} nods, but doesn't let go of it all evening." },
@@ -228,7 +228,7 @@ export const LADDER = {
         ['b', 'Yes. You never needed to ask.'],
         ['a', 'I did, though. I needed to hear it.'],
       ],
-      beat: '{b} says it again, so {a} can hear it twice.' },
+      beat: '{b} says yes again, louder.' },
     { id: 'exclusive-ask.06', when: { late: true },
       turns: [
         ['a', "We've been in here long enough. I want to make it serious. Just us."],
@@ -386,7 +386,7 @@ export const LADDER = {
         ['a', "I'm in love with you. You don't have to say it back."],
         ['b', "Okay."],
       ],
-      beat: "{a} waits for more. There isn't any." },
+      beat: "{a} waits for {b} to say it back. {b} doesn't." },
     { id: 'love-hanging.04', when: { phase: 'evening' },
       stage: 'In bed, after the lights have gone off.',
       turns: [

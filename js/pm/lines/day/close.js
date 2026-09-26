@@ -26,7 +26,7 @@ export const CLOSE = {
     { id: 'cc.w.02', when: { of: 'warm' }, turns: [['a', "Can I say something?"], ['b', "Go on."], ['a', "I'm really glad it's you I'm sitting here with."], ['b', "Yeah. Me too."]] },
     { id: 'cc.w.03', when: { of: 'warm' }, turns: [['b', "Do you want a drink?"], ['a', "Only if you come straight back."], ['b', "Where else would I go?"]], beat: '{b} comes straight back.' },
     { id: 'cc.w.04', when: { of: 'warm' }, turns: [['a', "You've got that look again."], ['b', "What look?"], ['a', "The one where you're happy."], ['b', "I am happy."]] },
-    { id: 'cc.w.05', when: { of: 'warm' }, turns: [['b', "We should get ready soon."], ['a', "Five more minutes."], ['b', "Five more minutes."]], beat: 'It is closer to half an hour.' },
+    { id: 'cc.w.05', when: { of: 'warm' }, turns: [['b', "We should get ready soon."], ['a', "Five more minutes."], ['b', "Five more minutes."]], beat: 'They stay out there another half hour.' },
     { id: 'cc.w.06', when: { of: 'warm' }, turns: [['a', "I didn't expect to feel like this in here."], ['b', "Like what?"], ['a', "Calm. With you, I'm calm."]] },
     { id: 'cc.w.07', when: { of: 'warm' }, turns: [['b', "Thanks for this."], ['a', "For what?"], ['b', "Just talking. Nobody else really talks to me like you do."]] },
     { id: 'cc.w.08', when: { of: 'warm' }, turns: [['a', "Come here."]], beat: '{a} pulls {b} into a hug, and neither of them is in a hurry to let go.' },
@@ -47,22 +47,22 @@ export const CLOSE = {
     { id: 'cc.f.08', when: { of: 'flat' }, turns: [['b', "Anyway. I'll let you get on."], ['a', "Okay. Later, yeah?"], ['b', "Later."]] },
     { id: 'cc.f.09', when: { of: 'flat' }, turns: [['a', "We'll get there. It's early."], ['b', "Yeah. It's early."]] },
     { id: 'cc.f.05', when: { of: 'flat', feels: 'little' }, turns: [['a', "I feel like we keep running out of things to say."], ['b', "Maybe we just need more time."], ['a', "Maybe."]] },
-    { id: 'cc.f.06', when: { of: 'flat', feels: 'little' }, turns: [['b', "You're quiet."], ['a', "So are you."], ['b', "Yeah."]], beat: 'That is the end of it.' },
+    { id: 'cc.f.06', when: { of: 'flat', feels: 'little' }, turns: [['b', "You're quiet."], ['a', "So are you."], ['b', "Yeah."]], beat: "That's the end of it." },
   ],
 
   'deep-chat-close': [
     { id: 'dc.o.01', when: { of: 'open' }, turns: [['b', "I've never said that to anyone in here."], ['a', "I'm glad you said it to me."], ['b', "So am I, actually."]] },
     { id: 'dc.o.02', when: { of: 'open' }, turns: [['a', "Thank you for being honest with me."], ['b', "It's easy with you. That's what scares me a bit."], ['a', "Don't be scared. I'm not going anywhere."]] },
     { id: 'dc.o.03', when: { of: 'open' }, turns: [['b', "Your turn. What about you?"], ['a', "Honestly? The same. I just didn't want to be the first one to say it."], ['b', "Well, now we've both said it."]] },
-    { id: 'dc.o.04', when: { of: 'open' }, turns: [['a', "I feel like I know you a lot better than I did this morning."], ['b', "You do. More than most people."]], beat: 'They sit there, not saying anything, and it is not awkward at all.' },
+    { id: 'dc.o.04', when: { of: 'open' }, turns: [['a', "I feel like I know you a lot better than I did this morning."], ['b', "You do. More than most people."]], beat: "They sit there, not saying anything, and it isn't awkward at all." },
     { id: 'dc.o.05', when: { of: 'open' }, turns: [['b', "Can we keep this between us?"], ['a', "Of course. It's ours."]], beat: '{b} squeezes {a.posAdj} hand.' },
     { id: 'dc.o.06', when: { of: 'open' }, turns: [['a', "Where do you see this going? Us, I mean."], ['b', "I don't want to jinx it."], ['a', "Just roughly."], ['b', "Somewhere good."]] },
     { id: 'dc.o.07', when: { of: 'open' }, turns: [['b', "I didn't think I'd have a conversation like this in here."], ['a', "Me neither. I'm glad it was with you."]] },
-    { id: 'dc.g.01', when: { of: 'guarded' }, turns: [['a', "What about you?"], ['b', "Me? I'm fine. I don't really do all this."], ['a', "All what?"], ['b', "Talking about feelings on a daybed."]], beat: '{a} laughs, but it is clear {b} meant it.' },
+    { id: 'dc.g.01', when: { of: 'guarded' }, turns: [['a', "What about you?"], ['b', "Me? I'm fine. I don't really do all this."], ['a', "All what?"], ['b', "Talking about feelings on a daybed."]], beat: "{a} laughs, but it's clear {b} meant it." },
     { id: 'dc.g.02', when: { of: 'guarded' }, turns: [['a', "You can tell me things, you know."], ['b', "I know. I just need a bit more time."], ['a', "Okay. I'll wait."]] },
     { id: 'dc.g.03', when: { of: 'guarded' }, turns: [['b', "Can we talk about something else?"], ['a', "Sure. Sorry. I didn't mean to push."], ['b', "You didn't. It's me."]] },
     { id: 'dc.g.04', when: { of: 'guarded' }, turns: [['a', "I feel like I've just told you my whole life story."], ['b', "You have. It was nice."], ['a', "And you've told me nothing."], ['b', "One day."]] },
-    { id: 'dc.g.05', when: { of: 'guarded' }, turns: [['a', "Do you ever let anyone in?"], ['b', "Eventually."]], beat: '{a} waits for more. There is no more, not tonight.' },
+    { id: 'dc.g.05', when: { of: 'guarded' }, turns: [['a', "Do you ever let anyone in?"], ['b', "Eventually."]], beat: "{a} waits for more, but {b} doesn't say anything else." },
   ],
 
   'friendship-close': [
@@ -83,14 +83,14 @@ export const CLOSE = {
     { id: 'pc.f.02', when: { of: 'flirt' }, turns: [['a', "Can we do this again?"], ['b', "Maybe. Ask me tomorrow."], ['a', "I will."]] },
     { id: 'pc.f.03', when: { of: 'flirt' }, turns: [['b', "I'm glad you pulled me."], ['a', "I'm glad you said yes."]], beat: 'They walk back separately, a few minutes apart.' },
     { id: 'pc.f.04', when: { of: 'flirt' }, turns: [['a', "I just wanted you to know I'm interested. That's all."], ['b', "Noted."], ['a', "Noted? That's it?"], ['b', "For now."]] },
-    { id: 'pc.f.05', when: { of: 'flirt', taken: true }, turns: [['b', "What about your partner?"], ['a', "It's just a chat."], ['b', "Is it?"]], beat: '{a} does not answer that.' },
+    { id: 'pc.f.05', when: { of: 'flirt', taken: true }, turns: [['b', "What about your partner?"], ['a', "It's just a chat."], ['b', "Is it?"]], beat: "{a} doesn't answer that." },
     { id: 'pc.f.06', when: { of: 'flirt', bTaken: true }, turns: [['a', "Look, I get it. You're with someone."], ['b', "I am."], ['a', "I'm just saying, if that ever changes."], ['b', "I heard you."]] },
     { id: 'pc.f.07', when: { of: 'flirt' }, turns: [['b', "This was nice."], ['a', "It was. Let's not make it a big thing yet."], ['b', "Agreed."]] },
     // turned down: said kindly, or not
     { id: 'pc.t.01', when: { of: 'turned-down' }, turns: [['a', "Okay. Fair enough."], ['b', "I'm sorry. I just don't see it."], ['a', "No, it's fine. At least I asked."]] },
     { id: 'pc.t.02', when: { of: 'turned-down' }, turns: [['b', "I don't want to lead you on."], ['a', "You're not. I get it."]], beat: '{a} goes back to the others and laughs a bit too loudly at something.' },
     { id: 'pc.t.03', when: { of: 'turned-down' }, turns: [['a', "So that's a no, then."], ['b', "It's a no. But I'm glad you asked."], ['a', "Are you?"], ['b', "I am. It was brave."]] },
-    { id: 'pc.t.04', when: { of: 'turned-down' }, turns: [['a', "Can we still be friends?"], ['b', "Of course we can."]], beat: '{a} nods, and does not quite look at {b} for the rest of the day.' },
+    { id: 'pc.t.04', when: { of: 'turned-down' }, turns: [['a', "Can we still be friends?"], ['b', "Of course we can."]], beat: "{a} nods, and doesn't quite look at {b} for the rest of the day." },
     { id: 'pc.t.05', when: { of: 'turned-down' }, turns: [['b', "It's not you."], ['a', "Please don't say it's you."], ['b', "It's a bit me."]], beat: 'They both laugh, which helps.' },
     // it went further (the engine recorded a kiss)
     { id: 'pc.k.01', when: { of: 'kissed' }, turns: [['b', "We shouldn't have done that."], ['a', "Probably not."], ['b', "Nobody can know."], ['a', "Nobody will."]] },
@@ -98,7 +98,7 @@ export const CLOSE = {
     { id: 'pc.k.03', when: { of: 'kissed' }, turns: [['b', "What happens now?"], ['a', "Now we go back and act normal."], ['b', "I don't know if I can."]] },
     // plans for the outside (the engine recorded a promise)
     { id: 'pc.p.01', when: { of: 'promised' }, turns: [['b', "Did we just make plans for the outside?"], ['a', "I think we did."], ['b', "We can't tell anyone."], ['a', "We won't."]] },
-    { id: 'pc.p.02', when: { of: 'promised' }, turns: [['a', "So. When we're out."], ['b', "When we're out."]], beat: 'They shake on it, and it lasts a second too long.' },
+    { id: 'pc.p.02', when: { of: 'promised' }, turns: [['a', "So. When we're out."], ['b', "When we're out."]], beat: 'They shake on it, and both smile.' },
   ],
 
   'loyalty-close': [
@@ -125,22 +125,22 @@ export const CLOSE = {
     { id: 'acl.w.04', when: { of: 'walk-off' }, turns: [['a', "Don't talk to me for a bit."], ['b', "Happily."]], beat: 'They go to opposite ends of the garden and stay there.' },
     { id: 'acl.w.05', when: { of: 'walk-off' }, turns: [['b', "We're not going to agree, are we?"], ['a', "No."], ['b', "Then I'm going to bed."]] },
     // simmer: nobody leaves and nothing is fixed
-    { id: 'acl.s.01', when: { of: 'simmer' }, turns: [['a', "Let's just leave it."], ['b', "Fine."], ['a', "Fine."]], beat: 'It is not fine, and everyone nearby can tell.' },
+    { id: 'acl.s.01', when: { of: 'simmer' }, turns: [['a', "Let's just leave it."], ['b', "Fine."], ['a', "Fine."]], beat: "It isn't fine, and everyone nearby can tell." },
     { id: 'acl.s.02', when: { of: 'simmer' }, turns: [['b', "We'll talk about it later."], ['a', "Will we?"], ['b', "Later."]] },
     { id: 'acl.s.03', when: { of: 'simmer' }, turns: [['a', "I'm not going to say sorry for something I didn't do."], ['b', "Nobody asked you to."], ['a', "Good."]], beat: 'They sit in silence until somebody else changes the subject.' },
     { id: 'acl.s.04', when: { of: 'simmer' }, turns: [['b', "Can we not do this in front of everyone?"], ['a', "You started it."], ['b', "And I'm ending it. For now."]] },
-    { id: 'acl.s.05', when: { of: 'simmer' }, turns: [['a', "Whatever."]], beat: '{b} opens {b.posAdj} mouth to answer, and then does not bother.' },
+    { id: 'acl.s.05', when: { of: 'simmer' }, turns: [['a', "Whatever."]], beat: "{b} opens {b.posAdj} mouth to answer, and then doesn't bother." },
   ],
 
   'gossip-close': [
     // thanks: b takes it in and is grateful to a
     { id: 'gc.t.01', when: { of: 'thanks' }, turns: [['b', "Why are you telling me?"], ['a', "Because if it was me, I'd want to know."], ['b', "…Thank you. I mean it."]] },
-    { id: 'gc.t.02', when: { of: 'thanks' }, turns: [['b', "I'm glad it was you who told me."], ['a', "I'm sorry it had to be anyone."]], beat: '{a} gives {b} a hug and does not let go straight away.' },
+    { id: 'gc.t.02', when: { of: 'thanks' }, turns: [['b', "I'm glad it was you who told me."], ['a', "I'm sorry it had to be anyone."]], beat: "{a} gives {b} a hug and doesn't let go straight away." },
     { id: 'gc.t.03', when: { of: 'thanks' }, turns: [['b', "Okay. I need to think."], ['a', "Take as long as you need. I'm here."], ['b', "Thank you for being straight with me."]] },
     { id: 'gc.t.04', when: { of: 'thanks' }, turns: [['b', "Does everyone know?"], ['a', "Not everyone. I wanted you to hear it first."], ['b', "Thank you. Really."]] },
     { id: 'gc.t.05', when: { of: 'thanks' }, turns: [['b', "You didn't have to tell me."], ['a', "Yes, I did."]], beat: '{b} nods slowly and wipes {b.posAdj} eyes.' },
     // angry: b is going to deal with it
-    { id: 'gc.a.01', when: { of: 'angry' }, turns: [['b', "I'm so angry I can't even think."], ['a', "Don't do anything tonight. Sleep on it."], ['b', "I'm not going to sleep."]], beat: '{b} stares across the garden at {c} and does not look away.' },
+    { id: 'gc.a.01', when: { of: 'angry' }, turns: [['b', "I'm so angry I can't even think."], ['a', "Don't do anything tonight. Sleep on it."], ['b', "I'm not going to sleep."]], beat: "{b} stares across the garden at {c} and doesn't look away." },
     { id: 'gc.a.02', when: { of: 'angry' }, turns: [['b', "I can't believe it. I actually can't believe it."], ['a', "I'm sorry."], ['b', "Don't be sorry. {c} should be sorry."]] },
     { id: 'gc.a.03', when: { of: 'angry' }, turns: [['b', "And {c} thought I'd never find out?"], ['a', "I don't think {c} thought about it at all."], ['b', "Clearly."]], beat: '{b} stares across the garden at {c}.' },
     { id: 'gc.a.04', when: { of: 'angry' }, turns: [['b', "I've defended {c.obj}. To everyone. Every day."], ['a', "I know you have."], ['b', "Never again."]] },
@@ -150,7 +150,7 @@ export const CLOSE = {
     { id: 'gc.q.02', when: { of: 'quiet' }, turns: [['b', "I think I knew. I just didn't want to."], ['a', "That's the worst bit, isn't it?"], ['b', "Yeah."]] },
     { id: 'gc.q.03', when: { of: 'quiet' }, turns: [['b', "Can you not tell anyone else? Just for now."], ['a', "I won't say a word."]], beat: '{b} goes to bed early and faces the wall.' },
     { id: 'gc.q.04', when: { of: 'quiet' }, turns: [['b', "I need a minute on my own."], ['a', "Of course. Shout if you need me."]] },
-    { id: 'gc.q.05', when: { of: 'quiet' }, turns: [['b', "I really thought {c} was different."], ['a', "I know you did."]], beat: '{b} does not cry. Not yet.' },
+    { id: 'gc.q.05', when: { of: 'quiet' }, turns: [['b', "I really thought {c} was different."], ['a', "I know you did."]], beat: "{b} doesn't cry." },
   ],
 };
 

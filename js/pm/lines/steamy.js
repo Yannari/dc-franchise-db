@@ -72,7 +72,7 @@ export const STEAMY_SCENES = {
   'game-kiss': [
     { id: 'gk.c8', when: { of: 'crush' }, stage: "{a} takes {b}'s face in both hands and kisses {b.obj}.", turns: [['b', "Wow."]], beat: 'Someone on the lawn fans themselves.' },
     { id: 'gk.c9', when: { of: 'crush' }, stage: '{a} pulls {b} in by the waist and kisses {b.obj} hard.', turns: [['a', "Was that the challenge?"], ['b', "I don't care."]] },
-    { id: 'gk.c10', when: { of: 'crush' }, stage: "{a} pushes {b} against the wall and kisses {b.obj}, one hand in {b.posAdj} hair.", turns: [['b', "Okay."], ['a', "Okay?"], ['b', "Do it again."]], beat: 'The villa cheers. The ones with partners watching do not.' },
+    { id: 'gk.c10', when: { of: 'crush' }, stage: "{a} pushes {b} against the wall and kisses {b.obj}, one hand in {b.posAdj} hair.", turns: [['b', "Okay."], ['a', "Okay?"], ['b', "Do it again."]], beat: "The villa cheers. The ones with partners watching don't." },
     { id: 'gk.s6', when: { of: 'stir', bTaken: true }, stage: '{a} kisses {b} slowly, eyes on {pb}.', turns: [['a', "Oops."]], beat: '{pb} gets up and walks off.' },
     { id: 'gk.s7', when: { of: 'stir' }, stage: "{a} sits on {b}'s lap for the kiss and stays there.", turns: [['a', "What? It's the challenge."]] },
   ],

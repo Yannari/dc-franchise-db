@@ -29,14 +29,14 @@ export const JOURNEY_LINES = {
     { id: 'fd.08', when: { of: 'rooftop' }, stage: 'The final date: a rooftop, a table for two, and the whole island below them.', turns: [['b', "We made it. We actually made it."], ['a', "We did."]] },
   ],
   'journey-open': [
-    { id: 'jo.01', when: { of: 'steady' }, stage: 'After dinner, a screen lights up on the table. It is a film of their time in the villa.', turns: [['b', "Oh no. What's this?"], ['a', "It's us."]] },
+    { id: 'jo.01', when: { of: 'steady' }, stage: "After dinner, a screen lights up on the table. It's a film of their time in the villa.", turns: [['b', "Oh no. What's this?"], ['a', "It's us."]] },
     { id: 'jo.02', when: { of: 'steady' }, stage: 'A photo album is waiting on the table, with their names on the front.', turns: [['a', "Shall we?"], ['b', "Go on, then."]] },
     { id: 'jo.03', when: { of: 'rocky' }, stage: 'A screen lights up. On it, the words: their journey.', turns: [['b', "I'm scared of what's on this."], ['a', "Same."]] },
     { id: 'jo.04', when: { of: 'rocky' }, stage: 'A film of their time together begins to play.', turns: [['a', "I think I know some of the bits they've put in."], ['b', "So do I."]] },
     { id: 'jo.05', when: { of: 'way-back' }, stage: 'A screen lights up with a film of the two of them.', turns: [['b', "Are they going to show everything?"], ['a', "I think so. All of it."]] },
     { id: 'jo.06', when: { of: 'way-back' }, stage: 'A photo album is waiting on the table. {a} opens it slowly.', turns: [['a', "We've been through a lot, haven't we?"]] },
     { id: 'jo.07', when: { of: 'late' }, stage: 'A screen lights up. Their film is shorter than most, and they both laugh at that.', turns: [['b', "We didn't waste any time, did we?"]] },
-    { id: 'jo.08', when: { of: 'late' }, stage: 'A photo album with their names on it. It is not very thick.', turns: [['a', "Quality, not quantity."], ['b', "Exactly."]] },
+    { id: 'jo.08', when: { of: 'late' }, stage: "A photo album with their names on it. It isn't very thick.", turns: [['a', "Quality, not quantity."], ['b', "Exactly."]] },
   ],
   'journey-clip': [
     // how they met
@@ -108,7 +108,7 @@ export const JOURNEY_LINES = {
     { id: 'jr.r2', when: { of: 'row' }, turns: [['a', "I'm sorry about that, by the way."], ['b', "You said sorry at the time."], ['a', "I'm saying it again."]] },
     { id: 'jr.r3', when: { of: 'row' }, stage: 'They both go quiet while it plays.', turns: [['b', "We came back from that."], ['a', "We did."]] },
     { id: 'jr.t1', when: { of: 'tested' }, turns: [['b', "I didn't enjoy watching that the first time."], ['a', "I know. I'm sorry."]] },
-    { id: 'jr.t2', when: { of: 'tested' }, turns: [['a', "That was a stupid moment."], ['b', "It was."], ['a', "You're meant to say it wasn't."]] },
+    { id: 'jr.t2', when: { of: 'tested' }, turns: [['a', "That was a stupid moment."], ['b', 'It was {a}.'], ['a', "You're meant to say it wasn't."]] },
     { id: 'jr.t3', when: { of: 'tested' }, stage: '{b} glances at {a} while it plays.', turns: [['a', "Nothing was ever going to happen."], ['b', "I know that now."]] },
     { id: 'jr.ca1', when: { of: 'casa' }, turns: [['a', "The worst few days in here."], ['b', "The longest few days of my life."]] },
     { id: 'jr.ca2', when: { of: 'casa' }, stage: "{b} takes {a}'s hand before it's even finished.", turns: [['b', "I don't want to watch that bit again."], ['a', "Then don't. Look at me instead."]] },
@@ -124,7 +124,7 @@ export const JOURNEY_LINES = {
     { id: 'jr.l2', when: { of: 'love' }, turns: [['b', "I'll never forget that."], ['a', "I'm glad it's on camera. Now you can't deny I said it first."]] },
     { id: 'jr.l3', when: { of: 'love' }, turns: [['a', "I was so scared to say it."], ['b', "I'm glad you did."]] },
     { id: 'jr.ch1', when: { of: 'challenge' }, turns: [['a', "What are we doing?"], ['b', "Winning, obviously."]] },
-    { id: 'jr.ch2', when: { of: 'challenge' }, stage: 'They are both crying with laughter.', turns: [['b', "I forgot about this."], ['a', "I'll never forget this."]] },
+    { id: 'jr.ch2', when: { of: 'challenge' }, stage: "They're both crying with laughter.", turns: [['b', "I forgot about this."], ['a', "I'll never forget this."]] },
   ],
   'journey-end': [
     { id: 'je.01', when: { of: 'steady' }, stage: 'The film ends. {a} and {b} sit for a moment without saying anything.', turns: [['a', "We've been solid since the start, haven't we?"], ['b', "From day one."]] },

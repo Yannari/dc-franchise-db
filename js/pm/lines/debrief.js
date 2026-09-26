@@ -21,7 +21,7 @@ export const DEBRIEF = [
     ['b', "Are you okay?"], ['a', "No. Ask me tomorrow."], ['b', "What are you going to say to {c}?"],
     ['a', "Nothing. I'm not giving {c} the satisfaction."], ['b', "Good. Be the bigger person."],
     ['a', "I'm being the bigger person on the outside. On the inside I'm screaming."]],
-    beat: '{b} does not let go of {a.posAdj} hand for the rest of the night.' },
+    beat: "{b} doesn't let go of {a.posAdj} hand for the rest of the night." },
   { id: 'dn.rb.04', when: C3({ of: 'robbed' }), stage: '{Where}, {a} is staring at the floor.', turns: [
     ['b', "You don't have to say anything."], ['a', "I thought we were solid."], ['b', "So did everyone."],
     ['a', "And then {c} stands up and says a name, and that's it. That's the end of it."],
@@ -34,7 +34,7 @@ export const DEBRIEF = [
   { id: 'dn.st.02', when: C3({ of: 'stole', taken: true }), turns: [
     ['a', "Is {c} okay?"], ['b', "What do you think?"], ['a', "I didn't do it to hurt anyone."],
     ['b', "I know. But you did."], ['a', "I'd do it again, though. That's the worst part."],
-    ['b', "Then at least be honest with {c} about that."]], beat: '{a} nods, and does not go and find {c}.' },
+    ['b', "Then at least be honest with {c} about that."]], beat: "{a} nods, and doesn't go and find {c}." },
   { id: 'dn.st.03', when: C3({ of: 'stole', taken: true }), turns: [
     ['b', "Well, you've made some enemies."], ['a', "Have I?"], ['b', "Half the villa isn't speaking to you."],
     ['a', "The half that matters is."], ['b', "{pa} better be worth it."], ['a', "{pa} is. I'm sure of it."],
@@ -87,7 +87,7 @@ export const DEBRIEF = [
     ['a', "It's so quiet without {c}."], ['b', "It's been an hour."], ['a', "I know. It's still quiet."],
     ['b', "You'll talk to {c} when you're out."], ['a', "It's not the same."],
     ['b', "No. But {c} would want you to stay and win this."], ['a', "{c} would want me to stay and be annoying about it."]],
-    beat: 'They both laugh, and it is the first laugh all night.' },
+    beat: "They both laugh, and it's the first laugh all night." },
   { id: 'dn.ms.02', when: C3({ of: 'miss' }), turns: [
     ['b', "How are you doing?"], ['a', "I keep looking round for {c}."], ['b', "That's normal. It's only been a few hours."],
     ['a', "{c} was the one I told everything to."], ['b', "Then tell me instead. I'm not going anywhere."],
@@ -101,7 +101,7 @@ export const DEBRIEF = [
     ['a', "It still smells like {c}."], ['b', "Okay. Now you're just being sad on purpose."],
     ['a', "A little bit."]] },
   // ── blame: c voted a's partner or friend out ──
-  { id: 'dn.bl.01', when: C3({ of: 'blame' }), stage: '{Where}, and {a} is not quiet about it.', turns: [
+  { id: 'dn.bl.01', when: C3({ of: 'blame' }), stage: "{Where}, and {a} isn't quiet about it.", turns: [
     ['a', "{c} looked me in the eye this morning."], ['b', "I know."], ['a', "And then stood up at the fire pit and did that."],
     ['b', "It was a vote. Somebody had to go."], ['a', "It didn't have to be them."],
     ['b', "Are you going to say something to {c}?"], ['a', "Oh, I'm going to say a lot of things to {c}."]],
@@ -128,7 +128,7 @@ export const DEBRIEF = [
     ['a', "About how fast it happens. One minute you're here, and then you're packing."],
     ['b', "You're not packing."], ['a', "Not tonight."], ['b', "Not any night. Come here."]] },
   // ── eyeing: a's partner could not stop looking at the bombshell c ──
-  { id: 'dn.ey.01', when: C3({ of: 'eyeing', taken: true }), stage: '{Where}, {a} is not letting it go.', turns: [
+  { id: 'dn.ey.01', when: C3({ of: 'eyeing', taken: true }), stage: "{Where}, {a} isn't letting it go.", turns: [
     ['a', "Did you see how {pa} looked at {c}?"], ['b', "I saw."], ['a', "I'm not imagining it?"],
     ['b', "You're not imagining it. But a look is a look."], ['a', "It's never just a look in here."],
     ['b', "Then talk to {pa} before you decide what it is."], ['a', "And if I don't like the answer?"],
@@ -136,7 +136,7 @@ export const DEBRIEF = [
   { id: 'dn.ey.02', when: C3({ of: 'eyeing', taken: true }), turns: [
     ['b', "Are you worried about {c}?"], ['a', "I'm worried about {pa}."], ['b', "What did {pa} say?"],
     ['a', "Nothing. That's what worries me."], ['b', "Nothing isn't always bad."],
-    ['a', "In here, nothing is always bad."]], beat: '{b} does not have an answer to that.' },
+    ['a', "In here, nothing is always bad."]], beat: "{b} doesn't have an answer to that." },
   { id: 'dn.ey.03', when: C3({ of: 'eyeing', taken: true }), turns: [
     ['a', "Be honest with me. Is {c} {pa}'s type?"], ['b', "…A bit."], ['a', "A bit?"],
     ['b', "Quite a lot. But {pa} chose you."], ['a', "{pa} chose me before {c} walked in."],
@@ -172,7 +172,7 @@ export const DEBRIEF = [
     ['b', "You looked so relieved when {pa} said your name."], ['a', "I was. I've been worried for days."],
     ['b', "About what?"], ['a', "That {pa} would pick someone else."], ['b', "And now?"],
     ['a', "And now I can finally breathe."]], beat: '{a} smiles, properly, for the first time all day.' },
-  { id: 'dn.pk.02', when: { of: 'picked', taken: true }, stage: '{Where}, {a} cannot stop grinning.', turns: [
+  { id: 'dn.pk.02', when: { of: 'picked', taken: true }, stage: "{Where}, {a} can't stop grinning.", turns: [
     ['b', "Go on. Say it."], ['a', "Say what?"], ['b', "That you're happy."], ['a', "I'm happy."],
     ['b', "With {pa}."], ['a', "With {pa}. Really happy. Is that mad?"], ['b', "It's the least mad thing you've said all week."]] },
   { id: 'dn.pk.03', when: { of: 'picked', taken: true }, turns: [
@@ -181,7 +181,7 @@ export const DEBRIEF = [
   { id: 'dn.mh.01', when: { of: 'meh', taken: true }, turns: [
     ['b', "You don't look very happy with {pa}."], ['a', "It's fine."], ['b', "Fine?"],
     ['a', "{pa} is lovely. I just don't feel much."], ['b', "Then why did you go along with it?"],
-    ['a', "Because it was that or go home."]], beat: '{b} nods slowly, and does not say what they are thinking.' },
+    ['a', "Because it was that or go home."]], beat: "{b} nods slowly, and doesn't say what they're thinking." },
   { id: 'dn.mh.02', when: { of: 'meh', taken: true }, stage: '{Where}, {a} is picking at a nail.', turns: [
     ['a', "Can I tell you something and you won't tell {pa}?"], ['b', "Of course."],
     ['a', "I'm not feeling it. I haven't been for days."], ['b', "Have you told {pa}?"],
@@ -195,8 +195,8 @@ export const DEBRIEF = [
 export const HEARD = [
   { id: 'gs.hd.01', when: { knows: true, heard: true }, turns: [['a', "I don't want to cause trouble, but I heard what {c} said about you last night."], ['b', "What did {c} say?"], ['a', "That {c} isn't really feeling it."]], beat: '{b} stares at {a}, and then across the lawn at {c}.' },
   { id: 'gs.hd.02', when: { knows: true, heard: true }, turns: [['a', "Can I tell you something? It's about {c}."], ['b', "Go on."], ['a', "{c} was talking about you in the debrief. It wasn't nice."], ['b', "Not nice how?"], ['a', "Not sure about you. Not sure at all."]] },
-  { id: 'gs.hd.03', when: { knows: true, heard: true }, turns: [['a', "I feel awful telling you this."], ['b', "Then why are you?"], ['a', "Because I'd want to know. {c} said {c} has got eyes for someone else."], ['b', "Who?"]], beat: '{a} does not say, which is worse.' },
-  { id: 'gs.hd.04', when: { knows: true, heard: true }, turns: [['a', "You know what {c} said on the terrace?"], ['b', "Nothing good, by your face."], ['a', "That it's a five with you. Maybe less."]], beat: '{b} laughs, and then does not.' },
+  { id: 'gs.hd.03', when: { knows: true, heard: true }, turns: [['a', "I feel awful telling you this."], ['b', "Then why are you?"], ['a', "Because I'd want to know. {c} said {c} has got eyes for someone else."], ['b', "Who?"]], beat: "{a} won't say." },
+  { id: 'gs.hd.04', when: { knows: true, heard: true }, turns: [['a', "You know what {c} said on the terrace?"], ['b', "Nothing good, by your face."], ['a', "That it's a five with you. Maybe less."]], beat: '{b} laughs, and then stops.' },
   { id: 'gs.hd.05', when: { knows: true, heard: true }, turns: [['a', "I was there when {c} said it. I'm not making it up."], ['b', "Said what?"], ['a', "That {c} would go for someone else if {c} could."], ['b', "{c} said that? To you?"], ['a', "To all of us."]] },
 ];
 

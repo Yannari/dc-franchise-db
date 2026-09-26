@@ -674,7 +674,7 @@ export const KINDS = {
     'camp-rally', 'camp-confront', 'camp-clash', 'camp-lobby', 'camp-split', 'camp-switch', 'camp-after',
     'feud-confront', 'feud-interrupt', 'feud-shade', 'feud-ick', 'feud-closure',
     'game-plan', 'game-latch', 'game-two-faced', 'game-suspect', 'game-called', 'game-fallout', 'game-end',
-    'betray-see', 'betray-confront', 'betray-end', 'mugged-low', 'found-love', 'villa-happy', 'redeem-reflect', 'redeem-act', 'redeem-doubt', 'grass-talk', 'grass-frozen', 'grass-confront', 'parents-named', 'parents-advice', 'parents-mediate', 'parents-wobble', 'exw-stir', 'exw-partner', 'exw-talk', 'exw-back']
+    'betray-see', 'betray-confront', 'betray-end', 'mugged-low', 'found-love', 'villa-happy', 'redeem-reflect', 'redeem-act', 'redeem-doubt', 'grass-talk', 'grass-frozen', 'grass-confront', 'parents-named', 'parents-advice', 'parents-mediate', 'parents-wobble', 'exw-stir', 'exw-partner', 'exw-talk', 'exw-back', 'vote-fallout', 'vote-callout', 'grudge-cold', 'grudge-clash', 'grudge-end', 'visit-arrive', 'visit-confront', 'visit-leave']
     .map(k => [k, { salience: 1, cast: () => null,
       apply: (s, ev) => ({ pop: ev.extra.pop || {}, major: ev.extra.majorPop || [] }) }])),
 };
@@ -755,7 +755,7 @@ const KIN_PHASE_KINDS = {
 const KIN_GAP = { 'kin-heart': 1, 'kin-vet': 0, 'kin-protect': 1, 'ex-awkward': 1, 'ex-jealous': 0 };
 const KIN_KINDS = new Set(Object.keys(KIN_GAP));
 // The most of a kind one episode's villa day holds, aired or not.
-const EP_CAP = { argument: 3, ick: 3 };
+const EP_CAP = { argument: 3, ick: 3, comedy: 3 };
 // What only happens once between the same people: sizing up a partner, the
 // ex's new partner, a flirt answered for.
 const onceFor = (s, tag) => (s.kinOnce ||= []).includes(tag);

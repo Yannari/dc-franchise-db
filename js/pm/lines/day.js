@@ -16,6 +16,7 @@ import { FRIENDSHIP } from './day/friendship.js';
 import { FRIEND_TALK } from './day/friend-talk.js';
 import { GOSSIP } from './day/gossip.js';
 import { COMEDY } from './day/comedy.js';
+import { COMEDY_MORE } from './day/comedy-more.js';
 import { LOYALTY } from './day/loyalty.js';
 import { ICK, CHALLENGE_KISS, CHALLENGE_WIN } from './day/challenge.js';
 import { PULL_MORE } from './day/pull-more.js';
@@ -126,7 +127,7 @@ export const DAY = {
   kiss: [...KISS, ...MAKING_UP.kiss, ...JM('kiss')],
   friendship: [...FRIENDSHIP, ...FRIEND_TALK, ...JM('friendship')],
   gossip: [...GOSSIP, ...JM('gossip')],
-  comedy: [...COMEDY, ...JM('comedy')],
+  comedy: [...COMEDY, ...COMEDY_MORE, ...JM('comedy')],
   ick: [...ICK, ...JM('ick')],
   'challenge-kiss': [...CHALLENGE_KISS, ...JM('challenge-kiss')],
   'challenge-win': [...CHALLENGE_WIN, ...MAKING_UP['challenge-win'], ...JM('challenge-win')],

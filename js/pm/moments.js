@@ -187,7 +187,11 @@ export function dumpingScene(state, rng, { atRisk = [], dumped, ballots = [], ch
     addBond(b.target, b.voter, -0.8);
     const p = partners[b.target];
     if (p && p !== b.voter && !dumped.includes(p)) addBond(p, b.voter, -0.5);
-    ev('ballot-reveal', [b.voter, b.target], { [b.voter]: { approval: -0.2, fame: 1 } });
+    // Why they voted (pm/villa-vote.js motives): a threat or a grudge said out
+    // loud; a tactical vote (a rival's partner, a strong couple) covered with a
+    // kinder reason.
+    const why = b.why ? (['rival', 'competition'].includes(b.why) ? 'cover' : b.why) : null;
+    ev('ballot-reveal', [b.voter, b.target], { [b.voter]: { approval: why && why !== 'cover' ? -0.4 : -0.2, fame: why ? 1.5 : 1 } }, [], why ? { of: why, why: b.why } : {});
   }
   // …and what the votes left to settle (a tie), before anyone is told.
   if (afterVotes) events.push(...afterVotes());

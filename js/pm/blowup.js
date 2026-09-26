@@ -72,6 +72,7 @@ function grievances(state, tonight = []) {
     if (e.kind === 'feud-confront') add(p[0], p[1], 2 * fade, 'steal');
     // A game player called out: the one being played, at the player; and the accuser it was turned on.
     if (e.kind === 'betray-see') add(p[0], p[1], 2.2 * fade, 'steal');
+    if (e.kind === 'vote-fallout' || e.kind === 'vote-callout' || e.kind === 'grudge-clash') add(p[0], p[1], 1.8 * fade, 'vote');
     if (e.kind === 'grass-confront') add(p[0], p[1], 1.2 * fade, 'told');
     if (e.kind === 'game-called') { add(p[2], p[1], 2.2 * fade, 'told'); if (e.extra?.of === 'turns') add(p[0], p[1], 1.5 * fade, 'history'); }
     if (e.kind === 'feud-interrupt' || (e.kind === 'feud-shade' && e.extra?.of === 'catty')) add(p[e.kind === 'feud-shade' ? 1 : 2], p[0], 1.2 * fade, 'history');

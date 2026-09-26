@@ -46,7 +46,9 @@ const MAX_CHAPTERS = 8;
 // what went on between the two of them BEFORE they were a couple.
 const HOSTILE = new Set(['argument', 'blowup', 'rival-shade', 'rival-row', 'camp-confront', 'camp-clash', 'code-call', 'cold-shoulder',
   // exes at war who found their way back (pm/rivalry.js): lovers, enemies, lovers again
-  'feud-confront', 'feud-interrupt']);
+  'feud-confront', 'feud-interrupt',
+  // a vote that cost one of them someone (pm/arcs.js): the grudge, before they fell
+  'vote-fallout', 'vote-callout', 'grudge-cold', 'grudge-clash']);
 const FRIENDLY = new Set(['friendship', 'comedy', 'camp-rally', 'advice', 'comfort', 'solidarity']);
 const hostileBetween = (e, a, b) => HOSTILE.has(e.kind) && both(e, a, b) && !(e.kind === 'rival-row' && e.extra?.of === 'clear-air')
   // a camp scene is between the two who clashed, not everyone in it

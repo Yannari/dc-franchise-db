@@ -37,6 +37,7 @@ import { CAMP_LINES } from './lines/camps.js';
 import { FEUD_LINES } from './lines/feuds.js';
 import { GAME_LINES } from './lines/game.js';
 import { ARC_LINES } from './lines/arcs.js';
+import { VOTE_LINES } from './lines/votes.js';
 import { FIREPIT_LINES } from './lines/firepit.js';
 import { HIDEAWAY_LINES } from './lines/hideaway.js';
 import { HEAT_LINES } from './lines/day/heat.js';
@@ -60,6 +61,7 @@ for (const [k, v] of Object.entries(CAMP_LINES)) POOLS[k] = [...(POOLS[k] || [])
 for (const [k, v] of Object.entries(FEUD_LINES)) POOLS[k] = [...(POOLS[k] || []), ...v];
 for (const [k, v] of Object.entries(GAME_LINES)) POOLS[k] = [...(POOLS[k] || []), ...v];
 for (const [k, v] of Object.entries(ARC_LINES)) POOLS[k] = [...(POOLS[k] || []), ...v];
+for (const [k, v] of Object.entries(VOTE_LINES)) POOLS[k] = [...(POOLS[k] || []), ...v];
 // The night before a dumping's verdict (lines/firepit.js).
 for (const [k, v] of Object.entries(FIREPIT_LINES)) POOLS[k] = [...(POOLS[k] || []), ...v];
 // The Hideaway night (lines/hideaway.js).
@@ -247,6 +249,13 @@ function relaxedWeight(state, entry, ps) {
 }
 
 /** The words have their own dice: a line can never change what happened. */
+function hutRng(state) {
+  if (state._hutRngEp !== state.ep) {
+    state._hutRng = streamFor(state.seed ?? 1, `hutline:${state.ep}${state.epSalt || ''}`);
+    state._hutRngEp = state.ep;
+  }
+  return state._hutRng;
+}
 function scriptRng(state) {
   if (state._scriptRngEp !== state.ep) {
     state._scriptRng = streamFor(state.seed ?? 1, `script:${state.ep}${state.epSalt || ''}`);
@@ -265,7 +274,7 @@ function scriptRng(state) {
 // Ellie being taken back from the one who had just picked her).
 const LEADING = ['exes', 'stoleFrom', 'rebuffed', 'heard', 'kissed', 'promised', 'rowedToday', 'justMet', 'heat', 'going'];
 
-export function pickScript(state, pool, ps, facts, { allowRepeat = true } = {}) {
+export function pickScript(state, pool, ps, facts, { allowRepeat = true, rng: own = null } = {}) {
   // Candidates at each width, narrowest first: the leading pool, then every
   // entry that fits. A spent leading pool widens before it repeats: a couple
   // who rowed and made up five times in one evening heard the same
@@ -280,7 +289,7 @@ export function pickScript(state, pool, ps, facts, { allowRepeat = true } = {}) 
   const fits = pool.filter(e => matches(e.when, facts));
   widths.push(fits.length ? fits : pool.filter(e => !e.when));
   if (!widths[widths.length - 1].length && !widths[0].length) return null;
-  const rng = scriptRng(state);
+  const rng = own || scriptRng(state);
   let cands = null, ws = null;
   for (const [i, w] of widths.entries()) {
     if (!w.length) continue;
@@ -620,8 +629,13 @@ export function hutFor(state, ev, who, stance) {
     kind: ev.kind, role: ev.players.indexOf(who), withB: others.length > 0,
     // Going home tonight (moments.js dumpingScene): a leaver is never "relieved it wasn't me".
     leaving: !!state._leaving?.includes(who) };
-  // A cutaway is optional: better none than the same line twice in an episode.
-  const entry = pickScript(state, HUT[stance], [who], facts, { allowRepeat: false });
+  // Always a cutaway, once the engine has decided there is one: whether a
+  // line was left in the pool must never decide anything (a skipped hut took
+  // its approval with it, so the words could change a vote). A repeat is still
+  // the last resort — the one heard longest ago (pickScript).
+  // On dice of their own: which chat line played must not move which hut line
+  // did (Look Who's Talking reads the huts; a longer chat pool changed a season).
+  const entry = pickScript(state, HUT[stance], [who], facts, { rng: hutRng(state) });
   if (!entry) return null;
   noteUse(state, entry, [who]);
   return renderScript(entry, ps, state);

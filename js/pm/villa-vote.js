@@ -5,7 +5,10 @@
 // Four real formats (spec §9.2). Voters read friendship, who threatens their
 // own couple, and how settled the couple they would be splitting looks — "you
 // don't split a real couple" (spec §6.7). Never approval or fame.
-import { friendship } from './feelings.js';
+import { friendship, romance, schemeEligible } from './feelings.js';
+import { getBond } from '../bonds.js';
+import { getRelationshipDimension } from '../relationships.js';
+import { attachment } from './emotions.js';
 import { attr } from './chemistry.js';
 import { partnerOf } from './events.js';
 import { coupleStrength } from './ladder.js';
@@ -18,6 +21,47 @@ import { kinOf, onYourSide } from './kin.js';
 export const DUMP_FORMATS = ['cross-gender', 'safe-pick-couple', 'one-stays', 'public',
   'top-couple-picks', 'save-one', 'couples-vote', 'ex-islanders'];
 
+// WHY SOMEBODY VOTES THE WAY THEY DO (user: "strategic islanders — someone
+// could use strategy to break a couple, dump someone in love but a threat to
+// herself or her couple, or just be petty … we need normal drama too,
+// especially at the dumping"). Read from US 7, where the villa's votes were
+// called strategic ("the islanders keep kicking off people who have a strong
+// relationship or a big person of interest"; "this cast has several
+// strategists"). Every voter weighs the same motives; who they are sets how
+// much each counts, in proportion:
+//   friend       who they like                     everyone; the kind most
+//   threat       whoever fancies their partner, or   the anxious and the strategic
+//                whom their partner fancies
+//   grudge       resentment, a bond gone bad         the hot-headed; the kind barely
+//   rival        the partner of someone they want —  only those who may scheme
+//                dump them, and the one they want is free
+//   competition  a strong couple, split it          only those who may scheme
+//   protect      a strong couple, keep it           everyone else ("you don't split a real couple")
+// The motive that weighed most against the one they voted for is the ballot's
+// `why`: said out loud at the fire pit (threat, grudge), or covered with a
+// kinder reason (rival, competition) — and the villa may see through it.
+const NICE_ARCH = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
+const st = (state, n, k) => (state.profiles[n]?.stats?.[k] ?? 5) / 10;
+function motives(state, v, t) {
+  const mine = partnerOf(state, v);
+  const nice = NICE_ARCH.has(state.profiles[v]?.archetype), sly = schemeEligible(state.profiles[v]);
+  const anx = attachment(state.profiles[v]).anxiety;
+  const temp = st(state, v, 'temperament'), strat = st(state, v, 'strategic');
+  const theirs = partnerOf(state, t);
+  const strength = theirs ? coupleStrength(state, t, theirs) : 0;
+  const terms = {
+    friend: friendship(v, t) * (nice ? 1.4 : 1),
+    threat: mine ? -5 * (0.4 + 0.6 * anx) * (0.6 + 0.6 * strat) * Math.max(attr(state, t, mine) ?? 0, attr(state, mine, t) ?? 0) / 10 : 0,
+    grudge: -1.5 * (1.2 - temp) * (nice ? 0.4 : 1) * ((getRelationshipDimension(v, t, 'resentment') || 0) / 2 + Math.max(0, -getBond(v, t)) / 2),
+    rival: sly && theirs && theirs !== v ? -4 * (0.5 + strat) * Math.max(0, romance(v, theirs) - 4) / 6 : 0,
+    competition: sly ? -2 * strat * strength : 0,
+    protect: sly ? 0 : 3 * strength * (nice ? 1.3 : 1),
+  };
+  const score = Object.values(terms).reduce((a, b) => a + b, 0);
+  const worst = ['threat', 'grudge', 'rival', 'competition'].sort((x, y) => terms[x] - terms[y])[0];
+  const why = terms[worst] <= -1 ? worst : null;
+  return { score, why };
+}
 function affinity(state, v, t) {
   const mine = partnerOf(state, v);
   // Your own partner, always: a boy whose girlfriend is at risk saves her.
@@ -27,12 +71,10 @@ function affinity(state, v, t) {
   // (the Relationships tab, pm/kin.js).
   const kin = kinOf(state, v, t);
   if (kin && onYourSide(kin)) return 90;
-  const threat = mine && (attr(state, t, mine) ?? 0) > 6 ? 2 : 0;
-  const theirs = partnerOf(state, t);
-  // The villa protects a couple that has made it official.
-  const protect = theirs ? 3 * coupleStrength(state, t, theirs) : 0;
-  return friendship(v, t) - threat + protect;
+  return motives(state, v, t).score;
 }
+/** Why v voted against t (null: nothing past liking them less). */
+export const voteWhy = (state, v, t) => (partnerOf(state, v) === t ? null : motives(state, v, t).why);
 
 function tally(ballots, rng) {
   const count = new Map();
@@ -42,7 +84,13 @@ function tally(ballots, rng) {
   return tied[Math.floor(rng() * tied.length)];
 }
 
-export function villaDumping(state, { format, bottom, rng }) {
+/** A villa vote, every ballot carrying why it was cast (the fire pit says it; the day after reads it). */
+export function villaDumping(state, opts) {
+  const res = villaDumpingRaw(state, opts);
+  for (const b of res.ballots || []) if (!b.save) b.why = voteWhy(state, b.voter, b.target);
+  return res;
+}
+function villaDumpingRaw(state, { format, bottom, rng }) {
   const atRisk = bottom.flat();
   const voters = state.villa.filter(n => !atRisk.includes(n));
   const g = n => state.profiles[n].gender;

@@ -92,6 +92,9 @@ export function arcs(state, rng, entry = null) {
   grass(state, rng, ev);
   parents(state, rng, ev);
   exWalksIn(state, rng, ev);
+  voteFallout(state, rng, seen, ev);
+  voteGrudges(state, rng, ev);
+  exVisit(state, rng, seen, ev);
   return out;
 }
 
@@ -102,7 +105,7 @@ const MUGGED = {   // the scene kind, and which of its players was the one left 
   'rival-won': e => e.players[1], 'feud-confront': e => e.players[0], 'game-fallout': e => (e.extra?.of === 'ends' ? e.players[0] : null),
   'triangle-choice': e => e.players[2],
 };
-const VILLAIN_ACT = { 'game-called': e => e.players[1], 'code-call': e => e.players[1], 'feud-confront': e => e.players[1],
+const VILLAIN_ACT = { 'vote-fallout': e => (e.extra?.of !== 'threat' ? e.players[1] : null), 'game-called': e => e.players[1], 'code-call': e => e.players[1], 'feud-confront': e => e.players[1],
   'rival-shade': e => (e.extra?.of === 'behind' ? e.players[0] : null), 'camp-confront': e => (e.extra?.of === 'hot' ? e.players[1] : null) };
 function record(state, seen) {
   for (const e of seen) {
@@ -401,5 +404,120 @@ function exWalksIn(state, rng, ev) {
     const i = exes[0];
     if (!i || state.exReturns.some(t => [t.i, t.e].includes(i) && [t.i, t.e].includes(e))) continue;
     state.exReturns.push({ i, e, ep: state.ep - 1, stage: 0, over: false });
+  }
+}
+
+// ── 7. the vote, the day after ────────────────────────────────────────
+// A vote cast for a reason past liking someone less (pm/villa-vote.js
+// motives) doesn't stay at the fire pit, when it's warranted: the dumped
+// one's partner or best friend has it out with the voter; the one who
+// survived it asks "you voted for me?"; and a tactical vote dressed up as
+// something kinder is called by someone who saw through it.
+//   vote-fallout  [p, v, t]  p (close to t) at voter v. `of`: threat · grudge · tactical
+//   vote-callout  [t, v]     t survived v's vote. `of`: threat · grudge · tactical
+function voteFallout(state, rng, seen, ev) {
+  let shown = 0;
+  for (const e of seen) {
+    if (shown >= 2) return;
+    if (e.kind !== 'ballot-reveal' || !e.extra?.why || state.ep - e.ep > 1) continue;
+    const [v, t] = e.players;
+    if (!state.villa.includes(v)) continue;
+    const why = e.extra.why === 'threat' || e.extra.why === 'grudge' ? e.extra.why : 'tactical';
+    if (!state.villa.includes(t)) {
+      // Gone: the one who loved them, or their closest friend, is left with the voter.
+      const p = roomMates(state, v).filter(n => n !== v && (romance(n, t) >= 4 || getBond(n, t) >= 3))
+        .sort((x, y) => (romance(y, t) + getBond(y, t)) - (romance(x, t) + getBond(x, t)))[0];
+      if (!p) continue;
+      // A tactical vote needs someone to see through the cover story first.
+      if (why === 'tactical' && rng() > st(state, p, 'intuition')) continue;
+      if (rng() > 0.35 + 0.5 * st(state, p, 'boldness') * (1.2 - st(state, p, 'temperament'))) continue;
+      addBond(p, v, -1.2); addRelationshipDimension(p, v, 'resentment', why === 'threat' ? 0.6 : 1);
+      feel(state, v, 'stress', 0.5);
+      ev('vote-fallout', [p, v, t], { of: why, pop: pop([p, 0.3, 1.5], [v, why === 'threat' ? -0.2 : -0.6, 1.5]) }, [p, v]);
+      shown++;
+      // …and it doesn't end there: a grudge over the episodes to come.
+      if (!(state.voteGrudges ||= []).some(g => !g.over && g.p === p && g.v === v)) state.voteGrudges.push({ p, v, t, ep: state.ep, stage: 0, over: false });
+      continue;
+    }
+    // Survived it: the one voted against wants a word.
+    if (!together(state, t, v)) continue;
+    if (why === 'tactical' && rng() > st(state, t, 'intuition')) continue;
+    if (rng() > 0.3 + 0.5 * st(state, t, 'boldness')) continue;
+    addBond(t, v, -0.8); addRelationshipDimension(t, v, 'resentment', 0.6);
+    ev('vote-callout', [t, v], { of: why, pop: pop([t, 0.2, 1.2], [v, -0.3, 1.2]) }, [t, v]);
+    shown++;
+  }
+}
+
+// ── 8. the grudge a vote leaves ───────────────────────────────────────
+// p lost someone to v's vote, and stayed. It plays out over the episodes:
+// the cold shoulder, a row, and an end — a truce, never, or (if they are
+// drawn to each other, and it happens) enemies to lovers.
+//   grudge-cold   [p, v]  the cold shoulder
+//   grudge-clash  [p, v]  it comes out again
+//   grudge-end    [p, v]  `of`: truce · spark · never
+function voteGrudges(state, rng, ev) {
+  for (const g of (state.voteGrudges || []).filter(x => !x.over)) {
+    if (!here(state, g.p, g.v)) { g.over = true; g.why = 'gone'; continue; }
+    if (g.ep === state.ep || !together(state, g.p, g.v) || rng() > 0.7) continue;
+    g.stage++;
+    const { p, v } = g;
+    if (g.stage === 1) {
+      addBond(p, v, -0.5); addBond(v, p, -0.3);
+      ev('grudge-cold', [p, v], { pop: pop([p, 0, 1]) });
+      continue;
+    }
+    const calm = (st(state, p, 'temperament') + st(state, v, 'temperament')) / 2;
+    const spark = compatible(state, p, v) ? Math.min(attr(state, p, v) ?? 0, attr(state, v, p) ?? 0) / 10 : 0;
+    const end = g.stage >= 4 || rng() < 0.3 + 0.2 * g.stage;
+    if (!end) {
+      addBond(p, v, -0.8); addBond(v, p, -0.8); feel(state, p, 'stress', 0.5);
+      // The heat of it: drawn to each other, a row feeds the spark too.
+      if (spark > 0.35) { nudgeAttraction(state, p, v, 0.3); nudgeAttraction(state, v, p, 0.3); }
+      ev('grudge-clash', [p, v], { pop: pop([p, -0.1, 1.5], [v, -0.1, 1.5]) }, [p, v]);
+      continue;
+    }
+    g.over = true;
+    const of = spark > 0.4 && rng() < spark ? 'spark' : rng() < 0.2 + 0.6 * calm - res(p, v) / 12 ? 'truce' : 'never';
+    g.why = of;
+    if (of === 'spark') { nudgeAttraction(state, p, v, 1); nudgeAttraction(state, v, p, 1); addBond(p, v, 1); addRelationshipDimension(p, v, 'resentment', -1); }
+    if (of === 'truce') { addBond(p, v, 1.2); addBond(v, p, 1.2); addRelationshipDimension(p, v, 'resentment', -1); }
+    if (of === 'never') addRelationshipDimension(p, v, 'resentment', 0.5);
+    ev('grudge-end', [p, v], { of, pop: pop([p, of === 'never' ? 0 : 0.4, 1.5], [v, of === 'never' ? -0.2 : 0.3, 1.5]) }, of === 'spark' ? [p, v] : []);
+  }
+}
+
+// ── 9. the ex comes back, for one night ───────────────────────────────
+// p stayed when d was dumped — most do — and has since moved on: coupled
+// with someone new, or kissing them. Now and then d comes back for a night
+// (the dumped have walked back in to have their say: the ex-islanders,
+// UK 11 d46), says it to p's face, and goes again. Rare, and temporary: d
+// never rejoins the villa.
+//   visit-arrive   [d, p, n]  d walks back in, and sees p with n
+//   visit-confront [d, p]     `of`: hurt · furious
+//   visit-leave    [d, p, n]  d goes, and leaves it with them
+function exVisit(state, rng, seen, ev) {
+  if (state.exVisited || state.ep < 4) return;
+  for (const g of [...(state.gone || [])].reverse()) {
+    if (state.ep - g.ep > 6 || state.ep - g.ep < 1 || state.villa.includes(g.name)) continue;
+    const d = g.name;
+    // Who d was with when d went, still here.
+    const p = Object.entries(state.pairedEver || {}).filter(([k, ep]) => k.split('|').includes(d) && ep >= g.ep - 1)
+      .map(([k]) => k.split('|').find(n => n !== d)).find(n => state.villa.includes(n));
+    if (!p) continue;
+    // Moved on since: coupled with someone new, or a kiss with them after d left.
+    const n = partnerOf(state, p) || (state.history || []).filter(e => e.ep > g.ep && (e.kind === 'kiss' || e.kind === 'game-kiss' || e.kind === 'pull') && e.players.includes(p))
+      .map(e => e.players.find(x => x !== p)).find(x => x && x !== d && state.villa.includes(x));
+    if (!n || romance(d, p) < 5) continue;
+    if (rng() > 0.25) continue;
+    state.exVisited = true;
+    const furious = rng() < 0.3 + 0.5 * (1 - st(state, d, 'temperament'));
+    feel(state, p, 'guilt', 1); feel(state, p, 'stress', 1);
+    jealousyHit(state, n, p, d, 1.5);
+    addBond(n, d, -0.8);
+    ev('visit-arrive', [d, p, n], { pop: pop([d, 0.5, 2]) }, [d, p]);
+    ev('visit-confront', [d, p], { of: furious ? 'furious' : 'hurt', pop: pop([d, 0.8, 2], [p, -0.6, 2]) }, [d, p]);
+    ev('visit-leave', [d, p, n], { pop: pop([d, 0.3, 1], [n, 0, 1]) });
+    return;
   }
 }

@@ -760,6 +760,15 @@ function arrivalRule(state, ctx, rule, fresh) {
       : rule === 'public-matches' ? publicMatch(state, name, { rng: ctx.rng, tonight }) : null;
     if (!r) continue;
     played = rule;
+    // The host says what tonight's rule is before it plays (season 41's
+    // stand-up opened on "Slowly, Chloe stands up", with nobody asked to).
+    // On its own dice; the coupled on the other side feel it coming.
+    const orng = streamFor(state.seed ?? 1, `rule-open:${state.ep}:${name}${state.epSalt || ''}`);
+    const g = state.profiles[name]?.gender;
+    for (const n of state.villa) if (n !== name && state.profiles[n]?.gender !== g && partnerOf(state, n)) feel(state, n, 'stress', 0.3);
+    // (The save has its own opening, save-setup.)
+    if (rule !== 'saves') events.push(makeEvent(state, orng, { phase: 'event', kind: 'rule-open', players: [name], aired: true,
+      extra: { of: rule, pop: { [name]: { approval: 0, fame: 0.5 } } } }));
     events.push(...r.events);
     if (r.dumped?.length) {
       const scene = dumpingScene(state, ctx.rng, { dumped: r.dumped, channel: 'bombshell' });
@@ -1124,11 +1133,16 @@ Object.assign(MOMENTS, {
     ctx.closed = true;
     const final = finalVote(state, { rng: ctx.rng });
     const envelope = ctx.splitOrStealOn ? splitOrSteal(state, final[0].couple, { rng: ctx.rng }) : null;
+    state.winnersCouple = [...final[0].couple];
     // THE RESULT, on screen. The vote was counted and exported and never
     // shown: every final went from the declarations to the reunion with no
     // winner named (read in season 11, 2026-09-23 — §11.5's system that runs
     // and reaches no screen). The host reads it bottom first, as the show does.
     const PLACE = { 1: 'first', 2: 'second', 3: 'third', 4: 'fourth' };
+    // …and before a name is read, the host says what this is: the couples
+    // standing together, what the public have been voting on, and the prize.
+    events.push(makeEvent(state, ctx.rng, { phase: 'final', kind: 'final-open', players: [], aired: true,
+      extra: { of: envelope ? 'envelope' : 'plain', pop: {} } }));
     for (const f of [...final].reverse()) {
       const [a, b] = f.couple;
       const won = f.placement === 1;
@@ -1168,6 +1182,12 @@ Object.assign(MOMENTS, {
       .sort((a, b) => b[1] - a[1]).map(([e]) => e)
       .filter(e => { const k = revealExchange(state, e.id); if (k && shownScripts.has(k)) return false; if (k) shownScripts.add(k); return true; })
       .slice(0, 5);
+    // The host's welcome, and the winners on the sofa first: how life is
+    // since the final (user: "not just a continuation of text without setup").
+    const winners = state.winnersCouple || null;
+    const open = [makeEvent(state, ctx.rng, { phase: 'reunion', kind: 'reunion-open', players: [], aired: true, extra: { pop: {} } })];
+    if (winners && winners.length === 2) open.push(makeEvent(state, ctx.rng, { phase: 'reunion', kind: 'reunion-winners', players: [...winners], aired: true,
+      extra: { of: winners.every(n => state.villa.includes(n)) && partnerOf(state, winners[0]) === winners[1] ? 'together' : 'apart', pop: {} } }));
     const events = hidden.map(e => {
       const touched = Object.keys(e.pop);
       airLater(state, e);
@@ -1187,6 +1207,7 @@ Object.assign(MOMENTS, {
       return makeEvent(state, ctx.rng, { phase: 'reunion', kind: 'reveal', players: cast,
         aired: true, major: touched, extra: { revealed: e.id, of: scandal ? 'scandal' : 'mild', what, pop: {} } });
     });
-    return { events, exits: [], ballots: [], extra: { revealed: hidden.map(e => e.id) } };
+    const close = makeEvent(state, ctx.rng, { phase: 'reunion', kind: 'reunion-close', players: [], aired: true, extra: { pop: {} } });
+    return { events: [...open, ...events, close], exits: [], ballots: [], extra: { revealed: hidden.map(e => e.id) } };
   },
 });

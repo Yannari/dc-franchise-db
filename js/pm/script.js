@@ -28,7 +28,7 @@ import { NARRATOR } from './lines/narrator.js';
 import { KISS_LINES, ICEBREAKER_CARDS } from './lines/kiss-games.js';
 import { RULES_LINES } from './lines/challenge-rules.js';
 import { MORE_D } from './lines/day/more-d.js';
-import { JOURNEY_LINES } from './lines/journey.js';
+import { JOURNEY_LINES, JOURNEY_MORE } from './lines/journey.js';
 import { KIN_LINES } from './lines/kin.js';
 import { FIREPIT_LINES } from './lines/firepit.js';
 import { HIDEAWAY_LINES } from './lines/hideaway.js';
@@ -39,6 +39,7 @@ export const POOLS = { ...DAY, ...LADDER, ...FEELINGS, ...MOMENT_LINES, ...CHALL
 for (const [k, v] of Object.entries(MORE_D)) POOLS[k] = [...(POOLS[k] || []), ...v];
 // The final dates and each couple's film (lines/journey.js).
 for (const [k, v] of Object.entries(JOURNEY_LINES)) POOLS[k] = [...(POOLS[k] || []), ...v];
+for (const [k, v] of Object.entries(JOURNEY_MORE)) POOLS[k] = [...(POOLS[k] || []), ...v];
 // The islanders who knew each other before the villa (lines/kin.js).
 for (const [k, v] of Object.entries(KIN_LINES)) POOLS[k] = [...(POOLS[k] || []), ...v];
 // The night before a dumping's verdict (lines/firepit.js).

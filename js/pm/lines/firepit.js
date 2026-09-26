@@ -28,6 +28,34 @@ export const FIREPIT_LINES = {
     { id: 'dt.08', when: pub('public-double'), turns: [['a', "Islanders, tonight TWO couples will be dumped from the island. Please make your way to the fire pit. #DoubleDumping"], ['b', "Two? Two couples?"]] },
     { id: 'dt.09', when: pub('singles'), turns: [['a', "Islanders, tonight every single islander is vulnerable. Please make your way to the fire pit. #SingleAndVulnerable"]], beat: 'Everyone who is single goes quiet.' },
   ],
+  // A bombshell night's rule, said before it plays (moments.js arrivalRule).
+  // {a} is the new arrival. `of`: stand-up · public-matches (the save has save-setup).
+  'rule-open': [
+    { id: 'rr.su1', when: { of: 'stand-up' }, stage: 'Everyone gathers at the fire pit.', turns: [['dior', "Islanders, {a} is going to couple up tonight. If you would like to get to know {a}, I want you to stand up. Now."]], beat: 'Nobody moves at first. Everyone is watching the benches.' },
+    { id: 'rr.su2', when: { of: 'stand-up' }, turns: [['a', "I want to get to know some of you properly. So if you're interested in me, please stand up."], ['dior', "And {a} will choose from whoever is standing. Partners included."]], beat: 'A few couples stop holding hands.' },
+    { id: 'rr.pm2', when: { of: 'public-matches' }, stage: 'A text arrives at the fire pit.', turns: [['dior', "It's not {a}'s choice tonight. It's yours at home. The public have picked {a}'s partner."]] },
+  ],
+  // The final vote's opening (moments.js final). `of`: envelope (Split or
+  // Steal follows) · plain.
+  'final-open': [
+    { id: 'fo.1', stage: 'The four couples stand at the fire pit, hand in hand, for the last time.', turns: [['dior', "Islanders, this is it. The final."], ['dior', "The public have been voting for the couple they want to crown their Perfect Match. I have the results here, and I'll read them out from fourth place."]], beat: 'Somebody on the end is shaking.' },
+    { id: 'fo.2', stage: 'The villa is lit up for the last night. The couples stand in a line, holding on to each other.', turns: [['dior', "Good evening, and welcome to the final."], ['dior', "Over the last few days, the public have been deciding who wins. Only one couple can take the title."]] },
+    { id: 'fo.e', when: { of: 'envelope' }, stage: 'The four couples stand at the fire pit, hand in hand.', turns: [['dior', "Islanders, the public have voted, and tonight one couple will be crowned the winners."], ['dior', "And the winners will face one last decision, in an envelope."]], beat: 'Every couple squeezes hands a little tighter.' },
+  ],
+  // The reunion (moments.js reunion): the welcome, the winners, the sign-off.
+  'reunion-open': [
+    { id: 'ru.o1', stage: 'A studio full of lights and a live audience. The islanders fill the sofas.', turns: [['dior', "Welcome to the Perfect Match reunion! Every islander from this season is here, and trust me, some of you are not going to enjoy tonight."]], beat: 'The audience cheers. A few islanders laugh nervously.' },
+    { id: 'ru.o2', stage: 'The whole cast, together again for the first time since the villa.', turns: [['dior', "Good evening, and welcome back! We've got the couples, we've got the exes, and we've got the footage you never saw."]] },
+  ],
+  'reunion-winners': [
+    { id: 'ru.w1', when: { of: 'together' }, turns: [['dior', "Let's start with our winners. {a}, {b}, how is life outside the villa?"], ['a', "Honestly? Better than in there. We don't have to share a bedroom with twenty people."], ['b', "Nineteen."]] },
+    { id: 'ru.w2', when: { of: 'together' }, turns: [['dior', "{a} and {b}, our Perfect Match. Are you still going strong?"], ['b', "Stronger."], ['a', "We're looking at flats."]], beat: 'The studio cheers.' },
+    { id: 'ru.w3', when: { of: 'apart' }, turns: [['dior', "{a}, {b}, our winners. I have to ask. How are things?"], ['a', "It's been a lot."], ['b', "We're taking it one day at a time."]], beat: 'The studio goes quiet for a second.' },
+  ],
+  'reunion-close': [
+    { id: 'ru.c1', turns: [['dior', "That's all we have time for. Thank you to every one of our islanders, and to all of you for watching."], ['dior', "Goodnight, and see you in the villa next time."]] },
+    { id: 'ru.c2', turns: [['dior', "What a season. Thank you for watching, and thank you to our islanders for letting us in. Goodnight!"]], beat: 'The whole studio is on its feet.' },
+  ],
   // A recoupling's opening (moments.js recoupleBuildUp). `of` on the text is
   // who chooses (f · m); on the host's line, who chooses and the stake:
   // all (every single goes home) · risk (whoever is left single could go) ·

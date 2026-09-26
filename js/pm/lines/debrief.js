@@ -69,6 +69,19 @@ export const DEBRIEF = [
     ['b', "Well. That was a lot."], ['a', "I know."], ['b', "Are you happy, at least?"],
     ['a', "I think so. I'm also terrified."], ['b', "Of what?"], ['a', "Of being the villain for the rest of this."],
     ['b', "Then don't act like one from here on."]] },
+  { id: 'dn.tw.04', when: { of: 'twisted' }, stage: '{Where}, {a} is lying on the bed, staring at the ceiling.', turns: [
+    ['b', "You did what you felt. That's allowed."], ['a', "It doesn't feel allowed."],
+    ['b', "Give it a few days."], ['a', "I don't think a few days is going to fix this."]] },
+  { id: 'dn.tw.05', when: { of: 'twisted' }, turns: [
+    ['a', "Everyone's looking at me like I've done something awful."], ['b', "You haven't. You've done something big."],
+    ['a', "Is there a difference?"], ['b', "Ask me next week."]] },
+  { id: 'dn.tw.06', when: C3({ of: 'twisted' }), turns: [
+    ['b', "Are you going to talk to {c}?"], ['a', "Tomorrow. I can't tonight."], ['b', "{c} is going to be up all night either way."],
+    ['a', "I know. That's why I can't."]] },
+  { id: 'dn.to.14', when: { of: 'twisted-on' }, turns: [
+    ['b', "Come here."], ['a', "I'm fine."], ['b', "You're not fine. Come here."]], beat: '{a} lets {b} hug {a.obj}, and finally cries.' },
+  { id: 'dn.to.15', when: { of: 'twisted-on' }, stage: '{Where}, {a} is packing and unpacking the same bag.', turns: [
+    ['b', "What are you doing?"], ['a', "I don't know. Something."], ['b', "Sit down. Nobody's going anywhere tonight."]] },
   // ── miss: c has just gone home ──
   { id: 'dn.ms.01', when: C3({ of: 'miss' }), stage: '{Where}, the bed next to {a} is already made up.', turns: [
     ['a', "It's so quiet without {c}."], ['b', "It's been an hour."], ['a', "I know. It's still quiet."],

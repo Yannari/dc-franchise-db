@@ -196,7 +196,7 @@ describe('an aired episode can be watched and read', () => {
       const html = screens.map(s => s.html).join('');
       const cardsOf = s => s.html.match(/class="pmv-card[ "]/g)?.length || 0;
       const extra = screens.filter(s => /^villa-(comingup|nexttime)-/.test(s.id)).reduce((n, s) => n + cardsOf(s), 0)
-        + (row.moment === 'final' && row.pm.shares?.length ? 1 : 0);
+        + (row.moment === 'final' && row.pm.shares?.length && !row.pm.events.some(e => e.kind === 'final-open') ? 1 : 0);
       expect(html.match(/class="pmv-card[ "]/g)?.length, `ep ${row.num}`).toBe(row.pm.events.length + extra);
       const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
       for (const e of row.pm.events) for (const l of e.script.lines) expect(html, `ep ${row.num}`).toContain(esc(l.text));

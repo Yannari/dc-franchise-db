@@ -55,7 +55,7 @@ export const KIND_LABEL = {
   blowup: 'It kicks off', 'pile-in': 'Taking sides', 'villa-divided': 'The villa divided', 'cold-shoulder': 'The cold shoulder', 'clear-the-air': 'Clearing the air',
   'bed-share': 'Lights out', vent: 'Letting off steam', apology: 'The apology', reunite: 'Back together', 'apology-rejected': 'Not this time',
   steal: 'A steal', 'final-recoupling': 'The final recoupling', 'challenge-rules': 'How it works', 'date-text': 'I got a text!', 'date-picked': 'The dates', 'date-back': 'Back from the date', 'recouple-pick': 'The recoupling', 'dump-buildup': 'At risk', 'dump-verdict': 'Dumped',
-  'dump-text': 'I got a text!', 'vote-safe': 'Everyone is safe', 'hideaway-text': 'I got a text!', 'recouple-text': 'I got a text!', 'recouple-nerves': 'Getting ready', 'recouple-open': 'The recoupling', 'recouple-single': 'Left single', 'casa-text': 'I got a text!', 'casa-goodbye': 'The goodbye', 'casa-explain': 'Casa Amor', 'hideaway-vote': 'The Hideaway vote', 'hideaway-win': 'The Hideaway', 'hideaway-snub': 'Not one vote', 'hideaway-morning': 'The morning after', 'dump-nerves': 'Getting ready', 'dump-open': 'The fire pit', 'dump-recap': 'The host', 'dump-safe': 'Safe', 'dump-plea': 'Making their case', 'dump-decide': 'The decision',
+  'dump-text': 'I got a text!', 'vote-safe': 'Everyone is safe', 'hideaway-text': 'I got a text!', 'recouple-text': 'I got a text!', 'final-open': 'The final vote', 'rule-open': 'How tonight works', 'reunion-open': 'The reunion', 'reunion-winners': 'The winners', 'reunion-close': 'Goodnight', 'recouple-nerves': 'Getting ready', 'recouple-open': 'The recoupling', 'recouple-single': 'Left single', 'casa-text': 'I got a text!', 'casa-goodbye': 'The goodbye', 'casa-explain': 'Casa Amor', 'hideaway-vote': 'The Hideaway vote', 'hideaway-win': 'The Hideaway', 'hideaway-snub': 'Not one vote', 'hideaway-morning': 'The morning after', 'dump-nerves': 'Getting ready', 'dump-open': 'The fire pit', 'dump-recap': 'The host', 'dump-safe': 'Safe', 'dump-plea': 'Making their case', 'dump-decide': 'The decision',
   'ballot-reveal': 'The vote', 'dump-reaction': 'The reaction', 'dump-goodbye': 'Goodbye', 'dump-fallout': 'Fallout',
   'casa-return': 'Stick or twist', photos: 'The photos', declaration: 'The declaration', 'final-result': 'The result',
   envelope: 'The envelope', walk: 'Leaving the villa', reveal: "What you didn't see", 'close-off': 'Closing off',
@@ -435,13 +435,16 @@ function finalSteps(row) {
   const host = words().host;
   const pct = s => `${Math.round(s.share * 1000) / 10}%`;
   const board = [...shares].map(s => [s.couple.join(' & '), Math.round(s.share * 1000) / 10]);
-  const steps = [{ part: 'result', who: host, voice: 'dior', bg: 'final', headline: 'The final vote', cast: [[host, 50, 'speak']],
-    text: `The public have been voting for their Perfect Match, and the votes are in. Let's find out who has won.`,
-    fx: { board: 0, neon: ['The Final', '#ffc15e'] }, board, sceneStart: true, sceneEnd: true, ev: -1, music: 'final-wait' }];
   // The engine's own result scenes (moments.js final): the host's words and
   // the couple's reaction from the pools, with the board lit on the first.
   const evs = row.pm.events || [];
   const sceneOf = (kind, match) => { const i = evs.findIndex(e => e.kind === kind && match(e)); return i < 0 ? null : sceneSteps(row, evs[i], i, 'final'); };
+  // The host's opening (moments.js final-open), or the plain line without one.
+  const opening = sceneOf('final-open', () => true);
+  const steps = opening ? opening.map((st, k) => ({ ...st, board, headline: 'The final vote', music: 'final-wait', ...(k === 0 ? { fx: { ...(st.fx || {}), board: 0, neon: ['The Final', '#ffc15e'] } } : {}) }))
+    : [{ part: 'result', who: host, voice: 'dior', bg: 'final', headline: 'The final vote', cast: [[host, 50, 'speak']],
+      text: `The public have been voting for their Perfect Match, and the votes are in. Let's find out who has won.`,
+      fx: { board: 0, neon: ['The Final', '#ffc15e'] }, board, sceneStart: true, sceneEnd: true, ev: -1, music: 'final-wait' }];
   shares.forEach((s, i) => {
     const place = shares.length - i, win = place === 1;
     const [a, b] = s.couple;
@@ -569,7 +572,7 @@ export function episodeScreens(row, opts = {}) {
   return opts.breaks === false ? screens : withBreaks(row, screens, opts.next);
 }
 const MOMENT_PHASE = new Set(['firepit', 'dumping', 'reunion']);
-const DRAWN_BY_FINAL = new Set(['final-result', 'envelope']);
+const DRAWN_BY_FINAL = new Set(['final-result', 'envelope', 'final-open']);
 
 // ── the breaks: "Coming up" and "Next time" ───────────────────────────
 // The show cuts to a break on a cliffhanger: a few seconds of what is still

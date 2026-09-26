@@ -194,3 +194,38 @@ export const JOURNEY_LINES = {
     { id: 'dec.l3', when: { of: 'late' }, turns: [['a', "I only had a few weeks with you in here. I want every week after this."]] },
   ],
 };
+
+// Second lines for the final's film (season 202: four couples, three of them
+// "rocky", heard the same opening, reaction and ending in one episode).
+export const JOURNEY_MORE = {
+  'journey-open': [
+    { id: 'jo.09', when: { of: 'steady' }, stage: 'The lights go down, and the film begins with their names.', turns: [['b', "I'm going to cry, aren't I?"], ['a', "Definitely."]] },
+    { id: 'jo.10', when: { of: 'steady' }, stage: 'A screen by the table flickers on.', turns: [['a', "Is this all of it?"], ['b', "I hope it's the good bits."]] },
+    { id: 'jo.11', when: { of: 'rocky' }, stage: 'The film starts, and {b} reaches for {a.posAdj} hand straight away.', turns: [['b', "Whatever's on here, we're here now."], ['a', "We're here now."]] },
+    { id: 'jo.12', when: { of: 'rocky' }, stage: 'Their names come up on the screen.', turns: [['a', "Do we have to watch the hard parts?"], ['b', "I think the hard parts are the point."]] },
+    { id: 'jo.13', when: { of: 'rocky' }, stage: 'The screen lights up. {a} takes a deep breath.', turns: [['a', "Okay. Let's see how bad it was."], ['b', "It wasn't that bad."], ['a', "Some of it was."]] },
+    { id: 'jo.14', when: { of: 'way-back' }, stage: 'The film begins, and they both go quiet.', turns: [['b', "I'm glad we're watching this together."]] },
+    { id: 'jo.15', when: { of: 'way-back' }, turns: [['a', "There's a bit in here I'm not proud of."], ['b', "There's a bit in here we both got through."]] },
+    { id: 'jo.16', when: { of: 'late' }, stage: 'The screen lights up with a film of the two of them. It begins late in the summer.', turns: [['a', "We got here fast."], ['b', "We got here right."]] },
+    { id: 'jo.17', when: { of: 'late' }, turns: [['b', "Everyone else had weeks. We had days."], ['a', "And look at us."]] },
+  ],
+  'journey-end': [
+    { id: 'je.13', when: { of: 'steady' }, turns: [['b', "No wobbles. Not really."], ['a', "Not really. A couple of small ones."]], beat: 'They both laugh.' },
+    { id: 'je.14', when: { of: 'rocky' }, stage: 'The screen goes dark, and neither of them lets go.', turns: [['a', "I'm glad we didn't walk away."], ['b', "So am I."]] },
+    { id: 'je.15', when: { of: 'rocky' }, turns: [['b', "We should be proud of that."], ['a', "Of all of it?"], ['b', "Of getting to the end of it."]] },
+    { id: 'je.16', when: { of: 'rocky' }, stage: 'The last frame is the two of them at the fire pit.', turns: [['a', "Every hard bit made this better."]] },
+    { id: 'je.17', when: { of: 'way-back' }, turns: [['a', "We found our way back. Not many people do."], ['b', "Not many people are us."]] },
+    { id: 'je.18', when: { of: 'late' }, turns: [['b', "Short film."], ['a', "Best film."]], beat: '{b} kisses {a.obj}.' },
+  ],
+  'journey-react': [
+    { id: 'jr.c4', when: { of: 'coupled' }, turns: [['a', "Look at us, standing there."], ['b', "We had no idea."]] },
+    { id: 'jr.c5', when: { of: 'coupled' }, turns: [['b', "Do you remember your face when my name came out?"], ['a', "I remember yours."]] },
+    { id: 'jr.k4', when: { of: 'first-kiss' }, turns: [['b', "Watching that back is so strange."], ['a', "Good strange?"], ['b', "Very good strange."]] },
+    { id: 'jr.k5', when: { of: 'first-kiss' }, turns: [['a', "I'd wanted to do that for days."], ['b', "I could tell."]] },
+    { id: 'jr.m4', when: { of: ['met', 'date-met'] }, turns: [['a', "Is that really the first thing I said to you?"], ['b', "It was. And it worked."]] },
+    { id: 'jr.n4', when: { of: 'night-one' }, turns: [['b', "Night one. Look how nervous we were."], ['a', "I'm still nervous."]] },
+    { id: 'jr.r4', when: { of: 'row' }, turns: [['b', "We sorted it, though."], ['a', "We always did."]] },
+    { id: 'jr.t4', when: { of: 'tested' }, turns: [['a', "That was a test."], ['b', "And we passed. Eventually."]] },
+    { id: 'jr.l4', when: { of: 'love' }, turns: [['a', "I meant it. I still mean it."], ['b', "I know you do."]] },
+  ],
+};

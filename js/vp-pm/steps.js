@@ -55,7 +55,7 @@ export const KIND_LABEL = {
   blowup: 'It kicks off', 'pile-in': 'Taking sides', 'villa-divided': 'The villa divided', 'cold-shoulder': 'The cold shoulder', 'clear-the-air': 'Clearing the air',
   'bed-share': 'Lights out', vent: 'Letting off steam', apology: 'The apology', reunite: 'Back together', 'apology-rejected': 'Not this time',
   steal: 'A steal', 'final-recoupling': 'The final recoupling', 'challenge-rules': 'How it works', 'date-text': 'I got a text!', 'date-picked': 'The dates', 'date-back': 'Back from the date', 'recouple-pick': 'The recoupling', 'dump-buildup': 'At risk', 'dump-verdict': 'Dumped',
-  'dump-text': 'I got a text!', 'vote-safe': 'Everyone is safe', 'hideaway-text': 'I got a text!', 'recouple-text': 'I got a text!', 'final-open': 'The final vote', 'rule-open': 'How tonight works', 'reunion-open': 'The reunion', 'reunion-winners': 'The winners', 'reunion-close': 'Goodnight', 'recouple-nerves': 'Getting ready', 'recouple-open': 'The recoupling', 'recouple-single': 'Left single', 'casa-text': 'I got a text!', 'casa-goodbye': 'The goodbye', 'casa-explain': 'Casa Amor', 'hideaway-vote': 'The Hideaway vote', 'hideaway-win': 'The Hideaway', 'hideaway-snub': 'Not one vote', 'hideaway-morning': 'The morning after', 'dump-nerves': 'Getting ready', 'dump-open': 'The fire pit', 'dump-recap': 'The host', 'dump-safe': 'Safe', 'dump-plea': 'Making their case', 'dump-decide': 'The decision',
+  'dump-text': 'I got a text!', 'vote-safe': 'Everyone is safe', 'hideaway-text': 'I got a text!', 'recouple-text': 'I got a text!', 'final-open': 'The final vote', 'rule-open': 'How tonight works', 'game-kiss': 'The kiss', 'reunion-open': 'The reunion', 'reunion-winners': 'The winners', 'reunion-close': 'Goodnight', 'recouple-nerves': 'Getting ready', 'recouple-open': 'The recoupling', 'recouple-single': 'Left single', 'casa-text': 'I got a text!', 'casa-goodbye': 'The goodbye', 'casa-explain': 'Casa Amor', 'hideaway-vote': 'The Hideaway vote', 'hideaway-win': 'The Hideaway', 'hideaway-snub': 'Not one vote', 'hideaway-morning': 'The morning after', 'dump-nerves': 'Getting ready', 'dump-open': 'The fire pit', 'dump-recap': 'The host', 'dump-safe': 'Safe', 'dump-plea': 'Making their case', 'dump-decide': 'The decision',
   'ballot-reveal': 'The vote', 'dump-reaction': 'The reaction', 'dump-goodbye': 'Goodbye', 'dump-fallout': 'Fallout',
   'casa-return': 'Stick or twist', photos: 'The photos', declaration: 'The declaration', 'final-result': 'The result',
   envelope: 'The envelope', walk: 'Leaving the villa', reveal: "What you didn't see", 'close-off': 'Closing off',
@@ -129,6 +129,7 @@ const POPS = {
   'hideaway-snub': [[0, 'Snubbed', 'down', 'crack'], [1, 'Snubbed', 'down', 'crack']],
   'dump-buildup': [[0, 'At risk', 'red', 'crack'], [1, 'At risk', 'red', 'crack']],
   'kin-heart': [[0, 'Bond +', 'teal', 'star'], [1, 'Bond +', 'teal', 'star']],
+  'game-kiss': [[1, 'Attraction +', '', 'heart']],
   'casa-miss': [[0, 'Missing them', '', 'heart']],
   'ex-partner': [[0, 'Security −', 'down', 'crack']],
   'ex-confront': [[0, 'Old feelings?', 'gold', 'eye'], [1, 'Old feelings?', 'gold', 'eye']],
@@ -430,6 +431,7 @@ function kissOf(e) {
   if (e.kind === 'kiss') return e.extra?.firstKiss ? 'first' : 'spark';
   if (e.kind === 'icebreaker' || e.kind === 'lady-luck-kiss') return e.extra?.choice === 'spark' ? 'spark' : 'peck';
   if (e.kind === 'blow-slip') return 'peck';
+  if (e.kind === 'game-kiss') return e.extra?.of === 'fun' ? 'peck' : 'spark';
   if (ALWAYS_KISS.has(e.kind)) return 'spark';
   return MAYBE_KISS.has(e.kind) ? 'spark' : null;
 }

@@ -16,6 +16,7 @@ import { romance, friendship, revealTruth } from './feelings.js';
 import { nudgeAttraction, attr, ickHit } from './chemistry.js';
 import { coupleStrength } from './ladder.js';
 import { feel, jealousyHit } from './emotions.js';
+import { kissRound } from './kiss-round.js';
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 const pop = (...rows) => Object.fromEntries(rows.filter(r => r[0]).map(([n, approval, fame]) => [n, { approval, fame }]));
@@ -38,7 +39,8 @@ function suckAndBlow(state, rng) {
   const line = [];
   for (let i = 0; i < Math.max(f.length, m.length); i++) { if (m[i]) line.push(m[i]); if (f[i]) line.push(f[i]); }
   if (line.length < 6) return [];
-  const out = [];
+  // Before the card: the kisses the game is an excuse for.
+  const out = kissRound(state, rng, { kissers: line.slice(0, 6), targets: line, n: 3, game: 'suck-blow', scene });
   let slips = 0, dares = 0;
   for (let i = 0; i + 1 < line.length && dares < 3; i++) {
     const [x, y] = [line[i], line[i + 1]];
@@ -83,6 +85,9 @@ function lipService(state, rng) {
   addBond(win[0], win[1], 0.5);
   for (const n of win) feel(state, n, 'confidence', 0.6);
   out.push(scene(state, rng, 'lip-race', [...win], { of: 'win', pop: pop([win[0], 0.3, 1.5], [win[1], 0.3, 1.5]) }));
+  // The swap round: the pairs change, and mouth to mouth with somebody else's
+  // partner is where the game earns its name.
+  out.push(...kissRound(state, rng, { kissers: [...state.villa].sort(() => rng() - 0.5), targets: state.villa, n: 3, game: 'lip-service', scene }));
   // Somebody who wants one of the winners has to watch it.
   const watcher = state.villa.find(n => !win.includes(n) && win.some(w => romance(n, w) >= 5 && partnerOf(state, n) !== w));
   if (watcher) {
@@ -190,6 +195,8 @@ function course(state, rng, g) {
   const winner = [...runners].sort((x, y) => (votes[y] || 0) - (votes[x] || 0) || q[y] - q[x])[0];
   feel(state, winner, 'confidence', 1.5);
   out.push(scene(state, rng, 'course-win', [winner, ...(partnerOf(state, winner) ? [partnerOf(state, winner)] : [])], { pop: pop([winner, 0.5, 2]) }));
+  // The prize: a kiss from anyone on the other side — and who it goes to says everything.
+  out.push(...kissRound(state, rng, { kissers: [winner], targets: judges, n: 1, game: 'course', scene }));
   return out;
 }
 

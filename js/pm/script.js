@@ -34,6 +34,7 @@ import { KIN_LINES } from './lines/kin.js';
 import { FIREPIT_LINES } from './lines/firepit.js';
 import { HIDEAWAY_LINES } from './lines/hideaway.js';
 import { HEAT_LINES } from './lines/day/heat.js';
+import { KISS_ROUND_LINES } from './lines/kiss-round.js';
 import { DIALECTS, slotWord, US_SPELLING, US_SPELLERS, ESL_EXPANSIONS } from './lines/dialect.js';
 
 export const POOLS = { ...DAY, ...LADDER, ...FEELINGS, ...MOMENT_LINES, ...CHALLENGE_LINES, ...CLOSE, ...ANSWER, ...KISS_LINES, ...RULES_LINES };
@@ -52,6 +53,8 @@ for (const [k, v] of Object.entries(FIREPIT_LINES)) POOLS[k] = [...(POOLS[k] || 
 for (const [k, v] of Object.entries(HIDEAWAY_LINES)) POOLS[k] = [...(POOLS[k] || []), ...v];
 // How hot a pull runs (lines/day/heat.js).
 for (const [k, v] of Object.entries(HEAT_LINES)) POOLS[k] = [...(POOLS[k] || []), ...v];
+// The kisses a kissing challenge is made of (lines/kiss-round.js).
+for (const [k, v] of Object.entries(KISS_ROUND_LINES)) POOLS[k] = [...(POOLS[k] || []), ...v];
 export { HUT, NARRATOR };
 
 export const SPEAKERS = ['a', 'b', 'c', 'dior', 'narrator'];
@@ -59,7 +62,7 @@ export const FACT_KEYS = ['rung', 'thinks', 'persona', 'intent', 'attachment', '
   'early', 'coupled', 'gap', 'knows', 'faking', 'bPersona', 'bMood', 'bRung', 'stance', 'family',
   'choice', 'cause', 'channel', 'grudge', 'stole', 'bTaken', 'archetype', 'taken', 'loyal', 'late', 'gender', 'bGender', 'myRung', 'phase', 'kind', 'role', 'withB', 'newArrival', 'dialect',
   'comfortedYesterday', 'rowedBefore', 'rowedToday', 'feels', 'of', 'knowsB', 'verdict', 'noticed',
-  'reason', 'split', 'guessed', 'stoleFrom', 'full', 'hasQuote', 'rank', 'cast', 'justMet', 'rebuffed', 'heard', 'kissed', 'promised', 'sec', 'lastBy', 'theirs', 'going', 'nth', 'exes', 'leaving', 'what', 'heat'];
+  'reason', 'split', 'guessed', 'stoleFrom', 'full', 'hasQuote', 'rank', 'cast', 'justMet', 'rebuffed', 'heard', 'kissed', 'promised', 'sec', 'lastBy', 'theirs', 'going', 'nth', 'exes', 'leaving', 'what', 'heat', 'game'];
 
 // Archetype groups a pool may name instead of listing them (CLAUDE.md).
 export const VILLAINS = ['villain', 'mastermind', 'schemer'];
@@ -137,7 +140,7 @@ export function factsFor(state, ev) {
   // How much a feels for b, in words a line can lean on (narration only):
   // "not yet" is somebody who cares; a real no is somebody who doesn't.
   if (b) { const r = romance(a, b); f.feels = r >= 6 ? 'strong' : r >= 3 ? 'some' : 'little'; } else f.feels = null;
-  for (const k of ['choice', 'cause', 'channel', 'grudge', 'of', 'noticed', 'reason', 'guessed', 'theirs', 'going', 'nth', 'exes', 'what', 'heat']) if (ev.extra?.[k] != null) f[k] = ev.extra[k];
+  for (const k of ['choice', 'cause', 'channel', 'grudge', 'of', 'noticed', 'reason', 'guessed', 'theirs', 'going', 'nth', 'exes', 'what', 'heat', 'game']) if (ev.extra?.[k] != null) f[k] = ev.extra[k];
   // A steal at the recoupling: {c} is the one who loses {b}.
   f.stoleFrom = !!ev.extra?.stole;
   // Night one's ranking: the pair at the top, or anybody below it.

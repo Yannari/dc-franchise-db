@@ -22,6 +22,7 @@ import { blowups } from './blowup.js';
 import { breakdowns } from './breakdown.js';
 import { triangles } from './triangle.js';
 import { streamFor } from '../dr/rng.js';
+import { kissRound } from './kiss-round.js';
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 const pick = (rng, arr) => (arr.length ? arr[Math.floor(rng() * arr.length)] : null);
@@ -248,9 +249,9 @@ function withRules(state, rng, id, out) {
   return [scene(state, rng, 'challenge-rules', [], { of: id, pop: {} }, { phase: 'event', aired: true }), ...out];
 }
 
-const RITUALS = {
-  // The monitor airs who really gets their heart going — hidden crushes included.
-  'heart-rate': (state, rng) => withRules(state, rng, 'heart-rate', state.villa.flatMap(x => {
+/** The monitor airs who really gets their heart going — hidden crushes included. */
+function heartRates(state, rng) {
+  return state.villa.flatMap(x => {
     const top = state.villa.filter(o => attr(state, x, o) != null).sort((a, b) => romance(x, b) - romance(x, a))[0];
     if (!top) return [];
     const partner = partnerOf(state, x);
@@ -261,7 +262,17 @@ const RITUALS = {
       revealTruth(state, partner, x);
     }
     return out;
-  })),
+  });
+}
+
+const RITUALS = {
+  // …and the dances end the way they are meant to: a few kisses, the boldest
+  // first, on their own dice so the rest of the day plays as it did.
+  'heart-rate': (state, rng) => [...withRules(state, rng, 'heart-rate', heartRates(state, rng)),
+    ...kissRound(state, streamFor(state.seed ?? 1, `hr-kiss:${state.ep}${state.epSalt || ''}`), {
+      kissers: [...state.villa].sort((x, y) => (state.profiles[y]?.stats?.boldness ?? 5) - (state.profiles[x]?.stats?.boldness ?? 5)),
+      targets: state.villa, n: 3, game: 'heart-rate',
+      scene: (s, r, k, p, e, m) => scene(s, r, k, p, e, { phase: 'event', aired: true, major: m }) })],
   'snog-marry-pie': (state, rng) => withRules(state, rng, 'snog-marry-pie', state.villa.flatMap(x => {
     const partner = partnerOf(state, x);
     const others = state.villa.filter(o => o !== x);

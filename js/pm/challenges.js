@@ -24,6 +24,7 @@ import { publicSorts, publicAwards } from './public-vote.js';
 import { CHALLENGE_NAMES } from './schedule.js';
 import { lieDetector } from './lie-detector.js';
 import { MORE_CHALLENGES } from './challenges-more.js';
+import { kissRound } from './kiss-round.js';
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 const pop = (...rows) => Object.fromEntries(rows.filter(r => r[0]).map(([n, approval, fame]) => [n, { approval, fame }]));
@@ -175,7 +176,10 @@ function snogger(state, rng) {
   const total = g => boys.reduce((s, b) => s + (score[`${b}|${g}`] || 0), 0);
   const ranked = [...girls].sort((x, y) => total(y) - total(x));
   const winner = ranked[0];
-  const out = [];
+  // The kisses themselves, before the scores: each girl's turn is her choice
+  // — her partner, the one she fancies, a laugh, or a schemer's stir — and
+  // the boys, blindfolded, only find out from the villa's faces.
+  const out = kissRound(state, rng, { kissers: [...girls].sort(() => rng() - 0.5), targets: boys, n: Math.min(5, girls.length), game: 'snogger', scene });
   // The best kiss of the day.
   const [bestKey] = Object.entries(score).sort((x, y) => y[1] - x[1])[0] || [];
   if (bestKey) {

@@ -35,6 +35,7 @@ import { FIREPIT_LINES } from './lines/firepit.js';
 import { HIDEAWAY_LINES } from './lines/hideaway.js';
 import { HEAT_LINES } from './lines/day/heat.js';
 import { KISS_ROUND_LINES } from './lines/kiss-round.js';
+import { STEAMY_NARRATOR, STEAMY_SCENES } from './lines/steamy.js';
 import { DIALECTS, slotWord, US_SPELLING, US_SPELLERS, ESL_EXPANSIONS } from './lines/dialect.js';
 
 export const POOLS = { ...DAY, ...LADDER, ...FEELINGS, ...MOMENT_LINES, ...CHALLENGE_LINES, ...CLOSE, ...ANSWER, ...KISS_LINES, ...RULES_LINES };
@@ -55,6 +56,9 @@ for (const [k, v] of Object.entries(HIDEAWAY_LINES)) POOLS[k] = [...(POOLS[k] ||
 for (const [k, v] of Object.entries(HEAT_LINES)) POOLS[k] = [...(POOLS[k] || []), ...v];
 // The kisses a kissing challenge is made of (lines/kiss-round.js).
 for (const [k, v] of Object.entries(KISS_ROUND_LINES)) POOLS[k] = [...(POOLS[k] || []), ...v];
+// The villa when it runs hot (lines/steamy.js): more staging, and the narrator's say.
+for (const [k, v] of Object.entries(STEAMY_SCENES)) POOLS[k] = [...(POOLS[k] || []), ...v];
+for (const [k, v] of Object.entries(STEAMY_NARRATOR)) NARRATOR[k] = [...(NARRATOR[k] || []), ...v];
 export { HUT, NARRATOR };
 
 export const SPEAKERS = ['a', 'b', 'c', 'dior', 'narrator'];
@@ -560,13 +564,19 @@ function clipSlots(state, ev) {
 // public saw and nothing more. Words only — his own dice, no effect on play.
 export const NARRATOR_PER_EPISODE = 6;
 const NARRATOR_CHANCE = 0.09;    // spread over the whole day, not spent by breakfast (measured)
+// The villa at its hottest gets the narrator's first call (user: "narration
+// details for steamy things"): no dice, and three more a night than the rest.
+const steamy = ev => (ev.kind === 'game-kiss' && ['crush', 'stir'].includes(ev.extra?.of))
+  || (ev.kind === 'pull' && ev.extra?.heat === 'steamy') || ev.kind === 'hideaway' || ev.kind === 'snogger-kiss'
+  || ev.kind === 'blow-slip' || (ev.kind === 'bed-share' && ev.extra?.of === 'kiss') || (ev.kind === 'tod-truth' && ev.extra?.of === 'named-coupled');
 export function narratorFor(state, ev) {
   if (!ev.aired) return null;
   const pool = NARRATOR[ev.kind];
   if (!pool?.length) return null;
   const said = ((state._narrated ||= {})[state.ep] ||= 0);
-  if (said >= NARRATOR_PER_EPISODE) return null;
-  if (scriptRng(state)() >= NARRATOR_CHANCE) return null;
+  const hot = steamy(ev);
+  if (said >= NARRATOR_PER_EPISODE + (hot ? 3 : 0)) return null;
+  if (!hot && scriptRng(state)() >= NARRATOR_CHANCE) return null;
   const ps = castOf(ev);
   // A voiceover line is heard at most twice a season, whoever it is about.
   const fresh = pool.filter(e => (usage(state)[e.id]?.eps.length || 0) < 2);

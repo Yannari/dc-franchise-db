@@ -31,7 +31,10 @@ export function momentTitle(row, fallback = 'A day in the villa') {
   if (row?.pm?.dumpFormat === 'couples-vote') return 'The villa votes';
   if (row?.pm?.dumpFormat === 'singles') return 'The singles face the public';
   // A vote night the villa could not spare anyone on plays as a villa day.
-  if (row?.moment === 'public-vote' && row?.pm && !row.pm.dumpFormat) return fallback === 'The night' ? 'The night' : 'A day in the villa';
+  if (row?.moment === 'public-vote' && row?.pm && !row.pm.dumpFormat) {
+    if ((row.pm.events || []).some(e => e.kind === 'vote-safe')) return 'Everyone is safe';
+    return fallback === 'The night' ? 'The night' : 'A day in the villa';
+  }
   return PM_MOMENT_TITLE[row?.moment] || fallback;
 }
 

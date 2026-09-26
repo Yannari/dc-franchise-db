@@ -28,6 +28,13 @@ export const FIREPIT_LINES = {
     { id: 'dt.08', when: pub('public-double'), turns: [['a', "Islanders, tonight TWO couples will be dumped from the island. Please make your way to the fire pit. #DoubleDumping"], ['b', "Two? Two couples?"]] },
     { id: 'dt.09', when: pub('singles'), turns: [['a', "Islanders, tonight every single islander is vulnerable. Please make your way to the fire pit. #SingleAndVulnerable"]], beat: 'Everyone who is single goes quiet.' },
   ],
+  // A vote night with nobody to spare: the text, and the relief.
+  'vote-safe': [
+    { id: 'vs.01', stage: "{a}'s phone goes off at the fire pit.", turns: [['a', "Islanders, the public have been voting, and tonight, nobody will be dumped. #SafeForNow"], ['b', "Nobody? Say that again."]], beat: 'The whole villa cheers.' },
+    { id: 'vs.02', turns: [['a', "I got a text! Islanders, the votes are in. You are all safe… for now. #EnjoyItWhileItLasts"], ['b', "For now. I hate 'for now'."]] },
+    { id: 'vs.03', stage: 'Everyone gathers at the fire pit, holding hands, for a text that never comes to a dumping.', turns: [['a', "Islanders, the public have spoken, and tonight everybody stays. #BreatheOut"]], beat: 'Somebody lets out a breath nobody knew they were holding.' },
+    { id: 'vs.04', turns: [['a', "Islanders, tonight's results are in, and there will be no dumping. But the next one is closer than you think. #WatchThisSpace"], ['b', "Why do they always have to add the last bit?"]] },
+  ],
   'dump-nerves': [
     { id: 'dn.01', stage: 'The dressing room. {a} is doing {a.posAdj} make-up very, very slowly.', turns: [['b', "Are you scared?"], ['a', "Terrified. You?"], ['b', "I can't even think about it."]] },
     { id: 'dn.02', stage: '{a} and {b} sit on the edge of the bed, dressed and ready, and neither of them gets up.', turns: [['a', "Whatever happens down there, I'm glad it was you."], ['b', "Don't talk like we're going."]] },

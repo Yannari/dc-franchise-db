@@ -999,7 +999,7 @@ export const MOMENTS = {
     { id: 'sleepover-choice.06', when: { choice: 'twist' },
       stage: 'Everyone waits at the fire pit to see who walks back in with who.',
       turns: [['a', "I didn't go there looking for anything. But I've come back with {b}."]],
-      beat: "{c} doesn't cry until {a} has gone." },
+      beat: "{c} holds it together until {a} and {b} have walked past, and then doesn't." },
   ],
   'immunity-win': [
     { id: 'immunity-win.01',

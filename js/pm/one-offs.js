@@ -57,7 +57,11 @@ export function sleepover(state, arriving, { rng }) {
   const events = [], dumped = [], invited = new Set();
   const pairs = [];
   for (const b of arriving) {
-    const x = others(state, b, arriving).filter(n => partnerOf(state, n) && !invited.has(n) && attr(state, b, n) != null)
+    // One from each couple: with both halves away, the one "left behind" was
+    // at the other sleepover, and came home to a welcome for somebody else
+    // (season 101: "I was so scared you weren't coming back" to a partner
+    // who had spent two nights away too).
+    const x = others(state, b, arriving).filter(n => partnerOf(state, n) && !invited.has(n) && !invited.has(partnerOf(state, n)) && attr(state, b, n) != null)
       .map(n => [n, (attr(state, b, n) ?? 0) + (rng() - 0.5)]).sort((p, q) => q[1] - p[1])[0]?.[0];
     if (!x) continue;
     invited.add(x);

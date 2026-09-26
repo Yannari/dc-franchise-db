@@ -458,11 +458,15 @@ export const KINDS = {
       const got = pick(rng, kinPairs(s).filter(([, , k]) => k === 'exes'));
       if (!got) return null;
       const [a, b] = got;
+      // Exes back together are not "not quite over it" (season 101: coupled
+      // since night one, and still getting the villa's side-eye scenes).
+      if (partnerOf(s, a) === b) return { players: [a, b], extra: { of: 'together' } };
       const spark = (attr(s, a, b) ?? 0) + (attr(s, b, a) ?? 0) > 10;
       return { players: [a, b], extra: { of: spark ? 'spark' : 'cold' } };
     },
     apply: (s, ev) => {
       const [a, b] = ev.players;
+      if (ev.extra.of === 'together') { addBond(a, b, 0.4); feel(s, a, 'security', 0.3); feel(s, b, 'security', 0.3); return { pop: { ...pop1(a, 0.3, 1), ...pop1(b, 0.3, 1) } }; }
       if (ev.extra.of === 'spark') { nudgeAttraction(s, a, b, 0.3); nudgeAttraction(s, b, a, 0.3); }
       else { addBond(a, b, -0.3); feel(s, a, 'stress', 0.3); }
       // Their partners notice.
@@ -632,7 +636,7 @@ export const KINDS = {
     'dump-at-risk', 'dump-verdict-couple', 'dump-verdict-singles', 'group-entrance', 'final-recoupling', 'challenge-rules', 'date-text', 'date-picked', 'date-back',
     'final-date', 'journey-open', 'journey-clip', 'journey-react', 'journey-end', 'speech',
     'pair-text', 'kin-entrance', 'kin-goodbye', 'kin-walk', 'ex-text', 'ex-reveal', 'ex-partner', 'ex-confront',
-    'dump-text', 'dump-nerves', 'dump-open', 'dump-recap', 'dump-safe', 'dump-plea', 'dump-decide',
+    'dump-text', 'dump-nerves', 'dump-open', 'vote-safe', 'dump-recap', 'dump-safe', 'dump-plea', 'dump-decide',
     // the arrivals of Plan 4.5 phase 2
     'stand-up', 'nobody-stands', 'stand-up-pick', 'save-setup', 'bombshell-save', 'public-match',
     'profile-pick', 'public-couple', 'ranking-couple', 'step-reveal', 'step-choose', 'step-back', 'icebreaker', 'kiss-pick', 'lady-luck-kiss', 'lady-luck-pick',

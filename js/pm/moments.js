@@ -859,7 +859,7 @@ function voteNight(state, ctx) {
       const spare = Math.min(firstSingles ? Math.max(1, Math.round(ctx.pace)) : Math.round(ctx.pace), singles.length - toCome,
         firstSingles ? ctx.surplus : Infinity);
       if (spare > 0 && (paceOk || firstSingles)) return singlesVoteNight(state, ctx, singles, spare);
-      return { events: [], exits: [], ballots: [], extra: { dumpFormat: null } };
+      return { events: safeNight(state, ctx), exits: [], ballots: [], extra: { dumpFormat: null } };
     }
     // A vote that plays only because it is the first (the pace alone would
     // have skipped it) can spare one couple and nobody else. A format that
@@ -937,6 +937,21 @@ export function coupledDumps(couples, later) {
 }
 
 /** Anyone single on a couples-only night leaves first: nobody stays in the villa alone now. */
+/**
+ * A vote night the villa has nobody to spare on (season 101: three in a row
+ * played as plain days under a "Public vote" on the timeline). The show says
+ * so: the text, the result, and the relief — everyone safe, for tonight.
+ */
+function safeNight(state, ctx) {
+  const villa = state.villa.filter(n => !(state.split && state.casa.includes(n)));
+  if (villa.length < 2) return [];
+  const reader = villa[Math.floor(ctx.rng() * villa.length)];
+  const other = partnerOf(state, reader) || villa.find(n => n !== reader);
+  for (const n of villa) { feel(state, n, 'stress', -0.5); feel(state, n, 'security', 0.3); }
+  return [makeEvent(state, ctx.rng, { phase: 'firepit', kind: 'vote-safe', players: [reader, other], aired: true,
+    extra: { pop: { [reader]: { approval: 0, fame: 0.5 } } } })];
+}
+
 function singlesLeave(state, ctx) {
   const singles = state.villa.filter(n => !partnerOf(state, n));
   if (!singles.length) return { events: [], exits: [] };
@@ -947,7 +962,7 @@ function singlesLeave(state, ctx) {
 function coupledNight(state, ctx) {
   const pre = singlesLeave(state, ctx);
   const n = coupledDumps(state.couples.length, ctx.coupledAhead || 0);
-  if (!n) return { events: pre.events, exits: pre.exits, ballots: [], extra: { dumpFormat: null } };
+  if (!n) return { events: [...pre.events, ...safeNight(state, ctx)], exits: pre.exits, ballots: [], extra: { dumpFormat: null } };
   let r;
   if (n === 1) r = coupleFormatNight(state, ctx, ctx.entry.dumpFormat || 'public');
   else {

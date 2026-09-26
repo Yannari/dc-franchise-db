@@ -212,7 +212,7 @@ export function buildSchedule({ bombshells = BASE_BOMBSHELLS, casa = 6, episodes
     const order = w => (w.quiet ? 0 : w.extra && w.moment !== 'bombshell' ? 1 : w.extra ? 2 : w.drop || 99);
     // …and never, while there is another, the week that keeps two bombshell nights apart.
     const between = i => out[i - 1]?.moment === 'bombshell' && out[i + 1]?.moment === 'bombshell' ? 50 : 0;
-    const cut = out.map((w, i) => [w, i]).filter(([w]) => !w.fixed && (!only || only(w)))
+    const cut = out.map((w, i) => [w, i]).filter(([w, i]) => !w.fixed && (!only || only(w, i)))
       .sort((a, b) => order(a[0]) + between(a[1]) - order(b[0]) - between(b[1]))[0];
     if (!cut) return false;
     const [w, i] = cut;
@@ -248,21 +248,38 @@ export function buildSchedule({ bombshells = BASE_BOMBSHELLS, casa = 6, episodes
     const lose = () => starters + bombshells + casa - 2 * FINAL_COUPLES - Math.round(casa * 0.65) - 2 * out.filter(w => w.coupled).length;
     const takes = w => (w.coupled || w.finalRecoupling ? 0 : w.moment === 'public-vote' ? 2 : w.moment === 'recoupling' ? 1 : 0);
     const over = () => out.reduce((t, w) => t + takes(w), 0) * 0.6 > Math.max(1, lose());
-    const dumping = w => w.moment === 'recoupling' || w.moment === 'public-vote';
+    // The recouplings the real show never goes without (UK 9-12, Wikipedia's
+    // coupling tables). The FIRST exit is the islander left single at a
+    // recoupling (UK 9 d5, UK 10 d5, UK 11 d5, UK 12 d4), never a couple the
+    // public voted out — so the recoupling before the first vote stays. And a
+    // dumping is followed by a recoupling (UK 11: d9 -> d10, d18 -> d19,
+    // d29 -> d31, d32 -> d34, d37 -> d38): the villa re-pairs whoever the vote
+    // left single. Only the couples-only week goes without one. User: "3
+    // episodes and no recoupling … dumping couples when you never had a
+    // recoupling is really dumb" — at 16 islanders every recoupling before the
+    // final one was cut, and a couple went home in episode 3.
+    const DUMPS = new Set(['first-coupling', 'recoupling', 'public-vote', 'stick-or-twist']);
+    const prevDump = i => { for (let j = i - 1; j >= 0; j--) if (DUMPS.has(out[j].moment)) return out[j]; return null; };
+    const nextDump = i => { for (let j = i + 1; j < out.length; j++) if (DUMPS.has(out[j].moment)) return out[j]; return null; };
+    const kept = (w, i) => w.moment === 'recoupling' && (
+      (prevDump(i)?.moment === 'public-vote' && !prevDump(i).coupled)
+      || (prevDump(i)?.moment === 'first-coupling' && nextDump(i)?.slot === 'vote1'));
+    const dumping = (w, i) => (w.moment === 'recoupling' || w.moment === 'public-vote') && !kept(w, i);
     // Only dumping weeks go: the bombshell nights keep the arrivals spread
     // through the season (cutting them sent seven bombshells in at the final
-    // recoupling of a 14-islander season).
-    for (let guard = 0; guard < 30 && over() && cutOne(dumping); guard++);
-    // A cast that small that it is still over loses fixed votes too, the least
-    // needed first: the last vote before the final recoupling; then the
-    // couples-only week's vote (the semi-final alone is that week: at 12
-    // islanders the week needed six couples, all twelve, and no earlier vote
-    // could send anyone home); then the second vote, its set piece moving to
-    // the first.
-    for (const slot of ['vote-post', 'vote3', 'vote2']) {
-      if (!over()) break;
+    // recoupling of a 14-islander season). A cast that small that it is still
+    // over loses fixed votes too, the least needed first: the last vote before
+    // the final recoupling; then the couples-only week's vote (the semi-final
+    // alone is that week: at 12 islanders the week needed six couples, all
+    // twelve, and no earlier vote could send anyone home); then the second
+    // vote, its set piece moving to the first. A vote gone frees the
+    // recoupling after it, so the weeks are looked at again after each.
+    const votes = ['vote-post', 'vote3', 'vote2'];
+    for (let guard = 0; guard < 40 && over(); guard++) {
+      if (cutOne(dumping)) continue;
+      const slot = votes.find(s => out.some(w => w.slot === s));
+      if (!slot) break;
       const at = out.findIndex(w => w.slot === slot);
-      if (at < 0) continue;
       const [gone] = out.splice(at, 1);
       if (gone.rituals?.length) {
         const to = [...out.slice(0, at)].reverse().find(w => w.moment === 'public-vote' && !w.coupled) || out.find(w => w.moment === 'public-vote');
@@ -333,7 +350,12 @@ export function minimumEpisodes(casa = 6) {
 // couples is not a choice, and a save-one night needs three at risk to send
 // two home — the same two exits the cross-gender night it replaces makes.
 export const DUMP_DRAWS = {
-  vote1: [['cross-gender', 3, 2], ['top-couple-picks', 3, 3], ['save-one', 2, 3], ['public', 1, 2]],
+  // The first vote dumps islanders, never a couple (UK 9-12): the public
+  // puts the least popular at risk and the villa sends one boy and one girl
+  // home (UK 9 d9, UK 10 d12, UK 11 d9 and d18), or saves one of three
+  // (UK 9 d19, UK 10 d9). A whole couple first goes on day 23 (UK 10, UK 11)
+  // or later (UK 12 d31), so those formats start at the second vote.
+  vote1: [['cross-gender', 4, 2], ['save-one', 2, 3]],
   vote2: [['safe-pick-couple', 2, 3], ['top-couple-picks', 3, 3], ['couples-vote', 2, 2], ['public', 2, 3]],
   // The couples-only week: every format sends exactly one couple home.
   vote3: [['safe-pick-couple', 2, 3], ['top-couple-picks', 3, 3], ['couples-vote', 2, 2], ['public', 2, 3]],

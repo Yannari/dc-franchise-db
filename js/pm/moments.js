@@ -938,7 +938,10 @@ function voteNight(state, ctx) {
       const s = dumpingScene(state, ctx.rng, { atRisk: pv.bottom, dumped: pv.bottom.flat(), channel: 'public' });
       return { events: s.events, exits: s.exits, ballots: [], extra: { shares: pv.shares, bottom: pv.bottom, dumpFormat: 'public', double: true } };
     }
-    return coupleFormatNight(state, ctx, forced ? 'public' : ctx.entry.dumpFormat);
+    // A forced first vote still dumps islanders, not a couple: the real show's
+    // first vote never sends a couple home (UK 9-12), and the recoupling after
+    // it re-pairs whoever it leaves single.
+    return coupleFormatNight(state, ctx, forced ? 'cross-gender' : ctx.entry.dumpFormat);
   }
 }
 

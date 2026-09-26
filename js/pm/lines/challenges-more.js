@@ -20,6 +20,8 @@
 const T = (text, who = 'a') => [[who, text]];
 export const MORE_CHALLENGE_LINES = {
   'challenge-text': [
+    { id: 'challenge-text.truth-dare.1', when: { of: 'truth-dare' }, stage: 'A text arrives, and {a} reads it out.', turns: [['a', "Islanders, today it's time to play Truth or Dare. No secrets, no shame. #TruthOrDare"], ['a', "Oh, this is going to end so badly."]] },
+    { id: 'challenge-text.truth-dare.2', when: { of: 'truth-dare' }, stage: 'A text arrives, and {a} reads it out.', turns: [['a', "Islanders, grab a card. You'll be telling the truth, or doing the dare. #NoHidingPlace"], ['a', "I'm picking dare. I'm always picking dare."]] },
     { id: 'challenge-text.suck-blow.1', when: { of: 'suck-blow' }, stage: 'A text arrives, and {a} reads it out.', turns: [['a', "Islanders, today you'll be passing a card from mouth to mouth. Drop it, and you'll have to do the dare on it. #SuckAndBlow"], ['a', "Oh no. Oh, this is going to go wrong."]] },
     { id: 'challenge-text.suck-blow.2', when: { of: 'suck-blow' }, stage: 'A text arrives, and {a} reads it out.', turns: [['a', "Islanders, today you'll be passing a card from mouth to mouth. Drop it, and you'll have to do the dare on it. #SuckAndBlow"], ['a', "Everyone brush your teeth. Now."]] },
     { id: 'challenge-text.lip-service.1', when: { of: 'lip-service' }, stage: 'A text arrives, and {a} reads it out.', turns: [['a', "Islanders, today you'll be making cocktails with your partner, using nothing but your mouths. #LipService"], ['a', "Using our mouths? For all of it?"]] },

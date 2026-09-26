@@ -16,7 +16,7 @@ import { romance, friendship, revealTruth } from './feelings.js';
 import { nudgeAttraction, attr, ickHit } from './chemistry.js';
 import { coupleStrength } from './ladder.js';
 import { feel, jealousyHit } from './emotions.js';
-import { kissRound } from './kiss-round.js';
+import { kissRound, roundSize } from './kiss-round.js';
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 const pop = (...rows) => Object.fromEntries(rows.filter(r => r[0]).map(([n, approval, fame]) => [n, { approval, fame }]));
@@ -40,7 +40,7 @@ function suckAndBlow(state, rng) {
   for (let i = 0; i < Math.max(f.length, m.length); i++) { if (m[i]) line.push(m[i]); if (f[i]) line.push(f[i]); }
   if (line.length < 6) return [];
   // Before the card: the kisses the game is an excuse for.
-  const out = kissRound(state, rng, { kissers: line.slice(0, 6), targets: line, n: 3, game: 'suck-blow', scene });
+  const out = kissRound(state, rng, { kissers: line, targets: line, n: roundSize(state, Math.ceil(line.length / 2)), game: 'suck-blow', scene });
   let slips = 0, dares = 0;
   for (let i = 0; i + 1 < line.length && dares < 3; i++) {
     const [x, y] = [line[i], line[i + 1]];
@@ -87,7 +87,7 @@ function lipService(state, rng) {
   out.push(scene(state, rng, 'lip-race', [...win], { of: 'win', pop: pop([win[0], 0.3, 1.5], [win[1], 0.3, 1.5]) }));
   // The swap round: the pairs change, and mouth to mouth with somebody else's
   // partner is where the game earns its name.
-  out.push(...kissRound(state, rng, { kissers: [...state.villa].sort(() => rng() - 0.5), targets: state.villa, n: 3, game: 'lip-service', scene }));
+  out.push(...kissRound(state, rng, { kissers: [...state.villa].sort(() => rng() - 0.5), targets: state.villa, n: roundSize(state, state.couples.length + 1, 3), game: 'lip-service', scene }));
   // Somebody who wants one of the winners has to watch it.
   const watcher = state.villa.find(n => !win.includes(n) && win.some(w => romance(n, w) >= 5 && partnerOf(state, n) !== w));
   if (watcher) {
@@ -303,8 +303,47 @@ function headlines(state, rng) {
   return out;
 }
 
+// ── TRUTH OR DARE (UK 4's "Truth or Dare") ───────────────────────────
+// Everyone plays: each islander draws a card and picks truth or dare, the
+// bold take the dare. A dare is a kiss, chosen as a kiss round chooses (the
+// partner, the one they fancy, a stir, a laugh). A truth is a loaded question
+// answered in front of everyone — honestly, which names somebody, or not,
+// which the partner notices.
+function truthOrDare(state, rng) {
+  const players = [...state.villa].sort(() => rng() - 0.5);
+  if (players.length < 6) return [];
+  const out = [];
+  for (const a of players) {
+    const bold = S(state, a).boldness / 10;
+    if (rng() < 0.3 + 0.5 * bold) {
+      out.push(...kissRound(state, rng, { kissers: [a], targets: state.villa, n: 1, game: 'truth-dare', scene }));
+      continue;
+    }
+    const p = partnerOf(state, a);
+    const eye = state.villa.filter(n => n !== a && n !== p && (attr(state, a, n) ?? 0) >= 4)
+      .sort((x, y) => (attr(state, a, y) ?? 0) - (attr(state, a, x) ?? 0))[0];
+    const honest = rng() < 0.35 + 0.3 * bold + 0.3 * (1 - S(state, a).loyalty / 10);
+    if (eye && honest) {
+      nudgeAttraction(state, eye, a, 0.3);
+      if (p) { jealousyHit(state, p, a, eye, 1.8, { confirmed: true }); addRelationshipDimension(p, a, 'trust', -0.3); }
+      const ep = partnerOf(state, eye);
+      if (ep && ep !== a) jealousyHit(state, ep, eye, a, 0.8);
+      out.push(scene(state, rng, 'tod-truth', [a, eye, ...(p ? [p] : [])], { of: p ? 'named-coupled' : 'named-single', pop: pop([a, p ? -0.2 : 0.3, 1.5]) }, p ? [a] : []));
+    } else if (eye && p) {
+      addRelationshipDimension(p, a, 'trust', -0.15);
+      out.push(scene(state, rng, 'tod-truth', [a, p], { of: 'dodge', pop: pop([a, -0.1, 1]) }));
+    } else if (p) {
+      addBond(a, p, 0.3); feel(state, p, 'security', 0.4);
+      out.push(scene(state, rng, 'tod-truth', [a, p], { of: 'partner-only', pop: pop([a, 0.3, 1]) }));
+    } else {
+      out.push(scene(state, rng, 'tod-truth', [a], { of: 'nobody', pop: pop([a, 0.2, 0.8]) }));
+    }
+  }
+  return out;
+}
+
 export const MORE_CHALLENGES = {
   'suck-blow': suckAndBlow, 'lip-service': lipService, tower: towerOfTruths,
   'lads-course': (s, rng) => course(s, rng, 'm'), 'girls-course': (s, rng) => course(s, rng, 'f'),
-  'blind-course': blindCourse, 'sports-day': sportsDay, headlines,
+  'blind-course': blindCourse, 'sports-day': sportsDay, headlines, 'truth-dare': truthOrDare,
 };

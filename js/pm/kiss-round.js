@@ -24,6 +24,7 @@ import { partnerOf } from './events.js';
 import { romance, friendship, schemeEligible } from './feelings.js';
 import { nudgeAttraction, attr, compatible } from './chemistry.js';
 import { feel, jealousyHit } from './emotions.js';
+import { closedness } from './ladder.js';
 
 const S = (state, n) => state.profiles[n]?.stats || {};
 const pop = (...rows) => Object.fromEntries(rows.filter(r => r[0]).map(([n, approval, fame]) => [n, { approval, fame }]));
@@ -36,18 +37,38 @@ function weighted(rng, opts) {
   return opts[opts.length - 1][0];
 }
 
+/**
+ * How open the villa is: the share of its islanders who are not closed off
+ * to everyone else (single, or coupled without having closed off). An open
+ * villa's games are where couples are made and broken (user: "there should be
+ * more steamy challenges the more people are not super set / exclusive").
+ */
+export function villaOpenness(state) {
+  const villa = state.villa.filter(n => !(state.split && state.casa?.includes(n)));
+  if (!villa.length) return 0;
+  const open = villa.filter(n => { const p = partnerOf(state, n); return !p || closedness(state, n, p) < 0.5; }).length;
+  return open / villa.length;
+}
+
+/** How many of a round's kissers should get a kiss on screen, by how open the villa is. */
+export function roundSize(state, kissers, least = 2) {
+  return Math.max(least, Math.min(kissers, Math.round(kissers * (0.35 + 0.65 * villaOpenness(state)))));
+}
+
 /** The choice one islander makes when it is their turn to kiss someone. */
 function choose(state, rng, a, targets) {
   const st = S(state, a), p = partnerOf(state, a);
   const loyal = (st.loyalty ?? 5) / 10, bold = (st.boldness ?? 5) / 10;
+  // Closed off to everyone else: the game is a kiss for the partner.
+  const shut = p ? closedness(state, a, p) : 0;
   const opts = [];
   for (const t of targets) {
     if (t === a || !compatible(state, a, t)) continue;
     const fancy = (attr(state, a, t) ?? 0) / 10;
-    if (t === p) { opts.push([['partner', t], 0.4 + 1.2 * loyal + romance(a, t) / 20]); continue; }
+    if (t === p) { opts.push([['partner', t], (0.4 + 1.2 * loyal + romance(a, t) / 20) * (1 + 2 * shut)]); continue; }
     const tp = partnerOf(state, t);
     // The one they fancy, held back by loyalty to a partner of their own.
-    opts.push([['crush', t], 2.5 * fancy * (p ? 1 - 0.5 * loyal : 1)]);
+    opts.push([['crush', t], 2.5 * fancy * (p ? 1 - 0.5 * loyal : 1) * (1 - 0.7 * shut)]);
     // On purpose, to shake somebody else's couple: a schemer, bold, and the
     // less they like the partner watching, the more it appeals.
     if (tp && tp !== a && schemeEligible(state.profiles[a])) {

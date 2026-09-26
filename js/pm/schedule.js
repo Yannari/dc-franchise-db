@@ -404,6 +404,7 @@ export const CHALLENGE_NAMES = {
   'lie-detector': 'The Lie Detector',
   'suck-blow': 'Suck and Blow', 'lip-service': 'Lip Service', tower: 'Tower of Truths', 'lads-course': "The Lads' Course",
   'girls-course': "The Girls' Course", 'blind-course': 'The Blindfold Course', 'sports-day': 'Sports Day', headlines: 'The Headlines',
+  'truth-dare': 'Truth or Dare',
 };
 const VILLA_DAYS = new Set(['recoupling', 'bombshell', 'public-vote', 'photos', 'semi-final']);
 export const CHALLENGE_DRAWS = [
@@ -439,6 +440,13 @@ export const CHALLENGE_DRAWS = [
   ['sports-day', 0.4, at => at > 0.45 && at < 0.9],    // UK 7 d28, UK 9 d46
   ['headlines', 0.5, at => at > 0.35],            // UK 5 d24 and d50, UK 6 d32
 ];
+// Added after every draw above, and drawn after all of them (seasonSchedule),
+// so none of those moved.
+export const LATER_CHALLENGE_DRAWS = [
+  ['truth-dare', 0.6, at => at > 0.1 && at < 0.8],     // UK 4's Truth or Dare: the cards, and everyone plays
+];
+// The games built to stir the villa: kisses, dares, rescues.
+export const STEAMY = new Set(['snogger', 'lip-service', 'suck-blow', 'girls-course', 'lads-course', 'truth-dare']);
 // Which nights can have one at all, for the Season Timeline too.
 export const CHALLENGE_NIGHTS = [...VILLA_DAYS];
 const hasGame = e => (e.rituals || []).some(r => r === 'heart-rate' || r === 'snog-marry-pie');
@@ -491,6 +499,12 @@ export function seasonSchedule(rng, template = SEASON_TEMPLATE) {
   }
   for (const e of out) if (late(e)) drawVote(e);
   for (const e of out) if (e.firstFormat === 'step-forward') e.firstFormat = draw(rng, KISS_FIRST_DRAWS)[0];
+  for (const [id, chance, fits] of LATER_CHALLENGE_DRAWS) {
+    const roll = rng(), where = rng();
+    if (roll >= chance) continue;
+    const days = out.filter(e => VILLA_DAYS.has(e.moment) && !e.challenge && !hasGame(e) && fits((e.ep - 1) / last, e));
+    if (days.length) days[Math.floor(where * days.length)].challenge = id;
+  }
   // EVERY VILLA DAY HAS ITS CHALLENGE. The draws above give a season the
   // real show's named ones at their real rate; the days left used to play a
   // generic "challenge" of kisses and a win with no name, no rules and no
@@ -567,10 +581,17 @@ function fillChallenges(out, rng) {
   for (const e of out) {
     if (!VILLA_DAYS.has(e.moment) || e.challenge || hasGame(e)) continue;
     const at = (e.ep - 1) / last;
-    const fits = CHALLENGE_DRAWS.filter(([id, , ok]) => !taken.has(id) && ok(at, e)).map(([id]) => id);
-    const pool = fits.length ? fits : CHALLENGE_DRAWS.map(([id]) => id).filter(id => !taken.has(id));
+    // Weighted by how often the real show plays each — and the steamy games
+    // count double before the last stretch, while the villa is still open
+    // enough for a kiss to make or break a couple (user: "Love Island's
+    // games are really hot").
+    const w = ([id, weight]) => weight * (STEAMY.has(id) && at < 0.7 ? 2 : 1);
+    const all = [...CHALLENGE_DRAWS, ...LATER_CHALLENGE_DRAWS];
+    const fits = all.filter(([id, , ok]) => !taken.has(id) && ok(at, e));
+    const pool = fits.length ? fits : all.filter(([id]) => !taken.has(id));
     if (!pool.length) continue;
-    e.challenge = pool[Math.floor(rng() * pool.length)];
+    let r = rng() * pool.reduce((t, d) => t + w(d), 0);
+    e.challenge = (pool.find(d => (r -= w(d)) < 0) || pool[pool.length - 1])[0];
     taken.add(e.challenge);
   }
 }

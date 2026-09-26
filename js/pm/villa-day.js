@@ -22,7 +22,7 @@ import { blowups } from './blowup.js';
 import { breakdowns } from './breakdown.js';
 import { triangles } from './triangle.js';
 import { streamFor } from '../dr/rng.js';
-import { kissRound } from './kiss-round.js';
+import { kissRound, roundSize } from './kiss-round.js';
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 const pick = (rng, arr) => (arr.length ? arr[Math.floor(rng() * arr.length)] : null);
@@ -271,7 +271,7 @@ const RITUALS = {
   'heart-rate': (state, rng) => [...withRules(state, rng, 'heart-rate', heartRates(state, rng)),
     ...kissRound(state, streamFor(state.seed ?? 1, `hr-kiss:${state.ep}${state.epSalt || ''}`), {
       kissers: [...state.villa].sort((x, y) => (state.profiles[y]?.stats?.boldness ?? 5) - (state.profiles[x]?.stats?.boldness ?? 5)),
-      targets: state.villa, n: 3, game: 'heart-rate',
+      targets: state.villa, n: roundSize(state, Math.ceil(state.villa.length / 2)), game: 'heart-rate',
       scene: (s, r, k, p, e, m) => scene(s, r, k, p, e, { phase: 'event', aired: true, major: m }) })],
   'snog-marry-pie': (state, rng) => withRules(state, rng, 'snog-marry-pie', state.villa.flatMap(x => {
     const partner = partnerOf(state, x);

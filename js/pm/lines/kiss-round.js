@@ -5,7 +5,29 @@
 //   `game`: snogger (blindfolded boys, the girls choose) · suck-blow · lip-service.
 //   {pa} is a's partner (taken), {pb} is b's (bTaken).
 export const KISS_ROUND_LINES = {
+  // Truth or Dare's truths (challenges-more.js truthOrDare). `of`:
+  //   named-coupled [a, b, c]  a is asked who else they'd kiss, and names b, with c (a's partner) listening
+  //   named-single  [a, b]     a, single, names b
+  //   dodge         [a, b]     a dodges the question, with b (a's partner) watching
+  //   partner-only  [a, b]     a's answer is b, a's partner
+  //   nobody        [a]        a, single, has nobody to name
+  'tod-truth': [
+    { id: 'tt.nc1', when: { of: 'named-coupled' }, stage: '{a} picks truth. The card: who in here, apart from your partner, would you most like to kiss?', turns: [['a', "…Honestly? {b}."], ['c', "Wow. Okay."]], beat: '{b} tries very hard not to look pleased.' },
+    { id: 'tt.nc2', when: { of: 'named-coupled' }, stage: "{a}'s card asks who {a} would pull if {a} was single.", turns: [['a', "It's got to be {b}."]], beat: '{c} puts down {c.posAdj} drink, very slowly.' },
+    { id: 'tt.nc3', when: { of: 'named-coupled' }, turns: [['a', "Truth. Go on."], ['a', "Who would I go for, apart from {c}? …{b}. Sorry. It's the truth."]], beat: 'The villa gasps. {c} does not say a word.' },
+    { id: 'tt.ns1', when: { of: 'named-single' }, stage: '{a} picks truth. Who would you most like to couple up with?', turns: [['a', "{b}. I've never hidden it."], ['b', "Oh. Okay then."]], beat: 'The villa whoops.' },
+    { id: 'tt.ns2', when: { of: 'named-single' }, turns: [['a', "You want the truth? It's {b}. It's been {b} for days."]], beat: '{b} goes pink.' },
+    { id: 'tt.d1', when: { of: 'dodge' }, stage: '{a} reads the card, and takes a very long time about it.', turns: [['a', "Can I take a dare instead?"], ['b', "Why can't you answer it?"]], beat: 'Everyone noticed. {b} noticed most.' },
+    { id: 'tt.d2', when: { of: 'dodge' }, turns: [['a', "Who would I kiss other than my partner? Nobody. Obviously."], ['b', "You took a long time to say obviously."]] },
+    { id: 'tt.d3', when: { of: 'dodge' }, turns: [['a', "I'm not answering that."], ['b', "It's truth or dare. You have to answer."], ['a', "Then I'm not answering it very well."]] },
+    { id: 'tt.p1', when: { of: 'partner-only' }, stage: "{a}'s card: who in here would you kiss, apart from your partner?", turns: [['a', "Nobody. It's {b}. It's only ever been {b}."]], beat: '{b} kisses {a} before anyone can say anything.' },
+    { id: 'tt.p2', when: { of: 'partner-only' }, turns: [['a', "Easy. {b}. Next question."]], beat: 'The villa groans at how sweet it is.' },
+    { id: 'tt.n1', when: { of: 'nobody' }, turns: [['a', "Who do I like in here? Honestly, nobody's grabbed me yet."]], beat: 'Somebody on the benches shouts, "Yet!"' },
+    { id: 'tt.n2', when: { of: 'nobody' }, stage: '{a} reads the card, and shrugs.', turns: [['a', "I'm still looking. Next."]] },
+  ],
   'game-kiss': [
+    { id: 'gk.td1', when: { game: 'truth-dare' }, stage: '{a} picks dare. The card: kiss the islander you are most attracted to.', turns: [['a', "Right. Okay."]], beat: '{a} walks straight over to {b}.' },
+    { id: 'gk.td2', when: { game: 'truth-dare', of: 'stir' }, stage: "{a} picks dare, and reads it out slowly: kiss somebody else's partner.", turns: [['a', "I think I know exactly who."]], beat: '{a} goes straight for {b}.' },
     // ── partner: the safe choice ──
     { id: 'gk.p6', when: { of: 'partner' }, stage: '{a} goes straight for {b}. No hesitation.', turns: [['b', "Took you long enough."], ['a', "About two seconds."]], beat: 'The villa cheers, a little disappointed.' },
     { id: 'gk.p7', when: { of: 'partner' }, turns: [['a', "There was only ever going to be one."]], beat: '{b} kisses {a} back, and the villa groans.' },

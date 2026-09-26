@@ -65,11 +65,17 @@ export const JUST_MET_MORE = {
   ],
 
   comedy: [
-    { id: 'jm.comedy.09', when: J, stage: '{a} tries to do a dramatic entrance to the pool and misses the step.', turns: [['a', "I meant to do that."]] },
-    { id: 'jm.comedy.10', when: J, stage: '{a} puts sun cream on everywhere except the middle of {a.posAdj} back.', turns: [['a', "Can someone… no? Okay. I'll just be patchy."]] },
-    { id: 'jm.comedy.11', when: J, stage: '{a} opens the wrong wardrobe and starts putting clothes in it.', turns: [['a', "Whose shoes are these? Oh. These are my shoes. This is my wardrobe."]] },
-    { id: 'jm.comedy.12', when: J, stage: '{a} tries to make everyone a cocktail and gets the blender lid wrong.', turns: [['a', "It's fine! It's fine. Who wants a smoothie on their face?"]] },
-    { id: 'jm.comedy.13', when: J, stage: '{a} practises {a.posAdj} walk for the fire pit up and down the lawn.', turns: [['a', "Too much? Not enough? Everyone's staring. Too much."]] },
-    { id: 'jm.comedy.14', when: J, stage: '{a} spends a long time trying to work out which tap is hot.', turns: [['a', "Neither of them is hot. Why is neither of them hot?"]] },
+    { id: 'jm.comedy.09', when: J, stage: '{a} goes for a dramatic walk into the pool and misses the step.', turns: [
+      ['a', "I meant to do that."], ['b', "You went in sideways."], ['a', "It's a style."], ['b', "It's a new one."]] },
+    { id: 'jm.comedy.10', when: J, stage: '{a} has put sun cream on everywhere except the middle of {a.posAdj} back.', turns: [
+      ['a', "Can someone…"], ['b', "Turn round. You've missed a massive bit."], ['a', "I can't reach it."], ['b', "Nobody can reach it. That's why you ask."]] },
+    { id: 'jm.comedy.11', when: J, stage: '{a} is putting clothes into a wardrobe when {b} walks in.', turns: [
+      ['b', "That's my wardrobe."], ['a', "Whose shoes are these, then?"], ['b', "Mine."], ['a', "Oh. So where's mine?"], ['b', "Next one along."]] },
+    { id: 'jm.comedy.12', when: J, stage: '{a} starts the blender without the lid on properly.', turns: [
+      ['a', "It's fine! It's fine."], ['b', "It's on the ceiling."], ['a', "Who wants a smoothie?"], ['b', "I think I'm wearing one."]] },
+    { id: 'jm.comedy.13', when: J, stage: '{a} is practising {a.posAdj} walk for the fire pit up and down the lawn.', turns: [
+      ['a', "Too much? Not enough?"], ['b', "Why are you doing it with your arms like that?"], ['a', "Like what?"], ['b', "Like that."], ['a', "Everyone's staring. Too much."]] },
+    { id: 'jm.comedy.14', when: J, stage: '{a} is standing at the sink, turning both taps.', turns: [
+      ['a', "Neither of them is hot. Why is neither of them hot?"], ['b', "You have to wait."], ['a', "How long?"], ['b', "Longer than that."]] },
   ],
 };

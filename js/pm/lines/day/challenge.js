@@ -41,7 +41,8 @@ export const ICK = [
     ] },
   { id: 'ick.07',
     stage: 'Later, in the dressing room, to nobody in particular.',
-    turns: [['a', "I can't explain it. {b} ran across the lawn earlier, and I just thought, no."]] },
+    turns: [['a', "I can't explain it. {b} ran across the lawn earlier, and I just thought, no."]],
+    beat: '{a} goes back out to the garden.' },
   { id: 'ick.08',
     turns: [
       ['b', 'Guess what my nickname was at school.'],

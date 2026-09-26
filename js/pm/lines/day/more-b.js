@@ -3,30 +3,52 @@
 // warm ones, never as an afterthought.
 
 export const MORE_B = {
-  // comedy [a] ALONE.
+  // comedy [a, b]: {a} is being funny, {b} answers.
   comedy: [
-    { id: 'co2.01', stage: '{a} tries to do a handstand in the pool and swallows half of it.', turns: [['a', "I'm fine. I meant to do that."]] },
-    { id: 'co2.02', stage: '{a} spends twenty minutes trying to get the perfect photo of the sunset, then realises there are no phones.', turns: [['a', "Oh. Right. Yeah."]] },
-    { id: 'co2.03', stage: '{a} sings in the shower, loudly, and the whole garden joins in the chorus.', turns: [['a', "I didn't know you could all hear that."]] },
-    { id: 'co2.04', stage: '{a} tries to cook pasta and sets off the smoke alarm.', turns: [['a', "It's fine! It's fine. Everybody stay calm."]] },
-    { id: 'co2.05', stage: '{a} falls asleep on a sunbed and wakes up with a very clear tan line.', turns: [['a', "Why did nobody wake me up?"]] },
-    { id: 'co2.06', when: { phase: 'morning' }, stage: "{a} does an impression of the host at breakfast. It isn't a good impression.", turns: [['a', "Okay, that one needs work."]] },
-    { id: 'co2.07', stage: '{a} tries to open a coconut with a spoon.', turns: [['a', "I've seen it done. On the internet."]] },
-    { id: 'co2.08', stage: '{a} walks straight into the glass door. Again.', turns: [['a', "Who keeps cleaning it? Stop cleaning it."]] },
-    { id: 'co2.09', stage: '{a} explains the rules of a card game nobody has ever heard of.', turns: [['a', "No, you're not listening. The joker is worth nine."]] },
-    { id: 'co2.10', stage: '{a} gets stuck in an inflatable flamingo.', turns: [['a', "Can somebody help? Anyone? Please?"]] },
-    { id: 'co2.11', stage: '{a} tries to do a yoga pose from memory and falls over.', turns: [['a', "That's the pose. That's what it's meant to look like."]] },
-    { id: 'co2.12', stage: '{a} makes everyone a cocktail. Nobody can drink it.', turns: [['a', "It's an acquired taste."]] },
-    { id: 'co2.13', stage: '{a} tries to whisper a secret and says it at full volume.', turns: [['a', "Did everyone hear that? Everyone heard that."]] },
-    { id: 'co2.14', stage: '{a} spends the morning looking for sunglasses that are on {a.posAdj} head.', turns: [['a', "Has anyone seen my… oh. Never mind."]] },
-    { id: 'co2.15', stage: '{a} trips carrying six drinks and saves every one of them.', turns: [['a', "Nobody move. I'm a professional."]] },
-    { id: 'co2.16', stage: '{a} challenges everyone to a push-up competition and gives up after four.', turns: [['a', "Four is a good number. It's a solid number."]] },
-    { id: 'co2.17', stage: '{a} gives a speech at dinner that nobody asked for.', turns: [['a', "I just want to say, I love every single one of you. Mostly."]] },
-    { id: 'co2.18', stage: '{a} tries to learn a dance routine off one of the others and gets it completely wrong.', turns: [['a', "I've got my own version. It's better."]] },
-    { id: 'co2.19', stage: '{a} mistakes the salt for sugar in everyone\'s tea.', turns: [['a', "Is it bad? It's bad, isn't it."]] },
-    { id: 'co2.20', stage: '{a} tries to sunbathe on the lilo and drifts slowly into the corner of the pool.', turns: [['a', "I'm stuck. I'm stuck in the corner. Nobody is helping."]] },
-    { id: 'co2.21', when: { phase: 'morning' }, stage: '{a} comes out for breakfast with the pillow still printed on {a.posAdj} face.', turns: [['a', "What? What are you all looking at?"]] },
-    { id: 'co2.22', when: { phase: 'evening' }, stage: '{a} spends so long getting ready that the fire pit has started.', turns: [['a', "Did I miss it? Please say I didn't miss it."]] },
+    { id: 'co2.01', stage: '{a} tries to do a handstand in the pool and swallows half of it.', turns: [
+      ['b', "Are you alive?"], ['a', "I'm fine. I meant to do that."], ['b', "You went under for ages."], ['a', "I was practising."]] },
+    { id: 'co2.02', stage: '{a} has been lining up the perfect view of the sunset for twenty minutes.', turns: [
+      ['a', "Get in, it's perfect. Where's my phone?"], ['b', "We haven't got phones."], ['a', "Oh. Right. Yeah."], ['b', "You'll just have to remember it."]] },
+    { id: 'co2.03', stage: '{a} is singing in the shower, loudly, and the whole garden joins in the chorus.', turns: [
+      ['a', "I didn't know you could all hear that."], ['b', "We've heard it every morning."], ['a', "Every morning?"], ['b', "Same song, too."]] },
+    { id: 'co2.04', stage: '{a} is cooking pasta when the smoke alarm goes off.', turns: [
+      ['a', "It's fine! It's fine. Everybody stay calm."], ['b', "How do you burn pasta? It's in water."], ['a', "I forgot the water."], ['b', "You forgot the water?"]] },
+    { id: 'co2.05', stage: '{a} wakes up on a sunbed with a very clear tan line across {a.posAdj} face.', turns: [
+      ['a', "Why did nobody wake me up?"], ['b', "You looked so peaceful."], ['a', "How bad is it?"], ['b', "It's the shape of your hand."]] },
+    { id: 'co2.06', when: { phase: 'morning' }, stage: "{a} does an impression of the host at breakfast. It isn't a good impression.", turns: [
+      ['a', "Islanders… it's time… for the recoupling."], ['b', "Why is she Australian?"], ['a', "She's not Australian."], ['b', "She was just then."], ['a', "Okay, that one needs work."]] },
+    { id: 'co2.07', stage: '{a} is trying to open a coconut with a spoon.', turns: [
+      ['b', "That's never going to work."], ['a', "I've seen it done."], ['b', "Where?"], ['a', "On the internet."], ['b', "With a spoon?"]] },
+    { id: 'co2.08', stage: '{a} walks straight into the glass door. Again.', turns: [
+      ['b', "Oh my God. Are you okay?"], ['a', "Who keeps cleaning it? Stop cleaning it."], ['b', "That's the second time today."], ['a', "Third. You missed one."]] },
+    { id: 'co2.09', stage: '{a} is explaining the rules of a card game to {b}.', turns: [
+      ['a', "So the joker is worth nine."], ['b', "Why nine?"], ['a', "Because it's the joker."], ['b', "I don't think this is a real game."], ['a', "No, you're not listening."]] },
+    { id: 'co2.10', stage: '{a} is stuck in an inflatable flamingo.', turns: [
+      ['a', "Can somebody help? Anyone? Please?"], ['b', "How did you even get in there?"], ['a', "I don't know! Just pull!"], ['b', "I'm laughing too much to pull."]] },
+    { id: 'co2.11', stage: '{a} tries a yoga pose from memory and falls over.', turns: [
+      ['a', "That's the pose. That's what it's meant to look like."], ['b', "Lying on the floor?"], ['a', "It's called the starfish."], ['b', "You just made that up."]] },
+    { id: 'co2.12', stage: '{a} has made everyone a cocktail. {b} tries it first.', turns: [
+      ['b', "What's in this?"], ['a', "A bit of everything."], ['b', "It tastes like sun cream."], ['a', "It's an acquired taste."]] },
+    { id: 'co2.13', stage: '{a} tries to whisper a secret to {b} and says it at full volume.', turns: [
+      ['a', "I think the new one is really hot."], ['b', "Why are you shouting?"], ['a', "Was I shouting?"], ['b', "Everyone heard that."]] },
+    { id: 'co2.14', stage: '{a} has spent the morning looking for sunglasses.', turns: [
+      ['a', "Has anyone seen my sunglasses?"], ['b', "Have you checked everywhere?"], ['a', "Twice. I've checked everywhere."], ['b', "They're on your head."], ['a', "…Oh. Never mind."]] },
+    { id: 'co2.15', stage: '{a} trips carrying six drinks and saves every one of them.', turns: [
+      ['a', "Nobody move. I'm a professional."], ['b', "How did you do that?"], ['a', "I have no idea."], ['b', "Do it again."], ['a', "Absolutely not."]] },
+    { id: 'co2.16', stage: '{a} has challenged {b} to a push-up competition.', turns: [
+      ['b', "That's four."], ['a', "Four is a good number. It's a solid number."], ['b', "I'm on twenty."], ['a', "It's not about the number."]] },
+    { id: 'co2.17', stage: '{a} stands up at dinner to give a speech nobody asked for.', turns: [
+      ['a', "I just want to say, I love every single one of you."], ['b', "Aw!"], ['a', "Mostly."], ['b', "Who's not in the mostly?"], ['a', "I'm not saying."]] },
+    { id: 'co2.18', stage: '{b} is teaching {a} a dance routine, and {a} is getting it completely wrong.', turns: [
+      ['b', "That's not the move."], ['a', "I've got my own version."], ['b', "Your version is just jumping."], ['a', "It's better."]] },
+    { id: 'co2.19', stage: '{a} has made everyone tea, with salt instead of sugar.', turns: [
+      ['b', "What have you done to this?"], ['a', "Is it bad?"], ['b', "It's so bad."], ['a', "It's bad, isn't it."]] },
+    { id: 'co2.20', stage: '{a} is on the lilo, drifting slowly into the corner of the pool.', turns: [
+      ['a', "I'm stuck. I'm stuck in the corner."], ['b', "Just paddle."], ['a', "I can't, I'll fall in."], ['b', "It's a pool. You're meant to fall in."], ['a', "Nobody is helping."]] },
+    { id: 'co2.21', when: { phase: 'morning' }, stage: '{a} comes out for breakfast with the pillow still printed on {a.posAdj} face.', turns: [
+      ['a', "What? What are you all looking at?"], ['b', "Nothing. Sit down."], ['a', "There's something on my face, isn't there."], ['b', "It'll be gone by lunch."]] },
+    { id: 'co2.22', when: { phase: 'evening' }, stage: '{a} runs out of the dressing room, still putting an earring in.', turns: [
+      ['a', "Did I miss it? Please say I didn't miss it."], ['b', "You missed it."], ['a', "No!"], ['b', "I'm joking. We're still waiting for you."]] },
   ],
   // deep-chat [a, b]: a couple opening up.
   'deep-chat': [

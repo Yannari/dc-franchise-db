@@ -441,7 +441,8 @@ export function scriptFor(state, ev) {
 // An ending already there: somebody leaves, or the words run out on the page.
 const EXIT = /\b(walks?|walking|goes|gets up|storms|leaves|already on|is up off|goes to bed|rest of the|says anything else|another word|doesn't speak|does not speak)\b/i;
 // An argument's question is rhetorical ("Both of them?"): it is answered by the ending, not by a reply.
-const NO_ANSWER = new Set(['argument', 'loyalty']);
+// A kiss's question ("What was that for?") is answered by what they say after it.
+const NO_ANSWER = new Set(['argument', 'loyalty', 'kiss']);
 function closed(state, ev, entry, opened, ps) {
   const pool = POOLS[`${ev.kind}-close`];
   const close = ev.extra?.close;

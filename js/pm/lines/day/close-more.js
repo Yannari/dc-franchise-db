@@ -8,9 +8,13 @@
 // conversations end with somebody getting up, not with a closing line.
 // A beat-only ending never follows an opener that already ended on its own
 // beat (pm/script.js closed).
+import { KISS_CLOSE } from './kiss-close.js';
+import { ICK_CLOSE } from './ick-close.js';
 const A = (id, beat, when = {}) => ({ id, when, turns: [], beat });
 
 export const CLOSE_MORE = {
+  ...KISS_CLOSE,
+  ...ICK_CLOSE,
   'friendship-close': [
     { id: 'fc.11', turns: [['a', "Right. I need a drink. Do you want one?"], ['b', "Always."]] },
     { id: 'fc.12', turns: [['b', "We should get ready soon."], ['a', "Ten more minutes."], ['b', "Ten. Then we go."]] },
@@ -101,7 +105,7 @@ export const CLOSE_MORE = {
     A('cc.eb.03', 'The chat drifts on to everyone else in the villa.', { of: 'easy' }),
     A('cc.eb.04', '{a} goes to make them both a tea.', { of: 'easy' }),
     A('cc.eb.05', 'Somebody shouts that dinner is ready, and that is the end of it.', { of: 'easy' }),
-    A('cc.fb.01', '{b} goes inside, and {a} stays where {a} is.', { of: 'flat' }),
+    A('cc.fb.01', '{b} goes inside, and {a} stays out there on {a.posAdj} own.', { of: 'flat' }),
     A('cc.fb.02', 'The conversation runs out, and neither of them tries very hard to start it again.', { of: 'flat' }),
     A('cc.fb.03', 'They sit side by side, both looking at the pool.', { of: 'flat' }),
   ],

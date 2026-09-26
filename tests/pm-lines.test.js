@@ -42,9 +42,9 @@ describe('the pools are well-formed', () => {
     }
   });
   it('a scene only names the people its kind casts', () => {
-    // comedy casts one islander, gossip three, everything else two. A {b}
+    // gossip casts three, everything else two unless listed here. A {b}
     // in a one-person scene renders as a raw placeholder, or as nobody.
-    const CAST = { comedy: 1, gossip: 3, 'head-turned': 1, 'jealous-sulk': 1, overthinking: 1,
+    const CAST = { gossip: 3, 'head-turned': 1, 'jealous-sulk': 1, overthinking: 1,
       'jealous-confront': 3, 'jealous-retaliate': 3, advice: 3,
       entrance: 1, steal: 3, 'recouple-pick': 3, 'dump-verdict': 1, 'dump-fallout': 1, 'snog-marry-pie': 4,
       'movie-night': 2, reveal: 2, 'dump-at-risk': 1, 'ex-return': 1, 'top-couple-pick': 4, 'couples-vote': 4, 'dump-verdict-couple': 2, 'dump-verdict-singles': 2, 'group-entrance': 2,

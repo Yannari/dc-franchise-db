@@ -88,14 +88,22 @@ export const JUST_MET = {
     { id: 'jm.friend.10', when: J, turns: [['a', "You were the first person to talk to me today."], ['b', "You looked like you needed it."]] },
   ],
   comedy: [
-    { id: 'jm.comedy.01', when: J, stage: '{a} tries to work the outdoor shower and gets completely soaked.', turns: [['a', "Nobody saw that. Nobody saw that."]] },
-    { id: 'jm.comedy.02', when: J, stage: '{a} gets lost looking for the bathroom.', turns: [['a', "How is this villa so big? I've been round it three times."]] },
-    { id: 'jm.comedy.03', when: J, stage: "{a} unpacks, and it's mostly shoes.", turns: [['a', "I thought it would be cold at night. It's not cold at night."]] },
-    { id: 'jm.comedy.04', when: J, stage: '{a} jumps into the pool, forgetting the microphone.', turns: [['a', "Oh no. Is this waterproof? Please say this is waterproof."]] },
-    { id: 'jm.comedy.05', when: J, stage: "{a} introduces {a.ref} to someone for the third time today.", turns: [['a', "I know. I know we've met. I'm just very bad with names."]] },
-    { id: 'jm.comedy.06', when: J, stage: "{a} sits down on a daybed that's already wet.", turns: [['a', "Great. Brilliant. First impressions."]] },
-    { id: 'jm.comedy.07', when: J, stage: '{a} spends ten minutes trying to open the fridge.', turns: [['a', "It's a push one. Of course it's a push one."]] },
-    { id: 'jm.comedy.08', when: J, stage: '{a} practises a chat-up line in the mirror, out loud.', turns: [['a', "No. Too much. Again."]] },
+    { id: 'jm.comedy.01', when: J, stage: '{a} tries to work the outdoor shower and gets completely soaked.', turns: [
+      ['a', "Nobody saw that. Nobody saw that."], ['b', "I saw that."], ['a', "You didn't see anything."], ['b', "It's the button on the left."]] },
+    { id: 'jm.comedy.02', when: J, stage: '{a} walks into the kitchen for the third time, looking lost.', turns: [
+      ['a', "Where's the bathroom? I've been round this villa three times."], ['b', "It's right behind you."], ['a', "That's a cupboard."], ['b', "The other door."]] },
+    { id: 'jm.comedy.03', when: J, stage: "{a} unpacks next to {b}, and it's mostly shoes.", turns: [
+      ['b', "How many pairs did you bring?"], ['a', "Not that many."], ['b', "I've counted nine."], ['a', "I thought it would be cold at night."], ['b', "That's not a coat, that's nine pairs of shoes."]] },
+    { id: 'jm.comedy.04', when: J, stage: '{a} jumps into the pool, forgetting the microphone.', turns: [
+      ['a', "Oh no. Is this waterproof?"], ['b', "I don't think so."], ['a', "Please say this is waterproof."], ['b', "Get out of the pool!"]] },
+    { id: 'jm.comedy.05', when: J, stage: '{a} introduces {a.ref} to {b} for the third time today.', turns: [
+      ['a', "Hi, I'm {a}."], ['b', "We've met. Twice."], ['a', "I know. I know we've met."], ['b', "What's my name, then?"], ['a', "…I'm just very bad with names."]] },
+    { id: 'jm.comedy.06', when: J, stage: "{a} sits down on a daybed that's soaking wet.", turns: [
+      ['b', "Oh, someone's just come out the pool there."], ['a', "Great. Brilliant."], ['b', "Do you want a towel?"], ['a', "I want a new first impression."]] },
+    { id: 'jm.comedy.07', when: J, stage: '{a} has been pulling at the fridge door for a while.', turns: [
+      ['b', "It's a push one."], ['a', "Of course it's a push one."], ['b', "It's got a sign on it."], ['a', "I didn't read the sign."]] },
+    { id: 'jm.comedy.08', when: J, stage: '{b} walks in on {a} practising a chat-up line in the mirror, out loud.', turns: [
+      ['a', "Hey. Hi. How are— no. Too much."], ['b', "Who's that for?"], ['a', "How long have you been there?"], ['b', "Long enough. Try it on me."]] },
   ],
   loyalty: [
     { id: 'jm.loyal.01', when: J, turns: [['b', "Can I get to know you a bit?"], ['a', "I'm coupled up, and I want to see where it goes. Sorry."]] },

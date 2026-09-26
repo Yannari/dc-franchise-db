@@ -581,13 +581,15 @@ export const KINDS = {
     salience: 0.7,
     cast: (s, rng) => {
       const a = weighted(rng, s.villa.map(n => [n, Math.max(0, S(s, n).social + S(s, n).temperament - 9)]));
-      return a ? { players: [a] } : null;
+      // Whoever is nearest answers the joke: a conversation, not a one-liner
+      // (every comedy scene aired as a single line, with nobody to talk to).
+      const b = a && pick(rng, roomMates(s, a));
+      return b ? { players: [a, b] } : null;
     },
-    apply: (s, ev, rng) => {
-      const [a] = ev.players;
-      const b = pick(rng, roomMates(s, a));
-      if (b) addBond(a, b, 0.2);
-      return { pop: pop1(a, 1.0, 2) };
+    apply: (s, ev) => {
+      const [a, b] = ev.players;
+      addBond(a, b, 0.2);
+      return { pop: { ...pop1(a, 1.0, 2), ...pop1(b, 0.1, 0.5) } };
     },
   },
   ick: {
@@ -692,6 +694,26 @@ const ENDINGS = {
     if (rng() < 0.8 * attachment(s.profiles[b]).avoidance) { feel(s, a, 'security', -0.3); return 'guarded'; }
     addRelationshipDimension(a, b, 'trust', 0.3); addRelationshipDimension(b, a, 'trust', 0.3);
     return 'open';
+  },
+  // After the ick: the bold say it out loud, and it stings; the rest keep it
+  // to themselves (lines/day/ick-close.js).
+  ick: (s, ev, rng) => {
+    const [a, b] = ev.players;
+    const bold = (S(s, a).boldness ?? 5) / 10, kind = (S(s, a).temperament ?? 5) / 10;
+    if (rng() < 0.15 + 0.5 * bold - 0.2 * kind) {
+      addBond(b, a, -0.3); feel(s, b, 'security', -0.4);
+      return 'said';
+    }
+    return 'kept';
+  },
+  // What a couple say after the kiss (lines/day/kiss-close.js): read off how
+  // much they like each other, and whether it was their first. Draws nothing.
+  kiss: (s, ev) => {
+    const [a, b] = ev.players;
+    const r = (romance(a, b) + romance(b, a)) / 2;
+    if (r < 2.5) return 'off';
+    if (ev.extra.firstKiss) return 'first';
+    return r >= 5 ? 'warm' : 'easy';
   },
   friendship: (s, ev) => { addRelationshipDimension(ev.players[0], ev.players[1], 'trust', 0.2); return true; },
   pull: (s, ev) => ev.extra.rebuffed ? 'turned-down' : ev.extra.kissed ? 'kissed' : ev.extra.promised ? 'promised' : 'flirt',
@@ -898,7 +920,8 @@ export function generateEpisodeEvents(state, rng, budgets = PHASE_BUDGETS) {
       if (!got) continue;
       const players = Array.isArray(got) ? got : got.players;
       const realKind = Array.isArray(got) ? kind : (got.kind || kind);
-      const key = realKind + '|' + [...players].sort().join('+');
+      // Comedy is the joker's scene: whoever answers, it is the same islander on screen again.
+      const key = realKind + '|' + (realKind === 'comedy' ? players[0] : [...players].sort().join('+'));
       if ((seenPhase[key] || 0) >= PER_PHASE || (seenEp[key] || 0) >= PER_EPISODE) continue;
       // A relation's scene, once an episode per kind (season 41 with four
       // relations drew 52 kin-protects and 50 kin-hearts from pools of five).

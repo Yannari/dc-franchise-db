@@ -28,6 +28,7 @@ import { NARRATOR } from './lines/narrator.js';
 import { KISS_LINES, ICEBREAKER_CARDS } from './lines/kiss-games.js';
 import { RULES_LINES } from './lines/challenge-rules.js';
 import { MORE_D } from './lines/day/more-d.js';
+import { MORE_E } from './lines/day/more-e.js';
 import { JOURNEY_LINES, JOURNEY_MORE, JOURNEY_SHAPES } from './lines/journey.js';
 import { KIN_LINES } from './lines/kin.js';
 import { FIREPIT_LINES } from './lines/firepit.js';
@@ -38,6 +39,7 @@ import { DIALECTS, slotWord, US_SPELLING, US_SPELLERS, ESL_EXPANSIONS } from './
 export const POOLS = { ...DAY, ...LADDER, ...FEELINGS, ...MOMENT_LINES, ...CHALLENGE_LINES, ...CLOSE, ...ANSWER, ...KISS_LINES, ...RULES_LINES };
 // The pools a season ran dry of (lines/day/more-d.js), added to whichever pool holds the kind.
 for (const [k, v] of Object.entries(MORE_D)) POOLS[k] = [...(POOLS[k] || []), ...v];
+for (const [k, v] of Object.entries(MORE_E)) POOLS[k] = [...(POOLS[k] || []), ...v];
 // The final dates and each couple's film (lines/journey.js).
 for (const [k, v] of Object.entries(JOURNEY_LINES)) POOLS[k] = [...(POOLS[k] || []), ...v];
 for (const [k, v] of Object.entries(JOURNEY_MORE)) POOLS[k] = [...(POOLS[k] || []), ...v];

@@ -21,7 +21,7 @@
 export const SEASON_TEMPLATE = [
   { ep: 1, days: [1, 2], moment: 'first-coupling', arrivals: { bombshell: 1 } },
   { ep: 2, days: [3, 5], moment: 'recoupling' },
-  { ep: 3, days: [6, 8], moment: 'bombshell', arrivals: { bombshell: 1 }, rituals: ['heart-rate'] },
+  { ep: 3, days: [6, 8], moment: 'bombshell', arrivals: { bombshell: 2 }, rituals: ['heart-rate'] },
   { ep: 4, days: [9, 11], moment: 'recoupling', rituals: ['hideaway'] },
   { ep: 5, days: [12, 14], moment: 'public-vote', slot: 'vote1', dumpFormat: 'cross-gender', bottom: 2 },
   { ep: 6, days: [15, 17], moment: 'bombshell', arrivals: { bombshell: 2 } },
@@ -33,7 +33,7 @@ export const SEASON_TEMPLATE = [
   { ep: 12, days: [32, 34], moment: 'public-vote', slot: 'vote2', dumpFormat: 'safe-pick-couple', bottom: 3 },
   { ep: 13, days: [35, 37], moment: 'recoupling', rituals: ['hideaway'] },
   { ep: 14, days: [38, 40], moment: 'public-vote', slot: 'vote-post', dumpFormat: 'safe-pick-couple', bottom: 3 },
-  { ep: 15, days: [41, 43], moment: 'recoupling', arrivals: { bombshell: 1 }, rituals: ['notes'], finalRecoupling: true },
+  { ep: 15, days: [41, 43], moment: 'recoupling', arrivals: { bombshell: 0 }, rituals: ['notes'], finalRecoupling: true },
   { ep: 16, days: [44, 46], moment: 'public-vote', slot: 'vote3', coupled: true },
   { ep: 17, days: [47, 49], moment: 'semi-final', slot: 'semi', rituals: ['families'], coupled: true },
   { ep: 18, days: [50, 52], moment: 'final' },
@@ -105,7 +105,9 @@ function baseWeeks(casa) {
   const pre = [
     { moment: 'first-coupling', cap: 1, fixed: true },
     { moment: 'recoupling', drop: 3 },
-    { moment: 'bombshell', cap: 1, rituals: ['heart-rate'] },
+    // Two on the first bombshell night, as the real first week brings them (UK 9
+    // d3: 2, UK 12 d3: 2, then 2-3 more by day 8; UK 10 and 11 d3: 1).
+    { moment: 'bombshell', cap: 2, rituals: ['heart-rate'] },
     // The Hideaway night (villa-day.js hideawayNight): the villa votes a couple in.
     { moment: 'recoupling', drop: 2, rituals: ['hideaway'] },
     { moment: 'public-vote', slot: 'vote1', fixed: true },

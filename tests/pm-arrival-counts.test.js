@@ -27,7 +27,8 @@ describe('choosing how many bombshells walk in', () => {
   });
 
   it('fewer on one night: the rest get new bombshell nights, and the season grows', () => {
-    const s = buildSchedule({ bombshells: 6, casa: 6, counts: { 2: 1 } });
+    // Two fewer (the final recoupling's free place takes one, a new night the other).
+    const s = buildSchedule({ bombshells: 6, casa: 6, counts: { 1: 1, 2: 1 } });
     expect(bombNights(s)[1].arrivals.bombshell).toBe(1);
     expect(arriving(s)).toBe(6);
     expect(s.length).toBeGreaterThan(plain.length);
@@ -83,8 +84,9 @@ describe('on the Season Timeline', () => {
     const firstBomb = before.find(e => e.moment === 'bombshell').ep;
     seasonConfig.twistSchedule = [{ id: 't1', episode: lastVote, type: 'pm-top-couple-picks' },
       { id: 't2', episode: firstBomb, type: 'pm-stand-up' }];
-    // One on the second bombshell night instead of two: the season grows.
+    // One on each of the first two bombshell nights instead of two: the season grows.
     const second = before.filter(e => e.moment === 'bombshell')[1].ep;
+    pmSetArrivals(firstBomb, '1');
     pmSetArrivals(second, '1');
     const after = perfectMatchEpisodes();
     expect(after.length).toBeGreaterThan(before.length);

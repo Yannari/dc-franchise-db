@@ -221,9 +221,13 @@ export function dumpingScene(state, rng, { atRisk = [], dumped, ballots = [], ch
     if (!p || dumped.includes(p)) continue;
     breakHeart(state, p, n, 5 * romance(p, n) / 10);
     ev('dump-reaction', [p, n], { [p]: { approval: 0.8 * Math.max(0, getBond(p, n)) / 10 + 0.3, fame: 1.5 } });
-    const solidarity = (romance(p, n) / 10) ** 2 * (state.profiles[p].stats.loyalty / 10)
-      * (0.3 + 0.7 * closedness(state, p, n));
-    if (rng() < solidarity * 0.5) {
+    // Only for someone in it: a small share of those, and more the more in love,
+    // loyal and closed off they are.
+    const solidarity = romance(p, n) < 3.5 ? 0 : 0.1 + 0.3 * (romance(p, n) / 10) ** 2 * (state.profiles[p].stats.loyalty / 10)
+      * (0.4 + 0.6 * closedness(state, p, n));
+    // Most stay; a few walk out with them (Uma left with Wil's dumping, UK 11
+    // d37). At half this, it was once in 30 seasons.
+    if (rng() < solidarity) {
       solidarityWalk.push(p);
       ev('solidarity', [p, n], { [p]: { approval: 2.5, fame: 2 } }, [p]);
     }
@@ -301,10 +305,19 @@ function recoupleBuildUp(state, { picker, stake, final }) {
   return out;
 }
 
+// WHO CHOOSES. The smaller side picks, so whoever is left standing comes
+// from the bigger one — the wiki's notes, every time: UK 9 d5 girls chose and
+// David was the boy not picked; d16 the boys chose and Zara was left; UK 10
+// d5 girls chose, George left; UK 11 d5 boys chose, Mimii left. Only when the
+// sides are level does it take turns (user: "shouldn't it be a girl
+// elimination, we've got more girls than boys — how are the ones picking the
+// ones eliminated?").
 function pickerGender(state) {
-  const g = state.recouplings % 2 === 0 ? 'm' : 'f';
+  const room = state.villa.filter(n => !(state.split && state.casa?.includes(n)));
+  const f = room.filter(n => state.profiles[n]?.gender === 'f').length, m = room.filter(n => state.profiles[n]?.gender === 'm').length;
+  const turn = state.recouplings % 2 === 0 ? 'm' : 'f';
   state.recouplings++;
-  return g;
+  return f === m ? turn : f < m ? 'f' : 'm';
 }
 
 function recoupleNight(state, rng, { dumpSingles, pace = 1.5, votesAhead = 0, all = false }) {

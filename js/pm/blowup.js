@@ -61,6 +61,10 @@ function grievances(state, tonight = []) {
     if (e.kind === 'argument') { add(p[0], p[1], 0.35 * fade, 'history'); add(p[1], p[0], 0.35 * fade, 'history'); }
     // Two after the same one: the rivals of a love triangle.
     if (e.kind === 'triangle-rivals') { add(p[0], p[1], 1.6 * fade, 'jealousy'); add(p[1], p[0], 1.6 * fade, 'jealousy'); }
+    // …and the rivals of pm/rivalry.js: shade stings the one it was about, a row both.
+    if (e.kind === 'rival-shade') add(p[1], p[0], 1.4 * fade, 'jealousy');
+    if (e.kind === 'rival-row' && e.extra?.of === 'row') { add(p[0], p[1], 1.6 * fade, 'jealousy'); add(p[1], p[0], 1.6 * fade, 'jealousy'); }
+    if (e.kind === 'code-call') add(p[2], p[1], 1.2 * fade, 'jealousy');
   }
   // Jealousy of a rival is a grievance of its own: the one who has been
   // eyeing their partner, whatever the record says.

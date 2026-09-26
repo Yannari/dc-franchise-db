@@ -31,6 +31,7 @@ import { MORE_D } from './lines/day/more-d.js';
 import { MORE_E } from './lines/day/more-e.js';
 import { JOURNEY_LINES, JOURNEY_MORE, JOURNEY_SHAPES } from './lines/journey.js';
 import { KIN_LINES } from './lines/kin.js';
+import { RIVALRY_LINES } from './lines/rivalry.js';
 import { FIREPIT_LINES } from './lines/firepit.js';
 import { HIDEAWAY_LINES } from './lines/hideaway.js';
 import { HEAT_LINES } from './lines/day/heat.js';
@@ -48,6 +49,7 @@ for (const [k, v] of Object.entries(JOURNEY_MORE)) POOLS[k] = [...(POOLS[k] || [
 for (const [k, v] of Object.entries(JOURNEY_SHAPES)) POOLS[k] = [...(POOLS[k] || []), ...v];
 // The islanders who knew each other before the villa (lines/kin.js).
 for (const [k, v] of Object.entries(KIN_LINES)) POOLS[k] = [...(POOLS[k] || []), ...v];
+for (const [k, v] of Object.entries(RIVALRY_LINES)) POOLS[k] = [...(POOLS[k] || []), ...v];
 // The night before a dumping's verdict (lines/firepit.js).
 for (const [k, v] of Object.entries(FIREPIT_LINES)) POOLS[k] = [...(POOLS[k] || []), ...v];
 // The Hideaway night (lines/hideaway.js).

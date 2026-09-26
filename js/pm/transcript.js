@@ -16,7 +16,7 @@ import { roundExits, PERFECT_MATCH_FORMAT } from '../shows.js';
 
 const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-export const PM_PHASE_LABEL = { arrival: 'The arrivals', 'arrival-2': 'The arrivals', coupling: 'The first coupling', debrief: 'The debrief', cinema: 'Movie Night', blowup: 'It kicks off', breakdown: 'It all gets too much', triangle: 'The love triangle',
+export const PM_PHASE_LABEL = { arrival: 'The arrivals', 'arrival-2': 'The arrivals', coupling: 'The first coupling', debrief: 'The debrief', cinema: 'Movie Night', blowup: 'It kicks off', breakdown: 'It all gets too much', triangle: 'The love triangle', rivals: 'Wanting the same one',
   morning: 'Morning', day: 'The day', event: 'The challenge', evening: 'Evening',
   firepit: 'The fire pit', dumping: 'The dumping', reunion: 'The reunion', 'final-date': 'The final dates', final: 'The final vote' };
 export const PM_MOMENT_TITLE = { 'first-coupling': 'The first coupling', bombshell: 'A bombshell arrives',
@@ -107,7 +107,7 @@ export function phasesOf(row) {
   // head turned) are built after the whole day, from how it left everyone,
   // and carry the part of the day they happen in — listed as they were built
   // they would open a second "The day" after the evening.
-  const ORDER = { arrival: -2, 'arrival-2': -1.5, coupling: -1, debrief: -0.5, morning: 0, day: 1, challenge: 1.5, event: 2, evening: 3, cinema: 3.5, triangle: 3.7, blowup: 3.8, breakdown: 3.9 };
+  const ORDER = { arrival: -2, 'arrival-2': -1.5, coupling: -1, debrief: -0.5, morning: 0, day: 1, challenge: 1.5, event: 2, evening: 3, cinema: 3.5, triangle: 3.7, rivals: 3.75, blowup: 3.8, breakdown: 3.9 };
   const villa = events.slice(0, from).map((e, i) => [e, i])
     .sort((x, y) => ((ORDER[x[0].phase] ?? 4) - (ORDER[y[0].phase] ?? 4)) || x[1] - y[1]).map(([e]) => e);
   // The named challenge's screen carries its name (Couple Goals, the talent show).

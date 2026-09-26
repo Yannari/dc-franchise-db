@@ -21,6 +21,7 @@ import { secondChances } from './exes.js';
 import { blowups } from './blowup.js';
 import { breakdowns } from './breakdown.js';
 import { triangles } from './triangle.js';
+import { rivalries } from './rivalry.js';
 import { streamFor } from '../dr/rng.js';
 import { kissRound, roundSize } from './kiss-round.js';
 
@@ -330,6 +331,9 @@ export function runVillaDay(state, rng, entry) {
   // The love triangles (pm/triangle.js), each a story over episodes — on
   // their own dice, before the fights (a rivalry can boil over tonight).
   out.push(...triangles(state, streamFor(state.seed ?? 1, `triangle:${state.ep}${state.epSalt || ''}`), entry));
+  // …and the rivalries and crushes nobody returns (pm/rivalry.js), each
+  // played by the islanders' own personalities. Own dice too.
+  out.push(...rivalries(state, streamFor(state.seed ?? 1, `rival:${state.ep}${state.epSalt || ''}`), entry));
   // When it kicks off (pm/blowup.js): after the night's reveals — Movie Night
   // included — never before them.
   out.push(...blowups(state, rng, entry, out));

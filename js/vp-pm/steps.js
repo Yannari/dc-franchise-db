@@ -48,6 +48,8 @@ export const KIND_LABEL = {
   breakdown: 'It all gets too much', comfort: 'Someone comes', 'no-show': 'Where were you?',
   'triangle-torn': 'Torn', 'triangle-rivals': 'The rivals', 'triangle-case': 'Making the case', 'triangle-ultimatum': 'Choose',
   'triangle-teams': 'Pick a side', 'triangle-choice': 'The choice',
+  'rival-shade': 'The shade', 'rival-play': 'Making a move', 'code-call': 'The code', 'rival-row': 'Face to face', 'rival-step-back': 'Stepping back', 'rival-won': 'The winner',
+  'crush-confide': 'The crush', 'crush-watch': 'Watching', 'crush-move': 'Going for it', 'crush-plea': 'A bit more', 'crush-over': 'Letting go',
   'lie-write': 'The questions', 'lie-question': 'The Lie Detector', 'lie-row': 'After the test',
   'blow-slip': 'A slip', 'blow-dare': 'The dare', 'lip-race': 'Lip Service', 'lip-watch': 'Watching', 'tower-q': 'Tower of Truths',
   'course-run': 'The course', 'course-pick': 'The rescue', 'course-win': 'The winner', 'blind-run': 'Blindfolded',
@@ -93,7 +95,7 @@ export function bgFor(row, phase) {
   if (phase === 'evening' || phase === 'debrief') return 'terrace';
   if (phase === 'cinema') return 'cinema';
   if (phase === 'breakdown') return 'night';
-  if (phase === 'triangle') return 'terrace';
+  if (phase === 'triangle' || phase === 'rivals') return 'terrace';
   return 'day';
 }
 
@@ -238,6 +240,7 @@ function fxFor(row, e, first) {
   // the one in the middle's pull to each (stage.js).
   if (k.startsWith('triangle-') && e.extra?.tri) fx.triangle = { ...e.extra.tri, teams: e.extra.teams || null, won: k === 'triangle-choice' ? e.players[1] : null };
   if (k === 'triangle-rivals' && e.extra?.of === 'clash') fx.shake = true;
+  if ((k === 'rival-row' && e.extra?.of === 'row') || k === 'code-call') fx.shake = true;
   if (k === 'triangle-choice' && e.extra?.of === 'pick') fx.neon = ['The choice', '#ff2e88'];
   if (k === 'lie-question' && first) fx.neon = ['Lie Detector', '#22d3ee'];
   if (k === 'lie-row') { fx.shake = e.extra?.of === 'own-it'; }

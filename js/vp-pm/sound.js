@@ -216,8 +216,9 @@ const SITUATION = {
     'final-date', 'journey-open', 'journey-clip', 'journey-react', 'journey-end', 'casa-miss', 'hideaway-win', 'game-kiss'],
   cheating: ['photos', 'head-turned', 'bed-share'],
   drama: ['argument', 'blowup', 'pile-in', 'villa-divided', 'jealous-confront', 'jealous-retaliate', 'cold-shoulder',
-    'casa-row', 'photo-row', 'movie-row', 'lie-row', 'triangle-rivals', 'triangle-ultimatum', 'apology-rejected', 'kin-protect'],
-  cry: ['casa-goodbye', 'breakdown', 'comfort', 'dump-reaction', 'photo-split', 'movie-split', 'torch', 'ask-declined', 'jealous-sulk'],
+    'casa-row', 'photo-row', 'movie-row', 'lie-row', 'triangle-rivals', 'triangle-ultimatum', 'apology-rejected', 'kin-protect',
+    'rival-shade', 'rival-row', 'code-call', 'rival-won', 'crush-watch'],
+  cry: ['crush-move', 'crush-over', 'crush-plea', 'casa-goodbye', 'breakdown', 'comfort', 'dump-reaction', 'photo-split', 'movie-split', 'torch', 'ask-declined', 'jealous-sulk'],
   // The dumped saying goodbye, and anyone walking out.
   goodbye: ['dump-goodbye', 'walk', 'solidarity', 'kin-goodbye', 'kin-walk'],
   comedy: ['comedy', 'blow-dare', 'blow-slip', 'baby-doll', 'talent-act'],

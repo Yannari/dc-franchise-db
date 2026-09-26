@@ -172,6 +172,13 @@ const POPS = {
 const HURT_STYLES = new Set(['red']);
 // A pop only where the scene did the thing: a receipt that read out "falling
 // for you" exposed nobody.
+// A pull's pop says how hot it ran (events.js pull `heat`).
+const PULL_POPS = {
+  steamy: [[0, 'Sparks', 'gold', 'spark'], [1, 'Sparks', 'gold', 'spark']],
+  'one-sided': [[1, 'Not feeling it', 'down', 'crack']],
+  light: [[1, 'Just friendly', 'teal', 'star']],
+  cold: [[1, 'Not interested', 'down', 'crack']],
+};
 const POPS_WHEN = { 'first-look': e => e.extra?.of === 'spark', 'ex-confront': e => e.extra?.of === 'spark', 'kin-vet': e => e.extra?.of === 'approve', 'ex-awkward': e => e.extra?.of === 'spark',
   // A kiss that fell flat moved nothing up worth a chip.
   icebreaker: e => e.extra?.choice === 'spark', 'lady-luck-kiss': e => e.extra?.choice === 'spark', receipt: e => ['secret', 'pull', 'head-turned'].includes(e.extra?.of),
@@ -302,7 +309,7 @@ export function sceneSteps(row, e, evIndex, bg) {
   const host = words().host, narrator = words().narratorName;
   const s = e.script || { lines: [] };
   const lines = s.lines || [];
-  const pops = (POPS_WHEN[e.kind]?.(e) === false ? [] : POPS[e.kind] || []).map(([slot, t, style, icon]) => [e.players[slot], t, style, icon]).filter(p => p[0]);
+  const pops = (POPS_WHEN[e.kind]?.(e) === false ? [] : (e.kind === 'pull' && PULL_POPS[e.extra?.heat]) || POPS[e.kind] || []).map(([slot, t, style, icon]) => [e.players[slot], t, style, icon]).filter(p => p[0]);
   const hurt = new Set(pops.filter(p => HURT_STYLES.has(p[2])).map(p => p[0]));
   // The situation the scene is, for its music (vp-pm/sound.js); null plays in silence.
   const base = { ev: evIndex, kind: e.kind, music: musicOf(e), raw: !e.aired, headline: KIND_LABEL[e.kind] || null,

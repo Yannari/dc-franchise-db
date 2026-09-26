@@ -199,14 +199,25 @@ export const KINDS = {
       // the engine recorded a flirtation, and gossip later called it one.
       const rebuffed = rng() < Math.max(0, Math.min(0.7, 0.7 - 0.175 * (attr(s, b, a) ?? 0)));
       ev.extra.rebuffed = rebuffed;
+      // HOW HOT IT RUNS (user: "how flirty are the chats — steamy, one-sided,
+      // light? it should depend"): from how much each of them fancies the
+      // other, no dice. One-sided: a is far keener, b humours it. Light:
+      // neither is much into it. Steamy: both are. Flirty is everything else.
+      const aa = attr(s, a, b) ?? 0, bb = attr(s, b, a) ?? 0;
+      // Bands from the villa's own attractions (measured over ten seasons of
+      // pulls: mutual attraction median 3.2, 90th percentile 4.9), so light
+      // is about the bottom quarter, steamy the top tenth, flirty the middle.
+      const heat = rebuffed ? 'cold' : aa - bb >= 2.5 && bb < 3 ? 'one-sided' : (aa + bb) / 2 >= 5 ? 'steamy' : (aa + bb) / 2 < 2.4 ? 'light' : 'flirty';
+      ev.extra.heat = heat;
+      const H = { cold: 0, 'one-sided': 0.3, light: 0.5, flirty: 1, steamy: 1.5 }[heat];
       if (rebuffed) nudgeAttraction(s, a, b, -0.1);
-      else { nudgeAttraction(s, b, a, 0.3 * S(s, a).social / 10); nudgeAttraction(s, a, b, 0.1); }
+      else { nudgeAttraction(s, b, a, H * 0.3 * S(s, a).social / 10); nudgeAttraction(s, a, b, heat === 'one-sided' ? 0.2 : H * 0.1); }
       addBond(a, b, rebuffed ? -0.1 : 0.3);
       // A pull that goes further (user: "pull shouldn't be the only thing
       // creating secrets — a kiss…"): both have to fancy it, and the one who
       // pulled is held back by their own loyalty and how closed-off they are.
       const pa = partnerOf(s, a);
-      const kissed = !rebuffed && rng() < light * 0.35 * ((attr(s, a, b) ?? 0) / 10) * ((attr(s, b, a) ?? 0) / 10)
+      const kissed = !rebuffed && rng() < light * 0.35 * { 'one-sided': 0.2, light: 0.3, flirty: 1, steamy: 1.6 }[heat] * ((attr(s, a, b) ?? 0) / 10) * ((attr(s, b, a) ?? 0) / 10)
         * (1 - 0.6 * S(s, a).loyalty / 10) * (1 - 0.4 * (pa ? closedness(s, a, pa) : 0));
       ev.extra.kissed = kissed;
       if (kissed) { nudgeAttraction(s, a, b, 0.4); nudgeAttraction(s, b, a, 0.4); }
@@ -217,13 +228,19 @@ export const KINDS = {
         * (1 - 0.6 * S(s, a).loyalty / 10);
       ev.extra.promised = promised;
       const weight = kissed ? 1.3 : promised ? 1.15 : 1;
+      // How much it is a secret follows how hot it ran: a light chat is
+      // barely one, a steamy one is; one-sided, it is mostly a's, and a pull
+      // b turned down is half a secret for a (it was a full one).
+      const heatSev = kissed || promised ? 1 : { cold: 0.5, 'one-sided': 0.6, light: 0.4, flirty: 1, steamy: 1.4 }[heat];
+      const bShare = heat === 'one-sided' && !kissed ? 0.3 : 0.7;
+      const seenBy = heat === 'steamy' ? 0.4 : heat === 'light' ? 0.15 : 0.25;
       // Only a pull b went along with is b's secret; a made the move either way.
-      for (const [x, y, sev0] of rebuffed ? [[a, b, 1]] : [[a, b, 1], [b, a, 0.7]]) {
-        const sev = sev0 * weight;
+      for (const [x, y, sev0] of rebuffed ? [[a, b, 1]] : [[a, b, 1], [b, a, bShare]]) {
+        const sev = sev0 * weight * heatSev;
         const p = partnerOf(s, x);
         if (!p || p === y) continue;
         const witnesses = roomMates(s, x).filter(n => n !== y && n !== p)
-          .filter(() => rng() < 0.25);
+          .filter(() => rng() < seenBy);
         const secret = { id: `sec${s.secrets.length + 1}`, who: x, partner: p, with: y, kind: kissed ? 'kiss' : promised && x === a ? 'promise' : 'pull',
           severity: sev * light, ep: s.ep, witnesses, known: false, eventId: ev.id, casa: s.split };
         s.secrets.push(secret);

@@ -120,7 +120,7 @@ export function roadOf(state, a, b) {
   let tests = 0;
   for (const s of state.secrets || []) {
     if (!((s.who === a && s.partner === b) || (s.who === b && s.partner === a)) || s.said || !s.kind || s.ep < since) continue;
-    tests += s.kind === 'pull' ? (s.known ? 0.15 : 0.05) : (s.known ? 2.5 : 0.8);
+    tests += s.kind === 'pull' ? (s.known ? 0.15 : 0.05) * (s.severity ?? 1) : (s.known ? 2.5 : 0.8);
   }
   score += Math.min(6, tests);
   const atRisk = after.filter(e => (e.kind === 'dump-buildup' || e.kind === 'dump-at-risk') && both(e, a, b)).length;

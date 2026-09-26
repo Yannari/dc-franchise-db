@@ -231,6 +231,25 @@ export function buildSchedule({ bombshells = BASE_BOMBSHELLS, casa = 6, episodes
     return true;
   };
 
+  // The recouplings the real show never goes without (UK 9-12, Wikipedia's
+  // coupling tables). The FIRST exit is the islander left single at a
+  // recoupling (UK 9 d5, UK 10 d5, UK 11 d5, UK 12 d4), never a couple the
+  // public voted out — so the recoupling before the first vote stays. And a
+  // dumping is followed by a recoupling (UK 11: d9 -> d10, d18 -> d19,
+  // d29 -> d31, d32 -> d34, d37 -> d38): the villa re-pairs whoever the vote
+  // left single. Only the couples-only week goes without one. User: "3
+  // episodes and no recoupling … dumping couples when you never had a
+  // recoupling is really dumb". Both cutters below keep them: the small
+  // cast's pacing, and the author's own length (at 16 episodes a 22-islander
+  // season went first coupling, bombshell, vote — "it still says ep3, 2
+  // dumped at the vote").
+  const DUMPS = new Set(['first-coupling', 'recoupling', 'public-vote', 'stick-or-twist']);
+  const prevDump = i => { for (let j = i - 1; j >= 0; j--) if (DUMPS.has(out[j].moment)) return out[j]; return null; };
+  const nextDump = i => { for (let j = i + 1; j < out.length; j++) if (DUMPS.has(out[j].moment)) return out[j]; return null; };
+  const kept = (w, i) => w.moment === 'recoupling' && (
+    (prevDump(i)?.moment === 'public-vote' && !prevDump(i).coupled)
+    || (prevDump(i)?.moment === 'first-coupling' && nextDump(i)?.slot === 'vote1'));
+
   // A SMALL CAST'S LENGTH (user: "fix the pacing for small casts"). The
   // weeks follow the bombshells, but the islanders to LOSE follow the whole
   // cast: at 14 the season had eleven nights to lose six on, and every season
@@ -248,22 +267,6 @@ export function buildSchedule({ bombshells = BASE_BOMBSHELLS, casa = 6, episodes
     const lose = () => starters + bombshells + casa - 2 * FINAL_COUPLES - Math.round(casa * 0.65) - 2 * out.filter(w => w.coupled).length;
     const takes = w => (w.coupled || w.finalRecoupling ? 0 : w.moment === 'public-vote' ? 2 : w.moment === 'recoupling' ? 1 : 0);
     const over = () => out.reduce((t, w) => t + takes(w), 0) * 0.6 > Math.max(1, lose());
-    // The recouplings the real show never goes without (UK 9-12, Wikipedia's
-    // coupling tables). The FIRST exit is the islander left single at a
-    // recoupling (UK 9 d5, UK 10 d5, UK 11 d5, UK 12 d4), never a couple the
-    // public voted out — so the recoupling before the first vote stays. And a
-    // dumping is followed by a recoupling (UK 11: d9 -> d10, d18 -> d19,
-    // d29 -> d31, d32 -> d34, d37 -> d38): the villa re-pairs whoever the vote
-    // left single. Only the couples-only week goes without one. User: "3
-    // episodes and no recoupling … dumping couples when you never had a
-    // recoupling is really dumb" — at 16 islanders every recoupling before the
-    // final one was cut, and a couple went home in episode 3.
-    const DUMPS = new Set(['first-coupling', 'recoupling', 'public-vote', 'stick-or-twist']);
-    const prevDump = i => { for (let j = i - 1; j >= 0; j--) if (DUMPS.has(out[j].moment)) return out[j]; return null; };
-    const nextDump = i => { for (let j = i + 1; j < out.length; j++) if (DUMPS.has(out[j].moment)) return out[j]; return null; };
-    const kept = (w, i) => w.moment === 'recoupling' && (
-      (prevDump(i)?.moment === 'public-vote' && !prevDump(i).coupled)
-      || (prevDump(i)?.moment === 'first-coupling' && nextDump(i)?.slot === 'vote1'));
     const dumping = (w, i) => (w.moment === 'recoupling' || w.moment === 'public-vote') && !kept(w, i);
     // Only dumping weeks go: the bombshell nights keep the arrivals spread
     // through the season (cutting them sent seven bombshells in at the final
@@ -304,7 +307,7 @@ export function buildSchedule({ bombshells = BASE_BOMBSHELLS, casa = 6, episodes
     const pre = out.filter(w => w.quiet).length % 2 === 0 || casa === 0;
     insertWeek(out, { moment: 'recoupling', quiet: true }, pre);
   }
-  while (target && out.length > target) if (!cutOne()) break;
+  while (target && out.length > target) if (!cutOne((w, i) => !kept(w, i))) break;
 
   // Number them, and give them days: two for the first night and the Casa
   // recoupling, three for the rest; the reunion has none. These are the
@@ -335,9 +338,13 @@ export function buildSchedule({ bombshells = BASE_BOMBSHELLS, casa = 6, episodes
   });
 }
 
-/** The shortest season the spine allows. */
+/**
+ * The shortest season the spine allows: the fixed nights, and the three
+ * recouplings a season is never cut below (before the first vote, after it,
+ * and after the second — see `kept` in buildSchedule).
+ */
 export function minimumEpisodes(casa = 6) {
-  return baseWeeks(casa).filter(w => w.fixed).length;
+  return baseWeeks(casa).filter(w => w.fixed).length + 3;
 }
 
 // ── HOW EACH DUMPING PLAYS (Plan 4.5) ─────────────────────────────────

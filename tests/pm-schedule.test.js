@@ -43,7 +43,9 @@ describe('the builder', () => {
     }
   });
   it("the author's length is kept, within the spine's minimum", () => {
-    for (const episodes of [13, 14, 20, 27]) expect(buildSchedule({ bombshells: 6, casa: 6, episodes }).length).toBe(episodes);
+    // The minimum counts the recouplings a season is never cut below (before
+    // the first vote, after each vote): 16 with Casa Amor, not 13.
+    for (const episodes of [16, 17, 20, 27]) expect(buildSchedule({ bombshells: 6, casa: 6, episodes }).length).toBe(episodes);
     expect(buildSchedule({ bombshells: 6, casa: 6, episodes: 3 }).length).toBe(minimumEpisodes(6));
   });
   it('a bigger cast makes a longer season, a smaller one a shorter', () => {

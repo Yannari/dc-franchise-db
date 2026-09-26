@@ -68,7 +68,13 @@ export function villaDumping(state, { format, bottom, rng }) {
   // cross-gender: each side votes one of the other side's at-risk islanders.
   const dumped = [], ballots = [];
   for (const side of ['f', 'm']) {
-    const targets = atRisk.filter(n => g(n) !== side);
+    // Never both halves of one couple: the second side votes from the others
+    // at risk, not the partner of the one the first side just sent home (user:
+    // "still getting a couple dumped … the first dump" — at 18-20 islanders
+    // half the first votes took a whole couple this way).
+    const gone = dumped.map(n => partnerOf(state, n)).filter(Boolean);
+    const all = atRisk.filter(n => g(n) !== side);
+    const targets = all.filter(n => !gone.includes(n)).length ? all.filter(n => !gone.includes(n)) : all;
     const sideVoters = voters.filter(v => g(v) === side);
     if (!targets.length || !sideVoters.length) continue;
     const mine = sideVoters.map(v => ({ voter: v, channel: 'villa',

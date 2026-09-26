@@ -23,7 +23,7 @@ import { isTraitorsSeason, simulateTraitorsEpisode, rerunTraitorsEpisode,
   lastTraitorsRerunRefusal } from './tr-run.js';
 import { isPerfectMatchSeason, simulatePerfectMatchEpisode, perfectMatchCanRerun,
   lastPerfectMatchRefusal, rerunPerfectMatchEpisode, perfectMatchPendingChange, perfectMatchSeasonShape,
-  perfectMatchSlots, perfectMatchVillaCounts, perfectMatchEpisodes, perfectMatchNights, perfectMatchDrawnChallenges } from './pm-run.js';
+  perfectMatchSlots, perfectMatchVillaCounts, perfectMatchEpisodes, perfectMatchNights, perfectMatchDrawnChallenges, perfectMatchDrawnNights } from './pm-run.js';
 import { EPISODE_WORDS as PM_EPISODE_WORDS, SLOT_NAMES as PM_SLOT_NAMES, seasonSchedule as pmDrawSchedule, CHALLENGE_NAMES as PM_CHALLENGE_NAMES, RITUAL_NAMES as PM_RITUAL_NAMES, CHALLENGE_NIGHTS as PM_CHALLENGE_NIGHTS } from './pm/schedule.js';
 import { episodeText as pmEpisodeText, momentTitle as pmMomentTitle } from './pm/transcript.js';
 import { isDragSeason, simulateDragEpisode, invalidateDragQueue,
@@ -2047,6 +2047,28 @@ export function pmSetArrivals(ep, value) {
   renderTimeline();
 }
 
+/**
+ * The villa tile's twist pickers (user: "do both as twists … and fix the fact
+ * that nothing tells me this"): how a vote night's dumping plays, how a
+ * bombshell night's arrivals play, and a return on a recoupling. `group` is
+ * which: 'dump', 'arrive' or 'return'; `type` a TWIST_CATALOG id, or '' for
+ * the night's own draw. Whatever the tile books replaces what it booked before.
+ */
+const _PM_TWIST_GROUPS = {
+  dump: t => !!t.pmFormat,
+  arrive: t => t.category === 'arrivals' && !!t.pmApply,
+  return: t => t.category === 'returns' && !!t.pmApply,
+};
+export function pmSetTwist(ep, group, type) {
+  const inGroup = _PM_TWIST_GROUPS[group];
+  if (!inGroup) return;
+  const ids = new Set(TWIST_CATALOG.filter(t => t.format === 'perfect-match' && inGroup(t)).map(t => t.id));
+  seasonConfig.twistSchedule = (seasonConfig.twistSchedule || []).filter(b => !(b && Number(b.episode) === Number(ep) && ids.has(b.type)));
+  if (type && ids.has(type)) seasonConfig.twistSchedule.push({ id: `tw-${Date.now()}-${ep}`, episode: Number(ep), type });
+  localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
+  renderTimeline();
+}
+
 /** The villa tile's challenge picker: '' as drawn, 'random', an id, or 'none'. */
 export function pmSetChallenge(ep, value) {
   // The cards that book a villa challenge say so themselves (pmApply.challenge).
@@ -3908,6 +3930,7 @@ export function renderTimeline() {
   // the season the badge counts — a still number said nothing about either.
   const _pmNights = _pmEps ? perfectMatchNights() : null;
   const _pmDrawnGames = _pmEps ? perfectMatchDrawnChallenges() : null;
+  const _pmDrawnNights = _pmEps ? perfectMatchDrawnNights() : null;
 
   let html = '';
   epMap.forEach(({ ep, active, phase }) => {
@@ -4357,6 +4380,38 @@ export function renderTimeline() {
           ${Object.entries(PM_CHALLENGE_NAMES).map(([id, n]) => opt(id, n)).join('')}${opt('none', 'No challenge')}
         </select></label>`;
     }
+    // How the night plays, and that it can be changed (user: "nothing tells
+    // me this"): the dumping format on a vote, the arrival rule on a bombshell
+    // night, a return on a recoupling — each "as drawn" until you pick.
+    let _pmTwistPick = '';
+    if (_pmEp) {
+      const drawnE = _pmDrawnNights?.get(ep);
+      const pmCat = TWIST_CATALOG.filter(t => t.format === 'perfect-match');
+      const pickRow = (group, label, color, options, drawnName) => {
+        const inGroup = _PM_TWIST_GROUPS[group];
+        const cur = twists.find(t => { const c = pmCat.find(k => k.id === t.type); return c && inGroup(c); })?.type || '';
+        const opt = (v, n) => `<option value="${v}" ${v === cur ? 'selected' : ''}>${_hubEsc(n)}</option>`;
+        return `<label onclick="event.stopPropagation()" title="Change how this night plays. Leave it as drawn and the season picks, the way the real show does." style="display:flex;align-items:center;gap:6px;flex:1 1 100%;min-width:0;color:${color};font-weight:700">${label}
+          <select onchange="event.stopPropagation();pmSetTwist(${ep},'${group}',this.value)" onclick="event.stopPropagation()" style="flex:1 1 0;min-width:0;width:100%;font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid ${color}66;border-radius:3px;padding:1px 2px;text-overflow:ellipsis">
+            ${opt('', drawnName)}${options.map(t => opt(t.id, t.name)).join('')}
+          </select></label>`;
+      };
+      if (_pmEp.slot) {
+        const opts = pmCat.filter(t => t.pmFormat && (t.pmSlots || []).includes(_pmEp.slot));
+        const d = opts.find(t => t.pmFormat === drawnE?.dumpFormat);
+        if (opts.length) _pmTwistPick += pickRow('dump', 'Dumping', '#e0467c', opts, d ? `As drawn: ${d.name}` : 'As drawn (when the season starts)');
+      }
+      if (_pmEp.moment === 'bombshell') {
+        const opts = pmCat.filter(t => t.category === 'arrivals' && t.pmApply && (t.pmOn || []).includes('bombshell'));
+        const d = drawnE && opts.find(t => (drawnE.arrivalRule ? t.pmApply.arrivalRule === drawnE.arrivalRule : t.pmApply.arrivalRule === 'dates') || (drawnE.oneOff && t.pmApply.oneOff === drawnE.oneOff));
+        _pmTwistPick += pickRow('arrive', 'Arrivals', '#f59e0b', opts, d ? `As drawn: ${d.name}` : 'As drawn (when the season starts)');
+      }
+      if (_pmEp.moment === 'recoupling' && !_pmEp.finalRecoupling) {
+        const opts = pmCat.filter(t => t.category === 'returns' && t.pmApply && (t.pmOn || []).includes('recoupling'));
+        const d = drawnE?.oneOff && opts.find(t => t.pmApply.oneOff === drawnE.oneOff && (!t.pmApply.scDecider || !drawnE.scDecider || t.pmApply.scDecider === drawnE.scDecider));
+        _pmTwistPick += pickRow('return', 'Returns', '#a78bfa', opts, d ? `As drawn: ${d.name}` : drawnE ? 'As drawn: nobody comes back' : 'As drawn (when the season starts)');
+      }
+    }
     // How many walk in tonight: the season's own, or the author's (1 to 4).
     let _pmCount = '';
     if (_pmEp?.moment === 'bombshell') {
@@ -4370,10 +4425,11 @@ export function renderTimeline() {
           ${opt('', `As scheduled: ${auto}`)}${[1, 2, 3, 4].map(n => opt(n, `${n} — ${WORD[n]}`)).join('')}
         </select></label>`;
     }
-    const villaRow = _pmEp && (_pmArr || _pmDraws || _pmLeft.length || _pmGame || _pmCount)
+    const villaRow = _pmEp && (_pmArr || _pmDraws || _pmLeft.length || _pmGame || _pmCount || _pmTwistPick)
       ? `<div class="fd-ep-comps" style="display:flex;gap:6px;flex-wrap:wrap;min-width:0;margin-top:5px;padding-top:5px;border-top:1px solid rgba(224,70,124,0.18);font-size:10.5px;color:var(--muted,#7d8590)">
           ${_pmArr ? `<span style="color:#f59e0b;font-weight:700">+${_pmArr} arriving</span>` : ''}
           ${_pmCount}
+          ${_pmTwistPick}
           ${_pmLeft.map(s => `<span style="color:#e0467c;font-weight:700">${_hubEsc(s)}</span>`).join('')}
           ${_pmGame}
           ${_pmEp.slot ? `<span>${_hubEsc(PM_SLOT_NAMES[_pmEp.slot] || 'an extra public vote')}${_pmBooked ? '' : ' · drawn at random'}</span>`

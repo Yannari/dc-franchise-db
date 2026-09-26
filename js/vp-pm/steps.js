@@ -57,6 +57,7 @@ export const KIND_LABEL = {
   'redeem-reflect': 'Looking back', 'redeem-act': 'Saying sorry', 'redeem-doubt': 'For the cameras?', 'grass-talk': 'The one who tells', 'grass-frozen': 'Gone quiet', 'grass-confront': 'You told them',
   'parents-named': 'Mum and Dad', 'parents-advice': 'Ask Mum and Dad', 'parents-mediate': 'Stepping in', 'parents-wobble': 'Even Mum and Dad', 'exw-stir': 'The ex is back', 'exw-partner': 'Should I be worried?', 'exw-talk': 'The talk', 'exw-back': 'A second chance', 'vote-fallout': 'The morning after', 'vote-callout': 'You voted for me', 'grudge-cold': 'The cold shoulder', 'grudge-clash': 'Still angry', 'grudge-end': 'The grudge',
   'visit-arrive': 'Look who is back', 'visit-confront': 'Face to face', 'visit-leave': 'Gone again',
+  'sc-arrive': 'The second chance', 'sc-rules': 'How it works', 'sc-vote': 'The vote', 'sc-stay': 'Back in the villa', 'sc-leave': 'Going home again',
   'lie-write': 'The questions', 'lie-question': 'The Lie Detector', 'lie-row': 'After the test',
   'blow-slip': 'A slip', 'blow-dare': 'The dare', 'lip-race': 'Lip Service', 'lip-watch': 'Watching', 'tower-q': 'Tower of Truths',
   'course-run': 'The course', 'course-pick': 'The rescue', 'course-win': 'The winner', 'blind-run': 'Blindfolded',
@@ -261,6 +262,8 @@ function fxFor(row, e, first) {
   if (k === 'exw-back') fx.neon = ['A second chance', '#ff2e88'];
   if (k === 'vote-fallout' || k === 'grudge-clash') fx.shake = true;
   if (k === 'visit-arrive') { fx.shake = true; fx.neon = ['Look who is back', '#ef4444']; }
+  if (k === 'sc-arrive') { fx.shake = true; fx.neon = ['Second chance', '#ff2e88']; }
+  if (k === 'sc-stay') fx.neon = ['Back in the villa', '#ff2e88'];
   if (k === 'triangle-choice' && e.extra?.of === 'pick') fx.neon = ['The choice', '#ff2e88'];
   if (k === 'lie-question' && first) fx.neon = ['Lie Detector', '#22d3ee'];
   if (k === 'lie-row') { fx.shake = e.extra?.of === 'own-it'; }

@@ -674,7 +674,7 @@ export const KINDS = {
     'camp-rally', 'camp-confront', 'camp-clash', 'camp-lobby', 'camp-split', 'camp-switch', 'camp-after',
     'feud-confront', 'feud-interrupt', 'feud-shade', 'feud-ick', 'feud-closure',
     'game-plan', 'game-latch', 'game-two-faced', 'game-suspect', 'game-called', 'game-fallout', 'game-end',
-    'betray-see', 'betray-confront', 'betray-end', 'mugged-low', 'found-love', 'villa-happy', 'redeem-reflect', 'redeem-act', 'redeem-doubt', 'grass-talk', 'grass-frozen', 'grass-confront', 'parents-named', 'parents-advice', 'parents-mediate', 'parents-wobble', 'exw-stir', 'exw-partner', 'exw-talk', 'exw-back', 'vote-fallout', 'vote-callout', 'grudge-cold', 'grudge-clash', 'grudge-end', 'visit-arrive', 'visit-confront', 'visit-leave']
+    'betray-see', 'betray-confront', 'betray-end', 'mugged-low', 'found-love', 'villa-happy', 'redeem-reflect', 'redeem-act', 'redeem-doubt', 'grass-talk', 'grass-frozen', 'grass-confront', 'parents-named', 'parents-advice', 'parents-mediate', 'parents-wobble', 'exw-stir', 'exw-partner', 'exw-talk', 'exw-back', 'vote-fallout', 'vote-callout', 'grudge-cold', 'grudge-clash', 'grudge-end', 'visit-arrive', 'visit-confront', 'visit-leave', 'sc-arrive', 'sc-rules', 'sc-vote', 'sc-stay', 'sc-leave']
     .map(k => [k, { salience: 1, cast: () => null,
       apply: (s, ev) => ({ pop: ev.extra.pop || {}, major: ev.extra.majorPop || [] }) }])),
 };

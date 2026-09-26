@@ -26,7 +26,7 @@ import { proneness } from './breakdown.js';
 import { runVillaDay } from './villa-day.js';
 import { seasonSchedule, withPicks, withBookings, resolveRandomGames, buildSchedule, FINAL_COUPLES } from './schedule.js';
 import { MOMENTS, nightOneOpening } from './moments.js';
-import { returnIslander } from './arrivals.js';
+import { returnIslander, secondChance } from './arrivals.js';
 import { loadKin, seedKinAttraction, kinLabel } from './kin.js';
 
 function initState(cast, setup, seed) {
@@ -192,11 +192,14 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
     state.history.push(...vday);
     // A returning islander walks back in before the night's moment, so at a
     // recoupling they are a new arrival and choose first (pm/arrivals.js).
-    const back = entry.oneOff === 'return' ? returnIslander(state, { ep: entry.ep, seed, rng }) : null;
+    // …or several at once, and the public or the villa keeps one of each (the second chance).
+    // On its own dice, so a season without one plays exactly as it did.
+    const back = entry.oneOff === 'return' ? returnIslander(state, { ep: entry.ep, seed, rng })
+      : entry.oneOff === 'second-chance' ? secondChance(state, { ep: entry.ep, seed, rng: streamFor(seed, `second:${entry.ep}${state.epSalt}`), decider: entry.scDecider || null }) : null;
     // The villa as the night's moment finds it: the debrief reads what changed.
     const pre = { villa: [...state.villa], couples: state.couples.map(c => [...c]) };
     const m = MOMENTS[entry.moment](state, ctx);
-    if (back) { m.events = [...back.events, ...m.events]; m.extra = { ...(m.extra || {}), oneOff: 'return', returned: back.name }; }
+    if (back) { m.events = [...back.events, ...m.events]; m.extra = { ...(m.extra || {}), oneOff: entry.oneOff, returned: back.name || back.names?.join(', ') }; }
     // THE DEBRIEF after a big night (pm/debrief.js), on its own dice, so the
     // rest of the season plays exactly as it did without it.
     m.events.push(...nightDebrief(state, streamFor(seed, `debrief:${entry.ep}${state.epSalt}`), entry, pre, m));

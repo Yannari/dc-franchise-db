@@ -473,6 +473,71 @@ export function returnIslander(state, { ep, seed, rng }) {
 }
 
 /**
+ * THE SECOND CHANCE (user: "a second-chance night — several dumped islanders
+ * come back at once, and the public or the villa decides who stays, as the
+ * real show has done with returning islanders"). UK 10 and UK 12 brought
+ * dumped islanders back; UK 11's ex-islanders walked back in for a night.
+ * Up to four come back together, a boy and a girl at a time where the
+ * dumped allow; the decider is the booking's (`scDecider`: public or villa),
+ * or drawn. One of each side stays — the side the villa is short of first —
+ * and walks in as a new arrival (they choose first at the next recoupling,
+ * and their exes still here read it: pm/arcs.js); the rest go home again.
+ *   sc-arrive  [...]     they walk back in together
+ *   sc-rules   []        the host: who decides, and how many stay
+ *   sc-vote    [v, k]    an islander's vote to keep k (the villa decides)
+ *   sc-stay    [s]       s is back in the villa. `of`: public · villa
+ *   sc-leave   [l]       l goes home again
+ */
+export function secondChance(state, { ep, seed, rng, decider = null }) {
+  const firstIn = n => state.ledger.firstEp?.[n] ?? 0;
+  const gone = [...new Set((state.gone || []).map(x => x.name))]
+    .filter(n => !state.villa.includes(n) && state.gone.find(x => x.name === n).ep > firstIn(n));
+  if (gone.length < 2) return null;
+  const pub = n => readApproval(state.ledger, n);
+  const byG = g => gone.filter(n => state.profiles[n].gender === g).sort((a, b) => pub(b) - pub(a));
+  const back = [...byG('f').slice(0, 2), ...byG('m').slice(0, 2)];
+  if (back.length < 2) return null;
+  const who = decider || (rng() < 0.5 ? 'public' : 'villa');
+  const events = [];
+  const ev = (kind, players, extra = {}, major = []) => events.push(makeEvent(state, rng, { phase: 'event', kind, players, aired: true, major, extra: { pop: {}, ...extra } }));
+  ev('sc-arrive', back, { pop: Object.fromEntries(back.map(n => [n, { approval: 0.3, fame: 2 }])) }, back);
+  ev('sc-rules', [], { of: who });
+  // Keep one of each side where both came back; the side the villa is short of first.
+  const count = g => state.villa.filter(n => state.profiles[n].gender === g).length;
+  const sides = ['f', 'm'].filter(g => back.some(n => state.profiles[n].gender === g))
+    .sort((a, b) => count(a) - count(b));
+  const stay = [];
+  for (const g of sides) {
+    const cands = back.filter(n => state.profiles[n].gender === g);
+    if (who === 'public') { stay.push(cands.sort((a, b) => pub(b) - pub(a))[0]); continue; }
+    // The villa votes, each islander for the one they want back — who they
+    // like, who they fancy, less anything they hold against them.
+    const tally = new Map(cands.map(c => [c, 0]));
+    let shown = 0;
+    for (const v of state.villa) {
+      const score = c => Math.max(0, friendship(v, c)) + (attr(state, v, c) ?? 0) / 2 - (state.dumpedBy?.[c]?.includes(v) ? 2 : 0);
+      const k = [...cands].sort((a, b) => score(b) - score(a))[0];
+      tally.set(k, tally.get(k) + 1);
+      if (shown < 3 && cands.length > 1) { ev('sc-vote', [v, k], { pop: { [v]: { approval: 0, fame: 0.5 } } }); shown++; }
+    }
+    const top = Math.max(...tally.values());
+    const tied = [...tally].filter(([, c]) => c === top).map(([n]) => n);
+    stay.push(tied.length > 1 ? tied.sort((a, b) => pub(b) - pub(a))[0] : tied[0]);
+  }
+  for (const n of back) {
+    if (stay.includes(n)) {
+      arriveIslander(state, n, { ep, seed });
+      (state.returnedEp ||= {})[n] = ep;
+      for (const v of (state.dumpedBy?.[n] || []).filter(x => state.villa.includes(x))) addBond(n, v, -0.6);
+      ev('sc-stay', [n], { of: who, pop: { [n]: { approval: 1, fame: 3 } } }, [n]);
+    } else {
+      ev('sc-leave', [n], { pop: { [n]: { approval: 0.3, fame: 1 } } });
+    }
+  }
+  return { names: stay, events };
+}
+
+/**
  * WHAT AN INTRODUCTION SAYS, from the islander's own profile (user: "what
  * are the presentations based off — archetype, country, looking for,
  * persona, type, icks, interests, eyes on, ex, stats?"). Three lines, the

@@ -227,6 +227,23 @@ export function perfectMatchDrawnChallenges() {
     .filter(e => e.challenge).map(e => [e.ep, e.challenge]));
 }
 
+/**
+ * What each night drew (how the dumping plays, how the arrivals play, a
+ * one-off), for the Season Timeline's pickers to say "As drawn: …" (user:
+ * "nothing tells me this" — the formats were bookable, and nothing on a
+ * tile said so). Only once the season has its seed; empty before.
+ */
+export function perfectMatchDrawnNights() {
+  const seed = gs?.pm?.seed;
+  if (!seed) return new Map();
+  const saved = Array.isArray(gs?.pm?.castOrder) && gs.pm.castOrder.length ? gs.pm.castOrder : null;
+  const cast = saved || (players || []).map(p => p.name).filter(Boolean);
+  const roles = perfectMatchRoles(cast, perfectMatchSetup());
+  const count = r => roles.filter(x => x === r).length;
+  const episodes = Number(seasonConfig.pmEpisodes) > 0 ? Number(seasonConfig.pmEpisodes) : null;
+  return new Map(perfectMatchScheduleFor(seed, { bombshells: count('bombshell'), casa: count('casa'), episodes }).map(e => [e.ep, e]));
+}
+
 export function perfectMatchBookings() {
   const mine = new Map(twistsForFormat({ format: PERFECT_MATCH_FORMAT }).filter(t => t.pmOn).map(t => [t.id, t]));
   const booked = (seasonConfig.twistSchedule || []).filter(b => b && (mine.has(b.type) || mine.has(b.id)));

@@ -422,6 +422,8 @@ export const ONE_OFF_DRAWS = [
   ['immunity', 0.25, e => e.moment === 'public-vote' && !e.coupled && e.slot !== 'vote-post'],
 ];
 export const MAX_ONE_OFFS = 2;
+// How often a season draws a second-chance night on its own (UK 10, UK 12 of the eight read).
+export const SECOND_CHANCE_CHANCE = 0.2;
 
 // Phase 4: the afternoon's named challenge (pm/challenges.js). Each is drawn
 // for a season with the chance four real seasons (UK 10-13) played it, on a
@@ -544,6 +546,15 @@ export function seasonSchedule(rng, template = SEASON_TEMPLATE) {
   // of the season when one fits, never twice. Drawn last, so no earlier
   // draw moved.
   fillChallenges(out, rng);
+  // THE SECOND CHANCE, now and then on its own (it is a twist to book too):
+  // after the middle of the season, on a recoupling (they walk in, then the
+  // villa recouples) with no other one-off. Drawn after everything, the
+  // challenges included, so nothing moved.
+  {
+    const roll = rng(), where = rng();
+    const nights = out.filter(e => e.moment === 'recoupling' && !e.finalRecoupling && !e.oneOff && (e.ep - 1) / last > 0.45 && (e.ep - 1) / last < 0.8);
+    if (roll < SECOND_CHANCE_CHANCE && nights.length && out.filter(e => e.oneOff).length < MAX_ONE_OFFS) nights[Math.floor(where * nights.length)].oneOff = 'second-chance';
+  }
   return out;
 }
 
@@ -590,6 +601,7 @@ export function withBookings(schedule, byEp = {}) {
     if (b.arrivalRule && e.moment === 'bombshell') out.arrivalRule = b.arrivalRule === 'dates' ? undefined : b.arrivalRule;
     if (b.firstFormat && e.moment === 'first-coupling') out.firstFormat = b.firstFormat;
     if (b.oneOff) out.oneOff = b.oneOff;
+    if (b.scDecider) out.scDecider = b.scDecider;
     if (b.immunity && e.moment === 'public-vote') out.immunity = true;
     if (b.challenge && VILLA_DAYS.has(e.moment)) out.challenge = b.challenge;
     // "No challenge" on the timeline: the night's drawn one does not play.

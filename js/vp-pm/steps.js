@@ -55,7 +55,7 @@ export const KIND_LABEL = {
   blowup: 'It kicks off', 'pile-in': 'Taking sides', 'villa-divided': 'The villa divided', 'cold-shoulder': 'The cold shoulder', 'clear-the-air': 'Clearing the air',
   'bed-share': 'Lights out', vent: 'Letting off steam', apology: 'The apology', reunite: 'Back together', 'apology-rejected': 'Not this time',
   steal: 'A steal', 'final-recoupling': 'The final recoupling', 'challenge-rules': 'How it works', 'date-text': 'I got a text!', 'date-picked': 'The dates', 'date-back': 'Back from the date', 'recouple-pick': 'The recoupling', 'dump-buildup': 'At risk', 'dump-verdict': 'Dumped',
-  'dump-text': 'I got a text!', 'vote-safe': 'Everyone is safe', 'hideaway-text': 'I got a text!', 'hideaway-vote': 'The Hideaway vote', 'hideaway-win': 'The Hideaway', 'hideaway-snub': 'Not one vote', 'hideaway-morning': 'The morning after', 'dump-nerves': 'Getting ready', 'dump-open': 'The fire pit', 'dump-recap': 'The host', 'dump-safe': 'Safe', 'dump-plea': 'Making their case', 'dump-decide': 'The decision',
+  'dump-text': 'I got a text!', 'vote-safe': 'Everyone is safe', 'hideaway-text': 'I got a text!', 'recouple-text': 'I got a text!', 'recouple-nerves': 'Getting ready', 'recouple-open': 'The recoupling', 'recouple-single': 'Left single', 'casa-text': 'I got a text!', 'casa-goodbye': 'The goodbye', 'casa-explain': 'Casa Amor', 'hideaway-vote': 'The Hideaway vote', 'hideaway-win': 'The Hideaway', 'hideaway-snub': 'Not one vote', 'hideaway-morning': 'The morning after', 'dump-nerves': 'Getting ready', 'dump-open': 'The fire pit', 'dump-recap': 'The host', 'dump-safe': 'Safe', 'dump-plea': 'Making their case', 'dump-decide': 'The decision',
   'ballot-reveal': 'The vote', 'dump-reaction': 'The reaction', 'dump-goodbye': 'Goodbye', 'dump-fallout': 'Fallout',
   'casa-return': 'Stick or twist', photos: 'The photos', declaration: 'The declaration', 'final-result': 'The result',
   envelope: 'The envelope', walk: 'Leaving the villa', reveal: "What you didn't see", 'close-off': 'Closing off',
@@ -194,7 +194,9 @@ function fxFor(row, e, first) {
   if (k === 'recouple-pick' && first) fx.neon = [row.moment === 'first-coupling' ? 'First coupling' : 'Recoupling', '#ff2e88'];
   if (k === 'dump-buildup' && first && !(row.pm.events || []).some(x => x.kind === 'dump-open')) fx.neon = ['The results', '#a78bfa'];
   if (k === 'dump-open') fx.neon = ['The fire pit', '#a78bfa'];
-  if (k === 'dump-text' || k === 'vote-safe' || k === 'hideaway-text') fx.phone = true;
+  if (k === 'dump-text' || k === 'vote-safe' || k === 'hideaway-text' || k === 'recouple-text' || k === 'casa-text') fx.phone = true;
+  if (k === 'recouple-open') fx.neon = [(e.extra?.of || '').endsWith('all') ? 'The final recoupling' : 'Recoupling', '#ff2e88'];
+  if (k === 'casa-explain') fx.neon = ['Casa Amor', '#14c8bb'];
   if (k === 'hideaway-win') { fx.neon = ['The Hideaway', '#ff2e88']; fx.petals = true; }
   if (k === 'dump-buildup' && e.extra?.nth !== 'next') fx.shake = true;
   if (k === 'dump-verdict' || k === 'dump-verdict-couple' || k === 'dump-verdict-singles') { fx.neonDie = ['Dumped', '#ff2e88']; fx.shake = true; }

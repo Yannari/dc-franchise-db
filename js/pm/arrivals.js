@@ -264,11 +264,28 @@ export function bombshellSteal(state, name, { rng }) {
 /** The villa splits. The moving gender goes to Casa; arrivals of that gender join the main villa. */
 export function openCasa(state, casaNames, { ep, seed, rng, movingGender = 'f' }) {
   const movers = state.villa.filter(n => state.profiles[n].gender === movingGender);
+  // CASA AMOR OPENS (user: "not just a continuation of text without setup"):
+  // the text that sends one side packing, the couples saying goodbye, and the
+  // host saying what happens now — before the first new face. On its own
+  // dice, so the arrivals play as they did.
+  const orng = streamFor(seed, `casa-open:${ep}${state.epSalt || ''}`);
+  const events = [];
+  const reader = movers[Math.floor(orng() * movers.length)];
+  if (reader) events.push(makeEvent(state, orng, { phase: 'event', kind: 'casa-text', players: [reader, partnerOf(state, reader) || movers.find(n => n !== reader) || reader].filter((n, i, a) => a.indexOf(n) === i),
+    aired: true, extra: { of: movingGender, pop: { [reader]: { approval: 0, fame: 0.5 } } } }));
+  // The two couples closest to each other say goodbye; the parting costs them.
+  const pairs = movers.map(m => [m, partnerOf(state, m)]).filter(([, p]) => p)
+    .sort((x, y) => (romance(y[0], y[1]) + romance(y[1], y[0])) - (romance(x[0], x[1]) + romance(x[1], x[0]))).slice(0, 2);
+  for (const [m, p] of pairs) {
+    feel(state, m, 'stress', 0.6); feel(state, p, 'stress', 0.6); feel(state, p, 'security', -0.4);
+    events.push(makeEvent(state, orng, { phase: 'event', kind: 'casa-goodbye', players: [m, p], aired: true,
+      extra: { pop: { [m]: { approval: 0.3, fame: 1 }, [p]: { approval: 0.3, fame: 1 } } } }));
+  }
+  events.push(makeEvent(state, orng, { phase: 'event', kind: 'casa-explain', players: [], aired: true, extra: { of: movingGender, pop: {} } }));
   state.split = true;
   state.splitEp = state.ep;
   state.casa = [...movers];
   state.casaArrivals = [...casaNames];
-  const events = [];
   // The first few walk in one at a time; a big Casa's rest arrive together,
   // one group per villa. Eleven single entrances from a handful of lines read
   // as the same scene six times (measured at a 40-islander cast).

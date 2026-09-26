@@ -9,6 +9,7 @@
 import { addBond, getBond } from '../bonds.js';
 import { makeEvent, partnerOf, roomMates, airLater, today } from './events.js';
 import { revealExchange } from './script.js';
+import { streamFor } from '../dr/rng.js';
 import { romance } from './feelings.js';
 import { closedness } from './ladder.js';
 import { breakHeart, feel, jealousOf, jealousyHit } from './emotions.js';
@@ -262,6 +263,40 @@ export function dumpingScene(state, rng, { atRisk = [], dumped, ballots = [], ch
   };
 }
 
+/**
+ * THE RECOUPLING'S OPENING: the text, a single islander who is not sure
+ * anyone will stand up for them, and the host saying who chooses tonight and
+ * what being left single means. `stake`: 'all' (the final recoupling: every
+ * single goes home) · 'risk' (whoever is left single could be dumped) ·
+ * 'safe' (whoever is left single stays, single and vulnerable).
+ */
+function recoupleBuildUp(state, { picker, stake, final }) {
+  const rng = streamFor(state.seed ?? 1, `recouple-open:${state.ep}${state.epSalt || ''}`);
+  const out = [];
+  const villa = state.villa.filter(n => !(state.split && state.casa.includes(n)));
+  const push = (kind, players, extra = {}) => out.push(makeEvent(state, rng, { phase: 'firepit', kind, players, aired: true, extra: { pop: {}, ...extra } }));
+  if (!final) {
+    const reader = villa[Math.floor(rng() * villa.length)];
+    const other = partnerOf(state, reader) || villa.find(n => n !== reader);
+    push('recouple-text', [reader, other], { of: picker });
+  }
+  // The one most likely to be left standing: on the side waiting to be
+  // picked, single or least sure of a partner (season 202's girl asked "what
+  // if nobody picks me?" on a night the girls were choosing).
+  const worried = villa.filter(n => state.profiles[n]?.gender !== picker).sort((x, y) => {
+    const w = n => (partnerOf(state, n) ? romance(partnerOf(state, n), n) : -5);
+    return w(x) - w(y);
+  })[0];
+  const friend = worried && villa.filter(n => n !== worried && state.profiles[n]?.gender === state.profiles[worried]?.gender)
+    .sort((x, y) => getBond(worried, y) - getBond(worried, x))[0];
+  if (worried && friend) {
+    feel(state, worried, 'stress', 0.5);
+    push('recouple-nerves', [worried, friend], { taken: !!partnerOf(state, worried) });
+  }
+  push('recouple-open', [], { of: `${picker}-${stake}` });
+  return out;
+}
+
 function pickerGender(state) {
   const g = state.recouplings % 2 === 0 ? 'm' : 'f';
   state.recouplings++;
@@ -269,6 +304,13 @@ function pickerGender(state) {
 }
 
 function recoupleNight(state, rng, { dumpSingles, pace = 1.5, votesAhead = 0, all = false }) {
+  // How many a recoupling may send home, decided before anyone picks, so the
+  // host can say what is at stake (below: the cap's reasons).
+  const base = state.villa.length > 10 ? 2 : 1;
+  const floor = votesAhead ? 2 * (FINAL_COUPLES + 1) : 0;
+  const cap = Math.min(pace < 0.5 ? 0 : pace < 1 ? 1 : Math.max(base, Math.ceil(pace - 0.5)),
+    Math.max(0, state.villa.length - floor));
+  const picker = pickerGender(state);
   // The final recoupling says so first: who reads the text, and the one
   // they turn to.
   const open = [];
@@ -278,7 +320,14 @@ function recoupleNight(state, rng, { dumpSingles, pace = 1.5, votesAhead = 0, al
     open.push(makeEvent(state, rng, { phase: 'firepit', kind: 'final-recoupling', players: [a, b], aired: true,
       extra: { pop: { [a]: { approval: 0, fame: 0.5 }, [b]: { approval: 0, fame: 0.3 } } } }));
   }
-  const r = runRecoupling(state, { rng, pickerGender: pickerGender(state), repick: all });
+  // A recoupling says what it is before anyone stands (user: "not just a
+  // continuation of text without setup or explanation" — season 202's opened
+  // on the first pick, and "whoever was not chosen is dumped" was only said
+  // after the last). The text, somebody who is not sure of being picked, and
+  // the host: who chooses, and what happens to whoever is left standing. On
+  // its own dice, so the picks play as they did.
+  if (dumpSingles && state.villa.length >= 4) open.push(...recoupleBuildUp(state, { picker, stake: all ? 'all' : cap > 0 ? 'risk' : 'safe', final: all }));
+  const r = runRecoupling(state, { rng, pickerGender: picker, repick: all });
   const events = [...open, ...r.picks.map(pk => makeEvent(state, rng, { phase: 'firepit', kind: 'recouple-pick',
     players: [pk.picker, pk.picked, ...(pk.stole ? [pk.stole] : [])], aired: true,
     major: pk.stole ? [pk.picker, pk.stole] : [],
@@ -292,23 +341,23 @@ function recoupleNight(state, rng, { dumpSingles, pace = 1.5, votesAhead = 0, al
     const scene = dumpingScene(state, rng, { atRisk: [], dumped: [...r.single], ballots: [], channel: 'recoupling' });
     return { events: [...events, ...scene.events], exits: scene.exits, ballots: r.ballots };
   }
-  // At most two go on a recoupling night, and only one once the villa is
-  // down to ten: the real show leaves the rest single rather than emptying
-  // the place a ceremony at a time. Measured: without the second cap, a
-  // thin season arrived at the final with two couples instead of four.
-  // …and the season's pace moves that: nobody goes when the villa has no one
-  // to spare, and more go when a short season has more to lose (season.js).
-  // Under half an islander a night to spare, the singles stay and try again;
-  // under one, a night dumps one at most.
-  const base = state.villa.length > 10 ? 2 : 1;
-  // …and never below five couples while a public vote is still to come: the
-  // vote needs a couple to spare, and a villa emptied to the final's four by
-  // the early recouplings skipped the first vote in 24 seasons of 100
-  // (measured 2026-09-23). The singles stay single and try again next time.
-  const floor = votesAhead ? 2 * (FINAL_COUPLES + 1) : 0;
-  const cap = Math.min(pace < 0.5 ? 0 : pace < 1 ? 1 : Math.max(base, Math.ceil(pace - 0.5)),
-    Math.max(0, state.villa.length - floor));
-  if (!cap) return { events, exits: [], ballots: r.ballots };
+  // The cap (top of the function): at most two go on a recoupling night, and
+  // only one once the villa is down to ten — the real show leaves the rest
+  // single rather than emptying the place a ceremony at a time (measured:
+  // without the second cap, a thin season arrived at the final with two
+  // couples instead of four). The season's pace moves it: nobody goes when
+  // the villa has no one to spare, more when a short season has more to lose;
+  // under half an islander a night to spare the singles stay, under one a
+  // night dumps one at most. And never below five couples while a public vote
+  // is still to come: a villa emptied to the final's four by the early
+  // recouplings skipped the first vote in 24 seasons of 100 (2026-09-23).
+  if (!cap) {
+    // Left single, and staying: said, so the night does not simply stop.
+    if (r.single.length) events.push(makeEvent(state, rng, { phase: 'dumping', kind: 'recouple-single', players: [r.single[0]], aired: true,
+      extra: { pop: { [r.single[0]]: { approval: 0.3, fame: 1 } } } }));
+    for (const n of r.single) { feel(state, n, 'confidence', -0.8); feel(state, n, 'stress', 0.6); }
+    return { events, exits: [], ballots: r.ballots };
+  }
   const dumped = r.single.slice(0, cap);
   const scene = dumpingScene(state, rng, { atRisk: [], dumped, ballots: [], channel: 'recoupling' });
   return { events: [...events, ...scene.events], exits: scene.exits, ballots: r.ballots };

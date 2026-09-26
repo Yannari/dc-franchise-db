@@ -28,6 +28,51 @@ export const FIREPIT_LINES = {
     { id: 'dt.08', when: pub('public-double'), turns: [['a', "Islanders, tonight TWO couples will be dumped from the island. Please make your way to the fire pit. #DoubleDumping"], ['b', "Two? Two couples?"]] },
     { id: 'dt.09', when: pub('singles'), turns: [['a', "Islanders, tonight every single islander is vulnerable. Please make your way to the fire pit. #SingleAndVulnerable"]], beat: 'Everyone who is single goes quiet.' },
   ],
+  // A recoupling's opening (moments.js recoupleBuildUp). `of` on the text is
+  // who chooses (f · m); on the host's line, who chooses and the stake:
+  // all (every single goes home) · risk (whoever is left single could go) ·
+  // safe (whoever is left single stays, single and vulnerable).
+  'recouple-text': [
+    { id: 'rt.f1', when: { of: 'f' }, stage: "{a}'s phone goes off by the pool.", turns: [['a', "I got a text! Islanders, tonight there will be a recoupling. The girls will choose which boy they want to couple up with. #DecisionTime"], ['b', "Here we go again."]] },
+    { id: 'rt.m1', when: { of: 'm' }, stage: "{a}'s phone goes off by the pool.", turns: [['a', "I got a text! Islanders, tonight there will be a recoupling. The boys will choose which girl they want to couple up with. #DecisionTime"], ['b', "Here we go again."]] },
+    { id: 'rt.f2', when: { of: 'f' }, turns: [['a', "Islanders, please get ready for a recoupling. Tonight, the girls are choosing. #ChooseWisely"], ['b', "Why does my stomach hurt already?"]] },
+    { id: 'rt.m2', when: { of: 'm' }, turns: [['a', "Islanders, please get ready for a recoupling. Tonight, the boys are choosing. #ChooseWisely"], ['b', "Why does my stomach hurt already?"]] },
+    { id: 'rt.3', stage: 'Everyone crowds round {a} and the phone.', turns: [['a', "Islanders, it's time to recouple. Please gather at the fire pit. #WhoWillItBe"]], beat: 'Nobody looks at their partner for a second too long.' },
+  ],
+  'recouple-nerves': [
+    { id: 'rn.s1', when: { taken: false }, turns: [['a', "What if nobody picks me?"], ['b', "Somebody will."], ['a', "You don't know that."], ['b', "No. But I'd pick you, if it was me choosing."]] },
+    { id: 'rn.s2', when: { taken: false }, stage: 'The dressing room. {a} has changed outfits three times.', turns: [['b', "You look amazing."], ['a', "I look single. That's what I look."]] },
+    { id: 'rn.t1', when: { taken: true }, turns: [['a', "I don't know if {pa} is going to pick me tonight."], ['b', "Have you asked?"], ['a', "You can't ask. That's the whole point."]] },
+    { id: 'rn.t2', when: { taken: true }, stage: '{a} is sitting on the edge of the daybed, dressed and ready, not moving.', turns: [['b', "Talk to me."], ['a', "I think tonight might be the night {pa} goes with someone else."]] },
+  ],
+  'recouple-open': [
+    { id: 'ro.fr', when: { of: 'f-risk' }, stage: 'The islanders sit round the fire pit. The host walks down.', turns: [['dior', "Good evening, islanders! It's time for a recoupling."], ['dior', "Girls, one at a time, you'll stand up and tell us which boy you want to couple up with, and why."], ['dior', "Anyone left single at the end of tonight could be dumped from the island."]] },
+    { id: 'ro.mr', when: { of: 'm-risk' }, stage: 'The islanders sit round the fire pit. The host walks down.', turns: [['dior', "Good evening, islanders! It's time for a recoupling."], ['dior', "Boys, one at a time, you'll stand up and tell us which girl you want to couple up with, and why."], ['dior', "Anyone left single at the end of tonight could be dumped from the island."]] },
+    { id: 'ro.fs', when: { of: 'f-safe' }, stage: 'The islanders sit round the fire pit. The host walks down.', turns: [['dior', "Good evening, islanders! Tonight the girls are choosing."], ['dior', "One at a time, girls, tell us who you want to couple up with. Anyone left single tonight stays in the villa, but single, and very vulnerable."]] },
+    { id: 'ro.ms', when: { of: 'm-safe' }, stage: 'The islanders sit round the fire pit. The host walks down.', turns: [['dior', "Good evening, islanders! Tonight the boys are choosing."], ['dior', "One at a time, boys, tell us who you want to couple up with. Anyone left single tonight stays in the villa, but single, and very vulnerable."]] },
+    { id: 'ro.fa', when: { of: 'f-all' }, turns: [['dior', "Good evening, islanders. This is the final recoupling."], ['dior', "Girls, you'll choose who you want to couple up with. And anyone left single tonight will be dumped from the island. From here on, it's couples only."]], beat: 'Nobody on the benches moves.' },
+    { id: 'ro.ma', when: { of: 'm-all' }, turns: [['dior', "Good evening, islanders. This is the final recoupling."], ['dior', "Boys, you'll choose who you want to couple up with. And anyone left single tonight will be dumped from the island. From here on, it's couples only."]], beat: 'Nobody on the benches moves.' },
+  ],
+  'recouple-single': [
+    { id: 'rsg.1', stage: '{a} is the only one left standing.', turns: [['dior', "{a}, you're single tonight. You're not going anywhere, but you are very vulnerable."], ['a', "I'll take it. For now."]] },
+    { id: 'rsg.2', stage: 'Every couple is on the bench, and {a} is standing alone.', turns: [['a', "Well. That's embarrassing."], ['dior', "You're staying, {a}. But you'll have to graft."]] },
+  ],
+  // Casa Amor opens (arrivals.js openCasa). `of` is the side that leaves.
+  'casa-text': [
+    { id: 'ct.f1', when: { of: 'f' }, stage: "{a}'s phone goes off in the dressing room.", turns: [['a', "Girls, pack your bags. You're going on a little trip. #CasaAmor"], ['b', "Casa. It's Casa. Oh my God, it's Casa."]] },
+    { id: 'ct.m1', when: { of: 'm' }, stage: "{a}'s phone goes off on the terrace.", turns: [['a', "Boys, pack your bags. You're going on a little trip. #CasaAmor"], ['b', "Casa. It's Casa. Oh my God, it's Casa."]] },
+    { id: 'ct.2', turns: [['a', "Islanders, it's time for Casa Amor. Some of you are leaving tonight. #PackYourBags"]], beat: 'The whole villa goes very, very quiet.' },
+  ],
+  'casa-goodbye': [
+    { id: 'cg.1', stage: '{a} and {b} hold on to each other by the gate.', turns: [['b', "Don't forget about me."], ['a', "As if I could."]] },
+    { id: 'cg.2', turns: [['a', "Whatever happens over there, I'm coming back to you."], ['b', "Promise?"], ['a', "Promise."]], beat: '{b} watches the gate long after it shuts.' },
+    { id: 'cg.3', stage: '{a} picks up a suitcase and turns back one last time.', turns: [['b', "Go. Before I don't let you."], ['a', "Behave yourself."], ['b', "You behave yourself."]] },
+    { id: 'cg.4', turns: [['b', "Just be yourself over there. And not too much yourself."], ['a', "What does that mean?"], ['b', "You know what it means."]] },
+  ],
+  'casa-explain': [
+    { id: 'ce.f', when: { of: 'f' }, turns: [['dior', "Islanders. The girls have gone to Casa Amor, a villa of their own, where new boys are waiting for them."], ['dior', "And here, new girls are about to walk in. For the next few days, every couple is tested. At the end of it, everyone chooses: stick with your partner, or twist and couple up with someone new."]] },
+    { id: 'ce.m', when: { of: 'm' }, turns: [['dior', "Islanders. The boys have gone to Casa Amor, a villa of their own, where new girls are waiting for them."], ['dior', "And here, new boys are about to walk in. For the next few days, every couple is tested. At the end of it, everyone chooses: stick with your partner, or twist and couple up with someone new."]] },
+  ],
   // A vote night with nobody to spare: the text, and the relief.
   'vote-safe': [
     { id: 'vs.01', stage: "{a}'s phone goes off at the fire pit.", turns: [['a', "Islanders, the public have been voting, and tonight, nobody will be dumped. #SafeForNow"], ['b', "Nobody? Say that again."]], beat: 'The whole villa cheers.' },

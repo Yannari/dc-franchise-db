@@ -55,7 +55,7 @@ describe('the pools are well-formed', () => {
       'lie-write': 3, 'lie-ask': 4, 'lie-answer': 1, 'lie-read': 2, 'lie-react': 3,
       'gossip-close': 3, 'gossip-what': 3,
       'blow-slip': 2, 'blow-dare': 3, 'lip-watch': 3, 'tower-q': 3, 'course-run': 1, 'course-pick': 3, 'course-win': 2, 'sports-win': 4, 'sports-sore': 2, headline: 4, 'lady-luck-pick': 3, 'step-reveal': 4, 'step-choose': 4, 'date-text': 3, 'date-picked': 3, 'date-back': 3, 'journey-clip': 3,
-      'pair-text': 1, 'intro-kin': 1, 'kin-vet': 3, 'kin-protect': 3, 'ex-jealous': 3, 'ex-partner': 3, 'dump-open': 0, 'dump-decide': 0, 'dump-recap': 3, reveal: 3, 'hideaway-vote': 4, 'hideaway-morning': 3 };
+      'pair-text': 1, 'intro-kin': 1, 'kin-vet': 3, 'kin-protect': 3, 'ex-jealous': 3, 'ex-partner': 3, 'dump-open': 0, 'dump-decide': 0, 'dump-recap': 3, reveal: 3, 'hideaway-vote': 4, 'hideaway-morning': 3, 'recouple-open': 0, 'casa-explain': 0, 'recouple-single': 1 };
     for (const [k, e] of ENTRIES) {
       if (k.startsWith('hut:') || k.startsWith('narrator:')) continue;
       const size = CAST[k] || 2;

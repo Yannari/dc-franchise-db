@@ -217,11 +217,11 @@ const SITUATION = {
   cheating: ['photos', 'head-turned', 'bed-share'],
   drama: ['argument', 'blowup', 'pile-in', 'villa-divided', 'jealous-confront', 'jealous-retaliate', 'cold-shoulder',
     'casa-row', 'photo-row', 'movie-row', 'lie-row', 'triangle-rivals', 'triangle-ultimatum', 'apology-rejected', 'kin-protect'],
-  cry: ['breakdown', 'comfort', 'dump-reaction', 'photo-split', 'movie-split', 'torch', 'ask-declined', 'jealous-sulk'],
+  cry: ['casa-goodbye', 'breakdown', 'comfort', 'dump-reaction', 'photo-split', 'movie-split', 'torch', 'ask-declined', 'jealous-sulk'],
   // The dumped saying goodbye, and anyone walking out.
   goodbye: ['dump-goodbye', 'walk', 'solidarity', 'kin-goodbye', 'kin-walk'],
   comedy: ['comedy', 'blow-dare', 'blow-slip', 'baby-doll', 'talent-act'],
-  suspense: ['dump-open', 'dump-safe', 'dump-plea', 'dump-decide', 'dump-buildup', 'dump-at-risk', 'ballot-reveal', 'save-vote', 'save-tie', 'top-couple-pick', 'couples-vote',
+  suspense: ['recouple-open', 'dump-open', 'dump-safe', 'dump-plea', 'dump-decide', 'dump-buildup', 'dump-at-risk', 'ballot-reveal', 'save-vote', 'save-tie', 'top-couple-pick', 'couples-vote',
     'ex-ballot', 'final-recoupling', 'recouple-pick', 'steal'],
   // The final: the declarations and the places under the wait, then the
   // winners (steps.js finalSteps marks which is which).

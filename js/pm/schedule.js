@@ -351,7 +351,7 @@ export const EPISODE_KIND = { 'first-coupling': 'couple', recoupling: 'couple', 
 // The villa's set pieces, by name, for the Season Timeline (user: "when is
 // movie night? there's no indication").
 export const RITUAL_NAMES = { 'heart-rate': 'Heart Rate', 'snog-marry-pie': 'Snog Marry Pie', 'movie-night': 'Movie Night',
-  notes: 'The notes', families: 'The families' };
+  notes: 'The notes', families: 'The families', hideaway: 'The Hideaway' };
 export const SLOT_NAMES = { vote1: 'the first public vote', vote2: 'the second public vote', 'vote-post': 'the third public vote', vote3: 'the vote before the semi-final', semi: 'the semi-final' };
 
 function draw(rng, options) {

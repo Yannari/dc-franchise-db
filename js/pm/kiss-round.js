@@ -59,16 +59,23 @@ export function roundSize(state, kissers, least = 2) {
 function choose(state, rng, a, targets) {
   const st = S(state, a), p = partnerOf(state, a);
   const loyal = (st.loyalty ?? 5) / 10, bold = (st.boldness ?? 5) / 10;
-  // Closed off to everyone else: the game is a kiss for the partner.
-  const shut = p ? closedness(state, a, p) : 0;
+  // Settled: closed off to everyone else, or simply both properly into each
+  // other — few couples climb the ladder that far, so the feeling counts too.
+  // A settled islander's game is a kiss for the partner (the second half of
+  // a season had crush kisses outnumbering partner ones 30 to 13).
+  const own = p ? romance(a, p) / 10 : 0;
+  const shut = p ? Math.max(closedness(state, a, p), Math.min(1, Math.max(0, (own - 0.4) / 0.4))) : 0;
   const opts = [];
   for (const t of targets) {
     if (t === a || !compatible(state, a, t)) continue;
     const fancy = (attr(state, a, t) ?? 0) / 10;
-    if (t === p) { opts.push([['partner', t], (0.4 + 1.2 * loyal + romance(a, t) / 20) * (1 + 2 * shut)]); continue; }
+    if (t === p) { opts.push([['partner', t], (0.4 + 1.2 * loyal + romance(a, t) / 20) * (1 + 2.5 * shut)]); continue; }
     const tp = partnerOf(state, t);
-    // The one they fancy, held back by loyalty to a partner of their own.
-    opts.push([['crush', t], 2.5 * fancy * (p ? 1 - 0.5 * loyal : 1) * (1 - 0.7 * shut)]);
+    // The one they fancy — only as far as it beats what they feel for their
+    // own partner (every islander in the villa was a small crush option, and
+    // together they outweighed the partner), held back by loyalty.
+    const over = p ? Math.max(0, fancy - 0.8 * own) : fancy;
+    opts.push([['crush', t], 3 * over * (p ? 1 - 0.5 * loyal : 1) * (1 - 0.75 * shut)]);
     // On purpose, to shake somebody else's couple: a schemer, bold, and the
     // less they like the partner watching, the more it appeals.
     if (tp && tp !== a && schemeEligible(state.profiles[a])) {

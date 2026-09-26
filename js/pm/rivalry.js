@@ -32,6 +32,20 @@
 //     rival-row     [x, y, h]  it comes out between them — or they clear the air
 //     rival-step-back [x, f, h] x stops competing — to a friend, or to the rival (`of`)
 //     rival-won     [w, l, h]  h chose; l takes it well or doesn't
+//   THE VILLA TAKES SIDES (user: "a storyline with a lot of people involved,
+//   not a lone event gone in the wind … arguments with people on different
+//   sides taking the back of x and y, ongoing over multiple episodes"). The
+//   rest of the villa leans to whichever rival they are closer to, and the
+//   camps move as the bonds do. The girls rallying round Anna, Curtis telling
+//   Maura and Maura telling Anna (UK 5); Rosie gathering the villa to watch
+//   (UK 4); Zara throwing herself between Kady and Malia (UK 2).
+//     camp-rally    [v, f, x]    f rallies round v after x went for v
+//     camp-confront [f, x, v]    f goes at x on v's behalf. `of`: hot · calm
+//     camp-clash    [f, g, x, v] g, from x's side, steps in: the two sides go at it
+//     camp-lobby    [f, h, s]    f talks to h about s. `of`: for · against (against: schemers only)
+//     camp-split    [x, y, h]    the villa divided, at dinner, in front of everyone
+//     camp-switch   [f, n, o]    f has changed sides, from o's to n's
+//     camp-after    [l, f, w]    after the choice, f is there for l. `of`: comfort · snipe (at w)
 //   CRUSH   a wants b; b doesn't want a back.
 //     crush-confide [a, f, b]  a tells a friend; the friend says go for it, or don't
 //     crush-watch   [a, b, c]  a watches b with c
@@ -127,7 +141,7 @@ function newRivalry(state, rng) {
     const heat = (Math.min(wants(state, x, h), wants(state, y, h)) / 10) * (0.6 + 0.4 * Math.max(st(state, x, 'boldness'), st(state, y, 'boldness')));
     cands.push({ h, x, y, w: heat });
   }
-  return cands.sort((a, b) => b.w - a.w).find(c => rng() < Math.min(0.5, c.w * 0.9)) || null;
+  return cands.sort((a, b) => b.w - a.w).find(c => rng() < Math.min(0.6, c.w * 1.2)) || null;
 }
 
 function newCrush(state, rng) {
@@ -163,24 +177,47 @@ export function rivalries(state, rng, entry = null) {
   // ── RIVALS ──
   for (const t of (state.rivalries || []).filter(r => !r.over)) {
     const { h, x, y } = t;
-    if (!here(state, h) || (!here(state, x) && !here(state, y))) { t.over = true; continue; }
-    // One of them went home: the other has h to themselves.
-    if (!here(state, x) || !here(state, y)) { t.over = true; continue; }
+    // Somebody went home: it's over (the other has h to themselves). Casa
+    // Amor only pauses it — every rivalry with someone across the villas used
+    // to end the night Casa opened.
+    if (![h, x, y].every(n => state.villa.includes(n))) { t.over = true; t.why = 'gone'; continue; }
+    if (!sameRoom(state, h, x, y)) continue;
     // A recoupling decided it: h is now with one of them.
     const p = partnerOf(state, h);
     if (p && (p === x || p === y) && (p !== t.partnerAt || recoupled) && t.ep !== state.ep) {
       const w = p, l = p === x ? y : x;
-      t.over = true;
-      (state.rivalDone ||= {})[[h, x, y].sort().join('|')] = state.ep;
+      // Losing one recoupling doesn't end it: the one who lost fights on
+      // (Siannise and Rebecca went round "multiple recouplings" over Luke, UK 6)
+      // unless they have gone off h, or this is the second time h has chosen.
+      t.decided = (t.decided || 0) + 1;
+      t.partnerAt = p;
+      nudgeAttraction(state, l, h, -0.8);
+      if (t.decided >= 2 || wants(state, l, h) < 4 || (styleOf(state, l, rng) === 'withdraw' && rng() < 0.5)) {
+        t.over = true; t.why = 'decided';
+        (state.rivalDone ||= {})[[h, x, y].sort().join('|')] = state.ep;
+      }
       const bitter = rng() < 0.2 + 0.6 * (1 - st(state, l, 'temperament')) * (NICE.has(arch(state, l)) ? 0.5 : 1);
       breakHeart(state, l, h, 3 * wants(state, l, h) / 10);
       if (bitter) { addBond(l, w, -1); addRelationshipDimension(l, w, 'resentment', 1); feel(state, l, 'stress', 0.6); }
       else { addBond(l, w, 0.4); }
       ev('rival-won', [w, l, h], { of: bitter ? 'bitter' : 'gracious', pop: pop([l, bitter ? -0.4 : 1, 1.5], [w, 0.2, 1]) }, bitter ? [l] : []);
+      // …and l's side is there for l, and some of them have words for w.
+      const side = campsOf(state, t)[l === x ? 'X' : 'Y'];
+      const f = side[0];
+      if (f && rng() < 0.8) {
+        const snipe = ['shade', 'confront'].includes(styleOf(state, f, rng)) && !NICE.has(arch(state, f));
+        addBond(l, f, 0.4); feel(state, l, 'stress', -0.3);
+        if (snipe) { addBond(f, w, -0.6); addBond(w, f, -0.4); }
+        ev('camp-after', [l, f, w], { of: snipe ? 'snipe' : 'comfort', sides: sidesOf(state, t), pop: pop([f, snipe ? -0.1 : 0.3, 0.8]) });
+      }
       continue;
     }
     if (t.ep === state.ep) continue;
-    for (let k = 0; k < 2 && !t.over; k++) if (rng() < 0.7) stepRivalry(state, rng, t, ev);
+    // The rivals' own move, then the villa's — a second villa step after a
+    // row or a dig, when everyone has something to say about it.
+    if (rng() < 0.8) stepRivalry(state, rng, t, ev);
+    if (!t.over && rng() < 0.95) stepCamp(state, rng, t, ev);
+    if (!t.over && ['shade', 'row', 'interrupt', 'code'].includes(t.last?.kind) && rng() < 0.7) stepCamp(state, rng, t, ev);
   }
   const r = newRivalry(state, rng);
   if (r) {
@@ -193,7 +230,8 @@ export function rivalries(state, rng, entry = null) {
   const ended = t => { (state.crushDone ||= {})[`${t.a}>${t.b}`] = attr(state, t.b, t.a) ?? 0; };
   for (const t of (state.crushes || []).filter(c => !c.over)) {
     const { a, b } = t;
-    if (!here(state, a) || !here(state, b)) { t.over = true; continue; }
+    if (!state.villa.includes(a) || !state.villa.includes(b)) { t.over = true; continue; }
+    if (!sameRoom(state, a, b)) continue;
     // It came good: b wants a back now (a slow burn), and the story is theirs.
     if ((attr(state, b, a) ?? 0) >= 5) { t.over = true; continue; }
     if (t.ep === state.ep) continue;
@@ -224,7 +262,7 @@ function stepRivalry(state, rng, t, ev) {
     // "I'm not going to be in competition with another woman in this villa."
     const f = friendOf(state, m, [h, o]);
     nudgeAttraction(state, m, h, -1.5); feel(state, m, 'stress', -0.4);
-    t.over = true;
+    t.over = true; t.why = 'stepped-back';
     (state.rivalDone ||= {})[[h, x, y].sort().join('|')] = state.ep;
     return ev('rival-step-back', [m, f || o, h], { of: f ? 'friend' : 'to-rival', pop: pop([m, 0.8, 1.2]) });
   }
@@ -235,6 +273,7 @@ function stepRivalry(state, rng, t, ev) {
     addRelationshipDimension(o, m, 'resentment', behind ? 0.4 : 0.8);
     // h hears it: the catty one loses a little with h unless h already sides with them.
     nudgeAttraction(state, h, m, getBond(h, m) > getBond(h, o) ? 0 : -0.2);
+    t.last = { kind: 'shade', by: m, at: o };
     return ev('rival-shade', [m, o, h], { of: behind ? 'behind' : 'face', style, pop: pop([m, behind ? -0.3 : -0.2, 1.5], [o, 0.2, 0.8]) });
   }
   if (style === 'confront' || (t.stage >= 3 && rng() < 0.5)) {
@@ -242,11 +281,13 @@ function stepRivalry(state, rng, t, ev) {
     const calm = (st(state, m, 'temperament') + st(state, o, 'temperament')) / 2;
     if (rng() < 0.15 + 0.6 * calm) {
       addBond(m, o, 0.6); addBond(o, m, 0.6); feel(state, m, 'stress', -0.3); feel(state, o, 'stress', -0.3);
+      t.last = { kind: 'clear-air', by: m, at: o };
       return ev('rival-row', [m, o, h], { of: 'clear-air', pop: pop([m, 0.5, 1], [o, 0.5, 1]) });
     }
     addBond(m, o, -1.2); addBond(o, m, -1.2); feel(state, m, 'stress', 0.8); feel(state, o, 'stress', 0.8);
     addRelationshipDimension(m, o, 'resentment', 0.8); addRelationshipDimension(o, m, 'resentment', 0.8);
-    return ev('rival-row', [m, o, h], { of: 'row', pop: pop([m, -0.3, 2], [o, -0.1, 1.5]) }, [m, o]);
+    t.last = { kind: 'row', by: m, at: o };
+    return ev('rival-row', [m, o, h], { of: 'row', sides: sidesOf(state, t), pop: pop([m, -0.3, 2], [o, -0.1, 1.5]) }, [m, o]);
   }
   // charm / fair: make the play for h, in front of o — and if h is o's
   // partner, somebody close to o may call it.
@@ -255,6 +296,7 @@ function stepRivalry(state, rng, t, ev) {
   nudgeAttraction(state, h, m, moved);
   jealousOf(state, o, m, 1);
   const interrupt = style === 'charm' && st(state, m, 'boldness') > 0.5 && rng() < 0.5;
+  t.last = { kind: interrupt ? 'interrupt' : 'play', by: m, at: o };
   ev('rival-play', [m, h, o], { of: interrupt ? 'interrupt' : style === 'fair' ? 'fair' : 'play', pop: pop([m, style === 'fair' ? 0.3 : 0, 1.2]) });
   if (hp === o) {
     const g = n => state.profiles[n]?.gender;
@@ -264,9 +306,92 @@ function stepRivalry(state, rng, t, ev) {
     if (f && rng() < (0.3 + 0.8 * st(state, f, 'boldness')) * (style === 'fair' ? 0.5 : 1)) {
       addBond(f, m, -0.8); addBond(m, f, -0.5);
       for (const n of roomMates(state, o)) if (n !== m && getBond(n, o) >= 3) addBond(n, m, -0.2);
-      ev('code-call', [f, m, o], { pop: pop([m, -0.5, 1.5], [f, 0.4, 1]) });
+      t.last = { kind: 'code', by: m, at: o };
+      ev('code-call', [f, m, o], { sides: sidesOf(state, t), pop: pop([m, -0.5, 1.5], [f, 0.4, 1]) });
     }
   }
+}
+
+// ── the villa takes sides ─────────────────────────────────────────────
+/** Who is on whose side: everyone else leans to the rival they are closer to. */
+export function campsOf(state, t) {
+  const { h, x, y } = t;
+  const lean = n => getBond(n, x) - getBond(n, y) + (Math.max(0, friendship(n, x)) - Math.max(0, friendship(n, y))) / 4;
+  const others = roomMates(state, x).filter(n => n !== h && n !== y);
+  const X = others.filter(n => lean(n) >= 0.8).sort((p, q) => lean(q) - lean(p)).slice(0, 3);
+  const Y = others.filter(n => lean(n) <= -0.8).sort((p, q) => lean(p) - lean(q)).slice(0, 3);
+  return { X, Y };
+}
+const sidesOf = (state, t) => { const c = campsOf(state, t); return { A: [t.x, ...c.X], B: [t.y, ...c.Y] }; };
+
+function stepCamp(state, rng, t, ev) {
+  const { h, x, y } = t;
+  const camps = campsOf(state, t);
+  const prev = t.camps || { X: [], Y: [] };
+  t.camps = camps;
+  const sides = { A: [x, ...camps.X], B: [y, ...camps.Y] };
+  const sideOf = n => (camps.X.includes(n) ? x : camps.Y.includes(n) ? y : null);
+  const campFor = r => (r === x ? camps.X : camps.Y);
+
+  // Somebody changed sides since last time — the bonds moved them.
+  const moved = [...prev.X.filter(n => camps.Y.includes(n)), ...prev.Y.filter(n => camps.X.includes(n))];
+  if (moved.length && rng() < 0.7) {
+    const f = moved[0], now = sideOf(f), was = now === x ? y : x;
+    addBond(f, now, 0.4); addBond(f, was, -0.4); addBond(was, f, -0.5);
+    return ev('camp-switch', [f, now, was], { sides, pop: pop([f, 0, 1]) });
+  }
+
+  // Who was wronged last (the one the dig, the row, the steal attempt was at).
+  const hostile = ['shade', 'row', 'interrupt', 'code'].includes(t.last?.kind);
+  const v = hostile ? t.last.at : (rng() < 0.5 ? x : y), agg = v === x ? y : x;
+  const mine = campFor(v), theirs = campFor(agg);
+  const opts = [];
+  if (mine.length) opts.push(['rally', hostile ? 1.3 : 0.4]);
+  if (mine.length) opts.push(['confront', (hostile ? 1.3 : 0.5) * Math.max(...mine.map(n => st(state, n, 'boldness')))]);
+  if (camps.X.length + camps.Y.length) opts.push(['lobby', 0.8]);
+  if (camps.X.length >= 2 && camps.Y.length >= 2 && t.stage >= 2 && !t.split) opts.push(['split', 1.4]);
+  const move = weighted(rng, opts);
+  if (!move) return;
+
+  if (move === 'rally') {
+    const f = mine[0];
+    addBond(v, f, 0.3); addBond(f, agg, -0.3); feel(state, v, 'stress', -0.3);
+    for (const n of mine.slice(1)) addBond(n, agg, -0.15);
+    return ev('camp-rally', [v, f, agg], { sides, pop: pop([f, 0.3, 0.8]) });
+  }
+  if (move === 'confront') {
+    // The boldest of v's side goes and says it — hot or calm, as they are built.
+    const f = [...mine].sort((p, q) => st(state, q, 'boldness') - st(state, p, 'boldness'))[0];
+    const hot = ['confront', 'shade'].includes(styleOf(state, f, rng));
+    addBond(f, agg, hot ? -0.9 : -0.4); addBond(agg, f, hot ? -0.7 : -0.3);
+    addRelationshipDimension(agg, f, 'resentment', hot ? 0.6 : 0.2);
+    feel(state, agg, 'stress', hot ? 0.5 : 0.2);
+    ev('camp-confront', [f, agg, v], { of: hot ? 'hot' : 'calm', sides, pop: pop([f, hot ? 0 : 0.3, 1.2], [agg, -0.2, 1]) }, hot ? [f, agg] : []);
+    // …and somebody from the other side steps in: now it's the two sides.
+    const g = theirs.find(n => rng() < 0.25 + 0.6 * st(state, n, 'boldness'));
+    if (g && hot) {
+      addBond(f, g, -1); addBond(g, f, -1); feel(state, f, 'stress', 0.5); feel(state, g, 'stress', 0.5);
+      addRelationshipDimension(f, g, 'resentment', 0.5); addRelationshipDimension(g, f, 'resentment', 0.5);
+      ev('camp-clash', [f, g, agg, v], { sides, pop: pop([f, -0.2, 1.8], [g, -0.2, 1.8]) }, [f, g]);
+    }
+    return;
+  }
+  if (move === 'lobby') {
+    // A friend works on the one in the middle: for their friend, or — if
+    // they may scheme — against the other one.
+    const f = weighted(rng, [...camps.X, ...camps.Y].map(n => [n, 0.3 + st(state, n, 'social')]));
+    const s1 = sideOf(f), s2 = s1 === x ? y : x;
+    const against = schemeEligible(state.profiles[f]) && rng() < 0.5;
+    const sway = (0.15 + 0.35 * st(state, f, 'social')) * (0.5 + Math.max(0, getBond(h, f)) / 10);
+    if (against) { nudgeAttraction(state, h, s2, -sway); addBond(s2, f, -0.3); }
+    else nudgeAttraction(state, h, s1, sway);
+    return ev('camp-lobby', [f, h, against ? s2 : s1], { of: against ? 'against' : 'for', sides, pop: pop([f, against ? -0.2 : 0.1, 0.8]) });
+  }
+  // The villa divided: every pair across the line cools a little.
+  t.split = true;
+  for (const a of sides.A) for (const b of sides.B) { addBond(a, b, -0.2); addBond(b, a, -0.2); }
+  for (const n of [...sides.A, ...sides.B, h]) feel(state, n, 'stress', 0.3);
+  return ev('camp-split', [x, y, h], { sides, pop: pop([x, 0, 1.5], [y, 0, 1.5], [h, -0.1, 1.5]) }, [x, y]);
 }
 
 function stepCrush(state, rng, t, ev) {
@@ -298,7 +423,9 @@ function stepCrush(state, rng, t, ev) {
   }
   // Watching b with somebody else.
   const other = bp || null;
-  if (other && other !== a && rng() < 0.4) {
+  // (Not two episodes running: "watching them, hurt" three nights in a row was a loop.)
+  if (other && other !== a && state.ep - (t.lastWatch ?? -9) >= 2 && rng() < 0.4) {
+    t.lastWatch = state.ep;
     jealousOf(state, a, other, 1.2); feel(state, a, 'stress', 0.4);
     // The catty ones take it out on the other one.
     const catty = styleOf(state, a, rng) === 'shade';

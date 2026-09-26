@@ -50,6 +50,7 @@ export const KIND_LABEL = {
   'triangle-teams': 'Pick a side', 'triangle-choice': 'The choice',
   'rival-shade': 'The shade', 'rival-play': 'Making a move', 'code-call': 'The code', 'rival-row': 'Face to face', 'rival-step-back': 'Stepping back', 'rival-won': 'The winner',
   'crush-confide': 'The crush', 'crush-watch': 'Watching', 'crush-move': 'Going for it', 'crush-plea': 'A bit more', 'crush-over': 'Letting go',
+  'camp-rally': 'Rallying round', 'camp-confront': 'Stepping in', 'camp-clash': 'Two sides', 'camp-lobby': 'A word in the ear', 'camp-split': 'The villa divided', 'camp-switch': 'Changing sides', 'camp-after': 'After the choice',
   'lie-write': 'The questions', 'lie-question': 'The Lie Detector', 'lie-row': 'After the test',
   'blow-slip': 'A slip', 'blow-dare': 'The dare', 'lip-race': 'Lip Service', 'lip-watch': 'Watching', 'tower-q': 'Tower of Truths',
   'course-run': 'The course', 'course-pick': 'The rescue', 'course-win': 'The winner', 'blind-run': 'Blindfolded',
@@ -241,6 +242,10 @@ function fxFor(row, e, first) {
   if (k.startsWith('triangle-') && e.extra?.tri) fx.triangle = { ...e.extra.tri, teams: e.extra.teams || null, won: k === 'triangle-choice' ? e.players[1] : null };
   if (k === 'triangle-rivals' && e.extra?.of === 'clash') fx.shake = true;
   if ((k === 'rival-row' && e.extra?.of === 'row') || k === 'code-call') fx.shake = true;
+  // The villa taking sides: the two camps on the stage (pm/rivalry.js campsOf).
+  if ((k.startsWith('camp-') || k === 'rival-row' || k === 'code-call') && e.extra?.sides) fx.sides = e.extra.sides;
+  if (k === 'camp-clash') { fx.shake = true; fx.neon = ['Two sides', '#ef4444']; }
+  if (k === 'camp-split') fx.neon = ['Villa divided', '#ef4444'];
   if (k === 'triangle-choice' && e.extra?.of === 'pick') fx.neon = ['The choice', '#ff2e88'];
   if (k === 'lie-question' && first) fx.neon = ['Lie Detector', '#22d3ee'];
   if (k === 'lie-row') { fx.shake = e.extra?.of === 'own-it'; }

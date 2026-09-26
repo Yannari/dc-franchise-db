@@ -32,6 +32,7 @@ import { MORE_E } from './lines/day/more-e.js';
 import { JOURNEY_LINES, JOURNEY_MORE, JOURNEY_SHAPES } from './lines/journey.js';
 import { KIN_LINES } from './lines/kin.js';
 import { RIVALRY_LINES } from './lines/rivalry.js';
+import { CAMP_LINES } from './lines/camps.js';
 import { FIREPIT_LINES } from './lines/firepit.js';
 import { HIDEAWAY_LINES } from './lines/hideaway.js';
 import { HEAT_LINES } from './lines/day/heat.js';
@@ -50,6 +51,7 @@ for (const [k, v] of Object.entries(JOURNEY_SHAPES)) POOLS[k] = [...(POOLS[k] ||
 // The islanders who knew each other before the villa (lines/kin.js).
 for (const [k, v] of Object.entries(KIN_LINES)) POOLS[k] = [...(POOLS[k] || []), ...v];
 for (const [k, v] of Object.entries(RIVALRY_LINES)) POOLS[k] = [...(POOLS[k] || []), ...v];
+for (const [k, v] of Object.entries(CAMP_LINES)) POOLS[k] = [...(POOLS[k] || []), ...v];
 // The night before a dumping's verdict (lines/firepit.js).
 for (const [k, v] of Object.entries(FIREPIT_LINES)) POOLS[k] = [...(POOLS[k] || []), ...v];
 // The Hideaway night (lines/hideaway.js).
@@ -215,7 +217,9 @@ function weightFor(state, entry, ps, facts) {
   // Twice in one episode is a repeat the viewer sees, whoever says it.
   const last = u.eps[u.eps.length - 1];
   if (last === state.ep) return 0;
-  if (state.ep - last <= 3) w *= 0.4;
+  // Heard already this season: rarer, and much rarer if recent (a pool of four
+  // played the same "pick whoever makes you happy" three times in one season).
+  w *= state.ep - last <= 3 ? 0.1 : 0.3;
   return w;
 }
 function noteUse(state, entry, ps) {

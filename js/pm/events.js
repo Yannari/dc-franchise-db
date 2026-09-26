@@ -672,7 +672,8 @@ export const KINDS = {
     // two after the same one, and the crush that isn't returned (pm/rivalry.js)
     'rival-shade', 'rival-play', 'code-call', 'rival-row', 'rival-step-back', 'rival-won', 'crush-confide', 'crush-watch', 'crush-move', 'crush-plea', 'crush-over',
     'camp-rally', 'camp-confront', 'camp-clash', 'camp-lobby', 'camp-split', 'camp-switch', 'camp-after',
-    'feud-confront', 'feud-interrupt', 'feud-shade', 'feud-ick', 'feud-closure']
+    'feud-confront', 'feud-interrupt', 'feud-shade', 'feud-ick', 'feud-closure',
+    'game-plan', 'game-latch', 'game-two-faced', 'game-suspect', 'game-called', 'game-fallout', 'game-end']
     .map(k => [k, { salience: 1, cast: () => null,
       apply: (s, ev) => ({ pop: ev.extra.pop || {}, major: ev.extra.majorPop || [] }) }])),
 };

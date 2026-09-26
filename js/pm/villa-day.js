@@ -22,6 +22,7 @@ import { blowups } from './blowup.js';
 import { breakdowns } from './breakdown.js';
 import { triangles } from './triangle.js';
 import { rivalries } from './rivalry.js';
+import { gamePlayers } from './game.js';
 import { streamFor } from '../dr/rng.js';
 import { kissRound, roundSize } from './kiss-round.js';
 
@@ -334,6 +335,8 @@ export function runVillaDay(state, rng, entry) {
   // …and the rivalries and crushes nobody returns (pm/rivalry.js), each
   // played by the islanders' own personalities. Own dice too.
   out.push(...rivalries(state, streamFor(state.seed ?? 1, `rival:${state.ep}${state.epSalt || ''}`), entry));
+  // …and the game players (pm/game.js): a schemer's plan, the villa working it out.
+  out.push(...gamePlayers(state, streamFor(state.seed ?? 1, `game:${state.ep}${state.epSalt || ''}`), entry));
   // When it kicks off (pm/blowup.js): after the night's reveals — Movie Night
   // included — never before them.
   out.push(...blowups(state, rng, entry, out));

@@ -456,7 +456,15 @@ export function scriptFor(state, ev) {
 const EXIT = /\b(walks?|walking|goes|gets up|storms|leaves|already on|is up off|goes to bed|rest of the|says anything else|another word|doesn't speak|does not speak)\b/i;
 // An argument's question is rhetorical ("Both of them?"): it is answered by the ending, not by a reply.
 // A kiss's question ("What was that for?") is answered by what they say after it.
-const NO_ANSWER = new Set(['argument', 'loyalty', 'kiss']);
+const NO_ANSWER = new Set(['argument', 'loyalty', 'kiss', 'ick', 'comedy', 'gossip']);
+// Only a real question about feelings or intentions gets a spoken answer
+// ("Do you like me?", "Are we okay?"), never a joke, a request or a
+// rhetorical one: season 23 answered "Did you just clap for a sandwich?" with
+// "Can I think about that one?", and "Can I pour you a drink?" with "Honestly?
+// I don't know yet." — the same six answers, 40 times a season.
+const FEELING_Q = /(^|[.!?…,]\s*)(do|are|would|will|could|have) (you|we)\b(?!\s+(just|always|do that|want a|want some))|\bhow do you feel\b|\bwhat do you (want|think of us|feel)\b|\bwhere (is|do you see) (this|us)\b|\bwhat are we\b|\bis this (going|real|a thing)\b/i;
+// What the engine decided the scene did, as the answer's colour: yes, not sure, or no.
+const ANSWER_OF = { warm: 'yes', open: 'yes', flirt: 'yes', kissed: 'yes', promised: 'yes', easy: 'unsure', guarded: 'unsure', flat: 'no', 'turned-down': 'no' };
 function closed(state, ev, entry, opened, ps) {
   const pool = POOLS[`${ev.kind}-close`];
   const close = ev.extra?.close;
@@ -482,7 +490,8 @@ function closed(state, ev, entry, opened, ps) {
     if (got) { noteUse(state, got, ps); add.push(renderScript(got, ps, state)); }
   };
   if (ev.kind === 'gossip') { if (!entry.told) take('gossip-what', facts.sec || 'pull'); }
-  else if (asked && !NO_ANSWER.has(ev.kind)) take('answer-close', null);
+  // …and not when the opener already reacted to it in its beat ("Ryan doesn't have an answer").
+  else if (asked && !opened.beat && !NO_ANSWER.has(ev.kind) && FEELING_Q.test(last.text)) take('answer-close', ANSWER_OF[close] || null);
   take(`${ev.kind}-close`, close === true ? null : close);
   if (!add.length) return opened;
   const act = text => ({ who: '', text, action: true });

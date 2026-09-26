@@ -78,7 +78,13 @@ export function arcs(state, rng, entry = null) {
   };
   const seen = fresh(state);
   // Everyone ever coupled with whom, for the exes (a couple as the record has it).
-  for (const [a, b] of state.couples) (state.pairedEver ||= {})[[a, b].sort().join('|')] = state.ep;
+  for (const [a, b] of state.couples) {
+    const k = [a, b].sort().join('|');
+    (state.pairedEver ||= {})[k] = state.ep;
+    // When this couple first formed, while it has lasted (the villa parents are a settled couple).
+    if (!state.pairedSince?.[k] || state.pairedEver[k] !== state.ep) (state.pairedSince ||= {})[k] ??= state.ep;
+  }
+  for (const k of Object.keys(state.pairedSince || {})) if (state.pairedEver[k] !== state.ep) delete state.pairedSince[k];
   record(state, seen);
   betrayals(state, rng, seen, ev);
   mugged(state, rng, ev);
@@ -171,6 +177,8 @@ function mugged(state, rng, ev) {
   state.underdogs ||= {};
   for (const [u, eps] of Object.entries(state.mugged || {})) {
     if (!state.villa.includes(u) || eps.length < 2) continue;
+    // Not the underdog while they're the one who went behind a friend's back.
+    if ((state.betrayals || []).some(t => !t.over && t.b === u)) continue;
     const t = (state.underdogs[u] ||= { u, low: false, found: null, ep: state.ep });
     if (t.found) continue;
     const f = friendOf(state, u);
@@ -182,7 +190,11 @@ function mugged(state, rng, ev) {
     }
     // Found: someone who wants u back, as much as u wants them, and says so.
     if (!t.low || state.ep === t.lowEp) continue;
-    const n = roomMates(state, u).filter(m => compatible(state, u, m) && (attr(state, m, u) ?? 0) >= 5 && (attr(state, u, m) ?? 0) >= 5)
+    // …and is free to: single, or already u's partner — never someone coupled
+    // with another (season 23: Theo "picked" Mia, then was named villa dad
+    // with Ellie the next episode).
+    const n = roomMates(state, u).filter(m => compatible(state, u, m) && (attr(state, m, u) ?? 0) >= 5 && (attr(state, u, m) ?? 0) >= 5
+      && [null, u].includes(partnerOf(state, m)))
       .sort((p, q) => (attr(state, q, u) ?? 0) - (attr(state, p, u) ?? 0))[0];
     if (!n || rng() > 0.7) continue;
     t.found = n; t.foundEp = state.ep;
@@ -293,8 +305,8 @@ function parents(state, rng, ev) {
   if (!P) {
     if (state.ep < 5 || state.parentsDone) return;
     // The settled couple: both properly in it, the longest together.
-    const c = state.couples.filter(([a, b]) => romance(a, b) >= 6 && romance(b, a) >= 6)
-      .sort((x, y) => (state.pairedEver?.[x.slice().sort().join('|')] ?? 0) - (state.pairedEver?.[y.slice().sort().join('|')] ?? 0))
+    const since = c => state.pairedSince?.[c.slice().sort().join('|')] ?? state.ep;
+    const c = state.couples.filter(([a, b]) => romance(a, b) >= 6 && romance(b, a) >= 6 && state.ep - since([a, b]) >= 3)
       .sort((x, y) => (romance(y[0], y[1]) + romance(y[1], y[0])) - (romance(x[0], x[1]) + romance(x[1], x[0])))[0];
     if (!c || rng() > 0.5) return;
     const k = friendOf(state, c[0], [c[1]]);

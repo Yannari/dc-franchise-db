@@ -162,6 +162,25 @@ export const CLOSE = {
 //                            engine's record, never more than it holds
 export const ANSWER = {
   'answer-close': [
+    // yes: the scene is going well (the engine's close: warm, open, flirty)
+    { id: 'an.y.a1', when: { lastBy: 'a', of: 'yes' }, turns: [['b', "Yeah. I really do."]] },
+    { id: 'an.y.a2', when: { lastBy: 'a', of: 'yes' }, turns: [['b', "Yes. Obviously."], ['a', "Obviously?"], ['b', "Obviously."]] },
+    { id: 'an.y.a3', when: { lastBy: 'a', of: 'yes' }, turns: [['b', "More than I thought I would, if I'm honest."]] },
+    { id: 'an.y.a4', when: { lastBy: 'a', of: 'yes' }, turns: [['b', "I think so. I'd like to."]] },
+    { id: 'an.y.b1', when: { lastBy: 'b', of: 'yes' }, turns: [['a', "Yeah. I really do."]] },
+    { id: 'an.y.b2', when: { lastBy: 'b', of: 'yes' }, turns: [['a', "Yes. Obviously."], ['b', "Obviously?"], ['a', "Obviously."]] },
+    { id: 'an.y.b3', when: { lastBy: 'b', of: 'yes' }, turns: [['a', "More than I thought I would, if I'm honest."]] },
+    { id: 'an.y.b4', when: { lastBy: 'b', of: 'yes' }, turns: [['a', "I think so. I'd like to."]] },
+    // unsure: fine, not there yet
+    { id: 'an.u.a1', when: { lastBy: 'a', of: 'unsure' }, turns: [['b', "I think so. Ask me again in a few days."]] },
+    { id: 'an.u.a2', when: { lastBy: 'a', of: 'unsure' }, turns: [['b', "I'm getting there."], ['a', "That's something."]] },
+    { id: 'an.u.b1', when: { lastBy: 'b', of: 'unsure' }, turns: [['a', "I think so. Ask me again in a few days."]] },
+    { id: 'an.u.b2', when: { lastBy: 'b', of: 'unsure' }, turns: [['a', "I'm getting there."], ['b', "That's something."]] },
+    // no: it isn't there
+    { id: 'an.n.a1', when: { lastBy: 'a', of: 'no' }, turns: [['b', "Honestly? I'm not sure I do."], ['a', "Oh. Okay."]] },
+    { id: 'an.n.a2', when: { lastBy: 'a', of: 'no' }, turns: [['b', "I don't think so. Sorry."]] },
+    { id: 'an.n.b1', when: { lastBy: 'b', of: 'no' }, turns: [['a', "Honestly? I'm not sure I do."], ['b', "Oh. Okay."]] },
+    { id: 'an.n.b2', when: { lastBy: 'b', of: 'no' }, turns: [['a', "I don't think so. Sorry."]] },
     { id: 'an.a.01', when: { lastBy: 'a' }, turns: [['b', "Honestly? I don't know yet."]] },
     { id: 'an.a.02', when: { lastBy: 'a' }, turns: [['b', "…Can I think about that one?"], ['a', "Take your time."]] },
     { id: 'an.a.03', when: { lastBy: 'a' }, turns: [['b', "I'll tell you. Just not today."]] },

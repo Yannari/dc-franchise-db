@@ -99,7 +99,7 @@ export const ARC_LINES = {
       ['a', "Every time, I'm the one left. Every single time."], ['b', "It's not you. Honestly."], ['a', "It feels like it's me."]] },
     { id: 'ml.02', stage: 'In the dressing room, {a} puts the brush down.', turns: [
       ['a', "I'm starting to think nobody in here is going to pick me."], ['b', "Don't say that."],
-      ['a', "It's true, though, isn't it?"], ['b', "Your person just hasn't walked in yet."]] },
+      ['a', "It's true, though, isn't it?"], ['b', "Your person is out there. Maybe even in here."]] },
     { id: 'ml.03', stage: 'On the daybeds, {b} gives {a} a hug.', turns: [
       ['a', "I'm so tired of being the back-up."], ['b', "You're nobody's back-up."],
       ['a', "Then why does it keep happening?"]], beat: "{b} doesn't have an answer, and holds on." },
@@ -132,7 +132,7 @@ export const ARC_LINES = {
       ['a', "I've never seen {b} this happy in here."], ['c', "Me neither."],
       ['a', "Look after {b}. Please."], ['c', "I will."]] },
     { id: 'vh.03', stage: '{a} hugs {b} at the kitchen island.', turns: [
-      ['a', "I told you, didn't I? I told you your person would walk in."], ['b', "You did."],
+      ['a', "I told you, didn't I? I told you someone would pick you."], ['b', "You did."],
       ['a', "I'm always right."]], beat: '{b} laughs, and doesn\'t argue.' },
   ],
 

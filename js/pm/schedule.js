@@ -167,7 +167,7 @@ function insertWeek(weeks, week, pre) {
  * nights, not its episode: that place survives every re-flow, because the
  * running order only ever loses nights at its end and gains them after it.
  */
-export function buildSchedule({ bombshells = BASE_BOMBSHELLS, casa = 6, episodes = null, counts = null } = {}) {
+export function buildSchedule({ bombshells = BASE_BOMBSHELLS, casa = 6, episodes = null, counts = null, starters = null } = {}) {
   const weeks = baseWeeks(casa);
   // More bombshells than the calibration season has slots for: a week each
   // pair — a bombshell night, then a recoupling — alternating before and
@@ -205,6 +205,80 @@ export function buildSchedule({ bombshells = BASE_BOMBSHELLS, casa = 6, episodes
   // A bombshell night nobody arrives on is not an episode.
   let out = weeks.filter(w => !(w.moment === 'bombshell' && !w.arrive));
 
+  // Take out the least necessary week; its arrivals join the next week
+  // that takes arrivals (or the previous, at the end).
+  const cutOne = (only = null) => {
+    const order = w => (w.quiet ? 0 : w.extra && w.moment !== 'bombshell' ? 1 : w.extra ? 2 : w.drop || 99);
+    // …and never, while there is another, the week that keeps two bombshell nights apart.
+    const between = i => out[i - 1]?.moment === 'bombshell' && out[i + 1]?.moment === 'bombshell' ? 50 : 0;
+    const cut = out.map((w, i) => [w, i]).filter(([w]) => !w.fixed && (!only || only(w)))
+      .sort((a, b) => order(a[0]) + between(a[1]) - order(b[0]) - between(b[1]))[0];
+    if (!cut) return false;
+    const [w, i] = cut;
+    out.splice(i, 1);
+    // Its set piece (Snog Marry Pie, the notes) moves to the nearest week that
+    // can hold one and has none, rather than leaving the season.
+    if (w.rituals?.length) {
+      const fits = x => (x.moment === 'recoupling' || x.moment === 'public-vote') && !x.coupled && !x.rituals?.length;
+      const to = [...out.slice(0, i)].reverse().find(fits) || out.slice(i).find(fits);
+      if (to) to.rituals = [...w.rituals];
+    }
+    if (w.arrive) {
+      const next = out.slice(i).find(x => x.cap != null) || [...out.slice(0, i)].reverse().find(x => x.cap != null);
+      if (next) { next.arrive = (next.arrive || 0) + w.arrive; next.cap = Math.max(next.cap, next.arrive); }
+    }
+    return true;
+  };
+
+  // A SMALL CAST'S LENGTH (user: "fix the pacing for small casts"). The
+  // weeks follow the bombshells, but the islanders to LOSE follow the whole
+  // cast: at 14 the season had eleven nights to lose six on, and every season
+  // of 20 at 14-18 islanders had three nights or more in a row with nobody
+  // going home (38-55% of vote nights sent nobody). The calibration season
+  // loses about one islander a dumping night, not counting the Casa arrivals
+  // the stick-or-twist sends home; a smaller cast drops its spare weeks until
+  // it does too. Only when the length is automatic and the cast is known.
+  if (!episodes && starters != null) {
+    // What the season has to lose before the couples-only week (which takes a
+    // couple a night on its own), against what its nights can take: a vote
+    // sends about a couple home, a recoupling about one. The calibration cast
+    // runs at 0.6 of what its nights could take; a smaller one drops weeks
+    // until it does too.
+    const lose = () => starters + bombshells + casa - 2 * FINAL_COUPLES - Math.round(casa * 0.65) - 2 * out.filter(w => w.coupled).length;
+    const takes = w => (w.coupled || w.finalRecoupling ? 0 : w.moment === 'public-vote' ? 2 : w.moment === 'recoupling' ? 1 : 0);
+    const over = () => out.reduce((t, w) => t + takes(w), 0) * 0.6 > Math.max(1, lose());
+    const dumping = w => w.moment === 'recoupling' || w.moment === 'public-vote';
+    // Only dumping weeks go: the bombshell nights keep the arrivals spread
+    // through the season (cutting them sent seven bombshells in at the final
+    // recoupling of a 14-islander season).
+    for (let guard = 0; guard < 30 && over() && cutOne(dumping); guard++);
+    // A cast that small that it is still over loses fixed votes too, the least
+    // needed first: the last vote before the final recoupling; then the
+    // couples-only week's vote (the semi-final alone is that week: at 12
+    // islanders the week needed six couples, all twelve, and no earlier vote
+    // could send anyone home); then the second vote, its set piece moving to
+    // the first.
+    for (const slot of ['vote-post', 'vote3', 'vote2']) {
+      if (!over()) break;
+      const at = out.findIndex(w => w.slot === slot);
+      if (at < 0) continue;
+      const [gone] = out.splice(at, 1);
+      if (gone.rituals?.length) {
+        const to = [...out.slice(0, at)].reverse().find(w => w.moment === 'public-vote' && !w.coupled) || out.find(w => w.moment === 'public-vote');
+        if (to) to.rituals = [...new Set([...(to.rituals || []), ...gone.rituals])];
+      }
+    }
+    // Two bombshell nights left side by side become one night, as far as one
+    // night can take them.
+    for (let i = out.length - 1; i > 0; i--) {
+      const [x, y] = [out[i - 1], out[i]];
+      if (x.moment === 'bombshell' && y.moment === 'bombshell' && (x.arrive || 0) + (y.arrive || 0) <= MAX_PER_NIGHT) {
+        x.arrive = (x.arrive || 0) + (y.arrive || 0); x.cap = Math.max(x.cap || 0, x.arrive);
+        out.splice(i, 1);
+      }
+    }
+  }
+
   // The author's length.
   const target = episodes ? Math.max(minimumEpisodes(casa), Math.min(MAX_EPISODES, Math.round(episodes))) : null;
   while (target && out.length < target) {
@@ -212,19 +286,7 @@ export function buildSchedule({ bombshells = BASE_BOMBSHELLS, casa = 6, episodes
     const pre = out.filter(w => w.quiet).length % 2 === 0 || casa === 0;
     insertWeek(out, { moment: 'recoupling', quiet: true }, pre);
   }
-  while (target && out.length > target) {
-    // Take out the least necessary week; its arrivals join the next week
-    // that takes arrivals (or the previous, at the end).
-    const order = w => (w.quiet ? 0 : w.extra && w.moment !== 'bombshell' ? 1 : w.extra ? 2 : w.drop || 99);
-    const cut = out.map((w, i) => [w, i]).filter(([w]) => !w.fixed).sort((a, b) => order(a[0]) - order(b[0]))[0];
-    if (!cut) break;
-    const [w, i] = cut;
-    out.splice(i, 1);
-    if (w.arrive) {
-      const next = out.slice(i).find(x => x.cap != null) || [...out.slice(0, i)].reverse().find(x => x.cap != null);
-      if (next) { next.arrive = (next.arrive || 0) + w.arrive; next.cap = Math.max(next.cap, next.arrive); }
-    }
-  }
+  while (target && out.length > target) if (!cutOne()) break;
 
   // Number them, and give them days: two for the first night and the Casa
   // recoupling, three for the rest; the reunion has none. These are the

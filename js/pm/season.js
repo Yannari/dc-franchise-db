@@ -126,7 +126,7 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
   const queues = queuesFor(state, cast);
   // Every bombshell and Casa arrival the author cast gets a night to walk in.
   schedule = schedule || withBookings(withPicks(perfectMatchScheduleFor(seed,
-    { bombshells: queues.bombshell.length, casa: queues.casa.length, episodes, counts: arrivalCounts }), picks), bookings);
+    { bombshells: queues.bombshell.length, casa: queues.casa.length, episodes, counts: arrivalCounts, starters: queues.starter.length }), picks), bookings);
   schedule = resolveRandomGames(schedule, streamFor(seed, 'random-games'));
   let final = null;
 

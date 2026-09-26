@@ -102,7 +102,7 @@ export function perfectMatchSeasonShape() {
   const roles = perfectMatchRoles(cast, setup);
   const count = r => roles.filter(x => x === r).length;
   const episodes = Number(seasonConfig.pmEpisodes) > 0 ? Number(seasonConfig.pmEpisodes) : null;
-  const shape = { bombshells: count('bombshell'), casa: count('casa'), episodes, counts: perfectMatchArrivalCounts() };
+  const shape = { bombshells: count('bombshell'), casa: count('casa'), episodes, counts: perfectMatchArrivalCounts(), starters: count('starter') };
   const seed = gs?.pm?.seed;
   const schedule = seed ? perfectMatchScheduleFor(seed, shape) : buildSchedule(shape);
   return { ...shape, starters: count('starter'), auto: buildSchedule({ ...shape, episodes: null }).length,
@@ -250,7 +250,7 @@ export function perfectMatchEpisodes() {
   const roles = perfectMatchRoles(cast, perfectMatchSetup());
   const episodes = Number(seasonConfig.pmEpisodes) > 0 ? Number(seasonConfig.pmEpisodes) : null;
   return buildSchedule({ bombshells: roles.filter(r => r === 'bombshell').length,
-    casa: roles.filter(r => r === 'casa').length, episodes, counts: perfectMatchArrivalCounts() });
+    casa: roles.filter(r => r === 'casa').length, episodes, counts: perfectMatchArrivalCounts(), starters: roles.filter(r => r === 'starter').length });
 }
 
 /** Which episode is which vote slot, for this cast and length (picks do not move them). */
@@ -260,7 +260,7 @@ export function perfectMatchSlots() {
   const roles = perfectMatchRoles(cast, perfectMatchSetup());
   const episodes = Number(seasonConfig.pmEpisodes) > 0 ? Number(seasonConfig.pmEpisodes) : null;
   return buildSchedule({ bombshells: roles.filter(r => r === 'bombshell').length,
-    casa: roles.filter(r => r === 'casa').length, episodes, counts: perfectMatchArrivalCounts() }).filter(e => e.slot);
+    casa: roles.filter(r => r === 'casa').length, episodes, counts: perfectMatchArrivalCounts(), starters: roles.filter(r => r === 'starter').length }).filter(e => e.slot);
 }
 
 // ── NOTHING IS DECIDED UNTIL IT AIRS ──────────────────────────────────

@@ -48,8 +48,12 @@ describe('a whole Perfect Match season', () => {
   });
 
   it('a 20-islander cast still finishes', () => {
+    // A smaller cast plays a shorter season (pm/schedule.js buildSchedule
+    // `starters`): its spare weeks go, the spine and the couples-only week stay.
     const { rows, winners } = play(6, 20);
-    expect(rows.length).toBe(SEASON_TEMPLATE.length);
+    expect(rows.length).toBeLessThanOrEqual(SEASON_TEMPLATE.length);
+    expect(rows.length).toBeGreaterThanOrEqual(13);
+    expect(rows.filter(r => r.moment === 'public-vote').length).toBeGreaterThanOrEqual(3);
     expect(winners).toHaveLength(2);
   });
 });

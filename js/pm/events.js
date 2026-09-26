@@ -671,7 +671,8 @@ export const KINDS = {
     'knowing-me', 'knowing-row', 'talent-act', 'talent-win', 'talent-snub', 'baby-doll', 'sorts-podium', 'grafties-award', 'save-vote', 'save-tie', 'lie-write', 'lie-question', 'lie-row', 'blow-slip', 'blow-dare', 'lip-race', 'lip-watch', 'tower-q', 'course-run', 'course-pick', 'course-win', 'blind-run', 'sports-captains', 'sports-win', 'sports-sore', 'headline', 'triangle-torn', 'triangle-rivals', 'triangle-case', 'triangle-ultimatum', 'triangle-teams', 'triangle-choice', 'breakdown', 'comfort', 'no-show', 'blowup', 'pile-in', 'villa-divided', 'cold-shoulder', 'clear-the-air', 'apology', 'reunite', 'apology-rejected', 'casa-host', 'casa-react', 'casa-row', 'photo-text', 'photo-row', 'photo-split', 'movie-text', 'movie-seat', 'movie-clip', 'movie-react', 'movie-row', 'movie-split', 'arrival-chat', 'first-toast', 'debrief', 'bombshell-text', 'bombshell-guess', 'bombshell-react', 'top-couple-pick', 'couples-vote', 'ex-return', 'ex-ballot',
     // two after the same one, and the crush that isn't returned (pm/rivalry.js)
     'rival-shade', 'rival-play', 'code-call', 'rival-row', 'rival-step-back', 'rival-won', 'crush-confide', 'crush-watch', 'crush-move', 'crush-plea', 'crush-over',
-    'camp-rally', 'camp-confront', 'camp-clash', 'camp-lobby', 'camp-split', 'camp-switch', 'camp-after']
+    'camp-rally', 'camp-confront', 'camp-clash', 'camp-lobby', 'camp-split', 'camp-switch', 'camp-after',
+    'feud-confront', 'feud-interrupt', 'feud-shade', 'feud-ick', 'feud-closure']
     .map(k => [k, { salience: 1, cast: () => null,
       apply: (s, ev) => ({ pop: ev.extra.pop || {}, major: ev.extra.majorPop || [] }) }])),
 };

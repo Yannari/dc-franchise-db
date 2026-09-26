@@ -53,6 +53,19 @@
 //     crush-plea    [a, b]     a is b's partner, and asks for more
 //     crush-over    [a, b]     a lets it go, and says so
 //
+//   EXES AT WAR (lovers to enemies — user: "Rob and Leah can exist too; make
+//   sure the storyline can have, but not always, some resolution"). Rob left
+//   Leah for Andrea at a recoupling and whispered an apology; Leah felt lied
+//   to, interrupted them, and got the ick watching him cry (US 6, collider.com);
+//   it was never resolved in the villa. d was left, l left d for n.
+//     feud-confront   [d, l, n]  d has it out with l. `of`: hurt · furious
+//     feud-interrupt  [d, l, n]  d walks in on l and n
+//     feud-shade      [d, n, l]  d on the new one. `of`: catty · civil
+//     feud-ick        [d, f, l]  d to a friend: the ick; moving on
+//     feud-closure    [d, l]     it's talked out. `of`: peace · refused
+//   …and the villa takes sides here too (the camp steps). Some make peace;
+//   some never do, and it goes home with them.
+//
 // PERSONALITY DECIDES THE STORY. Every step is picked from how that islander
 // is built — stats, archetype, attachment — in proportion (CLAUDE.md: stats
 // are always proportional): the bold and hot-headed confront, the scheming
@@ -61,7 +74,7 @@
 // they never cared. Nice archetypes never scheme (they don't throw shade
 // behind a back, or lead anybody on).
 import { addBond, getBond } from '../bonds.js';
-import { addRelationshipDimension } from '../relationships.js';
+import { addRelationshipDimension, getRelationshipDimension } from '../relationships.js';
 import { makeEvent, partnerOf, roomMates } from './events.js';
 import { attr, nudgeAttraction, compatible } from './chemistry.js';
 import { romance, friendship, schemeEligible } from './feelings.js';
@@ -245,6 +258,22 @@ export function rivalries(state, rng, entry = null) {
     stepCrush(state, rng, t, ev);
     if (t.over) ended(t);
   }
+
+  // ── EXES AT WAR ──
+  for (const t of (state.exFeuds || []).filter(f => !f.over)) {
+    if (![t.d, t.l].every(n => state.villa.includes(n))) { t.over = true; t.why = 'gone'; continue; }
+    if (partnerOf(state, t.d) === t.l) { t.over = true; t.why = 'back'; continue; }
+    if (!sameRoom(state, t.d, t.l)) continue;
+    if (t.ep === state.ep) continue;
+    t.h = partnerOf(state, t.l) || t.h;
+    if (rng() < 0.85) stepFeud(state, rng, t, ev);
+    if (!t.over && t.h && sameRoom(state, t.h, t.d, t.l) && rng() < 0.6) stepCamp(state, rng, t, ev);
+    // Nothing settles it, and it runs out of road: unresolved, and it stays that way.
+    if (!t.over && t.stage >= 6) { t.over = true; t.why = 'unresolved'; }
+  }
+  const f = newFeud(state, rng);
+  if (f) { (state.exFeuds ||= []).push(f); stepFeud(state, rng, f, ev); }
+  state._rivCouples = state.couples.map(p => [...p]);
   return out;
 }
 
@@ -312,6 +341,93 @@ function stepRivalry(state, rng, t, ev) {
   }
 }
 
+// ── exes at war ───────────────────────────────────────────────────────
+/**
+ * A couple the last night split, both still here, one of them now with
+ * someone else: the one left behind (d) was invested, and may go to war.
+ * Read from the couples as they were the last time this ran.
+ */
+function newFeud(state, rng) {
+  const before = state._rivCouples || [];
+  if ((state.exFeuds || []).filter(f => !f.over).length >= 2) return null;
+  const busy = busyIn(state);
+  for (const [p, q] of before) {
+    if (!state.villa.includes(p) || !state.villa.includes(q) || partnerOf(state, p) === q) continue;
+    if ((state.exFeuds || []).some(f => [f.d, f.l].includes(p) && [f.d, f.l].includes(q))) continue;
+    // l moved on to someone; d is the one left, and the more hurt of the two.
+    const pn = partnerOf(state, p), qn = partnerOf(state, q);
+    let d, l;
+    if (qn && !pn) [d, l] = [p, q];
+    else if (pn && !qn) [d, l] = [q, p];
+    else if (pn && qn) [d, l] = romance(p, q) >= romance(q, p) ? [p, q] : [q, p];
+    else continue;
+    if (busy.has(d) && busy.has(l)) continue;
+    const hurt = romance(d, l) / 10;
+    if (hurt < 0.25) continue;
+    if (rng() < Math.min(0.9, 0.35 + hurt * (0.6 + 0.4 * st(state, d, 'boldness')))) {
+      return { d, l, h: partnerOf(state, l), x: d, y: l, feud: true, ep: state.ep, stage: 0, over: false };
+    }
+  }
+  return null;
+}
+
+function stepFeud(state, rng, t, ev) {
+  const { d, l } = t;
+  const n = partnerOf(state, l);
+  t.stage++;
+  const style = styleOf(state, d, rng);
+  const calm = (st(state, d, 'temperament') + st(state, l, 'temperament')) / 2;
+  // The first thing is always having it out.
+  if (t.stage === 1 && n) {
+    const furious = style === 'confront' || style === 'shade' || rng() < 0.5 * (1 - st(state, d, 'temperament'));
+    addBond(d, l, furious ? -1.2 : -0.6); addRelationshipDimension(d, l, 'resentment', furious ? 1 : 0.6);
+    feel(state, l, 'guilt', 0.6); feel(state, d, 'stress', 0.6);
+    t.last = { kind: 'row', by: d, at: l };
+    return ev('feud-confront', [d, l, n], { of: furious ? 'furious' : 'hurt', sides: sidesOf(state, t), pop: pop([d, 0.4, 2], [l, -0.4, 2]) }, [d, l]);
+  }
+  const opts = [];
+  // Talking it out: the calmer they both are, and the guiltier l feels, the likelier.
+  const guilt = Math.min(1, (state.emo?.[l]?.guilt ?? 0) / 4);
+  if (t.stage >= 2) opts.push(['closure', 0.25 + 0.6 * calm + 0.4 * guilt]);
+  if (n && st(state, d, 'boldness') > 0.4) opts.push(['interrupt', 0.8 * st(state, d, 'boldness') * (1.2 - st(state, d, 'temperament'))]);
+  if (n) opts.push(['shade', 0.7 * (style === 'shade' || style === 'confront' ? 1.5 : 0.6)]);
+  opts.push(['ick', 0.4 + 0.6 * attachment(state.profiles[d]).secure]);
+  const move = weighted(rng, opts);
+  if (move === 'closure') {
+    // Peace, or not yet: d's resentment against how calm they both are.
+    const res = Math.min(1, getRelationshipDimensionSafe(d, l) / 5);
+    const peace = rng() < 0.2 + 0.6 * calm + 0.3 * guilt - 0.4 * res;
+    if (peace) {
+      addBond(d, l, 1.2); addBond(l, d, 1.2); addRelationshipDimension(d, l, 'resentment', -1.2);
+      feel(state, d, 'stress', -0.6); feel(state, l, 'guilt', -0.8);
+      t.over = true; t.why = 'peace';
+      return ev('feud-closure', [d, l], { of: 'peace', pop: pop([d, 0.6, 1.5], [l, 0.5, 1.5]) });
+    }
+    addRelationshipDimension(d, l, 'resentment', 0.3); feel(state, l, 'guilt', 0.3);
+    return ev('feud-closure', [d, l], { of: 'refused', pop: pop([d, 0.1, 1.2], [l, 0, 1]) });
+  }
+  if (move === 'interrupt') {
+    addBond(n, d, -0.6); addBond(l, d, -0.3); feel(state, n, 'stress', 0.3);
+    t.last = { kind: 'interrupt', by: d, at: l };
+    return ev('feud-interrupt', [d, l, n], { sides: sidesOf(state, t), pop: pop([d, -0.1, 1.5], [n, 0.1, 1]) }, [d]);
+  }
+  if (move === 'shade') {
+    const catty = style === 'shade' || style === 'confront';
+    if (catty) { addBond(d, n, -0.8); addBond(n, d, -0.6); t.last = { kind: 'shade', by: d, at: n }; }
+    else addBond(d, n, 0.2);
+    return ev('feud-shade', [d, n, l], { of: catty ? 'catty' : 'civil', pop: pop([d, catty ? -0.2 : 0.4, 1.2]) });
+  }
+  // The ick: seeing l differently now, and starting to let go.
+  const f = friendOf(state, d, [l, n]);
+  if (!f) return;
+  nudgeAttraction(state, d, l, -1.5); feel(state, d, 'stress', -0.3); addBond(d, f, 0.3);
+  if ((attr(state, d, l) ?? 0) < 2.5) { t.over = true; t.why = 'moved-on'; }
+  return ev('feud-ick', [d, f, l], { pop: pop([d, 0.3, 1]) });
+}
+const getRelationshipDimensionSafe = (a, b) => {
+  try { return getRelationshipDimension(a, b, 'resentment') || 0; } catch { return 0; }
+};
+
 // ── the villa takes sides ─────────────────────────────────────────────
 /** Who is on whose side: everyone else leans to the rival they are closer to. */
 export function campsOf(state, t) {
@@ -348,7 +464,7 @@ function stepCamp(state, rng, t, ev) {
   const opts = [];
   if (mine.length) opts.push(['rally', hostile ? 1.3 : 0.4]);
   if (mine.length) opts.push(['confront', (hostile ? 1.3 : 0.5) * Math.max(...mine.map(n => st(state, n, 'boldness')))]);
-  if (camps.X.length + camps.Y.length) opts.push(['lobby', 0.8]);
+  if (camps.X.length + camps.Y.length && !t.feud) opts.push(['lobby', 0.8]);
   if (camps.X.length >= 2 && camps.Y.length >= 2 && t.stage >= 2 && !t.split) opts.push(['split', 1.4]);
   const move = weighted(rng, opts);
   if (!move) return;

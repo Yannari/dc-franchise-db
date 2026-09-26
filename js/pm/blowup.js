@@ -68,6 +68,9 @@ function grievances(state, tonight = []) {
     // …and the two sides: whoever went at somebody's friend, and the pair who clashed over it.
     if (e.kind === 'camp-confront' && e.extra?.of === 'hot') add(p[1], p[0], 1.2 * fade, 'history');
     if (e.kind === 'camp-clash') { add(p[0], p[1], 1.5 * fade, 'history'); add(p[1], p[0], 1.5 * fade, 'history'); }
+    // Exes at war: the one left, at the one who left; the new one, at the one who keeps coming over.
+    if (e.kind === 'feud-confront') add(p[0], p[1], 2 * fade, 'steal');
+    if (e.kind === 'feud-interrupt' || (e.kind === 'feud-shade' && e.extra?.of === 'catty')) add(p[e.kind === 'feud-shade' ? 1 : 2], p[0], 1.2 * fade, 'history');
   }
   // Jealousy of a rival is a grievance of its own: the one who has been
   // eyeing their partner, whatever the record says.

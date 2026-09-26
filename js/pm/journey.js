@@ -37,6 +37,20 @@ const LOVE = new Set(['love-said', 'official-ask', 'exclusive-ask']);
 const TEST = new Set(['pull', 'head-turned', 'bed-share', 'kiss', 'date', 'hideaway']);
 const CHALLENGE = new Set(['knowing-me', 'couple-goals', 'lip-race', 'blind-run', 'course-pick', 'snogger-kiss', 'talent-act', 'baby-doll', 'tower-q']);
 const MAX_CHAPTERS = 8;
+// The love stories the final can tell (user: "love-story storylines usable
+// at the last episode — enemies to lovers, friends to lovers"). From the
+// show: Ekin-Su and Davide, "a liar and an actress" and then the winners
+// (UK 8, enemies to lovers); Dami and Indiyah, friends while coupled with
+// others until week two (UK 8, friends to lovers); Paige and Jacques, she
+// fell first and he fell harder (UK 8). Each is read from the record:
+// what went on between the two of them BEFORE they were a couple.
+const HOSTILE = new Set(['argument', 'blowup', 'rival-shade', 'rival-row', 'camp-confront', 'camp-clash', 'code-call', 'cold-shoulder',
+  // exes at war who found their way back (pm/rivalry.js): lovers, enemies, lovers again
+  'feud-confront', 'feud-interrupt']);
+const FRIENDLY = new Set(['friendship', 'comedy', 'camp-rally', 'advice', 'comfort', 'solidarity']);
+const hostileBetween = (e, a, b) => HOSTILE.has(e.kind) && both(e, a, b) && !(e.kind === 'rival-row' && e.extra?.of === 'clear-air')
+  // a camp scene is between the two who clashed, not everyone in it
+  && (!e.kind.startsWith('camp-') || (e.players.slice(0, 2).includes(a) && e.players.slice(0, 2).includes(b)));
 
 const both = (e, a, b) => e.players.includes(a) && e.players.includes(b);
 
@@ -82,10 +96,19 @@ export function storyOf(state, a, b) {
   add('love', seen.find(e => LOVE.has(e.kind) && both(e, a, b)));
   // A challenge they did together.
   add('challenge', seen.find(e => CHALLENGE.has(e.kind) && both(e, a, b)));
+  // Before they were a couple: at each other's throats, or friends.
+  const before = e => at(e) < from || (coupled && e.ep < coupled.ep);
+  add('enemies', seen.find(e => hostileBetween(e, a, b) && before(e)));
+  const friendly = seen.filter(e => FRIENDLY.has(e.kind) && e.players.slice(0, 2).includes(a) && e.players.slice(0, 2).includes(b) && before(e));
+  if (friendly.length >= 2) add('friends', friendly[0]);
+  // One of them wanted the other first, and wasn't wanted back — yet.
+  add('crush', seen.find(e => (e.kind === 'crush-move' || e.kind === 'crush-plea' || e.kind === 'crush-confide') && both(e, a, b)));
+  // They came out of a rivalry: one of them was fought over, and chose.
+  add('fought', seen.find(e => e.kind === 'rival-won' && [e.players[0], e.players[2]].includes(a) && [e.players[0], e.players[2]].includes(b)));
   // In order, the beginning always kept, and no more than the film has room for.
   found.sort((x, y) => at(x.event) - at(y.event));
   if (found.length > MAX_CHAPTERS) {
-    const keep = new Set(['night-one', 'met', 'date-met', 'coupled', 'first-kiss', 'love', 'split', 'back']);
+    const keep = new Set(['night-one', 'met', 'date-met', 'coupled', 'first-kiss', 'love', 'split', 'back', 'enemies', 'friends', 'crush', 'fought']);
     const must = found.filter(c => keep.has(c.type));
     const rest = found.filter(c => !keep.has(c.type)).slice(0, Math.max(0, MAX_CHAPTERS - must.length));
     return found.filter(c => must.includes(c) || rest.includes(c)).slice(0, MAX_CHAPTERS);
@@ -146,9 +169,19 @@ export function shapesOf(state, couples) {
   const info = couples.map(([a, b]) => ({ a, b, chapters: storyOf(state, a, b), road: roadOf(state, a, b) }));
   const rocky = new Set(info.filter(x => x.road.score >= 7 && !x.chapters.some(c => c.type === 'split'))
     .sort((p, q) => q.road.score - p.road.score).slice(0, 2).map(x => x));
+  const has = (x, t) => x.chapters.some(c => c.type === t);
   return info.map(x => {
     const { road, chapters } = x;
     if (chapters.some(c => c.type === 'split')) return 'way-back';
+    // The love stories, when their record holds one: they fought before
+    // they fell; they were fought over; one fell first and the other fell
+    // harder; they were friends first.
+    if (has(x, 'enemies')) return 'enemies';
+    if (has(x, 'fought')) return 'fought-for';
+    if (has(x, 'crush')) {
+      const c = (state.crushes || []).find(t => (t.a === x.a && t.b === x.b) || (t.a === x.b && t.b === x.a));
+      if (c && romance(c.b, c.a) >= romance(c.a, c.b)) return 'fell-harder';
+    }
     if (rocky.has(x)) return 'rocky';
     if (road.atRisk >= 2) return 'survivors';
     if (road.casaClean) return 'held';
@@ -156,6 +189,7 @@ export function shapesOf(state, couples) {
     if ([x.a, x.b].some(n => state.profiles[n]?.role === 'casa')) return 'casa-made';
     const late = (chapters[0]?.event.ep ?? 1) > len * 0.5;
     if (late) return 'late';
+    if (has(x, 'friends')) return 'friends';
     if (road.metAt != null && road.coupledEp != null && road.metAt <= len * 0.3 && road.coupledEp - road.metAt >= Math.max(3, len * 0.25)) return 'slow-burn';
     return 'steady';
   });
@@ -206,7 +240,7 @@ export function finalDate(state, rng, [a, b], n, given = null) {
     events.push(makeEvent(state, rng, { phase: 'final-date', kind: 'journey-clip', players: c.about ? [a, b, c.about] : [a, b], aired: true,
       extra: { of: c.type, clip: c.event.id, clipEp: c.event.ep, day, about: c.about, first: i === 0, pop: pop(0, 0.4) } }));
     // Watching it back: warmer for the good moments, a wince for the bad.
-    const sore = ['row', 'tested', 'casa', 'photos', 'split', 'at-risk'].includes(c.type);
+    const sore = ['row', 'tested', 'casa', 'photos', 'split', 'at-risk', 'enemies'].includes(c.type);
     feel(state, a, sore ? 'stress' : 'security', 0.2); feel(state, b, sore ? 'stress' : 'security', 0.2);
     addBond(a, b, sore ? 0.1 : 0.25);
     events.push(makeEvent(state, rng, { phase: 'final-date', kind: 'journey-react', players: [a, b], aired: true,
@@ -220,7 +254,7 @@ export function finalDate(state, rng, [a, b], n, given = null) {
 }
 
 // What a declaration can point back to, best first: the moments a speech is made of.
-const SPEAKS_OF = ['back', 'casa', 'photos', 'split', 'at-risk', 'row', 'love', 'first-kiss', 'night-one', 'date-met', 'coupled', 'met'];
+const SPEAKS_OF = ['back', 'enemies', 'fought', 'crush', 'casa', 'photos', 'split', 'at-risk', 'friends', 'row', 'love', 'first-kiss', 'night-one', 'date-met', 'coupled', 'met'];
 /** The chapter each of them talks about in their speech: never the same one twice. */
 export function speechChapters(chapters) {
   const ranked = SPEAKS_OF.map(t => chapters.find(c => c.type === t)).filter(Boolean);

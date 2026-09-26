@@ -58,7 +58,8 @@ describe('the pools are well-formed', () => {
       'pair-text': 1, 'intro-kin': 1, 'kin-vet': 3, 'kin-protect': 3, 'ex-jealous': 3, 'ex-partner': 3, 'dump-open': 0, 'dump-decide': 0, 'dump-recap': 3, reveal: 3, 'hideaway-vote': 4, 'hideaway-morning': 3, 'recouple-open': 0, 'casa-explain': 0, 'recouple-single': 1, 'final-open': 0, 'reunion-open': 0, 'reunion-close': 0, 'rule-open': 1, 'tod-truth': 3,
       'rival-shade': 3, 'rival-play': 3, 'code-call': 3, 'rival-row': 3, 'rival-step-back': 3, 'rival-won': 3,
       'crush-confide': 3, 'crush-watch': 3,
-      'camp-rally': 3, 'camp-confront': 3, 'camp-clash': 4, 'camp-lobby': 3, 'camp-split': 3, 'camp-switch': 3, 'camp-after': 3 };
+      'camp-rally': 3, 'camp-confront': 3, 'camp-clash': 4, 'camp-lobby': 3, 'camp-split': 3, 'camp-switch': 3, 'camp-after': 3,
+      'feud-confront': 3, 'feud-interrupt': 3, 'feud-shade': 3, 'feud-ick': 3 };
     for (const [k, e] of ENTRIES) {
       if (k.startsWith('hut:') || k.startsWith('narrator:')) continue;
       const size = CAST[k] || 2;

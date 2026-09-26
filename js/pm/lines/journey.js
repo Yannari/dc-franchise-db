@@ -229,3 +229,47 @@ export const JOURNEY_MORE = {
     { id: 'jr.l4', when: { of: 'love' }, turns: [['a', "I meant it. I still mean it."], ['b', "I know you do."]] },
   ],
 };
+
+// The shapes the final gives by what was the couple's own (journey.js
+// shapesOf): survivors (at risk again and again), held (Casa could not touch
+// them), slow-burn (met early, together late).
+export const JOURNEY_SHAPES = {
+  'journey-open': [
+    { id: 'jo.cm1', when: { of: 'casa-made' }, stage: 'The film starts at Casa Amor, the night they met.', turns: [['b', "Look at you walking in."], ['a', "Look at you pretending you weren't looking."]] },
+    { id: 'jo.cm2', when: { of: 'casa-made' }, turns: [['a', "Everyone said Casa couples never last."], ['b', "Everyone says a lot of things."]] },
+    { id: 'jo.cm3', when: { of: 'casa-made' }, stage: 'A screen lights up with a film of the two of them. It begins halfway through the summer.', turns: [['b', "We came in late to this."], ['a', "We came in at the right time."]] },
+    { id: 'jo.sv1', when: { of: 'survivors' }, stage: 'The film begins at the fire pit. It comes back to the fire pit a lot.', turns: [['b', "How many times were we at risk?"], ['a', "Too many."]] },
+    { id: 'jo.sv2', when: { of: 'survivors' }, stage: 'A screen lights up with their names.', turns: [['a', "Every week, I thought this was it."], ['b', "And every week it wasn't."]] },
+    { id: 'jo.sv3', when: { of: 'survivors' }, turns: [['b', "Is this going to be all fire pits?"], ['a', "Probably. We spent enough time at it."]] },
+    { id: 'jo.hd1', when: { of: 'held' }, stage: 'The film starts, and it starts with the two of them apart: Casa Amor.', turns: [['a', "I know how this bit ends."], ['b', "So do I. With you."]] },
+    { id: 'jo.hd2', when: { of: 'held' }, turns: [['b', "Everyone said Casa would get us."], ['a', "Everyone was wrong."]] },
+    { id: 'jo.hd3', when: { of: 'held' }, stage: 'A photo album with their names on the front, and one photo from each villa inside.', turns: [['a', "Two villas, and still us."]] },
+    { id: 'jo.sb1', when: { of: 'slow-burn' }, stage: 'The film opens on the first week, with the two of them barely talking.', turns: [['b', "Look at us. We had no idea."], ['a', "You had no idea. I had some idea."]] },
+    { id: 'jo.sb2', when: { of: 'slow-burn' }, turns: [['a', "It took us so long, didn't it?"], ['b', "We got there."]] },
+    { id: 'jo.sb3', when: { of: 'slow-burn' }, stage: 'A screen lights up. The first clip is from weeks before they coupled up.', turns: [['b', "Were we friends first?"], ['a', "We were friends first."]] },
+  ],
+  'journey-end': [
+    { id: 'je.cm1', when: { of: 'casa-made' }, turns: [['b', "Casa was meant to break couples up."], ['a', "It made one."]] },
+    { id: 'je.cm2', when: { of: 'casa-made' }, stage: 'The last photo is from the night they walked back into the villa together.', turns: [['a', "Everyone was staring."], ['b', "Let them stare."]] },
+    { id: 'je.cm3', when: { of: 'casa-made' }, turns: [['a', "I nearly didn't come back with you."], ['b', "I know. I'm glad you did."]] },
+    { id: 'je.sv1', when: { of: 'survivors' }, turns: [['a', "They kept putting us up there, and we kept coming back down together."], ['b', "Every time."]] },
+    { id: 'je.sv2', when: { of: 'survivors' }, stage: 'The film ends on them at the fire pit, still holding hands.', turns: [['b', "I don't think I'll ever be able to sit at a fire pit again."], ['a', "We'll get one for the garden."]] },
+    { id: 'je.sv3', when: { of: 'survivors' }, turns: [['a', "Nobody thought we'd make it to the final."], ['b', "We did."]] },
+    { id: 'je.hd1', when: { of: 'held' }, turns: [['b', "Three days apart, and all I did was miss you."], ['a', "Same. The whole time."]] },
+    { id: 'je.hd2', when: { of: 'held' }, stage: 'The last photo is the two of them on the bench, the night they both came back alone.', turns: [['a', "That's my favourite night in here."]] },
+    { id: 'je.hd3', when: { of: 'held' }, turns: [['a', "If Casa couldn't do it, nothing can."], ['b', "Don't jinx it."]] },
+    { id: 'je.sb1', when: { of: 'slow-burn' }, turns: [['a', "Worth the wait?"], ['b', "Every day of it."]] },
+    { id: 'je.sb2', when: { of: 'slow-burn' }, stage: 'The film ends where it began, with the two of them laughing.', turns: [['b', "We were friends first. I think that's why it works."]] },
+    { id: 'je.sb3', when: { of: 'slow-burn' }, turns: [['a', "I think I knew before you did."], ['b', "You definitely did."]] },
+  ],
+  declaration: [
+    { id: 'dec.cm1', when: { of: 'casa-made' }, stage: '{a} stands up and turns to {b}.', turns: [['a', "Nobody gave us a chance. A Casa couple, they said. Give it a week. And here we are, in the final. I'm not going anywhere."]] },
+    { id: 'dec.cm2', when: { of: 'casa-made' }, turns: [['a', "I walked into a villa full of strangers, and you were the one that made it feel like home."]], beat: '{b} squeezes {a.posAdj} hand.' },
+    { id: 'dec.sv1', when: { of: 'survivors' }, stage: '{a} stands up at the fire pit, where they have stood so many times.', turns: [['a', "{b}, every week they put us up there, and every week I'd have chosen you all over again. I'm not scared of this fire pit any more. I've got you."]] },
+    { id: 'dec.sv2', when: { of: 'survivors' }, stage: '{a} takes {b}\'s hands.', turns: [['a', "We've been at risk more times than anyone. And every time, the only thing I was scared of was losing you."]], beat: '{b} is already crying.' },
+    { id: 'dec.hd1', when: { of: 'held' }, stage: '{a} turns to {b}.', turns: [['a', "When you went to Casa, everyone told me to be ready for the worst. I sat on that bench, and you walked back in alone. I'll never forget that."]] },
+    { id: 'dec.hd2', when: { of: 'held' }, turns: [['a', "We had every reason to give up and we didn't even think about it. That's what I want. That, for as long as you'll have me."]] },
+    { id: 'dec.sb1', when: { of: 'slow-burn' }, stage: '{a} stands up and laughs before saying anything.', turns: [['a', "{b}, you were my friend before you were anything else. It took us ages. I wouldn't change a single day."]] },
+    { id: 'dec.sb2', when: { of: 'slow-burn' }, turns: [['a', "I don't know when it happened. Somewhere between the first week and now, you became my favourite person."]], beat: '{b} covers {b.posAdj} face.' },
+  ],
+};

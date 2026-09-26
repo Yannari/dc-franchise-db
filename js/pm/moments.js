@@ -22,7 +22,7 @@ import { secretMission, sleepover, immunityChallenge } from './one-offs.js';
 import { attr, nudgeAttraction } from './chemistry.js';
 import { stickOrTwist } from './casa.js';
 import { kissFirst } from './kiss-games.js';
-import { finalDate, speechChapters } from './journey.js';
+import { finalDate, speechChapters, shapesOf } from './journey.js';
 import { confrontation } from './movie-night.js';
 import { addRelationshipDimension } from '../relationships.js';
 import { closeEpisode, BETRAYAL } from './ledger.js';
@@ -1114,7 +1114,9 @@ Object.assign(MOMENTS, {
     // THE FINAL DATES (pm/journey.js): each couple on their last date, shown
     // their own story — then the declarations, which speak from it.
     const events = [];
-    const dates = state.couples.map(([a, b], n) => { const d = finalDate(state, ctx.rng, [a, b], n); events.push(...d.events); return d; });
+    // Each story's shape is decided against the others (journey.js shapesOf).
+    const shapes = shapesOf(state, state.couples);
+    const dates = state.couples.map(([a, b], n) => { const d = finalDate(state, ctx.rng, [a, b], n, shapes[n]); events.push(...d.events); return d; });
     // THE DECLARATIONS: both of them speak, as the show has it — each opens on
     // the shape of their story and then speaks of one real moment from it
     // (the chapter their film showed), never the same one as their partner.

@@ -93,7 +93,75 @@ export function storyOf(state, a, b) {
   return found;
 }
 
-/** The shape of a story, for what they say at the end of it and in the declarations. */
+/**
+ * How hard a couple's road was, weighed rather than counted (user: "how
+ * would you tighten it" — a row over a sunbed weighed as much as the Casa
+ * photos, and three finalist couples of four were "rocky"). Read from the
+ * whole of their time together, not the film's one chapter of each: rows by
+ * how public they were, tests by whether the partner found out, the photos,
+ * and nights at risk (the first one is a normal night; each after it is not).
+ */
+export function roadOf(state, a, b) {
+  const seen = (state.history || []).filter(e => e.ep != null);
+  const coupledAt = seen.findIndex(e => COUPLING.has(e.kind) && both(e, a, b));
+  const after = seen.slice(Math.max(0, coupledAt));
+  let score = 0;
+  for (const e of after) {
+    if (!both(e, a, b)) continue;
+    if (e.kind === 'blowup') score += e.aired ? 2 : 0.8;
+    else if (e.kind === 'argument') score += e.aired ? 0.6 : 0.2;
+    else if (e.kind === 'photos') score += 2.5;
+  }
+  // Tests: one of them with somebody else while they were a couple. A chat
+  // somebody pulled them for is the villa, and every couple has dozens (one
+  // season's finalists had 20-50 each); a kiss, a bed or a promise for the
+  // outside is a betrayal, and it cut deeper when the partner found out.
+  const since = coupledAt >= 0 ? seen[coupledAt].ep : Infinity;
+  let tests = 0;
+  for (const s of state.secrets || []) {
+    if (!((s.who === a && s.partner === b) || (s.who === b && s.partner === a)) || s.said || !s.kind || s.ep < since) continue;
+    tests += s.kind === 'pull' ? (s.known ? 0.15 : 0.05) : (s.known ? 2.5 : 0.8);
+  }
+  score += Math.min(6, tests);
+  const atRisk = after.filter(e => (e.kind === 'dump-buildup' || e.kind === 'dump-at-risk') && both(e, a, b)).length;
+  score += atRisk ? 0.5 + (atRisk - 1) * 1.2 : 0;
+  const metAt = seen.find(e => both(e, a, b))?.ep ?? null;
+  const coupledEp = coupledAt >= 0 ? seen[coupledAt].ep : null;
+  // Held at Casa: a couple before it, who came back to each other, with
+  // nothing from Casa between them — never a couple Casa itself made.
+  const casa = after.find(e => e.kind === 'casa-return' && both(e, a, b) && e.extra?.choice !== 'twist');
+  const casaClean = !!casa && coupledEp != null && state.splitEp != null && coupledEp < state.splitEp
+    && !(state.secrets || []).some(s => s.casa && s.with && s.kind !== 'pull' && ((s.who === a && s.partner === b) || (s.who === b && s.partner === a)));
+  return { score, atRisk, casaClean, metAt, coupledEp };
+}
+
+/**
+ * The shapes of the final's stories, all at once: the two hardest roads may
+ * be rocky, and only if they were hard; every other couple is told by what
+ * was actually theirs — survivors of the fire pit, the couple Casa could not
+ * touch, the slow burn, the whirlwind, or steady.
+ */
+export function shapesOf(state, couples) {
+  const len = state.ep || 1;
+  const info = couples.map(([a, b]) => ({ a, b, chapters: storyOf(state, a, b), road: roadOf(state, a, b) }));
+  const rocky = new Set(info.filter(x => x.road.score >= 7 && !x.chapters.some(c => c.type === 'split'))
+    .sort((p, q) => q.road.score - p.road.score).slice(0, 2).map(x => x));
+  return info.map(x => {
+    const { road, chapters } = x;
+    if (chapters.some(c => c.type === 'split')) return 'way-back';
+    if (rocky.has(x)) return 'rocky';
+    if (road.atRisk >= 2) return 'survivors';
+    if (road.casaClean) return 'held';
+    // A couple Casa Amor made: one of them walked in there.
+    if ([x.a, x.b].some(n => state.profiles[n]?.role === 'casa')) return 'casa-made';
+    const late = (chapters[0]?.event.ep ?? 1) > len * 0.5;
+    if (late) return 'late';
+    if (road.metAt != null && road.coupledEp != null && road.metAt <= len * 0.3 && road.coupledEp - road.metAt >= Math.max(3, len * 0.25)) return 'slow-burn';
+    return 'steady';
+  });
+}
+
+/** The shape of one story, alone (the final assigns them together: shapesOf). */
 export function shapeOf(chapters, state, a, b) {
   const has = t => chapters.some(c => c.type === t);
   if (has('split')) return 'way-back';
@@ -124,10 +192,10 @@ function curveOf(a, b) {
  * say when it ends. Watching it back brings them closer, in proportion to
  * how much they already feel.
  */
-export function finalDate(state, rng, [a, b], n) {
+export function finalDate(state, rng, [a, b], n, given = null) {
   const events = [];
   const chapters = storyOf(state, a, b);
-  const shape = shapeOf(chapters, state, a, b);
+  const shape = given || shapeOf(chapters, state, a, b);
   const pop = (x, y) => ({ [a]: { approval: x, fame: y }, [b]: { approval: x, fame: y } });
   events.push(makeEvent(state, rng, { phase: 'final-date', kind: 'final-date', players: [a, b], aired: true,
     extra: { of: ['sunset', 'yacht', 'picnic', 'rooftop'][n % 4], pop: pop(0.2, 1.5) } }));

@@ -17,7 +17,7 @@ export const HEAT_LINES = {
       ['a', "Nothing, really. I just realised we haven't spoken properly since you got here."], ['b', "We haven't, have we?"],
       ['a', "So. Tell me something about you."], ['b', "I'm a terrible dancer. That's the main thing."],
       ['a', "Everyone in here is a terrible dancer."], ['b', "Then I'll fit right in."]],
-      beat: 'It is a nice chat. It is not much more than that.' },
+      beat: "It's a nice chat. That's all." },
     { id: 'ht.l2', when: { heat: 'light' }, stage: '{a} and {b} sit on the edge of the pool, feet in the water.', turns: [
       ['a', "You're really easy to talk to, you know."], ['b', "So are you. I think everyone's so nervous in here."],
       ['a', "What do you miss most from home?"], ['b', "My own bed. Is that boring?"],
@@ -32,7 +32,7 @@ export const HEAT_LINES = {
       ['b', "Is this a chat chat, or just a chat?"], ['a', "Just a chat. I promise."],
       ['b', "Okay. Good. I wasn't sure."], ['a', "I just wanted to get to know you a bit."],
       ['b', "Go on, then. Ask me something."], ['a', "Best holiday you've ever been on?"], ['b', "This one, so far."]],
-      beat: 'Both of them seem relieved it is only a chat.' },
+      beat: 'They both look relieved.' },
     { id: 'ht.l5', when: { heat: 'light' }, stage: '{a} brings {b} a drink on the terrace.', turns: [
       ['a', "Peace offering. I don't think we've really spoken."], ['b', "We haven't. Hi."],
       ['a', "Hi. How are you finding it?"], ['b', "Honestly? Overwhelming. Everyone's so full on."],
@@ -47,7 +47,7 @@ export const HEAT_LINES = {
       ['b', "Good all over the place, or bad?"], ['a', "Bit of both. What about you?"],
       ['b', "Quiet day. I've been sunbathing and thinking."], ['a', "Thinking about what?"],
       ['b', "Nothing interesting. That's the problem."]],
-      beat: 'They swing for a bit in easy silence.' },
+      beat: 'They swing for a while without talking.' },
     { id: 'ht.l8', when: { heat: 'light' }, turns: [
       ['a', "I feel like we'd be really good friends on the outside."], ['b', "Friends?"],
       ['a', "Is that bad?"], ['b', "No! No, I like that. I think you're right."],
@@ -60,12 +60,12 @@ export const HEAT_LINES = {
       ['a', "I can't stop thinking about you."], ['b', "Oh. That's… nice."],
       ['a', "Nice?"], ['b', "It's really nice. I'm just not sure where my head is right now."],
       ['a', "That's fine. I'll wait."], ['b', "You don't have to wait for me."]],
-      beat: '{a} is hanging on every word. {b} keeps glancing over at the others.' },
+      beat: '{a} is keen. {b} keeps looking at the others.' },
     { id: 'ht.o2', when: { heat: 'one-sided' }, stage: '{a} has saved {b} the seat right next to them.', turns: [
       ['a', "So, what's your type? Asking for a friend."], ['b', "I'll let you know when I meet them."],
       ['a', "What if you already have?"], ['b', "Then I'm sure I'll work it out."],
       ['a', "I could help you work it out."], ['b', "I think I'll manage, thanks."]],
-      beat: '{a} laughs a bit too hard. {b} does not.' },
+      beat: "{a} laughs too hard. {b} doesn't." },
     { id: 'ht.o3', when: { heat: 'one-sided' }, turns: [
       ['a', "Do you ever think about us?"], ['b', "Us?"],
       ['a', "You know. Me and you."], ['b', "I… haven't really, if I'm honest."],
@@ -103,7 +103,7 @@ export const HEAT_LINES = {
       ['a', "A chat. Maybe a bit more than a chat."], ['b', "Oh, a bit more?"],
       ['a', "I'm just saying, I'm open to it."], ['b', "You're very sure of yourself."],
       ['a', "Is it working?"], ['b', "…A little bit."]],
-      beat: 'They are both smiling now, and neither of them is hiding it.' },
+      beat: "They're both smiling." },
     { id: 'ht.f2', stage: '{a} and {b} end up on the daybeds, knees touching.', turns: [
       ['b', "You've been looking at me all day."], ['a', "Have I?"],
       ['b', "You know you have."], ['a', "Maybe you've been looking at me looking at you."],
@@ -142,7 +142,7 @@ export const HEAT_LINES = {
       ['a', "If we weren't on camera right now…"], ['b', "Don't finish that sentence."],
       ['a', "Why not?"], ['b', "Because I'd let you."],
       ['a', "You'd let me what?"], ['b', "You know what."]],
-      beat: 'Half the terrace has stopped pretending not to watch.' },
+      beat: 'Half the terrace is watching.' },
     { id: 'ht.s2', when: { heat: 'steamy' }, turns: [
       ['b', "Stop looking at me like that."], ['a', "Like what?"],
       ['b', "You know exactly like what."], ['a', "I can't help it."],
@@ -159,8 +159,8 @@ export const HEAT_LINES = {
     { id: 'ht.s5', when: { heat: 'steamy' }, turns: [
       ['a', "I want to kiss you so badly right now."], ['b', "Then why are you still talking?"],
       ['a', "Because everyone's watching."], ['b', "Since when did you care who was watching?"]],
-      beat: "Somebody coughs loudly from the kitchen, and the moment's gone. For now." },
-    { id: 'ht.s6', when: { heat: 'steamy' }, stage: 'The hot tub, late, with the others on the other side of the garden.', turns: [
+      beat: 'Someone coughs in the kitchen, and they pull apart.' },
+    { id: 'ht.s6', when: { heat: 'steamy' }, stage: 'The hot tub, late. The others are across the garden.', turns: [
       ['b', "This is dangerous."], ['a', "What is?"],
       ['b', "You. This. Us being alone."], ['a', "We're not alone. There are cameras everywhere."],
       ['b', "That doesn't make it any less dangerous."], ['a', "No. It really doesn't."]] },
@@ -168,7 +168,7 @@ export const HEAT_LINES = {
       ['a', "Tell me to walk away."], ['b', "Why would I do that?"],
       ['a', "Because if you don't, I'm not going to."], ['b', "Then don't."],
       ['a', "You're making this very hard."], ['b', "Good."]],
-      beat: 'The whole terrace can feel it from where they are sitting.' },
+      beat: 'Everyone on the terrace is watching them.' },
     { id: 'ht.s8', when: { heat: 'steamy' }, stage: "{b} is fixing {a}'s collar, and taking a very long time about it.", turns: [
       ['a', "It's fine. It doesn't need fixing."], ['b', "It really does."],
       ['a', "You're not even fixing it."], ['b', "I know."],

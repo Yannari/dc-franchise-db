@@ -134,7 +134,10 @@ describe('the words follow the rules', () => {
       // round 5: jokes you have to decode (user: "whats the knife bit")
       'the knife bit', 'four times.', 'half a dance', 'i sent myself', 'my legs, and the foam', "partner's face knows",
       'better than the right thing', 'a reason face', "it's for drinking", 'turn heads', 'twice, if it goes well',
-      'cause something else', 'a really nice job'];
+      'cause something else', 'a really nice job',
+      // round 6: the steamy narrator's quips (user: "'Theo's hands would like a word' — this isn't good writing, we talked about this")
+      'would like a word', 'very much on', 'doing a lot of work', 'extremely well', 'it was not a yes', 'not broken',
+      'with extra steps', 'is not sleeping'];
     const bad = [];
     for (const [k, e] of ENTRIES) for (const x of texts(e)) for (const c of CLEVER) if (x.toLowerCase().includes(c)) bad.push(`${k} ${e.id}: "${c}"`);
     expect(bad).toEqual([]);

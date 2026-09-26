@@ -75,7 +75,7 @@ export const HEAT_LINES = {
       ['a', "I think we'd be really good together."], ['b', "You're lovely. You really are."],
       ['a', "I feel like there's a 'but' coming."], ['b', "There's no 'but'. I just want to take things slow."],
       ['a', "Slow is good. I can do slow."], ['b', "Really slow."]],
-      beat: "{a} hears the 'but' anyway." },
+      beat: '{a} looks disappointed, and tries not to show it.' },
     { id: 'ht.o5', when: { heat: 'one-sided' }, stage: '{a} is doing all the talking.', turns: [
       ['a', "…and my friends always say I'm the one who never gives up, so I'm not going to."],
       ['b', "Sorry, give up on what?"], ['a', "On you. On this."],
@@ -85,7 +85,7 @@ export const HEAT_LINES = {
       ['a', "You looked amazing at dinner."], ['b', "Thank you."],
       ['a', "I'm not just saying that. I mean it."], ['b', "I know. Thank you."],
       ['a', "Do you want to sit with me later?"], ['b', "Maybe. We'll see how the night goes."]],
-      beat: '{a} takes "maybe" as a yes. It was not a yes.' },
+      beat: '{a} is smiling. {b} is already looking at someone else.' },
     { id: 'ht.o7', when: { heat: 'one-sided' }, stage: '{a} catches {b} on the way to the kitchen.', turns: [
       ['a', "Two minutes. That's all I'm asking."], ['b', "Go on, then."],
       ['a', "I really like you. Like, really."], ['b', "I'm flattered. Honestly."],

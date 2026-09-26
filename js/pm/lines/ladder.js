@@ -415,14 +415,14 @@ export const LADDER = {
         ['a', "Still counts."],
       ] },
     { id: 'hideaway.04',
-      stage: 'The morning after the hideaway.',
+      stage: 'The hideaway, late, the two of them wide awake.',
       turns: [
-        ['a', "Everyone's going to ask."],
+        ['a', "Everyone's going to ask tomorrow."],
         ['b', "Then we'll tell them we talked."],
         ['a', 'We did talk.'],
         ['b', 'We did talk.'],
       ],
-      beat: 'The whole villa is waiting for them at breakfast.' },
+      beat: 'Neither of them is in any hurry to sleep.' },
     { id: 'hideaway.05', when: { persona: 'hopeless-romantic' },
       turns: [
         ['a', "I want to remember tonight. All of it."],

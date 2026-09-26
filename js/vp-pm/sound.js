@@ -213,7 +213,7 @@ const SITUATION = {
   // Romance without a first kiss in it: silent until it has a track.
   romance: ['date', 'love-said', 'official-ask', 'exclusive-ask', 'reunite', 'hideaway',
     // the final dates and each couple's film
-    'final-date', 'journey-open', 'journey-clip', 'journey-react', 'journey-end', 'casa-miss'],
+    'final-date', 'journey-open', 'journey-clip', 'journey-react', 'journey-end', 'casa-miss', 'hideaway-win'],
   cheating: ['photos', 'head-turned', 'bed-share'],
   drama: ['argument', 'blowup', 'pile-in', 'villa-divided', 'jealous-confront', 'jealous-retaliate', 'cold-shoulder',
     'casa-row', 'photo-row', 'movie-row', 'lie-row', 'triangle-rivals', 'triangle-ultimatum', 'apology-rejected', 'kin-protect'],

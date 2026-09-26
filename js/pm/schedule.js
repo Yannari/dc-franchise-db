@@ -22,7 +22,7 @@ export const SEASON_TEMPLATE = [
   { ep: 1, days: [1, 2], moment: 'first-coupling', arrivals: { bombshell: 1 } },
   { ep: 2, days: [3, 5], moment: 'recoupling' },
   { ep: 3, days: [6, 8], moment: 'bombshell', arrivals: { bombshell: 1 }, rituals: ['heart-rate'] },
-  { ep: 4, days: [9, 11], moment: 'recoupling' },
+  { ep: 4, days: [9, 11], moment: 'recoupling', rituals: ['hideaway'] },
   { ep: 5, days: [12, 14], moment: 'public-vote', slot: 'vote1', dumpFormat: 'cross-gender', bottom: 2 },
   { ep: 6, days: [15, 17], moment: 'bombshell', arrivals: { bombshell: 2 } },
   { ep: 7, days: [18, 20], moment: 'recoupling', rituals: ['snog-marry-pie'] },
@@ -31,7 +31,7 @@ export const SEASON_TEMPLATE = [
   { ep: 10, days: [27, 28], moment: 'stick-or-twist' },
   { ep: 11, days: [29, 31], moment: 'photos', arrivals: { bombshell: 1 }, rituals: ['movie-night'] },
   { ep: 12, days: [32, 34], moment: 'public-vote', slot: 'vote2', dumpFormat: 'safe-pick-couple', bottom: 3 },
-  { ep: 13, days: [35, 37], moment: 'recoupling' },
+  { ep: 13, days: [35, 37], moment: 'recoupling', rituals: ['hideaway'] },
   { ep: 14, days: [38, 40], moment: 'public-vote', slot: 'vote-post', dumpFormat: 'safe-pick-couple', bottom: 3 },
   { ep: 15, days: [41, 43], moment: 'recoupling', arrivals: { bombshell: 1 }, rituals: ['notes'], finalRecoupling: true },
   { ep: 16, days: [44, 46], moment: 'public-vote', slot: 'vote3', coupled: true },
@@ -106,7 +106,8 @@ function baseWeeks(casa) {
     { moment: 'first-coupling', cap: 1, fixed: true },
     { moment: 'recoupling', drop: 3 },
     { moment: 'bombshell', cap: 1, rituals: ['heart-rate'] },
-    { moment: 'recoupling', drop: 2 },
+    // The Hideaway night (villa-day.js hideawayNight): the villa votes a couple in.
+    { moment: 'recoupling', drop: 2, rituals: ['hideaway'] },
     { moment: 'public-vote', slot: 'vote1', fixed: true },
     { moment: 'bombshell', cap: 2 },
     { moment: 'recoupling', rituals: ['snog-marry-pie'], drop: 4, anchorPre: true },
@@ -127,7 +128,7 @@ function baseWeeks(casa) {
     // The extra weeks of a big cast go in before this vote, so it is always
     // the last night before the final recoupling and sees the villa as that
     // recoupling will find it.
-    { moment: 'recoupling', postCasa: true },
+    { moment: 'recoupling', postCasa: true, rituals: ['hideaway'] },
     { moment: 'public-vote', slot: 'vote-post', fixed: true, anchorPost: true },
     // THE FINAL RECOUPLING. Everyone left single goes home, however many that
     // is, and from here the villa is couples only: each night after it sends

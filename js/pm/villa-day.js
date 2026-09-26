@@ -93,6 +93,70 @@ function hideaway(state, rng, a, b) {
   return out;
 }
 
+/**
+ * THE HIDEAWAY NIGHT (user: "do we have a love room? islanders get it after
+ * voting between each other who deserves it"). The villa's private room, won
+ * by a vote: Love Island USA's cast "can nominate a couple worthy of a
+ * Hideaway moment" (and the public can vote on the app); when a couple got it,
+ * "the entire cast [was] celebrating" (Yahoo, 2025). The text, each couple's
+ * pick said out loud, the winners, the couple who wanted it most and got
+ * nothing, and the night itself — on its own dice, so the day it lands in
+ * plays as it would have. The morning after is the next episode's breakfast.
+ */
+function hideawayNight(state) {
+  const rng = streamFor(state.seed ?? 1, `hideaway:${state.ep}${state.epSalt || ''}`);
+  const here = n => state.villa.includes(n) && !(state.split && state.casa.includes(n));
+  const couples = state.couples.filter(([a, b]) => here(a) && here(b));
+  if (couples.length < 3) return [];
+  const out = [];
+  const reader = couples[Math.floor(rng() * couples.length)][Math.floor(rng() * 2)];
+  out.push(scene(state, rng, 'hideaway-text', [reader, partnerOf(state, reader)], { pop: pop([reader, 0, 0.5]) }, { phase: 'event', aired: true }));
+  // Each couple names another: who they like, and how plainly into each other
+  // that couple is, with a little chance in it.
+  const tally = new Map();
+  const into = ([x, y]) => (romance(x, y) + romance(y, x)) / 2;
+  for (const [a, b] of couples) {
+    const pick = couples.filter(c => !c.includes(a))
+      .map(c => [c, (friendship(a, c[0]) + friendship(a, c[1]) + friendship(b, c[0]) + friendship(b, c[1])) / 4 + 0.6 * into(c) + (rng() - 0.5) * 2])
+      .sort((p, q) => q[1] - p[1])[0]?.[0];
+    if (!pick) continue;
+    tally.set(pick, (tally.get(pick) || 0) + 1);
+    out.push(scene(state, rng, 'hideaway-vote', [a, b, pick[0], pick[1]], { pop: pop([a, 0.1, 0.5]) }, { phase: 'event', aired: true }));
+  }
+  const ranked = [...tally].sort((p, q) => q[1] - p[1] || into(q[0]) - into(p[0]));
+  const [w1, w2] = ranked[0][0];
+  // The winners, and the villa that chose them.
+  for (const n of [w1, w2]) { feel(state, n, 'security', 1); feel(state, n, 'confidence', 0.6); }
+  for (const e of out.filter(e => e.kind === 'hideaway-vote' && e.players[2] === w1)) {
+    for (const v of e.players.slice(0, 2)) { addRelationshipDimension(w1, v, 'affection', 0.3); addRelationshipDimension(w2, v, 'affection', 0.3); }
+  }
+  out.push(scene(state, rng, 'hideaway-win', [w1, w2], { pop: pop([w1, 0.6, 2], [w2, 0.6, 2]) }, { phase: 'event', aired: true, major: [w1, w2] }));
+  // The couple most into each other that nobody voted for: it stings.
+  const snub = couples.filter(c => !tally.has(c) && into(c) >= 5).sort((p, q) => into(q) - into(p))[0];
+  if (snub) {
+    for (const n of snub) { feel(state, n, 'confidence', -0.6); feel(state, n, 'stress', 0.4); }
+    out.push(scene(state, rng, 'hideaway-snub', [...snub], { pop: pop([snub[0], 0.2, 0.8]) }, { phase: 'event', aired: true }));
+  }
+  // The night itself, and anyone still carrying a torch for either of them.
+  out.push(...hideaway(state, rng, w1, w2));
+  state.hideawayMorning = { ep: state.ep, couple: [w1, w2] };
+  return out;
+}
+
+/** The morning after the Hideaway: breakfast, and the whole villa wanting to know. */
+function hideawayMorning(state, rng) {
+  const m = state.hideawayMorning;
+  if (!m || m.ep !== state.ep - 1) return [];
+  state.hideawayMorning = null;
+  const [w1, w2] = m.couple;
+  if (!state.villa.includes(w1) || !state.villa.includes(w2)) return [];
+  const friend = state.villa.filter(n => n !== w1 && n !== w2 && state.profiles[n]?.gender === state.profiles[w1]?.gender)
+    .sort((x, y) => friendship(w1, y) - friendship(w1, x))[0];
+  if (!friend) return [];
+  addRelationshipDimension(w1, friend, 'affection', 0.3);
+  return [scene(state, rng, 'hideaway-morning', [friend, w1, w2], { pop: pop([w1, 0.2, 0.8]) }, { phase: 'morning', aired: true })];
+}
+
 /** Jealousy has to come out somewhere. */
 function feelingScenes(state, rng) {
   const out = [];
@@ -234,6 +298,8 @@ const RITUALS = {
     if (guess === x && rng() < state.profiles[t].stats.intuition / 10) addRelationshipDimension(t, x, 'resentment', 1.5);
     return [scene(state, rng, 'notes', [x, t], { guessed: guess === x, pop: pop([t, 0.3, 1]) }, { phase: 'event', aired: true })];
   }),
+  // The Hideaway: the villa votes a couple in (hideawayNight).
+  hideaway: state => hideawayNight(state),
   // The families watched the aired show; what they think lands on the couple.
   families: (state, rng) => state.couples.flatMap(([a, b]) => [[a, b], [b, a]].map(([x, y]) => {
     const v = familyVerdict(state, x, y);
@@ -247,7 +313,7 @@ const RITUALS = {
 export function runVillaDay(state, rng, entry) {
   syncLadder(state);
   const days = entry.days ? Math.max(1, entry.days[1] - entry.days[0] + 1) : 1;
-  const out = [...ladderScenes(state, rng, days), ...feelingScenes(state, rng),
+  const out = [...hideawayMorning(state, rng), ...ladderScenes(state, rng, days), ...feelingScenes(state, rng),
     ...confessions(state, rng), ...advice(state, rng), ...secondChances(state, rng, entry)];
   for (const r of entry.rituals || []) out.push(...(RITUALS[r]?.(state, rng) || []));
   // The love triangles (pm/triangle.js), each a story over episodes — on

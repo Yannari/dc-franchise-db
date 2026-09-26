@@ -1103,6 +1103,12 @@ export const TWIST_CATALOG = [
     category:'first', phase:'any', engineType:'pm-first-lady-luck', pmOn:['first-coupling'], pmApply:{ firstFormat:'lady-luck' },
     desc:'Both sides walk in and meet, and then the side that walked in first plays Lady Luck at the fire pit. One at a time, each of them kisses two islanders from the other side who are still free, and then has to couple up with one of those two, straight away, in front of everyone. Whoever is picked is gone, so the later choosers get fewer to kiss, and the last one to choose may have only one left.',
     incompatible:['pm-first-step-forward','pm-first-profiles','pm-first-public','pm-first-ranking','pm-first-icebreakers'] },
+  /* The Hideaway night (pm/villa-day.js hideawayNight): on by default twice a
+     season, once before Casa Amor and once after; booked, it adds a night. */
+  { id:'pm-hideaway', emoji:'\u{1F6CF}\u{FE0F}', name:'The Hideaway', format:'perfect-match',
+    category:'nights', phase:'any', engineType:'pm-hideaway', pmOn:['recoupling','bombshell','public-vote'], pmApply:{ rituals:['hideaway'] },
+    desc:"A text tells the villa that one couple will spend tonight in the Hideaway, the private room with its own bed and hot tub away from everyone else, and that the islanders will decide who. Each couple stands up and names the couple they think deserves it, and why: the couple they like most, and the one most plainly into each other. The couple with the most nominations wins, to cheers, and grows closer for the night alone; the couple who wanted it most and got nothing takes it personally. Anyone still carrying a torch for either winner feels it, and the next morning the whole villa wants to know how it went. It needs at least three couples in the villa to be a vote.",
+    incompatible:[] },
   /* Movie Night (pm/movie-night.js). It plays on the Casa photos night, or on
      the second vote without Casa; booked, it moves to the night you pick. */
   { id:'pm-movie-night', emoji:'\u{1F3AC}', name:'Movie Night', format:'perfect-match',

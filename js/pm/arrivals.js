@@ -142,21 +142,29 @@ const pickOne = (rng, xs) => xs[Math.floor(rng() * xs.length)];
 function bombshellBuildUp(state, rng, name, before, ex = null) {
   const out = [];
   if (!before.length) return out;
+  // A second bombshell the same night (user: "they should acknowledge the fact
+  // that it's a second bombshell … why is Stephanie already doing this, she
+  // just got there"): the one who walked in an hour ago doesn't read the text
+  // or wonder who it is, and the text says there's another one.
+  const newToday = n => state.profiles[n]?.role !== 'starter' && state.ledger?.firstEp?.[n] === state.ep;
+  const another = before.some(newToday);
+  const settled = before.filter(n => !newToday(n));
+  const pool = settled.length ? settled : before;
   // The text lands on one phone, read out to whoever is nearest. An ex's
   // text hints at it, and the ex is the one who goes quiet.
-  const reader = pickOne(rng, before.filter(n => n !== ex)) || pickOne(rng, before);
-  const next = ex && ex !== reader ? ex : pickOne(rng, before.filter(n => n !== reader)) || null;
+  const reader = pickOne(rng, pool.filter(n => n !== ex)) || pickOne(rng, pool);
+  const next = ex && ex !== reader ? ex : pickOne(rng, pool.filter(n => n !== reader)) || null;
   out.push(makeEvent(state, rng, { phase: 'event', kind: ex ? 'ex-text' : 'bombshell-text', players: next ? [reader, next] : [reader], aired: true,
-    extra: { pop: { [reader]: { approval: 0, fame: 0.5 } } } }));
+    extra: { ...(another ? { another: true } : {}), pop: { [reader]: { approval: 0, fame: 0.5 } } } }));
   // Who is it? A coupled islander worries; a single one hopes. The worry is
   // real: it is stress, and it is on camera.
-  const coupled = before.filter(n => partnerOf(state, n)), single = before.filter(n => !partnerOf(state, n));
+  const coupled = pool.filter(n => partnerOf(state, n)), single = pool.filter(n => !partnerOf(state, n));
   const guessers = [pickOne(rng, coupled), pickOne(rng, single)].filter(Boolean);
   for (const a of guessers) {
-    const b = partnerOf(state, a) || pickOne(rng, before.filter(n => n !== a));
+    const b = partnerOf(state, a) || pickOne(rng, pool.filter(n => n !== a));
     if (partnerOf(state, a)) feel(state, a, 'stress', 0.8 * (1 - (state.profiles[a].stats?.temperament ?? 5) / 20));
     out.push(makeEvent(state, rng, { phase: 'event', kind: 'bombshell-guess', players: b ? [a, b] : [a], aired: true,
-      extra: { pop: { [a]: { approval: 0.1, fame: 0.8 } } } }));
+      extra: { ...(another ? { another: true } : {}), pop: { [a]: { approval: 0.1, fame: 0.8 } } } }));
   }
   // The new islander's own clip, as every islander's first night has one.
   out.push(makeEvent(state, rng, { phase: 'event', kind: 'intro', players: [name], aired: true,

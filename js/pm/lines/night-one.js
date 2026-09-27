@@ -105,6 +105,11 @@ export const NIGHT_ONE = {
     { id: 'bt.05', stage: 'Everybody crowds round {a} and the phone.', turns: [['a', "Islanders, it's time to welcome a new face. #FreshStart"], ['b', "Somebody's couple is about to get tested."]], beat: 'Two couples look at each other.' },
     { id: 'bt.06', turns: [['a', "I've got a text. Everyone shush."], ['a', "Islanders, a new islander will be joining you shortly. #BrokenHearts"], ['b', "Why is it always broken hearts?"]] },
     { id: 'bt.07', stage: 'The phone buzzes on the kitchen counter, and {a} gets to it first.', turns: [['a', "Islanders, the villa is about to get one more resident. #NoOneIsSafe"], ['b', "No one is safe. Great. Brilliant."]] },
+    // A second arrival the same night: the text says so.
+    { id: 'bt.a1', when: { another: true }, turns: [['a', "I got a text! Islanders, the villa isn't done yet. Another new arrival is on the way. #DoubleTrouble"], ['b', "Another one? Tonight?"]] },
+    { id: 'bt.a2', when: { another: true }, stage: "{a}'s phone goes off again, and nobody can believe it.", turns: [['a', "Islanders, one bombshell wasn't enough. Someone else is about to walk in. #HereWeGoAgain"], ['b', "We've only just said hello to the last one."]] },
+    { id: 'bt.a3', when: { another: true }, turns: [['a', "Another text. Islanders, get ready for arrival number two. #NotOverYet"], ['b', "Two in one night? Somebody is going to get their head turned."]], beat: 'The couples look at each other again.' },
+    { id: 'bt.a4', when: { another: true, cast: 1 }, turns: [['a', "It's another one. Islanders, a second new arrival is on the way. #BraceYourselves"]], beat: 'Everyone goes straight back to the lawn.' },
     { id: 'bt.08', when: { cast: 1 }, turns: [['a', "Islanders, a new arrival is on the way. #GetReady"]], beat: 'Somebody screams. Somebody drops a glass.' },
   ],
   'bombshell-guess': [
@@ -118,6 +123,14 @@ export const NIGHT_ONE = {
     { id: 'bg.s.03', when: { coupled: false }, turns: [['a', "This could be it for me. This could be my person."], ['b', "Or it could be somebody you can't stand."], ['a', "Let me have this."]] },
     { id: 'bg.s.04', when: { coupled: false }, turns: [['b', "Who do you think it is?"], ['a', "I don't know, but I've been waiting for this all week."], ['b', "It's been three days."], ['a', "Longest three days of my life."]] },
     { id: 'bg.s.05', when: { coupled: false }, turns: [['a', "I'm not saying I've got my hopes up."], ['b', "You've put lipstick on in the last thirty seconds."], ['a', "…That's not the same thing."]] },
+    { id: 'bg.a.01', when: { another: true, coupled: true }, turns: [['a', "I'd only just calmed down from the first one."], ['b', "Me too."], ['a', "Stay next to me, okay?"], ['b', "I'm not going anywhere."]] },
+    { id: 'bg.a.02', when: { another: true, coupled: false }, turns: [['a', "The first one wasn't for me. Maybe this one is."], ['b', "You don't know that."], ['a', "I know. I'm hoping anyway."]] },
+    { id: 'bg.a.03', when: { another: true }, turns: [['b', "Two new people in one night. That never happens."], ['a', "I know. I didn't see it coming either."], ['b', "I'm nervous for everyone."]] },
+    { id: 'bg.a.04', when: { another: true, coupled: true }, turns: [['b', "We got through one. We'll get through two."], ['a', "The last one barely looked at us."], ['b', "Let's hope this one does the same."]] },
+    { id: 'bg.a.05', when: { another: true, coupled: true }, turns: [['a', "What if this one's your type?"], ['b', "Then I'll say hello and come straight back to you."], ['a', "Promise?"], ['b', "Promise."]] },
+    { id: 'bg.a.06', when: { another: true, coupled: false }, turns: [['a', "Two new people and I'm still single. The odds are getting better."], ['b', "Or somebody's about to get picked over you twice."], ['a', "Don't say that."]] },
+    { id: 'bg.a.07', when: { another: true, coupled: false }, turns: [['b', "Are you getting ready again?"], ['a', "I got ready for the first one and it wasn't for me."], ['b', "So you're trying again."], ['a', "Obviously I'm trying again."]] },
+    { id: 'bg.a.08', when: { another: true }, turns: [['a', "I haven't even learned the last one's name properly."], ['b', "Nobody has."], ['a', "And now there's another one coming."]] },
     { id: 'bg.s.06', when: { coupled: false, cast: 1 }, turns: [['a', "Okay. Deep breaths. Whoever it is, be nice. Be normal. Be cool."]], beat: '{a} is shaking.' },
   ],
   entrance: [

@@ -22,12 +22,39 @@ import { makeEvent, partnerOf } from './events.js';
 import { attr, nudgeAttraction, compatible } from './chemistry.js';
 import { romance } from './feelings.js';
 import { feel, jealousOf, breakHeart } from './emotions.js';
+import { closedness } from './ladder.js';
 
 const MAX_ACTIVE = 2;
 
 const triInfo = (state, t) => ({ h: t.h, x: t.x, y: t.y,
   ax: Math.round((attr(state, t.h, t.x) ?? 0) * 10) / 10, ay: Math.round((attr(state, t.h, t.y) ?? 0) * 10) / 10 });
 const open = state => (state.triangles ||= []).filter(t => !t.over);
+
+/**
+ * BEHIND A PARTNER'S BACK (user, of "Me or Carrie?" / "You. It's you." from an
+ * islander coupled with somebody else: "there should be some change … more of
+ * a secret, that can be used in photos and movie night"). When one of the
+ * two in a private triangle scene has a partner outside it, the scene is a
+ * secret from that partner, exactly as a pull is (events.js): it goes on
+ * state.secrets for the photos and movie night to find, it weighs on the one
+ * keeping it, and the scene's lines know the partner exists (`behind`).
+ */
+// Which of the pairs [who, with, kind, severity] are behind somebody's back:
+// a partner OUTSIDE the triangle. Coupled with one of the two is the ordinary
+// triangle, played in front of the villa.
+const behindOf = (state, t, pairs) => pairs.filter(([who]) => { const p = partnerOf(state, who); return p && ![t.h, t.x, t.y].includes(p); });
+// Whose secret the scene's lines speak to: the one in the middle's, if theirs,
+// else the one asking's ('mid' reads {pb}, 'asker' {pa}).
+const whose = (bb, h) => bb.some(([who]) => who === h) ? 'mid' : 'asker';
+// Kept, once the scene exists (the secret points at it).
+function keepSecrets(state, e, pairs) {
+  for (const [who, other, kind, sev] of pairs) {
+    const p = partnerOf(state, who);
+    state.secrets.push({ id: `sec${state.secrets.length + 1}`, who, partner: p, with: other, kind, severity: sev,
+      ep: state.ep, witnesses: [], known: false, eventId: e.id, casa: !!state.split });
+    feel(state, who, 'guilt', 1.5 * sev * closedness(state, who, p));
+  }
+}
 
 function detect(state, rng) {
   if (open(state).length >= MAX_ACTIVE) return null;
@@ -121,7 +148,9 @@ function advance(state, rng, t, ev) {
       for (const [a, other] of [[x, y], [y, x]]) {
         const pull = ((S(a).social ?? 5) + (S(a).boldness ?? 5)) / 20;
         nudgeAttraction(state, h, a, 0.2 + 0.6 * pull * rng());
-        ev('triangle-case', [a, h, other], { pop: { [a]: { approval: 0.2, fame: 1 } } }, [], t);
+        const bb = behindOf(state, t, [[h, a, 'pull', 0.7], [a, h, 'pull', 0.7]]);
+        const e = ev('triangle-case', [a, h, other], { ...(bb.length ? { behind: whose(bb, h) } : {}), pop: { [a]: { approval: 0.2, fame: 1 } } }, [], t);
+        keepSecrets(state, e, bb);
       }
       feel(state, h, 'stress', 0.6);
     } else if (t.stage === 3) {
@@ -148,7 +177,12 @@ function advance(state, rng, t, ev) {
         if (of === 'chose-x') { nudgeAttraction(state, h, a, 0.8); nudgeAttraction(state, h, b, -0.6); breakHeart(state, b, h, 3 * romance(b, h) / 10); }
         if (of === 'chose-y') { nudgeAttraction(state, h, b, 0.8); nudgeAttraction(state, h, a, -0.8); breakHeart(state, a, h, 3 * romance(a, h) / 10); }
         if (of === 'not-yet') { addBond(a, h, -0.6); feel(state, a, 'stress', 0.8); }
-        ev('triangle-ultimatum', [a, h, b], { of, pop: { [a]: { approval: of === 'chose-x' ? 1 : -0.3, fame: 2 }, [h]: { approval: of === 'not-yet' ? -0.8 : 0, fame: 2 } } }, [a, h], t);
+        // Choosing someone while coupled with somebody else is a promise made
+        // behind that partner's back; asking for it while coupled is a pull.
+        const chosen = of === 'chose-x' ? a : of === 'chose-y' ? b : null;
+        const bb = behindOf(state, t, [[h, chosen || a, chosen ? 'promise' : 'pull', chosen ? 1.2 : 0.6], [a, h, 'pull', 0.8]]);
+        const e = ev('triangle-ultimatum', [a, h, b], { of, ...(bb.length ? { behind: whose(bb, h) } : {}), pop: { [a]: { approval: of === 'chose-x' ? 1 : -0.3, fame: 2 }, [h]: { approval: of === 'not-yet' ? -0.8 : 0, fame: 2 } } }, [a, h], t);
+        keepSecrets(state, e, bb);
         // A clear answer is the end of the triangle as a triangle.
         if (of !== 'not-yet') t.over = true;
       }

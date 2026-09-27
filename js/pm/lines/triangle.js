@@ -32,6 +32,11 @@ export const TRIANGLE_LINES = {
     { id: 'tc.04', stage: 'The daybeds, away from everyone.', turns: [['a', "Can I just say one thing, and then I'll leave you alone?"], ['b', "Go on."], ['a', "When you're with me, you laugh. I've seen you with {c}. You smile. It's not the same."]] },
     { id: 'tc.05', turns: [['a', "I'm not asking you to choose tonight."], ['b', "Then what are you asking?"], ['a', "Just think about how you feel when I walk in. Not when {c} does."]] },
     { id: 'tc.06', turns: [['a', "I can wait. I just need to know I'm not waiting for nothing."], ['b', "You're not waiting for nothing."]], beat: '{a} walks away grinning, and {c} sees it.' },
+    // Behind a partner's back (pm/triangle.js behindOf): one of the two is coupled with somebody else, and this is a secret from them.
+    { id: 'tc.b1', when: { behind: 'mid', bTaken: true }, stage: "Round the side of the villa, where {pb} can't see.", turns: [['a', "I know you're with {pb}. I'm not asking you to do anything about it tonight."], ['b', "Then why are we round here?"], ['a', "Because you'd rather {pb} didn't see us talking. So would I."]], beat: '{b} checks over {b.posAdj} shoulder before answering.' },
+    { id: 'tc.b2', when: { behind: 'mid', bTaken: true }, turns: [['a', "Does {pb} know how you feel about me?"], ['b', "No. And I'd like to keep it that way for now."], ['a', "And {c}?"], ['b', "I don't know what I feel about {c}. That's the problem."]] },
+    { id: 'tc.b3', when: { behind: 'mid', bTaken: true }, turns: [['b', "We can't keep doing this. I'm coupled up."], ['a', "With {pb}. I know. You still came when I asked you to."], ['b', "…I know I did."]], beat: 'They go back in separately, a few minutes apart.' },
+    { id: 'tc.b4', when: { behind: 'asker', taken: true }, turns: [['a', "I'm coupled with {pa}, I know. I still had to tell you how I feel."], ['b', "What about {pa}?"], ['a', "I'll deal with that. I wanted you to know first."], ['b', "And {c}?"], ['a', "That's why I'm telling you now."]] },
   ],
   'triangle-ultimatum': [
     { id: 'tu.x.01', when: { of: 'chose-x' }, turns: [['a', "I need to know. Me or {c}."], ['b', "…You. It's you."], ['a', "Are you sure?"], ['b', "I've been sure for a while. I was just scared of saying it."]], beat: 'Across the garden, {c} sees them and understands.' },
@@ -40,6 +45,14 @@ export const TRIANGLE_LINES = {
     { id: 'tu.y.02', when: { of: 'chose-y' }, turns: [['a', "I need an answer."], ['b', "I think you already know it."], ['a', "Say it anyway."], ['b', "It's {c}. I'm sorry."]] },
     { id: 'tu.n.01', when: { of: 'not-yet' }, turns: [['a', "Me or {c}? I need to know tonight."], ['b', "I can't do that. Not tonight."], ['a', "Then when?"], ['b', "I don't know."]], beat: "{a} laughs, but it isn't a happy laugh." },
     { id: 'tu.n.02', when: { of: 'not-yet' }, turns: [['a', "I'm done waiting. Choose."], ['b', "Don't put me on the spot like this."], ['a', "You've put me on the spot for a week."]] },
+    // Behind a partner's back: the answer is a secret from somebody.
+    { id: 'tu.bx1', when: { behind: 'mid', bTaken: true, of: 'chose-x' }, turns: [['a', "Forget {pb} for a second. Me or {c}?"], ['b', "…You."], ['a', "And {pb}?"], ['b', "I don't know yet. Please don't say anything."]], beat: 'They agree to keep it between the two of them, for now.' },
+    { id: 'tu.bx2', when: { behind: 'mid', bTaken: true, of: 'chose-x' }, stage: 'Late, on the daybeds, while {pb} is inside.', turns: [['a', "I need to know. Me or {c}."], ['b', "You. It's you."], ['a', "Then what are you still doing with {pb}?"], ['b', "I'll sort it. Just not tonight."]] },
+    { id: 'tu.by1', when: { behind: 'mid', bTaken: true, of: 'chose-y' }, turns: [['a', "You're with {pb}, and you're still talking to me and {c}. Just choose."], ['b', "It's {c}. I'm sorry."], ['a', "Does {pb} know that?"], ['b', "No. And please don't be the one who tells {pb}."]] },
+    { id: 'tu.bn1', when: { behind: 'mid', bTaken: true, of: 'not-yet' }, turns: [['a', "Me or {c}? Or are you staying with {pb}?"], ['b', "I can't answer that tonight."], ['a', "You can. You just don't want to."]], beat: '{b} goes back inside and sits down next to {pb} as if nothing happened.' },
+    { id: 'tu.bt1', when: { behind: 'asker', taken: true, of: 'chose-x' }, turns: [['a', "I'm with {pa}, and I'm still asking you. Me or {c}?"], ['b', "You. But you're with {pa}."], ['a', "Not for much longer."]] },
+    { id: 'tu.bt2', when: { behind: 'asker', taken: true, of: 'chose-y' }, turns: [['a', "I know I'm with {pa}. I still need to hear it. Me or {c}?"], ['b', "It's {c}. Go back to {pa}."]], beat: '{a} stays outside on {a.posAdj} own for a while.' },
+    { id: 'tu.bt3', when: { behind: 'asker', taken: true, of: 'not-yet' }, turns: [['a', "Me or {c}? I need to know before I say anything to {pa}."], ['b', "Sort things out with {pa} first. Then ask me."]] },
   ],
   'triangle-teams': [
     { id: 'tm.01', turns: [['narrator', "The villa has split down the middle. Team {b} on one side of the kitchen, Team {c} on the other. {a} is stuck at the island in between."]] },

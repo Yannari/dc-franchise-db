@@ -367,11 +367,14 @@ export const DUMP_DRAWS = {
   vote1: [['cross-gender', 4, 2], ['save-one', 2, 3]],
   vote2: [['safe-pick-couple', 2, 3], ['top-couple-picks', 3, 3], ['couples-vote', 2, 2], ['public', 2, 3]],
   // The couples-only week: every format sends exactly one couple home.
-  vote3: [['safe-pick-couple', 2, 3], ['top-couple-picks', 3, 3], ['couples-vote', 2, 2], ['public', 2, 3]],
+  // The last fortnight is the public's (UK 5: day 52 and day 56 the public alone,
+  // day 36 and 49 the public then the villa; user: "how is the public not voting
+  // more, especially after the final recoupling").
+  vote3: [['public', 5, 3], ['safe-pick-couple', 3, 3], ['top-couple-picks', 1, 3], ['couples-vote', 1, 2]],
   semi: [['public', 1], ['ex-islanders', 1]],
 };
 // A big cast's extra public votes draw from the second vote's formats.
-const drawsFor = slot => DUMP_DRAWS[slot === 'vote-extra' || slot === 'vote-post' ? 'vote2' : slot] || null;
+const drawsFor = slot => DUMP_DRAWS[slot === 'vote-extra' ? 'vote2' : slot === 'vote-post' ? 'vote3' : slot] || null;
 // What each episode is called on the Season Timeline, and its colour family.
 export const EPISODE_WORDS = { 'first-coupling': 'First coupling', recoupling: 'Recoupling', bombshell: 'Bombshell',
   'public-vote': 'Vote', 'casa-open': 'Casa opens', 'casa-nights': 'Casa Amor', 'stick-or-twist': 'Stick or twist',

@@ -352,12 +352,21 @@ function pickerGender(state) {
   return f === m ? turn : f < m ? 'f' : 'm';
 }
 
-function recoupleNight(state, rng, { dumpSingles, pace = 1.5, votesAhead = 0, all = false }) {
+function recoupleNight(state, rng, { dumpSingles, pace = 1.5, votesAhead = 0, all = false, toCome = [], surplus = 0 }) {
   // How many a recoupling may send home, decided before anyone picks, so the
   // host can say what is at stake (below: the cap's reasons).
   const base = state.villa.length > 10 ? 2 : 1;
   const floor = votesAhead ? 2 * (finalOf(state) + 1) : 0;
-  const cap = Math.min(pace < 0.5 ? 0 : pace < 1 ? 1 : Math.max(base, Math.ceil(pace - 0.5)),
+  // Whoever can never be coupled goes whatever the pace (user: "after Casa
+  // there's still single people, they should be dumped before we even get to
+  // dumping couples"): the side with more islanders than the other has, less
+  // the arrivals of the other side still to come. Kept, they were only ever
+  // going at the final recoupling — after every vote night had taken couples.
+  const gen = n => state.profiles[n].gender;
+  const here = state.villa.filter(n => !(state.split && state.casa.includes(n)));
+  const count = g => here.filter(n => gen(n) === g).length, coming = g => toCome.filter(n => gen(n) === g).length;
+  const hopeless = Math.max(0, count('f') - count('m') - coming('m')) + Math.max(0, count('m') - count('f') - coming('f'));
+  const cap = Math.min(Math.max(pace < 0.5 ? 0 : pace < 1 ? 1 : Math.max(base, Math.ceil(pace - 0.5)), hopeless),
     Math.max(0, state.villa.length - floor));
   const picker = pickerGender(state);
   // The final recoupling says so first: who reads the text, and the one
@@ -375,7 +384,15 @@ function recoupleNight(state, rng, { dumpSingles, pace = 1.5, votesAhead = 0, al
   // after the last). The text, somebody who is not sure of being picked, and
   // the host: who chooses, and what happens to whoever is left standing. On
   // its own dice, so the picks play as they did.
-  if (dumpSingles && state.villa.length >= 4) open.push(...recoupleBuildUp(state, { picker, stake: all ? 'all' : cap > 0 ? 'risk' : 'safe', final: all }));
+  // Singles first, couples later (the user, and the show: whoever is left
+  // standing at a recoupling goes): when the season can afford to lose them,
+  // everyone left single tonight is dumped, not only the pace's share. The
+  // exits the season has to lose are the same; the vote nights after take
+  // fewer. The host says so before anyone stands.
+  // Only once nobody else is coming: before that a single can still be coupled by the
+  // next arrival, and the first recoupling sent three home at once.
+  const spare = toCome.length ? 0 : Math.max(0, Math.min(Math.floor(surplus), state.villa.length - floor));
+  if (dumpSingles && state.villa.length >= 4) open.push(...recoupleBuildUp(state, { picker, stake: all ? 'all' : cap > 0 || spare > 0 ? 'risk' : 'safe', final: all }));
   const r = runRecoupling(state, { rng, pickerGender: picker, repick: all });
   const events = [...open, ...r.picks.map(pk => makeEvent(state, rng, { phase: 'firepit', kind: 'recouple-pick',
     players: [pk.picker, pk.picked, ...(pk.stole ? [pk.stole] : [])], aired: true,
@@ -400,14 +417,15 @@ function recoupleNight(state, rng, { dumpSingles, pace = 1.5, votesAhead = 0, al
   // night dumps one at most. And never below five couples while a public vote
   // is still to come: a villa emptied to the final's four by the early
   // recouplings skipped the first vote in 24 seasons of 100 (2026-09-23).
-  if (!cap) {
+  const take = Math.max(cap, Math.min(r.single.length, spare));
+  if (!take) {
     // Left single, and staying: said, so the night does not simply stop.
     if (r.single.length) events.push(makeEvent(state, rng, { phase: 'dumping', kind: 'recouple-single', players: [r.single[0]], aired: true,
       extra: { pop: { [r.single[0]]: { approval: 0.3, fame: 1 } } } }));
     for (const n of r.single) { feel(state, n, 'confidence', -0.8); feel(state, n, 'stress', 0.6); }
     return { events, exits: [], ballots: r.ballots };
   }
-  const dumped = r.single.slice(0, cap);
+  const dumped = r.single.slice(0, take);
   const scene = dumpingScene(state, rng, { atRisk: [], dumped, ballots: [], channel: 'recoupling' });
   return { events: [...events, ...scene.events], exits: scene.exits, ballots: r.ballots };
 }
@@ -854,7 +872,7 @@ export const MOMENTS = {
     const pre = arrivals(state, ctx, ctx.entry.arrivals?.bombshell || 0);
     // The final recoupling sends every single home (schedule.js).
     const r = recoupleNight(state, ctx.rng, { dumpSingles: true, pace: ctx.pace, votesAhead: ctx.votesAhead || 0,
-      all: !!ctx.entry.finalRecoupling });
+      all: !!ctx.entry.finalRecoupling, toCome: ctx.queues?.bombshell || [], surplus: ctx.surplus || 0 });
     return { events: [...pre, ...r.events], exits: r.exits, ballots: r.ballots };
   },
   'public-vote': (state, ctx) => {

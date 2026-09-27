@@ -39,6 +39,7 @@ import { GAME_LINES } from './lines/game.js';
 import { ARC_LINES } from './lines/arcs.js';
 import { VOTE_LINES } from './lines/votes.js';
 import { SECOND_CHANCE_LINES } from './lines/second-chance.js';
+import { VARIANTS } from './lines/variants.js';
 import { FIREPIT_LINES } from './lines/firepit.js';
 import { HIDEAWAY_LINES } from './lines/hideaway.js';
 import { HEAT_LINES } from './lines/day/heat.js';
@@ -64,6 +65,8 @@ for (const [k, v] of Object.entries(GAME_LINES)) POOLS[k] = [...(POOLS[k] || [])
 for (const [k, v] of Object.entries(ARC_LINES)) POOLS[k] = [...(POOLS[k] || []), ...v];
 for (const [k, v] of Object.entries(VOTE_LINES)) POOLS[k] = [...(POOLS[k] || []), ...v];
 for (const [k, v] of Object.entries(SECOND_CHANCE_LINES)) POOLS[k] = [...(POOLS[k] || []), ...v];
+// More lines for the pools a season wears thin (lines/variants.js), whichever file the pool lives in.
+for (const [k, v] of Object.entries(VARIANTS)) POOLS[k] = [...(POOLS[k] || []), ...v];
 // The night before a dumping's verdict (lines/firepit.js).
 for (const [k, v] of Object.entries(FIREPIT_LINES)) POOLS[k] = [...(POOLS[k] || []), ...v];
 // The Hideaway night (lines/hideaway.js).

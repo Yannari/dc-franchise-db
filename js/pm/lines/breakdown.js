@@ -34,8 +34,8 @@ export const BREAKDOWN_LINES = {
   comfort: [
     // a friend
     { id: 'cf.f.01', when: { of: 'friend' }, stage: "{a} knocks on the door, and doesn't wait for an answer.", turns: [
-      ['a', "Hey. Hey. Come here."], ['b', "I don't want anyone to see me like this."], ['a', "It's only me. I've seen you worse. I've seen you do karaoke."],
-      ['b', "…That's fair."]], beat: '{b} laughs, and then cries again, but with somebody holding on this time.' },
+      ['a', "Hey. Hey. Come here."], ['b', "I don't want anyone to see me like this."], ['a', "It's only me. You don't have to hide from me."],
+      ['b', "…Okay."]], beat: '{b} laughs, and then cries again, but with somebody holding on this time.' },
     { id: 'cf.f.02', when: { of: 'friend' }, turns: [
       ['a', "You don't have to say anything. I'll just sit here."], ['b', "Thank you."], ['a', "Whatever it is, you're not on your own with it."]],
       beat: '{a} stays until {b} has stopped shaking.' },

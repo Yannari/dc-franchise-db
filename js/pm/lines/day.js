@@ -120,6 +120,7 @@ import { HEARD } from './debrief.js';
 import { SECRET_LINES } from './secrets.js';
 import { PROMISE_LINES } from './breakdown.js';
 import { JUST_MET_MORE } from './day/just-met-more.js';
+import { JUST_MET_2 } from './day/just-met-2.js';
 const JM = k => JUST_MET[k] || [];
 export const DAY = {
   chat: [...CHAT, ...MAKING_UP.chat, ...JM('chat')],
@@ -137,6 +138,7 @@ export const DAY = {
 
 // Night one's second pool (lines/day/just-met-more.js): sized past the most each kind plays that night.
 for (const [k, v] of Object.entries(JUST_MET_MORE)) DAY[k] = [...(DAY[k] || []), ...v];
+for (const [k, v] of Object.entries(JUST_MET_2)) DAY[k] = [...(DAY[k] || []), ...v];
 // Second pools (lines/day/more-*.js): appended, so every kind has room not to repeat.
 for (const [k, v] of Object.entries({ ...MORE_A, ...MORE_B })) DAY[k] = [...(DAY[k] || []), ...v];
 for (const [k, v] of Object.entries(MORE_C)) DAY[k] = [...(DAY[k] || []), ...v];

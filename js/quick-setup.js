@@ -1248,6 +1248,7 @@ const CONFIG_SCOPE = {
     'cfg-pm-dialect':        ['perfect-match'],
     'cfg-pm-split-or-steal': ['perfect-match'],
     'cfg-pm-first-in': ['perfect-match'],
+    'cfg-pm-final-couples': ['perfect-match'],
     'sec-tr-divider':        ['traitors'],
     'sec-dr-options':        ['drag-race'],
     'sec-dr-divider':        ['drag-race'],

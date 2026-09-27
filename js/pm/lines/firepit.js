@@ -38,9 +38,9 @@ export const FIREPIT_LINES = {
   // The final vote's opening (moments.js final). `of`: envelope (Split or
   // Steal follows) · plain.
   'final-open': [
-    { id: 'fo.1', stage: 'The four couples stand at the fire pit, hand in hand, for the last time.', turns: [['dior', "Islanders, this is it. The final."], ['dior', "The public have been voting for the couple they want to crown their Perfect Match. I have the results here, and I'll read them out from fourth place."]], beat: 'Somebody on the end is shaking.' },
+    { id: 'fo.1', stage: 'The final couples stand at the fire pit, hand in hand, for the last time.', turns: [['dior', "Islanders, this is it. The final."], ['dior', "The public have been voting for the couple they want to crown their Perfect Match. I have the results here, and I'll read them out from fourth place."]], beat: 'Somebody on the end is shaking.' },
     { id: 'fo.2', stage: 'The villa is lit up for the last night. The couples stand in a line, holding on to each other.', turns: [['dior', "Good evening, and welcome to the final."], ['dior', "Over the last few days, the public have been deciding who wins. Only one couple can take the title."]] },
-    { id: 'fo.e', when: { of: 'envelope' }, stage: 'The four couples stand at the fire pit, hand in hand.', turns: [['dior', "Islanders, the public have voted, and tonight one couple will be crowned the winners."], ['dior', "And the winners will face one last decision, in an envelope."]], beat: 'Every couple squeezes hands a little tighter.' },
+    { id: 'fo.e', when: { of: 'envelope' }, stage: 'The final couples stand at the fire pit, hand in hand.', turns: [['dior', "Islanders, the public have voted, and tonight one couple will be crowned the winners."], ['dior', "And the winners will face one last decision, in an envelope."]], beat: 'Every couple squeezes hands a little tighter.' },
   ],
   // The reunion (moments.js reunion): the welcome, the winners, the sign-off.
   'reunion-open': [

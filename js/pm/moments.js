@@ -29,6 +29,8 @@ import { closeEpisode, BETRAYAL } from './ledger.js';
 import { FINAL_COUPLES } from './schedule.js';
 
 const EXIT = 'dumped';
+// How many couples reach the final: four, or three (Villa options, `pmFinalCouples`).
+const finalOf = state => state.finalCouples || FINAL_COUPLES;
 
 function removeFromVilla(state, names) {
   // Who has gone, and when: the ex-islanders who come back to vote are read
@@ -354,7 +356,7 @@ function recoupleNight(state, rng, { dumpSingles, pace = 1.5, votesAhead = 0, al
   // How many a recoupling may send home, decided before anyone picks, so the
   // host can say what is at stake (below: the cap's reasons).
   const base = state.villa.length > 10 ? 2 : 1;
-  const floor = votesAhead ? 2 * (FINAL_COUPLES + 1) : 0;
+  const floor = votesAhead ? 2 * (finalOf(state) + 1) : 0;
   const cap = Math.min(pace < 0.5 ? 0 : pace < 1 ? 1 : Math.max(base, Math.ceil(pace - 0.5)),
     Math.max(0, state.villa.length - floor));
   const picker = pickerGender(state);
@@ -909,7 +911,7 @@ function voteNight(state, ctx) {
     // The couples a vote must leave. On the last two: the final's four, and
     // one for each night of the couples-only week. Earlier, the final's four,
     // as it always was — the arrivals still to come refill the villa.
-    const target = FINAL_COUPLES + (lastVotes ? ctx.coupledAhead || 0 : 0);
+    const target = finalOf(state) + (lastVotes ? ctx.coupledAhead || 0 : 0);
     const enough = lastVotes ? can <= target : state.couples.length <= target;
     // A small villa can reach a vote night with two couples or fewer: a vote
     // would send one of the last couples home before the final. The night
@@ -1042,8 +1044,8 @@ function coupleFormatNight(state, ctx, fmt) {
  * reached the week one couple short keeps its couples tonight and loses one
  * at the semi-final, so nobody arrives at the final with three.
  */
-export function coupledDumps(couples, later) {
-  const excess = couples - FINAL_COUPLES;
+export function coupledDumps(couples, later, final = FINAL_COUPLES) {
+  const excess = couples - final;
   if (excess <= 0) return 0;
   if (!later) return excess;
   return excess > later ? Math.max(1, excess - later) : 0;
@@ -1074,7 +1076,7 @@ function singlesLeave(state, ctx) {
 /** The vote before the semi-final: couples only, and one couple goes. */
 function coupledNight(state, ctx) {
   const pre = singlesLeave(state, ctx);
-  const n = coupledDumps(state.couples.length, ctx.coupledAhead || 0);
+  const n = coupledDumps(state.couples.length, ctx.coupledAhead || 0, finalOf(state));
   if (!n) return { events: [...pre.events, ...safeNight(state, ctx)], exits: pre.exits, ballots: [], extra: { dumpFormat: null } };
   let r;
   if (n === 1) r = coupleFormatNight(state, ctx, ctx.entry.dumpFormat || 'public');
@@ -1145,7 +1147,7 @@ Object.assign(MOMENTS, {
     // final recoupling already took the singles — by the public, or by the
     // islanders the villa already dumped (UK 11 d55, UK 12 d56, UK 13 d46).
     const singles = state.villa.filter(n => !partnerOf(state, n));
-    const over = coupledDumps(state.couples.length, 0);
+    const over = coupledDumps(state.couples.length, 0, finalOf(state));
     const exes = ctx.entry.dumpFormat === 'ex-islanders' && over > 0 ? returningExes(state) : [];
     if (exes.length) return exIslandersNight(state, ctx, singles, over, exes);
     // The singles first, and in the words of a night nobody picked them:

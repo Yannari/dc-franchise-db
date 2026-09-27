@@ -1303,6 +1303,7 @@ export function saveConfig() {
     pmDialect: g('cfg-pm-dialect')?.value || 'uk',
     pmSplitOrSteal: g('cfg-pm-split-or-steal') ? g('cfg-pm-split-or-steal').checked : false,
     pmFirstIn: g('cfg-pm-first-in') ? (g('cfg-pm-first-in').value === 'm' ? 'm' : 'f') : (seasonConfig.pmFirstIn || 'f'),
+    pmFinalCouples: g('cfg-pm-final-couples') ? (g('cfg-pm-final-couples').value === '3' ? 3 : 4) : (seasonConfig.pmFinalCouples === 3 ? 3 : 4),
     trAutoDouble: g('cfg-tr-auto-double') ? g('cfg-tr-auto-double').checked : true,
     trEndgameReveal: g('cfg-tr-endgame-reveal') ? g('cfg-tr-endgame-reveal').checked : false,
     trEndgameSize: parseInt(g('cfg-tr-endgame-size')?.value) || 3,
@@ -1500,6 +1501,7 @@ export function renderConfig() {
   set('cfg-pm-dialect', seasonConfig.pmDialect || 'uk');
   if (g('cfg-pm-split-or-steal')) g('cfg-pm-split-or-steal').checked = seasonConfig.pmSplitOrSteal === true;
   if (g('cfg-pm-first-in')) g('cfg-pm-first-in').value = seasonConfig.pmFirstIn === 'm' ? 'm' : 'f';
+  if (g('cfg-pm-final-couples')) g('cfg-pm-final-couples').value = seasonConfig.pmFinalCouples === 3 ? '3' : '4';
   try { window.renderPerfectMatchCastSetup?.(); } catch { /* the panel is optional chrome */ }
   set('cfg-tr-traitor-mode', seasonConfig.trTraitorMode || 'random');
   if (g('cfg-tr-auto-double')) g('cfg-tr-auto-double').checked = seasonConfig.trAutoDouble !== false;

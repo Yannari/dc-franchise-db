@@ -843,6 +843,11 @@
                 </div>
                 <div class="pm-card" id="sec-pm-extras">
                   <div class="pm-card-head"><span class="pm-card-title">The final</span></div>
+                  <select class="pm-select" id="cfg-pm-final-couples" onchange="saveConfig()">
+                    <option value="4">Four couples in the final</option>
+                    <option value="3">Three couples in the final</option>
+                  </select>
+                  <div class="pm-hint">How many couples reach the final night. The UK final has almost always had four; three means two more islanders go home over the season, so the dumpings come more often.</div>
                   <label class="pm-toggle" id="sec-pm-envelope">
                     <input type="checkbox" id="cfg-pm-split-or-steal" onchange="saveConfig()">
                     <span class="pm-toggle-ui"></span>

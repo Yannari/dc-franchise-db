@@ -170,7 +170,7 @@ function insertWeek(weeks, week, pre) {
  * nights, not its episode: that place survives every re-flow, because the
  * running order only ever loses nights at its end and gains them after it.
  */
-export function buildSchedule({ bombshells = BASE_BOMBSHELLS, casa = 6, episodes = null, counts = null, starters = null } = {}) {
+export function buildSchedule({ bombshells = BASE_BOMBSHELLS, casa = 6, episodes = null, counts = null, starters = null, finalCouples = FINAL_COUPLES } = {}) {
   const weeks = baseWeeks(casa);
   // More bombshells than the calibration season has slots for: a week each
   // pair — a bombshell night, then a recoupling — alternating before and
@@ -266,7 +266,7 @@ export function buildSchedule({ bombshells = BASE_BOMBSHELLS, casa = 6, episodes
     // sends about a couple home, a recoupling about one. The calibration cast
     // runs at 0.6 of what its nights could take; a smaller one drops weeks
     // until it does too.
-    const lose = () => starters + bombshells + casa - 2 * FINAL_COUPLES - Math.round(casa * 0.65) - 2 * out.filter(w => w.coupled).length;
+    const lose = () => starters + bombshells + casa - 2 * finalCouples - Math.round(casa * 0.65) - 2 * out.filter(w => w.coupled).length;
     const takes = w => (w.coupled || w.finalRecoupling ? 0 : w.moment === 'public-vote' ? 2 : w.moment === 'recoupling' ? 1 : 0);
     const over = () => out.reduce((t, w) => t + takes(w), 0) * 0.6 > Math.max(1, lose());
     const dumping = (w, i) => (w.moment === 'recoupling' || w.moment === 'public-vote') && !kept(w, i);

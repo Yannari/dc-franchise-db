@@ -112,7 +112,7 @@ function villaDayEvents(state, rng, entry, seed) {
  * the new night the way it would have from any night.
  */
 export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = null, picks = {}, bookings = {}, rerolls = {},
-  splitOrStealOn = false, dialect = 'uk', episodes = null, firstIn = 'f', kinship = null, arrivalCounts = null } = {}) {
+  splitOrStealOn = false, dialect = 'uk', episodes = null, firstIn = 'f', kinship = null, arrivalCounts = null, finalCouples = FINAL_COUPLES } = {}) {
   setGs({ bonds: {}, perceivedBonds: {}, relationshipDimensions: {}, activePlayers: [],
     episodeHistory: [], popularity: {} });
   const state = initState(cast, setup, seed);
@@ -122,11 +122,13 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
   state.dialect = dialect;
   // Who walks in first on night one (Villa options): the girls unless the author says the boys.
   state.firstIn = firstIn === 'm' ? 'm' : 'f';
+  // How many couples reach the final (Villa options): four, as the UK has it, or three.
+  state.finalCouples = finalCouples === 3 ? 3 : FINAL_COUPLES;
   gs.pm = state;
   const queues = queuesFor(state, cast);
   // Every bombshell and Casa arrival the author cast gets a night to walk in.
   schedule = schedule || withBookings(withPicks(perfectMatchScheduleFor(seed,
-    { bombshells: queues.bombshell.length, casa: queues.casa.length, episodes, counts: arrivalCounts, starters: queues.starter.length }), picks), bookings);
+    { bombshells: queues.bombshell.length, casa: queues.casa.length, episodes, counts: arrivalCounts, starters: queues.starter.length, finalCouples: state.finalCouples }), picks), bookings);
   schedule = resolveRandomGames(schedule, streamFor(seed, 'random-games'));
   let final = null;
 
@@ -160,7 +162,13 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
     // night, so the villa has to reach it with a couple for each of those nights.
     const coupledAhead = ahead.filter(e => e !== entry && e.coupled).length;
     const nights = ahead.filter(e => !e.coupled && (e.moment === 'recoupling' || e.moment === 'public-vote')).length;
-    const surplus = state.villa.length + queues.bombshell.length - 2 * (FINAL_COUPLES + coupledAhead);
+    // …counting the Casa arrivals who will stay after stick or twist (about a
+    // third; buildSchedule plans on the same share going home). Left out, the
+    // villa before Casa thought it had nobody to spare and the dumpings piled
+    // up after it (user: "even with a 26 cast, five episodes with no dump"):
+    // ten Casa arrivals are three or four more islanders to lose.
+    const casaStay = queues.casa.length - Math.round(queues.casa.length * 0.65);
+    const surplus = state.villa.length + queues.bombshell.length + casaStay - 2 * (state.finalCouples + coupledAhead);
     // The couples-only week takes its own share (a couple a night), so the
     // rest is spread over the nights before it, the final recoupling included.
     const pace = surplus / Math.max(1, nights);

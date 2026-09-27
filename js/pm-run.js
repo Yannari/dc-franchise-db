@@ -102,7 +102,8 @@ export function perfectMatchSeasonShape() {
   const roles = perfectMatchRoles(cast, setup);
   const count = r => roles.filter(x => x === r).length;
   const episodes = Number(seasonConfig.pmEpisodes) > 0 ? Number(seasonConfig.pmEpisodes) : null;
-  const shape = { bombshells: count('bombshell'), casa: count('casa'), episodes, counts: perfectMatchArrivalCounts(), starters: count('starter') };
+  const shape = { bombshells: count('bombshell'), casa: count('casa'), episodes, counts: perfectMatchArrivalCounts(), starters: count('starter'),
+    finalCouples: seasonConfig.pmFinalCouples === 3 ? 3 : 4 };
   const seed = gs?.pm?.seed;
   const schedule = seed ? perfectMatchScheduleFor(seed, shape) : buildSchedule(shape);
   return { ...shape, starters: count('starter'), auto: buildSchedule({ ...shape, episodes: null }).length,
@@ -178,7 +179,7 @@ export function perfectMatchVillaCounts() {
   if (real) return new Map(real.map(r => [r.num, (r.pm?.villa || []).length + (r.exits || []).length]));
   const shape = perfectMatchSeasonShape();
   const aired = new Map((gs?.episodeHistory || []).filter(r => r && r.format === PERFECT_MATCH_FORMAT).map(r => [r.num, r]));
-  const FINAL = 8;
+  const FINAL = 2 * (seasonConfig.pmFinalCouples === 3 ? 3 : 4);
   let count = shape.starters;
   let bombsLeft = shape.bombshells;
   const out = new Map();
@@ -304,6 +305,8 @@ function _inputs() {
     setup: perfectMatchSetup(), picks: perfectMatchPicks(), bookings: perfectMatchBookings(),
     splitOrStealOn: seasonConfig.pmSplitOrSteal === true,
     firstIn: seasonConfig.pmFirstIn === 'm' ? 'm' : 'f',
+    // How many couples reach the final (Villa options).
+    finalCouples: seasonConfig.pmFinalCouples === 3 ? 3 : 4,
     dialect: Object.hasOwn(DIALECTS, seasonConfig.pmDialect || '') ? seasonConfig.pmDialect : 'uk',
     roleCounts: { ...(seasonConfig.pmRoleCounts || {}) },
     // The author's length, or null for automatic (from the cast).
@@ -359,7 +362,7 @@ function _build(inputs, rerolls) {
   try {
     result = playPerfectMatchSeason({ cast, setup: resolved, seed, picks: inputs.picks, bookings: inputs.bookings || {}, rerolls,
       splitOrStealOn: inputs.splitOrStealOn, dialect: inputs.dialect, episodes: inputs.episodes, firstIn: inputs.firstIn,
-      arrivalCounts: inputs.arrivalCounts });
+      arrivalCounts: inputs.arrivalCounts, finalCouples: inputs.finalCouples });
     inner = gs;
   } finally { setGs(outer); }
   return { cast, resolved, seed, rows: inner.episodeHistory || [], winners: result.winners || [], inner };

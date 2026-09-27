@@ -191,7 +191,7 @@ export function dumpingScene(state, rng, { atRisk = [], dumped, ballots = [], ch
     // loud; a tactical vote (a rival's partner, a strong couple) covered with a
     // kinder reason.
     const why = b.why ? (['rival', 'competition'].includes(b.why) ? 'cover' : b.why) : null;
-    ev('ballot-reveal', [b.voter, b.target], { [b.voter]: { approval: why && why !== 'cover' ? -0.4 : -0.2, fame: why ? 1.5 : 1 } }, [], why ? { of: why, why: b.why } : {});
+    ev('ballot-reveal', [b.voter, b.target], { [b.voter]: { approval: why && why !== 'cover' ? -0.4 : -0.2, fame: why ? 1.5 : 1 } }, [], why ? { why, motive: b.why } : {});
   }
   // …and what the votes left to settle (a tie), before anyone is told.
   if (afterVotes) events.push(...afterVotes());

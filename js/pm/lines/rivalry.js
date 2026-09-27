@@ -182,7 +182,7 @@ export const RIVALRY_LINES = {
     { id: 'sb.f.01', when: { of: 'friend' }, stage: '{a} sits down next to {b} on the swing.', turns: [
       ['a', "I'm done."], ['b', "Done with what?"], ['a', "Fighting over {c}. I'm not going to be in competition with someone for a person."],
       ['b', "Are you sure?"], ['a', "I'm sure. If {c} wants me, {c} knows where I am."]] },
-    { id: 'sb.f.02', when: { of: 'friend' }, stage: 'In the dressing room, {a} takes {a.posAdj} earrings out.', turns: [
+    { id: 'sb.f.02', when: { of: 'friend' }, stage: 'In the dressing room, {a} sits on the edge of the bench, not getting ready.', turns: [
       ['a', "I'm stepping back from {c}."], ['b', "Why? You really like {c}."],
       ['a', "I do. But I like myself more."], ['b', "Good for you."]] },
     { id: 'sb.f.03', when: { of: 'friend' }, stage: '{a} and {b} are lying on the sunbeds.', turns: [

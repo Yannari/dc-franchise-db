@@ -140,7 +140,12 @@ function newRivalry(state, rng) {
   for (const h of state.villa) {
     if (busy.has(h)) continue;
     // Everyone who wants h — whether h wants them back or not.
-    const suitors = roomMates(state, h).filter(n => !busy.has(n) && compatible(state, n, h) && wants(state, n, h) >= 5)
+    // Never somebody settled with their own partner — in love with them at
+    // least as much as they want h, or the villa's parents (season 31: the
+    // villa dad fought for Jess two episodes after the villa named him).
+    const settled = n => { const p = partnerOf(state, n); return !!p && (romance(n, p) >= wants(state, n, h)
+      || [state.villaParents?.p, state.villaParents?.q].includes(n)); };
+    const suitors = roomMates(state, h).filter(n => !busy.has(n) && compatible(state, n, h) && wants(state, n, h) >= 5 && !settled(n))
       .sort((p, q) => wants(state, q, h) - wants(state, p, h));
     if (suitors.length < 2) continue;
     const [x, y] = suitors;
@@ -205,11 +210,14 @@ export function rivalries(state, rng, entry = null) {
       t.decided = (t.decided || 0) + 1;
       t.partnerAt = p;
       nudgeAttraction(state, l, h, -0.8);
-      if (t.decided >= 2 || wants(state, l, h) < 4 || (styleOf(state, l, rng) === 'withdraw' && rng() < 0.5)) {
+      // …and a gracious loser doesn't fight on ("No hard feelings", and then
+      // another episode of it, read wrong): only a bitter one does.
+      const graceful = rng() < 0.2 + 0.6 * st(state, l, 'temperament') * (NICE.has(arch(state, l)) ? 1.3 : 1);
+      if (t.decided >= 2 || wants(state, l, h) < 4 || graceful || (styleOf(state, l, rng) === 'withdraw' && rng() < 0.5)) {
         t.over = true; t.why = 'decided';
         (state.rivalDone ||= {})[[h, x, y].sort().join('|')] = state.ep;
       }
-      const bitter = rng() < 0.2 + 0.6 * (1 - st(state, l, 'temperament')) * (NICE.has(arch(state, l)) ? 0.5 : 1);
+      const bitter = !t.over ? true : graceful ? false : rng() < 0.2 + 0.6 * (1 - st(state, l, 'temperament')) * (NICE.has(arch(state, l)) ? 0.5 : 1);
       breakHeart(state, l, h, 3 * wants(state, l, h) / 10);
       if (bitter) { addBond(l, w, -1); addRelationshipDimension(l, w, 'resentment', 1); feel(state, l, 'stress', 0.6); }
       else { addBond(l, w, 0.4); }

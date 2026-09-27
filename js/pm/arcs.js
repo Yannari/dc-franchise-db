@@ -137,6 +137,10 @@ function betrayals(state, rng, seen, ev) {
       if (Math.max(0, friendship(a, b)) < 3) continue;
       const mine = partnerOf(state, a) === x || romance(a, x) >= 5 || state.pairedEver?.[[a, x].sort().join('|')] != null && romance(a, x) >= 3.5;
       if (!mine || state.betrayals.some(t => t.a === a && t.b === b)) continue;
+      // Two who fought over x already have their story (the rivalry): not a
+      // betrayal too ("No hard feelings", then "I can't be your friend after
+      // that", the same episode, over the same one — season 31).
+      if ((state.rivalries || []).some(r => r.h === x && [r.x, r.y].includes(a) && [r.x, r.y].includes(b) && (!r.over || state.ep - (state.rivalDone?.[[r.h, r.x, r.y].sort().join('|')] ?? -99) < 6))) continue;
       // Going for a friend's one without a second thought needs the gate; the
       // rest of them do it only when they really want x.
       if (!schemeEligible(state.profiles[b]) && romance(b, x) < 5) continue;
@@ -197,7 +201,7 @@ function mugged(state, rng, ev) {
     // with another (season 23: Theo "picked" Mia, then was named villa dad
     // with Ellie the next episode).
     const n = roomMates(state, u).filter(m => compatible(state, u, m) && (attr(state, m, u) ?? 0) >= 5 && (attr(state, u, m) ?? 0) >= 5
-      && [null, u].includes(partnerOf(state, m)))
+      && [null, u].includes(partnerOf(state, m)) && [null, m].includes(partnerOf(state, u)))
       .sort((p, q) => (attr(state, q, u) ?? 0) - (attr(state, p, u) ?? 0))[0];
     if (!n || rng() > 0.7) continue;
     t.found = n; t.foundEp = state.ep;
@@ -419,10 +423,10 @@ function voteFallout(state, rng, seen, ev) {
   let shown = 0;
   for (const e of seen) {
     if (shown >= 2) return;
-    if (e.kind !== 'ballot-reveal' || !e.extra?.why || state.ep - e.ep > 1) continue;
+    if (e.kind !== 'ballot-reveal' || !e.extra?.motive || state.ep - e.ep > 1) continue;
     const [v, t] = e.players;
     if (!state.villa.includes(v)) continue;
-    const why = e.extra.why === 'threat' || e.extra.why === 'grudge' ? e.extra.why : 'tactical';
+    const why = e.extra.motive === 'threat' || e.extra.motive === 'grudge' ? e.extra.motive : 'tactical';
     if (!state.villa.includes(t)) {
       // Gone: the one who loved them, or their closest friend, is left with the voter.
       const p = roomMates(state, v).filter(n => n !== v && (romance(n, t) >= 4 || getBond(n, t) >= 3))

@@ -8,17 +8,17 @@
 export const VOTE_LINES = {
   'ballot-reveal': [
     // threat: they fancy my partner, or my partner fancies them
-    { id: 'bv.t.01', when: { of: 'threat' }, turns: [['a', "I'm going to be honest. I'm voting to dump {b}, because I don't feel comfortable with how {b} is around my partner."]], beat: '{b} shakes {b.posAdj} head.' },
-    { id: 'bv.t.02', when: { of: 'threat' }, turns: [['a', "I'm voting for {b}. I've seen the way {b} looks at my partner, and I'm protecting my couple."]], beat: 'There is a gasp from the benches.' },
-    { id: 'bv.t.03', when: { of: 'threat' }, turns: [['a', "This one's for my relationship. I'm voting to dump {b}."]], beat: "{b} laughs once, and doesn't look at {a.obj}." },
+    { id: 'bv.t.01', when: { why: 'threat' }, turns: [['a', "I'm going to be honest. I'm voting to dump {b}, because I don't feel comfortable with how {b} is around my partner."]], beat: '{b} shakes {b.posAdj} head.' },
+    { id: 'bv.t.02', when: { why: 'threat' }, turns: [['a', "I'm voting for {b}. I've seen the way {b} looks at my partner, and I'm protecting my couple."]], beat: 'There is a gasp from the benches.' },
+    { id: 'bv.t.03', when: { why: 'threat' }, turns: [['a', "This one's for my relationship. I'm voting to dump {b}."]], beat: "{b} laughs once, and doesn't look at {a.obj}." },
     // grudge: personal
-    { id: 'bv.g.01', when: { of: 'grudge' }, turns: [['a', "I'm voting for {b}. {b} hasn't been genuine with me, and I can't get past it."]], beat: '{b} stares straight at {a}.' },
-    { id: 'bv.g.02', when: { of: 'grudge' }, turns: [['a', "I don't think {b} has been a good person in here. I'm voting to dump {b}."]], beat: 'Somebody on the benches whistles through their teeth.' },
-    { id: 'bv.g.03', when: { of: 'grudge' }, turns: [['a', "{b} and I have had our problems. I'm not going to pretend otherwise. I'm voting for {b}."]], beat: '{b} mouths something back that nobody catches.' },
+    { id: 'bv.g.01', when: { why: 'grudge' }, turns: [['a', "I'm voting for {b}. {b} hasn't been genuine with me, and I can't get past it."]], beat: '{b} stares straight at {a}.' },
+    { id: 'bv.g.02', when: { why: 'grudge' }, turns: [['a', "I don't think {b} has been a good person in here. I'm voting to dump {b}."]], beat: 'Somebody on the benches whistles through their teeth.' },
+    { id: 'bv.g.03', when: { why: 'grudge' }, turns: [['a', "{b} and I have had our problems. I'm not going to pretend otherwise. I'm voting for {b}."]], beat: '{b} mouths something back that nobody catches.' },
     // cover: a tactical vote, with a kinder reason
-    { id: 'bv.c.01', when: { of: 'cover' }, turns: [['a', "This is so hard. I just haven't seen {b}'s connection grow the way the others have."]], beat: "{b} doesn't look convinced." },
-    { id: 'bv.c.02', when: { of: 'cover' }, turns: [['a', "I've gone with my gut. I'm voting to dump {b}. Sorry."]] },
-    { id: 'bv.c.03', when: { of: 'cover' }, turns: [['a', "I'm voting for {b}, because I think the others have more to lose."]], beat: 'A couple of the islanders exchange a look.' },
+    { id: 'bv.c.01', when: { why: 'cover' }, turns: [['a', "This is so hard. I just haven't seen {b}'s connection grow the way the others have."]], beat: "{b} doesn't look convinced." },
+    { id: 'bv.c.02', when: { why: 'cover' }, turns: [['a', "I've gone with my gut. I'm voting to dump {b}. Sorry."]] },
+    { id: 'bv.c.03', when: { why: 'cover' }, turns: [['a', "I'm voting for {b}, because I think the others have more to lose."]], beat: 'A couple of the islanders exchange a look.' },
   ],
 
   'vote-fallout': [

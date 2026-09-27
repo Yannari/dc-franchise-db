@@ -4,7 +4,7 @@
 //   dump-text       [a, b]   the text that there is a dumping tonight. `of`: the format
 //   dump-nerves     [a, b]   a couple waiting to go down to the fire pit
 //   dump-open       []       the host arrives and says exactly how tonight works. `of`: the format
-//   dump-recap      [a, b, c] the host on the day's biggest moment. `of`: its kind
+//   dump-recap      [a, b, c] the host on a moment since the last dumping. `of`: its kind, or intro; `ago`
 //   dump-safe       [a, b]   a safe couple, read out. `nth`: first · next · last
 //   dump-buildup    [a, b]   a couple at risk. `nth`: first · next · only
 //   dump-plea       [a, b]   the at-risk make their case. `of`: couple · one
@@ -130,17 +130,48 @@ export const FIREPIT_LINES = {
     { id: 'do.ex1', when: pub('exes'), stage: 'The host walks down to the fire pit.', turns: [['dior', "Good evening, islanders!"], ['dior', "Tonight, you'll vote for the couples you think are the least compatible. The couples with the most votes will be at risk."], ['dior', "And the people deciding their fate won't be you. They'll be some familiar faces."]] },
   ],
   'dump-recap': [
-    { id: 'dr.st', when: pub('steal'), turns: [['dior', "It's been quite a day. {a} walked in, and {b} and {c} are not a couple any more."]] },
-    { id: 'dr.bl', when: pub('blowup'), turns: [['dior', "I hear things got a bit heated earlier. {a}, {b}, I think the whole villa heard you."]], beat: '{a} looks at the floor.' },
-    { id: 'dr.ar', when: pub('argument'), turns: [['dior', "{a}, {b}, I hear you two had words today. I hope you've made up, because tonight you might need each other."]] },
-    { id: 'dr.ap', when: pub('argument-apart'), turns: [['dior', "{a}, {b}, I hear there were words between you two today. I hope the air's been cleared."]], beat: "{a} and {b} don't look at each other." },
-    { id: 'dr.bp', when: pub('blowup-apart'), turns: [['dior', "I hear things got heated today. {a}, {b}, the whole villa heard you."]], beat: 'Somebody on the benches coughs.' },
-    { id: 'dr.sp', when: pub('photo-split'), turns: [['dior', "{a}, {b}, I know it's been a hard day. I'm sorry."]] },
-    { id: 'dr.ms', when: pub('movie-split'), turns: [['dior', "{a}, {b}, I know that was a hard thing to watch. I'm sorry."]] },
-    { id: 'dr.oa', when: pub('official-ask'), turns: [['dior', "And I hear congratulations are in order. {a} and {b}, you're official!"]], beat: 'The villa cheers.' },
-    { id: 'dr.ls', when: pub('love-said'), turns: [['dior', "I hear the L word has been said in this villa. {a}, {b}, is that right?"]], beat: '{b} goes bright red.' },
-    { id: 'dr.en', when: pub('entrance'), turns: [['dior', "{a}, welcome to the villa. You've picked quite a night to arrive."]] },
-    { id: 'dr.ki', when: pub('kiss'), turns: [['dior', "I've heard there's been some kissing in the villa today. {a}, {b}, I'm looking at you."]], beat: 'Everybody laughs except {a} and {b}.' },
+    // The host goes back over what has happened since the last dumping, one
+    // moment at a time, and asks about it (user: "talk about the last episode
+    // before the last dumping, say what happened, stir the drama, that's her
+    // job as a host"). `of`: the moment's kind; `ago`: today · yesterday · days;
+    // `of: 'intro'` is her opening, with nobody named.
+    { id: 'dr.in1', when: { of: 'intro' }, turns: [['dior', "Before we start, let's talk about what's been going on in here over the last few days."], ['dior', "Because a lot has been going on."]], beat: 'A few islanders look at each other.' },
+    { id: 'dr.in2', when: { of: 'intro' }, turns: [['dior', "It's been a busy few days in the villa. I've been hearing all about it."]], beat: 'Nobody on the benches moves.' },
+    { id: 'dr.in3', when: { of: 'intro' }, turns: [['dior', "Now, I know some of you have had quite a time since I was last here. Let's go through it."]] },
+
+    { id: 'dr.st', when: { of: 'steal' }, turns: [['dior', "{b} and {c} were a couple the last time I was here. Now {b} is with {a}."], ['dior', "{c}, how are you feeling about that?"], ['c', "Honestly? Not great. But I'd rather know now."]], beat: "{a} doesn't look at {c}." },
+    { id: 'dr.st2', when: { of: 'steal' }, turns: [['dior', "{b}, {c}, you were a couple the last time I was here. Now {b} is sitting next to {a}."], ['dior', "{b}, do you want to tell us what happened?"], ['b', "I followed my heart. I'm sorry it hurt {c}."], ['c', "You're not that sorry."]], beat: 'The benches go very quiet.' },
+    { id: 'dr.st3', when: { of: 'steal' }, turns: [['dior', "{a}, you've already broken up a couple."], ['a', "I wanted {b}. I was honest about that from the start."], ['dior', "{c}, is that how you see it?"], ['c', "I see someone who didn't care who got hurt."]] },
+
+    { id: 'dr.bl', when: { of: 'blowup', ago: 'today' }, turns: [['dior', "I hear things got a bit heated earlier. {a}, {b}, I think the whole villa heard you."], ['dior', "Are you two okay?"], ['a', "We're fine. We've talked about it."], ['b', "We're getting there."]], beat: "They don't sound like the same answer." },
+    { id: 'dr.bl2', when: { of: 'blowup' }, turns: [['dior', "{a}, {b}. The two of you had the biggest row this villa has seen in days."], ['dior', "What was that about?"], ['a', "It was a bad day. We've both said sorry."], ['b', "I've said sorry. I'm still waiting to hear it back."]], beat: '{a} and {b} are sitting further apart than any other couple.' },
+    { id: 'dr.bl3', when: { of: 'blowup' }, turns: [['dior', "{a}, {b}, the villa tells me you two were shouting at each other where everyone could hear."], ['dior', "Is that sorted, or is it still going on?"], ['b', "Ask {a}."], ['a', "It's sorted."]], beat: '{b} shakes {b.posAdj} head.' },
+    { id: 'dr.bp', when: { of: 'blowup-apart', ago: 'today' }, turns: [['dior', "I hear things got heated today. {a}, {b}, the whole villa heard you."], ['dior', "{a}, what started it?"], ['a', "Ask {b}."], ['b', "I'm not the one who started shouting."]], beat: 'Somebody on the benches coughs.' },
+    { id: 'dr.bp2', when: { of: 'blowup-apart' }, turns: [['dior', "{a} and {b}. The two of you have hardly said a kind word to each other in days."], ['dior', "Is there anything you want to say now, while everyone's here?"], ['b', "No. I think I said it all already."], ['a', "So did I."]], beat: 'The villa has picked sides, and it shows on the benches.' },
+    { id: 'dr.bp3', when: { of: 'blowup-apart' }, turns: [['dior', "{a}, {b}, I'm told that row between you split the villa down the middle."], ['dior', "{b}, do you regret any of it?"], ['b', "Some of how I said it. Not what I said."], ['a', "That's not an apology."]] },
+
+    { id: 'dr.ar', when: { of: 'argument', ago: 'today' }, turns: [['dior', "{a}, {b}, I hear you two had words today. I hope you've made up, because tonight you might need each other."], ['a', "We have."], ['dior', "{b}?"], ['b', "Mostly."]] },
+    { id: 'dr.ar2', when: { of: 'argument' }, turns: [['dior', "{a}, {b}. You had words since I was last here. What about?"], ['a', "Nothing, really. It's done."], ['b', "It wasn't nothing."]], beat: '{a} turns to look at {b}, and {b} keeps looking at the host.' },
+    { id: 'dr.ar3', when: { of: 'argument' }, turns: [['dior', "{a}, the villa tells me you and {b} haven't been getting on."], ['a', "We had one argument. Every couple does."], ['dior', "{b}, is it just the one?"], ['b', "It's the one everyone heard."]] },
+    { id: 'dr.ap', when: { of: 'argument-apart' }, turns: [['dior', "{a}, {b}, I hear there were words between you two. I hope the air's been cleared."], ['a', "It's fine now."], ['b', "It's fine for tonight."]], beat: "{a} and {b} don't look at each other." },
+    { id: 'dr.ap2', when: { of: 'argument-apart' }, turns: [['dior', "{a} and {b}. I hear you two have fallen out."], ['dior', "{a}, what happened?"], ['a', "We see things differently. That's all."], ['b', "That's one way of putting it."]] },
+
+    { id: 'dr.sp', when: { of: 'photo-split' }, turns: [['dior', "{a}, {b}, I know it's been hard. You were a couple, and the photos changed that."], ['dior', "{a}, how are you doing?"], ['a', "I'm okay. I'm not going to pretend it didn't hurt."]], beat: '{b} looks at the floor.' },
+    { id: 'dr.sp2', when: { of: 'photo-split' }, turns: [['dior', "{a}, {b}, those photos ended things between you."], ['dior', "{b}, is there anything you want to say to {a}?"], ['b', "Just sorry. I should have been honest before the photos were."], ['a', "Yes. You should have."]] },
+    { id: 'dr.ms', when: { of: 'movie-split' }, turns: [['dior', "{a}, {b}, I know movie night was a hard thing to watch. I'm sorry."], ['dior', "{a}, have the two of you talked since?"], ['a', "A bit. It didn't go well."]], beat: '{b} nods.' },
+    { id: 'dr.ms2', when: { of: 'movie-split' }, turns: [['dior', "{a}, {b}. One clip on movie night, and you're not a couple any more."], ['dior', "{b}, did you know what was coming?"], ['b', "I knew there might be something. I didn't think it would be that."], ['a', "Neither did I."]] },
+
+    { id: 'dr.oa', when: { of: 'official-ask' }, turns: [['dior', "And I hear congratulations are in order. {a} and {b}, you're official!"], ['dior', "{b}, did you see it coming?"], ['b', "No. {a} kept it very quiet."], ['a', "I wanted it to be a surprise."]], beat: 'The villa cheers.' },
+    { id: 'dr.oa2', when: { of: 'official-ask' }, turns: [['dior', "{a}, {b}, I hear you two have gone and made it official."], ['dior', "{a}, why now?"], ['a', "Because I'm sure. I didn't want to wait any longer."]], beat: '{b} squeezes {a.posAdj} hand, and a couple of the other islanders clap.' },
+    { id: 'dr.ls', when: { of: 'love-said' }, turns: [['dior', "I hear the L word has been said in this villa. {a}, {b}, is that right?"], ['a', "It is."], ['dior', "{b}, how did that feel?"], ['b', "Like the best thing anyone's ever said to me."]], beat: '{b} goes bright red.' },
+    { id: 'dr.ls2', when: { of: 'love-said' }, turns: [['dior', "{a}. I'm told you told {b} you love {b.obj}."], ['a', "I did. I meant it."], ['dior', "{b}, what did you make of it?"], ['b', "I'm still smiling about it."]], beat: 'A few islanders look at their own partners.' },
+
+    { id: 'dr.en', when: { of: 'entrance', ago: 'today' }, turns: [['dior', "{a}, welcome to the villa. You've picked quite a night to arrive."], ['a', "Thank you. I think."]], beat: 'Nobody laughs.' },
+    { id: 'dr.en2', when: { of: 'entrance', ago: ['yesterday', 'days'] }, turns: [['dior', "{a}, you've been here a little while now. Has anybody caught your eye?"], ['a', "Maybe. I'll let you know at the next recoupling."]], beat: 'Two couples on the benches move a little closer together.' },
+    { id: 'dr.en3', when: { of: 'entrance' }, turns: [['dior', "{a}, how are you finding the villa so far?"], ['a', "Everyone's been lovely. Mostly."]], beat: 'A couple of islanders look away.' },
+
+    { id: 'dr.ki', when: { of: 'kiss' }, turns: [['dior', "I've heard there's been some kissing in the villa. {a}, {b}, I'm looking at you."], ['a', "I don't know what you're talking about."], ['b', "Yes, you do."]], beat: 'Everybody laughs except {a} and {b}.' },
+    { id: 'dr.ki2', when: { of: 'kiss' }, turns: [['dior', "{a}, {b}. The villa tells me the two of you can't keep your hands off each other."], ['b', "We're a couple. That's allowed."], ['dior', "It is. The villa just saw a lot of it."]], beat: 'The benches laugh.' },
   ],
   'dump-safe': [
     { id: 'ds.f1', when: { nth: 'first' }, turns: [['dior', "The first couple who are safe, and will stay in the villa tonight, is…"], ['dior', "…{a} and {b}."]], beat: '{a} and {b} let out a breath.' },

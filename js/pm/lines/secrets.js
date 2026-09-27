@@ -92,8 +92,8 @@ const K = (kind, more = {}) => ({ kind, ...more });
 export const SECRET_HUT = {
   honest: [
     { id: 'hut.sc.h1', when: K('apology', { of: 'sincere', role: 0 }), turns: [['a', "I meant every word. I just don't know if it's enough."]] },
-    { id: 'hut.sc.h2', when: K('apology', { role: 1 }), turns: [['a', "Part of me wants to forgive them. That's the part I don't trust."]] },
-    { id: 'hut.sc.h3', when: K('reunite', { role: 1 }), turns: [['a', "People will say I'm mad. Maybe I am. I still love them."]] },
+    { id: 'hut.sc.h2', when: K('apology', { role: 1 }), turns: [['a', "Part of me wants to forgive {b}. That's the part I don't trust."]] },
+    { id: 'hut.sc.h3', when: K('reunite', { role: 1 }), turns: [['a', "People will say I'm mad. Maybe I am. I still love {b}."]] },
     { id: 'hut.sc.h4', when: K('reunite', { role: 0 }), turns: [['a', "I've been given a second chance. I'm not wasting it."]] },
     { id: 'hut.sc.h5', when: K('apology-rejected', { role: 1 }), turns: [['a', "I'm not a pushover. Sorry doesn't fix it."]] },
     { id: 'hut.sc.h6', when: K('apology-rejected', { role: 0 }), turns: [['a', "I messed it up. I know I did. I just have to live with it."]] },
@@ -103,6 +103,6 @@ export const SECRET_HUT = {
     { id: 'hut.sc.t2', when: K('bed-share', { role: 0 }), turns: [['a', "It's Casa. Everyone shares a bed at Casa. It doesn't mean anything."]] },
     { id: 'hut.sc.t3', when: K('bed-share', { of: 'kiss', role: 0 }), turns: [['a', "One kiss. At Casa. That stays at Casa."]] },
     { id: 'hut.sc.t4', when: K('vent', { role: 0 }), turns: [['a', "I'd never say that to my partner's face. But it's true."]] },
-    { id: 'hut.sc.t5', when: K('apology', { of: 'half', role: 0 }), turns: [['a', "I said sorry. What else do they want from me?"]] },
+    { id: 'hut.sc.t5', when: K('apology', { of: 'half', role: 0 }), turns: [['a', "I said sorry. What else does {b} want from me?"]] },
   ],
 };

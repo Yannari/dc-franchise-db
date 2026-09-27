@@ -80,14 +80,44 @@ function fireBuildUp(state, rng, { atRisk, channel, format, dumped }) {
   }
   // 3. The host, the day, and the rules of the night.
   push('dump-open', [], { of: tonight, pop: {} });
-  // Never a secret: a kiss is only recapped between partners, where the villa saw it.
-  const big = today(state).filter(e => e.aired && !e.extra?.secret && RECAP.includes(e.kind)
-    && e.players.every(n => villa.includes(n) || e.kind === 'steal')
-    && (e.kind !== 'kiss' || partnerOf(state, e.players[0]) === e.players[1]))
-    .sort((x, y) => RECAP.indexOf(x.kind) - RECAP.indexOf(y.kind))[0];
-  // A row between two who are not a couple is not "you might need each other".
-  const apart = big && ['argument', 'blowup'].includes(big.kind) && partnerOf(state, big.players[0]) !== big.players[1];
-  if (big) push('dump-recap', big.players.slice(0, 3), { of: big.kind + (apart ? '-apart' : ''), pop: {} });
+  // Everything since the last time somebody left, not just today (user: "she's
+  // not even elaborating — talk about the last episodes before the last
+  // dumping, say what happened, stir the drama, that's her job as a host"):
+  // up to three moments, the biggest first, never the same pair twice, each
+  // asked about in front of the villa. Never a secret: a kiss is only recapped
+  // between partners, where the villa saw it.
+  const lastOut = Math.max(0, ...(state.gone || []).filter(g => g.ep < state.ep).map(g => g.ep));
+  const seen = new Set();
+  const since = [...(state.history || []), ...today(state)].filter(e => {
+    if (seen.has(e.id)) return false; seen.add(e.id);
+    return e.ep > lastOut && e.ep >= state.ep - 4 && e.aired && !e.extra?.secret && RECAP.includes(e.kind)
+      && e.players.every(n => villa.includes(n) || e.kind === 'steal')
+      && (e.kind !== 'kiss' || partnerOf(state, e.players[0]) === e.players[1]);
+  }).sort((x, y) => RECAP.indexOf(x.kind) - RECAP.indexOf(y.kind) || y.ep - x.ep);
+  const recaps = [];
+  for (const e of since) {
+    if (recaps.length >= 3) break;
+    // One of each kind a night: three rows in a row is one question asked three times.
+    const pair = e.players.slice(0, 2);
+    if (recaps.some(r => r.kind === e.kind || pair.every(n => r.players.includes(n)))) continue;
+    recaps.push(e);
+  }
+  if (recaps.length > 1) push('dump-recap', [], { of: 'intro', pop: {} });
+  for (const e of recaps) {
+    // A row between two who are not a couple is not "you might need each other".
+    const apart = ['argument', 'blowup'].includes(e.kind) && partnerOf(state, e.players[0]) !== e.players[1];
+    const ago = state.ep - e.ep === 0 ? 'today' : state.ep - e.ep === 1 ? 'yesterday' : 'days';
+    const named = e.players.slice(0, 3);
+    // Being asked about it with everyone watching: a row brought back up
+    // stings again; a good moment said out loud settles the couple.
+    const sore = ['argument', 'blowup', 'steal', 'photo-split', 'movie-split'].includes(e.kind);
+    for (const n of named) feel(state, n, 'stress', sore ? 0.3 : -0.1);
+    if (sore && named[1]) addBond(named[0], named[1], -0.2);
+    if (e.kind === 'steal' && named[2]) addBond(named[0], named[2], -0.2);
+    if (!sore && named[1]) addBond(named[0], named[1], 0.15);
+    push('dump-recap', named, { of: e.kind + (apart ? '-apart' : ''), ago,
+      pop: Object.fromEntries(named.map(n => [n, { approval: 0, fame: 0.5 }])) });
+  }
   // 4. The safe couples, one at a time, when the public has ranked them all.
   if (['public', 'villa', 'top-couple'].includes(channel) && atRisk.every(c => c.length === 2)) {
     const risky = new Set(atRisk.flat());

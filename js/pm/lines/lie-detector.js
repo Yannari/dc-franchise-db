@@ -142,7 +142,7 @@ export const LIE_HUT = {
     { id: 'hut.ld.h1', when: K('lie-question', { of: 'false-red', role: 0 }), turns: [['a', "I was telling the truth. I know I was. And now everyone's looking at me like I'm a liar."]] },
     { id: 'hut.ld.h2', when: K('lie-question', { of: 'caught', role: 0 }), turns: [['a', "I knew it was going to go red. I just hoped it wouldn't."]] },
     { id: 'hut.ld.h3', when: K('lie-question', { of: 'clean', role: 2 }), turns: [['a', "Seeing that green light. I can't explain how much I needed that."]] },
-    { id: 'hut.ld.h4', when: K('lie-question', { of: 'admit', role: 0 }), turns: [['a', "I'm not going to lie on a lie detector. That would be mad. But I've hurt them now."]] },
+    { id: 'hut.ld.h4', when: K('lie-question', { of: 'admit', role: 0, taken: true }), turns: [['a', "I'm not going to lie on a lie detector. That would be mad. But I've hurt {pa} now."]] },
     { id: 'hut.ld.h5', when: K('lie-row', { of: 'own-it', role: 1 }), turns: [['a', "I asked the question because I had a feeling. I just didn't want to be right."]] },
     { id: 'hut.ld.h6', when: K('lie-row', { of: 'broken', role: 1 }), turns: [['a', "I want to believe it was the machine. I really do."]] },
   ],

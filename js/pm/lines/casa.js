@@ -137,19 +137,19 @@ export const CASA_LINES = {
 const K = (kind, more = {}) => ({ kind, ...more });
 export const CASA_HUT = {
   honest: [
-    { id: 'hut.ca.h1', when: K('casa-react', { of: 'relief', role: 0 }), turns: [['a', "When I saw them on their own at the top of the steps, I couldn't breathe."]] },
+    { id: 'hut.ca.h1', when: K('casa-react', { of: 'relief', role: 0 }), turns: [['a', "When I saw {b} on {b.posAdj} own at the top of the steps, I couldn't breathe."]] },
     { id: 'hut.ca.h2', when: K('casa-react', { of: 'devastated', role: 0 }), turns: [['a', "I've never felt anything like it. Like the ground went."]] },
     { id: 'hut.ca.h3', when: K('casa-react', { of: 'turned', role: 0 }), turns: [['a', "I walked in on my own, proud of myself. That lasted about two seconds."]] },
     { id: 'hut.ca.h4', when: K('casa-return', { of: 'stayed', choice: 'stick', role: 0 }), turns: [['a', "Sitting on that bench on my own was the longest minute of my life."]] },
     { id: 'hut.ca.h5', when: K('photos', { role: 0 }), turns: [['a', "A photo. I found out from a photo."]] },
-    { id: 'hut.ca.h6', when: K('photo-row', { of: 'own-it', role: 1 }), turns: [['a', "I should have told them the second I walked back in."]] },
+    { id: 'hut.ca.h6', when: K('photo-row', { of: 'own-it', role: 1 }), turns: [['a', "I should have told {b} the second I walked back in."]] },
     // An ex walks in (arrivals.js exReveal).
     { id: 'hut.xr.h1', when: K('ex-reveal', { of: 'cold', role: 0 }), turns: [['a', "Of all the villas in all the world. {b}. Honestly."]] },
     { id: 'hut.xr.h2', when: K('ex-reveal', { of: 'cold', role: 0 }), turns: [['a', "We didn't end well. I'm not going to pretend we did."]] },
     { id: 'hut.xr.h3', when: K('ex-reveal', { of: 'spark', role: 0 }), turns: [['a', "My heart went. I'm not proud of it, but it did."]] },
     { id: 'hut.xr.h4', when: K('ex-reveal', { role: 1 }), turns: [['a', "The look on {b}'s face. I'll remember that forever."]] },
     { id: 'hut.xp.h1', when: K('ex-partner', { role: 0 }), turns: [['a', "Nobody wants their partner's ex walking in. Nobody."]] },
-    { id: 'hut.xp.h2', when: K('ex-partner', { of: 'spark', role: 0 }), turns: [['a', "I saw how {b} looked at them. I'm not blind."]] },
+    { id: 'hut.xp.h2', when: K('ex-partner', { of: 'spark', role: 0 }), turns: [['a', "I saw how {b} looked at {c}. I'm not blind."]] },
     { id: 'hut.xc.h1', when: K('ex-confront', { of: 'cold' }), turns: [['a', "There's a reason we broke up, and it's all still there."]] },
     { id: 'hut.xc.h2', when: K('ex-confront', { of: 'spark' }), turns: [['a', "I thought I was over it. Then we actually talked."]] },
     { id: 'hut.xc.h3', when: K('ex-confront', { of: 'spark' }), turns: [['a', "This is either the best thing that could have happened, or the worst."]] },
@@ -161,11 +161,11 @@ export const CASA_HUT = {
     { id: 'hut.ca.m12', when: K('casa-miss', { of: 'aches', role: 0, taken: true }), turns: [['a', "I never thought I'd be the one on my own at a party. I just miss {pa}."]] },
     { id: 'hut.ca.m13', when: K('casa-miss', { of: 'aches', role: 0, taken: true }), turns: [['a', "This week is a test. And I'm passing it, because all I can think about is {pa}."]] },
     { id: 'hut.ca.m4', when: K('casa-miss', { of: 'worries', role: 0, taken: true }), turns: [['a', "I trust {pa}. I do. It's everyone else in that villa I don't trust."]] },
-    { id: 'hut.ca.m5', when: K('casa-miss', { of: 'worries', role: 0, taken: true }), turns: [['a', "What if I'm sitting here being loyal, and {pa} is over there having the time of their life?"]] },
+    { id: 'hut.ca.m5', when: K('casa-miss', { of: 'worries', role: 0, taken: true }), turns: [['a', "What if I'm sitting here being loyal, and {pa} is over there having the time of {pa.posAdj} life?"]] },
     { id: 'hut.ca.m6', when: K('casa-miss', { of: 'worries', role: 0, taken: true }), turns: [['a', "The not knowing is the worst bit. I'd honestly rather know."]] },
     { id: 'hut.ca.m7', when: K('casa-miss', { of: 'tears', role: 0, taken: true }), stage: '{a} sits down in the beach hut and is already crying.', turns: [['a', "Sorry. Give me a second."], ['a', "I just really miss {pa}. I didn't know I'd feel it this much."]] },
-    { id: 'hut.ca.m8', when: K('casa-miss', { of: 'tears', role: 0, taken: true }), turns: [['a', "I came in here to find someone, and I did. And now they're not here."]], beat: '{a} wipes {a.posAdj} eyes with the back of {a.posAdj} hand.' },
-    { id: 'hut.ca.m9', when: K('casa-miss', { of: 'tears', role: 0, taken: true }), turns: [['a', "Everyone's having fun, and I'm in here crying over {pa}. This is so embarrassing."], ['a', "I don't even care. I miss them."]] },
+    { id: 'hut.ca.m8', when: K('casa-miss', { of: 'tears', role: 0, taken: true }), turns: [['a', "I came in here to find someone, and I did. And now {pa} isn't here."]], beat: '{a} wipes {a.posAdj} eyes with the back of {a.posAdj} hand.' },
+    { id: 'hut.ca.m9', when: K('casa-miss', { of: 'tears', role: 0, taken: true }), turns: [['a', "Everyone's having fun, and I'm in here crying over {pa}. This is so embarrassing."], ['a', "I don't even care. I just miss {pa}."]] },
     { id: 'hut.ca.m10', when: K('casa-miss', { of: 'tears', role: 0, taken: true }), stage: '{a} holds a cushion to {a.posAdj} chest.', turns: [['a', "If {pa} walks back through that door with someone else, I don't know what I'll do."]] },
   ],
   'two-faced': [

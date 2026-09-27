@@ -63,13 +63,13 @@ export const TRIANGLE_HUT = {
   honest: [
     { id: 'hut.tr.h1', when: K('triangle-torn', { role: 0 }), turns: [['a', "I've never been in this situation. Two people. I feel like the villain and I haven't even done anything yet."]] },
     { id: 'hut.tr.h2', when: K('triangle-rivals', { role: 0 }), turns: [['a', "May the best one win. I'm the best one, by the way."]] },
-    { id: 'hut.tr.h3', when: K('triangle-case', { role: 0 }), turns: [['a', "I put everything on the table. The rest is up to them."]] },
+    { id: 'hut.tr.h3', when: K('triangle-case', { role: 0 }), turns: [['a', "I put everything on the table. The rest is up to {b}."]] },
     { id: 'hut.tr.h4', when: K('triangle-ultimatum', { of: 'chose-y', role: 0 }), turns: [['a', "I asked. I got my answer. I just didn't want it to be that one."]] },
     { id: 'hut.tr.h5', when: K('triangle-choice', { of: 'pick', role: 2 }), turns: [['a', "I was so close. That's what hurts. I was so close."]] },
     { id: 'hut.tr.h6', when: K('triangle-choice', { of: 'pick', role: 0 }), turns: [['a', "Someone was always going to get hurt. I just hate that it was me who did it."]] },
   ],
   'two-faced': [
     { id: 'hut.tr.t1', when: K('triangle-torn', { role: 0 }), turns: [['a', "Two people fighting over me? I'm not going to lie, I'm enjoying it a bit."]] },
-    { id: 'hut.tr.t2', when: K('triangle-rivals', { of: 'size-up', role: 0 }), turns: [['a', "I shook their hand. I'm still going to win."]] },
+    { id: 'hut.tr.t2', when: K('triangle-rivals', { of: 'size-up', role: 0 }), turns: [['a', "I shook {b}'s hand. I'm still going to win."]] },
   ],
 };

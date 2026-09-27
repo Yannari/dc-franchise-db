@@ -92,7 +92,7 @@ export const BREAKDOWN_HUT = {
     { id: 'hut.bd.h5', when: K('no-show', { role: 1 }), turns: [['a', "Everyone came. Everyone except the one person who should have."]] },
   ],
   'two-faced': [
-    { id: 'hut.bd.t1', when: K('comfort', { role: 0 }), turns: [['a', "I'll be there for them. It doesn't hurt to be seen being there for them, either."]] },
-    { id: 'hut.bd.t2', when: K('pull', { promised: true, role: 0 }), turns: [['a', "What I say about the outside is between me and them. The villa doesn't need to know."]] },
+    { id: 'hut.bd.t1', when: K('comfort', { role: 0 }), turns: [['a', "I'll be there for {b}. It doesn't hurt to be seen being there, either."]] },
+    { id: 'hut.bd.t2', when: K('pull', { promised: true, role: 0 }), turns: [['a', "What I say about the outside is between me and {b}. The villa doesn't need to know."]] },
   ],
 };

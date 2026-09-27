@@ -151,7 +151,7 @@ export const BLOWUP_HUT = {
     { id: 'hut.bu.h2', when: K('blowup', { role: 1 }), turns: [['a', "I've never been spoken to like that in my life."]] },
     { id: 'hut.bu.h3', when: K('pile-in', { role: 0 }), turns: [['a', "I wasn't going to stand there and watch it. Not a chance."]] },
     { id: 'hut.bu.h4', when: K('clear-the-air', { of: 'peace' }), turns: [['a', "It feels like I can breathe in the villa again."]] },
-    { id: 'hut.bu.h5', when: K('cold-shoulder', { role: 1 }), turns: [['a', "They picked a side. I'm just letting them live on it."]] },
+    { id: 'hut.bu.h5', when: K('cold-shoulder', { role: 1 }), turns: [['a', "{b} picked a side. Fine. {b} can stay on it."]] },
   ],
   'two-faced': [
     { id: 'hut.bu.t1', when: K('clear-the-air', { of: 'peace', role: 0 }), turns: [['a', "We made up. For now. I haven't forgotten a single word."]] },

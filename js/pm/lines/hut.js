@@ -98,7 +98,7 @@ export const HUT = {
     { id: 'hut.gossip.h1', when: K('gossip', { ...B, role: 0 }), turns: [['a', "I didn't want to be the one to tell {b}. But I'd want to know, so I told."]] },
     { id: 'hut.gossip.h2', when: K('gossip', { ...B, role: 0, persona: 'girls-girl', gender: 'f' }), turns: [['a', "Girl code is girl code. I don't care who it upsets."]] },
     { id: 'hut.gossip.h3', when: K('gossip', { ...B, role: 0 }), turns: [['a', "I've probably just made an enemy. I'd rather that than watch {b} get lied to."]] },
-    { id: 'hut.gossip.h4', when: K('gossip', { ...B, role: 1 }), turns: [['a', "I trusted them. That's the bit I can't get over. I trusted them."]] },
+    { id: 'hut.gossip.h4', when: K('gossip', { ...B, role: 1 }), turns: [['a', "I trusted {c}. That's the bit I can't get over."]] },
     { id: 'hut.gossip.h5', when: K('gossip', { ...B, role: 1, attachment: 'avoidant' }), turns: [["a", "I'm not going to cry about it on camera. I'll do that later, when nobody's looking."]] },
     { id: 'hut.gossip.h6', when: K('gossip', { ...B, role: 1 }), turns: [['a', "I'm glad {b} told me. I'm not glad about what {b} told me."]] },
     { id: 'hut.gossip.h7', when: K('gossip', { role: 2 }), turns: [['a', "Everyone's looking at me like I've run someone over. I had a chat. A chat went too far."]] },

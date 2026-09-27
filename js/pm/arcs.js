@@ -50,7 +50,9 @@ const NICE = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer',
 const pop = (...rows) => Object.fromEntries(rows.filter(r => r && r[0]).map(([n, approval, fame]) => [n, { approval, fame }]));
 const res = (a, b) => getRelationshipDimension(a, b, 'resentment') || 0;
 const here = (state, ...ns) => ns.every(n => state.villa.includes(n));
-const together = (state, ...ns) => { const r = roomMates(state, ns[0]); return ns.slice(1).every(n => r.includes(n)); };
+// Both still in the villa, and in the same one (roomMates of somebody who has left
+// counted everyone: a villa-parents chat with an islander dumped weeks before).
+const together = (state, ...ns) => { if (!here(state, ...ns)) return false; const r = roomMates(state, ns[0]); return ns.slice(1).every(n => r.includes(n)); };
 function weighted(rng, opts) {
   const total = opts.reduce((t, o) => t + Math.max(0, o[1]), 0);
   if (total <= 0) return null;

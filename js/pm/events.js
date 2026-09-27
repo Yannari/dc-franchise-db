@@ -23,6 +23,11 @@ import { scriptFor, hutFor, moodOf, narratorFor } from './script.js';
 
 export const PHASE_BUDGETS = { morning: 12, day: 40, event: 18, evening: 23 };
 export const HUT_RATE = 0.25;
+// Scenes a secret has nothing to do with unless its people are in them (the hut's stance, below).
+// The villa's everyday scenes are the most common there are: a hut on a quarter
+// of them was the same friendship line a dozen times a season (audit 2026-09-26).
+const EVERYDAY_HUT = new Set(['friendship', 'comedy', 'chat']);
+const LIGHT_SCENES = new Set(['friendship', 'comedy', 'chat', 'advice', 'solidarity', 'snog-marry-pie', 'challenge-win', 'deep-chat']);
 // Scenes whose beach hut is the point of them: always cut away.
 const ALWAYS_HUT = new Set(['casa-miss']);
 
@@ -843,7 +848,7 @@ export function makeEvent(state, rng, { phase, kind, players, extra = {}, aired 
   ev.script = scriptFor(state, ev);
   for (const n of res.major || []) if (!ev.major.includes(n)) ev.major.push(n);
   // No beach hut in the middle of a couple watching their own film.
-  if (players.length && !NO_HUT.has(kind) && (ALWAYS_HUT.has(kind) || rng() < HUT_RATE)) {
+  if (players.length && !NO_HUT.has(kind) && (ALWAYS_HUT.has(kind) || rng() < (EVERYDAY_HUT.has(kind) ? 0.1 : HUT_RATE))) {
     // Only somebody who was THERE goes to the hut about it: the one a debrief
     // or a telling is about is not in the room (user, reading night one: "say
     // what out loud, when Mickey wasn't even the one talking").
@@ -857,7 +862,15 @@ export function makeEvent(state, rng, { phase, kind, players, extra = {}, aired 
     // hut two-faced by week five (80-97% of cutaways, measured).
     // Missing a partner is only two-faced over a real betrayal (a kiss, a bed),
     // not a moan about them to a friend or a chat somebody pulled them for.
-    const fresh = state.secrets.some(x => !x.known && x.who === who && x.ep >= state.ep - 1 && (kind !== 'casa-miss' || (x.with && x.kind !== 'pull')));
+    const mine = state.secrets.filter(x => !x.known && x.who === who && x.ep >= state.ep - 1 && (kind !== 'casa-miss' || (x.with && x.kind !== 'pull')));
+    // A scene with nothing to do with the secret (a laugh with a friend, a
+    // chat) is two-faced only some of the time, on its own dice: every hut of
+    // anyone keeping a secret was the same four two-faced lines, fifteen to
+    // twenty times a season (audit, 2026-09-26). A scene with the partner or
+    // the other one in it always is.
+    const about = mine.some(x => players.includes(x.partner) || players.includes(x.with));
+    const fresh = mine.length > 0 && (about || !LIGHT_SCENES.has(kind)
+      || streamFor(state.seed || 1, `hut-stance:${ev.id}`)() < 0.45);
     const stance = faking || fresh ? 'two-faced' : 'honest';
     const script = hutFor(state, ev, who, stance);
     // Nothing left to say this episode that hasn't been said: no cutaway.

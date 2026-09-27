@@ -125,8 +125,13 @@ function villaDumpingRaw(state, { format, bottom, rng }) {
     const targets = all.filter(n => !gone.includes(n)).length ? all.filter(n => !gone.includes(n)) : all;
     const sideVoters = voters.filter(v => g(v) === side);
     if (!targets.length || !sideVoters.length) continue;
-    const mine = sideVoters.map(v => ({ voter: v, channel: 'villa',
+    const cast = sideVoters.map(v => ({ voter: v, channel: 'villa',
       target: [...targets].sort((x, y) => affinity(state, v, x) - affinity(state, v, y))[0] }));
+    // Left with only their own partner or family to name, an islander does
+    // not vote at all (pm-kin: a sister voted out her brother when he was the
+    // only one left at risk on his side) — unless nobody on the side could.
+    const free = cast.filter(b => affinity(state, b.voter, b.target) < 90);
+    const mine = free.length ? free : cast;
     ballots.push(...mine);
     dumped.push(tally(mine, rng));
   }

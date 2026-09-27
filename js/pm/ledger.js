@@ -118,7 +118,17 @@ export function closeEpisode(L, ep, popularity = null) {
     // moment the public saw (BETRAYAL), not a first week of being noticed.
     const r0 = L.raw[name] || 0;
     const raw = fresh && r0 > 0 ? r0 * FIRST_WEIGHT : r0;
-    const applied = Math.round(clamp(0.75 * raw + 0.25 * (L.lastApplied[name] || 0), -cap, cap) * 100) / 100;
+    // The nearer the edge, the less a week moves it (user: "they all got to
+    // 100 fan favourite, at least the OGs, is it normal?" — 36% of finalists
+    // ended on exactly 100, a third of every cast Fan Favourite): the same
+    // good week lifts an islander at 20 by most of its weight and one at 90
+    // by a tenth, so the top of the board separates instead of piling up.
+    const moved = clamp(0.75 * raw + 0.25 * (L.lastApplied[name] || 0), -cap, cap);
+    const now = L.approval[name] || 0;
+    // Only the climb: a fall from grace is as fast as it ever was (the brake
+    // both ways left no villain in twenty seasons).
+    const room = moved > 0 ? (100 - now) / 100 : 1;
+    const applied = Math.round(moved * Math.max(0, room) * 100) / 100;
     L.approval[name] = clamp((L.approval[name] || 0) + applied, -100, 100);
     L.lastApplied[name] = applied;
     L.fame[name] = (L.fame[name] || 0) + (L.fameRaw[name] || 0);

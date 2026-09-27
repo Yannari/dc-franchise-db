@@ -62,8 +62,11 @@ export function nightDebrief(state, rng, entry, pre, m) {
   // Who went home, missed by their partner or best friend — and blamed on a voter.
   const gone = pre.villa.filter(n => !here(n));
   for (const d of gone) {
+    // A partner, or a real friend — never the best of a set of strangers (read,
+    // season 21: Priya, back from Casa, "looking round for" a Casa arrival she
+    // had never met).
     const mourner = (here(partnerBefore(d)) && partnerBefore(d))
-      || state.villa.filter(n => g(n) === g(d)).sort((x, y) => getBond(d, y) - getBond(d, x))[0];
+      || state.villa.filter(n => g(n) === g(d) && getBond(d, n) >= 2).sort((x, y) => getBond(d, y) - getBond(d, x))[0];
     add(2, 'miss', mourner, d);
     const voter = (m.ballots || []).find(b => !b.save && (b.target === d || b.couple?.includes(d)) && here(b.voter))?.voter;
     if (voter && mourner && voter !== mourner) add(3, 'blame', mourner, voter);

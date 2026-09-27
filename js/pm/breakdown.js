@@ -17,7 +17,7 @@
 //   no-show    [a, b]     b's partner a never came. Said later, to a's face.
 import { addBond, getBond } from '../bonds.js';
 import { addRelationshipDimension } from '../relationships.js';
-import { makeEvent, partnerOf } from './events.js';
+import { makeEvent, partnerOf, apart } from './events.js';
 import { emo, feel, attachment } from './emotions.js';
 import { romance } from './feelings.js';
 import { players } from '../core.js';
@@ -102,13 +102,14 @@ function scene(state, rng, { a, cause }) {
   const feud = (state.feuds || []).find(f => !f.over && (f.A.includes(a) || f.B.includes(a)));
   const enemy = feud ? (feud.A.includes(a) ? feud.B : feud.A).filter(n => n !== a && state.villa.includes(n)) : [];
   const pull = n => getBond(n, a) + 3 * (S(n).loyalty ?? 5) / 10 + (g(n) === g(a) ? 1 : 0) + (rng() - 0.5) * 2;
-  const others = state.villa.filter(n => n !== a && n !== pa);
+  // Only the ones in the same villa can come (Casa Amor splits it).
+  const others = state.villa.filter(n => n !== a && n !== pa && !apart(state, n, a));
   const friends = others.filter(n => getBond(n, a) > 1).sort((x, y) => pull(y) - pull(x)).slice(0, 2);
   const comers = [...friends];
-  const partnerComes = pa && pa !== reason && rng() < 0.35 + 0.5 * Math.max(0, getBond(pa, a)) / 10 + 0.2 * (S(pa).loyalty ?? 5) / 10;
+  const partnerComes = pa && pa !== reason && !apart(state, pa, a) && rng() < 0.35 + 0.5 * Math.max(0, getBond(pa, a)) / 10 + 0.2 * (S(pa).loyalty ?? 5) / 10;
   if (partnerComes) comers.push(pa);
   // Somebody from the other side of a feud, now and then — kindness, or guilt.
-  const ally = enemy.length && rng() < 0.18 ? enemy.sort((x, y) => (S(y).loyalty ?? 5) - (S(x).loyalty ?? 5))[0] : null;
+  const ally = enemy.filter(n => !apart(state, n, a)).length && rng() < 0.18 ? enemy.filter(n => !apart(state, n, a)).sort((x, y) => (S(y).loyalty ?? 5) - (S(x).loyalty ?? 5))[0] : null;
   if (ally && !comers.includes(ally)) comers.push(ally);
 
   for (const c of comers) {
@@ -125,7 +126,8 @@ function scene(state, rng, { a, cause }) {
   // Nobody came at all: that is its own scene, and it hurts.
   if (!comers.length) feel(state, a, 'loneliness', 1);
   // The partner who stayed away: remembered, and said to their face.
-  if (pa && !partnerComes && pa !== reason) {
+  // (A partner in the other villa did not stay away: they could not come.)
+  if (pa && !partnerComes && pa !== reason && !apart(state, pa, a)) {
     addRelationshipDimension(a, pa, 'resentment', 0.8); feel(state, a, 'security', -1);
     ev('no-show', [pa, a], { pop: { [pa]: { approval: -1, fame: 1 } } });
   }

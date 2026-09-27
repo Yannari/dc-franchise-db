@@ -46,6 +46,8 @@ export function partnerOf(state, name) {
   return c ? (c[0] === name ? c[1] : c[0]) : null;
 }
 const inCasa = (state, n) => state.split && state.casa.includes(n);
+/** Casa Amor has the two in different villas: nothing face to face between them. */
+export const apart = (state, a, b) => !!state.split && inCasa(state, a) !== inCasa(state, b);
 export function roomMates(state, name) {
   const here = inCasa(state, name);
   return state.villa.filter(n => n !== name && inCasa(state, n) === here);

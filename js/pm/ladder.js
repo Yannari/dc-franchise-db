@@ -80,6 +80,10 @@ export function headTurn(state, a, b) {
 export function decideLadder(state, rng, attachmentOf = null) {
   const out = [];
   for (const [a, b] of state.couples) {
+    // A couple Casa Amor has split cannot close off, open up or ask anything
+    // of each other: they are in different villas (audit 2026-09-27: asks,
+    // "I love you"s and Hideaway nights across the two villas).
+    if (state.split && state.casa.includes(a) !== state.casa.includes(b)) continue;
     for (const [x, y] of [[a, b], [b, a]]) {
       const cur = stepOf(state, x, y) || 'coupled';
       const r = readiness(state, x, y, attachmentOf);

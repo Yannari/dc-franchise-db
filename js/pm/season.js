@@ -295,7 +295,7 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
       exits, votes: m.ballots,
       pm: { events: [...day, ...m.events], momentFrom: day.length, dumpFormat: m.extra && 'dumpFormat' in m.extra ? m.extra.dumpFormat : (entry.dumpFormat || null),
         arrivalRule: m.extra?.arrivalRule || null, firstFormat: m.extra?.firstFormat || null,
-        oneOff: m.extra?.oneOff || null, ...(entry.ep === 1 ? { firstIn: state.firstIn } : {}), challenge: day.some(e => e.phase === 'challenge') ? entry.challenge : null, immune: m.extra?.immune || null, returned: m.extra?.returned || null, couples: state.couples.map(c => [...c]), villa: [...state.villa],
+        oneOff: m.extra?.oneOff || null, ...(entry.ep === 1 ? { firstIn: state.firstIn } : {}), challenge: day.some(e => e.phase === 'challenge') ? entry.challenge : null, immune: m.extra?.immune || null, returned: m.extra?.returned || null, couples: state.couples.map(c => [...c]), villa: [...state.villa], ...(state.split ? { casaRoom: [...state.casa] } : {}),
         // Who knew whom before the villa (the Relationships tab): [a, b, relation, words].
         ...(Object.keys(state.kin || {}).length ? { kin: Object.entries(state.kin).map(([k, v]) => [...k.split('|'), v, kinLabel(v)]) } : {}),
         // The couples as the night's moment found them (the day plays first now).

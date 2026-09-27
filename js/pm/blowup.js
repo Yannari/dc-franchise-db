@@ -21,7 +21,7 @@
 //   clear-the-air   [a, b]     the two at the heart of it talk. `of`: peace · still-angry
 import { addBond, getBond } from '../bonds.js';
 import { getRelationshipDimension, addRelationshipDimension } from '../relationships.js';
-import { makeEvent, partnerOf } from './events.js';
+import { makeEvent, partnerOf, apart } from './events.js';
 import { emo, feel } from './emotions.js';
 
 const LOOKBACK = 2;
@@ -105,7 +105,8 @@ export function blowups(state, rng, entry = null, tonight = []) {
   const cooled = state._lastBlowup != null && state.ep - state._lastBlowup <= 1 ? 0.35 : 1;
   for (const [k, v] of gr) {
     const [a, b] = k.split('|');
-    if (!here.has(a) || !here.has(b) || feuding.has(k)) continue;
+    // Never across Casa Amor's two villas (audit 2026-09-27).
+    if (!here.has(a) || !here.has(b) || feuding.has(k) || apart(state, a, b)) continue;
     const t = tension(state, a, b, v);
     const temper = state.profiles[a]?.stats?.temperament ?? 5;
     // The shorter the fuse, the likelier it goes — in proportion.
@@ -144,7 +145,8 @@ function kickOff(state, rng, { a, b, cause, role, kissed }) {
     return l;
   };
   const sides = { A: [a], B: [b] };
-  const bystanders = state.villa.filter(n => n !== a && n !== b).map(n => ({ n, lean: leanOf(n) }));
+  // Only the ones in the room take a side.
+  const bystanders = state.villa.filter(n => n !== a && n !== b && !apart(state, n, a)).map(n => ({ n, lean: leanOf(n) }));
   for (const { n, lean } of bystanders) {
     if (lean > 1) { sides.A.push(n); addBond(n, a, 0.4); addBond(n, b, -0.6); }
     else if (lean < -1) { sides.B.push(n); addBond(n, b, 0.4); addBond(n, a, -0.6); }
@@ -181,14 +183,16 @@ function feudScenes(state, rng) {
     // A cold shoulder between the camps.
     if (A.length && B.length && rng() < 0.6) {
       const x = A[Math.floor(rng() * A.length)], y = B[Math.floor(rng() * B.length)];
+      if (!apart(state, x, y)) {
       addBond(x, y, -0.3);
       out.push(makeEvent(state, rng, { phase: 'evening', kind: 'cold-shoulder', players: [x, y], aired: true,
         extra: { pop: { [x]: { approval: -0.1, fame: 0.5 } } } }));
+      }
     }
     // Clearing the air: both tempers and the one wronged's loyalty to the villa.
     const T = n => (state.profiles[n]?.stats?.temperament ?? 5) / 10;
     const pTalk = 0.25 + 0.3 * (T(f.a) + T(f.b)) / 2;
-    if (rng() < pTalk) {
+    if (!apart(state, f.a, f.b) && rng() < pTalk) {
       const peace = rng() < 0.3 + 0.4 * (T(f.a) + T(f.b)) / 2 - 0.1 * (state.ep - f.ep < 2 ? 1 : 0);
       if (peace) { f.over = true; addBond(f.a, f.b, 1.5); addRelationshipDimension(f.a, f.b, 'resentment', -1); addRelationshipDimension(f.b, f.a, 'resentment', -1); }
       else addBond(f.a, f.b, -0.5);

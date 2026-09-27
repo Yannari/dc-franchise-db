@@ -63,6 +63,7 @@ function detect(state, rng) {
   for (const h of state.villa) {
     if (busy.has(h)) continue;
     const suitors = state.villa.filter(n => n !== h && !busy.has(n) && compatible(state, n, h) && compatible(state, h, n)
+      && (!state.split || state.casa.includes(n) === state.casa.includes(h))
       && romance(n, h) >= 3 && (attr(state, h, n) ?? 0) >= 4);
     if (suitors.length < 2) continue;
     suitors.sort((p, q) => romance(q, h) - romance(p, h));
@@ -95,7 +96,7 @@ export function triangles(state, rng, entry = null) {
     if (!here(t.x) || !here(t.y)) {
       const [w, l] = here(t.x) ? [t.x, t.y] : [t.y, t.x];
       t.over = true;
-      if (here(w)) ev('triangle-choice', [t.h, w, l], { of: 'default', pop: {} }, [], t);
+      if (here(w) && !(state.split && state.casa.includes(w) !== state.casa.includes(t.h))) ev('triangle-choice', [t.h, w, l], { of: 'default', pop: {} }, [], t);
       continue;
     }
     const p = partnerOf(state, t.h);
@@ -124,9 +125,12 @@ export function triangles(state, rng, entry = null) {
     if (rng() < 0.6) advance(state, rng, t, ev);
     return out;
   }
-  // Each open triangle moves up to two steps an episode, or holds.
+  // Each open triangle moves up to two steps an episode, or holds — and holds
+  // while Casa Amor has them in different villas (read, season 21: Nadia, in
+  // Casa, cornered Callum in the main villa with "Me or Mia?").
+  const together = t => !state.split || [t.x, t.y].every(n => state.casa.includes(n) === state.casa.includes(t.h));
   for (const t of open(state)) {
-    if (t.ep === state.ep) continue;
+    if (t.ep === state.ep || !together(t)) continue;
     for (let k = 0; k < 2 && !t.over; k++) if (rng() >= 0.3) advance(state, rng, t, ev);
   }
   return out;

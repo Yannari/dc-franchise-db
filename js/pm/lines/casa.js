@@ -39,14 +39,17 @@ export const CASA_LINES = {
     { id: 'cs.w.03', when: { of: 'returned', choice: 'twist', taken: true }, stage: '{a} and {b} walk in together, and the fire pit goes silent.', turns: [['a', "I know this isn't what you wanted to see."]], beat: '{pa} lets out a short laugh and looks away.' },
     { id: 'cs.w.04', when: { of: 'returned', choice: 'twist', taken: true }, stage: '{a} stops halfway down the steps with {b}.', turns: [['narrator', "And that is the sound of a couple ending."], ['a', "I had to follow what I felt."]] },
     { id: 'cs.w.05', when: { of: 'returned', choice: 'twist', taken: true }, stage: "{b} walks in first. {a} follows, and can't look at {pa}.", turns: [['a', "I didn't go there looking for this."]], beat: '{pa} gets up and walks off before anyone can stop them.' },
-    { id: 'cs.s.01', when: { of: 'stayed', choice: 'stick' }, stage: '{a} sits alone on the fire pit bench, staring at the steps.', turns: [['a', "I stuck. Whatever happens now, I stuck."]] },
-    { id: 'cs.s.02', when: { of: 'stayed', choice: 'stick' }, stage: '{a} waits on the bench with an empty space beside {a.obj}.', turns: [['a', "That space is theirs. I just need them to walk back in and take it."]] },
-    { id: 'cs.s.03', when: { of: 'stayed', choice: 'stick' }, stage: '{a} is on {a.posAdj} own at the fire pit, hands shaking.', turns: [['a', "Please come back alone. Please."]] },
-    { id: 'cs.s.04', when: { of: 'stayed', choice: 'stick' }, turns: [['a', "I've had days to think about it, and I only thought about one person."]], beat: '{a} keeps looking at the steps.' },
+    { id: 'cs.s.01', when: { of: 'stayed', choice: 'stick', taken: true }, stage: '{a} sits alone on the fire pit bench, staring at the steps.', turns: [['a', "I stuck. Whatever happens now, I stuck."]] },
+    { id: 'cs.s.02', when: { of: 'stayed', choice: 'stick', taken: true }, stage: '{a} waits on the bench with an empty space beside {a.obj}.', turns: [['a', "That space is theirs. I just need them to walk back in and take it."]] },
+    { id: 'cs.s.03', when: { of: 'stayed', choice: 'stick', taken: true }, stage: '{a} is on {a.posAdj} own at the fire pit, hands shaking.', turns: [['a', "Please come back alone. Please."]] },
+    { id: 'cs.s.04', when: { of: 'stayed', choice: 'stick', taken: true }, turns: [['a', "I've had days to think about it, and I only thought about one person."]], beat: '{a} keeps looking at the steps.' },
+    // Single going into Casa, and still single: nobody is coming back for them.
+    { id: 'cs.s.n1', when: { of: 'stayed', choice: 'stick', taken: false }, stage: '{a} sits at the end of the bench. Nobody is coming back for {a.obj} tonight.', turns: [['a', "I've got nobody to wait for. I just want to see who walks in with who."]] },
+    { id: 'cs.s.n2', when: { of: 'stayed', choice: 'stick', taken: false }, turns: [['a', "I'm single, so tonight isn't about me. I'm nervous for everyone else."]], beat: '{a} keeps glancing at the ones who are waiting.' },
     { id: 'cs.t.01', when: { of: 'stayed', choice: 'twist', withB: true }, stage: '{a} sits at the fire pit, and {b} sits down right beside {a.obj}.', turns: [['a', "I know what this looks like. I've made my choice."]], beat: '{b} takes {a.posAdj} hand.' },
     { id: 'cs.t.02', when: { of: 'stayed', choice: 'twist', withB: true }, stage: '{a} is waiting on the bench, and {b} is next to {a.obj}.', turns: [['b', "Are you sure about this?"], ['a', "No. But I'm sure about how I feel."]] },
     { id: 'cs.t.03', when: { of: 'stayed', choice: 'twist', withB: true }, stage: 'The bench, and {a} next to {b}, not quite looking at the steps.', turns: [['a', "They'll understand. Or they won't. Either way, it's done."]] },
-    { id: 'cs.t.04', when: { of: 'stayed', choice: 'twist', withB: true }, turns: [['a', "I didn't think I'd be sitting here with someone new."], ['b', "Do you regret it?"], ['a', "Ask me in five minutes."]] },
+    { id: 'cs.t.04', when: { of: 'stayed', choice: 'twist', withB: true }, turns: [['a', "I didn't think I'd be sitting here with someone new."], ['b', "Do you regret it?"], ['a', "No. I'm scared, but I don't regret it."]] },
   ],
   'casa-react': [
     // relief: both stuck

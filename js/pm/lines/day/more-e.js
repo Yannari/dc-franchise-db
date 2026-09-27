@@ -27,12 +27,12 @@ export const MORE_E = {
     { id: 'br3.16', turns: [['a', "I want the couple with the most real connection to stay. For me, that isn't {b}'s."]] },
   ],
   'casa-return': [
-    { id: 'cs.s.05', when: { of: 'stayed', choice: 'stick' }, stage: "{a} is alone on the bench, a hand resting on the empty cushion beside {a.obj}.", turns: [['a', "I just want to see that face walk in."]] },
-    { id: 'cs.s.06', when: { of: 'stayed', choice: 'stick' }, turns: [['a', "Everyone kept telling me to twist. I didn't."]], beat: "{a} doesn't take {a.posAdj} eyes off the steps." },
-    { id: 'cs.s.07', when: { of: 'stayed', choice: 'stick' }, stage: '{a} sits on the bench, bouncing one knee.', turns: [['a', "If they come back with someone, I'll cope. I think I'll cope."]] },
-    { id: 'cs.s.08', when: { of: 'stayed', choice: 'stick' }, turns: [['a', "I've never wanted to see someone walk through a door so much in my life."]] },
-    { id: 'cs.s.09', when: { of: 'stayed', choice: 'stick' }, stage: 'The bench, and {a} alone on it, very still.', turns: [['a', "Whatever they did over there, I know what I did here. I stayed."]] },
-    { id: 'cs.s.10', when: { of: 'stayed', choice: 'stick' }, turns: [['a', "I've counted every single day of it."]], beat: '{a} laughs, but {a.posAdj} voice shakes.' },
+    { id: 'cs.s.05', when: { of: 'stayed', choice: 'stick', taken: true }, stage: "{a} is alone on the bench, a hand resting on the empty cushion beside {a.obj}.", turns: [['a', "I just want to see that face walk in."]] },
+    { id: 'cs.s.06', when: { of: 'stayed', choice: 'stick', taken: true }, turns: [['a', "Everyone kept telling me to twist. I didn't."]], beat: "{a} doesn't take {a.posAdj} eyes off the steps." },
+    { id: 'cs.s.07', when: { of: 'stayed', choice: 'stick', taken: true }, stage: '{a} sits on the bench, bouncing one knee.', turns: [['a', "If they come back with someone, I'll cope. I think I'll cope."]] },
+    { id: 'cs.s.08', when: { of: 'stayed', choice: 'stick', taken: true }, turns: [['a', "I've never wanted to see someone walk through a door so much in my life."]] },
+    { id: 'cs.s.09', when: { of: 'stayed', choice: 'stick', taken: true }, stage: 'The bench, and {a} alone on it, very still.', turns: [['a', "Whatever they did over there, I know what I did here. I stayed."]] },
+    { id: 'cs.s.10', when: { of: 'stayed', choice: 'stick', taken: true }, turns: [['a', "I've counted every single day of it."]], beat: '{a} laughs, but {a.posAdj} voice shakes.' },
   ],
   loyalty: [
     { id: 'ly3.01', when: { justMet: true }, turns: [['b', "Can I grab you?"], ['a', "I'm really flattered. But I'm happy where I am, honestly."], ['b', "Already?"], ['a', "Already."]] },

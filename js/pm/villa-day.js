@@ -8,7 +8,7 @@
 // Hideaway nights happen, and the scheduled ritual runs. Every scene has a
 // consequence and takes only what its people could know (spec §6.7-6.9, §7).
 import { addRelationshipDimension } from '../relationships.js';
-import { makeEvent, partnerOf, roomMates, airLater } from './events.js';
+import { makeEvent, partnerOf, roomMates, airLater, apart } from './events.js';
 import { romance, friendship, revealTruth, setMask } from './feelings.js';
 import { nudgeAttraction, attr } from './chemistry.js';
 import { syncLadder, decideLadder, closedness } from './ladder.js';
@@ -89,7 +89,7 @@ function hideaway(state, rng, a, b) {
   // Anyone still carrying a torch for either of them feels it, unconfirmed.
   for (const o of state.villa) {
     if (o === a || o === b) continue;
-    for (const t of [a, b]) if (romance(o, t) >= 6) {
+    for (const t of [a, b]) if (romance(o, t) >= 6 && !apart(state, o, t)) {
       breakHeart(state, o, t, 0.8 * romance(o, t) / 10);
       out.push(scene(state, rng, 'torch', [o, t], { pop: pop([o, 0.3, 0.5]) }));
     }
@@ -170,6 +170,12 @@ function feelingScenes(state, rng) {
     const [rival, j] = Object.entries(e.jealousy).sort((x, y) => y[1] - x[1])[0] || [null, 0];
     if (!rival || rng() >= clamp(j / 10, 0, 0.9)) continue;
     const how = jealousyOutlet(state, n, rng);
+    // With the partner in the other villa, it can only be kept in.
+    if (apart(state, n, partner) && how !== 'sulk' && how !== 'hidden') {
+      feel(state, n, 'stress', 0.5);
+      out.push(scene(state, rng, 'overthinking', [n], { pop: pop([n, 0.3, 0.6]) }, { phase: 'day' }));
+      continue;
+    }
     if (how === 'confront') {
       addRelationshipDimension(n, partner, 'trust', -0.5);
       addRelationshipDimension(partner, n, 'resentment', 0.3 * (1 - emo(state, partner).guilt / 10));
@@ -177,7 +183,7 @@ function feelingScenes(state, rng) {
       out.push(scene(state, rng, 'jealous-confront', [n, partner, rival], { pop: pop([n, -0.3, 2], [partner, 0, 1.5]) }, { aired: true }));
     } else if (how === 'sulk') {
       feel(state, n, 'security', -0.5);
-      const noticed = rng() < state.profiles[partner].stats.intuition / 10;
+      const noticed = !apart(state, n, partner) && rng() < state.profiles[partner].stats.intuition / 10;
       out.push(scene(state, rng, 'jealous-sulk', [n], { noticed, pop: pop([n, 0.1, 0.8]) }, { phase: 'day' }));
       if (noticed) out.push(reassurance(state, rng, n, partner));
     } else if (how === 'retaliate') {
@@ -213,7 +219,7 @@ function confessions(state, rng) {
   const out = [];
   for (const n of state.villa) {
     const partner = partnerOf(state, n), e = emo(state, n);
-    if (!partner || rng() >= (e.guilt / 10) * (state.profiles[n].stats.loyalty / 10)) continue;
+    if (!partner || apart(state, n, partner) || rng() >= (e.guilt / 10) * (state.profiles[n].stats.loyalty / 10)) continue;
     const secrets = state.secrets.filter(s => !s.known && s.who === n && s.partner === partner);
     if (!secrets.length) continue;
     for (const s of secrets) s.known = true;
@@ -233,7 +239,7 @@ function advice(state, rng) {
   const out = [];
   for (const n of state.villa) {
     const partner = partnerOf(state, n), c = confidantOf(state, n);
-    if (!partner || !c || rng() >= 0.3) continue;
+    if (!partner || !c || apart(state, c, n) || rng() >= 0.3) continue;
     const v = verdict(state, c, partner);
     nudgeAttraction(state, n, partner, 0.6 * v);
     addRelationshipDimension(n, partner, 'trust', 0.5 * v);

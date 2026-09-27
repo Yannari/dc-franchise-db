@@ -43,7 +43,8 @@ describe('the arrival rules, when they play', () => {
         const save = r.pm.events.find(e => e.kind === 'bombshell-save');
         const [bomb, saved, other] = save.players;
         expect(couplesOf(r)).toContain([bomb, saved].sort().join('+'));
-        if (r.exits.length) expect(r.exits.map(x => x.name)).toContain(other);
+        // Told they are vulnerable, the ones not saved go home (a booked save used to keep them all on a small cast).
+        expect(r.exits.map(x => x.name), `s${seed} e${r.num}`).toContain(other);
         expect(r.exits.every(x => x.channel === 'bombshell' || x.channel === 'walk')).toBe(true);
       }
     }

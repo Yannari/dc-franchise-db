@@ -800,10 +800,14 @@ function firstCouples(state, rng, format) {
 function arrivalRule(state, ctx, rule, fresh) {
   const events = [], exits = [];
   let played = null;
+  // How many the villa can still lose and reach four couples at the final:
+  // the save used to dump only when the pace was high, so on a small cast
+  // the vulnerable singles were all kept and the booked night did nothing.
+  let room = Math.max(0, Math.floor(ctx.surplus ?? 0));
   for (const name of fresh) {
     const tonight = fresh;
     const r = rule === 'stand-up' ? standUp(state, name, { rng: ctx.rng, tonight })
-      : rule === 'saves' ? bombshellSaves(state, name, { rng: ctx.rng, spare: ctx.pace >= 0.5, tonight })
+      : rule === 'saves' ? bombshellSaves(state, name, { rng: ctx.rng, spare: room, tonight })
       : rule === 'public-matches' ? publicMatch(state, name, { rng: ctx.rng, tonight }) : null;
     if (!r) continue;
     played = rule;
@@ -818,6 +822,7 @@ function arrivalRule(state, ctx, rule, fresh) {
       extra: { of: rule, pop: { [name]: { approval: 0, fame: 0.5 } } } }));
     events.push(...r.events);
     if (r.dumped?.length) {
+      room -= r.dumped.length;
       const scene = dumpingScene(state, ctx.rng, { dumped: r.dumped, channel: 'bombshell' });
       events.push(...scene.events); exits.push(...scene.exits);
     }

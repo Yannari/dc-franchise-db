@@ -68,6 +68,7 @@ export const KIND_LABEL = {
   'dump-text': 'I got a text!', 'vote-safe': 'Everyone is safe', 'hideaway-text': 'I got a text!', 'recouple-text': 'I got a text!', 'final-open': 'The final vote', 'rule-open': 'How tonight works', 'game-kiss': 'The kiss', 'tod-truth': 'Truth', 'reunion-open': 'The reunion', 'reunion-winners': 'The winners', 'reunion-close': 'Goodnight', 'recouple-nerves': 'Getting ready', 'recouple-open': 'The recoupling', 'recouple-single': 'Left single', 'casa-text': 'I got a text!', 'casa-goodbye': 'The goodbye', 'casa-explain': 'Casa Amor', 'hideaway-vote': 'The Hideaway vote', 'hideaway-win': 'The Hideaway', 'hideaway-snub': 'Not one vote', 'hideaway-morning': 'The morning after', 'dump-nerves': 'Getting ready', 'dump-open': 'The fire pit', 'dump-recap': 'The host', 'dump-safe': 'Safe', 'dump-plea': 'Making their case', 'dump-decide': 'The decision',
   'ballot-reveal': 'The vote', 'dump-reaction': 'The reaction', 'dump-goodbye': 'Goodbye', 'dump-fallout': 'Fallout',
   'casa-return': 'Stick or twist', photos: 'The photos', declaration: 'The declaration', 'final-result': 'The result',
+  'final-two': 'The final two', 'final-drum': 'The moment', 'final-winners': 'Your Perfect Match',
   envelope: 'The envelope', walk: 'Leaving the villa', reveal: "What you didn't see", 'close-off': 'Closing off',
   'keeping-open': 'Keeping it open', 'open-back-up': 'Opening back up', 'head-turned': 'Head turned',
   'exclusive-ask': 'Exclusive?', 'official-ask': 'Official?', 'ask-declined': 'Not yet', 'love-said': 'I love you',
@@ -224,6 +225,13 @@ function fxFor(row, e, first) {
   if (k === 'casa-host') fx.neon = ['Casa Amor', '#14c8bb'];
   if (k === 'casa-react' && e.extra?.of === 'relief') fx.petals = true;
   if (k === 'casa-react' && ['devastated', 'turned', 'both'].includes(e.extra?.of)) { fx.shake = true; fx.flash = true; }
+  // Stick or twist is the biggest moment of the season: every choice gets its
+  // own music the moment it is shown (user: "victory music when someone
+  // sticks and dramatic when someone twists"), and the face at the fire pit
+  // gets the pair's outcome — both stuck, the win; one twisted on the other,
+  // the hit; both twisted, the sour one (vp-pm/sound.js).
+  if (k === 'casa-return') fx.cue = e.extra?.choice === 'twist' ? 'pm-twist' : 'pm-stick';
+  if (k === 'casa-react') fx.cue = e.extra?.of === 'relief' ? 'pm-stick-both' : e.extra?.of === 'both' ? 'pm-twist-both' : 'pm-twist';
   if (k === 'casa-row' && e.extra?.of === 'deny') fx.shake = true;
   // The photos: a Polaroid of the real moment drops on the stage and develops.
   if (k === 'photos') fx.polaroid = { faces: e.extra?.faces || [e.players[1]], ep: e.extra?.photoEp ?? null };
@@ -480,9 +488,13 @@ function finalSteps(row) {
     : [{ part: 'result', who: host, voice: 'dior', bg: 'final', headline: 'The final vote', cast: [[host, 50, 'speak']],
       text: `The public have been voting for their Perfect Match, and the votes are in. Let's find out who has won.`,
       fx: { board: 0, neon: ['The Final', '#ffc15e'] }, board, sceneStart: true, sceneEnd: true, ev: -1, music: 'final-wait' }];
+  // The engine's last-two scenes (moments.js final): the two couples, the
+  // held name, and after the winners, their moment. Each lands where it plays.
+  const extraScene = (kind, music) => { const sc = sceneOf(kind, () => true); if (sc) { for (const st of sc) { st.board = board; st.music = music; } steps.push(...sc); } return !!sc; };
   shares.forEach((s, i) => {
     const place = shares.length - i, win = place === 1;
     const [a, b] = s.couple;
+    if (place === 2) { extraScene('final-two', 'final-wait'); extraScene('final-drum', 'final-wait'); }
     const played = sceneOf('final-result', e => e.players.every(n => s.couple.includes(n)));
     if (played) {
       const f = played[0];
@@ -492,6 +504,7 @@ function finalSteps(row) {
       // The places are read under the wait; the winners' names change the music.
       for (const st of played) { st.board = board; st.music = win ? 'winner' : 'final-wait'; }
       steps.push(...played);
+      if (win) extraScene('final-winners', 'winner');
       return;
     }
     steps.push({ part: 'result', who: host, voice: 'dior', bg: 'final', ev: -1, board, sceneStart: true, sceneEnd: true,
@@ -607,7 +620,7 @@ export function episodeScreens(row, opts = {}) {
   return opts.breaks === false ? screens : withBreaks(row, screens, opts.next);
 }
 const MOMENT_PHASE = new Set(['firepit', 'dumping', 'reunion']);
-const DRAWN_BY_FINAL = new Set(['final-result', 'envelope', 'final-open']);
+const DRAWN_BY_FINAL = new Set(['final-result', 'envelope', 'final-open', 'final-two', 'final-drum', 'final-winners']);
 
 // ── the breaks: "Coming up" and "Next time" ───────────────────────────
 // The show cuts to a break on a cliffhanger: a few seconds of what is still

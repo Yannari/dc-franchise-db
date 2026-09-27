@@ -187,7 +187,7 @@ export const MORE_MOMENTS = {
     { id: 'fr.3.03', when: { of: 'third' }, turns: [['dior', "{a} and {b}. You're in third place."], ['b', "Thank you to everyone who voted for us."]] },
     { id: 'fr.3.04', when: { of: 'third' }, turns: [['dior', "In third place… {a} and {b}."], ['a', "I'm disappointed and I'm happy at the same time."]] },
     { id: 'fr.2.01', when: { of: 'second' }, turns: [['dior', "Which means our runners-up are… {a} and {b}."]], beat: 'The other couple is already screaming.' },
-    { id: 'fr.2.02', when: { of: 'second' }, turns: [['dior', "It's the final two. And in second place… {a} and {b}."], ['a', "That's okay. That's okay. Well done, you two."]] },
+    { id: 'fr.2.02', when: { of: 'second' }, turns: [['dior', "In second place… {a} and {b}."], ['a', "That's okay. That's okay. Well done, you two."]] },
     { id: 'fr.2.03', when: { of: 'second' }, turns: [['dior', "Our runners-up… {a} and {b}."], ['b', "We came so close."], ['a', "We did. And I've still got you."]] },
     { id: 'fr.2.04', when: { of: 'second' }, turns: [['dior', "{a} and {b}, you're our runners-up."]], beat: '{a} hugs the winners first, before anyone else can.' },
     { id: 'fr.1.01', when: { of: 'first' }, turns: [['dior', "The winners of Perfect Match are… {a} and {b}!"]], beat: 'The fire pit erupts. {a} lifts {b} right off the ground.' },

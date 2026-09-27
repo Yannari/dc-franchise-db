@@ -1202,13 +1202,41 @@ Object.assign(MOMENTS, {
     // standing together, what the public have been voting on, and the prize.
     events.push(makeEvent(state, ctx.rng, { phase: 'final', kind: 'final-open', players: [], aired: true,
       extra: { of: envelope ? 'envelope' : 'plain', pop: {} } }));
-    for (const f of [...final].reverse()) {
-      const [a, b] = f.couple;
-      const won = f.placement === 1;
+    // THE LAST TWO (user: "the winners screen should be longer, more suspense
+    // … we don't even get the commentary, it's empty and underwhelming"): the
+    // places below second are read one by one; then the final two couples
+    // stand alone, the host speaks to each, holds the name, and names the
+    // runners-up and the winners; then the winners have their moment. The two
+    // are named in a fixed order (alphabetical), never the result's, so
+    // nothing in who is {a} gives it away.
+    const result = f => {
+      const [a, b] = f.couple, won = f.placement === 1;
       events.push(makeEvent(state, ctx.rng, { phase: 'final', kind: 'final-result', players: [a, b], aired: true,
         major: won ? [a, b] : [],
         extra: { of: PLACE[f.placement] || 'fourth', pop: { [a]: { approval: 0, fame: won ? 6 : 2 }, [b]: { approval: 0, fame: won ? 6 : 2 } } } }));
-    }
+    };
+    const byPlace = [...final].sort((x, y) => y.placement - x.placement);
+    for (const f of byPlace.filter(f => f.placement > 2)) result(f);
+    const top = final.filter(f => f.placement <= 2);
+    if (top.length === 2) {
+      const two = [...top].sort((x, y) => x.couple[0].localeCompare(y.couple[0]));
+      const four = [...two[0].couple, ...two[1].couple];
+      for (const n of four) feel(state, n, 'stress', 0.5);
+      events.push(makeEvent(state, ctx.rng, { phase: 'final', kind: 'final-two', players: four, aired: true,
+        extra: { pop: Object.fromEntries(four.map(n => [n, { approval: 0, fame: 1 }])) } }));
+      events.push(makeEvent(state, ctx.rng, { phase: 'final', kind: 'final-drum', players: [], aired: true, extra: { pop: {} } }));
+      result(top.find(f => f.placement === 2));
+      result(top.find(f => f.placement === 1));
+      // The winners' moment: the two of them, the runners-up coming over, the
+      // host, and the story the public voted for (its shape, journey.js).
+      const [w1, w2] = final[0].couple, [r1, r2] = top.find(f => f.placement === 2).couple;
+      addBond(w1, w2, 0.5);
+      for (const w of [w1, w2]) for (const r of [r1, r2]) addBond(w, r, 0.3);
+      feel(state, w1, 'security', 2); feel(state, w2, 'security', 2);
+      const shape = shapes[state.couples.findIndex(c => c.includes(w1) && c.includes(w2))] || 'steady';
+      events.push(makeEvent(state, ctx.rng, { phase: 'final', kind: 'final-winners', players: [w1, w2, r1, r2], aired: true,
+        major: [w1, w2], extra: { of: shape, pop: { [w1]: { approval: 0, fame: 2 }, [w2]: { approval: 0, fame: 2 }, [r1]: { approval: 0, fame: 0.5 } } } }));
+    } else for (const f of byPlace.filter(f => f.placement <= 2)) result(f);
     // The envelope: one of the winners chooses to split the prize or keep it.
     // A steal is the biggest betrayal the show has — the public turn at once.
     if (envelope) {

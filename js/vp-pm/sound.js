@@ -74,12 +74,36 @@ const PM_CUES = {
   // A kiss: a soft rising two-note; one only one of them wanted: a deflating slide.
   'pm-kiss': { duck: false, build: (c, d, n) => { tone(c, d, n, { f: 660, f2: 880, dur: 0.12, vol: 0.09 }); tone(c, d, n, { f: 988, t: 0.1, dur: 0.3, vol: 0.07 }); } },
   'pm-kiss-awkward': { duck: false, build: (c, d, n) => tone(c, d, n, { f: 520, f2: 260, dur: 0.45, type: 'triangle', vol: 0.09 }) },
+  // Stick or twist (steps.js fx.cue). A stick: a rising major fanfare, brass-
+  // bright, ending on a held chord. A twist: a low boom and a dissonant stab
+  // that sinks. Both stuck: the fanfare with a sparkle on top; both twisted:
+  // the hit, then a flat, sour two-note fall.
+  'pm-stick': { duck: true, build: (c, d, n) => fanfare(c, d, n) },
+  'pm-stick-both': { duck: true, build: (c, d, n) => { fanfare(c, d, n); [1568, 1976, 2349, 3136].forEach((f, i) => tone(c, d, n, { f, t: 0.75 + i * 0.07, dur: 0.35, vol: 0.05 })); } },
+  'pm-twist': { duck: true, build: (c, d, n) => dramaHit(c, d, n) },
+  'pm-twist-both': { duck: true, build: (c, d, n) => { dramaHit(c, d, n); tone(c, d, n, { f: 311, t: 1.0, dur: 0.45, type: 'triangle', vol: 0.1 }); tone(c, d, n, { f: 277, f2: 262, t: 1.4, dur: 0.9, type: 'triangle', vol: 0.1 }); } },
 };
+/** Da-da-da-DAAA: G C E, then a held C major chord, square and saw for the brass. */
+function fanfare(c, d, n) {
+  [[392, 0], [523, 0.13], [659, 0.26]].forEach(([f, t]) => { tone(c, d, n, { f, t, dur: 0.14, type: 'square', vol: 0.07 }); tone(c, d, n, { f: f / 2, t, dur: 0.14, type: 'sawtooth', vol: 0.04 }); });
+  for (const f of [523, 659, 784, 1047]) tone(c, d, n, { f, t: 0.42, dur: 1.4, type: 'sawtooth', vol: 0.045, attack: 0.03 });
+  tone(c, d, n, { f: 131, t: 0.42, dur: 1.3, type: 'triangle', vol: 0.16 });
+  noise(c, d, n, { t: 0.42, dur: 0.5, from: 6000, to: 9000, type: 'highpass', vol: 0.05 });
+}
+/** BOOM, and a minor-second stab that sinks: the twist. */
+function dramaHit(c, d, n) {
+  tone(c, d, n, { f: 70, f2: 32, dur: 1.4, vol: 0.4 });
+  noise(c, d, n, { dur: 0.6, from: 300, to: 60, type: 'lowpass', vol: 0.25 });
+  for (const f of [233, 247, 370]) tone(c, d, n, { f, f2: f * 0.94, t: 0.08, dur: 1.6, type: 'sawtooth', vol: 0.05, attack: 0.01 });
+  tone(c, d, n, { f: 1245, f2: 1175, t: 0.08, dur: 1.2, type: 'triangle', vol: 0.04 });
+}
 Object.assign(CUE_CATALOG, PM_CUES);
 
 /** The one sting a step's staging calls for, if any, strongest first. */
 export function stingFor(st, { switched = false } = {}) {
   const fx = st?.fx || {};
+  // A moment with its own music says so (stick or twist).
+  if (fx.cue) return fx.cue;
   if (fx.neonDie) return 'pm-doom';
   if (switched) return 'pm-static';
   if (fx.polaroid || fx.flash) return 'pm-shutter';
@@ -205,7 +229,7 @@ const SITUATION = {
     'step-reveal', 'step-choose', 'step-back',
     'icebreaker', 'lady-luck-kiss', 'kiss-pick', 'lady-luck-pick'],
   intro: ['intro'],
-  arrival: ['entrance', 'group-entrance', 'bombshell-react', 'casa-host', 'kin-entrance'],
+  arrival: ['entrance', 'group-entrance', 'bombshell-react', 'kin-entrance'],
   ex: ['return-entrance', 'return-ex', 'ex-return', 'ex-awkward', 'ex-jealous', 'ex-reveal', 'ex-partner', 'ex-confront'],
   // The first REAL kiss of a couple only (musicOf, below): never a game's kiss
   // (user: "first kiss doesn't count challenge kiss, like real first kiss").
@@ -223,11 +247,15 @@ const SITUATION = {
   goodbye: ['dump-goodbye', 'walk', 'solidarity', 'kin-goodbye', 'kin-walk'],
   comedy: ['comedy', 'blow-dare', 'blow-slip', 'baby-doll', 'talent-act'],
   suspense: ['recouple-open', 'dump-open', 'dump-safe', 'dump-plea', 'dump-decide', 'dump-buildup', 'dump-at-risk', 'ballot-reveal', 'save-vote', 'save-tie', 'top-couple-pick', 'couples-vote',
-    'ex-ballot', 'final-recoupling', 'recouple-pick', 'steal'],
+    'ex-ballot', 'final-recoupling', 'recouple-pick', 'steal',
+    // Stick or twist: the host, and every walk-in, under the wait (each choice's own music plays over it).
+    'casa-host', 'casa-return'],
   // The final: the declarations and the places under the wait, then the
   // winners (steps.js finalSteps marks which is which).
-  'final-wait': ['declaration'],
-  winner: ['final-result', 'envelope'],
+  // One track under every declaration (user: "declarations screens should have 1 music"):
+  // the speech between two of them has to keep it, or the next one starts the next track.
+  'final-wait': ['declaration', 'speech', 'final-open', 'final-two', 'final-drum'],
+  winner: ['final-result', 'final-winners', 'envelope'],
 };
 const BY_KIND = Object.fromEntries(Object.entries(SITUATION).flatMap(([sit, ks]) => ks.map(k => [k, sit])));
 const ONE_SHOT = new Set(['transition']);

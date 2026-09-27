@@ -2058,6 +2058,7 @@ const _PM_TWIST_GROUPS = {
   dump: t => !!t.pmFormat,
   arrive: t => t.category === 'arrivals' && !!t.pmApply,
   return: t => t.category === 'returns' && !!t.pmApply,
+  dumps: t => 'dumping' in (t.pmApply || {}),
 };
 export function pmSetTwist(ep, group, type) {
   const inGroup = _PM_TWIST_GROUPS[group];
@@ -4400,6 +4401,11 @@ export function renderTimeline() {
         const opts = pmCat.filter(t => t.pmFormat && (t.pmSlots || []).includes(_pmEp.slot));
         const d = opts.find(t => t.pmFormat === drawnE?.dumpFormat);
         if (opts.length) _pmTwistPick += pickRow('dump', 'Dumping', '#e0467c', opts, d ? `As drawn: ${d.name}` : 'As drawn (when the season starts)');
+      }
+      // Whether tonight dumps at all (user: "choose if an episode has a dump").
+      if ((_pmEp.moment === 'recoupling' && !_pmEp.finalRecoupling) || (_pmEp.moment === 'public-vote' && !_pmEp.coupled)) {
+        const opts = pmCat.filter(t => 'dumping' in (t.pmApply || {}));
+        _pmTwistPick += pickRow('dumps', 'Dumps', '#ef4444', opts, 'As the season plays it');
       }
       if (_pmEp.moment === 'bombshell') {
         const opts = pmCat.filter(t => t.category === 'arrivals' && t.pmApply && (t.pmOn || []).includes('bombshell'));

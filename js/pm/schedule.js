@@ -606,6 +606,8 @@ export function withBookings(schedule, byEp = {}) {
     if (b.oneOff) out.oneOff = b.oneOff;
     if (b.scDecider) out.scDecider = b.scDecider;
     if (b.immunity && e.moment === 'public-vote') out.immunity = true;
+    // Whether the night dumps (the timeline's Dumps picker): 'none' or 'always'.
+    if (b.dumping && (e.moment === 'recoupling' || e.moment === 'public-vote')) out.dumping = b.dumping;
     if (b.challenge && VILLA_DAYS.has(e.moment)) out.challenge = b.challenge;
     // "No challenge" on the timeline: the night's drawn one does not play.
     if (out.challenge === 'none') delete out.challenge;

@@ -352,7 +352,7 @@ function pickerGender(state) {
   return f === m ? turn : f < m ? 'f' : 'm';
 }
 
-function recoupleNight(state, rng, { dumpSingles, pace = 1.5, votesAhead = 0, all = false, toCome = [], surplus = 0 }) {
+function recoupleNight(state, rng, { dumpSingles, pace = 1.5, votesAhead = 0, all = false, toCome = [], surplus = 0, dumping = null }) {
   // How many a recoupling may send home, decided before anyone picks, so the
   // host can say what is at stake (below: the cap's reasons).
   const base = state.villa.length > 10 ? 2 : 1;
@@ -391,8 +391,10 @@ function recoupleNight(state, rng, { dumpSingles, pace = 1.5, votesAhead = 0, al
   // fewer. The host says so before anyone stands.
   // Only once nobody else is coming: before that a single can still be coupled by the
   // next arrival, and the first recoupling sent three home at once.
-  const spare = toCome.length ? 0 : Math.max(0, Math.min(Math.floor(surplus), state.villa.length - floor));
-  if (dumpSingles && state.villa.length >= 4) open.push(...recoupleBuildUp(state, { picker, stake: all ? 'all' : cap > 0 || spare > 0 ? 'risk' : 'safe', final: all }));
+  // The author's say (the timeline's Dumps picker): nobody tonight, or everyone left single.
+  const spare = dumping === 'none' ? 0 : dumping === 'always' ? Infinity
+    : toCome.length ? 0 : Math.max(0, Math.min(Math.floor(surplus), state.villa.length - floor));
+  if (dumpSingles && state.villa.length >= 4) open.push(...recoupleBuildUp(state, { picker, stake: all ? 'all' : dumping === 'none' ? 'safe' : cap > 0 || spare > 0 ? 'risk' : 'safe', final: all }));
   const r = runRecoupling(state, { rng, pickerGender: picker, repick: all });
   const events = [...open, ...r.picks.map(pk => makeEvent(state, rng, { phase: 'firepit', kind: 'recouple-pick',
     players: [pk.picker, pk.picked, ...(pk.stole ? [pk.stole] : [])], aired: true,
@@ -417,7 +419,7 @@ function recoupleNight(state, rng, { dumpSingles, pace = 1.5, votesAhead = 0, al
   // night dumps one at most. And never below five couples while a public vote
   // is still to come: a villa emptied to the final's four by the early
   // recouplings skipped the first vote in 24 seasons of 100 (2026-09-23).
-  const take = Math.max(cap, Math.min(r.single.length, spare));
+  const take = dumping === 'none' ? 0 : Math.max(cap, Math.min(r.single.length, spare));
   if (!take) {
     // Left single, and staying: said, so the night does not simply stop.
     if (r.single.length) events.push(makeEvent(state, rng, { phase: 'dumping', kind: 'recouple-single', players: [r.single[0]], aired: true,
@@ -872,7 +874,8 @@ export const MOMENTS = {
     const pre = arrivals(state, ctx, ctx.entry.arrivals?.bombshell || 0);
     // The final recoupling sends every single home (schedule.js).
     const r = recoupleNight(state, ctx.rng, { dumpSingles: true, pace: ctx.pace, votesAhead: ctx.votesAhead || 0,
-      all: !!ctx.entry.finalRecoupling, toCome: ctx.queues?.bombshell || [], surplus: ctx.surplus || 0 });
+      all: !!ctx.entry.finalRecoupling, toCome: ctx.queues?.bombshell || [], surplus: ctx.surplus || 0,
+      dumping: ctx.entry.finalRecoupling ? null : ctx.entry.dumping || null });
     return { events: [...pre, ...r.events], exits: r.exits, ballots: r.ballots };
   },
   'public-vote': (state, ctx) => {
@@ -918,6 +921,8 @@ export const MOMENTS = {
 
 /** A vote night, in whatever format it plays (see 'public-vote' above for immunity). */
 function voteNight(state, ctx) {
+  // The author's say (the timeline's Dumps picker): a night with no dumping.
+  if (ctx.entry.dumping === 'none') return { events: safeNight(state, ctx), exits: [], ballots: [], extra: { dumpFormat: null } };
   {
     // What counts on the last votes before the final recoupling is how many
     // couples the villa CAN make — the smaller side, with the bombshells still
@@ -962,7 +967,9 @@ function voteNight(state, ctx) {
     // (season 7 audit, seed 6: nine islanders, four couples, the one single
     // held for a bombshell — the first vote skipped).
     const firstRoom = firstCall && state.couples.length >= target && toComeAll >= 1;
-    if (state.couples.length < 3 || (enough && !roomy && !firstRoom) || !paceOk) {
+    // …and a night the author said always dumps plays, whatever the pace (never with fewer than three couples).
+    const authorSays = ctx.entry.dumping === 'always' && state.couples.length >= 3;
+    if (!authorSays && (state.couples.length < 3 || (enough && !roomy && !firstRoom) || !paceOk)) {
       // …unless the villa has single islanders to lose: then the singles face
       // the public (measured: at the calibration cast a quarter of second
       // votes met four couples and three or four singles, who then all went

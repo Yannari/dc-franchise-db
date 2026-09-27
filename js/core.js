@@ -1220,6 +1220,19 @@ export const TWIST_CATALOG = [
     category:'dumping', phase:'any', engineType:'pm-ex-islanders', pmFormat:'ex-islanders', pmSlots:['semi'],
     desc:'The semi-final. The couples name the least compatible couples, and then the islanders already dumped walk back through the door for one night to decide which of them leaves. They vote from what they lived in the villa — who voted them out, who moved on from them — and the couples they vote for go home until four are left for the final. It needs five or more couples at the semi-final; with four, nobody goes and the night plays without it.',
     incompatible:['pm-cross-gender','pm-top-couple-picks','pm-save-one','pm-public-vote','pm-safe-pick-couple','pm-couples-vote'] },
+  /* WHETHER A NIGHT DUMPS (user: "should I have a possibility to choose if an
+     episode has a dump … connected to the season timeline and changing it
+     live"). The Season Timeline's Dumps picker, on a recoupling or a vote
+     night. How many leave is still the night's format; the rest of the season
+     re-flows around it. */
+  { id:'pm-dump-none', emoji:'\u{1F6E1}', name:'Nobody Goes Home', format:'perfect-match',
+    category:'dumping', phase:'any', engineType:'pm-dump-none', pmOn:['recoupling','public-vote'], pmApply:{ dumping:'none' },
+    desc:'Tonight plays without a dumping. On a vote night the villa is told the votes are in and everyone is safe; at a recoupling, whoever is left single stays in the villa, single and vulnerable. The islanders the season still has to lose go on the nights after, so a later night may send more home.',
+    incompatible:['pm-dump-always'] },
+  { id:'pm-dump-always', emoji:'\u{1F6AA}', name:'Somebody Goes Home', format:'perfect-match',
+    category:'dumping', phase:'any', engineType:'pm-dump-always', pmOn:['recoupling','public-vote'], pmApply:{ dumping:'always' },
+    desc:'Tonight always dumps, whatever the season\'s pace says. On a vote night the drawn (or booked) format plays in full; at a recoupling, everyone left single is dumped. Losing islanders early leaves fewer for later: a season that dumps too often can reach the final a couple short.',
+    incompatible:['pm-dump-none'] },
 ];
 
 // ── Triple Dog Dare — dare pools by category ──

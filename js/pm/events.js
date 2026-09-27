@@ -186,7 +186,12 @@ export const KINDS = {
       const a = weighted(rng, s.villa.filter(n => compatibleMates(s, n).length)
         .map(n => [n, S(s, n).boldness * (1 - 0.8 * closedness(s, n, partnerOf(s, n)))]));
       if (!a) return null;
-      const b = weighted(rng, compatibleMates(s, a).filter(n => n !== partnerOf(s, a))
+      // Never somebody a turned down, or was turned down by, earlier today
+      // (read, season 21: Priya said no to Jordan in front of everyone, "and
+      // I'll be telling everyone you asked", then pulled him herself that
+      // afternoon with "I know you're with someone").
+      const noToday = n => today(s).some(e => e.kind === 'loyalty' && e.players.includes(a) && e.players.includes(n));
+      const b = weighted(rng, compatibleMates(s, a).filter(n => n !== partnerOf(s, a) && !noToday(n))
         .map(n => [n, attr(s, a, n)]));
       if (!b) return null;
       // A coupled islander can turn the pull down: that is a loyalty moment.
@@ -726,7 +731,22 @@ const ENDINGS = {
     if (ev.extra.firstKiss) return 'first';
     return r >= 5 ? 'warm' : 'easy';
   },
-  friendship: (s, ev) => { addRelationshipDimension(ev.players[0], ev.players[1], 'trust', 0.2); return true; },
+  // Now and then a friendship scene is a spat, the hotter-tempered the more
+  // often (read, season 21: the pool's falling-outs played on scenes the
+  // engine counted as bonding, and ended "Same time tomorrow"). A spat costs
+  // the bond it would have built and a little more, and it ends on its own
+  // lines, never on a cheerful closer.
+  friendship: (s, ev, rng) => {
+    const [a, b] = ev.players;
+    if (rng() < 0.05 + 0.08 * (1 - T(s, a) / 10)) {
+      addBond(a, b, -0.7);
+      addRelationshipDimension(b, a, 'resentment', 0.2);
+      ev.extra.friction = true;
+      return null;
+    }
+    addRelationshipDimension(a, b, 'trust', 0.2);
+    return true;
+  },
   pull: (s, ev) => ev.extra.rebuffed ? 'turned-down' : ev.extra.kissed ? 'kissed' : ev.extra.promised ? 'promised' : 'flirt',
   loyalty: () => true,
   argument: (s, ev, rng) => {

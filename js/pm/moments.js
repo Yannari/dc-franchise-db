@@ -365,7 +365,9 @@ function recoupleNight(state, rng, { dumpSingles, pace = 1.5, votesAhead = 0, al
   const gen = n => state.profiles[n].gender;
   const here = state.villa.filter(n => !(state.split && state.casa.includes(n)));
   const count = g => here.filter(n => gen(n) === g).length, coming = g => toCome.filter(n => gen(n) === g).length;
-  const hopeless = Math.max(0, count('f') - count('m') - coming('m')) + Math.max(0, count('m') - count('f') - coming('f'));
+  // (Boy-girl arithmetic: in a villa where somebody can fancy their own side it counts nobody.)
+  const ownSide = here.some(a => here.some(b => b !== a && gen(b) === gen(a) && attr(state, a, b) != null));
+  const hopeless = ownSide ? 0 : Math.max(0, count('f') - count('m') - coming('m')) + Math.max(0, count('m') - count('f') - coming('f'));
   const cap = Math.min(Math.max(pace < 0.5 ? 0 : pace < 1 ? 1 : Math.max(base, Math.ceil(pace - 0.5)), hopeless),
     Math.max(0, state.villa.length - floor));
   const picker = pickerGender(state);

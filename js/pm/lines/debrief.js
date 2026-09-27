@@ -138,8 +138,8 @@ export const DEBRIEF = [
     ['a', "It is in here."]], beat: "{b} doesn't know what to say to that." },
   { id: 'dn.ey.03', when: C3({ of: 'eyeing', taken: true }), turns: [
     ['a', "Be honest with me. Is {c} {pa}'s type?"], ['b', "…A bit."], ['a', "A bit?"],
-    ['b', "Quite a lot. But {pa} chose you."], ['a', "{pa} chose me before {c} walked in."],
-    ['b', "Then give {pa} a reason to keep choosing you."]] },
+    ['b', "Quite a lot. But {pa} is with you."], ['a', "{pa} was with me before {c} walked in."],
+    ['b', "Then give {pa} a reason to stay."]] },
   // ── bomb-threat: the bombshell c has come in for a's partner ──
   { id: 'dn.bt.01', when: C3({ of: 'bomb-threat', taken: true }), turns: [
     ['a', "{c} has come in for {pa}. I can tell."], ['b', "You don't know that."],
@@ -167,7 +167,7 @@ export const DEBRIEF = [
     ['a', "It was a good thirty seconds."], ['b', "What are you going to do?"],
     ['a', "Get up early and be the first one to say good morning."], ['b', "Good plan."]] },
   // ── picked / meh: a recoupling night ──
-  { id: 'dn.pk.01', when: { of: 'picked', taken: true }, turns: [
+  { id: 'dn.pk.01', when: { of: 'picked', taken: true, chose: false }, turns: [
     ['b', "You looked so relieved when {pa} said your name."], ['a', "I was. I've been worried for days."],
     ['b', "About what?"], ['a', "That {pa} would pick someone else."], ['b', "And now?"],
     ['a', "Now I can finally relax."]], beat: '{a} smiles properly for the first time all day.' },
@@ -177,7 +177,21 @@ export const DEBRIEF = [
   { id: 'dn.pk.03', when: { of: 'picked', taken: true }, turns: [
     ['a', "I think this is it with {pa}."], ['b', "As in, really it?"], ['a', "I don't want to jinx it."],
     ['b', "You won't. I've seen how {pa} looks at you."], ['a', "How?"], ['b', "Like nobody else is here."]] },
-  { id: 'dn.mh.01', when: { of: 'meh', taken: true }, turns: [
+  // The one who stood up and said the name.
+  { id: 'dn.pk.c1', when: { of: 'picked', taken: true, chose: true }, turns: [
+    ['b', "How did it feel, saying {pa}'s name out loud?"], ['a', "Terrifying. My voice was shaking."],
+    ['b', "You didn't look scared."], ['a', "I was. I kept thinking someone would pick {pa} before me."], ['b', "Well, nobody did."]],
+    beat: "{a} can't stop smiling." },
+  { id: 'dn.pk.c2', when: { of: 'picked', taken: true, chose: true }, turns: [
+    ['b', "You didn't even hesitate."], ['a', "There was nothing to think about. It was always going to be {pa}."],
+    ['b', "Did you see {pa}'s face?"], ['a', "I did. That's the bit I'll remember."]] },
+  { id: 'dn.mh.c1', when: { of: 'meh', taken: true, chose: true }, turns: [
+    ['b', "Can I ask why you picked {pa}?"], ['a', "Honestly? It was {pa} or standing there with nobody."],
+    ['b', "That's not a great reason."], ['a', "I know. It's the one I had."]] },
+  { id: 'dn.mh.c2', when: { of: 'meh', taken: true, chose: true }, turns: [
+    ['b', "You didn't look sure when you said {pa}'s name."], ['a', "I'm not sure. I just didn't want to be the one left standing."],
+    ['b', "Then give it a few days and see."], ['a', "That's the plan."]] },
+  { id: 'dn.mh.01', when: { of: 'meh', taken: true, chose: false }, turns: [
     ['b', "You don't look very happy with {pa}."], ['a', "It's fine."], ['b', "Fine?"],
     ['a', "{pa} is lovely. I just don't feel much."], ['b', "Then why did you go along with it?"],
     ['a', "Because it was that or go home."]], beat: "{b} nods, and doesn't say anything else." },

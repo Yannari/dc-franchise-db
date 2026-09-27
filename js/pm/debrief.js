@@ -45,7 +45,7 @@ export function nightDebrief(state, rng, entry, pre, m) {
   const here = n => state.villa.includes(n);
   const events = m.events || [];
   const cands = [];
-  const add = (prio, of, a, c = null) => { if (a && here(a)) cands.push({ prio, of, a, c }); };
+  const add = (prio, of, a, c = null, chose = null) => { if (a && here(a)) cands.push({ prio, of, a, c, chose }); };
   const partnerBefore = n => pre.couples.find(p => p.includes(n))?.find(x => x !== n) || null;
 
   // Steals: a recoupling pick, or a bombshell's.
@@ -91,9 +91,13 @@ export function nightDebrief(state, rng, entry, pre, m) {
   // A recoupling with no steal is still a night: who got what they wanted.
   if (entry.moment === 'recoupling' || entry.moment === 'semi-final' || events.some(e => e.kind === 'recouple-pick')) {
     const changed = state.couples.filter(c => !pairsOf(pre.couples).has([...c].sort().join('+')));
+    // Who stood up and said the name, and who heard theirs (read, season 21: a
+    // girls' choice debrief told Nadia how relieved she looked "when Callum
+    // said your name" — she had said his).
+    const choosers = new Set(events.filter(e => e.kind === 'recouple-pick').map(e => e.players[0]));
     for (const [p, q] of changed) for (const a of [p, q]) {
       const pa = partnerOf(state, a);
-      add(4, (attr(state, a, pa) ?? 0) >= 5 ? 'picked' : 'meh', a);
+      add(4, (attr(state, a, pa) ?? 0) >= 5 ? 'picked' : 'meh', a, null, choosers.has(a));
     }
   }
   if (!cands.length) return [];
@@ -114,10 +118,10 @@ export function nightDebrief(state, rng, entry, pre, m) {
   // The side that has most to say goes first; the boys' terrace and the girls'
   // dressing room each keep their scenes together.
   out.sort((x, y) => (g(x.a) === g(y.a) ? x.prio - y.prio : g(x.a) === 'm' ? -1 : 1));
-  return out.map(({ of, a, b, c }) => scene(state, rng, of, a, b, c));
+  return out.map(({ of, a, b, c, chose }) => scene(state, rng, of, a, b, c, chose));
 }
 
-function scene(state, rng, of, a, b, c) {
+function scene(state, rng, of, a, b, c, chose = null) {
   const pa = partnerOf(state, a);
   const where = state.profiles[a]?.gender === 'm' ? 'terrace' : 'dressing-room';
   const pop = { [a]: { approval: 0.2, fame: 1 }, [b]: { approval: 0.1, fame: 0.5 } };
@@ -154,5 +158,5 @@ function scene(state, rng, of, a, b, c) {
   }
   const players = c && ['robbed', 'stole', 'twisted-on', 'twisted', 'miss', 'blame', 'eyeing', 'bomb-fancy', 'bomb-threat'].includes(of) ? [a, b, c] : [a, b];
   return makeEvent(state, rng, { phase: 'debrief', kind: 'debrief', players, aired: true, major,
-    extra: { of, where, pop } });
+    extra: { of, where, pop, ...(chose == null ? {} : { chose }) } });
 }

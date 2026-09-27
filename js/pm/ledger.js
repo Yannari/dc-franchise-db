@@ -50,6 +50,20 @@ export const POP_SCALE = 2;
  * (12 / 24 / 35) still decide how fast anybody can move.
  */
 export const SCENE_GAIN = 5.0;
+/*
+ * A PATTERN HARDENS THE PUBLIC'S READ. One bad week is forgiven; a second and
+ * a third are "who they really are" (the negativity bias of impression
+ * forming: repeated bad acts read as character, one reads as a slip). Each
+ * bad week the public has already seen adds PATTERN to the next bad week's
+ * weight, up to PATTERN_MAX of them; a good week wears one off.
+ *
+ * Why it exists: the bad scenes were spread across the whole villa — a pull
+ * while coupled, a gossip, a row — a little each, so nobody's ever added up.
+ * When the villa day's rows were capped at three (e1d3e1d0, right for the
+ * show), Villain by ep 12 fell from 70% of seasons to 15% and both labels by
+ * ep 8 from ~40% to 4% (measured, 60 seasons either side).
+ */
+export const PATTERN = 0.7, PATTERN_MAX = 4, BAD_WEEK = -1.5;
 export const LABEL_ORDER = ['villain', 'disliked', 'divisive', 'invisible', 'liked', 'loved',
   'fan-favourite'];
 const BANDS = [[60, 'fan-favourite'], [25, 'loved'], [5, 'liked'], [-5, 'invisible'],
@@ -65,7 +79,7 @@ export function labelFor(a) {
 
 export function createLedger() {
   return { approval: {}, fame: {}, raw: {}, fameRaw: {}, major: {}, lastApplied: {},
-    firstEp: {}, label: {}, pending: {}, belief: {} };
+    firstEp: {}, label: {}, pending: {}, belief: {}, record: {} };
 }
 
 export function noteArrival(L, name, ep) {
@@ -117,7 +131,8 @@ export function closeEpisode(L, ep, popularity = null) {
     // Only the good impression is quickened: turning on somebody takes a
     // moment the public saw (BETRAYAL), not a first week of being noticed.
     const r0 = L.raw[name] || 0;
-    const raw = fresh && r0 > 0 ? r0 * FIRST_WEIGHT : r0;
+    const record = (L.record ||= {})[name] || 0;
+    const raw = fresh && r0 > 0 ? r0 * FIRST_WEIGHT : r0 < 0 ? r0 * (1 + PATTERN * record) : r0;
     // The nearer the edge, the less a week moves it (user: "they all got to
     // 100 fan favourite, at least the OGs, is it normal?" — 36% of finalists
     // ended on exactly 100, a third of every cast Fan Favourite): the same
@@ -131,6 +146,8 @@ export function closeEpisode(L, ep, popularity = null) {
     const applied = Math.round(moved * Math.max(0, room) * 100) / 100;
     L.approval[name] = clamp((L.approval[name] || 0) + applied, -100, 100);
     L.lastApplied[name] = applied;
+    if (applied <= BAD_WEEK) L.record[name] = Math.min(PATTERN_MAX, record + 1);
+    else if (applied >= -BAD_WEEK && record) L.record[name] = record - 1;
     L.fame[name] = (L.fame[name] || 0) + (L.fameRaw[name] || 0);
     if (popularity && applied) popularity[name] = (popularity[name] || 0) + applied * POP_SCALE;
     const band = labelFor(L.approval[name]);

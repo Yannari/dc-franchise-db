@@ -24,6 +24,10 @@
 //   game-end       [g, t]     how it ends. `of`: real (it stopped being a game) · amends · doubles-down
 // Only those the franchise lets scheme (CLAUDE.md) ever play one; the one
 // they play is who the villa likes most, read from the villa's bonds.
+// The public sees the plan and the two faces weeks before the villa does —
+// that is why Adam was the villain — so those beats cost what a betrayal
+// does, not a small scene's worth (at -0.2/-0.1 a villain archetype was
+// labelled Villain no more often than a hero: 5/60 vs 5/51, forty seasons).
 import { addBond, getBond } from '../bonds.js';
 import { addRelationshipDimension } from '../relationships.js';
 import { makeEvent, partnerOf, roomMates } from './events.js';
@@ -97,7 +101,7 @@ function step(state, rng, G, ev) {
     // A friend who isn't in on it has heard something they may not keep to themselves.
     if (!ally) G.suspicion += 0.6 + st(state, f, 'loyalty');
     else G.knows = G.knows.filter(n => n !== f);   // an ally keeps it quiet
-    return ev('game-plan', [g, f], { of: ally ? 'ally' : 'shocked', pop: pop([g, -0.2, 1]) });
+    return ev('game-plan', [g, f], { of: ally ? 'ally' : 'shocked', pop: pop([g, -0.8, 1.2]) });
   }
   // The one being played can't be told what they don't know yet: the
   // exposure comes when the villa has seen enough.
@@ -125,7 +129,7 @@ function step(state, rng, G, ev) {
     // Heard by someone who notices things, it counts for more.
     G.suspicion += 0.5 + 0.8 * st(state, x, 'intuition');
     addBond(x, g, -0.2);
-    return ev('game-two-faced', [g, x, t], { pop: pop([g, -0.1, 1]) });
+    return ev('game-two-faced', [g, x, t], { pop: pop([g, -1.0, 1.2]) });
   }
   // somebody says it out loud
   const x = G.knows.filter(n => here.includes(n)).sort((p, q) => st(state, q, 'boldness') - st(state, p, 'boldness'))[0]
@@ -158,7 +162,7 @@ function callIt(state, rng, G, ev) {
   feel(state, t, 'security', -1.2); feel(state, g, 'stress', 1);
   for (const n of here) if (n !== g && getBond(n, t) >= 2) addBond(n, g, -0.4);
   if (react === 'turns') { addBond(g, x, -1); addBond(x, g, -1); addRelationshipDimension(x, g, 'resentment', 0.6); }
-  return ev('game-called', [x, g, t], { of: react, pop: pop([g, react === 'owns' ? -0.6 : -1, 3], [x, 0.4, 1.5], [t, 0.5, 1.5]) }, [g, t, x]);
+  return ev('game-called', [x, g, t], { of: react, pop: pop([g, react === 'owns' ? -1 : -1.5, 3], [x, 0.4, 1.5], [t, 0.5, 1.5]) }, [g, t, x]);
 }
 
 function fallout(state, rng, G, ev) {
@@ -189,5 +193,5 @@ function endIt(state, rng, G, ev) {
   G.why = amends ? 'amends' : 'doubles-down';
   if (amends) { for (const n of roomMates(state, g)) if (getBond(n, t) >= 2) addBond(n, g, 0.3); addBond(t, g, 0.4); }
   else { feel(state, g, 'stress', -0.3); }
-  return ev('game-end', [g, t], { of: amends ? 'amends' : 'doubles-down', pop: pop([g, amends ? 0.8 : -0.5, 2]) });
+  return ev('game-end', [g, t], { of: amends ? 'amends' : 'doubles-down', pop: pop([g, amends ? 0.8 : -1.2, 2]) });
 }

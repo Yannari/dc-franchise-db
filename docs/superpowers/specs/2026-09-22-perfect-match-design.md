@@ -712,6 +712,11 @@ seasons, every rate beside its chance line:
    approval only accrues from aired scenes, and this show's biggest moments
    (Casa, the photos) land at 8–11, so episode 12 is the honest bar. End-of-
    season labels spread across all seven tiers with no saturation.
+   **2026-09-27:** capping a villa day's rows at three (e1d3e1d0) had taken
+   this to 4% / 15% — the rows were the only steady source of bad weeks.
+   Restored by a pattern rule in `ledger.js` (`PATTERN`: each bad week the
+   public has seen makes the next weigh more) and real costs on the game
+   player's beats: **ep 8 → 31%, ep 12 → 57%**, 99 islanders ending Villain.
 2. No label jumps more than two tiers in one episode without a major moment.
 3. About a quarter of the cast still Invisible at any point.
 4. Fame and approval not in lockstep (famous-and-hated islanders exist).

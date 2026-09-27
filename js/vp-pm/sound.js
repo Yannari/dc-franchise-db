@@ -254,7 +254,10 @@ const SITUATION = {
   // winners (steps.js finalSteps marks which is which).
   // One track under every declaration (user: "declarations screens should have 1 music"):
   // the speech between two of them has to keep it, or the next one starts the next track.
-  'final-wait': ['declaration', 'speech', 'final-open', 'final-two', 'final-drum'],
+  // The declarations have their own warm track under every speech; the wait
+  // for the names is the dark one that builds (manifest.json, chosen by measurement).
+  declare: ['declaration', 'speech'],
+  'final-wait': ['final-open', 'final-two', 'final-drum'],
   winner: ['final-result', 'final-winners', 'envelope'],
 };
 const BY_KIND = Object.fromEntries(Object.entries(SITUATION).flatMap(([sit, ks]) => ks.map(k => [k, sit])));

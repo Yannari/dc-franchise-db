@@ -255,10 +255,16 @@ export function dumpingScene(state, rng, { atRisk = [], dumped, ballots = [], ch
     ev('dump-reaction', [p, n], { [p]: { approval: 0.8 * Math.max(0, getBond(p, n)) / 10 + 0.3, fame: 1.5 } });
     // Only for someone in it: a small share of those, and more the more in love,
     // loyal and closed off they are.
-    const solidarity = romance(p, n) < 3.5 ? 0 : 0.1 + 0.3 * (romance(p, n) / 10) ** 2 * (state.profiles[p].stats.loyalty / 10)
-      * (0.4 + 0.6 * closedness(state, p, n));
-    // Most stay; a few walk out with them (Uma left with Wil's dumping, UK 11
-    // d37). At half this, it was once in 30 seasons.
+    // User: "walk-outs are often with the person getting eliminated if they
+    // are a couple" (Uma left with Wil's dumping, UK 11 d37). Measured before:
+    // 2 of 52 partners left behind walked, in 2 seasons of 30 — the couples who
+    // get dumped are rarely the most in love, and the gate asked for that.
+    // Now anyone who is into it can: more the more in love, loyal and closed
+    // off. Only while the season can spare them, or the final comes up short.
+    const r = romance(p, n);
+    const spare = (state._surplus ?? Infinity) - dumped.length - solidarityWalk.length >= 1;
+    const solidarity = r < 3 || !spare ? 0 : 0.3 + 0.5 * (r / 10) ** 1.5 * (0.5 + 0.5 * state.profiles[p].stats.loyalty / 10)
+      * (0.5 + 0.5 * closedness(state, p, n));
     if (rng() < solidarity) {
       solidarityWalk.push(p);
       ev('solidarity', [p, n], { [p]: { approval: 2.5, fame: 2 } }, [p]);

@@ -166,6 +166,14 @@
   ],
   "winner": [
     {
+      "file": "winner/winner-afterreveal.mp3",
+      "at": [
+        0
+      ],
+      "loopFrom": 0,
+      "loopTo": 600
+    },
+    {
       "file": "kiss/first-kiss.mp3",
       "at": [
         2.0

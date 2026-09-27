@@ -181,6 +181,8 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
     // The arrival places still to come, for a pair who would take one of them (moments.js arrivals).
     const slotsAhead = ahead.filter(e => e !== entry).map(e => ({ moment: e.moment, n: e.arrivals?.bombshell || 0 })).filter(x => x.n > 0);
     const ctx = { rng, entry, seed, queues, popularity: gs.popularity, splitOrStealOn, closed: false, pace, votesAhead, coupledAhead, plainNights: nights, firstVote, surplus, slotsAhead };
+    // For a partner walking out with the dumped (moments.js): only while the season can spare them.
+    state._surplus = surplus;
     // Episode one opens on the arrivals and the first coupling, before the day.
     if (entry.moment === 'first-coupling') ctx.opening = nightOneOpening(state, ctx);
     // The final's day is the final dates (pm/journey.js): no ordinary villa

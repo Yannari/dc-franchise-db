@@ -355,11 +355,17 @@ async function startBed(sit) {
   stopBed();
   if (!musicWanted() || !engine.output?.()) return;
   const mine = bed = { sit, pending: true };
-  const pick = await nextTrack(sit);
+  let pick = await nextTrack(sit);
   const out = engine.output?.();
   if (!pick || !out || bed !== mine) { if (bed === mine) bed = { sit, pending: false }; return; }
   const { ctx: c, dest } = out;
-  const buf = await bufferOf(c, pick.file);
+  let buf = await bufferOf(c, pick.file);
+  // A track listed but not there (not uploaded yet): the next one in the list,
+  // never silence (the winner's own track, winner/winner-afterreveal.mp3).
+  for (let tries = ((await loadManifest())?.[sit] || []).length - 1; !buf && tries > 0 && bed === mine; tries--) {
+    pick = await nextTrack(sit);
+    buf = pick ? await bufferOf(c, pick.file) : null;
+  }
   if (!buf || bed !== mine) { if (bed === mine) bed = { sit, pending: false }; return; }
   try {
     const now = c.currentTime;

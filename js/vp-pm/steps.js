@@ -69,6 +69,7 @@ export const KIND_LABEL = {
   'ballot-reveal': 'The vote', 'dump-reaction': 'The reaction', 'dump-goodbye': 'Goodbye', 'dump-fallout': 'Fallout',
   'casa-return': 'Stick or twist', photos: 'The photos', declaration: 'The declaration', 'final-result': 'The result',
   'final-two': 'The final two', 'final-drum': 'The moment', 'final-winners': 'Your Perfect Match',
+  'walk-doubt': 'Thinking of leaving', 'walk-goodbye': 'Goodbye', 'walk-after': 'After the walk',
   envelope: 'The envelope', walk: 'Leaving the villa', reveal: "What you didn't see", 'close-off': 'Closing off',
   'keeping-open': 'Keeping it open', 'open-back-up': 'Opening back up', 'head-turned': 'Head turned',
   'exclusive-ask': 'Exclusive?', 'official-ask': 'Official?', 'ask-declined': 'Not yet', 'love-said': 'I love you',

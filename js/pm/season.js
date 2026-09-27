@@ -21,7 +21,8 @@ import { runChallenge } from './challenges.js';
 import { romance, friendship, shown, believed, growLove, updateBeliefs, decideMasks,
   relationshipLabel } from './feelings.js';
 import { syncLadder, stepOf } from './ladder.js';
-import { emo, attachment, attachmentLabel, walkRisk } from './emotions.js';
+import { emo, attachment, attachmentLabel, walkRisk, feel } from './emotions.js';
+import { addBond, getBond } from '../bonds.js';
 import { proneness } from './breakdown.js';
 import { runVillaDay } from './villa-day.js';
 import { seasonSchedule, withPicks, withBookings, resolveRandomGames, buildSchedule, FINAL_COUPLES } from './schedule.js';
@@ -234,9 +235,38 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
       const walker = maybeWalk(state, rng);
       if (walker) {
         const before = state.couples.map(c => [...c]);
+        // THE WALK, as the show plays it (user: "we have 1 walked out in ep9
+        // and we don't even know someone walked out, how does it work?" — it
+        // was one line, and they were gone): the reason said out loud to the
+        // closest friend first, then the villa told, the goodbye, and the
+        // ones left behind — the ex it was about, and the friend who blames them.
+        const w = walker.name;
+        const ex = walker.cause === 'heartbreak' ? emo(state, w).heartbreakFrom : null;
+        // …who may be the walker's own partner still: hurt by the one they are with.
+        const withThem = !!ex && partnerOf(state, w) === ex;
+        const exNow = ex && !withThem && state.villa.includes(ex) ? partnerOf(state, ex) : null;
+        const friend = state.villa.filter(n => n !== w && n !== ex && n !== exNow)
+          .sort((x, y) => getBond(w, y) - getBond(w, x))[0] || null;
+        const say = (kind, players, extra) => { const e = makeEvent(state, rng, { phase: 'firepit', kind, players, aired: true, extra }); m.events.push(e); state.history.push(e); return e; };
+        if (friend) {
+          const of = walker.cause === 'homesick' ? 'homesick' : withThem ? 'with-them' : exNow ? 'moved-on' : 'heartbreak';
+          feel(state, friend, 'stress', 0.6);
+          say('walk-doubt', [w, friend, ...(ex && state.villa.includes(ex) ? [ex] : []), ...(exNow ? [exNow] : [])],
+            { of, pop: { [w]: { approval: 0.8, fame: 1 }, [friend]: { approval: 0.3, fame: 0.5 } } });
+        }
         const ev = makeEvent(state, rng, { phase: 'firepit', kind: 'walk', players: [walker.name], aired: true,
           major: [walker.name], extra: { cause: walker.cause, pop: { [walker.name]: { approval: 3, fame: 2 } } } });
         m.events.push(ev); state.history.push(ev);
+        if (friend) {
+          addBond(w, friend, 0.5);
+          say('walk-goodbye', [w, friend], { of: walker.cause, pop: { [friend]: { approval: 0.2, fame: 0.5 } } });
+          // The one it was about: the guilt, and the friend's blame for it.
+          if (ex && state.villa.includes(ex)) {
+            feel(state, ex, 'guilt', 1.5);
+            addBond(friend, ex, -0.5);
+            say('walk-after', [ex, friend, w], { of: withThem ? 'with-them' : exNow ? 'moved-on' : 'heartbreak', pop: { [ex]: { approval: -0.5, fame: 1 }, [friend]: { approval: 0, fame: 0.5 } } });
+          }
+        }
         (state.gone ||= []).push({ name: walker.name, ep: state.ep });
         state.villa = state.villa.filter(n => n !== walker.name);
         state.couples = state.couples.filter(c => !c.includes(walker.name));

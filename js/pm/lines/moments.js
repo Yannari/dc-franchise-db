@@ -1779,8 +1779,39 @@ export const MOMENTS = {
       stage: '{a} has decided to leave with {a.posAdj} partner.',
       turns: [['a', "I came in for love. I'm leaving with it."]] },
     { id: 'walk.06', when: { cause: 'heartbreak', mood: 'heartbroken' },
-      stage: 'The next morning, {a} is sitting on a packed suitcase by the door.',
+      stage: '{a} is sitting on a packed suitcase by the door.',
       turns: [['a', "I'm not being dramatic. I just can't do it any more."]] },
+  ],
+  // THE WALK, before and after (season.js). walk-doubt [a, b, (c), (d)]: a,
+  // leaving, tells b, the closest friend, why. `of`: moved-on (c is the ex,
+  // d who the ex is with now; d never speaks) · heartbreak (c is the ex) ·
+  // homesick.
+  'walk-doubt': [
+    { id: 'wd.m1', when: { of: 'moved-on' }, stage: '{a} pulls {b} to one side, away from everyone.', turns: [['a', "I can't do it any more."], ['b', "Do what?"], ['a', "Watch {c} with {d}. Every single day. I wake up and they're the first thing I see."], ['b', "It'll get easier."], ['a', "It hasn't. It's got worse."], ['b', "Please don't do anything tonight."], ['a', "I've already decided."]], beat: '{b} holds on to {a.obj} for a long time.' },
+    { id: 'wd.m2', when: { of: 'moved-on' }, turns: [['b', "You've been quiet all day."], ['a', "I saw {c} kiss {d} earlier. I had to go inside."], ['b', "I'm sorry."], ['a', "I thought I could stay and be fine with it. I can't."], ['b', "What are you saying?"], ['a', "I'm going home."]] },
+    { id: 'wd.m3', when: { of: 'moved-on' }, stage: 'On the terrace, {a} is packing things into a bag, then stopping.', turns: [['b', "What are you doing?"], ['a', "{c} is happy with {d}. Good for them. I just can't be here for it."], ['b', "You've got people in here who love you."], ['a', "I know. That's the only reason I stayed this long."]] },
+    { id: 'wd.h1', when: { of: 'heartbreak' }, stage: '{a} asks {b} for a chat, and {b} can tell something is wrong.', turns: [['a', "I haven't been right since {c} and me ended."], ['b', "I know. I've seen it."], ['a', "Every time {c} walks past, it starts all over again."], ['b', "So what do you want to do?"], ['a', "I think I want to go home."]], beat: '{b} doesn\'t try to argue.' },
+    { id: 'wd.h2', when: { of: 'heartbreak' }, turns: [['b', "Talk to me."], ['a', "I can't get over {c}. And I can't do that in here, with {c} right there."], ['b', "Give it a few more days."], ['a', "I've given it days. It's not getting better."]] },
+    { id: 'wd.w1', when: { of: 'with-them' }, stage: '{a} finds {b} on the daybeds.', turns: [['a', "Things with {c} aren't right. They haven't been for days."], ['b', "Have you told {c} that?"], ['a', "I've tried. Every time I try, it ends up worse."], ['b', "So what are you going to do?"], ['a', "I think I need to go home. I can't keep feeling like this."]] },
+    { id: 'wd.w2', when: { of: 'with-them' }, turns: [['b', "Are you and {c} okay?"], ['a', "No. I'm with someone who hurt me, and I'm pretending it's fine."], ['b', "You don't have to pretend with me."], ['a', "I don't want to pretend at all. I want to go home."]] },
+    { id: 'wd.s1', when: { of: 'homesick' }, stage: '{a} is sitting on the edge of the pool with {b}, not saying much.', turns: [['a', "I miss my family so much."], ['b', "We all do."], ['a', "No, it's more than that. I'm not happy in here any more. I haven't been for a while."], ['b', "Are you thinking of going?"], ['a', "Yes. I think I am."]], beat: '{b} puts an arm round {a.obj}.' },
+    { id: 'wd.s2', when: { of: 'homesick' }, turns: [['b', "You've barely eaten today."], ['a', "I just want to go home. I want my own bed and my family."], ['b', "You'd regret leaving."], ['a', "I think I'd regret staying more."]] },
+  ],
+  // walk-goodbye [a, b]: a, leaving, and b, the friend. `of`: the cause.
+  'walk-goodbye': [
+    { id: 'wg.1', stage: 'The suitcase is by the steps. {b} walks {a} to it.', turns: [['b', "I can't believe you're going."], ['a', "I'll see you on the outside. First thing."], ['b', "You'd better."]], beat: 'They hug for a long time before {a} lets go.' },
+    { id: 'wg.2', turns: [['a', "Thank you for everything. You kept me going in here."], ['b', "I'm going to miss you so much."], ['a', "Come here."]], beat: '{a} walks up the steps without looking back.' },
+    { id: 'wg.3', stage: 'The villa gathers at the steps to say goodbye.', turns: [['b', "Look after yourself, okay?"], ['a', "I will. Look after everyone here for me."]], beat: '{a} waves once from the top of the steps, and then {a} is gone.' },
+    { id: 'wg.4', when: { of: 'homesick' }, turns: [['b', "Give your family a hug from me."], ['a', "I will. They're going to be so happy to see me."], ['b', "So would I be, if I were them."]], beat: 'Everyone waves {a} off from the lawn.' },
+  ],
+  // walk-after [a, b, c]: a is the ex the walk was about; b is the friend, who
+  // blames them; c has just gone. `of`: moved-on · heartbreak.
+  'walk-after': [
+    { id: 'wa.1', stage: 'The villa is quiet after the steps.', turns: [['a', "That was because of me, wasn't it?"], ['b', "You tell me."], ['a', "I didn't want {c} to leave."], ['b', "You didn't make it easy for {c} to stay, either."]], beat: '{a} goes inside and doesn\'t come back out for a while.' },
+    { id: 'wa.2', when: { of: 'moved-on' }, turns: [['b', "I hope you're happy."], ['a', "That's not fair. I didn't do anything wrong."], ['b', "You moved on right in front of {c}. Every day."], ['a', "What was I supposed to do? Stay single for ever?"]], beat: 'Half the villa has heard it, and half of them agree with {b}.' },
+    { id: 'wa.3', turns: [['a', "Is {c} okay?"], ['b', "What do you think?"], ['a', "I feel awful."], ['b', "Good."]], beat: '{b} walks off before {a} can answer.' },
+    { id: 'wa.5', when: { of: 'with-them' }, turns: [['a', "{c} didn't even say it was because of me."], ['b', "{c} didn't have to."], ['a', "I thought we were getting through it."], ['b', "You were. {c} wasn't."]], beat: '{a} sits on {a.posAdj} own by the pool for the rest of the night.' },
+    { id: 'wa.4', when: { of: 'heartbreak' }, turns: [['a', "I didn't know {c} was still hurting that much."], ['b', "Everyone else did."], ['a', "Why didn't anyone tell me?"], ['b', "Would it have changed anything?"]] },
   ],
   // reveal [a, (b), (c)]: the reunion plays a clip nobody saw. `what` is what it
   // was (a pull, a kiss, a bed, something said); c is the partner it betrayed. Every reveal

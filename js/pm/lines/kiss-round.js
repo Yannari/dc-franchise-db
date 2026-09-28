@@ -16,7 +16,7 @@ export const KISS_ROUND_LINES = {
     { id: 'tt.nc2', when: { of: 'named-coupled' }, stage: "{a}'s card asks who {a} would pull if {a} was single.", turns: [['a', "It's got to be {b}."]], beat: '{c} puts {c.posAdj} drink down.' },
     { id: 'tt.nc3', when: { of: 'named-coupled' }, turns: [['a', "Truth. Go on."], ['a', "Who would I go for, apart from {c}? …{b}. Sorry. It's the truth."]], beat: "The villa gasps. {c} doesn't say a word." },
     { id: 'tt.ns1', when: { of: 'named-single' }, stage: '{a} picks truth. Who would you most like to couple up with?', turns: [['a', "{b}. I've never hidden it."], ['b', "Oh. Okay then."]], beat: 'The villa whoops.' },
-    { id: 'tt.ns2', when: { of: 'named-single' }, turns: [['a', "You want the truth? It's {b}. It's been {b} for days."]], beat: '{b} goes pink.' },
+    { id: 'tt.ns2', when: { known: true, of: 'named-single' }, turns: [['a', "You want the truth? It's {b}. It's been {b} for days."]], beat: '{b} goes pink.' },
     { id: 'tt.d1', when: { of: 'dodge' }, stage: '{a} reads the card for a long time.', turns: [['a', "Can I take a dare instead?"], ['b', "Why can't you answer it?"]], beat: '{b} notices.' },
     { id: 'tt.d2', when: { of: 'dodge' }, turns: [['a', "Who would I kiss other than my partner? Nobody. Obviously."], ['b', "You took a long time to say obviously."]] },
     { id: 'tt.d3', when: { of: 'dodge' }, turns: [['a', "I'm not answering that."], ['b', "It's truth or dare. You have to answer."], ['a', "Then I'm not answering it very well."]] },

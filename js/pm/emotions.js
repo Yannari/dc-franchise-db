@@ -83,6 +83,17 @@ export function breakHeart(state, n, by, amount) {
   feel(state, n, 'confidence', -0.4 * amount);
   feel(state, n, 'security', -amount);
 }
+/**
+ * Back with the one who broke your heart: it mends. Season 33: Josh took Mia
+ * from Jordan on the bombshell night, Jordan took her back at the recoupling
+ * — and walked out the same night, "hurt by the one he was with".
+ */
+export function healOnReunion(state, a, b) {
+  for (const [x, y] of [[a, b], [b, a]]) {
+    const e = emo(state, x);
+    if (e.heartbreakFrom === y) { e.heartbreak *= 0.2; e.heartbreakFrom = null; }
+  }
+}
 export const rebounding = (state, n) => emo(state, n).heartbreak > 3;
 
 /** One villa day. Stress builds; jealousy, guilt and heartbreak fade; security drifts to what they believe. */

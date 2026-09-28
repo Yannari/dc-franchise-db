@@ -681,7 +681,7 @@ export const KINDS = {
     'final-date', 'journey-open', 'journey-clip', 'journey-react', 'journey-end', 'speech',
     'pair-text', 'kin-entrance', 'kin-goodbye', 'kin-walk', 'ex-text', 'ex-reveal', 'ex-partner', 'ex-confront',
     'dump-text', 'dump-nerves', 'dump-open', 'vote-safe', 'hideaway-text', 'hideaway-vote', 'hideaway-win', 'hideaway-snub', 'hideaway-morning',
-    'recouple-text', 'recouple-nerves', 'recouple-open', 'recouple-single', 'casa-text', 'casa-goodbye', 'casa-explain',
+    'recouple-text', 'recouple-nerves', 'recouple-open', 'recouple-single', 'recouple-first', 'casa-text', 'casa-goodbye', 'casa-explain',
     'final-open', 'final-two', 'final-drum', 'final-winners', 'walk-doubt', 'walk-goodbye', 'walk-after', 'reunion-open', 'reunion-winners', 'reunion-close', 'rule-open', 'game-kiss', 'tod-truth', 'dump-recap', 'dump-safe', 'dump-plea', 'dump-decide',
     // the arrivals of Plan 4.5 phase 2
     'stand-up', 'nobody-stands', 'stand-up-pick', 'save-setup', 'bombshell-save', 'public-match',

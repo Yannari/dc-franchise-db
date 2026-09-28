@@ -167,7 +167,7 @@ export const DEBRIEF = [
     ['a', "It was a good thirty seconds."], ['b', "What are you going to do?"],
     ['a', "Get up early and be the first one to say good morning."], ['b', "Good plan."]] },
   // ── picked / meh: a recoupling night ──
-  { id: 'dn.pk.01', when: { of: 'picked', taken: true, chose: false }, turns: [
+  { id: 'dn.pk.01', when: { known: true, of: 'picked', taken: true, chose: false }, turns: [
     ['b', "You looked so relieved when {pa} said your name."], ['a', "I was. I've been worried for days."],
     ['b', "About what?"], ['a', "That {pa} would pick someone else."], ['b', "And now?"],
     ['a', "Now I can finally relax."]], beat: '{a} smiles properly for the first time all day.' },
@@ -195,7 +195,7 @@ export const DEBRIEF = [
     ['b', "You don't look very happy with {pa}."], ['a', "It's fine."], ['b', "Fine?"],
     ['a', "{pa} is lovely. I just don't feel much."], ['b', "Then why did you go along with it?"],
     ['a', "Because it was that or go home."]], beat: "{b} nods, and doesn't say anything else." },
-  { id: 'dn.mh.02', when: { of: 'meh', taken: true }, stage: '{Where}, {a} is picking at a nail.', turns: [
+  { id: 'dn.mh.02', when: { known: true, of: 'meh', taken: true }, stage: '{Where}, {a} is picking at a nail.', turns: [
     ['a', "Can I tell you something, and you won't tell {pa}?"], ['b', "Of course."],
     ['a', "I'm not feeling it. I haven't been for days."], ['b', "Have you told {pa}?"],
     ['a', "How do you tell someone that?"], ['b', "Kindly. And soon."]] },

@@ -52,7 +52,11 @@ function queuesFor(state, cast) {
 // villa days took walks from 68 to 114 a hundred seasons.
 function maybeWalk(state, rng, entry) {
   const share = entry?.days ? (entry.days[1] - entry.days[0] + 1) / 3 : 1;
+  // Nobody walks the night they stood up and chose somebody, or said yes to
+  // somebody who did (season 33: Jordan picked Mia, then walked).
+  const choseTonight = new Set((state.history || []).filter(e => e.ep === state.ep && e.kind === 'recouple-pick').flatMap(e => e.players.slice(0, 2)));
   for (const n of state.villa) {
+    if (choseTonight.has(n)) continue;
     const { p, cause } = walkRisk(state, n);
     if (rng() < p * share) return { name: n, cause };
   }
@@ -280,6 +284,10 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
             say('walk-after', [ex, friend, w], { of: withThem ? 'with-them' : exNow ? 'moved-on' : 'heartbreak', pop: { [ex]: { approval: -0.5, fame: 1 }, [friend]: { approval: 0, fame: 0.5 } } });
           }
         }
+        // The debrief was cast before anyone walked: nothing in it for somebody gone.
+        const stale = e => e.kind === 'debrief' && e.players.includes(w);
+        m.events = m.events.filter(e => !stale(e));
+        state.history = state.history.filter(e => !stale(e));
         (state.gone ||= []).push({ name: walker.name, ep: state.ep });
         state.villa = state.villa.filter(n => n !== walker.name);
         state.couples = state.couples.filter(c => !c.includes(walker.name));

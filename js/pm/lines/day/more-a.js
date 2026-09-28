@@ -56,7 +56,7 @@ export const MORE_A = {
   // pull [a, b]: a pulls b. Either may be coupled elsewhere; never to each other.
   pull: [
     { id: 'pl2.01', turns: [['a', "Can I steal you for five minutes?"], ['b', "Five minutes. I'm timing you."]] },
-    { id: 'pl2.02', turns: [['a', "I've wanted to talk to you properly for days."], ['b', "Well, here I am."], ['a', "Here you are."]] },
+    { id: 'pl2.02', when: { known: true }, turns: [['a', "I've wanted to talk to you properly for days."], ['b', "Well, here I am."], ['a', "Here you are."]] },
     { id: 'pl2.03', turns: [['a', "Can I ask you something straight? Are you happy?"], ['b', "Why are you asking?"], ['a', "Because I'd like to know if there's a chance."]] },
     { id: 'pl2.04', turns: [['a', "I just want to get to know you. No pressure."], ['b', "There's always pressure in here."]] },
     { id: 'pl2.05', when: { bTaken: true }, turns: [['a', "You've been on my mind since the last recoupling."], ['b', "That's a lot to say to someone in a couple."], ['a', "I know. I'm saying it anyway."]] },

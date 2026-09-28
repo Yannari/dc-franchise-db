@@ -81,7 +81,7 @@ for (const [k, v] of Object.entries(STEAMY_NARRATOR)) NARRATOR[k] = [...(NARRATO
 export { HUT, NARRATOR };
 
 export const SPEAKERS = ['a', 'b', 'c', 'dior', 'narrator'];
-export const FACT_KEYS = ['another', 'ago', 'behind', 'friction', 'chose', 'rung', 'thinks', 'persona', 'intent', 'attachment', 'mood', 'bombshell',
+export const FACT_KEYS = ['known', 'another', 'ago', 'behind', 'friction', 'chose', 'rung', 'thinks', 'persona', 'intent', 'attachment', 'mood', 'bombshell',
   'early', 'coupled', 'gap', 'knows', 'faking', 'bPersona', 'bMood', 'bRung', 'stance', 'family',
   'choice', 'cause', 'channel', 'grudge', 'stole', 'bTaken', 'archetype', 'taken', 'loyal', 'late', 'gender', 'bGender', 'myRung', 'phase', 'kind', 'role', 'withB', 'newArrival', 'dialect',
   'comfortedYesterday', 'rowedBefore', 'rowedToday', 'feels', 'of', 'knowsB', 'verdict', 'noticed',
@@ -173,6 +173,11 @@ export function factsFor(state, ev) {
   // first day. They have known each other for hours.
   const arrivedNow = n => n != null && (state.ledger?.firstEp?.[n] ?? state.ep) === state.ep;
   f.justMet = arrivedNow(a) || (!!b && arrivedNow(b));
+  // Everyone in it — and a's partner — has been in the villa two episodes or
+  // more: only then is "for days" true (season 33: Ellie, in two days and
+  // coupled that night, "hasn't been feeling it for days").
+  const inFor = n => n == null || state.ep - (state.ledger?.firstEp?.[n] ?? state.ep) >= 2;
+  f.known = inFor(a) && inFor(b) && inFor(partnerOf(state, a));
   f.rebuffed = !!ev.extra?.rebuffed;   // a pull b turned down (events.js decides)
   f.kissed = !!ev.extra?.kissed;       // a pull (or a Casa bed) that went further
   f.promised = !!ev.extra?.promised;   // a pull that ended in plans for the outside

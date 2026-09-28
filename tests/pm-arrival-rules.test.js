@@ -37,7 +37,7 @@ describe('the arrival rules, when they play', () => {
   it('the bombshell saves one: the saved one is coupled with them, the others are dumped', () => {
     let played = 0;
     for (let seed = 1; seed <= 20 && played < 3; seed++) {
-      const rows = season(seed, { 3: { arrivalRule: 'saves' }, 6: { arrivalRule: 'saves' } });
+      const rows = season(seed, { 3: { arrivalRule: 'saves' }, 7: { arrivalRule: 'saves' } });
       for (const r of rows.filter(x => x.pm.arrivalRule === 'saves')) {
         played++;
         const save = r.pm.events.find(e => e.kind === 'bombshell-save');
@@ -54,7 +54,7 @@ describe('the arrival rules, when they play', () => {
     const s = perfectMatchScheduleFor(3, { bombshells: 6, casa: 6 });
     const booked = withBookings(s, { 2: { arrivalRule: 'stand-up' }, 5: { firstFormat: 'profiles' } });
     expect(booked[1].arrivalRule).toBeUndefined();     // ep 2 is a recoupling
-    expect(booked[4].firstFormat).toBeUndefined();     // ep 5 is a vote
+    expect(booked[4].firstFormat).toBeUndefined();     // ep 5 is a villa day
   });
 });
 

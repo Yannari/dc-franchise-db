@@ -12,7 +12,7 @@ import { revealExchange } from './script.js';
 import { streamFor } from '../dr/rng.js';
 import { romance } from './feelings.js';
 import { closedness } from './ladder.js';
-import { breakHeart, feel, jealousOf, jealousyHit } from './emotions.js';
+import { breakHeart, feel, jealousOf, jealousyHit, healOnReunion } from './emotions.js';
 import { runRecoupling } from './recoupling.js';
 import { publicVote, publicVoteIslanders, finalVote, splitOrSteal } from './public-vote.js';
 import { villaDumping, topCouplePicks, saveOne, couplesVote, returningExes, exIslandersVote } from './villa-vote.js';
@@ -157,7 +157,7 @@ function pleas(state, rng, atRisk, channel) {
   });
 }
 
-export function dumpingScene(state, rng, { atRisk = [], dumped, ballots = [], channel, decision = null, afterVotes = null, format = null, nominate = null }) {
+export function dumpingScene(state, rng, { atRisk = [], dumped, ballots = [], channel, decision = null, afterVotes = null, format = null, nominate = null, staying = 0 }) {
   const events = [];
   const solidarityWalk = [];
   const kinWalk = new Set();
@@ -246,7 +246,10 @@ export function dumpingScene(state, rng, { atRisk = [], dumped, ballots = [], ch
   const done = new Set();
   const lone = dumped.filter(n => !(partners[n] && dumped.includes(partners[n])));
   if (channel === 'recoupling' && lone.length > 1) {
-    ev('dump-verdict-singles', lone, Object.fromEntries(lone.map(n => [n, { approval: 0, fame: 2 }])), lone);
+    // `of`: every single goes ('all'), or somebody single is staying ('some') —
+    // "every islander still single has been dumped" was said over a single
+    // who stayed (season 33, Josh).
+    ev('dump-verdict-singles', lone, Object.fromEntries(lone.map(n => [n, { approval: 0, fame: 2 }])), lone, { of: staying ? 'some' : 'all' });
     for (const n of lone) done.add(n);
   }
   for (const n of dumped) {
@@ -425,6 +428,11 @@ function recoupleNight(state, rng, { dumpSingles, pace = 1.5, votesAhead = 0, al
     : toCome.length ? 0 : Math.max(0, Math.min(Math.floor(surplus), state.villa.length - floor));
   if (dumpSingles && state.villa.length >= 4) open.push(...recoupleBuildUp(state, { picker, stake: all ? 'all' : dumping === 'none' ? 'safe' : cap > 0 || spare > 0 ? 'risk' : 'safe', final: all }));
   const r = runRecoupling(state, { rng, pickerGender: picker, repick: all });
+  // New arrivals choose first (recoupling.js): the host says so, or a girl
+  // stands up in a boys' choice with no reason given (season 33, Ellie).
+  const firsts = r.picks.filter(pk => pk.first).map(pk => pk.picker);
+  if (firsts.length) open.push(makeEvent(state, rng, { phase: 'firepit', kind: 'recouple-first', players: firsts.slice(0, 2), aired: true,
+    extra: { pop: {} } }));
   const events = [...open, ...r.picks.map(pk => makeEvent(state, rng, { phase: 'firepit', kind: 'recouple-pick',
     players: [pk.picker, pk.picked, ...(pk.stole ? [pk.stole] : [])], aired: true,
     major: pk.stole ? [pk.picker, pk.stole] : [],
@@ -432,6 +440,7 @@ function recoupleNight(state, rng, { dumpSingles, pace = 1.5, votesAhead = 0, al
       ...(pk.stole ? { [pk.stole]: { approval: 1.5, fame: 2 } } : {}) } } }))];
   for (const pk of r.picks) if (pk.stole) breakHeart(state, pk.stole, pk.picked, 5 * romance(pk.stole, pk.picked) / 10);
   state.couples = r.couples;
+  for (const [a, b] of r.couples) healOnReunion(state, a, b);
   // Who has been single and vulnerable since the last ceremony (below).
   const lastCeremony = state.lastRecouplingEp ?? 0;
   if (dumpSingles) state.lastRecouplingEp = state.ep;
@@ -466,7 +475,13 @@ function recoupleNight(state, rng, { dumpSingles, pace = 1.5, votesAhead = 0, al
   // too … there should be some single and vulnerable"; 28 of 40 were dumped
   // the next dumping night, most of them the recoupling right after).
   const fresh = n => dumping !== 'always' && (state.vulnerableSince?.[n] ?? -1) > lastCeremony;
-  const order = [...r.single.filter(n => !fresh(n)), ...r.single.filter(fresh)];
+  // Who goes first when the night cannot take every single: whoever nobody
+  // picked, then a chooser whose pick was taken, then whoever a bombshell only
+  // just left single. (By villa order, season 33 kept Josh — a chooser whose
+  // pick was stolen — and sent home two nobody picked, which happened to be
+  // right, and said every single had gone.)
+  const passedOver = n => gen(n) !== picker;
+  const order = [...r.single.filter(n => !fresh(n) && passedOver(n)), ...r.single.filter(n => !fresh(n) && !passedOver(n)), ...r.single.filter(fresh)];
   const others = order.filter(n => !fresh(n)).length;
   const cut = Math.min(take, Math.max(others, hopeless));
   if (!cut) {
@@ -477,8 +492,16 @@ function recoupleNight(state, rng, { dumpSingles, pace = 1.5, votesAhead = 0, al
     return { events, exits: [], ballots: r.ballots };
   }
   const dumped = order.slice(0, cut);
-  const scene = dumpingScene(state, rng, { atRisk: [], dumped, ballots: [], channel: 'recoupling' });
-  return { events: [...events, ...scene.events], exits: scene.exits, ballots: r.ballots };
+  const stay = order.slice(cut);
+  const scene = dumpingScene(state, rng, { atRisk: [], dumped, ballots: [], channel: 'recoupling', staying: stay.length });
+  // Whoever is left single and staying hears it, after the others have gone.
+  const after = [];
+  if (stay.length) {
+    after.push(makeEvent(state, rng, { phase: 'dumping', kind: 'recouple-single', players: [stay[0]], aired: true,
+      extra: { of: fresh(stay[0]) ? 'vulnerable' : 'kept', pop: { [stay[0]]: { approval: 0.3, fame: 1 } } } }));
+    for (const x of stay) { feel(state, x, 'confidence', -0.8); feel(state, x, 'stress', 0.6); }
+  }
+  return { events: [...events, ...scene.events, ...after], exits: scene.exits, ballots: r.ballots };
 }
 
 /**

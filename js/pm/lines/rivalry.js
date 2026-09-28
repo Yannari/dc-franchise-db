@@ -145,7 +145,7 @@ export const RIVALRY_LINES = {
       ['a', "You've been stirring things with {c} all day."], ['b', "I haven't said a word about you."],
       ['a', "Everyone's told me what you said."], ['b', "Then everyone's lying."], ['a', "All of them?"]],
       beat: 'Two of the others have to step in.' },
-    { id: 'rr.r.02', when: { of: 'row' }, stage: 'Across the garden, {a} shouts over to {b}.', turns: [
+    { id: 'rr.r.02', when: { known: true, of: 'row' }, stage: 'Across the garden, {a} shouts over to {b}.', turns: [
       ['a', "Say it to my face!"], ['b', "Fine. You're desperate."], ['a', "I'm desperate? You've been following {c} round for days!"],
       ['b', "At least {c} actually talks to me."]], beat: 'The whole villa has stopped what it was doing.' },
     { id: 'rr.r.03', when: { of: 'row' }, stage: 'In the kitchen, {a} slams a cupboard shut.', turns: [

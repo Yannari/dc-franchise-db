@@ -146,6 +146,12 @@ export const FIREPIT_LINES = {
     { id: 'ro.fa', when: { of: 'f-all' }, turns: [['dior', "Good evening, islanders. This is the final recoupling."], ['dior', "Girls, you'll choose who you want to couple up with. And anyone left single tonight will be dumped from the island. From here on, it's couples only."]], beat: 'Nobody on the benches moves.' },
     { id: 'ro.ma', when: { of: 'm-all' }, turns: [['dior', "Good evening, islanders. This is the final recoupling."], ['dior', "Boys, you'll choose who you want to couple up with. And anyone left single tonight will be dumped from the island. From here on, it's couples only."]], beat: 'Nobody on the benches moves.' },
   ],
+  // New arrivals choose first (recoupling.js runRecoupling): the host says so.
+  'recouple-first': [
+    { id: 'rf.1', when: { cast: 1 }, turns: [['dior', "Before we start. {a}, as our newest islander, you get to choose first."]], beat: '{a} takes a breath and stands up.' },
+    { id: 'rf.2', when: { cast: 1 }, turns: [['dior', "{a}, you're new here, so tonight you pick before anyone else."], ['a', "No pressure, then."]] },
+    { id: 'rf.3', when: { cast: 2 }, turns: [['dior', "{a} and {b}, as our newest islanders, you'll choose first. Then everyone else."]], beat: 'A few couples shift closer together on the benches.' },
+  ],
   'recouple-single': [
     { id: 'rsg.1', stage: '{a} is the only one left standing.', turns: [['dior', "{a}, you're single tonight. You're not going anywhere, but you are very vulnerable."], ['a', "I'll take it. For now."]] },
     { id: 'rsg.2', stage: 'Every couple is on the bench, and {a} is standing alone.', turns: [['a', "Well. That's embarrassing."], ['dior', "You're staying, {a}. But you'll have to graft."]] },

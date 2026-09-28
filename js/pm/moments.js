@@ -1089,7 +1089,11 @@ function voteNight(state, ctx) {
     // couples-only week can then keep to a couple a night; before this, a
     // villa of eight couples reached it and lost three in one night.
     const votesLeft = (ctx.votesAhead || 0) + 1;
-    if (!forced && lastVotes && can - target > votesLeft && can - 2 >= target && state.couples.length >= 2) {
+    // Never the first vote: it sends islanders home, not couples (UK 9-12).
+    // A 16-islander season's schedule is short enough that its first vote was
+    // one of its "last" — it sent two couples home in week one, and the
+    // semi-final, four couples in, had nobody left to send.
+    if (!forced && !ctx.firstVote && lastVotes && can - target > votesLeft && can - 2 >= target && state.couples.length >= 2) {
       const pv = publicVote(state, { rng: ctx.rng, bottom: 2, immune: ctx.immune || [] });
       const s = dumpingScene(state, ctx.rng, { atRisk: pv.bottom, dumped: pv.bottom.flat(), channel: 'public' });
       return { events: s.events, exits: s.exits, ballots: [], extra: { shares: pv.shares, bottom: pv.bottom, dumpFormat: 'public', double: true } };

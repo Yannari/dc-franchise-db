@@ -18,7 +18,7 @@
 // Forming is in proportion to how hard both have fallen and how evenly the
 // one in the middle is split; every stage after is a chance, not a schedule.
 import { addBond, getBond } from '../bonds.js';
-import { makeEvent, partnerOf } from './events.js';
+import { makeEvent, partnerOf, roomMates } from './events.js';
 import { attr, nudgeAttraction, compatible } from './chemistry.js';
 import { romance } from './feelings.js';
 import { feel, jealousOf, breakHeart } from './emotions.js';
@@ -116,7 +116,8 @@ export function triangles(state, rng, entry = null) {
     const t = { ...f, ep: state.ep, stage: 0, over: false, partnerAt: partnerOf(state, f.h) || null };
     state.triangles.push(t);
     const g = n => state.profiles[n]?.gender;
-    const friend = state.villa.filter(n => n !== t.h && n !== t.x && n !== t.y && g(n) === g(t.h))
+    // Somebody in the same villa: during Casa the friend was cast from the other one.
+    const friend = roomMates(state, t.h).filter(n => n !== t.x && n !== t.y && g(n) === g(t.h))
       .sort((p, q) => getBond(t.h, q) - getBond(t.h, p))[0];
     feel(state, t.h, 'stress', 0.8);
     if (friend) ev('triangle-torn', [t.h, friend], { pop: { [t.h]: { approval: 0, fame: 1.5 } } }, [], t);

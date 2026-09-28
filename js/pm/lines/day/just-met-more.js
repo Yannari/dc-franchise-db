@@ -60,7 +60,7 @@ export const JUST_MET_MORE = {
     { id: 'jm.pull.14', when: J, stage: '{a} waits until {b} is on {b.posAdj} own by the pool.', turns: [['a', "Is this seat taken?"], ['b', "It's a sunbed. There's loads of room."], ['a', "Then I'll take it."]] },
     { id: 'jm.pull.15', when: J, turns: [['a', "I feel like we haven't really spoken yet."], ['b', "We said hello."], ['a', "That's not speaking. That's hello."]] },
     { id: 'jm.pull.16', when: J, turns: [['a', "What's your type? Honestly."], ['b', "Why do you want to know?"], ['a', "Research."]] },
-    { id: 'jm.pull.17', when: J, turns: [['a', "You walked in and I thought, I need to talk to them."], ['b', "And now you are."], ['a', "And now I am. I've forgotten what I was going to say."]] },
+    { id: 'jm.pull.17', when: J, turns: [['a', "The second you walked in, I knew I wanted to talk to you."], ['b', "And now you are."], ['a', "And now I am. I've forgotten what I was going to say."]] },
     { id: 'jm.pull.18', when: J, turns: [['a', "Do you want to get a drink with me? Just us."], ['b', "It's a villa. It's always going to be nearly just us."], ['a', "Nearly just us, then."]] },
   ],
 

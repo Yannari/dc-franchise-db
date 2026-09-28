@@ -234,6 +234,10 @@ function weightFor(state, entry, ps, facts) {
   let w = 1 + Object.keys(entry.when || {}).length;          // the more it fits, the likelier
   if (!u) return w;
   if (u.pairs.includes(pairKey(ps))) return 0;
+  // Who somebody IS is theirs alone: two islanders never introduce themselves
+  // with the same line (season 33: Marcus and Ellie both "cry at every
+  // wedding"). A pool that runs dry still lends one (relaxedWeight).
+  if (/^intro[.-]/.test(entry.id)) return 0;
   // Twice in one episode is a repeat the viewer sees, whoever says it.
   const last = u.eps[u.eps.length - 1];
   if (last === state.ep) return 0;

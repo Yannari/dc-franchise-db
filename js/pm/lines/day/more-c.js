@@ -111,7 +111,7 @@ export const MORE_C = {
     { id: 'pl3.26', when: { rebuffed: true }, turns: [['a', "Can we chat later?"], ['b', "Maybe. I'll see how I feel."]], beat: '{b} spends the rest of the evening with someone else.' },
     { id: 'pl3.27', when: { rebuffed: true }, turns: [['a', "You could at least give me a chance."], ['b', "I did. At lunch. It didn't go well."]] },
     { id: 'pl3.28', when: { rebuffed: true }, turns: [['a', "Why do you keep avoiding me?"], ['b', "Because you keep coming over."]], beat: 'The chat is over before it starts.' },
-    { id: 'pl3.29', when: { rebuffed: true }, turns: [['a', "Sorry. I thought you were flirting with me earlier."], ['b', "I was being friendly."], ['a', "Right. Yeah. That makes sense."]], beat: '{a} goes very red.' },
+    { id: 'pl3.29', when: { rebuffed: true }, turns: [['a', "Sorry. I thought there was something there."], ['b', "I was being friendly."], ['a', "Right. Yeah. That makes sense."]], beat: '{a} goes very red.' },
     { id: 'pl3.30', when: { rebuffed: true }, turns: [['a', "I think I'm your type."], ['b', "You're really not."]], beat: 'Everyone in the garden hears it, and {a} knows they did.' },
     { id: 'pl3.31', when: { rebuffed: true }, turns: [['a', "Five minutes?"], ['b', "Two."], ['a', "Two, then."]], beat: "It's an awkward two minutes for both of them." },
     { id: 'pl3.32', when: { rebuffed: true }, turns: [['a', "What would you say if I told you I liked you?"], ['b', "I'd say thank you."], ['a', "That's it?"], ['b', "That's it."]] },

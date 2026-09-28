@@ -27,6 +27,11 @@ export const VIBES = ['funny', 'confident', 'emotionally-mature', 'fiery', 'ambi
   'family-oriented', 'protective', 'bubbly', 'chill', 'competitive', 'mysterious'];
 export const ICKS = ['nonchalant', 'cocky', 'loud', 'people-pleaser', 'attention-seeker',
   'chaser', 'no-manners'];
+// An ick that is the type they just said they want (season 33, Jess: "happy,
+// loud, fun", then "if you're the loudest one at the table, it's not going to
+// work"): a rolled ick never clashes with the rolled type.
+const CLASHES = { loud: ['bubbly', 'fiery'], nonchalant: ['chill', 'mysterious'] };
+const clashes = (ick, vibes) => (CLASHES[ick] || []).some(v => vibes.includes(v));
 export const INTERESTS = ['fitness', 'football', 'other-sport', 'dance', 'music', 'fashion',
   'beauty', 'travel', 'languages', 'family', 'animals', 'outdoors', 'partying', 'career',
   'education', 'performing', 'social-media', 'wellness', 'food', 'gaming', 'faith', 'pop-culture'];
@@ -148,7 +153,13 @@ export function resolveIslander(player, setup = {}, rng) {
       vibes: authoredVibes.length ? authoredVibes.slice(0, 2) : rolled.vibes,
     },
     looks: authoredOwnLooks.length ? authoredOwnLooks : rolled.looks,
-    icks: authoredIcks.length ? authoredIcks.slice(0, 2) : rolled.icks,
+    icks: authoredIcks.length ? authoredIcks.slice(0, 2)
+      : (() => {
+        // Filtered, never re-rolled: the draws behind this one stay where they were.
+        const vibes = authoredVibes.length ? authoredVibes.slice(0, 2) : rolled.vibes;
+        const ok = rolled.icks.filter(i => !clashes(i, vibes));
+        return ok.length ? ok : [ICKS.find(i => !clashes(i, vibes))];
+      })(),
     interests: authoredInterests.length >= 2 ? authoredInterests.slice(0, 4) : rolled.interests,
     bonusInterest: INTERESTS.includes(setup.bonusInterest) ? setup.bonusInterest : rolled.bonus,
     eyesOn: Array.isArray(setup.eyesOn) && setup.eyesOn.length ? [...setup.eyesOn] : null,

@@ -42,6 +42,8 @@ function weighted(rng, entries) {
 const S = (state, n) => state.profiles[n].stats;
 const PLAYERS = new Set(['villain', 'mastermind', 'schemer']);
 const LOYAL_KIND = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
+/** Left single by a bombshell since the last ceremony: grafting to stay (moments.js recoupleNight). */
+const vulnerable = (state, n) => (state.vulnerableSince?.[n] ?? -1) > (state.lastRecouplingEp ?? 0);
 /** How ready a coupled islander is to go chatting someone else up. */
 const graftUrge = (state, n) => (0.3 + 0.7 * (1 - S(state, n).loyalty / 10))
   * (PLAYERS.has(state.profiles[n].archetype) ? 1.5 : LOYAL_KIND.has(state.profiles[n].archetype) ? 0.5 : 1);
@@ -197,7 +199,7 @@ export const KINDS = {
       // seasons). Single, everybody chats freely.
       const a = weighted(rng, s.villa.filter(n => compatibleMates(s, n).length)
         .map(n => [n, S(s, n).boldness * (1 - 0.8 * closedness(s, n, partnerOf(s, n)))
-          * (partnerOf(s, n) ? graftUrge(s, n) : 1)]));
+          * (partnerOf(s, n) ? graftUrge(s, n) : vulnerable(s, n) ? 2 : 1)]));
       if (!a) return null;
       // Never somebody a turned down, or was turned down by, earlier today
       // (read, season 21: Priya said no to Jordan in front of everyone, "and

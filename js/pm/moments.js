@@ -74,11 +74,24 @@ function fireBuildUp(state, rng, { atRisk, channel, format, dumped }) {
   push('dump-text', other ? [reader, other] : [reader], { of: tonight, pop: { [reader]: { approval: 0, fame: 0.5 } } });
   // 2. Waiting to go down: the couple least sure of where they stand.
   const pairs = state.couples.filter(([a, b]) => villa.includes(a) && villa.includes(b));
-  const shaky = [...pairs].sort((x, y) => Math.min(romance(x[0], x[1]), romance(x[1], x[0])) - Math.min(romance(y[0], y[1]), romance(y[1], y[0])))[0];
+  // Not the same couple two vote nights running: they were the whole of it
+  // last time (user, of the build-ups: "super repetitive").
+  const lastPair = state._lastNervesPair;
+  const byShake = [...pairs].sort((x, y) => Math.min(romance(x[0], x[1]), romance(x[1], x[0])) - Math.min(romance(y[0], y[1]), romance(y[1], y[0])));
+  let shaky = byShake.find(c => [...c].sort().join('+') !== lastPair) || byShake[0];
   if (shaky) {
-    addBond(shaky[0], shaky[1], 0.2);
-    feel(state, shaky[0], 'stress', 0.3); feel(state, shaky[1], 'stress', 0.3);
-    push('dump-nerves', [...shaky], { pop: { [shaky[0]]: { approval: 0.1, fame: 0.6 } } });
+    // The keener one first: the scene is theirs. Why they are nervous, from
+    // where the two of them really are (narration only).
+    const [x, y] = romance(shaky[0], shaky[1]) >= romance(shaky[1], shaky[0]) ? shaky : [shaky[1], shaky[0]];
+    shaky = [x, y];
+    state._lastNervesPair = [x, y].sort().join('+');
+    const rx = romance(x, y), ry = romance(y, x);
+    const rowed = (state.history || []).some(e => e.kind === 'argument' && e.ep >= state.ep - 1 && e.players.includes(x) && e.players.includes(y))
+      || today(state).some(e => e.kind === 'argument' && e.players.includes(x) && e.players.includes(y));
+    const why = rowed ? 'rocky' : rx - ry >= 3 ? 'uneven' : Math.min(rx, ry) >= 6 ? 'solid' : 'unsure';
+    addBond(x, y, 0.2);
+    feel(state, x, 'stress', 0.3); feel(state, y, 'stress', 0.3);
+    push('dump-nerves', [x, y], { why, pop: { [x]: { approval: 0.1, fame: 0.6 } } });
   }
   // 3. The host, the day, and the rules of the night.
   push('dump-open', [], { of: tonight, pop: {} });
@@ -337,7 +350,15 @@ function recoupleBuildUp(state, { picker, stake, final }) {
     .sort((x, y) => getBond(worried, y) - getBond(worried, x))[0];
   if (worried && friend) {
     feel(state, worried, 'stress', 0.5);
-    push('recouple-nerves', [worried, friend], { taken: !!partnerOf(state, worried) });
+    // Why they are worried, from where they really stand (narration only):
+    // left single by a bombshell since the last ceremony, new and unattached,
+    // single, a partner with eyes for somebody else, or only unsure.
+    const pa = partnerOf(state, worried);
+    const eyes = pa && villa.some(n => n !== worried && n !== pa && (attr(state, pa, n) ?? 0) > (attr(state, pa, worried) ?? 0) + 1);
+    const why = !pa ? ((state.vulnerableSince?.[worried] ?? -1) > (state.lastRecouplingEp ?? 0) ? 'stolen'
+      : state.ep - (state.ledger?.firstEp?.[worried] ?? 0) <= 2 && state.profiles[worried]?.role !== 'starter' ? 'new' : 'single')
+      : eyes ? 'eyes-elsewhere' : romance(worried, pa) >= 6 && romance(pa, worried) >= 6 ? 'solid' : 'unsure';
+    push('recouple-nerves', [worried, friend], { taken: !!pa, why, nth: state.recouplings <= 2 ? 'first' : 'later' });
   }
   push('recouple-open', [], { of: `${picker}-${stake}` });
   return out;

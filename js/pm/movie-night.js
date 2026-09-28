@@ -86,11 +86,20 @@ function candidates(state) {
 export function movieNight(state, rng) {
   const cands = candidates(state);
   const bad = cands.filter(c => !c.good).sort((a, b) => b.sev - a.sev || (b.e.aired ? 0 : 1) - (a.e.aired ? 0 : 1));
-  const picked = [], subjects = new Set();
+  // One scene, one clip: when both of the people in it were coupled to
+  // somebody else, the second joins the first's clip and both partners
+  // watch it (season 33 showed Callum and Ellie's scene twice, once as
+  // "Behind Your Back" for Priya and again as "Crossing the Line" for Reece).
+  const picked = [], subjects = new Set(), byScene = new Map();
   for (const c of bad) {
-    if (picked.length >= MAX_CLIPS - 1) break;
+    const same = byScene.get(c.e.id);
+    if (same) {
+      if (!subjects.has(c.x) && !subjects.has(c.p)) { (same.also ||= []).push(c); subjects.add(c.x); }
+      continue;
+    }
+    if (picked.length >= MAX_CLIPS - 1) continue;
     if (subjects.has(c.x) || subjects.has(c.p)) continue;
-    picked.push(c); subjects.add(c.x);
+    picked.push(c); subjects.add(c.x); byScene.set(c.e.id, c);
   }
   const good = cands.find(c => c.good && !subjects.has(c.x));
   if (good) picked.push(good);
@@ -112,41 +121,45 @@ export function movieNight(state, rng) {
   ev('movie-seat', [seat, partnerOf(state, seat) || picked[0].p], { of: nervous.length ? 'guilty' : 'easy' });
 
   const usedTitles = new Set();
-  for (const c of picked) {
-    const { e, x, p } = c;
-    const title = titleFor(c, usedTitles);
+  for (const c0 of picked) {
+    const { e } = c0;
+    const title = titleFor(c0, usedTitles);
+    const watchers = [c0, ...(c0.also || [])];
     // The clip: the scene itself, in its own words.
-    const clip = footage(e, !!c.hut);
-    const shownE = ev('movie-clip', c.hut ? [x] : [...e.players], {
-      of: c.what, title, clipOf: e.id, clipEp: e.ep, clipDay: e.day ?? null, audience: [p, x],
-      pop: c.good ? { [x]: { approval: 2.5, fame: 2 } } : { [x]: { approval: -BETRAYAL.movieNight * Math.min(1, 0.5 + c.sev), fame: 2 } } },
-      [x, p]);
+    const clip = footage(e, !!c0.hut);
+    const shownE = ev('movie-clip', c0.hut ? [c0.x] : [...e.players], {
+      of: c0.what, title, clipOf: e.id, clipEp: e.ep, clipDay: e.day ?? null, audience: watchers.flatMap(w => [w.p, w.x]),
+      pop: Object.fromEntries(watchers.map(w => [w.x, w.good ? { approval: 2.5, fame: 2 } : { approval: -BETRAYAL.movieNight * Math.min(1, 0.5 + w.sev), fame: 2 }])) },
+      watchers.flatMap(w => [w.x, w.p]));
     shownE.script = { id: `clip:${e.id}`, stage: `Now showing: ${title}.`, lines: clip.lines, beat: null };
     if (!e.aired) airLater(state, e);
-    // What it does to the one watching.
-    let of;
-    if (c.good) {
-      addBond(p, x, 0.8); addRelationshipDimension(p, x, 'trust', 1.2); feel(state, p, 'security', 1);
-      of = 'relief';
-    } else {
-      revealTruth(state, p, x);
-      if (c.sec) c.sec.known = true;
-      for (const s of state.secrets) if (s.who === x && s.partner === p && s.said && !s.known && c.what === 'debrief') s.known = true;
-      jealousyHit(state, p, x, c.rival || x, (c.hut ? 3 : 5) * Math.max(0.5, c.sev), { confirmed: true });
-      addRelationshipDimension(p, x, 'trust', -1.5 * Math.max(0.5, c.sev));
-      addBond(p, x, -1.2 * Math.max(0.5, c.sev));
-      // Hurt or fury: the watcher's own temper, in proportion.
-      const temper = state.profiles[p]?.stats?.temperament ?? 5;
-      of = rng() < (10 - temper) / 12 ? 'fury' : 'hurt';
+    for (const c of watchers) {
+      const { x, p } = c;
+      // What it does to the one watching.
+      let of;
+      if (c.good) {
+        addBond(p, x, 0.8); addRelationshipDimension(p, x, 'trust', 1.2); feel(state, p, 'security', 1);
+        of = 'relief';
+      } else {
+        revealTruth(state, p, x);
+        if (c.sec) c.sec.known = true;
+        for (const s of state.secrets) if (s.who === x && s.partner === p && s.said && !s.known && c.what === 'debrief') s.known = true;
+        jealousyHit(state, p, x, c.rival || x, (c.hut ? 3 : 5) * Math.max(0.5, c.sev), { confirmed: true });
+        addRelationshipDimension(p, x, 'trust', -1.5 * Math.max(0.5, c.sev));
+        addBond(p, x, -1.2 * Math.max(0.5, c.sev));
+        // Hurt or fury: the watcher's own temper, in proportion.
+        const temper = state.profiles[p]?.stats?.temperament ?? 5;
+        of = rng() < (10 - temper) / 12 ? 'fury' : 'hurt';
+      }
+      const gasp = state.villa.find(n => n !== p && n !== x && getBond(n, p) > 0);
+      ev('movie-react', gasp && !c.good ? [p, x, gasp] : [p, x], { of,
+        pop: { [p]: { approval: c.good ? 0.5 : 1.5, fame: 1.5 } } }, c.good ? [] : [p]);
     }
-    const gasp = state.villa.find(n => n !== p && n !== x && getBond(n, p) > 0);
-    ev('movie-react', gasp && !c.good ? [p, x, gasp] : [p, x], { of,
-      pop: { [p]: { approval: c.good ? 0.5 : 1.5, fame: 1.5 } } }, c.good ? [] : [p]);
   }
 
   // After the screen goes dark: the rows (user: "big fights … let it stem from
   // jealousy, cheating").
-  for (const c of picked.filter(k => !k.good)) {
+  for (const c of picked.filter(k => !k.good).flatMap(k => [k, ...(k.also || [])])) {
     if (partnerOf(state, c.x) !== c.p) continue;
     events.push(...confrontation(state, rng, { p: c.p, x: c.x, sev: c.sev, rowKind: 'movie-row', splitKind: 'movie-split', phase: 'cinema' }));
   }

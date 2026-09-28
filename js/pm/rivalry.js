@@ -129,7 +129,9 @@ const busyIn = state => new Set([
 ]);
 const wants = (state, n, h) => Math.max(romance(n, h), attr(state, n, h) ?? 0);
 /** The friend somebody would talk to: their closest in the villa, not one of the story. */
-const friendOf = (state, n, not) => roomMates(state, n).filter(f => !not.includes(f))
+// Never their own partner: season 33's Callum confided his crush on Tasha to
+// Priya, the girl he was coupled with.
+const friendOf = (state, n, not) => roomMates(state, n).filter(f => !not.includes(f) && f !== partnerOf(state, n))
   .sort((p, q) => getBond(n, q) - getBond(n, p))[0] || null;
 
 // ── forming ───────────────────────────────────────────────────────────

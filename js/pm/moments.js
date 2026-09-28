@@ -433,10 +433,15 @@ function recoupleNight(state, rng, { dumpSingles, pace = 1.5, votesAhead = 0, al
   const firsts = r.picks.filter(pk => pk.first).map(pk => pk.picker);
   if (firsts.length) open.push(makeEvent(state, rng, { phase: 'firepit', kind: 'recouple-first', players: firsts.slice(0, 2), aired: true,
     extra: { pop: {} } }));
+  // A "steal" of the one you were coupled with before tonight is taking them
+  // back, not mugging anybody off (season 33: Josh picked Mia first, and
+  // Jordan, her partner, "chose someone already coupled up"). state.couples
+  // is still the villa before the ceremony here.
+  const reclaim = pk => !!pk.stole && partnerOf(state, pk.picker) === pk.picked;
   const events = [...open, ...r.picks.map(pk => makeEvent(state, rng, { phase: 'firepit', kind: 'recouple-pick',
     players: [pk.picker, pk.picked, ...(pk.stole ? [pk.stole] : [])], aired: true,
     major: pk.stole ? [pk.picker, pk.stole] : [],
-    extra: { stole: pk.stole, reason: pk.reason, pop: { [pk.picker]: { approval: pk.stole ? -BETRAYAL.steal : 0.2, fame: 1 },
+    extra: { stole: pk.stole, reclaim: reclaim(pk), reason: pk.reason, pop: { [pk.picker]: { approval: pk.stole && !reclaim(pk) ? -BETRAYAL.steal : 0.2, fame: 1 },
       ...(pk.stole ? { [pk.stole]: { approval: 1.5, fame: 2 } } : {}) } } }))];
   for (const pk of r.picks) if (pk.stole) breakHeart(state, pk.stole, pk.picked, 5 * romance(pk.stole, pk.picked) / 10);
   state.couples = r.couples;

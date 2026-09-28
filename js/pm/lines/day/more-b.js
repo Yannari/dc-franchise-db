@@ -255,7 +255,7 @@ export const MORE_MOMENTS = {
   date: [
     { id: 'dt2.01', stage: 'The date is on a boat.', turns: [['a', "So why did you say yes to this date?"], ['b', "Honestly? Curiosity."], ['a', "I can work with curiosity."]] },
     { id: 'dt2.02', stage: 'A picnic on a hill above the villa.', turns: [['a', "Tell me about the villa. Who should I watch out for?"], ['b', "Me, probably."]] },
-    { id: 'dt2.03', stage: 'The date is at a rooftop bar.', turns: [['a', "I've been watching you on the show for weeks."], ['b', "That's not creepy at all."], ['a', "It's a little bit creepy."]] },
+    { id: 'dt2.03', stage: 'The date is at a rooftop bar.', turns: [['a', "I've been watching you on the show every night since it started."], ['b', "That's not creepy at all."], ['a', "It's a little bit creepy."]] },
     { id: 'dt2.04', stage: 'A cooking class, and neither of them can cook.', turns: [['b', "Is it meant to be on fire?"], ['a', "Probably not."]], beat: 'They laugh the whole way through.' },
     { id: 'dt2.05', when: { bTaken: true }, stage: 'On the date, at a beach bar.', turns: [['a', "Are you open to meeting someone new?"], ['b', "I'm in a couple."], ['a', "That's not what I asked."]] },
     { id: 'dt2.06', stage: 'A quiet table in a little restaurant by the harbour.', turns: [['a', "I picked you because you looked like you'd be honest with me."], ['b', "I'll try. Ask me anything."]] },

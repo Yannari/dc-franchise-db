@@ -8,7 +8,7 @@ const C3 = extra => ({ cast: 3, ...extra });
 
 export const DEBRIEF = [
   // ── robbed: a's partner was stolen by c ──
-  { id: 'dn.rb.01', when: C3({ of: 'robbed' }), stage: '{Where}, {b} sits down next to {a} and waits.', turns: [
+  { id: 'dn.rb.01', when: C3({ of: 'robbed', since: 'before' }), stage: '{Where}, {b} sits down next to {a} and waits.', turns: [
     ['b', "Talk to me."], ['a', "I didn't see it coming. I really didn't."], ['b', "Nobody did."],
     ['a', "{c} was nice to my face all week."], ['b', "I know. That's what I can't get over."],
     ['a', "I don't want to cry in front of everyone."], ['b', "Then don't. Just sit here with me for a bit."]],
@@ -22,10 +22,18 @@ export const DEBRIEF = [
     ['a', "Nothing. I'm not going to give {c} the satisfaction."], ['b', "Good."],
     ['a', "I'm trying to act like I'm fine. I'm not fine."], ['b', "You don't have to act like anything in here with me."]],
     beat: "{b} doesn't let go of {a.posAdj} hand for the rest of the night." },
-  { id: 'dn.rb.04', when: C3({ of: 'robbed' }), stage: '{Where}, {a} is staring at the floor.', turns: [
+  { id: 'dn.rb.04', when: C3({ of: 'robbed', since: 'before' }), stage: '{Where}, {a} is staring at the floor.', turns: [
     ['b', "You don't have to say anything."], ['a', "I thought we were solid."], ['b', "So did everyone."],
     ['a', "And then {c} stands up and says a name, and it's over."],
     ['b', "Tonight is over. You're still here."], ['a', "Can we just sit here for a bit?"], ['b', "As long as you want."]] },
+  // Robbed of somebody they had only just picked, a minute before (debrief.js `since`).
+  { id: 'dn.rb.t1', when: C3({ of: 'robbed', since: 'tonight' }), stage: '{Where}, {a} is sitting on the edge of a sunbed.', turns: [
+    ['a', "I was coupled up for about two minutes."], ['b', "I saw."], ['a', "And then {c} stood up."],
+    ['b', "I know. I'm sorry."], ['a', "I should have seen it coming."],
+    ['b', "You still had to try."], ['a', "Yeah. I did."]] },
+  { id: 'dn.rb.t2', when: C3({ of: 'robbed', since: 'tonight' }), turns: [
+    ['a', "I stood up and said a name, and it wasn't enough."], ['b', "It was brave."], ['a', "It was pointless."],
+    ['b', "It wasn't. Everyone saw you mean it."], ['a', "{c} didn't seem to care."], ['b', "{c} was never going to let go without a fight."]] },
   // ── stole: a did it, from c ──
   { id: 'dn.st.01', when: C3({ of: 'stole', taken: true }), stage: '{Where}, and {b} has been waiting to ask.', turns: [
     ['b', "So. Tonight."], ['a', "I know how it looked."], ['b', "It looked like you took {pa} from {c}."],
@@ -199,7 +207,7 @@ export const DEBRIEF = [
     ['a', "Can I tell you something, and you won't tell {pa}?"], ['b', "Of course."],
     ['a', "I'm not feeling it. I haven't been for days."], ['b', "Have you told {pa}?"],
     ['a', "How do you tell someone that?"], ['b', "Kindly. And soon."]] },
-  { id: 'dn.mh.03', when: { of: 'meh', taken: true }, turns: [
+  { id: 'dn.mh.03', when: { known: true, of: 'meh', taken: true }, turns: [
     ['b', "Out of ten. You and {pa}."], ['a', "Honestly? A five."], ['b', "A five?"],
     ['a', "It was a six last week."], ['b', "So it's getting worse."], ['a', "I know."]] },
 ];

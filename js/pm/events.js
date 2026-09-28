@@ -205,7 +205,10 @@ export const KINDS = {
       // (read, season 21: Priya said no to Jordan in front of everyone, "and
       // I'll be telling everyone you asked", then pulled him herself that
       // afternoon with "I know you're with someone").
-      const noToday = n => today(s).some(e => e.kind === 'loyalty' && e.players.includes(a) && e.players.includes(n));
+      // A pull turned down counts the same (season 33: Marcus said "I'd rather
+      // not" to Tasha, and she asked him again that evening).
+      const noToday = n => today(s).some(e => (e.kind === 'loyalty' || (e.kind === 'pull' && e.extra?.rebuffed))
+        && e.players.includes(a) && e.players.includes(n));
       const b = weighted(rng, compatibleMates(s, a).filter(n => n !== partnerOf(s, a) && !noToday(n))
         .map(n => [n, attr(s, a, n)]));
       if (!b) return null;

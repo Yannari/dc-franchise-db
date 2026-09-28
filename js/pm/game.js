@@ -63,7 +63,8 @@ function newGame(state, rng) {
     const t = roomMates(state, g).filter(n => compatible(state, g, n) && romance(g, n) < 5)
       .sort((p, q) => liked(state, q) - liked(state, p))[0];
     if (!t) continue;
-    const f = roomMates(state, g).filter(n => n !== t).sort((p, q) => getBond(g, q) - getBond(g, p))[0];
+    // The plan is told to a friend, never to a partner (rivalry.js friendOf).
+    const f = roomMates(state, g).filter(n => n !== t && n !== partnerOf(state, g)).sort((p, q) => getBond(g, q) - getBond(g, p))[0];
     return { g, t, f, ep: state.ep, stage: 0, suspicion: 0, over: false, knows: f ? [f] : [] };
   }
   return null;

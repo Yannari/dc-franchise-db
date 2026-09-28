@@ -45,13 +45,19 @@ export function nightDebrief(state, rng, entry, pre, m) {
   const here = n => state.villa.includes(n);
   const events = m.events || [];
   const cands = [];
-  const add = (prio, of, a, c = null, chose = null) => { if (a && here(a)) cands.push({ prio, of, a, c, chose }); };
+  const add = (prio, of, a, c = null, chose = null, more = {}) => { if (a && here(a)) cands.push({ prio, of, a, c, chose, more }); };
   const partnerBefore = n => pre.couples.find(p => p.includes(n))?.find(x => x !== n) || null;
 
-  // Steals: a recoupling pick, or a bombshell's.
+  // Steals: a recoupling pick, or a bombshell's. `since`: the one robbed had
+  // been with them before tonight, or only since their own pick a minute
+  // earlier (season 33: Josh picked Mia, Jordan took her back, and Josh's
+  // debrief said "I thought we were solid").
   for (const e of events) {
-    if (e.kind === 'recouple-pick' && e.extra?.stole) { add(1, 'robbed', e.players[2], e.players[0]); add(2, 'stole', e.players[0], e.players[2]); }
-    if (e.kind === 'steal') { add(1, 'robbed', e.players[2], e.players[0]); add(2, 'stole', e.players[0], e.players[2]); }
+    if (e.kind === 'recouple-pick' && e.extra?.stole) {
+      const since = partnerBefore(e.players[2]) === e.players[1] ? 'before' : 'tonight';
+      add(1, 'robbed', e.players[2], e.players[0], null, { since }); add(2, 'stole', e.players[0], e.players[2]);
+    }
+    if (e.kind === 'steal') { add(1, 'robbed', e.players[2], e.players[0], null, { since: 'before' }); add(2, 'stole', e.players[0], e.players[2]); }
     // Casa Amor: who came back with somebody, and who was left.
     if (e.kind === 'casa-return' && e.extra?.choice === 'twist') {
       const left = partnerBefore(e.players[0]);
@@ -108,8 +114,13 @@ export function nightDebrief(state, rng, entry, pre, m) {
   const out = [];
   for (const c of cands) {
     if (spoke.has(c.a) || (perSide[g(c.a)] || 0) >= MAX_PER_SIDE) continue;
-    const friends = state.villa.filter(n => n !== c.a && n !== c.c && g(n) === g(c.a) && partnerOf(state, c.a) !== n)
+    // Never somebody whose own partner left tonight while anyone else can:
+    // they are the one who needs the arm round them (season 33: Theo, his
+    // partner just dumped, comforting Jordan about a friend).
+    const bereft = n => { const p = partnerBefore(n); return !!p && !here(p); };
+    const all = state.villa.filter(n => n !== c.a && n !== c.c && g(n) === g(c.a) && partnerOf(state, c.a) !== n)
       .sort((x, y) => getBond(c.a, y) - getBond(c.a, x));
+    const friends = all.some(n => !bereft(n)) ? all.filter(n => !bereft(n)) : all;
     const b = friends.find(n => !heard.has(n)) || friends[0];
     if (!b) continue;
     spoke.add(c.a); heard.add(b); perSide[g(c.a)] = (perSide[g(c.a)] || 0) + 1;
@@ -118,10 +129,10 @@ export function nightDebrief(state, rng, entry, pre, m) {
   // The side that has most to say goes first; the boys' terrace and the girls'
   // dressing room each keep their scenes together.
   out.sort((x, y) => (g(x.a) === g(y.a) ? x.prio - y.prio : g(x.a) === 'm' ? -1 : 1));
-  return out.map(({ of, a, b, c, chose }) => scene(state, rng, of, a, b, c, chose));
+  return out.map(({ of, a, b, c, chose, more }) => scene(state, rng, of, a, b, c, chose, more));
 }
 
-function scene(state, rng, of, a, b, c, chose = null) {
+function scene(state, rng, of, a, b, c, chose = null, more = {}) {
   const pa = partnerOf(state, a);
   const where = state.profiles[a]?.gender === 'm' ? 'terrace' : 'dressing-room';
   const pop = { [a]: { approval: 0.2, fame: 1 }, [b]: { approval: 0.1, fame: 0.5 } };
@@ -158,5 +169,5 @@ function scene(state, rng, of, a, b, c, chose = null) {
   }
   const players = c && ['robbed', 'stole', 'twisted-on', 'twisted', 'miss', 'blame', 'eyeing', 'bomb-fancy', 'bomb-threat'].includes(of) ? [a, b, c] : [a, b];
   return makeEvent(state, rng, { phase: 'debrief', kind: 'debrief', players, aired: true, major,
-    extra: { of, where, pop, ...(chose == null ? {} : { chose }) } });
+    extra: { of, where, pop, ...more, ...(chose == null ? {} : { chose }) } });
 }

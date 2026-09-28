@@ -81,7 +81,7 @@ for (const [k, v] of Object.entries(STEAMY_NARRATOR)) NARRATOR[k] = [...(NARRATO
 export { HUT, NARRATOR };
 
 export const SPEAKERS = ['a', 'b', 'c', 'dior', 'narrator'];
-export const FACT_KEYS = ['known', 'another', 'ago', 'behind', 'friction', 'chose', 'rung', 'thinks', 'persona', 'intent', 'attachment', 'mood', 'bombshell',
+export const FACT_KEYS = ['known', 'weeks', 'since', 'reclaim', 'another', 'ago', 'behind', 'friction', 'chose', 'rung', 'thinks', 'persona', 'intent', 'attachment', 'mood', 'bombshell',
   'early', 'coupled', 'gap', 'knows', 'faking', 'bPersona', 'bMood', 'bRung', 'stance', 'family',
   'choice', 'cause', 'channel', 'grudge', 'stole', 'bTaken', 'archetype', 'taken', 'loyal', 'late', 'gender', 'bGender', 'myRung', 'phase', 'kind', 'role', 'withB', 'newArrival', 'dialect',
   'comfortedYesterday', 'rowedBefore', 'rowedToday', 'feels', 'of', 'knowsB', 'verdict', 'noticed',
@@ -163,7 +163,9 @@ export function factsFor(state, ev) {
   // How much a feels for b, in words a line can lean on (narration only):
   // "not yet" is somebody who cares; a real no is somebody who doesn't.
   if (b) { const r = romance(a, b); f.feels = r >= 6 ? 'strong' : r >= 3 ? 'some' : 'little'; } else f.feels = null;
-  for (const k of ['choice', 'cause', 'channel', 'grudge', 'of', 'noticed', 'reason', 'guessed', 'theirs', 'going', 'nth', 'exes', 'what', 'heat', 'game', 'why', 'another', 'ago', 'behind', 'friction', 'chose']) if (ev.extra?.[k] != null) f[k] = ev.extra[k];
+  for (const k of ['choice', 'cause', 'channel', 'grudge', 'of', 'noticed', 'reason', 'guessed', 'theirs', 'going', 'nth', 'exes', 'what', 'heat', 'game', 'why', 'another', 'ago', 'behind', 'friction', 'chose', 'since']) if (ev.extra?.[k] != null) f[k] = ev.extra[k];
+  // A recoupling "steal" of the chooser's own partner from before tonight.
+  f.reclaim = !!ev.extra?.reclaim;
   // A steal at the recoupling: {c} is the one who loses {b}.
   f.stoleFrom = !!ev.extra?.stole;
   // Night one's ranking: the pair at the top, or anybody below it.
@@ -178,6 +180,9 @@ export function factsFor(state, ev) {
   // coupled that night, "hasn't been feeling it for days").
   const inFor = n => n == null || state.ep - (state.ledger?.firstEp?.[n] ?? state.ep) >= 2;
   f.known = inFor(a) && inFor(b) && inFor(partnerOf(state, a));
+  // About two weeks in (six episodes): only then is "the best few weeks of my
+  // life" true (season 33: Jess said it on day 8).
+  f.weeks = state.ep - (state.ledger?.firstEp?.[a] ?? state.ep) >= 6;
   f.rebuffed = !!ev.extra?.rebuffed;   // a pull b turned down (events.js decides)
   f.kissed = !!ev.extra?.kissed;       // a pull (or a Casa bed) that went further
   f.promised = !!ev.extra?.promised;   // a pull that ended in plans for the outside

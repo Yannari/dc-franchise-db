@@ -43,10 +43,14 @@ export const NARRATOR = {
     { id: 'nar.kiss.2', when: { phase: 'evening' }, turns: [['narrator', "The lights are going off, and {a} and {b} are making the most of the last few minutes."]] },
   ],
   pull: [
-    { id: 'nar.pull.x1', turns: [['narrator', "{a} has taken {b} for a chat, and everyone else has gone quiet so they can listen."]] },
-    { id: 'nar.pull.x2', turns: [['narrator', "And off {a} goes, to find {b}. The rest of the villa watches them go."]] },
+    // A pull the other one turned down is not a chat they went off for
+    // (season 33: "Tasha has taken Marcus for a chat" after Marcus said no).
+    { id: 'nar.pull.x1', when: { rebuffed: false }, turns: [['narrator', "{a} has taken {b} for a chat, and everyone else has gone quiet so they can listen."]] },
+    { id: 'nar.pull.x2', when: { rebuffed: false }, turns: [['narrator', "And off {a} goes, with {b}. The rest of the villa watches them go."]] },
     { id: 'nar.pull.1', turns: [['narrator', "{a} has asked {b} for a chat. In this villa, a chat usually means something."]] },
-    { id: 'nar.pull.2', when: { taken: true }, turns: [['narrator', "{a} is coupled up, and has just pulled someone else for a chat. {a.PosAdj} partner has noticed."]] },
+    // Whether the partner saw is the engine's (a secret, or known): the voiceover never says.
+    { id: 'nar.pull.2', when: { taken: true }, turns: [['narrator', "{a} is coupled up, and has just asked someone else for a chat."]] },
+    { id: 'nar.pull.r1', when: { rebuffed: true }, turns: [['narrator', "{a} asked. {b} said no. And half the villa saw it."]] },
     { id: 'nar.pull.3', when: { bTaken: true }, turns: [['narrator', "{b} is spoken for. {a} knows that. {a} has pulled {b.obj} for a chat anyway."]] },
     { id: 'nar.pull.4', when: { bombshell: true, early: true }, turns: [['narrator', "{a} has been here less than a day, and already knows who {a} wants."]] },
   ],

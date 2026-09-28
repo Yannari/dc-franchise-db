@@ -247,8 +247,11 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
     // …nor a villa day after the final recoupling: the couples-only week sends
     // one couple a night, and a walk there cut the final to three.
     const afterFinalRecoupling = schedule.some(e => e.finalRecoupling && e.ep < entry.ep);
+    // …nor while Casa Amor has the villa split: the one it is about is in the
+    // other villa, and so is half of who they would say goodbye to (season
+    // 33: Nadia confided in Callum across the split and he walked her out).
     if (entry.moment !== 'reunion' && entry.moment !== 'final' && !entry.coupled && !entry.finalRecoupling
-      && entry.slot !== 'vote-post' && !afterFinalRecoupling) {
+      && entry.slot !== 'vote-post' && !afterFinalRecoupling && !state.split) {
       const walker = maybeWalk(state, rng, entry);
       if (walker) {
         const before = state.couples.map(c => [...c]);

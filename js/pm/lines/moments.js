@@ -1993,11 +1993,11 @@ export const MOMENTS = {
   reveal: [
     // What the clip was, then the clip: {a} did it, {b} is who with, {c}
     // (cast 3) who {a} was coupled with at the time. {exchange} is the two lines.
-    { id: 'rv.pull1', when: { hasQuote: true, what: 'pull', cast: 3 }, stage: 'The clip: {a} pulling {b} aside, while {a} was coupled up with {c}. {exchange}',
+    { id: 'rv.pull1', when: { hasQuote: true, what: 'pull', cast: 3, of: 'scandal' }, stage: 'The clip: {a} pulling {b} aside, while {a} was coupled up with {c}. {exchange}',
       turns: [['dior', "{c}, did you know about this?"], ['c', "I do now."]], beat: 'The studio gasps.' },
     { id: 'rv.pull2', when: { hasQuote: true, what: 'pull', cast: 3 }, stage: '{a} and {b}, deep in conversation, while {c} was somewhere else. {exchange}',
       turns: [['dior', "{a}. Would you like to explain?"], ['a', "It was just a chat."], ['c', "It didn't look like just a chat."]], beat: 'The audience goes "ooh".' },
-    { id: 'rv.pull3', when: { hasQuote: true, what: 'pull', cast: 3 }, stage: 'The clip: {a} and {b}, talking quietly, away from everyone else. {exchange}',
+    { id: 'rv.pull3', when: { hasQuote: true, what: 'pull', cast: 3, of: 'scandal' }, stage: 'The clip: {a} and {b}, talking quietly, away from everyone else. {exchange}',
       turns: [['c', "Where was I when this happened?"], ['dior', "Somewhere else in the villa, {c}."]], beat: 'The studio laughs, and then gasps.' },
     { id: 'rv.pull4', when: { hasQuote: true, what: 'pull', cast: 3 }, stage: "A chat that didn't make it to air: {a} and {b}, while {c} had no idea. {exchange}",
       turns: [['dior', "{a}, you went very quiet."], ['a', "I don't know what to say."], ['c', "Try the truth."]], beat: 'The audience goes "ooh".' },

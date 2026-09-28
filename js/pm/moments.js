@@ -1389,7 +1389,11 @@ Object.assign(MOMENTS, {
       // a partner run down is a scandal; a row, an ick or a single islander's
       // chat is not (season 57's studio gasped at "Can I ask you something?").
       const sec = state.secrets.filter(s => s.eventId === e.id).sort((x, y) => (y.severity || 0) - (x.severity || 0))[0];
-      const scandal = !!sec || e.kind === 'bed-share' || e.kind === 'vent';
+      // …and a secret is a scandal when it went somewhere: a kiss, a bed, a
+      // promise, or a pull that ran hot (season 33's studio gasped at "Who in
+      // here is the funniest? — Probably you", a light pull's whole secret).
+      const scandal = (!!sec && (['kiss', 'bed', 'promise'].includes(sec.kind) || (sec.severity || 0) >= 0.6))
+        || e.kind === 'bed-share' || e.kind === 'vent';
       // What the clip WAS, said before it plays (season 57's reunion quoted
       // "None. I'll get over it." and nobody could tell what it was about):
       // who did it, who with, and who they were coupled with at the time.

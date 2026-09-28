@@ -192,6 +192,13 @@ export const HUT = {
     { id: 'hut.dump.l3', when: { family: 'dumping', leaving: true }, turns: [['a', "I wasn't ready. I don't think you ever are."]] },
     { id: 'hut.dump.h3', when: { kind: 'recouple-pick', role: 0 }, turns: [['a', "I stood up there and said it out loud. Whatever happens now, I said it."]] },
     { id: 'hut.dump.h4', when: { kind: 'recouple-pick', role: 1 }, turns: [['a', "I didn't know until my name came out. I was holding my breath the whole speech."]] },
+    // A recoupling has six or more picks: one or two lines a side were heard
+    // twice in one ceremony (season 33's final recoupling).
+    { id: 'hut.dump.h5', when: { kind: 'recouple-pick', role: 0 }, turns: [['a', "I knew who I was picking before I sat down. Saying it out loud was still terrifying."]] },
+    { id: 'hut.dump.h6', when: { kind: 'recouple-pick', role: 0 }, turns: [['a', "My legs were shaking the whole speech. I hope it looked better than it felt."]] },
+    { id: 'hut.dump.h7', when: { kind: 'recouple-pick', role: 0 }, turns: [['a', "I picked who I wanted. Whatever happens now, I can live with that."]] },
+    { id: 'hut.dump.h8', when: { kind: 'recouple-pick', role: 1 }, turns: [['a', "When my name came out, I nearly cried. Nearly."]] },
+    { id: 'hut.dump.h9', when: { kind: 'recouple-pick', role: 1 }, turns: [['a', "Being picked feels amazing for about a second. Then you look at who's still sitting down."]] },
     { id: 'hut.casa.h1', when: { kind: 'photos', role: 0 }, turns: [['a', "Casa Amor is where couples go to die. I just didn't think it would be mine."]] },
     { id: 'hut.casa.h2', when: { kind: 'casa-return', role: 0, choice: 'stick', of: 'returned' }, turns: [['a', "I walked back in on my own. Whatever's waiting for me, I can look it in the eye."]] },
     { id: 'hut.casa.h3', when: { kind: 'photos', role: 0 }, turns: [['a', "You can say you trust someone all you want. Then there's a photo, and it's in your hand."]] },
@@ -322,6 +329,11 @@ export const HUT = {
     { id: 'hut.jealous.t1', when: { kind: ['argument', 'jealous-confront', 'jealous-sulk'] }, turns: [['a', "I'm going to act like I'm upset about this. And I am. Just not for the reason they think."]] },
     { id: 'hut.dump.t1', when: { kind: ['dump-verdict', 'dump-verdict-couple', 'dump-verdict-singles', 'dump-reaction', 'dump-goodbye', 'dump-fallout'], leaving: false }, turns: [['a', "I stood there looking sad. I was a bit sad. I was mostly relieved it wasn't me."]] },
     { id: 'hut.dump.t2', when: { kind: 'recouple-pick', role: 0 }, turns: [['a', "Did I pick with my heart or my head? I picked with the bit that wants to stay in the villa."]] },
+    { id: 'hut.dump.t3', when: { kind: 'recouple-pick', role: 0 }, turns: [['a', "I said all the right things up there. I'm just not sure I meant all of them."]] },
+    { id: 'hut.dump.t4', when: { kind: 'recouple-pick', role: 0 }, turns: [['a', "I picked the safe option. Nobody needs to know that."]] },
+    { id: 'hut.dump.t5', when: { kind: 'recouple-pick', role: 0, withB: true }, turns: [['a', "I picked {b} with a straight face. After what I've done, that wasn't easy."]] },
+    { id: 'hut.dump.t6', when: { kind: 'recouple-pick', role: 1 }, turns: [['a', "I got picked, and I smiled. I'm not saying what I was actually thinking."]] },
+    { id: 'hut.dump.t7', when: { kind: 'recouple-pick', role: 1 }, turns: [['a', "Being picked should feel better than this. It would, if I had nothing to hide."]] },
     { id: 'hut.casa.t1', when: { kind: 'casa-return', role: 0, choice: 'stick', of: 'returned' }, turns: [['a', "What happens at Casa stays at Casa. That's what everyone says, isn't it?"]] },
   ],
 };

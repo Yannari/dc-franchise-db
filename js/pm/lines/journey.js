@@ -250,8 +250,8 @@ export const JOURNEY_SHAPES = {
   ],
   'journey-end': [
     { id: 'je.cm1', when: { of: 'casa-made' }, turns: [['b', "Casa was meant to break couples up."], ['a', "It made one."]] },
-    { id: 'je.cm2', when: { of: 'casa-made' }, stage: 'The last photo is from the night they walked back into the villa together.', turns: [['a', "Everyone was staring."], ['b', "Let them stare."]] },
-    { id: 'je.cm3', when: { of: 'casa-made' }, turns: [['a', "I nearly didn't come back with you."], ['b', "I know. I'm glad you did."]] },
+    { id: 'je.cm2', when: { of: 'casa-made', came: 'together' }, stage: 'The last photo is from the night they walked back into the villa together.', turns: [['a', "Everyone was staring."], ['b', "Let them stare."]] },
+    { id: 'je.cm3', when: { of: 'casa-made', came: 'together' }, turns: [['a', "I nearly didn't come back with you."], ['b', "I know. I'm glad you did."]] },
     { id: 'je.sv1', when: { of: 'survivors' }, turns: [['a', "They kept putting us up there, and we kept coming back down together."], ['b', "Every time."]] },
     { id: 'je.sv2', when: { of: 'survivors' }, stage: 'The film ends on them at the fire pit, still holding hands.', turns: [['b', "I don't think I'll ever be able to sit at a fire pit again."], ['a', "We'll get one for the garden."]] },
     { id: 'je.sv3', when: { of: 'survivors' }, turns: [['a', "Nobody thought we'd make it to the final."], ['b', "We did."]] },
@@ -264,7 +264,8 @@ export const JOURNEY_SHAPES = {
   ],
   declaration: [
     { id: 'dec.cm1', when: { of: 'casa-made' }, stage: '{a} stands up and turns to {b}.', turns: [['a', "Nobody gave us a chance. A Casa couple, they said. Give it a week. And here we are, in the final. I'm not going anywhere."]] },
-    { id: 'dec.cm2', when: { of: 'casa-made' }, turns: [['a', "I walked into a villa full of strangers, and you were the one that made it feel like home."]], beat: '{b} squeezes {a.posAdj} hand.' },
+    // Only the one who walked in at Casa walked into a villa of strangers (season 33: Priya, there since day one, said it to Reece).
+    { id: 'dec.cm2', when: { of: 'casa-made', bombshell: true }, turns: [['a', "I walked into a villa full of strangers, and you were the one that made it feel like home."]], beat: '{b} squeezes {a.posAdj} hand.' },
     { id: 'dec.sv1', when: { of: 'survivors' }, stage: '{a} stands up at the fire pit, where they have stood so many times.', turns: [['a', "{b}, every week they put us up there, and every week I'd have chosen you all over again. I'm not scared of this fire pit any more. I've got you."]] },
     { id: 'dec.sv2', when: { of: 'survivors' }, stage: '{a} takes {b}\'s hands.', turns: [['a', "We've been at risk more times than anyone. And every time, the only thing I was scared of was losing you."]], beat: '{b} is already crying.' },
     { id: 'dec.hd1', when: { of: 'held' }, stage: '{a} turns to {b}.', turns: [['a', "When you went to Casa, everyone told me to be ready for the worst. I sat on that bench, and you walked back in alone. I'll never forget that."]] },

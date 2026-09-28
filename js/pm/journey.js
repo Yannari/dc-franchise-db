@@ -104,7 +104,12 @@ export function storyOf(state, a, b) {
   const friendly = seen.filter(e => FRIENDLY.has(e.kind) && e.players.slice(0, 2).includes(a) && e.players.slice(0, 2).includes(b) && before(e));
   if (friendly.length >= 2) add('friends', friendly[0]);
   // One of them wanted the other first, and wasn't wanted back — yet.
-  add('crush', seen.find(e => (e.kind === 'crush-move' || e.kind === 'crush-plea' || e.kind === 'crush-confide') && both(e, a, b)));
+  // A confide is [the one with the crush, the friend, the crush]: both names
+  // in it is not enough — season 33's film gave Mia and Liam the scene where
+  // Mia was the friend, told about somebody else's crush on Liam.
+  const pairIs = (x, y) => (x === a && y === b) || (x === b && y === a);
+  add('crush', seen.find(e => ((e.kind === 'crush-move' || e.kind === 'crush-plea') && both(e, a, b))
+    || (e.kind === 'crush-confide' && pairIs(e.players[0], e.players[2]))));
   // Mugged off, then found love: the night one of them was finally picked.
   add('found', seen.find(e => e.kind === 'found-love' && both(e, a, b)));
   // Exes, and a second chance.
@@ -239,10 +244,16 @@ export function finalDate(state, rng, [a, b], n, given = null) {
   const chapters = storyOf(state, a, b);
   const shape = given || shapeOf(chapters, state, a, b);
   const pop = (x, y) => ({ [a]: { approval: x, fame: y }, [b]: { approval: x, fame: y } });
+  // A Casa couple either walked back into the villa together (the original
+  // went to Casa and came back with the new one) or met in the main villa,
+  // where the new one walked in. "The night they walked back in together"
+  // was said of Keisha and Marcus, who never left.
+  const came = (state.history || []).some(e => e.kind === 'casa-return' && e.extra?.choice === 'twist' && e.extra?.of === 'returned'
+    && e.players.includes(a) && e.players.includes(b)) ? 'together' : 'villa';
   events.push(makeEvent(state, rng, { phase: 'final-date', kind: 'final-date', players: [a, b], aired: true,
     extra: { of: ['sunset', 'yacht', 'picnic', 'rooftop'][n % 4], pop: pop(0.2, 1.5) } }));
   events.push(makeEvent(state, rng, { phase: 'final-date', kind: 'journey-open', players: [a, b], aired: true,
-    extra: { of: shape, pop: pop(0, 0.5) } }));
+    extra: { of: shape, came, pop: pop(0, 0.5) } }));
   chapters.forEach((c, i) => {
     const day = state.epDay?.[c.event.ep] ?? null;
     events.push(makeEvent(state, rng, { phase: 'final-date', kind: 'journey-clip', players: c.about ? [a, b, c.about] : [a, b], aired: true,
@@ -257,7 +268,7 @@ export function finalDate(state, rng, [a, b], n, given = null) {
   const warmth = (romance(a, b) + romance(b, a)) / 20;
   feel(state, a, 'security', 0.8 * warmth); feel(state, b, 'security', 0.8 * warmth);
   events.push(makeEvent(state, rng, { phase: 'final-date', kind: 'journey-end', players: [a, b], aired: true,
-    extra: { of: shape, curve: curveOf(a, b), chapters: chapters.length, pop: pop(0.3, 1) } }));
+    extra: { of: shape, came, curve: curveOf(a, b), chapters: chapters.length, pop: pop(0.3, 1) } }));
   return { events, shape, chapters };
 }
 

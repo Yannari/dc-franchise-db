@@ -118,6 +118,9 @@ export const FIREPIT_LINES = {
   'recouple-single': [
     { id: 'rsg.1', stage: '{a} is the only one left standing.', turns: [['dior', "{a}, you're single tonight. You're not going anywhere, but you are very vulnerable."], ['a', "I'll take it. For now."]] },
     { id: 'rsg.2', stage: 'Every couple is on the bench, and {a} is standing alone.', turns: [['a', "Well. That's embarrassing."], ['dior', "You're staying, {a}. But you'll have to graft."]] },
+    // Kept because a bombshell only just took their partner (moments.js recoupleNight `fresh`).
+    { id: 'rsg.v1', when: { of: 'vulnerable' }, stage: '{a} is the last one standing, arms folded.', turns: [['dior', "{a}, you've only just been left single, so tonight you're safe. But you are single, and you are very vulnerable."], ['a', "Understood. I've got work to do."]] },
+    { id: 'rsg.v2', when: { of: 'vulnerable' }, stage: 'Every couple is on the bench. {a} is still standing.', turns: [['dior', "{a}, nobody picked you tonight. You weren't single long enough to go home — but that won't save you twice."], ['a', "Then I'd better get talking."]] },
   ],
   // Casa Amor opens (arrivals.js openCasa). `of` is the side that leaves.
   'casa-text': [

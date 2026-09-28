@@ -262,6 +262,11 @@ export function bombshellSteal(state, name, { rng }) {
   const loved = Math.max(0, coupleScore(state.ledger, stole, leftSingle));
   state.couples = state.couples.filter(c => !c.includes(stole));
   state.couples.push([name, stole]);
+  // SINGLE AND VULNERABLE, not dumped (UK 11 d22: Jessy and Trey stole two
+  // partners and nobody went home until d29; UK 10 d39: Abi and Sammy stayed
+  // single until later recouplings). The next recoupling spares them; they
+  // have until the one after to graft (moments.js recoupleNight).
+  (state.vulnerableSince ||= {})[leftSingle] = state.ep;
   const ev = makeEvent(state, rng, { phase: 'event', kind: 'steal', players: [name, stole, leftSingle],
     aired: true, major: [name, stole, leftSingle],
     extra: { pop: { [name]: { approval: -(BETRAYAL.bombshellSteal + 0.05 * loved), fame: 3 },

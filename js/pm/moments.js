@@ -411,6 +411,9 @@ function recoupleNight(state, rng, { dumpSingles, pace = 1.5, votesAhead = 0, al
       ...(pk.stole ? { [pk.stole]: { approval: 1.5, fame: 2 } } : {}) } } }))];
   for (const pk of r.picks) if (pk.stole) breakHeart(state, pk.stole, pk.picked, 5 * romance(pk.stole, pk.picked) / 10);
   state.couples = r.couples;
+  // Who has been single and vulnerable since the last ceremony (below).
+  const lastCeremony = state.lastRecouplingEp ?? 0;
+  if (dumpSingles) state.lastRecouplingEp = state.ep;
   if (!dumpSingles || !r.single.length) return { events, exits: [], ballots: r.ballots };
   // The final recoupling: nobody single stays, whatever the pace.
   if (all) {
@@ -435,7 +438,24 @@ function recoupleNight(state, rng, { dumpSingles, pace = 1.5, votesAhead = 0, al
     for (const n of r.single) { feel(state, n, 'confidence', -0.8); feel(state, n, 'stress', 0.6); }
     return { events, exits: [], ballots: r.ballots };
   }
-  const dumped = r.single.slice(0, take);
+  // Made single by a bombshell since the last ceremony: single and
+  // vulnerable, not dumped (arrivals.js bombshellSteal) — the others left
+  // standing go first, and they only go tonight when the numbers leave no
+  // one else (user: "someone getting their couple stolen is always dumped
+  // too … there should be some single and vulnerable"; 28 of 40 were dumped
+  // the next dumping night, most of them the recoupling right after).
+  const fresh = n => dumping !== 'always' && (state.vulnerableSince?.[n] ?? -1) > lastCeremony;
+  const order = [...r.single.filter(n => !fresh(n)), ...r.single.filter(fresh)];
+  const others = order.filter(n => !fresh(n)).length;
+  const cut = Math.min(take, Math.max(others, hopeless));
+  if (!cut) {
+    const n = order[0];
+    events.push(makeEvent(state, rng, { phase: 'dumping', kind: 'recouple-single', players: [n], aired: true,
+      extra: { of: 'vulnerable', pop: { [n]: { approval: 0.5, fame: 1.5 } } } }));
+    for (const x of r.single) { feel(state, x, 'confidence', -0.8); feel(state, x, 'stress', 0.6); }
+    return { events, exits: [], ballots: r.ballots };
+  }
+  const dumped = order.slice(0, cut);
   const scene = dumpingScene(state, rng, { atRisk: [], dumped, ballots: [], channel: 'recoupling' });
   return { events: [...events, ...scene.events], exits: scene.exits, ballots: r.ballots };
 }

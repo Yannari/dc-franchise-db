@@ -268,7 +268,8 @@ export function perfectMatchEpisodes() {
   const roles = perfectMatchRoles(cast, perfectMatchSetup());
   const episodes = Number(seasonConfig.pmEpisodes) > 0 ? Number(seasonConfig.pmEpisodes) : null;
   return buildSchedule({ bombshells: roles.filter(r => r === 'bombshell').length,
-    casa: roles.filter(r => r === 'casa').length, episodes, counts: perfectMatchArrivalCounts(), starters: roles.filter(r => r === 'starter').length });
+    casa: roles.filter(r => r === 'casa').length, episodes, counts: perfectMatchArrivalCounts(), starters: roles.filter(r => r === 'starter').length,
+    finalCouples: seasonConfig.pmFinalCouples === 3 ? 3 : 4 });
 }
 
 /** Which episode is which vote slot, for this cast and length (picks do not move them). */
@@ -278,7 +279,8 @@ export function perfectMatchSlots() {
   const roles = perfectMatchRoles(cast, perfectMatchSetup());
   const episodes = Number(seasonConfig.pmEpisodes) > 0 ? Number(seasonConfig.pmEpisodes) : null;
   return buildSchedule({ bombshells: roles.filter(r => r === 'bombshell').length,
-    casa: roles.filter(r => r === 'casa').length, episodes, counts: perfectMatchArrivalCounts(), starters: roles.filter(r => r === 'starter').length }).filter(e => e.slot);
+    casa: roles.filter(r => r === 'casa').length, episodes, counts: perfectMatchArrivalCounts(), starters: roles.filter(r => r === 'starter').length,
+    finalCouples: seasonConfig.pmFinalCouples === 3 ? 3 : 4 }).filter(e => e.slot);
 }
 
 // ── NOTHING IS DECIDED UNTIL IT AIRS ──────────────────────────────────

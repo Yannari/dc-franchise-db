@@ -23,7 +23,10 @@ describe('choosing how many bombshells walk in', () => {
     expect(bombNights(s)[0].arrivals.bombshell).toBe(4);
     expect(arriving(s)).toBe(10);
     expect(bombNights(s).length).toBeLessThan(bombNights(ten).length);
-    expect(s.length).toBeLessThan(ten.length);
+    // A bombshell night that empties between two dumpings becomes a villa
+    // day (schedule.js), so count the nights that are not.
+    const busy = x => x.filter(e => e.moment !== 'villa').length;
+    expect(busy(s)).toBeLessThan(busy(ten));
   });
 
   it('fewer on one night: the rest get new bombshell nights, and the season grows', () => {
@@ -82,19 +85,23 @@ describe('on the Season Timeline', () => {
     const before = perfectMatchEpisodes();
     const lastVote = before.find(e => e.slot === 'vote-post').ep;
     const firstBomb = before.find(e => e.moment === 'bombshell').ep;
+    const lastCoupled = before.find(e => e.slot === 'vote3').ep;
     seasonConfig.twistSchedule = [{ id: 't1', episode: lastVote, type: 'pm-top-couple-picks' },
-      { id: 't2', episode: firstBomb, type: 'pm-stand-up' }];
+      { id: 't2', episode: firstBomb, type: 'pm-stand-up' }, { id: 't3', episode: lastCoupled, type: 'pm-safe-pick-couple' }];
     // One on each of the first two bombshell nights instead of two: the season grows.
     const second = before.filter(e => e.moment === 'bombshell')[1].ep;
     pmSetArrivals(firstBomb, '1');
     pmSetArrivals(second, '1');
     const after = perfectMatchEpisodes();
-    expect(after.length).toBeGreaterThan(before.length);
+    const busy = x => x.filter(e => e.moment !== 'villa').length;
+    expect(busy(after)).toBeGreaterThan(busy(before));
     expect(after.find(e => e.ep === second).arrivals.bombshell).toBe(1);
-    // The last vote moved, and its booking went with it; the night before the change did not move.
-    const newLast = after.find(e => e.slot === 'vote-post').ep;
-    expect(newLast).toBeGreaterThan(lastVote);
+    // Each late vote's booking stays on its own night, wherever the re-flow
+    // put it (the new bombshell night can take a villa day's place, and then
+    // no vote moves); the night before the change did not move.
+    const newLast = after.find(e => e.slot === 'vote-post').ep, newCoupled = after.find(e => e.slot === 'vote3').ep;
     expect(seasonConfig.twistSchedule.find(b => b.id === 't1').episode).toBe(newLast);
+    expect(seasonConfig.twistSchedule.find(b => b.id === 't3').episode).toBe(newCoupled);
     expect(seasonConfig.twistSchedule.find(b => b.id === 't2').episode).toBe(firstBomb);
     // The tile says so.
     renderTimeline();

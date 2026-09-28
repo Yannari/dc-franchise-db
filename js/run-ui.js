@@ -1362,7 +1362,7 @@ function _traitorsBadges(ep) {
  */
 const PM_MOMENT_PILL = { 'first-coupling': 'First coupling', recoupling: 'Recoupling', bombshell: 'Bombshell',
   'public-vote': 'Public vote', 'casa-open': 'Casa Amor', 'casa-nights': 'Casa Amor', 'stick-or-twist': 'Stick or twist',
-  photos: 'The photos', 'semi-final': 'Semi-final', final: 'Final', reunion: 'Reunion' };
+  photos: 'The photos', 'semi-final': 'Semi-final', final: 'Final', reunion: 'Reunion', villa: 'Villa day' };
 function _villaBadges(ep) {
   const pill = (text, color) => `<span class="ep-hist-tag" style="background:${color}22;color:${color}">${text}</span>`;
   let out = PM_MOMENT_PILL[ep.moment] ? pill(PM_MOMENT_PILL[ep.moment], '#e0467c') : '';
@@ -2124,7 +2124,7 @@ function _randomizeVilla() {
   renderTwistCatalog();
 }
 // An extra vote in a big cast has no catalogue twist of its own: it draws.
-const DUMP_SLOT_OK = slot => slot === 'vote1' || slot === 'vote2' || slot === 'vote-post' || slot === 'vote3' || slot === 'semi';
+const DUMP_SLOT_OK = slot => slot === 'vote1' || slot === 'vote2' || slot === 'vote-post' || slot === 'vote-couples' || slot === 'vote3' || slot === 'semi';
 
 function _replayVillaEpisode(epNum) {
   const laterEps = (gs.episodeHistory || []).filter(e => e.num > epNum);

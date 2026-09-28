@@ -40,12 +40,12 @@ describe('the villa can be started', () => {
 });
 
 describe('a season plays through the run path', () => {
-  it('nineteen episodes, one a press, stamped, and it ends complete with winners', () => {
+  it('twenty-five episodes, one a press, stamped, and it ends complete with winners', () => {
     freshSeason();
     const aired = playAll();
-    expect(aired.length).toBe(19);
+    expect(aired.length).toBe(25);
     expect(aired.every(r => r.format === 'perfect-match')).toBe(true);
-    expect(gs.episodeHistory.length).toBe(19);
+    expect(gs.episodeHistory.length).toBe(25);
     expect(gs.phase).toBe('complete');
     expect(gs.pmWinners?.length).toBe(2);
     expect(perfectMatchEpisodesLeft()).toBe(0);
@@ -135,8 +135,8 @@ describe('a pick is live until its episode airs', () => {
   it('a booking only pins a vote night that format can play', async () => {
     const { perfectMatchPicks } = await import('../js/pm-run.js');
     freshSeason();
-    seasonConfig.twistSchedule = [{ id: 'a', episode: 5, type: 'pm-save-one' }, { id: 'b', episode: 3, type: 'pm-public-vote' },
-      { id: 'c', episode: 12, type: 'pm-save-one' }, { id: 'd', episode: 17, type: 'pm-ex-islanders' }];
+    seasonConfig.twistSchedule = [{ id: 'a', episode: 6, type: 'pm-save-one' }, { id: 'b', episode: 3, type: 'pm-public-vote' },
+      { id: 'c', episode: 13, type: 'pm-save-one' }, { id: 'd', episode: 23, type: 'pm-ex-islanders' }];
     // ep 3 is a bombshell night; save-one is not a second-vote format.
     expect(perfectMatchPicks()).toEqual({ vote1: 'save-one', semi: 'ex-islanders' });
     seasonConfig.twistSchedule = [];
@@ -145,28 +145,28 @@ describe('a pick is live until its episode airs', () => {
     freshSeason();
     for (let i = 0; i < 3; i++) simulatePerfectMatchEpisode();
     const aired = gs.episodeHistory.map(fp);
-    // Booked on the Season Timeline: episode 5 is the first vote at 22. (Not
+    // Booked on the Season Timeline: episode 6 is the first vote at 22. (Not
     // the second: whether a late vote plays at all depends on how many
     // couples are left, which is the season's business, not the booking's.)
-    const drawn = gs._pmQueue.find(r => r.num === 5).pm.dumpFormat;
+    const drawn = gs._pmQueue.find(r => r.num === 6).pm.dumpFormat;
     const want = drawn === 'save-one' ? 'public' : 'save-one';
-    seasonConfig.twistSchedule = [{ id: 't1', episode: 5, type: want === 'public' ? 'pm-public-vote' : 'pm-save-one' }];
+    seasonConfig.twistSchedule = [{ id: 't1', episode: 6, type: want === 'public' ? 'pm-public-vote' : 'pm-save-one' }];
     simulatePerfectMatchEpisode();
     expect(gs.episodeHistory.slice(0, 3).map(fp)).toEqual(aired);
-    expect(gs._pmQueue.find(r => r.num === 5).pm.dumpFormat).toBe(want);
+    expect(gs._pmQueue.find(r => r.num === 6).pm.dumpFormat).toBe(want);
     expect(perfectMatchPendingChange()).toBe(null);
   });
   it('a pick for an aired episode waits for its re-run, and says so', () => {
     freshSeason();
-    for (let i = 0; i < 6; i++) simulatePerfectMatchEpisode();
-    const drawn = gs.episodeHistory[4].pm.dumpFormat;
+    for (let i = 0; i < 7; i++) simulatePerfectMatchEpisode();
+    const drawn = gs.episodeHistory[5].pm.dumpFormat;
     const want = drawn === 'save-one' ? 'public' : 'save-one';
-    seasonConfig.twistSchedule = [{ id: 't1', episode: 5, type: want === 'public' ? 'pm-public-vote' : 'pm-save-one' }];
+    seasonConfig.twistSchedule = [{ id: 't1', episode: 6, type: want === 'public' ? 'pm-public-vote' : 'pm-save-one' }];
     const aired = gs.episodeHistory.map(fp);
     simulatePerfectMatchEpisode();
-    expect(gs.episodeHistory.slice(0, 6).map(fp)).toEqual(aired);
-    expect(perfectMatchPendingChange()).toMatch(/episode 5/);
-    expect(rerunPerfectMatchEpisode(5)).toBe(true);
+    expect(gs.episodeHistory.slice(0, 7).map(fp)).toEqual(aired);
+    expect(perfectMatchPendingChange()).toMatch(/episode 6/);
+    expect(rerunPerfectMatchEpisode(6)).toBe(true);
     expect(simulatePerfectMatchEpisode().pm.dumpFormat).toBe(want);
   });
 });

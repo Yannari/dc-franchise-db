@@ -47,10 +47,14 @@ function queuesFor(state, cast) {
 }
 
 /** A walk: heartbreak with the ex still here, or loneliness and stress (spec §6.8). */
-function maybeWalk(state, rng) {
+// The risk is a three-day episode's: a shorter one (a villa day between
+// dumpings is two) carries its share. Rolled per episode unscaled, the six
+// villa days took walks from 68 to 114 a hundred seasons.
+function maybeWalk(state, rng, entry) {
+  const share = entry?.days ? (entry.days[1] - entry.days[0] + 1) / 3 : 1;
   for (const n of state.villa) {
     const { p, cause } = walkRisk(state, n);
-    if (rng() < p) return { name: n, cause };
+    if (rng() < p * share) return { name: n, cause };
   }
   return null;
 }
@@ -93,7 +97,11 @@ function villaDayEvents(state, rng, entry, seed) {
   // with its rules (schedule.js fills every villa day), and the time the
   // generic one took is ordinary villa time — its kisses and "winners" had
   // no name, no rules and no start, and read as scenes from nowhere.
-  const { morning, day, event, evening } = PHASE_BUDGETS;
+  const { morning, day, event } = PHASE_BUDGETS;
+  // A villa day has no fire pit and no ceremony: the night is the villa's —
+  // drinks, the terrace, the beds — so its evening runs twice as long (at the
+  // usual length it was the thinnest episode of the season, 72 events).
+  const evening = PHASE_BUDGETS.evening * (entry.moment === 'villa' ? 2 : 1);
   if (entry.moment === 'first-coupling') return generateEpisodeEvents(state, rng, { day: day + event, evening });
   if (!entry.challenge) return generateEpisodeEvents(state, rng, { morning, day: day + event, evening });
   const out = generateEpisodeEvents(state, rng, { morning, day });
@@ -232,9 +240,12 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
     // (the last vote and the final recoupling): a walkout then took a night's
     // dumping with it, and a vote night went by with nobody sent home
     // (season 31: Sophie walked the night of the last vote).
+    // …nor a villa day after the final recoupling: the couples-only week sends
+    // one couple a night, and a walk there cut the final to three.
+    const afterFinalRecoupling = schedule.some(e => e.finalRecoupling && e.ep < entry.ep);
     if (entry.moment !== 'reunion' && entry.moment !== 'final' && !entry.coupled && !entry.finalRecoupling
-      && entry.slot !== 'vote-post') {
-      const walker = maybeWalk(state, rng);
+      && entry.slot !== 'vote-post' && !afterFinalRecoupling) {
+      const walker = maybeWalk(state, rng, entry);
       if (walker) {
         const before = state.couples.map(c => [...c]);
         // THE WALK, as the show plays it (user: "we have 1 walked out in ep9

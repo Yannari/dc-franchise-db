@@ -40,6 +40,11 @@ function weighted(rng, entries) {
   return live.length ? live[live.length - 1][0] : null;
 }
 const S = (state, n) => state.profiles[n].stats;
+const PLAYERS = new Set(['villain', 'mastermind', 'schemer']);
+const LOYAL_KIND = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
+/** How ready a coupled islander is to go chatting someone else up. */
+const graftUrge = (state, n) => (0.3 + 0.7 * (1 - S(state, n).loyalty / 10))
+  * (PLAYERS.has(state.profiles[n].archetype) ? 1.5 : LOYAL_KIND.has(state.profiles[n].archetype) ? 0.5 : 1);
 
 export function partnerOf(state, name) {
   const c = state.couples.find(x => x.includes(name));
@@ -185,8 +190,14 @@ export const KINDS = {
     salience: 0.6,
     cast: (s, rng) => {
       // Somebody who has closed off does not go looking (spec §6.7).
+      // Pulling while coupled is the show's mugging-off, and who does it is
+      // character: the disloyal, and the ones built to play (a loyal hero was
+      // as likely to graft as a schemer, and the public's Villain label fell
+      // on nice archetypes 7.4% of the time vs 10.8% for villains — forty
+      // seasons). Single, everybody chats freely.
       const a = weighted(rng, s.villa.filter(n => compatibleMates(s, n).length)
-        .map(n => [n, S(s, n).boldness * (1 - 0.8 * closedness(s, n, partnerOf(s, n)))]));
+        .map(n => [n, S(s, n).boldness * (1 - 0.8 * closedness(s, n, partnerOf(s, n)))
+          * (partnerOf(s, n) ? graftUrge(s, n) : 1)]));
       if (!a) return null;
       // Never somebody a turned down, or was turned down by, earlier today
       // (read, season 21: Priya said no to Jordan in front of everyone, "and

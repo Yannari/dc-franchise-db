@@ -121,12 +121,12 @@ export function renderPerfectMatchShape() {
   const len = document.getElementById('cfg-pm-episodes');
   if (len) {
     len.placeholder = `Automatic (${shape.auto})`;
-    len.min = String(minimumEpisodes(shape.casa));
+    len.min = String(minimumEpisodes(shape.casa, seasonConfig.pmFinalCouples === 3 ? 3 : 4));
     if (document.activeElement !== len) len.value = Number(seasonConfig.pmEpisodes) > 0 ? String(seasonConfig.pmEpisodes) : '';
     const hint = document.getElementById('pm-episodes-hint');
     if (hint) hint.textContent = `This cast makes ${shape.auto} episodes (${shape.starters} starters, ${shape.bombshells} bombshells, `
       + `${shape.casa} Casa Amor arrivals). Set a number to change it: shorter packs the arrivals into fewer nights, `
-      + `longer adds quiet recoupling weeks. The shortest a season can be is ${minimumEpisodes(shape.casa)}.`
+      + `longer adds quiet recoupling weeks. The shortest a season can be is ${minimumEpisodes(shape.casa, seasonConfig.pmFinalCouples === 3 ? 3 : 4)}.`
       + (shape.episodes && shape.episodes < shape.auto
         ? ` At ${shape.episodes}, there are fewer dumping nights than this cast needs: whoever is left over goes at the semi-final, several at once.` : '');
   }

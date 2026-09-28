@@ -1129,6 +1129,8 @@ Object.assign(MOMENTS, {
       exits: [], ballots: [] };
   },
   'casa-nights': () => ({ events: [], exits: [], ballots: [] }),
+  // A villa day: the day and its challenge, and nobody goes home (schedule.js).
+  villa: () => ({ events: [], exits: [], ballots: [] }),
   'stick-or-twist': (state, ctx) => {
     if (!state.split) return { events: [], exits: [], ballots: [] };
     const st = stickOrTwist(state, { rng: ctx.rng });

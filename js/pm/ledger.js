@@ -64,6 +64,18 @@ export const SCENE_GAIN = 5.0;
  * ep 8 from ~40% to 4% (measured, 60 seasons either side).
  */
 export const PATTERN = 0.7, PATTERN_MAX = 4, BAD_WEEK = -1.5;
+/*
+ * INVISIBLE IS NOT BEING SEEN. A mild opinion (Liked, Divisive) needs the
+ * public to have watched you: an islander with less recent airtime than the
+ * villa's median (UNSEEN x it) reads Invisible whatever the small number
+ * says. Airtime is `seen`, fame with a memory of SEEN_DECAY a week. The
+ * labels only (the vote reads approval). By approval alone 8.8% of the villa
+ * was Invisible per episode, the spec asks about a quarter; damping everyday
+ * scenes' approval moved it by two points and made villains of the rest.
+ * Measured, sixty seasons: 0.6 -> 12.5%, 0.8 -> 15.9%, 1.0 -> 21.0%.
+ */
+export const UNSEEN = 1.0, SEEN_DECAY = 0.5;
+const MILD = new Set(['liked', 'divisive']);
 export const LABEL_ORDER = ['villain', 'disliked', 'divisive', 'invisible', 'liked', 'loved',
   'fan-favourite'];
 const BANDS = [[60, 'fan-favourite'], [25, 'loved'], [5, 'liked'], [-5, 'invisible'],
@@ -79,7 +91,7 @@ export function labelFor(a) {
 
 export function createLedger() {
   return { approval: {}, fame: {}, raw: {}, fameRaw: {}, major: {}, lastApplied: {},
-    firstEp: {}, label: {}, pending: {}, belief: {}, record: {} };
+    firstEp: {}, label: {}, pending: {}, belief: {}, record: {}, seen: {} };
 }
 
 export function noteArrival(L, name, ep) {
@@ -124,6 +136,12 @@ function stepToward(cur, band, max) {
  */
 export function closeEpisode(L, ep, popularity = null) {
   const out = {};
+  // Recent airtime, and the villa's median of it among those on screen this week.
+  const seen = (L.seen ||= {});
+  const onScreen = Object.keys(L.fameRaw).filter(n => L.fameRaw[n] > 0);
+  for (const n of Object.keys(L.firstEp)) seen[n] = SEEN_DECAY * (seen[n] || 0) + (L.fameRaw[n] || 0);
+  const sorted = onScreen.map(n => seen[n]).sort((a, b) => a - b);
+  const median = sorted.length ? sorted[sorted.length >> 1] : 0;
   for (const name of Object.keys(L.firstEp)) {
     const wasMajor = !!L.major[name];
     const cap = capFor(L, name, ep);
@@ -150,13 +168,17 @@ export function closeEpisode(L, ep, popularity = null) {
     else if (applied >= -BAD_WEEK && record) L.record[name] = record - 1;
     L.fame[name] = (L.fame[name] || 0) + (L.fameRaw[name] || 0);
     if (popularity && applied) popularity[name] = (popularity[name] || 0) + applied * POP_SCALE;
-    const band = labelFor(L.approval[name]);
+    const b0 = labelFor(L.approval[name]);
+    const band = MILD.has(b0) && L.fameRaw[name] > 0 && seen[name] < UNSEEN * median ? 'invisible' : b0;
     // A first impression has nothing to hold against: in an islander's first
     // episodes the label follows the public straight away. The hold and the
     // two-step limit are for an image that already exists (measured: with
     // them from day one the first Fan Favourite waited until episode 5).
     if (band === L.label[name]) L.pending[name] = null;
-    else if (wasMajor || fresh) { L.label[name] = band; L.pending[name] = null; }
+    else if (wasMajor) { L.label[name] = band; L.pending[name] = null; }
+    // Fresh, it follows at once — but two tiers at most, as any other week (a
+    // starter went Divisive to Loved on episode 3 of season 64).
+    else if (fresh) { L.label[name] = stepToward(L.label[name], band, 2); L.pending[name] = null; }
     else if (L.pending[name] === band) { L.label[name] = stepToward(L.label[name], band, 2); L.pending[name] = null; }
     else L.pending[name] = band;
     out[name] = { approval: L.approval[name], applied, label: L.label[name], fame: L.fame[name] };

@@ -111,8 +111,11 @@ export function walkRisk(state, n) {
   const ex = e.heartbreakFrom;
   const exHere = ex && state.villa.includes(ex);
   const exMovedOn = exHere && !!partnerOf(state, ex);
+  // 0.05 gave 22 heartbreak walks a hundred seasons at nineteen episodes;
+  // with the villa days between dumpings (more nights around the ex) it gave
+  // 50. The wiki has 0-1 walks a UK series of every kind (UK 9-12).
   const heartbreak = exHere
-    ? 0.05 * (e.heartbreak / 10) * (1.3 - effectiveTemperament(state, n) / 10) * (exMovedOn ? 1.5 : 1) : 0;
+    ? 0.03 * (e.heartbreak / 10) * (1.3 - effectiveTemperament(state, n) / 10) * (exMovedOn ? 1.5 : 1) : 0;
   const homesick = 0.03 * (e.loneliness / 10) * (e.stress / 10);
   return heartbreak >= homesick ? { p: heartbreak, cause: 'heartbreak' } : { p: homesick, cause: 'homesick' };
 }

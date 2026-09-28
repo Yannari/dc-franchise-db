@@ -127,7 +127,7 @@ describe('the one-offs (phase 3)', () => {
   it('the immune couple is never at risk that night', () => {
     let played = 0;
     for (let seed = 1; seed <= 10; seed++) {
-      const r = season(seed, { 5: { immunity: true }, 12: { immunity: true } }).filter(x => x.pm.immune);
+      const r = season(seed, { 6: { immunity: true }, 13: { immunity: true } }).filter(x => x.pm.immune);
       for (const x of r) {
         played++;
         expect((x.pm.bottom || []).flat().some(n => x.pm.immune.includes(n)), `s${seed} e${x.num}`).toBe(false);

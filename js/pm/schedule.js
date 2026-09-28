@@ -11,8 +11,8 @@
 // then packed into fewer episodes, or quiet recoupling weeks added.
 //
 // THE CALIBRATION CASE. The default 22-islander cast (10 starters, 6
-// bombshells, 6 Casa arrivals) builds EXACTLY the nineteen episodes the season
-// was tuned on — SEASON_TEMPLATE below, which tests/pm-schedule.test.js holds
+// bombshells, 6 Casa arrivals) builds EXACTLY the twenty-five episodes the
+// season is tuned on (nineteen, plus a villa day between back-to-back dumpings) — SEASON_TEMPLATE below, which tests/pm-schedule.test.js holds
 // the builder to. Everything else is that season stretched or shrunk.
 //
 // `rituals` are the villa's set pieces (spec §6.9), run by villa-day.js on
@@ -23,21 +23,27 @@ export const SEASON_TEMPLATE = [
   { ep: 2, days: [3, 5], moment: 'recoupling' },
   { ep: 3, days: [6, 8], moment: 'bombshell', arrivals: { bombshell: 2 }, rituals: ['heart-rate'] },
   { ep: 4, days: [9, 11], moment: 'recoupling', rituals: ['hideaway'] },
-  { ep: 5, days: [12, 14], moment: 'public-vote', slot: 'vote1', dumpFormat: 'cross-gender', bottom: 2 },
-  { ep: 6, days: [15, 17], moment: 'bombshell', arrivals: { bombshell: 2 } },
-  { ep: 7, days: [18, 20], moment: 'recoupling', rituals: ['snog-marry-pie'] },
-  { ep: 8, days: [21, 23], moment: 'casa-open' },
-  { ep: 9, days: [24, 26], moment: 'casa-nights' },
-  { ep: 10, days: [27, 28], moment: 'stick-or-twist' },
-  { ep: 11, days: [29, 31], moment: 'photos', arrivals: { bombshell: 1 }, rituals: ['movie-night'] },
-  { ep: 12, days: [32, 34], moment: 'public-vote', slot: 'vote2', dumpFormat: 'safe-pick-couple', bottom: 3 },
-  { ep: 13, days: [35, 37], moment: 'recoupling', rituals: ['hideaway'] },
-  { ep: 14, days: [38, 40], moment: 'public-vote', slot: 'vote-post', dumpFormat: 'safe-pick-couple', bottom: 3 },
-  { ep: 15, days: [41, 43], moment: 'recoupling', arrivals: { bombshell: 0 }, rituals: ['notes'], finalRecoupling: true },
-  { ep: 16, days: [44, 46], moment: 'public-vote', slot: 'vote3', coupled: true },
-  { ep: 17, days: [47, 49], moment: 'semi-final', slot: 'semi', rituals: ['families'], coupled: true },
-  { ep: 18, days: [50, 52], moment: 'final' },
-  { ep: 19, days: null, moment: 'reunion' },
+  { ep: 5, days: [12, 13], moment: 'villa' },
+  { ep: 6, days: [14, 16], moment: 'public-vote', slot: 'vote1', dumpFormat: 'cross-gender', bottom: 2 },
+  { ep: 7, days: [17, 19], moment: 'bombshell', arrivals: { bombshell: 2 } },
+  { ep: 8, days: [20, 22], moment: 'recoupling', rituals: ['snog-marry-pie'] },
+  { ep: 9, days: [23, 25], moment: 'casa-open' },
+  { ep: 10, days: [26, 28], moment: 'casa-nights' },
+  { ep: 11, days: [29, 30], moment: 'stick-or-twist' },
+  { ep: 12, days: [31, 33], moment: 'photos', arrivals: { bombshell: 1 }, rituals: ['movie-night'] },
+  { ep: 13, days: [34, 36], moment: 'public-vote', slot: 'vote2', dumpFormat: 'safe-pick-couple', bottom: 3 },
+  { ep: 14, days: [37, 38], moment: 'villa' },
+  { ep: 15, days: [39, 41], moment: 'recoupling', rituals: ['hideaway'] },
+  { ep: 16, days: [42, 43], moment: 'villa' },
+  { ep: 17, days: [44, 46], moment: 'public-vote', slot: 'vote-post', dumpFormat: 'safe-pick-couple', bottom: 3 },
+  { ep: 18, days: [47, 48], moment: 'villa' },
+  { ep: 19, days: [49, 51], moment: 'recoupling', arrivals: { bombshell: 0 }, rituals: ['notes'], finalRecoupling: true },
+  { ep: 20, days: [52, 53], moment: 'villa' },
+  { ep: 21, days: [54, 56], moment: 'public-vote', slot: 'vote3', coupled: true },
+  { ep: 22, days: [57, 58], moment: 'villa' },
+  { ep: 23, days: [59, 61], moment: 'semi-final', slot: 'semi', rituals: ['families'], coupled: true },
+  { ep: 24, days: [62, 64], moment: 'final' },
+  { ep: 25, days: null, moment: 'reunion' },
 ];
 export const FINAL_COUPLES = 4;
 /** The day the final ends on, as the real series (UK: 56-59 days). */
@@ -101,7 +107,7 @@ const MAX_EPISODES = 40;
 // The most the author may send in on one bombshell night (Season Timeline).
 export const MAX_PER_NIGHT = 4;
 
-function baseWeeks(casa) {
+function baseWeeks(casa, finalCouples = FINAL_COUPLES) {
   const pre = [
     { moment: 'first-coupling', cap: 1, fixed: true },
     { moment: 'recoupling', drop: 3 },
@@ -142,6 +148,11 @@ function baseWeeks(casa) {
     // home in one night (season 31: three singles and two couples).
     // Without Casa the photos' arrival slot is gone, so this night takes two.
     { moment: 'recoupling', cap: casa > 0 ? 1 : 2, rituals: ['notes'], finalRecoupling: true, fixed: true },
+    // A three-couple final has one couple more to lose in the couples-only
+    // week, so it gets a night more to lose it on (user: "three couples and
+    // four couples at the final has the same number of episodes, shouldn't we
+    // get one more?"). Without it that couple went in a double dumping.
+    ...(finalCouples === 3 ? [{ moment: 'public-vote', slot: 'vote-couples', coupled: true, fixed: true }] : []),
     { moment: 'public-vote', slot: 'vote3', coupled: true, fixed: true },
   ];
   const end = [
@@ -153,6 +164,8 @@ function baseWeeks(casa) {
 }
 
 /** Insert `week` before the anchor (pre-Casa, or the last vote before the final recoupling), alternating. */
+// The nights somebody can go home on (the final's couples go at the final).
+const DUMP_NIGHTS = new Set(['recoupling', 'public-vote', 'stick-or-twist', 'semi-final']);
 function insertWeek(weeks, week, pre) {
   const at = weeks.findIndex(w => (pre ? w.anchorPre : w.anchorPost));
   weeks.splice(at < 0 ? weeks.length - 3 : at, 0, week);
@@ -171,7 +184,7 @@ function insertWeek(weeks, week, pre) {
  * running order only ever loses nights at its end and gains them after it.
  */
 export function buildSchedule({ bombshells = BASE_BOMBSHELLS, casa = 6, episodes = null, counts = null, starters = null, finalCouples = FINAL_COUPLES } = {}) {
-  const weeks = baseWeeks(casa);
+  const weeks = baseWeeks(casa, finalCouples);
   // More bombshells than the calibration season has slots for: a week each
   // pair — a bombshell night, then a recoupling — alternating before and
   // after Casa Amor, and every second one a public vote, so the dumpings keep
@@ -211,7 +224,7 @@ export function buildSchedule({ bombshells = BASE_BOMBSHELLS, casa = 6, episodes
   // Take out the least necessary week; its arrivals join the next week
   // that takes arrivals (or the previous, at the end).
   const cutOne = (only = null) => {
-    const order = w => (w.quiet ? 0 : w.extra && w.moment !== 'bombshell' ? 1 : w.extra ? 2 : w.drop || 99);
+    const order = w => (w.spacer ? -1 : w.quiet ? 0 : w.extra && w.moment !== 'bombshell' ? 1 : w.extra ? 2 : w.drop || 99);
     // …and never, while there is another, the week that keeps two bombshell nights apart.
     const between = i => out[i - 1]?.moment === 'bombshell' && out[i + 1]?.moment === 'bombshell' ? 50 : 0;
     const cut = out.map((w, i) => [w, i]).filter(([w, i]) => !w.fixed && (!only || only(w, i)))
@@ -279,7 +292,7 @@ export function buildSchedule({ bombshells = BASE_BOMBSHELLS, casa = 6, episodes
     // twelve, and no earlier vote could send anyone home); then the second
     // vote, its set piece moving to the first. A vote gone frees the
     // recoupling after it, so the weeks are looked at again after each.
-    const votes = ['vote-post', 'vote3', 'vote2'];
+    const votes = ['vote-post', 'vote-couples', 'vote3', 'vote2'];
     for (let guard = 0; guard < 40 && over(); guard++) {
       if (cutOne(dumping)) continue;
       const slot = votes.find(s => out.some(w => w.slot === s));
@@ -302,8 +315,20 @@ export function buildSchedule({ bombshells = BASE_BOMBSHELLS, casa = 6, episodes
     }
   }
 
+  // A NIGHT OFF BETWEEN DUMPINGS (user: "2 dumpings back to back, ep4 and
+  // ep5, isn't it a little too much? … don't be scared to add more
+  // episodes"). The wiki's dumpings are 3-8 days apart (UK 10: days 5, 9,
+  // 12, 19; UK 11 after Casa: 31, 35, 38, 44, 49, 52, 55), and at six
+  // episodes a week the viewer gets several days of villa between each. At
+  // three days an episode the calendar matched, but the calibration season
+  // ran six dumping episodes in a row after Casa. Any two back to back get a
+  // villa day between them: the day, its challenge, no one goes home.
+  for (let i = out.length - 1; i > 0; i--) {
+    if (DUMP_NIGHTS.has(out[i - 1].moment) && DUMP_NIGHTS.has(out[i].moment)) out.splice(i, 0, { moment: 'villa', spacer: true, days: 2 });
+  }
+
   // The author's length.
-  const target = episodes ? Math.max(minimumEpisodes(casa), Math.min(MAX_EPISODES, Math.round(episodes))) : null;
+  const target = episodes ? Math.max(minimumEpisodes(casa, finalCouples), Math.min(MAX_EPISODES, Math.round(episodes))) : null;
   while (target && out.length < target) {
     // Quiet villa weeks: a recoupling, before and after Casa in turn.
     const pre = out.filter(w => w.quiet).length % 2 === 0 || casa === 0;
@@ -345,8 +370,8 @@ export function buildSchedule({ bombshells = BASE_BOMBSHELLS, casa = 6, episodes
  * recouplings a season is never cut below (before the first vote, after it,
  * and after the second — see `kept` in buildSchedule).
  */
-export function minimumEpisodes(casa = 6) {
-  return baseWeeks(casa).filter(w => w.fixed).length + 3;
+export function minimumEpisodes(casa = 6, finalCouples = FINAL_COUPLES) {
+  return baseWeeks(casa, finalCouples).filter(w => w.fixed).length + 3;
 }
 
 // ── HOW EACH DUMPING PLAYS (Plan 4.5) ─────────────────────────────────
@@ -374,19 +399,19 @@ export const DUMP_DRAWS = {
   semi: [['public', 1], ['ex-islanders', 1]],
 };
 // A big cast's extra public votes draw from the second vote's formats.
-const drawsFor = slot => DUMP_DRAWS[slot === 'vote-extra' ? 'vote2' : slot === 'vote-post' ? 'vote3' : slot] || null;
+const drawsFor = slot => DUMP_DRAWS[slot === 'vote-extra' ? 'vote2' : slot === 'vote-post' || slot === 'vote-couples' ? 'vote3' : slot] || null;
 // What each episode is called on the Season Timeline, and its colour family.
 export const EPISODE_WORDS = { 'first-coupling': 'First coupling', recoupling: 'Recoupling', bombshell: 'Bombshell',
   'public-vote': 'Vote', 'casa-open': 'Casa opens', 'casa-nights': 'Casa Amor', 'stick-or-twist': 'Stick or twist',
-  photos: 'The photos', 'semi-final': 'Semi-final', final: 'Final', reunion: 'Reunion' };
-export const EPISODE_KIND = { 'first-coupling': 'couple', recoupling: 'couple', bombshell: 'bomb', 'public-vote': 'vote',
+  photos: 'The photos', 'semi-final': 'Semi-final', final: 'Final', reunion: 'Reunion', villa: 'Villa day' };
+export const EPISODE_KIND = { villa: 'quiet', 'first-coupling': 'couple', recoupling: 'couple', bombshell: 'bomb', 'public-vote': 'vote',
   'casa-open': 'casa', 'casa-nights': 'casa', 'stick-or-twist': 'casa', photos: 'casa', 'semi-final': 'end',
   final: 'end', reunion: 'quiet' };
 // The villa's set pieces, by name, for the Season Timeline (user: "when is
 // movie night? there's no indication").
 export const RITUAL_NAMES = { 'heart-rate': 'Heart Rate', 'snog-marry-pie': 'Snog Marry Pie', 'movie-night': 'Movie Night',
   notes: 'The notes', families: 'The families', hideaway: 'The Hideaway' };
-export const SLOT_NAMES = { vote1: 'the first public vote', vote2: 'the second public vote', 'vote-post': 'the third public vote', vote3: 'the vote before the semi-final', semi: 'the semi-final' };
+export const SLOT_NAMES = { vote1: 'the first public vote', vote2: 'the second public vote', 'vote-post': 'the third public vote', 'vote-couples': 'the first couples-only vote', vote3: 'the vote before the semi-final', semi: 'the semi-final' };
 
 function draw(rng, options) {
   const total = options.reduce((s, o) => s + o[1], 0);
@@ -442,7 +467,7 @@ export const CHALLENGE_NAMES = {
   'girls-course': "The Girls' Course", 'blind-course': 'The Blindfold Course', 'sports-day': 'Sports Day', headlines: 'The Headlines',
   'truth-dare': 'Truth or Dare',
 };
-const VILLA_DAYS = new Set(['recoupling', 'bombshell', 'public-vote', 'photos', 'semi-final']);
+const VILLA_DAYS = new Set(['recoupling', 'bombshell', 'public-vote', 'photos', 'semi-final', 'villa']);
 export const CHALLENGE_DRAWS = [
   // guess-who cards: all four seasons, days 2-21
   ['receipts', 0.75, at => at < 0.4],
@@ -496,7 +521,7 @@ export function seasonSchedule(rng, template = SEASON_TEMPLATE) {
   };
   // The votes added after Casa Amor draw at the very end (below): they came
   // after every other draw, and moved none of them.
-  const late = e => e.slot === 'vote3' || e.slot === 'vote-post';
+  const late = e => e.slot === 'vote3' || e.slot === 'vote-post' || e.slot === 'vote-couples';
   const out = template.map(e => {
     const row = { ...e };
     if (e.slot && drawsFor(e.slot) && !late(e)) drawVote(row);
@@ -623,6 +648,7 @@ export function withBookings(schedule, byEp = {}) {
  * one fewest nights already have.
  */
 /** Give every villa day without a game a named challenge nobody has played yet this season. */
+const NIGHT_BOUND = { grafties: e => e.moment === 'public-vote' };
 function fillChallenges(out, rng) {
   const last = Math.max(1, ...out.map(e => e.ep));
   const taken = new Set(out.map(e => e.challenge).filter(Boolean));
@@ -636,7 +662,11 @@ function fillChallenges(out, rng) {
     const w = ([id, weight]) => weight * (STEAMY.has(id) && at < 0.7 ? 2 : 1);
     const all = [...CHALLENGE_DRAWS, ...LATER_CHALLENGE_DRAWS];
     const fits = all.filter(([id, , ok]) => !taken.has(id) && ok(at, e));
-    const pool = fits.length ? fits : all.filter(([id]) => !taken.has(id));
+    // Nothing left that fits the time of season: any not played yet — but a
+    // game that belongs to one kind of night stays on it (the Grafties are
+    // the vote night's; the villa days added between dumpings used up the
+    // catalogue and put them on a day nobody was voted on).
+    const pool = fits.length ? fits : all.filter(([id]) => !taken.has(id) && (!NIGHT_BOUND[id] || NIGHT_BOUND[id](e)));
     if (!pool.length) continue;
     let r = rng() * pool.reduce((t, d) => t + w(d), 0);
     e.challenge = (pool.find(d => (r -= w(d)) < 0) || pool[pool.length - 1])[0];

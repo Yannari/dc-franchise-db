@@ -22,7 +22,7 @@ export const PM_PHASE_LABEL = { arrival: 'The arrivals', 'arrival-2': 'The arriv
 export const PM_MOMENT_TITLE = { 'first-coupling': 'The first coupling', bombshell: 'A bombshell arrives',
   recoupling: 'Recoupling', 'public-vote': 'Public vote', 'casa-open': 'Casa Amor opens', 'casa-nights': 'Casa Amor',
   'stick-or-twist': 'Stick or twist', photos: 'The photos', 'semi-final': 'Semi-final', final: 'The final',
-  reunion: 'Reunion' };
+  reunion: 'Reunion', villa: 'A day in the villa' };
 
 /** The episode's title from what PLAYED: a couples' vote has no public in it. */
 export function momentTitle(row, fallback = 'A day in the villa') {

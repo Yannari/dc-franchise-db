@@ -19,6 +19,17 @@ export const VOTE_LINES = {
     { id: 'bv.c.01', when: { why: 'cover' }, turns: [['a', "This is so hard. I just haven't seen {b}'s connection grow the way the others have."]], beat: "{b} doesn't look convinced." },
     { id: 'bv.c.02', when: { why: 'cover' }, turns: [['a', "I've gone with my gut. I'm voting to dump {b}. Sorry."]] },
     { id: 'bv.c.03', when: { why: 'cover' }, turns: [['a', "I'm voting for {b}, because I think the others have more to lose."]], beat: 'A couple of the islanders exchange a look.' },
+    // Three a reason ran out on a four-voter night (season 33: Priya and Kai
+    // gave the same grudge, word for word, one after the other).
+    { id: 'bv.t.04', when: { why: 'threat' }, turns: [['a', "I'm not going to dress it up. {b} is too close to my partner for my liking. My vote is {b}."]] },
+    { id: 'bv.t.05', when: { why: 'threat' }, turns: [['a', "I have to look after my own couple. I'm voting for {b}."]], beat: '{b} nods slowly. It was never going to be anyone else.' },
+    { id: 'bv.t.06', when: { why: 'threat' }, turns: [['a', "Everyone in here knows why I'm saying this name. {b}."]], beat: 'Nobody looks at anybody.' },
+    { id: 'bv.g.04', when: { why: 'grudge' }, turns: [['a', "I've tried with {b}. I really have. It's {b}."]], beat: "{b} rolls {b.posAdj} eyes, and doesn't hide it." },
+    { id: 'bv.g.05', when: { why: 'grudge' }, turns: [['a', "{b} knows why. I don't need to say any more than that. {b}."]] },
+    { id: 'bv.g.06', when: { why: 'grudge' }, turns: [['a', "I don't trust {b}. I haven't for a while. So it's {b}."]], beat: '{b} shakes {b.posAdj} head, but says nothing.' },
+    { id: 'bv.c.04', when: { why: 'cover' }, turns: [['a', "There's nothing personal in this. I just think {b}'s couple is the one that would last least outside."]] },
+    { id: 'bv.c.05', when: { why: 'cover' }, turns: [['a', "I've thought about it all day, and I keep coming back to the same couple. {b}'s."]] },
+    { id: 'bv.c.06', when: { why: 'cover' }, turns: [['a', "I love both couples. But I have to choose, and I'm choosing {b}."]], beat: '{b} gives a small, tight smile.' },
   ],
 
   'vote-fallout': [

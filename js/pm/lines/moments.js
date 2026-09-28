@@ -1413,7 +1413,7 @@ export const MOMENTS = {
       beat: 'Nobody on the benches says a word.' },
     { id: 'dump-verdict-couple.01', when: ch('public'),
       turns: [['dior', "{a} and {b}. The public have voted, and I'm sorry, but you have been dumped from the island."]],
-      beat: '{a} takes {b.posAdj} hand, and they stand up together.' },
+      beat: '{a} takes {b.posAdj} hand, and neither of them lets go.' },
     { id: 'dump-verdict-couple.02', when: ch('public'),
       turns: [['dior', "The couple leaving the villa tonight is…"], ['dior', "…{a} and {b}."]],
       beat: "There's a long silence before anyone moves." },

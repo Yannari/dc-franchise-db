@@ -64,6 +64,18 @@ export const BREAKDOWN_LINES = {
       ['b', "No. Stay. Please."]], beat: "Whatever they fell out over, it doesn't come up once." },
     { id: 'cf.u.03', when: { of: 'unexpected' }, turns: [
       ['a', "Look, forget everything that's happened. Are you okay?"], ['b', "No."], ['a', "Okay. Then that's what matters right now."]] },
+    { id: 'cf.x.01', when: { of: 'friend' }, stage: '{a} brings a glass of water and sits on the end of the bed.', turns: [['a', "Drink this first."], ['b', "I'm fine."], ['a', "You're not, and that's allowed."], ['b', "…Thanks."]] },
+    { id: 'cf.x.02', when: { of: 'friend' }, turns: [['a', "Everyone has a day like this in here. Everyone."], ['b', "Not in front of the whole villa."], ['a', "Especially in front of the whole villa. That's where they all happen."]] },
+    { id: 'cf.x.03', when: { of: 'friend' }, stage: '{a} sits down next to {b} on the steps and says nothing for a while.', turns: [['a', "Better?"], ['b', "A bit."], ['a', "A bit is fine. We'll get to a lot."]] },
+    { id: 'cf.x.04', when: { of: 'friend' }, turns: [['a', "What do you need right now?"], ['b', "I don't know."], ['a', "Then I'll stay until you do."]] },
+    { id: 'cf.x.05', when: { of: 'friend' }, turns: [['b', "I don't even know why I'm crying."], ['a', "You don't need a reason. You've been holding it in."], ['b', "Is it that obvious?"], ['a', "To me it is."]] },
+    { id: 'cf.x.06', when: { of: 'friend' }, turns: [['a', "If anyone asks, I'll tell them you're fine."], ['b', "Am I fine?"], ['a', "You will be. They don't need to know it's not yet."]] },
+    { id: 'cf.x.07', when: { of: 'partner' }, stage: '{a} finds {b} on the terrace and sits down close.', turns: [['a', "You should have told me it was getting too much."], ['b', "I didn't want to spoil it for you."], ['a', "You can't spoil anything. You're the good bit."]] },
+    { id: 'cf.x.08', when: { of: 'partner' }, turns: [['a', "Come here. Lie down. I've got you."], ['b', "Everyone's going to talk."], ['a', "Let them."]] },
+    { id: 'cf.x.09', when: { of: 'partner' }, turns: [['b', "I'm sorry you have to see me like this."], ['a', "I'm not sorry. I'd rather be here than anywhere else."]] },
+    { id: 'cf.x.10', when: { of: 'partner' }, turns: [['a', "Whatever's in your head, say it to me first."], ['b', "What if it's about us?"], ['a', "Then especially."]] },
+    { id: 'cf.x.11', when: { of: 'unexpected' }, turns: [['a', "I'm not here to talk about any of it. I just brought you a tea."], ['b', "Why?"], ['a', "Because I'd want someone to."]] },
+    { id: 'cf.x.12', when: { of: 'unexpected' }, stage: '{a} hovers by the door before coming in.', turns: [['a', "Can I sit here? I won't say anything."], ['b', "…Okay."]], beat: 'They sit in silence, and neither of them brings up the row.' },
   ],
   'no-show': [
     { id: 'ns.01', turns: [['b', "Where were you?"], ['a', "What do you mean?"], ['b', "When I was in pieces. Everyone came except you."]], beat: "{a} doesn't have an answer." },

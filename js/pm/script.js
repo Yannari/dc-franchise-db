@@ -249,6 +249,10 @@ function weightFor(state, entry, ps, facts) {
   // Heard already this season: rarer, and much rarer if recent (a pool of four
   // played the same "pick whoever makes you happy" three times in one season).
   w *= state.ep - last <= 3 ? 0.1 : 0.3;
+  // …and rarer each time it has been heard: the discount looked only at the
+  // last use, so one line of a pool of ten carried six of a season's pile-ins
+  // (season 33, 25 episodes — the villa days wear a pool thinner).
+  w *= Math.pow(0.5, u.eps.length - 1);
   return w;
 }
 function noteUse(state, entry, ps) {

@@ -40,6 +40,13 @@ export const SECRET_LINES = {
     { id: 'vt.06', when: { taken: true }, turns: [['a', "If I'm honest, I'd be happier single than with {pa}."], ['b', "Wow. Okay."], ['a', "I didn't say that."], ['b', "You definitely said that."]] },
     { id: 'vt.07', when: { taken: true }, turns: [['a', "Is it bad that I get excited when {pa} goes to the gym?"], ['b', "Yes. Very bad."]], beat: 'They both laugh, but {b} remembers it.' },
     { id: 'vt.08', when: { taken: true }, turns: [['a', "{pa} is lovely. I'm just not attracted to {pa}."], ['b', "At all?"], ['a', "Not really. Please don't say anything."]] },
+    { id: 'vt.09', when: { taken: true }, turns: [['a', "{pa} wants to talk about the future. I want to talk about what's for dinner."], ['b', "Have you said that?"], ['a', "Not in those words."]] },
+    { id: 'vt.10', when: { taken: true }, turns: [['b', "You've gone quiet about {pa}."], ['a', "Because every time I think about it, I get annoyed."], ['b', "Annoyed how?"], ['a', "Like I'm the only one trying."]] },
+    { id: 'vt.11', when: { taken: true }, turns: [['a', "When {pa} holds my hand, I keep wanting to let go."], ['b', "Oh."], ['a', "I know. Don't look at me like that."]] },
+    { id: 'vt.12', when: { taken: true }, turns: [['a', "I think I picked {pa} because I was scared of being left on my own."], ['b', "And now?"], ['a', "Now I'm scared of being stuck."]] },
+    { id: 'vt.13', when: { taken: true }, turns: [['a', "Everyone says {pa} and me look good together."], ['b', "You do."], ['a', "Looking good isn't the same as feeling good."]] },
+    { id: 'vt.14', when: { taken: true }, turns: [['b', "Are you and {pa} alright?"], ['a', "We're polite. Is that alright?"], ['b', "Not really."], ['a', "No. I didn't think so either."]] },
+    { id: 'vt.15', when: { taken: true }, turns: [['a', "I don't laugh with {pa}. I laugh with everyone else."], ['b', "That's not nothing."], ['a', "No. That's the problem."]] },
   ],
   apology: [
     { id: 'ap.s.01', when: { of: 'sincere' }, stage: '{a} finds {b} alone on the terrace.', turns: [

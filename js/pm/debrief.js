@@ -61,7 +61,9 @@ export function nightDebrief(state, rng, entry, pre, m) {
     // Casa Amor: who came back with somebody, and who was left.
     if (e.kind === 'casa-return' && e.extra?.choice === 'twist') {
       const left = partnerBefore(e.players[0]);
-      if (left) add(1, 'twisted-on', left, e.players[0]);
+      // Only somebody who stuck was twisted on (season 33: Marcus, who came
+      // back with Keisha himself, "I stuck. I actually stuck").
+      if (left && e.extra?.theirs === 'stick') add(1, 'twisted-on', left, e.players[0]);
       add(3, 'twisted', e.players[0], left);
     }
   }

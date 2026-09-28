@@ -260,7 +260,7 @@ export function dumpingScene(state, rng, { atRisk = [], dumped, ballots = [], ch
       ev('dump-verdict-couple', [n, p], { [n]: { approval: 0, fame: 2 }, [p]: { approval: 0, fame: 2 } }, [n, p], order());
     } else {
       done.add(n);
-      ev('dump-verdict', [n], { [n]: { approval: 0, fame: 2 } }, [n]);
+      ev('dump-verdict', [n], { [n]: { approval: 0, fame: 2 } }, [n], { staying: staying > 0 });
     }
   }
   // 3. reaction: the partner left behind, and the ones who cannot stay without them

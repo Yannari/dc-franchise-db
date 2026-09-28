@@ -287,7 +287,7 @@ export const MORE_MOMENTS = {
   // recouple-pick [a, b, (c)]: a picks b, for the `reason` that carried it.
   'recouple-pick': [
     { id: 'rp2.01', when: { reason: 'connection' }, turns: [['a', "The person I'm choosing tonight is the first person I want to talk to every morning. {b}."]] },
-    { id: 'rp2.02', when: { reason: 'connection' }, turns: [['a', "We've had our ups and downs, but I've never doubted how I feel. It's {b}."]] },
+    { id: 'rp2.02', when: { reason: 'connection', known: true }, turns: [['a', "We've had our ups and downs, but I've never doubted how I feel. It's {b}."]] },
     { id: 'rp2.03', when: { reason: 'connection' }, turns: [['a', "This person gets me without me having to explain. {b}."]], beat: '{b} is already smiling.' },
     { id: 'rp2.04', when: { reason: 'attraction' }, turns: [['a', "From the second I saw this person, I couldn't stop looking. {b}."]] },
     { id: 'rp2.05', when: { reason: 'attraction' }, turns: [['a', "I'm going with my gut, and my gut says {b}."]] },

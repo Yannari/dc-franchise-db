@@ -522,6 +522,10 @@ export function stepCamp(state, rng, t, ev) {
 
 function stepCrush(state, rng, t, ev) {
   const { a, b } = t;
+  // Wanted back now: the crush is over, happily (season 33: Mia asked Jordan
+  // to be exclusive, and the same night his crush asked her for "a bit more
+  // affection — you're touchy with other people").
+  if (romance(b, a) >= 5) { t.over = true; t.why = 'returned'; return; }
   t.stage++;
   const bold = st(state, a, 'boldness'), att = attachment(state.profiles[a]);
   const bp = partnerOf(state, b);

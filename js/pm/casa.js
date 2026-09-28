@@ -30,7 +30,12 @@ function returnCeremony(state, rng, decisions) {
   const ev = (kind, players, extra, major = []) => makeEvent(state, rng, { phase: 'firepit', kind, players, aired: true, major, extra });
   const ret = (d, side) => {
     const partner = before[d.name];
-    const players = [d.name, d.with || partner].filter(Boolean);
+    // Who is in the scene: a stayer sits with the one they twisted for, or
+    // alone — the partner is still at Casa. (Cast with the partner as {b},
+    // `taken` read false, and season 33's Jordan, Callum and Kai, all waiting
+    // for partners who walked back in to them, sat "single, nobody coming
+    // back for me".) A returner walks in to their partner.
+    const players = (side === 'stayed' ? [d.name, d.with] : [d.name, d.with || partner]).filter(Boolean);
     // What the one waiting decided, so a walk-in alone to a partner who has
     // moved on is not "I told you I'd come back" / "Get over here".
     const theirs = partner ? decided[partner]?.choice || null : null;

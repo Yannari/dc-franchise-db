@@ -285,9 +285,12 @@ const RITUALS = {
   'snog-marry-pie': (state, rng) => withRules(state, rng, 'snog-marry-pie', state.villa.flatMap(x => {
     const partner = partnerOf(state, x);
     const others = state.villa.filter(o => o !== x);
-    const snog = others.filter(o => o !== partner && attr(state, x, o) != null).sort((a, b) => romance(x, b) - romance(x, a))[0];
+    // Three different people, as the game is played: a single islander's
+    // marry and snog were both their top romance, and the pie could land on
+    // either (season 33: Ryan married, snogged and pied Priya).
     const marry = partner || others.filter(o => attr(state, x, o) != null).sort((a, b) => romance(x, b) - romance(x, a))[0];
-    const pie = others.filter(o => o !== partner).sort((a, b) => friendship(x, a) - friendship(x, b))[0];
+    const snog = others.filter(o => o !== partner && o !== marry && attr(state, x, o) != null).sort((a, b) => romance(x, b) - romance(x, a))[0];
+    const pie = others.filter(o => o !== partner && o !== marry && o !== snog).sort((a, b) => friendship(x, a) - friendship(x, b))[0];
     if (pie) { addRelationshipDimension(pie, x, 'resentment', 1.5); feel(state, pie, 'confidence', -1); }
     if (snog && partner) jealousyHit(state, partner, x, snog, 3, { confirmed: true });
     if (marry) feel(state, marry, 'security', 1.5);

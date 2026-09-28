@@ -53,8 +53,12 @@ function queuesFor(state, cast) {
 function maybeWalk(state, rng, entry) {
   const share = entry?.days ? (entry.days[1] - entry.days[0] + 1) / 3 : 1;
   // Nobody walks the night they stood up and chose somebody, or said yes to
-  // somebody who did (season 33: Jordan picked Mia, then walked).
-  const choseTonight = new Set((state.history || []).filter(e => e.ep === state.ep && e.kind === 'recouple-pick').flatMap(e => e.players.slice(0, 2)));
+  // somebody who did (season 33: Jordan picked Mia, then walked) — nor the
+  // night they came back from Casa with someone new (Nadia, back with Sammy,
+  // walked out over Jordan an hour later), or a bombshell picked them.
+  const coupling = e => e.kind === 'recouple-pick' || e.kind === 'steal'
+    || (e.kind === 'casa-return' && e.extra?.choice === 'twist');
+  const choseTonight = new Set((state.history || []).filter(e => e.ep === state.ep && coupling(e)).flatMap(e => e.players.slice(0, 2)));
   for (const n of state.villa) {
     if (choseTonight.has(n)) continue;
     const { p, cause } = walkRisk(state, n);

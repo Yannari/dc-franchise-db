@@ -81,7 +81,7 @@ for (const [k, v] of Object.entries(STEAMY_NARRATOR)) NARRATOR[k] = [...(NARRATO
 export { HUT, NARRATOR };
 
 export const SPEAKERS = ['a', 'b', 'c', 'dior', 'narrator'];
-export const FACT_KEYS = ['known', 'weeks', 'since', 'reclaim', 'staying', 'came', 'another', 'ago', 'behind', 'friction', 'chose', 'rung', 'thinks', 'persona', 'intent', 'attachment', 'mood', 'bombshell',
+export const FACT_KEYS = ['known', 'sameStart', 'weeks', 'since', 'reclaim', 'staying', 'came', 'another', 'ago', 'behind', 'friction', 'chose', 'rung', 'thinks', 'persona', 'intent', 'attachment', 'mood', 'bombshell',
   'early', 'coupled', 'gap', 'knows', 'faking', 'bPersona', 'bMood', 'bRung', 'stance', 'family',
   'choice', 'cause', 'channel', 'grudge', 'stole', 'bTaken', 'archetype', 'taken', 'loyal', 'late', 'gender', 'bGender', 'myRung', 'phase', 'kind', 'role', 'withB', 'newArrival', 'dialect',
   'comfortedYesterday', 'rowedBefore', 'rowedToday', 'feels', 'of', 'knowsB', 'verdict', 'noticed',
@@ -180,6 +180,9 @@ export function factsFor(state, ev) {
   // coupled that night, "hasn't been feeling it for days").
   const inFor = n => n == null || state.ep - (state.ledger?.firstEp?.[n] ?? state.ep) >= 2;
   f.known = inFor(a) && inFor(b) && inFor(partnerOf(state, a));
+  // Walked in on the same night: only then is "remember how nervous we were
+  // when we walked in" theirs (season 33: Josh, day 5, and Nadia, day 15).
+  f.sameStart = !!b && (state.ledger?.firstEp?.[a] ?? -1) === (state.ledger?.firstEp?.[b] ?? -2);
   // About two weeks in (six episodes): only then is "the best few weeks of my
   // life" true (season 33: Jess said it on day 8).
   f.weeks = state.ep - (state.ledger?.firstEp?.[a] ?? state.ep) >= 6;

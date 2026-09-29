@@ -343,7 +343,7 @@ const SILENCE_LINES = {
     'The silence got used, and it got used by {b}, for {b}’s own purposes.',
     '{a} was fishing. {b} put something completely different in the net and walked off.',
     '{b} took the quiet as an invitation and confessed to an unrelated thing.',
-    '{a} wanted to know about last night and heard about a deal made on Tuesday instead.',
+    '{a} wanted to know about last night and heard about a deal made the other day instead.',
     'It worked, in that {b} talked. It failed, in that none of it was about the subject.',
     '{b} needed somewhere to put something and {a} had accidentally provided one.',
     '{a} got more than {a} came for and none of what {a} came for.',

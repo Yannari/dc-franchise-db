@@ -79,6 +79,8 @@
 //
 // Like every other file in this directory it imports no engine state.
 import { tidyNames } from './tidy.js';
+import { pronouns as _pronouns } from '../players.js';
+const _prOf = n => _pronouns(n) || { sub: 'they', obj: 'them', posAdj: 'their' };
 import { seasonConfig, players } from '../core.js';
 import { HOSTS_BY_FORMAT } from '../shows.js';
 import { PORTRAIT_CSS, TR_NAV_TOP } from './style.js';
@@ -586,9 +588,9 @@ const REACT = {
       '{b} agrees, and privately works out exactly what {a} has handed over and what it is worth.',
       '“That helps me,” {b} says, and it is a true sentence doing two jobs at once.',
       '{b} takes the offer, keeps a little back, and lets {a} believe the whole of it changed hands.',
-      '{b} accepts, and is already working out what this is worth on Thursday.',
+      '{b} accepts, and is already working out what this is worth in a few days.',
       '{b} says yes and means a slightly smaller yes than {a} heard.',
-      '“Good,” says {b}, who has wanted exactly this since Tuesday and never once asked.',
+      '“Good,” says {b}, who has wanted exactly this for days and never once asked.',
       '{b} agrees, and files the fact that {a} asked first.',
       '{b} takes it, and takes note of how much it cost {a} to offer.',
       '{b} accepts with one small condition that sounds like nothing and is not.',
@@ -610,7 +612,7 @@ const REACT = {
       '{b} accepts it without promising anything back, and both of them notice the gap.',
       '{b} says “we will see,” which from {b} is close to a yes.',
       '{b} agrees to the part {b} can agree to and is precise about which part.',
-      '“Ask me again on Thursday,” {b} says, and it is not a brush-off.',
+      '“Ask me again in a few days,” {b} says, and it is not a brush-off.',
       '{b} nods, once, and does not add a word to it.',
       '{b} takes it seriously enough not to answer straight away.',
       '“I will not say yes to something I might not do,” {b} says, which is nearly better.',
@@ -1527,7 +1529,7 @@ const REACT_SINGLE = {
     '{a} runs it through again, looking for the place it comes apart, and finds one.',
     '{a} files it the way {a} files everything, and rearranges tomorrow around it.',
     '{a} does not react at all, which for {a} is a decision rather than an absence.',
-    '{a} works out, standing there, exactly what that is going to be worth on Thursday.',
+    '{a} works out, standing there, exactly what that is going to be worth in a few days.',
     '{a} does the arithmetic before {a} does the feeling, which is the wrong way round and is {a}.',
     '{a} stands very still for a moment, which with {a} means something is being filed.',
     'Nothing about {a} moves. A great deal behind {a} rearranges itself.',
@@ -1580,30 +1582,35 @@ const REACT_SINGLE = {
 // still has is somebody who now intends something, is carrying something, or
 // is one step nearer a name — and in a format where every hour is evidence
 // for a vote that is coming, that is the only closing beat that is true.
+// PLAIN, AND TRUE OF ANY SCENE. This used to say "closer to identifying a
+// traitor" and "carries the information downstairs" under a scene about
+// somebody grieving, or being hungry, or — for a Traitor — hiding, which is
+// not a step towards identifying anybody. Read in a real dump, it was the
+// line most often wrong about the scene above it.
 const FALLBACK_SOLO = {
   smooth: [
-    '{a} keeps it quiet and goes down to dinner closer to identifying a traitor.',
-    'Nobody watched {a} work that out, which is the whole value of it.',
-    '{a} carries the information downstairs and intends to use it at the right table.',
-    'None of that helps {a} tonight. {a} is playing a longer game.',
-    '{a} comes away with the start of a suspicion and the sense to keep quiet about it.',
-    'Whoever the traitors are, they slipped up today, and {a} is a step closer to a name because of it.',
-    '{a} adds another observation to the pile, and the pile is starting to point somewhere.',
-    'Nothing about the evening changes. {a} goes into the round table knowing one more thing than the room does.',
-    '{a} will not act on what {a} learned this week, but {a} will not forget it either.',
-    'What {a} has is not evidence yet, but {a} has been here long enough to know where it is heading.',
+    '{a} keeps it to {aRef}.',
+    '{a} goes back to the others and says nothing about it.',
+    'Nobody sees, and {a} does not bring it up.',
+    '{a} decides it can wait.',
+    '{a} joins the others a few minutes later, as if nothing had happened.',
+    'That is all it is for now, but {a} will not forget it.',
+    '{a} feels a little better for it.',
+    '{a} lets it go, for today.',
+    '{a} is quiet for the rest of the hour.',
+    '{a} goes to find the others.',
   ],
   adverse: [
-    '{a} goes back down having got something wrong and not yet knowing which part.',
-    'Somebody is going to make {a} pay for that hour, and {a} half knows it.',
-    '{a} walks away because walking away is the only option left.',
-    'The damage will not show tonight. That is the kind of mistake that arrives late.',
-    '{a} lost ground this evening and cannot say exactly where.',
-    '{a} thought {a} had a theory forming, but there is a gap in it {a} cannot close.',
-    '{a} goes down to the hall hoping the mistake does not show.',
-    'The week has got harder for {a} and nobody in the room did it to {a}.',
-    '{a} would take that hour back, but there is no taking it back.',
-    '{a} is further from a name than {a} was this morning, and further along in the week.',
+    '{a} comes back looking worse than when {aSub} left.',
+    '{a} is rattled, and it shows on {aPos} face.',
+    '{a} would like that hour back.',
+    'It has not done {a} any good.',
+    '{a} goes back to the group in a worse mood than before.',
+    '{a} is still thinking about it at dinner.',
+    'It leaves {a} unsettled for the rest of the day.',
+    'Somebody noticed, and {a} is not sure who.',
+    '{a} feels worse for it.',
+    '{a} sits out the next conversation entirely.',
   ],
 };
 
@@ -1612,24 +1619,24 @@ const FALLBACK_SOLO = {
 // the scene was for.
 const FALLBACK_PAIR = {
   smooth: [
-    '{a} and {b} leave it where it is, and both of them will come back to it before Thursday.',
-    'Nothing is settled between {a} and {b}, and neither of them wanted it settled tonight.',
-    '{a} and {b} go back in separately, a minute apart, which is a habit now.',
-    'They have not agreed anything. {a} and {b} have agreed to keep having the conversation.',
-    '{a} takes something away from that and {b} takes something different.',
-    '{a} and {b} come out of it with the same short list and neither says so.',
-    'It moves nobody tonight. It has moved {a} and {b} nearer to each other all week.',
-    '{a} and {b} say goodnight in the corridor like two people who have not just done that.',
+    '{a} and {b} leave it there for now.',
+    'Nothing is settled, and neither of them pushes it.',
+    '{a} and {b} go back in separately, a minute apart.',
+    'They agree to talk again later.',
+    '{a} and {b} go back to the others without saying much.',
+    'Neither of them brings it up again today.',
+    '{a} and {b} part on good terms.',
+    'It ends there, and both of them seem fine with that.',
   ],
   adverse: [
-    '{a} and {b} stop before either of them says the thing that could not be walked back.',
-    'It ends because it has to end, not because {a} or {b} is finished.',
-    '{a} and {b} leave it, and it is going to be waiting for both of them tomorrow.',
-    'Neither of them has moved. That is the part {a} and {b} will each report differently.',
-    '{a} goes one way and {b} goes the other and the hall notices the order.',
-    'Nothing was decided and something between {a} and {b} was.',
-    'They will be perfectly civil at breakfast. {a} and {b} both know what that is worth.',
-    '{a} and {b} run out of evening before either runs out of argument.',
+    '{a} and {b} stop before either of them says something they cannot take back.',
+    'It ends because somebody else walks in, not because they are finished.',
+    '{a} and {b} leave it, but it is not over.',
+    '{a} goes one way and {b} goes the other.',
+    'It ends badly, and both of them know it.',
+    'They will be polite at dinner. That is about all.',
+    '{a} walks off first. {b} does not follow.',
+    'Neither of them has changed their mind.',
   ],
 };
 
@@ -1641,7 +1648,7 @@ const CONSEQ_SINGLE = {
       '{a} keeps it. Whoever was near enough to see it did not know what they were looking at.',
       'Nothing is decided by it, and {a} is carrying one more thing into tonight than {a} was this morning.',
       'It goes nowhere today. It has somewhere to go, and {a} knows where.',
-      'Nobody else will remember this by supper. {a} will remember it on Thursday.',
+      'Nobody else will remember this by supper. {a} will remember it in a few days.',
       '{a} files it and the filing is the whole of what happened.',
       'It costs nothing now, which is not the same as costing nothing.',
       'The day carries on exactly as it was going to, with one more thing in it.',
@@ -2771,12 +2778,18 @@ function _receiptConsequence(s, subs, tone, key, used) {
     // scene whose outcome is internal rather than countable — and carry
     // twelve lines a branch against these four. So the fallback now goes
     // THERE rather than to a fifth pool that says nothing.
-    const pool = s.closedNow ? [
+    const pair = subs.b && subs.b !== subs.a;
+    const pool = s.closedNow ? (pair ? [
       'The conversation ends there.',
       'They say nothing further about it.',
       'That is the last either of them says on the subject.',
-      'The discussion stops before anyone else joins them.',
-    ] : (subs.b && subs.b !== subs.a)
+      'The talk stops before anyone else joins them.',
+    ] : [
+      '{a} leaves it there.',
+      '{a} does not come back to it.',
+      'That is the end of it for {a}.',
+      '{a} puts it away and does not take it out again.',
+    ]) : pair
       ? (FALLBACK_PAIR[tone] || FALLBACK_PAIR.smooth)
       : (FALLBACK_SOLO[tone] || FALLBACK_SOLO.smooth);
     say = _fill(_pickUnique(pool, key + '|receipt|fallback', used,
@@ -2793,31 +2806,34 @@ function _receiptConsequence(s, subs, tone, key, used) {
 function _groundedAction(s, subs) {
   const line = String(s.line || '').trim();
   if (!subs.topic || line.includes(subs.topic)) return line;
+  // SAID THE WAY A NARRATOR SAYS IT. "{a} is still reacting to the loss of
+  // {topic}" and "{a} reviews their story about {topic}" were case notes, and
+  // the second printed singular they over gendered players.
   const leads = {
-    'road-third-name': '{a} brings up {topic} on the walk.',
-    'road-suspect-walk': '{other} watches how {topic} behaves on the walk.',
-    /* viewer phrase */ 'road-cover': '{a} rehearses what to say about {topic}.',
-    /* viewer phrase */ 'road-cover-back': '{a} checks whether their story about {topic} still holds up.',
+    'road-third-name': 'On the walk, {a} brings up {topic}.',
+    'road-suspect-walk': 'On the walk, {other} keeps an eye on {topic}.',
+    /* viewer phrase */ 'road-cover': '{a} goes over what to say about {topic}, in case anybody asks.',
+    /* viewer phrase */ 'road-cover-back': '{a} goes back over {aPos} story about {topic}.',
     'road-walk-test': '{other} uses the walk to test {topic}.',
-    'suspicion-third': '{a} raises a concern about {topic}.',
-    'testing-probe': '{other} checks what {topic} has said and done.',
-    /* viewer phrase */ 'cover-deflect': '{a} tries to redirect suspicion toward {topic}.',
-    /* viewer phrase */ 'cover-blend': '{a} uses the grief around {topic} to appear Faithful.',
-    /* viewer phrase */ 'cover-account': '{a} reviews their story about {topic}.',
-    /* viewer phrase */ 'cover-weight': '{a} considers how to keep hiding {topic}.',
-    'grief-loss': '{a} is still reacting to the loss of {topic}.',
+    'suspicion-third': '{a} brings up {topic}.',
+    'testing-probe': '{other} has been quietly testing {topic}.',
+    /* viewer phrase */ 'cover-deflect': '{a} tries to push the suspicion onto {topic}.',
+    /* viewer phrase */ 'cover-blend': '{a} stays close to the people grieving {topic}. It is a good place for a Traitor to be seen.',
+    /* viewer phrase */ 'cover-account': '{a} goes over {aPos} story about {topic} again.',
+    /* viewer phrase */ 'cover-weight': '{a} is alone with {topic}, and with the lie that goes with it.',
+    'grief-loss': 'The castle is still taking in losing {topic}.',
     'grief-vigil': '{a} cannot stop thinking about {topic}.',
-    'romance-bond': '{other} and {topic} confront what is happening between them.',
-    'romance-suspicion': '{other} questions whether {topic} can be trusted.',
-    'callback-history': '{a} brings up their previous-season history with {topic}.',
-    'callback-warning': '{a} shares what earlier seasons taught them about {topic}.',
-    'callback-envy': '{a} asks what the others know about {topic} from previous seasons.',
-    'after-wrong': '{a} reconsiders the vote that banished {topic}.',
-    'after-right': '{a} reconsiders the evidence that exposed {topic} as a Traitor.',
-    'seat-loss': '{a} reacts to the empty place left by {topic}.',
+    'romance-bond': '{other} and {topic} finally talk about what is going on between them.',
+    'romance-suspicion': '{other} is not sure {topic} can be trusted.',
+    'callback-history': '{a} brings up {aPos} history with {topic} from another season.',
+    'callback-warning': '{a} passes on what another season taught {aObj} about {topic}.',
+    'callback-envy': '{a} asks what the others know about {topic} from before.',
+    'after-wrong': '{a} keeps going back to the vote that sent {topic} home.',
+    'after-right': '{a} goes back over how the room caught {topic}.',
+    'seat-loss': '{a} keeps looking at the empty place where {topic} sat.',
     'secret-confidence': '{a} tells {b} a private suspicion about {topic}.',
     'confrontation': '{a} takes it straight to {topic}, in front of the room.',
-    'confrontation-pileon': '{a} and the room round on {topic} at once.',
+    'confrontation-pileon': '{a} goes after {topic}, and the room joins in.',
     'confrontation-defence': '{a} stands up for {topic} in front of the room.',
   };
   const lead = leads[s.topicKind];
@@ -3092,7 +3108,6 @@ const RECALL_LEAD_DAYS_TOPIC = [
   // NO TIME CLAIM IN THE LEAD. The tail says when; "running for some days now"
   // printed over a story that started yesterday.
   'Back to {topic}.',
-  'It is {topic} again.',
   'The same subject as before: {topic}.',
   'This is not the first time {topic} has come up.',
   'Once again it comes back to {topic}.',
@@ -4575,6 +4590,10 @@ function _composeScene(s, key, used, cast) {
     // back to `b` (then `a`) when the topic is off-scene (a behind-the-back
     // check) or the scene is solo.
     other: (s.topic && roll.find(n => n && n !== s.topic)) || b || a,
+    // THE SPEAKER'S PRONOUNS, so a pool can say "her story" instead of
+    // "their story" over somebody the roster says is a woman.
+    aSub: _prOf(a).sub, aObj: _prOf(a).obj, aPos: _prOf(a).posAdj, aRef: _prOf(a).ref,
+    bSub: _prOf(b || a).sub, bObj: _prOf(b || a).obj, bPos: _prOf(b || a).posAdj,
   };
   // A grounded event drives its own closing consequence off the recorded topic
   // and branch; legacy events keep the generic family/tone pools.

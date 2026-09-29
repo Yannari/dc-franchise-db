@@ -1048,7 +1048,7 @@ const LIABILITY_LINES = {
   confronts: [
     '{a} asked {b}, privately and directly, if there was something {a} needed to know.',
     'It came out quiet and it came out honest: {a} looked at {b} and asked them to explain themselves.',
-    '{a} closed the door, sat down, and asked {b} the question they had been not-asking for three days.',
+    '{a} closed the door, sat down, and asked {b} the question they had both been avoiding for days.',
     '"Just tell me," {a} said to {b}, and meant it, and waited a long time for the answer.',
   ],
   // REWRITTEN FOR `night` (round 2, R2). These two lines used to put the
@@ -1356,7 +1356,7 @@ const OPTICS_LINES = {
     '“Yes,” {b} said. “We vote together. What are you going to do about it.”',
     'The couple decided that being feared as a bloc beat being pitied as a couple.',
     '{a} and {b} began arriving at conversations together, on purpose, and the room hated it.',
-    'It was an accusation on Tuesday and a strategy by Thursday, and the two of them made the switch openly.',
+    'It started as an accusation and a few days later it was a strategy, and the two of them made the switch openly.',
     'They confirmed every suspicion the room had and dared it to do anything about it.',
     'A pair that admits it is a pair is much harder to split than one that denies it, and {a} knew that.',
     '{a} and {b} spent the morning being exactly as inseparable as they had been accused of being.',

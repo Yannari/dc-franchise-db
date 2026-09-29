@@ -225,11 +225,11 @@ export const GAME_LINES = {
 
   // ── ask: a asks b anonymously; b answers in front of everyone ────────────
   'game.ask.friendly': [
-    { id: 'game.ask.friendly.01', turns: [
+    { id: 'game.ask.friendly.01', when: { anon: true }, turns: [
       { by: 'a', react: "I am now in anonymous mode.", send: "What's the one thing you wish everybody in here knew about you?" },
       { by: 'b', react: "Aw. Okay, that's a nice one.", send: "That I'm way more of a softie than my pictures look {e:smile}" },
     ] },
-    { id: 'game.ask.friendly.02', turns: [
+    { id: 'game.ask.friendly.02', when: { anon: true }, turns: [
       { by: 'a', say: "I barely know {b}. Let's fix that.", send: "What do you miss most from home?" },
       { by: 'b', react: "Who asked that? That's sweet.", send: "My family. And my bed. Mostly my family lol" },
     ] },
@@ -249,13 +249,21 @@ export const GAME_LINES = {
       { by: 'a', say: "Keep it nice. Nice gets remembered.", send: "Who's your biggest inspiration?" },
       { by: 'b', send: "My dad. He worked two jobs my whole childhood" },
     ] },
+    { id: 'game.ask.friendly.07', when: { anon: false }, turns: [
+      { by: 'a', react: "The wheel landed on {b}. Okay, let's keep it nice.", send: "What's something that always makes you laugh?" },
+      { by: 'b', send: "My little cousins. They're chaos and I love them {e:laugh}" },
+    ] },
+    { id: 'game.ask.friendly.08', when: { anon: false }, turns: [
+      { by: 'a', send: "{b}, the question is yours. What's your biggest guilty pleasure?" },
+      { by: 'b', react: "In front of everybody? Fine.", send: "Reality TV. All of it. No shame" },
+    ] },
   ],
   'game.ask.barbed': [
-    { id: 'game.ask.barbed.01', turns: [
+    { id: 'game.ask.barbed.01', when: { anon: true }, turns: [
       { by: 'a', say: "Nobody will know it's me. Let's have some fun.", send: "Are you really this nice, or is it an act for the ratings?" },
       { by: 'b', react: "Whoa. Okay. Somebody's coming for me.", send: "It's not an act. I'm nice. Whoever asked this, maybe try it sometime" },
     ] },
-    { id: 'game.ask.barbed.02', turns: [
+    { id: 'game.ask.barbed.02', when: { anon: true }, turns: [
       { by: 'a', send: "Do you actually have friends in here, or just people you use?" },
       { by: 'b', react: "Excuse me? Who sent this?", send: "I have real friends in here. You know who you are {e:heart}" },
     ], beat: '{b} reads it again with {b.posAdj} mouth open.' },

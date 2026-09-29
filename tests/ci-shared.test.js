@@ -148,3 +148,20 @@ describe('the argument airs', () => {
     expect(l2).toMatchObject({ person: 'Mateo', kind: 'say' });
   });
 });
+
+import { fill, renderEntry } from '../js/ci/script.js';
+
+describe('a pair on the page', () => {
+  it('names one of the two in the staging, with that person\'s pronouns — the lead if there is one, else the face', () => {
+    const s = withPair();
+    s.people.Luis.gender = 'f';
+    expect(fill(s, '{a} leans back and smiles at {a.posAdj} screen.', { a: '@q0' }, 'narration')).toBe('Mateo leans back and smiles at his screen.');
+    expect(fill(s, '{a} leans back and smiles at {a.posAdj} screen.', { a: '@q0', personA: 'Luis' }, 'narration')).toBe('Luis leans back and smiles at her screen.');
+  });
+
+  it('labels the lead as the one dictating the message', () => {
+    const s = withPair();
+    const r = renderEntry(s, { id: 'x', turns: [{ by: 'a', say: 'Okay.', send: 'Hi {b}' }] }, { a: '@q0', b: '@q1', personA: 'Luis' }, streamFor(1, 'x'));
+    expect(r.lines.every(l => l.person === 'Luis')).toBe(true);
+  });
+});

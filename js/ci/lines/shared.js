@@ -31,7 +31,7 @@ export const SHARED_LINES = {
     { id: 'shared.argue.faceWins.06', when: { intent: 'flirt' }, stage: '{a.face} is smiling at the screen; {a.brain} is not.', turns: [
       { by: 'brain', say: "We are not flirting with the whole Circle." },
       { by: 'face', say: "Not the whole Circle. Just this one." },
-    ], beat: '{a.brain} covers {a.posAdj} eyes.' },
+    ], beat: '{a.brain} covers both eyes.' },
     { id: 'shared.argue.faceWins.07', when: { intent: 'flirt' }, turns: [
       { by: 'face', say: "Add a winky face." },
       { by: 'brain', say: "Absolutely not." },
@@ -42,7 +42,7 @@ export const SHARED_LINES = {
     { id: 'shared.argue.brainWins.01', stage: '{a.brain} has the notepad; {a.face} has the remote.', turns: [
       { by: 'face', say: "Just say hi. Keep it light." },
       { by: 'brain', say: "No. We say exactly this, word for word." },
-    ], beat: '{a.face} rolls {a.posAdj} eyes and reads it out anyway.' },
+    ], beat: '{a.face} rolls both eyes and reads it out anyway.' },
     { id: 'shared.argue.brainWins.02', turns: [
       { by: 'face', say: "That's so long. Nobody reads that much." },
       { by: 'brain', say: "They'll read it. And they'll remember who sent it." },

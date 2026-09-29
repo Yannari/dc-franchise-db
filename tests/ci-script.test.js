@@ -336,3 +336,14 @@ describe('games, parties, apartment life and videos from home — on the page', 
     expect(keys).toEqual(['life.plushie:{"a":"@sammie"}', 'home.video:{"a":"@rebecca"}']);
   });
 });
+
+describe('a game that is not anonymous', () => {
+  it('tells the pools whether the questions are anonymous', () => {
+    const s = room();
+    const mk = id => addScene(s, 'game', [...s.active], { gameId: id, family: 'ask',
+      rounds: [{ promptId: 'ask', answers: {}, questions: [{ asker: '@shubham', target: '@sammie', kind: 'friendly' }] }], results: {}, prize: null });
+    const ask = g => sceneBlocks(s, mk(g)).find(b => b.key === 'game.ask.friendly');
+    expect(ask('ama').extra).toMatchObject({ anon: true });
+    expect(ask('circle-of-fortune').extra).toMatchObject({ anon: false });
+  });
+});

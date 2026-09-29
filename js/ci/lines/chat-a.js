@@ -156,7 +156,7 @@ export const CHAT_A = {
       { by: 'b', react: "Okay, that was smooth.", send: "Okay that was smooth, I'll give you that {e:hearteyes}" },
     ], beat: '{b} covers {b.posAdj} face with a pillow and laughs into it.' },
     { id: 'chat.flirt.warm.02', turns: [
-      { by: 'a', send: "Not gonna lie, your new picture had me stop scrolling {e:fire}" },
+      { by: 'a', send: "Not gonna lie, your picture had me stop scrolling {e:fire}" },
       { by: 'b', react: "Stop.", send: "Stoppp. You're sweet {e:smile}" },
       { by: 'a', send: "Just being honest. It's a problem I have" },
       { by: 'b', send: "It's a good problem {e:wink}" },

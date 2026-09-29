@@ -48,7 +48,10 @@ export function apartmentLife(state, rng) {
     .sort((a, b) => b[1] - a[1]).slice(0, LIFE_PER_DAY).map(([h]) => h);
   return who.map(h => {
     const habit = state.habits[h][Math.floor(rng() * state.habits[h].length)];
-    const sc = addScene(state, 'life', [h], { habit }, [h]);
+    // A pair: one of the two is on screen doing it.
+    const names = state.profiles[h]?.players || [];
+    const person = names.length > 1 ? names[Math.floor(rng() * names.length)] : undefined;
+    const sc = addScene(state, 'life', [h], person ? { habit, person } : { habit }, [h]);
     if (habit === 'pacing') feel(state, h, 'paranoia', 0.5);
     else feel(state, h, 'loneliness', -0.8);
     return sc;

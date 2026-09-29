@@ -24,7 +24,7 @@ export const ROLES = ['a', 'b', 'c', 'host', 'face', 'brain'];
 export const FACT_KEYS = ['intent', 'ending', 'result', 'known', 'early', 'late', 'catfish', 'outed',
   'suspects', 'theory', 'pact', 'friends', 'rivals', 'flirty', 'newcomer', 'mood', 'group', 'style',
   'hurt', 'influencer', 'reason', 'motive', 'mode', 'reasonKind', 'band', 'kiss', 'claim', 'lie',
-  'tone', 'party', 'final', 'slip', 'noticed', 'place', 'self', 'likesC', 'misread'];
+  'tone', 'party', 'final', 'slip', 'noticed', 'place', 'self', 'likesC', 'misread', 'anon'];
 
 export const hostName = () => showWords('the-circle').host || 'Host';
 
@@ -143,15 +143,21 @@ export function fill(state, text, cast, speakerRole) {
     const p = h && state.profiles[h];
     if (!p) return m;
     const shown = p.shown?.name || realFirst(state, h);
+    // A pair in the staging is one of the two, not "Mateo and Luis is": the
+    // one the builder names (whoever won the argument, whoever is on screen),
+    // else the face.
+    const onScreen = p.players.length > 1
+      ? ((role === 'a' && cast.personA) || p.roles?.face || p.players[0]) : null;
     // Staging and beats describe the apartment: the person in it is the real one.
-    if (!prop) return speakerRole === 'narration' ? realFirst(state, h) : shown;
+    if (!prop) return speakerRole === 'narration' ? (onScreen ? onScreen.split(' ')[0] : realFirst(state, h)) : shown;
     if (prop === 'real') return realFirst(state, h);
     if (prop === 'face' || prop === 'brain') return (p.roles?.[prop] || p.players[0]).split(' ')[0];
     if (prop === 'aka') return p.mode === 'catfish' || p.players.length > 1
       ? `${shown}, aka ${realFirst(state, h)},` : shown;
     if (PRONOUN_KEYS.includes(prop)) {
       const knowsTruth = speakerRole === 'host' || speakerRole === 'narration';
-      const g = knowsTruth ? realGender(state, h) : (p.shown?.gender || realGender(state, h));
+      const g = speakerRole === 'narration' && onScreen ? state.people[onScreen].gender
+        : knowsTruth ? realGender(state, h) : (p.shown?.gender || realGender(state, h));
       return pronounsOf(g)[prop];
     }
     return m;
@@ -163,6 +169,7 @@ export function renderEntry(state, entry, cast, rng) {
   const who = role => (role === 'host' ? 'host' : role === 'face' || role === 'brain' ? cast.a : cast[role]);
   const personOf = role => {
     const p = state.profiles[cast.a];
+    if (role === 'a' && cast.personA) return cast.personA.split(' ')[0];
     return (role === 'face' || role === 'brain') && p ? (p.roles?.[role] || p.players[0]).split(' ')[0] : null;
   };
   if (entry.stage) lines.push({ who: cast.a, kind: 'stage', text: fill(state, entry.stage, cast, 'narration') });
@@ -172,16 +179,16 @@ export function renderEntry(state, entry, cast, rng) {
     const tag = x => (person ? { ...x, person } : x);
     if (t.react) lines.push(tag({ who: speaker, kind: 'react', text: fill(state, t.react, cast, t.by) }));
     if (t.say) lines.push(tag({ who: speaker, kind: t.by === 'host' ? 'host' : 'say', text: fill(state, t.say, cast, t.by) }));
-    if (t.video) lines.push({ who: speaker, kind: 'video', text: fill(state, t.video, cast, t.by) });
+    if (t.video) lines.push(tag({ who: speaker, kind: 'video', text: fill(state, t.video, cast, t.by) }));
     if (t.post) {
       const voice = state.profiles[speaker]?.voice;
       const styled = styleMessage(fill(state, t.post, cast, t.by), voice, rng);
-      lines.push({ who: speaker, kind: 'post', text: displayText(styled), spoken: dictation(styled, 'Status', 'Post') });
+      lines.push(tag({ who: speaker, kind: 'post', text: displayText(styled), spoken: dictation(styled, 'Status', 'Post') }));
     }
     if (t.send) {
       const voice = state.profiles[speaker]?.voice;
       const styled = styleMessage(fill(state, t.send, cast, t.by), voice, rng);
-      lines.push({ who: speaker, kind: 'send', text: displayText(styled), spoken: dictation(styled) });
+      lines.push(tag({ who: speaker, kind: 'send', text: displayText(styled), spoken: dictation(styled) }));
     }
   }
   return { id: entry.id, lines, beat: entry.beat ? fill(state, entry.beat, cast, 'narration') : null };
@@ -208,7 +215,8 @@ const BLOCKS = {
     const c = c0 ? (c0.about === a || c0.about === b ? c0.holder : c0.about) : undefined;
     const key = s.data.intent === 'probe'
       ? `chat.probe.${s.data.probes?.[0]?.result || 'pass'}` : `chat.${s.data.intent}.${s.data.ending}`;
-    const out = [{ key, cast: { a, b, c }, extra: { claim: c0?.kind, lie: c0 ? c0.origin.by === a && !c0.truth : false } }];
+    const personA = s.data.lead && state.profiles[a]?.players.length > 1 ? s.data.lead : undefined;
+    const out = [{ key, cast: { a, b, c, personA }, extra: { claim: c0?.kind, lie: c0 ? c0.origin.by === a && !c0.truth : false } }];
     for (const sl of s.data.slips || []) {
       const listener = sl.noticedBy[0] || (sl.by === a ? b : a);
       const k = sl.misread ? 'slip.misread' : `slip.${sl.kind}.${sl.noticedBy.length ? 'noticed' : 'missed'}`;
@@ -401,7 +409,8 @@ const BLOCKS = {
         break;
       case 'ask':
         for (const q of (rounds[0]?.questions || []).slice(0, 3)) {
-          out.push({ key: q.kind === 'catfish' ? `game.ask.catfish.${q.result}` : `game.ask.${q.kind}`, cast: { a: q.asker, b: q.target } });
+          out.push({ key: q.kind === 'catfish' ? `game.ask.catfish.${q.result}` : `game.ask.${q.kind}`, cast: { a: q.asker, b: q.target },
+            extra: { anon: !!g.anonymous } });
         }
         break;
       case 'guess':
@@ -481,7 +490,7 @@ const BLOCKS = {
     }
     return out;
   },
-  life(state, s) { return [{ key: `life.${s.data.habit}`, cast: { a: s.who[0] } }]; },
+  life(state, s) { return [{ key: `life.${s.data.habit}`, cast: { a: s.who[0], personA: s.data.person } }]; },
   // Private to the apartment: only its player is cast.
   'home-video'(state, s) { return [{ key: 'home.video', cast: { a: s.who[0] } }]; },
 };

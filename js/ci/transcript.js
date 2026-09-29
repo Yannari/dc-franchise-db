@@ -8,6 +8,7 @@
 // shown dictated, as the real edit does; later ones show only the screen.
 import { peopleOf } from './state.js';
 import { hostName } from './script.js';
+import { GAMES } from './games-data.js';
 
 const TITLES = {
   profiles: 'Setting up the profiles', recognise: 'A face they know', status: 'Status update',
@@ -15,6 +16,7 @@ const TITLES = {
   'after-party': 'The after-party', ratings: 'The Ratings', hangout: 'The Hangout',
   blocking: 'The blocking', visit: 'The visit', report: 'What the visit "said"', goodbye: 'The goodbye video',
   'final-ratings': 'The final ratings', meet: 'The finalists meet', reveal: 'The winner',
+  game: 'A game', party: 'The party', life: 'Alone in the apartment', 'home-video': 'A video from home',
 };
 
 const realName = (state, h) => peopleOf(state, h).join(' and ');
@@ -34,7 +36,9 @@ export function blockText(state, block) {
   const out = [];
   let dictated = false;
   for (const l of block.lines) {
-    const who = l.person ? `${l.person.toUpperCase()} (for ${shownName(state, l.who)})` : speakerLabel(state, l.who);
+    const shownAs = shownName(state, l.who);
+    const who = !l.person ? speakerLabel(state, l.who)
+      : l.person.toUpperCase() === shownAs ? shownAs : `${l.person.toUpperCase()} (for ${shownAs})`;
     if (l.kind === 'stage') out.push(`  [${l.text}]`);
     else if (l.kind === 'say') out.push(`  ${who}, aloud: "${l.text}"`);
     else if (l.kind === 'video') out.push(`  ${who} (on video): "${l.text}"`);
@@ -55,7 +59,8 @@ export function dayText(state, row) {
   const out = [`═══ Day ${row.day} — ${row.slot} ═══`, ''];
   for (const s of row.ci.aired || []) {
     if (!s.script?.blocks?.length) continue;
-    out.push(`── ${TITLES[s.kind] || s.kind}`);
+    const g = s.kind === 'game' ? GAMES.find(x => x.id === s.game) : null;
+    out.push(`── ${g ? `A game: ${g.name}` : TITLES[s.kind] || s.kind}`);
     for (const b of s.script.blocks) out.push(...blockText(state, b), '');
   }
   return out.join('\n');

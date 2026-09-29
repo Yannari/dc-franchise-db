@@ -138,7 +138,8 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
         blocked: state.blocked.filter(b => b.day === d.day).map(b => b.handle),
         arrivals: arriving, scenes: state.scenes.filter(s => s.day === d.day).length,
         aired: state.scenes.filter(s => s.day === d.day && s.aired)
-          .map(s => ({ id: s.id, kind: s.kind, who: s.who, script: s.script || null })) } };
+          .map(s => ({ id: s.id, kind: s.kind, who: s.who, script: s.script || null,
+            ...(s.kind === 'game' ? { game: s.data.gameId } : {}) })) } };
     rows.push(row);
     gs.episodeHistory.push(row);
   }

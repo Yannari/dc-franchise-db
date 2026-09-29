@@ -133,7 +133,14 @@ export const HUT = {
     { id: 'hut.friend.h12', when: K('friendship', B), turns: [['a', "I didn't expect to make a real friend in here. Then I met {b}."]] },
     { id: 'hut.friend.h13', when: K('friendship', B), turns: [['a', "{b} always tells me the truth, even when I don't want to hear it. That's why I trust {b}."]] },
     { id: 'hut.friend.h14', when: K('friendship', B), turns: [['a', "Whatever happens at the next dumping, I want {b} to stay. I'd miss {b} too much."]] },
-    { id: 'hut.friend.h15', when: K('friendship', B), turns: [['a', "{b} and I could sit and talk for hours. We usually do."]] },
+    { id: 'hut.friend.h15', when: K('friendship', { ...B, known: true }), turns: [['a', "{b} and I could sit and talk for hours. We usually do."]] },
+    // A friendship scene that ended in friction (events.js ENDINGS): the hut is
+    // about that, never a warm line over a scene that just went cold (season
+    // 33: Liam, hurt by Nadia, "we could sit and talk for hours").
+    { id: 'hut.friend.f1', when: K('friendship', { ...B, friction: true }), turns: [['a', "{b} and I usually get on. Today we didn't, and I don't really know why."]] },
+    { id: 'hut.friend.f2', when: K('friendship', { ...B, friction: true }), turns: [['a', "That went worse than I wanted it to. I'll sort it out with {b} later."]] },
+    { id: 'hut.friend.f3', when: K('friendship', { ...B, friction: true }), turns: [['a', "I love {b}. I don't love {b} today."]] },
+    { id: 'hut.friend.f4', when: K('friendship', { ...B, friction: true }), turns: [['a', "Maybe I was a bit much with {b}. Maybe {b} was. Probably both."]] },
     { id: 'hut.friend.h16', when: K('friendship', { ...B, taken: true }), turns: [['a', "My partner gets on with {b} too, which helps. I couldn't be with someone who didn't."]] },
     { id: 'hut.friend.h17', when: K('friendship', { ...B, mood: 'heartbroken' }), turns: [['a', "{b} sat with me for ages and didn't make me talk about it. That's a real friend."]] },
     { id: 'hut.friend.h18', when: K('friendship', { ...B, late: true }), turns: [['a', "{b} has been there since the first week. I'm going to be friends with {b} for life."]] },

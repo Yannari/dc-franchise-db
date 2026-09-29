@@ -45,7 +45,11 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .view{position:relative;aspect-ratio:16/9;overflow:hidden;border-radius:4px;isolation:isolate;
   box-shadow:0 0 0 1px rgba(224,160,73,.18),0 0 90px rgba(0,0,0,.9),0 30px 80px rgba(0,0,0,.8);background:var(--cv-void)}
 .sky{position:absolute;inset:0;transition:opacity 1.6s}
-.sky.dawn{background:linear-gradient(180deg,#27324a 0%,#4a4f66 38%,#8a6f73 62%,#c99a7a 76%,#2a2a33 100%)}
+.sky.dawn{background:radial-gradient(30% 22% at 16% 58%,rgba(255,196,120,.85),rgba(255,140,80,.25) 45%,transparent 70%),radial-gradient(60% 40% at 50% 64%,rgba(240,130,90,.35),transparent 70%),linear-gradient(180deg,#1c2340 0%,#3a3a60 30%,#7a5a78 52%,#d98a6a 66%,#e9a878 72%,#3a3040 100%)}
+.clouds{position:absolute;inset:0 0 45% 0;opacity:.8;transition:opacity 1.6s}
+.clouds i{position:absolute;height:14px;border-radius:50%;background:rgba(255,190,160,.35);filter:blur(6px);animation:cloud 60s linear infinite}
+@keyframes cloud{from{transform:translateX(-10%)}to{transform:translateX(10%)}}
+.night-on .clouds{opacity:.15}
 .sky.night{background:radial-gradient(40% 30% at 78% 18%,rgba(143,166,194,.25),transparent 70%),linear-gradient(180deg,#05070d 0%,#0b1120 55%,#10131b 100%);opacity:0}
 .stars{position:absolute;inset:0 0 40% 0;opacity:0;transition:opacity 2s}
 .stars i{position:absolute;width:2px;height:2px;border-radius:50%;background:#dfe7f5;animation:tw 3s infinite alternate}
@@ -59,11 +63,12 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 /* the world: the castle, laid out in 1600×900 units and moved as a camera */
 .world{position:absolute;left:0;top:0;width:1600px;height:900px;transform-origin:0 0;transition:transform 1.25s cubic-bezier(.65,0,.25,1)}
 .castle{position:absolute;inset:0}
-.room{position:absolute;overflow:hidden;background:#07090d;box-shadow:inset 0 0 0 3px #1a1f29,inset 0 0 40px rgba(0,0,0,.9);transition:filter 1s}
+.room{position:absolute;overflow:hidden;background:#07090d;box-shadow:0 0 0 6px #4a2418,0 0 0 8px #2a120c,inset 0 0 30px rgba(0,0,0,.6);transition:filter 1s}
 .room .glow{position:absolute;inset:0;transition:opacity 1s}
 .room.dark .glow{opacity:.18}
 .room.here{box-shadow:inset 0 0 0 2px rgba(255,219,149,.55),inset 0 0 40px rgba(0,0,0,.7)}
 .world.zoomed .room .lbl,.world.zoomed .room .dots{opacity:0}
+.world.zoomed .room:not(.here){filter:brightness(.28) saturate(.5)}
 .room .lbl,.room .dots{transition:opacity .4s}
 .room .lbl{position:absolute;left:10px;top:8px;font-family:var(--cv-display);font-size:11px;font-weight:700;letter-spacing:.28em;text-transform:uppercase;color:rgba(232,221,193,.55)}
 .room .dots{position:absolute;left:10px;bottom:9px;display:flex;gap:4px}
@@ -173,12 +178,9 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
   </div>
 
   <div class="view" id="view">
-    <div class="sky dawn"></div><div class="sky night"></div>
+    <div class="sky dawn"></div><div class="sky night"></div><div class="clouds" id="clouds"></div>
     <div class="stars" id="stars"></div><div class="moon"></div>
-    <svg class="hills" viewBox="0 0 1600 360" preserveAspectRatio="none">
-      <path d="M0 170 L140 110 L260 150 L420 70 L560 140 L700 120 L860 60 L1000 130 L1160 90 L1300 150 L1460 100 L1600 140 L1600 360 L0 360Z" fill="#141925" opacity=".85"/>
-      <path d="M0 230 L200 180 L380 220 L600 170 L820 215 L1040 175 L1260 220 L1460 185 L1600 210 L1600 360 L0 360Z" fill="#0b0e15"/>
-    </svg>
+    <svg class="hills" id="hills" viewBox="0 0 1600 360" preserveAspectRatio="none"></svg>
     <div class="mist" style="bottom:14%"></div>
 
     <div class="world" id="world">
@@ -205,6 +207,7 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
   </div>
 </div>
 
+<script src="tr-cutaway-scenery.js"></script>
 <script>
 const A = n => '../assets/avatars/' + n + '.png';
 const P = {Gwen:'gwen',Duncan:'duncan',Heather:'heather',Courtney:'courtney',Harold:'harold',Izzy:'izzy',Leshawna:'leshawna',
@@ -215,18 +218,18 @@ const TRAITOR = new Set(['Duncan','Alejandro','Chris']);
 // turrets and crow-stepped gables, two storeys and an attic either side.
 // Rooms are cut into the front, and the camera flies between them.
 const ROOMS = {
-  turret:   {x:700, y:170, w:220, h:120, g:'g-turret', label:"The turret"},
-  alcove:   {x:700, y:300, w:220, h:130, g:'g-alcove', label:'The alcove'},
-  bedL1:    {x:200, y:330, w:240, h:110, g:'g-bed', label:'Bedroom'},
-  bedL2:    {x:450, y:330, w:240, h:110, g:'g-bed', label:'Bedroom'},
-  bedR1:    {x:930, y:330, w:240, h:110, g:'g-bed', label:'Bedroom'},
-  bedR2:    {x:1180,y:330, w:230, h:110, g:'g-bed', label:'Bedroom'},
-  library:  {x:200, y:450, w:490, h:160, g:'g-lib', label:'The library'},
-  landing:  {x:700, y:440, w:220, h:170, g:'g-land', label:'The landing'},
-  hall:     {x:930, y:450, w:480, h:160, g:'g-hall', label:'The great hall'},
-  kitchen:  {x:200, y:620, w:490, h:165, g:'g-kit', label:'The kitchen'},
-  front:    {x:700, y:620, w:220, h:165, g:'g-land', label:'The front hall'},
-  table:    {x:930, y:620, w:480, h:165, g:'g-round', label:'The Round Table'},
+  turret:   {x:700, y:170, w:220, h:120, type:'turret', label:"The turret"},
+  alcove:   {x:700, y:300, w:220, h:130, type:'alcove', label:'The alcove'},
+  bedL1:    {x:200, y:330, w:240, h:110, type:'bed', label:'Bedroom'},
+  bedL2:    {x:450, y:330, w:240, h:110, type:'bed', label:'Bedroom'},
+  bedR1:    {x:930, y:330, w:240, h:110, type:'bed', label:'Bedroom'},
+  bedR2:    {x:1180,y:330, w:230, h:110, type:'bed', label:'Bedroom'},
+  library:  {x:200, y:450, w:490, h:160, type:'library', label:'The library'},
+  landing:  {x:700, y:440, w:220, h:170, type:'landing', label:'The landing'},
+  hall:     {x:930, y:450, w:480, h:160, type:'hall', label:'The great hall'},
+  kitchen:  {x:200, y:620, w:490, h:165, type:'kitchen', label:'The kitchen'},
+  front:    {x:700, y:620, w:220, h:165, type:'front', label:'The front hall'},
+  table:    {x:930, y:620, w:480, h:165, type:'table', label:'The Round Table'},
 };
 
 function castleSvg(){
@@ -329,7 +332,7 @@ function drawRooms(st){
     const lit = id===active || (st.night && id==='turret');
     const people = (id===active ? [] : (where[id]||[]));
     return `<div class="room${id===active?' here':''}${lit?' lit':''}" style="left:${r.x}px;top:${r.y}px;width:${r.w}px;height:${r.h}px">
-      <div class="glow ${r.g}${/turret|alcove|kit/.test(r.g)?' flick':''}"></div><span class="lbl">${r.label}</span>
+      <div class="glow">${TRScenery.room(r.type, r.w, r.h, st.night && !lit)}</div><span class="lbl">${r.label}</span>
       <span class="dots">${people.map(n=>`<img src="${A(P[n])}">`).join('')}</span></div>`;
   }).join('');
   // minimap
@@ -372,6 +375,7 @@ function paint(fresh){
   const st = stateAt(idx), s = STEPS[idx];
   document.getElementById('n').textContent = `${idx+1} / ${STEPS.length}`;
   view.classList.toggle('night-on', st.night);
+  if (st.night !== lastNight) { drawOutside(st.night); lastNight = st.night; }
   document.querySelectorAll('#clock .seg').forEach(el=>{
     const order = ['breakfast','morning','mission','evening','table','night'], cur = order.indexOf(st.seg), me = order.indexOf(el.dataset.k);
     el.classList.toggle('done', me < cur); el.classList.toggle('now', me === cur);
@@ -403,7 +407,7 @@ function paint(fresh){
 }
 function next(){ if(idx < STEPS.length-1){ idx++; paint(true); } }
 function all(){ idx = STEPS.length-1; paint(false); }
-function reset(){ idx = -1; view.classList.remove('night-on'); drawRooms({night:false}); camTo(null);
+function reset(){ idx = -1; view.classList.remove('night-on'); if (lastNight !== false) { drawOutside(false); lastNight = false; } drawRooms({night:false}); camTo(null);
   ['scene'].forEach(i=>document.getElementById(i).innerHTML=''); document.getElementById('caption').classList.remove('in');
   document.getElementById('corner').classList.remove('in'); document.getElementById('pops').innerHTML='';
   document.getElementById('lb').classList.remove('on'); document.getElementById('n').textContent = `0 / ${STEPS.length}`;
@@ -411,7 +415,10 @@ function reset(){ idx = -1; view.classList.remove('night-on'); drawRooms({night:
 function aud(){ document.body.classList.toggle('aud'); document.getElementById('audB').classList.toggle('on'); if(idx>=0) paint(false); }
 document.addEventListener('keydown', e=>{ if(e.key===' '||e.key==='ArrowRight'){ e.preventDefault(); next(); } });
 window.addEventListener('resize', ()=>{ const st = stateAt(idx); camTo(st.cam ? st.cam.room : (st.scene && st.scene.room)); if(idx>=0) drawScene(st,false); });
-document.getElementById('castle').innerHTML = castleSvg();
+function drawOutside(night){ document.getElementById('castle').innerHTML = TRScenery.castle(night); document.getElementById('hills').innerHTML = TRScenery.land(night); }
+let lastNight = null;
+drawOutside(false);
+document.getElementById('clouds').innerHTML = Array.from({length:9},(_,i)=>`<i style="left:${(i*13)%90}%;top:${8+(i*17)%70}%;width:${120+(i*37)%180}px;animation-delay:-${i*7}s"></i>`).join('');
 document.getElementById('stars').innerHTML = Array.from({length:70},()=>`<i style="left:${Math.random()*100}%;top:${Math.random()*100}%;animation-delay:-${Math.random()*3}s"></i>`).join('');
 reset();
 </script>

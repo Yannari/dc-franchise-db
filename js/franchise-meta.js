@@ -580,14 +580,18 @@ export function buildFranchiseMeta(cast, cfg) {
   seasonKeys.forEach((key, idx) => {
     const scale = idx === 0 ? 1 : Math.pow(W.bondOlderSeasonScale, idx);
     const season = _seasons[key];
-    const num = seasonKeyParts(key, season).num;
+    const { num, format: fmt } = seasonKeyParts(key, season);
+    // Where it happened, in words: a Total Drama season is "Season N" as it
+    // always was; another show's names the show, now that a past can cross
+    // shows ("Showmance that ended badly (Perfect Match 1)").
+    const where = !fmt || fmt === DEFAULT_FORMAT ? `Season ${num}` : `${SHOWS[fmt]?.name || 'Season'} ${num}`;
     const add = (a, b, delta, reason, kind, directional, extra) => {
       if (!inCast.has(a) || !inCast.has(b) || a === b) return;
       // Directional kinds (betrayal/blindside) keep each side's feeling separate;
       // symmetric kinds collapse regardless of order.
       const key = (directional ? a + '>>' + b : metaBondKey(a, b)) + '::' + kind;
       if (seeded[key]) { seeded[key].bondDelta += delta * scale * 0.5; return; } // stacking, diminishing
-      seeded[key] = { a, b, bondDelta: delta * scale, reason: `${reason} (Season ${num})`, kind, ...(extra || {}) };
+      seeded[key] = { a, b, bondDelta: delta * scale, reason: `${reason} (${where})`, kind, ...(extra || {}) };
     };
     for (const [name, rec] of Object.entries(season.players || {})) {
       for (const ally of rec.allies || []) add(name, ally, W.bondAllies, `Rode together to the end`, 'allies', false);

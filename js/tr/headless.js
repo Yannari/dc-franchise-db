@@ -2865,7 +2865,9 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   // a season with circles and tests in it is otherwise the same season. See
   // js/tr/strategy.js — nothing in the show turns this off.
   noStrategy = false,
-  announceTraitorCount = false } = {}) {
+  announceTraitorCount = false,
+  // Pairs the franchise remembers, [{ a, b, delta }] (js/franchise-carry.js sums).
+  carried = null } = {}) {
   // ── RE-RUN FROM AN EPISODE ──────────────────────────────────────────
   // The whole season is one deterministic block off `seed`, so a real per-
   // episode re-run works by REPLAYING it and swapping the rng to a fresh seed
@@ -2999,6 +3001,13 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   initCrowd(cast);
   resetKnowledge();
   _seedStartingBonds(cast, seed);
+  // WHAT THE FRANCHISE REMEMBERS (js/franchise-carry.js, passed by tr-run.js):
+  // a real past between two players replaces the fixture's random draw for
+  // that pair — exes, a couple, old allies, a betrayal on another show. No
+  // draws, so a season with nothing carried plays exactly as before.
+  for (const c of Array.isArray(carried) ? carried : []) {
+    if (c && cast.includes(c.a) && cast.includes(c.b) && c.a !== c.b && Number(c.delta)) setBond(c.a, c.b, Number(c.delta));
+  }
 
   const traitors = selectTraitors(cast,
     { traitorCount, chosenTraitors: Array.isArray(chosenTraitors) ? chosenTraitors : null }, rng);

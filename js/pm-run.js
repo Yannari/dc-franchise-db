@@ -25,6 +25,9 @@ import { PERFECT_MATCH_FORMAT } from './shows.js';
 import { playPerfectMatchSeason, perfectMatchScheduleFor } from './pm/season.js';
 import { assignRoles, buildSchedule, withPicks, withBookings } from './pm/schedule.js';
 import { DIALECTS } from './pm/lines/dialect.js';
+import { pmLedgerRecord } from './pm/ledger-record.js';
+import { recordBuiltSeason } from './franchise-meta.js';
+import { carriedFor } from './franchise-carry.js';
 
 export const isPerfectMatchSeason = () => seasonFormat(seasonConfig) === PERFECT_MATCH_FORMAT;
 
@@ -348,6 +351,13 @@ function _seasonRows() {
   return [...aired, ..._preview.rows.filter(r => !airedNums.has(r.num))];
 }
 
+// What the cast bring with them — their pasts with each other on a show and
+// since (js/franchise-carry.js). Relations become pm/kin.js rows, grudges a
+// cold bond and resentment. Empty on a franchise with no history.
+function _carried(cast) {
+  return carriedFor((players || []).filter(p => p && cast.includes(p.name)), seasonConfig || {});
+}
+
 function _build(inputs, rerolls) {
   _lastRefusal = null;
   const saved = Array.isArray(gs.pm?.castOrder) && gs.pm.castOrder.length ? gs.pm.castOrder : null;
@@ -360,21 +370,29 @@ function _build(inputs, rerolls) {
   if (problem) { _refuse(problem); return null; }
   const seed = _seed();
   const outer = gs;
-  let result, inner;
+  const carried = _carried(cast);
+  let result, inner, record = null;
   try {
     result = playPerfectMatchSeason({ cast, setup: resolved, seed, picks: inputs.picks, bookings: inputs.bookings || {}, rerolls,
       splitOrStealOn: inputs.splitOrStealOn, dialect: inputs.dialect, episodes: inputs.episodes, firstIn: inputs.firstIn,
-      arrivalCounts: inputs.arrivalCounts, finalCouples: inputs.finalCouples });
+      arrivalCounts: inputs.arrivalCounts, finalCouples: inputs.finalCouples, carried });
     inner = gs;
+    // What this season leaves the franchise, read while its own relationship
+    // layer is still the live one (pm/ledger-record.js). Recorded when the
+    // last episode airs (simulatePerfectMatchEpisode).
+    try {
+      record = pmLedgerRecord(result.rows || [], result.state, { cast, winners: result.winners || [],
+        seasonName: seasonConfig?.name || null, archetypeOf: n => (players || []).find(p => p?.name === n)?.archetype || null });
+    } catch { record = null; }
   } finally { setGs(outer); }
-  return { cast, resolved, seed, rows: inner.episodeHistory || [], winners: result.winners || [], inner };
+  return { cast, resolved, seed, rows: inner.episodeHistory || [], winners: result.winners || [], inner, record };
 }
 
 /** Make a built season the one on `gs`: the aired rows stay, the rest queue. */
 function _commit(built, inputs, rerolls, airedCount) {
   const { inner } = built;
   gs.pm = { seed: built.seed, castOrder: [...built.cast], setup: built.resolved, winners: built.winners,
-    picks: { ...inputs.picks }, rerolls: { ...rerolls }, built: _sig(inputs) };
+    picks: { ...inputs.picks }, rerolls: { ...rerolls }, built: _sig(inputs), record: built.record || null };
   gs._pmQueue = built.rows.slice(airedCount);
   gs.popularity = { ...(gs.popularity || {}), ...(inner.popularity || {}) };
   gs.relationshipDimensions = inner.relationshipDimensions || {};
@@ -431,7 +449,17 @@ export function simulatePerfectMatchEpisode() {
   gs.activePlayers = [...(row.pm?.villa || [])];
   gs.episode = row.num;
   gs.phase = gs._pmQueue.length ? 'villa' : 'complete';
-  if (!gs._pmQueue.length) gs.pmWinners = [...(gs.pm?.winners || [])];
+  if (!gs._pmQueue.length) {
+    gs.pmWinners = [...(gs.pm?.winners || [])];
+    // The season is over: what it leaves the franchise goes on the ledger,
+    // where the next season of any show reads it (franchise-meta.js).
+    try {
+      const num = Number(gs.seasonNumber || seasonConfig?.seasonNumber);
+      if (gs.pm?.record && num && recordBuiltSeason(gs.pm.record, num)) {
+        if (typeof window !== 'undefined') window.persistFranchiseLedger?.();
+      }
+    } catch (e) { console.warn('Franchise ledger record failed:', e); }
+  }
   return row;
 }
 

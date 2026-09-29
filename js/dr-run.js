@@ -38,7 +38,8 @@
 // test still green.
 import { gs, gsCheckpoints, players, relationships, seasonConfig, seasonFormat, twistsForFormat } from './core.js';
 import { DRAG_FORMAT } from './shows.js';
-import { activeSeasons, seasonKeyParts } from './franchise-meta.js';
+import { activeSeasons, seasonKeyParts, recordBuiltSeason } from './franchise-meta.js';
+import { drLedgerRecord } from './dr/ledger-record.js';
 import { seasonsFromDocs } from './dr/history.js';
 import { seasonFilePath } from './dr/export.js';
 import { getPerceivedBond, addBond } from './bonds.js';
@@ -918,6 +919,18 @@ function _airDragRow(row) {
     gs.phase = 'complete';
     gs.drWinner = row.dr.finale.winner || null;
     gs.drRunnerUp = row.dr.finale.runnerUp || null;
+    // What the season leaves the franchise (js/dr/ledger-record.js): her
+    // family, her showmance, her enemies, read off the live bonds, onto the
+    // ledger the next season of any show seeds from.
+    try {
+      const num = Number(gs.seasonNumber || seasonConfig?.seasonNumber);
+      const rows = (gs.episodeHistory || []).filter(r => r && r.dr);
+      const rec = drLedgerRecord(rows, { seasonName: seasonConfig?.name || null,
+        archetypeOf: n => (players || []).find(p => p?.name === n)?.archetype || null });
+      if (rec && num && recordBuiltSeason(rec, num)) {
+        if (typeof window !== 'undefined') window.persistFranchiseLedger?.();
+      }
+    } catch (e) { console.warn('Franchise ledger record failed:', e); }
   } else {
     gs.phase = gs._drQueue.length ? 'stage' : 'complete';
   }

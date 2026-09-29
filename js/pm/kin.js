@@ -21,7 +21,7 @@
 //     against family), the goodbye when one of them is dumped, and a
 //     sibling's opinion of a partner at the recoupling.
 import { kinshipPairs, REL_KINSHIP, relationships } from '../core.js';
-import { setBond } from '../bonds.js';
+import { setBond, getBond } from '../bonds.js';
 import { addRelationshipDimension } from '../relationships.js';
 import { compatible, BLOOD } from './chemistry.js';
 
@@ -43,12 +43,14 @@ const key = (a, b) => [a, b].sort().join('|');
  * and set where each pair starts. `given` overrides the Relationships tab
  * (tests; a direct call).
  */
-export function loadKin(state, cast, given = null, setup = {}) {
+export function loadKin(state, cast, given = null, setup = {}, carried = []) {
   const inCast = new Set(cast);
   // The islander cards used to carry their own "An ex in the villa" (user:
   // "you could port that there, ex and all"): an ex set there is an Exes row.
   const fromCards = cast.filter(n => setup[n]?.ex && inCast.has(setup[n].ex)).map(n => ({ a: n, b: setup[n].ex, kin: 'exes' }));
-  const all = [...(given || kinshipPairs()), ...fromCards];
+  // What the franchise remembers comes LAST: anything the author wrote about
+  // a pair wins (the first row for a pair is the one kept, below).
+  const all = [...(given || kinshipPairs()), ...fromCards, ...(carried || [])];
   const seen = new Set();
   const rows = all.filter(r => {
     if (!r || !inCast.has(r.a) || !inCast.has(r.b) || r.a === r.b || START[r.kin] == null) return false;
@@ -75,6 +77,24 @@ export function loadKin(state, cast, given = null, setup = {}) {
     }
   }
   return rows.length;
+}
+
+/**
+ * Grudges the franchise remembers (pm-run.js _carried): a betrayal, a
+ * blindside, an old rivalry. A cold bond, and resentment on the side whose
+ * grudge it is — never on a pair the villa already knows as a relation.
+ */
+export function applyCarriedBonds(state, cast, rows = []) {
+  const inCast = new Set(cast);
+  for (const r of rows) {
+    if (!inCast.has(r.a) || !inCast.has(r.b) || r.a === r.b || state.kin?.[key(r.a, r.b)]) continue;
+    const delta = Math.max(-6, Math.min(6, Number(r.delta) || 0));
+    if (!delta) continue;
+    // One pair can carry a grudge from each side; the colder one sets the bond.
+    const cur = getBond(r.a, r.b);
+    if (delta < 0 ? delta < cur : delta > cur) setBond(r.a, r.b, delta);
+    if (r.resent && delta < 0) addRelationshipDimension(r.a, r.b, 'resentment', Math.min(3, -delta / 2));
+  }
 }
 
 /** What two islanders are to each other, or null. */

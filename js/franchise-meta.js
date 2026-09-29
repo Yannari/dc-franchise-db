@@ -580,14 +580,18 @@ export function buildFranchiseMeta(cast, cfg) {
   seasonKeys.forEach((key, idx) => {
     const scale = idx === 0 ? 1 : Math.pow(W.bondOlderSeasonScale, idx);
     const season = _seasons[key];
-    const num = seasonKeyParts(key, season).num;
+    const { num, format: fmt } = seasonKeyParts(key, season);
+    // Where it happened, in words: a Total Drama season is "Season N" as it
+    // always was; another show's names the show, now that a past can cross
+    // shows ("Showmance that ended badly (Perfect Match 1)").
+    const where = !fmt || fmt === DEFAULT_FORMAT ? `Season ${num}` : `${SHOWS[fmt]?.name || 'Season'} ${num}`;
     const add = (a, b, delta, reason, kind, directional, extra) => {
       if (!inCast.has(a) || !inCast.has(b) || a === b) return;
       // Directional kinds (betrayal/blindside) keep each side's feeling separate;
       // symmetric kinds collapse regardless of order.
       const key = (directional ? a + '>>' + b : metaBondKey(a, b)) + '::' + kind;
       if (seeded[key]) { seeded[key].bondDelta += delta * scale * 0.5; return; } // stacking, diminishing
-      seeded[key] = { a, b, bondDelta: delta * scale, reason: `${reason} (Season ${num})`, kind, ...(extra || {}) };
+      seeded[key] = { a, b, bondDelta: delta * scale, reason: `${reason} (${where})`, kind, ...(extra || {}) };
     };
     for (const [name, rec] of Object.entries(season.players || {})) {
       for (const ally of rec.allies || []) add(name, ally, W.bondAllies, `Rode together to the end`, 'allies', false);
@@ -1564,6 +1568,24 @@ export function recordSeasonToLedger(_ep, source = 'live') {
     rec.objectives = evaluateObjectives(seasonConfig, _num, { gs, players });
     _retractStaleUntouchable(_num); // drop now-false untouchable medals on prior seasons
   } catch (e) { console.warn('Achievement/objective detection failed:', e); }
+  return true;
+}
+
+// A SHOW THAT BUILDS ITS OWN RECORD. deriveSeasonRecord reads Total Drama's
+// and Big Brother's state (ballots, alliances, gs.showmances); a show whose
+// engine keeps its own (Perfect Match's couples and feuds, The Traitors'
+// betrayals) builds the same shape itself — js/pm/ledger-record.js — and hands
+// it here, so every show's pairs reach the next season's bond seeding through
+// one door (user: bonds "persist between seasons, between shows").
+// Same guards as recordSeasonToLedger: a locked franchise, or auto-record off.
+export function recordBuiltSeason(rec, seasonNumber, source = 'live') {
+  if (!rec || !rec.format || !Number(seasonNumber)) return false;
+  const af = activeFranchise();
+  if (af.locked) { console.warn(`Franchise "${af.name || 'Untitled'}" is locked — season not recorded.`); return false; }
+  if (source === 'live' && (seasonConfig?.franchiseMeta === false || seasonConfig?.franchiseMetaAutoRecord === false)) return false;
+  rec.source = source;
+  rec.deriverV = LEDGER_DERIVER_V;
+  activeSeasons()[seasonKey(rec.format, Number(seasonNumber))] = rec;
   return true;
 }
 

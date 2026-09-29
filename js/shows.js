@@ -375,6 +375,10 @@ export const SHOWS = {
     // Set at the bottom of js/pm-run.js (Plan 3). Absent until then, which is
     // deliberate: the setup screen must refuse a show with no run loop.
     runnableFlag: '_pmRunnable',
+    // Everybody's past counts, not only a ticked Returning box: an islander
+    // who was somebody's ex, best friend or enemy on another show (or an
+    // earlier villa) walks in as one (js/pm-run.js _carried, pm/kin.js).
+    historyFromLedger: true,
     airNight: 6,
     rosterPlace: 'VILLA',
     hasJury: false,

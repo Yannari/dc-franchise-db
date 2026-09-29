@@ -60,7 +60,9 @@ export function arcAdvanceCiting(api, thread, ep, note, { cite = true, max = 3, 
   }
   const prior = cite ? priorMoments(thread, ep).slice(0, max) : [];
   const citation = prior.length ? citeMoments(thread, ep, max, note) : '';
-  const full = citation ? `${note} ${citation}` : note;
+  // A script keeps its citation on a line of its own, never glued to a
+  // line of dialogue.
+  const full = citation ? `${note}${String(note).includes('\n') ? '\n' : ' '}${citation}` : note;
   return { thread: api.advanceArc(thread.id, full, { source }), note: full,
     cited: prior.map(p => p.ep) };
 }

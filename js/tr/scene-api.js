@@ -88,6 +88,7 @@
 // place a draw is unavoidable — `learn()`'s acceptance roll — is fed a
 // deterministic COMMIT STREAM instead. See `_commitStream`.
 import { gs } from '../core.js';
+import { speakScript } from './speech.js';
 import { addBond as _addBond } from '../bonds.js';
 import { sceneEvidence, sceneDoubt, sceneEvidenceThreshold } from './deduction.js';
 import { crowdMoment, CROWD_COLOURS } from './crowd.js';
@@ -691,7 +692,10 @@ export function createTraitorsSceneApi(ctx = {}) {
       throw new Error('scene-api openArc: an arc is about somebody — parties must be a name list');
     }
     for (const n of parties) _name(n, 'openArc', 'party');
-    const t = openThread(kind, parties, ep, seed || source);
+    // A SCRIPT'S VOICED LINES ARE FILLED HERE, the one door every castle
+    // note walks through. See js/tr/speech.js.
+    const t = openThread(kind, parties, ep, speakScript(seed || source,
+      { key: `${eventId}|${ep}|${parties.join(',')}` }));
     _push({ kind: 'arc-open', players: parties, value: t ? t.id : null, source });
     return t;
   }
@@ -699,7 +703,8 @@ export function createTraitorsSceneApi(ctx = {}) {
   /** One more beat on an arc that is already open. */
   function advanceArc(id, note, { source } = {}) {
     _require(source, 'advanceArc');
-    const t = advanceThread(id, ep, note || source, eventId || '');
+    const t = advanceThread(id, ep, speakScript(note || source,
+      { key: `${eventId}|${ep}|${id}` }), eventId || '');
     _push({ kind: 'arc-advance', value: id, source,
       players: t ? [...t.parties] : null,
       applied: !!t, blockedBy: t ? null : 'no open arc with that id' });

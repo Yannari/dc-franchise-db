@@ -53,7 +53,7 @@ import { findOpenThread, heatAt } from '../threads.js';
 import { suspicion } from '../deduction.js';
 import { activeSeasons } from '../../franchise-meta.js';
 
-import { lineFor } from './lines.js';
+import { lineFor, pronounSlots } from './lines.js';
 
 const FAMILY = 'callback';
 
@@ -139,6 +139,9 @@ export function strongestRelation(history) {
 //                              together, which makes it everybody's fact.
 const RECOGNIZED_LINES = {
   'picked-it-back-up': [
+    '{a} and {b} clock each other from a season they both played.\n{a}: "Well, well."\n{b}: "Don’t. I know."\n{a}: "Last time you told me you’d never do one of these again."',
+    '{a} spots {b} across the hall and grins.\n{b}: "Here we go again."\n{a}: "Here we go again."',
+    '{a} and {b} hug like old friends.\n{b} (to camera): "{a} and me go way back. Everyone’s about to find that out."',
     '{a} and {b} clocked each other from a season they both played and neither of them bothered pretending otherwise.',
     '{a} knew exactly who {b} was the moment they walked in, and said so, and {b} laughed.',
     'It took {a} half a second to place {b}, and about the same for {b} to be pleased about it.',
@@ -149,6 +152,9 @@ const RECOGNIZED_LINES = {
     '{a} and {b} did not have to build anything this morning. It was already there and both of them used it.',
   ],
   'left-it-at-the-door': [
+    '{a} and {b} shake hands like strangers.\n{a}: "Nice to meet you."\n{b}: "Likewise."\n{b} (to camera): "We’ve met. Nobody needs to know that."',
+    '{a} and {b} pretend they’ve never met.\n{a} (to camera): "We played together before. Not a word. Not yet."',
+    '{a} gives {b} a tiny nod, and nothing more.\n{b} (to camera): "History’s a target. We’re keeping it quiet."',
     '{a} and {b} shook hands like strangers in front of a room that had no idea.',
     'Neither {a} nor {b} needed an introduction, and both of them sat through one anyway.',
     '{b} clocked {a} across the hall and went back to their conversation a beat too smoothly.',
@@ -159,6 +165,9 @@ const RECOGNIZED_LINES = {
     'It would have cost them nothing to say it. They did not say it, and both of them noticed the other not saying it.',
   ],
   'still-owed': [
+    '{a} recognises {b} across the hall and goes very still.\n{a} (to camera): "Of all the people. {b}. I haven’t forgotten."',
+    '{a} sees {b} and the smile drops.\n{b}: "Hi, {a}."\n{a}: "{b}."',
+    '{a} and {b} meet again, coldly.\n{a} (to camera): "{b} owes me. {b} knows it."',
     '{a} recognised {b} across the hall and went very still, and it was not a happy stillness.',
     '{b} knew what {a} was before {a} opened their mouth, and had known since the coach.',
     '{a} and {b} had unfinished business from a season nobody else in this castle watched, and it walked in with them.',
@@ -169,6 +178,9 @@ const RECOGNIZED_LINES = {
     '{a} said nothing to {b} at all this morning, which was louder than anything {a} could have said.',
   ],
   'said-it-to-the-room': [
+    '{a} tells the whole table about {b}.\n{a}: "Me and {b} have played together before. Better you hear it from me."\n{b} (to camera): "Thanks for that, {a}."',
+    '{a} outs the history to the room.\n{a}: "I’d rather say it now than have it come out later."',
+    '{a} announces the connection.\n{b}: "Well, that’s put a target on both of us."',
     '{a} told the whole table they had played a season with {b}, and watched the room do the arithmetic.',
     '"We\'ve done this before, {b} and me," {a} said, to everybody, and {b} had not been consulted.',
     '{a} put the history on the table at breakfast rather than let somebody else find it later.',
@@ -257,6 +269,9 @@ registerEvent({
 // the ledger supports, and only the interpretation moves.
 const REFORM_LINES = {
   'alliance-reformed': [
+    '{a} and {b} pick their old alliance back up like no time has passed.\n{a}: "Same as before?"\n{b}: "Same as before."',
+    '{a} and {b} shake on it again.\n{b} (to camera): "{a} and me worked last time. Why change it?"',
+    '{a} and {b} slip straight back into it.\n{a}: "I’ve missed this."\n{b}: "Me too."',
     '{a} and {b} picked their old alliance back up like no time had passed at all.',
     'It took {a} and {b} about a minute to be exactly what they had been last time.',
     '{a} and {b} did not renegotiate anything. The old terms simply resumed.',
@@ -267,6 +282,9 @@ const REFORM_LINES = {
     'Everybody else in this castle is on day one with each other. {a} and {b} are not.',
   ],
   'renegotiated-it': [
+    '{a} and {b} rebuild it from the start, on new terms.\n{b}: "Last time, you let me down at the end."\n{a}: "So this time we write it down."\n{b}: "In our heads."',
+    '{a} and {b} set new rules.\n{a} (to camera): "Old alliance, new rules. Learned my lesson."',
+    '{a} and {b} renegotiate.\n{b}: "Different game. Different deal."',
     '{a} and {b} rebuilt it from the beginning, on new terms, because the old ones had a hole in them.',
     '“Last time you went to the end and I did not,” {b} said. “So no, not the same as before.”',
     'It took an hour and it is a better alliance than the one they had, and both of them know why.',
@@ -277,6 +295,9 @@ const REFORM_LINES = {
     '{a} and {b} spent the evening being honest about a season they had both misremembered.',
   ],
   'not-the-same-terms': [
+    '{a} wants it back exactly as it was. {b} doesn’t.\n{b}: "I love you. But not like last time."\n{a}: "What does that mean?"\n{b}: "It means I’m playing my own game."',
+    '{b} turns down the old deal.\n{a} (to camera): "{b} said no. Kindly. Twice."',
+    '{b} wants something different.\n{b}: "Friends, yes. Alliance, not yet."',
     '{a} wanted it back exactly as it was. {b} did not, and said so, kindly, twice.',
     '“I am not doing what I did last time,” said {b}, and {a} had no way to argue with that.',
     'One of them offered the old alliance and the other one accepted a much smaller version.',
@@ -287,6 +308,9 @@ const REFORM_LINES = {
     '{a} spent the rest of the evening working out when {b} had decided that.',
   ],
   'somebody-noticed': [
+    '{a} and {b} resume an old alliance in a corner, and {c} watches from the doorway.\n{c} (to camera): "Those two. I knew it."',
+    '{c} catches {a} and {b} whispering.\n{c}: "Old friends, are we?"\n{a}: "Something like that."',
+    '{a} and {b} get spotted.\n{c} (to camera): {cam:holding-info}',
     '{a} and {b} resumed an old alliance in a corner, and {c} watched the whole of it from the doorway.',
     'It took ninety seconds and {c} saw every one of them.',
     'Two returnees rebuilding a bloc is the most legible thing in this castle, and {c} read it.',
@@ -364,6 +388,9 @@ registerEvent({
 // things they do with it.
 const GRUDGE_LINES = {
   'grudge-resurfaced': [
+    '{a} still hasn’t forgiven what {b} did, seasons ago, and makes sure {b} knows it.\n{a}: "You remember what you did."\n{b}: "That was years ago."\n{a}: "Not to me."',
+    '{a} brings up the past.\n{a}: "You stabbed me in the back once. Not again."',
+    '{a} holds the grudge tight.\n{a} (to camera): "{b} knows what {bSub} did. I’m not letting it go."',
     '{a} still hadn’t forgiven what {b} did to them, seasons ago, and made sure {b} knew it.',
     '{a} brought up something {b} had assumed everybody had forgotten, and nobody had.',
     'It had been years. {a} produced it in full detail, in front of people, anyway.',
@@ -374,6 +401,9 @@ const GRUDGE_LINES = {
     '“You know what you did,” said {a}, in a room where nobody else did.',
   ],
   'said-it-once-and-stopped': [
+    '{a} says it once, quietly, then never again all evening.\n{a}: "I haven’t forgotten."\n{b}: "I know."',
+    '{a} lets {b} know, and leaves it there.\n{b} (to camera): "One sentence. That was enough."',
+    '{a} mentions the past, briefly.\n{a} (to camera): "Said it. Done. Now we play."',
     '{a} said the thing, once, quietly, and then never mentioned it again all evening.',
     'It got named. It did not get relitigated, and {b} was more unsettled by that than by a row.',
     '{a} let {b} know the account was still open and declined to read out the balance.',
@@ -384,6 +414,9 @@ const GRUDGE_LINES = {
     '{a} put it on the table, face down, and left it there.',
   ],
   'wants-something-for-it': [
+    '{a} doesn’t want an apology from {b}. {a} wants a vote.\n{a}: "You owe me. Tuesday, you vote with me."\n{b}: "And then we’re square?"\n{a}: "Then we’re square."',
+    '{a} cashes in the grudge.\n{a} (to camera): "{b} owes me one. I’m collecting."',
+    '{a} names the price.\n{b}: "That’s steep."\n{a}: "So was what you did."',
     '{a} did not want an apology from {b}. {a} wanted a vote, and named the night.',
     'The grudge turned out to be negotiable, and the price was specific.',
     '“We can be square,” said {a}, “and here is what square costs.”',
@@ -394,6 +427,9 @@ const GRUDGE_LINES = {
     'What {a} produced was not a grievance. It was an invoice.',
   ],
   'let-it-go-at-last': [
+    '{a} looks at {b} and decides it was a very long time ago.\n{a}: "You know what? I’m done being angry."\n{b}: "Really?"\n{a}: "Really."',
+    '{a} finally forgives {b}.\n{a} (to camera): "Holding onto it was only hurting me."',
+    '{a} offers {b} a hand.\n{a}: "Fresh start."\n{b}: "I’d like that."',
     '{a} looked at {b} across a castle and decided, finally, that it was a very long time ago.',
     '“I am not doing this again,” {a} said, mostly to {a}, and meant it about the grudge.',
     'It came up and {a} put it back down, and {b} did not know what to do with that.',
@@ -463,6 +499,9 @@ registerEvent({
 // perfectly well decide, out loud, that they are not doing this again.
 const REUNION_LINES = {
   'reunion-spark': [
+    '{a} and {b} find the old feelings haven’t gone anywhere.\n{b}: "Still there, then."\n{a}: "Still there."',
+    '{a} and {b} pick up where they left off.\n{a} (to camera): "I told myself I was over it. I was lying."',
+    '{a} and {b} end up by the fire together.\n{b}: "This is a terrible idea."\n{a}: "The worst."',
     '{a} and {b} found out the old feelings hadn’t actually gone anywhere.',
     'Whatever {a} and {b} had ended, apparently, only on paper.',
     '{a} and {b} were fine, and adult, and completely over it, for about two days.',
@@ -473,6 +512,9 @@ const REUNION_LINES = {
     'Neither of them said anything about it. Everybody in that hall could see it anyway.',
   ],
   'agreed-not-to': [
+    '{b} says it before {a} can.\n{b}: "Not here."\n{a}: "No. Not here."\n{a} (to camera): "Relieved. And not."',
+    '{a} and {b} agree to keep it in the past.\n{b} (to camera): "It was lovely. It’s over. It has to be."',
+    '{a} and {b} set a boundary.\n{a}: "Friends."\n{b}: "Just friends."',
     '“Not here,” said {b}, before {a} had asked, and {a} was relieved and was not.',
     '{a} and {b} sat down and agreed, like adults, that this was not going to happen again.',
     'They had the conversation on the first night and got it out of the way properly.',
@@ -483,6 +525,9 @@ const REUNION_LINES = {
     'The old feelings turned up on schedule and got shown the door on schedule too.',
   ],
   'one-of-them-still-is': [
+    '{b} is over it. {a} has been pretending to be since day one.\n{b}: "It’s so nice that we’re just mates now."\n{a}: "Yeah. So nice."',
+    '{a} still has feelings.\n{a} (to camera): "{b} moved on. I didn’t. Great."',
+    '{a} watches {b} laugh with someone else.\n{a} (to camera): "It shouldn’t sting. It stings."',
     '{b} is over it. {a} has been pretending to be since the first day.',
     'It was mutual once. It is currently mutual in one direction only, and {a} knows which.',
     '{b} was warm and easy about all of it, which is exactly the problem.',
@@ -493,6 +538,9 @@ const REUNION_LINES = {
     '{a} has done the arithmetic four times and got the same answer each time.',
   ],
   'the-room-got-there-first': [
+    '{a} and {b} do nothing at all, and the castle has them back together by lunch.\n{b}: "Apparently we’re back together."\n{a}: "News to me."',
+    'The rumour runs ahead of them.\n{a} (to camera): "We’ve barely spoken. They’ve got us married off already."',
+    '{a} and {b} get teased at lunch.\n{b}: "We’re not!"\n{a}: "We’re really not."',
     'Two people did nothing at all and the castle had them back together by lunchtime.',
     '{c} worked it out inside an hour and told two people, and neither of them checked.',
     '{a} and {b} have been extremely careful and the room does not require evidence.',
@@ -571,6 +619,9 @@ registerEvent({
 // supports (these two were rivals) and only the interpretation moves.
 const RIVALRY_LINES = {
   'rivalry-carried-over': [
+    'Whatever it was between {a} and {b} last time, it hasn’t cooled.\n{a}: "Still here, then."\n{b}: "Still beating you, then."',
+    '{a} and {b} square up again.\n{b} (to camera): "Same rivalry. Different castle."',
+    '{a} and {b} trade barbs.\n{a}: "Try not to lose this one."\n{b}: "Try to keep up."',
     'Whatever it was between {a} and {b} last time, it clearly hadn\'t cooled off.',
     '{a} and {b} were competing about something before either of them noticed they had started.',
     'Everything between {a} and {b} is still a scoreboard, and both of them can read it.',
@@ -578,6 +629,9 @@ const RIVALRY_LINES = {
     'Put {a} and {b} in a room and the temperature does the same thing it always did.',
   ],
   'called-a-truce': [
+    '{b} calls a truce.\n{b}: "We were rivals last time. This is a different game."\n{a}: "Fair."\nBoth of them mean it.',
+    '{a} and {b} agree to put it aside.\n{a} (to camera): "Different game. Different rules. Truce."',
+    '{a} and {b} shake on a ceasefire.\n{b}: "For now."\n{a}: "For now."',
     '\u201cWe were rivals on a beach,\u201d {b} said to {a}. \u201cThis is not a beach.\u201d {a} agreed, and both of them meant it.',
     '{a} and {b} agreed to leave the old season where it was, out loud, in a corridor, at some length.',
     '{b} put it down first, which surprised {a}, and then {a} put it down too.',
@@ -585,6 +639,9 @@ const RIVALRY_LINES = {
     '{a} said the thing {a} should have said seasons ago, and {b} took it better than {a} deserved.',
   ],
   'reopened-it': [
+    '{a} raises the specific thing, by name, and {b} remembers it exactly.\n{a}: "That last night. You lied to my face."\n{b}: "I did not lie."\n{a}: "You absolutely lied."',
+    '{a} reopens the old argument.\n{b} (to camera): "{a} can’t let it go. Years later."',
+    '{a} brings up that one moment.\n{b}: "Seriously? Still?"',
     'It was not a general chill. {a} raised the specific thing, by name, and {b} remembered it exactly.',
     '{a} and {b} got into the old argument again, in full, with the same two positions and less patience.',
     'Whatever the two of them had left unfinished last time, {a} finished it in a stone corridor at midnight.',
@@ -592,6 +649,9 @@ const RIVALRY_LINES = {
     'The old grievance came out whole, on both sides, and neither of them had improved at it.',
   ],
   'useful-rivalry': [
+    '{a} points out that the room thinks they hate each other, and that’s worth something.\n{a}: "Nobody will ever suspect us of working together."\n{b}: "Oh, that’s good."',
+    '{a} and {b} use the rivalry as a smokescreen.\n{b} (to camera): "Public enemies. Private allies. Perfect."',
+    '{a} and {b} agree to keep fighting in public.\n{a}: "Make it look real."\n{b}: "It was real."',
     '{a} pointed out to {b} that the room already believes they hate each other, and that is worth something.',
     '\u201cNobody will ever put us together,\u201d {b} said to {a}. \u201cSo let\u2019s not be put together.\u201d',
     'Two old rivals worked out, quite fast, that being old rivals is the best available disguise.',
@@ -651,6 +711,9 @@ registerEvent({
 // closes the arc now.
 const DEFEND_HISTORY_LINES = {
   'defended-by-history': [
+    '{a} shuts down the suspicion around {b} with history nobody else has.\n{a}: "I played with {b} before. I know exactly who {bSub} is. It’s not {bObj}."',
+    '{a} vouches for {b}.\n{a}: "I’ve seen {b} under pressure. {bSub} doesn’t lie."',
+    '{a} uses the past to defend {b}.\n{b} (to camera): "{a} had my back. Again."',
     '{a} shut down the suspicion around {b} with the one thing nobody else in the room could offer: they’d already vouched for each other once before.',
     '“I have played a whole season with {b},” said {a}, and the room had no answer to that.',
     '{a} produced a reason to trust {b} that predated everybody else in the castle.',
@@ -661,6 +724,9 @@ const DEFEND_HISTORY_LINES = {
     'It took {a} about a minute and the name came off the table for the night.',
   ],
   'history-is-not-evidence': [
+    '{a} defends {b} with their history, and somebody cuts in: that was a different show.\n{a}: "But I know {bObj}."\nNobody moves. {b} is still on the table.',
+    '{a}’s defence doesn’t land.\n{a} (to camera): "They don’t care what happened before. Fair enough."',
+    '{a} tries history, and it fails.\n{b}: "Thanks for trying."',
     '“That was a different show,” somebody said to {a}, and the room agreed, and {b} was still on the table.',
     '{a} vouched for {b} out of a whole season, and the room pointed out that seasons end differently.',
     'The defence was the best available and it was not good enough, and {a} knew it halfway through.',
@@ -671,6 +737,9 @@ const DEFEND_HISTORY_LINES = {
     'The room let {a} finish, politely, and then went back to exactly where it had been.',
   ],
   'now-they-are-a-pair': [
+    '{a} defends {b} so completely that the castle stops counting them as two people.\n{b} (to camera): "Now we’re one target instead of two."',
+    '{a} goes all in for {b}.\n{a}: "If it’s {b}, it’s me as well."\n{b}: "Don’t say that."',
+    '{a} ties {aRef} to {b}.\n{a} (to camera): "In for a penny."',
     '{a} defended {b} so completely that the castle stopped counting them as two people.',
     'The name came off the table and a different, worse name went on it, which was “both of them”.',
     '{a} spent everything on {b} and the room noticed the size of the payment.',
@@ -681,6 +750,9 @@ const DEFEND_HISTORY_LINES = {
     'By the end of the evening {a} and {b} were one item on everybody’s list.',
   ],
   'would-not-spend-it': [
+    '{a} could say the thing about the old season, and doesn’t.\n{a} (to camera): "Not tonight. I’m saving it."',
+    '{a} stays quiet about the history.\n{b} (to camera): "{a} could have helped me. {a} didn’t."',
+    '{a} keeps the card in {aPos} pocket.\n{a} (to camera): {cam:holding-info}',
     '{a} could have said the thing about the old season. {a} listened to the whole evening and did not.',
     '{b} looked at {a} once, waiting. {a} looked at the fire.',
     'It would have taken one sentence and {a} decided the sentence was too expensive tonight.',
@@ -777,6 +849,9 @@ registerEvent({
 // intuition and loyalty.
 const WARN_LINES = {
   warned: [
+    '{a} pulls {c} aside and tells {cObj} exactly what {b} is capable of.\n{a}: "I’ve played with {b}. Be careful."\n{c}: "Careful how?"\n{a}: "Just careful."',
+    '{a} warns {c} about {b}.\n{a}: "{b} will smile at you and then vote you out."',
+    '{a} gives {c} a warning.\n{c} (to camera): "{a} really doesn’t trust {b}."',
     '{a} pulled {c} aside and told them exactly what {b} was capable of, from experience.',
     '{a} gave {c} the short version of what {b} did last time, and {c} went very quiet.',
     '“Whatever {b} tells you,” {a} said to {c}, “remember I said this first.”',
@@ -787,6 +862,9 @@ const WARN_LINES = {
     '{a} said one sentence about a night from another show and {c} has not stopped thinking about it.',
   ],
   'already-knew': [
+    '{a} warns {c} about {b}.\n{c}: "I know."\n{a}: "You… know?"\n{c}: "I’m not stupid."',
+    '{c} is ahead of {a}.\n{a} (to camera): "Didn’t expect the ‘I know’."',
+    '{c} already has {b} figured out.\n{c}: "Tell me something I don’t know."',
     '{a} warned {c} about {b}, and {c} said “I know,” and {a} had not expected the “I know”.',
     '{c} had the whole story already, from somebody else, with different details in it.',
     '“You are the third person to tell me that,” said {c}, which told {a} something about the castle.',
@@ -797,6 +875,9 @@ const WARN_LINES = {
     '{c} thanked {a} for it and had clearly not needed any of it.',
   ],
   'defended-them-instead': [
+    '{c} listens, then defends {b}.\n{c}: "{b} has been nothing but decent to me this week."\n{a}: "That’s how it starts."',
+    '{c} won’t hear it.\n{c}: "I judge people as I find them."',
+    '{c} sticks up for {b}.\n{a} (to camera): "{c} will learn."',
     '{c} listened to all of it and then said {b} had been nothing but decent to {c} this week.',
     '“That is not the person I have met,” said {c}, and would not be moved off it.',
     '{a} warned {c} about {b} and {c} came away with a lower opinion of {a}.',
@@ -807,6 +888,9 @@ const WARN_LINES = {
     '{c} took nothing from it except a fact about how much {a} minds.',
   ],
   'used-it-immediately': [
+    '{c} thanks {a} for the warning, and has it at the table within the hour.\n{a} (to camera): "I told {c} in confidence. Lesson learned."',
+    '{c} runs with the warning.\n{c}: "Someone who knows {b} says {bSub}’s dangerous."',
+    '{c} uses the information straight away.\n{a} (to camera): "Well, that backfired."',
     '{c} thanked {a} for the warning and had it at the table within the hour.',
     'What {a} gave {c} in confidence was public by lunchtime, with {a}’s name still on it.',
     '{c} took the whole story, and the source, and spent both.',
@@ -899,6 +983,9 @@ registerEvent({
 // added, because how somebody takes being narrated at is a fact about them.
 const DIFFERENT_PERSON_LINES = {
   redemption: [
+    '{a} admits {b} is playing a totally different game.\n{a}: "You’re not who you were last time."\n{b}: "Good. That person lost."',
+    '{a} is thrown by the new {b}.\n{a} (to camera): "I expected the old {b}. This one’s calmer. Smarter."',
+    '{a} tells {b} {bSub} has changed.\n{b}: "People do."',
     '{a} admitted {b} was playing a completely different game than the one {a} remembered — and it was throwing them.',
     '{a} came in ready to dislike {b} and has spent a week failing to.',
     'Whoever {b} was last time, {a} has had to concede this is not that person.',
@@ -911,6 +998,9 @@ const DIFFERENT_PERSON_LINES = {
     'Whatever happened to {b} between then and now, {a} would like to know what it was.',
   ],
   disappointment: [
+    '{a} expected {b} to be exactly who {bSub} was last time.\n{a}: "Where’s the old {b}? The fun one?"\n{b}: "Left at home."',
+    '{a} misses the old {b}.\n{a} (to camera): "This {b} is a stranger."',
+    '{a} is disappointed.\n{a}: "You used to be a laugh."\n{b}: "I used to lose."',
     '{a} expected {b} to be exactly who they were last time. This {b} was a stranger wearing the name.',
     '{a} had been looking forward to seeing {b} again, and got somebody colder than they remembered.',
     'The {b} that {a} liked seems to have stayed at home this season.',
@@ -928,6 +1018,9 @@ const DIFFERENT_PERSON_LINES = {
     '{a} gave it a week before admitting to themselves that {b} had changed.',
   ],
   dissonance: [
+    '{a} keeps comparing this {b} to the old one, out loud.\n{a}: "Last time you’d have—"\n{b}: "Stop. Please. It’s not last time."',
+    '{a} can’t stop comparing.\n{b} (to camera): "{a} keeps talking to someone who doesn’t exist any more."',
+    '{a} brings up the past again.\n{b}: "Can we be in this game, please?"',
     '{a} kept comparing this version of {b} to the one they remembered, out loud, to {b}’s visible annoyance.',
     '{a} has said “you never used to” to {b} three times today, and {b} has counted all three.',
     '{b} would quite like to be judged on this season, and {a} keeps producing the last one.',
@@ -940,6 +1033,9 @@ const DIFFERENT_PERSON_LINES = {
     'By the second mile {b} was answering in the past tense out of self-defence.',
   ],
   'asked-to-be-let-off': [
+    '{b} says it on the road, and doesn’t say it lightly.\n{b}: "I’m not that person any more."\n{a}: "Prove it."\n{b}: "I’m trying to."',
+    '{b} asks for a clean slate.\n{b}: "Judge me on this game. Just this one."',
+    '{b} asks {a} to let go of the past.\n{a} (to camera): "Maybe. We’ll see."',
     '“I am not that person,” said {b}, on the road, and did not say it lightly.',
     '{b} asked {a}, straight out, to stop introducing {b} by a season {b} has left behind.',
     '“You keep telling people who I was,” said {b}. “I am walking right here.”',
@@ -950,6 +1046,9 @@ const DIFFERENT_PERSON_LINES = {
     '{a} had not realised any of it was landing. {b} explained, at some length, that all of it was.',
   ],
   'stopped-comparing': [
+    'Somewhere on the road, {a} stops measuring {b} against the old version.\n{a}: "I like this you better."\n{b}: "So do I."',
+    '{a} lets the old {b} go.\n{a} (to camera): "New game. New person. Fine."',
+    '{a} decides to take {b} as {bSub} is now.\n{b}: "Thank you."',
     'Somewhere on that road {a} stopped measuring {b} against a person who no longer exists.',
     '{a} let the old season go, quietly, without announcing it, and the walk got easier.',
     'It took a fortnight and two miles and {a} arrived at judging {b} on this week.',
@@ -1032,6 +1131,9 @@ registerEvent({
 });
 const ENVY_LINES = {
   'left-out': [
+    '{a} sits outside a conversation about who did what to whom, having done none of it.\n{a} (to camera): "They’ve all got history. I’ve got nothing. Just me."',
+    '{a} listens to the old stories with nothing to add.\n{a} (to camera): {cam:left-out}',
+    '{a} feels like the outsider.\n{a}: "Anyone want to hear about my life?"\nNobody answers.',
     '{a} sat outside a conversation about who did what to whom, and had done none of it to anybody.',
     '{b} and {c} spent twenty minutes on a falling-out {a} had only ever heard about.',
     '{a} laughed in the right places at a story {a} was not in, and went to bed early.',
@@ -1042,6 +1144,9 @@ const ENVY_LINES = {
     'It is a very long story and {a} is not in any of it.',
   ],
   'asked-to-be-told': [
+    '{a} makes {b} tell the whole thing from the beginning, with names.\n{a}: "Start from the start. Who did what?"\n{b}: "How long have you got?"',
+    '{a} gets the full history.\n{a} (to camera): "Now I know who hates who. Useful."',
+    '{a} asks to be filled in.\n{b}: "Okay. So, it all started…"',
     '{a} made {b} tell the whole thing from the beginning, with names, and listened to all of it.',
     '“Start at the start,” said {a}, and {b} did, for about half an hour.',
     '{a} decided that not knowing was worse than asking, and asked, in front of two people.',
@@ -1052,6 +1157,9 @@ const ENVY_LINES = {
     '{a} took notes, more or less, and {b} noticed the taking of them.',
   ],
   'made-a-virtue-of-it': [
+    '{a} turns it into a strength.\n{a}: "I’ve never played with any of you. That makes me the only clean person here."\n{b}: "Or the only unknown."',
+    '{a} leans into being fresh.\n{a} (to camera): "No history. No grudges. No target."',
+    '{a} sells {aRef} as neutral.\n{a}: "I’m Switzerland."',
     '“I have never played with any of you,” {a} said, “which makes me the only clean person here.”',
     '{a} pointed out, pleasantly, that everybody with a history has a reason to lie about it.',
     '{a} turned having no history into the only argument in the room nobody could answer.',
@@ -1062,6 +1170,9 @@ const ENVY_LINES = {
     '{a} stopped apologising for not being in the story about an hour ago.',
   ],
   'went-and-found-one': [
+    '{a} can’t join {b} and {c}’s story, so {aSub} starts one with somebody else.\n{a} (to camera): "If I can’t have history, I’ll make some."',
+    '{a} builds new bonds.\n{a}: "Fancy a cuppa? We should get to know each other."',
+    '{a} finds a new ally.\n{a} (to camera): "Their past. My future."',
     '{a} could not join {b} and {c}’s story, so {a} spent the morning starting one with somebody else.',
     'By lunch {a} had a history in this castle that has nothing to do with any previous season.',
     '{a} left that conversation and went and made a different one, deliberately, with somebody outside it.',
@@ -1157,6 +1268,9 @@ registerEvent({
 // knowledge about how this ends, and the fork is what they do with it.
 const ALUMNI_LINES = {
   'alumni-bond': [
+    '{a} and {b} have gone the distance together once already.\n{a}: "Final two again?"\n{b}: "Wouldn’t bet against us."',
+    '{a} and {b} fall back into their old rhythm.\n{b} (to camera): "{a} and me have been to the end before. We know the way."',
+    '{a} and {b} share a look.\n{a}: "Like old times."',
     '{a} and {b} had already gone the distance together once. That kind of thing doesn’t just evaporate.',
     '{a} and {b} have both sat in the last chairs of a season, and neither had to explain to the other what that costs.',
     'Everybody else here is guessing what the end feels like. {a} and {b} are not.',
@@ -1167,6 +1281,9 @@ const ALUMNI_LINES = {
     '{a} said about four words to {b} and {b} understood all of them.',
   ],
   'compared-endings': [
+    '{a} and {b} spend an hour on how their season actually finished.\n{a}: "You should have won."\n{b}: "No, you should have."\n{a}: "We’re never going to agree on this."',
+    '{a} and {b} replay their old final.\n{b} (to camera): "We disagree on basically all of it."',
+    '{a} and {b} argue about the past.\n{a}: "That’s not how it happened."',
     '{a} and {b} spent an hour on how their season had actually finished, and disagreed about most of it.',
     'Two finalists, one ending, two completely different accounts of it.',
     '{b} remembered a conversation {a} would swear never happened, and neither of them is lying.',
@@ -1177,6 +1294,9 @@ const ALUMNI_LINES = {
     'By the end of it {a} understood something about that season that {a} had had wrong for two years.',
   ],
   'both-know-how-it-ends': [
+    '{a} and {b} agree one of them is going to have to do it to the other.\n{a}: "When it comes to it—"\n{b}: "I know. No hard feelings."\n{a}: "No hard feelings."',
+    '{a} and {b} face facts.\n{b} (to camera): "Only one of us can win. We both know."',
+    '{a} and {b} make peace with it.\n{a}: "May the best one win."',
     '{a} and {b} agreed, without much ceremony, that one of them is going to have to do it to the other.',
     '“We both know how this goes,” said {b}, and {a} did not pretend otherwise.',
     'Two people who have been to the end know exactly what the end requires, and said so out loud.',
@@ -1187,6 +1307,9 @@ const ALUMNI_LINES = {
     'They set a date, more or less, for stopping being on the same side.',
   ],
   'the-room-priced-them': [
+    'Two old finalists in one castle is a number, and by lunch the castle has worked it out.\n{b}: "We’re a target."\n{a}: "We were always going to be."',
+    '{a} and {b} feel the room watching.\n{a} (to camera): "Two finalists. Everyone’s nervous."',
+    '{a} and {b} get marked as a threat.\n{b} (to camera): "Being good last time makes you a target this time."',
     'Two finalists in one castle is a number, and by lunchtime the castle had worked out the number.',
     '{c} pointed out, quite loudly, that {a} and {b} had both been to a final before.',
     'The ease between them was visible from across the hall and read as an arrangement.',
@@ -1277,6 +1400,9 @@ registerEvent({
 //                        change.
 const CONFRONTATION_LINES = {
   reconciles: [
+    '{a} finally says what happened between them and {b}, and means it when {aSub} says it’s fine.\n{a}: "It’s done. I mean it."\n{b}: "Thank you."',
+    '{a} and {b} make peace.\n{b} (to camera): "Years of tension. Gone in five minutes."',
+    '{a} and {b} bury the past.\n{a}: "Water under the bridge."',
     '{a} finally said out loud what happened between them and {b}, and meant it when they said it was fine now.',
     '{a} and {b} actually talked it through, properly, for the first time since it happened.',
     '{b} apologised, badly, and {a} accepted it anyway, and both of them looked lighter afterwards.',
@@ -1289,6 +1415,9 @@ const CONFRONTATION_LINES = {
     'Whatever this castle does to them, that particular thing is finished.',
   ],
   grudge: [
+    '{a} brings the whole thing back up, and it goes as well as last time.\n{a}: "You never apologised."\n{b}: "Because I didn’t do anything wrong."\n{a}: "Here we go."',
+    '{a} and {b} have the same row again.\n{b} (to camera): "Different castle. Same argument."',
+    '{a} reopens it.\n{b}: "Not this again."',
     '{a} brought the whole thing back up, unprompted, and it went about as well as last time.',
     'It turned into the exact fight {a} and {b} had already had once before.',
     '{a} wanted an apology and {b} wanted it dropped, which is where they were last time too.',
@@ -1301,6 +1430,9 @@ const CONFRONTATION_LINES = {
     'It ended the way it ended last time, which is that one of them left.',
   ],
   strategic: [
+    '{a} makes it clear, calmly, that the history is a card {aSub} can play any time.\n{a}: "I could tell them what you did last time."\n{b}: "You wouldn’t."\n{a}: "Try me."',
+    '{a} holds the past over {b}.\n{a} (to camera): "{b} knows I know. That’s leverage."',
+    '{a} uses history as a threat.\n{b}: "That’s low."',
     '{a} made it very clear, calmly, that the history between them was a card {a} could play whenever they wanted.',
     '{a} treated the whole thing like leverage, and {b} clocked exactly what was happening.',
     '{a} did not threaten {b} with any of it. {a} simply mentioned that they remembered it well.',
@@ -1313,6 +1445,9 @@ const CONFRONTATION_LINES = {
     '{a} has been holding this since a different season and picked tonight to let {b} see it.',
   ],
   buries: [
+    '{a} decides, out loud, that whatever happened before stays there.\n{a}: "That was then. This is now."\n{b}: "Agreed."',
+    '{a} draws a line under it.\n{a} (to camera): "Left the past at the door."',
+    '{a} tells {b} it’s forgotten.\n{b}: "Just like that?"\n{a}: "Just like that."',
     '{a} decided, out loud, that whatever happened before stays in the season it happened in.',
     '{a} told {b} they weren\'t interested in relitigating any of it, and left it there.',
     '{a} waved the whole history off in one sentence and genuinely never raised it again.',
@@ -1362,7 +1497,8 @@ registerEvent({
     else if (roll < reconcileScore + grudgeScore + strategicScore) branch = 'strategic';
     else branch = 'buries';
 
-    const line = pick(rng, CONFRONTATION_LINES[branch]).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
+    const line = pronounSlots(pick(rng, CONFRONTATION_LINES[branch]), { a, b })
+      .replace(/\{a\}/g, a).replace(/\{b\}/g, b);
     const existing = findOpenThread(FAMILY, [a, b]);
     let bondDelta = 0;
     let threadId = existing?.id ?? null;

@@ -104,6 +104,9 @@ function rollBranch(scores, rng, fallback) {
 // be shown: three or more people arriving at one name before the table.
 const AGREE_LINES = {
   'landed-on-one': [
+    '{names} talk it round for an hour and come out with one name.\n{a}: "So we’re agreed?"\n{b}: "Agreed."\n{c}: "Agreed. Nobody breaks it."',
+    '{names} settle on a name in the library.\n{c}: "Say it out loud, so we all hear it."\n{a} says it. Nobody argues.',
+    '{names} agree after a long hour.\n{b} (to camera): "Three votes, one name. That’s how you do it."',
     '{names} talked it round for an hour and came out of it with one name between them.',
     'It took {names} three goes and a lot of doubling back, and then it was settled.',
     'Nobody in that room proposed the name first. By the end all {n} of them were saying the same one.',
@@ -112,6 +115,9 @@ const AGREE_LINES = {
     '{names} agreed on a name, which is the first thing any group here has agreed on all week.',
   ],
   'two-against-one': [
+    '{a} and {b} are already agreed, and {c} spends twenty minutes finding that out.\n{c}: "Hang on. You two have already decided."\n{a}: "We were waiting for you."\n{c}: "No, you weren’t."',
+    '{c} realises the others made up their minds without asking.\n{c} (to camera): "I was the last to know. Again."',
+    '{a} and {b} bring {c} round.\n{b}: "Come on. It makes sense."\n{c}: "Fine. But I don’t like it."',
     '{a} and {b} were already agreed, and {c} spent twenty minutes finding that out.',
     'It was not a discussion. It was {a} and {b} explaining a decision to {c}.',
     '{c} argued the other way and got nowhere, in front of witnesses.',
@@ -120,6 +126,9 @@ const AGREE_LINES = {
     'Two people who have already spoken and one who has not is not a conversation.',
   ],
   'broke-up-with-nothing': [
+    '{names} spend an hour on it and stand up with {n} different names.\n{a}: "So that was a waste of time."\n{b}: "Totally."',
+    '{names} can’t agree on anyone.\n{c} (to camera): "Three people, three names. Useless."',
+    '{names} give up.\n{b}: "Let’s just vote how we vote."\n{a}: "Fine."',
     '{names} spent an hour on it and stood up with {n} different names.',
     'Nobody moved. Everybody talked. It was the most productive-sounding hour of the day.',
     'The room could not agree and now everybody in it knows where everybody else stands.',
@@ -128,6 +137,9 @@ const AGREE_LINES = {
     'Three people, three names, and a table in about four hours.',
   ],
   'somebody-said-nothing': [
+    '{names} settle it, and one of them doesn’t say a word throughout.\n{a}: "You’re quiet, {c}."\n{c}: "Just listening."',
+    '{c} lets the others decide.\n{a} (to camera): "{c} agreed to nothing. Just nodded. I noticed."',
+    '{c} stays silent while {a} and {b} settle it.\n{b}: "You with us?"\n{c}: "Sure."',
     '{names} settled it, and one of them did not say a single word while it happened.',
     '{c} was in that room for the whole of it and contributed nothing anybody could quote.',
     'Silence in a group is louder than silence in a pair, because everybody can see it.',
@@ -201,6 +213,9 @@ registerEvent({
 // ══════════════════════════════════════════════════════════════════════
 const KITCHEN_LINES = {
   'nobody-mentioned-it': [
+    '{names} make breakfast around each other for twenty minutes, and nobody says the name.\n{a}: "Toast?"\n{b}: "Please."\n{c}: "Lovely morning."\nThe name stays unsaid.',
+    '{names} talk about anything else.\n{c} (to camera): "Elephant in the kitchen. Nobody mentioned it."',
+    '{names} keep it light at breakfast.\n{a}: "Did anyone sleep?"\n{b}: "Not really."',
     '{names} made breakfast around each other for twenty minutes and none of them said the name.',
     'There is an empty chair through there and {n} people in here talking about the weather.',
     'It is not denial. It is {n} people who have all decided somebody else should go first.',
@@ -209,6 +224,9 @@ const KITCHEN_LINES = {
     'Everything in that kitchen was said in the gaps.',
   ],
   'said-it-first': [
+    '{a} puts it into the room while {b} and {c} are still deciding whether to.\n{a}: "Right. Let’s just say it. Who do we think?"\n{b}: "Straight to it, then."',
+    '{a} goes first.\n{c} (to camera): "{a} didn’t wait. Brave, or reckless."',
+    '{a} breaks the silence.\n{a}: "Someone has to start. I will."',
     '{a} put it into the room while {b} and {c} were still deciding whether to.',
     'Somebody has to say the name first at breakfast, and {a} did it.',
     '{a} said what all {n} of them were thinking and the other two had to react in front of each other.',
@@ -217,6 +235,9 @@ const KITCHEN_LINES = {
     'The first person to say a name in a kitchen is a person the other two will remember.',
   ],
   'the-room-split': [
+    '{a} says one thing, {b} says the opposite, and {c} stands there with a plate.\n{a}: "It’s obvious."\n{b}: "It’s obviously not."\n{c}: "I’m just going to eat."',
+    '{a} and {b} disagree over breakfast.\n{c} (to camera): "Caught in the middle. With a croissant."',
+    '{a} and {b} argue across the counter.\n{c}: "Can we not, before coffee?"',
     '{a} said one thing, {b} said the opposite, and {c} stood there with a plate.',
     'A kitchen is too small for a disagreement and they had one anyway.',
     'By the end of it {c} had to choose, in a kitchen, before nine in the morning.',
@@ -225,6 +246,9 @@ const KITCHEN_LINES = {
     'They will all three be careful with each other for the rest of the day.',
   ],
   'closed-ranks': [
+    '{names} agree, quickly, that this stays in the kitchen.\n{a}: "This doesn’t leave this room."\n{b}: "Obviously."\n{c}: "Obviously."',
+    '{names} make a pact.\n{b} (to camera): "What’s said in the kitchen stays in the kitchen."',
+    '{names} close ranks.\n{c}: "Not a word to anyone."',
     '{names} agreed, quickly and without discussing it, that this stays in the kitchen.',
     'Whatever was said in there, all {n} of them came out saying nothing.',
     'It is the closest thing to an alliance any of them have, and none of them called it that.',
@@ -291,6 +315,9 @@ registerEvent({
 // ══════════════════════════════════════════════════════════════════════
 const COLUMN_GROUP_LINES = {
   'walked-as-a-block': [
+    '{names} walk out as a unit and stay one the whole way.\n{a}: "Nobody’s getting between us today."\n{b}: "Nobody’s trying."',
+    '{names} stick together on the road.\n{c} (to camera): "Us three. All the way."',
+    '{names} walk as a group.\n{b}: "People are looking."\n{a}: "Let them."',
     '{names} walked out as a unit and stayed one the whole way.',
     'A column of eighteen has shapes in it, and {names} were the most obvious one this morning.',
     'They did not plan it. All {n} of them arrived at the gate and fell in together anyway.',
@@ -299,6 +326,9 @@ const COLUMN_GROUP_LINES = {
     'They spent an hour being a bloc in daylight, which is a thing you cannot take back.',
   ],
   'picked-up-a-stray': [
+    '{c} attaches to {a} and {b} at the gate, and neither can work out how to stop it.\n{c}: "Mind if I join you?"\n{a}: "…Course not."',
+    '{c} tags along uninvited.\n{b} (to camera): "We had things to talk about. Now we can’t."',
+    '{c} joins {a} and {b}.\n{a}: "Lovely."\n{b} (to camera): "Not lovely."',
     '{c} attached to {a} and {b} at the gate and neither of them could work out how to prevent it.',
     'Two of them wanted an hour to talk and got a third person instead.',
     '{c} walked with them the whole way and was not once part of the conversation.',
@@ -307,6 +337,9 @@ const COLUMN_GROUP_LINES = {
     '{c} may have learned something. {c} certainly learned that they did not want {c} there.',
   ],
   'left-somebody-out': [
+    '{a} and {b} pull ahead, and {c} walks behind them for the last two miles.\n{c} (to camera): {cam:left-out}',
+    '{a} and {b} leave {c} behind.\n{c}: "Wait up!"\nThey don’t.',
+    '{c} trails behind {a} and {b}.\n{c} (to camera): "I know when I’m not wanted."',
     '{a} and {b} pulled ahead and {c} spent the last two miles walking behind them.',
     'Nobody said {c} could not walk with them. Nobody made room either.',
     'The gap was three feet and it was completely deliberate.',
@@ -315,6 +348,9 @@ const COLUMN_GROUP_LINES = {
     'By the field {c} had stopped trying.',
   ],
   'traded-what-they-had': [
+    'Somewhere on the road, {names} tell each other what they know, and it adds up.\n{a}: "So you saw that too?"\n{c}: "And I heard this."\n{b}: "Then it’s them."',
+    '{names} pool their information.\n{b} (to camera): "Three halves of a story. Put together, it made sense."',
+    '{names} compare notes.\n{c}: "That’s the missing piece."',
     'Somewhere on that road {names} told each other what they each knew, and it added up.',
     'Three people with three pieces of a week put them together on a road with nobody listening.',
     'It is the most efficient hour any of them will spend, and they spent it walking.',
@@ -388,6 +424,9 @@ registerEvent({
 // ══════════════════════════════════════════════════════════════════════
 const AFTER_GROUP_LINES = {
   'counted-it-out-loud': [
+    '{names} go through the votes together, name by name.\n{a}: "So that’s two for them, one for—"\n{b}: "No, that was three."\n{c}: "It doesn’t add up."',
+    '{names} count the ballots again.\n{c} (to camera): {cam:ballots}',
+    '{names} do the maths after the table.\n{a}: "Someone voted strangely."',
     '{names} went through the slates together, name by name, until the arithmetic stopped working.',
     'Three people counting the same vote find things one person counting it does not.',
     '{a} noticed the gap and {b} confirmed it and {c} went quiet.',
@@ -396,6 +435,9 @@ const AFTER_GROUP_LINES = {
     'By the end of it all {n} had the same short list.',
   ],
   'blamed-each-other': [
+    'It takes about four minutes for {names} to start asking about each other’s votes.\n{a}: "Why did you write that?"\n{b}: "Why did you?"\n{c}: "Oh, here we go."',
+    '{names} turn on each other.\n{c} (to camera): "Our little group. Falling apart."',
+    '{names} start blaming.\n{a}: "That wasn’t the plan."\n{b}: "Plans change."',
     'It took about four minutes for {names} to start asking each other about their own slates.',
     'A post-mortem between three people becomes an interrogation of one of them very quickly.',
     '{a} asked {c} a question that {b} had clearly also wanted to ask.',
@@ -404,6 +446,9 @@ const AFTER_GROUP_LINES = {
     'That conversation should have been had with two people, or none.',
   ],
   'protected-one-of-them': [
+    'One of those votes makes no sense, and the other two decide not to raise it.\n{a} (to camera): "We all know. Nobody’s saying."',
+    '{names} let one odd vote slide.\n{b}: "Let’s not."\n{a}: "Agreed."',
+    '{names} protect each other.\n{c} (to camera): "Loyalty. Or cowardice. Hard to tell."',
     'One of those slates was indefensible and the other two decided not to raise it.',
     '{a} and {b} both saw what {c} wrote and neither of them said a word about it.',
     'It is a favour, and {c} knows exactly how large a favour it is.',
@@ -412,6 +457,9 @@ const AFTER_GROUP_LINES = {
     'Nothing was agreed. All three of them understood it perfectly.',
   ],
   'went-to-bed-on-it': [
+    '{names} agree to leave it until morning, and none of them means it.\n{a}: "Sleep on it?"\n{b}: "Sleep on it."\nNobody sleeps.',
+    '{names} call it a night.\n{c} (to camera): "Nobody’s sleeping. We’re all just lying there thinking."',
+    '{names} go up together.\n{b}: "Tomorrow, then."',
     '{names} agreed to leave it until morning and none of them meant it.',
     'They ran out of energy before they ran out of disagreement.',
     'It is too late and they are too tired and it will be worse tomorrow for waiting.',
@@ -476,6 +524,9 @@ registerEvent({
 // ══════════════════════════════════════════════════════════════════════
 const SAT_UP_LINES = {
   'nobody-wanted-to-go-up': [
+    '{names} stay downstairs long after there’s any reason to.\n{a}: "Another one?"\n{b}: "Go on."\n{c}: "Nobody wants to go upstairs, do they?"',
+    '{names} put off going to bed.\n{c} (to camera): "Upstairs is where it happens. So we stayed down."',
+    '{names} sit by the fire until late.\n{a}: "Just five more minutes."',
     '{names} stayed downstairs long after there was any reason to, because upstairs is where it happens.',
     'The fire went out and all {n} of them were still in the room.',
     'Nobody says it. Going to bed is the part where somebody is chosen.',
@@ -484,6 +535,9 @@ const SAT_UP_LINES = {
     'Three people sitting in a cold room at one in the morning, being extremely casual.',
   ],
   'told-each-other-things': [
+    'It gets late enough that {names} start saying true things.\n{b}: "Honestly? I’m terrified."\n{a}: "Me too."\n{c}: "Me three."',
+    '{names} open up by the fire.\n{a} (to camera): "Midnight honesty. You can’t fake it at that hour."',
+    '{names} share secrets.\n{c}: "I’ve never told anyone this."',
     'It got late enough that {names} started saying true things.',
     'Something about one in the morning makes people honest, and all {n} of them were.',
     '{a} said something that will matter in a few days and did not realise it.',
@@ -492,6 +546,9 @@ const SAT_UP_LINES = {
     'By the time they went up they knew things about each other the castle does not.',
   ],
   'one-of-them-left-early': [
+    '{c} goes up before the others, and both of them watch {c} go.\n{a}: "Bit early."\n{b}: "Very early."',
+    '{c} leaves first.\n{b} (to camera): "Why’s {c} in such a hurry?"',
+    '{a} and {b} exchange a look as {c} heads upstairs.\n{a}: "Interesting."',
     '{c} went up before the others and both of them watched {c} go.',
     'Leaving a room first at night is a decision, and {c} made it in front of two people.',
     '{a} and {b} did not say anything about it until the stairs had stopped creaking.',
@@ -500,6 +557,9 @@ const SAT_UP_LINES = {
     'Two people stayed up specifically to talk about the third.',
   ],
   'heard-something': [
+    'All {n} of them hear it at once, and all {n} of them pretend not to.\n{a}: "Did you—"\n{b}: "No."\n{c}: "Nothing."',
+    '{names} freeze at a noise upstairs.\n{c} (to camera): "We all heard it. None of us said so."',
+    '{names} hear a door.\n{b}: "Just the wind."\n{a}: "Yeah. The wind."',
     'All {n} of them heard it at the same time and all {n} of them pretended not to.',
     'A door, upstairs, at the wrong hour, and three witnesses who will each tell it differently.',
     'Nobody went to look. That is the part they will be embarrassed about tomorrow.',
@@ -568,6 +628,9 @@ registerEvent({
 // the room actually in it.
 const ROUNDED_LINES = {
   'held-the-room': [
+    '{c} takes it from all {n} of them at once, and doesn’t give an inch.\n{c}: "Ask me anything. All of you. I’ll wait."',
+    '{c} stands firm.\n{a} (to camera): "All of us on {c} at once. Didn’t crack."',
+    '{c} holds firm.\n{c}: "I’m Faithful. That’s the answer, every time."',
     '{c} took it from all {n} of them at once and did not give an inch.',
     'Being questioned by one person is a conversation. Being questioned by {n} is a trial, and {c} stood through it.',
     '{c} answered {a}, then {b}, then {a} again, and never changed the story.',
@@ -576,6 +639,9 @@ const ROUNDED_LINES = {
     'By the end of it two of them were less sure than when they started.',
   ],
   'came-apart': [
+    '{c} manages {a} and manages {b}, but can’t manage both at once.\n{a}: "Where were you?"\n{b}: "And who with?"\n{c}: "I — hang on — one at a time!"',
+    '{c} crumbles under two questioners.\n{b} (to camera): "Two of us was too many for {c}."',
+    '{c} gets flustered.\n{c}: "Stop talking at the same time!"',
     '{c} managed {a} and managed {b} and could not manage both of them at once.',
     'It was the third question that did it, and everybody in the room saw which one.',
     '{c} contradicted {c}’s own answer in front of {n} people.',
@@ -584,6 +650,9 @@ const ROUNDED_LINES = {
     'Everybody in that room came out of it agreeing about one thing.',
   ],
   'the-room-turned': [
+    'It goes too far, and one of them says so.\n{b}: "Alright, stop. This is bullying."\n{a}: "It’s questions."\n{b}: "It’s bullying."',
+    '{b} calls a halt.\n{c} (to camera): "{b} stepped in. I’ll remember that."',
+    'The questioning stops.\n{a}: "Fine. Fine."',
     'It went too far and one of them said so, and after that it was over.',
     '{b} stopped it, which nobody expected, least of all {c}.',
     'A pile-on has a moment where it becomes bullying and this one found it.',
@@ -592,6 +661,9 @@ const ROUNDED_LINES = {
     'They came in {n} against one and left with the one looking better than two of them.',
   ],
   'nobody-would-start': [
+    'All {n} of them have the same question, and none of them asks it.\n{c}: "Well? Go on."\nSilence.',
+    '{names} sit in an awkward silence.\n{a} (to camera): "We were all thinking it. Nobody asked."',
+    '{names} can’t bring themselves to say it.\n{b}: "Someone say something."',
     'All {n} of them had the same question and none of them asked it.',
     'Everybody in that room was waiting for somebody else to say the name.',
     'It is astonishing how long three people can talk without asking the one thing.',
@@ -668,6 +740,9 @@ registerEvent({
 // ══════════════════════════════════════════════════════════════════════
 const HOME_GROUP_LINES = {
   'went-over-the-afternoon': [
+    '{names} rebuild the whole afternoon on the way home, out loud.\n{a}: "Then you went left—"\n{b}: "—and you went right."\n{c}: "And that’s where it went wrong."',
+    '{names} replay the mission.\n{c} (to camera): {cam:replay-mission}',
+    '{names} go over every detail.\n{b}: "Again, from the start."',
     '{names} rebuilt the whole afternoon on the way home, out loud, between the three of them.',
     'Everybody saw a different part of that mission and {n} of them put theirs together.',
     '{a} had missed the thing {b} saw, and {c} had seen it from the other side.',
@@ -676,6 +751,9 @@ const HOME_GROUP_LINES = {
     'They were still comparing it when they got to the gate.',
   ],
   'agreed-who-cost-them': [
+    'Somewhere on the road, all {n} of them arrive at the same name for it.\n{a}: "You’re thinking what I’m thinking."\n{b}: "Yep."\n{c}: "Yep."',
+    '{names} agree on who let them down.\n{b} (to camera): "One name between us. Easy."',
+    '{names} settle the blame.\n{c}: "It was them. No question."',
     'Somewhere on that road all {n} of them arrived at the same name for it.',
     'Nobody proposed it. It simply became the thing they were all saying.',
     'A group deciding whose fault an afternoon was is faster and less fair than one person doing it.',
@@ -684,6 +762,9 @@ const HOME_GROUP_LINES = {
     'That is how a name gets into a castle: three people and a long walk.',
   ],
   'one-of-them-defended-them': [
+    '{c} won’t have it, and the other two have to argue properly.\n{c}: "That’s not fair. Anyone could have made that mistake."\n{a}: "But they did make it."',
+    '{c} defends the one they’re blaming.\n{a} (to camera): "{c} is very protective. Why?"',
+    '{c} pushes back.\n{c}: "Leave it. It’s not worth it."',
     '{c} would not have it, and said so, and the other two had to argue for it properly.',
     'It is easy to blame somebody who is not there. {c} made it harder.',
     '{c} defended somebody at the cost of being on the wrong side of the other two for a mile.',
@@ -692,6 +773,9 @@ const HOME_GROUP_LINES = {
     'Defending an absent person in front of two people who have decided is not a free act.',
   ],
   'said-nothing-useful': [
+    'Three people walk five miles and produce nothing but agreement about the weather.\n{a}: "Nice day."\n{b}: "Lovely."\n{c}: "Bit windy."',
+    '{names} talk about nothing all the way home.\n{b} (to camera): "Five miles. Weather and dinner."',
+    '{names} avoid the real conversation.\n{c} (to camera): {cam:switch-off}',
     'Three people walked five miles and produced nothing but agreement about the weather.',
     'Whatever any of them thought about that afternoon, none of it got said on that road.',
     'It was pleasant and it was completely empty and all {n} of them chose that.',

@@ -347,7 +347,9 @@ export function priorMoments(thread, ep) {
  * comparable — the head sentence is the part an event actually authored.
  */
 function _head(note) {
-  const first = String(note || '').split(/(?<=[.!?])[ ]/)[0];
+  // A note can be a script (js/tr/speech.js); its head is the first line's
+  // first sentence, never a line of dialogue further down.
+  const first = String(note || '').split('\n')[0].split(/(?<=[.!?])[ ]/)[0];
   return first.trim().replace(/[.!?]+$/, '');
 }
 
@@ -499,7 +501,9 @@ export function advanceCiting(thread, ep, note, { cite = true, max = 3 } = {}) {
   if (!thread) throw new Error('advanceCiting: no thread to advance — weight() and fire() disagree');
   const prior = cite ? priorMoments(thread, ep).slice(0, max) : [];
   const citation = prior.length ? citeMoments(thread, ep, max, note) : '';
-  const full = citation ? `${note} ${citation}` : note;
+  // A script keeps its citation on a line of its own, never glued to a
+  // line of dialogue.
+  const full = citation ? `${note}${String(note).includes('\n') ? '\n' : ' '}${citation}` : note;
   return { thread: advanceThread(thread.id, ep, full), note: full, cited: prior.map(p => p.ep) };
 }
 

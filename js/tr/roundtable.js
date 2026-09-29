@@ -369,7 +369,9 @@ function clashes(ep, rng, accusations) {
   const openingOf = (threadId) => {
     const t = (gs.tr?.threads || []).find(x => x.id === threadId);
     const first = (t?.beats || [])[0];
-    const note = String(first?.note || '').trim();
+    // THE FIRST LINE: a scene note is a script (js/tr/speech.js), and its
+    // opening narration is the part that says what started.
+    const note = String(first?.note || '').split('\n')[0].trim();
     return note && note.length <= 190 ? note : null;
   };
 

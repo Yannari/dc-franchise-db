@@ -77,6 +77,9 @@ function fork(rng, scores) {
 // ══════════════════════════════════════════════════════════════════════
 const GRIEF_ON_LINES = {
   'still-carrying-it': [
+    '{a} brings {v} up again this morning, unprompted, and {b} lets {aObj}.\n{a}: "{v} would have loved this weather."\n{b}: "{v} would."',
+    '{a} can’t stop talking about {v}.\n{b} (to camera): "{a} still isn’t over {v}. I don’t think {aSub} will be."',
+    '{a} mentions {v} at breakfast.\n{a}: "I keep saving {v} a seat."',
     '{a} brought {v} up again this morning, unprompted, and {b} let {a} do it.',
     'It has been days and {a} is still starting sentences with {v}.',
     '{b} has noticed that {a} talks about {v} in the present tense.',
@@ -89,6 +92,9 @@ const GRIEF_ON_LINES = {
     '{b} would like to talk about something else and cannot find a way to say so.',
   ],
   'put-it-away': [
+    '{a} has stopped saying {v}’s name, and {b} notices the morning it stopped.\n{b}: "You haven’t mentioned {v} today."\n{a}: "No. I can’t keep doing it."',
+    '{a} packs the grief away.\n{a} (to camera): "I have to play now. {v} would want that."',
+    '{a} moves on from {v}.\n{b} (to camera): "Overnight, {a} just stopped. Strange."',
     '{a} has stopped saying {v}’s name and {b} noticed the exact morning it stopped.',
     'Whatever {a} was carrying about {v}, {a} has put it down somewhere and shut the door on it.',
     '{a} is brisk about it now, which {b} finds harder to watch than the crying was.',
@@ -101,6 +107,9 @@ const GRIEF_ON_LINES = {
     'It is efficient and it is a little frightening.',
   ],
   'turned-it-to-use': [
+    '{a} has started saying what {v} would have wanted, which is convenient.\n{a}: "{v} would want us to vote out the quiet ones."\n{b}: "Would {v}, though?"',
+    '{a} uses {v}’s memory.\n{b} (to camera): "Funny how {v} always wants what {a} wants."',
+    '{a} invokes {v} to make a point.\n{a}: "Do it for {v}."',
     '{a} has started saying what {v} would have wanted, which is convenient and unfalsifiable.',
     '{v} has become an argument {a} makes, and {b} has spotted it.',
     'Every day {v} has been gone, {a}’s account of what {v} thought has got more useful.',
@@ -113,6 +122,9 @@ const GRIEF_ON_LINES = {
     '{b} has stopped agreeing out loud when {a} does this.',
   ],
   'shared-it-properly': [
+    '{a} and {b} talk about {v} for a while this morning, without meaning anything by it.\n{b}: "Remember when {v} burnt the toast?"\n{a}: "Twice!"\nThey both laugh.',
+    '{a} and {b} share memories of {v}.\n{a} (to camera): "It felt good to just talk about {v}."',
+    '{a} and {b} remember {v} fondly.\n{b}: "I miss {v}."\n{a}: "Me too."',
     '{a} and {b} talked about {v} for a while this morning without either of them meaning anything by it.',
     'It was the first conversation about {v} that was not also about the game.',
     'They swapped the two or three things they each knew about {v} and left it there.',
@@ -184,6 +196,9 @@ registerEvent({
 // ══════════════════════════════════════════════════════════════════════
 const COVER_ON_LINES = {
   'told-it-the-same': [
+    '{a} gives {b} the same account this morning, word for word.\n{b}: "You said that exactly the same way yesterday."\n{a}: "Because it’s what happened."\n{b} (to camera): "Or because it’s rehearsed."',
+    '{a} repeats the story perfectly.\n{b} (to camera): "Word for word. That bothers me."',
+    '{a} tells it the same again.\n{a} (to camera): {cam:story-hold}',
     '{a} gave {b} the same account this morning, word for word, and word for word is its own problem.',
     'It has not changed a word in days, which is either the truth or a script.',
     '{b} has heard this twice now and could recite the middle of it.',
@@ -196,6 +211,9 @@ const COVER_ON_LINES = {
     '{a} finished on exactly the same sentence as last time.',
   ],
   'the-story-grew': [
+    'There’s more in {a}’s story this morning than there was on the night.\n{b}: "You didn’t mention the stairs before."\n{a}: "Didn’t I?"',
+    '{a}’s account gets new details.\n{b} (to camera): "The story’s growing. Stories that grow are made up."',
+    '{a} adds something.\n{a} (to camera): {cam:overdid}',
     'There is more in it this morning than there was on the night, and the extra is oddly specific.',
     '{a} has added a detail nobody asked for, which is what people do when they are filling a hole.',
     'The account is longer every time {b} hears it.',
@@ -208,6 +226,9 @@ const COVER_ON_LINES = {
     '{a} volunteered the new detail before {b} could ask anything at all.',
   ],
   'stopped-telling-it': [
+    '{a} won’t go through it again.\n{a}: "I’ve told you three times. I’m not doing it again."\n{b}: "Just once more?"\n{a}: "No."',
+    '{a} refuses, pleasantly.\n{b} (to camera): "Why won’t {a} just tell it again?"',
+    '{a} shuts it down.\n{a} (to camera): {cam:stay-quiet}',
     '{a} will not go through it again, and said so, pleasantly, this morning.',
     'The account has been retired. {b} noticed the retirement.',
     '"I have told you," said {a}, which is true and is not an answer.',
@@ -220,6 +241,9 @@ const COVER_ON_LINES = {
     '{a} has left the account where it is and hopes the week moves on.',
   ],
   'somebody-else-checked': [
+    '{b} has been to the other person in {a}’s story, and they said something slightly different.\n{b}: "Funny. They remember it differently."\n{a}: "They must be confused."',
+    '{b} checks {a}’s story.\n{a} (to camera): {cam:story-close}',
+    '{b} finds a mismatch.\n{b}: "One of you is wrong."\n{a}: "Well, it isn’t me."',
     '{b} has been to the other person in it, and the other person said something slightly different.',
     'The account survives on its own and does not survive being cross-referenced.',
     '{b} did the one thing nobody in this castle does: {b} went and asked.',
@@ -281,6 +305,9 @@ registerEvent({
 // ══════════════════════════════════════════════════════════════════════
 const ROMANCE_ON_LINES = {
   'nothing-changed-in-daylight': [
+    'Whatever that was last night, {a} and {b} are acting like it didn’t happen.\n{a}: "Morning."\n{b}: "Morning."\nThat’s it.',
+    '{a} and {b} are normal at breakfast.\n{b} (to camera): "What happens at night stays at night. Apparently."',
+    '{a} and {b} don’t mention it.\n{a} (to camera): "Awkward. Very awkward."',
     'Whatever that was last night, {a} and {b} are behaving this morning as though it did not happen.',
     'They are perfectly normal with each other, at some effort.',
     '{a} said good morning in exactly the voice {a} uses for everybody else.',
@@ -293,6 +320,9 @@ const ROMANCE_ON_LINES = {
     'The castle would notice a change, so there is not going to be one.',
   ],
   'admitted-it-in-daylight': [
+    '{a} says it again this morning, sober and in daylight.\n{a}: "I meant what I said last night."\n{b}: "Good. So did I."',
+    '{a} repeats it at breakfast.\n{b} (to camera): "In daylight. That’s when you know."',
+    '{a} confirms it.\n{a}: "Still true. Just so you know."',
     '{a} said it again this morning, sober and in daylight, which is the part that counts.',
     'Anybody can mean it at midnight. {a} meant it at nine.',
     '{b} needed to hear it when it was harder to say, and {a} worked that out.',
@@ -305,6 +335,9 @@ const ROMANCE_ON_LINES = {
     'The daylight version is shorter and it is the one that will hold.',
   ],
   'one-of-them-retreated': [
+    '{a} has been unavailable all morning.\n{b}: "Are you avoiding me?"\n{a}: "No! Just busy."\n{b} (to camera): "Busy doing what? It’s a castle."',
+    '{a} backs off after last night.\n{a} (to camera): "I panicked. I need a minute."',
+    '{a} keeps a distance.\n{b}: "Did I do something?"',
     '{a} has been unavailable all morning in a way that is not quite avoidance.',
     'Something was said last night and {a} has spent today walking it back without saying so.',
     '{b} has worked out that {a} is frightened, and cannot tell of what.',
@@ -317,6 +350,9 @@ const ROMANCE_ON_LINES = {
     'The retreat is doing more harm than the thing it is retreating from.',
   ],
   'somebody-saw': [
+    'They weren’t as alone last night as they thought.\n{b}: "Someone saw us."\n{a}: "Who?"\n{b}: "Does it matter?"',
+    '{a} and {b} find out they were spotted.\n{a} (to camera): "Great. Now it’s everybody’s business."',
+    'The news is out by breakfast.\n{b}: "Well, that’s that."',
     'They were not as alone last night as they thought, and this morning somebody knows.',
     'A third person has the thing that {a} and {b} have, which changes what it is worth.',
     'Neither of them has been told they were seen, which is the worst version.',
@@ -387,6 +423,9 @@ registerEvent({
 // ══════════════════════════════════════════════════════════════════════
 const SUSP_ON_LINES = {
   'tested-it-again': [
+    '{a} puts the same question to {b} on the road, phrased differently.\n{a}: "Remind me where you were that night?"\n{b}: "I told you on day {d}."\n{a}: "Tell me again."',
+    '{a} checks {b}’s answer against day {d}.\n{a} (to camera): "Same question, different words. Let’s see."',
+    '{a} tests {b} again.\n{b}: "You’ve asked me this before."',
     '{a} put the same question to {b} on the road out, phrased differently, to see whether the answer was.',
     'It is the third time {a} has asked and the first time {b} has noticed it is the third.',
     '{a} has a way of returning to it that does not look like returning to it.',
@@ -399,6 +438,9 @@ const SUSP_ON_LINES = {
     'It was a pleasant conversation and it was an interrogation.',
   ],
   'let-it-cool': [
+    '{a} decides the road is the wrong place, and talks to {b} about nothing.\n{a}: "Nice day."\n{b}: "Isn’t it?"',
+    '{a} lets it rest for now.\n{a} (to camera): {cam:wait-and-see}',
+    '{a} doesn’t push.\n{a} (to camera): "Another day. Not today."',
     '{a} decided the road was the wrong place and talked to {b} about nothing at all.',
     'The doubt is still there and {a} has stopped poking it in public.',
     '{a} has worked out that asking again would tell {b} more than the answer tells {a}.',
@@ -411,6 +453,9 @@ const SUSP_ON_LINES = {
     'It will come back. It is not coming back today.',
   ],
   'found-the-hole': [
+    'Somewhere on the road, {b} says something that doesn’t fit what {bSub} said on day {d}.\n{a}: "That’s not what you told me on day {d}."\n{b}: "Isn’t it?"',
+    '{a} catches a contradiction.\n{a} (to camera): "Day {d}, {b} said one thing. Today, another."',
+    '{b} slips up.\n{a} (to camera): {cam:holding-info}',
     'Somewhere on that road {b} said a thing that does not fit the thing {b} said on day {d}.',
     '{a} has been waiting for a gap and got one, walking, in the open air.',
     'It is small and it is real and {a} has stopped needing to be persuaded.',
@@ -423,6 +468,9 @@ const SUSP_ON_LINES = {
     'The road gave {a} what a week of watching had not.',
   ],
   'was-talked-round': [
+    '{b} answers it properly, and {a} comes back less sure.\n{b}: {say:answer-clean}\n{a}: "Okay. That makes sense."',
+    '{b} convinces {a}.\n{a} (to camera): "I went out suspicious. I came back less so."',
+    '{b} talks {a} round.\n{a}: "Fine. I believe you."',
     '{b} answered it properly on that road and {a} came back with less than {a} left with.',
     'It is the first time {b} has been given long enough to answer, and the answer held.',
     '{a} arrived at the field having quietly abandoned most of it.',
@@ -498,6 +546,9 @@ registerEvent({
 // ══════════════════════════════════════════════════════════════════════
 const TEST_ON_LINES = {
   'passed-it-again': [
+    '{a} sets it up again on the road, and {b} comes out clean.\n{a} (to camera): "Twice now. {b}’s passed twice."',
+    '{b} passes the test again.\n{a}: "Just checking."\n{b}: "Checking what?"\n{a}: "Nothing."',
+    '{a} tests {b} and gets the right answer.\n{a} (to camera): "Clean. Again."',
     '{a} set it up again on the road and {b} walked into it and came out clean.',
     'Twice now, and twice {b} has done the thing {b} said {b} would.',
     '{a} is running out of ways to doubt {b} and has one or two left.',
@@ -510,6 +561,9 @@ const TEST_ON_LINES = {
     'Whatever {b} is, {b} is consistent, and consistency is most of what this castle can measure.',
   ],
   'failed-it-this-time': [
+    'The same test, a week later, and {b} doesn’t do what {bSub} did the first time.\n{a} (to camera): "Different answer. Why?"',
+    '{b} fails the second test.\n{a} (to camera): {cam:holding-info}',
+    '{b} slips on the repeat test.\n{a} (to camera): "Last time {b} passed. This time, no."',
     'The same test, a week later, and {b} did not do what {b} did the first time.',
     'Something has changed in {b} and the road is where {a} found out.',
     '{b} hesitated where {b} did not hesitate before, and {a} was watching for exactly that.',
@@ -522,6 +576,9 @@ const TEST_ON_LINES = {
     'The test was cheap and what it bought is expensive.',
   ],
   'refused-to-play': [
+    '{b} works out it’s a test and says so.\n{b}: "This is a test, isn’t it?"\n{a}: "What? No."\n{b}: "I’m not answering."',
+    '{b} won’t play along.\n{b}: "Nice try, {a}."',
+    '{b} spots the trap.\n{a} (to camera): "Caught out. {b}’s sharp."',
     '{b} worked out it was a test, said so, and would not answer it.',
     '"You are checking on me," said {b}, on a road, in front of two other people.',
     '{a} has been caught and has to spend the rest of the walk on the back foot.',
@@ -534,6 +591,9 @@ const TEST_ON_LINES = {
     'It cost {a} more than any result would have been worth.',
   ],
   'turned-it-around': [
+    '{b} answers the test, then sets one for {a}.\n{b}: "My turn. Where were you on Tuesday night?"\n{a}: "Oh, very good."',
+    '{b} tests {a} back.\n{a} (to camera): "Two can play that game."',
+    '{b} flips it.\n{b}: "Let’s see how you like it."',
     '{b} let it run, answered it, and then set one for {a} on the same road.',
     'Two people testing each other for five miles and pretending to talk about the weather.',
     '{b} has been doing this longer than {a} realised.',
@@ -613,6 +673,9 @@ registerEvent({
 // ══════════════════════════════════════════════════════════════════════
 const COVER_ROAD_LINES = {
   'rehearsed-on-the-walk': [
+    '{a} spends the road out going over it again, silently.\n{a} (to camera): {cam:story-hold}',
+    '{a} rehearses on the walk.\n{a} (to camera): "In order. Every time. In order."',
+    '{a} goes quiet, running the story.\n{b}: "You okay?"\n{a}: "Fine. Just thinking."',
     '{a} spent the road out going over it again, silently, in order.',
     'Five miles is enough to say a thing to yourself forty times, and {a} used all of it.',
     '{a} has the account down to the minute now, which is the problem with having it down to the minute.',
@@ -625,6 +688,9 @@ const COVER_ROAD_LINES = {
     '{a} arrived at the field with it word-perfect and slightly sick of it.',
   ],
   'asked-about-it-out-there': [
+    '{b} raises it on the road, casually.\n{b}: "So, the other night. Where did you go after?"\n{a}: "Bed."\n{b}: "Straight to bed?"',
+    '{b} asks in the open air.\n{a} (to camera): {cam:story-close}',
+    '{b} brings it up on the road.\n{a}: "Why do you want to know?"',
     '{b} raised it on the road, casually, in the open air where it is harder to seem defensive.',
     'It came up again a mile out, and {a} had to do the whole thing standing up and walking.',
     '{b} picked the one hour {a} could not leave the conversation.',
@@ -637,6 +703,9 @@ const COVER_ROAD_LINES = {
     'They walked the last mile talking about the weather and both of them knew why.',
   ],
   'somebody-else-was-there': [
+    '{a} hadn’t counted on a third person hearing it, and a third person hears it.\n{a} (to camera): "Someone was right behind us. Great."',
+    '{a} realises someone overheard.\n{b}: "Did they hear?"\n{a}: "Every word."',
+    'A third person catches the conversation.\n{a} (to camera): {cam:story-close}',
     '{a} had not counted on a third person hearing it, and a third person heard it.',
     'It stopped being a private account somewhere on that road.',
     'Whoever was walking behind {a} and {b} has the whole of it now.',
@@ -649,6 +718,9 @@ const COVER_ROAD_LINES = {
     'It will come back at a table, in somebody else’s words.',
   ],
   'let-it-lie-out-there': [
+    'Neither {a} nor {b} mentions it once on the road, which takes effort.\n{a} (to camera): "We both knew. We both said nothing."',
+    '{a} and {b} avoid the subject.\n{b}: "Lovely walk."\n{a}: "Lovely."',
+    '{a} and {b} keep off it.\n{a} (to camera): {cam:story-fine}',
     'Neither {a} nor {b} mentioned it once on that road, which took effort from both.',
     'It was the obvious thing to talk about and they talked about everything else.',
     '{a} had the answer ready for five miles and never needed it.',
@@ -709,6 +781,9 @@ registerEvent({
 // ══════════════════════════════════════════════════════════════════════
 const GRIEF_ROAD_LINES = {
   'counted-the-column': [
+    '{a} counts the line at the gate, the way {aSub} has every morning since {v} went.\n{a} (to camera): {cam:few-left}',
+    '{a} counts heads again.\n{a} (to camera): "Since {v} went, I count. Every time."',
+    '{a} checks who’s still here.\n{b}: "You’re counting again."\n{a}: "I can’t stop."',
     '{a} counted the column at the gate the way {a} has every morning since {v} went.',
     'It is a shorter walk out every week and {a} is the one keeping the number.',
     '{a} knows exactly how many left the castle this morning without being told.',
@@ -721,6 +796,9 @@ const GRIEF_ROAD_LINES = {
     '{b} has started dreading the walk out because of what {a} says at the gate.',
   ],
   'talked-about-them-walking': [
+    '{a} and {b} talk about {v} for the first two miles.\n{b}: "{v} would have been at the front, chatting."\n{a}: "Never shut up."\n{b}: "Never."',
+    '{a} and {b} remember {v} on the road.\n{a} (to camera): "Talking about {v} made the walk shorter."',
+    '{a} and {b} share a {v} story.\n{b}: "I miss {v}."\n{a}: "Me too."',
     '{a} and {b} talked about {v} for the first two miles and neither of them minded.',
     'The road is where you can say a name without the room hearing it.',
     '{a} told {b} something about {v} that {a} has not told anybody else here.',
@@ -733,6 +811,9 @@ const GRIEF_ROAD_LINES = {
     'By the field they had said everything and both felt lighter for it.',
   ],
   'nobody-said-the-name': [
+    'Nobody on that road says {v}’s name once, and {a} counts.\n{a} (to camera): "Not once. Like {v} was never here."',
+    '{a} notices the silence about {v}.\n{a} (to camera): {cam:few-left}',
+    '{a} waits for someone to mention {v}.\n{a} (to camera): "Nobody did. I didn’t either."',
     'Nobody on that road said {v}’s name once, and {a} counted.',
     'A week ago {v} was on this walk. This morning nobody mentioned it.',
     '{a} waited for somebody else to say it first and nobody did.',
@@ -745,6 +826,9 @@ const GRIEF_ROAD_LINES = {
     '{a} walked the whole way out composing something and said none of it.',
   ],
   'walking-where-they-walked': [
+    '{a} takes {v}’s old place in the line without deciding to.\n{a} (to camera): "I realised halfway. That was {v}’s spot."',
+    '{a} walks where {v} used to walk.\n{b}: "That’s where {v} always was."\n{a}: "I know."',
+    '{a} fills {v}’s place.\n{a} (to camera): {cam:few-left}',
     '{a} took the place in the column {v} used to take, without deciding to.',
     'The road goes past the spot where {a} last spoke to {v} properly.',
     '{a} slowed at the ford for no reason {b} could see.',
@@ -806,6 +890,9 @@ registerEvent({
 // ══════════════════════════════════════════════════════════════════════
 const TEST_MORNING_LINES = {
   'set-it-over-breakfast': [
+    '{a} puts something in front of {b} at breakfast that only makes sense as a test.\n{a}: "Did you hear what they said about you last night?"\n{b}: "No. What?"\n{a} (to camera): "Nobody said anything. Let’s see who {b} runs to."',
+    '{a} sets a trap over toast.\n{a} (to camera): {cam:trap}',
+    '{a} tests {b} at breakfast.\n{a}: "Just between us…"',
     '{a} put something in front of {b} at breakfast that only makes sense as a test.',
     'It looked like small talk and it was not small talk.',
     '{a} left a gap in a sentence and watched what {b} filled it with.',
@@ -818,6 +905,9 @@ const TEST_MORNING_LINES = {
     'Nobody else at that table will remember the question by lunch.',
   ],
   'they-saw-it-coming': [
+    '{b} clocks it immediately, and answers the real question.\n{b}: "You want to know if I’ll repeat it. I won’t."\n{a}: "…Right."',
+    '{b} sees through it.\n{a} (to camera): "{b} knew exactly what I was doing."',
+    '{b} isn’t fooled.\n{b}: "Nice try."',
     '{b} clocked it immediately and answered the question {a} had actually asked.',
     '"You are testing me," {b} said, pleasantly, over the tea.',
     '{a} was not as subtle as {a} thought and now both of them know it.',
@@ -830,6 +920,9 @@ const TEST_MORNING_LINES = {
     'It is a draw and {a} does not enjoy draws.',
   ],
   'answered-too-well': [
+    '{b} has an answer ready that’s slightly better than the question deserves.\n{a} (to camera): "Too smooth. Nobody’s that ready at breakfast."',
+    '{b} answers perfectly.\n{a} (to camera): {cam:holding-info}',
+    '{b} is suspiciously prepared.\n{a}: "You’ve thought about that."\n{b}: "I think about everything."',
     '{b} had an answer ready that was slightly better than the question deserved.',
     'Nobody is that precise about one night, and {a} noticed.',
     'It was correct in a way that suggested it had been prepared.',
@@ -842,6 +935,9 @@ const TEST_MORNING_LINES = {
     '{a} said thank you and meant something else.',
   ],
   'nothing-to-read': [
+    '{b} answers flatly, and {a} comes away with nothing.\n{b}: "Okay."\n{a}: "…That’s it?"\n{b}: "That’s it."',
+    '{b} gives nothing away.\n{a} (to camera): "Blank. Totally blank."',
+    '{b} is unreadable.\n{a} (to camera): {cam:unsure-info}',
     '{b} answered it flatly and {a} came away with nothing at all.',
     'Some people are unreadable and {b} may simply be one of them.',
     'There was no tell because there was nothing to tell, or because {b} is good.',

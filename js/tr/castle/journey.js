@@ -54,7 +54,7 @@ import { alignmentAt } from '../roles.js';
 import { MAX_ACTIVE_ROMANCES, _activeRomanceCount, _threadForActors } from './romance.js';
 import { _sentenceCase } from './cover.js';
 import { murderCount } from '../state.js';
-import { lineFor } from './lines.js';
+import { lineFor, pronounSlots } from './lines.js';
 
 function pick(rng, arr) { return arr[Math.floor(rng() * arr.length)]; }
 function isTraitor(name, ep) { return alignmentAt(name, ep) === 'traitor'; }
@@ -94,6 +94,11 @@ function _lastMurdered() {
 // scene from the first.
 const STEP_LINES = {
   confided: [
+    '{b} falls into step with {a} on the way out and starts talking.\n{b}: "Can I tell you something? I haven’t said this to anyone in there."\n{a}: "Go on."\n{b}: "I don’t trust half the people at breakfast."',
+    '{b} walks with {a} and opens up.\n{b}: "It’s easier out here. No walls."\n{a}: "No ears, you mean."\n{b}: "That too."',
+    '{b} tells {a} more in ten minutes of walking than in days indoors.\n{b}: "I miss my kids. I haven’t said that out loud yet."\n{a}: "You can say it to me."',
+    '{b} and {a} walk ahead of the others.\n{b}: "Honestly? I’m struggling."\n{a}: "Me too. Nobody admits it."',
+    '{b} confides in {a} on the track.\n{b}: "If I go next, I want you to know who I think it is."\n{a} (to camera): {cam:holding-info}',
     '{b} fell into step with {a} on the way out and said more in ten minutes of walking than in days indoors.',
     'Out of the castle’s hearing, {b} told {a} the thing they had been carrying around all week.',
     'Walking put {b} at ease in a way the great hall never had, and {a} got the honest version.',
@@ -106,6 +111,11 @@ const STEP_LINES = {
     '{b} said it to the hedgerow rather than to {a}, and {a} had the sense to keep looking forward.',
   ],
   probed: [
+    '{b} keeps pace with {a} the whole way out, asking questions.\n{b}: "So where were you last night, after the fire?"\n{a}: "Bed. Why?"\n{b}: "Just asking."',
+    '{b} walks with {a} and won’t stop asking.\n{b}: "Who do you trust? Honestly?"\n{a}: "Is this an interview?"',
+    '{b} quizzes {a} on the road.\n{b}: {say:ask-where}\n{a}: {say:answer-clean}',
+    '{b} asks {a} one question after another.\n{a} (to camera): "Three miles of questions. I felt like I was on trial."',
+    '{b} digs.\n{b}: "What did you make of last night?"\n{a}: "Same as you, probably."\n{b}: "I doubt that."',
     '{b} kept pace with {a} the whole way out and asked questions the whole way out with it.',
     'Somewhere on the road {a} realised {b} had been steering the conversation since the gate.',
     '{b} spent the walk taking {a} apart very politely, one small question at a time.',
@@ -118,6 +128,11 @@ const STEP_LINES = {
     '{b} began with questions about breakfast, then asked {a} where they had been the previous night.',
   ],
   quiet: [
+    '{a} and {b} walk the whole way without saying much, and neither minds.\n{a}: "Nice out."\n{b}: "Lovely."\nThat’s about it.',
+    '{a} and {b} share a comfortable silence on the track.\n{b} (to camera): "Sometimes you don’t need to talk. That’s rare in here."',
+    '{a} and {b} walk side by side, saying nothing.\n{a} (to camera): {cam:switch-off}',
+    '{a} and {b} walk without a word.\n{b}: "Good to not talk for a bit."\n{a}: "Mm."',
+    '{a} and {b} enjoy the quiet.\n{a} (to camera): {cam:fresh-air}',
     '{a} and {b} walked the whole way without saying much, and neither of them minded.',
     '{b} had nothing to say on the road out, and {a} decided not to fill the gap.',
     'It was a long walk and {b} spent it inside their own head, with {a} beside them.',
@@ -130,6 +145,11 @@ const STEP_LINES = {
     '{b} walked the whole way half a step behind and neither of them adjusted.',
   ],
   'said-too-much': [
+    '{b} talks for two miles and spends the last one worrying about it.\n{b}: "Forget what I said about the vote."\n{a}: "Which bit?"\n{b}: "All of it."',
+    '{b} tells {a} far too much.\n{b} (to camera): {cam:overdid}',
+    '{b} realises {bSub} has said too much.\n{b}: "That stays between us, yeah?"\n{a}: "Of course."\n{a} (to camera): "Of course it doesn’t."',
+    '{b} lets something slip on the walk.\n{a} (to camera): {cam:holding-info}',
+    '{b} goes quiet after saying one thing too many.\n{b}: "I shouldn’t have told you that."\n{a}: "Too late now."',
     '{b} talked for two miles and spent the last one working out how much of it {a} would keep.',
     'It came out easily and stopped being easy about four hundred yards from the gate.',
     '{b} heard themselves telling {a} about the first night and could not find the end of the sentence.',
@@ -142,6 +162,11 @@ const STEP_LINES = {
     '{a} did not ask for any of it and is now carrying all of it.',
   ],
   'fell-behind': [
+    '{b} drops back at the first stile and finishes the walk with somebody else.\n{a} (to camera): "Didn’t want to walk with me, then. Noted."',
+    '{b} slows down and lets {a} go on alone.\n{a}: "You coming?"\n{b}: "Go ahead. I’ll catch up."\n{b} never catches up.',
+    '{b} peels away from {a} halfway.\n{a} (to camera): {cam:left-out}',
+    '{b} finds a reason to walk with someone else.\n{a}: "Something I said?"\n{b}: "No, just — I’ll see you there."',
+    '{b} falls behind on purpose.\n{b} (to camera): "I needed a break from {a}. Nothing personal."',
     '{b} dropped back at the first stile and finished the road with somebody else entirely.',
     'They started the walk together. Somewhere in the second mile {b} was not there any more.',
     '{b} let the gap open a little at a time until it was not a gap, it was a decision.',
@@ -208,7 +233,7 @@ registerEvent({
         : branch === 'said-too-much' ? 1
           : branch === 'fell-behind' ? -1.5 : 0.5;
     api.addBond(a, b, bondDelta, { source: sceneWhy });
-    const line = pick(rng, STEP_LINES[branch]).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
+    const line = pronounSlots(pick(rng, STEP_LINES[branch]), { a, b }).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
     const { thread, cited } = arcContinue(api, 'trust', [a, b], ctx.ep, line, { source: sceneWhy });
     // TERMINAL: a road walked apart is a story that ended on the road, and
     // `buried` is what neither of them will raise at the castle.
@@ -234,6 +259,11 @@ registerEvent({
 // reads who anybody actually is.
 const EARSHOT_LINES = {
   agreed: [
+    '{a} waits until the castle is out of sight to say {c}’s name.\n{a}: "It’s {c}. I’m sure of it."\n{b}: "I’ve been thinking it for days."',
+    '{a} floats {c} on the road, and {b} jumps on it.\n{a}: "What do you think about {c}?"\n{b}: {say:agree-suspect:{c}}',
+    '{a} and {b} agree on {c}.\n{a}: "So it’s {c}."\n{b}: "It’s {c}."',
+    'Away from the castle, {a} names {c}.\n{b}: "Thank God. I thought it was just me."',
+    '{a} says {c}, quietly.\n{b}: "Same. Let’s watch {cObj} at dinner."',
     '{a} waited until the castle was out of sight to say {c}’s name, and {b} said they had been thinking it too.',
     'Off the path, {a} finally said what they thought about {c}. {b} did not need convincing.',
     '{a} tried the theory about {c} out on {b} where nobody could overhear it, and it landed.',
@@ -244,6 +274,11 @@ const EARSHOT_LINES = {
     'It is much easier to say a name where there are no walls, and {a} and {b} both found that out.',
   ],
   hedged: [
+    '{a} floats {c}’s name on the road. {b} neither agrees nor argues.\n{a}: "What about {c}?"\n{b}: "Maybe. I don’t know."\n{a} (to camera): "That’s not a no."',
+    '{a} mentions {c}.\n{b}: {say:doubt-suspect:{c}}',
+    '{a} tests {c}’s name on {b}.\n{b}: "Could be. Could be anyone."',
+    '{a} brings up {c}. {b} shrugs.\n{b}: "I need more than a feeling."',
+    '{a} tries {c} on {b}.\n{b}: "I’ll think about it."\n{a} (to camera): {cam:unsure-info}',
     '{a} floated {c}’s name on the road and {b} neither agreed nor argued, which {a} noticed.',
     'Out of earshot {a} named {c}. {b} said “maybe” and changed the subject before the next bend.',
     '{a} put {c} in front of {b} and got a shrug for it, and walked the rest of the way wondering why.',
@@ -254,6 +289,11 @@ const EARSHOT_LINES = {
     '{a} could not tell whether {b} was being careful or was simply not interested, and still cannot.',
   ],
   defended: [
+    '{a} says {c}’s name out on the road, and {b} shuts it down.\n{a}: "I think it’s {c}."\n{b}: "No. Absolutely not."',
+    '{b} defends {c} straight away.\n{b}: "{c}? Never. I’d stake my game on {cObj}."',
+    '{a} suggests {c}. {b} is having none of it.\n{b}: "You’re wrong about {c}."\n{a}: "We’ll see."',
+    '{b} won’t hear a word against {c}.\n{a} (to camera): "Why is {b} so protective of {c}?"',
+    '{a} names {c}, and {b} bristles.\n{b}: "Leave {c} out of it."',
     '{a} said {c}’s name out on the road and {b} shut it down flat.',
     '{b} would not have a word said about {c}, not even out here where nobody was listening.',
     '{a} learned something on that walk, and it was about {b}, not about {c}.',
@@ -264,6 +304,11 @@ const EARSHOT_LINES = {
     '{a} had thought this was a safe conversation. It was a safe conversation about the wrong person.',
   ],
   'named-somebody-else': [
+    '{a} says {c}. {b} listens, then says a different name.\n{a}: "{c}, surely."\n{b}: "No. Somebody else. Somebody quieter."',
+    '{a} brings up {c}. {b} has another name.\n{b}: "Forget {c}. Think about who’s been too quiet."',
+    '{a} suggests {c}. {b} disagrees.\n{b}: "I’ve got a different name."\n{a}: "Go on."',
+    '{b} steers {a} away from {c}.\n{b}: "You’re looking in the wrong place."',
+    '{a} and {b} have different names.\n{a} (to camera): "{b} wouldn’t go with {c}. Interesting."',
     '{a} said {c}. {b} listened to all of it and then said a different name entirely.',
     '“Not {c},” said {b}, and then gave {a} somebody else and three reasons, on the hill.',
     '{b} traded a name for a name out on the road, which is the fairest exchange available here.',
@@ -274,6 +319,11 @@ const EARSHOT_LINES = {
     '{a} put {c} down and {b} put somebody else down beside it, and they walked round both.',
   ],
   'would-not-talk-about-it': [
+    '{a} mentions {c}.\n{b}: "Not out here."\n{a}: "Out here’s the only place we can."\n{b}: "Still no."',
+    '{b} refuses to talk names on the road.\n{b}: "Can we just walk?"',
+    '{a} brings up {c}. {b} changes the subject.\n{b}: "Look at that view."\n{a} (to camera): "Dodged it completely."',
+    '{b} won’t discuss {c}.\n{b}: "I’m not doing names today."',
+    '{b} goes quiet at {c}’s name.\n{a} (to camera): {cam:unsure-info}',
     '“Not out here,” {b} said, which is odd, because out here is the only place anybody can.',
     '{b} would not discuss anybody at all on the road, and gave no reason for it.',
     '{a} said {c}’s name and {b} started talking about the weather with real determination.',
@@ -339,7 +389,7 @@ registerEvent({
         : branch === 'named-somebody-else' ? 1
           : branch === 'would-not-talk-about-it' ? -0.5 : 0;
     if (bondDelta) api.addBond(a, b, bondDelta, { source: sceneWhy });
-    const line = pick(rng, EARSHOT_LINES[branch])
+    const line = pronounSlots(pick(rng, EARSHOT_LINES[branch]), { a, b, c: target })
       .replace(/\{a\}/g, a).replace(/\{b\}/g, b).replace(/\{c\}/g, target);
     // The thread is the PAIR's — what these two now share is that one of them
     // said a name to the other, which is a fact about the two of them.
@@ -368,6 +418,9 @@ registerEvent({
 // rehearsing an unnamed "story", the vague premise the reviewer read.
 const ROAD_REHEARSAL_LINES = {
   airtight: [
+    '{a} runs the account of {topic} back through on the walk, and can’t find a gap in it.\n{a} (to camera): {cam:story-fine}',
+    '{a} goes over {topic} step by step on the road.\n{a} (to camera): {cam:story-hold}',
+    '{a} tests {aPos} own story about {topic} and it holds.\n{a} (to camera): "Every minute accounted for. Let them ask."',
     '{a} used the walk to run the account of {topic} back through, start to finish, and could not find a seam in it.',
     'By the time the castle was out of sight, {a} had the story of {topic} smooth enough to say in {a}’s sleep.',
     '{a} spent the road out on {topic}, and came off it with an answer for every question the table could ask.',
@@ -378,6 +431,9 @@ const ROAD_REHEARSAL_LINES = {
     '{a} said the account of {topic} to a gate post, and the gate post believed every word.',
   ],
   serviceable: [
+    '{a} goes over {topic} on the walk, and gets most of it to hold.\n{a} (to camera): {cam:story-hold}',
+    '{a} patches {aPos} account of {topic} as {aSub} walks.\n{a} (to camera): "It’ll do. It has to."',
+    '{a} runs through {topic} one more time.\n{a} (to camera): {cam:story-close}',
     '{a} went over the account of {topic} on the walk and got most of it to hold, which would have to do.',
     'There was one part of {topic} that {a} still could not say the same way twice, and the road ran out before it was fixed.',
     '{a} practised the story of {topic} until it was good enough, and tried not to think about the part that was not.',
@@ -388,6 +444,9 @@ const ROAD_REHEARSAL_LINES = {
     '{a} traded a better account of {topic} for a simpler one, on the grounds that simpler survives being repeated.',
   ],
   overcooked: [
+    '{a} rehearses {topic} so many times it stops sounding real.\n{a} (to camera): {cam:overdid}',
+    '{a} says the account of {topic} under {aPos} breath all the way out.\n{a} (to camera): "Now it sounds rehearsed. Because it is."',
+    '{a} over-practises {topic}.\n{a} (to camera): {cam:overdid}',
     '{a} rehearsed {topic} so many times on the way out that it stopped sounding like something that happened.',
     'By the last mile, {a}’s account of {topic} had grown three details it did not need and could not lose.',
     '{a} polished the story of {topic} past the point of being believable, knew it, and could not stop.',
@@ -398,6 +457,9 @@ const ROAD_REHEARSAL_LINES = {
     '{a} rehearsed the shrug about {topic} as well, which is roughly where this stops being preparation.',
   ],
   'stopped-rehearsing': [
+    '{a} gets half a mile into rehearsing {topic} and stops.\n{a} (to camera): "Rehearsing is how you get caught. I’m just going to tell it."',
+    '{a} gives up practising {topic}.\n{a} (to camera): {cam:story-hold}',
+    '{a} decides not to rehearse {topic} any more.\n{a} (to camera): "The more I say it, the worse it sounds."',
     '{a} got half a mile into rehearsing {topic}, heard how it sounded, and decided the rehearsing is the thing that gets people caught.',
     '{a} put the account of {topic} down on the road out and went in with nothing prepared, on purpose.',
     'People who have done nothing do not have an account. {a} arrived at that, about {topic}, on the hill.',
@@ -408,6 +470,9 @@ const ROAD_REHEARSAL_LINES = {
     'Whatever {a} says about {topic} tonight, {a} has decided it will be said for the first time.',
   ],
   'could-not-get-it-straight': [
+    '{a} can’t get through {topic} once without losing an hour of it.\n{a} (to camera): {cam:story-close}',
+    '{a} tries to run {topic} in order, and it won’t go.\n{a} (to camera): "There’s a gap. I can’t fill it."',
+    '{a} mutters {topic} to {aRef} and gets it wrong twice.\n{a} (to camera): {cam:story-close}',
     '{a} could not get through the account of {topic} once, all the way out, without losing an hour of it.',
     'Every time {a} started on {topic}, it came out in a different order, and the order is the whole thing.',
     '{a} spent two miles on {topic} and arrived less sure of it than at the gate.',
@@ -470,7 +535,7 @@ registerEvent({
     const sceneWhy = branch === 'stopped-rehearsing' ? 'decided the rehearsing was the dangerous part'
       : branch === 'could-not-get-it-straight' ? 'could not get one evening into the same order twice'
         : 'ran through their account of the night on the road';
-    const line = pick(rng, ROAD_REHEARSAL_LINES[branch])
+    const line = pronounSlots(pick(rng, ROAD_REHEARSAL_LINES[branch]), { a: actor })
       .replace(/\{a\}/g, actor).replace(/\{topic\}/g, topic);
     const { thread, cited } = arcContinue(api, 'cover', [actor], ctx.ep, line, { source: sceneWhy });
     // TWO TERMINAL OUTCOMES, and the event had neither. An account walked
@@ -499,6 +564,10 @@ registerEvent({
 // between the two and {b}'s own boldness — nothing invented.
 const WALK_PICK_LINES = {
   flattered: [
+    '{a} chooses {b} to walk with, and {b} is visibly pleased.\n{b}: "Me? Really?"\n{a}: "Why not you?"\n{b} (to camera): "Nobody usually picks me. That was nice."',
+    '{a} falls in beside {b}.\n{a}: "Walk with me?"\n{b}: "I’d love to."',
+    '{a} picks {b} over the obvious choice.\n{b} (to camera): "{a} chose me. I won’t forget that."',
+    '{b} beams all the way down the track.\n{b}: "I thought you’d walk with your usual lot."\n{a}: "Fancied a change."',
     '{a} chose {b} to walk with instead of the obvious person, and {b} spent the road visibly pleased about it.',
     '{b} had not expected to be picked, and did not hide how much it landed.',
     '{a} dropped back to walk with {b}, and {b} took it as exactly what it looked like.',
@@ -511,6 +580,10 @@ const WALK_PICK_LINES = {
     '{b} talked more in that hour than in the days before it, out of sheer relief.',
   ],
   wary: [
+    '{a} chooses {b} to walk with, and {b} spends the road working out why.\n{b}: "Why me today?"\n{a}: "Does there have to be a reason?"\n{b}: "In here? Yes."',
+    '{b} is suspicious of {a}’s choice.\n{b} (to camera): "{a} never walks with me. What does {aSub} want?"',
+    '{a} picks {b}. {b} is wary.\n{b}: "What are you after?"\n{a}: "Company."',
+    '{b} keeps {bPos} guard up.\n{b} (to camera): {cam:unsure-info}',
     '{a} chose {b} to walk with, and {b} spent the whole road working out why.',
     '{b} noticed they had been picked and did not once believe it was an accident.',
     '{a} fell in beside {b}, and {b} answered every question with a shorter question.',
@@ -523,6 +596,10 @@ const WALK_PICK_LINES = {
     'Being chosen is information about the chooser, and {b} spent the road reading it.',
   ],
   transactional: [
+    '{b} understands the pick immediately.\n{b}: "So. What are we talking about? The vote?"\n{a}: "Straight to it."\n{b}: "Why else would you walk with me?"',
+    '{b} gets down to business.\n{b}: "You want my vote. What do I get?"',
+    '{b} treats the walk as a deal.\n{b}: "Let’s make this worth it."\n{a}: "Fine by me."',
+    '{b} works out straight away what the walk is for.\n{b} (to camera): "{a} picked me for a reason. I want to know what it’s worth."',
     '{b} understood the pick immediately, priced it, and started talking about what happened at the next vote.',
     '{a} picked {b} for the walk and {b} had turned it into an arrangement before the first hill.',
     '{b} accepted the company and made sure {a} knew what it would be worth later.',
@@ -535,6 +612,10 @@ const WALK_PICK_LINES = {
     '{b} named a night, a name and a price, in that order, before the halfway stone.',
   ],
   'would-not-be-picked': [
+    '{a} falls in beside {b}, and {b} finds a reason to be elsewhere within the mile.\n{b}: "Just need to catch someone. Sorry."\n{a} (to camera): "Charming."',
+    '{b} slips away from {a}.\n{b}: "I’ll see you there."',
+    '{b} walks faster until {a} gives up.\n{a} (to camera): {cam:left-out}',
+    '{b} doesn’t want to walk with {a}.\n{b} (to camera): "Not today. I’m not having that conversation."',
     '{a} fell in beside {b} and {b} found a reason to be somewhere else within the mile.',
     '{b} does not want to be seen walking with {a}, and made that clear without saying it.',
     '“I promised I would walk with somebody,” {b} said, which was true and was not the reason.',
@@ -547,6 +628,10 @@ const WALK_PICK_LINES = {
     'The gap between them by the top of the hill was about forty yards and entirely deliberate.',
   ],
   'turned-it-around': [
+    '{a} picks {b}, and by the second mile {b} is doing the asking.\n{b}: "So who are you writing tonight?"\n{a}: "I was going to ask you that."\n{b}: "I asked first."',
+    '{b} takes charge of the conversation.\n{a} (to camera): "I picked {b} to get answers. I ended up giving them."',
+    '{b} flips it on {a}.\n{b}: {say:ask-where}',
+    '{b} runs rings round {a}.\n{b}: "Your turn. What do you know?"',
     '{a} picked {b}, and by the second mile {b} was the one doing the asking.',
     '{b} let {a} start it and then spent an hour finding out what {a} wanted to know and why.',
     'It was supposed to be a test of {b}. {b} sat the test and then set one.',
@@ -610,7 +695,7 @@ registerEvent({
         : branch === 'transactional' ? 0.5
           : branch === 'would-not-be-picked' ? -2 : 0;
     if (bondDelta) api.addBond(a, b, bondDelta, { source: sceneWhy });
-    const line = pick(rng, WALK_PICK_LINES[branch]).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
+    const line = pronounSlots(pick(rng, WALK_PICK_LINES[branch]), { a, b }).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
     const t = api.openArc('testing', [a, b], { source: sceneWhy, seed: line });
     // TERMINAL: a walk refused is a test that got no answer, and `turned-back`
     // is what the pick came home as.
@@ -643,6 +728,9 @@ registerEvent({
 // labels rather than one pool of six lines.
 const SHORT_COLUMN_LINES = {
   'solo-first': [
+    '{a} looks at the group leaving the castle and sees how short it has got.\n{a} (to camera): {cam:few-left}',
+    'The line leaving the castle is shorter than last time, and {a} notices.\n{a} (to camera): "There used to be so many of us on this walk."',
+    '{a} counts the people on the road out.\n{a} (to camera): {cam:few-left}',
     'The group that left the castle was noticeably shorter than the last one, and {a} was the one who said so.',
     '{a} counted the people on the road out and wished they had not.',
     'Somebody used to walk at the front of this. {a} noticed the gap where they should have been.',
@@ -654,6 +742,9 @@ const SHORT_COLUMN_LINES = {
     '{a} did the subtraction twice, on the road, and got the same answer twice.',
   ],
   'solo-again': [
+    '{a} has stopped counting the people on the road, and knows the number anyway.\n{a} (to camera): {cam:few-left}',
+    '{a} walks out with fewer people again.\n{a} (to camera): "It gets smaller every time. You stop saying it out loud."',
+    '{a} notices the gap in the line.\n{a} (to camera): {cam:few-left}',
     '{a} had stopped counting the people on the road out, and hated that they knew the number anyway.',
     'The column out of the gate got shorter every time, and {a} had started walking at the back of it.',
     '{a} looked at how few of them were on the road now and could remember every single gap in it.',
@@ -666,6 +757,9 @@ const SHORT_COLUMN_LINES = {
     'There is a point where a group stops being a group, and {a} thinks they passed it.',
   ],
   'pair-first': [
+    'The group leaving is shorter than last time.\n{a}: "Look how few of us there are."\n{b} only nods.',
+    '{a} and {b} walk at the back and count the line.\n{a}: "It’s getting small."\n{b}: "It is."',
+    '{a} says it out loud.\n{a}: "We used to take up the whole road."\n{b}: "Don’t."',
     'The group leaving was shorter than last time. {a} said it out loud and {b} only nodded.',
     '{a} and {b} both clocked how much smaller the column out of the gate had got.',
     'Neither {a} nor {b} said anything about it, but both of them counted the road out.',
@@ -677,6 +771,9 @@ const SHORT_COLUMN_LINES = {
     '{a} said “fewer of us” and {b} said “yes,” and that was the whole conversation.',
   ],
   'pair-again': [
+    '{a} and {b} have both stopped counting out loud.\n{a}: "Shorter again."\n{b}: "I know."',
+    '{a} and {b} look at the line and say nothing.\n{b} (to camera): {cam:few-left}',
+    '{a} and {b} walk out with fewer people again.\n{a}: "Who’s next, do you think?"\n{b}: "Don’t."',
     '{a} and {b} had both stopped counting out loud, which was its own way of counting.',
     'The road out was shorter again. {a} started to say so and {b} said they already knew.',
     '{a} and {b} walked out through a gate that used to be crowded, and neither of them filled the silence.',
@@ -721,7 +818,7 @@ registerEvent({
     const [a, b] = ctx.actors;
     const deaths = _deaths();
     const branch = `${b ? 'pair' : 'solo'}-${deaths >= 2 ? 'again' : 'first'}`;
-    const line = _sentenceCase(pick(rng, SHORT_COLUMN_LINES[branch])
+    const line = _sentenceCase(pronounSlots(pick(rng, SHORT_COLUMN_LINES[branch]), { a, b })
       .replace(/\{a\}/g, a).replace(/\{b\}/g, b || 'somebody'));
     if (b) api.addBond(a, b, 1, { source: sceneWhy });
     const parties = b ? [a, b] : [a];
@@ -858,6 +955,10 @@ registerEvent({
 
 const SETTLED_LINES = {
   held: [
+    '{b} answers the thing that’s been between them all day, straight, on the walk home.\n{a}: "So that’s the truth?"\n{b}: "That’s the truth."\n{a}: "Okay. I believe you."',
+    '{b} explains {bRef} on the way back.\n{b}: "I wasn’t hiding anything. I was just tired."\n{a}: "Alright. That makes sense."',
+    '{a} asks, and {b} answers properly.\n{a} (to camera): "{b} answered everything. I’m satisfied."',
+    '{a} and {b} clear it up on the road.\n{b}: "Are we good?"\n{a}: "We’re good."',
     'Whatever had been sitting between {a} and {b} all day, {b} answered it straight on the walk home, and that was that.',
     'By the time the castle came back into view {b} had given {a} the answer they had been waiting for.',
     '{b} said the thing plainly on the road back. {a} believed it, and stopped asking.',
@@ -865,6 +966,10 @@ const SETTLED_LINES = {
     '{b} said it without being asked, halfway back, and {a} did not need to hear it twice.',
   ],
   dropped: [
+    '{a} decides somewhere on the way back that it isn’t worth carrying.\n{a} (to camera): {cam:drop-it}',
+    '{a} lets it go on the walk.\n{a}: "Forget it. It doesn’t matter."\n{b}: "You sure?"\n{a}: "I’m sure."',
+    '{a} drops the subject.\n{a} (to camera): "Life’s too short. Even in here."',
+    '{a} lets {b} off.\n{a}: "I was being paranoid."',
     '{a} decided somewhere on the way back that it was not worth carrying and let it go.',
     'Neither {a} nor {b} raised it again on the road home. It was simply over.',
     'The walk back was long enough for {a} to talk themselves out of it entirely.',
@@ -872,6 +977,10 @@ const SETTLED_LINES = {
     'By the gate {a} could not remember why it had mattered enough to carry all day.',
   ],
   soured: [
+    'It comes apart on the walk back. {b} says the wrong thing.\n{b}: "Why do you even care?"\n{a}: "Because you lied to me."\n{b}: "I didn’t lie."',
+    '{a} and {b} fall out on the road.\n{a}: "I’m done trying with you."\n{b}: "Fine."',
+    '{b} gets defensive, and {a} stops pretending.\n{a} (to camera): "That answer told me everything."',
+    '{a} and {b} argue all the way home.\n{b}: "You’ve made your mind up."\n{a}: "You made it up for me."',
     'It came apart on the walk back. {b} said the wrong thing and {a} stopped pretending.',
     'Whatever {a} and {b} had, it did not survive the road home.',
     '{b} pushed it one sentence too far on the way back, and {a} was done.',
@@ -879,6 +988,10 @@ const SETTLED_LINES = {
     '{a} and {b} could have left it alone on the walk back, but {b} kept talking and made it worse.',
   ],
   unresolved: [
+    '{a} and {b} talk the whole way back and settle nothing.\n{a}: "So we still don’t agree."\n{b}: "Looks like it."',
+    '{a} and {b} go round in circles.\n{b} (to camera): "Two miles of talking. Nothing changed."',
+    '{a} and {b} can’t settle it.\n{a}: "Let’s leave it."\n{b}: "For now."',
+    '{a} and {b} reach the gate no closer.\n{a} (to camera): {cam:unsure-info}',
     'They talked the whole way back and settled nothing, and both of them knew it.',
     '{a} and {b} got to the gate with the same question still open between them.',
     'The castle came back into view before {a} and {b} had got anywhere near the end of it.',
@@ -931,7 +1044,7 @@ registerEvent({
     else if (roll < holdScore + dropScore + sourScore) branch = 'soured';
     else branch = 'unresolved';
 
-    const line = pick(rng, SETTLED_LINES[branch]).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
+    const line = pronounSlots(pick(rng, SETTLED_LINES[branch]), { a, b }).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
     const thread = findOpenThread('trust', [a, b]);
     const bondDelta = branch === 'held' ? 2 : branch === 'soured' ? -2 : branch === 'dropped' ? 0.5 : 0;
     if (bondDelta) api.addBond(a, b, bondDelta, { source: sceneWhy });
@@ -952,6 +1065,10 @@ registerEvent({
 
 const LET_IT_GO_LINES = {
   cleared: [
+    '{b} answers it properly on the road back, and {a} can’t fault the answer.\n{a}: "That makes sense, actually."\n{b}: "Because it’s true."',
+    '{b} explains, and {a} believes it.\n{a} (to camera): "{b} had an answer for everything. A good one."',
+    '{a} asks. {b} answers.\n{b}: {say:answer-clean}\n{a}: "Okay. Fair enough."',
+    '{b} clears {bPos} name on the walk.\n{b}: "Ask anyone. They’ll tell you the same."\n{a}: "I believe you."',
     'On the road back {b} answered it, properly, and {a} could not find anything wrong with the answer.',
     '{b} finally gave {a} the whole account on the walk home, and it held together.',
     'By the gate {a} had run out of ways to make {b} look guilty, and said so.',
@@ -968,6 +1085,10 @@ const LET_IT_GO_LINES = {
     'By the time the walls came up {a} could not remember what had started it.',
   ],
   slipped: [
+    '{b} talks too much on the long walk, and {a} gets something {b} didn’t mean to give.\n{b}: "—and then I went back up, because—"\n{a}: "Back up? You said you stayed down."\n{b}: "Did I?"',
+    '{b} slips up.\n{a} (to camera): "One little detail. {b} didn’t even notice."',
+    '{b} gets {bPos} story muddled.\n{b}: {say:answer-shaky}\n{a} (to camera): {cam:holding-info}',
+    '{b} says something that doesn’t match.\n{a}: "That’s not what you said this morning."\n{b}: "Isn’t it?"',
     'It was a long walk and {b} talked too much on it. {a} got something out of it that {b} did not mean to give.',
     'Somewhere on the road home {b} said one sentence too many, and {a} heard it.',
     'The walk back went on long enough that {b} contradicted themselves, and {a} was still listening.',
@@ -984,6 +1105,10 @@ const LET_IT_GO_LINES = {
     'It was one word. It was the wrong word, and {a} has it now.',
   ],
   hardened: [
+    'Nothing about the walk back changes {a}’s mind about {b}, and {b} can tell.\n{b}: "You still don’t believe me."\n{a}: "No."',
+    '{a} stays cold with {b} the whole way.\n{b} (to camera): "Whatever I say, {a} has decided."',
+    '{a} listens to {b} and isn’t moved.\n{a} (to camera): "Nice try."',
+    '{a} doesn’t budge.\n{b}: "What would it take?"\n{a}: "More than that."',
     'Nothing about the walk back changed {a}\'s mind about {b}, and {b} could tell.',
     '{b} spent the road home defending themselves to {a}, and made it worse with every mile.',
     'By the time the castle came back into view {a} was more certain about {b}, not less.',
@@ -1000,6 +1125,9 @@ const LET_IT_GO_LINES = {
     'It was the wrong answer given very well, and {a} came home sure of it.',
   ],
   'never-raised-it': [
+    '{a} has the whole road to ask {b} about it, and doesn’t ask.\n{a} (to camera): {cam:drop-it}',
+    '{a} almost asks, then doesn’t.\n{b}: "Something on your mind?"\n{a}: "No. Nothing."',
+    '{a} keeps the question to {aRef}.\n{a} (to camera): "Not today. I’ll ask when it matters."',
     '{a} had the whole road to ask {b} about it and did not ask.',
     'Two miles, nobody else within earshot, and {a} talked to {b} about the weather.',
     '{a} rehearsed the question for the first half of that walk and spent the second half not asking it.',
@@ -1053,7 +1181,7 @@ registerEvent({
     else if (roll < clearScore + slipScore + hardenScore) branch = 'hardened';
     else branch = 'never-raised-it';
 
-    const line = pick(rng, LET_IT_GO_LINES[branch]).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
+    const line = pronounSlots(pick(rng, LET_IT_GO_LINES[branch]), { a, b }).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
     const thread = findOpenThread('suspicion', [a, b]);
     const bondDelta = branch === 'cleared' ? 2 : branch === 'slipped' ? -2 : -1;
     api.addBond(a, b, bondDelta, { source: sceneWhy });
@@ -1093,6 +1221,9 @@ registerEvent({
 
 const STORY_SURVIVED_LINES = {
   held: [
+    'A whole day out of the castle and nobody catches {a} out on {topic}.\n{a} (to camera): {cam:story-fine}',
+    '{a}’s story about {topic} is still holding at the gate.\n{a} (to camera): {cam:story-fine}',
+    '{a} gets through the day with {topic} intact.\n{a} (to camera): "Nobody laid a finger on it."',
     'A whole day out of the castle and nobody caught {a} out on {topic}. The story was still holding at the gate.',
     '{a} got through the entire journey without changing a word of the story about {topic}.',
     'By the walk home {a} had stopped bracing for the question about {topic}, because it never came.',
@@ -1100,6 +1231,9 @@ const STORY_SURVIVED_LINES = {
     '{a} told the same story about {topic} to four different people and none of them questioned it.',
   ],
   frayed: [
+    '{a} has to patch the story about {topic} twice on the road.\n{a} (to camera): {cam:story-close}',
+    '{a}’s account of {topic} wobbles on the way home.\n{a} (to camera): "Two patches. Neither of them clean."',
+    '{a} fumbles a question about {topic}.\n{a} (to camera): {cam:story-close}',
     '{a} had to patch the story about {topic} twice on the road, and neither patch was clean.',
     'The story of {topic} got {a} home, but it had lost a piece somewhere out there.',
     '{a} spent the walk back quietly listing everything about {topic} they would have to remember differently now.',
@@ -1112,6 +1246,9 @@ const STORY_SURVIVED_LINES = {
   // castle events write zero beliefs, so nobody in the castle learned
   // anything here except that one story stopped working.
   broke: [
+    'Somebody asks the one question about {topic} on the road back, and {a} has no matching answer.\n{a} (to camera): {cam:story-close}',
+    '{a}’s story about {topic} falls apart on the walk.\n{a} (to camera): "That’s it. That’s the question I couldn’t answer."',
+    '{a} gets caught out on {topic}.\n{a} (to camera): {cam:story-close}',
     'Somebody asked the one question about {topic} on the road back, and {a} did not have an answer that matched the last one.',
     'The account of {topic} came apart in the open, hours from the castle, and {a} had nothing to put in its place.',
     '{a} heard their own account of {topic} fall over on the walk home and could not pick it back up.',
@@ -1119,6 +1256,9 @@ const STORY_SURVIVED_LINES = {
     '{a} answered about {topic} too fast, out there where there was nowhere to go, and the answer was wrong.',
   ],
   'nobody-asked': [
+    '{a} carries a full account of {topic} all the way home, and nobody asks for a word of it.\n{a} (to camera): {cam:story-fine}',
+    'Nobody mentions {topic} all day.\n{a} (to camera): {cam:invisible}',
+    '{a} had the answers ready. Nobody wanted them.\n{a} (to camera): "All that preparation for nothing. Good."',
     '{a} carried a complete account of {topic} all the way home and nobody asked for one word of it.',
     'A whole day, and not one person put a question to {a} about {topic}.',
     '{a} had answers ready for questions that never came, and spent the evening wondering why.',
@@ -1172,7 +1312,7 @@ registerEvent({
 
     const victim = _lastMurdered();
     const topic = victim ? `the night ${victim} was murdered` : 'what happened on the mission';
-    const line = pick(rng, STORY_SURVIVED_LINES[branch])
+    const line = pronounSlots(pick(rng, STORY_SURVIVED_LINES[branch]), { a: actor })
       .replace(/\{a\}/g, actor).replace(/\{topic\}/g, topic);
     const thread = findOpenThread('cover', [actor]);
     // ── "AN ANSWER THAT MATCHED THE LAST ONE" NEEDS A LAST ONE ──────────
@@ -1211,6 +1351,10 @@ registerEvent({
 
 const CASTLE_IN_VIEW_LINES = {
   buried: [
+    '{a} and {b} talk about the ones who are gone the whole way back.\n{b}: "I still expect to see them at dinner."\n{a}: "Me too."',
+    '{a} and {b} remember the people who have left.\n{a}: "Remember the first walk? All of us?"\n{b}: "Feels like a year ago."',
+    '{a} and {b} say everything there is to say about who has gone.\n{b} (to camera): {cam:few-left}',
+    '{a} and {b} share memories of the missing.\n{a}: "I miss the noise."\n{b}: "I miss the people making it."',
     '{a} and {b} talked about the ones who were gone the whole way back, and by the gate they had said everything there was.',
     'Somewhere on the road home {a} and {b} stopped talking about the dead and started talking about tomorrow.',
     'They left it out there on the road. {a} and {b} came back through the gate lighter than they went out.',
@@ -1218,6 +1362,10 @@ const CASTLE_IN_VIEW_LINES = {
     'It got said properly, out there, and {a} and {b} both put it down before the gate.',
   ],
   carried: [
+    'The castle comes back into view, and {a} feels it all land again.\n{a}: "I don’t want to go back in."\n{b}: "I know."',
+    '{a} slows down as the castle appears.\n{b}: "Alright?"\n{a}: "Just give me a second."',
+    '{a} stops at the top of the hill.\n{a} (to camera): {cam:homesick}',
+    '{a} sees the castle and goes quiet.\n{b}: "Same."',
     'The castle came back into view and {a} felt the whole thing land on them again, with {b} right there.',
     '{a} and {b} had almost stopped thinking about it, and then they saw the roof.',
     'Coming back through the gate put it straight back on {a} and {b} both.',
@@ -1233,12 +1381,20 @@ const CASTLE_IN_VIEW_LINES = {
   // one of them refuses to have the conversation at all, and one of them ends
   // it by turning it into an argument about who is left.
   'talked-past-it': [
+    '{a} starts on the ones who are gone, and {b} changes the subject twice.\n{a}: "Do you miss—"\n{b}: "What’s for dinner, do you reckon?"',
+    '{b} won’t talk about who has left.\n{b}: "Not today."\n{a} (to camera): "{b} doesn’t do sad. Or doesn’t do it in front of me."',
+    '{b} steers the conversation away.\n{b}: "Let’s talk about something nice."',
+    '{a} tries, {b} deflects.\n{a} (to camera): {cam:unsure-info}',
     '{a} started on the ones who were gone and {b} put the conversation somewhere else entirely, twice, before the last bend.',
     '{b} did not want the dead on this road and steered {a} off them without ever saying so out loud.',
     'Every time it came near, {b} found something about tomorrow to say instead, and {a} let {b} have it.',
     '{a} and {b} spent the last mile talking about the food at the castle, which was neither of their subjects.',
   ],
   'turned-sharp': [
+    'Near the gate, it stops being about the ones who have gone and starts being about who’s still here.\n{a}: "One of the people walking in front of us did this."\n{b}: "I know."',
+    '{a} turns grief into suspicion.\n{a}: "Somebody in there is enjoying this."\n{b}: "Who?"',
+    '{a} and {b} get serious by the gate.\n{b}: "Who benefits from them being gone?"\n{a}: "That’s the question."',
+    '{a} stops mourning and starts counting.\n{a} (to camera): {cam:watching}',
     'It stopped being about the ones who were gone somewhere near the gate and started being about who was still here.',
     '“You keep saying we,” {b} said, on the last stretch. “Somebody in this castle did that.” After which the walk was quiet.',
     '{a} was still mourning and {b} had moved on to arithmetic, and the two of them found that out with the towers already up.',
@@ -1291,7 +1447,7 @@ registerEvent({
     else if (roll < buryScore + carryScore + deflectScore) branch = 'talked-past-it';
     else branch = 'turned-sharp';
 
-    const line = pick(rng, CASTLE_IN_VIEW_LINES[branch]).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
+    const line = pronounSlots(pick(rng, CASTLE_IN_VIEW_LINES[branch]), { a, b }).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
     const thread = findOpenThread('grief', [a, b]);
     const bondDelta = branch === 'buried' ? 1.5
       : branch === 'carried' ? 1 : branch === 'talked-past-it' ? -0.5 : -1.5;
@@ -1319,24 +1475,40 @@ registerEvent({
 // different actions with four different consequences.
 const WALKED_BACK_LINES = {
   easy: [
+    '{a} and {b} are the last two through the gate, walking slowly.\n{b}: "We should hurry."\n{a}: "Should we?"\n{b}: "No."',
+    '{a} and {b} dawdle on purpose.\n{a} (to camera): "Longest walk home ever. Didn’t mind at all."',
+    '{a} and {b} take their time.\n{b}: "I like walking with you."\n{a}: "I like it too."',
+    '{a} and {b} fall behind, laughing.\n{b} (to camera): "Best part of the day, that."',
     '{a} and {b} were the last two through the gate, and neither of them had been walking fast.',
     'The road back took {a} and {b} longer than it took anybody else, and nobody said anything about it.',
     '{a} and {b} came in from the road still talking, hours after they had run out of things to say.',
     '{a} and {b} stopped twice on the way back for no reason either of them offered.',
   ],
   watched: [
+    'Somebody holds the gate for {a} and {b} longer than expected.\n{b}: "Everyone’s staring."\n{a}: "Let them."',
+    '{a} and {b} arrive to raised eyebrows.\n{a} (to camera): "They’ve all noticed. Of course they have."',
+    '{a} and {b} walk in together, and the courtyard notices.\n{b}: "So much for subtle."',
+    '{a} and {b} get looks at the gate.\n{b} (to camera): "Everyone saw us come back together. That’ll be a conversation."',
     'Somebody held the gate for {a} and {b} for rather longer than they had expected to have to.',
     '{a} and {b} walked back together and were aware, the entire way, of exactly who was looking.',
     'It was a long road and there was nowhere on it for {a} and {b} to be out of sight, and both of them felt that.',
     '{a} and {b} came up the path apart, which fooled precisely nobody who had watched them set off.',
   ],
   'said-out-loud': [
+    'Somewhere on the road home one of them says it.\n{a}: "I like you. Properly."\n{b}: "I like you too."',
+    '{a} and {b} stop calling it nothing.\n{b}: "So this is a thing."\n{a}: "It’s a thing."',
+    '{a} and {b} admit it on the way home.\n{a} (to camera): "We said it. Out loud. No going back."',
+    '{b} says it first.\n{b}: "I think about you a lot."\n{a}: "Good. Me too."',
     'Somewhere on the road home one of them said the thing, and by the gate {a} and {b} had stopped calling it nothing.',
     '{a} put it into words on the walk back rather than leaving it to be inferred, and {b} did not laugh it off.',
     '{a} and {b} spent the last mile agreeing what this actually was, out loud, in sentences.',
     '“So what are we doing?” {b} asked, on the road. It took the rest of the walk, and they answered it.',
   ],
   strained: [
+    'The road home does {a} and {b} no favours, and by the gate they’re walking a yard apart.\n{a}: "Something wrong?"\n{b}: "No."',
+    '{a} and {b} have an awkward walk back.\n{b} (to camera): "It was weird. I don’t know what changed."',
+    '{a} and {b} barely talk on the way home.\n{a}: "You’re quiet."\n{b}: "Tired."',
+    '{a} and {b} drift apart on the walk.\n{a} (to camera): {cam:unsure-info}',
     'The road home did {a} and {b} no favours at all, and by the gate they were walking a yard further apart than they had set off.',
     'Something about the day got in between {a} and {b} on the walk back, and neither of them could name it in time.',
     '{a} wanted the walk to fix it and {b} wanted the walk to be over, and those are not the same walk.',
@@ -1399,7 +1571,7 @@ registerEvent({
     const bondDelta = branch === 'easy' ? 2
       : branch === 'said-out-loud' ? 2.5 : branch === 'watched' ? 0.5 : -1.5;
     api.addBond(a, b, bondDelta, { source: sceneWhy });
-    const line = pick(rng, WALKED_BACK_LINES[branch]).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
+    const line = pronounSlots(pick(rng, WALKED_BACK_LINES[branch]), { a, b }).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
     const advanced = api.advanceArc(thread.id, line, { source: sceneWhy });
     return { branch, pair: [a, b], kind,
       threadId: advanced?.id ?? thread.id, bondDelta };
@@ -1421,24 +1593,36 @@ registerEvent({
 // starvation this event was built to undo.
 const CAME_BACK_HOLDING_LINES = {
   'walked-in-holding': [
+    '{a} and {b} come back through the gate holding hands.\n{b}: "People are looking."\n{a}: "Good."',
+    '{a} and {b} walk into the courtyard hand in hand.\n{a} (to camera): "No point hiding it now."',
+    '{a} and {b} don’t let go at the gate.\n{b} (to camera): "Let them look. I don’t care any more."',
     '{a} and {b} came back through the gate close enough together that nobody in the courtyard had to ask.',
     'They were the last two in off the road, and by the time {a} and {b} reached the gate it was not a secret any more.',
     '{a} and {b} did not announce it. They did not have to; the courtyard watched them come back up the path.',
     'Whatever the road did to {a} and {b}, they walked back in as a pair and stopped pretending otherwise.',
   ],
   'told-them': [
+    '{a} tells somebody on the road back, and by the gate three people know.\n{b}: "You told them?"\n{a}: "I couldn’t help it."',
+    '{a} can’t keep it quiet.\n{b} (to camera): "{a} told half the castle before we got home."',
+    '{a} spills it on the walk.\n{b}: "So much for keeping it secret."\n{a}: "Sorry. Not sorry."',
     '{a} told somebody on the road back, in as many words, and by the time {a} and {b} reached the gate three other people knew.',
     '{b} said it out loud to the person walking beside {b}, and did not ask them to keep it, which was the decision.',
     'It got out on the road rather than at the castle: {a} answered a direct question honestly and that was that.',
     'Somebody asked {b} straight out on the walk home whether it was what it looked like, and {b} said yes.',
   ],
   'agreed-quietly': [
+    '{a} and {b} settle it between them on the last mile.\n{a}: "Just us know. For now."\n{b}: "Just us."',
+    '{a} and {b} make it official, privately.\n{b} (to camera): "Nobody else needs to know. Yet."',
+    '{a} and {b} agree quietly.\n{a}: "We’re a thing, then?"\n{b}: "We’re a thing."',
     '{a} and {b} settled it between them on the last mile - not for anybody else, just so the two of them had said it.',
     'By the gate {a} and {b} had agreed what they were, quietly, and agreed to let the castle work it out on its own.',
     '{a} and {b} came in separately and had, an hour earlier, stopped calling it nothing at all.',
     'Nobody saw it happen. {a} and {b} walked in ten minutes apart and were something they had not been that morning.',
   ],
   'not-yet': [
+    '{a} and {b} nearly say it on the road home, and put it down at the gate.\n{a}: "Later."\n{b}: "Later."',
+    '{a} and {b} almost admit it.\n{a} (to camera): "So close. Not yet."',
+    '{a} and {b} stop just short.\n{b}: "Not here. Not with everyone watching."',
     '{a} and {b} got most of the way to saying it on the road home and put it down again at the gate.',
     'There was a moment on the last hill where it nearly happened, and then the castle came into view and it did not.',
     '{a} started the sentence twice on the walk back and finished it neither time, with {b} waiting both times.',
@@ -1516,7 +1700,7 @@ registerEvent({
     else if (roll < holdScore + tellScore + quietScore) branch = 'agreed-quietly';
     else branch = 'not-yet';
 
-    const note = pick(rng, CAME_BACK_HOLDING_LINES[branch]).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
+    const note = pronounSlots(pick(rng, CAME_BACK_HOLDING_LINES[branch]), { a, b }).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
     if (branch === 'not-yet') {
       // The spark survives, one beat warmer and no further along. This is the
       // event's only non-escalating path and it writes a real beat, so the
@@ -1564,6 +1748,10 @@ export const JOURNEY_WINDOWS = ['journey-out', 'journey-back'];
 const ROAD_RAISE_LINES = {
   // They bring it up, out here, where the castle cannot hear it.
   'said-it-out-there': [
+    '{a} lets a mile go by, then asks the question {aSub} came out here to ask.\n{a}: "About the other day. Did you mean it?"\n{b}: "Yes. I did."',
+    '{a} raises the old thing on the road.\n{a}: "We never talked about it properly."\n{b}: "No. Go on, then."',
+    '{a} finally brings it up.\n{a}: "I need to ask you something, and I need a straight answer."\n{b}: "Alright."',
+    '{a} asks, away from the castle.\n{a} (to camera): "Out here, nobody can overhear. So I asked."',
     '{a} let a mile go by and then asked the question {a} had come out here to ask.',
     'There was nobody within earshot for the first time in a week, and {a} used it.',
     '{a} said it plainly, once, and then let {b} have the silence to answer into.',
@@ -1576,6 +1764,10 @@ const ROAD_RAISE_LINES = {
   ],
   // Raised, and put back down again without an answer.
   'let-it-lie': [
+    '{a} carries it the whole way out, and the whole way back.\n{a} (to camera): {cam:drop-it}',
+    '{a} almost says it, twice.\n{b}: "What?"\n{a}: "Nothing. Doesn’t matter."',
+    '{a} decides not to bring it up.\n{a} (to camera): "Not worth ruining a nice walk over."',
+    '{a} keeps quiet about it.\n{a} (to camera): {cam:holding-info}',
     '{a} carried it the whole way out and carried it the whole way back.',
     'The moment was there for about a hundred yards. {a} let it go past.',
     '{b} gave {a} two openings. {a} took neither and talked about the mission.',
@@ -1588,6 +1780,10 @@ const ROAD_RAISE_LINES = {
   ],
   // It goes badly: the old thing is worse for being handled.
   'reopened-it': [
+    '{a} means to settle it, and makes it worse.\n{a}: "I just want to understand."\n{b}: "You want to win the argument."\n{a}: "That’s not fair."',
+    '{a} brings it up and it blows up.\n{b}: "Why are we doing this again?"\n{a}: "Because you never answered."',
+    '{a} and {b} are back where they started.\n{b} (to camera): "{a} just can’t let it go."',
+    '{a} reopens the wound.\n{b}: "I thought we were past this."\n{a}: "So did I."',
     '{a} meant to settle it and managed to make it a great deal worse.',
     'Whatever had been scabbed over came off on that road, in front of the hills.',
     'They went out with one problem between them and came back with the same one, louder.',
@@ -1600,6 +1796,10 @@ const ROAD_RAISE_LINES = {
   ],
   // Or it closes: the road ends the story.
   'put-it-down': [
+    '{a} and {b} leave it in a field, which is a better place for it than the castle.\n{a}: "Done?"\n{b}: "Done."',
+    '{a} and {b} finally clear the air.\n{b}: "I’m sorry about the other day."\n{a}: "Me too."',
+    '{a} and {b} put the old thing to rest.\n{a} (to camera): "Feels lighter. Honestly."',
+    '{a} and {b} shake on it on the track.\n{b}: "Fresh start?"\n{a}: "Fresh start."',
     '{a} and {b} left it in a field, which is a better place for it than the castle.',
     'It got said, it got answered, and neither of them picked it back up.',
     'Whatever was between them went into the ditch at the second gate and stayed there.',
@@ -1687,7 +1887,7 @@ registerEvent({
       : branch === 'said-it-out-there' ? 1
         : branch === 'reopened-it' ? -2.5 : 0;
     if (bondDelta) api.addBond(a, b, bondDelta, { source: sceneWhy });
-    const line = pick(rng, ROAD_RAISE_LINES[branch]).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
+    const line = pronounSlots(pick(rng, ROAD_RAISE_LINES[branch]), { a, b }).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
     const { thread, cited } = arcContinue(api, 'trust', [a, b], ctx.ep, line, { source: sceneWhy });
     // A thing put down on the road is a thing the castle does not carry back.
     // 'buried' is the pool's own word for a story that ended where it was had —
@@ -1703,6 +1903,10 @@ registerEvent({
 const ROAD_ARGUMENT_LINES = {
   // It carries over from the table and does not wait for the mission.
   'straight-back-into-it': [
+    '{a} gets about four hundred yards before last night comes out again.\n{a}: "And another thing about last night—"\n{b}: "Here we go."',
+    '{a} and {b} pick up the row where they left it.\n{b}: "Can we not do this now?"\n{a}: "When, then?"',
+    '{a} can’t let last night go.\n{a}: "You embarrassed me."\n{b}: "You embarrassed yourself."',
+    '{a} and {b} start arguing before they’re out of sight of the castle.\n{b} (to camera): "Four hundred yards. That’s all it took."',
     '{a} got about four hundred yards before last night came out of {a} again.',
     'The road had barely started and {a} was already saying {b}\u2019s name like an accusation.',
     '{a} spent the first hill relitigating the table, at volume, at {b}.',
@@ -1715,6 +1919,10 @@ const ROAD_ARGUMENT_LINES = {
   ],
   // Held, in public, in front of a walking column.
   'in-front-of-everybody': [
+    'It happens in the open, on a track, with no walls to take it behind.\n{a}: "Don’t you dare."\n{b}: "Or what?"\nEveryone stops walking.',
+    '{a} and {b} argue in front of the whole group.\n{a} (to camera): "Probably shouldn’t have done that in front of everyone."',
+    '{a} and {b} have a shouting match on the road.\n{b}: "Say it to my face, then!"\n{a}: "I am!"',
+    'The whole column watches {a} and {b} row.\n{b} (to camera): "Everyone saw. Great."',
     'It happened in the open, on a track, with no walls to take it behind.',
     '{a} and {b} had it out where every single person on that road could hear.',
     'Nobody intervened and nobody looked away. Fourteen witnesses and not one of them neutral.',
@@ -1727,6 +1935,10 @@ const ROAD_ARGUMENT_LINES = {
   ],
   // Somebody steps in and it stops.
   'somebody-stepped-in': [
+    'It’s going somewhere bad until a third voice stops it.\n{a}: "You’re a liar."\n{b}: "Say that again—"\nSomebody further up the track tells them both to pack it in, and they do.',
+    '{a} and {b} get louder, and someone gets between them.\n{a} (to camera): "Probably a good thing somebody stopped us."',
+    'Somebody steps in before {a} and {b} say something they can’t take back.\n{b}: "Fine. Fine."',
+    'Another player pulls {a} away from {b} by the arm.\n{a}: "I wasn’t finished."\n{b}: "Yes, you were."',
     'It was going somewhere bad until a third voice made it stop going there.',
     'Somebody got between {a} and {b} and walked one of them up the road.',
     'The argument ended because somebody else decided it was going to.',
@@ -1739,6 +1951,10 @@ const ROAD_ARGUMENT_LINES = {
   ],
   // Or it does not happen at all, and the not-happening is the scene.
   'swallowed-it': [
+    '{a} says nothing to {b} for six miles, and means every word of it.\n{b} (to camera): "The silent treatment. For six miles."',
+    '{a} ignores {b} the whole walk.\n{b}: "Are you going to talk to me?"\n{a}: "No."',
+    '{a} bites {aPos} tongue all the way.\n{a} (to camera): "If I’d opened my mouth, I’d have said too much."',
+    '{a} walks ahead of {b} in silence.\n{a} (to camera): {cam:alone-choice}',
     '{a} said nothing to {b} for six miles and meant every word of it.',
     'It stayed in {a}, all the way out and all the way through the afternoon.',
     '{a} rehearsed it the whole road and delivered none of it.',
@@ -1806,7 +2022,7 @@ registerEvent({
     const bondDelta = branch === 'swallowed-it' ? -0.5
       : branch === 'somebody-stepped-in' ? -1 : -2.5;
     api.addBond(a, b, bondDelta, { source: sceneWhy });
-    const line = pick(rng, ROAD_ARGUMENT_LINES[branch]).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
+    const line = pronounSlots(pick(rng, ROAD_ARGUMENT_LINES[branch]), { a, b }).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
     const { thread, cited } = arcContinue(api, 'confrontation', [a, b], ctx.ep, line,
       { source: sceneWhy });
     return { branch, pair: [a, b], speaker: a, respondent: b,
@@ -1817,6 +2033,10 @@ registerEvent({
 const COLUMN_SHAPE_LINES = {
   // The column sorts itself and somebody reads the sorting.
   'read-the-order': [
+    '{a} watches who chooses whom on the road, and does the maths quietly.\n{a} (to camera): {cam:watching}',
+    '{a} notes who walks with who.\n{a} (to camera): "Watch who walks with who. That’s the real vote."',
+    '{a} reads the line like a map.\n{a} (to camera): {cam:notes}',
+    '{a} counts the pairs on the road out.\n{a} (to camera): {cam:watching}',
     '{a} watched who chose whom on that road and did the arithmetic quietly.',
     'The column is a seating plan nobody thinks about, and {a} thinks about it.',
     '{a} hung back a little and read the whole line of them from behind.',
@@ -1829,6 +2049,10 @@ const COLUMN_SHAPE_LINES = {
   ],
   // Two people who should not be together, are.
   'the-wrong-pair': [
+    '{b} is walking with the last person {a} would have paired {bObj} with.\n{a} (to camera): "Since when are they friends?"',
+    '{a} notices {b}’s new walking partner.\n{a} (to camera): {cam:holding-info}',
+    '{a} does a double take at {b}’s company.\n{a} (to camera): "That’s new. I don’t like new."',
+    '{a} clocks {b} with an unexpected partner.\n{a} (to camera): {cam:watching}',
     '{b} was walking with the last person {a} would have paired them with.',
     '{a} looked up the road, saw who {b} had fallen in beside, and thought about it all day.',
     'It is a small thing to notice. {a} noticed it and kept it.',
@@ -1841,6 +2065,10 @@ const COLUMN_SHAPE_LINES = {
   ],
   // Somebody is walking alone and that is its own answer.
   'walking-alone': [
+    '{b} has the road to {bRef} for an hour, and not by choice.\n{a} (to camera): "Nobody’s walking with {b}. That tells you something."',
+    '{a} notices {b} walking alone.\n{a} (to camera): {cam:watching}',
+    '{a} sees {b} left on {bPos} own.\n{a} (to camera): "Somebody’s been talking about {b}."',
+    '{a} watches {b} walk alone.\n{a} (to camera): {cam:holding-info}',
     '{b} had the road to themselves for an hour, and not by choosing it.',
     '{a} counted the pairs and got everybody except {b}.',
     'There was a space around {b} the whole way out that nobody stepped into.',
@@ -1852,6 +2080,9 @@ const COLUMN_SHAPE_LINES = {
     '{a} watched the space around {b} and understood exactly what it meant.',
   ],
   'the-gap-in-the-middle': [
+    'The column goes out in two halves with a gap between them, and {a} walks in the gap.\n{a} (to camera): "Two groups. Two sides. I’m in the middle."',
+    '{a} notices the line split in two.\n{a} (to camera): {cam:watching}',
+    '{a} walks alone between two groups.\n{a} (to camera): "Neither half wants me. Or both do. Hard to tell."',
     'The column went out in two halves today with thirty yards of nothing between them, and {a} walked in the gap looking at both.',
     '{a} noticed the road had a front group and a back group and that nobody was crossing between them.',
     'It was not a column this morning. It was two of them, and {a} could name who was in each.',
@@ -1918,7 +2149,7 @@ registerEvent({
     // A read costs the person read, a little, and only in the reader's head.
     const bondDelta = branch === 'walking-alone' ? -0.5 : -1;
     api.addBond(a, b, bondDelta, { source: sceneWhy });
-    const line = pick(rng, COLUMN_SHAPE_LINES[branch]).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
+    const line = pronounSlots(pick(rng, COLUMN_SHAPE_LINES[branch]), { a, b }).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
     const t = api.openArc('suspicion', [a, b], { source: sceneWhy, seed: line });
     return { branch, pair: [a, b], speaker: a, respondent: b, topic: b,
       topicKind: 'road-read', threadId: t?.id, bondDelta };
@@ -1927,6 +2158,10 @@ registerEvent({
 
 const ROAD_FAVOUR_LINES = {
   'took-the-weight': [
+    '{a} takes the load onto {aPos} own shoulder and says nothing about it.\n{b}: "You don’t have to."\n{a}: "I know."',
+    '{a} carries {b}’s bag without being asked.\n{b} (to camera): "{a} just took it. Didn’t say a word."',
+    '{a} lifts the heavy end.\n{b}: "Thank you."\n{a}: "Don’t mention it."',
+    '{a} helps {b} quietly.\n{b} (to camera): "Kind. Really kind."',
     '{a} shifted the load onto {a}\u2019s own shoulder at the gate and said nothing about it.',
     '{b} did not ask and {a} did not wait to be asked.',
     'By the top of the hill {a} had most of it, and neither of them had discussed that.',
@@ -1938,6 +2173,10 @@ const ROAD_FAVOUR_LINES = {
     '{a} did it quietly, which is the only way it counts.',
   ],
   'made-a-point-of-it': [
+    '{a} helps, visibly, in front of the people {aSub} wants to see it.\n{a}: "Here, let me take that!"\n{b} (to camera): "Very loud help, that."',
+    '{a} makes a show of carrying {b}’s load.\n{b} (to camera): "Nice gesture. Shame about the audience."',
+    '{a} helps {b} with a lot of noise.\n{a}: "Anyone else need a hand?"',
+    '{a} helps where everyone can see.\n{b} (to camera): "{a} wanted credit for that."',
     '{a} helped, visibly, in front of the people {a} wanted to have seen it.',
     'The generosity was genuine. So was the timing of it.',
     '{a} took the weight where the column was thickest and put it down where it was not.',
@@ -1949,6 +2188,10 @@ const ROAD_FAVOUR_LINES = {
     'A favour done loudly is still a favour. It is just also something else.',
   ],
   'let-them-struggle': [
+    '{b} carries all of it, and {a} walks beside {bObj} carrying nothing.\n{b}: "Don’t help, then."\n{a}: "You’re doing fine."',
+    '{a} watches {b} struggle.\n{b} (to camera): "{a} didn’t lift a finger. I’ll remember that."',
+    '{a} doesn’t offer to help.\n{b}: "A hand would be nice."\n{a}: "You’ve got it."',
+    '{a} leaves {b} to it.\n{b} (to camera): "Nice to know who helps and who doesn’t."',
     '{b} carried the whole of it and {a} walked beside {b} carrying nothing.',
     'There was one obvious moment to offer and {a} let it pass.',
     '{a} was close enough the whole way. That is what {b} will remember.',
@@ -1960,6 +2203,10 @@ const ROAD_FAVOUR_LINES = {
     '{a} walked ahead. {b} arrived last, and carrying everything.',
   ],
   'needed-carrying': [
+    '{a} is the one struggling today, and {b} takes the load without being asked.\n{a}: "I’m fine."\n{b}: "You’re not. Give it here."',
+    '{b} helps {a} up the hill.\n{a} (to camera): "I needed that. I won’t forget it."',
+    '{b} takes the weight off {a}.\n{a}: "Thank you."\n{b}: "That’s what we do."',
+    '{b} notices {a} flagging.\n{b}: "Swap?"\n{a}: "Please."',
     'It went the other way today: {a} was the one struggling and {b} took it off {a} without being asked.',
     '{a} could not hold the pace with it and {b} said nothing about that, which is the part {a} will remember.',
     '{a} has been the one helping all week. Today {a} needed it, and {b} was there.',
@@ -2028,7 +2275,7 @@ registerEvent({
       : branch === 'needed-carrying' ? 1.5
         : branch === 'made-a-point-of-it' ? 1 : -1.5;
     api.addBond(a, b, bondDelta, { source: sceneWhy });
-    const line = pick(rng, ROAD_FAVOUR_LINES[branch]).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
+    const line = pronounSlots(pick(rng, ROAD_FAVOUR_LINES[branch]), { a, b }).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
     const { thread, cited } = arcContinue(api, 'trust', [a, b], ctx.ep, line, { source: sceneWhy });
     return { branch, pair: [a, b], speaker: a, respondent: b,
       threadId: thread?.id, cited, bondDelta };

@@ -5624,8 +5624,10 @@ export function rpBuildCastleDay(ep, observer = 'audience', segment = null) {
  * cards on the page and in the transcript. Three copies of a day that can
  * drift apart is the shape js/vp-tr/screens.js exists to prevent, one level up.
  */
-export function castleDayScenes(ep, observer = 'audience') {
-  const v = _view(ep, observer);
+export function castleDayScenes(ep, observer = 'audience', segment = null) {
+  // `segment` narrows to one castle screen's phases — the stage (castle-stage.js)
+  // plays the same scenes that screen's page draws, composed with the same keys.
+  const v = _view(ep, observer, segment);
   if (!v) return [];
   const key = 'dy|' + v.ep;
   const used = new Set();
@@ -5639,8 +5641,8 @@ export function castleDayScenes(ep, observer = 'audience') {
  * observer-gating (a player never sees another player's private read) at the
  * data level rather than by scraping markup.
  */
-export function castleDayChips(ep, observer = 'audience') {
-  const v = _view(ep, observer);
+export function castleDayChips(ep, observer = 'audience', segment = null) {
+  const v = _view(ep, observer, segment);
   if (!v) return [];
   return v.scenes.map(s => ({ eventId: s.eventId, window: s.window,
     layer: s.layer, chips: (s.chips || []).map(c => ({ ...c })) }));

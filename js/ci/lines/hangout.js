@@ -24,6 +24,20 @@ export const HANGOUT = {
       { by: 'b', send: "Honestly? Like I'm gonna throw up" },
       { by: 'a', send: "Same {e:laugh} Let's go one by one" },
     ] },
+    { id: 'hangout.open.05', turns: [
+      { by: 'a', send: "Look at this place. Welcome to the Hangout {e:crown}" },
+      { by: 'b', send: "Lol it's so nice in here. I hate it. Let's get this over with" },
+    ] },
+    { id: 'hangout.open.06', turns: [
+      { by: 'a', say: "Nobody else is in here. Just me and {b}. Anything I say is on the record.", send: "Hi! Before anything, I'm really glad it's you in here with me" },
+      { by: 'b', send: "Same!! Okay, how do you want to do this?" },
+      { by: 'a', send: "One name at a time" },
+    ] },
+    { id: 'hangout.open.07', turns: [
+      { by: 'b', send: "So. Here we are {e:grimace}" },
+      { by: 'a', send: "Here we are. I haven't slept, just so you know" },
+      { by: 'b', send: "Lol me neither" },
+    ] },
   ],
   'hangout.view.fake.cut': [
     { id: 'hangout.view.fake.cut.01', turns: [
@@ -54,6 +68,18 @@ export const HANGOUT = {
     { id: 'hangout.view.threat.cut.03', turns: [
       { by: 'a', send: "{c} is running this game and nobody's saying it out loud" },
       { by: 'b', react: "Oof. Okay. Yeah.", send: "I've been thinking the same thing {e:eyes}" },
+    ] },
+    { id: 'hangout.view.threat.cut.04', turns: [
+      { by: 'a', send: "If {c} is ever an Influencer, neither of us is safe" },
+      { by: 'b', react: "That's true. That's really true.", send: "I hate that you're right" },
+    ] },
+    { id: 'hangout.view.threat.cut.05', turns: [
+      { by: 'b', send: "{c} is too well liked. We both know it" },
+      { by: 'a', send: "It's the smart move. It doesn't feel good, but it's smart" },
+    ] },
+    { id: 'hangout.view.threat.cut.06', turns: [
+      { by: 'a', say: "{c} is playing the best game in here. That's exactly why.", send: "Can we talk about how good {c} is at this game?" },
+      { by: 'b', send: "Too good. Way too good" },
     ] },
   ],
   'hangout.view.grudge.cut': [
@@ -111,6 +137,53 @@ export const HANGOUT = {
       { by: 'a', react: "Please don't say {c}. Please don't say {c}.", send: "Where are you at with {c}?" },
       { by: 'b', send: "Love {c.obj}. I'm not blocking {c.obj}" },
       { by: 'a', react: "Thank God." },
+    ] },
+    { id: 'hangout.view.noBond.keep.06', turns: [
+      { by: 'a', send: "{c} has been nothing but sweet to me. I can't" },
+      { by: 'b', send: "Me neither. {c} stays" },
+    ] },
+    { id: 'hangout.view.noBond.keep.07', turns: [
+      { by: 'b', send: "Where's your head at with {c}?" },
+      { by: 'a', send: "{c} is one of my closest in here honestly" },
+      { by: 'b', send: "Then {c} is safe" },
+    ] },
+    { id: 'hangout.view.noBond.keep.08', turns: [
+      { by: 'a', send: "I don't think {c} is coming for either of us" },
+      { by: 'b', send: "Agreed. Not {c}" },
+    ] },
+    { id: 'hangout.view.noBond.keep.09', turns: [
+      { by: 'a', say: "{c} is my friend. I'm not budging on this one.", send: "{c} is a no for me. I'd never" },
+      { by: 'b', send: "Okay okay {e:laugh} {c} is safe" },
+    ] },
+    { id: 'hangout.view.noBond.keep.10', turns: [
+      { by: 'a', send: "What do we think about {c}?" },
+      { by: 'b', react: "Careful. Don't show your cards.", send: "I like {c}. What about you?" },
+      { by: 'a', send: "Same. Moving on" },
+    ] },
+    { id: 'hangout.view.noBond.keep.11', turns: [
+      { by: 'a', send: "{c} and I talk every day. I'd feel sick blocking {c}" },
+      { by: 'b', send: "Then we won't" },
+    ] },
+    { id: 'hangout.view.noBond.keep.12', turns: [
+      { by: 'b', send: "Honestly {c} hasn't done anything wrong" },
+      { by: 'a', send: "Right? It feels wrong even saying the name" },
+    ] },
+    { id: 'hangout.view.noBond.keep.13', turns: [
+      { by: 'a', send: "Let's keep {c}. I think {c} could be really loyal to us after this {e:eyes}" },
+      { by: 'b', send: "Ooh. Okay. I like that" },
+    ] },
+    { id: 'hangout.view.noBond.keep.14', turns: [
+      { by: 'a', react: "I have to protect {c} without making it obvious.", send: "{c} is kind of harmless, right?" },
+      { by: 'b', send: "Totally harmless lol" },
+    ] },
+    { id: 'hangout.view.noBond.keep.15', turns: [
+      { by: 'b', send: "{c}?" },
+      { by: 'a', send: "Nope. Next" },
+      { by: 'b', send: "Lol that was fast" },
+    ] },
+    { id: 'hangout.view.noBond.keep.16', turns: [
+      { by: 'a', send: "{c} had my back on day one. I'm not forgetting that" },
+      { by: 'b', react: "Loyal. I respect that.", send: "Say less. {c} is off the list" },
     ] },
   ],
   'hangout.agree': [

@@ -195,5 +195,21 @@ export const SLIPS = {
       { by: 'a', send: "I don't really post much online, I'm not a social media person" },
       { by: 'b', react: "Not a social media person, on a social media show. Hm." },
     ], beat: '{b} taps a finger on the table.' },
+    { id: 'slip.misread.05', turns: [
+      { by: 'a', send: "My weekend is usually just brunch and a long walk {e:smile}" },
+      { by: 'b', react: "Brunch and a long walk. That's a dating profile, not a person." },
+    ], beat: '{b} makes a face at the screen.' },
+    { id: 'slip.misread.06', turns: [
+      { by: 'a', send: "I just want everybody in here to get along honestly" },
+      { by: 'b', react: "Everybody gets along? Nobody actually wants that." },
+    ], beat: '{b} scrolls back up to read it again.' },
+    { id: 'slip.misread.07', turns: [
+      { by: 'a', send: "I'm an open book, ask me anything lol" },
+      { by: 'b', react: "Only people with something to hide say that." },
+    ], beat: '{b} writes a question mark on the notepad.' },
+    { id: 'slip.misread.08', turns: [
+      { by: 'a', send: "Sorry for the late reply, I was in the shower lol" },
+      { by: 'b', react: "Stalling. That's what that is." },
+    ], beat: '{b} narrows {b.posAdj} eyes.' },
   ],
 };

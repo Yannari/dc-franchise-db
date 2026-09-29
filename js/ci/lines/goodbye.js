@@ -180,6 +180,16 @@ export const GOODBYE = {
     { id: 'goodbye.react.guilty.03', turns: [
       { by: 'a', react: "I'm sorry, {b}. I really am." },
     ], beat: '{a} stares at the frozen last frame of the video.' },
+    { id: 'goodbye.react.guilty.04', turns: [
+      { by: 'a', react: "Please don't hate me. Please don't hate me." },
+    ], beat: '{a} watches through {a.posAdj} fingers.' },
+    { id: 'goodbye.react.guilty.05', turns: [
+      { by: 'a', react: "That was so classy. And I'm the one who blocked {b}. Great." },
+    ] },
+    { id: 'goodbye.react.guilty.06', turns: [
+      { by: 'a', react: "Okay. I made my choice. I have to live with it." },
+      { by: 'a', say: "It still doesn't feel good." },
+    ] },
   ],
   'goodbye.react.warned': [
     { id: 'goodbye.react.warned.01', turns: [
@@ -193,6 +203,16 @@ export const GOODBYE = {
       { by: 'a', react: "Wow. Okay. Thanks for that, {b}. Really helpful." },
       { by: 'a', say: "Everybody's gonna look at me differently now." },
     ] },
+    { id: 'goodbye.react.warned.04', turns: [
+      { by: 'a', react: "Did {b} just say my name? On the way out the door?" },
+    ], beat: '{a} freezes with a spoon halfway to {a.posAdj} mouth.' },
+    { id: 'goodbye.react.warned.05', turns: [
+      { by: 'a', react: "Oh, great. Now everybody's looking at me." },
+      { by: 'a', say: "I need to get in the chats. Right now." },
+    ] },
+    { id: 'goodbye.react.warned.06', turns: [
+      { by: 'a', react: "That is not fair. {b} doesn't even know me!" },
+    ], beat: '{a} stands up and sits right back down.' },
   ],
   'goodbye.react.vindicated': [
     { id: 'goodbye.react.vindicated.01', turns: [

@@ -24,6 +24,15 @@ export const BLOCKING = {
     { id: 'block.announce.threat.03', turns: [
       { by: 'a', send: "Everybody loves this person. Including us. Which is why we had to do it. We are blocking... {c}" },
     ] },
+    { id: 'block.announce.threat.04', turns: [
+      { by: 'a', say: "Just type it. Don't think about it.", send: "You're playing too well, and we had to protect ourselves. We are blocking... {c}" },
+    ], beat: 'Every apartment waits on the dots.' },
+    { id: 'block.announce.threat.05', turns: [
+      { by: 'a', send: "This person could win the whole thing. That's why it had to be now. We are blocking... {c}" },
+    ] },
+    { id: 'block.announce.threat.06', turns: [
+      { by: 'a', send: "It's a game move, and this person would have made the same one. We are blocking... {c} {e:broken}" },
+    ] },
   ],
   'block.announce.grudge': [
     { id: 'block.announce.grudge.01', turns: [
@@ -62,6 +71,20 @@ export const BLOCKING = {
     { id: 'block.react.self.04', turns: [
       { by: 'a', react: "Are you serious? After everything?" },
     ], beat: '{a} gets up and walks to the window.' },
+    { id: 'block.react.self.05', turns: [
+      { by: 'a', react: "Wait. Me? No. No, no, no." },
+      { by: 'a', say: "I trusted people. That was the mistake. I trusted people." },
+      { by: 'a', say: "Okay. Okay. I'm proud of how I played. I am." },
+    ], beat: '{a} sits on the floor with {a.posAdj} back against the couch.' },
+    { id: 'block.react.self.06', turns: [
+      { by: 'a', react: "Of course it's me. Of course it is." },
+      { by: 'a', say: "I knew it the second I saw who the Influencers were." },
+    ], beat: '{a} laughs and wipes {a.posAdj} eyes at the same time.' },
+    { id: 'block.react.self.07', turns: [
+      { by: 'a', react: "Oh. Oh, wow. Okay." },
+      { by: 'a', say: "I thought I had them. I really thought I had them." },
+      { by: 'a', say: "I need to go see somebody before I leave. I know exactly who." },
+    ] },
   ],
   'block.react.friend': [
     { id: 'block.react.friend.01', turns: [

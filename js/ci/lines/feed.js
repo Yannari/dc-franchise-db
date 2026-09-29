@@ -40,6 +40,24 @@ export const FEED = {
     { id: 'status.low.06', turns: [
       { by: 'a', say: "I'm so tired of being in my own head.", post: "Somebody message me, I'm talking to my plants again {e:sweat}" },
     ], when: { mood: 'lonely' } },
+    { id: 'status.low.07', turns: [
+      { by: 'a', post: "Rough night. But I'm still here {e:muscle}" },
+    ] },
+    { id: 'status.low.08', turns: [
+      { by: 'a', say: "Honest post. People like honest.", post: "Not my best day, not gonna lie. Tomorrow's a new one {e:pray}" },
+    ] },
+    { id: 'status.low.09', turns: [
+      { by: 'a', post: "Could really use a hug right now {e:hug}" },
+    ], beat: '{a} hugs a pillow instead.' },
+    { id: 'status.low.10', turns: [
+      { by: 'a', post: "Trying to stay positive in here. Some days it's harder {e:sad}" },
+    ] },
+    { id: 'status.low.11', turns: [
+      { by: 'a', post: "Note to self: drink water, stay kind, don't overthink {e:pray} {t:SelfCare}" },
+    ] },
+    { id: 'status.low.12', turns: [
+      { by: 'a', post: "Anyone else feel like these walls are getting closer? Just me? {e:sweat}" },
+    ] },
   ],
   'status.high': [
     { id: 'status.high.01', turns: [
@@ -77,6 +95,20 @@ export const FEED = {
     { id: 'status.react.07', turns: [
       { by: 'a', react: "Ha. Same, {b}. Same." },
     ] },
+    { id: 'status.react.08', turns: [{ by: 'a', react: "{b} is always so positive. How?" }] },
+    { id: 'status.react.09', turns: [{ by: 'a', react: "Circle, like {b}'s status. See? I'm nice." }] },
+    { id: 'status.react.10', turns: [{ by: 'a', react: "Okay, {b}. We get it. You're having a great time." }] },
+    { id: 'status.react.11', turns: [{ by: 'a', react: "That is the most {b} thing I've ever read." }] },
+    { id: 'status.react.12', turns: [{ by: 'a', react: "Aw. I needed that today." }] },
+    { id: 'status.react.13', turns: [{ by: 'a', react: "Circle, like it. No, wait. Unlike. No. Like it." }], beat: '{a} stares at the heart button for a while.' },
+    { id: 'status.react.14', turns: [{ by: 'a', react: "Who posts this early? {b}, that's who." }] },
+    { id: 'status.react.15', turns: [{ by: 'a', react: "Hm. Not sure how I feel about that one." }] },
+    { id: 'status.react.16', turns: [{ by: 'a', react: "I love that for {b.obj}." }] },
+    { id: 'status.react.17', turns: [{ by: 'a', react: "Ha! That got me." }], beat: '{a} laughs with a mouth full of cereal.' },
+    { id: 'status.react.18', turns: [{ by: 'a', react: "Is that a dig at somebody? It feels like a dig." }] },
+    { id: 'status.react.19', when: { friends: true }, turns: [{ by: 'a', react: "That's my {b}! Circle, like it." }] },
+    { id: 'status.react.20', when: { rivals: true }, turns: [{ by: 'a', react: "Of course {b} posted that. Of course." }] },
+    { id: 'status.react.21', turns: [{ by: 'a', react: "No one is that happy in the morning. No one." }] },
   ],
   'likes.most': [
     { id: 'likes.most.01', turns: [
@@ -91,6 +123,15 @@ export const FEED = {
     { id: 'likes.most.04', turns: [
       { by: 'a', react: "Circle, show me who liked it. I need names." },
     ], beat: '{a} leans in close to the screen.' },
+    { id: 'likes.most.05', turns: [
+      { by: 'a', react: "People liked it! People actually liked it!" },
+    ] },
+    { id: 'likes.most.06', turns: [
+      { by: 'a', react: "The most likes. Okay. Don't let it go to your head." },
+    ], beat: '{a} does a victory lap around the couch.' },
+    { id: 'likes.most.07', turns: [
+      { by: 'a', say: "The most likes means the most eyes on me. That's good and bad." },
+    ] },
   ],
   'likes.none': [
     { id: 'likes.none.01', turns: [

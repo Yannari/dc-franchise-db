@@ -29,6 +29,16 @@ export const VISIT = {
     { id: 'visit.choose.answers.03', turns: [
       { by: 'a', say: "I'm not mad. Okay, I'm a little mad. I'm going to see {b}." },
     ] },
+    { id: 'visit.choose.answers.04', turns: [
+      { by: 'a', say: "I'm not leaving without looking {b} in the eye." },
+    ], beat: '{a} puts on shoes without sitting down.' },
+    { id: 'visit.choose.answers.05', turns: [
+      { by: 'a', react: "I know who's getting a knock on the door tonight." },
+      { by: 'a', say: "{b} is gonna explain this to my face." },
+    ] },
+    { id: 'visit.choose.answers.06', turns: [
+      { by: 'a', say: "It's {b}. {b} made this decision. {b} can own it." },
+    ] },
   ],
   'visit.choose.truth': [
     { id: 'visit.choose.truth.01', turns: [
@@ -68,6 +78,15 @@ export const VISIT = {
     { id: 'visit.wait.05', turns: [
       { by: 'a', react: "Every sound in this building is the door. That's the door. Is that the door?" },
     ] },
+    { id: 'visit.wait.06', turns: [
+      { by: 'a', react: "If it's me, I'm just gonna say sorry. For everything. Just in case." },
+    ], beat: '{a} fixes the pillows on the couch three times.' },
+    { id: 'visit.wait.07', turns: [
+      { by: 'a', react: "Somebody's walking the halls right now. What if it's to my door?" },
+    ], beat: '{a} turns off the TV to listen for footsteps.' },
+    { id: 'visit.wait.08', turns: [
+      { by: 'a', say: "Okay. Hair, fine. Kitchen, disaster. No time." },
+    ], beat: '{a} throws the dirty dishes into the oven.' },
   ],
   'visit.wait.catfish': [
     { id: 'visit.wait.catfish.01', turns: [
@@ -176,6 +195,20 @@ export const VISIT = {
       { by: 'a', say: "Of course I came here. You owe me an answer." },
       { by: 'b', say: "It came down to numbers. I'm sorry." },
     ] },
+    { id: 'visit.talk.answers.04', turns: [
+      { by: 'a', say: "Just be honest with me. Was it you?" },
+      { by: 'b', say: "It was both of us. I'm not gonna lie to your face." },
+      { by: 'a', say: "Okay. I respect that more than you know." },
+    ] },
+    { id: 'visit.talk.answers.05', turns: [
+      { by: 'b', say: "I know you're mad. You're allowed to be mad." },
+      { by: 'a', say: "I'm not mad. I'm hurt. There's a difference." },
+    ], beat: '{a} and {b} sit on opposite ends of the couch.' },
+    { id: 'visit.talk.answers.06', turns: [
+      { by: 'a', say: "Why me? Tell me the truth." },
+      { by: 'b', say: "Because you were good at this. Too good." },
+      { by: 'a', say: "That's the nicest mean thing anybody's ever said to me." },
+    ] },
   ],
   'visit.talk.truth': [
     { id: 'visit.talk.truth.01', turns: [
@@ -248,6 +281,19 @@ export const VISIT = {
       { by: 'a', say: "Don't let them get you." },
       { by: 'b', say: "I won't. Bye." },
     ], beat: '{a} waves from the hallway until the door shuts.' },
+    { id: 'visit.bye.04', turns: [
+      { by: 'b', say: "Thank you for coming. Really." },
+      { by: 'a', say: "Of course. Now go make me proud." },
+    ], beat: '{a} gives one last wave on the way out.' },
+    { id: 'visit.bye.05', turns: [
+      { by: 'a', say: "Okay. That's my time. Good luck in there." },
+      { by: 'b', say: "Thank you. For all of it." },
+    ] },
+    { id: 'visit.bye.06', turns: [
+      { by: 'b', say: "Text me when you're out. I mean it." },
+      { by: 'a', say: "You don't even have a phone." },
+      { by: 'b', say: "I will someday!" },
+    ], beat: 'The door shuts on both of them laughing.' },
   ],
   'report': [
     { id: 'report.01', turns: [

@@ -18,6 +18,17 @@ export const RATINGS = {
     { id: 'ratings.open.04', turns: [
       { by: 'a', react: "Ratings? Right now? I'm not even dressed." },
     ], beat: '{a} pulls on a hoodie as if it helps.' },
+    { id: 'ratings.open.05', turns: [
+      { by: 'a', react: "'Players, it's time to rate each other.' Of course it is." },
+      { by: 'a', say: "Every nice message this week was for tonight. Let's see if it worked." },
+    ] },
+    { id: 'ratings.open.06', turns: [
+      { by: 'a', react: "The Ratings. My stomach just dropped." },
+    ], beat: '{a} turns the music off and sits down in front of the screen.' },
+    { id: 'ratings.open.07', turns: [
+      { by: 'a', react: "Okay, Circle. Let's rate some people." },
+      { by: 'a', say: "This is the part where being nice stops being enough." },
+    ] },
   ],
   'rate.affection.top': [
     { id: 'rate.affection.top.01', turns: [{ by: 'a', say: "Circle, put {b} in first position. I just like {b.obj}. {b.Sub}'s my person in here." }] },
@@ -25,11 +36,19 @@ export const RATINGS = {
     { id: 'rate.affection.top.03', turns: [{ by: 'a', say: "{b}, you're my first place. You've been good to me from day one." }] },
     { id: 'rate.affection.top.04', turns: [{ by: 'a', say: "First position, {b}. I didn't even have to think about it." }] },
     { id: 'rate.affection.top.05', when: { flirty: true }, turns: [{ by: 'a', say: "Is it the flirting? Maybe. {b} goes in first. Don't judge me." }] },
+    { id: 'rate.affection.top.06', turns: [{ by: 'a', say: "{b}, first place. You make me laugh every single day." }] },
+    { id: 'rate.affection.top.07', turns: [{ by: 'a', say: "Circle, please put {b} in first position. {b} feels like home in here." }] },
+    { id: 'rate.affection.top.08', turns: [{ by: 'a', say: "I don't even have to think about it. {b} is my number one." }] },
+    { id: 'rate.affection.top.09', turns: [{ by: 'a', say: "First place goes to {b}. {b} always checks on me." }] },
+    { id: 'rate.affection.top.10', turns: [{ by: 'a', say: "{b} is first. Is it because {b} is sweet to me? Yes. Is that allowed? Also yes." }] },
   ],
   'rate.affection.bottom': [
     { id: 'rate.affection.bottom.01', turns: [{ by: 'a', say: "Last place is {b}. We just never clicked. Nothing personal." }] },
     { id: 'rate.affection.bottom.02', turns: [{ by: 'a', say: "{b}, I'm sorry. I don't know you, and what I do know, I don't love." }] },
     { id: 'rate.affection.bottom.03', turns: [{ by: 'a', say: "Circle, put {b} at the bottom. The vibe is just not there." }] },
+    { id: 'rate.affection.bottom.04', turns: [{ by: 'a', say: "{b} is last. I tried. We just don't talk the same language." }] },
+    { id: 'rate.affection.bottom.05', turns: [{ by: 'a', say: "Circle, put {b} in last position. There's nothing there for me." }] },
+    { id: 'rate.affection.bottom.06', turns: [{ by: 'a', say: "Bottom of my list is {b}. {b} hasn't said ten words to me." }] },
   ],
   'rate.trust.top': [
     { id: 'rate.trust.top.01', turns: [{ by: 'a', say: "{b} is first. {b.Sub}'s the one person in here I actually trust." }] },
@@ -75,11 +94,19 @@ export const RATINGS = {
     { id: 'rate.threat.top.01', turns: [{ by: 'a', say: "Is {b} a threat? Yes. Am I putting {b.obj} first anyway? Also yes." }] },
     { id: 'rate.threat.top.02', turns: [{ by: 'a', say: "{b} is gonna be up there no matter what I do. Might as well be on {b.posAdj} good side. First." }] },
     { id: 'rate.threat.top.03', turns: [{ by: 'a', say: "Everybody's gonna gun for {b} eventually. It won't be me tonight. First place." }] },
+    { id: 'rate.threat.top.04', turns: [{ by: 'a', say: "{b} is gonna go far, and I want to be close when {b} does. First." }] },
+    { id: 'rate.threat.top.05', turns: [{ by: 'a', say: "{b} is the strongest player in here. I'd rather be on {b}'s side. First." }] },
+    { id: 'rate.threat.top.06', turns: [{ by: 'a', say: "Everybody knows {b} is the one to beat. I'm putting {b} first and hoping {b} notices." }] },
   ],
   'rate.threat.bottom': [
     { id: 'rate.threat.bottom.01', turns: [{ by: 'a', say: "{b} is too popular. If I don't bring {b.obj} down now, I never will. Last place." }] },
     { id: 'rate.threat.bottom.02', turns: [{ by: 'a', say: "Nothing personal, {b}. You're a threat. Bottom." }] },
     { id: 'rate.threat.bottom.03', turns: [{ by: 'a', say: "Circle, put {b} in last position. Everybody loves {b.obj}, and that's exactly the problem." }] },
+    { id: 'rate.threat.bottom.04', turns: [{ by: 'a', say: "{b} could win this whole thing. That's exactly why {b} is at the bottom." }] },
+    { id: 'rate.threat.bottom.05', turns: [{ by: 'a', say: "I like {b}. I really do. But {b} is too strong. Last place." }] },
+    { id: 'rate.threat.bottom.06', turns: [{ by: 'a', say: "Circle, put {b} in last position. Everybody else is gonna rank {b} high, so somebody has to rank {b} low." }] },
+    { id: 'rate.threat.bottom.07', turns: [{ by: 'a', say: "{b} is playing the best game in here, and I'm not about to help. Last." }] },
+    { id: 'rate.threat.bottom.08', turns: [{ by: 'a', say: "Last place, {b}. It's a compliment, trust me." }] },
   ],
   'rate.suspicion.top': [
     { id: 'rate.suspicion.top.01', turns: [{ by: 'a', say: "I have my doubts about {b}. But real or not, {b.sub}'s been good to me. First." }] },
@@ -91,6 +118,8 @@ export const RATINGS = {
     { id: 'rate.suspicion.bottom.02', turns: [{ by: 'a', say: "My gut says {b} is a catfish. {b} goes at the bottom." }] },
     { id: 'rate.suspicion.bottom.03', turns: [{ by: 'a', say: "Too good to be true. Circle, put {b} in last position." }] },
     { id: 'rate.suspicion.bottom.04', turns: [{ by: 'a', say: "I don't think {b} is who {b.sub} says {b.sub} is. Last." }] },
+    { id: 'rate.suspicion.bottom.05', turns: [{ by: 'a', say: "Last place, {b}. The pictures, the answers, none of it fits." }] },
+    { id: 'rate.suspicion.bottom.06', turns: [{ by: 'a', say: "Circle, put {b} at the bottom. Whoever that is, it isn't {b}." }] },
   ],
   'rate.grudge.top': [
     { id: 'rate.grudge.top.01', turns: [{ by: 'a', say: "I'm still mad at {b}. But I'd be lying if I put {b.obj} anywhere else. First." }] },
@@ -127,6 +156,23 @@ export const RATINGS = {
     { id: 'result.bottom.04', turns: [
       { by: 'a', react: "Oh, that's me down there. Great. Love that." },
     ], beat: '{a} laughs, but not because anything is funny.' },
+    { id: 'result.bottom.05', turns: [
+      { by: 'a', react: "The bottom? What am I doing wrong?" },
+    ] },
+    { id: 'result.bottom.06', turns: [
+      { by: 'a', react: "Wow. Okay. That's humbling." },
+    ], beat: '{a} stares at the ceiling.' },
+    { id: 'result.bottom.07', turns: [
+      { by: 'a', react: "I'm not crying. I'm not crying." },
+      { by: 'a', say: "Okay, I'm crying a little." },
+    ] },
+    { id: 'result.bottom.08', turns: [
+      { by: 'a', react: "Down there? Me? After all those chats?" },
+    ] },
+    { id: 'result.bottom.09', turns: [
+      { by: 'a', react: "Well. At least I know where I stand now." },
+      { by: 'a', say: "Something has to change. Starting tomorrow." },
+    ] },
   ],
   'result.middle': [
     { id: 'result.middle.01', turns: [
@@ -153,6 +199,16 @@ export const RATINGS = {
     { id: 'result.top.03', turns: [
       { by: 'a', react: "Just missed it. That's fine. That's even better. No target." },
     ] },
+    { id: 'result.top.04', turns: [
+      { by: 'a', react: "Near the top and not an Influencer. Perfect. That's the sweet spot." },
+    ] },
+    { id: 'result.top.05', turns: [
+      { by: 'a', react: "Yes! Okay! People like me!" },
+    ], beat: '{a} throws a pillow in the air and catches it.' },
+    { id: 'result.top.06', turns: [
+      { by: 'a', react: "That high? Me?" },
+      { by: 'a', say: "Somebody in here actually has my back. A few somebodies." },
+    ] },
   ],
   'result.influencers': [
     { id: 'result.influencers.01', turns: [
@@ -170,6 +226,18 @@ export const RATINGS = {
     { id: 'result.influencers.04', turns: [
       { by: 'a', react: "Me and {b}. Okay. I can work with {b}." },
       { by: 'b', react: "{a} and me. Oh, I hope we agree on this." },
+    ] },
+    { id: 'result.influencers.05', turns: [
+      { by: 'a', react: "No way. No way! I'm an Influencer!" },
+      { by: 'b', react: "Me too? Oh my God. Me too!" },
+    ], beat: 'Two apartments scream at the same moment.' },
+    { id: 'result.influencers.06', turns: [
+      { by: 'a', react: "Okay. Power. I have power. Don't be weird about it." },
+      { by: 'b', react: "Top two. Wow. Now I have to block somebody." },
+    ] },
+    { id: 'result.influencers.07', turns: [
+      { by: 'a', react: "Influencer. Me. I'm calling my mom the second I get out of here." },
+      { by: 'b', react: "Me and {a}. Okay. We can do this." },
     ] },
   ],
 };

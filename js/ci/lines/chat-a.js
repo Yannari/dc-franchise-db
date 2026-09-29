@@ -105,6 +105,27 @@ export const CHAT_A = {
       { by: 'b', send: "Good! Kinda boring honestly lol" },
       { by: 'a', say: "Boring. Sure.", send: "Same here. Talk soon" },
     ], beat: '{a} narrows {a.posAdj} eyes at the screen, then leaves the chat.' },
+    { id: 'chat.bond.neutral.07', turns: [
+      { by: 'a', send: "Hey! Random question. Morning person or night person?" },
+      { by: 'b', send: "Night person for sure. You?" },
+      { by: 'a', send: "Morning. So we'll never be awake at the same time lol" },
+    ], beat: '{b} laughs, then goes back to making dinner.' },
+    { id: 'chat.bond.neutral.08', turns: [
+      { by: 'a', say: "Just say hi. Nothing crazy.", send: "Hi {b}! Just checking in. How's your day?" },
+      { by: 'b', send: "Pretty chill! Just vibing. Yours?" },
+      { by: 'a', send: "Same honestly. Okay, talk soon!" },
+    ] },
+    { id: 'chat.bond.neutral.09', turns: [
+      { by: 'a', send: "Okay I need to know. What are you eating in there? I'm so bored of my food" },
+      { by: 'b', send: "Lol cereal. For dinner. Don't judge" },
+      { by: 'a', send: "No judgment. Respect {e:clap}" },
+    ] },
+    { id: 'chat.bond.neutral.10', turns: [
+      { by: 'a', send: "Hey, we should talk more. I feel like I barely know you" },
+      { by: 'b', react: "Hm. Okay.", send: "Totally! Ask me anything" },
+      { by: 'a', send: "Okay. Favorite movie?" },
+      { by: 'b', send: "Anything scary. The scarier the better" },
+    ], beat: '{a} writes "scary movies" on the notepad.' },
   ],
   'chat.bond.cold': [
     { id: 'chat.bond.cold.01', turns: [
@@ -225,6 +246,16 @@ export const CHAT_A = {
       { by: 'a', send: "Same honestly. Coffee and a good day. That's the plan" },
       { by: 'b', react: "I like this plan.", send: "Deal {e:sun}" },
     ], beat: '{b} pours a second cup of coffee.' },
+    { id: 'chat.checkin.warm.05', turns: [
+      { by: 'a', send: "Hey you. Saw the ratings. I just want you to know I've got you {e:heart}" },
+      { by: 'b', react: "Okay. That helps.", send: "That means so much right now. Thank you" },
+      { by: 'a', send: "We're gonna get you back up there" },
+    ], beat: '{b} holds a hand over {b.posAdj} heart.' },
+    { id: 'chat.checkin.warm.06', turns: [
+      { by: 'a', say: "{b} needs a friend today.", send: "How are you feeling this morning? For real" },
+      { by: 'b', send: "For real? Kind of low. But better now that you asked" },
+      { by: 'a', send: "Good. I'm here whenever you need to talk {e:hug}" },
+    ] },
   ],
   'chat.checkin.neutral': [
     { id: 'chat.checkin.neutral.01', turns: [

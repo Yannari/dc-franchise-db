@@ -59,7 +59,7 @@ export const REVENGE_BEATS = {
      lipstick — a queen the room eliminated decides who leaves tonight — and
      the queen she was paired with takes the week off the back of it. */
   power: [
-    '"And {a}," the host says, "since you won tonight, you win tonight." The lipstick is hers, and every queen in that bottom works out what that means at the same moment.',
+    '"And {a}," the host says, "you did not just earn your place back tonight. You earned the power." The lipstick is hers, and every queen in that bottom works out what that means at the same moment.',
     'The host hands {a} the lipstick. She was sent home by somebody standing in that room and now she is holding the thing that sends one of them home.',
     '"One more thing," the host says, and the room goes quiet before he finishes the sentence, because it already knows. {a} is holding the power tonight.',
   ],

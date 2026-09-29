@@ -536,13 +536,13 @@ export const WERK_EVENTS = [
   }),
   ev({
     id: 'the-mirror-message', slot: 'cold-open', cast: 'solo', weight: 1,
-    note: 'She reads the message the eliminated queen left in lipstick.',
+    note: 'After the message has been read out, she is the one who stays with it.',
     when: f => f.someoneLeft, effects: { pop: { a: 1 }, state: 'sober' },
     lines: [
-      "{a} finds the message on the mirror before anyone else. Lipstick, the way queens do when they go — a couple of words and a name. She reads it twice. Does not wipe it off. Leaves it for the room, because it was meant for all of them.",
-      "The lipstick is smudged where somebody wrote too fast. {a} stands there trying to make out the last word. When she gets it she does not say anything. Puts her hand on the glass for a second, right next to the writing, then walks away and starts her day.",
-      "{a} is the one who reads the mirror message out loud, because someone has to. Reads it clearly, no commentary, and the room is quiet for a moment that belongs to the queen who left it. Nobody touches the mirror for the rest of the morning.",
-      "There is a heart drawn in lipstick where her name used to be. {a} sees it first, calls the others over. They stand around the mirror reading the words she left. Short. Kind. {a} sits down and the room moves on because the room has to move on.",
+      "Once the message has been read out, {a} takes a photo of it on her phone before anybody can wipe it. \"For the group chat,\" she says. It is not for the group chat.",
+      "The lipstick is smudged where somebody wrote too fast, and {a} is the one who notices the last word was meant to be longer. She does not say what she thinks it was going to be.",
+      "{a} stands at the mirror a little longer than everybody else after the reading, and fixes one letter that has run. Nobody asks her why.",
+      "There is a heart drawn in the corner that nobody mentioned while the message was being read. {a} sees it on her way past and stops, and for a second the whole morning is that heart.",
     ],
   }),
   ev({
@@ -1361,16 +1361,17 @@ export const WERK_EVENTS = [
   // ── the cold open ──
   ev({
     id: 'reading-the-mirror', slot: 'cold-open', cast: 'group', weight: 1.4,
-    note: '{a} reads the mirror message out loud to {b} and {c} because '
-      + 'somebody has to, and gets most of the way through it before her '
-      + 'voice does something she was not expecting.',
+    /* The reading itself is js/dr/coldopen.js's — it happens every morning
+       somebody left. This is what the room does with the message after. */
+    note: 'The message has been read out; {a} is the one who cannot leave it '
+      + 'alone, with {b} and {c} nearby.',
     when: f => f.someoneLeft && f.groupSize >= 3,
     effects: { bond: 1.5, pop: { a: 1 }, state: 'mirror-read' },
     lines: [
-      "{a} reads the lipstick message on the mirror out loud. The goodbye, the love-you, the see-you-on-the-outside. She gets through most of it before her voice catches. {b} puts a hand on her shoulder. {c} stands close.",
-      "\"I will read it.\" {a} volunteers before anyone asks. Reads it to {b} and {c}. Steady at first — then she hits the part that names someone in the room and her voice drops half a register. Everyone pretends not to hear the drop.",
-      "{a} stands at the mirror and reads the words left behind. The thank you. The fight-for-me. The smiley face drawn in lipstick. She makes it through the first sentence fine. Second sentence fine. Third sentence is where the voice goes.",
-      "The mirror has writing on it and {a} reads it out loud because somebody has to. {b} leans against {c}. {a} finishes the message and the room sits with it for a moment before anybody speaks.",
+      "The message has been read and everybody has moved on to their stations except {a}, who reads it again to herself with her lips moving. {b} and {c} pretend not to watch.",
+      "\"Read the bit about me again,\" {b} says, half joking. {a} does not read it again. \"You heard it,\" she says, and {c} laughs, and it breaks the room open a little.",
+      "{a} goes back to the mirror after the reading and stands where the queen who wrote it must have stood. {b} and {c} leave her to it.",
+      "Somebody wants to wipe the mirror so they can use it. {a} says \"not yet\" before she has decided to say anything, and {b} and {c} back her up without a word.",
     ],
   }),
   ev({

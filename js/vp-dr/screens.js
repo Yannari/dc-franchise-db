@@ -123,18 +123,6 @@ const SECTIONS = [
   { id: 'dr-arrivals', icon: icon('arrivals'), label: 'Arrivals', suffix: 'arrivals', phase: 'werk', accent: 'dr-a-room',
     opens: ['arrivals', 'entrance-order'], badge: { text: 'ENTRANCES', color: '#FFC83D' },
     title: 'Entrances', subtitle: 'the first thirteen through the door' },
-  /* ── THE ELIMINATED CAST COMES BACK FOR THE NIGHT ──
-     Revenge of the Queens (All Stars): they walk in at the top of the night,
-     pair off with the room, and two of them sing for a place back. Its own
-     section ahead of the cold open, because the door opening IS the cold open
-     on that night. The re-entry song is a separate section after the call --
-     it happens between the call and the bottom two's lip sync. */
-  { id: 'dr-revenge', icon: icon('return'), label: 'Revenge', suffix: 'revenge', phase: 'werk',
-    accent: 'dr-a-bond',
-    opens: ['revenge:open', 'revenge:walk', 'revenge:room', 'revenge:rule', 'revenge:pair'],
-    opensStep: ['revenge-door'],
-    badge: { text: 'THEY’RE BACK', color: '#3BE08A' },
-    title: 'Revenge of the Queens', subtitle: 'everybody this season sent home' },
   /* ── A QUEEN COMES BACK ──
      First screen of the night when the season books one, because the return
      is the first thing that happens: she is through the door before the room
@@ -156,6 +144,17 @@ const SECTIONS = [
   { id: 'dr-cold-open', icon: icon('mirror'), label: 'Cold Open', suffix: 'coldopen', phase: 'werk', accent: 'dr-a-room',
     opens: ['cold-open'],
     opensStep: ['cold-open'], badge: null, title: 'Cold Open', subtitle: 'the room, before anything' },
+  /* ── THE ELIMINATED CAST COMES BACK FOR THE NIGHT ──
+     Revenge of the Queens (All Stars): the room reads last night's mirror
+     first — the scenes run cold-open, then revenge-door — and then the door
+     opens on everybody the season sent home. They pair off with the room,
+     and two of them sing for a place back in a section after the call. */
+  { id: 'dr-revenge', icon: icon('return'), label: 'Revenge', suffix: 'revenge', phase: 'werk',
+    accent: 'dr-a-bond',
+    opens: ['revenge:open', 'revenge:walk', 'revenge:room', 'revenge:rule', 'revenge:pair'],
+    opensStep: ['revenge-door'],
+    badge: { text: 'THEY’RE BACK', color: '#3BE08A' },
+    title: 'Revenge of the Queens', subtitle: 'everybody this season sent home' },
   { id: 'dr-werk-morning', icon: icon('room'), label: 'The Werk Room', suffix: 'morning', phase: 'werk', accent: 'dr-a-room',
     opens: ['werk-morning'],
     opensStep: ['werk-morning'], badge: null, title: 'The Werk Room', subtitle: 'morning' },

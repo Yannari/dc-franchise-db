@@ -830,8 +830,10 @@ function detailFor(id, perf) {
         (d.wins || 0) >= 3 ? '<span class="dr-tag dr-t-good">assassin</span>' : ''}</div>`;
     case 'commercial':
       return `<div class="dr-sub">selling <b>${esc(d.product || '—')}</b>${
-        d.foundAngle ? '<span class="dr-tag dr-t-good">found the angle</span>'
-    : '<span class="dr-tag dr-t-warn">never found the angle</span>'}</div>`;
+        /* Only the positive fact. Finding the angle is a bonus on top of the
+           spot, not the spot: a queen can miss it and still carry the
+           commercial, and "never found the angle" over a 10.0 said so. */
+        d.foundAngle ? '<span class="dr-tag dr-t-good">found the angle</span>' : ''}</div>`;
     case 'choreography':
       return `<div class="dr-sub">${d.solo ? 'took the solo' : 'in the line'}${
         d.blewFormation ? '<span class="dr-tag dr-t-warn">blew the formation</span>' : ''}</div>`;

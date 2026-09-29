@@ -1771,7 +1771,20 @@ export function playDragSeason({
           || (epNum < revengeWantedEp && state.living.length <= finaleSize + 1))
         : state.living.length <= Math.ceil(cast.length / 2));
     if (revengeDue) revengeRun = true;
-    if (revengeDue && tournamentWeek) week.maxiId = 'commercial';
+    /* AND NOT ON A WEEK THAT ALREADY PAIRS THEM. Revenge is a night of
+       couples — every queen in the room gets a returner — so a Commercial or
+       a Makeover gave each queen two partners at once, and the transcript
+       read "Autumnatic and Sharon Needles sell a mattress" over a card saying
+       Autumnatic's partner was Anita Crown Davenport. The week takes a
+       challenge queens do on their own, one the season has not played. */
+    const clashes = tournamentWeek
+      || ['pairs', 'partnered'].includes(maxiById(week.maxiId)?.format);
+    if (revengeDue && clashes) {
+      const played = new Set(state.episodes.map(r => r?.dr?.challenge?.id).filter(Boolean));
+      week.maxiId = ['improv', 'stand-up', 'design', 'runway-challenge', 'singing', 'photoshoot']
+        .find(id => !played.has(id) && (maxiById(id)?.minCast || 0) <= state.living.length)
+        || 'design';
+    }
 
     let returned = null;
     /* ── SHE WON REVENGE LAST NIGHT, SO SHE WALKS IN THIS MORNING ──

@@ -93,3 +93,25 @@ describe('carried bonds', () => {
     expect(rel('@kate', '@a', 'affection')).toBeLessThan(0);  // C knows exactly who A is
   });
 });
+
+describe('games, parties and apartment life in a season (Plan 3a)', () => {
+  it('plays a game on every game day, a party on every party day, and videos from home', () => {
+    const { rows, state } = play();
+    const sched = rows.map(r => r.day);
+    const gamesOn = new Set(state.scenes.filter(s => s.kind === 'game').map(s => s.day));
+    const partiesOn = new Set(state.scenes.filter(s => s.kind === 'party').map(s => s.day));
+    const days = state.schedule;
+    for (const d of days) {
+      if (d.game) expect(gamesOn.has(d.day), `game on day ${d.day}`).toBe(true);
+      if (d.party) expect(partiesOn.has(d.day), `party on day ${d.day}`).toBe(true);
+      if (d.final || d.finale) expect(gamesOn.has(d.day)).toBe(false);
+    }
+    expect(new Set(state.gamesPlayed).size).toBe(state.gamesPlayed.length);
+    const homeDay = days.find(d => d.homeVideos).day;
+    const videos = state.scenes.filter(s => s.kind === 'home-video');
+    for (const h of state.scenes.find(s => s.day === homeDay && s.kind === 'status')?.seenBy || []) {
+      expect(videos.some(v => v.who[0] === h && v.day <= homeDay)).toBe(true);
+    }
+    expect(state.scenes.filter(s => s.kind === 'life').length).toBeGreaterThanOrEqual(sched.length);
+  });
+});

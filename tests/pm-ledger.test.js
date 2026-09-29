@@ -84,3 +84,14 @@ describe('followers come from fame, scaled by approval', () => {
     expect(readApproval(L, 'nobody')).toBe(0);
   });
 });
+
+describe('a week that rounds to nothing', () => {
+  it('records a plain zero, never -0 (a -0 does not survive a save: JSON writes it as 0)', () => {
+    const L = createLedger();
+    noteArrival(L, 'A', 1);
+    recordAired(L, { who: 'A', approval: -0.001, fame: 1 });
+    closeEpisode(L, 1, null);
+    expect(Object.is(L.lastApplied.A, -0)).toBe(false);
+    expect(JSON.parse(JSON.stringify(L))).toEqual(L);
+  });
+});

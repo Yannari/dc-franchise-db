@@ -32,6 +32,9 @@ import { buildSchedule } from './schedule.js';
 import { finalDay, finaleDay } from './finale.js';
 import { chooseAired } from './airing.js';
 import { writeDay } from './script.js';
+import { pickGame, runGame } from './games.js';
+import { runParty } from './party.js';
+import { apartmentLife, videoFromHome } from './life.js';
 
 export const CARRY = 0.6;
 
@@ -81,6 +84,7 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
   const queue = handles.filter(isNewcomer);
   const schedule = buildSchedule({ total: handles.length, starters: starters.length,
     finalists: state.options.finalists, days: state.options.days });
+  state.schedule = schedule;
 
   const rows = [];
   let finalRow = null, result = null;
@@ -101,9 +105,23 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
     if (arriving.length) { arrive(state, rng, arriving); for (const h of arriving) noteJoin(state, h); }
     recognise(state, carried);
 
+    // Alone in the apartment, then the chats, the game, and the evening:
+    // a party (a party day, or a prize) or Circle Chat; then videos from home.
+    if (!d.finale) apartmentLife(state, streamFor(seed, `life:${d.day}`));
     const ctx = contextFor(state, d);
     if (!d.finale) for (const plan of planChats(state, rng, ctx)) runChat(state, rng, plan, ctx);
-    if (!d.finale) runCircleChat(state, rng, { party: d.slot === 'social' && d.day % 2 === 0 });
+    if (d.game) {
+      const g = pickGame(state, streamFor(seed, `game:${d.day}`), { days: schedule.length });
+      if (g) runGame(state, streamFor(seed, `game:${d.day}:play`), g);
+    }
+    if (!d.finale) {
+      if (d.party || state.partyNext) { state.partyNext = false; runParty(state, streamFor(seed, `party:${d.day}`)); }
+      else runCircleChat(state, rng);
+    }
+    const videos = new Set(state.homeVideoFor || []);
+    state.homeVideoFor = [];
+    if (d.homeVideos) for (const h of state.active) if (!(state.homeVideosSeen || []).includes(h)) videos.add(h);
+    if (videos.size) videoFromHome(state, streamFor(seed, `home:${d.day}`), [...videos]);
 
     let rating = null;
     if (d.block) { rating = runRating(state, rng); standardBlocking(state, rng, rating); }

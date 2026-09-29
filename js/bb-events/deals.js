@@ -191,7 +191,7 @@ const finalTwo = {
     const p = pronouns(a);
     const text = _variant([
       `${a} says the words out loud — "final two, whatever happens" — and ${b} says them back. Neither of them writes anything down and both of them will remember the exact wording.`,
-      `${a} asks ${b} whether what they have is really a final two. ${b} says it has been since the first time they discussed the end. They shake on it anyway.`,
+      `${a} asks ${b} whether what they have is really a final two. ${b} says ${pronouns(b).sub} assumed it already was. They shake on it anyway.`,
       `“If it's us at the end, I'm not going to feel bad about beating you,” ${a} says. ${b} laughs. “You won't beat me.” They agree to get there together.`,
       `${a} has been circling this all week and finally asks. ${b} agrees so quickly that ${p.sub} wonders, briefly, how many other people have been asked the same thing.`,
     ], ctx, a, b);
@@ -202,7 +202,7 @@ const finalTwo = {
     api.sideDeal?.(a, b, 'f2', { reason: 'final two' });
     api.remember(a, b, 'final-two', 3, { week: ctx.week?.num || 0 });
     api.remember(b, a, 'final-two', 3, { week: ctx.week?.num || 0 });
-    api.setTarget(a, biggestThreat(_others(house, a, b)) || furthestFrom(a, house), 'the deal needs a road');
+    api.setTarget(a, biggestThreat(_others(house, a, b)) || furthestFrom(a, house), `in the way of the final two with ${b}`);
     return { text, players: [a, b], badgeText: 'FINAL TWO', badgeClass: 'gold' };
   },
 };
@@ -376,7 +376,7 @@ const defectionOffer = {
       `${outsider} lays out where ${mark} actually stands in that alliance, with numbers, and ${mark} does not enjoy how accurate it is.`,
       `"They'll take you to fourth and no further." It is true. ${mark} has known it for a while and has been waiting for somebody to say it out loud.`,
       `${mark} does not agree to anything. ${p.Sub} also does not say no, and ${outsider} leaves knowing which of those matters.`,
-      `The offer is better than the position ${mark} has, and the only thing holding ${p.obj} in place was a habit ${p.sub} has just noticed.`,
+      `${outsider}'s offer is better than the position ${mark} has, and the only thing holding ${p.obj} in place was a habit ${p.sub} has just noticed.`,
     ], ctx, mark, outsider);
 
     if (loyal) {
@@ -659,6 +659,7 @@ function _hedger(house) {
 const hedgedDeal = {
   id: 'deals-hedged',
   category: 'deals',
+  oncePerWeek: true,
   weight(house, ctx) {
     const h = _hedger(house);
     if (!h) return 0;
@@ -673,7 +674,7 @@ const hedgedDeal = {
     const holds = p.sub === 'they' ? 'hold' : 'holds';
     const tells = p.sub === 'they' ? 'tell' : 'tells';
     const text = _variant([
-      `${mark} asks ${a} the question directly — final two, the pair of us — and ${a} says yes without hesitating. ${p.Sub} already said yes to ${existing} weeks ago. One of those conversations was a lie and ${p.sub} ${does} not yet know which.`,
+      `${mark} asks ${a} the question directly — final two, the pair of us — and ${a} says yes without hesitating. ${p.Sub} already said yes to ${existing}. One of those conversations was a lie and ${p.sub} ${does} not yet know which.`,
       `${a} shakes on a final two with ${mark}. It is the second one ${p.sub} ${holds}. ${p.Sub} ${tells} ${p.ref} it is insurance rather than a lie, which is what everybody who does this tells themselves.`,
       `"Me and you at the end," ${mark} says. ${a} agrees, but avoids naming who leaves before them. `
         + `That missing name is where the first final two with ${existing} is hiding.`,
@@ -793,7 +794,7 @@ const reaffirmDeal = {
     const text = solid ? _variant([
       `${a} finds ${b} alone and says it again, plainly: still us, still the end. ${b} does not need to hear it and is glad to anyway.`,
       `Neither of them says much. ${a} bumps ${b}'s shoulder on the way past and ${b} nods once. Weeks in, that is the entire conversation and it is enough.`,
-      `"We good?" "We're good." ${a} and ${b} have had this exchange a dozen times and it has not stopped being true yet.`,
+      `"We good?" "We're good." ${a} and ${b} have had this exchange before, and it has not stopped being true yet.`,
       `${a} and ${b} compare their preferred boot orders. They disagree over one name, argue the timing for `
         + `five minutes, and leave with a plan both can actually repeat.`,
     ], ctx, a, b) : _variant([

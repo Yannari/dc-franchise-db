@@ -586,6 +586,8 @@ function sameMembers(alliance, members) {
  * is imitating is one where the names are half the point: Chilltown, The
  * Brigade, The Cookout.
  */
+const COUNTED_NAME = /\b(Two|Duo|Pair|Couple|Tandem|Pinky|Three|Trio|Trinity|Triangle|Trident|Triumvirate|Trifecta|Triple|Hat Trick|Four|Quad\w*|Square|Corners|Five|Six|Seven|Eight)\b/i;
+
 function nextAllianceName(size = 2, seedText = '') {
   const used = new Set(allianceStore().map(alliance => alliance.name));
   // nameNewAlliance picks with Math.random, which breaks a seeded season. The
@@ -600,7 +602,10 @@ function nextAllianceName(size = 2, seedText = '') {
       let state = (hash + attempt * 2654435761) >>> 0;
       Math.random = () => { state = (Math.imul(state, 1664525) + 1013904223) >>> 0; return state / 4294967296; };
       const name = nameNewAlliance(size);
-      if (name && !used.has(name)) return name;
+      // A house alliance recruits. A name with a head count in it is wrong the
+      // first time it does: "The Final Two Deal" ran all season with five
+      // members, "The Tandem" with three.
+      if (name && !used.has(name) && !COUNTED_NAME.test(name)) return name;
     }
   } catch { /* fall through to the numbered fallback */ } finally { Math.random = real; }
   let number = 1;
@@ -1106,8 +1111,22 @@ export function settleBBAllianceWeek(week, rng = Math.random) {
   for (const alliance of allianceStore()) {
     if (alliance.active === false || alliance.dissolved) continue;
     const members = new Set(alliance.members || []);
+    // ── A group cutting its own member is not one member betraying it ──
+    //
+    // When the alliance's own plan named the target, or most of its voters
+    // wrote the same member down together, every ballot was the alliance doing
+    // what it decided. Read one ballot at a time, a unanimous 6-0 that three
+    // alliances organised produced fourteen "votes to evict an ally, even
+    // though they were together" cards and a fractured meeting per voter —
+    // for carrying out the group's own plan.
+    const cutByTheGroup = victim => {
+      if ((week.voteOperation?.plans || []).some(p => p.alliance === alliance.name && p.target === victim)) return true;
+      const own = week.ballots.filter(b => members.has(b.voter) && b.voter !== victim);
+      return own.length >= 2 && own.filter(b => b.evict === victim).length * 2 > own.length;
+    };
     for (const ballot of week.ballots) {
       if (!members.has(ballot.voter) || !members.has(ballot.evict)) continue;
+      if (cutByTheGroup(ballot.evict)) continue;
       if (alliance.betrayals?.some(item => item.week === week.num && item.player === ballot.voter && item.victim === ballot.evict)) continue;
       // ── Does the victim actually know who did it? ──
       //

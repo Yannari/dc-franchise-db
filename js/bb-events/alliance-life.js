@@ -399,11 +399,17 @@ function _blameCast(house, ctx) {
   // voter names, so exclude anybody who actually cast a stray vote. If the
   // record cannot establish an innocent suspect, do not invent innocence.
   if (!split.strayVoters.length) return null;
+  // The alliance is only short if one of ITS OWN ballots went the other way.
+  // A stray from outside the group leaves every member's vote where it was
+  // promised, and "four votes in the same direction and one went the other
+  // way" was printed over four votes that all went the same way.
+  const ownStrays = split.strayVoters.filter(v => entry.members.includes(v));
+  if (!ownStrays.length) return null;
   const innocent = entry.members.filter(n => !split.strayVoters.includes(n));
   const blamed = _bottomBy(innocent, n => _looksLoyal(n, entry.members));
   const accuser = _organiser(entry.members.filter(n => n !== blamed));
   if (!blamed || !accuser) return null;
-  return { ...entry, ...split, blamed, accuser };
+  return { ...entry, ...split, strays: ownStrays.length, blamed, accuser };
 }
 
 const wrongBlame = {

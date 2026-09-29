@@ -366,7 +366,7 @@ const promiseExposedByCount = {
       `${promisee} asks ${voter} one question in the kitchen — not accusing, just counting out loud — and ${voter} answers it smoothly enough that ${p.sub} ${p.sub === 'they' ? 'know' : 'knows'} the answer was prepared before the question existed.`,
     ], ctx, promisee, voter, cast) : variant([
       `${promisee} repeats the count and watches ${voter}'s face do the arithmetic a half second too slowly. It is not proof. It is enough to make ${promisee} keep asking.`,
-      `"You told everybody ${promised}." ${voter} starts a sentence three separate times in the kitchen. ${promisee} waits through all three and then leaves before the fourth.`,
+      `"You told everybody ${promised}," ${promisee} says in the kitchen. ${voter} starts an answer three separate times. ${promisee} waits through all three and then leaves before the fourth.`,
       `The vote came back differently from the count ${voter} helped sell. When ${promisee} asks whether ${voter} wrote ${cast}, ${voter} stops talking instead of saying no.`,
       `${promisee} does not shout. ${p.Sub} repeats the name ${voter} said before the vote, then the name somebody secretly wrote, and asks why ${voter}'s story changed overnight.`,
     ], ctx, promisee, voter, cast);
@@ -415,7 +415,7 @@ const comfortBecomesLoyalty = {
     const text = formal ? variant([
       `${critic} floats ${owed}'s name in the bedroom and ${owes} kills it immediately — not with an argument, with a flat "no". ${critic} has never heard ${owes} be flat about anything before.`,
       `"${owed} sat with me when nobody else would." ${owes} says it once, to ${critic}, and then makes it a position: whatever the house does this week, it does not do it to ${owed}. They shake on it before the lights go out.`,
-      `${owes} has been quiet all season about who ${p.sub} is with. ${critic} finds out in the bedroom, by naming ${owed} as an option and watching the conversation stop.`,
+      `${owes} has not told anybody who ${p.sub} is with. ${critic} finds out in the bedroom by floating ${owed}'s name and watching ${owes} shut the idea down before it is finished.`,
       `${critic} expects ${owes} to be flexible, because ${owes} has been flexible about everything. Instead ${owes} says ${p.sub} owes ${owed} a week, and would like to pay it now while it is still worth something.`,
     ], ctx, owes, owed, critic) : variant([
       `${critic} says something small and unkind about ${owed}. ${owes} does not argue — just does not laugh, and lets the silence sit there until ${critic} moves on to somebody else.`,

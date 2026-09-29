@@ -237,7 +237,7 @@ const diaryRoom = {
       `"${subject} trusts me completely," ${speaker} says, "which is going to become a problem for ${pronouns(subject).obj} when the numbers get smaller."`,
       `${speaker} smiles at the lens in a way ${p.sub} has been careful not to smile at anybody.`,
     ], ctx, speaker, subject) : _variant([
-      `${speaker} sits down and, for the first time in about a week, stops performing. What comes out is mostly about being tired.`,
+      `${speaker} sits down and, for the first time since the door closed behind ${p.obj}, stops performing. What comes out is mostly about being tired.`,
       `"I don't know if I'm playing this right." Nobody in the house has heard ${speaker} say anything like that, and nobody will.`,
       `${speaker} talks about ${subject} for four minutes and only works out halfway through that ${p.sub} is talking about ${p.ref}.`,
       `${speaker} admits to the camera that ${p.sub} does not want to write ${subject}'s name down, and that ${p.sub} probably will.`,

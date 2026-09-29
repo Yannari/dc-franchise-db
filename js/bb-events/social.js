@@ -20,7 +20,7 @@
 import { pronouns } from '../players.js';
 import {
   pStats, bond, perceived, hidden, band, bondFactor, closestTo, furthestFrom,
-  trusts, dislikes, sharesAlliance, alliancesOf, grudge, remembers, memoriesOf,
+  trusts, dislikes, sharesAlliance, alliancesOf, grudge, remembers, memoriesOf, worstMemory,
   suspicionOf, targetOf, isHunting, threat, biggestThreat, couldRomance,
   showmanceOf, willScheme, isNice, isVillainous, archetype, beatsInvolving, spotlightOrder,
 } from './_read.js';
@@ -165,7 +165,7 @@ const lateNightTrust = {
     const text = _variant([
       `Everyone else goes to bed, but ${a} and ${b} stay at the kitchen table. They stop talking game and spend another hour telling stories about home.`,
       `${a} tells ${b} something personal they have not shared with anyone else in the house. ${b} thanks them for trusting them and promises it stays there.`,
-      `Around two in the morning, ${a} finally tells ${b} what has been bothering them all week. ${b} listens without interrupting or trying to fix it.`,
+      `Around two in the morning, ${a} finally tells ${b} what has been bothering ${pronouns(a).obj} all week. ${b} listens without interrupting or trying to fix it.`,
       `${a} and ${b} lie awake talking about the people they miss outside the house. When they finally say goodnight, both of them feel closer.`,
     ], ctx, a, b);
 
@@ -338,7 +338,7 @@ const rumour = {
     const lands = skilled * (1 - sharp * 0.8) > 0.28;
     const text = lands ? _variant([
       `${liar} tells ${mark} something ${victim} really said, but changes one important word. ${mark} asks twice whether that was the exact quote. ${liar} says it was.`,
-      `“I'm only telling you because I'd want to know,” ${liar} says. Then ${p.sub} tells ${mark} that ${victim} has been using their name as a target.`,
+      `“I'm only telling you because I'd want to know,” ${liar} says. Then ${p.sub} tells ${mark} that ${victim} has been putting ${mark}'s name forward as a target.`,
       `${liar} gives ${mark} a mostly true story about ${victim}, with just enough changed to make it sound personal. ${mark} believes it.`,
       `${liar} warns ${mark} that ${victim} cannot be trusted, then leaves before ${mark} can ask too many questions. ${mark} spends the evening watching ${victim}.`,
     ], ctx, liar, mark, victim) : _variant([
@@ -417,9 +417,11 @@ const grudgeHardens = {
     const a = _choose(carrying, ctx, 'grudge') || carrying[0];
     const enemy = _others(house, a).sort((x, y) => grudge(a, y) - grudge(a, x))[0];
     const p = pronouns(a);
-    const worst = memoriesOf(a).filter(m => m.subject === enemy)
-      .sort((x, y) => (y.strength || 1) - (x.strength || 1))[0];
-    const kind = worst?.type || 'betrayal';
+    // The thing held AGAINST them. Sorting every memory by strength picked up
+    // kindnesses too, and the house heard somebody's grudge was "the told me
+    // the truth".
+    const worst = worstMemory(a, enemy);
+    const kind = worst?.type || null;
     const grievance = ({
       'would-not-let-it-go': 'refusal to let the argument die',
       'apology-refused': 'rejected apology',
@@ -428,17 +430,35 @@ const grudgeHardens = {
       'threatened-me-live': 'threat on eviction night',
       'saw-them-fight': 'last blow-up',
       abandonment: 'disappearance when the vote got difficult',
-    })[kind] || String(kind).replaceAll('-', ' ');
+      betrayal: 'betrayal', 'alliance-betrayal': 'betrayal',
+      'lied-to-my-face': 'lie', deceit: 'lie', 'two-faced': 'double game',
+      'voted-me-out': 'vote', 'voted-me-out-once': 'vote', 'renominated-me': 'nomination',
+      'forced-me-up': 'nomination', 'made-me-the-pawn': 'pawn nomination',
+      'broke-a-promise': 'broken promise', 'broken-promise': 'broken promise',
+      'broke-a-final-two': 'broken final two', 'broken-final-two': 'broken final two',
+      'went-behind-my-back': 'move behind my back', 'took-my-ally': 'move on my ally',
+      'came-at-me-in-public': 'public attack', insult: 'insult', humiliated: 'public humiliation',
+      'made-me-the-joke': 'joke at my expense', 'talks-down-to-me': 'condescension',
+      'left-me-out': 'meeting without me', 'decided-without-me': 'meeting without me',
+      'leaked-information': 'leak', 'robbed-me-of-the-veto': 'veto theft',
+      'blamed-me-for-a-vote-i-did-not-cast': 'false accusation', 'wrongly-accused': 'false accusation',
+      'coming-for-me': 'plan against me', 'planning-the-cut': 'plan against me',
+      'overheard-plot': 'plot I overheard', 'crossed-me': 'double-cross', 'cold-war': 'cold war',
+      'kept-me-awake': 'nights of noise', 'never-cleans-up': 'mess', irritation: 'constant needling',
+    })[kind] || null;
 
     const text = _variant([
-      `${a} tells an ally that ${enemy}'s ${grievance} settled it. ${a} is no longer asking for an explanation; `
-        + `${a} is asking whether the votes exist to send ${enemy} home.`,
+      grievance
+        ? `${a} tells an ally that ${enemy}'s ${grievance} settled it. ${a} is no longer asking for an explanation; `
+          + `${a} is asking whether the votes exist to send ${enemy} home.`
+        : `${a} tells an ally that ${pronouns(a).sub} is done giving ${enemy} the benefit of the doubt. ${a} is no longer asking for an explanation; `
+          + `${a} is asking whether the votes exist to send ${enemy} home.`,
       `${a} is friendly to ${enemy} at dinner, then waits until ${enemy} leaves and says, “The next time I have power, they're going up.”`,
       `“I'm over it,” ${a} says when ${enemy}'s name comes up. A minute later, ${a} is listing every reason ${enemy} cannot stay.`,
       `${a} goes over what ${enemy} did, who helped and who knew. By the end of the conversation, ${a} has decided exactly when to take the shot.`,
     ], ctx, a, enemy);
 
-    api.setTarget(a, enemy, `has not forgiven the ${grievance}`);
+    api.setTarget(a, enemy, grievance ? `has not forgiven the ${grievance}` : 'has run out of patience');
     api.suspicion(a, enemy, 1.5);
     api.remember(a, enemy, 'resolve', 2, { about: kind });
     return { text, players: [a, enemy], badgeText: 'GRUDGE HARDENS', badgeClass: 'red' };
@@ -463,7 +483,7 @@ const comfortOnTheBlock = {
     const p = pronouns(nominee);
     const text = _variant([
       `${helper} sits beside ${nominee} after the ceremony and asks if they want company. ${pronouns(helper).Sub} stays even when ${nominee} does not feel like talking.`,
-      `“You don't have to pretend you're okay with me,” ${helper} tells ${nominee}. ${nominee} finally admits how scared they are.`,
+      `“You don't have to pretend you're okay with me,” ${helper} tells ${nominee}. ${nominee} finally admits how scared ${pronouns(nominee).sub} ${pronouns(nominee).sub === 'they' ? 'are' : 'is'}.`,
       `${helper} makes ${nominee} a cup of tea and brings it to the bedroom. They talk about anything except votes until ${nominee} feels ready to get up.`,
       `${helper} finds ${nominee} alone in the backyard and sits beside ${p.obj}. ${helper} listens while ${nominee} talks through the ceremony.`,
     ], ctx, helper, nominee);

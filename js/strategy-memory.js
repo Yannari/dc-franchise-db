@@ -42,6 +42,18 @@ const PRO_SOCIAL = new Set([
   'alliance', 'saved-me', 'stood-up-for-me', 'was-there',
   'was-there-at-three-in-the-morning', 'trust', 'told-me-to-my-face', 'intel',
   'let-me-play', 'handed-me-the-house', 'resolve', 'told-me-something-true',
+  // ── A THIRD SWEEP, 2026-09 ──
+  // Found by reading a Big Brother season: "Axel tells an ally that Cameron's
+  // told me the truth settled it" — a grudge built on honesty, and a target
+  // set on the person who was honest. Every type below is somebody doing
+  // right by the observer, or the two of them being on the same side.
+  'told-me-the-truth', 'told-me-first', 'told-me-about-the-deals', 'showed-me-the-plan',
+  'came-to-me', 'came-to-me-first', 'final-two', 'final-three', 'romantic-spark',
+  'respect', 'loyalty', 'made-amends', 'made-it-right', 'favour', 'obligation',
+  'covered-me-without-asking', 'counted-it-with-me', 'carved-the-house-up-with-me',
+  'offered-to-save-me', 'took-me-off-the-block', 'stood-by-my-friend', 'shared-joke',
+  'worked-with-me-when-nobody-else-was-there', 'votes-as-one', 'apology-noted',
+  'isolation-addressed', 'recruited-me', 'let-me-pick', 'owes-me-jury',
 ]);
 const directionOf = type => (PRO_SOCIAL.has(type) ? -0.45 : 1);
 

@@ -209,7 +209,10 @@ export const whoSaidIt = {
       beats.push(beat(
         `${host(WSI_HOST)} ${fact.statement} `
         + (a.right ? say(WSI_RIGHT)(spotlight, options[truthIndex])
-          : say(WSI_WRONG)(spotlight, options[a.given], options[truthIndex])),
+          // The statement's author is often evicted, and an evicted houseguest
+          // is not in the yard to look insulted.
+          : say(participants.includes(options[truthIndex]) ? WSI_WRONG
+            : WSI_WRONG.filter(fn => !/insulted/.test(fn('', '', ''))))(spotlight, options[a.given], options[truthIndex])),
         [spotlight], `ROUND ${r + 1}`, 'challenge'));
     }
 

@@ -58,6 +58,26 @@ export const BB_HOST_STYLES = {
  * already holds: 'balanced' was the old default and is still an explicit
  * value, so no existing season's voice moves.
  */
+/**
+ * Who hosts the house tonight.
+ *
+ * `seasonConfig.host` defaults to Chris for every show, so `host || 'Valeria'`
+ * never reached its fallback and the exit interview was conducted by Total
+ * Drama's host with a placeholder letter for a face. Only a name from the
+ * house's own list is honoured; anything else is the house's default.
+ */
+export function bbHostName() {
+  const list = HOSTS_BY_FORMAT['big-brother'] || [];
+  const chosen = seasonConfig.host;
+  // A name typed in by hand is the author's host and stands. Only a name that
+  // belongs to ANOTHER show's desk — the Total Drama default riding along —
+  // is swapped for the house's own.
+  const elsewhere = Object.entries(HOSTS_BY_FORMAT)
+    .some(([fmt, hosts]) => fmt !== 'big-brother' && (hosts || []).some(h => h.value === chosen));
+  if (chosen && (list.some(h => h.value === chosen) || !elsewhere)) return chosen;
+  return list[0]?.value || 'Valeria';
+}
+
 function hostStyle() {
   const chosen = seasonConfig.bbHostStyle;
   if (BB_HOST_STYLES[chosen]) return chosen;
@@ -209,9 +229,16 @@ function readOfTheRoom(evictee, week, house) {
     || votedAgainst[0]
     || week.hoh;
 
+  // The question is whose fingerprints are on the eviction, and the Head of
+  // Household's are on every one — they put the evictee in the chair. So is
+  // whoever organised the vote. Only a ballot-counter's answer was being
+  // accepted, and "Leaves believing it was Aiden — and is wrong" was printed
+  // about the Aiden who had nominated them.
+  const organizer = (week.voteOperation?.plans || []).find(pl => pl.target === evictee)?.organizer || null;
   return {
     blamed,
-    correct: votedAgainst.includes(blamed),
+    correct: votedAgainst.includes(blamed) || blamed === week.hoh
+      || (week.hohs || []).includes(blamed) || (!!organizer && blamed === organizer),
     flippers,
     betrayedByAlly: votedAgainst.filter(v => trusts(evictee, v, 2.5) || sharesAlliance(evictee, v)),
     margin: Object.values(week.votes || {}).sort((a, b) => b - a),
@@ -434,7 +461,12 @@ function goodbyeMessages(evictee, house, week, rng) {
         : close ? pickFresh(warm)
           : pickFresh(polite);
 
-    return { name, tone, against, text };
+    // What this person's seat was on the night, for the label beside the
+    // message: the Head of Household and the other nominee held no ballot, so
+    // "kept them" was a vote they never cast.
+    const role = against ? 'against' : voters.has(name) ? 'kept'
+      : name === week.hoh ? 'hoh' : blockmate(name) ? 'blockmate' : 'no-vote';
+    return { name, tone, against, role, text };
   });
   if (montage.length) {
     messages.push({
@@ -469,7 +501,7 @@ export function generateBBEvictionInterview(ep, week, rng = Math.random, who = n
   // Drama setting and defaults to Chris, so inheriting it put the wrong person
   // in the interview chair; the house gets its own knob and its own default.
   // The default follows HOSTS_BY_FORMAT['big-brother'][0] in js/shows.js.
-  const host = seasonConfig.host || 'Valeria';
+  const host = bbHostName();
   const style = hostStyle();
   const voice = evicteeVoice(evictee);
   const stats = pStats(evictee);

@@ -284,7 +284,10 @@ const nomCampaign = {
   id: 'power-nom-campaign',
   category: 'deals',
   weight(house, ctx) {
-    return _blockKnown(ctx) && _noms(ctx).length && house.length >= 4 ? band(9) : 0;
+    // Needs somebody to pitch to — the "has run out of people to talk to"
+    // fallback was a card with nothing in it.
+    return _blockKnown(ctx) && _noms(ctx).length && house.length >= 4
+      && _others(house, ..._noms(ctx), _hoh(ctx)).length ? band(9) : 0;
   },
   fire(house, ctx, api, rng) {
     const noms = _noms(ctx);
@@ -403,6 +406,7 @@ const blockPressure = {
 const pawnResentment = {
   id: 'power-pawn-resents',
   category: 'social',
+  oncePerWeek: true,
   weight(house, ctx) {
     const f = actFacts(ctx);
     if (!(_blockKnown(ctx) && f.pawn && _noms(ctx).includes(f.pawn))) return 0;
@@ -671,7 +675,7 @@ const vetoDrawLobby = {
     ], ctx, hoh, asker) : _variant([
       `${asker} lobbies to be in the veto draw. ${hoh} makes no promises, and the lack of one is deafening.`,
       `${hoh} says, “I'd rather choose somebody neutral.” ${asker} hears the word clearly: ${hoh} does not trust ${pronouns(asker).obj} with the veto.`,
-      `${asker} asks ${hoh} to choose them if Houseguest's Choice is drawn. ${hoh} says, “We'll see what happens,” and changes the subject.`,
+      `${asker} asks ${hoh} to choose ${pronouns(asker).obj} if Houseguest's Choice is drawn. ${hoh} says, “We'll see what happens,” and changes the subject.`,
     ], ctx, hoh, asker);
 
     if (agrees) {
@@ -787,7 +791,8 @@ const hohRoomCourt = {
   },
   fire(house, ctx, api) {
     const hoh = _hoh(ctx);
-    const inner = _quiet(_others(house, hoh)).slice(0, 3);
+    // The nominees are not upstairs being seen with the person who put them up.
+    const inner = _quiet(_others(house, hoh, ..._noms(ctx))).slice(0, 3);
     const outside = _others(house, hoh, ...inner)[0] || null;
     const text = _variant([
       `The HOH room fills up after lights-out and stays full. ${inner.join(', ')} are on the bed with ${hoh}; everybody else is downstairs listening to the ceiling.`,

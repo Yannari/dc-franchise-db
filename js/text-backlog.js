@@ -4610,6 +4610,13 @@ function _textBBHouseStatus(ep, phase, ln, sec, { skip = [] } = {}) {
     // name and a loose reason, and the score ended up credited to whoever was
     // printed above it. Only tags decide where a line ends here.
     .replace(/\s*\r?\n\s*/g, ' ')
+    // The gazette's cut-outs are portraits with a caption, both of them the
+    // name, three to a story and nothing between them: "Paige TurnerEnnui".
+    // The story beside them already names everybody in it.
+    .replace(/<figure class="bbgz-cut[\s\S]*?<\/figure>/gi, '')
+    // A headline and its standfirst are two sentences; run together they read
+    // "Lake takes the room 11 weeks with no say".
+    .replace(/<\/h[1-6]>/gi, ' — ')
     // A portrait IS a name on this screen, and in two places it is the only
     // one: "X is coming for Emmah" draws the hunter as a face and never writes
     // their name down. Dropping the face therefore deleted whoever was doing
@@ -4662,12 +4669,19 @@ function _textBBHouseStatus(ep, phase, ln, sec, { skip = [] } = {}) {
     .map(l => {
       const cells = l.split(' · ');
       return cells.filter((c, i) => {
-        if (!/^[A-Z][A-Za-z'-]*$/.test(c)) return true;
+        // Names can be two words ("Paige Turner"), and a portrait pair is
+        // labelled "Logan &" / "Duncan vs" before the join below — both used to
+        // slip through and print the name twice.
+        if (!/^[A-Z][A-Za-z'.-]*(?: [A-Z][A-Za-z'.-]*)*$/.test(c)) return true;
         // Only discard a portrait name when a later cell repeats that name as
         // its own label. A reason may mention the hunter again ("promised me
         // Dawn"), and treating prose as a duplicate erases the sentence's
         // subject.
-        return !cells.slice(i + 1).some(later => later === c);
+        // …or when the very next cell opens with it: "Laurie · Laurie has a
+        // structure" is the face and then the sentence about the face.
+        return !cells.slice(i + 1).some(later => later === c
+          || later === `${c} &` || later === `${c} vs`)
+          && !(cells[i + 1] || '').startsWith(`${c} `);
       }).join(' · ')
         // A pairing is one phrase, not two cells: "Nichelle vs Jo".
         .replace(/ (vs|&) · /g, ' $1 ');
@@ -4710,6 +4724,30 @@ function _textBBHouseStatus(ep, phase, ln, sec, { skip = [] } = {}) {
   }
   // A week with nothing to report should not leave a bare heading behind.
   if (!wrote) ln('  Nothing has moved yet.');
+}
+
+/**
+ * One goodbye message, labelled by the seat its author actually had.
+ *
+ * The montage has no author — it is the rest of the house waving — and it
+ * printed as "null (kept them)". The Head of Household and the other nominee
+ * held no ballot, so "kept them" claimed a vote they never cast. Messages from
+ * before `role` existed fall back to the old two-way label.
+ */
+/** "A", "A and B", "A, B and C". */
+function _bbAnd(names) {
+  const n = (names || []).filter(Boolean);
+  return n.length <= 1 ? (n[0] || '') : `${n.slice(0, -1).join(', ')} and ${n[n.length - 1]}`;
+}
+
+function _bbGoodbyeLine(g) {
+  if (!g.name) return g.text;
+  const label = {
+    against: 'voted to evict', kept: 'voted to keep', hoh: 'Head of Household',
+    blockmate: 'the other nominee', 'no-vote': 'no vote',
+    'final-hoh': 'cast the only vote', finalist: 'the other finalist',
+  }[g.role] || (g.against ? 'voted to evict' : 'voted to keep');
+  return `${g.name} (${label}): ${g.text}`;
 }
 
 export function generateBBSummaryText(ep) {
@@ -4909,7 +4947,11 @@ export function generateBBSummaryText(ep) {
             .filter(b => !['STAYS NOMINATED', 'OFF THE BLOCK'].includes(b?.badgeText))
             .forEach(b => ln(`    · ${b.text}`));
         }
-        (act.results || []).filter(r => r.threw).forEach(r => ln(`  ${r.name} threw the competition.`));
+        // Only where the competition did not already narrate it — every throw
+        // has its own beat, and the label under it repeated the same fact.
+        if (!(act.competition?.beats || []).length) {
+          (act.results || []).filter(r => r.threw).forEach(r => ln(`  ${r.name} threw the competition.`));
+        }
         if (act.secret) {
           ln('  The result is SEALED. Only the winner knows who holds power this week.');
           ln(`  (Viewer only: ${act.winner} is the Invisible HOH.)`);
@@ -5348,6 +5390,7 @@ export function generateBBSummaryText(ep) {
           ln(`  "${nomNames.join(', ')} — you have been nominated for eviction. This nomination ceremony is complete."`);
           ln('  No speech. No reasons. A room full of people performing innocence.');
           (act.socialBeats || []).forEach(b => ln(`  [${b.badgeText || 'HOUSE'}] ${b.text}`));
+          socialDone.add(act);
           break;
         }
         // THE ACT'S OWN HEAD OF HOUSEHOLD, not the episode's.
@@ -5418,6 +5461,9 @@ export function generateBBSummaryText(ep) {
         // Everything else that happened in the room.
         (act.socialBeats || []).filter(b => !spoken.includes(b))
           .forEach(b => ln(`  [${b.badgeText || 'HOUSE'}] ${b.text}`));
+        // Printed here, in the room, so the flush after the switch must not
+        // print the same reactions a second time under the ceremony.
+        socialDone.add(act);
         break;
       }
 
@@ -6518,7 +6564,10 @@ export function generateBBSummaryText(ep) {
         break;
 
       case 'campaign':
-        sec('CAMPAIGNING');
+        // The engine runs a campaign act per day between the veto meeting and
+        // the vote; three identical headers in a row read as a paste error.
+        // The days are numbered instead, which is what they are.
+        sec(act.campaignIndex ? `CAMPAIGNING — DAY ${act.campaignIndex + 1}` : 'CAMPAIGNING');
         // The pitch beats ARE the campaign — one card per conversation, the
         // argument included. The old summary line here read fields the pitch
         // no longer has and printed "undefined works undefined" for a week.
@@ -6599,6 +6648,13 @@ export function generateBBSummaryText(ep) {
         const voters = (act.ballots || []).map(b => b.voter);
         const majority = Math.floor(voters.length / 2) + 1;
         sec('VOTING PLANS');
+        // A Diamond Veto goes off AFTER these rooms met, so every plan below
+        // still talks about the block as it was. Said once, up front, rather
+        // than leaving "Cody sits on the block" to contradict the section above.
+        if (ep.diamondDetonation?.saved && ep.diamondDetonation?.replacement) {
+          ln(`  These rooms met before the Diamond Veto. ${ep.diamondDetonation.saved} is off the block now,`);
+          ln(`  and every plan aimed at ${ep.diamondDetonation.saved} has to land on ${ep.diamondDetonation.replacement} or the other chair instead.`);
+        }
         ln(`  ${majority} of ${voters.length} decides it.`);
         const STANCE = { dependable: 'locked', leaning: 'leaning', pulled: 'pulled in',
           conflicted: 'torn', refusing: 'REFUSES', elsewhere: 'answers to another room',
@@ -6653,8 +6709,10 @@ export function generateBBSummaryText(ep) {
           const record = (ep.finalPleas || []).find(r => r.speaker === nom);
           (record?.responses || []).filter(r => r.moved)
             .forEach(r => ln(`    The plea lands: ${r.voter}'s vote moves, live.`));
-          const caught = (record?.responses || []).filter(r => r.caught).map(r => r.voter);
-          if (caught.length) ln(`    ${caught.join(' and ')} ${caught.length === 1 ? 'does' : 'do'} not buy a word of it.`);
+          // Only the voters it cost: somebody who spots the bluff and keeps the
+          // speaker anyway was never going to vote the other way.
+          const caught = (record?.responses || []).filter(r => r.caught && r.evictingSpeaker).map(r => r.voter);
+          if (caught.length) ln(`    ${_bbAnd(caught)} ${caught.length === 1 ? 'does' : 'do'} not buy a word of it.`);
           ln('');
         }
 
@@ -6800,7 +6858,7 @@ export function generateBBSummaryText(ep) {
     });
     ln('');
     ln('  GOODBYE MESSAGES');
-    iv.goodbyes.forEach(g => ln(`    ${g.name} (${g.against ? 'voted against' : 'kept them'}): ${g.text}`));
+    iv.goodbyes.forEach(g => ln(`    ${_bbGoodbyeLine(g)}`));
     ln('');
     ln(`  ${iv.evictee}: ${iv.parting}`);
     if (iv.blamed) ln(`  Leaves believing it was ${iv.blamed}${iv.blameCorrect ? '.' : ' — and is wrong.'}`);
@@ -6821,8 +6879,18 @@ export function generateBBSummaryText(ep) {
   const moved = (ep.planChanges || []).filter(c => c.reason);
   if (moved.length) {
     sec('HOW THE PLANS CHANGED');
-    moved.slice(0, 18).forEach(c => ln(`  ${c.owner}: ${c.reason}.`));
-    if (moved.length > 18) ln(`  (${moved.length - 18} smaller revisions not listed)`);
+    // One line per person. The same owner printed twice in a row with two
+    // halves of one reaction ("fell in behind X's target" / "X just won power")
+    // read as a stutter, and an identical reason twice read as a paste error.
+    const byOwner = new Map();
+    for (const c of moved) {
+      const list = byOwner.get(c.owner) || [];
+      if (!list.includes(c.reason)) list.push(c.reason);
+      byOwner.set(c.owner, list);
+    }
+    const rows = [...byOwner.entries()];
+    rows.slice(0, 14).forEach(([owner, reasons]) => ln(`  ${owner}: ${reasons.slice(0, 2).join('; ')}.`));
+    if (rows.length > 14) ln(`  (${rows.length - 14} more houseguests adjusted their plans)`);
   }
 
   // WHERE EVERY ALLIANCE STANDS.
@@ -6938,7 +7006,7 @@ export function generateBBFinaleText(ep) {
         if ((iv.goodbyes || []).length) {
           ln('');
           ln('    GOODBYE MESSAGES');
-          iv.goodbyes.forEach(g => ln(`      ${g.name} (${g.against ? 'voted against' : 'kept them'}): ${g.text}`));
+          iv.goodbyes.forEach(g => ln(`      ${_bbGoodbyeLine(g)}`));
         }
         if (iv.parting) {
           ln('');

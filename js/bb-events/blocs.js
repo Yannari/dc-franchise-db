@@ -18,6 +18,7 @@
 // bloc-told fires whether or not it lands, and the disbelieved version has
 // consequences of its own.
 
+import { gs } from '../core.js';
 import { pronouns } from '../players.js';
 import {
   pStats, bond, perceived, band, closestTo, furthestFrom, suspicionOf, targetOf,
@@ -118,12 +119,30 @@ const blocNoticed = {
   },
 };
 
+/**
+ * The last eviction's tally, as the house heard it read out.
+ *
+ * Ballots are secret. Nobody in the house can go back through a vote "name by
+ * name"; what they have is the number, and a number only gives a bloc away when
+ * the room actually split. A 12-1 vote says nothing about who is working with
+ * whom, and this event used to read one as proof of a four-person alliance.
+ */
+function _lastTally() {
+  const w = (gs.bb?.weeks || []).slice().reverse().find(x => (x?.ballots || []).length);
+  if (!w) return null;
+  const t = {};
+  for (const b of w.ballots) if (b?.evict) t[b.evict] = (t[b.evict] || 0) + 1;
+  const counts = Object.values(t).sort((a, b) => b - a);
+  return { text: counts.join('–'), minority: counts.slice(1).reduce((a, b) => a + b, 0) };
+}
+
 const blocVoteTell = {
   id: 'bloc-vote-tell',
   category: 'social',
   weight(house, ctx) {
     // Only worth saying once the house has a vote to look back on.
     if ((ctx?.week?.num || 0) < 2 || house.length < 5) return 0;
+    if ((_lastTally()?.minority || 0) < 2) return 0;
     const counter = house.find(name => knownBlocsFor(name)
       .some(entry => entry.known >= 0.45));
     return counter ? band(8 * _fit(ctx)) : 0;
@@ -143,11 +162,12 @@ const blocVoteTell = {
     const together = timesVotedTogether(bloc);
     const evictions = evictionCount();
     const again = together >= 2 ? ` That is ${together} votes in a row.` : '';
+    const tally = _lastTally()?.text || 'split';
 
     const text = _variant([
-      `${counter} goes back through the last vote out loud, name by name, and stops. "${_list(bloc.members.slice(0, 3))} all landed on the same person."${again}`,
-      `Nobody has to be told what happened at the last eviction; ${counter} just has to count it in front of somebody. ${bloc.members.length} votes moved in the same direction${evictions >= 2 ? `, and it is not the first time` : ''}.`,
-      `"Tell me that's a coincidence." ${counter} lists who voted with whom and waits. Nobody in the room takes the bet.`,
+      `${counter} goes back over the last tally — ${tally} — and works out who could possibly have made up those numbers. "${_list(bloc.members.slice(0, 3))}. It has to be."${again}`,
+      `Nobody has to be told what happened at the last eviction; ${counter} just has to do the arithmetic in front of somebody. A ${tally} vote does not happen unless people walked into the Diary Room already agreed${evictions >= 2 ? `, and it is not the first time` : ''}.`,
+      `"Tell me that's a coincidence." ${counter} lists who was talking to whom the night before a ${tally} vote, and waits. Nobody in the room takes the bet.`,
       `${counter} has stopped guessing about ${bloc.label}. The tally did the work — ${p.sub} ${p.sub === 'they' ? 'were' : 'was'} looking at the wrong thing all week.`,
     ], ctx, counter, bloc.id);
     bloc.members.forEach(m => api.suspicion(counter, m, 0.7));
@@ -238,7 +258,7 @@ const blocRecruit = {
         && bond(listener, target) < 3;
       if (willing) {
         joined.push(listener);
-        api.setTarget(listener, target, `${plotter} convinced them ${bloc.label} has the numbers`);
+        api.setTarget(listener, target, `${plotter} says ${bloc.label} has the numbers`);
         api.addBond(plotter, listener, 0.7);
         api.remember(listener, plotter, 'recruited-me', 1, { about: bloc.label });
       } else {
@@ -272,12 +292,16 @@ const blocTold = {
   category: 'social',
   weight(house, ctx) {
     if (house.length < 5) return 0;
-    const teller = house.find(name => knownBlocsFor(name).some(e => e.known >= 0.55));
+    // Somebody who knows AND somebody left to tell: the fallback when the
+    // second half was missing was "has nobody left to tell", a card with no
+    // consequence, twice in one week.
+    const teller = house.find(name => knownBlocsFor(name).some(e => e.known >= 0.55
+      && outsidersTo(e.bloc, name).length));
     return teller ? band(8 * _fit(ctx)) : 0;
   },
   fire(house, ctx, api) {
-    const teller = _quiet(house).find(name => knownBlocsFor(name).some(e => e.known >= 0.55))
-      || house[0];
+    const teller = _quiet(house).find(name => knownBlocsFor(name).some(e => e.known >= 0.55
+      && outsidersTo(e.bloc, name).length)) || house[0];
     const entry = knownBlocsFor(teller).find(e => e.known >= 0.55) || knownBlocsFor(teller)[0];
     if (!entry) return { text: `${teller} keeps it to ${pronouns(teller).ref || 'themselves'}.`,
       players: [teller], badgeText: 'SAYS NOTHING', badgeClass: 'grey' };
@@ -339,7 +363,7 @@ const blocBlowup = {
     const p = pronouns(angry);
 
     const text = _variant([
-      `It comes out in the kitchen with everybody standing there. "${bloc.members.slice(0, 3).join(', ')} — we all know. Stop pretending those votes are independent." Nobody has to be told twice; there is no unhearing it.`,
+      `It comes out in the kitchen with everybody standing there. "${bloc.members.slice(0, 3).join(', ')} — we all know," ${angry} says. Stop pretending those votes are independent." Nobody has to be told twice; there is no unhearing it.`,
       `${angry} has been holding it in since ${pronouns(angry).sub} first noticed the pattern and lets go at the worst possible moment, in front of the entire house. ${bloc.label} is not a theory any more; it is a thing that was shouted.`,
       `"Say it to my face that you are not working together." ${bloc.members[0]} says nothing, which is the loudest answer available, and every person in the room does the arithmetic at the same time.`,
       `The argument is about something else for about forty seconds. Then ${angry} names ${_count(bloc.members.length)} of them out loud and the house stops being able to pretend.`,

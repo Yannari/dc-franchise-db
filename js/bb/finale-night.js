@@ -58,11 +58,15 @@ const pick = (rng, list) => list[Math.min(list.length - 1, Math.floor(rng() * li
  * different answers, in four printed lines.
  */
 function makeSayer(rng) {
-  const used = new Set();
+  const used = new Map();   // rendered line -> when it was last said
+  let clock = 0;
   return (list, ...args) => {
     const fresh = list.filter(fn => !used.has(fn(...args)));
-    const chosen = pick(rng, fresh.length ? fresh : list);
-    used.add(chosen(...args));
+    // An exhausted pool repeats its OLDEST line, never a random one — a random
+    // repeat put the same answer in both finalists' mouths in one exchange.
+    const chosen = fresh.length ? pick(rng, fresh)
+      : list.slice().sort((a, b) => used.get(a(...args)) - used.get(b(...args)))[0];
+    used.set(chosen(...args), ++clock);
     return chosen(...args);
   };
 }
@@ -80,8 +84,13 @@ export function grievanceOf(juror, finalist) {
   const own = evictionOf(juror);
   const votedMeOut = !!(own?.ballots || []).some(b => b.voter === finalist && b.evict === juror);
   const heldThePower = own?.hoh === finalist;
-  const deal = dealBetween(juror, finalist);
-  const brokenDeal = deal && deal.broken && deal.brokenBy === finalist ? deal : null;
+  // Straight from the ledger. `dealBetween` only returns LIVE deals between two
+  // people still in the house, and a juror never is — so this was always null,
+  // the betrayal question never had a real deal behind it, and a finalist who
+  // had cut somebody at the final three minutes earlier was asked "you kept
+  // your word to me when it cost you something".
+  const brokenDeal = (gs.sideDeals || []).find(d => d && d.broken && d.brokenBy === finalist
+    && (d.players || []).includes(juror) && (d.players || []).includes(finalist)) || null;
   const together = weeks().filter(w => (w.houseAtStart || []).includes(finalist)
     && (w.houseAtStart || []).includes(juror)).length;
   return {
@@ -176,6 +185,11 @@ const midSentence = s => {
   return cut.charAt(0).toLowerCase() + cut.slice(1);
 };
 
+/** "once", "twice", "three times" — a speech does not say "1 time". */
+const times = n => (n === 1 ? 'once' : n === 2 ? 'twice' : `${NUM(n)} times`);
+const NUM = n => (['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine',
+  'ten', 'eleven', 'twelve'][n] || String(n));
+
 const moveClaim = c => c.boots.length
   ? `I put ${c.boots[0]} on the jury when leaving ${c.boots[0]} in the game was bad for mine`
   : c.flips
@@ -195,9 +209,15 @@ const moveClaim = c => c.boots.length
 // whether an answer lands.
 
 const QUESTIONS = {
+  // Only asked when a deal was actually broken, by this finalist, with this
+  // juror. The friend who voted you out gets the `betrayal` pool below.
+  brokenDeal: [
+    (j, f, g, p) => `"We shook on the end together. You broke it. Tell me it was strategy — because if you tell me it was anything else, I'm going to know you're lying."`,
+    (j, f, g, p) => `"You promised me ${g.brokenDeal?.tier === 'final-three' ? 'a final three' : 'the final two'}. I want to hear, in front of everybody, the moment you decided it was not worth keeping."`,
+    (j, f, g, p) => `"I kept my half of our deal right up until the day you ended it. What did I get wrong about you?"`,
+  ],
   betrayal: [
     (j, f, g, p) => `"You sat on my bed in week ${g.week} and told me I was safe. Then you put my name in that box. I want you to say out loud, to my face, why you did it."`,
-    (j, f, g, p) => `"We shook on the end together. You broke it. Tell me it was strategy — because if you tell me it was anything else, I'm going to know you're lying."`,
     (j, f, g, p) => `"I trusted you more than anybody in that house, and I left in week ${g.week} because of it. What was I to you? Be honest."`,
     (j, f, g, p) => `"Do not tell me you love me and do not tell me it was just game. Tell me why losing me was worth sitting in that chair."`,
     (j, f, g, p) => `"When did you stop protecting me—and why did you keep asking me to protect you after that?"`,
@@ -263,7 +283,7 @@ const QUESTIONS = {
 
 /** What the room is really asking about, which decides what answers it. */
 const QUESTION_VALUE = {
-  betrayal: 'loyalty', cut: 'control', power: 'control',
+  brokenDeal: 'loyalty', betrayal: 'loyalty', cut: 'control', power: 'control',
   resume: 'control', passenger: 'challenge', loyalty: 'honesty',
   // Being paid to wreck a season is a nerve question. Being two people is a
   // question about whether anything was real, which is a different thing
@@ -276,7 +296,7 @@ function questionFor(juror, finalist, g, twist) {
   // anybody in that room lived through — but not a deal this person personally
   // shook on and broke, which is still the one that gets asked first.
   if (twist && !g.brokenDeal) return twist.kind;
-  if (g.brokenDeal) return 'betrayal';
+  if (g.brokenDeal) return 'brokenDeal';
   if (g.votedMeOut && g.bond >= 2) return 'betrayal';
   if (g.heldThePower) return 'power';
   if (g.votedMeOut) return 'cut';
@@ -326,7 +346,7 @@ const STYLE_VALUE = {
  * and a question about what your game WAS. Every question kind maps to one.
  */
 const ANSWER_FAMILY = {
-  betrayal: 'grievance', cut: 'grievance', power: 'grievance',
+  brokenDeal: 'grievance', betrayal: 'grievance', cut: 'grievance', power: 'grievance',
   resume: 'resume', passenger: 'resume', loyalty: 'resume',
   // A third family, because neither of the other two answers the question. "I
   // chose my game over you" is not a reply to "were you being paid", and a
@@ -373,7 +393,7 @@ const ANSWERS = {
       f => `"I was the person people could tell the dangerous version of the plan to. I listened, I kept enough of it private, and I made myself useful to people who did not always like each other."`,
       f => { const c = finalistCase(f); return `"I did not dominate every week. I survived ${c.weeks} of them by knowing when somebody needed reassurance, when they needed a vote, and when they needed to think an idea was theirs."`; },
       f => `"The move I am proudest of is not a nomination. It is that people who had every reason to compare notes kept trusting me long enough for me to reach this chair."`,
-      f => { const c = finalistCase(f); return `"I won ${c.wins} competitions. Everything else I won came one conversation at a time. If that looks quieter than control, ask why the loud players are sitting over there."`; },
+      f => { const c = finalistCase(f); return `"${c.wins ? `I won ${NUM(c.wins)} competition${c.wins === 1 ? '' : 's'}. Everything else I won` : 'I never won a competition. Everything I did win'} came one conversation at a time. If that looks quieter than control, ask why the loud players are sitting over there."`; },
       f => `"I do not want credit for using people. I want credit for understanding them, showing up for them, and still making the decision when their game stopped fitting mine."`,
     ],
     twist: [
@@ -393,8 +413,18 @@ const ANSWERS = {
       f => `"You deserved a cleaner goodbye than I gave you. I cannot fix that with a finale answer. I can only stop lying about it now."`,
     ],
     resume: [
-      f => { const c = finalistCase(f); return `"I did not run this house. I won ${c.wins} competition${c.wins === 1 ? '' : 's'}, survived ${c.survived} vote${c.survived === 1 ? '' : 's'} from the block, and made enough correct decisions to be here. Judge that game, not a bigger one I invent tonight."`; },
-      f => { const c = finalistCase(f); return `"My résumé has holes. I can see them. What it also has is ${c.correctVotes} correct eviction vote${c.correctVotes === 1 ? '' : 's'}, ${c.honoured} promise${c.honoured === 1 ? '' : 's'} kept when it mattered, and no quit in it."`; },
+      f => { const c = finalistCase(f);
+      const did = [
+        c.wins ? `won ${NUM(c.wins)} competition${c.wins === 1 ? '' : 's'}` : null,
+        c.survived ? `survived ${c.survived === 1 ? 'a vote' : `${NUM(c.survived)} votes`} from the block` : null,
+      ].filter(Boolean);
+      return `"I did not run this house. I ${did.length ? `${did.join(', ')}, and ` : ''}made enough correct decisions to be here. Judge that game, not a bigger one I invent tonight."`; },
+      f => { const c = finalistCase(f);
+      const has = [
+        c.correctVotes ? `${NUM(c.correctVotes)} vote${c.correctVotes === 1 ? '' : 's'} on the person who actually left` : null,
+        c.honoured ? `${NUM(c.honoured)} promise${c.honoured === 1 ? '' : 's'} kept when it mattered` : null,
+      ].filter(Boolean);
+      return `"My résumé has holes. I can see them. What it also has is ${has.length ? `${has.join(', ')}, and ` : ''}no quit in it."`; },
       f => `"There were weeks I followed. There were weeks surviving was the move. I would rather admit that than claim everybody else's idea because I happen to be in the chair."`,
       f => { const c = finalistCase(f); return `"The moment I earned this seat was when ${midSentence(moveClaim(c))}. It was not the biggest move of the season. It was the move my game needed."`; },
       f => `"I benefited from stronger players. I also watched them leave while they kept deciding I was safe for one more week. At some point, being underestimated becomes something you did."`,
@@ -433,6 +463,32 @@ const ANSWERS = {
   },
 };
 
+// The finalist who was not asked, on a question about something they did not
+// do. Short, and in the voice of their game, because the question was not
+// theirs and a speech in reply to it is a speech about nothing.
+const BYSTANDER = {
+  'own-it': [
+    f => `"That was not my move, and I am not going to borrow it now that it is worth something. Judge me on the weeks I actually drove."`,
+    f => `"I did not make that decision. If I had wanted you gone, you would have known it came from me."`,
+    f => `"That one belongs to the person next to me. I have enough of my own to answer for tonight."`,
+  ],
+  relationship: [
+    f => `"That was never my decision. I was the person you talked to that week, and I hope that counts for more than a vote I had no hand in."`,
+    f => `"I was not part of that conversation, and I would not have wanted to be. I just want you to know I am not going to pretend otherwise to look bigger."`,
+    f => `"That was not mine. What was mine is every conversation we had before it, and I stand by those."`,
+  ],
+  honest: [
+    f => `"I did not make that call. I am not going to claim it just because it worked."`,
+    f => `"That was not my plan, and I did not stop it either. I should not pretend the second part is nothing."`,
+    f => `"Honestly? I found out about that week the same way you did."`,
+  ],
+  deflect: [
+    f => `"That one is not on me. Ask the person who made it."`,
+    f => `"I had nothing to do with that, so I do not really know what you want me to say."`,
+    f => `"You are asking the wrong finalist."`,
+  ],
+};
+
 const LANDED = [
   (j, f, p) => `${j} sits back. Whatever ${j} came in here wanting, that was closer to it than expected.`,
   (j, f, p) => `${j} does not answer for a moment, and the room notices the moment.`,
@@ -457,7 +513,7 @@ const FLUBBED = [
 
 const IMMOVABLE = [
   (j, f, p) => `${j} has known how this vote was going since the door shut, and nothing said in this room was ever going to touch it.`,
-  (j, f, p) => `${j} listens politely. ${j}'s mind was made up in a lodge six weeks ago.`,
+  (j, f, p) => `${j} listens politely. ${j}'s mind was made up long before tonight.`,
   (j, f, p) => `It is a good answer. ${j} decided a long time ago that a good answer would not be enough.`,
   (j, f, p) => `${j} has already written a name in ${j}'s head. This is just the part where everybody pretends the ink is still wet.`,
   (j, f, p) => `${f} lands the point. It lands on a locked door.`,
@@ -562,7 +618,13 @@ export function runJuryQuestioning({ finalTwo = [], jury = [], week = 0, rng = M
       // where it genuinely is for both.
       let family = ANSWER_FAMILY[kind] || 'resume';
       if (family === 'twist' && twists[finalist]?.kind !== kind) family = 'resume';
-      const text = say(ANSWERS[style][family], finalist);
+      // The other finalist was not asked about something THEY did. Unless this
+      // juror has the same grievance with them, answering it as their own had
+      // them confessing to an eviction they took no part in — "I let you
+      // believe you had me" to somebody they had barely spoken to.
+      if (family === 'grievance' && finalist !== asked
+        && !(g.votedMeOut || g.heldThePower || g.brokenDeal)) family = 'bystander';
+      const text = say(family === 'bystander' ? BYSTANDER[style] : ANSWERS[style][family], finalist);
 
       // Move the read. Strength is what was said; `moveRead` applies this
       // juror's remaining headroom, so a locked mind barely shifts and a
@@ -620,14 +682,21 @@ const STATEMENTS = {
   relationship: [
     f => { const c = finalistCase(f); return `"My game lived in conversations nobody gave a trophy for. People trusted me with plans, fear, anger and information, and I turned that trust into ${c.correctVotes} correct vote${c.correctVotes === 1 ? '' : 's'} and this chair. I hurt some of you when my path narrowed. I will not call that good jury management. I will call the relationships real, even when the decisions were brutal."`; },
     f => `"I did not get here alone, and I refuse to erase you from my story just to sound dominant. Every person on that bench changed my game. I listened better than I spoke, made myself necessary to people who did not need the same things, and survived the moment those groups collided. My social game was not being liked. It was knowing what trust could carry—and when it could not."`,
-    f => { const c = finalistCase(f); return `"I won ${c.wins} competitions. The rest of my power came from people choosing to tell me the truth. They did that because I built something with them before I ever needed their vote. When I broke trust, I felt it because the trust existed. Judge the damage, but also judge the work it took to be trusted in the first place."`; },
+    f => { const c = finalistCase(f); return `"${c.wins ? `I won ${NUM(c.wins)} competition${c.wins === 1 ? '' : 's'}. The rest of my power came` : 'I never won a competition. My power came'} from people choosing to tell me the truth. They did that because I built something with them before I ever needed their vote. When I broke trust, I felt it because the trust existed. Judge the damage, but also judge the work it took to be trusted in the first place."`; },
     f => `"There is a version of social strategy that means smiling while other people play. That was not mine. I used relationships to learn where the vote was moving, to pull people back when it moved against me, and to keep enemies from comparing the right notes. It looked human because it was human. It was still strategy every day."`,
     f => { const c = finalistCase(f); return `"My case is not that everybody loved me. Clearly, some of you do not. My case is that for ${c.weeks} weeks, people with different plans kept finding a reason to include me in the next one. I made connection useful without making it meaningless. That is why I am here asking people I helped evict to choose me."`; },
   ],
   honest: [
     f => { const c = finalistCase(f); return `"I am not going to claim every eviction or rename survival as control. I won ${c.wins} competition${c.wins === 1 ? '' : 's'}, voted correctly ${c.correctVotes} time${c.correctVotes === 1 ? '' : 's'}, survived ${c.survived} vote${c.survived === 1 ? '' : 's'} from the block, and kept adapting when my position was worse than I admitted. It was imperfect. It was mine."`; },
     f => `"Some weeks I led. Some weeks I followed because following was safer than becoming the next name. I know that is not the cinematic answer. Big Brother is not won by looking impressive every Thursday; it is won by reaching the Thursday when there is nowhere left to hide. I reached it, and tonight I am not hiding from how."`,
-    f => { const c = finalistCase(f); return `"I made mistakes. I trusted people too long, waited too long on some decisions, and benefited from moves I did not create. I also kept ${c.honoured} promise${c.honoured === 1 ? '' : 's'}, survived the block ${c.survived} time${c.survived === 1 ? '' : 's'}, and never stopped looking for the next path. Vote for the real game, not the speech version."`; },
+    f => { const c = finalistCase(f);
+      // Only the parts of the record that are something to stand on. "I kept 0
+      // promises" and "survived the block 0 times" were read out as boasts.
+      const also = [
+        c.honoured ? `kept ${c.honoured === 1 ? 'the one promise that mattered' : `${NUM(c.honoured)} promises`}` : null,
+        c.survived ? `survived the block ${times(c.survived)}` : null,
+      ].filter(Boolean);
+      return `"I made mistakes. I trusted people too long, waited too long on some decisions, and benefited from moves I did not create. I also ${also.length ? `${also.join(', ')}, and ` : ''}never stopped looking for the next path. Vote for the real game, not the speech version."`; },
     f => `"The person beside me may have a louder résumé. My argument is that restraint is also a decision. I knew which fights would expose me, which allies needed space, and which weeks were not mine to own. I stayed teachable in a house that punishes certainty. If that is the game you value, I played it honestly."`,
     f => { const c = finalistCase(f); return `"I entered this night knowing there are gaps in my case. What fills them is that I lasted ${c.weeks} weeks without becoming somebody I could not defend. I lied sometimes. I compromised. I also admitted when a move was not mine. If credibility matters after a season of claims, let that matter now."`; },
   ],
@@ -816,11 +885,13 @@ const TAPE_INTROS = [
 ];
 
 const CONFESSIONS = [
-  (t, v, p) => `"It was me. You spent three months thinking it was somebody else and it was me, and I let you."`,
+  (t, v, p) => `"It was me. You spent the rest of the season thinking it was somebody else and it was me, and I let you."`,
   (t, v, p) => `"I wrote your name. I'm not going to sit here on live television and let you keep being wrong about it."`,
   (t, v, p) => `"Yeah. That one was mine." ${t} does not look away while ${p.sub} says it, which is worth something and not very much.`,
-  (t, v, p) => `"You hugged me on the way out," ${t} says. "I've thought about that hug a lot."`,
 ];
+// Only when that vote actually sent them out of the door — a flip that did
+// not evict anybody has no "way out" to hug on.
+const CONFESSION_EVICTED = (t, v, p) => `"You hugged me on the way out," ${t} says. "I've thought about that hug a lot."`;
 
 const REACTIONS = {
   juror: [
@@ -830,7 +901,7 @@ const REACTIONS = {
     (v, t, p) => `${v} says nothing at all. Everybody on that bench watches ${p.obj} decide what it is worth.`,
   ],
   prejury: [
-    (v, t, p) => `${v} throws both hands up. "I KNEW it. I said it in the jury house and nobody believed me — I was gone by then, I said it to a wall."`,
+    (v, t, p) => `${v} throws both hands up. "I KNEW it. I said it the night I left and nobody believed me."`,
     (v, t, p) => `"So all that," ${v} says slowly, "the whole speech about how it wasn't you. That was a performance."`,
     (v, t, p) => `${v} stands up, thinks better of it, and sits down again, which the audience enjoys enormously.`,
     (v, t, p) => `"I don't get a vote," ${v} says. "I want everybody to notice how much I wish I did."`,
@@ -838,11 +909,12 @@ const REACTIONS = {
 };
 
 const REPAIRS = [
-  (r, w, t) => `${r} turns to ${w}. "I have been horrible to you for two months about something you didn't do."`,
+  (r, w, t) => `${r} turns to ${w}. "I have been horrible to you ever since, about something you didn't do."`,
   (r, w, t) => `"${w}. I'm sorry." ${r} means it, and it is the first time all night anybody has said a sentence that short.`,
-  (r, w, t) => `${r} spent a season certain it was ${w}. It was ${t}. The apology is public and it costs ${r} something to make.`,
-  (r, w, t) => `"I told the whole house you flipped on me," ${r} says to ${w}. "You didn't. ${t} did, and ${t} let me say it."`,
+  (r, w, t) => `${r} spent the season certain it was ${w}. It was ${t}. The apology is public and it costs ${r} something to make.`,
 ];
+// Only for the person the vote was actually against.
+const REPAIR_OWN = (r, w, t) => `"I told the whole house you flipped on me," ${r} says to ${w}. "You didn't. ${t} did, and ${t} let me say it."`;
 
 const CLASHES = [
   (a, b) => `${a} and ${b} start talking at the same time and neither of them stops, and for about fifteen seconds nobody on that stage can be heard at all.`,
@@ -1018,13 +1090,15 @@ export function runReunion({ finalTwo = [], jury = [], prejury = [], week = 0, r
   const reveals = [...hidden].sort((a, b) => drama(b) - drama(a)).slice(0, 3);
 
   const exposed = new Set();
+  const repaired = new Set();
   for (const inc of reveals) {
     const { voter: traitor, victim } = inc;
     const tp = pronouns(traitor);
     const vp = pronouns(victim);
+    const wentOut = weeks().some(w => w?.num === inc.num && w?.evicted === victim);
     segments.push({
       kind: 'reveal', speaker: traitor, players: [traitor, victim], week: inc.num,
-      text: `${say(TAPE_INTROS, victim, inc.num || week)} ${say(CONFESSIONS, traitor, victim, tp)}`,
+      text: `${say(TAPE_INTROS, victim, inc.num || week)} ${say(wentOut ? [...CONFESSIONS, CONFESSION_EVICTED] : CONFESSIONS, traitor, victim, tp)}`,
       badgeText: 'THE VOTE THEY NEVER SAW', badgeClass: 'red',
     });
 
@@ -1051,11 +1125,15 @@ export function runReunion({ finalTwo = [], jury = [], prejury = [], week = 0, r
 
     // ── and the person who wore it ──
     const mis = inc.misattribution;
-    if (mis?.reactor && mis?.wrongSuspect && onStage.includes(mis.reactor)) {
+    // One apology per person. Three reveals could each carry the same reactor,
+    // and the stage heard Laurie blame Bruno, then Sanders, then Spud, for
+    // three different votes, as three separate "I got it wrong" moments.
+    if (mis?.reactor && mis?.wrongSuspect && onStage.includes(mis.reactor) && !repaired.has(mis.reactor)) {
+      repaired.add(mis.reactor);
       try { addBond(mis.reactor, mis.wrongSuspect, 2.5); } catch { /* the apology still happened */ }
       segments.push({
         kind: 'repair', speaker: mis.reactor, players: [mis.reactor, mis.wrongSuspect, traitor],
-        text: say(REPAIRS, mis.reactor, mis.wrongSuspect, traitor),
+        text: say(mis.reactor === victim ? [...REPAIRS, REPAIR_OWN] : REPAIRS, mis.reactor, mis.wrongSuspect, traitor),
         badgeText: 'BLAMED THE WRONG PERSON', badgeClass: 'blue',
       });
       // The wrongly-blamed juror was voting against somebody for a season on

@@ -1314,7 +1314,8 @@
     .bbgz-hed      { font-size:31px; line-height:1.06; font-weight:700; margin:0 0 8px;
                      letter-spacing:-.4px; color:#12100e; }
     .bbgz-standfirst{ font-size:14px; line-height:1.5; margin:0; color:#3a332a; }
-    .bbgz-standfirst::first-letter { font-size:31px; float:left; line-height:.86;
+    .bbgz-standfirst.no-drop::first-letter { font-size:inherit; float:none; line-height:inherit; margin:0; padding:0; font-weight:inherit; }
+    .bbgz-standfirst:not(.no-drop)::first-letter { font-size:31px; float:left; line-height:.86;
                      padding:2px 6px 0 0; font-weight:700; color:#12100e; }
 
     /* Three columns of newsprint, with the hairline rules between them. */

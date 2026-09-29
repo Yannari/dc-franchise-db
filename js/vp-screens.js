@@ -34,7 +34,7 @@ import { rpBuildDragSummary } from './vp-dr/summary.js';
 import { dragScreens } from './vp-dr/screens.js';
 import { perfectMatchVpScreens } from './vp-pm/screens.js';
 import { momentTitle as pmMomentTitle } from './pm/transcript.js';
-import { DRAG_FORMAT } from './shows.js';
+import { DRAG_FORMAT, HOSTS_BY_FORMAT } from './shows.js';
 import { rpBuildBBCarePackagePlay } from './vp-bb-twists.js';
 import { rpBuildBBCarePackage } from './vp-bb-care-package.js';
 import { rpBuildBBCoinOfDestiny } from './vp-bb-coin.js';
@@ -22855,6 +22855,16 @@ export function rpBuildBBVotingPlans(ep) {
  * and because the plea is resolved mechanically now, both surfaces read the
  * same `ep.finalPleas` record and can never disagree about what was said.
  */
+/** The house's host — never Total Drama's default. Mirrors bbHostName(). */
+function _bbHost() {
+  const list = HOSTS_BY_FORMAT['big-brother'] || [];
+  const chosen = typeof seasonConfig !== 'undefined' ? seasonConfig.host : null;
+  const elsewhere = Object.entries(HOSTS_BY_FORMAT)
+    .some(([fmt, hosts]) => fmt !== 'big-brother' && (hosts || []).some(h => h.value === chosen));
+  if (chosen && (list.some(h => h.value === chosen) || !elsewhere)) return chosen;
+  return list[0]?.value || 'Valeria';
+}
+
 export function _bbFinalPleaSpeech(ep, name) {
   const act = (ep.acts || []).find(a => a.type === 'eviction');
   const ballots = act?.ballots || [];
@@ -22942,7 +22952,16 @@ export function _bbFinalPleaSpeech(ep, name) {
         `You do not owe the Head of Household a successful week.`, `Make this ballot serve your game, not somebody else's résumé.`,
       ],
     };
-    const speech = (argumentsPool, ...salt) => `“${vvar(openings[voice], name, voice, ...salt, 'open')} ${vvar(argumentsPool, name, voice, ...salt, 'case')} ${vvar(closings[voice], name, voice, ...salt, 'close')}”`;
+    // The bluff the resolver rolled, said out loud. Voters were "catching" a
+    // claim the speech never made, so the reader was told half the room did
+    // not believe a sentence nobody had heard.
+    const bluffed = (record?.factsUsed || []).some(f => f.bluff);
+    const bluffLine = bluffed ? ' ' + vvar([
+      `I have done the count, and the votes to keep me are already there.`,
+      `I know where the votes are. They are with me.`,
+      `The numbers to keep me are already there; I am only asking you not to be the one who was not part of it.`,
+    ], name, vkey, 'bluff') : '';
+    const speech = (argumentsPool, ...salt) => `“${vvar(openings[voice], name, voice, ...salt, 'open')} ${vvar(argumentsPool, name, voice, ...salt, 'case')}${bluffLine} ${vvar(closings[voice], name, voice, ...salt, 'close')}”`;
 
     if (argType === 'showmance' && partnerName) return speech([
       `${partnerName}, everybody already sees us as a pair. Splitting us up does not erase that target; it leaves you carrying it alone.`,
@@ -22964,6 +22983,10 @@ export function _bbFinalPleaSpeech(ep, name) {
       `If I leave from the pawn seat, the lesson is that nobody's word around a nomination means anything.`,
       `The plan did not fail because of me. Do not make me pay because the people running it lost their nerve.`,
     ], vkey, 'pawn');
+    // Nominees always play for the veto, so "kept away from the veto" is only
+    // sayable by somebody who went up AFTER it — the replacement nominee.
+    const playedVeto = (ep.acts || []).some(a => a.type === 'veto' && (a.participants || []).includes(name));
+    const notPlayed = line => !(playedVeto && /kept away from the veto/.test(line));
     if (argType === 'target-warning' || argType === 'backdoor-warning') return speech([
       `I know I am the target. That does not mean I am your target, and the person who planned this week cannot cast a vote tonight.`,
       `This entire week was built to remove me. Before you finish that plan, ask whether it improves your position or only the Head of Household's.`,
@@ -22975,7 +22998,7 @@ export function _bbFinalPleaSpeech(ep, name) {
       `Keeping me leaves a target in front of you and puts a vote beside you. Evicting me gives both advantages to somebody else.`,
       `Do not hand somebody a completed move simply because they spent the week calling it the house's decision.`,
       `The easiest explanation is that I am dangerous. The more important question is who becomes safest when I walk out.`,
-    ], vkey, argType);
+    ].filter(notPlayed), vkey, argType);
     if (argType === 'competition-shield') return speech([
       `Yes, I can win competitions. If you keep me, those wins can protect people in this room instead of the people already controlling the vote.`,
       `Everybody sees me as a threat, which means everybody knows I can be nominated again. A quieter threat will not give you that same warning.`,
@@ -23707,7 +23730,7 @@ export function rpBuildBBEviction(ep) {
   const state = _tvState[stateKey];
   // Valeria, unless the season says otherwise. NOT seasonConfig.host's Total
   // Drama default, which is the wrong show. Follows quick-setup's BB list head.
-  const host = (typeof seasonConfig !== 'undefined' && seasonConfig.host) || 'Valeria';
+  const host = _bbHost();
 
   const pv = name => { try { return pronouns(name); } catch { return { sub: 'they', obj: 'them', posAdj: 'their', Sub: 'They' }; } };
   const vvar = (list, ...salt) => {
@@ -26252,7 +26275,7 @@ function _bbStories(ep, stillIn) {
         ? `A ${typeof ordinal === 'function' ? ordinal(prior + 1) : `${prior + 1}th`} reign. The house has now watched ${ep.hoh} win when it mattered more than once, and that is a number people count.`
         : firstOfTheSeason
           ? `The first week of real power${finalNoms.length ? `, and ${finalNoms.join(' and ')} pay for it` : ''}.`
-          : `${ep.num - 1} weeks with no say in anything, and now the only say that matters${finalNoms.length ? ` — ${finalNoms.join(' and ')} pay for it` : ''}.`,
+          : `${ep.num - 1 === 1 ? 'A week' : `${ep.num - 1} weeks`} with no say in anything, and now the only say that matters${finalNoms.length ? ` — ${finalNoms.join(' and ')} pay for it` : ''}.`,
       [ep.hoh]);
   }
 
@@ -26338,7 +26361,12 @@ function _bbStories(ep, stillIn) {
   if (feud) {
     add(64, 'feud', 'FEUD',
       `${(feud.players || [])[0] || 'The house'} loses patience`,
-      String(feud.text || '').split('. ')[0] + '.',
+      (() => {
+        // The first sentence, closed once. A sentence that already ends on
+        // punctuation or a closing quote got a second full stop: `up.”.`
+        const first = String(feud.text || '').split('. ')[0].trim();
+        return /[.!?"”’)]$/.test(first) ? first : `${first}.`;
+      })(),
       feud.players);
   }
 
@@ -26360,9 +26388,13 @@ function _bbStories(ep, stillIn) {
     if (/%|\d\/\d|confidence|proxy/i.test(text)) return '';
     return text;
   };
-  (ep.planChanges || []).slice(-3).forEach(c => {
+  // One brief per person: three lines of "Felipe changed his mind" in a row
+  // is a column with one subject.
+  const briefed = new Set();
+  (ep.planChanges || []).slice().reverse().forEach(c => {
+    if (briefed.size >= 3 || briefed.has(c.owner)) return;
     const why = readable(c.reason);
-    if (has(c.owner) && why) briefs.push(`${c.owner} changed ${pr(c.owner).posAdj} mind — ${why}.`);
+    if (has(c.owner) && why) { briefed.add(c.owner); briefs.push(`${c.owner} changed ${pr(c.owner).posAdj} mind — ${why}.`); }
   });
   if (ep.safetyWinner) briefs.push(`${ep.safetyWinner} won safety and never had to worry.`);
 
@@ -26396,7 +26428,7 @@ function _bbGazette(ep, stillIn, label) {
       <div class="bbgz-lead-body">
         <span class="bbgz-kicker">${_bbEsc(lead.kicker)}</span>
         <h2 class="bbgz-hed">${_bbEsc(lead.headline)}</h2>
-        <p class="bbgz-standfirst">${lead.standfirst}</p>
+        <p class="bbgz-standfirst${/^\s*\d/.test(String(lead.standfirst || '').replace(/<[^>]*>/g, '')) ? ' no-drop' : ''}">${lead.standfirst}</p>
       </div>
       ${lead.faces.length ? `<div class="bbgz-cuts">${faces(lead.faces, true)}</div>` : ''}
     </article>
@@ -26897,7 +26929,18 @@ export function rpBuildBBOverview(ep, phase = 'closing') {
   }
 
   let blocRows = [];
-  const _boardRows = (ep?.allianceBoard || []).filter(b =>
+  // The OPENING picture is the board as the house walked in. `allianceBoard`
+  // is the week's END, so the Before screen of week one listed an alliance
+  // formed on Tuesday — with the member recruited on Thursday already in it.
+  // The opening snapshot carries the board as it stood; the end-of-week
+  // record only supplies what the snapshot is too light to hold (share, power).
+  const _openingHolds = opening && Array.isArray(state?.holds) ? state.holds : null;
+  const _board = _openingHolds
+    ? _openingHolds.map(h => ({ ...((ep?.allianceBoard || []).find(b => b.name === h.name) || {}),
+      name: h.name, members: h.members || [], weakest: h.weakest || null,
+      share: stillIn.length ? (h.members || []).length / stillIn.length : 0 }))
+    : (ep?.allianceBoard || []);
+  const _boardRows = _board.filter(b =>
     (b.members || []).every(m => stillIn.includes(typeof m === 'string' ? m : m.name)));
   if (_boardRows.length) {
     blocRows = _boardRows.map(b => ({
@@ -26906,7 +26949,9 @@ export function rpBuildBBOverview(ep, phase = 'closing') {
       share: b.share || 0, power: b.power || 0, seen: b.seen,
       holds: b.members || [], weakest: b.weakest || null,
     }));
-  } else {
+  } else if (!_openingHolds) {
+    // Old records only. With an opening snapshot, an empty board IS the answer
+    // — the live store is the whole season and would spoil it.
     try {
       blocRows = (typeof listBlocs === 'function' ? listBlocs() : [])
         .filter(b => (b.members || []).every(m => stillIn.includes(m)));
@@ -28579,7 +28624,7 @@ export function rpBuildBBFinalCut(ep) {
   const hoh = act.finalHoh;
   const p = pronouns(hoh);
   const pv = name => { try { return pronouns(name); } catch { return { sub: 'they', obj: 'them', posAdj: 'their', Sub: 'They' }; } };
-  const host = (typeof seasonConfig !== 'undefined' && seasonConfig.host) || 'Valeria';
+  const host = _bbHost();
   // The two the decision is between, in the order they were sitting — never
   // kept-then-cut, which would answer the question in the seating.
   const pair = [act.kept, act.cut].filter(Boolean).sort();

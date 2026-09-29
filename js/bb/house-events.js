@@ -283,9 +283,34 @@ function _worldMoved(before) {
  * makes this an optimisation rather than a correctness requirement — but going
  * around it silently costs the whole season a rebuild per call.
  */
+// ── How often each event has already aired this week ──
+//
+// The kernel caps an event at two uses per act, and a week is five or six
+// acts, so nothing stopped the same card — same pair, same words — airing in
+// the HOH stretch, again after nominations and again during the campaign.
+// Measured on a played season: 44 lines printed two to four times inside one
+// week. Kept off `gs` (it is derived) and keyed on the history array itself,
+// so a new season never inherits the last one's counts.
+let _aired = null;
+function _airedCounts(week) {
+  const history = ensureState().eventHistory;
+  if (!_aired || _aired.history !== history || _aired.week !== week) {
+    const count = w => {
+      const c = {};
+      for (const e of history) if (e && e.week === w && e.eventId) c[e.eventId] = (c[e.eventId] || 0) + 1;
+      return c;
+    };
+    _aired = { history, week, now: count(week), last: count(week - 1) };
+  }
+  return _aired;
+}
+
 function recordBeat(entry) {
   const state = ensureState();
   state.eventHistory.push(entry);
+  if (_aired && _aired.history === state.eventHistory && _aired.week === entry.week && entry.eventId) {
+    _aired.now[entry.eventId] = (_aired.now[entry.eventId] || 0) + 1;
+  }
   if (state._beatCounts && state._beatCountsAt === state.eventHistory.length - 1) {
     for (const name of entry.players || []) {
       state._beatCounts[name] = (state._beatCounts[name] || 0) + 1;
@@ -454,7 +479,16 @@ export function scheduleHouseBeats(events, house, ctx, options = {}) {
       // say. So it multiplies what is already here — arguments and confessions
       // up, careful vote-counting down — and adds only the few beats that need
       // the drink to make sense.
-      return Math.max(0, Number(event.weight(house, beatCtx)) || 0) * _nightFactor(beatCtx, event);
+      // Already aired this week: each airing cuts the odds hard, and last
+      // week's airing a little. Weight, not a ban — a feud is allowed to
+      // flare twice; it is not allowed to be the same card four times.
+      const aired = _airedCounts(ctx.week?.num || 0);
+      // Some things only happen once a week however strong the pull: the HOH
+      // letter, the pawn accepting the chair, a second final two with the same
+      // person.
+      if (event.oncePerWeek && aired.now[event.id]) return 0;
+      const repeat = Math.pow(0.3, aired.now[event.id] || 0) * (aired.last[event.id] ? 0.7 : 1);
+      return Math.max(0, Number(event.weight(house, beatCtx)) || 0) * _nightFactor(beatCtx, event) * repeat;
     },
     fireEvent: (event, _context, meta, rngArg) => {
       const beatCtx = _beatCtxFor(ctx, meta.index);

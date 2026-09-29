@@ -27,7 +27,7 @@ import { simulateJuryVote } from './finale.js';
 import { runBBCompetition } from './bb/comps.js';
 import { BB_COMPETITIONS } from './bb-comps/index.js';
 import { generateBBFinaleHouse } from './bb/finale-house.js';
-import { generateBBEvictionInterview } from './bb-aftermath.js';
+import { generateBBEvictionInterview, bbHostName } from './bb-aftermath.js';
 
 // ── the last pitch ──────────────────────────────────────────────────────
 //
@@ -170,7 +170,7 @@ function finalThreeInterview(base, { cut, finalHoh, kept, betrayal, honoured }, 
   const vetos = Number(stats.vetoWins) || 0;
   const blocks = Number(stats.timesOnTheBlock ?? stats.timesNominated) || 0;
   const wouldTake = bondToHoh >= bondToKept ? finalHoh : kept;
-  const host = base.host || seasonConfig.host || 'Valeria';
+  const host = base.host || bbHostName();
 
   const cutAnswer = betrayal
     ? finalePick(rng, [
@@ -233,9 +233,9 @@ function finalThreeInterview(base, { cut, finalHoh, kept, betrayal, honoured }, 
       { q: `When the anger wears off, what are you proudest of?`, a: proud },
     ],
     goodbyes: [
-      { name: finalHoh, tone: betrayal ? 'confession' : 'unapologetic', against: true, text: hohGoodbye,
+      { name: finalHoh, tone: betrayal ? 'confession' : 'unapologetic', against: true, role: 'final-hoh', text: hohGoodbye,
         react: betrayal ? `${cut} laughs once at the phrase “chose the money.” There is no humour in it.` : `${cut} nods. It is the answer ${cp.sub} expected and still did not want.` },
-      { name: kept, tone: 'warm', against: false, text: keptGoodbye,
+      { name: kept, tone: 'warm', against: false, role: 'finalist', text: keptGoodbye,
         react: `${cut} looks down, smiles despite ${cp.obj}self, and tells the dark monitor, "You had better make it worth it."` },
     ],
     parting: finalePick(rng, [

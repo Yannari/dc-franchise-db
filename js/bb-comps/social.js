@@ -235,7 +235,9 @@ const ZING_MATERIAL = [
   zing('game', f => f.blocked === 0 && f.weeksIn >= 5 && f.wins === 0,
     f => `${f.name}, no wins and no nominations. You are not under the radar; you are part of the carpet. ZING!`,
     f => `${f.name} has avoided both power and danger for ${f.weeksIn} weeks. Even the cameras are asking for a name tag. ZING!`),
-  zing('game', f => f.hohWeeks.length && f.evictedByThem.length,
+  // Commentary needs a run to be a joke about: a week-two HOH "mentioning it
+  // so often" has had seven days to mention it.
+  zing('game', f => f.hohWeeks.length && f.evictedByThem.length && f.weeksIn - f.hohWeeks[0] >= 2,
     f => `${f.name}, your big HOH move was evicting ${f.evictedByThem[0]}. You mention it so often I assumed there was a sequel. ZING!`,
     f => `${f.name} sent ${f.evictedByThem[0]} home in week ${f.hohWeeks[0]}. One move, ${f.weeksIn} weeks of director commentary. ZING!`),
   zing('game', f => f.votes >= 4 && f.againstTheHouse === 0,

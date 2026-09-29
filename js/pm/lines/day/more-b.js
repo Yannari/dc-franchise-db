@@ -72,7 +72,7 @@ export const MORE_B = {
     { id: 'dc2.18', turns: [['a', "Sometimes I think you're here for the experience, not for me."], ['b', "That's not fair."], ['a', "Then show me it's not true."]] },
     { id: 'dc2.19', turns: [['a', "What if it doesn't work outside?"], ['b', "Then at least we tried."], ['a', "That's not very romantic."], ['b', "It's honest."]] },
     { id: 'dc2.20', turns: [['a', "I don't want to get hurt again."], ['b', "I don't want to be the one who does it."]] },
-    { id: 'dc2.21', when: { late: true }, turns: [['a', "Do you remember how nervous we were at the start?"], ['b', "I'm still nervous. Just about different things."]] },
+    { id: 'dc2.21', when: { late: true, sameStart: true }, turns: [['a', "Do you remember how nervous we were when we walked in?"], ['b', "I'm still nervous. Just about different things."]] },
     { id: 'dc2.22', when: { late: true }, turns: [['a', "Whatever the public decide, I've got what I came for."], ['b', "What's that?"], ['a', "You."]] },
     { id: 'dc2.23', when: { mood: 'secure' }, turns: [['a', "I don't worry about us any more."], ['b', "Good. Neither do I."]] },
     { id: 'dc2.24', when: { feels: 'little' }, turns: [['a', "Do you see this going anywhere?"], ['b', "I don't know yet."], ['a', "That's alright. I just needed to ask."]] },
@@ -103,7 +103,7 @@ export const MORE_B = {
   gossip: [
     { id: 'gs2.01', when: { knows: true }, turns: [['a', "I'm only telling you because I'd want to know."], ['b', "What happened?"], ['a', "{c} was by the pool with someone for a long time."]] },
     { id: 'gs2.02', when: { knows: true }, turns: [['a', "I don't want to cause drama. But I saw {c} in the hideaway."], ['b', "With who?"]], beat: "{a} doesn't answer straight away." },
-    { id: 'gs2.03', when: { knows: true }, turns: [['a', "Can I have a word? It's about {c}."], ['b', "Just tell me."], ['a', "It wasn't just a chat last night."]] },
+    { id: 'gs2.03', when: { knows: true }, turns: [['a', "Can I have a word? It's about {c}."], ['b', "Just tell me."], ['a', "It wasn't just a chat."]] },
     { id: 'gs2.04', when: { knows: true }, turns: [['a', "You're one of my best friends in here. So I have to say it."], ['b', "Say what?"], ['a', "{c} kissed someone."]] },
     { id: 'gs2.05', when: { knows: true }, turns: [['a', "I've been going back and forth about telling you."], ['b', "Is this about {c}?"], ['a', "Yeah."]] },
     { id: 'gs2.06', when: { knows: true }, turns: [['a', "I saw something I wasn't meant to see."], ['b', "Please don't say it's {c}."]], beat: '{a} says nothing.' },

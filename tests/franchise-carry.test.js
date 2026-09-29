@@ -14,6 +14,9 @@ import { setFranchiseLedger, seasonKey } from '../js/franchise-meta.js';
 import { carriedFor } from '../js/franchise-carry.js';
 import { playTraitorsSeason } from '../js/tr/headless.js';
 import { trLedgerRecord } from '../js/tr/ledger-record.js';
+import { playDragSeason } from '../js/dr/season.js';
+import { drLedgerRecord } from '../js/dr/ledger-record.js';
+import { dragFamilies } from '../js/dr/export.js';
 import roster from '../franchise_roster.json';
 
 const mk = over => ({ placement: 3, winner: false, finalist: false, episodesLasted: 10,
@@ -80,5 +83,25 @@ describe('The Traitors reads and writes the franchise', () => {
     expect(Object.values(rec.players).filter(p => p.placement === 1).length).toBeGreaterThan(0);
     for (const [n, p] of Object.entries(rec.players)) for (const v of p.betrayed) expect(rec.players[v].betrayedBy).toContain(n);
     expect(Object.values(rec.players).some(p => p.allies.length || p.rivals.length)).toBe(true);
+  });
+});
+
+describe('Drag Race writes the franchise', () => {
+  const STATS = ['physical', 'endurance', 'mental', 'social', 'strategic', 'loyalty', 'boldness', 'intuition', 'temperament'];
+  const queens = Array.from({ length: 12 }, (_, i) => ({
+    name: `Q${i + 1}`, slug: `q${i + 1}`, gender: 'm', sexuality: 'gay', archetype: 'hero', age: 25,
+    stats: Object.fromEntries(STATS.map((k, j) => [k, 1 + ((i * 7 + j * 3) % 10)])),
+    drag: { acting: 5, comedy: 6, dance: 4, design: 7, runway: 5, lipsync: 6, singing: 3 },
+  }));
+  it('a finished season leaves a record in the shape every show reads, family as allies', () => {
+    const OUT = playDragSeason({ cast: queens, seed: 3 });
+    const rec = drLedgerRecord(OUT.rows, { cast: queens.map(q => q.name) });
+    expect(rec.format).toBe('drag-race');
+    for (const q of queens) expect(rec.players[q.name], q.name).toBeTruthy();
+    expect(Object.values(rec.players).filter(p => p.winner).length).toBe(1);
+    for (const f of dragFamilies(OUT.rows)) {
+      const [x, ...rest] = f.members.filter(m => rec.players[m]);
+      for (const y of rest) expect(rec.players[x].allies, `${x} and ${y}, ${f.name}`).toContain(y);
+    }
   });
 });

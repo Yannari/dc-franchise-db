@@ -32,16 +32,16 @@
       <rect x="0" y="24" width="32" height="1.5" fill="#b3263a" opacity=".6"/>
       <rect x="24" y="0" width="1.5" height="32" fill="#b3263a" opacity=".5"/>
     </pattern>
-    <pattern id="ashlar" width="40" height="18" patternUnits="userSpaceOnUse">
-      <rect width="40" height="18" fill="#7a3a2c"/>
-      <rect x="0" y="0" width="40" height="1.2" fill="#3a1812" opacity=".7"/>
-      <rect x="0" y="9" width="40" height="1.2" fill="#3a1812" opacity=".7"/>
-      <rect x="19" y="0" width="1.2" height="9" fill="#3a1812" opacity=".6"/>
-      <rect x="0" y="9" width="1.2" height="9" fill="#3a1812" opacity=".6"/>
-      <rect x="4" y="2" width="12" height="5" fill="#8e4634" opacity=".35"/>
-      <rect x="24" y="11" width="10" height="5" fill="#6a3024" opacity=".35"/>
+    <pattern id="ashlar" width="22" height="10" patternUnits="userSpaceOnUse" patternTransform="scale(.62)">
+      <rect width="22" height="10" fill="#7a3a2c"/>
+      <rect x="0" y="0" width="22" height=".6" fill="#3a1812" opacity=".6"/>
+      <rect x="0" y="5" width="22" height=".6" fill="#3a1812" opacity=".6"/>
+      <rect x="10.5" y="0" width=".6" height="5" fill="#3a1812" opacity=".5"/>
+      <rect x="0" y="5" width=".6" height="5" fill="#3a1812" opacity=".5"/>
+      <rect x="2" y="1" width="7" height="3" fill="#8e4634" opacity=".3"/>
+      <rect x="13" y="6" width="6" height="3" fill="#6a3024" opacity=".3"/>
     </pattern>
-    <pattern id="ashlarIn" width="18" height="8" patternUnits="userSpaceOnUse">
+    <pattern id="ashlarIn" width="18" height="8" patternUnits="userSpaceOnUse" patternTransform="scale(.4)">
       <rect width="18" height="8" fill="#2a1a16"/>
       <path d="M0 0H18M0 4H18M9 0V4M0 4V8" stroke="#140b09" stroke-width=".7"/>
     </pattern>
@@ -313,9 +313,24 @@
       // rim light along the roofs and tower edges
       s += `<path d="M186 322 L300 210 L604 210 L704 322 M916 322 L1016 210 L1310 210 L1424 322" fill="none" stroke="${rim}" stroke-width="2"/>`
         + `<path d="M690 150 V795" stroke="${rim}" stroke-width="3"/><path d="M186 320 V795" stroke="${rim}" stroke-width="3"/>`;
-      // terrace and gravel
-      s += `<rect x="140" y="793" width="1330" height="10" fill="#4a2a20"/><rect x="0" y="802" width="1600" height="98" fill="${night ? '#0b0e14' : '#2a2a24'}"/>`
-        + `<path d="M0 820 H1600" stroke="${night ? '#141a24' : '#3a3a30'}" stroke-width="3"/>`;
+      // the grounds: a terrace with a balustrade, the gravel sweep, the lawn
+      const lawn = night ? '#0c1410' : '#2e3a24', lawn2 = night ? '#09100c' : '#243020';
+      const gravel = night ? '#1a1a1e' : '#6a5e50';
+      s += `<rect x="0" y="802" width="1600" height="98" fill="${lawn}"/>`
+        + `<path d="M0 860 C300 840 500 870 800 850 C1100 830 1300 866 1600 846 V900 H0Z" fill="${lawn2}"/>`
+        + `<path d="M640 802 C600 840 520 870 380 900 H1240 C1100 870 1020 840 980 802Z" fill="${gravel}" opacity=".85"/>`
+        + `<path d="M640 802 C600 840 520 870 380 900" stroke="#00000033" stroke-width="2" fill="none"/><path d="M980 802 C1020 840 1100 870 1240 900" stroke="#00000033" stroke-width="2" fill="none"/>`;
+      // terrace wall and balustrade either side of the entrance
+      [[150, 690], [930, 1460]].forEach(([x0, x1]) => {
+        s += `<rect x="${x0}" y="792" width="${x1 - x0}" height="14" fill="url(#ashlar)"/><rect x="${x0}" y="778" width="${x1 - x0}" height="4" fill="#8e4634"/>`;
+        for (let x = x0 + 6; x < x1 - 4; x += 12) s += `<path d="M${x} 792 v-10 q3 -3 0 -6 q-3 3 0 6" stroke="#6a3024" stroke-width="3" fill="none"/>`;
+      });
+      // the porte-cochère at the foot of the tower, lamp-lit
+      s += `<path d="M734 802 V735 a76 56 0 0 1 152 0 V802Z" fill="url(#ashlar)"/><path d="M758 802 V742 a52 40 0 0 1 104 0 V802Z" fill="#140a07"/>`
+        + `<circle cx="810" cy="770" r="60" fill="url(#lampGlow)" opacity="${night ? .9 : .45}"/>`
+        + `<rect x="744" y="752" width="6" height="12" fill="#ffcf7a"/><rect x="870" y="752" width="6" height="12" fill="#ffcf7a"/>`;
+      // clipped hedges along the terrace
+      for (let x = 160; x < 1460; x += 58) { if (x > 700 && x < 930) continue; s += `<ellipse cx="${x}" cy="812" rx="16" ry="9" fill="${night ? '#08100a' : '#1c2a18'}"/>`; }
       return s;
     },
     // ── the landscape: sky, cloud, hills, pines, a loch ──────────────────

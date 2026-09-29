@@ -15,7 +15,11 @@ built on a ballot does not fail on a show without one; it returns empty and
 flattens silently.
 
 **Before adding a show, changing a format, or writing any sentence a screen
-generates about a season, read `docs/ADDING-A-SHOW.md`.** It lists every file
+generates about a season, read `docs/ADDING-A-SHOW.md`.** For a new show,
+§8.3 (an engine that plays in its own `gs` must read and write the franchise
+ledger itself — `js/franchise-carry.js`, `recordBuiltSeason`) and §16 (the
+fifth show: the build order that worked, the transcript as the main tool, and
+the writing bug classes to check in every new pool) come first. It lists every file
 that branches on show, the eight that still hold their own copy of the show
 list, and §13 has the commands to re-derive all of it when this drifts.
 

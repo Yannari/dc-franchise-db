@@ -837,6 +837,48 @@ of this for free and stores nothing extra.
 4. If the show needs history the ledger cannot express, ADD IT TO THE LEDGER,
    or read the season document alongside `seededPairs`. Do not start a
    parallel table of constants.
+5. **Write your season back.** Reading is half of it. `deriveSeasonRecord`
+   reads Total Drama's and Big Brother's state (ballots, `gs.namedAlliances`,
+   `gs.showmances`), so for any other engine it records nothing useful — and
+   until the fifth show, Perfect Match, The Traitors and Drag Race wrote
+   NOTHING: an islander's ex, a queen's drag sister and a castle's murdered
+   friend were strangers the next time they were cast together. Build your
+   record in `deriveSeasonRecord`'s shape (`allies`, `rivals`, `betrayed` /
+   `betrayedBy`, `showmances: [{ partner, ended: 'intact'|'breakup' }]`,
+   placement) in a `js/<prefix>/ledger-record.js`, and hand it to
+   `recordBuiltSeason(rec, seasonNumber)` when the last episode airs, then
+   `window.persistFranchiseLedger?.()`. The three existing ones are the
+   templates. `tests/franchise-carry.test.js` checks both directions.
+
+### 8.3 A show that plays in its own game state gets NONE of §8.2 for free
+
+`initGameState` (`js/savestate.js`) seeds `gs.bonds` from the ledger AND from
+the life log (`js/life-cast.js`: couples still together, exes since) — for any
+season that plays on the run tab's own `gs`. Total Drama, Big Brother and Drag
+Race do. **Perfect Match and The Traitors open their season function with
+`setGs({ bonds: {} ... })`**, so every seeded bond was thrown away before
+episode one and neither show read a single past, while both "had" the feature.
+
+If your engine does the same (it is the easy way to make a season headless and
+replayable), then:
+
+- **Read** through `js/franchise-carry.js` `carriedFor(people, cfg)`: the ledger
+  and the life log in one place, life outranking the ledger on a couple (a pair
+  who finished a villa together and split outside walk in as exes). It returns
+  `kin` (relations: exes, a couple at their life stage, old friends), `bonds`
+  (grudges, with which side resents) and `sums` (one clamped bond per pair, for
+  an engine with no relation layer). Perfect Match folds `kin` into its own
+  relations layer behind anything the author wrote (`pm/kin.js loadKin`); The
+  Traitors lets `sums` replace its random opening bonds for those pairs.
+- **Build your ledger record while the inner `gs` is live** — inside the run
+  module, after the season function returns and BEFORE you restore the outer
+  `gs` — because your bonds live on the inner one. Store the record (it is a
+  small per-player summary, not engine state) and write it at the last episode.
+- **Copy back** what the rest of the site reads (`bonds`, `popularity`,
+  `relationshipDimensions`) onto the outer `gs`, as `pm-run.js _commit` does.
+- `historyFromLedger: true` in the registry, if you cast from the whole
+  franchise. Perfect Match has it: an islander who was somebody's ex on another
+  show walks into the villa as one.
 
 ---
 
@@ -2242,3 +2284,170 @@ was measuring the random stream.
    style here and a place on Total Drama; "competition" and "house" belong to
    other shows. The vocabulary guard caught all three, including once inside a
    comment explaining a previous fix.
+
+
+---
+
+## 16. What the fifth show actually found
+
+Perfect Match (Love Island) is the first show whose subject is RELATIONSHIPS
+rather than a game, and the first built plan by plan with a transcript you can
+read. Its spec and plans are in `docs/superpowers/specs/2026-09-22-perfect-match-design.md`
+and `docs/superpowers/plans/2026-09-2*-perfect-match-*`. What follows is what
+the next show should not have to discover again.
+
+### 16.1 The order that worked
+
+1. **Engine headless first, with its spec audit** (`npm run audit:pm-spec`: a
+   hundred seasons, every rate beside its chance line) — before a single screen.
+2. **The writing layer second, as its own plan.** Lines are SCRIPTS picked by
+   facts (`js/pm/script.js`), with their own rng stream so a line can never move
+   a result, and a repetition guard. Not templates filled with names.
+3. **A readable transcript tool** (`PM_SEED=n PM_CAST=24 npm run pm:transcript`
+   → `transcripts/pm-season-<seed>.txt`, gitignored). **This was the single most
+   productive tool on the show.** Every audit number was green while the
+   transcript showed a girl choosing in a boys' choice, a man walking out ten
+   minutes after reclaiming his partner, and the same scene played twice at
+   Movie Night. Read one full season, episode by episode, after every large
+   change. Nothing else finds the contradiction between two scenes.
+4. Run tab, then screens, then export — the site's other layers.
+
+### 16.2 A show that plays in its own game state
+
+See §8.3 — it is written up there because it applies to any engine. Short
+version: `setGs` at the top of your season function throws away the franchise's
+and the life layer's seeded bonds; read them through `js/franchise-carry.js`
+and write yours through `recordBuiltSeason`.
+
+### 16.3 The season's shape: breathing room, and constants that assume a length
+
+- **Check the real show's rhythm before fixing yours.** The villa ran six
+  dumping episodes in a row after Casa. The wiki (UK 9-12) has dumpings 3-8 days
+  apart, and the real show airs six episodes a week — the viewer sees days of
+  villa life between each. Any two dumping nights back to back now get a villa
+  day between them (`moment: 'villa'`, `schedule.js`).
+- **Adding episodes is §11.5 F in motion.** The six new villa days took walks
+  from 68 to 114 a hundred seasons and wore every line pool thinner, because
+  risks and draws were per EPISODE. Scale anything that is "per unit of time"
+  by the episode's days (`maybeWalk`'s `share`), and re-measure repetition.
+- **A calibration template pins the builder** (`SEASON_TEMPLATE`, held equal to
+  `buildSchedule(...)` by a test). When the shape changes on purpose, regenerate
+  the template from the builder — and expect every test that says "episode 5 is
+  the first vote" to break. Look slots up (`e.slot === 'vote1'`), never numbers.
+- **A three-couple final is a longer season, not the same one with a double
+  dumping.** An option that changes how many must go must change how many
+  nights there are to lose them on.
+- **The timeline must build the same schedule the season plays.** It read the
+  cast and forgot `finalCouples`; with a three-couple final the Season Timeline
+  showed a different season from the one that played.
+
+### 16.4 Writing: the bug classes reading found (check every new pool)
+
+Each of these shipped, was read in a transcript, and has a fact or a gate now.
+
+| class | example | the fix |
+|---|---|---|
+| **invented past** | "remember how nervous we were on the first day" between two who arrived ten days apart; "the dance you did last night"; "watching you for weeks" on day 5 | facts from the record: `known` (both two episodes in), `sameStart`, `weeks`, `comfortedYesterday`, `rowedBefore` — or rewrite into the present |
+| **engine outcome vs words** | a friendship scene the engine ended in friction, with a warm beach hut after it; "Tasha has taken Marcus for a chat" after Marcus said no | the ending is decided BEFORE the words (`events.js ENDINGS`), and is a fact the pools gate on (`friction`, `rebuffed`) |
+| **a fact that means something other than it reads** | `taken` is "has a partner who is NOT {b}" — cast the partner as {b} and a waiting islander at Casa read as single ("nobody is coming back for me") | cast only who is physically in the scene |
+| **casting the wrong confidant** | a crush confided to one's own partner; a friend cast from the other Casa villa; a bereaved islander comforting someone else | `friendOf` never picks the partner; `roomMates` not `state.villa` while split; nobody whose partner left tonight listens |
+| **the verdict overclaims** | "every islander who is still single has been dumped" over a single who stayed; "the only one still standing" with two standing | pass what the engine decided (`staying`, `of: 'some'|'all'`) |
+| **a rule the viewer is never told** | a girl picking in a boys' choice (new arrivals choose first — true, never said) | if the engine applies a rule, a scene says it (`recouple-first`) |
+| **a question nobody answers** | "can I ask your advice?" followed by "we should get ready" | an ending pool must not follow an open question; write the answer in |
+| **self-contradiction in an intro** | wanting "happy, loud, fun" and put off by "the loudest one at the table" | roll the ick filtered against the type (no re-roll: keep the draw order) |
+| **"them" for a known person** | "I think I'm starting to really like them" about a named partner | use the slot (`{pa}`) and gate `taken` |
+
+**Repetition is a function of volume, not only of pool size.** Measure, per
+scene kind: plays per season, distinct lines used, worst repeat of one line.
+On this show: a pool of ten carried six of one line because the guard only
+discounted a line's LAST use (it now halves per earlier use); a vote reason
+had three lines on nights with four voters; one pick-hut line served a whole
+six-pick ceremony; intros were unique per pair but not per season, so two
+islanders shared one self-description. And sometimes the fix is frequency:
+turn-downs were 7 of 90 scenes an episode, so their pool looped whatever its
+size — the cure was fewer pulls, each costing proportionally more with the
+public.
+
+**Your own guards catch your own lines.** The clever/quip guard, the regional
+word guard, the other-show vocabulary guard (`house` is Big Brother's) and the
+subject-pronoun guard all failed on lines written during these fixes. Run the
+line tests after every batch of new lines.
+
+### 16.5 Realism: look it up before you build it
+
+Every dumping mechanic that felt wrong in play was wrong against the wiki:
+a bombshell's steal leaves the partner single and VULNERABLE, not dumped (UK
+11 d22, UK 10 d39); the first public vote dumps islanders, never a couple;
+new arrivals choose first at a recoupling; couples-only week sends one couple
+a night. The user's standing instruction is to check the internet first.
+Sources that work: `loveisland.fandom.com/api.php?action=parse&page=Love%20Island%20(Season%20N)&prop=wikitext&format=json`
+(the page names are "Season N", not "series"), and Wikipedia's per-series
+coupling tables through a page fetch.
+
+### 16.6 A public ledger, and the label that quietly stopped being earned
+
+- Labels need a saturation brake at the top (the climb slows near 100) or every
+  finalist ends on Fan Favourite.
+- **A villain needs CONCENTRATED negatives.** Small costs spread across the
+  whole villa (a pull here, a gossip there) never add up on anybody. A pattern
+  rule — each bad week the public has seen makes the next weigh more — made the
+  label track repeat offenders.
+- **Removing an event source can silently kill a label.** Capping the day's
+  arguments at three (right for the show) took "a villain by episode 12" from
+  70% to 15%, because the rows were the only steady supply of bad weeks.
+  Nothing failed. Found by bisecting (§16.8).
+- **A label's name is a claim.** "Invisible" computed from approval meant
+  "neutral", so almost nobody was invisible; it now reads airtime (below the
+  villa's median, with no strong opinion).
+- The rule from §14.8 held: islander decisions never read public approval
+  (`tests/pm-ledger-readers.test.js`).
+
+### 16.7 Life after the show
+
+Couples who leave together are exported as `showmance` on the appearance, and
+the life resolver (`js/life-resolver.js`) takes it from there: 75% still
+together after the first off-season, splitting at 22% per off-season while
+dating and far less once settled, and being cast again (especially alone) the
+likeliest thing to end it. A couple that holds steady currently gets no news
+in 65-80% of off-seasons — a known gap, proposed but not built.
+
+### 16.8 Tools and operational traps
+
+- **Probes.** A throwaway `tests/zz-*-audit.test.js` run with the audit config
+  (`--config vitest.audit.config.js --reporter=verbose`) prints a measurement
+  without joining the suite. Delete it before committing.
+- **Bisect a regression with scratch worktrees.** `git worktree add --detach
+  <scratch>/wt-<sha> <sha>`, link `node_modules` into it (`mklink /J`), copy the
+  probe in, run several in parallel. **Remove the link before removing the
+  worktree** — removing a worktree whose `node_modules` is a junction can reach
+  through it.
+- **Noise.** 100 seasons move a rate by about ±2 points and a 60-season probe by
+  more; judge a small change at 300, or across several seeds.
+- **Another session may be working in the same tree.** Never `git stash` (it
+  takes their uncommitted work with it). If a file holds their edits and yours,
+  stage only your hunks: rebuild the file from `HEAD` plus your change in a
+  scratch copy, `git hash-object -w` it and `git update-index --cacheinfo`.
+  If the remote moved and the tree is dirty, merge and push from a temporary
+  worktree (`git worktree add --detach <tmp> origin/main`, merge your commit,
+  `git push origin HEAD:main`) — the local branch then fast-forwards later.
+- If `node_modules/.bin` is empty, `npx vitest` / `npm run` fail with "not
+  recognized"; `node node_modules/vitest/vitest.mjs run …` still works.
+- The user plays on GitHub Pages, not a local server: anything gitignored
+  (music, portraits) never reaches them.
+
+### 16.9 What the sixth show should do
+
+1. Answer §0, then read §8.2 and §8.3 before writing a line of engine: decide
+   whether you play in the run tab's `gs` or your own, and wire the franchise
+   read and write the day the engine plays a season.
+2. Build the headless engine and its spec audit, then a transcript tool, then
+   READ a season. Only then build screens.
+3. Look up the real show's rules for every elimination mechanic, and write the
+   source into the comment.
+4. Give the schedule the real show's rhythm; scale per-time risks by days.
+5. Write lines as scripts gated on facts from the record. Every new pool:
+   no invented past, no unanswered question, nothing the engine did not decide,
+   the right person cast in the right room.
+6. Measure repetition per kind (plays vs distinct lines vs worst repeat) and
+   frequency per kind (share of an episode's aired scenes) — both.
+7. Bisect any rate that moved without a reason, before tuning it back.

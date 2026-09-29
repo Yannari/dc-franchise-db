@@ -8,8 +8,10 @@ import { PROFILES } from './profiles.js';
 import { RATINGS } from './ratings.js';
 import { HANGOUT } from './hangout.js';
 import { BLOCKING } from './blocking.js';
+import { VISIT } from './visit.js';
+import { GOODBYE } from './goodbye.js';
 
 export const POOLS = {};
-for (const part of [CHAT_A, CHAT_B, SLIPS, FEED, CIRCLE, PROFILES, RATINGS, HANGOUT, BLOCKING]) {
+for (const part of [CHAT_A, CHAT_B, SLIPS, FEED, CIRCLE, PROFILES, RATINGS, HANGOUT, BLOCKING, VISIT, GOODBYE]) {
   for (const [k, v] of Object.entries(part)) POOLS[k] = [...(POOLS[k] || []), ...v];
 }

@@ -281,7 +281,11 @@ const BLOCKS = {
     for (const w of state.active.filter(x => x !== to).slice(0, 2)) {
       out.push({ key: state.profiles[w].mode === 'catfish' ? 'visit.wait.catfish' : 'visit.wait', cast: { a: w, b: h } });
     }
-    out.push({ key: `visit.door.${state.profiles[h].mode === 'catfish' ? 'catfish' : 'real'}`, cast: { a: to, b: h } });
+    // The door opens both ways: the visitor sees who was behind the profile too.
+    const fakeAt = state.profiles[h].mode === 'catfish', fakeIn = state.profiles[to].mode === 'catfish';
+    const door = fakeAt && fakeIn ? 'both' : fakeAt ? 'catfish' : fakeIn ? null : 'real';
+    if (door) out.push({ key: `visit.door.${door}`, cast: { a: to, b: h } });
+    if (fakeIn && !fakeAt) out.push({ key: 'visit.door.caught', cast: { a: h, b: to } });
     out.push({ key: `visit.talk.${s.data.motive}`, cast: { a: h, b: to }, extra: { motive: s.data.motive } });
     if (s.data.handed) {
       const c0 = claimOf(state, s.data.handed);
@@ -301,7 +305,12 @@ const BLOCKS = {
     const out = viewers[0] ? [{ key: 'goodbye.guess', cast: { a: viewers[0], b: h } }] : [];
     out.push({ key: p.mode === 'catfish' ? `goodbye.video.catfish.${p.reason || 'strategic'}` : `goodbye.video.${p.mode}`,
       cast: { a: h }, extra: { mode: p.mode, reasonKind: p.reason || undefined } });
-    if (s.data.warning) out.push({ key: `goodbye.warning.${s.data.warning.kind}`, cast: { a: h, c: s.data.warning.about } });
+    if (s.data.warning) {
+      const { kind, about } = s.data.warning;
+      // Met in person at the visit: the warning is something seen, not a hunch.
+      const seen = isRevealed(state, h, about) && state.profiles[about]?.mode === 'catfish';
+      out.push({ key: seen ? 'goodbye.warning.seen' : `goodbye.warning.${kind}`, cast: { a: h, c: about } });
+    }
     const blockers = state.blocked.find(b => b.handle === h)?.by || [];
     const guilty = viewers.find(v => blockers.includes(v));
     if (guilty) out.push({ key: 'goodbye.react.guilty', cast: { a: guilty, b: h } });
@@ -392,9 +401,9 @@ export const POOL_KEYS = [
   'hangout.agree', 'hangout.yield', 'hangout.trade', 'hangout.pact',
   ...BLOCK_WHY_.map(r => `block.announce.${r}`), 'block.react.self', 'block.react.friend', 'block.react.rival', 'block.react.relief',
   ...MOTIVES_.flatMap(m => [`visit.choose.${m}`, `visit.talk.${m}`]), 'visit.wait', 'visit.wait.catfish',
-  'visit.door.real', 'visit.door.catfish', 'visit.hand', 'visit.kiss', 'visit.bye', 'report',
+  'visit.door.real', 'visit.door.catfish', 'visit.door.caught', 'visit.door.both', 'visit.hand', 'visit.kiss', 'visit.bye', 'report',
   'goodbye.guess', ...['honest', 'polished', 'edited', 'shared'].map(m => `goodbye.video.${m}`),
-  ...WHY_.map(w => `goodbye.video.catfish.${w}`), 'goodbye.warning.catfish', 'goodbye.warning.distrusts',
+  ...WHY_.map(w => `goodbye.video.catfish.${w}`), 'goodbye.warning.catfish', 'goodbye.warning.distrusts', 'goodbye.warning.seen',
   'goodbye.react.guilty', 'goodbye.react.warned', 'goodbye.react.vindicated', 'goodbye.react.surprised',
   'meet.arrive.real', 'meet.arrive.catfish', ...WHY_.map(w => `meet.explain.${w}`),
   'reveal.place', 'reveal.winner', 'host.cold',

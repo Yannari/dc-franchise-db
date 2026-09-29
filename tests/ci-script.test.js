@@ -165,3 +165,32 @@ describe('repetition within a day, and slips inside the chat', () => {
     expect(sc.script.blocks[0].beat).toBe('Shubham smiles.');
   });
 });
+
+import { sceneBlocks } from '../js/ci/script.js';
+import { revealTo } from '../js/ci/reveal.js';
+
+describe('the visit and the goodbye know what was seen', () => {
+  it('lets the visitor react when the one who opens the door is the catfish', () => {
+    const s = room();
+    const sc = addScene(s, 'visit', ['@shubham', '@rebecca'], { motive: 'truth', kiss: false, handed: null });
+    const keys = sceneBlocks(s, sc).map(b => `${b.key}:${b.cast.a}>${b.cast.b}`);
+    expect(keys.filter(k => k.startsWith('visit.door'))).toEqual(['visit.door.caught:@shubham>@rebecca']);
+  });
+
+  it('opens the door once when both sides of it are catfish', () => {
+    const s = room();
+    s.profiles['@sammie'].mode = 'catfish';
+    const sc = addScene(s, 'visit', ['@sammie', '@rebecca'], { motive: 'truth', kiss: false, handed: null });
+    const doors = sceneBlocks(s, sc).filter(b => b.key.startsWith('visit.door')).map(b => b.key);
+    expect(doors).toEqual(['visit.door.both']);
+  });
+
+  it('warns as a fact, not a hunch, about a catfish the blocked player met in person', () => {
+    const s = room();
+    const v = addScene(s, 'visit', ['@shubham', '@rebecca'], { motive: 'truth', kiss: false, handed: null });
+    revealTo(s, '@shubham', '@rebecca', v);
+    const sc = addScene(s, 'goodbye', ['@shubham'], { mode: 'honest', warning: { about: '@rebecca', kind: 'catfish' } }, ['@rebecca', '@sammie']);
+    const w = sceneBlocks(s, sc).find(b => b.key.startsWith('goodbye.warning'));
+    expect(w.key).toBe('goodbye.warning.seen');
+  });
+});

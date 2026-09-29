@@ -39,7 +39,10 @@ describe('the pools are well-formed', () => {
     for (const [, e] of ENTRIES) {
       for (const x of allTexts(e)) for (const [, s] of x.matchAll(SLOT)) expect(s, `${e.id}: {${s}}`).toMatch(OK_SLOT);
       for (const [by, , x] of turnTexts(e)) {
-        if (by !== 'host') expect(x, `${e.id}: a player cannot know the real name`).not.toMatch(/\{[abc]\.(real|aka)\}/);
+        // A player knows one real name: their own ("Hi, I'm Seaburn" on a goodbye video).
+        if (by === 'host') continue;
+        const others = new RegExp(`\\{(?!${by}\\.real\\})[abc]\\.(real|aka)\\}`);
+        expect(x, `${e.id}: a player cannot know the real name`).not.toMatch(others);
       }
       for (const [by, kind, x] of turnTexts(e)) {
         if (kind !== 'send' && kind !== 'post') expect(x, `${e.id}: emoji and hashtags live in messages`).not.toMatch(/\{[et]:/);

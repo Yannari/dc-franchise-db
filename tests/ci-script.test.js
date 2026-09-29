@@ -371,3 +371,13 @@ describe('an anonymous question on screen', () => {
     expect(blockText(s, qb).join('\n')).toContain('▸ ANONYMOUS: Why?');
   });
 });
+
+describe('numbers said aloud', () => {
+  it('says a count as a word, capitalized when it starts a sentence', () => {
+    const s = room();
+    const cast = { a: '@sammie', text: { n: '6' } };
+    expect(fill(s, '{n} likes. Mine got {n}! {n}.', cast, 'a')).toBe('Six likes. Mine got six! Six.');
+    expect(fill(s, "We're at {n}.", { a: '@sammie', text: { n: '3 to 2' } }, 'a')).toBe("We're at three to two.");
+    expect(fill(s, '{n} likes.', { a: '@sammie', text: { n: '0' } }, 'a')).toBe('Zero likes.');
+  });
+});

@@ -27,7 +27,7 @@ export const FACT_KEYS = ['intent', 'ending', 'result', 'known', 'early', 'late'
   'hurt', 'influencer', 'reason', 'motive', 'mode', 'reasonKind', 'band', 'kiss', 'claim', 'lie',
   'tone', 'party', 'final', 'slip', 'noticed', 'place', 'self', 'likesC', 'misread', 'anon',
   'answer', 'strong', 'split', 'qkind', 'right', 'off', 'odd', 'failed', 'barbed', 'slipped', 'mutual', 'warm',
-  'everyone', 'fresh', 'tier'];
+  'everyone', 'fresh', 'tier', 'many'];
 
 export const hostName = () => showWords('the-circle').host || 'Host';
 
@@ -96,12 +96,14 @@ const usage = state => (state.usedLines ||= { uses: {}, pairs: {}, day: {} });
 export const SAME_DAY = 0;
 
 export function pickEntry(state, key, facts, pairKey, rng) {
-  const pool = POOLS[key];
+  // A list of keys merges pools: a game's own lines (weighted up) with its
+  // family's, so a game never runs out and repeats itself.
+  const pool = Array.isArray(key) ? key.flatMap(k => POOLS[k] || []) : POOLS[key];
   if (!pool?.length) return null;
   const u = usage(state);
   const fits = pool.filter(e => matches(e.when, facts));
   const scored = fits.map(e => {
-    const spec = Object.keys(e.when || {}).length;
+    const spec = Object.keys(e.when || {}).length + (e.id.startsWith('g.') ? 1 : 0);
     const uses = u.uses[e.id] || 0;
     const samePair = (u.pairs[e.id] || []).includes(pairKey);
     const today = (u.day || {})[e.id] === state.day ? SAME_DAY : 1;
@@ -136,11 +138,21 @@ function realGender(state, h) {
   return g.length === 1 ? g[0] : 'nb';
 }
 
+const NUMBER_WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
+  'eleven', 'twelve'];
+
 export function fill(state, text, cast, speakerRole) {
   // {q} and {game}: the Circle's own words (a rule, a prompt) and a game's
   // name, handed in by the builder — never a name the pool invents.
   const t = cast.text || {};
-  text = text.replace(/\{(q|game|ans|x|n)\}/g, (m, k) => (t[k] ?? m));
+  text = text.replace(/\{(q|game|ans|x|n)\}/g, (m, k, at, whole) => {
+    if (t[k] === undefined) return m;
+    if (k !== 'n') return t[k];
+    // A count is said, not typed: "six likes", "three to two".
+    const said = String(t[k]).replace(/\b\d+\b/g, d => NUMBER_WORDS[+d] ?? d);
+    const starts = /(^|[.!?]\s+|['"]\s*)$/.test(whole.slice(0, at));
+    return starts ? said.charAt(0).toUpperCase() + said.slice(1) : said;
+  });
   return text.replace(/\{([abc])(?:\.([A-Za-z]+))?\}/g, (m, role, prop) => {
     const h = cast[role];
     const p = h && state.profiles[h];
@@ -215,7 +227,7 @@ function bandOf(place, n) {
 // Which pool a game beat draws from (the family pool; game- and prompt-
 // specific pools, `g.<game>.<prompt?>.<suffix>`, take precedence).
 const GAME_FACTS = ['tone', 'answer', 'strong', 'split', 'qkind', 'result', 'anon', 'right', 'off', 'odd', 'failed',
-  'barbed', 'slipped', 'mutual', 'warm', 'everyone', 'fresh', 'tier', 'misread'];
+  'barbed', 'slipped', 'mutual', 'warm', 'everyone', 'fresh', 'tier', 'misread', 'many'];
 function gameKey(family, b) {
   const k = b.kind;
   if (k === 'open') return 'game.open';
@@ -420,12 +432,11 @@ const BLOCKS = {
       const q = trivia?.q ?? prompt?.text ?? (b.kind === 'open' ? g.rules[0] : undefined);
       const x = trivia ? (b.right ? trivia.a : trivia.wrong) : fact?.text;
       const suffix = key.replace(/^game\.(statement|name|ask|guess|make|photo|team|gift|rival|flirt)\./, '').replace(/^game\./, '');
-      const specific = [promptId && `g.${g.id}.${promptId}.${suffix}`, `g.${g.id}.${suffix}`].filter(Boolean)
-        .find(k => POOLS[k]?.length);
+      const keys = [promptId && `g.${g.id}.${promptId}.${suffix}`, `g.${g.id}.${suffix}`, key].filter(k => k && POOLS[k]?.length);
       const ans = b.answer ? (g.say || ['Agree', 'Disagree'])[b.answer === 'agree' ? 0 : 1] : undefined;
       const extra = {};
       for (const k of GAME_FACTS) if (b[k] !== undefined) extra[k] = b[k];
-      return { key: specific || key, phase: b.phase, round: b.round,
+      return { key, keys: keys.length ? keys : [key], phase: b.phase, round: b.round,
         cast: { a: b.by, b: b.about, c: b.c, anonA: b.kind === 'question' && b.anon,
           text: { q, x, n: b.n === undefined ? undefined : String(b.n), game: g.name, ans } }, extra };
     });
@@ -465,9 +476,10 @@ export function writeScene(state, scene) {
     const facts = { ...factsFor(state, scene, b.cast), ...extra };
     const rng = streamFor(state.seed, `line:${scene.id}:${i}`);
     const pairKey = [b.cast.a, b.cast.b, b.cast.c].filter(Boolean).sort().join('|');
-    const entry = pickEntry(state, b.key, facts, pairKey, rng);
+    const entry = pickEntry(state, b.keys || b.key, facts, pairKey, rng);
     if (!entry) { (state.missingPools ||= {})[b.key] = (state.missingPools[b.key] || 0) + 1; return; }
-    blocks.push({ key: b.key, ...(b.phase ? { phase: b.phase } : {}), ...(b.round != null ? { round: b.round } : {}),
+    const from = b.keys ? entry.id.replace(/\.[^.]+$/, '') : b.key;
+    blocks.push({ key: from, ...(b.phase ? { phase: b.phase } : {}), ...(b.round != null ? { round: b.round } : {}),
       ...renderEntry(state, entry, b.cast, rng) });
   });
   // A slip happens inside the conversation: weave it into the chat before the

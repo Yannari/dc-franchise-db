@@ -104,13 +104,14 @@ export const G_MAKE = {
     r1("It's reveal time. Please don't let mine be the worst. Please."),
   ]),
   ...E('game.make.comment', [
-    { turns: [{ by: 'a', react: "{b}'s got {n} likes. Honestly? Deserved." }] },
+    { turns: [{ by: 'a', react: "{b}'s got {n} likes. Honestly? Deserved." }], when: { many: true } },
+    { turns: [{ by: 'a', react: "{b}'s isn't getting much love. That's rough." }], when: { many: false } },
     { turns: [{ by: 'a', react: "What is {b}'s? I can't tell what it is. I love it anyway." }] },
     { turns: [{ by: 'a', react: "Okay, {b} actually tried. I respect effort." }] },
     { turns: [{ by: 'a', react: "{b}, what happened? What happened, {b}?" }], when: { tier: 'disaster' } },
     { turns: [{ by: 'a', react: "{b} is secretly an artist. Who knew?" }], when: { tier: 'proud' } },
     { turns: [{ by: 'a', react: "Circle, like {b}'s. That's the one." }], when: { warm: true } },
-    { turns: [{ by: 'a', react: "{n} likes for that? Come on." }], when: { warm: false } },
+    { turns: [{ by: 'a', react: "{n} likes for that? Come on." }], when: { warm: false, many: true } },
   ]),
   ...E('game.make.item', [
     two("Here it is. Be nice.", "Okay, that's actually really good, {a}."),

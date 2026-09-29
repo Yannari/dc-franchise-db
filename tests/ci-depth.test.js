@@ -98,3 +98,19 @@ describe('every one of the games, played in a room of eight', () => {
     expect(missing).toEqual([]);
   });
 });
+
+describe('a game never repeats itself', () => {
+  it('never uses the same line twice inside one game, in any of the 48', () => {
+    const repeats = [];
+    for (const g of GAMES) {
+      const s = room(8, 3);
+      bump('@q0', '@q1', 'attraction', 7); bump('@q1', '@q0', 'attraction', 7);
+      const sc = runGame(s, streamFor(3, g.id), g);
+      writeScene(s, sc);
+      const ids = sc.script.blocks.map(b => b.id);
+      const dup = ids.filter((id, i) => ids.indexOf(id) !== i);
+      if (dup.length) repeats.push(`${g.id}: ${[...new Set(dup)].join(', ')}`);
+    }
+    expect(repeats).toEqual([]);
+  });
+});

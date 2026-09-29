@@ -39,7 +39,11 @@ const FAMILY = {
       // certain of the rest (the further a stat sits from average).
       const strength = h => Math.abs(S(state, h, p.stat) - 5);
       const shown = [...new Set([r.lone, ...by(all.filter(h => h !== r.lone), strength)].filter(Boolean))].slice(0, 3);
-      for (const h of shown) push({ phase: 'round', round: i, kind: 'answer', by: h, answer: r.answers[h], strong: strength(h) >= 3, promptId: p.id });
+      // Somebody reacts to each answer: preferably someone who said the opposite.
+      for (const h of shown) {
+        const reactor = all.find(o => o !== h && r.answers[o] !== r.answers[h]) || pick(all.filter(o => o !== h), rng);
+        push({ phase: 'round', round: i, kind: 'answer', by: h, about: reactor, answer: r.answers[h], strong: strength(h) >= 3, promptId: p.id });
+      }
       const agree = all.filter(h => r.answers[h] === 'agree').length;
       const split = agree === 0 || agree === all.length ? 'all' : r.lone ? 'lone' : 'split';
       push({ phase: 'round', round: i, kind: 'results', by: pick(all.filter(h => !shown.includes(h)).concat(shown), rng),
@@ -159,7 +163,7 @@ const FAMILY = {
       // Somebody else has something to say about it (and the likes it got).
       const commenter = pick(all.filter(h => h !== maker && h !== subject), rng);
       if (commenter) push({ phase: 'reveal', kind: 'comment', by: commenter, about: maker, n: R.likes[maker],
-        warm: rel(commenter, maker, 'affection') >= 0, tier: tier(maker) });
+        many: R.likes[maker] >= 3, warm: rel(commenter, maker, 'affection') >= 0, tier: tier(maker) });
       if (subject) remember(state, sc, portrayal === 'jab' ? 'jab' : 'portrait-kind', maker, subject, game.id);
     }
     const loser = by(all, h => -R.likes[h] - q[h] / 100)[0];
@@ -246,7 +250,7 @@ const FAMILY = {
     const namers = Object.keys(ans);
     namers.forEach((v, i) => {
       push({ phase: 'round', round: i, kind: 'statement', by: v, about: ans[v], mutual: ans[ans[v]] === v });
-      if (i % 2 === 0 || ans[ans[v]] === v) push({ phase: 'round', round: i, kind: 'reply', by: ans[v], about: v, mutual: ans[ans[v]] === v });
+      push({ phase: 'round', round: i, kind: 'reply', by: ans[v], about: v, mutual: ans[ans[v]] === v });
       remember(state, sc, 'rival', v, ans[v], game.id);
     });
     const counts = {};

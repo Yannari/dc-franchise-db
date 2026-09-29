@@ -2547,3 +2547,31 @@ export function rpBuildColdOpen(ep, observer = 'audience') {
     + '<button class="co-btn" onclick="' + call('trColdOpenRevealAll') + '">Reveal all</button>'
     + '</div></div>';
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// FOR THE STAGE (breakfast-stage.js) — the same beats, and the table laid
+// ══════════════════════════════════════════════════════════════════════
+//
+// The stage plays this morning on the breakfast room set. It draws from THESE
+// beats, built by the same `_buildBeats` with the same keys and the host bands
+// resolved exactly as the page resolves them, so every word is the page's.
+// `laid` is the table in seating order (cast order: the page's own rule, so the
+// empty place is where it really is and not at the end of the table).
+export function coldOpenStageData(ep, observer = 'audience') {
+  const v = _view(ep, observer);
+  if (!v || !v.room.length) return null;
+  const beats = _buildBeats(v);
+  const seedEp = v.ep != null ? v.ep : (ep.num || 0);
+  const inRoom = new Set(v.room);
+  const missing = (v.missing || []).map(x => x.name);
+  // A hidden murder keeps three places empty and names none of them.
+  const missingSet = new Set([...missing, ...((v.hidden && v.hidden.coffins) || [])]);
+  const h = _host();
+  return {
+    beats: beats.map(b => ({ phase: b.phase, meta: b.meta ? { ...b.meta } : {},
+      html: (b.hostSlot ? _hostBand(_esc(_pick(HOST_LINES[b.hostSlot], 'co|host|' + b.hostSlot + '|' + seedEp))) : '') + b.html })),
+    laid: (v.cast || []).filter(n => inRoom.has(n) || missingSet.has(n)),
+    room: [...v.room], missing, hidden: v.hidden ? [...(v.hidden.coffins || [])] : [],
+    arrival: !!v.arrival, ep: v.ep, host: { name: h.name, slug: h.slug },
+  };
+}

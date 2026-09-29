@@ -147,20 +147,18 @@ function buildSteps(scenes, chips) {
  * alone). Registers the screen's state; the markup is inert until mounted.
  */
 export function castleStageHTML(ep, observer = 'audience', segment = null) {
-  let scenes = [];
-  let chips = [];
-  try {
-    scenes = castleDayScenes(ep, observer, segment);
-    chips = castleDayChips(ep, observer, segment);
-  } catch { return ''; }
-  if (!scenes.length) return '';
-  const steps = buildSteps(scenes, chips);
-  if (!steps.length) return '';
+  // LAZY: nothing is composed until the stage mounts in the viewer. The text
+  // backlog builds every screen (twice) and never mounts one, so a stage that
+  // composed its day at build time doubled the transcript's cost for nothing.
+  const init = () => {
+    const scenes = castleDayScenes(ep, observer, segment);
+    return { steps: scenes.length ? buildSteps(scenes, castleDayChips(ep, observer, segment)) : [] };
+  };
   const truth = (ep.tr && ep.tr.beliefs && ep.tr.beliefs.truth) || {};
   const isAudience = observer === 'audience';
   const traitors = isAudience ? Object.keys(truth).filter(n => truth[n] === 'traitor') : [];
   const uid = 'trs-' + String(ep.num) + '-' + (segment || 'day') + '-' + (hash(observer) % 1e6);
-  reg()[uid] = { uid, steps, idx: -1, segment, traitors, isAudience,
+  reg()[uid] = { uid, steps: null, init, idx: -1, segment, traitors, isAudience,
     day: (ep.tr && ep.tr.ep) || ep.num, pot: ep.tr && ep.tr.pot, timers: [] };
   return stageShell(uid, '<div class="trs-sky trs-day"></div><div class="trs-sky trs-eve"></div><div class="trs-sky trs-night"></div>'
     + '<div class="trs-stars"></div><div class="trs-moon"></div>'
@@ -411,6 +409,18 @@ function mount(root) {
   const uid = root.dataset.uid, S = reg()[uid];
   if (!S || root.dataset.mounted) return;
   root.dataset.mounted = '1';
+  // The page is read into steps now, at the one moment somebody is watching.
+  if (!S.steps && S.init) {
+    try { Object.assign(S, S.init()); } catch { S.steps = []; }
+  }
+  // Nothing to play (a night that is only confessionals): the stage steps
+  // aside and the written page underneath opens in its place.
+  if (!S.steps || !S.steps.length) {
+    root.style.display = 'none';
+    const det = root.nextElementSibling;
+    if (det && det.tagName === 'DETAILS') det.open = true;
+    return;
+  }
   S.idx = -1; S.lastNight = null;
   chrome(root, S);
   paint(uid, false);

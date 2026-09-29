@@ -21,84 +21,59 @@
 import { roundTableStageData } from './round-table.js';
 import { trsStageShell as stageShell, trsReg as reg, trsEsc as esc, trsFace as face, trsLater as later } from './castle-stage.js';
 import { TRScenery } from './cutaway-scenery.js';
+import { beatLines } from './stage-lines.js';
 
 const hash = s => { let h = 7; for (const c of String(s)) h = (Math.imul(h, 31) + c.charCodeAt(0)) >>> 0; return h; };
 const clean = s => String(s || '').replace(/\s+/g, ' ').trim();
-const unquote = s => clean(s).replace(/^[“"]+|[”"]+$/g, '');
 
-// ── THE PAGE, READ AS LINES ──────────────────────────────────────────────
+// ── THE PAGE, READ AS LINES (stage-lines.js), with the parts this stage
+// draws itself claimed: the slate, the count, the chair, the card.
 function parseBeats(data) {
-  if (typeof document === 'undefined') return [];
-  const steps = [];
-  const accs = [];                       // accuser → accused, as the debate names them
-  const tpl = document.createElement('template');
+  const accsAt = [];
+  const accs = [];
   data.beats.forEach((b, bi) => {
     const m = b.meta || {};
     if (m.kind === 'debate' && m.target) for (const a of m.accusers || []) {
       if (!accs.some(x => x[0] === a && x[1] === m.target)) accs.push([a, m.target]);
     }
-    const ctx = { beat: bi, phase: b.phase, kind: m.kind || null, target: m.target || null, pair: m.pair || null, accs: accs.slice() };
-    tpl.innerHTML = b.html;
-    let tag = null, announced = false;
-    const push = st => steps.push({ ...ctx, ...st });
-    const walk = el => {
-      for (const n of el.children) {
-        const c = n.classList;
-        if (c.contains('rt-host')) {
-          push({ t: 'host', text: unquote(n.querySelector('.rt-host-line')?.textContent) });
-        } else if (c.contains('rt-said')) {
-          const who = clean(n.querySelector('cite')?.textContent);
-          const text = unquote(n.querySelector('.rt-said-txt')?.textContent);
-          if (m.kind === 'reveal' && !announced) {
-            announced = true;
-            push({ t: 'reveal', who: data.chosen, alignment: m.alignment, line: text });
-          } else push({ t: 'say', who, text });
-        } else if (c.contains('rt-slate')) {
-          const note = tpl.content.querySelector('.rt-note');
-          push({ t: 'slate', ballot: m.ballot, tally: m.tally || {}, round: m.round || 0,
-            ord: clean(n.querySelector('.rt-slate-ord')?.textContent), reason: m.reason || '',
-            note: note ? clean(note.textContent) : '', noteTone: note ? note.dataset.tone || '' : '' });
-        } else if (c.contains('rt-tally')) {
-          push({ t: 'count', tally: m.tally || {} });
-        } else if (c.contains('rt-verdict')) {
-          push({ t: 'chair', who: m.who || data.chosen });
-        } else if (c.contains('rt-irony')) {
-          const head = clean(n.querySelector('b')?.textContent);
-          const body = [...n.querySelectorAll('span')].map(x => clean(x.textContent)).filter(Boolean).join(' ');
-          if (body) push({ t: 'narr', tag: head || 'What the room cannot see', text: body, aud: true });
-        } else if (c.contains('rt-note')) {
-          if (m.kind !== 'read') push({ t: 'narr', tag: null, text: clean(n.textContent), note: true });
-        } else if (c.contains('rt-murmur')) {
-          push({ t: 'narr', tag: 'Around the table', text: clean(n.textContent), murmur: true });
-        } else if (c.contains('rt-card-title') || c.contains('rt-silence-h') || c.contains('rt-clash-k')) {
-          tag = clean(n.textContent);
-        } else if (n.tagName === 'P') {
-          const text = clean(n.textContent);
-          if (text) { push({ t: 'narr', tag, text }); tag = null; }
-        } else if (c.contains('rt-reveal') || c.contains('rt-card-label') || c.contains('rt-faces')
-          || c.contains('rt-chips') || c.contains('rt-accused') || c.contains('rt-slate-run')
-          || c.contains('rt-clash-pair') || c.contains('rt-face-chip') || c.contains('cv-av')) {
-          // drawn by the stage itself, or furniture
-        } else if (n.children.length) walk(n);
-        else if (clean(n.textContent)) push({ t: 'narr', tag, text: clean(n.textContent) });
-      }
-    };
-    walk(tpl.content);
+    accsAt[bi] = accs.slice();
   });
-  return steps;
+  const announced = new Set();
+  const special = (n, part, ctx) => {
+    const m = ctx.meta;
+    if (part === 'slate') {
+      const note = ctx.tpl.content.querySelector('.rt-note');
+      return [{ t: 'slate', ballot: m.ballot, tally: m.tally || {}, round: m.round || 0,
+        ord: clean(n.querySelector('.rt-slate-ord')?.textContent), reason: m.reason || '',
+        note: note ? clean(note.textContent) : '', noteTone: note ? note.dataset.tone || '' : '' }];
+    }
+    if (part === 'note' && m.kind === 'read') return [];
+    if (part === 'tally') return [{ t: 'count', tally: m.tally || {} }];
+    if (part === 'verdict') return [{ t: 'chair', who: m.who || data.chosen }];
+    if (part === 'said' && m.kind === 'reveal' && !announced.has(ctx.beat)) {
+      announced.add(ctx.beat);
+      return [{ t: 'reveal', who: data.chosen, alignment: m.alignment,
+        line: clean(n.querySelector('.rt-said-txt')?.textContent).replace(/^[“"]+|[”"]+$/g, '') }];
+    }
+    return null;
+  };
+  return beatLines(data.beats, special).map(st => ({ ...st, target: st.meta.target || null,
+    pair: st.meta.pair || null, accs: accsAt[st.beat] || [] }));
 }
 
 // ── THE SCREEN ───────────────────────────────────────────────────────────
 export function tableStageScreen(ep, observer, pageHtml) {
-  let data = null;
-  try { data = roundTableStageData(ep, observer); } catch { data = null; }
-  if (!data || !data.seated.length) return pageHtml;
-  const steps = parseBeats(data);
-  if (!steps.length) return pageHtml;
+  const rec = ep && ep.tr && ep.tr.table;
+  if (!rec || !(rec.seated || []).length) return pageHtml;
+  // LAZY — read at mount, see castle-stage.js `mount`.
+  const init = () => {
+    const data = roundTableStageData(ep, observer);
+    if (!data) return { steps: [] };
+    const truth = data.truth || {};
+    return { data, steps: parseBeats(data), traitors: Object.keys(truth).filter(n => truth[n] === 'traitor') };
+  };
   const uid = 'trt-' + String(ep.num) + '-' + (hash(observer) % 1e6);
-  const truth = data.truth || {};
-  reg()[uid] = { uid, steps, idx: -1, title: 'The Round Table', data,
-    traitors: Object.keys(truth).filter(n => truth[n] === 'traitor'),
+  reg()[uid] = { uid, steps: null, init, idx: -1, title: 'The Round Table', traitors: [],
     day: (ep.tr && ep.tr.ep) || ep.num, pot: ep.tr && ep.tr.pot, timers: [], painter: paintTable };
   if (typeof queueMicrotask === 'function' && typeof window !== 'undefined' && window.trStageMountAll) {
     queueMicrotask(window.trStageMountAll);

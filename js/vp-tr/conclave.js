@@ -1937,3 +1937,29 @@ export function rpBuildConclave(ep, observer = 'audience') {
     + '<button class="cv-btn" onclick="' + call('trConclaveRevealAll') + '">Reveal all</button>'
     + '</div></div>';
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// FOR THE STAGE (conclave-stage.js) — the same beats, host lines resolved
+// ══════════════════════════════════════════════════════════════════════
+//
+// The stage plays the turret one line at a time from THESE beats: the same
+// `_buildBeats`, the same keys, the host bands picked exactly as the page picks
+// them, and each beat's downstairs margin handed over as data so the stage can
+// cut away to it. Withheld from any observer the page withholds it from — the
+// gate runs first, as it does on the page.
+export function conclaveStageData(ep, observer = 'audience') {
+  const rec = ep && ep.tr && ep.tr.conclave;
+  if (!rec || !conclaveVisibleTo(rec, observer)) return null;
+  const beats = _buildBeats(rec, ep);
+  const seedEp = rec.ep != null ? rec.ep : (ep.num || 0);
+  const h = _host();
+  return {
+    beats: beats.map(b => ({ phase: b.phase,
+      meta: { kind: b.slot || b.phase, margin: b.margin ? { t: b.margin.t, who: b.margin.who || null, m: b.margin.m } : null },
+      html: (b.hostSlot ? _hostBand(_pick(
+        HOST_LINES[b.hostSlot + _hostSuffix(rec.variant)] || HOST_LINES[b.hostSlot],
+        'tr|host|' + b.hostSlot + '|' + seedEp + '|' + rec.target)) : '') + b.html })),
+    turret: [...(rec.turret || [])], target: rec.target || null, second: rec.second || null,
+    variant: rec.variant || null, host: { name: h.name, slug: h.slug },
+  };
+}

@@ -48,6 +48,12 @@ import { rpBuildTournament } from './smackdown.js';
 const esc = v => String(v ?? '').replace(/[&<>"]/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const n1 = v => (Number.isFinite(Number(v)) ? Number(v).toFixed(1) : '—');
+/* A SCORE AS THE VIEWER READS IT: out of ten. The engine's raw performance
+   has no ceiling or floor — a standout choreo night came out at 14.6 and a
+   collapse at -1.3, printed on the card beside a panel that scores to ten.
+   The raw number still ranks the night; the card shows it on the scale the
+   show uses. */
+const n10 = v => (Number.isFinite(Number(v)) ? Math.max(0, Math.min(10, Number(v))).toFixed(1) : '—');
 const epOf = row => ({ num: row?.num ?? row?.dr?.ep ?? 0, format: 'drag-race', dr: row?.dr || {} });
 
 export /* THE TRACK AND WHAT IT SOUNDS LIKE. The girl group's theme reached the row
@@ -848,7 +854,7 @@ function perfCard(name, perf, i, suffix, ep, id, mate = null) {
        failure in §11.5, on the busiest screen of the night. */
     mate ? `<span class="dr-withq">&amp; ${esc(mate)}<i>eliminated</i></span>` : ''}${
     perf?.moment ? '<span class="dr-tag dr-t-note">moment</span>' : ''}</h3>${body}</div>
-      <span class="dr-score dr-disp ${scoreClass(perf?.perf)}">${n1(perf?.perf)}</span>
+      <span class="dr-score dr-disp ${scoreClass(perf?.perf)}">${n10(perf?.perf)}</span>
     </div></div>`;
 }
 

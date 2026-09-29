@@ -131,6 +131,8 @@ function factsFor({ a, b, players, state, storylines, ctx, rest = [] }) {
     phase: ctx.phase ?? 0,
     episode: ctx.episode ?? 1,
     roomSize: (state.living || []).length,
+    // A returning cast already knows each other.
+    allStars: !!state.allStars,
     someoneLeft: !!ctx.someoneLeft,
     lostAFriend: !!(ctx.gone || []).some(g => ctx.bond(a, g) >= 4),
     lostAnEnemy: !!(ctx.gone || []).some(g => ctx.bond(a, g) <= -4),

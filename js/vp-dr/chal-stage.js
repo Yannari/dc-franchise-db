@@ -262,7 +262,7 @@ export function perfStage(row, running, extra, { ep, title, sub, uid = 'x' } = {
   const tags = {};
   const states = running.map(p => {
     done.push(p.who);
-    tags[p.who] = { t: p.perf.toFixed(1), c: p.perf >= 8 ? '#ffd66b' : p.perf < 4 ? '#ff5a6e' : '#cfd8ff' };
+    tags[p.who] = { t: Math.max(0, Math.min(10, p.perf)).toFixed(1), c: p.perf >= 8 ? '#ffd66b' : p.perf < 4 ? '#ff5a6e' : '#cfd8ff' };
     const big = p.perf >= 8;
     const flop = p.perf < 4;
     return {
@@ -276,7 +276,7 @@ export function perfStage(row, running, extra, { ep, title, sub, uid = 'x' } = {
   })));
   const perfHtml = running.map(p => `<div class="pfx-q" data-c="${esc(p.who)}" style="--w:${clamp(p.perf * 10, 4, 100)}%">
       ${face(p.who, ep, 96)}<b>${esc(p.who)}</b>${p.role ? `<span class="pfx-role">${esc(p.role)}</span>` : ''}
-      <div class="pfx-meter"><i></i></div><span class="pfx-num" data-v="${p.perf.toFixed(1)}"></span></div>`).join('');
+      <div class="pfx-meter"><i></i></div><span class="pfx-num" data-v="${Math.max(0, Math.min(10, p.perf)).toFixed(1)}"></span></div>`).join('');
   const roomHtml = extra.map((x, i) => `<div class="pfx-room" data-c="room${i}"><div class="chx-in" style="flex-wrap:wrap">${(x.players || []).map(n => one(n, ep, true)).join('')}</div></div>`).join('');
   const room = running.map(p => p.who);
   const body = `<div class="pfx-hall">${perfHtml}${roomHtml}</div>${lineOf(room, ep)}`;

@@ -562,8 +562,11 @@ export function runMini({ living, mini, players, rng, bond = () => 0, star = {},
           pop: { [n]: 2 },
           data: { mini: mini.id, score: s },
         }));
-      } else if (s < LANDED) {
+      } else if (s < LANDED && !detail[n].passed) {
         // She went for somebody and missed, which is worse than not going.
+        // A queen who PASSED went for nobody: her card already says she stood
+        // up with nothing, and a second card describing her "flat read" was
+        // a read that never happened.
         events.push(evt('read-missed', {
           players: [n, target],
           bond: [[n, target, -1]],

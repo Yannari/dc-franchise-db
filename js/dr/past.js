@@ -202,6 +202,37 @@ export function castPasts({ cast = [], seasons = [], seed = 1 } = {}) {
   const rng = rngFor(seed * 31 + 17);
   const out = {};
   for (const p of cast) out[p.name] = queenPast(p, { seasons, rng });
+  /* ── ONE SEASON, ONE SIZE, ONE QUEEN PER PLACE ──
+     Each invented past was drawn on its own, so five queens "from season 1"
+     came out of a season of nine, ten, twelve and thirteen, and two of them
+     both went out fifth — read out at the door, one after another. Invented
+     queens who share a season now share its size, and each holds her own
+     place in it. An invented season never reuses the number of a season the
+     franchise really stored, whose cast is a fact. */
+  const realNums = new Set((seasons || []).map(x => Number(x?.season)).filter(Boolean));
+  const invented = Object.entries(out).filter(([, v]) => v && !v.real);
+  for (const [, v] of invented) {
+    let n = v.season;
+    while (realNums.has(n)) n += 1;
+    v.season = n;
+  }
+  const bySeason = {};
+  for (const [name, v] of invented) (bySeason[v.season] ||= []).push([name, v]);
+  for (const group of Object.values(bySeason)) {
+    // The room is big enough for all of them plus the queen who won it.
+    const of = Math.max(group.length + 1, ...group.map(([, v]) => v.of));
+    group.sort((x, y) => x[1].rank - y[1].rank || x[0].localeCompare(y[0]));
+    const taken = new Set();
+    for (const [name, v] of group) {
+      let r = Math.min(Math.max(2, v.rank), of);
+      while (taken.has(r) && r < of) r += 1;
+      while (taken.has(r)) r -= 1;
+      taken.add(r);
+      const wins = r === v.rank ? v.wins : (r <= 3 ? Math.max(1, v.wins) : r <= of / 2 ? Math.min(1, v.wins) : 0);
+      Object.assign(v, { of, rank: r, wins, exit: r <= 3 ? 'finalist' : 'eliminated',
+        business: businessFor(r, of, wins, name) });
+    }
+  }
   return out;
 }
 

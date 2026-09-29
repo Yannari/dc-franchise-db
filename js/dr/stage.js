@@ -202,6 +202,29 @@ export function performanceTiers(living = [], performances = {}) {
 /** How many judges actually speak to each queen. Not all of them, every time. */
 const JUDGES_PER_QUEEN = 2;
 
+const DOMAIN_FAMILIES = {
+  comedy: new Set(['roast', 'stand-up', 'snatch-game', 'improv', 'acting', 'commercial']),
+  dance: new Set(['choreography', 'girl-group', 'talent-show', 'rusical', 'lalaparuza', 'rumix', 'music-video']),
+  voice: new Set(['singing', 'rusical', 'girl-group', 'rumix', 'talent-show']),
+  look: new Set(['design', 'ball', 'runway-challenge', 'makeover', 'photoshoot']),
+  stage: new Set(['talent-show', 'lalaparuza', 'choreography', 'girl-group', 'rusical', 'music-video']),
+};
+function domainFits(domain, dimension, family) {
+  if (!domain || domain === 'any') return true;
+  if (domain === 'risk') return dimension === 'risk';
+  if (domain === 'look') return dimension === 'runway' || dimension === 'polish'
+    || DOMAIN_FAMILIES.look.has(family);
+  return dimension === 'challenge' && !!DOMAIN_FAMILIES[domain]?.has(family);
+}
+function domainOk(lines, r, family) {
+  if (!lines) return lines;
+  const pOk = domainFits(r.peeveDomain, r.dimension, family);
+  const oOk = domainFits(r.softDomain, r.dimension, family);
+  const kept = lines.filter(l => (pOk || !/\{p\}/.test(l)) && (oOk || !/\{o\}/.test(l)));
+  return kept.length ? kept : lines.filter(l => !/\{[po]\}/.test(l)).length
+    ? lines.filter(l => !/\{[po]\}/.test(l)) : lines;
+}
+
 export function renderStageBeats({
   walking = [], onStage = [], runway = {}, call = {}, reactions = {},
   lipsync = null, exits = [], split = false, judges = [], critiques = [],
@@ -505,7 +528,13 @@ export function renderStageBeats({
         // pool for the whole season and Michelle could not say she does not
         // see the family resemblance, because no critique knew it was a
         // makeover.
-        const said = reasonLinesFor(r.dimension, r.direction, challengeFamily);
+        /* ── HER PET PHRASE ONLY WHERE IT MEANS SOMETHING ──
+           A judge's peeve and soft spot are dropped into these lines whole,
+           and each belongs to one craft: "a hidden waist was the lag between
+           Paige Turner and every other queen", said about a dance number.
+           A line that uses one is only drawn when tonight's topic is that
+           craft; otherwise the pool's other lines speak. */
+        const said = domainOk(reasonLinesFor(r.dimension, r.direction, challengeFamily), r, challengeFamily);
         /* ONE EXTRA CLAUSE AT MOST, and the delivery outranks the bias.
            A reason plus a bias plus a note on how she said it is three
            clauses about one queen, and the transcript already had a card run
@@ -514,7 +543,7 @@ export function renderStageBeats({
            ends of the panel, so when it is there it is the more interesting
            of the two; her taste for this kind of drag fills the slot the rest
            of the time. */
-        const delivery = said ? deliveryLinesFor(r.warmth, r.direction) : null;
+        const delivery = said ? domainOk(deliveryLinesFor(r.warmth, r.direction), r, challengeFamily) : null;
         const bias = said && !delivery ? biasLinesFor(r.styleLean) : null;
         const text = said
           ? [
@@ -610,7 +639,12 @@ export function renderStageBeats({
   const argueFrom = (row, id) => (critiques.find(c => c.queen === row.name
     && (c.judge === id || c.judgeId === id || c.judgeName === nameOf(id))) || {}).reason?.dimension || null;
   const argued = contested.filter(sidesAgree);
-  emit(beatById('deliberation'), argued.length ? 'split' : 'agreed', []);
+  /* The OPENING reads whether they disagree at all — the critiques above
+     already badged those queens "the panel is split", and "every name lands
+     in the same place" under that badge contradicted it. The named arguments
+     below are only the ones with something true on both sides. */
+  void argued;
+  emit(beatById('deliberation'), contested.length ? 'split' : 'agreed', []);
   for (const row of contested) {
     const ids = Object.keys(views).filter(id => rankOf(id, row.name) !== null);
     if (ids.length < 2) continue;
@@ -1615,9 +1649,18 @@ export function renderChallengeBeats({
         { a: n, c: nameInSentence(maxi.name), d: choiceLabel(p.choice) }),
     });
   };
+  /* ── A CAPTAINS WEEK IS NOT A DRAFT OF PARTS ──
+     On a team week the captains pick QUEENS, and the slot each queen ends up
+     in ("standard", "lead") is a ladder the module hands out afterwards. It
+     was narrated as a choice: ten queens each "picks Standard — the slot with
+     the most counts, best placement", and the last one "has a couplet" on a
+     dance number. The captains' picks are their own scenes; there are no
+     part picks to react to. */
+  const captainsWeek = maxi.assignment === 'captains';
   for (const n of living) {
     const p = assignment.picks?.[n];
     if (!p) continue;
+    if (captainsWeek && !p.paired) continue;
     /* ── TWO WAYS NOT TO CHOOSE, AND THEY ARE DIFFERENT NIGHTS ──
        `chosen: false` meant "the host cast her" for as long as only the music
        video set it. Then the makeover started handing its room out — the mini
@@ -1858,7 +1901,14 @@ export function renderChallengeBeats({
         // Filled, like the line beside it. One queen in this scene, so {a}.
         note: fill(tier.note, { a: n }), perf: performances[n].perf,
       },
-      text: fill(pick(words.lines, rng, usedLines, `${family.family}/${tierId}`), { a: n }),
+      /* THE SOLO IS ONE QUEEN'S. A line that hands her "her eight counts"
+         in the featured solo is only drawn for the queen who had it; the
+         rest of the line said it too, over a card reading "in the line". */
+      text: fill(pick((() => {
+        const lead = ['lead', 'solo'].includes(assignment?.roles?.[n]);
+        const kept = lead ? words.lines : words.lines.filter(l => !/\bsolo\b/i.test(l));
+        return kept.length ? kept : words.lines;
+      })(), rng, usedLines, `${family.family}/${tierId}`), { a: n }),
     });
     if (performances[n].moment) emit(beatById('performance-moment'), 'moment', [n], {}, step);
   }

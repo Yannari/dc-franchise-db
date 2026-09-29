@@ -331,7 +331,15 @@ export function buildSchedule({ episodes, castSize, pinned = [], rng = Math.rand
       const fresh = MAXI_TYPES.filter(m => !m.tentpole && !used.has(m.id) && fits(m) && apart(m));
       const repeatable = MAXI_TYPES.filter(m => !m.tentpole && fits(m) && apart(m));
       const anything = MAXI_TYPES.filter(fits);
-      const pool = [fresh.filter(inWin), repeatable.filter(inWin), fresh, repeatable, anything, MAXI_TYPES]
+      /* A FRESH CHALLENGE JUST OUTSIDE ITS WINDOW BEATS A REPEAT INSIDE ONE.
+         The last week before a finale sits at the very end of the scale,
+         past Stand-Up's window, and the pool fell straight to "repeatable in
+         window" — a season ran the premiere's Runway Challenge again in week
+         eleven with Stand-Up never played. Near is within a sixth of the
+         season. */
+      const near = m => { const [lo, hi] = windowOf(m.id); const x = posOf(e);
+        return x >= lo - 0.17 && x <= hi + 0.17; };
+      const pool = [fresh.filter(inWin), fresh.filter(near), repeatable.filter(inWin), fresh, repeatable, anything, MAXI_TYPES]
         .find(p => p.length);
       maxiId = pick(er, pool).id;
     }

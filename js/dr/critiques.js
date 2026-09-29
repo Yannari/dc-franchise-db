@@ -184,6 +184,8 @@ export function critiqueLines({ panel, views, call, entries, rng = Math.random }
           warmth: Number.isFinite(Number(j.warmth)) ? Number(j.warmth) : null,
           peeve: j.petPeeve || null,
           softSpot: j.softSpot || null,
+          peeveDomain: j.peeveDomain || 'any',
+          softDomain: j.softDomain || 'any',
         },
       });
     }

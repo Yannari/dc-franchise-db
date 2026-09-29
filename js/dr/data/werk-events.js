@@ -632,7 +632,7 @@ export const WERK_EVENTS = [
   ev({
     id: 'settling-in', slot: 'werk-morning', cast: 'solo', weight: 1,
     note: 'Early season. She is still working out who everybody is.',
-    when: f => f.phase < 0.45, effects: { pop: { a: 1 } },
+    when: f => f.phase < 0.45 && !f.allStars, effects: { pop: { a: 1 } },
     lines: [
       "{a} is still learning who everyone is. Watches from her station — who talks to whom, who works alone, who fills the silence, who sits in it. She has not figured out where she fits yet. The not-knowing is exciting and uncomfortable, like the first week of any room.",
       "The room is full of people {a} does not know yet. She is paying attention the way you do when everything is new. Who is funny, who is serious, who takes up space, who gives it away. By the end of the week she will have a map.",

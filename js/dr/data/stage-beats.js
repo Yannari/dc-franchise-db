@@ -162,7 +162,7 @@ export const STAGE_BEATS = [
         + 'punchline.', [
         '"Also joining us — the man who puts the PUN in pun-dit — {j}!" {j} grins and fires back something worse and better at the same time, and the host pretends not to laugh and fails. "Oh, you came to PLAY tonight," he says, and {j} says "I always come to play" and the panel groans and the bit has started.',
         'The host plays the fill-in-the-blank. "He gives good — blank." {j} answers before the question is finished, which is a pun, which is worse than the answer she had written, which is the entire bit. The host says "That was TERRIBLE" and {j} says "Thank you" and the panel is already having a better time than the queens backstage.',
-        '"The man who will look at your look, read you for FILTH, and then make you laugh about it — {j}!" {j} takes a small bow from his chair, waves like a pageant winner, and says something to the camera that is absolutely going to make the blooper reel. The host shakes her head. "I cannot take you anywhere."',
+        '"The man who will look at your look, read you for FILTH, and then make you laugh about it — {j}!" {j} takes a small bow from his chair, waves like a pageant winner, and says something to the camera that is absolutely going to make the blooper reel. The host shakes his head. "I cannot take you anywhere."',
         '"My favourite fashion funny man — {j}!" {j} waves at the room with the energy of a golden retriever at a dog show. "I am SO excited to be here," he says, and he has said that exact sentence every time he has sat in this chair and it has been true every single time. The host pats his shoulder. "Baby, we are excited to HAVE you."',
         '"The pun-isher himself — {j}!" {j} finger-guns the camera. "That was terrible," the host says. "Thank you," {j} says. The exchange is the same every time and it works every time.',
         '"He is funny, he is fashionable, and he is about to make the worst pun you have heard all week — {j}!" {j} opens his mouth. "Do NOT," the host says. {j} closes his mouth. {j} opens his mouth again. The pun lands and the panel groans.',
@@ -493,7 +493,7 @@ export const STAGE_BEATS = [
         "\"I disagree.\" The word lands on the judge\'s table and the deliberation, which had been moving toward a conclusion, reverses direction entirely. One judge thinks the look saved the performance. Another judge thinks the performance buried the look. The queens in the back are fixing their faces and they are going to need the time.",
         "The judges are arguing. Not performing an argument for the camera — genuinely arguing, with notes and references and the kind of intensity that means somebody\'s placement is going to change in the next three minutes. It is close. The margin between safe and bottom is a hemline and a missed beat, and the panel cannot agree on which one mattered more. Eventually the host settles it. \"Bring back my girls.\" The queens return to a panel that is still not entirely in agreement.",
         "\"I saw something different.\" One judge says it and the deliberation, which was almost finished, reopens. Two judges lean forward. The queens backstage can feel it running long.",
-        "The panel splits on the bottom two. One judge is firm. Another judge is just as firm in the other direction. The host listens to both of them and does not reveal which one she agrees with.",
+        "The panel splits on the bottom two. One judge is firm. Another judge is just as firm in the other direction. The host listens to both of them and does not reveal which one he agrees with.",
         "It is not a clean night. The judges go back and forth and the back-and-forth is real — two names are in the same space and only one of them fits. \"Bring back my girls,\" the host says, and the decision she hands back is one the panel did not entirely agree on.",
         "\"We are not there yet.\" The host says it and the panel keeps deliberating. Two queens are separated by a margin the judges cannot agree on, and the disagreement is the margin.",
       ]),
@@ -797,7 +797,7 @@ export const STAGE_BEATS = [
     tierBy: 'always',
     tiers: [
       tier('hold', 'She stops, and the room stops with her.', [
-        "The host looks at the queens still on the stage and takes a breath that the room takes with her. Whatever she says next changes somebody's night, and the pause before she says it is the loudest silence the stage has produced.",
+        "The host looks at the queens still on the stage and takes a breath that the room takes with him. Whatever he says next changes somebody's night, and the pause before he says it is the loudest silence the stage has produced.",
         "He folds his hands. The queens standing in front of him are watching his mouth and he knows they are watching his mouth and he lets them watch it not move for three more seconds than anybody would choose.",
         "The host stops speaking and the stopping is deliberate. The room is arranged around a verdict that has not been said yet and the arrangement holds, perfectly still, while the host decides how long to let it hold.",
         "A pause that sits heavier than anything she has said tonight. The queens on the stage are breathing and the host is breathing and nobody else in the room is breathing at all.",

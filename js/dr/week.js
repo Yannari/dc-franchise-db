@@ -2583,7 +2583,11 @@ export function runDragWeek(state, cfg, ctx) {
          time beats render, so the season's first elimination is exactly the
          night when everybody who has ever gone home went home tonight. This
          also holds for a double sashay opening the season. */
-      firstOfSeason: exits.length > 0 && (state.out || []).length === exits.length,
+      firstOfSeason: exits.length > 0 && (state.out || []).length === exits.length
+        // Not on All Stars: the queen who holds the lipstick chose her, and
+        // "you're getting the porkchop" is the host's line on a flagship
+        // season's first night.
+        && !state.allStars,
       /* WHICH UNUSUAL NIGHT THIS IS, or null for an ordinary one. Read from
          the week's own config rather than guessed from the shape of the
          results — "six queens are here" is a symptom, not the announcement. */
@@ -2760,7 +2764,11 @@ export function runDragWeek(state, cfg, ctx) {
        there was no song. What she gets here is the ritual every exit gets. */
     for (const sc of renderStageBeats({
       exitOnly: true, exits: exits.slice(), players, rng,
-      firstOfSeason: exits.length > 0 && (state.out || []).length === exits.length,
+      firstOfSeason: exits.length > 0 && (state.out || []).length === exits.length
+        // Not on All Stars: the queen who holds the lipstick chose her, and
+        // "you're getting the porkchop" is the host's line on a flagship
+        // season's first night.
+        && !state.allStars,
     })) scenes.push(sc);
   } catch (err) {
     scenes.push({

@@ -109,6 +109,7 @@ export const JUDGES = [
     warmth: 0.70,
     petPeeve: 'a queen who plays it safe',
     softSpot: 'a big personality',
+    peeveDomain: 'risk', softDomain: 'any',
   },
   {
     id: 'michelle', name: 'Michelle Visage', permanent: true,
@@ -121,6 +122,7 @@ export const JUDGES = [
     warmth: 0.20,
     petPeeve: 'a hidden waist',
     softSpot: 'a live vocal',
+    peeveDomain: 'look', softDomain: 'voice',
   },
   {
     id: 'carson', name: 'Carson Kressley', permanent: false,
@@ -133,6 +135,7 @@ export const JUDGES = [
     warmth: 0.90,
     petPeeve: 'a look with no idea behind it',
     softSpot: 'a joke that lands',
+    peeveDomain: 'look', softDomain: 'comedy',
   },
   {
     id: 'ross', name: 'Ross Mathews', permanent: false,
@@ -145,6 +148,7 @@ export const JUDGES = [
     warmth: 0.78,
     petPeeve: 'dead air in the middle of a bit',
     softSpot: 'a heartfelt moment',
+    peeveDomain: 'comedy', softDomain: 'any',
   },
   {
     id: 'law', name: 'Law Roach', permanent: false,
@@ -157,6 +161,7 @@ export const JUDGES = [
     warmth: 0.05,
     petPeeve: 'a cheap fabric under a good idea',
     softSpot: 'proportion',
+    peeveDomain: 'look', softDomain: 'look',
   },
   {
     id: 'ts', name: 'TS Madison', permanent: false,
@@ -169,6 +174,7 @@ export const JUDGES = [
     warmth: 0.50,
     petPeeve: 'no nerve',
     softSpot: 'a stunt she did not see coming',
+    peeveDomain: 'risk', softDomain: 'stage',
   },
   {
     id: 'jamal', name: 'Jamal Sims', permanent: false,
@@ -181,5 +187,6 @@ export const JUDGES = [
     warmth: 0.60,
     petPeeve: 'being off the count',
     softSpot: 'a clean eight',
+    peeveDomain: 'dance', softDomain: 'dance',
   },
 ];

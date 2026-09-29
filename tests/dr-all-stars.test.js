@@ -989,7 +989,10 @@ describe('a legacy bottom is two, and three only on a real tie', () => {
           expect([2, 3]).toContain(n);
           if (n === 3) wide++;
           // The LOW only disappears when the tie took her.
-          if (n === 2) expect((r.dr.call.low || []).length).toBeGreaterThan(0);
+          // Unless the room cannot hold one: five queens with one immune is
+          // the top two, the immune queen and the bottom two, and nobody else.
+          const eligible = (r.dr.roomAtStart || []).length - (r.dr.call.safe || []).length;
+          if (n === 2 && eligible >= 5) expect((r.dr.call.low || []).length).toBeGreaterThan(0);
         }
       }
     }
@@ -1350,7 +1353,9 @@ describe('the other lipstick', () => {
 
   it('asks the runner-up the morning after, and she answers or she does not', () => {
     let asked = 0; const kinds = new Set();
-    for (const seed of [7, 19, 42, 77, 300]) {
+    /* Twelve seasons: `kept` is about one ask in twenty (3 of 59, measured
+       2026-09-29), so five seasons missed it a quarter of the time. */
+    for (const seed of [7, 19, 42, 77, 300, 11, 23, 58, 99, 150, 201, 333]) {
       for (const row of as(seed).rows) {
         const sh = (row.dr.scenes || []).filter(sc => String(sc.kind).startsWith('shadow:'));
         if (!sh.length) continue;

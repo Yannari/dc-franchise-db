@@ -136,7 +136,7 @@ export const MAXI_TYPES = [
        is written to be quotable. */
     id: 'rumix', name: 'Rumix Challenge', tentpole: false, stage: 'main', format: 'cast',
     blend: { singing: 0.4, comedy: 0.3, dance: 0.3 },
-    runway: 'themed', assignment: 'draft', roles: 'slots', chalStyle: 'physical', minCast: 5,
+    runway: 'themed', assignment: 'draft', roles: 'slots', chalStyle: 'physical', minCast: 4,
     desc: 'The remaining queens each write a verse for a remix of one of the host’s own songs, record it with a vocal coach, then learn a single group choreography and film the number together. Verse order is drafted, and whoever takes the last verse has to close the track. A verse that does not scan, a recording the coach cannot rescue, or a queen who gets lost inside the choreography is what fails. The queen whose verse and performance carry the track wins.',
   },
   {

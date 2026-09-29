@@ -1780,17 +1780,16 @@ function _stance(archetype) {
 const _ARRIVE_GROUP = [
   'It comes up the drive slowly, because the drive is gravel and nobody in it wants to be '
   + 'the one who arrives badly.',
-  'Doors, and then the noise of {n} people deciding at exactly the same moment to be '
-  + 'delighted.',
+  'The doors open and everybody in it starts talking at once.',
   'It stops short of the steps. Whoever is driving does not get out, and neither does '
   + 'anybody else for a second and a half.',
-  'Bags onto the flags first, then the {n} of them, then a long pause while everybody '
+  'Bags onto the flags first, then the people, then a long pause while everybody '
   + 'looks up at how much building there is.',
-  'Nobody in it says anything on the last hundred yards, and all {n} of them are talking '
-  + 'before the doors are shut.',
-  'Gravel, brake lights, and {n} people getting out into a silence none of them expected '
-  + 'to be this loud.',
-  'It arrives with the windows down and every one of the {n} of them looking straight up.',
+  'Nobody in it says a word on the last hundred yards. Then the doors open and '
+  + 'nobody stops.',
+  'Gravel, brake lights, and a car full of people getting out into the cold, all '
+  + 'looking up.',
+  'It arrives with the windows down and everybody in it craning to see the towers.',
 ];
 const _ARRIVE_ONE = {
   sharp: [
@@ -1835,11 +1834,18 @@ const _ARRIVE_ONE = {
   ],
 };
 const _MEET_NEUTRAL = [
-  '{a} and {b} introduce themselves twice inside a minute, which is what happens on a drive '
-  + 'where nobody has anything to go on yet.',
-  '{a} asks {b} how the journey was. It is not a question about travel and both of them know it.',
-  '{b} laughs at something {a} says. Neither of them will remember what it was by the evening.',
+  '{a} and {b} shake hands and forget each other&rsquo;s names straight away. They laugh about it.',
+  '{a} asks {b} how the journey was. {b} says long, and they both look up at the castle.',
+  '{b} says something about the size of the place and {a} laughs.',
   '{a} and {b} end up carrying the same case up the steps and decide they get on.',
+  '{a} says hello to {b}. {b} hugs {a}, which {a} was not expecting.',
+  '{b} asks {a} whether anybody has told them anything yet. Nobody has.',
+  '{a} offers {b} a hand with the bags. {b} says no, then gives {a} the heavy one.',
+  '{a} and {b} find out they both hate the cold, and stand closer together because of it.',
+  '&ldquo;Nice coat,&rdquo; {b} says to {a}. It is the first thing either of them has said.',
+  '{a} and {b} swap names, then swap guesses about what the mission will be.',
+  '{a} nods at {b} across the gravel. {b} nods back. That is all, for now.',
+  '{b} stands next to {a} because {a} looks friendly, and they get talking.',
 ];
 const _MEET_RECOGNISED = [
   '{a} places {b} on the flags and says so out loud, which puts a number on {b} before '
@@ -2141,7 +2147,7 @@ const _PERSONALITY = {
     '{name} will agree with whoever is talking, leave no trace on the vote, and wake up safe.',
     '{name} survives by being unremarkable and knows exactly how unremarkable to be.',
     "Nobody will suggest {name}'s name for a fortnight, which is the entire objective.",
-    '{name} is here at the end of most seasons and remembered in none of them.',
+    '{name} plans to get to the end without anybody noticing how.',
     'Ask {name} who {sub} is with and you will get a very warm answer that contains nothing.',
   ],
   underdog: [
@@ -2277,7 +2283,7 @@ const _THREAT = {
     // fact and the one that actually costs somebody something.
     'The room will invent a version of {name} by Thursday, and {name} will have to live in it.',
     'This castle will decide who {name} is off a single misjudged sentence, and then keep the verdict.',
-    "Somebody will mistake {name}'s quietness for a strategy, and act on it.",
+    'Nobody here has any idea what {name} is like yet, and {name} can use that.',
     '{name} gets to choose what to be in here, which is a freedom and a full-time job.',
     'Being unplaceable buys {name} a fortnight. What {sub} does with it is the whole season.',
     'The castle finds a stranger far more unsettling than a résumé, and it will test {obj} for it.',

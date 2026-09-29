@@ -2361,7 +2361,7 @@ describe('a topic-grounded scene names its subject and what changed', () => {
 
   it('does not add a context-free recap card when the same subject returns later that day', () => {
     const contextFree = grounded.flatMap(sc => sc.observerText.audience
-      .filter(b => b.role === 'recall' && !/\bdays? \d+\b/i.test(b.text))
+      .filter(b => b.role === 'recall' && !/\bdays? \d+\b|\byesterday\b/i.test(b.text))
       .map(b => sc.id + ': ' + b.text));
     expect(contextFree, 'same-day continuation gained a redundant recap card').toEqual([]);
     // Mutation: the exact redundant card that shipped is in scope.

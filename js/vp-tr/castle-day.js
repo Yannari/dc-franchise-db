@@ -78,6 +78,7 @@
 // most Traitors sentence this screen can make its layers say.
 //
 // Like every other file in this directory it imports no engine state.
+import { tidyNames } from './tidy.js';
 import { seasonConfig, players } from '../core.js';
 import { HOSTS_BY_FORMAT } from '../shows.js';
 import { PORTRAIT_CSS, TR_NAV_TOP } from './style.js';
@@ -363,7 +364,7 @@ const ESTABLISH_PAIR = {
   ],
   evening: [
     'An hour before they sit down. {a} and {b} are at {loc}, and neither is there by accident.',
-    'The light is going. {a} finds {b} at {loc}, which is where {a} was hoping to find them.',
+    'The light is going. {a} finds {b} at {loc}, which is where {a} hoped {b} would be.',
     'At {loc}, before the Round Table, {a} and {b} have a few minutes and they both know it.',
     '{a} and {b} are at {loc} with the evening in front of them and a name to settle on.',
     'There is an hour left and a decision in it. {a} and {b} spend some of the hour at {loc}.',
@@ -371,7 +372,7 @@ const ESTABLISH_PAIR = {
     'The evening is closing in on a name. At {loc}, {a} and {b} are working out whose.',
   ],
   'after-table': [
-    'The doors have just shut. {a} and {b} are at {loc}, standing the way they were standing.',
+    'The doors have just shut. {a} and {b} are at {loc}, and neither of them is ready for bed.',
     'Straight afterwards, at {loc}, {a} and {b} find each other before anybody else does.',
     'The Round Table is over and nobody has moved much yet. {a} and {b} are at {loc}.',
     'At {loc}, minutes after the table, {a} says {b}’s name and {b} stops walking.',
@@ -389,7 +390,7 @@ const ESTABLISH_PAIR = {
 const ESTABLISH_SOLO = [
   'There is nobody at {loc} but {a}, {when}.',
   '{a} is alone at {loc}, {when}, with nobody to perform for.',
-  '{when}, {a} stops at {loc} on their own and stays there.',
+  '{when}, {a} stops at {loc} alone and stays there.',
   'Nobody else is at {loc}. {a} is there alone, {when}.',
   '{a} is at {loc} with the door shut and nobody on the other side of it, {when}.',
 ];
@@ -397,8 +398,8 @@ const ESTABLISH_SOLO = [
 const ESTABLISH_GROUP = [
   '{names} are at {loc} together, {when}.',
   '{when}, {loc} has {names} in it and nobody else.',
-  '{names} end up at {loc} at the same time, {when}, which none of them planned.',
-  'At {loc}, {when}, it is {names} — and it stays {names} for as long as this takes.',
+  '{names} end up at {loc} at the same time, {when}.',
+  'At {loc}, {when}, it is just {names}.',
 ];
 
 /**
@@ -1477,7 +1478,7 @@ function _mode(s, cast) {
  */
 const ESTABLISH_SINGLE = [
   '{a} pauses at {loc}, {when}, while the rest of the castle carries on nearby.',
-  '{a} steps into {loc}, {when}, and keeps their voice low.',
+  '{a} steps into {loc}, {when}, and keeps out of the way.',
   '{a} stays near {loc}, {when}, watching the others come and go.',
   'At {loc}, {when}, {a} waits until the nearby conversation has finished.',
   '{a} stops at {loc}, {when}, away from the busiest part of the castle.',
@@ -3088,12 +3089,13 @@ const RECALL_LEAD_TODAY = [
 // so a short lead would bleed into the tail and never match. The legacy pools
 // above are all full sentences for the same reason.
 const RECALL_LEAD_DAYS_TOPIC = [
-  'Back to {topic} — and none of this started this morning.',
-  'It is {topic} once more, and this is older than this morning.',
-  'The same subject, {topic}, picked up again from days ago.',
-  'The matter of {topic} comes up once more, and not for the first time this week.',
-  'This returns to {topic}, which has been running for some days now.',
-  'The subject of {topic} comes up again, and this one has been running since earlier in the week.',
+  // NO TIME CLAIM IN THE LEAD. The tail says when; "running for some days now"
+  // printed over a story that started yesterday.
+  'Back to {topic}.',
+  'It is {topic} again.',
+  'The same subject as before: {topic}.',
+  'This is not the first time {topic} has come up.',
+  'Once again it comes back to {topic}.',
 ];
 const RECALL_LEAD_TODAY_TOPIC = [
   'Back to {topic} so soon — the same day has not even finished.',
@@ -3119,14 +3121,13 @@ const RECALL_LEAD_TODAY_TOPIC = [
 // return is like. The tail owns WHEN. The lead's job is what it costs to be
 // back here, which is the half a viewer cannot get from a day number.
 const RECALL_LEAD_RECORDED = [
-  'Neither of them comes into this fresh.',
-  // NOT "a new argument": this pool is drawn for carried TRUST, ROMANCE and
-  // GRIEF scenes as well, and tr-castle-prose has an arm asserting that a
-  // shared confidence is never introduced as a row. It caught this line.
-  'This started before today, and both of them know it.',
-  'They pick the conversation up exactly where they left it, which is not a comfortable place.',
-  'The conversation did not finish the first time, and neither of them has let it go.',
-  'They had this same conversation before, and it ended the same way.',
+  // MODE-NEUTRAL: drawn for one person alone as well as for pairs, and
+  // "neither of them" over somebody alone in a corridor is a scene with a
+  // ghost in it.
+  'This is not new.',
+  'This started before today.',
+  'It is not the first time.',
+  'The same thing again.',
 ];
 
 /**
@@ -4379,7 +4380,7 @@ const HOST_CLOSE = {
     'A castle is a very large building for keeping a secret in, and every one of them '
     + 'spent today finding that out.',
     'None of that was a competition and all of it was the game. It always is.',
-    'Nobody won anything this afternoon. Several people lost something and have not '
+    'Nobody won anything today. Several people lost something and have not '
     + 'noticed yet.',
     'Watch the ones who said the least. There were fewer of them than usual today.',
   ],
@@ -4657,6 +4658,13 @@ function _composeScene(s, key, used, cast) {
       text: _fill(_pick(b ? PUBLIC_CLOSE : PUBLIC_CLOSE_SOLO, key + '|pubclose'), subs) },
   ];
 
+  // A NAME SAID TWICE IN ONE SENTENCE BECOMES A PRONOUN. See js/vp-tr/tidy.js.
+  for (const c of [...audience, ...publicStream]) {
+    for (const f of ['text', 'lead', 'tail', 'say']) {
+      if (typeof c[f] === 'string') c[f] = tidyNames(c[f]);
+    }
+  }
+
   return {
     id: 'ep' + (s.epNum || 0) + '-' + s.window + '-' + s.eventId + '-' + s.beatNo,
     eventId: s.eventId,
@@ -4773,9 +4781,14 @@ function _recallTail(s, key, used) {
   if (s.citation || (s.priorDays || []).length) {
     const days = [...new Set([...(s.priorDays || []), ...(s.citedDays || [])])]
       .sort((a, b) => a - b);
+    // SAID THE WAY A PERSON SAYS IT. "The earlier discussion happened on day
+    // 1." read as a database row printed under a scene.
+    const today = Number(s.epNum) || 0;
+    const when = d => (d === today - 1 ? 'yesterday' : 'on day ' + d);
+    const list = days.map(when);
     return { days: true, text: days.length === 1
-      ? `The earlier discussion happened on day ${days[0]}.`
-      : `The same concern also surfaced on days ${days.join(', ')}.` };
+      ? `It first came up ${list[0]}.`
+      : `It has come up ${list.slice(0, -1).join(', ')} and ${list[list.length - 1]}.` };
   }
   return { days: false, text: _pickUnique(SAME_DAY, key + '|sameday', used) };
 }
@@ -5378,6 +5391,17 @@ const SEGMENT_META = {
       + 'banishment left it, and the one private hour the castle belongs to '
       + 'whoever is still awake in it.' },
 };
+// A NIGHT WITH NO TABLE BEFORE IT. The first night (and any night the format
+// skips the vote) has no banishment to stand in the shape of, and the header
+// above said it did — found by dumping episode one and reading it.
+const NIGHT_NO_TABLE = { eyebrow: 'Into The Dark',
+  title: 'THE CASTLE &middot; NIGHT',
+  sub: 'Lights out, and the one private hour the castle belongs to whoever is '
+    + 'still awake in it.' };
+function _segMeta(segment, ep) {
+  if (segment === 'night' && !(ep && ep.tr && ep.tr.table)) return NIGHT_NO_TABLE;
+  return SEGMENT_META[segment];
+}
 
 export function rpBuildCastleDay(ep, observer = 'audience', segment = null) {
   const suffix = segment ? 'castleday-' + segment : 'castleday';
@@ -5480,11 +5504,11 @@ export function rpBuildCastleDay(ep, observer = 'audience', segment = null) {
     + '<div class="dy-hero">' + '' /* loom hero removed — user found it out of place */
     + '<div class="dy-hero-lock">'
     + '<div class="dy-eyebrow">The Traitors &middot; Day ' + (v.ep || epNum)
-    + ' &middot; ' + (segment ? SEGMENT_META[segment].eyebrow : 'Dawn To Dark') + '</div>'
-    + '<h1 class="dy-title">' + (segment ? SEGMENT_META[segment].title : 'THE CASTLE DAY')
+    + ' &middot; ' + (segment ? _segMeta(segment, ep).eyebrow : 'Dawn To Dark') + '</div>'
+    + '<h1 class="dy-title">' + (segment ? _segMeta(segment, ep).title : 'THE CASTLE DAY')
     + '</h1>'
     + '<div class="dy-title-rule"><i></i>' + _ic('knot', 36, '#d2a44e') + '<i></i></div>'
-    + '<p class="dy-sub">' + (segment ? SEGMENT_META[segment].sub
+    + '<p class="dy-sub">' + (segment ? _segMeta(segment, ep).sub
       : (v.rows.some(r => r.priorDays.length)
         ? 'Seven hours, and everything that happened in them that was not a vote. Some of '
           + 'it started today. Some of it has been running for days and only the people in '

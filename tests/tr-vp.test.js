@@ -1869,9 +1869,15 @@ describe('breakfast prose explains the morning instead of gesturing at it', () =
       const text = strip(morningRevealed(ep));
       const expected = ep.tr.cast.length - ep.tr.goneBefore.length;
       expect(text, `ep ${ep.num}: breakfast never explains what happened overnight`)
-        .toContain('Last night, the Traitors chose someone for murder.');
+        .toMatch(/Another night gone\./);
+      // THE COUNT RUNS UP, AND NEVER OUT OF A TOTAL. "6 of 19 expected" told
+      // the reader how many survived before the door did; the progress is
+      // still concrete, it just does not know the answer.
       expect(text, `ep ${ep.num}: breakfast never accounts for the living arrivals`)
-        .toContain(`${expected} of ${expected} expected players are now at the table.`);
+        .toMatch(/\bat the table now\.|Everybody who is coming down is here now/);
+      expect(text, `ep ${ep.num}: breakfast leaks the survivor count`)
+        .not.toMatch(/expected players/);
+      void expected;
       expect(vague.test(text), `ep ${ep.num}: breakfast still contains disconnected filler`)
         .toBe(false);
     }

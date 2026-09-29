@@ -113,26 +113,26 @@ const ACCOUNT_LINES = {
   'could-not-place-them': [
     '{a} and {b} go hour by hour through last night.\n{b}: "Where was {c} at midnight?"\n{a}: "Nowhere I saw."',
     '{a} and {b} put last night back together, and there’s an hour with {c} nowhere in it.\n{a}: "Where was {c} between eleven and twelve?"\n{b}: "I have no idea."\n{a}: "Neither have I."',
-    '{a} and {b} can’t place {c}.\n{b} (to camera): "An hour missing. That’s a long time in here."',
-    '{a} and {b} find a gap.\n{a}: "{c} vanished for a bit, didn’t {cSub}?"',
+    '{a} and {b} can’t place {c}.\n{a}: "Where was {c} at midnight?"\n{b}: "Nowhere I saw."\n{b} (to camera): "An hour missing. That’s a long time in here."',
+    '{a} and {b} find a gap.\n{a}: "{c} vanished for a bit, didn’t {cSub}?"\n{b}: "A good hour."',
   ],
   'accounted-for': [
     '{a} and {b} rule {c} out.\n{b}: "{c} was with us the whole time."\n{a}: "Then it isn’t {c}."',
     '{a} and {b} walk through the whole night, and {c} is in all of it.\n{b}: "{c} was with us all evening."\n{a}: "Then it’s not {c}."',
-    '{a} and {b} clear {c}.\n{a} (to camera): "{c}’s accounted for. Every minute."',
-    '{a} and {b} confirm {c}’s night.\n{b}: "{c} was by the fire till bed."',
+    '{a} and {b} clear {c}.\n{a}: "{c} was with us all evening."\n{b}: "Then it’s not {c}."\n{a} (to camera): "{c}’s accounted for. Every minute."',
+    '{a} and {b} confirm {c}’s night.\n{b}: "{c} was by the fire till bed."\n{a}: "Then it isn’t {c}."',
   ],
   'two-accounts': [
     '{a} and {b} disagree about their own evening.\n{a}: "We went up at eleven."\n{b}: "It was nearer one."',
     '{a} and {b} can’t agree on their own night, let alone {c}.\n{a}: "We went up at eleven."\n{b}: "It was after midnight."\n{a}: "Was it?"',
-    '{a} and {b} have different versions.\n{b} (to camera): "If we can’t agree on our own night, how can we judge anyone?"',
-    '{a} and {b} muddle the timeline.\n{a}: "This is hopeless."',
+    '{a} and {b} have different versions.\n{a}: "We went up at eleven."\n{b}: "Nearer one."\n{b} (to camera): "If we can’t agree on our own night, how can we judge anyone?"',
+    '{a} and {b} muddle the timeline.\n{a}: "This is hopeless."\n{b}: "Completely hopeless."',
   ],
   'nobody-saw-anything': [
     '{a} and {b} compare nights.\n{b}: "I slept."\n{a}: "So did I."\n{b}: "Useless, the pair of us."',
     'Everybody slept. That’s the entire finding.\n{a}: "So nobody saw anything."\n{b}: "Nobody saw anything."',
-    '{a} and {b} come up empty.\n{a} (to camera): "Nothing. Absolutely nothing."',
-    '{a} and {b} give up.\n{b}: "We were all asleep. That’s it."',
+    '{a} and {b} come up empty.\n{a}: "Anything?"\n{b}: "Nothing."\n{a} (to camera): "Nothing. Absolutely nothing."',
+    '{a} and {b} give up.\n{b}: "We were all asleep. That’s it."\n{a}: "Useless, the pair of us."',
   ],
 };
 
@@ -279,8 +279,8 @@ const DOOR_LINES = {
   'passed-it-on': [
     '{a} leans in at breakfast.\n{a}: "Did you hear a door last night?"\n{b}: "No. Whose?"',
     '{a} mentions it to {b} at breakfast, carefully.\n{a}: "Did you hear a door last night?"\n{b}: "No. Why?"\n{a}: "I think it was {c}’s."',
-    '{a} shares it with {b}.\n{b} (to camera): "{a} heard {c}’s door. That’s interesting."',
-    '{a} tells {b} quietly.\n{a}: "Keep this between us."',
+    '{a} shares it with {b}.\n{a}: "I heard {c}’s door at two."\n{b}: "You’re sure it was {c}’s?"\n{b} (to camera): "{a} heard {c}’s door. That’s interesting."',
+    '{a} tells {b} quietly.\n{a}: "Keep this between us."\n{b}: "Between us."',
   ],
   'talked-themselves-out': [
     '{a} shrugs it off.\n{a}: "Old building. Old doors. It was the wind."\n{b}: "Probably."',
@@ -289,7 +289,7 @@ const DOOR_LINES = {
     '{a} lets it go.\n{a} (to camera): "I’m not accusing anyone over a creak."',
   ],
   'slept-through': [
-    '{b} asks, and {a} yawns.\n{a}: "Heard nothing. Slept like a log."',
+    '{b} asks, and {a} yawns.\n{a}: "Heard nothing. Slept like a log."\n{b}: "Lucky you."',
     '{a} slept straight through and has no idea whether anything happened.\n{a} (to camera): {cam:slept-fine}',
     '{a} heard nothing.\n{b}: "Did you hear anything?"\n{a}: "I was out like a light."',
     '{a} slept soundly.\n{a} (to camera): "Nothing. I heard nothing."',
@@ -360,17 +360,17 @@ const BED_LINES = {
   'said-it-out-loud': [
     '{a} tells {b} in a whisper.\n{a}: "{c}’s bed was empty last night."\n{b}: "For how long?"',
     '{a} tells {b} about the empty bed, and can’t unsay it.\n{a}: "{c} wasn’t in bed last night."\n{b}: "What time?"\n{a}: "Late. Really late."',
-    '{a} shares the empty bed with {b}.\n{b} (to camera): "Well. That changes things."',
+    '{a} shares the empty bed with {b}.\n{a}: "{c}’s bed was empty last night."\n{b}: "For how long?"\n{b} (to camera): "Well. That changes things."',
     '{a} lets it out.\n{a}: "I shouldn’t have told you that."',
   ],
   'they-had-a-reason': [
-    '{c} answers straight away.\n{c}: "I couldn’t sleep, so I went down for water."\n{a}: "Right. Of course."',
-    '{c} says it was the bathroom, and it probably was.\n{c}: "I went to the loo. Is that a crime now?"\n{a}: "No. Sorry."',
-    '{c} explains the empty bed.\n{a} (to camera): "Bathroom. Makes sense. I think."',
-    '{c} has an answer.\n{c}: "I couldn’t sleep, so I got some water."',
+    '{b} asked {c} about it at breakfast, and got an answer straight away.\n{b}: "{c} says {cSub} couldn’t sleep and went down for water."\n{a}: "Right. Of course."',
+    '{c} says it was the bathroom, and it probably was.\n{b}: "{c} went to the loo. That’s all it was."\n{a}: "Fair enough."',
+    '{c} has already explained the empty bed to half the castle.\n{b}: "Bathroom, apparently."\n{a}: "Makes sense. I think."',
+    '{c} has an answer for the empty bed, and {b} passes it on.\n{b}: "{c} couldn’t sleep, so {cSub} got some water."\n{a}: "Right."',
   ],
   'never-woke': [
-    '{b} asks about {c}, and {a} shakes {aPos} head.\n{a}: "I was out cold. Can’t help you."',
+    '{b} asks about {c}, and {a} shakes {aPos} head.\n{a}: "I was out cold. Can’t help you."\n{b}: "Never mind."',
     '{a} slept through and can vouch for nothing.\n{b}: "Was {c} in bed all night?"\n{a}: "No idea. I was asleep."',
     '{a} can’t help.\n{a} (to camera): {cam:slept-fine}',
     '{a} saw nothing.\n{a}: "Sorry. I sleep like a log."',

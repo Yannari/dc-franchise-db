@@ -46,8 +46,8 @@ const LIST_LINES = {
   'both-of-us': [
     '{a} and {b} sit next to each other at breakfast, very upright.\n{b}: "Nervous?"\n{a}: "Terrified. You?"\n{b}: "Terrified."',
     '{a} and {b} are both on the list, and spend the morning being very calm at each other.\n{a}: "Well. Here we are."\n{b}: "Here we are."\n{a}: "Calm."\n{b}: "Very calm."',
-    '{a} and {b} are on trial together.\n{b} (to camera): "Both of us. One of us might go. Horrible."',
-    '{a} and {b} share a nervous laugh.\n{a}: "May the best one survive."',
+    '{a} and {b} are on trial together.\n{a}: "Both of us, then."\n{b}: "Both of us."\n{b} (to camera): "Both of us. One of us might go. Horrible."',
+    '{a} and {b} share a nervous laugh.\n{a}: "May the best one survive."\n{b}: "May it be me."',
   ],
   'not-me': [
     '{a} isn’t on the list and hovers by {b}.\n{a}: "Is there anything I can do?"\n{b}: "Just don’t vote for me."',
@@ -59,12 +59,12 @@ const LIST_LINES = {
     '{a} leans over.\n{a}: "So why you, do you think?"\n{b}: "Thanks, {a}. Very reassuring."',
     '{a} wants to know what {b} did to get on the list.\n{a}: "Why do you think they put you on it?"\n{b}: "Thanks, {a}. Really helpful."',
     '{a} asks bluntly.\n{a}: "What did you do?"\n{b}: "Nothing! That’s the point!"',
-    '{a} wonders about {b}.\n{a} (to camera): "Nobody gets on that list for no reason."',
+    '{a} wonders about {b}.\n{a}: "Why do you think they put you on it?"\n{b}: "Thanks, {a}. Very helpful."\n{a} (to camera): "Nobody gets on that list for no reason."',
   ],
   'work-the-room': [
-    '{b} brings everyone tea.\n{b}: "Sugar? No? Lovely."\n{a} (to camera): "Somebody’s on a list."',
-    '{b} spends the morning being useful to everybody, which is what people on a list do.\n{b}: "Tea, anyone? Coffee? I’ll make it."\n{a} (to camera): "Very helpful all of a sudden."',
-    '{b} works the room.\n{b} (to camera): "I’m on the list. I need every friend I’ve got."',
+    '{b} brings everyone tea.\n{b}: "Sugar? No? Lovely."\n{a}: "You’re very helpful today."\n{b}: "I’m always helpful!"\n{a} (to camera): "Somebody’s on a list."',
+    '{b} spends the morning being useful to everybody, which is what people on a list do.\n{b}: "Tea, anyone? Coffee? I’ll make it."\n{a}: "You’re very busy this morning."\n{b}: "Just being useful."\n{a} (to camera): "Very helpful all of a sudden."',
+    '{b} works the room.\n{b}: "Need anything? Anything at all?"\n{a}: "I’m fine, {b}."\n{b} (to camera): "I’m on the list. I need every friend I’ve got."',
     '{b} is suddenly everyone’s best mate.\n{a}: "You’re very chatty today."\n{b}: "Am I?"',
   ],
 };
@@ -156,16 +156,16 @@ const OFFER_LINES = {
     '{a} makes the offer plainly.\n{a} (to camera): "No frills. Just a deal."',
   ],
   'took-it': [
-    '{b} agrees almost before {a} finishes.\n{b}: "Yes. Deal."\n{a} (to camera): "Quick. Too quick?"',
+    '{b} agrees almost before {a} finishes.\n{b}: "Yes. Deal."\n{a}: "That was quick."\n{b}: "It was a good offer."\n{a} (to camera): "Quick. Too quick?"',
     '{b} agrees before {a} has finished.\n{a}: "So what I’m proposing is—"\n{b}: "Yes."\n{a} (to camera): "Too quick. I noticed."',
-    '{b} jumps at the deal.\n{b}: "Done. Shake on it."',
-    '{b} accepts instantly.\n{a} (to camera): "Why so eager, {b}?"',
+    '{b} jumps at the deal.\n{b}: "Done. Shake on it."\n{a}: "Done."',
+    '{b} accepts instantly.\n{b}: "Yes. Deal. Done."\n{a}: "You didn’t even think about it."\n{a} (to camera): "Why so eager, {b}?"',
   ],
   'did-not-say-yes': [
     '{b} thinks about it for a long time.\n{b}: "Ask me tomorrow."\n{a}: "That’s a no."\n{b}: "It’s a tomorrow."',
     '{b} doesn’t say yes. {b} doesn’t say no either.\n{a}: "Well?"\n{b}: "I’ll think about it."\n{a} (to camera): "That’s an answer. Just not the one I wanted."',
-    '{b} stays non-committal.\n{b}: "Let’s see how the week goes."',
-    '{b} won’t commit.\n{a} (to camera): {cam:unsure-info}',
+    '{b} stays non-committal.\n{b}: "Let’s see how the week goes."\n{a}: "That’s not a no."\n{b}: "It’s not a yes, either."',
+    '{b} won’t commit.\n{a}: "So are we agreed?"\n{b}: "Let’s see."\n{a} (to camera): {cam:unsure-info}',
   ],
   // ── THE SECOND SHAPE, AND THE ONE THAT ACTUALLY GETS SEEN ──────────
   //
@@ -177,8 +177,8 @@ const OFFER_LINES = {
   'asked-outright': [
     '{b} puts it plainly.\n{b}: "You’ve stopped saying one particular name. What deal did you do?"\n{a}: "No deal."',
     '{b} has noticed one name never comes out of {a}’s mouth any more.\n{b}: "You never say their name. Why not?"\n{a}: "No reason."\n{b}: "There’s always a reason."',
-    '{b} calls it out.\n{b}: "You’ve done a deal, haven’t you?"',
-    '{b} asks directly.\n{a} (to camera): "{b} noticed. Of course {bSub} did."',
+    '{b} calls it out.\n{b}: "You’ve done a deal, haven’t you?"\n{a}: "Deal? What deal?"',
+    '{b} asks directly.\n{b}: "You’ve stopped saying one name. Why?"\n{a}: "No reason."\n{a} (to camera): "{b} noticed. Of course {bSub} did."',
   ],
   'noticed-quietly': [
     '{b} notices and says nothing.\n{b} (to camera): "Some names go quiet for a reason. I’ll wait."',
@@ -274,7 +274,7 @@ registerEvent({
 
 const HOLDING_LINES = {
   'cannot-say-it': [
-    '{b} asks what’s wrong over breakfast.\n{a}: "Nothing. Honestly."\n{a} (to camera): "Everything. And I can’t tell a soul."',
+    '{b} asks what’s wrong over breakfast.\n{a}: "Nothing. Honestly."\n{b}: "It doesn’t look like nothing."\n{a} (to camera): "Everything. And I can’t tell a soul."',
     '{a} has done something that can’t be explained to anybody, and spends breakfast not explaining it to {b}.\n{b}: "You’re quiet."\n{a}: "Tired."\n{a} (to camera): "I can’t tell {bObj}. I can’t tell anyone."',
     '{a} holds a secret through breakfast.\n{a} (to camera): {cam:holding-info}',
     '{a} keeps it inside.\n{b}: "Something’s up with you."\n{a}: "Nothing’s up."',
@@ -282,14 +282,14 @@ const HOLDING_LINES = {
   'said-half': [
     '{a} gives {b} a name and nothing else.\n{a}: "Watch them. Don’t ask me why."\n{b}: "That’s all I get?"',
     '{a} gives {b} half of it: a name to watch, and none of the reason.\n{a}: "Just watch them. Trust me."\n{b}: "Why?"\n{a}: "I can’t say."',
-    '{a} tells {b} just enough.\n{b} (to camera): "Half a story. The worst kind."',
+    '{a} tells {b} just enough.\n{a}: "Watch them. Don’t ask why."\n{b}: "That’s all I get?"\n{b} (to camera): "Half a story. The worst kind."',
     '{a} drops a hint.\n{a}: "Keep an eye on them. That’s all."',
   ],
   'told-them-everything': [
     '{a} tells {b} the whole thing in a rush.\n{b}: "You’ve been carrying that all night?"\n{a}: "Since three a.m."',
     '{a} tells {b} the whole of it, in order, and looks lighter for about four seconds.\n{b}: "Wow."\n{a}: "Yeah."\n{b}: "What do we do now?"',
-    '{a} spills everything to {b}.\n{a} (to camera): "I had to tell someone. It was {b}."',
-    '{a} confides in {b}.\n{b}: "I won’t tell a soul."',
+    '{a} spills everything to {b}.\n{b}: "You’ve been carrying that all night?"\n{a}: "Since three a.m."\n{a} (to camera): "I had to tell someone. It was {b}."',
+    '{a} confides in {b}.\n{b}: "I won’t tell a soul."\n{a}: "Thank you."',
   ],
 };
 

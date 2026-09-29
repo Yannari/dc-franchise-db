@@ -1652,15 +1652,19 @@ quality tool, the lesson of the fifth show (ADDING-A-SHOW §16.1).
 
 Each plan leaves the site working.
 
-1. **Plan 1 — engine.** Registry entry, setup scope, runnable flag, dispatch;
-   profiles, beliefs, claims, chats, ratings, Hangout, standard blocking,
-   visit, goodbye, newcomers, finale; `audit:ci-spec`.
+1. **Plan 1 — engine.** Registry entry (not runnable yet); profiles and the
+   Catfish Pool draw, beliefs, emotions, claims, slips, chats, ratings,
+   Hangout, standard blocking, visit, goodbye, newcomers, finale;
+   `audit:ci-spec`.
 2. **Plan 2 — writing.** Scripts, dictation, voices, host, cross-cuts,
    facts, all pools, repetition guard; `ci:transcript`. Read a season.
 3. **Plan 3 — the game library and twists.** Games, parties, apartment life,
    all blocking formats, powers, arrivals as timeline cards.
-4. **Plan 4 — the Circle tab.** The Catfish Pool, Profile Plan overrides, face catalogue, Photos panel,
-   season options.
+4. **Plan 4 — the Circle tab.** `js/ci-run.js`, the runnable flag and dispatch
+   in both `run-ui.js` sites, `CONFIG_SCOPE`, the format option in
+   `simulator.html`, the Catfish Pool, Profile Plan overrides, face catalogue,
+   Photos panel, season options. (The flag waits for the run loop, as Perfect
+   Match's did.)
 5. **Plan 5 — screens.** Stage kinds, apartments with personality, sound.
 6. **Plan 6 — the site.** Export, ratings reader, social pack, wiki, ledger.
 

@@ -98,13 +98,13 @@ const STEP_LINES = {
     '{b} walks with {a} and opens up.\n{b}: "It’s easier out here. No walls."\n{a}: "No ears, you mean."\n{b}: "That too."',
     '{b} tells {a} more in ten minutes of walking than in days indoors.\n{b}: "I miss my kids. I haven’t said that out loud yet."\n{a}: "You can say it to me."',
     '{b} and {a} walk ahead of the others.\n{b}: "Honestly? I’m struggling."\n{a}: "Me too. Nobody admits it."',
-    '{b} confides in {a} on the track.\n{b}: "If I go next, I want you to know who I think it is."\n{a} (to camera): {cam:holding-info}',
+    '{b} confides in {a} on the track.\n{b}: "If I go next, I want you to know who I think it is."\n{a}: "Don’t say that. You’re not going next."\n{b}: "Just in case. Promise me you’ll listen."\n{a} (to camera): {cam:holding-info}',
   ],
   probed: [
     '{b} keeps pace with {a} the whole way out, asking questions.\n{b}: "So where were you last night, after the fire?"\n{a}: "Bed. Why?"\n{b}: "Just asking."',
     '{b} walks with {a} and won’t stop asking.\n{b}: "Who do you trust? Honestly?"\n{a}: "Is this an interview?"',
     '{b} quizzes {a} on the road.\n{b}: {say:ask-where}\n{a}: {say:answer-clean}',
-    '{b} asks {a} one question after another.\n{a} (to camera): "Three miles of questions. I felt like I was on trial."',
+    '{b} asks {a} one question after another.\n{b}: "Where were you after dinner? And before that? And who with?"\n{a}: "Is this a walk or a trial?"\n{a} (to camera): "Three miles of questions. I felt like I was on trial."',
     '{b} digs.\n{b}: "What did you make of last night?"\n{a}: "Same as you, probably."\n{b}: "I doubt that."',
   ],
   quiet: [
@@ -116,9 +116,9 @@ const STEP_LINES = {
   ],
   'said-too-much': [
     '{b} talks for two miles and spends the last one worrying about it.\n{b}: "Forget what I said about the vote."\n{a}: "Which bit?"\n{b}: "All of it."',
-    '{b} tells {a} far too much.\n{b} (to camera): {cam:overdid}',
+    '{b} tells {a} far too much.\n{b}: "…and that’s why I’m not voting for them. Oh God. Forget I said that."\n{a}: "Said what?"\n{b} (to camera): {cam:overdid}',
     '{b} realises {bSub} has said too much.\n{b}: "That stays between us, yeah?"\n{a}: "Of course."\n{a} (to camera): "Of course it doesn’t."',
-    '{b} lets something slip on the walk.\n{a} (to camera): {cam:holding-info}',
+    '{b} lets something slip on the walk.\n{b}: "Well, I know who the others went to first, so—"\n{a}: "Who?"\n{b}: "Nobody. Forget it."\n{a} (to camera): {cam:holding-info}',
     '{b} goes quiet after saying one thing too many.\n{b}: "I shouldn’t have told you that."\n{a}: "Too late now."',
   ],
   'fell-behind': [
@@ -212,36 +212,36 @@ const EARSHOT_LINES = {
     '{a} waits until the castle is out of sight to say {c}’s name.\n{a}: "It’s {c}. I’m sure of it."\n{b}: "I’ve been thinking it for days."',
     '{a} floats {c} on the road, and {b} jumps on it.\n{a}: "What do you think about {c}?"\n{b}: {say:agree-suspect:{c}}',
     '{a} and {b} agree on {c}.\n{a}: "So it’s {c}."\n{b}: "It’s {c}."',
-    'Away from the castle, {a} names {c}.\n{b}: "Thank God. I thought it was just me."',
-    '{a} says {c}, quietly.\n{b}: "Same. Let’s watch {cObj} at dinner."',
+    'Away from the castle, {a} names {c}.\n{b}: "Thank God. I thought it was just me."\n{a}: "Then we watch {cObj} tonight. Both of us."',
+    '{a} says {c}, quietly.\n{b}: "Same. Let’s watch {cObj} at dinner."\n{a}: "Watch {cObj} at the table too."',
   ],
   hedged: [
     '{a} floats {c}’s name on the road. {b} neither agrees nor argues.\n{a}: "What about {c}?"\n{b}: "Maybe. I don’t know."\n{a} (to camera): "That’s not a no."',
-    '{a} mentions {c}.\n{b}: {say:doubt-suspect:{c}}',
-    '{a} tests {c}’s name on {b}.\n{b}: "Could be. Could be anyone."',
-    '{a} brings up {c}. {b} shrugs.\n{b}: "I need more than a feeling."',
-    '{a} tries {c} on {b}.\n{b}: "I’ll think about it."\n{a} (to camera): {cam:unsure-info}',
+    '{a} mentions {c}.\n{b}: {say:doubt-suspect:{c}}\n{a}: "Fair. Just keep an eye out."',
+    '{a} tests {c}’s name on {b}.\n{b}: "Could be. Could be anyone."\n{a}: "Anyone isn’t an answer."\n{b}: "It’s the only honest one."',
+    '{a} brings up {c}. {b} shrugs.\n{b}: "I need more than a feeling."\n{a}: "A feeling is how it starts."\n{b}: "A feeling is how Faithfuls go home."',
+    '{a} tries {c} on {b}.\n{b}: "I’ll think about it."\n{a}: "Think fast. The table’s tonight."\n{a} (to camera): {cam:unsure-info}',
   ],
   defended: [
     '{a} says {c}’s name out on the road, and {b} shuts it down.\n{a}: "I think it’s {c}."\n{b}: "No. Absolutely not."',
-    '{b} defends {c} straight away.\n{b}: "{c}? Never. I’d stake my game on {cObj}."',
+    '{b} defends {c} straight away.\n{b}: "{c}? Never. I’d stake my game on {cObj}."\n{a}: "You’re very sure."\n{b}: "I am."',
     '{a} suggests {c}. {b} is having none of it.\n{b}: "You’re wrong about {c}."\n{a}: "We’ll see."',
-    '{b} won’t hear a word against {c}.\n{a} (to camera): "Why is {b} so protective of {c}?"',
-    '{a} names {c}, and {b} bristles.\n{b}: "Leave {c} out of it."',
+    '{b} won’t hear a word against {c}.\n{a}: "I’m only saying what I’ve seen."\n{b}: "Then you’ve seen wrong. Drop it."\n{a} (to camera): "Why is {b} so protective of {c}?"',
+    '{a} names {c}, and {b} bristles.\n{b}: "Leave {c} out of it."\n{a}: "Touchy."\n{b}: "Loyal. There’s a difference."',
   ],
   'named-somebody-else': [
     '{a} says {c}. {b} listens, then says a different name.\n{a}: "{c}, surely."\n{b}: "No. Somebody else. Somebody quieter."',
-    '{a} brings up {c}. {b} has another name.\n{b}: "Forget {c}. Think about who’s been too quiet."',
+    '{a} brings up {c}. {b} has another name.\n{b}: "Forget {c}. Think about who’s been too quiet."\n{a}: "Too quiet like who?"\n{b}: "Work it out. I’m not saying it out here."',
     '{a} suggests {c}. {b} disagrees.\n{b}: "I’ve got a different name."\n{a}: "Go on."',
-    '{b} steers {a} away from {c}.\n{b}: "You’re looking in the wrong place."',
-    '{a} and {b} have different names.\n{a} (to camera): "{b} wouldn’t go with {c}. Interesting."',
+    '{b} steers {a} away from {c}.\n{b}: "You’re looking in the wrong place."\n{a}: "Then where should I look?"\n{b}: "Closer to home."',
+    '{a} and {b} have different names.\n{a}: "It’s {c}. I’m sure of it."\n{b}: "It isn’t. I’ve got someone else."\n{a} (to camera): "{b} wouldn’t go with {c}. Interesting."',
   ],
   'would-not-talk-about-it': [
     '{a} mentions {c}.\n{b}: "Not out here."\n{a}: "Out here’s the only place we can."\n{b}: "Still no."',
-    '{b} refuses to talk names on the road.\n{b}: "Can we just walk?"',
-    '{a} brings up {c}. {b} changes the subject.\n{b}: "Look at that view."\n{a} (to camera): "Dodged it completely."',
-    '{b} won’t discuss {c}.\n{b}: "I’m not doing names today."',
-    '{b} goes quiet at {c}’s name.\n{a} (to camera): {cam:unsure-info}',
+    '{b} refuses to talk names on the road.\n{b}: "Can we just walk?"\n{a}: "We can walk and talk."\n{b}: "Not about that."',
+    '{a} brings up {c}. {b} changes the subject.\n{b}: "Look at that view."\n{a}: "The view’s been there all week."\n{a} (to camera): "Dodged it completely."',
+    '{b} won’t discuss {c}.\n{b}: "I’m not doing names today."\n{a}: "Then when?"\n{b}: "Not out here."',
+    '{b} goes quiet at {c}’s name.\n{a}: "What about {c}?"\n{b}: "…What about {cObj}?"\n{a} (to camera): {cam:unsure-info}',
   ],
 };
 
@@ -441,32 +441,32 @@ const WALK_PICK_LINES = {
   flattered: [
     '{a} chooses {b} to walk with, and {b} is visibly pleased.\n{b}: "Me? Really?"\n{a}: "Why not you?"\n{b} (to camera): "Nobody usually picks me. That was nice."',
     '{a} falls in beside {b}.\n{a}: "Walk with me?"\n{b}: "I’d love to."',
-    '{a} picks {b} over the obvious choice.\n{b} (to camera): "{a} chose me. I won’t forget that."',
+    '{a} picks {b} over the obvious choice.\n{b}: "Why me? You usually walk with the others."\n{a}: "Fancied a change."\n{b} (to camera): "{a} chose me. I won’t forget that."',
     '{b} beams all the way down the track.\n{b}: "I thought you’d walk with your usual lot."\n{a}: "Fancied a change."',
   ],
   wary: [
     '{a} chooses {b} to walk with, and {b} spends the road working out why.\n{b}: "Why me today?"\n{a}: "Does there have to be a reason?"\n{b}: "In here? Yes."',
-    '{b} is suspicious of {a}’s choice.\n{b} (to camera): "{a} never walks with me. What does {aSub} want?"',
+    '{b} is suspicious of {a}’s choice.\n{b}: "What do you want, {a}?"\n{a}: "A walk. Just a walk."\n{b}: "Nobody wants just a walk."\n{b} (to camera): "{a} never walks with me. What does {aSub} want?"',
     '{a} picks {b}. {b} is wary.\n{b}: "What are you after?"\n{a}: "Company."',
-    '{b} keeps {bPos} guard up.\n{b} (to camera): {cam:unsure-info}',
+    '{b} keeps {bPos} guard up.\n{a}: "You’re very quiet."\n{b}: "I’m listening. You’re the one who picked me."\n{b} (to camera): {cam:unsure-info}',
   ],
   transactional: [
     '{b} understands the pick immediately.\n{b}: "So. What are we talking about? The vote?"\n{a}: "Straight to it."\n{b}: "Why else would you walk with me?"',
-    '{b} gets down to business.\n{b}: "You want my vote. What do I get?"',
+    '{b} gets down to business.\n{b}: "You want my vote. What do I get?"\n{a}: "Straight to it, then."\n{b}: "Life’s short. So’s the walk."',
     '{b} treats the walk as a deal.\n{b}: "Let’s make this worth it."\n{a}: "Fine by me."',
-    '{b} works out straight away what the walk is for.\n{b} (to camera): "{a} picked me for a reason. I want to know what it’s worth."',
+    '{b} works out straight away what the walk is for.\n{b}: "Let’s skip the small talk. What are you offering?"\n{a}: "Who says I’m offering anything?"\n{b} (to camera): "{a} picked me for a reason. I want to know what it’s worth."',
   ],
   'would-not-be-picked': [
-    '{a} falls in beside {b}, and {b} finds a reason to be elsewhere within the mile.\n{b}: "Just need to catch someone. Sorry."\n{a} (to camera): "Charming."',
-    '{b} slips away from {a}.\n{b}: "I’ll see you there."',
-    '{b} walks faster until {a} gives up.\n{a} (to camera): {cam:left-out}',
-    '{b} doesn’t want to walk with {a}.\n{b} (to camera): "Not today. I’m not having that conversation."',
+    '{a} falls in beside {b}, and {b} finds a reason to be elsewhere within the mile.\n{b}: "Just need to catch someone. Sorry."\n{a}: "Right. Course."\n{a} (to camera): "Charming."',
+    '{b} slips away from {a}.\n{b}: "I’ll see you there."\n{a}: "I’ll walk with you."\n{b}: "No, it’s fine. Honestly."',
+    '{b} walks faster until {a} gives up.\n{a}: "Slow down a bit?"\n{b}: "Can’t. Need to catch the others."\n{a} (to camera): {cam:left-out}',
+    '{b} doesn’t want to walk with {a}.\n{a}: "Walk with me?"\n{b}: "Maybe later."\n{b} (to camera): "Not today. I’m not having that conversation."',
   ],
   'turned-it-around': [
     '{a} picks {b}, and by the second mile {b} is doing the asking.\n{b}: "So who are you writing tonight?"\n{a}: "I was going to ask you that."\n{b}: "I asked first."',
-    '{b} takes charge of the conversation.\n{a} (to camera): "I picked {b} to get answers. I ended up giving them."',
-    '{b} flips it on {a}.\n{b}: {say:ask-where}',
-    '{b} runs rings round {a}.\n{b}: "Your turn. What do you know?"',
+    '{b} takes charge of the conversation.\n{b}: "Let’s talk about you, actually. Who do you trust?"\n{a}: "I was going to ask you that."\n{a} (to camera): "I picked {b} to get answers. I ended up giving them."',
+    '{b} flips it on {a}.\n{b}: {say:ask-where}\n{a}: "I asked you first."\n{b}: "And I asked second. Go on."',
+    '{b} runs rings round {a}.\n{b}: "Your turn. What do you know?"\n{a}: "Not much."\n{b}: "Liar."',
   ],
 };
 
@@ -566,7 +566,7 @@ const SHORT_COLUMN_LINES = {
   ],
   'pair-first': [
     '{a} nudges {b} and nods at the line ahead.\n{a}: "Half the size of the first day."\n{b}: "Less than half."',
-    'The group leaving is shorter than last time.\n{a}: "Look how few of us there are."\n{b} only nods.',
+    'The group leaving is shorter than last time.\n{a}: "Look how few of us there are."\n{b}: "Don’t."\n{b} only nods.',
     '{a} and {b} walk at the back and count the line.\n{a}: "It’s getting small."\n{b}: "It is."',
     '{a} says it out loud.\n{a}: "We used to take up the whole road."\n{b}: "Don’t."',
   ],
@@ -646,27 +646,27 @@ const ROAD_SPARK_LINES = {
   'road-spark': [
     'Something happens on the walk between {a} and {b} that never happens in the castle.\n{a}: "You’re different out here."\n{b}: "So are you. Nicer."\n{a}: "Don’t tell anyone."',
     '{a} and {b} fall behind the group without deciding to.\n{b}: "We should catch up."\n{a}: "Should we?"',
-    '{a} makes {b} laugh twice before the first gate.\n{b} (to camera): "I haven’t laughed like that since I got here. That’s a problem."',
+    '{a} makes {b} laugh twice before the first gate.\n{b}: "Stop it, I’ll fall over."\n{a}: "Then fall over. I’ll catch you."\n{b} (to camera): "I haven’t laughed like that since I got here. That’s a problem."',
     '{a} offers {b} a hand over the stile and doesn’t let go straight away.\n{b}: "You can let go now."\n{a}: "I know."',
-    '{a} and {b} walk close enough that their arms keep touching.\n{a} (to camera): "Nothing happened. Something happened."',
+    '{a} and {b} walk close enough that their arms keep touching.\n{b}: "You’re very close."\n{a}: "It’s a narrow path."\n{b}: "It isn’t."\n{a} (to camera): "Nothing happened. Something happened."',
   ],
   'named-it': [
     'Halfway to the vans, {a} says it out loud, and {b} doesn’t run.\n{a}: "I like you. I don’t know what to do with that in here."\n{b}: "Nothing, yet."',
     '{a} stops on the track and says it.\n{a}: "This is going to get complicated."\n{b}: "It already is."',
     '{b} asks, and {a} answers honestly.\n{b}: "Is this a game thing?"\n{a}: "No. Unfortunately."',
-    '{a} names it before {aSub} can talk {aRef} out of it.\n{a}: "I’d rather say it than spend a week pretending."\n{b} (to camera): "Brave. Stupid. Brave."',
+    '{a} names it before {aSub} can talk {aRef} out of it.\n{a}: "I’d rather say it than spend a week pretending."\n{b}: "Okay. Then I’ll say it back."\n{b} (to camera): "Brave. Stupid. Brave."',
   ],
   'somebody-saw': [
     '{a} and {b} walk out together, and half the line watches them do it.\n{b}: "Everyone’s looking."\n{a}: "Let them."',
-    '{a} and {b} laugh at something, and three heads turn.\n{a} (to camera): "By lunch that’ll be a rumour."',
+    '{a} and {b} laugh at something, and three heads turn.\n{b}: "Everyone’s looking at us."\n{a}: "Let them."\n{a} (to camera): "By lunch that’ll be a rumour."',
     '{a} and {b} walk at the back, and someone keeps glancing round.\n{b}: "We’ve got an audience."\n{a}: "We always had one."',
-    '{a} and {b} get noticed.\n{b} (to camera): "There’s no private in this place. Not even in a field."',
+    '{a} and {b} get noticed.\n{a}: "We’ve been clocked."\n{b}: "We were clocked on day two."\n{b} (to camera): "There’s no private in this place. Not even in a field."',
   ],
   'walked-it-off': [
     '{a} feels it coming and drops back to walk with somebody else.\n{a} (to camera): "Not now. Not in here. I know exactly where that goes."',
     '{a} lengthens {aPos} stride and leaves {b} behind.\n{b}: "Was it something I said?"\n{a}: "No. That’s the problem."',
     '{a} walks it off before it becomes anything.\n{a} (to camera): "A crush is a weakness. Weaknesses get used."',
-    '{a} changes the subject, then changes walking partner.\n{b} (to camera): "Well. That was a very fast exit."',
+    '{a} changes the subject, then changes walking partner.\n{b}: "Was it something I said?"\n{a}: "No. I just need to catch someone."\n{b} (to camera): "Well. That was a very fast exit."',
   ],
 };
 
@@ -742,26 +742,26 @@ const SETTLED_LINES = {
   held: [
     '{b} answers the thing that’s been between them all day, straight, on the walk home.\n{a}: "So that’s the truth?"\n{b}: "That’s the truth."\n{a}: "Okay. I believe you."',
     '{b} explains {bRef} on the way back.\n{b}: "I wasn’t hiding anything. I was just tired."\n{a}: "Alright. That makes sense."',
-    '{a} asks, and {b} answers properly.\n{a} (to camera): "{b} answered everything. I’m satisfied."',
+    '{a} asks, and {b} answers properly.\n{a}: "So where were you?"\n{b}: "Kitchen, then the fire, then bed. Ask anyone."\n{a}: "Okay. I believe you."\n{a} (to camera): "{b} answered everything. I’m satisfied."',
     '{a} and {b} clear it up on the road.\n{b}: "Are we good?"\n{a}: "We’re good."',
   ],
   dropped: [
     '{a} decides somewhere on the way back that it isn’t worth carrying.\n{a} (to camera): {cam:drop-it}',
     '{a} lets it go on the walk.\n{a}: "Forget it. It doesn’t matter."\n{b}: "You sure?"\n{a}: "I’m sure."',
     '{a} drops the subject.\n{a} (to camera): "Life’s too short. Even in here."',
-    '{a} lets {b} off.\n{a}: "I was being paranoid."',
+    '{a} lets {b} off.\n{a}: "I was being paranoid."\n{b}: "You were a bit."\n{a}: "Don’t push it."',
   ],
   soured: [
     'It comes apart on the walk back. {b} says the wrong thing.\n{b}: "Why do you even care?"\n{a}: "Because you lied to me."\n{b}: "I didn’t lie."',
     '{a} and {b} fall out on the road.\n{a}: "I’m done trying with you."\n{b}: "Fine."',
-    '{b} gets defensive, and {a} stops pretending.\n{a} (to camera): "That answer told me everything."',
+    '{b} gets defensive, and {a} stops pretending.\n{b}: "Why are you always on at me?"\n{a}: "Because you never give me a straight answer."\n{a} (to camera): "That answer told me everything."',
     '{a} and {b} argue all the way home.\n{b}: "You’ve made your mind up."\n{a}: "You made it up for me."',
   ],
   unresolved: [
     '{a} and {b} talk the whole way back and settle nothing.\n{a}: "So we still don’t agree."\n{b}: "Looks like it."',
-    '{a} and {b} go round in circles.\n{b} (to camera): "Two miles of talking. Nothing changed."',
+    '{a} and {b} go round in circles.\n{a}: "So we still disagree."\n{b}: "We still disagree."\n{b} (to camera): "Two miles of talking. Nothing changed."',
     '{a} and {b} can’t settle it.\n{a}: "Let’s leave it."\n{b}: "For now."',
-    '{a} and {b} reach the gate no closer.\n{a} (to camera): {cam:unsure-info}',
+    '{a} and {b} reach the gate no closer.\n{b}: "Are we done?"\n{a}: "For now."\n{a} (to camera): {cam:unsure-info}',
   ],
 };
 
@@ -831,20 +831,20 @@ registerEvent({
 const LET_IT_GO_LINES = {
   cleared: [
     '{b} answers it properly on the road back, and {a} can’t fault the answer.\n{a}: "That makes sense, actually."\n{b}: "Because it’s true."',
-    '{b} explains, and {a} believes it.\n{a} (to camera): "{b} had an answer for everything. A good one."',
+    '{b} explains, and {a} believes it.\n{b}: "That’s all it was. Honestly."\n{a}: "Okay. That makes sense."\n{a} (to camera): "{b} had an answer for everything. A good one."',
     '{a} asks. {b} answers.\n{b}: {say:answer-clean}\n{a}: "Okay. Fair enough."',
     '{b} clears {bPos} name on the walk.\n{b}: "Ask anyone. They’ll tell you the same."\n{a}: "I believe you."',
   ],
   slipped: [
     '{b} talks too much on the long walk, and {a} gets something {b} didn’t mean to give.\n{b}: "—and then I went back up, because—"\n{a}: "Back up? You said you stayed down."\n{b}: "Did I?"',
-    '{b} slips up.\n{a} (to camera): "One little detail. {b} didn’t even notice."',
-    '{b} gets {bPos} story muddled.\n{b}: {say:answer-shaky}\n{a} (to camera): {cam:holding-info}',
+    '{b} slips up.\n{b}: "I only went down for a minute."\n{a}: "Down? You said you never left your room."\n{a} (to camera): "One little detail. {b} didn’t even notice."',
+    '{b} gets {bPos} story muddled.\n{b}: {say:answer-shaky}\n{a}: "That’s not what you said this morning."\n{a} (to camera): {cam:holding-info}',
     '{b} says something that doesn’t match.\n{a}: "That’s not what you said this morning."\n{b}: "Isn’t it?"',
   ],
   hardened: [
     'Nothing about the walk back changes {a}’s mind about {b}, and {b} can tell.\n{b}: "You still don’t believe me."\n{a}: "No."',
-    '{a} stays cold with {b} the whole way.\n{b} (to camera): "Whatever I say, {a} has decided."',
-    '{a} listens to {b} and isn’t moved.\n{a} (to camera): "Nice try."',
+    '{a} stays cold with {b} the whole way.\n{b}: "Are you going to talk to me at all?"\n{a}: "I’m listening."\n{b}: "You’re not."\n{b} (to camera): "Whatever I say, {a} has decided."',
+    '{a} listens to {b} and isn’t moved.\n{b}: "I’ve explained it three times."\n{a}: "I know. It sounded better the first time."\n{a} (to camera): "Nice try."',
     '{a} doesn’t budge.\n{b}: "What would it take?"\n{a}: "More than that."',
   ],
   'never-raised-it': [
@@ -1050,14 +1050,14 @@ const CASTLE_IN_VIEW_LINES = {
   buried: [
     '{a} and {b} talk about the ones who are gone the whole way back.\n{b}: "I still expect to see them at dinner."\n{a}: "Me too."',
     '{a} and {b} remember the people who have left.\n{a}: "Remember the first walk? All of us?"\n{b}: "Feels like a year ago."',
-    '{a} and {b} say everything there is to say about who has gone.\n{b} (to camera): {cam:few-left}',
+    '{a} and {b} say everything there is to say about who has gone.\n{a}: "I miss the noise."\n{b}: "I miss the people making it."\n{b} (to camera): {cam:few-left}',
     '{a} and {b} share memories of the missing.\n{a}: "I miss the noise."\n{b}: "I miss the people making it."',
   ],
   carried: [
     'The castle comes back into view, and {a} feels it all land again.\n{a}: "I don’t want to go back in."\n{b}: "I know."',
     '{a} slows down as the castle appears.\n{b}: "Alright?"\n{a}: "Just give me a second."',
     '{a} stops at the top of the hill.\n{a} (to camera): {cam:homesick}',
-    '{a} sees the castle and goes quiet.\n{b}: "Same."',
+    '{a} sees the castle and goes quiet.\n{b}: "Same."\n{a}: "Back in, then."',
   ],
   // ── TWO BRANCHES ADDED (Task 7 stage 3) ──────────────────────────────
   //
@@ -1069,9 +1069,9 @@ const CASTLE_IN_VIEW_LINES = {
   // it by turning it into an argument about who is left.
   'talked-past-it': [
     '{a} starts on the ones who are gone, and {b} changes the subject twice.\n{a}: "Do you miss—"\n{b}: "What’s for dinner, do you reckon?"',
-    '{b} won’t talk about who has left.\n{b}: "Not today."\n{a} (to camera): "{b} doesn’t do sad. Or doesn’t do it in front of me."',
-    '{b} steers the conversation away.\n{b}: "Let’s talk about something nice."',
-    '{a} tries, {b} deflects.\n{a} (to camera): {cam:unsure-info}',
+    '{b} won’t talk about who has left.\n{b}: "Not today."\n{a}: "You can be sad, you know."\n{a} (to camera): "{b} doesn’t do sad. Or doesn’t do it in front of me."',
+    '{b} steers the conversation away.\n{b}: "Let’s talk about something nice."\n{a}: "Like what?"\n{b}: "Anything. Dinner. Dogs. Anything."',
+    '{a} tries, {b} deflects.\n{a}: "Do you miss them?"\n{b}: "Look, a deer."\n{a} (to camera): {cam:unsure-info}',
   ],
   'turned-sharp': [
     'Near the gate, it stops being about the ones who have gone and starts being about who’s still here.\n{a}: "One of the people walking in front of us did this."\n{b}: "I know."',
@@ -1155,27 +1155,27 @@ registerEvent({
 const WALKED_BACK_LINES = {
   easy: [
     '{a} and {b} are the last two through the gate, walking slowly.\n{b}: "We should hurry."\n{a}: "Should we?"\n{b}: "No."',
-    '{a} and {b} dawdle on purpose.\n{a} (to camera): "Longest walk home ever. Didn’t mind at all."',
+    '{a} and {b} dawdle on purpose.\n{b}: "We should hurry."\n{a}: "Should we, though?"\n{a} (to camera): "Longest walk home ever. Didn’t mind at all."',
     '{a} and {b} take their time.\n{b}: "I like walking with you."\n{a}: "I like it too."',
-    '{a} and {b} fall behind, laughing.\n{b} (to camera): "Best part of the day, that."',
+    '{a} and {b} fall behind, laughing.\n{a}: "They’ll think we’ve got lost."\n{b}: "Let them."\n{b} (to camera): "Best part of the day, that."',
   ],
   watched: [
     'Somebody holds the gate for {a} and {b} longer than expected.\n{b}: "Everyone’s staring."\n{a}: "Let them."',
-    '{a} and {b} arrive to raised eyebrows.\n{a} (to camera): "They’ve all noticed. Of course they have."',
-    '{a} and {b} walk in together, and the courtyard notices.\n{b}: "So much for subtle."',
-    '{a} and {b} get looks at the gate.\n{b} (to camera): "Everyone saw us come back together. That’ll be a conversation."',
+    '{a} and {b} arrive to raised eyebrows.\n{b}: "Why’s everyone staring?"\n{a}: "Because we came back together. Again."\n{a} (to camera): "They’ve all noticed. Of course they have."',
+    '{a} and {b} walk in together, and the courtyard notices.\n{b}: "So much for subtle."\n{a}: "We were never subtle."',
+    '{a} and {b} get looks at the gate.\n{a}: "Walk in separately next time?"\n{b}: "No chance."\n{b} (to camera): "Everyone saw us come back together. That’ll be a conversation."',
   ],
   'said-out-loud': [
     'Somewhere on the road home one of them says it.\n{a}: "I like you. Properly."\n{b}: "I like you too."',
     '{a} and {b} stop calling it nothing.\n{b}: "So this is a thing."\n{a}: "It’s a thing."',
-    '{a} and {b} admit it on the way home.\n{a} (to camera): "We said it. Out loud. No going back."',
+    '{a} and {b} admit it on the way home.\n{b}: "So we’re saying it."\n{a}: "We’re saying it."\n{a} (to camera): "We said it. Out loud. No going back."',
     '{b} says it first.\n{b}: "I think about you a lot."\n{a}: "Good. Me too."',
   ],
   strained: [
     'The road home does {a} and {b} no favours, and by the gate they’re walking a yard apart.\n{a}: "Something wrong?"\n{b}: "No."',
-    '{a} and {b} have an awkward walk back.\n{b} (to camera): "It was weird. I don’t know what changed."',
+    '{a} and {b} have an awkward walk back.\n{a}: "Did I do something?"\n{b}: "No. I’m just tired."\n{b} (to camera): "It was weird. I don’t know what changed."',
     '{a} and {b} barely talk on the way home.\n{a}: "You’re quiet."\n{b}: "Tired."',
-    '{a} and {b} drift apart on the walk.\n{a} (to camera): {cam:unsure-info}',
+    '{a} and {b} drift apart on the walk.\n{a}: "You’re miles away."\n{b}: "Am I? Sorry."\n{a} (to camera): {cam:unsure-info}',
   ],
 };
 
@@ -1258,26 +1258,26 @@ const CAME_BACK_HOLDING_LINES = {
   'walked-in-holding': [
     '{a} and {b} walk through the gate together, and neither steps away.\n{a}: "They’ve seen."\n{b}: "Good."',
     '{a} and {b} come back through the gate holding hands.\n{b}: "People are looking."\n{a}: "Good."',
-    '{a} and {b} walk into the courtyard hand in hand.\n{a} (to camera): "No point hiding it now."',
-    '{a} and {b} don’t let go at the gate.\n{b} (to camera): "Let them look. I don’t care any more."',
+    '{a} and {b} walk into the courtyard hand in hand.\n{b}: "People are looking."\n{a}: "Good."\n{a} (to camera): "No point hiding it now."',
+    '{a} and {b} don’t let go at the gate.\n{a}: "You can let go now."\n{b}: "I don’t want to."\n{b} (to camera): "Let them look. I don’t care any more."',
   ],
   'told-them': [
     '{a} lets it slip to one person on the walk home.\n{b}: "Who else knows?"\n{a}: "…A few people."',
     '{a} tells somebody on the road back, and by the gate three people know.\n{b}: "You told them?"\n{a}: "I couldn’t help it."',
-    '{a} can’t keep it quiet.\n{b} (to camera): "{a} told half the castle before we got home."',
+    '{a} can’t keep it quiet.\n{b}: "Who did you tell?"\n{a}: "Just one person. Maybe two."\n{b} (to camera): "{a} told half the castle before we got home."',
     '{a} spills it on the walk.\n{b}: "So much for keeping it secret."\n{a}: "Sorry. Not sorry."',
   ],
   'agreed-quietly': [
     '{a} and {b} slow down at the gate so they come in last.\n{b}: "So that’s settled."\n{a}: "That’s settled."',
     '{a} and {b} settle it between them on the last mile.\n{a}: "Just us know. For now."\n{b}: "Just us."',
-    '{a} and {b} make it official, privately.\n{b} (to camera): "Nobody else needs to know. Yet."',
+    '{a} and {b} make it official, privately.\n{a}: "Just us know."\n{b}: "Just us."\n{b} (to camera): "Nobody else needs to know. Yet."',
     '{a} and {b} agree quietly.\n{a}: "We’re a thing, then?"\n{b}: "We’re a thing."',
   ],
   'not-yet': [
-    '{a} almost says it at the gate and lets go of {b}’s sleeve instead.\n{b} (to camera): "Nearly. Tomorrow, maybe."',
+    '{a} almost says it at the gate and lets go of {b}’s sleeve instead.\n{b}: "What were you going to say?"\n{a}: "Nothing. Tomorrow."\n{b} (to camera): "Nearly. Tomorrow, maybe."',
     '{a} and {b} nearly say it on the road home, and put it down at the gate.\n{a}: "Later."\n{b}: "Later."',
-    '{a} and {b} almost admit it.\n{a} (to camera): "So close. Not yet."',
-    '{a} and {b} stop just short.\n{b}: "Not here. Not with everyone watching."',
+    '{a} and {b} almost admit it.\n{a}: "I think I—"\n{b}: "Not here."\n{a} (to camera): "So close. Not yet."',
+    '{a} and {b} stop just short.\n{b}: "Not here. Not with everyone watching."\n{a}: "Later, then."',
   ],
 };
 
@@ -1415,14 +1415,14 @@ const ROAD_RAISE_LINES = {
   'reopened-it': [
     '{a} means to settle it, and makes it worse.\n{a}: "I just want to understand."\n{b}: "You want to win the argument."\n{a}: "That’s not fair."',
     '{a} brings it up and it blows up.\n{b}: "Why are we doing this again?"\n{a}: "Because you never answered."',
-    '{a} and {b} are back where they started.\n{b} (to camera): "{a} just can’t let it go."',
+    '{a} and {b} are back where they started.\n{b}: "We sorted this."\n{a}: "You sorted it. I let it go. It came back."\n{b} (to camera): "{a} just can’t let it go."',
     '{a} reopens the wound.\n{b}: "I thought we were past this."\n{a}: "So did I."',
   ],
   // Or it closes: the road ends the story.
   'put-it-down': [
     '{a} and {b} leave it in a field, which is a better place for it than the castle.\n{a}: "Done?"\n{b}: "Done."',
     '{a} and {b} finally clear the air.\n{b}: "I’m sorry about the other day."\n{a}: "Me too."',
-    '{a} and {b} put the old thing to rest.\n{a} (to camera): "Feels lighter. Honestly."',
+    '{a} and {b} put the old thing to rest.\n{a}: "Done with it?"\n{b}: "Done with it."\n{a} (to camera): "Feels lighter. Honestly."',
     '{a} and {b} shake on it on the track.\n{b}: "Fresh start?"\n{a}: "Fresh start."',
   ],
 };
@@ -1521,20 +1521,20 @@ const ROAD_ARGUMENT_LINES = {
     '{a} gets about four hundred yards before last night comes out again.\n{a}: "And another thing about last night—"\n{b}: "Here we go."',
     '{a} and {b} pick up the row where they left it.\n{b}: "Can we not do this now?"\n{a}: "When, then?"',
     '{a} can’t let last night go.\n{a}: "You embarrassed me."\n{b}: "You embarrassed yourself."',
-    '{a} and {b} start arguing before they’re out of sight of the castle.\n{b} (to camera): "Four hundred yards. That’s all it took."',
+    '{a} and {b} start arguing before they’re out of sight of the castle.\n{a}: "About last night—"\n{b}: "We’re not even out of the gate."\n{b} (to camera): "Four hundred yards. That’s all it took."',
   ],
   // Held, in public, in front of a walking column.
   'in-front-of-everybody': [
     'It happens in the open, on a track, with no walls to take it behind.\n{a}: "Don’t you dare."\n{b}: "Or what?"\nEveryone stops walking.',
-    '{a} and {b} argue in front of the whole group.\n{a} (to camera): "Probably shouldn’t have done that in front of everyone."',
+    '{a} and {b} argue in front of the whole group.\n{b}: "Say it to my face!"\n{a}: "I am saying it to your face!"\n{a} (to camera): "Probably shouldn’t have done that in front of everyone."',
     '{a} and {b} have a shouting match on the road.\n{b}: "Say it to my face, then!"\n{a}: "I am!"',
-    'The whole column watches {a} and {b} row.\n{b} (to camera): "Everyone saw. Great."',
+    'The whole column watches {a} and {b} row.\n{a}: "You lied to me!"\n{b}: "Keep your voice down!"\n{b} (to camera): "Everyone saw. Great."',
   ],
   // Somebody steps in and it stops.
   'somebody-stepped-in': [
     'It’s going somewhere bad until a third voice stops it.\n{a}: "You’re a liar."\n{b}: "Say that again—"\nSomebody further up the track tells them both to pack it in, and they do.',
-    '{a} and {b} get louder, and someone gets between them.\n{a} (to camera): "Probably a good thing somebody stopped us."',
-    'Somebody steps in before {a} and {b} say something they can’t take back.\n{b}: "Fine. Fine."',
+    '{a} and {b} get louder, and someone gets between them.\n{a}: "You’re a liar."\n{b}: "Say that again—"\n{a} (to camera): "Probably a good thing somebody stopped us."',
+    'Somebody steps in before {a} and {b} say something they can’t take back.\n{b}: "Fine. Fine."\n{a}: "Fine."',
     'Another player pulls {a} away from {b} by the arm.\n{a}: "I wasn’t finished."\n{b}: "Yes, you were."',
   ],
   // Or it does not happen at all, and the not-happening is the scene.
@@ -1704,25 +1704,25 @@ registerEvent({
 const ROAD_FAVOUR_LINES = {
   'took-the-weight': [
     '{a} takes the load onto {aPos} own shoulder and says nothing about it.\n{b}: "You don’t have to."\n{a}: "I know."',
-    '{a} carries {b}’s bag without being asked.\n{b} (to camera): "{a} just took it. Didn’t say a word."',
+    '{a} carries {b}’s bag without being asked.\n{b}: "You don’t have to."\n{a}: "I know."\n{b} (to camera): "{a} just took it. Didn’t say a word."',
     '{a} lifts the heavy end.\n{b}: "Thank you."\n{a}: "Don’t mention it."',
-    '{a} helps {b} quietly.\n{b} (to camera): "Kind. Really kind."',
+    '{a} helps {b} quietly.\n{b}: "Thank you."\n{a}: "It’s nothing."\n{b} (to camera): "Kind. Really kind."',
   ],
   'made-a-point-of-it': [
     '{a} helps, visibly, in front of the people {aSub} wants to see it.\n{a}: "Here, let me take that!"\n{b} (to camera): "Very loud help, that."',
-    '{a} makes a show of carrying {b}’s load.\n{b} (to camera): "Nice gesture. Shame about the audience."',
-    '{a} helps {b} with a lot of noise.\n{a}: "Anyone else need a hand?"',
-    '{a} helps where everyone can see.\n{b} (to camera): "{a} wanted credit for that."',
+    '{a} makes a show of carrying {b}’s load.\n{a}: "Make way! Heavy load coming through!"\n{b}: "It’s a rucksack."\n{b} (to camera): "Nice gesture. Shame about the audience."',
+    '{a} helps {b} with a lot of noise.\n{a}: "Anyone else need a hand?"\n{b}: "I think you’ve helped enough."',
+    '{a} helps where everyone can see.\n{a}: "Here, give it to me! Everyone, I’ve got it!"\n{b}: "Alright, alright."\n{b} (to camera): "{a} wanted credit for that."',
   ],
   'let-them-struggle': [
     '{b} carries all of it, and {a} walks beside {bObj} carrying nothing.\n{b}: "Don’t help, then."\n{a}: "You’re doing fine."',
-    '{a} watches {b} struggle.\n{b} (to camera): "{a} didn’t lift a finger. I’ll remember that."',
+    '{a} watches {b} struggle.\n{b}: "A hand would be nice."\n{a}: "You’re doing great."\n{b} (to camera): "{a} didn’t lift a finger. I’ll remember that."',
     '{a} doesn’t offer to help.\n{b}: "A hand would be nice."\n{a}: "You’ve got it."',
-    '{a} leaves {b} to it.\n{b} (to camera): "Nice to know who helps and who doesn’t."',
+    '{a} leaves {b} to it.\n{b}: "Could you take one end?"\n{a}: "You’ve got it."\n{b} (to camera): "Nice to know who helps and who doesn’t."',
   ],
   'needed-carrying': [
     '{a} is the one struggling today, and {b} takes the load without being asked.\n{a}: "I’m fine."\n{b}: "You’re not. Give it here."',
-    '{b} helps {a} up the hill.\n{a} (to camera): "I needed that. I won’t forget it."',
+    '{b} helps {a} up the hill.\n{b}: "Give me your hand."\n{a}: "I’m fine—"\n{b}: "You’re not. Hand."\n{a} (to camera): "I needed that. I won’t forget it."',
     '{b} takes the weight off {a}.\n{a}: "Thank you."\n{b}: "That’s what we do."',
     '{b} notices {a} flagging.\n{b}: "Swap?"\n{a}: "Please."',
   ],

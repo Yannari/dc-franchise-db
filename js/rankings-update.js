@@ -861,6 +861,28 @@ export const RU_SHOW = {
       strategicScore: 0,
     }),
   },
+  // The Circle has no competitions and no vote against you: the ranking
+  // columns are times made Influencer and first-place ratings. Written by
+  // the export (Plan 6); provisional until a season has been ranked.
+  'the-circle': {
+    comp1: { label: 'Influencer', weight: 0.3, title: '+0.3 per time made Influencer (provisional)' },
+    comp2: null,
+    comp3: null,
+    adv: null,
+    strat: { weight: 0, scale: 10 },
+    social: { kind: 'survived', label: 'Firsts', weight: 0, cap: 6,
+      title: 'First-place ratings received · shown, not scored (provisional)',
+      prose: { zero: 'never rated first by anyone', one: 'rated first once',
+        many: n => `rated first ${n} times` } },
+    read: (p) => ({
+      comp1: p.ci?.influencerTimes ?? 0,
+      comp2: 0,
+      comp3: 0,
+      social: p.ci?.firstPlaces ?? 0,
+      advFound: 0, advPlayed: 0, advWasted: 0, advHeld: 0,
+      strategicScore: 0,
+    }),
+  },
 };
 
 /**

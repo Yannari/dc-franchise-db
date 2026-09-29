@@ -79,25 +79,25 @@ const GRIEF_ON_LINES = {
   'still-carrying-it': [
     '{a} sets a place for {v} without thinking.\n{b}: "Oh, love."\n{a}: "Habit. Sorry."',
     '{a} brings {v} up again this morning, unprompted, and {b} lets {aObj}.\n{a}: "{v} would have loved this weather."\n{b}: "{v} would."',
-    '{a} can’t stop talking about {v}.\n{b} (to camera): "{a} still isn’t over {v}. I don’t think {aSub} will be."',
+    '{a} can’t stop talking about {v}.\n{a}: "{v} would have hated this porridge."\n{b}: "{v} hated all porridge."\n{b} (to camera): "{a} still isn’t over {v}. I don’t think {aSub} will be."',
     '{a} mentions {v} at breakfast.\n{a}: "I keep saving {v} a seat."',
   ],
   'put-it-away': [
-    '{b} mentions {v} and {a} changes the subject.\n{a}: "Not today."\n{b} (to camera): "That’s new."',
+    '{b} mentions {v} and {a} changes the subject.\n{a}: "Not today."\n{b}: "Okay. Not today."\n{b} (to camera): "That’s new."',
     '{a} has stopped saying {v}’s name, and {b} notices the morning it stopped.\n{b}: "You haven’t mentioned {v} today."\n{a}: "No. I can’t keep doing it."',
     '{a} packs the grief away.\n{a} (to camera): "I have to play now. {v} would want that."',
-    '{a} moves on from {v}.\n{b} (to camera): "Overnight, {a} just stopped. Strange."',
+    '{a} moves on from {v}.\n{b}: "You haven’t mentioned {v} today."\n{a}: "I can’t keep doing it."\n{b} (to camera): "Overnight, {a} just stopped. Strange."',
   ],
   'turned-it-to-use': [
     '{a} says {v}’s name again at the table.\n{a}: "{v} would have voted this way."\n{b}: "You don’t know that."',
     '{a} has started saying what {v} would have wanted, which is convenient.\n{a}: "{v} would want us to vote out the quiet ones."\n{b}: "Would {v}, though?"',
-    '{a} uses {v}’s memory.\n{b} (to camera): "Funny how {v} always wants what {a} wants."',
+    '{a} uses {v}’s memory.\n{a}: "{v} would want us to go after the quiet ones."\n{b}: "Would {v}, though?"\n{b} (to camera): "Funny how {v} always wants what {a} wants."',
     '{a} invokes {v} to make a point.\n{a}: "Do it for {v}."',
   ],
   'shared-it-properly': [
     '{a} and {b} laugh about {v} over coffee.\n{b}: "{v} would hate us being sad."\n{a}: "{v} would hate the coffee."',
     '{a} and {b} talk about {v} for a while this morning, without meaning anything by it.\n{b}: "Remember when {v} burnt the toast?"\n{a}: "Twice!"\nThey both laugh.',
-    '{a} and {b} share memories of {v}.\n{a} (to camera): "It felt good to just talk about {v}."',
+    '{a} and {b} share memories of {v}.\n{b}: "Remember when {v} fell asleep at the fire?"\n{a}: "Snoring. Everyone pretending not to hear."\n{a} (to camera): "It felt good to just talk about {v}."',
     '{a} and {b} remember {v} fondly.\n{b}: "I miss {v}."\n{a}: "Me too."',
   ],
 };
@@ -162,25 +162,25 @@ const COVER_ON_LINES = {
   'told-it-the-same': [
     '{b} asks again, and {a} answers exactly as before.\n{b}: "Word for word."\n{a}: "Because it’s true."',
     '{a} gives {b} the same account this morning, word for word.\n{b}: "You said that exactly the same way yesterday."\n{a}: "Because it’s what happened."\n{b} (to camera): "Or because it’s rehearsed."',
-    '{a} repeats the story perfectly.\n{b} (to camera): "Word for word. That bothers me."',
+    '{a} repeats the story perfectly.\n{b}: "Tell me again. Last night."\n{a}: "Kitchen, then the fire, then bed at eleven."\n{b} (to camera): "Word for word. That bothers me."',
     '{a} tells it the same again.\n{a} (to camera): {cam:story-hold}',
   ],
   'the-story-grew': [
     '{a} adds a detail {b} hasn’t heard.\n{b}: "You never said there was a candle."\n{a}: "Didn’t I?"',
     'There’s more in {a}’s story this morning than there was on the night.\n{b}: "You didn’t mention the stairs before."\n{a}: "Didn’t I?"',
-    '{a}’s account gets new details.\n{b} (to camera): "The story’s growing. Stories that grow are made up."',
+    '{a}’s account gets new details.\n{a}: "…and there was a candle out on the landing."\n{b}: "You never mentioned a candle."\n{b} (to camera): "The story’s growing. Stories that grow are made up."',
     '{a} adds something.\n{a} (to camera): {cam:overdid}',
   ],
   'stopped-telling-it': [
-    '{b} asks for the story one more time.\n{a}: "I’ve told it. I’m not performing it."',
+    '{b} asks for the story one more time.\n{a}: "I’ve told it. I’m not performing it."\n{b}: "Why not? It’s easy if it’s true."',
     '{a} won’t go through it again.\n{a}: "I’ve told you three times. I’m not doing it again."\n{b}: "Just once more?"\n{a}: "No."',
-    '{a} refuses, pleasantly.\n{b} (to camera): "Why won’t {a} just tell it again?"',
+    '{a} refuses, pleasantly.\n{b}: "Just once more?"\n{a}: "No. You’ve heard it."\n{b} (to camera): "Why won’t {a} just tell it again?"',
     '{a} shuts it down.\n{a} (to camera): {cam:stay-quiet}',
   ],
   'somebody-else-checked': [
     '{b} comes back from asking around.\n{b}: "They say you went up at eleven. You said ten."\n{a}: "They’re wrong."',
     '{b} has been to the other person in {a}’s story, and they said something slightly different.\n{b}: "Funny. They remember it differently."\n{a}: "They must be confused."',
-    '{b} checks {a}’s story.\n{a} (to camera): {cam:story-close}',
+    '{b} checks {a}’s story.\n{b}: "Funny. They remember it differently."\n{a}: "Then they remember it wrong."\n{a} (to camera): {cam:story-close}',
     '{b} finds a mismatch.\n{b}: "One of you is wrong."\n{a}: "Well, it isn’t me."',
   ],
 };
@@ -235,26 +235,26 @@ const ROMANCE_ON_LINES = {
   'nothing-changed-in-daylight': [
     '{a} and {b} pass the toast without looking at each other.\n{b}: "Thanks."\n{a}: "Mm."',
     'Whatever that was last night, {a} and {b} are acting like it didn’t happen.\n{a}: "Morning."\n{b}: "Morning."\nThat’s it.',
-    '{a} and {b} are normal at breakfast.\n{b} (to camera): "What happens at night stays at night. Apparently."',
-    '{a} and {b} don’t mention it.\n{a} (to camera): "Awkward. Very awkward."',
+    '{a} and {b} are normal at breakfast.\n{a}: "Morning."\n{b}: "Morning. Toast?"\n{b} (to camera): "What happens at night stays at night. Apparently."',
+    '{a} and {b} don’t mention it.\n{b}: "About last night—"\n{a}: "Pass the butter?"\n{a} (to camera): "Awkward. Very awkward."',
   ],
   'admitted-it-in-daylight': [
     '{a} says it over breakfast, quietly.\n{a}: "Last night wasn’t the wine."\n{b}: "Good."',
     '{a} says it again this morning, sober and in daylight.\n{a}: "I meant what I said last night."\n{b}: "Good. So did I."',
-    '{a} repeats it at breakfast.\n{b} (to camera): "In daylight. That’s when you know."',
+    '{a} repeats it at breakfast.\n{a}: "I meant it. Last night."\n{b}: "Good. So did I."\n{b} (to camera): "In daylight. That’s when you know."',
     '{a} confirms it.\n{a}: "Still true. Just so you know."',
   ],
   'one-of-them-retreated': [
     '{b} finds {a} busy all morning.\n{b}: "Are you avoiding me?"\n{a}: "Just busy!"',
     '{a} has been unavailable all morning.\n{b}: "Are you avoiding me?"\n{a}: "No! Just busy."\n{b} (to camera): "Busy doing what? It’s a castle."',
     '{a} backs off after last night.\n{a} (to camera): "I panicked. I need a minute."',
-    '{a} keeps a distance.\n{b}: "Did I do something?"',
+    '{a} keeps a distance.\n{b}: "Did I do something?"\n{a}: "No. I just need a minute."',
   ],
   'somebody-saw': [
     'Someone winks at {a} and {b} over breakfast.\n{a}: "They know."\n{b}: "Nothing stays private in here."',
     'They weren’t as alone last night as they thought.\n{b}: "Someone saw us."\n{a}: "Who?"\n{b}: "Does it matter?"',
-    '{a} and {b} find out they were spotted.\n{a} (to camera): "Great. Now it’s everybody’s business."',
-    'The news is out by breakfast.\n{b}: "Well, that’s that."',
+    '{a} and {b} find out they were spotted.\n{b}: "Someone saw us."\n{a}: "Who?"\n{b}: "Does it matter?"\n{a} (to camera): "Great. Now it’s everybody’s business."',
+    'The news is out by breakfast.\n{b}: "Well, that’s that."\n{a}: "That’s that."',
   ],
 };
 
@@ -317,8 +317,8 @@ const SUSP_ON_LINES = {
   'tested-it-again': [
     '{a} asks the day {d} question again, differently.\n{a}: "Who were you with, after dinner?"\n{b}: "Same answer as last time."',
     '{a} puts the same question to {b} on the road, phrased differently.\n{a}: "Remind me where you were that night?"\n{b}: "I told you on day {d}."\n{a}: "Tell me again."',
-    '{a} checks {b}’s answer against day {d}.\n{a} (to camera): "Same question, different words. Let’s see."',
-    '{a} tests {b} again.\n{b}: "You’ve asked me this before."',
+    '{a} checks {b}’s answer against day {d}.\n{a}: "Remind me where you were that night?"\n{b}: "I told you on day {d}."\n{a}: "Tell me again."\n{a} (to camera): "Same question, different words. Let’s see."',
+    '{a} tests {b} again.\n{b}: "You’ve asked me this before."\n{a}: "I know. I want to hear it again."',
   ],
   'let-it-cool': [
     '{a} almost asks, then talks about the weather.\n{b}: "You wanted to say something."\n{a}: "Later."',
@@ -329,14 +329,14 @@ const SUSP_ON_LINES = {
   'found-the-hole': [
     '{a} stops walking.\n{a}: "On day {d} you told me the opposite."\n{b}: "I don’t remember that."',
     'Somewhere on the road, {b} says something that doesn’t fit what {bSub} said on day {d}.\n{a}: "That’s not what you told me on day {d}."\n{b}: "Isn’t it?"',
-    '{a} catches a contradiction.\n{a} (to camera): "Day {d}, {b} said one thing. Today, another."',
-    '{b} slips up.\n{a} (to camera): {cam:holding-info}',
+    '{a} catches a contradiction.\n{a}: "On day {d} you said the kitchen."\n{b}: "Did I? I meant after."\n{a} (to camera): "Day {d}, {b} said one thing. Today, another."',
+    '{b} slips up.\n{b}: "…and then I went back up after the library."\n{a}: "The library? When?"\n{a} (to camera): {cam:holding-info}',
   ],
   'was-talked-round': [
     '{b} explains, calmly, all the way to the vans.\n{a}: "Fine. I was wrong about you."\n{b}: "Say it louder."',
     '{b} answers it properly, and {a} comes back less sure.\n{b}: {say:answer-clean}\n{a}: "Okay. That makes sense."',
-    '{b} convinces {a}.\n{a} (to camera): "I went out suspicious. I came back less so."',
-    '{b} talks {a} round.\n{a}: "Fine. I believe you."',
+    '{b} convinces {a}.\n{b}: "Ask me anything. I’ll answer all of it."\n{a}: "Fine. I believe you."\n{a} (to camera): "I went out suspicious. I came back less so."',
+    '{b} talks {a} round.\n{a}: "Fine. I believe you."\n{b}: "Thank you."',
   ],
 };
 
@@ -402,28 +402,28 @@ registerEvent({
 // ══════════════════════════════════════════════════════════════════════
 const TEST_ON_LINES = {
   'passed-it-again': [
-    '{a} runs the same test a second time, and {b} passes it again.\n{a} (to camera): "Twice clean. I’m starting to believe it."',
-    '{a} sets it up again on the road, and {b} comes out clean.\n{a} (to camera): "Twice now. {b}’s passed twice."',
+    '{a} runs the same test a second time, and {b} passes it again.\n{b}: "Why do you keep asking me that?"\n{a}: "No reason."\n{a} (to camera): "Twice clean. I’m starting to believe it."',
+    '{a} sets it up again on the road, and {b} comes out clean.\n{b}: "Same answer as last week."\n{a}: "I know."\n{a} (to camera): "Twice now. {b}’s passed twice."',
     '{b} passes the test again.\n{a}: "Just checking."\n{b}: "Checking what?"\n{a}: "Nothing."',
-    '{a} tests {b} and gets the right answer.\n{a} (to camera): "Clean. Again."',
+    '{a} tests {b} and gets the right answer.\n{a}: "Just checking."\n{b}: "Checking what?"\n{a} (to camera): "Clean. Again."',
   ],
   'failed-it-this-time': [
     '{b} gives a different answer this time.\n{a}: "Last week you said the opposite."\n{b}: "Did I?"',
-    'The same test, a week later, and {b} doesn’t do what {bSub} did the first time.\n{a} (to camera): "Different answer. Why?"',
-    '{b} fails the second test.\n{a} (to camera): {cam:holding-info}',
-    '{b} slips on the repeat test.\n{a} (to camera): "Last time {b} passed. This time, no."',
+    'The same test, a week later, and {b} doesn’t do what {bSub} did the first time.\n{b}: "I told someone. Was I not meant to?"\n{a}: "Last time you didn’t."\n{a} (to camera): "Different answer. Why?"',
+    '{b} fails the second test.\n{a}: "Did you tell anyone what I said?"\n{b}: "…Only one person."\n{a} (to camera): {cam:holding-info}',
+    '{b} slips on the repeat test.\n{a}: "Last week you kept it to yourself."\n{b}: "Last week was different."\n{a} (to camera): "Last time {b} passed. This time, no."',
   ],
   'refused-to-play': [
     '{b} sees the test coming.\n{b}: "Is this another one of your tests?"\n{a}: "Would I?"\n{b}: "Yes."',
     '{b} works out it’s a test and says so.\n{b}: "This is a test, isn’t it?"\n{a}: "What? No."\n{b}: "I’m not answering."',
-    '{b} won’t play along.\n{b}: "Nice try, {a}."',
-    '{b} spots the trap.\n{a} (to camera): "Caught out. {b}’s sharp."',
+    '{b} won’t play along.\n{b}: "Nice try, {a}."\n{a}: "Try at what?"\n{b}: "You know what."',
+    '{b} spots the trap.\n{b}: "Another test, {a}?"\n{a}: "…Maybe."\n{a} (to camera): "Caught out. {b}’s sharp."',
   ],
   'turned-it-around': [
     '{b} answers, then asks one back.\n{b}: "Now you. Who did you tell about my secret?"\n{a}: "…Nobody."',
     '{b} answers the test, then sets one for {a}.\n{b}: "My turn. Where were you on Tuesday night?"\n{a}: "Oh, very good."',
-    '{b} tests {a} back.\n{a} (to camera): "Two can play that game."',
-    '{b} flips it.\n{b}: "Let’s see how you like it."',
+    '{b} tests {a} back.\n{b}: "My turn. Where were you on Tuesday night?"\n{a}: "Oh, very good."\n{a} (to camera): "Two can play that game."',
+    '{b} flips it.\n{b}: "Let’s see how you like it."\n{a}: "Alright. Go on."',
   ],
 };
 
@@ -493,7 +493,7 @@ registerEvent({
 // ══════════════════════════════════════════════════════════════════════
 const COVER_ROAD_LINES = {
   'rehearsed-on-the-walk': [
-    '{b} asks what {a} is muttering.\n{a}: "Nothing. A song."\n{a} (to camera): {cam:story-hold}',
+    '{b} asks what {a} is muttering.\n{a}: "Nothing. A song."\n{b}: "Sounded like a timeline."\n{a} (to camera): {cam:story-hold}',
     '{a} spends the road out going over it again, silently.\n{a} (to camera): {cam:story-hold}',
     '{a} rehearses on the walk.\n{a} (to camera): "In order. Every time. In order."',
     '{a} goes quiet, running the story.\n{b}: "You okay?"\n{a}: "Fine. Just thinking."',
@@ -501,8 +501,8 @@ const COVER_ROAD_LINES = {
   'asked-about-it-out-there': [
     '{b} brings it up by the ford.\n{b}: "So that night. Where did you go?"\n{a}: "Bed."',
     '{b} raises it on the road, casually.\n{b}: "So, the other night. Where did you go after?"\n{a}: "Bed."\n{b}: "Straight to bed?"',
-    '{b} asks in the open air.\n{a} (to camera): {cam:story-close}',
-    '{b} brings it up on the road.\n{a}: "Why do you want to know?"',
+    '{b} asks in the open air.\n{b}: "So where did you go after the fire?"\n{a}: "Bed. Why?"\n{a} (to camera): {cam:story-close}',
+    '{b} brings it up on the road.\n{a}: "Why do you want to know?"\n{b}: "Just curious."',
   ],
   'somebody-else-was-there': [
     '{a} turns and finds someone right behind them.\n{a}: "How long have you been there?"\nNo answer.',
@@ -573,7 +573,7 @@ const GRIEF_ROAD_LINES = {
   'talked-about-them-walking': [
     '{b} starts a {v} story.\n{b}: "Remember when {v} got lost on this exact path?"\n{a}: "Twice!"',
     '{a} and {b} talk about {v} for the first two miles.\n{b}: "{v} would have been at the front, chatting."\n{a}: "Never shut up."\n{b}: "Never."',
-    '{a} and {b} remember {v} on the road.\n{a} (to camera): "Talking about {v} made the walk shorter."',
+    '{a} and {b} remember {v} on the road.\n{b}: "{v} would have been at the front, talking."\n{a}: "Never shut up."\n{a} (to camera): "Talking about {v} made the walk shorter."',
     '{a} and {b} share a {v} story.\n{b}: "I miss {v}."\n{a}: "Me too."',
   ],
   'nobody-said-the-name': [
@@ -641,25 +641,25 @@ const TEST_MORNING_LINES = {
     '{a} slides the jam over with a question.\n{a}: "Heard anything interesting about me?"\n{b}: "No. Should I have?"',
     '{a} puts something in front of {b} at breakfast that only makes sense as a test.\n{a}: "Did you hear what they said about you last night?"\n{b}: "No. What?"\n{a} (to camera): "Nobody said anything. Let’s see who {b} runs to."',
     '{a} sets a trap over toast.\n{a} (to camera): {cam:trap}',
-    '{a} tests {b} at breakfast.\n{a}: "Just between us…"',
+    '{a} tests {b} at breakfast.\n{a}: "Just between us…"\n{b}: "Go on."\n{a}: "I heard someone’s been saying things about you."',
   ],
   'they-saw-it-coming': [
     '{b} smiles over the teapot.\n{b}: "This is a test."\n{a}: "It’s toast."\n{b}: "It’s a test."',
     '{b} clocks it immediately, and answers the real question.\n{b}: "You want to know if I’ll repeat it. I won’t."\n{a}: "…Right."',
-    '{b} sees through it.\n{a} (to camera): "{b} knew exactly what I was doing."',
-    '{b} isn’t fooled.\n{b}: "Nice try."',
+    '{b} sees through it.\n{b}: "You want to see if I’ll repeat it."\n{a}: "…Maybe."\n{a} (to camera): "{b} knew exactly what I was doing."',
+    '{b} isn’t fooled.\n{b}: "Nice try."\n{a}: "Nice try at what?"',
   ],
   'answered-too-well': [
-    '{b} answers perfectly and instantly.\n{a} (to camera): "That answer was ready before I asked."',
-    '{b} has an answer ready that’s slightly better than the question deserves.\n{a} (to camera): "Too smooth. Nobody’s that ready at breakfast."',
-    '{b} answers perfectly.\n{a} (to camera): {cam:holding-info}',
+    '{b} answers perfectly and instantly.\n{a}: "Where were you last night?"\n{b}: "Kitchen at ten, bed by half eleven, and I passed two people on the stairs."\n{a} (to camera): "That answer was ready before I asked."',
+    '{b} has an answer ready that’s slightly better than the question deserves.\n{a}: "Where were you last night?"\n{b}: "Kitchen, fire, bed. Ten, half ten, eleven."\n{a} (to camera): "Too smooth. Nobody’s that ready at breakfast."',
+    '{b} answers perfectly.\n{a}: "Heard anything about me?"\n{b}: "Nothing at all. Why?"\n{a} (to camera): {cam:holding-info}',
     '{b} is suspiciously prepared.\n{a}: "You’ve thought about that."\n{b}: "I think about everything."',
   ],
   'nothing-to-read': [
-    '{b} shrugs.\n{b}: "Don’t know. Don’t mind."\n{a} (to camera): "Nothing. Absolutely nothing."',
+    '{b} shrugs.\n{b}: "Don’t know. Don’t mind."\n{a}: "Nothing?"\n{b}: "Nothing."\n{a} (to camera): "Nothing. Absolutely nothing."',
     '{b} answers flatly, and {a} comes away with nothing.\n{b}: "Okay."\n{a}: "…That’s it?"\n{b}: "That’s it."',
-    '{b} gives nothing away.\n{a} (to camera): "Blank. Totally blank."',
-    '{b} is unreadable.\n{a} (to camera): {cam:unsure-info}',
+    '{b} gives nothing away.\n{a}: "What do you make of it?"\n{b}: "Of what?"\n{a} (to camera): "Blank. Totally blank."',
+    '{b} is unreadable.\n{a}: "Anything you want to tell me?"\n{b}: "Not really."\n{a} (to camera): {cam:unsure-info}',
   ],
 };
 

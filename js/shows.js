@@ -430,6 +430,65 @@ export const SHOWS = {
     polls: ['Who is your favourite couple?', 'Who gets dumped next?',
       'Who twists at Casa Amor?', 'Who wins the villa?'],
   },
+  // ── THE SIXTH SHOW: THE CIRCLE ───────────────────────────────────────
+  //
+  // Players live alone in one building and talk only through a voice-run
+  // social network. Every few days they rank each other; the top two become
+  // Influencers and block a player. A profile may be the player, an edited
+  // version of them, or somebody else entirely (a catfish). One door out:
+  // blocked. Rounds are ratings, which are ballots (ADDING-A-SHOW §5).
+  //
+  // Spec: docs/superpowers/specs/2026-09-29-the-circle-design.md
+  'the-circle': {
+    prefix: 'ci', name: 'The Circle', short: 'CI', emoji: '⭕', accent: '#3fd8ff',
+    venue: { label: 'The Circle', icon: '⭕' },
+    // Set at the bottom of js/ci-run.js (Plan 4). Absent until then, which is
+    // deliberate: the setup screen must refuse a show with no run loop.
+    runnableFlag: '_ciRunnable',
+    // Past seasons count: an alum walks in with their reputation and grudges.
+    historyFromLedger: true,
+    airNight: 3,
+    rosterPlace: 'APARTMENTS',
+    hasJury: false,
+    roundsPath: 'episodeHistory',
+    roundShape: 'ballots',
+    words: {
+      seasonComplete: 'The final ratings are in.',
+      noExitLine: 'Nobody was blocked',
+      openingStoryline: 'Eight strangers, eight apartments, and nobody knows who is real.',
+      quietRound: 'A quiet day in The Circle',
+      player: 'player', players: 'players', round: 'Episode',
+      exit: 'blocked', exitAction: 'block',
+      challenge: 'game', comp: 'game', comps: 'games won',
+      compBeast: 'game winner', compWon: 'games',
+      milestone: 'the final ratings',
+      audienceAward: 'Fan Favorite',
+      fanWords: ['ratings', 'influencer', 'blocked', 'catfish', 'circle chat',
+        'the hangout', 'newsfeed', 'hashtag', 'alert'],
+      // The comic narrator-host. The user has not chosen who yet (spec §17.4):
+      // null, never a borrowed host.
+      host: null,
+    },
+    // PROVISIONAL until a season has been played and the signals printed
+    // (ADDING-A-SHOW §2.5). The Circle sells twists and strategy; the same few
+    // influencers every week is its own complaint.
+    audience: { strategy: 1.2, blindside: 1.2, mess: 1.2, predictable: 0.8,
+      steamroll: 0.9, showmance: 0.8, twist: 1.3 },
+    // Written by the export (Plan 6). Declared now so the article rows exist.
+    careerStats: [
+      ['ci.influencerTimes', 'totalInfluencerTimes'],
+      ['ci.firstPlaces',     'totalFirstPlaceRatings'],
+      ['ci.blocksMade',      'totalBlocksMade'],
+      ['ci.catfishSeasons',  'totalCatfishSeasons'],
+    ],
+    articleStats: {
+      career: [['influencerTimes', 'Times Influencer'], ['firstPlaceRatings', 'First-place ratings']],
+      season: [['ci.influencerTimes', 'Times Influencer'], ['ci.firstPlaces', 'First-place ratings']],
+      comps: [['ci.influencerTimes', 'Times Influencer'], ['ci.blocksMade', 'Blocks made']],
+    },
+    polls: ['Who is the catfish?', 'Who gets blocked next?',
+      'Who will the Influencers protect?', 'Who wins The Circle?'],
+  },
 };
 
 /** The default for anything that predates formats — every old season is this. */
@@ -453,6 +512,7 @@ export const DRAG_FORMAT = 'drag-race';
 export const TRAITORS_FORMAT = 'traitors';
 export const BB_FORMAT = 'big-brother';
 export const PERFECT_MATCH_FORMAT = 'perfect-match';
+export const CIRCLE_FORMAT = 'the-circle';
 
 const BY_PREFIX = Object.fromEntries(
   Object.entries(SHOWS).map(([format, show]) => [show.prefix, format]));
@@ -735,5 +795,11 @@ export const HOSTS_BY_FORMAT = {
   // portrait guard allows). Inspired by Ariana Madix; her own voice.
   'perfect-match': [
     { value: 'Dior', label: 'Dior' },
+  ],
+  // The host is undecided (spec §17.4) — Don is held for a racing format (see
+  // the Big Brother note above). An explicit empty option, because a show
+  // missing from this map gets Total Drama's hosts.
+  'the-circle': [
+    { value: '', label: 'No host chosen yet' },
   ],
 };

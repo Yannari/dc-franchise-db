@@ -1,0 +1,128 @@
+import { describe, expect, it, beforeEach } from 'vitest';
+import { setGs } from '../js/core.js';
+import { streamFor } from '../js/dr/rng.js';
+import { newState } from '../js/ci/state.js';
+import { truthOf, medianAge, catfishMotive, reasonFor, drawPersonas, buildProfiles, MOTIVE_LINE } from '../js/ci/profiles.js';
+import { makePlayers, makePool } from './helpers/ci-cast.js';
+
+beforeEach(() => setGs({ bonds: {}, relationshipDimensions: {}, episodeHistory: [] }));
+const truths = (n, seed, setup = {}) => makePlayers(n, seed).map(p => truthOf(p, setup[p.name] || {}));
+
+describe('the catfish motive', () => {
+  it('rises with strategy, boldness and costly facts, and falls with loyalty', () => {
+    const base = { name: 'X', gender: 'f', archetype: 'floater', age: 25, alum: false, rep: null, jobCost: 0,
+      stats: { strategic: 5, boldness: 5, loyalty: 5 } };
+    const m = catfishMotive(base, 25);
+    expect(catfishMotive({ ...base, stats: { ...base.stats, strategic: 9 } }, 25)).toBeGreaterThan(m);
+    expect(catfishMotive({ ...base, stats: { ...base.stats, loyalty: 9 } }, 25)).toBeLessThan(m);
+    expect(catfishMotive({ ...base, age: 54 }, 25)).toBeGreaterThan(m);
+    expect(catfishMotive({ ...base, alum: true, rep: 'villain' }, 25)).toBeGreaterThan(m);
+  });
+
+  it('never gives a nice archetype a strategic reason', () => {
+    const hero = { archetype: 'hero', stats: { strategic: 9, loyalty: 1 } };
+    const villain = { archetype: 'villain', stats: { strategic: 9, loyalty: 1 } };
+    expect(reasonFor(hero, { reasons: ['strategic'] })).toBeNull();
+    expect(reasonFor(hero, { reasons: ['strategic', 'protective'] })).toBe('protective');
+    expect(reasonFor(villain, { reasons: ['strategic'] })).toBe('strategic');
+  });
+});
+
+describe('drawing from the Catfish Pool', () => {
+  it('an empty pool gives no catfish, and the motivated play Edited instead', () => {
+    const t = truths(12, 4);
+    const d = drawPersonas(t, [], streamFor(4, 'pool'), 'stats');
+    expect(Object.keys(d.assigned)).toHaveLength(0);
+    const median = medianAge(t);
+    const wanting = t.filter(x => catfishMotive(x, median) >= MOTIVE_LINE).map(x => x.name);
+    expect(d.edited.sort()).toEqual(wanting.sort());
+  });
+
+  it('a big pool leaves personas unused', () => {
+    const t = truths(10, 5);
+    const pool = makePool(20, 5);
+    const d = drawPersonas(t, pool, streamFor(5, 'pool'), 'stats');
+    expect(d.unused.length).toBeGreaterThan(0);
+    expect(Object.keys(d.assigned).length + d.unused.length).toBe(20);
+  });
+
+  it('honours pins, ignores a pin to a persona that does not exist, and never catfishes a Never', () => {
+    const players = makePlayers(8, 6);
+    const [a, b, c] = players.map(p => p.name);
+    const setup = { [a]: { catfish: 'persona-2' }, [b]: { catfish: 'persona-99' }, [c]: { catfish: 'never' } };
+    const t = players.map(p => truthOf(p, setup[p.name] || {}));
+    const d = drawPersonas(t, makePool(6, 6), streamFor(6, 'pool'), 'stats');
+    expect(d.assigned[a].personaId).toBe('persona-2');
+    expect(d.assigned[c]).toBeUndefined();
+    expect(Object.values(d.assigned).filter(x => x.personaId === 'persona-99')).toHaveLength(0);
+  });
+
+  it('random mode uses some personas and not others', () => {
+    let used = 0, runs = 0;
+    for (let s = 1; s <= 20; s++) {
+      const d = drawPersonas(truths(10, s), makePool(10, s), streamFor(s * 7919, 'pool'), 'random');
+      used += Object.keys(d.assigned).length; runs++;
+    }
+    const mean = used / runs;
+    expect(mean).toBeGreaterThan(2);
+    expect(mean).toBeLessThan(8);
+  });
+
+  it('bios do not move the draw', () => {
+    const t = truths(12, 8);
+    const pool = makePool(8, 8);
+    const d1 = drawPersonas(t, pool, streamFor(8, 'pool'), 'stats');
+    const d2 = drawPersonas(t, pool.map(p => ({ ...p, bio: 'a completely different bio' })), streamFor(8, 'pool'), 'stats');
+    expect(d2.assigned).toEqual(d1.assigned);
+  });
+});
+
+describe('building profiles', () => {
+  it('gives catfish the persona\'s face and facts, unique handles, and a gap', () => {
+    const s = newState(3);
+    const players = makePlayers(10, 3);
+    const t = players.map(p => truthOf(p, {}));
+    const pool = makePool(10, 3);
+    const d = drawPersonas(t, pool, streamFor(3, 'pool'), 'stats');
+    const handles = buildProfiles(s, t, d, pool, streamFor(3, 'profiles'));
+    expect(new Set(handles).size).toBe(handles.length);
+    for (const [name, { personaId }] of Object.entries(d.assigned)) {
+      const p = s.profiles[s.handleOf[name]];
+      const persona = pool.find(x => x.id === personaId);
+      expect(p.mode).toBe('catfish');
+      expect(p.shown).toMatchObject({ name: persona.handle, age: persona.age, face: persona.face });
+      expect(p.gap).toBeGreaterThan(0);
+    }
+    const honest = Object.values(s.profiles).filter(p => p.mode === 'honest');
+    for (const p of honest) expect(p.gap).toBe(0);
+    expect(s.unused).toEqual(d.unused);
+  });
+
+  it('puts two partners on one shared profile', () => {
+    const s = newState(2);
+    const players = makePlayers(6, 2);
+    const [a, b] = players.map(p => p.name);
+    const t = players.map(p => truthOf(p, p.name === a ? { partner: b } : p.name === b ? { partner: a } : {}));
+    const d = drawPersonas(t, [], streamFor(2, 'pool'), 'stats');
+    buildProfiles(s, t, d, [], streamFor(2, 'profiles'));
+    expect(s.handleOf[a]).toBe(s.handleOf[b]);
+    expect(s.profiles[s.handleOf[a]]).toMatchObject({ mode: 'shared', players: [a, b] });
+    expect(Object.keys(s.profiles)).toHaveLength(5);
+  });
+
+  it('never hands the second partner a persona of their own, and keeps the pair\'s persona', () => {
+    const players = makePlayers(6, 2);
+    const [a, b] = players.map(p => p.name);
+    const setup = { [a]: { partner: b, catfish: 'persona-1' }, [b]: { partner: a, catfish: 'always' } };
+    const t = players.map(p => truthOf(p, setup[p.name] || {}));
+    const pool = makePool(4, 2);
+    const d = drawPersonas(t, pool, streamFor(2, 'pool'), 'stats');
+    expect(d.assigned[b]).toBeUndefined();
+    expect(d.edited).not.toContain(b);
+    expect(Object.keys(d.assigned).length + d.unused.length).toBe(4);   // nothing lost
+    const s = newState(2);
+    buildProfiles(s, t, d, pool, streamFor(2, 'profiles'));
+    const p = s.profiles[s.handleOf[a]];
+    expect(p).toMatchObject({ mode: 'catfish', shared: true, players: [a, b], personaId: 'persona-1' });
+  });
+});

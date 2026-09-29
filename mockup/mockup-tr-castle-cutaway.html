@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Traitors Castle Cutaway</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,400;9..144,600;9..144,700;9..144,900&family=IM+Fell+English:ital@0;1&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,400;9..144,600;9..144,700;9..144,900&family=IM+Fell+English:ital@0;1&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Caveat:wght@600;700&family=Kalam:wght@400;700&family=Gochi+Hand&family=Shadows+Into+Light&family=Reenie+Beanie&display=swap" rel="stylesheet">
 <style>
 /* THE OLD VIEWER'S OWN TOKENS (js/vp-tr/style.js) — the look is kept, the delivery is new. */
 :root{
@@ -45,7 +45,11 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .view{position:relative;aspect-ratio:16/9;overflow:hidden;border-radius:4px;isolation:isolate;
   box-shadow:0 0 0 1px rgba(224,160,73,.18),0 0 90px rgba(0,0,0,.9),0 30px 80px rgba(0,0,0,.8);background:var(--cv-void)}
 .sky{position:absolute;inset:0;transition:opacity 1.6s}
-.sky.dawn{background:linear-gradient(180deg,#27324a 0%,#4a4f66 38%,#8a6f73 62%,#c99a7a 76%,#2a2a33 100%)}
+.sky.dawn{background:radial-gradient(30% 22% at 16% 58%,rgba(255,196,120,.85),rgba(255,140,80,.25) 45%,transparent 70%),radial-gradient(60% 40% at 50% 64%,rgba(240,130,90,.35),transparent 70%),linear-gradient(180deg,#1c2340 0%,#3a3a60 30%,#7a5a78 52%,#d98a6a 66%,#e9a878 72%,#3a3040 100%)}
+.clouds{position:absolute;inset:0 0 45% 0;opacity:.8;transition:opacity 1.6s}
+.clouds i{position:absolute;height:14px;border-radius:50%;background:rgba(255,190,160,.35);filter:blur(6px);animation:cloud 60s linear infinite}
+@keyframes cloud{from{transform:translateX(-10%)}to{transform:translateX(10%)}}
+.night-on .clouds{opacity:.15}
 .sky.night{background:radial-gradient(40% 30% at 78% 18%,rgba(143,166,194,.25),transparent 70%),linear-gradient(180deg,#05070d 0%,#0b1120 55%,#10131b 100%);opacity:0}
 .stars{position:absolute;inset:0 0 40% 0;opacity:0;transition:opacity 2s}
 .stars i{position:absolute;width:2px;height:2px;border-radius:50%;background:#dfe7f5;animation:tw 3s infinite alternate}
@@ -59,11 +63,12 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 /* the world: the castle, laid out in 1600×900 units and moved as a camera */
 .world{position:absolute;left:0;top:0;width:1600px;height:900px;transform-origin:0 0;transition:transform 1.25s cubic-bezier(.65,0,.25,1)}
 .castle{position:absolute;inset:0}
-.room{position:absolute;overflow:hidden;background:#07090d;box-shadow:inset 0 0 0 3px #1a1f29,inset 0 0 40px rgba(0,0,0,.9);transition:filter 1s}
+.room{position:absolute;overflow:hidden;background:#07090d;box-shadow:0 0 0 6px #4a2418,0 0 0 8px #2a120c,inset 0 0 30px rgba(0,0,0,.6);transition:filter 1s}
 .room .glow{position:absolute;inset:0;transition:opacity 1s}
 .room.dark .glow{opacity:.18}
 .room.here{box-shadow:inset 0 0 0 2px rgba(255,219,149,.55),inset 0 0 40px rgba(0,0,0,.7)}
 .world.zoomed .room .lbl,.world.zoomed .room .dots{opacity:0}
+.world.zoomed .room:not(.here){filter:brightness(.28) saturate(.5)}
 .room .lbl,.room .dots{transition:opacity .4s}
 .room .lbl{position:absolute;left:10px;top:8px;font-family:var(--cv-display);font-size:11px;font-weight:700;letter-spacing:.28em;text-transform:uppercase;color:rgba(232,221,193,.55)}
 .room .dots{position:absolute;left:10px;bottom:9px;display:flex;gap:4px}
@@ -144,9 +149,137 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .pop .up{color:#8fd19e}.pop .dn{color:#e87a82}
 @keyframes pop{from{transform:translateX(30px);opacity:0}}
 
+/* ── THE ROUND TABLE — the existing screen's pieces, brought onto the stage ──
+   Palette and parts from js/vp-tr/round-table.js: the hall green, bone text,
+   candle and blood, the seat board, the debate card, the framed chalk slate
+   with its running count, The Count, The Chair, and the card that turns over. */
+.rt{position:absolute;inset:0;z-index:6;opacity:0;pointer-events:none;transition:opacity .9s;
+  --rt-bone:#ded6c4;--rt-bone-dim:rgba(222,214,196,.62);--rt-candle:#fff3d2;--rt-chalk:#eef2ec;
+  --rt-slate:#20262c;--rt-slate-2:#12171c;--rt-blood:#8e1526;--rt-blood-hot:#c9283c;--rt-rule:rgba(222,214,196,.17)}
+.rt.on{opacity:1}
+/* the seat board: everybody evenly round the table, the host at its head */
+.rt .seat{position:absolute;transform:translate(-50%,-50%);text-align:center;transition:filter .45s,transform .45s cubic-bezier(.2,1.2,.4,1)}
+.rt .seat .av{position:relative;width:100%;aspect-ratio:1/1.12;overflow:hidden;border-radius:50% 50% 12% 12%/44% 44% 9% 9%;
+  background:linear-gradient(162deg,#252b37,#080b11);box-shadow:0 0 0 2px rgba(222,214,196,.35),0 8px 20px rgba(0,0,0,.8)}
+.rt .seat .av img{width:100%;height:100%;object-fit:cover;object-position:50% 18%}
+.rt .seat .nm{display:inline-block;margin-top:5px;padding:2px 8px;white-space:nowrap;font-family:var(--cv-display);font-weight:700;font-size:10px;
+  letter-spacing:.18em;text-transform:uppercase;color:var(--rt-bone);background:rgba(4,7,5,.72);border:1px solid var(--rt-rule)}
+.rt .seat .ticks{height:12px;margin-top:3px;font-family:var(--cv-hand);font-size:14px;line-height:12px;color:var(--rt-blood-hot);letter-spacing:1px}
+.rt .seat.quiet{filter:brightness(.55) saturate(.75)}
+.rt .seat.speak{transform:translate(-50%,-50%) scale(1.14);z-index:1400!important}
+.rt .seat.speak .av{box-shadow:0 0 0 2px var(--rt-candle),0 0 34px rgba(255,243,210,.55),0 8px 20px rgba(0,0,0,.8)}
+.rt .seat.accused .av{box-shadow:0 0 0 2px var(--rt-blood-hot),0 0 26px rgba(201,40,60,.55),0 8px 20px rgba(0,0,0,.8)}
+.rt .seat.host .av{box-shadow:0 0 0 2px var(--rt-candle),0 8px 20px rgba(0,0,0,.8)}
+.rt .seat.host .nm{color:var(--rt-candle)}
+.aud .rt .seat.traitor .av::after{content:"";position:absolute;inset:0;border-radius:inherit;box-shadow:inset 0 0 0 2px rgba(201,40,60,.9),inset 0 -26px 34px -16px rgba(142,21,38,.8)}
+.rt .seat.out{filter:grayscale(1) brightness(.35)}
+.rt svg.threads{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible;z-index:900}
+.rt .thread{fill:none;stroke:var(--rt-blood-hot);stroke-width:3;stroke-linecap:round;filter:drop-shadow(0 0 5px rgba(201,40,60,.9));stroke-dasharray:1400;stroke-dashoffset:1400;animation:draw 1s ease forwards}
+.rt .thread.old{stroke:rgba(201,40,60,.4);filter:none;animation:none;stroke-dashoffset:0}
+@keyframes draw{to{stroke-dashoffset:0}}
+/* the counter on the baize */
+.rt .counter{position:absolute;transform:translate(-50%,-50%);text-align:center;z-index:800;font-family:var(--cv-display);color:var(--rt-candle);text-shadow:0 2px 12px #000}
+.rt .counter b{display:block;font-size:30px;font-weight:900}
+.rt .counter span{font-size:10px;font-weight:700;letter-spacing:.3em;color:var(--rt-bone-dim)}
+
+/* the card at the foot of the stage: the debate, or the host */
+.rt .card-slot{position:absolute;left:50%;bottom:3.5%;width:min(62%,760px);transform:translate(-50%,12px);opacity:0;z-index:3200;transition:.4s}
+.rt .card-slot.in{opacity:1;transform:translate(-50%,0)}
+.rt .dcard{padding:14px 18px 12px;background:linear-gradient(160deg,rgba(26,14,7,.98),rgba(10,6,4,.98));border:1px solid var(--rt-rule);box-shadow:0 18px 40px rgba(0,0,0,.75)}
+.rt .dhead{display:flex;align-items:center;gap:12px;padding-bottom:9px;margin-bottom:10px;border-bottom:1px solid var(--rt-rule)}
+.rt .dhead img{width:38px;height:42px;border-radius:50% 50% 12% 12%/44% 44% 9% 9%;object-fit:cover;box-shadow:0 0 0 2px var(--rt-blood-hot)}
+.rt .dhead .k{font-family:var(--cv-display);font-size:9.5px;font-weight:700;letter-spacing:.34em;color:var(--rt-bone-dim);text-transform:uppercase}
+.rt .dhead b{display:block;font-family:var(--cv-display);font-weight:900;font-size:22px;color:var(--rt-bone)}
+.rt .dhead .v{margin-left:auto;text-align:right;font-family:var(--cv-display);font-size:9.5px;font-weight:700;letter-spacing:.24em;color:var(--rt-bone-dim);text-transform:uppercase}
+.rt .dhead .v em{display:block;font-style:normal;font-size:18px;color:var(--rt-candle)}
+.rt .quote{display:grid;grid-template-columns:40px 1fr;gap:12px;padding:10px 12px;border-left:2px solid var(--rt-rule);background:rgba(255,243,210,.03)}
+.rt .quote img{width:40px;height:44px;border-radius:50% 50% 12% 12%/44% 44% 9% 9%;object-fit:cover}
+.rt .quote p{font-family:var(--cv-body);font-size:clamp(17px,1.5vw,20px);line-height:1.4;color:var(--rt-bone)}
+.rt .quote small{display:block;margin-top:4px;font-family:var(--cv-display);font-size:9.5px;font-weight:700;letter-spacing:.3em;color:var(--rt-bone-dim);text-transform:uppercase}
+.rt .hostcard{display:grid;grid-template-columns:52px 1fr;gap:14px;align-items:center;padding:14px 18px;
+  background:radial-gradient(80% 140% at 50% 50%,rgba(74,40,16,.98),rgba(10,6,4,.98));border-top:1px solid var(--rt-rule);border-bottom:1px solid var(--rt-rule);box-shadow:0 18px 40px rgba(0,0,0,.75)}
+.rt .hostcard img{width:52px;height:58px;border-radius:50% 50% 12% 12%/44% 44% 9% 9%;object-fit:cover}
+.rt .hostcard .k{font-family:var(--cv-display);font-size:9.5px;font-weight:700;letter-spacing:.34em;color:var(--rt-bone-dim);text-transform:uppercase}
+.rt .hostcard p{font-family:var(--cv-body);font-style:italic;font-size:clamp(18px,1.6vw,22px);line-height:1.35;color:var(--rt-candle)}
+
+/* the slate, read aloud: the existing screen's framed chalkboard */
+.rt .bigslate{position:absolute;left:50%;top:27%;width:min(36%,420px);transform:translateX(-50%) rotateX(80deg);transform-origin:top;opacity:0;z-index:2500;
+  padding:12px;border-radius:3px;background:linear-gradient(150deg,#4b3a22,#241b10);box-shadow:0 22px 44px rgba(0,0,0,.72),inset 0 1px 0 rgba(255,243,210,.2);transition:transform .55s cubic-bezier(.2,1.3,.4,1),opacity .25s}
+.rt .bigslate.in{transform:translateX(-50%) rotateX(0);opacity:1}
+.rt .bigslate .face{position:relative;padding:18px 18px 14px;text-align:center;background:linear-gradient(158deg,var(--rt-slate),var(--rt-slate-2));box-shadow:inset 0 0 40px rgba(0,0,0,.75)}
+.rt .bigslate .ord{position:absolute;left:12px;top:8px;font-family:var(--cv-display);font-weight:900;font-size:11px;letter-spacing:.14em;color:rgba(238,242,236,.32)}
+.rt .bigslate .nm{font-family:var(--cv-hand);font-size:clamp(30px,3.8vw,46px);line-height:1.06;color:var(--rt-chalk);text-shadow:0 0 1px rgba(238,242,236,.9),0 0 14px rgba(238,242,236,.28);transform:rotate(-1.1deg)}
+.rt .bigslate .by{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:12px;padding-top:10px;border-top:1px solid rgba(238,242,236,.14);
+  font-family:var(--cv-display);font-weight:700;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:rgba(238,242,236,.72)}
+.rt .bigslate .by img{width:26px;height:28px;border-radius:50% 50% 12% 12%/44% 44% 9% 9%;object-fit:cover}
+.rt .bigslate .run{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;padding:10px 2px 0}
+.rt .chip{display:inline-flex;align-items:center;gap:6px;padding:3px 9px;border:1px solid rgba(222,214,196,.2);background:rgba(4,7,5,.55);
+  font-family:var(--cv-display);font-weight:700;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(222,214,196,.8)}
+.rt .chip b{font-size:12px;color:var(--rt-candle)}
+.rt .chip[data-lead="1"]{border-color:rgba(201,40,60,.55);color:#e58490}.rt .chip[data-lead="1"] b{color:#e58490}
+.rt .chip[data-just="1"]{border-color:rgba(240,224,170,.6);background:rgba(240,224,170,.1);color:rgba(246,238,214,.95)}
+
+
+/* THE CHALK — the name is written on the slate, a letter at a time, in the
+   voter's own hand, with the stick travelling along the line and dust falling
+   off it. The running count waits until the name is finished. */
+.rt .bigslate .nm.chalk{position:relative;display:inline-block;font-size:clamp(40px,4.6vw,60px);line-height:1.1;padding:0 6px;filter:url(#chalkRough);
+  text-shadow:0 0 1px rgba(238,242,236,.95),0 0 12px rgba(238,242,236,.25)}
+.rt .bigslate .nm.chalk span{display:inline-block;white-space:pre;clip-path:inset(-30% 100% -30% -30%);
+  animation:chalkL var(--per) cubic-bezier(.4,.1,.6,.9) forwards;animation-delay:calc(var(--start) + var(--i) * var(--per))}
+@keyframes chalkL{to{clip-path:inset(-30% -30% -30% -30%)}}
+.rt .bigslate .stick{position:absolute;left:0;top:55%;width:38px;height:10px;border-radius:2px 4px 4px 2px;opacity:0;pointer-events:none;
+  background:linear-gradient(180deg,#fffef8,#d9d6c8 70%,#b9b5a4);box-shadow:0 3px 6px rgba(0,0,0,.55);transform-origin:0 50%;
+  animation:stickGo var(--dur) linear var(--start) forwards,stickBob var(--per) ease-in-out var(--start) infinite alternate,stickVis calc(var(--dur) + .5s) linear calc(var(--start) - .2s) forwards}
+@keyframes stickGo{from{left:0}to{left:100%}}
+@keyframes stickBob{from{transform:translate(-2px,-70%) rotate(-40deg)}to{transform:translate(-2px,-10%) rotate(-32deg)}}
+@keyframes stickVis{0%{opacity:0}12%{opacity:1}88%{opacity:1}100%{opacity:0}}
+.rt .bigslate .dust{position:absolute;top:70%;width:3px;height:3px;border-radius:50%;background:#f4f2ea;opacity:0;
+  animation:dust .9s ease-in forwards;animation-delay:var(--d)}
+@keyframes dust{0%{opacity:.95;transform:translate(0,0)}100%{opacity:0;transform:translate(var(--dx),34px)}}
+.rt .bigslate .run{opacity:0;animation:runIn .45s ease forwards calc(var(--start) + var(--dur) + .15s)}
+@keyframes runIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.rt .bigslate .smear{position:absolute;inset:0;pointer-events:none;opacity:.5;
+  background:radial-gradient(40% 30% at 30% 40%,rgba(238,242,236,.06),transparent 70%),radial-gradient(35% 25% at 72% 62%,rgba(238,242,236,.05),transparent 70%)}
+.rt .seat .ticks i{font-style:normal;opacity:0;animation:runIn .3s forwards;animation-delay:var(--t)}
+
+/* The Count */
+.rt .count{position:absolute;right:16px;bottom:16px;width:230px;padding:12px 14px;z-index:3200;background:linear-gradient(160deg,rgba(26,14,7,.98),rgba(10,6,4,.98));
+  border:1px solid var(--rt-rule);box-shadow:0 18px 40px rgba(0,0,0,.75);opacity:0;transform:translateY(-8px);transition:.5s}
+.rt .count.on{opacity:1;transform:none}
+.rt .count h5{font-family:var(--cv-display);font-size:10px;font-weight:700;letter-spacing:.34em;text-transform:uppercase;color:var(--rt-bone-dim);margin-bottom:8px}
+.rt .crow{display:grid;grid-template-columns:24px 1fr auto;gap:9px;align-items:center;padding:6px 8px;margin-bottom:5px;border:1px solid rgba(222,214,196,.11);background:rgba(4,7,5,.5)}
+.rt .crow img{width:24px;height:26px;border-radius:50% 50% 12% 12%/44% 44% 9% 9%;object-fit:cover}
+.rt .crow span{font-family:var(--cv-display);font-weight:700;font-size:13px;color:var(--rt-bone)}
+.rt .crow b{font-family:var(--cv-display);font-weight:900;font-size:16px;color:var(--rt-candle)}
+.rt .crow i{grid-column:1/-1;height:3px;background:rgba(222,214,196,.09);position:relative}
+.rt .crow i::after{content:"";position:absolute;left:0;top:0;bottom:0;width:var(--w);background:linear-gradient(90deg,rgba(142,21,38,.9),rgba(201,40,60,.9))}
+.rt .crow[data-top="1"]{border-color:rgba(201,40,60,.5)}.rt .crow[data-top="1"] b{color:#e58490}
+
+/* The Chair, and the card that turns over */
+.rt .chair{position:absolute;inset:0;z-index:3000;display:grid;place-items:center;background:radial-gradient(45% 55% at 50% 45%,rgba(4,7,5,.55),rgba(4,7,5,.95));opacity:0;transition:opacity .8s}
+.rt .chair.on{opacity:1}
+.rt .chair .inner{text-align:center;width:min(46%,480px);margin-top:-9%}
+.rt .chair .k{font-family:var(--cv-display);font-size:10px;font-weight:700;letter-spacing:.34em;color:var(--rt-bone-dim);text-transform:uppercase}
+.rt .chair .who{font-family:var(--cv-display);font-weight:900;font-size:clamp(30px,4vw,48px);color:var(--rt-bone);margin:6px 0 2px}
+.rt .chair .word{font-family:var(--cv-display);font-size:11px;font-weight:700;letter-spacing:.4em;color:#e58490;text-transform:uppercase}
+.rt .flip{position:relative;margin:16px auto 0;width:min(50%,210px);aspect-ratio:3/4;perspective:1200px}
+.rt .flip .rin{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform 1.2s cubic-bezier(.3,1.2,.3,1)}
+.rt .chair.turned .rin{transform:rotateY(180deg)}
+.rt .flip .rf,.rt .flip .rb{position:absolute;inset:0;overflow:hidden;backface-visibility:hidden;border-radius:50% 50% 8% 8%/40% 40% 6% 6%}
+.rt .flip .rf{box-shadow:0 0 0 3px var(--rt-bone),0 30px 70px rgba(0,0,0,.9)}
+.rt .flip .rf img{width:100%;height:100%;object-fit:cover;object-position:50% 18%}
+.rt .flip .rb{transform:rotateY(180deg);display:grid;place-items:center;padding:18px}
+.rt .flip .rb.faithful{background:radial-gradient(circle at 50% 35%,#f1e6c8,#c9ba95);color:#241b11;box-shadow:0 0 0 3px var(--rt-candle),0 0 60px rgba(255,243,210,.35)}
+.rt .flip .rb.traitor{background:radial-gradient(circle at 50% 35%,#8e1526,#2a0508);color:#f3dcd8;box-shadow:0 0 0 3px var(--rt-blood-hot),0 0 60px rgba(201,40,60,.55)}
+.rt .flip .rb small{display:block;font-family:var(--cv-display);font-size:11px;font-weight:700;letter-spacing:.4em;margin-bottom:10px;opacity:.75}
+.rt .flip .rb strong{font-family:var(--cv-display);font-weight:900;font-size:clamp(18px,1.8vw,24px);letter-spacing:.04em;line-height:1.15}
+.rt .chair .cap{margin-top:16px;font-family:var(--cv-body);font-style:italic;font-size:20px;color:var(--rt-bone)}
+
 /* minimap: where in the castle, who is where */
-.mini{position:absolute;left:16px;bottom:16px;z-index:10;width:190px;padding:8px;background:rgba(4,5,8,.78);box-shadow:0 0 0 1px rgba(224,160,73,.22)}
+.mini{position:absolute;left:16px;bottom:16px;z-index:10;transition:opacity .6s;width:190px;padding:8px;background:rgba(4,5,8,.78);box-shadow:0 0 0 1px rgba(224,160,73,.22)}
 .mini svg{width:100%;display:block}
+:has(> .rt.on) > .mini, :has(.rt.on) .mini{opacity:0;pointer-events:none}
 .mini .k{font-family:var(--cv-display);font-size:9px;font-weight:700;letter-spacing:.3em;color:var(--cv-mute);text-transform:uppercase;margin-bottom:5px}
 
 /* ── controls, in the old stone-and-lantern ── */
@@ -173,12 +306,9 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
   </div>
 
   <div class="view" id="view">
-    <div class="sky dawn"></div><div class="sky night"></div>
+    <div class="sky dawn"></div><div class="sky night"></div><div class="clouds" id="clouds"></div>
     <div class="stars" id="stars"></div><div class="moon"></div>
-    <svg class="hills" viewBox="0 0 1600 360" preserveAspectRatio="none">
-      <path d="M0 170 L140 110 L260 150 L420 70 L560 140 L700 120 L860 60 L1000 130 L1160 90 L1300 150 L1460 100 L1600 140 L1600 360 L0 360Z" fill="#141925" opacity=".85"/>
-      <path d="M0 230 L200 180 L380 220 L600 170 L820 215 L1040 175 L1260 220 L1460 185 L1600 210 L1600 360 L0 360Z" fill="#0b0e15"/>
-    </svg>
+    <svg class="hills" id="hills" viewBox="0 0 1600 360" preserveAspectRatio="none"></svg>
     <div class="mist" style="bottom:14%"></div>
 
     <div class="world" id="world">
@@ -187,6 +317,7 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
     </div>
     <div class="mist" style="bottom:2%;animation-duration:34s;opacity:.7"></div>
 
+    <div class="rt" id="rt"></div>
     <div class="scene" id="scene"></div>
     <div class="caption" id="caption"></div>
     <div class="loc" id="loc"><div class="e" id="locE"></div><div class="t" id="locT"></div><div class="gem"></div></div>
@@ -205,6 +336,7 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
   </div>
 </div>
 
+<script src="tr-cutaway-scenery.js"></script>
 <script>
 const A = n => '../assets/avatars/' + n + '.png';
 const P = {Gwen:'gwen',Duncan:'duncan',Heather:'heather',Courtney:'courtney',Harold:'harold',Izzy:'izzy',Leshawna:'leshawna',
@@ -215,18 +347,18 @@ const TRAITOR = new Set(['Duncan','Alejandro','Chris']);
 // turrets and crow-stepped gables, two storeys and an attic either side.
 // Rooms are cut into the front, and the camera flies between them.
 const ROOMS = {
-  turret:   {x:700, y:170, w:220, h:120, g:'g-turret', label:"The turret"},
-  alcove:   {x:700, y:300, w:220, h:130, g:'g-alcove', label:'The alcove'},
-  bedL1:    {x:200, y:330, w:240, h:110, g:'g-bed', label:'Bedroom'},
-  bedL2:    {x:450, y:330, w:240, h:110, g:'g-bed', label:'Bedroom'},
-  bedR1:    {x:930, y:330, w:240, h:110, g:'g-bed', label:'Bedroom'},
-  bedR2:    {x:1180,y:330, w:230, h:110, g:'g-bed', label:'Bedroom'},
-  library:  {x:200, y:450, w:490, h:160, g:'g-lib', label:'The library'},
-  landing:  {x:700, y:440, w:220, h:170, g:'g-land', label:'The landing'},
-  hall:     {x:930, y:450, w:480, h:160, g:'g-hall', label:'The great hall'},
-  kitchen:  {x:200, y:620, w:490, h:165, g:'g-kit', label:'The kitchen'},
-  front:    {x:700, y:620, w:220, h:165, g:'g-land', label:'The front hall'},
-  table:    {x:930, y:620, w:480, h:165, g:'g-round', label:'The Round Table'},
+  turret:   {x:700, y:170, w:220, h:120, type:'turret', label:"The turret"},
+  alcove:   {x:700, y:300, w:220, h:130, type:'alcove', label:'The alcove'},
+  bedL1:    {x:200, y:330, w:240, h:110, type:'bed', label:'Bedroom'},
+  bedL2:    {x:450, y:330, w:240, h:110, type:'bed', label:'Bedroom'},
+  bedR1:    {x:930, y:330, w:240, h:110, type:'bed', label:'Bedroom'},
+  bedR2:    {x:1180,y:330, w:230, h:110, type:'bed', label:'Bedroom'},
+  library:  {x:200, y:450, w:490, h:160, type:'library', label:'The library'},
+  landing:  {x:700, y:440, w:220, h:170, type:'landing', label:'The landing'},
+  hall:     {x:930, y:450, w:480, h:160, type:'hall', label:'The great hall'},
+  kitchen:  {x:200, y:620, w:490, h:165, type:'kitchen', label:'The kitchen'},
+  front:    {x:700, y:620, w:220, h:165, type:'front', label:'The front hall'},
+  table:    {x:930, y:620, w:480, h:165, type:'table', label:'The Round Table'},
 };
 
 function castleSvg(){
@@ -285,6 +417,17 @@ const STEPS = [
   { who:'Courtney', text:'Because you went quiet the second Owen’s name came up.' },
   { who:'Heather', text:'I went quiet because I was upset.' },
   { who:'Courtney', text:'You? Upset? You called him a golden retriever on day one.', pop:{f:['Courtney','Heather'],t:'Suspicion',up:false} },
+  { seg:'table', room:'table', when:'Evening', rt:true },
+  { host:'Welcome to the Round Table. Sit down, all of you. Nobody leaves until a name has been said out loud.' },
+  { who:'Courtney', text:'I’ll start. Heather went quiet the second Owen’s name came up this morning.', acc:['Courtney','Heather'] },
+  { who:'Heather', text:'I was upset. People are allowed to be upset in here, Courtney.' },
+  { who:'Gwen', text:'You called him a golden retriever on day one. You weren’t upset.', acc:['Gwen','Heather'] },
+  { who:'Duncan', text:'Can we talk about Harold’s vote last night? Because nobody else wrote that name.', acc:['Duncan','Harold'] },
+  { who:'Harold', text:'I voted on the evidence! I have a spreadsheet. A mental one.' },
+  { host:'It is time to vote. Write down the name of the person you believe to be a Traitor.', phase:'vote' },
+  ...['Courtney','Heather','Gwen','Duncan','Harold','Izzy','Leshawna','Alejandro','Lindsay','Chris'].map(n => ({ vote:n })),
+  { host:'Heather. You have received the most votes. Please tell the Round Table who you really are.', out:'Heather' },
+  { reveal:'faithful', cap:'Four Faithfuls wrote her name. So did one Traitor — Alejandro.' },
   { seg:'night', room:'turret', when:'After lights out', cast:['Chris','Duncan','Alejandro'], night:true },
   { narr:'Three cloaks on the turret stair. The rest of the castle is asleep, or says it is.' },
   { who:'Chris', text:'Gwen. She trusts Duncan too much to ever look at him.' },
@@ -329,7 +472,7 @@ function drawRooms(st){
     const lit = id===active || (st.night && id==='turret');
     const people = (id===active ? [] : (where[id]||[]));
     return `<div class="room${id===active?' here':''}${lit?' lit':''}" style="left:${r.x}px;top:${r.y}px;width:${r.w}px;height:${r.h}px">
-      <div class="glow ${r.g}${/turret|alcove|kit/.test(r.g)?' flick':''}"></div><span class="lbl">${r.label}</span>
+      <div class="glow">${TRScenery.room(r.type, r.w, r.h, st.night && !lit)}</div><span class="lbl">${r.label}</span>
       <span class="dots">${people.map(n=>`<img src="${A(P[n])}">`).join('')}</span></div>`;
   }).join('');
   // minimap
@@ -368,10 +511,133 @@ function drawScene(st, fresh){
   const cap = document.getElementById('caption');
   if(st.beat && st.beat.narr){ cap.textContent = st.beat.narr; cap.classList.add('in'); } else cap.classList.remove('in');
 }
+// ── THE ROUND TABLE ─────────────────────────────────────────────────────
+// The existing screen's board, debate card, slate, count and chair, played
+// one click at a time on the stage. Seats are EVEN round the table — eleven
+// places, the host's at the head — the way the existing board lays them out.
+const RT_SEATS = ['Courtney','Heather','Gwen','Duncan','Harold','Izzy','Leshawna','Alejandro','Lindsay','Chris'];
+const RT_VOTES = { Courtney:'Heather', Heather:'Courtney', Gwen:'Heather', Duncan:'Harold', Harold:'Heather', Izzy:'Heather',
+  Leshawna:'Harold', Alejandro:'Heather', Lindsay:'Harold', Chris:'Harold' };
+const RT_ORDER = RT_SEATS.slice();                  // the order the slates are read
+function rtState(i){
+  const r = { accs:[], slates:{}, order:[], out:null, reveal:null, phase:'talk', on:false };
+  for(let k=0;k<=i;k++){ const s = STEPS[k];
+    if(s.room && !s.cam){ Object.assign(r, { accs:[], slates:{}, order:[], out:null, reveal:null, phase:'talk', on:!!s.rt }); }
+    if(!r.on) continue;
+    if(s.acc) r.accs.push(s.acc);
+    if(s.phase) r.phase = s.phase;
+    if(s.vote){ r.slates[s.vote] = RT_VOTES[s.vote]; r.order.push(s.vote); }
+    if(s.out) r.out = s.out;
+    if(s.reveal) r.reveal = s;
+  }
+  const cur = STEPS[i] || {};
+  r.lastAcc = cur.acc || null; r.lastVote = cur.vote || null;
+  return r;
+}
+// slot 0 is the host's, at the head of the table; ten evenly spaced after it
+function seatAt(slot, W, H){
+  const cx = W*.5, cy = H*.45, rx = W*.405, ry = H*.245;
+  const a = (-90 + slot * 360/11) * Math.PI/180;
+  const x = cx + rx*Math.cos(a), y = cy + ry*Math.sin(a);
+  return { x, y, z: 100 + Math.round(y) };
+}
+function drawTable(st, fresh){
+  const rt = document.getElementById('rt'), W = view.clientWidth, H = view.clientHeight;
+  const r = rtState(idx);
+  const beat = st.beat || {};
+  const speaker = beat.who || beat.vote || (beat.host ? 'Host' : null);
+  const pw = H*.092;
+  let h = `<svg width="0" height="0" style="position:absolute"><filter id="chalkRough"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="4" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.6"/></filter></svg>`
+    + TRScenery.roundTableSet(W, H) + TRScenery.roundTable(W*.5, H*.455, W*.29, H*.17, 11);
+  // threads between accuser and accused
+  const pos = n => { const p = seatAt(RT_SEATS.indexOf(n) + 1, W, H); return [p.x, p.y]; };
+  h += `<svg class="threads">` + r.accs.map(([a,b]) => {
+    const [x1,y1] = pos(a), [x2,y2] = pos(b);
+    const mx = (x1+x2)/2 + (W*.5 - (x1+x2)/2)*.35, my = (y1+y2)/2 + (H*.46 - (y1+y2)/2)*.35;
+    const isNew = fresh && r.lastAcc && r.lastAcc[0]===a && r.lastAcc[1]===b;
+    return `<path class="thread${isNew?'':' old'}" d="M${x1},${y1} Q${mx},${my} ${x2},${y2}"/>`;
+  }).join('') + `</svg>`;
+  // the count on the baize, while the slates are read
+  const count = {}; Object.values(r.slates).forEach(v => count[v] = (count[v]||0) + 1);
+  if(r.phase === "vote" && !r.out && !beat.vote)
+    h += `<div class="counter" style="left:${W*.5}px;top:${H*.44}px"><b>${r.order.length} / ${RT_SEATS.length}</b><span>READ ALOUD</span></div>`;
+  // the host's seat
+  const hp = seatAt(0, W, H);
+  h += `<div class="seat host${speaker==='Host'?' speak':(speaker?' quiet':'')}" style="left:${hp.x}px;top:${hp.y}px;width:${pw}px;z-index:${hp.z}">`
+    + `<div class="av"><img src="${A('alan-cumming')}"></div><div class="nm">Alan Cumming</div></div>`;
+  // the players, with the votes against them as chalk ticks at their place
+  const accused = new Set(r.accs.map(x => x[1]));
+  RT_SEATS.forEach((n, i) => {
+    const p = seatAt(i + 1, W, H);
+    const cls = ['seat', speaker===n?'speak':(speaker?'quiet':''), accused.has(n) && r.phase!=='vote' ? 'accused':'',
+      TRAITOR.has(n)?'traitor':'', r.out===n && r.reveal ? 'out':''].join(' ');
+    h += `<div class="${cls}" style="left:${p.x}px;top:${p.y}px;width:${pw}px;z-index:${p.z}">`
+      + `<div class="av"><img src="${A(P[n])}"></div><div class="nm">${n}</div>`
+      + `<div class="ticks">${'/'.repeat(Math.max(0, (count[n]||0) - (fresh && beat.vote && RT_VOTES[beat.vote]===n ? 1 : 0)))}`
+      + (fresh && beat.vote && RT_VOTES[beat.vote]===n ? `<i style="--t:${(.7 + n.length*.14 + .2).toFixed(2)}s">/</i>` : '') + `</div></div>`;
+  });
+  // the slate just read — the existing screen's framed chalkboard
+  if(beat.vote){
+    const lead = Math.max(...Object.values(count));
+    const chips = Object.keys(count).sort((a,b) => count[b]-count[a]).map(n =>
+      `<span class="chip"${count[n]===lead?' data-lead="1"':''}${n===RT_VOTES[beat.vote]?' data-just="1"':''}>${n} <b>${count[n]}</b></span>`).join('');
+    const nm = RT_VOTES[beat.vote];
+    // the voter's own hand, the same every time they write
+    const HANDS = ["'Caveat',cursive", "'Kalam',cursive", "'Gochi Hand',cursive", "'Shadows Into Light',cursive", "'Reenie Beanie',cursive"];
+    const hand = HANDS[[...beat.vote].reduce((a, c) => a + c.charCodeAt(0), 0) % HANDS.length];
+    const per = fresh ? .14 : 0, start = fresh ? .7 : 0, dur = nm.length * per;
+    const dust = fresh ? Array.from({ length: 9 }, (_, i) =>
+      `<b class="dust" style="left:${(i + .5) / 9 * 100}%;--d:${(start + dur * (i + .5) / 9).toFixed(2)}s;--dx:${(i % 3 - 1) * 6}px"></b>`).join('') : '';
+    h += `<div class="bigslate" style="--per:${per}s;--start:${start}s;--dur:${dur}s"><div class="face"><span class="smear"></span><span class="ord">${r.order.length} / ${RT_SEATS.length}</span>`
+      + `<div class="nm chalk" style="font-family:${hand}">` + [...nm].map((c, i) => `<span style="--i:${i}">${c}</span>`).join('')
+      + (fresh ? `<i class="stick"></i>` : '') + dust + `</div>`
+      + `<div class="by"><img src="${A(P[beat.vote])}">${beat.vote}</div></div>`
+      + `<div class="run">${chips}</div></div>`;
+  }
+  // The Count, once every slate is up
+  if(r.order.length === RT_SEATS.length){
+    const names = Object.keys(count).sort((a,b) => count[b]-count[a]), top = count[names[0]];
+    h += `<div class="count on"><h5>The Count</h5>` + names.map(n =>
+      `<div class="crow"${count[n]===top?' data-top="1"':''}><img src="${A(P[n])}"><span>${n}</span><b>${count[n]}</b><i style="--w:${count[n]/top*100}%"></i></div>`).join('') + `</div>`;
+  }
+  // The Chair, and the card that turns over
+  if(r.out){
+    const faithful = !r.reveal || r.reveal.reveal === 'faithful';
+    h += `<div class="chair on${r.reveal?' turned':''}"><div class="inner"><div class="k">The Chair</div>`
+      + `<div class="who">${r.out}</div><div class="word">Banished</div>`
+      + `<div class="flip"><div class="rin"><div class="rf"><img src="${A(P[r.out])}"></div>`
+      + `<div class="rb ${faithful?'faithful':'traitor'}"><div><small>I AM</small><strong>${faithful?'A FAITHFUL':'A TRAITOR'}</strong></div></div></div></div>`
+      + `<div class="cap">${r.reveal ? r.reveal.cap : ''}</div></div></div>`;
+  }
+  // the card at the foot of the stage: the host, or the debate
+  let card = '';
+  if(beat.host && !r.reveal){
+    card = `<div class="hostcard"><img src="${A('alan-cumming')}"><div><div class="k">Alan Cumming</div><p>“${beat.host}”</p></div></div>`;
+  } else if(beat.who){
+    const target = beat.acc ? beat.acc[1] : (accused.has(beat.who) ? beat.who : (r.accs.length ? r.accs[r.accs.length-1][1] : beat.who));
+    const voices = r.accs.filter(x => x[1] === target).length;
+    card = `<div class="dcard"><div class="dhead"><img src="${A(P[target])}"><div><div class="k">The Debate</div><b>${target}</b></div>`
+      + `<div class="v"><em>${voices}</em>${voices === 1 ? 'voice' : 'voices'} at this name</div></div>`
+      + `<div class="quote"><img src="${A(P[beat.who])}"><div><p class="q"></p><small>${beat.who}</small></div></div></div>`;
+  }
+  if(card) h += `<div class="card-slot">${card}</div>`;
+  rt.innerHTML = h;
+  const slot = rt.querySelector('.card-slot'), bs = rt.querySelector('.bigslate');
+  requestAnimationFrame(() => { slot && slot.classList.add('in'); bs && bs.classList.add('in'); });
+  const q = rt.querySelector('.quote .q');
+  if(q){ const txt = '“' + beat.text + '”';
+    if(fresh){ let k=0; const t = setInterval(()=>{ q.textContent = txt.slice(0,++k); if(k>=txt.length) clearInterval(t); }, 16); }
+    else q.textContent = txt; }
+  const phaseLabel = r.out ? 'The banishment' : r.phase === 'vote' ? 'The slates' : 'The debate';
+  document.getElementById('corner').innerHTML = `The Round Table · <b>${phaseLabel}</b>`;
+  document.getElementById('corner').classList.add('in');
+}
+
 function paint(fresh){
   const st = stateAt(idx), s = STEPS[idx];
   document.getElementById('n').textContent = `${idx+1} / ${STEPS.length}`;
   view.classList.toggle('night-on', st.night);
+  if (st.night !== lastNight) { drawOutside(st.night); lastNight = st.night; }
   document.querySelectorAll('#clock .seg').forEach(el=>{
     const order = ['breakfast','morning','mission','evening','table','night'], cur = order.indexOf(st.seg), me = order.indexOf(el.dataset.k);
     el.classList.toggle('done', me < cur); el.classList.toggle('now', me === cur);
@@ -385,17 +651,19 @@ function paint(fresh){
   clearTimeout(zoomTimer);
   if(newScene){
     document.getElementById('scene').innerHTML = ''; document.getElementById('caption').classList.remove('in');
+    document.getElementById('rt').classList.remove('on');
     camTo(null);
     zoomTimer = setTimeout(()=>{ camTo(room);
       if(!s.cam){ document.getElementById('locE').textContent = st.scene.when.toUpperCase(); document.getElementById('locT').textContent = ROOMS[room].label;
         loc.classList.add('in'); setTimeout(()=>loc.classList.remove('in'), 1500); }
-      setTimeout(()=>drawScene(st, true), s.cam ? 700 : 1500);
+      setTimeout(()=>{ if(st.scene && st.scene.rt){ document.getElementById('rt').classList.add('on'); drawTable(st, true); } else drawScene(st, true); }, s.cam ? 700 : 1500);
     }, 900);
   } else {
     camTo(room);
-    drawScene(st, fresh);
+    if(st.scene && st.scene.rt){ document.getElementById('scene').innerHTML=''; document.getElementById('rt').classList.add('on'); drawTable(st, fresh); }
+    else { document.getElementById('rt').classList.remove('on'); drawScene(st, fresh); }
   }
-  corner.innerHTML = room ? `${ROOMS[room].label} · <b>${st.cam ? 'Confessional' : st.scene.when}</b>` : '';
+  if(!(st.scene && st.scene.rt)) corner.innerHTML = room ? `${ROOMS[room].label} · <b>${st.cam ? 'Confessional' : st.scene.when}</b>` : '';
   corner.classList.toggle('in', !!room);
   // pops
   document.getElementById('pops').innerHTML = st.cam ? '' : st.pops.slice(-2).map(p=>
@@ -403,15 +671,18 @@ function paint(fresh){
 }
 function next(){ if(idx < STEPS.length-1){ idx++; paint(true); } }
 function all(){ idx = STEPS.length-1; paint(false); }
-function reset(){ idx = -1; view.classList.remove('night-on'); drawRooms({night:false}); camTo(null);
-  ['scene'].forEach(i=>document.getElementById(i).innerHTML=''); document.getElementById('caption').classList.remove('in');
+function reset(){ idx = -1; view.classList.remove('night-on'); if (lastNight !== false) { drawOutside(false); lastNight = false; } drawRooms({night:false}); camTo(null);
+  ['scene','rt'].forEach(i=>document.getElementById(i).innerHTML=''); document.getElementById('rt').classList.remove('on'); document.getElementById('caption').classList.remove('in');
   document.getElementById('corner').classList.remove('in'); document.getElementById('pops').innerHTML='';
   document.getElementById('lb').classList.remove('on'); document.getElementById('n').textContent = `0 / ${STEPS.length}`;
   document.querySelectorAll('#clock .seg').forEach(el=>{ el.classList.toggle('now', el.dataset.k==='breakfast'); el.classList.remove('done'); }); }
 function aud(){ document.body.classList.toggle('aud'); document.getElementById('audB').classList.toggle('on'); if(idx>=0) paint(false); }
 document.addEventListener('keydown', e=>{ if(e.key===' '||e.key==='ArrowRight'){ e.preventDefault(); next(); } });
-window.addEventListener('resize', ()=>{ const st = stateAt(idx); camTo(st.cam ? st.cam.room : (st.scene && st.scene.room)); if(idx>=0) drawScene(st,false); });
-document.getElementById('castle').innerHTML = castleSvg();
+window.addEventListener('resize', ()=>{ const st = stateAt(idx); camTo(st.cam ? st.cam.room : (st.scene && st.scene.room)); if(idx>=0){ if(st.scene && st.scene.rt) drawTable(st,false); else drawScene(st,false); } });
+function drawOutside(night){ document.getElementById('castle').innerHTML = TRScenery.castle(night); document.getElementById('hills').innerHTML = TRScenery.land(night); }
+let lastNight = null;
+drawOutside(false);
+document.getElementById('clouds').innerHTML = Array.from({length:9},(_,i)=>`<i style="left:${(i*13)%90}%;top:${8+(i*17)%70}%;width:${120+(i*37)%180}px;animation-delay:-${i*7}s"></i>`).join('');
 document.getElementById('stars').innerHTML = Array.from({length:70},()=>`<i style="left:${Math.random()*100}%;top:${Math.random()*100}%;animation-delay:-${Math.random()*3}s"></i>`).join('');
 reset();
 </script>

@@ -480,7 +480,7 @@ const TIMING_LINES = {
   ],
   'would-not-play': [
     '{a} starts on why {v}, and why now. {b} won’t have it.\n{b}: "Not this morning. Somebody’s dead."\n{a}: "I’m just trying to work it out."\n{b}: "Well, work it out without me."',
-    '{a} wants to talk about who did it. {b} walks off mid-sentence.\n{b}: "Sorry. I can’t do this right now."\n{a} (to camera): "Everyone grieves differently. I just find it weird when someone won’t even talk about it."',
+    '{a} wants to talk about who did it. {b} walks off mid-sentence.\n{b}: "Sorry. I can’t do this right now."\n{a}: "Sorry. I didn’t mean—"\n{a} (to camera): "Everyone grieves differently. I just find it weird when someone won’t even talk about it."',
     '{b} won’t guess at all.\n{a}: "You must have a theory."\n{b}: "Not everything’s a clue."\n{a} files that away and doesn’t say anything.',
     '{a} asks the same question twice and gets the same non-answer.\n{a}: "Who do you think it was?"\n{b}: "I don’t know."\n{a}: "You must think something."\n{b}: "I think I want my breakfast."',
   ],
@@ -821,7 +821,7 @@ registerEvent({
 const BLAME_ROOM_LINES = {
   'blamed-room': [
     '{a} puts down {aPos} fork and says it to the whole table.\n{a}: "Somebody in this room let {v} die. Somebody sat here last night and knew."\n{b}: "We all know that."\n{a}: "Then why is everyone eating like it’s normal?"',
-    '{a} is not grieving so much as furious.\n{a}: "One of you said goodnight to {v} knowing. One of you."\n{b} watches who looks up.',
+    '{a} is not grieving so much as furious.\n{a}: "One of you said goodnight to {v} knowing. One of you."\n{a}: "One of you."\n{b} watches who looks up.',
     '{b} says it is nobody’s fault. {a} isn’t having it.\n{b}: "It’s the game. It’s nobody’s fault."\n{a}: "It’s somebody’s fault. That’s literally the game."',
     '{a} stands up at breakfast.\n{a}: "I just want whoever did it to know I’m looking at them. That’s all."\n{b}: "Sit down, mate."\n{a} sits down, still looking round the table.',
   ],
@@ -829,7 +829,7 @@ const BLAME_ROOM_LINES = {
     '{a} does the maths out loud.\n{a}: "There’s three of them, probably. At this table. Three people lied to us last night."\n{b}: "Keep your voice down."\n{a}: "Why? They already know."',
     '{a} puts a figure on it, and the figure scares people more than an accusation would.\n{a}: "It’s not one person. It’s a few. They sat here and decided."\n{b}: "You’re frightening people."\n{a}: "Good."',
     '{b} tries to soften it. {a} says it again.\n{a}: "More than one person in this room knew {v} was going."\n{b}: "You don’t know that."\n{a}: "It’s how the game works. Of course I know that."',
-    '{a} counts round the table with {aPos} eyes.\n{a}: "Any of you. Any three of you."\n{b} (to camera): "{a} isn’t wrong. That’s what made it so horrible."',
+    '{a} counts round the table with {aPos} eyes.\n{a}: "Any of you. Any three of you."\n{a}: "You know who you are."\n{b} (to camera): "{a} isn’t wrong. That’s what made it so horrible."',
   ],
   'turned-on-them': [
     '{a} starts off blaming the room and ends up blaming {b}.\n{a}: "And you were the last one up, weren’t you?"\n{b}: "Are you serious?"\n{a}: "I’m just saying what I saw."',
@@ -923,7 +923,7 @@ registerEvent({
 const TOAST_LINES = {
   'named-them-all': [
     '{a} and {b} pour a glass each and go through the names of everyone they’ve lost.\n{a}: "To all of them."\n{b}: "All {n} of them."\nThey drink.',
-    '{a} lifts a glass to the empty end of the table, and {b} lifts one back.\n{b}: "Go on then. Say them."\n{a} says every name, in order. {b} says them back.',
+    '{a} lifts a glass to the empty end of the table, and {b} lifts one back.\n{b}: "Go on then. Say them."\n{a}: "To all of them."\n{a} says every name, in order. {b} says them back.',
     '{a} says a name, {b} says a name, and they keep going until there are none left.\n{a}: "That’s everyone."\n{b}: "That’s too many."',
     '{a} and {b} drink to the ones who went first.\n{a}: "We came in with some of them."\n{b}: "I know. Cheers, all of you."',
   ],
@@ -1326,7 +1326,7 @@ const WRONGLY_SUSPECTED_LINES = {
     '{a} won’t clear {v} of anything.\n{a}: "It doesn’t prove {v} was Faithful."\n{b}: "They murdered {vObj}!"\n{a}: "Maybe that’s exactly what they want us to think."',
     '{a} still has doubts, even now.\n{a}: "Traitors can murder their own. It’s been done."\n{b}: "That’s mad."\n{a}: "Is it?"',
     '{b} wants to say sorry to {v}’s memory. {a} doesn’t.\n{a}: "I’m not apologising. I had reasons."\n{b}: "{v} is dead, {a}."\n{a}: "In the game. I know."',
-    '{a} keeps to {aPos} position.\n{a}: "I stand by it. Something was off with {v}."\n{b} (to camera): "{a} just won’t admit being wrong. That’s worrying."',
+    '{a} keeps to {aPos} position.\n{a}: "I stand by it. Something was off with {v}."\n{b}: "{v} was Faithful, {a}."\n{a}: "I know what the card said."\n{b} (to camera): "{a} just won’t admit being wrong. That’s worrying."',
   ],
   'turned-on-each-other': [
     '{a} and {b} both suspected {v}, and now they argue about whose idea it was.\n{a}: "You brought {v} up first."\n{b}: "No, you did! On the walk!"\n{a}: "I only agreed with you."',
@@ -2015,7 +2015,7 @@ const OTHER_CHAIR_LINES = {
     '{b} keeps saying it was only a card game.\n{b}: "It was a card. That’s all it was. Luck."\n{a}: "Someone still died."\n{b}: "I know. But it was luck."',
     '{b} won’t read anything into it.\n{b}: "Don’t make it mean something. It was a draw."\n{a}: "Everything means something in here."',
     '{a} wants to talk about the card game. {b} doesn’t.\n{b}: "Luck of the draw. Leave it."\n{a}: "Fine."',
-    '{b} shrugs it off.\n{b}: "Could’ve been any of them. It was just cards."\n{a} (to camera): "{b} keeps saying it was just cards. I’m not sure it was."',
+    '{b} shrugs it off.\n{b}: "Could’ve been any of them. It was just cards."\n{a}: "You keep saying that."\n{a} (to camera): "{b} keeps saying it was just cards. I’m not sure it was."',
   ],
   'who-picked-the-four': [
     '{a} and {b} want to know who chose the four players.\n{a}: "The Traitors picked those four."\n{b}: "So why those four?"\n{a}: "That’s what I keep asking."',

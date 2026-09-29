@@ -411,12 +411,17 @@ export function bombshellSaves(state, name, { rng, spare = Infinity, tonight = [
   // saved (user: "the people vulnerable didn't get dumped"): with room for
   // one, two are at risk; with room for none, the night is only dates.
   const room = spare === true ? Infinity : spare === false ? 0 : spare;
-  if (room < 1) return null;
+  // With nobody to spare the save still plays (user: "the bombshell save one
+  // twist doesn't work when there's no dump" — it returned nothing, and a
+  // booked night played as a plain arrival): the bombshell dates them and
+  // keeps one, and the rest stay in the villa, single and very vulnerable.
+  const keep = room < 1;
   const singles = otherSide(state, name, tonight).filter(n => !partnerOf(state, n))
-    .slice(0, room + 1);
+    .slice(0, keep ? 3 : room + 1);
   if (singles.length < 2) return null;
+  const of = keep ? 'kept' : 'dump';
   const events = [makeEvent(state, rng, { phase: 'event', kind: 'save-setup', players: singles.slice(0, 2), aired: true,
-    major: [...singles], extra: { pop: Object.fromEntries(singles.map(n => [n, { approval: 0.3, fame: 1.5 }])) } })];
+    major: [...singles], extra: { of, pop: Object.fromEntries(singles.map(n => [n, { approval: 0.3, fame: 1.5 }])) } })];
   for (const s of singles.slice(0, 3)) {
     addBond(name, s, 0.3 + 0.4 * ((attr(state, s, name) ?? 0) / 10));
     events.push(makeEvent(state, rng, { phase: 'event', kind: 'date', players: [name, s], aired: true,
@@ -426,9 +431,10 @@ export function bombshellSaves(state, name, { rng, spare = Infinity, tonight = [
     .sort((a, b) => b[1] - a[1])[0][0];
   const rest = singles.filter(s => s !== pick);
   events.push(makeEvent(state, rng, { phase: 'event', kind: 'bombshell-save', players: [name, pick, rest[0]], aired: true,
-    major: [name, pick], extra: { pop: { [name]: { approval: 0.3, fame: 2.5 }, [pick]: { approval: 0.5, fame: 2 } } } }));
+    major: [name, pick], extra: { of, pop: { [name]: { approval: 0.3, fame: 2.5 }, [pick]: { approval: 0.5, fame: 2 } } } }));
   coupleWith(state, name, pick);
-  return { events, saved: pick, dumped: rest };
+  if (keep) for (const s of rest) { feel(state, s, 'confidence', -0.8); feel(state, s, 'stress', 0.6); }
+  return { events, saved: pick, dumped: keep ? [] : rest, kept: keep ? rest : [] };
 }
 
 /**

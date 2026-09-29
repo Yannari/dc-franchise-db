@@ -2065,7 +2065,14 @@ export function pmSetTwist(ep, group, type) {
   if (!inGroup) return;
   const ids = new Set(TWIST_CATALOG.filter(t => t.format === 'perfect-match' && inGroup(t)).map(t => t.id));
   seasonConfig.twistSchedule = (seasonConfig.twistSchedule || []).filter(b => !(b && Number(b.episode) === Number(ep) && ids.has(b.type)));
-  if (type && ids.has(type)) seasonConfig.twistSchedule.push({ id: `tw-${Date.now()}-${ep}`, episode: Number(ep), type });
+  if (type && ids.has(type)) {
+    seasonConfig.twistSchedule.push({ id: `tw-${Date.now()}-${ep}`, episode: Number(ep), type });
+    // One night, one answer: picking "Nobody Goes Home" takes the night's
+    // dumping format off it, and picking a format takes "Nobody Goes Home"
+    // off (the catalogue's `incompatible`, across the tile's two pickers).
+    const clash = new Set(TWIST_CATALOG.find(t => t.id === type)?.incompatible || []);
+    if (clash.size) seasonConfig.twistSchedule = seasonConfig.twistSchedule.filter(b => !(b && Number(b.episode) === Number(ep) && clash.has(b.type)));
+  }
   localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
   renderTimeline();
 }
@@ -2082,14 +2089,19 @@ export function pmSetChallenge(ep, value) {
 
 function _randomizeVilla() {
   const mine = TWIST_CATALOG.filter(t => t.pmFormat || t.pmApply);
-  const ids = new Set(mine.map(t => t.id));
+  // The author's own Dumps picks stay: Randomize fills the season around them
+  // (user: "make sure the randomizer respects that").
+  const DUMPS = new Set(['pm-dump-none', 'pm-dump-always']);
+  const ids = new Set(mine.map(t => t.id).filter(id => !DUMPS.has(id)));
+  const noDump = new Set((seasonConfig.twistSchedule || []).filter(b => b?.type === 'pm-dump-none').map(b => Number(b.episode)));
   const had = (seasonConfig.twistSchedule || []).filter(b => b && ids.has(b.type)).length;
   if (had && !confirm(`Replace the ${had} villa twist${had === 1 ? '' : 's'} on the timeline with a new random season?`)) return;
   const drawn = pmDrawSchedule(Math.random, perfectMatchEpisodes());
   const idFor = e => mine.find(t => t.pmFormat && t.pmFormat === e.dumpFormat && t.pmSlots?.includes(e.slot))?.id;
   const book = [];
   for (const e of drawn) {
-    if (e.slot && DUMP_SLOT_OK(e.slot)) { const id = idFor(e); if (id) book.push([e.ep, id]); }
+    // Never a dumping format on a night the author said sends nobody home.
+    if (e.slot && DUMP_SLOT_OK(e.slot) && !noDump.has(e.ep)) { const id = idFor(e); if (id) book.push([e.ep, id]); }
     if (e.moment === 'bombshell') {
       const rule = e.arrivalRule || 'dates';
       const id = mine.find(t => t.pmApply?.arrivalRule === rule)?.id;
@@ -2118,7 +2130,9 @@ function _randomizeVilla() {
   const fi = document.getElementById('cfg-pm-first-in'); if (fi) fi.value = seasonConfig.pmFirstIn;
   const ss = document.getElementById('cfg-pm-split-or-steal'); if (ss) ss.checked = seasonConfig.pmSplitOrSteal;
   const keep = (seasonConfig.twistSchedule || []).filter(b => b && !ids.has(b.type));
-  seasonConfig.twistSchedule = [...keep, ...book.map(([ep, type, more], i) => ({ id: `tw-${Date.now()}-${i}`, episode: ep, type, ...(more || {}) }))];
+  // Marked `random`: the draw written down, not the author forcing a night
+  // (pm-run.js perfectMatchForcedSlots) — a Randomize season keeps its pace.
+  seasonConfig.twistSchedule = [...keep, ...book.map(([ep, type, more], i) => ({ id: `tw-${Date.now()}-${i}`, episode: ep, type, random: true, ...(more || {}) }))];
   localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
   renderTimeline();
   renderTwistCatalog();

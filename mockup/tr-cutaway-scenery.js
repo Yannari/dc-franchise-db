@@ -271,8 +271,54 @@
     },
   };
 
+  // ── THE ROUND TABLE SET — the table the show builds inside the Great Hall.
+  // Screen-sized (w × h in pixels), seen from just behind the host's chair:
+  // walnut panelling round the walls, a great hearth at the back, tall dark
+  // windows, a brass chandelier, tartan underfoot running away in perspective.
+  function roundTableSet(w, h, night) {
+    const hor = h * .46; // where the far wall meets the floor
+    let s = `<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" style="position:absolute;inset:0">${DEFS}`;
+    s += `<rect width="${w}" height="${h}" fill="#16241c"/>`;
+    // back wall panelling, full height to the picture rail
+    s += panelling(w, hor - h * .26, h * .26);
+    s += `<rect x="0" y="${hor - h * .3}" width="${w}" height="${h * .04}" fill="#3a2410"/>`;
+    // tall windows on the back wall, night outside
+    [.12, .88].forEach(f => { s += archWindow(w * f - w * .035, h * .06, w * .07, h * .3, night !== false); });
+    // portraits between
+    [.27, .73].forEach(f => { s += portrait(w * f - w * .03, h * .08, w * .06, h * .1, '#2a1a14'); });
+    // the hearth, centre back, with its fire
+    const fx = w / 2, fw = w * .16;
+    s += `<circle cx="${fx}" cy="${hor - h * .06}" r="${h * .32}" fill="url(#fireGlow)"/>`
+      + `<rect x="${fx - fw / 2 - 10}" y="${hor - h * .27}" width="${fw + 20}" height="${h * .05}" fill="#4a2a16"/>`
+      + `<path d="M${fx - fw / 2} ${hor} V${hor - h * .2} H${fx + fw / 2} V${hor}Z" fill="#6a4a36"/>`
+      + `<path d="M${fx - fw * .36} ${hor} V${hor - h * .13} a${fw * .36} ${h * .05} 0 0 1 ${fw * .72} 0 V${hor}Z" fill="#120806"/>`
+      + `<ellipse cx="${fx}" cy="${hor - h * .03}" rx="${fw * .22}" ry="${h * .04}" fill="url(#flame)" class="flick"/>`;
+    // floor: tartan running away from us, darker at the far wall
+    s += `<path d="M0 ${hor} H${w} V${h} H0Z" fill="#140d08"/>`
+      + `<path d="M${w * .22} ${hor} H${w * .78} L${w * 1.05} ${h} H${-w * .05}Z" fill="url(#tartanRed)" opacity=".75"/>`
+      + `<path d="M0 ${hor} H${w} V${hor + h * .12} H0Z" fill="#000" opacity=".45"/>`;
+    // the chandelier's pool of light over the table
+    s += `<circle cx="${w / 2}" cy="${h * .5}" r="${h * .6}" fill="url(#candleGlow)" opacity=".8"/>`
+      + `<path d="M${w / 2} 0 V${h * .1}" stroke="#8a6428" stroke-width="2"/>`
+      + `<ellipse cx="${w / 2}" cy="${h * .12}" rx="${w * .08}" ry="${h * .018}" fill="none" stroke="url(#gilt)" stroke-width="3"/>`;
+    [-.06, -.02, .02, .06].forEach(o => { s += candle(w / 2 + w * o, h * .12, 8, 26); });
+    s += `<rect width="${w}" height="${h}" fill="url(#vignette)"/></svg>`;
+    return s;
+  }
+  // the table itself, in perspective, on its own layer so threads draw over it
+  function roundTable(cx, cy, rx, ry) {
+    let s = `<ellipse cx="${cx}" cy="${cy + ry * .16}" rx="${rx}" ry="${ry}" fill="#1a0c05"/>`
+      + `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="#5a2e14"/>`
+      + `<ellipse cx="${cx}" cy="${cy}" rx="${rx * .96}" ry="${ry * .92}" fill="none" stroke="#8a5a2e" stroke-width="2" opacity=".6"/>`
+      + `<ellipse cx="${cx}" cy="${cy}" rx="${rx * .74}" ry="${ry * .7}" fill="#1f3a2e"/>`
+      + `<ellipse cx="${cx}" cy="${cy}" rx="${rx * .74}" ry="${ry * .7}" fill="none" stroke="#c98a3a" stroke-width="1.5" opacity=".5"/>`;
+    // candles round the baize
+    for (let i = 0; i < 7; i++) { const a = Math.PI * (i / 6); s += candle(cx + Math.cos(a) * rx * .5 - rx * 0, cy - Math.sin(a) * ry * .38 + ry * .12, 12, 42); }
+    return `<svg style="position:absolute;inset:0;width:100%;height:100%;overflow:visible">${DEFS}${s}</svg>`;
+  }
+
   window.TRScenery = {
-    DEFS,
+    DEFS, roundTableSet, roundTable,
     room(type, w, h, night) {
       const f = ROOMS[type] || ROOMS.landing;
       return `<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" preserveAspectRatio="none" style="position:absolute;inset:0">${DEFS}`

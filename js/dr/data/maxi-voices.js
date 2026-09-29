@@ -609,7 +609,7 @@ export const WALKTHROUGH_VOICES = [
     '{a} reads her roast set to the host. The host listens without laughing — not cruelty, just hearing the material the way a panel will hear it. Stripped of delivery. Testing whether the jokes stand on their own.',
     'The host stops at {a}\'s station. Read me the set. Read me the callbacks. Read me the closer. {a} reads. The host gives a note about structure that is more useful than any note about individual jokes.',
     '{a} runs her roast material for the host. The host\'s face does the thing it does when material is either landing or not. {a} watches the face and knows which one it is before the note arrives.',
-    'The host sits with {a} and asks to hear the set. It sounds different in the werk room than it does in {a}\'s head. The werk room does not laugh politely. The host does not laugh at all. She listens and then speaks.',
+    'The host sits with {a} and asks to hear the set. It sounds different in the werk room than it does in {a}\'s head. The werk room does not laugh politely. The host does not laugh at all. He listens and then speaks.',
     '{a} reads her jokes. The host\'s note is about the arc — not whether the jokes are funny but whether the set has a shape. Whether it builds. Whether the closer earns the walk-off.',
     'The host pulls {a} aside and listens to the material. Clinical — timing, callbacks, whether {a} is roasting or just reading insults. Whether the difference between those two things is visible in the writing.',
     '{a} walks the host through her roast set. The host gives a note {a} can either use or ignore. Both are valid. Both will be visible on stage — the used note as a fix, the ignored note as a gap.',
@@ -942,19 +942,31 @@ export function walkthroughLinesFor(family) {
 }
 
 export function helpLinesFor(family) {
-  const w = HELP_VOICES.find(x => x.family === family)
+  /* An EMPTY family pool falls through to generic too. `find` returned the
+     roast's unwritten entry, its zero lines became null, and the renderer
+     fell back to the event's own lines — which are about sewing, so a Roast
+     prep room had a queen "rebuilding the construction" of a stand-up set. */
+  const w = HELP_VOICES.find(x => x.family === family && x.lines.length)
     || HELP_VOICES.find(x => x.family === 'generic');
   return w && w.lines.length ? w.lines : null;
 }
 
 export function sabotageLinesFor(family) {
-  const w = SABOTAGE_VOICES.find(x => x.family === family)
+  /* An EMPTY family pool falls through to generic too. `find` returned the
+     roast's unwritten entry, its zero lines became null, and the renderer
+     fell back to the event's own lines — which are about sewing, so a Roast
+     prep room had a queen "rebuilding the construction" of a stand-up set. */
+  const w = SABOTAGE_VOICES.find(x => x.family === family && x.lines.length)
     || SABOTAGE_VOICES.find(x => x.family === 'generic');
   return w && w.lines.length ? w.lines : null;
 }
 
 export function shunnedLinesFor(family) {
-  const w = SHUNNED_VOICES.find(x => x.family === family)
+  /* An EMPTY family pool falls through to generic too. `find` returned the
+     roast's unwritten entry, its zero lines became null, and the renderer
+     fell back to the event's own lines — which are about sewing, so a Roast
+     prep room had a queen "rebuilding the construction" of a stand-up set. */
+  const w = SHUNNED_VOICES.find(x => x.family === family && x.lines.length)
     || SHUNNED_VOICES.find(x => x.family === 'generic');
   return w && w.lines.length ? w.lines : null;
 }

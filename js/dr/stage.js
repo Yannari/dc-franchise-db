@@ -21,6 +21,7 @@
 import { STAGE_BEATS } from './data/stage-beats.js';
 import { UNTUCKED_EVENTS, UNTUCKED_PHASES } from './data/untucked-events.js';
 import { CHALLENGE_BEATS } from './data/challenge-beats.js';
+import { nameInSentence, capSentenceThe } from './data/challenges.js';
 import { mentorForBeat } from './data/judges.js';
 import { MAXI_EVENTS, eventAgreesWithTier, leanTier } from './data/maxi-events.js';
 import { performanceFor, familyForChallenge } from './data/maxi-performance.js';
@@ -592,10 +593,19 @@ export function renderStageBeats({
     const ids = Object.keys(views).filter(id => rankOf(id, row.name) !== null);
     if (ids.length < 2) return false;
     const sorted = [...ids].sort((x, y) => rankOf(x, row.name) - rankOf(y, row.name));
-    const toneBy = id => (critiques.find(c => c.queen === row.name
-      && (c.judgeId === id || c.judgeName === nameOf(id))) || {}).tone;
-    return toneBy(sorted[0]) !== 'pan' && toneBy(sorted[sorted.length - 1]) !== 'praise';
+    const critOf = id => critiques.find(c => c.queen === row.name
+      && (c.judge === id || c.judgeId === id || c.judgeName === nameOf(id))) || {};
+    const pro = critOf(sorted[0]); const con = critOf(sorted[sorted.length - 1]);
+    /* AND EACH SIDE NEEDS SOMETHING TRUE TO SAY. The champion argues from a
+       term the queen actually beat the stage on and the dissenter from one
+       she actually fell short on — read off the same critique, so RuPaul no
+       longer insists "she did the work tonight" about a queen whose set died
+       in silence. */
+    return pro.tone !== 'pan' && con.tone !== 'praise'
+      && pro.reason?.direction === 'praise' && con.reason?.direction === 'fault';
   };
+  const argueFrom = (row, id) => (critiques.find(c => c.queen === row.name
+    && (c.judge === id || c.judgeId === id || c.judgeName === nameOf(id))) || {}).reason?.dimension || null;
   const argued = contested.filter(sidesAgree);
   emit(beatById('deliberation'), argued.length ? 'split' : 'agreed', []);
   for (const row of contested) {
@@ -607,7 +617,9 @@ export function renderStageBeats({
     if (!sidesAgree(row)) continue;
     // What they are actually fighting over, rather than what each of them
     // happens to weight most — see divergentTastes for why those differ.
-    const { forTaste, againstTaste } = divergentTastes(seatOf(forId), seatOf(againstId));
+    const div = divergentTastes(seatOf(forId), seatOf(againstId));
+    const forTaste = argueFrom(row, forId) || div.forTaste;
+    const againstTaste = argueFrom(row, againstId) || div.againstTaste;
 
     for (const [id, stance, otherId, tasteId] of [
       [forId, 'champion', againstId, forTaste],
@@ -895,7 +907,10 @@ export function renderStageBeats({
       // The stay is said first, because that is the order she says it in and
       // the order is the whole cruelty of it: one queen is released and the
       // other is left standing there knowing.
-      for (const n of stayed) emit(beatById('lipsync-shantay'), 'shantay', [n]);
+      for (const n of stayed) {
+        emit(beatById('lipsync-shantay'),
+          lipsync.overruled && n === lipsync.winner ? 'shantay-record' : 'shantay', [n]);
+      }
       for (const n of gone) emit(beatById('lipsync-sashay'), 'sashay', [n]);
     } else {
       emit(beatById('lipsync-call'), lipsync.call || 'shantay', []);
@@ -1228,7 +1243,7 @@ export function renderChallengeBeats({
           ? { mentor: { id: mentorOf(beat.id).id, name: mentorOf(beat.id).name } } : {}),
         ...extra,
       },
-      text: fill(line,
+      text: capSentenceThe(fill(line,
         /* `{m}` IS WHOEVER RAN THE ROOM. The booth and the shoot were written
            around "the director" and "the vocal producer" — an unnamed stranger
            handing out notes that move a result. Michelle runs both and Jamal
@@ -1240,8 +1255,8 @@ export function renderChallengeBeats({
            lines said "her partner" over a man the pick has carried a name for
            since the module was written. Read off `extra` so it stays one
            field: whatever the beat put on the card is what the line says. */
-        { a: who[0], b: who[1], c: maxi.name, m: mentorOf(beat.id)?.name || '',
-          d: extra.partner || extra.choice || '' }),
+        { a: who[0], b: who[1], c: nameInSentence(maxi.name), m: mentorOf(beat.id)?.name || '',
+          d: extra.partner || extra.choice || '' })),
     });
   };
 
@@ -1268,7 +1283,7 @@ export function renderChallengeBeats({
         beat: 'the-brief', tier: 'brief', players: [], challenge: maxi.name,
         note: briefBeat.tiers[0].note, family: briefFam, voiced: true,
       },
-      text: fill(pick(brief, rng, usedLines, `brief/${briefFam}`), { c: maxi.name }),
+      text: capSentenceThe(fill(pick(brief, rng, usedLines, `brief/${briefFam}`), { c: nameInSentence(maxi.name) })),
     });
   } else {
     emit(briefBeat, 'brief', [], { challenge: maxi.name, family: briefFam, voiced: false });
@@ -1299,7 +1314,7 @@ export function renderChallengeBeats({
         note: t.note, family: briefFam, voiced: true,
       },
       text: fill(pick(lines, rng, usedLines, `react/${briefFam}/${tierId}`),
-        { a: n, c: maxi.name }),
+        { a: n, c: nameInSentence(maxi.name) }),
     });
   };
   for (const n of byAptitude.slice(0, REACTING)) {
@@ -1594,7 +1609,7 @@ export function renderChallengeBeats({
         wanted: p.wanted && p.wanted !== p.choice ? p.wanted : null,
       },
       text: fill(pick(lines, rng, usedLines, `pick/${kindId}/${tierId}`),
-        { a: n, c: maxi.name, d: choiceLabel(p.choice) }),
+        { a: n, c: nameInSentence(maxi.name), d: choiceLabel(p.choice) }),
     });
   };
   for (const n of living) {
@@ -1986,9 +2001,9 @@ export function renderMaxiEventScenes(events, {
       },
       text: familyLines
         ? fill(chosenLine,
-          { a: who[0], b: who[1], c: maxiName, d: partners[who[0]] || '' })
+          { a: who[0], b: who[1], c: nameInSentence(maxiName), d: partners[who[0]] || '' })
         : fill(chosenLine,
-          { a: who[0], b: who[1], c: maxiName, d: partners[who[0]] || '' }),
+          { a: who[0], b: who[1], c: nameInSentence(maxiName), d: partners[who[0]] || '' }),
     });
   }
   return scenes;

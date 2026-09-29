@@ -436,6 +436,18 @@ export function buildSchedule({ episodes, castSize, pinned = [], rng = Math.rand
       break;
     }
   }
+  /* ── THE CHOREOGRAPHER SITS ON A DANCING WEEK ──
+     The rotation is a plain cycle, so Jamal Sims landed on a Roast and gave
+     notes on jokes in counts ("being off the count was sitting right there in
+     every silence"). He stays in the rotation; on a comedy week his seat is
+     swapped with the nearest week that is not comedy and has not been pinned,
+     so the panel each week is somebody who judges that kind of night. */
+  for (const e of out) {
+    if (e.rotatingId !== 'jamal' || e._style !== 'comedy' || byEp[e.episode]?.rotatingId) continue;
+    const swap = [...out].sort((x, y) => Math.abs(x.episode - e.episode) - Math.abs(y.episode - e.episode))
+      .find(x => x !== e && x._style !== 'comedy' && x.rotatingId !== 'jamal' && !byEp[x.episode]?.rotatingId);
+    if (swap) [e.rotatingId, swap.rotatingId] = [swap.rotatingId, e.rotatingId];
+  }
   for (const e of out) delete e._style;
 
   const catPool = RUNWAY_CATEGORIES.map(c => c.label)
@@ -1291,7 +1303,7 @@ function rejoinScenes(state, ctx) {
  * drDoubleShantay, drDoubleSashay, drSchedule, drJudgeWeights.
  */
 /** How much of her vote a finalist keeps in the Miss Congeniality count. */
-export const FINALIST_SASH_WEIGHT = 0.35;
+export const FINALIST_SASH_WEIGHT = 0.6;
 
 export function playDragSeason({
   cast, seed = 1, config = {}, bond = () => 0, addBond = null, popDelta = null,
@@ -1728,11 +1740,26 @@ export function playDragSeason({
        fewer than two queens have gone, because two is the smallest field
        that can produce a pair of couples. */
     const revengeWantedEp = Number(config.drAllStarsTwistEp) || 0;
+    /* NOT ON A LALAPARUZA. The tournament resolves its own exits and never
+       runs the night's song, so a Revenge booked onto it had no duel and no
+       returner — the twist silently did not happen. The scheduler can place
+       the tournament mid-season, which is exactly where Revenge lands. So the
+       Revenge week trades the tournament for a pairs challenge — Revenge is a
+       night of couples — rather than waiting, because waiting can run the
+       season out from under it. */
+    const tournamentWeek = week.maxiId === 'lipsync-challenge';
     const revengeDue = config.drAllStars && config.drAllStarsTwist === 'revenge'
       && !revengeRun && state.out.length >= 2 && state.living.length > finaleSize
-      && (revengeWantedEp ? epNum === revengeWantedEp
+      && (revengeWantedEp
+        /* The author's week — or, if the season is going to end before it
+           (a double lipstick takes two queens and shortens the run), the
+           last week there is. A booked twist that silently does not happen
+           is this project's signature bug. */
+        ? (epNum === revengeWantedEp
+          || (epNum < revengeWantedEp && state.living.length <= finaleSize + 1))
         : state.living.length <= Math.ceil(cast.length / 2));
     if (revengeDue) revengeRun = true;
+    if (revengeDue && tournamentWeek) week.maxiId = 'commercial';
 
     let returned = null;
     /* ── SHE WON REVENGE LAST NIGHT, SO SHE WALKS IN THIS MORNING ──

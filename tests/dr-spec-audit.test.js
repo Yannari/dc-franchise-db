@@ -184,9 +184,14 @@ describe('a hundred drag seasons', () => {
       }
     }
     console.log('\n3 · THE BOTTOM');
-    line('BTM (named, saved before the song)', btm);
+    line('BTM (retired: named and saved is LOW)', btm, 'must be 0');
     line('BTM2 (lip synced and survived)', btm2);
-    expect(btm, 'BTM never happens — the split is cosmetic').toBeGreaterThan(0);
+    /* BTM IS RETIRED. The season 16 wikitext has one word for a queen named
+       in the bottom and saved before the song, and it is LOW — see the note
+       above the record in js/dr/week.js and docs/drag-race.md. This used to
+       demand BTM > 0, which asserted the result the engine was changed to
+       stop writing. */
+    expect(btm, 'a retired result was written').toBe(0);
     expect(btm2).toBeGreaterThan(0);
   });
 
@@ -416,7 +421,8 @@ describe('forty All Stars seasons', () => {
           bottoms++;
           if (singers.includes(q)) sang++;
           const cell = (r.dr.record?.[q] || []).slice(-1)[0];
-          if (q === lip.eliminated) continue;
+          // Both of them, on a night two lipsticks named two different queens.
+          if (q === lip.eliminated || (lip.eliminatedAll || []).includes(q)) continue;
           spared++;
           if (cell !== want) wrongCell++;
         }

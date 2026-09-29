@@ -1840,7 +1840,13 @@ export function runDragWeek(state, cfg, ctx) {
       const rec = state.record[n] || [];
       if (!rec.length) return hostLean;
       const ppe = rec.reduce((s, r) => s + (_ppeW[r] ?? 0), 0) / rec.length;
-      const trackProtection = Math.max(0, (ppe - 3.0) * 6.0);
+      /* CAPPED AT A POINT AND A HALF. It was (ppe - 3) x 6, uncapped, so a
+         queen on a 4.0 record carried six points into a song scored out of
+         about ten — enough to lose a lip sync 3.4 to 6.5 and stay, over a
+         stage that had just narrated the other queen's death drop. The rule
+         at the top of lipsyncCall is that the host can decide a close one
+         and cannot rescue a blowout; this is now the size of a close one. */
+      const trackProtection = Math.min(1.5, Math.max(0, (ppe - 3.0) * 2.0));
       return hostLean + trackProtection;
     };
     // A NO-ELIMINATION WEEK still runs the lip sync — a split premiere ends
@@ -1913,6 +1919,12 @@ export function runDragWeek(state, cfg, ctx) {
       beats: { [a]: sa.beats, [b]: sb.beats },
       stunts: { [a]: sa.stunt, [b]: sb.stunt },
       call: lc.call, winner: lc.winner, loser: lc.loser, gap: lc.gap,
+      /* SHE LOST THE SONG AND STAYED. Rare now, and when it happens the host
+         says why — the stage must not narrate a clear win and then send the
+         winner home without a word. */
+      overruled: !!(lc.call === 'shantay' && lc.winner && lc.loser
+        && sa.score !== sb.score
+        && (lc.winner === a ? sa.score < sb.score : sb.score < sa.score)),
       ...(topTwoSing ? { forTheWin: true } : {}),
       ...(doubleLegacy ? { doubleWin: true, winners: [a, b] } : {}),
     };
@@ -2177,7 +2189,10 @@ export function runDragWeek(state, cfg, ctx) {
             const tier = salience(q);
             scenes.push({
               step: 'legacy-choice', kind: `legacy:weigh-${tier}`,
-              data: { players: [holder, q], holder: holder, about: q, salience: tier },
+              /* HER OWN LEDGER ON THE CARD. On a double-lipstick night there
+                 are two holders and `lipsync.weighed` is only the first one's,
+                 so a reader could not tell which weighing a card came from. */
+              data: { players: [holder, q], holder: holder, about: q, salience: tier, weighed: weighOf(q) },
               text: legacyLine(WEIGH_BEATS.queen[tier] || WEIGH_BEATS.queen.plain,
                 { h: holder, x: q, y: pool.find(n => n !== q) || '' }, rng, said),
             });

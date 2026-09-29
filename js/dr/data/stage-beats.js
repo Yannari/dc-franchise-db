@@ -110,17 +110,17 @@ export const STAGE_BEATS = [
     tierBy: 'always',
     tiers: [
       tier('open', 'He takes the stage and the room becomes the main stage.', [
-        'The lights drop and the werk room disappears and what replaces it is the main stage. The host walks out in a gown that could pay rent for a year and a wig that has its own postcode. \"Hello, hello, hello!\" she says, and the room answers her before the third hello has landed. The queens backstage can hear the heels and the heels mean the rehearsal is over.',
+        'The lights drop and the werk room disappears and what replaces it is the main stage. The host walks out in a gown that could pay rent for a year and a wig that has its own postcode. \"Hello, hello, hello!\" he says, and the room answers him before the third hello has landed. The queens backstage can hear the heels and the heels mean the rehearsal is over.',
         '\"Welcome to the main stage of RuPaul\'s Drag Race!\" He says it like he is surprised to be here and he is not surprised to be here and that is the bit and it works every single time. The runway lights come up and the gown catches every one of them and the room shifts from a werk room into a courtroom with better lighting.',
         'He takes the stage heels-first, wig-first, everything-first, and the room reorganises itself around him the way a room always does when the person in it has been doing this longer than most of the queens backstage have been alive. \"Ladies,\" he says, and the word is a welcome and a warning and both of them land.',
         'The runway lights come up and the host is already standing at the mark when the last one hits, in full drag, looking like a million dollars that was well spent. \"Oooh, girl,\" he says to nobody in particular, surveying the stage. \"Somebody is going home tonight and it is NOT going to be me.\" The panel laughs. The queens backstage do not.',
         '\"Another day, another slay!\" The host takes the stage with the energy of somebody who has never once been underdressed for his own show. The wig is right, the mug is right, the gown is doing things that fabric should not be able to do, and the room shifts into main-stage register — which is the register where everything that happened in the werk room starts counting.',
-        'The runway lights hit and the host is already at the mark. \"Weeelcome!\" she says, dragging the word across three syllables and a grin. The gown tonight is red and the wig is higher than the ceiling and backstage somebody whispers \"she looks incredible\" and she does.',
+        'The runway lights hit and the host is already at the mark. \"Weeelcome!\" he says, dragging the word across three syllables and a grin. The gown tonight is red and the wig is higher than the ceiling and backstage somebody whispers \"look at that gown\" and it earns it.',
         'The lights change. The host steps out in full drag and the first thing that lands is the silence — the werk room noise dies the moment his heels hit the stage. \"Ladies and gentlemen,\" he says, \"start your engines, and may the best drag queen win.\"',
         '\"Hello, hello, HELLO!\" The host takes the stage and every queen backstage goes quiet. The gown is new, the mug is flawless, and the room just became the main stage because the host decided it did.',
         'He walks out like he owns the building, which he does, and stops at the mark and looks at the camera. \"Another week, another opportunity for somebody to gag me,\" he says. \"And somebody better, because this gown did not come cheap.\"',
-        'The host hits the stage in a look that could close Fashion Week and opens with a wave that includes the panel, the queens, the camera, and everybody watching at home. \"We are BACK,\" she says, like she was gone for a year instead of a commercial break.',
-        'The werk room lights go down and the runway lights come up and the host is standing there in drag that makes the whole stage look like it was built for her. Which it was. \"Good evening,\" she says, and the evening starts.',
+        'The host hits the stage in a look that could close Fashion Week and opens with a wave that includes the panel, the queens, the camera, and everybody watching at home. \"We are BACK,\" he says, like he was gone for a year instead of a commercial break.',
+        'The werk room lights go down and the runway lights come up and the host is standing there in drag that makes the whole stage look like it was built for him. Which it was. \"Good evening,\" he says, and the evening starts.',
       ]),
     ],
   },
@@ -160,7 +160,7 @@ export const STAGE_BEATS = [
       tier('carson', 'Puns first, fashion second. He will pun back and the '
         + 'host knows it, so this introduction is a setup rather than a '
         + 'punchline.', [
-        '"Also joining us — the man who puts the PUN in pun-dit — {j}!" {j} grins and fires back something worse and better at the same time, and the host pretends not to laugh and fails. "Oh, you came to PLAY tonight," she says, and {j} says "I always come to play" and the panel groans and the bit has started.',
+        '"Also joining us — the man who puts the PUN in pun-dit — {j}!" {j} grins and fires back something worse and better at the same time, and the host pretends not to laugh and fails. "Oh, you came to PLAY tonight," he says, and {j} says "I always come to play" and the panel groans and the bit has started.',
         'The host plays the fill-in-the-blank. "He gives good — blank." {j} answers before the question is finished, which is a pun, which is worse than the answer she had written, which is the entire bit. The host says "That was TERRIBLE" and {j} says "Thank you" and the panel is already having a better time than the queens backstage.',
         '"The man who will look at your look, read you for FILTH, and then make you laugh about it — {j}!" {j} takes a small bow from his chair, waves like a pageant winner, and says something to the camera that is absolutely going to make the blooper reel. The host shakes her head. "I cannot take you anywhere."',
         '"My favourite fashion funny man — {j}!" {j} waves at the room with the energy of a golden retriever at a dog show. "I am SO excited to be here," he says, and he has said that exact sentence every time he has sat in this chair and it has been true every single time. The host pats his shoulder. "Baby, we are excited to HAVE you."',
@@ -267,7 +267,7 @@ export const STAGE_BEATS = [
         + 'straight into the sentence. NEVER invent a credit — {k} is the only '
         + 'claim about her past this line is allowed to make.', [
         '"And joining us tonight — {k}, {j}!\" The credit lands and the room reacts and {j} waves and the host says \"Now THAT is a résumé, baby\" and means it. The queens backstage just heard both halves of that introduction and at least one of them whispered the credit back to herself.',
-        '"Please welcome to the panel — {j}, {k}!\" The host lets the credit land before the applause covers it. \"She has BEEN there, ladies,\" she says to the curtain. \"She has done THAT.\" {j} takes the seat with the posture of somebody whose record precedes the introduction and follows it out the door.',
+        '"Please welcome to the panel — {j}, {k}!\" The host lets the credit land before the applause covers it. \"She has BEEN there, ladies,\" he says to the curtain. \"She has done THAT.\" {j} takes the seat with the posture of somebody whose record precedes the introduction and follows it out the door.',
         '"And our very special guest tonight — {k} — {j}!\" {j} takes the seat and the host turns to the camera. \"You hear that credit? That is not a GIFT, that is something she EARNED.\" {j} nods once. The nod is the whole record in one gesture and the room reads it correctly.',
         '"Joining the panel — {j}, who is {k}!\" The host says it with warmth and {j} acknowledges the credit with a wave that says yes, that is who I am. \"Welcome back to this stage, darling,\" the host says. \"We are GLAD to have you.\" The queens backstage have just learned who is watching them tonight.',
       ]),
@@ -853,6 +853,15 @@ export const STAGE_BEATS = [
       + 'and what {a} does when she hears her own name.',
     tierBy: 'always',
     tiers: [
+      /* SHE LOST THE SONG AND THE HOST KEPT HER ANYWAY — for the season she
+         has had, a point or so of it at most. The host says it, because the
+         room just watched the other queen win and needs to hear why. */
+      tier('shantay-record', 'She lost the song, and her season saved her.', [
+        "\"{a}.\" A long pause. \"You did not win that lip sync, and you know it. But I have watched you all season, and I am not done watching. Shantay, you stay.\" {a} nods slowly, like somebody who has just been handed something she has to pay back.",
+        "\"{a}, tonight was not your night.\" The host lets that sit. \"But your track record speaks for you, and tonight I am listening to it. Shantay, you stay.\" {a} does not celebrate. She knows exactly how close that was.",
+        "\"This one was hard.\" The host looks from one queen to the other. \"{a}, you have been one of the strongest queens in this competition. That is the only reason you are still standing here. Shantay, you stay.\" {a} exhales and does not look at the queen beside her.",
+        "\"{a}.\" The host shakes his head slightly. \"I am keeping you because of everything you have done before tonight — not because of tonight. Shantay, you stay.\" {a} takes it with both hands and a face that says she heard every word.",
+      ]),
       tier('shantay', 'She stays, and she hears it first.', [
         "\"{a} — shantay, you stay.\" {a} clasps two fists under her chin, squeezes them tight, and every breath after that one is lighter than the last.",
         "\"{a}, my dear — shantay, you stay.\" {a} drops into a curtsy so deep it is almost a collapse, and when she rises the tears are already falling.",

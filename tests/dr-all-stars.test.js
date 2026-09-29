@@ -561,8 +561,10 @@ describe('both of them won it (All Stars 4)', () => {
 
 describe('the call on a legacy night is the format\'s own', () => {
   it('names six: the top two, a high, a low, and two up for elimination', () => {
-    const res = season(120, { drAllStars: true });
+    // Several seasons: one ten-queen season can lose its eight-queen weeks to
+    // a double lipstick, which is a legal night and not what this measures.
     let wide = 0;
+    for (const res of [120, 121, 122, 123].map(s => season(s, { drAllStars: true })))
     for (const r of weekly(res)) {
       if (!r.dr.lipsync?.legacy) continue;
       const c = r.dr.callAtCall || r.dr.call;
@@ -584,6 +586,8 @@ describe('the call on a legacy night is the format\'s own', () => {
     for (const r of weekly(res)) {
       const lip = r.dr.lipsync;
       if (!lip?.legacy || !lip.winner) continue;
+      // AS4's double: BOTH singers won it and both are WIN. Not a runner-up.
+      if (lip.winners && lip.winners.length > 1) continue;
       const loser = (r.dr.call.singers || []).find(n => n !== lip.winner);
       if (!loser) continue;
       expect((r.dr.record?.[loser] || []).slice(-1)[0]).toBe('TOP2');
@@ -818,7 +822,13 @@ describe('when Revenge happens', () => {
   it('or the episode the author asks for', () => {
     for (const ep of [5, 6]) {
       const res = season(311, { drAllStars: true, drAllStarsTwist: 'revenge', drAllStarsTwistEp: ep });
-      expect(night(res)?.num, `episode ${ep}`).toBe(ep);
+      /* Her week, unless the season ended before it (a double lipstick
+         shortens the run) — then the last week it had. Never not at all. */
+      // (Her return then adds a week back, so the row count cannot say which.)
+      const n = night(res);
+      expect(n, `episode ${ep}: it never happened`).toBeTruthy();
+      expect(n.num, `episode ${ep}`).toBeLessThanOrEqual(ep);
+      expect(n.num, `episode ${ep}`).toBeGreaterThanOrEqual(ep - 1);
     }
   });
 
@@ -1539,7 +1549,7 @@ describe('the ceremony shows the weighing', () => {
       for (const row of as(seed).rows) {
         const weighed = row.dr.lipsync?.weighed || [];
         for (const sc of cer(row).filter(x => x.data?.about)) {
-          const w = weighed.find(x => x.q === sc.data.about);
+          const w = sc.data.weighed || weighed.find(x => x.q === sc.data.about);
           if (!w) continue;
           /* The beat is chosen from what is actually on her ledger tonight,
              so a card calling somebody her friend has to be about a queen

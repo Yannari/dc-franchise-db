@@ -298,7 +298,10 @@ describe('the campaign and what it leaves behind', () => {
 
   it('the season carries it: campaign scenes, repaid debts and settled promises', () => {
     let campaigns = 0; let settled = 0; let repaid = 0; let promisesMade = 0;
-    for (const s of SEEDS) {
+    /* Twenty-four, not the file's twelve: a repaid debt needs the saved
+       queen to later hold the power herself, and it lands in about a quarter
+       of seasons (23 across 60, measured 2026-09-28) — twelve can miss it. */
+    for (const s of Array.from({ length: 24 }, (_, i) => i + 1)) {
       const played = season(s, { drSave: 'beaver' });
       promisesMade += (played.state?.saves?.promises || []).length;
       for (const r of weekly(played)) {
@@ -335,7 +338,7 @@ describe('the campaign and what it leaves behind', () => {
       }
     }
     expect(campaigns).toBeGreaterThan(40);
-    expect(repaid, 'no debt was ever repaid in twelve seasons').toBeGreaterThan(0);
+    expect(repaid, 'no debt was ever repaid in twenty-four seasons').toBeGreaterThan(0);
     /* ── THIS ONE IS THIN, AND IT IS THIN BY DESIGN ──────────────────
        A promise is made by a queen in the bottom to the queen holding the
        save, and it is VOIDED the same night unless that holder actually

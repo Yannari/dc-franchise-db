@@ -34,6 +34,7 @@
 // open that only produced prose would be the cosmetic-event bug this repo
 // refuses everywhere else.
 import { MIRROR, COLD_BEATS } from './data/cold-open-beats.js';
+import { nameInSentence, capSentenceThe } from './data/challenges.js';
 
 const pick = (rng, arr) => arr[Math.floor(rng() * arr.length) % arr.length];
 const num = v => (Number.isFinite(Number(v)) ? Number(v) : 5);
@@ -150,7 +151,7 @@ export function coldOpen({
   if (!room.length) return { scenes, events, mirror: null };
 
   const say = (kind, who, pool, vars = {}, data = {}) => {
-    const text = coldLine(pool, vars, rng, said);
+    const text = capSentenceThe(coldLine(pool, vars, rng, said));
     if (!text) return;
     scenes.push({
       step: 'cold-open', kind: `cold:${kind}`,
@@ -197,7 +198,7 @@ export function coldOpen({
     }
   }
 
-  if (L.maxi) say('challenge', [], COLD_BEATS.challenge, { m: L.maxi });
+  if (L.maxi) say('challenge', [], COLD_BEATS.challenge, { m: nameInSentence(L.maxi) });
 
   /* CONDRAGULATIONS, and it is worth something: a room that makes a fuss of
      her is a room she owes a little, and she is warmer to all of it. */

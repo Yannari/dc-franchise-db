@@ -33,6 +33,15 @@ import { romanticallyCompatible } from '../attraction.js';
 import { confessionalsFor } from './confessional.js';
 import { streamFor } from './rng.js';
 
+/** Whether this season has a romance in it at all. Rolled once, frozen. */
+export const ROMANCE_SEASON_CHANCE = 0.4;
+function romanceSeason(state) {
+  if (typeof state.romanceSeason !== 'boolean') {
+    state.romanceSeason = streamFor((state.seed || 0) >>> 0, 'romance-season')() < ROMANCE_SEASON_CHANCE;
+  }
+  return state.romanceSeason;
+}
+
 /** How much an arc match is worth. Multiplicative on the base weight. */
 const ARC_BONUS = 2.5;
 /** How much a scene already used this season is discouraged. Not banned. */
@@ -142,7 +151,14 @@ function factsFor({ a, b, players, state, storylines, ctx, rest = [] }) {
        started in a single werk room, all of them believing they were the
        second, because the caller only wrote the list once the whole run
        had returned. It is written at the point the pairing happens now. */
-    romanceOpen: (state.romances || []).length < 2,
+    /* NOT EVERY SEASON HAS ONE. Bonds of three and up are everywhere by
+       week two, so a compatible pair turned up in 90% of seasons against a
+       design of about 40% — and on the real show a werk room romance is the
+       exception. One roll per season, on its own stream so nothing else in
+       the season moves, decides whether romance is in the air at all. An
+       existing pair keeps its thread either way. */
+    romanceOpen: (state.romances || []).length < 2
+      && ((state.romances || []).length > 0 || romanceSeason(state)),
     alreadyPaired: (state.romances || []).some(r => r.includes(a) || (b && r.includes(b))),
   };
 }

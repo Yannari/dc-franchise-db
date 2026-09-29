@@ -252,7 +252,7 @@ export const HOST_CALL = [
       'The panel finishes arguing and the host leaves the board alone. \"I agree,\" he says, and the agreement is brief and final.',
       'One judge opens her mouth to make one more argument and the host raises a finger — just one — and the judge stops. The finger says the deliberation is over and the order stands.',
       'The board stays where the panel put it. The host does not explain why — he does not need to. The panel made a case and the case held.',
-      'The host surveys the board and lets it stand. \"Bring back my girls,\" she says, and the board she hands back is the board she was given.',
+      'The host surveys the board and lets it stand. \"Bring back my girls,\" he says, and the board he hands back is the board he was given.',
     ]),
 ];
 

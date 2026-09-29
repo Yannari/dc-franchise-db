@@ -85,18 +85,38 @@ export function critiqueLines({ panel, views, call, entries, rng = Math.random }
       if (!row || !e) continue;
 
       const gap = row.view - median;
-      const tone = gap > 1.2 ? 'praise' : gap < -1.2 ? 'pan' : 'mixed';
+      let tone = gap > 1.2 ? 'praise' : gap < -1.2 ? 'pan' : 'mixed';
 
       // Which terms actually moved this judge on this queen, weighted by how
       // much she cares. Only the ones she cares about are eligible at all.
-      const contrib = [
-        ['challenge', (j.taste.challenge || 0) * (e.perf ?? 5)],
-        ['runway', (j.taste.runway || 0) * (e.runway ?? 5)],
-        ['risk', (j.taste.risk || 0) * ((e.risk ?? 0.5) * 10)],
-        ['polish', (j.taste.polish || 0) * (e.polish ?? 5)],
-      ].filter(([k]) => (j.taste[k] || 0) >= CARES);
-
-      contrib.sort((a, b) => (tone === 'pan' ? a[1] - b[1] : b[1] - a[1]));
+      /* ── AGAINST THE FIELD, NOT AGAINST ZERO ──
+         This weighed each term as taste x her raw number and, for a pan,
+         took the SMALLEST — which is mostly whichever term the judge weights
+         least, whatever the queen did on it. The direction was then copied
+         from the overall verdict. So a judge who had a queen low overall
+         told her "the material was not there, the jokes were not funny" on
+         a Roast where her set was the third best of the night, and a queen
+         who bombed was told she "brought material that is actually funny".
+         Each term is now how far she sat from the rest of the stage on it,
+         scaled by how much this judge cares; the pan leads with where she
+         was furthest BELOW the others and the praise with where she was
+         furthest ABOVE, and `direction` below reads the sign of that same
+         number. What a judge says about a term is true of that term. */
+      const val = (x, k) => ({ challenge: x.perf, runway: x.runway,
+        risk: (x.risk ?? 0.5) * 10, polish: x.polish }[k] ?? 5);
+      const stage = onStage.map(nm => byName[nm]).filter(Boolean);
+      const meanOf = k => stage.reduce((t, x) => t + val(x, k), 0) / Math.max(1, stage.length);
+      const contrib = ['challenge', 'runway', 'risk', 'polish']
+        .filter(k => (j.taste[k] || 0) >= CARES)
+        .map(k => [k, (j.taste[k] || 0) * (val(e, k) - meanOf(k))]);
+      contrib.sort((a, b) => (tone === 'pan' ? a[1] - b[1]
+        : tone === 'praise' ? b[1] - a[1] : Math.abs(b[1]) - Math.abs(a[1])));
+      /* A pan with nothing below the field to point at, or praise with
+         nothing above it, is a judge whose number came from somewhere the
+         critique cannot name (her memory, her style bias). She says the true
+         thing and the plate says mixed, rather than PAN over a compliment. */
+      const lead = (contrib[0] || [])[1];
+      if (lead != null && ((tone === 'pan' && lead > 0) || (tone === 'praise' && lead < 0))) tone = 'mixed';
       const reasons = contrib.slice(0, 2).map(([k]) => TERM_NAMES[k]);
 
       /* ── WHY, AND IN WHOSE WORDS ──────────────────────────────────
@@ -148,7 +168,10 @@ export function critiqueLines({ panel, views, call, entries, rng = Math.random }
         gap: Math.round(gap * 100) / 100,
         reason: {
           dimension: dim,
-          direction: tone === 'pan' ? 'fault' : tone === 'praise' ? 'praise' : (gap >= 0 ? 'praise' : 'fault'),
+          // The sign of the term she is being told about, not of the verdict:
+          // a panned queen whose best thing was the challenge hears that the
+          // challenge was the good part. `tone` still carries the verdict.
+          direction: ((contrib[0] || [])[1] ?? gap) >= 0 ? 'praise' : 'fault',
           // 1-indexed, and out of the queens standing there rather than the
           // whole cast: the middle went home before anybody spoke.
           standing: place >= 0 ? place + 1 : null,

@@ -216,3 +216,21 @@ export const MAX_CAST = { rumix: 8 };
 
 /** Where `id` sits in a season, or everywhere if nobody has said. */
 export const windowOf = id => SEASON_WINDOW[id] || [0, 1];
+
+/* ── THE NAME AS IT READS INSIDE A SENTENCE ──
+   Pools write "the post-mortem on {m}" and "This week is {c}", and the names
+   are titles: "The post-mortem on Girl Group Challenge", "Can we talk about
+   The Ball". Mid-sentence they want an article or a lower-case one — the
+   Girl Group Challenge, the Ball, the Rusical — and Snatch Game wants neither.
+   A line that OPENS on the name is re-capitalised by the renderer. */
+export function nameInSentence(name) {
+  const n = String(name || '');
+  if (!n) return n;
+  if (/^The /.test(n)) return `the ${n.slice(4)}`;
+  if (/(Challenge|Extravaganza|LaLaPaRUza)$/.test(n)) return `the ${n}`;
+  return n;
+}
+
+/** Capitalise a "the" that a substitution left at the start of a sentence. */
+export const capSentenceThe = text => String(text || '')
+  .replace(/(^|[.!?]\s+|^["\u201c]|[.!?]\s+["\u201c])the\b/g, (m, p) => `${p}The`);

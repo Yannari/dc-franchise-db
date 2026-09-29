@@ -12,6 +12,7 @@
 // All weights are proportional (stat × factor). MOTIVE_LINE is a gameplay
 // constant tuned by audit:ci-spec so that a pool big enough gives roughly a
 // third of the cast a persona (spec §2.2: about a third of real casts).
+import { rolesFor } from './shared.js';
 import { clamp, personMayScheme } from './state.js';
 
 export const MOTIVE = { age: 0.08, alum: 0.6, villainRep: 1.4, job: 1.0,
@@ -29,6 +30,9 @@ export function truthOf(player, setup = {}) {
     status: setup.status ?? 'Single', alum: !!(setup.alum ?? player.isReturnee),
     rep: setup.rep ?? null, jobCost: setup.jobCost ?? 0, role: setup.role || 'starter',
     catfish: setup.catfish || 'decide', partner: setup.partner || null,
+    // A shared profile (spec §14.8): who is the face and who the brain, and the
+    // facts of a life the profile might hide ("three kids at home").
+    face: setup.face ?? null, brain: setup.brain ?? null, facts: [...(setup.facts || [])],
   };
 }
 
@@ -176,6 +180,13 @@ export function buildProfiles(state, truths, draw, pool, rng) {
       p.players.push(t.name); p.shared = true;
       if (p.mode !== 'catfish') p.mode = 'shared';
       p.gap = Math.max(p.gap, 0.5);
+      p.roles = rolesFor(state, p.players);
+      // An honest pair shows the face: their name, their photos.
+      if (p.mode === 'shared' && p.roles.face !== p.players[0]) {
+        const f = state.people[p.roles.face];
+        p.shown = { name: f.name, age: f.age, gender: f.gender, job: f.job, status: f.status,
+          hometown: f.hometown, face: `portrait:${f.name}` };
+      }
       state.handleOf[t.name] = partnerHandle;
       continue;
     }

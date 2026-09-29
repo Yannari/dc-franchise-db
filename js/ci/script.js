@@ -18,7 +18,9 @@ import { styleMessage, displayText, dictation } from './voice.js';
 import { POOLS } from './lines/index.js';
 import { GAMES, PARTY_THEMES, NEVER_HAVE_I_EVER } from './games-data.js';
 
-export const ROLES = ['a', 'b', 'c', 'host'];
+// 'face' and 'brain': the two people behind a shared profile, speaking to
+// each other in their own apartment (spec §14.8).
+export const ROLES = ['a', 'b', 'c', 'host', 'face', 'brain'];
 export const FACT_KEYS = ['intent', 'ending', 'result', 'known', 'early', 'late', 'catfish', 'outed',
   'suspects', 'theory', 'pact', 'friends', 'rivals', 'flirty', 'newcomer', 'mood', 'group', 'style',
   'hurt', 'influencer', 'reason', 'motive', 'mode', 'reasonKind', 'band', 'kiss', 'claim', 'lie',
@@ -144,6 +146,7 @@ export function fill(state, text, cast, speakerRole) {
     // Staging and beats describe the apartment: the person in it is the real one.
     if (!prop) return speakerRole === 'narration' ? realFirst(state, h) : shown;
     if (prop === 'real') return realFirst(state, h);
+    if (prop === 'face' || prop === 'brain') return (p.roles?.[prop] || p.players[0]).split(' ')[0];
     if (prop === 'aka') return p.mode === 'catfish' || p.players.length > 1
       ? `${shown}, aka ${realFirst(state, h)},` : shown;
     if (PRONOUN_KEYS.includes(prop)) {
@@ -157,12 +160,18 @@ export function fill(state, text, cast, speakerRole) {
 
 export function renderEntry(state, entry, cast, rng) {
   const lines = [];
-  const who = role => (role === 'host' ? 'host' : cast[role]);
+  const who = role => (role === 'host' ? 'host' : role === 'face' || role === 'brain' ? cast.a : cast[role]);
+  const personOf = role => {
+    const p = state.profiles[cast.a];
+    return (role === 'face' || role === 'brain') && p ? (p.roles?.[role] || p.players[0]).split(' ')[0] : null;
+  };
   if (entry.stage) lines.push({ who: cast.a, kind: 'stage', text: fill(state, entry.stage, cast, 'narration') });
   for (const t of entry.turns || []) {
     const speaker = who(t.by);
-    if (t.react) lines.push({ who: speaker, kind: 'react', text: fill(state, t.react, cast, t.by) });
-    if (t.say) lines.push({ who: speaker, kind: t.by === 'host' ? 'host' : 'say', text: fill(state, t.say, cast, t.by) });
+    const person = personOf(t.by);
+    const tag = x => (person ? { ...x, person } : x);
+    if (t.react) lines.push(tag({ who: speaker, kind: 'react', text: fill(state, t.react, cast, t.by) }));
+    if (t.say) lines.push(tag({ who: speaker, kind: t.by === 'host' ? 'host' : 'say', text: fill(state, t.say, cast, t.by) }));
     if (t.video) lines.push({ who: speaker, kind: 'video', text: fill(state, t.video, cast, t.by) });
     if (t.post) {
       const voice = state.profiles[speaker]?.voice;
@@ -204,6 +213,12 @@ const BLOCKS = {
       const listener = sl.noticedBy[0] || (sl.by === a ? b : a);
       const k = sl.misread ? 'slip.misread' : `slip.${sl.kind}.${sl.noticedBy.length ? 'noticed' : 'missed'}`;
       out.push({ key: k, cast: { a: sl.by, b: listener }, extra: { slip: sl.kind, noticed: sl.noticedBy.length > 0 } });
+    }
+    // A shared profile argues over the message before it goes (spec §14.8).
+    const pa = state.profiles[a];
+    if (s.data.lead && pa?.players.length > 1) {
+      const won = s.data.lead === (pa.roles?.face || pa.players[0]) ? 'faceWins' : 'brainWins';
+      out.push({ key: `shared.argue.${won}`, cast: { a, b } });
     }
     return out;
   },
@@ -496,6 +511,9 @@ export function writeScene(state, scene) {
     }
     blocks.splice(1, blocks.length - 1, ...blocks.slice(1).filter(x => !x.key.startsWith('slip.')));
   }
+  // The argument happens before the message is sent: it opens the scene.
+  const argue = blocks.findIndex(x => x.key.startsWith('shared.argue.'));
+  if (argue > 0) blocks.unshift(...blocks.splice(argue, 1));
   scene.script = { blocks };
   return scene.script;
 }
@@ -572,5 +590,5 @@ export const POOL_KEYS = [
   'game.rival.round', 'game.flirt.round', ...['party', 'photo', 'video', 'immunity', 'gift'].map(k => `game.prize.${k}`),
   'party.open', 'party.nhie', 'party.nhie.none',
   ...['workout', 'skincare', 'cooking', 'reading', 'singing', 'plushie', 'praying', 'pacing'].map(h => `life.${h}`),
-  'home.video', 'host.game', 'host.life',
+  'home.video', 'host.game', 'host.life', 'shared.argue.faceWins', 'shared.argue.brainWins',
 ];

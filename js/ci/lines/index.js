@@ -14,8 +14,9 @@ import { FINALE } from './finale.js';
 import { HOST } from './host.js';
 import { GAME_LINES } from './games.js';
 import { LIFE_LINES } from './life.js';
+import { SHARED_LINES } from './shared.js';
 
 export const POOLS = {};
-for (const part of [CHAT_A, CHAT_B, SLIPS, FEED, CIRCLE, PROFILES, RATINGS, HANGOUT, BLOCKING, VISIT, GOODBYE, FINALE, HOST, GAME_LINES, LIFE_LINES]) {
+for (const part of [CHAT_A, CHAT_B, SLIPS, FEED, CIRCLE, PROFILES, RATINGS, HANGOUT, BLOCKING, VISIT, GOODBYE, FINALE, HOST, GAME_LINES, LIFE_LINES, SHARED_LINES]) {
   for (const [k, v] of Object.entries(part)) POOLS[k] = [...(POOLS[k] || []), ...v];
 }

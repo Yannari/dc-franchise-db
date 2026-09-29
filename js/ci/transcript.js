@@ -34,7 +34,7 @@ export function blockText(state, block) {
   const out = [];
   let dictated = false;
   for (const l of block.lines) {
-    const who = speakerLabel(state, l.who);
+    const who = l.person ? `${l.person.toUpperCase()} (for ${shownName(state, l.who)})` : speakerLabel(state, l.who);
     if (l.kind === 'stage') out.push(`  [${l.text}]`);
     else if (l.kind === 'say') out.push(`  ${who}, aloud: "${l.text}"`);
     else if (l.kind === 'video') out.push(`  ${who} (on video): "${l.text}"`);

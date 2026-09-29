@@ -11,6 +11,7 @@ import { rel, bump, S, clamp, isActive, schemeEligible } from './state.js';
 import { belief } from './beliefs.js';
 import { mood } from './mind.js';
 import { contradictions } from './claims.js';
+import { isPair, SHARED_PACE } from './shared.js';
 
 export const INTENTS = ['bond', 'ally', 'flirt', 'probe', 'pump', 'compare', 'plant', 'credit',
   'repair', 'confront', 'checkin', 'pitch', 'confess'];
@@ -37,11 +38,16 @@ export function seedAttraction(state, rng) {
   }
 }
 
-export function utilities(state, me, you, ctx = {}) {
+export function utilities(state, me, you, ctx = {}, who = null) {
+  // Two people want different chats; the one who wants it more pushes it.
+  if (!who && isPair(state, me)) {
+    const each = state.profiles[me].players.map(n => utilities(state, me, you, ctx, n));
+    return Object.fromEntries(Object.keys(each[0]).map(k => [k, Math.max(...each.map(u => u[k]))]));
+  }
   const aff = rel(me, you, 'affection'), tr = rel(me, you, 'trust'), res = rel(me, you, 'resentment');
   const att = rel(me, you, 'attraction');
   const b = belief(state, me, you);
-  const st = k => S(state, me, k) / 10;
+  const st = k => S(state, me, k, { who }) / 10;
   const lonely = mood(state, me, 'loneliness') / 10, para = mood(state, me, 'paranoia') / 10;
   const guilt = mood(state, me, 'guilt') / 10;
   const catfish = state.profiles[me].mode === 'catfish';
@@ -70,7 +76,9 @@ export function planChats(state, rng, ctx) {
   const plans = [];
   const order = state.active.map(h => [h, rng()]).sort((a, b) => a[1] - b[1]).map(([h]) => h);
   for (const me of order) {
-    const budget = clamp(Math.round(1 + S(state, me, 'social') / 4 - mood(state, me, 'stress') / 6), 1, 4);
+    let budget = clamp(Math.round(1 + S(state, me, 'social') / 4 - mood(state, me, 'stress') / 6), 1, 4);
+    // Every message is an argument: a shared profile is slow.
+    if (isPair(state, me)) budget = Math.max(1, Math.round(budget * SHARED_PACE - 0.01));
     const options = [];
     for (const you of state.active) {
       if (you === me) continue;

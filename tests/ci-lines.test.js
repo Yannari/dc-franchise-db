@@ -15,7 +15,7 @@ const ENTRIES = Object.entries(POOLS).flatMap(([k, list]) => list.map(e => [k, e
 const turnTexts = e => (e.turns || []).flatMap(t => ['react', 'say', 'send', 'post', 'video'].filter(x => t[x]).map(x => [t.by, x, t[x]]));
 const allTexts = e => [e.stage, e.beat, ...turnTexts(e).map(t => t[2])].filter(Boolean);
 const SLOT = /\{([^}]*)\}/g;
-const OK_SLOT = /^([abc])(\.(real|aka|sub|obj|pos|posAdj|ref|Sub|Obj|PosAdj))?$|^([et]):([A-Za-z0-9]+)$|^(q|game|ans)$/;
+const OK_SLOT = /^([abc])(\.(real|aka|face|brain|sub|obj|pos|posAdj|ref|Sub|Obj|PosAdj))?$|^([et]):([A-Za-z0-9]+)$|^(q|game|ans)$/;
 
 describe('the pools are well-formed', () => {
   it('has unique ids that start with their pool key, and only known pool keys', () => {
@@ -41,6 +41,8 @@ describe('the pools are well-formed', () => {
       for (const [by, , x] of turnTexts(e)) {
         // A player knows one real name: their own ("Hi, I'm Seaburn" on a goodbye video).
         if (by === 'host') continue;
+        if (by !== 'face' && by !== 'brain') expect(x, `${e.id}: only the pair name each other`).not.toMatch(/\{[abc]\.(face|brain)\}/);
+        if (by === 'face' || by === 'brain') continue;
         const others = new RegExp(`\\{(?!${by}\\.real\\})[abc]\\.(real|aka)\\}`);
         expect(x, `${e.id}: a player cannot know the real name`).not.toMatch(others);
       }

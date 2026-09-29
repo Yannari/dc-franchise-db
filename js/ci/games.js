@@ -13,6 +13,7 @@ import { belief, nudgeBelief, noteAlly } from './beliefs.js';
 import { feel } from './mind.js';
 import { makeClaim, learn } from './claims.js';
 import { rollSlips, probe } from './slips.js';
+import { isPair, leadFor } from './shared.js';
 
 const NICE = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
 /** A profile the franchise rule keeps nice: every person behind it is a nice archetype. */
@@ -33,7 +34,8 @@ const RUN = {
     for (const p of shuffled(game.prompts, rng).slice(0, 4)) {
       const answers = {};
       for (const h of all) {
-        const pAgree = clamp(0.5 + p.lean * (S(state, h, p.stat) - 5) / 10 + (rng() - 0.5) * 0.4, 0.05, 0.95);
+        const who = isPair(state, h) ? leadFor(state, h, 'statement', rng) : null;
+        const pAgree = clamp(0.5 + p.lean * (S(state, h, p.stat, { who }) - 5) / 10 + (rng() - 0.5) * 0.4, 0.05, 0.95);
         answers[h] = rng() < pAgree ? 'agree' : 'disagree';
       }
       sc.data.rounds.push({ promptId: p.id, answers });

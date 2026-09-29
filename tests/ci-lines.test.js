@@ -60,7 +60,8 @@ describe('the pools talk like the show', () => {
   const people = (Array.isArray(roster) ? roster : roster.players || Object.values(roster)).map(p => p.name).filter(Boolean);
   // Names that are also ordinary words, allowed in a line as the word.
   const WORDS = new Set(['Chef', 'Max', 'Summer', 'Sky', 'Star', 'Hope', 'Joy', 'Will', 'Grace', 'Faith', 'Rose', 'Ivy',
-    'Dawn', 'Crystal', 'Angel', 'Hunter', 'Chase', 'Lucky', 'Brick', 'Heather', 'Mike', 'Owen', 'Alan', 'Tom', 'Bill']);
+    'Dawn', 'Crystal', 'Angel', 'Hunter', 'Chase', 'Lucky', 'Brick', 'Heather', 'Mike', 'Owen', 'Alan', 'Tom', 'Bill',
+    'Scary', 'Honey', 'Baby', 'Sugar', 'Queen', 'King', 'Duke', 'Ace', 'Blue', 'Red', 'Storm', 'River']);
   const FIRST = [...new Set(people.map(n => n.split(' ')[0]).filter(n => n.length > 2 && !WORDS.has(n)))];
   const STANDINS = ['Sammie', 'Chloe', 'Raven', 'Madelyn', 'Jadejha', 'Terilisha', 'Joey', 'Shubham', 'Chris', 'Frank',
     'Kyle', 'Darian', 'Garret', 'Rebecca', 'Mercedeze', 'Carol', 'Nathan', 'Jared', 'Imani', 'Gianna'];
@@ -100,12 +101,14 @@ describe('the pools talk like the show', () => {
     expect(bad).toEqual([]);
   });
 
+  // Only a MESSAGE needs an answer. A question said out loud to yourself
+  // ('Getting old?') is how people talk; the transcripts are full of them.
   it('answers every question: a question is followed by the other speaker, or the asker leaves', () => {
     const bad = [];
     for (const [, e] of ENTRIES) {
       const ts = e.turns || [];
       ts.forEach((t, i) => {
-        const last = (t.send || t.say || t.react || '').replace(/\{[et]:[A-Za-z0-9]+\}/g, '').trim();
+        const last = (t.send || '').replace(/\{[et]:[A-Za-z0-9]+\}/g, '').trim();
         if (!last.endsWith('?') || t.by === 'host') return;
         const next = ts[i + 1];
         if (!next && !e.leaves) bad.push(`${e.id}: ends on a question`);

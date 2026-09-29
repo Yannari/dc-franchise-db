@@ -29,7 +29,10 @@ describe('the villa reads its own signals', () => {
   });
   it('every signal stays in its band and moves', () => {
     const seen = {};
-    for (const seed of [1, 2, 3]) for (const s of signalsOf(seed).signals) for (const k of Object.keys(CALIBRATION)) (seen[k] ||= []).push(s[k]);
+    // Eight seeds, not three: seeds 1-3 are the quietest of twelve for the
+    // favourite changing hands (7 nights of 75, against 62 of 300 across all
+    // twelve), and the guard measured its own sample (2026-09-28).
+    for (const seed of [1, 2, 3, 4, 5, 6, 7, 8]) for (const s of signalsOf(seed).signals) for (const k of Object.keys(CALIBRATION)) (seen[k] ||= []).push(s[k]);
     for (const [key, vals] of Object.entries(seen)) {
       vals.sort((a, b) => a - b);
       expect(vals[0], `${key} below zero`).toBeGreaterThanOrEqual(0);

@@ -116,13 +116,17 @@ describe('the one-offs (phase 3)', () => {
       expect(r.exits.filter(e => [girl, boy].includes(e.name) && e.channel !== 'walk')).toEqual([]);
     }
   });
-  it('the sleepover villa dumps only the new arrivals nobody chose', () => {
-    for (let seed = 1; seed <= 8; seed++) {
-      const r = season(seed, { 6: { oneOff: 'sleepover' } })[5];
+  // User: "my bombshells got dumped the night they arrived".
+  it('the sleepover villa keeps the new arrivals nobody chose, single', () => {
+    let kept = 0;
+    const every = Object.fromEntries(Array.from({ length: 20 }, (_, i) => [i + 1, { oneOff: 'sleepover' }]));
+    for (let seed = 1; seed <= 4; seed++) for (const r of season(seed, every)) {
       if (r.pm.oneOff !== 'sleepover') continue;
       const arrived = r.pm.events.filter(e => e.kind === 'entrance').map(e => e.players[0]);
-      for (const x of r.exits.filter(e => e.channel === 'sleepover')) expect(arrived).toContain(x.name);
+      expect(r.exits.filter(e => arrived.includes(e.name) && e.channel !== 'walk')).toEqual([]);
+      for (const e of r.pm.events.filter(e => e.kind === 'sleepover-single')) { kept++; expect(r.pm.villa).toContain(e.players[0]); }
     }
+    expect(kept).toBeGreaterThan(0);
   });
   it('the immune couple is never at risk that night', () => {
     let played = 0;

@@ -698,7 +698,7 @@ export const KINDS = {
     'profile-pick', 'public-couple', 'ranking-couple', 'step-reveal', 'step-choose', 'step-back', 'icebreaker', 'kiss-pick', 'lady-luck-kiss', 'lady-luck-pick',
     // the one-offs of phase 3
     'return-entrance', 'return-ex', 'mission-brief', 'mission-dump', 'mission-return', 'sleepover-invite',
-    'sleepover-choice', 'sleepover-night', 'immunity-win',
+    'sleepover-choice', 'sleepover-night', 'sleepover-single', 'immunity-win',
     // the named challenges of phase 4
     'challenge-text', 'receipt', 'look-who',
     // night one's opening

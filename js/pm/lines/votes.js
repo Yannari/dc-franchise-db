@@ -27,9 +27,11 @@ export const VOTE_LINES = {
     { id: 'bv.g.04', when: { why: 'grudge' }, turns: [['a', "I've tried with {b}. I really have. It's {b}."]], beat: "{b} rolls {b.posAdj} eyes, and doesn't hide it." },
     { id: 'bv.g.05', when: { why: 'grudge' }, turns: [['a', "{b} knows why. I don't need to say any more than that. {b}."]] },
     { id: 'bv.g.06', when: { why: 'grudge' }, turns: [['a', "I don't trust {b}. I haven't for a while. So it's {b}."]], beat: '{b} shakes {b.posAdj} head, but says nothing.' },
-    { id: 'bv.c.04', when: { why: 'cover' }, turns: [['a', "There's nothing personal in this. I just think {b}'s couple is the one that would last least outside."]] },
-    { id: 'bv.c.05', when: { why: 'cover' }, turns: [['a', "I've thought about it all day, and I keep coming back to the same couple. {b}'s."]] },
-    { id: 'bv.c.06', when: { why: 'cover' }, turns: [['a', "I love both couples. But I have to choose, and I'm choosing {b}."]], beat: '{b} gives a small, tight smile.' },
+    { id: 'bv.c.04', when: { why: 'cover', risk: ['couple', 'couples'] }, turns: [['a', "There's nothing personal in this. I just think {b}'s couple is the one that would last least outside."]] },
+    { id: 'bv.c.05', when: { why: 'cover', risk: ['couple', 'couples'] }, turns: [['a', "I've thought about it all day, and I keep coming back to the same couple. {b}'s."]] },
+    { id: 'bv.c.06', when: { why: 'cover', risk: 'couple' }, turns: [['a', "I love both couples. But I have to choose, and I'm choosing {b}."]], beat: '{b} gives a small, tight smile.' },
+    { id: 'bv.c.o1', when: { why: 'cover', risk: 'one' }, turns: [['a', "I don't think {b} has found anyone in here yet. So it's {b}."]], beat: '{b} raises an eyebrow.' },
+    { id: 'bv.c.o2', when: { why: 'cover', risk: 'one' }, turns: [['a', "I'm voting for {b}. I think the others have more reason to stay."]] },
   ],
 
   'vote-fallout': [

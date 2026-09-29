@@ -11,7 +11,7 @@ import { attr } from './chemistry.js';
 import { makeEvent, partnerOf } from './events.js';
 import { romance, friendship } from './feelings.js';
 import { closedness, coupleStrength } from './ladder.js';
-import { breakHeart } from './emotions.js';
+import { breakHeart, feel } from './emotions.js';
 
 const others = (state, name, tonight) => state.villa.filter(n => n !== name && !tonight.includes(n));
 
@@ -49,12 +49,14 @@ export function secretMission(state, name, { rng, tonight = [] }) {
  * THE SLEEPOVER VILLA (UK 12 d15-17). Each new arrival invites one islander
  * who is coupled up to a separate villa for two nights; then each invited
  * islander chooses to stay with their partner or couple up with the one who
- * invited them. A bombshell nobody twisted for is dumped; a partner left
- * behind is single. The choice is the Casa Amor question, asked of one
+ * invited them. A partner left behind is single. On the real show a bombshell
+ * nobody twisted for was dumped (UK 12 d17); here they stay, single and very
+ * vulnerable, for the next recoupling to settle (user: "my bombshells got
+ * dumped the night they arrived"). The choice is the Casa Amor question, asked of one
  * islander at a time: how settled the couple is, against the pull.
  */
 export function sleepover(state, arriving, { rng }) {
-  const events = [], dumped = [], invited = new Set();
+  const events = [], kept = [], invited = new Set();
   const pairs = [];
   for (const b of arriving) {
     // One from each couple: with both halves away, the one "left behind" was
@@ -90,12 +92,17 @@ export function sleepover(state, arriving, { rng }) {
       addBond(x, p, 0.5);
       events.push(makeEvent(state, rng, { phase: 'firepit', kind: 'sleepover-choice', players: [x, p, b], aired: true,
         major: [x], extra: { choice: 'stick', pop: { [x]: { approval: 1, fame: 2 }, [p]: { approval: 0.5, fame: 1 } } } }));
-      dumped.push(b);
+      kept.push(b);
     }
   }
-  // An arrival who invited nobody (nobody coupled was left) is dumped too.
-  for (const b of arriving) if (!pairs.some(([x]) => x === b)) dumped.push(b);
-  return { events, dumped };
+  // …and so does an arrival who invited nobody (nobody coupled was left).
+  for (const b of arriving) if (!pairs.some(([x]) => x === b)) kept.push(b);
+  for (const b of kept) {
+    feel(state, b, 'confidence', -0.8); feel(state, b, 'stress', 0.6);
+    events.push(makeEvent(state, rng, { phase: 'firepit', kind: 'sleepover-single', players: [b], aired: true,
+      extra: { pop: { [b]: { approval: 0.2, fame: 1 } } } }));
+  }
+  return { events, kept };
 }
 
 /**

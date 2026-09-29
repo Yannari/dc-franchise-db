@@ -141,6 +141,24 @@ function villaDumpingRaw(state, { format, bottom, rng }) {
 const coupleAffinity = (state, voters, c) => voters.reduce((s, v) => s + affinity(state, v, c[0]) + affinity(state, v, c[1]), 0);
 
 /**
+ * A DOUBLE DUMPING the villa decides: the public's bottom three couples, and
+ * each safe islander names the couple they want gone; the two named most go.
+ */
+export function safePickCouples(state, { bottom, n = 2, rng }) {
+  const atRisk = bottom.flat();
+  const voters = state.villa.filter(v => !atRisk.includes(v));
+  if (!voters.length) return { dumped: bottom.slice(0, n).flat(), ballots: [] };
+  const ballots = voters.map(v => {
+    const worst = [...bottom].sort((x, y) => coupleAffinity(state, [v], x) - coupleAffinity(state, [v], y))[0];
+    return { voter: v, target: worst[0], couple: [...worst], channel: 'villa', why: voteWhy(state, v, worst[0]) };
+  });
+  const count = new Map(bottom.map(c => [c, 0]));
+  for (const b of ballots) { const c = bottom.find(x => x.includes(b.target)); count.set(c, count.get(c) + 1); }
+  const dumped = [...count].map(([c, k]) => [c, k + rng() * 0.5]).sort((a, b) => b[1] - a[1]).slice(0, n).flatMap(r => r[0]);
+  return { dumped, ballots };
+}
+
+/**
  * The public's favourite couple sends one of the bottom couples home. They
  * decide TOGETHER, out loud, at the fire pit: the couple the two of them are
  * least attached to, with no thought of the public (they don't know the votes).
@@ -150,6 +168,25 @@ export function topCouplePicks(state, { bottom, pickers, rng }) {
     .sort((x, y) => x[1] - y[1]);
   const dumped = [...ranked[0][0]];
   return { dumped, ballots: pickers.map(v => ({ voter: v, target: dumped[0], couple: dumped, channel: 'villa' })) };
+}
+
+/**
+ * The first vote with more of one side than the other: the public's bottom
+ * of the bigger side, and the other side votes `n` of them out, each naming
+ * the one (or two) they are least attached to. Evens the villa out.
+ */
+export function sideDumping(state, { atRisk, n = 1, rng, voters: who = null }) {
+  const g = x => state.profiles[x].gender;
+  // `voters`: somebody other than the other side (the coupled islanders, on a singles night).
+  const voters = who || state.villa.filter(v => !atRisk.includes(v) && g(v) !== g(atRisk[0]));
+  if (!voters.length) return { dumped: atRisk.slice(0, n), ballots: [] };
+  const ballots = voters.flatMap(v => [...atRisk].sort((x, y) => affinity(state, v, x) - affinity(state, v, y))
+    .slice(0, n).map(t => ({ voter: v, target: t, channel: 'villa' })));
+  for (const b of ballots) b.why = voteWhy(state, b.voter, b.target);
+  const count = new Map(atRisk.map(x => [x, 0]));
+  for (const b of ballots) count.set(b.target, count.get(b.target) + 1);
+  const dumped = [...count].map(([x, c]) => [x, c + rng() * 0.5]).sort((a, b) => b[1] - a[1]).slice(0, n).map(r => r[0]);
+  return { dumped, ballots };
 }
 
 /** One side saves one of the other side's bottom islanders; the rest go. */

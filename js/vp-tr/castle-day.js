@@ -407,11 +407,11 @@ const ESTABLISH_PAIR = {
 };
 /** Nobody else in the room, which is a scene in its own right and not a fault. */
 const ESTABLISH_SOLO = [
-  'There is nobody at {loc} but {a}, {when}.',
-  '{a} is alone at {loc}, {when}, with nobody to perform for.',
-  '{when}, {a} stops at {loc} alone and stays there.',
-  'Nobody else is at {loc}. {a} is there alone, {when}.',
-  '{a} is at {loc} with the door shut and nobody on the other side of it, {when}.',
+  'Nobody else is around. {a} is alone.',
+  '{a} is alone, with nobody to perform for.',
+  '{a} has the room to {aRef}.',
+  '{a} is on {aPos} own, and has shut the door.',
+  '{a} is alone, and glad of it.',
 ];
 /** Three or more, which the pair templates cannot honestly describe. */
 const ESTABLISH_GROUP = [
@@ -608,7 +608,7 @@ const REACT = {
       '{b} accepts, and is already working out what this is worth in a few days.',
       '{b} says yes and means a slightly smaller yes than {a} heard.',
       '“Good,” says {b}, who has wanted exactly this for days and never once asked.',
-      '{b} agrees, and files the fact that {a} asked first.',
+      '{b} agrees, and notes that {a} asked first.',
       '{b} takes it, and takes note of how much it cost {a} to offer.',
       '{b} accepts with one small condition that sounds like nothing and is not.',
     ],
@@ -653,7 +653,7 @@ const REACT = {
     ],
     guarded: [
       '{b} says the right things in the right order and none of it reaches {b}’s face.',
-      '“Yeah,” {b} says, and looks at the floor, and that is the whole of what {b} has today.',
+      '“Yeah,” {b} says, and looks at the floor. {b} has nothing else to give today.',
       '{b} holds it together in front of {a}, then goes somewhere else to not hold it together.',
     ],
   },
@@ -707,7 +707,7 @@ const REACT = {
     blunt: [
       '{b} answers it the way {b} answers everything — fast, loud, and without once wondering why it was asked.',
       '“Why do you want to know that?” {b} says, and then answers it anyway, at length.',
-      '{b} doesn’t think twice about it, which is either the truth or a very good habit.',
+      '{b} answers without thinking twice. Either it’s the truth, or {b} has practised.',
     ],
     sharp: [
       '{b} answers, and half a beat later works out that the question had a shape to it.',
@@ -774,7 +774,7 @@ const REACT = {
 const REACT_SOLO = {
   blunt: [
     'There is nobody to perform for, so {a} doesn’t, and what is on {a}’s face now was not on it at breakfast.',
-    '{a} swears once, quietly, at nobody in particular, and that is the whole of it.',
+    '{a} swears once, quietly, at nobody in particular.',
     '{a} stands there long enough that it stops being a pause and turns into a decision.',
     '{a} says the short version of it out loud, to the wall, and does not soften a word.',
     'No audience, so no manners. {a} calls it what it is and goes to bed.',
@@ -783,7 +783,7 @@ const REACT_SOLO = {
   sharp: [
     '{a} runs it through again from the start, looking for the place it comes apart, and finds one.',
     'Nobody sees it. {a} spends the next minute working out who would have, if anyone had been standing there.',
-    '{a} files it away the way {a} files everything, and rearranges tomorrow around it.',
+    '{a} puts it away for now and changes tomorrow’s plans around it.',
     '{a} does the arithmetic twice and gets a slightly different answer the second time.',
     'Alone, {a} takes it apart properly, which is not something {a} would do where it could be watched.',
     '{a} works out what it changes and what it does not, and the second list is shorter than {a} expected.',
@@ -985,7 +985,7 @@ const REACT_ADVERSE = {
     ],
     guarded: [
       '{b} says it is fine, twice, and the second one is the one to worry about.',
-      '{b} steps back from it without a word, and the distance is the whole of the answer.',
+      '{b} steps back without a word. That is {bPos} answer.',
     ],
   },
   loss: {
@@ -1003,7 +1003,7 @@ const REACT_ADVERSE = {
     ],
     guarded: [
       '{b} takes it as a warning rather than as a loss, and stops talking about it.',
-      '{b} says nothing and changes seats, and that is the whole of the reaction.',
+      '{b} says nothing and changes seats.',
     ],
   },
   past: {
@@ -1038,7 +1038,7 @@ const REACT_ADVERSE = {
       '{b} says that it is fine and drops back to walk with somebody else.',
     ],
     guarded: [
-      '{b} gives less than {b} gave yesterday, and the difference is the whole message.',
+      '{b} gives less than yesterday, and {a} notices.',
       '{b} stops offering anything and lets {a} carry the conversation on {a}’s own.',
     ],
   },
@@ -1065,312 +1065,300 @@ const CONSEQ = {
   suspicion: {
     opened: {
       smooth: [
-        '{a} says nothing more about it and doesn’t stop thinking about it either. {b} has a place in {a}’s head now that {b} did not have this morning.',
-        'Nothing is decided. But {a} is going to watch where {b} stands tonight, and {b} has no idea that is happening.',
-        '{a} lets it go for now and does not forget it. {b} walks away thinking the conversation went fine.',
-        '{a} keeps it to {a}’s self, which is the most useful thing {a} can do with it today.',
+        '{a} doesn’t say anything, but {a} is watching {b} now.',
+        '{a} keeps it quiet for now. {b} leaves thinking it was an ordinary chat.',
+        '{a} isn’t sure yet, but {b} is on {aPos} list.',
+        'Nothing happens yet. {a} just pays closer attention to {b} for the rest of the day.',
       ],
       adverse: [
-        '{a} has a reason now, and it is a specific one, and {a} can say it in a sentence in front of people.',
-        'That is not a feeling any more. {a} leaves with something {a} would be willing to repeat at the table.',
-        '{b} did not talk {a} out of it. {b} made {a} more certain, which is the opposite of what {b} was trying to do.',
-        '{a} has stopped wondering. What {a} does about it is the only question left.',
+        '{a} now has a real reason to suspect {b}, and could say it at the table.',
+        '{b} tried to talk {a} out of it and made {aObj} more suspicious instead.',
+        '{a} is convinced something is off about {b}.',
+        '{a} walks away sure that {b} is hiding something.',
       ],
     },
     carried: {
       smooth: [
-        'That is twice. {a} stops calling it a feeling and starts treating it as something to prove.',
-        '{a} sets it beside what {a} already had. It is not proof yet, and it is getting harder for {b} to explain away.',
-        'It stops being a thing {a} noticed and becomes a thing {a} is prepared to say out loud in front of people.',
-        '{a} adds it to the pile and says nothing, and the pile is now big enough to be worth mentioning.',
+        '{a} has seen this from {b} before. It is starting to look like a pattern.',
+        'It adds to what {a} already had on {b}. Still no proof, but it is building.',
+        '{a} is closer to saying {b}’s name out loud.',
+        'Another small thing against {b}, and {a} is keeping count.',
       ],
       adverse: [
-        'Two of these now, and the second one is worse than the first. {a} is no longer looking for reasons to be wrong.',
-        '{a} has enough of it to be dangerous with, and {b} has just handed over the piece {a} was missing.',
-        'The doubt does not need any more evidence. It needs an audience, and {a} knows where to find one tonight.',
-        '{a} stops giving {b} the benefit of it. That is the change, and it does not go back.',
+        'That is twice now. {a} stops giving {b} the benefit of the doubt.',
+        '{a} has enough on {b} to make a case at the table.',
+        '{a} is done wondering about {b}. The only question is when to say it.',
+        'This one settles it for {a}. {b} is the name {a} will push.',
       ],
     },
   },
-  // The same scene from the side that won it. See `TURNED_BRANCHES` and
-  // `_reactClass`: `{a}` is the person who was being tested and took the
-  // conversation over, `{b}` is the one who set it up.
   'testing-turned': {
     opened: {
       smooth: [
-        '{b} came to find something out and went away having been found out. Neither of them says that out loud.',
-        '{a} now knows {b} is checking, which is worth more than whatever {b} was checking for.',
-        'The test went the wrong way for the person who set it. {b} will not be trying that one again.',
-        '{a} leaves holding the thing {b} came to collect, and {b} knows it.',
+        '{a} noticed the test. Now {a} knows {b} is checking up on {aObj}.',
+        '{b} was trying to read {a} and got caught doing it.',
+        'The test backfired. {b} learned nothing, and {a} learned that {b} is suspicious.',
+        '{a} saw what {b} was doing and played it straight back.',
       ],
       adverse: [
-        '{b} has lost the one advantage {b} had, which was that {a} did not know {b} was looking.',
-        '{a} was being measured and is now measuring, and {b} handed that over in a single sentence.',
-        'It costs {b} more than it costs {a}, and both of them can see exactly how much.',
-        '{b} came in with a question and leaves with a problem, and the problem is {a}.',
+        '{b} gave the game away. {a} now knows exactly who is watching {aObj}.',
+        'It cost {b} more than {a}. {b} showed {bPos} hand for nothing.',
+        '{a} turned it round, and now {b} is the one on the back foot.',
+        '{b} came to find something out and gave something away instead.',
       ],
     },
     carried: {
       smooth: [
-        'Twice now {b} has come at it sideways, and twice {a} has turned it round. {b} stops trying.',
-        '{a} has stopped pretending not to notice, and {b} has stopped pretending not to be doing it.',
-        'The two of them are past the sideways version of this conversation, which suits {a} and does not suit {b}.',
-        '{a} has the measure of how {b} asks things now, which is a more useful thing to own than an answer.',
+        '{b} has tried this twice now, and {a} caught it both times.',
+        '{a} knows how {b} asks questions now, and isn’t fooled by it.',
+        'Neither of them pretends any more. {a} knows {b} is checking, and {b} knows it.',
+        '{b} gives up on testing {a}.',
       ],
       adverse: [
-        '{b} has done this twice and been caught twice, and {a} has stopped giving {b} the benefit of it.',
-        'Whatever {b} was building, {a} has taken it apart in front of {b} for the second time.',
-        '{a} does not need to test {b} back. {b} keeps volunteering it.',
-        'Two of these now, and the only thing {b} has established is that {a} is watching {b} do it.',
+        'Caught again. {a} has stopped trusting anything {b} says.',
+        '{b} keeps testing and keeps getting caught. {a} is losing patience.',
+        '{b} keeps giving the game away, and {a} keeps noticing.',
+        'Caught out twice, {b} has made an enemy of {a}.',
       ],
     },
   },
   testing: {
     opened: {
       smooth: [
-        '{a} came away with an answer, and the answer is worth more to {a} than {b} would like it to be.',
-        'It was a small thing to ask and {a} was never really asking it. {a} has what {a} came for either way.',
-        '{b} passes it without ever knowing there was anything to pass. {a} knows, and that is the whole point of it.',
-        '{a} puts {b} a little higher on the list of people worth keeping, and never says why.',
+        '{b} passed without knowing it was a test. {a} trusts {bObj} a little more.',
+        '{a} got the answer {a} was hoping for, and thinks better of {b}.',
+        'It was a small test, and {b} passed it. {a} relaxes about {bObj}.',
+        '{a} puts {b} on the list of people worth relying on.',
       ],
       adverse: [
-        '{b} fails it, and {a} does not say so. {a} simply stops planning tomorrow around {b}.',
-        // WAS "{b} has no idea a question was asked, let alone answered badly." That
-        // line was written for a BEHIND-THE-BACK check where {b} is absent, and it
-        // sat in this SHARED pair/group pool, so it landed on to-their-face tests
-        // where {b} had just answered in the reaction card one line above — saying
-        // {b} did not know a question was asked, a card after {b} answered it. The
-        // one event it was right for (the alibi check) now composes as a solo
-        // scene and draws from CONSEQ_SINGLE, so this pool only ever answers a
-        // scene {b} was in. The line now says {b} was present and oblivious to the
-        // STAKES, not to the question. Found by the Defect 3 coherence sweep.
-        '{a} got the answer {a} was afraid of. {b} thinks it was just a conversation, and does not know it was anything else.',
-        'That is the last favour {b} gets from {a} for a while, and {b} will not be told why.',
-        '{a} was hoping to be wrong about {b} and is not. It moves {b} up a list {b} cannot see.',
+        '{b} failed and doesn’t know it. {a} quietly stops relying on {bObj}.',
+        '{a} got the answer {a} was afraid of. {b} thinks it was just a chat.',
+        '{a} was hoping to be wrong about {b}, and wasn’t.',
+        '{b} is off {a}’s list of people to trust, and won’t be told why.',
       ],
     },
     carried: {
       smooth: [
-        '{a} has set this up twice now, and {b} still does not know that either time was a test.',
-        'Two goes, two results, and {a} is beginning to trust the pattern more than the person.',
-        '{a} does it again and gets the same answer again, which is either reassuring or very well rehearsed.',
-        '{a} stops testing {b}. Whatever {a} was checking for, {a} has stopped expecting to find it.',
+        '{a} has tested {b} twice now, and both times {b} came through.',
+        'Same test, same answer. {a} is starting to believe {b}.',
+        '{a} stops testing {b} and decides to trust {bObj}.',
+        '{b} passes again. {a} is running out of reasons to doubt {bObj}.',
       ],
       adverse: [
-        'Twice now, and {b} has failed both. {a} stops calling it bad luck.',
-        '{a} does not need a third. {b} has answered the same question two different ways and not noticed.',
-        'The pattern holds and it is the wrong pattern. {a} starts working out who else has seen it.',
-        '{a} was giving {b} a chance to come out of this well. {b} has now used the last of them.',
+        '{b} has failed twice now. {a} doesn’t call it bad luck any more.',
+        '{b} gave two different answers to the same question, and {a} noticed.',
+        'The same slip again. {a} starts wondering who else has seen it.',
+        '{a} gave {b} one more chance, and {b} wasted it.',
       ],
     },
   },
   cover: {
     opened: {
       smooth: [
-        '{a} gets away with it. Nobody asks a second question, which is precisely what {a} needed today.',
-        'It holds. {a} walks away from it looking like somebody who had nothing to walk away from.',
-        'Nothing about {a} looked wrong to {b}, and {a} spends the rest of the day quietly grateful for that.',
-        '{a} banks it. One more ordinary hour on the record, and ordinary is the whole strategy.',
+        '{a} gets through it. {b} doesn’t ask a single follow-up question.',
+        'Nothing about {a} looked off to {b}, and {a} is quietly relieved.',
+        'The story holds, and {a} looks like someone with nothing to hide.',
+        '{a} stays calm, and {b} has no reason to look twice.',
       ],
       adverse: [
-        'It does not hold. {a} leaves knowing exactly which sentence gave way, and cannot take it back.',
-        '{a} has to remember the new version now as well as the old one, and there is no writing either of them down.',
-        'Something in it did not sit right with {b}, and {a} watched it not sit right, and could do nothing.',
-        '{a} came out of that with a hole in the story and a person who has noticed the hole.',
+        'The story wobbles, and {a} knows exactly which answer did it.',
+        'Something {a} said didn’t sit right with {b}, and {a} saw it land.',
+        '{a} now has two versions of the day to keep straight.',
+        '{b} noticed a gap in {a}’s story.',
       ],
     },
     carried: {
       smooth: [
-        '{a} tells it the same way again. Nobody has yet noticed that it is always exactly the same way.',
-        'It survives another day, and every day it survives makes it harder for {a} to change any part of it.',
-        '{a} gets through another one. The version {a} is telling has not moved a word since the first time.',
-        'Another day of flying under the radar. {a} is getting very good at it, and that is when people stop noticing you.',
+        '{a} tells it the same way again, and nobody questions it.',
+        'Another day, and the story still holds. {a} hasn’t changed a word of it.',
+        '{a} is getting good at this, and nobody suspects a thing.',
+        'The same answer and the same calm face, and {b} believes it again.',
       ],
       adverse: [
-        'The version is coming apart at the edges now, and {a} is patching it in front of the person who noticed.',
-        '{a} has told it too many times and it has started to sound told. {b} heard that, whatever {b} said.',
-        'It does not survive this one intact. What {a} has left is a story with a repair in it.',
-        '{a} spends the rest of the day working out who {b} is going to repeat that to.',
+        'The story is starting to fray, and {a} is patching it in front of {b}.',
+        '{a} has told it too many times. It sounds rehearsed now, and {b} heard that.',
+        'The story takes another knock, and {a} is running out of ways to fix it.',
+        '{a} spends the rest of the day wondering who {b} will tell.',
       ],
     },
   },
   trust: {
     opened: {
       smooth: [
-        'Something gets agreed here that neither of them writes down. {a} and {b} go into tonight on the same side.',
-        'It is a small thing to have decided and it is decided. {a} would defend {b} now, out loud, in front of people.',
-        'Neither of them calls it an arrangement. {a} and {b} both leave behaving as though one had been made.',
-        '{a} and {b} have a name they will not write, and they have it in common, which is the whole of it.',
+        '{a} and {b} leave on the same side. Nothing is written down, but both of them know.',
+        '{a} would now stand up for {b} at the table.',
+        '{a} and {b} have the start of an alliance.',
+        '{a} and {b} trust each other a bit more after this.',
       ],
       adverse: [
-        '{a} offered something and did not get it back. {a} will remember which way that went.',
-        'Whatever {a} thought was there is not there, and {a} leaves having said more than {b} did.',
-        'It does not take. {a} and {b} are politer with each other afterwards than they were before, which is worse.',
-        '{a} has learned where the edge of this is, and it is closer in than {a} had assumed.',
+        '{a} offered trust and didn’t get it back, and won’t forget that.',
+        '{a} said more than {b} did, and noticed.',
+        'It doesn’t land. {a} and {b} are politer afterwards, and further apart.',
+        '{a} finds out {b} isn’t as close to {aObj} as {a} thought.',
       ],
     },
     carried: {
       smooth: [
-        'It holds again. {a} and {b} have built something the rest of the castle has not been shown.',
-        'Another day and {a} and {b} are still where they were. That is starting to be worth something to both of them.',
-        '{a} and {b} keep choosing each other, and it is beginning to be the thing they are known for.',
-        'Neither of them tests it any more. That is either the safest thing either of them has, or the most expensive.',
+        '{a} and {b} are still solid, and people are starting to notice them together.',
+        'Another day of backing each other up. {a} and {b} are a real pair now.',
+        '{a} and {b} keep choosing each other.',
+        '{a} and {b} don’t need to check any more. They know where they stand.',
       ],
       adverse: [
-        'It bends, and both of them feel it bend. Neither of them says so, which is how it stays bent.',
-        '{a} stops assuming {b} will be there tonight, and starts making a second plan.',
-        'Something they had is smaller after this than it was before it, and neither can point at what.',
-        '{a} and {b} are still allies out loud. Out loud is now the only place it is true.',
+        'The alliance bends. Neither of them says so, but both of them feel it.',
+        '{a} stops counting on {b} at the vote and starts making a backup plan.',
+        'Something has gone out of it. {a} and {b} are allies in name only.',
+        '{a} and {b} still say they are together. Neither is sure any more.',
       ],
     },
   },
   romance: {
     opened: {
       smooth: [
-        'Neither of them mentions it afterwards, and neither of them forgets it either.',
-        'It is not nothing. {a} and {b} both notice that it is not nothing, and both decide to leave it there.',
-        '{a} and {b} spend an hour together that neither of them needed to spend, and both of them noticed the hour.',
-        'Nothing is said about it out loud. Both of them go to bed having thought about it.',
+        'Neither of them mentions it afterwards, and neither of them forgets it.',
+        '{a} and {b} spent an hour together they didn’t need to, and both of them noticed.',
+        'Nothing is said out loud, but both of them go to bed thinking about it.',
+        'There is something between {a} and {b} now, and both of them know it.',
       ],
       adverse: [
-        'Whatever this was, it just became a thing {a} and {b} have to manage in front of people.',
-        'It goes wrong in a way neither of them planned, and the room is going to have opinions by morning.',
-        '{a} and {b} are further apart at the end of it than they were at the start, and both are surprised by that.',
-        'It stops being sweet and starts being a liability, in the space of about a minute.',
+        'It turns awkward fast, and now {a} and {b} have to handle it in front of people.',
+        'It goes wrong, and the castle will be talking about it by morning.',
+        '{a} and {b} end up further apart than when they started.',
+        'It starts sweet and turns into a problem for both of them.',
       ],
     },
     carried: {
       smooth: [
-        'It happens again, and neither of them is being especially careful about who is nearby any more.',
-        '{a} and {b} spend another hour together that they did not have to spend together.',
-        'It is not a secret so much as a thing nobody has said aloud yet. That will not last the week.',
-        '{a} and {b} stop pretending to be surprised when they end up in the same room.',
+        '{a} and {b} are getting less careful about who sees them together.',
+        '{a} and {b} keep ending up in the same room, and stop pretending it’s chance.',
+        'It happens again, and the castle is starting to notice.',
+        '{a} and {b} are getting closer, and not hiding it well.',
       ],
       adverse: [
-        'Twice now it has gone badly, and {a} and {b} are running out of ways to call it nothing.',
-        'What was easy about it yesterday is not easy today, and both of them are working at it.',
-        '{a} and {b} have an argument they have already had once, and it goes further this time.',
-        'It is costing both of them something now, and neither is sure it is still worth what it costs.',
+        'It goes badly again, and it is getting harder to call it nothing.',
+        '{a} and {b} have the same argument as last time, and it goes further.',
+        'It is costing both of them now, and neither is sure it is worth it.',
+        'What was easy yesterday is hard work today.',
       ],
     },
   },
   grief: {
     opened: {
       smooth: [
-        'Nothing is fixed by it. But {a} and {b} got through the morning next to each other instead of alone.',
-        'A bad morning, shared. Neither of them tries to make it useful.',
-        '{a} and {b} do not talk about the game once, which neither of them manages twice in a week.',
-        'Nothing is fixed. {a} and {b} are just less alone with it than they were an hour ago.',
+        'Nothing is fixed, but {a} and {b} got through the morning together instead of alone.',
+        '{a} and {b} don’t talk about the game once. They just sit with it.',
+        'A bad morning, shared. Both of them feel a little less alone.',
+        '{a} and {b} are closer after this.',
       ],
       adverse: [
-        'The grief turns into a question halfway through, and the question has a name in it.',
-        '{a} came for comfort and left with a suspicion, which is not what {a} came for.',
-        'It stops being about the person who is gone and starts being about who is still here.',
-        '{a} and {b} both say the kind thing and both hear the other one working out the arithmetic underneath.',
+        'Halfway through, the grief turns into suspicion.',
+        '{a} came for comfort and left suspicious.',
+        'The talk moves from the person who is gone to who might have done it.',
+        'They both say kind things, and both are working out who to blame.',
       ],
     },
     carried: {
       smooth: [
-        'The same weight, a day later, and it has not got any lighter for either of them.',
-        '{a} and {b} keep coming back to it, because there is nowhere else for it to go.',
-        'They do this most mornings now. Neither has said out loud that it has become a habit.',
-        'Nothing changes. {a} and {b} sit with it again, and sitting with it is the whole of what there is.',
+        'Another day, and it hasn’t got any easier for either of them.',
+        '{a} and {b} keep coming back to it together.',
+        'This has become their morning routine, though neither of them says so.',
+        'Nothing changes. {a} and {b} just sit with it again.',
       ],
       adverse: [
-        'It curdles this time. What was shared yesterday is being counted today.',
-        '{a} says the wrong name out loud and cannot get it back, and {b} heard it.',
-        'The mourning has turned into a shortlist, and both of them can feel it turn.',
-        'They have done this once too often, and this is the morning it goes sour.',
+        'This time the grief turns sour.',
+        '{a} says a name out loud and can’t take it back, and {b} heard it.',
+        'The mourning is turning into a list of suspects.',
+        'They have done this once too often, and today it turns bitter.',
       ],
     },
   },
   callback: {
     opened: {
       smooth: [
-        'Old history is back on the table, and {a} and {b} are the only two in the room who know the full version.',
-        'The old story is out. It changes how {a} looks at {b} tonight, and it does not go back in.',
-        '{a} and {b} settle something that has been sitting between them since long before the castle.',
-        'They get through it, which neither of them entirely expected to. Whatever it was, it is smaller now.',
+        'Old history is back, and only {a} and {b} know the whole story.',
+        'The old story comes out, and it changes how {a} sees {b}.',
+        '{a} and {b} finally settle something from before the castle.',
+        'They get through it, and whatever it was matters less now.',
       ],
       adverse: [
-        'The old argument arrives intact, and it is exactly as bad as it was the first time.',
-        '{a} says a thing about the old season that {b} is not going to be able to leave alone.',
-        'Whatever was buried is not buried. {a} and {b} have to be in a castle together with it out.',
-        'It does not stay between them. By tonight somebody else has the shape of it.',
+        'The old argument comes back just as bad as the first time.',
+        '{a} brings up something from the old days that {b} won’t let go.',
+        'What was buried isn’t any more, and they still have to share a castle.',
+        'It doesn’t stay between them. By supper someone else has heard it.',
       ],
     },
     carried: {
       smooth: [
-        'It comes up again, which means it was never really settled the first time.',
-        '{a} and {b} are still arguing about something that happened long before either of them saw this castle.',
-        'The old story gets another airing, and it is a little less sharp than it was yesterday.',
-        'They have reached the part where it is a shared joke rather than a shared wound. Nearly.',
+        'It comes up again, so it was never really settled.',
+        '{a} and {b} are still going over something from before the castle.',
+        'The old story comes up again, a little less sharp than yesterday.',
+        'They can almost laugh about it now.',
       ],
       adverse: [
-        'It is worse this time. Whatever {a} and {b} did not say last time gets said now.',
-        'The old wound is doing new damage, and both of them can see it doing the damage.',
-        '{a} and {b} have now had this argument twice in a castle, and the second one was public.',
-        'What started as history is now a reason to act, and both of them know it.',
+        'It is worse this time. What went unsaid last time gets said.',
+        'The old wound is doing fresh damage.',
+        '{a} and {b} have now had this argument twice, and this time people heard.',
+        'What was old history is now a reason to act.',
       ],
     },
   },
   journey: {
     opened: {
       smooth: [
-        'By the time the doors are in sight, {a} and {b} have an understanding they did not set out with.',
-        'The road did what the road does. {a} and {b} said things out there they would not have said indoors.',
-        'They come back through the gates walking together, which is not how they went out.',
-        'An hour of it and no walls. {a} and {b} both got something they could not have got at the table.',
+        'By the time they reach the doors, {a} and {b} have an understanding.',
+        'Out on the road, {a} and {b} said things they wouldn’t say indoors.',
+        'They come back through the gates walking together.',
+        '{a} and {b} got something out of that walk they couldn’t get at the table.',
       ],
       adverse: [
-        'They come back through the gates not walking together, and several people notice that.',
-        'The road was the wrong place for it, and {a} and {b} both worked that out about a mile too late.',
-        'Something got said out there that cannot be unsaid indoors, and now they are indoors.',
-        '{a} pushed it further than the walk could carry, and {b} spent the last mile silent.',
+        'They come back through the gates apart, and people notice.',
+        'The road was the wrong place for it, and both of them realised too late.',
+        'Something was said out there that can’t be taken back indoors.',
+        '{a} pushed too far, and {b} said nothing for the last mile.',
       ],
     },
     carried: {
       smooth: [
-        'Another hour of walking, another hour of talking, and it goes a little further than last time.',
-        '{a} and {b} have made this walk together before. This one moves it on.',
-        'The walk is becoming the place they do this, and both of them are starting to rely on it.',
-        'Same road, same pair, and each walk takes it a step further than the last.',
+        'Another walk together, and it goes a bit further than last time.',
+        '{a} and {b} have made this walk before. This time it moves things on.',
+        'The walk is becoming where they talk, and both of them rely on it.',
+        'Same road, same pair, and one step further.',
       ],
       adverse: [
-        '{a} and {b} have had this conversation on this road before, and it went better the first time.',
-        'The walk is no longer the safe place it was. Neither of them will suggest it tomorrow.',
-        'They run out of road before they run out of argument, which is the worst way to end one.',
-        'They get worse with each other over the distance rather than better, and the gate is still a mile off.',
+        'They have had this talk on this road before, and it went better last time.',
+        'The walk isn’t safe for them any more. Neither will suggest it tomorrow.',
+        'They run out of road before they run out of argument.',
+        '{a} and {b} get on worse with every mile.',
       ],
     },
   },
   unspun: {
     opened: {
       smooth: [
-        'It is a small thing and it is not nothing. {a} and {b} both leave with a slightly different read of the other.',
-        'Nothing is settled by it. Something is nudged by it, and neither of them could say exactly what.',
-        '{a} and {b} move on to other people, carrying a read neither of them asked for.',
-        '{a} and {b} part ways without saying anything worth repeating, and both remember how the other said it.',
+        '{a} and {b} each leave with a slightly different read on the other.',
+        'Nothing is settled, but {a} and {b} are a little easier with each other.',
+        '{a} and {b} move on, each with a new impression of the other.',
+        'Small talk, mostly, and both of them remember how it went.',
       ],
       adverse: [
-        'It goes slightly wrong, in a way neither of them will mention and both of them will remember.',
-        '{a} and {b} leave it a little colder than they arrived at it, and neither is sure why.',
-        'Something goes wrong between {a} and {b}, too small to name and too sharp to ignore.',
-        '{a} and {b} leave it sharper with each other than when they sat down, and neither can point at what changed.',
+        'It goes slightly wrong. Neither mentions it, and both remember it.',
+        '{a} and {b} leave a little cooler with each other than they arrived.',
+        'Something small goes wrong between {a} and {b}.',
+        '{a} and {b} are a bit sharper with each other afterwards.',
       ],
     },
     carried: {
       smooth: [
-        '{a} and {b} end up in the same room again, and pick it up without deciding to.',
-        '{a} and {b} pick it up where they left it and put it down about where they picked it up.',
-        'Twice now, and it still has not turned into anything. It may not need to.',
-        '{a} and {b} have the same exchange a second time and neither of them calls it a habit yet.',
+        '{a} and {b} end up together again and pick up where they left off.',
+        '{a} and {b} have the same easy chat as last time.',
+        'Twice now. It hasn’t turned into anything, and it may not need to.',
+        '{a} and {b} are getting used to each other’s company.',
       ],
       adverse: [
-        'It comes round again and it is thinner than it was. {a} and {b} are running out of it.',
-        'The second go is worse than the first, and neither of them has the energy to fix it.',
-        'Whatever this was, it is souring by repetition, and both of them can hear it souring.',
-        'They do it again and it does not work again, and that is now the pattern.',
+        'It comes round again, and there is less to it than before.',
+        'The second time goes worse than the first.',
+        'It gets a little worse each time, and both of them can hear it.',
+        'It doesn’t work again, and now that is the pattern.',
       ],
     },
   },
@@ -1495,14 +1483,22 @@ function _mode(s, cast) {
  * emptying it, which is the only honest thing to say when the evidence stops
  * where it does.
  */
+// THE HEADER ALREADY SAYS WHERE AND WHEN. These lines used to say both again
+// ("Bridgette steps into the woodpile, in the middle of the morning, and keeps
+// out of the way"), which read badly and doubled every solo card's opening.
+// AND IT SAYS NOTHING ABOUT COMPANY. A one-person scene is not always a
+// solitary one — "Brightly ends up in the middle of the group" is one — so an
+// opening that put them alone contradicted the next line. `ESTABLISH_SOLO`
+// is the pool for scenes that ARE alone.
 const ESTABLISH_SINGLE = [
-  '{a} pauses at {loc}, {when}, while the rest of the castle carries on nearby.',
-  '{a} steps into {loc}, {when}, and keeps out of the way.',
-  '{a} stays near {loc}, {when}, watching the others come and go.',
-  'At {loc}, {when}, {a} waits until the nearby conversation has finished.',
-  '{a} stops at {loc}, {when}, away from the busiest part of the castle.',
-  '{a} reaches {loc}, {when}, and takes a moment before returning to the group.',
-  '{a} moves to {loc}, {when}, where the others are less likely to interrupt.',
+  '{a} is quiet.',
+  '{a} has something on {aPos} mind.',
+  '{a} isn’t saying much.',
+  '{a} is thinking something over.',
+  '{a} is keeping {aPos} thoughts to {aRef}.',
+  '{a} is watching the others.',
+  '{a} is lost in thought.',
+  '{a} is somewhere else in {aPos} head.',
 ];
 // ── WIDENED (fix round 1, C1b) ────────────────────────────────────────
 //
@@ -1544,7 +1540,7 @@ const REACT_SINGLE = {
   ],
   sharp: [
     '{a} runs it through again, looking for the place it comes apart, and finds one.',
-    '{a} files it the way {a} files everything, and rearranges tomorrow around it.',
+    '{a} keeps it to {aRef} and changes tomorrow’s plans around it.',
     '{a} does not react at all, which for {a} is a decision rather than an absence.',
     '{a} works out, standing there, exactly what that is going to be worth in a few days.',
     '{a} does the arithmetic before {a} does the feeling, which is the wrong way round and is {a}.',
@@ -1563,7 +1559,7 @@ const REACT_SINGLE = {
     '{a} does the kind thing before {a} has finished deciding whether it was deserved.',
     '{a} minds more than {a} lets on, and lets on more than {a} means to.',
     'It lands somewhere {a} was not braced for, and {a} needs a second with it.',
-    '{a} does not say anything for a moment, and the moment is the whole of the answer.',
+    '{a} doesn’t answer straight away.',
     '{a} is generous about it, immediately, and thinks about the cost afterwards.',
     'Something goes out of {a} and comes back slightly changed.',
     '{a} would rather have been told sooner and does not say so.',
@@ -1660,62 +1656,62 @@ const FALLBACK_PAIR = {
 const CONSEQ_SINGLE = {
   opened: {
     smooth: [
-      '{a} does nothing about it today. {a} will do something about it, and not yet.',
-      'It changes nothing anybody could point at, and it changes what {a} intends to do tomorrow.',
-      '{a} keeps it. Whoever was near enough to see it did not know what they were looking at.',
-      'Nothing is decided by it, and {a} is carrying one more thing into tonight than {a} was this morning.',
-      'It goes nowhere today. It has somewhere to go, and {a} knows where.',
-      'Nobody else will remember this by supper. {a} will remember it in a few days.',
-      '{a} files it and the filing is the whole of what happened.',
-      'It costs nothing now, which is not the same as costing nothing.',
-      'The day carries on exactly as it was going to, with one more thing in it.',
-      '{a} does not act on it. {a} does not put it down either.',
-      'It is small, and small things in this building have a way of not staying small.',
-      'Whatever that was worth, {a} has decided not to spend it this morning.',
+      '{a} doesn’t act on it today.',
+      'Nothing changes yet, but {a} has a plan for tomorrow.',
+      'Nobody else noticed.',
+      '{a} keeps it to {aRef}.',
+      '{a} saves it for later.',
+      '{a} feels a little better for it.',
+      'Nobody will remember it by supper, but {a} will.',
+      '{a} decides to wait.',
+      'The day carries on as normal.',
+      '{a} lets it go for now.',
+      '{a} is steadier after that.',
+      'It is a small thing, but {a} won’t forget it.',
     ],
     adverse: [
-      'That is going to cost {a} something, and {a} knew it was going to as it was happening.',
-      '{a} cannot take it back and spends the rest of the hour working out who saw.',
-      'It gets away from {a}, briefly, and briefly is all it takes in a building this size.',
-      '{a} has made tonight harder for {a}, and has nobody to blame for it.',
-      'That is going to be quoted back, and {a} could name the person who will quote it.',
-      '{a} spends the next hour finding out how far it went, and it went further than that.',
-      'It is out. There is no version of the evening where {a} gets it back.',
-      '{a} has given the room something to do with {a}, which is the last thing {a} needed.',
-      'Somebody heard the whole of that, and {a} does not know which somebody.',
-      'It costs {a} a name at the table tonight and {a} can already feel which one.',
-      '{a} would take it back. {a} has been in this format long enough to know that is not on offer.',
-      'The damage is small and it is the kind that compounds.',
+      'That will cost {a} something, and {a} knows it.',
+      '{a} spends the next hour working out who saw.',
+      'Someone saw that, and {a} doesn’t know who.',
+      '{a} has made the vote harder for {aRef}.',
+      'Someone will bring that up at the table.',
+      'It spreads further than {a} hoped.',
+      'There is no taking it back.',
+      '{a} has given people something to talk about.',
+      'It may cost {a} a vote at the table.',
+      '{a} wishes it hadn’t happened.',
+      'It is a small mistake, but it will be remembered.',
+      '{a} spends the evening waiting for someone to mention it.',
     ],
   },
   carried: {
     smooth: [
-      'The same again, a day later, and {a} is a little better at it than yesterday.',
-      '{a} does it again and it costs about what it cost last time, which is manageable.',
-      '{a} does the same thing again and it has got no easier and no harder.',
-      'Another day of it. {a} has stopped noticing that {a} is doing it at all.',
-      'It has become a habit rather than a decision, which is how most of these end.',
-      'The second time is easier. The third one was easier than that.',
-      '{a} has done this enough times now that there is a rhythm to it.',
-      'It is the same weight and {a} has got better at carrying it.',
-      'Nothing new. That is not the same as nothing.',
-      'By now {a} could do it without thinking, and increasingly does.',
-      'It repeats because it works, and {a} has stopped asking whether it still does.',
-      'Another morning, the same shape, and {a} is a fraction further in than yesterday.',
+      'Same as yesterday, and {a} is getting better at it.',
+      '{a} does it again, and it is no harder than last time.',
+      'Another day of the same. {a} barely notices doing it now.',
+      'It has become a habit.',
+      'It gets easier each time.',
+      '{a} has a routine now.',
+      'Nothing new today.',
+      '{a} does it without thinking now.',
+      'It keeps working, so {a} keeps doing it.',
+      'Another morning, the same routine.',
+      '{a} is handling it better than yesterday.',
+      'It is getting easier for {a}.',
     ],
     adverse: [
-      'It is getting heavier. {a} has nowhere to set it down and nobody safe to set it down in front of.',
-      '{a} does it again, and is worse at it than the last time, and can tell.',
-      'It is costing more each time and {a} has not found a way to stop.',
-      'The third one is where it stops looking like bad luck to anybody watching.',
-      '{a} is further in than {a} meant to be and cannot see the way back from here.',
-      'It compounds. Everything in this building compounds.',
-      '{a} knows exactly how this ends and does it again anyway.',
-      'Every repeat makes the first one look worse, and there have been several.',
-      'It is heavier than yesterday and yesterday was heavier than the day before.',
-      '{a} has run out of ways to make this one mean something else.',
-      'The second one is harder than the first, and {a} has no reason to think the third will not be harder still.',
-      '{a} is running out of room to do this in, and there is a week of it left.',
+      'It is getting heavier, and {a} has nobody safe to tell.',
+      '{a} does it again and does it worse, and can tell.',
+      'It costs more every time, and {a} can’t stop.',
+      'Three times now. People will start to notice.',
+      '{a} is in deeper than {a} meant to be.',
+      'It keeps getting worse.',
+      '{a} knows how this ends and does it anyway.',
+      'Each time makes the first one look worse.',
+      'It is heavier today than yesterday.',
+      '{a} has run out of excuses for it.',
+      'It is harder every time.',
+      '{a} is running out of room to keep doing this.',
     ],
   },
 };
@@ -1744,29 +1740,29 @@ const CONSEQ_SINGLE = {
 // {topic} plus what the road revealed about {b}.
 const CONSEQ_ROAD_THIRD_NAME = {
   agreed: [
-    '{a} and {b} came off the road with {topic}’s name settled between them. Neither has proof; both are treating {topic} as the name for tonight.',
-    'By the gate, {a} and {b} had said {topic} out loud enough times to stop hedging. That is one more person now watching {topic}, and {topic} does not know it.',
-    '{a} went out carrying {topic}’s name alone and walked back sharing it with {b}. The two of them are closer for it; {topic} is further exposed for it.',
+    '{a} and {b} come back agreed on {topic}. Neither has proof, but both will vote that way.',
+    'By the gate, {a} and {b} have stopped hedging about {topic}. One more person is watching {topic}, and {topic} doesn’t know it.',
+    '{a} went out suspecting {topic} alone and came back with {b} on side. The two of them are closer, and {topic} is in more trouble.',
   ],
   hedged: [
-    '{a} is no less sure about {topic} than at the gate — and a good deal less sure about {b}, who would not say either way.',
-    '{topic}’s name is still {a}’s alone to carry: {b} took it and gave nothing back. {a} walks in wondering which side {b} is really keeping.',
-    '{a} put {topic} in front of {b} and got a shrug. The suspicion of {topic} stands; the trust in {b} is the thing that moved, and downward.',
+    '{a} is as sure about {topic} as before, and much less sure about {b}, who wouldn’t say either way.',
+    '{b} listened about {topic} and gave nothing back. {a} walks in wondering whose side {b} is on.',
+    '{a} raised {topic} and got a shrug from {b}. {a} still suspects {topic}, and now trusts {b} a little less.',
   ],
   defended: [
-    '{a} learned nothing new about {topic} and something new about {b}: whatever the road offered, {b} will not move against {topic}.',
-    'The name {a} tried was the one name {b} guards. {a} still suspects {topic} — and now knows {b} is no help there, and files that too.',
-    '{b} shut the talk of {topic} down flat. {a} keeps the suspicion of {topic} and adds a fresh one, about how fast {b} came to {topic}’s defence.',
+    '{a} learned nothing new about {topic}, but did learn that {b} won’t turn on {topic}.',
+    'The name {a} tried was the one name {b} protects. {a} still suspects {topic}, and now knows {b} won’t help.',
+    '{b} shut the talk about {topic} down flat. {a} still suspects {topic}, and now wonders why {b} defended {tObj} so fast.',
   ],
   'named-somebody-else': [
-    '{a} went out with {topic}’s name and walked home with {b}’s alternative beside it. Both are on {a}’s list now.',
-    '{b} would not follow {a} to {topic}, and would not let {a} arrive empty either. {a} carries in two names instead of one.',
-    '{topic} stays on {a}’s list; the name {b} traded goes on beside it. The road doubled the problem instead of settling it.',
+    '{a} went out suspecting {topic} and came back with a second name from {b}. Both are on {a}’s list now.',
+    '{b} wouldn’t agree about {topic} and offered another name instead. {a} now has two suspects instead of one.',
+    '{topic} stays on {a}’s list, and {b}’s suggestion goes on beside it. The walk made things less clear, not more.',
   ],
   'would-not-talk-about-it': [
     "{topic}’s name went nowhere on that road. What {a} took home is that {b} will not say a word out of earshot — and that silence had a shape.",
-    '{a} raised {topic} and {b} raised the weather. The suspicion of {topic} is exactly where it started; the read on {b} is not.',
-    '{b} would not touch {topic}, or anyone. {a} walks in with the same doubt about {topic} and a new one about why {b} stays so quiet.',
+    '{a} raised {topic}, and {b} changed the subject. {a} still suspects {topic}, and now wonders about {b} too.',
+    '{b} wouldn’t talk about {topic}, or anyone. {a} walks in wondering why {b} is being so quiet.',
   ],
 };
 
@@ -1774,19 +1770,19 @@ const CONSEQ_ROAD_THIRD_NAME = {
 // home, asking all the way. The change is on the doubt about {topic}.
 const CONSEQ_ROAD_SUSPECT_WALK = {
   cleared: [
-    '{a} spent the whole road home working on {topic} and came away satisfied. The doubt about {topic} is set down, and {a} means it.',
-    'A long walk with nothing to do but be asked about it, and {topic} never wavered. {a} lets the suspicion of {topic} go at the gate.',
-    '{a} went out doubting {topic} and walked back an ally. Whatever the road tested, {topic} passed it.',
+    '{a} questioned {topic} all the way home and came away satisfied. {a} doesn’t suspect {topic} any more.',
+    '{topic} answered every question on the walk without wavering. By the gate, {a} has let the suspicion go.',
+    '{a} went out doubting {topic} and came back an ally.',
   ],
   slipped: [
-    '{topic} gave {a} one account of the afternoon early on the road and a different one near the gate — and {a} was still listening. The doubt about {topic} is far harder now.',
-    '{a} caught {topic} telling the same hours two ways on one walk. That is no longer a feeling about {topic}; it is a thing {a} could say at the table.',
-    'Somewhere on the road {topic}’s story stopped matching itself, and {a} heard it. The suspicion of {topic} has teeth now.',
+    '{topic} told {a} one version of the afternoon early on the walk and a different one near the gate. {a} is far more suspicious now.',
+    '{a} caught {topic} telling the same story two different ways. That is something {a} could say at the table.',
+    'Somewhere on the road {topic}’s story stopped matching itself, and {a} heard it. {a} is much more suspicious now.',
   ],
   hardened: [
-    '{topic} held the line the whole way home and {a} believed none of it. The doubt about {topic} did not clear — it set.',
-    '{a} asked {topic} about it all the way to the gate, got a clean answer each time, and trusts {topic} less for how clean they were.',
-    'Nothing {topic} said was wrong, and {a} came home surer than ever that something is. The read on {topic} hardened on that road.',
+    '{topic} stuck to the story the whole way home, and {a} believed none of it. The doubt only got stronger.',
+    '{topic} gave {a} a perfect answer every time, and {a} trusts {topic} less because of it.',
+    'Nothing {topic} said was wrong, but {a} came home more suspicious than ever.',
   ],
 };
 
@@ -1795,29 +1791,29 @@ const CONSEQ_ROAD_SUSPECT_WALK = {
 // for). The change is whether that answer will hold at the table.
 const CONSEQ_ROAD_COVER = {
   airtight: [
-    '{a} walked the account of {topic} smooth enough to say in {a}’s sleep. If it comes up at the table tonight, {a} is ready for it.',
-    'By the gate {a} had {topic} answered from every side. The one advantage a Traitor keeps is a story that does not move, and {a} has it.',
-    '{a} found the seam in the account of {topic}, closed it on the road, and arrived with nothing left to catch.',
+    '{a} has the story about {topic} word-perfect now. If it comes up at the table, {a} is ready.',
+    'By the gate {a} has an answer for every question about {topic}.',
+    '{a} found the weak spot in the story about {topic} and fixed it on the walk.',
   ],
   serviceable: [
-    '{a} got the account of {topic} to hold, mostly. There is one part {a} still cannot say the same way twice, and the road ran out before it was fixed.',
-    '{a} has a version of {topic} that survives being repeated, provided nobody pushes the middle of it. {a} is betting nobody does.',
-    'The story about {topic} works if you do not lean on it. {a} spent the walk hoping the table will not.',
+    'The story about {topic} mostly holds. There is still one part {a} can’t tell the same way twice.',
+    '{a}’s story about {topic} works, as long as nobody pushes on the middle of it.',
+    'The story about {topic} works if nobody leans on it. {a} is hoping nobody does.',
   ],
   overcooked: [
-    '{a} rehearsed the account of {topic} so many times on the road that it stopped sounding like something that happened. Now having it is itself the risk.',
-    '{a}’s answer for {topic} grew a detail for every hour, which no honest person has. {a} knows it and cannot cut any of them.',
-    'By the gate {a} had polished {topic} past the point of belief, and could feel it, and could not stop.',
+    '{a} rehearsed the story about {topic} so often that it now sounds rehearsed.',
+    '{a}’s story about {topic} has too many details, and {a} knows an honest person wouldn’t remember that much.',
+    'By the gate {a} has polished the story about {topic} so much that it no longer sounds true.',
   ],
   'stopped-rehearsing': [
-    '{a} heard how the rehearsed account of {topic} sounded and decided the rehearsing was the thing that gets people caught. {a} goes in cold, on purpose.',
-    '{a} put the account of {topic} down on the road and will say it, for the first time, only if the table asks. Nobody else will ever know there was a rehearsal.',
-    '{a} has watched two people caught by being too ready about their story. On {topic}, {a} will not be the third.',
+    '{a} realises that rehearsing is what gets people caught, and stops. If {topic} comes up, {a} will answer it fresh.',
+    '{a} stops rehearsing the story about {topic}, and will only tell it if someone asks.',
+    '{a} has seen people caught for sounding too prepared, and won’t over-prepare the story about {topic}.',
   ],
   'could-not-get-it-straight': [
-    '{a} could not get through the account of {topic} once, all the way, without losing an hour of it. {a} arrives with a night that has a hole in the middle.',
-    'Every time {a} started on {topic} it came out in a different order, and the order is the whole thing. The road did not give it back.',
-    '{a} spent two miles on {topic} and got off the road less sure of it than at the gate.',
+    '{a} can’t get through the story about {topic} once without losing part of it.',
+    'Every time {a} goes over {topic}, it comes out in a different order.',
+    '{a} spends the whole walk on the story about {topic}, and ends up less sure of it.',
   ],
 };
 
@@ -1831,13 +1827,13 @@ const CONSEQ_ROAD_COVER_BACK = {
   ],
   frayed: [
     "{a}'s story about {topic} got home, but it changed on the road: {a} has to remember a different version now than the one {a} left with.",
-    'The story of {topic} held, barely. {a} spends the walk in learning which loose end to watch.',
-    'One person remembered {topic} differently and {a} had to agree with them. The account is a repair now, not a clean run.',
+    'The story about {topic} held, just. {a} spends the walk back working out which part is weakest.',
+    'Someone remembered {topic} differently, and {a} had to go along with it. The story has a patch in it now.',
   ],
   broke: [
-    'The account of {topic} came apart in the open, and {a} could not put it back. One story {a} was leaning on has stopped working.',
-    '{a} answered about {topic} once too often and once too fast, and it fell over where people could hear. There is no taking that back on a road.',
-    'The story of {topic} did not survive the day. {a} walks in with a hole where an alibi used to be.',
+    'The story about {topic} fell apart in front of people, and {a} couldn’t fix it.',
+    '{a} answered about {topic} too fast, and the story fell apart where people could hear.',
+    'The story about {topic} didn’t survive the day. {a} walks back in without an alibi.',
   ],
 };
 
@@ -1845,23 +1841,23 @@ const CONSEQ_ROAD_COVER_BACK = {
 // did with the pick is the test. The change is the read on {topic}.
 const CONSEQ_ROAD_WALK_TEST = {
   flattered: [
-    '{a} picked {topic} for the road and {topic} took it as the compliment it was. The two are closer for it, and {a} has the read {a} went out for.',
-    '{topic} walked the whole way beside {a} and gave the honest version. {a} comes off the road trusting {topic} a little more than at the gate.',
+    '{a} chose to walk with {topic}, and {topic} took it as a compliment. They are closer now, and {a} learned what {a} wanted to.',
+    '{topic} walked beside {a} the whole way and was honest. {a} trusts {topic} a little more now.',
   ],
   wary: [
-    '{a} learned less about {topic} than {a} hoped: {topic} kept the walk pleasant and gave nothing away. {a} files the caution.',
-    '{topic} answered {a} carefully the whole road out. {a} is no surer of {topic}, and a little more curious about why.',
+    '{a} learned less about {topic} than {a} hoped. {topic} kept the walk pleasant and gave nothing away.',
+    '{topic} answered carefully the whole way. {a} is no surer of {topic}, and wonders what the care is hiding.',
   ],
   transactional: [
     '{topic} made the road a negotiation. Nothing was decided, but both of them know a deal is on the table now.',
-    '{a} picked {topic} and got a trade rather than a friendship. {a} knows exactly what {topic} wants, and that is worth more than warmth.',
+    '{a} wanted a friend and got a deal instead. At least {a} now knows exactly what {topic} wants.',
   ],
   'would-not-be-picked': [
-    '{topic} declined to be walked with, quickly and in front of people. {a} has the answer {a} went for, and it is not the one {a} wanted.',
-    '{topic} put a length of road between them by the top of the hill. {a} comes home knowing where {a} stands with {topic} — further out than {a} thought.',
+    '{topic} refused to walk with {a}, quickly and in front of people. {a} has an answer, and not the one {a} wanted.',
+    'By the top of the hill {topic} had walked on ahead. {a} is further from {topic} than {a} thought.',
   ],
   'turned-it-around': [
-    '{topic} was picked to be read and spent the road doing the reading instead. Whoever set out to test {topic} came home tested.',
+    '{a} wanted to read {topic}, but {topic} spent the walk reading {a} instead.',
     "The walk was somebody else's idea and {topic}'s afternoon. {topic} gave away nothing and learned plenty, and now one more person knows how good {topic} is at exactly that.",
   ],
 };
@@ -1874,18 +1870,18 @@ const CONSEQ_ROAD_WALK_TEST = {
 const CONSEQ_SUSP_THIRD = {
   up: [
     '{a} comes away more sure about {topic}, and now {b} has heard the name too. Neither has proof; both are watching {topic}.',
-    'The read on {topic} hardened between {a} and {b}. It is still a feeling — but it is a shared one now.',
+    '{a} and {b} both suspect {topic} more now. Still no proof, but they agree.',
     "{a} and {b} both leave more suspicious of {topic} than they were when they sat down.",
   ],
   down: [
     '{a} came in doubting {topic} and leaves a little less sure — whatever {b} said took some of the weight off {topic}.',
     'The doubt about {topic} eased between {a} and {b}. It is not gone; it is lighter.',
-    '{a} lets some of {topic} go. {b} did not think there was much in it, and said so.',
+    '{a} lets some of the doubt about {topic} go, because {b} didn’t think there was much in it.',
   ],
   flat: [
     "{topic}'s name went between {a} and {b} and settled nothing. The read on {topic} is exactly where it started.",
-    '{a} and {b} turned {topic} over and put it down again, no further along.',
-    '{b} would not be drawn on {topic}. {a} carries the same half-thought back inside, alone.',
+    '{a} and {b} talk about {topic} and get nowhere.',
+    '{b} wouldn’t be drawn on {topic}, so {a} is left with the same doubt as before.',
   ],
 };
 // How a suspicion scene's branch moves the read, for the consequence direction
@@ -1913,25 +1909,25 @@ function _suspDir(s) {
 // never of "a Traitor".
 const CONSEQ_TESTING = {
   held: [
-    '{other} came off that test trusting {topic} a shade more than before — a small thing, but {topic} passed it clean.',
-    'Whatever {other} was probing for, {topic} did not give it, and {other} files {topic} on the safer side of the ledger tonight.',
-    '{other} set the test and {topic} walked through it without ever noticing there had been one. That is the best a test like this does.',
+    '{other} trusts {topic} a little more after that. {topic} passed without knowing it was a test.',
+    '{topic} gave nothing away, and {other} is satisfied.',
+    '{topic} never noticed the test, and passed it.',
     '{other} finds no reason to doubt {topic} after the check.',
-    '{other} got the reassurance {other} went looking for: on this evidence, {topic} is exactly who {topic} appears to be.',
+    '{other} got the reassurance {other} wanted about {topic}.',
   ],
   failed: [
-    '{other} did not like what the test showed about {topic}, and there is no unseeing it now.',
-    '{topic} failed a check {topic} did not know was running, and {other} is the only one who knows {topic} failed it.',
-    'The test came back wrong about {topic}. It is a feeling with a shape now, and the shape is {topic}.',
-    '{other} went in half-doubting {topic} and came out further along that road — nothing proven, but the doubt about {topic} has weight it lacked this morning.',
-    'Whatever {other} suspected, {topic} did the thing that confirms it, and {other} watched {topic} do it.',
+    '{other} didn’t like how {topic} answered, and can’t stop thinking about it.',
+    '{topic} failed a test {tSub} didn’t know about, and only {other} knows.',
+    'The test pointed at {topic}, and now {other} is watching {tObj}.',
+    '{other} already half-doubted {topic}. Now the doubt is stronger.',
+    '{topic} did exactly what {other} was afraid of, right in front of {oObj}.',
   ],
   spotted: [
-    '{topic} worked out {other} was running a test, which means the test is over and {topic} knows who set it.',
-    '{other} set out to read {topic} and {topic} read the room instead. Now {topic} knows exactly where {other} stands.',
-    '{topic} called it out as a test to {other}\'s face. {other} got an answer, but {topic} now knows {other} was looking.',
-    '{topic} turned the check back on {other}, and came away knowing more about {other} than {other} got about {topic}.',
-    '{other} tried it once too plainly and {topic} caught it. There is no running that particular test on {topic} again.',
+    '{topic} worked out it was a test, and knows {other} set it.',
+    '{other} tried to read {topic}, but {topic} saw through it.',
+    '{topic} called it a test to {other}’s face.',
+    '{topic} turned it round and learned more about {other} than {other} learned about {tObj}.',
+    '{topic} caught {other} testing {tObj}, and {other} can’t try that again.',
   ],
   inconclusive: [
     '{other} found no evidence that either cleared or implicated {topic}.',
@@ -1976,29 +1972,29 @@ function _confrontDir(s) {
 }
 const CONSEQ_CONFRONT = {
   held: [
-    '{a} got nothing out of {topic}, and the room saw {topic} take a direct hit without falling — which says something, just not the thing {a} wanted said.',
-    '{topic} held, so the accusation proved nothing; what it proved is that {a} and {topic} are enemies out loud now.',
-    'Whatever {a} hoped to shake loose, {topic} did not give it up. The two of them are a known feud from here on.',
+    '{a} got nothing out of {topic}, and the room saw {topic} stay calm under pressure.',
+    'The accusation proved nothing, except that {a} and {topic} are now open enemies.',
+    '{topic} gave {a} nothing. From now on, the two of them are openly at war.',
   ],
   exposed: [
-    '{topic} came off worse for it — the flinch is what the room keeps, not the words — and {a} knows exactly what that bought.',
-    'The room will remember {topic} coming apart more than anything {topic} actually said, and it is watching {topic} harder for it.',
-    '{topic} did not hold, and a room that watches for exactly that now has its reason to keep watching {topic}.',
+    '{topic} came off worse. People will remember the flinch more than anything that was said.',
+    '{topic} cracked under it, and people are watching {tObj} more closely now.',
+    '{topic} didn’t hold up, and now the room has a reason to keep an eye on {tObj}.',
   ],
   turned: [
-    'It is {a} on the back foot now, not {topic}. Whatever {a} walked in carrying, {topic} handed straight back.',
-    '{a} meant to corner {topic} and ended up explaining themselves, and the room noticed which way that went.',
-    '{topic} turned it clean around, and now it is {a} the room is quietly wondering about.',
+    '{topic} turned it round, and now {a} is the one on the back foot.',
+    '{a} meant to corner {topic} and ended up having to explain {aRef}.',
+    '{topic} turned it around, and now people are wondering about {a} instead.',
   ],
   'blew-up': [
-    'Nothing about {topic} got settled — but {a} and {topic} are a declared war now, and the rest of the room has to pick a side or work hard to look like it has not.',
-    'Two people who plainly cannot stand each other, out loud, with a vote coming: {a} and {topic} just made the week harder for the room around them.',
-    'The fight told the room nothing about {topic} and everything about {a} and {topic}, and none of it can be taken back.',
+    'Nothing got settled, but {a} and {topic} are openly at war now, and the others will have to pick a side.',
+    '{a} and {topic} can’t stand each other, and they no longer hide it.',
+    'The fight proved nothing about {topic}, but it showed exactly how {a} and {topic} feel about each other.',
   ],
   defended: [
-    '{topic} came through it, and the room half-remembers who stood where while it happened.',
-    'Whatever was meant to land on {topic} did not, quite — {topic} is still standing and the room files that too.',
-    '{topic} weathered it, and the room noticed that the accusation slid off cleaner than it should have.',
+    '{topic} came through it, and people noticed who took which side.',
+    'Whatever was meant to land on {topic} didn’t, and {topic} is still standing.',
+    '{topic} got through it, maybe a little too easily.',
   ],
 };
 
@@ -2012,19 +2008,19 @@ function _defenceDir(s) {
 }
 const CONSEQ_DEFENCE = {
   safe: [
-    '{topic} came through it, and {a} is the reason — a debt like that does not un-happen.',
-    'The doubt eased off {topic}, and the people who saw it know {a} bought that with their own standing.',
-    '{topic} is safer than they were an hour ago, and tied to {a} now whether either of them wanted that.',
+    '{topic} came through it because of {a}, and owes {a} for it.',
+    'The doubt eased off {topic}, and people saw {a} risk {aPos} own standing to do it.',
+    '{topic} is safer than an hour ago, and now tied to {a}, whether either of them likes it or not.',
   ],
   unmoved: [
-    'The defence changed nothing: {topic} is under exactly as much suspicion as before, and {a} spent standing on it for no return.',
-    '{topic} is no better off, and {a} is on record having tried — which is its own small mark, for later.',
-    'It slid off. {topic} stays where they were, and the only thing that moved is that {a} showed a card.',
+    'The defence changed nothing. {topic} is as suspected as before, and {a} risked {aPos} own standing for nothing.',
+    '{topic} is no better off, and people will remember that {a} tried.',
+    'It didn’t help {topic}, and {a} has shown whose side {a} is on.',
   ],
   spread: [
-    '{a} drew the room’s doubt onto themselves standing up for {topic}, and now both of them are being watched — a defence that widened the target instead of shrinking it.',
-    'Now it is {a} and {topic} both, tied together by the defence: whatever lands on one has a way to the other.',
-    'Standing up for {topic} put {a} in the frame beside them, and neither can get clear of the other now.',
+    'Standing up for {topic} made {a} a target too. Now both of them are being watched.',
+    'Now {a} and {topic} are tied together. Whatever hits one will hit the other.',
+    'Defending {topic} put {a} under suspicion too.',
   ],
 };
 
@@ -2037,56 +2033,56 @@ const CONSEQ_DEFENCE = {
 // name planted, a Faithful double-bluffed).
 const CONSEQ_COVER_DEFLECT = {
   held: [
-    '{a} got {topic}’s name to sit where {a} needed it. Nobody looked at {a} for saying it, and one more person is watching {topic} tonight.',
+    '{a} got {topic}’s name to stick, and nobody noticed who said it first. One more person is watching {topic} now.',
     'The suspicion {a} pointed at {topic} took hold. {topic} does not know where it started, and {a} means to keep it that way.',
-    '{a} walked away clean and left {topic} holding a doubt {topic} did not earn — a good night’s work, for a Traitor.',
-    '{a} put {topic} in the frame and stepped out of it. The room is looking the wrong way, which is the only way {a} needs it to look.',
+    '{a} walked away clean and left {topic} carrying a doubt {topic} didn’t earn.',
+    '{a} put {topic} in the frame and stepped out of it. The room is looking the wrong way.',
   ],
   slipped: [
-    '{a} pushed {topic}’s name too hard, and the room noticed the pushing more than the name. Now {a} is the one who looks like they had a reason.',
-    'The move against {topic} was a shade too neat, and neat is what gets a Traitor caught. {a} felt it land wrong.',
-    '{a} aimed a doubt at {topic} and it ricocheted. {topic} is fine; {a} is the one with a question on them now.',
-    '{a} overplayed {topic} and knows it. The name did not stick to {topic}, and something stuck to {a} instead.',
+    '{a} pushed {topic}’s name too hard, and people noticed the pushing. Now {a} is the one who looks suspicious.',
+    'The move against {topic} was a little too neat, and {a} could feel it land wrong.',
+    '{a} tried to throw suspicion on {topic}, and it bounced back. Now people are asking about {a}.',
+    '{a} overplayed it. The suspicion didn’t stick to {topic}, and some of it stuck to {a} instead.',
   ],
   turned: [
-    '{topic} would not carry what {a} tried to hang on them, and said so where people could hear. {a} is back to square one, and lighter one option.',
-    '{a} offered {topic} up and {topic} handed it straight back. Whatever {a} learned, {topic} learned {a} was reaching.',
-    'The name went out and came back. {topic} did not take it, the room did not take it, and {a} is holding a plan that did nothing.',
-    '{topic} played along just far enough to see where {a} was going, then stopped. {a} showed a card for nothing.',
+    '{topic} refused to take the blame, and said so where people could hear. {a} is back to square one.',
+    '{a} tried to put it on {topic}, and {topic} threw it straight back. Now {topic} knows {a} was trying.',
+    'Nobody took the bait on {topic}, and {a}’s plan came to nothing.',
+    '{topic} played along long enough to see what {a} was doing, then stopped. {a} gave the game away for nothing.',
   ],
   abandoned: [
-    '{a} had {topic}’s name ready and swallowed it. Some nights the safest move is the one {a} does not make, and {a} decided this was one.',
-    '{a} thought better of pointing at {topic} at the last second. The plan is intact because {a} never spent it.',
-    '{a} pulled the move against {topic} before it left {a}’s mouth. Nobody will ever know {topic} was almost tonight’s name.',
-    '{a} kept {topic}’s name in reserve — not tonight, but {a} knows exactly where it is for when {a} needs it.',
+    '{a} had {topic}’s name ready, then decided not to say it.',
+    '{a} changed {aPos} mind about pointing at {topic} at the last second, and saves it for later.',
+    '{a} stopped before saying {topic}’s name. Nobody will know how close it came.',
+    '{a} keeps {topic}’s name in reserve for another day.',
   ],
 };
 // cover-blend — {a} hides inside the grief around {topic} (a murdered player's
 // friend, whose circle {a} is not really part of).
 const CONSEQ_COVER_BLEND = {
   held: [
-    '{a} folded into the grief around {topic} and came out looking like one more person who is sad — which is exactly what {a} needed to look like.',
-    '{a} sat with {topic} and nobody once thought {a} did not belong there. The best place to hide is inside the mourning.',
-    '{a} borrowed {topic}’s circle for the evening and it fit: one more ordinary griever, as far as anyone watching could tell.',
-    '{a} got close to {topic} without a single false note. {topic} has no idea they just gave a Traitor somewhere to hide.',
+    '{a} joined in the grief for {topic}, and looked like just another person who was sad.',
+    '{a} sat with {topic}, and nobody thought {a} didn’t belong there.',
+    '{a} spent the evening with {topic}’s friends, and fitted in without anyone noticing.',
+    '{a} got close to {topic} without a wrong note. {topic} has no idea a Traitor just used {tObj} to hide.',
   ],
   slipped: [
-    '{a} overdid it with {topic} — too sad, too fast — and grief does not work like that. {topic} half-noticed, and half is enough.',
-    '{a} tried to blend in with {topic} and stood out instead. There is a way real friends behave, and {a} was performing next to it.',
-    '{a} pushed too hard into {topic}’s circle and it closed a little. {a} is not one of them, and tonight it showed.',
-    '{a} reached for {topic}’s grief and grabbed air. {topic} did not warm to it, and a cold reception is a thing people remember.',
+    '{a} overdid it with {topic}, too sad and too fast, and {topic} half-noticed.',
+    '{a} tried to blend in with {topic}’s friends and stood out instead. It looked like a performance.',
+    '{a} pushed too hard to get into {topic}’s group, and it showed that {a} isn’t one of them.',
+    '{a} tried to share {topic}’s grief, and {topic} didn’t warm to it. People noticed.',
   ],
   turned: [
-    '{topic} kept {a} at arm’s length all evening, politely and completely. {a} learned that {topic}’s circle is not a place {a} gets to hide.',
-    '{topic} did not want company, least of all {a}’s. Whatever {a} was going for, {topic} was not in the mood to supply it.',
-    '{a} went to stand with {topic} and was quietly not made room for. {a} files it and finds somewhere else to be ordinary.',
-    '{topic} made room for the others and not for {a}, and only {a} noticed the gap. {a} will not try that door again.',
+    '{topic} kept {a} at arm’s length all evening, politely. {a} won’t be able to hide in that group.',
+    '{topic} didn’t want company, least of all {a}’s.',
+    '{a} went to stand with {topic} and wasn’t made welcome. {a} moves on and keeps a low profile.',
+    '{topic} made room for the others but not for {a}. {a} won’t try that again.',
   ],
   abandoned: [
-    '{a} decided the safest way to sit with {topic}’s people was not to, and drifted off before it looked deliberate. Nothing risked is nothing lost.',
-    '{a} thought better of joining {topic}’s circle tonight. Better to be nobody in the corner than the wrong somebody in the group.',
-    '{a} left {topic}’s grief to {topic}’s friends and kept out of it. The move {a} did not make is the move that cannot fail.',
-    '{a} backed away from {topic}’s table before sitting down. Some nights the move is to be forgettable, and {a} made it.',
+    '{a} decided not to sit with {topic}’s people, and drifted off before it looked deliberate.',
+    '{a} decided not to join {topic}’s group, and kept to the corner instead.',
+    '{a} left {topic}’s grief to {topic}’s friends and stayed out of it.',
+    '{a} backed away from {topic}’s table before sitting down, and kept a low profile.',
   ],
 };
 // cover-account — {a} defends, rehearses, or sits alone with the account of
@@ -2094,56 +2090,56 @@ const CONSEQ_COVER_BLEND = {
 // or — on the first day — what {a} really is).
 const CONSEQ_COVER_ACCOUNT = {
   held: [
-    '{a}’s account of {topic} is holding. Said the same way twice, to two different people, and neither of them blinked.',
-    '{a} got through {topic} without a seam showing. One more day survived is one more day a Traitor gets to keep playing.',
-    'Whatever {topic} needed to be, {a} made it that, out loud, and it held. {a} sleeps a little easier for it.',
-    '{a}’s version of {topic} is solid tonight. Nobody has a reason to pull at it, and {a} has given them none.',
+    '{a}’s story about {topic} is holding. {a} told it the same way to two people, and neither blinked.',
+    '{a} got through questions about {topic} without a slip. One more day survived.',
+    '{a} told the story about {topic} out loud, and it held. {a} will sleep a little easier.',
+    '{a}’s story about {topic} is solid, and nobody has a reason to question it.',
   ],
   slipped: [
-    '{a}’s account of {topic} cracked where somebody could see it, and there is no taking that back on the spot.',
-    '{a} said {topic} one way too many times and heard it stop sounding true. The story about {topic} has a soft place in it now.',
-    'Something in {a}’s telling of {topic} did not add up, and {a} felt the room catch it — the worst feeling a Traitor gets.',
-    '{a} tripped on {topic} in front of the wrong person. It is a small thing, and small things are exactly what get remembered.',
+    '{a}’s story about {topic} cracked where somebody could see it.',
+    '{a} told the story about {topic} once too often, and it stopped sounding true.',
+    'Something in {a}’s story about {topic} didn’t add up, and {a} could tell people noticed.',
+    '{a} slipped up about {topic} in front of the wrong person. It’s small, but it will be remembered.',
   ],
   turned: [
-    'Somebody pushed {a} on {topic} harder than expected, and {a} had to give ground. The account of {topic} is a repair now, not a clean run.',
-    '{a} got asked about {topic} straight out and answered a beat too slow. The beat is what they will remember, not the answer.',
-    '{a} planned to raise {topic} and got beaten to it, which is never where a Traitor wants to be. Now {a} is reacting, not steering.',
-    'The story of {topic} got checked against somebody else’s and did not quite match. {a} spends the night working out how much that cost.',
+    'Somebody pushed {a} on {topic} harder than expected, and {a} had to change the story.',
+    '{a} was asked about {topic} straight out and answered a second too slowly. People will remember the pause.',
+    'Someone else brought up {topic} before {a} could, and now {a} is on the back foot.',
+    '{a}’s story about {topic} didn’t quite match someone else’s, and {a} spends the night worrying about it.',
   ],
   abandoned: [
-    '{a} decided the safest thing to do about {topic} was nothing at all, and said none of it. A story you never tell cannot be caught.',
-    '{a} had a whole account of {topic} rehearsed and left it in {a}’s pocket. Better an awkward silence than a story that unravels.',
-    '{a} backed off {topic} before anyone asked. Nobody will ever know there was a version ready, which is the point.',
-    '{a} buried {topic} rather than defend it. On the nights {a} cannot make it hold, the move is to make it small.',
+    '{a} decided to say nothing at all about {topic}.',
+    '{a} had a story about {topic} ready, and decided not to tell it.',
+    '{a} backed off {topic} before anyone asked. Nobody will know there was a story ready.',
+    '{a} let {topic} drop rather than defend it.',
   ],
 };
 // cover-weight — {a} sits ALONE with the account of {topic}. No audience, so it
 // never "cracks in the open"; the axis is whether {a} is holding together.
 const CONSEQ_COVER_WEIGHT = {
   held: [
-    '{a} carried {topic} through another night without it showing. The whole cost of it is that {a} is the one who has to carry it.',
-    '{a} sat alone with {topic} and put it down again, steady. Tomorrow {a} does it all over, and knows it.',
+    '{a} got through another night with {topic} on {aPos} mind, and nobody could tell.',
+    '{a} sat alone with {topic} and stayed steady. Tomorrow {a} has to do it all again.',
     "{a} has stopped fighting {topic} and started managing it. The secret is {a}'s weight to carry.",
-    '{a} looked {topic} full in the face in the dark and did not flinch. That is the job, on the nights nobody is watching.',
+    '{a} thought hard about {topic} in the dark, and didn’t flinch.',
   ],
   slipped: [
-    '{a} lay awake with {topic}. Nothing cracked in the open, but {a} is running on less than {a} needs to keep this up.',
-    '{a} came within a sentence of telling somebody about {topic}, alone in the dark, and stopped. Nobody will ever know how close it was.',
-    '{topic} would not let {a} sleep. It is not the room that is wearing {a} down; it is the thing only {a} knows.',
-    '{a} went over {topic} again in the dark and the dark did not help. The lie is holding fine. {a} is the part that is wearing out.',
+    '{a} lay awake thinking about {topic}. Nobody saw anything, but {a} is getting tired.',
+    '{a} nearly told someone about {topic}, and stopped just in time.',
+    '{a} couldn’t sleep for thinking about {topic}. The secret is wearing {aObj} down.',
+    '{a} went over {topic} again in the dark. The lie is holding, but {a} is wearing out.',
   ],
   turned: [
-    '{a} nearly handed {topic} to somebody just to be rid of it, and caught {a}’s own mouth in time. The weight of it is starting to steer {a}.',
-    '{topic} got the better of {a} for a moment tonight. Nobody saw — but {a} knows it can, now, which is a new thing to be afraid of.',
-    'For the length of one bad hour {topic} was louder than {a}’s sense, and {a} is only sure it passed because morning came.',
+    '{a} nearly confessed about {topic} just to be rid of it, and stopped in time.',
+    'For a moment {topic} got the better of {a}. Nobody saw, but {a} is frightened it could happen again.',
+    '{a} had one bad hour over {topic}, and only got through it because morning came.',
     "{a} nearly said {topic} out loud without meaning to, and caught it just in time. The danger now is {a}'s own mouth.",
   ],
   abandoned: [
-    '{a} tried to stop thinking about {topic} and could not. A secret that size does not let you set it down.',
-    '{a} tried to leave {topic} for the morning and took it to bed instead. There is no shift that ends for a Traitor.',
-    '{a} meant to set {topic} aside tonight. {topic} had other ideas, and {a} lost the argument to {a}’s own head.',
-    '{a} wanted one night off from {topic} and did not get it. The secret does not take nights off.',
+    '{a} tried to stop thinking about {topic}, and couldn’t.',
+    '{a} tried to leave {topic} until morning and took it to bed instead.',
+    '{a} tried to put {topic} aside for one night, and failed.',
+    '{a} wanted one night without thinking about {topic}, and didn’t get it.',
   ],
 };
 // GRIEF (mourning). {topic} is the murdered person. This family KEEPS its
@@ -2153,18 +2149,18 @@ const CONSEQ_COVER_WEIGHT = {
 // solo scenes (a keepsake pocketed, somebody numb) and the pair scenes alike.
 const CONSEQ_GRIEF = {
   closer: [
-    'Grieving {topic} out loud left {a} less alone than before it — the one thing a death like this ever gives back.',
-    'The loss of {topic} drew {a} toward the people who felt it too. Something in the room is warmer for the naming of it.',
-    '{a} said what {topic} had meant and found {a} was not the only one who felt it. Shared grief is lighter than the other kind.',
+    'Grieving {topic} out loud left {a} feeling less alone.',
+    'Losing {topic} drew {a} closer to the others who felt it too.',
+    '{a} said what {topic} had meant, and found {a} wasn’t the only one who felt it.',
     'Talking about {topic} helped {a} more than {a} expected it to.',
-    '{topic} being gone drove {a} toward the people who are still here.',
+    'With {topic} gone, {a} leans on the people who are still here.',
   ],
   apart: [
     'The loss of {topic} put something cold between {a} and the room, and {a} let it.',
-    'Grieving {topic} went wrong for {a}: what should have drawn people together drove a wedge instead.',
-    '{a} came away from the mourning of {topic} more alone, not less. Not every death brings a room closer.',
-    '{topic}’s name sat badly between {a} and the others, and by the end nobody was pretending otherwise.',
-    'The grief for {topic} turned sharp on {a}, and {a} pointed it at the room.',
+    'Grieving {topic} pushed {a} away from the others instead of closer.',
+    '{a} feels more alone after mourning {topic}, not less.',
+    'Talking about {topic} made things awkward between {a} and the others.',
+    '{a}’s grief for {topic} turned into anger at the room.',
   ],
   borne: [
     'The chair where {topic} sat is still the first thing {a} sees in that room, and will be tomorrow.',
@@ -2187,37 +2183,37 @@ const CONSEQ_GRIEF_VIGIL = {
   mourned: [
     '{a} keeps counting the chairs and coming up one short for {topic}.',
     '{a} spent the whole day thinking about {topic}, and none of it helped.',
-    '{a} took the grief over {topic} off somewhere private, and it weighed exactly the same coming back.',
-    '{a} keeps listening for {topic} in a building with one fewer person in it, and knows {a} is doing it.',
+    '{a} went somewhere private to grieve {topic}, and came back feeling no better.',
+    '{a} keeps half-expecting to hear {topic} in the corridor.',
     '{a} grieved {topic} alone and put it away before anyone could see.',
   ],
   banished: [
-    'The castle is one chair lighter for {topic}, and {a} sat alone with the fact that the room did it in daylight, on purpose.',
-    '{topic} was sent home by a vote {a} was part of — a different weight, somehow, from the ones taken in the dark.',
-    'For {a}, {topic} leaving by the table is the harder kind of gone: nobody to blame but the people still in the building.',
-    '{a} spent the quiet hours with the seat {topic} left — not taken, but given away by a room {a} still stands in.',
+    '{a} sat alone with the fact that the room chose to send {topic} home.',
+    '{topic} was sent home by a vote {a} took part in, and that feels worse than a murder.',
+    'With {topic} banished, {a} has nobody to blame but the people still here.',
+    '{a} spent the quiet hours looking at the seat {topic} left empty.',
   ],
   haunted: [
     "{a} could not stop counting how many people had written {a}'s name down at that table.",
-    '{a} came out of it no safer than {a} went in, and knowing exactly which faces to watch from here.',
+    '{a} is no safer than before, but now knows exactly who to watch.',
     "{a} lay awake less worried about who went home than about how many votes had {a}'s name on them.",
-    '{a} counted, alone, who had written {a} down, until the counting stopped meaning anything and the light came anyway.',
+    '{a} lay awake going over who had written {aPos} name, until it got light.',
   ],
   restless: [
     "{a} talked {a}'s self into suspecting somebody, and by morning could not remember why.",
     '{a} chewed on a hunch all night and it was still a hunch by morning.',
-    '{a} sat alone with a feeling that had no fact under it, knew as much, and sat with it regardless.',
+    '{a} had a bad feeling with nothing to back it up, and couldn’t shake it.',
     '{a} went looking for a reason to be afraid, found none, and stayed afraid anyway.',
   ],
   // was-found: somebody came upon the crier and stayed. Role-neutral — the pool
   // names the dead against BOTH of them, so it does not matter which of the pair
   // the composer puts first (see grief.js: the recorded pair is left as-is).
   comforted: [
-    'The two of them sat with the fact of {topic} for a while, and neither pretended it was nothing.',
-    'Grief for {topic} did not have to be carried alone this morning, and both of them were quietly the better for that.',
+    'The two of them sat together for a while, missing {topic}.',
+    'Neither of them had to grieve {topic} alone this morning, and both felt better for it.',
     'They fixed nothing about {topic} being gone. They just made sure nobody had to face it by themselves.',
-    'Whatever {topic} had been to them, the loss was lighter for being shared in that corner before anyone else was up.',
-    'Neither of them said much about {topic}. Sitting there together was the whole of what either had to offer, and it was enough.',
+    'Sharing the loss of {topic} made it a little easier for both of them.',
+    'Neither of them said much about {topic}. Sitting together was enough.',
   ],
 };
 /** mourned | banished | haunted | restless for a grief-vigil scene. The event
@@ -2233,47 +2229,47 @@ function _vigilDir(s) {
 // (a breakup ended BY the partner) orders them. KEEPS its reaction beat.
 const CONSEQ_ROMANCE = {
   warmed: [
-    'What {other} and {topic} have is realer tonight than it was this morning, and both of them felt it move.',
-    '{other} and {topic} closed a little more of the distance. In a castle, being sure of one person is worth more than it looks.',
-    'It went well for {other} and {topic}. There is a place in this game to stand next to somebody, and they are building one.',
-    'The thing between {other} and {topic} took a step it cannot easily take back — a comfort and a liability, both at once.',
-    '{other} and {topic} are steadier tonight. Two people who trust each other in here is rare enough to be worth guarding.',
+    '{other} and {topic} are more serious about each other than they were this morning.',
+    '{other} and {topic} get a little closer.',
+    'It went well for {other} and {topic}. They are starting to rely on each other.',
+    '{other} and {topic} took a step they can’t easily take back. It’s a comfort, and a risk.',
+    '{other} and {topic} feel steadier together, and want to protect that.',
   ],
   cooled: [
-    'Whatever {other} and {topic} had cooled tonight, and neither of them pretended it hadn’t.',
-    'The distance between {other} and {topic} opened back up, and in here a rift between two people is a thing other people use.',
-    'It went badly for {other} and {topic}. What was shelter yesterday is a draught tonight.',
-    '{other} and {topic} are further apart than they were this morning, and a castle notices a couple coming unstuck.',
-    'Something closed between {other} and {topic}, and closed doors between two people are read by the rest of the building.',
+    'Things cooled between {other} and {topic}, and neither pretended otherwise.',
+    '{other} and {topic} drift apart again, and other people will notice.',
+    'It went badly for {other} and {topic}. What felt safe yesterday doesn’t now.',
+    '{other} and {topic} are further apart than this morning, and people can tell.',
+    'Something has shut down between {other} and {topic}.',
   ],
   tangled: [
-    'What {other} and {topic} are to each other got more complicated tonight, and complicated is dangerous in a game that turns on who trusts whom.',
-    'The thing between {other} and {topic} is now half feeling and half strategy, and neither of them could tell you the ratio.',
-    '{other} and {topic} are a fact the rest of the castle is starting to have opinions about — the last thing a couple in here wants.',
-    'Whatever {other} and {topic} decided tonight, the game was in the room with them, and it always will be now.',
-    'For {other} and {topic} the line between protecting each other and using each other got thinner tonight, and both of them know it.',
+    'Things between {other} and {topic} got more complicated.',
+    'For {other} and {topic}, it’s now half feelings and half strategy.',
+    'The castle is starting to have opinions about {other} and {topic}, which is the last thing they want.',
+    'Whatever {other} and {topic} decided, the game was on both their minds.',
+    '{other} and {topic} can’t tell any more whether they are protecting each other or using each other.',
   ],
 };
 // CALLBACK. {topic} is the person the actor shares prior-season history with.
 // KEEPS its reaction beat; uses {other} + {topic}.
 const CONSEQ_CALLBACK = {
   warmed: [
-    'The history between {other} and {topic} came back on the right side tonight. Two people who already know how the other plays is an edge, and they have it.',
-    '{other} and {topic} found their old rapport still there. The franchise remembers, and tonight it paid {other} a dividend.',
-    'Whatever {other} and {topic} were on another season, tonight it works in their favour, and both of them are lighter for it.',
-    'The old understanding between {other} and {topic} held across the gap between seasons — rarer than it sounds, and worth more.',
+    'The old friendship between {other} and {topic} is working for them again. They know how the other plays.',
+    '{other} and {topic} find they still get on, just like last time.',
+    'Their history from another season works in {other} and {topic}’s favour.',
+    'The old understanding between {other} and {topic} still holds.',
   ],
   cooled: [
-    'Whatever is between {other} and {topic} from before did not stay in the past. It is a live thing again, and the room can feel there is history in it.',
-    '{other} and {topic} reopened something that started on another season. Whatever it was then, it has teeth again now.',
-    'The old business between {other} and {topic} came back on the wrong side tonight, and neither of them is letting it go.',
-    'What {other} and {topic} carry from before soured the room between them. The past does not expire in here; it waits.',
+    'The old trouble between {other} and {topic} is back, and the room can feel it.',
+    '{other} and {topic} reopened something from another season, and it still hurts.',
+    'Old business between {other} and {topic} came back, and neither will let it go.',
+    'What happened between {other} and {topic} before still sours things between them.',
   ],
   noted: [
-    'The history between {other} and {topic} is out in the open now, and a room that knows two people go back will price them as a pair.',
-    '{other} and {topic} could not keep their past to themselves, and now the castle is doing the maths on it.',
-    'Whatever {other} and {topic} were before, the room has noticed they were something — a fact with a cost in here.',
-    'The old connection between {other} and {topic} is common knowledge tonight. Two people with a shared yesterday are a target with a shared today.',
+    'It is out now that {other} and {topic} go back a long way, and people will treat them as a pair.',
+    '{other} and {topic} couldn’t keep their past quiet, and now people are wondering what it means.',
+    'The room has noticed that {other} and {topic} have history, and that could cost them.',
+    'The old connection between {other} and {topic} is common knowledge now, and that makes them a target.',
   ],
 };
 // CALLBACK-ABSENCE — the two once-skipped callback events, both about the
@@ -2284,54 +2280,54 @@ const CONSEQ_CALLBACK = {
 // ABOUT — and frame who is short of it. KEEP the reaction beat (callback).
 const CONSEQ_CALLBACK_WARNING = {
   'took-it': [
-    '{a} handed {b} a read on {topic} that {b} had no way to check — {b} has no history with {topic} to weigh it against, only {a}’s word.',
-    '{b} came away watching {topic} on {a}’s say-so alone, which is the whole power of having played before and the whole risk of trusting somebody who has.',
-    '{a}’s history with {topic} is {b}’s inheritance now, secondhand, and {b} took it because {b} had nothing of {b}’s own to set against it.',
-    '{b} left with {a}’s warning about {topic} and no way to test it — a newcomer’s bargain, taking a veteran’s past on trust.',
+    '{a} warned {b} about {topic}, and {b}, who has never played with {topic}, has to take {a}’s word for it.',
+    '{b} is now watching {topic}, purely on {a}’s say-so.',
+    '{b} takes on {a}’s view of {topic}, having nothing of {bPos} own to go on.',
+    '{b} leaves with {a}’s warning about {topic} and no way to check it.',
   ],
   'had-it': [
-    '{a} warned {b} about {topic} and found {b} already halfway there — a reputation beats a warning to the room, as it usually does.',
-    '{b} did not need {a}’s history with {topic}; {b} had built enough of a read here to meet it, and the missing past turned out not to matter this time.',
-    '{a} told {b} what {topic} was, and {b} nodded along to a thing {b} had worked out with no history to go on at all.',
-    '{a}’s account of {topic} landed on somebody who had already reached it alone — the warning confirmed {b} rather than informing {b}.',
+    '{a} warned {b} about {topic}, but {b} had already worked it out.',
+    '{b} didn’t need the warning about {topic}. {b} had already seen enough.',
+    '{a} told {b} about {topic}, and {b} nodded. {b} had reached the same view alone.',
+    'The warning about {topic} only confirmed what {b} already thought.',
   ],
   refused: [
-    '{b} has no history with {topic} and decided that cut the other way — {b} trusts what {b} has seen over what {a} remembers, and said so.',
-    '{a}’s warning about {topic} bounced: with no shared past of {b}’s own, {b} weighed {a} against {topic} and came down on {topic}’s side.',
-    '{b} took {a}’s history with {topic} as {a}’s problem, not {b}’s, and defended {topic} to {a}’s face.',
-    'Having nothing owed to {topic} either way, {b} heard {a} out and sided with {topic} anyway — the warning cost {a} more than {topic}.',
+    '{b} trusts what {b} has seen of {topic} more than what {a} remembers, and said so.',
+    '{b} didn’t buy {a}’s warning about {topic}, and sided with {topic}.',
+    '{b} told {a} the history with {topic} was {a}’s problem, and defended {topic}.',
+    '{b} heard {a} out and sided with {topic} anyway. The warning hurt {a} more than {topic}.',
   ],
   'spent-it': [
-    '{b} had no stake in {a}’s history with {topic} and every use for it — {b} took the warning straight to work, and {a} watched it be spent.',
-    '{a} meant a caution and {b} heard ammunition. No history with {topic} left {b} free to use one without a second thought.',
-    '{a}’s account of {topic} became {b}’s opening move inside the hour, which is not what a warning is for.',
-    '{b} turned {a}’s past with {topic} into {b}’s present against {topic}, and did it before {a} had finished talking.',
+    '{b} took {a}’s warning about {topic} and used it straight away.',
+    '{a} meant it as a warning, but {b} used it as ammunition against {topic}.',
+    'Within the hour, {b} was using {a}’s story about {topic} against {tObj}.',
+    '{b} turned {a}’s old history with {topic} into a weapon before {a} had even finished talking.',
   ],
 };
 const CONSEQ_CALLBACK_ENVY = {
   'left-out': [
-    '{a} sat outside a conversation about {topic} that {a} had no part in, and felt the whole weight of having no history here to fall back on.',
-    'The story about {topic} was one {b} could tell and {a} could only listen to. In a returnee castle, that gap leaves you standing in the open.',
-    '{a} has no shared past with {topic} to trade on, and an hour of {b} reminiscing made sure {a} felt it.',
-    'A story about {topic} went round that {a} was not in, and {a} learned again that a clean slate is also an empty hand here.',
+    '{a} sat through a conversation about {topic} with nothing to add, and felt like an outsider.',
+    '{b} had stories about {topic}, and {a} could only listen. {a} feels left out.',
+    '{a} has no history with {topic}, and an hour of {b} reminiscing made that clear.',
+    'A story about {topic} went round that {a} wasn’t part of, and {a} felt like the new one again.',
   ],
   asked: [
-    '{a} made {b} tell the whole story about {topic} from the start — if {a} cannot have the history, {a} will at least have the information.',
-    'Rather than sit outside it, {a} asked {b} for the whole of {topic}, and turned a gap into a briefing.',
-    '{a} has no history with {topic}, so {a} did the next best thing and got {b} to hand it over in full.',
-    '{a} could not share {topic}’s past, so {a} borrowed it — questioned {b} until the missing years were at least secondhand knowledge.',
+    '{a} got {b} to tell the whole story about {topic} from the start.',
+    'Instead of feeling left out, {a} asked {b} to explain everything about {topic}.',
+    '{a} has no history with {topic}, so {a} got {b} to fill {aObj} in.',
+    '{a} questioned {b} about {topic} until {a} knew the whole history.',
   ],
   virtue: [
-    '{a} turned having no history with {topic} into the argument — no old debts, no old grudges, nothing owed. In here, a clean slate can be sold as trustworthiness.',
-    '{a} made a virtue of the gap: the rest of the room is tangled up with {topic}, and {a} is not, and {a} made sure that was heard.',
-    '{a} decided that not sharing {topic}’s history was a feature, not a wound, and started saying so out loud.',
-    '{a} recast the missing past with {topic} as an asset — the one person here with no reason to protect {topic} or fear them.',
+    '{a} argued that having no history with {topic} makes {aObj} more trustworthy. No old debts, no old grudges.',
+    '{a} pointed out that, unlike the others, {a} has no ties to {topic}.',
+    '{a} decided having no history with {topic} was a good thing, and started saying so.',
+    '{a} says being new is an advantage: {a} has no reason to protect {topic}, or to fear {tObj}.',
   ],
   'own-story': [
-    '{a} stopped envying the history with {topic} and went and started one of {a}’s own instead — the only real cure for being the newcomer.',
-    'Left out of {topic}’s story, {a} went and built a fresh one elsewhere in the room, which is worth more than borrowing an old one.',
-    '{a} could not share the past with {topic}, so {a} spent the morning making a present with somebody who also had none.',
-    'Rather than stand at the edge of {topic}’s history, {a} walked off and laid the first stone of a history of {a}’s own.',
+    '{a} stopped envying the others’ history with {topic} and went to make friends of {aPos} own.',
+    'Left out of the story about {topic}, {a} went to build new friendships instead.',
+    'Rather than hear more about {topic}, {a} spent the morning getting to know another newcomer.',
+    'Rather than listen to old stories about {topic}, {a} went off to make some new ones.',
   ],
 };
 const WARN_TOOK = new Set(['warned']);
@@ -2379,28 +2375,28 @@ function _callbackDir(s) {
 // its reaction beat dropped, because the action line already carries the doubt.
 const CONSEQ_ROMANCE_SUSPICION = {
   buried: [
-    '{a} felt the ground shift under {topic} and stepped back onto it — the doubt is real, but tonight {a} would rather have the showmance than the answer.',
-    '{a} looked straight at what {topic} might be and chose not to see it, and the couple is warmer tonight for the looking away.',
-    'Whatever {a} half-noticed about {topic}, {a} buried it under one more good evening. The read is still there; {a} just is not ready to spend it.',
-    '{a} had the thought about {topic} and put it back down. Some doubts are safer kept than acted on, and {a} decided this was one.',
+    '{a} has a doubt about {topic}, but would rather keep the relationship than know the answer.',
+    '{a} chose not to think about what {topic} might be, and the two of them are closer for it.',
+    '{a} noticed something about {topic}, and decided to enjoy the evening instead.',
+    '{a} had a doubt about {topic}, and decided not to act on it.',
   ],
   'took-root': [
-    'A cold thought about {topic} took root in {a} tonight, and {a} said nothing — so {topic} does not yet know {a} has started counting.',
-    '{a} has begun watching {topic} the way you watch a person you sleep beside and have started to wonder about. Nothing said, everything changed.',
-    '{a} kept the doubt about {topic} private, and a doubt kept is a doubt that grows. {topic} is a question to {a} now, not just a partner.',
+    '{a} has started to doubt {topic}, and hasn’t said anything yet.',
+    '{a} has started watching {topic} more closely. Nothing has been said.',
+    '{a} is keeping the doubt about {topic} private, and it is growing.',
     'Something about {topic} stopped adding up for {a}, quietly, and {a} is not going to be the one to raise it first.',
   ],
   'named-it': [
-    '{a} put the doubt to {topic} directly, in private, and the showmance is a different thing now for {a} having said it aloud.',
-    '{a} asked {topic} the question {a} had been swallowing for days. Whatever {topic} answered, the couple cannot go back to not having asked.',
-    '{a} confronted {topic} where nobody could hear, and something broke a little in the asking — trust, once queried, does not fully re-seal.',
-    '{a} finally said to {topic} what {a} had been thinking, and the room the two of them shared is smaller for it now.',
+    '{a} asked {topic} straight out, in private. Things between them have changed.',
+    '{a} finally asked {topic} the question. Whatever the answer, they can’t go back.',
+    '{a} confronted {topic} in private, and something between them broke a little.',
+    '{a} finally told {topic} what {a} had been thinking, and things are colder between them.',
   ],
   'went-public': [
-    '{a} named {topic} out loud in the dark, loud enough for the corridor, and the showmance stopped being shelter and became evidence against {topic}.',
-    'The one person who knew {topic} best just told the floor what {a} believes {topic} is. There is no protection left in it for {topic} now.',
-    '{a} spent the whole of the showmance in a single sentence: {topic} is exposed, and the person who exposed {topic} is the one who used to shield them.',
-    '{a} turned the couple into an accusation — {topic} is named, publicly, by the last person anyone expected to do it.',
+    '{a} accused {topic} loud enough for the corridor to hear. Now the relationship is evidence against {tObj}.',
+    'The person who knows {topic} best has just accused {tObj} in front of the others.',
+    '{a} ended the relationship in one sentence, and exposed {topic} doing it.',
+    '{a} accused {topic} publicly, and nobody expected it to come from {aObj}.',
   ],
 };
 /** buried | took-root | named-it | went-public for a romance-suspicion scene. */
@@ -2482,27 +2478,27 @@ function _coverDir(s) {
 // reckoning with it; {other} is whoever they are reckoning with it beside.
 const CONSEQ_AFTER_WRONG = {
   owned: [
-    '{a} keeps coming back to {a}’s own ballot with {topic}’s name on it. The room got it wrong, and {a} was part of the room.',
-    'The reveal cleared {topic} of everything and left {a} holding a vote {a} cannot take back.',
-    '{a} was certain about {topic} at six o’clock, and certainty is exactly what cost {topic} the game. {a} will carry the price of that a while.',
+    '{a} voted for {topic}, and {topic} was a Faithful. {a} can’t stop thinking about it.',
+    '{topic} turned out to be a Faithful, and {a} can’t take back {aPos} vote.',
+    '{a} was certain about {topic}, and wrong. That will stay with {aObj}.',
     '{a} helped send {topic} home a Faithful, and no amount of going over it changes that.',
   ],
   blamed: [
-    '{a} traced {topic}’s whole banishment back to the loudest voice in the room, and is not letting that voice forget it.',
-    'For {a}, the wrong done to {topic} has a face on it now, and it is not {a}’s own.',
-    '{a} came away sure of one thing: {topic} should still be here, and somebody talked the room into the opposite.',
-    '{a} is angrier at how {topic} went than at the fact of it — a name got said first, and the rest of them only agreed.',
+    '{a} blames whoever pushed hardest for {topic}’s name, and won’t let it go.',
+    '{a} knows exactly who to blame for {topic}, and it isn’t {aRef}.',
+    '{a} is sure {topic} should still be here, and that someone talked the room out of it.',
+    '{a} is angry about how {topic} went: one person said the name first, and the rest followed.',
   ],
   defended: [
-    '{a} will not call {topic} a mistake, only the best answer to a bad question, and means to make the same kind of call tomorrow.',
-    '{topic} is gone and {a} has decided to be colder about it than the room expected, because the alternative is being useless.',
-    '{a} filed {topic} under the cost of playing this game at all, and went back to work. Somebody has to.',
-    'For {a}, the read was right on the night even if {topic} was wrong, and {a} is not going to apologise for arithmetic.',
+    '{a} won’t call banishing {topic} a mistake, and would do it again.',
+    '{topic} is gone, and {a} has decided not to dwell on it.',
+    '{a} puts {topic} down to the cost of playing the game, and moves on.',
+    '{a} thinks the vote made sense at the time, even though {topic} was a Faithful, and won’t apologise.',
   ],
   quiet: [
-    '{a} would not say {topic}’s name again tonight, and the not-saying was louder than anything {a} could have said.',
-    'Whatever losing {topic} did to {a}, {a} took it somewhere the room could not follow.',
-    '{a} carried {topic} out of that hall without a word, and nobody was going to make {a} put it down for them.',
+    '{a} wouldn’t say {topic}’s name again, and people noticed.',
+    '{a} kept {aPos} feelings about {topic} to {aRef}.',
+    '{a} left the hall without a word about {topic}.',
     "{a} answered every question about the table without once saying {topic}’s name, and the room heard the gap where it should have been.",
   ],
 };
@@ -2510,22 +2506,22 @@ const CONSEQ_AFTER_WRONG = {
 // got it right, and now the question is who actually knew.
 const CONSEQ_AFTER_RIGHT = {
   credited: [
-    '{a} had {topic}’s name before the reveal did, and tonight the slate proved it — worth more to {a} than the banishment itself.',
-    'For once the castle confirmed something for {a}: {topic} was exactly what {a} had thought, and {a} got to say so at last.',
-    'The read on {topic} came good, and {a} is walking a shade taller for it — quietly, where it cannot be used against {a}.',
-    '{a} and the slate agreed about {topic}, and {a} filed the feeling away for the next time a read of {a}’s gets waved off.',
+    '{a} suspected {topic} before anyone, and the reveal proved {a} right.',
+    '{topic} was exactly what {a} thought, and {a} finally got to say so.',
+    '{a} was right about {topic}, and is quietly pleased about it.',
+    '{a} was right about {topic}, and will remember that the next time people ignore {aObj}.',
   ],
   'who-knew': [
-    'The interesting thing was never {topic} leaving. It was working out who else had {topic}’s name, and what that says about them.',
-    '{a} came away from {topic} less interested in the win than in who claimed to have seen it coming and could not prove they had.',
-    '{topic} is off the board, and now {a} is doing the harder arithmetic: which of the people still here really knew.',
-    'For {a}, catching {topic} only sharpened the next question — the room got one right, and somebody in it got there suspiciously fast.',
+    '{a} is less interested in {topic} leaving than in who else voted for {tObj}.',
+    '{a} is thinking about who claimed to suspect {topic} all along, and whether they really did.',
+    '{topic} is gone, and {a} wonders who else knew all along.',
+    'The room got {topic} right, but {a} noticed someone got there suspiciously fast.',
   ],
   onward: [
-    '{a} gave {topic} about four seconds of satisfaction and then went straight to who {topic} had been sitting with.',
-    '{topic}’s name is off the board, and for {a} it only made the shape of the rest of them clearer.',
-    'Being right about {topic} is not the same as being safe, and {a} spent the quiet minutes on the difference.',
-    '{a} took {topic} away to keep — one fact the castle had finally made certain — and started rebuilding the week around it.',
+    '{a} enjoyed catching {topic} for a moment, then started looking at who {topic} had been close to.',
+    'With {topic} gone, {a} can see the rest of the game more clearly.',
+    '{a} was right about {topic}, but being right hasn’t made {a} any safer.',
+    '{a} finally has one certain fact about {topic}, and starts rethinking everything around it.',
   ],
 };
 // SEAT-LOSS — grief for the banished, either at the table's edge (after-table)
@@ -2534,29 +2530,29 @@ const CONSEQ_AFTER_RIGHT = {
 // different weight from the ones taken at night.
 const CONSEQ_SEAT_LOSS = {
   mourned: [
-    'The empty place where {topic} sat is the one {a} keeps looking at, and the vote that made it empty was cast in daylight, by hands still in the room.',
-    '{a} lost {topic} to a show of hands, not to the dark, and somehow that is the harder thing to sit with.',
-    '{a} watched the room vote {topic} out in daylight, which sits heavier than a murder nobody saw.',
-    '{a} spent the evening keeping {topic} in the conversation, because the alternative was letting the room close over the gap too fast.',
+    '{a} keeps looking at {topic}’s empty seat, knowing the people who voted are still in the room.',
+    '{a} lost {topic} to a vote, not a murder, and that feels worse.',
+    '{a} watched the room banish {topic}, and it hurts more than a murder would.',
+    '{a} kept talking about {topic} all evening, so the others wouldn’t forget too quickly.',
   ],
   relieved: [
-    '{a} would not say it aloud, but the seat {topic} left is one {a} is glad to see empty. Some banishments are a mercy, and this was one.',
-    'Whatever {a} owes the room tonight, it is thanks: {topic} is gone, and {a} will sleep easier for the chair being empty.',
-    'For {a}, the loss of {topic} is not a loss at all, and {a} spent the night making a careful private peace with that.',
+    '{a} won’t say it out loud, but is glad {topic} is gone.',
+    '{a} is relieved {topic} is gone, and will sleep better for it.',
+    '{a} doesn’t miss {topic} at all, and is quietly fine with that.',
   ],
   guilty: [
-    '{a} wrote {topic}’s name and now has to sit across from the gap it made. There is no version of the evening where {a} did not help do that.',
-    'The empty seat is {a}’s doing as much as anyone’s — {a}’s ballot said {topic}, and the slate does not forget.',
-    '{a} keeps arriving back at the same fact: {a} put {topic}’s name down, and {topic}’s chair is where {a} put it.',
+    '{a} wrote {topic}’s name, and now has to look at the empty chair.',
+    '{a}’s vote helped put {topic} out, and {a} knows it.',
+    '{a} keeps coming back to the same thought: {a} voted for {topic}.',
   ],
   angry: [
-    '{a} traced the seat {topic} left back to the loudest voice at the table, and is not finished with that voice yet.',
-    'For {a}, {topic} leaving has a face on it, and it is not {a}’s: somebody talked the room into that chair being empty.',
-    '{a} came away from {topic}’s seat less sad than furious, and clear about exactly who to be furious at.',
+    '{a} blames whoever pushed hardest against {topic}, and isn’t finished with them.',
+    '{a} blames someone for {topic} going, and it isn’t {aRef}.',
+    '{a} is more angry than sad about {topic}, and knows exactly who to be angry at.',
   ],
   quiet: [
     'The seat {topic} had is the first thing {a} sees in that room now, and will be tomorrow.',
-    '{a} could not put {topic} into words tonight, and stopped trying somewhere before it got light.',
+    '{a} couldn’t find the words for {topic}, and stopped trying before it got light.',
     "{a} spent the evening with {topic} on {a}'s mind and nothing useful to do about it.",
   ],
 };
@@ -2718,7 +2714,9 @@ function _topicConsequence(s, subs, key, used, cfg, tone) {
   else if (cfg.byDirection) branch = _suspDir(s);
   const pool = (cfg.conseq && cfg.conseq[branch])
     || (cfg.conseq && Object.values(cfg.conseq)[0]) || [];
-  const say = _fill(_pickUnique(pool, key + '|tconseq', used, 'tconseq'), subs);
+  // A LINE THAT OPENS ON {topic} opens on whatever the topic is — "the night
+  // Amy was murdered would not let…" — so the sentence is capitalised here.
+  const say = _cap(_fill(_pickUnique(pool, key + '|tconseq', used, 'tconseq'), subs));
   return { text: say, say, mark: null, tone };
 }
 
@@ -2727,6 +2725,49 @@ function _receiptConsequence(s, subs, tone, key, used) {
   const chips = Array.isArray(s.chips) ? s.chips : [];
   const lines = [];
   const seen = new Set();
+  // ONE PAIR, ONE SENTENCE. A suspicion chip and a bond chip between the same
+  // two people used to be two sentences, and when they pulled opposite ways
+  // the card contradicted itself ("B is more suspicious of Beth after that.
+  // B and Beth have more ground under them now."). Found reading a real day.
+  const byPair = new Map();
+  for (const chip of chips) {
+    if (!chip || !chip.a || !chip.b) continue;
+    const k = [chip.a, chip.b].sort().join('|');
+    const e = byPair.get(k) || {};
+    if (chip.type === 'suspicion' && s.readKind !== 'pact' && s.readKind !== 'threat') e.susp = chip;
+    if (chip.type === 'bond') e.bond = chip;
+    byPair.set(k, e);
+  }
+  for (const [k, e] of byPair) {
+    if (!e.susp || !e.bond) continue;
+    const c = e.susp, bObj = _prOf(c.b).obj;
+    const pool = c.dir > 0
+      ? (e.bond.dir > 0 ? [
+        '{a} gets on with {b}, but trusts {bObj} less after that.',
+        '{a} likes {b} more, and suspects {bObj} more too.',
+        '{a} and {b} get closer, but {a} is watching {bObj} now.',
+        '{a} is friendlier with {b}, and more suspicious of {bObj} at the same time.',
+      ] : [
+        '{a} is cooler with {b}, and more suspicious of {bObj}.',
+        '{a} and {b} fall out, and {a} suspects {bObj} more.',
+        '{a} trusts {b} less and likes {bObj} less.',
+        'Things sour between {a} and {b}, and {a} starts to suspect {bObj}.',
+      ])
+      : (e.bond.dir > 0 ? [
+        '{a} and {b} get closer, and {a} suspects {bObj} less.',
+        '{a} warms to {b}, and lets some of the doubt go.',
+        '{a} trusts {b} more after that.',
+        '{a} and {b} are on better terms, and {a} worries less about {bObj}.',
+      ] : [
+        '{a} suspects {b} less, though the two of them are cooler.',
+        '{a} stops worrying about {b}, but they are not closer for it.',
+        '{a} lets the doubt about {b} go, and keeps {bPos} distance.',
+        '{a} and {b} are cooler, but {a} is less suspicious of {bObj}.',
+      ]);
+    lines.push(_fill(_pickUnique(pool, key + '|receipt|mixed|' + k, used, 'receipt-mixed'),
+      { a: c.a, b: c.b, bObj, bPos: _prOf(c.b).posAdj }));
+    seen.add(k + '|suspicion'); seen.add(k + '|bond');
+  }
   for (const chip of chips) {
     if (!chip || !chip.a || !chip.b) continue;
     const pair = [chip.a, chip.b].sort().join('|') + '|' + chip.type;
@@ -2753,7 +2794,7 @@ function _receiptConsequence(s, subs, tone, key, used) {
       ]) : chip.dir > 0 ? [
         '{a} is more suspicious of {b} after that.',
         "{b} is higher on {a}'s list tonight.",
-        '{a} files {b} under the names worth keeping an eye on.',
+        '{a} decides to keep an eye on {b}.',
         '{a} leaves with a harder read on {b}.',
       ] : [
         '{a} eases off {b} after that.',
@@ -2768,12 +2809,12 @@ function _receiptConsequence(s, subs, tone, key, used) {
         '{a} and {b} are steadier with each other after that.',
         '{a} and {b} close a little of the distance.',
         '{a} and {b} walk away warmer than they sat down.',
-        '{a} and {b} have more ground under them tonight.',
+        '{a} and {b} are on better terms now.',
       ] : [
         '{a} and {b} are cooler with each other after that.',
         'Something between {a} and {b} frays a little.',
         '{a} and {b} are more guarded with each other after that.',
-        '{a} and {b} have less ground under them tonight.',
+        '{a} and {b} are on worse terms now.',
       ];
       lines.push(_fill(_pickUnique(pool, key + '|receipt|bond|' + pair, used,
         'receipt-bond'), chip));
@@ -3175,7 +3216,7 @@ const RECALL_LEAD_RECORDED = [
 const PUBLIC_ACTION = [
   'From where you are standing it is two people talking low, and stopping when you get closer.',
   'You get about one word in five. None of the five is worth anything on its own.',
-  'You can see that it is not small talk. That is the whole of what you can see.',
+  'You can see it isn’t small talk, but that’s all you can see.',
   'Whatever is being said is being said quietly, and it is being said carefully.',
 ];
 /**
@@ -4476,11 +4517,10 @@ const HOST_CLOSE = {
     'Watch the ones who said the least. There were fewer of them than usual today.',
   ],
   quiet: [
-    'A quiet day, and quiet is not the same as nothing. It is simply a day where the '
-    + 'work went on underneath.',
-    'Not much happened out loud. That is usually the tell.',
-    'A slow day in a stone building. Everybody spent it thinking, which is worse.',
-    'Very little to report, which will be a great comfort to precisely nobody.',
+    'A quiet day. Not much happened out loud, but plenty went on underneath.',
+    'Not much happened out loud today, and that usually means something is being planned.',
+    'A slow day. Everybody spent it thinking.',
+    'Very little to report today.',
   ],
   woven: [
     'Three or four of those were the same story, and only some of them know it.',
@@ -4675,6 +4715,15 @@ function _composeScene(s, key, used, cast) {
     aSub: _prOf(a).sub, aObj: _prOf(a).obj, aPos: _prOf(a).posAdj, aRef: _prOf(a).ref,
     bSub: _prOf(b || a).sub, bObj: _prOf(b || a).obj, bPos: _prOf(b || a).posAdj,
   };
+  // AND THE SAME FOR {topic} AND {other}, so a closing line can say "him" the
+  // second time instead of the name a third time. Capitalised forms for a
+  // pronoun that opens a sentence.
+  {
+    const tp = _prOf(subs.topic || a), op = _prOf(subs.other);
+    const up = w => String(w || '').replace(/^./, c => c.toUpperCase());
+    Object.assign(subs, { tSub: tp.sub, tObj: tp.obj, tPos: tp.posAdj, TSub: up(tp.sub),
+      oSub: op.sub, oObj: op.obj, oPos: op.posAdj, OSub: up(op.sub) });
+  }
   // A grounded event drives its own closing consequence off the recorded topic
   // and branch; legacy events keep the generic family/tone pools.
   const topicCfg = (s.topic && TOPIC_CONFIG[s.topicKind]) ? TOPIC_CONFIG[s.topicKind] : null;

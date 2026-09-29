@@ -389,7 +389,7 @@ const CHIP = {
   // TOP2 borrows the win's chip: on this night it is the top of the call
   // until the song says otherwise.
   TOP2: 'dr-c-win',
-  BTM: 'dr-c-btm', BTM3: 'dr-c-btm', BTM2: 'dr-c-btm2', ELIM: 'dr-c-elim',
+  BTM: 'dr-c-btm', BTM2: 'dr-c-btm2', ELIM: 'dr-c-elim',
 };
 
 /**
@@ -433,10 +433,10 @@ export function rpBuildResults(row) {
   const named = groups.flatMap(([r, list]) => list.map(n => [r, n]));
   if (!named.length && !safe.length) return '';
   /* A BEAVER OR BAGUETTE NIGHT names its bottom before anybody is saved, so
-     nobody on this screen is BTM2 yet. They are stamped BTM3 — a call-screen
-     stamp, not a chart result. They used to be stamped LOW, which the chart
-     defines as "in the bottom, NOT up for elimination", printed beside the
-     host telling each of them she was up for elimination. */
+     nobody on this screen is BTM2 yet: they are stamped LOW, and the host's
+     words stay the "up for elimination" ones, because that is what she said.
+     This is deliberate: after the save the two who sing become BTM2 and the
+     saved queen stays LOW. Do not "fix" it to a BTM3 stamp. */
   // `dr.save.hold` too, so an episode played before the flag existed reads right.
   const pending = !!(call.pendingSave || row?.dr?.save?.hold);
   /* ── AND THE TWO WHO ARE ABOUT TO SING ARE NOT "HIGH" ──
@@ -459,7 +459,7 @@ export function rpBuildResults(row) {
      put first, and a third queen who was merely in the top, stamped the
      same. The chart already keeps a cell for the top two. */
   const shown = (r, name) => {
-    if (pending && r === 'BTM2') return 'BTM3';
+    if (pending && r === 'BTM2') return 'LOW';
     if (topTwoNight && r === 'HIGH' && singers.has(name)) return 'TOP2';
     if (r === 'HIGH' && topCouple.has(name)) return 'TOP2';
     return r;

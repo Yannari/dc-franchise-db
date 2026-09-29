@@ -348,3 +348,34 @@ export function writeDay(state, day) {
   const entry = pickEntry(state, 'host.cold', { tone, early: day <= 2 }, `day${day}`, rng);
   if (entry) aired[0].script.blocks.unshift({ key: 'host.cold', ...renderEntry(state, entry, { a: aired[0].who[0] }, rng) });
 }
+
+// Every pool key sceneBlocks can ask for — the writing backlog, and what the
+// coverage guard checks (tests/ci-lines.test.js).
+const INTENTS_ = ['bond', 'ally', 'flirt', 'pump', 'compare', 'plant', 'credit', 'repair', 'confront', 'checkin', 'pitch', 'confess'];
+const REASONS_ = ['affection', 'trust', 'obligation', 'pact', 'protection', 'threat', 'suspicion', 'grudge', 'deserves'];
+const SLIPS_ = ['knowledge', 'body', 'voice', 'tooPerfect', 'overreach', 'name'];
+const MOTIVES_ = ['friend', 'answers', 'truth', 'apology'];
+const WHY_ = ['strategic', 'protective', 'experimental', 'family'];
+const BLOCK_WHY_ = ['fake', 'threat', 'grudge', 'noBond'];
+export const POOL_KEYS = [
+  ...INTENTS_.flatMap(i => ['warm', 'neutral', 'cold'].map(e => `chat.${i}.${e}`)),
+  ...['pass', 'dodge', 'fail'].map(r => `chat.probe.${r}`),
+  ...SLIPS_.flatMap(k => [`slip.${k}.noticed`, `slip.${k}.missed`]), 'slip.misread',
+  'status.low', 'status.steady', 'status.high', 'status.react', 'likes.most', 'likes.none',
+  'circle.open', 'circle.party', 'circle.final', 'circle.theory',
+  ...['honest', 'polished', 'edited', 'catfish', 'shared'].map(m => `profile.${m}`),
+  'recognise', 'arrival', 'arrival.react', 'afterparty',
+  'ratings.open', ...REASONS_.flatMap(r => [`rate.${r}.top`, `rate.${r}.bottom`]),
+  'result.bottom', 'result.middle', 'result.top', 'result.influencers',
+  ...REASONS_.map(r => `final.rate.${r}`),
+  'hangout.open', ...BLOCK_WHY_.map(r => `hangout.view.${r}.cut`), 'hangout.view.noBond.keep',
+  'hangout.agree', 'hangout.yield', 'hangout.trade', 'hangout.pact',
+  ...BLOCK_WHY_.map(r => `block.announce.${r}`), 'block.react.self', 'block.react.friend', 'block.react.rival', 'block.react.relief',
+  ...MOTIVES_.flatMap(m => [`visit.choose.${m}`, `visit.talk.${m}`]), 'visit.wait', 'visit.wait.catfish',
+  'visit.door.real', 'visit.door.catfish', 'visit.hand', 'visit.kiss', 'visit.bye', 'report',
+  'goodbye.guess', ...['honest', 'polished', 'edited', 'shared'].map(m => `goodbye.video.${m}`),
+  ...WHY_.map(w => `goodbye.video.catfish.${w}`), 'goodbye.warning.catfish', 'goodbye.warning.distrusts',
+  'goodbye.react.guilty', 'goodbye.react.warned', 'goodbye.react.vindicated', 'goodbye.react.surprised',
+  'meet.arrive.real', 'meet.arrive.catfish', ...WHY_.map(w => `meet.explain.${w}`),
+  'reveal.place', 'reveal.winner', 'host.cold',
+];

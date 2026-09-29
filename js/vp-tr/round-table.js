@@ -144,6 +144,26 @@ function _pick(pool, key) {
   if (!pool || !pool.length) return '';
   return pool[_hash(key) % pool.length];
 }
+// ONE TABLE NEVER SAYS THE SAME SENTENCE TWICE. `_pick` is a hash, and a
+// table with three accused drew "I have spent all week defending X" for all
+// three of them, and "One of them keeps counting the empty chairs" twice —
+// found by reading a season. `_tableUsed` is reset at the top of every build.
+let _tableUsed = new Set();
+const _NUMW = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight',
+  'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen',
+  'seventeen', 'eighteen', 'nineteen', 'twenty'];
+/** "2 of them already have" is a report; a host says "two". */
+function _numWord(n) { return _NUMW[n] || String(n); }
+function _fresh(pool, key) {
+  if (!pool || !pool.length) return '';
+  const n = pool.length;
+  const start = _hash(key) % n;
+  for (let i = 0; i < n; i++) {
+    const v = pool[(start + i) % n];
+    if (!_tableUsed.has(v)) { _tableUsed.add(v); return v; }
+  }
+  return pool[start];
+}
 const _esc = s => String(s == null ? '' : s)
   .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 function _fill(tpl, subs) {
@@ -1486,7 +1506,7 @@ const HOST_LINES = {
 // identical on every observer layer, which is what a host beat has to be.
 
 const NEEDLE_CONVERGE = [
-  '{Nm}. {n} people have said your name tonight and you have answered none of them properly. '
+  '{Nm}. That is {n} people who have said your name tonight and you have answered none of them properly. '
   + 'Would you like to try, or would you like to keep looking at the table?',
   '{Nm}, {n} of them have decided you are the interesting one this evening. How does that feel from where you are sitting?',
   'Let us start with {Nm}, since {n} of them already have. {Nm}, they think it is you. Are they right?',
@@ -1570,7 +1590,7 @@ const HOST_SENDOFF = [
 const ACCUSE_LINES = [
   '{A} keeps coming back to {t}, and will not be talked off it.',
   '{A} says it is {t}, looking straight down the table and refusing to look away.',
-  '{A} lays out the week and every part of it ends at {t}.',
+  '{A} goes through it step by step, and every step ends at {t}.',
   '{A} names {t}. No hedging, no softening, and no route back from it afterwards.',
   '{A} asks {t} a question with the answer already written on {pos} face.',
   '{A} will not let {t} finish a sentence tonight.',
@@ -1581,22 +1601,26 @@ const ACCUSE_LINES = [
 // beside them. The pool above is NARRATION and belongs in a paragraph: the
 // first draft put "Caleb names Amy" in Caleb's own mouth, which is the kind of
 // defect no assertion catches and a single read of the output does.
+// NO INVENTED HISTORY. "I have spent all week defending {t}" and "every time
+// something has gone wrong this week" were said on day two, by people who
+// had never once defended anybody. An accusation says what the speaker
+// thinks now; the evidence card underneath says why.
 const ACCUSE_SAID = [
-  'It is {t}. I have thought about nothing else since yesterday morning, and it is {t}.',
+  'It is {t}. I have thought about it all day, and it is {t}.',
   'I want to ask {t} something, and I want all of you watching {pos} face while {sub} answers it.',
-  'Every time something has gone wrong this week, {t} has been standing exactly where it went wrong.',
-  'I am not going to dress it up. I think it is {t}, and I think most of you think so too.',
-  'Tell me I am wrong, {t}. Out loud. Now, in front of everybody.',
-  'I have spent all week defending {t}. I am finished doing that.',
+  'I keep coming back to {t}. I cannot shake it.',
+  'I am not going to dress it up. I think it is {t}, and I think some of you do too.',
+  'Tell me I am wrong, {t}. Go on. In front of everybody.',
+  'I like {t}. I still think it is {t}.',
   'Nobody else is going to say it, so I will. {t}.',
-  'If I am wrong about {t} then I should be the next one out of that door, and I will take it.',
+  'If I am wrong about {t}, I will be the next one out of that door, and I will take it.',
 ];
 const ACCUSED_REPLY = [
   '{T} takes it flat, which half the room reads as innocence and the other half as practice.',
   '{T} answers too fast, and the room hears the speed rather than the words.',
   '{T} says the only true thing {sub} has left: that being suspected is not evidence.',
   '{T} laughs, and it lands badly.',
-  '{T} says nothing at all, and lets the accusation sit there getting older.',
+  '{T} shakes {pos} head before {a} has even finished.',
   '{T} turns it round and asks who put the idea in {a}’s head.',
 ];
 // THE ACCUSED ANSWERS, in their own voice — the show gives everyone the floor to
@@ -1606,7 +1630,7 @@ const ACCUSED_DEFENCE = [
   'I did not touch anyone. I cannot prove that to you, and I know exactly how that sounds from where I am sitting.',
   'You want a Traitor and I am the easiest name in this room. Those are not the same thing, and you all know it.',
   'Ask yourself who is loudest about me tonight. Then ask yourself why they need me gone before I can talk.',
-  'If you send me out and I was one of yours, you have just done their work for them, in the open, for free.',
+  'If you send me out and I turn out to be Faithful, you have done the Traitors’ work for them, in front of everybody.',
   'Every one of you has had an hour today you could not fully account for. Tonight you have decided it is mine.',
   'Write my name if you have already made your minds up. But you will be back here next week with the same problem.',
 ];
@@ -1622,21 +1646,25 @@ const ACCUSED_DEFLECT = [
 // somebody said a name back with nothing under it. When the deflector holds a
 // citable record against the person they are pointing at, it goes on the wood
 // with the name. `{d}` is the name, `{dsrc}` their own stored reason.
+// `{dsrc}` is a PREDICATE with no subject ("still had Dave down as safe…"),
+// so every line gives it one: `{d}`, the person it is about. Printed bare
+// after a colon it read as a fragment — "a reason, not just a name: has
+// managed a whole season without naming Geoff once."
 const DEFLECT_SOURCE = [
-  'And {T} is not doing it empty-handed: {dsrc}.',
-  'It is not just a name thrown back. {T} has a reason for {d}, and gives it: {dsrc}.',
-  '{T} puts something under it before anybody can call it a reflex: {dsrc}.',
-  'The room was ready to hear a name and nothing else. What it gets is a reason: {dsrc}.',
+  'And {T} has a reason for it: {d} {dsrc}.',
+  '{T} has a reason, and gives it. {D} {dsrc}.',
+  '{T} backs it up straight away: {d} {dsrc}.',
+  'It is not just a name thrown back. According to {T}, {d} {dsrc}.',
 ];
 // HOW A SPEAKER PUTS THEIR EVIDENCE ON THE TABLE. `{src}` is the exact reason
 // their belief carries — drawn from the stored source, never invented — so the
 // claim is never "{A} finds {t} suspicious" but a thing that actually happened.
 // The framing lets the source phrase stand as the reason.
 const CLAIM_SOURCE = [
-  '{A} backs the accusation up with something specific: {src}.',
-  'And {A} has evidence — {src} — which is more than most accusations at this table come with.',
-  '{A} gives the table a reason, not just a name: {src}.',
-  '{A} does not stop at the name. {A} says why: {src}.',
+  '{A} backs it up with something specific: {t} {src}.',
+  'And {A} has a reason, which is more than most accusations at this table come with. {T} {src}.',
+  '{A} gives the table a reason, not just a name: {t} {src}.',
+  '{A} does not stop at the name, and says why. {T} {src}.',
 ];
 // ══════════════════════════════════════════════════════════════════════
 // SAYING THE SAME FACT MORE THAN ONE WAY
@@ -1670,7 +1698,7 @@ const REASON_PHRASINGS = [
     'still had {1} down as safe on the night {1} was turned over',
     'wrote a different name on the night {1} was revealed',
     'was not among the people who called {1}, on the night it turned out {1} was one',
-    'had {1} nowhere near their slate the night {1} went',
+    'never came close to writing {1}’s name the night {1} went',
     'spent that whole table defending a name that came back a Traitor',
     'looked at {1} on reveal night and picked somebody else',
     'sat through {1}’s reveal having backed {1} an hour earlier',
@@ -1679,8 +1707,8 @@ const REASON_PHRASINGS = [
     'put {1}’s name up at the table, and {1} did not survive the night',
     'was pushing {1} hours before the Traitors got to {1}',
     'wanted {1} out at the table and got it by morning, from a different direction',
-    'named {1} at that table. Nobody saw {1} again',
-    'and the Traitors agreed with {1} about {1} that same night',
+    'named {1} at that table, and nobody saw {1} again',
+    'named {1} out loud, and {1} was gone by morning',
     'said {1} out loud, and the castle woke up one short',
   ]],
   [/^never once voted against (.+)$/, [
@@ -1738,12 +1766,12 @@ function _sayReason(text, seed) {
 // ballot phrases. A case is two or three things that agree; one fact is a
 // hunch with a date on it.
 const CLAIM_SECOND = [
-  'And it is not one thing. {A} has a second: {src2}.',
-  'There is more than that, and {A} has been keeping it: {src2}.',
-  '{A} is not finished. The other half of it: {src2}.',
-  'Then {A} puts a second thing beside the first — {src2} — and lets the room hold both.',
-  'One of those on its own is nothing. {A} does not have one of those on its own: {src2}.',
-  '{A} adds the part that makes the first part matter: {src2}.',
+  'And it is not one thing. {A} has a second: {t} {src2}.',
+  'There is more, and {A} has been keeping it: {t} {src2}.',
+  '{A} is not finished. {T} {src2} as well.',
+  'Then {A} adds a second thing: {t} {src2}.',
+  'One of those on its own is nothing, but {A} has two. {T} {src2}.',
+  '{A} adds the part that makes the first part matter: {t} {src2}.',
 ];
 
 // AND WHEN THERE IS NOTHING TO CITE, WHICH IS BETTER THAN A QUARTER OF THE
@@ -1763,7 +1791,7 @@ const NO_SOURCE = {
     'It came from {f} and it has been going round ever since. {A} is repeating it back at the table it started at.',
     'The reason is {f}. {A} does not say that out loud, and everybody who was here last night works it out anyway.',
     '{A} is certain, and every bit of the certainty was handed over by {f} at this same wood.',
-    'Ask {A} where it came from and the answer is a person, not a thing. The person is {f}.',
+    '{A} did not work this out. {A} heard it from {f}.',
     'Every part of this reached {aobj} secondhand, from {f}, and {asub} is delivering it like a discovery.',
   ],
   // Something the whole room already has, so it reads as nobody's insight.
@@ -1777,8 +1805,8 @@ const NO_SOURCE = {
   // They had something. It has stopped being true under them.
   'gone-cold': [
     '{A} is still working from something that stopped being true days ago, and has not noticed.',
-    'The reason {A} has is out of date. {Asub} says it with all of last week’s certainty.',
-    'That was a good read on Tuesday. {A} is the last person in the castle still holding it.',
+    'The reason {A} has is out of date, and {asub} says it as if it were new.',
+    'That was a good read a few days ago. {A} is the last person in the castle still holding it.',
     'Whatever {A} had is days old now, and {asub} is still arguing as if it just happened.',
     '{A} is answering a question the week has already moved past.',
   ],
@@ -1899,10 +1927,15 @@ const READ_LEAD = [
   '{T} moves ahead, and the arithmetic in the room changes shape.',
   'That puts {t} on top of the pile.',
 ];
+// "JUST" ONLY WHEN IT WAS JUST. The first line fired on slate eight for a
+// slate that had been turned over on slate one.
+const READ_BACK_JUST = [
+  '{A} writes down the name of the person who just wrote {aobj}.',
+  'Straight back. {T} wrote {A} a moment ago, and {A} wrote {T}.',
+];
 const READ_BACK = [
-  '{A} writes down the name of the person who just wrote {pos}.',
-  'Both ways across the table, in the same handwriting hour.',
-  'They chose each other. One of them is about to find out what that cost.',
+  '{T} wrote {A} earlier. Now {A} has written {T}.',
+  'They wrote each other. One of them is about to find out what that cost.',
   'A straight exchange, and neither of them looks away while it happens.',
 ];
 
@@ -2057,7 +2090,7 @@ function _said(who, line) {
     + '<cite>' + _esc(who) + '</cite></div></div>';
 }
 function _murmur(key) {
-  return '<div class="rt-murmur">' + _pick(MURMUR, key) + '</div>';
+  return '<div class="rt-murmur">' + _fresh(MURMUR, key) + '</div>';
 }
 function _chip(text, tone) {
   return '<span class="rt-chip"' + (tone ? ' data-tone="' + tone + '"' : '') + '>'
@@ -2336,7 +2369,7 @@ function _buildBeats(v) {
   push('gather', _card(
     v.endgame ? 'What Is Left Of The Room' : 'The Room Sits Down',
     'The table', 'table',
-    '<p>' + v.seated.length + ' of them, and one chalkboard each. '
+    '<p>' + _cap(_numWord(v.seated.length)) + ' of them, and one chalkboard each. '
     + (v.endgame
       ? 'This far in there is nothing to work with but each other, and no answer coming afterwards.'
       : 'Whatever anybody has worked out since breakfast has to be said here or not at all.')
@@ -2375,14 +2408,15 @@ function _buildBeats(v) {
       + '<span>' + _esc(t.line || '') + '</span>'
       + '<div class="rt-faces">' + [t.by, t.spared, t.against].map(n => _faceChip(n, 26)).join('')
       + '</div>'
-      + '<span><b>' + _esc(t.by) + '</b> has two names and one vote. '
-      + _esc(t.against) + ' is the one this room listens to &mdash; weight '
-      + _esc(String(t.theirWeight)) + ' against ' + _esc(String(t.sparedWeight))
-      + ' &mdash; so ' + _esc(t.spared) + ' gets a week, and ' + _esc(t.by)
-      + ' spends the vote on ' + _esc(t.against) + '.</span>'
+      // NO RAW WEIGHTS IN A SENTENCE. "weight 0.58 against 0.49" is the
+      // debug screen's language; the reason is that the room listens to one
+      // of them more, and that is what the card says.
+      + '<span><b>' + _esc(t.by) + '</b> suspects both of them and has one vote. The room '
+      + 'listens to ' + _esc(t.against) + ' more, so ' + _esc(t.by) + ' votes for '
+      + _esc(t.against) + ' tonight and leaves ' + _esc(t.spared) + ' for later.</span>'
       + '<span>' + (t.shared
-        ? _esc(t.circleName || 'Their own people') + ' were told.'
-        : 'Nobody else was told. Not even ' + _esc(t.circleName || 'their own circle') + '.')
+        ? _esc(t.circleName || 'Their own people') + ' know about it.'
+        : 'Nobody else knows. Not even ' + _esc(t.circleName || 'their own circle') + '.')
       + '</span></div>', null, { kind: 'deal' });
   }
 
@@ -2437,7 +2471,7 @@ function _buildBeats(v) {
     const npr = nd.who ? _pr(nd.who) : null;
     const nline = _fill(_pick(nd.pool, key + '|needle|' + (nd.who || '-')),
       { Nm: _esc(nd.who || ''), them: npr ? npr.obj : '', they: npr ? npr.sub : '',
-        their: npr ? npr.posAdj : '', n: String(nd.n == null ? '' : nd.n) });
+        their: npr ? npr.posAdj : '', n: nd.n == null ? '' : _numWord(nd.n) });
     push('gather', _hostBand(nline)
       + (nd.who
         ? '<div class="rt-faces">' + _faceChip(nd.who, 30) + '</div>'
@@ -2545,36 +2579,36 @@ function _buildBeats(v) {
       + '<span class="rt-accused-nm">' + _esc(c.t) + '</span>'
       + '<span class="rt-accused-ct">' + c.acc.length
       + (c.acc.length === 1 ? ' voice' : ' voices') + '<br>at this name</span></div>';
-    inner += '<p>' + _fill(_pick(ACCUSE_LINES, key + '|acc|' + c.t), subs) + '</p>';
-    inner += _said(lead, _fill(_pick(ACCUSE_SAID, key + '|say|' + c.t), subs));
+    inner += '<p>' + _fill(_fresh(ACCUSE_LINES, key + '|acc|' + c.t), subs) + '</p>';
+    inner += _said(lead, _fill(_fresh(ACCUSE_SAID, key + '|say|' + c.t), subs));
     // THE MOVE, WITHOUT NAMING IT. See SACRIFICE_LINES: the room reads this as
     // a late convert and the audience gets the truth in the irony block below.
     if (sacrificing.has(lead + '>' + c.t)) {
-      inner += '<p>' + _fill(_pick(SACRIFICE_LINES, key + '|sac|' + c.t), subs) + '</p>';
+      inner += '<p>' + _fill(_fresh(SACRIFICE_LINES, key + '|sac|' + c.t), subs) + '</p>';
     }
     // THE SOURCE, CITED — only when the speaker actually holds one. And when
     // they do not, WHICH KIND OF NOTHING they are working from, rather than
     // the name-and-silence this printed before. `hearsay` needs a name it can
     // point at, so it falls back to the `feeling` pool without one.
     if (src) {
-      inner += '<p>' + _fill(_pick(CLAIM_SOURCE, key + '|src|' + c.t), subs) + '</p>';
+      inner += '<p>' + _fill(_fresh(CLAIM_SOURCE, key + '|src|' + c.t), subs) + '</p>';
       // THE CASE, not the one fact. Only when a genuine second clue exists —
       // `_reasonFor` dedupes by sentence, so this is never the first one
       // reworded.
       if (subs.src2) {
-        inner += '<p>' + _fill(_pick(CLAIM_SECOND, key + '|src2|' + c.t), subs) + '</p>';
+        inner += '<p>' + _fill(_fresh(CLAIM_SECOND, key + '|src2|' + c.t), subs) + '</p>';
       }
     } else {
       let rk = (mine && mine.reasonKind) || 'feeling';
       if (rk === 'hearsay' && !subs.f) rk = 'feeling';
       const pool = NO_SOURCE[rk] || NO_SOURCE.feeling;
-      inner += '<p>' + _fill(_pick(pool, key + '|nosrc|' + rk + '|' + c.t), subs) + '</p>';
+      inner += '<p>' + _fill(_fresh(pool, key + '|nosrc|' + rk + '|' + c.t), subs) + '</p>';
     }
     if (c.acc.length > 1) {
       inner += '<div class="rt-faces">'
         + c.acc.slice(0, 8).map(n => _faceChip(n, 26)).join('') + '</div>';
     }
-    inner += '<p>' + _fill(_pick(ACCUSED_REPLY, key + '|rep|' + c.t), subs) + '</p>';
+    inner += '<p>' + _fill(_fresh(ACCUSED_REPLY, key + '|rep|' + c.t), subs) + '</p>';
     // THE ACCUSED GETS THE FLOOR, in their own voice — every table on the real
     // show lets the named player answer before the slates. And they throw it
     // back ONLY at a name they actually put up tonight (`byTarget` proves it),
@@ -2582,15 +2616,15 @@ function _buildBeats(v) {
     inner += _said(c.t, pickDefence(key + '|def|' + c.t));
     const deflectTo = [...byTarget.entries()].find(([tgt, accs]) => tgt !== c.t && accs.includes(c.t));
     if (deflectTo) {
-      const dsubs = { ...subs, d: _esc(deflectTo[0]) };
-      inner += '<p>' + _fill(_pick(ACCUSED_DEFLECT, key + '|dfl|' + c.t), dsubs) + '</p>';
+      const dsubs = { ...subs, d: _esc(deflectTo[0]), D: _esc(deflectTo[0]) };
+      inner += '<p>' + _fill(_fresh(ACCUSED_DEFLECT, key + '|dfl|' + c.t), dsubs) + '</p>';
       // AND THE REASON FOR IT, when the deflector holds one. `v.speeches` is
       // the whole table's, so this is the deflector's OWN record against the
       // name they just said — never the reason somebody else has for it.
       const back = v.speeches.find(sp => sp.speaker === c.t && sp.target === deflectTo[0]
         && (sp.sources || []).length);
       if (back) {
-        inner += '<p>' + _fill(_pick(DEFLECT_SOURCE, key + '|dsrc|' + c.t),
+        inner += '<p>' + _fill(_fresh(DEFLECT_SOURCE, key + '|dsrc|' + c.t),
           { ...dsubs, dsrc: _esc(_sayReason(back.sources[0].text, key + '|d|' + c.t)) }) + '</p>';
       }
     }
@@ -2610,7 +2644,7 @@ function _buildBeats(v) {
         ? _esc(betrayers[0]) + ' is not agreeing with the room. ' + _esc(betrayers[0])
           + ' is burying somebody who was in the turret this week, before '
           + _esc(c.t) + ' can be asked a question with an answer.'
-        : _fill(_pick(pool, key + '|iro|' + c.t), subs);
+        : _fill(_fresh(pool, key + '|iro|' + c.t), subs);
       inner += '<div class="rt-irony"><b>What the room cannot see</b><span>'
         + line + '</span></div>';
     }
@@ -2628,11 +2662,11 @@ function _buildBeats(v) {
       const mpr = _pr(mv);
       const msubs = { who: _esc(mv), t: c.t, sub: mpr.sub, Sub: mpr.Sub,
         obj: mpr.obj, pos: mpr.pos };
-      let mi = '<p>' + _fill(_pick(MINDCHANGE_TEXT, key + '|mc|' + c.t + '|' + mv), msubs) + '</p>';
+      let mi = '<p>' + _fill(_fresh(MINDCHANGE_TEXT, key + '|mc|' + c.t + '|' + mv), msubs) + '</p>';
       if (movers.length > 1) {
         mi += '<div class="rt-faces">'
           + movers.slice(0, 8).map(n => _faceChip(n, 26)).join('') + '</div>'
-          + '<p>' + _fill(_pick(MINDCHANGE_MORE, key + '|mcm|' + c.t), msubs) + '</p>';
+          + '<p>' + _fill(_fresh(MINDCHANGE_MORE, key + '|mcm|' + c.t), msubs) + '</p>';
       }
       if (ci === clusters.length - 1) mi += _murmur(key + '|m2|' + c.t);
       push('debate', _card('A Name Travels', 'The debate', 'hand', mi),
@@ -2728,8 +2762,10 @@ function _buildBeats(v) {
       + '<p class="rt-clash-t">' + _esc(c.line) + '</p>'
       // WHAT IT IS ABOUT, quoted off the thread's opening beat. Without this
       // the card says an argument happened and never says what argument.
-      + (c.since ? '<p class="rt-clash-since">&ldquo;' + _esc(c.since)
-        + '&rdquo;</p>' : '') + '</div>',
+      // NOT IN QUOTATION MARKS: the opening beat is narration, and quoted it
+      // read as something one of them had said out loud at the table.
+      + (c.since ? '<p class="rt-clash-since"><b>How it started:</b> ' + _esc(c.since)
+        + '</p>' : '') + '</div>',
     null, { kind: 'clash', pair: [c.a, c.b] });
   }
 
@@ -2779,7 +2815,11 @@ function _buildBeats(v) {
       // about a slate it had not seen yet -- the sidebar's spoiling bug,
       // wearing a card.
       else if (b.target && seenPair.get(b.target) === b.voter) {
-        note = _fill(_pick(READ_BACK, key + '|bk|' + b.voter), subs);
+        const prevB = ballots[i - 1];
+        const just = prevB && prevB.voter === b.target && prevB.target === b.voter;
+        const apr = _pr(b.voter);
+        note = _fill(_pick(just ? READ_BACK_JUST : READ_BACK, key + '|bk|' + b.voter),
+          { ...subs, obj: _pr(b.target).obj, aobj: apr.obj });
       } else if (i === 0) {
         note = _pick(READ_FIRST, key + '|f' + roundIx);
       } else if (b.target && leadersNow.length === 1 && leadersNow[0] === b.target
@@ -3523,6 +3563,7 @@ export function trRoundTableRevealAll(suffix, total, epNum) {
  * it is applied.
  */
 export function rpBuildRoundTable(ep, observer = 'audience') {
+  _tableUsed = new Set();
   const rec = ep && ep.tr && ep.tr.table;
   const suffix = 'roundtable';
   // The noise tiles are rendered once per build and handed to CSS as custom

@@ -582,7 +582,7 @@ export function liveTruces(ep) {
 
 const TRUCE_LINES = {
   open: [
-    '{a} stops saying {b}\u2019s name \u2014 not because {a} stopped thinking it, but because {c} is the bigger problem and there is only one vote to spend.',
+    '{a} stops naming {b}. {a} still suspects {b}, but {c} is the bigger problem and there is only one vote to spend.',
     '{a} goes to {b} with something close to an offer: not tonight, and not from me, so long as it is {c} we are both looking at.',
     '{a} decides {c} is worth more gone than {b} is, and that {b} is worth more alive and grateful.',
     'Two names and one vote. {a} spends it on {c}, and lets {b} hear that it was spent.',

@@ -2,11 +2,12 @@
 import { pronouns } from '../players.js';
 import { gs } from '../core.js';
 import { band, beatsInvolving, spotlightOrder, bond, memoriesOf, memoryWeek, pStats, remembers } from './_read.js';
+import { freshLine } from '../bb/aired.js';
 
 function variant(lines, ctx, ...salt) {
   const key=`${ctx?.week?.num||0}|${ctx?.beat||0}|${ctx?.act||''}|${salt.join('|')}`;
   let h=2166136261; for(const ch of key) h=Math.imul(h^ch.charCodeAt(0),16777619)>>>0;
-  return lines[h%lines.length];
+  return freshLine(lines, h, ctx);
 }
 /** Least-seen first, weighted toward whoever this week is about. */
 const quiet = pool => spotlightOrder(pool);

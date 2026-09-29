@@ -28,6 +28,7 @@ import {
   trustOf, resentmentOf, beatsInvolving, spotlightOrder, actFacts,
 } from './_read.js';
 import { memoriesAbout } from '../strategy-memory.js';
+import { freshLine } from '../bb/aired.js';
 
 const _others = (house, ...x) => house.filter(n => n && !x.includes(n));
 /** Least-seen first, weighted toward whoever this week is about. */
@@ -42,7 +43,7 @@ function _variant(list, ctx, ...salt) {
   const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${ctx?.phase || ''}|${salt.join('|')}`;
   let hash = 0;
   for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
-  return list[hash % list.length];
+  return freshLine(list, hash, ctx);
 }
 
 /**

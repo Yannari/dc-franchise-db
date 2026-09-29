@@ -25,6 +25,7 @@ import {
   isNice, isVillainous, archetype, resentmentOf, trustOf, beatsInvolving, spotlightOrder,
   actFacts, alliancesOf, deFactoAllies,
 } from './_read.js';
+import { freshLine } from '../bb/aired.js';
 
 // ── helpers ───────────────────────────────────────────────────────────
 
@@ -32,7 +33,7 @@ function _variant(list, ctx, ...salt) {
   const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${ctx?.act || ''}|${salt.join('|')}`;
   let hash = 0;
   for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
-  return list[hash % list.length];
+  return freshLine(list, hash, ctx);
 }
 
 /** Weight an event onto one phase of the week — the same scaling phases.js uses. */
@@ -1261,7 +1262,9 @@ const nobodySurprised = {
       `The ceremony takes four minutes and surprises nobody. Two people go back to bed. The house has known how this week ends since Monday.`,
       `Nothing about the veto changes anything, which everybody privately expected and nobody says out loud in case it sounds like gloating.`,
       `${watchers[0] || 'Somebody'} asks what happened at the ceremony, gets the answer and goes straight back to what ${pronouns(watchers[0] || 'Somebody').sub} ${pronouns(watchers[0] || 'Somebody').sub === 'they' ? 'were' : 'was'} doing.`,
-      `There is no scene after it. ${noms.join(' and ')} are the same two names they were this morning, and the vote was decided before any of it.`,
+      // Only when the act actually carries the block; a campaign stretch can
+      // arrive without it and printed " and  are the same two names".
+      ...(noms.length === 2 ? [`There is no scene after it. ${noms.join(' and ')} are the same two names they were this morning, and the vote was decided before any of it.`] : []),
     ], ctx, ...watchers);
     // A week with no surprise is still a week: the block hardens.
     noms.forEach(n => watchers.forEach(w => api.suspicion(w, n, 0.2)));

@@ -52,6 +52,10 @@ describe("Pandora's Box actually charges for the box", () => {
       const ep = withSeededRandom(seed * 19, () => simulateBBEpisode());
       const act = (ep.acts || []).find(a => a.type === 'pandoras-box');
       if (!act?.opened) continue;
+      // A box whose Diamond Veto was PLAYED at the live show has been
+      // revealed to everybody, and naming it is correct. The secrecy this
+      // guards is the week the prize is held and never used.
+      if (ep.diamondDetonation) continue;
 
       // The price is a real punishment, not a string.
       expect(BB_PUNISHMENTS[act.consequence], `not a real punishment: ${act.consequence}`)

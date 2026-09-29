@@ -236,7 +236,9 @@ describe('a season with the week scheduled', () => {
     let doubles = 0;
     let zeroVoteExits = 0;
 
-    for (const seed of [3, 11, 29]) {
+    // Eight seeds, not three: a partner leaving on zero votes is a real but
+    // occasional outcome, and three seeds sat on the edge of never seeing it.
+    for (const seed of [3, 11, 29, 41, 57, 73, 89, 101]) {
       house();
       seasonConfig.twistSchedule = [{ episode: 2, type: 'bb-duo-week' }];
       withSeededRandom(seed, () => {

@@ -26,6 +26,7 @@ import {
   isNice, isVillainous, archetype, trustOf, obligationOf, respectOf, dangerOf,
   resentmentOf, beatsInvolving, spotlightOrder, actFacts,
 } from './_read.js';
+import { freshLine } from '../bb/aired.js';
 
 // ── helpers ───────────────────────────────────────────────────────────
 
@@ -33,7 +34,7 @@ function _variant(list, ctx, ...salt) {
   const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${ctx?.act || ''}|${salt.join('|')}`;
   let hash = 0;
   for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
-  return list[hash % list.length];
+  return freshLine(list, hash, ctx);
 }
 
 const _others = (house, ...exclude) => house.filter(n => n && !exclude.includes(n));
@@ -59,6 +60,8 @@ const _voters = (house, ctx) =>
 
 // ── casting ───────────────────────────────────────────────────────────
 
+const _holdsFinalTwo = name => endgameDealsOf(name).some(d => tierOf(d) === 'final-two');
+
 function _pactPair(house, ctx) {
   const pool = _leastSeen(house);
   for (const a of pool) {
@@ -67,10 +70,15 @@ function _pactPair(house, ctx) {
     // full head — so a final four watched two people solemnly invent the
     // final two they had been in since week three. The deal ledger doesn't
     // forget; ask it first, in both directions.
+    // A FIRST final two only, for both of them. Somebody who already holds
+    // one and shakes on another is the SECOND DEAL event — a double-cross the
+    // house can catch — not this. Without the check a single houseguest was
+    // collecting three final twos in a week, every one of them sincere.
+    if (_holdsFinalTwo(a)) continue;
     const b = _others(house, a).find(n =>
       bond(a, n) >= 3 && trustOf(a, n) >= 0
       && !remembers(a, n, 'final-two') && !remembers(n, a, 'final-two')
-      && !dealBetween(a, n));
+      && !dealBetween(a, n) && !_holdsFinalTwo(n));
     if (b) return { a, b };
   }
   return null;
@@ -179,6 +187,7 @@ function _juryPair(house, ctx) {
 const finalTwo = {
   id: 'deals-final-two',
   category: 'deals',
+  oncePerWeek: true,
   weight(house, ctx) {
     const pair = _pactPair(house, ctx);
     if (!pair) return 0;
@@ -646,8 +655,15 @@ const finalThreePact = {
 /** Somebody with a final two already, shaking on a second one. */
 function _hedger(house) {
   for (const a of _leastSeen(house)) {
+    // Promising the same seat to two people is a scheme, and the franchise
+    // rule for who may scheme applies: a hero does not run two final twos.
+    // Ungated, this was the commonest deal in the game — more second deals
+    // than first ones across eight measured seasons.
+    if (!willScheme(a)) continue;
     const held = endgameDealsOf(a).filter(d => tierOf(d) === 'final-two');
-    if (!held.length) continue;
+    // Exactly one: the second deal is the story. A third is not a hedge, it
+    // is a houseguest promising the end to everybody they talk to.
+    if (held.length !== 1) continue;
     const existing = held[0].players.find(n => n !== a);
     const mark = _others(house, a, existing).find(n =>
       bond(a, n) >= 1.5 && !dealBetween(a, n) && trustOf(n, a) >= 0);
@@ -665,7 +681,7 @@ const hedgedDeal = {
     if (!h) return 0;
     const s = pStats(h.a);
     const nerve = (s.strategic * 0.6 + s.boldness * 0.4) / 10;
-    return _w(nerve * (house.length <= 8 ? 1.5 : 1) * 11, ctx);
+    return _w(nerve * (house.length <= 8 ? 1.5 : 1) * 5, ctx);
   },
   fire(house, ctx, api) {
     const { a, mark, existing } = _hedger(house);

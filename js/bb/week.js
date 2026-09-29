@@ -6789,6 +6789,41 @@ export function simulateBBWeek(options = {}) {
             const pref = initialVotePreference(save, nominees, rng);
             ballots.push({ voter: save, ...pref, preference: pref.evict, changed: false, dpovAdded: true });
           }
+          // The holder knew all week whom the veto was for. Their ballot told
+          // the house the saved name as cover, and the count screen then
+          // scored them as having "counted" votes against the person they
+          // were about to save. Their ballot is what it always was, and a
+          // count aimed at somebody who is no longer on the block is not a
+          // wrong count — the block changed.
+          const holderBallot = ballots.find(b => b.voter === holder);
+          if (holderBallot) {
+            holderBallot.preference = holderBallot.evict;
+            holderBallot.stated = holderBallot.evict;
+            holderBallot.lied = null;
+          }
+          week.votePlans = (week.votePlans || []).filter(v => v.target !== save && v.voter !== holder);
+          // ── The rooms re-aim ──
+          // Every alliance met about a block that no longer exists. They have
+          // minutes, not days, so nobody re-campaigns — each room simply swings
+          // to the nominee who is not one of theirs, and its members' ballots
+          // go with it. Left alone, the plans kept talking about the saved
+          // houseguest while the ballots scattered at random.
+          for (const plan of week.voteOperation?.plans || []) {
+            const valid = nominees.includes(plan.target) && !(plan.members || []).includes(plan.target)
+              && !(gs.namedAlliances || []).some(a => a.name === plan.alliance && (a.members || []).includes(plan.target));
+            if (valid) continue;
+            const ownMembers = (gs.namedAlliances || []).find(a => a.name === plan.alliance)?.members || plan.members || [];
+            const next = nominees.find(n => !ownMembers.includes(n)) || null;
+            if (!next) continue;
+            plan.reaimed = { from: plan.target, to: next };
+            plan.target = next;
+            plan.keeping = nominees.find(n => n !== next) || null;
+            for (const b of ballots) {
+              if ((plan.members || []).includes(b.voter) && b.dpovMove && b.evict !== next) {
+                b.evict = next; b.blocMove = plan.alliance;
+              }
+            }
+          }
           const replacementWhy = explainReplacement(holder, replacement,
             house.filter(n => !protectedNames.includes(n)), chooserPlan, nominees);
           week.diamondDetonation = { holder, saved: save, replacement,

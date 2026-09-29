@@ -31,6 +31,7 @@ import {
 } from './_read.js';
 import { endgameDealsOf, tierOf } from '../bb/deals.js';
 import { seatedJurors } from '../bb/jury.js';
+import { freshLine } from '../bb/aired.js';
 
 // ── shared plumbing ───────────────────────────────────────────────────
 
@@ -39,7 +40,7 @@ function variant(lines, ctx, ...salt) {
   const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${ctx?.act || ''}|${salt.join('|')}`;
   let h = 2166136261;
   for (const ch of key) h = Math.imul(h ^ ch.charCodeAt(0), 16777619) >>> 0;
-  return lines[h % lines.length];
+  return freshLine(lines, h, ctx);
 }
 
 /** Least-seen first, weighted toward whoever this week is about. */

@@ -28,12 +28,13 @@ import {
 } from '../bb/fallout.js';
 import { knowsVote } from '../bb/knowledge.js';
 import { believes, factId, learn } from '../knowledge.js';
+import { freshLine } from '../bb/aired.js';
 
 function _variant(list, ctx, ...salt) {
   const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${ctx?.act || ''}|${salt.join('|')}`;
   let hash = 0;
   for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
-  return list[hash % list.length];
+  return freshLine(list, hash, ctx);
 }
 /** Least-seen first, weighted toward whoever this week is about. */
 const _quiet = pool => spotlightOrder(pool);

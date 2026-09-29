@@ -1,12 +1,13 @@
 // One consequence-bearing slice of house life for every supported camera.
 import { pronouns } from '../players.js';
 import { archetype, band, beatsInvolving, bond, closestTo, furthestFrom, pStats, targetOf } from './_read.js';
+import { freshLine } from '../bb/aired.js';
 
 function variant(lines, ctx, ...salt) {
   const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${ctx?.act || ''}|${salt.join('|')}`;
   let hash = 2166136261;
   for (const ch of key) hash = Math.imul(hash ^ ch.charCodeAt(0), 16777619) >>> 0;
-  return lines[hash % lines.length];
+  return freshLine(lines, hash, ctx);
 }
 const others = (house, ...skip) => house.filter(n => n && !skip.includes(n));
 const quiet = pool => [...pool].sort((a,b) => beatsInvolving(a)-beatsInvolving(b));

@@ -149,13 +149,19 @@ describe('a group that could not have existed from night one', () => {
     initGameState();
     globalThis.gs = gs;
     let twin = null;
-    // Seed chosen because she survives her arrival week on it. She does not on
+    // The first seed on which she survives her arrival week. She does not on
     // every seed, and that is the game working — she walks in mid-week and the
-    // house can put her straight up.
-    withSeededRandom(13, () => {
-      installTwinTwist([...gs.activePlayers], { weeks: 2, quota: 0, rng: Math.random, pick: 'Scary' });
-      for (let i = 0; i < 3; i++) simulateBBEpisode();
-    });
+    // house can put her straight up. Searched rather than pinned, because a
+    // pinned seed breaks whenever anything upstream draws one more number.
+    for (let seed = 13; seed < 60; seed++) {
+      initGameState();
+      globalThis.gs = gs;
+      withSeededRandom(seed, () => {
+        installTwinTwist([...gs.activePlayers], { weeks: 2, quota: 0, rng: Math.random, pick: 'Scary' });
+        for (let i = 0; i < 3; i++) simulateBBEpisode();
+      });
+      if (twinState().entered && gs.activePlayers.includes(twinState().other)) break;
+    }
     twin = twinState().other;
     expect(twinState().entered, 'the twin never got in').toBe(true);
     expect(gs.activePlayers).toContain(twin);

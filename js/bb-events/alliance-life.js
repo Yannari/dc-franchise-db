@@ -31,6 +31,7 @@ import { pronouns } from '../players.js';
 import {
   pStats, bond, perceived, band, spotlightOrder, beatsInvolving, targetOf,
 } from './_read.js';
+import { freshLine } from '../bb/aired.js';
 
 // ── helpers ───────────────────────────────────────────────────────────
 
@@ -38,7 +39,7 @@ function _variant(list, ctx, ...salt) {
   const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${ctx?.act || ''}|${salt.join('|')}`;
   let hash = 0;
   for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
-  return list[hash % list.length];
+  return freshLine(list, hash, ctx);
 }
 
 const _quiet = pool => spotlightOrder(pool);

@@ -859,7 +859,10 @@ describe('an alliance that stops existing says so', () => {
 
     const unexplained = [];
     let checked = 0;
-    for (let s = 0; s < 4; s++) {
+    // Eight seasons of ten weeks. Alliances are built to last now — the early
+    // bloc usually survives the first six weeks intact, as it does on the show
+    // — so a shorter window could finish without a single one ending.
+    for (let s = 0; s < 8; s++) {
       seedGame(Array.from({ length: 18 }, (_, i) => ({ name: 'P' + i,
         archetype: ARCH[i % ARCH.length], gender: i % 2 ? 'f' : 'm',
         sexuality: 'straight', stats: spread(i + 1) })),
@@ -874,7 +877,7 @@ describe('an alliance that stops existing says so', () => {
         getBond, getPerceivedBond, ordinal });
 
       let prev = null;
-      for (let w = 0; w < 6; w++) {
+      for (let w = 0; w < 10; w++) {
         const ep = simulateBBEpisode();
         if (!ep) break;
         vp.buildBBWeekScreens(ep);

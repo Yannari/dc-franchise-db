@@ -787,20 +787,29 @@ const JOIN_AVG = 1.2;       // but genuinely wanted by the group overall
  * of the format is that a group large enough to control every vote is also
  * large enough that somebody in it is already counting who they cut first.
  */
-const MAX_ALLIANCE_SIZE = 7;
+// Measured against the wiki (Category:Alliances, BB21-27): every modern
+// season has a bloc of six to nine — Gr8ful 8, the 8 Pack, The Cookout 6 —
+// and it is built in the first fortnight. Seven held the house under that.
+// The real ceiling is the one below: a bloc stops growing once it is a
+// majority, because past that there is nobody left worth voting out.
+const MAX_ALLIANCE_SIZE = 9;
 
-function recruitmentOptions(house) {
+function recruitmentOptions(house, weekNum = 99) {
   const options = [];
+  const ceiling = Math.min(MAX_ALLIANCE_SIZE, Math.ceil(house.length / 2) + 1);
+  // Week one is sorted on first impressions: people join the big group
+  // because it is the big group, before anybody has earned real trust.
+  const joinAvg = weekNum <= 2 ? 0.55 : weekNum <= 4 ? 0.9 : JOIN_AVG;
   for (const alliance of allianceStore()) {
     if (alliance.active === false || alliance.dissolved) continue;
     const members = (alliance.members || []).filter(name => house.includes(name));
     // Seven is the ceiling, not six. Past that an alliance is the house.
-    if (members.length < 2 || members.length >= MAX_ALLIANCE_SIZE) continue;
+    if (members.length < 2 || members.length >= ceiling) continue;
     for (const candidate of house) {
       if (members.includes(candidate)) continue;
       const scores = members.map(m => pairTrust(candidate, m));
       const avg = scores.reduce((sum, v) => sum + v, 0) / scores.length;
-      if (Math.min(...scores) < JOIN_FLOOR || avg < JOIN_AVG) continue;
+      if (Math.min(...scores) < JOIN_FLOOR || avg < joinAvg) continue;
       // A smaller alliance is hungrier for numbers than one that already has them.
       options.push({ alliance, members: [...members, candidate], candidate,
         score: avg + (MAX_ALLIANCE_SIZE - members.length) * 0.35 });
@@ -920,19 +929,39 @@ export function updateBBAllianceLifecycle({ phase = 'opening', house = gs.active
   // Growing an existing alliance comes first. It is how a pair becomes a bloc,
   // and without it the house fills with duos that die the moment one of the two
   // is evicted.
-  for (const option of recruitmentOptions(house).slice(0, 4)) {
+  // One recruitment per alliance per week and one new room per houseguest per
+  // week. The lifecycle runs in every stretch of house life, so without these
+  // a group took somebody in after the HOH, again after nominations and again
+  // during the campaign — twenty-three recruitments a season, measured.
+  const changedThisWeek = al => (al.history || []).some(h => h.week === weekNum
+    && (h.type === 'recruited' || h.type === 'formed' || h.type === 'formed-inside'));
+  const joinedThisWeek = name => allianceStore().some(al => al.active !== false && !al.dissolved
+    && (al.history || []).some(h => h.week === weekNum && h.type === 'recruited' && h.member === name));
+  const newThisWeek = allianceStore().filter(al => al.formed === weekNum).length;
+  // An alliance closes as the season goes on: by the middle of the game the
+  // groups that exist are the groups there are.
+  // The first three weeks are when blocs are BUILT, so a group may take
+  // somebody in during every stretch of house life; after that it recruits at
+  // most once a week and less readily as the season settles.
+  const lateDamp = weekNum <= 3 ? 1 : weekNum <= 5 ? 0.6 : 0.4;
+  for (const option of recruitmentOptions(house, weekNum).slice(0, 4)) {
     if (isOvercommitted(option.candidate)) continue;
+    if ((weekNum > 3 && changedThisWeek(option.alliance)) || joinedThisWeek(option.candidate)) continue;
     // The first fortnight favors growing the alliance you have over founding
     // another duo — a small thumb on the scale, not a guarantee, per the
     // audit: creation volume is healthy, founding-shape is what was thin.
     const earlyBias = weekNum <= 2 ? 0.15 : 0;
-    const chance = clamp(0.22 + option.score * 0.11 + earlyBias, 0.25, 0.78);
+    const chance = clamp(0.22 + option.score * 0.11 + earlyBias, 0.25, 0.78) * lateDamp;
     if (rng() >= chance) continue;
     option.alliance.members = [...option.members];
     option.alliance.trust = option.score;
     (option.alliance.history ||= []).push({ week:weekNum, type:'recruited', member:option.candidate });
     return { formed:option.alliance, alliances:allianceStore() };
   }
+
+  // One new room a week (two on move-in week, when the house is sorting
+  // itself for the first time).
+  if (newThisWeek >= (weekNum <= 2 ? 2 : 1)) return { formed:null, alliances:allianceStore() };
 
   // The alliance inside the alliance, before founding anything new.
   for (const option of innerCircleOptions(house).slice(0, 3)) {

@@ -29,12 +29,13 @@ import {
   tellAbout, exposeBloc, outsidersTo, hasPlanAgainst, recordPlanAgainst, blocExposure,
 } from '../bb/blocs.js';
 import { timesVotedTogether, evictionCount } from '../bb/fallout.js';
+import { freshLine } from '../bb/aired.js';
 
 function _variant(list, ctx, ...salt) {
   const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${ctx?.act || ''}|${salt.join('|')}`;
   let hash = 0;
   for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
-  return list[hash % list.length];
+  return freshLine(list, hash, ctx);
 }
 
 const _others = (house, ...exclude) => house.filter(n => n && !exclude.includes(n));

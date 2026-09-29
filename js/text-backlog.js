@@ -6648,12 +6648,11 @@ export function generateBBSummaryText(ep) {
         const voters = (act.ballots || []).map(b => b.voter);
         const majority = Math.floor(voters.length / 2) + 1;
         sec('VOTING PLANS');
-        // A Diamond Veto goes off AFTER these rooms met, so every plan below
-        // still talks about the block as it was. Said once, up front, rather
-        // than leaving "Cody sits on the block" to contradict the section above.
+        // A Diamond Veto goes off AFTER these rooms met. Each room that was
+        // aimed at the saved houseguest is shown meeting about the old block
+        // and then swinging, in the minutes it had, to the new one.
         if (ep.diamondDetonation?.saved && ep.diamondDetonation?.replacement) {
-          ln(`  These rooms met before the Diamond Veto. ${ep.diamondDetonation.saved} is off the block now,`);
-          ln(`  and every plan aimed at ${ep.diamondDetonation.saved} has to land on ${ep.diamondDetonation.replacement} or the other chair instead.`);
+          ln(`  These rooms met before the Diamond Veto took ${ep.diamondDetonation.saved} off the block.`);
         }
         ln(`  ${majority} of ${voters.length} decides it.`);
         const STANCE = { dependable: 'locked', leaning: 'leaning', pulled: 'pulled in',
@@ -6666,7 +6665,7 @@ export function generateBBSummaryText(ep) {
             const tag = plan.locked >= plan.majority ? 'HOLDS THE HOUSE'
               : plan.expected >= plan.majority ? 'THINKS IT HOLDS THE HOUSE' : `${plan.needed} SHORT`;
             ln('');
-            ln(`  ${plan.alliance} wants out ${plan.target} — ${tag}`);
+            ln(`  ${plan.alliance} wants out ${plan.reaimed ? plan.reaimed.from : plan.target} — ${tag}`);
             ln(`    ${plan.organizer} gathers the room: "${plan.reason}"`);
             plan.stances.forEach(st => {
               ln(`      ${st.voter}: ${STANCE[st.stance] || st.stance}`
@@ -6677,6 +6676,10 @@ export function generateBBSummaryText(ep) {
               if (st.argument) ln(`        ${st.argument}`);
             });
             if (plan.outsideSupport.length) ln(`    Already with them without being asked: ${plan.outsideSupport.join(', ')}.`);
+            if (plan.reaimed) {
+              ln(`    Then the Diamond Veto goes off. ${plan.reaimed.from} is safe, and ${plan.organizer}`);
+              ln(`    turns the room onto ${plan.reaimed.to} before anybody has sat back down.`);
+            }
             plan.approaches.forEach(a => {
               const OUT = { agrees: 'signs on', refuses: 'turns them down',
                 undecided: "won't commit", lies: 'says yes — and means no' };

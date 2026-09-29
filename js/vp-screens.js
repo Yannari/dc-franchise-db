@@ -22673,12 +22673,13 @@ function _bbopAlliancePlans(op) {
       <div class="bbop-plan-h">
         <span class="bbop-aname">${_bbEsc(plan.alliance)}</span>
         <span class="bbop-wants">wants out</span>
-        ${_bbAvatar(plan.target, 28)}<span class="bbop-tname">${_bbEsc(plan.target)}</span>
+        ${_bbAvatar(plan.reaimed ? plan.reaimed.from : plan.target, 28)}<span class="bbop-tname">${_bbEsc(plan.reaimed ? plan.reaimed.from : plan.target)}</span>
         ${tag}
       </div>
       <div class="bbop-organizer">${_bbAvatar(plan.organizer, 22)} <strong>${_bbEsc(plan.organizer)}</strong> gathers the room: “${plan.reason}”</div>
       <div class="bbop-members">${stanceRows}</div>
       ${promiseAsks}
+      ${plan.reaimed ? `<div class="bbop-arg">Then the Diamond Veto goes off. <strong>${_bbEsc(plan.reaimed.from)}</strong> is safe, and ${_bbEsc(plan.organizer)} turns the room onto <strong>${_bbEsc(plan.reaimed.to)}</strong> before anybody has sat back down.</div>` : ''}
     </div>`;
   }).join('');
   return `<div class="bbop-sec">

@@ -108,7 +108,10 @@ describe('a line that assumes a craft says so', () => {
       ...CONFESSIONAL_TIERS.flatMap(t => t.lines || [])];
     for (const l of all) {
       if (typeof l === 'string') continue;
-      expect(CRAFTS, `unknown craft "${l.needs}"`).toContain(l.needs);
+      // A line may be tagged with a claim about {b}'s season instead of a
+      // craft (js/dr/confessional.js, ABOUT); it must be one of the two.
+      if (l.about) expect(['coasting', 'tops']).toContain(l.about);
+      else expect(CRAFTS, `unknown craft "${l.needs}"`).toContain(l.needs);
       expect(textOf(l).length, 'a tagged line with no text').toBeGreaterThan(40);
     }
   });

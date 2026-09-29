@@ -208,3 +208,35 @@ export function drawPartners(cohort, rng = Math.random, n = 12) {
   }
   return out;
 }
+
+/* ── WHO SHE IS DRESSING, OUT OF DRAG ──
+   The makeover prep lines said "him" for every partner — so her mother was
+   talked into the heels as "him", and so was her grandmother. On the runway
+   the partner is her drag SISTER and the show says "she" whoever it is; in the
+   morning, before the transformation, it is the partner's own pronoun. Read
+   from what we actually know: the relationship ("her mother"), a queen sent
+   home, or the partner's own note ("his daughter"). Nothing known is "they". */
+const MALE_REL = /\b(father|dad|brother|uncle|nephew|grandfather|grandad|son|husband|boyfriend)\b/i;
+const FEMALE_REL = /\b(mother|mum|mom|sister|aunt|niece|grandmother|nan|daughter|wife|girlfriend)\b/i;
+export function partnerPronouns(partner) {
+  const P = {
+    he: { sub: 'he', obj: 'him', pos: 'his' },
+    she: { sub: 'she', obj: 'her', pos: 'her' },
+    they: { sub: 'they', obj: 'them', pos: 'their' },
+  };
+  if (!partner) return P.they;
+  if (partner.isQueen || /^eliminated|^alumni/.test(String(partner.id || ''))) return P.she;
+  const name = String(partner.name || '');
+  if (/^her /i.test(name)) {
+    if (MALE_REL.test(name)) return P.he;
+    if (FEMALE_REL.test(name)) return P.she;
+    return P.they;
+  }
+  const note = String(partner.note || '');
+  const he = /\b(he|him|his|himself)\b/i.test(note);
+  const she = /\b(she|her|hers|herself)\b/i.test(note);
+  if (he && !she) return P.he;
+  if (she && !he) return P.she;
+  if (/^(Sergeant|Corporal|Captain|Private|Major|Lieutenant|Officer|Airman|Gunner|Commander|Ensign)\b/.test(name)) return P.they;
+  return P.they;
+}

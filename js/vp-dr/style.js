@@ -350,7 +350,12 @@ export function _note(sc) {
   const [a, b] = sc?.data?.players || [];
   if (/\{[ab]\}/.test(raw) && !a) return '';
   if (/\{b\}/.test(raw) && !b) return '';
-  return raw.replace(/\{a\}/g, a || '').replace(/\{b\}/g, b || '')
+  /* A NOTE IS SHOWN TO THE VIEWER, and a note that doubles as a brief to
+     the writer ("Write the moment the answer is read out") printed that
+     instruction on screen. Any sentence addressed to the writer is dropped. */
+  const shown = raw.split(/(?<=[.!?])\s+/)
+    .filter(t => !/^(Write|Do not|Don't|Avoid|Use the|Name the)\b/.test(t.trim())).join(' ');
+  return shown.replace(/\{a\}/g, a || '').replace(/\{b\}/g, b || '')
     .replace(/\s+/g, ' ').trim();
 }
 

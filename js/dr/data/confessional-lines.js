@@ -272,9 +272,9 @@ export const CONFESSIONAL_TIERS = [
   tier('results-hers-landed', 'Somebody else was placed at the top.', +1, [
     '"{b} at the top. Fine. Deserved, even." {a} pauses. "I hate saying deserved."',
     '"When they said {b}, the girl next to me clapped. I clapped too. Mine was quieter."',
-    '"{b} is building a track record now, and a track record is a target." {a} looks at the camera. "Just noting it."',
+    { about: 'tops', line: '"{b} is building a track record now, and a track record is a target." {a} looks at the camera. "Just noting it."' },
     '"Good for {b}. She worked for it." {a} nods. "I watched her work for it all week and it paid off."',
-    '"Another week, another good result for {b}." {a} raises an eyebrow. "At some point that stops being luck."',
+    { about: 'tops', line: '"Another week, another good result for {b}." {a} raises an eyebrow. "At some point that stops being luck."' },
     '"I was happy for {b}. Really." {a} tilts her head. "I would have been happier for me."',
   ]),
   tier('results-hers-low', 'Somebody else was called low, and kept.', -1, [
@@ -287,7 +287,7 @@ export const CONFESSIONAL_TIERS = [
     '"{b} in the bottom? I am shocked." {a} is not shocked. "Genuinely. Shocked."',
     '"I saw the face {b} made when the host said it." {a} presses her lips together. "She had been expecting something better."',
     '"The critiques were not kind to {b} and neither was the call." {a} shrugs. "That tends to happen together."',
-    '"I will say it: {b} has been coasting, and tonight caught up with her." {a} looks at the camera.',
+    { about: 'coasting', line: '"I will say it: {b} has been coasting, and tonight caught up with her." {a} looks at the camera.' },
     '"I felt bad for {b}. For about a second." {a} pauses. "Then I remembered I was not the one standing there."',
     '"{b} kept nodding at the host like it was fine." {a} tilts her head. "It was not fine."',
   ]),

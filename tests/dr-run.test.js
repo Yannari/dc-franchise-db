@@ -39,7 +39,12 @@ function stage(cfg = {}) {
   }
   setPlayers(CAST.map(p => ({ ...p })));
   Object.assign(seasonConfig, defaultConfig(), { format: 'drag-race', seasonNumber: 1, ...cfg });
-  setGs({ episodeHistory: [], activePlayers: CAST.map(p => p.name), eliminated: [], popularity: {}, episode: 0 });
+  /* A PINNED SEED. Left to dr-run it is season x 1000 + Math.random(), so the
+     season this file plays was a different one every run — and one in eight
+     of them had a double shantay, which adds a week, and the length assertion
+     below failed for a reason that had nothing to do with the code. */
+  setGs({ episodeHistory: [], activePlayers: CAST.map(p => p.name), eliminated: [], popularity: {}, episode: 0,
+    _drSeed: 1001 });
 }
 afterAll(() => { delete globalThis.gs; });
 
@@ -68,14 +73,18 @@ describe('dr-run', () => {
     expect(gsRef.activePlayers.length).toBe(11);
     expect(gsRef.eliminated.length).toBe(1);
     expect(roundExits(r1, 'drag-race')[0].verb).toBe('sashayed away');
-    expect(dragEpisodesLeft()).toBe(8);
+    /* WHAT IS LEFT IS A PREDICTION, and the assertion is that it comes
+       true. A hard-coded 8 and 9 held for one season shape; a season with a
+       double shantay or a free week is a week longer and just as correct. */
+    const left = dragEpisodesLeft();
+    expect(left).toBeGreaterThanOrEqual(8);
 
     let row = r1;
     let guard = 0;
     while (row && guard++ < 25) row = simulateDragEpisode();
 
     expect(gsRef.phase).toBe('complete');
-    expect(gsRef.episodeHistory.length).toBe(9);
+    expect(gsRef.episodeHistory.length).toBe(1 + left);
     expect(gsRef.drWinner).toBeTruthy();
     expect(gsRef.drRunnerUp).toBeTruthy();
     expect(gsRef.episodeHistory.every(r => r.format === 'drag-race')).toBe(true);

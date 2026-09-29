@@ -26,6 +26,11 @@ const ARCH = ['villain', 'hero', 'mastermind', 'goat', 'schemer', 'floater',
 
 const season = (seed) => {
   const rng = rngFor(seed);
+  /* MIXED FIRST. The generator's opening draws are nearly linear in the seed
+     (js/dr/rng.js), so the casts for the first forty-one of these seeds came
+     out nearly alike — measured: a friendship falling out happened in none of
+     seeds 1-41 and in 12 of 42-100. Four burned draws, as streamFor does. */
+  rng(); rng(); rng(); rng();
   const r = () => 1 + Math.floor(rng() * 10);
   const cast = NAMES.map((name, i) => ({
     name, slug: name.toLowerCase(), gender: 'f', archetype: ARCH[i], age: 25 + i,
@@ -155,11 +160,18 @@ describe('every arc is rechecked, not just the front-runner', () => {
        relationship rule never fired once in 20 seasons and looked fine,
        because it compared the live bond against ZERO when the pairs are
        eliminated long before a rivalry crosses into friendship. */
+    /* FORTY SEASONS FOR THIS ONE, not twenty. Measured over a hundred spread
+       seasons (2026-09-28): overtaken 68%, reconciled 20%, arrived 12%,
+       fallen-out 12%. At 12% twenty seasons miss a rule entirely 8% of the
+       time, and it did, after a lip sync change that touched no arc. */
+    const more = Array.from({ length: 20 }, (_, i) => (i + 21) * 7919 + 13).map(season);
     const flips = {};
-    for (const a of allArcs) if (a.flipped) flips[`${a.arc}:${a.flipped}`] = (flips[`${a.arc}:${a.flipped}`] || 0) + 1;
+    for (const a of [...allArcs, ...more.flatMap(r => r.state.storylines)]) {
+      if (a.flipped) flips[`${a.arc}:${a.flipped}`] = (flips[`${a.arc}:${a.flipped}`] || 0) + 1;
+    }
     for (const rule of ['frontrunner:overtaken', 'underdog:arrived',
       'relationship:reconciled', 'relationship:fallen-out']) {
-      expect(flips[rule] || 0, `${rule} never fires in ${SEEDS.length} seasons`).toBeGreaterThan(0);
+      expect(flips[rule] || 0, `${rule} never fires in ${SEEDS.length + more.length} seasons`).toBeGreaterThan(0);
     }
   });
 

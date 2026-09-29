@@ -32,6 +32,7 @@ import { familyFacts } from './family.js';
 import { romanticallyCompatible } from '../attraction.js';
 import { confessionalsFor } from './confessional.js';
 import { streamFor } from './rng.js';
+import { ageOk } from './season-age.js';
 
 /** Whether this season has a romance in it at all. Rolled once, frozen. */
 export const ROMANCE_SEASON_CHANCE = 0.4;
@@ -208,7 +209,7 @@ export function usableLines(event, blend = null) {
 }
 
 function render(event, facts, rng, used = null, blend = null) {
-  const lines = usableLines(event, blend);
+  const lines = ageOk(usableLines(event, blend));
   if (!lines.length) return null;
   const fresh = used
     ? lines.filter(l => !used.has(event.id + '\u0000' + lineText(l))) : lines;

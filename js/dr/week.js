@@ -26,6 +26,8 @@
 import { arrivalScenes } from './arrivals.js';
 import { dragOf, DRAG_STATS } from './queen.js';
 import { maxiById } from './data/challenges.js';
+import { partnerPronouns } from './data/partners.js';
+import { setNightNumber } from './season-age.js';
 import { miniById, buysFor } from './data/minis.js';
 import { SONGS, songById } from './data/songs.js';
 import { runwayById } from './data/runways.js';
@@ -151,10 +153,19 @@ function untuckedEffects(sc) {
   return ev?.effects || {};
 }
 
+/** How much a queen's season protects her in a lip sync. Tunable so the
+ *  audit can fit it to the real show — see the note where it is used. */
+/* Fitted by tests/dr-lipsync-record-audit.test.js to the real show (US S7-S17,
+   67 lip syncs): better record survives 66% / 74% / 89% (all / 0.5+ / 1.0+
+   PPE apart) against the wiki's 67% / 64% / 89%. */
+export const LIPSYNC_RECORD = { slope: 10, cap: 5, dead: 0.5 };
+
 export function runDragWeek(state, cfg, ctx) {
   const { rng, players, bond = () => 0, popDelta = () => {} } = ctx;
   const maxi = maxiById(cfg.maxiId);
   if (!maxi) throw new Error(`drag-race: unknown maxi challenge "${cfg.maxiId}"`);
+  // Which night this is, for the lines that need a season behind them.
+  setNightNumber(cfg.num);
 
   const words = showWords('drag-race');
   const living = [...state.living];
@@ -1835,19 +1846,39 @@ export function runDragWeek(state, cfg, ctx) {
     // that the record offers no shelter. Measured: PPE 3.5+ queens
     // survive ~78% of their lip syncs.
     const _ppeW = { WIN: 5, HIGH: 4, SAFE: 3, LOW: 2, BTM: 1, BTM2: 1 };
-    const bendOf = n => {
+    const ppeOf = n => {
+      const rec = (state.record[n] || []).filter(r => r in _ppeW);
+      return rec.length ? rec.reduce((t, r) => t + _ppeW[r], 0) / rec.length : null;
+    };
+    /* ── THE RECORD, AS A DIFFERENCE BETWEEN THE TWO OF THEM ──
+       Checked against the fandom progress tables for US seasons 7-17 (67
+       lip syncs, tools-free: every night with one BTM2 and one ELIM, both
+       queens' points-per-episode before it):
+
+         better record survives, all nights            67%
+         records 0.5+ PPE apart                        64%
+         records 1.0+ PPE apart                        89%  (17 of 19)
+
+       So the song decides most close nights, and a clearly better season
+       almost always survives — unless she bombs it. The first version gave
+       each queen (ppe - 3) x 6, uncapped and ABOUT HERSELF: a 4.0 record
+       carried six points into a song scored out of ten, and two bottom
+       queens with middling records got nothing at all. It is now one edge
+       between the two singers, sized by how far apart their seasons are and
+       capped so a blowout on the stage still wins. LIPSYNC_RECORD is fitted
+       to the table above by tests/dr-lipsync-record-audit.test.js. */
+    const recordEdge = (n, other) => {
+      const pn = ppeOf(n); const po = ppeOf(other);
+      if (pn == null || po == null) return 0;
+      // A dead zone first: on the show, seasons a few tenths apart are a coin
+      // the song flips; only a clear gap buys a queen anything.
+      const gap = pn - po;
+      const d = LIPSYNC_RECORD.slope * Math.sign(gap) * Math.max(0, Math.abs(gap) - (LIPSYNC_RECORD.dead || 0));
+      return Math.max(-LIPSYNC_RECORD.cap, Math.min(LIPSYNC_RECORD.cap, d)) / 2;
+    };
+    const bendOf = (n, other) => {
       const hostLean = (bend.find(x => x.name === n)?.bend || 0) * 0.5;
-      const rec = state.record[n] || [];
-      if (!rec.length) return hostLean;
-      const ppe = rec.reduce((s, r) => s + (_ppeW[r] ?? 0), 0) / rec.length;
-      /* CAPPED AT A POINT AND A HALF. It was (ppe - 3) x 6, uncapped, so a
-         queen on a 4.0 record carried six points into a song scored out of
-         about ten — enough to lose a lip sync 3.4 to 6.5 and stay, over a
-         stage that had just narrated the other queen's death drop. The rule
-         at the top of lipsyncCall is that the host can decide a close one
-         and cannot rescue a blowout; this is now the size of a close one. */
-      const trackProtection = Math.min(1.5, Math.max(0, (ppe - 3.0) * 2.0));
-      return hostLean + trackProtection;
+      return hostLean + recordEdge(n, other);
     };
     // A NO-ELIMINATION WEEK still runs the lip sync — a split premiere ends
     // with two queens performing for their lives and both staying, which is
@@ -1904,7 +1935,7 @@ export function runDragWeek(state, cfg, ctx) {
       }
       : lipsyncCall({
         a: { name: a, score: sa.score }, b: { name: b, score: sb.score },
-        bendA: bendOf(a), bendB: bendOf(b),
+        bendA: bendOf(a, b), bendB: bendOf(b, a),
         allowDoubleShantay: cfg.allowDoubleShantay,
         allowDoubleSashay: cfg.allowDoubleSashay,
       });
@@ -2655,6 +2686,10 @@ export function runDragWeek(state, cfg, ctx) {
       partners: Object.fromEntries(Object.entries(assignment.picks || {})
         .filter(([, p]) => p && p.paired && p.choice)
         .map(([n, p]) => [n, p.choice])),
+      // And how to refer to him or her before the drag goes on.
+      partnerPronouns: Object.fromEntries(Object.entries(assignment.picks || {})
+        .filter(([, p]) => p && p.paired && p.choice)
+        .map(([n, p]) => [n, partnerPronouns(p.partner || { name: p.choice })])),
     })) scenes.push(sc);
 
     /* ── WHAT HAPPENED ON THAT STAGE FOLLOWS THEM BACKSTAGE ──
@@ -2792,6 +2827,11 @@ export function runDragWeek(state, cfg, ctx) {
       // So a confessional never mentions a garment on an acting week.
       blend: maxi.blend || null,
       bond: ctx.bond, max: step === 'untucked' || step === 'results' ? 2 : 1, chance: 0.3,
+      // Each queen's season BEFORE tonight — tonight's result is already on
+      // the record by now, and "she has been coasting" is about the weeks
+      // that led here.
+      record: Object.fromEntries(Object.entries(state.record || {})
+        .map(([n, rec]) => [n, (rec || []).slice(0, -1)])),
       /* THE SEASON'S DICE, NOT THE EPISODE NUMBER'S. This was seeded on
          `cfg.num + 1` alone, so episode three of every season ever played
          drew the same confessional rolls — a guard sampling sixteen seasons

@@ -83,7 +83,7 @@ export const CALL_CSS = `
 .csx-face{width:clamp(62px,8.4vw,88px);aspect-ratio:1;border-radius:50%;overflow:hidden;
   box-shadow:0 0 0 3px rgba(255,255,255,.14),0 14px 30px -10px #000;transition:box-shadow .5s}
 .csx-face > *,.csx-face img{width:100%!important;height:100%!important;object-fit:cover;margin:0!important}
-.csx-q b{font:400 14px/1 'Anton','Impact',sans-serif;letter-spacing:.04em;text-transform:uppercase;text-align:center;
+.csx-q b{margin-top:6px;font:400 14px/1 'Anton','Impact',sans-serif;letter-spacing:.04em;text-transform:uppercase;text-align:center;
   max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .csx-team{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#c9a6bc;min-height:10px}
 .csx-tag{min-width:62px;padding:4px 8px;border-radius:6px;text-align:center;font:400 13px/1 'Anton','Impact',sans-serif;

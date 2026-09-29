@@ -100,7 +100,7 @@ describe('the performance pool', () => {
 
 describe('the lines', () => {
   const written = [
-    ...MAXI_EVENTS.filter(e => e.lines.length).map(e => ({ id: e.id, cast: e.cast, lines: e.lines })),
+    ...MAXI_EVENTS.filter(e => e.lines.length).map(e => ({ id: e.id, cast: e.cast, from: e.from, lines: e.lines })),
     ...MAXI_PERFORMANCE.flatMap(f => f.tiers.filter(x => x.lines.length)
       .map(x => ({ id: `${f.family}/${x.id}`, cast: 'solo', lines: x.lines }))),
   ];
@@ -126,7 +126,11 @@ describe('the lines', () => {
     for (const w of written) {
       for (const l of w.lines) {
         if (w.cast === 'solo') expect(l, `${w.id} is solo but uses {b}`).not.toMatch(/\{b\}/);
-        const bad = l.match(/\{(?!a\}|b\})[^}]*\}/);
+        // A makeover line may also name the partner ({d}) and use her own
+        // pronouns before the drag goes on ({po} him/her/them, {pp} his/her/their).
+        const bad = w.from === 'makeover'
+          ? l.match(/\{(?!a\}|b\}|d\}|po\}|pp\})[^}]*\}/)
+          : l.match(/\{(?!a\}|b\})[^}]*\}/);
         expect(bad, `${w.id} uses unknown placeholder ${bad?.[0]}`).toBeNull();
       }
     }

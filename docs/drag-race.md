@@ -117,6 +117,24 @@ Every night runs in three steps, and the separation is the point:
 prose renders what already happened; a second opinion living in the narration
 is how a screen ends up crowning somebody the chart does not.
 
+### The lip sync and her season
+
+The song decides, and her record can tip it: the better record gets an edge
+of `slope x (PPE gap - dead zone)`, capped (`LIPSYNC_RECORD` in
+`js/dr/week.js`). Fitted, not guessed, to the fandom progress tables for US
+seasons 7-17 (67 lip syncs with one BTM2 and one ELIM):
+
+| records compared | real show | engine |
+|---|---|---|
+| all nights | 67% | 66% |
+| 0.5+ PPE apart | 64% | 74% |
+| 1.0+ PPE apart | 89% | 90% |
+| lost the song by 4+ and stayed | rare | 6% |
+
+When the host keeps the queen who lost the song, the stage says so
+(`shantay-record`, "I am keeping you because of everything you have done
+before tonight"). Re-fit with `tests/dr-lipsync-record-audit.test.js`.
+
 ## The queen model
 
 Nine shared stats (`physical` … `temperament`, exactly as everywhere else in

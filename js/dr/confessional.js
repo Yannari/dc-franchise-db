@@ -32,6 +32,7 @@
 // There is no gentler fallback tier, because inventing one would put a line
 // in her mouth that the pool was not written for.
 import { CONFESSIONAL_TIERS, confessionalTier } from './data/confessional-lines.js';
+import { ageOk } from './season-age.js';
 
 /* THE TWO TIERS THAT ARE SHADE. `taken-cold` is not one of them — she is the
    one it was done to, and saying so is a feeling rather than a move. */
@@ -356,6 +357,21 @@ export function stagedCandidatesFor(scene, room, bond, surface, median, list = [
 const lineText = l => (typeof l === 'string' ? l : (l && l.line) || '');
 const lineNeeds = l => (typeof l === 'string' ? null : (l && l.needs) || null);
 
+/* ── A LINE MAY ALSO ASSUME SOMETHING ABOUT {b}'S SEASON ──
+   "{b} has been coasting" fired in episode five about a queen who had been in
+   the top the week before; "another week, another good result for {b}" about
+   a queen with one. `{ about: 'coasting' | 'tops', line }` is only drawn when
+   the queen's record, before tonight, says it. */
+const ABOUT = {
+  // Safe at least three times and never at the top: the definition the
+  // werk room's own coasting event already uses.
+  coasting: rec => rec.filter(r => r === 'SAFE').length >= 3
+    && !rec.some(r => r === 'WIN' || r === 'HIGH' || r === 'TOP2'),
+  // At the top at least twice before tonight.
+  tops: rec => rec.filter(r => r === 'WIN' || r === 'HIGH' || r === 'TOP2').length >= 2,
+};
+const lineAbout = l => (typeof l === 'string' ? null : (l && l.about) || null);
+
 export function usableConfessionalLines(tier, blend = null) {
   return (tier?.lines || []).filter(l => {
     const need = lineNeeds(l);
@@ -386,6 +402,9 @@ function pickByStake(rng, list) {
 export function confessionalsFor({
   scenes = [], room = [], players = {}, rng = Math.random, bond = () => 0,
   spoken = new Set(), max = 2, chance = 0.25, slot = null, step = null, blend = null,
+  /* `{ name: results[] }` BEFORE tonight, for lines that claim something
+     about a queen's season. Absent, those lines are not drawn at all. */
+  record = null,
 } = {}) {
   const out = [];
   const P = n => players[n] || {};
@@ -441,10 +460,16 @@ export function confessionalsFor({
        Filtered rather than thrown: a writer putting {b} in the wrong pool
        should cost that line and not the episode. */
     const craftOk = usableConfessionalLines(t, blend);
-    const usable = about ? craftOk
-      : craftOk.filter(l => !/\{b\}/.test(lineText(l)));
+    const usable = (about ? craftOk
+      : craftOk.filter(l => !/\{b\}/.test(lineText(l))))
+      .filter(l => {
+        const claim = lineAbout(l);
+        if (!claim) return true;
+        const rec = record && about ? record[about] : null;
+        return !!(rec && ABOUT[claim] && ABOUT[claim](rec));
+      });
     if (!usable.length) continue;
-    const line = lineText(pickFrom(rng, usable));
+    const line = lineText(pickFrom(rng, ageOk(usable)));
 
     out.push({
       index: i,

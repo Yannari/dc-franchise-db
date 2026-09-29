@@ -134,6 +134,9 @@ describe('the season timeline', () => {
     core.setGs({
       episodeHistory: [], activePlayers: cast.map(p => p.name),
       eliminated: [], popularity: {}, phase: 'stage',
+      // Pinned: dr-run otherwise seeds with Math.random(), and this failed
+      // about one run in ten on a season shape the prediction cannot see.
+      _drSeed: 1001,
     });
     Object.assign(core.seasonConfig, {
       format: 'drag-race', drFinale: 'top4', seasonNumber: 1,

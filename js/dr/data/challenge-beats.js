@@ -615,6 +615,10 @@ export const CHALLENGE_BEATS = [
         "The pick lands and it is the one she was hoping for. {a} takes it without hesitation and gets to work immediately. That is the tell — queens who got what they wanted do not stand around discussing it. They build.",
         "{a} gets exactly what she wanted and the room watches her take it. \"Yes ma'am,\" she says under her breath. Her station is already being reorganised around the pick before the next queen has chosen.",
         "First choice, best choice. {a} takes what she wanted. The wanting was so obvious nobody in the room is surprised. She sits down, opens her kit, and starts. No speech. No gloating. Just work.",
+        "{a} does not even look at the other options. She says what she wants before the host finishes asking, gets it, and is back at her station while the next queen is still deciding.",
+        "Hers. {a} lets herself have one small fist-pump under the table where she thinks nobody can see it. Everybody can see it.",
+        "{a} got the one she wanted and immediately starts worrying about whether wanting it was a mistake. That is how you know it is the right one.",
+        "The queen after {a} was hoping for the same thing. {a} knows it, took it anyway, and does not look back to check.",
       ]),
       tier('settled', 'Not her first choice. She is making it work.', [
         "{a} takes what is available and decides — visibly — to make it work. Not with excitement. With purpose. \"I can do something with this,\" she says. It is not a lie. It is not entirely true either.",
@@ -627,6 +631,10 @@ export const CHALLENGE_BEATS = [
         "Whatever was left is what {a} has. She picks it up the way you pick up a lost-and-found coat. It will do the job. It will not be pretty. \"I am going to make this work,\" she says. She has something to prove this week.",
         "{a} takes the leftover and the leftover becomes her challenge inside the challenge. Make this work. Make it work when everybody can see it was last on the shelf. The queens who picked before her look away.",
         "The last pick goes to {a} and she takes it with a smile that costs her something. \"Watch me,\" she says. Not loud. Not to anybody in particular. But she says it.",
+        "{a} ends up with the one nobody reached for. She turns it over twice, finds the angle nobody else bothered to look for, and gets quiet in the way that means she has an idea.",
+        "\"Somebody has to,\" {a} says, taking what is left, and the room laughs because it is true and because she said it before anybody else could.",
+        "Last thing on the table, and {a} takes it like it was the plan all along. It was not the plan. She will make it look like the plan by tonight.",
+        "{a} looks at what she has been left with, looks at the queens who left it, and says nothing, which the room reads correctly as a promise.",
       ]),
       /* ── LAST TO PICK IS NOT THE SAME AS BEING PICKED FOR A TEAM ──
          This is the beat every draft falls back to when its own pool is

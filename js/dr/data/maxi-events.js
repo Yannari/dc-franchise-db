@@ -262,10 +262,10 @@ export const MAXI_EVENTS = [
     note: 'Her partner will not go along with it — the heels, the corset, the '
       + 'face, something. {a} spends the morning on that instead of the look.',
     lines: [
-      "{a}'s partner will not put the heels on. Flat out refuses. She spends twenty minutes talking him into it and that is twenty minutes she did not spend on the look.",
-      "He will not sit still for the wig. {a} is patient, then firm, then begging, and the whole morning goes to getting him through something the other partners did in ten minutes.",
-      "{a}'s partner keeps laughing and pulling away every time she tries to do his face. She is losing time and she knows it. The look is suffering because the morning went to him instead of the garment.",
-      "Her partner fights every step. The corset, the lashes, the walk — all of it is a negotiation. {a} keeps her cool but by lunch the look is behind and the reason is not her skills, it is his morning.",
+      "{a}'s partner will not put the heels on. Flat out refuses. She spends twenty minutes talking {po} into it and that is twenty minutes she did not spend on the look.",
+      "{a}'s partner, {d}, will not sit still for the wig. {a} is patient, then firm, then begging, and the whole morning goes to getting {po} through something the other partners did in ten minutes.",
+      "{a}'s partner keeps laughing and pulling away every time she tries to do {pp} face. She is losing time and she knows it. The look is suffering because the morning went to {po} instead of the garment.",
+      "Her partner fights every step. The corset, the lashes, the walk — all of it is a negotiation. {a} keeps her cool but by lunch the look is behind and the reason is not her skills, it is {pp} morning.",
     ],
   }),
   e({
@@ -275,10 +275,10 @@ export const MAXI_EVENTS = [
     note: 'Her partner turns out to love it, and {a} gets a day she was not '
       + 'counting on.',
     lines: [
-      "{a}'s partner is into it. Like, actually into it. He is asking about the wig, he wants to try the walk, and {a} gets to spend the morning on the look instead of on him. She was not expecting this.",
-      "He takes to it immediately. {a} barely has to explain anything — he sits for the face, he stands for the fitting, he practices the walk on his own. She gets a full morning of actual work and she knows how lucky that is.",
-      "{a}'s partner loves it. The heels, the padding, the whole thing — he is laughing but he is also standing still and letting her work. The morning goes exactly how she needed it to go.",
-      "Her partner turns out to be the easiest one in the room. {a} has him in the wig and corset by mid-morning and spends the rest of the day on the details everyone else is rushing through.",
+      "{a}'s partner is into it. Like, actually into it. Her partner is asking about the wig, wants to try the walk, and {a} gets to spend the morning on the look instead of on {po}. She was not expecting this.",
+      "Her partner takes to it immediately. {a} barely has to explain anything — a sit for the face, a stand for the fitting, the walk practised alone in a corner. She gets a full morning of actual work and she knows how lucky that is.",
+      "{a}'s partner loves it. The heels, the padding, the whole thing — laughing, but standing still and letting her work. The morning goes exactly how she needed it to go.",
+      "Her partner turns out to be the easiest one in the room. {a} has {po} in the wig and corset by mid-morning and spends the rest of the day on the details everyone else is rushing through.",
     ],
   }),
   e({
@@ -643,9 +643,9 @@ export const MAXI_EVENTS = [
   e({
     id: 'named-by-the-room', from: 'mini', cast: 'solo',
     note: '{a} has just been named by most of the room on a question that '
-      + 'stings, out loud, before she has done anything this week. Write her '
-      + 'taking it — or failing to. Do not name a second queen: the accusers '
-      + 'are the room.',
+      + 'stings, out loud, before she has done anything this week.',
+    /* For the writer: her taking it, or failing to. No second queen — the
+       accusers are the room. (Kept out of `note`, which the screen prints.) */
     lines: [],
   }),
   e({
@@ -668,9 +668,10 @@ export const MAXI_EVENTS = [
   e({
     id: 'nobody-knew-it-was-hers', from: 'mini', cast: 'solo',
     note: 'Something belonging to {a} went up and not one queen in the room '
-      + 'guessed it was hers.'
-      + 'She has been living with these women for weeks. Write '
-      + 'the moment the answer is read out, not a summary of how she feels.',
+      + 'guessed it was hers.',
+    /* For the writer: the moment the answer is read out, not a summary of
+       how she feels. (Kept out of `note`, which the screen prints — it said
+       "she has been living with these women for weeks" in episode three.) */
     lines: [
       "The answer goes up and every head in the room turns to {a} at the same time. She watches it happen — eight women realising they have been living with her for weeks and not one of them got it right. She laughs first, which is the only move she has.",
       "{a} is already smiling before the name is read, because she knew. She could see the board from her seat and there was not a single vote on her. The host says it and the room groans and {a} just shrugs, arms open, like what did you think.",
@@ -694,8 +695,8 @@ export const MAXI_EVENTS = [
     id: 'her-own-girl-missed-it', from: 'mini', cast: 'pair',
     note: '{a} and {b} are close and {a} still could not tell the thing was '
       + 'hers. '
-      + 'Nobody did anything wrong, which is exactly why it lands. Write the '
-      + 'two of them afterwards rather than the guess itself.',
+      + 'Nobody did anything wrong, which is exactly why it lands.',
+    /* For the writer: the two of them afterwards rather than the guess. */
     lines: [
       "{a} stares at the board when the answer comes up because she wrote somebody else's name and the right answer was {b}. {b} is two seats away, already looking at her. Neither of them says anything for a second. Then {a} mouths \"I am so sorry\" and {b} waves it off, but she waves it off a little too fast.",
       "The reveal goes up and {a} sees {b}'s name where she wrote another queen's. {b} catches her eye across the room and laughs — \"Girl, we sit next to each other\" — and {a} laughs too, but she is doing the thing where the laugh does not quite reach the rest of her face. They move on. It takes about a minute longer than it should.",

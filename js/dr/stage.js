@@ -21,6 +21,7 @@
 import { STAGE_BEATS } from './data/stage-beats.js';
 import { UNTUCKED_EVENTS, UNTUCKED_PHASES } from './data/untucked-events.js';
 import { CHALLENGE_BEATS } from './data/challenge-beats.js';
+import { ageOk } from './season-age.js';
 import { nameInSentence, capSentenceThe } from './data/challenges.js';
 import { mentorForBeat } from './data/judges.js';
 import { MAXI_EVENTS, eventAgreesWithTier, leanTier } from './data/maxi-events.js';
@@ -103,7 +104,8 @@ const REACTING = 3;
  * falls back to any line rather than printing nothing, because a repeat is
  * better than a blank.
  */
-const pick = (lines, rng, used = null, key = '') => {
+const pick = (lines0, rng, used = null, key = '') => {
+  const lines = ageOk(lines0);
   if (!lines || !lines.length) return null;
   if (!used) return lines[Math.floor(rng() * lines.length)];
   const fresh = lines.filter(l => !used.has(key + '\u0000' + l));
@@ -117,7 +119,8 @@ const pick = (lines, rng, used = null, key = '') => {
  *  For beats that are colour rather than result — a queen who gets no card for
  *  it has lost nothing — where a verbatim repeat reads as a glitch. The
  *  walkthrough printed one paragraph six times in one prep room. */
-const pickFresh = (lines, rng, used, key = '') => {
+const pickFresh = (lines0, rng, used, key = '') => {
+  const lines = ageOk(lines0);
   if (!lines || !lines.length) return null;
   const fresh = lines.filter(l => !used.has(key + '\u0000' + l));
   if (!fresh.length) return null;
@@ -1899,9 +1902,17 @@ export function renderMaxiEventScenes(events, {
      effects have already been applied, and a sentence saying the opposite of
      her score is worse than no sentence. */
   tiers = {},
+  /* `{ queen: { sub, obj, pos } }` — her makeover partner's own pronouns,
+     for the prep lines that happen before the drag goes on. `{po}` and `{pp}`
+     in a line; "them"/"their" when nobody said. */
+  partnerPronouns = {},
 } = {}) {
   const scenes = [];
   const used = new Set();
+  const pron = (text, n) => {
+    const pr = partnerPronouns[n] || { obj: 'them', pos: 'their' };
+    return String(text || '').replace(/\{po\}/g, pr.obj).replace(/\{pp\}/g, pr.pos);
+  };
   for (const ev of events || []) {
     const spec = MAXI_EVENTS.find(x => x.id === ev.type);
     if (!spec) continue;
@@ -1999,11 +2010,11 @@ export function renderMaxiEventScenes(events, {
         from: spec.from,
         ...(familyLines ? { family, voiced: true } : {}),
       },
-      text: familyLines
+      text: pron(familyLines
         ? fill(chosenLine,
           { a: who[0], b: who[1], c: nameInSentence(maxiName), d: partners[who[0]] || '' })
         : fill(chosenLine,
-          { a: who[0], b: who[1], c: nameInSentence(maxiName), d: partners[who[0]] || '' }),
+          { a: who[0], b: who[1], c: nameInSentence(maxiName), d: partners[who[0]] || '' }), who[0]),
     });
   }
   return scenes;

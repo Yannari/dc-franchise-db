@@ -883,6 +883,12 @@ export function trArrivalRevealAll(suffix, total, epNum) {
  * the cast are people before they are anything, and a premiere that opens on
  * the blindfolds has a viewer who has met nobody in the rank.
  */
+const _AR_W = ['No', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine',
+  'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen',
+  'Eighteen', 'Nineteen', 'Twenty', 'Twenty-one', 'Twenty-two', 'Twenty-three', 'Twenty-four'];
+/** A sentence opens on a word, not a numeral. */
+function _arWord(n) { return _AR_W[n] || String(n); }
+
 export function rpBuildArrival(ep, observer = 'audience') {
   const suffix = 'arrival';
   const vars = '--ar-grain-src:' + _noiseTile('0.88', 4, 31, 0.28, 220) + ';';
@@ -953,7 +959,7 @@ export function rpBuildArrival(ep, observer = 'audience') {
     + ' &middot; The Arrival</div>'
     + '<h1 class="ar-title">THROUGH THE ARCH</h1>'
     + '<div class="ar-title-rule"><i></i>' + _icon('seal', 34, '#e7b978') + '<i></i></div>'
-    + '<p class="ar-sub">' + v.intros.length + ' people come up a mile of gravel with their '
+    + '<p class="ar-sub">' + _arWord(v.intros.length) + ' people come up a mile of gravel with their '
     + 'bags, meet each other on the flags, and are told exactly how this works while they '
     + 'still have every reason to trust the person standing next to them.</p>'
     + '</div></div>'

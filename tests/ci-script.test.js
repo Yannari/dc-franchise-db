@@ -392,3 +392,32 @@ describe('an answer inside a sentence', () => {
     expect(fill(s, "'{x}' Who wrote that?", c('Birds. All birds.'), 'a')).toBe("'Birds. All birds.' Who wrote that?");
   });
 });
+
+describe('games come back', () => {
+  const mem = (s, gameScene, extra) => { (s.gameMemory ||= []).push({ day: gameScene.day, scene: gameScene.id, gameId: 'most-likely', ...extra }); };
+  it('opens a later chat with what one did to the other in a game, once, and only if both saw it', () => {
+    const s = room();
+    s.day = 3;
+    const game = addScene(s, 'game', [...s.active], { gameId: 'most-likely', family: 'name', rounds: [], beats: [] });
+    mem(s, game, { kind: 'named-bad', by: '@shubham', about: '@sammie' });
+    s.day = 4;
+    const chat = () => addScene(s, 'chat', ['@sammie', '@shubham'], { intent: 'confront', ending: 'cold', claims: [], slips: [] });
+    const keys = sc => sceneBlocks(s, sc).map(b => b.key);
+    expect(keys(chat())).toContain('callback.named-bad.theirs');
+    expect(keys(chat())).not.toContain('callback.named-bad.theirs');          // once per pair
+    const s2 = room(); s2.day = 3;
+    const g2 = addScene(s2, 'game', ['@shubham', '@rebecca'], { gameId: 'most-likely', family: 'name', rounds: [], beats: [] });
+    mem(s2, g2, { kind: 'named-bad', by: '@shubham', about: '@sammie' });
+    s2.day = 4;
+    const c2 = addScene(s2, 'chat', ['@sammie', '@shubham'], { intent: 'bond', ending: 'warm', claims: [], slips: [] });
+    expect(sceneBlocks(s2, c2).map(b => b.key).some(k => k.startsWith('callback.'))).toBe(false);   // Sammie never saw it
+  });
+
+  it('never reaches back into a game that had not happened yet (same-day chats come before the game)', () => {
+    const s = room(); s.day = 4;
+    const game = addScene(s, 'game', [...s.active], { gameId: 'most-likely', family: 'name', rounds: [], beats: [] });
+    mem(s, game, { kind: 'rival', by: '@shubham', about: '@sammie' });
+    const c = addScene(s, 'chat', ['@sammie', '@shubham'], { intent: 'bond', ending: 'warm', claims: [], slips: [] });
+    expect(sceneBlocks(s, c).map(b => b.key).some(k => k.startsWith('callback.'))).toBe(false);
+  });
+});

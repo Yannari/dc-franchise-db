@@ -232,6 +232,35 @@ function bandOf(place, n) {
   return f < 0.34 ? 'top' : f > 0.66 ? 'bottom' : 'middle';
 }
 
+// ── Games come back (Plan 3a+ Task 10) ─────────────────────────────────
+// What a game did between two players returns in a later chat ("After what
+// you said in Most Likely…") and in a ballot. Only a game both of them saw;
+// never from earlier the same day (the chats come before the game); each
+// memory once per pair.
+export const CALLBACK_KINDS = ['named-bad', 'named-good', 'rival', 'gift', 'picked-last', 'jab', 'portrait-kind',
+  'flirted', 'asked-barbed', 'asked-catfish'];
+export const CALLBACK_DAYS = 3;
+export function gameCallback(state, a, b, scene, { sameDay = false, kinds = CALLBACK_KINDS, dir = null } = {}) {
+  const mem = state.gameMemory || [];
+  const used = (usage(state).callbacks ||= []);
+  for (let i = mem.length - 1; i >= 0; i--) {
+    const m = mem[i];
+    if (!kinds.includes(m.kind)) continue;
+    if (scene.day - m.day > CALLBACK_DAYS || (sameDay ? m.day > scene.day : m.day >= scene.day)) continue;
+    const mine = m.by === a && m.about === b, theirs = m.by === b && m.about === a;
+    if (!mine && !theirs) continue;
+    const d = mine ? 'mine' : 'theirs';
+    if (dir && d !== dir) continue;
+    const g = state.scenes.find(x => x.id === m.scene);
+    if (!g?.seenBy.includes(a) || !g.seenBy.includes(b)) continue;
+    const tag = `${i}:${[a, b].sort().join('|')}`;
+    if (used.includes(tag)) continue;
+    used.push(tag);
+    return { kind: m.kind, dir: d, game: GAMES.find(x => x.id === m.gameId)?.name };
+  }
+  return null;
+}
+
 // Which pool a game beat draws from (the family pool; game- and prompt-
 // specific pools, `g.<game>.<prompt?>.<suffix>`, take precedence).
 const GAME_FACTS = ['tone', 'answer', 'strong', 'split', 'qkind', 'result', 'anon', 'right', 'off', 'odd', 'failed',
@@ -271,6 +300,8 @@ const BLOCKS = {
       const k = sl.misread ? 'slip.misread' : `slip.${sl.kind}.${sl.noticedBy.length ? 'noticed' : 'missed'}`;
       out.push({ key: k, cast: { a: sl.by, b: listener }, extra: { slip: sl.kind, noticed: sl.noticedBy.length > 0 } });
     }
+    const cb = gameCallback(state, a, b, s);
+    if (cb) out.push({ key: `callback.${cb.kind}.${cb.dir}`, cast: { a, b, text: { game: cb.game } } });
     // A shared profile argues over the message before it goes (spec §14.8).
     const pa = state.profiles[a];
     if (s.data.lead && pa?.players.length > 1) {
@@ -318,6 +349,11 @@ const BLOCKS = {
       if (final) { out.push({ key: `final.rate.${b.reasons[0]}`, cast: { a: b.voter, b: first }, extra: { final: true } }); continue; }
       out.push({ key: `rate.${b.reasons[0]}.top`, cast: { a: b.voter, b: first }, extra: { band: 'top' } });
       if (last && last !== first) out.push({ key: `rate.${b.reasons.at(-1)}.bottom`, cast: { a: b.voter, b: last }, extra: { band: 'bottom' } });
+      const bad = last && gameCallback(state, b.voter, last, s, { sameDay: true, dir: 'theirs',
+        kinds: ['named-bad', 'rival', 'jab', 'asked-barbed', 'picked-last', 'asked-catfish'] });
+      if (bad) out.push({ key: 'rate.callback.bad', cast: { a: b.voter, b: last, text: { game: bad.game } } });
+      const good = first && gameCallback(state, b.voter, first, s, { sameDay: true, dir: 'theirs', kinds: ['gift', 'named-good', 'portrait-kind'] });
+      if (good) out.push({ key: 'rate.callback.good', cast: { a: b.voter, b: first, text: { game: good.game } } });
     }
     if (!final) {
       for (const group of s.data.reveal.slice(0, -1)) {
@@ -499,9 +535,12 @@ export function writeScene(state, scene) {
     }
     blocks.splice(1, blocks.length - 1, ...blocks.slice(1).filter(x => !x.key.startsWith('slip.')));
   }
-  // The argument happens before the message is sent: it opens the scene.
-  const argue = blocks.findIndex(x => x.key.startsWith('shared.argue.'));
-  if (argue > 0) blocks.unshift(...blocks.splice(argue, 1));
+  // A game remembered opens the chat; the argument over the message comes
+  // before the message itself.
+  for (const prefix of ['callback.', 'shared.argue.']) {
+    const at = blocks.findIndex(x => x.key.startsWith(prefix));
+    if (at > 0) blocks.unshift(...blocks.splice(at, 1));
+  }
   scene.script = { blocks };
   return scene.script;
 }
@@ -592,4 +631,6 @@ export const POOL_KEYS = [
   'party.open', 'party.nhie', 'party.nhie.none',
   ...['workout', 'skincare', 'cooking', 'reading', 'singing', 'plushie', 'praying', 'pacing'].map(h => `life.${h}`),
   'home.video', 'host.game', 'host.life', 'shared.argue.faceWins', 'shared.argue.brainWins',
+  ...['named-bad', 'named-good', 'rival', 'gift', 'picked-last', 'jab', 'portrait-kind', 'flirted', 'asked-barbed', 'asked-catfish']
+    .flatMap(k => [`callback.${k}.mine`, `callback.${k}.theirs`]), 'rate.callback.bad', 'rate.callback.good',
 ];

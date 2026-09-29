@@ -8,22 +8,22 @@
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Manrope:wght@400;500;600;700;800&family=Cormorant+Garamond:ital,wght@1,500&family=Caveat+Brush&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#07080a; --panel:rgba(22,20,18,.72); --line:rgba(214,178,110,.18); --line2:rgba(214,178,110,.34);
-  --brass:#d9b36c; --brass2:#f3d9a0; --ink:#efe7da; --mute:#9b9183;
-  --traitor:#c8243a; --traitor2:#ff4d63; --faith:#6fb3dc; --r:18px;
+  --bg:#12050a; --panel:rgba(40,10,20,.62); --line:rgba(232,168,90,.20); --line2:rgba(242,122,40,.45);
+  --brass:#e9b35f; --brass2:#ffd79a; --ink:#f4e6d4; --mute:#b38f86;
+  --traitor:#7a0f24; --traitor2:#ff6a1f; --faith:#6fb3dc; --r:18px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{background:var(--bg);color:var(--ink);font-family:Manrope,system-ui,sans-serif}
-body{min-height:100vh;background:radial-gradient(1200px 600px at 50% -10%,rgba(217,179,108,.08),transparent 60%),
-  radial-gradient(900px 500px at 100% 100%,rgba(200,36,58,.07),transparent 60%),var(--bg)}
+body{min-height:100vh;background:radial-gradient(1200px 650px at 50% -12%,rgba(122,15,36,.55),transparent 62%),
+  radial-gradient(900px 520px at 100% 100%,rgba(242,106,31,.10),transparent 60%),var(--bg)}
 button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .top{display:flex;align-items:center;gap:14px;padding:14px 22px}
 .logo{font-family:Cinzel,serif;font-weight:900;letter-spacing:.18em;font-size:22px;
-  background:linear-gradient(180deg,#fff3d6,#d9b36c 55%,#8a6a33);-webkit-background-clip:text;background-clip:text;color:transparent}
+  background:linear-gradient(180deg,#fff0cf,#e9b35f 55%,#9a5a1c);-webkit-background-clip:text;background-clip:text;color:transparent}
 .logo small{display:block;font-family:Manrope;font-weight:700;font-size:10.5px;letter-spacing:.28em;color:var(--mute);-webkit-text-fill-color:var(--mute)}
 .top .sp{flex:1}
 .pill{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;background:rgba(255,255,255,.04);border:1px solid var(--line);font-size:12.5px;font-weight:700;color:#d8cfc1}
-.pill.on{background:rgba(200,36,58,.16);border-color:rgba(255,77,99,.45);color:#ffd7dc}
+.pill.on{background:rgba(242,106,31,.16);border-color:rgba(255,106,31,.45);color:#ffe0c7}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--traitor2);box-shadow:0 0 10px var(--traitor2);animation:blink 1.6s infinite}
 @keyframes blink{50%{opacity:.35}}
 .layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:18px;padding:0 22px 120px;max-width:1440px;margin:0 auto}
@@ -32,13 +32,13 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 /* ── the stage: the room is the table ── */
 .stage{position:relative;aspect-ratio:16/10;border-radius:22px;overflow:hidden;isolation:isolate;
   box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 0 1px var(--line) inset;
-  background:radial-gradient(70% 60% at 50% 42%,#1d1a16,#0a0908 75%)}
+  background:radial-gradient(70% 60% at 50% 42%,#2e0b16,#0e0306 75%)}
 .stage::before{content:"";position:absolute;inset:0;background:radial-gradient(40% 30% at 50% 40%,rgba(255,180,90,.16),transparent 70%);animation:breathe 6s ease-in-out infinite}
 @keyframes breathe{50%{opacity:.6}}
 .table{position:absolute;left:22%;right:22%;top:23%;height:34%;border-radius:50%;
-  background:radial-gradient(60% 60% at 50% 45%,#1f3b2c,#12261c 70%,#0b1812);
-  box-shadow:0 0 0 10px #4a2f1a,0 0 0 12px #8a6a33,0 0 0 14px #2b1c10,0 30px 60px rgba(0,0,0,.7),inset 0 0 60px rgba(0,0,0,.6)}
-.table::after{content:"";position:absolute;inset:14% 18%;border-radius:50%;border:1px solid rgba(217,179,108,.18)}
+  background:radial-gradient(60% 60% at 50% 45%,#1f3a2e,#12261e 70%,#0a1712);
+  box-shadow:0 0 0 10px #3a0a16,0 0 0 12px #c98a3a,0 0 0 14px #22050c,0 30px 60px rgba(0,0,0,.7),inset 0 0 60px rgba(0,0,0,.6)}
+.table::after{content:"";position:absolute;inset:14% 18%;border-radius:50%;border:1px solid rgba(233,179,95,.18)}
 .tcandle{position:absolute;width:5px;height:26px;border-radius:2px;background:linear-gradient(#f1e6cf,#b9a98c);transform:translate(-50%,-100%)}
 .tcandle::before{content:"";position:absolute;left:50%;top:-12px;width:8px;height:13px;margin-left:-4px;border-radius:50% 50% 45% 45%;
   background:radial-gradient(circle at 50% 70%,#fff6d0,#ffb347 55%,rgba(255,120,30,0) 72%);animation:flick 2.1s infinite alternate}
@@ -50,28 +50,29 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 
 /* seats */
 .seat{position:absolute;width:8.2%;aspect-ratio:1;transform:translate(-50%,-50%);z-index:4;transition:transform .45s cubic-bezier(.2,1.3,.4,1),filter .4s}
-.seat .med{position:absolute;inset:0;border-radius:50%;overflow:hidden;border:3px solid rgba(217,179,108,.55);box-shadow:0 8px 20px rgba(0,0,0,.6);background:#222}
+.seat .med{position:absolute;inset:0;border-radius:50%;overflow:hidden;border:3px solid rgba(233,179,95,.55);box-shadow:0 8px 20px rgba(0,0,0,.6);background:#222}
 .seat .med img{width:100%;height:100%;object-fit:cover;object-position:50% 20%}
 .seat .nm{position:absolute;left:50%;top:108%;transform:translateX(-50%);font-size:11px;font-weight:800;white-space:nowrap;
   padding:3px 8px;border-radius:999px;background:rgba(0,0,0,.6)}
 .seat.dim{filter:brightness(.45) saturate(.6)}
 .seat.speak{transform:translate(-50%,-56%) scale(1.18);z-index:6}
-.seat.speak .med{border-color:var(--brass2);box-shadow:0 0 0 4px rgba(243,217,160,.25),0 0 40px rgba(243,217,160,.45)}
-.seat.target .med{border-color:var(--traitor2);box-shadow:0 0 0 4px rgba(255,77,99,.2),0 0 36px rgba(255,77,99,.5)}
-.aud .seat.is-traitor .med{border-color:#ff4d63}
+.seat.speak .med{border-color:var(--brass2);box-shadow:0 0 0 4px rgba(255,215,154,.25),0 0 40px rgba(255,215,154,.45)}
+.seat.target .med{border-color:var(--traitor2);box-shadow:0 0 0 4px rgba(255,106,31,.2),0 0 36px rgba(255,106,31,.5)}
+.aud .seat.is-traitor .med{border-color:#ff6a1f}
 .aud .seat.is-traitor::after{content:"";position:absolute;right:-2px;top:-2px;width:14px;height:14px;border-radius:50%;background:var(--traitor2);box-shadow:0 0 10px var(--traitor2);border:2px solid #0a0908}
 .seat.out{filter:grayscale(1) brightness(.35)}
 /* slates: a chalkboard over each seat, flipped on the read-out */
-.slate{position:absolute;left:50%;top:58%;width:132%;height:46%;z-index:2;transform:translateX(-50%) rotateX(90deg);transform-origin:bottom;
+.slate{position:absolute;left:50%;top:103%;width:150%;height:34%;z-index:2;transform:translateX(-50%) rotateX(90deg);transform-origin:bottom;
   border-radius:6px;background:linear-gradient(160deg,#2d3530,#1b201d);border:2px solid #6b4a2a;box-shadow:0 8px 16px rgba(0,0,0,.6);
   display:grid;place-items:center;font-family:"Caveat Brush",cursive;font-size:clamp(12px,1.25vw,19px);color:#f3f1e8;opacity:0;transition:transform .55s cubic-bezier(.2,1.4,.4,1),opacity .2s}
 .slate.up{transform:translateX(-50%) rotateX(0);opacity:1}
+.seat.voted .nm{opacity:0}
 .slate.fresh{animation:chalk .8s ease}
 @keyframes chalk{0%{filter:brightness(2.2)}100%{filter:none}}
 /* accusation lines */
 svg.lines{position:absolute;inset:0;width:100%;height:100%;z-index:5;pointer-events:none}
-.acc{fill:none;stroke:var(--traitor2);stroke-width:3;stroke-linecap:round;filter:drop-shadow(0 0 6px rgba(255,77,99,.8));stroke-dasharray:900;stroke-dashoffset:900;animation:draw .9s ease forwards}
-.acc.old{stroke:rgba(255,77,99,.35);filter:none;animation:none;stroke-dashoffset:0}
+.acc{fill:none;stroke:var(--traitor2);stroke-width:3;stroke-linecap:round;filter:drop-shadow(0 0 6px rgba(255,106,31,.8));stroke-dasharray:900;stroke-dashoffset:900;animation:draw .9s ease forwards}
+.acc.old{stroke:rgba(255,106,31,.35);filter:none;animation:none;stroke-dashoffset:0}
 @keyframes draw{to{stroke-dashoffset:0}}
 
 .hud{position:absolute;top:14px;left:14px;right:14px;display:flex;gap:8px;z-index:9;align-items:center}
@@ -84,10 +85,10 @@ svg.lines{position:absolute;inset:0;width:100%;height:100%;z-index:5;pointer-eve
 
 /* dialogue */
 .say{position:absolute;left:4%;right:4%;bottom:4%;min-height:17%;z-index:8;border-radius:18px;padding:20px 26px 16px;
-  background:linear-gradient(180deg,rgba(18,16,15,.84),rgba(10,9,9,.92));backdrop-filter:blur(12px);border:1px solid rgba(217,179,108,.28);box-shadow:0 18px 50px rgba(0,0,0,.55);transition:opacity .3s}
+  background:linear-gradient(180deg,rgba(52,10,22,.86),rgba(24,5,11,.93));backdrop-filter:blur(12px);border:1px solid rgba(255,215,154,.26);box-shadow:0 18px 50px rgba(0,0,0,.55);transition:opacity .3s}
 .say.empty{opacity:0}
-.say .who{position:absolute;top:-15px;left:22px;font-size:13px;font-weight:800;padding:6px 14px;border-radius:999px;background:linear-gradient(180deg,#f0d49a,#b98d45);color:#1b140a}
-.say .who.host{background:linear-gradient(180deg,#e7ecf2,#9eb0c2)}
+.say .who{position:absolute;top:-15px;left:22px;font-size:13px;font-weight:800;padding:6px 14px;border-radius:999px;background:linear-gradient(180deg,#8e1a31,#5a0b1c);color:#ffd79a;box-shadow:inset 0 0 0 1px rgba(255,215,154,.35)}
+.say .who.host{background:linear-gradient(180deg,#ffd79a,#c98a3a);color:#3a0714}
 .say p{font-size:clamp(16px,1.5vw,20px);line-height:1.5;font-weight:500}
 .say p.narr{font-family:"Cormorant Garamond",serif;font-style:italic;font-size:clamp(18px,1.7vw,23px);color:#e3d6bf}
 
@@ -103,8 +104,8 @@ svg.lines{position:absolute;inset:0;width:100%;height:100%;z-index:5;pointer-eve
 .reveal .face img{width:100%;height:100%;object-fit:cover}
 .reveal .face b{position:absolute;left:0;right:0;bottom:0;padding:14px;font-family:Cinzel,serif;font-size:24px;letter-spacing:.1em;text-align:center;background:linear-gradient(transparent,rgba(0,0,0,.85))}
 .reveal .back{transform:rotateY(180deg);display:grid;place-items:center;text-align:center;padding:20px}
-.reveal .back.faithful{background:radial-gradient(circle at 50% 35%,#2a5d80,#0d2233);border:3px solid #9fd3f2}
-.reveal .back.traitor{background:radial-gradient(circle at 50% 35%,#7c1323,#26060c);border:3px solid #ff8a99}
+.reveal .back.faithful{background:radial-gradient(circle at 50% 35%,#6b4a1a,#2a1a08);border:3px solid #ffd79a;color:#ffe9c2}
+.reveal .back.traitor{background:radial-gradient(circle at 50% 35%,#7a0f24,#2a0610);border:3px solid #ff6a1f}
 .reveal .back small{display:block;font-size:11px;font-weight:800;letter-spacing:.3em;opacity:.8;margin-bottom:10px}
 .reveal .back strong{font-family:Cinzel,serif;font-size:clamp(24px,2.6vw,36px);letter-spacing:.08em}
 .reveal .caption{position:absolute;bottom:9%;left:0;right:0;text-align:center;font-family:"Cormorant Garamond",serif;font-style:italic;font-size:22px;color:#e8dcc6}
@@ -116,7 +117,7 @@ svg.lines{position:absolute;inset:0;width:100%;height:100%;z-index:5;pointer-eve
 .tally .row{display:grid;grid-template-columns:30px 1fr 22px;gap:10px;align-items:center;margin:8px 0}
 .tally img{width:30px;height:30px;border-radius:9px;object-fit:cover}
 .tally .bar{height:10px;border-radius:9px;background:rgba(255,255,255,.06);overflow:hidden;position:relative}
-.tally .bar i{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,#8a1a2b,#ff4d63);transition:width .6s cubic-bezier(.2,1.2,.4,1)}
+.tally .bar i{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,#7a0f24,#ff6a1f);transition:width .6s cubic-bezier(.2,1.2,.4,1)}
 .tally .row b{font-size:15px;text-align:right}
 .tally .nm{grid-column:2;font-size:11.5px;font-weight:700;color:#cfc5b6;margin-top:-6px}
 .acclist .a{display:flex;align-items:center;gap:8px;padding:7px 0;border-top:1px solid rgba(255,255,255,.05);font-size:13px;font-weight:700}
@@ -131,7 +132,7 @@ svg.lines{position:absolute;inset:0;width:100%;height:100%;z-index:5;pointer-eve
 .log .l.nar{grid-template-columns:1fr;font-family:"Cormorant Garamond",serif;font-style:italic;font-size:16px;color:#bfae92}
 .controls{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:center;gap:10px;align-items:center;padding:16px;background:linear-gradient(180deg,transparent,rgba(0,0,0,.85) 40%);z-index:20}
 .btn{padding:13px 22px;border-radius:14px;font-weight:800;font-size:14px;background:rgba(255,255,255,.06);border:1px solid var(--line)}
-.btn.main{padding:13px 44px;background:linear-gradient(180deg,#f0d49a,#b98d45);color:#1b140a;border:0;box-shadow:0 10px 30px rgba(217,179,108,.3)}
+.btn.main{padding:13px 44px;background:linear-gradient(180deg,#ff8a3d,#d9480f);color:#fff;border:0;box-shadow:0 10px 30px rgba(242,106,31,.35)}
 .count{font-size:12px;color:var(--mute);font-weight:700;min-width:60px}
 </style>
 </head>
@@ -222,7 +223,7 @@ function paint(fresh){
   document.getElementById('seats').innerHTML = SEATS.map((n,i)=>{
     const [x,y] = seatPos[i];
     const cls = ['seat', speaker===n?'speak':'', speaker && speaker!==n && !targets.has(n) && st.phase!=='vote' ? 'dim':'', targets.has(n)?'target':'',
-      TRAITORS.has(n)?'is-traitor':'', st.out===n && st.reveal ? 'out':''].join(' ');
+      TRAITORS.has(n)?'is-traitor':'', st.out===n && st.reveal ? 'out':'', st.slates[n]?'voted':''].join(' ');
     const sl = st.slates[n];
     return `<div class="${cls}" style="left:${x}%;top:${y}%"><div class="slate ${sl?'up':''} ${st.lastVote===n&&fresh?'fresh':''}">${sl||''}</div>`
       + `<div class="med"><img src="${A(P[n])}"></div><span class="nm">${n}</span></div>`;

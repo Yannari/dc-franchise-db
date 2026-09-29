@@ -135,7 +135,7 @@ export const HANGOUT = {
     ] },
     { id: 'hangout.view.noBond.keep.05', turns: [
       { by: 'a', react: "Please don't say {c}. Please don't say {c}.", send: "Where are you at with {c}?" },
-      { by: 'b', send: "Love {c.obj}. I'm not blocking {c.obj}" },
+      { by: 'b', send: "{c} is fine by me. I'm not blocking {c.obj}" },
       { by: 'a', react: "Thank God." },
     ] },
     { id: 'hangout.view.noBond.keep.06', when: { likesC: true }, turns: [

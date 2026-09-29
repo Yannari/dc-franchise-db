@@ -46,7 +46,7 @@ These were settled with the user during the brainstorm on 2026-09-29.
 | 4 | **The approved visual direction** is `circle-stage-v3` (§18). | The user: "seem really good … a little more personality in the apartment but I love it". |
 | 5 | **Host:** a comic narrator-host in the spirit of Michelle Buteau. **Identity undecided.** Don (`don.png`) is a candidate the user may keep for a future Amazing Race. | The engine reads the host's name and portrait from one config slot (§17.4). Nothing is hard-coded. |
 | 6 | **Relationships are keyed by profile, not person,** inside the season. | Bridgette trusts "Maddie". At the reveal that feeling converts into a feeling about the real player, and that is what reaches the franchise ledger (§5.4). |
-| 7 | **Each player has a Profile Plan in Cast setup** (mode, cover, tells). Blank fields roll. | The user asked for covers to be authorable (§4.2). |
+| 7 | **The author fills a Catfish Pool of personas each season;** by stats (or at random) some are taken and some are not. Per-player overrides live on the cast card. | The user: "enter some catfish profiles each time and depending on their stats or randomly some may be used some not" (§4.2, §4.3a). |
 | 8 | **Honesty is decided fact by fact,** from what showing each fact costs in this game. | The user asked how "themselves, but with a different job" is decided (§4.3). |
 | 9 | **Nice archetypes** may be Polished, Edited, or a *protective* catfish. Strategic catfishing, the Hacker, planted claims and canary traps are scheme-only. | Keeps the franchise's archetype rule while matching the real show, where plenty of kind people catfish (§4.4). |
 | 10 | **Photos are uploaded inside the website,** not dropped into a folder. | The user: "I aspire to make my sim usable to everyone … people that don't have access to the local files" (§19.3). |
@@ -183,7 +183,7 @@ js/ci-run.js                bridge to the run tab: setup → engine → commit, 
 js/ci/season.js             playCircleSeason({cast, setup, seed, bookings}) — the loop
 js/ci/schedule.js           days → episodes, which days rate, block, arrive, party
 js/ci/rng.js                named streams (per day, per scene, per line) so a line can't move a result
-js/ci/profiles.js           profile plans, covers, honesty per fact, face catalogue lookups
+js/ci/profiles.js           the Catfish Pool draw, overrides, honesty per fact, face catalogue lookups
 js/ci/faces.js              the face catalogue data (§4.6)
 js/ci/beliefs.js            what each player believes about each profile (§5)
 js/ci/mind.js               emotions: loneliness, paranoia, stress, guilt, elation (§5.5)
@@ -295,25 +295,42 @@ against before any new store is added.
 Players only ever read layer 2 and their own layer 3. Only the engine, the
 audience and the Debug drawer see layer 1.
 
-### 4.2 The Profile Plan (Cast setup)
+### 4.2 The Catfish Pool (season setup) and the Profile Plan (Cast setup)
 
-Each player's card in the Cast tab gets a **Profile Plan** section. Every
-field is optional; a blank field rolls when the season is built, and the roll
-is shown back on the card so the author can keep or change it.
+**The Catfish Pool.** Before each season the author writes a pool of
+ready-made personas, the way the real show's players arrive with their fake
+profile already prepared. A persona is:
 
 | Field | Values | Notes |
 |---|---|---|
-| Mode | Honest · Polished · Edited · Catfish · Shared · AI | §4.3 |
-| Handle | text | a catfish's persona name; blank = the player's own first name |
-| Face | face-catalogue id, an alum, or own portrait | §4.6, §4.7 |
-| Age shown | number | |
-| Job shown | text | |
-| Relationship status shown | Single · Taken · Married · "It's complicated" · Solo · Very single | real bios used "Solo" and "Single. Very single." |
-| Hometown shown | text | |
+| Handle | text | the persona's name ("Rebecca", "Mercedeze", "Carol") |
+| Face | face-catalogue id or an alum | §4.6, §4.7 |
+| Age, job, hometown | text | |
+| Relationship status | Single · Taken · Married · "It's complicated" · Solo · Very single | real bios used "Solo" and "Single. Very single." |
 | Bio | text | blank = written from the persona (§17) |
-| Reason | text + a reason kind | e.g. "playing as my girlfriend, she's more photogenic"; drives the visit and the goodbye video |
-| Tells | list | what the cover must never touch: "doesn't know golf", "has never had a period", "doesn't know Adele" |
+| Reason kinds it suits | one or more (below) | a "my girlfriend's photos" persona suits *strategic* or *experimental* |
+| Tells | list | what it must never touch: "doesn't know golf", "has never had a period", "doesn't know Adele" |
+| Fits | optional: gender, age range, archetypes of the player who would pick it | a 26-year-old persona fits a player who wants to seem young |
+
+**Not every persona is used.** Who takes one is decided when the season is
+built (§4.3a), by stats or at random. Personas nobody picks stay in the pool
+as **stock for the season's twists**: a burner profile (§14.3), a
+second-chance shared profile (§14.7), the Joker's anonymous profile (§14.1),
+a newcomer's cover. A persona the author wrote can still arrive mid-season.
+
+**The Profile Plan** on each player's card is now a short set of **overrides**,
+every field optional:
+
+| Field | Values | Notes |
+|---|---|---|
+| Catfish | Decide for me · Never · Always · As persona X | "Decide for me" is the default |
+| Mode if honest | Decide for me · Honest · Polished · Edited | |
+| Edits | job / age / status / hometown shown | for Edited; blank = chosen by §4.3 |
+| Reason | text + a reason kind | overrides the reason the draw would give |
 | Partner | another cast member | for Shared: who shares the apartment |
+
+Whatever the draw decides is shown back on the card (which persona, and why),
+so the author can keep it or pin something else.
 
 A **reason kind** is one of: *strategic* (hot girls get more likes — US 1
 Seaburn's own words), *protective* (judged for how I look — US 1 Karyn,
@@ -354,6 +371,30 @@ per-fact plan: keep, soften, or change. The mode is a summary of that plan:
 - **Catfish** — a different face, usually a different name.
 - **Shared** — two people, one profile (§14.8).
 - **AI** — a profile played by the engine's own bot (§14.10).
+
+### 4.3a Who takes a persona from the pool
+
+When the season is built:
+
+1. Every player without an override gets a **catfish motive**: the sum of what
+   their true facts cost to show in *this* cast (above), plus `strategic` and
+   `boldness`, minus `loyalty` (all proportional). An alum with a villain's
+   reputation, a 54-year-old in a room of 24-year-olds, a doctor among
+   bartenders all score high; a loyal player with nothing to hide scores low.
+2. Players are taken in order of motive, strongest first. Each looks at the
+   personas still in the pool and takes the one that best **fits** their goal
+   (the fact they want to hide, the persona's `fits`, the reason kinds it
+   suits). A player whose motive is below the line, or who finds no persona
+   that fits, does not catfish.
+3. **If the pool runs out**, the motivated players left over play **Edited**
+   instead (same face, one to three facts changed). The engine never invents a
+   persona the author did not write.
+4. **Random mode** (a season switch) skips the motive: a persona goes to a
+   player at random, and whoever gets one plays it.
+5. Pins win: "Always" and "As persona X" are placed first; "Never" is skipped.
+
+The draw uses its own named stream, so changing a persona's bio never changes
+who catfishes.
 
 A player's plan is chosen before Day 1 and can **move during the season**: a
 catfish can confess (US 1 Sean sent her real photo to three players on Day 8,
@@ -1406,7 +1447,7 @@ transcripts.
 7. **Real texting, really spoken.** Punctuation and emoji are dictated the way
    players do it ("question mark", "heart emoji", "hashtag…"), and the sent
    text shows the result.
-8. **American English by default** (the Netflix seasons are the model), with a
+8. **American English by default** (confirmed by the user; the Netflix seasons are the model), with a
    UK-season option; regional words go through the speaker's dialect slots, as
    on Perfect Match.
 9. **No slurs, no stereotypes as mechanics.** Players may say rude, funny,
@@ -1491,15 +1532,22 @@ ratings drumroll, the BLOCKED sound, party music from the user's library.
 
 ### 19.1 Cast tab
 
-The cast cards gain the **Profile Plan** (§4.2), with a dice button per field
-and a preview of the persona's profile as the other players will see it.
+The cast cards gain the **Profile Plan** overrides (§4.2), and after the draw
+each card shows its result: the persona taken (with a preview of the profile
+as the other players will see it) or "playing as themselves", and the reason.
 Alumni cards show who in the cast would recognise them.
+
+**The Catfish Pool** is its own panel beside the cast: a list of persona cards
+you add, edit, duplicate and delete, each with a face picker from the face
+catalogue. A counter shows how many personas the cast's motives would use
+("4 of 7 would be taken") so the author can see before the season starts that
+some will be left over as twist stock.
 
 ### 19.2 Season options
 
 Length (auto from cast, or set), newcomer rule (§8.5), rating style (ranking
-or stars), catfish share (how many blank plans roll Catfish), finalists
-(4 or 5), Fan Favorite on/off, US or UK language. Blocking formats, games,
+or stars), who takes a persona (**by stats** or **at random**, §4.3a), finalists
+(4 or 5), Fan Favorite on/off, US English (default) or UK English. Blocking formats, games,
 powers and arrivals are **Season Timeline cards**, never a separate picker
 (the user's rule from Perfect Match: "there's already a schedule system,
 adapt it").
@@ -1611,7 +1659,7 @@ Each plan leaves the site working.
    facts, all pools, repetition guard; `ci:transcript`. Read a season.
 3. **Plan 3 — the game library and twists.** Games, parties, apartment life,
    all blocking formats, powers, arrivals as timeline cards.
-4. **Plan 4 — the Circle tab.** Profile Plans, face catalogue, Photos panel,
+4. **Plan 4 — the Circle tab.** The Catfish Pool, Profile Plan overrides, face catalogue, Photos panel,
    season options.
 5. **Plan 5 — screens.** Stage kinds, apartments with personality, sound.
 6. **Plan 6 — the site.** Export, ratings reader, social pack, wiki, ledger.
@@ -1624,5 +1672,3 @@ Each plan leaves the site working.
    for a future Amazing Race.
 2. **The face catalogue** — drafted by Claude from the 84 images; needs the
    user's corrections.
-3. **Default language** — US (Netflix model) is proposed; a UK option is in
-   §19.2.

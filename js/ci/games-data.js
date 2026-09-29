@@ -14,7 +14,8 @@
 // Left out on purpose: Who Dis? and Kray Pop, which run on real celebrities
 // and real pop culture — nothing in this universe to quiz on.
 //
-// Prompt shapes: statement {id, text, stat, lean ±1 — agreeing leans on stat};
+// Prompt shapes: statement {id, text, stat, lean ±1 — agreeing leans on stat;
+// the game's `say` is the two answer words, spoken aloud};
 // name {id, text, tone good|bad|funny}; guess {id, text — a fact every player
 // answers about themselves}; team {id, text — a category}; make {id, text,
 // stats, about — the work portrays another player}.
@@ -29,7 +30,7 @@ const q = (id, text) => ({ id, text });
 
 export const GAMES = [
   // ── statement: agree / disagree, yes / no — every answer shown ─────────
-  { id: 'ice-breaker', name: 'Ice Breaker', family: 'statement', purpose: 'learn', prize: 'none', source: 'US 1 Ep 1',
+  { id: 'ice-breaker', say: ['Agree', 'Disagree'], name: 'Ice Breaker', family: 'statement', purpose: 'learn', prize: 'none', source: 'US 1 Ep 1',
     rules: ['All Players will be shown a series of statements. You must decide if you agree or disagree with each statement.'],
     prompts: [
       st('shower', "It's okay to pee in the shower.", 'boldness', 1),
@@ -40,7 +41,7 @@ export const GAMES = [
       st('phone', "It's okay to look through your partner's phone.", 'intuition', 1),
       st('split', 'The person who asks should pay for the first date.', 'temperament', 1),
     ] },
-  { id: 'been-there', name: 'Been There Done That', family: 'statement', purpose: 'learn', prize: 'none', source: 'US 4 Ep 1',
+  { id: 'been-there', say: ['Yes', 'No'], name: 'Been There Done That', family: 'statement', purpose: 'learn', prize: 'none', source: 'US 4 Ep 1',
     rules: ['Players will be shown a series of experiences. You must answer whether or not you have been there and done that.'],
     prompts: [
       st('skinny-dip', 'I have been skinny-dipping.', 'boldness', 1),
@@ -50,7 +51,7 @@ export const GAMES = [
       st('bar-fight', 'I have been in a bar fight.', 'temperament', -1),
       st('marathon', 'I have run a marathon.', 'endurance', 1),
     ] },
-  { id: 'for-real', name: 'For Real For Real', family: 'statement', purpose: 'learn', prize: 'none', source: 'US 6 Ep 1',
+  { id: 'for-real', say: ['Yes', 'No'], name: 'For Real For Real', family: 'statement', purpose: 'learn', prize: 'none', source: 'US 6 Ep 1',
     rules: ['Players will be asked a series of questions. You must answer yes or no, for real for real.'],
     prompts: [
       st('unfriend', 'Would you unfriend someone who got canceled?', 'loyalty', -1),
@@ -60,7 +61,7 @@ export const GAMES = [
       st('return-wallet', 'If you found a wallet full of cash, would you return it?', 'loyalty', 1),
       st('regift', 'Would you regift a present?', 'strategic', 1),
     ] },
-  { id: 'risky-quizness', name: 'Risky Quizness', family: 'statement', purpose: 'learn', prize: 'none', source: 'US 7 Ep 1',
+  { id: 'risky-quizness', say: ['Yes', 'No'], name: 'Risky Quizness', family: 'statement', purpose: 'learn', prize: 'none', source: 'US 7 Ep 1',
     rules: ["It's time for Risky Quizness. You must answer yes or no to each question about the risky things you've done."],
     prompts: [
       st('jump', 'Have you ever jumped out of a plane?', 'boldness', 1),
@@ -70,7 +71,7 @@ export const GAMES = [
       st('crush', 'Have you ever confessed a crush to a friend?', 'social', 1),
       st('dare', 'Have you ever done a dare you regretted?', 'boldness', 1),
     ] },
-  { id: 'pick-3', name: 'Pick 3', family: 'statement', purpose: 'learn', prize: 'none', source: 'US 7 Ep 10',
+  { id: 'pick-3', say: ['Yes', 'No'], name: 'Pick 3', family: 'statement', purpose: 'learn', prize: 'none', source: 'US 7 Ep 10',
     rules: ["Players, you must pick the three things you can't live without. For each one, say whether it makes your list."],
     prompts: [
       st('phone', 'My phone.', 'social', 1),

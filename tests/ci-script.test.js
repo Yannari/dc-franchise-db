@@ -284,3 +284,55 @@ describe('the Hangout', () => {
     expect(views).toEqual(['@shubham', '@sammie']);
   });
 });
+
+import { GAMES } from '../js/ci/games-data.js';
+
+describe('games, parties, apartment life and videos from home — on the page', () => {
+  const withPools = (pools, fn) => {
+    const saved = { ...POOLS };
+    Object.assign(POOLS, pools);
+    try { return fn(); } finally { for (const k of Object.keys(POOLS)) delete POOLS[k]; Object.assign(POOLS, saved); }
+  };
+  const e = (key, turns) => [{ id: `${key}.t1`, turns }];
+
+  it('opens a game with its rules read aloud, then a block per round, then the prize', () => {
+    const s = room();
+    const g = GAMES.find(x => x.id === 'ice-breaker');
+    const sc = addScene(s, 'game', [...s.active], { gameId: g.id, family: 'statement',
+      rounds: [{ promptId: 'shower', answers: { '@rebecca': 'agree', '@shubham': 'disagree', '@sammie': 'disagree' }, lone: '@rebecca' }],
+      results: {}, prize: { kind: 'party', to: ['@sammie'] } });
+    const blocks = withPools({
+      'game.open': e('game.open', [{ by: 'a', react: '"{q}" — it\'s {game}!' }]),
+      'game.statement.agree': e('game.statement.agree', [{ by: 'a', say: 'Agree. "{q}"' }, { by: 'b', react: 'What?' }]),
+      'game.statement.disagree': e('game.statement.disagree', [{ by: 'a', say: 'Disagree.' }]),
+      'game.statement.lone': e('game.statement.lone', [{ by: 'a', react: 'Only {b}?' }]),
+      'game.prize.party': e('game.prize.party', [{ by: 'a', react: 'A party!' }]),
+    }, () => writeScene(s, sc).blocks);
+    expect(blocks.map(b => b.key)).toEqual(['game.open', 'game.statement.agree', 'game.statement.lone', 'game.prize.party']);
+    expect(blocks[0].lines[0].text).toBe(`"${g.rules[0]}" — it's Ice Breaker!`);
+    expect(blocks[1].lines[0].text).toBe(`Agree. "It's okay to pee in the shower."`);
+    expect(blocks[2].lines[0].text).toBe('Only Rebecca?');
+  });
+
+  it('opens a party with its props, and plays each Never Have I Ever round', () => {
+    const s = room();
+    const sc = addScene(s, 'party', [...s.active], { theme: 'nineties', props: ['a windbreaker', 'butterfly clips', 'a boom box'],
+      rounds: [{ by: '@shubham', statement: 'lied-age', admitted: ['@sammie'] }, { by: '@sammie', statement: 'dared', admitted: [] }] });
+    const blocks = withPools({
+      'party.open': e('party.open', [{ by: 'a', react: '{game}! {q}!' }]),
+      'party.nhie': e('party.nhie', [{ by: 'a', send: '{q}' }, { by: 'b', react: 'Guilty.' }]),
+      'party.nhie.none': e('party.nhie.none', [{ by: 'a', send: '{q}' }]),
+    }, () => writeScene(s, sc).blocks);
+    expect(blocks.map(b => b.key)).toEqual(['party.open', 'party.nhie', 'party.nhie.none']);
+    expect(blocks[0].lines[0].text).toBe('90s Party! a windbreaker, butterfly clips and a boom box!');
+    expect(blocks[1].lines[0].text).toBe('Never have I ever lied about my age.');
+  });
+
+  it('shows a life scene and a home video with their own player only', () => {
+    const s = room();
+    const life = addScene(s, 'life', ['@sammie'], { habit: 'plushie' }, ['@sammie']);
+    const home = addScene(s, 'home-video', ['@rebecca'], { catfish: true }, ['@rebecca']);
+    const keys = [...sceneBlocks(s, life), ...sceneBlocks(s, home)].map(b => `${b.key}:${JSON.stringify(b.cast)}`);
+    expect(keys).toEqual(['life.plushie:{"a":"@sammie"}', 'home.video:{"a":"@rebecca"}']);
+  });
+});

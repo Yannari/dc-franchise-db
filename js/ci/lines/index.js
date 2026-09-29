@@ -12,8 +12,10 @@ import { VISIT } from './visit.js';
 import { GOODBYE } from './goodbye.js';
 import { FINALE } from './finale.js';
 import { HOST } from './host.js';
+import { GAME_LINES } from './games.js';
+import { LIFE_LINES } from './life.js';
 
 export const POOLS = {};
-for (const part of [CHAT_A, CHAT_B, SLIPS, FEED, CIRCLE, PROFILES, RATINGS, HANGOUT, BLOCKING, VISIT, GOODBYE, FINALE, HOST]) {
+for (const part of [CHAT_A, CHAT_B, SLIPS, FEED, CIRCLE, PROFILES, RATINGS, HANGOUT, BLOCKING, VISIT, GOODBYE, FINALE, HOST, GAME_LINES, LIFE_LINES]) {
   for (const [k, v] of Object.entries(part)) POOLS[k] = [...(POOLS[k] || []), ...v];
 }

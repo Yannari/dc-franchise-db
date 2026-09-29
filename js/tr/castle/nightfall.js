@@ -408,7 +408,7 @@ const IN_THE_MORNING = {
   'one-of-them-lied': [
     '{a} caught the seam in {b}’s account at lights-out, and {b} heard {a} catch it.',
     'It fell apart in the dark. {b} said one thing too many and {a} stopped agreeing with any of it.',
-    '“You told me that differently on Tuesday,” {a} said, and the rest of the night went the way that goes.',
+    '“You told me that differently the other day,” {a} said, and the rest of the night went the way that goes.',
     '{a} had been waiting all day for the part of {b}’s story that would not hold, and it arrived at midnight.',
     '{b} tried the account on {a} one last time and it did not survive being said out loud.',
   ],

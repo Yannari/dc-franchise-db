@@ -18,6 +18,7 @@
 // consults is decoration, and we have been caught by that before.
 // ══════════════════════════════════════════════════════════════════════
 import { gs, players } from '../core.js';
+import { pronouns } from '../players.js';
 import { getBond } from '../bonds.js';
 import { getRelationshipDimensions } from '../relationships.js';
 import { evaluateEndgameBeatability } from '../intentions.js';
@@ -401,6 +402,13 @@ export function reviseHousePlans({ house = houseNow(), week = null, trigger = 'w
   for (const name of house) {
     const plan = ensureHousePlan(name, { house, week });
     if (!plan) continue;
+    // These reasons print after the owner's name ("Laurie: ..."), so the owner
+    // is the subject and has to be referred to as themself. A bare "they" read
+    // as a third person: "Laurie: Paige Turner became somebody they rely on."
+    let me = { sub: 'they', obj: 'them', posAdj: 'their', Sub: 'They' };
+    try { me = pronouns(name) || me; } catch { /* harness without a cast */ }
+    const isAre = me.sub === 'they' ? 'are' : 'is';
+    const hasHave = me.sub === 'they' ? 'have' : 'has';
     const pool = house.filter(n => n !== name);
     if (!pool.length) continue;
 
@@ -419,7 +427,7 @@ export function reviseHousePlans({ house = houseNow(), week = null, trigger = 'w
     }
     if (plan.shield && !house.includes(plan.shield)) {
       changes.push(logChange(plan, round, 'shield', plan.shield, null,
-        `${plan.shield} was their shield and is out of the house — they are the target now`));
+        `${plan.shield} was ${me.posAdj} shield and is out of the house — ${me.sub} ${isAre} the target now`));
       plan.shield = null;
     }
     if (plan.goat && !house.includes(plan.goat)) {
@@ -465,7 +473,7 @@ export function reviseHousePlans({ house = houseNow(), week = null, trigger = 'w
         plan.shield = hoh;
         plan.origins.shield[hoh] = better.why;
         changes.push(logChange(plan, round, 'shield', before, hoh,
-          `${hoh} just won power — better to stand behind them than in front`));
+          `${hoh} just won power — better to stand behind ${hoh} than in front`));
       }
     }
 
@@ -479,7 +487,7 @@ export function reviseHousePlans({ house = houseNow(), week = null, trigger = 'w
             plan.targets = [hoh, ...plan.targets].slice(0, 3);
             plan.origins.targets[hoh] = 'put them on the block';
             changes.push(logChange(plan, round, 'targets', before, [...plan.targets],
-              `${hoh} nominated them — that is now the whole plan`));
+              `${hoh} nominated ${me.obj} — that is now the whole plan`));
           }
           if (resentOf(name, hoh) >= 3 && !plan.revenge.includes(hoh)) {
             plan.revenge.push(hoh);
@@ -492,7 +500,7 @@ export function reviseHousePlans({ house = houseNow(), week = null, trigger = 'w
         // not what you thought it was, or somebody outside it is running things.
         const exposed = plan.preferredCore.filter(n => nominees.includes(n));
         changes.push(logChange(plan, round, 'preferredCore', [...plan.preferredCore], [...plan.preferredCore],
-          `${nameOf(exposed)} went up and they did not — the core is not protecting anybody`));
+          `${nameOf(exposed)} went up and ${me.sub} did not — the core is not protecting anybody`));
       }
     }
 
@@ -500,7 +508,7 @@ export function reviseHousePlans({ house = houseNow(), week = null, trigger = 'w
     if (trigger === 'veto' && vetoWinner) {
       if (saved && saved !== name && plan.targets.includes(saved) && skill >= 5) {
         changes.push(logChange(plan, round, 'targets', [...plan.targets], [...plan.targets],
-          `${saved} came off the block — the shot they wanted is gone for this week`));
+          `${saved} came off the block — the shot ${me.sub} wanted is gone for this week`));
       }
       if (vetoWinner !== name && houseThreat(vetoWinner) > houseThreat(name) + 0.6
         && skill >= 6 && !plan.targets.includes(vetoWinner) && trustOf(name, vetoWinner) <= 0) {
@@ -508,7 +516,7 @@ export function reviseHousePlans({ house = houseNow(), week = null, trigger = 'w
         plan.targets = [vetoWinner, ...plan.targets].slice(0, 3);
         plan.origins.targets[vetoWinner] = 'keeps winning when it counts';
         changes.push(logChange(plan, round, 'targets', before, [...plan.targets],
-          `${vetoWinner} pulled out the veto when they needed it — that is a problem worth solving`));
+          `${vetoWinner} won the veto on top of everything else — that is a problem worth solving`));
       }
     }
 
@@ -528,7 +536,7 @@ export function reviseHousePlans({ house = houseNow(), week = null, trigger = 'w
           plan.origins.shield[shield.name] = shield.why;
           changes.push(logChange(plan, round, 'shield', before, shield.name, before
             ? `${shield.name} is a bigger wall to stand behind than ${before}`
-            : shield.why));
+            : `${shield.name} is the shield: ${shield.why}`));
         }
       }
       const goat = readGoat(name, pool, skill, stage);
@@ -542,7 +550,7 @@ export function reviseHousePlans({ house = houseNow(), week = null, trigger = 'w
           plan.origins.goat[goat.name] = goat.why;
           changes.push(logChange(plan, round, 'goat', before, goat.name, before
             ? `${goat.name} is a safer person to sit beside than ${before}`
-            : goat.why));
+            : `${goat.name} is the one ${me.sub} would most like to sit beside at the end`));
         }
       }
       // Who they are actually close to now.
@@ -563,10 +571,10 @@ export function reviseHousePlans({ house = houseNow(), week = null, trigger = 'w
         core.forEach(n => { plan.origins.preferredCore[n] = 'closest thing to trust they have in this house'; });
         if (joined.length) {
           changes.push(logChange(plan, round, 'preferredCore', before, core,
-            `${nameOf(joined)} became somebody they actually rely on`));
+            `${nameOf(joined)} became somebody ${me.sub} actually ${me.sub === 'they' ? 'rely' : 'relies'} on`));
         } else if (left.length) {
           changes.push(logChange(plan, round, 'preferredCore', before, core,
-            `whatever they had with ${nameOf(left)} has cooled off`));
+            `whatever ${me.sub} had with ${nameOf(left)} has cooled off`));
         }
       }
       plan.backupAllies = byTrust
@@ -617,7 +625,7 @@ export function reviseHousePlans({ house = houseNow(), week = null, trigger = 'w
           plan.revengeSince[other] = round;
           plan.origins.revenge[other] = 'resentment crossed the line into a grudge';
           changes.push(logChange(plan, round, 'revenge', null, other,
-            `whatever ${other} did, they have not let it go`));
+            `whatever ${other} did, ${me.sub} ${hasHave} not let it go`));
         }
       }
       // And a target, if they somehow have none.
@@ -656,7 +664,7 @@ export function reviseHousePlans({ house = houseNow(), week = null, trigger = 'w
       if (!plan.targets.includes(hunter)) continue;   // heard it, sat on it
       plan.origins.targets[hunter] = 'word got back that they are the one coming';
       changes.push(logChange(plan, round, 'targets', before, [...plan.targets],
-        `${name} found out ${hunter} is gunning for them`));
+        `found out ${hunter} is gunning for ${me.obj}`));
     }
 
     _resolveShieldTargetClash(plan, changes, round);

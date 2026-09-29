@@ -184,7 +184,7 @@ const bestFriends = {
       `${a} and ${b} have a joke nobody else understands and neither of them can remember starting. It is not funny to anybody outside it, which is most of the point.`,
       `Neither of them has ever suggested working together. They just end up in the same room every time either of them has a bad hour, which the house has noticed and neither of them has.`,
       `${a} makes ${b} a plate without being asked and without making anything of it. ${watcher || 'Somebody'} clocks it and quietly moves both their names down a list.`,
-      `They are not an alliance. Ask either of them and they will say so honestly. Ask them to write the other's name down and watch what happens.`,
+      `${a} and ${b} are not an alliance. Ask either of them and they will say so honestly. Ask one of them to write the other's name down and watch what happens.`,
     ], ctx, a, b);
 
     api.addBond(a, b, 1);

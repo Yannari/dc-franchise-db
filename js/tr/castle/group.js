@@ -486,7 +486,7 @@ const SAT_UP_LINES = {
   'told-each-other-things': [
     'It got late enough that {names} started saying true things.',
     'Something about one in the morning makes people honest, and all {n} of them were.',
-    '{a} said something that will matter on Thursday and did not realise it.',
+    '{a} said something that will matter in a few days and did not realise it.',
     'They will all three remember this conversation differently and all three will remember it.',
     'Nobody was strategising. That is what made it worth more than the strategising.',
     'By the time they went up they knew things about each other the castle does not.',

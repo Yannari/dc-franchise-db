@@ -148,7 +148,7 @@ const diaryRoomRant = {
 };
 
 const hohLetter = {
-  id:'texture-hoh-letter', category:'social', location:'hoh-room',
+  id:'texture-hoh-letter', category:'social', location:'hoh-room', oncePerWeek:true,
   weight:(h,c)=>c?.hoh&&h.includes(c.hoh)&&h.length>=4?fit(c,2.6):0,
   fire(h,c,api) {
     const hoh=c.hoh, guest=closestTo(hoh,others(h,hoh))||first(others(h,hoh));

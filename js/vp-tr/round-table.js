@@ -69,6 +69,7 @@
 //      inside `_view` before a player's screen is built from it, rather than
 //      hidden in the markup: a blanking pass is one edit away from leaking,
 //      and a branch that never receives the data cannot leak it at all.
+import { tidyNames } from './tidy.js';
 import { seasonConfig, players } from '../core.js';
 import { pronouns } from '../players.js';
 import { exitVerbs, publicBallots, showWords } from '../shows.js';
@@ -1747,6 +1748,13 @@ export function _reasonRenderings(text) {
  * Keyed on the episode and the target so one card does not reword the same
  * clue twice, and so a re-render of the same night is stable.
  */
+// A STORED REASON IS USUALLY A PREDICATE ("kept X in on…"), and the lines
+// that cite it supply the subject. Some — a mission clue — were minted with the
+// name already on the front, and printed "Gwen Gwen looked at the gold ring".
+function _pred(name, text) {
+  const t = String(text || '');
+  return name && t.indexOf(name + ' ') === 0 ? t.slice(name.length + 1) : t;
+}
 function _sayReason(text, seed) {
   const raw = String(text || '');
   for (const [re, pool] of REASON_PHRASINGS) {
@@ -2566,9 +2574,9 @@ function _buildBeats(v) {
     const apr = _pr(lead);
     const subs = { A: lead, a: lead, T: c.t, t: c.t, sub: pr.sub, Sub: pr.Sub,
       obj: pr.obj, pos: pr.pos,
-      src: src ? _esc(_sayReason(src.text, key + '|1|' + c.t)) : '',
+      src: src ? _esc(_pred(c.t, _sayReason(src.text, key + '|1|' + c.t))) : '',
       src2: (mine && (mine.sources || [])[1])
-        ? _esc(_sayReason(mine.sources[1].text, key + '|2|' + c.t)) : '',
+        ? _esc(_pred(c.t, _sayReason(mine.sources[1].text, key + '|2|' + c.t))) : '',
       // THE ACCUSER'S pronouns, under their own keys. `sub`/`pos` above are
       // the ACCUSED's and always have been, so a sentence about the person
       // doing the accusing had no pronoun available and had to say the name
@@ -2625,7 +2633,7 @@ function _buildBeats(v) {
         && (sp.sources || []).length);
       if (back) {
         inner += '<p>' + _fill(_fresh(DEFLECT_SOURCE, key + '|dsrc|' + c.t),
-          { ...dsubs, dsrc: _esc(_sayReason(back.sources[0].text, key + '|d|' + c.t)) }) + '</p>';
+          { ...dsubs, dsrc: _esc(_pred(deflectTo[0], _sayReason(back.sources[0].text, key + '|d|' + c.t))) }) + '</p>';
       }
     }
     // THE AUDIENCE'S PRIVILEGE. `v.truth` is null on every other layer and at
@@ -2759,7 +2767,7 @@ function _buildBeats(v) {
       + _esc(CLASH_KIND[c.kind] || 'It gets sharp') + '</div>'
       + '<div class="rt-clash-pair">' + _faceChip(c.a, 26)
       + '<span class="rt-clash-v"></span>' + _faceChip(c.b, 26) + '</div>'
-      + '<p class="rt-clash-t">' + _esc(c.line) + '</p>'
+      + '<p class="rt-clash-t">' + _esc(tidyNames(c.line)) + '</p>'
       // WHAT IT IS ABOUT, quoted off the thread's opening beat. Without this
       // the card says an argument happened and never says what argument.
       // NOT IN QUOTATION MARKS: the opening beat is narration, and quoted it
@@ -3160,7 +3168,10 @@ function _seatAt(i, n) {
     px: _RING.cx + Math.sin(a) * _PLACE.rx,
     py: _RING.cy - Math.cos(a) * _PLACE.ry,
     t,
-    scale: 0.6 + 0.5 * t,
+    // A FLOOR OF .8, not .6: at .6 the far chairs rendered a 25px face over
+    // a name about six pixels tall — perspective nobody could read. Depth
+    // still reads through the dimming and the stacking order.
+    scale: 0.8 + 0.3 * t,
     z: 10 + Math.round(t * 200),
   };
 }

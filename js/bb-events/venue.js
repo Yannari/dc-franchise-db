@@ -88,7 +88,7 @@ const sharedSpace = {
       `${a} and ${b} talk in ${_v('gather')} about nothing for an hour, which in here is how trust is actually built.`,
     ], ctx, a, b) : _variant([
       `${a} and ${b} end up alone in ${_v('gather')}. They discuss food, laundry, and the weather outside—`
-        + `everything except the argument both came in carrying.`,
+        + `everything except the thing that went wrong between them.`,
       `There is one room and both of them are in it. ${a} and ${b} talk about ${_v('foodSource')} for ten minutes rather than the obvious.`,
       `${a} and ${b} share ${_v('downtime')} without sharing anything else. Everybody watching learns something anyway.`,
       `${b} settles into ${_v('gather')} hoping for a room to ${pronouns(b).ref}. ${a} sits at the opposite end and stays. Neither is willing to give the other the satisfaction of leaving first, so they remain there in silence.`,

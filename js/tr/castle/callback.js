@@ -388,7 +388,7 @@ const GRUDGE_LINES = {
     'The grudge turned out to be negotiable, and the price was specific.',
     '“We can be square,” said {a}, “and here is what square costs.”',
     '{a} converted an old betrayal into a present-day arrangement inside four minutes.',
-    'It stopped being about last time about halfway through and became about Thursday.',
+    'It stopped being about last time about halfway through and became about the next table.',
     '{b} would rather have had the argument, and said so, and paid anyway.',
     '{a} has been waiting two seasons to have something {b} needs, and now has it.',
     'What {a} produced was not a grievance. It was an invoice.',
@@ -469,7 +469,7 @@ const REUNION_LINES = {
     'It turns out {a} and {b} still have all their old shorthand, and it still works.',
     '{b} laughed at something the way they used to, and {a} was in trouble again immediately.',
     'They got about four hours into a castle before it was obvious to everybody but them.',
-    '{a} has been over {b} for two seasons and was over being over {b} by Tuesday lunchtime.',
+    '{a} has been over {b} for two seasons, and it took {aObj} about one lunch to stop pretending.',
     'Neither of them said anything about it. Everybody in that hall could see it anyway.',
   ],
   'agreed-not-to': [
@@ -483,7 +483,7 @@ const REUNION_LINES = {
     'The old feelings turned up on schedule and got shown the door on schedule too.',
   ],
   'one-of-them-still-is': [
-    '{b} is over it. {a} has been in this castle for four days pretending to be.',
+    '{b} is over it. {a} has been pretending to be since the first day.',
     'It was mutual once. It is currently mutual in one direction only, and {a} knows which.',
     '{b} was warm and easy about all of it, which is exactly the problem.',
     '{a} would take it back tomorrow. {b} has genuinely moved on and did not have to say so.',
@@ -684,7 +684,7 @@ const DEFEND_HISTORY_LINES = {
     '{a} could have said the thing about the old season. {a} listened to the whole evening and did not.',
     '{b} looked at {a} once, waiting. {a} looked at the fire.',
     'It would have taken one sentence and {a} decided the sentence was too expensive tonight.',
-    '{a} has one card and is not spending it on a Tuesday, and {b} will find that out later.',
+    '{a} has one card and is not spending it this early, and {b} will find that out later.',
     'Nobody in that room knows {a} and {b} played a season together, and {a} would like that to continue.',
     '{a} did not defend {b}. {a} also did not agree with any of it, and said nothing at all.',
     'The history stayed in {a}’s pocket, where it is worth more and does less.',
@@ -945,7 +945,7 @@ const DIFFERENT_PERSON_LINES = {
     '“You keep telling people who I was,” said {b}. “I am walking right here.”',
     '{b} let {a} finish the story and then asked {a} not to tell it again.',
     'It came out much harder than {b} had meant it to and {b} did not take it back.',
-    '{b} has been waiting three days to say it and picked a road with nobody else on it.',
+    '{b} has been waiting days to say it and picked a quiet stretch of road to do it.',
     '“Whatever I did to you, I did four years ago,” said {b}, “and I have not done it since.”',
     '{a} had not realised any of it was landing. {b} explained, at some length, that all of it was.',
   ],
@@ -1068,7 +1068,7 @@ const ENVY_LINES = {
     'If nobody will give you a past, said {a}, more or less, then get a present.',
     '{a} stopped trying to get into the old story and started building a new one, in the same room.',
     '{b} and {c} did not notice {a} leave, which is exactly what {a} had been counting on.',
-    '{a} is going to have a story by Thursday and it is not going to include {b}.',
+    '{a} is going to have a story in a few days and it is not going to include {b}.',
     'Everybody else is playing last season. {a} has decided to play this one.',
   ],
 };
@@ -1322,7 +1322,7 @@ const CONFRONTATION_LINES = {
     '{b} braced for the whole of it and got one sentence and a change of subject.',
     '{a} has decided the old season is not worth what carrying it costs, and said so once.',
     'It went in the ground quietly, at {a}’s choosing, and {b} was not asked to help dig.',
-    '{a} said it was finished and then behaved for four days as though it were, which settled it.',
+    '{a} said it was finished and then behaved from then on as though it were, which settled it.',
   ],
 };
 

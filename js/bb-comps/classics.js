@@ -586,7 +586,7 @@ const stayOrFold = {
     [...runs].sort((a, b) => a.total - b.total).forEach(r => {
       if (r.threw) { beats.push(threwBeat(r, say)); return; }
       if (r.folds >= 3) {
-        beats.push(beat(`${r.name} folds ${r.folds} of the four and finishes on ${r.total}. Safe, small, and out of it by the third round.`,
+        beats.push(beat(`${r.name} folds ${r.folds === 4 ? 'all four' : `${['', 'one', 'two', 'three'][r.folds]} of the four`} and finishes on ${r.total}. Safe, small, and out of it by the third round.`,
           [r.name], `FOLDED ${r.folds}`, 'grey'));
       } else if (r.wiped >= 2) {
         beats.push(beat(`${r.name} stays in twice on cards that could not survive the table and loses both. ${r.total} points, and a lot of information given away for free.`,

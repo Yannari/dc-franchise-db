@@ -33,6 +33,7 @@
 
 import { gs } from '../../core.js';
 import { getBond } from '../../bonds.js';
+import { pronouns } from '../../players.js';
 
 /**
  * FNV-1a. Small, stable across runs and platforms, and no dependency.
@@ -212,7 +213,25 @@ export function lineFor(pool, key, subs) {
   if (subs) {
     for (const k of Object.keys(subs)) s = s.split('{' + k + '}').join(subs[k]);
   }
-  return s;
+  return pronounSlots(s, subs);
+}
+
+/**
+ * `{aSub}` `{aObj}` `{aPos}` `{aRef}` — and the same for any other slot — are
+ * the pronouns of whoever filled `{a}`. A pool cannot know who it will be
+ * filled with, so without these it wrote "{a} said it hit them" over players
+ * the roster gives a gender. Resolved AFTER the names, off the same subs, and
+ * never part of the hash key, so no line choice moves.
+ */
+const _PRON_KEYS = { Sub: 'sub', Obj: 'obj', Pos: 'posAdj', Ref: 'ref' };
+export function pronounSlots(text, subs) {
+  if (!subs || text.indexOf('{') < 0) return text;
+  return text.replace(/\{(\w+?)(Sub|Obj|Pos|Ref)\}/g, (m, who, form) => {
+    const name = subs[who];
+    if (typeof name !== 'string' || !name) return m;
+    const p = pronouns(name) || {};
+    return p[_PRON_KEYS[form]] || m;
+  });
 }
 
 // ── THE COUNTERFACTUAL SWITCH, AND WHY IT IS SHIPPED ─────────────────
@@ -290,6 +309,9 @@ export function namesPhrase(list) {
   return `${l.slice(0, -1).join(', ')} and ${l[l.length - 1]}`;
 }
 
-const COUNT_WORDS = ['nobody', 'one', 'two', 'three', 'four', 'five', 'six'];
+const COUNT_WORDS = ['nobody', 'one', 'two', 'three', 'four', 'five', 'six', 'seven',
+  'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen',
+  'seventeen', 'eighteen', 'nineteen', 'twenty', 'twenty-one', 'twenty-two', 'twenty-three',
+  'twenty-four'];
 /** "three", for a sentence that wants to say how many rather than which. */
 export function countWord(n) { return COUNT_WORDS[n] || String(n); }

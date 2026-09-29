@@ -6564,8 +6564,32 @@ export function simulateBBWeek(options = {}) {
           badgeText: response.accepted ? (worn ? 'WORN DOWN' : 'RECEPTIVE') : 'UNMOVED',
           badgeClass: response.accepted ? 'green' : 'grey',
           eventId: 'campaign-pitch', category: 'deals', location: 'bedroom',
+          _fold: !response.accepted && !worn && words
+            ? { pitcher: pitch.pitcher, voter: response.voter, words } : null,
         };
       }).filter(Boolean));
+    // The same argument to three people is one scene, not three. A nominee
+    // whose case is a read of the whole house says the same sentence to every
+    // holdout, and the feed printed it verbatim once per voter.
+    for (let i = 0; i < pitchBeats.length; i++) {
+      const f = pitchBeats[i]._fold;
+      if (!f) continue;
+      const same = pitchBeats.filter((b, j) => j > i && b._fold
+        && b._fold.pitcher === f.pitcher && b._fold.words === f.words);
+      if (!same.length) continue;
+      const voters = [f.voter, ...same.map(b => b._fold.voter)];
+      const list = `${voters.slice(0, -1).join(', ')} and ${voters[voters.length - 1]}`;
+      Object.assign(pitchBeats[i], {
+        text: `${f.pitcher} makes the same case to ${list}, one at a time. ${f.words} `
+          + `${voters.length === 2 ? 'Neither of them moves' : 'Not one of them moves'}.`,
+        players: [f.pitcher, ...voters],
+      });
+      for (const b of same) b._drop = true;
+    }
+    for (let i = pitchBeats.length - 1; i >= 0; i--) {
+      if (pitchBeats[i]._drop) pitchBeats.splice(i, 1);
+      else delete pitchBeats[i]._fold;
+    }
     // The arena winner works the room like everybody else — they are on the
     // block as far as they know. One conversation per voter for the week,
     // same discipline as the real pitches; a small real consequence so the

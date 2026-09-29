@@ -487,7 +487,7 @@ const hohPressuresVeto = {
       `The conversation lasts six minutes and ${holder} comes out of it knowing exactly what using the veto would cost.`,
     ], ctx, hoh, holder) : _variant([
       `${hoh} tells ${holder} what ${p.sub} wants, then says the final decision belongs to ${holder}. ${holder} asks if ${hoh} really means that.`,
-      `"Use it if you need to. I'd rather you were straight with me than safe." ${holder} believes ${pronouns(hoh).obj}, and that is worth more to ${hoh} than the nominations.`,
+      `"Use it if you need to. I'd rather you told me straight than kept me comfortable." ${holder} believes ${pronouns(hoh).obj}, and to ${hoh} that is worth more than keeping the nominations as they are.`,
       `${hoh} makes the case once, badly, and apologises for making it at all.`,
       `They talk about it like two people rather than two positions, and ${holder} is the one who ends up feeling obliged.`,
     ], ctx, hoh, holder);

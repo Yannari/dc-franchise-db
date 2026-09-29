@@ -135,3 +135,30 @@ describe('a pair on a counted night', () => {
     }
   });
 });
+
+describe('Randomize respects the author', () => {
+  it('keeps "Nobody Goes Home", puts no dumping format on that night, and marks its own bookings as random', async () => {
+    const { gs, setGs, setPlayers: setP, seasonConfig, players, relationships, TWIST_CATALOG, seasonFormat, selectedEpisodes } = await import('../js/core.js');
+    const { pStats, pronouns, ordinal, romanticCompat } = await import('../js/players.js');
+    const { getBond, getPerceivedBond, bKey, bondLabel } = await import('../js/bonds.js');
+    const { perfectMatchEpisodes, perfectMatchForcedSlots } = await import('../js/pm-run.js');
+    const { showRandomizerPanel } = await import('../js/run-ui.js');
+    Object.assign(seasonConfig, { format: 'perfect-match', seasonNumber: 3, pmSetup: {}, pmRoleCounts: {}, pmArrivalCounts: {} });
+    setP(makeIslanders(22, 5));
+    setGs({ initialized: true, episodeHistory: [], popularity: {}, activePlayers: [], pm: { seed: 3004 } });
+    Object.assign(globalThis, { gs, players, seasonConfig, relationships, TWIST_CATALOG, seasonFormat, selectedEpisodes,
+      pStats, pronouns, ordinal, romanticCompat, getBond, getPerceivedBond, bKey, bondLabel });
+    document.body.innerHTML = '<div id="fd-timeline"></div>';
+    const vote1 = perfectMatchEpisodes().find(e => e.slot === 'vote1').ep;
+    seasonConfig.twistSchedule = [{ id: 'mine', episode: vote1, type: 'pm-dump-none' }];
+    showRandomizerPanel();
+    const onVote1 = seasonConfig.twistSchedule.filter(b => b.episode === vote1).map(b => b.type);
+    expect(onVote1).toContain('pm-dump-none');
+    const formats = new Set(TWIST_CATALOG.filter(t => t.pmFormat).map(t => t.id));
+    expect(onVote1.some(t => formats.has(t)), `formats on a night that sends nobody home: ${onVote1}`).toBe(false);
+    expect(seasonConfig.twistSchedule.filter(b => b.id !== 'mine').every(b => b.random)).toBe(true);
+    // A Randomize format is the draw written down: it forces nothing.
+    expect(perfectMatchForcedSlots()).toEqual([]);
+    seasonConfig.twistSchedule = [];
+  });
+});

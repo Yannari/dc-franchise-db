@@ -1553,8 +1553,10 @@ function _rule(state, idx) {
     // THE TWO ENDS, NAMED SO THEY STILL MEAN SOMETHING ALONE. The transcript
     // renders the stage as prose, and "nothing" and "certain" on their own
     // lines read as stray words rather than as the ends of a scale.
-    + '<div class="sn-tick-l" style="left:22px">no read at all</div>'
-    + '<div class="sn-tick-l" style="left:calc(100% - 22px)">certainty</div>'
+    // ANCHORED TO THEIR OWN EDGE rather than centred on it, so the words sit
+    // inside the box instead of hanging off both sides on a phone.
+    + '<div class="sn-tick-l" style="left:14px;transform:none">no read at all</div>'
+    + '<div class="sn-tick-l" style="left:auto;right:14px;transform:none">certainty</div>'
     + '</div>'
     + '<div class="sn-rule-foot">' + foot.join('') + '</div>'
     + '</div>';

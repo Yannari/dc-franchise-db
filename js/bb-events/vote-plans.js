@@ -1051,7 +1051,7 @@ const targetSurvivesRegroup = {
       `${org} tried to end ${survivor}'s season and did not, and now has to live in a house where ${survivor} gets to decide what happens next. ${survivor} takes the whole morning to make that point without saying a word of it.`,
     ], ctx, survivor, org) : _variant([
       `${survivor} is polite to ${org} all morning, which is the most alarming thing ${org} has seen this week.`,
-      `Nobody has told ${survivor} anything. ${survivor} has still narrowed the push to ${org}'s room, and has decided that suspecting it quietly is worth more than saying it too soon.`,
+      `Nobody has told ${survivor} anything, and ${survivor} has still worked out that the push came from ${org}'s room. ${p.Sub} ${p.sub === 'they' ? 'have' : 'has'} decided that knowing it quietly is worth more than saying it too soon.`,
       `${org} keeps finding reasons to be wherever ${survivor} is not. ${survivor} notices, files it, and goes back to the washing up.`,
       `"No hard feelings." ${survivor} says it to ${org} and means the first word considerably more than the second.`,
     ], ctx, survivor, org);

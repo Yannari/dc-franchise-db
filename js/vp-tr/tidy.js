@@ -78,12 +78,40 @@ function _nextWord(text, from) {
   return m ? m[1].toLowerCase() : '';
 }
 
+// ── THE SUBJECT'S OWN "THEIR" ─────────────────────────────────────────
+//
+// "Emma changed their mind." "Duncan was still arguing with themselves." The
+// pools wrote singular they wherever a line needed the subject's possessive,
+// because a pool cannot know who fills it. When the sentence's first person
+// is the one doing it, and nothing plural or nobody else stands between them
+// and the word, the word is theirs and it gets their pronoun.
+const PLURAL_BLOCK = /\b(and|others?|people|everyone|everybody|both|all|they|them|room|rest|pair|two|three|Traitors|Faithfuls|group|table|castle|who|each)\b/i;
+function _ownTheir(sent, hits) {
+  if (!hits.length) return sent;
+  const h = hits[0];
+  const p = pronouns(h.name) || {};
+  if (!p.sub || p.sub === 'they') return sent;
+  const stop = hits.length > 1 ? hits[1].at : sent.length;
+  const span = sent.slice(h.end, stop);
+  const m = /\b(their|themselves|themself)\b/.exec(span);
+  if (!m) return sent;
+  const between = span.slice(0, m.index);
+  if (PLURAL_BLOCK.test(between) || between.split(/\s+/).length > 9) return sent;
+  const word = m[1] === 'their' ? p.posAdj : p.ref;
+  const at = h.end + m.index;
+  return sent.slice(0, at) + word + sent.slice(at + m[1].length);
+}
+
 /** One sentence, repeats replaced where the position is unambiguous. */
 function _tidySentence(sent, re) {
   const hits = [];
   re.lastIndex = 0;
   let m;
   while ((m = re.exec(sent))) hits.push({ name: m[1], poss: !!m[2], at: m.index, end: re.lastIndex });
+  if (hits.length && hits[0].at <= 2) {
+    const fixed = _ownTheir(sent, hits);
+    if (fixed !== sent) return _tidySentence(fixed, re);
+  }
   if (hits.length < 2) return sent;
   const seen = new Set();
   const out = [];

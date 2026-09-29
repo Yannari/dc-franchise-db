@@ -633,6 +633,13 @@ export function campaignArgument(nominee, voter, opponent) {
   // Has the nominee ever written this voter's name down?
   const everVoted = (gs.episodeHistory || []).some(h => (h.votingLog || [])
     .some(b => b.voter === nominee && b.voted === voter));
+  // "Never" is only a boast once there has been a ballot to be clean on, and
+  // "they cannot say the same" only once the other nominee actually wrote it.
+  // Both were said on week one, before anybody in the house had voted.
+  const hasVoted = who => (gs.episodeHistory || []).some(h => (h.votingLog || [])
+    .some(b => b.voter === who));
+  const opponentVoted = !!opponent && (gs.episodeHistory || []).some(h => (h.votingLog || [])
+    .some(b => b.voter === opponent && b.voted === voter));
 
   if (huntsVoter) {
     return `"Every time you leave the room, ${opponent} brings up your name. I am not the one you need to worry about."`;
@@ -649,8 +656,8 @@ export function campaignArgument(nominee, voter, opponent) {
   if (opponent && threat(opponent) > threat(nominee) + 1) {
     return `"Look at who is left. ${opponent} beats you at the end. I do not, and I think we both know it. Take the one you can beat."`;
   }
-  if (!everVoted) {
-    return `"I have never written your name down. Not once. ${opponent ? `${opponent} cannot say the same` : 'The other side cannot say that'} and I can."`;
+  if (!everVoted && hasVoted(nominee) && opponentVoted) {
+    return `"I have never written your name down. Not once. ${opponent} cannot say the same, and I can."`;
   }
   if (bond(nominee, voter) >= 2) {
     return `"You do not owe me anything. But you need a number next week, and I will be one for you. ${opponent ? `${opponent} will not` : 'The other side will not'}."`;

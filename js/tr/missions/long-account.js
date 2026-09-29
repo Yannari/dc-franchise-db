@@ -36,6 +36,8 @@
 // heavy phases, so the counting room is won by people the sandbar had no use
 // for.
 
+import { countWord as _countWord } from '../castle/lines.js';
+const _cw = n => (n === 0 ? 'no' : _countWord(n));
 import {
   briefingText, clamp01, confessionalVoice, freshPick, hostDo, hostSay, PHASE_SWING,
   missionQuality, missionScene, noisyPair, payPot, placementsFrom,
@@ -436,7 +438,7 @@ const DID_HOLD = [
   '{who} held, and came out from behind the screen looking for somebody\'s face.',
 ];
 const DID_TAKE = [
-  '{who} took.',
+  '{who} wrote TAKE.',
   '{who} wrote TAKE, folded it, and was the first one back at the table.',
   "{who} took it, folded the card twice, and put it in the clerk's tray face down.",
 ];
@@ -517,7 +519,8 @@ function _settlement(ctx, rng, teams, settled) {
       participants: t.members,
       behaviour: paid ? 'impressive' : 'suspicious',
       text: render(freshPick(rng, paid ? HOLD_PAID : HOLD_BROKE), { team: t.name })
-        + ` The clerk read out ${holds} holds and ${rows.length - holds} takes, and no names.`,
+        + ` The clerk read out ${_cw(holds)} ${holds === 1 ? 'hold' : 'holds'} and `
+        + `${_cw(rows.length - holds)} ${rows.length - holds === 1 ? 'take' : 'takes'}, and no names.`,
       effects: [
         { kind: 'record', team: t.name, field: 'settlementCount',
           value: { holds, takes: rows.length - holds, paid },
@@ -525,10 +528,19 @@ function _settlement(ctx, rng, teams, settled) {
         { kind: 'crowd', name: first, colour: paid ? 'impressive' : 'selfish', mult: 0.3,
           source: `${t.name}'s settlement ${paid ? 'carried' : 'collapsed'} behind the screens` },
       ],
-      confessional: paid ? null : {
-        purpose: 'traitor-reasoning', speaker: null,
-        text: "Somebody in this room stood there and said the word hold to my face. "
-          + "I'd very much like to know who that was.",
+      // SPOKEN BY SOMEBODY WHO HELD. It printed with no speaker at all —
+      // "· confessional" over a line in the first person — and the only
+      // person who can honestly say it is one who wrote HOLD themselves.
+      confessional: (paid || !rows.some(r => r.held)) ? null : {
+        purpose: 'traitor-reasoning', speaker: rows.find(r => r.held).name,
+        text: confessionalVoice(rows.find(r => r.held).name, {
+          nice: "I wrote hold because we all said hold. Somebody in this room said it to my "
+            + "face and then didn't. That's the part that gets me.",
+          villainous: "Somebody in this room stood there and said the word hold to my face. "
+            + "I'd very much like to know who that was.",
+          neutral: `We all said hold. The clerk counted ${_cw(holds)}. Some of these people `
+            + 'lie for money, and now I know that about them.',
+        }),
       },
     }));
 
@@ -546,7 +558,7 @@ function _settlement(ctx, rng, teams, settled) {
         phase: 'settlement',
         participants: [liar.name],
         behaviour: 'selfish',
-        text: `${liar.name} said hold, out loud, to the table. `
+        text: `${liar.name} promised the table HOLD, out loud. Then `
           + render(freshPick(rng, DID_TAKE, 2), slots)
           + ' The screens are collected face down and the clerk does not read out names.',
         effects: [

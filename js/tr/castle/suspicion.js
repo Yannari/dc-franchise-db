@@ -21,7 +21,7 @@ import {
   findOpenThread, heatAt, actPhrase, lastClosedThread, outcomeSense, priorMoments,
 } from '../threads.js';
 import { suspicion } from '../deduction.js';
-import { lineFor } from './lines.js';
+import { lineFor, pronounSlots } from './lines.js';
 
 const FAMILY = 'suspicion';
 
@@ -324,7 +324,7 @@ const TALLY_LINES = {
   ],
   'put-it-to-them': [
     '{a} put the whole list to {b}, in order, dated, and waited to be told which part of it was wrong.',
-    '“Do you want it from the first day, or from Tuesday,” {a} said, and {b} learned there had been a first day.',
+    '“Do you want it from the first day, or from yesterday?” {a} said. {b} wanted it from the first day.',
     '{a} recited four things {b} had done and asked {b} to explain any one of them.',
     'It had been private for days. {a} made it not private, out loud, with {b} standing there.',
     '{a} said the list. It took about ninety seconds, and {b} did not interrupt any of it.',
@@ -771,7 +771,7 @@ const ACCUSE_LINES = {
     '“Where were YOU,” said {b}, and it turned out to be a fair question.',
     '{a} arrived with a case and left having been given one to answer.',
     '{b} did not deny anything. {b} simply changed whose evening was on the table.',
-    'By the end of it {a} was explaining a Tuesday, which had not been the plan at all.',
+    'By the end of it {a} was explaining where {aSub} had been two nights ago, which had not been the plan at all.',
   ],
   confess: [
     '{b} broke, but not about what {a} thought — they admitted to something else entirely.',
@@ -828,7 +828,8 @@ registerEvent({
     else if (roll < denyScore + denyWeakScore + turnScore) branch = 'turned';
     else branch = 'confess';
 
-    const line = pick(rng, ACCUSE_LINES[branch]).replace(/\{a\}/g, accuser).replace(/\{b\}/g, accused);
+    const line = pronounSlots(pick(rng, ACCUSE_LINES[branch]).replace(/\{a\}/g, accuser).replace(/\{b\}/g, accused),
+      { a: accuser, b: accused });
     const existing = findOpenThread(FAMILY, [accuser, accused]);
     let bondDelta = 0;
     let threadId = existing?.id ?? null;
@@ -901,7 +902,7 @@ const TIMELINE_LINES = {
     '{a} and {b} could not agree on their own version of the evening, so checking {c}’s was hopeless.',
     'Halfway through {b} realised {b} could not account for {b}’s own hour, which ended the exercise.',
     '{a} and {b} set out to check {c} and spent twenty minutes establishing where the two of THEM had been.',
-    'Nobody in this castle wears a watch. {a} and {b} rediscovered that about {c}’s Tuesday.',
+    'Nobody in this castle wears a watch. {a} and {b} found that out trying to pin down where {c} had been.',
     'The whole thing came apart on the question of when dinner had been.',
   ],
   'one-of-us-was-there': [
@@ -1047,7 +1048,7 @@ const BODY_READ_LINES = {
   ],
   'caught-them-looking': [
     '{b} looked up and found {a} already looking, and neither of them pretended otherwise.',
-    '“You have been watching me since Tuesday,” {b} said to {a}. “Get on with it.”',
+    '“You have been watching me for days,” {b} said to {a}. “Get on with it.”',
     '{b} saw {a} watching them in the window’s reflection and confronted {a} about it.',
     '{a} had been careful about it. Not careful enough — {b} said so, in front of two other people.',
     '{b} moved seats, deliberately, so that {a} would have to turn round to keep doing it.',
@@ -1057,7 +1058,7 @@ const BODY_READ_LINES = {
   ],
   'was-nothing': [
     '{a} waited for {b} to do it again, all morning, and {b} did not do it again.',
-    'It was there on Tuesday and it was gone by Thursday, and {a} was honest enough to say so to {a}.',
+    'The suspicion was there a few days ago and it has gone now, and {a} was honest enough to admit it.',
     '{a} watched for the same thing four times and got it none of them, and stopped watching.',
     '{a} found out what it actually was, and it was a person sleeping badly, and that was all it was.',
     '{a} had built something on a shoulder. {a} took it apart again, on {a}’s own, without telling anybody.',
@@ -1519,7 +1520,7 @@ const GROUP_PRESSURE_LINES = {
     '{b} gave the room an alibi for a morning nobody had mentioned, which was the first anybody had heard of it.',
     'Every extra sentence {b} added made the first one look worse, and {b} kept adding them.',
     '{b} answered, and then answered again, and then answered a third time in case the room had missed it. It had not.',
-    '{b} produced a level of detail about a Tuesday that no innocent person has ever had about a Tuesday.',
+    '{b} remembered that night in more detail than any innocent person ever remembers anything.',
     'Nobody had asked where {b} was. {b} told them anyway, twice, with times.',
     '{b} kept going long after {a} had stopped wanting an answer, and neither of them noticed who stopped listening first.',
     'The room believed {b} up until about the fourth clarification.',
@@ -1654,7 +1655,7 @@ const MISREAD_LINES = {
     '{b} sat with their back to the door, the way {b} has sat since the first night, and {a} noticed it for the first time and hated it.',
     '{a} has decided that {b} says {a}’s name too often, and has started counting.',
     '{b} takes the same seat every morning. This morning {a} decided that was a choice.',
-    '{a} could not have picked {b} out of the room on day one and has now got four days of evidence about them.',
+    '{a} could not have picked {b} out of the room on day one, and now has days of evidence about {b}.',
   ],
   'told-somebody': [
     '{a} took the theory to {c} before breakfast, and {c} has it now whether {c} wanted it or not.',

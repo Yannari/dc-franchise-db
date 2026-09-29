@@ -759,7 +759,7 @@ const HUDDLE_LINES = {
     '{a} went to sit with {b} and {b} could not do it this morning, and said so, and meant nothing by it.',
     '{b} had been handled by four people already and could not take a fifth.',
     '“Not now,” {b} said, without looking up, and {a} took it well and did not take it well.',
-    '{a} offered the same thing that worked on Tuesday and it did not work today.',
+    '{a} offered the same thing that worked the other day and it did not work today.',
     '{b} wanted to be somewhere with nobody in it, and there is nowhere in this castle like that.',
     'It is possible to be too frightened to be comforted. {b} got there this morning.',
     '{a} sat down anyway, at a distance, and neither of them said anything for twenty minutes.',
@@ -1248,7 +1248,7 @@ const INVITE_LINES = {
     'What {a} put on the table was not a plan. It was a way for {b} to end {a}.',
   ],
   'asked-what-it-costs': [
-    '{b} said yes, and then asked what {b} was expected to do about it on Thursday.',
+    '{b} said yes, and then asked what {b} was expected to do about it in a few days.',
     '“And in return?” {b} asked, pleasantly, and {a} had not prepared an answer.',
     '{b} accepted the invitation and priced it in the same breath.',
     '{a} offered friendship. {b} heard an arrangement and negotiated it like one.',
@@ -1559,7 +1559,7 @@ const DEFEND_LINES = {
     'The name came up and {a} said “no” before anybody had finished the sentence.',
     '{a} could have let {b}’s name sit there and gain weight. {a} took it off the table instead.',
     'It took {a} about forty seconds and it cost {a} more than forty seconds will get back.',
-    '{a} produced two facts about Tuesday that nobody else had bothered to remember.',
+    '{a} produced two facts about that night that nobody else had bothered to remember.',
     'Nobody in that room will mention this to {b}, and {a} knew that going in.',
   ],
   'lost-the-argument': [

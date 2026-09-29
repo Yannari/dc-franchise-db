@@ -128,7 +128,7 @@ function villaDayEvents(state, rng, entry, seed) {
  * so every earlier episode replays exactly, and every later one follows from
  * the new night the way it would have from any night.
  */
-export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = null, picks = {}, bookings = {}, rerolls = {},
+export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = null, picks = {}, forcedSlots = null, bookings = {}, rerolls = {},
   splitOrStealOn = false, dialect = 'uk', episodes = null, firstIn = 'f', kinship = null, arrivalCounts = null, finalCouples = FINAL_COUPLES,
   carried = null } = {}) {
   setGs({ bonds: {}, perceivedBonds: {}, relationshipDimensions: {}, activePlayers: [],
@@ -148,7 +148,7 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
   const queues = queuesFor(state, cast);
   // Every bombshell and Casa arrival the author cast gets a night to walk in.
   schedule = schedule || withBookings(withPicks(perfectMatchScheduleFor(seed,
-    { bombshells: queues.bombshell.length, casa: queues.casa.length, episodes, counts: arrivalCounts, starters: queues.starter.length, finalCouples: state.finalCouples }), picks), bookings);
+    { bombshells: queues.bombshell.length, casa: queues.casa.length, episodes, counts: arrivalCounts, starters: queues.starter.length, finalCouples: state.finalCouples }), picks, forcedSlots), bookings);
   schedule = resolveRandomGames(schedule, streamFor(seed, 'random-games'));
   let final = null;
 

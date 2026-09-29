@@ -32,7 +32,7 @@ const _STYLE = `<style>
 
 .sigbluff .bf-head{text-align:center;padding:14px 8px 4px}
 .sigbluff .bf-eyebrow{font-family:'Cinzel',serif;font-size:9.5px;letter-spacing:5px;color:var(--bf-brass);text-transform:uppercase}
-.sigbluff .bf-title{font-family:'Cinzel',serif;font-size:38px;letter-spacing:3px;margin:6px 0 2px;color:var(--bf-ivory);
+.sigbluff .bf-title{text-transform:uppercase;font-family:'Cinzel',serif;font-size:38px;letter-spacing:3px;margin:6px 0 2px;color:var(--bf-ivory);
   text-shadow:0 0 26px rgba(201,162,39,.3)}
 .sigbluff .bf-sub{font-size:15px;font-style:italic;color:#cfe0d3}
 .sigbluff .bf-rule{width:180px;height:1px;margin:10px auto 12px;
@@ -214,7 +214,7 @@ export function rpBuildSigDrinkOrBluff(ep, actType, u = {}) {
     <div class="bf-wrap">
       <div class="bf-head">
         <div class="bf-eyebrow">${esc(actType === 'veto' ? 'Power of Veto' : 'Head of Household')}</div>
-        <div class="bf-title">TO DRINK OR TO BLUFF</div>
+        <div class="bf-title">${esc(comp?.name || 'To Drink or to Bluff')}</div>
         <div class="bf-sub">One glass is worse than the others, and only one person knows which.</div>
         ${comp.desc ? `<div class="bf-rules">${esc(comp.desc)}</div>` : ''}
         ${(() => {

@@ -1476,7 +1476,7 @@ const NAME_BY_BACK_LINES = {
   'agreed-for-different-reasons': [
     '{a} and {b} arrived at the same name on the road home for two entirely different reasons and did not notice the difference.',
     'They agreed on who, {a} and {b}. What {a} was arguing from and what {b} was arguing from had almost nothing in common.',
-    '{a} named somebody off what happened on {mission}. {b} named the same person off something from three days ago. It held, for now.',
+    '{a} named somebody off what happened on {mission}. {b} named the same person off something from days ago. It held, for now.',
     'By the gate {a} and {b} had a name between them and a disagreement underneath it that neither had gone looking for.',
   ],
   split: [
@@ -1834,7 +1834,7 @@ const GOOD_HANDS_LINES = {
     'Being useful is how you stay here, and {a} was not useful this afternoon.',
     '{a} told {b} the truth of it: {a} wanted that job.',
     'Nobody chose {a} for it and nobody was thinking about {a} at all, which is worse.',
-    '{a} has spent the road home working out how to be indispensable by Thursday.',
+    '{a} has spent the road home working out how to be indispensable in a few days.',
     'The afternoon was a good one and {a} came out of it feeling replaceable.',
   ],
 };
@@ -1906,7 +1906,7 @@ const LAUGHED_LINES = {
     '{a} did an impression of the whole thing and {b} had to stop walking.',
     'Failing at something together is a fast way to stop being strangers.',
     'Nothing about the day worked and both of them came home lighter.',
-    'It will be a running joke by Thursday and neither of them will remember starting it.',
+    'It will be a running joke in a few days and neither of them will remember starting it.',
   ],
   'too-soon': [
     '{a} tried to make it funny and {b} was not ready for it to be funny.',
@@ -2001,7 +2001,7 @@ const GOOD_DAY_LINES = {
     'It went well, and going well is rare enough here to be worth an hour of not being careful.',
     '{a} and {b} came home genuinely pleased and did not bother hiding it.',
     'They had a good day, and neither of them can remember the last one.',
-    'The money was up and the sun was out and neither of them was thinking about Thursday.',
+    'The money was up and the sun was out and neither of them was thinking about the next table.',
     '{a} said it was the first time all week {a} had forgotten where {a} was.',
     'It will not last past dinner and both of them are aware of that.',
   ],

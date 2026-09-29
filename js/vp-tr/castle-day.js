@@ -3553,7 +3553,7 @@ function _filters() {
 // THE VISUAL SYSTEM
 // ══════════════════════════════════════════════════════════════════════
 const DY_CSS = `
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,400;9..144,600;9..144,700;9..144,900&family=IM+Fell+English:ital@0;1&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,400;9..144,600;9..144,700;9..144,900&family=IM+Fell+English:ital@0;1&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Crimson+Pro:ital,wght@0,400;0,500;0,600;1,400&display=swap');
 
 .dy-root{
   --dy-ground:#24211b;
@@ -4100,6 +4100,53 @@ const DY_CSS = `
   .dy-mote{opacity:.24}
   .dy-shaft{opacity:.7}
 }
+/* ══ READABILITY PASS (2026-09-29) ═════════════════════════════════════
+   The user found these pages hard to read next to Perfect Match. What was
+   wrong, measured on a real morning: narration, speech and results all in one
+   thin display serif at one size and one muted colour; the spoken line — the
+   interesting part — the smallest and most italic thing on the card; the
+   establishing sentence restating the header in full; tiny tracked capitals
+   everywhere. So: a book face for the text, speech the largest and brightest
+   thing with a face beside it, the establishing line set as a stage
+   direction, the history as a footnote, the result as one tinted block. */
+.dy-root{--dy-text:'Crimson Pro',Georgia,'Times New Roman',serif}
+.dy-scene{padding:16px 22px 18px}
+.dy-sh{display:flex;align-items:center;gap:12px;margin:0 0 10px}
+.dy-stack{display:flex;flex:none}
+.dy-stack .cv-av{position:relative;overflow:hidden;flex:none;box-shadow:0 0 0 2px #1d1914}
+.dy-stack .cv-av-ini{position:absolute;inset:0}
+.dy-stack .cv-av + .cv-av{margin-left:-10px}
+.dy-sh-t{min-width:0}
+.dy-sh .dy-place{margin:0;font-size:11px;letter-spacing:.2em;opacity:1}
+.dy-sh-who{font-family:var(--dy-display);font-weight:700;font-size:15px;letter-spacing:.01em;color:#f4ead4;line-height:1.25}
+.dy-scene .dy-say{font-family:var(--dy-text);font-size:18px;line-height:1.55;color:rgba(240,232,214,.9)}
+.dy-scene .dy-say.dy-dir{font-style:italic;font-size:16px;color:rgba(236,227,208,.6);margin:0 0 6px}
+.dy-scene .dy-say.dy-act{color:rgba(240,232,214,.86);margin-top:10px}
+.dy-scene .dy-line{display:flex;gap:12px;align-items:flex-start;margin:12px 0 0;padding:0;border:0;
+  font-family:var(--dy-text);font-size:20px;line-height:1.42;color:#fbf4e4}
+.dy-line-av{flex:none;padding-top:2px}
+.dy-line-av .cv-av{position:relative;overflow:hidden;box-shadow:0 0 0 2px rgba(230,194,122,.55)}
+.dy-line-av .cv-av-ini{position:absolute;inset:0}
+.dy-line-body{display:block;min-width:0}
+.dy-scene .dy-line-who{display:block;font-family:var(--dy-display);font-weight:700;font-size:12.5px;letter-spacing:.06em;
+  color:#e6c27a;margin-bottom:1px}
+.dy-scene .dy-line-who b{font-weight:700}
+.dy-scene .dy-line-q{display:block;font-style:normal;font-weight:500}
+.dy-scene .dy-cam .dy-line-who{color:#9fbde0}
+.dy-scene .dy-cam .dy-line-av .cv-av{box-shadow:0 0 0 2px rgba(159,189,224,.6)}
+.dy-scene .dy-cam .dy-line-q{font-style:italic;font-weight:400;color:#dfe9f5}
+.dy-recall{display:flex;align-items:center;flex-wrap:wrap;gap:4px 12px;margin-top:12px}
+.dy-recall .dy-say{font-size:14.5px;font-style:italic;color:rgba(236,227,208,.55);margin:0}
+.dy-recall .dy-stitch{margin:0;padding:0;background:none;border:0}
+.dy-recall .dy-stitch-k{margin:0;font-size:8.5px}
+.dy-scene .dy-outcome{margin-top:14px;padding:10px 14px 11px;border:0;border-left:3px solid rgba(236,227,208,.3);
+  background:rgba(255,238,196,.05)}
+.dy-scene .dy-outcome[data-tone="smooth"]{border-left-color:rgba(122,178,122,.8);background:rgba(70,110,70,.12)}
+.dy-scene .dy-outcome[data-tone="adverse"]{border-left-color:rgba(208,110,110,.85);background:rgba(120,60,60,.14)}
+.dy-scene .dy-outcome .dy-say-out{font-size:16.5px;color:rgba(244,236,220,.9)}
+.dy-scene .dy-outcome .dy-impact{margin-top:9px;padding-top:0;border:0}
+.dy-scene .dy-outcome .dy-impact-k{display:none}
+.dy-scene .dy-say.dy-spoken{font-family:var(--dy-text);font-size:19px}
 ` + PORTRAIT_CSS;
 
 // ══════════════════════════════════════════════════════════════════════
@@ -5094,13 +5141,18 @@ function _chipRow(chips) {
  */
 function _scriptHtml(text) {
   return scriptParts(text).map(p => {
-    if (p.kind === 'narr') return '<p class="dy-say">' + _esc(p.text) + '</p>';
+    if (p.kind === 'narr') return '<p class="dy-say dy-act">' + _esc(p.text) + '</p>';
+    // THE WORDS ARE THE BRIGHTEST THING IN A SCENE. A face beside every line,
+    // the name over it, the words under it at the largest size on the card —
+    // the reading order of a script, which is what a scene is.
     return '<p class="dy-line' + (p.kind === 'cam' ? ' dy-cam' : '') + '">'
-      // Name, "(to camera)" and the colon are ONE flex item: as siblings the
-      // row's gap printed "Julia :" with a space before the colon.
-      + '<span class="dy-line-who">' + _av(p.who, 22) + '<span><b>' + _esc(p.who) + '</b>'
-      + (p.kind === 'cam' ? '<i> (to camera)</i>' : '') + ':</span></span> '
-      + '<span class="dy-line-q">“' + _esc(p.text) + '”</span></p>';
+      + '<span class="dy-line-av">' + _av(p.who, 36) + '</span>'
+      + '<span class="dy-line-body">'
+      // Name, "(to camera)" and the colon are ONE item: as siblings the row's
+      // gap printed "Julia :" with a space before the colon.
+      + '<span class="dy-line-who"><b>' + _esc(p.who) + '</b>'
+      + (p.kind === 'cam' ? '<i> (to camera)</i>' : '') + ':</span> '
+      + '<span class="dy-line-q">“' + _esc(p.text) + '”</span></span></p>';
   }).join('');
 }
 
@@ -5108,30 +5160,43 @@ function _sceneCard(s, stream, key) {
   const fam = _fam(s);
   const heard = s.layer === 'heard';
   const carried = !s.opened;
-  let body = '<div class="dy-place">' + _esc(s.heading) + '</div>';
-  body += _faces(s.participants);
-  // THE BEATS, SET APART SO A SCENE PARSES AT A GLANCE. The action reads as
-  // narration; a spoken reaction is pulled out in its own hand; the consequence
-  // sits below a hairline in its own block; the impact chips close the card.
-  // One scrollable card still — the separation is structural, not a click.
+  // THE HEADER: who, where, when — read once, then out of the way. Faces
+  // stacked, the room and the hour, the names.
+  const names = (s.participants || []).filter(Boolean).slice(0, 4);
+  let body = '<header class="dy-sh">'
+    + (names.length ? '<span class="dy-stack">' + names.map(n => _av(n, 34)).join('') + '</span>' : '')
+    + '<div class="dy-sh-t"><div class="dy-place">' + _esc(s.heading) + '</div>'
+    + (names.length ? '<div class="dy-sh-who">' + names.map(_esc).join(' · ') + '</div>' : '')
+    + '</div></header>';
+  let outcome = '';
   for (const beat of stream) {
     const txt = _esc(beat.say || beat.text);
     if (beat.kind === 'consequence') {
-      body += '<div class="dy-outcome"><p class="dy-say dy-say-out">' + txt + '</p>';
+      // THE RESULT, in one block with what it moved: the sentence, then the
+      // chips, tinted by which way it went.
+      outcome += '<div class="dy-outcome" data-tone="' + _esc(beat.tone || 'neutral') + '">'
+        + '<p class="dy-say dy-say-out">' + txt + '</p>';
       if (!heard && s.closedNow && !(s.topic && TOPIC_CONFIG[s.topicKind])) {
-        body += _knotMark(s, beat.mark);
+        outcome += _knotMark(s, beat.mark);
       }
-      body += '</div>';
+      outcome += '</div>';
     } else if (beat.kind === 'reaction') {
       body += '<p class="dy-say dy-spoken">' + txt + '</p>';
     } else if (beat.kind === 'action' && beat.role !== 'recall') {
       body += _scriptHtml(beat.say || beat.text);
+    } else if (beat.role === 'recall') {
+      // THE HISTORY IS A FOOTNOTE, NOT A PARAGRAPH: one small line and its tabs.
+      body += '<div class="dy-recall"><p class="dy-say">' + txt + '</p>'
+        + (heard ? '' : _stitch(s, beat.tail)) + '</div>';
     } else {
-      body += '<p class="dy-say">' + txt + '</p>';
-      if (!heard && beat.role === 'recall') body += _stitch(s, beat.tail);
+      // The establishing line: a stage direction, set small, under the header.
+      body += '<p class="dy-say dy-dir">' + txt + '</p>';
     }
   }
-  if (!heard && s.chips && s.chips.length) body += _chipRow(s.chips);
+  if (!heard && s.chips && s.chips.length) {
+    outcome = outcome ? outcome.replace(/<\/div>$/, _chipRow(s.chips) + '</div>') : _chipRow(s.chips);
+  }
+  body += outcome;
   return '<div class="dy-scene" data-carried="' + (carried && !heard ? '1' : '0') + '"'
     + ' data-beat="scene"'
     + (heard ? ' data-heard="1"' : '')

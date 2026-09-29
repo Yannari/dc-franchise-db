@@ -12,7 +12,7 @@
 //
 // Like every other file in this directory it imports no engine state.
 import { coldOpenStageData } from './cold-open.js';
-import { trsStageShell as stageShell, trsReg as reg, trsEsc as esc, trsFace as face } from './castle-stage.js';
+import { trsStageShell as stageShell, trsFold, trsReg as reg, trsEsc as esc, trsFace as face } from './castle-stage.js';
 import { TRScenery } from './cutaway-scenery.js';
 import { beatLines } from './stage-lines.js';
 import { footCard, playCard, CARD_CSS } from './stage-cards.js';
@@ -33,8 +33,7 @@ export function breakfastStageScreen(ep, observer, pageHtml) {
   if (typeof queueMicrotask === 'function' && typeof window !== 'undefined' && window.trStageMountAll) {
     queueMicrotask(window.trStageMountAll);
   }
-  return stageShell(uid, '<div class="trb"></div><div class="trs-corner"></div><div class="trs-start"></div>', CARD_CSS + CSS)
-    + '<details class="trs-transcript"><summary></summary>' + pageHtml + '</details>';
+  return trsFold(stageShell(uid, '<div class="trb"></div><div class="trs-corner"></div><div class="trs-start"></div>', CARD_CSS + CSS), pageHtml);
 }
 
 // Who is down, and whether the room has found the gap yet, at step idx.

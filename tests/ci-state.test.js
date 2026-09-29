@@ -8,7 +8,7 @@ beforeEach(() => setGs({ bonds: {}, relationshipDimensions: {}, episodeHistory: 
 describe('ci state', () => {
   it('starts empty, JSON-clean, with the default options', () => {
     const s = newState(9, { finalists: 4 });
-    expect(s.options).toEqual({ pickBy: 'stats', newcomerRule: 'rate-not-rated', finalists: 4, days: null });
+    expect(s.options).toEqual({ pickBy: 'stats', newcomerRule: 'rate-not-rated', finalists: 4, days: null, script: true });
     expect(JSON.parse(JSON.stringify(s))).toEqual(s);
   });
 

@@ -30,6 +30,8 @@ import { arrive } from './arrivals.js';
 import { openLedger, noteJoin, airDay, fanFavorite } from './public.js';
 import { buildSchedule } from './schedule.js';
 import { finalDay, finaleDay } from './finale.js';
+import { chooseAired } from './airing.js';
+import { writeDay } from './script.js';
 
 export const CARRY = 0.6;
 
@@ -107,11 +109,17 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
     if (d.final) { finalRow = finalDay(state, rng); rating = finalRow; }
     if (d.finale) result = finaleDay(state, rng, finalRow);
 
+    // The edit, then the words: what aired is decided first, and the writing
+    // layer has its own dice (Plan 2), so neither can move a result.
+    chooseAired(state, d.day);
+    if (state.options.script !== false) writeDay(state, d.day);
     airDay(state);
     const row = { episode: d.day, day: d.day, format: CIRCLE_FORMAT, slot: d.slot,
       ci: { active: [...state.active], rating,
         blocked: state.blocked.filter(b => b.day === d.day).map(b => b.handle),
-        arrivals: arriving, scenes: state.scenes.filter(s => s.day === d.day).length } };
+        arrivals: arriving, scenes: state.scenes.filter(s => s.day === d.day).length,
+        aired: state.scenes.filter(s => s.day === d.day && s.aired)
+          .map(s => ({ id: s.id, kind: s.kind, who: s.who, script: s.script || null })) } };
     rows.push(row);
     gs.episodeHistory.push(row);
   }

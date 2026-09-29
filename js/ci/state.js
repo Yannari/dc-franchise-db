@@ -16,7 +16,7 @@ export const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 export function newState(seed, options = {}) {
   return {
     seed, day: 0,
-    options: { pickBy: 'stats', newcomerRule: 'rate-not-rated', finalists: 5, days: null, ...options },
+    options: { pickBy: 'stats', newcomerRule: 'rate-not-rated', finalists: 5, days: null, script: true, ...options },
     people: {}, profiles: {}, handleOf: {}, active: [], blocked: [], immuneNext: {}, unratedNext: {},
     joinedDay: {}, likesCount: {}, recognised: {},
     beliefs: {}, beliefLog: [], mind: {}, claims: [], know: {}, revealed: {}, ideal: {},

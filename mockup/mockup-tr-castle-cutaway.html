@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Traitors Castle Cutaway</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,400;9..144,600;9..144,700;9..144,900&family=IM+Fell+English:ital@0;1&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+/* THE OLD VIEWER'S OWN TOKENS (js/vp-tr/style.js) — the look is kept, the delivery is new. */
+:root{
+  --cv-void:#040508; --cv-stone:#0e1117; --cv-lantern:#e0a049; --cv-lantern-hot:#ffdb95; --cv-lantern-dim:rgba(224,160,73,.16);
+  --cv-vellum:#e8ddc1; --cv-vellum-2:#c9ba95; --cv-vellum-ink:#241b11; --cv-wax:#75121e; --cv-wax-hot:#b32633;
+  --cv-moon:#8fa6c2; --cv-moon-dim:rgba(143,166,194,.5); --cv-mute:#6a7484; --cv-rule:rgba(224,160,73,.22);
+  --cv-display:'Fraunces',Georgia,serif; --cv-hand:'IM Fell English',Georgia,serif; --cv-body:'Cormorant Garamond',Georgia,serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#000;color:var(--cv-vellum);font-family:var(--cv-body);-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+.shell{max-width:1320px;margin:0 auto;padding:18px 18px 28px}
+
+/* ── title band, as the old screens open ── */
+.band{display:flex;align-items:flex-end;gap:18px;padding:6px 4px 14px;border-bottom:1px solid var(--cv-rule)}
+.eyebrow{font-family:var(--cv-display);font-size:11px;font-weight:700;letter-spacing:.42em;color:var(--cv-vellum-2);text-transform:uppercase}
+.title{font-family:var(--cv-display);font-weight:900;font-size:clamp(26px,3.2vw,42px);letter-spacing:.02em;color:#f7ecd2;
+  text-shadow:0 0 22px rgba(255,219,149,.35),0 2px 0 rgba(0,0,0,.6);line-height:1.05}
+.band .sp{flex:1}
+.fund{text-align:right}
+.fund b{display:block;font-family:var(--cv-display);font-weight:900;font-size:26px;color:var(--cv-lantern-hot);text-shadow:0 0 16px rgba(224,160,73,.4)}
+.fund span{font-size:11px;letter-spacing:.3em;color:var(--cv-mute);font-family:var(--cv-display);font-weight:700;text-transform:uppercase}
+
+/* ── the day clock: the hour as a HUD, not a paragraph ── */
+.clock{display:flex;align-items:center;gap:0;margin:14px 0 12px;position:relative}
+.clock .seg{flex:1;position:relative;text-align:center;font-family:var(--cv-display);font-size:10.5px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:#4e5666;padding-top:18px;transition:color .6s}
+.clock .seg::before{content:"";position:absolute;left:0;right:0;top:6px;height:2px;background:rgba(224,160,73,.12)}
+.clock .seg::after{content:"";position:absolute;left:50%;top:1px;width:12px;height:12px;margin-left:-6px;transform:rotate(45deg);background:#141922;border:1px solid rgba(224,160,73,.25);transition:.6s}
+.clock .seg.done{color:var(--cv-vellum-2)} .clock .seg.done::before{background:rgba(224,160,73,.45)}
+.clock .seg.done::after{background:var(--cv-lantern);border-color:var(--cv-lantern-hot)}
+.clock .seg.now{color:var(--cv-lantern-hot)}
+.clock .seg.now::after{background:var(--cv-lantern-hot);box-shadow:0 0 14px var(--cv-lantern),0 0 30px rgba(224,160,73,.5);animation:pulse 1.6s infinite}
+.clock .seg.night.now::after{background:var(--cv-wax-hot);border-color:#ff8a8a;box-shadow:0 0 16px var(--cv-wax-hot)}
+@keyframes pulse{50%{transform:rotate(45deg) scale(1.25)}}
+
+/* ── the viewport ── */
+.view{position:relative;aspect-ratio:16/9;overflow:hidden;border-radius:4px;isolation:isolate;
+  box-shadow:0 0 0 1px rgba(224,160,73,.18),0 0 90px rgba(0,0,0,.9),0 30px 80px rgba(0,0,0,.8);background:var(--cv-void)}
+.sky{position:absolute;inset:0;transition:opacity 1.6s}
+.sky.dawn{background:linear-gradient(180deg,#27324a 0%,#4a4f66 38%,#8a6f73 62%,#c99a7a 76%,#2a2a33 100%)}
+.sky.night{background:radial-gradient(40% 30% at 78% 18%,rgba(143,166,194,.25),transparent 70%),linear-gradient(180deg,#05070d 0%,#0b1120 55%,#10131b 100%);opacity:0}
+.stars{position:absolute;inset:0 0 40% 0;opacity:0;transition:opacity 2s}
+.stars i{position:absolute;width:2px;height:2px;border-radius:50%;background:#dfe7f5;animation:tw 3s infinite alternate}
+@keyframes tw{to{opacity:.2}}
+.moon{position:absolute;right:18%;top:10%;width:54px;height:54px;border-radius:50%;background:radial-gradient(circle at 40% 40%,#f3f1e6,#b8bfcc);box-shadow:0 0 60px rgba(223,231,245,.45);opacity:0;transition:opacity 2s}
+.night-on .sky.night,.night-on .stars,.night-on .moon{opacity:1}
+.hills{position:absolute;left:0;right:0;bottom:0;height:40%}
+.mist{position:absolute;left:-20%;right:-20%;height:18%;background:radial-gradient(50% 50% at 50% 50%,rgba(200,210,225,.18),transparent 70%);filter:blur(10px);animation:mist 26s linear infinite}
+@keyframes mist{from{transform:translateX(-6%)}to{transform:translateX(6%)}}
+
+/* the world: the castle, laid out in 1600×900 units and moved as a camera */
+.world{position:absolute;left:0;top:0;width:1600px;height:900px;transform-origin:0 0;transition:transform 1.25s cubic-bezier(.65,0,.25,1)}
+.castle{position:absolute;inset:0}
+.room{position:absolute;overflow:hidden;background:#07090d;box-shadow:inset 0 0 0 3px #1a1f29,inset 0 0 40px rgba(0,0,0,.9);transition:filter 1s}
+.room .glow{position:absolute;inset:0;transition:opacity 1s}
+.room.dark .glow{opacity:.18}
+.room.here{box-shadow:inset 0 0 0 2px rgba(255,219,149,.55),inset 0 0 40px rgba(0,0,0,.7)}
+.world.zoomed .room .lbl,.world.zoomed .room .dots{opacity:0}
+.room .lbl,.room .dots{transition:opacity .4s}
+.room .lbl{position:absolute;left:10px;top:8px;font-family:var(--cv-display);font-size:11px;font-weight:700;letter-spacing:.28em;text-transform:uppercase;color:rgba(232,221,193,.55)}
+.room .dots{position:absolute;left:10px;bottom:9px;display:flex;gap:4px}
+.room .dots img{width:22px;height:22px;border-radius:50% 50% 12% 12%/44% 44% 9% 9%;object-fit:cover;box-shadow:0 0 0 1px rgba(224,160,73,.5)}
+/* light-only interiors */
+.g-hall{background:radial-gradient(70% 60% at 50% 110%,rgba(255,170,80,.35),transparent 60%),
+  repeating-linear-gradient(90deg,transparent 0 90px,rgba(160,190,225,.16) 90px 120px,transparent 120px 150px),linear-gradient(180deg,#1b1d25,#0c0d12)}
+.g-lib{background:radial-gradient(45% 70% at 80% 30%,rgba(255,200,120,.45),transparent 65%),
+  repeating-linear-gradient(180deg,transparent 0 30px,rgba(0,0,0,.6) 30px 34px),
+  repeating-linear-gradient(90deg,rgba(120,70,40,.35) 0 9px,rgba(70,40,25,.35) 9px 15px,rgba(150,95,50,.28) 15px 21px,rgba(40,25,15,.4) 21px 25px)}
+.g-bed{background:radial-gradient(35% 60% at 25% 35%,rgba(143,166,194,.28),transparent 70%),linear-gradient(180deg,#12151d,#090a0e)}
+.g-kit{background:radial-gradient(50% 80% at 20% 100%,rgba(255,140,60,.45),transparent 65%),linear-gradient(180deg,#191410,#0b0908)}
+.g-turret{background:radial-gradient(70% 80% at 50% 100%,rgba(255,120,40,.55),rgba(117,18,30,.35) 45%,transparent 75%),#0a0406}
+.g-alcove{background:radial-gradient(40% 70% at 50% 40%,rgba(255,210,140,.45),transparent 70%),#050507}
+.g-round{background:radial-gradient(40% 36% at 50% 62%,#24503a,#133322 60%,transparent 62%),radial-gradient(70% 70% at 50% 50%,rgba(255,170,80,.25),transparent 70%),#0a0c0b}
+.g-land{background:radial-gradient(40% 70% at 50% 20%,rgba(255,200,120,.2),transparent 70%),linear-gradient(180deg,#14161d,#0a0b0f)}
+.flick{animation:flick 3s infinite alternate}
+@keyframes flick{0%{opacity:1}40%{opacity:.86}70%{opacity:.95}100%{opacity:.9}}
+.night-on .room:not(.lit) .glow{opacity:.12}
+.night-on .room:not(.lit){filter:brightness(.55) saturate(.6)}
+
+/* ── the scene layer: screen space, over the zoomed room ── */
+.scene{position:absolute;inset:0;pointer-events:none;z-index:5}
+.fig{position:absolute;bottom:0;transform:translate(-50%,24px);opacity:0;transition:transform .6s cubic-bezier(.2,.9,.3,1.2),opacity .5s,filter .45s}
+.fig.in{transform:translate(-50%,0);opacity:1}
+.fig .av{position:relative;width:100%;aspect-ratio:3/4;overflow:hidden;border-radius:50% 50% 12% 12%/44% 44% 9% 9%;
+  background:linear-gradient(162deg,#252b37,#080b11);box-shadow:0 0 0 2px rgba(224,160,73,.45),0 16px 40px rgba(0,0,0,.8)}
+.fig .av img{width:100%;height:100%;object-fit:cover;object-position:50% 18%}
+.fig .nm{margin-top:8px;text-align:center;white-space:nowrap;font-family:var(--cv-display);font-weight:700;font-size:12px;letter-spacing:.26em;text-transform:uppercase;color:var(--cv-vellum-2);text-shadow:0 2px 8px #000}
+.fig.quiet{filter:brightness(.42) saturate(.6)}
+.fig.speak .av{box-shadow:0 0 0 2px var(--cv-lantern-hot),0 0 40px rgba(224,160,73,.55),0 16px 40px rgba(0,0,0,.8)}
+.fig.speak .nm{color:var(--cv-lantern-hot)}
+.aud .fig.traitor .av::after{content:"";position:absolute;inset:0;border-radius:inherit;box-shadow:inset 0 0 0 2px rgba(179,38,51,.9),inset 0 -40px 50px -20px rgba(117,18,30,.7)}
+.aud .fig.traitor .nm::after{content:" · Traitor";color:#e0606a}
+
+/* speech: vellum, pinned above the speaker */
+.line{position:absolute;max-width:44%;transform:translate(-50%,-100%) scale(.96);opacity:0;transition:transform .35s cubic-bezier(.2,1.4,.4,1),opacity .25s;z-index:7}
+.line.in{transform:translate(-50%,-100%) scale(1);opacity:1}
+.line .card{position:relative;padding:14px 18px 13px;border-radius:3px;background:linear-gradient(170deg,#efe5cc,#d9cba6);color:var(--cv-vellum-ink);
+  box-shadow:0 14px 30px rgba(0,0,0,.6),inset 0 0 30px rgba(120,90,40,.18)}
+.line .card::after{content:"";position:absolute;left:50%;bottom:-8px;width:16px;height:16px;margin-left:-8px;transform:rotate(45deg);background:#dacca8}
+.line .who{font-family:var(--cv-display);font-weight:700;font-size:10.5px;letter-spacing:.3em;text-transform:uppercase;color:#6b4a1f;margin-bottom:4px;display:flex;gap:6px;align-items:center}
+.line .who i{width:8px;height:8px;border-radius:50%;background:var(--cv-wax);box-shadow:0 0 0 2px rgba(117,18,30,.25)}
+.line p{font-family:var(--cv-hand);font-size:clamp(16px,1.55vw,21px);line-height:1.35}
+.line.cam .card{background:linear-gradient(170deg,#1a2230,#0f141d);color:#dfe7f2;box-shadow:0 14px 30px rgba(0,0,0,.7),0 0 0 1px rgba(143,166,194,.4)}
+.line.cam .card::after{background:#131a26}
+.line.cam .who{color:var(--cv-moon)}
+.aud .line.cam.traitor .card{background:linear-gradient(170deg,#3a0a12,#1c0509);box-shadow:0 14px 30px rgba(0,0,0,.7),0 0 0 1px rgba(179,38,51,.6);color:#f3dcd8}
+.aud .line.cam.traitor .card::after{background:#2a070d}
+.aud .line.cam.traitor .who{color:#e87a82}
+/* narration: the old viewer's italic, as a caption bar */
+.caption{position:absolute;left:50%;bottom:5%;transform:translate(-50%,10px);opacity:0;max-width:70%;text-align:center;z-index:7;
+  font-family:var(--cv-body);font-style:italic;font-size:clamp(17px,1.6vw,22px);color:#f1e6cc;padding:10px 22px;
+  background:linear-gradient(90deg,transparent,rgba(4,5,8,.82) 18%,rgba(4,5,8,.82) 82%,transparent);transition:.4s}
+.caption.in{opacity:1;transform:translate(-50%,0)}
+
+/* the location card: the old hero title, flown in */
+.loc{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%) scale(.9);text-align:center;opacity:0;z-index:8;transition:opacity .5s,transform .8s cubic-bezier(.2,.9,.3,1)}
+.loc.in{opacity:1;transform:translate(-50%,-50%) scale(1)}
+.loc .e{font-family:var(--cv-display);font-size:12px;font-weight:700;letter-spacing:.46em;color:var(--cv-vellum-2)}
+.loc .t{font-family:var(--cv-display);font-weight:900;font-size:clamp(34px,5vw,70px);color:#f7ecd2;letter-spacing:.02em;
+  text-shadow:0 0 30px rgba(255,219,149,.45),0 3px 0 rgba(0,0,0,.6)}
+.loc .gem{width:14px;height:14px;margin:12px auto 0;transform:rotate(45deg);background:var(--cv-wax-hot);box-shadow:0 0 18px var(--cv-wax-hot)}
+.corner{position:absolute;left:18px;top:16px;z-index:8;font-family:var(--cv-display);font-weight:700;font-size:11px;letter-spacing:.34em;text-transform:uppercase;
+  color:var(--cv-vellum-2);padding:7px 12px;background:rgba(4,5,8,.7);box-shadow:0 0 0 1px rgba(224,160,73,.25);opacity:0;transition:opacity .5s}
+.corner.in{opacity:1}
+.corner b{color:var(--cv-lantern-hot);font-weight:700}
+.letterbox::before,.letterbox::after{content:"";position:absolute;left:0;right:0;height:10%;background:#000;z-index:9;transition:transform .6s}
+.letterbox::before{top:0;transform:translateY(-100%)}.letterbox::after{bottom:0;transform:translateY(100%)}
+.letterbox.on::before,.letterbox.on::after{transform:none}
+
+/* game notifications: what the scene changed, as it changes */
+.pops{position:absolute;right:16px;top:16px;z-index:10;display:flex;flex-direction:column;gap:8px;align-items:flex-end}
+.pop{display:flex;align-items:center;gap:10px;padding:8px 14px 8px 8px;background:rgba(4,5,8,.82);box-shadow:0 0 0 1px rgba(224,160,73,.3),0 10px 24px rgba(0,0,0,.6);
+  font-family:var(--cv-display);font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--cv-vellum);animation:pop .55s cubic-bezier(.2,1.5,.4,1)}
+.pop img{width:26px;height:26px;border-radius:50% 50% 12% 12%/44% 44% 9% 9%;object-fit:cover}
+.pop img+img{margin-left:-8px}
+.pop .up{color:#8fd19e}.pop .dn{color:#e87a82}
+@keyframes pop{from{transform:translateX(30px);opacity:0}}
+
+/* minimap: where in the castle, who is where */
+.mini{position:absolute;left:16px;bottom:16px;z-index:10;width:190px;padding:8px;background:rgba(4,5,8,.78);box-shadow:0 0 0 1px rgba(224,160,73,.22)}
+.mini svg{width:100%;display:block}
+.mini .k{font-family:var(--cv-display);font-size:9px;font-weight:700;letter-spacing:.3em;color:var(--cv-mute);text-transform:uppercase;margin-bottom:5px}
+
+/* ── controls, in the old stone-and-lantern ── */
+.ctrl{display:flex;justify-content:center;align-items:center;gap:12px;margin-top:14px}
+.b{padding:12px 22px;font-family:var(--cv-display);font-weight:700;font-size:12px;letter-spacing:.3em;text-transform:uppercase;
+  background:var(--cv-stone);box-shadow:0 0 0 1px rgba(224,160,73,.25);color:var(--cv-vellum-2)}
+.b:hover{box-shadow:0 0 0 1px rgba(224,160,73,.6);color:var(--cv-vellum)}
+.b.main{padding:13px 46px;color:#1b1206;background:linear-gradient(180deg,var(--cv-lantern-hot),var(--cv-lantern));box-shadow:0 0 24px rgba(224,160,73,.35)}
+.b.on{color:#f3c2c6;box-shadow:0 0 0 1px rgba(179,38,51,.7)}
+.n{font-family:var(--cv-display);font-size:11px;letter-spacing:.24em;color:var(--cv-mute);min-width:70px;text-align:center}
+</style>
+</head>
+<body class="aud">
+<div class="shell">
+  <div class="band">
+    <div><div class="eyebrow">The Traitors · Day 4</div><div class="title">The Castle</div></div>
+    <div class="sp"></div>
+    <div class="fund"><b>£23,480</b><span>in the prize fund</span></div>
+  </div>
+  <div class="clock" id="clock">
+    <div class="seg" data-k="breakfast">Breakfast</div><div class="seg" data-k="morning">Morning</div>
+    <div class="seg" data-k="mission">Mission</div><div class="seg" data-k="evening">Evening</div>
+    <div class="seg" data-k="table">Round Table</div><div class="seg night" data-k="night">Night</div>
+  </div>
+
+  <div class="view" id="view">
+    <div class="sky dawn"></div><div class="sky night"></div>
+    <div class="stars" id="stars"></div><div class="moon"></div>
+    <svg class="hills" viewBox="0 0 1600 360" preserveAspectRatio="none">
+      <path d="M0 170 L140 110 L260 150 L420 70 L560 140 L700 120 L860 60 L1000 130 L1160 90 L1300 150 L1460 100 L1600 140 L1600 360 L0 360Z" fill="#141925" opacity=".85"/>
+      <path d="M0 230 L200 180 L380 220 L600 170 L820 215 L1040 175 L1260 220 L1460 185 L1600 210 L1600 360 L0 360Z" fill="#0b0e15"/>
+    </svg>
+    <div class="mist" style="bottom:14%"></div>
+
+    <div class="world" id="world">
+      <svg class="castle" id="castle" viewBox="0 0 1600 900" width="1600" height="900"></svg>
+      <div id="rooms"></div>
+    </div>
+    <div class="mist" style="bottom:2%;animation-duration:34s;opacity:.7"></div>
+
+    <div class="scene" id="scene"></div>
+    <div class="caption" id="caption"></div>
+    <div class="loc" id="loc"><div class="e" id="locE"></div><div class="t" id="locT"></div><div class="gem"></div></div>
+    <div class="corner" id="corner"></div>
+    <div class="letterbox" id="lb"></div>
+    <div class="pops" id="pops"></div>
+    <div class="mini"><div class="k">The castle</div><svg id="mini" viewBox="160 90 1300 700"></svg></div>
+  </div>
+
+  <div class="ctrl">
+    <button class="b" onclick="reset()">Restart</button>
+    <button class="b main" onclick="next()">Next</button>
+    <button class="b" onclick="all()">Skip</button>
+    <button class="b on" id="audB" onclick="aud()">Audience view</button>
+    <span class="n" id="n"></span>
+  </div>
+</div>
+
+<script>
+const A = n => '../assets/avatars/' + n + '.png';
+const P = {Gwen:'gwen',Duncan:'duncan',Heather:'heather',Courtney:'courtney',Harold:'harold',Izzy:'izzy',Leshawna:'leshawna',
+  Alejandro:'alejandro',Lindsay:'lindsay',Chris:'chris-mclean'};
+const TRAITOR = new Set(['Duncan','Alejandro','Chris']);
+
+// ── THE CASTLE, after Ardross: a five-storey entrance tower with pepperpot
+// turrets and crow-stepped gables, two storeys and an attic either side.
+// Rooms are cut into the front, and the camera flies between them.
+const ROOMS = {
+  turret:   {x:700, y:170, w:220, h:120, g:'g-turret', label:"The turret"},
+  alcove:   {x:700, y:300, w:220, h:130, g:'g-alcove', label:'The alcove'},
+  bedL1:    {x:200, y:330, w:240, h:110, g:'g-bed', label:'Bedroom'},
+  bedL2:    {x:450, y:330, w:240, h:110, g:'g-bed', label:'Bedroom'},
+  bedR1:    {x:930, y:330, w:240, h:110, g:'g-bed', label:'Bedroom'},
+  bedR2:    {x:1180,y:330, w:230, h:110, g:'g-bed', label:'Bedroom'},
+  library:  {x:200, y:450, w:490, h:160, g:'g-lib', label:'The library'},
+  landing:  {x:700, y:440, w:220, h:170, g:'g-land', label:'The landing'},
+  hall:     {x:930, y:450, w:480, h:160, g:'g-hall', label:'The great hall'},
+  kitchen:  {x:200, y:620, w:490, h:165, g:'g-kit', label:'The kitchen'},
+  front:    {x:700, y:620, w:220, h:165, g:'g-land', label:'The front hall'},
+  table:    {x:930, y:620, w:480, h:165, g:'g-round', label:'The Round Table'},
+};
+
+function castleSvg(){
+  const st = '#10141c', rim = 'rgba(224,160,73,.35)';
+  // wings: two storeys + attic, crow-stepped gables at the outer ends
+  const crow = (x0, x1, y, peak, left) => {
+    // stepped gable rising from y to peak across the wing end
+    const steps = 6, dx = (x1 - x0) / 2 / steps, dy = (y - peak) / steps;
+    let d = `M${x0} ${y}`;
+    for (let i = 0; i < steps; i++) d += ` L${x0 + i*dx} ${y - (i+1)*dy} L${x0 + (i+1)*dx} ${y - (i+1)*dy}`;
+    for (let i = steps; i > 0; i--) d += ` L${x1 - (i-1)*dx - dx} ${y - i*dy} L${x1 - (i-1)*dx - dx} ${y - (i-1)*dy}`;
+    return d + ` L${x1} ${y} Z`;
+  };
+  let s = '';
+  s += `<defs><linearGradient id="rimL" x1="0" x2="1"><stop offset="0" stop-color="${rim}"/><stop offset=".08" stop-color="rgba(224,160,73,0)"/></linearGradient>
+        <linearGradient id="roof" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b2130"/><stop offset="1" stop-color="#0d1017"/></linearGradient></defs>`;
+  // wing bodies
+  s += `<rect x="186" y="320" width="518" height="475" fill="${st}"/><rect x="916" y="320" width="508" height="475" fill="${st}"/>`;
+  // slate roofs of the wings with crow-stepped gable ends
+  s += `<path d="M186 322 L300 210 L604 210 L704 322Z" fill="url(#roof)"/><path d="M916 322 L1016 210 L1310 210 L1424 322Z" fill="url(#roof)"/>`;
+  s += `<path d="${crow(186, 330, 322, 190)}" fill="${st}"/><path d="${crow(1280, 1424, 322, 190)}" fill="${st}"/>`;
+  // dormers
+  [360, 470, 580, 1040, 1150, 1260].forEach(x => s += `<path d="M${x} 300 L${x} 262 L${x+30} 242 L${x+60} 262 L${x+60} 300Z" fill="${st}"/><rect x="${x+18}" y="266" width="24" height="26" fill="#1e2433"/>`);
+  // chimneys (corniced stacks)
+  [[250,170],[640,180],[980,180],[1360,170]].forEach(([x,y]) => s += `<rect x="${x}" y="${y}" width="34" height="${210-y+20}" fill="${st}"/><rect x="${x-4}" y="${y-6}" width="42" height="8" fill="#161b26"/>`);
+  // the entrance tower, five storeys, with a cap-house and pepperpot turrets
+  s += `<rect x="690" y="150" width="240" height="645" fill="${st}"/>`;
+  s += `<path d="${crow(760, 860, 152, 92)}" fill="${st}"/>`;
+  const pepper = (cx, y) => `<rect x="${cx-18}" y="${y}" width="36" height="70" fill="${st}"/><path d="M${cx-24} ${y} L${cx} ${y-58} L${cx+24} ${y}Z" fill="url(#roof)"/>`
+    + `<path d="M${cx-18} ${y+70} Q${cx} ${y+92} ${cx+18} ${y+70}Z" fill="${st}"/><circle cx="${cx}" cy="${y-60}" r="3" fill="${rim}"/>`;
+  s += pepper(684, 118) + pepper(936, 118);
+  // battlement rim-light along the silhouette
+  s += `<path d="M186 322 L300 210 L604 210 L704 322" fill="none" stroke="${rim}" stroke-width="1.5"/><path d="M916 322 L1016 210 L1310 210 L1424 322" fill="none" stroke="${rim}" stroke-width="1.5"/>`;
+  s += `<path d="M690 150 L690 795 M930 150 L930 795" stroke="rgba(224,160,73,.18)" stroke-width="2"/>`;
+  // ground
+  s += `<rect x="120" y="793" width="1360" height="8" fill="#0a0c12"/><rect x="0" y="800" width="1600" height="100" fill="#07090d"/>`;
+  return s;
+}
+
+// who is in which room at the moment, drawn as little portraits in the room
+const WHERE_DAY = { bedL1:['Lindsay'], kitchen:['Izzy','Leshawna'], front:['Harold'], bedR2:['Alejandro','Chris'] };
+
+// ── the script ──
+const STEPS = [
+  { seg:'morning', room:'hall', when:'After breakfast', cast:['Gwen','Duncan'] },
+  { narr:'The plates are cleared. Owen’s chair is still pushed in at the end of the table.' },
+  { who:'Gwen', text:'Owen went to bed laughing. Who does that to Owen?' },
+  { who:'Duncan', text:'Someone who needed him quiet.' },
+  { who:'Gwen', text:'He wasn’t onto anybody. He was onto the biscuits.' },
+  { who:'Duncan', text:'Then maybe he was onto somebody and didn’t know it.', pop:{f:['Gwen','Duncan'],t:'Trust',up:true} },
+  { cam:'Duncan', room:'alcove' },
+  { camText:'Every time somebody dies, Gwen trusts me a little more. Horrible thing to say. True, though.' },
+  { seg:'morning', room:'library', when:'Mid-morning', cast:['Heather','Courtney'] },
+  { narr:'Heather shuts the door behind Courtney and doesn’t sit down.' },
+  { who:'Heather', text:'You said my name at the table. Twice.' },
+  { who:'Courtney', text:'Because you went quiet the second Owen’s name came up.' },
+  { who:'Heather', text:'I went quiet because I was upset.' },
+  { who:'Courtney', text:'You? Upset? You called him a golden retriever on day one.', pop:{f:['Courtney','Heather'],t:'Suspicion',up:false} },
+  { seg:'night', room:'turret', when:'After lights out', cast:['Chris','Duncan','Alejandro'], night:true },
+  { narr:'Three cloaks on the turret stair. The rest of the castle is asleep, or says it is.' },
+  { who:'Chris', text:'Gwen. She trusts Duncan too much to ever look at him.' },
+  { who:'Alejandro', text:'Then we leave her. Kill the ones who are looking.' },
+  { who:'Duncan', text:'Courtney’s looking. At Heather, for now.' },
+  { who:'Chris', text:'For now is all we need.', pop:{f:['Chris','Alejandro'],t:'Pact tension',up:false} },
+];
+
+// ── state and camera ──
+const view = document.getElementById('view'), world = document.getElementById('world');
+let idx = -1, cam = { room:null }, zoomTimer = null, camGeo = null;
+function fit(){ return view.clientWidth / 1600; }
+function camTo(room){
+  const k0 = fit();
+  if(!room){ world.classList.remove('zoomed'); const W = view.clientWidth, H = view.clientHeight; const k = Math.min(W/1320, H/760);
+    world.style.transform = `translate(${W/2 - 805*k}px,${H/2 - 470*k}px) scale(${k})`; return k; }
+  const r = ROOMS[room], W = view.clientWidth, H = view.clientHeight;
+  const k = Math.min(W*0.94/r.w, H*0.84/r.h);
+  const cx = r.x + r.w/2, cy = r.y + r.h/2;
+  const tx = W/2 - cx*k, ty = H/2 - cy*k;
+  world.style.transform = `translate(${tx}px,${ty}px) scale(${k})`;
+  world.classList.add('zoomed');
+  // where the room's floor and ceiling land on screen, so the people stand in it
+  camGeo = { floor: ty + (r.y + r.h)*k - 6, ceil: ty + r.y*k, h: r.h*k };
+  return k;
+}
+function stateAt(i){
+  const st = { scene:null, beat:null, pops:[], cam:null, night:false, seg:'breakfast' };
+  for(let k=0;k<=i;k++){ const s = STEPS[k];
+    if(s.room && !s.cam){ st.scene = s; st.pops = []; st.cam = null; st.beat = null; st.seg = s.seg; st.night = !!s.night; continue; }
+    if(s.cam){ st.cam = s; st.beat = null; continue; }
+    if(s.camText){ st.beat = { cam:st.cam.cam, text:s.camText }; continue; }
+    st.beat = s; if(s.pop) st.pops.push(s.pop);
+    if(st.cam && !s.camText) st.cam = null;
+  }
+  return st;
+}
+function drawRooms(st){
+  const active = st.cam ? st.cam.room : (st.scene && st.scene.room);
+  const where = st.night ? {} : WHERE_DAY;
+  document.getElementById('rooms').innerHTML = Object.entries(ROOMS).map(([id,r])=>{
+    const lit = id===active || (st.night && id==='turret');
+    const people = (id===active ? [] : (where[id]||[]));
+    return `<div class="room${id===active?' here':''}${lit?' lit':''}" style="left:${r.x}px;top:${r.y}px;width:${r.w}px;height:${r.h}px">
+      <div class="glow ${r.g}${/turret|alcove|kit/.test(r.g)?' flick':''}"></div><span class="lbl">${r.label}</span>
+      <span class="dots">${people.map(n=>`<img src="${A(P[n])}">`).join('')}</span></div>`;
+  }).join('');
+  // minimap
+  document.getElementById('mini').innerHTML = Object.entries(ROOMS).map(([id,r])=>
+    `<rect x="${r.x}" y="${r.y}" width="${r.w-8}" height="${r.h-8}" fill="${id===active?'rgba(255,219,149,.85)':(st.night&&id==='turret'?'rgba(179,38,51,.7)':'rgba(224,160,73,.14)')}" stroke="rgba(224,160,73,.3)" stroke-width="3"/>`).join('')
+    + Object.entries(where).map(([id,ns])=>ns.map((_,i)=>`<circle cx="${ROOMS[id].x+30+i*40}" cy="${ROOMS[id].y+ROOMS[id].h-30}" r="14" fill="#e8ddc1"/>`).join('')).join('');
+}
+function drawScene(st, fresh){
+  const sc = document.getElementById('scene'), W = view.clientWidth, H = view.clientHeight;
+  const people = st.cam ? [st.cam.cam] : (st.scene ? st.scene.cast : []);
+  const speaker = st.beat && (st.beat.who || st.beat.cam);
+  const g = camGeo || { floor:H*0.86, h:H*0.6 };
+  const figW = Math.min(W*0.16, g.h*0.62*3/4);
+  const floor = Math.min(g.floor, st.cam ? H*0.84 : H*0.93);
+  const xs = people.length===1 ? [0.5] : people.length===2 ? [0.32,0.68] : [0.25,0.5,0.75];
+  sc.innerHTML = people.map((n,i)=>{
+    const cls = ['fig', speaker===n?'speak':(speaker?'quiet':''), TRAITOR.has(n)?'traitor':''].join(' ');
+    return `<div class="${cls}" style="left:${xs[i]*100}%;width:${figW}px;bottom:${H-floor}px"><div class="av"><img src="${A(P[n])}"></div><div class="nm">${n}</div></div>`;
+  }).join('');
+  requestAnimationFrame(()=>setTimeout(()=>sc.querySelectorAll('.fig').forEach(f=>f.classList.add('in')), fresh ? 380 : 0));
+  // the line, pinned over the speaker
+  if(st.beat && (st.beat.who || st.beat.cam)){
+    const i = people.indexOf(speaker), x = xs[Math.max(0,i)];
+    const top = floor - figW*4/3 - 22;
+    const isCam = !!st.beat.cam;
+    const el = document.createElement('div');
+    el.className = 'line' + (isCam ? ' cam' : '') + (TRAITOR.has(speaker) ? ' traitor' : '');
+    el.style.left = Math.min(Math.max(x*100, 24), 76) + '%'; el.style.top = Math.max(top, H*0.2) + 'px';
+    el.innerHTML = `<div class="card"><div class="who"><i></i>${speaker}${isCam?' · to camera':''}</div><p></p></div>`;
+    sc.appendChild(el);
+    const p = el.querySelector('p'), txt = '“' + st.beat.text + '”';
+    requestAnimationFrame(()=>el.classList.add('in'));
+    if(fresh){ let k=0; const t = setInterval(()=>{ p.textContent = txt.slice(0,++k); if(k>=txt.length) clearInterval(t); }, 18); }
+    else p.textContent = txt;
+  }
+  const cap = document.getElementById('caption');
+  if(st.beat && st.beat.narr){ cap.textContent = st.beat.narr; cap.classList.add('in'); } else cap.classList.remove('in');
+}
+function paint(fresh){
+  const st = stateAt(idx), s = STEPS[idx];
+  document.getElementById('n').textContent = `${idx+1} / ${STEPS.length}`;
+  view.classList.toggle('night-on', st.night);
+  document.querySelectorAll('#clock .seg').forEach(el=>{
+    const order = ['breakfast','morning','mission','evening','table','night'], cur = order.indexOf(st.seg), me = order.indexOf(el.dataset.k);
+    el.classList.toggle('done', me < cur); el.classList.toggle('now', me === cur);
+  });
+  drawRooms(st);
+  const room = st.cam ? st.cam.room : (st.scene && st.scene.room);
+  document.getElementById('lb').classList.toggle('on', !!st.cam);
+  // a new scene: pull out to the castle, fly in, title card
+  const newScene = fresh && s && (s.room);
+  const loc = document.getElementById('loc'), corner = document.getElementById('corner');
+  clearTimeout(zoomTimer);
+  if(newScene){
+    document.getElementById('scene').innerHTML = ''; document.getElementById('caption').classList.remove('in');
+    camTo(null);
+    zoomTimer = setTimeout(()=>{ camTo(room);
+      if(!s.cam){ document.getElementById('locE').textContent = st.scene.when.toUpperCase(); document.getElementById('locT').textContent = ROOMS[room].label;
+        loc.classList.add('in'); setTimeout(()=>loc.classList.remove('in'), 1500); }
+      setTimeout(()=>drawScene(st, true), s.cam ? 700 : 1500);
+    }, 900);
+  } else {
+    camTo(room);
+    drawScene(st, fresh);
+  }
+  corner.innerHTML = room ? `${ROOMS[room].label} · <b>${st.cam ? 'Confessional' : st.scene.when}</b>` : '';
+  corner.classList.toggle('in', !!room);
+  // pops
+  document.getElementById('pops').innerHTML = st.cam ? '' : st.pops.slice(-2).map(p=>
+    `<div class="pop"><span style="display:flex">${p.f.map(n=>`<img src="${A(P[n])}">`).join('')}</span>${p.t} <span class="${p.up?'up':'dn'}">${p.up?'▲':'▼'}</span></div>`).join('');
+}
+function next(){ if(idx < STEPS.length-1){ idx++; paint(true); } }
+function all(){ idx = STEPS.length-1; paint(false); }
+function reset(){ idx = -1; view.classList.remove('night-on'); drawRooms({night:false}); camTo(null);
+  ['scene'].forEach(i=>document.getElementById(i).innerHTML=''); document.getElementById('caption').classList.remove('in');
+  document.getElementById('corner').classList.remove('in'); document.getElementById('pops').innerHTML='';
+  document.getElementById('lb').classList.remove('on'); document.getElementById('n').textContent = `0 / ${STEPS.length}`;
+  document.querySelectorAll('#clock .seg').forEach(el=>{ el.classList.toggle('now', el.dataset.k==='breakfast'); el.classList.remove('done'); }); }
+function aud(){ document.body.classList.toggle('aud'); document.getElementById('audB').classList.toggle('on'); if(idx>=0) paint(false); }
+document.addEventListener('keydown', e=>{ if(e.key===' '||e.key==='ArrowRight'){ e.preventDefault(); next(); } });
+window.addEventListener('resize', ()=>{ const st = stateAt(idx); camTo(st.cam ? st.cam.room : (st.scene && st.scene.room)); if(idx>=0) drawScene(st,false); });
+document.getElementById('castle').innerHTML = castleSvg();
+document.getElementById('stars').innerHTML = Array.from({length:70},()=>`<i style="left:${Math.random()*100}%;top:${Math.random()*100}%;animation-delay:-${Math.random()*3}s"></i>`).join('');
+reset();
+</script>
+</body>
+</html>

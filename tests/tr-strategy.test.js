@@ -491,10 +491,11 @@ describe('the truce', () => {
           expect(html).toContain(truce.by);
           expect(html).toContain(truce.spared);
           expect(html).toContain(truce.against);
-          // THE REASONING, not just the result: the weights that decided which
-          // of the two names was worth going after.
-          expect(html).toContain(String(truce.theirWeight));
-          expect(html).toContain(String(truce.sparedWeight));
+          // THE REASONING, not just the result — said the way a narrator says
+          // it. The weights decided it, but "weight 0.58 against 0.49" is the
+          // debug screen's language and printed as a sentence it read as one.
+          expect(html).toContain('listens to ' + truce.against + ' more');
+          expect(html).not.toContain(String(truce.theirWeight));
           // And a player at that table may not read any of it.
           const watcher = (row.tr.table.seated || []).find(n => n !== truce.by);
           expect(rpBuildRoundTable(row, `player:${watcher}`)).not.toContain('the deal</b>');

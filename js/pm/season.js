@@ -256,7 +256,22 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
     // 33: Nadia confided in Callum across the split and he walked her out).
     if (entry.moment !== 'reunion' && entry.moment !== 'final' && !entry.coupled && !entry.finalRecoupling
       && entry.slot !== 'vote-post' && !afterFinalRecoupling && !state.split) {
-      const walker = maybeWalk(state, rng, entry);
+      let walker = maybeWalk(state, rng, entry);
+      // With nobody left to walk in, a walk that leaves the villa unable to
+      // form the couples its last nights need is not one the show lets happen
+      // (UK finals are four couples; a walk late on is answered with a new
+      // arrival, and here there is none). Season 9 of the same-sex test: a
+      // girl walked on day 42 with the girls already short, the final
+      // recoupling made three couples, and the vote and the semi sent nobody.
+      if (walker && !(ctx.queues?.bombshell?.length || ctx.queues?.casa?.length)) {
+        const ahead = schedule.slice(schedule.indexOf(entry) + 1);
+        const need = state.finalCouples + ahead.filter(e => e.coupled).length;
+        const partner = partnerOf(state, walker.name);
+        const leaves = [walker.name, ...(partner && !ahead.some(e => e.moment === 'recoupling') ? [partner] : [])];
+        const left = state.villa.filter(n => !leaves.includes(n));
+        const f = left.filter(n => state.profiles[n].gender === 'f').length;
+        if (Math.min(f, left.length - f) < need) walker = null;
+      }
       if (walker) {
         const before = state.couples.map(c => [...c]);
         // THE WALK, as the show plays it (user: "we have 1 walked out in ep9

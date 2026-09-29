@@ -916,7 +916,7 @@ const ARRIVAL = [
 // number, which is the rule this whole file is built on.
 const RESUME = [
   'They have heard the rules now. Traitors and Faithfuls, murders and banishments, and '
-  + 'the fact that {c} of them is about to be chosen. They are back on the gravel, and '
+  + 'the fact that some of them are about to be chosen. They are back on the gravel, and '
   + 'nobody is making small talk any more.',
   'The same {c} people, back out on the same drive, but quieter. They know what the game '
   + 'is now. They do not know who is about to be picked to play the other side of it.',
@@ -1021,8 +1021,8 @@ const GAP = {
   many: [
     '{n} people between this tap and the last.',
     '{n} shoulders further along the line.',
-    '{n} people passed between them.',
-    'the host walked past {n} others before stopping again.',
+    '{n} people along from the last tap.',
+    '{n} people further down the line.',
   ],
   none: [
     'right next to the last one.',
@@ -1363,13 +1363,14 @@ function _buildBeats(v) {
         + '<div><div class="tp-who-nm">' + _esc(t.name) + '</div>'
         + '<div class="tp-who-sub">' + (t.mine
           ? 'You. And that is the whole of what you were given.'
-          : 'Blindfolded, and gave away nothing.')
+          : ['Blindfolded, and gave away nothing.', 'Did not move a muscle.',
+            'Kept perfectly still.', 'Not a flicker.'][(t.order || 0) % 4])
         + '</div></div></div>'
         + '<p>' + _fill(_esc(line), { who: _esc(t.name), Who: _esc(t.name) }) + '</p>'
         + '<div class="tp-place">' + _ic('rank', 15)
-        + '<span>Standing at </span><b>' + (t.at + 1) + '</b>'
-        + '<span>of ' + n + ' in the rank'
-        + (prev >= 0 ? ', ' + _fill(_pick(_gapPool(t.at - prev - 1), key + '|gap|' + t.order),
+        + '<span>Number </span><b>' + (t.at + 1) + '</b>'
+        + '<span>of ' + n + ' in the line'
+        + (prev >= 0 ? ' — ' + _fill(_pick(_gapPool(t.at - prev - 1), key + '|gap|' + t.order),
           { n: _word(Math.max(0, t.at - prev - 1)) }) : '')
         + '</span></div>';
       prev = t.at;

@@ -122,6 +122,22 @@ function _fill(tpl, subs) {
   return String(tpl || '').replace(/\{(\w+)\}/g, (m, k) =>
     (subs && subs[k] != null) ? subs[k] : m);
 }
+// Numbers in a sentence are words. "Breakfast is set for 19 players" read as
+// a report; a person says "nineteen".
+const _NUMW = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight',
+  'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen',
+  'seventeen', 'eighteen', 'nineteen', 'twenty', 'twenty-one', 'twenty-two',
+  'twenty-three', 'twenty-four'];
+function _numWord(n) { return _NUMW[n] || String(n); }
+function _cap1(w) { return String(w).charAt(0).toUpperCase() + String(w).slice(1); }
+function _emptyChairs(seated, empty) {
+  const who = _numWord(seated);
+  const head = who.charAt(0).toUpperCase() + who.slice(1) + ' people at the table';
+  if (empty <= 0) return head + ', and not one empty chair.';
+  return head + ', and ' + _numWord(empty) + ' empty ' + (empty === 1 ? 'chair' : 'chairs')
+    + '. Nobody says a name until the door stops opening.';
+}
+
 /** The subject's pronouns, in the keys the pools use. NO `Pos` property. */
 function _pr(name) {
   const p = pronouns(name) || {};
@@ -955,10 +971,10 @@ const CO_CSS = `
 
 const HOST_LINES = {
   open: [
-    'Good morning. Take your seats. When everyone who can come down has arrived, any empty place will tell you whom the Traitors chose overnight.',
-    'Morning. Wait until every surviving player is here, then count the empty places. That is how you will learn whether the Traitors removed anyone overnight.',
-    'Good morning. Sit down and account for everyone who survived the Round Table. Anyone still missing after that was selected overnight.',
-    'Morning. Do not decide who is missing until the last surviving player reaches the table. Then the empty chair will give you the answer.',
+    'Good morning. Take a seat, have some tea, and keep an eye on the door.',
+    'Morning, everyone. Sit down. We wait until everybody who is coming down has come down.',
+    'Good morning. Nobody guesses. We wait for the door, and then we count.',
+    'Morning. Sit wherever you like. The door will tell you the rest.',
   ],
   gap: [
     'Look around you. There is a chair back this morning, and it is not coming forward again.',
@@ -1249,11 +1265,11 @@ const DAY_QUIET = [
 // about somebody who is not there, to a room that has worked out why.
 const EULOGY_OPEN = [
   'This one is {Nm}.',
-  '{Nm}. Off the wall, and off the board.',
+  'So. {Nm}.',
   'Let us all look at {Nm} one more time.',
-  'The frame is {Nm}&rsquo;s. Was.',
-  'And here we have {Nm}, in better days. Yesterday, mostly.',
-  '{Nm}. One castle, and one very bad decision made by somebody else.',
+  'Here is {Nm}.',
+  '{Nm}, everybody.',
+  '{Nm}. I did like this one.',
 ];
 
 // THE FACT CLAUSE, and the branch is picked from the record before any of
@@ -1261,41 +1277,37 @@ const EULOGY_OPEN = [
 const EULOGY_FACT = {
   // Somebody still in this room spent last night's table pushing them.
   pushed: [
-    'Last night {who} sat at that table and told everybody here that {Nm} was the problem. '
-    + '{who}, you were wrong, and you were loud, and somebody who was right did it quietly.',
+    'Last night {who} told this whole table that {Nm} was a Traitor. {Nm} was not, and '
+    + 'the Traitors have {gone} {them}.',
     '{who} wanted {Nm} gone at the Round Table. Somebody upstairs agreed, and they did not need a vote.',
-    'The last thing this room did to {Nm} was let {who} put a name on {them}. The Traitors '
-    + 'have now agreed with {who}, which is not the endorsement {who} was hoping for.',
+    'The last thing this room did to {Nm} was listen to {who} call {them} a Traitor. Then the '
+    + 'Traitors {gone} {them}, which rather answers that.',
     '{who} spent yesterday evening making a case against {Nm}. The Traitors '
     + 'made the same decision overnight, without the debate.',
   ],
   // A real, stored, publicly-visible bond with somebody still at the table.
   mourned: [
-    '{who} liked {Nm}. That was visible from the other end of the castle, and it is going to be '
-    + 'visible for the rest of the week.',
-    'There is one person in this room who is going to take this badly, and {who} already knows '
-    + 'I mean {them}.',
-    '{Nm} found exactly one person in this castle worth trusting, and {who} is sitting right there, '
-    + 'having breakfast without {them}.',
-    '{who}, you have lost the only person here who was pleased to see you in the mornings. '
-    + 'Do enjoy the rest of your stay.',
+    '{who} liked {Nm}. Everybody in the castle could see it, and this is going to be a hard '
+    + 'morning for {who}.',
+    '{Nm} trusted exactly one person in this castle, and {who} is sitting right there.',
+    '{who}, I am sorry. I know you two were close.',
+    'Of everybody at this table, {who} is going to miss {Nm} the most, and the Traitors know it.',
   ],
   // Nobody pushed them and nobody was close: the quiet game, ended.
   quiet: [
-    '{Nm} did not make a single enemy in this castle. That turns out not to be the protection '
-    + 'everybody assumes it is.',
-    'Nobody at this table has said {Nm}&rsquo;s name this morning. It has been eleven minutes.',
-    '{Nm} played six days without once being accused of anything. Somebody upstairs found that '
-    + 'far more interesting than any of you did.',
-    'You will all struggle to remember what {Nm} said at the last Round Table, and that is '
-    + 'because {Nm} did not say anything, and that is why {Nm} is not here.',
+    '{Nm} did not make a single enemy in this castle. That was not enough to save {them}.',
+    'Nobody at this table has said {Nm}&rsquo;s name yet this morning. Somebody upstairs said '
+    + 'it last night.',
+    '{Nm} went {day} days without anybody accusing {them} of anything. That is exactly the kind '
+    + 'of player the Traitors go after.',
+    '{Nm} kept quiet at the Round Table. Quiet did not keep {them} safe.',
   ],
   // Made it a long way in.
   survivor: [
-    '{Nm} got further than most of the people who are still eating, and it did not save {them}.',
-    'That is {Nm} gone on day {day}, which is more days than half of this table is going to see.',
-    '{Nm} survived {day} days of this and one night of it, and only the last one counted.',
-    'Day {day}. {Nm} outlasted a great many of you and is nonetheless the one on the floor.',
+    '{Nm} got further than half the people at this table, and it still was not far enough.',
+    'That is {Nm} gone on day {day}. More days than a lot of you are going to get.',
+    'Day {day}. {Nm} outlasted a lot of you, and in the end it did not matter.',
+    '{Nm} made it to day {day}. Somebody upstairs decided that was plenty.',
   ],
   // The first name off the wall, or near enough.
   early: [
@@ -1312,12 +1324,12 @@ const EULOGY_FACT = {
 const EULOGY_PUN = [
   'Terribly sad. Anyway.',
   'A great loss. The castle will have forgotten by lunch.',
-  'Gone, {gone}, and frankly a little bit predictable.',
+  'We shall miss {them}. Pass the butter.',
   'We shall not see {them} again. We shall, however, be having eggs.',
   'A tragedy. Do help yourselves to the toast.',
   'And that is that. It is a beautiful morning and one of you had a hand in it.',
-  'Rest well. Or do not — I understand the beds through there are dreadful.',
-  'Marvellous person. Absolutely no use to anybody upstairs.',
+  'Goodbye, {Nm}. Somebody at this table is very pleased about this.',
+  'A lovely person, and the Traitors knew it.',
 ];
 
 // The frame hits the floor. This is a physical beat and the room reacts to it.
@@ -1491,14 +1503,14 @@ const SIT_SOLO = [
 // they were seen with — because a bond is something the whole room saw. This
 // beat must carry no alignment and name no agent. {vic}, {closest} only.
 const FLASH_TEXT = [
-  '{vic} was present at the Round Table the night before. Among the remaining players, {closest} had the strongest recorded bond with {obj}.',
-  'Before the night began, {vic} was still in the game. {Sub} was closest to {closest}, which explains why the loss may affect them most.',
-  'The public record from the previous evening still included {vic}. {closest} was the surviving player most closely connected to {obj}.',
-  '{vic} survived the Round Table and entered the night as an active player. {Sub} had a stronger bond with {closest} than with anyone else still present.',
+  'Last night {vic} went up to bed with everybody else. Of the people still here, {closest} was the one {sub} trusted most.',
+  'The last anybody saw of {vic} was on the stairs on the way up to bed. {closest} was the person {sub} was closest to in here.',
+  '{vic} was at dinner last night like everybody else. Nobody still in the castle was closer to {obj} than {closest}.',
+  'If anybody in the castle was {vic}&rsquo;s friend, it was {closest}. {closest} is the one the room looks at first.',
 ];
 const FLASH_NOCLOSE = [
-  '{vic} was still an active player when the previous evening ended. No close surviving bond is recorded for {obj}.',
-  'The previous public record ends with {vic} still in the game. The next confirmed fact is the empty place at breakfast.',
+  'The last anybody saw of {vic} was on the way up to bed last night. Nobody still in here was especially close to {obj}.',
+  '{vic} went up to bed last night like everybody else, and did not come down this morning.',
 ];
 // ── THE EMPTY CHAIR — the victim's own neighbours, by the fixed seating.
 // Caused by `gs.tr.castOrder`: who actually sat either side of them. {a},{b},{vic}.
@@ -1799,8 +1811,8 @@ function _buildBeats(v) {
   const overnight = v.arrival
     ? _pick(STILL_TEXT, key + '|still')
     : v.hidden
-      ? 'Last night, the Traitors chose someone for murder. This morning the castle will not be told who.'
-      : 'Last night, the Traitors chose someone for murder. The players will learn the result at breakfast when everyone who can still arrive has reached the table.';
+      ? 'Another night gone, and this morning the castle is not going to be told what it cost.'
+      : 'Another night gone. Nobody down here knows what it cost yet, and the only way to find out is to wait and see who comes through that door.';
   push('still', _card(
     v.arrival ? 'Before Any Of Them' : 'What Happened Overnight',
     v.arrival ? 'First light' : 'Before breakfast', 'window',
@@ -1809,9 +1821,8 @@ function _buildBeats(v) {
 
   const prepared = v.arrival
     ? _pick(STIR_TEXT, key + '|stir')
-    : 'Breakfast is set for ' + (v.room.length + v.missing.length)
-      + ' players who were still in the game when the night began. '
-      + v.room.length + ' of them can still come down this morning.';
+    : 'The table is laid for ' + _numWord(v.room.length + v.missing.length)
+      + ', the same as last night. The staff lay a place for everybody who went up to bed.';
   push('stir', _card(v.arrival ? 'The East Windows' : 'The Breakfast Room',
     v.arrival ? 'Dawn' : 'The table is set', 'sun',
     '<p>' + prepared + '</p>'), null,
@@ -1857,8 +1868,11 @@ function _buildBeats(v) {
         : gi === 0 ? _pickAway(DOWN_FIRST, key + '|first', leadSaid)
           : isLast ? _pickAway(DOWN_MORE, key + '|more|' + gi, leadSaid)
             : _pickAway(DOWN_MID, key + '|mid|' + gi, leadSaid))
-      : _names(g) + (g.length === 1 ? ' arrives. ' : ' arrive together. ') + arrivedSoFar.length + ' of ' + v.room.length
-        + ' expected players are now at the table.';
+      // NO "OF N EXPECTED". The room does not know how many are coming down —
+      // that is the whole morning — so a running total out of the survivors
+      // told the reader the answer before the door did.
+      : _names(g) + (g.length === 1 ? ' comes down. ' : ' come down together. ')
+        + _cap1(_numWord(arrivedSoFar.length)) + ' at the table now.';
     const chips = g.length > 1
       ? '<div class="co-arrivals">' + g.map(n => _faceChip(n, 26)).join('') + '</div>'
       : '';
@@ -1885,9 +1899,7 @@ function _buildBeats(v) {
     v.arrival ? 'Strangers, And One Secret' : 'The Room Counts Itself',
     'The count', 'plate',
     '<p>' + (v.arrival ? _pick(COUNT_TEXT, key + '|count')
-      : arrivedSoFar.length + ' players are seated. '
-        + ((v.room.length + v.missing.length) - arrivedSoFar.length)
-        + ' places are still empty, so the group waits for the remaining arrivals before identifying a victim.')
+      : _emptyChairs(arrivedSoFar.length, (v.room.length + v.missing.length) - arrivedSoFar.length))
       + '</p>' + _countStrip(seatBits)),
   null, { kind: 'count', down: [...arrivedSoFar] });
 
@@ -1925,9 +1937,8 @@ function _buildBeats(v) {
 
       // ── THE RELIEF, that leaves the murdered place as the only answer ──
       push('down', _card('And Then One More', 'The stair', 'stair',
-        '<p>' + _esc(lastOne) + ' is the last expected player to arrive. '
-        + v.room.length + ' of ' + v.room.length
-        + ' expected players are now at the table. Any remaining empty place belongs to somebody taken overnight.</p>'),
+        '<p>' + _esc(lastOne) + ' comes down last. The door stays shut after that. '
+        + 'Everybody who is coming down is here now, and there is still an empty chair.</p>'),
       null, { kind: 'relief', down: [...v.room] });
     }
 

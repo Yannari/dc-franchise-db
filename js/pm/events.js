@@ -150,6 +150,9 @@ const pop1 = (who, approval, fame) => ({ [who]: { approval, fame } });
 // quarter — with the public and as a secret (season 7: Theo, pulled twice on
 // night one, was told on three times and ended the night at -28).
 const DAY_ONE = 0.25;
+// What a pull while coupled costs with the public (x SCENE_GAIN); the one
+// who goes along with it pays half.
+const PULL_COST = 1.3;
 const GOSSIP_PER_EPISODE = 3;
 const metToday = (s, ...ns) => ns.some(n => n != null && (s.ledger?.firstEp?.[n] ?? s.ep) === s.ep);
 
@@ -285,8 +288,12 @@ export const KINDS = {
         const py = partnerOf(s, y);
         if (py && py !== x) girlCode(s, x, [y, py]);
       }
-      return { pop: { ...pop1(a, partnerOf(s, a) ? -0.8 * light : 0.2, 1.5),
-        ...pop1(b, rebuffed ? (partnerOf(s, b) ? 0.3 : 0) : partnerOf(s, b) ? -0.4 * light : 0.1, 1) } };
+      // Pulls were cut to ~60% of their old rate (PHASE_KINDS, 2026-09-28:
+      // turn-downs were 7 scenes an episode); each one the public sees while
+      // coupled costs in proportion more, or the villains that pulls made
+      // went with them (villain by ep 12: 60% -> 40% of seasons).
+      return { pop: { ...pop1(a, partnerOf(s, a) ? -PULL_COST * light : 0.2, 1.5),
+        ...pop1(b, rebuffed ? (partnerOf(s, b) ? 0.3 : 0) : partnerOf(s, b) ? -PULL_COST / 2 * light : 0.1, 1) } };
     },
   },
   // Casa Amor week: sharing a bed with a new arrival — the show's classic
@@ -814,11 +821,11 @@ export const PHASE_KINDS = {
   // The small slots (a morning pull, an evening chat or joke) are there for
   // the lines written for them: a gate on a phase its kind never plays at is
   // a line nobody hears (tests/pm-lines.test.js found six).
-  morning: [['chat', 4], ['kiss', 2], ['friendship', 3], ['comedy', 1], ['ick', 0.5], ['argument', 0.3], ['pull', 0.5]],
-  day: [['chat', 3], ['deep-chat', 2], ['pull', 3], ['friendship', 3], ['gossip', 1.5],
+  morning: [['chat', 4], ['kiss', 2], ['friendship', 3], ['comedy', 1], ['ick', 0.5], ['argument', 0.3], ['pull', 0.2]],
+  day: [['chat', 3], ['deep-chat', 2], ['pull', 1.0], ['friendship', 3], ['gossip', 1.5],
     ['comedy', 1.5], ['argument', 0.6], ['ick', 0.8], ['vent', 0.15]],
   event: [['challenge-kiss', 3], ['challenge-win', 1], ['comedy', 1], ['argument', 0.3]],
-  evening: [['kiss', 3], ['deep-chat', 2], ['pull', 2], ['argument', 0.9], ['gossip', 1.5], ['friendship', 1], ['chat', 0.5], ['comedy', 0.5],
+  evening: [['kiss', 3], ['deep-chat', 2], ['pull', 0.7], ['argument', 0.9], ['gossip', 1.5], ['friendship', 1], ['chat', 0.5], ['comedy', 0.5],
     ['bed-share', 1.2], ['vent', 0.05]],
 };
 

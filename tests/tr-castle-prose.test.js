@@ -304,7 +304,10 @@ describe('THE VARIETY FLOOR: an event that says one thing is one thing, however 
     expect(pools.length, 'no pools were parsed out of the castle source at all')
       .toBeGreaterThan(400);
     const total = pools.reduce((n, p) => n + p.count, 0);
-    expect(total, 'the pools parsed but hold almost no lines').toBeGreaterThan(3000);
+    // 2500, not 3000: the two-person pools dropped ~2,400 narration-only lines
+    // in favour of scripted exchanges (2026-09-29). Width per branch is guarded
+    // separately; this floor only proves the parser is still reading pools.
+    expect(total, 'the pools parsed but hold almost no lines').toBeGreaterThan(2500);
 
     // AND NOTHING IS EXEMPTED BY BEING UNREADABLE. A pool the parser opens and
     // closes without counting a single entry is not an empty pool — there are

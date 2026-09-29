@@ -109,4 +109,20 @@ describe('building profiles', () => {
     expect(s.profiles[s.handleOf[a]]).toMatchObject({ mode: 'shared', players: [a, b] });
     expect(Object.keys(s.profiles)).toHaveLength(5);
   });
+
+  it('never hands the second partner a persona of their own, and keeps the pair\'s persona', () => {
+    const players = makePlayers(6, 2);
+    const [a, b] = players.map(p => p.name);
+    const setup = { [a]: { partner: b, catfish: 'persona-1' }, [b]: { partner: a, catfish: 'always' } };
+    const t = players.map(p => truthOf(p, setup[p.name] || {}));
+    const pool = makePool(4, 2);
+    const d = drawPersonas(t, pool, streamFor(2, 'pool'), 'stats');
+    expect(d.assigned[b]).toBeUndefined();
+    expect(d.edited).not.toContain(b);
+    expect(Object.keys(d.assigned).length + d.unused.length).toBe(4);   // nothing lost
+    const s = newState(2);
+    buildProfiles(s, t, d, pool, streamFor(2, 'profiles'));
+    const p = s.profiles[s.handleOf[a]];
+    expect(p).toMatchObject({ mode: 'catfish', shared: true, players: [a, b], personaId: 'persona-1' });
+  });
 });

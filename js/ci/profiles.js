@@ -89,13 +89,21 @@ export function drawPersonas(truths, pool, rng, pickBy = 'stats') {
   const best = t => left.map(p => [p, fitScore(t, p, median)]).filter(([, s]) => s > -1)
     .sort((a, b) => b[1] - a[1])[0]?.[0];
 
+  // A player whose partner comes earlier in the cast joins that partner's
+  // profile (spec §14.8): they draw nothing of their own, or the persona they
+  // drew would vanish — neither played nor left in the pool.
+  const seen = new Set();
+  const follower = new Set();
+  for (const t of truths) { if (t.partner && seen.has(t.partner)) follower.add(t.name); seen.add(t.name); }
+  const drawing = truths.filter(t => !follower.has(t.name));
+
   // Pins first. A pin to a persona that is not in the pool is ignored.
-  for (const t of truths) {
+  for (const t of drawing) {
     if (['decide', 'never', 'always'].includes(t.catfish)) continue;
     const p = left.find(x => x.id === t.catfish);
     if (p && reasonFor(t, p)) take(t, p);
   }
-  const open = truths.filter(t => !assigned[t.name] && t.catfish !== 'never');
+  const open = drawing.filter(t => !assigned[t.name] && t.catfish !== 'never');
   const motive = Object.fromEntries(open.map(t => [t.name, catfishMotive(t, median)]));
 
   if (pickBy === 'random') {
@@ -164,7 +172,10 @@ export function buildProfiles(state, truths, draw, pool, rng) {
     const partnerHandle = t.partner && state.handleOf[t.partner];
     if (partnerHandle && state.profiles[partnerHandle].players.length === 1) {
       const p = state.profiles[partnerHandle];
-      p.players.push(t.name); p.mode = 'shared'; p.gap = 0.5;
+      // A pair behind a persona stays a catfish; an honest pair is 'shared'.
+      p.players.push(t.name); p.shared = true;
+      if (p.mode !== 'catfish') p.mode = 'shared';
+      p.gap = Math.max(p.gap, 0.5);
       state.handleOf[t.name] = partnerHandle;
       continue;
     }

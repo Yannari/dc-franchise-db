@@ -149,13 +149,13 @@ export const LIPSYNC_TEMPOS = [
       ]),
       tier('strong', 'She reads the build correctly and saves enough for it.', [
         '{a} paces herself through {s} and the pacing works — she does not peak early, she does not run out of energy, and when the final chorus arrives she has enough left to give it something, which is all a mid-tempo asks and more than most queens manage.',
-        'She finds the build in {s} and follows it. The early verses are steady, the bridge has a lift, and the climax gets a gear she had not shown before, and the whole thing coheres into a lip sync that read the song and responded to it.',
+        '{a} finds the build in {s} and follows it. The early verses are steady, the bridge has a lift, and the climax gets a gear she had not shown before, and the whole thing coheres into a lip sync that read the song and responded to it.',
         '{a} saves something for the end and the end is better for it. The song builds and her performance builds with it, not perfectly but visibly, and the panel watches a queen who understood that a mid-tempo is a story, not a sprint.',
         '{a} handles the build of {s} with the patience of a queen who has been through this before — she does not throw everything at the first verse, she does not coast through the bridge, and the final stretch has more energy than the opening, which is the whole assignment.',
       ]),
       tier('trying', 'She peaks early and spends the rest of the song at the same level.', [
         '{a} opens at full power and has nowhere to go when {s} opens up, and the last minute of the lip sync is a queen at the same level she was at in the first thirty seconds, which means the build happened without her and she did not notice.',
-        'She gives the first verse everything and the song is not asking for everything yet, and by the time the song IS asking for everything she has already given it, and the flat line from verse two onward is the story the panel is watching.',
+        '{a} gives the first verse everything and the song is not asking for everything yet, and by the time the song IS asking for everything she has already given it, and the flat line from verse two onward is the story the panel is watching.',
         '{a} peaks in the first chorus and stays there, and staying at one level while {s} rises is the mid-tempo version of falling behind — the song is climbing and she is standing on the step she started on.',
         'The build passes her. {a} starts the lip sync at a level that would have been perfect for the final chorus and maintains it through every section of {s}, which means the song gets louder and the performance does not, and the gap is visible.',
       ]),
@@ -207,7 +207,7 @@ export const LIPSYNC_TEMPOS = [
       ]),
       tier('strong', 'She keeps up and the effort only shows once, near the end.', [
         '{a} keeps pace with {s} and the pace is punishing and she holds it — the words stay in the right place, the body stays in motion, and the effort only surfaces once, near the end, in a breath between phrases that the panel may or may not have caught.',
-        'She matches the uptempo for the whole song and the fatigue only shows in the final thirty seconds, when a step is a half-beat late and a hand grabs the wig and the face recovers fast enough that the moment passes without becoming the story.',
+        '{a} matches the uptempo for the whole song and the fatigue only shows in the final thirty seconds, when a step is a half-beat late and a hand grabs the wig and the face recovers fast enough that the moment passes without becoming the story.',
         '{a} rides the speed of {s} and stays on it. The lip sync is not effortless — an uptempo never is — but the effort is managed, the words are there, and the body keeps going when a lesser performance would have started coasting.',
         'The uptempo asks for stamina and {a} has it. She is moving and mouthing and performing at full speed through almost all of {s}, and the one moment where the speed catches her is a moment she recovers from before the next bar.',
       ]),

@@ -555,7 +555,7 @@ export const UNTUCKED_EVENTS = [
     when: f => true, effects: { bond: 0.5, pop: { a: 1 } },
     lines: [
       "{a} pulls a compact out of somewhere — nobody saw where — and starts fixing the damage. {b} leans over. \"You have got a line here.\" Touches her own cheek to show where. They have been arguing for twenty minutes but the face comes first. Always.",
-      "\"I look like I have been crying.\" Accurate, because she has been crying. {b} hands her a wipe. \"You look like you have been feeling things on television, which is what we are here for.\" {a} laughs. The laugh helps more than the wipe.",
+      "\"Do I look like I have been crying?\" She has not, but three hours under those lights will do the same thing to a face. {b} hands her a wipe. \"You look like you have been feeling things on television, which is what we are here for.\" {a} laughs. The laugh helps more than the wipe.",
       "{a} and {b} end up at the same mirror at the same time. Fixing lips and lashes side by side, elbows almost touching. Neither acknowledges it. You do not go back on that stage without your face right, and you do not let anybody else go back without theirs right either.",
       "{b} goes \"hold still\" and fixes something on {a}'s lash that {a} could not see. Takes four seconds. {a} goes \"thank you\" and means it beyond the lash. {b} goes \"of course\" and means it beyond the lash too.",
     ],
@@ -624,10 +624,13 @@ export const UNTUCKED_EVENTS = [
   ev({
     id: 'putting-the-face-back', phase: 'late', cast: 'solo', weight: 2,
     note: 'She has cried it off and has about ninety seconds to be somebody else.',
-    when: f => true, effects: { pop: { a: 1 } },
+    /* She has to have had something to cry about. This fired for anybody,
+       so a queen coming off a top critique spent Untucked repairing a face
+       nobody had seen her lose. */
+    when: f => f.inBottom || f.callA === 'LOW', effects: { pop: { a: 1 } },
     lines: [
       "{a} has ninety seconds and a mirror. Works fast — concealer first, then powder, then the lip, then the lash. By the time she is done you would not know she had been crying unless you looked at her eyes.",
-      "She wipes everything off and starts again. There is no time to start again. {a} starts again anyway because the face she had on was the face of somebody who had been told bad news, and the face she needs is the face of somebody who can take it. Finishes with eleven seconds to spare.",
+      "{a} wipes everything off and starts again. There is no time to start again. She starts again anyway because the face she had on was the face of somebody who had been told bad news, and the face she needs is the face of somebody who can take it. Finishes with eleven seconds to spare.",
       "{a} is rebuilding her mug — systematic, fast, no wasted motion. Somebody offers to help. {a} goes \"I have got it\" without looking up because looking up would mean stopping and stopping would mean thinking about what she looks like right now.",
       "The mirror shows the damage and {a} fixes it layer by layer. Primer. Powder. Liner. When she clicks the compact shut and stands up she looks like a person who has not cried in years. That is a kind of drag all by itself.",
     ],

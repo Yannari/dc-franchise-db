@@ -162,32 +162,35 @@ export const BRIEF_FAMILIES = [
         'A group number means a team, and a team means witnesses, and {a} is about to be the reason the choreography looks uneven and everybody in the room can do that math.',
       ]),
     ]),
-  fam('rumix', true,
+  /* NOT SOLO. It was flagged solo, and the brief duly told the room "No
+     teams. No partners" and "stand on the stage alone" — over a challenge
+     whose whole cast performs one routine together, each with her verse. */
+  fam('rumix', false,
     'A track, and a verse each to write and record. Writing is the challenge; '
     + 'the booth decides what survives it, and she performs it live.',
     tier('brief', 'A verse to write, a booth to record it in, and a live stage tonight.', [
-      'This week is {c} — every queen writes her own verse to one track, records it in the booth, and performs it live on the main stage tonight. No teams. No partners. The verse is the challenge.',
+      'This week is {c} — every queen writes her own verse to one track, records it in the booth, and performs it live on the main stage tonight, the whole cast in one number. The choreography is shared. The verse is hers.',
       'For {c}, every queen writes four bars, records them with a vocal coach, and then performs the whole thing live. The track is shared. The verse is hers. The booth is the test and the stage is the proof.',
       '{c} asks for a verse. Written today. Recorded today. Performed tonight. The host explains the order — write, booth, stage — and the room does the maths on how many hours that leaves for four bars.',
-      'The host announces {c}: a verse challenge. Write the bars. Record them. Stand on the stage alone and perform them live to the track. \"You are all solo this week,\" she says. \"There is nobody to hide behind.\"',
+      'The host announces {c}: a verse challenge. Write the bars. Record them. Then the whole cast learns one routine and performs the track live. \"Everybody is on that stage,\" he says. \"But when your verse comes, it is your verse, and there is nobody to hide behind.\"',
     ]),
     [
-      tier('delighted', 'She writes, and a verse is the one thing here she can do alone.', [
+      tier('delighted', 'She writes, and a verse is the part of this she owns outright.', [
         '{a} writes. She has always written. A verse challenge is the week she packed for — bars come naturally, the booth is a formality, and the stage is where she gets to prove it. She is already scribbling.',
         'The brief lands and {a} is grinning. She writes bars the way other queens sew gowns — fast, confident, and with a style the room recognises. This is her week and she knows it before the host finishes talking.',
-        '{a} hears verse challenge and exhales. This is the one. No teams to carry her, no teams to drag her. Just her words, her voice, her stage. \"Finally,\" she mouths.',
-        'A verse is the one thing {a} can do alone, and alone is how she does her best work. She has four bars in her head before the host has finished the brief. The booth will be a formality.',
+        '{a} hears verse challenge and exhales. This is the one. Whatever the routine does, sixteen bars of it are going to be her words in her voice. \"Finally,\" she mouths.',
+        'A verse is the one part of a group number {a} gets to write herself, and writing is how she does her best work. She has four bars in her head before the host has finished the brief. The booth will be a formality.',
       ]),
       tier('braced', 'She can write or she can sing, and this asks for both in one day.', [
         '{a} can write. She cannot sing, exactly, but she can sell a verse if the verse is strong enough. The brief is manageable. The booth is the part she is worried about.',
         'The verse she can handle. The booth is the question mark. {a} has written bars before — not professionally, not under pressure — and a vocal coach watching her record them is a different thing from writing them alone at a mirror.',
-        '{a} nods through the brief. She can do this. She has enough rhythm to scan four bars and enough nerve to stand on a stage alone. Whether the booth turns that into a verse the panel wants to hear is the question she cannot answer yet.',
+        '{a} nods through the brief. She can do this. She has enough rhythm to scan four bars and enough nerve to step forward when her verse comes. Whether the booth turns that into a verse the panel wants to hear is the question she cannot answer yet.',
         'A verse challenge. {a} can write, and she can perform, and the recording session in between is the part where either of those skills might fail to translate. \"I just need the bars to be good,\" she tells herself. The bars have to be good.',
       ]),
       tier('dreading', 'She has never written a bar in her life and it is going on tape.', [
         '{a} has never written a verse. Not a bar. Not a hook. Not a line. She is a queen who performs other people\'s words and today the words have to come from her and they have to come by tonight.',
         'The brief drops and {a} goes quiet. She cannot write lyrics. She has never been able to. The booth is going to record whatever she manages to put on paper and the panel is going to hear the recording and the recording is going to be honest.',
-        '{a} picks up a pen and puts it down. The pen is the problem. The verse is the problem. She is a performer, not a writer, and a solo verse challenge is the week that makes that distinction into a verdict.',
+        '{a} picks up a pen and puts it down. The pen is the problem. The verse is the problem. She is a performer, not a writer, and a verse challenge is the week that makes that distinction into a verdict.',
         'A verse. Written today. Recorded today. Performed tonight. {a} is staring at a blank page and the page is going to be on tape in six hours. \"Girl,\" she says to nobody. That is all she says.',
       ]),
     ]),

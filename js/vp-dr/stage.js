@@ -19,6 +19,7 @@
 // view rather than from the call, so a MIXED plate beside a PRAISE plate is
 // a real disagreement and not decoration. The rail carries the panel's
 // running ranking, which is what the viewer is actually watching.
+import { reactionLabel } from '../dr/data/stage-beats.js';
 import { campaignStage, applyStage } from './save.js';
 import { _shell, _portrait, _judgePortrait, _icon, _note, _roomRail, _allianceRail, _pairRail, ROOM_RAIL_CSS } from './style.js';
 // Borrowed for the untucked consequence row — same fact, same badge.
@@ -751,7 +752,7 @@ export function rpBuildCritiques(row) {
       </div>
       ${cards}
       ${reactions[name]
-    ? `<div class="dr-react">She takes it: <b>${esc(reactions[name])}</b>.
+    ? `<div class="dr-react">She takes it: <b>${esc(reactionLabel(reactions[name]))}</b>.
         ${reactionSaid.get(name)
       ? `<p style="margin:6px 0 0;color:#f4e3ed;line-height:1.6">${esc(reactionSaid.get(name))}</p>`
       : ''}</div>` : ''}

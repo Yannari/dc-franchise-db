@@ -40,6 +40,7 @@ import { _shell, _portrait, _icon, _note, _judgePortrait } from './style.js';
 import { _controls, _seedRail, _state, _reapplyVisibility } from './reveal.js';
 import { JUDGES } from '../dr/data/judges.js';
 import { maxiById } from '../dr/data/challenges.js';
+import { buysLabel } from '../dr/data/minis.js';
 import { sceneCard, WERK_CSS } from './werk.js';
 import { characterById } from '../dr/data/snatch-characters.js';
 import { rpBuildTournament } from './smackdown.js';
@@ -1459,7 +1460,11 @@ export function rpBuildMini(row) {
      announced the winner before the challenge it is a recording of had been
      watched. The rail did the same at every index. The prize is the right
      thing to open with; the winner is the thing the last click is for. */
-  const prize = esc(BUYS[m.buys] || m.buys || 'the bragging rights');
+  /* In the week's own terms: "the right to hand out the partners" on a
+     makeover, not "first choice when the parts go out". See `buysLabel`. */
+  const weekMaxi = maxiById(row?.dr?.challenge?.id) || null;
+  const prizeText = BUYS[m.buys] ? buysLabel(m.buys, weekMaxi) : (m.buys || 'the bragging rights');
+  const prize = esc(prizeText);
   const lead = `<div class="dr-brief">
     <span class="dr-fmt">Mini challenge</span>
     <h3 class="dr-disp">${esc(m.name)}</h3>
@@ -1604,7 +1609,7 @@ export function rpBuildMini(row) {
     return at ? { t: 'read', who, at, tier: d.tier } : { t: 'say', who };
   });
   if (m.winner) miniList.push({ t: 'win', who: m.winner });
-  const miniSt = miniStage(row, miniList, { ep, room: miniRoom, name: m.name, prize: BUYS[m.buys] || '', uid: `mn${ep.num}` });
+  const miniSt = miniStage(row, miniList, { ep, room: miniRoom, name: m.name, prize: BUYS[m.buys] ? prizeText : '', uid: `mn${ep.num}` });
   wireStage('mini', miniSt, ep, _state);
   return `<style>${CHAL_CSS}${WERK_CSS}${CHAL_STAGE_CSS}</style>${_shell(
     `${miniSt.html}<div class="dr-brief-room chx-cards">${briefSet('mini')}${lead}${steps}${winStep}</div>`, ep, {
@@ -2195,7 +2200,13 @@ export function rpBuildChoice(row) {
 
   const seat = (who, p, idx) => {
     const took = _choiceLabel(p);
-    const shared = (byChoice[String(p?.choice ?? '')] || []).filter(n => n !== who);
+    /* A PARTNER IS NOBODY ELSE'S. On a loved-ones makeover every queen's
+       "choice" is a relation — Her Mother, Her Twin — so two queens who each
+       brought their own mother were drawn as a collision: "Her Mother also
+       Velvet Vixen", as though they were sharing one woman. A paired pick is
+       a person, and a person is not a part two queens can land on. */
+    const shared = p?.paired ? []
+      : (byChoice[String(p?.choice ?? '')] || []).filter(n => n !== who);
     const wanted = p?.wanted && p.wanted !== p.choice ? _choiceLabel({ choice: p.wanted }) : '';
     /* ── A NEAR MISS IS A RIVALRY; A LONG FALL IS THE ORDER ──
        `lostTo` names whoever holds her FIRST choice however far down she went,

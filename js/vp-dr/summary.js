@@ -297,6 +297,12 @@ export function generateDragSummaryText(row) {
     eliminated: Object.keys(dr.record || {})
       .filter(n => !(dr.living || []).includes(n)),
     phase: dr.finale ? 'finale' : 'competition',
+    /* THE WHOLE CAST, off the row as well. Left to the header it reads the
+       live `players` global, which is empty in every headless tool and holds
+       a DIFFERENT season's cast once another one is loaded -- the block
+       printed with nothing under it. The record knows every queen who has
+       placed, and the room knows anybody who has not yet. */
+    cast: [...new Set([...Object.keys(dr.record || {}), ...(dr.living || [])])].sort(),
   })) ln(line);
 
   const screens = dragScreensRevealed(row);

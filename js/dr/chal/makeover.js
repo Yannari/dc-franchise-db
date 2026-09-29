@@ -49,7 +49,9 @@ export const PARTNER_POOLS = {
   'loved-ones': [crew('her mother', 4), crew('her brother', 6), crew('her sister', 8),
     crew('her father', 3), crew('her cousin', 7), crew('her best friend', 9),
     crew('her aunt', 5), crew('her nephew', 6), crew('her uncle', 3),
-    crew('her twin', 9), crew('her neighbour', 5), crew('her drag mother', 10)],
+    /* No twin: it asserted a sibling no queen's biography has, and two
+       queens drew one on the same night. */
+    crew('her neighbour', 5), crew('her drag mother', 10), crew('her grandmother', 4)],
   // Built at run time from the queens already sent home.
   eliminated: null,
   // And from the franchise itself — see `alumniPartners` below.

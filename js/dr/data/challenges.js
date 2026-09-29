@@ -180,3 +180,39 @@ export const MAXI_TYPES = [
 export function maxiById(id) {
   return MAXI_TYPES.find(m => m.id === id) || null;
 }
+
+/* ── WHERE IN A SEASON EACH CHALLENGE HAPPENS ──
+   `[from, to]` as a fraction of the weeks before the finale: 0 is the
+   premiere, 1 the last week before it. Read off the episode tables of US
+   seasons 9–17 on the fandom wiki (the "Maxi Challenge" line of every
+   episode), not remembered:
+
+     Snatch Game   S9 6/12  S11 8/12  S12 6/12  S13 9/14  S14 10/14  S16 8/14  S17 7/14
+     Makeover      S9 10/12 S10 10/12 S11 11/12 S12 10/12 S13 10/14 S15 13/14 S16 13 S17 13
+     Rumix         S9 12/12 S10 12/12 S11 12/12 S14 14/14 S15 14/14 — the week before the finale
+     Stand-up      S9 8  S11 10  S12 11  S13 12  S14 13  S15 11  S16 11  S17 10, 12
+     Ball          S10 4  S12 4  S13 5  S14 3  S16 3  S17 6  (S9 11, S15 9 the outliers)
+     Girl groups   S14 8  S15 6  S16 5
+     Premieres     talent show (S14, S16, S17), design (S10, S11), runway (S9)
+
+   The scheduler booked the six tentpoles uniformly anywhere in weeks 2..N-2
+   and the fillers with no sense of time at all, so a played season opened on
+   a fourteen-queen Rumix, ran the Makeover in week two and the Snatch Game
+   with five left. A window is where a challenge BELONGS; the scheduler
+   prefers it and only leaves it when nothing else fits. */
+export const SEASON_WINDOW = {
+  'talent-show': [0, 0.1], design: [0, 1], 'runway-challenge': [0, 1], photoshoot: [0, 0.6],
+  choreography: [0, 0.5], acting: [0.05, 0.85], singing: [0.05, 0.7], improv: [0.1, 0.75],
+  commercial: [0.1, 1], 'girl-group': [0.1, 0.55], rusical: [0.1, 0.85], ball: [0.1, 0.8],
+  'snatch-game': [0.3, 0.7], 'lipsync-challenge': [0.35, 0.8], 'music-video': [0.4, 1],
+  roast: [0.5, 0.95], 'stand-up': [0.5, 0.95], makeover: [0.65, 1], rumix: [0.8, 1],
+};
+
+/* ── AND HOW MANY QUEENS IT CAN HOLD ──
+   A Rumix is a verse each on one track: the real ones run four to seven
+   queens (the split premieres of S12/S13 are half a cast). Fourteen verses is
+   not a song. */
+export const MAX_CAST = { rumix: 8 };
+
+/** Where `id` sits in a season, or everywhere if nobody has said. */
+export const windowOf = id => SEASON_WINDOW[id] || [0, 1];

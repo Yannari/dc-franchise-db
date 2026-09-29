@@ -108,3 +108,31 @@ export const MINI_TYPES = [
 export function miniById(id) {
   return MINI_TYPES.find(m => m.id === id) || null;
 }
+
+/* ── WHAT THE WIN IS WORTH, THIS WEEK ──
+   `buys` above is what a mini is USUALLY played for. What it can buy depends
+   on the maxi it sits in front of: a captaincy on a week with no teams, or
+   "first choice when the parts go out" on a makeover, promised the room a
+   power the week never used — read on a played premiere, where Quick Drag
+   bought "the captaincy, and the right to pick the teams" in front of a solo
+   Rumix. So the power follows the week's assignment, and a week with nothing
+   to hand out (a Ball, a design week, a cast the host assigns) is played for
+   money, which is what most real minis are played for anyway. */
+export function buysFor(buys, maxi) {
+  if (!maxi) return buys;
+  if (buys === 'prize') return 'prize';
+  if (maxi.assignment === 'captains') return 'captain';
+  if (maxi.assignment === 'draft') return buys === 'captain' ? 'pick-order' : buys;
+  return 'prize';
+}
+
+/** The prize as a noun phrase, in this week's own terms. */
+export function buysLabel(buys, maxi = null) {
+  if (buys === 'captain') return 'the captaincy, and the right to pick the teams';
+  if (buys === 'prize') return 'a cash prize';
+  const first = buys === 'first-pick';
+  if (maxi?.id === 'makeover') return 'the right to hand out the partners';
+  if (maxi?.roles === 'characters') return first ? 'first pick of the characters' : 'first choice of character';
+  if (maxi?.roles === 'slots') return first ? 'first pick of the verses and spots' : 'first choice when the spots go out';
+  return first ? 'first pick of the draft' : 'first choice when the parts go out';
+}

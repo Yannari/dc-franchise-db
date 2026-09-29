@@ -22,7 +22,7 @@ import { STAGE_BEATS } from './data/stage-beats.js';
 import { UNTUCKED_EVENTS, UNTUCKED_PHASES } from './data/untucked-events.js';
 import { CHALLENGE_BEATS } from './data/challenge-beats.js';
 import { mentorForBeat } from './data/judges.js';
-import { MAXI_EVENTS } from './data/maxi-events.js';
+import { MAXI_EVENTS, eventAgreesWithTier, leanTier } from './data/maxi-events.js';
 import { performanceFor, familyForChallenge } from './data/maxi-performance.js';
 import { briefLinesFor, reactionLinesFor } from './data/brief-voices.js';
 import { miniLinesFor, miniNamesOther, lineOf } from './data/mini-voices.js';
@@ -112,6 +112,23 @@ const pick = (lines, rng, used = null, key = '') => {
   return chosen;
 };
 
+/** Like `pick`, but NULL once every line of the pool has been used tonight.
+ *  For beats that are colour rather than result — a queen who gets no card for
+ *  it has lost nothing — where a verbatim repeat reads as a glitch. The
+ *  walkthrough printed one paragraph six times in one prep room. */
+const pickFresh = (lines, rng, used, key = '') => {
+  if (!lines || !lines.length) return null;
+  const fresh = lines.filter(l => !used.has(key + '\u0000' + l));
+  if (!fresh.length) return null;
+  const chosen = fresh[Math.floor(rng() * fresh.length)];
+  used.add(key + '\u0000' + chosen);
+  return chosen;
+};
+
+/* Maxi events whose card is colour, not consequence: skipped once the night's
+   lines are spent. The host does not visit every station on camera. */
+const COLOUR_EVENTS = new Set(['walkthrough', 'read-missed', 'read-landed', 'help', 'shunned']);
+
 /* ── EVERY PLACEHOLDER THIS FILE KNOWS ──
    Destructured, so a key the caller passes and this list does not name is
    silently dropped and its `{x}` ships to the screen verbatim. That happened
@@ -162,6 +179,15 @@ function fractionalRank(name, scores) {
 }
 
 const tierAt = (frac, table) => (table.find(([cut]) => frac <= cut) || table[table.length - 1])[1];
+
+/** Every queen's performance tier, off the same rank the cards use, so the
+ *  event renderer can ask whether an event agrees with the night she had. */
+export function performanceTiers(living = [], performances = {}) {
+  const scores = Object.fromEntries(
+    living.filter(n => performances[n]).map(n => [n, performances[n].perf]));
+  return Object.fromEntries(Object.keys(scores)
+    .map(n => [n, tierAt(fractionalRank(n, scores), PERF_TIERS)]));
+}
 
 /**
  * Every beat of the main stage, in one pass.
@@ -553,13 +579,32 @@ export function renderStageBeats({
      and do not appear here at all — the host announces the shape of the night
      instead and the queens go and rank each other. Returning early is the
      point: everything below this is the panel talking. */
-  emit(beatById('deliberation'), contested.length ? 'split' : 'agreed', []);
+  /* ── A CHAMPION WHO JUST PANNED HER IS NOT A CHAMPION ──
+     "Highest of the panel" is relative: on a night the whole panel has a
+     queen near the bottom, the judge who has her twelfth of fourteen is still
+     the one who ranked her best — and argued FOR her, "the argument is the
+     performance itself", three cards after telling her the verse was filler.
+     Read on a played premiere, twice in two episodes. So each side has to
+     agree with what that judge said to her face: nobody champions a queen she
+     panned, nobody dismisses one she praised. Asked BEFORE the opening line,
+     which has to promise only the arguments that follow it. */
+  const sidesAgree = row => {
+    const ids = Object.keys(views).filter(id => rankOf(id, row.name) !== null);
+    if (ids.length < 2) return false;
+    const sorted = [...ids].sort((x, y) => rankOf(x, row.name) - rankOf(y, row.name));
+    const toneBy = id => (critiques.find(c => c.queen === row.name
+      && (c.judgeId === id || c.judgeName === nameOf(id))) || {}).tone;
+    return toneBy(sorted[0]) !== 'pan' && toneBy(sorted[sorted.length - 1]) !== 'praise';
+  };
+  const argued = contested.filter(sidesAgree);
+  emit(beatById('deliberation'), argued.length ? 'split' : 'agreed', []);
   for (const row of contested) {
     const ids = Object.keys(views).filter(id => rankOf(id, row.name) !== null);
     if (ids.length < 2) continue;
     const sorted = [...ids].sort((x, y) => rankOf(x, row.name) - rankOf(y, row.name));
     const forId = sorted[0];
     const againstId = sorted[sorted.length - 1];
+    if (!sidesAgree(row)) continue;
     // What they are actually fighting over, rather than what each of them
     // happens to weight most — see divergentTastes for why those differ.
     const { forTaste, againstTaste } = divergentTastes(seatOf(forId), seatOf(againstId));
@@ -1142,6 +1187,9 @@ export function renderChallengeBeats({
      docs/ADDING-A-SHOW.md about it.
      Passed in rather than recomputed, so what is drawn is what happened. */
   moduleScenes = [],
+  /* The challenge's own events, so a middling queen's line can lean toward
+     what one of them says happened — see `leanTier` in maxi-events.js. */
+  maxiEvents = [],
 }) {
   const scenes = [];
   const usedLines = new Set();
@@ -1160,6 +1208,13 @@ export function renderChallengeBeats({
     const t = beat.tiers.find(x => x.id === tierId) || beat.tiers[0];
     if (!t) return;
     if (!t.lines || !t.lines.length) return;  // see the note on the emit above
+    /* The host calling the next queen up is colour: once its lines are spent
+       the card is dropped rather than printed again. See `pickFresh`. */
+    const lineKey = `${beat.id}/${t.id}`;
+    const line = beat.id === 'mini-turn'
+      ? pickFresh(t.lines, rng, usedLines, lineKey)
+      : pick(t.lines, rng, usedLines, lineKey);
+    if (!line) return;
     scenes.push({
       step: step || beat.step,
       kind: `chal:${beat.id}`,
@@ -1173,7 +1228,7 @@ export function renderChallengeBeats({
           ? { mentor: { id: mentorOf(beat.id).id, name: mentorOf(beat.id).name } } : {}),
         ...extra,
       },
-      text: fill(pick(t.lines, rng, usedLines, `${beat.id}/${t.id}`),
+      text: fill(line,
         /* `{m}` IS WHOEVER RAN THE ROOM. The booth and the shoot were written
            around "the director" and "the vocal producer" — an unnamed stranger
            handing out notes that move a result. Michelle runs both and Jamal
@@ -1295,6 +1350,18 @@ export function renderChallengeBeats({
         return;
       }
       const t = beat.tiers.find(x => x.id === tierId) || beat.tiers[0];
+      /* A SPENT POOL. The turn line is only the host calling her up, so once
+         its lines are gone the card is dropped rather than printed a second
+         time. A read is her card and is kept — but first it looks for an
+         unused line in the mini's whole tier before settling for a repeat. */
+      const mkey = `mini/${mini.id}/${tierId}`;
+      let line = pickFresh(lines, rng, usedLines, mkey);
+      if (!line && beatId === 'mini-turn') return;
+      if (!line) {
+        const wider = (miniLinesFor(mini.id, tierId, null) || [])
+          .filter(l => who[1] || !/\{b\}/.test(String(l)));
+        line = pickFresh(wider, rng, usedLines, mkey) || pick(lines, rng, usedLines, mkey);
+      }
       scenes.push({
         step: beat.step,
         // `chal:`, matching every other beat this renderer emits. The stage
@@ -1306,7 +1373,7 @@ export function renderChallengeBeats({
           note: fill(t.note, { a: who[0], b: who[1], c: mini.name }),
           mini: mini.id, voiced: true, angle, ...extra,
         },
-        text: fill(lineOf(pick(lines, rng, usedLines, `mini/${mini.id}/${tierId}`)),
+        text: fill(lineOf(line),
           { a: who[0], b: who[1], c: mini.name }),
       });
     };
@@ -1749,7 +1816,8 @@ export function renderChallengeBeats({
   for (const n of living) {
     if (!performances[n]) continue;
     const tierId = tierAt(fractionalRank(n, perfScores), PERF_TIERS);
-    const tier = family.tiers.find(t => t.id === tierId) || family.tiers[2];
+    const herEvents = (maxiEvents || []).filter(e => (e.players || [])[0] === n).map(e => e.type);
+    const tier = family.tiers.find(t => t.id === leanTier(tierId, herEvents)) || family.tiers[2];
     /* ── A FAMILY CAN SHIP AHEAD OF ITS PROSE, AND MUST NOT SHIP SILENT ──
        `pick` on an empty pool returns nothing and `fill` turns that into an
        empty string, so a family whose tiers are not written yet would push a
@@ -1811,6 +1879,11 @@ export function renderMaxiEventScenes(events, {
      Six of them in one prep room, none of them addressed.
      Empty on every other challenge, where `{d}` simply does not appear. */
   partners = {},
+  /* `{ name: tier }` from `performanceTiers`. An event that contradicts the
+     night the queen actually had is not narrated — its bond and popularity
+     effects have already been applied, and a sentence saying the opposite of
+     her score is worse than no sentence. */
+  tiers = {},
 } = {}) {
   const scenes = [];
   const used = new Set();
@@ -1818,6 +1891,7 @@ export function renderMaxiEventScenes(events, {
     const spec = MAXI_EVENTS.find(x => x.id === ev.type);
     if (!spec) continue;
     const who = ev.players || [];
+    if (spec.cast !== 'pair' && !eventAgreesWithTier(ev.type, tiers[who[0]])) continue;
     /* WHERE THE EVENT HAPPENS, which the event has always known and this
        renderer always ignored. Every entry in maxi-events.js carries a
        `from` — and four of them say `prep`, meaning the werk room while the
@@ -1893,6 +1967,10 @@ export function renderMaxiEventScenes(events, {
        `if (!t.lines || !t.lines.length) return;` in both of them. */
     const pool = familyLines || spec.lines;
     if (!pool || !pool.length) continue;
+    const lineKey = familyLines ? `${ev.type}/${family}` : ev.type;
+    const chosenLine = COLOUR_EVENTS.has(ev.type)
+      ? pickFresh(pool, rng, used, lineKey) : pick(pool, rng, used, lineKey);
+    if (!chosenLine) continue;
     scenes.push({
       step: at,
       kind: `maxi:${ev.type}`,
@@ -1907,9 +1985,9 @@ export function renderMaxiEventScenes(events, {
         ...(familyLines ? { family, voiced: true } : {}),
       },
       text: familyLines
-        ? fill(pick(familyLines, rng, used, `${ev.type}/${family}`),
+        ? fill(chosenLine,
           { a: who[0], b: who[1], c: maxiName, d: partners[who[0]] || '' })
-        : fill(pick(spec.lines, rng, used, ev.type),
+        : fill(chosenLine,
           { a: who[0], b: who[1], c: maxiName, d: partners[who[0]] || '' }),
     });
   }

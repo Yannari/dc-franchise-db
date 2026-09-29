@@ -80,7 +80,7 @@ export const MAXI_EVENTS = [
       "{a} walks out and the look she built this morning stops the room. She had the same fabric as everybody else and the same glue guns and the same number of hours, and what she made out of those materials is so far beyond what the brief asked for that one of the judges mouths something to the other that does not get picked up by the mic.",
       "The garment she built is the garment nobody believed she could build. The construction is clean, the concept is fully realised, and the walk sells it with the authority of somebody wearing couture rather than something she hot-glued together at dawn. The panel leans forward. The queens backstage go quiet.",
       "Whatever {a} did in the werk room, she did it at a level that makes the ball her night. The look is structured, it moves correctly, and the finishing is so clean that the judges are going to have to ask her how she did it, because the materials on the wall do not explain what is on the runway.",
-      "She built something extraordinary and the room knows it before she reaches the end of the runway. The proportions are right, the silhouette is right, and the thing she made out of unconventional materials looks like it was made out of exactly the right materials. The ball has a winner and the winner just walked.",
+      "{a} built something extraordinary and the room knows it before she reaches the end of the runway. The proportions are right, the silhouette is right, and the thing she made out of unconventional materials looks like it was made out of exactly the right materials. The ball has a winner and the winner just walked.",
     ],
   }),
 
@@ -153,7 +153,7 @@ export const MAXI_EVENTS = [
     lines: [
       "{a} is in the number and the number runs and {a} is in it for all of it and none of it lands. She hits her marks, she mouths the words, she does the choreography, and at no point during the entire run does anybody on the panel look at her, because there is nothing to look at. She is present and invisible and on this night those are the same thing.",
       "The worst note the panel can give is not \"you were bad.\" The worst note is \"I did not see you.\" {a} is in the ensemble and the ensemble performs and {a} performs inside it and the performing disappears into the formation the way a single instrument disappears into an orchestra that is not listening for it.",
-      "She is there. She is in every scene she is supposed to be in, in every position she was given, wearing the costume, doing the choreography. And the critique that is coming — the critique that will sit in her chest for the rest of the week — is that none of that mattered, because the panel did not notice she was on stage.",
+      "{a} is there. She is in every scene she is supposed to be in, in every position she was given, wearing the costume, doing the choreography. And the critique that is coming — the critique that will sit in her chest for the rest of the week — is that none of that mattered, because the panel did not notice she was on stage.",
       "{a} does the rusical and the rusical does not need her. She sings her lines, she hits her spots, and she produces a performance that is technically correct and completely forgettable, which on a night where everybody else is fighting for camera time is the same as not being there at all.",
     ],
   }),
@@ -337,10 +337,10 @@ export const MAXI_EVENTS = [
   }),
   e({
     id: 'no-verse', from: 'rumix', cast: 'solo',
-    note: 'Four bars of filler. There is no verse, and a solo stage cannot hide that.',
+    note: 'Four bars of filler. There is no verse, and her spot in the number cannot hide that.',
     lines: [
-      '{a} has four bars and none of them say anything. Not a punchline. Not a reveal. Not a single line the cast will remember five minutes after the track ends. The verse is filler — words arranged to rhyme that do not add up to a verse, and on a solo stage there is nothing else to look at.',
-      'There is no verse. {a} has four bars of rhyming words that scan on the beat and say absolutely nothing. A girl group can hide a weak verse behind choreography and a strong partner. A solo stage puts the verse in a spotlight and the spotlight is honest.',
+      '{a} has four bars and none of them say anything. Not a punchline. Not a reveal. Not a single line the cast will remember five minutes after the track ends. The verse is filler — words arranged to rhyme that do not add up to a verse, and when it is her turn at the front there is nothing else to look at.',
+      'There is no verse. {a} has four bars of rhyming words that scan on the beat and say absolutely nothing. The chorus can hide a weak voice behind the rest of the cast. A verse puts one queen in the spotlight and the spotlight is honest.',
       '{a} wrote filler and performed it like filler. The bars rhyme. They scan. They take up the right amount of time on the track. None of them hit. A verse needs one line the room remembers, and {a}\'s verse has zero.',
       'Four bars. Four chances to write something that lands. {a} used all four on setup and never arrived at a punchline. The verse sounds like the part of a song you skip to get to the part of the song that matters, except the part that matters never comes.',
     ],
@@ -783,7 +783,7 @@ export const MAXI_EVENTS = [
     lines: [
       "{a} drops the line. Not a stumble, not a paraphrase — a full stop, mid-sentence, on camera, with the scene still running around her. There is no second take. The cameras keep rolling and {a} stands in the middle of a scene she is no longer in, mouth open, reaching for words that were in her head ten seconds ago and are not there now.",
       "The line is gone. {a} had it in rehearsal, she had it in the walk-through, and it left her the moment the camera was live. She stops. The scene does not stop. The other queens keep acting and {a} is standing in the frame like a person who walked into the wrong room.",
-      "She forgets the line on camera and there is no second take and the forgetting becomes part of the scene — a character who was supposed to speak and instead produced three seconds of visible panic that will be in the edit because the edit does not have anything else to cut to.",
+      "{a} forgets the line on camera and there is no second take and the forgetting becomes part of the scene — a character who was supposed to speak and instead produced three seconds of visible panic that will be in the edit because the edit does not have anything else to cut to.",
       "{a} opens her mouth and the line is not there. The scene continues past her like a train she was supposed to be on and is now watching leave. No second take. No reset. She stands in the shot and the standing is what makes it into the final cut.",
     ],
   }),
@@ -999,4 +999,57 @@ export const MAXI_EVENT_IDS = MAXI_EVENTS.map(x => x.id);
 
 export function unwrittenMaxiEvents() {
   return MAXI_EVENTS.filter(x => !x.lines || x.lines.length < 4).map(x => x.id);
+}
+
+/* ── WHICH WAY AN EVENT SAYS THE NIGHT WENT ──
+   An event is decided on ONE part of a challenge — the Ball's sewn look, the
+   Rumix's written bars, a single Snatch Game exchange — and the performance
+   line underneath it is drawn from the WHOLE night's rank. The two used to be
+   drawn independently, so the same card read "the look she built stops the
+   room" beside a wardrobe malfunction, and "Taystee has a verse. The bars
+   scan" beside "There is no verse". Measured on four played seasons: 19
+   down-events on a strong or extraordinary performance, 9 up-events on a
+   struggling one.
+
+   `down` asserts she failed at something the panel will see, `up` that she
+   excelled, `mild` a slip the night can survive, `mid` a middle-of-the-road
+   outcome ("the booth saved a shaky verse"). Unlisted events assert nothing
+   about quality and are never filtered. js/dr/stage.js reads this through
+   `eventAgreesWithTier` and `leanTier`. */
+export const MAXI_EVENT_TONE = {
+  dying: 'down', 'wardrobe-malfunction': 'down', 'bad-verse': 'down', invisible: 'down',
+  bombed: 'down', 'stunt-failed': 'down', 'wrong-talent': 'down', 'booth-lost-it': 'down',
+  'no-verse': 'down', 'director-wrote-her-off': 'down', 'lost-in-the-background': 'down',
+  'dropped-a-line': 'down', 'one-note': 'down', 'tagline-died': 'down', froze: 'down',
+  'blank-frame': 'down', 'blew-the-formation': 'down', 'cracked-a-note': 'down',
+  'forgot-the-lyric': 'down', 'repeated-herself': 'down', 'lost-the-words': 'down',
+  'left-to-hang': 'down', 'dressed-herself-better': 'down',
+  'shaky-on-the-words': 'mild', 'ignored-the-note': 'mild', 'took-a-bad-note': 'mild',
+  showstopper: 'up', 'verse-of-the-week': 'up', 'roasted-the-panel': 'up', 'stunt-landed': 'up',
+  'quotable-bar': 'up', 'director-loved-her': 'up', 'found-the-angle': 'up', 'ran-with-it': 'up',
+  'used-the-set': 'up', 'nailed-the-solo': 'up', 'sang-it-out': 'up', 'host-played-along': 'up',
+  'booth-rescue': 'mid',
+};
+
+/** Whether an event can be narrated beside a performance of this tier. */
+export function eventAgreesWithTier(id, tier) {
+  const tone = MAXI_EVENT_TONE[id];
+  if (!tone || !tier) return true;
+  if (tone === 'down') return tier !== 'strong' && tier !== 'extraordinary';
+  if (tone === 'mild') return tier !== 'extraordinary';
+  if (tone === 'up') return tier !== 'struggling' && tier !== 'collapse';
+  if (tone === 'mid') return tier !== 'extraordinary' && tier !== 'collapse';
+  return true;
+}
+
+/** The tier whose WORDS a middling queen's card should use once an event has
+ *  said which way her night leaned. Only `competent` moves, one step, and only
+ *  when her events agree with each other: the rank is unchanged, the sentence
+ *  stops claiming "nothing went wrong" over the thing that went wrong. */
+export function leanTier(tier, eventIds = []) {
+  if (tier !== 'competent') return tier;
+  const tones = new Set(eventIds.map(id => MAXI_EVENT_TONE[id]).filter(Boolean));
+  if (tones.has('down') && !tones.has('up')) return 'struggling';
+  if (tones.has('up') && !tones.has('down') && !tones.has('mild')) return 'strong';
+  return tier;
 }

@@ -23,6 +23,7 @@
 //                   panel deliberates over an empty stage.
 //
 // Nothing at rest names a result. Reduced motion shows end states.
+import { reactionLabel } from '../dr/data/stage-beats.js';
 import { _portrait, _judgePortrait } from './style.js';
 import { FINALE_STAGE_CSS, shell, engine, face, quoteHtml } from './finale-stage.js';
 
@@ -344,7 +345,7 @@ export function critiquesStage(row, list, { ep, judges, guest, uid = 'x' } = {})
     ${safe ? `<div class="crx-safe" data-c="safe">${safe.safe.map((q, j) => `<span style="--dl:${(0.3 + j * 0.12).toFixed(2)}s">${face(q, ep, 54)}</span>`).join('')}</div>` : ''}
     ${queens.map(s => `<div class="crx-q" data-c="q:${esc(s.who)}">${face(s.who, ep, 92)}<b>${esc(s.who)}</b>
       <span class="crx-tally">${s.reads.map(r => `<i class="${esc(r.tone)}"></i>`).join('')}</span>
-      ${s.reaction ? `<span class="crx-react">She takes it: ${esc(s.reaction)}</span>` : ''}</div>`).join('')}
+      ${s.reaction ? `<span class="crx-react">She takes it: ${esc(reactionLabel(s.reaction))}</span>` : ''}</div>`).join('')}
     ${wsg.map(s => `<div class="crx-wsg" data-c="w:${esc(s.voter)}"><div>${face(s.voter, ep, 70)}<small>${esc(s.voter)}</small></div>${arrow}
       <div class="tgt">${face(s.target, ep, 70)}<small>${s.voter === s.target ? 'herself' : esc(s.target)}</small></div></div>`).join('')}
     ${board ? `<div class="crx-board" data-c="board">${Object.entries(board.tally).sort((a, b) => b[1] - a[1]).map(([n, k], j) => {

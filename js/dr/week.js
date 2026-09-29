@@ -26,7 +26,7 @@
 import { arrivalScenes } from './arrivals.js';
 import { dragOf, DRAG_STATS } from './queen.js';
 import { maxiById } from './data/challenges.js';
-import { miniById } from './data/minis.js';
+import { miniById, buysFor } from './data/minis.js';
 import { SONGS, songById } from './data/songs.js';
 import { runwayById } from './data/runways.js';
 import { panelFor } from './judges.js';
@@ -46,7 +46,7 @@ import { runWerkRoom, applyWerkScene } from './werk.js';
 import { runMini, applyMiniEvents } from './mini.js';
 import { critiqueLines, runReactions, whoShouldGoHome, rateAQueen } from './critiques.js';
 import { renderStageBeats, runUntucked, applyUntuckedScene, renderChallengeBeats,
-  renderMaxiEventScenes } from './stage.js';
+  renderMaxiEventScenes, performanceTiers } from './stage.js';
 import { lipsyncScore, lipsyncCall, GREAT, CLOSE } from './lipsync.js';
 import { chooseElimination } from './legacy.js';
 import { revengePairs, revengeReentry, revengeLine, pairJudging } from './revenge.js';
@@ -602,7 +602,7 @@ export function runDragWeek(state, cfg, ctx) {
       miniScores = res.scores;
       miniWinner = res.winner;
       mini = {
-        id: m.id, name: m.name, winner: miniWinner, buys: m.buys,
+        id: m.id, name: m.name, winner: miniWinner, buys: buysFor(m.buys, maxi),
         interaction: res.interaction, detail: res.detail,
         // Who reads when. The turn is the format for a targeting mini.
         turnOrder: res.turnOrder || null,
@@ -2609,6 +2609,7 @@ export function runDragWeek(state, cfg, ctx) {
       // The module's own scenes, so a beat can read back what the challenge
       // recorded rather than recomputing it. See the note on the parameter.
       moduleScenes: M.scenes || [],
+      maxiEvents,
     })) scenes.push(sc);
 
     /* ...AND NOW THE MINI'S OWN EVENTS, UNDER THE CARDS THEY BELONG TO —
@@ -2630,6 +2631,7 @@ export function runDragWeek(state, cfg, ctx) {
     // narrate none of them, so without this they reach the row as bare types.
     for (const sc of renderMaxiEventScenes(maxiEvents, {
       maxiName: maxi.name,
+      tiers: performanceTiers(living, performances),
       step: maxi.stage === 'pre' ? 'maxi-pre' : 'maxi-main', rng,
       // So the host's walkthrough note can be about this week's actual work.
       family: familyForChallenge(maxi.id).family,
@@ -2775,7 +2777,12 @@ export function runDragWeek(state, cfg, ctx) {
       // So a confessional never mentions a garment on an acting week.
       blend: maxi.blend || null,
       bond: ctx.bond, max: step === 'untucked' || step === 'results' ? 2 : 1, chance: 0.3,
-      rng: streamFor((cfg.num || 0) + 1, `confessional|${step}`),
+      /* THE SEASON'S DICE, NOT THE EPISODE NUMBER'S. This was seeded on
+         `cfg.num + 1` alone, so episode three of every season ever played
+         drew the same confessional rolls — a guard sampling sixteen seasons
+         read the same two confessionals it read with eight. Still its own
+         stream, so the week's other draws are untouched. */
+      rng: streamFor(((state.seed || 0) >>> 0) + (cfg.num || 0) * 7919 + 1, `confessional|${step}`),
     });
     for (const r of rows.slice().reverse()) {
       const c = r.scene;

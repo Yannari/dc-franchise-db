@@ -249,7 +249,12 @@ export function candidatesFor(scene, room, bond = () => 0) {
    that night, so it reads as her standing among the others rather than as
    an absolute somebody picked. */
 const CALL_VALUE = {
-  'result-win': 5, 'result-high': 4, 'result-low': 2, 'result-btm': 1.5, 'result-bottom': 1,
+  /* `result-btm` is named in the bottom and SPARED before the song: she is
+     safe, so she speaks from the LOW pool. At 1.5 she drew the lip-sync
+     queen's lines ("The bottom. Me. This week.") while being told she would
+     not sing — hidden until the confessional dice stopped being the same for
+     every season. */
+  'result-win': 5, 'result-high': 4, 'result-low': 2, 'result-btm': 2, 'result-bottom': 1,
 };
 const SURFACES = {
   runway: { id: 'runway', valueOf: sc => num(sc?.data?.score) },

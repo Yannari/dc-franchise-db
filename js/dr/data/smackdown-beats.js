@@ -55,7 +55,7 @@ export const SMACKDOWN_BEATS = [
     note: 'The champion of the bracket takes her title.',
     tiers: [tier('crown', 'A title of her own, and it is not the crown.', [
       "\"{a}.\" The host says it and the room already knew. \"You came back here and you beat every queen they put in front of you.\" She is handed her title and does not know what to do with her face. It is not the crown. It is not nothing either, and everybody on that stage understands the difference.",
-      "{a} takes it, and the cast makes more noise for her than they made for anybody all night. \"I went home in week four,\" she says, when the host asks her how it feels. \"And tonight I beat every queen they put in front of me.\" That is the whole speech and it does not need another line.",
+      "{a} takes it, and the cast makes more noise for her than they made for anybody all night. \"I went home early,\" she says, when the host asks her how it feels. \"And tonight I beat every queen they put in front of me.\" That is the whole speech and it does not need another line.",
       "The title goes to {a}, who fought through the entire bracket and looks like somebody who has just been given back a thing she thought she had lost. She holds it up. The queens who lost to her tonight are the loudest people in the room.",
       "\"The winner of the smackdown — and I do not say this lightly — is {a}.\" She wins a title, a sum of money and a night that is entirely hers, on a stage she was sent away from weeks ago. Some queens get a crown. This one got the last word.",
     ])],

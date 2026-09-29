@@ -423,7 +423,7 @@ export function callWeek(finalRanking, {
        that night: it is a win, two highs and the three named. */
     const lowWanted = down0 >= 3 ? 0 : Math.max(0, Math.min(drawFrom(LOW_TABLE) ?? 1,
       spokenFor - down0 - (room >= 5 ? 2 : 1)));
-    const up = Math.max(1, spokenFor - down0 - lowWanted);
+    const up = Math.max(1, Math.min(upFor(room) + 1, spokenFor - down0 - lowWanted));
     const called = winners.slice(0, Math.max(1, up));
     const win  = called.length ? [called[0].name] : [];
     const high = called.slice(1).map(r => r.name);
@@ -436,7 +436,9 @@ export function callWeek(finalRanking, {
     const bottomBlock = loserEligible.slice(-down);
     const bottom = bottomBlock.slice(-2);
     const atRisk = bottomBlock.slice(0, -2);
-    const lowCount = Math.max(0, Math.min(lowWanted, loserEligible.length - down));
+    const lowCount = Math.max(0, Math.min(
+      lowWanted + (down0 >= 3 ? 0 : Math.max(0, spokenFor - down0 - lowWanted - up)),
+      loserEligible.length - down));
     const low = down < loserEligible.length
       ? loserEligible.slice(Math.max(0, loserEligible.length - down - lowCount),
         loserEligible.length - down)
@@ -489,7 +491,15 @@ export function callWeek(finalRanking, {
   // A named bottom three is the lows: see the note on the team branch.
   const lowWanted = down0 >= 3 ? 0 : Math.max(0, Math.min(drawFrom(LOW_TABLE) ?? 1,
     spokenFor - down0 - (n >= 5 ? 2 : 1)));
-  const up = Math.max(1, spokenFor - down0 - lowWanted);
+  /* ── THE TOP IS THREE, AND THE SLACK GOES TO THE BOTTOM ──
+     A seven-queen stage with no LOW drawn put all of its slack at the top:
+     a win and FOUR highs, nobody warned, on a night the transcript then
+     narrated as "you were one of the best" four times over. The real stage
+     calls three up on an ordinary night and four on 18% of them, never five
+     (tools/dr-real-critique-size.py) — so `up` stops at one past `upFor(n)`
+     and whatever it cannot take becomes a LOW. */
+  const up = Math.max(1, Math.min(upFor(n) + 1, spokenFor - down0 - lowWanted));
+  const lowExtra = down0 >= 3 ? 0 : Math.max(0, spokenFor - down0 - lowWanted - up);
   /* TWO IN THE BOTTOM BLOCK, NOT THREE. The show calls a top and a bottom
      forward and sends everybody else off before a word is said, and the block
      it calls is the pair who lip sync. This returned three, which put a third
@@ -534,7 +544,7 @@ export function callWeek(finalRanking, {
      the top, three at the bottom — which is one win, two high, one low and
      the two who lip sync. Two lows made it seven and diluted a stage whose
      whole tension is that being on it means something. */
-  const lowCount = Math.max(0, Math.min(lowWanted, eligible.length - down));
+  const lowCount = Math.max(0, Math.min(lowWanted + lowExtra, eligible.length - down));
   const low = down < eligible.length
     ? eligible.slice(Math.max(0, eligible.length - down - lowCount), eligible.length - down)
     : [];

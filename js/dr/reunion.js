@@ -128,7 +128,13 @@ export function runReunion(state, cfg, ctx) {
     record: state.record,
     bond: ctx.bond,
     rows: state.episodes || [],
-    congeniality: state.congeniality || null,
+    /* ONLY A SASH THAT CANNOT MOVE. If the country's pick is a finalist she
+       may yet be crowned, and a winner cannot keep the sash — the finale then
+       hands it to the next queen on the tally. Announced here, that is two
+       Miss Congenialities in one season. So the reunion names a queen who
+       went home, and leaves a finalist's sash to the finale. */
+    congeniality: state.congeniality && !(state.living || []).includes(state.congeniality)
+      ? state.congeniality : null,
   });
 
   const used = new Set();

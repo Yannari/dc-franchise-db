@@ -111,14 +111,14 @@ export const STAGE_BEATS = [
     tiers: [
       tier('open', 'He takes the stage and the room becomes the main stage.', [
         'The lights drop and the werk room disappears and what replaces it is the main stage. The host walks out in a gown that could pay rent for a year and a wig that has its own postcode. \"Hello, hello, hello!\" she says, and the room answers her before the third hello has landed. The queens backstage can hear the heels and the heels mean the rehearsal is over.',
-        '\"Welcome to the main stage of RuPaul\'s Drag Race!\" She says it like she is surprised to be here and she is not surprised to be here and that is the bit and it works every single time. The runway lights come up and the gown catches every one of them and the room shifts from a werk room into a courtroom with better lighting.',
-        'She takes the stage heels-first, wig-first, everything-first, and the room reorganises itself around her the way a room always does when the person in it has been doing this longer than most of the queens backstage have been alive. \"Ladies,\" she says, and the word is a welcome and a warning and both of them land.',
-        'The runway lights come up and the host is already standing at the mark when the last one hits, in full drag, looking like a million dollars that was well spent. \"Oooh, girl,\" she says to nobody in particular, surveying the stage. \"Somebody is going home tonight and it is NOT going to be me.\" The panel laughs. The queens backstage do not.',
-        '\"Another day, another slay!\" The host takes the stage with the energy of a woman who has never once been underdressed for her own show. The wig is right, the mug is right, the gown is doing things that fabric should not be able to do, and the room shifts into main-stage register — which is the register where everything that happened in the werk room starts counting.',
+        '\"Welcome to the main stage of RuPaul\'s Drag Race!\" He says it like he is surprised to be here and he is not surprised to be here and that is the bit and it works every single time. The runway lights come up and the gown catches every one of them and the room shifts from a werk room into a courtroom with better lighting.',
+        'He takes the stage heels-first, wig-first, everything-first, and the room reorganises itself around him the way a room always does when the person in it has been doing this longer than most of the queens backstage have been alive. \"Ladies,\" he says, and the word is a welcome and a warning and both of them land.',
+        'The runway lights come up and the host is already standing at the mark when the last one hits, in full drag, looking like a million dollars that was well spent. \"Oooh, girl,\" he says to nobody in particular, surveying the stage. \"Somebody is going home tonight and it is NOT going to be me.\" The panel laughs. The queens backstage do not.',
+        '\"Another day, another slay!\" The host takes the stage with the energy of somebody who has never once been underdressed for his own show. The wig is right, the mug is right, the gown is doing things that fabric should not be able to do, and the room shifts into main-stage register — which is the register where everything that happened in the werk room starts counting.',
         'The runway lights hit and the host is already at the mark. \"Weeelcome!\" she says, dragging the word across three syllables and a grin. The gown tonight is red and the wig is higher than the ceiling and backstage somebody whispers \"she looks incredible\" and she does.',
-        'The lights change. The host steps out in full drag and the first thing that lands is the silence — the werk room noise dies the moment her heels hit the stage. \"Ladies and gentlemen,\" she says, \"start your engines, and may the best drag queen win.\"',
+        'The lights change. The host steps out in full drag and the first thing that lands is the silence — the werk room noise dies the moment his heels hit the stage. \"Ladies and gentlemen,\" he says, \"start your engines, and may the best drag queen win.\"',
         '\"Hello, hello, HELLO!\" The host takes the stage and every queen backstage goes quiet. The gown is new, the mug is flawless, and the room just became the main stage because the host decided it did.',
-        'She walks out like she owns the building, which she does, and stops at the mark and looks at the camera. \"Another week, another opportunity for somebody to gag me,\" she says. \"And somebody better, because this gown did not come cheap.\"',
+        'He walks out like he owns the building, which he does, and stops at the mark and looks at the camera. \"Another week, another opportunity for somebody to gag me,\" he says. \"And somebody better, because this gown did not come cheap.\"',
         'The host hits the stage in a look that could close Fashion Week and opens with a wave that includes the panel, the queens, the camera, and everybody watching at home. \"We are BACK,\" she says, like she was gone for a year instead of a commercial break.',
         'The werk room lights go down and the runway lights come up and the host is standing there in drag that makes the whole stage look like it was built for her. Which it was. \"Good evening,\" she says, and the evening starts.',
       ]),
@@ -200,7 +200,7 @@ export const STAGE_BEATS = [
         '"The incredible {j}!" The host says it and {j} smiles with the patience of a man who has been counting eights his entire career. "He is already watching your FEET, ladies, and none of you have MOVED yet," the host says to the curtain. {j} nods. The nod is on the beat of something only he can hear.',
         '"You better know your choreography tonight because THIS man will clock every missed step — {j}!" {j} waves and the wave has rhythm in it, because everything {j} does has rhythm in it. "Baby, he can tell who rehearsed by the WALK to the mark," the host says. {j} does not deny this because it is true.',
         '"He taught your favourite queen\'s favourite dance — the one, the only, {j}!" {j} raises a hand from the panel with a grin. "Are we ready?" he says. "Oh, I am ALWAYS ready," the host says. "The question is whether THEY are." She gestures at the curtain. Backstage, somebody is definitely running the routine one more time.',
-        '"And {j}!" The host says it warmly. "Now, girls — five, six, seven, EIGHT." She does a little shimmy and {j} laughs and the laugh is the laugh of a man who has spent decades in rehearsal rooms and appreciates somebody who can count. "I love when she does that," he says to the camera. "She always lands on the eight."',
+        '"And {j}!" The host says it warmly. "Now, girls — five, six, seven, EIGHT." He does a little shimmy and {j} laughs and the laugh is the laugh of a man who has spent decades in rehearsal rooms and appreciates somebody who can count. "I love when she does that," he says to the camera. "She always lands on the eight."',
       ]),
       /* ── AND THE FIVE THE HOST ACTUALLY USES ──
          The two tiers below are the fallbacks. A guest is a PERSON the
@@ -226,7 +226,7 @@ export const STAGE_BEATS = [
         "\"And joining us tonight — {k}, {j}!\" The room does not hesitate. The applause is immediate and warm and the host grins because {j} is the kind of name that brings a room up. \"Oh, we LOVE her,\" the host says. \"Can I get an amen?\" The amen comes from the panel and the audience and possibly from backstage.",
         "\"Please welcome — {k}, the beautiful {j}!\" {j} beams from the guest seat and the beaming is real and the realness is the whole point. \"Now THAT is how you receive a welcome, ladies,\" the host says. \"Take notes.\" {j} waves at the panel and the panel waves back because nobody in this room has a single complicated feeling about {j}.",
         "\"She is loved, she is HERE, and she is ready to JUDGE — {k}, {j}!\" {j} takes the chair and blows a kiss at the camera and the room catches it. The queens backstage can hear the warmth of the reaction through the curtain and the warmth tells them something about tonight: the guest chair is in good hands.",
-        "\"Joining us tonight — and I could not be MORE excited about this — {k}, {j}!\" The host claps her own hands together and the clapping is genuine. {j} sits down smiling and mouths \"thank you\" and the mouthing is not a performance — she has been loved by a franchise and has never quite gotten used to it. \"She is a DOLL,\" the host says to the camera.",
+        "\"Joining us tonight — and I could not be MORE excited about this — {k}, {j}!\" The host claps his own hands together and the clapping is genuine. {j} sits down smiling and mouths \"thank you\" and the mouthing is not a performance — she has been loved by a franchise and has never quite gotten used to it. \"She is a DOLL,\" the host says to the camera.",
         "\"A round of applause for {k} — {j}!\" The welcome is a wall of sound and {j} takes it with both hands raised and a laugh the microphones pick up. \"Oh, honey, they are going to EAT you up,\" the host says. \"Let them!\" {j} says, and the room settles with her in it, because {j} makes people calmer, not louder.",
         "\"She is sunshine in human form — {k}, {j}!\" {j} puts one hand on her chest and the gesture is gratitude and it is unguarded and the host watches her do it and says \"See? THAT is what genuine looks like, ladies\" to the curtain, where every queen is listening and at least one of them just said \"aww\" out loud.",
       ]),
@@ -247,7 +247,7 @@ export const STAGE_BEATS = [
         "\"And our guest tonight — bring your BEST, because she brought hers — {k}, {j}!\" {j} sits down and looks at the runway with the eyes of somebody who knows what a strong performance costs. \"Welcome, darling,\" the host says. {j} smiles — the kind of smile that says thank you and also says I am ready to judge. Both are true.",
       ]),
       tier('guest-scrapper', 'underdog, goat, floater. She was not supposed to get as far as she did, and everybody remembers it.', [
-        "\"And joining us tonight — {k}, {j}!\" The cheer has real affection in it and the host is grinning. \"Now NOBODY saw this one coming,\" she says, \"and that is why she is my FAVOURITE kind of story.\" {j} waves from the guest seat and the wave is grateful and the gratitude has never quite faded.",
+        "\"And joining us tonight — {k}, {j}!\" The cheer has real affection in it and the host is grinning. \"Now NOBODY saw this one coming,\" he says, \"and that is why she is my FAVOURITE kind of story.\" {j} waves from the guest seat and the wave is grateful and the gratitude has never quite faded.",
         "\"She is proof that it ain\'t OVER till it is OVER — {k}, {j}!\" {j} takes the chair and the room gives her more than she was expecting, which is how most of her season went. \"Don\'t you cry on me, {j},\" the host says. \"Not yet. Save the tears for the lip sync.\" {j} laughs and the laugh is the sound of a person still catching up to the welcome.",
         "\"Please welcome — the underdog who bit BACK — {k}, {j}!\" {j} sits down and the warmth that follows is the warmth a room gives somebody it rooted for. \"I love a comeback story, and {j} IS a comeback story,\" the host says to the camera. {j} puts a hand on her chest because the sentence is a lot to carry.",
         "\"Joining us tonight — and I personally could NOT be more proud — {k}, {j}!\" The host\'s tone has affection that goes beyond courtesy because {j}\'s season was a season where the audience picked a favourite and the favourite was the one nobody picked at the start. \"You showed them, baby,\" the host says. {j} smiles. The smile still has surprise in it.",
@@ -286,26 +286,26 @@ export const STAGE_BEATS = [
     tierBy: 'runway-kind',
     tiers: [
       tier('call', 'An ordinary themed runway: she brought it, she walks it.', [
-        "\"Gentlemen, START your engines, and may the BEST woman WIN!\" The host delivers it the way she always delivers it — like a dare wrapped in a welcome. \"Tonight\'s category is {c},\" she says, and she lets the word sit in the room like a challenge. \"And I mean it. Do NOT disappoint me.\" The panel settles. The first queen is already at the top of the runway.",
+        "\"Gentlemen, START your engines, and may the BEST woman WIN!\" The host delivers it the way he always delivers it — like a dare wrapped in a welcome. \"Tonight\'s category is {c},\" he says, and he lets the word sit in the room like a challenge. \"And I mean it. Do NOT disappoint me.\" The panel settles. The first queen is already at the top of the runway.",
         "\"Category is — {c}!\" The host says it and snaps twice and the room changes temperature. \"Now, I want to see FASHION, I want to see DRAMA, and I want to see somebody make me say WOW.\" The panel picks up their pens. Backstage, every queen checks her reflection one more time. The runway lights come up.",
-        "\"Start your engines, and may the best drag queen WIN!\" The host opens the stage and the room answers her before she has finished the sentence. She names {c} and looks at the panel. \"Are we ready?\" Michelle nods. The guest judge looks delighted. \"Then let\'s see what they\'ve GOT.\"",
-        "\"Tonight on the runway — {c}.\" The host pauses and the pause is deliberate because she knows how to hold a room. \"Bring it to the runway, ladies. And I mean BRING it.\" The panel is seated, the lights are up, and the first queen appears at the top of the stage with her shoulders back and her face already performing.",
-        "\"Ooh, I am EXCITED about this one.\" The host grins at the panel. \"The category is {c}, and if these queens know what is good for them they will SERVE.\" She turns to the runway. \"Gentlemen, start your engines!\" The room shifts into main-stage register — the register where everything in the werk room starts counting.",
-        "\"Gentlemen — START your engines!\" The host lets the word carry. \"The category is {c} and may the best woman win.\" She looks at the camera with the expression of somebody who has done this a thousand times and still means every syllable. The runway lights come up. The first queen walks. The night is officially running.",
+        "\"Start your engines, and may the best drag queen WIN!\" The host opens the stage and the room answers him before he has finished the sentence. He names {c} and looks at the panel. \"Are we ready?\" Michelle nods. The guest judge looks delighted. \"Then let\'s see what they\'ve GOT.\"",
+        "\"Tonight on the runway — {c}.\" The host pauses and the pause is deliberate because he knows how to hold a room. \"Bring it to the runway, ladies. And I mean BRING it.\" The panel is seated, the lights are up, and the first queen appears at the top of the stage with his shoulders back and his face already performing.",
+        "\"Ooh, I am EXCITED about this one.\" The host grins at the panel. \"The category is {c}, and if these queens know what is good for them they will SERVE.\" He turns to the runway. \"Gentlemen, start your engines!\" The room shifts into main-stage register — the register where everything in the werk room starts counting.",
+        "\"Gentlemen — START your engines!\" The host lets the word carry. \"The category is {c} and may the best woman win.\" He looks at the camera with the expression of somebody who has done this a thousand times and still means every syllable. The runway lights come up. The first queen walks. The night is officially running.",
         "\"Ladies, the category tonight is {c}. And I need you to understand — {c} is not a suggestion. It is a REQUIREMENT.\" The host turns to the panel. \"I expect to be GAGGED.\" The panel laughs. The runway lights come up and the first queen appears and the host watches her the way she watches every first queen — ready to be impressed, ready to be disappointed, and ready to say so either way.",
       ]),
       tier('sewn', 'She MADE it — a design week or a Ball, where the category '
         + 'is the brief she sewed to and the judgement is on the building.', [
         '"Tonight\'s category is {c} — and you MADE it.\" The host lets that land. \"That is not from a suitcase, ladies. That came out of that werk room.\" The panel leans in because a sewn runway is a different kind of walk — every seam is a decision and every decision is about to be inspected under these lights.',
-        '"Gentlemen, start your engines!\" The host names {c} and holds up a finger. \"Now, I want to remind everybody — these looks were BUILT in that room, with those hands.\" She looks at the panel. \"So when we judge, we are judging the BUILD.\" The queens backstage check their hems one last time.',
+        '"Gentlemen, start your engines!\" The host names {c} and holds up a finger. \"Now, I want to remind everybody — these looks were BUILT in that room, with those hands.\" He looks at the panel. \"So when we judge, we are judging the BUILD.\" The queens backstage check their hems one last time.',
         '"The category is {c}, and every STITCH you are about to see was put in by the queen wearing it.\" The host says it with the gravity it deserves. \"I have seen them sew. I have seen them CRY. Let us see if the crying was WORTH it.\" The panel picks up their pens. The room shifts.',
-        '"Start your engines, and may the best woman win!\" She names {c} and waits a beat. \"Made from SCRATCH, baby. In that very room.\" She points at the werk room door. \"If it falls apart on this runway, we will ALL see it.\" The queens backstage are checking their garment bags one final time.',
+        '"Start your engines, and may the best woman win!\" He names {c} and waits a beat. \"Made from SCRATCH, baby. In that very room.\" He points at the werk room door. \"If it falls apart on this runway, we will ALL see it.\" The queens backstage are checking their garment bags one final time.',
       ]),
       tier('ball', 'Three categories in one night. The host names all of them '
         + 'and lets the room work out how much sewing that was.', [
-        '"Tonight is a BALL, ladies!\" The host claps once and names {c} first, then the other two categories, and watches the room absorb the number. \"That is THREE walks. THREE looks. At least one of them SEWN.\" She turns to the panel. \"I hope you brought snacks because we are going to be here a WHILE.\" The panel picks up their pens.',
-        '"Start your engines!\" The host opens the stage and lists all three categories, starting with {c}, and the list alone makes somebody backstage close her eyes and count garment bags. \"A Ball is a MARATHON, ladies,\" the host says. \"Not a sprint.\" She looks at the camera. \"Let us see who packed their A-game and who packed their anxiety.\"',
-        '"The Ball begins with {c}.\" The host names the first category and then the second and then the third and then folds her hands. \"Three categories. One night. And at least one of those is something you BUILT.\" She looks at the panel. \"Buckle up.\" The panel settles in. This is a long stage.',
+        '"Tonight is a BALL, ladies!\" The host claps once and names {c} first, then the other two categories, and watches the room absorb the number. \"That is THREE walks. THREE looks. At least one of them SEWN.\" He turns to the panel. \"I hope you brought snacks because we are going to be here a WHILE.\" The panel picks up their pens.',
+        '"Start your engines!\" The host opens the stage and lists all three categories, starting with {c}, and the list alone makes somebody backstage close her eyes and count garment bags. \"A Ball is a MARATHON, ladies,\" the host says. \"Not a sprint.\" He looks at the camera. \"Let us see who packed their A-game and who packed their anxiety.\"',
+        '"The Ball begins with {c}.\" The host names the first category and then the second and then the third and then folds his hands. \"Three categories. One night. And at least one of those is something you BUILT.\" He looks at the panel. \"Buckle up.\" The panel settles in. This is a long stage.',
         '"This is a Ball, which means three categories, three looks, one NIGHT.\" The host names {c} and then the rest and the list lands on the room like a brief nobody can renegotiate. \"If you did not bring enough looks, baby, that is between you and your garment bag.\" Every queen backstage just did the arithmetic on how many garments that is.',
       ]),
     ],
@@ -777,7 +777,7 @@ export const STAGE_BEATS = [
         "{a} goes for the split and does not make it all the way down. The landing is awkward, the recovery is worse, and the three seconds she spends getting back up are three seconds where the other queen has the stage entirely to herself. The stunt was a gamble and the gamble did not pay.",
         "The reveal is supposed to be the moment. {a} reaches for the tear-away and it does not tear, and she pulls again and it tears in the wrong place, and the panel watches with the kind of silence that is worse than laughter. The stunt was the plan and the plan just failed on live television.",
         "{a} attempts a move that her body does not quite agree with tonight. The intention is clear — it was supposed to be a moment — but the execution lands somewhere between ambitious and unfortunate, and the gap between those two things is where the lip sync slips away from her.",
-        "She goes for it. She should not have gone for it. The stunt misfires — a slip, a stumble, a beat lost to recovery — and the energy that was building collapses into the particular silence of a room that just watched someone bet everything on a single moment and lose.",
+        "{a} goes for it. She should not have gone for it. The stunt misfires — a slip, a stumble, a beat lost to recovery — and the energy that was building collapses into the particular silence of a room that just watched someone bet everything on a single moment and lose.",
       ]),
     ],
   },
@@ -798,16 +798,16 @@ export const STAGE_BEATS = [
     tiers: [
       tier('hold', 'She stops, and the room stops with her.', [
         "The host looks at the queens still on the stage and takes a breath that the room takes with her. Whatever she says next changes somebody's night, and the pause before she says it is the loudest silence the stage has produced.",
-        "She folds her hands. The queens standing in front of her are watching her mouth and she knows they are watching her mouth and she lets them watch it not move for three more seconds than anybody would choose.",
+        "He folds his hands. The queens standing in front of him are watching his mouth and he knows they are watching his mouth and he lets them watch it not move for three more seconds than anybody would choose.",
         "The host stops speaking and the stopping is deliberate. The room is arranged around a verdict that has not been said yet and the arrangement holds, perfectly still, while the host decides how long to let it hold.",
         "A pause that sits heavier than anything she has said tonight. The queens on the stage are breathing and the host is breathing and nobody else in the room is breathing at all.",
-        "The host shifts her weight and the shift is the only motion on the stage. She is about to speak. She has not spoken yet. The gap between those two facts is where the entire room lives for the next four seconds.",
-        "She takes one step forward and the step tightens every queen on the stage by half an inch. The host has not said anything. The step was the sentence.",
+        "The host shifts his weight and the shift is the only motion on the stage. He is about to speak. He has not spoken yet. The gap between those two facts is where the entire room lives for the next four seconds.",
+        "He takes one step forward and the step tightens every queen on the stage by half an inch. The host has not said anything. The step was the sentence.",
         "The host holds eye contact with the queen at the end of the line and the eye contact stretches past comfortable and into something that has weight. Whatever she is about to say, the queen receiving the look already knows it is for her.",
         "Silence. The host lets it build the way a host who has done this a thousand times lets it build — long enough to mean something, short enough that nobody passes out. The queens stand in it like statues who can feel their own heartbeat.",
-        "The host surveys the line and her face gives nothing. The queens look back at her and their faces give everything. The asymmetry is the whole point of the pause and the pause is not over.",
-        "She waits. The waiting is a performance and the queens standing on the other side of it are the audience, and the audience cannot leave, and the audience is terrified, and the host knows all of this and lets the beat sit for one more second before she opens her mouth.",
-        "The host folds her hands and the folding is the cue. Every queen on the stage reads it. The room goes still. Whatever is next is next.",
+        "The host surveys the line and his face gives nothing. The queens look back at him and their faces give everything. The asymmetry is the whole point of the pause and the pause is not over.",
+        "He waits. The waiting is a performance and the queens standing on the other side of it are the audience, and the audience cannot leave, and the audience is terrified, and the host knows all of this and lets the beat sit for one more second before he opens his mouth.",
+        "The host folds his hands and the folding is the cue. Every queen on the stage reads it. The room goes still. Whatever is next is next.",
       ]),
     ],
   },
@@ -836,7 +836,7 @@ export const STAGE_BEATS = [
         "\"Two queens stand before me. Two queens performed their hearts out tonight.\" The host surveys the stage. \"But I have made my decision.\"",
         "\"I have made my decision.\" The host holds the pause longer than either queen would choose, and the holding is deliberate.",
         "The track fades and the host waits, looking at both of them, letting the room settle before she opens her mouth. \"I have made my decision.\"",
-        "\"Ladies.\" The host folds her hands. \"This was not easy, but I have made my decision.\" The room holds its breath.",
+        "\"Ladies.\" The host folds his hands. \"This was not easy, but I have made my decision.\" The room holds its breath.",
         "\"Both of you gave me everything tonight.\" The host pauses. \"But I have to make a choice, and I have made that choice.\"",
         "The host looks at one queen and then the other and then back to the first. The silence does the work. Then: \"I have made my decision.\"",
         "\"Ladies, what you just gave this stage was extraordinary.\" A beat. \"But I have made my decision, and a decision must be made.\"",
@@ -1429,7 +1429,7 @@ export const STAGE_BEATS = [
     note: 'The host closes the night on the queens who are left.',
     tierBy: 'always',
     tiers: [tier('close', 'If you cannot love yourself, how in the hell are you going to love somebody else?', [
-      "The stage is one queen shorter and everybody standing on it can feel the gap. The host does not hurry through it. She waits until the room is with her, asks it the question she asks every week, and gets the answer she always gets — louder tonight, because the queens who are left have something to be loud about. Then the lights come up and it is next week.",
+      "The stage is one queen shorter and everybody standing on it can feel the gap. The host does not hurry through it. He waits until the room is with him, asks it the question he asks every week, and gets the answer he always gets — louder tonight, because the queens who are left have something to be loud about. Then the lights come up and it is next week.",
       "\"Now, let the music play.\" The host closes the night with the words that mean the stage is done and the werk room is next, and the queens who survived walk off into whatever comes tomorrow. Somebody just left and the room is lighter by one voice and heavier by everything that voice said.",
       "The host delivers the closing and the queens respond and the ritual is the same as it has been every week. That is the comfort of it — the same words, the same amen, the same walk off the stage — and the comfort is real even when the night was hard, because the words mean you are still here to hear them.",
       "The closing words land the way they always do — familiar, earned, and aimed at a room full of people who needed to hear them tonight more than most nights. The queens say amen and the host smiles and the music plays and the stage empties one last time until next week, when all of this starts again with one fewer voice in the room.",
@@ -1517,3 +1517,12 @@ export function stageBeatCount({
   }
   return n;
 }
+
+/* ── HOW SHE TOOK THE CRITIQUE, IN WORDS A VIEWER READS ──
+   The reaction tier ids are engine vocabulary and were printed raw on two
+   screens: "She takes it: idgaf." and "She takes it: crash-out." */
+export const REACTION_LABEL = {
+  joy: 'beaming', relief: 'relieved', idgaf: 'unbothered',
+  sadness: 'holding back tears', 'crash-out': 'falling apart',
+};
+export const reactionLabel = id => REACTION_LABEL[id] || String(id || '').replace(/-/g, ' ');

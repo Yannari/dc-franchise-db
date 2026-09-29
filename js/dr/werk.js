@@ -493,7 +493,10 @@ export function runWerkRoom({ slots, living, players, state, storylines, rng, ct
          of them spoke as often as the one whose closest ally had just been
          read. See `candidatesFor`. */
       bond: ctx?.bond || (() => 0),
-      rng: streamFor(episode + 1, `confessional|${k}|${list.map(x => x.id).join(',')}`),
+      // The season's seed as well as the episode's number: seeded on the
+      // episode alone, every season's week three drew the same rolls.
+      rng: streamFor(((state?.seed || 0) >>> 0) + episode * 7919 + 1,
+        `confessional|${k}|${list.map(x => x.id).join(',')}`),
     });
     if (!rows.length) continue;
     // Splice against the FULL list, not the slot's, so the confessional lands

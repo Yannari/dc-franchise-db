@@ -54,7 +54,10 @@ export const RESULT_ORDERS = [
     + 'they are safe and then one of them is told she won; and the two who are '
     + 'left standing there are the two who are left standing there. The '
     + 'ordinary shape, and the one that works on most nights.',
-    ['LOW', 'HIGH', 'WIN', 'BTM', 'BTM2'], 'BTM2'),
+    /* TOPS, THEN BOTTOMS — the order the host actually calls it. This was
+       LOW, HIGH, WIN: the low queen was told she was safe before anybody was
+       told they were good, which is not a night the show has ever run. */
+    ['HIGH', 'WIN', 'LOW', 'BTM', 'BTM2'], 'BTM2'),
   order('winner-last',
     'THE WIN IS THE STORY, so it is the last thing the night says. Everything '
     + 'else is settled first — including the bottom, which is unusual and '
@@ -99,10 +102,16 @@ export function resultOrder(id) {
 export function chooseResultOrder({
   winnerFirstWin = false, winnerGap = 0, dangerStreak = 0, rng = Math.random,
 } = {}) {
+  /* ONLY THE TWO ORDERS THE SHOW RUNS. The host always calls the top of the
+     week before the bottom; what varies is whether the winner is named before
+     or after the other tops are sent back. `winner-last` and `danger-first`
+     named the bottom BEFORE the winner, which no season has ever done — they
+     stay defined so a season saved with one still renders, and are never
+     drawn. */
   const w = {
     standard: 2.4,
-    'winner-last': (winnerFirstWin ? 2.2 : 0.4) + (1 - Math.min(1, winnerGap)) * 0.8,
-    'danger-first': Math.min(1, dangerStreak) * 3.0,
+    'winner-last': 0,
+    'danger-first': 0,
     'top-first': Math.min(1, winnerGap) * 2.2,
   };
   const total = Object.values(w).reduce((t, x) => t + x, 0);

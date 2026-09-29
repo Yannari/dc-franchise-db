@@ -487,7 +487,10 @@ describe('a queen called LOW', () => {
       })),
       seed, config: {}, bond: () => 0, addBond: () => {}, popDelta: () => {},
     });
-    for (let s = 1; s <= 8; s++) {
+    // Twenty-four, not eight: the guard needs enough LOW confessionals to
+    // have read anything, and eight seasons drew as few as two once the
+    // confessional dice started differing between seasons.
+    for (let s = 1; s <= 24; s++) {
       const res = mk(s * 97 + 3);
       for (const r of res.rows.filter(x => x.dr && !x.dr.finale)) {
         const low = new Set([...(r.dr.call?.low || []), ...(r.dr.call?.atRisk || [])]);

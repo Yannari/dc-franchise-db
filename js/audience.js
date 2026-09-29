@@ -164,6 +164,11 @@ export function audienceBoard({ eligible = null, _gs = gs } = {}) {
  */
 export function runAudienceVote({
   eligible = null, rng = Math.random, blocks = 750, scale = 1, _gs = gs,
+  /* `{ name: multiplier }` on a voter's weight, for a show whose audience
+     votes differently for some of the field — Drag Race fans send the sash
+     to a queen who went home over one still in the running for the money.
+     Absent, every weight is exactly what it was. */
+  bias = null,
 } = {}) {
   const board = audienceBoard({ eligible, _gs });
   if (board.length < 2) return null;
@@ -182,7 +187,8 @@ export function runAudienceVote({
   // Floored, so somebody the audience never warmed to still has a vote out
   // there. This is not a ranking of gameplay and should not resolve like one.
   const weights = board.map(r => ({ name: r.name,
-    w: Math.max(0.05, 1 + ((r.standing - mean) / sd) * VOTE_SHARPNESS * scale) }));
+    w: Math.max(0.05, 1 + ((r.standing - mean) / sd) * VOTE_SHARPNESS * scale)
+      * (bias && bias[r.name] != null ? Number(bias[r.name]) : 1) }));
   const total = weights.reduce((s, x) => s + x.w, 0);
   const N = Math.max(25, Math.round(blocks));
 

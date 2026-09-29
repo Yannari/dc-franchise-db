@@ -19,7 +19,7 @@ import { smackdownScenes } from './smackdown.js';
 import { alumniPool } from '../alumni.js';
 import { runDragWeek } from './week.js';
 import { assignStorylines, recordBeat, arcSummary, popSnapshot } from './storylines.js';
-import { MAXI_TYPES, TENTPOLES, maxiById } from './data/challenges.js';
+import { MAXI_TYPES, TENTPOLES, maxiById, windowOf, MAX_CAST } from './data/challenges.js';
 import { MINI_TYPES } from './data/minis.js';
 import { JUDGES } from './data/judges.js';
 import { SONGS } from './data/songs.js';
@@ -92,7 +92,13 @@ const FAMOUS_STARS = 1.5;
 const _slugOf = n => String(n || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-');
 
 export function buildSchedule({ episodes, castSize, pinned = [], rng = Math.random,
-  premiere = 'standard', cast = [], seed = null }) {
+  premiere = 'standard', cast = [], seed = null,
+  /* A SPARE WEEK. The season outran its booking (a double shantay, a free
+     week) and needs one more episode: it is built as a one-episode schedule,
+     which put it at position 0 — a premiere — so a late spare drew from the
+     premiere's challenges. `positionAt` says where in the season it really
+     falls, and `exclude` is what the season has already played. */
+  positionAt = null, exclude = [] }) {
   /* -- ONE STREAM PER EPISODE, NOT ONE WALKING THE WHOLE SEASON --
      This used to draw everything -- the tentpole shuffle, then every week's
      filler challenge, mini, judge, guest and song, in episode order -- off a
@@ -110,6 +116,11 @@ export function buildSchedule({ episodes, castSize, pinned = [], rng = Math.rand
   const own = seed != null;
   const sRng = own ? streamFor(seed, 7) : rng;
   const epRng = (e, salt = 1000) => (own ? streamFor(seed, salt + e) : rng);
+  /* Where an episode sits in the season, 0 at the premiere and 1 the week
+     before the finale — the scale SEASON_WINDOW is written in. */
+  const posOf = e => (positionAt != null ? positionAt
+    : episodes > 1 ? Math.min(1, (e - 1) / (episodes - 1)) : 0);
+  const inWindow = (id, e) => { const [lo, hi] = windowOf(id); const x = posOf(e); return x >= lo && x <= hi; };
   const rotating = JUDGES.filter(j => !j.permanent).map(j => j.id);
 
   /* ── THE GUEST JUDGE, WHICH HAD NEVER ONCE APPEARED ──
@@ -225,7 +236,7 @@ export function buildSchedule({ episodes, castSize, pinned = [], rng = Math.rand
       .filter(p => Number(p.episode) >= 1 && Number(p.episode) <= episodes)
       .map(p => [Number(p.episode), p]));
 
-  const used = new Set();
+  const used = new Set(exclude);
   for (const p of Object.values(byEp)) if (p.maxiId) used.add(p.maxiId);
 
   /* ── WHERE THE TENTPOLES LAND ──
@@ -262,11 +273,30 @@ export function buildSchedule({ episodes, castSize, pinned = [], rng = Math.rand
   }
   const slots = [];
   for (let e = 2; e <= episodes - 2; e++) if (!byEp[e]?.maxiId) slots.push(e);
+  /* ── AND EACH ONE WHERE IT BELONGS ──
+     A slot anywhere in 2..N-2 put the Makeover in week two and the Snatch
+     Game with five queens left. Each tentpole now takes a free slot inside
+     its SEASON_WINDOW (js/dr/data/challenges.js, read off seasons 9-17), and
+     only when every slot in its window is gone does it take the nearest one
+     outside it. The shuffle above still decides who gets first choice, so a
+     short season still loses a different tentpole each time. */
   const tentpoleAt = {};
   for (const t of tentpolesLeft) {
     if (!slots.length) break;
-    const i = Math.floor(sRng() * slots.length);
-    tentpoleAt[slots.splice(i, 1)[0]] = t;
+    const [lo, hi] = windowOf(t);
+    const miss = e => { const x = posOf(e); return x < lo ? lo - x : x > hi ? x - hi : 0; };
+    const best = Math.min(...slots.map(miss));
+    const near = slots.filter(e => miss(e) === best);
+    // Not beside a week already booked in the same style — the Snatch Game
+    // and the Roast share a window and a style, and nothing downstream can
+    // separate them once both are inside it.
+    const style = maxiById(t)?.chalStyle;
+    const styleAt = x => maxiById(tentpoleAt[x] || byEp[x]?.maxiId)?.chalStyle;
+    const spaced = near.filter(x => styleAt(x - 1) !== style && styleAt(x + 1) !== style);
+    const pool = spaced.length ? spaced : near;
+    const e = pool[Math.floor(sRng() * pool.length)];
+    slots.splice(slots.indexOf(e), 1);
+    tentpoleAt[e] = t;
   }
 
   const out = [];
@@ -284,11 +314,25 @@ export function buildSchedule({ episodes, castSize, pinned = [], rng = Math.rand
       || null;
 
     if (!maxiId) {
-      const fits = m => m.minCast <= alive;
-      const fresh = MAXI_TYPES.filter(m => !m.tentpole && !used.has(m.id) && fits(m) && m.chalStyle !== prevStyle);
-      const repeatable = MAXI_TYPES.filter(m => !m.tentpole && fits(m) && m.chalStyle !== prevStyle);
+      const fits = m => m.minCast <= alive && !(MAX_CAST[m.id] < alive);
+      /* THE WEEK'S PLACE IN THE SEASON FIRST. A filler outside its window —
+         a Rumix on the premiere, a Talent Show in week nine — is only drawn
+         when nothing inside one fits; the old order of preference (fresh,
+         then repeatable, then anything) runs within that. */
+      const inWin = m => inWindow(m.id, e);
+      /* And the week AFTER, when it is already booked: tentpoles are placed
+         first, so a filler can see its neighbour on both sides. Placing the
+         tentpoles inside their windows means the adjacency repair below can
+         no longer always swap its way out of a clash, so the filler avoids
+         making one. */
+      const nextId = byEp[e + 1]?.maxiId || tentpoleAt[e + 1] || null;
+      const nextStyle = nextId ? (maxiById(nextId)?.chalStyle ?? null) : null;
+      const apart = m => m.chalStyle !== prevStyle && m.chalStyle !== nextStyle;
+      const fresh = MAXI_TYPES.filter(m => !m.tentpole && !used.has(m.id) && fits(m) && apart(m));
+      const repeatable = MAXI_TYPES.filter(m => !m.tentpole && fits(m) && apart(m));
       const anything = MAXI_TYPES.filter(fits);
-      const pool = fresh.length ? fresh : repeatable.length ? repeatable : anything.length ? anything : MAXI_TYPES;
+      const pool = [fresh.filter(inWin), repeatable.filter(inWin), fresh, repeatable, anything, MAXI_TYPES]
+        .find(p => p.length);
       maxiId = pick(er, pool).id;
     }
 
@@ -379,6 +423,9 @@ export function buildSchedule({ episodes, castSize, pinned = [], rng = Math.rand
       const fitsThere = out[i]._style !== out[j - 1]._style
         && (j + 1 >= out.length || out[i]._style !== out[j + 1]._style);
       if (!fitsHere || !fitsThere) continue;
+      // A swap that moves either challenge out of where it belongs in the
+      // season trades one pacing rule for a worse one.
+      if (!inWindow(out[j].maxiId, out[i].episode) || !inWindow(out[i].maxiId, out[j].episode)) continue;
       const a = out[i];
       const b = out[j];
       // Swap the CHALLENGE only. The judge, the song and the guest belong to
@@ -916,7 +963,15 @@ export function runFinale(state, cfg, ctx) {
     const s2 = duel(state, finalists[2], finalists[3], ctx, song(), fctx);
     const f = duel(state, s1.winner, s2.winner, ctx, song(), fctx);
     rounds.push(s1, s2, f);
-    placements = [f.winner, f.loser, s1.loser, s2.loser, ...finalists.slice(4)];
+    /* THIRD IS THE BETTER OF THE TWO SEMI LOSERS, not the first one drawn.
+       Semi one's loser was always third, so a queen who scored 6.4 was placed
+       below one who scored 4.2 — and the crowning said "she placed fourth"
+       over the stronger night. The show calls them joint third; the chart
+       still needs an order, so it is the one the stage produced. */
+    const [third, fourth] = [s1, s2]
+      .sort((x, y) => (y.scores[y.loser] || 0) - (x.scores[x.loser] || 0))
+      .map(r => r.loser);
+    placements = [f.winner, f.loser, third, fourth, ...finalists.slice(4)];
   } else if (type === 'top3' && finalists.length >= 3) {
     const s1 = duel(state, finalists[0], finalists[1], ctx, song(), fctx);
     const f = duel(state, s1.winner, finalists[2], ctx, song(), fctx);
@@ -1235,6 +1290,9 @@ function rejoinScenes(state, ctx) {
  * `config` is the setup screen's: drPremiere, drFinale, drImmunity,
  * drDoubleShantay, drDoubleSashay, drSchedule, drJudgeWeights.
  */
+/** How much of her vote a finalist keeps in the Miss Congeniality count. */
+export const FINALIST_SASH_WEIGHT = 0.35;
+
 export function playDragSeason({
   cast, seed = 1, config = {}, bond = () => 0, addBond = null, popDelta = null,
   /* Authored drag-family edges from the Relationships tab, in the shape
@@ -1588,7 +1646,10 @@ export function playDragSeason({
       .find(x => x && Number(x.episode) === Number(epNum));
     return buildSchedule({
       episodes: 1,
-      castSize: cast.length,
+      // The room it actually has, at the end of the season it actually is.
+      castSize: state.living.length,
+      positionAt: 1,
+      exclude: state.episodes.map(r => r?.dr?.challenge?.id || r?.challenge?.id).filter(Boolean),
       pinned: pin ? [{ ...pin, episode: 1 }] : [],
       rng,
       premiere: 'standard',
@@ -1839,8 +1900,13 @@ export function playDragSeason({
      announces it too, which is the modern format; both read one value.
      Eligible is everybody but the winner, who is not known yet — so the
      board is the whole cast and the winner is removed after. */
+  /* FINALISTS ARE ON THE BALLOT, AND THE COUNTRY LEANS AWAY FROM THEM.
+     A finalist can take the sash, but the audience sends it to somebody
+     sent home far more often — she has no other shot at anything. With the
+     field voting evenly the sash went to a finalist 59% of seasons. */
+  const finalistBias = Object.fromEntries((state.living || []).map(n => [n, FINALIST_SASH_WEIGHT]));
   const vote = runAudienceVote({
-    eligible: [...state.castOrder], rng, blocks: 600,
+    eligible: [...state.castOrder], rng, blocks: 600, bias: finalistBias,
     _gs: { popularity: state.popularity, episodeHistory: rows },
   });
   if (vote) {

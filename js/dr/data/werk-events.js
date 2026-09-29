@@ -451,7 +451,7 @@ export const WERK_EVENTS = [
   ev({
     id: 'apology', slot: 'werk-morning', cast: 'pair', weight: 1,
     note: 'One of them apologises properly for something from last week.',
-    arcs: ['villain', 'relationship'], when: f => f.bond <= -2,
+    arcs: ['villain', 'relationship'], when: f => f.episode > 1 && f.bond <= -2,
     effects: { bond: 3, pop: { a: 2 }, state: 'mended' },
     lines: [
       "{a} pulls {b} aside before the room fills up. No preamble. \"I was wrong last week and I am sorry.\" Does not explain it, qualify it, or make it about herself. Says it and waits. {b} takes a breath, nods. The thing that was between them is smaller now.",
@@ -463,7 +463,7 @@ export const WERK_EVENTS = [
   ev({
     id: 'apology-refused', slot: 'werk-morning', cast: 'pair', weight: 1,
     note: 'The apology is offered and not accepted.',
-    arcs: ['relationship'], when: f => f.bond <= -5,
+    arcs: ['relationship'], when: f => f.episode > 1 && f.bond <= -5,
     effects: { bond: -1, pop: { b: -1 }, state: 'frost' },
     lines: [
       "{a} tries. Sits down, says the words, means them. {b} listens to the whole thing, waits until {a} is finished, and says \"okay\" in a tone that closes a door. {a} nods, stands up, walks back to her station. The apology was offered. It was not accepted. The room felt both.",
@@ -512,7 +512,7 @@ export const WERK_EVENTS = [
   ev({
     id: 'chaotic-good', slot: 'cold-open', cast: 'solo', weight: 1,
     note: 'She does something completely unhinged and harmless and everyone loves it.',
-    arcs: ['narrator'], when: f => st(f.a, 'boldness') >= 6,
+    arcs: ['narrator'], when: f => f.episode > 1 && st(f.a, 'boldness') >= 6,
     effects: { pop: { a: 2 } },
     lines: [
       "{a} arrives wearing the wig from last night’s runway as a hat — upside down, sunglasses perched on top. Acts like nothing is unusual. Pours coffee into a mug that says something unprintable. Starts the day like this is a normal person doing a normal thing.",
@@ -694,7 +694,7 @@ export const WERK_EVENTS = [
   ev({
     id: 'still-in-last-nights-face', slot: 'werk-morning', cast: 'solo', weight: 1,
     note: 'She never took the makeup off and the room can tell what kind of night she had.',
-    when: f => true, effects: { pop: { a: 1 } },
+    when: f => f.episode > 1, effects: { pop: { a: 1 } },
     lines: [
       "{a} walks in still in last night's face. Lashes off but the foundation is there, liner smudged. She sits down, stares at the mirror, and does not start getting ready. She starts getting present.",
       "The eyeliner from the runway is still on and {a} has not tried to fix it. That tells the room everything about the kind of night she had. She sat in bed going over every second of the main stage. She will take it off. She will get ready. But right now she is still in last night.",

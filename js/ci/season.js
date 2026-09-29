@@ -94,14 +94,15 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
       for (const h of state.active) driftMind(state, h);
       for (const h of state.pendingGoodbyes.splice(0)) goodbyeVideo(state, rng, h);
       deliverReports(state, rng);
-      morningFeed(state, rng);
+      // Finale day is the studio: the phones are off after the final ratings.
+      if (!d.finale) morningFeed(state, rng);
     }
     const arriving = queue.splice(0, d.arrivals);
     if (arriving.length) { arrive(state, rng, arriving); for (const h of arriving) noteJoin(state, h); }
     recognise(state, carried);
 
     const ctx = contextFor(state, d);
-    for (const plan of planChats(state, rng, ctx)) runChat(state, rng, plan, ctx);
+    if (!d.finale) for (const plan of planChats(state, rng, ctx)) runChat(state, rng, plan, ctx);
     if (!d.finale) runCircleChat(state, rng, { party: d.slot === 'social' && d.day % 2 === 0 });
 
     let rating = null;

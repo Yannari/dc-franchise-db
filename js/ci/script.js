@@ -325,10 +325,18 @@ const BLOCKS = {
   meet(state, s) {
     const [a, ...present] = s.who;
     if (!present.length) return [];
-    const p = state.profiles[a];
-    const out = [{ key: `meet.arrive.${p.mode === 'catfish' ? 'catfish' : 'real'}`, cast: { a, b: present.at(-1) } }];
-    if (p.mode === 'catfish') out.push({ key: `meet.explain.${p.reason || 'strategic'}`, cast: { a, b: present.at(-1) }, extra: { reasonKind: p.reason || undefined } });
-    return out;
+    const explain = (h, to) => {
+      const why = state.profiles[h].reason;
+      return { key: `meet.explain.${why || 'strategic'}`, cast: { a: h, b: to }, extra: { reasonKind: why || undefined } };
+    };
+    const fake = h => state.profiles[h].mode === 'catfish';
+    // The first one in waited alone: a catfish there is found out by the
+    // second, and that replaces the happy hello.
+    const first = present.length === 1 && fake(present[0]) ? present[0] : null;
+    if (first && fake(a)) return [{ key: 'meet.both', cast: { a, b: first } }, explain(a, first), explain(first, a)];
+    if (first) return [{ key: 'meet.found', cast: { a, b: first } }, explain(first, a)];
+    const b = present.at(-1);
+    return fake(a) ? [{ key: 'meet.arrive.catfish', cast: { a, b } }, explain(a, b)] : [{ key: 'meet.arrive.real', cast: { a, b } }];
   },
   reveal(state, s) {
     const pl = s.data.placements;
@@ -405,6 +413,6 @@ export const POOL_KEYS = [
   'goodbye.guess', ...['honest', 'polished', 'edited', 'shared'].map(m => `goodbye.video.${m}`),
   ...WHY_.map(w => `goodbye.video.catfish.${w}`), 'goodbye.warning.catfish', 'goodbye.warning.distrusts', 'goodbye.warning.seen',
   'goodbye.react.guilty', 'goodbye.react.warned', 'goodbye.react.vindicated', 'goodbye.react.surprised',
-  'meet.arrive.real', 'meet.arrive.catfish', ...WHY_.map(w => `meet.explain.${w}`),
+  'meet.arrive.real', 'meet.arrive.catfish', 'meet.found', 'meet.both', ...WHY_.map(w => `meet.explain.${w}`),
   'reveal.place', 'reveal.winner', 'host.cold',
 ];

@@ -32,6 +32,12 @@ describe('a whole season', () => {
     }
   });
 
+  it('plays nothing on finale day but the meet and the placements', () => {
+    const { state, rows } = play();
+    const last = rows.at(-1).day;
+    expect([...new Set(state.scenes.filter(s => s.day === last).map(s => s.kind))].sort()).toEqual(['meet', 'reveal']);
+  });
+
   it('replays identically from its seed, and a persona\'s bio changes nothing', () => {
     const one = play(13, 11);
     const two = play(13, 11);

@@ -194,3 +194,22 @@ describe('the visit and the goodbye know what was seen', () => {
     expect(w.key).toBe('goodbye.warning.seen');
   });
 });
+
+describe('the finalists meet', () => {
+  it('lets the second arrival find out the catfish who walked in first', () => {
+    const s = room();
+    s.profiles['@rebecca'].reason = 'protective';
+    const sc = addScene(s, 'meet', ['@shubham', '@rebecca'], { arrives: '@shubham' });
+    const keys = sceneBlocks(s, sc).map(b => `${b.key}:${b.cast.a}>${b.cast.b}`);
+    expect(keys).toEqual(['meet.found:@shubham>@rebecca', 'meet.explain.protective:@rebecca>@shubham']);
+  });
+
+  it('gives two catfish meeting one scene, and both explanations', () => {
+    const s = room();
+    s.profiles['@sammie'].mode = 'catfish'; s.profiles['@sammie'].reason = 'family';
+    const sc = addScene(s, 'meet', ['@sammie', '@rebecca'], { arrives: '@sammie' });
+    const keys = sceneBlocks(s, sc).map(b => `${b.key}:${b.cast.a}>${b.cast.b}`);
+    expect(keys).toEqual(['meet.both:@sammie>@rebecca', 'meet.explain.family:@sammie>@rebecca',
+      'meet.explain.strategic:@rebecca>@sammie']);
+  });
+});

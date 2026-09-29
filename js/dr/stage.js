@@ -79,6 +79,7 @@ const RUNWAY_TIERS = [
    apart. THE HOOK STAYS RELATIVE — see its own note below: a key change has
    one owner and there is no middle at it. */
 const LIPSYNC_TIERS = [[7.5, 'legendary'], [5.5, 'strong'], [3.5, 'trying'], [-99, 'lost']];
+const nameLead = line => (line.includes('{a}') ? line : line.replace(/^She\b/, '{a}'));
 const tierByScore = (v, table) =>
   (table.find(([cut]) => (Number(v) || 0) >= cut) || table[table.length - 1])[1];
 const PERF_TIERS = [
@@ -785,7 +786,8 @@ export function renderStageBeats({
       const singing = (lipsync?.queens || call.singers || []).includes(n);
       const tier = doubleWin ? 'double-win'
         : (g === 'HIGH' && tierId !== 'high' && !singing && !topCouple.includes(n)) ? 'high'
-          : tierId;
+          : (g === 'HIGH' && tierId === 'win' && rateAQueen) ? 'win-rated'
+            : tierId;
       emit(beatById(beatId), tier, [n],
         { order: shape.id, ...(doubleWin ? { doubleWin: true } : {}) });
     }
@@ -796,7 +798,12 @@ export function renderStageBeats({
      fighting to survive or fighting to win, and the call never said which. */
   if (lipsync && (lipsync.queens || []).length >= 2 && !pendingSave) {
     const [ls1, ls2] = lipsync.queens;
-    emit(beatById('call-stakes'), stakes, [ls1, ls2], { stakes });
+    /* MORE THAN TWO AT THE BOTTOM, ONE SONG. The pair pool names {a} and
+       {b} and says one stays and one goes, so a four-queen lip sync named
+       two of them and promised half the result. */
+    const many = lipsync.queens.length > 2 && stakes === 'life';
+    emit(beatById('call-stakes'), many ? 'life-group' : stakes, many ? [...lipsync.queens] : [ls1, ls2],
+      { stakes });
   }
 
   // ── the lip sync, beat by beat ──
@@ -806,7 +813,8 @@ export function renderStageBeats({
        so a for-the-win night opened with "one stays, one goes" over a night
        nobody could lose. `stakes` is already computed for `call-stakes`
        above; this is the same question asked one beat later. */
-    emit(beatById('lipsync-intro'), stakes, [],
+    emit(beatById('lipsync-intro'),
+      (lipsync.queens || []).length > 2 && stakes === 'life' ? 'life-group' : stakes, [],
       { song: lipsync.song, artist: lipsync.artist, stakes });
     /* ── THE SONG DECIDES WHAT THE PERFORMANCE WAS ──
        `lipsync-beat` had four tiers keyed on how well she did and nothing
@@ -823,7 +831,15 @@ export function renderStageBeats({
     const lsBeat = beatById('lipsync-beat');
     const stuntBeat = beatById('lipsync-stunt');
     for (const n of lipsync.queens || []) {
-      const tierId = tierByScore((lipsync.scores || {})[n], LIPSYNC_TIERS);
+      /* THE QUEEN WHO TOOK THE SONG IS NEVER NARRATED LOSING IT. Below 5.5 the
+         tempo pools are written as a defeat — "The uptempo wins", "the
+         mismatch that loses a slow song every time" — and a 4.8 that beat a
+         2.9 was drawn in those words and then handed the hook. The score is
+         absolute; the song is a contest, so its winner starts at `strong` — except on a double sashay, where
+         neither of them took it. */
+      const topped = lipsync.call !== 'double-sashay' && fractionalRank(n, lipsync.scores || {}) === 0;
+      const raw = tierByScore((lipsync.scores || {})[n], LIPSYNC_TIERS);
+      const tierId = topped && (raw === 'trying' || raw === 'lost') ? 'strong' : raw;
       const tempoLines = tempoLinesFor(lipsync.tempo, tierId);
       if (tempoLines) {
         const t = lsBeat.tiers.find(x => x.id === tierId) || lsBeat.tiers[0];
@@ -834,7 +850,10 @@ export function renderStageBeats({
             beat: 'lipsync-beat', tier: tierId, players: [n], note: t.note,
             score: lipsync.scores?.[n], tempo: lipsync.tempo, voiced: true,
           },
-          text: fill(pick(tempoLines, rng, usedLines, `tempo/${lipsync.tempo}/${tierId}`),
+          /* A line that opens on a bare "She" leans on the card before it to
+             say who; with four queens on one song the card before it is
+             somebody else's. */
+          text: fill(nameLead(pick(tempoLines, rng, usedLines, `tempo/${lipsync.tempo}/${tierId}`)),
             { a: n, s: songTitle }),
         });
       } else {
@@ -850,7 +869,13 @@ export function renderStageBeats({
            thing that cannot happen. Whoever actually topped the song took it. */
         const took = fractionalRank(n, lipsync.scores || {}) === 0;
         const hookLines = hookLinesFor(lipsync.hook, took ? 'nailed' : 'missed');
-        if (hookLines) {
+        /* A LANDED STUNT IS HER MOMENT IN THE BREAK. The missed-hook lines are
+           a queen caught with nothing to do when the song opens up — "does
+           not dance", "no idea what to do with it" — and were drawn a line
+           before the split that brought the judges to their feet. She did not
+           take the song, and the stunt says what she did instead. */
+        const stuntLanded = lipsync.stunts?.[n] === 'landed';
+        if (hookLines && (took || !stuntLanded)) {
           /* NO BEAT IN stage-beats.js FOR THIS ONE, deliberately. Its prose
              lives entirely in lipsync-voices.js keyed by the song's hook, so
              a stub beat there would be a second place to look for lines that

@@ -1121,6 +1121,30 @@ function rpBuildBall(row) {
     }
   }
 
+  /* ── AND THE COLUMN SORTS ──────────────────────────────────────────
+     Each judge's total is rounded on its own, so two queens a mean rank
+     apart could print 63 above 64 in the placement at the end — the screen
+     claiming an order its own numbers contradict. Walked in the panel's
+     order: a queen whose total reaches the one above hers gives the
+     difference back on her last walk, where the paddles are shown last. */
+  {
+    const order = (row?.dr?.panel?.ranking || []).map(r => r.name);
+    const sum = nm => steps.filter(st => st.name === nm)
+      .reduce((t, st) => t + st.jScores.reduce((a, b) => a + b, 0), 0);
+    let prev = Infinity;
+    for (const nm of order) {
+      const last = [...steps].reverse().find(st => st.name === nm);
+      let total = sum(nm);
+      for (let guard = 0; last && total >= prev && guard < 40; guard++) {
+        const j = last.jScores.indexOf(Math.max(...last.jScores));
+        if (last.jScores[j] <= 0) break;
+        last.jScores = last.jScores.map((v, k) => (k === j ? v - 1 : v));
+        total -= 1;
+      }
+      prev = total;
+    }
+  }
+
   /* ── PROSE: engine prose on the SEWN look, runway reads on the rest ──
      The engine writes one block per queen about her whole ball ("three looks,
      one voice..."). That belongs on the sewn look — the climax, where the
@@ -1191,7 +1215,11 @@ function rpBuildBall(row) {
       lines = (proseByQueen[s.name] || [])
         .map(t => `<p class="dr-perf-line">${esc(t)}</p>`).join('');
     } else {
-      const read = _runwayRead(s.name, s.look.score, s.look.label);
+      // Read off the paddles the viewer is looking at, not the engine's raw
+      // look score: a 7-10-9 was captioned "competently — nothing the panel
+      // will remember" because the raw number behind it was a 6.
+      const shown = s.jScores.length ? s.jScores.reduce((t, v) => t + v, 0) / s.jScores.length : s.look.score;
+      const read = _runwayRead(s.name, shown, s.look.label);
       lines = `<p class="dr-perf-line">${esc(read)}</p>`;
     }
 

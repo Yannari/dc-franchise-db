@@ -528,7 +528,7 @@ export function rpBuildCrowning(row) {
     } else if (beat === 'crown-speech' || beat === 'finale-speech') {
       body = `<div class="cr-winner">
         ${who ? _portrait(who, ep, { size: 160, station: true }) : ''}
-        <span class="cr-winner-label dr-disp">America's Next Drag Superstar</span>
+        <span class="cr-winner-label dr-disp">${ep?.dr?.finale?.allStars ? 'Drag Race Hall of Fame' : "America's Next Drag Superstar"}</span>
         <b class="cr-winner-name dr-disp">${esc(who || '')}</b>
         <p class="cr-winner-speech">${esc(sc.text)}</p>
       </div>`;

@@ -265,7 +265,7 @@ export const CHALLENGE_BEATS = [
       tier('paired', 'One queen won the mini, and she is handing the whole room out.', [
         "One queen won the mini and that queen is now holding the whole room in her hands. She picks the partners. Every queen in the room just lost control of her week and every one of them is staring at the same person.",
         "The mini winner pairs the room. No draft, no counting slots, no strategy — one queen decides who works with whom, out loud, in front of everybody. The room does the math on who she likes and who she does not.",
-        "\"You won the mini. You are pairing the room.\" The winner stands up. Every other queen sits very still. This is not a draft. There is no turn. There is one person with the power and twelve people waiting to find out what she thinks of them.",
+        "\"You won the mini. You are pairing the room.\" The winner stands up. Every other queen sits very still. This is not a draft. There is no turn. There is one person with the power and a room full of people waiting to find out what she thinks of them.",
         "Pairs, chosen by the mini winner. She has the whole room to hand out and the whole room knows it. Some queens are smiling at her. Some queens are avoiding eye contact. Neither strategy is going to change what she already decided.",
       ]),
       /* AND THE SAME NIGHT WITH NOBODY TO DO THE PAIRING. An episode that

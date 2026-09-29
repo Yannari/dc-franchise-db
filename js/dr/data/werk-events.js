@@ -225,7 +225,7 @@ export const WERK_EVENTS = [
     arcs: ['villain'], when: f => f.canScheme && st(f.a, 'boldness') >= 7,
     effects: { pop: { a: -1 }, state: 'declared' },
     lines: [
-      "Nobody asks. {a} just says it, mid-morning, while everyone is working. \"I did not come here to be liked.\" The room keeps moving but the queens stop talking. That silence is the sound of twelve people recalculating where {a} sits in the room.",
+      "Nobody asks. {a} just says it, mid-morning, while everyone is working. \"I did not come here to be liked.\" The room keeps moving but the queens stop talking. That silence is the sound of a whole room recalculating where {a} sits in the room.",
       "\"Let me be honest.\" Then she is. What she thinks of the level in here, what she plans to do about it, how sorry she is not going to be. Two queens look at each other. One mouths \"wow.\" {a} goes back to her work like she said something ordinary.",
       "{a} says it to herself in the mirror, but loud enough for the room. \"I am here to win. I am not here to hold hands. If that makes me the villain then fine.\" Does not turn around. Does not have to. Everyone heard it.",
       "The room is talking about how they are all in this together and {a} lets the sentence finish and then goes \"no we are not\" with a cheerfulness that makes it worse. She means it. She is not performing. {a} goes back to glueing like the temperature did not just drop four degrees.",

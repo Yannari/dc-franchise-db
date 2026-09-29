@@ -1157,6 +1157,14 @@ export function runFinale(state, cfg, ctx) {
     });
   }
 
+  const spliceJury = (beats, js) => {
+    if (!js.length) return beats;
+    const at = beats.findIndex(s => s.step === 'finale-cut' || s.step === 'finale-lipsync');
+    const kept = beats.filter(s => s.step !== 'finale-cut');
+    const i = at < 0 ? kept.length : kept.indexOf(beats.slice(at).find(s => s.step !== 'finale-cut'));
+    return i < 0 ? [...kept, ...js] : [...kept.slice(0, i), ...js, ...kept.slice(i)];
+  };
+
   const row = {
     num: cfg.num,
     format: 'drag-race',
@@ -1171,7 +1179,7 @@ export function runFinale(state, cfg, ctx) {
       mini: null,
       judges: [],
       guest: null,
-      finale: { type, rounds, winner: placements[0], winners, doubleCrown,
+      finale: { type, rounds, winner: placements[0], winners, doubleCrown, allStars: !!state.allStars,
         runnerUp: doubleCrown ? null : placements[1], placements },
       // The finale carries the arcs too, and it is the one episode where they
       // matter most: this is where the season finds out whether the
@@ -1191,14 +1199,16 @@ export function runFinale(state, cfg, ctx) {
          itself is now between them. */
       scenes: [
         { step: 'main-stage', kind: 'finale-open', data: { finalists, type }, text: '' },
-        /* ── THE JURY'S NIGHT, BEFORE THE CUT IT DECIDES ───────────────
-           Pushed here rather than inside `renderFinaleBeats` because the
-           ballot is not a beat pool: it is a result the finale already has,
-           and these scenes only say it out loud. The cut beats that follow
-           are unchanged — the host still announces it, because on this show
-           the host always announces it. */
-        ...juryScenes,
-        ...renderFinaleBeats({
+        /* ── THE JURY'S NIGHT, AFTER THE SHOWCASE IT JUDGES ────────────
+           Spliced in rather than written inside `renderFinaleBeats` because
+           the ballot is not a beat pool: it is a result the finale already
+           has, and these scenes only say it out loud. It goes where the cut
+           would have been — after the showcase, which the ballots quote — and
+           the finale then draws no cut of its own: the jury IS the cut, and
+           a host announcing it a second time was a second cut. It used to be
+           pushed first, ahead of the whole night, so the jury voted on a
+           showcase nobody had performed yet and the morning ran twice. */
+        ...spliceJury(renderFinaleBeats({
           finalists,
           // Everybody this season sent home, walking back in.
           returning: [...(state.out || [])],
@@ -1219,7 +1229,10 @@ export function runFinale(state, cfg, ctx) {
           rng,
           players: ctx.players,
           record: state.record,
-        }),
+          strength: Object.fromEntries(finalists.map(n => [n, recordStrength(state.record[n] || [])])),
+          jury: !!juryResult,
+          allStars: !!state.allStars,
+        }), juryScenes),
         { step: 'exit', kind: 'crowning', data: { placements }, text: '' },
       ],
     },

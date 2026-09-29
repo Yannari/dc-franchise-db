@@ -303,10 +303,17 @@ export const STAGE_BEATS = [
       ]),
       tier('ball', 'Three categories in one night. The host names all of them '
         + 'and lets the room work out how much sewing that was.', [
-        '"Tonight is a BALL, ladies!\" The host claps once and names {c} first, then the other two categories, and watches the room absorb the number. \"That is THREE walks. THREE looks. At least one of them SEWN.\" He turns to the panel. \"I hope you brought snacks because we are going to be here a WHILE.\" The panel picks up their pens.',
-        '"Start your engines!\" The host opens the stage and lists all three categories, starting with {c}, and the list alone makes somebody backstage close her eyes and count garment bags. \"A Ball is a MARATHON, ladies,\" the host says. \"Not a sprint.\" He looks at the camera. \"Let us see who packed their A-game and who packed their anxiety.\"',
-        '"The Ball begins with {c}.\" The host names the first category and then the second and then the third and then folds his hands. \"Three categories. One night. And at least one of those is something you BUILT.\" He looks at the panel. \"Buckle up.\" The panel settles in. This is a long stage.',
-        '"This is a Ball, which means three categories, three looks, one NIGHT.\" The host names {c} and then the rest and the list lands on the room like a brief nobody can renegotiate. \"If you did not bring enough looks, baby, that is between you and your garment bag.\" Every queen backstage just did the arithmetic on how many garments that is.',
+        "\"Tonight is a BALL, ladies!\" The host claps once. \"{c}!\" Then he names the three categories, one after another, and watches the room absorb the number. \"That is THREE walks. THREE looks. At least one of them SEWN.\" He turns to the panel. \"I hope you brought snacks.\"",
+        "\"Start your engines!\" The host opens the stage on {c} and lists its three categories, and the list alone makes somebody backstage close her eyes and count garment bags. \"A Ball is a MARATHON, ladies,\" the host says. \"Not a sprint.\"",
+        "\"Welcome to {c}.\" The host names the first category and then the second and then the third and then folds his hands. \"Three categories. One night. And at least one of those is something you BUILT.\" He looks at the panel. \"Buckle up.\"",
+        "\"This is a Ball, which means three categories, three looks, one NIGHT.\" The host names {c} and then its categories, and the list lands on the room like a brief nobody can renegotiate. \"If you did not bring enough looks, baby, that is between you and your garment bag.\"",
+      ]),
+      tier('trio', 'A Runway Challenge: three categories, three looks she brought, nothing sewn. '
+        + 'The category named here is the name of the trio.', [
+        "\"Gentlemen, start your engines!\" The host lets the cheer settle. \"Tonight there is no challenge but THIS one. {c}: three categories, three looks, and every one of them judged on its own.\" He turns to the panel. \"No sets to hide behind. Just the girl and the garment.\"",
+        "\"Tonight's runway is the whole challenge,\" the host says, \"and it comes in threes.\" He names it — {c} — and then the three categories, and backstage the queens who packed light start doing arithmetic. \"Three looks. Three chances. Three ways to let me down.\"",
+        "\"{c},\" the host announces, and reads out the three categories one by one. \"You had this morning to style, steam and pray.\" He smiles at the panel. \"Let us see who prayed hardest.\"",
+        "\"Start your engines, and may the best woman win!\" The host holds up three fingers. \"{c}. Three categories. If I see the same dress three times in three colours, I WILL notice.\" Backstage somebody quietly swaps a belt.",
       ]),
     ],
   },
@@ -584,6 +591,16 @@ export const STAGE_BEATS = [
        it is filled these two are called on the screen with their stamp and
        named as a pair by `call-stakes`, and nothing wrong is said. */
     tier('win', 'The top two of the week. She is about to sing for it.', [
+      "\"{a}.\" The host lets the name sit. \"You are in the top two tonight.\" {a} rolls her shoulders back — not nerves, a fighter loosening up. She has just been handed a reason to want the song.",
+      "\"{a}, the judges put you at the top tonight.\" The host grins. {a} grins back and the grin is competitive.",
+      "\"{a}, top two.\" A beat. \"Which means you are not done yet.\" {a} nods once, sharp. She knows exactly what the next three minutes are for.",
+      "\"You were one of the best tonight, {a}.\" The host holds her eye. \"One of.\" {a}'s jaw tightens. She heard the second sentence louder than the first.",
+      "\"{a}.\" The host looks at her the way he looks at a queen he is about to enjoy watching. \"Top two.\" {a} adjusts her stance. Small, deliberate — she already knows what she is going to do with it.",
+      "\"{a}, you are in the top two.\" The host delivers it clean. {a} takes a breath and the breath is anticipation, not relief.",
+    ]),
+    /* Rate-a-Queen only: every line credits the QUEENS with the placement,
+       which on a night the panel judged is the narration inventing a vote. */
+    tier('win-rated', 'The top two of a Rate-a-Queen night. The room put her there.', [
       "\"{a}.\" The host lets the name sit. \"Your sisters put you in the top two tonight.\" {a} rolls her shoulders back — not nerves, a fighter loosening up. The room chose her and the room is watching.",
       "\"The queens have spoken, {a}, and they put you at the top.\" The host grins because he can — nobody is going home and the grin costs nothing. {a} grins back and the grin is competitive.",
       "\"{a}, top two tonight.\" A beat. \"Not because the panel put you there — the queens did, and they had every reason not to.\" {a} nods once, sharp. She earned this from the people she is competing against.",
@@ -692,6 +709,12 @@ export const STAGE_BEATS = [
       "\"For your life.\" The host says it and the phrase lands on both queens at the same time, and the weight of it is the weight of everything they have done in this competition compressed into the next three minutes of {s}. The track starts. One of them moves first. The other follows half a beat later.",
       "The stage belongs to two queens and a song. The host steps back after delivering the speech — the same speech, the same gravity, the same \"don\'t fuck it up\" — and the music fills the space the host leaves behind, and {s} begins, and both queens know that the next three minutes are the only three minutes that matter.",
     ]),
+      tier('life-group', "A group lip sync for their lives: more than two queens, one song, more than one going home.", [
+        "\"Ladies, I have some sad news.\" The host looks along the line of them. \"The time has come for you to lip sync — all of you, together — for your LIFE. Good luck, and don't fuck it up.\" The song is {s}.",
+        "\"All of you, on one stage, to one song.\" The host does not soften it. \"Not all of you are coming back from it. This is your last chance to impress me and save yourself from elimination.\" The first bars of {s} start before anybody is ready.",
+        "\"A lip sync for your life,\" the host says, \"and tonight there is room at the bottom for more than one goodbye.\" {s} starts, and every queen on that stage is watching the others out of the corner of her eye.",
+        "The stage is crowded for a lip sync and the host lets them feel it. \"Some of you will stay. Some of you will not. The song is {s}.\" He steps back. \"Now lip sync for your LIFE.\"",
+      ]),
     tier('win', 'The top two, and the song is the prize. Nobody can lose.', [
       "\"Ladies, prior to tonight you were asked to prepare a lip sync performance of {s}.\" The host grins, and the grin is the one he saves for a night nobody can lose. \"This is a lip sync for the WIN. Good luck, and don\'t fuck it up.\" The track drops and both queens take their marks.",
       "\"The time has come for you to lip sync — not for survival, but for the WIN.\" He lets the distinction land. \"The song is {s}. Now show me what you came here to do.\" Both queens adjust their stances and the music is already rising under his voice.",
@@ -1177,6 +1200,12 @@ export const STAGE_BEATS = [
         '"{a}, {b}." The host holds the pause. "One of you will stay, and one of you will sashay away." The words are the same as every other night and the meaning of them has never once been diminished by repetition.',
         '"For your life." The host delivers it to both of them and both of them receive it standing. Whatever happened on the runway and whatever the panel said has been compressed into a song and a floor, and {a} and {b} already know the song is the only argument either of them has left.',
         '"This is a lip sync for your life, ladies." The host steps back and the step is the last soft thing either of them will see tonight. {a} and {b} face the stage and the stage is suddenly the only thing left in the building.',
+      ]),
+      tier('life-group', "More than two in the bottom, one song, more than one going home.", [
+        "\"Ladies — the time has come for you to lip sync for your life.\" The host says it to the whole line of them. One song, all of them on the stage at once, and not everybody on it is staying.",
+        "\"Look around you,\" the host says. The bottom of the night is a crowd, and a crowd is a new kind of fear. \"Not every queen on this stage is still in the competition when the music stops.\"",
+        "The host names them one after another and does not pause between the names. \"For your lives,\" he says — plural, and every queen on that line hears the plural.",
+        "The host lets every name land. \"One song. More than one of you will sashay away.\" Nobody on the line looks at anybody else.",
       ]),
       tier('win', 'The top two, for the win. Nobody is going home.', [
         '"{a}, {b} — tonight you will be lip syncing not for your life, but for the WIN." The emphasis changes the room. Nobody is in danger and nobody is going home, and the song is a victory lap with a prize attached.',

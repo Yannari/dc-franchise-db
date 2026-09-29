@@ -707,6 +707,21 @@ export function runDragWeek(state, cfg, ctx) {
     const off = noise(rng, PANEL_FORM / PANEL_CHALLENGE_WEIGHT);
     performances[n].perf = Math.round((performances[n].perf + off) * 100) / 100;
     performances[n].parts = { ...(performances[n].parts || {}), form: off };
+    /* ── AND INTO EVERY PART THE SCREEN ADDS UP ──
+       A Runway Challenge's three walks, a Ball's three looks and a
+       photoshoot's frames are printed beside the total they average to. The
+       draw moved the total and left the parts, so a queen walked 6.4, 4.1 and
+       6.8 and was shown a 2.0 — and ranked last by a room that had watched
+       three middling looks. She was off for the whole night, so every walk of
+       it carries the same draw. */
+    const d = performances[n].detail;
+    const r2 = v => Math.round((Number(v) + off) * 100) / 100;
+    if (d && Array.isArray(d.walks)) d.walks = d.walks.map(r2);
+    if (d && Array.isArray(d.looks)) d.looks = d.looks.map(l => (l && Number.isFinite(l.score) ? { ...l, score: r2(l.score) } : l));
+    if (d && Array.isArray(d.frames)) {
+      d.frames = d.frames.map(r2);
+      if (Number.isFinite(d.best)) d.best = r2(d.best);
+    }
   }
   const maxiEvents = M.events;
   for (const sc of M.scenes) scenes.push(sc.text ? sc : { ...sc, text: '' });
@@ -736,7 +751,12 @@ export function runDragWeek(state, cfg, ctx) {
   }));
   if (!M.tournamentExit) say('main-stage', 'main-stage', { judges: panel.map(j => j.id) });
 
-  const category = cfg.runwayCategory || `${maxi.name} eleganza`;
+  /* A MODULE THAT REPLACES THE RUNWAY NAMES IT. A Ball's theme and a Runway
+     Challenge's trio ARE the night's category; the season's scheduled prompt
+     is for a runway these queens are not walking. It used to win anyway, so a
+     night of three decades was announced as "tonight's category is Beard Is
+     Here" and then walked as the forties, the seventies and the nineties. */
+  const category = M.runwayOverride?.theme || cfg.runwayCategory || `${maxi.name} eleganza`;
   // The styles this category flatters, from the category itself. A prompt
   // nobody declared styles for is neutral, and a design or Ball week's runway
   // is the look she BUILT, which is judged on the building rather than on
@@ -754,7 +774,10 @@ export function runDragWeek(state, cfg, ctx) {
   // Which shape of category call the host makes: three looks, one she sewed,
   // or one she brought. Read from the walks rather than from the challenge,
   // because a module may replace the runway without changing the challenge.
-  const runwayKind = walks.length > 1 ? 'ball' : (walks[0] && walks[0].sewn ? 'sewn' : 'call');
+  // Three walks with one of them sewn is a Ball; three with none is a Runway
+  // Challenge, which the host cannot announce as a Ball.
+  const runwayKind = walks.length > 1 ? (walks.some(w => w.sewn) ? 'ball' : 'trio')
+    : (walks[0] && walks[0].sewn ? 'sewn' : 'call');
   /* ── AND ON A DESIGN NIGHT THERE IS NO SECOND WALK ────────────────
      A Ball, a Design challenge and a Runway challenge all deliver a LOOK: the
      thing she presents on the main stage is the thing the challenge set her to
@@ -2565,8 +2588,12 @@ export function runDragWeek(state, cfg, ctx) {
   // *shown* rather than where they are *known* would mean threading half the
   // night's results backwards through the function.
   if (!M.tournamentExit) try {
-    const onStage = [...(call.win || []), ...(call.high || []),
-      ...(call.low || []), ...(call.bottom || [])];
+    /* `atRisk` too: on a no-elimination or top-two night the bottom queens
+       are filed there rather than under `bottom`, and they were critiqued on
+       that stage like anybody else — the card showed "RuPaul pan, Michelle
+       pan" with no sentence from any of them. */
+    const onStage = [...new Set([...(call.win || []), ...(call.high || []),
+      ...(call.low || []), ...(call.bottom || []), ...(call.atRisk || [])])];
     const stageScenes = renderStageBeats({
       walking: living, onStage, runway, reactions, lipsync,
       /* THE CALL THE HOST MADE, WHICH ON A TOP-TWO NIGHT IS NOT THE ONE

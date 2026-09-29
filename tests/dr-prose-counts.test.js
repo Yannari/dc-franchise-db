@@ -96,7 +96,7 @@ describe('EVERY PLACEHOLDER A POOL USES IS ONE THE WRITER FILLS', () => {
        it builds into `subs`. Read off the source rather than hardcoded, so
        adding a token to `subs` is enough to license it. */
     const always = new Set(['a', 'b', 'c']);
-    const subsBlock = filler.match(/return \{ tier, subs: \{([\s\S]*?)\} \};/);
+    const subsBlock = filler.match(/return \{ tier,[^{]*subs: \{([\s\S]*?)\} \};/);
     expect(subsBlock, 'the interview subs block moved or was renamed').toBeTruthy();
     /* Both property forms. `{ wins: String(wins), best, worst }` mixes
        key:value with SHORTHAND, and reading only `key:` missed `best` and

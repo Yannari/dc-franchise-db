@@ -13,20 +13,26 @@
 // not, and {h} the host.
 
 export const JURY_BEATS = {
-  /* ── THE DOOR ── they come back in, and the finalists watch them do it. */
+  /* ── THE BENCH ── they already came back with the rest of the returned cast,
+     two screens earlier, so this is them taking the jury seats, not walking
+     through a door a second time. */
   open: [
-    '"Before we go any further," the host says, "there are some queens who have opinions about tonight." The finalists turn towards the door before he finishes the sentence.',
-    'The host lets the room settle. "This season, you will not be deciding who lip syncs for the crown." A pause. "They will."',
-    '"Every queen who left this competition left because somebody decided she should." The host smiles. "Tonight they get a turn."',
-    'Nobody has told the finalists this part. You can see the exact moment each of them works out what the door opening means.',
-    '"You have all been judged by me for ten weeks," the host says. "Tonight you are judged by them, and they were in the room."',
+    "\"Before we go any further,\" the host says, turning to the queens who came back tonight, \"some of you have opinions about this.\" The finalists look at the returned cast, and the returned cast looks straight back.",
+    "The host lets the room settle. \"This season, you will not be deciding who lip syncs for the crown,\" he tells the finalists. He nods at the queens he sent home. \"They will.\"",
+    "\"Every queen who left this competition left because somebody decided she should.\" The host smiles at the returned cast. \"Tonight they get a turn.\"",
+    "Nobody has told the finalists this part. You can see the exact moment each of them works out why the queens who went home were brought back tonight.",
+    "\"You have all been judged by me all season,\" the host says to the finalists. \"Tonight you are judged by them, and they were in the room.\"",
   ],
   walk: [
-    '{a} comes back through that door in the best thing she owns and takes her time about it.',
-    '{a} walks in, finds the finalist she is here for, and does not look at anybody else.',
-    'The room makes a sound for {a} and {a} enjoys every second of it.',
-    '{a} is back, holding herself like somebody who has been waiting weeks for this exact walk.',
-    '{a} arrives, kisses nobody, and takes her place.',
+    "{a} gets up from the returned cast and walks to the jury bench in the best thing she owns, and takes her time about it.",
+    "{a} takes her seat on the jury, finds the finalist she is here for, and does not look at anybody else.",
+    "The room makes a sound as {a} crosses to the jury bench, and {a} enjoys every second of it.",
+    "{a} takes the jury seat like somebody who has been waiting weeks for this exact walk.",
+    "{a} sits down on the jury, kisses nobody, and folds her hands.",
+    "{a} finds her place on the jury bench and crosses her legs like she has been rehearsing it in a hotel mirror.",
+    "{a} takes her seat, looks down the line of finalists one at a time, and gives none of them anything.",
+    "{a} moves to the jury bench and squeezes the hand of the queen next to her before she sits.",
+    "{a} sits down on the jury with a little wave to the finalists that could mean anything.",
   ],
   rule: [
     '"Each of you will cast one vote," the host says to the jury. "The two finalists with the most support will lip sync for the crown. The rest will not."',

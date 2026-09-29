@@ -259,7 +259,17 @@ const CALL_VALUE = {
 };
 const SURFACES = {
   runway: { id: 'runway', valueOf: sc => num(sc?.data?.score) },
-  lipsync: { id: 'lipsync', valueOf: sc => num(sc?.data?.score) },
+  /* THE LOSER OF A GOOD LIP SYNC DID NOT "GO UP THERE WITHOUT THE SONG".
+     Against the median of two, the lower score is always `missed`, and the
+     missed pools are a queen who forgot the words and stopped performing —
+     said about a 6.8 that lost to a 7.4 and had just been narrated having
+     the stamina for it. Missed means the song actually got away from her
+     (under 3.5, js/dr/stage.js's `lost` cut); a respectable loss between
+     that and the median has no pool and draws no confessional. */
+  lipsync: {
+    id: 'lipsync', valueOf: sc => num(sc?.data?.score),
+    outcomeOf: (v, median) => (v >= median ? 'landed' : v < 3.5 ? 'missed' : null),
+  },
   /* THE CALL. One queen and the word the host just said to her. Not against
      the night's median: a call is already a ranking, and the median of a
      bottom-heavy line would count a LOW as landing. The top is landing,
@@ -324,6 +334,7 @@ export function stagedCandidatesFor(scene, room, bond, surface, median, list = [
   if (v === null) return [];
   const hers = who[0];
   const outcome = surface.outcomeOf ? surface.outcomeOf(v, median) : v >= median ? 'landed' : 'missed';
+  if (!outcome) return [];
   const tie = (x, y) => Math.abs(Number(bond(x, y)) || 0);
   const watchers = room.filter(n => n !== hers).map(n => ({
     name: n, tier: `${surface.id}-hers-${outcome}`, about: hers, stake: tie(n, hers),

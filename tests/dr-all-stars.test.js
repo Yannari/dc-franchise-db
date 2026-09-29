@@ -1311,7 +1311,10 @@ describe('why she chose that lipstick', () => {
       return p.length ? p.reduce((t, r) => t + PPE_POINTS[r], 0) / p.length : 0;
     };
     let agree = 0; let dis = 0;
-    for (const seed of [1, 2, 3, 4, 5, 6, 7, 8, 19, 42, 77, 300]) {
+    // Wide: a 'threat' read fires about once in three seasons, and twelve
+    // seeds gave four samples, where one disagreement is the whole margin.
+    for (const seed of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+      21, 22, 23, 24, 25, 42, 77, 300]) {
       const res = as(seed);
       for (const row of res.rows) {
         if (row.dr.lipsync?.why !== 'threat') continue;
@@ -1488,12 +1491,19 @@ describe('the Jury of Queer Peers', () => {
     expect(whys.size).toBeGreaterThan(2);
   });
 
-  it('draws it on a screen of its own, before the cut', async () => {
+  it('draws it on a screen of its own, after the showcase, and IS the cut', async () => {
     const { dragScreens } = await import('../js/vp-dr/screens.js');
     const row = fin(jury(7));
     const ids = dragScreens(row).map(x => x.id);
     expect(ids).toContain('dr-finale-jury');
-    expect(ids.indexOf('dr-finale-jury')).toBeLessThan(ids.indexOf('dr-finale-cut'));
+    // The ballots quote the showcase, so they come after it.
+    expect(ids.indexOf('dr-finale-jury')).toBeGreaterThan(ids.indexOf('dr-finale-showcase'));
+    expect(ids.indexOf('dr-finale-jury')).toBeLessThan(ids.indexOf('dr-finale-lipsync'));
+    // And the host does not announce a second cut after it.
+    expect(ids).not.toContain('dr-finale-cut');
+    // The night opens once: no finale-open scene after the jury's first one.
+    const kinds = row.dr.scenes.map(s => s.kind);
+    expect(kinds.lastIndexOf('finale:finale-open')).toBeLessThan(kinds.indexOf('jury:open'));
   });
 });
 

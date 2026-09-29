@@ -2521,7 +2521,8 @@ function _buildBeats(v) {
     + '<div class="lt-pot"><span class="lt-pot-n">' + _money(v.pot) + '</span>'
     + '<span class="lt-pot-k">in the box</span></div>'
     + '<h2 class="lt-h">' + (solo ? 'One Of Them Takes It'
-      : v.takers.length + ' Ways') + '</h2>'
+      : (['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six'][v.takers.length] || v.takers.length)
+        + ' Ways') + '</h2>'
     + '<p>' + _apos(_pick(MONEY_LEAD[side], key + '|lead')) + '</p>'
     + '<div class="lt-winners" data-side="' + side + '">' + winnersHtml + '</div>'
     + robbedHtml
@@ -2899,8 +2900,10 @@ export function rpBuildEndgame(ep, observer = 'audience') {
     + '<div class="lt-hero-lock">'
     // TASK 7: "Night 9" and not "Season I - Night IX" — the episode record
     // carries no season number, and the other five screens say so too.
-    + '<div class="lt-eyebrow">The Traitors &middot; Night ' + (v.ep || epNum)
-    + ' &middot; The Last Question</div>'
+    // "THE FINAL", not a night number: the endgame is filed on the engine's
+    // own counter, one past the episode it airs in, so it printed "Night 12"
+    // on episode eleven.
+    + '<div class="lt-eyebrow">The Traitors &middot; The Final &middot; The Last Question</div>'
     + '<h1 class="lt-title">THE ENDGAME</h1>'
     + '<div class="lt-title-rule"><i></i>' + _ic('slip', 34, '#cdd4dc') + '<i></i></div>'
     + '<p class="lt-sub">One word each, folded and handed back. Every hand in the room has '

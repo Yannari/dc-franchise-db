@@ -251,7 +251,7 @@ export function resolvePot(ep) {
   const line = takers.length
     ? lineFor(POT_LINES[key], `endgame-pot|${ep}|${key}`,
       { takers: listOf(takers), losers: listOf(losers),
-        share: share.toLocaleString('en-US'), pot: pot.toLocaleString('en-US') })
+        share: '£' + share.toLocaleString('en-US'), pot: '£' + pot.toLocaleString('en-US') })
     : 'An empty castle. Nobody is left to take it.';
   return { winner, survivors, takers, losers, pot, share, line, lineKey: key };
 }

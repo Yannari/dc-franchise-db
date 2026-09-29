@@ -585,7 +585,12 @@ export function rpBuildColdOpen(row) {
 /** The morning: the room at work, and what it costs them. */
 export function rpBuildWerkMorning(row) {
   const ep = epOf(row);
-  const scenes = sectionScenes(row, 'werk-morning', ['mini', 'maxi-announce', 'chal:mini-announce']);
+  /* Its own step only, the rule the cold open already keeps. A season save
+     is introduced between the morning and the mini, and this window took it
+     too: the dunk tank was explained at the bottom of the werk room and again
+     on its own screen. */
+  const scenes = sectionScenes(row, 'werk-morning', ['mini', 'maxi-announce', 'chal:mini-announce'])
+    .filter(s => s.step === 'werk-morning');
   return screen(row, {
     suffix: 'morning', phase: 'werk', title: 'The Werk Room', subtitle: 'morning',
     scenes,

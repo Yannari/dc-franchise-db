@@ -1453,6 +1453,13 @@ export function runDragWeek(state, cfg, ctx) {
     if (saves.kind === 'baguette') {
       saveScene('save-hold', 'handoff', { players: [giver, holderRes.holder], giver },
         saveLine(SAVE_BEATS.handoff.gave, { g: giver, h: holderRes.holder }));
+      const courted = (holderRes.targets || [])[0];
+      if (courted && courted !== holderRes.holder) {
+        const self = holderRes.pool.includes(holderRes.holder);
+        saveScene('save-hold', 'handoff-misread', { players: [holderRes.holder, courted], giver },
+          saveLine(self ? SAVE_BEATS.handoff.misreadSelf : SAVE_BEATS.handoff.misread,
+            { g: giver, h: holderRes.holder, t: courted }));
+      }
     }
     const brokenHope = new Set((memory.hopes || []).map(x => `${x.from}|${x.to}`));
     let remaining = [...holderRes.pool];

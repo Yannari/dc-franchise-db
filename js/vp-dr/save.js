@@ -951,6 +951,11 @@ export function rpBuildSaveHold(row, scenes = []) {
       case 'save:handoff':
         holderNow = chip(hold.holder, `${noun} held by`);
         return { ...common, holder: holderNow, phase: 'handoff', kept: null, caption: cap('The hand-off', sc.text) };
+      // The queen the room courted in Untucked, finding out it was not her.
+      case 'save:handoff-misread':
+        return { ...common, holder: holderNow, phase: 'handoff', kept: null,
+          talk: (sc.data?.players || [])[1] || null, tone: 'bitter', bubble: 'wrong queen',
+          caption: cap('The wrong queen', sc.text) };
       case 'save:invoke': {
         const h = sc.data?.holder;
         holderNow = chip(h, `${noun} held by`);
@@ -1000,7 +1005,7 @@ export function rpBuildSaveHold(row, scenes = []) {
     title: `${hold.pool.length === 4 ? 'Two of four' : 'One of three'} saved`, center, extra, caption: idle.caption,
   }).replace('<div class="svx-caption"', `${confessBox}<div class="svx-caption"`);
   const tagOf = sc => ({
-    'save:handoff': 'The hand-off', 'save:invoke': 'The host', 'save:speech': `${sc.data?.holder || ''} speaks`,
+    'save:handoff': 'The hand-off', 'save:handoff-misread': 'The wrong queen', 'save:invoke': 'The host', 'save:speech': `${sc.data?.holder || ''} speaks`,
     'save:suspense': 'The wait', 'save:saved': `${sc.data?.holder || hold.holder} decides`, 'save:host-react': 'The host',
     'save:reaction': 'Reaction', 'save:confessional': `Confessional · ${sc.data?.who || ''}`, 'save:left': 'Lip sync for your life',
     'save:favoritism': 'Again?', 'save:passed-over': 'Passed over',

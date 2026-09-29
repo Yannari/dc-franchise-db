@@ -121,3 +121,18 @@ describe('the werk room screens', () => {
     expect(html).toMatch(/prefers-reduced-motion/);
   });
 });
+
+describe('the morning keeps to its own scenes', () => {
+  it('does not draw the season save introduced between the morning and the mini', () => {
+    const b = {}; const k = (x, y) => [x, y].sort().join('|');
+    const tank = playDragSeason({
+      cast: cast(12, 6), seed: 5, config: { drSave: 'tank' },
+      bond: (x, y) => b[k(x, y)] || 0,
+      addBond: (x, y, d) => { b[k(x, y)] = (b[k(x, y)] || 0) + d; },
+    }).rows;
+    const row = tank.find(r => (r.dr.scenes || []).some(s => s.kind === 'save:intro'));
+    expect(row, 'no episode introduced the tank').toBeTruthy();
+    const intro = row.dr.scenes.find(s => s.kind === 'save:intro').text;
+    expect(strip(rpBuildWerkMorning(row))).not.toContain(intro.slice(0, 40));
+  });
+});

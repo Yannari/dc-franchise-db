@@ -305,6 +305,36 @@ Per family: `game.<family>.round` ≥ 8 entries, `game.<family>.react` ≥ 6, wi
 
 - [ ] Guards pass (three plain entries per key, US English, no names, CLEVER list, answered questions). Commit.
 
+### Task 13: Shared profiles, played as two people (spec §14.8)
+
+Asked for by the user (2026-09-29), with this example: *Mateo and Luis, brothers, one profile "Mateo" — Mateo's face, Luis's brain. They argue about every message, which makes "Mateo" slow but hard to trap. Blind spot: the younger brother's flirting and the older brother's caution don't sound like one person; the chat voice is inconsistent, which everyone eventually notices.* (Executed before Task 12, so the read covers it.)
+
+**Files:** `js/ci/profiles.js`, `js/ci/state.js`, `js/ci/chat.js`, `js/ci/conversation.js`, `js/ci/slips.js`, `js/ci/script.js`, `js/ci/lines/shared.js`, `tests/ci-shared.test.js`
+
+**Interfaces — Produces:** a shared profile gains `roles: { face, brain }` (person names; authored via `setup.shared[name] = { face, brain }`, else face = the higher `social`, brain = the higher `strategic`, ties to the first). `leadFor(state, handle, intent, rng) → personName` — who wins the argument over this message. `S(state, handle, key, { who })` reads one person when `who` is given.
+
+Rules (proportional):
+- **Who wins each message:** the face's pull on `flirt`/`bond`/`checkin` and the brain's on `pitch`/`probe`/`plant`/`ally`/`pump`/`compare`/`credit` is `+2`; each side adds `S(boldness) * 0.3 + S(strategic) * 0.2`; `rng()*2` breaks it. The chat's reception and dice read the winner's stats (`S(..., { who })`), not the average.
+- **Slow:** a shared profile opens `× 0.7` as many chats a day (every message is an argument).
+- **Hard to trap:** a probe against a shared profile fails `× 0.6` as often (two heads check the answer).
+- **The blind spot:** `voice` slip risk `+ distance / 20`, where `distance = |Δboldness| + |Δsocial| + |Δtemperament|` between the two people. Each noticed voice slip adds to the observer's `state.inconsistency[obs][handle]`; once it passes 3, the observer's `belief.real` drops by an extra `0.05 × intuition/10` per further notice, and a Circle Chat theory about that profile becomes likelier (`hasTheory` reads `real`, so it follows).
+- **The hidden partner's life leaks:** the partner who is not the face contributes `knowledge` slips (their age, their family: `setup.people[name].facts`, e.g. "three kids at home") at the rate of a catfish tell.
+- **The argument airs:** a new scene part — before a shared profile's first sent message in an aired chat, an `argue` block: the two people, named as themselves in staging, argue aloud; the winner's version is sent. Pool `shared.argue.<faceWins|brainWins>` (≥ 6 each), written as two real people in one room: *"Don't send that." — "Why not?" — "Because you sound like you're nineteen."* Players outside the apartment never see it.
+- **Games:** the pair answers once; on a `statement` or `name` prompt the answer is the lead's.
+
+- [ ] **Step 1: Failing tests** (`tests/ci-shared.test.js`, with the brothers as the fixture: Mateo 26, social 8, boldness 8, strategic 4; Luis 31, social 5, boldness 3, strategic 8, facts `['three kids at home']`):
+```js
+it('makes Mateo the face and Luis the brain when nobody says otherwise, and honors an authored split', ...);
+it('lets Mateo win the flirts and Luis the pitches, most of the time (500 draws)', ...);
+it('opens fewer chats than a single player with the same averaged stats', ...);      // control arm
+it('fails fewer probes than the same profile played alone', ...);                     // control arm
+it('slips on voice more the more different the two are', ...);                       // brothers vs twins
+it('builds an inconsistency score that, past 3 notices, costs belief in the profile', ...);
+it('airs the argument before the first sent message, to the pair only', ...);
+it('answers a game prompt once, as the lead', ...);
+```
+- [ ] Steps 2–5 as in the other tasks; `tests/ci-season.test.js` and the audit still pass.
+
 ### Task 12: Read the output
 
 1. `CI_SEED=7` and `CI_SEED=19` transcripts. Read end to end: a social day with a game and a party, a rating day with a game, the home-video day.

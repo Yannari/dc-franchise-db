@@ -148,6 +148,7 @@ export function forbiddenFor(format) {
  */
 export const PROPER_NOUNS = [
   'murder on the dancefloor',
+  'make out, marry, murder',   // a real Circle game (US 7 Ep 5)
 ];
 
 export function foreignWordsIn(text, format) {

@@ -434,11 +434,17 @@ const REASON_LINES = {
     'Every read {t} has offered has landed. I would rather not be the next one.',
     'The table follows {t} now. Removing {obj} costs the Faithfuls the only voice they have all agreed on.',
   ],
+  // A BAD REASON, SAID AS A GOOD ONE. The engine reaches this label when the
+  // pick is somebody the room already suspects — which throws away the name
+  // the Faithfuls were about to vote for (murder.js: "a bad reason,
+  // deliberately reachable"). These lines are the PROPOSER's words, so they
+  // argue FOR the pick; the old ones spelled out why it was a mistake, and the
+  // Traitor ended up arguing against the name they had just put forward.
   'wasted-decoy': [
-    'The Faithfuls already suspect {t}. Removing {obj} wastes a likely Round Table target and forces them to investigate somebody new.',
-    '{T} is already drawing suspicion. If we remove {obj}, the castle loses the person it was most likely to vote against next.',
-    'The castle is focused on {t}. Removing {obj} destroys that false lead before the Faithfuls can use it.',
-    'Several Faithfuls already want to vote for {t}. Removing {obj} takes that easy target away from them.',
+    'They all suspect {t}. Kill {obj} tonight and they decide they had it wrong, and spend tomorrow doubting themselves instead of us.',
+    '{T} is the name they are about to write. If {sub} dies first, the castle reads it as proof {sub} was innocent, and a room full of guilt does not look for anybody.',
+    '{T} is already under suspicion, so nobody will ask why {sub} was chosen. It is the quietest kill on the table.',
+    'Take {t} off the board and the castle loses the only theory it has. Let them start again from nothing.',
   ],
   convenient: [
     '{T} has fewer close allies than the other options. Removing {obj} is less likely to unite the castle against us.',

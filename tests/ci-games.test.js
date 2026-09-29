@@ -109,7 +109,7 @@ describe('public-answer games', () => {
 
   it('a statement game: a catfish can give themselves away with an answer', () => {
     let slipped = 0;
-    for (let seed = 1; seed <= 30; seed++) {
+    for (let seed = 1; seed <= 100; seed++) {
       const s = room(8, seed);
       Object.assign(s.profiles['@q0'], { mode: 'catfish', gap: 2 });
       const sc = runGame(s, streamFor(seed, 'g'), game('ice-breaker'));
@@ -210,7 +210,7 @@ describe('catfish tests', () => {
   it('a guess game: a catfish gives themselves away more than the same player honest (control arm)', () => {
     const slipsWith = gap => {
       let n = 0;
-      for (let seed = 1; seed <= 150; seed++) {
+      for (let seed = 1; seed <= 300; seed++) {
         const s = room(6, seed);
         Object.assign(s.profiles['@q0'], { mode: gap ? 'catfish' : 'honest', gap });
         const sc = runGame(s, streamFor(seed, 'guess'), game('says-who'));

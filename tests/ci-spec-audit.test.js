@@ -10,6 +10,7 @@ import { setPlayers } from '../js/core.js';
 import { playCircleSeason } from '../js/ci/season.js';
 import { makePlayers, makePool, circleSetup } from './helpers/ci-cast.js';
 import { POOLS } from '../js/ci/lines/index.js';
+import { GAMES } from '../js/ci/games-data.js';
 
 const SEASONS = 100;
 const pct = (a, b) => (b ? (100 * a / b).toFixed(1) + '%' : 'n/a');
@@ -20,9 +21,10 @@ describe('The Circle spec audit', () => {
     const m = { finished: 0, days: [], blocks: [], catfish: 0, profiles: 0, catfishWin: 0, catfishTotal: 0,
       catfishExposed: 0, finalCatfish: 0, finalSuspected: 0, influencer3: 0, wrongFake: [], inferred: [], inferredRight: 0, inferredAll: 0,
       visitsCatfish: 0, visits: 0, newcomerFinal: 0, scenesPerDay: [], chatsPerDay: [], intents: {},
-      probes: {}, slips: [], slipsNoticed: 0, slipsAll: 0, ffIsWinner: 0, pacts: [], pactKept: 0, pactChecks: 0,
+      probes: {}, slips: [], misreads: [], slipsNoticed: 0, slipsAll: 0, ffIsWinner: 0, pacts: [], pactKept: 0, pactChecks: 0,
       reports: [], unused: [], editedShare: [],
-      pools: {}, pairRepeats: 0, missing: {}, airedPerDay: [], blocksPerScene: [], lines: 0 };
+      pools: {}, pairRepeats: 0, missing: {}, airedPerDay: [], blocksPerScene: [], lines: 0,
+      games: [], families: {}, purposes: {}, prizes: {}, immuneSaved: 0, gameSlips: 0, chatSlips: 0, partySlips: 0, parties: [], homeVideos: [] };
     for (let s = 1; s <= SEASONS; s++) {
       const cast = makePlayers(13, s);
       setPlayers(cast);
@@ -30,6 +32,24 @@ describe('The Circle spec audit', () => {
       const { rows, state, result } = playCircleSeason({ cast: names, setup: circleSetup(names, { newcomers: 5 }),
         pool: makePool(6, s), seed: s });
       if (state.active.length === state.options.finalists) m.finished++;
+      // Games, parties, home videos (Plan 3a).
+      const games = state.scenes.filter(x => x.kind === 'game');
+      m.games.push(games.length);
+      for (const g of games) {
+        m.families[g.data.family] = (m.families[g.data.family] || 0) + 1;
+        const pur = GAMES.find(x => x.id === g.data.gameId)?.purpose;
+        m.purposes[pur] = (m.purposes[pur] || 0) + 1;
+        if (g.data.prize) m.prizes[g.data.prize.kind] = (m.prizes[g.data.prize.kind] || 0) + 1;
+        m.gameSlips += (g.data.slips || []).filter(x => !x.misread).length;
+      }
+      m.chatSlips += state.scenes.filter(x => x.kind === 'chat').reduce((a, x) => a + (x.data.slips || []).filter(y => !y.misread).length, 0);
+      m.partySlips += state.scenes.filter(x => x.kind === 'party').reduce((a, x) => a + (x.data.slips || []).filter(y => !y.misread).length, 0);
+      m.parties.push(state.scenes.filter(x => x.kind === 'party').length);
+      m.homeVideos.push(state.scenes.filter(x => x.kind === 'home-video').length);
+      for (const g of games.filter(x => x.data.prize?.kind === 'immunity')) {
+        const hang = state.scenes.find(x => x.kind === 'hangout' && x.day >= g.day);
+        if (hang) m.immuneSaved += g.data.prize.to.filter(h => !hang.data.atRisk.includes(h) && !hang.who.includes(h)).length;
+      }
       // The writing (Plan 2 Task 11): how often each pool plays, how many of
       // its entries a season uses, and the worst repeat of one entry.
       const u = state.usedLines || { uses: {}, pairs: {} };
@@ -92,6 +112,7 @@ describe('The Circle spec audit', () => {
       }
       const slips = state.scenes.flatMap(x => x.data.slips || []);
       m.slips.push(slips.length);
+      m.misreads.push(slips.filter(x => x.misread).length);
       m.slipsAll += slips.length;
       m.slipsNoticed += slips.filter(x => x.noticedBy.length).length;
       if (result.fanFavorite === result.winner.people[0]) m.ffIsWinner++;
@@ -117,6 +138,7 @@ describe('The Circle spec audit', () => {
       ['seasons with a newcomer in the final', pct(m.newcomerFinal, SEASONS), 'common (US 4 "Imani")'],
       ['scenes per day / chats per day', `${mean(m.scenesPerDay)} / ${mean(m.chatsPerDay)}`, 'dense'],
       ['slips per season (noticed)', `${mean(m.slips)} (${pct(m.slipsNoticed, m.slipsAll)})`, 'a few, some noticed'],
+      ['…of which misreads (an honest answer read as a tell)', mean(m.misreads), 'a handful'],
       ['visit lies per season', mean(m.reports), 'rare'],
       ['Fan Favorite is the winner', pct(m.ffIsWinner, SEASONS), 'sometimes (US 1: no)'],
     ];
@@ -125,6 +147,15 @@ describe('The Circle spec audit', () => {
     console.log('\n  intents:', JSON.stringify(m.intents));
     console.log('  probes: ', JSON.stringify(m.probes), '\n');
     const r1 = x => Math.round(x * 10) / 10;
+    const tot = o => Object.values(o).reduce((a, b) => a + b, 0);
+    const share = o => JSON.stringify(Object.fromEntries(Object.entries(o).map(([k, v]) => [k, pct(v, tot(o))])));
+    console.log('  GAMES');
+    console.log(`  games per season ${mean(m.games)} (target 7-10) · parties ${mean(m.parties)} · home videos ${mean(m.homeVideos)}`);
+    console.log('  families:', JSON.stringify(m.families));
+    console.log('  purposes:', share(m.purposes), '(no purpose over 40%)');
+    console.log('  prizes:', JSON.stringify(m.prizes), `· immunity that kept someone off the block: ${m.immuneSaved}`);
+    console.log(`  slips — in chats ${m.chatSlips}, in games ${m.gameSlips}, at parties ${m.partySlips} (100 seasons)`);
+    console.log('');
     console.log('  WRITING');
     console.log(`  aired scenes per day ${r1(mean(m.airedPerDay))} · blocks per aired scene ${r1(mean(m.blocksPerScene))} · lines per season ${Math.round(m.lines / SEASONS)}`);
     console.log(`  same entry, same pair, again (pool exhausted for that pair): ${m.pairRepeats} over ${SEASONS} seasons`);

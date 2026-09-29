@@ -35,8 +35,6 @@ const RUN = {
       for (const h of all) {
         const pAgree = clamp(0.5 + p.lean * (S(state, h, p.stat) - 5) / 10 + (rng() - 0.5) * 0.4, 0.05, 0.95);
         answers[h] = rng() < pAgree ? 'agree' : 'disagree';
-        // An answer can contradict the profile ("She might be a dude").
-        rollSlips(state, rng, h, all, { specific: 0.4, attention: 0.7 }, sc);
       }
       sc.data.rounds.push({ promptId: p.id, answers });
       for (const a of all) for (const b of all) if (a !== b && answers[a] === answers[b]) bump(a, b, 'affection', 0.15);
@@ -48,6 +46,11 @@ const RUN = {
         for (const obs of all) if (obs !== lone) nudgeBelief(state, obs, lone, 'real', -0.02 * S(state, obs, 'intuition') / 10, sc);
       }
     }
+    // Over the whole game, an answer can contradict the profile ("She might be
+    // a dude"). Once per player, not per round: the lone-answer rule above is
+    // already the room reading each round (the audit showed per-round rolls
+    // doubling the season's misreads).
+    for (const h of all) rollSlips(state, rng, h, all, { specific: 0.8, attention: 0.7 }, sc);
   },
 
   /** Say the Player who fits, in the open (1×11 Most Likely). */
@@ -135,13 +138,14 @@ const RUN = {
       const answers = {}, placedBy = {};
       for (const h of all) {
         answers[h] = 'fact';
-        rollSlips(state, rng, h, all, { specific: 0.6, attention: 0.8 }, sc);
         placedBy[h] = all.filter(o => o !== h && rng() < 0.3 + S(state, o, 'intuition') / 20
           + Math.max(0, rel(o, h, 'affection')) / 40);
         if (placedBy[h].length === all.length - 1) for (const o of placedBy[h]) nudgeBelief(state, o, h, 'real', 0.04, sc);
       }
       sc.data.rounds.push({ promptId: p.id, answers, placedBy });
     }
+    // A catfish's facts can give them away — once per player per game.
+    for (const h of all) rollSlips(state, rng, h, all, { specific: 2.5, attention: 0.8 }, sc);
   },
 
   /**

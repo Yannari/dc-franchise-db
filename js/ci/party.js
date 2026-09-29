@@ -36,10 +36,13 @@ export function runParty(state, rng, { theme = null } = {}) {
     const admitted = all.filter(h => rng() < clamp(S(state, h, st.stat) / 12 + rng() * 0.3 - 0.15, 0.02, 0.95));
     for (const h of admitted) {
       for (const obs of all) if (obs !== h && attractionOk(state, obs, h) && rel(obs, h, 'attraction') > 2) bump(obs, h, 'attraction', 0.3);
-      rollSlips(state, rng, h, all, { specific: 0.5, party: true, attention: 0.6 }, sc);
     }
     sc.data.rounds.push({ by, statement: st.id, admitted });
   }
+  // What someone admits can give them away — rolled once per player for the
+  // whole game (per admission, the audit counted six misreads a party).
+  const admittedAny = [...new Set(sc.data.rounds.flatMap(r => r.admitted))];
+  for (const h of admittedAny) rollSlips(state, rng, h, all, { specific: 0.8, party: true, attention: 0.6 }, sc);
   for (const a of all) for (const b of all) {
     if (a !== b && attractionOk(state, a, b) && rel(a, b, 'attraction') > 3) bump(a, b, 'attraction', 0.5);
   }

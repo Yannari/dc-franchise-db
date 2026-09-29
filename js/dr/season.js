@@ -1610,6 +1610,10 @@ export function playDragSeason({
     premiere: premiere === 'split' ? 'standard' : premiere,
     // So a queen cannot be flown in to judge the season she is competing in.
     cast,
+    /* WHAT THE SPLIT ALREADY PLAYED. The season proper is built as a season
+       of its own whose episode one is a premiere, so it could open on a third
+       Talent Show straight after the split's two. */
+    exclude: rows.map(r => r?.dr?.challenge?.id).filter(Boolean),
   });
 
   /* AND THE BOTTOM-THREE NIGHT, booked onto whichever middle episode the

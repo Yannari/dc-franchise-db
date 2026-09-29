@@ -120,7 +120,7 @@ const CONFIDE_LINES = {
   'regretted-it': [
     '{a} says too much to {b}, and knows it before the sentence is finished.\n{a}: "Forget I said that."\n{b}: "Said what?"\n{a} (to camera): "Why did I say that? Why?"',
     '{a} hears {aRef} telling {b} too much, and can’t stop.\n{a}: "...and that’s why I don’t trust anyone. God. Sorry. That was a lot."\n{b}: "It’s fine."\n{a} (to camera): "It was not fine."',
-    '{a} confides in {b}, and immediately wishes {aSub} hadn’t.\n{a} (to camera): "I told {b} my plan for tomorrow. Out loud. What was I thinking?"',
+    '{a} confides in {b}, and immediately wishes {aSub} hadn’t.\n{a}: "…so that’s the plan for tomorrow."\n{b}: "Wow. Thanks for telling me."\n{a} (to camera): "I told {b} my plan for tomorrow. Out loud. What was I thinking?"',
     '{a} opens up to {b}, then panics about it.\n{a}: "You won’t repeat that, will you?"\n{b}: "No. Why would I?"\n{a}: "No reason."',
   ],
   'nearly-said-it': [
@@ -223,28 +223,28 @@ registerEvent({
 // to — which is the trust family's own question asked quietly.
 const TRADE_LINES = {
   'traded-reads': [
-    '{a} and {b} compare notes on {c}, quietly.\n{a}: "What do you make of {c}?"\n{b}: "Honestly? {cSub} doesn’t sit right with me."\n{a}: "Same."',
+    '{a} and {b} compare notes on {c}, quietly.\n{a}: "What do you make of {c}?"\n{b}: "Honestly? {c} doesn’t sit right with me."\n{a}: "Same."',
     '{a} asks {b} straight out what {bSub} thinks of {c}.\n{b}: {say:suspect:{c}}\n{a}: {say:agree-suspect:{c}}',
     '{a} and {b} go through {c} together.\n{b}: "You first."\n{a}: "{c}’s too nice. Nobody’s that nice in here."\n{b}: "I thought it was just me."',
     '{a} and {b} swap reads on {c}.\n{a}: "Trust {c}?"\n{b}: "About as far as I could throw {cObj}."',
   ],
   'one-way': [
     '{a} gives {b} a proper read on {c}, and gets nothing back.\n{a}: {say:suspect:{c}}\n{b}: "Interesting."\n{a}: "And you?"\n{b}: "Oh, I don’t know. Could be anyone."',
-    '{a} shares what {aSub} thinks of {c}. {b} doesn’t share back.\n{a} (to camera): "I gave {b} everything. {b} gave me a shrug. I’ll remember that."',
+    '{a} shares what {aSub} thinks of {c}. {b} doesn’t share back.\n{a}: "That’s what I think about {c}. Your turn."\n{b}: "I haven’t really made my mind up."\n{a} (to camera): "I gave {b} everything. {b} gave me a shrug. I’ll remember that."',
     '{a} goes first, as usual, and {b} doesn’t go at all.\n{a}: "Your turn."\n{b}: "I haven’t really got a view on {c}."\n{a}: "Everyone’s got a view."',
-    '{a} tells {b} exactly what {aSub} thinks about {c}.\n{b}: "Thanks. Good to know."\n{a} (to camera): "That was a one-way street."',
+    '{a} tells {b} exactly what {aSub} thinks about {c}.\n{b}: "Thanks. Good to know."\n{a}: "And you?"\n{b}: "I’ll let you know."\n{a} (to camera): "That was a one-way street."',
   ],
   'same-name': [
     '{a} and {b} both say {c} at the same time.\n{a}: "{c}."\n{b}: "{c}."\n{a}: "Right. Well. That settles that."',
     '{a} and {b} have both got {c} in mind, separately.\n{b}: "Have you been thinking about {c}?"\n{a}: "For two days."\n{b}: "Then we vote together tonight."',
     'Both of them say the same name, and it becomes a plan.\n{a}: "So that’s two of us on {c}."\n{b}: "Let’s make it more."',
-    '{a} and {b} land on {c} independently.\n{a} (to camera): "When two people get to the same name on their own, you listen."',
+    '{a} and {b} land on {c} independently.\n{a}: "I think it’s {c}."\n{b}: "I was going to say {c}."\n{a} (to camera): "When two people get to the same name on their own, you listen."',
   ],
   disagreed: [
     '{a} says {c}. {b} says somebody else, and neither will budge.\n{a}: {say:suspect:{c}}\n{b}: {say:doubt-suspect:{c}}\n{a}: "Fine. We’ll see tonight."',
     '{a} and {b} can’t agree about {c}.\n{b}: "You’re wrong about {c}."\n{a}: "Then who?"\n{b}: "Not {c}. That’s all I know."',
     '{a} and {b} argue about {c}, and by the end they’re not really talking about {c}.\n{b}: "You always go for the easy name."\n{a}: "And you always defend it."',
-    '{a} pushes {c}. {b} pushes back.\n{a} (to camera): "{b} was very quick to defend {c}. Very quick."',
+    '{a} pushes {c}. {b} pushes back.\n{a}: "{c} has been off all week."\n{b}: "{c}’s been fine. You’re reaching."\n{a} (to camera): "{b} was very quick to defend {c}. Very quick."',
   ],
   'read-the-room': [
     '{a} watches who sits with who at dinner, and adjusts the list in {aPos} head.\n{a} (to camera): {cam:watching}',
@@ -361,7 +361,7 @@ const CIRCLE_LINES = {
     '{a} and {b} agree, without quite saying the word, that they’re in this together now.\n{b}: "So we’re… a thing? Strategically?"\n{a}: "Don’t call it that. But yes."',
     '{a} and {b} walk away from the conversation as a pair.\n{a}: "You watch my back, I’ll watch yours."\n{b}: "Deal."',
     '{a} and {b} shake on it, quietly.\n{a}: "Nobody needs to know."\n{b}: "Nobody will."',
-    'Nobody says the word alliance. Both of them know that’s what it is.\n{b} (to camera): "{a} and me are solid now. That changes things."',
+    'Nobody says the word alliance. Both of them know that’s what it is.\n{a}: "So we look after each other."\n{b}: "We look after each other."\n{b} (to camera): "{a} and me are solid now. That changes things."',
   ],
   'said-the-word': [
     '{b} makes {a} say it out loud.\n{b}: "It’s an alliance. Say it."\n{a}: "Fine. It’s an alliance."\n{b}: "Good. Now I believe you."',
@@ -377,9 +377,9 @@ const CIRCLE_LINES = {
   ],
   'not-this-week': [
     '{a} offers {b} a proper alliance. {b} holds back.\n{b}: "Let’s see how tonight goes."\n{a}: "That’s a no."\n{b}: "It’s a not yet."',
-    '{b} likes the idea but won’t commit.\n{b}: "I like you. I’m just not locking anything in this week."\n{a} (to camera): "Not locking in. Right. I’ll remember that."',
+    '{b} likes the idea but won’t commit.\n{b}: "I like you. I’m just not locking anything in this week."\n{a}: "Right. Not this week."\n{a} (to camera): "Not locking in. Right. I’ll remember that."',
     'It very nearly becomes something, and then {b} steps back.\n{b}: "Ask me again in a few days."\n{a}: "Fine."',
-    '{a} tries to make it official. {b} won’t name it.\n{b}: "We’re friends. Let’s leave it there for now."',
+    '{a} tries to make it official. {b} won’t name it.\n{b}: "We’re friends. Let’s leave it there for now."\n{a}: "Friends who vote together?"\n{b}: "Friends. Let’s see about the rest."',
   ],
 };
 
@@ -476,7 +476,7 @@ const CIRCLE_BREAK_LINES = {
     '{a} tells {b} it’s over.\n{a}: "I’m not tied to you any more. Just so you know."\n{b}: "Wow. Okay."\n{a}: "It’s nothing personal."\n{b}: "It feels personal."',
     '{a} ends it in one sentence.\n{a}: "We’re done. As a team, I mean."\n{b}: "Just like that?"\n{a}: "Just like that."',
     '{a} tells {b} straight.\n{a}: "I can’t protect you any more. I need to look after myself."\n{b}: "I thought we were in this together."',
-    '{a} cuts {b} loose.\n{a}: "Vote how you want tonight. I’m voting how I want."\n{b} (to camera): "So that’s that, then."',
+    '{a} cuts {b} loose.\n{a}: "Vote how you want tonight. I’m voting how I want."\n{b}: "Fine by me."\n{b} (to camera): "So that’s that, then."',
   ],
   'turned-cold': [
     '{a} looks at {b} and wonders, for the first time, if {bSub}’s a Traitor.\n{a}: "Were you ever really with me?"\n{b}: "What are you talking about?"\n{a}: "I just want an honest answer."',
@@ -549,25 +549,25 @@ const COMMIT_LINES = {
     '{a} asks {b} for {bPos} vote tonight, and {b} gives a straight answer.\n{a}: "Are you with me tonight?"\n{b}: "Count on it."\n{a}: "No hedging?"\n{b}: "No hedging."',
     '{a} asks, and {b} gives one name, plainly.\n{a}: "Who are you writing?"\n{b}: "The same as you. I promise."',
     '{b} looks {a} in the eye and promises.\n{b}: "I’m voting with you. Don’t worry."\n{a}: "I’m going to hold you to that."\n{b}: "Do."',
-    '{a} checks {b} is still on the plan.\n{b}: "Nothing’s changed. Same name."',
+    '{a} checks {b} is still on the plan.\n{b}: "Nothing’s changed. Same name."\n{a}: "Good. Tonight, then."',
   ],
   broken: [
     '{b} promises {a} {bPos} vote, and doesn’t mean it.\n{a}: "You’re with me tonight?"\n{b}: "Course I am."\n{b} (to camera): "I’m not. But {a} doesn’t need to know that yet."',
     '{a} believes {b}. {b} walks off knowing it was a lie.\n{a}: "Thank you. I needed that."\n{b}: "Any time."\n{b} (to camera): "I feel bad. I’m still not voting that way."',
-    '{b} tells {a} what {aSub} wants to hear.\n{b}: "Yes. Absolutely. Same name."\n{b} (to camera): "Different name. Sorry, {a}."',
-    '{b} smiles and says yes, and has already decided otherwise.\n{a} (to camera): "{b} said yes. I think {b} meant it."',
+    '{b} tells {a} what {aSub} wants to hear.\n{b}: "Yes. Absolutely. Same name."\n{a}: "Promise?"\n{b}: "Promise."\n{b} (to camera): "Different name. Sorry, {a}."',
+    '{b} smiles and says yes, and has already decided otherwise.\n{a}: "Same name tonight?"\n{b}: "Same name. Course."\n{a} (to camera): "{b} said yes. I think {b} meant it."',
   ],
   deflected: [
     '{b} never actually says yes.\n{a}: "So you’re with me tonight?"\n{b}: "I’m just seeing how it goes."\n{a}: "That’s not a yes."\n{b}: "It’s not a no either."',
     '{a} asks for a promise. {b} gives a feeling.\n{b}: "You know I like you."\n{a}: "That’s not what I asked."',
-    '{b} talks around it until {a} gives up.\n{a} (to camera): "Five minutes of talking and not one answer. I noticed."',
+    '{b} talks around it until {a} gives up.\n{a}: "So who are you writing?"\n{b}: "Well, it depends, doesn’t it, on how the day goes and who says what at dinner—"\n{a} (to camera): "Five minutes of talking and not one answer. I noticed."',
     '{b} dodges the question.\n{a}: "Yes or no?"\n{b}: "Let’s wait and see what everyone says at the table."',
   ],
   turned: [
     '{b} answers {a}’s question with a question.\n{a}: "Are you voting with me?"\n{b}: "Are you voting with me?"\n{a}: "I asked first."\n{b}: "You go first."',
-    '{b} turns it round.\n{b}: "You tell me your name first, then I’ll tell you mine."\n{a} (to camera): "Now I owe {b} an answer. How did that happen?"',
+    '{b} turns it round.\n{b}: "You tell me your name first, then I’ll tell you mine."\n{a}: "That’s not fair."\n{b}: "It’s perfectly fair."\n{a} (to camera): "Now I owe {b} an answer. How did that happen?"',
     '{b} puts it back on {a}.\n{b}: "Why do you need to know so badly?"\n{a}: "Because I’m scared."\n{b}: "So am I."',
-    'Instead of committing, {b} asks {a} to commit first.\n{b}: "Prove it. Tell me who."',
+    'Instead of committing, {b} asks {a} to commit first.\n{b}: "Prove it. Tell me who."\n{a}: "I asked first."',
   ],
 };
 
@@ -658,7 +658,7 @@ const HUDDLE_LINES = {
     '{a} and {b} sit close after last night, and neither pretends they aren’t scared.\n{a}: "That could’ve been us."\n{b}: "I know. Don’t."',
     '{a} and {b} find each other before anybody else is down.\n{b}: "Stay with me this morning?"\n{a}: "Wasn’t going anywhere."',
     '{a} and {b} sit on the stairs together.\n{a}: "I can’t stop thinking about last night."\n{b}: "Me neither. Stay close today, yeah?"',
-    '{a} and {b} spend the morning together, quietly.\n{b} (to camera): "{a} makes me feel safer. That’s all I want today."',
+    '{a} and {b} spend the morning together, quietly.\n{a}: "Tea?"\n{b}: "Please. And stay a bit?"\n{b} (to camera): "{a} makes me feel safer. That’s all I want today."',
   ],
   'counted-the-room': [
     'It starts as comfort and turns into strategy inside ten minutes.\n{a}: "Okay. Who’s left that we trust?"\n{b}: "Let’s count."',
@@ -669,13 +669,13 @@ const HUDDLE_LINES = {
   'could-not-be-near-anyone': [
     '{a} goes to sit with {b}, and {b} can’t do it this morning.\n{b}: "Sorry. I just need to be on my own."\n{a}: "That’s fine. I’ll be around."',
     '{b} has been comforted by four people already and can’t take a fifth.\n{b}: "I’m okay. Honestly. I just need space."\n{a}: "Say no more."',
-    '{b} gently turns {a} away.\n{b}: "It’s not you. I just can’t be near anyone right now."',
-    '{a} tries to help. {b} isn’t ready.\n{a} (to camera): "Everyone deals with it differently. I left {b} to it."',
+    '{b} gently turns {a} away.\n{b}: "It’s not you. I just can’t be near anyone right now."\n{a}: "Okay. I’ll be around."',
+    '{a} tries to help. {b} isn’t ready.\n{a}: "Do you want to talk?"\n{b}: "Not yet. Sorry."\n{a} (to camera): "Everyone deals with it differently. I left {b} to it."',
   ],
   'went-round-the-room': [
-    '{a} doesn’t sit with {b}. {a} sits with everyone, one at a time.\n{b} (to camera): "{a} comforted half the castle before nine. I noticed."',
+    '{a} doesn’t sit with {b}. {a} sits with everyone, one at a time.\n{b}: "Busy morning?"\n{a}: "Everyone needed a hug."\n{b} (to camera): "{a} comforted half the castle before nine. I noticed."',
     '{a} goes from person to person all morning.\n{b}: "You’ve been busy."\n{a}: "People are upset."\n{b}: "Yeah. I know."',
-    '{a} makes the rounds, and {b} watches.\n{b} (to camera): "Kind? Or working the room? I honestly can’t tell with {a}."',
+    '{a} makes the rounds, and {b} watches.\n{b}: "You’ve spoken to everyone today."\n{a}: "Someone has to."\n{b} (to camera): "Kind? Or working the room? I honestly can’t tell with {a}."',
     '{a} checks on everyone except {b}.\n{b} (to camera): "Everyone got a hug from {a}. Except me."',
   ],
 };
@@ -737,19 +737,19 @@ const PACT_LINES = {
     '{b} agrees, with one condition.\n{b}: "Unless it’s the two of us at the end."\n{a}: "Fair."\n{b} (to camera): "Only fair. The end’s the end."',
     '{b} signs up to everything except the last night.\n{b}: "All the way. Except the final."\n{a}: "Which is the only bit that matters."',
     '{a} and {b} agree, and both hear the gap in it.\n{a}: "So if it’s us two—"\n{b}: "Then it’s every person for themselves."',
-    '{b} promises, but not for the final.\n{a} (to camera): "{b} left a door open. I saw it."',
+    '{b} promises, but not for the final.\n{a}: "Never me. Say it."\n{b}: "Never you. Until the very end."\n{a} (to camera): "{b} left a door open. I saw it."',
   ],
   'one-way': [
     '{a} promises. {b} says something warm that isn’t a promise.\n{a}: "I’ll never vote for you."\n{b}: "You know how I feel about you."\n{a} (to camera): "That’s not the same thing."',
     '{a} gives the guarantee and gets a smile back.\n{b}: "Aw, that’s sweet."\n{a}: "And you?"\n{b}: "Obviously."',
-    '{a} commits. {b} doesn’t, quite.\n{b}: "We’ll be fine."\n{a} (to camera): "We’ll be fine isn’t a promise."',
-    '{a} notices {b} didn’t actually say it.\n{a} (to camera): "I said never you. {b} said ‘yeah, same’. I’m not sure ‘same’ counts."',
+    '{a} commits. {b} doesn’t, quite.\n{b}: "We’ll be fine."\n{a}: "That’s not a promise."\n{a} (to camera): "We’ll be fine isn’t a promise."',
+    '{a} notices {b} didn’t actually say it.\n{a}: "Never you. Promise."\n{b}: "Yeah. Same."\n{a} (to camera): "I said never you. {b} said ‘yeah, same’. I’m not sure ‘same’ counts."',
   ],
   'said-it-again': [
     '{a} and {b} have promised this before, and they promise it again.\n{a}: "Still never you?"\n{b}: "Still never you. Why, what’s happened?"\n{a}: "Nothing. Just checking."',
     '{a} asks for the promise a second time.\n{b}: "We’ve already done this."\n{a}: "I know. I just need to hear it."\n{b} (to camera): "Why does {a} need to hear it again?"',
     '{a} and {b} repeat their pact.\n{b}: "Same deal as always."\n{a}: "Same deal."',
-    '{a} checks the pact still stands.\n{b}: "Of course it does. Stop worrying."',
+    '{a} checks the pact still stands.\n{b}: "Of course it does. Stop worrying."\n{a}: "I’ll stop when we’re at the end."',
   ],
 };
 
@@ -840,8 +840,8 @@ const CHECKIN_LINES = {
   'air-in-the-answer': [
     '{a} checks in with {b}, and there’s a gap in the answer.\n{a}: {say:check-in}\n{b}: {say:check-in-hedge}\n{a} (to camera): "I didn’t like that pause."',
     '{a} asks if they’re still good, and {b} hesitates.\n{a}: {say:check-in}\n{b}: "Of course. Why?"\n{a}: "You hesitated."\n{b}: "I didn’t."',
-    '{b} says all the right words, with a gap in the middle.\n{b}: "Yeah, course, we’re — yeah."\n{a} (to camera): "That was a lot of air in a yes."',
-    '{a} spends the morning thinking about {b}’s answer.\n{a} (to camera): "{b} said ‘of course.’ It was the way {b} said it."',
+    '{b} says all the right words, with a gap in the middle.\n{b}: "Yeah, course, we’re — yeah."\n{a}: "Right."\n{a} (to camera): "That was a lot of air in a yes."',
+    '{a} spends the morning thinking about {b}’s answer.\n{a}: "We’re still good?"\n{b}: "Of course."\n{a} (to camera): "{b} said ‘of course.’ It was the way {b} said it."',
   ],
   'checked-on-them': [
     '{a} doesn’t mention the game. {a} just asks how {b} is.\n{a}: "How are you doing, after last night?"\n{b}: "Honestly? Not great."\n{a}: "Want to talk about it?"',
@@ -987,25 +987,25 @@ const SHARE_SUSPICION_LINES = {
     '{a} says {c}, and {b} has been thinking the same.\n{a}: "{c}."\n{b}: "I’ve been sitting on {c} for two days."\n{a}: "Then that’s our name."',
     'Two people get to {c} separately.\n{b}: {say:agree-suspect:{c}}\n{a}: "Tonight, then."',
     '{a} and {b} both suspect {c}, and now they know it.\n{b}: "I didn’t want to say it first."\n{a}: "Neither did I."',
-    '{a} and {b} land on the same person.\n{a} (to camera): "Two of us on {c} now. That’s the start of a vote."',
+    '{a} and {b} land on the same person.\n{a}: "You’ve been watching {c} too?"\n{b}: "Since Tuesday."\n{a} (to camera): "Two of us on {c} now. That’s the start of a vote."',
   ],
   'defended-them': [
     '{a} names {c}. {b} spends ten minutes explaining why {a} is wrong.\n{b}: {say:doubt-suspect:{c}}\n{a}: "You’re very sure."\n{b}: "I am."',
     '{a} finds out, the hard way, that {b} likes {c}.\n{a}: "I think it’s {c}."\n{b}: "No way. I’d stake my game on {c}."',
-    '{b} defends {c} to {a}.\n{b}: "You’ve got {c} completely wrong."\n{a} (to camera): "I didn’t know {b} and {c} were that close. Now I do."',
-    '{a} brings up {c}, and {b} shuts it down.\n{b}: "Not {c}. Anyone but {c}."',
+    '{b} defends {c} to {a}.\n{b}: "You’ve got {c} completely wrong."\n{a}: "Have I?"\n{a} (to camera): "I didn’t know {b} and {c} were that close. Now I do."',
+    '{a} brings up {c}, and {b} shuts it down.\n{b}: "Not {c}. Anyone but {c}."\n{a}: "Why not?"\n{b}: "Because I know {c}."',
   ],
   'took-it-back': [
     '{a} names {c}, then immediately asks {b} not to repeat it.\n{a}: "Forget I said that."\n{b}: "Too late."',
     '{a} says it, then tries to un-say it.\n{a}: "Actually, don’t tell anyone I said {c}."\n{b}: "Why not?"\n{a}: "Just don’t."',
-    '{a} backs off {aPos} own suspicion.\n{a}: "I’m probably wrong about {c}. Ignore me."\n{b} (to camera): "{a} said it though. You can’t take it back."',
+    '{a} backs off {aPos} own suspicion.\n{a}: "I’m probably wrong about {c}. Ignore me."\n{b}: "You don’t sound sure."\n{b} (to camera): "{a} said it though. You can’t take it back."',
     '{a} regrets naming {c} out loud.\n{a}: "That stays between us, yeah?"\n{b}: "Course."',
   ],
   'made-them-pay-first': [
     '{a} won’t name anyone until {b} does.\n{a}: "You first."\n{b}: "Fine. I don’t trust {c}."\n{a}: "Then we agree."',
     '{a} makes {b} go first.\n{b}: "Why do I always have to go first?"\n{a}: "Because I trust you more when you do."',
     '{a} only says {c} after {b} has committed.\n{b}: "There. I’ve said mine."\n{a}: "{c}."',
-    '{a} gets {b} to show {bPos} hand before {a} shows {aPos}.\n{a} (to camera): "Trust, but with a receipt."',
+    '{a} gets {b} to show {bPos} hand before {a} shows {aPos}.\n{a}: "You first."\n{b}: "Fine. I think it’s {c}."\n{a}: "Good. So do I."\n{a} (to camera): "Trust, but with a receipt."',
   ],
 };
 
@@ -1088,8 +1088,8 @@ const INVITE_LINES = {
   'showed-the-worst-of-it': [
     '{a} leads with the part that makes {aObj} look bad.\n{a}: "Before you say yes: on the second night, I voted for someone I liked, for strategy."\n{b}: "Why are you telling me that?"\n{a}: "Because you should know."',
     '{a} tells {b} the worst of it first.\n{a}: "I’ve lied to people in here. Not you. But people."\n{b}: "Thanks for being honest."',
-    '{a} is honest with {b} about everything.\n{a}: "Here’s what I’ve done. All of it."\n{b} (to camera): "It was a lot. But it meant I could trust {a}."',
-    '{a} confesses before inviting {b} in.\n{a}: "I’m not perfect. I want you in anyway."',
+    '{a} is honest with {b} about everything.\n{a}: "Here’s what I’ve done. All of it."\n{b}: "That’s a lot to tell someone."\n{b} (to camera): "It was a lot. But it meant I could trust {a}."',
+    '{a} confesses before inviting {b} in.\n{a}: "I’m not perfect. I want you in anyway."\n{b}: "Then I’m in."',
   ],
   'asked-what-it-costs': [
     '{b} says yes, then asks what’s expected in return.\n{b}: "And in return?"\n{a}: "Your vote. When it matters."\n{b}: "Fair."',
@@ -1100,8 +1100,8 @@ const INVITE_LINES = {
   declined: [
     '{b} says no. Kindly.\n{b}: "I’d rather not owe anyone anything this week."\n{a}: "I get it."\n{a} (to camera): "I get it. I don’t like it."',
     '{b} turns {a} down.\n{b}: "I think I’m safer on my own. Sorry."\n{a}: "No, that’s fair."',
-    '{b} won’t join.\n{b}: "Alliances get people banished. I’m staying out of it."',
-    '{b} declines, with reasons.\n{b}: "If your group goes down, I go with it. No thanks."\n{a} (to camera): "Can’t argue with that."',
+    '{b} won’t join.\n{b}: "Alliances get people banished. I’m staying out of it."\n{a}: "Suit yourself."',
+    '{b} declines, with reasons.\n{b}: "If your group goes down, I go with it. No thanks."\n{a}: "Fair enough."\n{a} (to camera): "Can’t argue with that."',
   ],
 };
 
@@ -1170,24 +1170,24 @@ const FAVOR_LINES = {
   'favor-returned': [
     '{b} does {a} a small favour tonight, the kind that only makes sense if they’re still a team.\n{b}: "I told them you were with me all evening."\n{a}: "You didn’t have to."\n{b}: "Yes I did."',
     '{b} quietly takes something off {a}’s plate.\n{a}: "Did you do the washing up for me?"\n{b}: "Don’t mention it."',
-    '{b} backs {a} up at dinner without being asked.\n{a} (to camera): "{b} had my back tonight. I owe {b} one."',
+    '{b} backs {a} up at dinner without being asked.\n{a}: "You didn’t have to do that at dinner."\n{b}: "You’d have done it for me."\n{a} (to camera): "{b} had my back tonight. I owe {b} one."',
     '{b} returns the favour from yesterday.\n{b}: "We’re even now."\n{a}: "We were never counting."',
   ],
   'noticed-and-said-so': [
     '{a} catches {b} doing it and says thank you properly.\n{a}: "I saw that. Thank you."\n{b}: "It was nothing."\n{a}: "It wasn’t nothing."',
     '{a} thanks {b} out loud.\n{a}: "You didn’t have to do that."\n{b}: "I know."',
     '{a} notices what {b} did for {aObj}.\n{a}: "You stuck up for me earlier."\n{b}: "Someone had to."',
-    '{a} makes a point of thanking {b}.\n{b}: "Stop, you’re embarrassing me."',
+    '{a} makes a point of thanking {b}.\n{b}: "Stop, you’re embarrassing me."\n{a}: "I mean it. Thank you."',
   ],
   'refused-it-back': [
     '{b} does {a} a favour and won’t let {a} return it.\n{a}: "Let me do something for you."\n{b}: "We’re not keeping score."\n{a} (to camera): "Generous? Or a way of making me owe {bObj}?"',
     '{b} won’t take anything back.\n{b}: "No. Keep it. I don’t want anything."\n{a}: "That makes me nervous."',
     '{b} refuses to be paid back.\n{b}: "Friends don’t count."\n{a}: "Everyone counts in here."',
-    '{a} tries to return the favour and gets turned down.\n{b}: "Honestly, don’t."',
+    '{a} tries to return the favour and gets turned down.\n{b}: "Honestly, don’t."\n{a}: "I owe you."\n{b}: "You don’t."',
   ],
   'kept-the-score': [
     '{b} does {a} a favour, then mentions it again an hour later.\n{b}: "Remember I stuck up for you earlier."\n{a}: "I remember. I said thank you."',
-    '{b} brings it up twice before bed.\n{b}: "So, earlier. That was me, just so you know."\n{a} (to camera): "Okay, {b}. I get it. I owe you."',
+    '{b} brings it up twice before bed.\n{b}: "So, earlier. That was me, just so you know."\n{a}: "I know, {b}. Thank you."\n{a} (to camera): "Okay, {b}. I get it. I owe you."',
     '{b} makes sure {a} knows the favour counts.\n{b}: "You owe me one."\n{a}: "Apparently."',
     '{b} keeps a running tab.\n{b}: "That’s two I’ve done for you now."\n{a}: "You’re counting?"',
   ],
@@ -1269,25 +1269,25 @@ const VOW_LINES = {
     '{a} and {b} agree that whatever they’ve said stays between them.\n{a}: "This doesn’t leave this room."\n{b}: "It won’t. I swear."',
     '{a} asks {b} never to repeat it.\n{b}: "I won’t. You have my word."\n{a}: "Good."',
     '{a} and {b} make a promise.\n{a}: "Not a word to anyone."\n{b}: "Not a word."',
-    '{a} and {b} agree to keep it quiet.\n{b} (to camera): "{a} trusted me with that. I’m not breaking it."',
+    '{a} and {b} agree to keep it quiet.\n{a}: "Not a word."\n{b}: "Not a word."\n{b} (to camera): "{a} trusted me with that. I’m not breaking it."',
   ],
   'agreed-a-version': [
     '{a} and {b} don’t agree to say nothing. They agree what to say.\n{a}: "If anyone asks, we were in the kitchen till eleven."\n{b}: "Till eleven. Got it."',
     '{a} and {b} line up their stories.\n{b}: "So what’s our version?"\n{a}: "We went up together. That’s it."',
     '{a} and {b} work out what they’ll both say.\n{a}: "Keep it simple. Same answer, same order."\n{b}: "Same answer. Same order."',
-    '{a} and {b} agree on the story they’ll tell.\n{a} (to camera): "Nothing to hide. We just want the same answer."',
+    '{a} and {b} agree on the story they’ll tell.\n{a}: "So, dinner, fire, bed."\n{b}: "Dinner, fire, bed."\n{a} (to camera): "Nothing to hide. We just want the same answer."',
   ],
   'one-sided-vow': [
     '{a} asks {b} to keep it quiet. {b} agrees, and asks nothing back.\n{b}: "Fine. I won’t say anything."\n{a}: "Don’t you want the same?"\n{b}: "No. I’m fine."',
-    '{b} promises easily and won’t take a promise back.\n{a} (to camera): "{b} didn’t want anything back. That’s either kind or clever."',
-    '{b} agrees to stay quiet, no questions asked.\n{b}: "Consider it forgotten."',
-    '{a} gets a promise and gives nothing.\n{a} (to camera): "{b} didn’t ask me to promise anything. I’m not sure why."',
+    '{b} promises easily and won’t take a promise back.\n{a}: "What do you want back?"\n{b}: "Nothing."\n{a} (to camera): "{b} didn’t want anything back. That’s either kind or clever."',
+    '{b} agrees to stay quiet, no questions asked.\n{b}: "Consider it forgotten."\n{a}: "Just like that?"',
+    '{a} gets a promise and gives nothing.\n{b}: "Your secret’s safe."\n{a}: "And what do you want for it?"\n{b}: "Nothing."\n{a} (to camera): "{b} didn’t ask me to promise anything. I’m not sure why."',
   ],
   'would-not-promise': [
     '{a} asks {b} to keep it between them. {b} says no.\n{b}: "I’m not promising that. I won’t lie to you about what I’d do."\n{a}: "That’s worse than a yes."\n{b}: "It’s honest."',
     '{b} won’t make the promise.\n{b}: "If it matters at the table, I’ll say it."\n{a}: "Great. Thanks."',
-    '{b} refuses, and explains why.\n{b}: "I can’t promise silence in a game like this."\n{a} (to camera): "At least {b} said it to my face."',
-    '{b} won’t swear to it.\n{b}: "Sorry. No promises this week."',
+    '{b} refuses, and explains why.\n{b}: "I can’t promise silence in a game like this."\n{a}: "Fair."\n{a} (to camera): "At least {b} said it to my face."',
+    '{b} won’t swear to it.\n{b}: "Sorry. No promises this week."\n{a}: "Next week, then?"',
   ],
 };
 
@@ -1487,8 +1487,8 @@ const SECRET_SWAP_LINES = {
   ],
   'refused-to-trade': [
     '{a} gives {b} something real, and gets nothing back.\n{a}: "Your turn."\n{b}: "I haven’t really got anything."\n{a} (to camera): "Right. So it’s one way."',
-    '{b} takes what {a} offers and doesn’t offer anything.\n{a} (to camera): "I gave. {b} took. That tells me something about {b}."',
-    '{a} tries to trade secrets. {b} won’t play.\n{b}: "I’d rather keep mine, thanks."',
+    '{b} takes what {a} offers and doesn’t offer anything.\n{a}: "Your turn."\n{b}: "I haven’t really got anything."\n{a} (to camera): "I gave. {b} took. That tells me something about {b}."',
+    '{a} tries to trade secrets. {b} won’t play.\n{b}: "I’d rather keep mine, thanks."\n{a}: "That’s not how it works."\n{b}: "It is now."',
     '{b} listens to {a}’s secret and keeps {b}’s own.\n{a}: "That’s not how it works."\n{b}: "It is now."',
   ],
 };
@@ -1610,24 +1610,24 @@ const LAST_WORD_LINES = {
     'The lights are out before {b} says it.\n{b}: "Whatever happens tomorrow, I’m not writing your name. I promise."\n{a}: "I believe you."',
     '{b} waits until it’s dark to give {a} a straight promise.\n{b}: "You’re safe with me. Always."\n{a}: "Goodnight, {b}."\n{b}: "Goodnight."',
     'In the dark, {b} tells {a} what {a} needs to hear.\n{b}: "I’ve got you tomorrow."\n{a}: "Promise?"\n{b}: "Promise."',
-    '{b} whispers it across the room.\n{b}: "Not you. Never you."',
+    '{b} whispers it across the room.\n{b}: "Not you. Never you."\n{a}: "Never you either."',
   ],
   hedged: [
     '{a} asks in the dark, and {b} gives an answer with a way out.\n{a}: "You’re with me tomorrow?"\n{b}: "Probably. Let’s see."\n{a} (to camera): "Probably. In the dark. Great."',
-    '{b} says something that sounds like yes.\n{b}: "Yeah, yeah. Go to sleep."\n{a} (to camera): "That wasn’t a yes."',
-    '{a} asks, and {b} half answers.\n{b}: "I’ll see what everyone says tomorrow."',
-    '{b} gives a yes that isn’t quite a yes.\n{b}: "We’ll be fine. Night."',
+    '{b} says something that sounds like yes.\n{b}: "Yeah, yeah. Go to sleep."\n{a}: "Is that a yes?"\n{a} (to camera): "That wasn’t a yes."',
+    '{a} asks, and {b} half answers.\n{b}: "I’ll see what everyone says tomorrow."\n{a}: "That’s not an answer."',
+    '{b} gives a yes that isn’t quite a yes.\n{b}: "We’ll be fine. Night."\n{a}: "Night."',
   ],
   broken: [
     '{b} tells {a}, in the dark, that {b} can’t promise.\n{b}: "I can’t promise that. I’m sorry."\n{a}: "Right."\nNeither of them sleeps much.',
-    '{b} says no, plainly, and rolls over.\n{b}: "No. Not tomorrow. I can’t."\n{a} (to camera): "At least I know."',
-    '{b} won’t give {a} the promise.\n{b}: "I don’t know where my vote’s going. I won’t lie to you."',
+    '{b} says no, plainly, and rolls over.\n{b}: "No. Not tomorrow. I can’t."\n{a}: "Okay. Thanks for saying it."\n{a} (to camera): "At least I know."',
+    '{b} won’t give {a} the promise.\n{b}: "I don’t know where my vote’s going. I won’t lie to you."\n{a}: "I appreciate that."',
     'It ends at lights out.\n{b}: "I’m not voting with you tomorrow."\n{a}: "Why?"\n{b}: "Goodnight."',
   ],
   'turned-it-round': [
     '{a} asks in the dark, and {b} asks it straight back.\n{a}: "Are you with me tomorrow?"\n{b}: "Are you with me?"\nNeither answers first.',
     '{b} won’t go first.\n{b}: "You tell me first."\n{a}: "I asked you."\n{b}: "I know."',
-    '{b} puts the same question to {a} and waits.\n{a} (to camera): "Stalemate. In the dark. Brilliant."',
+    '{b} puts the same question to {a} and waits.\n{a}: "Will you stick with me tomorrow?"\n{b}: "Will you stick with me?"\n{a}: "I asked first."\n{a} (to camera): "Stalemate. In the dark. Brilliant."',
     '{a} and {b} end the night waiting for the other to promise.\n{a}: "Well?"\n{b}: "Well?"',
   ],
 };

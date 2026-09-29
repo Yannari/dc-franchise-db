@@ -28,7 +28,7 @@ import { runVillaDay } from './villa-day.js';
 import { seasonSchedule, withPicks, withBookings, resolveRandomGames, buildSchedule, FINAL_COUPLES } from './schedule.js';
 import { MOMENTS, nightOneOpening } from './moments.js';
 import { returnIslander, secondChance } from './arrivals.js';
-import { loadKin, seedKinAttraction, kinLabel } from './kin.js';
+import { loadKin, applyCarriedBonds, seedKinAttraction, kinLabel } from './kin.js';
 
 function initState(cast, setup, seed) {
   const state = { ep: 0, day: 0, villa: [], casa: [], split: false, couples: [], profiles: {},
@@ -129,12 +129,15 @@ function villaDayEvents(state, rng, entry, seed) {
  * the new night the way it would have from any night.
  */
 export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = null, picks = {}, bookings = {}, rerolls = {},
-  splitOrStealOn = false, dialect = 'uk', episodes = null, firstIn = 'f', kinship = null, arrivalCounts = null, finalCouples = FINAL_COUPLES } = {}) {
+  splitOrStealOn = false, dialect = 'uk', episodes = null, firstIn = 'f', kinship = null, arrivalCounts = null, finalCouples = FINAL_COUPLES,
+  carried = null } = {}) {
   setGs({ bonds: {}, perceivedBonds: {}, relationshipDimensions: {}, activePlayers: [],
     episodeHistory: [], popularity: {} });
   const state = initState(cast, setup, seed);
-  // Who knew whom before the villa (the Relationships tab, pm/kin.js).
-  loadKin(state, cast, kinship, setup);
+  // Who knew whom before the villa (the Relationships tab, pm/kin.js) — and,
+  // behind it, what the franchise remembers (pm-run.js _carried).
+  loadKin(state, cast, kinship, setup, carried?.kin || []);
+  applyCarriedBonds(state, cast, carried?.bonds || []);
   // The season's default voice, for any islander whose cast setup left it blank.
   state.dialect = dialect;
   // Who walks in first on night one (Villa options): the girls unless the author says the boys.

@@ -87,7 +87,10 @@ function _accountTopic() {
   for (let i = rounds.length - 1; i >= 0; i--) {
     if (rounds[i] && rounds[i].murdered) return `the night ${rounds[i].murdered} was murdered`;
   }
-  return 'what they really are';
+  // NOT "what they really are": that printed singular they over players the
+  // roster gives a gender, and read as a riddle. On day one the thing a
+  // Traitor has to account for is the line on the gravel.
+  return 'the blindfolds';
 }
 
 // ── REWRITE (Task 7 stage 5). Fourth on the blame table. The audit's verdict
@@ -248,7 +251,7 @@ const SACRIFICE_ALLY_LINES = {
   'the-room-kept-it': [
     'It worked. It worked so well that the room is still on {b} two days later and {a} cannot call it off.',
     '{a} pointed the room at {b} for one evening. The room has decided to keep {b}.',
-    'The name went in easily and will not come out, and {a} needs {b} alive on Thursday.',
+    'The name went in easily and will not come out, and {a} needs {b} alive in a few days.',
     '{a} spent {b} for a morning and has bought {b} a week of it.',
     'By the second day {a} was quietly defending {b} against a suspicion {a} had started.',
     'The manoeuvre had no off switch, which nobody thinks about until they need one.',
@@ -487,7 +490,7 @@ const REHEARSED_LINES = {
     '{a} could have said it backwards by now, and had privately checked that they could.',
   ],
   'roughed-it-up': [
-    '{a} deliberately got a small detail wrong this morning, because nobody remembers a Tuesday perfectly.',
+    '{a} deliberately got a small detail wrong this morning, because nobody remembers one night perfectly.',
     '{a} has started putting a hesitation in, on purpose, in the same place every time.',
     'The account acquired an error overnight. It is a very carefully chosen error.',
     '“Half nine — no, quarter to,” said {a}, having decided at four in the morning to say exactly that.',
@@ -500,20 +503,20 @@ const REHEARSED_LINES = {
     '{a} got to the middle of it and heard, quite clearly, that it was a performance.',
     'It came out smooth and {a} did not like how smooth, and could not do anything about it mid-sentence.',
     '{a} listened to their own voice doing the small joke for the fourth morning and stopped enjoying it.',
-    'Somewhere in the third telling {a} realised that nobody says a Tuesday this well.',
+    'Somewhere in the third telling {a} realised that nobody tells the story of one night this well.',
     '{a} finished the account and knew exactly which sentence would be quoted back.',
     'The story is airtight. {a} is now frightened of it, which is a new problem.',
     '{a} has told it so often that {a} can no longer tell whether any of it happened.',
     'What {a} heard this morning was somebody reciting, and {a} was the only one in the room to hear it.',
   ],
   'changed-it': [
-    '{a} changed a detail this morning and there is now a version of Tuesday in the room that is out of date.',
+    '{a} changed a detail this morning and there is now a version of that night going round that is out of date.',
     'The account moved half an hour to the left, and two people have the old one.',
     '{a} improved it. Improving it is the single most dangerous thing anybody can do to a story.',
     '{a} could not remember whether the earlier version had the kitchen in it, and guessed.',
     'It is a better account than yesterday’s and it is not yesterday’s.',
     '{a} fixed the weak hour and created a new one in the process.',
-    'By breakfast there were two Tuesdays and {a} is the only person who knows both.',
+    'By breakfast there were two versions of that night going round, and {a} is the only one who knows both.',
     '{a} will find out which version anybody actually heard at the worst possible moment.',
   ],
 };
@@ -702,7 +705,7 @@ const OUTCOME_LINES = {
     '{a} answered, stopped, and did not add anything, which is the whole skill.',
     'Nobody had any follow-up, because there was nowhere for a follow-up to go.',
     '{a} got a detail slightly wrong and corrected it, which sold the rest of it.',
-    'The room heard an ordinary Tuesday and went back to what it was doing.',
+    'The room heard an ordinary account of an ordinary night and went back to what it was doing.',
   ],
   awkward: [
     '{a}\'s story had a wobble in it. Nobody happened to be listening closely enough to catch it.',
@@ -832,7 +835,7 @@ const DOUBLE_BLUFF_LINES = {
     '{a} spent a partner to buy an evening and found out by nine that the price had been the wrong way round.',
     '{b} took the name and ran with it, and {a} had to spend the rest of the night keeping up.',
     'The bluff landed. What it bought {a} was a room now looking hard at somebody {a} needed.',
-    '{a} said a true thing to look innocent and made a problem that will still be here on Thursday.',
+    '{a} said a true thing to look innocent and made a problem that will still be here in a few days.',
   ],
   'asked-back': [
     '{a} named somebody frightening to {b}, and {b} asked {a} why {a} had picked that name.',
@@ -954,7 +957,7 @@ const RECRUIT_COVER_LINES = {
   'told-it-unasked': [
     '{a} explained where {a} had been that night to somebody who had not raised it.',
     'It came out at breakfast, unprompted, complete, and {a} heard it happening.',
-    '{a} answered a question about the weather with an alibi for a Tuesday.',
+    '{a} answered a question about the weather with an alibi for one night.',
     'Nobody had asked. {a} told them anyway, which is the one thing the account could not survive.',
     'The story was so ready that it went off, and {a} could not get it back in.',
     '{a} volunteered a detail nobody could have known to want and watched it land.',
@@ -1060,7 +1063,7 @@ const ALIBI_CRUMBLE_LINES = {
     'Somebody tried to pull at {a}’s alibi. It didn’t give.',
     'Two people came at {a}’s account from two directions and it was the same account both times.',
     '{a} invited them to check it, which is the last thing anybody does with a story that will not hold.',
-    'The question was a good one and the answer had been ready for it since Tuesday.',
+    'The question was a good one and the answer had been ready for it for days.',
     '{a} answered without hurrying, which is the whole of the difference.',
     'It has been asked three ways now and come back the same shape every time.',
     '{a} let a silence sit at the end of it rather than filling the silence, and the silence held too.',
@@ -1097,7 +1100,7 @@ const ALIBI_CRUMBLE_LINES = {
     '{a} found out at lunch that the story had been checked at breakfast.',
     'Two other people put that hour together and {a} was not in it the way {a} had said.',
     'It was never a question. It was a comparison, and {a} did not get to answer.',
-    'Somebody had gone round the castle with {a}’s Tuesday and collected disagreements.',
+    'Somebody had gone round the castle checking {a}’s story, and found people who remembered it differently.',
     'The alibi is fine. The other four alibis it has to fit inside are not.',
     'Nobody accused {a} of anything. Somebody read out three times and let them sit together.',
     '{a} would have loved a chance to explain and was not offered one.',
@@ -1105,11 +1108,11 @@ const ALIBI_CRUMBLE_LINES = {
   ],
   'abandoned-it': [
     '{a} stopped defending it. Simply stopped, mid-week, and said “I do not remember” instead.',
-    '“I have said too much about a Tuesday,” said {a}, and would not say another word about it.',
+    '“I have said enough about that night,” said {a}, and would not say another word about it.',
     '{a} withdrew the account before anybody broke it, which is the smarter and stranger move.',
     'The story went away. {a} did not replace it with a better one, which is the point.',
     '{a} decided that an unremembered hour is safer than a well-remembered one, and switched.',
-    'Everybody in the castle has a version of {a}’s Tuesday except {a}, as of this evening.',
+    'Everybody in the castle has a version of where {a} was that night, and none of them match.',
     '{a} let it drop and let the room think what it liked, and the room found that unsettling.',
     'It is a real tactic and it costs a great deal, and {a} paid it rather than be broken.',
     '{a} answered the next four questions with “I could not tell you,” pleasantly.',
@@ -1466,7 +1469,7 @@ const SWAP_STORY_LINES = {
   ],
   'too-identical': [
     '{a} and {b} matched it so exactly that two people who were there noticed the matching.',
-    'Nobody agrees about a Tuesday to the minute. {a} and {b} did, out loud, in front of somebody.',
+    'Nobody remembers a night to the minute. {a} and {b} did, out loud, in front of somebody.',
     'They smoothed it until there was nothing left to be different about, which is itself a difference.',
     '{a} used {b}’s phrase and {b} used {a}’s, and both of them heard it happen too late.',
     'Two accounts identical to the word is one account read twice, and the room can hear that.',
@@ -1478,7 +1481,7 @@ const SWAP_STORY_LINES = {
     '{a} came to smooth it and {b} would not move a single detail, and gave no reason.',
     '“I am not changing what I saw,” said {b}, at dawn, to somebody who very much needed {b} to.',
     '{b} refused to have the conversation at all and went back to bed.',
-    '{a} needed one hour moved and {b} would not move it, and now there are two Tuesdays.',
+    '{a} needed one hour moved and {b} would not move it, and now there are two versions of that night.',
     'It is not a disagreement about a fact. It is {b} declining to be managed, and {a} understood that.',
     '{b} has decided to be somebody who tells the truth about small things, starting this week.',
     '{a} left the kitchen with a problem {a} had gone in to solve.',

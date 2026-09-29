@@ -553,7 +553,7 @@ const CORRIDOR_LINES = {
   'cleared-the-air': [
     'They had it out in the corridor and came out of it better than they went in, which surprised both of them.',
     '{a} and {b} said the whole thing to each other and then, oddly, shook on it.',
-    'It turned out to be a misunderstanding with four days on it, and four days is a long time here.',
+    'It turned out to be a misunderstanding that had been going on for days, and days are a long time in here.',
     '{b} explained, {a} believed it, and the corridor got twenty minutes and settled it.',
     'The argument ended with both of them agreeing it had been stupid.',
     'They went up separately and came down together, and the hall noticed that in the morning.',
@@ -768,7 +768,7 @@ const MISSION_BLAME_LINES = {
     '{a} said it and the column did not pick it up, and {a} was left holding an accusation alone.',
     'Nobody agreed out loud. That is not the same as nobody agreeing, and {a} knows it.',
     'The road went quiet in the way roads do when somebody has misjudged the room.',
-    '{a} expected support and got fourteen people looking at the hedge.',
+    '{a} expected support and got a road full of people looking at the hedge.',
     'It turns out the castle would rather lose the money than have that conversation.',
     'Somebody changed the subject, kindly, and {a} let them, which cost {a} more than the silence had.',
   ],
@@ -863,7 +863,7 @@ const BROKEN_WORD_LINES = {
     '"I would do it again," said {b}, which is at least an answer.',
     '{a} came for an apology and got an explanation, and those are not the same thing.',
     '{b} explained the circumstances at length and {a} listened to all of them without softening.',
-    'It was a promise made on a Tuesday about a Thursday, and {b} said as much.',
+    'It was a promise about the future made by somebody with no future in here, and {b} said as much.',
   ],
   'threw-it-back': [
     '{b} listed, from memory, the two things {a} had promised {b} and not done.',

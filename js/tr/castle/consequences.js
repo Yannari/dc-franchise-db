@@ -1591,7 +1591,7 @@ const NEED_YOU = {
     '“A name for a name,” {b} said. {a} did not enjoy the transaction and completed it anyway.',
     '{a} and {b} settled tomorrow between them, at a price, in a corridor, without writing anything down.',
     '{b} attached a cost to it and {a} paid it, and neither of them called it what it was.',
-    '“That’s not a friendship,” {b} said, “but it will hold until Thursday.” {a} took the deal.',
+    '“That’s not a friendship,” {b} said, “but it will hold until the next table.” {a} took the deal.',
   ],
 };
 

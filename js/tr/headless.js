@@ -1983,7 +1983,7 @@ const _PROFILE = {
     + 'remember being asked.',
     'By lunchtime {name} will have heard three secrets and offered two, and the exchange rate '
     + 'will always favour {obj}.',
-    '{name} remembers every favour done and every debt owed, and by Thursday the kitchen '
+    '{name} remembers every favour done and every debt owed, and within a few days the kitchen '
     + 'runs through {obj}.',
     'Give {name} an evening and a kitchen and {sub} will come out of it with an alliance '
     + 'nobody agreed to.',
@@ -2067,7 +2067,7 @@ const _PERSONALITY = {
     'Control without fingerprints &mdash; {name} has done this before, to people who liked {obj}.',
     'Three people will leave this castle on a plan {name} set in motion, and two of them '
     + 'will think it was their own idea.',
-    '{name} will have three people voting together by Thursday, and none of them will remember whose idea it was.',
+    '{name} will have three people voting together in a few days, and none of them will remember whose idea it was.',
   ],
   schemer: [
     '{name} will burn something down this week and be sympathetic about it at breakfast.',
@@ -2123,7 +2123,7 @@ const _PERSONALITY = {
     'Nobody, including {name}, knows what {name} is going to do on any given night.',
     '{name} will vote against the room for a reason nobody can reconstruct afterwards.',
     'There is no pattern to {name} and therefore nothing to plan around.',
-    '{name} will back somebody to the hilt on Monday and vote them out on Wednesday without '
+    '{name} will back somebody to the hilt one night and vote them out two nights later without '
     + 'losing a minute of sleep.',
     'Half the castle will spend the season trying to work out whose side {name} is on.',
     'Unpredictable in a way that is genuinely dangerous rather than merely annoying.',
@@ -2281,7 +2281,7 @@ const _THREAT = {
     // and two sentences making the same observation is the montage stalling.
     // These are about what the ROOM does with a stranger, which is a different
     // fact and the one that actually costs somebody something.
-    'The room will invent a version of {name} by Thursday, and {name} will have to live in it.',
+    'The room will invent a version of {name} within a few days, and {name} will have to live in it.',
     'This castle will decide who {name} is off a single misjudged sentence, and then keep the verdict.',
     'Nobody here has any idea what {name} is like yet, and {name} can use that.',
     '{name} gets to choose what to be in here, which is a freedom and a full-time job.',

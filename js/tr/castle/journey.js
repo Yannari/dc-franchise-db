@@ -94,7 +94,7 @@ function _lastMurdered() {
 // scene from the first.
 const STEP_LINES = {
   confided: [
-    '{b} fell into step with {a} on the way out and said more in ten minutes of walking than in three days indoors.',
+    '{b} fell into step with {a} on the way out and said more in ten minutes of walking than in days indoors.',
     'Out of the castle’s hearing, {b} told {a} the thing they had been carrying around all week.',
     'Walking put {b} at ease in a way the great hall never had, and {a} got the honest version.',
     'Two miles from anybody, {b} told {a} something {b} had not planned on telling anybody at all.',
@@ -240,7 +240,7 @@ const EARSHOT_LINES = {
     'The second the gate was behind them, {a} said {c}, and {b} said {c} back.',
     '{a} and {b} spent the middle of the road agreeing about {c} in more detail than either had planned.',
     'Two miles of {c}, and by the end of it neither of them was hedging about any of it.',
-    '{a} had been carrying {c}’s name since Tuesday and put it down in front of {b} on the hill.',
+    '{a} had been carrying {c}’s name for days and put it down in front of {b} on the hill.',
     'It is much easier to say a name where there are no walls, and {a} and {b} both found that out.',
   ],
   hedged: [
@@ -504,11 +504,11 @@ const WALK_PICK_LINES = {
     '{a} dropped back to walk with {b}, and {b} took it as exactly what it looked like.',
     '{b} had been braced for a long walk on their own, and spent the whole of it grinning instead.',
     'Being chosen did something visible to {b}, and {a} saw it happen and said nothing.',
-    '{b} has been the last person picked for four days, and today {b} was the first.',
+    '{b} has been the last person picked every day so far, and today {b} was the first.',
     'It is a very small thing and {b} carried it the whole two miles like luggage.',
     '{b} said “really?” out loud when {a} fell in beside them, and then was embarrassed about saying it.',
     'Nobody in this castle has chosen {b} for anything yet. {b} noticed the difference immediately.',
-    '{b} talked more in that hour than in the three days before it, out of sheer relief.',
+    '{b} talked more in that hour than in the days before it, out of sheer relief.',
   ],
   wary: [
     '{a} chose {b} to walk with, and {b} spent the whole road working out why.',
@@ -648,7 +648,7 @@ const SHORT_COLUMN_LINES = {
     'Somebody used to walk at the front of this. {a} noticed the gap where they should have been.',
     'It was the first time the road out had felt short, and {a} could not stop doing the arithmetic.',
     '{a} counted the column at the gate and got a number {a} did not like.',
-    'There is a gap in the line where somebody walked on Monday, and {a} kept looking at it.',
+    'There is a gap in the line where somebody walked on the first day, and {a} kept looking at it.',
     '{a} realised halfway out that nobody was behind {a} any more.',
     'It is the same road and it takes the same time and it is not the same walk.',
     '{a} did the subtraction twice, on the road, and got the same answer twice.',
@@ -662,7 +662,7 @@ const SHORT_COLUMN_LINES = {
     'The road out takes the same time and feels twice as long with four fewer people on it.',
     '{a} walked in the space where somebody used to walk, and noticed doing it.',
     'It is quieter every week and nobody has said so out loud since the second one.',
-    '{a} could see the whole column from the front now, which was not true on Monday.',
+    '{a} could see the whole column from the front now, which was not true on the first day.',
     'There is a point where a group stops being a group, and {a} thinks they passed it.',
   ],
   'pair-first': [
@@ -861,7 +861,7 @@ const SETTLED_LINES = {
     'Whatever had been sitting between {a} and {b} all day, {b} answered it straight on the walk home, and that was that.',
     'By the time the castle came back into view {b} had given {a} the answer they had been waiting for.',
     '{b} said the thing plainly on the road back. {a} believed it, and stopped asking.',
-    'It took {b} one sentence on the walk home, and {a} had been waiting three days for it.',
+    'It took {b} one sentence on the walk home, and {a} had been waiting days for it.',
     '{b} said it without being asked, halfway back, and {a} did not need to hear it twice.',
   ],
   dropped: [
@@ -1718,12 +1718,12 @@ const ROAD_ARGUMENT_LINES = {
     'It happened in the open, on a track, with no walls to take it behind.',
     '{a} and {b} had it out where every single person on that road could hear.',
     'Nobody intervened and nobody looked away. Fourteen witnesses and not one of them neutral.',
-    'They had it out on an open road with fourteen people close enough to hear every word.',
+    'They had it out on an open road, close enough to the others for every word to carry.',
     'Nobody pretended not to listen. There is nowhere on a road to pretend.',
     '{a} and {b} argued the length of a field and the column went quiet around them.',
     'It was not a private conversation and neither of them tried to make it one.',
     'The walk arranged itself into an audience without anybody deciding to.',
-    'Two people arguing, twelve people walking slightly slower to hear it.',
+    'Two people arguing, and the rest of the column walking slightly slower to hear it.',
   ],
   // Somebody steps in and it stops.
   'somebody-stepped-in': [

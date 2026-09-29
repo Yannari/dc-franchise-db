@@ -909,7 +909,7 @@ function _buildBeats(rec, ep) {
           ? 'The name, and is in the room for the writing of it.'
           : name === rec.decidedBy
             ? 'The one holding the pen, because somebody had to and the other two waited.'
-            : 'Says nothing, agrees to it, and will be living with that by Thursday.')
+            : 'Says nothing, agrees to it, and will be living with that for days.')
         : null;
     return '<div class="cv-cloak" data-state="' + tone + '">' + _cloakFigure(tone, name)
       + '<div class="cv-cloak-name">' + _esc(String(name).toUpperCase()) + '</div>'

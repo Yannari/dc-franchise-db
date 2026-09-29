@@ -22,7 +22,7 @@ import { sceneApi, arcContinue } from './effects.js';
 import { _sentenceCase } from './cover.js';
 import { findOpenThread } from '../threads.js';
 import { alignmentAt } from '../roles.js';
-import { lineFor } from './lines.js';
+import { lineFor, countWord } from './lines.js';
 import { peopleLost, murderCount } from '../state.js';
 
 const FAMILY = 'grief';
@@ -110,17 +110,17 @@ const EMPTY_CHAIR_LINES = {
     '{a} caught {b} looking at the gap at the table before either of them said anything.',
     'Somebody had laid the table for the number they had yesterday. {a} and {b} both counted the places.',
     '{b} pulled out {v}’s chair without thinking, realised, and put it back. {a} pretended not to have seen.',
-    'There was too much room at the table now. {a} said so, badly, and {b} knew what they meant.',
+    'There was too much room at the table now. {a} said so, badly, and {b} knew what {aSub} meant.',
     'The chair is exactly where {v} left it, pushed back at the angle {v} always pushed it back at.',
     '{a} and {b} sat either side of a gap and had a conversation across it about nothing at all.',
   ],
   'moved-it-away': [
-    '{b} took {v}’s chair away from the table before anybody else came down, and {a} watched them do it.',
+    '{b} took {v}’s chair away from the table before anybody else came down, and {a} watched {bObj} do it.',
     'The chair went against the wall. Nobody asked who had moved it, and {a} knew, and said nothing.',
-    '{a} stacked it, quite briskly, and {b} did not know whether to be grateful or appalled.',
+    '{a} stacked {v}’s chair against the wall, quite briskly, and {b} did not know whether to be grateful or appalled.',
     'By the time the room filled up there was no gap, because {b} had spent five minutes making sure of it.',
     '“It is easier if it is not there,” {b} said to {a}, and {a} could not argue with easier.',
-    'Somebody had already dealt with it. That somebody was {b}, and {a} had seen the doing of it.',
+    '{v}’s chair was gone by the time the others came down. {b} had moved it, and {a} had seen {bObj} do it.',
     'The table now seats the number the castle actually has, which took {b} about a minute to arrange.',
     '{a} came down to a room with no hole in it and understood immediately what that had cost {b}.',
   ],
@@ -129,10 +129,10 @@ const EMPTY_CHAIR_LINES = {
     'There was a cup at the empty setting all morning. {b} put it there and {a} let it stay.',
     '{a} counted out the plates and put down one too many, on purpose, and dared the room to say so.',
     'Nobody used {v}’s place. {a} and {b} kept it, without ever discussing keeping it.',
-    'It is a small stubborn thing and {a} did it every morning that week.',
+    '{a} will lay that place again tomorrow, and {b} knows it.',
     '{b} moved a knife two inches so the setting was straight, which is not what people do to an empty chair.',
     'The castle ate around a laid place and pretended it had not noticed.',
-    '{a} said it was for whoever comes next, which fooled nobody, including {a}.',
+    '{a} said the extra place was for whoever comes next. {b} did not believe that for a second.',
   ],
   'nobody-noticed': [
     'The table was laid for the right number this morning, first time, and only {a} and {b} clocked it.',
@@ -141,8 +141,8 @@ const EMPTY_CHAIR_LINES = {
     'The room got the arithmetic right without being told, and {b} found that harder than the empty chair.',
     'Nobody counted this morning. {a} counted, and was the only one.',
     '{a} pointed the missing setting out to {b} and {b} said “I know,” in the voice of somebody who had stopped saying it.',
-    'The castle has learned to lay a table for the survivors, and it learned it in about four days.',
-    'Breakfast happened at the right speed for the wrong reason and only two people minded.',
+    'The castle has learned to lay a table for the survivors, and it learned fast.',
+    'Breakfast carried on as normal. {a} and {b} were the only ones who seemed to mind.',
   ],
 };
 
@@ -207,8 +207,8 @@ const HEADCOUNT_LINES = {
   'said-the-number': [
     '{a} said it out loud so {b} did not have to: {n} of them left.',
     '{a} got to {n} and stopped. {b} had got there first and had not wanted to be the one to say it.',
-    '"{n}," said {a}, to nobody in particular, and {b} did not correct them.',
-    '{b} watched {a} count the room on their fingers and get to {n} both times.',
+    '"{n}," said {a}, to nobody in particular, and {b} did not correct {aObj}.',
+    '{b} watched {a} count the room on {aPos} fingers and get to {n} both times.',
     '{a} and {b} arrived at {n} separately and then had to sit with it together.',
     '{b} said the number first. {a} had been hoping to get through breakfast without hearing it.',
     'Neither {a} nor {b} needed to count. Both of them did, and both of them got {n}.',
@@ -216,13 +216,13 @@ const HEADCOUNT_LINES = {
   ],
   'left-it-unsaid': [
     '{b} asked {a} how many were left and {a} would not answer, which was its own answer.',
-    '{a} began to count out loud and {b} put a hand up and stopped them at four.',
+    '{a} began to count out loud and {b} put a hand up and stopped {aObj} at four.',
     '"Don\'t," {b} said, before {a} had got the number out, and {a} did not.',
     '{a} knew the number and {b} knew the number and neither of them was going to be the one to say {n}.',
     '{b} changed the subject twice to stop {a} getting to the end of the table.',
     'They spent breakfast very carefully not counting, {a} and {b}, and both of them noticed the other doing it.',
-    '{a} asked, and {b} said they had stopped keeping track, which was not true and both of them knew it.',
-    '{b} would not have the number said at the table. {a} let them have that.',
+    '{a} asked, and {b} said {bSub} had stopped keeping track, which was not true and both of them knew it.',
+    '{b} would not have the number said at the table. {a} let {bObj} have that.',
   ],
   'counted-the-chairs': [
     '{a} counted the chairs instead of the people, which came to the same thing.',
@@ -237,13 +237,13 @@ const HEADCOUNT_LINES = {
     '{a} got to {n} and then started again from the other end of the table to see if it came out different.',
   ],
   'counted-the-useful-ones': [
-    '{a} was not counting people this morning. {a} was counting which of the {n} would still be standing next to them next week.',
+    '{a} was not counting people this morning. {a} was counting which of the {n} would still be on {aPos} side next week.',
     '{n} left, and {a} could name the four who mattered and did, silently, twice.',
     '{a} went round the table working out not how many were left but how many were any use.',
     'It was not a headcount so much as an inventory, and {a} did not enjoy how short the useful half was.',
     'There are {n} people in this castle and {a} spent breakfast sorting them into two piles.',
     '{a} did the sum, and then did the more frightening sum underneath it.',
-    '{n} of them, and {a} had a number for the ones who would take a bullet and it was very much smaller.',
+    '{n} of them, and {a} could count on one hand the ones {aSub} could actually trust.',
     '{a} counted the room and then counted it again with most of the room left out.',
   ],
 };
@@ -288,7 +288,7 @@ registerEvent({
       : branch === 'counted-the-useful-ones' ? 'counted who was left that was any use to them'
         : 'counted the room and found it shorter';
     const note = lineFor(HEADCOUNT_LINES[branch], `grief-headcount|${branch}|${ctx.ep}|${remaining}`,
-      { a: actors[0], b: actors[1] || 'somebody', n: String(remaining) });
+      { a: actors[0], b: actors[1] || 'somebody', n: countWord(remaining) });
     const t = api.openArc(FAMILY, actors, { source: sceneWhy, seed: note });
     let bondDelta = 0;
     if (branch === 'said-the-number') bondDelta = 1;
@@ -310,13 +310,13 @@ registerEvent({
 // counted number, because a room re-sorts itself faster every time.
 const RESEATED_LINES = {
   reseated: [
-    '{a} sat somewhere new this morning, and {b} sat down right next to them without being asked.',
-    'Nobody sits where they sat on the first day any more. {a} moved again, and {b} moved with them.',
+    '{a} sat somewhere new this morning, and {b} sat down right next to {aObj} without being asked.',
+    'Nobody sits where they sat on the first day any more. {a} moved again, and {b} moved with {aObj}.',
     '{a} took the chair furthest from the door and {b} took the one beside it, and neither explained.',
     'The table had reorganised itself overnight. {a} ended up next to {b}, and both of them were fine with that.',
-    '{a} moved a seat along to close the gap, and {b} moved along after them.',
+    '{a} moved a seat along to close the gap, and {b} moved along after {aObj}.',
     'Two people who started the week at opposite ends of that table are now within arm’s reach of each other.',
-    'It happens by inches and nobody announces it, and by day six the map is completely different.',
+    'It happens a chair at a time, and by now the seating looks nothing like the first morning.',
     '{b} arrived to find {a} had already saved the chair, which is not a thing anybody did on day one.',
   ],
   'kept-the-gap': [
@@ -325,7 +325,7 @@ const RESEATED_LINES = {
     'There is a hole in the middle of that table now and the castle eats around the edge of it.',
     'Two people shuffled up. Nobody closed it, and everybody noticed nobody had.',
     '{b} said it was silly. {b} still sat at the far end.',
-    'The gap has become a place. {a} said that out loud and wished {a} had not.',
+    '{a} called it {v}’s gap, out loud, and wished {aSub} had not.',
     'It would take one person moving one chair. Nobody in this castle is going to be that person.',
     '{a} and {b} both arrived early to make sure of a seat that was not that one.',
   ],
@@ -335,8 +335,8 @@ const RESEATED_LINES = {
     '{a} came down to find {b} in the dead person’s seat, eating toast, quite calmly.',
     '“It is a chair,” {b} said to {a}, which is true and is not what the room heard.',
     '{b} took the seat and held the room’s eye while doing it, which was the point of taking it.',
-    'It is the best seat at that table and {b} has wanted it since Tuesday.',
-    'The castle got its answer about {b} at about ten past eight this morning.',
+    'It is the best seat at that table, and {b} has wanted it for days.',
+    'The whole table watched {b} do it, and nobody is going to forget it.',
     '{a} will remember which chair {b} chose long after {a} has forgotten what was said in it.',
   ],
   'sat-apart': [
@@ -345,8 +345,8 @@ const RESEATED_LINES = {
     '{b} took a chair three places from {a} and spent breakfast talking to somebody else.',
     'The room re-sorted itself and put {a} and {b} on different sides of it.',
     '{a} noticed where {b} sat and did the arithmetic, and did not like the answer.',
-    'It is a small thing. In here a small thing is the only kind of thing there is.',
-    'They have sat together every morning this week. This morning they did not.',
+    '{a} noticed. In here, people notice everything.',
+    '{a} and {b} have sat together every morning until now. This morning they did not.',
     '{a} kept a chair free and {b} did not take it, and both of them registered that.',
   ],
 };
@@ -523,7 +523,7 @@ const TIMING_LINES = {
     '{a} wanted to know what {v} knew. {b} wanted to know who else had wondered that before last night.',
     'Of everybody in the castle, {v}. {a} could not make it fit, and {b} had been trying for an hour longer.',
     '{a} asked {b} what {v} had done to deserve going first, and got a silence that was itself an answer.',
-    'There are nineteen people in this building and one of them is gone, and {a} wants to know why that one.',
+    'Of everybody in the castle, one is gone, and {a} wants to know why that one.',
     '{b} said it was random. {a} said nothing in here is random, and {b} did not really disagree.',
     'The two of them went round it four times and arrived back where they started, which was {v}.',
   ],
@@ -538,12 +538,12 @@ const TIMING_LINES = {
     '“It was the question,” said {b}. “It was because of the question.”',
   ],
   'we-had-it-wrong': [
-    '{a} and {b} had spent three days on {v}, and last night settled it in the worst possible direction.',
-    'The castle had a story about {v}. That story is now unavailable and {a} would like the last three days back.',
-    '{b} pointed out, gently, that they had been asking {v} questions right up until Tuesday.',
+    '{a} and {b} had suspected {v}. Last night proved them wrong in the worst possible way.',
+    '{a} had been so sure about {v}. {a} was wrong, and now {v} is gone.',
+    '{b} pointed out, gently, that they had both been asking {v} questions right up until yesterday.',
     '“We were wrong,” said {a}, which is a bigger sentence than it sounds in here.',
     'All of it pointed at {v} and all of it was pointing the wrong way, and {a} and {b} were both pointing.',
-    'The one thing {a} and {b} had agreed on all week has just been disproved by somebody with a knife.',
+    '{a} and {b} had agreed about {v}. Last night proved them both wrong.',
     '{b} said they should start again from the beginning. {a} said the beginning was {v}.',
     'What {a} and {b} lost last night was not only {v}. It was every hour they spent on {v}.',
   ],
@@ -643,23 +643,23 @@ function _partnerSafe(pool, partner) {
 
 const REACTION_LINES = {
   mourn: [
-    '{a} didn\'t hide how hard it hit them. {b} sat with them and let it be quiet for a while.',
+    '{a} did not hide how hard it hit {aObj}. {b} sat with {aObj} and let it be quiet for a while.',
     '{a} said {v}\'s name out loud like it needed saying, and {b} agreed.',
-    '{a} cried at the table, in front of everyone, and did not apologise for it. {b} thought better of them for it.',
+    '{a} cried at the table, in front of everyone, and did not apologise for it. {b} thought better of {aObj} for it.',
     '{a} kept starting sentences about {v} and not finishing them, and {b} let every one of them go unfinished.',
     '{a} cried in front of {b} without apologising for it, which nobody here does.',
     '{a} said {v}’s name about nine times in half an hour and did not notice doing it.',
     '{b} asked how {a} was and got an honest answer, at length, for the first time this week.',
     '{a} wanted to talk about {v} and not about who did it, and said so.',
     'It took {a} most of the morning and {b} sat through the whole of it.',
-    '{a} went and stood in the room where {v} used to leave their boots.',
+    '{a} went and stood in the room where {v} used to leave {vPos} boots.',
     '{a} said the name once at breakfast and then could not say anything else.',
-    '{a} kept the seat next to them empty for the whole of the morning.',
+    '{a} kept the seat next to {aObj} empty for the whole of the morning.',
     'There is a right amount to grieve a stranger and {a} has gone past it.',
     '{a} was fine until somebody passed the toast the way {v} used to.',
     '{a} took it worse than the room expected and did not perform any of it.',
     '{a} said the eulogy nobody asked for, quietly, into a cup of tea.',
-    '{a} has known {v} for six days and is behaving like it was six years.',
+    '{a} barely knew {v}, and is taking it like losing an old friend.',
     '{a} stayed at the table long after it had emptied.',
     '{a} was the last one to look away from the portrait.',
   ],
@@ -667,7 +667,7 @@ const REACTION_LINES = {
     '{a} skipped past the grief entirely and went straight to "who benefits from this?" {b} didn\'t have a good answer.',
     '{a} was already building a theory before breakfast was over, and said as much to {b}.',
     'Before anybody had said {v}\'s name twice, {a} was asking {b} who had been out of their room.',
-    '{a} wanted the timeline, not the eulogy, and made {b} walk through the whole evening with them.',
+    '{a} wanted the timeline, not the eulogy, and made {b} walk through the whole evening with {aObj}.',
     '{a} was asking who had been where before the announcement had finished.',
     '“Who benefits,” said {a}, to {b}, over the toast, which is not a breakfast sentence.',
     '{a} had a list of names before {a} had a cup of tea.',
@@ -683,29 +683,29 @@ const REACTION_LINES = {
     '{a} treated the announcement as evidence rather than as news.',
   ],
   stoic: [
-    '{a} said almost nothing all morning. {b} noticed, and let them have it.',
+    '{a} said almost nothing all morning. {b} noticed, and left {aObj} to it.',
     '{a} went quiet in a way that read as more, not less.',
     '{a} ate breakfast, cleared the plate, and answered every question with one word.',
-    'Whatever {a} was doing with it, they were doing it somewhere nobody could watch.',
+    '{a} was dealing with it somewhere nobody could watch.',
     '{a} was up before anybody, dressed, useful, and completely unreachable.',
     '{a} did the washing up. All of it. Twice. And said about four words.',
     'Nothing showed. {b} watched for it all morning and nothing showed.',
     '{a} answered every question with the shortest true answer available.',
     '{a} has a way of being present and entirely absent at once, and did it all morning.',
-    '{b} could not tell whether {a} was devastated or unbothered, and neither could {a}.',
+    '{b} could not tell whether {a} was devastated or did not care.',
     '{a} was already dressed and already useful before the room had woken up.',
     '{a} put the chairs back, straightened the table, and said nothing at all.',
   ],
   opportunistic: [
     '{a} used the room\'s grief to steer {b} toward exactly where {a} wanted the suspicion to land — smoothly enough that {b} never felt managed.',
-    '{a} tried to use the moment to move {b} where they wanted, and it came out clumsy enough that {b} half-noticed something was off.',
+    '{a} tried to use the moment to move {b} where {aSub} wanted, and it came out clumsy enough that {b} half-noticed something was off.',
     '{a} grieved convincingly for {v} and, in the same breath, put a name in {b}\'s head that had not been there at breakfast.',
-    '{a} was a fraction too keen to comfort {b}, and a fraction too keen to tell them who to look at, and {b} clocked the second part.',
+    '{a} was a fraction too keen to comfort {b}, and a fraction too keen to tell {bObj} who to look at, and {b} clocked the second part.',
     '{a} was the first person at {b}’s side and the first person to say a name.',
     'The comfort was real enough. The name that came after it was the reason for the comfort.',
     '{a} used the worst morning of {b}’s week to move {b} one place along.',
     '{a} said “we have to think about who gains,” which is true and was not what {b} needed.',
-    'It was decent and it was working, and {b} will remember which came first.',
+    '{a} was kind to {b} all morning, and then mentioned a name. {b} noticed the order.',
     '{a} was sorry, loudly, and then helpful, pointedly, in that order.',
     '{a} grieved for exactly as long as it took the room to start listening.',
     'There is a way to be the most comforting person in a room and to be steering it, and {a} did both.',
@@ -967,10 +967,10 @@ const BLAME_ROOM_LINES = {
     '{a} said the room let {v} die, and then said that {a} was the room.',
     '“I was awake,” said {a}. “I heard something. I went back to sleep.”',
     'The anger turned round on {a} halfway through and {b} did not know what to do with the second half.',
-    '{a} had promised {v} something on Tuesday and told the whole hall about it this morning.',
+    '{a} had promised {v} something the other day and told the whole hall about it this morning.',
     '{b} said it was not {a}’s fault, four times, and {a} did not accept any of them.',
     'What {a} could not forgive was not the castle. {b} understood that about a minute too late.',
-    '{a} apologised to a chair, in front of eleven people, and then left the room.',
+    '{a} apologised to a chair, in front of the others, and then left the room.',
     'It is the most honest thing anybody has said in that hall all week and nobody knew where to look.',
   ],
 };
@@ -1487,17 +1487,17 @@ const WRONGLY_SUSPECTED_LINES = {
   'wrongly-suspected-irony': [
     '{a} and {b} realised, too late, that {v} had spent their last days under a suspicion that never actually went anywhere.',
     'Whatever {a} and {b} had thought about {v} last week, they were not going to get to find out now.',
-    '{b} reminded {a} what they had both been saying about {v} three days ago. Neither of them enjoyed the reminder.',
+    '{b} reminded {a} what they had both been saying about {v} only the other day. Neither of them enjoyed the reminder.',
     '{v} had been answering questions right up until the end, and {a} and {b} worked out this morning that none of them had mattered.',
     'The case against {v} died with {v}, and {a} and {b} were the only two still holding it.',
     'Four days of watching {v} very carefully, and the one thing they were watching for was never there.',
-    '{a} said {v}’s name this morning in a completely different voice from the one used on Tuesday.',
+    '{a} said {v}’s name this morning in a completely different voice from the one used the other day.',
     'Everything {a} and {b} had about {v} turned out to be about somebody they were never going to find this way.',
   ],
   'owned-the-mistake': [
     '{a} said it out loud: “I had {v}. I was completely wrong about {v}, in front of everybody.”',
     '{a} apologised to a room for something the room had also done, and was the only one who did.',
-    '“I asked {v} four times where they were on Tuesday,” said {a}. “Four times.”',
+    '“I asked {v} four times where {vSub} was that night,” said {a}. “Four times.”',
     '{a} took the whole of it and did not spread any of it round the table.',
     '{b} tried to share the blame and {a} would not let {b} have any.',
     'It cost {a} something to say and {a} said it before breakfast was over.',
@@ -1509,7 +1509,7 @@ const WRONGLY_SUSPECTED_LINES = {
     '“They could still have been one,” said {a}, about {v}, on the morning of it, and meant it.',
     '{b} said {v} was innocent. {a} said {b} had no more evidence for that today than yesterday.',
     'The suspicion did not die with {v} — {a} carried it out of the room intact.',
-    '{a} has seen a castle kill its own before now and is not giving the last four days up.',
+    '{a} has seen a castle turn on its own before and is not giving up the last few days of work.',
     '“Prove it,” said {a}, which is a terrible thing to say about somebody who cannot answer.',
     '{b} thought that was monstrous and said so, and {a} agreed and did not change position.',
     'It is the coldest thing said in that hall this week and it is not obviously wrong.',
@@ -1521,7 +1521,7 @@ const WRONGLY_SUSPECTED_LINES = {
     'Whatever {a} and {b} had built about {v} came apart this morning and took the two of them with it.',
     '{b} pointed out exactly which conversation had started it and who had been in it.',
     'It was a shared mistake right up until it was a mistake, and then it was {b}’s.',
-    'Two people who agreed about {v} for four days spent this morning proving they never had.',
+    '{a} and {b} agreed about {v} for days, and spent this morning finding out they never really had.',
     '{a} and {b} will not be doing this together again, and both of them said so.',
   ],
 };

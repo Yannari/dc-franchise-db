@@ -30,6 +30,14 @@
 // have nothing to sit above, and the chart loses the alignment that is its
 // entire reason for existing. A queen already gone is `OUT`: blank, present.
 import { SAVE_KINDS } from './saves.js';
+import { maxiById } from './data/challenges.js';
+
+/* `lead` is a CAPTAINCY only on a captained team week. Everywhere else it is
+   the biggest part — the Rusical's headliner, the video's lead, the girl
+   group's lead verse — and the chart called all of them "Team Captain",
+   including on a Rusical, which has no teams. */
+const leadNote = (role, challengeId) => (role !== 'lead' ? ''
+  : maxiById(challengeId)?.assignment === 'captains' ? 'Team Captain' : 'Lead Role');
 import { seasonRounds, showWords, DRAG_FORMAT } from '../shows.js';
 import { avatarUrl } from '../avatar-registry.js';
 
@@ -219,6 +227,7 @@ function fromDocument(doc, format) {
         challenge: e.challenge?.name || (e.finale ? 'The Finale' : ''),
         mini: (e.mini?.winner || null) === p.name,
         role: e.assignment?.roles?.[p.name] || null,
+        leadNote: leadNote(e.assignment?.roles?.[p.name], e.challenge?.id),
         panelRank: cell.panelRank ?? null,
         finalRank: cell.finalRank ?? null,
         storyline: cell.storyline || null,
@@ -329,6 +338,7 @@ function fromRows(rows, format) {
           challenge: challengeName(r),
           mini: (r?.dr?.mini?.winner || null) === n,
           role: r?.dr?.assignment?.roles?.[n] || null,
+          leadNote: leadNote(r?.dr?.assignment?.roles?.[n], r?.dr?.challenge?.id),
           panelRank: bend.panelRank ?? null,
           finalRank: bend.finalRank ?? null,
           storyline: arc?.variantName || arc?.arc || null,
@@ -439,7 +449,7 @@ export function buildTrackRecordGrid(source, {
          as a grid of results. */
       const notes = [
         c.mini ? 'Mini Chall. Winner' : '',
-        c.role === 'lead' ? 'Team Captain' : '',
+        c.leadNote || (c.role === 'lead' ? 'Lead Role' : ''),
         c.saved ? (SAVE_KINDS[c.saved]?.chartNote || 'Saved') : '',
       ].filter(Boolean);
       const body = esc(meta.label)

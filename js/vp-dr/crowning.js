@@ -521,7 +521,7 @@ export function rpBuildCrowning(row) {
     } else if (beat === 'crown-congeniality' || beat === 'finale-congeniality') {
       body = `<div class="cr-sash">
         ${who ? _portrait(who, ep, { size: 72, station: true }) : ''}
-        <div><span class="cr-sash-k">The cast chose her</span>
+        <div><span class="cr-sash-k">The fans chose her</span>
           <b class="dr-disp">${esc(who || '')}</b></div>
       </div>
       <div class="cr-said" style="border-top:0"><q>${esc(sc.text)}</q></div>`;

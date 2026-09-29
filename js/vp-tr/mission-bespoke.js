@@ -283,7 +283,14 @@ function _briefing(v, th) {
 function _who(card) {
   const names = card.who;
   const faces = names.map(n => _av(n, 28)).join('');
-  const label = names.join(' &amp; ') + (card.team ? ' &middot; ' + _esc(card.team) : '');
+  // A WHOLE TEAM IS A TEAM. Ten names chained with ampersands wrapped under
+  // the card's tag and printed "SUSPICIOUS" across "Gerry & Izzy"; past three
+  // names the faces say who, and the label says how many.
+  const who = names.length > 3
+    ? (card.team ? _esc(card.team) + ' &middot; ' : '') + names.length + ' of them'
+    : names.length === 3 ? _esc(names[0]) + ', ' + _esc(names[1]) + ' &amp; ' + _esc(names[2])
+      : names.map(_esc).join(' &amp; ');
+  const label = who + (card.team && names.length <= 3 ? ' &middot; ' + _esc(card.team) : '');
   return '<span class="mb-avs">' + faces + '</span><span class="mb-nm">' + label + '</span>';
 }
 
@@ -574,7 +581,7 @@ const COMMON_CSS = `
 .mb-rname{font-size:12px;letter-spacing:.2em;text-transform:uppercase;opacity:.72;margin-bottom:7px}
 .mb-rfaces{display:flex;flex-wrap:wrap;gap:5px}
 .mb-rf .cv-av{width:30px;height:30px}
-.mb-wholine{display:flex;align-items:center;gap:9px}
+.mb-wholine{display:flex;align-items:center;gap:9px;padding-right:96px;flex-wrap:wrap}
 .mb-avs{display:inline-flex;align-items:center}
 .mb-avs .cv-av{width:26px;height:26px;margin-left:-6px}
 .mb-avs .cv-av:first-child{margin-left:0}

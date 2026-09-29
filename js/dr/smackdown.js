@@ -22,6 +22,12 @@ const fill = (line, { a, b, c } = {}) => (line || '')
 
 const beatById = id => SMACKDOWN_BEATS.find(x => x.id === id);
 
+/** Everybody on a three-way lip sync who did not win it, as one phrase. */
+const othersOf = d => {
+  const o = (d.contestants || []).filter(n => n !== d.winner);
+  return o.length < 2 ? o.join('') : `${o.slice(0, -1).join(', ')} and ${o[o.length - 1]}`;
+};
+
 /* HOW A DUEL READS. The gap decides it, and `seed` is who was expected to win
    — a queen who lasted longer in the competition. An upset is the short-lived
    queen taking it from somebody who outlasted her, which is the whole appeal
@@ -39,7 +45,13 @@ function duelTier(duel, expectedOf) {
      won it clearly. */
   const seedGap = Math.abs(ra - rb);
   if (duel.winner !== favourite && seedGap >= 3 && gap >= 1.5) return 'upset';
-  return gap >= 3 ? 'blowout' : 'close';
+  if (gap >= 3) return 'blowout';
+  /* A CLOSE DUEL BETWEEN TWO QUEENS WHO HAD NOTHING LEFT is not "the best
+     thing either of them has done all season". Read off the numbers the
+     screen prints — after the fatigue, which is what tired them out. */
+  const shown = duel.adjusted || duel.scores || {};
+  const best = Math.max(Number(shown[duel.a]) || 0, Number(shown[duel.b]) || 0);
+  return best < 5 ? 'scrappy' : 'close';
 }
 
 /**
@@ -69,6 +81,16 @@ export function smackdownScenes({
 
   emit('smackdown-open', 'open', {}, { field: [...field], players: [...field] });
   for (const d of duels) {
+    /* A THREE-WAY IS THREE QUEENS. It was narrated from the pair pool over
+       its winner and one loser — "neither of them gives an inch", "two queens
+       raising each other" — with the third queen on the stage and in nobody's
+       sentence. */
+    if (d.triple && (d.contestants || []).length > 2) {
+      emit('smackdown-duel', 'triple',
+        { a: d.winner, b: othersOf(d), c: d.song },
+        { duel: d, players: [...d.contestants] });
+      continue;
+    }
     emit('smackdown-duel', duelTier(d, rank),
       { a: d.winner, b: d.loser, c: d.song },
       { duel: d, players: [d.a, d.b] });
@@ -121,6 +143,12 @@ export function tournamentScenes({
   const r3Duels = duels.filter(d => d.round === 3);
 
   for (const d of r1Duels) {
+    // A three-way is three queens, not a pair with one left out.
+    if (d.triple && (d.contestants || []).length > 2) {
+      emit('tournament-duel', 'triple', { a: d.winner, b: othersOf(d), c: d.song },
+        { duel: d, players: [...d.contestants] });
+      continue;
+    }
     emit('tournament-duel', tournamentDuelTier(d, rank),
       { a: d.winner, b: d.loser, c: d.song },
       { duel: d, players: [d.a, d.b] });
@@ -132,6 +160,12 @@ export function tournamentScenes({
   }
 
   for (const d of r2Duels) {
+    // A three-way is three queens, not a pair with one left out.
+    if (d.triple && (d.contestants || []).length > 2) {
+      emit('tournament-duel', 'triple', { a: d.winner, b: othersOf(d), c: d.song },
+        { duel: d, players: [...d.contestants] });
+      continue;
+    }
     emit('tournament-duel', tournamentDuelTier(d, rank),
       { a: d.winner, b: d.loser, c: d.song },
       { duel: d, players: [d.a, d.b] });

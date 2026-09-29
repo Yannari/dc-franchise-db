@@ -638,13 +638,18 @@ export function rpBuildSmackdown(row) {
       for (const rd of roundDuels) { poolSet.add(rd.a); poolSet.add(rd.b); }
       roundPool = [...poolSet];
 
-      const rScene = d.round === 1 ? null : nextProse('smackdown-duel');
+      /* The banner has no prose of its own. It used to take the next
+         `smackdown-duel` scene on every round after the first, which is the
+         FIRST DUEL'S — so from the semi-finals on every duel was captioned
+         with the next one's story, and the final with none. */
+      const rScene = null;
 
       step(`<div class="dr-panel dr-a-lip">
         <div class="tm-banner${isFinal ? ' danger' : ''}">
           <div class="tm-banner-round">${roundName(d.round)}</div>
           <div class="tm-banner-line">${
-  isFinal ? 'One song for the crown.'
+  // The crown is next week's; this song is for the Smackdown's own title.
+  isFinal ? 'One song for the title.'
     : d.round === 1 ? 'Everybody lip syncs. Winners advance.'
       : 'The winners face each other.'}</div>
         </div>

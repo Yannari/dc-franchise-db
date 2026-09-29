@@ -42,8 +42,20 @@ export const SMACKDOWN_BEATS = [
         "Neither of them gives an inch. {b} goes for the floor early, {a} answers it, and from there it is a conversation rather than a fight — two queens raising each other for three minutes. {a} edges it. {b} is the first person to hug her.",
         "“{c}” is close enough that it comes down to the last eight bars, which is where {a} does the thing she has been saving. {b} sees it happen from four feet away and laughs, because there is nothing else to do about it.",
       ]),
+      tier('scrappy', "Close, and neither of them had it tonight.", [
+        "{a} and {b} are both tired and both of them know it. “{c}” gets a scrappy, sloppy three minutes out of the pair of them, and {a} wins it by being slightly less lost. The room is kind about it.",
+        "Neither of them finds “{c}”. {b} loses the second verse, {a} loses the bridge, and the duel is decided by who hides it better. {a} hides it better.",
+        "It is not pretty. {a} and {b} lip sync near “{c}” rather than to it, and when it ends the host takes a second before he names {a}, because there was not a lot to choose between them.",
+        "“{c}” asks for more than either of them has left tonight. {a} gets through it on attitude; {b} gets through it on memory, and the memory runs out first.",
+      ]),
+      tier('triple', "Three queens, one song, one goes through. {b} is the other two, joined.", [
+        "Three queens, one “{c}”, and one place in the next round. {a} takes the centre of the stage early and never gives it back; {b} spend the song fighting each other for what is left of it.",
+        "A three-way is a different animal and {a} is the only one on stage who treats it like one — she plays to the panel while {b} play to each other. It is enough.",
+        "“{c}” with three bodies on it is chaos, and {a} is the one who finds the calm inside it. {b} are both good. Neither of them is the queen the room is watching by the last chorus.",
+        "There is no hiding in a three-way lip sync and nobody tries. {a}, {b} — all three go for it, all three land something, and {a} lands the most.",
+      ]),
       tier('upset', 'Nobody had her winning that.', [
-        "Nobody had {a} beating {b} and {a} did not care. She takes “{c}” from the first note, commits to it harder than she committed to anything while she was still in the competition, and by the end the room is screaming for the queen who went home first. {b} takes it well and takes it hard.",
+        "Nobody had {a} beating {b} and {a} did not care. She takes “{c}” from the first note, commits to it harder than she committed to anything while she was still in the competition, and by the end the room is screaming for a queen who went home weeks before {b} did. {b} takes it well and takes it hard.",
         "{b} was the favourite going into this one and it does not survive the first chorus. {a} arrives with something to prove and proves it — and the look on her face when the host calls her name is the look of somebody who has been carrying that for weeks.",
         "The upset of the bracket. {a} should not beat {b} on paper, and “{c}” is not even her kind of song, and she wins it anyway on pure want. Somebody in the back shouts her name three times before the host has said anything.",
         "This is the one people will talk about. {a} — out early, barely a track record, nothing to lose — takes “{c}” off {b} and looks genuinely startled to have done it. {b} says “that was deserved” and means it.",

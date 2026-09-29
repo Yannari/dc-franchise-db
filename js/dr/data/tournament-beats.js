@@ -39,6 +39,12 @@ export const TOURNAMENT_BEATS = [
         "This is the duel the bracket was built for. “{c}” gets performed twice at once in two different registers and both of them work. {a} takes it. {b} is the first person to hug her.",
         "“{c}” comes down to the final eight bars, which is where {a} finds the thing she has been saving. {b} sees it happen from four feet away and shakes her head, because there is nothing else to do when somebody pulls that out of nowhere.",
       ]),
+      tier('triple', "Three queens, one song, one goes through. {b} is the other two, joined.", [
+        "Three queens on “{c}” and only one of them is safe when it ends. {a} takes the front of the stage in the first chorus and holds it; {b} spend the rest of the song fighting each other for the edges of it.",
+        "A three-way lip sync with a place at stake and {a} is the one who plays it to the panel instead of to the other two. {b} are good. {a} is the one the room is watching.",
+        "“{c}” with three bodies on it should be chaos, and for {b} it is. {a} finds the calm in the middle of it and wins the song from there.",
+        "Nobody holds back in a three-way. {a}, {b} — all three go for it, all three land something, and {a} lands the most.",
+      ]),
       tier('upset', 'The favourite lost and nobody saw it coming.', [
         "Nobody had {a} beating {b} and {a} did not care. She takes “{c}” from the first note, commits to it harder than she has committed to anything on this stage, and by the end the room is screaming for the queen nobody expected to survive this round. {b} takes it well. She takes it hard.",
         "{b} was the favourite and it does not survive the first chorus. {a} arrives with something to prove and proves it, and the look on her face when the host says her name is somebody who has been carrying that weight for weeks and just set it down.",

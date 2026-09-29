@@ -299,3 +299,20 @@ export const PARTY_THEMES = [
   { id: 'animal', name: 'Animal Instincts', props: ['cat ears', 'a leopard print scarf', 'a tail'] },
   { id: 'disco', name: 'Disco Night', props: ['a disco ball', 'platform shoes', 'a wig'] },
 ];
+
+// Never Have I Ever, played in the party's Circle Chat (1×02). An admission
+// is public; `stat` is what makes someone likelier to have done it.
+export const NEVER_HAVE_I_EVER = [
+  { id: 'public', text: 'Never have I ever kissed someone in public.', stat: 'boldness' },
+  { id: 'first-date', text: 'Never have I ever kissed someone on the first date.', stat: 'boldness' },
+  { id: 'lied-age', text: 'Never have I ever lied about my age.', stat: 'strategic' },
+  { id: 'fake-sick', text: 'Never have I ever called in sick when I was not sick.', stat: 'strategic' },
+  { id: 'slid-dms', text: 'Never have I ever slid into a stranger\'s DMs.', stat: 'boldness' },
+  { id: 'cried-work', text: 'Never have I ever cried at work.', stat: 'social' },
+  { id: 'ex-back', text: 'Never have I ever gotten back together with an ex.', stat: 'loyalty' },
+  { id: 'stalked', text: 'Never have I ever looked up an ex online at two in the morning.', stat: 'intuition' },
+  { id: 'dared', text: 'Never have I ever done something on a dare I would not do sober.', stat: 'boldness' },
+  { id: 'crush-friend', text: 'Never have I ever had a crush on a friend\'s partner.', stat: 'temperament' },
+  { id: 'fight', text: 'Never have I ever been kicked out of a party.', stat: 'boldness' },
+  { id: 'fake-number', text: 'Never have I ever given someone a fake number.', stat: 'strategic' },
+];

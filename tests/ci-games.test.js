@@ -1,6 +1,6 @@
 // ci-games.test.js — the game library and the games (Plan 3a).
 import { describe, expect, it } from 'vitest';
-import { GAMES, FAMILIES, PURPOSES, PRIZES, PARTY_THEMES } from '../js/ci/games-data.js';
+import { GAMES, FAMILIES, PURPOSES, PRIZES, PARTY_THEMES, NEVER_HAVE_I_EVER } from '../js/ci/games-data.js';
 import { foreignWordsIn } from './helpers/show-vocabulary.js';
 
 const VALID_STATS = ['physical', 'endurance', 'mental', 'social', 'strategic', 'loyalty', 'boldness', 'intuition', 'temperament'];
@@ -37,7 +37,8 @@ describe('the game library', () => {
   });
 
   it('writes in US English, names nobody real, and borrows no other show\'s words', () => {
-    const texts = GAMES.flatMap(g => [g.name, ...g.rules, ...(g.prompts || []).map(p => p.text)]);
+    const texts = [...GAMES.flatMap(g => [g.name, ...g.rules, ...(g.prompts || []).map(p => p.text)]),
+      ...NEVER_HAVE_I_EVER.map(x => x.text), ...PARTY_THEMES.flatMap(t => [t.name, ...t.props])];
     const UK = /\b(colour|favourite|mum|realise|whilst|apologise|organise|mate|bloody|fancy)\b/i;
     for (const t of texts) {
       expect(t).not.toMatch(UK);
@@ -49,26 +50,11 @@ describe('the game library', () => {
   });
 });
 
-import { setGs } from '../js/core.js';
-import { newState, bump } from '../js/ci/state.js';
-import { initMind } from '../js/ci/mind.js';
+import { bump } from '../js/ci/state.js';
 import { streamFor } from '../js/dr/rng.js';
 import { pickGame } from '../js/ci/games.js';
 
-const STATS = { physical: 5, endurance: 5, mental: 5, social: 5, strategic: 5, loyalty: 5, boldness: 5, intuition: 5, temperament: 5 };
-export function room(n = 8, seed = 3) {
-  setGs({ bonds: {}, relationshipDimensions: {}, episodeHistory: [] });
-  const s = newState(seed);
-  s.day = 1;
-  for (let i = 0; i < n; i++) {
-    const name = `Q${i}`, handle = `@q${i}`;
-    s.people[name] = { name, gender: i % 2 ? 'm' : 'f', sexuality: 'straight', archetype: 'floater', stats: { ...STATS }, age: 25 };
-    s.profiles[handle] = { handle, players: [name], mode: 'honest', gap: 0,
-      shown: { name: `Q${i}`, gender: i % 2 ? 'm' : 'f', age: 25 }, voice: { emoji: 0.5, hashtags: 0.5, caps: 0 } };
-    s.handleOf[name] = handle; s.active.push(handle); initMind(s, handle);
-  }
-  return s;
-}
+import { room } from './helpers/ci-room.js';
 
 describe('which game', () => {
   it('never repeats a game, opens with a learn game, and never plays one purpose three times running', () => {

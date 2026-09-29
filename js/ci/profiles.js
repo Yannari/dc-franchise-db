@@ -1,0 +1,197 @@
+// ══════════════════════════════════════════════════════════════════════
+// ci/profiles.js — who plays whom
+// ══════════════════════════════════════════════════════════════════════
+//
+// Spec §4. Each player has a TRUTH (the person) and a PROFILE (what the room
+// sees). The author writes a Catfish Pool of personas each season; players
+// take them by MOTIVE (stats, and what their real facts cost in this cast)
+// or at random, and personas nobody takes stay in the pool as stock for later
+// twists (spec §4.2). The engine never invents a persona: a motivated player
+// who finds none plays EDITED — same face, one to three facts changed.
+//
+// All weights are proportional (stat × factor). MOTIVE_LINE is a gameplay
+// constant tuned by audit:ci-spec so that a pool big enough gives roughly a
+// third of the cast a persona (spec §2.2: about a third of real casts).
+import { clamp, personMayScheme } from './state.js';
+
+export const MOTIVE = { age: 0.08, alum: 0.6, villainRep: 1.4, job: 1.0,
+  strategic: 0.07, boldness: 0.05, loyalty: 0.06 };
+export const MOTIVE_LINE = 0.75;
+export const RANDOM_TAKE = 0.5;
+const EDIT_JOBS = ['student', 'teacher', 'barista', 'personal trainer', 'marketing assistant',
+  'bartender', 'nurse', 'graphic designer'];
+
+export function truthOf(player, setup = {}) {
+  return {
+    name: player.name, gender: player.gender || 'f', sexuality: player.sexuality || 'straight',
+    archetype: player.archetype || 'floater', stats: { ...player.stats },
+    age: setup.age ?? player.age ?? 25, job: setup.job ?? null, hometown: setup.hometown ?? null,
+    status: setup.status ?? 'Single', alum: !!(setup.alum ?? player.isReturnee),
+    rep: setup.rep ?? null, jobCost: setup.jobCost ?? 0, role: setup.role || 'starter',
+    catfish: setup.catfish || 'decide', partner: setup.partner || null,
+  };
+}
+
+export function medianAge(truths) {
+  const a = truths.map(t => t.age).sort((x, y) => x - y);
+  return a.length ? a[a.length >> 1] : 25;
+}
+
+/** What each true fact costs to show in this room (spec §4.3). */
+export function factCosts(t, median) {
+  return { age: Math.abs(t.age - median) * MOTIVE.age, alum: t.alum ? MOTIVE.alum : 0,
+    rep: t.rep === 'villain' ? MOTIVE.villainRep : 0, job: (t.jobCost || 0) * MOTIVE.job };
+}
+
+export function catfishMotive(t, median) {
+  const c = factCosts(t, median);
+  return c.age + c.alum + c.rep + c.job
+    + (t.stats.strategic ?? 5) * MOTIVE.strategic
+    + (t.stats.boldness ?? 5) * MOTIVE.boldness
+    - (t.stats.loyalty ?? 5) * MOTIVE.loyalty;
+}
+
+/** The first of the persona's reasons this person may use; strategic is scheme-only (spec §4.4). */
+export function reasonFor(t, persona) {
+  const ok = (persona.reasons || []).filter(r => r !== 'strategic' || personMayScheme(t));
+  return ok[0] ?? null;
+}
+
+/** How well a persona hides what this player wants hidden. -Infinity = unusable. */
+export function fitScore(t, persona, median) {
+  if (!reasonFor(t, persona)) return -Infinity;
+  const f = persona.fits || {};
+  let s = 0;
+  if (f.gender && f.gender !== t.gender) s -= 1;
+  if (f.ageMin != null && t.age < f.ageMin) s -= 1;
+  if (f.ageMax != null && t.age > f.ageMax) s -= 1;
+  if (f.archetypes && !f.archetypes.includes(t.archetype)) s -= 0.5;
+  if (t.age > median + 5 && persona.age < t.age) s += 1;
+  if (t.age < median - 5 && persona.age > t.age) s += 1;
+  if (t.alum || t.rep) s += 0.5;
+  return s;
+}
+
+function shuffled(list, rng) {
+  const a = [...list];
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
+
+export function drawPersonas(truths, pool, rng, pickBy = 'stats') {
+  const median = medianAge(truths);
+  const left = [...pool];
+  const assigned = {};
+  const take = (t, p) => {
+    assigned[t.name] = { personaId: p.id, reason: reasonFor(t, p) };
+    left.splice(left.indexOf(p), 1);
+  };
+  const best = t => left.map(p => [p, fitScore(t, p, median)]).filter(([, s]) => s > -1)
+    .sort((a, b) => b[1] - a[1])[0]?.[0];
+
+  // Pins first. A pin to a persona that is not in the pool is ignored.
+  for (const t of truths) {
+    if (['decide', 'never', 'always'].includes(t.catfish)) continue;
+    const p = left.find(x => x.id === t.catfish);
+    if (p && reasonFor(t, p)) take(t, p);
+  }
+  const open = truths.filter(t => !assigned[t.name] && t.catfish !== 'never');
+  const motive = Object.fromEntries(open.map(t => [t.name, catfishMotive(t, median)]));
+
+  if (pickBy === 'random') {
+    for (const t of open.filter(t => t.catfish === 'always')) { const p = best(t); if (p) take(t, p); }
+    for (const p of shuffled(left, rng)) {
+      if (rng() > RANDOM_TAKE) continue;
+      const takers = open.filter(t => !assigned[t.name] && reasonFor(t, p));
+      if (takers.length) take(takers[Math.floor(rng() * takers.length)], p);
+    }
+  } else {
+    const order = open.map(t => [t, motive[t.name] + (t.catfish === 'always' ? 99 : 0) + rng() * 1.2])
+      .sort((a, b) => b[1] - a[1]).map(([t]) => t);
+    for (const t of order) {
+      if (t.catfish !== 'always' && motive[t.name] < MOTIVE_LINE) continue;
+      const p = best(t);
+      if (p) take(t, p);
+    }
+  }
+  const edited = open.filter(t => !assigned[t.name]
+    && (t.catfish === 'always' || motive[t.name] >= MOTIVE_LINE)).map(t => t.name);
+  return { assigned, unused: left.map(p => p.id), edited };
+}
+
+/** Texting voice (spec §4.5): numbers 0..1 that Plan 2 turns into words. */
+export function voiceOf(age, stats) {
+  return {
+    emoji: clamp(stats.social / 10 + (age < 30 ? 0.2 : -0.1), 0, 1),
+    hashtags: clamp(stats.boldness / 10 + (age < 35 ? 0.1 : -0.2), 0, 1),
+    caps: clamp((stats.boldness - 4) / 10, 0, 1),
+    length: clamp(stats.mental / 10, 0, 1),
+    speed: clamp((stats.social + stats.boldness) / 20, 0, 1),
+  };
+}
+
+const slug = s => String(s).toLowerCase().replace(/[^a-z0-9]/g, '') || 'player';
+function uniqueHandle(base, taken) {
+  let h = `@${slug(base)}`, i = 2;
+  while (taken[h]) h = `@${slug(base)}${i++}`;
+  return h;
+}
+
+function editsFor(t, median, rng) {
+  const c = factCosts(t, median);
+  const shown = {};
+  const edits = [];
+  const ranked = Object.entries(c).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]).slice(0, 2);
+  for (const [fact] of ranked) {
+    if (fact === 'age') { shown.age = Math.round(median + (t.age > median ? 2 : -2) * rng()); edits.push('age'); }
+    if (fact === 'job') { shown.job = EDIT_JOBS[Math.floor(rng() * EDIT_JOBS.length)]; edits.push('job'); }
+    if (fact === 'alum' || fact === 'rep') { if (!edits.includes('fame')) edits.push('fame'); }
+  }
+  if (t.status !== 'Single' && rng() < (t.stats.strategic ?? 5) / 20) { shown.status = 'Single'; edits.push('status'); }
+  if (!edits.length) { shown.job = EDIT_JOBS[Math.floor(rng() * EDIT_JOBS.length)]; edits.push('job'); }
+  return { shown, edits };
+}
+
+export function buildProfiles(state, truths, draw, pool, rng) {
+  const median = medianAge(truths);
+  const personas = Object.fromEntries(pool.map(p => [p.id, p]));
+  state.pool = pool.map(p => ({ ...p }));
+  state.unused = [...draw.unused];
+  const handles = [];
+  for (const t of truths) {
+    state.people[t.name] = t;
+    // A partner already on a profile: join it (spec §14.8).
+    const partnerHandle = t.partner && state.handleOf[t.partner];
+    if (partnerHandle && state.profiles[partnerHandle].players.length === 1) {
+      const p = state.profiles[partnerHandle];
+      p.players.push(t.name); p.mode = 'shared'; p.gap = 0.5;
+      state.handleOf[t.name] = partnerHandle;
+      continue;
+    }
+    const a = draw.assigned[t.name];
+    const persona = a && personas[a.personaId];
+    let mode = 'honest', shown, edits = [], tells = [], gap = 0;
+    const own = { name: t.name, age: t.age, gender: t.gender, job: t.job, status: t.status,
+      hometown: t.hometown, face: `portrait:${t.name}` };
+    if (persona) {
+      mode = 'catfish';
+      shown = { name: persona.handle, age: persona.age, gender: persona.gender, job: persona.job,
+        status: persona.status, hometown: persona.hometown, face: persona.face };
+      tells = [...(persona.tells || [])];
+      gap = 1 + Math.abs(persona.age - t.age) / 10 + (persona.gender !== t.gender ? 1 : 0);
+    } else if (draw.edited.includes(t.name)) {
+      mode = 'edited';
+      const e = editsFor(t, median, rng);
+      shown = { ...own, ...e.shown }; edits = e.edits; gap = 0.3 * edits.length;
+    } else {
+      mode = catfishMotive(t, median) > 0 ? 'polished' : 'honest';
+      shown = own;
+    }
+    const handle = uniqueHandle(shown.name, state.profiles);
+    state.profiles[handle] = { handle, players: [t.name], mode, personaId: persona?.id ?? null,
+      reason: a?.reason ?? null, shown, edits, tells, gap, voice: voiceOf(shown.age, t.stats) };
+    state.handleOf[t.name] = handle;
+    handles.push(handle);
+  }
+  return handles;
+}

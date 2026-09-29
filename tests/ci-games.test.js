@@ -48,3 +48,57 @@ describe('the game library', () => {
     for (const th of PARTY_THEMES) expect(th.props.length, th.id).toBeGreaterThanOrEqual(3);
   });
 });
+
+import { setGs } from '../js/core.js';
+import { newState, bump } from '../js/ci/state.js';
+import { initMind } from '../js/ci/mind.js';
+import { streamFor } from '../js/dr/rng.js';
+import { pickGame } from '../js/ci/games.js';
+
+const STATS = { physical: 5, endurance: 5, mental: 5, social: 5, strategic: 5, loyalty: 5, boldness: 5, intuition: 5, temperament: 5 };
+export function room(n = 8, seed = 3) {
+  setGs({ bonds: {}, relationshipDimensions: {}, episodeHistory: [] });
+  const s = newState(seed);
+  s.day = 1;
+  for (let i = 0; i < n; i++) {
+    const name = `Q${i}`, handle = `@q${i}`;
+    s.people[name] = { name, gender: i % 2 ? 'm' : 'f', sexuality: 'straight', archetype: 'floater', stats: { ...STATS }, age: 25 };
+    s.profiles[handle] = { handle, players: [name], mode: 'honest', gap: 0,
+      shown: { name: `Q${i}`, gender: i % 2 ? 'm' : 'f', age: 25 }, voice: { emoji: 0.5, hashtags: 0.5, caps: 0 } };
+    s.handleOf[name] = handle; s.active.push(handle); initMind(s, handle);
+  }
+  return s;
+}
+
+describe('which game', () => {
+  it('never repeats a game, opens with a learn game, and never plays one purpose three times running', () => {
+    for (let seed = 1; seed <= 20; seed++) {
+      const s = room(10, seed);
+      const played = [];
+      for (let day = 1; day <= 12; day++) {
+        s.day = day;
+        played.push(pickGame(s, streamFor(seed, `game:${day}`), { days: 13 }));
+      }
+      expect(new Set(played.map(g => g.id)).size).toBe(played.length);
+      expect(played[0].purpose).toBe('learn');
+      for (let i = 2; i < played.length; i++) {
+        expect(played[i].purpose === played[i - 1].purpose && played[i].purpose === played[i - 2].purpose).toBe(false);
+      }
+    }
+  });
+
+  it('plays no team game with fewer than six, and no flirt game without a mutual spark', () => {
+    for (let seed = 1; seed <= 40; seed++) {
+      const s = room(5, seed);
+      s.day = 5;
+      const g = pickGame(s, streamFor(seed, 'x'), { days: 13 });
+      expect(g.family).not.toBe('team');
+      expect(g.family).not.toBe('flirt');
+    }
+    const s = room(8, 1);
+    bump('@q0', '@q1', 'attraction', 8); bump('@q1', '@q0', 'attraction', 8);
+    s.gamesPlayed = GAMES.filter(g => g.family !== 'flirt').map(g => g.id);
+    s.day = 5;
+    expect(pickGame(s, streamFor(1, 'x'), { days: 13 }).family).toBe('flirt');
+  });
+});

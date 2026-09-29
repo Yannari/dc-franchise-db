@@ -51,3 +51,16 @@ describe('the schedule', () => {
     expect(() => buildSchedule({ total: 13, starters: 2 })).toThrow(/three starting/);
   });
 });
+
+describe('the schedule — games, parties, videos from home (Plan 3a)', () => {
+  it('puts a game on day one, on every social day and on every other middle rating day, and none at the end', () => {
+    const s = buildSchedule({ total: 13, starters: 8 });
+    expect(s[0].game).toBe(true);
+    for (const d of s.filter(x => x.slot === 'social')) { expect(d.game).toBe(true); expect(d.party).toBe(true); }
+    expect(s.filter(d => d.final || d.finale).every(d => !d.game && !d.party)).toBe(true);
+    const videos = s.filter(d => d.homeVideos);
+    expect(videos).toHaveLength(1);
+    expect(videos[0].day).toBe(s.length - 3);
+    expect(s.filter(d => d.game).length).toBeGreaterThanOrEqual(7);
+  });
+});

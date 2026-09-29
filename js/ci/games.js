@@ -144,6 +144,110 @@ const RUN = {
     }
   },
 
+  /**
+   * Make something, often of another Player, and post it; the likes judge
+   * (1×04 Nailed It, 1×08 Portrait Mode). A scheming maker who resents the
+   * subject makes a jab — a public one. A nice maker never does.
+   */
+  make(state, rng, game, sc, all) {
+    const p = game.prompts[0];
+    const quality = Object.fromEntries(all.map(h =>
+      [h, p.stats.reduce((s, k) => s + S(state, h, k), 0) / p.stats.length + rng() * 3]));
+    const answers = {}, portrayals = {};
+    if (p.about) {
+      const order = shuffled(all, rng);
+      order.forEach((maker, i) => {
+        const subject = order[(i + 1) % order.length];
+        answers[maker] = subject;
+        const jab = schemeEligible(state, maker) && rel(maker, subject, 'resentment') > rel(maker, subject, 'affection');
+        portrayals[maker] = jab ? 'jab' : 'kind';
+        if (jab) {
+          const c = makeClaim(state, { kind: 'distrusts', holder: maker, about: subject, truth: true, secrecy: 'public', by: maker });
+          for (const obs of all) if (obs !== maker) learn(state, obs, c, maker, sc);
+          bump(subject, maker, 'resentment', 1);
+        } else bump(subject, maker, 'affection', 0.5);
+      });
+    } else for (const h of all) answers[h] = 'made';
+    const likes = Object.fromEntries(all.map(h => [h, 0]));
+    for (const liker of all) {
+      all.filter(o => o !== liker).map(o => [o, quality[o] + rel(liker, o, 'affection') * 0.3])
+        .sort((a, b) => b[1] - a[1]).slice(0, 3).forEach(([o]) => { likes[o]++; });
+    }
+    sc.data.rounds.push({ promptId: p.id, answers, portrayals });
+    sc.data.results = { quality, likes, winner: argmax(all, h => likes[h] + quality[h] / 100) };
+  },
+
+  /** Post a photo; the room reacts (1×05 Hashtag This). */
+  photo(state, rng, game, sc, all) {
+    const answers = {}, likes = Object.fromEntries(all.map(h => [h, 0]));
+    for (const poster of all) {
+      answers[poster] = 'posted';
+      rollSlips(state, rng, poster, all, { specific: 0.2, attention: 0.5 }, sc);
+      for (const viewer of all) {
+        if (viewer === poster) continue;
+        bump(viewer, poster, 'affection', 0.2);
+        if (attractionOk(state, viewer, poster)) bump(viewer, poster, 'attraction', 0.4);
+        if (rel(viewer, poster, 'affection') + rng() * 2 > 1) likes[poster]++;
+      }
+    }
+    sc.data.rounds.push({ promptId: 'photo', answers });
+    sc.data.results = { likes, winner: argmax(all, h => likes[h]) };
+  },
+
+  /**
+   * Two captains pick teams in turn (1×07 Trivia Night: the captains are the
+   * day's newcomers, scouting profiles before they pick). Teammates bond; the
+   * last one picked feels it.
+   */
+  team(state, rng, game, sc, all) {
+    const fresh = all.filter(h => state.joinedDay?.[h] === state.day);
+    const last = [...state.ratings].reverse().find(r => !r.final);
+    const captains = fresh.length >= 2 ? fresh.slice(0, 2)
+      : last ? last.results.map(r => r.profile).filter(h => all.includes(h)).slice(0, 2)
+        : [...all].sort((a, b) => S(state, b, 'social') - S(state, a, 'social')).slice(0, 2);
+    const teams = [[captains[0]], [captains[1]]];
+    const left = all.filter(h => !captains.includes(h));
+    let turn = 0, lastPick = null;
+    while (left.length) {
+      const cap = captains[turn % 2];
+      const pick = argmax(left, o => rel(cap, o, 'affection') + S(state, o, 'mental') * 0.3 + rng());
+      teams[turn % 2].push(pick);
+      left.splice(left.indexOf(pick), 1);
+      lastPick = pick;
+      turn++;
+    }
+    if (lastPick) {
+      feel(state, lastPick, 'loneliness', 1.5);
+      for (const c of captains) bump(lastPick, c, 'resentment', 0.4);
+    }
+    for (const t of teams) for (const a of t) for (const b of t) if (a !== b) bump(a, b, 'affection', 0.4);
+    const score = t => t.reduce((s, h) => s + S(state, h, 'mental'), 0) / t.length + rng() * 2;
+    const scores = teams.map(score);
+    const answers = Object.fromEntries(teams.flatMap((t, i) => t.map(h => [h, i])));
+    sc.data.rounds.push({ promptId: shuffled(game.prompts, rng)[0].id, answers });
+    sc.data.results = { captains, teams, scores, lastPick, winner: scores[0] >= scores[1] ? 0 : 1 };
+  },
+
+  /** Pickup lines, and a date for the pair that clicks (5×02 Talk Flirty to Me). */
+  flirt(state, rng, game, sc, all) {
+    const pairs = [];
+    for (const a of all) for (const b of all) {
+      if (a >= b || !attractionOk(state, a, b) || !attractionOk(state, b, a)) continue;
+      pairs.push([a, b, Math.min(rel(a, b, 'attraction'), rel(b, a, 'attraction')) + rng()]);
+    }
+    pairs.sort((x, y) => y[2] - x[2]);
+    const answers = {}, used = new Set();
+    for (const [a, b] of pairs) {
+      if (used.has(a) || used.has(b) || Object.keys(answers).length >= 4) continue;
+      answers[a] = b; answers[b] = a; used.add(a); used.add(b);
+      bump(a, b, 'attraction', 1); bump(b, a, 'attraction', 1);
+      feel(state, a, 'elation', 1); feel(state, b, 'elation', 1);
+    }
+    sc.data.rounds.push({ promptId: 'flirt', answers });
+    const first = Object.keys(answers)[0];
+    sc.data.results = { winner: first ? [first, answers[first]] : null };
+  },
+
   /** Name your biggest rival, and why you deserve it more (1×10 State Your Case). */
   rival(state, rng, game, sc, all) {
     const answers = {};
@@ -160,12 +264,64 @@ const RUN = {
   },
 };
 
+/** Who takes the game's prize, by family. */
+function winnersOf(state, game, sc, all) {
+  const r = sc.data.results || {};
+  switch (game.family) {
+    case 'make': case 'photo': return [r.winner];
+    // A video from home skips a captain who joined today (1×07: "Captain Sean
+    // won't get one because she's literally been here like 12 minutes").
+    case 'team': return r.teams[r.winner].filter(h => game.prize !== 'video' || state.joinedDay?.[h] !== state.day);
+    case 'flirt': return r.winner || [];
+    case 'name': {
+      const counts = {};
+      for (const round of sc.data.rounds) {
+        const tone = game.prompts.find(p => p.id === round.promptId)?.tone;
+        if (tone === 'good') for (const n of Object.values(round.answers)) counts[n] = (counts[n] || 0) + 1;
+      }
+      const top = Object.keys(counts).sort((a, b) => counts[b] - counts[a])[0];
+      return top ? [top] : [];
+    }
+    case 'guess': {
+      const placed = {};
+      for (const round of sc.data.rounds) for (const list of Object.values(round.placedBy)) for (const o of list) placed[o] = (placed[o] || 0) + 1;
+      return [argmax(all, h => placed[h] || 0)];
+    }
+    default: return [...all];     // a party night, a Circle Fest: everyone
+  }
+}
+
+/**
+ * The prize alert. party: tomorrow night is a party. photo: a new profile
+ * photo the room warms to. video: a message from home tonight. immunity:
+ * safe at the next blocking (standardBlocking honors and clears it; the
+ * final ratings never read it). gift: the winner sends someone a gift.
+ */
+export function awardPrize(state, rng, game, winners, sc) {
+  if (!game.prize || game.prize === 'none' || !winners.length) return null;
+  sc.data.prize = { kind: game.prize, to: [...winners] };
+  const all = sc.seenBy;
+  for (const w of winners) {
+    if (game.prize === 'party') state.partyNext = true;
+    if (game.prize === 'photo') for (const o of all) if (o !== w) bump(o, w, 'affection', 0.2);
+    if (game.prize === 'video') (state.homeVideoFor ||= []).push(w);
+    if (game.prize === 'immunity') state.immuneNext[w] = true;
+    if (game.prize === 'gift') {
+      const to = argmax(all.filter(o => o !== w), o => rel(w, o, 'affection') + rng());
+      bump(to, w, 'affection', 1);
+      for (const obs of all) if (obs !== w) noteAlly(state, obs, w, to, sc);
+      sc.data.prize.gift = { from: w, to };
+    }
+  }
+  return sc.data.prize;
+}
+
 /** Play a game with everyone still in, and record it as one public scene. */
 export function runGame(state, rng, game) {
   const all = [...state.active];
   const sc = addScene(state, 'game', all, { gameId: game.id, family: game.family, rounds: [], results: {}, prize: null }, all);
-  if (!RUN[game.family]) throw new Error(`no runner for the ${game.family} family yet`);
   RUN[game.family](state, rng, game, sc, all);
+  awardPrize(state, rng, game, winnersOf(state, game, sc, all).filter(Boolean), sc);
   return sc;
 }
 

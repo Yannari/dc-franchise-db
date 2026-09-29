@@ -235,3 +235,79 @@ describe('catfish tests', () => {
     expect(slipsWith(2)).toBeGreaterThan(slipsWith(0) + 5);
   });
 });
+
+import { awardPrize } from '../js/ci/games.js';
+import { atRiskOf, standardBlocking } from '../js/ci/blocking.js';
+
+describe('making things, photos, teams, flirting — and the prizes', () => {
+  it('a make game: a nice maker never draws a jab, and the most-liked maker takes the prize', () => {
+    const s = room(6, 9);
+    for (const n of Object.keys(s.people)) s.people[n].archetype = 'hero';
+    for (const a of s.active) for (const b of s.active) if (a !== b) bump(a, b, 'resentment', 6);
+    const sc = runGame(s, streamFor(9, 'make'), game('portrait-mode'));
+    expect(Object.values(sc.data.rounds[0].portrayals)).not.toContain('jab');
+    for (const [maker, subject] of Object.entries(sc.data.rounds[0].answers)) expect(subject).not.toBe(maker);
+    const likes = sc.data.results.likes;
+    const top = Math.max(...Object.values(likes));
+    expect(likes[sc.data.results.winner]).toBe(top);
+  });
+
+  it('a make game: a scheming maker who resents the subject paints a jab everyone learns about', () => {
+    let jabs = 0;
+    for (let seed = 1; seed <= 10; seed++) {
+      const s = room(5, seed);
+      for (const n of Object.keys(s.people)) Object.assign(s.people[n], { archetype: 'villain' });
+      for (const a of s.active) for (const b of s.active) if (a !== b) bump(a, b, 'resentment', 5);
+      const sc = runGame(s, streamFor(seed, 'make'), game('poor-traits'));
+      for (const [maker, how] of Object.entries(sc.data.rounds[0].portrayals)) {
+        if (how !== 'jab') continue;
+        jabs++;
+        const subject = sc.data.rounds[0].answers[maker];
+        expect(s.claims.some(c => c.kind === 'distrusts' && c.holder === maker && c.about === subject && c.secrecy === 'public')).toBe(true);
+      }
+    }
+    expect(jabs).toBeGreaterThan(0);
+  });
+
+  it('a team game: two newcomers captain, teammates bond, the last pick feels it', () => {
+    const s = room(8, 10);
+    s.day = 4; s.joinedDay = { '@q6': 4, '@q7': 4 };
+    const before = mood(s, '@q0', 'loneliness');
+    const sc = runGame(s, streamFor(10, 'team'), game('trivia-night'));
+    const r = sc.data.results;
+    expect(r.captains.sort()).toEqual(['@q6', '@q7']);
+    expect(r.teams[0].length + r.teams[1].length).toBe(8);
+    const [x, y] = r.teams[0];
+    expect(rel(x, y, 'affection')).toBeGreaterThan(0);
+    expect(mood(s, r.lastPick, 'loneliness')).toBeGreaterThan(r.lastPick === '@q0' ? before : -1);
+    expect(sc.data.prize).toMatchObject({ kind: 'video' });
+    // 1×07: "Captain Sean won't get one because she's literally been here like 12 minutes."
+    expect([...s.homeVideoFor].sort()).toEqual(r.teams[r.winner].filter(h => !r.captains.includes(h)).sort());
+  });
+
+  it('a flirt game: the mutually attracted pair flirts, and it grows', () => {
+    const s = room(6, 11);
+    bump('@q0', '@q1', 'attraction', 6); bump('@q1', '@q0', 'attraction', 6);
+    const sc = runGame(s, streamFor(11, 'flirt'), game('talk-flirty'));
+    expect(sc.data.rounds[0].answers['@q0']).toBe('@q1');
+    expect(rel('@q0', '@q1', 'attraction')).toBeGreaterThan(6);
+  });
+
+  it('a photo game: everyone posts, and the room warms to the posters', () => {
+    const s = room(5, 12);
+    const sc = runGame(s, streamFor(12, 'photo'), game('hashtag-this'));
+    expect(Object.keys(sc.data.rounds[0].answers)).toHaveLength(5);
+    expect(rel('@q1', '@q0', 'affection')).toBeGreaterThan(0);
+  });
+
+  it('immunity from a prize protects its winner at the next blocking, then clears', () => {
+    const s = room(7, 13);
+    const sc = runGame(s, streamFor(13, 'ice'), game('ice-breaker'));
+    awardPrize(s, streamFor(13, 'p'), { ...game('ice-breaker'), prize: 'immunity' }, ['@q2'], sc);
+    expect(sc.data.prize).toEqual({ kind: 'immunity', to: ['@q2'] });
+    expect(atRiskOf(s, ['@q0', '@q1'])).not.toContain('@q2');
+    standardBlocking(s, streamFor(13, 'b'), { influencers: ['@q0', '@q1'] });
+    expect(s.immuneNext['@q2']).toBeUndefined();
+    expect(s.blocked.at(-1).handle).not.toBe('@q2');
+  });
+});

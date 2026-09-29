@@ -103,3 +103,30 @@ describe('picking and rendering', () => {
     expect(JSON.stringify(block)).not.toMatch(/\{[a-z]/);
   });
 });
+
+import { speakerLabel, blockText } from '../js/ci/transcript.js';
+
+describe('the transcript', () => {
+  it('labels a catfish with the persona, and prints a block the way the edit plays it', () => {
+    const s = room();
+    expect(speakerLabel(s, '@rebecca')).toBe('SEABURN (as Rebecca)');
+    expect(speakerLabel(s, '@shubham')).toBe('SHUBHAM');
+    const block = { id: 'x.1', beat: 'Seaburn smiles.', lines: [
+      { who: '@shubham', kind: 'stage', text: 'Shubham sits down.' },
+      { who: '@shubham', kind: 'say', text: 'Let me check on her.' },
+      { who: '@shubham', kind: 'send', text: 'Hey Rebecca! You good?', spoken: 'Message: "Hey Rebecca, exclamation point." Send.' },
+      { who: '@rebecca', kind: 'react', text: 'Aw.' },
+      { who: '@rebecca', kind: 'send', text: 'All good ❤️', spoken: 'Message: "All good." Heart emoji. Send.' },
+      { who: 'host', kind: 'host', text: 'Adorable.' }] };
+    expect(blockText(s, block)).toEqual([
+      '  [Shubham sits down.]',
+      '  SHUBHAM, aloud: "Let me check on her."',
+      '  SHUBHAM dictates: Message: "Hey Rebecca, exclamation point." Send.',
+      '      ▸ SHUBHAM: Hey Rebecca! You good?',
+      '  SEABURN (as Rebecca): "Aw."',
+      '      ▸ REBECCA: All good ❤️',
+      '  HOST: Adorable.',
+      '  — Seaburn smiles.',
+    ]);
+  });
+});

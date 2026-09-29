@@ -28,6 +28,7 @@ import { rpBuildEndgame, trEndgameRevealAll } from './endgame.js';
 import { rpBuildCastleDay, trCastleDayRevealAll, castleSegmentHasScenes }
   from './castle-day.js';
 import { rpBuildSelection, trSelectionRevealAll } from './selection.js';
+import { castleStageScreen } from './castle-stage.js';
 import { rpBuildWeb } from './web.js';
 import { rpBuildSuspicion, trSuspicionRevealAll } from './suspicion.js';
 // The Alcove is folded into the night castle segment (Plan 11); only its gate
@@ -128,7 +129,7 @@ export const TRAITORS_SCREENS = [
   { id: 'tr-castle-morning', label: 'The Morning', suffix: 'castleday-morning',
     badge: { text: 'The Morning', color: '#8fbf9a' },
     when: r => castleSegmentHasScenes(r, 'morning'),
-    build: (r, o) => rpBuildCastleDay(r, o, 'morning'),
+    build: (r, o) => castleStageScreen(r, o, 'morning', rpBuildCastleDay(r, o, 'morning')),
     revealAll: trCastleDayRevealAll, revealAllName: 'trCastleDayRevealAll' },
   { id: 'tr-mission', label: 'The Mission', suffix: 'mission',
     badge: { text: 'Mission', color: '#c8a24a' },
@@ -148,7 +149,7 @@ export const TRAITORS_SCREENS = [
   { id: 'tr-castle-afternoon', label: 'The Afternoon', suffix: 'castleday-afternoon',
     badge: { text: 'The Afternoon', color: '#c9a24e' },
     when: r => castleSegmentHasScenes(r, 'afternoon'),
-    build: (r, o) => rpBuildCastleDay(r, o, 'afternoon'),
+    build: (r, o) => castleStageScreen(r, o, 'afternoon', rpBuildCastleDay(r, o, 'afternoon')),
     revealAll: trCastleDayRevealAll, revealAllName: 'trCastleDayRevealAll' },
   // ── VOTING PLANS — THE INTENTIONS THAT LEAD INTO THE TABLE (moved) ────
   //
@@ -187,7 +188,7 @@ export const TRAITORS_SCREENS = [
   { id: 'tr-castle-night', label: 'The Night', suffix: 'castleday-night',
     badge: { text: 'The Night', color: '#94a0cc' },
     when: r => castleSegmentHasScenes(r, 'night') || _hasConfessionals(r),
-    build: (r, o) => rpBuildCastleDay(r, o, 'night'),
+    build: (r, o) => castleStageScreen(r, o, 'night', rpBuildCastleDay(r, o, 'night')),
     revealAll: trCastleDayRevealAll, revealAllName: 'trCastleDayRevealAll' },
   { id: 'tr-conclave', label: 'The Conclave', suffix: 'conclave',
     badge: { text: 'Conclave', color: '#e0a049' },

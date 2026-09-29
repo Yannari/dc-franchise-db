@@ -74,13 +74,13 @@ export const FEED = {
     ] },
   ],
   'status.react': [
-    { id: 'status.react.01', when: { friends: true }, turns: [
+    { id: 'status.react.01', when: { friends: true, tone: ['steady', 'high'] }, turns: [
       { by: 'a', react: "Aw, look at {b}. I love that." },
     ] },
     { id: 'status.react.02', when: { rivals: true }, turns: [
       { by: 'a', react: "Oh, please. {b} is putting on a show." },
     ] },
-    { id: 'status.react.03', turns: [
+    { id: 'status.react.03', when: { tone: ['steady', 'high'] }, turns: [
       { by: 'a', react: "Okay, that's cute. I'll give {b.obj} that." },
     ] },
     { id: 'status.react.04', turns: [
@@ -95,20 +95,25 @@ export const FEED = {
     { id: 'status.react.07', turns: [
       { by: 'a', react: "Ha. Same, {b}. Same." },
     ] },
-    { id: 'status.react.08', turns: [{ by: 'a', react: "{b} is always so positive. How?" }] },
+    { id: 'status.react.08', when: { tone: ['steady', 'high'] }, turns: [{ by: 'a', react: "{b} is always so positive. How?" }] },
     { id: 'status.react.09', turns: [{ by: 'a', react: "Circle, like {b}'s status. See? I'm nice." }] },
-    { id: 'status.react.10', turns: [{ by: 'a', react: "Okay, {b}. We get it. You're having a great time." }] },
+    { id: 'status.react.10', when: { tone: ['steady', 'high'] }, turns: [{ by: 'a', react: "Okay, {b}. We get it. You're having a great time." }] },
     { id: 'status.react.11', turns: [{ by: 'a', react: "That is the most {b} thing I've ever read." }] },
-    { id: 'status.react.12', turns: [{ by: 'a', react: "Aw. I needed that today." }] },
+    { id: 'status.react.12', when: { tone: ['steady', 'high'] }, turns: [{ by: 'a', react: "Aw. I needed that today." }] },
     { id: 'status.react.13', turns: [{ by: 'a', react: "Circle, like it. No, wait. Unlike. No. Like it." }], beat: '{a} stares at the heart button for a while.' },
     { id: 'status.react.14', turns: [{ by: 'a', react: "Who posts this early? {b}, that's who." }] },
     { id: 'status.react.15', turns: [{ by: 'a', react: "Hm. Not sure how I feel about that one." }] },
-    { id: 'status.react.16', turns: [{ by: 'a', react: "I love that for {b.obj}." }] },
-    { id: 'status.react.17', turns: [{ by: 'a', react: "Ha! That got me." }], beat: '{a} laughs with a mouth full of cereal.' },
+    { id: 'status.react.16', when: { tone: ['steady', 'high'] }, turns: [{ by: 'a', react: "I love that for {b.obj}." }] },
+    { id: 'status.react.17', when: { tone: ['steady', 'high'] }, turns: [{ by: 'a', react: "Ha! That got me." }], beat: '{a} laughs with a mouth full of cereal.' },
     { id: 'status.react.18', turns: [{ by: 'a', react: "Is that a dig at somebody? It feels like a dig." }] },
     { id: 'status.react.19', when: { friends: true }, turns: [{ by: 'a', react: "That's my {b}! Circle, like it." }] },
     { id: 'status.react.20', when: { rivals: true }, turns: [{ by: 'a', react: "Of course {b} posted that. Of course." }] },
-    { id: 'status.react.21', turns: [{ by: 'a', react: "No one is that happy in the morning. No one." }] },
+    { id: 'status.react.21', when: { tone: ['steady', 'high'] }, turns: [{ by: 'a', react: "No one is that happy in the morning. No one." }] },
+    { id: 'status.react.22', when: { tone: 'low' }, turns: [{ by: 'a', react: "Aw, {b}. Hang in there." }] },
+    { id: 'status.react.23', when: { tone: 'low' }, turns: [{ by: 'a', react: "Somebody should check on {b}. Maybe me." }], beat: '{a} opens a private chat, then closes it again.' },
+    { id: 'status.react.24', when: { tone: 'low' }, turns: [{ by: 'a', react: "Oof. I felt that one." }] },
+    { id: 'status.react.25', when: { tone: 'low', friends: true }, turns: [{ by: 'a', react: "No. Not {b}. {b} deserves a good day." }] },
+    { id: 'status.react.26', when: { tone: 'low', rivals: true }, turns: [{ by: 'a', react: "A sad post. Interesting timing." }] },
   ],
   'likes.most': [
     { id: 'likes.most.01', turns: [

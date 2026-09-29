@@ -151,6 +151,19 @@ describe('repetition within a day, and slips inside the chat', () => {
     expect(repeats).toBeLessThan(4);
   });
 
+  it('never reuses a line from today while an older one still fits, however worn', () => {
+    for (let i = 0; i < 20; i++) {
+      const s = room();
+      POOLS['test.day'] = [1, 2, 3].map(n => ({ id: `test.day.${n}`, turns: [{ by: 'a', say: String(n) }] }));
+      s.usedLines = { uses: { 'test.day.2': 12, 'test.day.3': 12 }, pairs: {}, day: { 'test.day.2': 1, 'test.day.3': 2 } };
+      const first = pickEntry(s, 'test.day', {}, 'pair-1', streamFor(i, 'x'));
+      const second = pickEntry(s, 'test.day', {}, 'pair-2', streamFor(i + 500, 'y'));
+      delete POOLS['test.day'];
+      expect(first.id).toBe('test.day.1');
+      expect(second.id).not.toBe('test.day.1');
+    }
+  });
+
   it('weaves a slip into the chat it happened in, before the chat\'s last beat', () => {
     const s = room();
     POOLS['chat.bond.warm'] = [{ id: 'chat.bond.warm.t1', turns: [{ by: 'a', send: 'Hi {b}' }], beat: '{a} smiles.' }];

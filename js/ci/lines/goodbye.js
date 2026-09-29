@@ -211,7 +211,7 @@ export const GOODBYE = {
       { by: 'a', say: "I need to get in the chats. Right now." },
     ] },
     { id: 'goodbye.react.warned.06', turns: [
-      { by: 'a', react: "That is not fair. {b} doesn't even know me!" },
+      { by: 'a', react: "Wow. On the way out the door? Really?" },
     ], beat: '{a} stands up and sits right back down.' },
   ],
   'goodbye.react.vindicated': [

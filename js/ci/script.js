@@ -83,9 +83,11 @@ function matches(when = {}, facts) {
 }
 
 const usage = state => (state.usedLines ||= { uses: {}, pairs: {}, day: {} });
-// A line already used today (by anyone) is nearly off the table: two players
-// posting the same status on the same morning reads as a copy, not a coincidence.
-export const SAME_DAY = 0.1;
+// A line already used today (by anyone) is off the table while anything else
+// fits: two players posting the same status on the same morning reads as a
+// copy, not a coincidence. (At 0.1 it still lost to entries worn down by
+// earlier days — seed 19, day 7 aired one status twice.)
+export const SAME_DAY = 0;
 
 export function pickEntry(state, key, facts, pairKey, rng) {
   const pool = POOLS[key];

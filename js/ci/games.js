@@ -7,12 +7,12 @@
 // in everyone's business, so they'll all know how each other voted" (the
 // host, 1×01).
 import { GAMES } from './games-data.js';
-import { rel, bump, S, clamp, addScene, peopleOf } from './state.js';
+import { rel, bump, S, clamp, addScene, peopleOf, schemeEligible } from './state.js';
 import { attractionOk } from './chat.js';
 import { belief, nudgeBelief, noteAlly } from './beliefs.js';
 import { feel } from './mind.js';
 import { makeClaim, learn } from './claims.js';
-import { rollSlips } from './slips.js';
+import { rollSlips, probe } from './slips.js';
 
 const NICE = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
 /** A profile the franchise rule keeps nice: every person behind it is a nice archetype. */
@@ -93,6 +93,55 @@ const RUN = {
       for (const obs of all) if (obs !== giver) noteAlly(state, obs, giver, to, sc);
     }
     for (const h of all) if (!Object.values(answers).includes(h)) feel(state, h, 'loneliness', 2);
+  },
+
+  /**
+   * One anonymous question each, answered in front of everyone (1×03 Ask Me
+   * Anything: "Are you really shy, or is that a front for easy likability?").
+   * A suspected profile gets a catfish question — a probe the whole room
+   * watches. A scheming asker may send a barbed one; anyone else asks the
+   * Player they know least. The asked may work out who asked.
+   */
+  ask(state, rng, game, sc, all) {
+    const answers = {}, questions = [];
+    for (const asker of all) {
+      const others = all.filter(o => o !== asker);
+      const suspect = argmax(others, o => -belief(state, asker, o).real);
+      let target, kind;
+      if (belief(state, asker, suspect).real < 0.6) { target = suspect; kind = 'catfish'; }
+      else if (schemeEligible(state, asker)) { target = argmax(others, o => rel(asker, o, 'resentment') + rng()); kind = 'barbed'; }
+      else { target = argmax(others, o => -Math.abs(rel(asker, o, 'affection')) + rng()); kind = 'friendly'; }
+      const q = { asker, target, kind, result: null, guessed: false };
+      if (kind === 'catfish') {
+        q.result = probe(state, rng, asker, target, sc);
+        const d = q.result === 'fail' ? -0.1 : q.result === 'pass' ? 0.05 : 0;
+        if (d) for (const obs of all) if (obs !== asker && obs !== target) nudgeBelief(state, obs, target, 'real', d, sc);
+      } else if (kind === 'barbed') feel(state, target, 'stress', 1);
+      else bump(target, asker, 'affection', 0.3);
+      q.guessed = rng() < S(state, target, 'intuition') / 15;
+      if (q.guessed && kind !== 'friendly') bump(target, asker, 'resentment', 1);
+      answers[asker] = target;
+      questions.push(q);
+    }
+    sc.data.rounds.push({ promptId: 'ask', answers, questions });
+  },
+
+  /**
+   * Facts without names; everyone guesses whose (2×01 Says Who?). A catfish's
+   * own fact can give them away; a fact everyone places reads as consistent.
+   */
+  guess(state, rng, game, sc, all) {
+    for (const p of shuffled(game.prompts, rng).slice(0, 3)) {
+      const answers = {}, placedBy = {};
+      for (const h of all) {
+        answers[h] = 'fact';
+        rollSlips(state, rng, h, all, { specific: 0.6, attention: 0.8 }, sc);
+        placedBy[h] = all.filter(o => o !== h && rng() < 0.3 + S(state, o, 'intuition') / 20
+          + Math.max(0, rel(o, h, 'affection')) / 40);
+        if (placedBy[h].length === all.length - 1) for (const o of placedBy[h]) nudgeBelief(state, o, h, 'real', 0.04, sc);
+      }
+      sc.data.rounds.push({ promptId: p.id, answers, placedBy });
+    }
   },
 
   /** Name your biggest rival, and why you deserve it more (1×10 State Your Case). */

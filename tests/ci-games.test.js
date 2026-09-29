@@ -190,3 +190,48 @@ describe('a shared profile in a game', () => {
     }
   });
 });
+
+import { belief } from '../js/ci/beliefs.js';
+
+describe('catfish tests', () => {
+  it('an ask game: a suspected player is questioned in public, and a failed answer costs them with everyone', () => {
+    let failures = 0;
+    for (let seed = 1; seed <= 20; seed++) {
+      const s = room(6, seed);
+      Object.assign(s.profiles['@q0'], { mode: 'catfish', gap: 3 });
+      s.people.Q0.stats.mental = 1; s.people.Q0.stats.strategic = 1;
+      for (const h of s.active) if (h !== '@q0') belief(s, h, '@q0').real = 0.3;
+      const before = Object.fromEntries(s.active.map(h => [h, belief(s, h, '@q0').real]));
+      const sc = runGame(s, streamFor(seed, 'ask'), game('ama'));
+      const qs = sc.data.rounds[0].questions;
+      expect(qs).toHaveLength(6);
+      for (const qq of qs.filter(x => x.target === '@q0' && x.kind === 'catfish' && x.result === 'fail')) {
+        failures++;
+        for (const obs of s.active) if (obs !== qq.asker && obs !== '@q0') expect(belief(s, obs, '@q0').real).toBeLessThan(before[obs]);
+      }
+    }
+    expect(failures).toBeGreaterThan(0);
+  });
+
+  it('an ask game: a nice player never sends a barbed question', () => {
+    const s = room(6, 3);
+    for (const n of Object.keys(s.people)) s.people[n].archetype = 'hero';
+    for (const a of s.active) for (const b of s.active) if (a !== b) bump(a, b, 'resentment', 6);
+    const sc = runGame(s, streamFor(3, 'ask'), game('ama'));
+    expect(sc.data.rounds[0].questions.some(x => x.kind === 'barbed')).toBe(false);
+  });
+
+  it('a guess game: a catfish gives themselves away more than the same player honest (control arm)', () => {
+    const slipsWith = gap => {
+      let n = 0;
+      for (let seed = 1; seed <= 150; seed++) {
+        const s = room(6, seed);
+        Object.assign(s.profiles['@q0'], { mode: gap ? 'catfish' : 'honest', gap });
+        const sc = runGame(s, streamFor(seed, 'guess'), game('says-who'));
+        n += (sc.data.slips || []).filter(x => x.by === '@q0' && !x.misread).length;
+      }
+      return n;
+    };
+    expect(slipsWith(2)).toBeGreaterThan(slipsWith(0) + 5);
+  });
+});

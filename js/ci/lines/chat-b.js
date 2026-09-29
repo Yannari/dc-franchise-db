@@ -35,6 +35,17 @@ export const CHAT_B = {
       { by: 'b', send: "I'm pretty sure {c} has a group chat going. You didn't hear it from me" },
       { by: 'a', react: "A group chat. Without me.", send: "Noted. Thank you {e:detective}" },
     ], beat: '{a} leaves the chat and says "of course they do" to nobody.' },
+    { id: 'chat.pump.warm.06', turns: [
+      { by: 'a', say: "{b} talks to everybody. If anyone knows what's going on, it's {b}.", send: "Okay be honest. What's everybody saying in here?" },
+      { by: 'b', react: "Should I tell {a.obj}? Okay, a little.", send: "Lol a lot. People are starting to pick sides" },
+      { by: 'a', send: "And which side am I on?" },
+      { by: 'b', send: "Mine {e:wink} That's all you need to know" },
+    ], beat: '{a} laughs, then writes "sides" on the notepad.' },
+    { id: 'chat.pump.warm.07', turns: [
+      { by: 'a', send: "Real question. Am I safe right now?" },
+      { by: 'b', react: "Aw. {a} is worried.", send: "With me? Always. With everybody else? I'd keep talking to people" },
+      { by: 'a', send: "Okay. That's honest. Thank you {e:pray}" },
+    ], beat: '{a} opens a new chat as soon as this one closes.' },
   ],
   'chat.pump.neutral': [
     { id: 'chat.pump.neutral.01', turns: [
@@ -144,6 +155,17 @@ export const CHAT_B = {
       { by: 'b', react: "Okay, now I'm scared.", send: "Wait what does that mean?? Who?" },
       { by: 'a', send: "Can't say yet. Just watch who's being extra nice" },
     ], beat: '{b} spends the next ten minutes staring at the Circle Chat.' },
+    { id: 'chat.plant.warm.05', turns: [
+      { by: 'a', say: "Just enough to make {b.obj} think. Not enough to trace back to me.", send: "Can I say something? Not everybody in here is who they seem" },
+      { by: 'b', react: "Oh, I love this.", send: "Tell me EVERYTHING" },
+      { by: 'a', send: "I can't yet. But I will. Just trust me for now {e:detective}" },
+      { by: 'b', send: "Okay. I trust you" },
+    ], beat: '{a} leaves the chat and smiles at the screen.' },
+    { id: 'chat.plant.warm.06', turns: [
+      { by: 'a', send: "You're one of the only real ones in here, so I'm telling you. Watch who's being nice to everybody" },
+      { by: 'b', react: "Wait. Is that about me?", send: "Okay you're making me paranoid lol. But thank you" },
+      { by: 'a', send: "That's my job {e:wink}" },
+    ], beat: '{b} scrolls back through the Circle Chat, slowly.' },
   ],
   'chat.plant.neutral': [
     { id: 'chat.plant.neutral.01', when: { claim: 'catfish' }, turns: [
@@ -160,6 +182,16 @@ export const CHAT_B = {
       { by: 'b', send: "Some people in here say that about everyone lol" },
       { by: 'a', say: "Hm. {b.Sub}'s sharper than I thought." },
     ], beat: '{a} leaves the chat.' },
+    { id: 'chat.plant.neutral.04', turns: [
+      { by: 'a', say: "Say it like it's nothing.", send: "Not everybody's playing fair in here. I'm just saying" },
+      { by: 'b', send: "Okay. Anybody specific?" },
+      { by: 'a', send: "Not yet. Keep your eyes open" },
+    ], beat: '{b} shrugs and closes the chat.' },
+    { id: 'chat.plant.neutral.05', turns: [
+      { by: 'a', send: "Have you noticed who's been quiet lately? Quiet people worry me" },
+      { by: 'b', send: "Lol I'm quiet sometimes" },
+      { by: 'a', send: "Not you. You're fine {e:laugh}" },
+    ], beat: '{b} laughs, but checks the Circle Chat anyway.' },
   ],
   'chat.plant.cold': [
     { id: 'chat.plant.cold.01', when: { claim: 'catfish' }, turns: [
@@ -177,6 +209,17 @@ export const CHAT_B = {
       { by: 'a', send: "Advice. Obviously" },
       { by: 'b', send: "Okay. Noted." },
     ], beat: '{b} closes the chat and says, out loud, "That was weird."' },
+    { id: 'chat.plant.cold.04', turns: [
+      { by: 'a', send: "Just so you know, people are talking about you" },
+      { by: 'b', react: "Here we go.", send: "People talk about everybody. What's your point?" },
+      { by: 'a', send: "No point. Just looking out for you" },
+    ], beat: '{b} closes the chat and says "sure you are" to the empty room.' },
+    { id: 'chat.plant.cold.05', turns: [
+      { by: 'a', say: "Scare {b.obj} a little. Just a little.", send: "I heard some things about you today. Not good things" },
+      { by: 'b', send: "From who?" },
+      { by: 'a', send: "Can't say" },
+      { by: 'b', send: "Then I can't care. Bye {e:wave}" },
+    ], leaves: true, beat: '{a} stares at the screen after {b} leaves the chat.' },
   ],
   'chat.credit.warm': [
     { id: 'chat.credit.warm.01', when: { lie: true }, turns: [
@@ -194,6 +237,16 @@ export const CHAT_B = {
       { by: 'a', send: "You were never going anywhere last night. I made sure of it" },
       { by: 'b', send: "You're a real one {e:crown} I won't forget this" },
     ], beat: '{b} says "I won’t" again, to the empty room.' },
+    { id: 'chat.credit.warm.04', turns: [
+      { by: 'a', send: "I just want you to know, your name never came out of my mouth last night" },
+      { by: 'b', react: "Okay, that feels good.", send: "That means a lot. Seriously" },
+      { by: 'a', send: "We look out for each other {e:handshake}" },
+    ], beat: '{b} smiles at the screen for a long time.' },
+    { id: 'chat.credit.warm.05', turns: [
+      { by: 'a', say: "Remind {b} who {b.posAdj} friends are.", send: "Last night was scary. I'm glad you're still here" },
+      { by: 'b', send: "Me too!! And I'm glad you're here too {e:heart}" },
+      { by: 'a', send: "We're not going anywhere" },
+    ], beat: '{a} gives the screen a little nod.' },
   ],
   'chat.credit.neutral': [
     { id: 'chat.credit.neutral.01', turns: [

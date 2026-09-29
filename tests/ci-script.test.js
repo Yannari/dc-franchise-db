@@ -213,3 +213,26 @@ describe('the finalists meet', () => {
       'meet.explain.strategic:@rebecca>@sammie']);
   });
 });
+
+import { writeDay } from '../js/ci/script.js';
+
+describe('the host', () => {
+  it('bridges about one aired beat in five, and never over a confession', () => {
+    const s = room();
+    const saved = { ...POOLS };
+    POOLS['chat.bond.warm'] = [{ id: 'chat.bond.warm.t1', turns: [{ by: 'a', send: 'Hi {b}' }] }];
+    POOLS['chat.confess.warm'] = [{ id: 'chat.confess.warm.t1', turns: [{ by: 'a', send: 'I lied, {b}' }] }];
+    POOLS['host.chat'] = [{ id: 'host.chat.t1', turns: [{ by: 'host', say: 'Meanwhile, {a} is typing.' }] }];
+    for (let i = 0; i < 12; i++) {
+      const sc = addScene(s, 'chat', ['@shubham', '@sammie'], { intent: i === 5 ? 'confess' : 'bond', ending: 'warm', claims: [], slips: [] });
+      sc.aired = true;
+    }
+    writeDay(s, s.day);
+    for (const k of Object.keys(POOLS)) delete POOLS[k];
+    Object.assign(POOLS, saved);
+    const hosted = s.scenes.filter(x => x.script.blocks.some(b => b.key === 'host.chat'));
+    expect(hosted.length).toBe(2);
+    expect(hosted.some(x => x.data.intent === 'confess')).toBe(false);
+    expect(hosted[0].script.blocks[0].lines[0]).toMatchObject({ kind: 'host', text: 'Meanwhile, Shubham is typing.' });
+  });
+});

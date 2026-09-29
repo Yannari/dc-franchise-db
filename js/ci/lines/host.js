@@ -1,0 +1,55 @@
+// The narrator-host (spec §17.4): the cold open and the bridges over
+// apartment life. Data only. The host knows everything, so {a.aka} and real
+// pronouns are fine here — and nowhere else. Jokes come from what is on
+// screen: the room, the outfit, the snack, the message being typed.
+// `host.cold` is keyed by `tone` (what happened yesterday: first, blocking,
+// arrival, quiet); a is the first Player on screen. In the bridges, a is the
+// Player the scene opens on (the sender of a chat, the poster of a status)
+// and b the one they are writing to.
+export const HOST = {
+  'host.cold': [
+    { id: 'host.cold.01', turns: [{ by: 'host', say: "Good morning, Circle! The sun is up, the coffee is on, and {a} is already talking to a screen." }] },
+    { id: 'host.cold.02', turns: [{ by: 'host', say: "Rise and shine, Players. Another day of making friends with people you've never seen." }] },
+    { id: 'host.cold.03', turns: [{ by: 'host', say: "It's morning in the Circle, which means everybody is wide awake and nobody has brushed their teeth." }] },
+    { id: 'host.cold.04', turns: [{ by: 'host', say: "Welcome back to the Circle. {a} is up, dressed, and has already said good morning to the fridge." }] },
+    { id: 'host.cold.05', turns: [{ by: 'host', say: "Morning, everybody. Somewhere in this building, somebody is doing push-ups for a camera that isn't even on them yet." }] },
+    { id: 'host.cold.06', when: { tone: 'first' }, turns: [{ by: 'host', say: "Welcome to the Circle! A bunch of strangers, one apartment building, and not one of them can see each other. What could go wrong?" }] },
+    { id: 'host.cold.07', when: { tone: 'first' }, turns: [{ by: 'host', say: "Here they come! Our Players are moving in, and every single one of them just checked out their own reflection in the hallway." }] },
+    { id: 'host.cold.08', when: { tone: 'first' }, turns: [{ by: 'host', say: "It's day one in the Circle. The apartments are gorgeous, the fridges are full, and the phones are gone. Good luck, everybody." }] },
+    { id: 'host.cold.09', when: { tone: 'blocking' }, turns: [{ by: 'host', say: "After last night's blocking, there's one less apartment with the lights on, and a lot more people checking the door." }] },
+    { id: 'host.cold.10', when: { tone: 'blocking' }, turns: [{ by: 'host', say: "Good morning to everyone who survived last night's blocking. Everybody still here is being extra nice this morning." }] },
+    { id: 'host.cold.11', when: { tone: 'blocking' }, turns: [{ by: 'host', say: "The morning after a blocking in the Circle. Nobody slept, everybody's smiling, and nobody means it." }] },
+    { id: 'host.cold.12', when: { tone: 'arrival' }, turns: [{ by: 'host', say: "There's a new face in the building, and everybody wants to know if it's a real one. Good morning, Circle!" }] },
+    { id: 'host.cold.13', when: { tone: 'arrival' }, turns: [{ by: 'host', say: "Good morning! Yesterday the Circle got a new Player, and today every old Player is pretending they're not worried about it." }] },
+    { id: 'host.cold.14', when: { tone: 'arrival' }, turns: [{ by: 'host', say: "New neighbor alert! Everybody's being very welcoming this morning. Very, very welcoming." }] },
+    { id: 'host.cold.15', when: { tone: 'quiet' }, turns: [{ by: 'host', say: "A quiet night in the Circle. No blockings, no new Players, just a lot of people talking to themselves in the dark." }] },
+    { id: 'host.cold.16', when: { tone: 'quiet' }, turns: [{ by: 'host', say: "Good morning, Players! Nothing happened last night, and they're all going to spend today making something happen." }] },
+    { id: 'host.cold.17', when: { tone: 'quiet' }, turns: [{ by: 'host', say: "It's a brand-new day in the Circle, and {a} has already changed outfits twice." }] },
+  ],
+  'host.chat': [
+    { id: 'host.chat.01', turns: [{ by: 'host', say: "Meanwhile, {a} is ready to private chat {b}." }] },
+    { id: 'host.chat.02', turns: [{ by: 'host', say: "Over in the next apartment, {a} has something to say to {b}, and a blanket to say it from." }] },
+    { id: 'host.chat.03', turns: [{ by: 'host', say: "And upstairs, {a} is opening a chat with {b}. Deep breath, {a}." }] },
+    { id: 'host.chat.04', turns: [{ by: 'host', say: "{a} has been staring at {b}'s profile for ten minutes. Time to type something." }] },
+    { id: 'host.chat.05', turns: [{ by: 'host', say: "Meanwhile, {a} is lying upside down on the couch, which is apparently the best way to message {b}." }] },
+    { id: 'host.chat.06', when: { intent: 'flirt' }, turns: [{ by: 'host', say: "And {a} just fixed the hair for a private chat. With a TV. Good luck with {b}!" }] },
+    { id: 'host.chat.07', when: { intent: 'flirt' }, turns: [{ by: 'host', say: "Uh-oh. {a} is lighting a candle before messaging {b}. This is going to be a flirty one." }] },
+    { id: 'host.chat.08', when: { intent: 'plant' }, turns: [{ by: 'host', say: "Meanwhile, {a} is about to stir the pot. {b}, you might want to sit down." }] },
+    { id: 'host.chat.09', when: { intent: 'probe' }, turns: [{ by: 'host', say: "{a} has a notepad, a pen and a list of questions for {b}. This isn't a chat. It's an interview." }] },
+    { id: 'host.chat.10', when: { catfish: true }, turns: [{ by: 'host', say: "Meanwhile, {a.aka} is checking {a.posAdj} notes before messaging {b}. Can't forget your own birthday." }] },
+    { id: 'host.chat.11', when: { intent: 'ally' }, turns: [{ by: 'host', say: "Over in the next apartment, {a} is ready to talk strategy with {b}. Serious face on." }] },
+  ],
+  'host.status': [
+    { id: 'host.status.01', turns: [{ by: 'host', say: "Time for a status update! {a} is taking this very seriously." }] },
+    { id: 'host.status.02', turns: [{ by: 'host', say: "{a} is about to post a status. Twelve drafts in, and we're getting close." }] },
+    { id: 'host.status.03', turns: [{ by: 'host', say: "Status updates are here, and {a} is ready to share some thoughts with the whole Circle." }] },
+    { id: 'host.status.04', turns: [{ by: 'host', say: "And {a} has something to post. Everybody brace yourselves." }] },
+    { id: 'host.status.05', when: { catfish: true }, turns: [{ by: 'host', say: "{a.aka} is posting a status. Remember, {a.sub} has to sound like somebody else. Before coffee." }] },
+  ],
+  'host.circle': [
+    { id: 'host.circle.01', turns: [{ by: 'host', say: "Circle Chat is open, and {a} can't wait to be the first one in." }] },
+    { id: 'host.circle.02', turns: [{ by: 'host', say: "It's group chat time! Everybody in the building just sat up a little straighter." }] },
+    { id: 'host.circle.03', turns: [{ by: 'host', say: "The Circle Chat is open. Somebody's going to say something they regret, and I can't wait." }] },
+    { id: 'host.circle.04', when: { party: true }, turns: [{ by: 'host', say: "It's party night in the Circle! The music is up, the drinks are out, and the filter is off." }] },
+  ],
+};

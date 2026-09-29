@@ -18,7 +18,7 @@ export const EMOJI = {
   snake: ['🐍', 'snake emoji'], clap: ['👏', 'clapping hands emoji'], sad: ['😔', 'sad face emoji'],
   smile: ['😊', 'smiley face emoji'], side: ['😏', 'smirk emoji'], cool: ['😎', 'sunglasses emoji'],
   sun: ['☀️', 'sun emoji'], lipstick: ['💄', 'lipstick emoji'], detective: ['🕵️', 'detective emoji'],
-  handshake: ['🤝', 'handshake emoji'], fish: ['🐟', 'fish emoji'], broken: ['💔', 'broken heart emoji'],
+  handshake: ['🤝', 'handshake emoji'], fish: ['🐟', 'fish emoji'], wave: ['👋', 'waving hand emoji'], broken: ['💔', 'broken heart emoji'],
 };
 
 export function tokenize(text) {

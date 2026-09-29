@@ -53,6 +53,12 @@ describe('the pools are well-formed', () => {
     }
   });
 
+  it('covers every key the engine can ask for with three plain entries', () => {
+    const thin = POOL_KEYS.filter(k => (POOLS[k] || []).filter(e => !e.when).length < 3)
+      .map(k => `${k}: ${(POOLS[k] || []).filter(e => !e.when).length}`);
+    expect(thin).toEqual([]);
+  });
+
   it('conditions only on known facts', () => {
     for (const [, e] of ENTRIES) for (const k of Object.keys(e.when || {})) expect(FACT_KEYS, `${e.id}: ${k}`).toContain(k);
   });

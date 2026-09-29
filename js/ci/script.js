@@ -384,6 +384,26 @@ export function writeDay(state, day) {
   const rng = streamFor(state.seed, `line:cold:${day}`);
   const entry = pickEntry(state, 'host.cold', { tone, early: day <= 2 }, `day${day}`, rng);
   if (entry) aired[0].script.blocks.unshift({ key: 'host.cold', ...renderEntry(state, entry, { a: aired[0].who[0] }, rng) });
+  bridge(state, aired);
+}
+
+// The host talks over apartment life about once every HOST_EVERY beats
+// (spec §17.4), only on light scenes, and never over a confession.
+export const HOST_EVERY = 5;
+const BRIDGES = { chat: 'host.chat', status: 'host.status', 'circle-chat': 'host.circle' };
+function bridge(state, aired) {
+  let since = 0;
+  for (const s of aired) {
+    const key = BRIDGES[s.kind];
+    const light = key && s.data?.intent !== 'confess' && s.script?.blocks?.length;
+    if (light && since >= HOST_EVERY) {
+      const cast = { a: s.who[0], b: s.who[1] };
+      const rng = streamFor(state.seed, `line:host:${s.id}`);
+      const entry = pickEntry(state, key, factsFor(state, s, cast), s.id, rng);
+      if (entry) { s.script.blocks.unshift({ key, ...renderEntry(state, entry, cast, rng) }); since = 0; }
+    }
+    since += s.script?.blocks?.length || 0;
+  }
 }
 
 // Every pool key sceneBlocks can ask for — the writing backlog, and what the
@@ -414,5 +434,5 @@ export const POOL_KEYS = [
   ...WHY_.map(w => `goodbye.video.catfish.${w}`), 'goodbye.warning.catfish', 'goodbye.warning.distrusts', 'goodbye.warning.seen',
   'goodbye.react.guilty', 'goodbye.react.warned', 'goodbye.react.vindicated', 'goodbye.react.surprised',
   'meet.arrive.real', 'meet.arrive.catfish', 'meet.found', 'meet.both', ...WHY_.map(w => `meet.explain.${w}`),
-  'reveal.place', 'reveal.winner', 'host.cold',
+  'reveal.place', 'reveal.winner', 'host.cold', 'host.chat', 'host.status', 'host.circle',
 ];

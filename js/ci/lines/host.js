@@ -17,6 +17,10 @@ export const HOST = {
     { id: 'host.cold.blocking.01', turns: [{ by: 'host', say: "After last night's blocking, there's one less apartment with the lights on, and a lot more people checking the door." }] },
     { id: 'host.cold.blocking.02', turns: [{ by: 'host', say: "Good morning to everyone who survived last night's blocking. Everybody still here is being extra nice this morning." }] },
     { id: 'host.cold.blocking.03', turns: [{ by: 'host', say: "The morning after a blocking in the Circle. Nobody slept, everybody's smiling, and nobody means it." }] },
+    { id: 'host.cold.blocking.04', turns: [{ by: 'host', say: "Good morning, Circle. One Player went home last night, and everyone else woke up doing math." }] },
+    { id: 'host.cold.blocking.05', turns: [{ by: 'host', say: "Rise and shine, Players. Last night's blocking is over, the goodbye message is waiting, and nobody wants to press play." }] },
+    { id: 'host.cold.blocking.06', turns: [{ by: 'host', say: "It's the morning after a blocking, so {a} is up early, pretending to be calm. It's not working." }] },
+    { id: 'host.cold.blocking.07', turns: [{ by: 'host', say: "Morning, everybody. There's one less Player in the building today, and a lot more friendly messages." }] },
   ],
   'host.cold.arrival': [
     { id: 'host.cold.arrival.01', turns: [{ by: 'host', say: "There's a new face in the building, and everybody wants to know if it's a real one. Good morning, Circle!" }] },

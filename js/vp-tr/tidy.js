@@ -151,10 +151,34 @@ function _tidySentence(sent, re) {
  * Tidy a line of rendered prose. Safe on HTML-free text and on text with
  * entities in it; it never touches anything that is not a cast name.
  */
+// A SCRIPT LINE THAT IS SPEECH. `Name: "words"` or `Name (to camera): "words"`,
+// straight or curly quotes. See js/tr/speech.js for the format.
+const SPEECH = /^([^:\n"“]{1,40}?)( \(to camera\))?: ["“]([\s\S]*?)["”]\s*$/;
+
+/** A script split into narration, speech and confessional lines. */
+export function scriptParts(text) {
+  return String(text == null ? '' : text).split('\n').map(l => l.trim()).filter(Boolean)
+    .map(l => {
+      const m = SPEECH.exec(l);
+      if (!m) return { kind: 'narr', text: l };
+      // Spoken words open on a capital even when a pool slot filled the first
+      // word ("{n} people" → "four people").
+      return { kind: m[2] ? 'cam' : 'say', who: m[1].trim(),
+        text: m[3].replace(/^./, c => c.toUpperCase()) };
+    });
+}
+
 export function tidyNames(text) {
   const s = String(text == null ? '' : text);
   const re = _castPattern();
   if (!re || !s) return s;
+  // A SCRIPT IS TIDIED LINE BY LINE, and speech is never touched: a pronoun
+  // rule written for narration turns `Emma: "Did you see their faces?"`
+  // into "her faces".
+  if (s.indexOf('\n') >= 0) {
+    return s.split('\n').map(l => (SPEECH.test(l.trim()) ? l : tidyNames(l))).join('\n');
+  }
+  if (SPEECH.test(s.trim())) return s;
   // Sentence by sentence: a pronoun reaches back only inside its own sentence.
   return s.split(/(?<=[.!?]["”’]?)(\s+)/).map(part =>
     /^\s+$/.test(part) ? part : _tidySentence(part, re)).join('');

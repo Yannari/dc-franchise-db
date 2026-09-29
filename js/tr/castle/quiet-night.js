@@ -57,6 +57,9 @@ function _hadANight(ep) {
 const QUIET_LINES = {
   // Somebody says the obvious thing, and the obvious thing is unsettling.
   'counted-twice': [
+    '{a} counts the table twice, gets the same number, and tells {b}, who has already done it.\n{a}: "Everyone’s here."\n{b}: "I know. I counted."\n{a}: "So nobody died."\n{b}: "Nobody died."',
+    '{a} and {b} count heads at breakfast.\n{a} (to camera): "Nobody murdered. Why?"',
+    '{a} counts again.\n{b}: "Still everyone."',
     '{a} counted the table twice and got the same number both times, and told {b}, who had already done it.',
     '"Nobody," said {a}. {b} had been waiting for somebody else to say it first.',
     '{a} went round the table with a finger and came back to {b} with nothing to report, which was the report.',
@@ -64,6 +67,9 @@ const QUIET_LINES = {
   ],
   // The generous reading: they could not agree, or they lost their nerve.
   'they-faltered': [
+    '{a} thinks the Traitors argued all night and never settled.\n{a}: "They couldn’t agree. That’s what this is."\n{b}: "I’d love that to be true."',
+    '{a} has a theory.\n{a} (to camera): "They fell out. I’d put money on it."',
+    '{a} tells {b} {aSub} thinks they’re cracking.\n{b}: "Or they want us to think that."',
     '{a} thinks they argued all night and never settled it. {b} would like that to be true.',
     '"Maybe they could not agree," {a} said. {b} said nothing, because that would be the first time.',
     '{a} offers {b} the comfortable version: a turret full of people who could not pick.',
@@ -71,6 +77,9 @@ const QUIET_LINES = {
   ],
   // The dangerous reading, and the one that is nearest the truth.
   'somebody-was-safe': [
+    '{a} says it quietly to {b}.\n{a}: "They went for somebody, and it didn’t work."\n{b}: "A shield?"\n{a}: "Must have been."',
+    '{a} suspects a shield saved someone.\n{a} (to camera): "Someone in this castle had protection last night."',
+    '{a} and {b} wonder who was saved.\n{b}: "Who looks relieved this morning?"',
     '{a} says it quietly to {b}: they went for somebody and it did not take.',
     '"They tried," {a} said. "Something stopped it." {b} has been thinking the same since the stair.',
     '{a} works it out loud at {b} — a name was chosen, and the name is sitting at this table eating.',
@@ -78,6 +87,9 @@ const QUIET_LINES = {
   ],
   // The paranoid reading: a gift is a message.
   'a-message': [
+    '{a} doesn’t trust a quiet night.\n{a}: "This is a message. They’re playing with us."\n{b}: "Nobody’s ever been thanked for a quiet night."',
+    '{a} is suspicious of the calm.\n{a} (to camera): "No murder isn’t good news. It’s a tactic."',
+    '{a} can’t relax.\n{b}: "Enjoy it."\n{a}: "I can’t."',
     '{a} does not trust a quiet night. {b} points out that nobody has ever been thanked for one.',
     '"They want us calm," {a} told {b}. "That is what a morning like this buys them."',
     '{a} reads the full table as a decision rather than an accident, and says so to {b}.',

@@ -120,6 +120,13 @@ const PROSE_SEASONS = 4200;
 function lead(note) { return String(note || '').split(/(?<=[.!?])[ ]/)[0]; }
 
 /** A note minus any citation appended to it — see `citeMoments` in threads.js. */
+const COUNT_WORD_LIST = ['nobody', 'one', 'two', 'three', 'four', 'five', 'six', 'seven',
+  'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen',
+  'seventeen', 'eighteen', 'nineteen', 'twenty', 'twenty-one', 'twenty-two', 'twenty-three',
+  'twenty-four'];
+const SPELLED_COUNT = new RegExp('\\b(' + COUNT_WORD_LIST.slice(4).sort((a, b) => b.length - a.length)
+  .join('|') + ')(?= of us\\b| left\\b)', 'gi');
+
 function authored(note) {
   return String(note || '').split(/It went back to day |It had been going on since day |It did not stop there: /)[0];
 }
@@ -729,7 +736,14 @@ describe('THE NUMBER RULE: a printed count must be true of the season it is prin
         // count in a SECOND sentence ("... 3 empty beds, so far."), so a
         // lead-only rule was green against the very defect it was written for.
         // Verified by running the mutation, not by reading the code.
-        for (const m of authored(note).match(/\d+/g) || []) {
+        // SPELLED COUNTS ARE COUNTS. The castle scripts print a headcount the
+        // way people say it ("Seven of us left"), through `countWord`, and a
+        // digit-only rule went vacuous the day they stopped printing "7".
+        // Only four and up, and only before "of us" / "left": "two of us" and
+        // "three of us" are how people say a pair or a trio, not a census.
+        const spelled = [...authored(note).matchAll(SPELLED_COUNT)]
+          .map(m => String(COUNT_WORD_LIST.indexOf(m[1].toLowerCase())));
+        for (const m of (authored(note).match(/\d+/g) || []).concat(spelled)) {
           checked++;
           if (ok.has(Number(m))) continue;
           const k = `${f.key} printed ${m} (living ${t.living}, lost ${t.lost}, `
@@ -1760,10 +1774,20 @@ describe('THE CASTLE DAY READS AS TELEVISION', () => {
       const shown = _vpTextLines(screenNarration(rpBuildCastleDay(ep, 'audience')));
       for (const scene of allScenes(ep)) {
         for (const beat of scene.observerText.audience) {
-          const want = beat.text.replace(/\s+/g, ' ').trim().slice(0, 44);
-          expect(shown.some(l => l.includes(want)),
-            'the screen never printed ' + scene.id + '/' + beat.kind + ': "' + want + '"')
-            .toBe(true);
+          // LINE BY LINE: an action is a script now (js/tr/speech.js), and the
+          // screen draws each of its lines on its own row. Spoken lines are
+          // matched on their words, which the screen prints in curly quotes.
+          for (const raw of String(beat.text).split('\n')) {
+            const words = raw.replace(/^[^:"“]{1,40}?(?: \(to camera\))?: ["“]/, '')
+              .replace(/["”]\s*$/, '');
+            const want = words.replace(/\s+/g, ' ').trim().slice(0, 44);
+            if (!want) continue;
+            // Case-blind on purpose: the screen capitalises a spoken line
+            // whose first word was a slot ("four people" → "Four people").
+            expect(shown.some(l => l.toLowerCase().includes(want.toLowerCase())),
+              'the screen never printed ' + scene.id + '/' + beat.kind + ': "' + want + '"')
+              .toBe(true);
+          }
           checked++;
         }
       }

@@ -4929,7 +4929,11 @@ describe('a thread cites a day it actually has a beat on', () => {
           .map(b => String(b.note).trim());
         expect(notes.length, 'a scene on a thread with no beat in this round')
           .toBeGreaterThan(0);
-        const whole = s.citation ? (s.line + ' ' + s.citation) : s.line;
+        // A SCRIPT (js/tr/speech.js) carries its citation on a line of its
+        // own; a one-sentence note carries it after a space. Either way the two
+        // halves rebuild the note exactly.
+        const whole = s.citation
+          ? (s.line + (s.line.includes('\n') ? '\n' : ' ') + s.citation) : s.line;
         expect(notes, `ep ${ep.num}: the two halves do not rebuild any beat of this thread`)
           .toContain(whole);
         if (s.citation) {

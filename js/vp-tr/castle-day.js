@@ -78,7 +78,7 @@
 // most Traitors sentence this screen can make its layers say.
 //
 // Like every other file in this directory it imports no engine state.
-import { tidyNames } from './tidy.js';
+import { tidyNames, scriptParts } from './tidy.js';
 import { pronouns as _pronouns } from '../players.js';
 const _prOf = n => _pronouns(n) || { sub: 'they', obj: 'them', posAdj: 'their' };
 import { seasonConfig, players } from '../core.js';
@@ -3869,6 +3869,18 @@ const DY_CSS = `
 
 .dy-say{font-family:var(--dy-body);font-size:19px;line-height:1.56;
   color:rgba(240,232,214,.94);margin:0}
+.dy-say + .dy-say{margin-top:8px}
+/* SPOKEN LINES: the speaker's face and name, then the words. */
+.dy-line{margin:8px 0 0;padding-left:12px;border-left:2px solid rgba(214,178,110,.35);
+  font-family:var(--dy-body);font-size:18px;line-height:1.5;color:rgba(244,236,220,.96)}
+.dy-line + .dy-say{margin-top:10px}
+.dy-line-who{display:inline-flex;align-items:center;gap:6px;vertical-align:middle;
+  font-family:var(--dy-display);font-size:13px;letter-spacing:.04em;color:#e6c27a}
+.dy-line-who .cv-av{width:22px;height:22px}
+.dy-line-who i{font-style:italic;font-weight:400;color:rgba(230,194,122,.7)}
+.dy-line-q{font-style:normal}
+.dy-cam{border-left-color:rgba(160,190,220,.45)}
+.dy-cam .dy-line-q{font-style:italic}
 .dy-faces{display:flex;align-items:center;gap:8px;margin:12px 0 0;flex-wrap:wrap}
 .dy-face{display:inline-flex;align-items:center;gap:8px;
   font-family:var(--dy-display);font-weight:700;font-size:12px;letter-spacing:.04em;
@@ -5037,6 +5049,24 @@ function _chipRow(chips) {
 
 // nothing to click through. The 4-beat DATA is unchanged (castleDayScenes still
 // returns the full stream) — only the rendering is merged.
+/**
+ * A SCENE'S ACTION IS A SCRIPT (js/tr/speech.js): narration lines, spoken
+ * lines and confessionals. Speech is drawn in the speaker's own row with
+ * their face, so a reader can follow who said what without a name in every
+ * sentence; the transcript reads it back as `Name: “words”`.
+ */
+function _scriptHtml(text) {
+  return scriptParts(text).map(p => {
+    if (p.kind === 'narr') return '<p class="dy-say">' + _esc(p.text) + '</p>';
+    return '<p class="dy-line' + (p.kind === 'cam' ? ' dy-cam' : '') + '">'
+      // Name, "(to camera)" and the colon are ONE flex item: as siblings the
+      // row's gap printed "Julia :" with a space before the colon.
+      + '<span class="dy-line-who">' + _av(p.who, 22) + '<span><b>' + _esc(p.who) + '</b>'
+      + (p.kind === 'cam' ? '<i> (to camera)</i>' : '') + ':</span></span> '
+      + '<span class="dy-line-q">“' + _esc(p.text) + '”</span></p>';
+  }).join('');
+}
+
 function _sceneCard(s, stream, key) {
   const fam = _fam(s);
   const heard = s.layer === 'heard';
@@ -5057,6 +5087,8 @@ function _sceneCard(s, stream, key) {
       body += '</div>';
     } else if (beat.kind === 'reaction') {
       body += '<p class="dy-say dy-spoken">' + txt + '</p>';
+    } else if (beat.kind === 'action' && beat.role !== 'recall') {
+      body += _scriptHtml(beat.say || beat.text);
     } else {
       body += '<p class="dy-say">' + txt + '</p>';
       if (!heard && beat.role === 'recall') body += _stitch(s, beat.tail);

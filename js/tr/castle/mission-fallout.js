@@ -250,47 +250,40 @@ function forkOn(rng, scores) {
 // front of them, not four ways of saying the same shrug.
 const COST_US_LINES = {
   pinned: [
-    '“{who} was the one they sent to {task},” {a} said on the road back, and {b} did not argue with the arithmetic.',
-    '{a} laid it out on the walk home — {who}, named for it, the job still not done — and {b} said yes, that was the afternoon.',
-    'It took {a} about a mile to get to {who}, and when {a} did, {b} had already been there.',
-    '“Somebody had to {task}. It was {who}, and it didn’t happen.” {b} nodded, and kept walking, and kept the name.',
-    '{a} said {who}’s name and the task next to it, and {b} agreed that it was the part of {mission} worth remembering.',
+    'On the road back, {a} brings up who was meant to {task}.\n{a}: "{who} was the one they sent to {task}. It didn’t happen."\n{b}: "No. It didn’t."\n{a}: "That’s money we haven’t got."',
+    '{a} lays it out for {b} on the walk home.\n{a}: "{who} had one job. {task}. And it’s not done."\n{b}: "I’m not going to argue with that."',
+    '{a} can’t let it go.\n{a}: "Did you see {who} out there? Nowhere near it."\n{b}: "I saw."\n{a}: "Then you know what that cost us."',
+    '{a} and {b} put the missed job on {who}.\n{b}: "It was {who}’s job."\n{a}: "Exactly. So why wasn’t it done?"',
   ],
   defended: [
-    '“{who} was asked to {task},” {a} said. {b} said half the castle would have missed that and most of them know it.',
-    '{a} put {who} up on the road back and {b} took {who} straight back down. “That was a lottery. You know it was.”',
-    '“One extra job,” {b} said. “On {mission}, of all days. You want to hang somebody for that?”',
-    '{a} named {who} for the missed task and {b} spent the rest of the walk explaining why that proved nothing at all.',
-    '“Somebody had to {task},” {b} repeated, flatly. “Go on, then. Tell me you’d have managed it.”',
+    '{a} blames {who}, and {b} defends {who}.\n{a}: "{who} was asked to {task} and didn’t."\n{b}: "Half of us would’ve missed that. It was a lottery."\n{a}: "A lottery {who} lost."',
+    '{b} won’t let {a} pin it on {who}.\n{b}: "Come on. That task was impossible."\n{a}: "{who} didn’t even try."\n{b}: "You don’t know that."',
+    '{a} puts {who} up for it. {b} takes {who} straight back down.\n{b}: "Anyone could’ve missed it. Leave {who} alone."',
+    '{b} sticks up for {who} on the walk back.\n{b}: "It’s not on one person. It never is."\n{a}: "It usually is, in here."',
   ],
   redirected: [
-    '{a} started on {who} and {b} moved it onto the day itself — {tier}, and no one person did that.',
-    '“Forget {who},” {b} said. “Look at what {mission} actually paid us and tell me one missed job explains it.”',
-    '{a} wanted {who}’s name in the conversation. {b} wanted the result, and the result was that {tier}.',
-    '{b} let {a} finish about {who} and then said the thing {a} had been avoiding: {tier}, and that is a team number.',
+    '{a} starts on {who}, and {b} moves it onto the whole day.\n{b}: "Forget {who}. The whole afternoon was a mess."\n{a}: "Fine. But {who} didn’t help."',
+    '{b} won’t make it about one person.\n{b}: "Look at what {mission} actually paid. One missed job doesn’t explain that."\n{a}: "No. You’re right."',
+    '{a} blames {who}. {b} blames the day.\n{b}: "Honestly, {tier}. That’s not {who}’s fault."',
+    '{b} steers it away from {who}.\n{b}: "We all had a bad day. Let’s not pick one person."',
   ],
   shrugged: [
-    '{a} said {who}’s name on the walk back and {b} said nothing useful about it for the next twenty minutes.',
-    '“{who} didn’t {task},” {a} said. “Mm,” {b} said, and looked at the road.',
-    '{a} tried twice to get {b} onto {who} and {b} changed the subject twice, politely, both times.',
-    '{b} would not put a name to a missed extra on {mission}, and {a} noticed how carefully {b} would not.',
+    '{a} brings up {who} on the walk back. {b} says nothing useful.\n{a}: "{who} didn’t {task}."\n{b}: "Mm."\n{a}: "That’s it? Mm?"',
+    '{a} mentions {who}’s missed job. {b} looks at the road.\n{b}: "Does it matter now?"\n{a}: "It matters to the pot."',
+    '{b} isn’t interested in blaming {who}.\n{b}: "Can we not? I’m tired."',
+    '{a} raises it, and {b} lets it drop.\n{a} (to camera): "{b} didn’t care. Or didn’t want to be seen caring."',
   ],
-  // ── THE SOLO SCENE, AND WHY IT IS A WIDENING RATHER THAN A NEW EVENT ──
-  //
-  // Measured: this window's scene sampler draws ONE person about 40% of the
-  // time, and a night with three solo draws had two of them arrive at a window
-  // holding almost nothing solo — which is where a third of the phase's unspent
-  // budget was going. The honest fix for a gate that is too narrow is to widen
-  // the gate, not to register a fourteenth event beside it. The fact is
-  // identical (the record names {who} for {task} and says it did not happen);
-  // what changes is that there is nobody to argue with about it.
   alone: [
-    '{a} walked home turning over the one thing on the record with a name attached to it: {who}, sent to {task}, and it did not happen.',
-    'Nobody else on that road seemed to have noticed that {who} had been the one asked to {task}. {a} had noticed.',
-    '{a} spent the walk back from {mission} deciding what {who}’s missed job was actually worth, and did not say a word about it to anybody.',
-    'One person had been asked to {task} and had not done it, and {a} thought about that the whole way home.',
-    'Everybody on that road was talking about {mission}. {a} was thinking about {who}, and about one job that did not get done.',
-    'The estate manager had read out that nobody managed to {task}. {a} was the only one still thinking about it at the gate.',
+    '{a} walks home thinking about the one job that didn’t get done: {who} was sent to {task}, and it didn’t happen.\n{a} (to camera): {cam:mission-angry}',
+    'Nobody else on the road seems to have noticed that {who} was meant to {task}. {a} noticed.\n{a} (to camera): "{who} had one job. I’m not saying anything yet. I’m remembering it."',
+    '{a} walks back going over what {mission} could have paid.\n{a} (to camera): {cam:mission-angry}',
+    '{a} keeps coming back to {who} and the job that wasn’t done.\n{a} (to camera): "Was it an accident? That’s what I want to know."',
+    '{a} works out what the missed task cost the pot.\n{a} (to camera): {cam:money}',
+    '{a} walks back alone, annoyed about {mission}.\n{a} (to camera): {cam:mission-angry}',
+    '{a} replays the moment it went wrong on {mission}.\n{a} (to camera): {cam:replay-mission}',
+    '{a} counts the cost of {mission} in {aPos} head.\n{a} (to camera): "Someone should have done that job. Someone didn’t."',
+    '{a} thinks about {who} the whole way back.\n{a} (to camera): {cam:holding-info}',
+    '{a} walks home going over who pulled their weight on {mission}, and who didn’t.\n{a} (to camera): {cam:replay-mission}',
   ],
 };
 
@@ -369,28 +362,28 @@ registerEvent({
 // what two people make of a number that was made for both of them.
 const SAME_SIDE_LINES = {
   'closed-ranks': [
-    '{a} and {b} walked {team} home the way people walk home from something they did together, and {tier}.',
-    'Whatever {mission} had been, {a} and {b} had been on the same end of it, and by the gate that had turned into something.',
-    '{a} said {team} had done what it could and {b} said it twice more, louder, to nobody in particular.',
-    'They were the last two off {team}’s side of the road, {a} and {b}, and neither of them was in a hurry about it.',
+    '{a} and {b} walk home together, both from {team}.\n{a}: "We did alright today."\n{b}: "We did. Whatever anyone says."',
+    '{a} and {b} were on the same end of {mission}, and by the gate that means something.\n{b}: "Good team today."\n{a}: "Good team."',
+    '{a} and {b} back each other up on the way home.\n{a}: "If anyone asks, {team} gave it everything."\n{b}: "Because we did."',
+    '{a} and {b} come off {mission} closer than they went in.\n{b} (to camera): "{a} and me worked well today. That counts for something."',
   ],
   'divided-it': [
-    '{a} wanted to know why {team} had ended up where it did, and {b} heard the question underneath the question.',
-    'By the second hill {a} and {b} had stopped talking about {mission} and started talking about each other.',
-    '{team} came apart on the road back rather than on the job — {a} started it and {b} did not let it go.',
-    '“We were on the same side all day,” {b} said. “So say what you actually mean.” {a} said it.',
+    '{a} wants to know why {team} ended up where it did, and {b} hears the real question.\n{a}: "What happened to us out there?"\n{b}: "You mean what happened to me."\n{a}: "I didn’t say that."',
+    'By the second hill, {a} and {b} have stopped talking about {mission} and started talking about each other.\n{b}: "You think I let us down."\n{a}: "I think somebody did."',
+    '{a} and {b} disagree about how {team} did.\n{a}: "We should’ve won that."\n{b}: "We did our best."\n{a}: "Did we?"',
+    '{a} and {b} fall out over {mission} on the walk back.\n{b} (to camera): "{a} blames me. I can feel it."',
   ],
   professional: [
-    '{a} and {b} took {mission} apart on the walk back without once making it personal, which took effort from both of them.',
-    '“It was the day, not the people,” {a} said about {team}, and {b} agreed, and both of them half meant it.',
-    '{a} and {b} agreed that {tier}, and that nobody on {team} was going to be able to prove otherwise.',
-    'It was a tidy, unemotional debrief of {team}’s afternoon, conducted between two people who were watching each other conduct it.',
+    '{a} and {b} go over {mission} on the walk back without making it personal.\n{a}: "Timing was off. That’s all."\n{b}: "Agreed. Nobody’s fault."',
+    '{a} and {b} talk about the mission like it was work.\n{b}: "It was the day, not the people."\n{a}: "Mostly."',
+    '{a} and {b} keep it calm on the road home.\n{a}: "We’ll do better next time."\n{b}: "We will."',
+    '{a} and {b} have a sensible chat about {mission}.\n{a} (to camera): "Very polite. Very careful. Neither of us said what we thought."',
   ],
   'one-sided': [
-    '{a} went through {team}’s whole afternoon on the road home and {b} contributed roughly four words to it.',
-    '{a} was still talking about {mission} at the gate. {b} had stopped listening somewhere near the top of the hill.',
-    '“You were there,” {a} said. “I was there,” {b} agreed, and that was the whole of {b}’s contribution.',
-    '{b} let {a} carry the entire conversation about {team} and gave away nothing at all in the process.',
+    '{a} goes through {team}’s whole afternoon on the road home, and {b} says about four words.\n{a}: "And then, when we got to the end—"\n{b}: "Yeah."\n{a}: "Are you even listening?"',
+    '{a} is still talking about {mission} at the gate. {b} stopped listening at the top of the hill.\n{b} (to camera): "{a} does not stop."',
+    '{a} talks the whole way home. {b} nods.\n{b}: "Mm. Right."',
+    '{a} wants to go over every detail. {b} doesn’t.\n{b}: "Can we talk about anything else?"',
   ],
 };
 
@@ -461,34 +454,34 @@ registerEvent({
 // lands differently for that reason.
 const OTHER_HALF_LINES = {
   'compared-clean': [
-    '{a} and {b} put {ta} and {tb} side by side on the road home and the two afternoons fitted together without a seam.',
-    'Two halves of {mission}, told by two people who had not spoken since the briefing, and nothing in either one contradicted the other.',
-    '{a} described {ta}’s day, {b} described {tb}’s, and by the gate they had one afternoon between them instead of two.',
-    '{a} and {b} compared their parts of {mission} on the walk home. Their accounts matched, and {tier}.',
+    '{a} and {b} put {ta}’s afternoon and {tb}’s afternoon side by side on the walk home. They fit together.\n{a}: "So you were doing that while we were doing this."\n{b}: "Yep. Makes sense now."',
+    '{a} and {b} compare notes on {mission}, and nothing contradicts.\n{b}: "Same story from both sides."\n{a}: "Good. One less thing to worry about."',
+    '{a} and {b} swap halves of {mission}.\n{a}: "What was it like on your side?"\n{b}: "Chaos. Yours?"\n{a}: "Same."',
+    '{a} checks {b}’s version of the afternoon against {aPos} own. It matches.\n{a} (to camera): "Clean. {b}’s story holds."',
   ],
   traded: [
-    '{a} gave {b} what {ta} had seen and took what {tb} had seen in exchange, and both of them came home with a name.',
-    '{a} and {b} traded halves of {mission} on the road back like people who had agreed the price in advance.',
-    '“You tell me yours, I’ll tell you mine.” By the gate {a} and {b} each knew things about {mission} nobody on their own side did.',
-    '{a} had {ta}’s afternoon and {b} had {tb}’s, and neither of them walked back with only half of it.',
+    '{a} tells {b} what {ta} saw, and gets what {tb} saw in return.\n{a}: "Who went quiet on your side?"\n{b}: "Funny you should ask."',
+    '{a} and {b} trade halves of {mission} on the road back.\n{b}: "I’ll tell you who slacked off, if you tell me who."\n{a}: "Deal."',
+    '{a} and {b} swap information like a business deal.\n{a} (to camera): "I gave {b} {ta}’s afternoon. {b} gave me {tb}’s. Fair trade."',
+    '{a} and {b} come home with a name each from the other team.\n{b}: "That’s useful."\n{a}: "Very."',
   ],
   gap: [
-    '{b} told it as though {tb} had carried {mission}. Everybody on that road had heard the result, and {a} let the sentence sit there.',
-    '“That’s not what they read out,” {a} said, quietly, when {b} finished explaining how well {tb} had done.',
-    '{b}’s version of {tb}’s afternoon and the version the estate manager had announced were not the same version, and {a} had heard both.',
-    '{a} did not say anything while {b} rewrote {tb}’s day on the walk home. {a} did keep it, though.',
+    '{b} tells it like {tb} carried {mission}. {a} knows that’s not what the result said.\n{a}: "That’s not what they read out."\n{b}: "Well, it felt like it."',
+    '{b}’s version of {tb}’s afternoon doesn’t match what everyone heard.\n{a} (to camera): "{b} is rewriting the afternoon. I was there."',
+    '{b} makes {tb} sound better than they did.\n{a}: "Hang on. You lost that bit."\n{b}: "Did we?"',
+    '{a} lets {b}’s version sit there, and doesn’t believe it.\n{a} (to camera): {cam:holding-info}',
   ],
   boasted: [
-    '{b} had been on {tb}, {tb} had taken {mission}, and {b} was not going to let {a} forget either fact before the gate.',
-    '“{tb},” {b} said, about six times on the way back, and each time {a} liked it slightly less.',
-    '{b} was generous about {ta}’s afternoon in the specific way that makes generosity worse.',
-    '{a} got the whole of {tb}’s good day narrated at {a} on the road home, and {tier} did not come into it once.',
+    '{b} was on {tb}, {tb} won {mission}, and {b} won’t let {a} forget it.\n{b}: "Did I mention we won?"\n{a}: "About six times."',
+    '{b} boasts about {tb} the whole way home.\n{b}: "We were brilliant. Just brilliant."\n{a} (to camera): "{b} is unbearable today."',
+    '{b} can’t stop going on about {tb}’s win.\n{a}: "Alright, we get it."',
+    '{b} rubs it in.\n{b}: "Better luck next time, {a}."\n{a}: "Thanks."',
   ],
   'shrugged-off': [
-    '{a} asked {b} how {tb} had actually got on and {b} gave an answer that could have described any afternoon of the season.',
-    '“Fine,” {b} said about {tb}, and {a} was still waiting for the second half of it at the gate.',
-    '{b} had nothing to say about {mission} that {a} could do anything with, and said it pleasantly.',
-    '{a} spent the road home asking about {tb} and came back through the gate knowing exactly what {a} had gone out knowing.',
+    '{a} asks {b} how {tb} actually got on, and gets nothing.\n{b}: "Fine."\n{a}: "Just fine?"\n{b}: "Just fine."',
+    '{b} gives {a} an answer that could describe any afternoon.\n{a} (to camera): "Vague. Very vague."',
+    '{b} won’t talk about {tb}’s side.\n{b}: "It was a mission. We did it."',
+    '{a} tries to find out about {tb}. {b} changes the subject.\n{a} (to camera): {cam:unsure-info}',
   ],
 };
 
@@ -558,28 +551,28 @@ registerEvent({
 // NO FIGURES: see the number rule in the header.
 const WORTH_LINES = {
   'counted-it': [
-    '{a} and {b} worked out what {mission} had actually been worth on the walk back, and {tier}.',
-    'Somewhere on the road {a} said the total out loud and {b} made {a} say it again, slower.',
-    '{a} and {b} spent the walk home doing sums about {mission} that neither of them entirely trusted.',
-    '“So where does that leave the pot?” {b} asked, and {a} had the answer ready, because {a} had been working on it since the gate.',
+    '{a} and {b} work out what {mission} was actually worth on the walk back.\n{a}: "So that’s what, a few thousand?"\n{b}: "Something like that. Not bad."\n{a}: "Not bad at all."',
+    '{a} says the total out loud, and {b} makes {aObj} say it again.\n{b}: "Say that again."\n{a}: "You heard."\n{b}: "I want to hear it again."',
+    '{a} and {b} add up the pot on the way home.\n{b}: "The pot’s getting big now."\n{a}: "Big enough to lie for."',
+    '{a} and {b} agree that {tier}.\n{a} (to camera): {cam:money}',
   ],
   bitter: [
-    '{a} could not get past what {mission} had cost against what it paid, and said so for most of the road.',
-    '{a} said out loud, on the road, that {tier} — in the voice of somebody who had been holding the sentence in since the briefing.',
-    '{b} regretted asking {a} about the money before they had got a mile down the road.',
-    '{a} was still angry about {mission} at the gate, and {b} had run out of things to say about it two hills back.',
+    '{a} can’t get over what {mission} cost against what it paid.\n{a}: "All that, for that?"\n{b}: "It’s money."\n{a}: "It’s not enough money."',
+    '{a} is bitter about {mission} the whole way home.\n{a}: "We should have got double that."\n{b}: "Should’ve, would’ve."',
+    '{a} says it out loud: {tier}.\n{b}: "Alright, we know."\n{a}: "I’m just saying."',
+    '{a} grumbles about the pot.\n{a} (to camera): {cam:mission-angry}',
   ],
   joked: [
-    '{a} made {b} laugh about {mission} on the road back, which was not a thing {b} had expected to do today.',
-    'By the second hill {a} and {b} had turned {mission} into a running joke and the walk got considerably shorter.',
-    '{a} said something unrepeatable about the estate manager and {b} had to stop walking for a moment.',
-    'It was true that {tier}, and {a} said something about that on the road home that made {b} laugh out loud in front of everybody.',
+    '{a} makes {b} laugh about {mission} on the road back.\n{a}: "Did you see my face when it collapsed?"\n{b}: "I’ll never forget it."\nThey’re still laughing at the gate.',
+    'By the second hill, {mission} has become a running joke.\n{b}: "Next time, you’re carrying the heavy one."\n{a}: "Next time, you’re not dropping it."',
+    '{a} and {b} laugh the whole way home.\n{b} (to camera): "Best walk home we’ve had. Needed that."',
+    '{a} does an impression of the estate manager, and {b} cries laughing.\n{b}: "Stop, stop."',
   ],
   'already-past-it': [
-    '{a} was done with {mission} before the road bent, and wanted to talk about tonight instead.',
-    '“The money’s the money,” {a} said. “Who are we actually talking about at that table?”',
-    '{a} and {b} gave {mission} about four minutes and the rest of the walk to the vote.',
-    'Neither {a} nor {b} was interested in what the day had paid. Both of them were interested in who was going to be sitting where.',
+    '{a} is done with {mission} before the road bends.\n{a}: "The money’s the money. Who are we talking about at the table?"\n{b}: "Straight to business."',
+    '{a} wants to talk about tonight, not the mission.\n{a}: "Forget the mission. Who’s going tonight?"\n{b}: "You tell me."',
+    '{a} moves on from {mission} immediately.\n{a}: "Right. The Round Table."\n{b}: "Give it five minutes."',
+    '{a} has already stopped thinking about the afternoon.\n{a} (to camera): {cam:plan}',
   ],
 };
 
@@ -652,28 +645,28 @@ registerEvent({
 // almost never has and the reason this event is in this window and not indoors.
 const WHAT_YOU_SAW_LINES = {
   answered: [
-    '{a} asked {b} about a part of {mission} only somebody on {team} could have seen, and {b} described it without pausing.',
-    '{b} answered {a}’s question about {team}’s afternoon in more detail than {a} had asked for, and all of it was right.',
-    '“Where were you when it went?” {a} asked. {b} said exactly where, and it matched the afternoon {a} had had.',
-    '{a} went looking for a hole in {b}’s account of {mission} and did not find one anywhere on the road.',
+    '{a} asks {b} about a part of {mission} only someone on {team} could have seen, and {b} answers straight away.\n{a}: "What happened at the far end?"\n{b}: "We got stuck for ten minutes, then {team} got it moving."',
+    '{b} answers {a}’s question about {team}’s afternoon in detail, and all of it checks out.\n{a} (to camera): "Everything {b} said matches. Good."',
+    '{a} tests {b} on {mission}, and {b} passes.\n{b}: "Ask me anything. I was there."',
+    '{a} checks {b} was where {bSub} said.\n{b}: "I was on {team} the whole time. Ask them."',
   ],
   caught: [
-    '{b} answered two questions about {team} and then asked {a} why {a} was asking.',
-    '“You were standing next to me,” {b} said. “So you already know. Which means this isn’t about {mission}.”',
-    '{b} worked out somewhere on the second hill that {a} was checking rather than reminiscing, and said so.',
-    '{a} asked one question too many about {team}’s afternoon and watched {b}’s face change while {a} was asking it.',
+    '{b} answers two questions about {team}, then turns it round.\n{b}: "You were standing next to me. So why are you asking?"\n{a}: "Just checking."\n{b}: "This isn’t about the mission, is it?"',
+    '{b} realises {a} is testing {bObj}.\n{b}: "You know exactly where I was."\n{a} (to camera): "Caught."',
+    '{b} catches on to {a}’s questions.\n{b}: "What are you really asking me?"',
+    '{b} works out what {a} is doing.\n{b}: "Is this a test? It feels like a test."',
   ],
   blank: [
-    '{a} asked {b} about {mission} and {b} could not put the afternoon in order, and heard {b}’s own answer not work.',
-    '{b} got the sequence of {team}’s afternoon wrong on the road home and knew it before {a} said anything.',
-    '“I don’t — it was all one thing,” {b} said about {mission}, and it sounded worse out loud than it had in {b}’s head.',
-    '{b} had been on {team} all afternoon and could not tell {a} what had happened on it, which {a} filed away.',
+    '{a} asks {b} about {mission}, and {b} can’t put the afternoon in order.\n{b}: "We did the — no, first we — I don’t know, it’s a blur."\n{a} (to camera): "It was three hours ago."',
+    '{b} gets {team}’s afternoon muddled on the way home.\n{b}: {say:answer-shaky}\n{a} (to camera): {cam:holding-info}',
+    '{b} can’t remember the order of things at {mission}.\n{a}: "You were there."\n{b}: "I know. It’s just all mixed up."',
+    '{b} goes blank on a simple question.\n{a} (to camera): "Strange. {b} was right in the middle of it."',
   ],
   turned: [
-    '{b} answered {a}’s question about {team} and then put one of {b}’s own in front of {a}, and it was a better question.',
-    '“Fine — where were you?” {b} said, before {a} had finished, and the walk home stopped being {a}’s conversation.',
-    '{a} tested {b} on {mission} and came away having been tested harder, which was not the plan.',
-    '{b} let {a} run the whole thing about {team} and then turned it round on the last hill without raising {b}’s voice.',
+    '{b} answers {a}’s question, then asks a better one back.\n{b}: "Fine. Where were you when it went wrong?"\n{a}: "Me?"\n{b}: "You."',
+    '{b} flips the conversation.\n{b}: "Why are you so interested in {team}?"\n{a} (to camera): "Good question. I didn’t have a good answer."',
+    '{b} turns the questions on {a}.\n{b}: "My turn. What were you doing?"',
+    '{b} takes over the conversation.\n{a} (to camera): "I asked one question. I answered five."',
   ],
 };
 
@@ -756,58 +749,40 @@ registerEvent({
 // and the road home is where that lands.
 const BODY_SHORT_LINES = {
   'named-them': [
-    '{a} said the name out loud on the road back from {mission} — the first time anybody had, all day — and {b} let it stand there.',
-    'Somewhere between the vans {a} told {b} what the missing one would have been like on {team}, and got most of the way through it.',
-    '“They’d have hated today,” {a} said, and {b} laughed before {b} could stop, and then neither of them said anything for a while.',
-    '{a} and {b} spent the last mile talking about somebody who was not on the road, by name, at length.',
+    '{a} says the name of the person who should have been on {team}, the first time anyone has all day.\n{a}: "They’d have loved that mission."\n{b}: "They would."',
+    '{a} tells {b} what the missing one would have been like on {mission}.\n{a}: "They’d have been straight in the water. No hesitation."\n{b}: "They would."',
+    '{a} brings up the empty space on {team}.\n{a}: "We were one short today. Did you feel it?"\n{b}: "All afternoon."',
+    '{a} mentions who wasn’t there.\n{b}: "I was thinking the same thing."',
   ],
   'did-not-mention-it': [
-    '{a} and {b} walked back from {mission} talking about absolutely nothing, and both of them knew what they were not talking about.',
-    'There were {living} of them on the road home and neither {a} nor {b} said a word about the ones who were not.',
-    '{a} started to say the name on the walk back and put it away again, and {b} pretended not to have heard the start of it.',
-    'The whole way home {a} and {b} kept the conversation on {mission}, deliberately, and it took work.',
+    '{a} and {b} walk back from {mission} talking about nothing, and both know what they’re not talking about.\n{a}: "Nice weather."\n{b}: "Lovely."',
+    'There are {living} of them on the road home, and neither {a} nor {b} mentions the ones who aren’t.\n{b} (to camera): "We didn’t say it. We both thought it."',
+    '{a} and {b} keep the chat light.\n{a}: "What’s for dinner?"\n{b}: "No idea."',
+    '{a} and {b} avoid the subject all the way home.\n{a} (to camera): "Some things you don’t say out loud."',
   ],
   angry: [
-    '“We did all that,” {a} said about {mission}, “and we’re still going home to lose somebody tonight.” {b} had no answer to it.',
-    '{a} was furious on the road back and it was not about the afternoon, and {b} worked that out about a mile in.',
-    '{a} said something bitter about the castle on the walk home from {mission} and {b} did not disagree fast enough to help.',
-    'Whatever {a} was carrying off {team} today, it came out on the road and it came out at nobody in particular.',
+    '{a} is furious on the road back, and it isn’t about the mission.\n{a}: "We did all that, and we’re still going home to lose somebody tonight."\n{b}: "I know."',
+    '{a} can’t let it go.\n{a}: "What’s the point of the money if we keep losing people?"\n{b} has no answer.',
+    '{a} is angry about who is missing.\n{a} (to camera): {cam:mission-angry}',
+    '{a} snaps on the walk home.\n{a}: "I’m sick of it. All of it."',
   ],
-  // THE SOLO SCENE. Same widening, same measured reason as event 1's `alone`:
-  // the sampler draws one person about 40% of the time and this window had
-  // almost nothing for them. The arc is `grief` and it is opened on one
-  // party, which is what a private one is.
-  //
-  // EIGHT LINES, NOT FOUR, AND THE REASON IS ARITHMETIC RATHER THAN TASTE. A
-  // solo branch is the ONLY branch its event has on a solo draw, so all of that
-  // event's solo firings in a season — about three — come out of this one pool,
-  // where a three-way collision runs at roughly 6%. A probe over 800 seasons
-  // attributing every within-season triple repeat to the branch that printed
-  // it put this pool at the top of the entire castle, ahead of every
-  // pre-existing one. Eight lines takes the same collision to about 1.6%.
   'on-their-own': [
-    '{a} walked the whole road back from {mission} thinking about the one who should have been on {team} and was not.',
-    'There were {living} of them coming back up the path, and {a} counted, and wished {a} had not.',
-    'Nobody on that road mentioned the empty seat, and {a} thought about very little else the whole way home.',
-    '{a} had got through the entire afternoon without it landing. It landed on the walk back, alone, between the vans and the gate.',
-    'Two of them would have been on {team} last week. {a} did that sum twice on the road home and got the same answer.',
-    '{a} kept turning round on the path, out of habit, to check somebody was keeping up.',
-    'It was a shorter column coming back from {mission} than it had been going out, and {a} was near the end of it.',
-    'Somebody told a joke on the way out that the murdered player would have laughed at, and {a} thought about that the whole way back.',
-    'There was a spare seat on the van home, where the murdered player used to sit, and {a} sat next to it.',
-    '{a} had spent the whole of {mission} not thinking about it, which takes more work than thinking about it.',
-    'Somebody on {team} kept saying \u201cwe\u201d and meaning a smaller number than they had last week, and {a} noticed every time.',
-    'The murdered player used to point out the castle when it appeared over the hill, and {a} looked for it alone this time.',
-    '{a} carried the kit for two on {mission} without mentioning why it was heavier.',
-    'The murdered player was still on the team sheet, and {a} had read the sheet four times without crossing the name out.',
-    '{a} walked at the back on purpose, out of everybody’s sight for the whole hour.',
-    'It had been a good afternoon, which {a} felt oddly guilty about the whole way home.',
+    '{a} walks back from {mission} thinking about the one who should have been on {team}.\n{a} (to camera): "There should have been one more of us out there. I kept turning round to say something to them."',
+    'There are {living} of them coming back up the path. {a} counts, and wishes {aSub} hadn’t.\n{a} (to camera): {cam:few-left}',
+    '{a} walks home alone, missing someone.\n{a} (to camera): {cam:homesick}',
+    '{a} notices the gap on {team} the whole afternoon.\n{a} (to camera): "We were one short. You feel it in a mission."',
+    '{a} walks the long way back, thinking about who has gone.\n{a} (to camera): {cam:few-left}',
+    '{a} looks at the line walking home and thinks how short it has got.\n{a} (to camera): {cam:few-left}',
+    '{a} keeps thinking about the empty place on {team}.\n{a} (to camera): {cam:few-left}',
+    '{a} walks back, quieter than usual.\n{a} (to camera): "Missions are harder when you know who should be there."',
+    '{a} thinks about the first mission, when everyone was still here.\n{a} (to camera): {cam:few-left}',
+    '{a} walks home on {aPos} own after {mission}.\n{a} (to camera): "Every mission there are fewer of us doing it. You notice it most on the walk back."',
   ],
   useful: [
-    '{a} brought the missing one up on the road back and then, gently, brought up who had got quieter since.',
-    '“Think about who’s been comfortable this week,” {a} said, on the walk home from {mission}, and {b} understood the shape of it.',
-    '{a} used the empty seat on {team} to start a conversation that was not about the empty seat at all.',
-    '{b} noticed that {a} only ever mentioned the dead when {a} wanted something from the living, and noticed it on this road.',
+    '{a} brings up the missing player, then brings up who has got quieter since.\n{a}: "Think about who’s been comfortable this week."\n{b}: "You mean since they went?"\n{a}: "Exactly since."',
+    '{a} uses the empty space on {team} to make a point.\n{a}: "Who benefits from them being gone?"\n{b}: "I hadn’t thought about it like that."',
+    '{a} ties the missing player to a suspicion.\n{a} (to camera): {cam:holding-info}',
+    '{a} gets {b} thinking.\n{a}: "Someone relaxed the day they went. Watch for it."',
   ],
 };
 
@@ -841,7 +816,7 @@ registerEvent({
     if (!b) {
       const soloNote = line(BODY_SHORT_LINES['on-their-own'], 'mission-a-body-short',
         'on-their-own', ctx.ep,
-        { a, mission: m.name, team: team.name, living: (gs.activePlayers || []).length });
+        { a, mission: m.name, team: team.name, living: countWord((gs.activePlayers || []).length) });
       const solo = arcContinue(api, 'grief', [a], ctx.ep, soloNote, { source: sceneWhy });
       return { branch: 'on-their-own', actor: a,
         threadId: solo.thread?.id, cited: solo.cited, bondDelta: 0 };
@@ -854,7 +829,7 @@ registerEvent({
     });
     const note = line(BODY_SHORT_LINES[branch], 'mission-a-body-short', branch, ctx.ep, {
       a, b, mission: m.name, team: team.name,
-      living: (gs.activePlayers || []).length,
+      living: countWord((gs.activePlayers || []).length),
     });
     const bondDelta = branch === 'named-them' ? 2
       : branch === 'did-not-mention-it' ? 0.5 : branch === 'angry' ? -0.5 : -1;
@@ -881,28 +856,28 @@ registerEvent({
 // window that declines two draws in five.
 const AUDIT_LINES = {
   solid: [
-    '{a} went back over {mission} on the road home and could not find a minute of it anybody could ask about.',
-    'By the gate {a} had the whole of {team}’s afternoon in order and knew which parts of it were safe to be certain about.',
-    '{a} spent the walk home checking {mission} against what everybody else had seen, and it matched everywhere it had to.',
-    'Nobody had watched {a} all afternoon, and {a} had spent all afternoon making sure of it.',
+    '{a} goes back over {mission} on the road home, and can’t find a minute anyone could question.\n{a} (to camera): {cam:story-fine}',
+    'By the gate, {a} has all of {team}’s afternoon in order.\n{a} (to camera): "Every minute accounted for. Let them ask."',
+    '{a} checks {aPos} own afternoon, and it’s clean.\n{a} (to camera): {cam:story-fine}',
+    '{a} walks home confident about {mission}.\n{a} (to camera): "Nobody can say I wasn’t pulling my weight."',
   ],
   thin: [
-    'There was an hour of {mission} {a} could not account for cleanly, and {a} walked the whole road home turning it over.',
-    '{a} had one gap in the afternoon and no good way to fill it, and the gate arrived before an answer did.',
-    'The problem with {team}’s day, from where {a} was standing, was the part in the middle where nobody could say where {a} had been.',
-    '{a} kept arriving at the same twenty minutes of {mission} and kept not liking them.',
+    'There’s an hour of {mission} {a} can’t account for, and {aSub} turns it over the whole way home.\n{a} (to camera): {cam:story-close}',
+    '{a} has one gap in the afternoon and no good way to fill it.\n{a} (to camera): "If anyone asks where I was at three, I’m in trouble."',
+    '{a} worries about a missing hour on {mission}.\n{a} (to camera): {cam:story-close}',
+    '{a} can’t make {aPos} afternoon add up.\n{a} (to camera): "I need a better story for that bit."',
   ],
   overtold: [
-    '{a} told {who} about {mission} on the road back without being asked once, and heard it happening.',
-    '{a} volunteered rather more of the afternoon than anybody had wanted, and then spent the last mile regretting the extra.',
-    '“I was on {team} the whole time,” {a} said, twice, to somebody who had not asked either time.',
-    '{a} put the whole day in front of people who were not looking for it, and they looked at each other instead.',
+    '{a} tells {who} all about {mission} without being asked once.\n{a} (to camera): {cam:overdid}',
+    '{a} gives far more of the afternoon than anyone wanted.\n{a} (to camera): "Why did I tell {who} all that? Nobody asked."',
+    '{a} explains {aPos} whole afternoon to {who}.\n{a} (to camera): {cam:overdid}',
+    '{a} says too much on the walk home.\n{a} (to camera): "Too much detail. That’s what guilty people do."',
   ],
   unasked: [
-    'Nobody asked {a} anything about {mission} on the way home, and {a} noticed how much that was worth.',
-    '{a} came off {team} braced for a question and walked the entire road without getting one.',
-    'The afternoon had been loud enough that nobody was thinking about {a} at all, and {a} let that happen.',
-    '{a} had an account of {mission} ready the whole way home and never once had to use it.',
+    'Nobody asks {a} anything about {mission} on the way home, and {a} notices how much that’s worth.\n{a} (to camera): {cam:story-fine}',
+    '{a} expected a question and never gets one.\n{a} (to camera): {cam:invisible}',
+    '{a} walks the whole road without a single question.\n{a} (to camera): "Nobody’s curious about me. Perfect."',
+    '{a} came off {team} braced for questions. None come.\n{a} (to camera): {cam:story-fine}',
   ],
 };
 
@@ -1002,28 +977,28 @@ registerEvent({
 // record answers exactly.
 const MISSING_HOUR_LINES = {
   'counted-the-cost': [
-    '“{who} was gone the whole middle of it,” {a} said on the road back, “and {mission} finished a body light.” {b} did the same arithmetic out loud.',
-    '{a} and {b} worked out on the walk home roughly what {who}’s hour had taken off the afternoon, and neither of them liked the answer.',
-    '{a} put it plainly: {who} left {team} to go looking, and {team} did {mission} without {who}. {b} agreed that was the shape of it.',
-    '“It’s not that {who} went,” {b} said. “It’s that we paid for it and {who} kept it.”',
+    '{a} and {b} work out what {who}’s hour away from {team} cost the afternoon.\n{a}: "{who} was gone the whole middle of it."\n{b}: "And we finished a person short."\n{a}: "Exactly."',
+    '{a} and {b} add up what {who}’s missing hour took off the pot.\n{b}: "That’s a lot of money for one shield."\n{a}: "That’s what I’m saying."',
+    '{a} brings up {who} going missing.\n{a}: "Where did {who} even go?"\n{b}: "To get the shield, I think."',
+    '{a} and {b} aren’t happy about {who}’s hour.\n{b} (to camera): "{who} looked after {who}. The rest of us paid for it."',
   ],
   'defended-the-hour': [
-    '“I’d have gone looking too,” {b} said, when {a} complained about {who} leaving. “So would you.”',
-    '{a} raised {who}’s hour away from {team} and {b} pointed out that anybody with a chance at that would have taken it.',
-    '“{who} played the game,” {b} said on the road home. “You’re annoyed because {who} played it first.”',
-    '{b} would not have {who} blamed for the detour on {mission}, and said so twice before the gate.',
+    '{a} complains about {who} leaving. {b} defends it.\n{b}: "I’d have gone looking too. So would you."\n{a}: "Maybe."',
+    '{b} sticks up for {who}.\n{b}: "Anyone with a chance at a shield would take it."\n{a}: "Not in the middle of the job."',
+    '{b} won’t hold it against {who}.\n{b}: "It’s the game. You’d have done the same."',
+    '{b} defends {who}’s hour.\n{a} (to camera): "{b}’s very quick to defend {who}."',
   ],
   'saw-it-happen': [
-    '{a} had watched {who} come back up with it and told {b} exactly what that had looked like.',
-    '“I was standing there when they handed it over,” {a} said. {b} had not been, and listened all the way home.',
-    '{a} described {who}’s return to {b} in detail, because {a} had been close enough to see the faces around it.',
-    'Only a handful of people had actually seen {who} come back holding it on {mission}, and {a} was one of them, and {b} was not.',
+    '{a} tells {b} exactly what it looked like when {who} came back with it.\n{a}: "{who} came back with something in {whoPos} pocket. I saw it."\n{b}: "What was it?"\n{a}: "No idea. But {who} looked pleased."',
+    '{a} was there when {who} was handed something.\n{a}: "I was standing right there."\n{b} listens all the way home.',
+    '{a} describes {who}’s return to {b}.\n{a} (to camera): {cam:holding-info}',
+    '{a} saw {who} slip back into the team.\n{a}: "{who} thought nobody noticed. I noticed."',
   ],
   'let-it-alone': [
-    '{a} brought {who}’s hour up on the road back and {b} declined the conversation, politely and completely.',
-    '“Not worth it,” {b} said about {who}. “There’s a table tonight and it isn’t going to be about a missing hour.”',
-    '{a} tried to make {who}’s detour matter on the walk home and could not get {b} to hold the other end of it.',
-    '{b} had already decided {who}’s afternoon was not tonight’s problem, and nothing {a} said on that road moved it.',
+    '{a} brings up {who}’s hour, and {b} won’t discuss it.\n{b}: "Not worth it. There’s a table tonight."\n{a}: "Fine."',
+    '{b} politely shuts the subject down.\n{b}: "Let {who} have it. We’ve got bigger things to worry about."',
+    '{b} isn’t interested in {who}’s missing hour.\n{a} (to camera): "{b} wouldn’t touch it. Interesting."',
+    '{b} changes the subject.\n{b}: "Anyway. Tonight."',
   ],
 };
 
@@ -1098,28 +1073,28 @@ registerEvent({
 // days before a banishment is not.
 const TOOK_EXTRA_LINES = {
   credited: [
-    '“{who} went and did it,” {a} said on the road back, which was to {task}, and nobody had asked, and {b} agreed it had been the best thing about {mission}.',
-    '{a} and {b} spent a mile being genuinely impressed that {who} had managed to {task}, which neither of them had expected of the day.',
-    '{a} said the thing out loud that nobody had said at the vans: {who} was the reason {mission} paid what it did.',
-    '“Somebody had to {task},” {b} said. “On today of all days.” {a} had been thinking exactly that since it happened.',
+    '{a} and {b} are impressed that {who} went and managed to {task}.\n{a}: "{who} actually did it. Nobody asked, and {who} just did it."\n{b}: "Best bit of the whole day."',
+    '{a} and {b} give {who} the credit.\n{b}: "Say what you like about {who}, that was brilliant."\n{a}: "Agreed."',
+    '{a} can’t stop talking about {who}’s bonus.\n{a}: "Did you see {who} go for it?"\n{b}: "Couldn’t miss it."',
+    '{b} praises {who} on the way home.\n{b} (to camera): "Fair play to {who}. That was bold."',
   ],
   'suspicious-of-eager': [
-    '“Why {who}, though,” {a} said on the walk back. “Why is {who} the one volunteering to {task} in front of everybody?”',
-    '{a} did not think {who} had gone for the extra on {mission} out of public spirit, and by the gate {b} was not sure either.',
-    '{b} pointed out that {who} had made very certain the room was watching while {who} went to {task}.',
-    '“Nobody works that hard for the pot,” {a} said about {who}. “They work that hard for the room.”',
+    '{a} wonders why {who} was so keen to {task}.\n{a}: "Why {who}, though? Why volunteer in front of everyone?"\n{b}: "To look good?"\n{a}: "Exactly."',
+    '{a} doesn’t think {who} went for the extra out of kindness.\n{a} (to camera): "Nobody’s that eager unless they want to be seen being eager."',
+    '{a} and {b} discuss {who}’s enthusiasm.\n{b}: "Maybe {who} just wanted to help."\n{a}: "Maybe."',
+    '{a} finds {who}’s eagerness suspicious.\n{a} (to camera): {cam:holding-info}',
   ],
   'used-it': [
-    '{a} started on the extra job {who} had gone and done, and finished on why that made {who} the wrong name for tonight — which was where {a} had been going.',
-    '“You can’t put up somebody who just went and did that in front of the room,” {b} said, and {a} filed the whole conversation under what it actually was.',
-    '{a} was building {who} a case on the road home and did not pretend otherwise when {b} asked what {a} was doing.',
-    'By the gate {a} had turned {who}’s extra on {mission} into an argument about the table, and {b} had let it happen.',
+    '{a} brings up {who}’s bonus, and uses it to argue {who} isn’t the name for tonight.\n{a}: "You can’t vote out someone who just did that for the pot."\n{b}: "I suppose not."\n{b} (to camera): "{a} was steering me. I could tell."',
+    '{a} uses {who}’s good deed to push the vote elsewhere.\n{a}: "It can’t be {who}. Not after today."',
+    '{a} spins {who}’s bonus into an argument.\n{a} (to camera): {cam:plan}',
+    '{a} makes {who}’s extra work count for something.\n{b}: "You really want {who} safe, don’t you?"',
   ],
   unimpressed: [
-    '“It’s a bonus,” {b} said about {who}. “Somebody was always going to {task}. It isn’t a personality.”',
-    '{a} raised what {who} had pulled off and {b} said the day’s result was a team number and it always had been.',
-    '{b} was not going to spend the road home admiring {who} for one extra job, and made that clear without being unkind about it.',
-    '“Good for {who},” {b} said, in a voice that closed the subject before the next bend.',
+    '{b} isn’t impressed by {who}.\n{b}: "Somebody was always going to {task}. It isn’t a personality."\n{a}: "Harsh."',
+    '{a} praises {who}. {b} shrugs.\n{b}: "It’s a team number. It always has been."',
+    '{b} won’t give {who} the credit.\n{b}: "Anyone could’ve done that."',
+    '{b} rolls {bPos} eyes at {who}’s bonus.\n{b} (to camera): "Showing off. That’s all that was."',
   ],
 };
 
@@ -1181,28 +1156,28 @@ registerEvent({
 // pairs who were merely CAST together, which on a returnee cast is everybody.
 const DONE_THIS_BEFORE_LINES = {
   'same-page': [
-    'It was not the first long day {a} and {b} had had together, and on the road back from {mission} that started to be worth something.',
-    '{a} and {b} had been through {season} and now they had been through {mission}, and by the gate the second one had reopened the first.',
-    '“We’re quite good at this,” {a} said to {b} on the walk home, meaning rather more than {mission}.',
-    '{a} and {b} fell into an old rhythm on the road back that neither of them had used since {season}.',
+    '{a} and {b} have done long days together before, back in {season}, and today reminds them.\n{a}: "Just like {season}."\n{b}: "Except we won this time."',
+    '{a} and {b} walk home from {mission} talking about {season}.\n{b}: "We’ve always worked well together."\n{a}: "We have."',
+    '{a} and {b}’s history makes today easier.\n{b} (to camera): "{a} and me go back to {season}. It shows."',
+    '{a} and {b} fall back into old habits from {season}.\n{a}: "Same team, same result."',
   ],
   'old-account': [
-    '{a} waited until {mission} was behind them and then brought up {season}, which had been coming all day.',
-    '“Same as {season},” {a} said on the road home, and {b} knew precisely which part of {season} {a} meant.',
-    'The afternoon put {a} and {b} back in each other’s company for the first time since {season}, and {a} used the hours.',
-    '{b} got asked about {season} on the walk back from {mission}, and had had a whole afternoon to see it coming.',
+    '{a} waits until {mission} is behind them, then brings up {season}.\n{a}: "We never talked about what happened in {season}."\n{b}: "Do we have to?"\n{a}: "Yes."',
+    '{a} brings up something from {season}.\n{a}: "Same as {season}, isn’t it?"\n{b}: "I knew you’d say that."',
+    '{a} reopens an old argument from {season}.\n{b}: "That was ages ago."\n{a}: "Not to me."',
+    '{a} can’t let {season} go.\n{a} (to camera): "{b} knows what {b} did in {season}. I haven’t forgotten."',
   ],
   'not-that-person': [
-    '“That was {season},” {b} said, walking home from {mission}. “I was twenty-four and I was wrong about most of it.”',
-    '{b} refused to be the person {a} remembered from {season}, and pointed at the afternoon they had just had as the evidence.',
-    '“You’ve had a whole day of me,” {b} said. “Judge that, not {season}.”',
-    '{b} answered {a}’s version of {season} with {mission}, which was the only argument {b} had and was not a bad one.',
+    '{b} tells {a} {bSub}’s not who {bSub} was in {season}.\n{b}: "That was {season}. I was young and I was wrong about most of it."\n{a}: "Prove it."\n{b}: "I did. Today."',
+    '{b} refuses to be the person {a} remembers.\n{b}: "I’ve changed. Look at today."',
+    '{b} points at {mission} as proof.\n{b}: "Did I let you down today?"\n{a}: "No."\n{b}: "Then stop living in {season}."',
+    '{b} asks {a} to let {season} go.\n{a} (to camera): "Maybe {b} has changed. Maybe."',
   ],
   'still-that-person': [
-    '{a} had watched {b} all afternoon on {mission} and come away certain that {season} had told the truth about {b}.',
-    '“You did exactly what you did in {season},” {a} said, at the gate, and did not soften it.',
-    'By the end of the road {a} had matched something {b} did today to something {b} did in {season}, out loud, in front of {b}.',
-    '{a} had gone out wanting to be wrong about {b} and came back through the gate holding {season} tighter than before.',
+    '{a} watched {b} all afternoon and came away sure {season} told the truth about {bObj}.\n{a}: "You did exactly what you did in {season}."\n{b}: "What’s that supposed to mean?"',
+    '{a} says it at the gate.\n{a}: "Same old {b}."\n{b}: "Wow."',
+    '{a} sees the old {b} on {mission}.\n{a} (to camera): "People don’t change. {b} certainly hasn’t."',
+    '{a} tells {b} {bSub} hasn’t changed.\n{b}: "You never gave me the chance to."',
   ],
 };
 
@@ -1272,42 +1247,33 @@ registerEvent({
 // is a body short. Nothing here needs a second person to react.
 const LONG_WALK_LINES = {
   'straight-through': [
-    '{a} walked the whole road home from {mission} without talking to anybody, and arrived having decided something.',
-    'Everybody else was in twos on the way back. {a} was not, and did not appear to mind.',
-    '{a} put {mission} away somewhere on the second hill and spent the rest of the road on tonight.',
-    'The walk back took {a} about an hour and {a} used every minute of it, quietly, on the same question.',
-    '{a} was the first one back through the gate, by some distance, and had not spoken since the vans.',
-    'Two people tried to fall into step with {a} on the road home. Both of them gave up.',
-    '{a} walked it at a pace that made conversation impossible, on purpose.',
-    'The road home took an hour and {a} spent all of it about ten yards ahead.',
-    '{a} had nothing to say about the afternoon and said none of it, at length.',
-    'Somebody asked {a} a question at the halfway stone and got most of a word back.',
-    '{a} looked at the castle getting bigger and did not slow down for any of it.',
-    'It is a long way to walk without talking and {a} managed the whole of it.',
+    '{a} walks the whole road home from {mission} without talking to anyone, and arrives having decided something.\n{a} (to camera): {cam:have-a-name}',
+    'Everyone else walks home in twos. {a} doesn’t, and doesn’t seem to mind.\n{a} (to camera): {cam:alone-choice}',
+    '{a} marches home on {aPos} own.\n{a} (to camera): {cam:front}',
+    '{a} doesn’t say a word on the walk back.\n{a} (to camera): {cam:plan}',
+    '{a} walks back alone, deep in thought.\n{a} (to camera): {cam:have-a-name}',
+    '{a} gets home first, having talked to nobody.\n{a} (to camera): {cam:alone-choice}',
   ],
   'caught-up-with-it': [
-    'It got {a} on the road home — not at {mission}, where there had been too much going on, but afterwards, in the quiet.',
-    '{a} had been fine all afternoon. {a} was not fine somewhere between the vans and the gate, and there was nobody there for it.',
-    'The afternoon had kept {a} busy. The road home did not, and that turned out to be the harder half.',
-    '{a} got most of the way back from {mission} before the day caught up, and then had to stop for a moment.',
-    '{a} spent the walk home going over one small thing from {mission} that nobody else had noticed and could not put it down.',
-    'Somewhere on the last hill {a} stopped being all right about it, at some length, with nobody there to see.',
+    'It catches up with {a} on the road home, not at {mission} but afterwards, in the quiet.\n{a} (to camera): {cam:homesick}',
+    '{a} was fine all afternoon, and isn’t fine somewhere between the vans and the gate.\n{a} (to camera): "It just hit me. All of it."',
+    '{a} gets emotional on the walk back.\n{a} (to camera): {cam:cost}',
+    '{a} walks home quietly, holding it together.\n{a} (to camera): {cam:homesick}',
+    '{a} feels the day land on {aObj} on the way back.\n{a} (to camera): "I kept it together out there. Just not on the walk home."',
   ],
   'sorting-it': [
-    '{a} spent the road home putting {mission} in order — who had been where, who had been loud about it, who had not.',
-    'By the gate {a} had a list. {a} had started it at the vans and had not spoken to anybody since.',
-    '{a} went back through the afternoon on the walk home the way people go back through a receipt.',
-    'Somewhere on the road {a} worked out which part of {mission} was actually going to matter tonight.',
-    '{a} walked home from {mission} rebuilding the afternoon from the start, twice, until the order stopped changing.',
-    '{a} spent the road home reviewing how each player had behaved during {mission} and said nothing about it.',
+    '{a} spends the road home putting {mission} in order: who was where, who was loud, who wasn’t.\n{a} (to camera): {cam:replay-mission}',
+    'By the gate, {a} has a list.\n{a} (to camera): {cam:notes}',
+    '{a} goes over the afternoon step by step on the way back.\n{a} (to camera): {cam:replay-mission}',
+    '{a} works out who pulled their weight on {mission}.\n{a} (to camera): "I know exactly who did nothing today."',
+    '{a} thinks about who was quiet on the mission.\n{a} (to camera): {cam:watching}',
   ],
   'nothing-doing': [
-    '{a} walked home from {mission} thinking about nothing in particular, which was the most restful hour of the week.',
-    'There were {living} of them left and {a} spent the entire road home thinking about a sandwich.',
-    '{a} had had enough of {mission}, enough of the castle, and enough of everybody, and walked accordingly.',
-    'The road back was long, {a} was tired, and for one hour {a} simply did not play.',
-    '{a} looked at the hills the whole way home and thought about the game for approximately none of it.',
-    'Whatever {mission} had been, {a} left it at the vans and walked the rest of it as a person with nothing to work out.',
+    '{a} walks home from {mission} thinking about nothing in particular.\n{a} (to camera): {cam:switch-off}',
+    'There are {living} of them left, and {a} spends the whole road thinking about a sandwich.\n{a} (to camera): "I’m starving. That’s my strategy tonight: dinner."',
+    '{a} has a quiet, easy walk home.\n{a} (to camera): {cam:switch-off}',
+    '{a} lets {aPos} mind wander on the way back.\n{a} (to camera): {cam:fresh-air}',
+    '{a} enjoys the walk home.\n{a} (to camera): {cam:switch-off}',
   ],
 };
 
@@ -1343,7 +1309,7 @@ registerEvent({
       'nothing-doing': (1 - st.strategic / 10) * 0.35 + 0.15,
     });
     const note = line(LONG_WALK_LINES[branch], 'mission-the-long-walk', branch, ctx.ep, {
-      a, mission: m.name, living: (gs.activePlayers || []).length,
+      a, mission: m.name, living: countWord((gs.activePlayers || []).length),
     });
     // A SOLO SCENE STILL HAS A CONSEQUENCE, and this is the sanctioned one:
     // `setEmotionalState` (js/tr/scene-api.js) is how a scene overrides how
@@ -1372,28 +1338,28 @@ registerEvent({
 // is the whole of the difference between the two scenes.
 const WHO_WAS_WHERE_LINES = {
   'straight-answer': [
-    '{a} asked what {tb} had actually been doing while {ta} was on the far side of {mission}, and {b} told {a}, start to finish.',
-    '{b} walked {a} through {tb}’s whole afternoon on the road home, in order, without being asked twice.',
-    '“You were nowhere near us,” {b} said. “Right. So — here’s what happened.” And {b} told it.',
-    '{a} came off {ta} knowing nothing about the other half of {mission} and came home knowing most of it.',
+    '{a} asks what {tb} was doing while {ta} was on the far side, and {b} tells {aObj}, start to finish.\n{b}: "We did the ropes first, then the boat, then we waited for you lot."\n{a}: "Okay. That matches."',
+    '{b} walks {a} through {tb}’s whole afternoon.\n{a} (to camera): "Straight answer. No hesitation. I like that."',
+    '{a} asks {b} where {tb} got to. {b} answers plainly.\n{b}: {say:answer-clean}',
+    '{b} tells {a} exactly where {bSub} was on {mission}.\n{b}: "Ask anyone on {tb}. They’ll say the same."',
   ],
   'thin-answer': [
-    '{a} asked about {tb}’s half of {mission} and got about four sentences, none of which put {b} anywhere in particular.',
-    '“We were all over the place,” {b} said about {tb}, which was true and was also all {a} got.',
-    '{b}’s account of the afternoon had {tb} in it and did not have {b} in it, and {a} noticed the shape of the gap.',
-    '{a} asked where {b} had been on {mission} and {b} answered about {tb} instead, twice.',
+    '{a} asks about {tb}’s half of {mission} and gets about four sentences.\n{b}: "We were all over the place, honestly."\n{a}: "Where were you, though?"\n{b}: "Around."',
+    '{b} gives {a} a thin answer about {tb}.\n{b}: {say:answer-shaky}\n{a} (to camera): {cam:holding-info}',
+    '{b} is vague about {tb}’s afternoon.\n{a} (to camera): "Not much of an answer."',
+    '{b} can’t say much about where {bSub} was.\n{b}: "I don’t know. Everywhere?"',
   ],
   'asked-back': [
-    '{b} answered about {tb} and then wanted the same about {ta}, in the same detail, which {a} had not been expecting to give.',
-    '“Your turn,” {b} said, before {a} had finished processing the first half. “Where were you when it went wrong?”',
-    '{a} and {b} ended up trading whole afternoons on the road home because {b} would not do it one way.',
-    '{b} was perfectly happy to describe {tb}, on condition that {a} described {ta}, and meant the condition.',
+    '{b} answers about {tb}, then wants the same about {ta}.\n{b}: "Your turn. Where were you when it went wrong?"\n{a}: "Me? I was—"\n{b}: "In detail, please."',
+    '{b} turns it round on {a}.\n{b}: "What was {ta} doing, then?"\n{a} (to camera): "I didn’t expect to have to answer."',
+    '{b} answers, then asks back.\n{b}: "Fair’s fair. Your afternoon."',
+    '{b} matches {a}’s question with one of {bPos} own.\n{a}: "Fine. We were at the far end."',
   ],
   'refused-it': [
-    '“Why does it matter where I was?” {b} said about {mission}, and {a} did not have a good answer that was also honest.',
-    '{b} declined to account for {tb}’s afternoon to somebody who had spent it on {ta}, and did not soften the declining.',
-    '{a} asked one straightforward question about the other half of {mission} and got a wall for it.',
-    '“Ask somebody who was on {tb},” {b} said. “Oh — wait.” And {b} walked on ahead.',
+    '{b} won’t account for {tb}’s afternoon.\n{b}: "Why does it matter where I was?"\n{a}: "Just asking."\n{b}: "Ask someone else."',
+    '{b} flatly refuses.\n{b}: "I don’t have to explain myself to you."\n{a} (to camera): "No. But you’d want to, if you had nothing to hide."',
+    '{b} won’t answer.\n{b}: "I’m not doing this on the walk home."',
+    '{b} declines to say.\n{a} (to camera): {cam:holding-info}',
   ],
 };
 
@@ -1468,49 +1434,40 @@ registerEvent({
 // out they do not. Both are the same scene and the second is worth more.
 const NAME_BY_BACK_LINES = {
   agreed: [
-    'By the time the gate came into view {a} and {b} had a name, and both of them had got there off the same part of {mission}.',
-    '{a} said a name on the road back and {b} had been about to say it, which is the sort of thing that builds something.',
-    '“Same person?” {a} said, near the gate. “Same person,” {b} said, and neither of them had to explain further.',
-    '{a} and {b} spent the last mile of {mission} settling on one name and the rest of it agreeing about why.',
+    'By the time the gate comes into view, {a} and {b} have a name, and they both got there from the same part of {mission}.\n{a}: "It’s got to be them."\n{b}: "I was about to say the same."',
+    '{a} says a name on the road back, and {b} was about to say it too.\n{b}: "Snap."\n{a}: "Then that’s tonight."',
+    '{a} and {b} agree on tonight’s name on the walk home.\n{a}: {say:suspect:someone quiet}\n{b}: "Same. Let’s do it."',
+    '{a} and {b} settle on a name.\n{b} (to camera): "Two of us, same name. That’s a start."',
   ],
   'agreed-for-different-reasons': [
-    '{a} and {b} arrived at the same name on the road home for two entirely different reasons and did not notice the difference.',
-    'They agreed on who, {a} and {b}. What {a} was arguing from and what {b} was arguing from had almost nothing in common.',
-    '{a} named somebody off what happened on {mission}. {b} named the same person off something from days ago. It held, for now.',
-    'By the gate {a} and {b} had a name between them and a disagreement underneath it that neither had gone looking for.',
+    '{a} and {b} get to the same name on the road home, for completely different reasons.\n{a}: "Because of what they did at the mission."\n{b}: "Because of what they said at breakfast."\n{a}: "Same name, though."',
+    '{a} and {b} agree on who, and not on why.\n{b} (to camera): "{a} has a totally different reason. Doesn’t matter. Same vote."',
+    '{a} and {b} land on the same person, from opposite directions.\n{a}: "Whatever the reason, it’s them."',
+    '{a} and {b} agree, and don’t notice they disagree.\n{a} (to camera): "Same name. That’s all I needed."',
   ],
   split: [
-    '{a} and {b} could not get to one name on the road home and were still not there when the castle came into view.',
-    '“Then we cancel each other out,” {b} said, at the gate, and that was where the walk ended.',
-    '{a} wanted one name, {b} wanted another, and the last mile was spent finding out how firmly.',
-    'Two names went into the road back from {mission} and two names came out the other end of it.',
+    '{a} and {b} can’t agree on a name, and they’re still arguing at the gate.\n{b}: "Then we cancel each other out."\n{a}: "Looks like it."',
+    '{a} and {b} each want a different name.\n{a}: "You’re wrong."\n{b}: "So are you."',
+    '{a} and {b} split on tonight.\n{a} (to camera): "Two votes, two names. We’re useless."',
+    '{a} and {b} don’t agree about anyone.\n{b}: "We’ll have to decide at the table."',
   ],
   'kept-it-back': [
-    '{a} asked {b} who {b} was writing and {b} gave an answer that was not a name.',
-    '“I’ll know when I’m sitting down,” {b} said, on the walk home, which {a} had heard {b} say before.',
-    '{a} put a name in front of {b} on the road back and got nothing at all to put beside it.',
-    '{b} let {a} talk about tonight the whole way home from {mission} and never once said who {b} had in mind.',
+    '{a} asks {b} who {bSub}’s writing, and {b} won’t say.\n{b}: "I’ll know when I’m sitting down."\n{a}: "You said that last time."',
+    '{b} keeps {bPos} name to {bRef}.\n{b}: "I’m not saying yet."\n{a} (to camera): "{b} knows. {b} just won’t tell me."',
+    '{b} won’t give {a} a name.\n{b}: "Wait and see."',
+    '{b} holds back on the walk home.\n{a} (to camera): {cam:unsure-info}',
   ],
-  // Eight lines, for the reason given over `on-their-own` in event 6: this is
-  // the only branch this event has on a solo draw, so it carries every one of
-  // that event's solo firings on its own.
   alone: [
-    '{a} walked back from {mission} arriving, slowly and entirely alone, at a name.',
-    'Somewhere between the vans and the gate {a} stopped weighing names and picked one.',
-    '{a} had two names going into the road home from {mission} and one coming out, and had not discussed it with anybody.',
-    'By the time {a} came through the gate {a} had decided who to vote for tonight, alone, off nothing but {a}’s own afternoon.',
-    'Nobody walked with {a} on the way back, which suited {a}, because {a} had a decision to make and did not want help with it.',
-    '{a} ran the whole table in {a}’s head on that road, seat by seat, and stopped at one of them.',
-    'Choosing a name to say at the table tonight was not a hard decision, and {a} was slightly troubled by how easy it had been.',
-    '{a} changed {a}’s mind twice between the vans and the gate and then changed it back.',
-    '{a} put three names on the road home and took two of them off again before the drive.',
-    'The walk back from {mission} is exactly long enough to settle on a name for the table, and {a} did.',
-    '{a} did not want anybody’s opinion tonight, and made sure of it by walking faster than everybody.',
-    'By the gate {a} had a name and a reason, and the reason was the part {a} kept testing.',
-    '{a} decided on the road that the safest name and the right name were not the same, and picked one.',
-    'Nobody asked {a} who {a} was writing, which was the only useful thing about that walk.',
-    '{a} had been going to wait until the evening to decide and found that {a} had already decided.',
-    'It came to {a} somewhere in the last quarter mile, plainly, the way these things do when nobody is talking.',
+    '{a} walks back from {mission}, slowly settling on a name.\n{a} (to camera): {cam:have-a-name}',
+    'Somewhere between the vans and the gate, {a} stops weighing names and picks one.\n{a} (to camera): {cam:have-a-name}',
+    '{a} decides on tonight’s vote on the road home.\n{a} (to camera): {cam:certain}',
+    '{a} walks back alone, working out who to write.\n{a} (to camera): {cam:undecided}',
+    '{a} changes {aPos} mind about tonight on the walk back.\n{a} (to camera): {cam:changed-mind}',
+    '{a} picks a name somewhere on the last mile.\n{a} (to camera): {cam:have-a-name}',
+    '{a} thinks about tonight’s Round Table the whole way home.\n{a} (to camera): {cam:dread-table}',
+    '{a} walks home, sure of {aPos} vote.\n{a} (to camera): {cam:have-a-name}',
+    '{a} still has two names by the time the castle is in sight.\n{a} (to camera): {cam:undecided}',
+    '{a} decides on the walk home, and doesn’t tell anyone.\n{a} (to camera): "I know who I’m writing. Nobody else needs to yet."',
   ],
 };
 
@@ -1589,28 +1546,28 @@ registerEvent({
 const ARC_KINDS_AT_THE_GATE = ['suspicion', 'trust', 'grief', 'testing', 'callback'];
 const THE_GATE_LINES = {
   'settled-it': [
-    '{a} and {b} finished it at the gate, properly, with the towers already over them, and walked in with nothing owed.',
-    'Whatever had been running between {a} and {b} since before {mission} got its ending in the last hundred yards.',
-    '{a} said the last of it on the path up and {b} accepted it, and that was genuinely that.',
-    'It had taken all day and the whole road, but {a} and {b} came through the gate square with each other.',
+    '{a} and {b} finish their argument at the gate, properly, and walk in with nothing owed.\n{a}: "Are we okay?"\n{b}: "We’re okay."',
+    'Whatever has been going on between {a} and {b} gets settled in the last hundred yards.\n{b}: "Let’s leave it out here."\n{a}: "Agreed."',
+    '{a} and {b} shake hands at the gate.\n{a} (to camera): "Done. Sorted. Moving on."',
+    '{a} and {b} clear the air before going inside.\n{b}: "No more of this."\n{a}: "No more."',
   ],
   'ended-badly': [
-    '{a} and {b} finished the argument at the gate, and finishing it was worse for both of them than leaving it open had been.',
-    'The last hundred yards took whatever {a} and {b} had left and spent it, and neither of them was pretending otherwise inside.',
-    '“Fine,” {b} said, at the door. “Then we know where we are.” They did. It was not a good place.',
-    '{a} pushed the conversation one sentence too far on the path up from {mission}, and whatever trust was left between them broke.',
+    '{a} and {b} finish the argument at the gate, and it ends badly for both of them.\n{b}: "Fine. Think what you want."\n{a}: "I will."',
+    'The last hundred yards take whatever {a} and {b} had left.\n{a} (to camera): "That’s done now. Properly done."',
+    '{a} and {b} walk through the gate not speaking.\n{b} (to camera): "That was the end of it. Of us."',
+    '{a} says one thing too many at the gate.\n{b}: "Wow. Okay."',
   ],
   'carried-inside': [
-    'The castle arrived before {a} and {b} were done, and both of them knew exactly what that meant for tonight.',
-    '{a} and {b} ran out of road before they finished the argument, and carried the rest of it in through the gate.',
-    '”Later,” {a} said at the door, and both of them knew the conversation was not over.',
-    '{a} and {b} came back from {mission} with the disagreement still unresolved between them.',
+    'The castle arrives before {a} and {b} are done, and they carry it inside.\n{a}: "We’ll finish this later."\n{b}: "We will."',
+    '{a} and {b} run out of road before they run out of argument.\n{b} (to camera): "It’s not over. It’ll come up at the table."',
+    '{a} and {b} walk in still arguing.\n{a}: "This isn’t finished."',
+    '{a} and {b} bring the row through the front door.\n{a} (to camera): "Everyone saw us come in. Great."',
   ],
   'quietly-dropped': [
-    'Neither {a} nor {b} brought the argument up again on the path from {mission}, and by the door it had gone quiet on its own.',
-    '{a} stopped pushing the point somewhere on the last mile and did not tell {b}, which was the kindest version.',
-    'The disagreement simply ran out of energy between the vans and the gate, and neither of them restarted it.',
-    '{a} and {b} walked the last stretch talking about the food, and the argument was never mentioned again.',
+    'Neither {a} nor {b} brings it up again, and by the door it has gone quiet on its own.\n{a} (to camera): "I let it go. Not worth it."',
+    '{a} stops pushing the point on the last mile, and doesn’t tell {b}.\n{b}: "So are we done arguing?"\n{a}: "Looks like it."',
+    '{a} and {b} let the argument fade.\n{b} (to camera): "Sometimes the best thing is to just stop."',
+    'The argument dies out before the gate.\n{a}: "Forget it."\n{b}: "Forgotten."',
   ],
 };
 
@@ -1697,44 +1654,28 @@ export const MISSION_FALLOUT_WINDOW = 'journey-back';
 // castle's whole social graph starts somewhere and this is one of the places.
 const FIRST_TIME_LINES = {
   'found-they-worked': [
-    '{a} and {b} had not said fifty words to each other before this afternoon and worked like they had.',
-    'Nobody put {a} and {b} together. The draw did, and it turned out to be a good draw.',
-    'They spent four hours finding out they think the same way about a problem.',
-    '{a} has been in this castle a week and only met {b} properly today.',
-    'It is a strange way to meet somebody, and it worked.',
-    'By the end of it {a} and {b} were finishing each other’s jobs without being asked.',
-    'Before today {a} and {b} had no reason to talk to each other, and now they do.',
-    '{a} came off that field having decided {b} is worth knowing.',
+    '{a} and {b} had barely spoken before today, and worked like old friends.\n{a}: "Where have you been all week?"\n{b}: "Right here. You just never talked to me."',
+    'Nobody put {a} and {b} together. The draw did, and it was a good draw.\n{b} (to camera): "{a} and me clicked today. Didn’t see that coming."',
+    '{a} and {b} discover they make a good team.\n{a}: "We should do that again."\n{b}: "We should."',
+    '{a} and {b} walk back like friends.\n{a} (to camera): "New ally, maybe. We’ll see."',
   ],
   'polite-and-nothing': [
-    '{a} and {b} were perfectly civil for four hours and came home strangers.',
-    'They did the work. They did not do anything else.',
-    'Not every pairing takes. That one did not, and neither of them minded.',
-    '{a} could not tell you one thing about {b} that {a} did not know this morning.',
-    'It was an afternoon of two people being professionally pleasant.',
-    'Nothing went wrong between them and nothing happened either.',
-    'They will go back to not speaking tomorrow and it will not be awkward.',
-    'Four hours, no friction, no ground gained.',
+    '{a} and {b} are perfectly polite for four hours and come home strangers.\n{a}: "Well done today."\n{b}: "You too."\nThat’s it.',
+    '{a} and {b} do the work, and nothing else.\n{b} (to camera): "Nice enough. No connection."',
+    '{a} and {b} are civil and nothing more.\n{a} (to camera): "Four hours with {b}. I still don’t know {bObj}."',
+    '{a} and {b} work fine together, and say almost nothing.\n{b}: "Cheers."\n{a}: "Cheers."',
   ],
   'got-in-the-way': [
-    '{a} and {b} could not get out of each other’s way all afternoon.',
-    'Two people with the same idea and no way to agree whose it was.',
-    'It was not a row. It was four hours of very slightly the wrong rhythm.',
-    'They each thought the other was slowing it down and both were a bit right.',
-    '{a} has decided {b} is hard work, on the evidence of one afternoon.',
-    'Nobody said anything. Everybody could see it.',
-    'By the third hour they had stopped consulting each other entirely.',
-    '{a} will bring it up at a round table eventually, and {b} will not have forgotten either.',
+    '{a} and {b} can’t get out of each other’s way all afternoon.\n{a}: "Could you not stand there?"\n{b}: "Could you not stand there?"',
+    '{a} and {b} have the same idea and can’t agree whose it is.\n{b} (to camera): "{a} and me are too alike. It was a nightmare."',
+    '{a} and {b} clash all afternoon.\n{a}: "That was painful."\n{b}: "Agreed. Never again."',
+    '{a} and {b} trip over each other at every turn.\n{a} (to camera): "Worst partner I’ve had."',
   ],
   'one-of-them-carried-it': [
-    '{a} did most of it and {b} knows {a} did most of it.',
-    'There is a debt on that field now and both of them can feel the shape of it.',
-    '{b} was out of {b}’s depth and {a} took it on without making a thing of it.',
-    '{a} said nothing about it on the road home, which {b} noticed more than a complaint.',
-    'Being carried is a hard thing to be grateful for and {b} is managing it.',
-    'It cost {a} an afternoon and bought something that is not a favour yet.',
-    '{b} will remember this the next time {a}’s name comes up, one way or the other.',
-    'They came home even in the record and not even at all.',
+    '{a} does most of the work, and {b} knows it.\n{b}: "Thanks for carrying me today."\n{a}: "Any time."\n{b} (to camera): "I owe {a} one now."',
+    '{a} carries the team, and {b} feels the debt.\n{b}: "I wasn’t much use, was I?"\n{a}: "You were fine."',
+    '{a} pulls {b} through the afternoon.\n{a} (to camera): "I did the work. {b} knows. That’s worth something later."',
+    '{b} thanks {a} quietly on the walk home.\n{b}: "I won’t forget that."',
   ],
 };
 
@@ -1798,44 +1739,28 @@ registerEvent({
 // is not always admiration.
 const GOOD_HANDS_LINES = {
   admired: [
-    '{a} watched {who} {task} as if it were nothing, and said so, out loud, to {b}.',
-    '{who} had to {task}, made it look straightforward, and {a} has not stopped mentioning it.',
-    '{a} spent the whole road home telling {b} how {who} handled the {task}.',
-    '{a} told {b} that {who} was the best thing about the whole day.',
-    'It was not close. Somebody had to {task}, {who} did, and everybody else watched.',
-    '{a} would not have got near it and is honest with {b} about that.',
-    '{a} has seen plenty of people try hard out there and very few do it that well.',
-    '{a} has decided {who} is somebody to keep, on the evidence of one afternoon.',
+    '{a} watched {who} {task} like it was nothing, and says so to {b}.\n{a}: "Did you see {who}? Made it look easy."\n{b}: "Very easy. Suspiciously easy?"\n{a}: "No, just good."',
+    '{a} can’t stop talking about how {who} managed to {task}.\n{a}: "That was the best thing I’ve seen in here."\n{b}: "Fair play to {who}."',
+    '{a} is impressed by {who}.\n{a} (to camera): "{who} has hidden talents."',
+    '{a} and {b} agree {who} was brilliant today.\n{b}: "Give {who} the credit. It was all {who}."',
   ],
   'noted-it-quietly': [
-    '{a} said nothing at the time about what it took to {task}, and has thought about it since.',
-    '{a} filed the way {who} managed to {task}, and did not tell {b} what {a} was filing.',
-    '{a} now knows exactly what {who} can do, and has not told anybody yet.',
-    '{a} watched {who} closely enough to be able to describe it later, which is a decision.',
-    '{a} mentioned to {b} that somebody had to {task}, in a way that sounded like small talk.',
-    '{a} wondered aloud to {b} what else {who} can do that {who} has not shown yet.',
-    '{a} is building a list of what people are capable of and {who} went on it today.',
-    'The observation is worth more unshared and {a} has kept most of it.',
+    '{a} says nothing at the time about how {who} managed to {task}, and thinks about it since.\n{a} (to camera): {cam:holding-info}',
+    '{a} files away how good {who} was.\n{a} (to camera): "Remember that. {who}’s more capable than {who} lets on."',
+    '{a} keeps quiet about {who}’s skill.\n{a} (to camera): {cam:watching}',
+    '{a} notes {who}’s performance and doesn’t tell {b}.\n{a} (to camera): "Useful to know."',
   ],
   'found-it-suspicious': [
-    '{who} was far too good at it for {a}’s liking, and {a} said so to {b}.',
-    '{a} wanted to know where {who} learned to do that.',
-    'There is no reason being competent should look bad. It looked bad to {a}.',
-    '{a} put it to {b} that nobody is that calm doing that job for the first time.',
-    'The case against {who} is thin and {a} knows it, but {a} cannot stop making it.',
-    '{a} has turned an afternoon’s good work into a question about {who}.',
-    'Everybody saw how good {who} was out there, and {a} thinks that should worry people.',
-    '{b} thinks {a} is reaching. {a} may be reaching.',
+    '{who} was far too good at it for {a}’s liking.\n{a}: "Where did {who} learn to do that?"\n{b}: "Maybe {who}’s just good."\n{a}: "Maybe."',
+    '{a} is suspicious of how easy {who} made it look.\n{a} (to camera): "Too good. Too calm. Makes me wonder."',
+    '{a} tells {b} {who} was suspiciously skilled.\n{b}: "You’re suspicious of everyone."',
+    '{a} doesn’t trust {who}’s performance.\n{a} (to camera): {cam:holding-info}',
   ],
   'wished-it-had-been-them': [
-    '{a} could have been the one to {task} and was not asked, and has been quiet since.',
-    'It is a small thing to mind and {a} minds it.',
-    '{a} congratulated {who} and meant about two thirds of it.',
-    'Being useful is how you stay here, and {a} was not useful this afternoon.',
-    '{a} told {b} the truth of it: {a} wanted that job.',
-    'Nobody chose {a} for it and nobody was thinking about {a} at all, which is worse.',
-    '{a} has spent the road home working out how to be indispensable in a few days.',
-    'The afternoon was a good one and {a} came out of it feeling replaceable.',
+    '{a} could have been the one to {task}, and wasn’t asked.\n{a} (to camera): "I could have done that. Nobody asked me."',
+    '{a} minds that it was {who}, not {aObj}.\n{a} (to camera): "Small thing. I mind it."',
+    '{a} is quiet about {who}’s moment.\n{b}: "You alright?"\n{a}: "Fine. Just wanted a go."',
+    '{a} wishes it had been {aObj}.\n{a} (to camera): {cam:left-out}',
   ],
 };
 
@@ -1899,44 +1824,28 @@ registerEvent({
 // had no event that could say so. Gated on the tier actually being poor.
 const LAUGHED_LINES = {
   'laughed-about-it': [
-    'It was a disaster and by the second mile {a} and {b} could not stop laughing about it.',
-    'Somebody has to find it funny first, and {a} did, and then {b} was gone too.',
-    'They have a joke now that nobody else in the castle has, which is worth more than the money was.',
-    'The afternoon was worthless and the walk home was the best hour of {a}’s week.',
-    '{a} did an impression of the whole thing and {b} had to stop walking.',
-    'Failing at something together is a fast way to stop being strangers.',
-    'Nothing about the day worked and both of them came home lighter.',
-    'It will be a running joke in a few days and neither of them will remember starting it.',
+    'It was a disaster, and by the second mile {a} and {b} can’t stop laughing about it.\n{a}: "When you fell in the mud—"\n{b}: "Don’t. Don’t."\nThey’re both in tears.',
+    'Somebody has to find it funny first. {a} does, and then {b} goes too.\n{b}: "Worst mission ever."\n{a}: "Best worst mission."',
+    '{a} and {b} laugh the whole way home about {mission}.\n{a} (to camera): "What a shambles. Loved it."',
+    '{a} and {b} replay the worst moments, laughing.\n{b}: "Can we do it again tomorrow?"\n{a}: "Absolutely not."',
   ],
   'too-soon': [
-    '{a} tried to make it funny and {b} was not ready for it to be funny.',
-    'It cost real money and {a} joked about it about ninety minutes too early.',
-    '{b} had wanted that afternoon to go well more than {a} realised.',
-    '{a} laughed and nobody laughed back, and the road went very quiet.',
-    '{a} apologised, which made it slightly worse.',
-    'There is a right hour for that joke and it was not on that road.',
-    '{b} said "it is not funny" and meant it, and {a} believed {b}.',
-    'It is a small misjudgement and {a} will be careful with {b} for a day or two.',
+    '{a} tries to make it funny, and {b} isn’t ready.\n{a}: "Well, that went well."\n{b}: "It cost us money, {a}."\n{a}: "Sorry. Too soon."',
+    '{a} jokes about {mission} ninety minutes too early.\n{b} (to camera): "{a} thinks it’s funny. It’s not funny."',
+    '{a} makes a joke that lands badly.\n{b}: "Not now."',
+    '{a}’s joke falls flat.\n{a} (to camera): "Read the room, me. Read the room."',
   ],
   'blamed-the-set-up': [
-    '{a} and {b} agreed, at length, that the afternoon had been unwinnable.',
-    'It is easier to be angry at the day than at each other, and they took the easier thing.',
-    'By the gate they had built a complete case against the whole design of it.',
-    'Neither of them said a word about anybody on their own team, which took effort.',
-    'They could have won it, but blaming the setup is easier than blaming each other.',
-    'A shared grievance about nobody in particular is the safest bond two people can have here.',
-    '{a} started it and {b} improved it and by the drive it was a full theory.',
-    'It is the most agreeable conversation either of them has had all week.',
+    '{a} and {b} agree the afternoon was impossible.\n{a}: "Nobody could have won that."\n{b}: "Nobody. It was rigged."',
+    '{a} and {b} blame the mission, not each other.\n{b}: "It was the set-up. Not us."\n{a}: "Definitely not us."',
+    '{a} and {b} decide it was unwinnable.\n{a} (to camera): "Easier to blame the mission than each other."',
+    '{a} and {b} moan about the task all the way home.\n{b}: "Whoever designed that was having a laugh."',
   ],
   'went-quiet-about-it': [
-    'Neither {a} nor {b} said anything about the afternoon for the whole road home.',
-    'It had cost too much to be discussed and they both knew it.',
-    'They walked five miles beside each other and talked about the hedge.',
-    'There was nothing to say about it and neither of them tried.',
-    '{a} tried once. {b} did not pick it up. That was the end of it.',
-    'The silence was not hostile and it was not comfortable either.',
-    'They will each say something about it to somebody else tonight, and not to each other.',
-    'By the gate the afternoon had become a thing neither of them was going to mention.',
+    'Neither {a} nor {b} says anything about the afternoon all the way home.\n{a} (to camera): "Nothing to say. It went badly."',
+    '{a} and {b} walk back in silence.\n{b} (to camera): "Too raw to talk about."',
+    '{a} and {b} don’t mention {mission} once.\n{a}: "Let’s never speak of it."\n{b}: "Deal."',
+    '{a} and {b} keep quiet on the road home.\n{a} (to camera): {cam:mission-angry}',
   ],
 };
 
@@ -1996,44 +1905,28 @@ registerEvent({
 // a target, and a season this format runs on knows it.
 const GOOD_DAY_LINES = {
   'enjoyed-it': [
-    'For one afternoon {a} and {b} were just two people who had done a job well.',
-    'Nobody mentioned the game on that road and both of them noticed afterwards.',
-    'It went well, and going well is rare enough here to be worth an hour of not being careful.',
-    '{a} and {b} came home genuinely pleased and did not bother hiding it.',
-    'They had a good day, and neither of them can remember the last one.',
-    'The money was up and the sun was out and neither of them was thinking about the next table.',
-    '{a} said it was the first time all week {a} had forgotten where {a} was.',
-    'It will not last past dinner and both of them are aware of that.',
+    'For one afternoon, {a} and {b} are just two people who did a job well.\n{a}: "That was fun, actually."\n{b}: "It was, wasn’t it?"',
+    'Nobody mentions the game on the road home.\n{b} (to camera): "For an hour, it wasn’t The Traitors. It was just a good day."',
+    '{a} and {b} walk home happy.\n{a}: "We smashed it."\n{b}: "We did."',
+    '{a} and {b} enjoy the win together.\n{a} (to camera): {cam:switch-off}',
   ],
   'too-visible': [
-    '{a} and {b} were the story of that afternoon and the story travels.',
-    'Being the two who won it is being the two everybody looked at.',
-    '{a} worked out on the road home that a good day has a cost attached.',
-    'People here like winners right up until they start counting how often those two win.',
-    'They did it together, publicly, and the room has now paired them in its head.',
-    '{b} would rather have had a quiet afternoon and says so.',
-    '{a} and {b} were that useful and that visible together, and the road noticed both.',
-    'It is a good problem and it is a problem.',
+    '{a} and {b} are the story of the afternoon, and the story travels.\n{a} (to camera): "Everyone’s talking about us. That’s not always good."',
+    '{a} and {b} won it, and now everyone’s watching them.\n{b}: "We’re a target now, aren’t we?"\n{a}: "Probably."',
+    '{a} and {b} worry about being too successful.\n{a} (to camera): "Nobody votes out the ones who fail. They vote out the ones who look like they’re running things."',
+    '{a} and {b} are the pair everyone’s looking at tonight.\n{b} (to camera): "Winning makes you visible. Visible makes you vulnerable."',
   ],
   'took-the-credit': [
-    '{a} spent the road home making sure the right version of the afternoon travelled.',
-    'It was a team result and {a} has been describing it in the first person.',
-    '{b} noticed which parts {a} was leaving out.',
-    '{a} is not lying about any of it and is not telling it straight either.',
-    'Credit is the only currency out there and {a} is collecting it.',
-    'By the gate three people had heard {a}’s account and none had heard {b}’s.',
-    '{b} let it go, which is not the same as not minding.',
-    'It is a small thing that will be a large thing in about a week.',
+    '{a} spends the road home making sure {aPos} version of the afternoon is the one that travels.\n{b} (to camera): "It was a team result. {a} is telling it like a solo."',
+    '{a} talks about the win in the first person.\n{a}: "When I got the last piece in—"\n{b}: "We got it in."\n{a}: "Yeah, we."',
+    '{a} takes all the credit.\n{b} (to camera): "Typical."',
+    '{a} tells everyone how {aSub} won it.\n{b}: "Funny. I was there too."',
   ],
   'shared-it-out': [
-    '{a} made sure the people who did the work were the people who got named for it.',
-    '{a} could have taken it and handed it round instead.',
-    'It costs nothing to do that and almost nobody here does it.',
-    '{b} noticed, and {b} will not be the only one.',
-    '{a} named four people and was not one of them, which the road heard.',
-    'Generosity with credit is the cheapest alliance there is and {a} is good at it.',
-    'Whether {a} meant it or was playing a long game, the effect was the same.',
-    '{a} came home with less credit and more people.',
+    '{a} makes sure the people who did the work get the credit.\n{a}: "{b} was the one who figured it out."\n{b}: "You didn’t have to say that."\n{a}: "Yes I did."',
+    '{a} could have taken the credit, and hands it round instead.\n{b} (to camera): "{a} gave me the credit. That meant a lot."',
+    '{a} shares the win.\n{a}: "Everyone did their bit."',
+    '{a} names everyone who helped.\n{a} (to camera): "It was a team win. I’m not taking that from anyone."',
   ],
 };
 

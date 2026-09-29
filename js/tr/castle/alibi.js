@@ -111,6 +111,9 @@ function noticed(ep, subject, skill, roll) {
 
 const ACCOUNT_LINES = {
   'could-not-place-them': [
+    '{a} and {b} put last night back together, and there’s an hour with {c} nowhere in it.\n{a}: "Where was {c} between eleven and twelve?"\n{b}: "I have no idea."\n{a}: "Neither have I."',
+    '{a} and {b} can’t place {c}.\n{b} (to camera): "An hour missing. That’s a long time in here."',
+    '{a} and {b} find a gap.\n{a}: "{c} vanished for a bit, didn’t {cSub}?"',
     '{a} and {b} put last night back together between them, and there is an hour of it with {c} nowhere in it.',
     'Everybody else can be placed somewhere. {c} cannot, for a stretch in the middle of the night.',
     '{a} remembers the corridor being quiet. {b} remembers it not being quiet. Neither can find {c} in either version.',
@@ -121,6 +124,9 @@ const ACCOUNT_LINES = {
     'They have not accused {c} of anything. They have simply failed, twice, to account for {c}.',
   ],
   'accounted-for': [
+    '{a} and {b} walk through the whole night, and {c} is in all of it.\n{b}: "{c} was with us all evening."\n{a}: "Then it’s not {c}."',
+    '{a} and {b} clear {c}.\n{a} (to camera): "{c}’s accounted for. Every minute."',
+    '{a} and {b} confirm {c}’s night.\n{b}: "{c} was by the fire till bed."',
     '{a} and {b} walked through the whole night and {c} is in all of it.',
     'Somebody saw {c} at every point that mattered, which is more than most of them could say.',
     '{c} is clear, and {a} says so out loud, which costs {a} something.',
@@ -131,6 +137,9 @@ const ACCOUNT_LINES = {
     'It is not proof of anything. It is one name they can stop turning over.',
   ],
   'two-accounts': [
+    '{a} and {b} can’t agree on their own night, let alone {c}.\n{a}: "We went up at eleven."\n{b}: "It was after midnight."\n{a}: "Was it?"',
+    '{a} and {b} have different versions.\n{b} (to camera): "If we can’t agree on our own night, how can we judge anyone?"',
+    '{a} and {b} muddle the timeline.\n{a}: "This is hopeless."',
     '{a} and {b} cannot agree on their own night, let alone {c}.',
     'The reconstruction fell apart on the question of when the lamps went out.',
     'Halfway through {a} realised {a} could not place {a}’s own hour either.',
@@ -141,6 +150,9 @@ const ACCOUNT_LINES = {
     'The night is not reconstructable and both of them know it.',
   ],
   'nobody-saw-anything': [
+    'Everybody slept. That’s the entire finding.\n{a}: "So nobody saw anything."\n{b}: "Nobody saw anything."',
+    '{a} and {b} come up empty.\n{a} (to camera): "Nothing. Absolutely nothing."',
+    '{a} and {b} give up.\n{b}: "We were all asleep. That’s it."',
     'Everybody slept. That is the entire finding.',
     '{a} and {b} established that no one was awake to see anything at all.',
     'A castle full of people and not one witness to any of it.',
@@ -287,6 +299,9 @@ registerEvent({
 
 const DOOR_LINES = {
   'heard-it-go': [
+    '{a} doesn’t sleep well, and heard a door. {a} is fairly sure it was {c}’s.\n{a} (to camera): "Two in the morning. A door. I think it was {c}’s."',
+    '{a} lies awake and hears it.\n{a} (to camera): {cam:heard-doors}',
+    '{a} heard something in the night.\n{a} (to camera): "I’m not certain. But I’m fairly sure."',
     '{a} does not sleep well and heard a door. {a} is fairly sure it was {c}’s.',
     'Somewhere after two, a door. {a} lay there working out whose it was.',
     '{a} has been awake half the night for a week and has started keeping a list.',
@@ -297,6 +312,9 @@ const DOOR_LINES = {
     'A door, in the middle of the night, and {a} has been carrying it since.',
   ],
   'passed-it-on': [
+    '{a} mentions it to {b} at breakfast, carefully.\n{a}: "Did you hear a door last night?"\n{b}: "No. Why?"\n{a}: "I think it was {c}’s."',
+    '{a} shares it with {b}.\n{b} (to camera): "{a} heard {c}’s door. That’s interesting."',
+    '{a} tells {b} quietly.\n{a}: "Keep this between us."',
     '{a} mentions it to {b} at breakfast, carefully, the way you mention a thing you are not sure of.',
     '{a} tells {b} about the door and watches {b}’s face while saying whose it was.',
     'It gets said out loud for the first time, quietly, over tea.',
@@ -307,6 +325,9 @@ const DOOR_LINES = {
     '{b} asks {a} twice whether {a} is certain. {a} is not certain.',
   ],
   'talked-themselves-out': [
+    '{a} decides it was the wind, and mostly believes that.\n{a} (to camera): "Old castle. Old doors. It was the wind. Probably."',
+    '{a} talks {aRef} out of it.\n{a} (to camera): {cam:drop-it}',
+    '{a} lets it go.\n{a} (to camera): "I’m not accusing anyone over a creak."',
     '{a} decided it was the wind, and mostly believes that.',
     'By morning it had become nothing much, which is what the middle of the night usually becomes.',
     '{a} has heard doors all week and it has never meant anything before.',
@@ -317,6 +338,9 @@ const DOOR_LINES = {
     'Nothing comes of it, and {a} is not sure whether that is a relief.',
   ],
   'slept-through': [
+    '{a} slept straight through and has no idea whether anything happened.\n{a} (to camera): {cam:slept-fine}',
+    '{a} heard nothing.\n{b}: "Did you hear anything?"\n{a}: "I was out like a light."',
+    '{a} slept soundly.\n{a} (to camera): "Nothing. I heard nothing."',
     '{a} slept straight through and has no idea whether anything happened at all.',
     'Whatever the castle did between two and four, {a} was not present for it.',
     '{a} is faintly annoyed at having missed it, which is its own kind of tell.',
@@ -384,6 +408,9 @@ registerEvent({
 
 const BED_LINES = {
   'the-bed-was-empty': [
+    '{a} woke at some point, and the other bed was empty. {a} hasn’t mentioned it to {c}.\n{a} (to camera): "{c} wasn’t there. I don’t know for how long."',
+    '{a} saw {c}’s empty bed in the night.\n{a} (to camera): {cam:holding-info}',
+    '{a} keeps quiet about the empty bed.\n{a} (to camera): "I’m not saying anything. Yet."',
     '{a} woke at some point and the other bed was empty. {a} has not mentioned it to {c}.',
     '{a} got up in the night and came back to a room with one person in it instead of two.',
     'It could be a dozen things. {a} has been through most of them and keeps arriving back.',
@@ -394,6 +421,9 @@ const BED_LINES = {
     '{a} would like a reason to stop noticing this. {a} has not been given one.',
   ],
   'said-it-out-loud': [
+    '{a} tells {b} about the empty bed, and can’t unsay it.\n{a}: "{c} wasn’t in bed last night."\n{b}: "What time?"\n{a}: "Late. Really late."',
+    '{a} shares the empty bed with {b}.\n{b} (to camera): "Well. That changes things."',
+    '{a} lets it out.\n{a}: "I shouldn’t have told you that."',
     '{a} tells {b} about the empty bed, and having said it cannot unsay it.',
     'It comes out badly and too fast, the way a thing you have been sitting on does.',
     '{a} needed one other person to know, and {b} is now that person.',
@@ -404,6 +434,9 @@ const BED_LINES = {
     '{b} believes {a}, which is the part {a} had not prepared for.',
   ],
   'they-had-a-reason': [
+    '{c} says it was the bathroom, and it probably was.\n{c}: "I went to the loo. Is that a crime now?"\n{a}: "No. Sorry."',
+    '{c} explains the empty bed.\n{a} (to camera): "Bathroom. Makes sense. I think."',
+    '{c} has an answer.\n{c}: "I couldn’t sleep, so I got some water."',
     '{c} says it was the bathroom, and it probably was the bathroom.',
     '{a} asked, got an ordinary answer, and felt slightly ridiculous.',
     'There is an explanation and it is boring, which is what an explanation should be.',
@@ -414,6 +447,9 @@ const BED_LINES = {
     'The answer arrived quickly and easily, and {a} took it.',
   ],
   'never-woke': [
+    '{a} slept through and can vouch for nothing.\n{b}: "Was {c} in bed all night?"\n{a}: "No idea. I was asleep."',
+    '{a} can’t help.\n{a} (to camera): {cam:slept-fine}',
+    '{a} saw nothing.\n{a}: "Sorry. I sleep like a log."',
     '{a} slept through and can vouch for nothing at all.',
     'A room with two people in it and neither can say what the other did.',
     '{a} is a heavy sleeper, which in this castle is a small tragedy.',

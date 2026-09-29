@@ -22,7 +22,7 @@ import { sceneApi, arcContinue } from './effects.js';
 import { _sentenceCase } from './cover.js';
 import { findOpenThread } from '../threads.js';
 import { alignmentAt } from '../roles.js';
-import { lineFor, countWord } from './lines.js';
+import { lineFor, countWord, pronounSlots } from './lines.js';
 import { peopleLost, murderCount } from '../state.js';
 
 const FAMILY = 'grief';
@@ -105,44 +105,30 @@ function _victimLastNight(ep) {
 // about the room rather than about anybody in it.
 const EMPTY_CHAIR_LINES = {
   'empty-chair': [
-    '{a} and {b} both ended up staring at the same empty seat at breakfast.',
-    'Nobody moved {v}’s chair. {a} and {b} noticed at the same time that nobody had.',
-    '{a} caught {b} looking at the gap at the table before either of them said anything.',
-    'Somebody had laid the table for the number they had yesterday. {a} and {b} both counted the places.',
-    '{b} pulled out {v}’s chair without thinking, realised, and put it back. {a} pretended not to have seen.',
-    'There was too much room at the table now. {a} said so, badly, and {b} knew what {aSub} meant.',
-    'The chair is exactly where {v} left it, pushed back at the angle {v} always pushed it back at.',
-    '{a} and {b} sat either side of a gap and had a conversation across it about nothing at all.',
+    '{a} and {b} are the first two down, and {v}’s chair is still pushed in at the table.\n{b}: "Nobody’s moved it."\n{a}: "Nobody’s going to. Would you?"\n{b}: "No. God, no."\nThey sit down either side of it and neither of them looks at it.',
+    '{b} is already at the table when {a} comes in. The place next to {b} is {v}’s, and it is laid.\n{a}: "They’ve still laid for {v}."\n{b}: "I know. I didn’t want to be the one to clear it."\n{a} sits down on the other side, leaving the gap.',
+    '{a} catches {b} staring at {v}’s empty place.\n{a}: "You alright?"\n{b}: "Yeah. It’s just the chair, you know?"\n{a}: "I know."',
+    '{b} pulls out {v}’s chair without thinking, realises, and pushes it back in.\n{b}: "Sorry. Habit."\n{a}: "Don’t be sorry. I nearly did the same."',
+    'There is one chair too many at breakfast, and {a} and {b} both notice it at the same time.\n{a}: {say:grief-open:{v}}\n{b}: {say:grief-open:{v}}',
+    '{a} and {b} sit either side of the gap where {v} should be.\n{b}: "It feels wrong, doesn’t it? Eating."\n{a}: "It does. Eat anyway."\nThey eat in silence for a while.',
   ],
   'moved-it-away': [
-    '{b} took {v}’s chair away from the table before anybody else came down, and {a} watched {bObj} do it.',
-    'The chair went against the wall. Nobody asked who had moved it, and {a} knew, and said nothing.',
-    '{a} stacked {v}’s chair against the wall, quite briskly, and {b} did not know whether to be grateful or appalled.',
-    'By the time the room filled up there was no gap, because {b} had spent five minutes making sure of it.',
-    '“It is easier if it is not there,” {b} said to {a}, and {a} could not argue with easier.',
-    '{v}’s chair was gone by the time the others came down. {b} had moved it, and {a} had seen {bObj} do it.',
-    'The table now seats the number the castle actually has, which took {b} about a minute to arrange.',
-    '{a} came down to a room with no hole in it and understood immediately what that had cost {b}.',
+    '{b} is down before anyone else. By the time {a} comes in, {v}’s chair is already against the wall.\n{a}: "You moved it."\n{b}: "Somebody had to. I’m not eating breakfast next to a gap."\n{a}: "People are going to notice."\n{b}: "Good. Better that than staring at it all morning."',
+    '{a} watches {b} lift {v}’s chair away from the table before the others come down.\n{a}: "Is that not a bit cold?"\n{b}: "It’s kinder. Trust me. Nobody wants to look at it."\n{a} doesn’t argue, and helps shift the others along.',
+    '{a} comes down to a table with no gap in it.\n{a}: "Where’s {v}’s chair?"\n{b}: "I put it in the hall. I couldn’t look at it."\n{a}: "Fair enough. I don’t think I could either."',
+    '{b} is stacking {v}’s chair against the wall when {a} walks in.\n{b}: "Don’t say anything."\n{a}: "I wasn’t going to."\n{b}: "It’s easier if it’s not there."\n{a}: "I know it is."',
   ],
   'laid-a-place': [
-    '{a} laid a place for {v} anyway, and {b} did not take it away.',
-    'There was a cup at the empty setting all morning. {b} put it there and {a} let it stay.',
-    '{a} counted out the plates and put down one too many, on purpose, and dared the room to say so.',
-    'Nobody used {v}’s place. {a} and {b} kept it, without ever discussing keeping it.',
-    '{a} will lay that place again tomorrow, and {b} knows it.',
-    '{b} moved a knife two inches so the setting was straight, which is not what people do to an empty chair.',
-    'The castle ate around a laid place and pretended it had not noticed.',
-    '{a} said the extra place was for whoever comes next. {b} did not believe that for a second.',
+    '{a} lays a place for {v} anyway, and {b} watches {aObj} do it.\n{b}: "They’re not coming down."\n{a}: "I know. I’m doing it anyway."\n{b} leaves it where it is.',
+    'There is a cup at {v}’s place. {b} put it there, and {a} notices.\n{a}: "Did you do that?"\n{b}: "Yeah. Is that weird?"\n{a}: "No. It’s nice. Leave it."',
+    '{a} puts down one plate too many, on purpose.\n{b}: "That’s {v}’s."\n{a}: "I know whose it is."\nNobody moves it all breakfast.',
+    '{a} straightens the knife and fork at {v}’s empty place.\n{b}: "You don’t have to do that."\n{a}: "I want to. It’s the only thing I can do."\n{b}: "Then I’ll help."',
   ],
   'nobody-noticed': [
-    'The table was laid for the right number this morning, first time, and only {a} and {b} clocked it.',
-    'Somebody had already adjusted. {a} could not work out who, and that was worse than the gap.',
-    'For the first time there was no gap to notice, and {a} noticed that instead.',
-    'The room got the arithmetic right without being told, and {b} found that harder than the empty chair.',
-    'Nobody counted this morning. {a} counted, and was the only one.',
-    '{a} pointed the missing setting out to {b} and {b} said “I know,” in the voice of somebody who had stopped saying it.',
-    'The castle has learned to lay a table for the survivors, and it learned fast.',
-    'Breakfast carried on as normal. {a} and {b} were the only ones who seemed to mind.',
+    'This morning the table is laid for the right number first time. {a} and {b} are the only ones who seem to notice.\n{a}: "They didn’t lay for {v}."\n{b}: "No. They’re getting used to it."\n{a}: "I don’t want to get used to it."',
+    '{a} looks for the gap where {v} sat and can’t find it.\n{a}: "Someone’s already moved everything round."\n{b}: "I didn’t see who."\n{a}: "That’s worse, somehow."',
+    '{a} points at the table.\n{a}: "Nobody’s even left a space."\n{b}: "I know. I noticed."\n{a}: "Is that what we are now?"\n{b} doesn’t answer.',
+    'Breakfast carries on as normal, and {a} and {b} seem to be the only ones who mind.\n{b}: "Nobody’s said {v}’s name yet."\n{a}: "Then I will. {v}. There."',
   ],
 };
 
@@ -205,46 +191,34 @@ registerEvent({
 // counted against the number they started with.
 const HEADCOUNT_LINES = {
   'said-the-number': [
-    '{a} said it out loud so {b} did not have to: {n} of them left.',
-    '{a} got to {n} and stopped. {b} had got there first and had not wanted to be the one to say it.',
-    '"{n}," said {a}, to nobody in particular, and {b} did not correct {aObj}.',
-    '{b} watched {a} count the room on {aPos} fingers and get to {n} both times.',
-    '{a} and {b} arrived at {n} separately and then had to sit with it together.',
-    '{b} said the number first. {a} had been hoping to get through breakfast without hearing it.',
-    'Neither {a} nor {b} needed to count. Both of them did, and both of them got {n}.',
-    '{a} started to say how many were left, stopped, and {b} finished it: {n}.',
+    '{a} and {b} look down the table at the same time.\n{a}: "{n}."\n{b}: "I know. I got there too."\n{a}: "It goes quick, doesn’t it?"',
+    '{b} is counting heads when {a} sits down.\n{a}: "Don’t. I’ll tell you. {n}."\n{b}: "Thanks. I didn’t want to be the one to say it."',
+    '{a} says the number out loud so {b} doesn’t have to.\n{a}: "{n} of us left."\n{b}: "It was a full table when we got here."\n{a}: "I know."',
+    '{a} gets halfway down the table and stops.\n{b}: "{n}. You were going to say {n}."\n{a}: "Yeah. I was."',
   ],
   'left-it-unsaid': [
-    '{b} asked {a} how many were left and {a} would not answer, which was its own answer.',
-    '{a} began to count out loud and {b} put a hand up and stopped {aObj} at four.',
-    '"Don\'t," {b} said, before {a} had got the number out, and {a} did not.',
-    '{a} knew the number and {b} knew the number and neither of them was going to be the one to say {n}.',
-    '{b} changed the subject twice to stop {a} getting to the end of the table.',
-    'They spent breakfast very carefully not counting, {a} and {b}, and both of them noticed the other doing it.',
-    '{a} asked, and {b} said {bSub} had stopped keeping track, which was not true and both of them knew it.',
-    '{b} would not have the number said at the table. {a} let {bObj} have that.',
+    '{b} catches {a} counting the table.\n{b}: "Don’t."\n{a}: "I wasn’t going to say it."\n{b}: "You were. Please don’t."\n{a} stops.',
+    '{a} asks {b} how many are left.\n{b}: "I’m not doing that this morning."\n{a}: "Fair enough."\nNeither of them says the number.',
+    '{a} starts counting out loud and {b} puts a hand up.\n{b}: "Please. Not today."\n{a}: "Sorry. You’re right."',
+    '{b} changes the subject twice to stop {a} counting the table.\n{a}: "You don’t want to know, do you?"\n{b}: "I already know. I just don’t want to hear it."',
   ],
   'counted-the-chairs': [
-    '{a} counted the chairs instead of the people, which came to the same thing.',
-    '{a} counted the castle twice, like the number might change.',
-    '{a} counted the room, got {n}, and counted it again to be sure of something.',
-    'There were {n} of them. {a} had known that before counting and counted anyway.',
-    '{a} did the arithmetic without meaning to, the way you check a pocket for keys.',
-    '{a} counted heads at breakfast and could not stop doing it for the rest of the morning.',
-    '{a} had known it was {n} before counting, and had counted three times since getting up anyway.',
-    'Somewhere between the stairs and the table {a} had done the sum again without deciding to.',
-    '{a} counted the cups on the drainer, which is a slower way to get to {n} and gave the same answer.',
-    '{a} got to {n} and then started again from the other end of the table to see if it came out different.',
+    '{a} counts the toothbrushes in the bathroom.\n{a} (to camera): {cam:count:{n}}',
+    '{a} counts the coats on the hooks by the door.\n{a} (to camera): {cam:count:{n}}',
+    '{a} counts the plates as {aSub} lays the table.\n{a} (to camera): {cam:count:{n}}',
+    '{a} counts the chairs instead of the people. It comes to the same thing.\n{a} (to camera): {cam:count:{n}}',
+    '{a} counts the room twice, as if the number might change.\n{a} (to camera): {cam:count:{n}}',
+    '{a} gets to {n}, then counts again from the other end of the table.\n{a} (to camera): {cam:count:{n}}',
+    '{a} is counting heads again, and can’t stop.\n{a} (to camera): {cam:count:{n}}',
+    '{a} counts the cups on the drainer, which is a slower way of getting to {n}.\n{a} (to camera): {cam:count:{n}}',
+    'Somewhere between the stairs and the table, {a} has done the sum again.\n{a} (to camera): {cam:count:{n}}',
   ],
   'counted-the-useful-ones': [
-    '{a} was not counting people this morning. {a} was counting which of the {n} would still be on {aPos} side next week.',
-    '{n} left, and {a} could name the four who mattered and did, silently, twice.',
-    '{a} went round the table working out not how many were left but how many were any use.',
-    'It was not a headcount so much as an inventory, and {a} did not enjoy how short the useful half was.',
-    'There are {n} people in this castle and {a} spent breakfast sorting them into two piles.',
-    '{a} did the sum, and then did the more frightening sum underneath it.',
-    '{n} of them, and {a} could count on one hand the ones {aSub} could actually trust.',
-    '{a} counted the room and then counted it again with most of the room left out.',
+    '{a} isn’t counting people this morning. {a} is counting allies.\n{a} (to camera): "{n} of us. People I’d actually trust? I can do that on one hand."',
+    '{a} goes round the table working out who would still back {aObj} at the Round Table.\n{a} (to camera): "It’s not how many are left. It’s how many are on my side. That’s the scary number."',
+    '{a} does the sum, then a second, more frightening sum underneath it.\n{a} (to camera): "{n} people. If it came to a vote on me tonight, I reckon I’ve got three."',
+    '{a} sorts the breakfast table into two piles in {aPos} head.\n{a} (to camera): "There’s the ones I trust, and there’s everyone else. Everyone else is getting bigger."',
+    '{a} counts the room, then counts it again with most of it left out.\n{a} (to camera): "{n} left, and maybe four I’d go to the end with. That’s not enough."',
   ],
 };
 
@@ -310,44 +284,28 @@ registerEvent({
 // counted number, because a room re-sorts itself faster every time.
 const RESEATED_LINES = {
   reseated: [
-    '{a} sat somewhere new this morning, and {b} sat down right next to {aObj} without being asked.',
-    'Nobody sits where they sat on the first day any more. {a} moved again, and {b} moved with {aObj}.',
-    '{a} took the chair furthest from the door and {b} took the one beside it, and neither explained.',
-    'The table had reorganised itself overnight. {a} ended up next to {b}, and both of them were fine with that.',
-    '{a} moved a seat along to close the gap, and {b} moved along after {aObj}.',
-    'Two people who started the week at opposite ends of that table are now within arm’s reach of each other.',
-    'It happens a chair at a time, and by now the seating looks nothing like the first morning.',
-    '{b} arrived to find {a} had already saved the chair, which is not a thing anybody did on day one.',
+    '{a} sits somewhere new this morning, and {b} sits down right next to {aObj}.\n{b}: "This alright?"\n{a}: "Course. Stay there."',
+    '{a} takes the chair furthest from the door, and {b} takes the one beside it.\n{a}: "Moving up in the world?"\n{b}: "I just wanted to sit with you, to be honest."',
+    'The table has shuffled round overnight, and {a} ends up next to {b}.\n{b}: "Funny how that works."\n{a}: "It’s not funny. It’s the only seat I wanted."',
+    '{b} comes down to find {a} has saved the chair next to {aObj}.\n{b}: "Is that for me?"\n{a}: "Who else would it be for?"',
   ],
   'kept-the-gap': [
-    'The seats either side of the gap stayed empty. Nobody would take either of them.',
-    '{a} moved rather than sit next to the space, and {b} moved for the same reason and would not say so.',
-    'There is a hole in the middle of that table now and the castle eats around the edge of it.',
-    'Two people shuffled up. Nobody closed it, and everybody noticed nobody had.',
-    '{b} said it was silly. {b} still sat at the far end.',
-    '{a} called it {v}’s gap, out loud, and wished {aSub} had not.',
-    'It would take one person moving one chair. Nobody in this castle is going to be that person.',
-    '{a} and {b} both arrived early to make sure of a seat that was not that one.',
+    'The seats either side of {v}’s place stay empty. {a} and {b} both walk past them.\n{b}: "I’m not sitting there."\n{a}: "Me neither."\nThey sit at the far end together.',
+    '{a} moves along rather than sit next to the gap, and {b} does the same.\n{a}: "Is it daft that I won’t sit there?"\n{b}: "No. I won’t either."',
+    '{b} looks at the empty seat next to {v}’s place.\n{b}: "It’s just a chair."\n{a}: "Then you sit in it."\n{b} doesn’t.',
+    'There is a hole in the middle of the table and everybody eats round the edge of it.\n{a}: "Somebody’s going to have to sit there eventually."\n{b}: "Not today."',
   ],
   'took-their-chair': [
-    '{b} sat in {v}’s chair. Deliberately, first thing, in front of everybody.',
-    'Somebody had to, and {b} decided it was going to be {b}, and let the room watch.',
-    '{a} came down to find {b} in the dead person’s seat, eating toast, quite calmly.',
-    '“It is a chair,” {b} said to {a}, which is true and is not what the room heard.',
-    '{b} took the seat and held the room’s eye while doing it, which was the point of taking it.',
-    'It is the best seat at that table, and {b} has wanted it for days.',
-    'The whole table watched {b} do it, and nobody is going to forget it.',
-    '{a} will remember which chair {b} chose long after {a} has forgotten what was said in it.',
+    '{b} sits in {v}’s chair first thing, in front of everybody.\n{a}: "Really? That one?"\n{b}: "It’s a chair. Somebody has to sit in it."\n{a}: "Doesn’t have to be today."',
+    '{a} comes down to find {b} in {v}’s seat, eating toast.\n{a}: "You’re in {v}’s place."\n{b}: "I know. {v} would have laughed."\n{a} is not sure {v} would have.',
+    '{b} takes {v}’s chair and holds the room’s eye while doing it.\n{a}: "Bold."\n{b}: "What, am I meant to tiptoe round it for a week?"',
+    '{b} has wanted that seat since the first morning, and this morning takes it.\n{a}: "That was quick."\n{b}: "It’s the best seat at the table. {v} would’ve said the same."',
   ],
   'sat-apart': [
-    '{a} and {b} sat at opposite ends of the table this morning and neither of them planned it that way.',
-    'Whatever the two of them had yesterday, the seating this morning did not reflect it.',
-    '{b} took a chair three places from {a} and spent breakfast talking to somebody else.',
-    'The room re-sorted itself and put {a} and {b} on different sides of it.',
-    '{a} noticed where {b} sat and did the arithmetic, and did not like the answer.',
-    '{a} noticed. In here, people notice everything.',
-    '{a} and {b} have sat together every morning until now. This morning they did not.',
-    '{a} kept a chair free and {b} did not take it, and both of them registered that.',
+    '{a} and {b} sit at opposite ends of the table this morning, and both of them notice.\n{a} (to camera): "{b} walked straight past me. Didn’t even look. So that’s where we are."',
+    '{b} takes a chair three places away from {a} and talks to someone else all through breakfast.\n{a} (to camera): "Yesterday we sat together. Today {b} wouldn’t sit next to me. I want to know what changed."',
+    '{a} keeps a seat free for {b}. {b} doesn’t take it.\n{a} (to camera): "I kept that seat. {b} saw me keep it. And sat somewhere else."',
+    'The table rearranges itself and {a} and {b} end up on different sides of it.\n{a} (to camera): "It’s only seats. But in here, nothing’s only anything."',
   ],
 };
 
@@ -411,44 +369,28 @@ registerEvent({
 // this rewrite the castle could only print the first.
 const SHARED_MOURNING_LINES = {
   'shared-mourning': [
-    '{a} and {b} didn’t talk much this morning. They didn’t need to.',
-    '{a} sat down next to {b} and stayed there, and that was the entire conversation.',
-    'Whatever {a} and {b} had before this morning, it was heavier by lunchtime and neither of them mentioned it.',
-    '{b} made two cups of tea without asking, and {a} took one, and that was enough.',
-    'They did the washing up together, {a} and {b}, very slowly, for much longer than it took.',
-    'Both of them lost the same person and neither of them said the name once all morning.',
-    '{a} and {b} sat on the step for an hour with about four sentences between them.',
-    'It is the only conversation in this castle this week where nobody was working anything out.',
+    '{a} and {b} end up on the back step with a cup of tea each, not saying much.\n{b}: "I keep thinking about {v}."\n{a}: "Me too."\nThey stay out there until the tea goes cold.',
+    '{b} makes two cups of tea without asking and hands one to {a}.\n{a}: "Thank you."\n{b}: "You looked like you needed it. I did."',
+    '{a} sits down next to {b} and stays there.\n{a}: "We don’t have to talk."\n{b}: "Good. I can’t, really."',
+    '{a} and {b} do the washing up together, very slowly.\n{a}: "{v} always dried. Every morning."\n{b}: "I know. I was going to say that."',
   ],
   'told-a-story-about-them': [
-    '{b} told {a} the thing {v} had said on the second night, and both of them laughed and then stopped.',
-    '{a} and {b} spent breakfast on {v} — not the death, {v} — and it was the best half-hour of the week.',
-    'They swapped {v} stories until somebody else came in, and then they stopped.',
-    '{b} did the voice. {a} had not expected to laugh at anything today and did.',
-    '“{v} would have hated this,” said {a}, about the whole morning, and {b} agreed at length.',
-    'It turned out {a} and {b} had two completely different versions of {v}, and both of them were true.',
-    '{b} remembered something {a} had forgotten, and {a} was very glad somebody else had it.',
-    'For twenty minutes {v} was a person in that room rather than a chair.',
+    '{b} tells {a} something {v} said on the first night, and they both laugh.\n{b}: "And {v} just went, ‘well, that’s me murdered then.’"\n{a}: "{v} did not say that!"\n{b}: "Swear to God."\nThe laugh doesn’t last long.',
+    '{a} and {b} spend breakfast talking about {v} — not the murder, just {v}.\n{a}: "Do you remember {v} trying to light the fire?"\n{b}: "Half the castle nearly went up."\n{a}: "It was the best bit of the week."',
+    '{b} does {v}’s voice, and {a} laughs for the first time all day.\n{a}: "Stop it, that’s too good."\n{b}: "Somebody’s got to keep {v} going in here."',
+    '{a} and {b} swap stories about {v} until somebody else comes in.\n{a}: "{v} would hate us being sad about it."\n{b}: "{v} would hate us talking about it at breakfast, more like."',
   ],
   'one-sided-grief': [
-    '{a} was in pieces. {b} had barely known {v}, and spent the morning being careful about that.',
-    '{b} said the right things and did not feel any of them, and hoped {a} could not tell.',
-    'It is hard to mourn beside somebody who is mourning much harder, and {b} found that out this morning.',
-    '{a} kept saying “you understand,” and {b} kept saying yes.',
-    '{b} lost an acquaintance. {a} lost the one person in here who knew them, and the gap between those showed.',
-    '{a} needed somebody to have loved {v} too. {b} was the person available rather than the person needed.',
-    '{b} was kind about it all morning and got it slightly wrong in about four places.',
-    'By lunch {a} had stopped talking about {v} to {b}. {b} noticed but did not ask why.',
+    '{a} is in pieces. {b} barely knew {v}, and is careful about it.\n{a}: "You understand, don’t you? {v} was my person in here."\n{b}: "Yeah. Course."\n{b} (to camera): "I didn’t really know {v}. I’m not going to pretend I did. I just sat there."',
+    '{b} says all the right things to {a} and doesn’t feel much.\n{a}: "{v} was the only one I trusted."\n{b}: {say:comfort:{v}}\n{b} (to camera): "I feel bad, but I’d spoken to {v} about twice."',
+    '{a} needs somebody to miss {v} as much as {aSub} does. {b} is who happens to be there.\n{a}: "Do you miss {v}? Properly?"\n{b}: "I didn’t know {v} like you did."\n{a}: "No. Nobody did."',
+    '{a} talks about {v} all morning, and {b} listens.\n{a}: "Sorry. I keep going on."\n{b}: "Go on. It’s fine."\nBy lunch {a} has stopped talking about it to {b}, and {b} notices.',
   ],
   'could-not-say-it': [
-    'Neither of them could get through a sentence about {v}, so they stopped starting them.',
-    '{a} tried three times and {b} did not make {a} finish any of them.',
-    'They sat with it and did not name it, and both would have said afterwards it helped.',
-    '{b} started to say something about the last night and then simply did not.',
-    'It went unspoken for two hours, and the unspokenness was the whole of what passed between them.',
-    '{a} opened their mouth twice and shut it twice and {b} nodded both times.',
-    'Whatever either of them has to say about {v}, this was not the morning it was going to get said.',
-    'They washed up in silence and neither of them left the room first.',
+    '{a} and {b} sit together. Neither of them can get a sentence about {v} out.\n{a}: "I just — {v} was—"\n{b}: "I know. You don’t have to."',
+    '{a} tries three times to say something about {v}.\n{a}: "I wanted to say—"\n{b}: "Don’t. I know."\nThey sit there a bit longer.',
+    '{b} starts to say something about last night, then stops.\n{a}: "What?"\n{b}: "Nothing. Doesn’t matter."\n{a} doesn’t push.',
+    '{a} and {b} wash up in silence. Neither of them leaves first.\n{b}: "Thanks for this."\n{a}: "For what?"\n{b}: "Not talking."',
   ],
 };
 
@@ -518,44 +460,29 @@ registerEvent({
 // days deciding {v} was a Traitor.
 const TIMING_LINES = {
   timing: [
-    '{a} said to {b}, quietly: “of everyone, why {v}, and why last night?” Neither of them had an answer.',
-    '“Why {v},” {a} kept saying to {b}, “and why now.” It was not really a question by the fourth time.',
-    '{a} wanted to know what {v} knew. {b} wanted to know who else had wondered that before last night.',
-    'Of everybody in the castle, {v}. {a} could not make it fit, and {b} had been trying for an hour longer.',
-    '{a} asked {b} what {v} had done to deserve going first, and got a silence that was itself an answer.',
-    'Of everybody in the castle, one is gone, and {a} wants to know why that one.',
-    '{b} said it was random. {a} said nothing in here is random, and {b} did not really disagree.',
-    'The two of them went round it four times and arrived back where they started, which was {v}.',
+    '{a} leans over to {b} at breakfast.\n{a}: {say:who-benefits:{v}}\n{b}: "I’ve been asking myself the same thing."',
+    '{a} keeps coming back to the same question.\n{a}: "Why {v}? And why last night?"\n{b}: "Because {v} was dangerous to them. Has to be."\n{a}: "Dangerous how, though?"',
+    '{a} wants to know what {v} knew.\n{a}: "Did {v} say anything to you? About anyone?"\n{b}: "Not to me. You?"\n{a}: "No. That’s what worries me."',
+    '{b} says it’s random. {a} isn’t having it.\n{b}: "They probably just picked someone."\n{a}: "Nothing in here is random. Somebody chose {v}."',
+    '{a} and {b} go round it four times and end up where they started.\n{b}: {say:who-benefits:{v}}\n{a}: "We’re going in circles."\n{b}: "I know. Let’s stop."',
   ],
   'about-to-say-something': [
-    '{b} pointed out to {a} that {v} had been about to say something at that table. Neither of them liked where that went.',
-    '{v} had started a sentence last night and not finished it, and {a} has been thinking about the half of it that got said.',
-    '“{v} was going to name somebody,” {a} said, and once said it could not be unsaid.',
-    '{b} remembered exactly what {v} had been holding, and told {a}, and both of them went quiet.',
-    'Somebody stopped {v} talking. {a} said that out loud to {b} and meant it literally.',
-    '{a} and {b} worked out between them what {v} had been building towards, and worked out what it cost.',
-    'The last thing {v} said was a beginning. {b} has not been able to think about anything else.',
-    '“It was the question,” said {b}. “It was because of the question.”',
+    '{b} remembers something about last night.\n{b}: "{v} was about to say something at the table. Do you remember?"\n{a}: "{v} started a sentence and stopped."\n{b}: "What if that’s why?"',
+    '{a} has been thinking about {v}’s last conversation.\n{a}: "{v} was going to name someone. I’m sure of it."\n{b}: "Did {v} say who?"\n{a}: "No. And now we’ll never know."',
+    '{a} says it quietly to {b}.\n{a}: "{v} knew something. They took {v} before it came out."\n{b}: "You can’t know that."\n{a}: "No. But I’d bet on it."',
+    '{b} goes quiet, then says it.\n{b}: "{v} asked me last night who I trusted. Like {v} was working something out."\n{a}: "Did you tell {vObj}?"\n{b}: "I didn’t get the chance."',
   ],
   'we-had-it-wrong': [
-    '{a} and {b} had suspected {v}. Last night proved them wrong in the worst possible way.',
-    '{a} had been so sure about {v}. {a} was wrong, and now {v} is gone.',
-    '{b} pointed out, gently, that they had both been asking {v} questions right up until yesterday.',
-    '“We were wrong,” said {a}, which is a bigger sentence than it sounds in here.',
-    'All of it pointed at {v} and all of it was pointing the wrong way, and {a} and {b} were both pointing.',
-    '{a} and {b} had agreed about {v}. Last night proved them both wrong.',
-    '{b} said they should start again from the beginning. {a} said the beginning was {v}.',
-    'What {a} and {b} lost last night was not only {v}. It was every hour they spent on {v}.',
+    '{a} and {b} both suspected {v}. Now {v} has been murdered.\n{a}: "We had {v} down as a Traitor."\n{b}: "I know."\n{a}: "They don’t murder their own. So we were wrong."',
+    '{a} puts it plainly.\n{a}: "We were wrong about {v}."\n{b}: "Completely."\n{a}: "So who’s been pointing us at {v}? Because someone was."',
+    '{b} reminds {a} what they had both been saying about {v}.\n{b}: "We were going to vote for {v}. Last night."\n{a}: "Don’t. I feel sick about it."',
+    '{a} and {b} had agreed about {v}. The murder has just proved them both wrong.\n{b}: "Where do we even go from here?"\n{a}: "Back to the start. Whoever made us suspect {v}."',
   ],
   'would-not-play': [
-    '{a} started on why-{v}-and-why-now, and {b} said, flatly, that {b} was not doing this today.',
-    '“Somebody is dead,” {b} said, “and you want to do arithmetic,” and {a} had no answer for that.',
-    '{b} refused the whole shape of the conversation and left {a} holding it.',
-    '{a} wanted to solve it. {b} wanted to be sad about it for one morning, and said so.',
-    '“Not everything is a clue,” said {b}, which is either true or the most useful thing a Traitor ever says.',
-    '{b} would not speculate about {v} at all, which {a} noticed and filed and did not mention.',
-    '{a} asked the question twice and got the same non-answer twice.',
-    '{b} walked out on the conversation, politely, in the middle of {a}’s second sentence.',
+    '{a} starts on why {v}, and why now. {b} won’t have it.\n{b}: "Not this morning. Somebody’s dead."\n{a}: "I’m just trying to work it out."\n{b}: "Well, work it out without me."',
+    '{a} wants to talk about who did it. {b} walks off mid-sentence.\n{b}: "Sorry. I can’t do this right now."\n{a} (to camera): "Everyone grieves differently. I just find it weird when someone won’t even talk about it."',
+    '{b} won’t guess at all.\n{a}: "You must have a theory."\n{b}: "Not everything’s a clue."\n{a} files that away and doesn’t say anything.',
+    '{a} asks the same question twice and gets the same non-answer.\n{a}: "Who do you think it was?"\n{b}: "I don’t know."\n{a}: "You must think something."\n{b}: "I think I want my breakfast."',
   ],
 };
 
@@ -643,77 +570,46 @@ function _partnerSafe(pool, partner) {
 
 const REACTION_LINES = {
   mourn: [
-    '{a} did not hide how hard it hit {aObj}. {b} sat with {aObj} and let it be quiet for a while.',
-    '{a} said {v}\'s name out loud like it needed saying, and {b} agreed.',
-    '{a} cried at the table, in front of everyone, and did not apologise for it. {b} thought better of {aObj} for it.',
-    '{a} kept starting sentences about {v} and not finishing them, and {b} let every one of them go unfinished.',
-    '{a} cried in front of {b} without apologising for it, which nobody here does.',
-    '{a} said {v}’s name about nine times in half an hour and did not notice doing it.',
-    '{b} asked how {a} was and got an honest answer, at length, for the first time this week.',
-    '{a} wanted to talk about {v} and not about who did it, and said so.',
-    'It took {a} most of the morning and {b} sat through the whole of it.',
-    '{a} went and stood in the room where {v} used to leave {vPos} boots.',
-    '{a} said the name once at breakfast and then could not say anything else.',
-    '{a} kept the seat next to {aObj} empty for the whole of the morning.',
-    'There is a right amount to grieve a stranger and {a} has gone past it.',
-    '{a} was fine until somebody passed the toast the way {v} used to.',
-    '{a} took it worse than the room expected and did not perform any of it.',
-    '{a} said the eulogy nobody asked for, quietly, into a cup of tea.',
-    '{a} barely knew {v}, and is taking it like losing an old friend.',
-    '{a} stayed at the table long after it had emptied.',
-    '{a} was the last one to look away from the portrait.',
+    '{a} doesn’t hide how hard it has hit. {b} sits down beside {a}.\n{b}: {say:comfort:{v}}\n{a}: {say:grief-reply:{v}}',
+    '{a} says {v}’s name out loud, like it needs saying.\n{a}: {say:grief-open:{v}}\n{b}: "I know. Me too."',
+    '{a} cries at the table in front of everyone and doesn’t apologise.\n{b}: {say:comfort:{v}}\n{a}: {say:grief-reply:{v}}',
+    '{b} asks how {a} is doing, and gets a real answer.\n{a}: {say:grief-open:{v}}\n{b}: "I’m so sorry."',
+    '{a} keeps starting sentences about {v} and not finishing them.\n{b}: "You don’t have to finish them."\n{a}: "I know. I just keep starting."',
+    '{a} wants to talk about {v}, not about who did it.\n{a}: "Can we not play detective for five minutes? I just miss {v}."\n{b}: "Yeah. Course we can."',
+    '{a} sits at the table long after it has emptied.\n{a} (to camera): {cam:grief:{v}}',
+    '{a} goes and stands in the room where {v} used to leave {vPos} boots.\n{a} (to camera): {cam:grief:{v}}',
+    '{a} is fine until somebody passes the toast the way {v} used to.\n{a} (to camera): {cam:grief:{v}}',
+    '{a} says the name once at breakfast and then can’t say anything else.\n{a} (to camera): {cam:grief:{v}}',
+    '{a} is the last one to look away from {v}’s portrait.\n{a} (to camera): {cam:grief:{v}}',
+    '{a} barely knew {v}, and is taking it like losing an old friend.\n{a} (to camera): {cam:grief:{v}}',
   ],
   suspicious: [
-    '{a} skipped past the grief entirely and went straight to "who benefits from this?" {b} didn\'t have a good answer.',
-    '{a} was already building a theory before breakfast was over, and said as much to {b}.',
-    'Before anybody had said {v}\'s name twice, {a} was asking {b} who had been out of their room.',
-    '{a} wanted the timeline, not the eulogy, and made {b} walk through the whole evening with {aObj}.',
-    '{a} was asking who had been where before the announcement had finished.',
-    '“Who benefits,” said {a}, to {b}, over the toast, which is not a breakfast sentence.',
-    '{a} had a list of names before {a} had a cup of tea.',
-    '{b} wanted to be sad about it. {a} wanted the hour it happened in.',
-    '{a} skipped grief entirely and went straight to arithmetic, and did not pretend otherwise.',
-    '{a} was doing the arithmetic before the room had finished reacting.',
-    '{a} wanted to know who had gone up the stairs and when, and asked twice.',
-    '{a} looked at faces rather than at the empty chair.',
-    'The grief in that room was real and {a} was reading it for tells.',
-    '{a} counted who cried and, more usefully, who cried second.',
-    '{a} has three names by the end of breakfast and had none at the start.',
-    '{a} did not ask how anybody was feeling. {a} asked where they had been.',
-    '{a} treated the announcement as evidence rather than as news.',
+    '{a} skips the grief and goes straight to the question.\n{a}: {say:who-benefits:{v}}\n{b}: "I don’t know. I haven’t even had a coffee."',
+    '{a} already has a theory before breakfast is over.\n{a}: "Who went up last last night? Think about it."\n{b}: "I wasn’t really paying attention."\n{a}: "Well, start."',
+    '{a} wants the timeline, not the eulogy.\n{a}: {say:ask-where}\n{b}: {say:answer-clean}\n{a}: "Okay. Who else was still up?"',
+    '{b} wants to be sad about it. {a} wants the hour it happened in.\n{b}: "Can we just have a minute?"\n{a}: "We can have a minute. Then I want names."',
+    '{a} watches faces rather than the empty chair.\n{a} (to camera): "Everyone’s crying. Fine. I’m watching who cries second."',
+    '{a} treats the news as evidence rather than as news.\n{a} (to camera): "Sad, yes. But {v} going tells me who they were scared of. That’s useful."',
+    '{a} has three names by the end of breakfast.\n{a} (to camera): "I came down with nothing. I’m leaving with three names."',
+    '{a} is doing the maths before the room has finished reacting.\n{a} (to camera): {cam:grief:{v}}',
+    '{a} asks around the table who went up the stairs, and when.\n{a} (to camera): "Nobody likes being asked where they were. That’s exactly why you ask."',
   ],
   stoic: [
-    '{a} said almost nothing all morning. {b} noticed, and left {aObj} to it.',
-    '{a} went quiet in a way that read as more, not less.',
-    '{a} ate breakfast, cleared the plate, and answered every question with one word.',
-    '{a} was dealing with it somewhere nobody could watch.',
-    '{a} was up before anybody, dressed, useful, and completely unreachable.',
-    '{a} did the washing up. All of it. Twice. And said about four words.',
-    'Nothing showed. {b} watched for it all morning and nothing showed.',
-    '{a} answered every question with the shortest true answer available.',
-    '{a} has a way of being present and entirely absent at once, and did it all morning.',
-    '{b} could not tell whether {a} was devastated or did not care.',
-    '{a} was already dressed and already useful before the room had woken up.',
-    '{a} put the chairs back, straightened the table, and said nothing at all.',
+    '{a} says almost nothing all morning. {b} notices.\n{b}: "You alright?"\n{a}: "Fine."\n{b} leaves {aObj} to it.',
+    '{a} eats breakfast, clears the plate, and answers every question with one word.\n{b}: "Did you know {v} well?"\n{a}: "Bit."\n{b}: "Right."',
+    '{a} is up before everyone else, dressed and useful, and completely unreachable.\n{b}: "Do you want to talk?"\n{a}: "No, I’m alright. Thanks."',
+    '{b} watches {a} all morning for a reaction, and nothing shows.\n{b} (to camera): "I can’t tell if {a} is devastated or doesn’t care. That bothers me."',
+    '{a} does the washing up, all of it, and barely says a word.\n{a} (to camera): {cam:grief:{v}}',
+    '{a} puts the chairs back, straightens the table, and says nothing.\n{a} (to camera): {cam:grief:{v}}',
+    '{a} goes quiet in a way that says more than talking would.\n{a} (to camera): {cam:grief:{v}}',
   ],
   opportunistic: [
-    '{a} used the room\'s grief to steer {b} toward exactly where {a} wanted the suspicion to land — smoothly enough that {b} never felt managed.',
-    '{a} tried to use the moment to move {b} where {aSub} wanted, and it came out clumsy enough that {b} half-noticed something was off.',
-    '{a} grieved convincingly for {v} and, in the same breath, put a name in {b}\'s head that had not been there at breakfast.',
-    '{a} was a fraction too keen to comfort {b}, and a fraction too keen to tell {bObj} who to look at, and {b} clocked the second part.',
-    '{a} was the first person at {b}’s side and the first person to say a name.',
-    'The comfort was real enough. The name that came after it was the reason for the comfort.',
-    '{a} used the worst morning of {b}’s week to move {b} one place along.',
-    '{a} said “we have to think about who gains,” which is true and was not what {b} needed.',
-    '{a} was kind to {b} all morning, and then mentioned a name. {b} noticed the order.',
-    '{a} was sorry, loudly, and then helpful, pointedly, in that order.',
-    '{a} grieved for exactly as long as it took the room to start listening.',
-    'There is a way to be the most comforting person in a room and to be steering it, and {a} did both.',
-    '{a} said a name inside a condolence, which is a difficult thing to object to.',
-    '{a} put an arm round somebody and a thought in their head at the same time.',
-    '{a} made sure to be visible this morning, and to be visible being kind.',
-    'The tears were real. The timing was not an accident.',
-    '{a} used the worst hour of the week to become somebody people go to.',
+    '{a} is the first person at {b}’s side, and the first person to say a name.\n{a}: {say:comfort:{v}}\n{a}: {say:suspect:{c}}\n{b}: "Really? You think so?"',
+    '{a} comforts {b} all morning, and then, gently, points {bObj} somewhere.\n{a}: "I just think we need to look at who gains from this."\n{b}: "Like who?"\n{a}: {say:suspect:{c}}',
+    '{a} is sorry, loudly, and then helpful, pointedly.\n{a}: {say:grief-open:{v}}\n{a}: "And honestly? Watch {c} today."\n{b} nods slowly.',
+    '{a} says a name inside a condolence, which is hard to argue with.\n{a}: "{v} would want us to get whoever did this. And I keep coming back to {c}."\n{b}: "I hadn’t even thought about {c}."',
+    '{a} makes sure to be seen being kind this morning.\n{a} (to camera): {cam:grief:{v}}',
+    '{a} grieves for exactly as long as it takes the room to start listening.\n{a} (to camera): {cam:grief:{v}}',
   ],
 };
 
@@ -762,9 +658,16 @@ registerEvent({
     // See the note on _partnerSafe in cover.js — the old strip left sentences
     // ending on their own verb whenever `{b}` sat mid-clause, and every one of
     // those was quotable by a later citation.
-    let line = _sentenceCase(pick(rng, _partnerSafe(REACTION_LINES[branch], partner))
+    // THE NAME AN OPPORTUNIST STEERS TOWARDS: the living player the reactor
+    // likes least, read off the bond graph (no rng), never the partner.
+    const steerAt = (ctx.living || [])
+      .filter(n => n !== reactor && n !== partner && n !== victim)
+      .sort((x, y) => (getBond(reactor, x) - getBond(reactor, y)) || String(x).localeCompare(String(y)))[0]
+      || 'somebody';
+    let line = _sentenceCase(pronounSlots(pick(rng, _partnerSafe(REACTION_LINES[branch], partner))
       .replace(/\{a\}/g, reactor).replace(/\{v\}/g, victim)
-      .replace(/\{b\}/g, partner || 'somebody'));
+      .replace(/\{b\}/g, partner || 'somebody').replace(/\{c\}/g, steerAt),
+    { a: reactor, b: partner || '', v: victim }));
 
     // Every branch has to leave SOMETHING — a solo scene (no partner drawn)
     // still writes residue on the reactor even when it can't move a bond,
@@ -815,46 +718,29 @@ registerEvent({
 // decides whether this is theirs to keep at all.
 const KEEPSAKE_LINES = {
   pocketed: [
-    '{a} took one thing off {v}\'s side of the room before anybody else went in, and never said what.',
-    'It was not worth anything. {a} put it in a pocket anyway and kept checking it was still there.',
-    'Something of {v}\'s went missing from the room before breakfast. {a} knew exactly where it was.',
-    '{a} quietly kept something small of {v}\'s. Nobody asked, and {a} did not offer.',
-    'Whatever {a} lifted from {v}\'s bedside, it was small enough to close a hand around, and {a} did, all morning.',
-    '{a} went up before the others were awake and came down with one of {v}\'s things and a very ordinary face.',
-    'There was a thing of {v}\'s that {a} did not want the castle to divide up, so {a} took it first.',
-    '{a} kept one thing and left the rest, and could not have told anybody why that thing.',
-    'By the time the room was opened up again the only thing missing was small, and {a} had it.',
-    '{a} did not think of it as taking. {a} thought of it as not leaving it there.',
+    '{a} goes up before anybody else and takes one small thing from {v}’s side of the room.\n{a} (to camera): "It’s just a bracelet. I’m not giving it to the production. I’m keeping it."',
+    'Something of {v}’s goes into {a}’s pocket before breakfast, and stays there.\n{a} (to camera): "It sounds soppy. I just didn’t want {v}’s stuff to be packed up by strangers."',
+    '{a} comes down with one of {v}’s things and a very ordinary face.\n{a} (to camera): "I took {v}’s scarf. Don’t tell anyone. I don’t even know why."',
+    '{a} keeps one thing of {v}’s and leaves the rest.\n{a} (to camera): "I didn’t want to take much. Just something, so I remember {vObj} properly."',
+    '{a} checks the thing in {aPos} pocket about every ten minutes.\n{a} (to camera): "It’s still there. I keep checking. Weird, isn’t it?"',
   ],
   'handed-it-over': [
-    '{a} found something of {v}\'s and put it straight into {c}\'s hands, because {c} was the one who would want it.',
-    '{a} did not keep it. {a} gave it to {c}, who had been closer to {v} than anybody, and said nothing else about it.',
-    '"This should be yours," {a} said, and {c} did not trust themselves to answer.',
-    '{a} carried one of {v}\'s things down the stairs, found {c}, and handed it over without a speech.',
-    '{a} could have kept it. {a} gave it to {c} instead, and {c} noticed which of those {a} had chosen.',
-    'It took {a} about a minute to decide the thing belonged with {c}, and about ten seconds to say so.',
-    '{a} put it down in front of {c} at breakfast and went to get the tea, which was the kindest way to do it.',
-    '{c} had not asked for anything of {v}\'s. {a} brought it anyway.',
+    '{a} finds something of {v}’s and takes it straight to {c}.\n{a}: "This should be yours. You were closest to {v}."\n{c}: "Oh my God. Thank you."\n{c} holds it for a long time.',
+    '{a} puts one of {v}’s things down in front of {c} at breakfast.\n{c}: "Is that {v}’s?"\n{a}: "Yeah. I thought you should have it."\n{c} can’t answer, and doesn’t need to.',
+    '{a} could have kept it, and gives it to {c} instead.\n{a}: "{v} would’ve wanted you to have this."\n{c}: "You didn’t have to do that."\n{a}: "I know."',
+    '{c} hasn’t asked for anything of {v}’s. {a} brings it anyway.\n{a}: "Here. Don’t say anything."\n{c}: "I wasn’t going to. I can’t."',
   ],
   'put-it-back': [
-    '{a} took one of {v}\'s things, held it for a while, and then went back up and put it exactly where it had been.',
-    'It felt wrong in {a}\'s pocket by about nine o\'clock, and it was back on the shelf by ten.',
-    '{a} got as far as the stairs with it and then turned round.',
-    '{a} decided the room could keep what was in it, and left {v}\'s side of it untouched after all.',
-    'Whatever {a} had meant to keep, {a} put it back, and did not tell anybody either half of that.',
-    '{a} squared {v}\'s things up neatly on the shelf and took none of them, which took longer than taking one would have.',
-    'For about an hour {a} owned something of {v}\'s. Then {a} did not, and the shelf looked the same as before.',
-    '{a} folded {v}\'s jumper properly, put it where it went, and shut the door on it.',
+    '{a} takes one of {v}’s things, holds it for a while, and then puts it back exactly where it was.\n{a} (to camera): "I thought I wanted something of {v}’s. I didn’t. It felt like stealing."',
+    '{a} gets as far as the stairs with it, then turns round.\n{a} (to camera): "I put it back. It’s not mine, is it? It’s {v}’s."',
+    '{a} folds {v}’s jumper, puts it where it goes, and shuts the door.\n{a} (to camera): "Somebody had to tidy it. I didn’t take anything. I couldn’t."',
+    '{a} lines {v}’s things up neatly on the shelf and takes none of them.\n{a} (to camera): "I just wanted it to look nice. For when they pack it."',
   ],
   'set-it-out': [
-    '{a} put one of {v}\'s things on the table at breakfast, in the empty place, and dared the room to move it.',
-    'Nobody had asked for a memorial. {a} made a small one out of a book and a mug and left it where everyone ate.',
-    '{a} set something of {v}\'s down in front of the empty chair and sat back down without explaining it.',
-    'It was on the table by the time the rest of them came down: one of {v}\'s things, exactly where {v} had sat.',
-    '{a} would not let the morning happen as though yesterday had not, and put something of {v}\'s in the middle of it.',
-    '{a} laid it out where the whole room would have to walk past it, which was the point.',
-    'Half the castle pretended not to see what {a} had put on the table. The other half could not stop looking at it.',
-    '{a} said nothing at all, put {v}\'s cup back on the table, and let that be the sentence.',
+    '{a} puts {v}’s mug at {v}’s empty place at breakfast, and sits down.\n{a} (to camera): "I’m not letting this lot pretend {v} was never here."',
+    'By the time the others come down, one of {v}’s things is on the table where {v} used to sit.\n{a} (to camera): "Call it a memorial. Call it whatever. It’s staying there."',
+    '{a} lays something of {v}’s out where everybody has to walk past it.\n{a} (to camera): "Whoever did this can look at it all through breakfast. Good."',
+    '{a} puts {v}’s cup back on the table and says nothing about it.\n{a} (to camera): "Half of them looked at it. Half of them looked away. I watched which half."',
   ],
 };
 
@@ -934,44 +820,28 @@ registerEvent({
 // it, a fight with the one person standing there, or a thing {a} turns inward.
 const BLAME_ROOM_LINES = {
   'blamed-room': [
-    '{a} said out loud that somebody in this castle let {v} die. {b} didn’t disagree.',
-    '“One of us sat at that table last night and knew,” {a} said, to the room, and {b} watched who looked up.',
-    '{a} was not grieving so much as furious, and {b} caught the edge of it.',
-    '{b} said it was nobody’s fault. {a} said that was exactly the problem, and the room heard both.',
-    '{a} pointed out that {v} had been sitting between two people last night, and neither of them was going to say who.',
-    '{a} addressed the whole hall for about ninety seconds and did not lower their voice once.',
-    '“Somebody in this room said goodnight to {v},” said {a}. Nobody put a hand up.',
-    'It was not aimed at anybody, which is why everybody in the hall took it personally.',
+    '{a} puts down {aPos} fork and says it to the whole table.\n{a}: "Somebody in this room let {v} die. Somebody sat here last night and knew."\n{b}: "We all know that."\n{a}: "Then why is everyone eating like it’s normal?"',
+    '{a} is not grieving so much as furious.\n{a}: "One of you said goodnight to {v} knowing. One of you."\n{b} watches who looks up.',
+    '{b} says it is nobody’s fault. {a} isn’t having it.\n{b}: "It’s the game. It’s nobody’s fault."\n{a}: "It’s somebody’s fault. That’s literally the game."',
+    '{a} stands up at breakfast.\n{a}: "I just want whoever did it to know I’m looking at them. That’s all."\n{b}: "Sit down, mate."\n{a} sits down, still looking round the table.',
   ],
   'named-a-number': [
-    '“Three of you know exactly what happened,” {a} said, and the number was the frightening part.',
-    '{a} counted, out loud, how many people it would have taken, and got to a number nobody liked.',
-    '{a} did the arithmetic in front of the room: {v} was not taken by weather.',
-    '“There are more of them than you think,” {a} said to the hall, and could not be talked down from it.',
-    '{a} put a figure on it and the figure did more damage than the accusation.',
-    '{b} tried to soften it. {a} repeated the number instead.',
-    'What {a} said was structural rather than personal, and the room found that much worse.',
-    'By the end of it half the castle was checking {a}’s arithmetic and the other half was checking each other.',
+    '{a} does the maths out loud.\n{a}: "There’s three of them, probably. At this table. Three people lied to us last night."\n{b}: "Keep your voice down."\n{a}: "Why? They already know."',
+    '{a} puts a figure on it, and the figure scares people more than an accusation would.\n{a}: "It’s not one person. It’s a few. They sat here and decided."\n{b}: "You’re frightening people."\n{a}: "Good."',
+    '{b} tries to soften it. {a} says it again.\n{a}: "More than one person in this room knew {v} was going."\n{b}: "You don’t know that."\n{a}: "It’s how the game works. Of course I know that."',
+    '{a} counts round the table with {aPos} eyes.\n{a}: "Any of you. Any three of you."\n{b} (to camera): "{a} isn’t wrong. That’s what made it so horrible."',
   ],
   'turned-on-them': [
-    '{a} started by blaming the room and finished by blaming {b}, and never noticed the turn.',
-    'It was general for about a minute and then it was very specifically about {b}.',
-    '“You were the last one up,” {a} said to {b}, which was true and was not the same as an accusation.',
-    '{b} was standing there and the anger had to go somewhere, and it went at {b}.',
-    '{a} did not mean it. {a} said it, and the room was there, and it cannot be unsaid.',
-    'The room got a speech and {b} got the end of it, at close range.',
-    '{b} answered calmly, which made {a} angrier rather than less.',
-    'What began as grief for {v} became a thing between {a} and {b} inside four sentences.',
+    '{a} starts off blaming the room and ends up blaming {b}.\n{a}: "And you were the last one up, weren’t you?"\n{b}: "Are you serious?"\n{a}: "I’m just saying what I saw."',
+    'It’s general for about a minute, and then it’s about {b}.\n{a}: "You were quiet last night. Really quiet."\n{b}: "Because I was tired! Oh my God."',
+    '{b} is standing there, and {a}’s anger has to go somewhere.\n{a}: "You didn’t even look sad when they said {v}’s name."\n{b}: {say:deny}\n{a} doesn’t look convinced.',
+    '{b} answers calmly, which only makes {a} angrier.\n{a}: "Why are you so calm about it?"\n{b}: "Because shouting at me won’t bring {v} back."\n{a}: "Don’t tell me how I should feel."',
   ],
   'blamed-themselves': [
-    '{a} said the room let {v} die, and then said that {a} was the room.',
-    '“I was awake,” said {a}. “I heard something. I went back to sleep.”',
-    'The anger turned round on {a} halfway through and {b} did not know what to do with the second half.',
-    '{a} had promised {v} something the other day and told the whole hall about it this morning.',
-    '{b} said it was not {a}’s fault, four times, and {a} did not accept any of them.',
-    'What {a} could not forgive was not the castle. {b} understood that about a minute too late.',
-    '{a} apologised to a chair, in front of the others, and then left the room.',
-    'It is the most honest thing anybody has said in that hall all week and nobody knew where to look.',
+    '{a} blames the room, and then blames {aRef}.\n{a}: "I heard something last night. On the landing. I went back to sleep."\n{b}: "You couldn’t have known."\n{a}: "I could’ve got up."',
+    'Halfway through, {a}’s anger turns round on {aRef}.\n{a}: "I told {v} I’d look out for {vObj}. I promised."\n{b}: "It’s not your fault."\n{a}: "Tell me that again in a week."',
+    '{b} tells {a} it isn’t {aPos} fault, four times.\n{b}: "It’s not on you."\n{a}: "It feels like it is."\n{b}: "It’s not. I promise you it’s not."',
+    '{a} apologises to {v}’s empty chair, in front of the others, and leaves the room.\n{b} (to camera): "I didn’t know what to say. Nobody did."',
   ],
 };
 
@@ -1052,56 +922,44 @@ registerEvent({
 // asserts.
 const TOAST_LINES = {
   'named-them-all': [
-    '{a} and {b} raised a glass, quietly, to everyone the castle had already lost.',
-    'They went through the names, {a} and {b}, in order, and drank once at the end of the list.',
-    '{a} poured two, handed one to {b}, and they got through all {n} of them without stopping.',
-    'It was not a ceremony. {a} said a name, {b} said a name, and they went on until there were none left to say.',
-    '{a} lifted a glass to the empty end of the table and {b} lifted one back, and then they did it properly, name by name.',
-    '{a} and {b} drank to the ones who went first, which by now was most of the people they came in with.',
+    '{a} and {b} pour a glass each and go through the names of everyone they’ve lost.\n{a}: "To all of them."\n{b}: "All {n} of them."\nThey drink.',
+    '{a} lifts a glass to the empty end of the table, and {b} lifts one back.\n{b}: "Go on then. Say them."\n{a} says every name, in order. {b} says them back.',
+    '{a} says a name, {b} says a name, and they keep going until there are none left.\n{a}: "That’s everyone."\n{b}: "That’s too many."',
+    '{a} and {b} drink to the ones who went first.\n{a}: "We came in with some of them."\n{b}: "I know. Cheers, all of you."',
   ],
   'could-not-finish': [
-    '{b} started to make a toast, could not finish it, and {a} did not finish it either.',
-    'They got four names in and {a} put the glass down, and neither of them picked it back up.',
-    '{a} had not realised how long the list had got until {a} was halfway through saying it out loud.',
-    'The toast stopped somewhere in the middle. {b} said it was fine. It was not especially fine.',
-    '{a} and {b} meant to do all {n} of them and managed about half before it turned into something else.',
-    'It is harder than it sounds to say that many names in a row, and {a} found that out in front of {b}.',
+    '{b} starts a toast and can’t finish it.\n{b}: "To—"\n{a}: "It’s alright."\n{b}: "I can’t even get through the list."',
+    'They get four names in and {a} puts the glass down.\n{a}: "I didn’t realise how long it was."\n{b}: "No. Me neither."',
+    '{a} has no idea how long the list has got until {aSub} tries to say it out loud.\n{a}: "How is it this many already?"\n{b}: "Just drink. We’ll do the rest another night."',
+    'The toast stops somewhere in the middle.\n{b}: "It’s fine."\n{a}: "It’s not, though."\n{b}: "No. It’s not."',
   ],
   'turned-into-a-vow': [
-    'It started as a toast to the dead and ended as {a} and {b} promising something to each other about tomorrow.',
-    '{a} raised a glass to the ones who had gone and then, in the same breath, to the two of them getting further.',
-    '"To them," {b} said. "And to us not joining them," said {a}, and they drank on it like an agreement.',
-    'By the end of it {a} and {b} were not really talking about the dead any more, and both of them knew when it had turned.',
-    'The names ran out and what was left was {a} and {b} deciding, out loud, that they were in this together.',
-    '{a} and {b} started the evening mourning and finished it with an arrangement, which is what this place does.',
+    'It starts as a toast to the dead, and turns into a promise.\n{b}: "To them."\n{a}: "And to us not joining them."\n{b}: "Deal."\nThey clink glasses on it.',
+    '{a} raises a glass to everyone who has gone, then to the two of them.\n{a}: "And to us. To the end."\n{b}: "To the end."',
+    'The names run out, and what’s left is {a} and {b} making a deal.\n{a}: "Whatever happens, I’m not writing your name."\n{b}: "And I’m not writing yours. Cheers."',
+    '{a} and {b} start the evening mourning and finish it with a plan.\n{b}: "We look after each other. That’s it."\n{a}: "That’s it."',
   ],
   'nobody-joined-in': [
-    '{a} and {b} raised a glass to the dead and the rest of the room carried on eating.',
-    'Nobody else stood up. {a} and {b} drank anyway, and felt every second of the room not joining in.',
-    '{a} said the names loudly enough for the table to hear and the table did not hear them.',
-    'It was meant to be for everybody. It ended up being for {a} and {b}, in front of everybody.',
-    '{b} looked round for somebody else to lift a glass and could not find one.',
-    'The castle has got good at going on with its dinner, and {a} and {b} found that out with two glasses in the air.',
+    '{a} and {b} raise a glass to the dead, and the rest of the table carries on eating.\n{b}: "Nobody else is joining in."\n{a}: "Then it’s just us. That’s fine."',
+    '{a} says the names loud enough for the table to hear. The table doesn’t look up.\n{b} (to camera): "That really upset me. Nobody even stopped eating."',
+    '{b} looks round for someone else to lift a glass, and can’t find anyone.\n{a}: "Leave them. Cheers."\n{b}: "Cheers."',
+    'It was meant to be for everybody. It ends up being just {a} and {b}.\n{a}: "They’ve got used to it already."\n{b}: "I don’t want to get used to it."',
   ],
   'poured-two': [
-    '{a} poured two and drank one, and left the other where it was.',
-    'Nobody was there for it. {a} said one name out loud and drank to it alone.',
-    '{a} did the whole list under their breath, all {n} of them, standing at the sink.',
-    'There was no ceremony in it. {a} raised a glass to an empty kitchen and put it down again.',
-    '{a} had meant to find somebody to do this with and had not, and did it anyway.',
-    'It is a small thing to do on your own and {a} did it every night now.',
-    '{a} left a full glass on the table for nobody and went up.',
-    '{a} got as far as saying two of the names and decided that was enough for tonight.',
-    'The castle was noisy in the other room. {a} stayed where it was quiet and drank to {n} people.',
-    'Nobody needed to see {a} do it, and that was rather the point of doing it there.',
-    '{a} poured two and drank one and left the other where it was until morning.',
-    'It took about four seconds and {a} did it every night that week.',
-    '{a} said the name once, quietly, in a kitchen with nobody in it.',
-    'There is a glass on that windowsill and only one person in this castle knows why.',
-    '{a} raised it to a chair, felt ridiculous, and did it anyway.',
-    'Nobody joined in because nobody was invited and nobody was told.',
-    '{a} has done this for two of them now and is not looking forward to a third.',
-    'It is the only part of the day {a} does not have to perform any of.',
+    '{a} lifts a mug of tea to the empty chairs and says nothing.\n{a} (to camera): {cam:count:{n}}',
+    '{a} stands at the window with a glass and says the names, quietly.\n{a} (to camera): "I don’t want them forgotten. That’s all."',
+    '{a} pours two small glasses, drinks one, and tips the other into the sink.\n{a} (to camera): "Silly ritual. I need it."',
+    '{a} raises a glass to the portraits on the wall.\n{a} (to camera): {cam:count:{n}}',
+    '{a} has a quiet drink on the back step, alone.\n{a} (to camera): "Cheers, everyone who’s gone. I’m still here."',
+    '{a} says the name of the last person to go, and then the one before.\n{a} (to camera): "I say them every night. Otherwise it’s like they were never here."',
+    '{a} pours two glasses, drinks one, and leaves the other where it is.\n{a} (to camera): "One for me, one for them. It’s silly, I know."',
+    'Nobody else is in the kitchen. {a} says one name out loud and drinks to it.\n{a} (to camera): {cam:count:{n}}',
+    '{a} says every name under {aPos} breath, standing at the sink.\n{a} (to camera): "I do it every night now. All {n} of them. Nobody knows."',
+    '{a} raises a glass to an empty kitchen and puts it down again.\n{a} (to camera): "You have to mark it somehow. Otherwise they just vanish."',
+    '{a} leaves a full glass on the table for nobody, and goes up.\n{a} (to camera): "That one’s for whoever’s next. Hopefully not me."',
+    '{a} gets as far as saying two of the names and decides that’s enough for tonight.\n{a} (to camera): "I can’t do the whole list tonight. I’ll do it tomorrow."',
+    'The rest of the castle is noisy in the other room. {a} stays where it’s quiet.\n{a} (to camera): "{n} people. I drink to them every night. It’s the only bit of the day I don’t have to act."',
+    '{a} lifts a glass to an empty chair, feels a bit ridiculous, and does it anyway.\n{a} (to camera): "If anyone walked in right now I’d die. But I needed to do it."',
   ],
 };
 
@@ -1136,7 +994,7 @@ registerEvent({
     if (!b) {
       const soloWhy = 'drank to the ones who had gone, alone';
       const note = lineFor(TOAST_LINES['poured-two'], `grief-toast-to-them|poured-two|${ctx.ep}|${gone}`,
-        { a, n: String(gone) });
+        { a, n: countWord(gone) });
       const solo = arcContinue(api, FAMILY, [a], ctx.ep, note, { source: soloWhy });
       return { branch: 'poured-two', topic: gone, topicKind: 'grief-loss', actor: a, gone, threadId: solo.thread?.id,
         cited: solo.cited, bondDelta: 0 };
@@ -1160,7 +1018,7 @@ registerEvent({
       : branch === 'could-not-finish' ? 1.5 : branch === 'turned-into-a-vow' ? 2.5 : 1;
     api.addBond(a, b, bondDelta, { source: sceneWhy });
     const note = lineFor(TOAST_LINES[branch], `grief-toast-to-them|${branch}|${ctx.ep}|${gone}`,
-      { a, b, n: String(gone) });
+      { a, b, n: countWord(gone) });
     const { thread, cited } = arcContinue(api, FAMILY, [a, b], ctx.ep, note, { source: sceneWhy });
     return { branch, pair: [a, b], topic: gone, topicKind: 'grief-loss', gone, threadId: thread?.id, cited, bondDelta,
       crowd: [{ name: a, colour: 'kind', mult: 0.5 }, { name: b, colour: 'kind', mult: 0.5 }] };
@@ -1182,44 +1040,28 @@ registerEvent({
 // that is the scene.
 const NUMB_LINES = {
   numb: [
-    'The castle had stopped flinching at the empty chair. {a} said so out loud to {b}, and hated that nobody argued.',
-    'Nobody looked up when the number changed this morning. {a} pointed that out to {b}, and the room let it stand.',
-    'Breakfast happened at the normal speed today. {a} said to {b} that it should not have, and {b} had no answer to that.',
-    'Somewhere in the last few days the castle had started treating this as weather. {a} named it to {b}; nobody in earshot disagreed.',
-    'The room had got good at this. {a} said the words to {b} and hated every one of them, and still nobody argued.',
-    'The announcement took forty seconds and then people asked about the bread. {a} said so to {b}; nobody in the hall looked up.',
-    'There was no gasp this morning. {a} told {b} that there used to be one, and the room let that stand too.',
-    'The castle has a routine for this now. {a} described the routine to {b}, out loud, and nobody contradicted a word of it.',
+    'Another empty chair, and {a} and {b} both notice they feel less than they did.\n{a}: "Is it bad I’m not crying this time?"\n{b}: "No. I’m not either. I think we’re just tired."',
+    '{a} looks at {v}’s place and just eats.\n{b}: "You alright?"\n{a}: "Yeah. That’s the scary part. I am."',
+    '{b} realises {a} hasn’t even mentioned {v} yet.\n{b}: "You haven’t said anything about {v}."\n{a}: "What is there to say? It happens every morning now."',
+    'The shock has gone out of it. {a} and {b} both know it.\n{a}: "Remember the first morning? We were in bits."\n{b}: "Now it’s just breakfast."',
   ],
   'one-of-them-still-feels-it': [
-    'The room had stopped flinching. {b} had not, and {a} watched {b} be the only one.',
-    '{a} said the castle was used to it now. {b} said “I am not,” and the hall heard that too.',
-    'Everybody got on with breakfast. {b} did not, and {a} said out loud that somebody had to not.',
-    'The castle crossed a line this morning and {b} was standing on the other side of it, alone.',
-    '{a} told {b} that nobody flinches any more. {b} flinched, then, which proved and disproved it at once.',
-    'It is a room of people who have adjusted, and one person who refuses to, and {a} named both.',
-    '{b} is still counting. {a} said to the hall that {b} was the last one who was, and was not contradicted.',
-    'The difference between them this morning is that one of them still finds it remarkable.',
+    '{a} has gone numb to it. {b} hasn’t.\n{a}: "You okay?"\n{b}: "No. How are you okay? How is everyone okay?"\n{a} doesn’t have an answer.',
+    '{b} is the only one at the table still taking it hard.\n{b}: "Does nobody care any more?"\n{a}: "We care. We’re just tired of caring."\n{b}: "Well, I’m not."',
+    '{a} watches {b} cry over {v}, and realises {aSub} can’t any more.\n{a} (to camera): "{b} still feels every one of them. I used to. I don’t know when that stopped."',
+    '{b} counts every loss out loud. {a} has stopped counting.\n{b}: "That’s {v}. That’s another one."\n{a}: "I know. Come on, sit down."',
   ],
   'said-it-and-regretted-it': [
-    '{a} said the castle had got used to death, heard it land, and could not take it back.',
-    'It came out as an accusation against everybody in the hall, including {a}, and {a} had not meant that.',
-    '{a} named the thing nobody names and then had to stand in the room afterwards.',
-    '“That was not fair,” {b} said, later, and {a} agreed and still thought it was true.',
-    'The sentence was accurate and unkind in about equal measure, and the room only heard the second half.',
-    '{a} apologised for the way it was said and not for any of what was in it.',
-    'Two people stopped speaking to {a} over it, which is a lot of people in a castle this size.',
-    '{a} will be quoted on it at the next table, and knew that about four seconds too late.',
+    '{a} says what everyone’s thinking, and wishes {aSub} hadn’t.\n{a}: "At least it wasn’t one of us."\n{b}: "Wow."\n{a}: "That came out wrong."',
+    '{a} tries to make a joke about the murders and it lands badly.\n{a}: "Well, who’s next, then?"\n{b}: "Seriously?"\n{a}: "Sorry. Sorry. I didn’t mean that."',
+    '{a} says it out loud.\n{a}: "Honestly, I’m relieved it wasn’t me."\n{b}: "You can’t say that."\n{a}: "Everyone’s thinking it."',
+    '{a} tells {b} {aSub} barely feels it any more, and regrets it straight away.\n{b}: "That’s cold."\n{a}: "I know. Forget I said it."',
   ],
   'performed-it': [
-    'The castle did the mourning the way you do a fire drill, and {a} said so to {b} in the middle of it.',
-    'Everybody said the right thing in the right order, and {a} pointed out to {b} that it had an order now.',
-    'The hall observed a silence that had been getting shorter all week, and {b} timed it.',
-    '{a} told {b} that the castle has a ceremony for this and nobody can remember agreeing to one.',
-    'They all said the name. Nobody said anything else, and {a} named the difference out loud.',
-    'It has become a routine with parts in it, and {a} described the parts to {b} while they were happening.',
-    'The room grieved competently, which {a} said to {b} is the worst sentence available.',
-    '{b} said it was better than nothing. {a} said that was exactly what it was better than.',
+    '{a} watches the whole castle grieve like it has done this before.\n{a}: "Everyone looks sad in exactly the same way now."\n{b}: "What do you mean?"\n{a}: "Nothing. Just watch."',
+    '{a} and {b} watch the morning play out.\n{a}: "Hug, sit down, say something nice about them, eat. Every morning."\n{b}: "That’s grim."\n{a}: "It’s true, though."',
+    '{a} notices the room has got good at grief.\n{a} (to camera): "Everyone’s very good at looking upset now. Which means one of them is very good at pretending."',
+    '{a} keeps an eye on who is grieving properly and who is doing it for the room.\n{a}: "Some of them are crying on cue. I’d put money on it."\n{b}: "That’s harsh."\n{a}: "Watch them, then."',
   ],
 };
 
@@ -1290,7 +1132,7 @@ registerEvent({
       : branch === 'said-it-and-regretted-it' ? 'named the thing nobody names and had to stand there afterwards'
         : branch === 'performed-it' ? 'watched the castle grieve competently'
           : 'stopped feeling the mornings';
-    const note = lineFor(NUMB_LINES[branch], `grief-numb-to-it-now|${branch}|${ctx.ep}`, { a, b });
+    const note = lineFor(NUMB_LINES[branch], `grief-numb-to-it-now|${branch}|${ctx.ep}`, { a, b, v: v || 'them' });
     // NO BOND MOVE ON `numb`, deliberately — the point of that one IS the
     // absence of a felt reaction, and that was true of the event before this
     // rewrite. The other three are scenes with something in them and move it.
@@ -1320,46 +1162,29 @@ registerEvent({
 // carrying something before the empty chair was there.
 const CRIES_ALONE_LINES = {
   'put-it-away': [
-    '{a} found somewhere nobody could see them and let it out, alone, before breakfast.',
-    '{a} went to the far end of the corridor to do it where the walls were thick enough.',
-    '{a} cried in the one room of the castle with no window in the door, then washed their face and went down.',
-    'It came out of {a} all at once, in private, and was finished and put away before anybody else was up.',
-    'Nobody saw {a} between the bell and breakfast, and {a} came down with a very carefully arranged face.',
-    '{a} gave it four minutes in the boot room and then gave it nothing else all day.',
-    'Whatever happened to {a} upstairs was over by the time the stairs creaked under anybody else.',
-    '{a} ran a tap for longer than washing takes, and came down with the same face as everybody.',
-    'It took {a} about as long as it takes to make a bed, and {a} made the bed afterwards too.',
-    '{a} did it standing up, quickly, the way you do a thing you have decided to be finished with.',
+    '{a} goes somewhere quiet before breakfast, cries for five minutes, then washes {aPos} face.\n{a} (to camera): "You get it out of your system away from everyone. Then you go down and you’re fine."',
+    '{a} has a moment alone in the bathroom and comes down looking completely normal.\n{a} (to camera): "Nobody needs to see that. I’m not giving anyone the satisfaction."',
+    '{a} lets it out on the landing, then puts it away.\n{a} (to camera): {cam:grief:{v}}',
+    '{a} takes a minute on the back stairs before facing the table.\n{a} (to camera): "Right. Done. Face on. Let’s go."',
+    '{a} cries in the shower, where nobody can hear.\n{a} (to camera): "It’s the only place in the castle you’re properly on your own."',
   ],
   'was-found': [
-    '{c} went looking for a coat and found {a} instead, and did not say a word about it to anybody.',
-    '{a} did not hear {c} come in. {c} sat down on the floor beside them and stayed until it stopped.',
-    '{c} found {a} in the stairwell, said nothing at all, and put a hand on their shoulder for a long time.',
-    'It was {c} who found {a}, and {c} who decided the rest of the castle did not need to know.',
-    '{a} was very embarrassed to be found. {c} said the only correct thing, which was nothing.',
-    '{c} came round the corner at the wrong moment and made it the right one by staying.',
-    'Somebody was always going to walk in. It was {c}, and {c} shut the door behind them.',
-    '{a} apologised to {c} twice for it. {c} would not accept either one.',
+    '{c} finds {a} crying on the back stairs, and sits down.\n{c}: {say:comfort:{v}}\n{a}: {say:grief-reply:{v}}\n{c} stays until {a} is ready to go in.',
+    '{a} thought nobody would come looking. {c} does.\n{c}: "Hey. Hey. Come here."\n{a}: "Sorry. I didn’t want anyone to see."\n{c}: "It’s only me."',
+    '{c} hears {a} in the corridor and knocks.\n{c}: "You alright in there?"\n{a}: "Not really."\n{c}: "Can I come in?"\n{a}: "Yeah."',
+    '{c} sits down next to {a} without saying anything for a while.\n{a}: "How did you know where I was?"\n{c}: "I didn’t. I just looked."',
   ],
   'did-not-come-down': [
-    '{a} did not come down for breakfast, and the castle worked out why without anybody saying it.',
-    'There was a plate laid for {a} and it stayed laid. Nobody moved it and nobody mentioned it.',
-    '{a} stayed upstairs through the whole meal, and the room got quieter the longer it went on.',
-    'Two people went up to knock on {a}\'s door and both of them came back down alone.',
-    'The castle ate breakfast one person shorter than it had to be, and everybody knew which one.',
-    '{a} could not make themselves do the stairs this morning, and the room downstairs heard the not-doing.',
-    'Somebody asked where {a} was. Nobody answered, and the question did not get asked twice.',
-    'By the time {a} came down it was the middle of the morning and the plate had been cleared.',
+    '{a} doesn’t come down to breakfast at all.\n{a} (to camera): "I couldn’t face it. The chair, the looks, all of it. Not today."',
+    'There is a second empty place at breakfast. {a} stays in bed.\n{a} (to camera): "I know how it looks, not going down. I don’t care how it looks."',
+    '{a} misses breakfast and misses the first hour of the day.\n{a} (to camera): {cam:grief:{v}}',
+    '{a} stays upstairs until the others have gone out.\n{a} (to camera): "I just needed an hour where nobody was looking at me."',
   ],
   'came-down-angry': [
-    'Whatever {a} did upstairs, it came back down as temper, and the first person to speak to {a} got the end of it.',
-    '{a} came down dry-eyed and furious, which is a thing grief does and nobody in the room had a name for.',
-    'It turned somewhere on the stairs. {a} arrived at breakfast looking for an argument and found one.',
-    '{a} had cried it out and come down hard, and spent the morning being sharp with people who had not earned it.',
-    'Nobody could work out what they had done to {a}. Nobody had done anything to {a}.',
-    '{a} snapped at the room over the milk, of all things, and then stood there hearing how it had sounded.',
-    'The grief went in one end of {a} and came out the other as something with edges on it.',
-    'By nine o\'clock {a} was not sad any more, which was worse for everybody standing near {a}.',
+    '{a} comes down from it angry, not sad.\n{a} (to camera): "I cried, and then I got angry, and angry is more useful."',
+    '{a} walks into breakfast with a face like thunder.\n{a} (to camera): {cam:grief:{v}}',
+    '{a} has done crying. Now {aSub} wants a name.\n{a} (to camera): "Somebody at that table did this. I’m not being sad about it any more. I’m going to find them."',
+    '{a} comes down, sits, and stares round the table.\n{a} (to camera): "I want them to see me looking. I want them nervous."',
   ],
 };
 
@@ -1424,9 +1249,10 @@ registerEvent({
         : ` Somebody had said ${actor}'s name at that table, and it had not stopped ringing since.`;
     const line = lineFor(CRIES_ALONE_LINES[branch],
       `grief-someone-cries-alone|${branch}|${ctx.ep}|${state || 'content'}`,
-      { a: actor, c: finder || 'somebody' });
+      { a: actor, c: finder || 'somebody', v: _victimLastNight(ctx.ep) || 'them' });
     const parties = branch === 'was-found' ? [actor, finder] : [actor];
-    const t = api.openArc(FAMILY, parties, { source: sceneWhy, seed: `${line}${why}` });
+    const t = api.openArc(FAMILY, parties, { source: sceneWhy, seed: why ? `${line}
+${why.trim()}` : line });
     const out = { branch, actor, threadId: t?.id, state: state || 'content', bondDelta: 0 };
     // GROUNDED (once-skipped). The empty chair is a MURDER victim (the grief
     // gate requires one), so the death-vs-banishment axis is always 'death'
@@ -1485,44 +1311,28 @@ registerEvent({
 // are looked up off `t.parties`, never assumed.
 const WRONGLY_SUSPECTED_LINES = {
   'wrongly-suspected-irony': [
-    '{a} and {b} realised, too late, that {v} had spent their last days under a suspicion that never actually went anywhere.',
-    'Whatever {a} and {b} had thought about {v} last week, they were not going to get to find out now.',
-    '{b} reminded {a} what they had both been saying about {v} only the other day. Neither of them enjoyed the reminder.',
-    '{v} had been answering questions right up until the end, and {a} and {b} worked out this morning that none of them had mattered.',
-    'The case against {v} died with {v}, and {a} and {b} were the only two still holding it.',
-    'Four days of watching {v} very carefully, and the one thing they were watching for was never there.',
-    '{a} said {v}’s name this morning in a completely different voice from the one used the other day.',
-    'Everything {a} and {b} had about {v} turned out to be about somebody they were never going to find this way.',
+    '{a} and {b} both suspected {v}. Now {v} has been murdered.\n{a}: "We were so sure about {v}."\n{b}: "I know."\n{a}: "And they killed {vObj}. So {v} was Faithful all along."',
+    '{b} says it quietly over breakfast.\n{b}: "We nearly voted {v} out."\n{a}: "And the Traitors took {vObj} instead."\n{b}: "Which means we were completely wrong."',
+    '{a} feels sick about it.\n{a}: "I said {v}’s name at the table. Out loud."\n{b}: "So did I."\n{a}: "{v} must have hated us."',
+    '{a} and {b} work it out at the same time.\n{b}: "If {v} was a Traitor they wouldn’t have murdered {vObj}."\n{a}: "So somebody talked us into it."\n{b}: "Who, though?"',
   ],
   'owned-the-mistake': [
-    '{a} said it out loud: “I had {v}. I was completely wrong about {v}, in front of everybody.”',
-    '{a} apologised to a room for something the room had also done, and was the only one who did.',
-    '“I asked {v} four times where {vSub} was that night,” said {a}. “Four times.”',
-    '{a} took the whole of it and did not spread any of it round the table.',
-    '{b} tried to share the blame and {a} would not let {b} have any.',
-    'It cost {a} something to say and {a} said it before breakfast was over.',
-    '{a} has been wrong about somebody before and has never had it settled like this.',
-    'What {a} said this morning will be remembered longer than anything {a} said about {v} alive.',
+    '{a} says it out loud.\n{a}: "I was wrong about {v}. I said it was {v}, and I was wrong."\n{b}: "We all were."\n{a}: "I was loudest. That’s on me."',
+    '{a} owns it before anyone else can bring it up.\n{a}: "I owe {v} an apology I can’t give now."\n{b}: "That’s a big thing to say."\n{a}: "It’s true, though."',
+    '{a} tells {b} straight.\n{a}: "I got {v} wrong. I won’t do that to someone else."\n{b}: "Then don’t. Be careful tonight."',
+    '{a} can’t stop thinking about it.\n{a}: "I made everyone look at {v}. And the whole time it was someone else."\n{b}: "You didn’t know."\n{a}: "I should’ve."',
   ],
   'still-think-we-were-right': [
-    '{a} pointed out that being taken does not clear anybody of anything, and {b} did not enjoy hearing it.',
-    '“They could still have been one,” said {a}, about {v}, on the morning of it, and meant it.',
-    '{b} said {v} was innocent. {a} said {b} had no more evidence for that today than yesterday.',
-    'The suspicion did not die with {v} — {a} carried it out of the room intact.',
-    '{a} has seen a castle turn on its own before and is not giving up the last few days of work.',
-    '“Prove it,” said {a}, which is a terrible thing to say about somebody who cannot answer.',
-    '{b} thought that was monstrous and said so, and {a} agreed and did not change position.',
-    'It is the coldest thing said in that hall this week and it is not obviously wrong.',
+    '{a} won’t clear {v} of anything.\n{a}: "It doesn’t prove {v} was Faithful."\n{b}: "They murdered {vObj}!"\n{a}: "Maybe that’s exactly what they want us to think."',
+    '{a} still has doubts, even now.\n{a}: "Traitors can murder their own. It’s been done."\n{b}: "That’s mad."\n{a}: "Is it?"',
+    '{b} wants to say sorry to {v}’s memory. {a} doesn’t.\n{a}: "I’m not apologising. I had reasons."\n{b}: "{v} is dead, {a}."\n{a}: "In the game. I know."',
+    '{a} keeps to {aPos} position.\n{a}: "I stand by it. Something was off with {v}."\n{b} (to camera): "{a} just won’t admit being wrong. That’s worrying."',
   ],
   'turned-on-each-other': [
-    '{a} said {b} had started it. {b} said {a} had, and both of them were partly right.',
-    'The case against {v} had two authors and this morning each of them named the other one.',
-    '“You said it first,” said {a}, which is true and is not the defence {a} thinks it is.',
-    'Whatever {a} and {b} had built about {v} came apart this morning and took the two of them with it.',
-    '{b} pointed out exactly which conversation had started it and who had been in it.',
-    'It was a shared mistake right up until it was a mistake, and then it was {b}’s.',
-    '{a} and {b} agreed about {v} for days, and spent this morning finding out they never really had.',
-    '{a} and {b} will not be doing this together again, and both of them said so.',
+    '{a} and {b} both suspected {v}, and now they argue about whose idea it was.\n{a}: "You brought {v} up first."\n{b}: "No, you did! On the walk!"\n{a}: "I only agreed with you."',
+    '{b} blames {a}.\n{b}: "You kept pushing {v}. Every day."\n{a}: "And you went along with it."\n{b}: "Because you were so sure."',
+    'The guilt turns into an argument.\n{a}: "Don’t put this on me."\n{b}: "I’m not putting it on you. I’m saying you started it."',
+    '{a} and {b} stop agreeing about anything.\n{a}: "So whose fault is {v}, then?"\n{b}: "The Traitors’. And maybe a bit yours."',
   ],
 };
 
@@ -1625,65 +1435,28 @@ registerEvent({
 // rerouted the season.
 const NIGHT_AWAKE_LINES = {
   desperate: [
-    '{a} did not sleep. They had watched the room write their own name down and then had to lie in the dark and count how many.',
-    'It was not the empty beds keeping {a} awake. It was the number of people who had said their name at that table.',
-    '{a} went over the ballots in the dark until the order they had been read out stopped meaning anything.',
-    'There is no version of tonight {a} could lie down with, and {a} tried all of them before it got light.',
-    '{a} spent the night deciding what to say in the morning, and threw all of it away by five.',
-    'Somebody in this building had written {a}\'s name down tonight, and {a} lay there going through who.',
-    '{a} rehearsed being surprised, in the dark, for a morning {a} was fairly sure would not come.',
-    'Twice in the night {a} got as far as the door and both times sat back down on the end of the bed.',
-    '{a} worked out, lying there, exactly which two people would have to change their minds, and could not think how.',
-    'The dark did not help. {a} had run out of ways to make tomorrow come out differently by about two.',
+    '{a} lies awake, thinking about the vote tomorrow.\n{a} (to camera): "My name came up at the table. If it comes up again, I’m gone. I can’t sleep."',
+    '{a} is still up long after the corridor has gone quiet.\n{a} (to camera): "I heard my name last night. I keep hearing it."',
+    '{a} gets up, sits on the end of the bed, and doesn’t lie back down.\n{a} (to camera): "Either they murder me, or the table banishes me. That’s where I’m at."',
+    '{a} counts the votes against {aObj} again in the dark.\n{a} (to camera): "I’ve got to change some minds tomorrow. I don’t know how."',
   ],
   paranoid: [
-    'Somebody had said {a}\'s name tonight, and {a} spent the dark working out who else had been thinking it.',
-    '{a} lay awake going through the room one by one, deciding which of them had meant it.',
-    'One name said out loud at that table was enough to keep {a} up until the corridor started making noises.',
-    '{a} kept coming back to who had looked away first, and could not let the question go long enough to sleep.',
-    'Every time {a} nearly went under, the room reassembled itself behind their eyes and started talking again.',
-    '{a} counted who had been kind to them today and could not decide what any of it had meant.',
-    '{a} listened to the corridor for a long time and could not decide whether it had gone quiet or always was.',
-    'Somewhere in the dark {a} started ranking the room by who had not looked at them, which is no way to sleep.',
-    'Every creak in the building was somebody deciding something about {a}, and {a} knew that was nonsense, and lay there anyway.',
-    '{a} replayed one sentence from the table until they had heard four different meanings in it.',
+    '{a} lies awake, listening for footsteps.\n{a} (to camera): "Every creak, I think it’s them coming for me."',
+    '{a} hears the stairs go at two in the morning and doesn’t sleep after that.\n{a} (to camera): "Somebody was up. I want to know who."',
+    '{a} is sure someone said {aPos} name at the table and meant it.\n{a} (to camera): "They’re coming for me. Either tonight or at the Round Table."',
+    '{a} lies there going through who said {aPos} name, and when.\n{a} (to camera): "I know who wants me out. I just don’t know if they’re Traitors or just stupid."',
   ],
-  // THE SAME NIGHT WITH NO BALLOT UNDER IT (fix round 1, C3). Reachable only
-  // when the mood came from somewhere other than the room's votes — an
-  // override written by a scene, or an episode with no table behind it yet.
-  // Not one of these says anybody voted, said a name, or sat at a table,
-  // because on this branch the record does not say that they did.
   unfounded: [
-    '{a} could not name a single thing that had gone wrong today and lay awake about it anyway.',
-    'Nothing happened. {a} spent four hours going over the nothing.',
-    '{a} kept coming back to who had looked away first, and could not let the question go long enough to sleep.',
-    'Every creak in the building was somebody deciding something about {a}, and {a} knew that was nonsense, and lay there anyway.',
-    '{a} counted who had been kind to them today and could not decide what any of it had meant.',
-    'Somewhere in the dark {a} started ranking the room by who had not looked at them, which is no way to sleep.',
-    'It is a feeling rather than a fact, and at three in the morning {a} could not tell the difference.',
-    '{a} listened to the corridor for a long time and could not decide whether it had gone quiet or always was.',
-    '{a} rehearsed a conversation nobody has asked for, twice, and then a third time.',
-    'There is no evidence for any of it. {a} lay there assembling some.',
-    '{a} went under twice and came back up both times with the same face in front of them.',
-    'By four {a} had built a whole case out of an afternoon and could not find the first brick of it.',
+    '{a} can’t sleep, and can’t say why.\n{a} (to camera): "Nobody’s said my name. I just feel like they’re about to."',
+    '{a} lies awake with nothing to worry about, worrying.\n{a} (to camera): "I’m safe. I think I’m safe. Why don’t I feel it?"',
+    '{a} gets up for water three times.\n{a} (to camera): "Nothing’s happened. That’s what’s keeping me up. Nothing ever happens until it does."',
+    '{a} lies awake running through every conversation from the day.\n{a} (to camera): "Did I say too much? I always think I’ve said too much."',
   ],
   content: [
-    '{a} lay awake with the empty beds, doing the arithmetic nobody says out loud.',
-    'The castle went very quiet at night once there were fewer people in it, and {a} noticed.',
-    '{a} listened to a building built for a lot more people than were still in it.',
-    'It took {a} a long time to get to sleep, and it was not fear, and it was not nothing either.',
-    '{a} could hear how much room there was above them, and had never noticed the ceiling before.',
-    'The corridor settles at night, and {a} lay listening to a building doing nothing in particular.',
-    '{a} slept badly and could not have told anybody what about, which was somehow worse.',
-    'The place makes different noises with fewer people in it, and {a} had started noticing which.',
-    '{a} lay there thinking about nothing much, in a room that used to have somebody else breathing in it.',
-    'It is a big building to be quiet in, and {a} was awake for a good hour of it.',
-    '{a} lay there doing arithmetic on a room that keeps getting smaller.',
-    'The castle at four in the morning is a very long building, and {a} heard all of it.',
-    '{a} slept for perhaps an hour and dreamed about the table, which was not restful.',
-    'There is nothing to do at that hour except think, and {a} thought about all of them in order.',
-    '{a} got up twice for water neither time wanting water.',
-    'It was light before {a} stopped listening to the corridor.',
+    '{a} lies awake thinking about the people who have gone.\n{a} (to camera): {cam:count:{n}}',
+    '{a} can’t sleep, and ends up at the window.\n{a} (to camera): "You lie here and you think, who’s not coming down tomorrow?"',
+    '{a} stays up, not scared, just thinking.\n{a} (to camera): "I feel alright, weirdly. I just can’t switch my head off."',
+    '{a} listens to the castle settle and doesn’t sleep till late.\n{a} (to camera): "It’s so quiet at night. You’d never know what goes on upstairs."',
   ],
 };
 
@@ -1747,10 +1520,9 @@ registerEvent({
     // record names this person on it. See `_ballotBehind` above.
     const grounded = !isNervy(state) || !!_ballotBehind(actor);
     const pool = grounded ? state : 'unfounded';
-    const line = pick(rng, NIGHT_AWAKE_LINES[pool] || NIGHT_AWAKE_LINES.content)
-      .replace(/\{a\}/g, actor);
-    const tail = gone === 1 ? 'One empty bed, so far.' : `${gone} empty beds, so far.`;
-    const t = api.openArc(FAMILY, [actor], { source: sceneWhy, seed: `${line} ${tail}` });
+    const line = pronounSlots(pick(rng, NIGHT_AWAKE_LINES[pool] || NIGHT_AWAKE_LINES.content)
+      .replace(/\{a\}/g, actor).replace(/\{n\}/g, countWord(gone)), { a: actor });
+    const t = api.openArc(FAMILY, [actor], { source: sceneWhy, seed: line });
     // THE BRANCH IS THE STATE. Returning a constant label made the audit's
     // (id, branch) table read this as one outcome fired five times in a
     // season when it is three genuinely different scenes chosen by the last
@@ -1822,29 +1594,28 @@ function _chaliceLastNight(ep) {
 
 const LAST_GLASS_LINES = {
   'still-there': [
-    'There were cups turned over on the table and one still full, and {a} did not want to be the one to right any of them.',
-    '{a} counted the turned-over cups twice and got the same number twice.',
-    'Somebody had turned the cups over and nobody had said who was under which, and {b} stared at them anyway.',
-    '{a} moved one cup an inch and then put it back exactly where it had been.',
-    'Neither {a} nor {b} would touch the table. It had been set for people the castle had not been told about yet.',
+    'The glass from last night is still on the table. Nobody has moved it.\n{a}: "That’s the one, isn’t it?"\n{b}: "Don’t touch it."\n{a}: "I wasn’t going to."',
+    '{a} and {b} stand looking at the one glass nobody has cleared.\n{b}: "Whoever drank from that is gone."\n{a}: "And whoever poured it is sat at breakfast."',
+    '{a} spots the glass first.\n{a}: "They left it there."\n{b}: "On purpose?"\n{a}: "Everything in here is on purpose."',
+    '{b} goes to clear the table and stops at the glass.\n{b}: "I can’t pick that up."\n{a}: "Leave it. I’ll do it later."',
   ],
   'washed-them-all': [
-    'Every glass from last night was clean and away before anybody came down, and {b} found that harder to take than the cups.',
-    '{a} asked who had tidied up. The question went round the room and came back with nothing on it.',
-    'The kitchen was spotless and the table was not, and {a} could not decide which of those bothered them more.',
-    '{b} had wanted to look at the glasses and there were no glasses left to look at.',
+    'Every glass from last night is already washed and put away.\n{a}: "Who did the washing up?"\n{b}: "Not me. It was done before I got down."\n{a}: "That’s helpful, isn’t it. For somebody."',
+    '{a} finds the draining board full of clean glasses.\n{a}: "Someone’s been busy."\n{b}: "Maybe they just couldn’t sleep."\n{a}: "Maybe."',
+    'The glasses are washed before anyone comes down.\n{b}: "Well, that’s the evidence gone."\n{a}: "If there was any."\n{b}: "There’s always some."',
+    '{a} asks round who washed up. Nobody says.\n{a} (to camera): "Somebody got up early and washed every glass. And nobody’s owning up to it."',
   ],
   'who-had-what': [
-    '{a} and {b} went back over the evening drink by drink and could not make it come out the same way twice.',
-    '"Who handed round the last ones?" {a} said, and {b} had been about to ask it.',
-    'Between them they could name everybody who had been standing up at the end of the night, which was almost everybody.',
-    'They tried to remember who had fetched what, and found they had both been watching the room rather than the table.',
+    '{a} and {b} try to work out who was drinking what last night.\n{a}: "You were on red, I was on white."\n{b}: "And the rest of the table?"\n{a}: "I honestly can’t remember."',
+    '{a} tries to put the evening back together.\n{a}: "Who poured the last round?"\n{b}: "I thought you did."\n{a}: "I didn’t pour anything."',
+    '{b} gets a piece of paper out.\n{b}: "Right. Who sat where, and who had which glass."\n{a}: "That’s very organised."\n{b}: "Somebody has to be."',
+    '{a} and {b} go round in circles on who drank from what.\n{a}: "We’ll never get it back."\n{b}: "No. And they know that."',
   ],
   'thought-nothing-of-it': [
-    '{a} drank tea at a table of turned-over cups and did not once wonder why it was drinks and not chairs.',
-    'The cups were a formality as far as {b} was concerned, and {b} got on with breakfast.',
-    '{a} had bigger arithmetic to be doing than the crockery.',
-    'Neither of them read anything into the table. There was nothing in it to read, as far as either could see.',
+    '{a} clears the table without looking at it.\n{b}: "Was that last night’s?"\n{a}: "Probably. Why?"\n{b}: "No reason."',
+    '{a} and {b} wash up and chat about the mission, not about the glasses.\n{a}: "Did you see the state of the kitchen?"\n{b}: "Awful. Pass me that."',
+    '{a} tips the dregs down the sink.\n{b}: "Should we have kept that?"\n{a}: "Kept it for what?"\n{b}: "I don’t know. Never mind."',
+    '{a} and {b} don’t give the glasses a second thought.\n{a} (to camera): "It was just washing up. I didn’t think about it till later."',
   ],
 };
 
@@ -1973,29 +1744,28 @@ function _plainSightLastNight(ep) {
 // ── TWO CHAIRS ───────────────────────────────────────────────────────
 const TWO_CHAIRS_LINES = {
   'counted-twice': [
-    '{a} counted the room, did not believe it, and counted it again. Two.',
-    'There were two places nobody was going to sit in, and {b} had to say the number out loud before it would go in.',
-    '{a} got to the end of the table and found they had lost two people, not one, and had to start again.',
-    '{b} had been braced for a chair. Nobody braces for two.',
-    'Two. {a} said it, {b} repeated it, and neither of them got any further than that for a while.',
+    '{a} counts the table and gets two missing.\n{a}: "Two. There’s two gone."\n{b}: "They took two?"\n{a}: "Count it yourself."',
+    '{b} counts, then counts again.\n{b}: "That can’t be right."\n{a}: "It is. Two chairs."\n{b}: "They’ve never done that before."',
+    '{a} and {b} look at the two empty places.\n{a}: "Two in one night."\n{b}: "They’re getting greedy."',
+    '{a} gets to the end of the table and has to start again.\n{a}: "We’ve lost two, not one."\n{b}: "Oh my God."',
   ],
   'which-one-first': [
-    '{a} wanted to know which of them had gone first, which {b} said did not matter and then thought about all morning.',
-    'They spent breakfast trying to work out the order it had happened in, as if the order were a kindness.',
-    '"Both of them, in one night," {b} said, and {a} could hear them working out what that took.',
-    '{a} could not stop arranging it into a sequence. {b} had stopped trying.',
+    '{a} tries to put the two murders in order.\n{a}: "Who do you think they went for first?"\n{b}: "Does it matter?"\n{a}: "It might. The first one was the one they really wanted."',
+    '{b} thinks one of them was the real target.\n{b}: "One was planned. The other was just a bonus."\n{a}: "Which one was planned, though?"',
+    '{a} and {b} argue about which of the two mattered more to the Traitors.\n{a}: "It has to be the first one."\n{b}: "We don’t know which was first."\n{a}: "No. That’s the problem."',
+    '{a} works it through.\n{a}: "If you could take two, who would you take?"\n{b}: "The two biggest threats."\n{a}: "So who thought those two were threats?"',
   ],
   'what-it-tells-them': [
-    'Two in a night is not a night. {a} said so to {b}, and {b} had got there before {a} had finished.',
-    '{a} pointed out that whoever did this had been in a hurry, and neither of them liked what a hurry meant.',
-    '{b} took two empty chairs as arithmetic rather than grief, and was not ashamed of it.',
-    'It told them something, and {a} could not have said what, and could not put it down either.',
+    '{b} reads the double murder as a message.\n{b}: "They’re scared. You don’t take two unless you’re scared."\n{a}: "Or confident."\n{b}: "Either way, it tells us something."',
+    '{a} and {b} try to work out what two empty chairs say.\n{a}: "Those two were getting close."\n{b}: "To who, though?"\n{a}: "That’s what we find out today."',
+    '{b} is already making notes.\n{b}: "Who were those two talking to yesterday? Because that’s our list."\n{a}: "That’s half the castle."\n{b}: "Then it’s half the castle."',
+    '{a} thinks it’s a decision, not bad luck.\n{a}: "They chose those two. Together. Why together?"\n{b}: "Because together they were dangerous."',
   ],
   'no-arithmetic-today': [
-    '{a} would not do the sum this morning and {b} did not make them.',
-    'Neither of them counted anything. It was the first morning of the season either had managed that.',
-    '{b} put breakfast in front of {a} and did not mention the table at all.',
-    'There was nothing to work out, {a} said, and meant there was nothing they could bear to work out yet.',
+    '{a} won’t count the room this morning.\n{a}: "Don’t tell me the number. I don’t want to know."\n{b}: "Okay. I won’t."',
+    '{b} starts working out who is missing, and {a} stops {bObj}.\n{a}: "Not today. Please."\n{b}: "Alright. Sorry."',
+    '{a} sits down and puts {aPos} head in {aPos} hands.\n{b}: "Two, {a}."\n{a}: "I know. I don’t want to talk about it."',
+    '{a} and {b} just sit together.\n{b}: "Should we work out who it was?"\n{a}: "Later. Not now."',
   ],
 };
 
@@ -2054,28 +1824,28 @@ registerEvent({
 // point of the night is that it finds out at the funeral.
 const COFFIN_LINES = {
   'counted-the-missing': [
-    '{a} worked out how many were not at breakfast and then could not work out what to do with the number.',
-    'There were people missing and no list of them, and {b} kept trying to make one anyway.',
-    '{a} and {b} put together who they had seen this morning, which turned out to be a shorter conversation than either wanted.',
-    '{b} counted, got a number, and found the number told them nothing at all.',
+    '{a} and {b} count who isn’t at breakfast. Nobody has been told who is dead.\n{a}: "There’s three not here."\n{b}: "And only one of them is dead. Probably."\n{a}: "We won’t know till this afternoon."',
+    '{b} goes round the table in {bPos} head.\n{b}: "I can name who’s missing. I can’t tell you which one it is."\n{a}: "Nobody can. That’s the point."',
+    '{a} counts the missing, and can’t get any further.\n{a}: "It’s one of them. Just one."\n{b}: "Unless it isn’t."',
+    '{a} lists the missing faces out loud.\n{a}: "That’s everyone who isn’t here."\n{b}: "Now we wait."\n{a}: "I hate waiting."',
   ],
   'would-not-guess': [
-    '{a} refused to guess who it was. {b} noticed how hard the refusing was.',
-    '"We find out this afternoon," {b} said, and made it sound like a rule rather than a comfort.',
-    '{a} said they would rather not know for another few hours, and meant it.',
-    'Neither of them would put a name to it, and both of them had one.',
+    '{a} won’t guess which of the missing is dead.\n{b}: "Who do you think it is?"\n{a}: "I’m not doing that. We’ll find out."',
+    '{b} wants to guess. {a} won’t.\n{b}: "Go on. Gut feeling."\n{a}: "No. Guessing who’s dead is grim."',
+    '{a} keeps quiet all morning.\n{a}: "It’s not a game, guessing that."\n{b}: "Everything’s a game in here."\n{a}: "Not that."',
+    '{a} changes the subject every time the coffins come up.\n{a}: "Can we talk about the mission instead?"\n{b}: "Fine."',
   ],
   'said-a-name-anyway': [
-    '{a} said a name out loud and then wished they had not, and {b} would not say whether they had thought the same one.',
-    'It took {a} about four minutes to start guessing, which {b} thought was about three and a half too few.',
-    '{b} had a name ready before the kettle boiled, and {a} did not ask for it.',
-    '{a} guessed, {b} guessed differently, and the two of them fell out about people who might both be alive.',
+    '{b} says a name out loud, and {a} doesn’t like it.\n{b}: "I reckon it’s {c}."\n{a}: "Don’t. You don’t know that."\n{b}: "I just feel it."',
+    '{b} guesses who is in the coffin.\n{b}: "It’s got to be {c}. {c} was a threat to them."\n{a}: "And if it’s not?"\n{b}: "Then I was wrong."',
+    '{b} can’t help it.\n{b}: "{c}. I’d bet on {c}."\n{a}: "Keep your voice down."',
+    '{b} names someone, and {a} feels sick hearing it.\n{b}: "My money’s on {c}."\n{a}: "That’s horrible, saying that."',
   ],
   'waited-badly': [
-    '{a} spent the morning doing nothing at all, quite intently, and {b} sat with them while they did it.',
-    'The afternoon was hours away and {b} could not find anything to put in front of it.',
-    '{a} kept looking at the door like the door owed them an answer.',
-    'Waiting is a skill and neither {a} nor {b} turned out to have it.',
+    '{b} can’t sit still waiting for the afternoon.\n{b}: "How long till we find out?"\n{a}: "Hours."\n{b}: "I can’t do hours."',
+    '{a} watches {b} pace the hall.\n{a}: "Sit down, you’re making me nervous."\n{b}: "I can’t. Someone’s dead and we don’t even know who."',
+    'The morning drags. {b} checks the time every few minutes.\n{b}: "It’s been ten minutes."\n{a}: "It’s been two."',
+    '{b} keeps asking {a} who {bSub} thinks it is.\n{a}: "Stop asking me."\n{b}: "I can’t stop thinking about it."',
   ],
 };
 
@@ -2112,7 +1882,10 @@ registerEvent({
         : branch === 'waited-badly' ? 'could not get through the morning to the afternoon'
           : 'counted who was not at breakfast and got no further';
     const note = lineFor(COFFIN_LINES[branch],
-      'grief-the-coffins|' + branch + '|' + ctx.ep, { a, b });
+      'grief-the-coffins|' + branch + '|' + ctx.ep,
+      // THE NAME A GUESS REACHES FOR: one of the people not at breakfast.
+      { a, b, c: ((_lastRound(ctx.ep)?.variantData?.coffins || [])
+        .find(n => n !== a && n !== b)) || 'somebody' });
     // Guessing out loud at a morning like this costs the pair something; the
     // rest of it draws them together.
     const bondDelta = branch === 'said-a-name-anyway' ? -0.5 : 1;
@@ -2135,28 +1908,28 @@ registerEvent({
 // the format's cruellest available scene.
 const IN_THIS_ROOM_LINES = {
   'we-were-all-here': [
-    '"We were all here," {a} said. "All of us. All evening." {b} had no answer to that and did not pretend to.',
-    '{b} kept coming back to the fact that nobody had left the room, and to how little that turned out to be worth.',
-    'Nobody went anywhere last night, {a} said, and heard how that sounded as they said it.',
-    '{a} could account for the whole evening and for every person in it, and {v} was gone anyway.',
+    'Nobody left the room last night, and {v} is gone anyway.\n{a}: "We were all here. The whole evening."\n{b}: "Then how?"\n{a}: "One of us did it in front of all of us."',
+    '{a} can’t get over it.\n{a}: "It happened right under our noses."\n{b}: "At the table. While we were talking."\n{a}: "While we were talking."',
+    '{b} goes cold thinking about it.\n{b}: "Whoever did it was sat right next to us."\n{a}: "Laughing at our jokes."',
+    '{a} and {b} look at each other.\n{a}: "It could’ve been you."\n{b}: "It could’ve been you."\nNeither of them laughs.',
   ],
   'went-round-the-evening': [
-    '{a} and {b} went back through the evening hour by hour and could not find the hole in it.',
-    'They reconstructed the whole night between them, and the reconstruction was perfect, and useless.',
-    '{b} remembered where everybody had been sitting. {a} remembered who had got up, which was everybody.',
-    '{a} asked what the last thing {v} had said was, and between them they could not agree on it.',
+    '{a} goes back over the whole evening with {b}.\n{a}: "Who got up? Who went to the loo?"\n{b}: "Nobody. Nobody left."\n{a}: "Then I’m missing something."',
+    '{a} and {b} rebuild the evening minute by minute.\n{b}: "{v} was laughing at about ten."\n{a}: "And at eleven?"\n{b}: "I can’t remember."',
+    '{a} can’t find a gap in the evening anywhere.\n{a}: "I’ve been through it five times."\n{b}: "Then they’re good. Really good."',
+    '{b} goes through who sat where.\n{b}: "{v} was there. You were there. I was here."\n{a}: "And the person next to {v}?"',
   ],
   'stopped-looking': [
-    '{b} stopped trying to make the evening explain itself, and told {a} to stop as well.',
-    '{a} decided it did not matter where anybody had been standing, which was the first restful thought of the morning.',
-    'Neither of them wanted the evening back. {b} said so and {a} agreed too quickly.',
-    '{a} had been through it four times before breakfast and put it down in the middle of the fifth.',
+    '{b} puts the evening down rather than go through it again.\n{b}: "I’m not doing it again. It gets us nowhere."\n{a}: "Fine. But I’m not letting it go."',
+    '{a} wants to go through it again. {b} won’t.\n{b}: "We’ve done this. Leave it."\n{a}: "Alright. For now."',
+    '{b} is tired of going over it.\n{b}: "We were all there and none of us saw it. That’s the answer."\n{a}: "That’s not an answer."',
+    '{a} and {b} give up on the evening.\n{a}: "We’re never going to work it out."\n{b}: "Not like this."',
   ],
   'looked-round-the-table': [
-    '{a} looked round the table at every single face and made themselves keep looking.',
-    '{b} spent breakfast watching the room instead of eating in it.',
-    'Whoever it was had been at that table last night, and {a} was going to be at it again tonight.',
-    '{a} checked the faces one at a time, found nothing in any of them, and did it again anyway.',
+    '{a} looks at every face at the table, one at a time.\n{a} (to camera): "One of these people sat next to {v} all night and did it. I looked at every single one of them."',
+    '{a} watches the table at breakfast very carefully.\n{a}: "Somebody here did it in front of us."\n{b}: "Stop staring. People are noticing."\n{a}: "Good."',
+    '{a} goes round the table with {aPos} eyes.\n{a} (to camera): "Somebody had a really good evening last night. I want to know who."',
+    '{a} keeps looking at the same few people.\n{b}: "Who are you looking at?"\n{a}: "Everyone. I’m looking at everyone."',
   ],
 };
 
@@ -2233,36 +2006,34 @@ function _deathMatchLastNight(ep) {
 
 const OTHER_CHAIR_LINES = {
   'cannot-stop-looking': [
-    '{a} had been watching {w} all morning and only noticed doing it when {b} asked what they were looking at.',
-    '"Somebody had to win it," {b} said, and then went back to watching {w} not eat anything.',
-    'Neither of them said {w}’s name. Both of them were talking about {w}.',
-    '{a} kept replaying the last card, and every time it came out the same and meant nothing.',
-    '{b} said out loud that it was a card game, in the tone of somebody arguing with themselves.',
+    '{a} can’t stop looking at {w}, the one who got up from the card table.\n{a}: "{w} walked away from that."\n{b}: "Somebody had to."\n{a}: "I know. It’s just strange to look at."',
+    '{a} watches {w} eat breakfast like nothing happened.\n{a}: "How is {w} so calm?"\n{b}: "What else can you do?"',
+    '{a} and {b} both keep glancing at {w}.\n{b}: "Stop looking."\n{a}: "You’re looking too."',
+    '{a} can’t get last night out of {aPos} head.\n{a}: "{w} turned that card over and just breathed."\n{b}: "I’d have been sick."',
   ],
   'it-was-a-card': [
-    '"It was a card," {a} said. "It was a card, {b}." {b} agreed, twice, which was once too many.',
-    '{a} pointed out that {w} could have lost just as easily, and could not make the thought land anywhere useful.',
-    '{b} refused to make anything of it and spent a while refusing quite loudly.',
-    '{a} said that if you go looking for meaning in a shuffled deck you deserve what you find.',
+    '{b} keeps saying it was only a card game.\n{b}: "It was a card. That’s all it was. Luck."\n{a}: "Someone still died."\n{b}: "I know. But it was luck."',
+    '{b} won’t read anything into it.\n{b}: "Don’t make it mean something. It was a draw."\n{a}: "Everything means something in here."',
+    '{a} wants to talk about the card game. {b} doesn’t.\n{b}: "Luck of the draw. Leave it."\n{a}: "Fine."',
+    '{b} shrugs it off.\n{b}: "Could’ve been any of them. It was just cards."\n{a} (to camera): "{b} keeps saying it was just cards. I’m not sure it was."',
   ],
   'who-picked-the-four': [
-    '{a} was not interested in the cards. {a} wanted to know who chose the four of them.',
-    '"Somebody wrote those four names down," {b} said, and the kitchen went quiet for a moment.',
-    '{a} and {b} worked backwards from the four chairs and got as far as knowing the chairs were the point.',
-    'It was {b} who said the useful thing: the game was fair, and the guest list was not.',
-    '{a} listed the four out loud, twice, looking for what they had in common. There was nothing in common.',
+    '{a} and {b} want to know who chose the four players.\n{a}: "The Traitors picked those four."\n{b}: "So why those four?"\n{a}: "That’s what I keep asking."',
+    '{b} thinks the choice of four is the real clue.\n{b}: "Forget the cards. Who put those four at the table?"\n{a}: "The Traitors."\n{b}: "Exactly. So who’d want those four in trouble?"',
+    '{a} goes through the four names.\n{a}: "What have those four got in common?"\n{b}: "They were all loud at the last table."\n{a}: "That’s it. That’s it."',
+    '{a} isn’t interested in the cards.\n{a}: "I want to know who picked the four of them."\n{b}: "We’ll never know that."\n{a}: "We might."',
   ],
   'would-you-have-drawn': [
-    '{a} and {b} spent breakfast deciding which card each of them would have taken, as if it could still matter.',
-    '"I would have gone left," {a} said. {b} said everybody says that.',
-    'They played the circle again with teaspoons and it came out differently, which helped nobody.',
-    '{b} admitted they had been glad not to be called, and hated saying it.',
+    '{a} plays the last round again over breakfast.\n{a}: "Would you have drawn, or stuck?"\n{b}: "Drawn. No question."\n{a}: "Then you’d be gone."',
+    '{b} and {a} argue about the last hand.\n{b}: "I’d have stuck."\n{a}: "You’d have panicked."\n{b}: "Probably."',
+    '{a} can’t stop replaying it.\n{a}: "One more card. That’s all it was."\n{b}: "Don’t. It makes it worse."',
+    '{a} asks {b} what {bSub} would have done.\n{b}: "Honestly? I’d have frozen."\n{a}: "Me too."',
   ],
   'was-in-it': [
-    '{a} had been at that table and could not describe any of it, which {b} found more frightening than a description.',
-    '{a} got up from the game and has not really got up from it since. {b} sat with them anyway.',
-    '"You were there," {b} said. {a} said yes, and that they had been thinking about nothing else.',
-    '{a} kept saying they had been lucky, and each time it sounded less like a word for good things.',
+    '{a} was at the card table last night and is still shaking.\n{b}: "You okay?"\n{a}: "I was one card away. One."\n{b}: "But you’re here."',
+    '{a} sat in that chair and turned cards over, and survived.\n{a}: "I didn’t sleep."\n{b}: "I’m not surprised."\n{a}: "I keep seeing the last card."',
+    '{b} asks {a} what it was like at the table.\n{a}: "Horrible. Everyone just watching."\n{b}: "I’m glad it wasn’t you."\n{a}: "It nearly was."',
+    '{a} was in it, and won’t talk about it much.\n{a}: "I got lucky. That’s all."\n{b}: "Lucky’s enough."',
   ],
 };
 

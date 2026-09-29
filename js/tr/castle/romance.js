@@ -91,7 +91,7 @@ import { sceneApi, arcContinue } from './effects.js';
 import { findOpenThread, heatAt, priorMoments } from '../threads.js';
 import { suspicion } from '../deduction.js';
 
-import { lineFor, whoTheyTold } from './lines.js';
+import { lineFor, whoTheyTold, pronounSlots } from './lines.js';
 
 const FAMILY = 'romance';
 const SPARK_KIND = 'romance-spark';
@@ -216,6 +216,10 @@ export function _activeRomanceCount() {
 //   said-nothing   — both of them clock it and both of them decide not to.
 const SPARK_LINES = {
   sparked: [
+    '{a} and {b} end up on the same sofa, closer than they need to be.\n{b}: "Is it me, or is this sofa getting smaller?"\n{a}: "It’s definitely the sofa."',
+    '{a} makes {b} laugh twice in five minutes.\n{b}: "Stop it. People are looking."\n{a}: "Let them look."',
+    '{a} and {b} talk by the fire until everyone else has gone up.\n{a} (to camera): "I didn’t come here for this. But, well. Here we are."',
+    '{b} catches {a} looking.\n{b}: "What?"\n{a}: "Nothing."\n{b}: "Doesn’t look like nothing."',
     '{a} and {b} sat closer than the conversation strictly required, and both of them noticed.',
     'Something shifted between {a} and {b} tonight that had nothing to do with the game.',
     '{a} caught {b}’s eye across the room and it lasted a beat too long to be nothing.',
@@ -228,6 +232,9 @@ const SPARK_LINES = {
     'Somewhere in the middle of a dull conversation {a} and {b} stopped having it and kept talking.',
   ],
   'named-it-fast': [
+    '{b} says it about ten seconds in.\n{b}: "This is going to be a problem, isn’t it?"\n{a}: "Probably."\n{b}: "Good."',
+    '{b} doesn’t waste time.\n{b}: "I like you. That’s going to complicate things."\n{a}: "Things were already complicated."',
+    '{a} and {b} name it straight away.\n{b} (to camera): "Why play games about it? We’re playing enough games already."',
     '“This is going to be a problem, isn’t it,” {b} said, about ten seconds in, and {a} did not disagree.',
     '{a} said the thing out loud before either of them had decided to, which is one way of deciding.',
     'It took {a} one evening and one sentence. {b} had been expecting it to take a week.',
@@ -238,6 +245,9 @@ const SPARK_LINES = {
     '{b} asked {a} a direct question about it and got a direct answer, which nobody here expects.',
   ],
   'one-sided-so-far': [
+    '{a} spends the evening falling for {b}, who is just being nice.\n{b}: "Night, {a}! Sleep well."\n{a} (to camera): "Did you see that? {bSub} said sleep well."',
+    '{a} reads a lot into {b}’s smile.\n{b} (to camera): "{a}’s lovely. I think {aSub} might like me a bit more than I realised."',
+    '{a} hangs on {b}’s every word.\n{b}: "You alright? You’re staring."\n{a}: "Am I? Sorry."',
     '{a} spent the evening in something that {b} was, as far as {b} knew, merely being pleasant in.',
     '{b} thought it was a nice conversation. {a} thought about it for two hours afterwards.',
     'It was mutual for exactly one of them, and {a} is the one who knows that.',
@@ -248,6 +258,9 @@ const SPARK_LINES = {
     'Nothing about the evening was reciprocal, which {a} has decided not to think about.',
   ],
   interrupted: [
+    '{a} and {b} are nearly there when {c} comes in for a glass of water.\n{c}: "Oh! Sorry. Carry on."\n{b}: "We weren’t doing anything."\n{c}: "Clearly."',
+    '{c} walks in at exactly the wrong moment.\n{a} (to camera): "{c} has the worst timing in the castle."',
+    '{a} leans in, and the door opens.\n{c}: "Anyone seen my jumper?"\n{b}: "No!"',
     '{a} and {b} were most of the way to something when {c} came in for a glass of water.',
     '{c} walked in at exactly the wrong moment, said nothing, and has said nothing since.',
     'The door went. {a} and {b} were suddenly two people discussing tomorrow’s mission.',
@@ -258,6 +271,9 @@ const SPARK_LINES = {
     'Nothing was said. {c} has been carrying it since about half past eleven.',
   ],
   'said-nothing': [
+    'Both of them notice. Neither says so.\n{a}: "Well. Night, then."\n{b}: "Night."\nNeither moves.',
+    '{a} and {b} sit in a loaded silence.\n{b} (to camera): "Something happened. Nothing happened. You know?"',
+    '{a} and {b} say goodnight a bit too slowly.\n{a} (to camera): "I’m not saying anything. Not yet."',
     'Both of them noticed. Neither of them said so, and both of them noticed the not saying.',
     '{a} and {b} sat with it for an hour and let it go up the stairs unaccompanied.',
     'There was a version of the evening where somebody spoke. This was the other one.',
@@ -357,6 +373,9 @@ registerEvent({
 // same note for the same reason.
 const SHOWMANCE_FORM_LINES = {
   'stopped-hiding-it': [
+    '{a} and {b} stop pretending it’s nothing.\n{a}: "So we’re doing this?"\n{b}: "We’re doing this."\nThe castle has a showmance now.',
+    '{a} takes {b}’s hand at dinner in front of everyone.\n{b} (to camera): "No more hiding. It’s out."',
+    '{a} and {b} sit together openly.\n{a}: "Let them talk."\n{b}: "They will."',
     '{a} and {b} stopped pretending it was nothing. The castle has a showmance now.',
     'By breakfast {who} knew about {a} and {b}, and {a} and {b} had stopped minding.',
     '{a} and {b} arrived together and left together and did not explain either.',
@@ -365,6 +384,9 @@ const SHOWMANCE_FORM_LINES = {
     'There was no moment. There was a week of moments, and this was the one after which nobody bothered asking.',
   ],
   'the-room-said-it': [
+    'Somebody asks across the table whether {a} and {b} are a thing, before either of them has said it.\n{b}: "We’re not— I mean—"\n{a}: "Yeah. We are."',
+    'The room names it first.\n{b} (to camera): "We didn’t even get to say it. They said it for us."',
+    'The table teases {a} and {b}.\n{a}: "Alright, alright."\n{b}: "Yes. Fine. We are."',
     'Somebody said it out loud at the table before {a} or {b} had, and both of them went red and neither denied it.',
     '"So how long has that been going on," somebody asked the room, cheerfully, and {a} and {b} had to answer it.',
     '{a} and {b} did not get to choose the hour. The castle chose it, over dinner, in front of everybody.',
@@ -373,6 +395,9 @@ const SHOWMANCE_FORM_LINES = {
     '{a} and {b} had a plan for telling people and the room got there first.',
   ],
   'told-one-person': [
+    '{a} and {b} pick one person to tell first, carefully.\n{a}: "Can you keep a secret?"\n{b}: "We’re sort of together."',
+    '{a} and {b} tell their closest ally.\n{a} (to camera): "One person. The right person. For now."',
+    '{a} and {b} decide who gets to know.\n{b}: "Just one. Someone we trust."\n{a}: "That’s a short list."',
     '{a} and {b} picked one person to tell first, and picked carefully, and told them together.',
     'Before it got out on its own, {a} and {b} decided who was going to hear it from them.',
     'It is a strategic decision as much as anything else, and {a} and {b} made it like one.',
@@ -381,6 +406,9 @@ const SHOWMANCE_FORM_LINES = {
     '{a} and {b} worked out who they could afford to have know, and went and found them.',
   ],
   'agreed-to-hide-it': [
+    '{a} and {b} agree it’s real, and agree the castle won’t be told.\n{a}: "Nobody finds out."\n{b}: "Nobody."\nThey shake on it.',
+    '{a} and {b} keep it secret.\n{b} (to camera): "A couple is a target. We’re not giving them one."',
+    '{a} and {b} agree to act normal.\n{a}: "Sit apart at breakfast."\n{b}: "I hate this."\n{a}: "Me too."',
     '{a} and {b} agreed it was real and agreed the castle was not going to be told, and shook on the second part.',
     'It became a thing that night, and it became a secret in the same conversation.',
     '{a} said the room would use it. {b} agreed, and so they arranged to be strangers in daylight.',
@@ -484,6 +512,9 @@ registerEvent({
 //                    did not come in.
 const PROTECT_LINES = {
   protected: [
+    '{a} puts {aRef} between {b} and a room that’s getting too interested in {bObj}.\n{a}: "Leave {b} out of this. You’ve got nothing."',
+    '{a} shields {b} at the table.\n{b} (to camera): "{a} stepped in for me. I felt safe for the first time in days."',
+    '{a} changes the subject away from {b}.\n{a}: "Can we talk about the actual evidence?"',
     '{a} put themselves between {b} and a room that was getting a little too interested in {b}’s name.',
     'The moment {b}’s name came up, {a} was talking, and kept talking until it had gone away again.',
     '{a} made it very clear, without ever raising their voice, that coming for {b} meant coming for both of them.',
@@ -494,6 +525,9 @@ const PROTECT_LINES = {
     '{a} did it so smoothly that {b} only worked out what had happened an hour later.',
   ],
   'too-loud': [
+    '{a} defends {b} so loudly that three people wonder why.\n{a}: "It is NOT {b}! Absolutely not!"\n{b} (to camera): "Too much, {a}. Way too much."',
+    '{a} overdoes it.\n{a}: "I’ll bet my life on {b}!"\nThe room exchanges looks.',
+    '{a} protests too much.\n{b}: "You’re not helping."',
     '{a} defended {b} at a volume that made three people wonder what needed defending.',
     'It was a good defence. It was also, everybody agreed afterwards, an unmistakably personal one.',
     '{a} went further than {b} would have gone for {a}, and the room did the arithmetic on that.',
@@ -504,6 +538,9 @@ const PROTECT_LINES = {
     'The defence was so complete that it read, to the room, as an alibi with feelings on it.',
   ],
   'asked-not-to': [
+    '{b} takes {a} aside afterwards.\n{b}: "Don’t do that for me again."\n{a}: "I was helping."\n{b}: "I know. That’s why."',
+    '{b} asks {a} to stop defending {bObj}.\n{b}: "It makes us both look worse."',
+    '{b} is kind about it.\n{b}: "Thank you. But please, don’t."',
     '“Do not do that for me again,” {b} said to {a}, afterwards, and meant it as a kindness.',
     '{b} took {a} aside and explained, patiently, exactly what {a} had cost them both.',
     '“You are making me a pair,” {b} said. “I need to be a person.”',
@@ -514,6 +551,9 @@ const PROTECT_LINES = {
     '{a} had done a generous thing and had to hear why it was a foolish one.',
   ],
   'did-not-step-in': [
+    '{b}’s name goes round the table, and {a} looks at the floor.\n{b} (to camera): "{a} didn’t say a word. Not one."',
+    '{a} stays silent while {b} is attacked.\n{a} (to camera): "If I defend {b}, they come for me. I couldn’t."',
+    '{a} lets {b} take it alone.\n{b}: "Thanks for nothing."\n{a}: "I’m sorry."',
     '{b}’s name went round the table and {a} looked at the floor for the whole of it.',
     'It would have taken one sentence. {a} did not spend it, and {b} counted the seconds it took not to.',
     '{a} decided the smart play was to let it pass, and {b} watched {a} decide that.',
@@ -588,6 +628,9 @@ registerEvent({
 });
 const JEALOUSY_LINES = {
   'said-it-out-loud': [
+    '{a} doesn’t love how much time {b} spends with {c}, and says so.\n{a}: "You and {c} are very close."\n{b}: "We’re friends."\n{a}: "Are you?"',
+    '{a} brings up {c}.\n{a}: "Every time I look round, you’re with {c}."',
+    '{a} tells {b} it bothers {aObj}.\n{b}: "Are you jealous?"\n{a}: "…A bit."',
     '{a} did not love how much time {b} was spending with {c}, and said so.',
     '{a} asked what {b} and {c} had been talking about for that long, and did not like being the kind of person who asks.',
     '{b} came back from a conversation with {c} to find {a} had been counting the minutes, and being told so.',
@@ -596,6 +639,9 @@ const JEALOUSY_LINES = {
     '{a} put it plainly to {b}: not jealous, exactly, but not comfortable, and here is why.',
   ],
   'swallowed-it': [
+    '{a} watches {b} and {c} all evening and says nothing.\n{a} (to camera): "I’m not jealous. I’m just… watching."',
+    '{a} keeps it in.\n{a} (to camera): "{b} and {c}. I don’t like it. I won’t say it."',
+    '{a} pretends not to mind.\n{b}: "You okay?"\n{a}: "Fine!"',
     '{a} watched {b} and {c} for most of an evening and said nothing at all about it.',
     '{a} decided that saying it would be worse than thinking it, and thought it for three hours.',
     '{b} had no idea. {a} intended to keep it that way and was already failing.',
@@ -604,6 +650,9 @@ const JEALOUSY_LINES = {
     '{a} was perfectly pleasant to {b} about {c} and was not, underneath, in the slightest.',
   ],
   'made-it-strategy': [
+    '{a} tells {b} that {c} is worth watching, and about a third of it is strategy.\n{a}: "I don’t trust {c}."\n{b}: "Is that about the game?"\n{a}: "Mostly."',
+    '{a} dresses up jealousy as suspicion.\n{a} (to camera): "Is {c} a Traitor? Maybe. Do I want {c} away from {b}? Definitely."',
+    '{a} warns {b} off {c}.\n{a}: "Just be careful with {c}."',
     '{a} told {b} that {c} was worth watching, and about a third of that was strategy.',
     '{a} turned an evening of watching {b} and {c} into a very persuasive case against {c}.',
     'It came out as a read, complete with reasons, and {b} could not tell where the read ended.',
@@ -612,6 +661,9 @@ const JEALOUSY_LINES = {
     '{b} agreed that {c} was worth keeping an eye on, and never found out why {a} had raised it.',
   ],
   'went-to-them': [
+    '{a} takes it to {c}, in a corridor.\n{a}: "What’s going on with you and {b}?"\n{c}: "Nothing. Why?"\n{a}: "Keep it that way."',
+    '{a} confronts {c}.\n{c} (to camera): "{a} warned me off. Seriously?"',
+    '{a} has a word with {c}.\n{c}: "You’re being ridiculous."\n{a}: "Am I?"',
     '{a} did not take it to {b}. {a} took it to {c}, in a corridor, and it did not go well.',
     '{a} asked {c} directly what {c} thought {c} was doing, which {c} had not been expecting.',
     'It was {c} who got the conversation, not {b}, and {c} had done nothing to earn it.',
@@ -706,6 +758,9 @@ registerEvent({
 // a rule about.
 const BREAKUP_LINES = {
   'broke-up': [
+    '{a} and {b} end it in front of enough people that it’s round the castle by lunch.\n{b}: "I can’t do this any more."\n{a}: "Fine. Then don’t."',
+    '{a} and {b} split publicly.\n{a} (to camera): "Everyone saw. Everyone’s going to talk."',
+    '{a} and {b} have a very public ending.\n{b}: "We’re done."\n{a}: "Clearly."',
     '{a} and {b} ended it in front of enough people that it would be around the castle by lunch.',
     'It finished in the kitchen, with an audience, and neither {a} nor {b} lowered their voice for it.',
     '{a} and {b} stopped, and four people watched them stop, and nobody pretended otherwise.',
@@ -713,6 +768,9 @@ const BREAKUP_LINES = {
     '{b} walked away from {a} mid-sentence, and that was the end of it, in front of four people.',
   ],
   'faded-out': [
+    'Nobody ends it. {a} and {b} just stop sitting together.\n{a} (to camera): "It sort of stopped. Nobody said anything."',
+    '{a} and {b} drift apart.\n{b} (to camera): "We didn’t break up. We just stopped."',
+    '{a} and {b} fade out.\n{a}: "We’re okay, right?"\n{b}: "Yeah. Course."',
     'Nobody ended it. {a} and {b} simply stopped sitting together, and by the third day it had stopped.',
     'There was no conversation about it, which is how most of these actually go. {a} and {b} just went quiet.',
     '{a} and {b} were still perfectly friendly and had stopped being anything else about a week ago.',
@@ -720,6 +778,9 @@ const BREAKUP_LINES = {
     'The game took up all the room there was, and what {a} and {b} had did not survive the crowding.',
   ],
   'ended-kindly': [
+    '{a} and {b} end it properly, in private.\n{a}: "I think we should stop."\n{b}: "I think so too. Thank you for saying it first."',
+    '{a} and {b} part as friends.\n{b} (to camera): "It was lovely. It just couldn’t last in here."',
+    '{a} and {b} have a gentle goodbye.\n{a}: "Friends?"\n{b}: "Always."',
     '{a} and {b} ended it properly, in private, and both of them were better about it than they had to be.',
     '\u201cThis place is not the place for it,\u201d {b} said to {a}, and {a} agreed, and they meant it kindly.',
     'It finished with the two of them agreeing it had finished, which almost never happens here.',
@@ -727,6 +788,9 @@ const BREAKUP_LINES = {
     'They were friends by the end of the conversation, {a} and {b}, which neither had expected going in.',
   ],
   'ended-in-strategy': [
+    '{b} ends it because of what it’s costing at the table.\n{b}: "We’re a target. I can’t be a target."\n{a}: "So it’s the game."\n{b}: "It’s always the game."',
+    '{b} puts the game first.\n{b} (to camera): "I liked {a}. I like winning more."',
+    '{b} is blunt.\n{b}: "People think we’re a pair. That’s dangerous."',
     '{b} ended it because of what it was costing at the table, and told {a} that in exactly those words.',
     '\u201cThey are going to come for whichever of us is easier,\u201d {b} said, and ended it, and was not wrong.',
     '{a} was left holding a very reasonable explanation and no relationship at all.',
@@ -805,6 +869,9 @@ registerEvent({
 // being seen to protect each other is what gets both of them written down.
 const SHIELD_LINES = {
   'shield-pact': [
+    '{a} and {b} quietly agree: if either name comes up tomorrow, the other speaks first.\n{a}: "You’ve got me?"\n{b}: "I’ve got you."',
+    '{a} and {b} make a pact in the dark.\n{b}: "Anyone says your name, I’m on my feet."',
+    '{a} and {b} promise to protect each other.\n{a} (to camera): "Whatever happens tomorrow, I’m not alone."',
     '{a} and {b} quietly agreed: if either of their names comes up tomorrow, the other one is speaking first.',
     'Last thing before sleep, {a} and {b} worked out who says what if it goes wrong tomorrow.',
     '{a} and {b} agreed on a signal, which is either very sweet or very organised.',
@@ -812,6 +879,9 @@ const SHIELD_LINES = {
     '{b} told {a} not to defend them tomorrow. {a} agreed, and both of them knew {a} was lying.',
   ],
   'one-sided-pact': [
+    '{a} promises to stand up for {b}. {b} says something warm that isn’t the same promise.\n{a}: "I’ll defend you. Will you defend me?"\n{b}: "You know I care about you."',
+    '{a} notices what {b} didn’t say.\n{a} (to camera): "I promised. {b} didn’t. I heard the gap."',
+    '{b} dodges the promise.\n{b}: "Let’s see what happens."',
     '{a} promised to stand up for {b} tomorrow. {b} said something warm that was not the same promise.',
     '{a} committed to it out loud and waited, and {b} did not commit to anything out loud.',
     'It was supposed to be mutual. {a} noticed, somewhere in the dark, that only one of them had said it.',
@@ -819,6 +889,9 @@ const SHIELD_LINES = {
     '{a} came away from that thinking it was settled. It was settled in one direction.',
   ],
   'agreed-to-be-strangers': [
+    '{a} and {b} agree to be nothing in public tomorrow.\n{a}: "Don’t sit with me."\n{b}: "Don’t look at me."\n{a}: "It’s safer."',
+    '{a} and {b} agree to keep apart.\n{b} (to camera): "Sensible. Horrible, but sensible."',
+    '{a} and {b} make a painful plan.\n{a}: "Strangers till the table."\n{b}: "Strangers."',
     '{a} and {b} agreed to be nothing in public tomorrow, which is the sensible version and it cost them.',
     '\u201cDon\u2019t defend me,\u201d {b} said, and meant it. \u201cIf you stand up for me they write us both down.\u201d',
     'The pact {a} and {b} made was the opposite of a pact: two people agreeing not to look at each other.',
@@ -826,6 +899,9 @@ const SHIELD_LINES = {
     'They chose the game over the gesture, {a} and {b}, and both of them were quiet about it afterwards.',
   ],
   'refused-the-pact': [
+    '{b} won’t make the promise, and won’t explain.\n{a}: "Why not?"\n{b}: "I just can’t."\n{a} lies awake with that.',
+    '{b} refuses.\n{a} (to camera): "{b} wouldn’t promise. What does that mean?"',
+    '{b} turns {a} down gently.\n{b}: "Don’t ask me that. Please."',
     '{b} would not make the promise, and would not explain why, and {a} lay there with that.',
     '\u201cI\u2019m not going to say that to you,\u201d {b} told {a}, in the dark, and did not soften it.',
     '{a} asked for the one thing and {b} declined, kindly, and the kindness made it worse.',
@@ -892,6 +968,9 @@ registerEvent({
 // time are not the same object, and the thread is where that is stored.
 const SHARED_ALIBI_LINES = {
   'shared-alibi': [
+    '{a} and {b} vouch for each other’s whereabouts last night.\n{a}: "We were together all night."\n{b}: "All night."\nNobody asks if that makes it more or less convincing.',
+    '{a} and {b} back each other up.\n{b}: "I was with {a}. The whole time."',
+    '{a} and {b} give the same answer.\n{a} (to camera): "Our story’s simple. We were together."',
     '{a} and {b} vouched for each other’s whereabouts last night. Nobody thought to ask whether that made it MORE or LESS convincing.',
     '{a} was with {b}. {b} was with {a}. The room had to decide what that was worth.',
     'The two people least able to clear each other cleared each other, and did it with a straight face.',
@@ -902,6 +981,9 @@ const SHARED_ALIBI_LINES = {
     '{a} and {b} agreed on the hour, the room and the reason, which is one detail more than anybody honest has.',
   ],
   'asked-separately': [
+    'Someone takes {a} and {b} into different rooms, and the two accounts come back identical.\n{a} (to camera): "Same story, because it’s true."',
+    '{a} and {b} are questioned apart.\n{b}: "Ask {a}. {a} will say the same."',
+    '{a} and {b} pass the separate-rooms test.\n{b} (to camera): "Nice try. We match."',
     'Somebody had the wit to take {a} and {b} into different rooms, and the two accounts came back identical.',
     '{a} was asked first and did not know it. {b} was asked second and did.',
     'Split up and questioned apart, {a} and {b} produced the same night down to the same cold tea.',
@@ -912,6 +994,9 @@ const SHARED_ALIBI_LINES = {
     'The identical answer was the reassuring part and the frightening part at the same time.',
   ],
   'did-not-match': [
+    '{a} says the kitchen. {b} says the stairs.\n{a}: "The kitchen."\n{b}: "The stairs."\nBoth of them hear it.',
+    '{a} and {b} give different answers.\n{a} (to camera): "That was bad. Very bad."',
+    '{a} and {b} contradict each other in front of everyone.\n{b}: "I mean — we were — it doesn’t matter."',
     '{a} said the kitchen. {b} said the stairs. Both of them heard the other one say it.',
     'The accounts came apart on one word, and one word is all it takes in here.',
     '{a} put the two of them together an hour later than {b} did, and neither could fix it afterwards.',
@@ -922,6 +1007,9 @@ const SHARED_ALIBI_LINES = {
     '{a} tried to make the two versions the same version and made three versions.',
   ],
   'refused-to-vouch': [
+    '{b} is asked whether {a} was there, and says {bSub} can’t swear to it.\n{b}: "I was asleep. I can’t say where {a} was."\n{a}: "Thanks a lot."',
+    '{b} won’t vouch for {a}.\n{a} (to camera): "{b} left me hanging."',
+    '{b} is honest.\n{b}: "I’m not going to lie for anyone."',
     '{b} was asked whether {a} had been there and said, honestly, that {b} could not swear to it.',
     '“I was asleep,” {b} said, which is true, and which left {a} standing there with nothing.',
     '{b} would not lie for {a}, not even a small one, and {a} had not known that until this morning.',
@@ -1034,18 +1122,24 @@ registerEvent({
 //                          their best cover.
 const LIABILITY_LINES = {
   oblivious: [
+    '{a} spends the day next to {b} and never once feels the ground shift.\n{a} (to camera): "{b} and me are solid. I don’t worry about {bObj}."',
+    '{a} trusts {b} completely.\n{a}: "You’re the one person I don’t doubt."\n{b}: "Good."',
     '{a} spent the whole day next to {b} and never once felt the ground shift.',
     'Whatever was true about {b}, {a} was nowhere close to seeing it.',
     '{a} defended {b} twice today, warmly, and had no idea what they were defending.',
     '{b} left three separate openings and {a} walked past every one of them.',
   ],
   suspicious: [
+    'Something about {b} has started to sit wrong with {a}.\n{a} (to camera): "I can’t put my finger on it. But something’s off."',
+    '{a} watches {b} a bit more carefully.\n{a} (to camera): {cam:unsure-info}',
     '{a} couldn\'t say why, exactly, but something about {b} had started to sit wrong.',
     'A small, cold thought about {b} took root in {a} and refused to leave.',
     '{a} caught themselves checking where {b} had been, and was appalled at themselves for checking.',
     'Nothing {b} did was wrong. {a} started counting the things anyway.',
   ],
   confronts: [
+    '{a} asks {b}, privately and directly.\n{a}: "Is there something I need to know?"\n{b}: "Like what?"\n{a}: "You tell me."',
+    '{a} takes {b} aside.\n{a}: "Look me in the eye and tell me you’re Faithful."\n{b}: "I’m Faithful."',
     '{a} asked {b}, privately and directly, if there was something {a} needed to know.',
     'It came out quiet and it came out honest: {a} looked at {b} and asked them to explain themselves.',
     '{a} closed the door, sat down, and asked {b} the question they had both been avoiding for days.',
@@ -1147,7 +1241,8 @@ registerEvent({
     else if (roll < obliviousScore + suspiciousScore + confrontsScore) branch = 'confronts';
     else branch = 'exposes';
 
-    const line = pick(rng, LIABILITY_LINES[branch]).replace(/\{a\}/g, doubter).replace(/\{b\}/g, suspected);
+    const line = pronounSlots(pick(rng, LIABILITY_LINES[branch]), { a: doubter, b: suspected })
+      .replace(/\{a\}/g, doubter).replace(/\{b\}/g, suspected);
     const showmance = findOpenThread(SHOWMANCE_KIND, [x, y]);
     let bondDelta = 0;
     let threadId = showmance?.id ?? null;
@@ -1192,7 +1287,7 @@ registerEvent({
       }
       const who = api.consensusPhrase({ factId: exposureId });
       const coverThread = api.openArc('cover', [suspected],
-        { source: sceneWhy, seed: `${line} ${lineFor(EXPOSED_AFTERMATH_LINES, `romance-liability-exposed|exposes|${ctx.ep}`,
+        { source: sceneWhy, seed: `${line}${line.includes('\n') ? '\n' : ' '}${lineFor(EXPOSED_AFTERMATH_LINES, `romance-liability-exposed|exposes|${ctx.ep}`,
           { a: doubter, b: suspected, who })}` });
       threadId = coverThread?.id ?? threadId;
     }
@@ -1224,6 +1319,9 @@ registerEvent({
 //                     night, which is rarer here than a break-up.
 const FIGHT_LINES = {
   'showmance-fight': [
+    '{a} and {b} have a real fight, loud enough that the room pretends not to notice.\n{b}: "You always do this!"\n{a}: "Do what?"\n{b}: "Make everything about you!"',
+    '{a} and {b} row in the kitchen.\n{a} (to camera): "Everyone heard. Of course they did."',
+    '{a} and {b} have their first proper fight.\n{b}: "I need some space."\n{a}: "Fine!"',
     '{a} and {b} had a real fight, loud enough that the room pretended not to notice.',
     'It started over nothing and got somewhere real, and everybody downstairs heard the end of it.',
     '{a} said something to {b} that could not be taken back, and did not take it back.',
@@ -1234,6 +1332,9 @@ const FIGHT_LINES = {
     '{a} brought up something from day two that {a} had promised not to bring up.',
   ],
   'went-cold': [
+    'There’s no shouting. {a} and {b} are extremely polite for four hours.\n{a}: "Could you pass the salt, please?"\n{b}: "Of course."\nEveryone at the table winces.',
+    '{a} and {b} go icy.\n{b} (to camera): "We’re not fighting. We’re just not talking."',
+    '{a} and {b} are frostily civil.\n{a}: "Goodnight."\n{b}: "Goodnight."',
     'There was no shouting. {a} and {b} were extremely polite to each other for four hours.',
     '{a} said “fine” in a way that meant the opposite, and then said nothing else at all.',
     'They sat in the same room all evening and did not once speak to each other, and everybody saw it.',
@@ -1244,6 +1345,9 @@ const FIGHT_LINES = {
     '{b} went to bed early without saying goodnight, and {a} noticed both halves of that.',
   ],
   'about-the-vote': [
+    'It looks like a lovers’ row. It’s really about a name.\n{a}: "You wrote them down. You didn’t tell me."\n{b}: "I don’t have to tell you everything."',
+    '{a} and {b} argue about the vote.\n{b} (to camera): "It’s not about us. It’s about the game."',
+    '{a} and {b} disagree on who goes.\n{a}: "We should be voting together."\n{b}: "Says who?"',
     'It looked like a lovers’ row. It was actually about a name, and both of them knew that.',
     '{a} and {b} fell out over who to write, which is not a thing couples in the outside world do.',
     '“You are asking me to choose,” {b} said, and {a} said “yes,” and that was the whole argument.',
@@ -1254,6 +1358,9 @@ const FIGHT_LINES = {
     'It ended with the two of them further apart on a name than they had been at breakfast.',
   ],
   'patched-it': [
+    '{a} and {b} have it out properly, then put it back together the same night.\n{b}: "I’m sorry."\n{a}: "Me too. Come here."',
+    '{a} and {b} make up before bed.\n{a} (to camera): "Silly row. We’re fine."',
+    '{a} and {b} fix it.\n{b}: "Never go to bed angry."\n{a}: "Especially not in here."',
     'They had it out properly and then, unusually for this castle, put it back together the same night.',
     '{a} apologised first and meant it, and {b} let {a} finish before saying so.',
     'It was a bad hour and then it was over, and the being over was the surprising part.',
@@ -1332,6 +1439,9 @@ registerEvent({
 // length, and the two of them's strategic and temperament. All looked up.
 const OPTICS_LINES = {
   'called-strategic': [
+    'Somebody points out that {a} and {b} getting together is awfully convenient.\n{a}: "It’s not strategic."\n{b}: "It’s really not."\nNobody looks convinced.',
+    '{who} call it a strategic alliance.\n{b} (to camera): "Now everyone thinks we’re a voting bloc with a kiss on top."',
+    '{a} and {b} get accused of playing a game with it.\n{a}: "Can’t people just like each other?"',
     'Somebody pointed out, not unkindly, that {a} and {b} getting together was awfully convenient for both their games.',
     'The word "convenient" got used about {a} and {b} this morning, and it travelled.',
     'Two votes that always land together stop looking like a couple and start looking like a bloc, and the room said so.',
@@ -1342,6 +1452,9 @@ const OPTICS_LINES = {
     'It was settled this morning, by {who}, that {a} and {b} are a number rather than two numbers.',
   ],
   'made-a-joke-of-it': [
+    '{a} gets in front of it by saying it first, and worse.\n{a}: "Yes, it’s all a long con. I’m a genius."\nThe room laughs and lets it go.',
+    '{a} jokes it away.\n{a}: "If this is strategy, it’s terrible strategy."',
+    '{a} laughs it off.\n{b} (to camera): "{a} disarmed the whole room in one sentence."',
     '{a} got in front of it by saying it first and worse, and the room laughed and let it go.',
     '“We are a voting bloc, obviously,” {b} said, cheerfully, and somehow that was the end of it.',
     '{a} and {b} played up to it so thoroughly that nobody could take it seriously any more.',
@@ -1352,6 +1465,9 @@ const OPTICS_LINES = {
     '{a} and {b} let the room have the joke and kept the arrangement, which was the trade.',
   ],
   'leaned-into-it': [
+    '{a} and {b} stop denying it’s strategic and start using it.\n{a}: "So what if we’re a pair? Two votes."\n{b}: "Two votes."',
+    '{a} and {b} embrace the power-couple label.\n{a} (to camera): "If they’re scared of us, good."',
+    '{a} and {b} own it.\n{b}: "We’re together. Deal with it."',
     '{a} and {b} stopped denying it was strategic and started using it, which was worse for everybody else.',
     '“Yes,” {b} said. “We vote together. What are you going to do about it.”',
     'The couple decided that being feared as a bloc beat being pitied as a couple.',
@@ -1362,6 +1478,9 @@ const OPTICS_LINES = {
     '{a} and {b} spent the morning being exactly as inseparable as they had been accused of being.',
   ],
   'it-landed-inside': [
+    'The room says it about {a} and {b}, and by evening {a} wonders if it’s true.\n{a} (to camera): "Is {b} with me because {bSub} likes me? Or because I’m useful?"',
+    '{a} starts doubting {b}.\n{a}: "Would you still be with me if my name came up at the table?"\n{b}: "Of course. Why?"',
+    '{a} can’t shake the idea.\n{a} (to camera): {cam:unsure-info}',
     'The room said it about {a} and {b}. By evening {a} had started wondering whether it was true of {b}.',
     'It was meant as a dig at both of them. Only one of them took it home.',
     '{a} heard "convenient" and could not stop hearing it for the rest of the day.',
@@ -1471,6 +1590,9 @@ registerEvent({
 // them's temperament and boldness.
 const GRIEF_SPARK_LINES = {
   'grief-spark': [
+    '{a} and {b} lean on each other after last night, and it turns into something else.\n{b}: "I’m glad you’re still here."\n{a}: "Me too. You, I mean."',
+    'Comfort becomes something more.\n{a} (to camera): "Last night was awful. Then this happened. I don’t know."',
+    '{a} and {b} hold each other a little too long.\n{b}: "Is this okay?"\n{a}: "Yes."',
     '{a} and {b} leaned on each other after last night, and it turned into something neither of them expected.',
     '{b} was the one who found {a} this morning, and neither of them moved for a long time afterwards.',
     'It was meant to be comfort. Somewhere in the middle of it, for {a} and {b}, it stopped being only that.',
@@ -1481,6 +1603,9 @@ const GRIEF_SPARK_LINES = {
     'It is a terrible way for a thing to start and it started anyway.',
   ],
   'just-comfort': [
+    '{a} sits with {b} until it’s light, and that’s all.\n{b}: "Thank you for staying."\n{a}: "Where else would I be?"',
+    '{a} comforts {b} through the night.\n{b} (to camera): "{a} didn’t leave. I won’t forget that."',
+    '{a} holds {b}’s hand while {bSub} cries.\n{a}: "It’s okay. Let it out."',
     '{a} sat with {b} until it was light, and that is all that happened, and it was not nothing.',
     'Nothing started. {a} and {b} simply got each other through a bad morning, which counts for more in here.',
     '{b} made tea neither of them drank and stayed until {a} could talk about it.',
@@ -1491,6 +1616,9 @@ const GRIEF_SPARK_LINES = {
     'By breakfast the two of them were something. It is not what the castle would guess it is.',
   ],
   'too-soon': [
+    'It gets as far as a hand on an arm.\n{b}: "Not like this."\n{a}: "No. You’re right."',
+    '{b} pulls back.\n{b} (to camera): "Grief makes you do things. I didn’t want it to be that."',
+    '{a} and {b} stop themselves.\n{a}: "Sorry."\n{b}: "Don’t be. Just — not tonight."',
     'It got as far as a hand on an arm, and then {b} said “not like this,” and was right.',
     '{a} pulled back before {b} had to, and both of them were grateful and neither said so.',
     'Somewhere in it {b} remembered why they were both awake, and that ended it.',
@@ -1501,6 +1629,9 @@ const GRIEF_SPARK_LINES = {
     '{a} went back upstairs at five and lay awake being sensible about it.',
   ],
   'the-room-noticed': [
+    'Nobody meant it to be a scene. The castle has it by breakfast.\n{a}: "They’re all looking at us."\n{b}: "Of course they are."',
+    '{a} and {b} are spotted.\n{b} (to camera): "Six in the morning. Someone walked in. Brilliant."',
+    '{a} and {b} get caught holding each other.\n{a}: "It’s not what it looks like."\n{b}: "It’s a bit what it looks like."',
     'Nobody meant it to be a scene. The castle had it by breakfast anyway.',
     '{a} and {b} were found together at six in the morning by somebody who did not knock.',
     'Two people comforting each other over a body is a lovely thing that looks like something else from a doorway.',
@@ -1619,6 +1750,9 @@ registerEvent({
 // ── romance-walked-together ─────────────────────────────────────────────
 const WALKED_LINES = {
   'walked-the-whole-way': [
+    '{a} and {b} walk out together and back together.\n{b}: "Same again tomorrow?"\n{a}: "Obviously."',
+    '{a} and {b} don’t swap partners once.\n{a} (to camera): "Best walk of the week."',
+    '{a} and {b} stick together all day.\n{b}: "People are going to talk."\n{a}: "They’re already talking."',
     '{a} and {b} walked out together and walked back together and did not once swap partners in between.',
     'Everybody else rotated up and down that column all afternoon. {a} and {b} did not move.',
     'It is a five-mile advertisement and neither {a} nor {b} seems to mind.',
@@ -1629,6 +1763,9 @@ const WALKED_LINES = {
     '{a} and {b} arrived at the field last and nobody was surprised by that.',
   ],
   'kept-apart-on-purpose': [
+    '{a} and {b} walk at opposite ends of the line, which fools nobody.\n{b} (to camera): "Very subtle. We’re fooling nobody."',
+    '{a} and {b} deliberately keep apart.\n{a}: "Don’t walk with me."\n{b}: "I wasn’t going to."',
+    '{a} and {b} avoid each other in public.\n{a} (to camera): "It’s killing me. But it’s smart."',
     '{a} and {b} deliberately walked at opposite ends of the column, which fooled nobody.',
     'Not walking together is a decision, and everybody could see the decision being made.',
     '{b} joined a group at the front specifically so as not to be walking beside {a}.',
@@ -1639,6 +1776,9 @@ const WALKED_LINES = {
     '{a} and {b} said one word to each other in five miles and it was “fine”.',
   ],
   'the-column-saw-it': [
+    'Somebody walks behind {a} and {b} for a mile and says nothing.\n{a}: "Were they listening?"\n{b}: "Probably."',
+    '{a} and {b} are watched on the road.\n{b} (to camera): "There’s no privacy in here. None."',
+    '{a} and {b} get an audience.\n{a}: "Awkward."',
     'Somebody walked the middle third of that road behind {a} and {b} and did not say anything about it.',
     'It is not a secret any more. It stopped being one somewhere around the ford.',
     'Two people at the back of the column had a whole conversation about the two people at the front.',
@@ -1649,6 +1789,9 @@ const WALKED_LINES = {
     'The column arrived at that field with a piece of information it had not left with.',
   ],
   'first-hour-alone': [
+    'It’s the only hour this week {a} and {b} have had without a room round them.\n{b}: "Finally."\n{a}: "Finally."',
+    '{a} and {b} make the most of it.\n{a} (to camera): "One hour. No eyes. Heaven."',
+    '{a} and {b} talk properly, alone.\n{b}: "I’ve wanted to say this all week."',
     'It is the only hour this week {a} and {b} have had without a room around them, and they used all of it.',
     'No castle, no table, no cameras in the corner. Just a road, and they talked the whole of it.',
     '{a} said something on that road that would not have been said inside those walls.',
@@ -1719,6 +1862,9 @@ registerEvent({
 // fork is whether the help is given as a partner or performed as a player.
 const CARRIED_LINES = {
   'took-care-of-them': [
+    '{b} is finished by the end of the afternoon, and {a} gets {bObj} home without making a thing of it.\n{a}: "Lean on me."\n{b}: "Thank you."',
+    '{a} helps {b} home quietly.\n{b} (to camera): "{a} carried me, basically. I won’t forget it."',
+    '{a} takes {b}’s bag.\n{a}: "Give it here."\n{b}: "You’re a star."',
     '{b} was finished by the end of that afternoon and {a} got {b} home without making anything of it.',
     '{a} carried {b}’s share of it for the last two miles and did not mention doing it.',
     'It was not a gesture. {a} simply did it, which is why it landed.',
@@ -1729,6 +1875,9 @@ const CARRIED_LINES = {
     'They came up the drive together at half the pace of everybody else and neither of them cared.',
   ],
   'made-a-performance-of-it': [
+    '{a} helps {b} home very visibly.\n{a}: "Everyone, make way!"\n{b} (to camera): "Sweet. Also a bit much."',
+    '{a} makes a show of it.\n{b}: "I can walk, you know."\n{a}: "I know. People are watching."',
+    '{a} helps loudly.\n{b} (to camera): "Half kindness, half performance."',
     '{a} helped {b} home very visibly, and the visibility was doing at least half the work.',
     'It was kind and it was staged, and the person it was staged for was the column.',
     '{a} asked twice, loudly, whether {b} was all right.',
@@ -1739,6 +1888,9 @@ const CARRIED_LINES = {
     'It is not nothing to be looked after. It is less when you can see the reason.',
   ],
   'let-them-struggle': [
+    '{b} falls back on the road, and {a} stays exactly where {aSub} was.\n{b} (to camera): "{a} didn’t even look back."',
+    '{a} doesn’t help {b}.\n{b}: "Wait for me?"\n{a}: "Keep up."',
+    '{a} leaves {b} behind.\n{b} (to camera): "So that’s how it is."',
     '{b} fell back on that road and {a} stayed exactly where {a} had been walking.',
     '{a} did not help, and the not-helping was as visible as helping would have been.',
     'Somebody else went back for {b}. Everybody noticed it was not {a}.',
@@ -1749,6 +1901,9 @@ const CARRIED_LINES = {
     'It cost {a} nothing and it cost the two of them a great deal.',
   ],
   'they-refused-it': [
+    '{a} tries to take it off {b}, and {b} won’t have it.\n{b}: "I’m fine. I don’t need saving."\n{a}: "I was only—"\n{b}: "I know."',
+    '{b} refuses help in front of six people.\n{a} (to camera): "Proud. Too proud."',
+    '{b} pushes {a} away.\n{b}: "Not in front of everyone."',
     '{a} tried to take it off {b} and {b} would not have it, in front of six people.',
     '{b} shook {a} off harder than the moment needed.',
     '{b} is not going to be the one who has to be looked after, and made that clear on a public road.',
@@ -1817,6 +1972,9 @@ registerEvent({
 // whether they were. `after-table` held ONE romance event before this.
 const VOTED_LINES = {
   'wrote-the-same-name': [
+    '{a} and {b} turn over the same name without needing to look at each other.\n{b}: "Great minds."\n{a}: "Or matching mistakes."',
+    '{a} and {b} vote together.\n{a} (to camera): "Same name. We didn’t even plan it."',
+    '{a} and {b} are in sync.\n{b}: "Knew you’d write that."',
     '{a} and {b} turned over the same name and neither of them had to look at the other to know it.',
     'Two slates, one name, no conversation about it beforehand. The room noticed that.',
     'It is the closest thing to a public declaration this castle allows.',
@@ -1827,6 +1985,9 @@ const VOTED_LINES = {
     'Nobody in this room believes that was a coincidence, because it was not.',
   ],
   'wrote-different-names': [
+    '{a} writes one name and {b} writes another, and the whole room watches.\n{a}: "You didn’t tell me."\n{b}: "You didn’t ask."',
+    '{a} and {b} split their votes.\n{b} (to camera): "We don’t have to agree on everything."',
+    '{a} and {b} vote differently.\n{a}: "So what was that?"\n{b}: "My vote."',
     '{a} wrote one name and {b} wrote another and the whole room watched them find that out.',
     'It is the first time they have split, and it happened in public with no warning.',
     '{b}’s slate came up and {a}’s face did something before {a} could stop it.',
@@ -1837,6 +1998,9 @@ const VOTED_LINES = {
     'It is not a betrayal. It is the exact shape of one, at the exact worst moment.',
   ],
   'covered-for-them': [
+    '{a} votes somewhere useless so that {b}’s name doesn’t need company.\n{a} (to camera): "Wasted vote. Worth it."',
+    '{a} throws a vote to keep attention off {b}.\n{b}: "Why did you write that?"\n{a}: "For you."',
+    '{a} sacrifices {aPos} vote for {b}.\n{a} (to camera): "Nobody will understand that vote. {b} will."',
     '{a} voted somewhere useless specifically so that {b}’s name would not need company.',
     '{b} was in danger and {a} spent a slate keeping {b} out of it.',
     'It was a wasted vote and it was not wasted, and only two people at that table know why.',
@@ -1847,6 +2011,9 @@ const VOTED_LINES = {
     'The room will forgive a bad vote. It is less forgiving about a pattern of them.',
   ],
   'one-of-them-was-in-danger': [
+    '{b}’s name is in the air all evening, and {a} has to sit there and hear it.\n{a} (to camera): "Horrible. I just had to sit there."',
+    '{a} watches {b} get votes.\n{a}: "You’re still here."\n{b}: "Just."',
+    '{a} squeezes {b}’s hand under the table.\n{b} (to camera): "That was close. Too close."',
     '{b}’s name was in the air all evening and {a} had to sit there and hear it.',
     '{a} spent that table defending {b} and became a name in the process.',
     'Watching somebody you are close with being the subject of discussion is worse than being in the hot seat yourself, and {a} sat through the whole hour of it.',

@@ -44,40 +44,28 @@ import { gs } from '../../core.js';
 
 const LIST_LINES = {
   'both-of-us': [
+    '{a} and {b} sit next to each other at breakfast, very upright.\n{b}: "Nervous?"\n{a}: "Terrified. You?"\n{b}: "Terrified."',
     '{a} and {b} are both on the list, and spend the morning being very calm at each other.\n{a}: "Well. Here we are."\n{b}: "Here we are."\n{a}: "Calm."\n{b}: "Very calm."',
     '{a} and {b} are on trial together.\n{b} (to camera): "Both of us. One of us might go. Horrible."',
     '{a} and {b} share a nervous laugh.\n{a}: "May the best one survive."',
-    '{a} and {b} are both on it, and spend the morning being very calm at each other.',
-    'Two of the names on that paper are sitting at the same end of the table. Neither of them moves all morning.',
-    '{a} works out loud which of them the pact would rather have. {b} would rather not do this arithmetic out loud.',
-    '"One of us," {b} says, and {a} does not tell {b} that is not comforting.',
   ],
   'not-me': [
+    '{a} isn’t on the list and hovers by {b}.\n{a}: "Is there anything I can do?"\n{b}: "Just don’t vote for me."',
     '{a} isn’t on the list, and can’t work out where to stand.\n{b}: "You alright?"\n{a}: "I don’t know whether to be relieved or guilty."',
     '{a} feels awkward being safe.\n{a} (to camera): "I’m not on it. Some of my friends are. What do I say?"',
     '{b} notices {a} not knowing what to do.\n{b}: "Just act normal."\n{a}: "What’s normal?"',
-    '{a} is not on the list and cannot work out where to stand. {b} notices {a} not knowing.',
-    '{b} is on it. {a} is not. They have the whole day and about four sentences.',
-    '{a} keeps offering {b} things — tea, a chair, an errand — and {b} lets {a}, because it is easier than saying no.',
-    'Nothing about the morning is different except that {a} cannot look at {b} for longer than a second.',
   ],
   'they-picked-you': [
+    '{a} leans over.\n{a}: "So why you, do you think?"\n{b}: "Thanks, {a}. Very reassuring."',
     '{a} wants to know what {b} did to get on the list.\n{a}: "Why do you think they put you on it?"\n{b}: "Thanks, {a}. Really helpful."',
     '{a} asks bluntly.\n{a}: "What did you do?"\n{b}: "Nothing! That’s the point!"',
     '{a} wonders about {b}.\n{a} (to camera): "Nobody gets on that list for no reason."',
-    '{a} wants to know what {b} did to get on that list, and does not phrase it any better than that.',
-    '"They chose four people," {a} says to {b}. "Why you." It is not really a question and {b} does not really answer.',
-    '{a} has decided the list is information. {b} has decided {a} is enjoying this.',
-    '{a} says out loud what several people are thinking: the Traitors had reasons, and the reasons are sitting at this table.',
   ],
   'work-the-room': [
+    '{b} brings everyone tea.\n{b}: "Sugar? No? Lovely."\n{a} (to camera): "Somebody’s on a list."',
     '{b} spends the morning being useful to everybody, which is what people on a list do.\n{b}: "Tea, anyone? Coffee? I’ll make it."\n{a} (to camera): "Very helpful all of a sudden."',
     '{b} works the room.\n{b} (to camera): "I’m on the list. I need every friend I’ve got."',
     '{b} is suddenly everyone’s best mate.\n{a}: "You’re very chatty today."\n{b}: "Am I?"',
-    '{b} spends the morning being useful to everybody, which is what people on a list do.',
-    '{b} is on the paper and has decided the best answer is to be impossible to give up. {a} watches it work.',
-    'By eleven o’clock {b} has helped {a} with two things {a} did not need help with.',
-    '{b} talks to everybody, at length, warmly. {a} cannot tell whether it is fear or strategy and suspects {b} cannot either.',
   ],
 };
 
@@ -162,31 +150,22 @@ registerEvent({
 
 const OFFER_LINES = {
   'said-it-straight': [
+    '{a} keeps it to one sentence.\n{a}: "You don’t write me, I don’t write you."\n{b}: "Done."',
     '{a} says it in one sentence, in a corridor.\n{a}: "Not you, not this week. And we both go after the other one."\n{b}: "Deal."',
     '{a} lays out the deal.\n{a}: "You don’t write me. I don’t write you. Simple."',
     '{a} makes the offer plainly.\n{a} (to camera): "No frills. Just a deal."',
-    '{a} says it in one sentence, in a corridor, and does not dress it up: not you, not this week, and we both go at the other one.',
-    '"I am not saying your name," {a} tells {b}. "I would like you to notice that."',
-    '{a} finds {b} alone and makes the offer in about eleven words. {b} takes rather longer to answer.',
-    'There is no negotiation in it. {a} states the arrangement to {b} like a timetable and walks off before it can be argued with.',
   ],
   'took-it': [
+    '{b} agrees almost before {a} finishes.\n{b}: "Yes. Deal."\n{a} (to camera): "Quick. Too quick?"',
     '{b} agrees before {a} has finished.\n{a}: "So what I’m proposing is—"\n{b}: "Yes."\n{a} (to camera): "Too quick. I noticed."',
     '{b} jumps at the deal.\n{b}: "Done. Shake on it."',
     '{b} accepts instantly.\n{a} (to camera): "Why so eager, {b}?"',
-    '{b} agrees before {a} has finished, which {a} notices and files away.',
-    '{b} says yes, and says it warmly, and neither of them believes the warmth.',
-    'They shake on it like two people who have both decided the other one is lying.',
-    '"Done," {b} says, and means it for exactly as long as it is useful.',
   ],
   'did-not-say-yes': [
+    '{b} thinks about it for a long time.\n{b}: "Ask me tomorrow."\n{a}: "That’s a no."\n{b}: "It’s a tomorrow."',
     '{b} doesn’t say yes. {b} doesn’t say no either.\n{a}: "Well?"\n{b}: "I’ll think about it."\n{a} (to camera): "That’s an answer. Just not the one I wanted."',
     '{b} stays non-committal.\n{b}: "Let’s see how the week goes."',
     '{b} won’t commit.\n{a} (to camera): {cam:unsure-info}',
-    '{b} does not say yes. {b} does not say no either, and that turns out to be the answer {a} needed.',
-    '{b} listens to the whole thing and then talks about the mission. {a} lets it go and counts it as agreed.',
-    '{b} asks what happens if it does not work, and {a} has no answer that is worth saying out loud.',
-    '{b} nods at the right places and commits to nothing at all, and both of them leave the corridor calling it an agreement.',
   ],
   // ── THE SECOND SHAPE, AND THE ONE THAT ACTUALLY GETS SEEN ──────────
   //
@@ -196,22 +175,16 @@ const OFFER_LINES = {
   // and it is the more interesting scene anyway: a deal is invisible, and a
   // name somebody has stopped saying is not.
   'asked-outright': [
+    '{b} puts it plainly.\n{b}: "You’ve stopped saying one particular name. What deal did you do?"\n{a}: "No deal."',
     '{b} has noticed one name never comes out of {a}’s mouth any more.\n{b}: "You never say their name. Why not?"\n{a}: "No reason."\n{b}: "There’s always a reason."',
     '{b} calls it out.\n{b}: "You’ve done a deal, haven’t you?"',
     '{b} asks directly.\n{a} (to camera): "{b} noticed. Of course {bSub} did."',
-    '{b} has noticed that one name never comes out of {a}\u2019s mouth any more, and says so.',
-    '"You have not said that name all week," {b} tells {a}, and waits. {a} does not fill the silence.',
-    '{b} asks {a} straight out why {a} keeps steering off the obvious one. {a} has an answer ready and {b} can hear that it was ready.',
-    '"Say the name," {b} says, half joking. {a} says a different one, and they both hear it happen.',
   ],
   'noticed-quietly': [
+    '{b} notices and says nothing.\n{b} (to camera): "Some names go quiet for a reason. I’ll wait."',
     '{b} says nothing about it to anybody, and keeps count.\n{b} (to camera): "{a} has stopped mentioning a certain name. I’m watching."',
     '{b} files it away.\n{b} (to camera): {cam:holding-info}',
     '{b} notices, and keeps quiet.\n{b} (to camera): "Something’s changed with {a}. I’ll wait."',
-    '{b} says nothing about it to anybody, and keeps count.',
-    '{a} steers the conversation twice. {b} lets {a} both times and thinks about it afterwards.',
-    'It is not what {a} says that {b} takes away from the evening. It is the one thing {a} does not.',
-    '{b} gives {a} three separate chances to say it and watches {a} decline all three.',
   ],
 };
 
@@ -301,32 +274,22 @@ registerEvent({
 
 const HOLDING_LINES = {
   'cannot-say-it': [
+    '{b} asks what’s wrong over breakfast.\n{a}: "Nothing. Honestly."\n{a} (to camera): "Everything. And I can’t tell a soul."',
     '{a} has done something that can’t be explained to anybody, and spends breakfast not explaining it to {b}.\n{b}: "You’re quiet."\n{a}: "Tired."\n{a} (to camera): "I can’t tell {bObj}. I can’t tell anyone."',
     '{a} holds a secret through breakfast.\n{a} (to camera): {cam:holding-info}',
     '{a} keeps it inside.\n{b}: "Something’s up with you."\n{a}: "Nothing’s up."',
-    '{a} has done something that cannot be explained to anybody, and spends breakfast not explaining it to {b}.',
-    '{a} starts a sentence to {b} three times and finishes none of them.',
-    '"I did something," {a} says, and then nothing else, and {b} has to live with that for the rest of the day.',
-    '{a} is carrying something around the kitchen and putting it down every time {b} looks up.',
-    '{b} asks {a} twice what is wrong. {a} says nothing twice, which is two more answers than {a} can afford.',
   ],
   'said-half': [
+    '{a} gives {b} a name and nothing else.\n{a}: "Watch them. Don’t ask me why."\n{b}: "That’s all I get?"',
     '{a} gives {b} half of it: a name to watch, and none of the reason.\n{a}: "Just watch them. Trust me."\n{b}: "Why?"\n{a}: "I can’t say."',
     '{a} tells {b} just enough.\n{b} (to camera): "Half a story. The worst kind."',
     '{a} drops a hint.\n{a}: "Keep an eye on them. That’s all."',
-    '{a} gives {b} half of it: a name to watch, and none of the reason.',
-    '{a} tells {b} to keep an eye on somebody and will not say why. {b} takes the name and keeps the question.',
-    '"Just watch them," {a} says. It is the least useful way anybody has ever been told something.',
-    '{a} hands over the conclusion and none of the working, and {b} spends the morning trying to reverse it.',
   ],
   'told-them-everything': [
+    '{a} tells {b} the whole thing in a rush.\n{b}: "You’ve been carrying that all night?"\n{a}: "Since three a.m."',
     '{a} tells {b} the whole of it, in order, and looks lighter for about four seconds.\n{b}: "Wow."\n{a}: "Yeah."\n{b}: "What do we do now?"',
     '{a} spills everything to {b}.\n{a} (to camera): "I had to tell someone. It was {b}."',
     '{a} confides in {b}.\n{b}: "I won’t tell a soul."',
-    '{a} tells {b} the whole of it, in order, and looks lighter for about four seconds.',
-    '{a} explains exactly what was done and exactly what came back, and then has to watch {b} decide what to think of {a} for doing it.',
-    'It takes {a} two minutes to explain and {b} the rest of the morning to work out how they feel about it.',
-    '{a} confesses the entire arrangement to {b} over the toast, including the part {a} is not proud of.',
   ],
 };
 

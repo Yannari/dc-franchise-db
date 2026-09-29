@@ -1402,3 +1402,29 @@ export function rpBuildMission(ep, observer = 'audience') {
     + '<button class="mi-btn" onclick="' + call('trMissionRevealAll') + '">Reveal all</button>'
     + '</div></div>';
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// FOR THE STAGE (mission-field-stage.js) — the same beats, host lines resolved
+// ══════════════════════════════════════════════════════════════════════
+//
+// The archetype afternoons only: a bespoke mission already plays on its own
+// themed stage (mission-stage.js) and returns null here. The beats are the
+// page's own `_buildBeats`, the host bands picked exactly as the page picks
+// them, and the numbers the count animates come off the same view.
+export function missionStageData(ep, observer = 'audience') {
+  if (isBespokeMissionRec(ep && ep.tr && ep.tr.mission)) return null;
+  const v = _view(ep, observer);
+  if (!v) return null;
+  const beats = _buildBeats(v);
+  const seedEp = v.ep != null ? v.ep : (ep.num || 0);
+  const h = _host();
+  return {
+    beats: beats.map(b => ({ phase: b.phase, meta: b.meta ? { ...b.meta } : {},
+      html: (b.hostSlot === 'open' ? _hostBand(_esc(_pick(HOST_LINES.open, 'mi|host|open|' + seedEp))) : '')
+        + b.html
+        + (b.hostSlot === 'close' ? _hostBand(_esc(_pick(HOST_LINES.close, 'mi|host|close|' + seedEp))) : '') })),
+    name: v.name, teams: v.teams.map(t => ({ name: t.name, members: [...t.members] })), bestTeam: v.bestTeam,
+    pot: v.pot, potBefore: v.potBefore, earned: v.earned, ceiling: v.ceiling || 0,
+    host: { name: h.name, slug: h.slug },
+  };
+}

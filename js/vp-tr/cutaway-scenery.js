@@ -339,6 +339,116 @@ export const TRScenery = (function () {
     },
   };
 
+  // ── THE BREAKFAST ROOM — screen-sized. The long table under linen, laid
+  // for everybody who went up to bed; morning coming in cold and low through
+  // three tall windows; walnut to the dado, deep green above, the sideboard
+  // with its silver. The places themselves are drawn by the stage (a cup can
+  // be turned over), so this is the room and the cloth.
+  function breakfastSet(w, h) {
+    const hor = h * .5;
+    let s = `<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" style="position:absolute;inset:0">${DEFS}
+      <defs>
+        <linearGradient id="bfWall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0c1d15"/><stop offset="1" stop-color="#17301f"/></linearGradient>
+        <linearGradient id="bfShaft" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff4dc" stop-opacity=".28"/><stop offset="1" stop-color="#fff4dc" stop-opacity="0"/></linearGradient>
+        <linearGradient id="bfCloth" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e9e2d0"/><stop offset="1" stop-color="#c9bfa8"/></linearGradient>
+      </defs>`;
+    s += `<rect width="${w}" height="${hor}" fill="url(#bfWall)"/>`;
+    s += panelling(w, hor - h * .16, h * .16);
+    // three tall windows, the morning in them, and the light they throw
+    [.2, .5, .8].forEach(f => {
+      const x = w * f - w * .045;
+      s += archWindow(x, h * .06, w * .09, h * .3, false)
+        + `<path d="M${x} ${h * .36} L${x + w * .09} ${h * .36} L${x + w * .2} ${h} L${x - w * .02} ${h}Z" fill="url(#bfShaft)"/>`;
+    });
+    [.35, .65].forEach(f => { s += portrait(w * f - w * .025, h * .1, w * .05, h * .09, '#1f2a22'); });
+    // the sideboard with its silver domes, back right
+    s += `<rect x="${w * .84}" y="${hor - h * .1}" width="${w * .14}" height="${h * .1}" fill="#2a170b"/>`
+      + [0, 1, 2].map(i => `<path d="M${w * (.86 + i * .04)} ${hor - h * .1} a${w * .016} ${h * .03} 0 0 1 ${w * .032} 0Z" fill="#b8bfcc"/>`).join('');
+    // the floor
+    s += `<rect y="${hor}" width="${w}" height="${h - hor}" fill="#1a130d"/>`
+      + `<path d="M${w * .06} ${hor} H${w * .94} L${w * 1.04} ${h} H${-w * .04}Z" fill="url(#tartanRed)" opacity=".55"/>`;
+    // the long table under its cloth, seen along its length from one end of the room
+    const y0 = h * .47, y1 = h * .6;
+    s += `<path d="M${w * .08} ${y0} H${w * .92} L${w * .95} ${y1} H${w * .05}Z" fill="url(#bfCloth)"/>`
+      + `<path d="M${w * .05} ${y1} H${w * .95} V${y1 + h * .035} H${w * .05}Z" fill="#b5ab94"/>`
+      + `<path d="M${w * .08} ${y0} H${w * .92}" stroke="#fff" stroke-width="1.5" opacity=".6"/>`;
+    // candelabra and a teapot down the middle
+    [.3, .7].forEach(f => { s += candelabra(w * f, (y0 + y1) / 2, 1.2); });
+    s += `<ellipse cx="${w * .5}" cy="${(y0 + y1) / 2}" rx="${w * .018}" ry="${h * .022}" fill="#b8bfcc"/><path d="M${w * .518} ${(y0 + y1) / 2 - 2} q${w * .012} -4 ${w * .018} -10" stroke="#b8bfcc" stroke-width="3" fill="none"/>`;
+    s += `<rect width="${w}" height="${h}" fill="url(#vignette)"/></svg>`;
+    return s;
+  }
+  // ── THE TURRET — screen-sized. Round stone, two arrow slits with the moon in
+  // them, the brazier, cloaks on their hooks, and the small round table the
+  // pact meets at, lit from below by its candles. No other light in the castle.
+  function turretSet(w, h) {
+    let s = `<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" style="position:absolute;inset:0">${DEFS}
+      <defs>
+        <radialGradient id="tuRoom" cx=".5" cy=".62" r=".75"><stop offset="0" stop-color="#3a1a10"/><stop offset=".55" stop-color="#1a0a0a"/><stop offset="1" stop-color="#060304"/></radialGradient>
+        <radialGradient id="tuTable" cx=".5" cy=".35" r=".7"><stop offset="0" stop-color="#5a2e14"/><stop offset="1" stop-color="#1e0d05"/></radialGradient>
+      </defs>`;
+    s += `<rect width="${w}" height="${h}" fill="url(#ashlarIn)"/><rect width="${w}" height="${h}" fill="url(#tuRoom)" opacity=".92"/>`;
+    // the curve of the wall: stone courses bending round
+    for (let i = 0; i < 7; i++) s += `<path d="M0 ${h * (.1 + i * .08)} Q${w / 2} ${h * (.04 + i * .08)} ${w} ${h * (.1 + i * .08)}" stroke="#000" stroke-width="2" opacity=".25" fill="none"/>`;
+    // arrow slits with moonlight
+    [.3, .7].forEach(f => {
+      s += `<rect x="${w * f - 5}" y="${h * .1}" width="10" height="${h * .22}" rx="5" fill="#2a3a55"/>`
+        + `<circle cx="${w * f}" cy="${h * .2}" r="${h * .2}" fill="url(#moonGlow)" opacity=".55"/>`;
+    });
+    // the brazier, left, and its glow
+    const bx = w * .1, by = h * .62;
+    s += `<circle cx="${bx}" cy="${by}" r="${h * .45}" fill="url(#fireGlow)"/>`
+      + `<path d="M${bx - 26} ${by} h52 l-10 20 h-32Z" fill="#3a2414"/><path d="M${bx - 12} ${by + 20} l-8 ${h * .16} M${bx + 12} ${by + 20} l8 ${h * .16}" stroke="#3a2414" stroke-width="5"/>`
+      + `<ellipse cx="${bx}" cy="${by - 10}" rx="22" ry="20" fill="url(#flame)" class="flick"/>`;
+    // cloaks on hooks, right
+    [.86, .92].forEach((f, i) => { s += `<path d="M${w * f} ${h * .12} q-18 ${h * .3} -8 ${h * .6} h32 q4 ${-h * .34} -10 ${-h * .6}Z" fill="${i ? '#1f3a2e' : '#3a0a14'}"/>`; });
+    // the floor, and the small round table
+    s += `<rect y="${h * .8}" width="${w}" height="${h * .2}" fill="#0c0606"/>`;
+    const cx = w / 2, cy = h * .66, rx = w * .2, ry = h * .09;
+    s += `<ellipse cx="${cx}" cy="${cy + ry * .35}" rx="${rx}" ry="${ry}" fill="#0a0503"/>`
+      + `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="url(#tuTable)" stroke="#6a3a18" stroke-width="2"/>`
+      + `<circle cx="${cx}" cy="${cy - h * .05}" r="${h * .32}" fill="url(#candleGlow)" opacity=".85"/>`;
+    [-.1, -.03, .04, .11].forEach(o => { s += candle(cx + w * o, cy + (o > 0 ? 4 : -2), 14, 40); });
+    s += `<rect width="${w}" height="${h}" fill="url(#vignette)"/></svg>`;
+    return s;
+  }
+  // ── THE MISSION FIELD — screen-sized. The estate in the afternoon: the
+  // hills, the loch, the castle small on its rise, a grass field, a banner
+  // pole either side for the two teams, and the prize chest on its trestle in
+  // the middle where the money goes.
+  function fieldSet(w, h) {
+    let s = `<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" style="position:absolute;inset:0">${DEFS}
+      <defs>
+        <linearGradient id="fdSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7f98b8"/><stop offset=".7" stop-color="#c9d0d4"/><stop offset="1" stop-color="#e4d8bf"/></linearGradient>
+        <linearGradient id="fdGrass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4e6a38"/><stop offset="1" stop-color="#2a3a1e"/></linearGradient>
+        <linearGradient id="fdChest" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6a3a18"/><stop offset="1" stop-color="#2a1408"/></linearGradient>
+      </defs>`;
+    s += `<rect width="${w}" height="${h}" fill="url(#fdSky)"/>`
+      + `<circle cx="${w * .8}" cy="${h * .14}" r="${h * .45}" fill="url(#candleGlow)" opacity=".35"/>`;
+    s += `<path d="M0 ${h * .38} C${w * .15} ${h * .22} ${w * .32} ${h * .34} ${w * .48} ${h * .26} C${w * .64} ${h * .18} ${w * .82} ${h * .32} ${w} ${h * .24} V${h} H0Z" fill="#6e7a8e"/>`
+      + `<path d="M0 ${h * .44} C${w * .2} ${h * .36} ${w * .45} ${h * .45} ${w * .62} ${h * .38} C${w * .8} ${h * .32} ${w * .92} ${h * .42} ${w} ${h * .38} V${h} H0Z" fill="#56664a"/>`;
+    // the castle, small, on its rise
+    const cx = w * .72, cy = h * .37;
+    s += `<g fill="#6e3226" opacity=".85"><rect x="${cx - 40}" y="${cy - 22}" width="80" height="22"/><rect x="${cx - 12}" y="${cy - 44}" width="24" height="44"/>`
+      + `<path d="M${cx - 16} ${cy - 44} L${cx} ${cy - 58} L${cx + 16} ${cy - 44}Z" fill="#3a3d48"/><path d="M${cx - 44} ${cy - 22} L${cx - 30} ${cy - 34} L${cx - 14} ${cy - 22}Z M${cx + 14} ${cy - 22} L${cx + 30} ${cy - 34} L${cx + 44} ${cy - 22}Z" fill="#3a3d48"/></g>`;
+    // the loch, a band of light across the middle distance
+    s += `<path d="M0 ${h * .47} C${w * .3} ${h * .44} ${w * .6} ${h * .5} ${w} ${h * .46} V${h * .52} C${w * .6} ${h * .55} ${w * .3} ${h * .5} 0 ${h * .53}Z" fill="#9fb4cc" opacity=".75"/>`;
+    // the field
+    s += `<path d="M0 ${h * .52} C${w * .3} ${h * .5} ${w * .7} ${h * .54} ${w} ${h * .5} V${h} H0Z" fill="url(#fdGrass)"/>`;
+    for (let i = 0; i < 60; i++) { const x = (i * 97) % w, y = h * .56 + ((i * 53) % (h * .42)); s += `<path d="M${x} ${y} l2 -7 l2 7" stroke="#3a5028" stroke-width="1.5" fill="none" opacity=".7"/>`; }
+    // pines at the edges
+    const pine = (x, y, hh) => `<path d="M${x} ${y - hh} L${x - hh * .28} ${y - hh * .45} L${x - hh * .14} ${y - hh * .45} L${x - hh * .36} ${y} L${x + hh * .36} ${y} L${x + hh * .14} ${y - hh * .45} L${x + hh * .28} ${y - hh * .45}Z" fill="#18221a"/>`;
+    [[.03, .62, 160], [.08, .58, 120], [.95, .6, 150], [.9, .57, 110]].forEach(([x, y, hh]) => { s += pine(w * x, h * y, hh * h / 700); });
+    // the prize chest on its trestle
+    const bx = w / 2, by = h * .56;
+    s += `<rect x="${bx - w * .06}" y="${by}" width="${w * .12}" height="${h * .015}" fill="#3a2414"/>`
+      + `<path d="M${bx - w * .05} ${by + h * .015} l-8 ${h * .08} M${bx + w * .05} ${by + h * .015} l8 ${h * .08}" stroke="#3a2414" stroke-width="5"/>`
+      + `<rect x="${bx - w * .045}" y="${by - h * .08}" width="${w * .09}" height="${h * .08}" rx="4" fill="url(#fdChest)" stroke="#c9a04e" stroke-width="2"/>`
+      + `<path d="M${bx - w * .045} ${by - h * .08} q${w * .045} ${-h * .05} ${w * .09} 0" fill="#7a4420" stroke="#c9a04e" stroke-width="2"/>`
+      + `<rect x="${bx - 7}" y="${by - h * .06}" width="14" height="16" rx="2" fill="#d8b15e"/>`;
+    s += `<rect width="${w}" height="${h}" fill="url(#vignette)" opacity=".7"/></svg>`;
+    return s;
+  }
   // ── THE ROUND TABLE SET — drawn from the US show's chamber, not a banquet hall.
   // The table is a set built in its own room: a dark octagon of walnut panels,
   // each bay a brass lattice lit amber from behind, thin white light bars set in
@@ -480,7 +590,7 @@ export const TRScenery = (function () {
   }
 
   return {
-    DEFS, roundTableSet, roundTable,
+    DEFS, roundTableSet, roundTable, breakfastSet, turretSet, fieldSet,
     room(type, w, h, night) {
       const f = ROOMS[type] || ROOMS.landing;
       return `<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" preserveAspectRatio="none" style="position:absolute;inset:0">${DEFS}`

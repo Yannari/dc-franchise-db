@@ -36,6 +36,12 @@ describe('texting voice', () => {
     expect(dictation(msg)).toBe(`Message: "Same. Let's go one by one." Laughing emoji. Send.`);
     expect(displayText(styleMessage("Hi you {e:smile} I was hoping", { emoji: 1 }, () => 0))).toBe('Hi you 😊 I was hoping');
   });
+  it('doubles a lone exclamation for a loud voice, but never an already doubled one', () => {
+    const loud = { caps: 2 };
+    expect(styleMessage('We did it! Final five', loud, () => 0)).toBe('We did it!! Final five');
+    expect(styleMessage('We did it!! Final five!!', loud, () => 0)).toBe('We did it!! Final five!!');
+  });
+
   it('never leaves a stray space or an empty message', () => {
     const out = styleMessage('{e:heart}', { emoji: 0, hashtags: 0, caps: 0 }, () => 0.99);
     expect(out.trim().length).toBeGreaterThan(0);

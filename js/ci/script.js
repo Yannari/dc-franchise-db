@@ -336,12 +336,18 @@ const BLOCKS = {
     // A second exchange, from whoever hasn't spoken yet (or the first voices again in a small room).
     if (!s.data.final) out.push({ key: 'circle.more', cast: { a: rest[3] || b, b: rest[4] || c || a, c: rest[5] || a } });
     // The last one runs long: finalists look back, each to the one they're closest to.
-    if (s.data.final) for (const h of [...new Set([a, b, d].filter(Boolean))].slice(0, 2)) {
+    if (s.data.final) for (const h of [...new Set([a, b, d].filter(Boolean))].slice(0, 3)) {
       const to = s.who.filter(x => x !== h).sort((x, y) => rel(h, y, 'affection') - rel(h, x, 'affection'))[0];
       if (to) out.push({ key: 'circle.final.look', cast: { a: h, b: to } });
     }
+    // Each reacts to somebody else's post, never their own.
+    const spoke = [a, d, b, e].filter(Boolean);
     const reactors = [...new Set([f, rest[3], b, c].filter(Boolean))].slice(0, 3);
-    reactors.forEach((h, i) => out.push({ key: 'circle.react', cast: { a: h, b: [a, d, b][i] || a } }));
+    // The last chat is goodbyes, not side-eye: nobody sneers at it.
+    if (!s.data.final) reactors.forEach((h, i) => {
+      const to = [spoke[i], ...spoke].find(x => x && x !== h);
+      if (to) out.push({ key: 'circle.react', cast: { a: h, b: to } });
+    });
     out.push({ key: 'circle.leave', cast: { a: c || a } });
     out.push(...(s.data.theories || []).map(t => ({ key: 'circle.theory', cast: { a: t.by, b: t.about }, extra: { claim: 'catfish' } })));
     return out;
@@ -420,12 +426,12 @@ const BLOCKS = {
       { key: `block.announce.${s.data.reason}`, cast: { a: announcer, c: target }, extra: { reason: s.data.reason } },
       { key: 'block.react.self', cast: { a: target }, extra: { self: true } },
       { key: 'block.after', cast: { a: announcer, b: target } },
-      ...s.data.by.filter(i => i !== announcer).slice(0, 1).map(i => ({ key: 'block.after', cast: { a: i, b: target } })));
+      ...s.data.by.filter(i => i !== announcer).slice(0, 2).map(i => ({ key: 'block.after', cast: { a: i, b: target } })));
     const friend = others.find(h => rel(h, target, 'affection') > 3);
     const rival = others.find(h => rel(h, target, 'resentment') > 3 && h !== friend);
     if (friend) out.push({ key: 'block.react.friend', cast: { a: friend, b: target } });
     if (rival) out.push({ key: 'block.react.rival', cast: { a: rival, b: target } });
-    for (const h of others.filter(x => x !== friend && x !== rival).slice(0, 2)) out.push({ key: 'block.react.relief', cast: { a: h, b: target } });
+    for (const h of others.filter(x => x !== friend && x !== rival).slice(0, 3)) out.push({ key: 'block.react.relief', cast: { a: h, b: target } });
     return out;
   },
   visit(state, s) {
@@ -493,6 +499,20 @@ const BLOCKS = {
       return { key: `meet.explain.${why || 'strategic'}`, cast: { a: h, b: to }, extra: { reasonKind: why || undefined } };
     };
     const fake = h => state.profiles[h].mode === 'catfish';
+    const pair = h => state.profiles[h].players.length > 1;
+    // A shared profile walks in as two people: that is the reveal.
+    if (present.length === 1 && pair(present[0])) {
+      return [{ key: 'meet.found.shared', cast: { a, b: present[0] } }, { key: 'meet.explain.shared', cast: { a: present[0], b: a } },
+        ...(fake(present[0]) ? [explain(present[0], a)] : [])];
+    }
+    if (pair(a)) {
+      const b = present.at(-1);
+      const out = [{ key: 'meet.arrive.shared', cast: { a, b } }, { key: 'meet.explain.shared', cast: { a, b } }];
+      if (fake(a)) out.push(explain(a, b));
+      for (const h of present.filter(x => x !== b).slice(-3)) out.push({ key: 'meet.react.shared', cast: { a: h, b: a } });
+      out.push({ key: 'meet.settle', cast: { a, b } });
+      return out;
+    }
     // The first one in waited alone: a catfish there is found out by the
     // second, and that replaces the happy hello.
     const first = present.length === 1 && fake(present[0]) ? present[0] : null;
@@ -554,7 +574,13 @@ const BLOCKS = {
     const d = s.data;
     const tail = [];
     for (const h of d.dancers || []) tail.push({ key: 'party.dance', cast: { a: h } });
-    for (const ph of d.photos || []) tail.push({ key: 'party.photo', cast: { a: ph.by, b: ph.likers[0] || s.who.find(h => h !== ph.by), text: { n: String(ph.likers.length) } } });
+    // A different voice likes each photo when the room allows it.
+    const liked = new Set();
+    for (const ph of d.photos || []) {
+      const b = ph.likers.find(h => !liked.has(h)) || ph.likers[0] || s.who.find(h => h !== ph.by);
+      liked.add(b);
+      tail.push({ key: 'party.photo', cast: { a: ph.by, b, text: { n: String(ph.likers.length) } } });
+    }
     const fl = (d.flirts || [])[0];
     tail.push(fl ? { key: 'party.flirt', cast: { a: fl[0], b: fl[1] } }
       : { key: 'party.banter', cast: { a: s.who[1] || s.who[0], b: s.who[2] || s.who[0] } });
@@ -692,7 +718,7 @@ export const POOL_KEYS = [
   'home.video', 'host.game', 'host.life', 'shared.argue.faceWins', 'shared.argue.brainWins',
   'circle.more', 'circle.react', 'ratings.done', 'ratings.wait', 'final.open', 'final.done', 'block.wait', 'block.typing',
   ...['friend', 'answers', 'truth', 'apology'].map(m => `visit.talk2.${m}`), 'visit.after', 'goodbye.after',
-  'meet.first', 'meet.react', 'meet.settle', 'circle.leave', 'circle.final.look', 'block.after', 'visit.walk', 'rate.middle', 'party.dance', 'party.photo', 'party.flirt', 'party.banter', 'party.end',
+  'meet.first', 'meet.react', 'meet.settle', 'meet.arrive.shared', 'meet.found.shared', 'meet.react.shared', 'meet.explain.shared', 'circle.leave', 'circle.final.look', 'block.after', 'visit.walk', 'rate.middle', 'party.dance', 'party.photo', 'party.flirt', 'party.banter', 'party.end',
   ...['named-bad', 'named-good', 'rival', 'gift', 'picked-last', 'jab', 'portrait-kind', 'flirted', 'asked-barbed', 'asked-catfish']
     .flatMap(k => [`callback.${k}.mine`, `callback.${k}.theirs`]), 'rate.callback.bad', 'rate.callback.good',
 ];

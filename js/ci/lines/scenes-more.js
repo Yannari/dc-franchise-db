@@ -18,7 +18,7 @@ export const SCENES_MORE = {
   ...E('circle.more', [
     { turns: [{ by: 'a', send: "Okay but who's cooking tonight because it's not me lol" }, { by: 'b', send: "Cereal for dinner gang {e:laugh}" }, { by: 'c', send: "Cereal gang represent" }] },
     { turns: [{ by: 'a', send: "Real talk, how is everybody holding up?" }, { by: 'b', send: "Surviving. Barely. Lol" }, { by: 'c', send: "Thriving honestly {e:sparkle}" }] },
-    { turns: [{ by: 'a', send: "Shoutout to everybody still in here. We made it this far {e:clap}" }, { by: 'b', send: "{t:CircleFam} forever" }, { by: 'c', send: "Group hug {e:hug}" }] },
+    { turns: [{ by: 'a', send: "Shoutout to everybody still in here. We made it this far {e:clap}" }, { by: 'b', send: "{t:CircleFam} forever" }, { by: 'c', send: "Group hug {e:hug}" }], when: { early: false } },
     { turns: [{ by: 'a', send: "Can we play a game in here? Two truths and a lie. Go" }, { by: 'b', send: "I've never been on a plane, I love pineapple on pizza, I can juggle" }, { by: 'c', send: "The plane one is the lie. Easy" }], beat: '{b} laughs at the screen and does not confirm it.' },
     { turns: [{ by: 'a', send: "Is it just me or is today dragging" }, { by: 'b', send: "Dragging so hard {e:sweat}" }, { by: 'c', send: "Speak for yourselves, I had a nap {e:cool}" }] },
     { turns: [{ by: 'a', send: "What's everybody wearing right now, be honest" }, { by: 'b', send: "Sweatpants. Always sweatpants" }, { by: 'c', send: "Full outfit. I don't know why. Nobody can see me" }] },
@@ -26,7 +26,7 @@ export const SCENES_MORE = {
   ]),
   ...E('circle.react', [
     r1("Of course {b} said that. Of course."),
-    r1("{b} is so funny. I didn't expect that."),
+    r1("I did not expect that from {b}."),
     r1("Okay, {b} is trying way too hard today."),
     r1("I love {b}'s energy in the group chat.", { when: { friends: true } }),
     r1("Every time {b} posts, I roll my eyes. Every time.", { when: { rivals: true } }),
@@ -148,6 +148,67 @@ export const SCENES_MORE = {
     { turns: [{ by: 'a', send: "{b}, thank you for being exactly who you said you were" }, { by: 'b', send: "Always. Can't wait to hug you for real" }] },
     { turns: [{ by: 'a', say: "Last chance to say it.", send: "If I win tonight, part of it is because of {b}" }, { by: 'b', send: "And if I win, you're getting a vacation lol" }, { by: 'a', send: "Holding you to that {e:laugh}" }] },
   ]),
+  // A shared profile walks into the finale as two people (a is the profile,
+  // b already in the room). meet.found.shared: a walks in and finds the pair
+  // b waiting. meet.react.shared: a, in the room, takes it in.
+  ...E('meet.arrive.shared', [
+    { stage: '{a.face} walks in first. Then {a.brain} walks in right behind.', turns: [
+      { by: 'face', say: "Hi! It's me. It's us." },
+      { by: 'b', say: "Wait. Us? There's two of you?" },
+      { by: 'brain', say: "There were always two of us." },
+    ], beat: 'The room goes silent, then loud.' },
+    { stage: 'The door opens, and two people step through it together.', turns: [
+      { by: 'face', say: "Surprise!" },
+      { by: 'b', say: "No. No way. Which one of you is {a}?" },
+      { by: 'brain', say: "Both of us. That's the whole point." },
+    ] },
+    { stage: '{a.face} and {a.brain} come in side by side, grinning.', turns: [
+      { by: 'b', say: "{a}? Is that... is that two {a}s?" },
+      { by: 'face', say: "Don't be mad!" },
+      { by: 'brain', say: "Be a little mad. We earned it." },
+    ], beat: '{b} covers {b.posAdj} mouth with both hands.' },
+    { stage: '{a.face} walks in waving. {a.brain} follows, holding the door.', turns: [
+      { by: 'face', say: "Okay, before anybody says anything, we can explain." },
+      { by: 'b', say: "We? What do you mean, we?" },
+    ], beat: 'Everyone on the couch stands up at once.' },
+  ]),
+  ...E('meet.found.shared', [
+    { turns: [
+      { by: 'a', say: "Hi! Oh. Hi. Hi, both of you?" },
+      { by: 'b', say: "Surprise. You've been talking to two people." },
+    ], beat: '{a} stops dead in the doorway.' },
+    { turns: [
+      { by: 'a', say: "I'm looking for {b}. Which one of you is {b}?" },
+      { by: 'b', say: "Yes." },
+    ], beat: '{a} looks from one face to the other and bursts out laughing.' },
+    { turns: [
+      { by: 'a', say: "Why are there two people on the couch?" },
+      { by: 'b', say: "Sit down. This is gonna take a minute." },
+    ] },
+  ]),
+  ...E('meet.react.shared', [
+    r1("Two people. The whole time. I talked to two people."),
+    r1("That's why the messages were so different some days!"),
+    r1("I did not see that coming. A whole extra person!"),
+    r1("Okay, so which one of you was I actually talking to?"),
+    r1("I'm not even mad. That's genius."),
+    r1("Every late-night chat, there were two of you reading it? Oh my God."),
+  ]),
+  ...E('meet.explain.shared', [
+    { turns: [
+      { by: 'brain', say: "{a.face} is the face, I'm the brain. That was the deal." },
+      { by: 'face', say: "And we fought about every single message." },
+      { by: 'brain', say: "Every single one." },
+    ] },
+    { turns: [
+      { by: 'face', say: "I wanted to send everything. {a.brain} wanted to send nothing." },
+      { by: 'brain', say: "So we met in the middle. That's why we were slow." },
+    ] },
+    { turns: [
+      { by: 'brain', say: "We figured two heads would be harder to trap than one." },
+      { by: 'face', say: "It worked. Mostly. Except when it didn't." },
+    ], beat: '{a.face} and {a.brain} bump fists.' },
+  ]),
   ...E('circle.leave', [
     r1("Okay, I'm out. Circle, exit the chat."),
     r1("That's enough group chat for one day.", { beat: '{a} closes the chat and flops back onto the couch.' }),
@@ -190,7 +251,7 @@ export const SCENES_MORE = {
   ...E('party.dance', [
     s1("Nobody can see me. I'm dancing like nobody can see me.", { beat: '{a} dances on the couch.' }),
     r1("This is my song! This is my song!"),
-    s1("Party of one. Best party I've ever been to."),
+    s1("Nobody can see me dance. This is the most free I have ever been."),
     s1("I've been saving these moves for a special occasion."),
     r1("Turn it up! Circle, turn it up!", { beat: '{a} spins around the kitchen counter.' }),
     s1("If they could see me right now, I'd win the whole game."),

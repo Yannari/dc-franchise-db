@@ -50,7 +50,7 @@ export function styleMessage(text, voice = {}, rng = () => 0.5) {
   for (const p of tokenize(text)) {
     if (p.type === 'text') {
       let v = p.v;
-      if (caps > 0 && rng() < caps * 0.5) v = v.replace(/!/g, '!!');
+      if (caps > 0 && rng() < caps * 0.5) v = v.replace(/!+/g, m => (m.length > 1 ? m : '!!'));
       out = dropped ? joinAcross(out, v) : out + v;
       dropped = false;
     } else if (p.type === 'emoji') {

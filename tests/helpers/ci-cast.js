@@ -11,6 +11,8 @@ const KEYS = ['physical', 'endurance', 'mental', 'social', 'strategic', 'loyalty
 const HANDLES = ['Rebecca', 'Mercedeze', 'Adam', 'Carol', 'Nathan', 'Jared', 'Imani', 'Gianna',
   'Tierra', 'Andy', 'Felix', 'Gemma', 'Syed', 'Dorothy', 'Kate', 'Olivia', 'Paul', 'Brittney',
   'Bruno', 'Sasha'];
+// A persona's pronouns follow its name: "Adam" is never "she".
+const MALE_HANDLES = new Set(['Adam', 'Nathan', 'Jared', 'Andy', 'Felix', 'Syed', 'Paul', 'Bruno']);
 
 export function makePlayers(n = 13, seed = 7) {
   const rng = rngFor(seed * 7919 + 13);
@@ -31,7 +33,7 @@ export function makePool(k = 6, seed = 7) {
     handle: HANDLES[i % HANDLES.length] + (i >= HANDLES.length ? String(i) : ''),
     face: `guest-${i + 1}`,
     age: 21 + Math.floor(rng() * 12),
-    gender: i % 2 === 0 ? 'f' : 'm',
+    gender: MALE_HANDLES.has(HANDLES[i % HANDLES.length]) ? 'm' : 'f',
     job: ['student', 'nurse', 'personal trainer', 'bartender', 'teacher', 'model'][i % 6],
     hometown: null,
     status: 'Single',

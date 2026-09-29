@@ -165,3 +165,16 @@ describe('a pair on the page', () => {
     expect(r.lines.every(l => l.person === 'Luis')).toBe(true);
   });
 });
+
+describe('the finale meet', () => {
+  it('reveals a shared profile as two people, whether it walks in or is found waiting', () => {
+    const s = withPair();
+    const walksIn = writeScene(s, addScene(s, 'meet', ['@q0', '@q1', '@q2', '@q3'], {})).blocks;
+    expect(walksIn.map(b => b.key)).toContain('meet.arrive.shared');
+    expect(walksIn.map(b => b.key)).toContain('meet.explain.shared');
+    const people = new Set(walksIn.flatMap(b => b.lines.map(l => l.person)));
+    expect(people.has('Mateo') && people.has('Luis')).toBe(true);
+    const found = writeScene(s, addScene(s, 'meet', ['@q1', '@q0'], {})).blocks;
+    expect(found.map(b => b.key).slice(0, 2)).toEqual(['meet.found.shared', 'meet.explain.shared']);
+  });
+});

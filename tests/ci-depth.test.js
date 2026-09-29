@@ -10,6 +10,7 @@ import { setPlayers } from '../js/core.js';
 import { playCircleSeason } from '../js/ci/season.js';
 import { blockText } from '../js/ci/transcript.js';
 import { GAMES } from '../js/ci/games-data.js';
+import { POOLS } from '../js/ci/lines/index.js';
 import { makePlayers, makePool, circleSetup } from './helpers/ci-cast.js';
 
 export const DEPTH = {
@@ -138,5 +139,24 @@ describe('every big moment airs in full', () => {
     console.log('\n  lines per scene (mean, min):', JSON.stringify(Object.fromEntries(
       Object.entries(seen).map(([k, a]) => [k, `${avg(a)} / ${Math.min(...a)} (need ${SCENE_DEPTH[k]})`]))));
     expect(Object.fromEntries(Object.entries(thin).map(([k, a]) => [k, a.length]))).toEqual({});
+  });
+});
+
+// Length bought with repetition is not depth: a season that airs the same
+// sentence every week reads thinner than a short one. No line airs more than
+// MAX_AIRINGS times in a season (the spec audit prints the full wear table).
+export const MAX_AIRINGS = 4;
+describe('a season never wears a line out', () => {
+  it(`airs no single line more than ${MAX_AIRINGS} times`, () => {
+    const worn = {};
+    for (const seed of [2, 7, 19]) {
+      const { state } = seasonWithPair(seed);
+      const uses = state.usedLines?.uses || {};
+      for (const [k, list] of Object.entries(POOLS)) {
+        const worst = Math.max(0, ...list.map(e => uses[e.id] || 0));
+        if (worst > MAX_AIRINGS) worn[k] = Math.max(worn[k] || 0, worst);
+      }
+    }
+    expect(worn).toEqual({});
   });
 });

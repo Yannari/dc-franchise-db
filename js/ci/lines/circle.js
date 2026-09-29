@@ -57,7 +57,6 @@ export const CIRCLE = {
   ],
   'circle.final': [
     { id: 'circle.final.01', turns: [
-      { by: 'a', react: "'Before the winner is revealed, you are invited to one last Circle Chat.' This is it." },
       { by: 'a', send: "I just want to say I love every single one of you. No matter what {e:heart}" },
       { by: 'b', send: "We did it!! Final five!! {e:party}" },
       { by: 'c', send: "Cheers to the realest people in the Circle {e:party} {t:FinalFive}" },

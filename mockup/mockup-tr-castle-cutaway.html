@@ -149,67 +149,113 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .pop .up{color:#8fd19e}.pop .dn{color:#e87a82}
 @keyframes pop{from{transform:translateX(30px);opacity:0}}
 
-/* ── THE ROUND TABLE: the camera cuts from the castle to the table itself ── */
-.rt{position:absolute;inset:0;z-index:6;opacity:0;pointer-events:none;transition:opacity .9s}
+/* ── THE ROUND TABLE — the existing screen's pieces, brought onto the stage ──
+   Palette and parts from js/vp-tr/round-table.js: the hall green, bone text,
+   candle and blood, the seat board, the debate card, the framed chalk slate
+   with its running count, The Count, The Chair, and the card that turns over. */
+.rt{position:absolute;inset:0;z-index:6;opacity:0;pointer-events:none;transition:opacity .9s;
+  --rt-bone:#ded6c4;--rt-bone-dim:rgba(222,214,196,.62);--rt-candle:#fff3d2;--rt-chalk:#eef2ec;
+  --rt-slate:#20262c;--rt-slate-2:#12171c;--rt-blood:#8e1526;--rt-blood-hot:#c9283c;--rt-rule:rgba(222,214,196,.17)}
 .rt.on{opacity:1}
-.rt .seat{position:absolute;transform:translate(-50%,-100%);transition:filter .45s,transform .45s cubic-bezier(.2,1.2,.4,1)}
-.rt .seat .av{position:relative;width:100%;aspect-ratio:3/4;overflow:hidden;border-radius:50% 50% 12% 12%/44% 44% 9% 9%;
-  background:linear-gradient(162deg,#252b37,#080b11);box-shadow:0 0 0 2px rgba(224,160,73,.45),0 10px 26px rgba(0,0,0,.85)}
+/* the seat board: everybody evenly round the table, the host at its head */
+.rt .seat{position:absolute;transform:translate(-50%,-50%);text-align:center;transition:filter .45s,transform .45s cubic-bezier(.2,1.2,.4,1)}
+.rt .seat .av{position:relative;width:100%;aspect-ratio:1/1.12;overflow:hidden;border-radius:50% 50% 12% 12%/44% 44% 9% 9%;
+  background:linear-gradient(162deg,#252b37,#080b11);box-shadow:0 0 0 2px rgba(222,214,196,.35),0 8px 20px rgba(0,0,0,.8)}
 .rt .seat .av img{width:100%;height:100%;object-fit:cover;object-position:50% 18%}
-.rt .seat .nm{margin-top:5px;text-align:center;white-space:nowrap;font-family:var(--cv-display);font-weight:700;font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--cv-vellum-2);text-shadow:0 2px 6px #000}
-.rt .seat.quiet{filter:brightness(.5) saturate(.7)}
-.rt .seat.speak{transform:translate(-50%,-104%) scale(1.08)}
-.rt .seat.speak .av{box-shadow:0 0 0 2px var(--cv-lantern-hot),0 0 36px rgba(224,160,73,.6),0 10px 26px rgba(0,0,0,.85)}
-.rt .seat.speak .nm{color:var(--cv-lantern-hot)}
-.rt .seat.accused .av{box-shadow:0 0 0 2px var(--cv-wax-hot),0 0 30px rgba(179,38,51,.55),0 10px 26px rgba(0,0,0,.85)}
-.rt .seat.host .av{box-shadow:0 0 0 2px #cfd8e6,0 0 24px rgba(143,166,194,.45),0 10px 26px rgba(0,0,0,.85)}
-.aud .rt .seat.traitor .av::after{content:"";position:absolute;inset:0;border-radius:inherit;box-shadow:inset 0 0 0 2px rgba(179,38,51,.9),inset 0 -30px 40px -18px rgba(117,18,30,.75)}
+.rt .seat .nm{display:inline-block;margin-top:5px;padding:2px 8px;white-space:nowrap;font-family:var(--cv-display);font-weight:700;font-size:10px;
+  letter-spacing:.18em;text-transform:uppercase;color:var(--rt-bone);background:rgba(4,7,5,.72);border:1px solid var(--rt-rule)}
+.rt .seat .ticks{height:12px;margin-top:3px;font-family:var(--cv-hand);font-size:14px;line-height:12px;color:var(--rt-blood-hot);letter-spacing:1px}
+.rt .seat.quiet{filter:brightness(.55) saturate(.75)}
+.rt .seat.speak{transform:translate(-50%,-50%) scale(1.14);z-index:1400!important}
+.rt .seat.speak .av{box-shadow:0 0 0 2px var(--rt-candle),0 0 34px rgba(255,243,210,.55),0 8px 20px rgba(0,0,0,.8)}
+.rt .seat.accused .av{box-shadow:0 0 0 2px var(--rt-blood-hot),0 0 26px rgba(201,40,60,.55),0 8px 20px rgba(0,0,0,.8)}
+.rt .seat.host .av{box-shadow:0 0 0 2px var(--rt-candle),0 8px 20px rgba(0,0,0,.8)}
+.rt .seat.host .nm{color:var(--rt-candle)}
+.aud .rt .seat.traitor .av::after{content:"";position:absolute;inset:0;border-radius:inherit;box-shadow:inset 0 0 0 2px rgba(201,40,60,.9),inset 0 -26px 34px -16px rgba(142,21,38,.8)}
 .rt .seat.out{filter:grayscale(1) brightness(.35)}
-/* the slate: a small chalkboard held up under the face */
-.rt .slate{position:absolute;left:50%;top:100%;width:128%;padding:5px 0 6px;transform:translateX(-50%) rotateX(90deg);transform-origin:top;opacity:0;
-  background:linear-gradient(170deg,#23302a,#141c18);border:3px solid #5a3a1c;border-radius:3px;box-shadow:0 6px 14px rgba(0,0,0,.7);
-  font-family:var(--cv-hand);font-style:italic;font-size:15px;color:#f2efe4;text-align:center;letter-spacing:.02em;transition:transform .55s cubic-bezier(.2,1.4,.4,1),opacity .2s}
-.rt .slate.up{transform:translateX(-50%) rotateX(0);opacity:1}
-.rt .slate.fresh{animation:chalk .9s ease}
-@keyframes chalk{0%{filter:brightness(2.2)}100%{filter:none}}
-.rt .seat.voted .nm{opacity:0}
 .rt svg.threads{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible;z-index:900}
-.rt .thread{fill:none;stroke:var(--cv-wax-hot);stroke-width:3;stroke-linecap:round;filter:drop-shadow(0 0 5px rgba(179,38,51,.9));stroke-dasharray:1200;stroke-dashoffset:1200;animation:draw 1s ease forwards}
-.rt .thread.old{stroke:rgba(179,38,51,.45);filter:none;animation:none;stroke-dashoffset:0}
+.rt .thread{fill:none;stroke:var(--rt-blood-hot);stroke-width:3;stroke-linecap:round;filter:drop-shadow(0 0 5px rgba(201,40,60,.9));stroke-dasharray:1400;stroke-dashoffset:1400;animation:draw 1s ease forwards}
+.rt .thread.old{stroke:rgba(201,40,60,.4);filter:none;animation:none;stroke-dashoffset:0}
 @keyframes draw{to{stroke-dashoffset:0}}
-/* the ledger: a vellum card that keeps the count */
-.rt .ledger{position:absolute;right:16px;top:58px;width:210px;padding:12px 14px 10px;z-index:1500;background:linear-gradient(170deg,#efe5cc,#d6c7a0);color:var(--cv-vellum-ink);
-  box-shadow:0 14px 30px rgba(0,0,0,.7),inset 0 0 26px rgba(120,90,40,.2);opacity:0;transform:translateY(-8px);transition:.5s}
-.rt .ledger.on{opacity:1;transform:none}
-.rt .ledger h5{font-family:var(--cv-display);font-size:10px;font-weight:700;letter-spacing:.34em;text-transform:uppercase;color:#6b4a1f;margin-bottom:6px}
-.rt .ledger .row{display:grid;grid-template-columns:22px 1fr auto;gap:8px;align-items:center;padding:4px 0;border-top:1px solid rgba(80,60,30,.18);font-family:var(--cv-hand);font-size:15px}
-.rt .ledger .row:first-of-type{border-top:0}
-.rt .ledger img{width:22px;height:22px;border-radius:50% 50% 12% 12%/44% 44% 9% 9%;object-fit:cover}
-.rt .ledger .seals{display:flex;gap:3px}
-.rt .ledger .seals i{width:9px;height:9px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#d0404c,#75121e);box-shadow:0 0 0 1px rgba(80,10,20,.4)}
-/* the reveal: the card is turned over */
-.rt .reveal{position:absolute;inset:0;z-index:3000;display:grid;place-items:center;background:radial-gradient(45% 55% at 50% 45%,rgba(0,0,0,.45),rgba(0,0,0,.93));opacity:0;transition:opacity .8s}
-.rt .reveal.on{opacity:1}
-.rt .rcard{width:min(24%,250px);aspect-ratio:3/4;perspective:1200px}
-.rt .rin{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform 1.2s cubic-bezier(.3,1.2,.3,1)}
-.rt .reveal.flip .rin{transform:rotateY(180deg)}
-.rt .rf,.rt .rb{position:absolute;inset:0;overflow:hidden;backface-visibility:hidden;border-radius:50% 50% 8% 8%/40% 40% 6% 6%;box-shadow:0 30px 80px rgba(0,0,0,.9)}
-.rt .rf{box-shadow:0 0 0 3px var(--cv-lantern),0 30px 80px rgba(0,0,0,.9)}
-.rt .rf img{width:100%;height:100%;object-fit:cover;object-position:50% 18%}
-.rt .rb{transform:rotateY(180deg);display:grid;place-items:center;text-align:center;padding:18px}
-.rt .rb.faithful{background:radial-gradient(circle at 50% 35%,#f1e6c8,#c9ba95);color:var(--cv-vellum-ink);box-shadow:0 0 0 3px var(--cv-lantern),0 0 60px rgba(224,160,73,.45)}
-.rt .rb.traitor{background:radial-gradient(circle at 50% 35%,#8a1a28,#2a0508);color:#f3dcd8;box-shadow:0 0 0 3px var(--cv-wax-hot),0 0 60px rgba(179,38,51,.55)}
-.rt .rb small{display:block;font-family:var(--cv-display);font-size:11px;font-weight:700;letter-spacing:.4em;margin-bottom:10px;opacity:.75}
-.rt .rb strong{font-family:var(--cv-display);font-weight:900;font-size:clamp(22px,2.4vw,32px);letter-spacing:.06em}
-.rt .rcap{position:absolute;left:0;right:0;bottom:9%;text-align:center;font-family:var(--cv-body);font-style:italic;font-size:22px;color:#f1e6cc;text-shadow:0 2px 12px #000}
-.rt .rname{position:absolute;left:0;right:0;top:9%;text-align:center;font-family:var(--cv-display);font-weight:900;font-size:clamp(26px,3.4vw,48px);color:#f7ecd2;text-shadow:0 0 30px rgba(255,219,149,.45)}
-.line.host .card{background:linear-gradient(170deg,#e9edf3,#b9c4d2);box-shadow:0 14px 30px rgba(0,0,0,.6),0 0 0 1px rgba(143,166,194,.6)}
-.line.host .card::after{background:#c1cbd8}
-.line.host .who{color:#2a3a55}
+/* the counter on the baize */
+.rt .counter{position:absolute;transform:translate(-50%,-50%);text-align:center;z-index:800;font-family:var(--cv-display);color:var(--rt-candle);text-shadow:0 2px 12px #000}
+.rt .counter b{display:block;font-size:30px;font-weight:900}
+.rt .counter span{font-size:10px;font-weight:700;letter-spacing:.3em;color:var(--rt-bone-dim)}
+
+/* the card at the foot of the stage: the debate, or the host */
+.rt .card-slot{position:absolute;left:50%;bottom:3.5%;width:min(62%,760px);transform:translate(-50%,12px);opacity:0;z-index:3200;transition:.4s}
+.rt .card-slot.in{opacity:1;transform:translate(-50%,0)}
+.rt .dcard{padding:14px 18px 12px;background:linear-gradient(160deg,rgba(13,23,18,.96),rgba(6,11,8,.96));border:1px solid var(--rt-rule);box-shadow:0 18px 40px rgba(0,0,0,.75)}
+.rt .dhead{display:flex;align-items:center;gap:12px;padding-bottom:9px;margin-bottom:10px;border-bottom:1px solid var(--rt-rule)}
+.rt .dhead img{width:38px;height:42px;border-radius:50% 50% 12% 12%/44% 44% 9% 9%;object-fit:cover;box-shadow:0 0 0 2px var(--rt-blood-hot)}
+.rt .dhead .k{font-family:var(--cv-display);font-size:9.5px;font-weight:700;letter-spacing:.34em;color:var(--rt-bone-dim);text-transform:uppercase}
+.rt .dhead b{display:block;font-family:var(--cv-display);font-weight:900;font-size:22px;color:var(--rt-bone)}
+.rt .dhead .v{margin-left:auto;text-align:right;font-family:var(--cv-display);font-size:9.5px;font-weight:700;letter-spacing:.24em;color:var(--rt-bone-dim);text-transform:uppercase}
+.rt .dhead .v em{display:block;font-style:normal;font-size:18px;color:var(--rt-candle)}
+.rt .quote{display:grid;grid-template-columns:40px 1fr;gap:12px;padding:10px 12px;border-left:2px solid var(--rt-rule);background:rgba(255,243,210,.03)}
+.rt .quote img{width:40px;height:44px;border-radius:50% 50% 12% 12%/44% 44% 9% 9%;object-fit:cover}
+.rt .quote p{font-family:var(--cv-body);font-size:clamp(17px,1.5vw,20px);line-height:1.4;color:var(--rt-bone)}
+.rt .quote small{display:block;margin-top:4px;font-family:var(--cv-display);font-size:9.5px;font-weight:700;letter-spacing:.3em;color:var(--rt-bone-dim);text-transform:uppercase}
+.rt .hostcard{display:grid;grid-template-columns:52px 1fr;gap:14px;align-items:center;padding:14px 18px;
+  background:radial-gradient(80% 140% at 50% 50%,rgba(40,70,52,.55),rgba(6,11,8,.96));border-top:1px solid var(--rt-rule);border-bottom:1px solid var(--rt-rule);box-shadow:0 18px 40px rgba(0,0,0,.75)}
+.rt .hostcard img{width:52px;height:58px;border-radius:50% 50% 12% 12%/44% 44% 9% 9%;object-fit:cover}
+.rt .hostcard .k{font-family:var(--cv-display);font-size:9.5px;font-weight:700;letter-spacing:.34em;color:var(--rt-bone-dim);text-transform:uppercase}
+.rt .hostcard p{font-family:var(--cv-body);font-style:italic;font-size:clamp(18px,1.6vw,22px);line-height:1.35;color:var(--rt-candle)}
+
+/* the slate, read aloud: the existing screen's framed chalkboard */
+.rt .bigslate{position:absolute;left:50%;top:27%;width:min(36%,420px);transform:translateX(-50%) rotateX(80deg);transform-origin:top;opacity:0;z-index:2500;
+  padding:12px;border-radius:3px;background:linear-gradient(150deg,#4b3a22,#241b10);box-shadow:0 22px 44px rgba(0,0,0,.72),inset 0 1px 0 rgba(255,243,210,.2);transition:transform .55s cubic-bezier(.2,1.3,.4,1),opacity .25s}
+.rt .bigslate.in{transform:translateX(-50%) rotateX(0);opacity:1}
+.rt .bigslate .face{position:relative;padding:18px 18px 14px;text-align:center;background:linear-gradient(158deg,var(--rt-slate),var(--rt-slate-2));box-shadow:inset 0 0 40px rgba(0,0,0,.75)}
+.rt .bigslate .ord{position:absolute;left:12px;top:8px;font-family:var(--cv-display);font-weight:900;font-size:11px;letter-spacing:.14em;color:rgba(238,242,236,.32)}
+.rt .bigslate .nm{font-family:var(--cv-hand);font-size:clamp(30px,3.8vw,46px);line-height:1.06;color:var(--rt-chalk);text-shadow:0 0 1px rgba(238,242,236,.9),0 0 14px rgba(238,242,236,.28);transform:rotate(-1.1deg)}
+.rt .bigslate .by{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:12px;padding-top:10px;border-top:1px solid rgba(238,242,236,.14);
+  font-family:var(--cv-display);font-weight:700;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:rgba(238,242,236,.72)}
+.rt .bigslate .by img{width:26px;height:28px;border-radius:50% 50% 12% 12%/44% 44% 9% 9%;object-fit:cover}
+.rt .bigslate .run{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;padding:10px 2px 0}
+.rt .chip{display:inline-flex;align-items:center;gap:6px;padding:3px 9px;border:1px solid rgba(222,214,196,.2);background:rgba(4,7,5,.55);
+  font-family:var(--cv-display);font-weight:700;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(222,214,196,.8)}
+.rt .chip b{font-size:12px;color:var(--rt-candle)}
+.rt .chip[data-lead="1"]{border-color:rgba(201,40,60,.55);color:#e58490}.rt .chip[data-lead="1"] b{color:#e58490}
+.rt .chip[data-just="1"]{border-color:rgba(240,224,170,.6);background:rgba(240,224,170,.1);color:rgba(246,238,214,.95)}
+
+/* The Count */
+.rt .count{position:absolute;right:16px;bottom:16px;width:230px;padding:12px 14px;z-index:3200;background:linear-gradient(160deg,rgba(13,23,18,.96),rgba(6,11,8,.96));
+  border:1px solid var(--rt-rule);box-shadow:0 18px 40px rgba(0,0,0,.75);opacity:0;transform:translateY(-8px);transition:.5s}
+.rt .count.on{opacity:1;transform:none}
+.rt .count h5{font-family:var(--cv-display);font-size:10px;font-weight:700;letter-spacing:.34em;text-transform:uppercase;color:var(--rt-bone-dim);margin-bottom:8px}
+.rt .crow{display:grid;grid-template-columns:24px 1fr auto;gap:9px;align-items:center;padding:6px 8px;margin-bottom:5px;border:1px solid rgba(222,214,196,.11);background:rgba(4,7,5,.5)}
+.rt .crow img{width:24px;height:26px;border-radius:50% 50% 12% 12%/44% 44% 9% 9%;object-fit:cover}
+.rt .crow span{font-family:var(--cv-display);font-weight:700;font-size:13px;color:var(--rt-bone)}
+.rt .crow b{font-family:var(--cv-display);font-weight:900;font-size:16px;color:var(--rt-candle)}
+.rt .crow i{grid-column:1/-1;height:3px;background:rgba(222,214,196,.09);position:relative}
+.rt .crow i::after{content:"";position:absolute;left:0;top:0;bottom:0;width:var(--w);background:linear-gradient(90deg,rgba(142,21,38,.9),rgba(201,40,60,.9))}
+.rt .crow[data-top="1"]{border-color:rgba(201,40,60,.5)}.rt .crow[data-top="1"] b{color:#e58490}
+
+/* The Chair, and the card that turns over */
+.rt .chair{position:absolute;inset:0;z-index:3000;display:grid;place-items:center;background:radial-gradient(45% 55% at 50% 45%,rgba(4,7,5,.55),rgba(4,7,5,.95));opacity:0;transition:opacity .8s}
+.rt .chair.on{opacity:1}
+.rt .chair .inner{text-align:center;width:min(46%,480px);margin-top:-9%}
+.rt .chair .k{font-family:var(--cv-display);font-size:10px;font-weight:700;letter-spacing:.34em;color:var(--rt-bone-dim);text-transform:uppercase}
+.rt .chair .who{font-family:var(--cv-display);font-weight:900;font-size:clamp(30px,4vw,48px);color:var(--rt-bone);margin:6px 0 2px}
+.rt .chair .word{font-family:var(--cv-display);font-size:11px;font-weight:700;letter-spacing:.4em;color:#e58490;text-transform:uppercase}
+.rt .flip{position:relative;margin:16px auto 0;width:min(50%,210px);aspect-ratio:3/4;perspective:1200px}
+.rt .flip .rin{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform 1.2s cubic-bezier(.3,1.2,.3,1)}
+.rt .chair.turned .rin{transform:rotateY(180deg)}
+.rt .flip .rf,.rt .flip .rb{position:absolute;inset:0;overflow:hidden;backface-visibility:hidden;border-radius:50% 50% 8% 8%/40% 40% 6% 6%}
+.rt .flip .rf{box-shadow:0 0 0 3px var(--rt-bone),0 30px 70px rgba(0,0,0,.9)}
+.rt .flip .rf img{width:100%;height:100%;object-fit:cover;object-position:50% 18%}
+.rt .flip .rb{transform:rotateY(180deg);display:grid;place-items:center;padding:18px}
+.rt .flip .rb.faithful{background:radial-gradient(circle at 50% 35%,#f1e6c8,#c9ba95);color:#241b11;box-shadow:0 0 0 3px var(--rt-candle),0 0 60px rgba(255,243,210,.35)}
+.rt .flip .rb.traitor{background:radial-gradient(circle at 50% 35%,#8e1526,#2a0508);color:#f3dcd8;box-shadow:0 0 0 3px var(--rt-blood-hot),0 0 60px rgba(201,40,60,.55)}
+.rt .flip .rb small{display:block;font-family:var(--cv-display);font-size:11px;font-weight:700;letter-spacing:.4em;margin-bottom:10px;opacity:.75}
+.rt .flip .rb strong{font-family:var(--cv-display);font-weight:900;font-size:clamp(18px,1.8vw,24px);letter-spacing:.04em;line-height:1.15}
+.rt .chair .cap{margin-top:16px;font-family:var(--cv-body);font-style:italic;font-size:20px;color:var(--rt-bone)}
 
 /* minimap: where in the castle, who is where */
-.mini{position:absolute;left:16px;bottom:16px;z-index:10;width:190px;padding:8px;background:rgba(4,5,8,.78);box-shadow:0 0 0 1px rgba(224,160,73,.22)}
+.mini{position:absolute;left:16px;bottom:16px;z-index:10;transition:opacity .6s;width:190px;padding:8px;background:rgba(4,5,8,.78);box-shadow:0 0 0 1px rgba(224,160,73,.22)}
 .mini svg{width:100%;display:block}
+:has(> .rt.on) > .mini, :has(.rt.on) .mini{opacity:0;pointer-events:none}
 .mini .k{font-family:var(--cv-display);font-size:9px;font-weight:700;letter-spacing:.3em;color:var(--cv-mute);text-transform:uppercase;margin-bottom:5px}
 
 /* ── controls, in the old stone-and-lantern ── */
@@ -442,20 +488,21 @@ function drawScene(st, fresh){
   if(st.beat && st.beat.narr){ cap.textContent = st.beat.narr; cap.classList.add('in'); } else cap.classList.remove('in');
 }
 // ── THE ROUND TABLE ─────────────────────────────────────────────────────
-const RT_SEATS = ['Chris','Lindsay','Alejandro','Leshawna','Izzy','Harold','Duncan','Gwen','Heather','Courtney'];
+// The existing screen's board, debate card, slate, count and chair, played
+// one click at a time on the stage. Seats are EVEN round the table — eleven
+// places, the host's at the head — the way the existing board lays them out.
+const RT_SEATS = ['Courtney','Heather','Gwen','Duncan','Harold','Izzy','Leshawna','Alejandro','Lindsay','Chris'];
 const RT_VOTES = { Courtney:'Heather', Heather:'Courtney', Gwen:'Heather', Duncan:'Harold', Harold:'Heather', Izzy:'Heather',
   Leshawna:'Harold', Alejandro:'Heather', Lindsay:'Harold', Chris:'Harold' };
-// round the table from the host's left to the host's right; the front of the
-// table is left open, because that is where the camera is
-const RT_ANGLES = [-122, -150, 180, 152, 126, 54, 28, 0, -30, -58];
+const RT_ORDER = RT_SEATS.slice();                  // the order the slates are read
 function rtState(i){
-  const r = { accs:[], slates:{}, out:null, reveal:null, phase:'talk', on:false };
+  const r = { accs:[], slates:{}, order:[], out:null, reveal:null, phase:'talk', on:false };
   for(let k=0;k<=i;k++){ const s = STEPS[k];
-    if(s.room && !s.cam){ Object.assign(r, { accs:[], slates:{}, out:null, reveal:null, phase:'talk', on:!!s.rt }); }
+    if(s.room && !s.cam){ Object.assign(r, { accs:[], slates:{}, order:[], out:null, reveal:null, phase:'talk', on:!!s.rt }); }
     if(!r.on) continue;
     if(s.acc) r.accs.push(s.acc);
     if(s.phase) r.phase = s.phase;
-    if(s.vote) r.slates[s.vote] = RT_VOTES[s.vote];
+    if(s.vote){ r.slates[s.vote] = RT_VOTES[s.vote]; r.order.push(s.vote); }
     if(s.out) r.out = s.out;
     if(s.reveal) r.reveal = s;
   }
@@ -463,74 +510,90 @@ function rtState(i){
   r.lastAcc = cur.acc || null; r.lastVote = cur.vote || null;
   return r;
 }
-function seatAt(i, W, H){
-  const cx = W*.5, cy = H*.58, rx = W*.44, ry = H*.31;
-  const a = RT_ANGLES[i] * Math.PI/180;
+// slot 0 is the host's, at the head of the table; ten evenly spaced after it
+function seatAt(slot, W, H){
+  const cx = W*.5, cy = H*.45, rx = W*.4, ry = H*.24;
+  const a = (-90 + slot * 360/11) * Math.PI/180;
   const x = cx + rx*Math.cos(a), y = cy + ry*Math.sin(a);
-  const depth = (y - (cy-ry)) / (2*ry);            // 0 = the far side, 1 = the near side
-  return { x, y, s: .66 + .44*depth, z: 100 + Math.round(y) };
+  return { x, y, z: 100 + Math.round(y) };
 }
 function drawTable(st, fresh){
   const rt = document.getElementById('rt'), W = view.clientWidth, H = view.clientHeight;
   const r = rtState(idx);
   const beat = st.beat || {};
   const speaker = beat.who || beat.vote || (beat.host ? 'Host' : null);
-  const hostW = H*.1, hostX = W*.5, hostY = H*.37;
-  let h = TRScenery.roundTableSet(W, H, true) + TRScenery.roundTable(W*.5, H*.6, W*.3, H*.16);
-  // threads between accuser and accused, at chest height
-  const chest = i => { const p = seatAt(i, W, H), w = H*.112*p.s; return [p.x, p.y - w*1.33*.45]; };
+  const pw = H*.092;
+  let h = TRScenery.roundTableSet(W, H, true) + TRScenery.roundTable(W*.5, H*.46, W*.27, H*.15);
+  // threads between accuser and accused
+  const pos = n => { const p = seatAt(RT_SEATS.indexOf(n) + 1, W, H); return [p.x, p.y]; };
   h += `<svg class="threads">` + r.accs.map(([a,b]) => {
-    const [x1,y1] = chest(RT_SEATS.indexOf(a)), [x2,y2] = chest(RT_SEATS.indexOf(b));
-    const mx = (x1+x2)/2, my = Math.min(y1,y2) - H*.1;
+    const [x1,y1] = pos(a), [x2,y2] = pos(b);
+    const mx = (x1+x2)/2 + (W*.5 - (x1+x2)/2)*.35, my = (y1+y2)/2 + (H*.46 - (y1+y2)/2)*.35;
     const isNew = fresh && r.lastAcc && r.lastAcc[0]===a && r.lastAcc[1]===b;
     return `<path class="thread${isNew?'':' old'}" d="M${x1},${y1} Q${mx},${my} ${x2},${y2}"/>`;
   }).join('') + `</svg>`;
-  // the host, at the head of the table
-  h += `<div class="seat host${speaker==='Host'?' speak':(speaker?' quiet':'')}" style="left:${hostX}px;top:${hostY}px;width:${hostW}px;z-index:${100+Math.round(hostY)}">`
+  // the count on the baize, while the slates are read
+  const count = {}; Object.values(r.slates).forEach(v => count[v] = (count[v]||0) + 1);
+  if(r.phase === "vote" && !r.out && !beat.vote)
+    h += `<div class="counter" style="left:${W*.5}px;top:${H*.46}px"><b>${r.order.length} / ${RT_SEATS.length}</b><span>READ ALOUD</span></div>`;
+  // the host's seat
+  const hp = seatAt(0, W, H);
+  h += `<div class="seat host${speaker==='Host'?' speak':(speaker?' quiet':'')}" style="left:${hp.x}px;top:${hp.y}px;width:${pw}px;z-index:${hp.z}">`
     + `<div class="av"><img src="${A('alan-cumming')}"></div><div class="nm">Alan Cumming</div></div>`;
-  // the players, with their slates
+  // the players, with the votes against them as chalk ticks at their place
   const accused = new Set(r.accs.map(x => x[1]));
   RT_SEATS.forEach((n, i) => {
-    const p = seatAt(i, W, H), w = H*.112*p.s;
-    const cls = ['seat', speaker===n?'speak':(speaker?'quiet':''), accused.has(n) && r.phase!=='vote' ? 'accused':'', TRAITOR.has(n)?'traitor':'',
-      r.slates[n]?'voted':'', r.out===n && r.reveal ? 'out':''].join(' ');
-    const sl = r.slates[n];
-    h += `<div class="${cls}" style="left:${p.x}px;top:${p.y}px;width:${w}px;z-index:${p.z}">`
+    const p = seatAt(i + 1, W, H);
+    const cls = ['seat', speaker===n?'speak':(speaker?'quiet':''), accused.has(n) && r.phase!=='vote' ? 'accused':'',
+      TRAITOR.has(n)?'traitor':'', r.out===n && r.reveal ? 'out':''].join(' ');
+    h += `<div class="${cls}" style="left:${p.x}px;top:${p.y}px;width:${pw}px;z-index:${p.z}">`
       + `<div class="av"><img src="${A(P[n])}"></div><div class="nm">${n}</div>`
-      + `<div class="slate${sl?' up':''}${fresh && r.lastVote===n?' fresh':''}">${sl||''}</div></div>`;
+      + `<div class="ticks">${'/'.repeat(count[n]||0)}</div></div>`;
   });
-  // the ledger
-  const count = {}; Object.values(r.slates).forEach(v => count[v] = (count[v]||0) + 1);
-  const names = Object.keys(count).sort((a,b) => count[b]-count[a]);
-  h += `<div class="ledger${names.length?' on':''}"><h5>The count</h5>` + names.map(n =>
-    `<div class="row"><img src="${A(P[n])}"><span>${n}</span><span class="seals">${'<i></i>'.repeat(count[n])}</span></div>`).join('') + `</div>`;
-  // the reveal
+  // the slate just read — the existing screen's framed chalkboard
+  if(beat.vote){
+    const lead = Math.max(...Object.values(count));
+    const chips = Object.keys(count).sort((a,b) => count[b]-count[a]).map(n =>
+      `<span class="chip"${count[n]===lead?' data-lead="1"':''}${n===RT_VOTES[beat.vote]?' data-just="1"':''}>${n} <b>${count[n]}</b></span>`).join('');
+    h += `<div class="bigslate"><div class="face"><span class="ord">${r.order.length} / ${RT_SEATS.length}</span>`
+      + `<div class="nm">${RT_VOTES[beat.vote]}</div><div class="by"><img src="${A(P[beat.vote])}">${beat.vote}</div></div>`
+      + `<div class="run">${chips}</div></div>`;
+  }
+  // The Count, once every slate is up
+  if(r.order.length === RT_SEATS.length){
+    const names = Object.keys(count).sort((a,b) => count[b]-count[a]), top = count[names[0]];
+    h += `<div class="count on"><h5>The Count</h5>` + names.map(n =>
+      `<div class="crow"${count[n]===top?' data-top="1"':''}><img src="${A(P[n])}"><span>${n}</span><b>${count[n]}</b><i style="--w:${count[n]/top*100}%"></i></div>`).join('') + `</div>`;
+  }
+  // The Chair, and the card that turns over
   if(r.out){
     const faithful = !r.reveal || r.reveal.reveal === 'faithful';
-    h += `<div class="reveal on${r.reveal?' flip':''}"><div class="rname">${r.out}</div><div class="rcard"><div class="rin">`
-      + `<div class="rf"><img src="${A(P[r.out])}"></div>`
-      + `<div class="rb ${faithful?'faithful':'traitor'}"><div><small>I AM</small><strong>${faithful?'A FAITHFUL':'A TRAITOR'}</strong></div></div>`
-      + `</div></div><div class="rcap">${r.reveal ? r.reveal.cap : ''}</div></div>`;
+    h += `<div class="chair on${r.reveal?' turned':''}"><div class="inner"><div class="k">The Chair</div>`
+      + `<div class="who">${r.out}</div><div class="word">Banished</div>`
+      + `<div class="flip"><div class="rin"><div class="rf"><img src="${A(P[r.out])}"></div>`
+      + `<div class="rb ${faithful?'faithful':'traitor'}"><div><small>I AM</small><strong>${faithful?'A FAITHFUL':'A TRAITOR'}</strong></div></div></div></div>`
+      + `<div class="cap">${r.reveal ? r.reveal.cap : ''}</div></div></div>`;
   }
+  // the card at the foot of the stage: the host, or the debate
+  let card = '';
+  if(beat.host && !r.reveal){
+    card = `<div class="hostcard"><img src="${A('alan-cumming')}"><div><div class="k">Alan Cumming</div><p>“${beat.host}”</p></div></div>`;
+  } else if(beat.who){
+    const target = beat.acc ? beat.acc[1] : (accused.has(beat.who) ? beat.who : (r.accs.length ? r.accs[r.accs.length-1][1] : beat.who));
+    const voices = r.accs.filter(x => x[1] === target).length;
+    card = `<div class="dcard"><div class="dhead"><img src="${A(P[target])}"><div><div class="k">The Debate</div><b>${target}</b></div>`
+      + `<div class="v"><em>${voices}</em>${voices === 1 ? 'voice' : 'voices'} at this name</div></div>`
+      + `<div class="quote"><img src="${A(P[beat.who])}"><div><p class="q"></p><small>${beat.who}</small></div></div></div>`;
+  }
+  if(card) h += `<div class="card-slot">${card}</div>`;
   rt.innerHTML = h;
-  // the spoken line, over whoever is speaking (the host included)
-  if((beat.who || beat.host || beat.vote) && !(r.out && r.reveal)){
-    let x, top, who, txt, cls = 'line', el_z = 2500;
-    if(beat.host){ x = hostX; top = hostY - hostW*1.33 - 14; who = 'Alan Cumming'; txt = beat.host; cls += ' host'; }
-    else { const i = RT_SEATS.indexOf(beat.who || beat.vote), p = seatAt(i, W, H), w = H*.112*p.s;
-      x = p.x; top = p.y - w*1.33 - 14; who = beat.who || beat.vote; txt = beat.text || `I’m writing ${RT_VOTES[beat.vote]}.`; }
-    if(r.out){ top = H*.95; x = W*.5; el_z = 3100; }
-    const el = document.createElement('div');
-    el.className = cls; el.style.zIndex = el_z;
-    el.style.left = Math.min(Math.max(x, W*.24), W*.76) + 'px'; el.style.top = Math.max(top, H*.16) + 'px';
-    el.innerHTML = `<div class="card"><div class="who"><i></i>${who}</div><p></p></div>`;
-    rt.appendChild(el);
-    const pEl = el.querySelector('p'), q = '“' + txt + '”';
-    requestAnimationFrame(()=>el.classList.add('in'));
-    if(fresh){ let k=0; const t = setInterval(()=>{ pEl.textContent = q.slice(0,++k); if(k>=q.length) clearInterval(t); }, 16); }
-    else pEl.textContent = q;
-  }
-  const phaseLabel = r.out ? 'The banishment' : r.phase === 'vote' ? 'The vote' : 'The accusations';
+  const slot = rt.querySelector('.card-slot'), bs = rt.querySelector('.bigslate');
+  requestAnimationFrame(() => { slot && slot.classList.add('in'); bs && bs.classList.add('in'); });
+  const q = rt.querySelector('.quote .q');
+  if(q){ const txt = '“' + beat.text + '”';
+    if(fresh){ let k=0; const t = setInterval(()=>{ q.textContent = txt.slice(0,++k); if(k>=txt.length) clearInterval(t); }, 16); }
+    else q.textContent = txt; }
+  const phaseLabel = r.out ? 'The banishment' : r.phase === 'vote' ? 'The slates' : 'The debate';
   document.getElementById('corner').innerHTML = `The Round Table · <b>${phaseLabel}</b>`;
   document.getElementById('corner').classList.add('in');
 }

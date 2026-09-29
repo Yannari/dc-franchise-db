@@ -7,6 +7,7 @@
 // 4) the intent's own consequence (a pact, a claim, a reveal), 5) gossip on a
 // warm chat. Plan 2 writes words FROM this record, so a scene can never say
 // one thing while the numbers did another.
+import { isPair, leadFor } from './shared.js';
 import { rel, bump, S, clamp, addScene, makePact } from './state.js';
 import { belief } from './beliefs.js';
 import { feel, mood } from './mind.js';
@@ -118,6 +119,7 @@ function gossip(state, rng, sc, from, to) {
 export function runChat(state, rng, plan, ctx = {}) {
   const { from, to, intent } = plan;
   const sc = addScene(state, 'chat', [from, to], { intent, ending: null, turns: [], claims: [], pact: null });
+  if (isPair(state, from)) sc.data.lead = leadFor(state, from, intent, rng);
   let ending;
   if (intent === 'probe') {
     const r = probe(state, rng, from, to, sc);

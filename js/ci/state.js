@@ -46,8 +46,10 @@ export function makePact(state, kind, a, b) {
 }
 export const isActive = (state, handle) => state.active.includes(handle);
 
-/** A profile's stat: the mean over the people behind it (a shared profile is two). */
-export function S(state, handle, key) {
+/** A profile's stat: the mean over the people behind it (a shared profile is
+ *  two), or one person's when `who` names them (whoever won the argument). */
+export function S(state, handle, key, { who = null } = {}) {
+  if (who && state.people[who]) return state.people[who].stats[key] ?? 5;
   const names = peopleOf(state, handle);
   if (!names.length) return 5;
   return names.reduce((sum, n) => sum + (state.people[n].stats[key] ?? 5), 0) / names.length;

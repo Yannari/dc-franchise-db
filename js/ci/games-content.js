@@ -1,0 +1,273 @@
+// ══════════════════════════════════════════════════════════════════════
+// ci/games-content.js — what the games are played WITH (Plan 3a+)
+// ══════════════════════════════════════════════════════════════════════
+//
+// Data only. Trivia questions with their answers, and the facts a player
+// submits in a guess game. In-universe: general knowledge, no real people,
+// brands, countries or cities. The engine picks from here and decides who is
+// right; the writing layer quotes it.
+
+// Trivia: category id → questions. `a` is the answer, `wrong` a plausible
+// wrong one (what a player says when they miss).
+const tq = (id, q, a, wrong) => ({ id, q, a, wrong });
+export const TRIVIA = {
+  movies: [
+    tq('m1', 'In movies, what do you call the person who yells "Action!"?', 'The director', 'The producer'),
+    tq('m2', 'What is the name for a movie that is a musical number after musical number?', 'A musical', 'An opera'),
+    tq('m3', 'What snack is most famous at the movies?', 'Popcorn', 'Nachos'),
+    tq('m4', 'What do you call the list of names at the end of a movie?', 'The credits', 'The cast list'),
+    tq('m5', 'A movie with no sound and no talking is called what?', 'A silent film', 'A mime film'),
+    tq('m6', 'What is the golden statue given for the best movies called?', 'An award statuette', 'A trophy cup'),
+  ],
+  food: [
+    tq('f1', 'What vegetable makes you cry when you cut it?', 'An onion', 'Garlic'),
+    tq('f2', 'Guacamole is made mostly from what fruit?', 'Avocado', 'Lime'),
+    tq('f3', 'What is the main ingredient in hummus?', 'Chickpeas', 'Lentils'),
+    tq('f4', 'How many eggs are in a dozen?', 'Twelve', 'Ten'),
+    tq('f5', 'What gives bread its rise?', 'Yeast', 'Baking soda'),
+    tq('f6', 'Which fruit has its seeds on the outside?', 'A strawberry', 'A raspberry'),
+  ],
+  animals: [
+    tq('a1', 'How many legs does a spider have?', 'Eight', 'Six'),
+    tq('a2', 'What is a baby kangaroo called?', 'A joey', 'A kit'),
+    tq('a3', 'What is the largest mammal in the world?', 'The blue whale', 'The elephant'),
+    tq('a4', 'Which bird is known for copying human speech?', 'A parrot', 'A crow'),
+    tq('a5', 'What do you call a group of lions?', 'A pride', 'A pack'),
+    tq('a6', 'How many hearts does an octopus have?', 'Three', 'Two'),
+  ],
+  science: [
+    tq('s1', 'What gas do plants breathe in?', 'Carbon dioxide', 'Oxygen'),
+    tq('s2', 'At what temperature does water boil, in Fahrenheit?', '212 degrees', '200 degrees'),
+    tq('s3', 'What is the hardest natural substance?', 'Diamond', 'Granite'),
+    tq('s4', 'What planet is known as the Red Planet?', 'Mars', 'Jupiter'),
+    tq('s5', 'What part of the cell holds the DNA?', 'The nucleus', 'The membrane'),
+    tq('s6', 'What force keeps us on the ground?', 'Gravity', 'Magnetism'),
+  ],
+  music: [
+    tq('mu1', 'How many strings does a standard guitar have?', 'Six', 'Five'),
+    tq('mu2', 'How many keys are on a standard piano?', '88', '76'),
+    tq('mu3', 'What do you call a group of four singers?', 'A quartet', 'A quintet'),
+    tq('mu4', 'What does a conductor hold?', 'A baton', 'A bow'),
+    tq('mu5', 'Which instrument has pedals, keys and hammers?', 'The piano', 'The organ'),
+    tq('mu6', 'A song sung without instruments is called what?', 'A cappella', 'Acoustic'),
+  ],
+  home: [
+    tq('h1', 'What do you call the room where you store food, next to the kitchen?', 'A pantry', 'A cellar'),
+    tq('h2', 'How often should you change a toothbrush, according to dentists?', 'Every three months', 'Every year'),
+    tq('h3', 'What household item has a spin cycle?', 'A washing machine', 'A dishwasher'),
+    tq('h4', 'What do you measure with a thermostat?', 'Temperature', 'Humidity'),
+    tq('h5', 'Which way do you turn a screw to tighten it?', 'Clockwise', 'Counterclockwise'),
+    tq('h6', 'What is the most common cause of kitchen fires?', 'Unattended cooking', 'Toasters'),
+  ],
+  space: [
+    tq('sp1', 'What is the closest star to Earth?', 'The Sun', 'The North Star'),
+    tq('sp2', 'Which planet has the famous rings?', 'Saturn', 'Neptune'),
+    tq('sp3', 'How many planets are in our solar system?', 'Eight', 'Nine'),
+    tq('sp4', 'What is the name of our galaxy?', 'The Milky Way', 'Andromeda'),
+    tq('sp5', 'What do you call a rock that burns up in the sky?', 'A meteor', 'A comet'),
+    tq('sp6', 'Which planet is the largest?', 'Jupiter', 'Saturn'),
+  ],
+  math: [
+    tq('ma1', 'What is seven times eight?', '56', '54'),
+    tq('ma2', 'How many sides does a hexagon have?', 'Six', 'Eight'),
+    tq('ma3', 'What is the square root of 144?', '12', '14'),
+    tq('ma4', 'What is 15 percent of 200?', '30', '25'),
+    tq('ma5', 'How many degrees are in a right angle?', '90', '180'),
+    tq('ma6', 'What comes next: 2, 4, 8, 16…?', '32', '24'),
+  ],
+  words: [
+    tq('w1', 'What is the opposite of "ancient"?', 'Modern', 'Recent'),
+    tq('w2', 'How do you spell the word for a place where you borrow books?', 'L-I-B-R-A-R-Y', 'L-I-B-A-R-Y'),
+    tq('w3', 'What is a word that reads the same backward and forward?', 'A palindrome', 'An anagram'),
+    tq('w4', 'What is the plural of "mouse"?', 'Mice', 'Mouses'),
+    tq('w5', 'What do you call a word that means the same as another word?', 'A synonym', 'An antonym'),
+    tq('w6', 'What letter do most words in the dictionary start with?', 'S', 'A'),
+  ],
+  body: [
+    tq('b1', 'How many bones are in the adult human body?', '206', '212'),
+    tq('b2', 'What is the largest organ of the body?', 'The skin', 'The liver'),
+    tq('b3', 'How many teeth does an adult usually have?', '32', '28'),
+    tq('b4', 'Which blood type is the universal donor?', 'O negative', 'AB positive'),
+    tq('b5', 'What muscle pumps blood through the body?', 'The heart', 'The lungs'),
+    tq('b6', 'Where is the smallest bone in the body?', 'The ear', 'The toe'),
+  ],
+  maps: [
+    tq('mp1', 'Which direction does a compass needle point?', 'North', 'South'),
+    tq('mp2', 'What do you call a map of the stars?', 'A star chart', 'A constellation map'),
+    tq('mp3', 'What is the imaginary line around the middle of the Earth?', 'The equator', 'The meridian'),
+    tq('mp4', 'How many continents are there?', 'Seven', 'Six'),
+    tq('mp5', 'What do you call a big body of fresh water with land all around it?', 'A lake', 'A bay'),
+    tq('mp6', 'Which ocean is the largest?', 'The Pacific', 'The Atlantic'),
+  ],
+  medicine: [
+    tq('md1', 'What does a stethoscope listen to?', 'The heart and lungs', 'The stomach'),
+    tq('md2', 'What is a normal body temperature in Fahrenheit?', '98.6 degrees', '100 degrees'),
+    tq('md3', 'What vitamin do you get from sunlight?', 'Vitamin D', 'Vitamin C'),
+    tq('md4', 'What do you call a doctor who treats children?', 'A pediatrician', 'A podiatrist'),
+    tq('md5', 'What does a cast help heal?', 'A broken bone', 'A sprain'),
+    tq('md6', 'How many chambers does the human heart have?', 'Four', 'Two'),
+  ],
+  sports: [
+    tq('sn1', 'How many players are on a basketball court for one team?', 'Five', 'Six'),
+    tq('sn2', 'In bowling, what do you call three strikes in a row?', 'A turkey', 'A hat trick'),
+    tq('sn3', 'How many holes are on a standard golf course?', '18', '12'),
+    tq('sn4', 'What sport uses a shuttlecock?', 'Badminton', 'Squash'),
+    tq('sn5', 'How long is a marathon, in miles?', 'About 26', 'About 20'),
+    tq('sn6', 'In tennis, what is a score of zero called?', 'Love', 'Nil'),
+  ],
+  cooking: [
+    tq('c1', 'What does it mean to sauté?', 'Fry quickly in a little fat', 'Boil slowly'),
+    tq('c2', 'What is the main ingredient in a meringue?', 'Egg whites', 'Cream'),
+    tq('c3', 'What do you call cooking food slowly in liquid in a covered pot?', 'Braising', 'Grilling'),
+    tq('c4', 'At what temperature is chicken safely cooked, in Fahrenheit?', '165 degrees', '145 degrees'),
+    tq('c5', 'What kind of pasta is shaped like little rice grains?', 'Orzo', 'Farfalle'),
+    tq('c6', 'What is a roux made from?', 'Flour and fat', 'Flour and water'),
+  ],
+  history: [
+    tq('hi1', 'What did people use to write before paper?', 'Clay tablets and parchment', 'Chalkboards'),
+    tq('hi2', 'What is the name for a ruler of an empire?', 'An emperor', 'A mayor'),
+    tq('hi3', 'What were knights\' metal suits called?', 'Armor', 'Mail order'),
+    tq('hi4', 'What do you call the study of the past through digging?', 'Archaeology', 'Geology'),
+    tq('hi5', 'What was used to tell time before clocks?', 'A sundial', 'A compass'),
+    tq('hi6', 'What do you call a very old written record?', 'An archive', 'A diary'),
+  ],
+};
+
+// Guess games: prompt id → the facts a player can submit. `stat` makes a
+// player likelier to have that fact (proportional, with dice).
+const fx = (id, text, stat) => ({ id, text, stat });
+export const FACTS = {
+  'secret-talent': [
+    fx('juggle', 'I can juggle four oranges.', 'physical'), fx('voices', 'I can do twenty different voices.', 'boldness'),
+    fx('cube', 'I can solve a puzzle cube in under a minute.', 'mental'), fx('splits', 'I can still do the splits.', 'endurance'),
+    fx('whistle', 'I can whistle any song after hearing it once.', 'social'), fx('lie', 'I can tell when anyone is lying to me.', 'intuition'),
+    fx('tongue', 'I can touch my nose with my tongue.', 'boldness'),
+    fx('cook', "I can cook a five-course meal from whatever's in the fridge.", 'temperament'),
+  ],
+  'worst-date': [
+    fx('mom', 'My date brought their mom.', 'loyalty'), fx('wallet', 'I forgot my wallet and my date had to pay.', 'temperament'),
+    fx('ex', 'My date talked about their ex for two hours.', 'social'), fx('fell', 'I fell into a pool in front of everybody.', 'physical'),
+    fx('ran', 'I pretended to take a phone call and never came back.', 'strategic'), fx('fight', 'We got into an argument with the waiter.', 'boldness'),
+    fx('rain', 'We got stuck in the rain for three hours, no umbrella.', 'endurance'),
+    fx('twin', "My date showed up with their twin and didn't explain.", 'intuition'),
+  ],
+  'first-job': [
+    fx('lifeguard', 'Lifeguard at a public pool.', 'endurance'), fx('mascot', 'Dancing mascot outside a car wash.', 'boldness'),
+    fx('tutor', 'Math tutor for kids in my neighborhood.', 'mental'), fx('dog', 'Dog walker for the whole block.', 'loyalty'),
+    fx('fries', 'Fry cook. I still smell like fries.', 'temperament'), fx('sales', 'Selling phones at a mall kiosk.', 'strategic'),
+    fx('camp', 'Camp counselor for a summer full of screaming kids.', 'social'),
+    fx('theater', 'Ushering at a movie theater. Free popcorn forever.', 'mental'),
+  ],
+  embarrassing: [
+    fx('wave', 'I waved back at someone who was waving at the person behind me.', 'social'), fx('pants', 'My pants split on stage at graduation.', 'physical'),
+    fx('text', 'I sent a text about my crush to my crush.', 'boldness'), fx('mom-name', 'I called my teacher "Mom" in front of the whole class.', 'loyalty'),
+    fx('door', 'I walked into a glass door on a first date.', 'temperament'), fx('karaoke', 'I sang the wrong song at karaoke with total confidence.', 'boldness'),
+    fx('sneeze', 'I sneezed on a stranger in an elevator. Twice.', 'temperament'),
+    fx('trip', 'I tripped on stage while accepting an award.', 'endurance'),
+  ],
+  scared: [
+    fx('birds', 'Birds. All birds.', 'temperament'), fx('dark', 'The dark. I still sleep with a light on.', 'intuition'),
+    fx('heights', 'Heights. I can\'t do a ladder.', 'endurance'), fx('alone', 'Being alone. Which is funny, in here.', 'social'),
+    fx('clowns', 'Clowns. No explanation needed.', 'boldness'), fx('fail', 'Letting my family down.', 'loyalty'),
+    fx('spiders', 'Spiders. I will leave the house.', 'intuition'),
+    fx('deep', "Deep water. Anything I can't see the bottom of.", 'strategic'),
+  ],
+  weekend: [
+    fx('couch', 'Couch, snacks, and a movie marathon.', 'temperament'), fx('party', 'Out all night, brunch the next day.', 'social'),
+    fx('hike', 'Up at six for a hike.', 'endurance'), fx('family', 'Sunday dinner with my whole family.', 'loyalty'),
+    fx('gym', 'Gym twice a day.', 'physical'), fx('project', 'Working on my side business.', 'strategic'),
+    fx('road', 'A road trip with no plan.', 'boldness'),
+    fx('sleep', 'Sleeping until noon. No apologies.', 'intuition'),
+  ],
+  dance: [
+    fx('center', 'In the center of the circle.', 'boldness'), fx('wall', 'Against the wall, judging.', 'intuition'),
+    fx('bar', 'At the bar, pretending I can\'t dance.', 'temperament'), fx('everyone', 'Dancing with everybody.', 'social'),
+    fx('moves', 'Doing choreography I learned online.', 'mental'), fx('leave', 'Already home in bed.', 'endurance'),
+    fx('kitchen', 'In the kitchen, where the snacks are.', 'strategic'),
+    fx('dj', 'Next to the DJ, requesting songs.', 'loyalty'),
+  ],
+  breakup: [
+    fx('ice-cream', 'Eat ice cream and cry.', 'social'), fx('gym', 'Go to the gym and get revenge-fit.', 'physical'),
+    fx('delete', 'Delete every photo that same night.', 'boldness'), fx('friends', 'Call my friends and talk for hours.', 'loyalty'),
+    fx('work', 'Throw myself into work.', 'strategic'), fx('fine', 'Tell everyone I\'m fine. I\'m not fine.', 'temperament'),
+    fx('haircut', 'Get a dramatic haircut.', 'physical'),
+    fx('trip', 'Book a trip the same week.', 'endurance'),
+  ],
+  morning: [
+    fx('five', 'Five minutes. Out the door.', 'boldness'), fx('hour', 'An hour, minimum.', 'social'),
+    fx('snooze', 'Three alarms and a snooze button.', 'temperament'), fx('run', 'A run before anything else.', 'endurance'),
+    fx('plan', 'Coffee and a to-do list.', 'strategic'), fx('pray', 'Quiet time before the day starts.', 'loyalty'),
+    fx('news', 'Reading the news in bed for an hour.', 'mental'),
+    fx('dance', 'Dancing while I brush my teeth.', 'boldness'),
+  ],
+  text: [
+    fx('instant', 'Instantly.', 'social'), fx('days', 'Three days later. Maybe.', 'temperament'),
+    fx('draft', 'After writing five drafts.', 'strategic'), fx('voice', 'With a voice memo.', 'boldness'),
+    fx('read', 'I leave it on read and forget.', 'intuition'), fx('emoji', 'With a string of emojis.', 'social'),
+    fx('call', 'I call back instead. Texting is too slow.', 'loyalty'),
+    fx('gif', 'With a GIF. Always a GIF.', 'strategic'),
+  ],
+  baby: [
+    fx('bald', 'Bald, chubby, and furious.', 'boldness'), fx('bath', 'In a sink full of bubbles.', 'social'),
+    fx('costume', 'Dressed as a pumpkin.', 'loyalty'), fx('cake', 'Face-first in a birthday cake.', 'physical'),
+    fx('asleep', 'Asleep on the family dog.', 'temperament'), fx('crying', 'Crying at a mall photo studio.', 'intuition'),
+    fx('glasses', "Wearing my dad's sunglasses.", 'mental'),
+    fx('pool', 'In a tiny pool with a giant hat.', 'endurance'),
+  ],
+  school: [
+    fx('braces', 'Braces and a bowl cut.', 'mental'), fx('missing', 'Missing both front teeth.', 'physical'),
+    fx('glasses', 'Glasses bigger than my face.', 'intuition'), fx('hat', 'A hat my mom made me wear.', 'loyalty'),
+    fx('smirk', 'A smirk that says trouble.', 'boldness'), fx('closed', 'Eyes closed. Every single year.', 'temperament'),
+    fx('costume', 'Dressed as a book character on picture day.', 'social'),
+    fx('award', 'Holding a perfect attendance ribbon.', 'endurance'),
+  ],
+  prom: [
+    fx('suit', 'A suit two sizes too big.', 'temperament'), fx('group', 'With a big group, no date.', 'social'),
+    fx('king', 'Wearing the prom crown.', 'boldness'), fx('best-friend', 'With my best friend as my date.', 'loyalty'),
+    fx('skip', 'I skipped it. This is a photo of me skipping it.', 'strategic'), fx('dance', 'Mid-dance, completely blurry.', 'physical'),
+    fx('rain', 'Soaked from the rain in the parking lot.', 'endurance'),
+    fx('corsage', 'Holding a corsage for a date who never showed.', 'loyalty'),
+  ],
+  halloween: [
+    fx('ghost', 'A ghost made of a bedsheet.', 'temperament'), fx('hero', 'A superhero with a towel cape.', 'boldness'),
+    fx('food', 'A slice of pizza.', 'social'), fx('scary', 'Something genuinely terrifying.', 'intuition'),
+    fx('group', 'One of five in a group costume.', 'loyalty'), fx('athlete', 'A pro athlete, with the real uniform.', 'physical'),
+    fx('robot', 'A robot made of cardboard boxes.', 'mental'),
+    fx('parent', 'Dressed as one of my parents.', 'strategic'),
+  ],
+  birthday: [
+    fx('pool', 'A pool party with twenty kids.', 'social'), fx('crying', 'Crying because I didn\'t win a party game.', 'temperament'),
+    fx('bike', 'Getting my first bike.', 'physical'), fx('small', 'Just me, my mom and a cupcake.', 'loyalty'),
+    fx('magic', 'At a magic show, trying to figure out the trick.', 'mental'), fx('crown', 'Wearing a paper crown all day.', 'boldness'),
+    fx('surprise', 'Crying at my own surprise party.', 'social'),
+    fx('camping', 'Camping in the backyard with my cousins.', 'endurance'),
+  ],
+  joke: [
+    fx('chicken', 'Why did the chicken join a band? It had the drumsticks.', 'social'), fx('pun', 'I told a pun so bad everyone groaned.', 'boldness'),
+    fx('long', 'A joke so long I forgot the ending.', 'temperament'), fx('dad', 'A dad joke. A real dad joke.', 'loyalty'),
+    fx('dark', 'Something a little too dark for the Circle.', 'strategic'), fx('knock', 'A knock-knock joke. Classic.', 'mental'),
+    fx('mime', 'I mimed a joke. It was silent. It was great.', 'physical'),
+    fx('self', 'A joke about myself. The safest kind.', 'intuition'),
+  ],
+  emotion: [
+    fx('happy', 'Happy. Obviously happy.', 'social'), fx('nervous', 'Nervous, but hiding it.', 'intuition'),
+    fx('angry', 'Angry. Very angry.', 'boldness'), fx('sad', 'Sad, trying to smile.', 'loyalty'),
+    fx('surprised', 'Surprised.', 'temperament'), fx('bored', 'Bored out of their mind.', 'mental'),
+    fx('proud', 'Proud. Quietly proud.', 'strategic'),
+    fx('tired', 'Tired. Deeply tired.', 'endurance'),
+  ],
+  problem: [
+    fx('ask', 'Ask what\'s wrong, and then just listen.', 'social'), fx('snack', 'Bring them a snack and sit with them.', 'loyalty'),
+    fx('space', 'Give them space until they\'re ready.', 'intuition'), fx('fix', 'Figure out the problem and fix it.', 'strategic'),
+    fx('joke', 'Make them laugh first.', 'boldness'), fx('hug', 'Hug first, questions later.', 'temperament'),
+    fx('walk', 'Take them for a walk. Talking is easier walking.', 'endurance'),
+    fx('note', 'Leave them a little note.', 'mental'),
+  ],
+  breakfast: [
+    fx('eggs', 'Eggs and toast.', 'loyalty'), fx('nothing', 'Nothing. Coffee counts.', 'endurance'),
+    fx('cereal', 'Cereal, standing up.', 'temperament'), fx('smoothie', 'A green smoothie.', 'physical'),
+    fx('pancakes', 'Pancakes. I burned the first one.', 'social'), fx('leftovers', 'Cold leftovers from last night.', 'strategic'),
+    fx('toast', 'Toast with way too much butter.', 'boldness'),
+    fx('fruit', "Just fruit. I'm trying.", 'intuition'),
+  ],
+};

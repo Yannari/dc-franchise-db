@@ -24,10 +24,23 @@ it('writes a season transcript', () => {
   const seed = Number(process.env.CI_SEED) || 7;
   const size = Number(process.env.CI_CAST) || 13;
   const cast = makePlayers(size, seed).map((p, i) => ({ ...p, name: (i % 2 === 0 ? F : M)[Math.floor(i / 2)] }));
+  // A shared profile, so every read covers one (the user's example, spec
+  // §14.8): Mateo and Luis, brothers, one profile — Mateo's face, Luis's brain.
+  const pair = process.env.CI_PAIR !== '0';
+  if (pair) {
+    Object.assign(cast[1], { name: 'Mateo', age: 26, archetype: 'showmancer',
+      stats: { ...cast[1].stats, social: 8, boldness: 8, strategic: 4, temperament: 6 } });
+    Object.assign(cast[3], { name: 'Luis', age: 31, archetype: 'loyal-soldier',
+      stats: { ...cast[3].stats, social: 5, boldness: 3, strategic: 8, temperament: 3 } });
+  }
   setPlayers(cast);
   const names = cast.map(p => p.name);
-  const { rows, state, result } = playCircleSeason({ cast: names,
-    setup: circleSetup(names, { newcomers: Math.round(size * 0.38) }), pool: makePool(6, seed), seed });
+  const setup = circleSetup(names, { newcomers: Math.round(size * 0.38) });
+  if (pair) {
+    Object.assign(setup.Mateo, { catfish: 'never', face: 'Mateo', brain: 'Luis', job: 'personal trainer' });
+    Object.assign(setup.Luis, { catfish: 'never', partner: 'Mateo', facts: ['three kids at home'] });
+  }
+  const { rows, state, result } = playCircleSeason({ cast: names, setup, pool: makePool(6, seed), seed });
   const dir = join(ROOT, 'transcripts');
   mkdirSync(dir, { recursive: true });
   const base = join(dir, `ci-season-${seed}`);

@@ -98,9 +98,9 @@ function placeOf(sc) {
 }
 const cap1 = s => String(s || '').replace(/^./, c => c.toUpperCase());
 
-function face(name) {
+function face(name, slug) {
   let u = null;
-  try { u = playerAvatarUrl(name); } catch { u = null; }
+  try { u = playerAvatarUrl(slug ? { slug } : name); } catch { u = null; }
   const ini = esc(String(name || '?').split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase());
   return (u ? `<img src="${esc(u)}" alt="" onerror="this.remove()">` : '') + `<span class="trs-ini">${ini}</span>`;
 }
@@ -147,27 +147,20 @@ function buildSteps(scenes, chips) {
  * alone). Registers the screen's state; the markup is inert until mounted.
  */
 export function castleStageHTML(ep, observer = 'audience', segment = null) {
-  let scenes = [];
-  let chips = [];
-  try {
-    scenes = castleDayScenes(ep, observer, segment);
-    chips = castleDayChips(ep, observer, segment);
-  } catch { return ''; }
-  if (!scenes.length) return '';
-  const steps = buildSteps(scenes, chips);
-  if (!steps.length) return '';
+  // LAZY: nothing is composed until the stage mounts in the viewer. The text
+  // backlog builds every screen (twice) and never mounts one, so a stage that
+  // composed its day at build time doubled the transcript's cost for nothing.
+  const init = () => {
+    const scenes = castleDayScenes(ep, observer, segment);
+    return { steps: scenes.length ? buildSteps(scenes, castleDayChips(ep, observer, segment)) : [] };
+  };
   const truth = (ep.tr && ep.tr.beliefs && ep.tr.beliefs.truth) || {};
   const isAudience = observer === 'audience';
   const traitors = isAudience ? Object.keys(truth).filter(n => truth[n] === 'traitor') : [];
   const uid = 'trs-' + String(ep.num) + '-' + (segment || 'day') + '-' + (hash(observer) % 1e6);
-  reg()[uid] = { uid, steps, idx: -1, segment, traitors, isAudience,
+  reg()[uid] = { uid, steps: null, init, idx: -1, segment, traitors, isAudience,
     day: (ep.tr && ep.tr.ep) || ep.num, pot: ep.tr && ep.tr.pot, timers: [] };
-  return `<style>${CSS}</style><div class="trs" data-uid="${esc(uid)}">`
-    + '<div class="trs-band"><div class="trs-band-l"><div class="trs-eyebrow"></div><div class="trs-title"></div></div>'
-    + '<div class="trs-fund"><b></b><span></span></div></div>'
-    + '<div class="trs-clock"></div>'
-    + `<div class="trs-view" onclick="trStageNext('${esc(uid)}')">`
-    + '<div class="trs-sky trs-day"></div><div class="trs-sky trs-eve"></div><div class="trs-sky trs-night"></div>'
+  return stageShell(uid, '<div class="trs-sky trs-day"></div><div class="trs-sky trs-eve"></div><div class="trs-sky trs-night"></div>'
     + '<div class="trs-stars"></div><div class="trs-moon"></div>'
     + '<svg class="trs-hills" viewBox="0 0 1600 360" preserveAspectRatio="xMidYMax slice"></svg>'
     + '<div class="trs-mist"></div>'
@@ -176,8 +169,19 @@ export function castleStageHTML(ep, observer = 'audience', segment = null) {
     + '<div class="trs-scene"></div><div class="trs-caption"></div>'
     + '<div class="trs-loc"><div class="trs-loc-e"></div><div class="trs-loc-t"></div><div class="trs-gem"></div></div>'
     + '<div class="trs-corner"></div><div class="trs-lb"></div><div class="trs-pops"></div>'
-    + '<div class="trs-start"></div>'
-    + '</div>'
+    + '<div class="trs-start"></div>');
+}
+
+/**
+ * The frame every stage shares: the title band, the day clock, the view (its
+ * contents are the caller's), the controls. Inert, and carrying no words.
+ */
+function stageShell(uid, viewInner, extraCss = '') {
+  return `<style>${CSS}${extraCss}</style><div class="trs" data-uid="${esc(uid)}">`
+    + '<div class="trs-band"><div class="trs-band-l"><div class="trs-eyebrow"></div><div class="trs-title"></div></div>'
+    + '<div class="trs-fund"><b></b><span></span></div></div>'
+    + '<div class="trs-clock"></div>'
+    + `<div class="trs-view" onclick="trStageNext('${esc(uid)}')">` + viewInner + '</div>'
     + '<div class="trs-ctrl">'
     + `<button type="button" class="trs-btn" data-l="restart" onclick="trStageReset('${esc(uid)}')"></button>`
     + `<button type="button" class="trs-btn trs-next" data-l="next" onclick="trStageNext('${esc(uid)}')"></button>`
@@ -197,7 +201,7 @@ function later(S, fn, ms) { const t = setTimeout(fn, ms); S.timers.push(t); retu
 
 function chrome(root, S) {
   $(root, 'eyebrow').textContent = 'The Traitors · Day ' + S.day;
-  $(root, 'title').textContent = SEGMENT_TITLE[S.segment] || 'The Castle';
+  $(root, 'title').textContent = S.title || SEGMENT_TITLE[S.segment] || 'The Castle';
   const fund = $(root, 'fund');
   if (S.pot != null) {
     fund.querySelector('b').textContent = '£' + Math.round(S.pot).toLocaleString('en-GB');
@@ -206,7 +210,8 @@ function chrome(root, S) {
   $(root, 'clock').innerHTML = CLOCK.map(([k, l]) => `<div class="trs-seg" data-k="${k}">${l}</div>`).join('');
   const L = { restart: 'Restart', next: 'Next', all: 'Skip to the end', text: 'Transcript' };
   root.querySelectorAll('.trs-btn').forEach(b => { b.textContent = L[b.dataset.l] || ''; });
-  $(root, 'stars').innerHTML = Array.from({ length: 60 }, (_, i) =>
+  const stars = $(root, 'stars');
+  if (stars) stars.innerHTML = Array.from({ length: 60 }, (_, i) =>
     `<i style="left:${(i * 37) % 100}%;top:${(i * 53) % 100}%;animation-delay:-${(i % 7) * .4}s"></i>`).join('');
 }
 
@@ -328,6 +333,7 @@ function paint(uid, fresh) {
   clearTimers(S);
   root.dataset.idx = String(S.idx);
   $(root, 'count').textContent = `${Math.max(0, S.idx + 1)} / ${S.steps.length}`;
+  if (S.painter) { S.painter(root, S, fresh); return; }
   const view = $(root, 'view');
   if (S.idx < 0) {
     // AT REST: the castle, and nobody in it
@@ -403,13 +409,25 @@ function mount(root) {
   const uid = root.dataset.uid, S = reg()[uid];
   if (!S || root.dataset.mounted) return;
   root.dataset.mounted = '1';
+  // The page is read into steps now, at the one moment somebody is watching.
+  if (!S.steps && S.init) {
+    try { Object.assign(S, S.init()); } catch { S.steps = []; }
+  }
+  // Nothing to play (a night that is only confessionals): the stage steps
+  // aside and the written page underneath opens in its place.
+  if (!S.steps || !S.steps.length) {
+    const opt = root.closest('.trs-opt');
+    if (opt) opt.style.display = 'none';
+    return;
+  }
   S.idx = -1; S.lastNight = null;
   chrome(root, S);
   paint(uid, false);
 }
 export function trStageMountAll() {
   if (typeof document === 'undefined') return;
-  document.querySelectorAll('.trs[data-uid]').forEach(mount);
+  // A stage folded away behind its Watch button mounts when it is opened.
+  document.querySelectorAll('.trs[data-uid]').forEach(root => { if (!root.closest('[hidden]')) mount(root); });
 }
 export function trStageNext(uid) {
   const S = reg()[uid];
@@ -433,17 +451,26 @@ export function trStageReset(uid) {
   S.idx = -1;
   paint(uid, false);
 }
-/** Opens the written day under the stage, every scene of it revealed. */
+/** Folds the stage away again, back to the written page it sits above. */
 export function trStageTranscript(uid) {
   const root = rootOf(uid);
-  const det = root && root.parentElement && root.parentElement.querySelector('.trs-transcript');
-  if (!det) return;
-  det.open = !det.open;
-  if (det.open) {
-    const btn = det.querySelector('[onclick^="trCastleDayRevealAll"]');
-    if (btn) btn.click();
-    try { det.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch { /* jsdom */ }
-  }
+  const box = root && root.closest('.trs-watchbox');
+  if (!box) return;
+  box.hidden = true;
+  const btn = box.previousElementSibling;
+  if (btn) btn.classList.remove('trs-on');
+}
+/** The Watch button: opens the stage over the written page, or folds it away. */
+export function trStageWatch(btn) {
+  const box = btn && btn.nextElementSibling;
+  if (!box) return;
+  box.hidden = !box.hidden;
+  btn.classList.toggle('trs-on', !box.hidden);
+  if (box.hidden) return;
+  const root = box.querySelector('.trs[data-uid]');
+  if (!root) return;
+  if (!root.dataset.mounted) mount(root);
+  else trStageReset(root.dataset.uid);
 }
 if (typeof document !== 'undefined' && !globalThis.__trStageHooks) {
   globalThis.__trStageHooks = true;
@@ -457,14 +484,23 @@ if (typeof document !== 'undefined' && !globalThis.__trStageHooks) {
 }
 
 /**
- * The castle segment screen: the stage, with the written day folded under it.
- * With nothing to play (a night that is only confessionals) it is the page.
+ * THE WRITTEN PAGE IS THE SCREEN; THE STAGE IS OPTIONAL. The user tried the
+ * stages and preferred the transcript ("really static and boring… I prefer the
+ * transcript version"), so every screen opens on its page again and the stage
+ * waits behind a Watch button above it. The button's label is CSS content, so
+ * no word of it reaches the text backlog, which reads this markup as narration.
  */
+export function trsFold(stage, pageHtml) {
+  return '<div class="trs-opt"><button type="button" class="trs-watchbtn" onclick="trStageWatch(this)"></button>'
+    + '<div class="trs-watchbox" hidden>' + stage + '</div></div>' + pageHtml;
+}
+
+/** The castle segment screen: its page, with the stage folded above it. */
 export function castleStageScreen(ep, observer, segment, pageHtml) {
   const stage = castleStageHTML(ep, observer, segment);
   if (!stage) return pageHtml;
   if (typeof queueMicrotask === 'function' && typeof document !== 'undefined') queueMicrotask(trStageMountAll);
-  return stage + '<details class="trs-transcript"><summary></summary>' + pageHtml + '</details>';
+  return trsFold(stage, pageHtml);
 }
 
 // ── THE LOOK ─────────────────────────────────────────────────────────────
@@ -595,12 +631,22 @@ const CSS = `
 .trs-btn:hover{color:var(--v-lantern-hot)!important}
 .trs-next{padding:11px 44px;color:var(--v-ink)!important;background:linear-gradient(180deg,#f0c77a,#b8863e)!important;box-shadow:0 0 0 1px #ffdb95,0 0 24px rgba(224,160,73,.4)}
 .trs-count{min-width:70px;font-family:var(--v-display);font-size:10.5px;letter-spacing:.2em;color:var(--v-mute)}
-.trs-transcript{margin-top:18px}
-.trs-transcript>summary{list-style:none;height:0;overflow:hidden}
-.trs-transcript:not([open])>*:not(summary){display:none}
+.trs-opt{display:flex;flex-direction:column;align-items:flex-end;gap:10px;margin:0 0 12px}
+.trs-watchbox{width:100%}
+.trs-watchbox[hidden]{display:none}
+.trs-watchbtn{padding:8px 16px;border:0;cursor:pointer;font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:10.5px;letter-spacing:.28em;
+  text-transform:uppercase;color:#c9ba95;background:linear-gradient(180deg,#141922,#0b0e14);box-shadow:0 0 0 1px rgba(224,160,73,.3)}
+.trs-watchbtn::before{content:"Watch it played"}
+.trs-watchbtn.trs-on::before{content:"Close the stage"}
+.trs-watchbtn:hover{color:#ffdb95}
 @media (max-width:700px){
   .trs-band{flex-wrap:wrap}.trs-seg{font-size:0;letter-spacing:0}
   .trs-line{max-width:72%}.trs-caption{max-width:92%;font-size:15px}
   .trs-btn{padding:10px 12px;font-size:10px;letter-spacing:.18em}.trs-next{padding:10px 24px}
 }
 `;
+
+// Shared with table-stage.js under prefixed names: main.js hangs every exported
+// function on `window`, and a bare `esc` or `face` there would replace
+// somebody else's.
+export { esc as trsEsc, reg as trsReg, face as trsFace, later as trsLater, stageShell as trsStageShell };

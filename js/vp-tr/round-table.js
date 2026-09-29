@@ -3713,3 +3713,99 @@ export function rpBuildRoundTable(ep, observer = 'audience') {
     + '<button class="rt-btn" onclick="' + call('trRoundTableRevealAll') + '">Reveal all</button>'
     + '</div></div>';
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// FOR THE STAGE (castle-stage.js) — the same beats, and why each slate says
+// what it says
+// ══════════════════════════════════════════════════════════════════════
+//
+// The stage plays this table one click at a time on the Round Table set. It
+// draws from THESE beats, built by the same `_buildBeats` with the same keys,
+// so every word the page prints — the host, the debate, the defences, the mind
+// changes, the notes under the slates, the chair, the reveal, the room after —
+// is on the stage too, and nothing is written twice.
+//
+// THE ONE THING THE STAGE ADDS IS THE VOTER'S OWN REASON, said as the slate is
+// turned (the format: every player shows the name and says why). It is built
+// under the rule the debate cards keep: a voter cites only a reason the record
+// says they hold (`v.speeches`, speaker and target both matching), reworded by
+// `_sayReason` inside the closed set `_reasonRenderings` names. With nothing to
+// cite they say which KIND of nothing they have, as NO_SOURCE does — never an
+// invented fact.
+const SLATE_CITED = [
+  'I’ve written {T}. {Who} {src}.',
+  '{T}. {Who} {src}, and I can’t get past it.',
+  'It’s {T}. {Who} {src}.',
+  '{T}. Because {who} {src}.',
+  'I wrote {T}, and I’ll tell you why. {Who} {src}.',
+];
+const SLATE_NOSRC = {
+  hearsay: [
+    '{T}. I heard it from {F}, and I believe it.',
+    '{F} put {T}’s name in my head, and I can’t get it out.',
+    'I’ll be honest, it started with {F}. It’s {T}.',
+  ],
+  public: [
+    '{T}. It’s nothing secret. I was sitting right here when it happened.',
+    'It’s {T}. I’m not telling anybody anything new.',
+  ],
+  'gone-cold': [
+    '{T}. I said it days ago, and nothing since has changed my mind.',
+    'I haven’t moved. It was {T} then and it’s {T} now.',
+  ],
+  feeling: [
+    '{T}. I can’t tell you why. It’s a feeling, and I’m going with it.',
+    'I don’t have proof. I have {T}, and a bad feeling.',
+    'It’s a gut thing. {T}.',
+    '{T}. Something about {obj} doesn’t sit right with me.',
+  ],
+};
+function _slateReason(v, b, key) {
+  if (!b || !b.target) return '';
+  const sp = (v.speeches || []).find(s => s.speaker === b.voter && s.target === b.target);
+  const pr = _pr(b.target);
+  // Singular "they" over a gendered player was a shipped bug class; a player
+  // whose pronoun reads as a plural is named instead.
+  const Who = pr.sub === 'they' ? b.target : pr.Sub;
+  const who = pr.sub === 'they' ? b.target : pr.sub;
+  const src = sp && (sp.sources || []).length ? sp.sources[0] : null;
+  const subs = { T: b.target, Who, who, obj: pr.obj,
+    src: src ? _pred(b.target, _sayReason(src.text, key + '|sl|' + b.voter)) : '',
+    F: sp && sp.hearsayFrom ? sp.hearsayFrom : '' };
+  if (src) return _fill(_pick(SLATE_CITED, key + '|slc|' + b.voter), subs);
+  let rk = (sp && sp.reasonKind) || 'feeling';
+  if (rk === 'hearsay' && !subs.F) rk = 'feeling';
+  const pool = SLATE_NOSRC[rk] || SLATE_NOSRC.feeling;
+  return _fill(_pick(pool, key + '|sln|' + rk + '|' + b.voter), subs);
+}
+
+/**
+ * `roundTableStageData(ep, observer)` — the table as the stage plays it, or
+ * null on a row with no table. `beats[i].html` is exactly the page's beat,
+ * host band included; `reasons` maps 'voter|round|index' to the line that
+ * voter says when the slate is turned.
+ */
+export function roundTableStageData(ep, observer = 'audience') {
+  const rec = ep && ep.tr && ep.tr.table;
+  if (!rec) return null;
+  _tableUsed = new Set();
+  const v = _view(rec, observer, (ep && ep.tr && ep.tr.trial) || null,
+    (ep && ep.tr && ep.tr.strategy) || null);
+  const beats = _buildBeats(v);
+  const seedEp = v.ep != null ? v.ep : (ep.num || 0);
+  const key = 'rt|' + v.ep + '|' + (v.chosen || '');
+  const hostHtml = b => (b.hostSlot ? _hostBand(_fill(_pick(HOST_LINES[b.hostSlot],
+    'rt|host|' + b.hostSlot + '|' + seedEp + '|' + (v.chosen || '')),
+  { Nm: _esc(v.chosen || ''), nm: _esc(v.chosen || ''),
+    banish: _esc(_verbs().banish), Banish: _esc(_cap(_verbs().banish)) })) : '');
+  const out = beats.map((b, i) => {
+    const meta = b.meta ? { ...b.meta } : {};
+    if (meta.kind === 'read' && meta.ballot) meta.reason = _slateReason(v, meta.ballot, key + '|' + (meta.round || 0) + '|' + i);
+    return { phase: b.phase, meta, html: hostHtml(b) + b.html };
+  });
+  const h = _host();
+  return { beats: out, host: { name: h.name, slug: h.slug },
+    seated: [...v.seated], chosen: v.chosen || null, chosenAlignment: v.chosenAlignment || null,
+    endgame: !!v.endgame, truth: v.truth ? { ...v.truth } : null, ep: v.ep,
+    banish: _verbs().banish };
+}

@@ -29,6 +29,10 @@ import { rpBuildCastleDay, trCastleDayRevealAll, castleSegmentHasScenes }
   from './castle-day.js';
 import { rpBuildSelection, trSelectionRevealAll } from './selection.js';
 import { castleStageScreen } from './castle-stage.js';
+import { tableStageScreen } from './table-stage.js';
+import { breakfastStageScreen } from './breakfast-stage.js';
+import { conclaveStageScreen } from './conclave-stage.js';
+import { missionFieldStageScreen } from './mission-field-stage.js';
 import { rpBuildWeb } from './web.js';
 import { rpBuildSuspicion, trSuspicionRevealAll } from './suspicion.js';
 // The Alcove is folded into the night castle segment (Plan 11); only its gate
@@ -112,7 +116,8 @@ export const TRAITORS_SCREENS = [
     revealAllName: 'trSelectionRevealAll' },
   { id: 'tr-cold-open', label: 'Breakfast', suffix: 'coldopen',
     when: r => !!(r.tr && r.tr.dawn),
-    build: rpBuildColdOpen, revealAll: trColdOpenRevealAll, revealAllName: 'trColdOpenRevealAll' },
+    build: (r, o) => breakfastStageScreen(r, o, rpBuildColdOpen(r, o)),
+    revealAll: trColdOpenRevealAll, revealAllName: 'trColdOpenRevealAll' },
   // ── THE DAY, INTERLEAVED INTO BROADCAST ORDER (Plan 11) ───────────────
   //
   // The Castle Day used to be ONE screen at the foot of the episode, after the
@@ -134,7 +139,8 @@ export const TRAITORS_SCREENS = [
   { id: 'tr-mission', label: 'The Mission', suffix: 'mission',
     badge: { text: 'Mission', color: '#c8a24a' },
     when: r => !!(r.tr && r.tr.mission),
-    build: rpBuildMission, revealAll: trMissionRevealAll, revealAllName: 'trMissionRevealAll' },
+    build: (r, o) => missionFieldStageScreen(r, o, rpBuildMission(r, o)),
+    revealAll: trMissionRevealAll, revealAllName: 'trMissionRevealAll' },
   // THE ARMOURY, IMMEDIATELY AFTER THE AFTERNOON THAT EARNED IT. It is the
   // mission's own reward and it happens on the way back from it, so it sits
   // between the mission and the afternoon rather than anywhere near the night.
@@ -175,7 +181,8 @@ export const TRAITORS_SCREENS = [
   { id: 'tr-round-table', label: 'The Round Table', suffix: 'roundtable',
     badge: { text: 'Round Table', color: '#b91c3c' },
     when: r => !!(r.tr && r.tr.table),
-    build: rpBuildRoundTable, revealAll: trRoundTableRevealAll, revealAllName: 'trRoundTableRevealAll' },
+    build: (r, o) => tableStageScreen(r, o, rpBuildRoundTable(r, o)),
+    revealAll: trRoundTableRevealAll, revealAllName: 'trRoundTableRevealAll' },
   // THE NIGHT — after the table, into the dark. This is the segment that MAY
   // react to the banishment (roundtable-scramble + post-banishment), so it sits
   // after the Round Table, exactly where the whole day used to sit. It is also
@@ -193,7 +200,8 @@ export const TRAITORS_SCREENS = [
   { id: 'tr-conclave', label: 'The Conclave', suffix: 'conclave',
     badge: { text: 'Conclave', color: '#e0a049' },
     when: r => !!(r.tr && r.tr.conclave),
-    build: rpBuildConclave, revealAll: trConclaveRevealAll, revealAllName: 'trConclaveRevealAll' },
+    build: (r, o) => conclaveStageScreen(r, o, rpBuildConclave(r, o)),
+    revealAll: trConclaveRevealAll, revealAllName: 'trConclaveRevealAll' },
   { id: 'tr-recruitment', label: 'The Offer', suffix: 'recruitment',
     badge: { text: 'The Offer', color: '#8b5cf6' },
     when: r => !!(r.tr && r.tr.recruitment),

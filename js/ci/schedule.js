@@ -26,6 +26,15 @@ export function buildSchedule({ total, starters, finalists = 5, days = null }) {
   }
   out.push(day(D - 1, 'final-ratings', { final: true }), day(D, 'finale', { finale: true }));
 
+  // Games and parties (Plan 3a): 1×01 opens with Ice Breaker, so day one has a
+  // game; every social day has a game and a party; every other rating day in
+  // the middle has a game. Videos from home land two days before the final
+  // ratings, as a late-season ritual (US 1, US 4, US 6, US 7).
+  out[0].game = true;
+  out.filter(d => d.slot === 'social').forEach(d => { d.game = true; d.party = true; });
+  out.filter(d => d.block && d.day > 1).forEach((d, i) => { if (i % 2 === 0) d.game = true; });
+  for (const d of out) { d.game = !!d.game; d.party = !!d.party; d.homeVideos = d.day === D - 3; }
+
   const cutoff = Math.floor(D * 2 / 3);
   let slots = out.filter(d => d.day > 1 && d.day <= cutoff && out[d.day - 2].block);
   if (slots.length * 2 < newcomers) slots = out.filter(d => d.day > 1 && d.day <= D - 3);

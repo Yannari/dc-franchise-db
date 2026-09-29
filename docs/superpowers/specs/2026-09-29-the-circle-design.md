@@ -1658,8 +1658,12 @@ Each plan leaves the site working.
    `audit:ci-spec`.
 2. **Plan 2 — writing.** Scripts, dictation, voices, host, cross-cuts,
    facts, all pools, repetition guard; `ci:transcript`. Read a season.
-3. **Plan 3 — the game library and twists.** Games, parties, apartment life,
-   all blocking formats, powers, arrivals as timeline cards.
+3. **Plan 3 — the game library and twists**, split in two:
+   **3a** (done 2026-09-29) — 48 games in ten families, prizes, parties,
+   apartment life, videos from home, and shared profiles played as two
+   people (face and brain; the user's Mateo-and-Luis example);
+   **3b** — all blocking formats, powers, arrivals as timeline cards, and a
+   calibration pass on the catfish win rate.
 4. **Plan 4 — the Circle tab.** `js/ci-run.js`, the runnable flag and dispatch
    in both `run-ui.js` sites, `CONFIG_SCOPE`, the format option in
    `simulator.html`, the Catfish Pool, Profile Plan overrides, face catalogue,

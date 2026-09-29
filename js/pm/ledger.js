@@ -161,7 +161,8 @@ export function closeEpisode(L, ep, popularity = null) {
     // Only the climb: a fall from grace is as fast as it ever was (the brake
     // both ways left no villain in twenty seasons).
     const room = moved > 0 ? (100 - now) / 100 : 1;
-    const applied = Math.round(moved * Math.max(0, room) * 100) / 100;
+    // "|| 0": a tiny loss rounds to -0, and -0 does not survive a save.
+    const applied = Math.round(moved * Math.max(0, room) * 100) / 100 || 0;
     L.approval[name] = clamp((L.approval[name] || 0) + applied, -100, 100);
     L.lastApplied[name] = applied;
     if (applied <= BAD_WEEK) L.record[name] = Math.min(PATTERN_MAX, record + 1);

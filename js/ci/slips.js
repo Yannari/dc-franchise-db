@@ -6,6 +6,7 @@
 // is (US 4 Ep 8), period cramps "on my left side" and not knowing Adele (US 1
 // Ep 12), a nickname let slip (US 3 Ep 13), and above all "too good to be
 // true" (16 times in 90 episodes). A slip only counts if somebody notices.
+import { isPair, distance, hiddenFacts, noticeInconsistency, SHARED_PROBE } from './shared.js';
 import { clamp, S } from './state.js';
 import { nudgeBelief, belief } from './beliefs.js';
 import { feel } from './mind.js';
@@ -24,7 +25,9 @@ export function slipRisk(state, h, { specific = 0.3, party = false } = {}) {
   const stress = state.mind[h]?.stress ?? 2;
   const skill = (S(state, h, 'strategic') + S(state, h, 'mental')) / 2;
   return clamp(SLIP.base * p.gap * (1 + specific) * (1 + stress * SLIP.stress)
-    * (party ? 1 + SLIP.party : 1) * (1 - skill * SLIP.skill), 0, 0.6);
+    * (party ? 1 + SLIP.party : 1) * (1 - skill * SLIP.skill)
+    // Two people do not sound like one: the more unlike, the more it shows.
+    * (1 + distance(state, h) / 20), 0, 0.6);
 }
 
 export function noticeChance(state, obs, target, attention = 0.5) {
@@ -36,9 +39,9 @@ function slipKind(state, h, rng) {
   const p = state.profiles[h];
   const real = state.people[p.players[0]];
   const w = {
-    knowledge: p.tells?.length ? 2 : 1,
+    knowledge: (p.tells?.length ? 2 : 1) + hiddenFacts(state, h).length,
     body: p.shown?.gender && p.shown.gender !== real.gender ? 1.5 : 0.2,
-    voice: Math.abs((p.shown?.age ?? real.age) - (real.age ?? 25)) / 10,
+    voice: Math.abs((p.shown?.age ?? real.age) - (real.age ?? 25)) / 10 + distance(state, h) / 10,
     tooPerfect: p.mode === 'catfish' ? 1 : 0.5,
     overreach: 0.6,
     name: p.players.length > 1 ? 1 : 0.3,
@@ -68,6 +71,7 @@ export function rollSlips(state, rng, speaker, listeners, ctx, scene) {
     if (rng() < noticeChance(state, obs, speaker, ctx.attention ?? 0.5)) {
       noticedBy.push(obs);
       nudgeBelief(state, obs, speaker, 'real', -(0.06 + 0.03 * state.profiles[speaker].gap), scene);
+      if (kind === 'voice' && isPair(state, speaker)) noticeInconsistency(state, obs, speaker, scene);
     }
   }
   const slip = { kind, noticedBy };
@@ -81,7 +85,9 @@ export function probe(state, rng, asker, target, scene) {
   const p = state.profiles[target];
   const record = r => { (scene.data.probes ||= []).push({ asker, target, result: r }); return r; };
   if (!p?.gap) { nudgeBelief(state, asker, target, 'real', 0.12, scene); return record('pass'); }
-  const fail = clamp(PROBE.fail * p.gap * (1 - S(state, target, 'mental') / 15), 0, 0.8);
+  // Two heads check every answer (spec §14.8: slow, but hard to trap).
+  const fail = clamp(PROBE.fail * p.gap * (1 - S(state, target, 'mental') / 15), 0, 0.8)
+    * (isPair(state, target) ? SHARED_PROBE : 1);
   const dodge = clamp(S(state, target, 'strategic') * PROBE.dodge, 0, 0.8);
   feel(state, target, 'stress', 0.8);
   const r = rng();

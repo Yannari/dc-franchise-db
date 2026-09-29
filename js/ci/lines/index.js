@@ -15,8 +15,12 @@ import { HOST } from './host.js';
 import { GAME_LINES } from './games.js';
 import { LIFE_LINES } from './life.js';
 import { SHARED_LINES } from './shared.js';
+import { G_STATEMENT_NAME } from './g-statement-name.js';
+import { G_ASK_GUESS } from './g-ask-guess.js';
+import { G_MAKE } from './g-make.js';
+import { G_REST } from './g-rest.js';
 
 export const POOLS = {};
-for (const part of [CHAT_A, CHAT_B, SLIPS, FEED, CIRCLE, PROFILES, RATINGS, HANGOUT, BLOCKING, VISIT, GOODBYE, FINALE, HOST, GAME_LINES, LIFE_LINES, SHARED_LINES]) {
+for (const part of [CHAT_A, CHAT_B, SLIPS, FEED, CIRCLE, PROFILES, RATINGS, HANGOUT, BLOCKING, VISIT, GOODBYE, FINALE, HOST, GAME_LINES, LIFE_LINES, SHARED_LINES, G_STATEMENT_NAME, G_ASK_GUESS, G_MAKE, G_REST]) {
   for (const [k, v] of Object.entries(part)) POOLS[k] = [...(POOLS[k] || []), ...v];
 }

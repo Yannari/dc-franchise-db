@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { POOLS } from '../js/ci/lines/index.js';
+import { GAMES } from '../js/ci/games-data.js';
 import { FACT_KEYS, ROLES, POOL_KEYS } from '../js/ci/script.js';
 import { EMOJI } from '../js/ci/voice.js';
 import { foreignWordsIn } from './helpers/show-vocabulary.js';
@@ -15,14 +16,18 @@ const ENTRIES = Object.entries(POOLS).flatMap(([k, list]) => list.map(e => [k, e
 const turnTexts = e => (e.turns || []).flatMap(t => ['react', 'say', 'send', 'post', 'video'].filter(x => t[x]).map(x => [t.by, x, t[x]]));
 const allTexts = e => [e.stage, e.beat, ...turnTexts(e).map(t => t[2])].filter(Boolean);
 const SLOT = /\{([^}]*)\}/g;
-const OK_SLOT = /^([abc])(\.(real|aka|face|brain|sub|obj|pos|posAdj|ref|Sub|Obj|PosAdj))?$|^([et]):([A-Za-z0-9]+)$|^(q|game|ans)$/;
+const OK_SLOT = /^([abc])(\.(real|aka|face|brain|sub|obj|pos|posAdj|ref|Sub|Obj|PosAdj))?$|^([et]):([A-Za-z0-9]+)$|^(q|game|ans|x|n)$/;
 
 describe('the pools are well-formed', () => {
   it('has unique ids that start with their pool key, and only known pool keys', () => {
     const ids = ENTRIES.map(([, e]) => e.id);
     expect(new Set(ids).size).toBe(ids.length);
     for (const [k, e] of ENTRIES) expect(e.id.startsWith(`${k}.`), e.id).toBe(true);
-    for (const k of Object.keys(POOLS)) expect(POOL_KEYS, `orphan pool ${k}`).toContain(k);
+    // g.<game>.<beat> and g.<game>.<prompt>.<beat>: a game's own lines, keyed by a real game.
+    for (const k of Object.keys(POOLS)) {
+      if (k.startsWith('g.')) { expect(GAMES.map(g => g.id), `pool ${k} names no game`).toContain(k.split('.')[1]); continue; }
+      expect(POOL_KEYS, `orphan pool ${k}`).toContain(k);
+    }
   });
 
   it('casts only a, b, c and the host, and every turn says something', () => {

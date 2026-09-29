@@ -352,29 +352,6 @@ export const GAME_LINES = {
     ] },
   ],
 
-  // ── guess: a's fact was the hard one to place; b guesses ─────────────────
-  'game.guess.round': [
-    { id: 'game.guess.round.01', turns: [
-      { by: 'b', react: "'{q}' Okay, whoever wrote this answer is wild." },
-      { by: 'b', say: "I would never have guessed that was {a}. Never." },
-    ] },
-    { id: 'game.guess.round.02', turns: [
-      { by: 'b', react: "'{q}' That has to be somebody else. It's not {a}." },
-      { by: 'a', react: "It's me. They have no idea it's me." },
-    ], beat: '{a} grins at the screen.' },
-    { id: 'game.guess.round.03', turns: [
-      { by: 'b', react: "'{q}' Circle, I'm guessing somebody else. Wait. It's {a}?" },
-      { by: 'b', say: "That doesn't fit {a} at all." },
-    ] },
-    { id: 'game.guess.round.04', turns: [
-      { by: 'b', react: "'{q}' Oh, I know exactly who that is." },
-      { by: 'b', react: "Nope. I did not know who that was. {a}? Really?" },
-    ] },
-    { id: 'game.guess.round.05', turns: [
-      { by: 'a', say: "Nobody's gonna guess this one.", react: "'{q}' That's mine." },
-      { by: 'b', react: "{a}? Get out of here." },
-    ] },
-  ],
   // a's answer in a game gave something away, or looked like it did to b.
   'game.slip': [
     { id: 'game.slip.01', turns: [

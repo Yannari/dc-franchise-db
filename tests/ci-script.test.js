@@ -286,6 +286,7 @@ describe('the Hangout', () => {
 });
 
 import { GAMES } from '../js/ci/games-data.js';
+import { beatsFor } from '../js/ci/game-beats.js';
 
 describe('games, parties, apartment life and videos from home — on the page', () => {
   const withPools = (pools, fn) => {
@@ -295,23 +296,26 @@ describe('games, parties, apartment life and videos from home — on the page', 
   };
   const e = (key, turns) => [{ id: `${key}.t1`, turns }];
 
-  it('opens a game with its rules read aloud, then a block per round, then the prize', () => {
+  it('airs a game as its beats: the rules, every round with answers and the lone one, the conclusions, the prize', () => {
     const s = room();
     const g = GAMES.find(x => x.id === 'ice-breaker');
     const sc = addScene(s, 'game', [...s.active], { gameId: g.id, family: 'statement',
-      rounds: [{ promptId: 'shower', answers: { '@rebecca': 'agree', '@shubham': 'disagree', '@sammie': 'disagree' }, lone: '@rebecca' }],
+      rounds: [{ promptId: 'shower', answers: { '@rebecca': 'agree', '@shubham': 'disagree', '@sammie': 'disagree' }, lone: '@rebecca' },
+        { promptId: 'money', answers: { '@rebecca': 'agree', '@shubham': 'agree', '@sammie': 'disagree' }, lone: '@sammie' }],
       results: {}, prize: { kind: 'party', to: ['@sammie'] } });
-    const blocks = withPools({
-      'game.open': e('game.open', [{ by: 'a', react: '"{q}" — it\'s {game}!' }]),
-      'game.statement.agree': e('game.statement.agree', [{ by: 'a', say: 'Agree. "{q}"' }, { by: 'b', react: 'What?' }]),
-      'game.statement.disagree': e('game.statement.disagree', [{ by: 'a', say: 'Disagree.' }]),
-      'game.statement.lone': e('game.statement.lone', [{ by: 'a', react: 'Only {b}?' }]),
-      'game.prize.party': e('game.prize.party', [{ by: 'a', react: 'A party!' }]),
-    }, () => writeScene(s, sc).blocks);
-    expect(blocks.map(b => b.key)).toEqual(['game.open', 'game.statement.agree', 'game.statement.lone', 'game.prize.party']);
-    expect(blocks[0].lines[0].text).toBe(`"${g.rules[0]}" — it's Ice Breaker!`);
-    expect(blocks[1].lines[0].text).toBe(`Agree. "It's okay to pee in the shower."`);
-    expect(blocks[2].lines[0].text).toBe('Only Rebecca?');
+    beatsFor(s, streamFor(1, 'b'), g, sc);
+    const blocks = writeScene(s, sc).blocks;
+    const phases = blocks.map(b => b.phase);
+    expect(phases[0]).toBe('announce');
+    expect(phases.at(-1)).toBe('prize');
+    expect(new Set(blocks.filter(b => b.phase === 'round').map(b => b.round))).toEqual(new Set([0, 1]));
+    const keys = blocks.map(b => b.key);
+    expect(keys).toContain('game.statement.lone');
+    expect(keys).toContain('game.statement.at');
+    expect(keys.some(k => k.startsWith('game.statement.agree') || k.startsWith('g.ice-breaker'))).toBe(true);
+    const text = blocks.flatMap(b => b.lines.map(l => l.text)).join(' ');
+    expect(text).not.toMatch(/\{[a-z]/);
+    expect(text).toContain("pee in the shower");
   });
 
   it('opens a party with its props, and plays each Never Have I Ever round', () => {
@@ -342,7 +346,8 @@ describe('a game that is not anonymous', () => {
     const s = room();
     const mk = id => addScene(s, 'game', [...s.active], { gameId: id, family: 'ask',
       rounds: [{ promptId: 'ask', answers: {}, questions: [{ asker: '@shubham', target: '@sammie', kind: 'friendly' }] }], results: {}, prize: null });
-    const ask = g => sceneBlocks(s, mk(g)).find(b => b.key === 'game.ask.friendly');
+    const ask = g => { const sc = mk(g); beatsFor(s, streamFor(2, g), GAMES.find(x => x.id === g), sc);
+      return sceneBlocks(s, sc).find(b => b.key === 'game.ask.friendly'); };
     expect(ask('ama').extra).toMatchObject({ anon: true });
     expect(ask('circle-of-fortune').extra).toMatchObject({ anon: false });
   });
@@ -353,15 +358,16 @@ describe('an anonymous question on screen', () => {
     const s = room();
     const sc = addScene(s, 'game', [...s.active], { gameId: 'ama', family: 'ask',
       rounds: [{ promptId: 'ask', answers: {}, questions: [{ asker: '@shubham', target: '@sammie', kind: 'friendly' }] }], results: {}, prize: null });
+    beatsFor(s, streamFor(3, 'ama'), GAMES.find(x => x.id === 'ama'), sc);
     const saved = { ...POOLS };
-    POOLS['game.open'] = [{ id: 'game.open.t1', turns: [{ by: 'a', react: 'Go.' }] }];
     POOLS['game.ask.friendly'] = [{ id: 'game.ask.friendly.t1', turns: [{ by: 'a', send: 'Why?' }, { by: 'b', send: 'Because.' }] }];
     const blocks = writeScene(s, sc).blocks;
     for (const k of Object.keys(POOLS)) delete POOLS[k];
     Object.assign(POOLS, saved);
-    const [q, a] = blocks[1].lines;
+    const qb = blocks.find(b => b.key === 'game.ask.friendly');
+    const [q, a] = qb.lines;
     expect(q.anon).toBe(true);
     expect(a.anon).toBeUndefined();
-    expect(blockText(s, blocks[1]).join('\n')).toContain('▸ ANONYMOUS: Why?');
+    expect(blockText(s, qb).join('\n')).toContain('▸ ANONYMOUS: Why?');
   });
 });

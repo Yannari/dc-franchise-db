@@ -7,6 +7,8 @@
 // in everyone's business, so they'll all know how each other voted" (the
 // host, 1×01).
 import { GAMES } from './games-data.js';
+import { TRIVIA, FACTS } from './games-content.js';
+import { beatsFor } from './game-beats.js';
 import { rel, bump, S, clamp, addScene, peopleOf, schemeEligible } from './state.js';
 import { attractionOk } from './chat.js';
 import { belief, nudgeBelief, noteAlly } from './beliefs.js';
@@ -25,6 +27,13 @@ function shuffled(list, rng) {
   return a;
 }
 const argmax = (list, score) => list.reduce((best, x) => (score(x) > score(best) ? x : best), list[0]);
+function weightedPick(list, weight, rng) {
+  if (!list.length) return null;
+  const w = list.map(x => Math.max(0.01, weight(x)));
+  let r = rng() * w.reduce((a, b) => a + b, 0);
+  for (let i = 0; i < list.length; i++) if ((r -= w[i]) <= 0) return list[i];
+  return list.at(-1);
+}
 
 // ── The runners, one per family ──────────────────────────────────────────
 
@@ -138,8 +147,11 @@ const RUN = {
   guess(state, rng, game, sc, all) {
     for (const p of shuffled(game.prompts, rng).slice(0, 3)) {
       const answers = {}, placedBy = {};
+      const bank = FACTS[p.id] || [];
       for (const h of all) {
-        answers[h] = 'fact';
+        // The fact a player submits: drawn by who they are (proportional).
+        const who = isPair(state, h) ? leadFor(state, h, 'statement', rng) : null;
+        answers[h] = weightedPick(bank, f => S(state, h, f.stat, { who }) + rng() * 3, rng)?.id || 'fact';
         placedBy[h] = all.filter(o => o !== h && rng() < 0.3 + S(state, o, 'intuition') / 20
           + Math.max(0, rel(o, h, 'affection')) / 40);
         if (placedBy[h].length === all.length - 1) for (const o of placedBy[h]) nudgeBelief(state, o, h, 'real', 0.04, sc);
@@ -227,10 +239,29 @@ const RUN = {
       for (const c of captains) bump(lastPick, c, 'resentment', 0.4);
     }
     for (const t of teams) for (const a of t) for (const b of t) if (a !== b) bump(a, b, 'affection', 0.4);
-    const score = t => t.reduce((s, h) => s + S(state, h, 'mental'), 0) / t.length + rng() * 2;
-    const scores = teams.map(score);
+    // The quiz itself: questions in turn, one teammate answering each; right
+    // in proportion to what they know (1×07: "I'm here for brains on my
+    // trivia team"). A tie goes to one more question.
+    const scores = [0, 0], questions = [];
+    const cats = shuffled(game.prompts, rng);
+    const asked = new Set();
+    const ask = (ti, i) => {
+      const cat = cats[i % cats.length].id;
+      const q = shuffled(TRIVIA[cat] || [], rng).find(x => !asked.has(x.id));
+      if (!q) return;
+      asked.add(q.id);
+      const team = teams[ti];
+      const answerer = team[i % team.length];
+      const right = rng() < clamp(S(state, answerer, 'mental') / 12 + rng() * 0.3, 0.1, 0.95);
+      if (right) scores[ti]++;
+      if (right) for (const m of team) if (m !== answerer) bump(m, answerer, 'affection', 0.2);
+      questions.push({ team: ti, cat, qid: q.id, by: answerer, right, score: [...scores] });
+    };
+    for (let i = 0; i < 10; i++) ask(i % 2, Math.floor(i / 2) + (i % 2));
+    if (scores[0] === scores[1]) { ask(0, 11); ask(1, 12); }
+    if (scores[0] === scores[1]) scores[rng() < 0.5 ? 0 : 1] += 0.5;
     const answers = Object.fromEntries(teams.flatMap((t, i) => t.map(h => [h, i])));
-    sc.data.rounds.push({ promptId: shuffled(game.prompts, rng)[0].id, answers });
+    sc.data.rounds.push({ promptId: cats[0].id, answers, questions });
     sc.data.results = { captains, teams, scores, lastPick, winner: scores[0] >= scores[1] ? 0 : 1 };
   },
 
@@ -328,6 +359,7 @@ export function runGame(state, rng, game) {
   const sc = addScene(state, 'game', all, { gameId: game.id, family: game.family, rounds: [], results: {}, prize: null }, all);
   RUN[game.family](state, rng, game, sc, all);
   awardPrize(state, rng, game, winnersOf(state, game, sc, all).filter(Boolean), sc);
+  beatsFor(state, rng, game, sc);
   return sc;
 }
 

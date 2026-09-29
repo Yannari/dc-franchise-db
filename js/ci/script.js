@@ -17,6 +17,7 @@ import { isRevealed } from './reveal.js';
 import { styleMessage, displayText, dictation } from './voice.js';
 import { POOLS } from './lines/index.js';
 import { GAMES, PARTY_THEMES, NEVER_HAVE_I_EVER } from './games-data.js';
+import { TRIVIA, FACTS } from './games-content.js';
 
 // 'face' and 'brain': the two people behind a shared profile, speaking to
 // each other in their own apartment (spec §14.8).
@@ -24,7 +25,9 @@ export const ROLES = ['a', 'b', 'c', 'host', 'face', 'brain'];
 export const FACT_KEYS = ['intent', 'ending', 'result', 'known', 'early', 'late', 'catfish', 'outed',
   'suspects', 'theory', 'pact', 'friends', 'rivals', 'flirty', 'newcomer', 'mood', 'group', 'style',
   'hurt', 'influencer', 'reason', 'motive', 'mode', 'reasonKind', 'band', 'kiss', 'claim', 'lie',
-  'tone', 'party', 'final', 'slip', 'noticed', 'place', 'self', 'likesC', 'misread', 'anon'];
+  'tone', 'party', 'final', 'slip', 'noticed', 'place', 'self', 'likesC', 'misread', 'anon',
+  'answer', 'strong', 'split', 'qkind', 'right', 'off', 'odd', 'failed', 'barbed', 'slipped', 'mutual', 'warm',
+  'everyone', 'fresh', 'tier'];
 
 export const hostName = () => showWords('the-circle').host || 'Host';
 
@@ -137,7 +140,7 @@ export function fill(state, text, cast, speakerRole) {
   // {q} and {game}: the Circle's own words (a rule, a prompt) and a game's
   // name, handed in by the builder — never a name the pool invents.
   const t = cast.text || {};
-  text = text.replace(/\{(q|game|ans)\}/g, (m, k) => (t[k] ?? m));
+  text = text.replace(/\{(q|game|ans|x|n)\}/g, (m, k) => (t[k] ?? m));
   return text.replace(/\{([abc])(?:\.([A-Za-z]+))?\}/g, (m, role, prop) => {
     const h = cast[role];
     const p = h && state.profiles[h];
@@ -207,6 +210,31 @@ const byAffection = (h, others) => [...others].sort((x, y) => Math.abs(rel(y, h,
 function bandOf(place, n) {
   const f = (place - 1) / Math.max(1, n - 1);
   return f < 0.34 ? 'top' : f > 0.66 ? 'bottom' : 'middle';
+}
+
+// Which pool a game beat draws from (the family pool; game- and prompt-
+// specific pools, `g.<game>.<prompt?>.<suffix>`, take precedence).
+const GAME_FACTS = ['tone', 'answer', 'strong', 'split', 'qkind', 'result', 'anon', 'right', 'off', 'odd', 'failed',
+  'barbed', 'slipped', 'mutual', 'warm', 'everyone', 'fresh', 'tier', 'misread'];
+function gameKey(family, b) {
+  const k = b.kind;
+  if (k === 'open') return 'game.open';
+  if (k === 'first') return 'game.first';
+  if (k === 'slip') return 'game.slip';
+  if (k.startsWith('prize.')) return `game.${k}`;
+  switch (family) {
+    case 'statement': return k === 'answer' ? `game.statement.${b.answer}` : `game.statement.${k}`;
+    case 'name': return k === 'tally' ? `game.name.${b.tone}` : k === 'reply' ? `game.name.reply.${b.tone}` : `game.name.${k}`;
+    case 'ask': return k === 'question' ? (b.qkind === 'catfish' ? `game.ask.catfish.${b.result}` : `game.ask.${b.qkind}`) : `game.ask.${k}`;
+    case 'guess': return k === 'guessed' ? `game.guess.guessed.${b.right ? 'right' : 'wrong'}` : `game.guess.${k}`;
+    case 'make': return k === 'portrait.jab' ? 'game.make.jab' : k === 'portrait.kind' ? 'game.make.kind' : k === 'winner' ? 'game.make.result' : `game.make.${k}`;
+    case 'photo': return k === 'post' ? 'game.photo.round' : `game.photo.${k}`;
+    case 'team': return k === 'pick.first' ? 'game.team.pick' : k === 'pick' ? 'game.team.picks' : `game.team.${k}`;
+    case 'gift': return k === 'gift' ? 'game.gift.round' : `game.gift.${k}`;
+    case 'rival': return k === 'statement' ? 'game.rival.round' : `game.rival.${k}`;
+    case 'flirt': return k === 'line' ? 'game.flirt.round' : `game.flirt.${k}`;
+    default: return `game.${family}.${k}`;
+  }
 }
 
 const BLOCKS = {
@@ -378,100 +406,29 @@ const BLOCKS = {
     return [...pl.slice(1).reverse().map(x => ({ key: 'reveal.place', cast: { a: x.profile }, extra: { place: PLACE_WORDS[x.place - 1] } })),
       { key: 'reveal.winner', cast: { a: pl[0].profile } }];
   },
-  // A game: a player reads the Circle's rules aloud, then the rounds that
-  // matter, then any slip, then the prize alert (spec §13.3).
+  // A game airs as its beats (js/ci/game-beats.js): the alert, the rounds
+  // with every answer that matters, the reveal, the verdict, the prize.
   game(state, s) {
     const g = GAMES.find(x => x.id === s.data.gameId);
-    const reader = s.who[s.id % s.who.length];
-    const out = [{ key: 'game.open', cast: { a: reader, text: { q: g.rules[0], game: g.name } } }];
-    const promptText = r => g.prompts?.find(p => p.id === r.promptId)?.text;
-    const rounds = s.data.rounds || [];
-    const R = s.data.results || {};
-    const other = a => s.who.find(h => h !== a);
-    switch (s.data.family) {
-      case 'statement':
-        for (const r of rounds) {
-          const a = r.lone || s.who[0];
-          const b = s.who.find(h => h !== a && r.answers[h] !== r.answers[a]) || other(a);
-          const ans = (g.say || ['Agree', 'Disagree'])[r.answers[a] === 'agree' ? 0 : 1];
-          out.push({ key: `game.statement.${r.answers[a]}`, cast: { a, b, text: { q: promptText(r), ans } } });
-          if (r.lone) out.push({ key: 'game.statement.lone', cast: { a: b, b: r.lone, text: { q: promptText(r) } } });
-        }
-        break;
-      case 'name':
-        for (const r of rounds) {
-          const tone = g.prompts.find(p => p.id === r.promptId).tone;
-          const counts = {};
-          for (const n of Object.values(r.answers)) counts[n] = (counts[n] || 0) + 1;
-          const named = Object.keys(counts).sort((x, y) => counts[y] - counts[x])[0];
-          const namer = Object.keys(r.answers).find(v => r.answers[v] === named);
-          out.push({ key: `game.name.${tone}`, cast: { a: namer, b: named, text: { q: promptText(r) } } });
-        }
-        break;
-      case 'ask':
-        for (const q of (rounds[0]?.questions || []).slice(0, 3)) {
-          out.push({ key: q.kind === 'catfish' ? `game.ask.catfish.${q.result}` : `game.ask.${q.kind}`,
-            cast: { a: q.asker, b: q.target, anonA: !!g.anonymous }, extra: { anon: !!g.anonymous } });
-        }
-        break;
-      case 'guess':
-        for (const r of rounds) {
-          // The fact the room struggled to place: the interesting one.
-          const a = s.who.reduce((best, h) => ((r.placedBy[h]?.length || 0) < (r.placedBy[best]?.length || 0) ? h : best), s.who[0]);
-          out.push({ key: 'game.guess.round', cast: { a, b: other(a), text: { q: promptText(r) } } });
-        }
-        break;
-      case 'make': {
-        const r = rounds[0] || { answers: {}, portrayals: {} };
-        const jab = Object.keys(r.portrayals || {}).find(m => r.portrayals[m] === 'jab');
-        const kind = Object.keys(r.portrayals || {}).find(m => r.portrayals[m] === 'kind');
-        if (jab) out.push({ key: 'game.make.jab', cast: { a: jab, b: r.answers[jab], text: { game: g.name } } });
-        if (kind) out.push({ key: 'game.make.kind', cast: { a: kind, b: r.answers[kind], text: { game: g.name } } });
-        if (R.winner) out.push({ key: 'game.make.result', cast: { a: R.winner, b: other(R.winner), text: { game: g.name } } });
-        break;
-      }
-      case 'photo':
-        for (const a of Object.keys(rounds[0]?.answers || {}).slice(0, 2)) out.push({ key: 'game.photo.round', cast: { a, b: other(a) } });
-        break;
-      case 'team': {
-        out.push({ key: 'game.team.pick', cast: { a: R.captains[0], b: R.teams[0][1] || R.captains[1] } });
-        if (R.lastPick) {
-          const cap = R.teams.find(t => t.includes(R.lastPick))[0];
-          out.push({ key: 'game.team.last', cast: { a: R.lastPick, b: cap } });
-        }
-        out.push({ key: 'game.team.result', cast: { a: R.teams[R.winner][0], b: R.teams[1 - R.winner][0] } });
-        break;
-      }
-      case 'gift': {
-        const ans = rounds[0]?.answers || {};
-        for (const giver of Object.keys(ans).slice(0, 2)) out.push({ key: 'game.gift.round', cast: { a: giver, b: ans[giver] } });
-        const none = s.who.find(h => !Object.values(ans).includes(h));
-        if (none) out.push({ key: 'game.gift.none', cast: { a: none } });
-        break;
-      }
-      case 'rival': {
-        const ans = rounds[0]?.answers || {};
-        for (const namer of Object.keys(ans).slice(0, 3)) out.push({ key: 'game.rival.round', cast: { a: namer, b: ans[namer] } });
-        break;
-      }
-      case 'flirt': {
-        const seen = new Set();
-        for (const [a, b] of Object.entries(rounds[0]?.answers || {})) {
-          if (seen.has(a)) continue;
-          seen.add(a); seen.add(b);
-          out.push({ key: 'game.flirt.round', cast: { a, b } });
-        }
-        break;
-      }
-    }
-    for (const sl of (s.data.slips || []).slice(0, 2)) {
-      out.push({ key: 'game.slip', cast: { a: sl.by, b: sl.noticedBy[0] || other(sl.by) }, extra: { misread: !!sl.misread } });
-    }
-    if (s.data.prize) {
-      const [a, b] = s.data.prize.to;
-      out.push({ key: `game.prize.${s.data.prize.kind}`, cast: { a, b } });
-    }
-    return out;
+    return (s.data.beats || []).map(b => {
+      const key = gameKey(g.family, b);
+      const promptId = b.promptId;
+      // The engine keeps ids; the words are looked up here.
+      const prompt = promptId ? g.prompts?.find(p => p.id === promptId) : null;
+      const trivia = b.qid ? Object.values(TRIVIA).flat().find(t => t.id === b.qid) : null;
+      const fact = b.factId && promptId ? (FACTS[promptId] || []).find(f => f.id === b.factId) : null;
+      const q = trivia?.q ?? prompt?.text ?? (b.kind === 'open' ? g.rules[0] : undefined);
+      const x = trivia ? (b.right ? trivia.a : trivia.wrong) : fact?.text;
+      const suffix = key.replace(/^game\.(statement|name|ask|guess|make|photo|team|gift|rival|flirt)\./, '').replace(/^game\./, '');
+      const specific = [promptId && `g.${g.id}.${promptId}.${suffix}`, `g.${g.id}.${suffix}`].filter(Boolean)
+        .find(k => POOLS[k]?.length);
+      const ans = b.answer ? (g.say || ['Agree', 'Disagree'])[b.answer === 'agree' ? 0 : 1] : undefined;
+      const extra = {};
+      for (const k of GAME_FACTS) if (b[k] !== undefined) extra[k] = b[k];
+      return { key: specific || key, phase: b.phase, round: b.round,
+        cast: { a: b.by, b: b.about, c: b.c, anonA: b.kind === 'question' && b.anon,
+          text: { q, x, n: b.n === undefined ? undefined : String(b.n), game: g.name, ans } }, extra };
+    });
   },
   // A party: props at the door, then Never Have I Ever in Circle Chat (1×02).
   party(state, s) {
@@ -510,7 +467,8 @@ export function writeScene(state, scene) {
     const pairKey = [b.cast.a, b.cast.b, b.cast.c].filter(Boolean).sort().join('|');
     const entry = pickEntry(state, b.key, facts, pairKey, rng);
     if (!entry) { (state.missingPools ||= {})[b.key] = (state.missingPools[b.key] || 0) + 1; return; }
-    blocks.push({ key: b.key, ...renderEntry(state, entry, b.cast, rng) });
+    blocks.push({ key: b.key, ...(b.phase ? { phase: b.phase } : {}), ...(b.round != null ? { round: b.round } : {}),
+      ...renderEntry(state, entry, b.cast, rng) });
   });
   // A slip happens inside the conversation: weave it into the chat before the
   // chat's closing beat, rather than printing it as a second scene.
@@ -595,7 +553,19 @@ export const POOL_KEYS = [
   'game.open', 'game.statement.agree', 'game.statement.disagree', 'game.statement.lone',
   'game.name.good', 'game.name.bad', 'game.name.funny',
   'game.ask.friendly', 'game.ask.barbed', ...['pass', 'dodge', 'fail'].map(r => `game.ask.catfish.${r}`),
-  'game.guess.round', 'game.slip', 'game.make.jab', 'game.make.kind', 'game.make.result', 'game.photo.round',
+  'game.slip', 'game.make.jab', 'game.make.kind', 'game.make.result', 'game.photo.round',
+  // Plan 3a+: every beat of a game (js/ci/game-beats.js).
+  'game.first',
+  ...['prompt', 'results', 'at', 'surprise', 'conclusion'].map(k => `game.statement.${k}`),
+  ...['prompt', 'namer', 'reply.good', 'reply.bad', 'reply.funny', 'hurt', 'proud'].map(k => `game.name.${k}`),
+  ...['choose', 'react', 'guess', 'conclusion'].map(k => `game.ask.${k}`),
+  ...['submit', 'prompt', 'fact', 'guessed.right', 'guessed.wrong', 'owner', 'conclusion'].map(k => `game.guess.${k}`),
+  ...['props', 'plan', 'build.disaster', 'build.ok', 'build.proud', 'timeup', 'upload', 'item', 'comment', 'last', 'tally'].map(k => `game.make.${k}`),
+  ...['choose', 'tag', 'winner'].map(k => `game.photo.${k}`),
+  ...['captains', 'scout.want', 'scout.pass', 'picks', 'trash', 'question.right', 'question.wrong', 'banter'].map(k => `game.team.${k}`),
+  ...['choose', 'thanks', 'noticed'].map(k => `game.gift.${k}`),
+  ...['reply', 'react', 'observe'].map(k => `game.rival.${k}`),
+  ...['practice', 'answer', 'react', 'vote', 'date'].map(k => `game.flirt.${k}`),
   'game.team.pick', 'game.team.last', 'game.team.result', 'game.gift.round', 'game.gift.none',
   'game.rival.round', 'game.flirt.round', ...['party', 'photo', 'video', 'immunity', 'gift'].map(k => `game.prize.${k}`),
   'party.open', 'party.nhie', 'party.nhie.none',

@@ -76,11 +76,11 @@ function speakText(s) {
     .replace(/\.\s*$/, '');
 }
 
-export function dictation(text) {
+export function dictation(text, lead = 'Message', close = 'Send') {
   const parts = tokenize(text);
   const quoted = speakText(parts.filter(p => p.type === 'text').map(p => p.v).join(' '));
   const extras = parts.filter(p => p.type !== 'text')
     .map(p => p.type === 'emoji' ? cap(EMOJI[p.v]?.[1] ?? 'emoji') : `Hashtag ${tagWords(p.v)}`);
-  const said = quoted ? `Message: "${cap(quoted)}."` : 'Message:';
-  return [said, ...extras.map(x => `${x}.`), 'Send.'].join(' ').replace(/\.\."/g, '."');
+  const said = quoted ? `${lead}: "${cap(quoted)}."` : `${lead}:`;
+  return [said, ...extras.map(x => `${x}.`), `${close}.`].join(' ').replace(/\.\."/g, '."');
 }

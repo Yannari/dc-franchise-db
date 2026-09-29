@@ -80,7 +80,10 @@ function matches(when = {}, facts) {
   return Object.entries(when).every(([k, v]) => (Array.isArray(v) ? v.includes(facts[k]) : facts[k] === v));
 }
 
-const usage = state => (state.usedLines ||= { uses: {}, pairs: {} });
+const usage = state => (state.usedLines ||= { uses: {}, pairs: {}, day: {} });
+// A line already used today (by anyone) is nearly off the table: two players
+// posting the same status on the same morning reads as a copy, not a coincidence.
+export const SAME_DAY = 0.1;
 
 export function pickEntry(state, key, facts, pairKey, rng) {
   const pool = POOLS[key];
@@ -91,7 +94,8 @@ export function pickEntry(state, key, facts, pairKey, rng) {
     const spec = Object.keys(e.when || {}).length;
     const uses = u.uses[e.id] || 0;
     const samePair = (u.pairs[e.id] || []).includes(pairKey);
-    return [e, samePair ? 0 : (1 + spec) * Math.pow(0.5, uses)];
+    const today = (u.day || {})[e.id] === state.day ? SAME_DAY : 1;
+    return [e, samePair ? 0 : (1 + spec) * Math.pow(0.5, uses) * today];
   });
   let total = scored.reduce((s, [, w]) => s + w, 0);
   // Everything that fits has been used on this pair: take the least-used fit.
@@ -108,6 +112,7 @@ function note(state, e, pairKey) {
   if (!e) return null;
   const u = usage(state);
   u.uses[e.id] = (u.uses[e.id] || 0) + 1;
+  (u.day ||= {})[e.id] = state.day;
   (u.pairs[e.id] ||= []).push(pairKey);
   return e;
 }
@@ -150,6 +155,11 @@ export function renderEntry(state, entry, cast, rng) {
     if (t.react) lines.push({ who: speaker, kind: 'react', text: fill(state, t.react, cast, t.by) });
     if (t.say) lines.push({ who: speaker, kind: t.by === 'host' ? 'host' : 'say', text: fill(state, t.say, cast, t.by) });
     if (t.video) lines.push({ who: speaker, kind: 'video', text: fill(state, t.video, cast, t.by) });
+    if (t.post) {
+      const voice = state.profiles[speaker]?.voice;
+      const styled = styleMessage(fill(state, t.post, cast, t.by), voice, rng);
+      lines.push({ who: speaker, kind: 'post', text: displayText(styled), spoken: dictation(styled, 'Status', 'Post') });
+    }
     if (t.send) {
       const voice = state.profiles[speaker]?.voice;
       const styled = styleMessage(fill(state, t.send, cast, t.by), voice, rng);
@@ -202,9 +212,10 @@ const BLOCKS = {
     return out;
   },
   'circle-chat'(state, s) {
-    const a = s.data.posts?.[0]?.by || s.who[0];
+    const posters = [...new Set((s.data.posts || []).map(p => p.by))];
+    const [a = s.who[0], b = s.who.find(h => h !== a), c = s.who.find(h => h !== a && h !== b)] = posters;
     const key = s.data.final ? 'circle.final' : s.data.party ? 'circle.party' : 'circle.open';
-    return [{ key, cast: { a } },
+    return [{ key, cast: { a, b, c } },
       ...(s.data.theories || []).map(t => ({ key: 'circle.theory', cast: { a: t.by, b: t.about }, extra: { claim: 'catfish' } }))];
   },
   profiles(state, s) {
@@ -332,6 +343,15 @@ export function writeScene(state, scene) {
     if (!entry) { (state.missingPools ||= {})[b.key] = (state.missingPools[b.key] || 0) + 1; return; }
     blocks.push({ key: b.key, ...renderEntry(state, entry, b.cast, rng) });
   });
+  // A slip happens inside the conversation: weave it into the chat before the
+  // chat's closing beat, rather than printing it as a second scene.
+  if (scene.kind === 'chat' && blocks.length > 1 && !blocks[0].key.startsWith('slip.')) {
+    for (const b of blocks.slice(1).filter(x => x.key.startsWith('slip.'))) {
+      blocks[0].lines.push(...b.lines);
+      if (b.beat) blocks[0].lines.push({ who: b.lines[0]?.who, kind: 'stage', text: b.beat });
+    }
+    blocks.splice(1, blocks.length - 1, ...blocks.slice(1).filter(x => !x.key.startsWith('slip.')));
+  }
   scene.script = { blocks };
   return scene.script;
 }

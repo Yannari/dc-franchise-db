@@ -12,7 +12,7 @@ import { EMOJI } from '../js/ci/voice.js';
 import { foreignWordsIn } from './helpers/show-vocabulary.js';
 
 const ENTRIES = Object.entries(POOLS).flatMap(([k, list]) => list.map(e => [k, e]));
-const turnTexts = e => (e.turns || []).flatMap(t => ['react', 'say', 'send', 'video'].filter(x => t[x]).map(x => [t.by, x, t[x]]));
+const turnTexts = e => (e.turns || []).flatMap(t => ['react', 'say', 'send', 'post', 'video'].filter(x => t[x]).map(x => [t.by, x, t[x]]));
 const allTexts = e => [e.stage, e.beat, ...turnTexts(e).map(t => t[2])].filter(Boolean);
 const SLOT = /\{([^}]*)\}/g;
 const OK_SLOT = /^([abc])(\.(real|aka|sub|obj|pos|posAdj|ref|Sub|Obj|PosAdj))?$|^([et]):([A-Za-z0-9]+)$/;
@@ -30,7 +30,7 @@ describe('the pools are well-formed', () => {
       expect(e.turns?.length || e.stage, e.id).toBeTruthy();
       for (const t of e.turns || []) {
         expect(ROLES, e.id).toContain(t.by);
-        expect(t.react || t.say || t.send || t.video, e.id).toBeTruthy();
+        expect(t.react || t.say || t.send || t.post || t.video, e.id).toBeTruthy();
       }
     }
   });
@@ -42,7 +42,7 @@ describe('the pools are well-formed', () => {
         if (by !== 'host') expect(x, `${e.id}: a player cannot know the real name`).not.toMatch(/\{[abc]\.(real|aka)\}/);
       }
       for (const [by, kind, x] of turnTexts(e)) {
-        if (kind !== 'send') expect(x, `${e.id}: emoji and hashtags live in messages`).not.toMatch(/\{[et]:/);
+        if (kind !== 'send' && kind !== 'post') expect(x, `${e.id}: emoji and hashtags live in messages`).not.toMatch(/\{[et]:/);
         for (const [, k] of x.matchAll(/\{e:([A-Za-z0-9]+)\}/g)) expect(EMOJI, `${e.id}: emoji ${k}`).toHaveProperty(k);
         for (const [, t] of x.matchAll(/\{t:([A-Za-z0-9]+)\}/g)) expect(t, `${e.id}: hashtag`).toMatch(/^[A-Z][A-Za-z0-9]+$/);
         void by;

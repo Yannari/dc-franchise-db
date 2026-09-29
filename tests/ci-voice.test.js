@@ -36,3 +36,9 @@ describe('texting voice', () => {
     expect(displayText(styleMessage('ok {e:heart}  {t:Fam}', { emoji: 0, hashtags: 0, caps: 0 }, () => 0.99))).toBe('ok');
   });
 });
+
+describe('a status update', () => {
+  it('is posted, not messaged', () => {
+    expect(dictation('Good morning {e:sun}', 'Status', 'Post')).toBe('Status: "Good morning." Sun emoji. Post.');
+  });
+});

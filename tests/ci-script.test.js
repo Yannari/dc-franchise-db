@@ -130,3 +130,38 @@ describe('the transcript', () => {
     ]);
   });
 });
+
+import { writeScene } from '../js/ci/script.js';
+
+describe('repetition within a day, and slips inside the chat', () => {
+  it('rarely reuses a line already used today, even for a different pair', () => {
+    let repeats = 0;
+    for (let i = 0; i < 40; i++) {
+      const s = room();
+      POOLS['test.day'] = [
+        { id: 'test.day.1', turns: [{ by: 'a', say: 'one' }] },
+        { id: 'test.day.2', turns: [{ by: 'a', say: 'two' }] },
+        { id: 'test.day.3', turns: [{ by: 'a', say: 'three' }] },
+      ];
+      const first = pickEntry(s, 'test.day', {}, 'pair-1', streamFor(i, 'x'));
+      const second = pickEntry(s, 'test.day', {}, 'pair-2', streamFor(i + 500, 'y'));
+      if (first.id === second.id) repeats++;
+    }
+    delete POOLS['test.day'];
+    expect(repeats).toBeLessThan(4);
+  });
+
+  it('weaves a slip into the chat it happened in, before the chat\'s last beat', () => {
+    const s = room();
+    POOLS['chat.bond.warm'] = [{ id: 'chat.bond.warm.t1', turns: [{ by: 'a', send: 'Hi {b}' }], beat: '{a} smiles.' }];
+    POOLS['slip.misread'] = [{ id: 'slip.misread.t1', turns: [{ by: 'a', send: 'I love it here' }, { by: 'b', react: 'Too nice.' }], beat: '{b} frowns.' }];
+    const sc = addScene(s, 'chat', ['@shubham', '@sammie'], { intent: 'bond', ending: 'warm', claims: [],
+      slips: [{ by: '@shubham', kind: 'tooPerfect', noticedBy: ['@sammie'], misread: true }] });
+    writeScene(s, sc);
+    delete POOLS['chat.bond.warm']; delete POOLS['slip.misread'];
+    expect(sc.script.blocks).toHaveLength(1);
+    const kinds = sc.script.blocks[0].lines.map(l => `${l.kind}:${l.text}`);
+    expect(kinds).toEqual(['send:Hi Sammie', 'send:I love it here', 'react:Too nice.', 'stage:Sammie frowns.']);
+    expect(sc.script.blocks[0].beat).toBe('Shubham smiles.');
+  });
+});

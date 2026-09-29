@@ -29,6 +29,7 @@ import { rpBuildCastleDay, trCastleDayRevealAll, castleSegmentHasScenes }
   from './castle-day.js';
 import { rpBuildSelection, trSelectionRevealAll } from './selection.js';
 import { castleStageScreen } from './castle-stage.js';
+import { tableStageScreen } from './table-stage.js';
 import { rpBuildWeb } from './web.js';
 import { rpBuildSuspicion, trSuspicionRevealAll } from './suspicion.js';
 // The Alcove is folded into the night castle segment (Plan 11); only its gate
@@ -175,7 +176,8 @@ export const TRAITORS_SCREENS = [
   { id: 'tr-round-table', label: 'The Round Table', suffix: 'roundtable',
     badge: { text: 'Round Table', color: '#b91c3c' },
     when: r => !!(r.tr && r.tr.table),
-    build: rpBuildRoundTable, revealAll: trRoundTableRevealAll, revealAllName: 'trRoundTableRevealAll' },
+    build: (r, o) => tableStageScreen(r, o, rpBuildRoundTable(r, o)),
+    revealAll: trRoundTableRevealAll, revealAllName: 'trRoundTableRevealAll' },
   // THE NIGHT — after the table, into the dark. This is the segment that MAY
   // react to the banishment (roundtable-scramble + post-banishment), so it sits
   // after the Round Table, exactly where the whole day used to sit. It is also

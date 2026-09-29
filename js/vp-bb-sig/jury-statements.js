@@ -291,10 +291,15 @@ export function rpBuildSigJuryStatements(ep, actType, u = {}) {
       // whitespace to get past it left "C. Fern" glued to the front of the
       // sentence, so the prefix is rebuilt exactly as the competition wrote it
       // and removed by identity.
-      const prefix = `${q.juror ? `${q.juror}: ` : ''}${q.stem} — `
-        + q.options.map((o, idx) => `${'ABC'[idx]}. ${o}`).join('  ') + ' ';
-      const rest = (b.text.startsWith(prefix) ? b.text.slice(prefix.length) : b.text)
-        .split(' The answer was ')[0].trim();
+      // Two shapes: seasons played before the verdicts were made explicit
+      // wrote "stem — A. x  B. y ", newer ones "stem (A. x · B. y). ".
+      const who = q.juror ? `${q.juror}: ` : '';
+      const prefixes = [
+        `${who}${q.stem} (${q.options.map((o, idx) => `${'ABC'[idx]}. ${o}`).join(' · ')}). `,
+        `${who}${q.stem} — ${q.options.map((o, idx) => `${'ABC'[idx]}. ${o}`).join('  ')} `,
+      ];
+      const prefix = prefixes.find(pre => b.text.startsWith(pre)) || '';
+      const rest = b.text.slice(prefix.length).split(' The answer was ')[0].trim();
       cards += `<div class="jt-card">
         <div class="jt-bar"><span class="jt-rec"><i></i>PLAYBACK</span>
           <span>STATEMENT ${asked} OF ${questions.length || asked}</span>

@@ -29,6 +29,14 @@ import {
   sharesAlliance, resentmentOf, grudge, isVillainous, isNice, spotlightOrder,
 } from './_read.js';
 
+// Head-counts in prose follow the house. "Eleven other people" was written for
+// a house of twelve and printed over sixteen.
+const _WORDS = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine',
+  'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen',
+  'eighteen', 'nineteen', 'twenty'];
+const _countWord = n => _WORDS[n] || String(n);
+const _capWord = w => w.charAt(0).toUpperCase() + w.slice(1);
+
 function _variant(list, ctx, ...salt) {
   const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${ctx?.act || ''}|${salt.join('|')}`;
   let hash = 0;
@@ -167,7 +175,7 @@ const theNoise = {
       `${culprit} and two others are still talking at three in the morning, in a room with beds in it, at a volume that is not quite a whisper. ${annoyed} lies there doing the arithmetic on how many hours are left.`,
       `Somebody is singing. Big Brother tells them to stop singing. Somebody starts singing again forty seconds later, and ${annoyed} makes a sound into the pillow that carries further than the singing did.`,
       `${annoyed} asks the room to keep it down. ${culprit} keeps it down for about four minutes. The second time ${annoyed} asks, it is not a request.`,
-      `The lights go on at seven because ${culprit} is a morning person and has never once thought about what that means for eleven other people.`,
+      `The lights go on at seven because ${culprit} is a morning person and has never once thought about what that means for ${_countWord(house.length - 1)} other people.`,
     ], ctx, culprit, annoyed);
     api.addBond(annoyed, culprit, -0.7);
     api.remember(annoyed, culprit, 'kept-me-awake', 1, { about: 'the bedroom' });
@@ -220,7 +228,7 @@ const theSpace = {
     const { culprit, annoyed } = _grating(house, ctx);
     const week = Number(ctx?.week?.num) || 1;
     const lines = [
-      `${culprit} has been in the bathroom for fifty minutes. There are eleven other people in this house and exactly one mirror that anybody wants.`,
+      `${culprit} has been in the bathroom for fifty minutes. There are ${_countWord(house.length - 1)} other people in this house and exactly one mirror that anybody wants.`,
       `Somebody has moved ${annoyed}'s things off the good bed. Nobody admits to it. ${annoyed} knows exactly who, and says so to the wrong person first.`,
       `${culprit} borrows a jumper without asking. It comes back smelling of the backyard and ${annoyed} does not mention it, which everybody notices more than a row.`,
     ];
@@ -388,7 +396,7 @@ const theCook = {
     const fed = _others(house, cook).slice(0, 4);
     const text = _variant([
       `${cook} cooks for the whole house without being asked and without making it a favour, which is a much harder thing to do than the cooking.`,
-      `There is a proper dinner tonight because ${cook} decided there would be. Twelve people sit down at the same time for the first time in a week.`,
+      `There is a proper dinner tonight because ${cook} decided there would be. ${_capWord(_countWord(house.length))} people sit down at the same time, which has not happened since move-in.`,
       `${cook} has quietly become the person who feeds everybody. Nobody voted on it. It is the most reliable social position in the house and ${cook} may not have noticed holding it.`,
       `${cook} makes something out of almost nothing and the house is briefly, genuinely happy about it. ${fed[0]} says so out loud, which nobody usually bothers to do.`,
     ], ctx, cook);

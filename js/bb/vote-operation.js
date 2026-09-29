@@ -494,7 +494,13 @@ export function resolveFinalPleas({ nominees = [], ballots = [], hoh = null, wee
     const lieChance = clamp((s.strategic || 5) * 0.04 + (10 - (s.loyalty || 5)) * 0.04
       + ({ villain: 0.15, schemer: 0.12, mastermind: 0.12, 'chaos-agent': 0.08 }[arch] || 0), 0, 0.55);
     if (rng() < lieChance) {
-      factsUsed.push({ claim: `the votes to keep ${speaker} are already there`, supported: false });
+      // A bluff only when it is one. A nominee the house is already keeping
+      // who says "the votes are there" is telling the truth, and a voter
+      // "catching" a true sentence sent eleven people to not believe a word of
+      // a plea by somebody who then went home with zero votes against them.
+      const keeping = ballots.filter(b => b.evict === other).length;
+      factsUsed.push({ claim: `the votes to keep ${speaker} are already there`,
+        supported: keeping * 2 > ballots.length, bluff: true });
     }
     // A strategic speaker may expose a REAL deal the other nominee holds —
     // true, damaging, and the exposed voter does not thank them for it.

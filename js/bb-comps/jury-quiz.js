@@ -212,7 +212,7 @@ const RIGHT = [
   (n, j) => `${n} gets there — and the small nod ${j} gives from the jury bench confirms it before the answer is read out.`,
   (n, j, p) => `${n} answers like somebody who spent a week thinking about ${j}, which is exactly what ${p.sub} did.`,
   (n, j, p) => `${n} was listening, back when listening cost ${p.obj} nothing. Right.`,
-  (n, j) => `${n} barely looks at the board. Some of these ${n} could have answered in week three.`,
+  (n, j) => `${n} barely looks at the board. ${n} could have answered this one weeks ago.`,
 ];
 
 const WRONG = [
@@ -222,7 +222,7 @@ const WRONG = [
   // `jp` is the JUROR's pronoun. Reaching for the finalist's produced "Priya
   // spent a season managing Gus and never once asked her anything", where
   // "her" is Priya — two people in one sentence and the wrong one referred to.
-  (n, j, p, jp) => `${n} spent a season managing ${j} and never once asked ${jp.obj} anything. Wrong.`,
+  (n, j, p, jp) => `${n} spent the season managing ${j} and never once asked ${jp.obj} anything. Wrong.`,
   (n, j) => `${n} goes with the safe one. ${j} was never the safe one.`,
   (n, j, p) => `${n} works it out from the game rather than from the person, which is how ${p.sub} got here and why ${p.sub} ${p.sub === 'they' ? 'get' : 'gets'} this one wrong.`,
 ];
@@ -312,11 +312,18 @@ export const juryStatements = {
       const p0 = pronouns(finalists[0]);
       const p1 = finalists[1] ? pronouns(finalists[1]) : p0;
       const jp = pronouns(juror);
-      const lineFor = (finalist, p) => (answers[finalist].right
-        ? say(RIGHT)(finalist, juror, p, jp)
-        : say(WRONG)(finalist, juror, p, jp));
+      // Every line has to leave the reader knowing whether it was right: half
+      // the pool is atmosphere ("answers like somebody who spent a week thinking
+      // about Aiden") and the verdict was only implied. The letter they wrote
+      // goes on the end, and a line that already says Right/Wrong keeps it.
+      const lineFor = (finalist, p) => {
+        const a = answers[finalist];
+        const line = a.right ? say(RIGHT)(finalist, juror, p, jp) : say(WRONG)(finalist, juror, p, jp);
+        return /\b(Right|Wrong)\.$/.test(line) ? line.replace(/\b(Right|Wrong)\.$/, `$1 (${'ABC'[a.answer]}).`)
+          : `${line} ${a.right ? 'Right' : 'Wrong'} (${'ABC'[a.answer]}).`;
+      };
       beats.push(beat(
-        `${juror}: ${picked.q.stem} — ${options.map((o, i) => `${'ABC'[i]}. ${o}`).join('  ')} `
+        `${juror}: ${picked.q.stem} (${options.map((o, i) => `${'ABC'[i]}. ${o}`).join(' · ')}). `
         + `${lineFor(finalists[0], p0)}`
         + (finalists[1] ? ` ${lineFor(finalists[1], p1)}` : '')
         + ` The answer was ${options[truthIndex]}.`,

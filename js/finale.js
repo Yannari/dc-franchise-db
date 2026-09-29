@@ -2773,7 +2773,18 @@ export function simulateJuryVote(finalists, adjustments = null) {
     const _jrBond = getBond(juror, pick);
     const _jrHistory = gs.jurorHistory?.[juror];
     const _jrVotedOut = _jrHistory?.voters?.includes(pick);
+    // On a house season the Head of Household who put the juror on the block
+    // never casts a ballot, so "wasn't part of that vote" is technically true
+    // and completely wrong. Their hands are on it anyway.
+    const _jrPutMeUp = (gs.bb?.weeks || []).some(w => w?.evicted === juror
+      && (w.hoh === pick || (w.hohs || []).includes(pick)));
     const _jrFp = pronouns(pick);
+    const _jrCleanHands = (who, fp) => [
+      `${who} didn't vote me out. That matters more than people think. Loyalty deserves to be rewarded.`,
+      `I looked at who sent me home and who didn't. ${who} wasn't part of that vote. ${fp.Sub} ${fp.sub==='they'?'have':'has'} my respect.`,
+      `${who} kept ${fp.posAdj} hands clean when others didn't. That's the kind of game I want to reward.`,
+      `My name was never on ${who}'s ballot. I noticed, and I am saying so with this one.`,
+    ];
     const _jrPick = arr => {
       const fresh = arr.filter(x => !spoken.has(_sigOf(x)));
       const pool = fresh.length ? fresh : arr;
@@ -2855,12 +2866,21 @@ export function simulateJuryVote(finalists, adjustments = null) {
         `I have had a long time to be annoyed about this and all I have come up with is that ${_jrFp.sub} ${_jrFp.sub === 'they' ? 'were' : 'was'} right to do it.`,
       ]);
     } else if (_jrVotedOut && _jrBond < 0) {
+      // This branch used to print "${pick} didn't vote me out" — under the
+      // condition that ${pick} DID vote them out. The juror voted out by
+      // somebody they do not like, who votes for them anyway, is giving the
+      // game its due through their teeth.
       _jrReason = _jrPick([
-        `${pick} didn't vote me out. That matters more than people think. Loyalty deserves to be rewarded.`,
-        `I looked at who sent me home and who didn't. ${pick} wasn't part of that vote. ${_jrFp.Sub} ${_jrFp.sub==='they'?'have':'has'} my respect.`,
-        `${pick} kept ${_jrFp.pos} hands clean when others didn't. That's the kind of game I want to reward.`,
-        `I went through every vote in my head on that bench. ${pick}'s name was never on the wrong side of mine.`,
+        `${pick} voted me out and I still don't like it. It was the right vote, and so is this one.`,
+        `I'm not voting for ${pick} because I've forgiven ${_jrFp.obj}. I'm voting for ${_jrFp.obj} because the other game was smaller.`,
+        `${pick} wrote my name down. I'd have written ${_jrFp.pos} too, if I'd had the chance first.`,
       ]);
+    } else if (_jrHistory && !_jrVotedOut && !_jrPutMeUp && (_jrHistory.voters || []).length
+      // A reason, not THE reason: once the bench has used these up, the
+      // juror falls through to what they actually felt about the finalist
+      // instead of repeating somebody else's sentence.
+      && _jrCleanHands(pick, _jrFp).some(l => !spoken.has(_sigOf(l)))) {
+      _jrReason = _jrPick(_jrCleanHands(pick, _jrFp));
     } else if (_jrBond >= 4) {
       _jrReason = _jrPick([
         `${pick} and I had something real out there. I'm voting for ${_jrFp.obj} because ${_jrFp.sub} earned it — as a player and as a person.`,

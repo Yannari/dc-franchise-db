@@ -55,8 +55,31 @@ function _pmPhaseForScreen(id) {
   return { id:'pm-night', label:'The Night', icon:'☾' };
 }
 
+// The house's screens are `bb-*`. They fell through to the bed table, so every
+// Big Brother week was filed under Total Drama's words — "CHALLENGE / EVICTION
+// NIGHT", "CHALLENGE / MOVE-IN". Same phase ids (quick mode keys on them),
+// the house's own labels.
+function _bbPhaseForScreen(id) {
+  if (id === 'bb-debug') return { id:'debug', label:'Debug', icon:'⚙' };
+  if (/^bb-(cold|premiere|move|previously|theme)/.test(id)) return { id:'previously', label:'The House', icon:'◀' };
+  if (id === 'bb-overview') return { id:'previously', label:'The House', icon:'◀' };
+  if (id.startsWith('bb-house') || id === 'bb-otherside' || id === 'bb-finale-house') return { id:'camp', label:'House Life', icon:'●' };
+  if (/^bb-(ftc|final-cut|finale-brief)/.test(id)) return { id:'tribal', label:'Finale', icon:'▲' };
+  if (/^bb-(noms|cer|nomination|veto-cer)/.test(id)) return { id:'tribal', label:'Ceremony', icon:'▲' };
+  if (/^bb-(plans|campaign)/.test(id)) return { id:'scramble', label:'Voting Plans', icon:'◆' };
+  if (id === 'bb-jury' || id === 'bb-results') return { id:'reveal', label:'The Vote', icon:'✦' };
+  if (/^bb-(evict|jury-vote|votes)/.test(id)) return { id:'reveal', label:'Eviction', icon:'✦' };
+  if (/^bb-(interview|final-interview|overview-after|aftermath|reunion|winner|finale-night|afh|afp)/.test(id)) return { id:'aftermath', label:'Aftermath', icon:'■' };
+  const bed = bedForScreen(id);
+  if (bed === 'aftermath' || bed === 'victory') return { id:'aftermath', label:'Aftermath', icon:'■' };
+  if (bed === 'tribal-tension') return { id:'tribal', label:'Ceremony', icon:'▲' };
+  if (bed === 'camp') return { id:'camp', label:'House Life', icon:'●' };
+  return { id:'challenge', label:'Competition', icon:'⚑' };
+}
+
 export function _vpPhaseForScreen(id = '') {
   if (_TR_PHASES[id]) return _TR_PHASES[id];
+  if (id.startsWith('bb-')) return _bbPhaseForScreen(id);
   if (id.startsWith('villa-')) return _pmPhaseForScreen(id);
   if (id === 'debug') return { id:'debug', label:'Debug', icon:'⚙' };
   if (id === 'cold-open' || id.includes('previous') || id === 'first-impressions') return { id:'previously', label:'Previously On', icon:'◀' };

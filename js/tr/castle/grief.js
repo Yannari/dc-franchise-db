@@ -113,9 +113,9 @@ const EMPTY_CHAIR_LINES = {
     '{a} and {b} sit either side of the gap where {v} should be.\n{b}: "It feels wrong, doesn’t it? Eating."\n{a}: "It does. Eat anyway."\nThey eat in silence for a while.',
   ],
   'moved-it-away': [
-    '{b} is down before anyone else. By the time {a} comes in, {v}’s chair is already against the wall.\n{a}: "You moved it."\n{b}: "Somebody had to. I’m not eating breakfast next to a gap."\n{a}: "People are going to notice."\n{b}: "Good. Better that than staring at it all morning."',
+    '{b} was down before anyone else this morning. By the time {a} came in, {v}’s chair was already against the wall.\n{a}: "You moved it."\n{b}: "Somebody had to. I’m not eating breakfast next to a gap."\n{a}: "People are going to notice."\n{b}: "Good. Better that than staring at it all morning."',
     '{a} watches {b} lift {v}’s chair away from the table before the others come down.\n{a}: "Is that not a bit cold?"\n{b}: "It’s kinder. Trust me. Nobody wants to look at it."\n{a} doesn’t argue, and helps shift the others along.',
-    '{a} comes down to a table with no gap in it.\n{a}: "Where’s {v}’s chair?"\n{b}: "I put it in the hall. I couldn’t look at it."\n{a}: "Fair enough. I don’t think I could either."',
+    '{a} came down this morning to a table with no gap in it.\n{a}: "Where’s {v}’s chair gone?"\n{b}: "I put it in the hall. I couldn’t look at it."\n{a}: "Fair enough. I don’t think I could either."',
     '{b} is stacking {v}’s chair against the wall when {a} walks in.\n{b}: "Don’t say anything."\n{a}: "I wasn’t going to."\n{b}: "It’s easier if it’s not there."\n{a}: "I know it is."',
   ],
   'laid-a-place': [
@@ -287,7 +287,7 @@ const RESEATED_LINES = {
     '{a} sits somewhere new this morning, and {b} sits down right next to {aObj}.\n{b}: "This alright?"\n{a}: "Course. Stay there."',
     '{a} takes the chair furthest from the door, and {b} takes the one beside it.\n{a}: "Moving up in the world?"\n{b}: "I just wanted to sit with you, to be honest."',
     'The table has shuffled round overnight, and {a} ends up next to {b}.\n{b}: "Funny how that works."\n{a}: "It’s not funny. It’s the only seat I wanted."',
-    '{b} comes down to find {a} has saved the chair next to {aObj}.\n{b}: "Is that for me?"\n{a}: "Who else would it be for?"',
+    '{b} came down this morning to find {a} had saved the chair next to {aObj}.\n{b}: "You saved me a seat this morning."\n{a}: "Who else would it be for?"',
   ],
   'kept-the-gap': [
     'The seats either side of {v}’s place stay empty. {a} and {b} both walk past them.\n{b}: "I’m not sitting there."\n{a}: "Me neither."\nThey sit at the far end together.',
@@ -297,7 +297,7 @@ const RESEATED_LINES = {
   ],
   'took-their-chair': [
     '{b} sits in {v}’s chair first thing, in front of everybody.\n{a}: "Really? That one?"\n{b}: "It’s a chair. Somebody has to sit in it."\n{a}: "Doesn’t have to be today."',
-    '{a} comes down to find {b} in {v}’s seat, eating toast.\n{a}: "You’re in {v}’s place."\n{b}: "I know. {v} would have laughed."\n{a} is not sure {v} would have.',
+    '{a} came down this morning to find {b} in {v}’s seat, eating toast.\n{a}: "You sat in {v}’s place at breakfast."\n{b}: "I know. {v} would have laughed."\n{a} is not sure {v} would have.',
     '{b} takes {v}’s chair and holds the room’s eye while doing it.\n{a}: "Bold."\n{b}: "What, am I meant to tiptoe round it for a week?"',
     '{b} has wanted that seat since the first morning, and this morning takes it.\n{a}: "That was quick."\n{b}: "It’s the best seat at the table. {v} would’ve said the same."',
   ],
@@ -719,8 +719,8 @@ registerEvent({
 const KEEPSAKE_LINES = {
   pocketed: [
     '{a} goes up before anybody else and takes one small thing from {v}’s side of the room.\n{a} (to camera): "It’s just a bracelet. I’m not giving it to the production. I’m keeping it."',
-    'Something of {v}’s goes into {a}’s pocket before breakfast, and stays there.\n{a} (to camera): "It sounds soppy. I just didn’t want {v}’s stuff to be packed up by strangers."',
-    '{a} comes down with one of {v}’s things and a very ordinary face.\n{a} (to camera): "I took {v}’s scarf. Don’t tell anyone. I don’t even know why."',
+    'Something of {v}’s went into {a}’s pocket before breakfast, and it’s still there.\n{a} (to camera): "It sounds soppy. I just didn’t want {v}’s stuff to be packed up by strangers."',
+    '{a} came down to breakfast with one of {v}’s things and a very ordinary face.\n{a} (to camera): "I took {v}’s scarf. Don’t tell anyone. I don’t even know why."',
     '{a} keeps one thing of {v}’s and leaves the rest.\n{a} (to camera): "I didn’t want to take much. Just something, so I remember {vObj} properly."',
     '{a} checks the thing in {aPos} pocket about every ten minutes.\n{a} (to camera): "It’s still there. I keep checking. Weird, isn’t it?"',
   ],
@@ -1162,8 +1162,8 @@ registerEvent({
 // carrying something before the empty chair was there.
 const CRIES_ALONE_LINES = {
   'put-it-away': [
-    '{a} goes somewhere quiet before breakfast, cries for five minutes, then washes {aPos} face.\n{a} (to camera): "You get it out of your system away from everyone. Then you go down and you’re fine."',
-    '{a} has a moment alone in the bathroom and comes down looking completely normal.\n{a} (to camera): "Nobody needs to see that. I’m not giving anyone the satisfaction."',
+    '{a} went somewhere quiet before breakfast, cried for five minutes, then washed {aPos} face.\n{a} (to camera): "You get it out of your system away from everyone. Then you go down and you’re fine."',
+    '{a} had a moment alone in the bathroom before breakfast and came down looking completely normal.\n{a} (to camera): "Nobody needs to see that. I’m not giving anyone the satisfaction."',
     '{a} lets it out on the landing, then puts it away.\n{a} (to camera): {cam:grief:{v}}',
     '{a} takes a minute on the back stairs before facing the table.\n{a} (to camera): "Right. Done. Face on. Let’s go."',
     '{a} cries in the shower, where nobody can hear.\n{a} (to camera): "It’s the only place in the castle you’re properly on your own."',
@@ -1181,10 +1181,10 @@ const CRIES_ALONE_LINES = {
     '{a} stays upstairs until the others have gone out.\n{a} (to camera): "I just needed an hour where nobody was looking at me."',
   ],
   'came-down-angry': [
-    '{a} comes down from it angry, not sad.\n{a} (to camera): "I cried, and then I got angry, and angry is more useful."',
+    '{a} came down to breakfast angry, not sad.\n{a} (to camera): "I cried, and then I got angry, and angry is more useful."',
     '{a} walks into breakfast with a face like thunder.\n{a} (to camera): {cam:grief:{v}}',
     '{a} has done crying. Now {aSub} wants a name.\n{a} (to camera): "Somebody at that table did this. I’m not being sad about it any more. I’m going to find them."',
-    '{a} comes down, sits, and stares round the table.\n{a} (to camera): "I want them to see me looking. I want them nervous."',
+    '{a} sat through breakfast staring round the table, and hasn’t stopped.\n{a} (to camera): "I want them to see me looking. I want them nervous."',
   ],
 };
 

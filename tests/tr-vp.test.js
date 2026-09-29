@@ -4659,7 +4659,7 @@ function dayRevealed(ep, observer = 'audience') {
 
 /** The label this screen draws each of the seven windows under. */
 const HOUR_LABEL = {
-  dawn: 'Dawn', morning: 'Morning', 'journey-out': 'The Road Out',
+  dawn: 'After Breakfast', morning: 'Morning', 'journey-out': 'The Road Out',
   'journey-back': 'The Road Back', evening: 'Evening',
   'after-table': 'After The Table', night: 'Night',
 };

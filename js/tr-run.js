@@ -30,6 +30,9 @@
 // never two — this repo has shipped an 19MB `gs` from exactly that mistake.
 import { gs, setGs, players, seasonConfig, seasonFormat, TWIST_CATALOG } from './core.js';
 import { playTraitorsSeason } from './tr/headless.js';
+import { trLedgerRecord } from './tr/ledger-record.js';
+import { recordBuiltSeason } from './franchise-meta.js';
+import { carriedFor } from './franchise-carry.js';
 import { bespokeMissionsEnabled, _setBespokeMissionsEnabled } from './tr/missions/index.js';
 // The one shared background resolver and its blocker list — the same pair
 // the cast builder uses, so the season and the panel cannot disagree.
@@ -235,6 +238,9 @@ function _playWholeSeason(rerollFromEp = null, rerollSeed = null, rerolls = null
   try {
     result = playTraitorsSeason({
       cast,
+      // What the franchise remembers about these people (js/franchise-carry.js):
+      // real pasts replace the fixture's random opening bonds for those pairs.
+      carried: carriedFor((players || []).filter(p => p && cast.includes(p.name)), seasonConfig || {}).sums,
       traitorCount: Math.max(2, Math.min(5, Number(seasonConfig.traitorCount) || 3)),
       potCeiling: Number(seasonConfig.trPotCeiling) || undefined,
       // The castle's own endgame size (setup: final 2-5). Falls back to the
@@ -283,6 +289,13 @@ function _playWholeSeason(rerollFromEp = null, rerollSeed = null, rerolls = null
     _setBespokeMissionsEnabled(_bespokeWas);
   }
   _lastSeasonResult = result;
+  // What this castle leaves the franchise, read while its bonds are live
+  // (js/tr/ledger-record.js). Recorded when the last episode airs.
+  let record = null;
+  try {
+    record = trLedgerRecord(result, { cast, seasonName: seasonConfig?.name || null,
+      archetypeOf: n => (players || []).find(p => p?.name === n)?.archetype || null });
+  } catch { record = null; }
   // `gs` is now the engine's. Take what it wrote and give the UI's back.
   const inner = gs;
   const rows = inner.episodeHistory || [];
@@ -297,6 +310,7 @@ function _playWholeSeason(rerollFromEp = null, rerollSeed = null, rerolls = null
   gs._trSurvivors = survivors;
   gs._trWinner = result.winner || null;
   gs._trPot = result.pot ?? 0;
+  gs._trRecord = record;
   return true;
 }
 
@@ -347,6 +361,14 @@ export function simulateTraitorsEpisode() {
     // never held the result object still knows who took the money.
     const eg = row.tr?.endgame;
     if (eg) gs.trWinner = eg.winner || null;
+    // The season is over: its pairs go on the franchise ledger, where the next
+    // season of any show reads them (franchise-meta.js recordBuiltSeason).
+    try {
+      const num = Number(gs.seasonNumber || seasonConfig?.seasonNumber);
+      if (gs._trRecord && num && recordBuiltSeason(gs._trRecord, num)) {
+        if (typeof window !== 'undefined') window.persistFranchiseLedger?.();
+      }
+    } catch (e) { console.warn('Franchise ledger record failed:', e); }
   } else {
     gs.phase = 'castle';
   }

@@ -67,7 +67,10 @@ describe('a season plays through the run path', () => {
   it("never saves the engine's working state — only what the screens read", () => {
     freshSeason();
     playAll();
-    expect(Object.keys(gs.pm).sort()).toEqual(['built', 'castOrder', 'picks', 'rerolls', 'seed', 'setup', 'winners']);
+    // `record` is what the season leaves the franchise ledger (pm/ledger-record.js):
+    // a per-islander summary of couples, friends, rivals and betrayals, not engine state.
+    expect(Object.keys(gs.pm).sort()).toEqual(['built', 'castOrder', 'picks', 'record', 'rerolls', 'seed', 'setup', 'winners']);
+    expect(JSON.stringify(gs.pm.record).length).toBeLessThan(40 * 1024);
     const size = JSON.stringify({ ...gs, _pmQueue: undefined }).length;
     // A played season is its rows: about 1MB, measured. The engine's `state`
     // would double it, and a page that saves on every episode notices 3.

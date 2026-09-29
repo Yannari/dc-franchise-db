@@ -1567,6 +1567,24 @@ export function recordSeasonToLedger(_ep, source = 'live') {
   return true;
 }
 
+// A SHOW THAT BUILDS ITS OWN RECORD. deriveSeasonRecord reads Total Drama's
+// and Big Brother's state (ballots, alliances, gs.showmances); a show whose
+// engine keeps its own (Perfect Match's couples and feuds, The Traitors'
+// betrayals) builds the same shape itself — js/pm/ledger-record.js — and hands
+// it here, so every show's pairs reach the next season's bond seeding through
+// one door (user: bonds "persist between seasons, between shows").
+// Same guards as recordSeasonToLedger: a locked franchise, or auto-record off.
+export function recordBuiltSeason(rec, seasonNumber, source = 'live') {
+  if (!rec || !rec.format || !Number(seasonNumber)) return false;
+  const af = activeFranchise();
+  if (af.locked) { console.warn(`Franchise "${af.name || 'Untitled'}" is locked — season not recorded.`); return false; }
+  if (source === 'live' && (seasonConfig?.franchiseMeta === false || seasonConfig?.franchiseMetaAutoRecord === false)) return false;
+  rec.source = source;
+  rec.deriverV = LEDGER_DERIVER_V;
+  activeSeasons()[seasonKey(rec.format, Number(seasonNumber))] = rec;
+  return true;
+}
+
 // Record a season derived from a PARSED savestate export (season-*-ep*.json shape:
 // { name, config, players, gs }). Validates a finished finale and NEVER touches
 // live gs/players. Writes into the ACTIVE franchise. Returns a result object.

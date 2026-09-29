@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Traitors Stage — Round Table</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Manrope:wght@400;500;600;700;800&family=Cormorant+Garamond:ital,wght@1,500&family=Caveat+Brush&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#07080a; --panel:rgba(22,20,18,.72); --line:rgba(214,178,110,.18); --line2:rgba(214,178,110,.34);
+  --brass:#d9b36c; --brass2:#f3d9a0; --ink:#efe7da; --mute:#9b9183;
+  --traitor:#c8243a; --traitor2:#ff4d63; --faith:#6fb3dc; --r:18px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--ink);font-family:Manrope,system-ui,sans-serif}
+body{min-height:100vh;background:radial-gradient(1200px 600px at 50% -10%,rgba(217,179,108,.08),transparent 60%),
+  radial-gradient(900px 500px at 100% 100%,rgba(200,36,58,.07),transparent 60%),var(--bg)}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+.top{display:flex;align-items:center;gap:14px;padding:14px 22px}
+.logo{font-family:Cinzel,serif;font-weight:900;letter-spacing:.18em;font-size:22px;
+  background:linear-gradient(180deg,#fff3d6,#d9b36c 55%,#8a6a33);-webkit-background-clip:text;background-clip:text;color:transparent}
+.logo small{display:block;font-family:Manrope;font-weight:700;font-size:10.5px;letter-spacing:.28em;color:var(--mute);-webkit-text-fill-color:var(--mute)}
+.top .sp{flex:1}
+.pill{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;background:rgba(255,255,255,.04);border:1px solid var(--line);font-size:12.5px;font-weight:700;color:#d8cfc1}
+.pill.on{background:rgba(200,36,58,.16);border-color:rgba(255,77,99,.45);color:#ffd7dc}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--traitor2);box-shadow:0 0 10px var(--traitor2);animation:blink 1.6s infinite}
+@keyframes blink{50%{opacity:.35}}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:18px;padding:0 22px 120px;max-width:1440px;margin:0 auto}
+@media (max-width:1000px){.layout{grid-template-columns:1fr}}
+
+/* ── the stage: the room is the table ── */
+.stage{position:relative;aspect-ratio:16/10;border-radius:22px;overflow:hidden;isolation:isolate;
+  box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 0 1px var(--line) inset;
+  background:radial-gradient(70% 60% at 50% 42%,#1d1a16,#0a0908 75%)}
+.stage::before{content:"";position:absolute;inset:0;background:radial-gradient(40% 30% at 50% 40%,rgba(255,180,90,.16),transparent 70%);animation:breathe 6s ease-in-out infinite}
+@keyframes breathe{50%{opacity:.6}}
+.table{position:absolute;left:22%;right:22%;top:23%;height:34%;border-radius:50%;
+  background:radial-gradient(60% 60% at 50% 45%,#1f3b2c,#12261c 70%,#0b1812);
+  box-shadow:0 0 0 10px #4a2f1a,0 0 0 12px #8a6a33,0 0 0 14px #2b1c10,0 30px 60px rgba(0,0,0,.7),inset 0 0 60px rgba(0,0,0,.6)}
+.table::after{content:"";position:absolute;inset:14% 18%;border-radius:50%;border:1px solid rgba(217,179,108,.18)}
+.tcandle{position:absolute;width:5px;height:26px;border-radius:2px;background:linear-gradient(#f1e6cf,#b9a98c);transform:translate(-50%,-100%)}
+.tcandle::before{content:"";position:absolute;left:50%;top:-12px;width:8px;height:13px;margin-left:-4px;border-radius:50% 50% 45% 45%;
+  background:radial-gradient(circle at 50% 70%,#fff6d0,#ffb347 55%,rgba(255,120,30,0) 72%);animation:flick 2.1s infinite alternate}
+.tcandle::after{content:"";position:absolute;left:50%;top:-38px;width:80px;height:80px;margin-left:-40px;border-radius:50%;background:radial-gradient(circle,rgba(255,176,80,.28),transparent 65%)}
+@keyframes flick{40%{transform:scale(.92,1.08)}100%{transform:scale(1.05,.95)}}
+.center{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);text-align:center;z-index:3}
+.center b{display:block;font-family:Cinzel,serif;font-size:clamp(20px,2.4vw,32px);font-weight:900;letter-spacing:.08em;color:#f6e6c4;text-shadow:0 2px 20px rgba(0,0,0,.8)}
+.center span{font-size:11px;font-weight:800;letter-spacing:.3em;color:var(--brass)}
+
+/* seats */
+.seat{position:absolute;width:8.2%;aspect-ratio:1;transform:translate(-50%,-50%);z-index:4;transition:transform .45s cubic-bezier(.2,1.3,.4,1),filter .4s}
+.seat .med{position:absolute;inset:0;border-radius:50%;overflow:hidden;border:3px solid rgba(217,179,108,.55);box-shadow:0 8px 20px rgba(0,0,0,.6);background:#222}
+.seat .med img{width:100%;height:100%;object-fit:cover;object-position:50% 20%}
+.seat .nm{position:absolute;left:50%;top:108%;transform:translateX(-50%);font-size:11px;font-weight:800;white-space:nowrap;
+  padding:3px 8px;border-radius:999px;background:rgba(0,0,0,.6)}
+.seat.dim{filter:brightness(.45) saturate(.6)}
+.seat.speak{transform:translate(-50%,-56%) scale(1.18);z-index:6}
+.seat.speak .med{border-color:var(--brass2);box-shadow:0 0 0 4px rgba(243,217,160,.25),0 0 40px rgba(243,217,160,.45)}
+.seat.target .med{border-color:var(--traitor2);box-shadow:0 0 0 4px rgba(255,77,99,.2),0 0 36px rgba(255,77,99,.5)}
+.aud .seat.is-traitor .med{border-color:#ff4d63}
+.aud .seat.is-traitor::after{content:"";position:absolute;right:-2px;top:-2px;width:14px;height:14px;border-radius:50%;background:var(--traitor2);box-shadow:0 0 10px var(--traitor2);border:2px solid #0a0908}
+.seat.out{filter:grayscale(1) brightness(.35)}
+/* slates: a chalkboard over each seat, flipped on the read-out */
+.slate{position:absolute;left:50%;top:58%;width:132%;height:46%;z-index:2;transform:translateX(-50%) rotateX(90deg);transform-origin:bottom;
+  border-radius:6px;background:linear-gradient(160deg,#2d3530,#1b201d);border:2px solid #6b4a2a;box-shadow:0 8px 16px rgba(0,0,0,.6);
+  display:grid;place-items:center;font-family:"Caveat Brush",cursive;font-size:clamp(12px,1.25vw,19px);color:#f3f1e8;opacity:0;transition:transform .55s cubic-bezier(.2,1.4,.4,1),opacity .2s}
+.slate.up{transform:translateX(-50%) rotateX(0);opacity:1}
+.slate.fresh{animation:chalk .8s ease}
+@keyframes chalk{0%{filter:brightness(2.2)}100%{filter:none}}
+/* accusation lines */
+svg.lines{position:absolute;inset:0;width:100%;height:100%;z-index:5;pointer-events:none}
+.acc{fill:none;stroke:var(--traitor2);stroke-width:3;stroke-linecap:round;filter:drop-shadow(0 0 6px rgba(255,77,99,.8));stroke-dasharray:900;stroke-dashoffset:900;animation:draw .9s ease forwards}
+.acc.old{stroke:rgba(255,77,99,.35);filter:none;animation:none;stroke-dashoffset:0}
+@keyframes draw{to{stroke-dashoffset:0}}
+
+.hud{position:absolute;top:14px;left:14px;right:14px;display:flex;gap:8px;z-index:9;align-items:center}
+.chip{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:7px 11px;border-radius:999px;background:rgba(0,0,0,.45);
+  backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.08);color:#e9dfcf;display:inline-flex;gap:7px;align-items:center}
+.hud .sp{flex:1}
+.phase{font-size:11px;font-weight:800;letter-spacing:.22em;text-transform:uppercase;display:flex;gap:6px}
+.phase i{font-style:normal;padding:7px 11px;border-radius:999px;background:rgba(0,0,0,.35);color:#7d7466;border:1px solid transparent}
+.phase i.on{color:#1b140a;background:linear-gradient(180deg,#f0d49a,#b98d45)}
+
+/* dialogue */
+.say{position:absolute;left:4%;right:4%;bottom:4%;min-height:17%;z-index:8;border-radius:18px;padding:20px 26px 16px;
+  background:linear-gradient(180deg,rgba(18,16,15,.84),rgba(10,9,9,.92));backdrop-filter:blur(12px);border:1px solid rgba(217,179,108,.28);box-shadow:0 18px 50px rgba(0,0,0,.55);transition:opacity .3s}
+.say.empty{opacity:0}
+.say .who{position:absolute;top:-15px;left:22px;font-size:13px;font-weight:800;padding:6px 14px;border-radius:999px;background:linear-gradient(180deg,#f0d49a,#b98d45);color:#1b140a}
+.say .who.host{background:linear-gradient(180deg,#e7ecf2,#9eb0c2)}
+.say p{font-size:clamp(16px,1.5vw,20px);line-height:1.5;font-weight:500}
+.say p.narr{font-family:"Cormorant Garamond",serif;font-style:italic;font-size:clamp(18px,1.7vw,23px);color:#e3d6bf}
+
+/* the reveal: a full-stage moment */
+.reveal{position:absolute;inset:0;z-index:12;display:grid;place-items:center;background:radial-gradient(50% 60% at 50% 45%,rgba(0,0,0,.55),rgba(0,0,0,.92));
+  opacity:0;pointer-events:none;transition:opacity .7s}
+.reveal.on{opacity:1}
+.reveal .card{width:min(30%,300px);aspect-ratio:3/4;perspective:1200px}
+.reveal .inner{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform 1.1s cubic-bezier(.3,1.2,.3,1)}
+.reveal.flip .inner{transform:rotateY(180deg)}
+.reveal .face,.reveal .back{position:absolute;inset:0;border-radius:22px;overflow:hidden;backface-visibility:hidden;box-shadow:0 30px 80px rgba(0,0,0,.8)}
+.reveal .face{border:3px solid var(--brass2)}
+.reveal .face img{width:100%;height:100%;object-fit:cover}
+.reveal .face b{position:absolute;left:0;right:0;bottom:0;padding:14px;font-family:Cinzel,serif;font-size:24px;letter-spacing:.1em;text-align:center;background:linear-gradient(transparent,rgba(0,0,0,.85))}
+.reveal .back{transform:rotateY(180deg);display:grid;place-items:center;text-align:center;padding:20px}
+.reveal .back.faithful{background:radial-gradient(circle at 50% 35%,#2a5d80,#0d2233);border:3px solid #9fd3f2}
+.reveal .back.traitor{background:radial-gradient(circle at 50% 35%,#7c1323,#26060c);border:3px solid #ff8a99}
+.reveal .back small{display:block;font-size:11px;font-weight:800;letter-spacing:.3em;opacity:.8;margin-bottom:10px}
+.reveal .back strong{font-family:Cinzel,serif;font-size:clamp(24px,2.6vw,36px);letter-spacing:.08em}
+.reveal .caption{position:absolute;bottom:9%;left:0;right:0;text-align:center;font-family:"Cormorant Garamond",serif;font-style:italic;font-size:22px;color:#e8dcc6}
+
+/* rail */
+.card{border-radius:var(--r);background:var(--panel);border:1px solid var(--line);padding:16px;margin-bottom:14px}
+.card h4{font-size:11px;font-weight:800;letter-spacing:.22em;color:var(--brass);text-transform:uppercase;margin-bottom:10px}
+.card p.sub{font-size:12px;color:var(--mute);line-height:1.45;margin:-4px 0 12px}
+.tally .row{display:grid;grid-template-columns:30px 1fr 22px;gap:10px;align-items:center;margin:8px 0}
+.tally img{width:30px;height:30px;border-radius:9px;object-fit:cover}
+.tally .bar{height:10px;border-radius:9px;background:rgba(255,255,255,.06);overflow:hidden;position:relative}
+.tally .bar i{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,#8a1a2b,#ff4d63);transition:width .6s cubic-bezier(.2,1.2,.4,1)}
+.tally .row b{font-size:15px;text-align:right}
+.tally .nm{grid-column:2;font-size:11.5px;font-weight:700;color:#cfc5b6;margin-top:-6px}
+.acclist .a{display:flex;align-items:center;gap:8px;padding:7px 0;border-top:1px solid rgba(255,255,255,.05);font-size:13px;font-weight:700}
+.acclist .a:first-of-type{border-top:0}
+.acclist img{width:24px;height:24px;border-radius:7px;object-fit:cover}
+.acclist .ar{color:var(--traitor2)}
+.log{margin-top:14px;border-radius:var(--r);background:var(--panel);border:1px solid var(--line);padding:14px 18px;max-height:220px;overflow:auto}
+.log h4{font-size:11px;font-weight:800;letter-spacing:.22em;color:var(--brass);text-transform:uppercase;margin-bottom:8px}
+.log .l{display:grid;grid-template-columns:26px 1fr;gap:10px;padding:5px 0;font-size:14px;color:#d7cebf}
+.log .l img{width:24px;height:24px;border-radius:7px;object-fit:cover}
+.log .l b{color:#fff}
+.log .l.nar{grid-template-columns:1fr;font-family:"Cormorant Garamond",serif;font-style:italic;font-size:16px;color:#bfae92}
+.controls{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:center;gap:10px;align-items:center;padding:16px;background:linear-gradient(180deg,transparent,rgba(0,0,0,.85) 40%);z-index:20}
+.btn{padding:13px 22px;border-radius:14px;font-weight:800;font-size:14px;background:rgba(255,255,255,.06);border:1px solid var(--line)}
+.btn.main{padding:13px 44px;background:linear-gradient(180deg,#f0d49a,#b98d45);color:#1b140a;border:0;box-shadow:0 10px 30px rgba(217,179,108,.3)}
+.count{font-size:12px;color:var(--mute);font-weight:700;min-width:60px}
+</style>
+</head>
+<body class="aud">
+<div class="top">
+  <div class="logo">THE TRAITORS<small>DAY 4 · EVENING · THE ROUND TABLE</small></div>
+  <div class="sp"></div>
+  <span class="pill"><span class="dot"></span>On air</span>
+  <button class="pill on" id="audBtn" onclick="toggleAud()">◉ Audience view</button>
+</div>
+
+<div class="layout">
+  <div>
+    <div class="stage" id="stage">
+      <div class="table" id="table"></div>
+      <div class="center" id="center"><span>EVENING 4</span><b>THE ROUND TABLE</b></div>
+      <svg class="lines" id="lines" viewBox="0 0 1000 625" preserveAspectRatio="none"></svg>
+      <div id="seats"></div>
+      <div class="hud"><div class="phase" id="phase"><i data-p="talk">The accusations</i><i data-p="vote">The vote</i><i data-p="reveal">The reveal</i></div>
+        <span class="sp"></span><span class="chip">10 at the table · 1 leaves</span></div>
+      <div class="say empty" id="say"><span class="who" id="who"></span><p id="line"></p></div>
+      <div class="reveal" id="reveal">
+        <div class="card"><div class="inner"><div class="face"><img id="rvImg"><b id="rvName"></b></div>
+          <div class="back faithful" id="rvBack"><div><small>I AM</small><strong id="rvRole">A FAITHFUL</strong></div></div></div></div>
+        <div class="caption" id="rvCap"></div>
+      </div>
+    </div>
+    <div class="log" id="log"><h4>At the table</h4></div>
+  </div>
+  <aside>
+    <div class="card"><h4>The vote</h4><p class="sub">Every slate is read out in turn. The bars fill as the names are shown.</p><div class="tally" id="tally"></div></div>
+    <div class="card acclist"><h4>Said out loud tonight</h4><div id="accs"><p class="sub" style="margin:0">Nobody has named anybody yet.</p></div></div>
+  </aside>
+</div>
+
+<div class="controls">
+  <button class="btn" onclick="reset()">Restart</button>
+  <button class="btn main" onclick="next()">Next</button>
+  <button class="btn" onclick="all()">Reveal all</button>
+  <span class="count" id="count"></span>
+</div>
+
+<script>
+const A = n => '../assets/avatars/' + n + '.png';
+const P = {Gwen:'gwen',Duncan:'duncan',Heather:'heather',Courtney:'courtney',Harold:'harold',Izzy:'izzy',Leshawna:'leshawna',
+  Alejandro:'alejandro',Lindsay:'lindsay',Chris:'chris-mclean',Host:'alan-cumming'};
+const TRAITORS = new Set(['Duncan','Alejandro','Chris']);
+const SEATS = ['Courtney','Heather','Gwen','Duncan','Harold','Izzy','Leshawna','Alejandro','Lindsay','Chris'];
+// seat i on an ellipse around the table (percent of the stage)
+const seatPos = SEATS.map((_,i)=>{ const a = -Math.PI/2 + i*2*Math.PI/SEATS.length; return [50+37*Math.cos(a), 40+27*Math.sin(a)]; });
+const VOTES = { Courtney:'Heather', Heather:'Courtney', Gwen:'Heather', Duncan:'Harold', Harold:'Heather', Izzy:'Heather',
+  Leshawna:'Harold', Alejandro:'Heather', Lindsay:'Harold', Chris:'Harold' };
+
+const STEPS = [
+  { host:'Sit down, all of you. Nobody leaves this room until a name has been said out loud.', phase:'talk' },
+  { who:'Courtney', text:'I’ll start. Heather went quiet the second Owen’s name came up this morning.', acc:['Courtney','Heather'] },
+  { who:'Heather', text:'I was upset. People are allowed to be upset in here, Courtney.' },
+  { who:'Gwen', text:'You called him a golden retriever on day one. You weren’t upset.', acc:['Gwen','Heather'] },
+  { who:'Duncan', text:'Can we talk about Harold’s vote last night? Because nobody else wrote that name.', acc:['Duncan','Harold'] },
+  { who:'Harold', text:'I voted on the evidence! I have a spreadsheet. A mental one.' },
+  { narr:'Chalk squeaks round the table. Ten names, written where nobody can see.', phase:'vote' },
+  ...SEATS.map(n => ({ vote:n })),
+  { host:'Heather. You have received the most votes. Please tell the castle who you really are.', phase:'reveal', out:'Heather' },
+  { reveal:'Heather', role:'faithful', cap:'Four Faithfuls wrote her name. So did one Traitor — Alejandro.' },
+];
+
+let idx = -1, typer = null;
+function stateAt(i){
+  const st = { phase:'talk', accs:[], slates:{}, speaker:null, beat:null, out:null, reveal:null, lastAcc:null, lastVote:null };
+  for(let k=0;k<=i;k++){
+    const s = STEPS[k];
+    if(s.phase) st.phase = s.phase;
+    if(s.acc){ st.accs.push(s.acc); st.lastAcc = k===i ? s.acc : null; }
+    if(s.vote){ st.slates[s.vote] = VOTES[s.vote]; st.lastVote = k===i ? s.vote : null; }
+    if(s.out) st.out = s.out;
+    if(s.reveal) st.reveal = s;
+    if(s.who || s.host || s.narr) st.beat = s;
+    if(s.vote) st.beat = { voteLine:s.vote };
+  }
+  return st;
+}
+function paint(fresh){
+  const st = stateAt(idx), aud = document.body.classList.contains('aud');
+  document.getElementById('count').textContent = `${idx+1} / ${STEPS.length}`;
+  document.querySelectorAll('#phase i').forEach(i => i.classList.toggle('on', i.dataset.p === st.phase));
+  const speaker = st.beat && (st.beat.who || st.beat.voteLine);
+  const targets = new Set(st.lastAcc ? [st.lastAcc[1]] : []);
+  document.getElementById('seats').innerHTML = SEATS.map((n,i)=>{
+    const [x,y] = seatPos[i];
+    const cls = ['seat', speaker===n?'speak':'', speaker && speaker!==n && !targets.has(n) && st.phase!=='vote' ? 'dim':'', targets.has(n)?'target':'',
+      TRAITORS.has(n)?'is-traitor':'', st.out===n && st.reveal ? 'out':''].join(' ');
+    const sl = st.slates[n];
+    return `<div class="${cls}" style="left:${x}%;top:${y}%"><div class="slate ${sl?'up':''} ${st.lastVote===n&&fresh?'fresh':''}">${sl||''}</div>`
+      + `<div class="med"><img src="${A(P[n])}"></div><span class="nm">${n}</span></div>`;
+  }).join('');
+  // candles on the table
+  document.getElementById('table').innerHTML = [0.2,0.5,0.8].map(f=>`<span class="tcandle" style="left:${f*100}%;top:${f===0.5?38:52}%"></span>`).join('');
+  // accusation lines
+  const svg = document.getElementById('lines');
+  svg.innerHTML = st.accs.map(([a,b])=>{
+    const [x1,y1] = seatPos[SEATS.indexOf(a)], [x2,y2] = seatPos[SEATS.indexOf(b)];
+    const X1=x1*10, Y1=y1*6.25, X2=x2*10, Y2=y2*6.25, mx=(X1+X2)/2, my=(Y1+Y2)/2 - 40;
+    const isNew = st.lastAcc && st.lastAcc[0]===a && st.lastAcc[1]===b && fresh;
+    return `<path class="acc ${isNew?'':'old'}" d="M${X1},${Y1} Q${mx},${my} ${X2},${Y2}"/>`;
+  }).join('');
+  document.getElementById('center').style.opacity = st.phase==='vote' ? .25 : 1;
+  // dialogue
+  const say = document.getElementById('say'), who = document.getElementById('who'), line = document.getElementById('line');
+  clearInterval(typer);
+  const b = st.beat;
+  if(!b || st.reveal){ say.classList.add('empty'); }
+  else {
+    say.classList.remove('empty');
+    let name = '', txt = '', narr = false;
+    if(b.host){ name = 'Alan Cumming'; txt = '“'+b.host+'”'; }
+    else if(b.who){ name = b.who; txt = '“'+b.text+'”'; }
+    else if(b.voteLine){ name = b.voteLine; txt = `“I’m voting for ${VOTES[b.voteLine]}.”`; }
+    else { narr = true; txt = b.narr; }
+    who.style.display = narr ? 'none' : ''; who.textContent = name; who.className = 'who' + (b.host?' host':'');
+    line.className = narr ? 'narr' : '';
+    if(fresh){ let k=0; line.textContent=''; typer=setInterval(()=>{ line.textContent=txt.slice(0,++k); if(k>=txt.length) clearInterval(typer); },16); }
+    else line.textContent = txt;
+  }
+  // the reveal
+  const rv = document.getElementById('reveal');
+  rv.classList.toggle('on', !!(st.out && (STEPS[idx].reveal || STEPS[idx].out)));
+  if(st.out){
+    document.getElementById('rvImg').src = A(P[st.out]); document.getElementById('rvName').textContent = st.out.toUpperCase();
+    const role = st.reveal ? st.reveal.role : 'faithful';
+    document.getElementById('rvBack').className = 'back ' + role;
+    document.getElementById('rvRole').textContent = role==='traitor' ? 'A TRAITOR' : 'A FAITHFUL';
+    document.getElementById('rvCap').textContent = st.reveal ? st.reveal.cap : '';
+  }
+  rv.classList.toggle('flip', !!st.reveal);
+  if(STEPS[idx] && STEPS[idx].out && !st.reveal){ say.classList.remove('empty'); say.style.zIndex = 13; } else say.style.zIndex = '';
+  // tally
+  const count = {}; Object.values(st.slates).forEach(v => count[v] = (count[v]||0)+1);
+  const names = Object.keys(count).sort((a,b)=>count[b]-count[a]);
+  document.getElementById('tally').innerHTML = names.length ? names.map(n=>
+    `<div class="row"><img src="${A(P[n])}"><div><div class="bar"><i style="width:${count[n]/Math.max(...Object.values(count))*100}%"></i></div><div class="nm" style="margin-top:4px">${n}</div></div><b>${count[n]}</b></div>`).join('')
+    : '<p class="sub" style="margin:0">The slates are still face down.</p>';
+  // accusations
+  document.getElementById('accs').innerHTML = st.accs.length ? st.accs.map(([a,b])=>
+    `<div class="a"><img src="${A(P[a])}">${a} <span class="ar">→</span> <img src="${A(P[b])}">${b}</div>`).join('') : '<p class="sub" style="margin:0">Nobody has named anybody yet.</p>';
+  // log
+  const log = document.getElementById('log'); let h = '<h4>At the table</h4>';
+  for(let k=0;k<=idx;k++){ const s=STEPS[k];
+    if(s.host) h += `<div class="l"><img src="${A(P.Host)}"><div><b>Alan Cumming</b>: “${s.host}”</div></div>`;
+    else if(s.who) h += `<div class="l"><img src="${A(P[s.who])}"><div><b>${s.who}</b>: “${s.text}”</div></div>`;
+    else if(s.narr) h += `<div class="l nar">${s.narr}</div>`;
+    else if(s.vote) h += `<div class="l"><img src="${A(P[s.vote])}"><div><b>${s.vote}</b> wrote <b>${VOTES[s.vote]}</b></div></div>`;
+    else if(s.reveal) h += `<div class="l nar">${s.reveal} turns the card over: a Faithful.</div>`;
+  }
+  log.innerHTML = h; log.scrollTop = log.scrollHeight;
+}
+function next(){ if(idx < STEPS.length-1){ idx++; paint(true); } }
+function all(){ idx = STEPS.length-1; paint(false); }
+function reset(){ idx = -1; paint(false); document.getElementById('count').textContent = `0 / ${STEPS.length}`; }
+function toggleAud(){ document.body.classList.toggle('aud'); document.getElementById('audBtn').classList.toggle('on'); paint(false); }
+document.addEventListener('keydown', e=>{ if(e.key===' '||e.key==='ArrowRight'){ e.preventDefault(); next(); } });
+reset();
+</script>
+</body>
+</html>

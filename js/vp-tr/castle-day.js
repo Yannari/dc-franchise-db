@@ -189,11 +189,16 @@ function _fam(scene) {
 // happened somewhere. `sun` is where the light is and it drives the whole
 // screen's atmosphere — see `.dy-shell[data-phase]`.
 const HOURS = {
-  dawn: { label: 'Dawn', sun: 'dawn', lines: [
-    'The light comes up on whoever did not sleep, and it is never the people who say they did.',
-    'First light through the east windows, and a room that has to find out what the night cost.',
-    'Cold light, cold flags, and the first thing anybody says today.',
-    'The hour the castle finds out how many of it there are.',
+  // THE HOUR AFTER BREAKFAST, not dawn. The engine's phase is `breakfast-
+  // fallout`: it runs once the breakfast screen has shown who came down and who
+  // did not, so everybody in it is awake and knows what the night cost. It was
+  // labelled "Dawn · before anyone is up" and printed "Nobody else is down yet"
+  // straight after a breakfast the whole castle had just sat through.
+  dawn: { label: 'After Breakfast', sun: 'dawn', lines: [
+    'Breakfast is over, and nobody has quite decided what to do with what it told them.',
+    'The plates are cleared. The chair that stayed empty is still at the table.',
+    'The first hour after the news, when everybody finds somebody to say it to.',
+    'The castle breaks up from the table in twos, and nobody goes far.',
   ] },
   morning: { label: 'Morning', sun: 'morning', lines: [
     'The castle at work — bread, water, wood — and everything anybody says over the top of it.',
@@ -294,7 +299,12 @@ function _hour(w) {
  * deterministically off the scene's own key, so the same day always happens in
  * the same places and the transcript and the screen agree.
  */
+/** Hours in which "tonight" is still ahead (see `_composeScene`). */
+const DAYTIME = new Set(['early', 'dawn', 'morning', 'journey-out', 'journey-back']);
+/** Events that only make sense before breakfast (see `_composeScene`). */
+const EARLY_EVENTS = new Set(['trust-first-one-down', 'confront-first-light']);
 const PLACES = {
+  early: ['the kitchen', 'the long table', 'the front hall', 'the bottom of the stairs'],
   dawn: ['the kitchen', 'the long table', 'the bottom of the stairs', 'the front hall',
     'the corridor outside the bedrooms'],
   morning: ['the library', 'the courtyard', 'the woodpile', 'the drawing room',
@@ -312,14 +322,15 @@ const PLACES = {
 };
 /** The half of the heading that is a clock, in the words a viewer uses. */
 const WHEN_HEAD = {
-  dawn: 'BEFORE ANYONE IS UP', morning: 'MID-MORNING',
+  early: 'EARLIER, BEFORE BREAKFAST', dawn: 'AFTER BREAKFAST', morning: 'MID-MORNING',
   'journey-out': 'ON THE WAY OUT', 'journey-back': 'ON THE WAY BACK',
   evening: 'BEFORE THE ROUND TABLE', 'after-table': 'AFTER THE ROUND TABLE',
   night: 'AFTER LIGHTS OUT',
 };
 /** The same clock, in a clause a sentence can end on. */
 const WHEN_SAID = {
-  dawn: 'before the castle is properly awake', morning: 'in the middle of the morning',
+  early: 'earlier that morning, before anybody else was down',
+  dawn: 'just after breakfast', morning: 'in the middle of the morning',
   'journey-out': 'on the way out', 'journey-back': 'on the way back',
   evening: 'an hour before the Round Table', 'after-table': 'minutes after the Round Table',
   night: 'after lights out',
@@ -332,13 +343,19 @@ const WHEN_SAID = {
  * written for, arriving on the screen side.
  */
 const ESTABLISH_PAIR = {
+  early: [
+    'Earlier, before breakfast: {a} and {b} had {loc} to themselves.',
+    'Earlier that morning. {a} came down to {loc} and found {b} already there.',
+    'Before anybody else was down, {a} and {b} were at {loc}.',
+    'Earlier, with the castle still asleep, {a} caught {b} at {loc}.',
+  ],
   dawn: [
-    'It is barely light yet, and {a} and {b} have {loc} to themselves.',
-    'First light. {a} comes down to {loc} and finds {b} already standing there.',
-    'Nobody else is down yet. {a} and {b} are at {loc} with the whole building quiet behind them.',
-    'The morning is about ten minutes old. {a} catches {b} at {loc}, before anybody else comes down.',
-    '{a} and {b} reach {loc} before anyone else. Neither explains why they came down so early.',
-    'The kettle has not gone on yet. {a} and {b} are at {loc} with the day still ahead of them.',
+    'Breakfast has only just broken up, and {a} and {b} have {loc} to themselves.',
+    'The table empties. {a} follows {b} out to {loc}.',
+    'The others are still clearing plates. {a} and {b} are at {loc}, out of earshot.',
+    'Ten minutes after breakfast, {a} catches {b} at {loc}.',
+    '{a} and {b} leave the table together and stop at {loc}.',
+    'The news is barely an hour old. {a} and {b} are at {loc} with the day still ahead of them.',
   ],
   morning: [
     'Mid-morning at {loc}, with the work half done, and {a} and {b} are the only two there.',
@@ -4583,11 +4600,15 @@ function _composeScene(s, key, used, cast) {
   // exhausting the evening's pool, and the third scene after the table fell
   // through to a repeat. Two consecutive scenes in the same room, which the
   // pacing contract forbids outright. Found by dumping a day and reading it.
-  const loc = _pickUnique(PLACES[s.window] || PLACES.morning, key + '|loc', used,
-    'loc|' + s.window);
+  // A scene whose premise IS being up before anybody else is staged as an
+  // earlier cut ("EARLIER · BEFORE BREAKFAST"), since the hour it is drawn in
+  // comes after the breakfast screen. See EARLY_EVENTS.
+  const stage = EARLY_EVENTS.has(s.eventId) ? 'early' : s.window;
+  const loc = _pickUnique(PLACES[stage] || PLACES.morning, key + '|loc', used,
+    'loc|' + stage);
   const subs = {
     a, b: b || a, loc,
-    when: WHEN_SAID[s.window] || 'somewhere in the middle of the day',
+    when: WHEN_SAID[stage] || 'somewhere in the middle of the day',
     names: _namesPhrase(roll),
     d: String(s.openedEp), n: String([...new Set(s.priorDays || [])].length),
     // THE CONCRETE SUBJECT, when the event recorded one. Empty string for a
@@ -4612,7 +4633,7 @@ function _composeScene(s, key, used, cast) {
   const topicCfg = (s.topic && TOPIC_CONFIG[s.topicKind]) ? TOPIC_CONFIG[s.topicKind] : null;
 
   const estPool = mode === 'group' ? ESTABLISH_GROUP
-    : mode === 'pair' ? (ESTABLISH_PAIR[s.window] || ESTABLISH_PAIR.morning)
+    : mode === 'pair' ? (ESTABLISH_PAIR[stage] || ESTABLISH_PAIR.morning)
       : mode === 'solo' ? ESTABLISH_SOLO : ESTABLISH_SINGLE;
   const establish = _cap(_fill(_pickUnique(estPool, key + '|est', used), subs));
 
@@ -4689,6 +4710,22 @@ function _composeScene(s, key, used, cast) {
       text: _fill(_pick(b ? PUBLIC_CLOSE : PUBLIC_CLOSE_SOLO, key + '|pubclose'), subs) },
   ];
 
+  // A DAYTIME SCENE IS NOT "TONIGHT". The consequence pools describe where two
+  // people stand "tonight" whatever hour the scene is in, so a scene just after
+  // breakfast closed on "Brick and Sanders have less ground under them
+  // tonight". In the daylight hours that becomes "now"; a future "tonight"
+  // (at the table tonight, the name for tonight) stays.
+  if (DAYTIME.has(stage)) {
+    const daylight = t => t.replace(/\b(at the table |for |into |until |before |at |by )?tonight(’s)?\b/g,
+      (m, fut, poss) => (fut || poss ? m : 'now'))
+      .replace(/than (?:it was |they were )?this morning/g, m => m.replace('this morning', 'yesterday'));
+    for (const c of audience) {
+      if (c.kind !== 'consequence') continue;
+      // `say` is what the card draws when present; `text` is what the
+      // transcript reads. Both, or the two disagree.
+      for (const f of ['text', 'say']) if (typeof c[f] === 'string') c[f] = daylight(c[f]);
+    }
+  }
   // A NAME SAID TWICE IN ONE SENTENCE BECOMES A PRONOUN. See js/vp-tr/tidy.js.
   for (const c of [...audience, ...publicStream]) {
     for (const f of ['text', 'lead', 'tail', 'say']) {
@@ -4702,9 +4739,9 @@ function _composeScene(s, key, used, cast) {
     phase: s.phaseId || ('window:' + s.window),
     window: s.window,
     location: loc,
-    when: WHEN_HEAD[s.window] || 'DURING THE DAY',
+    when: WHEN_HEAD[stage] || 'DURING THE DAY',
     heading: loc.replace(/^the /, 'THE ').toUpperCase() + ' · '
-      + (WHEN_HEAD[s.window] || 'DURING THE DAY'),
+      + (WHEN_HEAD[stage] || 'DURING THE DAY'),
     participants: roll,
     // WHAT THE SCREEN DECIDED, ON THE RECORD, so a guard can check the prose
     // against the reasons for it rather than against itself. `mode` is how many
@@ -5128,7 +5165,7 @@ function _hostBand(line) {
  * out loud.
  */
 const BAND_NAME = {
-  'breakfast-fallout': 'First light',
+  'breakfast-fallout': 'After breakfast',
   'morning-life': 'The morning',
   'mission-fallout': 'The way back',
   'private-strategy': 'Before the Round Table',
@@ -5429,8 +5466,8 @@ function _confessionalNightBeats(ep, observer) {
 // Per-segment title furniture. Whole-day (segment null) keeps its own text
 // below, unchanged, so the transcript renderer sees the same page it always did.
 const SEGMENT_META = {
-  morning: { eyebrow: 'Dawn Into The Morning', title: 'THE CASTLE &middot; MORNING',
-    sub: 'The hours before the mission — first light on whatever the night cost, '
+  morning: { eyebrow: 'From Breakfast To The Mission', title: 'THE CASTLE &middot; MORNING',
+    sub: 'The hours before the mission — the fallout from breakfast, '
       + 'and the long working morning the castle spends in twos and in doorways.' },
   afternoon: { eyebrow: 'The Road Back, Into The Evening',
     title: 'THE CASTLE &middot; AFTERNOON',

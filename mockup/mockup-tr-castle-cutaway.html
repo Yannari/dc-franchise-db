@@ -149,6 +149,64 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .pop .up{color:#8fd19e}.pop .dn{color:#e87a82}
 @keyframes pop{from{transform:translateX(30px);opacity:0}}
 
+/* ── THE ROUND TABLE: the camera cuts from the castle to the table itself ── */
+.rt{position:absolute;inset:0;z-index:6;opacity:0;pointer-events:none;transition:opacity .9s}
+.rt.on{opacity:1}
+.rt .seat{position:absolute;transform:translate(-50%,-100%);transition:filter .45s,transform .45s cubic-bezier(.2,1.2,.4,1)}
+.rt .seat .av{position:relative;width:100%;aspect-ratio:3/4;overflow:hidden;border-radius:50% 50% 12% 12%/44% 44% 9% 9%;
+  background:linear-gradient(162deg,#252b37,#080b11);box-shadow:0 0 0 2px rgba(224,160,73,.45),0 10px 26px rgba(0,0,0,.85)}
+.rt .seat .av img{width:100%;height:100%;object-fit:cover;object-position:50% 18%}
+.rt .seat .nm{margin-top:5px;text-align:center;white-space:nowrap;font-family:var(--cv-display);font-weight:700;font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--cv-vellum-2);text-shadow:0 2px 6px #000}
+.rt .seat.quiet{filter:brightness(.5) saturate(.7)}
+.rt .seat.speak{transform:translate(-50%,-104%) scale(1.08)}
+.rt .seat.speak .av{box-shadow:0 0 0 2px var(--cv-lantern-hot),0 0 36px rgba(224,160,73,.6),0 10px 26px rgba(0,0,0,.85)}
+.rt .seat.speak .nm{color:var(--cv-lantern-hot)}
+.rt .seat.accused .av{box-shadow:0 0 0 2px var(--cv-wax-hot),0 0 30px rgba(179,38,51,.55),0 10px 26px rgba(0,0,0,.85)}
+.rt .seat.host .av{box-shadow:0 0 0 2px #cfd8e6,0 0 24px rgba(143,166,194,.45),0 10px 26px rgba(0,0,0,.85)}
+.aud .rt .seat.traitor .av::after{content:"";position:absolute;inset:0;border-radius:inherit;box-shadow:inset 0 0 0 2px rgba(179,38,51,.9),inset 0 -30px 40px -18px rgba(117,18,30,.75)}
+.rt .seat.out{filter:grayscale(1) brightness(.35)}
+/* the slate: a small chalkboard held up under the face */
+.rt .slate{position:absolute;left:50%;top:100%;width:128%;padding:5px 0 6px;transform:translateX(-50%) rotateX(90deg);transform-origin:top;opacity:0;
+  background:linear-gradient(170deg,#23302a,#141c18);border:3px solid #5a3a1c;border-radius:3px;box-shadow:0 6px 14px rgba(0,0,0,.7);
+  font-family:var(--cv-hand);font-style:italic;font-size:15px;color:#f2efe4;text-align:center;letter-spacing:.02em;transition:transform .55s cubic-bezier(.2,1.4,.4,1),opacity .2s}
+.rt .slate.up{transform:translateX(-50%) rotateX(0);opacity:1}
+.rt .slate.fresh{animation:chalk .9s ease}
+@keyframes chalk{0%{filter:brightness(2.2)}100%{filter:none}}
+.rt .seat.voted .nm{opacity:0}
+.rt svg.threads{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible;z-index:900}
+.rt .thread{fill:none;stroke:var(--cv-wax-hot);stroke-width:3;stroke-linecap:round;filter:drop-shadow(0 0 5px rgba(179,38,51,.9));stroke-dasharray:1200;stroke-dashoffset:1200;animation:draw 1s ease forwards}
+.rt .thread.old{stroke:rgba(179,38,51,.45);filter:none;animation:none;stroke-dashoffset:0}
+@keyframes draw{to{stroke-dashoffset:0}}
+/* the ledger: a vellum card that keeps the count */
+.rt .ledger{position:absolute;right:16px;top:58px;width:210px;padding:12px 14px 10px;z-index:1500;background:linear-gradient(170deg,#efe5cc,#d6c7a0);color:var(--cv-vellum-ink);
+  box-shadow:0 14px 30px rgba(0,0,0,.7),inset 0 0 26px rgba(120,90,40,.2);opacity:0;transform:translateY(-8px);transition:.5s}
+.rt .ledger.on{opacity:1;transform:none}
+.rt .ledger h5{font-family:var(--cv-display);font-size:10px;font-weight:700;letter-spacing:.34em;text-transform:uppercase;color:#6b4a1f;margin-bottom:6px}
+.rt .ledger .row{display:grid;grid-template-columns:22px 1fr auto;gap:8px;align-items:center;padding:4px 0;border-top:1px solid rgba(80,60,30,.18);font-family:var(--cv-hand);font-size:15px}
+.rt .ledger .row:first-of-type{border-top:0}
+.rt .ledger img{width:22px;height:22px;border-radius:50% 50% 12% 12%/44% 44% 9% 9%;object-fit:cover}
+.rt .ledger .seals{display:flex;gap:3px}
+.rt .ledger .seals i{width:9px;height:9px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#d0404c,#75121e);box-shadow:0 0 0 1px rgba(80,10,20,.4)}
+/* the reveal: the card is turned over */
+.rt .reveal{position:absolute;inset:0;z-index:3000;display:grid;place-items:center;background:radial-gradient(45% 55% at 50% 45%,rgba(0,0,0,.45),rgba(0,0,0,.93));opacity:0;transition:opacity .8s}
+.rt .reveal.on{opacity:1}
+.rt .rcard{width:min(24%,250px);aspect-ratio:3/4;perspective:1200px}
+.rt .rin{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform 1.2s cubic-bezier(.3,1.2,.3,1)}
+.rt .reveal.flip .rin{transform:rotateY(180deg)}
+.rt .rf,.rt .rb{position:absolute;inset:0;overflow:hidden;backface-visibility:hidden;border-radius:50% 50% 8% 8%/40% 40% 6% 6%;box-shadow:0 30px 80px rgba(0,0,0,.9)}
+.rt .rf{box-shadow:0 0 0 3px var(--cv-lantern),0 30px 80px rgba(0,0,0,.9)}
+.rt .rf img{width:100%;height:100%;object-fit:cover;object-position:50% 18%}
+.rt .rb{transform:rotateY(180deg);display:grid;place-items:center;text-align:center;padding:18px}
+.rt .rb.faithful{background:radial-gradient(circle at 50% 35%,#f1e6c8,#c9ba95);color:var(--cv-vellum-ink);box-shadow:0 0 0 3px var(--cv-lantern),0 0 60px rgba(224,160,73,.45)}
+.rt .rb.traitor{background:radial-gradient(circle at 50% 35%,#8a1a28,#2a0508);color:#f3dcd8;box-shadow:0 0 0 3px var(--cv-wax-hot),0 0 60px rgba(179,38,51,.55)}
+.rt .rb small{display:block;font-family:var(--cv-display);font-size:11px;font-weight:700;letter-spacing:.4em;margin-bottom:10px;opacity:.75}
+.rt .rb strong{font-family:var(--cv-display);font-weight:900;font-size:clamp(22px,2.4vw,32px);letter-spacing:.06em}
+.rt .rcap{position:absolute;left:0;right:0;bottom:9%;text-align:center;font-family:var(--cv-body);font-style:italic;font-size:22px;color:#f1e6cc;text-shadow:0 2px 12px #000}
+.rt .rname{position:absolute;left:0;right:0;top:9%;text-align:center;font-family:var(--cv-display);font-weight:900;font-size:clamp(26px,3.4vw,48px);color:#f7ecd2;text-shadow:0 0 30px rgba(255,219,149,.45)}
+.line.host .card{background:linear-gradient(170deg,#e9edf3,#b9c4d2);box-shadow:0 14px 30px rgba(0,0,0,.6),0 0 0 1px rgba(143,166,194,.6)}
+.line.host .card::after{background:#c1cbd8}
+.line.host .who{color:#2a3a55}
+
 /* minimap: where in the castle, who is where */
 .mini{position:absolute;left:16px;bottom:16px;z-index:10;width:190px;padding:8px;background:rgba(4,5,8,.78);box-shadow:0 0 0 1px rgba(224,160,73,.22)}
 .mini svg{width:100%;display:block}
@@ -189,6 +247,7 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
     </div>
     <div class="mist" style="bottom:2%;animation-duration:34s;opacity:.7"></div>
 
+    <div class="rt" id="rt"></div>
     <div class="scene" id="scene"></div>
     <div class="caption" id="caption"></div>
     <div class="loc" id="loc"><div class="e" id="locE"></div><div class="t" id="locT"></div><div class="gem"></div></div>
@@ -288,6 +347,17 @@ const STEPS = [
   { who:'Courtney', text:'Because you went quiet the second Owen’s name came up.' },
   { who:'Heather', text:'I went quiet because I was upset.' },
   { who:'Courtney', text:'You? Upset? You called him a golden retriever on day one.', pop:{f:['Courtney','Heather'],t:'Suspicion',up:false} },
+  { seg:'table', room:'table', when:'Evening', rt:true },
+  { host:'Welcome to the Round Table. Sit down, all of you. Nobody leaves until a name has been said out loud.' },
+  { who:'Courtney', text:'I’ll start. Heather went quiet the second Owen’s name came up this morning.', acc:['Courtney','Heather'] },
+  { who:'Heather', text:'I was upset. People are allowed to be upset in here, Courtney.' },
+  { who:'Gwen', text:'You called him a golden retriever on day one. You weren’t upset.', acc:['Gwen','Heather'] },
+  { who:'Duncan', text:'Can we talk about Harold’s vote last night? Because nobody else wrote that name.', acc:['Duncan','Harold'] },
+  { who:'Harold', text:'I voted on the evidence! I have a spreadsheet. A mental one.' },
+  { host:'It is time to vote. Write down the name of the person you believe to be a Traitor.', phase:'vote' },
+  ...['Courtney','Heather','Gwen','Duncan','Harold','Izzy','Leshawna','Alejandro','Lindsay','Chris'].map(n => ({ vote:n })),
+  { host:'Heather. You have received the most votes. Please tell the Round Table who you really are.', out:'Heather' },
+  { reveal:'faithful', cap:'Four Faithfuls wrote her name. So did one Traitor — Alejandro.' },
   { seg:'night', room:'turret', when:'After lights out', cast:['Chris','Duncan','Alejandro'], night:true },
   { narr:'Three cloaks on the turret stair. The rest of the castle is asleep, or says it is.' },
   { who:'Chris', text:'Gwen. She trusts Duncan too much to ever look at him.' },
@@ -371,6 +441,100 @@ function drawScene(st, fresh){
   const cap = document.getElementById('caption');
   if(st.beat && st.beat.narr){ cap.textContent = st.beat.narr; cap.classList.add('in'); } else cap.classList.remove('in');
 }
+// ── THE ROUND TABLE ─────────────────────────────────────────────────────
+const RT_SEATS = ['Chris','Lindsay','Alejandro','Leshawna','Izzy','Harold','Duncan','Gwen','Heather','Courtney'];
+const RT_VOTES = { Courtney:'Heather', Heather:'Courtney', Gwen:'Heather', Duncan:'Harold', Harold:'Heather', Izzy:'Heather',
+  Leshawna:'Harold', Alejandro:'Heather', Lindsay:'Harold', Chris:'Harold' };
+// round the table from the host's left to the host's right; the front of the
+// table is left open, because that is where the camera is
+const RT_ANGLES = [-122, -150, 180, 152, 126, 54, 28, 0, -30, -58];
+function rtState(i){
+  const r = { accs:[], slates:{}, out:null, reveal:null, phase:'talk', on:false };
+  for(let k=0;k<=i;k++){ const s = STEPS[k];
+    if(s.room && !s.cam){ Object.assign(r, { accs:[], slates:{}, out:null, reveal:null, phase:'talk', on:!!s.rt }); }
+    if(!r.on) continue;
+    if(s.acc) r.accs.push(s.acc);
+    if(s.phase) r.phase = s.phase;
+    if(s.vote) r.slates[s.vote] = RT_VOTES[s.vote];
+    if(s.out) r.out = s.out;
+    if(s.reveal) r.reveal = s;
+  }
+  const cur = STEPS[i] || {};
+  r.lastAcc = cur.acc || null; r.lastVote = cur.vote || null;
+  return r;
+}
+function seatAt(i, W, H){
+  const cx = W*.5, cy = H*.58, rx = W*.44, ry = H*.31;
+  const a = RT_ANGLES[i] * Math.PI/180;
+  const x = cx + rx*Math.cos(a), y = cy + ry*Math.sin(a);
+  const depth = (y - (cy-ry)) / (2*ry);            // 0 = the far side, 1 = the near side
+  return { x, y, s: .66 + .44*depth, z: 100 + Math.round(y) };
+}
+function drawTable(st, fresh){
+  const rt = document.getElementById('rt'), W = view.clientWidth, H = view.clientHeight;
+  const r = rtState(idx);
+  const beat = st.beat || {};
+  const speaker = beat.who || beat.vote || (beat.host ? 'Host' : null);
+  const hostW = H*.1, hostX = W*.5, hostY = H*.37;
+  let h = TRScenery.roundTableSet(W, H, true) + TRScenery.roundTable(W*.5, H*.6, W*.3, H*.16);
+  // threads between accuser and accused, at chest height
+  const chest = i => { const p = seatAt(i, W, H), w = H*.112*p.s; return [p.x, p.y - w*1.33*.45]; };
+  h += `<svg class="threads">` + r.accs.map(([a,b]) => {
+    const [x1,y1] = chest(RT_SEATS.indexOf(a)), [x2,y2] = chest(RT_SEATS.indexOf(b));
+    const mx = (x1+x2)/2, my = Math.min(y1,y2) - H*.1;
+    const isNew = fresh && r.lastAcc && r.lastAcc[0]===a && r.lastAcc[1]===b;
+    return `<path class="thread${isNew?'':' old'}" d="M${x1},${y1} Q${mx},${my} ${x2},${y2}"/>`;
+  }).join('') + `</svg>`;
+  // the host, at the head of the table
+  h += `<div class="seat host${speaker==='Host'?' speak':(speaker?' quiet':'')}" style="left:${hostX}px;top:${hostY}px;width:${hostW}px;z-index:${100+Math.round(hostY)}">`
+    + `<div class="av"><img src="${A('alan-cumming')}"></div><div class="nm">Alan Cumming</div></div>`;
+  // the players, with their slates
+  const accused = new Set(r.accs.map(x => x[1]));
+  RT_SEATS.forEach((n, i) => {
+    const p = seatAt(i, W, H), w = H*.112*p.s;
+    const cls = ['seat', speaker===n?'speak':(speaker?'quiet':''), accused.has(n) && r.phase!=='vote' ? 'accused':'', TRAITOR.has(n)?'traitor':'',
+      r.slates[n]?'voted':'', r.out===n && r.reveal ? 'out':''].join(' ');
+    const sl = r.slates[n];
+    h += `<div class="${cls}" style="left:${p.x}px;top:${p.y}px;width:${w}px;z-index:${p.z}">`
+      + `<div class="av"><img src="${A(P[n])}"></div><div class="nm">${n}</div>`
+      + `<div class="slate${sl?' up':''}${fresh && r.lastVote===n?' fresh':''}">${sl||''}</div></div>`;
+  });
+  // the ledger
+  const count = {}; Object.values(r.slates).forEach(v => count[v] = (count[v]||0) + 1);
+  const names = Object.keys(count).sort((a,b) => count[b]-count[a]);
+  h += `<div class="ledger${names.length?' on':''}"><h5>The count</h5>` + names.map(n =>
+    `<div class="row"><img src="${A(P[n])}"><span>${n}</span><span class="seals">${'<i></i>'.repeat(count[n])}</span></div>`).join('') + `</div>`;
+  // the reveal
+  if(r.out){
+    const faithful = !r.reveal || r.reveal.reveal === 'faithful';
+    h += `<div class="reveal on${r.reveal?' flip':''}"><div class="rname">${r.out}</div><div class="rcard"><div class="rin">`
+      + `<div class="rf"><img src="${A(P[r.out])}"></div>`
+      + `<div class="rb ${faithful?'faithful':'traitor'}"><div><small>I AM</small><strong>${faithful?'A FAITHFUL':'A TRAITOR'}</strong></div></div>`
+      + `</div></div><div class="rcap">${r.reveal ? r.reveal.cap : ''}</div></div>`;
+  }
+  rt.innerHTML = h;
+  // the spoken line, over whoever is speaking (the host included)
+  if((beat.who || beat.host || beat.vote) && !(r.out && r.reveal)){
+    let x, top, who, txt, cls = 'line', el_z = 2500;
+    if(beat.host){ x = hostX; top = hostY - hostW*1.33 - 14; who = 'Alan Cumming'; txt = beat.host; cls += ' host'; }
+    else { const i = RT_SEATS.indexOf(beat.who || beat.vote), p = seatAt(i, W, H), w = H*.112*p.s;
+      x = p.x; top = p.y - w*1.33 - 14; who = beat.who || beat.vote; txt = beat.text || `I’m writing ${RT_VOTES[beat.vote]}.`; }
+    if(r.out){ top = H*.95; x = W*.5; el_z = 3100; }
+    const el = document.createElement('div');
+    el.className = cls; el.style.zIndex = el_z;
+    el.style.left = Math.min(Math.max(x, W*.24), W*.76) + 'px'; el.style.top = Math.max(top, H*.16) + 'px';
+    el.innerHTML = `<div class="card"><div class="who"><i></i>${who}</div><p></p></div>`;
+    rt.appendChild(el);
+    const pEl = el.querySelector('p'), q = '“' + txt + '”';
+    requestAnimationFrame(()=>el.classList.add('in'));
+    if(fresh){ let k=0; const t = setInterval(()=>{ pEl.textContent = q.slice(0,++k); if(k>=q.length) clearInterval(t); }, 16); }
+    else pEl.textContent = q;
+  }
+  const phaseLabel = r.out ? 'The banishment' : r.phase === 'vote' ? 'The vote' : 'The accusations';
+  document.getElementById('corner').innerHTML = `The Round Table · <b>${phaseLabel}</b>`;
+  document.getElementById('corner').classList.add('in');
+}
+
 function paint(fresh){
   const st = stateAt(idx), s = STEPS[idx];
   document.getElementById('n').textContent = `${idx+1} / ${STEPS.length}`;
@@ -389,17 +553,19 @@ function paint(fresh){
   clearTimeout(zoomTimer);
   if(newScene){
     document.getElementById('scene').innerHTML = ''; document.getElementById('caption').classList.remove('in');
+    document.getElementById('rt').classList.remove('on');
     camTo(null);
     zoomTimer = setTimeout(()=>{ camTo(room);
       if(!s.cam){ document.getElementById('locE').textContent = st.scene.when.toUpperCase(); document.getElementById('locT').textContent = ROOMS[room].label;
         loc.classList.add('in'); setTimeout(()=>loc.classList.remove('in'), 1500); }
-      setTimeout(()=>drawScene(st, true), s.cam ? 700 : 1500);
+      setTimeout(()=>{ if(st.scene && st.scene.rt){ document.getElementById('rt').classList.add('on'); drawTable(st, true); } else drawScene(st, true); }, s.cam ? 700 : 1500);
     }, 900);
   } else {
     camTo(room);
-    drawScene(st, fresh);
+    if(st.scene && st.scene.rt){ document.getElementById('scene').innerHTML=''; document.getElementById('rt').classList.add('on'); drawTable(st, fresh); }
+    else { document.getElementById('rt').classList.remove('on'); drawScene(st, fresh); }
   }
-  corner.innerHTML = room ? `${ROOMS[room].label} · <b>${st.cam ? 'Confessional' : st.scene.when}</b>` : '';
+  if(!(st.scene && st.scene.rt)) corner.innerHTML = room ? `${ROOMS[room].label} · <b>${st.cam ? 'Confessional' : st.scene.when}</b>` : '';
   corner.classList.toggle('in', !!room);
   // pops
   document.getElementById('pops').innerHTML = st.cam ? '' : st.pops.slice(-2).map(p=>
@@ -408,13 +574,13 @@ function paint(fresh){
 function next(){ if(idx < STEPS.length-1){ idx++; paint(true); } }
 function all(){ idx = STEPS.length-1; paint(false); }
 function reset(){ idx = -1; view.classList.remove('night-on'); if (lastNight !== false) { drawOutside(false); lastNight = false; } drawRooms({night:false}); camTo(null);
-  ['scene'].forEach(i=>document.getElementById(i).innerHTML=''); document.getElementById('caption').classList.remove('in');
+  ['scene','rt'].forEach(i=>document.getElementById(i).innerHTML=''); document.getElementById('rt').classList.remove('on'); document.getElementById('caption').classList.remove('in');
   document.getElementById('corner').classList.remove('in'); document.getElementById('pops').innerHTML='';
   document.getElementById('lb').classList.remove('on'); document.getElementById('n').textContent = `0 / ${STEPS.length}`;
   document.querySelectorAll('#clock .seg').forEach(el=>{ el.classList.toggle('now', el.dataset.k==='breakfast'); el.classList.remove('done'); }); }
 function aud(){ document.body.classList.toggle('aud'); document.getElementById('audB').classList.toggle('on'); if(idx>=0) paint(false); }
 document.addEventListener('keydown', e=>{ if(e.key===' '||e.key==='ArrowRight'){ e.preventDefault(); next(); } });
-window.addEventListener('resize', ()=>{ const st = stateAt(idx); camTo(st.cam ? st.cam.room : (st.scene && st.scene.room)); if(idx>=0) drawScene(st,false); });
+window.addEventListener('resize', ()=>{ const st = stateAt(idx); camTo(st.cam ? st.cam.room : (st.scene && st.scene.room)); if(idx>=0){ if(st.scene && st.scene.rt) drawTable(st,false); else drawScene(st,false); } });
 function drawOutside(night){ document.getElementById('castle').innerHTML = TRScenery.castle(night); document.getElementById('hills').innerHTML = TRScenery.land(night); }
 let lastNight = null;
 drawOutside(false);

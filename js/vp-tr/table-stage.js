@@ -19,7 +19,7 @@
 //
 // Like every other file in this directory it imports no engine state.
 import { roundTableStageData } from './round-table.js';
-import { trsStageShell as stageShell, trsReg as reg, trsEsc as esc, trsFace as face, trsLater as later } from './castle-stage.js';
+import { trsStageShell as stageShell, trsFold, trsReg as reg, trsEsc as esc, trsFace as face, trsLater as later } from './castle-stage.js';
 import { TRScenery } from './cutaway-scenery.js';
 import { beatLines } from './stage-lines.js';
 
@@ -78,8 +78,7 @@ export function tableStageScreen(ep, observer, pageHtml) {
   if (typeof queueMicrotask === 'function' && typeof window !== 'undefined' && window.trStageMountAll) {
     queueMicrotask(window.trStageMountAll);
   }
-  return stageShell(uid, '<div class="trt"></div><div class="trs-corner"></div><div class="trs-start"></div>', CSS)
-    + '<details class="trs-transcript"><summary></summary>' + pageHtml + '</details>';
+  return trsFold(stageShell(uid, '<div class="trt"></div><div class="trs-corner"></div><div class="trs-start"></div>', CSS), pageHtml);
 }
 
 // ── THE SEATS: the host at the head, everybody else evenly round the star ─

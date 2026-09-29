@@ -416,9 +416,8 @@ function mount(root) {
   // Nothing to play (a night that is only confessionals): the stage steps
   // aside and the written page underneath opens in its place.
   if (!S.steps || !S.steps.length) {
-    root.style.display = 'none';
-    const det = root.nextElementSibling;
-    if (det && det.tagName === 'DETAILS') det.open = true;
+    const opt = root.closest('.trs-opt');
+    if (opt) opt.style.display = 'none';
     return;
   }
   S.idx = -1; S.lastNight = null;
@@ -427,7 +426,8 @@ function mount(root) {
 }
 export function trStageMountAll() {
   if (typeof document === 'undefined') return;
-  document.querySelectorAll('.trs[data-uid]').forEach(mount);
+  // A stage folded away behind its Watch button mounts when it is opened.
+  document.querySelectorAll('.trs[data-uid]').forEach(root => { if (!root.closest('[hidden]')) mount(root); });
 }
 export function trStageNext(uid) {
   const S = reg()[uid];
@@ -451,17 +451,26 @@ export function trStageReset(uid) {
   S.idx = -1;
   paint(uid, false);
 }
-/** Opens the written day under the stage, every scene of it revealed. */
+/** Folds the stage away again, back to the written page it sits above. */
 export function trStageTranscript(uid) {
   const root = rootOf(uid);
-  const det = root && root.parentElement && root.parentElement.querySelector('.trs-transcript');
-  if (!det) return;
-  det.open = !det.open;
-  if (det.open) {
-    const btn = [...det.querySelectorAll('button[onclick]')].find(b => /RevealAll\(/.test(b.getAttribute('onclick')));
-    if (btn) btn.click();
-    try { det.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch { /* jsdom */ }
-  }
+  const box = root && root.closest('.trs-watchbox');
+  if (!box) return;
+  box.hidden = true;
+  const btn = box.previousElementSibling;
+  if (btn) btn.classList.remove('trs-on');
+}
+/** The Watch button: opens the stage over the written page, or folds it away. */
+export function trStageWatch(btn) {
+  const box = btn && btn.nextElementSibling;
+  if (!box) return;
+  box.hidden = !box.hidden;
+  btn.classList.toggle('trs-on', !box.hidden);
+  if (box.hidden) return;
+  const root = box.querySelector('.trs[data-uid]');
+  if (!root) return;
+  if (!root.dataset.mounted) mount(root);
+  else trStageReset(root.dataset.uid);
 }
 if (typeof document !== 'undefined' && !globalThis.__trStageHooks) {
   globalThis.__trStageHooks = true;
@@ -475,14 +484,23 @@ if (typeof document !== 'undefined' && !globalThis.__trStageHooks) {
 }
 
 /**
- * The castle segment screen: the stage, with the written day folded under it.
- * With nothing to play (a night that is only confessionals) it is the page.
+ * THE WRITTEN PAGE IS THE SCREEN; THE STAGE IS OPTIONAL. The user tried the
+ * stages and preferred the transcript ("really static and boring… I prefer the
+ * transcript version"), so every screen opens on its page again and the stage
+ * waits behind a Watch button above it. The button's label is CSS content, so
+ * no word of it reaches the text backlog, which reads this markup as narration.
  */
+export function trsFold(stage, pageHtml) {
+  return '<div class="trs-opt"><button type="button" class="trs-watchbtn" onclick="trStageWatch(this)"></button>'
+    + '<div class="trs-watchbox" hidden>' + stage + '</div></div>' + pageHtml;
+}
+
+/** The castle segment screen: its page, with the stage folded above it. */
 export function castleStageScreen(ep, observer, segment, pageHtml) {
   const stage = castleStageHTML(ep, observer, segment);
   if (!stage) return pageHtml;
   if (typeof queueMicrotask === 'function' && typeof document !== 'undefined') queueMicrotask(trStageMountAll);
-  return stage + '<details class="trs-transcript"><summary></summary>' + pageHtml + '</details>';
+  return trsFold(stage, pageHtml);
 }
 
 // ── THE LOOK ─────────────────────────────────────────────────────────────
@@ -613,9 +631,14 @@ const CSS = `
 .trs-btn:hover{color:var(--v-lantern-hot)!important}
 .trs-next{padding:11px 44px;color:var(--v-ink)!important;background:linear-gradient(180deg,#f0c77a,#b8863e)!important;box-shadow:0 0 0 1px #ffdb95,0 0 24px rgba(224,160,73,.4)}
 .trs-count{min-width:70px;font-family:var(--v-display);font-size:10.5px;letter-spacing:.2em;color:var(--v-mute)}
-.trs-transcript{margin-top:18px}
-.trs-transcript>summary{list-style:none;height:0;overflow:hidden}
-.trs-transcript:not([open])>*:not(summary){display:none}
+.trs-opt{display:flex;flex-direction:column;align-items:flex-end;gap:10px;margin:0 0 12px}
+.trs-watchbox{width:100%}
+.trs-watchbox[hidden]{display:none}
+.trs-watchbtn{padding:8px 16px;border:0;cursor:pointer;font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:10.5px;letter-spacing:.28em;
+  text-transform:uppercase;color:#c9ba95;background:linear-gradient(180deg,#141922,#0b0e14);box-shadow:0 0 0 1px rgba(224,160,73,.3)}
+.trs-watchbtn::before{content:"Watch it played"}
+.trs-watchbtn.trs-on::before{content:"Close the stage"}
+.trs-watchbtn:hover{color:#ffdb95}
 @media (max-width:700px){
   .trs-band{flex-wrap:wrap}.trs-seg{font-size:0;letter-spacing:0}
   .trs-line{max-width:72%}.trs-caption{max-width:92%;font-size:15px}

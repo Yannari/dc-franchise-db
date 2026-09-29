@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>The Circle — stage v3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--cy:#3fd8ff;--bl:#2f7bff;--vi:#8b5cff;--pk:#ff4fb4;--navy:#0a0f2e;--card:rgba(20,24,52,.78)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#05060f;color:#fff;font-family:Montserrat,system-ui,sans-serif;padding:18px 16px 40px}
+h1{font-weight:800;font-size:20px;letter-spacing:.02em}
+.sub{color:#9aa6d6;font-size:13px;margin:4px 0 12px;max-width:1100px}
+.wrap{max-width:1100px;margin:0 auto}
+.stage{position:relative;aspect-ratio:16/9;border-radius:16px;overflow:hidden;background:#000;box-shadow:0 0 0 1px #1c2350,0 30px 80px rgba(40,60,255,.25)}
+.layer{position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .45s}
+.layer.on{opacity:1;pointer-events:auto}
+.ctrl{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.ctrl button{font:700 11px Montserrat;letter-spacing:.1em;text-transform:uppercase;color:#cfd6ff;background:#121838;border:1px solid #2a3470;border-radius:99px;padding:8px 14px;cursor:pointer}
+.ctrl button.act{background:linear-gradient(90deg,var(--bl),var(--vi));color:#fff;border-color:transparent}
+.ctrl .sep{width:1px;background:#2a3470;margin:0 4px}
+.note{color:#9aa6d6;font-size:12.5px;line-height:1.6;margin-top:6px}
+.note b{color:#fff}
+
+/* ===== the aurora ring (the Circle's signature light) ===== */
+.aurora{position:absolute;border-radius:50%;
+ background:conic-gradient(from 0deg,transparent 0 8%,#3fd8ff 18%,#2f7bff 30%,#8b5cff 45%,#ff4fb4 58%,transparent 72%,transparent);
+ -webkit-mask:radial-gradient(closest-side,transparent 88%,#000 90.5%,#000 93%,transparent 100%);mask:radial-gradient(closest-side,transparent 88%,#000 90.5%,#000 93%,transparent 100%);
+ filter:blur(1.5px) drop-shadow(0 0 18px #3fd8ff);animation:spin 14s linear infinite}
+.aurora.soft{filter:blur(14px);opacity:.9}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ui-bg{position:absolute;inset:0;background:radial-gradient(ellipse at 60% 45%,#2a2a8a 0%,#16185a 35%,#0a0c30 70%,#06071c 100%)}
+
+/* ===== Circle UI ===== */
+.cui{position:absolute;inset:0;overflow:hidden;font-family:Montserrat}
+.rail{position:absolute;left:0;top:6%;bottom:6%;width:7%;display:flex;flex-direction:column;justify-content:space-around;align-items:center;background:rgba(8,10,34,.55);border-right:1px solid rgba(255,255,255,.07)}
+.rail svg{width:42%;fill:#d8defa;opacity:.85}
+.rail .sel{position:relative}.rail .sel:after{content:"";position:absolute;right:-60%;top:-20%;bottom:-20%;width:3px;background:var(--bl);box-shadow:0 0 10px var(--bl)}
+.feed{position:absolute;left:11%;right:25%;top:4%;bottom:16%;display:flex;flex-direction:column;justify-content:flex-end;gap:2.2%}
+.msg{display:flex;gap:3%;align-items:flex-start;animation:msgIn .7s cubic-bezier(.2,1.3,.4,1) both}
+@keyframes msgIn{0%{opacity:0;transform:translateX(-40px) scale(.94);filter:blur(6px)}100%{opacity:1;transform:none;filter:none}}
+.msg .av{flex:none;width:clamp(26px,5.2%,58px);aspect-ratio:1;border-radius:50%;background-size:cover;background-position:center 25%;border:3px solid var(--ring,#2f7bff);box-shadow:0 0 12px var(--ring,#2f7bff)}
+.msg .card{background:var(--card);border-radius:6px;padding:1.6% 2.4%;flex:1;box-shadow:0 8px 24px rgba(0,0,0,.35);backdrop-filter:blur(6px)}
+.msg .nm{font-weight:800;font-size:clamp(8px,1.25vw,14px);letter-spacing:.04em;text-transform:uppercase}
+.msg .tx{font-weight:500;font-size:clamp(9px,1.45vw,16px);line-height:1.38;color:#eef1ff;margin-top:2px}
+.ht{color:#3aa8ff;font-weight:600;text-shadow:0 0 12px rgba(58,168,255,.6);animation:shimmer 2.4s infinite}
+@keyframes shimmer{50%{color:#8fd8ff}}
+.typing .card{width:22%;flex:none}
+.dots span{display:inline-block;width:.55em;height:.55em;margin-right:.3em;border-radius:50%;background:#9fb0ff;animation:bounce 1s infinite}
+.dots span:nth-child(2){animation-delay:.15s}.dots span:nth-child(3){animation-delay:.3s}
+@keyframes bounce{40%{transform:translateY(-5px);background:#fff}}
+.people{position:absolute;right:1.5%;top:3%;bottom:3%;width:21%;display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:min-content;gap:4px;align-content:start}
+.people .hd{grid-column:1/-1;text-align:center;font-weight:700;font-size:clamp(8px,1.1vw,13px);letter-spacing:.08em;padding:6px;background:rgba(20,24,60,.8);border-radius:4px}
+.tile{background:rgba(26,30,70,.8);border-radius:4px;padding:8% 4% 6%;text-align:center;transition:.3s}
+.tile .ph{width:62%;aspect-ratio:1;margin:0 auto;border-radius:50%;background-size:cover;background-position:center 25%;border:2px solid #fff}
+.tile .n{font-weight:700;font-size:clamp(6px,.85vw,11px);margin-top:6%;letter-spacing:.05em}
+.tile.talk{background:rgba(47,123,255,.45);box-shadow:0 0 18px rgba(63,216,255,.7);transform:scale(1.06)}
+.inbar{position:absolute;left:11%;right:25%;bottom:4%;height:8%;display:flex;gap:1.2%}
+.inbar .box{flex:1;background:#eef0f7;border-radius:4px;color:#1a1d3a;font-weight:500;font-size:clamp(8px,1.3vw,15px);display:flex;align-items:center;padding:0 2%;overflow:hidden;white-space:nowrap}
+.inbar .send{width:9%;background:var(--bl);border-radius:4px;display:grid;place-items:center}
+.inbar .send svg{width:50%;fill:#fff}
+.inbar .send.fire{animation:fire .6s}
+@keyframes fire{40%{transform:scale(1.25);box-shadow:0 0 30px var(--cy)}}
+.caret:after{content:"|";animation:blink .7s infinite;color:var(--bl);margin-left:1px}
+@keyframes blink{50%{opacity:0}}
+
+/* ===== ALERT ===== */
+#alert{background:#000}
+#alert .ui-bg{background:radial-gradient(ellipse at 50% 50%,#1a1560 0%,#0a0930 45%,#000 80%)}
+.alertTxt{position:absolute;left:50%;top:47%;transform:translate(-50%,-50%);font-weight:900;font-size:clamp(40px,11vw,140px);letter-spacing:.01em;white-space:nowrap}
+.go .alertTxt{animation:slam .9s cubic-bezier(.2,1.6,.3,1) both,rgb 2.2s .9s infinite}
+@keyframes slam{0%{transform:translate(-50%,-50%) scale(3.2);opacity:0;filter:blur(20px)}60%{opacity:1;filter:blur(0)}100%{transform:translate(-50%,-50%) scale(1)}}
+@keyframes rgb{0%,100%{text-shadow:0 0 30px rgba(120,160,255,.6)}8%{text-shadow:-6px 0 #ff2a6d,6px 0 #2ae8ff,0 0 30px rgba(120,160,255,.6);transform:translate(-50%,-50%) skewX(-4deg)}12%{text-shadow:0 0 30px rgba(120,160,255,.6);transform:translate(-50%,-50%)}}
+.go .aurora.big{animation:draw 1.2s cubic-bezier(.2,.9,.2,1) both,spin 10s 1.2s linear infinite}
+@keyframes draw{0%{transform:scale(.3) rotate(-180deg);opacity:0}100%{transform:scale(1) rotate(0);opacity:1}}
+.flash{position:absolute;inset:0;background:#fff;opacity:0}
+.go .flash{animation:flash .6s .55s}
+@keyframes flash{0%{opacity:.85}100%{opacity:0}}
+.shock{position:absolute;left:50%;top:47%;width:10px;height:10px;border-radius:50%;border:3px solid #9fd8ff;transform:translate(-50%,-50%);opacity:0}
+.go .shock{animation:shock 1.1s .6s ease-out}
+@keyframes shock{0%{opacity:1;width:10px;height:10px}100%{opacity:0;width:140%;height:250%}}
+.alertSub{position:absolute;left:0;right:0;top:68%;text-align:center;font-weight:600;font-size:clamp(11px,1.8vw,22px);letter-spacing:.3em;text-transform:uppercase;color:#bcd0ff;opacity:0}
+.go .alertSub{animation:up .6s 1.3s both}
+@keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1}}
+/* building: every apartment lights up */
+.building{position:absolute;inset:0;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(3,1fr);gap:8px;padding:8px;background:#02030a;opacity:0}
+.go2 .building{opacity:1;transition:opacity .3s}
+.win{position:relative;border-radius:6px;overflow:hidden;opacity:.15;filter:brightness(.3)}
+.go2 .win{animation:lightup .5s both}
+@keyframes lightup{to{opacity:1;filter:brightness(1)}}
+.win .tv{position:absolute;left:24%;right:24%;top:20%;height:40%;border-radius:3px;background:radial-gradient(circle,#2a2a8a,#0a0c30);display:grid;place-items:center;font-weight:900;font-size:clamp(7px,1.2vw,14px);box-shadow:0 0 22px rgba(63,216,255,.55);animation:pulse 1s infinite}
+@keyframes pulse{50%{box-shadow:0 0 38px rgba(255,79,180,.8)}}
+.win .who{position:absolute;left:6px;bottom:5px;font:700 9px Montserrat;letter-spacing:.1em;background:rgba(0,0,0,.55);padding:2px 5px;border-radius:3px}
+
+/* ===== Apartments ===== */
+.apt{position:absolute;inset:0;overflow:hidden}
+.room{position:absolute;inset:0;transition:transform 2.6s cubic-bezier(.3,.1,.2,1);transform-origin:50% 30%}
+.push .room{transform:scale(1.1) translateY(2%)}
+.wall{position:absolute;inset:0 0 18% 0}
+.floor{position:absolute;left:0;right:0;bottom:0;height:18%;background:linear-gradient(#3a2a22,#1b120d)}
+.dado{position:absolute;left:0;right:0;bottom:18%;height:22%;border-top:3px solid rgba(255,255,255,.12)}
+.poster{position:absolute;border:5px solid #c9a55a;outline:10px solid #f4efe6;outline-offset:-15px;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.tvset{position:absolute;left:30%;width:44%;top:9%;aspect-ratio:16/9;border-radius:6px;border:5px solid #0c0c10;background:#000;overflow:hidden;box-shadow:0 0 0 1px #222,0 0 60px var(--bias,#3fd8ff),0 0 140px var(--bias,#3fd8ff)}
+.lamp{position:absolute;border-radius:50%;filter:blur(30px);mix-blend-mode:screen}
+.bust{position:absolute;bottom:5%;width:24%;aspect-ratio:1;background-size:cover;background-position:center 20%;border-radius:14px;border:3px solid rgba(255,255,255,.85);box-shadow:0 0 0 6px rgba(0,0,0,.25),0 0 40px var(--glow,#3fd8ff),0 20px 50px rgba(0,0,0,.6);z-index:7}
+.bust:after{content:attr(data-cam);position:absolute;left:8px;top:8px;font:800 10px Montserrat;letter-spacing:.14em;background:rgba(0,0,0,.6);padding:3px 6px;border-radius:3px;color:#fff}
+.bust:before{content:"";position:absolute;right:10px;top:10px;width:8px;height:8px;border-radius:50%;background:#ff4a6a;box-shadow:0 0 8px #ff4a6a;animation:blink 1.2s infinite}
+.bust.L{left:2.5%;transform:rotate(-2deg)}.bust.R{right:2.5%;transform:rotate(2deg)}
+.enterL .bust.L{animation:inL .8s cubic-bezier(.2,1.2,.3,1) both}
+.enterR .bust.R{animation:inR .8s cubic-bezier(.2,1.2,.3,1) both}
+@keyframes inL{from{transform:translateX(-60%);opacity:0}}
+@keyframes inR{from{transform:translateX(60%);opacity:0}}
+.rim{position:absolute;bottom:0;width:40%;height:80%;filter:blur(40px);opacity:.55;mix-blend-mode:screen}
+.hud{position:absolute;top:2.5%;left:2%;right:2%;display:flex;justify-content:space-between;font:700 clamp(8px,1vw,12px) Montserrat;letter-spacing:.14em;text-transform:uppercase;z-index:9;text-shadow:0 2px 6px #000}
+.hud .lv{color:#ff5b7a}.hud .lv:before{content:"● ";animation:blink 1.2s infinite}
+.dlg{position:absolute;left:29%;right:3%;bottom:4%;z-index:8;background:linear-gradient(135deg,rgba(18,20,56,.88),rgba(40,20,80,.82));border:1px solid rgba(120,160,255,.35);border-radius:10px;padding:2.2% 2.4% 1.8%;backdrop-filter:blur(10px);box-shadow:0 0 40px rgba(60,80,255,.3);animation:up .5s both}
+.apt.R .dlg{left:3%;right:29%}
+.plate{position:absolute;top:-14px;left:16px;padding:5px 12px;border-radius:4px;font:800 clamp(8px,1vw,12px) Montserrat;letter-spacing:.12em;text-transform:uppercase;background:linear-gradient(90deg,var(--bl),var(--vi),var(--pk))}
+.plate i{font-style:normal;font-weight:600;opacity:.85}
+.line{font-size:clamp(10px,1.45vw,17px);line-height:1.45;font-weight:500}
+.chip{display:inline-block;font:800 clamp(7px,.8vw,10px) Montserrat;letter-spacing:.14em;padding:3px 7px;border-radius:3px;margin-right:6px;vertical-align:2px}
+.c-say{background:rgba(255,255,255,.15)}.c-cmd{background:rgba(63,216,255,.2);color:var(--cy)}
+.cmd{color:#9fe6ff;font-weight:600}
+.catfish{position:absolute;z-index:9;top:9%;left:2%;font:800 clamp(7px,.9vw,11px) Montserrat;letter-spacing:.14em;padding:5px 9px;border-radius:4px;background:rgba(255,79,180,.18);color:#ff8fd0;border:1px solid rgba(255,79,180,.5);animation:up .5s .4s both}
+.catfish .mini{display:inline-block;width:18px;height:18px;border-radius:50%;background-size:cover;vertical-align:middle;margin-right:6px;border:2px solid var(--pk)}
+.beam{position:absolute;z-index:7;top:28%;left:52%;width:14%;height:6px;border-radius:3px;background:linear-gradient(90deg,transparent,var(--cy),#fff);box-shadow:0 0 18px var(--cy),0 0 40px var(--vi);opacity:0}
+.beam.fly{animation:beam .9s ease-in}
+@keyframes beam{0%{opacity:1;left:52%;width:4%}100%{opacity:0;left:110%;width:30%}}
+.pop{position:absolute;z-index:9;font-size:clamp(20px,4vw,52px);animation:pop 1.6s both}
+@keyframes pop{0%{transform:scale(0) rotate(-20deg);opacity:0}25%{transform:scale(1.3);opacity:1}70%{transform:translateY(-30px);opacity:1}100%{transform:translateY(-60px);opacity:0}}
+.ping{position:absolute;z-index:6;border-radius:50%;border:3px solid var(--cy);animation:ping 1.2s ease-out infinite}
+@keyframes ping{0%{opacity:.9;transform:scale(.4)}100%{opacity:0;transform:scale(1.6)}}
+.wipe{position:absolute;inset:0;z-index:20;pointer-events:none;background:linear-gradient(100deg,transparent 0 30%,#8b5cff 42%,#3fd8ff 50%,#ff4fb4 58%,transparent 70%);transform:translateX(-120%)}
+.wipe.run{animation:wipe .7s ease-in-out}
+@keyframes wipe{to{transform:translateX(120%)}}
+.swatches{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.sw{width:118px;border-radius:8px;overflow:hidden;cursor:pointer;border:2px solid transparent;font:700 10px Montserrat;letter-spacing:.06em}
+.sw.act{border-color:var(--cy)}
+.sw .pv{height:54px;position:relative}
+.sw .pv:after{content:"";position:absolute;left:30%;right:30%;top:22%;height:36%;background:#0a0c30;border-radius:2px;box-shadow:0 0 10px var(--b)}
+.sw div.t{background:#121838;padding:5px 7px;color:#cfd6ff}
+</style></head>
+<body><div class="wrap">
+<h1>The Circle — stage mockup v3</h1>
+<p class="sub">Auto-plays as one sequence: <b>ALERT</b> → the building lights up → <b>Circle Chat</b> → Alejandro (catfishing as "Maddie") dictates in <b>his</b> apartment → the message lands in <b>Bridgette's</b> apartment. Jump with the buttons; change Alejandro's apartment with the swatches.</p>
+
+<div class="stage" id="stage">
+  <!-- ALERT -->
+  <div class="layer" id="alert">
+    <div class="ui-bg"></div>
+    <div class="aurora big" style="left:50%;top:47%;width:62%;aspect-ratio:1;margin:-31% 0 0 -31%"></div>
+    <div class="aurora big soft" style="left:50%;top:47%;width:62%;aspect-ratio:1;margin:-31% 0 0 -31%"></div>
+    <div class="shock"></div>
+    <div class="alertTxt">ALERT!</div>
+    <div class="alertSub">The ratings are now open</div>
+    <div class="flash"></div>
+    <div class="building" id="building"></div>
+  </div>
+
+  <!-- CIRCLE CHAT -->
+  <div class="layer" id="chat">
+    <div class="cui">
+      <div class="ui-bg"></div>
+      <div class="aurora" style="left:34%;top:-8%;width:60%;aspect-ratio:1"></div>
+      <div class="aurora soft" style="left:34%;top:-8%;width:60%;aspect-ratio:1"></div>
+      <div class="rail" id="rail1"></div>
+      <div class="feed" id="feed"></div>
+      <div class="people" id="people"></div>
+      <div class="inbar"><div class="box" id="gbox"></div><div class="send"><svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg></div></div>
+    </div>
+  </div>
+
+  <!-- APARTMENT A (sender) -->
+  <div class="layer" id="aptA"><div class="apt L">
+    <div class="room" id="roomA">
+      <div class="wall" id="wallA"></div><div class="dado" id="dadoA"></div><div class="floor"></div>
+      <div class="poster" id="posterA1"></div><div class="poster" id="posterA2"></div>
+      <div class="lamp" id="lampA"></div>
+      <div class="tvset" id="tvA"><div class="cui" id="tvAui"></div></div>
+      <div class="rim" style="left:0;background:var(--cy)"></div>
+      <div class="bust L" data-cam="CAM 4 · ALEJANDRO" style="--glow:#3fd8ff;background-image:url(../assets/avatars/alejandro.png)"></div>
+    </div>
+    <div class="hud"><span id="hudA">APARTMENT 4 · DAY 6 · 10:41 PM</span><span class="lv">Live</span></div>
+    <div class="catfish"><span class="mini" style="background-image:url(../assets/guests/fan-maddie.png)"></span>Playing as "Maddie" · catfish</div>
+    <div class="beam" id="beam"></div>
+    <div id="dlgA"></div>
+  </div></div>
+
+  <!-- APARTMENT B (receiver) -->
+  <div class="layer" id="aptB"><div class="apt R">
+    <div class="room" id="roomB">
+      <div class="wall" id="wallB"></div><div class="dado" id="dadoB"></div><div class="floor" style="background:linear-gradient(#5b4a55,#2a2028)"></div>
+      <div class="poster" id="posterB1"></div>
+      <div class="lamp" id="lampB"></div>
+      <div class="tvset" id="tvB" style="left:26%"><div class="cui" id="tvBui"></div></div>
+      <div class="ping" id="pingB" style="left:44%;top:18%;width:12%;aspect-ratio:1;display:none"></div>
+      <div class="rim" style="right:0;background:var(--pk)"></div>
+      <div class="bust R" data-cam="CAM 7 · BRIDGETTE" style="--glow:#ff4fb4;background-image:url(../assets/avatars/bridgette.png)"></div>
+    </div>
+    <div class="hud"><span>APARTMENT 7 · DAY 6 · 10:42 PM</span><span class="lv">Live</span></div>
+    <div id="dlgB"></div>
+    <div id="popB"></div>
+  </div></div>
+
+  <div class="wipe" id="wipe"></div>
+</div>
+
+<div class="ctrl" id="ctrl">
+  <button data-s="alert">1 · Alert</button><button data-s="chat">2 · Circle Chat</button><button data-s="aptA">3 · Sender's apartment</button><button data-s="aptB">4 · Receiver's apartment</button>
+  <span class="sep"></span><button id="auto" class="act">Auto-play ✓</button>
+</div>
+<div style="font:700 11px Montserrat;letter-spacing:.12em;color:#9aa6d6;margin-top:6px">ALEJANDRO'S APARTMENT — every player gets their own</div>
+<div class="swatches" id="sw"></div>
+
+<p class="note" style="margin-top:14px"><b>What's here:</b> the real Circle UI (icon rail, glass message cards, ringed avatars, blue hashtags, participant grid, input bar, paper-plane send) redrawn from your screenshots, running on the TV <i>inside</i> each apartment and full-screen for group chat.
+Every apartment is its own room: wall colour, wallpaper pattern, posters and lamp light are all theme data, and the TV's glow lights the player.
+<b>Animations:</b> the aurora ring draws itself, ALERT! slams in with a shockwave, flash and RGB glitch, and every apartment in the building lights up in a cascade. Messages spring in with the speaker's tile glowing and a typing indicator first. The camera pushes toward the TV while a player dictates, the words type into the input bar, and the send button fires a light beam out of the room. The receiver's TV pings, then a colour wipe cuts between rooms.</p>
+</div>
+
+<script>
+const ICONS={home:'M12 3l9 8h-3v9h-5v-6h-2v6H6v-9H3z',chat:'M4 4h16v12H8l-4 4z',bolt:'M13 2L4 14h6l-1 8 9-12h-6z',me:'M12 12a4 4 0 100-8 4 4 0 000 8zm-8 9c0-4 4-6 8-6s8 2 8 6z',img:'M3 5h18v14H3zm3 11h12l-4-5-3 4-2-2z',bars:'M4 20V10h4v10zm6 0V4h4v16zm6 0v-7h4v7z',dice:'M4 4h16v16H4zm4 3a1.5 1.5 0 100 3 1.5 1.5 0 000-3zm8 8a1.5 1.5 0 100 3 1.5 1.5 0 000-3zm-4-4a1.5 1.5 0 100 3 1.5 1.5 0 000-3z'};
+const rail=(sel)=>Object.entries(ICONS).map(([k,d])=>`<div class="${k===sel?'sel':''}"><svg viewBox="0 0 24 24"><path d="${d}"/></svg></div>`).join('');
+const P={maddie:{n:'Maddie',img:'../assets/guests/fan-maddie.png',ring:'#ff4fb4'},brody:{n:'Brody',img:'../assets/avatars/brody.png',ring:'#ff9f2f'},bridgette:{n:'Bridgette',img:'../assets/avatars/bridgette.png',ring:'#2f7bff'},beth:{n:'Beth',img:'../assets/avatars/beth.png',ring:'#3fd88f'},duncan:{n:'Duncan',img:'../assets/avatars/duncan.png',ring:'#b35cff'},heather:{n:'Heather',img:'../assets/avatars/heather.png',ring:'#ffd23f'}};
+const hashify=t=>t.replace(/#(\w+)/g,'<span class="ht">#$1</span>');
+const msgHTML=(id,t)=>`<div class="msg" style="--ring:${P[id].ring}"><div class="av" style="background-image:url(${P[id].img})"></div><div class="card"><div class="nm">${P[id].n}</div><div class="tx">${hashify(t)}</div></div></div>`;
+const typingHTML=id=>`<div class="msg typing" style="--ring:${P[id].ring}"><div class="av" style="background-image:url(${P[id].img})"></div><div class="card"><span class="dots"><span></span><span></span><span></span></span></div></div>`;
+document.getElementById('rail1').innerHTML=rail('chat');
+document.getElementById('people').innerHTML='<div class="hd">CIRCLE CHAT</div>'+Object.keys(P).map(k=>`<div class="tile" id="t-${k}"><div class="ph" style="background-image:url(${P[k].img})"></div><div class="n">${P[k].n.toUpperCase()}</div></div>`).join('');
+
+/* ---- apartment themes (data, not drawings) ---- */
+const THEMES={
+ palm:{name:'Palm Teal',wall:'linear-gradient(#1f5a58,#163f3e)',pat:'radial-gradient(circle at 20% 30%,rgba(255,255,255,.04) 0 18%,transparent 19%) 0 0/60px 60px',dado:'rgba(10,30,30,.5)',p1:'linear-gradient(#ff8a4c 0 30%,#ff5e6c 30% 55%,#8a3a8a 55% 75%,#2b1a3a 75%)',p2:'linear-gradient(135deg,#e24a3a,#f5a84a)',lamp:'#ffb86b',bias:'#3fd8ff'},
+ deco:{name:'Blush Deco',wall:'linear-gradient(#e6a9b0,#c98590)',pat:'radial-gradient(circle at 50% 100%,transparent 0 40%,rgba(160,110,40,.35) 41% 44%,transparent 45%) 0 0/48px 26px',dado:'rgba(120,50,70,.35)',p1:'linear-gradient(160deg,#2b2350,#8b5cff 60%,#ff4fb4)',p2:'linear-gradient(#ffd9a0,#ff9a8a)',lamp:'#ffd0a0',bias:'#ff4fb4'},
+ stripe:{name:'Midnight Stripe',wall:'repeating-linear-gradient(90deg,#1a1f45 0 22px,#151a3a 22px 44px)',pat:'none',dado:'rgba(0,0,0,.35)',p1:'linear-gradient(#ffcf3f,#ff7a3f)',p2:'linear-gradient(135deg,#3fd8ff,#2f7bff)',lamp:'#8fb0ff',bias:'#8b5cff'},
+ jungle:{name:'Botanic Green',wall:'linear-gradient(#244a2c,#18321e)',pat:'repeating-radial-gradient(ellipse at 0 0,rgba(210,180,90,.14) 0 2px,transparent 3px 20px) 0 0/80px 80px',dado:'rgba(10,25,12,.5)',p1:'linear-gradient(#f5e6c0,#d9b86a)',p2:'linear-gradient(#ff6b6b,#ffb36b)',lamp:'#ffe08a',bias:'#3fd88f'},
+ citrus:{name:'Citrus Pop',wall:'linear-gradient(#ffb43a,#f08a1e)',pat:'radial-gradient(circle,rgba(255,255,255,.18) 0 3px,transparent 4px) 0 0/28px 28px',dado:'rgba(160,70,0,.35)',p1:'linear-gradient(135deg,#2f7bff,#3fd8ff)',p2:'linear-gradient(#ff4fb4,#8b5cff)',lamp:'#fff2b0',bias:'#ffd23f'},
+ lav:{name:'Lavender Wave',wall:'linear-gradient(#8a7ad0,#6a5ab0)',pat:'repeating-linear-gradient(45deg,rgba(255,255,255,.06) 0 10px,transparent 10px 20px)',dado:'rgba(40,20,90,.4)',p1:'linear-gradient(#fff,#cfe0ff)',p2:'linear-gradient(135deg,#ff4fb4,#ffd23f)',lamp:'#e0d0ff',bias:'#b35cff'}};
+function theme(side,key){const t=THEMES[key],g=id=>document.getElementById(id);
+ g('wall'+side).style.background=t.pat==='none'?t.wall:`${t.pat},${t.wall}`;g('dado'+side).style.background=t.dado;
+ const p1=g('poster'+side+'1');Object.assign(p1.style,side==='A'?{left:'4%',top:'10%',width:'17%',height:'42%'}:{right:'5%',top:'8%',width:'16%',height:'46%'});p1.style.background=t.p1;
+ const p2=g('poster'+side+'2');if(p2){Object.assign(p2.style,{right:'5%',top:'6%',width:'15%',height:'34%',background:t.p2})}
+ const l=g('lamp'+side);Object.assign(l.style,{background:t.lamp,width:'30%',height:'40%',top:'10%',[side==='A'?'right':'left']:'0%',opacity:.35});
+ g('tv'+side).style.setProperty('--bias',t.bias);}
+theme('A','palm');theme('B','deco');
+document.getElementById('sw').innerHTML=Object.entries(THEMES).map(([k,t])=>`<div class="sw ${k==='palm'?'act':''}" data-k="${k}" style="--b:${t.bias}"><div class="pv" style="background:${t.pat==='none'?t.wall:t.pat+','+t.wall}"></div><div class="t">${t.name}</div></div>`).join('');
+document.getElementById('sw').onclick=e=>{const s=e.target.closest('.sw');if(!s)return;document.querySelectorAll('.sw').forEach(x=>x.classList.toggle('act',x===s));theme('A',s.dataset.k);show('aptA');};
+
+/* ---- mini Circle UI on each TV ---- */
+function tvUI(id,msgs,peer){document.getElementById(id).innerHTML=`<div class="ui-bg"></div><div class="aurora" style="left:30%;top:-20%;width:70%;aspect-ratio:1"></div><div class="rail">${rail('chat')}</div><div class="feed" id="${id}-feed" style="right:27%">${msgs.map(m=>msgHTML(m[0],m[1])).join('')}</div><div class="people" style="grid-template-columns:1fr"><div class="tile"><div class="ph" style="background-image:url(${P[peer].img})"></div><div class="n">${P[peer].n.toUpperCase()}</div></div></div><div class="inbar" style="right:27%"><div class="box" id="${id}-box"></div><div class="send" id="${id}-send"><svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg></div></div>`;
+ document.getElementById(id).querySelectorAll('.msg .tx').forEach(e=>e.style.fontSize='clamp(5px,.75vw,9px)');document.getElementById(id).querySelectorAll('.msg .nm').forEach(e=>e.style.fontSize='clamp(4px,.6vw,8px)');}
+
+/* ---- sequencing ---- */
+let timers=[],auto=true,cur=null;const T=(ms,f)=>timers.push(setTimeout(f,ms));
+const order=['alert','chat','aptA','aptB'],dur={alert:6200,chat:9000,aptA:10500,aptB:7000};
+function typeInto(el,text,ms,done){let i=0;el.classList.add('caret');const step=()=>{el.textContent=text.slice(0,++i);if(i<text.length)T(ms,step);else{el.classList.remove('caret');done&&done();}};step();}
+function wipe(){const w=document.getElementById('wipe');w.classList.remove('run');void w.offsetWidth;w.classList.add('run');}
+function show(s){timers.forEach(clearTimeout);timers=[];cur=s;wipe();
+ document.querySelectorAll('.layer').forEach(l=>l.classList.toggle('on',l.id===s));
+ document.querySelectorAll('#ctrl [data-s]').forEach(b=>b.classList.toggle('act',b.dataset.s===s));
+ ({alert:runAlert,chat:runChat,aptA:runA,aptB:runB})[s]();
+ if(auto)T(dur[s],()=>show(order[(order.indexOf(s)+1)%order.length]));}
+function runAlert(){const a=document.getElementById('alert');a.classList.remove('go','go2');void a.offsetWidth;a.classList.add('go');
+ const who=['Alejandro','Bridgette','Brody','Beth','Duncan','Heather','Apt 7','Apt 8','Apt 9','Apt 10','Apt 11','Apt 12'],keys=Object.keys(THEMES);
+ document.getElementById('building').innerHTML=who.map((w,i)=>{const t=THEMES[keys[i%keys.length]];return `<div class="win" style="background:${t.pat==='none'?t.wall:t.pat+','+t.wall};animation-delay:${(i%4)*.09+Math.floor(i/4)*.14}s"><div class="tv">ALERT!</div><div class="who">${i<6?w.toUpperCase():''}</div></div>`}).join('');
+ T(3400,()=>a.classList.add('go2'));}
+function runChat(){const f=document.getElementById('feed');f.innerHTML='';const box=document.getElementById('gbox');box.textContent='';
+ const script=[['bridgette',"Ok. Who else just got the ALERT?? My heart is pounding 😳 #RatingsDay"],['brody',"Brooo I'm not ready. Maddie, you good?"],['maddie',"Honestly? Shaking. But I've got love for everyone in here 💜 #NoFakeVibes"],['heather',"Interesting hashtag from the girl who's been DMing everyone. #JustSaying"]];
+ let t=300;script.forEach(([id,txt],i)=>{T(t,()=>{document.querySelectorAll('.tile').forEach(x=>x.classList.remove('talk'));document.getElementById('t-'+id).classList.add('talk');const d=document.createElement('div');d.innerHTML=typingHTML(id);f.appendChild(d.firstChild);while(f.children.length>4)f.removeChild(f.firstChild);});
+  T(t+900,()=>{f.lastChild.outerHTML=msgHTML(id,txt);});t+=2100;});}
+function runA(){const apt=document.querySelector('#aptA .apt');apt.classList.remove('enterL','push');void apt.offsetWidth;apt.classList.add('enterL');
+ tvUI('tvAui',[['bridgette',"ok maddie be honest… do u trust brody?? 👀"]],'bridgette');
+ const d=document.getElementById('dlgA');d.innerHTML='';
+ T(700,()=>{d.innerHTML=`<div class="dlg"><div class="plate">Alejandro <i>· as Maddie</i></div><div class="line"><span class="chip c-say">SAYS ALOUD</span><span id="sayA"></span></div><div class="line" style="margin-top:6px"><span class="chip c-cmd">TO THE CIRCLE</span><span class="cmd" id="cmdA"></span></div></div>`;
+  typeInto(document.getElementById('sayA'),"She's fishing about Brody. If Maddie sounds too keen to cut him, she'll smell it. Soft. Make it hurt a little.",22,()=>{
+   apt.classList.add('push');
+   T(500,()=>typeInto(document.getElementById('cmdA'),'Circle, message: "girl… between us? not fully 😬 #HeartOnMySleeve"',26));
+   T(900,()=>typeInto(document.getElementById('tvAui-box'),'girl… between us? not fully 😬 #HeartOnMySleeve',45,()=>{
+    T(400,()=>{const s=document.getElementById('tvAui-send');s.classList.add('fire');const fd=document.getElementById('tvAui-feed');fd.insertAdjacentHTML('beforeend',msgHTML('maddie','girl… between us? not fully 😬 #HeartOnMySleeve'));fd.querySelectorAll('.msg .tx').forEach(e=>e.style.fontSize='clamp(5px,.75vw,9px)');fd.querySelectorAll('.msg .nm').forEach(e=>e.style.fontSize='clamp(4px,.6vw,8px)');document.getElementById('tvAui-box').textContent='';const b=document.getElementById('beam');b.classList.remove('fly');void b.offsetWidth;b.classList.add('fly');});}));
+  });});}
+function runB(){const apt=document.querySelector('#aptB .apt');apt.classList.remove('enterR','push');void apt.offsetWidth;
+ tvUI('tvBui',[['bridgette',"ok maddie be honest… do u trust brody?? 👀"]],'maddie');
+ document.getElementById('dlgB').innerHTML='';document.getElementById('popB').innerHTML='';const ping=document.getElementById('pingB');ping.style.display='block';
+ T(900,()=>{ping.style.display='none';const fd=document.getElementById('tvBui-feed');fd.insertAdjacentHTML('beforeend',msgHTML('maddie','girl… between us? not fully 😬 #HeartOnMySleeve'));fd.querySelectorAll('.msg .tx').forEach(e=>e.style.fontSize='clamp(5px,.75vw,9px)');fd.querySelectorAll('.msg .nm').forEach(e=>e.style.fontSize='clamp(4px,.6vw,8px)');});
+ T(1500,()=>{apt.classList.add('enterR');document.getElementById('popB').innerHTML='<div class="pop" style="right:22%;top:30%">😳</div>';});
+ T(2300,()=>{document.getElementById('dlgB').innerHTML=`<div class="dlg"><div class="plate">Bridgette</div><div class="line"><span class="chip c-say">SAYS ALOUD</span><span id="sayB"></span></div></div>`;typeInto(document.getElementById('sayB'),'"Not fully"?! Okay. Maddie knows something about Brody. I need to know what she knows.',24);});}
+document.getElementById('ctrl').onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.id==='auto'){auto=!auto;b.classList.toggle('act',auto);b.textContent='Auto-play '+(auto?'✓':'✗');if(auto)show(cur);return;}show(b.dataset.s);};
+show('alert');
+</script>
+</body></html>

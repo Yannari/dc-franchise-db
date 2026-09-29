@@ -30,6 +30,12 @@ describe('texting voice', () => {
     expect(h).toBeGreaterThan(l);
   });
 
+  it('keeps two sentences apart when the emoji between them is dropped or read out', () => {
+    const msg = "Same {e:laugh} Let's go one by one";
+    expect(displayText(styleMessage(msg, { emoji: 0 }, () => 0.99))).toBe("Same. Let's go one by one");
+    expect(dictation(msg)).toBe(`Message: "Same. Let's go one by one." Laughing emoji. Send.`);
+    expect(displayText(styleMessage("Hi you {e:smile} I was hoping", { emoji: 1 }, () => 0))).toBe('Hi you 😊 I was hoping');
+  });
   it('never leaves a stray space or an empty message', () => {
     const out = styleMessage('{e:heart}', { emoji: 0, hashtags: 0, caps: 0 }, () => 0.99);
     expect(out.trim().length).toBeGreaterThan(0);

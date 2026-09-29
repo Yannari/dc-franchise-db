@@ -5,8 +5,11 @@ import { SLIPS } from './slips.js';
 import { FEED } from './feed.js';
 import { CIRCLE } from './circle.js';
 import { PROFILES } from './profiles.js';
+import { RATINGS } from './ratings.js';
+import { HANGOUT } from './hangout.js';
+import { BLOCKING } from './blocking.js';
 
 export const POOLS = {};
-for (const part of [CHAT_A, CHAT_B, SLIPS, FEED, CIRCLE, PROFILES]) {
+for (const part of [CHAT_A, CHAT_B, SLIPS, FEED, CIRCLE, PROFILES, RATINGS, HANGOUT, BLOCKING]) {
   for (const [k, v] of Object.entries(part)) POOLS[k] = [...(POOLS[k] || []), ...v];
 }

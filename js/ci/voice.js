@@ -18,7 +18,7 @@ export const EMOJI = {
   snake: ['🐍', 'snake emoji'], clap: ['👏', 'clapping hands emoji'], sad: ['😔', 'sad face emoji'],
   smile: ['😊', 'smiley face emoji'], side: ['😏', 'smirk emoji'], cool: ['😎', 'sunglasses emoji'],
   sun: ['☀️', 'sun emoji'], lipstick: ['💄', 'lipstick emoji'], detective: ['🕵️', 'detective emoji'],
-  handshake: ['🤝', 'handshake emoji'],
+  handshake: ['🤝', 'handshake emoji'], fish: ['🐟', 'fish emoji'], broken: ['💔', 'broken heart emoji'],
 };
 
 export function tokenize(text) {
@@ -38,18 +38,24 @@ export const tagWords = tag => tag.replace(/([a-z0-9])([A-Z])/g, '$1 $2').replac
 
 const tidy = s => s.replace(/[ \t]{2,}/g, ' ').replace(/\s+([,.!?])/g, '$1').trim();
 
+// An emoji can sit between two sentences ("Same 😂 Let's go"). Once it is
+// dropped, or read out at the end, the first sentence needs its full stop.
+const joinAcross = (left, right) =>
+  /[A-Za-z0-9)]\s*$/.test(left) && /^\s*[A-Z]/.test(right) ? `${left.trimEnd()}.${right}` : left + right;
+
 /** Keep or drop each token by the sender's voice; a loud voice doubles an exclamation. */
 export function styleMessage(text, voice = {}, rng = () => 0.5) {
   const e = voice.emoji ?? 0.5, t = voice.hashtags ?? 0.5, caps = voice.caps ?? 0;
-  let out = '';
+  let out = '', dropped = false;
   for (const p of tokenize(text)) {
     if (p.type === 'text') {
       let v = p.v;
       if (caps > 0 && rng() < caps * 0.5) v = v.replace(/!/g, '!!');
-      out += v;
+      out = dropped ? joinAcross(out, v) : out + v;
+      dropped = false;
     } else if (p.type === 'emoji') {
-      if (rng() < 0.3 + 0.7 * e) out += `{e:${p.v}}`;
-    } else if (rng() < 0.25 + 0.75 * t) out += `{t:${p.v}}`;
+      if (rng() < 0.3 + 0.7 * e) out += `{e:${p.v}}`; else dropped = true;
+    } else if (rng() < 0.25 + 0.75 * t) out += `{t:${p.v}}`; else dropped = true;
   }
   const cleaned = tidy(out);
   const bare = cleaned.replace(/\{[et]:[A-Za-z0-9]+\}/g, '').trim();
@@ -78,7 +84,7 @@ function speakText(s) {
 
 export function dictation(text, lead = 'Message', close = 'Send') {
   const parts = tokenize(text);
-  const quoted = speakText(parts.filter(p => p.type === 'text').map(p => p.v).join(' '));
+  const quoted = speakText(parts.filter(p => p.type === 'text').map(p => p.v).reduce(joinAcross, ''));
   const extras = parts.filter(p => p.type !== 'text')
     .map(p => p.type === 'emoji' ? cap(EMOJI[p.v]?.[1] ?? 'emoji') : `Hashtag ${tagWords(p.v)}`);
   const said = quoted ? `${lead}: "${cap(quoted)}."` : `${lead}:`;

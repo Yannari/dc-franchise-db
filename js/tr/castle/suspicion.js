@@ -42,11 +42,11 @@ function pick(rng, arr) { return arr[Math.floor(rng() * arr.length)]; }
 // recipient or it has not travelled.
 const NOTICE_LINES = {
   noticed: [
-    '{a} notices that {b}’s story about last night has changed since this morning.\n{a} (to camera): "This morning {b} said the kitchen. Just now it was the library. Small thing. I’m keeping it."',
-    '{b} answers a simple question a bit too quickly, and {a} notices.\n{a} (to camera): {cam:holding-info}',
+    '{a} notices that {b}’s story about last night has changed since this morning.\n{a}: "Where did you say you were last night?"\n{b}: "The library. Why?"\n{a} (to camera): "This morning {b} said the kitchen. Just now it was the library. Small thing. I’m keeping it."',
+    '{b} answers a simple question a bit too quickly, and {a} notices.\n{a}: "What time did you go up?"\n{b}: "Eleven. Why do you ask?"\n{a} (to camera): {cam:holding-info}',
     '{a} and {b} are chatting when {b} gets a detail about yesterday wrong.\n{b}: "I was with you, remember?"\n{a}: "Were you? I thought you were upstairs."\n{b}: "No, I was — never mind."\n{a} lets it go, for now.',
     '{a} asks {b} something harmless about last night, and doesn’t like the answer.\n{a}: {say:ask-where}\n{b}: {say:answer-shaky}\n{a}: "Right. Okay."',
-    '{b} mentions going up to bed early. {a} is sure {aSub} saw {bObj} downstairs later.\n{a} (to camera): "Either I’m wrong about the time, or {b} is lying about it. I don’t think I’m wrong."',
+    '{b} mentions going up to bed early. {a} is sure {aSub} saw {bObj} downstairs later.\n{b}: "I was in bed by ten, easy."\n{a}: "Were you?"\n{a} (to camera): "Either I’m wrong about the time, or {b} is lying about it. I don’t think I’m wrong."',
   ],
   'asked-about-it': [
     '{a} doesn’t let it go. {a} asks {b} straight out.\n{a}: "This morning you said you went straight up. Now you’re saying the kitchen. Which was it?"\n{b}: "Both? I went to the kitchen, then up."\n{a}: "You didn’t say that this morning."\n{b}: "Because you didn’t ask this morning."',
@@ -55,9 +55,9 @@ const NOTICE_LINES = {
     '{a} asks {b} about it, calmly, and watches the whole answer.\n{a}: "Something you said doesn’t match. I’m just asking."\n{b}: {say:deny}\n{a}: "Okay. I just wanted to hear you say it."',
   ],
   'let-it-pass': [
-    '{a} notices {b}’s story has a gap in it, and decides it’s just a bad memory.\n{a} (to camera): {cam:drop-it}',
-    '{a} nearly says something about {b}’s story, and stops.\n{a} (to camera): "I get my own evenings muddled all the time. I’m not hanging {b} for that."',
-    '{a} hears {b} tell last night slightly differently, and lets it pass.\n{a} (to camera): "Everyone gets mixed up in here. I’m not going to jump on it."',
+    '{a} notices {b}’s story has a gap in it, and decides it’s just a bad memory.\n{b}: "I think I went up after the fire. Or before? I don’t know."\n{a}: "Doesn’t matter."\n{a} (to camera): {cam:drop-it}',
+    '{a} nearly says something about {b}’s story, and stops.\n{b}: "…and then I went straight up."\n{a}: "Right."\n{a} (to camera): "I get my own evenings muddled all the time. I’m not hanging {b} for that."',
+    '{a} hears {b} tell last night slightly differently, and lets it pass.\n{b}: "Then I was in the kitchen, I think."\n{a}: "Mm."\n{a} (to camera): "Everyone gets mixed up in here. I’m not going to jump on it."',
     '{a} spots the detail and decides not to make a thing of it.\n{a} (to camera): {cam:drop-it}',
   ],
   'told-somebody': [
@@ -177,9 +177,9 @@ const OVERHEARD_LINES = {
   ],
   'told-somebody-else': [
     '{a} and {b} saw {c} and {d} go quiet. By bedtime, someone else knows about it too.\n{a}: "We told one person."\n{b}: "And now it’s round the castle."\n{a}: "Great."',
-    '{a} and {b} mention what they saw to one other person, and it spreads.\n{b} (to camera): "I only said it once. Now everyone’s asking {c} and {d} what they were talking about."',
+    '{a} and {b} mention what they saw to one other person, and it spreads.\n{a}: "Who did you tell?"\n{b}: "One person. One!"\n{b} (to camera): "I only said it once. Now everyone’s asking {c} and {d} what they were talking about."',
     '{a} tells the story of {c} and {d} at dinner, and it takes on a life of its own.\n{b}: "You made it sound worse than it was."\n{a}: "I just said what we saw."',
-    'What {a} and {b} saw is in somebody else’s hands within the hour.\n{a} (to camera): "I didn’t mean for it to go round. But it has, and I’m not sorry."',
+    'What {a} and {b} saw is in somebody else’s hands within the hour.\n{b}: "Did you tell anyone?"\n{a}: "One person. It’s gone round."\n{a} (to camera): "I didn’t mean for it to go round. But it has, and I’m not sorry."',
   ],
   'saw-it-alone': [
     '{a} sees {c} and {d} walk off together, then come back separately.\n{a} (to camera): {cam:holding-info}',
@@ -586,13 +586,13 @@ const WHISPER_LINES = {
     '{a} starts talking about {c}. {b} shuts it down.\n{b}: "Say it to {c}, or don’t say it."\n{a}: "I’m just talking."\n{b}: "Behind {cPos} back. I’m not doing that."',
     '{a} brings up {c}, and {b} won’t join in.\n{b}: "I’m not gossiping about someone who isn’t here."\n{a}: "It’s not gossip. It’s the game."\n{b}: "Then play it to {cPos} face."',
     '{a} wants to talk about {c}. {b} changes the subject.\n{a}: "Did you hear what I said?"\n{b}: "I did. I’m not getting into it."',
-    '{b} won’t say anything about {c} while {c} isn’t there.\n{b}: "Not like this."\n{a} (to camera): "{b} wouldn’t touch it. I don’t know if that’s loyalty or something else."',
+    '{b} won’t say anything about {c} while {c} isn’t there.\n{b}: "Not like this."\n{a}: "I’m only saying what I’ve seen."\n{a} (to camera): "{b} wouldn’t touch it. I don’t know if that’s loyalty or something else."',
   ],
   'took-it-away': [
     '{b} agrees with everything {a} says about {c}, and gives nothing back.\n{a}: {say:suspect:{c}}\n{b}: "Interesting. Very interesting."\n{a} (to camera): "{b} took all of that and didn’t give me a thing. Hmm."',
     '{a} gives {b} a full read on {c}. {b} takes it and says thanks.\n{b}: "Thanks for that. Really useful."\n{a}: "Your turn."\n{b}: "I haven’t got anything. Sorry."',
     '{a} hands {b} everything {aSub} has on {c}.\n{b}: "Keep going."\n{a}: "That’s all of it. What have you got?"\n{b}: "Nothing yet."',
-    '{b} listens to all of {a}’s theory about {c}, nodding.\n{b} (to camera): "Useful. I’ll keep it. {a} doesn’t need to know what I think."',
+    '{b} listens to all of {a}’s theory about {c}, nodding.\n{a}: "So you agree with me about {c}?"\n{b}: "I agree it’s interesting."\n{b} (to camera): "Useful. I’ll keep it. {a} doesn’t need to know what I think."',
   ],
 };
 
@@ -686,11 +686,11 @@ const ACCUSE_LINES = {
     '{a} accuses {b} to {bPos} face, and {b} takes it apart point by point.\n{a}: "I think you’re a Traitor."\n{b}: {say:deny}\n{a}: "Then explain yesterday."\n{b} does, calmly, and {a} runs out of things to say.',
     '{a} pushes {b} hard. {b} doesn’t flinch.\n{a}: "Just tell me the truth."\n{b}: "I am. You’re just not listening."',
     '{a} lays it out. {b} answers every part of it.\n{a}: "You voted one way, then argued the other way the next day."\n{b}: "Because I changed my mind. People do that."',
-    '{a} confronts {b}, and {b} stays completely calm.\n{b}: "Say it to the table if you’re so sure. I’ll answer there too."',
+    '{a} confronts {b}, and {b} stays completely calm.\n{b}: "Say it to the table if you’re so sure. I’ll answer there too."\n{a}: "I will, then."',
   ],
   denyWeak: [
     '{a} accuses {b}, and the denial doesn’t sound right.\n{a}: "It’s you, isn’t it?"\n{b}: "No! No. It’s not — why would you say that?"\n{a}: "That was a lot of no’s."',
-    '{b} says the words, but {bPos} voice doesn’t match them.\n{b}: "That’s not true."\n{a} (to camera): "{b} said it wasn’t true. {b} didn’t look at me when {bSub} said it."',
+    '{b} says the words, but {bPos} voice doesn’t match them.\n{b}: "That’s not true."\n{a}: "Look at me and say it."\n{a} (to camera): "{b} said it wasn’t true. {b} didn’t look at me when {bSub} said it."',
     '{a} watches {b} deny it and gets more sure, not less.\n{b}: {say:deny}\n{a}: "You’re sweating."\n{b}: "It’s warm in here!"',
     '{b}’s answer to {a} goes on too long.\n{b}: "I was in bed, I was — honestly, I was in bed, why would I — ask anyone."\n{a}: "I’m asking you."',
   ],
@@ -813,12 +813,12 @@ const TIMELINE_LINES = {
     '{a} and {b} go through {c}’s day hour by hour. Every hour, somebody saw {cObj}.\n{a}: "It all checks out."\n{b}: "Annoyingly."',
     '{c}’s timeline holds up. {a} was hoping it wouldn’t.\n{a}: "I really thought we’d find something."\n{b}: "Maybe {c}’s just innocent."',
     '{a} and {b} check {c}’s story from every angle.\n{b}: "Every minute accounted for."\n{a}: "Fine. {c}’s clear. For now."',
-    '{a} and {b} compare notes and find nothing wrong with {c}.\n{a} (to camera): "Clean. Either {c}’s Faithful, or very, very good."',
+    '{a} and {b} compare notes and find nothing wrong with {c}.\n{a}: "{c} was where {c} said, every hour."\n{b}: "Then it’s not {c}."\n{a} (to camera): "Clean. Either {c}’s Faithful, or very, very good."',
   ],
   'lost-the-hour': [
     '{a} and {b} try to check {c}’s story and can’t agree on their own.\n{a}: "Dinner was at eight."\n{b}: "It was nine."\n{a}: "Then we’re useless."',
     '{a} and {b} give up trying to check {c}.\n{b}: "We can’t even remember our own night."\n{a}: "No. This is hopeless."',
-    '{a} and {b} get the times muddled and abandon it.\n{a}: "Forget it. We’ll never pin it down."',
+    '{a} and {b} get the times muddled and abandon it.\n{a}: "Forget it. We’ll never pin it down."\n{b}: "It was either half ten or half eleven."\n{a}: "That’s the whole problem."',
     '{a} and {b} argue about what time everything happened, and never get to {c}.\n{b}: "This castle has no clocks."\n{a}: "That’s the problem."',
   ],
   'one-of-us-was-there': [
@@ -1091,7 +1091,7 @@ const SHAPE_GUESS_LINES = {
     '{a} and {b} had a map of the castle a week ago. Tonight they tear it up.\n{a}: "None of this is right any more."\n{b}: "Too many people have gone."\n{a}: "And too many have changed sides."',
     '{a} and {b} start their alliance map again from scratch.\n{b}: "Who’s with who now?"\n{a}: "Honestly? No idea. Let’s start again."',
     'The map {a} and {b} built doesn’t survive the week.\n{a}: "Two of our groups don’t exist any more."\n{b}: "Then we draw new ones."',
-    '{a} and {b} redraw the castle, and it looks completely different.\n{b} (to camera): "It changes every day. That’s what makes it hard."',
+    '{a} and {b} redraw the castle, and it looks completely different.\n{a}: "Yesterday those two were in different groups."\n{b}: "Today they’re sitting together."\n{b} (to camera): "It changes every day. That’s what makes it hard."',
   ],
   'drew-it-alone': [
     '{a} notices who always ends up next to who at the table.\n{a} (to camera): "Same people, same seats, every night. That’s not an accident."',
@@ -1210,30 +1210,30 @@ const OVERCORRECT_LINES = {
     '{a} asks {b} a simple question, and gets a very long answer.\n{a}: "Did you sleep alright?"\n{b}: "Yes, I went up at ten, well, quarter past, I was with — why do you ask?"\n{a}: "I just asked if you slept."',
     '{b} explains {bRef} for far longer than the question needs.\n{a}: "It was only a question."\n{b}: "I know, I just want to be clear."',
     '{a} asks something polite and gets a full defence back.\n{a}: "Nice day for it."\n{b}: "I wasn’t anywhere near the tower, if that’s what you mean."\n{a}: "It isn’t."',
-    '{b} over-explains to {a}, and it doesn’t help.\n{a} (to camera): "I asked one thing. {b} answered five. That tells me something."',
+    '{b} over-explains to {a}, and it doesn’t help.\n{a}: "I just asked when you went up."\n{b}: "Right, yes, eleven, but before that I was in the kitchen, and before that—"\n{a} (to camera): "I asked one thing. {b} answered five. That tells me something."',
   ],
   'caught-themselves': [
     '{b} hears {bRef} rambling halfway through and stops.\n{b}: "I was — sorry. Anyway. What did you ask?"\n{a}: "Nothing important."',
-    '{b} realises {a} only asked one thing.\n{b}: "Sorry, I’m going on. Ignore me."\n{a} (to camera): "{b} caught {bRef}. That was almost worse."',
+    '{b} realises {a} only asked one thing.\n{b}: "Sorry, I’m going on. Ignore me."\n{a}: "You’re fine. Go on."\n{a} (to camera): "{b} caught {bRef}. That was almost worse."',
     '{b} stops dead mid-sentence.\n{b}: "I don’t know why I’m telling you all this."\n{a}: "Neither do I."',
     '{b} goes quiet halfway through a long answer.\n{b}: "Anyway. Doesn’t matter."\n{a}: "It seemed to matter a minute ago."',
   ],
   'it-worked': [
-    '{b} buries {a} in detail, and somewhere in it {a} decides {b} is just anxious.\n{a} (to camera): "Too much information. But I think {b} is just nervous, not guilty."',
+    '{b} buries {a} in detail, and somewhere in it {a} decides {b} is just anxious.\n{b}: "…and then I put the kettle on, and then—"\n{a}: "Okay. Okay. I believe you."\n{a} (to camera): "Too much information. But I think {b} is just nervous, not guilty."',
     '{b}’s long answer ends up convincing {a}.\n{a}: "Okay. I believe you."\n{b}: "Thank God."',
-    '{a} doesn’t enjoy it, but {b}’s over-explaining works.\n{a} (to camera): "It was a lot. But it hung together."',
-    '{b} talks too much, and {a} ends up trusting {bObj} more.\n{a}: "You’re a terrible liar. So I don’t think you’re lying."',
+    '{a} doesn’t enjoy it, but {b}’s over-explaining works.\n{b}: "…and that’s everything, I think. Every minute."\n{a}: "That was a lot of minutes."\n{a} (to camera): "It was a lot. But it hung together."',
+    '{b} talks too much, and {a} ends up trusting {bObj} more.\n{a}: "You’re a terrible liar. So I don’t think you’re lying."\n{b}: "Is that a compliment?"',
   ],
   'nobody-asked-you': [
     '{a} cuts {b} off in the middle of it.\n{a}: "I didn’t ask you that."\n{b}: "I just thought—"\n{a}: "I asked about lunch."',
     '{a} lets {b} finish, then asks the original question again.\n{a}: "So. Who’s washing up?"\n{b}: "...Me. I’ll do it."',
     '{a} points out that nobody accused {b} of anything.\n{a}: "Nobody said you did anything."\n{b}: "I know. I just wanted to say."\n{a} (to camera): "Guilty people explain before they’re asked."',
-    '{a} stops {b} mid-defence.\n{a}: "Why are you defending yourself? I didn’t say anything."',
+    '{a} stops {b} mid-defence.\n{a}: "Why are you defending yourself? I didn’t say anything."\n{b}: "Oh. Right. Sorry."',
   ],
   'let-it-go': [
-    '{a} decides {b} is scared, not careful.\n{a} (to camera): "{b} over-explains everything. That’s nerves, not guilt."',
+    '{a} decides {b} is scared, not careful.\n{a}: "You alright? You’re talking very fast."\n{b}: "I’m just nervous. Everyone’s so tense."\n{a} (to camera): "{b} over-explains everything. That’s nerves, not guilt."',
     '{b} over-explains and {a} lets {bObj} off.\n{a}: "It’s fine. Honestly. Breathe."\n{b}: "Sorry. I’m just on edge."',
-    '{a} lets {b} ramble and doesn’t hold it against {bObj}.\n{a} (to camera): "Everyone explains too much in here. It’s the stress."',
+    '{a} lets {b} ramble and doesn’t hold it against {bObj}.\n{b}: "Sorry. I talk when I’m nervous."\n{a}: "We all do in here."\n{a} (to camera): "Everyone explains too much in here. It’s the stress."',
     '{a} gives {b} the benefit of the doubt.\n{a}: "You’re alright, {b}."\n{b}: "Am I? Thanks."',
   ],
 };
@@ -1339,39 +1339,39 @@ registerEvent({
 const GROUP_PRESSURE_LINES = {
   holds: [
     'A few people start questioning {b} at once. {b} doesn’t budge.\n{a}: "Just tell us where you were."\n{b}: "I’ve told you. Asking louder won’t change it."',
-    'The group turns on {b}, and {b} waits them out.\n{b}: "Are you done? Because my answer’s the same."',
-    'Everyone’s asking {b} questions at once. {b} stays calm.\n{b}: "One at a time. I’ll answer all of you."',
+    'The group turns on {b}, and {b} waits them out.\n{b}: "Are you done? Because my answer’s the same."\n{a}: "Then say it again."',
+    'Everyone’s asking {b} questions at once. {b} stays calm.\n{b}: "One at a time. I’ll answer all of you."\n{a}: "Fine. Where were you?"',
     '{a} leads the questions, and {b} holds firm.\n{a}: "Something doesn’t add up with you."\n{b}: {say:deny}',
   ],
   cracks: [
     'The group presses {b}, and {b} starts contradicting {bRef}.\n{a}: "You said the library."\n{b}: "I said — no, I said the hall. Didn’t I?"\n{a}: "You said the library."',
-    '{b} folds under the pressure fast.\n{b}: "I don’t know! I don’t remember! Stop asking me!"\n{a} (to camera): "That was not how an innocent person answers."',
+    '{b} folds under the pressure fast.\n{b}: "I don’t know! I don’t remember! Stop asking me!"\n{a}: "Nobody’s shouting, {b}."\n{a} (to camera): "That was not how an innocent person answers."',
     'It takes less than a minute for {b} to get tangled up.\n{a}: "Which one is it?"\n{b}: "Both. Neither. I don’t know."',
     '{b} can’t get the story straight with everyone watching.\n{b}: {say:answer-shaky}\n{a}: "That’s not what you said this morning."',
   ],
   redirects: [
     'The group turns on {b}, and {b} points them at somebody else.\n{b}: "Why are you all on me? Ask the quiet ones where they were."\n{a}: "We’re asking you."\n{b}: "And I’m telling you to look somewhere else."',
-    '{b} takes the pressure and turns it round.\n{b}: "You know who hasn’t said a word all day? Think about that."',
-    'By the end, the room has forgotten it was ever asking {b} anything.\n{a} (to camera): "{b} was brilliant. We walked in about {b} and walked out talking about someone else."',
-    '{b} deflects so smoothly that {a} doesn’t notice until later.\n{b}: "Honestly, if I was you I’d look at who’s been pushing this."',
+    '{b} takes the pressure and turns it round.\n{b}: "You know who hasn’t said a word all day? Think about that."\n{a}: "Who?"\n{b}: "You tell me."',
+    'By the end, the room has forgotten it was ever asking {b} anything.\n{b}: "Why is nobody asking the person who’s been silent all day?"\n{a}: "…Actually, that’s a good point."\n{a} (to camera): "{b} was brilliant. We walked in about {b} and walked out talking about someone else."',
+    '{b} deflects so smoothly that {a} doesn’t notice until later.\n{b}: "Honestly, if I was you I’d look at who’s been pushing this."\n{a}: "Pushing what?"\n{b}: "Me. All day. Ask yourself why."',
   ],
   overcorrected: [
     '{b} explains {bRef} to the group for far too long.\n{b}: "I went up at ten, I cleaned my teeth, I read for a bit, I—"\n{a}: "Nobody asked for all that."',
-    'The group asks {b} one thing, and {b} answers everything.\n{a} (to camera): "Way too much detail. That’s what liars do."',
+    'The group asks {b} one thing, and {b} answers everything.\n{a}: "We only asked where you were."\n{b}: "I know, I’m just giving you everything."\n{a} (to camera): "Way too much detail. That’s what liars do."',
     '{b} over-defends and makes it worse.\n{b}: "And another thing—"\n{a}: "Stop. Just stop talking."',
     '{b} gives a speech nobody asked for.\n{a}: "That was a lot."\n{b}: "I just want you all to know."',
   ],
   'walked-away': [
-    '{b} stands up in the middle of it and leaves.\n{b}: "I’m not doing this tonight."\n{a} (to camera): "Walking out. Guilty or fed up? I honestly can’t tell."',
-    '{b} gets up and goes.\n{b}: "Talk about me when I’m not here, then. You will anyway."',
-    '{b} leaves the room while the group is still asking questions.\n{a}: "Well. That settles that."',
-    '{b} walks out, and the room has to decide what that means.\n{a}: "Is that an answer?"',
+    '{b} stands up in the middle of it and leaves.\n{b}: "I’m not doing this tonight."\n{a}: "We’re not finished!"\n{a} (to camera): "Walking out. Guilty or fed up? I honestly can’t tell."',
+    '{b} gets up and goes.\n{b}: "Talk about me when I’m not here, then. You will anyway."\n{a}: "We just want answers."',
+    '{b} leaves the room while the group is still asking questions.\n{a}: "Well. That settles that."\n{b}: "It settles nothing. I’m tired."',
+    '{b} walks out, and the room has to decide what that means.\n{a}: "Is that an answer?"\n{b}: "It’s me going to bed."',
   ],
   'admitted-something-else': [
     'Under all the pressure, {b} admits to something, and it isn’t what anybody wanted.\n{b}: "Fine! I’ve been voting with the same people on purpose. We made a deal. That’s all!"\n{a}: "A deal?"\n{b}: "Not a Traitor deal. A normal one."',
     '{b} cracks on a different thing entirely.\n{b}: "I lied about the mission. I didn’t find anything. I said I did."\n{a}: "That’s not what we asked."',
-    '{b} gives up something real, and the room doesn’t know what to do with it.\n{b}: "I’ve been scared the whole time. That’s why I’m quiet. That’s all it is."',
-    '{b} admits to something small to get the group off {bPos} back.\n{a} (to camera): "{b} gave us a little secret so we’d stop looking for a big one."',
+    '{b} gives up something real, and the room doesn’t know what to do with it.\n{b}: "I’ve been scared the whole time. That’s why I’m quiet. That’s all it is."\n{a}: "Scared of what?"\n{b}: "Of this. Of you lot."',
+    '{b} admits to something small to get the group off {bPos} back.\n{b}: "Fine. I went downstairs to eat biscuits. At midnight. Happy?"\n{a}: "…Biscuits."\n{a} (to camera): "{b} gave us a little secret so we’d stop looking for a big one."',
   ],
 };
 
@@ -1487,8 +1487,8 @@ const MISREAD_LINES = {
   'asked-them': [
     '{a} asks {b} about it directly.\n{a}: "Why do you do that with your sleeve?"\n{b}: "What sleeve?"\n{a}: "When we talk about the murders."\n{b}: "I genuinely have no idea what you mean."',
     '{a} puts it to {b}.\n{a}: "You always touch your face when someone mentions the Traitors."\n{b}: "Do I? I’ve got a spot. That’s all."',
-    '{a} asks {b} what {aSub} thinks it means.\n{b}: "It means I’m cold, {a}. That’s all it means."',
-    '{a} asks, and {b} has no idea what {aSub} is talking about.\n{b}: "You’ve been watching my hands? That’s weird."',
+    '{a} asks {b} what {aSub} thinks it means.\n{b}: "It means I’m cold, {a}. That’s all it means."\n{a}: "Every time the murders come up."\n{b}: "Because it’s freezing in that room!"',
+    '{a} asks, and {b} has no idea what {aSub} is talking about.\n{b}: "You’ve been watching my hands? That’s weird."\n{a}: "Just when the murders come up."\n{b}: "I scratch my nose. That’s it."',
   ],
   'heard-it-out-loud': [
     '{a} says the whole theory about {b} out loud, alone, and it falls apart.\n{a} (to camera): "I said it out loud and it was a sleeve. It was literally just a sleeve."',

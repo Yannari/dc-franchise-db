@@ -142,25 +142,25 @@ const RECOGNIZED_LINES = {
     '{a} and {b} spot each other and grin.\n{b}: "You swore you’d never do another one."\n{a}: "So did you."',
     '{a} and {b} clock each other from a season they both played.\n{a}: "Well, well."\n{b}: "Don’t. I know."\n{a}: "Last time you told me you’d never do one of these again."',
     '{a} spots {b} across the hall and grins.\n{b}: "Here we go again."\n{a}: "Here we go again."',
-    '{a} and {b} hug like old friends.\n{b} (to camera): "{a} and me go way back. Everyone’s about to find that out."',
+    '{a} and {b} hug like old friends.\n{a}: "Look at you!"\n{b}: "Look at YOU. You swore you’d never do another one."\n{b} (to camera): "{a} and me go way back. Everyone’s about to find that out."',
   ],
   'left-it-at-the-door': [
-    '{a} gives {b} a polite nod and nothing else.\n{a} (to camera): "We’ve played before. Nobody needs to know yet."',
+    '{a} gives {b} a polite nod and nothing else.\n{b}: "Nice to meet you."\n{a}: "Likewise."\n{a} (to camera): "We’ve played before. Nobody needs to know yet."',
     '{a} and {b} shake hands like strangers.\n{a}: "Nice to meet you."\n{b}: "Likewise."\n{b} (to camera): "We’ve met. Nobody needs to know that."',
-    '{a} and {b} pretend they’ve never met.\n{a} (to camera): "We played together before. Not a word. Not yet."',
-    '{a} gives {b} a tiny nod, and nothing more.\n{b} (to camera): "History’s a target. We’re keeping it quiet."',
+    '{a} and {b} pretend they’ve never met.\n{a}: "Hi. I’m {a}."\n{b}: "{b}. Lovely to meet you."\n{a} (to camera): "We played together before. Not a word. Not yet."',
+    '{a} gives {b} a tiny nod, and nothing more.\n{b}: "Morning."\n{a}: "Morning."\n{b} (to camera): "History’s a target. We’re keeping it quiet."',
   ],
   'still-owed': [
     '{a} sees {b} and the smile drops.\n{b}: "Hello again."\n{a}: "Hello."',
-    '{a} recognises {b} across the hall and goes very still.\n{a} (to camera): "Of all the people. {b}. I haven’t forgotten."',
+    '{a} recognises {b} across the hall and goes very still.\n{b}: "{a}. Long time."\n{a}: "Not long enough."\n{a} (to camera): "Of all the people. {b}. I haven’t forgotten."',
     '{a} sees {b} and the smile drops.\n{b}: "Hi, {a}."\n{a}: "{b}."',
-    '{a} and {b} meet again, coldly.\n{a} (to camera): "{b} owes me. {b} knows it."',
+    '{a} and {b} meet again, coldly.\n{b}: "No hard feelings, I hope."\n{a}: "We’ll see."\n{a} (to camera): "{b} owes me. {b} knows it."',
   ],
   'said-it-to-the-room': [
-    '{a} tells the whole table.\n{a}: "Me and {b} go back. Might as well know now."\n{b} (to camera): "Thanks for that."',
-    '{a} tells the whole table about {b}.\n{a}: "Me and {b} have played together before. Better you hear it from me."\n{b} (to camera): "Thanks for that, {a}."',
+    '{a} tells the whole table.\n{a}: "Me and {b} go back. Might as well know now."\n{a}: "Better now than at the table."\n{b} (to camera): "Thanks for that."',
+    '{a} tells the whole table about {b}.\n{a}: "Me and {b} have played together before. Better you hear it from me."\n{a}: "You’d have done the same."\n{b} (to camera): "Thanks for that, {a}."',
     '{a} outs the history to the room.\n{a}: "I’d rather say it now than have it come out later."',
-    '{a} announces the connection.\n{b}: "Well, that’s put a target on both of us."',
+    '{a} announces the connection.\n{b}: "Well, that’s put a target on both of us."\n{a}: "It was always going to come out."',
   ],
 };
 
@@ -243,20 +243,20 @@ const REFORM_LINES = {
   'alliance-reformed': [
     '{a} and {b} shake hands in the library, like old times.\n{b}: "Same as before?"\n{a}: "Same as before."',
     '{a} and {b} pick their old alliance back up like no time has passed.\n{a}: "Same as before?"\n{b}: "Same as before."',
-    '{a} and {b} shake on it again.\n{b} (to camera): "{a} and me worked last time. Why change it?"',
+    '{a} and {b} shake on it again.\n{a}: "Same as last time?"\n{b}: "Same as last time."\n{b} (to camera): "{a} and me worked last time. Why change it?"',
     '{a} and {b} slip straight back into it.\n{a}: "I’ve missed this."\n{b}: "Me too."',
   ],
   'renegotiated-it': [
     '{a} and {b} set new terms.\n{b}: "You left me hanging at the end last time."\n{a}: "Not this time. Promise."',
     '{a} and {b} rebuild it from the start, on new terms.\n{b}: "Last time, you let me down at the end."\n{a}: "So this time we write it down."\n{b}: "In our heads."',
-    '{a} and {b} set new rules.\n{a} (to camera): "Old alliance, new rules. Learned my lesson."',
-    '{a} and {b} renegotiate.\n{b}: "Different game. Different deal."',
+    '{a} and {b} set new rules.\n{b}: "No surprises at the end this time."\n{a}: "No surprises. I promise."\n{a} (to camera): "Old alliance, new rules. Learned my lesson."',
+    '{a} and {b} renegotiate.\n{b}: "Different game. Different deal."\n{a}: "Better deal, I hope."',
   ],
   'not-the-same-terms': [
     '{b} turns the old deal down gently.\n{b}: "I’m playing my own game this time."\n{a}: "Right."',
     '{a} wants it back exactly as it was. {b} doesn’t.\n{b}: "I love you. But not like last time."\n{a}: "What does that mean?"\n{b}: "It means I’m playing my own game."',
-    '{b} turns down the old deal.\n{a} (to camera): "{b} said no. Kindly. Twice."',
-    '{b} wants something different.\n{b}: "Friends, yes. Alliance, not yet."',
+    '{b} turns down the old deal.\n{a}: "Just like before?"\n{b}: "Not just like before. Sorry."\n{a} (to camera): "{b} said no. Kindly. Twice."',
+    '{b} wants something different.\n{b}: "Friends, yes. Alliance, not yet."\n{a}: "Not yet?"\n{b}: "Give it a week."',
   ],
   'somebody-noticed': [
     '{c} catches {a} and {b} whispering in the corridor.\n{c}: "Old friends, is it?"\n{a}: "Just catching up."',
@@ -335,24 +335,24 @@ const GRUDGE_LINES = {
     '{a} stops {b} at the door.\n{a}: "You haven’t apologised. Not once."\n{b}: "For a game?"',
     '{a} still hasn’t forgiven what {b} did, seasons ago, and makes sure {b} knows it.\n{a}: "You remember what you did."\n{b}: "That was years ago."\n{a}: "Not to me."',
     '{a} brings up the past.\n{a}: "You stabbed me in the back once. Not again."',
-    '{a} holds the grudge tight.\n{a} (to camera): "{b} knows what {bSub} did. I’m not letting it go."',
+    '{a} holds the grudge tight.\n{a}: "You know what you did."\n{b}: "It was a game."\n{a}: "It was my game."\n{a} (to camera): "{b} knows what {bSub} did. I’m not letting it go."',
   ],
   'said-it-once-and-stopped': [
     '{a} says it across the table, once.\n{a}: "I remember what you did."\nThen {aSub} passes the salt.',
     '{a} says it once, quietly, then never again all evening.\n{a}: "I haven’t forgotten."\n{b}: "I know."',
-    '{a} lets {b} know, and leaves it there.\n{b} (to camera): "One sentence. That was enough."',
+    '{a} lets {b} know, and leaves it there.\n{a}: "I haven’t forgotten."\n{b}: "I know."\n{b} (to camera): "One sentence. That was enough."',
     '{a} mentions the past, briefly.\n{a} (to camera): "Said it. Done. Now we play."',
   ],
   'wants-something-for-it': [
     '{a} doesn’t want sorry.\n{a}: "Vote with me tonight and we’re even."\n{b}: "And if I don’t?"\n{a}: "Then we’re not."',
     '{a} doesn’t want an apology from {b}. {a} wants a vote.\n{a}: "You owe me. Tuesday, you vote with me."\n{b}: "And then we’re square?"\n{a}: "Then we’re square."',
-    '{a} cashes in the grudge.\n{a} (to camera): "{b} owes me one. I’m collecting."',
+    '{a} cashes in the grudge.\n{a}: "You owe me one. I want it tonight."\n{b}: "And then we’re square?"\n{a} (to camera): "{b} owes me one. I’m collecting."',
     '{a} names the price.\n{b}: "That’s steep."\n{a}: "So was what you did."',
   ],
   'let-it-go-at-last': [
     '{a} holds out a hand to {b}.\n{a}: "Water under the bridge."\n{b}: "Really?"\n{a}: "Really."',
     '{a} looks at {b} and decides it was a very long time ago.\n{a}: "You know what? I’m done being angry."\n{b}: "Really?"\n{a}: "Really."',
-    '{a} finally forgives {b}.\n{a} (to camera): "Holding onto it was only hurting me."',
+    '{a} finally forgives {b}.\n{a}: "I’m done being angry about it."\n{b}: "Really?"\n{a}: "Really."\n{a} (to camera): "Holding onto it was only hurting me."',
     '{a} offers {b} a hand.\n{a}: "Fresh start."\n{b}: "I’d like that."',
   ],
 };
@@ -417,20 +417,20 @@ const REUNION_LINES = {
   'reunion-spark': [
     '{a} and {b} end up by the fire long after everyone else.\n{b}: "This is exactly how it started last time."\n{a}: "I know."',
     '{a} and {b} find the old feelings haven’t gone anywhere.\n{b}: "Still there, then."\n{a}: "Still there."',
-    '{a} and {b} pick up where they left off.\n{a} (to camera): "I told myself I was over it. I was lying."',
+    '{a} and {b} pick up where they left off.\n{b}: "This is how it started last time."\n{a}: "I know. I’m not stopping it."\n{a} (to camera): "I told myself I was over it. I was lying."',
     '{a} and {b} end up by the fire together.\n{b}: "This is a terrible idea."\n{a}: "The worst."',
   ],
   'agreed-not-to': [
     '{a} and {b} agree before anything can happen.\n{a}: "Not again. Not in here."\n{b}: "Agreed."',
     '{b} says it before {a} can.\n{b}: "Not here."\n{a}: "No. Not here."\n{a} (to camera): "Relieved. And not."',
-    '{a} and {b} agree to keep it in the past.\n{b} (to camera): "It was lovely. It’s over. It has to be."',
+    '{a} and {b} agree to keep it in the past.\n{a}: "Friends. That’s all."\n{b}: "That’s all."\n{b} (to camera): "It was lovely. It’s over. It has to be."',
     '{a} and {b} set a boundary.\n{a}: "Friends."\n{b}: "Just friends."',
   ],
   'one-of-them-still-is': [
-    '{b} talks about someone else {bSub} likes, and {a} smiles through it.\n{a} (to camera): "Fine. I’m fine."',
+    '{b} talks about someone else {bSub} likes, and {a} smiles through it.\n{b}: "Isn’t that sweet?"\n{a}: "Very sweet."\n{a} (to camera): "Fine. I’m fine."',
     '{b} is over it. {a} has been pretending to be since day one.\n{b}: "It’s so nice that we’re just mates now."\n{a}: "Yeah. So nice."',
-    '{a} still has feelings.\n{a} (to camera): "{b} moved on. I didn’t. Great."',
-    '{a} watches {b} laugh with someone else.\n{a} (to camera): "It shouldn’t sting. It stings."',
+    '{a} still has feelings.\n{b}: "It’s so nice we can just be mates now."\n{a}: "So nice."\n{a} (to camera): "{b} moved on. I didn’t. Great."',
+    '{a} watches {b} laugh with someone else.\n{b}: "You alright?"\n{a}: "Never better."\n{a} (to camera): "It shouldn’t sting. It stings."',
   ],
   'the-room-got-there-first': [
     '{a} and {b} walk in separately, and the table still whistles.\n{b}: "We came in separately!"\n{a}: "Doesn’t matter, apparently."',
@@ -509,25 +509,25 @@ const RIVALRY_LINES = {
   'rivalry-carried-over': [
     '{a} and {b} square up over the last croissant.\n{b}: "Still losing to me, then."\n{a}: "It’s day four."',
     'Whatever it was between {a} and {b} last time, it hasn’t cooled.\n{a}: "Still here, then."\n{b}: "Still beating you, then."',
-    '{a} and {b} square up again.\n{b} (to camera): "Same rivalry. Different castle."',
+    '{a} and {b} square up again.\n{b}: "Try and keep up this time."\n{a}: "Try and win something this time."\n{b} (to camera): "Same rivalry. Different castle."',
     '{a} and {b} trade barbs.\n{a}: "Try not to lose this one."\n{b}: "Try to keep up."',
   ],
   'called-a-truce': [
     '{b} offers a truce.\n{b}: "Different game. Different us."\n{a}: "Truce. For now."',
     '{b} calls a truce.\n{b}: "We were rivals last time. This is a different game."\n{a}: "Fair."\nBoth of them mean it.',
-    '{a} and {b} agree to put it aside.\n{a} (to camera): "Different game. Different rules. Truce."',
+    '{a} and {b} agree to put it aside.\n{b}: "Truce?"\n{a}: "For now."\n{a} (to camera): "Different game. Different rules. Truce."',
     '{a} and {b} shake on a ceasefire.\n{b}: "For now."\n{a}: "For now."',
   ],
   'reopened-it': [
     '{a} brings up the one moment from last time.\n{a}: "You know what you did in the final week."\n{b}: "Seriously? Still?"',
     '{a} raises the specific thing, by name, and {b} remembers it exactly.\n{a}: "That last night. You lied to my face."\n{b}: "I did not lie."\n{a}: "You absolutely lied."',
-    '{a} reopens the old argument.\n{b} (to camera): "{a} can’t let it go. Years later."',
-    '{a} brings up that one moment.\n{b}: "Seriously? Still?"',
+    '{a} reopens the old argument.\n{a}: "You know what you did in the final week."\n{b}: "We’ve been through this."\n{b} (to camera): "{a} can’t let it go. Years later."',
+    '{a} brings up that one moment.\n{b}: "Seriously? Still?"\n{a}: "Still."',
   ],
   'useful-rivalry': [
-    '{a} and {b} bicker loudly at breakfast, then wink at each other.\n{a} (to camera): "Nobody suspects two people who hate each other."',
+    '{a} and {b} bicker loudly at breakfast, then wink at each other.\n{a}: "You’re impossible."\n{b}: "And you’re predictable."\n{a} (to camera): "Nobody suspects two people who hate each other."',
     '{a} points out that the room thinks they hate each other, and that’s worth something.\n{a}: "Nobody will ever suspect us of working together."\n{b}: "Oh, that’s good."',
-    '{a} and {b} use the rivalry as a smokescreen.\n{b} (to camera): "Public enemies. Private allies. Perfect."',
+    '{a} and {b} use the rivalry as a smokescreen.\n{a}: "Keep fighting me in public."\n{b}: "With pleasure."\n{b} (to camera): "Public enemies. Private allies. Perfect."',
     '{a} and {b} agree to keep fighting in public.\n{a}: "Make it look real."\n{b}: "It was real."',
   ],
 };
@@ -583,27 +583,27 @@ registerEvent({
 // closes the arc now.
 const DEFEND_HISTORY_LINES = {
   'defended-by-history': [
-    '{a} stands up for {b} with history.\n{a}: "I’ve played with {b}. I know what {bSub} looks like lying. That isn’t it."',
-    '{a} shuts down the suspicion around {b} with history nobody else has.\n{a}: "I played with {b} before. I know exactly who {bSub} is. It’s not {bObj}."',
-    '{a} vouches for {b}.\n{a}: "I’ve seen {b} under pressure. {bSub} doesn’t lie."',
-    '{a} uses the past to defend {b}.\n{b} (to camera): "{a} had my back. Again."',
+    '{a} stands up for {b} with history.\n{a}: "I’ve played with {b}. I know what {bSub} looks like lying. That isn’t it."\n{b}: "Thank you."',
+    '{a} shuts down the suspicion around {b} with history nobody else has.\n{a}: "I played with {b} before. I know exactly who {bSub} is. It’s not {bObj}."\n{b}: "You didn’t have to."',
+    '{a} vouches for {b}.\n{a}: "I’ve seen {b} under pressure. {bSub} doesn’t lie."\n{b}: "Thank you, {a}."',
+    '{a} uses the past to defend {b}.\n{a}: "I’ve played with {b}. {b} doesn’t lie like that."\n{b}: "Thank you."\n{b} (to camera): "{a} had my back. Again."',
   ],
   'history-is-not-evidence': [
-    '{a} vouches for {b} from last time, and someone rolls their eyes.\n{a}: "It counts for something!"\n{b} (to camera): "It didn’t."',
-    '{a} defends {b} with their history, and somebody cuts in: that was a different show.\n{a}: "But I know {bObj}."\nNobody moves. {b} is still on the table.',
+    '{a} vouches for {b} from last time, and someone rolls their eyes.\n{a}: "It counts for something!"\n{b}: "You tried."\n{b} (to camera): "It didn’t."',
+    '{a} defends {b} with their history, and somebody cuts in: that was a different show.\n{a}: "But I know {bObj}."\n{b}: "Thanks anyway."\nNobody moves. {b} is still on the table.',
     '{a}’s defence doesn’t land.\n{a} (to camera): "They don’t care what happened before. Fair enough."',
-    '{a} tries history, and it fails.\n{b}: "Thanks for trying."',
+    '{a} tries history, and it fails.\n{b}: "Thanks for trying."\n{a}: "It should count for something."',
   ],
   'now-they-are-a-pair': [
     '{a} defends {b} so hard that they’re now one name.\n{b}: "You’ve tied us together."\n{a}: "We were already tied."',
-    '{a} defends {b} so completely that the castle stops counting them as two people.\n{b} (to camera): "Now we’re one target instead of two."',
+    '{a} defends {b} so completely that the castle stops counting them as two people.\n{a}: "If it’s {b}, it’s me too."\n{b}: "Don’t say that."\n{b} (to camera): "Now we’re one target instead of two."',
     '{a} goes all in for {b}.\n{a}: "If it’s {b}, it’s me as well."\n{b}: "Don’t say that."',
-    '{a} ties {aRef} to {b}.\n{a} (to camera): "In for a penny."',
+    '{a} ties {aRef} to {b}.\n{a}: "You and me, then."\n{b}: "You and me."\n{a} (to camera): "In for a penny."',
   ],
   'would-not-spend-it': [
     '{a} stays quiet about the past while {b} gets questioned.\n{b}: "You could have said something."\n{a}: "Not yet."',
     '{a} could say the thing about the old season, and doesn’t.\n{a} (to camera): "Not tonight. I’m saving it."',
-    '{a} stays quiet about the history.\n{b} (to camera): "{a} could have helped me. {a} didn’t."',
+    '{a} stays quiet about the history.\n{b}: "You could have said something."\n{a}: "Not yet."\n{b} (to camera): "{a} could have helped me. {a} didn’t."',
     '{a} keeps the card in {aPos} pocket.\n{a} (to camera): {cam:holding-info}',
   ],
 };
@@ -695,25 +695,25 @@ const WARN_LINES = {
   warned: [
     '{a} takes {c} aside.\n{a}: "Word of advice about {b}. Don’t turn your back."\n{c}: "Noted."',
     '{a} pulls {c} aside and tells {cObj} exactly what {b} is capable of.\n{a}: "I’ve played with {b}. Be careful."\n{c}: "Careful how?"\n{a}: "Just careful."',
-    '{a} warns {c} about {b}.\n{a}: "{b} will smile at you and then vote you out."',
-    '{a} gives {c} a warning.\n{c} (to camera): "{a} really doesn’t trust {b}."',
+    '{a} warns {c} about {b}.\n{a}: "{b} will smile at you and then vote you out."\n{c}: "You sound very sure."\n{a}: "I’ve seen it happen."',
+    '{a} gives {c} a warning.\n{a}: "Watch your back with {b}. I mean it."\n{c}: "Noted."\n{c} (to camera): "{a} really doesn’t trust {b}."',
   ],
   'already-knew': [
     '{a} warns {c} about {b}.\n{c}: "I worked that out on day one."\n{a}: "Oh. Good."',
     '{a} warns {c} about {b}.\n{c}: "I know."\n{a}: "You… know?"\n{c}: "I’m not stupid."',
     '{c} is ahead of {a}.\n{a} (to camera): "Didn’t expect the ‘I know’."',
-    '{c} already has {b} figured out.\n{c}: "Tell me something I don’t know."',
+    '{c} already has {b} figured out.\n{c}: "Tell me something I don’t know."\n{a}: "Oh. Good."',
   ],
   'defended-them-instead': [
     '{c} shakes {cPos} head at {a}.\n{c}: "{b}’s been kind to me all week."\n{a}: "That’s the trick."',
     '{c} listens, then defends {b}.\n{c}: "{b} has been nothing but decent to me this week."\n{a}: "That’s how it starts."',
     '{c} won’t hear it.\n{c}: "I judge people as I find them."',
-    '{c} sticks up for {b}.\n{a} (to camera): "{c} will learn."',
+    '{c} sticks up for {b}.\n{c}: "{b}’s been nothing but kind to me."\n{a}: "That’s how it starts."\n{a} (to camera): "{c} will learn."',
   ],
   'used-it-immediately': [
     '{c} repeats {a}’s warning at dinner, word for word.\n{a} (to camera): "That was meant to be private."',
     '{c} thanks {a} for the warning, and has it at the table within the hour.\n{a} (to camera): "I told {c} in confidence. Lesson learned."',
-    '{c} runs with the warning.\n{c}: "Someone who knows {b} says {bSub}’s dangerous."',
+    '{c} runs with the warning.\n{c}: "Someone who knows {b} says {bSub}’s dangerous."\n{a}: "That was between us!"',
     '{c} uses the information straight away.\n{a} (to camera): "Well, that backfired."',
   ],
 };
@@ -801,13 +801,13 @@ const DIFFERENT_PERSON_LINES = {
   redemption: [
     '{a} watches {b} help with the washing-up.\n{a}: "You never did that last time."\n{b}: "People grow up."',
     '{a} admits {b} is playing a totally different game.\n{a}: "You’re not who you were last time."\n{b}: "Good. That person lost."',
-    '{a} is thrown by the new {b}.\n{a} (to camera): "I expected the old {b}. This one’s calmer. Smarter."',
-    '{a} tells {b} {bSub} has changed.\n{b}: "People do."',
+    '{a} is thrown by the new {b}.\n{a}: "You’re different this time."\n{b}: "Good different?"\n{a}: "Different."\n{a} (to camera): "I expected the old {b}. This one’s calmer. Smarter."',
+    '{a} tells {b} {bSub} has changed.\n{b}: "People do."\n{a}: "I suppose they do."',
   ],
   disappointment: [
     '{a} tries an old in-joke on {b}.\n{b}: "I don’t do that any more."\n{a}: "Shame."',
     '{a} expected {b} to be exactly who {bSub} was last time.\n{a}: "Where’s the old {b}? The fun one?"\n{b}: "Left at home."',
-    '{a} misses the old {b}.\n{a} (to camera): "This {b} is a stranger."',
+    '{a} misses the old {b}.\n{a}: "Where’s the old {b}?"\n{b}: "Left at home."\n{a} (to camera): "This {b} is a stranger."',
     '{a} is disappointed.\n{a}: "You used to be a laugh."\n{b}: "I used to lose."',
     // THREE ADDED AFTER READING A DUMP: this pool produced the worst
     // within-season repeat in 3200 seasons (four printings of "had been
@@ -819,20 +819,20 @@ const DIFFERENT_PERSON_LINES = {
   dissonance: [
     '{a} keeps saying "last time".\n{b}: "Every sentence. Last time, last time."\n{a}: "Because you were different!"',
     '{a} keeps comparing this {b} to the old one, out loud.\n{a}: "Last time you’d have—"\n{b}: "Stop. Please. It’s not last time."',
-    '{a} can’t stop comparing.\n{b} (to camera): "{a} keeps talking to someone who doesn’t exist any more."',
-    '{a} brings up the past again.\n{b}: "Can we be in this game, please?"',
+    '{a} can’t stop comparing.\n{a}: "Last time you’d have—"\n{b}: "It isn’t last time."\n{b} (to camera): "{a} keeps talking to someone who doesn’t exist any more."',
+    '{a} brings up the past again.\n{b}: "Can we be in this game, please?"\n{a}: "Fine. This game."',
   ],
   'asked-to-be-let-off': [
     '{b} asks {a} on the road.\n{b}: "Judge me on this week. Just this week."\n{a}: "I’ll try."',
     '{b} says it on the road, and doesn’t say it lightly.\n{b}: "I’m not that person any more."\n{a}: "Prove it."\n{b}: "I’m trying to."',
-    '{b} asks for a clean slate.\n{b}: "Judge me on this game. Just this one."',
-    '{b} asks {a} to let go of the past.\n{a} (to camera): "Maybe. We’ll see."',
+    '{b} asks for a clean slate.\n{b}: "Judge me on this game. Just this one."\n{a}: "I’ll try."',
+    '{b} asks {a} to let go of the past.\n{b}: "Can we leave the old stuff where it was?"\n{a}: "Maybe."\n{a} (to camera): "Maybe. We’ll see."',
   ],
   'stopped-comparing': [
     '{a} laughs at something {b} says.\n{a}: "I like this version of you."\n{b}: "Me too."',
     'Somewhere on the road, {a} stops measuring {b} against the old version.\n{a}: "I like this you better."\n{b}: "So do I."',
-    '{a} lets the old {b} go.\n{a} (to camera): "New game. New person. Fine."',
-    '{a} decides to take {b} as {bSub} is now.\n{b}: "Thank you."',
+    '{a} lets the old {b} go.\n{a}: "I like this version better."\n{b}: "So do I."\n{a} (to camera): "New game. New person. Fine."',
+    '{a} decides to take {b} as {bSub} is now.\n{b}: "Thank you."\n{a}: "Don’t make me regret it."',
   ],
 };
 
@@ -907,7 +907,7 @@ registerEvent({
 });
 const ENVY_LINES = {
   'left-out': [
-    '{a} listens to {b} and {c} swap old stories.\n{a}: "Anyone want to hear about my holiday?"\nNobody does.',
+    '{a} listens to {b} and {c} swap old stories.\n{a}: "Anyone want to hear about my holiday?"\n{b}: "Maybe later, {a}."\nNobody does.',
     '{a} sits outside a conversation about who did what to whom, having done none of it.\n{a} (to camera): "They’ve all got history. I’ve got nothing. Just me."',
     '{a} listens to the old stories with nothing to add.\n{a} (to camera): {cam:left-out}',
     '{a} feels like the outsider.\n{a}: "Anyone want to hear about my life?"\nNobody answers.',
@@ -916,7 +916,7 @@ const ENVY_LINES = {
     '{a} pulls up a chair.\n{a}: "Right. From the beginning. Who betrayed who?"\n{b}: "Get comfy."',
     '{a} makes {b} tell the whole thing from the beginning, with names.\n{a}: "Start from the start. Who did what?"\n{b}: "How long have you got?"',
     '{a} gets the full history.\n{a} (to camera): "Now I know who hates who. Useful."',
-    '{a} asks to be filled in.\n{b}: "Okay. So, it all started…"',
+    '{a} asks to be filled in.\n{b}: "Okay. So, it all started…"\n{a}: "From the very start. Names and everything."',
   ],
   'made-a-virtue-of-it': [
     '{a} says it at the table.\n{a}: "I’m the only one here with no history. No grudges. Think about that."',
@@ -926,7 +926,7 @@ const ENVY_LINES = {
   ],
   'went-and-found-one': [
     '{a} sits down next to someone new at breakfast.\n{a}: "We haven’t really talked. Let’s fix that."',
-    '{a} can’t join {b} and {c}’s story, so {aSub} starts one with somebody else.\n{a} (to camera): "If I can’t have history, I’ll make some."',
+    '{a} can’t join {b} and {c}’s story, so {aSub} starts one with somebody else.\n{b}: "You had to be there."\n{a}: "Clearly."\n{a} (to camera): "If I can’t have history, I’ll make some."',
     '{a} builds new bonds.\n{a}: "Fancy a cuppa? We should get to know each other."',
     '{a} finds a new ally.\n{a} (to camera): "Their past. My future."',
   ],
@@ -1018,26 +1018,26 @@ const ALUMNI_LINES = {
   'alumni-bond': [
     '{a} and {b} bump fists at breakfast.\n{b}: "Final two again?"\n{a}: "Final two again."',
     '{a} and {b} have gone the distance together once already.\n{a}: "Final two again?"\n{b}: "Wouldn’t bet against us."',
-    '{a} and {b} fall back into their old rhythm.\n{b} (to camera): "{a} and me have been to the end before. We know the way."',
-    '{a} and {b} share a look.\n{a}: "Like old times."',
+    '{a} and {b} fall back into their old rhythm.\n{a}: "Final two again?"\n{b}: "Final two again."\n{b} (to camera): "{a} and me have been to the end before. We know the way."',
+    '{a} and {b} share a look.\n{a}: "Like old times."\n{b}: "Like old times."',
   ],
   'compared-endings': [
     '{a} and {b} replay their old final.\n{a}: "You had it won."\n{b}: "You had it won!"',
     '{a} and {b} spend an hour on how their season actually finished.\n{a}: "You should have won."\n{b}: "No, you should have."\n{a}: "We’re never going to agree on this."',
-    '{a} and {b} replay their old final.\n{b} (to camera): "We disagree on basically all of it."',
-    '{a} and {b} argue about the past.\n{a}: "That’s not how it happened."',
+    '{a} and {b} replay their old final.\n{a}: "You had it won."\n{b}: "YOU had it won."\n{b} (to camera): "We disagree on basically all of it."',
+    '{a} and {b} argue about the past.\n{a}: "That’s not how it happened."\n{b}: "That’s exactly how it happened."',
   ],
   'both-know-how-it-ends': [
     '{a} and {b} say it calmly.\n{b}: "One day it’s you or me."\n{a}: "No hard feelings."\n{b}: "None."',
     '{a} and {b} agree one of them is going to have to do it to the other.\n{a}: "When it comes to it—"\n{b}: "I know. No hard feelings."\n{a}: "No hard feelings."',
-    '{a} and {b} face facts.\n{b} (to camera): "Only one of us can win. We both know."',
-    '{a} and {b} make peace with it.\n{a}: "May the best one win."',
+    '{a} and {b} face facts.\n{a}: "One day it’s you or me."\n{b}: "No hard feelings."\n{b} (to camera): "Only one of us can win. We both know."',
+    '{a} and {b} make peace with it.\n{a}: "May the best one win."\n{b}: "And may it be me."',
   ],
   'the-room-priced-them': [
     '{a} and {b} feel the room watching them.\n{b}: "We’re the biggest target here."\n{a}: "We always were."',
     'Two old finalists in one castle is a number, and by lunch the castle has worked it out.\n{b}: "We’re a target."\n{a}: "We were always going to be."',
-    '{a} and {b} feel the room watching.\n{a} (to camera): "Two finalists. Everyone’s nervous."',
-    '{a} and {b} get marked as a threat.\n{b} (to camera): "Being good last time makes you a target this time."',
+    '{a} and {b} feel the room watching.\n{b}: "Everyone’s staring."\n{a}: "We’re the two who’ve done it before."\n{a} (to camera): "Two finalists. Everyone’s nervous."',
+    '{a} and {b} get marked as a threat.\n{a}: "We’re a target."\n{b}: "We always were."\n{b} (to camera): "Being good last time makes you a target this time."',
   ],
 };
 
@@ -1122,20 +1122,20 @@ const CONFRONTATION_LINES = {
   reconciles: [
     '{a} finally says it.\n{a}: "I was angry for years. I’m not any more."\n{b}: "Thank you."',
     '{a} finally says what happened between them and {b}, and means it when {aSub} says it’s fine.\n{a}: "It’s done. I mean it."\n{b}: "Thank you."',
-    '{a} and {b} make peace.\n{b} (to camera): "Years of tension. Gone in five minutes."',
-    '{a} and {b} bury the past.\n{a}: "Water under the bridge."',
+    '{a} and {b} make peace.\n{a}: "It’s done. I mean it."\n{b}: "Thank you."\n{b} (to camera): "Years of tension. Gone in five minutes."',
+    '{a} and {b} bury the past.\n{a}: "Water under the bridge."\n{b}: "Under it and gone."',
   ],
   grudge: [
     '{a} brings up the old betrayal again.\n{b}: "We’ve done this."\n{a}: "We’ve never finished it."',
     '{a} brings the whole thing back up, and it goes as well as last time.\n{a}: "You never apologised."\n{b}: "Because I didn’t do anything wrong."\n{a}: "Here we go."',
-    '{a} and {b} have the same row again.\n{b} (to camera): "Different castle. Same argument."',
-    '{a} reopens it.\n{b}: "Not this again."',
+    '{a} and {b} have the same row again.\n{a}: "You never apologised."\n{b}: "Because I did nothing wrong!"\n{b} (to camera): "Different castle. Same argument."',
+    '{a} reopens it.\n{b}: "Not this again."\n{a}: "Yes, this again."',
   ],
   strategic: [
     '{a} leans in.\n{a}: "I could tell this room a lot about you."\n{b}: "You wouldn’t."\n{a}: "Keep it that way, then."',
     '{a} makes it clear, calmly, that the history is a card {aSub} can play any time.\n{a}: "I could tell them what you did last time."\n{b}: "You wouldn’t."\n{a}: "Try me."',
-    '{a} holds the past over {b}.\n{a} (to camera): "{b} knows I know. That’s leverage."',
-    '{a} uses history as a threat.\n{b}: "That’s low."',
+    '{a} holds the past over {b}.\n{a}: "I could tell them a lot about you."\n{b}: "You wouldn’t."\n{a} (to camera): "{b} knows I know. That’s leverage."',
+    '{a} uses history as a threat.\n{b}: "That’s low."\n{a}: "Then behave."',
   ],
   buries: [
     '{a} draws a line under it.\n{a}: "That was a different game. This is this one."\n{b}: "Deal."',

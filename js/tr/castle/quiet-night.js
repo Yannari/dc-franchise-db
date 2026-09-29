@@ -59,22 +59,22 @@ const QUIET_LINES = {
   'counted-twice': [
     '{a} counts the table and grabs {b}’s arm.\n{a}: "Nobody’s missing."\n{b}: "Nobody’s missing."',
     '{a} counts the table twice, gets the same number, and tells {b}, who has already done it.\n{a}: "Everyone’s here."\n{b}: "I know. I counted."\n{a}: "So nobody died."\n{b}: "Nobody died."',
-    '{a} and {b} count heads at breakfast.\n{a} (to camera): "Nobody murdered. Why?"',
-    '{a} counts again.\n{b}: "Still everyone."',
+    '{a} and {b} count heads at breakfast.\n{a}: "Nobody’s missing."\n{b}: "Nobody’s missing."\n{a} (to camera): "Nobody murdered. Why?"',
+    '{a} counts again.\n{b}: "Still everyone."\n{a}: "Why, though?"',
   ],
   // The generous reading: they could not agree, or they lost their nerve.
   'they-faltered': [
     '{a} has a theory by the second cup.\n{a}: "They couldn’t agree. That’s why nobody died."\n{b}: "Or they want us to think that."',
     '{a} thinks the Traitors argued all night and never settled.\n{a}: "They couldn’t agree. That’s what this is."\n{b}: "I’d love that to be true."',
     '{a} has a theory.\n{a} (to camera): "They fell out. I’d put money on it."',
-    '{a} tells {b} {aSub} thinks they’re cracking.\n{b}: "Or they want us to think that."',
+    '{a} tells {b} {aSub} thinks they’re cracking.\n{b}: "Or they want us to think that."\n{a}: "Maybe."',
   ],
   // The dangerous reading, and the one that is nearest the truth.
   'somebody-was-safe': [
     '{a} lowers {aPos} voice.\n{a}: "Somebody in this room had a shield last night."\n{b}: "Who?"',
     '{a} says it quietly to {b}.\n{a}: "They went for somebody, and it didn’t work."\n{b}: "A shield?"\n{a}: "Must have been."',
     '{a} suspects a shield saved someone.\n{a} (to camera): "Someone in this castle had protection last night."',
-    '{a} and {b} wonder who was saved.\n{b}: "Who looks relieved this morning?"',
+    '{a} and {b} wonder who was saved.\n{b}: "Who looks relieved this morning?"\n{a}: "Nobody. That’s the problem."',
   ],
   // The paranoid reading: a gift is a message.
   'a-message': [

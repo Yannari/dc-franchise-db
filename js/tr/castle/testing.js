@@ -56,25 +56,25 @@ const DARE_LINES = {
     '{a} asks {b} for something small and pointless, just to see what happens.\n{a}: "Swap seats with me for dinner?"\n{b}: "Sure. Why?"\n{a}: "No reason."\n{a} (to camera): "No questions. Just did it. That tells me something."',
     '{a} tests {b} with a tiny favour.\n{a}: "Can you grab my jumper from upstairs?"\n{b}: "Yeah, course."\n{a} (to camera): "Easy-going. Or eager to please. Either way, noted."',
     '{a} asks {b} for something slightly odd.\n{a}: "Sit next to me tonight at the table."\n{b}: "Alright."\n{a} (to camera): "{b} didn’t even ask why."',
-    '{a} floats a small ask, and {b} goes along with it.\n{b}: "Whatever you want."\n{a} (to camera): "That’s a person who trusts me. Or wants me to think so."',
+    '{a} floats a small ask, and {b} goes along with it.\n{b}: "Whatever you want."\n{a}: "You didn’t even ask why."\n{b}: "Should I have?"\n{a} (to camera): "That’s a person who trusts me. Or wants me to think so."',
   ],
   refused: [
     '{a} asks {b} for something small, and {b} wants to know why.\n{a}: "Can you sit at the other end tonight?"\n{b}: "Why?"\n{a}: "Just humour me."\n{b}: "Not without a reason."',
     '{b} pushes back on a tiny ask.\n{b}: "What’s this for?"\n{a}: "Nothing."\n{b}: "Then I’ll stay where I am."\n{a} (to camera): "Guarded. Very guarded."',
-    '{a} asks a harmless favour, and {b} won’t do it without an explanation.\n{a} (to camera): "Four seconds of effort, and {b} wanted a reason. Interesting."',
-    '{b} says no to something that costs nothing.\n{b}: "I don’t do things just because."\n{a} (to camera): "Fair. Also suspicious."',
+    '{a} asks a harmless favour, and {b} won’t do it without an explanation.\n{b}: "Why do you need me to do that?"\n{a}: "No reason. It’s tiny."\n{b}: "Then do it yourself."\n{a} (to camera): "Four seconds of effort, and {b} wanted a reason. Interesting."',
+    '{b} says no to something that costs nothing.\n{b}: "I don’t do things just because."\n{a}: "It’s a cup of tea, {b}."\n{b}: "It’s the principle."\n{a} (to camera): "Fair. Also suspicious."',
   ],
   'named-the-test': [
     '{b} does the favour, then calls it out.\n{b}: "That was a test, wasn’t it?"\n{a}: "What? No."\n{b}: "It was. It’s fine. Did I pass?"',
     '{a} gets the favour, and a diagnosis.\n{b}: "You’re checking if I’ll do what you say."\n{a}: "Maybe."\n{b}: "I will. Within reason."',
-    '{b} does it, then smiles at {a}.\n{b}: "Nice try."\n{a} (to camera): "{b} saw right through me. That’s either a Faithful being clever, or a Traitor being careful."',
-    '{b} spots the test straight away.\n{b}: "What are you actually trying to find out?"',
+    '{b} does it, then smiles at {a}.\n{b}: "Nice try."\n{a}: "Nice try at what?"\n{b}: "Don’t. I know a test when I see one."\n{a} (to camera): "{b} saw right through me. That’s either a Faithful being clever, or a Traitor being careful."',
+    '{b} spots the test straight away.\n{b}: "What are you actually trying to find out?"\n{a}: "Nothing. I just needed a hand."\n{b}: "Course you did."',
   ],
   'over-delivered': [
     '{a} asks {b} a small favour, and {b} does far more than asked.\n{a}: "Just the jumper."\n{b}: "I brought your book too. And a tea."\n{a} (to camera): "Why so keen?"',
-    '{b} turns a four-second favour into twenty minutes of being helpful.\n{a} (to camera): "Either {b} is the nicest person here, or {b} really needs me to like {bObj}."',
+    '{b} turns a four-second favour into twenty minutes of being helpful.\n{a}: "Honestly, that’s plenty, thanks."\n{b}: "No, no, let me do the rest as well."\n{a} (to camera): "Either {b} is the nicest person here, or {b} really needs me to like {bObj}."',
     '{b} goes above and beyond for {a}.\n{b}: "Anything else?"\n{a}: "No, honestly, that’s plenty."',
-    '{b} does the favour and keeps offering more.\n{a} (to camera): {cam:too-nice}',
+    '{b} does the favour and keeps offering more.\n{b}: "Anything else? Tea? Blanket? Anything?"\n{a}: "I’m fine. Really."\n{a} (to camera): {cam:too-nice}',
   ],
 };
 
@@ -108,26 +108,26 @@ const OATH_LINES = {
   sincere: [
     '{a} asks {b} to commit in front of the others, and {b} does, straight away.\n{a}: "Say it. Here. That you’re with me."\n{b}: "I’m with you. Everyone heard it."',
     '{a} puts the question in public, and {b} answers in public.\n{a}: "Will you stand by me at the table?"\n{b}: "Yes. No question."',
-    '{b} gives {a} a promise in front of the room.\n{b}: "I’ve got {a}’s back. If anyone’s got a problem with that, tell me."',
-    '{a} asks, and {b} swears to it without hesitating.\n{a} (to camera): "No pause. Nothing. I believe {b}."',
+    '{b} gives {a} a promise in front of the room.\n{b}: "I’ve got {a}’s back. If anyone’s got a problem with that, tell me."\n{a}: "You didn’t have to say that in front of everyone."\n{b}: "I wanted them to hear it."',
+    '{a} asks, and {b} swears to it without hesitating.\n{a}: "Swear to me you’re not writing my name."\n{b}: "I swear. On my kids."\n{a} (to camera): "No pause. Nothing. I believe {b}."',
   ],
   reluctant: [
     '{b} says what {a} wants to hear, but it takes a while.\n{a}: "Are you with me?"\n{b}: "I… yeah. Yes. I am."\n{a} (to camera): "Too long. That took too long."',
-    '{b} gets to the right answer the long way round.\n{b}: "I mean, it depends what happens, but — yes. Fine. Yes."\n{a} (to camera): "That’s a maybe dressed as a yes."',
+    '{b} gets to the right answer the long way round.\n{b}: "I mean, it depends what happens, but — yes. Fine. Yes."\n{a}: "That was a long way round to yes."\n{b}: "It’s still a yes."\n{a} (to camera): "That’s a maybe dressed as a yes."',
     '{b} commits, with visible effort.\n{b}: "Okay. I promise."\n{a}: "You didn’t sound sure."',
-    '{b} agrees, but not happily.\n{a} (to camera): {cam:unsure-info}',
+    '{b} agrees, but not happily.\n{a}: "Can I count on you tonight?"\n{b}: "…Yes. Probably. Yes."\n{a} (to camera): {cam:unsure-info}',
   ],
   refuses: [
     '{b} refuses, in front of everyone.\n{a}: "Just say you’re with me."\n{b}: "I’m not promising anyone anything. Not in here."\n{a}: "Wow."',
-    '{b} won’t make the commitment.\n{b}: "I’ll decide at the table, like everyone else."\n{a} (to camera): "Publicly refused. That hurt."',
-    '{b} says no, loudly enough for the room.\n{b}: "I don’t make promises I might break."',
-    '{b} turns down the oath.\n{a} (to camera): {cam:frozen-out}',
+    '{b} won’t make the commitment.\n{b}: "I’ll decide at the table, like everyone else."\n{a}: "Just like everyone else. Right."\n{b}: "Don’t take it personally."\n{a} (to camera): "Publicly refused. That hurt."',
+    '{b} says no, loudly enough for the room.\n{b}: "I don’t make promises I might break."\n{a}: "I didn’t ask you to shout it."\n{b}: "Then don’t ask me in front of people."',
+    '{b} turns down the oath.\n{a}: "Just tell me you’re with me."\n{b}: "I can’t tell you that. Not yet."\n{a} (to camera): {cam:frozen-out}',
   ],
   'asked-for-one-back': [
     '{b} swears it, then asks {a} to swear the same.\n{b}: "I’m with you. Now say it back."\n{a}: "...I’m with you."\n{b}: "Good."',
-    '{b} gives an oath and asks for one in return.\n{b}: "Fair’s fair. Your turn."\n{a} (to camera): "I wasn’t expecting to have to promise anything."',
+    '{b} gives an oath and asks for one in return.\n{b}: "Fair’s fair. Your turn."\n{a}: "Fine. I promise too."\n{b}: "Say it properly."\n{a} (to camera): "I wasn’t expecting to have to promise anything."',
     '{b} makes it mutual.\n{b}: "I’ll promise if you do."\n{a}: "Fine. Deal."',
-    '{b} demands the same promise back.\n{b}: "It goes both ways, or it doesn’t go at all."',
+    '{b} demands the same promise back.\n{b}: "It goes both ways, or it doesn’t go at all."\n{a}: "Alright. Both ways."\n{b}: "Good. Shake on it."',
   ],
 };
 
@@ -135,25 +135,25 @@ const REVERSE_PSYCH_LINES = {
   calm: [
     '{a} pretends to distrust {b}, just to see the reaction. {b} laughs it off.\n{a}: "You know, I’ve started to wonder about you."\n{b}: "Wonder away. I’ll be here."',
     '{a} accuses {b} of something {a} doesn’t believe. {b} just agrees, cheerfully.\n{a}: "You’re a Traitor, aren’t you?"\n{b}: "Obviously. Pass the salt."',
-    '{a} tries to rattle {b}, and gets nothing.\n{a} (to camera): "Calm as anything. Either innocent or ice cold."',
-    '{b} shrugs off {a}’s fake suspicion.\n{b}: "If you really thought that, you wouldn’t say it to my face."',
+    '{a} tries to rattle {b}, and gets nothing.\n{a}: "I’ve been watching you, you know."\n{b}: "Watch away. I’m very boring."\n{a} (to camera): "Calm as anything. Either innocent or ice cold."',
+    '{b} shrugs off {a}’s fake suspicion.\n{b}: "If you really thought that, you wouldn’t say it to my face."\n{a}: "Maybe I would."\n{b}: "Then say it at the table."',
   ],
   rattled: [
     '{a} pretends to distrust {b}, and {b} gets visibly rattled.\n{a}: "I’m not sure about you any more."\n{b}: "What? Why? What have I done?"\n{a}: "Nothing. Just a feeling."\n{a} (to camera): "I didn’t even mean it. Look how {b} reacted."',
-    '{a} says something {a} doesn’t mean, and {b} spends ten minutes answering it.\n{b}: "I swear, I’ve done nothing, ask anyone—"\n{a} (to camera): "That was a lot of defence for a fake accusation."',
-    '{b} panics at a fake suspicion.\n{b}: {say:deny}\n{a} (to camera): "Why so rattled? I was bluffing."',
-    '{a} tests {b}, and {b} goes red.\n{a} (to camera): {cam:holding-info}',
+    '{a} says something {a} doesn’t mean, and {b} spends ten minutes answering it.\n{b}: "I swear, I’ve done nothing, ask anyone—"\n{a}: "I was joking."\n{b}: "That wasn’t funny."\n{a} (to camera): "That was a lot of defence for a fake accusation."',
+    '{b} panics at a fake suspicion.\n{b}: {say:deny}\n{a}: "Relax. I was joking."\n{b}: "Well, don’t."\n{a} (to camera): "Why so rattled? I was bluffing."',
+    '{a} tests {b}, and {b} goes red.\n{a}: "I think it might be you, you know."\n{b}: "Me? Why me? What have I done?"\n{a} (to camera): {cam:holding-info}',
   ],
   'saw-through-it': [
     '{b} sees straight through {a}.\n{b}: "You don’t believe that. So what are you actually asking me?"\n{a}: "Nothing."\n{b}: "Yeah, right."',
-    '{b} calls out the trick while {a} is still doing it.\n{b}: "You’re testing me."\n{a} (to camera): "Busted."',
-    '{b} spots the game.\n{b}: "Nice try. I’m not falling for that."',
-    '{b} names it before {a} finishes.\n{b}: "This is the bit where you pretend to suspect me to see if I panic. I’m not panicking."',
+    '{b} calls out the trick while {a} is still doing it.\n{b}: "You’re testing me."\n{a}: "I’m having a conversation."\n{b}: "You’re having a test. I can smell it."\n{a} (to camera): "Busted."',
+    '{b} spots the game.\n{b}: "Nice try. I’m not falling for that."\n{a}: "Falling for what?"\n{b}: "Exactly."',
+    '{b} names it before {a} finishes.\n{b}: "This is the bit where you pretend to suspect me to see if I panic. I’m not panicking."\n{a}: "I wasn’t going to do that."\n{b}: "You were halfway through."',
   ],
   'turned-it-round': [
     '{b} takes the bait, runs with it, and ends up questioning {a}.\n{b}: "Funny you should say that, because I’ve been wondering about you."\n{a}: "Me?"\n{b}: "You."',
-    '{b} agrees with {a}’s fake suspicion, and turns it round.\n{b}: "You’re right to be suspicious. So what are you going to do about it?"\n{a} (to camera): "I didn’t have a plan for that."',
-    '{b} flips it on {a}.\n{b}: "Why are you asking? Guilty people ask."',
+    '{b} agrees with {a}’s fake suspicion, and turns it round.\n{b}: "You’re right to be suspicious. So what are you going to do about it?"\n{a}: "I was going to watch you, mostly."\n{b}: "Then I’ll give you something to watch."\n{a} (to camera): "I didn’t have a plan for that."',
+    '{b} flips it on {a}.\n{b}: "Why are you asking? Guilty people ask."\n{a}: "Is that what you think?"\n{b}: "It’s what the room will think."',
     'By the end, {a} is the one explaining {aRef}.\n{a} (to camera): {cam:story-close}',
   ],
 };
@@ -163,25 +163,25 @@ const HYPOTHETICAL_LINES = {
     '{a} asks {b} what {bSub} would do if {a} got banished next.\n{a}: "If it’s me tomorrow, what do you do?"\n{b}: "I go after whoever did it. Simple."\n{a} (to camera): "That felt real."',
     '{a} asks the question, and {b} gives a proper answer.\n{a}: "If they come for me, will you fight for me?"\n{b}: "I’ll stand up at the table and say your name’s not going on my slate."',
     '{a} tests {b} with a hypothetical.\n{a}: "What if it’s me next?"\n{b}: "Then they’ll have to get past me first."',
-    '{b} answers the hypothetical sincerely.\n{b}: "I’d defend you. I would."',
+    '{b} answers the hypothetical sincerely.\n{b}: "I’d defend you. I would."\n{a}: "Even if the whole table turned?"\n{b}: "Especially then."',
   ],
   hedged: [
     '{a} asks what {b} would do if {a} were next, and {b} hedges.\n{a}: "If it’s me tomorrow?"\n{b}: "Well, it depends what people say, doesn’t it?"\n{a} (to camera): "It depends. Great."',
-    '{a} asks a direct question and gets a paragraph.\n{b}: "I mean, you know how I feel, but the room’s the room…"\n{a} (to camera): "That’s not an answer."',
+    '{a} asks a direct question and gets a paragraph.\n{b}: "I mean, you know how I feel, but the room’s the room…"\n{a}: "Yes or no, {b}."\n{b}: "…It’s complicated."\n{a} (to camera): "That’s not an answer."',
     '{b} won’t commit to a hypothetical.\n{b}: "Let’s not think about that."\n{a}: "I need to think about it."',
-    '{b} dodges the question.\n{a} (to camera): {cam:unsure-info}',
+    '{b} dodges the question.\n{a}: "If they came for me, would you defend me?"\n{b}: "Let’s not get ahead of ourselves."\n{a} (to camera): {cam:unsure-info}',
   ],
   'asked-it-back': [
     '{a} asks what {b} would do. {b} asks {a} first.\n{b}: "You go. What would you do if it was me?"\n{a}: "I… I’d defend you."\n{b}: "Then so would I."',
-    '{b} turns the hypothetical round.\n{b}: "You tell me first, then I’ll tell you."\n{a} (to camera): "I hadn’t planned for that."',
-    '{b} won’t answer until {a} does.\n{b}: "Same question, back at you."',
-    '{b} asks it straight back.\n{a} (to camera): "Why won’t anyone just answer a question in here?"',
+    '{b} turns the hypothetical round.\n{b}: "You tell me first, then I’ll tell you."\n{a}: "I asked first."\n{b}: "And I asked second. Go on."\n{a} (to camera): "I hadn’t planned for that."',
+    '{b} won’t answer until {a} does.\n{b}: "Same question, back at you."\n{a}: "That’s not how questions work."\n{b}: "It is in here."',
+    '{b} asks it straight back.\n{a}: "If it came down to you or me, what would you do?"\n{b}: "What would you do?"\n{a} (to camera): "Why won’t anyone just answer a question in here?"',
   ],
   'made-a-condition': [
     '{b} says yes, then names a price.\n{b}: "I’d defend you. If you’d do the same for me, every time."\n{a}: "Deal."',
-    '{b} agrees, with a condition.\n{b}: "Yes. As long as you tell me who you’re voting for tonight."\n{a} (to camera): "Everything costs something in here."',
+    '{b} agrees, with a condition.\n{b}: "Yes. As long as you tell me who you’re voting for tonight."\n{a}: "That’s a steep price for a yes."\n{b}: "Take it or leave it."\n{a} (to camera): "Everything costs something in here."',
     '{b} puts a condition on the promise.\n{b}: "Answer me one thing first."\n{a}: "Go on."',
-    '{b} wants something back.\n{b}: "I’ll back you. You back me. That’s the deal."',
+    '{b} wants something back.\n{b}: "I’ll back you. You back me. That’s the deal."\n{a}: "Deal."\n{b}: "Say it like you mean it."',
   ],
 };
 
@@ -191,27 +191,27 @@ const HYPOTHETICAL_LINES = {
 const DOUBLE_CHECK_LINES = {
   consistent: [
     '{a} asks {b} to walk through the morning again. It matches, word for word.\n{a}: "Sorry, where were you before the mission?"\n{b}: "Same as I said. Kitchen, then the courtyard."\n{a} (to camera): "Same answer. Good."',
-    '{a} makes {b} tell it twice, and it comes out the same.\n{a} (to camera): "Including the boring bits. That’s what the truth sounds like."',
-    '{a} checks {b}’s story a second time.\n{b}: {say:answer-clean}\n{a} (to camera): "Consistent. I’ll take that."',
-    '{b} repeats the account without a hitch.\n{a} (to camera): "Nothing changed. That’s reassuring."',
+    '{a} makes {b} tell it twice, and it comes out the same.\n{a}: "Just once more, from the top."\n{b}: "Dinner, fire, up at eleven. Same as before."\n{a} (to camera): "Including the boring bits. That’s what the truth sounds like."',
+    '{a} checks {b}’s story a second time.\n{b}: {say:answer-clean}\n{a}: "And after that?"\n{b}: "Bed. Same as I said this morning."\n{a} (to camera): "Consistent. I’ll take that."',
+    '{b} repeats the account without a hitch.\n{a}: "Tell me last night again."\n{b}: "Kitchen, then the fire, then up. Why?"\n{a}: "No reason."\n{a} (to camera): "Nothing changed. That’s reassuring."',
   ],
   inconsistent: [
     '{a} asks {b} to go through the morning again, and it comes out different.\n{b}: "Courtyard, then the library."\n{a}: "Earlier you said the kitchen."\n{b}: "Did I? Kitchen, then."',
     'The second version has a room in it the first one didn’t.\n{a} (to camera): {cam:holding-info}',
-    '{b}’s story shifts the second time.\n{b}: {say:answer-shaky}\n{a} (to camera): "That’s not what {b} said this morning."',
-    '{a} catches a change in {b}’s account.\n{a} (to camera): "Small change. But a change."',
+    '{b}’s story shifts the second time.\n{b}: {say:answer-shaky}\n{a}: "This morning you said the library."\n{b}: "Did I? I meant after the library."\n{a} (to camera): "That’s not what {b} said this morning."',
+    '{a} catches a change in {b}’s account.\n{a}: "You said eleven earlier."\n{b}: "Eleven, twelve. It was late."\n{a} (to camera): "Small change. But a change."',
   ],
   'would-not-repeat-it': [
     '{b} won’t go through it again.\n{b}: "I’ve told you."\n{a}: "Just once more."\n{b}: "No."',
-    '{b} declines to repeat the story.\n{b}: "Why do you need it twice?"\n{a} (to camera): "Refusing to repeat it. That’s either offended or careful."',
-    '{b} shuts it down.\n{b}: "Asked and answered."',
-    '{b} won’t tell it a second time.\n{a} (to camera): {cam:unsure-info}',
+    '{b} declines to repeat the story.\n{b}: "Why do you need it twice?"\n{a}: "Humour me."\n{b}: "No. Once is enough."\n{a} (to camera): "Refusing to repeat it. That’s either offended or careful."',
+    '{b} shuts it down.\n{b}: "Asked and answered."\n{a}: "Just once more."\n{b}: "No. Ask me something new."',
+    '{b} won’t tell it a second time.\n{a}: "Go through it again for me?"\n{b}: "I’ve told you. I’m not doing it twice."\n{a} (to camera): {cam:unsure-info}',
   ],
   'asked-why-twice': [
     '{b} answers again, then asks {a} why.\n{b}: "That’s twice you’ve asked. Why is it twice?"\n{a}: "Just making sure."\n{b}: "Of what?"',
-    '{b} tells it again, then turns it round.\n{b}: "What’s changed since yesterday?"\n{a} (to camera): "I didn’t have a good answer to that."',
+    '{b} tells it again, then turns it round.\n{b}: "What’s changed since yesterday?"\n{a}: "Nothing’s changed. I’m just checking."\n{b}: "People don’t check for nothing."\n{a} (to camera): "I didn’t have a good answer to that."',
     '{b} notices the double check.\n{b}: "You’re checking my story."\n{a}: "Everyone’s checking everyone’s."',
-    '{b} answers, then questions {a}.\n{b}: "Why do you care so much about my morning?"',
+    '{b} answers, then questions {a}.\n{b}: "Why do you care so much about my morning?"\n{a}: "I care about everyone’s morning."\n{b}: "No, you don’t."',
   ],
 };
 
@@ -219,8 +219,8 @@ const SILENCE_LINES = {
   chased: [
     '{a} goes quiet on purpose, to see if {b} will fill it. {b} does, almost straight away.\n{b}: "What? What is it? Why’ve you gone quiet?"\n{a}: "Nothing."\n{b}: "It’s not nothing."',
     '{a} stops mid-thought, and {b} can’t leave it.\n{b}: "Finish what you were saying."\n{a}: "Doesn’t matter."\n{b}: "It does now."',
-    '{a} lets a silence hang, and {b} rushes to fill it.\n{a} (to camera): "Nervous people can’t stand silence."',
-    '{b} chases {a}’s silence.\n{b}: "You’re worrying me."',
+    '{a} lets a silence hang, and {b} rushes to fill it.\n{b}: "What? Why are you looking at me like that? Have I done something?"\n{a}: "No. Nothing."\n{a} (to camera): "Nervous people can’t stand silence."',
+    '{b} chases {a}’s silence.\n{b}: "You’re worrying me."\n{a}: "Sorry. Miles away."\n{b}: "You’re never miles away."',
   ],
   letgo: [
     '{a} goes quiet on purpose. {b} goes quiet right back.\n{a} (to camera): "{b} just sat in the silence. Comfortable as anything."',
@@ -230,9 +230,9 @@ const SILENCE_LINES = {
   ],
   'filled-it-with-their-own': [
     '{a} leaves a gap, and {b} fills it with something {a} never asked about.\n{b}: "Actually, I’ve been meaning to say — I don’t trust some of your friends."\n{a} (to camera): "I didn’t ask. {b} volunteered. Why?"',
-    'The silence gets used, and {b} uses it.\n{b}: "While we’re here — who are you voting for tonight?"\n{a} (to camera): "I set the trap. {b} walked through it with a question of {bPos} own."',
-    '{b} fills {a}’s silence with a change of subject.\n{b}: "Anyway. The mission tomorrow."',
-    '{b} takes the silence and runs with it.\n{a} (to camera): "{b} steered the whole conversation. I let {bObj}."',
+    'The silence gets used, and {b} uses it.\n{b}: "While we’re here — who are you voting for tonight?"\n{a}: "I asked you first."\n{b}: "You didn’t ask anything. You went quiet."\n{a} (to camera): "I set the trap. {b} walked through it with a question of {bPos} own."',
+    '{b} fills {a}’s silence with a change of subject.\n{b}: "Anyway. The mission tomorrow."\n{a}: "Right. The mission."\n{b}: "Unless you wanted to say something else?"',
+    '{b} takes the silence and runs with it.\n{b}: "Since you’re not talking, I will. Who’s been off with you this week?"\n{a}: "…Nobody."\n{a} (to camera): "{b} steered the whole conversation. I let {bObj}."',
   ],
   'out-waited-them': [
     '{b} lets the silence run, then lets it run longer, and {a} breaks first.\n{a}: "Okay, fine, I was testing you."\n{b}: "I know."',
@@ -244,20 +244,20 @@ const SILENCE_LINES = {
 const COLD_READ_LINES = {
   'read-it-right': [
     '{a} mentions {c} in front of {b}, just to watch {bPos} face. Something crosses it.\n{a}: "Did you see {c} at breakfast? Very quiet."\n{b}: "Was {cSub}? I didn’t notice."\n{a} (to camera): "{b} noticed. {b}’s face noticed."',
-    '{a} says something about {c} and watches {b} instead of listening.\n{a} (to camera): "Got exactly what I came for."',
+    '{a} says something about {c} and watches {b} instead of listening.\n{a}: "{c} was very quiet at breakfast, wasn’t {c}?"\n{b}: "Was {c}? I didn’t notice."\n{a} (to camera): "Got exactly what I came for."',
     '{a} drops {c}’s name into the chat, and watches.\n{a} (to camera): {cam:holding-info}',
-    '{a} tests {b} with a line about {c}.\n{a} (to camera): "Mention {c}, and {b} looks away. Every time."',
+    '{a} tests {b} with a line about {c}.\n{a}: "What do you make of {c}?"\n{b}: "{c}? Fine. Why?"\n{a} (to camera): "Mention {c}, and {b} looks away. Every time."',
   ],
   'read-it-wrong': [
-    '{a} drops {c}’s name in front of {b}, and nothing happens.\n{a} (to camera): "Nothing. No reaction at all. Maybe I’m wrong about the two of them."',
-    '{a} is sure {b} has a problem with {c}. {b} doesn’t.\n{b}: "{c}? {c}’s lovely."\n{a} (to camera): "Or I’ve got it all wrong."',
-    '{a} reads {b} wrong.\n{a} (to camera): {cam:unsure-info}',
-    '{a}’s test on {b} comes back blank.\n{a} (to camera): "Either {b}’s a brilliant actor or I’m a rubbish detective."',
+    '{a} drops {c}’s name in front of {b}, and nothing happens.\n{a}: "{c} was acting odd last night."\n{b}: "Was {c}? Seemed normal to me."\n{a} (to camera): "Nothing. No reaction at all. Maybe I’m wrong about the two of them."',
+    '{a} is sure {b} has a problem with {c}. {b} doesn’t.\n{b}: "{c}? {c}’s lovely."\n{a}: "Really? I thought you two didn’t get on."\n{b}: "Where did you hear that?"\n{a} (to camera): "Or I’ve got it all wrong."',
+    '{a} reads {b} wrong.\n{a}: "You and {c} have fallen out, haven’t you?"\n{b}: "No. Should we have?"\n{a} (to camera): {cam:unsure-info}',
+    '{a}’s test on {b} comes back blank.\n{a}: "Do you trust {c}?"\n{b}: "As much as anyone. Why?"\n{a} (to camera): "Either {b}’s a brilliant actor or I’m a rubbish detective."',
   ],
   'said-it-aloud': [
     '{a} brings up {c} to see how {b} reacts, then admits it.\n{a}: "Sorry. I was watching your face just then."\n{b}: "Why?"\n{a}: "Because of {c}."',
     '{a} owns up to the test.\n{a}: "I was testing you. About {c}."\n{b}: "And?"\n{a}: "And I don’t know."',
-    '{a} tells {b} exactly what {aSub} was doing.\n{b}: "That’s honest, I suppose."',
+    '{a} tells {b} exactly what {aSub} was doing.\n{b}: "That’s honest, I suppose."\n{a}: "I was watching how you’d react to {c}’s name."\n{b}: "And?"',
     '{a} can’t keep the test to {aRef}.\n{a}: "I said {c}’s name to see if you’d flinch."\n{b}: "Did I?"\n{a}: "No."',
   ],
   'kept-it': [
@@ -297,9 +297,9 @@ const FOLLOW_THROUGH_LINES = {
   ],
   'clocked-the-check': [
     '{b} works out {a} has been checking up on {bObj}.\n{b}: "You keep asking me that. Every day, in slightly different words."\n{a}: "Do I?"\n{b}: "You do."',
-    '{b} calls {a} out on the checking.\n{b}: "I know what you’re doing."\n{a} (to camera): "Caught."',
-    '{b} lets {a} know {bSub} has noticed.\n{b}: "You can stop checking. I’m keeping my word."',
-    '{b} spots the pattern in {a}’s questions.\n{b}: "Every morning, the same question. Why?"',
+    '{b} calls {a} out on the checking.\n{b}: "I know what you’re doing."\n{a}: "What am I doing?"\n{b}: "Checking I keep my promise. Every day."\n{a} (to camera): "Caught."',
+    '{b} lets {a} know {bSub} has noticed.\n{b}: "You can stop checking. I’m keeping my word."\n{a}: "I wasn’t checking."\n{b}: "You were. It’s fine. I’d check too."',
+    '{b} spots the pattern in {a}’s questions.\n{b}: "Every morning, the same question. Why?"\n{a}: "Because I want to know."\n{b}: "Then ask me properly."',
   ],
 };
 
@@ -940,9 +940,9 @@ const DECOY_LINES = {
   ],
   caughtTest: [
     '{b} looks {a} in the eye.\n{b}: "You’re testing me, aren’t you?"\n{a}: "What? No."\n{b}: "That secret was fake."',
-    '{b} sees straight through the plant.\n{b}: "Nice try."\n{a} (to camera): "{b} knew. Straight away."',
-    '{b} calls {a}’s bluff.\n{b}: "You made that up to see if I’d tell."',
-    '{b} figures out the fake secret was a test.\n{a} (to camera): {cam:story-close}',
+    '{b} sees straight through the plant.\n{b}: "Nice try."\n{a}: "Nice try at what?"\n{b}: "Nobody has a shield. You wanted to see if I’d tell."\n{a} (to camera): "{b} knew. Straight away."',
+    '{b} calls {a}’s bluff.\n{b}: "You made that up to see if I’d tell."\n{a}: "Why would I do that?"\n{b}: "Because it’s what I’d do."',
+    '{b} figures out the fake secret was a test.\n{b}: "That shield you told me about. You made it up, didn’t you?"\n{a}: "…Maybe."\n{a} (to camera): {cam:story-close}',
   ],
 };
 

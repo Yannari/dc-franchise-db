@@ -98,9 +98,9 @@ function placeOf(sc) {
 }
 const cap1 = s => String(s || '').replace(/^./, c => c.toUpperCase());
 
-function face(name) {
+function face(name, slug) {
   let u = null;
-  try { u = playerAvatarUrl(name); } catch { u = null; }
+  try { u = playerAvatarUrl(slug ? { slug } : name); } catch { u = null; }
   const ini = esc(String(name || '?').split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase());
   return (u ? `<img src="${esc(u)}" alt="" onerror="this.remove()">` : '') + `<span class="trs-ini">${ini}</span>`;
 }
@@ -162,12 +162,7 @@ export function castleStageHTML(ep, observer = 'audience', segment = null) {
   const uid = 'trs-' + String(ep.num) + '-' + (segment || 'day') + '-' + (hash(observer) % 1e6);
   reg()[uid] = { uid, steps, idx: -1, segment, traitors, isAudience,
     day: (ep.tr && ep.tr.ep) || ep.num, pot: ep.tr && ep.tr.pot, timers: [] };
-  return `<style>${CSS}</style><div class="trs" data-uid="${esc(uid)}">`
-    + '<div class="trs-band"><div class="trs-band-l"><div class="trs-eyebrow"></div><div class="trs-title"></div></div>'
-    + '<div class="trs-fund"><b></b><span></span></div></div>'
-    + '<div class="trs-clock"></div>'
-    + `<div class="trs-view" onclick="trStageNext('${esc(uid)}')">`
-    + '<div class="trs-sky trs-day"></div><div class="trs-sky trs-eve"></div><div class="trs-sky trs-night"></div>'
+  return stageShell(uid, '<div class="trs-sky trs-day"></div><div class="trs-sky trs-eve"></div><div class="trs-sky trs-night"></div>'
     + '<div class="trs-stars"></div><div class="trs-moon"></div>'
     + '<svg class="trs-hills" viewBox="0 0 1600 360" preserveAspectRatio="xMidYMax slice"></svg>'
     + '<div class="trs-mist"></div>'
@@ -176,8 +171,19 @@ export function castleStageHTML(ep, observer = 'audience', segment = null) {
     + '<div class="trs-scene"></div><div class="trs-caption"></div>'
     + '<div class="trs-loc"><div class="trs-loc-e"></div><div class="trs-loc-t"></div><div class="trs-gem"></div></div>'
     + '<div class="trs-corner"></div><div class="trs-lb"></div><div class="trs-pops"></div>'
-    + '<div class="trs-start"></div>'
-    + '</div>'
+    + '<div class="trs-start"></div>');
+}
+
+/**
+ * The frame every stage shares: the title band, the day clock, the view (its
+ * contents are the caller's), the controls. Inert, and carrying no words.
+ */
+function stageShell(uid, viewInner, extraCss = '') {
+  return `<style>${CSS}${extraCss}</style><div class="trs" data-uid="${esc(uid)}">`
+    + '<div class="trs-band"><div class="trs-band-l"><div class="trs-eyebrow"></div><div class="trs-title"></div></div>'
+    + '<div class="trs-fund"><b></b><span></span></div></div>'
+    + '<div class="trs-clock"></div>'
+    + `<div class="trs-view" onclick="trStageNext('${esc(uid)}')">` + viewInner + '</div>'
     + '<div class="trs-ctrl">'
     + `<button type="button" class="trs-btn" data-l="restart" onclick="trStageReset('${esc(uid)}')"></button>`
     + `<button type="button" class="trs-btn trs-next" data-l="next" onclick="trStageNext('${esc(uid)}')"></button>`
@@ -197,7 +203,7 @@ function later(S, fn, ms) { const t = setTimeout(fn, ms); S.timers.push(t); retu
 
 function chrome(root, S) {
   $(root, 'eyebrow').textContent = 'The Traitors · Day ' + S.day;
-  $(root, 'title').textContent = SEGMENT_TITLE[S.segment] || 'The Castle';
+  $(root, 'title').textContent = S.title || SEGMENT_TITLE[S.segment] || 'The Castle';
   const fund = $(root, 'fund');
   if (S.pot != null) {
     fund.querySelector('b').textContent = '£' + Math.round(S.pot).toLocaleString('en-GB');
@@ -206,7 +212,8 @@ function chrome(root, S) {
   $(root, 'clock').innerHTML = CLOCK.map(([k, l]) => `<div class="trs-seg" data-k="${k}">${l}</div>`).join('');
   const L = { restart: 'Restart', next: 'Next', all: 'Skip to the end', text: 'Transcript' };
   root.querySelectorAll('.trs-btn').forEach(b => { b.textContent = L[b.dataset.l] || ''; });
-  $(root, 'stars').innerHTML = Array.from({ length: 60 }, (_, i) =>
+  const stars = $(root, 'stars');
+  if (stars) stars.innerHTML = Array.from({ length: 60 }, (_, i) =>
     `<i style="left:${(i * 37) % 100}%;top:${(i * 53) % 100}%;animation-delay:-${(i % 7) * .4}s"></i>`).join('');
 }
 
@@ -328,6 +335,7 @@ function paint(uid, fresh) {
   clearTimers(S);
   root.dataset.idx = String(S.idx);
   $(root, 'count').textContent = `${Math.max(0, S.idx + 1)} / ${S.steps.length}`;
+  if (S.painter) { S.painter(root, S, fresh); return; }
   const view = $(root, 'view');
   if (S.idx < 0) {
     // AT REST: the castle, and nobody in it
@@ -440,7 +448,7 @@ export function trStageTranscript(uid) {
   if (!det) return;
   det.open = !det.open;
   if (det.open) {
-    const btn = det.querySelector('[onclick^="trCastleDayRevealAll"]');
+    const btn = [...det.querySelectorAll('button[onclick]')].find(b => /RevealAll\(/.test(b.getAttribute('onclick')));
     if (btn) btn.click();
     try { det.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch { /* jsdom */ }
   }
@@ -604,3 +612,8 @@ const CSS = `
   .trs-btn{padding:10px 12px;font-size:10px;letter-spacing:.18em}.trs-next{padding:10px 24px}
 }
 `;
+
+// Shared with table-stage.js under prefixed names: main.js hangs every exported
+// function on `window`, and a bare `esc` or `face` there would replace
+// somebody else's.
+export { esc as trsEsc, reg as trsReg, face as trsFace, later as trsLater, stageShell as trsStageShell };

@@ -253,68 +253,177 @@
       s += candle(w * .3, h * .5, 8, 40) + candle(w * .7, h * .5, 8, 40);
       return s;
     },
-    // THE ROUND TABLE — the set built in the Great Hall: walnut, candles, tartan
+    // THE ROUND TABLE — its own dark chamber: walnut, amber lattice, the star table
     table(w, h) {
-      let s = `<rect width="${w}" height="${h}" fill="#1b2a22"/>`;
-      s += panelling(w, h * .12, h * .44);
-      [.18, .82].forEach(f => { s += portrait(w * f - 18, h * .16, 36, 44, '#2a1a14'); });
-      s += `<circle cx="${w / 2}" cy="${h * .6}" r="${h * .8}" fill="url(#candleGlow)" opacity=".9"/>`;
-      s += floor(w, h * .82, h * .18, 'tartanRed');
-      // the round table, seen from the doorway
-      s += `<ellipse cx="${w / 2}" cy="${h * .74}" rx="${w * .3}" ry="${h * .1}" fill="#2a1408"/>`
-        + `<ellipse cx="${w / 2}" cy="${h * .72}" rx="${w * .3}" ry="${h * .1}" fill="#4a2410"/>`
-        + `<ellipse cx="${w / 2}" cy="${h * .72}" rx="${w * .22}" ry="${h * .065}" fill="#23402e"/>`;
-      // high-backed chairs
-      for (let i = 0; i < 9; i++) { const x = w * .22 + i * w * .07; s += `<path d="M${x} ${h * .72} v${-h * .22} q6 -8 12 0 v${h * .22}" fill="#1e0e06" opacity=".92"/>`; }
-      [.36, .5, .64].forEach(f => { s += candle(w * f, h * .71, 10, 38); });
+      let s = `<defs><pattern id="rmLattice" width="10" height="10" patternUnits="userSpaceOnUse"><rect width="10" height="10" fill="#2a1406"/><path d="M5 0 L10 5 L5 10 L0 5Z" fill="#f0a848" opacity=".6"/></pattern></defs>`;
+      s += `<rect width="${w}" height="${h}" fill="#0b0604"/>`;
+      // lattice bays along the back wall, lit from behind
+      for (let i = 0; i < 6; i++) {
+        if (i === 2 || i === 3) continue;
+        const x = w * (.06 + i * .15);
+        s += `<rect x="${x}" y="${h * .14}" width="${w * .11}" height="${h * .42}" fill="url(#rmLattice)" stroke="#5a3010" stroke-width="2"/>`
+          + `<rect x="${x}" y="${h * .14}" width="${w * .11}" height="${h * .42}" fill="#ffb35a" opacity=".12"/>`;
+      }
+      // the doorway at the head
+      s += `<rect x="${w * .43}" y="${h * .1}" width="${w * .14}" height="${h * .48}" fill="#1a0c05" stroke="#5a3010" stroke-width="2"/>`;
+      [.38, .62].forEach(f => { s += `<rect x="${w * f - 1}" y="${h * .12}" width="2" height="${h * .44}" fill="#ffb660" opacity=".7"/>`; });
+      // the table: black rim, ring of white light, mahogany, the star
+      const cx = w / 2, cy = h * .74, rx = w * .34, ry = h * .13;
+      s += `<ellipse cx="${cx}" cy="${cy + 4}" rx="${rx}" ry="${ry}" fill="#1a0a03"/>`
+        + `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="#0d0907" stroke="#c9a04e" stroke-width="1.5"/>`
+        + `<ellipse cx="${cx}" cy="${cy}" rx="${rx * .85}" ry="${ry * .85}" fill="#7a3416" stroke="#fffaf0" stroke-width="1.5"/>`;
+      for (let i = 0; i < 8; i++) {
+        const a = i / 8 * Math.PI * 2 - Math.PI / 2, L = i % 2 === 0 ? .78 : .52;
+        const t = [cx + Math.cos(a) * rx * L, cy + Math.sin(a) * ry * L];
+        const l = [cx + Math.cos(a - .22) * rx * .25, cy + Math.sin(a - .22) * ry * .25];
+        const r = [cx + Math.cos(a + .22) * rx * .25, cy + Math.sin(a + .22) * ry * .25];
+        s += `<polygon points="${cx},${cy} ${l} ${t}" fill="#efe3c4"/><polygon points="${cx},${cy} ${t} ${r}" fill="#141010"/>`;
+      }
+      s += `<ellipse cx="${cx}" cy="${cy - 3}" rx="${rx * .2}" ry="${ry * .2}" fill="#9a4a24" stroke="#d8b15e" stroke-width="1"/>`;
+      // white light bars in the floor
+      for (let i = 0; i < 9; i++) { const x = w * (.1 + i * .1); s += `<rect x="${x}" y="${h * .95}" width="${w * .03}" height="2" fill="#fffaf0" opacity=".8"/>`; }
       return s;
     },
   };
 
-  // ── THE ROUND TABLE SET — the table the show builds inside the Great Hall.
-  // Screen-sized (w × h in pixels), seen from just behind the host's chair:
-  // walnut panelling round the walls, a great hearth at the back, tall dark
-  // windows, a brass chandelier, tartan underfoot running away in perspective.
-  function roundTableSet(w, h, night) {
-    const hor = h * .46; // where the far wall meets the floor
-    let s = `<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" style="position:absolute;inset:0">${DEFS}`;
-    s += `<rect width="${w}" height="${h}" fill="#16241c"/>`;
-    // back wall panelling, full height to the picture rail
-    s += panelling(w, hor - h * .26, h * .26);
-    s += `<rect x="0" y="${hor - h * .3}" width="${w}" height="${h * .04}" fill="#3a2410"/>`;
-    // tall windows on the back wall, night outside
-    [.12, .88].forEach(f => { s += archWindow(w * f - w * .035, h * .06, w * .07, h * .3, night !== false); });
-    // portraits between
-    [.27, .73].forEach(f => { s += portrait(w * f - w * .03, h * .08, w * .06, h * .1, '#2a1a14'); });
-    // the hearth, centre back, with its fire
-    const fx = w / 2, fw = w * .16;
-    s += `<circle cx="${fx}" cy="${hor - h * .06}" r="${h * .32}" fill="url(#fireGlow)"/>`
-      + `<rect x="${fx - fw / 2 - 10}" y="${hor - h * .27}" width="${fw + 20}" height="${h * .05}" fill="#4a2a16"/>`
-      + `<path d="M${fx - fw / 2} ${hor} V${hor - h * .2} H${fx + fw / 2} V${hor}Z" fill="#6a4a36"/>`
-      + `<path d="M${fx - fw * .36} ${hor} V${hor - h * .13} a${fw * .36} ${h * .05} 0 0 1 ${fw * .72} 0 V${hor}Z" fill="#120806"/>`
-      + `<ellipse cx="${fx}" cy="${hor - h * .03}" rx="${fw * .22}" ry="${h * .04}" fill="url(#flame)" class="flick"/>`;
-    // floor: tartan running away from us, darker at the far wall
-    s += `<path d="M0 ${hor} H${w} V${h} H0Z" fill="#140d08"/>`
-      + `<path d="M${w * .22} ${hor} H${w * .78} L${w * 1.05} ${h} H${-w * .05}Z" fill="url(#tartanRed)" opacity=".75"/>`
-      + `<path d="M0 ${hor} H${w} V${hor + h * .12} H0Z" fill="#000" opacity=".45"/>`;
-    // the chandelier's pool of light over the table
-    s += `<circle cx="${w / 2}" cy="${h * .5}" r="${h * .6}" fill="url(#candleGlow)" opacity=".8"/>`
-      + `<path d="M${w / 2} 0 V${h * .1}" stroke="#8a6428" stroke-width="2"/>`
-      + `<ellipse cx="${w / 2}" cy="${h * .12}" rx="${w * .08}" ry="${h * .018}" fill="none" stroke="url(#gilt)" stroke-width="3"/>`;
-    [-.06, -.02, .02, .06].forEach(o => { s += candle(w / 2 + w * o, h * .12, 8, 26); });
+  // ── THE ROUND TABLE SET — drawn from the US show's chamber, not a banquet hall.
+  // The table is a set built in its own room: a dark octagon of walnut panels,
+  // each bay a brass lattice lit amber from behind, thin white light bars set in
+  // the floor round the table, and a doorway at the head where the host stands in
+  // a ring of light. No hearth, no windows, no tablecloth.
+  function roundTableSet(w, h) {
+    const hor = h * .5;
+    let s = `<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" style="position:absolute;inset:0">${DEFS}
+      <defs>
+        <pattern id="rtLattice" width="18" height="18" patternUnits="userSpaceOnUse">
+          <rect width="18" height="18" fill="#2a1406"/>
+          <path d="M9 0 L18 9 L9 18 L0 9Z" fill="#e39a3c" opacity=".55"/>
+          <path d="M9 3 L15 9 L9 15 L3 9Z" fill="#ffcf7a" opacity=".5"/>
+        </pattern>
+        <linearGradient id="rtWall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0c0604"/><stop offset=".6" stop-color="#2a1509"/><stop offset="1" stop-color="#140a05"/></linearGradient>
+        <radialGradient id="rtBay" cx=".5" cy=".6" r=".7"><stop offset="0" stop-color="#ffb35a" stop-opacity=".55"/><stop offset="1" stop-color="#ffb35a" stop-opacity="0"/></radialGradient>
+        <radialGradient id="rtPool" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffdca0" stop-opacity=".22"/><stop offset=".7" stop-color="#ffdca0" stop-opacity=".06"/><stop offset="1" stop-color="#ffdca0" stop-opacity="0"/></radialGradient>
+      </defs>`;
+    s += `<rect width="${w}" height="${h}" fill="#070403"/>`;
+    // the octagon's walls: a flat back face and two raked faces each side
+    const faces = [
+      [[0, 0], [w * .16, h * .1], [w * .16, hor + h * .08], [0, h * .8]],
+      [[w * .16, h * .1], [w * .34, h * .04], [w * .34, hor - h * .02], [w * .16, hor + h * .08]],
+      [[w * .34, h * .04], [w * .66, h * .04], [w * .66, hor - h * .02], [w * .34, hor - h * .02]],
+      [[w * .66, h * .04], [w * .84, h * .1], [w * .84, hor + h * .08], [w * .66, hor - h * .02]],
+      [[w * .84, h * .1], [w, 0], [w, h * .8], [w * .84, hor + h * .08]],
+    ];
+    const pt = p => p.map(q => q.join(',')).join(' ');
+    faces.forEach((f, i) => {
+      s += `<polygon points="${pt(f)}" fill="url(#rtWall)" stroke="#3d1f0c" stroke-width="3"/>`;
+      if (i === 2) return;                       // the back face holds the doorway
+      // two lattice bays per face, inset, lit from behind
+      [.12, .56].forEach(t0 => {
+        const t1 = t0 + .32, lerp = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+        const top0 = lerp(f[0], f[1], t0), top1 = lerp(f[0], f[1], t1);
+        const bot0 = lerp(f[3], f[2], t0), bot1 = lerp(f[3], f[2], t1);
+        const m = (a, b, t) => lerp(a, b, t);
+        const q = [m(top0, bot0, .22), m(top1, bot1, .22), m(top1, bot1, .82), m(top0, bot0, .82)];
+        s += `<polygon points="${pt(q)}" fill="url(#rtLattice)" stroke="#6a3a14" stroke-width="3"/>`
+          + `<polygon points="${pt(q)}" fill="url(#rtBay)"/>`;
+      });
+    });
+    // the doorway at the head, and the host's ring of light on the floor
+    const dx = w / 2, dw = w * .13;
+    s += `<rect x="${dx - dw / 2}" y="${h * .1}" width="${dw}" height="${hor - h * .12}" fill="#1a0c05" stroke="#5a3010" stroke-width="4"/>`
+      + `<path d="M${dx - dw / 2} ${h * .1} L${dx} ${h * .03} L${dx + dw / 2} ${h * .1}" fill="#1a0c05" stroke="#5a3010" stroke-width="4"/>`
+      + `<rect x="${dx - dw * .38}" y="${h * .14}" width="${dw * .76}" height="${hor - h * .17}" fill="url(#rtLattice)" opacity=".35"/>`
+      + `<ellipse cx="${dx}" cy="${hor - h * .03}" rx="${w * .06}" ry="${h * .022}" fill="none" stroke="#fff4dc" stroke-width="2" opacity=".8" filter="drop-shadow(0 0 6px #fff4dc)"/>`;
+    // uprights between the faces, each with a warm strip of light up it
+    [w * .16, w * .34, w * .66, w * .84].forEach((x, i) => {
+      const top = i === 0 || i === 3 ? h * .1 : h * .04, bot = i === 0 || i === 3 ? hor + h * .08 : hor - h * .02;
+      s += `<rect x="${x - 7}" y="${top}" width="14" height="${bot - top}" fill="#1d0e05"/>`
+        + `<rect x="${x - 1.5}" y="${top + 10}" width="3" height="${bot - top - 20}" fill="#ffb660" opacity=".75" filter="drop-shadow(0 0 5px #ff9c3a)"/>`;
+    });
+    // the floor: near-black, with short white light bars set in it round the table
+    s += `<path d="M0 ${h * .8} L${w * .16} ${hor + h * .08} L${w * .34} ${hor - h * .02} L${w * .66} ${hor - h * .02} L${w * .84} ${hor + h * .08} L${w} ${h * .8} V${h} H0Z" fill="#0b0604"/>`;
+    for (let i = 0; i < 26; i++) {
+      const a = -Math.PI * .95 + i * (Math.PI * 1.9 / 25) - Math.PI / 2;
+      const r1 = 1.02, cx = w / 2, cy = h * .47, rx = w * .47, ry = h * .4;
+      const x = cx + Math.cos(a) * rx * r1, y = cy + Math.sin(a) * ry * r1;
+      const x2 = cx + Math.cos(a) * rx * (r1 + .05), y2 = cy + Math.sin(a) * ry * (r1 + .05);
+      if (y < hor - h * .02) continue;
+      s += `<line x1="${x}" y1="${y}" x2="${x2}" y2="${y2}" stroke="#fffaf0" stroke-width="3" stroke-linecap="round" opacity=".85" filter="drop-shadow(0 0 4px #fff)"/>`;
+    }
+    s += `<ellipse cx="${w / 2}" cy="${h * .47}" rx="${w * .5}" ry="${h * .45}" fill="url(#rtPool)"/>`;
     s += `<rect width="${w}" height="${h}" fill="url(#vignette)"/></svg>`;
     return s;
   }
-  // the table itself, in perspective, on its own layer so threads draw over it
-  function roundTable(cx, cy, rx, ry) {
-    let s = `<ellipse cx="${cx}" cy="${cy + ry * .16}" rx="${rx}" ry="${ry}" fill="#1a0c05"/>`
-      + `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="#5a2e14"/>`
-      + `<ellipse cx="${cx}" cy="${cy}" rx="${rx * .96}" ry="${ry * .92}" fill="none" stroke="#8a5a2e" stroke-width="2" opacity=".6"/>`
-      + `<ellipse cx="${cx}" cy="${cy}" rx="${rx * .74}" ry="${ry * .7}" fill="#1f3a2e"/>`
-      + `<ellipse cx="${cx}" cy="${cy}" rx="${rx * .74}" ry="${ry * .7}" fill="none" stroke="#c98a3a" stroke-width="1.5" opacity=".5"/>`;
-    // candles round the baize
-    for (let i = 0; i < 7; i++) { const a = Math.PI * (i / 6); s += candle(cx + Math.cos(a) * rx * .5 - rx * 0, cy - Math.sin(a) * ry * .38 + ry * .12, 12, 42); }
-    return `<svg style="position:absolute;inset:0;width:100%;height:100%;overflow:visible">${DEFS}${s}</svg>`;
+  // THE TABLE ITSELF, in perspective, on its own layer so threads draw over it.
+  // Mahogany inlaid with a great eight-point star in cream and black, gold rays
+  // under it; a black rim with gold stars and moon-phase discs, a thin ring of
+  // white light on its inner edge; a raised drum in the middle with a crescent
+  // moon set in it. `seats` puts a water glass at each place.
+  function roundTable(cx, cy, rx, ry, seats) {
+    const k = ry / rx;                                     // the perspective squash
+    const P = (a, r) => [cx + Math.cos(a) * r * rx, cy + Math.sin(a) * r * ry];
+    const pts = arr => arr.map(p => p.join(',')).join(' ');
+    let s = `<defs>
+        <radialGradient id="rtWood" cx=".5" cy=".42" r=".6"><stop offset="0" stop-color="#a4502a"/><stop offset=".6" stop-color="#7a3416"/><stop offset="1" stop-color="#4e1d0a"/></radialGradient>
+        <linearGradient id="rtDrumSide" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3a1506"/><stop offset=".5" stop-color="#6e2e12"/><stop offset="1" stop-color="#3a1506"/></linearGradient>
+        <radialGradient id="rtDrumTop" cx=".45" cy=".4" r=".7"><stop offset="0" stop-color="#b35c30"/><stop offset="1" stop-color="#6a2c10"/></radialGradient>
+      </defs>`;
+    // shadow and the table's thickness
+    s += `<ellipse cx="${cx}" cy="${cy + ry * .12}" rx="${rx * 1.01}" ry="${ry * 1.01}" fill="#000" opacity=".7"/>`
+      + `<ellipse cx="${cx}" cy="${cy + ry * .07}" rx="${rx}" ry="${ry}" fill="#1a0a03"/>`;
+    // the black rim, gold-edged
+    s += `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="#0d0907" stroke="#c9a04e" stroke-width="2"/>`;
+    // gold stars and circles round the rim
+    for (let i = 0; i < 32; i++) {
+      const a = i / 32 * Math.PI * 2, [x, y] = P(a, .93), r = rx * .014;
+      s += i % 2
+        ? `<circle cx="${x}" cy="${y}" r="${r * 1.3}" fill="none" stroke="#b8903f" stroke-width="1" opacity=".7"/>`
+        : `<path d="M${x} ${y - r * 2 * k}L${x + r * .5} ${y - r * .5 * k}L${x + r * 2} ${y}L${x + r * .5} ${y + r * .5 * k}L${x} ${y + r * 2 * k}L${x - r * .5} ${y + r * .5 * k}L${x - r * 2} ${y}L${x - r * .5} ${y - r * .5 * k}Z" fill="#d8b15e" opacity=".85"/>`;
+    }
+    // the wood field, and the ring of white light round its edge
+    s += `<ellipse cx="${cx}" cy="${cy}" rx="${rx * .85}" ry="${ry * .85}" fill="url(#rtWood)"/>`
+      + `<ellipse cx="${cx}" cy="${cy}" rx="${rx * .855}" ry="${ry * .855}" fill="none" stroke="#fffaf0" stroke-width="2.5" filter="drop-shadow(0 0 5px #fff)"/>`;
+    // fine gold rays under the star
+    for (let i = 0; i < 96; i++) {
+      const a = i / 96 * Math.PI * 2, [x1, y1] = P(a, .6), [x2, y2] = P(a, .8);
+      s += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#e0b870" stroke-width=".8" opacity="${i % 4 ? .18 : .4}"/>`;
+    }
+    s += `<ellipse cx="${cx}" cy="${cy}" rx="${rx * .6}" ry="${ry * .6}" fill="none" stroke="#d8b15e" stroke-width="1.5" opacity=".7"/>`
+      + `<ellipse cx="${cx}" cy="${cy}" rx="${rx * .8}" ry="${ry * .8}" fill="none" stroke="#d8b15e" stroke-width="1" opacity=".5"/>`;
+    // the eight-point star: long cardinal points, short diagonals, each split light/dark
+    for (let i = 0; i < 8; i++) {
+      const a = i / 8 * Math.PI * 2 - Math.PI / 2, long = i % 2 === 0;
+      const tip = P(a, long ? .8 : .56), l = P(a - (long ? .2 : .26), .27), r = P(a + (long ? .2 : .26), .27), c = [cx, cy];
+      s += `<polygon points="${pts([c, l, tip])}" fill="#efe3c4"/>`
+        + `<polygon points="${pts([c, tip, r])}" fill="#141010"/>`;
+    }
+    // moon-phase discs set in the rim, eight of them
+    for (let i = 0; i < 8; i++) {
+      const a = i / 8 * Math.PI * 2 + Math.PI / 8, [x, y] = P(a, .93), r = rx * .038;
+      const ph = i / 8, off = (ph * 2 - 1) * r * 2;
+      s += `<ellipse cx="${x}" cy="${y}" rx="${r}" ry="${r * k * 1.15}" fill="#0a0808" stroke="#d8b15e" stroke-width="1.5"/>`
+        + `<clipPath id="rtM${i}"><ellipse cx="${x}" cy="${y}" rx="${r * .8}" ry="${r * .8 * k * 1.15}"/></clipPath>`
+        + `<g clip-path="url(#rtM${i})"><rect x="${x - r}" y="${y - r}" width="${r * 2}" height="${r * 2}" fill="#f4ecd6"/>`
+        + `<ellipse cx="${x + off}" cy="${y}" rx="${r * .95}" ry="${r * k * 1.15}" fill="#0a0808"/></g>`;
+    }
+    // the raised drum in the middle, with its crescent moon
+    const dr = rx * .21, dh = ry * .16;
+    s += `<ellipse cx="${cx}" cy="${cy}" rx="${dr}" ry="${dr * k}" fill="#1a0a03"/>`
+      + `<path d="M${cx - dr} ${cy - dh} V${cy} A${dr} ${dr * k} 0 0 0 ${cx + dr} ${cy} V${cy - dh}Z" fill="url(#rtDrumSide)"/>`
+      + `<ellipse cx="${cx}" cy="${cy - dh}" rx="${dr}" ry="${dr * k}" fill="url(#rtDrumTop)" stroke="#d8b15e" stroke-width="1.5"/>`
+      + `<ellipse cx="${cx}" cy="${cy - dh}" rx="${dr * .82}" ry="${dr * k * .82}" fill="none" stroke="#d8b15e" stroke-width="1" opacity=".6"/>`
+      + `<ellipse cx="${cx}" cy="${cy - dh}" rx="${dr * .5}" ry="${dr * k * .5}" fill="none" stroke="#d8b15e" stroke-width="1" opacity=".5"/>`;
+    const mr = dr * .34, my = cy - dh;
+    s += `<path d="M${cx + mr * .2} ${my - mr * k} A${mr} ${mr * k} 0 1 0 ${cx + mr * .2} ${my + mr * k} A${mr * .75} ${mr * k * .8} 0 1 1 ${cx + mr * .2} ${my - mr * k}Z" fill="#f0dca2" opacity=".9"/>`;
+    // a water glass at every place
+    if (seats) for (let i = 0; i < seats; i++) {
+      const a = (-90 + i * 360 / seats) * Math.PI / 180;
+      if (i === 0) continue;                             // the host stands; no glass
+      const [x, y] = P(a + .09, .9);
+      s += `<ellipse cx="${x}" cy="${y}" rx="${rx * .012}" ry="${rx * .012 * k}" fill="#fff" opacity=".35" stroke="#fff" stroke-width="1"/>`
+        + `<rect x="${x - rx * .01}" y="${y - rx * .03}" width="${rx * .02}" height="${rx * .03}" fill="rgba(220,235,255,.25)" stroke="rgba(255,255,255,.6)" stroke-width="1"/>`;
+    }
+    return `<svg style="position:absolute;inset:0;width:100%;height:100%;overflow:visible">${s}</svg>`;
   }
 
   window.TRScenery = {

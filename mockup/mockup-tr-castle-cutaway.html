@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Traitors Castle Cutaway</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,400;9..144,600;9..144,700;9..144,900&family=IM+Fell+English:ital@0;1&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,400;9..144,600;9..144,700;9..144,900&family=IM+Fell+English:ital@0;1&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Caveat:wght@600;700&family=Kalam:wght@400;700&family=Gochi+Hand&family=Shadows+Into+Light&family=Reenie+Beanie&display=swap" rel="stylesheet">
 <style>
 /* THE OLD VIEWER'S OWN TOKENS (js/vp-tr/style.js) — the look is kept, the delivery is new. */
 :root{
@@ -185,7 +185,7 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 /* the card at the foot of the stage: the debate, or the host */
 .rt .card-slot{position:absolute;left:50%;bottom:3.5%;width:min(62%,760px);transform:translate(-50%,12px);opacity:0;z-index:3200;transition:.4s}
 .rt .card-slot.in{opacity:1;transform:translate(-50%,0)}
-.rt .dcard{padding:14px 18px 12px;background:linear-gradient(160deg,rgba(13,23,18,.96),rgba(6,11,8,.96));border:1px solid var(--rt-rule);box-shadow:0 18px 40px rgba(0,0,0,.75)}
+.rt .dcard{padding:14px 18px 12px;background:linear-gradient(160deg,rgba(26,14,7,.98),rgba(10,6,4,.98));border:1px solid var(--rt-rule);box-shadow:0 18px 40px rgba(0,0,0,.75)}
 .rt .dhead{display:flex;align-items:center;gap:12px;padding-bottom:9px;margin-bottom:10px;border-bottom:1px solid var(--rt-rule)}
 .rt .dhead img{width:38px;height:42px;border-radius:50% 50% 12% 12%/44% 44% 9% 9%;object-fit:cover;box-shadow:0 0 0 2px var(--rt-blood-hot)}
 .rt .dhead .k{font-family:var(--cv-display);font-size:9.5px;font-weight:700;letter-spacing:.34em;color:var(--rt-bone-dim);text-transform:uppercase}
@@ -197,7 +197,7 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .rt .quote p{font-family:var(--cv-body);font-size:clamp(17px,1.5vw,20px);line-height:1.4;color:var(--rt-bone)}
 .rt .quote small{display:block;margin-top:4px;font-family:var(--cv-display);font-size:9.5px;font-weight:700;letter-spacing:.3em;color:var(--rt-bone-dim);text-transform:uppercase}
 .rt .hostcard{display:grid;grid-template-columns:52px 1fr;gap:14px;align-items:center;padding:14px 18px;
-  background:radial-gradient(80% 140% at 50% 50%,rgba(40,70,52,.55),rgba(6,11,8,.96));border-top:1px solid var(--rt-rule);border-bottom:1px solid var(--rt-rule);box-shadow:0 18px 40px rgba(0,0,0,.75)}
+  background:radial-gradient(80% 140% at 50% 50%,rgba(74,40,16,.98),rgba(10,6,4,.98));border-top:1px solid var(--rt-rule);border-bottom:1px solid var(--rt-rule);box-shadow:0 18px 40px rgba(0,0,0,.75)}
 .rt .hostcard img{width:52px;height:58px;border-radius:50% 50% 12% 12%/44% 44% 9% 9%;object-fit:cover}
 .rt .hostcard .k{font-family:var(--cv-display);font-size:9.5px;font-weight:700;letter-spacing:.34em;color:var(--rt-bone-dim);text-transform:uppercase}
 .rt .hostcard p{font-family:var(--cv-body);font-style:italic;font-size:clamp(18px,1.6vw,22px);line-height:1.35;color:var(--rt-candle)}
@@ -219,8 +219,32 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .rt .chip[data-lead="1"]{border-color:rgba(201,40,60,.55);color:#e58490}.rt .chip[data-lead="1"] b{color:#e58490}
 .rt .chip[data-just="1"]{border-color:rgba(240,224,170,.6);background:rgba(240,224,170,.1);color:rgba(246,238,214,.95)}
 
+
+/* THE CHALK — the name is written on the slate, a letter at a time, in the
+   voter's own hand, with the stick travelling along the line and dust falling
+   off it. The running count waits until the name is finished. */
+.rt .bigslate .nm.chalk{position:relative;display:inline-block;font-size:clamp(40px,4.6vw,60px);line-height:1.1;padding:0 6px;filter:url(#chalkRough);
+  text-shadow:0 0 1px rgba(238,242,236,.95),0 0 12px rgba(238,242,236,.25)}
+.rt .bigslate .nm.chalk span{display:inline-block;white-space:pre;clip-path:inset(-30% 100% -30% -30%);
+  animation:chalkL var(--per) cubic-bezier(.4,.1,.6,.9) forwards;animation-delay:calc(var(--start) + var(--i) * var(--per))}
+@keyframes chalkL{to{clip-path:inset(-30% -30% -30% -30%)}}
+.rt .bigslate .stick{position:absolute;left:0;top:55%;width:38px;height:10px;border-radius:2px 4px 4px 2px;opacity:0;pointer-events:none;
+  background:linear-gradient(180deg,#fffef8,#d9d6c8 70%,#b9b5a4);box-shadow:0 3px 6px rgba(0,0,0,.55);transform-origin:0 50%;
+  animation:stickGo var(--dur) linear var(--start) forwards,stickBob var(--per) ease-in-out var(--start) infinite alternate,stickVis calc(var(--dur) + .5s) linear calc(var(--start) - .2s) forwards}
+@keyframes stickGo{from{left:0}to{left:100%}}
+@keyframes stickBob{from{transform:translate(-2px,-70%) rotate(-40deg)}to{transform:translate(-2px,-10%) rotate(-32deg)}}
+@keyframes stickVis{0%{opacity:0}12%{opacity:1}88%{opacity:1}100%{opacity:0}}
+.rt .bigslate .dust{position:absolute;top:70%;width:3px;height:3px;border-radius:50%;background:#f4f2ea;opacity:0;
+  animation:dust .9s ease-in forwards;animation-delay:var(--d)}
+@keyframes dust{0%{opacity:.95;transform:translate(0,0)}100%{opacity:0;transform:translate(var(--dx),34px)}}
+.rt .bigslate .run{opacity:0;animation:runIn .45s ease forwards calc(var(--start) + var(--dur) + .15s)}
+@keyframes runIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.rt .bigslate .smear{position:absolute;inset:0;pointer-events:none;opacity:.5;
+  background:radial-gradient(40% 30% at 30% 40%,rgba(238,242,236,.06),transparent 70%),radial-gradient(35% 25% at 72% 62%,rgba(238,242,236,.05),transparent 70%)}
+.rt .seat .ticks i{font-style:normal;opacity:0;animation:runIn .3s forwards;animation-delay:var(--t)}
+
 /* The Count */
-.rt .count{position:absolute;right:16px;bottom:16px;width:230px;padding:12px 14px;z-index:3200;background:linear-gradient(160deg,rgba(13,23,18,.96),rgba(6,11,8,.96));
+.rt .count{position:absolute;right:16px;bottom:16px;width:230px;padding:12px 14px;z-index:3200;background:linear-gradient(160deg,rgba(26,14,7,.98),rgba(10,6,4,.98));
   border:1px solid var(--rt-rule);box-shadow:0 18px 40px rgba(0,0,0,.75);opacity:0;transform:translateY(-8px);transition:.5s}
 .rt .count.on{opacity:1;transform:none}
 .rt .count h5{font-family:var(--cv-display);font-size:10px;font-weight:700;letter-spacing:.34em;text-transform:uppercase;color:var(--rt-bone-dim);margin-bottom:8px}
@@ -512,7 +536,7 @@ function rtState(i){
 }
 // slot 0 is the host's, at the head of the table; ten evenly spaced after it
 function seatAt(slot, W, H){
-  const cx = W*.5, cy = H*.45, rx = W*.4, ry = H*.24;
+  const cx = W*.5, cy = H*.45, rx = W*.405, ry = H*.245;
   const a = (-90 + slot * 360/11) * Math.PI/180;
   const x = cx + rx*Math.cos(a), y = cy + ry*Math.sin(a);
   return { x, y, z: 100 + Math.round(y) };
@@ -523,7 +547,8 @@ function drawTable(st, fresh){
   const beat = st.beat || {};
   const speaker = beat.who || beat.vote || (beat.host ? 'Host' : null);
   const pw = H*.092;
-  let h = TRScenery.roundTableSet(W, H, true) + TRScenery.roundTable(W*.5, H*.46, W*.27, H*.15);
+  let h = `<svg width="0" height="0" style="position:absolute"><filter id="chalkRough"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="4" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.6"/></filter></svg>`
+    + TRScenery.roundTableSet(W, H) + TRScenery.roundTable(W*.5, H*.455, W*.29, H*.17, 11);
   // threads between accuser and accused
   const pos = n => { const p = seatAt(RT_SEATS.indexOf(n) + 1, W, H); return [p.x, p.y]; };
   h += `<svg class="threads">` + r.accs.map(([a,b]) => {
@@ -535,7 +560,7 @@ function drawTable(st, fresh){
   // the count on the baize, while the slates are read
   const count = {}; Object.values(r.slates).forEach(v => count[v] = (count[v]||0) + 1);
   if(r.phase === "vote" && !r.out && !beat.vote)
-    h += `<div class="counter" style="left:${W*.5}px;top:${H*.46}px"><b>${r.order.length} / ${RT_SEATS.length}</b><span>READ ALOUD</span></div>`;
+    h += `<div class="counter" style="left:${W*.5}px;top:${H*.44}px"><b>${r.order.length} / ${RT_SEATS.length}</b><span>READ ALOUD</span></div>`;
   // the host's seat
   const hp = seatAt(0, W, H);
   h += `<div class="seat host${speaker==='Host'?' speak':(speaker?' quiet':'')}" style="left:${hp.x}px;top:${hp.y}px;width:${pw}px;z-index:${hp.z}">`
@@ -548,15 +573,25 @@ function drawTable(st, fresh){
       TRAITOR.has(n)?'traitor':'', r.out===n && r.reveal ? 'out':''].join(' ');
     h += `<div class="${cls}" style="left:${p.x}px;top:${p.y}px;width:${pw}px;z-index:${p.z}">`
       + `<div class="av"><img src="${A(P[n])}"></div><div class="nm">${n}</div>`
-      + `<div class="ticks">${'/'.repeat(count[n]||0)}</div></div>`;
+      + `<div class="ticks">${'/'.repeat(Math.max(0, (count[n]||0) - (fresh && beat.vote && RT_VOTES[beat.vote]===n ? 1 : 0)))}`
+      + (fresh && beat.vote && RT_VOTES[beat.vote]===n ? `<i style="--t:${(.7 + n.length*.14 + .2).toFixed(2)}s">/</i>` : '') + `</div></div>`;
   });
   // the slate just read — the existing screen's framed chalkboard
   if(beat.vote){
     const lead = Math.max(...Object.values(count));
     const chips = Object.keys(count).sort((a,b) => count[b]-count[a]).map(n =>
       `<span class="chip"${count[n]===lead?' data-lead="1"':''}${n===RT_VOTES[beat.vote]?' data-just="1"':''}>${n} <b>${count[n]}</b></span>`).join('');
-    h += `<div class="bigslate"><div class="face"><span class="ord">${r.order.length} / ${RT_SEATS.length}</span>`
-      + `<div class="nm">${RT_VOTES[beat.vote]}</div><div class="by"><img src="${A(P[beat.vote])}">${beat.vote}</div></div>`
+    const nm = RT_VOTES[beat.vote];
+    // the voter's own hand, the same every time they write
+    const HANDS = ["'Caveat',cursive", "'Kalam',cursive", "'Gochi Hand',cursive", "'Shadows Into Light',cursive", "'Reenie Beanie',cursive"];
+    const hand = HANDS[[...beat.vote].reduce((a, c) => a + c.charCodeAt(0), 0) % HANDS.length];
+    const per = fresh ? .14 : 0, start = fresh ? .7 : 0, dur = nm.length * per;
+    const dust = fresh ? Array.from({ length: 9 }, (_, i) =>
+      `<b class="dust" style="left:${(i + .5) / 9 * 100}%;--d:${(start + dur * (i + .5) / 9).toFixed(2)}s;--dx:${(i % 3 - 1) * 6}px"></b>`).join('') : '';
+    h += `<div class="bigslate" style="--per:${per}s;--start:${start}s;--dur:${dur}s"><div class="face"><span class="smear"></span><span class="ord">${r.order.length} / ${RT_SEATS.length}</span>`
+      + `<div class="nm chalk" style="font-family:${hand}">` + [...nm].map((c, i) => `<span style="--i:${i}">${c}</span>`).join('')
+      + (fresh ? `<i class="stick"></i>` : '') + dust + `</div>`
+      + `<div class="by"><img src="${A(P[beat.vote])}">${beat.vote}</div></div>`
       + `<div class="run">${chips}</div></div>`;
   }
   // The Count, once every slate is up

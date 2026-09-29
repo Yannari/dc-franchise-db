@@ -27,7 +27,7 @@ export const SAVE_BEATS = {
   intro: {
     chocolate: [
       'Each queen gets a sealed chocolate bar with her face on the wrapper. One of them hides a golden ticket. Nobody opens hers unless she is sent home.',
-      'Ru hands round the bars herself. "Keep them sealed. If you lose a lip sync, you will open yours on this stage. One of them is golden, and golden means you stay."',
+      'The host hands round the bars himself. "Keep them sealed. If you lose a lip sync, you will open yours on this stage. One of them is golden, and golden means you stay."',
       'A tray of chocolate bars, one per queen. One is gold inside. The rule is simple: hold on to it, and pray you never have to open it.',
     ],
     tank: [
@@ -36,12 +36,12 @@ export const SAVE_BEATS = {
     ],
     beaver: [
       'New rule this season: three queens will be named in the bottom every week, and the winner of the maxi challenge holds the Golden Beaver. She saves one of them before the song.',
-      'Ru holds up a golden beaver. "Every week, the challenge winner uses this to save one of the bottom three. The other two lip sync."',
+      'The host holds up a golden beaver. "Every week, the challenge winner uses this to save one of the bottom three. The other two lip sync."',
       'Panic in the werk room: the maxi winner will get to save one of the bottom three, every single week. Everybody suddenly needs new best friends.',
     ],
     baguette: [
       'The Golden Baguette: every week, the queen who went home the week before comes back with it and hands it to anyone still in the race. Whoever holds it saves one of the bottom three.',
-      'Ru introduces the Golden Baguette. The last queen out decides who holds it, and the holder decides who is saved. Two decisions, two chances to make an enemy.',
+      'The host introduces the Golden Baguette. The last queen out decides who holds it, and the holder decides who is saved. Two decisions, two chances to make an enemy.',
     ],
   },
   /* The last live lever has just been found: nothing left in the row can
@@ -60,6 +60,19 @@ export const SAVE_BEATS = {
       '{g} walks back onto the main stage holding the Golden Baguette. She gives it to {h}.',
       'The doors open and it is {g}, one week gone, carrying the baguette. She puts it in the hands of {h}.',
       '{g} is back just long enough to choose. The baguette goes to {h}.',
+    ],
+    /* THE ROOM GUESSED WRONG. Untucked is spent working the queen everybody
+       expects {g} to pick ({t}); when it goes elsewhere the screen has to say
+       so, or the courting and the hand-off read as two different nights. */
+    misread: [
+      'A whole Untucked spent working on {t}, and the baguette goes past her. {t} looks at the bottom three and shrugs: none of that was hers to give.',
+      'The bottom three turn, as one, from {t} to {h}. Every promise made on that couch was made to the wrong queen.',
+      '{t} laughs out loud. She spent an hour being begged for something she was never going to hold.',
+    ],
+    /* And when the queen who got it is one of the bottom three herself. */
+    misreadSelf: [
+      'The baguette goes to {h} — who is standing in the bottom three, and who spent Untucked pleading with {t} like everybody else. Nobody saw this coming, least of all her.',
+      '{h} was on that couch an hour ago begging {t} for a lifeline. Now she is holding it.',
     ],
   },
   saveHold: {
@@ -112,12 +125,12 @@ export const SAVE_BEATS = {
   ask: {
     chocolate: [
       '"{a}, before you sashay away... open your chocolate bar."',
-      'Ru holds up a hand. "Not yet, {a}. You still have your bar. Open it."',
+      'The host holds up a hand. "Not yet, {a}. You still have your bar. Open it."',
       '"{a}. The moment of truth. Unwrap your chocolate bar."',
     ],
     tank: [
       '"{a}, you lost the lip sync. But the tank is still full. Pick a lever."',
-      'Ru points at the tank. "{a}, choose your lever. Choose wisely."',
+      'The host points at the tank. "{a}, choose your lever. Choose wisely."',
       '"Before you go, {a}... Michelle is waiting. Pick a lever."',
     ],
   },

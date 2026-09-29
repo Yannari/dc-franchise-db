@@ -327,9 +327,11 @@ describe('games, parties, apartment life and videos from home — on the page', 
       'party.nhie': e('party.nhie', [{ by: 'a', send: '{q}' }, { by: 'b', react: 'Guilty.' }]),
       'party.nhie.none': e('party.nhie.none', [{ by: 'a', send: '{q}' }]),
     }, () => writeScene(s, sc).blocks);
-    expect(blocks.map(b => b.key)).toEqual(['party.open', 'party.nhie', 'party.nhie.none']);
+    const keys = blocks.map(b => b.key);
+    expect(keys[0]).toBe('party.open');
+    expect(keys.filter(k => k.startsWith('party.nhie'))).toEqual(['party.nhie', 'party.nhie.none']);
     expect(blocks[0].lines[0].text).toBe('90s Party! a windbreaker, butterfly clips and a boom box!');
-    expect(blocks[1].lines[0].text).toBe('Never have I ever lied about my age.');
+    expect(blocks.find(b => b.key === 'party.nhie').lines[0].text).toBe('Never have I ever lied about my age.');
   });
 
   it('shows a life scene and a home video with their own player only', () => {

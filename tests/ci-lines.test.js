@@ -4,7 +4,7 @@
 // written. The coverage test — every key the engine can ask for has three
 // plain entries — closes the plan (Task 10).
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { POOLS } from '../js/ci/lines/index.js';
 import { GAMES } from '../js/ci/games-data.js';
@@ -64,6 +64,16 @@ describe('the pools are well-formed', () => {
     const thin = POOL_KEYS.filter(k => (POOLS[k] || []).filter(e => !e.when).length < 3)
       .map(k => `${k}: ${(POOLS[k] || []).filter(e => !e.when).length}`);
     expect(thin).toEqual([]);
+  });
+
+  it('never defines a pool twice in one file (the second silently replaces the first)', () => {
+    const dir = join(process.cwd(), 'js/ci/lines');
+    const dups = [];
+    for (const f of readdirSync(dir).filter(x => x.endsWith('.js'))) {
+      const keys = [...readFileSync(join(dir, f), 'utf8').matchAll(/^\s+(?:\.\.\.E\()?'([a-z0-9.-]+)'(?:: \[|,)/gm)].map(m => m[1]);
+      for (const k of new Set(keys.filter((k, i) => keys.indexOf(k) !== i))) dups.push(`${f}: ${k}`);
+    }
+    expect(dups).toEqual([]);
   });
 
   it('conditions only on known facts', () => {

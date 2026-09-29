@@ -327,8 +327,24 @@ const BLOCKS = {
     const posters = [...new Set((s.data.posts || []).map(p => p.by))];
     const [a = s.who[0], b = s.who.find(h => h !== a), c = s.who.find(h => h !== a && h !== b)] = posters;
     const key = s.data.final ? 'circle.final' : s.data.party ? 'circle.party' : 'circle.open';
-    return [{ key, cast: { a, b, c } },
-      ...(s.data.theories || []).map(t => ({ key: 'circle.theory', cast: { a: t.by, b: t.about }, extra: { claim: 'catfish' } }))];
+    const rest = [...posters, ...s.who].filter((h, i, l) => l.indexOf(h) === i && ![a, b, c].includes(h));
+    const [d, e, f] = rest;
+    const out = [{ key, cast: { a, b, c } }];
+    // The chat keeps going (1×01: the group chat is where the whole room
+    // talks at once), and people in other apartments react out loud.
+    if (d && e) out.push({ key: s.data.final ? 'circle.final' : 'circle.more', cast: { a: d, b: e, c: f || a } });
+    // A second exchange, from whoever hasn't spoken yet (or the first voices again in a small room).
+    if (!s.data.final) out.push({ key: 'circle.more', cast: { a: rest[3] || b, b: rest[4] || c || a, c: rest[5] || a } });
+    // The last one runs long: finalists look back, each to the one they're closest to.
+    if (s.data.final) for (const h of [...new Set([a, b, d].filter(Boolean))].slice(0, 2)) {
+      const to = s.who.filter(x => x !== h).sort((x, y) => rel(h, y, 'affection') - rel(h, x, 'affection'))[0];
+      if (to) out.push({ key: 'circle.final.look', cast: { a: h, b: to } });
+    }
+    const reactors = [...new Set([f, rest[3], b, c].filter(Boolean))].slice(0, 3);
+    reactors.forEach((h, i) => out.push({ key: 'circle.react', cast: { a: h, b: [a, d, b][i] || a } }));
+    out.push({ key: 'circle.leave', cast: { a: c || a } });
+    out.push(...(s.data.theories || []).map(t => ({ key: 'circle.theory', cast: { a: t.by, b: t.about }, extra: { claim: 'catfish' } })));
+    return out;
   },
   profiles(state, s) {
     return s.who.map(a => ({ key: `profile.${state.profiles[a].mode}`, cast: { a },
@@ -342,12 +358,20 @@ const BLOCKS = {
   },
   'after-party'(state, s) { return [{ key: 'afterparty', cast: { a: s.who[0], b: s.who[1] } }]; },
   ratings(state, s, final = false) {
-    const out = final ? [] : [{ key: 'ratings.open', cast: { a: s.who[0] } }];
+    const out = final
+      ? s.who.slice(0, 3).map(h => ({ key: 'final.open', cast: { a: h } }))
+      : [{ key: 'ratings.open', cast: { a: s.who[0] } }];
     const n = s.data.results.length;
-    for (const b of s.data.ballots.slice(0, final ? s.data.ballots.length : 4)) {
+    for (const b of s.data.ballots) {
       const first = b.order[0], last = b.order.at(-1);
-      if (final) { out.push({ key: `final.rate.${b.reasons[0]}`, cast: { a: b.voter, b: first }, extra: { final: true } }); continue; }
+      if (final) {
+        out.push({ key: `final.rate.${b.reasons[0]}`, cast: { a: b.voter, b: first }, extra: { final: true } });
+        if (last && last !== first) out.push({ key: `rate.${b.reasons.at(-1)}.bottom`, cast: { a: b.voter, b: last }, extra: { band: 'bottom', final: true } });
+        continue;
+      }
       out.push({ key: `rate.${b.reasons[0]}.top`, cast: { a: b.voter, b: first }, extra: { band: 'top' } });
+      const mid = b.order.length >= 5 ? b.order[Math.floor(b.order.length / 2)] : null;
+      if (mid) out.push({ key: 'rate.middle', cast: { a: b.voter, b: mid } });
       if (last && last !== first) out.push({ key: `rate.${b.reasons.at(-1)}.bottom`, cast: { a: b.voter, b: last }, extra: { band: 'bottom' } });
       const bad = last && gameCallback(state, b.voter, last, s, { sameDay: true, dir: 'theirs',
         kinds: ['named-bad', 'rival', 'jab', 'asked-barbed', 'picked-last', 'asked-catfish'] });
@@ -355,11 +379,16 @@ const BLOCKS = {
       const good = first && gameCallback(state, b.voter, first, s, { sameDay: true, dir: 'theirs', kinds: ['gift', 'named-good', 'portrait-kind'] });
       if (good) out.push({ key: 'rate.callback.good', cast: { a: b.voter, b: first, text: { game: good.game } } });
     }
+    // Rankings sent; the waiting before the results.
+    for (const h of s.data.ballots.map(x => x.voter).slice(-2)) out.push({ key: final ? 'final.done' : 'ratings.done', cast: { a: h } });
     if (!final) {
+      for (const h of [...s.data.reveal.flat()].reverse().slice(0, 2)) out.push({ key: 'ratings.wait', cast: { a: h } });
       for (const group of s.data.reveal.slice(0, -1)) {
-        const r = s.data.results.find(x => x.profile === group[0]);
-        out.push({ key: `result.${bandOf(r.place, n)}`, cast: { a: group[0], b: group[1] },
-          extra: { band: bandOf(r.place, n), place: PLACE_WORDS[r.place - 1] } });
+        for (const h of group) {
+          const r = s.data.results.find(x => x.profile === h);
+          out.push({ key: `result.${bandOf(r.place, n)}`, cast: { a: h, b: group.find(x => x !== h) },
+            extra: { band: bandOf(r.place, n), place: PLACE_WORDS[r.place - 1] } });
+        }
       }
       const [i1, i2] = s.data.influencers;
       out.push({ key: 'result.influencers', cast: { a: i1, b: i2 } });
@@ -384,20 +413,27 @@ const BLOCKS = {
   },
   blocking(state, s) {
     const [announcer, target] = s.who;
-    const out = [{ key: `block.announce.${s.data.reason}`, cast: { a: announcer, c: target }, extra: { reason: s.data.reason } },
-      { key: 'block.react.self', cast: { a: target }, extra: { self: true } }];
     const others = s.seenBy.filter(h => h !== target && h !== announcer && !s.data.by.includes(h));
+    // Before the name: the ones at risk, waiting; the Influencer typing it.
+    const out = [target, ...others].slice(0, 4).map(h => ({ key: 'block.wait', cast: { a: h } }));
+    out.push({ key: 'block.typing', cast: { a: announcer, c: target }, extra: { reason: s.data.reason } },
+      { key: `block.announce.${s.data.reason}`, cast: { a: announcer, c: target }, extra: { reason: s.data.reason } },
+      { key: 'block.react.self', cast: { a: target }, extra: { self: true } },
+      { key: 'block.after', cast: { a: announcer, b: target } },
+      ...s.data.by.filter(i => i !== announcer).slice(0, 1).map(i => ({ key: 'block.after', cast: { a: i, b: target } })));
     const friend = others.find(h => rel(h, target, 'affection') > 3);
     const rival = others.find(h => rel(h, target, 'resentment') > 3 && h !== friend);
     if (friend) out.push({ key: 'block.react.friend', cast: { a: friend, b: target } });
     if (rival) out.push({ key: 'block.react.rival', cast: { a: rival, b: target } });
-    if (!friend && !rival && others[0]) out.push({ key: 'block.react.relief', cast: { a: others[0], b: target } });
+    for (const h of others.filter(x => x !== friend && x !== rival).slice(0, 2)) out.push({ key: 'block.react.relief', cast: { a: h, b: target } });
     return out;
   },
   visit(state, s) {
     const [h, to] = s.who;
     const out = [{ key: `visit.choose.${s.data.motive}`, cast: { a: h, b: to }, extra: { motive: s.data.motive } }];
-    for (const w of state.active.filter(x => x !== to).slice(0, 2)) {
+    out.push({ key: 'visit.walk', cast: { a: h, b: to } });
+    // Everybody waits, the one about to be visited included: nobody knows whose door it is.
+    for (const w of [to, ...state.active.filter(x => x !== to)].slice(0, 5)) {
       out.push({ key: state.profiles[w].mode === 'catfish' ? 'visit.wait.catfish' : 'visit.wait', cast: { a: w, b: h } });
     }
     // The door opens both ways: the visitor sees who was behind the profile too.
@@ -406,12 +442,15 @@ const BLOCKS = {
     if (door) out.push({ key: `visit.door.${door}`, cast: { a: to, b: h } });
     if (fakeIn && !fakeAt) out.push({ key: 'visit.door.caught', cast: { a: h, b: to } });
     out.push({ key: `visit.talk.${s.data.motive}`, cast: { a: h, b: to }, extra: { motive: s.data.motive } });
+    // The conversation keeps going: on the real show a visit is a sit-down.
+    out.push({ key: `visit.talk2.${s.data.motive}`, cast: { a: h, b: to }, extra: { motive: s.data.motive } });
     if (s.data.handed) {
       const c0 = claimOf(state, s.data.handed);
       out.push({ key: 'visit.hand', cast: { a: h, b: to, c: c0.about }, extra: { claim: c0.kind } });
     }
     if (s.data.kiss) out.push({ key: 'visit.kiss', cast: { a: h, b: to }, extra: { kiss: true } });
     out.push({ key: 'visit.bye', cast: { a: h, b: to } });
+    out.push({ key: 'visit.after', cast: { a: to, b: h } });
     return out;
   },
   report(state, s) {
@@ -421,7 +460,7 @@ const BLOCKS = {
     const [h] = s.who;
     const p = state.profiles[h];
     const viewers = s.seenBy.filter(x => x !== h);
-    const out = viewers[0] ? [{ key: 'goodbye.guess', cast: { a: viewers[0], b: h } }] : [];
+    const out = viewers.slice(0, 4).map(v => ({ key: 'goodbye.guess', cast: { a: v, b: h } }));
     out.push({ key: p.mode === 'catfish' ? `goodbye.video.catfish.${p.reason || 'strategic'}` : `goodbye.video.${p.mode}`,
       cast: { a: h }, extra: { mode: p.mode, reasonKind: p.reason || undefined } });
     if (s.data.warning) {
@@ -436,14 +475,19 @@ const BLOCKS = {
     const warned = s.data.warning && viewers.includes(s.data.warning.about) ? s.data.warning.about : null;
     if (warned) out.push({ key: 'goodbye.react.warned', cast: { a: warned, b: h } });
     const suspecter = viewers.find(v => v !== guilty && v !== warned && peekReal(state, v, h) < 0.5);
-    const other = viewers.find(v => v !== guilty && v !== warned && v !== suspecter);
     if (suspecter) out.push({ key: p.mode === 'catfish' ? 'goodbye.react.vindicated' : 'goodbye.react.surprised', cast: { a: suspecter, b: h } });
-    else if (other) out.push({ key: 'goodbye.react.surprised', cast: { a: other, b: h } });
+    // Everybody else watching reacts too, and a friend has the last word.
+    for (const v of viewers.filter(x => ![guilty, warned, suspecter].includes(x)).slice(0, 3)) {
+      out.push({ key: 'goodbye.react.surprised', cast: { a: v, b: h } });
+    }
+    const friend = viewers.filter(v => rel(v, h, 'affection') > 2).sort((x, y) => rel(y, h, 'affection') - rel(x, h, 'affection'))[0];
+    if (friend) out.push({ key: 'goodbye.after', cast: { a: friend, b: h } });
     return out;
   },
   meet(state, s) {
     const [a, ...present] = s.who;
-    if (!present.length) return [];
+    // The first one in waits alone in the studio.
+    if (!present.length) return [{ key: 'meet.first', cast: { a } }];
     const explain = (h, to) => {
       const why = state.profiles[h].reason;
       return { key: `meet.explain.${why || 'strategic'}`, cast: { a: h, b: to }, extra: { reasonKind: why || undefined } };
@@ -455,7 +499,12 @@ const BLOCKS = {
     if (first && fake(a)) return [{ key: 'meet.both', cast: { a, b: first } }, explain(a, first), explain(first, a)];
     if (first) return [{ key: 'meet.found', cast: { a, b: first } }, explain(first, a)];
     const b = present.at(-1);
-    return fake(a) ? [{ key: 'meet.arrive.catfish', cast: { a, b } }, explain(a, b)] : [{ key: 'meet.arrive.real', cast: { a, b } }];
+    const out = fake(a) ? [{ key: 'meet.arrive.catfish', cast: { a, b } }, explain(a, b)] : [{ key: 'meet.arrive.real', cast: { a, b } }];
+    // Everybody already in the room reacts to who walked in.
+    const reacting = present.length <= 2 ? present : present.filter(x => x !== b).slice(-3);
+    for (const h of reacting) out.push({ key: 'meet.react', cast: { a: h, b: a }, extra: { catfish: fake(a) } });
+    out.push({ key: 'meet.settle', cast: { a, b } });
+    return out;
   },
   reveal(state, s) {
     const pl = s.data.placements;
@@ -501,7 +550,17 @@ const BLOCKS = {
     for (const sl of (s.data.slips || []).slice(0, 1)) {
       out.push({ key: 'game.slip', cast: { a: sl.by, b: sl.noticedBy[0] || s.who.find(h => h !== sl.by) }, extra: { misread: !!sl.misread } });
     }
-    return out;
+    // The night itself: dancing alone, party photos, the flirting, the end.
+    const d = s.data;
+    const tail = [];
+    for (const h of d.dancers || []) tail.push({ key: 'party.dance', cast: { a: h } });
+    for (const ph of d.photos || []) tail.push({ key: 'party.photo', cast: { a: ph.by, b: ph.likers[0] || s.who.find(h => h !== ph.by), text: { n: String(ph.likers.length) } } });
+    const fl = (d.flirts || [])[0];
+    tail.push(fl ? { key: 'party.flirt', cast: { a: fl[0], b: fl[1] } }
+      : { key: 'party.banter', cast: { a: s.who[1] || s.who[0], b: s.who[2] || s.who[0] } });
+    if (d.dancers?.[0]) tail.push({ key: 'party.end', cast: { a: d.dancers.at(-1) } });
+    // Dancing first, then the photos, then the game, the flirting and the end.
+    return [out[0], ...tail.slice(0, (d.dancers || []).length + (d.photos || []).length), ...out.slice(1), ...tail.slice((d.dancers || []).length + (d.photos || []).length)];
   },
   life(state, s) { return [{ key: `life.${s.data.habit}`, cast: { a: s.who[0], personA: s.data.person } }]; },
   // Private to the apartment: only its player is cast.
@@ -631,6 +690,9 @@ export const POOL_KEYS = [
   'party.open', 'party.nhie', 'party.nhie.none',
   ...['workout', 'skincare', 'cooking', 'reading', 'singing', 'plushie', 'praying', 'pacing'].map(h => `life.${h}`),
   'home.video', 'host.game', 'host.life', 'shared.argue.faceWins', 'shared.argue.brainWins',
+  'circle.more', 'circle.react', 'ratings.done', 'ratings.wait', 'final.open', 'final.done', 'block.wait', 'block.typing',
+  ...['friend', 'answers', 'truth', 'apology'].map(m => `visit.talk2.${m}`), 'visit.after', 'goodbye.after',
+  'meet.first', 'meet.react', 'meet.settle', 'circle.leave', 'circle.final.look', 'block.after', 'visit.walk', 'rate.middle', 'party.dance', 'party.photo', 'party.flirt', 'party.banter', 'party.end',
   ...['named-bad', 'named-good', 'rival', 'gift', 'picked-last', 'jab', 'portrait-kind', 'flirted', 'asked-barbed', 'asked-catfish']
     .flatMap(k => [`callback.${k}.mine`, `callback.${k}.theirs`]), 'rate.callback.bad', 'rate.callback.good',
 ];

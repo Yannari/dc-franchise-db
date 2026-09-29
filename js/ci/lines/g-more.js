@@ -140,6 +140,35 @@ export const G_MORE = {
     ab("I'm proud of it. Nobody else has to be.", "I'm a little proud of you, {a}."),
   ]),
 
+  ...E('game.flirt.round', 5, [
+    { turns: [{ by: 'a', say: "Go big.", send: "{b}, if you were a vegetable you'd be a cute-cumber {e:wink}" }, { by: 'b', react: "Oh no. Oh no, that's terrible." }] },
+    { turns: [{ by: 'a', send: "{b}, do you have a map? I keep getting lost in your profile picture" }, { by: 'b', react: "A map. {a} said a map. Okay." }] },
+    { turns: [{ by: 'a', send: "{b}, are you tired? You've been running through my messages all day {e:hearteyes}" }, { by: 'b', react: "Ha! Classic. Terrible. Classic." }] },
+    { turns: [{ by: 'a', say: "Keep it simple. Keep it cute.", send: "{b}, you had me at 'Hey'" }, { by: 'b', react: "Aw. That's actually kind of sweet." }] },
+    { turns: [{ by: 'a', send: "{b}, I'd swipe right on you in every app, and I don't even have my phone" }, { by: 'b', react: "Okay, {a}, that one's good." }] },
+    { turns: [{ by: 'a', send: "{b}, are you the Circle? Because I can't stop talking about you" }, { by: 'b', react: "Did {a} just flirt with me using the Circle?" }] },
+  ]),
+  ...E('game.flirt.answer', 5, [
+    { turns: [{ by: 'a', send: "Only if you're the answer {e:wink}" }] },
+    { turns: [{ by: 'a', react: "Two can play that game.", send: "Are you a magician? Because every time I read your messages, everyone else disappears" }] },
+    { turns: [{ by: 'a', send: "Took you long enough {e:kiss}" }] },
+  ]),
+  ...E('game.flirt.react', 4, [
+    s1("{b} and {c} have chemistry. Even through a screen."),
+    s1("That was cringe. That was cute. That was cringe-cute."),
+    s1("I need {b} to stop. I need {b} to never stop."),
+    { turns: [{ by: 'a', say: "{b} went for {c}? Interesting. Very interesting." }] },
+    { turns: [{ by: 'a', say: "That line was so bad I had to read it twice." }] },
+    { turns: [{ by: 'a', say: "{b} is shameless. I love it." }] },
+    { turns: [{ by: 'a', say: "Poor {c}. Or lucky {c}. One of the two." }] },
+    { turns: [{ by: 'a', say: "Wait, {b} likes {c}? Since when?" }] },
+    { turns: [{ by: 'a', say: "I'm screaming. {b} really sent that to {c}." }] },
+    { turns: [{ by: 'a', say: "If {c} says yes to that, I'm out of the Circle." }] },
+    { turns: [{ by: 'a', say: "Okay, {b} has game. Terrible game, but game." }] },
+    { turns: [{ by: 'a', say: "Everybody's flirting except me. Great." }] },
+    { turns: [{ by: 'a', say: "{b} and {c}. I'm calling it now." }] },
+    { turns: [{ by: 'a', say: "Where do people get these lines?" }] },
+  ]),
   ...E('game.rival.round', 6, [
     { turns: [{ by: 'a', send: "My biggest rival is {b}. We want the same things in here. Only one of us gets them" }, { by: 'b', react: "Fair. Terrifying, but fair." }] },
     { turns: [{ by: 'a', send: "{b}. You're sweet, but you're a threat, and I see it" }, { by: 'b', react: "A threat? Me? I'll take that." }] },
@@ -163,11 +192,6 @@ export const G_MORE = {
     { turns: [{ by: 'a', say: "My pick is {b}. Let everybody see it." }, { by: 'b', react: "{a} picked me in front of everybody!" }] },
     { turns: [{ by: 'a', say: "{b}. No hesitation." }, { by: 'b', react: "Wait, me? Thank you, {a}!" }] },
     { turns: [{ by: 'a', say: "It's going to {b}. {b} has been there for me." }, { by: 'b', react: "Aw, {a}. That's so sweet." }] },
-  ]),
-  ...E('game.flirt.react', 4, [
-    s1("{b} and {c} have chemistry. Even through a screen."),
-    s1("That was cringe. That was cute. That was cringe-cute."),
-    s1("I need {b} to stop. I need {b} to never stop."),
   ]),
   ...E('game.flirt.vote', 4, [
     s1("{b}'s line was the worst, and that's why it's the best."),

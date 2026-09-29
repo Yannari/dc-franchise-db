@@ -287,22 +287,29 @@ const RUN = {
 
   /** Pickup lines, and a date for the pair that clicks (5×02 Talk Flirty to Me). */
   flirt(state, rng, game, sc, all) {
-    const pairs = [];
-    for (const a of all) for (const b of all) {
-      if (a >= b || !attractionOk(state, a, b) || !attractionOk(state, b, a)) continue;
-      pairs.push([a, b, Math.min(rel(a, b, 'attraction'), rel(b, a, 'attraction')) + rng()]);
+    // Everybody delivers a pickup line to their crush; a line that lands
+    // where the crush is mutual grows it both ways. The room votes the best.
+    const answers = {};
+    for (const a of all) {
+      const options = all.filter(b => b !== a && attractionOk(state, a, b));
+      if (!options.length) continue;
+      answers[a] = argmax(options, b => rel(a, b, 'attraction') + rng());
     }
-    pairs.sort((x, y) => y[2] - x[2]);
-    const answers = {}, used = new Set();
-    for (const [a, b] of pairs) {
-      if (used.has(a) || used.has(b) || Object.keys(answers).length >= 4) continue;
-      answers[a] = b; answers[b] = a; used.add(a); used.add(b);
-      bump(a, b, 'attraction', 1); bump(b, a, 'attraction', 1);
-      feel(state, a, 'elation', 1); feel(state, b, 'elation', 1);
+    for (const [a, b] of Object.entries(answers)) {
+      if (attractionOk(state, b, a) && rel(b, a, 'attraction') > 3) { bump(a, b, 'attraction', 1); bump(b, a, 'attraction', 1); feel(state, b, 'elation', 1); }
+      else bump(b, a, 'affection', 0.2);
+      feel(state, a, 'elation', 0.5);
+    }
+    const votes = {};
+    for (const v of all) {
+      const pickFrom = Object.keys(answers).filter(x => x !== v);
+      if (!pickFrom.length) continue;
+      const w = argmax(pickFrom, x => S(state, x, 'boldness') * 0.3 + rel(v, x, 'affection') * 0.2 + rng() * 2);
+      votes[w] = (votes[w] || 0) + 1;
     }
     sc.data.rounds.push({ promptId: 'flirt', answers });
-    const first = Object.keys(answers)[0];
-    sc.data.results = { winner: first ? [first, answers[first]] : null };
+    const top = Object.keys(votes).sort((x, y) => votes[y] - votes[x])[0];
+    sc.data.results = { votes, winner: top ? [top, answers[top]] : null };
   },
 
   /** Name your biggest rival, and why you deserve it more (1×10 State Your Case). */

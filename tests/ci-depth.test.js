@@ -114,3 +114,29 @@ describe('a game never repeats itself', () => {
     expect(repeats).toEqual([]);
   });
 });
+
+// Beyond the games: every big moment of a Circle episode, held to what the
+// real show gives it (structure-based minimums: who speaks in the real
+// segment, times two or three lines each).
+export const SCENE_DEPTH = {
+  ratings: 30, 'final-ratings': 15, blocking: 14, goodbye: 18, visit: 22, party: 35, 'circle-chat': 16, meet: 6,
+};
+
+describe('every big moment airs in full', () => {
+  it('meets the minimum for ratings, blockings, goodbyes, visits, parties, Circle Chat and the finale', () => {
+    const thin = {}, seen = {};
+    for (const seed of [2, 7, 19]) {
+      const { state } = seasonWithPair(seed);
+      for (const sc of state.scenes.filter(x => x.aired && SCENE_DEPTH[x.kind])) {
+        const lines = sc.script.blocks.reduce((n, b) => n + blockText(state, b).filter(l => l.trim()).length, 0);
+        (seen[sc.kind] ||= []).push(lines);
+        const min = sc.kind === 'meet' && sc.who.length < 3 ? 4 : SCENE_DEPTH[sc.kind];
+        if (lines < min) (thin[sc.kind] ||= []).push(lines);
+      }
+    }
+    const avg = a => Math.round(a.reduce((x, y) => x + y, 0) / a.length);
+    console.log('\n  lines per scene (mean, min):', JSON.stringify(Object.fromEntries(
+      Object.entries(seen).map(([k, a]) => [k, `${avg(a)} / ${Math.min(...a)} (need ${SCENE_DEPTH[k]})`]))));
+    expect(Object.fromEntries(Object.entries(thin).map(([k, a]) => [k, a.length]))).toEqual({});
+  });
+});

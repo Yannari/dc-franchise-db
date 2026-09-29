@@ -102,3 +102,91 @@ describe('which game', () => {
     expect(pickGame(s, streamFor(1, 'x'), { days: 13 }).family).toBe('flirt');
   });
 });
+
+import { runGame } from '../js/ci/games.js';
+import { rel } from '../js/ci/state.js';
+import { mood } from '../js/ci/mind.js';
+
+const game = id => GAMES.find(g => g.id === id);
+
+describe('public-answer games', () => {
+  it('a statement game: everyone answers every round once, the same-answer pairs warm', () => {
+    const s = room(8, 2);
+    const sc = runGame(s, streamFor(2, 'g'), game('ice-breaker'));
+    expect(sc.kind).toBe('game');
+    expect(sc.data.rounds.length).toBeGreaterThanOrEqual(4);
+    for (const r of sc.data.rounds) expect(Object.keys(r.answers).sort()).toEqual([...s.active].sort());
+    const [a, b] = s.active;
+    const same = sc.data.rounds.filter(r => r.answers[a] === r.answers[b]).length;
+    expect(rel(a, b, 'affection') > 0).toBe(same > 0);
+  });
+
+  it('a statement game: a catfish can give themselves away with an answer', () => {
+    let slipped = 0;
+    for (let seed = 1; seed <= 30; seed++) {
+      const s = room(8, seed);
+      Object.assign(s.profiles['@q0'], { mode: 'catfish', gap: 2 });
+      const sc = runGame(s, streamFor(seed, 'g'), game('ice-breaker'));
+      if ((sc.data.slips || []).some(x => x.by === '@q0' && !x.misread)) slipped++;
+    }
+    expect(slipped).toBeGreaterThan(0);
+  });
+
+  it('a name game: the named-for-bad resent their namers, the named-for-good warm to theirs', () => {
+    const s = room(8, 4);
+    const sc = runGame(s, streamFor(4, 'g'), game('most-likely'));
+    const g = game('most-likely');
+    for (const r of sc.data.rounds) {
+      const tone = g.prompts.find(p => p.id === r.promptId).tone;
+      for (const [namer, named] of Object.entries(r.answers)) {
+        expect(named).not.toBe(namer);
+        if (tone === 'bad') expect(rel(named, namer, 'resentment')).toBeGreaterThan(0);
+        if (tone === 'good') expect(rel(named, namer, 'affection')).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it('a gift game: every giver gives once, the receiver warms, and nobody-picked is lonely', () => {
+    const s = room(8, 5);
+    const before = Object.fromEntries(s.active.map(h => [h, mood(s, h, 'loneliness')]));
+    const sc = runGame(s, streamFor(5, 'g'), game('democracy-day'));
+    const gifts = sc.data.rounds[0].answers;
+    expect(Object.keys(gifts).sort()).toEqual([...s.active].sort());
+    for (const [giver, to] of Object.entries(gifts)) expect(rel(to, giver, 'affection')).toBeGreaterThanOrEqual(1);
+    const unpicked = s.active.filter(h => !Object.values(gifts).includes(h));
+    for (const h of unpicked) expect(mood(s, h, 'loneliness')).toBeGreaterThan(before[h]);
+  });
+
+  it('a rival game: every rival is public knowledge and resents the one who named them', () => {
+    const s = room(6, 6);
+    const sc = runGame(s, streamFor(6, 'g'), game('state-your-case'));
+    const named = Object.entries(sc.data.rounds[0].answers);
+    expect(named).toHaveLength(6);
+    for (const [namer, rival] of named) {
+      expect(rel(rival, namer, 'resentment')).toBeGreaterThan(0);
+      const c = s.claims.find(x => x.kind === 'targeting' && x.holder === namer && x.about === rival);
+      expect(c?.secrecy).toBe('public');
+      for (const o of s.active) if (o !== namer) expect(s.know[o]?.[c.id]).toBeTruthy();
+    }
+  });
+
+  it('runs every public family with three players', () => {
+    for (const id of ['ice-breaker', 'most-likely', 'democracy-day', 'state-your-case']) {
+      const s = room(3, 7);
+      const sc = runGame(s, streamFor(7, id), game(id));
+      for (const r of sc.data.rounds) expect(Object.keys(r.answers)).toHaveLength(3);
+    }
+  });
+});
+
+describe('a shared profile in a game', () => {
+  it('answers once for the pair, never twice', () => {
+    const s = room(6, 8);
+    s.people.Q9 = { ...s.people.Q0, name: 'Q9' };
+    s.profiles['@q0'].players.push('Q9'); s.profiles['@q0'].mode = 'shared'; s.handleOf.Q9 = '@q0';
+    for (const id of ['ice-breaker', 'most-likely', 'democracy-day', 'state-your-case']) {
+      const sc = runGame(s, streamFor(8, id), game(id));
+      for (const r of sc.data.rounds) expect(Object.keys(r.answers).sort()).toEqual([...s.active].sort());
+    }
+  });
+});

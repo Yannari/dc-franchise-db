@@ -7,8 +7,118 @@
 // in everyone's business, so they'll all know how each other voted" (the
 // host, 1×01).
 import { GAMES } from './games-data.js';
-import { rel } from './state.js';
+import { rel, bump, S, clamp, addScene, peopleOf } from './state.js';
 import { attractionOk } from './chat.js';
+import { belief, nudgeBelief, noteAlly } from './beliefs.js';
+import { feel } from './mind.js';
+import { makeClaim, learn } from './claims.js';
+import { rollSlips } from './slips.js';
+
+const NICE = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
+/** A profile the franchise rule keeps nice: every person behind it is a nice archetype. */
+const isNice = (state, h) => peopleOf(state, h).every(n => NICE.has(state.people[n]?.archetype));
+
+function shuffled(list, rng) {
+  const a = [...list];
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
+const argmax = (list, score) => list.reduce((best, x) => (score(x) > score(best) ? x : best), list[0]);
+
+// ── The runners, one per family ──────────────────────────────────────────
+
+const RUN = {
+  /** Agree or disagree; everyone sees who said what (1×01 Ice Breaker). */
+  statement(state, rng, game, sc, all) {
+    for (const p of shuffled(game.prompts, rng).slice(0, 4)) {
+      const answers = {};
+      for (const h of all) {
+        const pAgree = clamp(0.5 + p.lean * (S(state, h, p.stat) - 5) / 10 + (rng() - 0.5) * 0.4, 0.05, 0.95);
+        answers[h] = rng() < pAgree ? 'agree' : 'disagree';
+        // An answer can contradict the profile ("She might be a dude").
+        rollSlips(state, rng, h, all, { specific: 0.4, attention: 0.7 }, sc);
+      }
+      sc.data.rounds.push({ promptId: p.id, answers });
+      for (const a of all) for (const b of all) if (a !== b && answers[a] === answers[b]) bump(a, b, 'affection', 0.15);
+      for (const side of ['agree', 'disagree']) {
+        const who = all.filter(h => answers[h] === side);
+        if (who.length !== 1) continue;
+        const [lone] = who;
+        sc.data.rounds.at(-1).lone = lone;
+        for (const obs of all) if (obs !== lone) nudgeBelief(state, obs, lone, 'real', -0.02 * S(state, obs, 'intuition') / 10, sc);
+      }
+    }
+  },
+
+  /** Say the Player who fits, in the open (1×11 Most Likely). */
+  name(state, rng, game, sc, all) {
+    for (const p of shuffled(game.prompts, rng).slice(0, 4)) {
+      const answers = {};
+      for (const voter of all) {
+        const others = all.filter(o => o !== voter);
+        const score = o => {
+          if (p.tone === 'bad') {
+            return isNice(state, voter) ? -rel(voter, o, 'affection') + rng()
+              : rel(voter, o, 'resentment') + belief(state, voter, o).threat * 0.3 + rng() * 2;
+          }
+          return rel(voter, o, 'affection') + rng() * 2;
+        };
+        answers[voter] = argmax(others, score);
+      }
+      sc.data.rounds.push({ promptId: p.id, answers });
+      for (const [namer, named] of Object.entries(answers)) {
+        if (p.tone === 'bad') { bump(named, namer, 'resentment', 0.6); feel(state, named, 'stress', 0.5); }
+        if (p.tone === 'good') { bump(named, namer, 'affection', 0.5); feel(state, named, 'elation', 0.5); }
+      }
+      if (p.tone === 'good') {
+        const counts = {};
+        for (const n of Object.values(answers)) counts[n] = (counts[n] || 0) + 1;
+        const top = argmax(Object.keys(counts), k => counts[k]);
+        feel(state, top, 'elation', 1);
+        for (const v of all) if (v !== top) nudgeBelief(state, v, top, 'threat', 0.3, sc);
+      }
+    }
+  },
+
+  /** Each gives one Player something; the givers are revealed (Democracy Day). */
+  gift(state, rng, game, sc, all) {
+    const answers = {};
+    for (const giver of all) {
+      answers[giver] = argmax(all.filter(o => o !== giver),
+        o => rel(giver, o, 'affection') + rel(giver, o, 'attraction') * 0.5 + rng());
+    }
+    sc.data.rounds.push({ promptId: 'gift', answers });
+    for (const [giver, to] of Object.entries(answers)) {
+      bump(to, giver, 'affection', 1.0);
+      for (const obs of all) if (obs !== giver) noteAlly(state, obs, giver, to, sc);
+    }
+    for (const h of all) if (!Object.values(answers).includes(h)) feel(state, h, 'loneliness', 2);
+  },
+
+  /** Name your biggest rival, and why you deserve it more (1×10 State Your Case). */
+  rival(state, rng, game, sc, all) {
+    const answers = {};
+    for (const namer of all) {
+      const rival = argmax(all.filter(o => o !== namer),
+        o => belief(state, namer, o).threat + rel(namer, o, 'resentment') * 0.5 + rng());
+      answers[namer] = rival;
+      const c = makeClaim(state, { kind: 'targeting', holder: namer, about: rival, truth: true, secrecy: 'public', by: namer });
+      for (const obs of all) if (obs !== namer) learn(state, obs, c, namer, sc);
+      bump(rival, namer, 'resentment', 1.2);
+      feel(state, rival, 'stress', 1);
+    }
+    sc.data.rounds.push({ promptId: 'rival', answers });
+  },
+};
+
+/** Play a game with everyone still in, and record it as one public scene. */
+export function runGame(state, rng, game) {
+  const all = [...state.active];
+  const sc = addScene(state, 'game', all, { gameId: game.id, family: game.family, rounds: [], results: {}, prize: null }, all);
+  if (!RUN[game.family]) throw new Error(`no runner for the ${game.family} family yet`);
+  RUN[game.family](state, rng, game, sc, all);
+  return sc;
+}
 
 /** Mean suspicion in the room, read from beliefs that already exist. */
 function roomSuspicion(state) {

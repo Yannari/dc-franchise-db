@@ -137,3 +137,51 @@ describe('the one-offs (phase 3)', () => {
     expect(played).toBeGreaterThan(5);
   });
 });
+
+describe('a save plays whether or not the villa can spare anyone', () => {
+  // User: "the bombshell save one twist doesn't work when there's no dump".
+  it('with nobody to spare, the rest are kept single — nobody leaves, the save still plays', async () => {
+    const { bombshellSaves } = await import('../js/pm/arrivals.js');
+    const cast = makeIslanders(22, 4); setPlayers(cast);
+    const names = cast.map(p => p.name);
+    const { state } = playPerfectMatchSeason({ cast: names, setup: roleSetup(names), seed: 4 });
+    state.couples = [];
+    const bomb = state.villa.find(n => state.profiles[n].gender === 'f');
+    const r = bombshellSaves(state, bomb, { rng: () => 0.5, spare: 0 });
+    expect(r, 'the save returned nothing').toBeTruthy();
+    expect(r.dumped).toEqual([]);
+    expect(r.kept.length).toBeGreaterThan(0);
+    expect(r.events.find(e => e.kind === 'bombshell-save').extra.of).toBe('kept');
+  });
+  it('booked by hand, it sends the unsaved home every time it plays', () => {
+    let played = 0;
+    for (let seed = 1; seed <= 12; seed++) {
+      const rows = season(seed, { 3: { arrivalRule: 'saves' }, 7: { arrivalRule: 'saves' } });
+      for (const r of rows.filter(x => x.pm.arrivalRule === 'saves' && x.pm.events.some(e => e.kind === 'bombshell-save'))) {
+        played++;
+        expect(r.exits.filter(x => x.channel === 'bombshell').length, `s${seed} e${r.num}`).toBeGreaterThan(0);
+      }
+    }
+    expect(played).toBeGreaterThan(0);
+  });
+  it('a booked Save One vote always plays, and a random one keeps the pace', () => {
+    for (let seed = 1; seed <= 8; seed++) {
+      const cast = makeIslanders(22, seed); setPlayers(cast);
+      const names = cast.map(p => p.name);
+      const { rows } = playPerfectMatchSeason({ cast: names, setup: roleSetup(names), seed, picks: { vote1: 'save-one' } });
+      const v1 = rows.find(r => r.slot === 'vote1' || (r.moment === 'public-vote' && r.pm.dumpFormat === 'save-one'));
+      expect(v1?.exits.length, `seed ${seed}`).toBeGreaterThan(0);
+    }
+  });
+});
+
+describe('a night that sends nobody home takes no dumping format', () => {
+  it('"Nobody Goes Home" and every dumping format are one night\'s alternatives', async () => {
+    const { TWIST_CATALOG } = await import('../js/core.js');
+    const none = TWIST_CATALOG.find(t => t.id === 'pm-dump-none');
+    for (const f of TWIST_CATALOG.filter(t => t.format === 'perfect-match' && t.pmFormat)) {
+      expect(f.incompatible, f.id).toContain('pm-dump-none');
+      expect(none.incompatible, f.id).toContain(f.id);
+    }
+  });
+});

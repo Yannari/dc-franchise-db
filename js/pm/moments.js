@@ -903,6 +903,9 @@ function arrivalRule(state, ctx, rule, fresh) {
   // the save used to dump only when the pace was high, so on a small cast
   // the vulnerable singles were all kept and the booked night did nothing.
   let room = Math.max(0, Math.floor(ctx.surplus ?? 0));
+  // A save the author booked sends somebody home, whatever the pace; a drawn
+  // one with nobody to spare plays with the rest kept, single (arrivals.js).
+  if (rule === 'saves' && ctx.entry.ruleBooked) room = Math.max(room, 1);
   for (const name of fresh) {
     const tonight = fresh;
     const r = rule === 'stand-up' ? standUp(state, name, { rng: ctx.rng, tonight })
@@ -1045,7 +1048,11 @@ function voteNight(state, ctx) {
     // held for a bombshell — the first vote skipped).
     const firstRoom = firstCall && state.couples.length >= target && toComeAll >= 1;
     // …and a night the author said always dumps plays, whatever the pace (never with fewer than three couples).
-    const authorSays = ctx.entry.dumping === 'always' && state.couples.length >= 3;
+    // So does a format the author booked on the night (user: "the save one
+    // twist doesn't work when there's no dump" — a booked Save One met a
+    // pace with nobody to spare and the night played as everyone safe).
+    const authorSays = (ctx.entry.dumping === 'always' || (ctx.entry.formatBooked && ctx.entry.dumping !== 'none'))
+      && state.couples.length >= 3;
     if (!authorSays && (state.couples.length < 3 || (enough && !roomy && !firstRoom) || !paceOk)) {
       // …unless the villa has single islanders to lose: then the singles face
       // the public (measured: at the calibration cast a quarter of second

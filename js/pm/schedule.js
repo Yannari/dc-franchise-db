@@ -626,7 +626,11 @@ export function withBookings(schedule, byEp = {}) {
     if (b?.rituals && VILLA_DAYS.has(e.moment)) e = { ...e, rituals: [...new Set([...(e.rituals || []), ...b.rituals])] };
     if (!b) return e;
     const out = { ...e };
-    if (b.arrivalRule && e.moment === 'bombshell') out.arrivalRule = b.arrivalRule === 'dates' ? undefined : b.arrivalRule;
+    if (b.arrivalRule && e.moment === 'bombshell') {
+      out.arrivalRule = b.arrivalRule === 'dates' ? undefined : b.arrivalRule;
+      // Booked by the author: it plays in full (moments.js arrivalRule).
+      if (out.arrivalRule && b.ruleBooked !== false) out.ruleBooked = true;
+    }
     if (b.firstFormat && e.moment === 'first-coupling') out.firstFormat = b.firstFormat;
     if (b.oneOff) out.oneOff = b.oneOff;
     if (b.scDecider) out.scDecider = b.scDecider;
@@ -690,13 +694,16 @@ export function resolveRandomGames(schedule, rng) {
   });
 }
 
-export function withPicks(schedule, picks = {}) {
+// `forced`: the slots the author booked by hand (a Randomize booking is not
+// one); null means every pick is the author's, as a direct call's are.
+export function withPicks(schedule, picks = {}, forced = null) {
   return schedule.map(e => {
     const want = e.slot && picks?.[e.slot];
     const opt = want && DUMP_DRAWS[e.slot]?.find(o => o[0] === want);
     if (!opt) return e;
     const [dumpFormat, , bottom] = opt;
-    const out = { ...e, dumpFormat };
+    // Booked by the author: the night plays it, pace or no pace (moments.js).
+    const out = { ...e, dumpFormat, ...(!forced || forced.includes(e.slot) ? { formatBooked: true } : {}) };
     if (bottom) out.bottom = bottom; else delete out.bottom;
     return out;
   });

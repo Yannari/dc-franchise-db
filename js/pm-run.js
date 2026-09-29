@@ -112,7 +112,7 @@ export function perfectMatchSeasonShape() {
   return { ...shape, starters: count('starter'), auto: buildSchedule({ ...shape, episodes: null }).length,
     // What the nights would be with nobody's counts: the timeline's "as scheduled".
     plain: buildSchedule({ ...shape, counts: null }),
-    schedule: withBookings(withPicks(schedule, perfectMatchPicks()), perfectMatchBookings()) };
+    schedule: withBookings(withPicks(schedule, perfectMatchPicks(), perfectMatchForcedSlots()), perfectMatchBookings()) };
 }
 
 /**
@@ -136,6 +136,19 @@ export function perfectMatchPicks() {
     if (slot && tw.pmSlots.includes(slot)) picks[slot] = tw.pmFormat;
   }
   return picks;
+}
+
+/**
+ * The slots whose format the author booked by hand: those play in full, pace
+ * or no pace (moments.js). A Randomize booking (`random: true`) is the draw
+ * written down, and keeps the draw's manners — it dumps only when the season
+ * can spare somebody.
+ */
+export function perfectMatchForcedSlots() {
+  const mine = new Map(twistsForFormat({ format: PERFECT_MATCH_FORMAT }).filter(t => t.pmFormat).map(t => [t.id, t]));
+  const slotAt = new Map(perfectMatchSlots().map(e => [e.ep, e.slot]));
+  return (seasonConfig.twistSchedule || []).filter(b => b && !b.random && (mine.has(b.type) || mine.has(b.id)))
+    .map(b => slotAt.get(Number(b.episode))).filter(Boolean);
 }
 
 /**
@@ -259,7 +272,9 @@ export function perfectMatchBookings() {
     const ep = Number(b.episode);
     // The Villa Challenge card carries its game in the booking ('' = random).
     const game = tw.pmApply.challenge === 'random' && b.pmGame ? { challenge: b.pmGame } : {};
-    if (tw.pmOn.includes(kindAt.get(ep))) out[ep] = { ...(out[ep] || {}), ...tw.pmApply, ...game };
+    // An arrival rule the author booked by hand plays in full; a Randomize one keeps the draw's manners.
+    const byHand = tw.pmApply.arrivalRule ? { ruleBooked: !b.random } : {};
+    if (tw.pmOn.includes(kindAt.get(ep))) out[ep] = { ...(out[ep] || {}), ...tw.pmApply, ...game, ...byHand };
   }
   return out;
 }
@@ -307,7 +322,7 @@ function _firstChanged(aired, rows) {
 
 function _inputs() {
   return {
-    setup: perfectMatchSetup(), picks: perfectMatchPicks(), bookings: perfectMatchBookings(),
+    setup: perfectMatchSetup(), picks: perfectMatchPicks(), forcedSlots: perfectMatchForcedSlots(), bookings: perfectMatchBookings(),
     splitOrStealOn: seasonConfig.pmSplitOrSteal === true,
     firstIn: seasonConfig.pmFirstIn === 'm' ? 'm' : 'f',
     // How many couples reach the final (Villa options).
@@ -373,7 +388,7 @@ function _build(inputs, rerolls) {
   const carried = _carried(cast);
   let result, inner, record = null;
   try {
-    result = playPerfectMatchSeason({ cast, setup: resolved, seed, picks: inputs.picks, bookings: inputs.bookings || {}, rerolls,
+    result = playPerfectMatchSeason({ cast, setup: resolved, seed, picks: inputs.picks, forcedSlots: inputs.forcedSlots || null, bookings: inputs.bookings || {}, rerolls,
       splitOrStealOn: inputs.splitOrStealOn, dialect: inputs.dialect, episodes: inputs.episodes, firstIn: inputs.firstIn,
       arrivalCounts: inputs.arrivalCounts, finalCouples: inputs.finalCouples, carried });
     inner = gs;

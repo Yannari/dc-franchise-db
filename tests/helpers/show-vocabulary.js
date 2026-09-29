@@ -101,6 +101,15 @@ export const VOCAB = {
       'challenge', 'challenges',
     ],
   },
+  'the-circle': {
+    // Phrases where the bare word is ordinary English elsewhere: every show
+    // "blocks" a shot and "rates" a look, so the exclusive forms are the
+    // Circle's own nouns.
+    own: [
+      'the circle', 'circle chat', 'influencer', 'influencers', 'catfish',
+      'catfished', 'the hangout', 'blocked from the circle', 'newsfeed',
+    ],
+  },
 };
 
 /** Everything a given format is not allowed to say. */

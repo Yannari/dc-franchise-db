@@ -30,6 +30,7 @@ export const SETTINGS_BY_FORMAT = {
   // has an answer that is not a summer camp.
   'drag-race': ['dr-werkroom'],
   'perfect-match': ['pm-villa'],
+  'the-circle': ['ci-apartments'],
 };
 
 export function settingsForFormat(fmt) {
@@ -390,6 +391,20 @@ export const SEASON_SETTINGS = {
     arrival: { vehicle: 'villa steps', verb: 'walks down the villa steps', point: 'the villa',
                onPoint: 'in the villa', headline: 'One villa. One perfect match.',
                groupCall: 'Islanders, meet me at the firepit.' },
+    reskin: {},
+    atmosphere: [],
+  },
+  // ── THE CIRCLE ─────────────────────────────────────────────────────
+  // One venue. The engine writes its own scenes and draws nothing from the
+  // camp reskin pools; this exists so the dropdown has something true.
+  'ci-apartments': {
+    label: 'The Apartments', emoji: '⭕',
+    blurb: 'A block of apartments, one player in each, with a Circle screen in every room, a Hangout upstairs and a roof terrace nobody is allowed to share.',
+    vocab: { place: 'the building', shelter: 'the apartment', gather: 'Circle Chat',
+             water: 'the bath', sleep: 'the bedroom', downtime: 'the sofa', foodSource: 'the kitchen' },
+    arrival: { vehicle: 'front door', verb: 'walks into the apartment', point: 'the building',
+               onPoint: 'in the building', headline: 'Welcome to The Circle.',
+               groupCall: 'Players, Circle Chat is now open.' },
     reskin: {},
     atmosphere: [],
   },

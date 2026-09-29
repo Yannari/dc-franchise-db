@@ -277,6 +277,38 @@ const SHOW_WORDS = {
       { id: 'casa', text: 'Who twists at Casa Amor?' },
     ],
   },
+  'the-circle': {
+    name: 'The Circle',
+    short: 'CI',
+    episode: 'episode',
+    Episode: 'Episode',
+    episodeShort: 'Ep',
+    elimination: 'blocking',
+    eliminated: 'blocked',
+    challenge: 'game',
+    home: 'the Circle',
+    vote: 'ratings',
+    finalVote: 'final ratings',
+    comps: ['game'],
+    danger: 'at risk',
+    Danger: 'At risk',
+    onDanger: 'at risk',
+    nominated: 'ended up at risk',
+    Pawn: 'A saved player',
+    Ceremony: 'The ratings',
+    nominee: 'an at-risk player',
+    pawn: 'a saved player',
+    ceremony: 'the ratings',
+    // No jury: the finalists rate each other.
+    jury: 'the final five',
+    safe: 'safe',
+    nominationLabel: 'At risk',
+    polls: [
+      { id: 'catfish', text: 'Who is the catfish?' },
+      { id: 'blocked', text: 'Who gets blocked next?' },
+      { id: 'winner', text: 'Who wins The Circle?' },
+    ],
+  },
 };
 
 /** The words this show uses. Unknown formats get the generic set, never a crash. */

@@ -266,8 +266,8 @@ export const CHAT_B = {
   'chat.credit.cold': [
     { id: 'chat.credit.cold.01', turns: [
       { by: 'a', send: "I had your back in the Hangout last night" },
-      { by: 'b', react: "That's not what I heard.", send: "Funny. That's not what I heard" },
-      { by: 'a', send: "Then you heard wrong" },
+      { by: 'b', react: "Sure you did.", send: "Sure you did lol" },
+      { by: 'a', send: "I did. I really did" },
     ], beat: '{b} leaves the chat without another word.' },
     { id: 'chat.credit.cold.02', turns: [
       { by: 'a', send: "You're welcome for last night by the way {e:wink}" },

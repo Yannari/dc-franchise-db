@@ -21,7 +21,7 @@ export const ROLES = ['a', 'b', 'c', 'host'];
 export const FACT_KEYS = ['intent', 'ending', 'result', 'known', 'early', 'late', 'catfish', 'outed',
   'suspects', 'theory', 'pact', 'friends', 'rivals', 'flirty', 'newcomer', 'mood', 'group', 'style',
   'hurt', 'influencer', 'reason', 'motive', 'mode', 'reasonKind', 'band', 'kiss', 'claim', 'lie',
-  'tone', 'party', 'final', 'slip', 'noticed', 'place', 'self'];
+  'tone', 'party', 'final', 'slip', 'noticed', 'place', 'self', 'likesC'];
 
 export const hostName = () => showWords('the-circle').host || 'Host';
 
@@ -69,6 +69,8 @@ export function factsFor(state, scene, cast) {
       newcomer: (state.joinedDay[b] || 1) > 1 && state.day - state.joinedDay[b] <= 2,
     });
   }
+  // Whether a actually likes the Player being discussed (the Hangout's c).
+  if (cast.c && state.profiles[cast.c]) f.likesC = rel(a, cast.c, 'affection') > 4;
   const d = scene.data || {};
   for (const k of ['intent', 'ending', 'reason', 'motive', 'mode', 'kiss', 'tone', 'party', 'final']) {
     if (d[k] !== undefined && d[k] !== null) f[k] = d[k];
@@ -253,11 +255,13 @@ const BLOCKS = {
   hangout(state, s) {
     const [a, b] = s.who;
     const out = [{ key: 'hangout.open', cast: { a, b } }];
-    for (const v of (s.data.views || []).slice(0, 5)) {
+    // They take turns bringing up each name.
+    (s.data.views || []).slice(0, 5).forEach((v, i) => {
       const cut = v.handle === s.data.target;
       const reason = cut ? s.data.reason : 'noBond';
-      out.push({ key: `hangout.view.${reason}.${cut ? 'cut' : 'keep'}`, cast: { a, b, c: v.handle }, extra: { reason } });
-    }
+      const [x, y] = i % 2 ? [b, a] : [a, b];
+      out.push({ key: `hangout.view.${reason}.${cut ? 'cut' : 'keep'}`, cast: { a: x, b: y, c: v.handle }, extra: { reason } });
+    });
     const kind = s.data.offers.some(o => o.trade) ? 'trade' : s.data.yielded ? 'yield' : 'agree';
     out.push({ key: `hangout.${kind}`, cast: { a: s.data.decider, b: s.data.yielded || b, c: s.data.target } });
     if (s.data.offers.some(o => o.pact)) out.push({ key: 'hangout.pact', cast: { a, b } });
@@ -382,8 +386,9 @@ export function writeDay(state, day) {
   const tone = day === 1 ? 'first' : yesterday.some(s => s.kind === 'blocking') ? 'blocking'
     : yesterday.some(s => s.kind === 'arrival') ? 'arrival' : 'quiet';
   const rng = streamFor(state.seed, `line:cold:${day}`);
-  const entry = pickEntry(state, 'host.cold', { tone, early: day <= 2 }, `day${day}`, rng);
-  if (entry) aired[0].script.blocks.unshift({ key: 'host.cold', ...renderEntry(state, entry, { a: aired[0].who[0] }, rng) });
+  const key = `host.cold.${tone}`;
+  const entry = pickEntry(state, key, { early: day <= 2 }, `day${day}`, rng);
+  if (entry) aired[0].script.blocks.unshift({ key, ...renderEntry(state, entry, { a: aired[0].who[0] }, rng) });
   bridge(state, aired);
 }
 
@@ -434,5 +439,5 @@ export const POOL_KEYS = [
   ...WHY_.map(w => `goodbye.video.catfish.${w}`), 'goodbye.warning.catfish', 'goodbye.warning.distrusts', 'goodbye.warning.seen',
   'goodbye.react.guilty', 'goodbye.react.warned', 'goodbye.react.vindicated', 'goodbye.react.surprised',
   'meet.arrive.real', 'meet.arrive.catfish', 'meet.found', 'meet.both', ...WHY_.map(w => `meet.explain.${w}`),
-  'reveal.place', 'reveal.winner', 'host.cold', 'host.chat', 'host.status', 'host.circle',
+  'reveal.place', 'reveal.winner', ...['first', 'blocking', 'arrival', 'quiet'].map(t => `host.cold.${t}`), 'host.chat', 'host.status', 'host.circle',
 ];

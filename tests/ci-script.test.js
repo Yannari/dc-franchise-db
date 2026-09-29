@@ -236,3 +236,38 @@ describe('the host', () => {
     expect(hosted[0].script.blocks[0].lines[0]).toMatchObject({ kind: 'host', text: 'Meanwhile, Shubham is typing.' });
   });
 });
+
+import { rel } from '../js/ci/state.js';
+
+describe('what the host and the Hangout may say', () => {
+  it('opens the first day with a first-day line, from its own pool', () => {
+    const s = room();
+    s.day = 1;
+    const sc = addScene(s, 'status', ['@sammie'], {});
+    sc.aired = true;
+    const saved = POOLS['status.steady'];
+    POOLS['status.steady'] = [{ id: 'status.steady.t1', turns: [{ by: 'a', post: 'Hi' }] }];
+    writeDay(s, 1);
+    POOLS['status.steady'] = saved;
+    expect(sc.script.blocks[0].key).toBe('host.cold.first');
+  });
+
+  it('knows whether the one discussing c actually likes c', () => {
+    const s = room();
+    bump('@shubham', '@sammie', 'affection', 6);
+    const sc = addScene(s, 'hangout', ['@shubham', '@rebecca'], {});
+    expect(factsFor(s, sc, { a: '@shubham', b: '@rebecca', c: '@sammie' }).likesC).toBe(true);
+    expect(factsFor(s, sc, { a: '@rebecca', b: '@shubham', c: '@sammie' }).likesC).toBe(false);
+    void rel;
+  });
+});
+
+describe('the Hangout', () => {
+  it('lets the two Influencers take turns opening each name', () => {
+    const s = room();
+    const sc = addScene(s, 'hangout', ['@shubham', '@sammie'], { atRisk: ['@rebecca'], target: '@rebecca', reason: 'threat',
+      views: [{ handle: '@rebecca' }, { handle: '@rebecca' }], offers: [], decider: '@shubham' });
+    const views = sceneBlocks(s, sc).filter(b => b.key.startsWith('hangout.view')).map(b => b.cast.a);
+    expect(views).toEqual(['@shubham', '@sammie']);
+  });
+});

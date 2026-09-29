@@ -2,29 +2,36 @@
 // apartment life. Data only. The host knows everything, so {a.aka} and real
 // pronouns are fine here — and nowhere else. Jokes come from what is on
 // screen: the room, the outfit, the snack, the message being typed.
-// `host.cold` is keyed by `tone` (what happened yesterday: first, blocking,
+// `host.cold.<tone>` is picked by what happened yesterday (first, blocking,
 // arrival, quiet); a is the first Player on screen. In the bridges, a is the
 // Player the scene opens on (the sender of a chat, the poster of a status)
 // and b the one they are writing to.
 export const HOST = {
-  'host.cold': [
-    { id: 'host.cold.01', turns: [{ by: 'host', say: "Good morning, Circle! The sun is up, the coffee is on, and {a} is already talking to a screen." }] },
-    { id: 'host.cold.02', turns: [{ by: 'host', say: "Rise and shine, Players. Another day of making friends with people you've never seen." }] },
-    { id: 'host.cold.03', turns: [{ by: 'host', say: "It's morning in the Circle, which means everybody is wide awake and nobody has brushed their teeth." }] },
-    { id: 'host.cold.04', turns: [{ by: 'host', say: "Welcome back to the Circle. {a} is up, dressed, and has already said good morning to the fridge." }] },
-    { id: 'host.cold.05', turns: [{ by: 'host', say: "Morning, everybody. Somewhere in this building, somebody is doing push-ups for a camera that isn't even on them yet." }] },
-    { id: 'host.cold.06', when: { tone: 'first' }, turns: [{ by: 'host', say: "Welcome to the Circle! A bunch of strangers, one apartment building, and not one of them can see each other. What could go wrong?" }] },
-    { id: 'host.cold.07', when: { tone: 'first' }, turns: [{ by: 'host', say: "Here they come! Our Players are moving in, and every single one of them just checked out their own reflection in the hallway." }] },
-    { id: 'host.cold.08', when: { tone: 'first' }, turns: [{ by: 'host', say: "It's day one in the Circle. The apartments are gorgeous, the fridges are full, and the phones are gone. Good luck, everybody." }] },
-    { id: 'host.cold.09', when: { tone: 'blocking' }, turns: [{ by: 'host', say: "After last night's blocking, there's one less apartment with the lights on, and a lot more people checking the door." }] },
-    { id: 'host.cold.10', when: { tone: 'blocking' }, turns: [{ by: 'host', say: "Good morning to everyone who survived last night's blocking. Everybody still here is being extra nice this morning." }] },
-    { id: 'host.cold.11', when: { tone: 'blocking' }, turns: [{ by: 'host', say: "The morning after a blocking in the Circle. Nobody slept, everybody's smiling, and nobody means it." }] },
-    { id: 'host.cold.12', when: { tone: 'arrival' }, turns: [{ by: 'host', say: "There's a new face in the building, and everybody wants to know if it's a real one. Good morning, Circle!" }] },
-    { id: 'host.cold.13', when: { tone: 'arrival' }, turns: [{ by: 'host', say: "Good morning! Yesterday the Circle got a new Player, and today every old Player is pretending they're not worried about it." }] },
-    { id: 'host.cold.14', when: { tone: 'arrival' }, turns: [{ by: 'host', say: "New neighbor alert! Everybody's being very welcoming this morning. Very, very welcoming." }] },
-    { id: 'host.cold.15', when: { tone: 'quiet' }, turns: [{ by: 'host', say: "A quiet night in the Circle. No blockings, no new Players, just a lot of people talking to themselves in the dark." }] },
-    { id: 'host.cold.16', when: { tone: 'quiet' }, turns: [{ by: 'host', say: "Good morning, Players! Nothing happened last night, and they're all going to spend today making something happen." }] },
-    { id: 'host.cold.17', when: { tone: 'quiet' }, turns: [{ by: 'host', say: "It's a brand-new day in the Circle, and {a} has already changed outfits twice." }] },
+  // `host.cold.<tone>`: tone is what happened yesterday.
+  'host.cold.first': [
+    { id: 'host.cold.first.01', turns: [{ by: 'host', say: "Welcome to the Circle! A bunch of strangers, one apartment building, and not one of them can see each other. What could go wrong?" }] },
+    { id: 'host.cold.first.02', turns: [{ by: 'host', say: "Here they come! Our Players are moving in, and every single one of them just checked out their own reflection in the hallway." }] },
+    { id: 'host.cold.first.03', turns: [{ by: 'host', say: "It's day one in the Circle. The apartments are gorgeous, the fridges are full, and the phones are gone. Good luck, everybody." }] },
+  ],
+  'host.cold.blocking': [
+    { id: 'host.cold.blocking.01', turns: [{ by: 'host', say: "After last night's blocking, there's one less apartment with the lights on, and a lot more people checking the door." }] },
+    { id: 'host.cold.blocking.02', turns: [{ by: 'host', say: "Good morning to everyone who survived last night's blocking. Everybody still here is being extra nice this morning." }] },
+    { id: 'host.cold.blocking.03', turns: [{ by: 'host', say: "The morning after a blocking in the Circle. Nobody slept, everybody's smiling, and nobody means it." }] },
+  ],
+  'host.cold.arrival': [
+    { id: 'host.cold.arrival.01', turns: [{ by: 'host', say: "There's a new face in the building, and everybody wants to know if it's a real one. Good morning, Circle!" }] },
+    { id: 'host.cold.arrival.02', turns: [{ by: 'host', say: "Good morning! Yesterday the Circle got a new Player, and today every old Player is pretending they're not worried about it." }] },
+    { id: 'host.cold.arrival.03', turns: [{ by: 'host', say: "New neighbor alert! Everybody's being very welcoming this morning. Very, very welcoming." }] },
+  ],
+  'host.cold.quiet': [
+    { id: 'host.cold.quiet.01', turns: [{ by: 'host', say: "Good morning, Circle! The sun is up, the coffee is on, and {a} is already talking to a screen." }] },
+    { id: 'host.cold.quiet.02', turns: [{ by: 'host', say: "Rise and shine, Players. Another day of making friends with people you've never seen." }] },
+    { id: 'host.cold.quiet.03', turns: [{ by: 'host', say: "It's morning in the Circle, which means everybody is wide awake and nobody has brushed their teeth." }] },
+    { id: 'host.cold.quiet.04', turns: [{ by: 'host', say: "Welcome back to the Circle. {a} is up, dressed, and has already said good morning to the fridge." }] },
+    { id: 'host.cold.quiet.05', turns: [{ by: 'host', say: "Morning, everybody. Somewhere in this building, somebody is doing push-ups for a camera that isn't even on them yet." }] },
+    { id: 'host.cold.quiet.06', turns: [{ by: 'host', say: "A quiet night in the Circle. No blockings, no new Players, just a lot of people talking to themselves in the dark." }] },
+    { id: 'host.cold.quiet.07', turns: [{ by: 'host', say: "Good morning, Players! Nothing happened last night, and they're all going to spend today making something happen." }] },
+    { id: 'host.cold.quiet.08', turns: [{ by: 'host', say: "It's a brand-new day in the Circle, and {a} has already changed outfits twice." }] },
   ],
   'host.chat': [
     { id: 'host.chat.01', turns: [{ by: 'host', say: "Meanwhile, {a} is ready to private chat {b}." }] },

@@ -138,6 +138,7 @@ function realGender(state, h) {
   return g.length === 1 ? g[0] : 'nb';
 }
 
+const PROPER = /^(Mars|Saturn|Jupiter|Neptune|Earth|North|South|S$|O negative|AB\b|L-I-B)/;
 const NUMBER_WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
   'eleven', 'twelve'];
 
@@ -147,10 +148,17 @@ export function fill(state, text, cast, speakerRole) {
   const t = cast.text || {};
   text = text.replace(/\{(q|game|ans|x|n)\}/g, (m, k, at, whole) => {
     if (t[k] === undefined) return m;
+    const starts = /(^|[.!?…]\s+|['"]\s*)$/.test(whole.slice(0, at));
+    if (k === 'x') {
+      // An answer inside a sentence loses its capital ("It's carbon
+      // dioxide"), unless it is a name ("Mars") or starts the sentence.
+      const v = String(t[k]);
+      if (starts || PROPER.test(v)) return v;
+      return v.charAt(0).toLowerCase() + v.slice(1);
+    }
     if (k !== 'n') return t[k];
     // A count is said, not typed: "six likes", "three to two".
     const said = String(t[k]).replace(/\b\d+\b/g, d => NUMBER_WORDS[+d] ?? d);
-    const starts = /(^|[.!?]\s+|['"]\s*)$/.test(whole.slice(0, at));
     return starts ? said.charAt(0).toUpperCase() + said.slice(1) : said;
   });
   return text.replace(/\{([abc])(?:\.([A-Za-z]+))?\}/g, (m, role, prop) => {

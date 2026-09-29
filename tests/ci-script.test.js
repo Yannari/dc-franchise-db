@@ -381,3 +381,14 @@ describe('numbers said aloud', () => {
     expect(fill(s, '{n} likes.', { a: '@sammie', text: { n: '0' } }, 'a')).toBe('Zero likes.');
   });
 });
+
+describe('an answer inside a sentence', () => {
+  it('drops its capital mid-sentence, keeps it at the start and for proper names', () => {
+    const s = room();
+    const c = x => ({ a: '@sammie', text: { x } });
+    expect(fill(s, "It's {x}.", c('Carbon dioxide'), 'a')).toBe("It's carbon dioxide.");
+    expect(fill(s, "Oh! {x}!", c('The nucleus'), 'a')).toBe('Oh! The nucleus!');
+    expect(fill(s, "Is it {x}?", c('Mars'), 'a')).toBe('Is it Mars?');
+    expect(fill(s, "'{x}' Who wrote that?", c('Birds. All birds.'), 'a')).toBe("'Birds. All birds.' Who wrote that?");
+  });
+});

@@ -148,10 +148,15 @@ const RUN = {
     for (const p of shuffled(game.prompts, rng).slice(0, 3)) {
       const answers = {}, placedBy = {};
       const bank = FACTS[p.id] || [];
+      const taken = new Set();
       for (const h of all) {
-        // The fact a player submits: drawn by who they are (proportional).
+        // The fact a player submits: drawn by who they are (proportional),
+        // and never the same fact as somebody else's.
         const who = isPair(state, h) ? leadFor(state, h, 'statement', rng) : null;
-        answers[h] = weightedPick(bank, f => S(state, h, f.stat, { who }) + rng() * 3, rng)?.id || 'fact';
+        const open = bank.filter(f => !taken.has(f.id));
+        const f = weightedPick(open.length ? open : bank, x => S(state, h, x.stat, { who }) + rng() * 3, rng);
+        answers[h] = f?.id || 'fact';
+        taken.add(answers[h]);
         placedBy[h] = all.filter(o => o !== h && rng() < 0.3 + S(state, o, 'intuition') / 20
           + Math.max(0, rel(o, h, 'affection')) / 40);
         if (placedBy[h].length === all.length - 1) for (const o of placedBy[h]) nudgeBelief(state, o, h, 'real', 0.04, sc);

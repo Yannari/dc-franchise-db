@@ -42,7 +42,7 @@ export const G_STATEMENT_NAME = {
   // a messages b in the game chat about b's lone answer; b answers back.
   'game.statement.at': [
     e('game.statement.at.01', [
-      { by: 'a', send: "@{b} you're the only one who said \"{ans}\" lol. Explain yourself {e:eyes}" },
+      { by: 'a', send: "@{b} you're the only one who said '{ans}' lol. Explain yourself {e:eyes}" },
       { by: 'b', react: "Of course somebody noticed.", send: "Somebody had to be honest in here {e:laugh}" },
     ]),
     e('game.statement.at.02', [
@@ -50,7 +50,7 @@ export const G_STATEMENT_NAME = {
       { by: 'b', send: "Nothing to know! I just said what I think" },
     ]),
     e('game.statement.at.03', [
-      { by: 'a', send: "@{b} don't lie, you said \"{ans}\" and I respect it" },
+      { by: 'a', send: "@{b} don't lie, you said '{ans}' and I respect it" },
       { by: 'b', react: "Thank God, somebody gets it.", send: "Finally somebody with sense {e:clap}" },
     ]),
     e('game.statement.at.04', [
@@ -69,7 +69,7 @@ export const G_STATEMENT_NAME = {
   ],
   // a is surprised by friend b's answer.
   'game.statement.surprise': [
-    e('game.statement.surprise.01', say("{b} said \"{ans}\"? I thought I knew {b}.")),
+    e('game.statement.surprise.01', say("{b} said '{ans}'? I thought I knew {b}.")),
     e('game.statement.surprise.02', say("Wait. {b} and I didn't answer the same? We always agree.")),
     e('game.statement.surprise.03', say("Hm. {b} surprised me with that one.")),
     e('game.statement.surprise.04', [{ by: 'a', react: "Not {b}! Come on, {b}." }], { beat: '{a} laughs and shakes {a.posAdj} head.' }),

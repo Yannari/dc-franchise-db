@@ -150,7 +150,6 @@ export const G_MORE = {
     s1("{b} thinks I'm a threat? Good. {b} should."),
     s1("{b} named me. I'm going to be extra nice to {b} now. Extra, extra nice."),
     s1("I knew {b} would say me. I just didn't think {b} would say it out loud."),
-    s1("{b} said I haven't taken risks? {b} doesn't know me at all."),
     s1("Okay, {b}. You want a rival? You've got one."),
     s1("It stings a little, coming from {b}. I thought we were good."),
   ]),

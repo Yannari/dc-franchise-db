@@ -41,7 +41,8 @@ const FAMILY = {
       const shown = [...new Set([r.lone, ...by(all.filter(h => h !== r.lone), strength)].filter(Boolean))].slice(0, 3);
       // Somebody reacts to each answer: preferably someone who said the opposite.
       for (const h of shown) {
-        const reactor = all.find(o => o !== h && r.answers[o] !== r.answers[h]) || pick(all.filter(o => o !== h), rng);
+        const opposite = all.filter(o => o !== h && r.answers[o] !== r.answers[h]);
+        const reactor = pick(opposite.length ? opposite : all.filter(o => o !== h), rng);
         push({ phase: 'round', round: i, kind: 'answer', by: h, about: reactor, answer: r.answers[h], strong: strength(h) >= 3, promptId: p.id });
       }
       const agree = all.filter(h => r.answers[h] === 'agree').length;
@@ -213,7 +214,7 @@ const FAMILY = {
     qs.forEach((qq, i) => {
       const cap = R.teams[qq.team][0];
       push({ phase: 'round', round: i, kind: qq.right ? 'question.right' : 'question.wrong', by: qq.by, about: cap,
-        qid: qq.qid, right: qq.right, n: `${qq.score[0]} to ${qq.score[1]}` });
+        qid: qq.qid, right: qq.right, n: `${qq.score[qq.team]} to ${qq.score[1 - qq.team]}` });
       // The other team has an opinion about it.
       const other = pick(R.teams[1 - qq.team], rng);
       if (other) push({ phase: 'round', round: i, kind: 'banter', by: other, about: qq.by, right: qq.right });

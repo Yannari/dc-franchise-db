@@ -44,69 +44,69 @@ export const GAME_LINES = {
   // ── statement: a answers aloud; b sees it ────────────────────────────────
   'game.statement.agree': [
     { id: 'game.statement.agree.01', turns: [
-      { by: 'a', react: "'{q}' {ans}. Easy." },
-      { by: 'b', react: "{a} said \"{ans}\"? Okay, {a}. I see you." },
+      { by: 'a', react: "{ans}. Easy." },
+      { by: 'b', react: "{a} said '{ans}'? Okay, {a}. I see you." },
     ] },
     { id: 'game.statement.agree.02', turns: [
-      { by: 'a', react: "'{q}' Is that a trick? No. {ans}." },
-      { by: 'b', react: "Wait. {a} said \"{ans}\" to that?" },
+      { by: 'a', react: "Is that a trick? No. {ans}." },
+      { by: 'b', react: "Wait. {a} said '{ans}' to that?" },
     ] },
     { id: 'game.statement.agree.03', turns: [
-      { by: 'a', react: "'{q}' Circle, mark \"{ans}.\" And I'm not ashamed." },
+      { by: 'a', react: "Circle, mark '{ans}.' And I'm not ashamed." },
       { by: 'b', react: "Ha. Of course {a} did." },
     ] },
     { id: 'game.statement.agree.04', turns: [
-      { by: 'a', react: "'{q}' Honestly? {ans}." },
+      { by: 'a', react: "Honestly? {ans}." },
       { by: 'b', react: "Honest. I respect it, {a}." },
     ] },
     { id: 'game.statement.agree.05', turns: [
-      { by: 'a', react: "'{q}' Who wouldn't say that? {ans}." },
+      { by: 'a', react: "Who wouldn't say that? {ans}." },
       { by: 'b', react: "Let me see the answers. {a}. Interesting." },
     ] },
     { id: 'game.statement.agree.06', turns: [
-      { by: 'a', say: "Do I answer honestly or do I answer smart? Honestly.", react: "'{q}' {ans}." },
+      { by: 'a', say: "Do I answer honestly or do I answer smart? Honestly.", react: "{ans}." },
       { by: 'b', react: "Okay, {a}. Noted." },
     ] },
     { id: 'game.statement.agree.07', turns: [
-      { by: 'a', react: "'{q}' Absolutely. {ans}." },
+      { by: 'a', react: "Absolutely. {ans}." },
       { by: 'b', react: "{a} didn't even hesitate on that one." },
     ], beat: '{b} writes something on the notepad.' },
     { id: 'game.statement.agree.08', turns: [
-      { by: 'a', react: "'{q}' I'm gonna regret this. {ans}." },
+      { by: 'a', react: "I'm gonna regret this. {ans}." },
       { by: 'b', react: "{a} is bold. I'll give {a.obj} that." },
     ] },
   ],
   'game.statement.disagree': [
     { id: 'game.statement.disagree.01', turns: [
-      { by: 'a', react: "'{q}' Absolutely not. {ans}." },
-      { by: 'b', react: "{a} said \"{ans}\"? Really?" },
+      { by: 'a', react: "Absolutely not. {ans}." },
+      { by: 'b', react: "{a} said '{ans}'? Really?" },
     ] },
     { id: 'game.statement.disagree.02', turns: [
-      { by: 'a', react: "'{q}' Hell no. What? {ans}." },
+      { by: 'a', react: "Hell no. What? {ans}." },
       { by: 'b', react: "Okay, {a} is strict. Good to know." },
     ] },
     { id: 'game.statement.disagree.03', turns: [
-      { by: 'a', react: "'{q}' No, no, no. Circle, mark \"{ans}.\"" },
-      { by: 'b', react: "Of course {a} said \"{ans}.\" That tracks." },
+      { by: 'a', react: "No, no, no. Circle, mark '{ans}.'" },
+      { by: 'b', react: "Of course {a} said '{ans}.' That tracks." },
     ] },
     { id: 'game.statement.disagree.04', turns: [
-      { by: 'a', react: "'{q}' I was raised better than that. {ans}." },
+      { by: 'a', react: "I was raised better than that. {ans}." },
       { by: 'b', react: "Look at {a}, taking the high road." },
     ] },
     { id: 'game.statement.disagree.05', turns: [
-      { by: 'a', say: "If I say yes, somebody's gonna judge me.", react: "'{q}' {ans}." },
+      { by: 'a', say: "If I say yes, somebody's gonna judge me.", react: "{ans}." },
       { by: 'b', react: "Hm. I didn't expect that from {a}." },
     ] },
     { id: 'game.statement.disagree.06', turns: [
-      { by: 'a', react: "'{q}' Nope. Not me. {ans}." },
-      { by: 'b', react: "{a} said \"{ans}.\" Sure, {a}. Sure." },
+      { by: 'a', react: "Nope. Not me. {ans}." },
+      { by: 'b', react: "{a} said '{ans}.' Sure, {a}. Sure." },
     ], beat: '{b} squints at the screen.' },
     { id: 'game.statement.disagree.07', turns: [
-      { by: 'a', react: "'{q}' {ans}. That's my answer." },
-      { by: 'b', react: "Let me see the answers. {a}: \"{ans}.\" Okay." },
+      { by: 'a', react: "{ans}. That's my answer." },
+      { by: 'b', react: "Let me see the answers. {a}: '{ans}.' Okay." },
     ] },
     { id: 'game.statement.disagree.08', turns: [
-      { by: 'a', react: "'{q}' {ans}, and I'm not changing it." },
+      { by: 'a', react: "{ans}, and I'm not changing it." },
       { by: 'b', react: "{a} feels very strongly about this." },
     ] },
   ],
@@ -138,87 +138,87 @@ export const GAME_LINES = {
   // ── name: a names b, in front of everyone ───────────────────────────────
   'game.name.good': [
     { id: 'game.name.good.01', turns: [
-      { by: 'a', react: "'{q}' That's a no-brainer. {b}." },
+      { by: 'a', react: "That's a no-brainer. {b}." },
       { by: 'b', react: "Me? Stop it. You guys!", send: "Wow, thank you so much guys {e:heart}" },
     ] },
     { id: 'game.name.good.02', turns: [
-      { by: 'a', react: "'{q}' {b}. For sure." },
+      { by: 'a', react: "{b}. For sure." },
       { by: 'b', react: "Everybody said me? Oh my God.", send: "I'm not crying, you're crying {e:cry}" },
     ] },
     { id: 'game.name.good.03', turns: [
-      { by: 'a', react: "'{q}' Easy. {b}." },
+      { by: 'a', react: "Easy. {b}." },
       { by: 'b', react: "Okay, now I have to live up to that." },
     ], beat: '{b} does a little dance in the kitchen.' },
     { id: 'game.name.good.04', turns: [
-      { by: 'a', react: "'{q}' I would put {b}. Honestly, {b}." },
+      { by: 'a', react: "I would put {b}. Honestly, {b}." },
       { by: 'b', send: "Love you guys. That means a lot {e:hug}" },
     ] },
     { id: 'game.name.good.05', turns: [
-      { by: 'a', say: "Say {b}. It's a compliment, and {b} will remember it.", react: "'{q}' {b}." },
+      { by: 'a', say: "Say {b}. It's a compliment, and {b} will remember it.", react: "{b}." },
       { by: 'b', react: "Aw. That's so nice." },
     ] },
     { id: 'game.name.good.06', turns: [
-      { by: 'a', react: "'{q}' Come on. It's {b}." },
+      { by: 'a', react: "Come on. It's {b}." },
       { by: 'b', react: "Wait, is that a good thing? It's a good thing.", send: "You all are too sweet {e:smile}" },
     ] },
     { id: 'game.name.good.07', when: { friends: true }, turns: [
-      { by: 'a', react: "'{q}' My {b}! Obviously." },
+      { by: 'a', react: "My {b}! Obviously." },
       { by: 'b', react: "That's my person right there." },
     ] },
     { id: 'game.name.good.08', turns: [
-      { by: 'a', react: "'{q}' Everybody's gonna say {b}, so I'm saying {b}." },
+      { by: 'a', react: "Everybody's gonna say {b}, so I'm saying {b}." },
       { by: 'b', react: "Everybody said me. Okay. Now I'm scared." },
     ], beat: '{b} stops smiling after a second.' },
   ],
   'game.name.bad': [
     { id: 'game.name.bad.01', turns: [
-      { by: 'a', react: "'{q}' Sorry, but that's {b}." },
+      { by: 'a', react: "Sorry, but that's {b}." },
       { by: 'b', react: "Me? Are you serious?", send: "Wow. Okay. Didn't see that coming" },
     ] },
     { id: 'game.name.bad.02', turns: [
-      { by: 'a', react: "'{q}' {b}. I'm not gonna pretend." },
+      { by: 'a', react: "{b}. I'm not gonna pretend." },
       { by: 'b', react: "Who said me? I need names." },
     ], beat: '{b} scrolls back to see every answer.' },
     { id: 'game.name.bad.03', turns: [
-      { by: 'a', say: "This is my chance to say it without saying it.", react: "'{q}' {b}." },
+      { by: 'a', say: "This is my chance to say it without saying it.", react: "{b}." },
       { by: 'b', react: "Oh, so that's how it is." },
     ] },
     { id: 'game.name.bad.04', turns: [
-      { by: 'a', react: "'{q}' That's {b}, and {b} knows it." },
+      { by: 'a', react: "That's {b}, and {b} knows it." },
       { by: 'b', send: "Lol I'm gonna remember that {e:side}" },
     ] },
     { id: 'game.name.bad.05', turns: [
-      { by: 'a', react: "'{q}' I hate this game. {b}." },
+      { by: 'a', react: "I hate this game. {b}." },
       { by: 'b', react: "That hurts. That actually hurts." },
     ] },
     { id: 'game.name.bad.06', when: { rivals: true }, turns: [
-      { by: 'a', react: "'{q}' Oh, that's {b}. Next question." },
+      { by: 'a', react: "Oh, that's {b}. Next question." },
       { by: 'b', react: "Of course {a} said me. Of course." },
     ] },
     { id: 'game.name.bad.07', turns: [
-      { by: 'a', react: "'{q}' I'm going with {b}. It's just a game." },
+      { by: 'a', react: "I'm going with {b}. It's just a game." },
       { by: 'b', react: "Just a game. Sure it is.", send: "I'll take it lol. Somebody's gotta be the villain" },
     ] },
   ],
   'game.name.funny': [
     { id: 'game.name.funny.01', turns: [
-      { by: 'a', react: "'{q}' {b}. I'm sorry, but it's {b}." },
+      { by: 'a', react: "{b}. I'm sorry, but it's {b}." },
       { by: 'b', react: "Rude! Accurate, but rude.", send: "I'm offended and also you're right {e:laugh}" },
     ] },
     { id: 'game.name.funny.02', turns: [
-      { by: 'a', react: "'{q}' Ha! {b}, a hundred percent." },
+      { by: 'a', react: "Ha! {b}, a hundred percent." },
       { by: 'b', react: "Why is everybody saying me?" },
     ], beat: '{b} laughs so hard {b.sub} has to sit down.' },
     { id: 'game.name.funny.03', turns: [
-      { by: 'a', react: "'{q}' It's gotta be {b}." },
+      { by: 'a', react: "It's gotta be {b}." },
       { by: 'b', send: "Okay that is a little bit true {e:sweat}" },
     ] },
     { id: 'game.name.funny.04', turns: [
-      { by: 'a', react: "'{q}' {b}, and I say that with love." },
+      { by: 'a', react: "{b}, and I say that with love." },
       { by: 'b', react: "With love. Okay. I'll allow it." },
     ] },
     { id: 'game.name.funny.05', turns: [
-      { by: 'a', react: "'{q}' That's so {b}." },
+      { by: 'a', react: "That's so {b}." },
       { by: 'b', react: "I can't even argue with that." },
     ] },
   ],

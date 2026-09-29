@@ -297,3 +297,14 @@ describe('making things, photos, teams, flirting — and the prizes', () => {
     expect(s.blocked.at(-1).handle).not.toBe('@q2');
   });
 });
+
+describe('a guess game', () => {
+  it('never gives two players the same fact', () => {
+    const s = room(8, 5);
+    const sc = runGame(s, streamFor(5, 'g'), GAMES.find(g => g.id === 'says-who'));
+    for (const r of sc.data.rounds) {
+      const facts = Object.values(r.answers);
+      expect(new Set(facts).size).toBe(facts.length);
+    }
+  });
+});

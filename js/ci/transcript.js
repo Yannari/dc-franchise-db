@@ -48,7 +48,7 @@ export function blockText(state, block) {
       out.push(`  ${who} posts: ${l.spoken}`, `      ▸ STATUS — ${shownName(state, l.who)}: ${l.text}`);
     } else if (l.kind === 'send') {
       if (!dictated) { out.push(`  ${who} dictates: ${l.spoken}`); dictated = true; }
-      out.push(`      ▸ ${shownName(state, l.who)}: ${l.text}`);
+      out.push(`      ▸ ${l.anon ? 'ANONYMOUS' : shownName(state, l.who)}: ${l.text}`);
     }
   }
   if (block.beat) out.push(`  — ${block.beat}`);

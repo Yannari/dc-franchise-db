@@ -182,6 +182,19 @@ export const CHAT_A = {
       { by: 'b', react: "Straight to it!", send: "Honestly? Yes. I would {e:hearteyes}" },
       { by: 'a', send: "Okay good because I already picked the restaurant {e:laugh}" },
     ], beat: '{a} jumps up from the couch and does a lap of the living room.' },
+    { id: 'chat.flirt.warm.07', turns: [
+      { by: 'a', send: "I think about our chats more than I should {e:hearteyes}" },
+      { by: 'b', react: "Oh my God. Okay, me too.", send: "Same. It's a problem honestly {e:laugh}" },
+      { by: 'a', send: "A good problem" },
+    ], beat: '{b} spins around once in the desk chair.' },
+    { id: 'chat.flirt.warm.08', turns: [
+      { by: 'a', say: "Say it. Just say it.", send: "Not gonna lie, you're my favorite notification" },
+      { by: 'b', react: "Stop. Stop it.", send: "Okay that is the cutest thing anyone has said to me in here {e:heart}" },
+    ] },
+    { id: 'chat.flirt.warm.09', turns: [
+      { by: 'a', send: "When we get out of here, first date is on me" },
+      { by: 'b', send: "It's a date. Literally {e:kiss}" },
+    ], beat: '{a} throws a pillow in the air and does not catch it.' },
   ],
   'chat.flirt.neutral': [
     { id: 'chat.flirt.neutral.01', turns: [
@@ -205,6 +218,26 @@ export const CHAT_A = {
       { by: 'b', react: "Oh no. Is this a thing?", send: "Not weird! Smiling is good lol" },
       { by: 'a', send: "Okay good. I'll keep doing it then" },
     ], beat: '{b} closes the chat and bites {b.posAdj} lip, thinking.' },
+    { id: 'chat.flirt.neutral.05', turns: [
+      { by: 'a', say: "Just a little bit of flirting. A little.", send: "Can I say your profile picture is kind of distracting {e:hearteyes}" },
+      { by: 'b', react: "Ha. Okay.", send: "Lol thank you. I'll try to be less distracting" },
+      { by: 'a', say: "That's a polite no. I know a polite no." },
+    ], beat: '{a} laughs at the screen and shakes {a.posAdj} head.' },
+    { id: 'chat.flirt.neutral.06', turns: [
+      { by: 'a', send: "What's your idea of a perfect first date?" },
+      { by: 'b', react: "Is this a question or a pitch?", send: "Tacos and a long walk. Nothing big" },
+      { by: 'a', send: "I can do tacos {e:wink}" },
+      { by: 'b', send: "Everybody can do tacos lol" },
+    ], beat: '{b} closes the chat, smiling a little anyway.' },
+    { id: 'chat.flirt.neutral.07', turns: [
+      { by: 'a', send: "Okay I have to ask. Do you have a type?" },
+      { by: 'b', react: "Careful. Don't give it away.", send: "Honestly? Kind and funny. That's it" },
+      { by: 'a', say: "Kind and funny. I'm both. Right? I'm both." },
+    ] },
+    { id: 'chat.flirt.neutral.08', turns: [
+      { by: 'a', send: "Hey you {e:smile} Just wanted to say hi before the chaos starts" },
+      { by: 'b', send: "Hi! That's sweet. Okay, bracing for chaos" },
+    ], beat: '{a} wishes the reply had a winky face in it.' },
   ],
   'chat.flirt.cold': [
     { id: 'chat.flirt.cold.01', turns: [

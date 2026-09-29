@@ -188,7 +188,8 @@ export function renderEntry(state, entry, cast, rng) {
     if (t.send) {
       const voice = state.profiles[speaker]?.voice;
       const styled = styleMessage(fill(state, t.send, cast, t.by), voice, rng);
-      lines.push(tag({ who: speaker, kind: 'send', text: displayText(styled), spoken: dictation(styled) }));
+      const anon = t.by === 'a' && cast.anonA ? { anon: true } : {};
+      lines.push(tag({ who: speaker, kind: 'send', text: displayText(styled), spoken: dictation(styled), ...anon }));
     }
   }
   return { id: entry.id, lines, beat: entry.beat ? fill(state, entry.beat, cast, 'narration') : null };
@@ -409,8 +410,8 @@ const BLOCKS = {
         break;
       case 'ask':
         for (const q of (rounds[0]?.questions || []).slice(0, 3)) {
-          out.push({ key: q.kind === 'catfish' ? `game.ask.catfish.${q.result}` : `game.ask.${q.kind}`, cast: { a: q.asker, b: q.target },
-            extra: { anon: !!g.anonymous } });
+          out.push({ key: q.kind === 'catfish' ? `game.ask.catfish.${q.result}` : `game.ask.${q.kind}`,
+            cast: { a: q.asker, b: q.target, anonA: !!g.anonymous }, extra: { anon: !!g.anonymous } });
         }
         break;
       case 'guess':

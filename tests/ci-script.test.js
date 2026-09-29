@@ -347,3 +347,21 @@ describe('a game that is not anonymous', () => {
     expect(ask('circle-of-fortune').extra).toMatchObject({ anon: false });
   });
 });
+
+describe('an anonymous question on screen', () => {
+  it('shows the sender as anonymous, and the answer as the Player who gave it', () => {
+    const s = room();
+    const sc = addScene(s, 'game', [...s.active], { gameId: 'ama', family: 'ask',
+      rounds: [{ promptId: 'ask', answers: {}, questions: [{ asker: '@shubham', target: '@sammie', kind: 'friendly' }] }], results: {}, prize: null });
+    const saved = { ...POOLS };
+    POOLS['game.open'] = [{ id: 'game.open.t1', turns: [{ by: 'a', react: 'Go.' }] }];
+    POOLS['game.ask.friendly'] = [{ id: 'game.ask.friendly.t1', turns: [{ by: 'a', send: 'Why?' }, { by: 'b', send: 'Because.' }] }];
+    const blocks = writeScene(s, sc).blocks;
+    for (const k of Object.keys(POOLS)) delete POOLS[k];
+    Object.assign(POOLS, saved);
+    const [q, a] = blocks[1].lines;
+    expect(q.anon).toBe(true);
+    expect(a.anon).toBeUndefined();
+    expect(blockText(s, blocks[1]).join('\n')).toContain('▸ ANONYMOUS: Why?');
+  });
+});

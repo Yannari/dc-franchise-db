@@ -7,22 +7,22 @@
 export const LIFE_LINES = {
   'party.open': [
     { id: 'party.open.01', turns: [
-      { by: 'a', react: "'Tonight, it's the {game}!' Wait. There's a delivery at my door." },
-      { by: 'a', react: "{q}? Oh, we are doing this!" },
+      { by: 'a', react: "'Tonight: {game}!' Wait. There's a delivery at my door." },
+      { by: 'a', react: "Look what they sent: {q}. Oh, we are doing this!" },
     ], beat: '{a} has the music on before the door is even closed.' },
     { id: 'party.open.02', turns: [
-      { by: 'a', react: "A party! The {game}! Circle, what did you send me?" },
-      { by: 'a', say: "{q}. Okay. I'm wearing all of it." },
+      { by: 'a', react: "A party! {game}! Circle, what did you send me?" },
+      { by: 'a', say: "They sent {q}. Okay. I'm wearing all of it." },
     ] },
     { id: 'party.open.03', turns: [
       { by: 'a', react: "We got {q}. Yeah, buddy!" },
     ], beat: '{a} dances alone in the middle of the living room.' },
     { id: 'party.open.04', turns: [
-      { by: 'a', react: "The {game}? I was born for the {game}." },
+      { by: 'a', react: "{game}? I was born for this." },
       { by: 'a', say: "Parties are where people slip. Have fun, but keep your eyes open." },
     ] },
     { id: 'party.open.05', turns: [
-      { by: 'a', react: "There's a box at the door. {q}. The Circle knows me." },
+      { by: 'a', react: "There's a box at the door: {q}. The Circle knows me." },
     ], beat: '{a} tries everything on at once in front of the mirror.' },
     { id: 'party.open.06', turns: [
       { by: 'a', react: "It's party time in the Circle!" },
@@ -32,7 +32,7 @@ export const LIFE_LINES = {
       { by: 'a', react: "'{game}.' Okay, I didn't pack for this, but the Circle did." },
     ] },
     { id: 'party.open.08', turns: [
-      { by: 'a', say: "A party means people talk. And people talking means I learn things.", react: "{q}. Let's go." },
+      { by: 'a', say: "A party means people talk. And people talking means I learn things.", react: "Look at this: {q}. Let's go." },
     ] },
   ],
   'party.nhie': [

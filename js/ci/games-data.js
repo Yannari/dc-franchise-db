@@ -240,7 +240,7 @@ export const GAMES = [
     rules: ['The Players at risk have 15 minutes to write a poem. The best poem will keep its author safe.'],
     prompts: [{ id: 'poem', text: 'A poem to be saved.', stats: ['mental', 'social'], about: false }] },
   { id: 'head-to-head', name: 'Head to Head', family: 'make', purpose: 'divide', prize: 'immunity', source: 'US 3 Ep 5',
-    rules: ['Two Players will go head to head in a diss track battle. The Circle will vote for the winner.'],
+    rules: ['Players will go head to head: each writes a diss track about another Player, and The Circle will vote for the best one.'],
     prompts: [{ id: 'diss', text: 'A diss track about the other Player.', stats: ['boldness', 'mental'], about: true }] },
   { id: 'roast', name: 'Roast', family: 'make', purpose: 'divide', prize: 'none', source: 'US 4 Ep 6',
     rules: ['Tonight, The Circle is holding a roast. You must write a roast joke about another Player. The best one wins.'],

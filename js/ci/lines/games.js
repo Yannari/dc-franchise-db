@@ -450,7 +450,7 @@ export const GAME_LINES = {
       { by: 'b', react: "How did {a} pull that off?" },
     ] },
     { id: 'game.make.result.04', turns: [
-      { by: 'a', react: "Top of the Newsfeed. I'm an artist now." },
+      { by: 'a', react: "Top of the Newsfeed. Who knew?" },
       { by: 'b', react: "Okay, {a} deserved that one." },
     ] },
   ],

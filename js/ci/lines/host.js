@@ -79,5 +79,9 @@ export const HOST = {
     { id: 'host.circle.02', turns: [{ by: 'host', say: "It's group chat time! Everybody in the building just sat up a little straighter." }] },
     { id: 'host.circle.03', turns: [{ by: 'host', say: "The Circle Chat is open. Somebody's going to say something they regret, and I can't wait." }] },
     { id: 'host.circle.04', when: { party: true }, turns: [{ by: 'host', say: "It's party night in the Circle! The music is up, the drinks are out, and the filter is off." }] },
+    { id: 'host.circle.05', turns: [{ by: 'host', say: "Time for Circle Chat, where everybody is nice to everybody, in public." }] },
+    { id: 'host.circle.06', turns: [{ by: 'host', say: "Everybody's in Circle Chat, which means everybody's watching everybody." }] },
+    { id: 'host.circle.07', turns: [{ by: 'host', say: "Circle Chat is open. {a} has been waiting for this all day." }] },
+    { id: 'host.circle.08', turns: [{ by: 'host', say: "And now, the group chat. Nothing could possibly go wrong." }] },
   ],
 };

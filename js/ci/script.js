@@ -27,7 +27,7 @@ export const FACT_KEYS = ['intent', 'ending', 'result', 'known', 'early', 'late'
   'hurt', 'influencer', 'reason', 'motive', 'mode', 'reasonKind', 'band', 'kiss', 'claim', 'lie',
   'tone', 'party', 'final', 'slip', 'noticed', 'place', 'self', 'likesC', 'misread', 'anon',
   'answer', 'strong', 'split', 'qkind', 'right', 'off', 'odd', 'failed', 'barbed', 'slipped', 'mutual', 'warm',
-  'everyone', 'fresh', 'tier', 'many'];
+  'everyone', 'fresh', 'tier', 'many', 'jab'];
 
 export const hostName = () => showWords('the-circle').host || 'Host';
 
@@ -235,7 +235,7 @@ function bandOf(place, n) {
 // Which pool a game beat draws from (the family pool; game- and prompt-
 // specific pools, `g.<game>.<prompt?>.<suffix>`, take precedence).
 const GAME_FACTS = ['tone', 'answer', 'strong', 'split', 'qkind', 'result', 'anon', 'right', 'off', 'odd', 'failed',
-  'barbed', 'slipped', 'mutual', 'warm', 'everyone', 'fresh', 'tier', 'misread', 'many'];
+  'barbed', 'slipped', 'mutual', 'warm', 'everyone', 'fresh', 'tier', 'misread', 'many', 'jab'];
 function gameKey(family, b) {
   const k = b.kind;
   if (k === 'open') return 'game.open';
@@ -580,7 +580,8 @@ export const POOL_KEYS = [
   ...['prompt', 'namer', 'reply.good', 'reply.bad', 'reply.funny', 'hurt', 'proud'].map(k => `game.name.${k}`),
   ...['choose', 'react', 'guess', 'conclusion'].map(k => `game.ask.${k}`),
   ...['submit', 'prompt', 'fact', 'guessed.right', 'guessed.wrong', 'owner', 'conclusion'].map(k => `game.guess.${k}`),
-  ...['props', 'plan', 'build.disaster', 'build.ok', 'build.proud', 'timeup', 'upload', 'item', 'comment', 'last', 'tally'].map(k => `game.make.${k}`),
+  ...['props', 'plan', 'build.disaster', 'build.ok', 'build.proud', 'timeup', 'upload', 'item', 'comment', 'last', 'tally',
+    'whodunit.right', 'whodunit.wrong'].map(k => `game.make.${k}`),
   ...['choose', 'tag', 'winner'].map(k => `game.photo.${k}`),
   ...['captains', 'scout.want', 'scout.pass', 'picks', 'trash', 'question.right', 'question.wrong', 'banter'].map(k => `game.team.${k}`),
   ...['choose', 'thanks', 'noticed'].map(k => `game.gift.${k}`),

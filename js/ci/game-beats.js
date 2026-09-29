@@ -107,7 +107,8 @@ const FAMILY = {
       const watcher = pick(all.filter(h => h !== q.asker && h !== q.target), rng);
       if (watcher) push({ phase: 'round', round: i, kind: 'react', by: watcher, about: q.target, qkind: q.kind, result: q.result, anon });
       if (anon && q.guessed) push({ phase: 'round', round: i, kind: 'guess', by: q.target, about: q.asker, qkind: q.kind, anon });
-      remember(state, sc, q.kind === 'catfish' ? 'asked-catfish' : `asked-${q.kind}`, q.asker, q.target, q.result);
+      // An anonymous question is only on the record if the asked worked out who.
+      if (!anon || q.guessed) remember(state, sc, q.kind === 'catfish' ? 'asked-catfish' : `asked-${q.kind}`, q.asker, q.target, q.result);
     });
     const failed = qs.find(q => q.kind === 'catfish' && q.result === 'fail');
     const barbed = qs.find(q => q.kind === 'barbed');
@@ -163,13 +164,20 @@ const FAMILY = {
         n: R.likes[maker], tier: tier(maker) });
       // Somebody else has something to say about it (and the likes it got).
       const commenter = pick(all.filter(h => h !== maker && h !== subject), rng);
-      if (commenter) push({ phase: 'reveal', kind: 'comment', by: commenter, about: maker, n: R.likes[maker],
+      // In an anonymous game nobody knows whose piece it is, so nobody names the maker.
+      if (commenter && !game.anonymous) push({ phase: 'reveal', kind: 'comment', by: commenter, about: maker, n: R.likes[maker],
         many: R.likes[maker] >= 3, warm: rel(commenter, maker, 'affection') >= 0, tier: tier(maker) });
-      if (subject) remember(state, sc, portrayal === 'jab' ? 'jab' : 'portrait-kind', maker, subject, game.id);
+      if (subject && game.anonymous && r.guesses?.[subject]) {
+        const gu = r.guesses[subject];
+        push({ phase: 'reveal', kind: gu.right ? 'whodunit.right' : 'whodunit.wrong', by: subject,
+          about: gu.right ? maker : pick(all.filter(h => h !== maker && h !== subject), rng), jab: portrayal === 'jab' });
+        if (gu.right && portrayal === 'jab') remember(state, sc, 'jab', maker, subject, game.id);
+      }
+      if (subject && !game.anonymous) remember(state, sc, portrayal === 'jab' ? 'jab' : 'portrait-kind', maker, subject, game.id);
     }
     const loser = by(all, h => -R.likes[h] - q[h] / 100)[0];
     if (loser !== R.winner) push({ phase: 'verdict', kind: 'last', by: loser, n: R.likes[loser], tier: tier(loser) });
-    push({ phase: 'verdict', kind: 'tally', by: pick(all.filter(h => h !== R.winner), rng), about: R.winner, n: R.likes[R.winner] });
+    if (!game.anonymous) push({ phase: 'verdict', kind: 'tally', by: pick(all.filter(h => h !== R.winner), rng), about: R.winner, n: R.likes[R.winner] });
     push({ phase: 'verdict', kind: 'winner', by: R.winner, about: pick(all.filter(h => h !== R.winner), rng) });
     remember(state, sc, 'won', R.winner, null, game.id);
   },

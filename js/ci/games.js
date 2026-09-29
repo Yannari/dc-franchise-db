@@ -184,11 +184,16 @@ const RUN = {
         answers[maker] = subject;
         const jab = schemeEligible(state, maker) && rel(maker, subject, 'resentment') > rel(maker, subject, 'affection');
         portrayals[maker] = jab ? 'jab' : 'kind';
-        if (jab) {
+        if (jab && game.anonymous) {
+          // An anonymous jab stings, but nobody knows whose it was.
+          feel(state, subject, 'stress', 1);
+          feel(state, subject, 'paranoia', 1);
+        } else if (jab) {
           const c = makeClaim(state, { kind: 'distrusts', holder: maker, about: subject, truth: true, secrecy: 'public', by: maker });
           for (const obs of all) if (obs !== maker) learn(state, obs, c, maker, sc);
           bump(subject, maker, 'resentment', 1);
-        } else bump(subject, maker, 'affection', 0.5);
+        } else if (!game.anonymous) bump(subject, maker, 'affection', 0.5);
+        else feel(state, subject, 'elation', 0.5);
       });
     } else for (const h of all) answers[h] = 'made';
     const likes = Object.fromEntries(all.map(h => [h, 0]));
@@ -196,7 +201,17 @@ const RUN = {
       all.filter(o => o !== liker).map(o => [o, quality[o] + rel(liker, o, 'affection') * 0.3])
         .sort((a, b) => b[1] - a[1]).slice(0, 3).forEach(([o]) => { likes[o]++; });
     }
-    sc.data.rounds.push({ promptId: p.id, answers, portrayals });
+    // Anonymous portraits: each subject tries to work out who painted them;
+    // guessing a jab right turns the sting into a grudge.
+    const guesses = {};
+    if (game.anonymous && p.about) {
+      for (const [maker, subject] of Object.entries(answers)) {
+        const right = rng() < S(state, subject, 'intuition') / 15;
+        guesses[subject] = { maker, right };
+        if (right && portrayals[maker] === 'jab') bump(subject, maker, 'resentment', 1);
+      }
+    }
+    sc.data.rounds.push({ promptId: p.id, answers, portrayals, guesses });
     sc.data.results = { quality, likes, winner: argmax(all, h => likes[h] + quality[h] / 100) };
   },
 

@@ -244,7 +244,7 @@ describe('making things, photos, teams, flirting — and the prizes', () => {
       const s = room(5, seed);
       for (const n of Object.keys(s.people)) Object.assign(s.people[n], { archetype: 'villain' });
       for (const a of s.active) for (const b of s.active) if (a !== b) bump(a, b, 'resentment', 5);
-      const sc = runGame(s, streamFor(seed, 'make'), game('poor-traits'));
+      const sc = runGame(s, streamFor(seed, 'make'), game('roast'));
       for (const [maker, how] of Object.entries(sc.data.rounds[0].portrayals)) {
         if (how !== 'jab') continue;
         jabs++;
@@ -306,5 +306,30 @@ describe('a guess game', () => {
       const facts = Object.values(r.answers);
       expect(new Set(facts).size).toBe(facts.length);
     }
+  });
+});
+
+describe('an anonymous portrait', () => {
+  it('stings its subject but names no painter: no public claim, no grudge at the maker, no memory of who', () => {
+    let jabs = 0;
+    for (let seed = 1; seed <= 10; seed++) {
+      const s = room(5, seed);
+      for (const n of Object.keys(s.people)) s.people[n].archetype = 'villain';
+      for (const a of s.active) for (const b of s.active) if (a !== b) bump(a, b, 'resentment', 5);
+      const before = s.claims.length;
+      const sc = runGame(s, streamFor(seed, 'anon'), GAMES.find(g => g.id === 'paint-the-player'));
+      for (const [maker, how] of Object.entries(sc.data.rounds[0].portrayals)) {
+        if (how !== 'jab') continue;
+        jabs++;
+        const subject = sc.data.rounds[0].answers[maker];
+        // Only a subject who worked out who painted them holds it against the painter.
+        const guessed = sc.data.rounds[0].guesses[subject]?.right;
+        expect(rel(subject, maker, 'resentment')).toBe(guessed ? 6 : 5);
+      }
+      expect(s.claims.length).toBe(before);
+      const known = (s.gameMemory || []).filter(m => m.kind === 'jab');
+      for (const m of known) expect(sc.data.rounds[0].guesses[m.about]?.right).toBe(true);
+    }
+    expect(jabs).toBeGreaterThan(0);
   });
 });

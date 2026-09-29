@@ -390,16 +390,23 @@ export const DUMP_DRAWS = {
   // (UK 9 d19, UK 10 d9). A whole couple first goes on day 23 (UK 10, UK 11)
   // or later (UK 12 d31), so those formats start at the second vote.
   vote1: [['cross-gender', 4, 2], ['save-one', 2, 3]],
-  vote2: [['safe-pick-couple', 2, 3], ['top-couple-picks', 3, 3], ['couples-vote', 2, 2], ['public', 2, 3]],
+  // A vote the public settle ALONE is rare before the last week: most nights
+  // the public put islanders at risk and the villa decides, which is where the
+  // drama is (UK 9 d9 and d19, UK 11 d10 and d21, UK 12 d56; the public alone
+  // UK 11 d26 and d35, UK 9 d51, UK 12 d53 — late). User: "some full public
+  // votes don't often happen until the semi-final; mostly it's always a public
+  // vote, then the vulnerable are voted".
+  vote2: [['safe-pick-couple', 3, 3], ['top-couple-picks', 3, 3], ['couples-vote', 2, 2], ['public', 0.5, 3]],
+  'vote-post': [['safe-pick-couple', 3, 3], ['top-couple-picks', 2, 3], ['couples-vote', 1, 2], ['public', 1, 3]],
   // The couples-only week: every format sends exactly one couple home.
-  // The last fortnight is the public's (UK 5: day 52 and day 56 the public alone,
-  // day 36 and 49 the public then the villa; user: "how is the public not voting
-  // more, especially after the final recoupling").
-  vote3: [['public', 5, 3], ['safe-pick-couple', 3, 3], ['top-couple-picks', 1, 3], ['couples-vote', 1, 2]],
+  // The last fortnight gives the public more say (UK 5: day 52 and day 56 the
+  // public alone, day 36 and 49 the public then the villa; user: "how is the
+  // public not voting more, especially after the final recoupling").
+  vote3: [['public', 2, 3], ['safe-pick-couple', 3, 3], ['top-couple-picks', 2, 3], ['couples-vote', 1, 2]],
   semi: [['public', 1], ['ex-islanders', 1]],
 };
 // A big cast's extra public votes draw from the second vote's formats.
-const drawsFor = slot => DUMP_DRAWS[slot === 'vote-extra' ? 'vote2' : slot === 'vote-post' || slot === 'vote-couples' ? 'vote3' : slot] || null;
+const drawsFor = slot => DUMP_DRAWS[slot === 'vote-extra' ? 'vote2' : slot === 'vote-couples' ? 'vote3' : slot] || null;
 // What each episode is called on the Season Timeline, and its colour family.
 export const EPISODE_WORDS = { 'first-coupling': 'First coupling', recoupling: 'Recoupling', bombshell: 'Bombshell',
   'public-vote': 'Vote', 'casa-open': 'Casa opens', 'casa-nights': 'Casa Amor', 'stick-or-twist': 'Stick or twist',
@@ -593,7 +600,7 @@ export function seasonSchedule(rng, template = SEASON_TEMPLATE) {
 // premiere: the run tab rebuilds the unaired episodes when one changes, and a
 // pick for an episode that already aired takes effect when it is re-run.
 export const PICK_LABELS = {
-  'cross-gender': 'Public bottom per side; the other side dumps one each',
+  'cross-gender': "The public's favourite boy and girl; the villa dumps from the bottom",
   'top-couple-picks': "The public's favourite couple decides",
   'save-one': "The public's bottom three; the other side saves one",
   public: 'Straight public vote',
@@ -699,7 +706,9 @@ export function resolveRandomGames(schedule, rng) {
 export function withPicks(schedule, picks = {}, forced = null) {
   return schedule.map(e => {
     const want = e.slot && picks?.[e.slot];
-    const opt = want && DUMP_DRAWS[e.slot]?.find(o => o[0] === want);
+    // Through drawsFor: the vote after Casa and the couples-only week share
+    // another slot's formats, and a booking on them was silently dropped.
+    const opt = want && drawsFor(e.slot)?.find(o => o[0] === want);
     if (!opt) return e;
     const [dumpFormat, , bottom] = opt;
     // Booked by the author: the night plays it, pace or no pace (moments.js).

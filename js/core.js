@@ -1194,7 +1194,7 @@ export const TWIST_CATALOG = [
      night with nothing booked draws its format the way the real show does. */
   { id:'pm-cross-gender', emoji:'\u{1F46B}', name:'Each Side Dumps One', format:'perfect-match',
     category:'dumping', phase:'any', engineType:'pm-cross-gender', pmFormat:'cross-gender', pmSlots:['vote1'],
-    desc:'The public have been voting for their favourite couples, and the ones with the fewest votes are at risk. Then the villa finishes it: the girls choose one of the boys at risk to send home, and the boys choose one of the girls, each vote read out at the fire pit. Two islanders leave, from two different couples, and both partners they leave behind are suddenly single.',
+    desc:'The public have been voting for their favourite boy and favourite girl: islanders on their own, not couples. With as many boys as girls, the three of each with the fewest votes are at risk, and the villa finishes it: the girls choose one of the boys to send home and the boys one of the girls, each vote read out at the fire pit. With more of one side, only that side faces the public, and the other side votes out one (two, if the villa is two apart) to even it up. Any partner left behind is suddenly single.',
     incompatible:['pm-top-couple-picks','pm-save-one','pm-public-vote','pm-safe-pick-couple','pm-couples-vote','pm-ex-islanders','pm-dump-none'] },
   { id:'pm-top-couple-picks', emoji:'\u{1F451}', name:'The Favourites Decide', format:'perfect-match',
     category:'dumping', phase:'any', engineType:'pm-top-couple-picks', pmFormat:'top-couple-picks', pmSlots:['vote2','vote-post','vote-couples','vote3'],

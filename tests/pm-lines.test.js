@@ -49,7 +49,7 @@ describe('the pools are well-formed', () => {
       entrance: 1, steal: 3, 'recouple-pick': 3, 'dump-verdict': 1, 'dump-fallout': 1, 'snog-marry-pie': 4,
       'movie-night': 2, reveal: 2, 'dump-at-risk': 1, 'ex-return': 1, 'top-couple-pick': 4, 'couples-vote': 4, 'dump-verdict-couple': 2, 'dump-verdict-singles': 2, 'group-entrance': 2,
       'stand-up': 3, 'nobody-stands': 1, 'stand-up-pick': 3, 'bombshell-save': 3, 'public-match': 3,
-      'return-entrance': 1, 'return-ex': 3, 'mission-brief': 1, 'mission-dump': 3, 'sleepover-invite': 3, 'sleepover-choice': 3,
+      'return-entrance': 1, 'return-ex': 3, 'mission-brief': 1, 'mission-dump': 3, 'sleepover-invite': 3, 'sleepover-choice': 3, 'sleepover-single': 3,
       'challenge-text': 1, 'first-arrival': 2, 'step-forward': 2, 'host-open': 0, 'host-first': 0, intro: 1, receipt: 4, 'look-who': 3, 'snogger-row': 3, 'couple-goals': 4, 'couple-goals-row': 3, 'talent-snub': 3,
       'arrival-chat': 3, 'first-toast': 3, debrief: 3, 'bombshell-react': 3, 'movie-react': 3, 'casa-host': 0, 'casa-react': 3, 'casa-return': 2, 'photo-text': 1, 'pile-in': 3, breakdown: 1, 'triangle-rivals': 3, 'triangle-case': 3, 'triangle-ultimatum': 3, 'triangle-teams': 3, 'triangle-choice': 3,
       'lie-write': 3, 'lie-ask': 4, 'lie-answer': 1, 'lie-read': 2, 'lie-react': 3,

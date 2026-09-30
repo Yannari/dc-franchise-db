@@ -20,7 +20,7 @@
 import { pickOrder, contestFor } from '../assign.js';
 import { prepareRoom } from '../prep.js';
 import { lipsyncScore } from '../lipsync.js';
-import { SONGS } from '../data/songs.js';
+import { drawSong } from '../data/songs.js';
 import { dragOf } from '../queen.js';
 import { evt } from '../rules.js';
 import { tournamentScenes } from '../smackdown.js';
@@ -191,7 +191,7 @@ export function perform(ctx) {
   };
 
   const duel = (a, b, round, roundLabel, chosen) => {
-    const song = SONGS[Math.floor(rng() * SONGS.length)];
+    const song = drawSong(rng);
     const fatA = fatigueFactor(lipsyncCount[a] || 0);
     const fatB = fatigueFactor(lipsyncCount[b] || 0);
     const sa = lipsyncScore({ player: players[a], song, lipsyncRecord: state.lipsyncRecord?.[a] || [], rng });
@@ -222,7 +222,7 @@ export function perform(ctx) {
     if (group.length === 4) {
       // 3-way lip sync — odd queen out joins a group instead of getting a bye
       const [a, b, c, chosen] = group;
-      const song = SONGS[Math.floor(rng() * SONGS.length)];
+      const song = drawSong(rng);
       const entries = [a, b, c].map(n => {
         const fat = fatigueFactor(lipsyncCount[n] || 0);
         const sc = lipsyncScore({ player: players[n], song, lipsyncRecord: state.lipsyncRecord?.[n] || [], rng });
@@ -277,7 +277,7 @@ export function perform(ctx) {
   let eliminated = null;
   const r3Alive = [...r2Losers].sort(() => rng() - 0.5);
   if (r3Alive.length >= 3) {
-    const song = SONGS[Math.floor(rng() * SONGS.length)];
+    const song = drawSong(rng);
     const entries = r3Alive.map(n => {
       const fat = fatigueFactor(lipsyncCount[n] || 0);
       const sc = lipsyncScore({ player: players[n], song, lipsyncRecord: state.lipsyncRecord?.[n] || [], rng });

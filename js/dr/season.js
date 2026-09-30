@@ -22,7 +22,7 @@ import { assignStorylines, recordBeat, arcSummary, popSnapshot } from './storyli
 import { MAXI_TYPES, TENTPOLES, maxiById, windowOf, MAX_CAST } from './data/challenges.js';
 import { MINI_TYPES } from './data/minis.js';
 import { JUDGES } from './data/judges.js';
-import { SONGS } from './data/songs.js';
+import { drawSong } from './data/songs.js';
 import { RUNWAY_CATEGORIES } from './data/runways.js';
 import { rngFor, streamFor } from './rng.js';
 import { assignDragFamilies } from './family.js';
@@ -363,7 +363,7 @@ export function buildSchedule({ episodes, castSize, pinned = [], rng = Math.rand
          four often enough that a guest should feel like an occasion rather
          than a chair that is always full. */
       guest: 'guest' in pin ? pin.guest : (er() < 0.7 ? drawGuest(er) : null),
-      songTitle: pin.songTitle || pick(er, SONGS).title,
+      songTitle: pin.songTitle || drawSong(er).title,
       // A category per week, and never the same one twice in a season: the
       // runway is the one thing a viewer sees every single episode, so a
       // repeat is more noticeable here than anywhere else.
@@ -821,7 +821,7 @@ export function runSmackdown(state, cfg, ctx, {
       if (isOdd && available.length === 2) {
         const names = [chooser, ...available];
         for (const n of available) used.add(n);
-        const song = SONGS[Math.floor(rng() * SONGS.length)];
+        const song = drawSong(rng);
         const entries = names.map(n => {
           const fat = fatigue(n);
           const sc = lipsyncScore({ player: players[n], song, lipsyncRecord: state.lipsyncRecord?.[n] || [], rng });
@@ -849,7 +849,7 @@ export function runSmackdown(state, cfg, ctx, {
 
       const { choice: opponent, strategy } = pickOpponent(chooser, available);
       used.add(opponent);
-      const song = SONGS[Math.floor(rng() * SONGS.length)];
+      const song = drawSong(rng);
       const sa = lipsyncScore({ player: players[chooser], song, lipsyncRecord: state.lipsyncRecord?.[chooser] || [], rng });
       const sb = lipsyncScore({ player: players[opponent], song, lipsyncRecord: state.lipsyncRecord?.[opponent] || [], rng });
       const adjA = sa.score * fatigue(chooser);
@@ -938,7 +938,7 @@ export function runFinale(state, cfg, ctx) {
   const { rng } = ctx;
   const type = cfg.type || 'top4';
   const finalists = [...state.living].sort(() => rng() - 0.5);
-  const song = () => pick(rng, SONGS);
+  const song = () => drawSong(rng);
   const rounds = [];
   let placements = [];
   /* WHO NEVER GOT TO SING. On a bracket every finalist lip syncs and the

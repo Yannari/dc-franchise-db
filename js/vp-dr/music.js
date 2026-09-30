@@ -425,7 +425,7 @@ function rememberPreview(title, url) {
 /* A remix, a live take or an acoustic cut is the right singer and the wrong
    record — measured: "Telephone (Kaskade Mix)", "Physical (Acoustic)" and
    "Last Dance (Live)" were first in their results. Kept only as a last resort. */
-const VARIANT = /\b(re-?mix|mix\w*|radio|club|dub|acoustic|live|karaoke|instrumental|version|edit|demo|a cappella|cover|tribute|sped up|slowed)\b/i;
+const VARIANT = /\b(re-?mix|mix\w*|radio|club|dub|acoustic|live|karaoke|instrumental|version|edit|demo|a cappella|cover|tribute|sped up|slowed|commentary)\b/i;
 // "P!nk" is Pink: the bang is a letter, not punctuation.
 const artistKey = s => norm(String(s || '').replace(/!/g, 'i'));
 

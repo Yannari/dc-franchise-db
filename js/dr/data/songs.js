@@ -458,7 +458,111 @@ export const SONGS = [
   { title: 'Jealous of My Boogie', artist: 'RuPaul', tempo: 'dance', mood: 'fierce', genre: 'dance-pop', hook: 'spoken' },
   { title: 'Kitty Girl', artist: 'RuPaul', tempo: 'dance', mood: 'sexy', genre: 'dance-pop', hook: 'spoken' },
   { title: 'Adrenaline', artist: 'RuPaul', tempo: 'dance', mood: 'fierce', genre: 'dance-pop', hook: 'spoken' },
+
+  // ── RECENT: 2015-2026 ───────────────────────────────────────────────
+  // Added 2026-09-30 on the user's ask ("more recent songs, like Pinky Up"),
+  // each checked against the iTunes store. Chosen partly to fill the thin
+  // corners of the bank — sad uptempos, fierce and sexy ballads, rage — so
+  // drawSong's balanced draw has more than a handful of songs in each.
+  { title: 'PINKY UP', artist: 'KATSEYE', tempo: 'uptempo', mood: 'funny', genre: 'k-pop', hook: 'dance-break' },
+  { title: 'Gabriela', artist: 'KATSEYE', tempo: 'mid', mood: 'rage', genre: 'latin', hook: 'none' },
+  { title: 'Golden', artist: 'HUNTR/X', tempo: 'uptempo', mood: 'fierce', genre: 'k-pop', hook: 'key-change' },
+  { title: 'Soda Pop', artist: 'Saja Boys', tempo: 'dance', mood: 'sexy', genre: 'k-pop', hook: 'none' },
+  { title: "How It's Done", artist: 'HUNTR/X', tempo: 'uptempo', mood: 'fierce', genre: 'k-pop', hook: 'spoken' },
+  { title: 'Taste', artist: 'Sabrina Carpenter', tempo: 'uptempo', mood: 'rage', genre: 'pop', hook: 'none' },
+  { title: 'Manchild', artist: 'Sabrina Carpenter', tempo: 'uptempo', mood: 'funny', genre: 'country', hook: 'none' },
+  { title: 'Tears', artist: 'Sabrina Carpenter', tempo: 'dance', mood: 'sexy', genre: 'disco', hook: 'none' },
+  { title: 'Femininomenon', artist: 'Chappell Roan', tempo: 'uptempo', mood: 'funny', genre: 'pop', hook: 'spoken' },
+  { title: 'The Subway', artist: 'Chappell Roan', tempo: 'ballad', mood: 'sad', genre: 'pop', hook: 'breakdown' },
+  { title: 'Casual', artist: 'Chappell Roan', tempo: 'mid', mood: 'sad', genre: 'pop', hook: 'breakdown' },
+  { title: 'Apple', artist: 'Charli xcx', tempo: 'mid', mood: 'sad', genre: 'hyperpop', hook: 'dance-break' },
+  { title: 'drivers license', artist: 'Olivia Rodrigo', tempo: 'ballad', mood: 'sad', genre: 'pop', hook: 'breakdown' },
+  { title: 'bad idea right?', artist: 'Olivia Rodrigo', tempo: 'uptempo', mood: 'funny', genre: 'rock', hook: 'spoken' },
+  { title: 'Anti-Hero', artist: 'Taylor Swift', tempo: 'mid', mood: 'sad', genre: 'pop', hook: 'none' },
+  { title: 'Cruel Summer', artist: 'Taylor Swift', tempo: 'uptempo', mood: 'sad', genre: 'pop', hook: 'breakdown' },
+  { title: 'The Fate of Ophelia', artist: 'Taylor Swift', tempo: 'mid', mood: 'sad', genre: 'pop', hook: 'none' },
+  { title: 'Look What You Made Me Do', artist: 'Taylor Swift', tempo: 'mid', mood: 'rage', genre: 'pop', hook: 'spoken' },
+  { title: 'Die With A Smile', artist: 'Lady Gaga & Bruno Mars', tempo: 'ballad', mood: 'sad', genre: 'soul', hook: 'key-change' },
+  { title: 'Vanish Into You', artist: 'Lady Gaga', tempo: 'mid', mood: 'sad', genre: 'pop', hook: 'key-change' },
+  { title: 'What Was I Made For?', artist: 'Billie Eilish', tempo: 'ballad', mood: 'sad', genre: 'pop', hook: 'none' },
+  { title: 'BIRDS OF A FEATHER', artist: 'Billie Eilish', tempo: 'mid', mood: 'sad', genre: 'pop', hook: 'none' },
+  { title: 'LUNCH', artist: 'Billie Eilish', tempo: 'mid', mood: 'sexy', genre: 'pop', hook: 'none' },
+  { title: 'Happier Than Ever', artist: 'Billie Eilish', tempo: 'ballad', mood: 'rage', genre: 'rock', hook: 'breakdown' },
+  { title: 'ALIEN SUPERSTAR', artist: 'Beyoncé', tempo: 'dance', mood: 'fierce', genre: 'house', hook: 'spoken' },
+  { title: 'Dance The Night', artist: 'Dua Lipa', tempo: 'dance', mood: 'fierce', genre: 'disco', hook: 'none' },
+  { title: 'Levitating', artist: 'Dua Lipa', tempo: 'dance', mood: 'sexy', genre: 'disco', hook: 'none' },
+  { title: 'Kill Bill', artist: 'SZA', tempo: 'mid', mood: 'rage', genre: 'r&b', hook: 'none' },
+  { title: 'Snooze', artist: 'SZA', tempo: 'ballad', mood: 'sexy', genre: 'r&b', hook: 'none' },
+  { title: 'Saturn', artist: 'SZA', tempo: 'ballad', mood: 'sad', genre: 'r&b', hook: 'none' },
+  { title: 'Water', artist: 'Tyla', tempo: 'mid', mood: 'sexy', genre: 'r&b', hook: 'dance-break' },
+  { title: 'Tattoo', artist: 'Loreen', tempo: 'mid', mood: 'sad', genre: 'dance-pop', hook: 'breakdown' },
+  { title: 'Used to Be Young', artist: 'Miley Cyrus', tempo: 'ballad', mood: 'sad', genre: 'pop', hook: 'none' },
+  { title: "Mother's Daughter", artist: 'Miley Cyrus', tempo: 'uptempo', mood: 'fierce', genre: 'pop', hook: 'none' },
+  { title: 'Midnight Sky', artist: 'Miley Cyrus', tempo: 'dance', mood: 'fierce', genre: 'dance-pop', hook: 'none' },
+  { title: 'Say So', artist: 'Doja Cat', tempo: 'mid', mood: 'sexy', genre: 'disco', hook: 'spoken' },
+  { title: 'Barbie World', artist: 'Nicki Minaj & Ice Spice', tempo: 'mid', mood: 'funny', genre: 'hip-hop', hook: 'spoken' },
+  { title: 'Lose Control', artist: 'Teddy Swims', tempo: 'ballad', mood: 'sad', genre: 'soul', hook: 'breakdown' },
+  { title: 'Beautiful Things', artist: 'Benson Boone', tempo: 'ballad', mood: 'sad', genre: 'rock', hook: 'breakdown' },
+  { title: "That's So True", artist: 'Gracie Abrams', tempo: 'uptempo', mood: 'rage', genre: 'pop', hook: 'none' },
+  { title: 'Messy', artist: 'Lola Young', tempo: 'mid', mood: 'rage', genre: 'pop', hook: 'breakdown' },
+  { title: 'like JENNIE', artist: 'JENNIE', tempo: 'uptempo', mood: 'fierce', genre: 'k-pop', hook: 'spoken' },
+  { title: 'ROCKSTAR', artist: 'LISA', tempo: 'dance', mood: 'fierce', genre: 'k-pop', hook: 'spoken' },
+  { title: 'the boy is mine', artist: 'Ariana Grande', tempo: 'mid', mood: 'sexy', genre: 'r&b', hook: 'none' },
+  { title: 'Dangerous Woman', artist: 'Ariana Grande', tempo: 'ballad', mood: 'sexy', genre: 'r&b', hook: 'breakdown' },
+  { title: 'Popular', artist: 'Ariana Grande', tempo: 'mid', mood: 'funny', genre: 'musical', hook: 'spoken' },
+  { title: 'The Wizard and I', artist: 'Cynthia Erivo', tempo: 'ballad', mood: 'fierce', genre: 'musical', hook: 'key-change' },
+  { title: 'Mother', artist: 'Meghan Trainor', tempo: 'mid', mood: 'funny', genre: 'pop', hook: 'spoken' },
+  { title: 'Rush', artist: 'Troye Sivan', tempo: 'dance', mood: 'sexy', genre: 'house', hook: 'dance-break' },
+  { title: 'Midnight Sun', artist: 'Zara Larsson', tempo: 'dance', mood: 'fierce', genre: 'dance-pop', hook: 'none' },
+  { title: 'Lush Life', artist: 'Zara Larsson', tempo: 'uptempo', mood: 'funny', genre: 'dance-pop', hook: 'none' },
+  { title: 'Ordinary', artist: 'Alex Warren', tempo: 'ballad', mood: 'sad', genre: 'pop', hook: 'key-change' },
+  { title: 'Anxiety', artist: 'Doechii', tempo: 'mid', mood: 'sad', genre: 'hip-hop', hook: 'spoken' },
+  { title: "I'm Good (Blue)", artist: 'David Guetta & Bebe Rexha', tempo: 'dance', mood: 'fierce', genre: 'dance-pop', hook: 'none' },
+  { title: 'Eat Your Man', artist: 'Dom Dolla & Nelly Furtado', tempo: 'dance', mood: 'sexy', genre: 'house', hook: 'none' },
+  { title: 'Diet Pepsi', artist: 'Addison Rae', tempo: 'mid', mood: 'sexy', genre: 'pop', hook: 'none' },
+  { title: 'Sports car', artist: 'Tate McRae', tempo: 'mid', mood: 'sexy', genre: 'pop', hook: 'none' },
+  { title: 'exes', artist: 'Tate McRae', tempo: 'uptempo', mood: 'rage', genre: 'pop', hook: 'none' },
+  { title: 'As It Was', artist: 'Harry Styles', tempo: 'uptempo', mood: 'sad', genre: 'pop', hook: 'none' },
+  { title: 'Too Sweet', artist: 'Hozier', tempo: 'mid', mood: 'funny', genre: 'soul', hook: 'none' },
+  { title: 'Rise Up', artist: 'Andra Day', tempo: 'ballad', mood: 'fierce', genre: 'soul', hook: 'key-change' },
+  { title: 'This Is Me', artist: 'Keala Settle', tempo: 'ballad', mood: 'fierce', genre: 'musical', hook: 'key-change' },
+  { title: 'Skin', artist: 'Rihanna', tempo: 'ballad', mood: 'sexy', genre: 'r&b', hook: 'none' },
+  { title: 'Mr. Brightside', artist: 'The Killers', tempo: 'uptempo', mood: 'sad', genre: 'rock', hook: 'none' },
+  { title: 'STAY', artist: 'The Kid LAROI & Justin Bieber', tempo: 'uptempo', mood: 'sad', genre: 'pop', hook: 'none' },
+  { title: 'Maneater', artist: 'Nelly Furtado', tempo: 'dance', mood: 'rage', genre: 'dance-pop', hook: 'none' },
 ];
+
+/* ── THE DRAW ──────────────────────────────────────────────────────────
+   Every KIND of lip sync equally likely, whatever the shelf holds. Drawn
+   uniformly from the bank, the bank's shape decided the show: 109 fierce
+   songs to 54 sad ones made a fierce lip sync twice as likely as a sad
+   one, and every song added tilted it further. So the draw picks the MOOD
+   first (each one in five), then a TEMPO within it (each equally, among the
+   tempos with at least MIN_CELL songs — no mood has a comic ballad), then a
+   song. Adding songs now widens a corner without changing the odds. */
+export const LIPSYNC_MOODS = ['sad', 'fierce', 'funny', 'sexy', 'rage'];
+export const LIPSYNC_TEMPOS = ['ballad', 'mid', 'dance', 'uptempo'];
+export const MIN_CELL = 5;
+let cells = null;
+function cellsOf() {
+  if (cells) return cells;
+  cells = {};
+  for (const m of LIPSYNC_MOODS) {
+    cells[m] = {};
+    for (const t of LIPSYNC_TEMPOS) {
+      const list = SONGS.filter(s => s.mood === m && s.tempo === t);
+      if (list.length >= MIN_CELL) cells[m][t] = list;
+    }
+  }
+  return cells;
+}
+export function drawSong(rng) {
+  const c = cellsOf();
+  const mood = LIPSYNC_MOODS[Math.floor(rng() * LIPSYNC_MOODS.length)];
+  const tempos = Object.keys(c[mood]);
+  const pool = c[mood][tempos[Math.floor(rng() * tempos.length)]];
+  return pool[Math.floor(rng() * pool.length)];
+}
 
 export function songById(title) {
   return SONGS.find(s => s.title === title) || null;

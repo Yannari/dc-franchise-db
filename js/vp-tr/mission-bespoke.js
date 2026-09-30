@@ -112,6 +112,99 @@ const BAD = new Set(['weak', 'freeze', 'wrong', 'lost', 'out', 'bad', 'lose', 's
 
 function _toneOf(kind) { return GOOD.has(kind) ? 'good' : BAD.has(kind) ? 'bad' : 'steady'; }
 
+// ── SAID ON THE COURSE (2026-09-30) ───────────────────────────────────
+//
+// The user: "we needed more dialogue in mission anyway". A beat was a
+// narrated action ("B swapped two letters and lost the raven") and nobody
+// said a word about it. Now a teammate reacts out loud to a good or bad
+// moment, and the player answers — as a PAIR, so the answer fits what was
+// said. Only ever a member of the SAME team, and only about what just
+// happened in front of them. {p} is the player.
+const BANTER = {
+  good: [
+    ['Yes! Go on, {p}!', 'Don’t jinx it.'],
+    ['How did you do that?', 'Honestly? No idea.'],
+    ['{p}, you absolute genius.', 'Say that again at the Round Table.'],
+    ['That’s it. That’s the one.', 'Told you I’d get one.'],
+  ],
+  bad: [
+    ['{p}! What was that?', 'I know. I know!'],
+    ['It’s fine. It’s fine. Next one.', 'Sorry. I thought I had it.'],
+    ['Come on, {p}, that one was easy!', 'Then you do it.'],
+    ['Don’t worry about it. Go again.', 'Thank you. Right. Again.'],
+    ['Were you even looking?', 'It moved, I swear it moved.'],
+  ],
+};
+// EACH AFTERNOON ITS OWN WORDS. A line has to be about the thing in front of
+// them — "the whole leg's come off" at the wicker beasts, "you've turned it the
+// wrong way" at the orrery — or it reads as nonsense under a beat about a
+// dinner toast. The generic pool above is the fallback for an afternoon that
+// has none here.
+const BANTER_BY = {
+  'ash-vault': {
+    good: [['That’s holding. Don’t touch it.', 'I wasn’t going to.'], ['Steady hands, {p}. Keep going.', 'Stop talking to me, I’m concentrating.'], ['You’ve done this before.', 'Never. Don’t tell anyone.']],
+    bad: [['{p}, the whole thing just moved!', 'I know! I felt it!'], ['Careful! That beam isn’t safe.', 'Now you tell me.'], ['Slow down. Nobody’s racing us.', 'The clock is.']],
+  },
+  'beacon-lighting': {
+    good: [['It’s lit! {p}, it’s lit!', 'Row, then! Next one!'], ['Keep the raft straight, {p}. That’s it.', 'My arms are on fire.'], ['That’s another one. We can do this.', 'Don’t count yet.']],
+    bad: [['You’re drifting, {p}! Left, left!', 'Which left?'], ['It went out. It actually went out.', 'The wind took it, not me.'], ['{p}, you’re soaked.', 'The loch won that one.']],
+  },
+  'buried-alive': {
+    good: [['Keep digging, {p}, I can hear them!', 'I can see the lid!'], ['Faster than I thought you’d be.', 'Nobody’s staying down there on my watch.'], ['That’s it, get them out.', 'Grab an arm. Pull.']],
+    bad: [['Wrong plot, {p}! That’s the wrong plot!', 'They all look the same in the dark!'], ['{p}, you’re digging in circles.', 'The ground keeps caving in!'], ['Come on, they’re running out of air.', 'I’m going as fast as I can.']],
+  },
+  'church-match': {
+    good: [['You knew exactly what they’d say.', 'I listen more than people think.'], ['That’s a match, {p}!', 'Told you I know them.'], ['How did you get that?', 'Lucky guess. Mostly.']],
+    bad: [['{p}, you don’t know them at all.', 'Apparently not.'], ['That wasn’t even close.', 'I thought I had them worked out.'], ['Really? That’s what you went with?', 'In my head it made sense.']],
+  },
+  'drowned-causeway': {
+    good: [['Go, {p}! The tide’s behind you!', 'Don’t wait for me!'], ['You made that look easy.', 'It was not easy.'], ['That’s the marker. Grab it!', 'Got it! Go, go!']],
+    bad: [['{p}, the water’s coming in!', 'I can see that!'], ['You’ve dropped it. It’s gone under.', 'I had it, and then I didn’t.'], ['Come back, it’s too deep!', 'Not without the marker!']],
+  },
+  funeral: {
+    good: [['That was beautiful, {p}.', 'Somebody had to say it properly.'], ['Hold your end, {p}. Steady.', 'I’ve got it. Just walk.'], ['You kept it together.', 'Only just.']],
+    bad: [['{p}, watch the coffin!', 'I’ve got it, I’ve got it!'], ['Did you just laugh? At a funeral?', 'Nerves. It’s nerves.'], ['You missed your moment.', 'Nobody told me there was a moment.']],
+  },
+  'long-account': {
+    good: [['That column adds up. {p}, it adds up!', 'Check it again anyway.'], ['You found it. The missing entry.', 'It was hiding in plain sight.'], ['How are you this fast with numbers?', 'Years of splitting bills.']],
+    bad: [['{p}, that total’s wrong.', 'Then you add it up.'], ['You’ve skipped a page.', 'The pages are stuck together!'], ['We’ve been through that book twice.', 'Third time lucky.']],
+  },
+  'nightjar-orrery': {
+    good: [['That’s the alignment! {p}, look!', 'Don’t touch it. Nobody breathe.'], ['You read the sky better than the book.', 'The book’s wrong. The sky isn’t.'], ['It clicked. It actually clicked.', 'I told you the third ring moved.']],
+    bad: [['{p}, you’ve turned it the wrong way.', 'It said clockwise!'], ['Now nothing lines up.', 'Give me a second. I can fix it.'], ['My hands are frozen. Are yours?', 'I can’t feel the brass any more.']],
+  },
+  roulette: {
+    good: [['Well played, {p}.', 'It was the wheel, not me.'], ['I’d follow you into any bet.', 'Careful. I might hold you to that.'], ['You kept your nerve.', 'Somebody had to.']],
+    bad: [['{p}, that was our money.', 'It was the table’s decision, not mine.'], ['Hold your nerve, {p}.', 'I am holding it. It’s just shaking.'], ['You’ve gone very quiet.', 'Just watching the wheel.']],
+  },
+  'traitors-chess': {
+    good: [['Good move, {p}.', 'I saw it three turns ago.'], ['That’s check. That’s actually check.', 'Don’t celebrate yet.'], ['You’re better at this than you look.', 'Everyone says that.']],
+    bad: [['{p}, you’ve left me wide open!', 'I didn’t see the bishop!'], ['Why would you move there?', 'It looked safe from where I was standing.'], ['That’s me off the board, then. Thanks, {p}.', 'Sorry! I’m sorry!']],
+  },
+  'traitors-monument': {
+    good: [['You cracked it, {p}!', 'It’s just dots, once you see it.'], ['How did you know that?', 'I just listened to the question.'], ['Read it again, slower. Yes!', 'Right first time.']],
+    bad: [['{p}, that’s the wrong figure!', 'The code said the eye!'], ['You answered too fast.', 'I was sure. I was so sure.'], ['We lost that one because of you.', 'Then you answer the next one.']],
+  },
+  'wicker-beasts': {
+    good: [['It’s standing! {p}, it’s standing!', 'Don’t breathe on it.'], ['Tie it off there. Perfect.', 'My fingers are shredded.'], ['That antler looks incredible.', 'It looks like a coat hanger, but thank you.']],
+    bad: [['{p}, the whole leg’s come off!', 'It was loose before I touched it!'], ['That’s not how willow bends.', 'It is now.'], ['Careful, you’re pulling the frame down!', 'It’s pulling me!']],
+  },
+};
+function _banter(m, card, key, used) {
+  if (card.isSocial || (card.tone !== 'good' && card.tone !== 'bad')) return null;
+  const p = card.who[0];
+  const team = (m.teams || []).find(t => t.name === card.team);
+  const mates = team ? (team.members || []).filter(n => n !== p) : [];
+  if (!mates.length) return null;
+  const by = mates[_hash(key + '|by') % mates.length];
+  const pool = (BANTER_BY[m.id] || BANTER)[card.tone];
+  let i = _hash(key) % pool.length;
+  for (let d = 0; d < pool.length && used.has(pool[i][0]); d++) i = (i + 1) % pool.length;
+  used.add(pool[i][0]);
+  const fill = t => t.replace(/\{p\}/g, p);
+  return [{ who: by, text: fill(pool[i][0]) }, { who: p, text: fill(pool[i][1]) }];
+}
+
 function _view(ep) {
   const m = ep && ep.tr && ep.tr.mission;
   if (!m || !Array.isArray(m.phases) || m.phases.length < 3) return null;
@@ -136,6 +229,7 @@ function _view(ep) {
     }
   }
 
+  const banterUsed = new Set();
   const phases = m.phases.map(p => {
     const suppress = soloScenePlayers[p.id] || new Set();
     // CURATED THE WAY THE MOCKUP IS. A phase has a beat for every living player;
@@ -152,6 +246,7 @@ function _view(ep) {
     const notable = eligible.filter(b => b.tone !== 'steady');
     const steady = eligible.filter(b => b.tone === 'steady');
     const beatCards = [...notable.slice(0, 4), ...steady.slice(0, 2)].slice(0, 5);
+    beatCards.forEach((c, k) => { c.said = _banter(m, c, 'mb|' + (m.id || '') + '|' + day + '|' + p.id + '|' + k, banterUsed); });
     const sceneCards = (scenesByPhase[p.id] || []).map(s => ({
       phaseId: p.id, kind: s.behaviour || 'steady', tone: _behaviourTone(s.behaviour),
       who: [...(s.participants || [])],
@@ -309,6 +404,8 @@ function _defaultCard(v, c, id, th) {
     + th.icon(c, c._ph) + '<span class="' + p + '-tag">' + _esc(th.cardTag(c, c._ph)) + '</span>'
     + '<div class="' + p + '-who mb-wholine">' + _who(c) + '</div>'
     + '<div class="' + p + '-txt">' + _esc(c.text) + '</div>'
+    + (c.said || []).map(x => '<div class="mb-said"><cite>' + _esc(x.who) + '</cite> '
+      + '<span class="mb-said-txt">&ldquo;' + _esc(x.text) + '&rdquo;</span></div>').join('')
     + conf + fx + '</article>';
 }
 
@@ -385,6 +482,28 @@ function _paintShield(e, s) {
 }
 
 /** True when this record is a bespoke afternoon this file can draw. */
+/** For the watch-it-played stage (mission-bespoke-stage.js): the page's own
+ *  view — the same curated cards, banter and confessionals — and its theme. */
+export function bespokeStageData(ep) {
+  const v = _view(ep);
+  if (!v) return null;
+  const th = THEME[v.id] || null;
+  const h = _host();
+  // THE THEME'S OWN SET, at rest: the scene each afternoon's page already draws
+  // (the loch, the causeway, the church), lifted out of its strip so the stage
+  // plays in the right place rather than on a generic field
+  let scene = null;
+  try {
+    if (th && th.stage && th.sideStates) {
+      const total = v.phases.reduce((a, p) => a + p.cards.length, 0) + v.phases.length + 2;
+      const html = th.stage(v, th.sideStates(v, total), 0);
+      const a = html.indexOf('<svg class="ms-scene"'), b = html.indexOf('<div class="ms-layer');
+      if (a >= 0 && b > a) scene = html.slice(a, b);
+    }
+  } catch { scene = null; }
+  return { v, title: th && th.title ? th.title(v) : null, host: { name: h.name, slug: h.slug }, scene };
+}
+
 export function isBespokeMissionRec(m) { return !!(m && m.id && THEME[m.id]); }
 
 const _bespokeState = {};
@@ -570,6 +689,9 @@ const NAV = TR_NAV_TOP;
 
 /** Bits every theme shares: the root scope, roster, observer strip, card faces. */
 const COMMON_CSS = `
+.mb-said{display:flex;gap:8px;align-items:baseline;margin:7px 0 0;font-size:.95em;line-height:1.4}
+.mb-said cite{flex:none;font-style:normal;font-weight:700;font-size:.72em;letter-spacing:.14em;text-transform:uppercase;opacity:.75}
+.mb-said-txt{font-style:italic}
 .mb-scope{ -webkit-font-smoothing:antialiased; }
 .mb-scope *{box-sizing:border-box}
 .mb-scope [id^="mb-step-"][data-on="1"]{opacity:1 !important;transform:none !important;filter:none !important}

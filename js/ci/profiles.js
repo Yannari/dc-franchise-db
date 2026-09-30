@@ -16,8 +16,13 @@ import { rolesFor } from './shared.js';
 import { clamp, personMayScheme } from './state.js';
 import { jobOf, tellsOf } from './persona-data.js';
 
+// Calibrated on the roster the site plays (tests/helpers/ci-cast.js
+// rosterCast), 2026-09-30: most roster players have no age, so strategy and
+// nerve must carry the motive themselves. 0.07/0.05 gave 14% catfish on real
+// casts (synthetic casts, whose ages spread 21-58, had hidden it at 31%);
+// 0.10/0.07 gives 32%, and catfish win about a third of seasons.
 export const MOTIVE = { age: 0.08, alum: 0.6, villainRep: 1.4, job: 1.0,
-  strategic: 0.07, boldness: 0.05, loyalty: 0.06 };
+  strategic: 0.10, boldness: 0.07, loyalty: 0.06 };
 // 0.75 gave 6.1 of 13 a persona once the pool had eight (47%) — the audit's
 // pool of six had been capping it. 1.0 gives 4.1 (31%) with the default pool.
 export const MOTIVE_LINE = 1.0;

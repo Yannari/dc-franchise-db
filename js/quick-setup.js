@@ -1309,6 +1309,7 @@ const CONFIG_SCOPE = {
     // The Circle's options: the heading, and the container, so a hint never
     // sits alone on another show (the bb-options-body lesson above).
     'sec-ci-divider':        ['the-circle'],
+    'sec-ci-cast':           ['the-circle'],
     'sec-ci-options':        ['the-circle'],
     'ci-options-body':       ['the-circle'],
     'sec-pm-divider':        ['perfect-match'],

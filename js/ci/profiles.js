@@ -36,6 +36,9 @@ export function truthOf(player, setup = {}) {
     status: setup.status ?? 'Single', alum: !!(setup.alum ?? player.isReturnee),
     rep: setup.rep ?? null, jobCost: setup.jobCost ?? 0, role: setup.role || 'starter',
     catfish: setup.catfish || 'decide', partner: setup.partner || null,
+    // The Profile Plan's mode pin for a player without a persona: 'honest',
+    // 'polished' or 'edited'; null lets the motive decide (spec 4.2).
+    mode: ['honest', 'polished', 'edited'].includes(setup.mode) ? setup.mode : null,
     // A shared profile (spec §14.8): who is the face and who the brain, and the
     // facts of a life the profile might hide ("three kids at home").
     face: setup.face ?? null, brain: setup.brain ?? null, facts: [...(setup.facts || [])],
@@ -136,8 +139,10 @@ export function drawPersonas(truths, pool, rng, pickBy = 'stats') {
       if (p) take(t, p);
     }
   }
-  const edited = open.filter(t => !assigned[t.name]
-    && (t.catfish === 'always' || motive[t.name] >= EDIT_LINE)).map(t => t.name);
+  // Edited: pinned, or a reason to hide something. "Never" rules out a
+  // persona, not an edit; an honest or polished pin rules out both.
+  const edited = drawing.filter(t => !assigned[t.name] && (t.mode === 'edited'
+    || (!t.mode && (t.catfish === 'always' || catfishMotive(t, median) >= EDIT_LINE)))).map(t => t.name);
   return { assigned, unused: left.map(p => p.id), edited };
 }
 
@@ -217,7 +222,7 @@ export function buildProfiles(state, truths, draw, pool, rng) {
       const e = editsFor(t, median, rng);
       shown = { ...own, ...e.shown }; edits = e.edits; gap = 0.3 * edits.length;
     } else {
-      mode = catfishMotive(t, median) > 0 ? 'polished' : 'honest';
+      mode = t.mode === 'honest' || t.mode === 'polished' ? t.mode : catfishMotive(t, median) > 0 ? 'polished' : 'honest';
       shown = own;
     }
     const handle = uniqueHandle(shown.name, state.profiles);

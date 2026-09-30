@@ -35,17 +35,23 @@ the timeline's slots, randomize). ADDING-A-SHOW §2, §3, §10.
    Dispatch in all `run-ui.js` sites; `main.js` import.
 2. **An episode on screen now.** Until Plan 5's stages, an episode airs as its
    transcript (both message layers, host, scenes), in the VP.
-3. **Defaults so a season runs unauthored.** `js/ci/faces.js` (all 84 faces
-   tagged by looking at them, §4.6) and a default Catfish Pool of eight
-   personas with faces chosen by fit.
+3. **Defaults so a season runs unauthored.** A default Catfish Pool of eight
+   personas. *(Faces: the first pass tagged the 84 guest images in
+   `js/ci/faces.js`; removed the same day when the user chose to make the
+   catfish images themselves. Personas carry a `look` line instead.)*
 4. **Season options** (§19.2): length, newcomer rule, who takes a persona,
    finalists, the AI player — CONFIG_SCOPE-scoped, in `simulator.html`.
 5. **The Season Timeline**: the Circle's catalog cards (blockings, arrivals,
    powers, twists) bookable per episode; bookings become slots for the engine.
 6. **Mockup, then the Cast tab's Profile Plan** overrides and the draw's
    result on each card (§4.2, §19.1).
+   *Rulings (user, 2026-09-30): "do what the other simulators do": no draw
+   preview. Like the villa panel, a blank field is decided when the season is
+   dealt and each card shows the result once it is. A mode pin
+   (honest/polished/edited) went into the engine; the reason override did not
+   (a reason follows from the persona and the stats).*
 7. **Mockup, then the Catfish Pool panel** (add, edit, duplicate, delete,
-   face picker, "4 of 7 would be taken").
+   the author's own image per persona, "4 of 7 would be taken").
 8. **Play it in the browser** end to end (Playwright), fix what it finds,
    full suite, docs, memory, push.
 

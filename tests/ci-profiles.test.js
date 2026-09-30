@@ -140,3 +140,44 @@ describe('building profiles', () => {
     expect(p).toMatchObject({ mode: 'catfish', shared: true, players: [a, b], personaId: 'persona-1' });
   });
 });
+
+describe('the mode pin on the Profile Plan (spec 4.2: honest, polished, edited)', () => {
+  const median = t => medianAge(t);
+  it('Edited always edits, even a player with no reason to', () => {
+    const t = truths(12, 4);
+    const calm = t.find(x => catfishMotive(x, median(t)) < EDIT_LINE);
+    calm.mode = 'edited';
+    const d = drawPersonas(t, makePool(20, 4), streamFor(4, 'pool'), 'stats');
+    expect(d.edited).toContain(calm.name);
+    expect(d.assigned[calm.name]).toBeUndefined();
+  });
+
+  it('Honest never edits, however much they have to hide', () => {
+    const t = truths(12, 4);
+    const keen = t.filter(x => { const m = catfishMotive(x, median(t)); return m >= EDIT_LINE && m < MOTIVE_LINE; })[0];
+    keen.mode = 'honest';
+    const d = drawPersonas(t, makePool(20, 4), streamFor(4, 'pool'), 'stats');
+    expect(d.edited).not.toContain(keen.name);
+  });
+
+  it('Never means never a persona: a player with a reason still hides one fact', () => {
+    const t = truths(12, 4);
+    const keen = t.filter(x => catfishMotive(x, median(t)) >= EDIT_LINE)[0];
+    keen.catfish = 'never';
+    const d = drawPersonas(t, makePool(20, 4), streamFor(4, 'pool'), 'stats');
+    expect(d.assigned[keen.name]).toBeUndefined();
+    expect(d.edited).toContain(keen.name);
+  });
+
+  it('the pin reaches the profile: Polished and Honest are shown as asked', () => {
+    const players = makePlayers(8, 6);
+    const setup = { [players[0].name]: { mode: 'polished', catfish: 'never' }, [players[1].name]: { mode: 'honest', catfish: 'never' } };
+    const t = players.map(p => truthOf(p, setup[p.name] || {}));
+    const state = newState(6);
+    const d = drawPersonas(t, [], streamFor(6, 'pool'), 'stats');
+    buildProfiles(state, t, d, [], streamFor(6, 'profiles'));
+    const modeOf = n => state.profiles[state.handleOf[n]].mode;
+    expect(modeOf(players[0].name)).toBe('polished');
+    expect(modeOf(players[1].name)).toBe('honest');
+  });
+});

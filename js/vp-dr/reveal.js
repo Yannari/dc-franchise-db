@@ -23,6 +23,9 @@
 // are replaying.
 
 import { applyVnMode, skipTypewriter, resetVnStep, vnSupported, isVnMode, vnToggleBtn, toggleVnMode } from './vn-reader.js';
+import { dragMusicStep, drLoadSongs } from './music.js';
+// On window through this module (js/main.js), for the lip sync screen's button.
+export { drLoadSongs };
 
 export const drToggleVn = toggleVnMode;
 
@@ -81,6 +84,11 @@ export function _reapplyVisibility(suffix, upToIdx, total) {
   const extra = (window._drRevealExtra || {})[suffix];
   if (typeof extra === 'function') {
     try { extra(upToIdx, total); } catch { /* a decoration, not the reveal */ }
+  }
+  /* THE MUSIC FOLLOWS THE MOMENT (js/vp-dr/music.js): the step just shown
+     says what it is, and the track starts, carries on or fades. */
+  if (upToIdx >= 0) {
+    try { dragMusicStep(suffix, upToIdx); } catch { /* the ear, not the reveal */ }
   }
 
   const newest = document.getElementById(`dr-step-${suffix}-${upToIdx}`);

@@ -26,6 +26,7 @@ import { resultOrder } from '../dr/data/results-order.js';
 import { _controls, _seedRail, _state } from './reveal.js';
 import { GRID_RESULTS } from '../dr/grid.js';
 import { showWords } from '../shows.js';
+import { tagStep, lipsyncMusicOf, songAttr, songLoaderHtml } from './music.js';
 
 const esc = v => String(v ?? '').replace(/[&<>"]/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -558,7 +559,9 @@ export function rpBuildResults(row) {
     list.push({ t: 'stakes', text: stakes.text, who: stakes.data?.players || [], stakes: stakes.data?.stakes || 'life' });
   }
 
-  const steps = list.map((s, i) => {
+  /* The music under the call (js/vp-dr/music.js): the wait is suspense, and
+     "Condragulations" is the winner's track. */
+  const steps = list.map((s, i) => tagStep((() => {
     if (s.t === 'hold' || s.t === 'stakes') {
       return `<div class="dr-step" id="dr-step-results-${i}">
       <div class="dr-panel dr-a-room dr-hold${s.t === 'stakes' ? ' dr-stakes' : ''}">
@@ -589,7 +592,7 @@ export function rpBuildResults(row) {
         ${moved ? '<span class="dr-moved dr-disp">the host moved her</span>' : '<span></span>'}
         <span class="dr-stamp dr-disp" style="color:${meta.color || '#fff'}">${esc(meta.label || s.r)}</span>
       </div></div>`;
-  }).join('');
+  })(), s.t === 'confess' ? null : s.raw === 'WIN' ? 'winner' : 'suspense')).join('');
 
   /* ── THE STAGE ── js/vp-dr/call-stage.js. The line stands in the order the
      panel ranked them, which the critiques already showed; the call order
@@ -670,7 +673,9 @@ export function rpBuildLipSync(row) {
     const who = (sc.data?.players || []).filter(n => n === a || n === b);
     return who.length === 1 ? who[0] : null;
   };
-  const steps = beats.map((sc, i) => {
+  // Each card carries its moment for the music (js/vp-dr/music.js): the
+  // performance is the song, the call the suspense, then the verdict.
+  const steps = beats.map((sc, i) => tagStep((() => {
     const who = sideOf(sc);
     const right = who && who === b;
 
@@ -719,7 +724,7 @@ export function rpBuildLipSync(row) {
         ${who ? _portrait(who, ep, { size: 42 }) : ''}</span>`
     : who || sc.kind?.startsWith('confess:') ? _portrait(who || (sc.data?.players || [])[0], ep, { size: 42 }) : ''}
       <div>${decor.tag}<p>${esc(sc.text)}</p></div></div></div>`;
-  }).join('');
+  })(), lipsyncMusicOf(sc.kind))).join('');
 
   // The verdict: the host's call, her names, or — on a night the song is a
   // prize — the winner's name.
@@ -739,7 +744,7 @@ export function rpBuildLipSync(row) {
   }
 
   return `<style>${RESULTS_CSS}${LS_CSS}</style>${_shell(
-    `<div class="dr-lsroom">${forPlace ? `<div class="dr-placebar">
+    `<div class="dr-lsroom"${songAttr(ls.song)}>${songLoaderHtml()}${forPlace ? `<div class="dr-placebar">
       <span class="dr-placek dr-disp">Lip sync for her place</span>
       <p>Neither of these queens is in the competition. Both were sent home,
       both came back tonight, and the winner of this song rejoins the race

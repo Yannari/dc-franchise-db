@@ -48,6 +48,7 @@
 // arrangement of the plinths themselves.
 import { _shell, _portrait, _icon, _judgePortrait } from './style.js';
 import { _controls, _state } from './reveal.js';
+import { musicAttr } from './music.js';
 
 const esc = v => String(v ?? '').replace(/[&<>"]/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -552,7 +553,9 @@ export function rpBuildCrowning(row) {
         <p>${esc(sc.text)}</p></div>`;
     }
 
-    return `<div class="dr-step cr-beat" id="dr-step-fincrown-${i}"
+    // The name is the crowned queen's track (js/vp-dr/music.js); the rest of
+    // the ceremony plays under the screen's own.
+    return `<div class="dr-step cr-beat" id="dr-step-fincrown-${i}"${musicAttr(NAME_BEATS.has(beat) ? 'crowned' : null)}
       data-stage="${esc(attr)}" data-crownbeat="${NAME_BEATS.has(beat) ? '1' : ''}">
       ${body}</div>`;
   }).join('');

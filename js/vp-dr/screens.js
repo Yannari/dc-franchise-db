@@ -25,6 +25,7 @@
 // this that stays true as the engine grows new scene kinds.
 import { _shell, _portrait, _icon, _judgePortrait, _note, _setAllStars, _pairRail, ROOM_RAIL_CSS } from './style.js';
 import { _controls, _state } from './reveal.js';
+import { musicAttr, musicOfKind } from './music.js';
 import { rpBuildChart } from './chart.js';
 import { rpBuildRate } from './rate.js';
 import { rpBuildRelationships } from './relationships.js';
@@ -482,7 +483,7 @@ function step(sc, i, suffix, ep, accent) {
           <p>${esc(sc.text || '')}</p></div>
       </div></div>`;
   }
-  return `<div class="dr-step" id="dr-step-${suffix}-${i}">
+  return `<div${musicAttr(musicOfKind(sc?.kind))} class="dr-step" id="dr-step-${suffix}-${i}">
     <div class="dr-panel ${accent} dr-scene">
       ${who}<div class="dr-scene-body">${tier}${name}${esc(sc.text || '')}</div>
     </div></div>`;

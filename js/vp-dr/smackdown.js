@@ -4,6 +4,7 @@
 import { _shell, _portrait } from './style.js';
 import { _controls, _seedRail } from './reveal.js';
 import { SONGS } from '../dr/data/songs.js';
+import { musicAttr, songAttr } from './music.js';
 
 const esc = v => String(v ?? '').replace(/[&<>"]/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -580,8 +581,11 @@ export function rpBuildSmackdown(row) {
       </div>` : ''}`;
   };
 
-  const step = (html) => {
-    steps.push(`<div class="dr-step" id="dr-step-smackdown-${stepIdx}">${html}</div>`);
+  /* Each card of a duel carries that duel's song (js/vp-dr/music.js), so the
+     music changes with the bracket; the champion gets the winner's track. */
+  let curSong = null;
+  const step = (html, sit = null) => {
+    steps.push(`<div${musicAttr(sit)}${sit ? '' : songAttr(curSong)} class="dr-step" id="dr-step-smackdown-${stepIdx}">${html}</div>`);
     sidebarPanels.push(buildSidebar());
     stepIdx++;
   };
@@ -626,6 +630,7 @@ export function rpBuildSmackdown(row) {
 
   for (let di = 0; di < duels.length; di++) {
     const d = duels[di];
+    curSong = d.song || null;
     const isFinal = d.round === rounds[rounds.length - 1];
 
     // ── ROUND BANNER on new round ──
@@ -932,7 +937,7 @@ export function rpBuildSmackdown(row) {
         <div class="tm-exit-sub">${esc(sd.title || 'Lip Sync Assassin of the Season')}</div>
       </div>
       ${crownScene ? `<div class="dr-scene" style="margin-top:14px"><div class="dr-scene-body">${esc(crownScene.text)}</div></div>` : ''}
-    </div>`);
+    </div>`, 'winner');
   }
 
   // ── REVEAL HOOK + ANIMATION TRIGGER ──

@@ -24,16 +24,19 @@ import { trsEsc as esc, trsFace as face } from './castle-stage.js';
  * @param {string} [o.at]      somebody the line is aimed at
  * @param {boolean} [o.fresh]  play the entrance, or draw it at rest
  * @param {boolean} [o.hood]   draw the speaker under a hood (the conclave)
+ * @param {string} [o.with]    the person being spoken TO, dim on the right, no bolt
+ * @param {boolean} [o.quick]  a swap mid-conversation: no slash, a short slide
  */
 export function cutIn(o) {
   const bust = (n, slug, side) => `<div class="tci-bust tci-${side}${o.hood ? ' tci-hooded' : ''}">`
     + `<div class="tci-av">${face(n, slug)}${o.hood ? '<i class="tci-hood"></i>' : ''}</div>`
     + `<div class="tci-nm" data-n="${esc(n)}"></div></div>`;
-  return `<div class="tci tci-${o.tone || 'morning'}${o.fresh ? ' tci-fresh' : ''}"${o.label ? ` data-l="${esc(o.label)}"` : ''}>`
+  return `<div class="tci tci-${o.tone || 'morning'}${o.fresh ? ' tci-fresh' : ''}${o.quick ? ' tci-quick' : ''}"${o.label ? ` data-l="${esc(o.label)}"` : ''}>`
     + '<div class="tci-speed"></div><div class="tci-slash"></div>'
     + bust(o.who, o.slug, 'l')
     + (o.at ? '<svg class="tci-bolt" viewBox="0 0 1000 560" preserveAspectRatio="none">'
       + '<polyline pathLength="100" points="280,263 410,240 470,291 570,251 630,296 720,274"/></svg>' + bust(o.at, null, 'r') : '')
+    + (!o.at && o.with ? bust(o.with, null, 'r tci-with') : '')
     + '</div>';
 }
 
@@ -70,7 +73,7 @@ export const CUTIN_CSS = `
 @keyframes tciInR{from{transform:translateX(170%) skewX(12deg);opacity:0}to{transform:none;opacity:1}}
 .tci-r .tci-av{filter:saturate(.85)}
 .tci-nm{margin-top:10px}
-.tci-nm::before{content:attr(data-n);display:inline-block;padding:4px 14px;font-family:var(--v-display);font-weight:900;font-size:clamp(14px,1.6vw,22px);
+.tci-nm::before{content:attr(data-n);display:inline-block;padding:4px 14px;white-space:nowrap;font-family:var(--v-display);font-weight:900;font-size:clamp(14px,1.6vw,22px);
   letter-spacing:.18em;text-transform:uppercase;color:#fff3d2;background:rgba(6,4,3,.85);border:1px solid var(--glow);transform:skewX(-10deg)}
 /* the hood: the conclave's speakers are cloaked */
 .tci-hood{position:absolute;inset:-6% -14% 30% -14%;z-index:2;border-radius:50% 50% 30% 30%/62% 62% 18% 18%;pointer-events:none;
@@ -80,6 +83,13 @@ export const CUTIN_CSS = `
 .tci-bolt polyline{fill:none;stroke:var(--rim);stroke-width:6;stroke-linejoin:bevel;filter:drop-shadow(0 0 8px var(--glow));stroke-dasharray:100}
 .tci.tci-fresh .tci-bolt polyline{stroke-dashoffset:100;animation:tciBolt .38s cubic-bezier(.5,0,.9,.4) .7s forwards}
 @keyframes tciBolt{to{stroke-dashoffset:0}}
+/* the listener, and a swap mid-conversation */
+.tci-with{opacity:.55;filter:saturate(.7) brightness(.8)}
+.tci-with .tci-av{box-shadow:0 0 0 2px rgba(222,214,196,.4),0 24px 50px rgba(0,0,0,.9);animation:none}
+.tci.tci-quick .tci-slash,.tci.tci-quick .tci-speed{animation:none}
+.tci.tci-fresh.tci-quick .tci-l{animation:tciSwap .28s ease-out both}
+.tci.tci-fresh.tci-quick .tci-r{animation:none}
+@keyframes tciSwap{from{transform:translateX(-18%);opacity:0}to{transform:none;opacity:1}}
 @media (max-width:700px){.tci-bust{height:28%}}
 @media (prefers-reduced-motion:reduce){.tci *{animation:none!important}}
 `;

@@ -858,6 +858,49 @@
                 </div>
               </div>
             </section>
+            <!-- THE CIRCLE'S OPTIONS (spec 19.2). Every control here is read by
+                 js/ci-run.js and handed to the engine; all scoped to the-circle
+                 in CONFIG_SCOPE. Blocking formats, games, powers and arrivals are
+                 Season Timeline cards, never options here. -->
+            <div class="divider" id="sec-ci-divider"></div>
+            <div class="setup-section-label" id="sec-ci-options">CIRCLE OPTIONS</div>
+            <div id="ci-options-body">
+              <div class="form-group">
+                <label class="form-label" for="cfg-ci-days">Days</label>
+                <input type="number" id="cfg-ci-days" class="form-input" min="8" max="30" step="1" placeholder="Automatic" onchange="saveConfig()">
+                <div class="hint hint-tight">One episode a day. Automatic follows the cast: 11 to 15 days. A number too small for this cast is raised to the fewest days it needs: one for every blocking, plus the first and last.</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="cfg-ci-finalists">The final</label>
+                <select id="cfg-ci-finalists" class="form-input" onchange="saveConfig()">
+                  <option value="5">Five finalists</option>
+                  <option value="4">Four finalists</option>
+                </select>
+                <div class="hint hint-tight">How many profiles are still in on the last day, when the final ratings pick the winner. The US show has ended with five in most seasons.</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="cfg-ci-newcomer-rule">Newcomers on their first ratings</label>
+                <select id="cfg-ci-newcomer-rule" class="form-input" onchange="saveConfig()">
+                  <option value="rate-not-rated">They rate, but nobody rates them (US 2 on)</option>
+                  <option value="none">They sit it out: no rating either way (US 1)</option>
+                  <option value="full">They are fully in: they rate and are rated (UK 1)</option>
+                </select>
+                <div class="hint hint-tight">A player who just arrived is always safe from their first blocking. This decides whether their first ratings count.</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="cfg-ci-pick-by">Who plays as someone else</label>
+                <select id="cfg-ci-pick-by" class="form-input" onchange="saveConfig()">
+                  <option value="stats">Whoever has a reason to</option>
+                  <option value="random">At random</option>
+                </select>
+                <div class="hint hint-tight">Who takes a persona from the Catfish Pool. With a reason: a player whose age, fame or job would cost them in this room, and whose strategy, nerve and loyalty say they would try it. A player with a smaller reason plays themselves and changes a fact or two.</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label"><input type="checkbox" id="cfg-ci-ai" onchange="saveConfig()"> An AI player</label>
+                <div class="hint hint-tight">US 6: a bot plays from Day 1 behind the profile of a 26-year-old vet intern. It is good with hashtags, never schemes, can't flirt, and struggles with very human questions. The others don't know it is there.</div>
+              </div>
+            </div>
+            <!-- /ci-options -->
             <div class="divider" id="sec-tr-divider"></div>
             <div class="setup-section-label" id="sec-tr-options">CASTLE OPTIONS</div>
             <div class="bbopt-fixed" id="sec-tr-fixed-ties">

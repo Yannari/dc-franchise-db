@@ -1304,6 +1304,16 @@ export function saveConfig() {
     pmSplitOrSteal: g('cfg-pm-split-or-steal') ? g('cfg-pm-split-or-steal').checked : false,
     pmFirstIn: g('cfg-pm-first-in') ? (g('cfg-pm-first-in').value === 'm' ? 'm' : 'f') : (seasonConfig.pmFirstIn || 'f'),
     pmFinalCouples: g('cfg-pm-final-couples') ? (g('cfg-pm-final-couples').value === '3' ? 3 : 4) : (seasonConfig.pmFinalCouples === 3 ? 3 : 4),
+    // The Circle's (js/ci-run.js reads each). The Profile Plan and the Catfish
+    // Pool are edited on their own panels and carried, like pmSetup; an
+    // unwritten pool stays unwritten, so the default pool plays (ci/default-pool.js).
+    ciSetup: seasonConfig.ciSetup || {},
+    ...(Array.isArray(seasonConfig.ciPool) ? { ciPool: seasonConfig.ciPool } : {}),
+    ciDays: g('cfg-ci-days') ? (parseInt(g('cfg-ci-days').value) > 0 ? parseInt(g('cfg-ci-days').value) : null) : (seasonConfig.ciDays ?? null),
+    ciFinalists: g('cfg-ci-finalists') ? (g('cfg-ci-finalists').value === '4' ? 4 : 5) : (seasonConfig.ciFinalists === 4 ? 4 : 5),
+    ciNewcomerRule: g('cfg-ci-newcomer-rule')?.value || seasonConfig.ciNewcomerRule || 'rate-not-rated',
+    ciPickBy: g('cfg-ci-pick-by') ? (g('cfg-ci-pick-by').value === 'random' ? 'random' : 'stats') : (seasonConfig.ciPickBy === 'random' ? 'random' : 'stats'),
+    ciAI: g('cfg-ci-ai') ? g('cfg-ci-ai').checked : seasonConfig.ciAI === true,
     trAutoDouble: g('cfg-tr-auto-double') ? g('cfg-tr-auto-double').checked : true,
     trEndgameReveal: g('cfg-tr-endgame-reveal') ? g('cfg-tr-endgame-reveal').checked : false,
     trEndgameSize: parseInt(g('cfg-tr-endgame-size')?.value) || 3,
@@ -1502,6 +1512,11 @@ export function renderConfig() {
   if (g('cfg-pm-split-or-steal')) g('cfg-pm-split-or-steal').checked = seasonConfig.pmSplitOrSteal === true;
   if (g('cfg-pm-first-in')) g('cfg-pm-first-in').value = seasonConfig.pmFirstIn === 'm' ? 'm' : 'f';
   if (g('cfg-pm-final-couples')) g('cfg-pm-final-couples').value = seasonConfig.pmFinalCouples === 3 ? '3' : '4';
+  if (g('cfg-ci-days')) g('cfg-ci-days').value = Number(seasonConfig.ciDays) > 0 ? String(seasonConfig.ciDays) : '';
+  if (g('cfg-ci-finalists')) g('cfg-ci-finalists').value = seasonConfig.ciFinalists === 4 ? '4' : '5';
+  if (g('cfg-ci-newcomer-rule')) g('cfg-ci-newcomer-rule').value = ['none', 'full'].includes(seasonConfig.ciNewcomerRule) ? seasonConfig.ciNewcomerRule : 'rate-not-rated';
+  if (g('cfg-ci-pick-by')) g('cfg-ci-pick-by').value = seasonConfig.ciPickBy === 'random' ? 'random' : 'stats';
+  if (g('cfg-ci-ai')) g('cfg-ci-ai').checked = seasonConfig.ciAI === true;
   try { window.renderPerfectMatchCastSetup?.(); } catch { /* the panel is optional chrome */ }
   set('cfg-tr-traitor-mode', seasonConfig.trTraitorMode || 'random');
   if (g('cfg-tr-auto-double')) g('cfg-tr-auto-double').checked = seasonConfig.trAutoDouble !== false;
@@ -2394,7 +2409,10 @@ export function drVerdictUI() {
      is not offered beside it. The mode's own list takes its place. */
   const save = document.getElementById('grp-dr-save');
   const twist = document.getElementById('grp-dr-as-twist');
-  if (save) save.style.display = mode === 'off' ? '' : 'none';
+  // Only on a drag season: CONFIG_SCOPE hides the group on every other show,
+  // and this ran after it, so the save sat on every setup page.
+  const drag = seasonFormat(seasonConfig) === DRAG_FORMAT;
+  if (save) save.style.display = drag && mode === 'off' ? '' : 'none';
   if (twist) twist.style.display = mode === 'off' ? 'none' : '';
   // ...and WHEN it happens is only a question once one is picked.
   const when = document.getElementById('cfg-dr-as-twist-when');

@@ -17,7 +17,6 @@ import { TRScenery } from './cutaway-scenery.js';
 import { trPlay } from './sfx.js';
 import { beatLines } from './stage-lines.js';
 import { footCard, playCard, CARD_CSS } from './stage-cards.js';
-import { cutIn } from './stage-cutin.js';
 
 const hash = s => { let h = 7; for (const c of String(s)) h = (Math.imul(h, 31) + c.charCodeAt(0)) >>> 0; return h; };
 const GAP_KINDS = new Set(['gap', 'told', 'after', 'flash', 'chair', 'grief', 'eyes', 'sit']);
@@ -125,12 +124,9 @@ function paint(root, S, fresh) {
   // room has found it, holds the frame; narration pulls back to the room
   const onGap = r.gapShown && m.kind === 'gap' && st.t !== 'say' && gone.length;
   if (onGap) frame(gone[0], !fresh, 1.6);
-  else frame(st.t === 'say' || (st.react && st.who) ? speaker : null, !fresh, st.t === 'say' ? 1.4 : 1.85);
-  cam.classList.toggle('trb-dim', st.t === 'say');
+  else frame(st.t === 'say' || (st.react && st.who) ? speaker : null, !fresh, 1.85);
   cam.classList.toggle('trb-dread', !!onGap);
   let h = '';
-  // A SPOKEN LINE IS A CUT-IN (stage-cutin.js)
-  if (st.t === 'say') h += cutIn({ who: st.who, tone: 'morning', fresh });
   // THE DOOR: whoever has just come down arrives as a framed portrait through
   // the door, the way the programme cuts to each face walking in, and then
   // takes their place at the table

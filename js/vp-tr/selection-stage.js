@@ -19,7 +19,7 @@ import { TRScenery } from './cutaway-scenery.js';
 import { beatLines } from './stage-lines.js';
 import { footCard, playCard, CARD_CSS } from './stage-cards.js';
 import { trPlay } from './sfx.js';
-import { cutIn as cutInCard } from './stage-cutin.js';
+import { confessional, cutIn as cutInCard } from './stage-cutin.js';
 import { CLOAK } from './conclave-stage.js';
 
 const hash = s => { let h = 7; for (const c of String(s)) h = (Math.imul(h, 31) + c.charCodeAt(0)) >>> 0; return h; };
@@ -208,17 +208,21 @@ function paint(root, S, fresh) {
   }
   start.classList.remove('trs-in');
   // TO CAMERA: a Traitor upstairs under the hood, a Faithful downstairs in blue
-  const traitorCam = st.t === 'cam' && (st.meta || {}).kind === 'tcams';
   const prevSt = S.steps[S.idx - 1] || {};
-  let cut = st.t === 'cam' ? cutInCard({ who: st.who, fresh, tone: traitorCam ? 'blood' : 'cam', hood: traitorCam,
-    label: 'To camera', quick: prevSt.t === 'cam' }) : '';
-  // the first meeting: each line under the hood, the one it is said to waiting opposite
+  let cut = st.t === 'cam' ? confessional({ who: st.who, fresh: fresh && prevSt.t !== 'cam' }) : '';
+  // THE FIRST MEETING IS A BIG MOMENT: each line gets the band, under the hood,
+  // the one it is said to waiting opposite
   if (st.t === 'say' && (st.meta || {}).kind === 'turret') {
     const next = S.steps[S.idx + 1] || {};
     const other = [prevSt, next].find(x => x.beat === st.beat && x.t === 'say' && x.who && x.who !== st.who);
     cut = cutInCard({ who: st.who, fresh, tone: 'blood', hood: true, with: other ? other.who : null,
       quick: prevSt.t === 'say' && prevSt.beat === st.beat });
   }
+  // the first meeting is live: the one speaking steps forward in the turret
+  tur.querySelectorAll('.tps-cloak').forEach(c => {
+    c.classList.toggle('tps-speaking', st.t === 'say' && c.dataset.n === st.who);
+    c.classList.toggle('tps-listen', st.t === 'say' && c.dataset.n !== st.who);
+  });
   tur.classList.toggle('tps-dim', !!cut);
   hud.innerHTML = cut + footCard(st, D.host, { over: r.turret });
   playCard(hud, st, S, fresh);
@@ -273,6 +277,9 @@ const CSS = `
 .tps-cloak{position:relative;width:150px;aspect-ratio:100/150;text-align:center;opacity:0;transition:opacity .4s}
 .tps-cloak.tps-here{opacity:1}
 .tps-cloak.tps-new{animation:tpsArrive 1s ease both}
+.tps-cloak.tps-speaking{transform:scale(1.14);filter:drop-shadow(0 0 26px rgba(201,40,60,.8));z-index:2}
+.tps-cloak.tps-listen{filter:brightness(.55)}
+.tps-cloak{transition:opacity .4s,transform .4s,filter .4s}
 .tps-turret.tps-dim .tps-cloaks,.tps-turret.tps-dim>svg{filter:brightness(.45) blur(2px);transition:filter .5s}
 .tps-cloak .trc-cloak{position:absolute;left:0;top:0;width:100%;height:auto;filter:drop-shadow(0 14px 18px rgba(0,0,0,.8))}
 @keyframes tpsArrive{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}

@@ -288,7 +288,7 @@ function drawPeople(root, S, st, geo, fresh) {
   // A SPOKEN LINE IS A CUT-IN (stage-cutin.js): the speaker's bust slides in
   // over the room on their colour, the room goes soft behind them, and the
   // line sits under the bust. A confessional keeps its own letterboxed look.
-  const cutting = !!speaker && !cam;
+  const cutting = false;   // live talk: the room and the bubble (see stage-cutin.js)
   view.classList.toggle('trs-cutting', cutting);
   if (cutting) {
     const night = /trs-night/.test(view.className);

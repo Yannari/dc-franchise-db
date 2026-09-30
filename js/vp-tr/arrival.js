@@ -1007,5 +1007,14 @@ export function arrivalStageData(ep, observer = 'audience') {
     beats: _buildBeats(v, ep).map(b => ({ phase: b.phase, meta: b.meta ? { ...b.meta } : {}, html: b.html })),
     groups: v.groups.map(g => ({ id: g.id, arrivals: [...g.arrivals] })),
     names: v.intros.map(i => i.name), host: { name: h.name, slug: h.slug },
+    // WHAT THEY ARE KNOWN FOR, for the band under their name: every season the
+    // ledger holds them on, labelled by the registry (never a literal), with
+    // the finish where there is one
+    known: Object.fromEntries(v.intros.map(i => [i.name, (i.appearances || []).map(a => {
+      const p = Number(a.placement);
+      const ord = Number.isFinite(p) && p > 0 ? p + (p % 100 >= 11 && p % 100 <= 13 ? 'th' : ['th', 'st', 'nd', 'rd'][p % 10] || 'th') : '';
+      const fin = p === 1 ? 'Winner' : ord;
+      return a.seasonLabel ? a.seasonLabel + (fin ? ' · ' + fin : '') : null;
+    }).filter(Boolean)])),
   };
 }

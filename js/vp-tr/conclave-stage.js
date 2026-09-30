@@ -185,6 +185,9 @@ function paint(root, S, fresh) {
   // floor, candlelight moves on everything, and when the wax goes down the
   // red comes in from the edges of the room.
   const away = !!(st.down && st.down.length);
+  // THE BAND IS FOR THE BIG MOMENTS (the user: "let the band title dialogue
+  // thingy for important moments like at the Round Table or conclave"), and
+  // everything said in the turret is one
   if (!away && !r.letter) {
     if (st.t === 'say' && st.who) h += cutIn({ who: st.who, tone: 'blood', hood: pact.includes(st.who), fresh });
     else if (st.t === 'slip' && st.by && st.target) h += cutIn({ who: st.by, tone: st.struck ? 'steel' : 'blood', hood: true,

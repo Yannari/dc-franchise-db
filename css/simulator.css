@@ -6936,3 +6936,14 @@ textarea.ci-bio{resize:vertical;width:100%}
 .ci-ov tr{cursor:pointer;transition:transform .15s}
 .ci-ov tbody tr:hover{transform:translateX(3px)}
 .ci-ov tbody tr:hover td{background:rgba(47,123,255,.22)}
+
+/* ── The shows' cast panels, hidden before the first paint ──────────────
+   #sec-pm-cast (the villa) and #sec-ci-cast (the Circle) are plain HTML in
+   the Cast tab. The rules that hid them (CONFIG_SCOPE, and the Casting
+   Room's own CSS) arrive with the JavaScript, a moment after the first
+   paint, so every reload flashed the villa panel (user, 2026-09-30). Here,
+   before anything paints, they are hidden; each is shown only in its own
+   Casting Room view, or when the room is switched off (the legacy panel). */
+#sec-pm-cast, #sec-ci-cast { display: none; }
+#cast-room[data-view="villa"] #sec-pm-cast, #tab-cast.cast-room-off #sec-pm-cast { display: flex; }
+#cast-room[data-view="circle"] #sec-ci-cast, #tab-cast.cast-room-off #sec-ci-cast { display: block; }

@@ -35,7 +35,7 @@ import { powersMorning, jokerMeets, runDisrupter } from './powers.js';
 import { runEvent, endSwap } from './twists.js';
 import { addAI } from './ai.js';
 import { openLedger, noteJoin, airDay, fanFavorite, publicPick } from './public.js';
-import { buildSchedule } from './schedule.js';
+import { buildSchedule, rhythmOf } from './schedule.js';
 import { finalDay, finaleDay } from './finale.js';
 import { chooseAired } from './airing.js';
 import { writeDay } from './script.js';
@@ -170,7 +170,7 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
   const starters = handles.filter(h => !isNewcomer(h));
   const queue = handles.filter(isNewcomer);
   const schedule = buildSchedule({ total: handles.length, starters: starters.length,
-    finalists: state.options.finalists, days: state.options.days });
+    finalists: state.options.finalists, days: state.options.days, rhythm: state.options.rhythm ?? rhythmOf(cast) });
   // What each ratings night is: booked by slot, or drawn (Plan 3b).
   const booked = bookSeason(schedule, streamFor(seed, 'timeline'),
     { total: handles.length, finalists: state.options.finalists, bookings: state.options.bookings || {} });
@@ -179,6 +179,9 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
 
   const rows = [];
   let finalRow = null, result = null;
+  // A night whose ratings closed yesterday's episode: its Hangout, blocking,
+  // visit and goodbye video open today's (the show's cliffhanger).
+  let tonight = null;
   for (const d of schedule) {
     state.day = d.day;
     const start = roomAt(state);
@@ -192,6 +195,11 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
       addScene(state, 'profiles', [...starters], {}, [...starters]);
     } else {
       for (const h of state.active) driftMind(state, h);
+      if (tonight) {
+        runBlocking(state, ds(`block:${d.day}`), tonight.rating, tonight.night);
+        tonight = null;
+      }
+      // The goodbye video plays in the episode of the blocking, after the visit.
       for (const h of state.pendingGoodbyes.splice(0)) goodbyeVideo(state, rng, h);
       deliverReports(state, rng);
       powersMorning(state, ds(`powers:${d.day}`));
@@ -259,7 +267,12 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
       state.publicChoice = night.format === 'public-super' ? publicPick(state) : null;
       const f = FORMATS[night.format] || FORMATS.standard;
       rating = runRating(state, rng, { seats: f.seats ?? 2, pick: f.pick, hidden: !!f.hidden, human: !!f.human });
-      runBlocking(state, rng, rating, night);
+      // An instant block happens on the spot (US 1 Ep 9); every other night
+      // ends the episode on the ratings and blocks at the start of the next.
+      if (night.format === 'instant') {
+        runBlocking(state, rng, rating, night);
+        for (const h of state.pendingGoodbyes.splice(0)) goodbyeVideo(state, rng, h);
+      } else tonight = { rating, night };
     }
     if (d.final) { finalRow = finalDay(state, rng); rating = finalRow; }
     if (d.finale) result = finaleDay(state, rng, finalRow);

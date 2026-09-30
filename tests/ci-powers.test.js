@@ -12,7 +12,8 @@ function booked(slot, id, seed = 5) {
   const names = cast.map(p => p.name);
   const out = playCircleSeason({ cast: names, setup: circleSetup(names, { newcomers: 5 }), pool: makePool(6, seed), seed,
     options: { bookings: { [slot]: [id] } } });
-  const day = out.state.schedule.find(d => d.slot === slot).day;
+  // The power is handed over at the visit, which opens the next day.
+  const day = out.state.schedule.find(d => d.slot === slot).day + 1;
   const power = out.state.powers.find(p => p.day === day);
   return { ...out, day, power };
 }
@@ -66,7 +67,8 @@ describe('the Joker (US 2)', () => {
   it('names one of the next Influencers', () => {
     for (const seed of [5, 7, 9, 11]) {
       const { power, state, day } = booked('rating3', 'ci-power-joker', seed);
-      const next = state.ratings.find(r => r.day > day && !r.final && !r.hidden && r.influencers.length === 2);
+      // the first ordinary ratings after the visit (it can be the same day's, back to back)
+      const next = state.ratings.find(r => r.day >= day && !r.final && !r.hidden && r.influencers.length === 2);
       if (!next || !state.active.concat(state.blocked.map(b => b.handle)).includes(power.holder)) continue;
       const pick = state.scenes.find(s => s.kind === 'joker-pick');
       if (!pick) continue;
@@ -82,7 +84,7 @@ describe('the burner profile (US 3)', () => {
     for (const seed of [5, 7, 9]) {
       const { power, state, day } = booked('rating3', 'ci-power-burner', seed);
       if (!power || !state.active.concat(state.blocked.filter(x => x.day > day + 1).map(x => x.handle)).includes(power.holder)) continue;
-      const next = state.ratings.find(r => r.day > day && !r.final);
+      const next = state.ratings.find(r => r.day >= day && !r.final);
       const ballots = next.ballots.filter(x => x.burner);
       const exposed = state.scenes.some(s => s.kind === 'burner-exposed' && s.day === next.day);
       expect(ballots.length + (exposed ? 1 : 0), `seed ${seed}`).toBe(1);

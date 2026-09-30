@@ -157,7 +157,8 @@ function forcedStatements(state, rng) {
   return sc;
 }
 function forcedBlock(state, rng, rating) {
-  const st = state.scenes.filter(s => s.kind === 'statement' && s.day === state.day).at(-1);
+  // tonight's statement: the latest (the blocking now opens the day after the ratings)
+  const st = state.scenes.filter(s => s.kind === 'statement').at(-1);
   const top = rating.results[0].profile;
   const target = st?.data.picks[top];
   if (!target || !state.active.includes(target)) return standardBlocking(state, rng, rating, { format: 'forced' });

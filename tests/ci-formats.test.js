@@ -16,9 +16,27 @@ function booked(slot, id, seed = 5) {
   const names = cast.map(p => p.name);
   const out = playCircleSeason({ cast: names, setup: circleSetup(names, { newcomers: 5 }), pool: makePool(6, seed), seed,
     options: { bookings: { [slot]: id } } });
-  const day = out.state.schedule.find(d => d.slot === slot).day;
-  const on = kind => out.state.scenes.filter(s => s.kind === kind && s.day === day);
-  return { ...out, day, on };
+  const d = out.state.schedule.find(x => x.slot === slot);
+  const day = d.day;
+  // The ratings (and what comes before them) end day N; the rest of the night
+  // opens day N+1 (the show's cliffhanger), except an instant block.
+  const night = d.night?.format === 'instant' ? day : day + 1;
+  const RATINGS_DAY = new Set(['ratings', 'statement', 'mission', 'alert']);
+  // That night's own scenes: an instant block's come after its ratings; a
+  // deferred night's open the next day, before that day's own ratings (a
+  // back-to-back day holds yesterday's blocking AND its own ratings).
+  const all = out.state.scenes;
+  const ratingsAt = n => all.findIndex(s => s.kind === 'ratings' && s.day === n);
+  const on = kind => all.filter((s, i) => {
+    if (s.kind !== kind) return false;
+    if (RATINGS_DAY.has(kind)) return s.day === day;
+    if (s.day !== night) return false;
+    const r = ratingsAt(night);
+    return night === day ? i > r : (r < 0 || i < r);
+  });
+  // who that night blocked (its blocking scenes' targets)
+  const gone = () => on('blocking').map(b => b.data.target).concat(on('vote').map(v => v.data?.target).filter(Boolean));
+  return { ...out, day, night, on, gone };
 }
 
 describe('three Influencers (UK 1 Ep 6)', () => {
@@ -172,20 +190,20 @@ describe('instant block (US 1 Ep 9, UK 1 Ep 10, 17)', () => {
     expect(rating.data.influencers).toEqual([]);
     expect(on('hangout')).toHaveLength(0);
     expect(on('visit').length).toBe(block.data.noVisit ? 0 : 1);
-    expect(state.blocked.filter(b => b.day === day)).toHaveLength(1);
+    expect(on('blocking')).toHaveLength(1);   // (the same day may also open with yesterday's night)
   });
 });
 
 describe('double block (US 1 Ep 9, US 3 Ep 9, US 2 Ep 8)', () => {
   it('removes two in one night, gives a later day back, and still ends with the finalists', () => {
     for (const seed of [3, 5, 8, 11]) {
-      const { state, day, result } = booked('rating3', 'ci-double-block', seed);
-      const gone = state.blocked.filter(b => b.day === day);
+      const { state, day, night, result } = booked('rating3', 'ci-double-block', seed);
+      const gone = state.blocked.filter(b => b.day === night);
       expect(gone, `seed ${seed}`).toHaveLength(2);
       expect(state.schedule.some(d => d.gaveBack === 'rating3')).toBe(true);
       expect(result.placements).toHaveLength(5);
-      const night = state.nights.find(n => n.day === day);
-      expect(['instant-then-hangout', 'each', 'lowest-two']).toContain(night.variant);
+      const rec = state.nights.find(n => n.day === day);
+      expect(['instant-then-hangout', 'each', 'lowest-two']).toContain(rec.variant);
     }
   });
   it('each Influencer blocking alone never blocks the other Influencer', () => {
@@ -246,8 +264,8 @@ describe('public super influencer (UK 2 Ep 17)', () => {
 
 describe('no blocking (US 7 Ep 1)', () => {
   it('nobody leaves that night, a later night takes two, and the season still ends with five', () => {
-    const { state, day, result } = booked('rating3', 'ci-no-blocking');
-    expect(state.blocked.filter(b => b.day === day)).toHaveLength(0);
+    const { state, day, night, result } = booked('rating3', 'ci-no-blocking');
+    expect(state.blocked.filter(b => b.day === night)).toHaveLength(0);
     expect(state.nights.find(n => n.day === day).format).toBe('none');
     expect(state.nights.some(n => n.day > day && n.format === 'double')).toBe(true);
     expect(result.placements).toHaveLength(5);
@@ -257,10 +275,10 @@ describe('no blocking (US 7 Ep 1)', () => {
 describe('secret mission (UK 3 Ep 8)', () => {
   it('one player must get a named target blocked, or is blocked themselves', () => {
     for (const seed of [3, 5, 7, 9]) {
-      const { on, state, day } = booked('rating4', 'ci-secret-mission', seed);
+      const { on, gone: goneOf } = booked('rating4', 'ci-secret-mission', seed);
       const m = on('mission')[0];
       expect(m).toBeTruthy();
-      const gone = state.blocked.filter(b => b.day === day).map(b => b.handle);
+      const gone = goneOf();
       expect(gone).toHaveLength(1);
       expect([m.data.target, m.data.holder]).toContain(gone[0]);
     }

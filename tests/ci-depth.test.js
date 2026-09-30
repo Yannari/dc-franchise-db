@@ -134,7 +134,9 @@ describe('every big moment airs in full', () => {
         // A visit delivered in person (a Super Influencer) opens at the talk:
         // the walk and the door are in the blocking scene before it.
         // A block the saves or the room decided has its waiting in those scenes.
+        // A goodbye late in the season has fewer watchers: about three lines each, plus the video.
         const min = sc.kind === 'meet' && sc.who.length < 3 ? 4 : sc.kind === 'visit' && sc.data.inPerson ? 12
+          : sc.kind === 'goodbye' ? Math.min(SCENE_DEPTH.goodbye, 3 * (sc.seenBy.length - 1) + 2)
           : sc.kind === 'blocking' && ['unsaved', 'vote', 'instant', 'antivirus', 'mission'].includes(sc.data.channel) ? 9 : SCENE_DEPTH[sc.kind];
         if (lines < min) (thin[sc.kind] ||= []).push(lines);
       }

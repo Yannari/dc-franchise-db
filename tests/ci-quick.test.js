@@ -40,10 +40,10 @@ describe('a card booked where the engine cannot run it', () => {
   const blocking = shape.find(d => d.block).day;
   const warns = sched => validateQuickSetup(circle({ twistSchedule: sched }), makePlayers(13)).filter(r => r.warn);
 
-  it('a blocking format on a day with no blocking', () => {
+  it('a blocking format on a day with no ratings', () => {
     const w = warns([{ type: 'ci-sole-influencer', episode: noBlock }]);
     expect(w).toHaveLength(1);
-    expect(w[0].msg).toMatch(new RegExp(`Sole Influencer.*episode ${noBlock}.*no blocking`));
+    expect(w[0].msg).toMatch(new RegExp(`Sole Influencer.*episode ${noBlock}.*no ratings`));
   });
 
   it('an arrival on a day nobody arrives', () => {

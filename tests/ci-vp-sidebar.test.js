@@ -25,7 +25,10 @@ describe('the room as the day began', () => {
     for (const k of ['influencers', 'suspects', 'bonds', 'rivals']) expect(Array.isArray(st[k])).toBe(true);
     const later = rows.at(-3).ci.start;
     expect(later.suspects.length + later.bonds.length + later.rivals.length).toBeGreaterThan(0);
-    expect(rows.some(r => r.ci.start.rivals.length)).toBe(true);
+    // grudges are rarer than bonds: across a few seasons, somebody holds one
+    const seasons = [rows, ...[5, 6].map(seed => { const c = rosterCast(13, seed); setPlayers(c); const n = c.map(p => p.name);
+      return playCircleSeason({ cast: n, setup: circleSetup(n), pool: DEFAULT_POOL, seed }).rows; })];
+    expect(seasons.some(rs => rs.some(r => r.ci.start.rivals.length))).toBe(true);
     expect(rows[0].ci.start.active).toHaveLength(0);   // Day 1: the sidebar fills as they walk in
   });
   it('lists every player in the room, real person beside the profile', () => {

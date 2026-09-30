@@ -3,7 +3,9 @@
 // pronouns are fine here — and nowhere else. Jokes come from what is on
 // screen: the room, the outfit, the snack, the message being typed.
 // `host.cold.<tone>` is picked by what happened yesterday (first, blocking,
-// arrival, quiet); a is the first Player on screen. In the bridges, a is the
+// arrival, quiet); a is the first Player on screen who is still in the Circle.
+// A day that opens on last night's Hangout gets `host.cold.night` first, and
+// the good-morning comes after the night. In the bridges, a is the
 // Player the scene opens on (the sender of a chat, the poster of a status)
 // and b the one they are writing to.
 export const HOST = {
@@ -12,6 +14,23 @@ export const HOST = {
     { id: 'host.cold.first.01', turns: [{ by: 'host', say: "Welcome to the Circle! A bunch of strangers, one apartment building, and not one of them can see each other. What could go wrong?" }] },
     { id: 'host.cold.first.02', turns: [{ by: 'host', say: "Here they come! Our Players are moving in, and every single one of them just checked out their own reflection in the hallway." }] },
     { id: 'host.cold.first.03', turns: [{ by: 'host', say: "It's day one in the Circle. The apartments are gorgeous, the fridges are full, and the phones are gone. Good luck, everybody." }] },
+  ],
+  // The episode opens on last night's cliffhanger: the ratings ended the
+  // last one, and the Hangout, the blocking and the visit open this one.
+  // `blocks`: somebody leaves tonight; `infl`: how many Influencers there are.
+  'host.cold.night': [
+    { id: 'host.cold.night.01', when: { blocks: true }, turns: [{ by: 'host', say: "Previously on the Circle: the ratings are in, and tonight, somebody is getting blocked." }] },
+    { id: 'host.cold.night.02', when: { blocks: true }, turns: [{ by: 'host', say: "Welcome back. The ratings are done, the phones are buzzing, and one of these apartments is about to go dark." }] },
+    { id: 'host.cold.night.03', turns: [{ by: 'host', say: "We're picking up right where we left off. The ratings are in, and nobody in this building is going to sleep." }] },
+    { id: 'host.cold.night.04', turns: [{ by: 'host', say: "Last time, everybody rated everybody. Now we find out what that cost." }] },
+    { id: 'host.cold.night.05', turns: [{ by: 'host', say: "Welcome back to the Circle, where it's still the same long night, and it's about to get longer." }] },
+    { id: 'host.cold.night.06', when: { blocks: true }, turns: [{ by: 'host', say: "Right where we left off: the ratings are in, the building is quiet, and somebody's night is about to end early." }] },
+    { id: 'host.cold.night.07', when: { infl: 2, blocks: true }, turns: [{ by: 'host', say: "Last time on the Circle, the ratings came in and two Players became Influencers. Now they have to decide who goes home." }] },
+    { id: 'host.cold.night.08', when: { infl: 2, blocks: true }, turns: [{ by: 'host', say: "Two new Influencers, one decision, and a whole building pretending to be calm. Welcome back." }] },
+    { id: 'host.cold.night.09', when: { infl: 2 }, turns: [{ by: 'host', say: "Previously: the ratings crowned two Influencers. Everybody else is refreshing the Circle and praying." }] },
+    { id: 'host.cold.night.10', when: { infl: 1, blocks: true }, turns: [{ by: 'host', say: "Welcome back. The ratings gave all the power to one Player tonight, and everyone else knows it." }] },
+    { id: 'host.cold.night.11', when: { infl: 1 }, turns: [{ by: 'host', say: "Last time, one Player came out on top. Tonight, that one Player holds everybody's fate." }] },
+    { id: 'host.cold.night.12', when: { blocks: false }, turns: [{ by: 'host', say: "Welcome back. The ratings are in, but tonight, the Circle has a surprise." }] },
   ],
   'host.cold.blocking': [
     { id: 'host.cold.blocking.01', turns: [{ by: 'host', say: "After last night's blocking, there's one less apartment with the lights on, and a lot more people checking the door." }] },

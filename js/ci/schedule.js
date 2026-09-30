@@ -9,7 +9,49 @@
 // the social days in Plan 3.
 export const DEFAULT_DAYS = { min: 11, max: 15 };
 
-export function buildSchedule({ total, starters, finalists = 5, days = null }) {
+// THE RHYTHM (user, 2026-09-30: "an elimination one episode, a rating a
+// different episode"). The ratings END an episode and the blocking OPENS the
+// next (season.js), so a ratings day, the day after it and a quiet day make
+// the shape. Real seasons differ: US 1 alternates early (ratings in episodes
+// 1, 3, 5, 7) and runs them back to back late (9, 10, 11); US 2 has quiet
+// episodes with neither (3, 5, 9). `rhythm` picks one of those shapes; with
+// none, the social days are spread evenly (the old shape, for callers that
+// ask for no rhythm).
+export const RHYTHMS = [['breather', 0.4], ['early', 0.35], ['spread', 0.25]];
+function mulberry(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+/** A season's rhythm key from its cast: the setup preview and the engine read the same shape. */
+export const rhythmOf = names => [...names].sort().join('|').split('').reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 17);
+function socialDays(mid, social, rhythm) {
+  const spread = () => new Set(Array.from({ length: social }, (_, k) => Math.floor((k + 0.5) * mid / social)));
+  if (rhythm == null || social <= 0) return { shape: 'spread', at: spread() };
+  const rng = mulberry(rhythm);
+  let r = rng() * RHYTHMS.reduce((n, [, w]) => n + w, 0), shape = 'spread';
+  for (const [name, w] of RHYTHMS) { if ((r -= w) <= 0) { shape = name; break; } }
+  const at = new Set();
+  if (shape === 'early') {
+    // ratings on alternate days early, back to back late (US 1: ratings 1, 3, 5, 7, then 9, 10, 11)
+    for (let i = 0; at.size < social && i < mid; i += 2) at.add(i);
+  } else if (shape === 'breather' && social >= 2) {
+    // one quiet stretch of two days somewhere in the middle, the rest spread
+    const p = 1 + Math.floor(rng() * Math.max(1, mid - 3));
+    at.add(p); at.add(p + 1);
+    // the other quiet days spread out, never touching the breather or each other
+    const rest = social - 2;
+    const free = () => Array.from({ length: mid }, (_, i) => i).filter(i => ![...at].some(j => Math.abs(j - i) <= 1));
+    for (let k = 0; k < rest; k++) {
+      const c = free();
+      if (!c.length) break;
+      at.add(c[Math.floor((k + 0.5) * c.length / (rest - k)) % c.length]);
+    }
+  } else {
+    for (const i of spread()) at.add(Math.max(0, Math.min(mid - 1, i + (rng() < 0.5 ? 0 : rng() < 0.5 ? 1 : -1))));
+  }
+  // exactly `social` quiet days, whatever the shape managed
+  for (let i = mid - 1; at.size < social && i >= 0; i--) at.add(i);
+  return { shape, at };
+}
+
+export function buildSchedule({ total, starters, finalists = 5, days = null, rhythm = null }) {
   const blocks = total - finalists;
   if (blocks < 1) throw new Error(`a season needs at least one blocking: ${total} players, ${finalists} finalists`);
   if (starters < 3) throw new Error('a season needs at least three starting players');
@@ -17,7 +59,7 @@ export function buildSchedule({ total, starters, finalists = 5, days = null }) {
   const D = Math.max(blocks + 2, days ?? Math.min(DEFAULT_DAYS.max, Math.max(DEFAULT_DAYS.min, total)));
   const mid = D - 3;                       // days 2 .. D-2
   const social = D - 2 - blocks;
-  const socialAt = new Set(Array.from({ length: social }, (_, k) => Math.floor((k + 0.5) * mid / social)));
+  const { at: socialAt } = socialDays(mid, social, rhythm);
   const day = (n, slot, over = {}) => ({ day: n, slot, block: false, arrivals: 0, final: false, finale: false, ...over });
   const out = [day(1, 'rating1', { block: true })];
   // Slots are unique (the timeline books by slot): social1, social2, ...

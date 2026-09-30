@@ -35,7 +35,7 @@ export const PROBE = { fail: 0.25, dodge: 0.08 };
 export const THEORY_LINE = 0.35;
 // A reader's paranoia finds something off even in an honest profile (US 1
 // Alana: blocked first for "not being who she says she is", and she was).
-export const MISREAD = 0.03;
+export const MISREAD = 0.006;
 export const SLIP_KINDS = ['knowledge', 'body', 'voice', 'tooPerfect', 'overreach', 'name'];
 
 export function slipRisk(state, h, { specific = 0.3, party = false } = {}) {

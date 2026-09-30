@@ -16,6 +16,7 @@ import { makeClaim, learn } from './claims.js';
 import { revealTo } from './reveal.js';
 import { attractionOk } from './chat.js';
 import { deliberate } from './hangout.js';
+import { THEORY_LINE } from './slips.js';
 
 export function atRiskOf(state, influencers) {
   const pool = state.active.filter(h => !influencers.includes(h));
@@ -112,6 +113,13 @@ export function deliverReports(state, rng) {
   }
 }
 
+// A goodbye names a catfish only when the player leaving has a real theory
+// (below the theory line); short of that it is a grievance, as most real
+// goodbyes are ("the real snake was not taken out of the game", US 2). And
+// the room hears a blocked player's parting shot as partly sour grapes. At a
+// flat 0.5 line every goodbye accusation in 60 seasons (172 of 172) was
+// right, and it was most of the doubt a catfish finalist carried.
+export const SOUR_GRAPES = 0.6;
 export function goodbyeVideo(state, rng, h) {
   const all = [...state.active];
   const sc = addScene(state, 'goodbye', [h], { mode: state.profiles[h].mode, warning: null }, all);
@@ -120,9 +128,9 @@ export function goodbyeVideo(state, rng, h) {
     .sort((a, b) => b[1] - a[1])[0];
   if (top && top[1] > 3) {
     const o = top[0];
-    const c = belief(state, h, o).real < 0.5
-      ? makeClaim(state, { kind: 'catfish', holder: h, about: o, truth: state.profiles[o].mode === 'catfish', secrecy: 'public', by: h })
-      : makeClaim(state, { kind: 'distrusts', holder: h, about: o, truth: rel(h, o, 'trust') < 0, secrecy: 'public', by: h });
+    const c = belief(state, h, o).real < THEORY_LINE
+      ? makeClaim(state, { kind: 'catfish', holder: h, about: o, truth: state.profiles[o].mode === 'catfish', secrecy: 'public', by: h, weight: SOUR_GRAPES })
+      : makeClaim(state, { kind: 'distrusts', holder: h, about: o, truth: rel(h, o, 'trust') < 0, secrecy: 'public', by: h, weight: SOUR_GRAPES });
     for (const x of all) if (x !== o) learn(state, x, c, h, sc);
     feel(state, o, 'paranoia', 2);
     feel(state, o, 'stress', 2);

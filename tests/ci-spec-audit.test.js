@@ -167,5 +167,9 @@ describe('The Circle spec audit', () => {
     for (const w of worst) console.log(`    ${w.k.padEnd(28)} ${String(w.size).padStart(3)} entries · ${String(w.plays).padStart(5)} plays · ${String(w.distinct).padStart(4)} distinct · worst repeat ${w.worst}`);
     console.log('');
     expect(m.finished).toBe(SEASONS);
+    // Catfish won 5 of 10 real seasons (spec 2.2); 22% before the Plan 3b
+    // calibration. A band, not a point: 100 seasons carry about 5 points of noise.
+    expect(m.catfishWin / SEASONS).toBeGreaterThan(0.35);
+    expect(m.catfishWin / SEASONS).toBeLessThan(0.65);
   });
 });

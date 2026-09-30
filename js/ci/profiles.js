@@ -68,6 +68,8 @@ export function truthOf(player, setup = {}) {
     job: setup.job ?? ((player.occupation ?? setup.from?.occupation) ? String(player.occupation ?? setup.from.occupation).toLowerCase() : null),
     hometown: setup.hometown ?? player.hometown ?? setup.from?.hometown ?? null,
     status: setup.status ?? 'Single', alum: rep !== 'none', rep,
+    // Fame stars (js/fame.js), handed in by the season (ci-run.js); for the screens.
+    stars: Number.isFinite(setup.autoStars) ? setup.autoStars : null,
     jobCost: setup.jobCost ?? 0, role: setup.role || 'starter',
     // Plays as someone else: 'decide' (the motive decides), 'always' (yes) or
     // 'never' (no); and, for Decide or Yes, which persona when they do.

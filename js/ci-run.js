@@ -217,7 +217,7 @@ function _build(inputs, rerolls) {
   const roles = circleRoles(cast, inputs.setup);
   const known = circleKnownAs((players || []).filter(p => p && cast.includes(p.name)));
   const setup = Object.fromEntries(cast.map((n, i) => [n, { ...(inputs.setup[n] || {}), role: roles[i],
-    from: rosterFactsOf((players || []).find(p => p && p.name === n) || { name: n }), autoRep: known[n]?.rep || 'none' }]));
+    from: rosterFactsOf((players || []).find(p => p && p.name === n) || { name: n }), autoRep: known[n]?.rep || 'none', autoStars: known[n]?.stars ?? null }]));
   const seed = _seed();
   const outer = gs;
   let result, inner;

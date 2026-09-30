@@ -14,11 +14,14 @@ describe('Day 1', () => {
       const cast = rosterCast(13, s); setPlayers(cast);
       const names = cast.map(p => p.name);
       const { rows } = playCircleSeason({ cast: names, setup: circleSetup(names), pool: DEFAULT_POOL, seed: s });
-      const kinds = rows[0].ci.aired.map(x => x.kind);
+      // A famous face is recognised the moment the profiles go up, so those
+      // scenes may sit between the profiles and the chat.
+      const aired = rows[0].ci.aired.filter(x => x.kind !== 'recognise');
+      const kinds = aired.map(x => x.kind);
       expect(kinds.slice(0, 2), `season ${s}`).toEqual(['profiles', 'circle-chat']);
       expect(kinds.filter(k => k === 'circle-chat')).toHaveLength(1);
       // the host opens it; then the first hellos
-      expect(rows[0].ci.aired[1].script.blocks.map(b => b.key)).toContain('circle.first');
+      expect(aired[1].script.blocks.map(b => b.key)).toContain('circle.first');
     }
   });
   it('the opening lines are introductions, and there are plenty of them', () => {

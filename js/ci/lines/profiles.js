@@ -86,6 +86,50 @@ export const PROFILES = {
       { by: 'a', react: "Circle, enlarge that photo. Oh, I know exactly who that is. And it isn't {b}." },
     ], beat: '{a.real} laughs out loud, alone in the apartment.' },
   ],
+  // A famous face, recognised (season.js recogniseFame). a = who recognises,
+  // b = the famous player's profile. They know the face, not the plan.
+  'recognise.celebrity': [
+    { id: 'recognise.celebrity.01', turns: [
+      { by: 'a', react: "Wait. Wait. Circle, open {b}'s profile. Oh my God. That's actually {b}." },
+      { by: 'a', say: "I've seen {b.obj} on TV. Everybody's seen {b.obj} on TV. How is {b.sub} in here?" },
+    ], beat: '{a.real} stands up from the couch and sits back down again.' },
+    { id: 'recognise.celebrity.02', turns: [
+      { by: 'a', react: "No. No way. That's {b}. Like, the {b}." },
+      { by: 'a', say: "Okay, be cool. Be normal. Do not message {b.obj} like a fan." },
+    ] },
+    { id: 'recognise.celebrity.03', turns: [
+      { by: 'a', react: "I know that face. Everybody in America knows that face." },
+      { by: 'a', say: "{b.Sub} has fans. Fans vote. That's a problem for the rest of us." },
+    ], beat: '{a.real} leans in until {a.posAdj} nose nearly touches the screen.' },
+  ],
+  'recognise.villain': [
+    { id: 'recognise.villain.01', turns: [
+      { by: 'a', react: "Hold on. I know {b}. I watched {b.obj} lie to everybody on TV." },
+      { by: 'a', say: "I bet half these people have no idea what {b.sub} did. I do." },
+    ], beat: '{a.real} crosses {a.posAdj} arms.' },
+    { id: 'recognise.villain.02', turns: [
+      { by: 'a', react: "Oh, it's {b}. Of course it's {b}." },
+      { by: 'a', say: "Whatever {b.sub} says to you, {b.sub} doesn't mean it. I've seen the show." },
+    ] },
+    { id: 'recognise.villain.03', turns: [
+      { by: 'a', react: "Circle, open {b}'s profile. Yep. That's the one everybody hated." },
+      { by: 'a', say: "Keep {b.obj} close. Closer than {b.sub} keeps me." },
+    ] },
+  ],
+  'recognise.tv': [
+    { id: 'recognise.tv.01', turns: [
+      { by: 'a', react: "Wait, I've seen {b} before. On TV. I'm sure of it." },
+      { by: 'a', say: "{b.Sub} knows how these games work. That makes {b.obj} dangerous." },
+    ] },
+    { id: 'recognise.tv.02', turns: [
+      { by: 'a', react: "Hey, that's {b}! I watched {b.posAdj} season." },
+      { by: 'a', say: "Honestly? I kind of loved {b.obj}. That's gonna make this hard." },
+    ], beat: '{a.real} smiles at the screen in spite of {a.ref}.' },
+    { id: 'recognise.tv.03', turns: [
+      { by: 'a', react: "I know that face from somewhere. Circle, enlarge the photo." },
+      { by: 'a', say: "Yeah. {b} has done this before. {b.Sub} has a head start on all of us." },
+    ] },
+  ],
   'arrival': [
     { id: 'arrival.01', turns: [
       { by: 'a', react: "Oh my God. Okay. I'm in the Circle. I'm actually in the Circle." },

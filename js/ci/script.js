@@ -401,7 +401,12 @@ const BLOCKS = {
     return s.who.map(a => ({ key: `profile.${state.profiles[a].mode}`, cast: { a },
       extra: { reasonKind: state.profiles[a].reason || undefined } }));
   },
-  recognise(state, s) { return [{ key: 'recognise', cast: { a: s.who[0], b: s.data.profile } }]; },
+  recognise(state, s) {
+    // A famous face (season.js recogniseFame), or a borrowed photo somebody knows.
+    const key = s.data.fame ? (s.data.fame === 'celebrity' ? 'recognise.celebrity' : s.data.fame === 'villain' ? 'recognise.villain' : 'recognise.tv') : 'recognise';
+    // One face never hears the same line twice, whoever is looking at it.
+    return [{ key, cast: { a: s.who[0], b: s.data.profile }, ...(s.data.fame ? { pairKey: `fame|${s.data.profile}` } : {}) }];
+  },
   arrival(state, s) {
     const [a] = s.who;
     const other = s.seenBy.find(h => h !== a);
@@ -904,7 +909,7 @@ export function writeScene(state, scene) {
     const extra = Object.fromEntries(Object.entries(b.extra || {}).filter(([, v]) => v !== undefined));
     const facts = { ...factsFor(state, scene, b.cast), ...extra };
     const rng = streamFor(state.seed, `line:${scene.id}:${i}`);
-    const pairKey = [b.cast.a, b.cast.b, b.cast.c].filter(Boolean).sort().join('|');
+    const pairKey = b.pairKey || [b.cast.a, b.cast.b, b.cast.c].filter(Boolean).sort().join('|');
     const entry = pickEntry(state, b.keys || b.key, facts, pairKey, rng, b.cast.a);
     if (!entry) { (state.missingPools ||= {})[b.key] = (state.missingPools[b.key] || 0) + 1; return; }
     const from = b.keys ? entry.id.replace(/\.[^.]+$/, '') : b.key;
@@ -981,7 +986,7 @@ export const POOL_KEYS = [
   ...['caps', 'ellipses', 'stage', 'greeting', 'nicknames', 'catchphrase', 'formal', 'hype', 'dry']
     .flatMap(t => [`style.${t}.charmed`, `style.${t}.annoyed`]), 'style.mismatch.suspicious',
   'status.low', 'status.steady', 'status.high', 'status.react', 'likes.most', 'likes.none',
-  'circle.first', 'circle.open', 'circle.party', 'circle.final', 'circle.theory',
+  'recognise.celebrity', 'recognise.villain', 'recognise.tv', 'circle.first', 'circle.open', 'circle.party', 'circle.final', 'circle.theory',
   ...['honest', 'polished', 'edited', 'catfish', 'shared'].map(m => `profile.${m}`),
   'recognise', 'arrival', 'arrival.react', 'afterparty',
   'ratings.open', ...REASONS_.flatMap(r => [`rate.${r}.top`, `rate.${r}.bottom`]),

@@ -42,6 +42,16 @@ export async function putPhoto(dataUrl) {
   return id;
 }
 
+/** Keep an image under a given id (a season pack brings its own ids). */
+export async function putPhotoWithId(id, dataUrl) {
+  const db = _db();
+  if (!db) { _mem.set(id, dataUrl); _cache.set(id, dataUrl); return id; }
+  const d = await db;
+  await new Promise((res, rej) => { const tx = d.transaction('photos', 'readwrite'); tx.objectStore('photos').put({ id, dataUrl }); tx.oncomplete = res; tx.onerror = () => rej(tx.error); });
+  _cache.set(id, dataUrl);
+  return id;
+}
+
 /** The image a `photo:<id>` face names, or null. */
 export async function photoURL(face) {
   const id = String(face || '').startsWith('photo:') ? face.slice(6) : null;
@@ -58,8 +68,9 @@ export async function photoURL(face) {
 /** Already loaded, without waiting (for drawing). */
 export const cachedPhoto = face => (String(face || '').startsWith('photo:') ? _cache.get(face.slice(6)) || null : null);
 
-/** A picked file, shrunk to fit 512px, as a data URL. */
-export function shrinkImage(file, max = 512) {
+/** A picked file, shrunk to fit 512px (and cropped square from the middle
+ *  when asked, as the spec wants for the Photos panel), as a data URL. */
+export function shrinkImage(file, max = 512, square = false) {
   return new Promise((res, rej) => {
     const fr = new FileReader();
     fr.onerror = () => rej(fr.error);
@@ -67,10 +78,13 @@ export function shrinkImage(file, max = 512) {
       const img = new Image();
       img.onerror = () => res(fr.result);
       img.onload = () => {
-        const k = Math.min(1, max / Math.max(img.width, img.height));
+        const side = Math.min(img.width, img.height);
+        const sx = square ? (img.width - side) / 2 : 0, sy = square ? (img.height - side) / 2 : 0;
+        const sw = square ? side : img.width, sh = square ? side : img.height;
+        const k = Math.min(1, max / Math.max(sw, sh));
         const c = document.createElement('canvas');
-        c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
-        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        c.width = Math.round(sw * k); c.height = Math.round(sh * k);
+        c.getContext('2d').drawImage(img, sx, sy, sw, sh, 0, 0, c.width, c.height);
         res(c.toDataURL('image/jpeg', 0.88));
       };
       img.src = fr.result;

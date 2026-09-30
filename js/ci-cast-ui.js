@@ -24,6 +24,7 @@ import { personaStyle } from './ci/cover.js';
 import { circleRoles } from './ci-run.js';
 import { putPhoto, photoURL, cachedPhoto, shrinkImage } from './ci/photo-store.js';
 import { playerAvatarUrl } from './players.js';
+import { setPhotoContext, photosPanelHTML, afterPhotosRender, onPhotosClick, onPhotosChange, onPhotosDrop } from './ci-photos-ui.js';
 
 const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const cfg = () => window.seasonConfig || {};
@@ -195,12 +196,22 @@ export function renderCircleCastSetup() {
   const takenN = Object.keys(taken).length;
   const editing = pool.find(p => p.id === window._ciEditing);
   const starters = roles.filter(r => r === 'starter').length;
-  root.innerHTML = `
+  // Three tabs (user, Plan 4b: "a tab switcher"): the plan, the pool, the photos.
+  const sub = ['plan', 'pool', 'photos'].includes(window._ciSub) ? window._ciSub : 'plan';
+  const tabsHTML = `<div class="ci-sub">${[['plan', 'Profile Plan'], ['pool', 'Catfish Pool'], ['photos', 'Photos']].map(([k, l]) =>
+    `<button type="button" data-act="sub" data-v="${k}" class="${k === sub ? 'on' : ''}">${l}</button>`).join('')}<i class="ci-sub-ind ${sub}"></i></div>`;
+  if (sub === 'photos') {
+    root.innerHTML = tabsHTML + photosPanelHTML();
+    if (!root._ciWired) { wire(root); root._ciWired = true; }
+    afterPhotosRender(root);
+    return;
+  }
+  root.innerHTML = tabsHTML + (sub === 'plan' ? `
     <div class="ci-panel">
       <div class="ci-phead"><div class="ci-ring"></div><div class="ci-ptitle">THE PROFILE PLAN</div>
         <div class="ci-pcount">${players.length} players · ${starters} on Day 1 · ${players.length - starters} arrive later · every field optional</div></div>
       <div class="ci-rows">${players.map((p, i) => planRow(p, roles[i])).join('') || '<div class="ci-small">Add players to the cast first.</div>'}</div>
-    </div>
+    </div>` : `
     <div class="ci-panel">
       <div class="ci-phead"><div class="ci-ring ci-ring-pk"></div><div class="ci-ptitle">THE CATFISH POOL</div>
         <div class="ci-pcount"><span class="ci-pool-count">${d ? `${takenN} of ${pool.length} taken this season · ${pool.length - takenN} left as twist stock`
@@ -211,7 +222,7 @@ export function renderCircleCastSetup() {
         ${pool.map(p => (editing && p.id === editing.id ? editor(p) : poolCard(p, taken))).join('')}
         <button type="button" class="ci-add" data-act="new"><span class="ci-plus">+</span>New persona<span class="ci-small">pick a job, a few details, and add your image</span></button>
       </div>
-    </div>`;
+    </div>`);
   if (!root._ciWired) { wire(root); root._ciWired = true; }
   // Images come from IndexedDB: draw again once any not yet loaded arrive.
   const missing = pool.filter(p => p.face && !cachedPhoto(p.face));
@@ -228,6 +239,8 @@ function onClick(ev) {
   const b = ev.target.closest('[data-act]');
   if (!b) return;
   const act = b.dataset.act, v = b.dataset.v;
+  if (act === 'sub') { window._ciSub = v; window._ciEditing = null; return renderCircleCastSetup(); }
+  if (onPhotosClick(b)) return;
   const row = b.closest('.ci-row');
   if (row) {
     const s = setupFor(row.dataset.name);
@@ -261,6 +274,7 @@ function onClick(ev) {
 
 function onChange(ev) {
   const el = ev.target;
+  if (onPhotosChange(el)) return;
   const row = el.closest('.ci-row');
   if (row && el.dataset.field) {
     const s = setupFor(row.dataset.name);
@@ -291,14 +305,19 @@ function clearPins(match) {
   for (const s of Object.values(cfg().ciSetup || {})) if (s.catfish && !['never', 'always'].includes(s.catfish) && match(s.catfish)) delete s.catfish;
 }
 
-function done() { save(); renderCircleCastSetup(); }
+function done(persist = true) { if (persist) save(); renderCircleCastSetup(); }
+
+setPhotoContext({ cfg, ownPool, poolNow, cast, dealt, avatar: safeAvatar, done: persist => done(persist) });
 
 function wire(root) {
   root.addEventListener('click', onClick);
   root.addEventListener('change', onChange);
   // Drop an image straight onto a persona's slot.
   root.addEventListener('dragover', e => { if (e.target.closest('.ci-slot')) e.preventDefault(); });
+  root.addEventListener('dragover', e => { if (e.target.closest('.ci-photos')) e.preventDefault(); });
   root.addEventListener('drop', e => {
+    // A batch dropped anywhere on the Photos tab sorts itself (ci-photos-ui.js).
+    if (e.target.closest('.ci-photos')) { e.preventDefault(); onPhotosDrop(e.dataTransfer?.files || []); return; }
     const s = e.target.closest('.ci-slot'); const file = e.dataTransfer?.files?.[0];
     if (!s || !file) return;
     e.preventDefault();

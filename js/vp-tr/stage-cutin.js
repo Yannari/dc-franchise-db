@@ -29,8 +29,11 @@ import { trsEsc as esc, trsFace as face } from './castle-stage.js';
  * @param {string[]} [o.known] the band under the name: the seasons they are known for
  */
 export function cutIn(o) {
-  const bust = (n, slug, side) => `<div class="tci-bust tci-${side}${o.hood ? ' tci-hooded' : ''}">`
-    + `<div class="tci-av">${face(n, slug)}${o.hood ? '<i class="tci-hood"></i>' : ''}</div>`
+  // THE HOOD IS THE SPEAKER'S: a Traitor proposing a name is cloaked, the
+  // Faithful they propose is not (the user caught the victim in a hood)
+  const hooded = side => o.hood && side === 'l';
+  const bust = (n, slug, side) => `<div class="tci-bust tci-${side}${hooded(side) ? ' tci-hooded' : ''}">`
+    + `<div class="tci-av">${face(n, slug)}${hooded(side) ? '<i class="tci-hood"></i>' : ''}</div>`
     + `<div class="tci-nm" data-n="${esc(n)}"></div>`
     + (side === 'l' && o.known && o.known.length ? '<div class="tci-known">' + o.known.slice(0, 4).map(k =>
       `<i data-t="${esc(k)}"></i>`).join('') + '</div>' : '')

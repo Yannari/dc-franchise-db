@@ -14,7 +14,7 @@ import { setPlayers } from '../js/core.js';
 import { playCircleSeason } from '../js/ci/season.js';
 import { seasonText, seasonHtml } from '../js/ci/transcript.js';
 import { makePlayers, makePool, circleSetup } from './helpers/ci-cast.js';
-import { VOICE_SHEETS, VOICE_CAST } from './helpers/ci-voices.js';
+import { VOICE_SHEETS, VOICE_CAST, PERSONA_VOICES } from './helpers/ci-voices.js';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 // Readable stand-ins for the synthetic cast, which alternates f/m.
@@ -45,7 +45,9 @@ it('writes a season transcript', () => {
   if (process.env.CI_VOICES !== '0') {
     for (const [name, sheet] of Object.entries(VOICE_CAST)) if (setup[name]) setup[name].chatVoice = VOICE_SHEETS[sheet];
   }
-  const { rows, state, result } = playCircleSeason({ cast: names, setup, pool: makePool(6, seed), seed });
+  const pool = makePool(6, seed);
+  if (process.env.CI_VOICES !== '0') for (const p of pool) if (PERSONA_VOICES[p.handle]) p.chatVoice = PERSONA_VOICES[p.handle];
+  const { rows, state, result } = playCircleSeason({ cast: names, setup, pool, seed });
   const dir = join(ROOT, 'transcripts');
   mkdirSync(dir, { recursive: true });
   const base = join(dir, `ci-season-${seed}`);

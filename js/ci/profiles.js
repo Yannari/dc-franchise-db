@@ -35,6 +35,8 @@ export function truthOf(player, setup = {}) {
     face: setup.face ?? null, brain: setup.brain ?? null, facts: [...(setup.facts || [])],
     // How they type, if an author wrote it (ci/register.js, voice.js byAuthored).
     chatVoice: setup.chatVoice ?? player.chatVoice ?? null,
+    // How ready they are to type like somebody else, 0..1 (ci/cover.js).
+    prep: setup.prep ?? 0,
   };
 }
 
@@ -202,7 +204,8 @@ export function buildProfiles(state, truths, draw, pool, rng) {
       shown = { name: persona.handle, age: persona.age, gender: persona.gender, job: persona.job,
         status: persona.status, hometown: persona.hometown, face: persona.face };
       tells = [...(persona.tells || [])];
-      gap = 1 + Math.abs(persona.age - t.age) / 10 + (persona.gender !== t.gender ? 1 : 0);
+      // Not gender: keeping a persona up is style, age and smarts (ci/cover.js).
+      gap = 1 + Math.abs(persona.age - t.age) / 10;
     } else if (draw.edited.includes(t.name)) {
       mode = 'edited';
       const e = editsFor(t, median, rng);
@@ -213,7 +216,9 @@ export function buildProfiles(state, truths, draw, pool, rng) {
     }
     const handle = uniqueHandle(shown.name, state.profiles);
     state.profiles[handle] = { handle, players: [t.name], mode, personaId: persona?.id ?? null,
-      reason: a?.reason ?? null, shown, edits, tells, gap, voice: voiceOf(shown.age, t.stats) };
+      reason: a?.reason ?? null, shown, edits, tells, gap, voice: voiceOf(shown.age, t.stats),
+      // How the persona itself talks, if the pool's author wrote it.
+      personaVoice: persona?.chatVoice || null };
     state.handleOf[t.name] = handle;
     handles.push(handle);
   }

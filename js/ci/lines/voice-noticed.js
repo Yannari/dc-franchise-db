@@ -6,7 +6,7 @@
 //   formal, hype, dry; tones charmed / annoyed. style.mismatch.suspicious —
 //   b is a catfish whose voice does not fit the face.
 // {x} sits after a quote mark or a full stop so it keeps the author's case.
-const E = (key, list) => ({ [key]: list.map((x, i) => ({ id: `${key}.${String(i + 1).padStart(2, '0')}`, ...x })) });
+const E = (key, list) => ({ [key]: list.map((x, i) => ({ id: `${key}.${key.startsWith('slip.voice') ? 'c' : ''}${String(i + 1).padStart(2, '0')}`, ...x })) });
 const r1 = (a, extra = {}) => ({ turns: [{ by: 'a', react: a }], ...extra });
 
 export const VOICE_NOTICED = {
@@ -24,6 +24,56 @@ export const VOICE_NOTICED = {
       beat: '{a} stares at the screen, frozen.' },
     { turns: [{ by: 'a', send: 'Talk tomorrow. {x}' }, { by: 'a', say: 'Nobody noticed. Nobody noticed. Okay.' }] },
     { turns: [{ by: 'a', send: 'Night night. {x}' }, { by: 'a', react: "Why did I type '{x}'? Circle, can I unsend? I can't unsend." }] },
+  ]),
+
+  // A cover cracking, by the way it cracks (ci/cover.js crackOf). a is the
+  // catfish (or a pair, 'off'), b the one chatting with them.
+  ...E('slip.voice.noticed', [
+    { when: { crack: 'stiff' }, turns: [{ by: 'a', send: 'I appreciate you reaching out. That was very considerate.' },
+      { by: 'b', react: 'Very considerate? Since when does {a} talk like a thank-you card?' }] },
+    { when: { crack: 'stiff' }, turns: [{ by: 'a', send: 'Please let me know if you have any further questions.' },
+      { by: 'b', react: "'Further questions.' Is {a} okay?" }], beat: '{b} squints at the screen.' },
+    { when: { crack: 'sloppy' }, turns: [{ by: 'a', send: 'lol ya idk tbh' },
+      { by: 'b', react: 'Huh. {a} usually writes whole sentences.' }] },
+    { when: { crack: 'sloppy' }, turns: [{ by: 'a', send: 'wait wat' }, { by: 'b', react: "'Wat'? From {a}? Okay." }],
+      beat: '{b} reads it twice.' },
+    { when: { crack: 'loud' }, turns: [{ by: 'a', send: "OMG YES!!! LET'S GOOO" },
+      { by: 'b', react: "Whoa. {a} is not usually like this." }, { by: 'b', say: "Who got into {a}'s coffee?" }] },
+    { when: { crack: 'loud' }, turns: [{ by: 'a', send: 'AHHHH I LOVE THAT' },
+      { by: 'b', react: "That's a lot of capital letters for {a}." }] },
+    { when: { crack: 'flat' }, turns: [{ by: 'a', send: 'cool.' },
+      { by: 'b', react: "Just 'cool'? {a} is usually way more excited than that." }] },
+    { when: { crack: 'flat' }, turns: [{ by: 'a', send: 'sure. sounds fine.' },
+      { by: 'b', react: "That doesn't sound like {a} at all." }], beat: '{b} scrolls back up to compare.' },
+    { when: { crack: 'dated' }, turns: [{ by: 'a', send: "Now that's the bee's knees" },
+      { by: 'b', react: "The bee's knees? Who says that?" }], beat: '{b} laughs, then frowns.' },
+    { when: { crack: 'young' }, turns: [{ by: 'a', send: "no cap that's crazy" },
+      { by: 'b', react: "'No cap'? {a} is how old again?" }] },
+    { when: { crack: 'young' }, turns: [{ by: 'a', send: 'lowkey obsessed with this' },
+      { by: 'b', react: "'Lowkey'? From {a}?" }], beat: "{b} checks {a}'s profile again." },
+    // Plain: any crack, and a pair whose two voices don't match.
+    { turns: [{ by: 'a', send: "Okay but seriously. That's a big deal" },
+      { by: 'b', react: '{a} sounds like a different person today.' }] },
+    { turns: [{ by: 'a', send: 'Understood. Talk later' },
+      { by: 'b', react: "That doesn't sound like {a}. At all." }], beat: '{b} scrolls back through their old messages.' },
+    { turns: [{ by: 'a', send: 'Anyway. How are you' },
+      { by: 'b', react: 'Something about the way {a} types today is different.' }], beat: '{b} tilts {b.posAdj} head at the screen.' },
+  ]),
+  ...E('slip.voice.missed', [
+    { when: { crack: 'stiff' }, turns: [{ by: 'a', send: 'That is wonderful. I am very happy for you.' },
+      { by: 'a', react: 'Too stiff. Loosen up. Loosen up!' }] },
+    { when: { crack: 'sloppy' }, turns: [{ by: 'a', send: 'k cool' }, { by: 'a', react: '{a} writes full sentences. Come on.' }],
+      beat: '{a} smacks {a.posAdj} own forehead.' },
+    { when: { crack: 'loud' }, turns: [{ by: 'a', send: 'YESSS!!' }, { by: 'a', react: "Too much. {a} doesn't do too much. Calm down." }] },
+    { when: { crack: 'flat' }, turns: [{ by: 'a', send: 'nice' },
+      { by: 'a', react: '{a} has way more energy than this. Exclamation points!' }] },
+    { when: { crack: 'young' }, turns: [{ by: 'a', send: 'slay' }, { by: 'a', react: '{a} would not say slay. {a} would not say slay.' }],
+      beat: '{a} buries {a.posAdj} face in a pillow.' },
+    { turns: [{ by: 'a', send: 'Got it. Thanks' },
+      { by: 'a', react: "That didn't sound like {a}. Did that sound like {a}?" }] },
+    { turns: [{ by: 'a', send: 'Okay talk soon' }, { by: 'a', react: 'Stay in character. Stay in character.' }],
+      beat: '{a} shakes out {a.posAdj} hands like a boxer.' },
+    { turns: [{ by: 'a', send: 'For sure. Sounds good' }, { by: 'a', react: "Close enough. I hope that's close enough." }] },
   ]),
 
   ...E('style.caps.charmed', [

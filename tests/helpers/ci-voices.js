@@ -23,3 +23,11 @@ export const VOICE_SHEETS = {
 
 /** Which synthetic cast member carries which sheet in the transcript. */
 export const VOICE_CAST = { Frank: 'loudUncle', 'Yu Ling': 'psychic', Raven: 'boardChair', Chris: 'wrestler', Sammie: 'cuddler', Kyle: 'showgirl', Chloe: 'grandma' };
+
+/** How some personas in the fixture Catfish Pool talk (persona.chatVoice):
+ *  what the catfish has to keep up. */
+export const PERSONA_VOICES = {
+  Rebecca: { register: 'warm', fillers: ["y'all", 'bless'], rate: 0.4 },
+  Adam: { register: 'hype', openers: ["Let's gooo!"], fillers: ['bro'], rate: 0.4 },
+  Carol: { register: 'flirty', signoffs: ['xo'], rate: 0.35 },
+};

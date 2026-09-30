@@ -10,18 +10,22 @@ import { isPair, distance, hiddenFacts, noticeInconsistency, SHARED_PROBE } from
 import { clamp, S } from './state.js';
 import { nudgeBelief, belief } from './beliefs.js';
 import { feel } from './mind.js';
-import { registerOf } from './register.js';
+import { coverStrain, coverParts } from './cover.js';
 
 // A voice that does not fit the face (Plan 3a+ Task 14): a "24-year-old" who
 // types like a board memo, or a "50-year-old" who types LET'S GOOO. Only a
 // catfish has a face to not fit.
 export function voiceMismatch(state, h) {
-  const p = state.profiles[h];
-  if (p?.mode !== 'catfish') return 0;
-  const age = p.shown?.age ?? 28, reg = registerOf(state, h);
-  if (reg === 'formal' && age < 30) return 1;
-  if ((reg === 'hype' || reg === 'flirty') && age >= 45) return 1;
-  return 0;
+  const style = coverParts(state, h).style;
+  return style > 0.6 ? style : 0;
+}
+// Somebody near the persona's age knows how that age types (a fake young
+// voice is heard soonest by the young).
+export const EAR = { near: 6, bonus: 1.35 };
+function earFor(state, obs, target) {
+  const shown = state.profiles[target]?.shown?.age;
+  const ages = (state.profiles[obs]?.players || []).map(n => state.people[n]?.age).filter(a => a != null);
+  return shown != null && ages.some(a => Math.abs(a - shown) <= EAR.near) ? EAR.bonus : 1;
 }
 /** The author's leaks: phrases that belong to the person, not the profile. */
 export const leaksOf = (state, h) => (state.profiles[h]?.players || []).flatMap(n => state.people[n]?.chatVoice?.leaks || []);
@@ -42,7 +46,10 @@ export function slipRisk(state, h, { specific = 0.3, party = false } = {}) {
   return clamp(SLIP.base * p.gap * (1 + specific) * (1 + stress * SLIP.stress)
     * (party ? 1 + SLIP.party : 1) * (1 - skill * SLIP.skill)
     // Two people do not sound like one: the more unlike, the more it shows.
-    * (1 + distance(state, h) / 20), 0, 0.6);
+    * (1 + distance(state, h) / 20)
+    // A persona is a performance: an easy one slips less than a bare gap
+    // would, a hard one more (ci/cover.js).
+    * (p.mode === 'catfish' ? 0.5 + coverStrain(state, h) : 1), 0, 0.6);
 }
 
 export function noticeChance(state, obs, target, attention = 0.5) {
@@ -56,8 +63,7 @@ function slipKind(state, h, rng) {
   const w = {
     knowledge: (p.tells?.length ? 2 : 1) + hiddenFacts(state, h).length,
     body: p.shown?.gender && p.shown.gender !== real.gender ? 1.5 : 0.2,
-    voice: Math.abs((p.shown?.age ?? real.age) - (real.age ?? 25)) / 10 + distance(state, h) / 10
-      + (leaksOf(state, h).length ? 1.5 : 0) + voiceMismatch(state, h),
+    voice: coverStrain(state, h) * 1.5 + distance(state, h) / 10 + (leaksOf(state, h).length ? 1.5 : 0),
     tooPerfect: p.mode === 'catfish' ? 1 : 0.5,
     overreach: 0.6,
     name: p.players.length > 1 ? 1 : 0.3,
@@ -84,7 +90,7 @@ export function rollSlips(state, rng, speaker, listeners, ctx, scene) {
   const noticedBy = [];
   for (const obs of listeners) {
     if (obs === speaker) continue;
-    if (rng() < noticeChance(state, obs, speaker, ctx.attention ?? 0.5)) {
+    if (rng() < noticeChance(state, obs, speaker, ctx.attention ?? 0.5) * (kind === 'voice' ? earFor(state, obs, speaker) : 1)) {
       noticedBy.push(obs);
       nudgeBelief(state, obs, speaker, 'real', -(0.06 + 0.03 * state.profiles[speaker].gap), scene);
       if (kind === 'voice' && isPair(state, speaker)) noticeInconsistency(state, obs, speaker, scene);

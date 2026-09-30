@@ -15,7 +15,8 @@ import { THEORY_LINE } from './slips.js';
 import { styleOf } from './ratings.js';
 import { isRevealed } from './reveal.js';
 import { styleMessage, displayText, dictation, byAuthored } from './voice.js';
-import { registerOf, nicknameFor } from './register.js';
+import { nicknameFor } from './register.js';
+import { shownRegister, shownVoice, crackOf } from './cover.js';
 import { POOLS } from './lines/index.js';
 import { GAMES, PARTY_THEMES, NEVER_HAVE_I_EVER } from './games-data.js';
 import { TRIVIA, FACTS } from './games-content.js';
@@ -28,7 +29,7 @@ export const FACT_KEYS = ['intent', 'ending', 'result', 'known', 'early', 'late'
   'hurt', 'influencer', 'reason', 'motive', 'mode', 'reasonKind', 'band', 'kiss', 'claim', 'lie',
   'tone', 'party', 'final', 'slip', 'noticed', 'place', 'self', 'likesC', 'misread', 'anon',
   'answer', 'strong', 'split', 'qkind', 'right', 'off', 'odd', 'failed', 'barbed', 'slipped', 'mutual', 'warm',
-  'everyone', 'fresh', 'tier', 'many', 'jab', 'register'];
+  'everyone', 'fresh', 'tier', 'many', 'jab', 'register', 'crack'];
 
 export const hostName = () => showWords('the-circle').host || 'Host';
 
@@ -59,7 +60,7 @@ export function factsFor(state, scene, cast) {
   const { a, b } = cast;
   const f = { early: state.day <= 2, late: false, catfish: state.profiles[a]?.mode === 'catfish' };
   if (a && state.mind[a]) f.mood = moodOf(state, a);
-  if (a && state.profiles[a]) { f.group = groupOf(state, a); f.style = styleOf(state, a); f.register = registerOf(state, a, cast.personA); }
+  if (a && state.profiles[a]) { f.group = groupOf(state, a); f.style = styleOf(state, a); f.register = shownRegister(state, a, scene, cast.personA); }
   const last = [...state.ratings].reverse().find(r => r.day === state.day - 1 && !r.final);
   if (last && a) {
     f.hurt = last.results.slice(-3).some(r => r.profile === a);
@@ -212,11 +213,12 @@ export function renderEntry(state, entry, cast, rng, ctx = {}) {
     // The one at the keyboard: a shared profile types in two voices.
     const typist = t.by === 'a' ? cast.personA || null
       : (t.by === 'face' || t.by === 'brain') ? state.profiles[cast.a]?.roles?.[t.by] || null : null;
-    const voiceOf = () => ({ ...(state.profiles[speaker]?.voice || {}), register: registerOf(state, speaker, typist) });
+    // A catfish types in the persona's register until the cover cracks (ci/cover.js).
+    const voiceOf = () => ({ ...(state.profiles[speaker]?.voice || {}), register: shownRegister(state, speaker, ctx.scene, typist) });
     // The person at the keyboard, for what the author wrote about them.
     const p0 = state.profiles[speaker];
     const typer = typist || p0?.roles?.face || p0?.players?.[0];
-    const av = typer ? state.people[typer]?.chatVoice : null;
+    const av = speaker && state.profiles[speaker] ? shownVoice(state, speaker, ctx.scene, typer) : null;
     const nick = text => {
       if (!av?.nicknames) return text;
       const names = Object.keys(state.profiles).filter(h => h !== speaker && state.profiles[h].shown?.name)
@@ -334,7 +336,7 @@ const BLOCKS = {
       const k = sl.misread ? 'slip.misread' : sl.leak ? `slip.leak.${sl.noticedBy.length ? 'noticed' : 'missed'}`
         : `slip.${sl.kind}.${sl.noticedBy.length ? 'noticed' : 'missed'}`;
       out.push({ key: k, cast: { a: sl.by, b: listener, ...(sl.leak ? { text: { x: sl.leak } } : {}) },
-        extra: { slip: sl.kind, noticed: sl.noticedBy.length > 0 } });
+        extra: { slip: sl.kind, noticed: sl.noticedBy.length > 0, ...(sl.kind === 'voice' && !sl.leak ? { crack: crackOf(state, sl.by) } : {}) } });
     }
     const cb = gameCallback(state, a, b, s);
     if (cb) out.push({ key: `callback.${cb.kind}.${cb.dir}`, cast: { a, b, text: { game: cb.game } } });
@@ -642,7 +644,7 @@ export function sceneBlocks(state, scene) {
 export function writeScene(state, scene) {
   const blocks = [];
   // Who has already said hello to the group in this scene (an authored greeting).
-  const ctx = { kind: scene.kind, greeted: new Set() };
+  const ctx = { kind: scene.kind, scene, greeted: new Set() };
   sceneBlocks(state, scene).forEach((b, i) => {
     const extra = Object.fromEntries(Object.entries(b.extra || {}).filter(([, v]) => v !== undefined));
     const facts = { ...factsFor(state, scene, b.cast), ...extra };

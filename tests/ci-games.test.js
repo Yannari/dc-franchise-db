@@ -212,7 +212,9 @@ describe('catfish tests', () => {
       let n = 0;
       for (let seed = 1; seed <= 300; seed++) {
         const s = room(6, seed);
-        Object.assign(s.profiles['@q0'], { mode: gap ? 'catfish' : 'honest', gap });
+        // A persona with something to keep up (ci/cover.js): a perfect match barely slips.
+        Object.assign(s.profiles['@q0'], { mode: gap ? 'catfish' : 'honest', gap,
+          ...(gap ? { shown: { ...s.profiles['@q0'].shown, age: 45, job: 'lawyer' } } : {}) });
         const sc = runGame(s, streamFor(seed, 'guess'), game('says-who'));
         n += (sc.data.slips || []).filter(x => x.by === '@q0' && !x.misread).length;
       }

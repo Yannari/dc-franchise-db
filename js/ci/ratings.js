@@ -12,6 +12,7 @@ import { rel, bump, S, clamp, addScene } from './state.js';
 import { belief, nudgeBelief } from './beliefs.js';
 import { feel, mood } from './mind.js';
 import { burnerVoters, jokerPick } from './powers.js';
+import { rideOrDieInfluencers } from './twists.js';
 
 // a affection · t trust · o obligation · p pact · v "will they save me"
 // h threat · s suspicion · r resentment · d "deserves it" (final only)
@@ -142,7 +143,7 @@ export function runRating(state, rng, { final = false, seats = Infinity, pick = 
   // A format seats its own number of Influencers (a sole influencer: one).
   let influencers = final ? [] : (pick ? pick(res, state) : influencersFrom(res).slice(0, seats));
   // The Joker names the second Influencer of an ordinary night (US 2).
-  if (!final && !hidden && seats === 2 && !pick) influencers = jokerPick(state, influencers);
+  if (!final && !hidden && seats === 2 && !pick) influencers = rideOrDieInfluencers(state, jokerPick(state, influencers));
   const sc = addScene(state, final ? 'final-ratings' : 'ratings', voters,
     { ballots, results: res, influencers, reveal: revealOrder(res), ...(hidden ? { hidden: true } : {}) }, [...state.active]);
   for (const r of res) state.firstPlaces[r.profile] = (state.firstPlaces[r.profile] || 0) + r.firsts;

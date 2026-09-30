@@ -841,3 +841,80 @@ export const TWIST_LINES = {
     { turns: [{ by: 'a', say: "I'm picking {b}. {b} is going to owe me big." }] },
   ]),
 };
+
+// ── Task 9b: identity twists ───────────────────────────────────────────
+// swap.told — a learns (alone) they will play b's profile. swap.back — a,
+// back in their own profile. clone.alert — a reads that there are two of
+// the same profile. clone.plea.old / .new — the original / the clone makes
+// the case (never by name: both have the same one). clone.vote.new / .old —
+// a calls the new one / the old one fake. clone.out — a, voted fake.
+// rod.partner — a learns b is their Ride or Die. sacrifice.go — a goes in
+// b's place; sacrifice.kept — a let b go; sacrifice.saved — b about a.
+export const IDENTITY_LINES = {
+  ...E('swap.told', [
+    { turns: [{ by: 'a', react: "'Until the next blocking, you will play {b}'s profile.' I'm {b} now?" }, { by: 'a', say: "Okay. Think like {b}. Type like {b}." }],
+      beat: "{a} scrolls through {b}'s old messages to learn the voice." },
+    { turns: [{ by: 'a', react: "A profile swap. With {b}. Nobody else knows. This is insane." }] },
+    { turns: [{ by: 'a', say: "I have to keep all of {b}'s friendships alive and not wreck them. No pressure." }], beat: '{a} takes notes like it is an exam.' },
+  ]),
+  ...E('swap.back', [
+    { turns: [{ by: 'a', react: 'I am me again. I have never been so happy to be me.' }], beat: '{a} logs back into {a.posAdj} own profile.' },
+    { turns: [{ by: 'a', react: 'Back in my own chats. What did they say while I was gone?' }] },
+    { turns: [{ by: 'a', react: 'Swap is over. I hope I get my friends back the way I left them.' }] },
+  ]),
+  ...E('clone.alert', [
+    { turns: [{ by: 'a', react: 'There are two of them. Two. Same name, same pictures.' }, { by: 'a', say: 'One of them is fake. Which one?' }],
+      beat: '{a} holds the tablet up close to compare the two.' },
+    { turns: [{ by: 'a', react: "'A clone has entered The Circle.' A clone? Of who?" }] },
+    { turns: [{ by: 'a', react: 'Two identical profiles. My brain hurts.' }] },
+  ]),
+  ...E('clone.plea.old', [
+    { turns: [{ by: 'a', send: "Guys. It's me. The real one. Ask me anything we've talked about" }], beat: '{a} types faster than {a.sub} ever has.' },
+    { turns: [{ by: 'a', send: 'I have been here since day one. You know me. You know my words' }] },
+    { turns: [{ by: 'a', say: 'Somebody is wearing my face. I need everyone to remember who I actually am.' }], when: { catfish: false } },
+    { turns: [{ by: 'a', send: "Ask me about our first chat. Go on. The copy won't know" }] },
+    { turns: [{ by: 'a', say: 'Of all the profiles to copy, they picked mine. Great.', send: "I'm the one you know. Don't let this thing split us up" }], when: { catfish: true } },
+  ]),
+  ...E('clone.plea.new', [
+    { turns: [{ by: 'a', say: 'Sell it. Sell it like your life depends on it.', send: "I don't know who that is, but it isn't me" }] },
+    { turns: [{ by: 'a', send: "Whoever that other account is, they have been studying me. Don't fall for it" }], beat: '{a} bites {a.posAdj} lip and hits send.' },
+    { turns: [{ by: 'a', say: 'One day of notes. That is all I have. Make it count.', send: "I'm the real one. Trust your gut" }] },
+  ]),
+  ...E('clone.vote.new', [
+    { turns: [{ by: 'a', say: "The new one is fake. The old one has been talking to me for days. I'd know." }] },
+    { turns: [{ by: 'a', say: "I'm voting the new account as the fake. It's too polished." }] },
+    { turns: [{ by: 'a', say: 'The one who just showed up is lying. Simple.' }] },
+  ]),
+  ...E('clone.vote.old', [
+    { turns: [{ by: 'a', say: "I actually think the old one is the fake. Something has been off for days." }] },
+    { turns: [{ by: 'a', say: "The new one sounds more real to me than the original ever did. Weird, but that's my vote." }] },
+    { turns: [{ by: 'a', say: "I'm voting the original as the fake. Call it a hunch." }], beat: '{a} winces as {a.sub} sends it.' },
+  ]),
+  ...E('clone.out', [
+    { turns: [{ by: 'a', react: 'They picked the other one. They think I am the fake.' }], beat: '{a} stares at the screen, stunned.' },
+    { turns: [{ by: 'a', react: 'Blocked as a fake. As myself. Unbelievable.' }], when: { catfish: false } },
+    { turns: [{ by: 'a', react: "Called a fake by the room. The irony is not lost on me." }], when: { catfish: true } },
+    { turns: [{ by: 'a', react: 'After all of that, the room believed the copy.' }], beat: '{a} sits down slowly on the floor.' },
+    { turns: [{ by: 'a', react: 'So that is it. The room chose.' }] },
+  ]),
+  ...E('rod.partner', [
+    { turns: [{ by: 'a', react: "'Your Ride or Die is {b}.' Oh, I can work with that." }], beat: '{a} smiles at the screen.' },
+    { turns: [{ by: 'a', react: '{b}? My Ride or Die is {b}? I did not see that coming.' }] },
+    { turns: [{ by: 'a', say: "If {b} goes down, I might have to go down with {b.obj}. I need to think about that." }] },
+  ]),
+  ...E('sacrifice.go', [
+    { turns: [{ by: 'a', say: "I'll go. Keep {b} in. {b} has more game left than I do." }], beat: '{a} presses the button before {a.sub} can change {a.posAdj} mind.' },
+    { turns: [{ by: 'a', say: 'Ride or die means ride or die. I go.' }] },
+    { turns: [{ by: 'a', say: "{b} is not leaving tonight. I am." }], beat: '{a} wipes {a.posAdj} eyes.' },
+  ]),
+  ...E('sacrifice.kept', [
+    { turns: [{ by: 'a', say: "I'm sorry, {b}. I can't. I came here to win." }], beat: '{a} looks away from the screen.' },
+    { turns: [{ by: 'a', say: 'I love {b}. But not enough to leave for {b.obj}.' }] },
+    { turns: [{ by: 'a', react: 'I stayed. I hope {b} understands. I will never know if {b} does.' }] },
+  ]),
+  ...E('sacrifice.saved', [
+    { turns: [{ by: 'b', react: '{a} went for me? {a} left so I could stay?' }], beat: '{b} holds both hands over {b.posAdj} mouth.' },
+    { turns: [{ by: 'b', react: 'I will win this for {a}. I swear I will.' }] },
+    { turns: [{ by: 'b', react: 'Nobody has ever done anything like that for me.' }] },
+  ]),
+};

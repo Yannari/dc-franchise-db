@@ -1264,6 +1264,18 @@ export const TWIST_CATALOG = [
   { id:'ci-disrupter', emoji:'\u{1F6A8}', name:'Disrupter Alert', format:'the-circle',
     category:'social', phase:'any', engineType:'ci-disrupter', ciEvent:'disrupter',
     desc:'Without warning, an alert goes out to every apartment: first to respond wins. Nobody knows what they are racing for until someone wins it. The prize is either immunity at the next blocking or the right to name one of the next Influencers. Being first rewards paying attention and nerve, not popularity, so it often lands on someone the ratings would never have helped.' },
+  /* ── THE CIRCLE'S IDENTITY TWISTS (Plan 3b Task 9b) ──
+     Booked on a day by slot (in the slot's list) or drawn rarely.
+     `ciTwist` is the engine's name (js/ci/twists.js EVENTS). */
+  { id:'ci-profile-swap', emoji:'\u{1F501}', name:'The Profile Swap', format:'the-circle',
+    category:'social', phase:'any', engineType:'ci-profile-swap', ciTwist:'swap',
+    desc:'Two players are told, privately, that until the next blocking they will play each other\'s profiles. Each one moves into the other\'s chats, answers as them and has to keep up their friendships and their way of typing, while the rest of the building has no idea. Every slip is a chance to be caught, and anything said in those chats stays with the profile, not the person. The swap ends on the morning of the next blocking.' },
+  { id:'ci-clone', emoji:'\u{1F46F}', name:'The Clone', format:'the-circle',
+    category:'returns', phase:'any', engineType:'ci-clone', ciTwist:'clone',
+    desc:'A blocked player comes back into the Circle wearing an active player\'s exact name and photos, and the building suddenly has two of the same person. Everyone else votes on which one is fake. The original has history and friendships to lean on; the clone has one day of notes and nerve. Whoever the room calls fake is blocked on the spot, and the room can get it wrong.' },
+  { id:'ci-ride-or-die', emoji:'\u{1F91D}', name:'Ride or Die', format:'the-circle',
+    category:'social', phase:'any', engineType:'ci-ride-or-die', ciTwist:'ride-or-die',
+    desc:'Secret compatibility answers pair every player with a Ride or Die. Until the final ratings, if one of a pair is blocked, their partner can choose to go in their place, and the top-rated player\'s partner becomes a secret second Influencer. Players learn who their own partner is and nobody else\'s, so every blocking is also a question of who would take the fall for whom.' },
   /* ── THE CIRCLE'S ARRIVALS (Plan 3b Task 7) ──
      How a newcomer comes in, booked on an arrival day by slot (a slot's
      booking may list a blocking and an arrival) or drawn by how many arrive.

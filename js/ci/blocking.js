@@ -18,6 +18,7 @@ import { attractionOk } from './chat.js';
 import { deliberate } from './hangout.js';
 import { THEORY_LINE } from './slips.js';
 import { handOver } from './powers.js';
+import { rideOrDieTarget } from './twists.js';
 
 export function atRiskOf(state, influencers) {
   const pool = state.active.filter(h => !influencers.includes(h));
@@ -77,6 +78,8 @@ export function standardBlocking(state, rng, ratingRow, { format = 'standard', s
   // A mission can overrule the Hangout (UK 3 Ep 8): it names who actually goes.
   let channel = 'influencers';
   if (decide) { const r = decide(d); if (r.target !== d.target) { d.target = r.target; channel = r.channel || channel; } }
+  // Ride or Die (US 6): a blocked player's partner may go in their place.
+  { const r = rideOrDieTarget(state, rng, d.target); if (r.target !== d.target) { d.target = r.target; channel = r.channel || channel; } }
   Object.assign(hangout.data, d);
   for (const h of state.active) delete state.immuneNext[h];
   const announcement = addScene(state, 'blocking', [d.announcer, d.target],

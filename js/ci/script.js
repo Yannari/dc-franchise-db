@@ -487,6 +487,28 @@ const BLOCKS = {
     return [{ key: 'disrupter.alert', cast: { a: slow[0] || w, b: w } }, { key: `disrupter.win.${s.data.effect}`, cast: { a: w } },
       ...slow.slice(0, 2).map(h => ({ key: 'disrupter.slow', cast: { a: h, b: w } }))];
   },
+  // Identity twists (Plan 3b Task 9b).
+  swap(state, s) {
+    const [A, B] = s.data.handles;
+    return [{ key: 'swap.told', cast: { a: A, b: B } }, { key: 'swap.told', cast: { a: B, b: A } }];
+  },
+  'swap-back'(state, s) { return s.data.handles.map(h => ({ key: 'swap.back', cast: { a: h } })); },
+  clone(state, s) {
+    const { original, clone, votes, fake } = s.data;
+    const out = [{ key: 'clone.alert', cast: { a: Object.keys(votes)[0] || original } },
+      { key: 'clone.plea.old', cast: { a: original } }, { key: 'clone.plea.new', cast: { a: clone } }];
+    for (const [v, t] of Object.entries(votes).slice(0, 4)) out.push({ key: t === clone ? 'clone.vote.new' : 'clone.vote.old', cast: { a: v } });
+    out.push({ key: 'clone.out', cast: { a: fake } });
+    return out;
+  },
+  'ride-or-die'(state, s) {
+    return s.data.pairs.slice(0, 2).flatMap(([a, b]) => [{ key: 'rod.partner', cast: { a, b } }]);
+  },
+  sacrifice(state, s) {
+    const { goes, stays, chose } = s.data;
+    return chose ? [{ key: 'sacrifice.go', cast: { a: goes, b: stays } }, { key: 'sacrifice.saved', cast: { a: goes, b: stays } }]
+      : [{ key: 'sacrifice.kept', cast: { a: stays, b: goes } }];
+  },
   // Powers (Plan 3b Task 8).
   'power-reveal'(state, s) {
     const readers = s.seenBy.filter(h => h !== s.who[0]);
@@ -953,7 +975,8 @@ export const POOL_KEYS = [
   ...['immunity', 'hacker', 'joker', 'burner'].map(k => `visit.power.${k}`), ...['immunity', 'joker', 'hacker'].map(k => `power.reveal.${k}`),
   'hack.send', 'hack.read', 'hack.undone', 'joker.chat', 'joker.pick', 'burner.exposed',
   'alert.public-super', 'alert.none', 'block.react.guess', 'noblock.alert', 'noblock.influencer', 'noblock.relief', 'mission.given', 'mission.success',
-  'block.announce.mission', 'disrupter.alert', 'disrupter.win.immunity', 'disrupter.win.pick', 'disrupter.slow', 'disrupter.pick', 'date.pick', 'date.chat', 'date.gift', 'date.passed', 'invites.first', 'invites.next', 'invites.last',
+  'block.announce.mission', 'swap.told', 'swap.back', 'clone.alert', 'clone.plea.old', 'clone.plea.new', 'clone.vote.new', 'clone.vote.old',
+  'clone.out', 'rod.partner', 'sacrifice.go', 'sacrifice.kept', 'sacrifice.saved', 'disrupter.alert', 'disrupter.win.immunity', 'disrupter.win.pick', 'disrupter.slow', 'disrupter.pick', 'date.pick', 'date.chat', 'date.gift', 'date.passed', 'invites.first', 'invites.next', 'invites.last',
   'race.win', 'race.lose', 'newparty.throw', 'newparty.guest', 'newparty.left', 'lurk.watch', 'lurk.reveal',
   'chosen.offer', 'chosen.pick', 'chosen.thanks', 'pairarrival.chat', 'alert.antivirus', 'antivirus.open', 'antivirus.pass', 'antivirus.got', 'antivirus.left', 'block.announce.antivirus',
   'hangout.agree', 'hangout.yield', 'hangout.trade', 'hangout.pact',

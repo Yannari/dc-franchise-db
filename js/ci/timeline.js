@@ -38,6 +38,9 @@ const powerOfTwist = id => TWIST_CATALOG.find(t => t.id === id && t.format === '
 // Powers a blocked player hands over (spec 14), drawn now and then mid-season.
 export const POWER_DRAWS = { chance: 0.2, kinds: [['immunity', 2], ['hacker', 1], ['joker', 1], ['burner', 1]] };
 export const DISRUPTER_CHANCE = 0.3;
+const twistOfId = id => TWIST_CATALOG.find(t => t.id === id && t.format === 'the-circle' && t.ciTwist)?.ciTwist;
+// Identity twists, drawn rarely (booked by slot as often as the author likes).
+export const TWIST_DRAWS = { swap: 0.08, clone: 0.06, 'ride-or-die': 0.12 };
 // A slot's booking: one id, or a list (a night can have a blocking and an arrival).
 const idsAt = (bookings, slot) => [].concat(bookings[slot] || []);
 
@@ -103,6 +106,16 @@ export function bookSeason(schedule, rng, { total, finalists = 5, bookings = {} 
   for (const d of out) {
     if (d.block || d.final || d.finale || d.day === 1) continue;
     if (idsAt(bookings, d.slot).includes('ci-disrupter') || (d.slot.startsWith('social') && rng() < DISRUPTER_CHANCE)) d.disrupter = true;
+  }
+  // Identity twists (spec 14): booked on a day, or drawn now and then.
+  let rodDrawn = false;
+  for (const d of out) {
+    if (d.final || d.finale || d.day === 1) continue;
+    const booked = idsAt(bookings, d.slot).map(twistOfId).find(Boolean);
+    if (booked) { d.twist = booked; continue; }
+    if (d.slot.startsWith('social') && rng() < TWIST_DRAWS.swap) d.twist = 'swap';
+    else if (d.block && d.night?.position === 'middle' && rng() < TWIST_DRAWS.clone) d.twist = 'clone';
+    else if (!rodDrawn && d.day <= Math.ceil(out.length / 2) && rng() < TWIST_DRAWS['ride-or-die']) { d.twist = 'ride-or-die'; rodDrawn = true; }
   }
   // Arrival days: booked by slot, or drawn by how many arrive. A pair on a
   // one-arrival day pulls a newcomer forward from the last later arrival day

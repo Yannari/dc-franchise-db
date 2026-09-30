@@ -1719,7 +1719,12 @@ const CLASH_SAID = {
     reply: ['I’m not the one being asked.', 'Nice try.', 'Just answer the question.'] },
   'ganged-up': { speaker: 'b',
     say: ['That’s three of you with the same name in ten minutes. Who set that up?', 'Funny how you all landed on me at once.', 'Did you lot rehearse this?'],
-    reply: ['Nobody rehearsed anything.', 'We just agree.', 'Maybe we’re just right.'] },
+    reply: ['Nobody rehearsed anything.', 'We just agree.', 'Maybe we’re just right.'],
+    // THE SAME PERSON, ON THE OTHER END OF IT. Somebody who has just told the
+    // table "nobody rehearsed anything" and is then piled on themselves cannot
+    // ask "did you lot rehearse this?" with a straight face; they know it.
+    turned: ['Five minutes ago you were all on {p}. Now it’s me?', 'Oh, so now it’s my turn.', 'Right. So I’m {p} now, am I?'],
+    turnedReply: ['You did the same to {p}.', 'Now you know how {p} felt.', 'Yes. It’s your turn.'] },
   'grievance-fresh': { speaker: 'a', keepLine: true,
     say: ['We had this out yesterday, {o}, and I haven’t forgotten it.', 'This is about yesterday, {o}, and you know it.'],
     reply: ['Neither have I.', 'Then let’s have it out properly.'] },
@@ -2933,6 +2938,7 @@ function _buildBeats(v) {
     'ganged-up': 'Too many accusers to be a coincidence',
     defended: 'Somebody speaks up for them',
   };
+  const gangReplied = new Map();   // who defended a pile-on → against whom
   for (const c of (v.clashes || [])) {
     // SAID, NOT SUMMARISED. The engine's line reports the exchange ("Bowie
     // asks Ripper, in front of everybody, why he is so certain"); where the
@@ -2943,8 +2949,11 @@ function _buildBeats(v) {
     if (cs) {
       const [sp, other] = cs.speaker === 'b' ? [c.b, c.a] : [c.a, c.b];
       const ck = key + '|clash|' + c.kind + '|' + c.a + '|' + c.b;
-      talk = _said(sp, _fill(_fresh(cs.say, ck), { o: _esc(other) }))
-        + (cs.reply ? _said(other, _fill(_fresh(cs.reply, ck + '|r'), { o: _esc(sp) })) : '');
+      const turned = c.kind === 'ganged-up' && gangReplied.has(sp) && cs.turned;
+      const subs = { o: _esc(other), p: _esc(gangReplied.get(sp) || '') };
+      talk = _said(sp, _fill(_fresh(turned ? cs.turned : cs.say, ck), subs))
+        + (cs.reply ? _said(other, _fill(_fresh(turned ? cs.turnedReply : cs.reply, ck + '|r'), subs)) : '');
+      if (c.kind === 'ganged-up') gangReplied.set(other, sp);
     }
     push('debate', '<div class="rt-clash">'
       + '<div class="rt-clash-k">' + _ic('candles', 11)

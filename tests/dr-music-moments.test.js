@@ -15,14 +15,13 @@ describe("the show's cues", () => {
        for drama and cry. The user: "i still dont hear the soundtrack in the
        correct place". A cue may score the moments of ONE kind, no more. */
     const allowed = {
-      'private/time-has-come.mp3': ['time-has-come'],
+      'private/time-has-come.mp3': ['time-has-come', 'the-verdict', 'suspense', 'crowning'],
       'private/bottom-two.mp3': ['bottom-two'],
       'private/up-for-elimination.mp3': ['up-for-elimination'],
       'private/top-and-bottom.mp3': ['critiques', 'the-call'],
       'private/love-yourself.mp3': ['closing'],
-      'private/elimination.mp3': ['verdict'],
-      // "I've made my decision": every wait for a verdict.
-      'private/decision.mp3': ['decision', 'suspense', 'crowning'],
+      // The Last Sun is her goodbye, and nothing else (the user: the call "is using the sashay music").
+      'private/decision.mp3': ['sashay'],
       'private/arrivals.mp3': ['entrances'],
       'private/werkroom.mp3': ['werkroom'],
       'private/untucked.mp3': ['untucked'],

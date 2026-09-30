@@ -813,9 +813,45 @@ export function renderStageBeats({
        so a for-the-win night opened with "one stays, one goes" over a night
        nobody could lose. `stakes` is already computed for `call-stakes`
        above; this is the same question asked one beat later. */
-    emit(beatById('lipsync-intro'),
-      (lipsync.queens || []).length > 2 && stakes === 'life' ? 'life-group' : stakes, [],
-      { song: lipsync.song, artist: lipsync.artist, stakes });
+    /* THE SPEECH, ONE LINE AT A TIME. The show's own words (fan wiki,
+       "Lip Sync Performances"), each its own card so the room can hold its
+       breath between them: the queens named, the song, the stakes, "the time
+       has come", the three words, and the send-off. The user asked for it —
+       "we need multiple cards for suspense" — and the screen scores it: the
+       tension bed under the first three, "The Time Has Come" from the fourth,
+       the song on the first move. Prize nights say the show's prize wording.
+       Any other stakes keep the prose intro. */
+    const nQ = (lipsync.queens || []).length;
+    const speech = nQ >= 2 && (stakes === 'life' || stakes === 'win' || stakes === 'legacy');
+    if (speech) {
+      const COUNT = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six'];
+      const by = lipsync.artist ? ` by ${lipsync.artist}` : '';
+      const lines = [
+        ['two', `"${COUNT[nQ] || 'All of you'} queens stand before me."`],
+        ['song', `"Prior to tonight, you were asked to prepare a lip sync performance of ${lipsync.song}${by}."`],
+        ['stakes', stakes === 'win'
+          ? '"Ladies, this is your chance to impress me and win the week."'
+          : stakes === 'legacy'
+            ? '"Ladies, this is your chance to impress me and win the power to send one of your sisters home."'
+            : '"Ladies, this is your last chance to impress me and save yourself from elimination."'],
+        ['time', '"The time has come..."'],
+        ['for', stakes === 'win' ? '"...for you to lip sync... FOR. THE. WIN!"'
+          : stakes === 'legacy' ? '"...for you to lip sync... FOR. YOUR. LEGACY!"'
+            : '"...for you to lip sync... FOR. YOUR. LIFE!"'],
+        ['luck', '"Good luck, and don\'t fuck it up."'],
+      ];
+      for (const [part, text] of lines) {
+        scenes.push({
+          step: 'lipsync', kind: 'stage:lipsync-speech',
+          data: { beat: 'lipsync-speech', part, stakes, players: [], song: lipsync.song, artist: lipsync.artist, voiced: true },
+          text,
+        });
+      }
+    } else {
+      emit(beatById('lipsync-intro'),
+        nQ > 2 && stakes === 'life' ? 'life-group' : stakes, [],
+        { song: lipsync.song, artist: lipsync.artist, stakes });
+    }
     /* THE HEAD-TO-HEAD, AT BOTH ENDS OF THE SONG (stage-beats.js
        lipsync-open / lipsync-last-chorus). Two queens only: {a} is the one
        ahead on the stage. Read off the same scores that decide the song, so

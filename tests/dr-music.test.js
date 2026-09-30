@@ -50,8 +50,13 @@ describe('every screen knows what it is', () => {
     const html = tagStep('<div class="dr-step" id="x">hi</div>', 'winner', 'Toxic');
     expect(html).toContain('data-music="winner"');
     expect(html).toContain('data-song="Toxic"');
-    expect(lipsyncMusicOf('stage:lipsync-shantay')).toBe('shantay');
+    // The verdict is one moment under one cue; her goodbye after it is the Last Sun's.
+    expect(lipsyncMusicOf('stage:lipsync-shantay')).toBe('the-verdict');
+    expect(lipsyncMusicOf('stage:lipsync-sashay')).toBe('the-verdict');
     expect(lipsyncMusicOf('stage:sashay-words')).toBe('sashay');
+    // The speech: the tension bed, then "The Time Has Come".
+    expect(lipsyncMusicOf('stage:lipsync-speech', { part: 'stakes' })).toBe('bottom-two');
+    expect(lipsyncMusicOf('stage:lipsync-speech', { part: 'time' })).toBe('time-has-come');
     // "The time has come" has its own cue; the song starts on the first move.
     expect(lipsyncMusicOf('stage:lipsync-intro')).toBe('time-has-come');
     expect(lipsyncMusicOf('stage:lipsync-beat')).toBe('lipsync');

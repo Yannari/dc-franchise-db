@@ -240,10 +240,10 @@ export function validateQuickSetup(config = {}, playerList = []) {
       const c = _catById(t.type), d = shape.get(Number(t.episode));
       if (!d) continue;
       const edge = d.day === 1 || d.final || d.finale;
-      const why = (c.ciFormat || c.ciPower) && !d.block ? 'a day with no blocking'
+      const why = (c.ciFormat || c.ciPower) && !d.block ? 'a day with no ratings (a night is booked on its ratings day)'
         : c.ciEntry && !d.arrivals ? 'a day with no newcomer'
           : c.ciTwist && edge ? (d.day === 1 ? 'Day 1' : 'the last two days')
-            : c.ciEvent && (d.block || edge) ? 'a blocking day' : null;
+            : c.ciEvent && (d.block || edge) ? 'a ratings day' : null;
       if (why) rows.push({ key: 'twists', ok: true, warn: true, msg: `${c.name} is booked on episode ${t.episode}, ${why}: it won't run there.` });
     }
     return rows;

@@ -30,7 +30,7 @@ export const FACT_KEYS = ['intent', 'ending', 'result', 'known', 'early', 'late'
   'hurt', 'influencer', 'reason', 'motive', 'mode', 'reasonKind', 'band', 'kiss', 'claim', 'lie',
   'tone', 'party', 'final', 'slip', 'noticed', 'place', 'self', 'likesC', 'misread', 'anon',
   'answer', 'strong', 'split', 'qkind', 'right', 'off', 'odd', 'failed', 'barbed', 'slipped', 'mutual', 'warm',
-  'everyone', 'fresh', 'tier', 'many', 'jab', 'register', 'crack', 'sole'];
+  'everyone', 'fresh', 'tier', 'many', 'jab', 'register', 'crack', 'sole', 'blocks', 'infl'];
 
 export const hostName = () => showWords('the-circle').host || 'Host';
 
@@ -767,6 +767,9 @@ const BLOCKS = {
     const out = viewers.slice(0, 4).map(v => ({ key: 'goodbye.guess', cast: { a: v, b: h } }));
     out.push({ key: p.ai ? 'goodbye.video.ai' : p.mode === 'catfish' ? `goodbye.video.catfish.${p.reason || 'strategic'}` : `goodbye.video.${p.mode}`,
       cast: { a: h }, extra: { mode: p.mode, reasonKind: p.reason || undefined } });
+    // A shout-out to their closest friend still in the building, when there is one.
+    const bestie = viewers.filter(v => rel(h, v, 'affection') > 3).sort((x, y) => rel(h, y, 'affection') - rel(h, x, 'affection'))[0];
+    if (bestie && !p.ai) out.push({ key: 'goodbye.shout', cast: { a: h, b: bestie } });
     // Every goodbye ends the same way on the show: a lesson, then good luck (spec 11.2).
     out.push({ key: 'goodbye.video.close', cast: { a: h } });
     if (s.data.warning) {
@@ -944,18 +947,38 @@ export function writeScene(state, scene) {
   return scene.script;
 }
 
+// The night's scenes that can open a day (season.js: the blocking follows the
+// ratings into the next episode).
+const NIGHT_KINDS = new Set(['hangout', 'blocking', 'save', 'plead', 'vote', 'offer', 'visit', 'antivirus', 'no-block']);
+
 /** Script every aired scene of the day, and open the day with the host. */
 export function writeDay(state, day) {
   const aired = state.scenes.filter(s => s.day === day && s.aired);
   aired.forEach(s => writeScene(state, s));
   if (!aired[0]) return;
-  const yesterday = state.scenes.filter(s => s.day === day - 1);
-  const tone = day === 1 ? 'first' : yesterday.some(s => s.kind === 'blocking') ? 'blocking'
-    : yesterday.some(s => s.kind === 'arrival') ? 'arrival' : 'quiet';
   const rng = streamFor(state.seed, `line:cold:${day}`);
-  const key = `host.cold.${tone}`;
-  const entry = pickEntry(state, key, { early: day <= 2 }, `day${day}`, rng);
-  if (entry) aired[0].script.blocks.unshift({ key, ...renderEntry(state, entry, { a: aired[0].who[0] }, rng) });
+  // A day that opens on last night's Hangout and blocking (the ratings ended
+  // the last episode): the host picks up the cliffhanger, and the good-morning
+  // waits until the night is over.
+  let morning = 0;
+  while (morning < aired.length && NIGHT_KINDS.has(aired[morning].kind)) morning++;
+  const blockedToday = state.blocked.some(b => b.day === day);
+  if (morning > 0) {
+    const infl = [...state.ratings].reverse().find(r => !r.final)?.influencers?.length ?? 0;
+    const entry = pickEntry(state, 'host.cold.night', { blocks: blockedToday, infl }, `day${day}`, rng);
+    if (entry) aired[0].script.blocks.unshift({ key: 'host.cold.night', ...renderEntry(state, entry, { a: aired[0].who[0] }, rng) });
+  }
+  const yesterday = state.scenes.filter(s => s.day === day - 1);
+  const tone = day === 1 ? 'first' : (morning > 0 ? blockedToday : yesterday.some(s => s.kind === 'blocking')) ? 'blocking'
+    : yesterday.some(s => s.kind === 'arrival') ? 'arrival' : 'quiet';
+  const first = aired[morning];
+  if (first) {
+    const key = `host.cold.${tone}`;
+    const entry = pickEntry(state, key, { early: day <= 2 }, `day${day}`, rng);
+    // a: somebody still in the Circle (a goodbye scene opens on the one who left)
+    const a = first.who.find(h => state.active.includes(h)) || state.active[0];
+    if (entry) first.script.blocks.unshift({ key, ...renderEntry(state, entry, { a }, rng) });
+  }
   bridge(state, aired);
 }
 
@@ -1026,7 +1049,7 @@ export const POOL_KEYS = [
   ...WHY_.map(w => `goodbye.video.catfish.${w}`), 'goodbye.warning.catfish', 'goodbye.warning.distrusts', 'goodbye.warning.seen',
   'goodbye.react.guilty', 'goodbye.react.warned', 'goodbye.react.vindicated', 'goodbye.react.surprised',
   'meet.arrive.real', 'meet.arrive.catfish', 'meet.found', 'meet.both', ...WHY_.map(w => `meet.explain.${w}`),
-  'reveal.place', 'reveal.winner', ...['first', 'blocking', 'arrival', 'quiet'].map(t => `host.cold.${t}`), 'host.chat', 'host.status', 'host.circle',
+  'reveal.place', 'reveal.winner', 'goodbye.shout', ...['first', 'blocking', 'arrival', 'quiet', 'night'].map(t => `host.cold.${t}`), 'host.chat', 'host.status', 'host.circle',
   // Plan 3a: games, parties, apartment life, videos from home.
   'game.open', 'game.statement.agree', 'game.statement.disagree', 'game.statement.lone',
   'game.name.good', 'game.name.bad', 'game.name.funny',

@@ -76,7 +76,8 @@ describe('a booked season plays', () => {
     const { state, result } = playCircleSeason({ cast: names, setup: circleSetup(names, { newcomers: 5 }), pool: makePool(6, 5), seed: 5,
       options: { bookings: { rating2: 'ci-sole-influencer' } } });
     const night = state.schedule.find(d => d.slot === 'rating2');
-    const block = state.scenes.find(s => s.kind === 'blocking' && s.day === night.day);
+    // the night's ratings end its day; its blocking opens the next
+    const block = state.scenes.find(s => s.kind === 'blocking' && s.day === night.day + 1);
     expect(block.data.by).toHaveLength(1);
     expect(block.data.format).toBe('sole');
     expect(result.placements).toHaveLength(5);

@@ -11,8 +11,13 @@ function booked(slot, id, seed = 5) {
   const names = cast.map(p => p.name);
   const out = playCircleSeason({ cast: names, setup: circleSetup(names, { newcomers: 5 }), pool: makePool(6, seed), seed,
     options: { bookings: { [slot]: [id] } } });
-  const day = out.state.schedule.find(d => d.slot === slot).day;
-  const on = kind => out.state.scenes.filter(s => s.kind === kind && s.day === day);
+  const d = out.state.schedule.find(x => x.slot === slot);
+  const day = d.day;
+  // A night's Hangout, blocking and visit open the next day (the show's
+  // cliffhanger); its ratings and a day twist stay on the day itself.
+  const NIGHT = new Set(['hangout', 'blocking', 'save', 'plead', 'vote', 'offer', 'visit', 'antivirus', 'no-block']);
+  const nightDay = d.night?.format === 'instant' ? day : day + 1;
+  const on = kind => out.state.scenes.filter(s => s.kind === kind && s.day === (NIGHT.has(kind) ? nightDay : day));
   return { ...out, day, on };
 }
 

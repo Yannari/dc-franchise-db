@@ -440,6 +440,21 @@ export const FORMAT_LINES_4 = {
   ]),
 };
 
+// goodbye.shout — a, on video, to b: their closest friend still in the
+// building (only when there is one). The show's goodbyes nearly always have it.
+export const GOODBYE_SHOUT = {
+  ...E('goodbye.shout', [
+    { turns: [{ by: 'a', video: "{b}, you were my person in here. Don't let anybody tell you different." }] },
+    { turns: [{ by: 'a', video: '{b}, I owe you a real hug and a real dinner. Win this for both of us.' }] },
+    { turns: [{ by: 'a', video: "{b}. You know. You know what you meant to me in here. Go get it." }] },
+    { turns: [{ by: 'a', video: "And {b}? Thank you. You made the worst days in there feel normal." }] },
+    { turns: [{ by: 'a', video: "{b}, I'm going to be yelling at my TV for you. Loudly." }] },
+    { turns: [{ by: 'a', video: "Special shout-out to {b}. Real recognizes real. Take it all the way." }] },
+    { turns: [{ by: 'a', video: "{b}, keep being exactly who you are. It's working. I promise." }] },
+    { turns: [{ by: 'a', video: "{b}, you better be in that final. I'll be watching." }] },
+  ]),
+};
+
 // goodbye.video.close — a, on video, before the screen goes dark: what they
 // learned, and good luck (spec 11.2 steps 5-6).
 export const GOODBYE_CLOSE = {

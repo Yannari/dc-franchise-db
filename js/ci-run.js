@@ -21,7 +21,7 @@
 import { gs, setGs, players, seasonConfig, seasonFormat, TWIST_CATALOG } from './core.js';
 import { CIRCLE_FORMAT } from './shows.js';
 import { playCircleSeason } from './ci/season.js';
-import { buildSchedule } from './ci/schedule.js';
+import { buildSchedule, rhythmOf } from './ci/schedule.js';
 import { carriedFor } from './franchise-carry.js';
 import { buildFranchiseMeta } from './franchise-meta.js';
 import { fameStarsFor } from './alumni.js';
@@ -153,16 +153,19 @@ export function circleTimelineDays() {
   const ai = seasonConfig.ciAI === true;
   let n = circleRoles(cast).filter(r => r === 'starter').length + (ai ? 1 : 0);
   const out = new Map();
-  for (const d of circleSeasonShape()) {
+  const shape = circleSeasonShape();
+  for (const d of shape) {
     const start = n;
     const row = rows.get(d.day);
+    // The ratings end a day; that night's blocking opens the next (season.js).
+    const blocksHere = !!shape[d.day - 2]?.block;
     if (row?.ci?.people) n = row.ci.people.length;
-    else n += (d.arrivals || 0) - (d.block ? 1 : 0);
-    const parts = d.finale ? ['Finale'] : d.final ? ['Final ratings']
-      : [d.block ? 'Blocking' : 'No blocking',
+    else n += (d.arrivals || 0) - (blocksHere ? 1 : 0);
+    const parts = d.finale ? ['Finale'] : d.final ? [blocksHere ? 'Blocking' : null, 'Final ratings']
+      : [blocksHere ? 'Blocking' : null, d.block ? 'Ratings' : null, !blocksHere && !d.block ? 'A quiet day' : null,
         d.arrivals ? (d.arrivals === 1 ? 'Newcomer' : `${d.arrivals} newcomers`) : null,
         d.game ? 'Game' : null, d.party ? 'Party' : null, d.homeVideos ? 'Videos from home' : null];
-    out.set(d.day, { label: parts.filter(Boolean).join(' · '), start, end: n, slot: d.slot, block: !!d.block, arrivals: d.arrivals || 0 });
+    out.set(d.day, { label: parts.filter(Boolean).join(' · '), start, end: n, slot: d.slot, block: blocksHere, ratings: !!d.block, arrivals: d.arrivals || 0 });
   }
   return out;
 }
@@ -192,7 +195,9 @@ export function circleShapeOf({ cast = [], setup = {}, config = {} } = {}) {
   const ai = config.ciAI === true;
   try {
     return buildSchedule({ total: cast.length + (ai ? 1 : 0), starters: roles.filter(r => r === 'starter').length + (ai ? 1 : 0),
-      finalists: _finalists(config), days: Number(config.ciDays) > 0 ? Number(config.ciDays) : null });
+      finalists: _finalists(config), days: Number(config.ciDays) > 0 ? Number(config.ciDays) : null,
+      // the same rhythm the engine will play (schedule.js rhythmOf)
+      rhythm: rhythmOf(cast.map(p => p.name)) });
   } catch { return []; }
 }
 

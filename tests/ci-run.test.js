@@ -185,16 +185,22 @@ describe('the Season Timeline tiles say what each day is', () => {
     const shape = circleSeasonShape();
     const days = circleTimelineDays();
     expect(days.size).toBe(shape.length);
+    // The ratings end a day; that night's blocking opens the next (the show's cliffhanger).
     const first = days.get(1);
-    expect(first.label).toMatch(/Blocking/);
-    expect(first.end).toBe(first.start - 1);
+    expect(first.label).toMatch(/Ratings/);
+    expect(first.label).not.toMatch(/Blocking/);
+    expect(first.end).toBe(first.start);
+    const second = days.get(2);
+    expect(second.label).toMatch(/Blocking/);
     const arrival = shape.find(d => d.arrivals > 0);
     const tile = days.get(arrival.day);
     expect(tile.label).toMatch(/(Newcomer|\d newcomers)/);
-    expect(tile.end).toBe(tile.start + arrival.arrivals - (arrival.block ? 1 : 0));
-    const social = shape.find(d => !d.block && !d.final && !d.finale);
-    expect(days.get(social.day).label).toMatch(/No blocking/);
-    expect(days.get(shape.find(d => d.final).day)).toMatchObject({ label: 'Final ratings', end: 5 });
+    expect(tile.end).toBe(tile.start + arrival.arrivals - (shape[arrival.day - 2]?.block ? 1 : 0));
+    const quiet = shape.find((d, i) => !d.block && !d.final && !d.finale && !shape[i - 1]?.block);
+    if (quiet) expect(days.get(quiet.day).label).toMatch(/A quiet day/);
+    const fin = days.get(shape.find(d => d.final).day);
+    expect(fin.label).toMatch(/Final ratings/);
+    expect(fin.end).toBe(5);
     expect(days.get(shape.find(d => d.finale).day).label).toBe('Finale');
   });
 

@@ -1667,6 +1667,24 @@ second, and that had hidden every small avatar photo.
 
 ---
 
+**As built (2026-09-30): the pacing.** The user asked for "an elimination one
+episode, a rating a different episode", and the wiki agrees:
+- **US 1:** 12 episodes, 8 blockings. **US 2:** 13 episodes, 7.
+- **The episode split:** the ratings END an episode, on the cliffhanger. The
+  Hangout, blocking, visit and goodbye video OPEN the next (`season.js`
+  `tonight`). The host opens that episode with `host.cold.night`, and the
+  good-morning waits until the night is over.
+- **Instant block:** the exception. It happens on the spot, as in US 1 Ep 9.
+- **Rhythm per season** (`schedule.js` `socialDays`), keyed on the cast
+  (`rhythmOf`) so the setup preview and the engine agree:
+  - `early` (35%): ratings on days 1, 3, 5, 7, then back to back, as in US 1.
+  - `breather` (40%): a quiet stretch mid-season, with the other quiet days
+    spread, as in US 2's episodes 3, 5, 9.
+  - `spread` (25%).
+- **Goodbye shout-out:** goodbye videos now include a shout-out to the
+  player's closest friend still in the building.
+- **Audit:** catfish win 42–46%, against 40% before.
+
 ## 19. Setup and the Circle tab
 
 ### 19.1 Cast tab

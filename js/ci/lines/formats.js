@@ -918,3 +918,58 @@ export const IDENTITY_LINES = {
     { turns: [{ by: 'b', react: 'Nobody has ever done anything like that for me.' }] },
   ]),
 };
+
+// ── Task 9b part 2 ─────────────────────────────────────────────────────
+// secondchance.back — the pair (a, as face and brain) learn they are back.
+// secondchance.react — a (in the building) about the new profile b.
+// egg.intro — a, an egg, introduces themselves (never by face). egg.vote —
+// a votes to keep b. egg.stays — a, kept. egg.goes — a, blocked unseen.
+export const COUNT_LINES = {
+  ...E('secondchance.back', [
+    { stage: '{a.face} and {a.brain} sit side by side in a brand-new apartment.', turns: [
+      { by: 'face', say: "We're back. Both of us. In one apartment." },
+      { by: 'brain', say: 'And we know exactly who sent us home.' }], beat: '{a.face} and {a.brain} bump fists.' },
+    { stage: 'Two blocked players, one new profile, one keyboard.', turns: [
+      { by: 'brain', say: "Second chance. We don't waste it." },
+      { by: 'face', say: 'We argue about every message, and we win anyway.' }] },
+    { stage: '{a.face} reads the alert over {a.brain}\'s shoulder.', turns: [
+      { by: 'face', react: "'You have been given a second chance.' Together?" },
+      { by: 'brain', say: "Together. Nobody in there knows it's us." }] },
+  ]),
+  ...E('secondchance.react', [
+    { turns: [{ by: 'a', react: 'A new player? This late? Something about {b} feels familiar.' }], beat: "{a} studies {b}'s profile." },
+    { turns: [{ by: 'a', react: '{b} just showed up out of nowhere. I do not trust out of nowhere.' }] },
+    { turns: [{ by: 'a', react: "Welcome, {b}. I guess. Who even are you?" }] },
+  ]),
+  ...E('secondchance.recognize', [
+    { turns: [{ by: 'a', react: 'Wait. {b} is back? We said goodbye to {b}!' }], beat: '{a} leans right up to the screen.' },
+    { turns: [{ by: 'a', react: "{b} came back. And {b} knows exactly who blocked {b.obj}." }] },
+    { turns: [{ by: 'a', react: "A second chance for {b}. Oh, this is not good for somebody." }], beat: '{a} starts pacing.' },
+  ]),
+  ...E('egg.intro', [
+    { turns: [{ by: 'a', send: "Hi Circle! I'm an egg right now, but I promise I'm a lot of fun" }] },
+    { turns: [{ by: 'a', send: "Keep me and you won't regret it. I'm loyal, I'm funny and I'm a great listener" }] },
+    { turns: [{ by: 'a', send: "Hello from inside the egg! Pick me. I'll make it worth it" }] },
+    { turns: [{ by: 'a', send: 'I know you can not see me. Just trust the vibe' }] },
+  ]),
+  ...E('egg.vote.first', [
+    { turns: [{ by: 'a', say: 'Two eggs. I pick the first one. It made me laugh.' }] },
+    { turns: [{ by: 'a', say: "I'm voting for the first egg. That intro had real energy." }] },
+    { turns: [{ by: 'a', say: 'Keep the first egg. I have a good feeling. About an egg. What is my life.' }] },
+  ]),
+  ...E('egg.vote.second', [
+    { turns: [{ by: 'a', say: 'The second egg. It sounded like somebody I would actually talk to.' }] },
+    { turns: [{ by: 'a', say: "I'm keeping the second one. Don't ask me why. Vibes." }] },
+    { turns: [{ by: 'a', say: 'Second egg. Final answer. I am voting for an egg. This show.' }] },
+  ]),
+  ...E('egg.stays', [
+    { turns: [{ by: 'a', react: 'They picked me! I get to hatch!' }], beat: '{a} jumps up and down in the new apartment.' },
+    { turns: [{ by: 'a', react: 'I stay. And now I have to be as fun as I promised.' }] },
+    { turns: [{ by: 'a', react: 'Kept! Out of the egg and into the game.' }] },
+  ]),
+  ...E('egg.goes', [
+    { turns: [{ by: 'a', react: 'Blocked before anyone even saw my face.' }], beat: '{a} stares at the screen in disbelief.' },
+    { turns: [{ by: 'a', react: 'That is the shortest game anyone has ever played.' }] },
+    { turns: [{ by: 'a', react: 'Never hatched. Okay. Wow.' }] },
+  ]),
+};

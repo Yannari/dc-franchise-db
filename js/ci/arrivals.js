@@ -9,6 +9,7 @@
 import { rel, bump, addScene, S, makePact } from './state.js';
 import { initMind, feel } from './mind.js';
 import { nudgeBelief, belief } from './beliefs.js';
+import { applyBlock } from './blocking.js';
 
 function join(state, h, entry) {
   state.active.push(h);
@@ -127,6 +128,27 @@ export const ENTRIES = {
     if (rest.length) ENTRIES.snoop.run(state, rng, rest);
   } },
 };
+
+// UK 2 Ep 16: two newcomers arrive hidden behind eggs; each gives the room
+// a short introduction, the room votes which stays, and the other is
+// blocked at once. They have only the introductions to go on.
+ENTRIES.egg = { min: 2, run(state, rng, handles) {
+  const eggs = handles.slice(0, 2);
+  for (const h of eggs) join(state, h, 'egg');
+  const voters = state.active.filter(o => !eggs.includes(o));
+  const votes = {};
+  for (const v of voters) {
+    votes[v] = eggs.map(e => [e, S(state, e, 'social') * 0.3 + S(state, e, 'boldness') * 0.2 + rng() * 3]).sort((a, b) => b[1] - a[1])[0][0];
+  }
+  const tally = Object.fromEntries(eggs.map(e => [e, Object.values(votes).filter(x => x === e).length]));
+  const stays = tally[eggs[0]] >= tally[eggs[1]] ? eggs[0] : eggs[1];
+  const goes = eggs.find(e => e !== stays);
+  const sc = addScene(state, 'egg', [...eggs], { eggs, votes, stays, goes }, [...state.active]);
+  applyBlock(state, goes, 'egg', [], sc);
+  state.pendingGoodbyes.push(goes);
+  for (const [v, e] of Object.entries(votes)) if (e === stays) bump(stays, v, 'affection', 0.5);
+  if (handles.length > 2) ENTRIES.snoop.run(state, rng, handles.slice(2));
+} };
 
 /** The Influencers pick which of two waiting profiles comes in. They have
  *  only the profile to go on: a curated face reads a little better. */

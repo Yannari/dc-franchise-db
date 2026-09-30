@@ -11,7 +11,7 @@ const src = f => readFileSync(join(DIR, f), 'utf8').replace(/\/\/.*$/gm, '');
 
 const KINDS = ['profiles', 'recognise', 'status', 'likes', 'chat', 'circle-chat', 'arrival',
   'after-party', 'ratings', 'hangout', 'blocking', 'visit', 'report', 'goodbye',
-  'final-ratings', 'meet', 'reveal', 'game', 'party', 'life', 'home-video', 'alert', 'save', 'offer', 'plead', 'vote', 'statement', 'antivirus', 'date', 'invites', 'race', 'newparty', 'lurk', 'chosen', 'pair-arrival', 'power-reveal', 'hack', 'hack-undone', 'joker-chat', 'joker-pick', 'burner-exposed', 'no-block', 'mission', 'disrupter', 'swap', 'swap-back', 'clone', 'ride-or-die', 'sacrifice'];
+  'final-ratings', 'meet', 'reveal', 'game', 'party', 'life', 'home-video', 'alert', 'save', 'offer', 'plead', 'vote', 'statement', 'antivirus', 'date', 'invites', 'race', 'newparty', 'lurk', 'chosen', 'pair-arrival', 'power-reveal', 'hack', 'hack-undone', 'joker-chat', 'joker-pick', 'burner-exposed', 'no-block', 'mission', 'disrupter', 'swap', 'swap-back', 'clone', 'ride-or-die', 'sacrifice', 'second-chance', 'egg'];
 
 function seasons(n = 4) {
   return Array.from({ length: n }, (_, i) => {

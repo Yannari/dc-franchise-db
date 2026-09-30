@@ -60,11 +60,33 @@ function weighted(rng, options) {
 /** The schedule with `night` on every blocking day (and days a double gave back). */
 export function bookSeason(schedule, rng, { total, finalists = 5, bookings = {} } = {}) {
   const out = schedule.map(d => ({ ...d }));
+  // Twists that change how many must be blocked, placed first: a second
+  // chance brings one profile back (+1); an egg twist blocks a newcomer on
+  // arrival (-1). Each applies from its own day on.
+  const deltas = [];
+  for (const d of out) {
+    if (d.final || d.finale || d.day === 1) continue;
+    const ids = idsAt(bookings, d.slot);
+    if (ids.some(id => twistOfId(id) === 'second-chance')) { d.twist = 'second-chance'; deltas.push({ day: d.day, delta: 1, twist: d }); }
+    if (d.arrivals > 0 && ids.some(id => entryOfTwist(id) === 'egg')) {
+      if (d.arrivals < 2) {
+        const from = out.filter(x => x.day > d.day && x.arrivals > 0).at(-1);
+        if (from) { from.arrivals--; d.arrivals++; d.pulledFrom = from.slot; }
+      }
+      if (d.arrivals >= 2) { d.entry = 'egg'; d.entryBooked = true; deltas.push({ day: d.day, delta: -1 }); }
+    }
+  }
   const nights = out.filter(d => d.block);
   const n = nights.length;
-  let need = total - finalists;
+  let need = total - finalists, removed = 0;
   nights.forEach((d, i) => {
     if (!d.block) return;                          // given back to a double earlier
+    for (const e of deltas.filter(x => !x.applied && x.day <= d.day)) {
+      e.applied = true;
+      // A second chance needs two blocked players to bring back.
+      if (e.delta > 0 && removed < 2) { delete e.twist.twist; e.twist.twistFellBack = 'second-chance'; continue; }
+      need += e.delta; removed -= e.delta < 0 ? e.delta : 0;
+    }
     const later = nights.slice(i + 1).filter(x => x.block);
     const ctx = { position: positionOf(i, n), index: i, nights: n, need, later: later.length };
     // What is left after tonight must still be doable: every later night
@@ -101,6 +123,7 @@ export function bookSeason(schedule, rng, { total, finalists = 5, bookings = {} 
       Object.assign(later[j], { block: false, gaveBack: d.slot, game: true, party: true });
     }
     need -= FORMATS[night.format].removes;
+    removed += FORMATS[night.format].removes;
   });
   // Disrupter alerts (US 7): booked on a day, or drawn on some social days.
   for (const d of out) {
@@ -111,6 +134,7 @@ export function bookSeason(schedule, rng, { total, finalists = 5, bookings = {} 
   let rodDrawn = false;
   for (const d of out) {
     if (d.final || d.finale || d.day === 1) continue;
+    if (d.twist || d.twistFellBack) continue;       // placed in the first pass
     const booked = idsAt(bookings, d.slot).map(twistOfId).find(Boolean);
     if (booked) { d.twist = booked; continue; }
     if (d.slot.startsWith('social') && rng() < TWIST_DRAWS.swap) d.twist = 'swap';
@@ -122,8 +146,8 @@ export function bookSeason(schedule, rng, { total, finalists = 5, bookings = {} 
   // (a 13-player season spreads its newcomers one a day, and the real show
   // still brought two in together: US 3 Ep 3).
   for (const d of out) {
-    if (!(d.arrivals > 0)) continue;
-    const booked = idsAt(bookings, d.slot).map(entryOfTwist).find(Boolean);
+    if (!(d.arrivals > 0) || d.entry === 'egg') continue;
+    const booked = idsAt(bookings, d.slot).map(entryOfTwist).find(x => x && x !== 'egg');
     let entry = booked || weighted(rng, ENTRY_DRAWS[d.arrivals >= 2 ? 'more' : 'one']);
     if (entry === 'pair' && d.arrivals < 2) {
       const from = out.filter(x => x.day > d.day && x.arrivals > 0).at(-1);

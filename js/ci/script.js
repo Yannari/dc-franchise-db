@@ -487,6 +487,20 @@ const BLOCKS = {
     return [{ key: 'disrupter.alert', cast: { a: slow[0] || w, b: w } }, { key: `disrupter.win.${s.data.effect}`, cast: { a: w } },
       ...slow.slice(0, 2).map(h => ({ key: 'disrupter.slow', cast: { a: h, b: w } }))];
   },
+  // Twists that change the count (Plan 3b Task 9b).
+  'second-chance'(state, s) {
+    const out = [{ key: 'secondchance.back', cast: { a: s.data.handle } }];
+    const key = s.data.known ? 'secondchance.recognize' : 'secondchance.react';
+    for (const h of s.seenBy.filter(x => x !== s.data.handle).slice(0, 2)) out.push({ key, cast: { a: h, b: s.data.handle } });
+    return out;
+  },
+  egg(state, s) {
+    const out = s.data.eggs.map(e => ({ key: 'egg.intro', cast: { a: e, anonA: true, anonAs: 'An egg' } }));
+    // Nobody knows who is inside: they vote for "the first egg" or "the second".
+    for (const [v, e] of Object.entries(s.data.votes).slice(0, 3)) out.push({ key: e === s.data.eggs[0] ? 'egg.vote.first' : 'egg.vote.second', cast: { a: v } });
+    out.push({ key: 'egg.stays', cast: { a: s.data.stays } }, { key: 'egg.goes', cast: { a: s.data.goes } });
+    return out;
+  },
   // Identity twists (Plan 3b Task 9b).
   swap(state, s) {
     const [A, B] = s.data.handles;
@@ -976,7 +990,7 @@ export const POOL_KEYS = [
   'hack.send', 'hack.read', 'hack.undone', 'joker.chat', 'joker.pick', 'burner.exposed',
   'alert.public-super', 'alert.none', 'block.react.guess', 'noblock.alert', 'noblock.influencer', 'noblock.relief', 'mission.given', 'mission.success',
   'block.announce.mission', 'swap.told', 'swap.back', 'clone.alert', 'clone.plea.old', 'clone.plea.new', 'clone.vote.new', 'clone.vote.old',
-  'clone.out', 'rod.partner', 'sacrifice.go', 'sacrifice.kept', 'sacrifice.saved', 'disrupter.alert', 'disrupter.win.immunity', 'disrupter.win.pick', 'disrupter.slow', 'disrupter.pick', 'date.pick', 'date.chat', 'date.gift', 'date.passed', 'invites.first', 'invites.next', 'invites.last',
+  'clone.out', 'secondchance.back', 'secondchance.react', 'secondchance.recognize', 'egg.intro', 'egg.vote.first', 'egg.vote.second', 'egg.stays', 'egg.goes', 'rod.partner', 'sacrifice.go', 'sacrifice.kept', 'sacrifice.saved', 'disrupter.alert', 'disrupter.win.immunity', 'disrupter.win.pick', 'disrupter.slow', 'disrupter.pick', 'date.pick', 'date.chat', 'date.gift', 'date.passed', 'invites.first', 'invites.next', 'invites.last',
   'race.win', 'race.lose', 'newparty.throw', 'newparty.guest', 'newparty.left', 'lurk.watch', 'lurk.reveal',
   'chosen.offer', 'chosen.pick', 'chosen.thanks', 'pairarrival.chat', 'alert.antivirus', 'antivirus.open', 'antivirus.pass', 'antivirus.got', 'antivirus.left', 'block.announce.antivirus',
   'hangout.agree', 'hangout.yield', 'hangout.trade', 'hangout.pact',

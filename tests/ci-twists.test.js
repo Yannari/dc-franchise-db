@@ -72,3 +72,37 @@ describe('Ride or Die (US 6)', () => {
     }
   });
 });
+
+// ── 9b part 2: twists that change the count ─────────────────────────────
+describe('second chance (US 2, US 5)', () => {
+  it('two blocked players return as one shared profile; the season still ends with five', () => {
+    for (const seed of [3, 5, 7]) {
+      const { state, day, result } = booked('rating5', 'ci-second-chance', seed);
+      const sc = state.scenes.find(s => s.kind === 'second-chance' && s.day === day);
+      expect(sc, `seed ${seed}`).toBeTruthy();
+      const p = state.profiles[sc.data.handle];
+      expect(p.players).toHaveLength(2);
+      for (const n of p.players) expect(state.blocked.some(b => state.profiles[b.handle].players.includes(n) || b.people?.includes(n))).toBe(true);
+      expect(result.placements, `seed ${seed}`).toHaveLength(5);
+    }
+  });
+});
+
+describe('the egg twist (UK 2 Ep 16)', () => {
+  it('two anonymous newcomers; the room keeps one and the other is blocked at once; the season still ends with five', () => {
+    for (const seed of [3, 5, 7]) {
+      const cast = makePlayers(13, seed); setPlayers(cast);
+      const names = cast.map(p => p.name);
+      const probe = playCircleSeason({ cast: names, setup: circleSetup(names, { newcomers: 5 }), pool: makePool(6, seed), seed });
+      const slot = probe.state.schedule.find(d => d.arrivals > 0).slot;
+      const { state, result } = playCircleSeason({ cast: names, setup: circleSetup(names, { newcomers: 5 }), pool: makePool(6, seed), seed,
+        options: { bookings: { [slot]: ['ci-arrive-egg'] } } });
+      const egg = state.scenes.find(s => s.kind === 'egg');
+      expect(egg, `seed ${seed}`).toBeTruthy();
+      expect(egg.data.eggs).toHaveLength(2);
+      expect(egg.data.eggs).toContain(egg.data.goes);
+      expect(state.blocked.some(b => b.handle === egg.data.goes && b.channel === 'egg')).toBe(true);
+      expect(result.placements, `seed ${seed}`).toHaveLength(5);
+    }
+  });
+});

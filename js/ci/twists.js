@@ -20,6 +20,7 @@ import { rel, bump, S, addScene } from './state.js';
 import { initMind, feel } from './mind.js';
 import { belief } from './beliefs.js';
 import { voiceOf } from './profiles.js';
+import { rolesFor } from './shared.js';
 
 const single = (state, h) => state.profiles[h]?.players.length === 1;
 
@@ -73,6 +74,36 @@ export const EVENTS = {
       for (const t of Object.values(votes)) tally[t]++;
       const fake = tally[original] > tally[clone] ? original : clone;
       return { scene: addScene(state, 'clone', [original, clone], { original, clone, votes, fake, cloner: person }, [...state.active]), fake };
+    },
+  },
+  // US 2, US 5: two blocked players come back as ONE shared profile, under a
+  // persona the Catfish Pool still has, or as themselves (spec 14.7, 14.8).
+  // They come back knowing who blocked them.
+  'second-chance': {
+    canNow: state => new Set(state.blocked.map(b => b.handle)).size >= 2,
+    run(state, rng) {
+      // Two different blocked profiles, one person from each (the latest two).
+      const handles = [...new Set(state.blocked.slice().reverse().map(b => b.handle))].slice(0, 2);
+      const people = handles.map(h => state.profiles[h].players[0]);
+      const from = state.blocked.filter(b => state.profiles[b.handle].players.some(n => people.includes(n)));
+      const personaId = state.unused.shift();
+      const persona = personaId && state.pool.find(p => p.id === personaId);
+      const roles = rolesFor(state, people);
+      const face = state.people[roles.face];
+      const shown = persona
+        ? { name: persona.handle, age: persona.age, gender: persona.gender, job: persona.job, status: persona.status, face: persona.face }
+        : { name: face.name, age: face.age, gender: face.gender, job: face.job, status: face.status, face: `portrait:${face.name}` };
+      let handle = `@${String(shown.name).toLowerCase().replace(/[^a-z0-9]/g, '')}`, k = 2;
+      while (state.profiles[handle]) handle = `@${String(shown.name).toLowerCase().replace(/[^a-z0-9]/g, '')}${k++}`;
+      state.profiles[handle] = { handle, players: people, mode: persona ? 'catfish' : 'shared', shared: true, roles,
+        personaId: persona?.id ?? null, reason: persona ? 'strategic' : null, shown, edits: [], tells: [...(persona?.tells || [])],
+        gap: persona ? 2 : 0.5, voice: voiceOf(shown.age ?? 30, face.stats), personaVoice: persona?.chatVoice || null, secondChance: true };
+      for (const n of people) state.handleOf[n] = handle;
+      state.active.push(handle); state.joinedDay[handle] = state.day; initMind(state, handle);
+      for (const b of from) for (const i of b.by) if (state.active.includes(i)) bump(handle, i, 'resentment', 2);
+      for (const o of state.active) if (o !== handle) feel(state, o, 'paranoia', 0.5);
+      // Back under their own faces, the room knows them from the goodbye videos.
+      return addScene(state, 'second-chance', [handle], { handle, people, persona: persona?.id ?? null, known: !persona }, [...state.active]);
     },
   },
   'ride-or-die': {

@@ -204,6 +204,8 @@ export function lipsyncSfxOf(sc) {
   const k = String(sc?.kind || '').replace(/^stage:/, '');
   const tier = sc?.data?.tier;
   if (k === 'lipsync-intro' || k === 'lipsync-legacy-choice') return 'stinger';
+  if (k === 'lipsync-call' && tier === 'double-shantay') return 'shantay';   // both stay: one card says it
+  if (k === 'lipsync-call' && tier === 'double-sashay') return 'sashay';
   if (k === 'lipsync-suspense' || k === 'lipsync-call') return 'heartbeat';
   if (k === 'lipsync-beat') return tier === 'legendary' ? 'roar' : tier === 'strong' ? 'cheer' : tier === 'lost' ? 'groan' : null;
   if (k === 'lipsync-hook') return tier === 'nailed' ? 'roar' : null;

@@ -735,7 +735,7 @@ export function rpBuildLipSync(row) {
         ${who ? _portrait(who, ep, { size: 42 }) : ''}</span>`
     : who || sc.kind?.startsWith('confess:') ? _portrait(who || (sc.data?.players || [])[0], ep, { size: 42 }) : ''}
       <div>${decor.tag}<p>${esc(sc.text)}</p></div></div></div>`;
-  })(), lipsyncMusicOf(sc.kind)), lipsyncSfxOf(sc))).join('');
+  })(), lipsyncMusicOf(sc.kind, sc.data)), lipsyncSfxOf(sc))).join('');
 
   // The verdict: the host's call, her names, or — on a night the song is a
   // prize — the winner's name.

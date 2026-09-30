@@ -169,7 +169,9 @@ function aptStage(row, screen, idx, fresh) {
       : `<div class="civ-line stage">${st.host ? '<b>THE CIRCLE · </b>' : ''}${esc(st.text)}</div>`;
   const tvUi = `<div class="civ-uibg"></div><div class="civ-aurora" style="left:30%;top:-20%;width:70%;aspect-ratio:1"></div>${rail('chat')}
     <div class="civ-feed">${feedHtml(row, steps, sending ? idx - 1 : idx, false, 4)}${sending ? '' : ''}</div>
-    ${peopleHtml(row, [peer], null, 'CHAT')}${inbar(sending ? st.text : '', sending)}`;
+    ${peopleHtml(row, [peer], null, screen.kind === 'recognise' ? 'PROFILE' : 'CHAT')}${inbar(sending ? st.text : '', sending)}`;
+  // A face they know: the TV has their profile open, full screen.
+  const tv = screen.kind === 'recognise' && peer !== h ? `<div class="civ-uibg"></div>${profileCard(row, peer, 'PROFILE')}` : tvUi;
   const win = CHATWIN.has(screen.kind);
   return `<div class="civ-layer civ-apt ${side}${win ? ' haswin' : ''}${sending ? ' push sent' : ''}${cut || (fresh && idx === 0) ? ' enter' : ''}">
     <div class="civ-room">
@@ -177,7 +179,7 @@ function aptStage(row, screen, idx, fresh) {
       <div class="civ-poster" style="${side === 'L' ? 'left:4%' : 'right:5%'};top:10%;width:17%;height:42%;background:${t.p1}"></div>
       <div class="civ-poster" style="${side === 'L' ? 'right:5%' : 'left:4%'};top:6%;width:15%;height:34%;background:${t.p2}"></div>
       <div class="civ-lamp" style="background:${t.lamp};${side === 'L' ? 'right' : 'left'}:0"></div>
-      <div class="civ-tvset" style="--bias:${t.bias}${side === 'R' ? ';left:26%' : ''}">${tvUi}</div>
+      <div class="civ-tvset" style="--bias:${t.bias}${side === 'R' ? ';left:26%' : ''}">${tv}</div>
       ${ping ? '<div class="civ-ping"></div>' : ''}
       <div class="civ-rim" style="${side === 'L' ? 'left' : 'right'}:0;background:${ringOf(row, h)}"></div>
       <div class="civ-bust ${side}" data-cam="CAM ${aptNo(row, h)} · ${esc(real.toUpperCase())}" style="--glow:${ringOf(row, h)}${cam ? `;background-image:url('${esc(cam)}')` : ''}">${cam ? '' : esc(real[0] || '?')}</div>
@@ -206,8 +208,99 @@ function alertStage(row, screen, idx, fresh) {
     <div class="civ-flash"></div>${building}<div class="civ-where">ALERT</div></div>`;
 }
 
+// ── MEET THE PLAYERS ───────────────────────────────────────────────────
+// A player walks in. The viewer is told who they really are (their name, age,
+// job, hometown and fame, from Create Character) and what they plan to be,
+// and watches the TV build the profile the room will see. A reaction is the
+// other side: somebody else's apartment, and on their TV only the PROFILE.
+const FAME = { celebrity: 'CELEBRITY', villain: 'KNOWN VILLAIN', threat: 'A BIG THREAT', known: 'SEEN ON TV' };
+const REASON_WHY = {
+  strategic: 'Strategic: a different face will get further in this room.',
+  protective: 'Protective: so nobody judges them for who they really are.',
+  family: 'Family: playing someone from their own life.',
+  experimental: 'Experimental: to see how the room treats somebody else.',
+};
+const EDIT_WORDS = { age: 'age', job: 'job', status: 'relationship status' };
+export const starsText = n => (n > 0 ? '★'.repeat(Math.floor(n)) + (n % 1 >= 0.5 ? '½' : '') : '');
+const facts = (...xs) => xs.filter(x => x != null && x !== '').map(esc).join(' · ');
+
+function planOf(p) {
+  if (p.mode === 'catfish') {
+    return { chip: `<span class="civ-planchip cat">CATFISH · Playing as ${esc([p.name, p.age, p.job].filter(x => x != null).join(', '))}</span>`,
+      why: REASON_WHY[p.reason] || '' };
+  }
+  const who = p.people.length > 1 ? 'TWO PLAYERS, ONE PROFILE' : 'PLAYING AS THEMSELVES';
+  if (p.mode === 'edited') {
+    const changed = (p.edits || []).map(e => EDIT_WORDS[e]).filter(Boolean);
+    const why = [changed.length ? `Changed on the profile: ${changed.join(', ')}.` : '',
+      (p.edits || []).includes('fame') ? 'Left their TV past off it.' : ''].filter(Boolean).join(' ');
+    return { chip: `<span class="civ-planchip edit">${who} · A FEW THINGS CHANGED</span>`, why };
+  }
+  if (p.mode === 'polished') return { chip: `<span class="civ-planchip">${who} · BEST PHOTOS ONLY</span>`, why: '' };
+  return { chip: `<span class="civ-planchip">${who}</span>`, why: '' };
+}
+function idCard(row, h) {
+  const p = row.ci.profiles[h];
+  const reals = p.people || [];
+  const t = row.ci.cast?.[reals[0]] || {};
+  const known = FAME[t.rep];
+  const fame = known ? `<div class="civ-fame"><b>${known}</b>${t.stars > 0 ? ` <span class="st">${starsText(t.stars)}</span>` : ''}
+    <small>${p.mode === 'catfish' || (p.edits || []).includes('fame') ? 'Hiding it from the room' : 'The room may recognise them'}</small></div>` : '';
+  const plan = planOf(p);
+  return `<div class="civ-id"><div class="nm">${esc(reals.join(' & ') || nameOf(row, h))}</div>
+    <div class="fx">${reals.length > 1 ? '' : facts(t.age, t.job, t.hometown)}</div>${fame}${plan.chip}
+    ${plan.why ? `<div class="civ-why">${esc(plan.why)}</div>` : ''}</div>`;
+}
+function profileCard(row, h, label = 'PROFILE') {
+  const p = row.ci.profiles[h];
+  const url = faceUrl(faceOf(row, h, 'profile'));
+  return `<div class="civ-pcard" style="--ring:${ringOf(row, h)}"><div class="hd">${esc(label)}</div>
+    <div class="ph"${bg(url)}>${url ? '' : esc(nameOf(row, h)[0] || '?')}</div>
+    <div class="nm">${esc(nameOf(row, h).toUpperCase())}</div>
+    <div class="fx">${facts(p.age, p.status)}</div>${p.job ? `<div class="jb">${esc(p.job)}</div>` : ''}
+    ${p.bio ? `<div class="bio">“${esc(p.bio)}”</div>` : ''}</div>`;
+}
+function arriveStage(row, screen, idx, fresh) {
+  const steps = screen.steps, st = idx >= 0 ? steps[idx] : null;
+  const about = st?.about && row.ci.profiles?.[st.about] ? st.about : null;
+  const title = screen.kind === 'profiles' ? 'MEET THE PLAYERS' : 'A NEW PLAYER';
+  // Who is speaking on this step: the line's speaker, or for a stage
+  // direction, the last one who spoke in the same block.
+  let speaker = st?.who || null;
+  for (let i = idx; !speaker && i >= 0 && steps[i].about === st?.about; i--) { speaker = steps[i].who || null; if (steps[i].entry) break; }
+  const react = about && speaker && speaker !== about;
+  const build = fresh && st?.entry && about && !react;
+  const order = [...new Set(steps.map(x => x.about).filter(Boolean))];
+  const introduced = new Set(steps.slice(0, idx + 1).map(x => x.about).filter(Boolean));
+  const roll = screen.kind === 'profiles' && order.length > 1 ? `<div class="civ-roll">${order.map(h => {
+    const url = faceUrl(faceOf(row, h, 'profile'));
+    return `<span class="${introduced.has(h) ? 'on' : ''}${h === about ? ' cur' : ''}" style="--ring:${ringOf(row, h)}"${bg(introduced.has(h) ? url : '')}>${introduced.has(h) && !url ? esc(nameOf(row, h)[0]) : ''}</span>`;
+  }).join('')}<b>${introduced.size} / ${order.length}</b></div>` : '';
+  const bgl = `<div class="civ-uibg"></div><div class="civ-aurora" style="left:52%;top:-14%;width:56%;aspect-ratio:1"></div><div class="civ-aurora soft" style="left:52%;top:-14%;width:56%;aspect-ratio:1"></div>`;
+  const where = `<div class="civ-where">${title}</div>`;
+  if (!about) {
+    return `<div class="civ-layer civ-arrive rest">${bgl}<div class="civ-arrtitle${fresh && idx === 0 ? ' new' : ''}">${title}<small>${esc(screen.kind === 'profiles' ? `${order.length} strangers · one building · nobody can see anybody` : 'A new Player has entered the Circle')}</small></div>
+      ${roll}${where}${st ? captionHtml(st, fresh) : ''}</div>`;
+  }
+  const cam = faceUrl(faceOf(row, react ? speaker : about, 'cam'));
+  const camOf = react ? speaker : about;
+  const real = realOf(row, camOf);
+  const plate = `<div class="civ-plate">${esc(real)}${react ? ' <i>· sees the new profile</i>' : ''}</div>`;
+  const line = !st.who ? `<div class="civ-line stage">${esc(st.text)}</div>`
+    : `<div class="civ-line"><span class="civ-chip say">${st.part === 'react' ? 'REACTS' : 'SAYS ALOUD'}</span>${esc(st.text)}</div>`;
+  const enter = fresh && st.entry;
+  return `<div class="civ-layer civ-arrive${build ? ' build' : ''}${react ? ' react' : ''}${enter ? ' enter' : ''}">${bgl}
+    <div class="${react ? 'civ-watch' : 'civ-cam'}" data-cam="CAM ${aptNo(row, camOf)} · ${esc(real.toUpperCase())}" style="--glow:${ringOf(row, camOf)}${cam ? `;background-image:url('${esc(cam)}')` : ''}">${cam ? '' : esc(real[0] || '?')}</div>
+    ${react ? `<div class="civ-watchnote">APARTMENT ${aptNo(row, camOf)}<b>${esc(real)}</b>sees a new face on the Circle</div>` : idCard(row, about)}
+    <div class="civ-tvframe" style="--bias:${ringOf(row, about)}">${profileCard(row, about, react ? 'A NEW PLAYER' : 'THE PROFILE THE ROOM WILL SEE')}</div>
+    ${roll}${where}
+    <div class="civ-dlg${fresh ? ' new' : ''}">${plate}${line}</div>
+    ${enter && idx > 0 ? '<div class="civ-wipe run"></div>' : ''}</div>`;
+}
+
 /** The stage for this screen after step `idx` (-1: at rest, before the first line). */
 export function stageInner(row, screen, idx, fresh = false) {
+  if (screen.stage === 'arrive') return arriveStage(row, screen, idx, fresh);
   if (screen.stage === 'alert') return alertStage(row, screen, idx, fresh);
   if (screen.stage === 'apt') return aptStage(row, screen, idx, fresh);
   return uiStage(row, screen, idx, fresh);

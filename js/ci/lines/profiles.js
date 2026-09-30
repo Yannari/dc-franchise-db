@@ -98,7 +98,7 @@ export const PROFILES = {
       { by: 'a', say: "Okay, be cool. Be normal. Do not message {b.obj} like a fan." },
     ] },
     { id: 'recognise.celebrity.03', turns: [
-      { by: 'a', react: "I know that face. Everybody in America knows that face." },
+      { by: 'a', react: "I know that face. That's {b}. Everybody in America knows that face." },
       { by: 'a', say: "{b.Sub} has fans. Fans vote. That's a problem for the rest of us." },
     ], beat: '{a.real} leans in until {a.posAdj} nose nearly touches the screen.' },
   ],

@@ -12,15 +12,26 @@
 // WHERE THE CAMERA IS: a private chat, a date, a plea, apartment life and a
 // video from home play IN THE APARTMENTS (the dictation, the send beam, the
 // TV); the group chats, the Newsfeed, the ratings, games and parties play on
-// THE CIRCLE ITSELF, full screen; an alert SLAMS IN. New stages (ratings,
+// THE CIRCLE ITSELF, full screen; an alert SLAMS IN; the profiles and a new
+// player's arrival play on the ARRIVAL stage (who they really are, and the
+// profile the room will see). New stages (ratings,
 // blocked, the Hangout, the visit, the goodbye video, the finale) come next
 // and take their kinds from this map.
 import { TITLES } from '../ci/transcript.js';
 import { GAMES } from '../ci/games-data.js';
 
-const APT = new Set(['chat', 'date', 'plead', 'joker-chat', 'life', 'home-video', 'report', 'recognise', 'lurk', 'hack-undone', 'after-party']);
+const APT = new Set(['chat', 'date', 'plead', 'joker-chat', 'life', 'home-video', 'report', 'recognise', 'lurk', 'hack-undone', 'after-party', 'pair-arrival']);
 const ALERT = new Set(['alert', 'power-reveal', 'disrupter', 'hack', 'no-block', 'mission']);
-export const stageOf = kind => (APT.has(kind) ? 'apt' : ALERT.has(kind) ? 'alert' : 'ui');
+// Meet the players: who walks in, who they really are, and the profile built.
+const ARRIVE = new Set(['profiles', 'arrival']);
+export const stageOf = kind => (ARRIVE.has(kind) ? 'arrive' : APT.has(kind) ? 'apt' : ALERT.has(kind) ? 'alert' : 'ui');
+
+// Whose arrival a block is: the player making their profile, or, for a
+// reaction, the newcomer somebody else is looking at.
+function subjectOf(s, b) {
+  if (b.key.endsWith('.react')) return s.who?.[0] || null;
+  return (b.lines || []).find(l => l.who && l.who !== 'host')?.who || null;
+}
 
 /** A face for a profile: what the room sees (`profile`), or who is really in
  *  the apartment (`cam`: the first player behind it, on the apartment camera). */
@@ -35,14 +46,18 @@ export function circleScreens(row) {
   return (row?.ci?.aired || []).filter(s => s.script?.blocks?.length).map((s, si) => {
     const g = s.kind === 'game' ? GAMES.find(x => x.id === s.game) : null;
     const steps = [];
+    const arrive = ARRIVE.has(s.kind);
     for (const b of s.script.blocks) {
+      const tag = arrive ? { about: subjectOf(s, b) } : {};
+      const first = steps.length;
       for (const l of b.lines || []) {
         steps.push({ who: l.who && l.who !== 'host' ? l.who : null, host: l.who === 'host' || l.kind === 'host',
-          part: l.kind, text: l.text, ...(l.spoken ? { spoken: l.spoken } : {}) });
+          part: l.kind, text: l.text, ...(l.spoken ? { spoken: l.spoken } : {}), ...tag });
       }
-      if (b.beat) steps.push({ who: null, part: 'stage', text: b.beat });
+      if (b.beat) steps.push({ who: null, part: 'stage', text: b.beat, ...tag });
+      if (arrive && steps[first]) steps[first].entry = true;
     }
-    const cast = [...new Set([...(s.who || []), ...steps.map(x => x.who).filter(Boolean)])].filter(h => row.ci.profiles?.[h]);
+    const cast = [...new Set([...(s.who || []), ...steps.map(x => x.who).filter(Boolean), ...(s.about ? [s.about] : [])])].filter(h => row.ci.profiles?.[h]);
     return { id: s.id || `s${si}`, kind: s.kind, stage: stageOf(s.kind),
       title: g ? `A game: ${g.name}` : TITLES[s.kind] || s.kind, cast, steps };
   });

@@ -1603,6 +1603,23 @@ gated by the reveal state so it never spoils ahead (ADDING-A-SHOW §6.5). Sound
 goes through `js/audio.js`: the ALERT sting, message chimes, typing, the
 ratings drumroll, the BLOCKED sound, party music from the user's library.
 
+**As built (Plan 5, 2026-09-30): Meet the players.** The profiles and a new
+player's arrival play on an `arrive` stage (`js/vp-ci/stage.js`
+`arriveStage`). A player walks in on camera. Their ID card shows the real
+person: name, age, job and hometown (`row.ci.cast`, from Create Character),
+and their fame in stars plus a word ("CELEBRITY", "KNOWN VILLAIN"), noted
+either "The room may recognise them" or "Hiding it from the room". Then
+their plan: themselves, best photos, a few things changed (which ones), or
+CATFISH with the persona and the reason. Last, the profile the room will
+see builds on their TV. A reaction is the other side: the watcher's
+apartment, and on their TV only the newcomer's PROFILE, never the real
+person. The text backlog prints the same introduction before each player's
+lines (`transcript.js` `introText`). A famous face is recognised
+(`season.js` `recogniseFame`, odds × intuition). The edit airs two
+recognitions of one face a day and three a season, and the watcher's TV has
+that profile open. Two newcomers' private chat (`pair-arrival`) plays in the
+apartments.
+
 ---
 
 ## 19. Setup and the Circle tab

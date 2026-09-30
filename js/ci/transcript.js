@@ -55,13 +55,41 @@ export function blockText(state, block) {
   return out;
 }
 
+// Meet the players (the arrival screen, js/vp-ci/stage.js): before a player's
+// first lines, who they really are and what they are playing as. The viewer
+// is told; the room is not.
+const FAME_WORDS = { celebrity: 'A celebrity', villain: 'A known villain', threat: 'A big threat', known: 'Seen on TV' };
+const PLAN_WORDS = { honest: 'Playing as themselves', polished: 'Playing as themselves, best photos only',
+  edited: 'Playing as themselves, with a few things changed', shared: 'Two players, one profile' };
+const stars = n => (n > 0 ? '★'.repeat(Math.floor(n)) + (n % 1 >= 0.5 ? '½' : '') : '');
+export function introText(row, h) {
+  const p = row?.ci?.profiles?.[h];
+  if (!p) return null;
+  const people = p.people || [];
+  const t = row.ci.cast?.[people[0]] || {};
+  const facts = people.length > 1 ? [] : [t.age, t.job, t.hometown ? `from ${t.hometown}` : null].filter(x => x != null && x !== '');
+  const fame = FAME_WORDS[t.rep] ? `${FAME_WORDS[t.rep]}${t.stars > 0 ? ` (${stars(t.stars)})` : ''}.` : '';
+  const plan = p.mode === 'catfish'
+    ? `Playing as ${[p.name, p.age, p.job].filter(x => x != null).join(', ')}: a catfish${p.reason ? ` (${p.reason})` : ''}.`
+    : `${PLAN_WORDS[people.length > 1 ? 'shared' : p.mode] || PLAN_WORDS.honest}${p.mode === 'edited' && p.edits?.length ? ` (${p.edits.join(', ')})` : ''}.`;
+  const head = `MEET ${people.join(' AND ').toUpperCase() || String(p.name).toUpperCase()}`;
+  return `  ▸ ${head}${facts.length ? `: ${facts.join(', ')}.` : ':'} ${[fame, plan].filter(Boolean).join(' ')}`;
+}
+const INTRO = new Set(['profiles', 'arrival']);
+const introduces = b => b.key.startsWith('profile.') || b.key === 'arrival';
+
 export function dayText(state, row) {
   const out = [`═══ Day ${row.day} — ${row.slot} ═══`, ''];
   for (const s of row.ci.aired || []) {
     if (!s.script?.blocks?.length) continue;
     const g = s.kind === 'game' ? GAMES.find(x => x.id === s.game) : null;
     out.push(`── ${g ? `A game: ${g.name}` : TITLES[s.kind] || s.kind}`);
-    for (const b of s.script.blocks) out.push(...blockText(state, b), '');
+    for (const b of s.script.blocks) {
+      const h = INTRO.has(s.kind) && introduces(b) ? b.lines?.find(l => l.who && l.who !== 'host')?.who : null;
+      const intro = h ? introText(row, h) : null;
+      if (intro) out.push(intro);
+      out.push(...blockText(state, b), '');
+    }
   }
   return out.join('\n');
 }

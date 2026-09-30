@@ -58,8 +58,15 @@ function parseBeats(data) {
     }
     return null;
   };
-  return beatLines(data.beats, special).map(st => ({ ...st, target: st.meta.target || null,
-    pair: st.meta.pair || null, accs: accsAt[st.beat] || [] }));
+  const steps = beatLines(data.beats, special);
+  // THE SLATE ALREADY SAYS WHY. Its card types the voter's reason under the
+  // chalk; the page's quoted paragraph of the same reason was a second step
+  // repeating it, once per ballot.
+  const unq = x => clean(x).replace(/^[“"]+|[”"]+$/g, '');
+  const said = new Map();
+  steps.forEach(st => { if (st.t === 'slate' && st.reason) said.set(st.beat, unq(st.reason)); });
+  return steps.filter(st => !(st.t === 'narr' && said.has(st.beat) && unq(st.text) === said.get(st.beat)))
+    .map(st => ({ ...st, target: st.meta.target || null, pair: st.meta.pair || null, accs: accsAt[st.beat] || [] }));
 }
 
 // ── THE SCREEN ───────────────────────────────────────────────────────────
@@ -154,10 +161,14 @@ function paintTable(root, S, fresh) {
   const slots = D.seated.length + 1;
   const pw = Math.min(H * .09, seatAt(0, slots, W, H).gap * .58);
   const small = slots > 16;
-  const speaker = st.t === 'say' ? st.who : st.t === 'slate' ? st.ballot && st.ballot.voter : st.t === 'host' ? '@host' : null;
+  // narration ABOUT somebody at the table ("Brightly looks round the table
+  // before answering") leans in on them, gently
+  const narrWho = st.t === 'narr' && !r.chair ? (st.who && D.seated.includes(st.who) ? st.who
+    : D.seated.filter(n => String(st.text || '').indexOf(n) === 0 && !/[A-Za-z]/.test(String(st.text).charAt(n.length))).sort((a, b) => b.length - a.length)[0] || null) : null;
+  const speaker = narrWho || (st.t === 'say' ? st.who : st.t === 'slate' ? st.ballot && st.ballot.voter : st.t === 'host' ? '@host' : null);
   const pair = st.pair || [];
-  const focus = st.t === 'say' || st.t === 'slate' || st.t === 'host' || pair.length > 0;
-  let h = `<svg width="0" height="0" style="position:absolute"><filter id="trtChalk"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="4" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.6"/></filter></svg>`
+  const focus = st.t === 'say' || st.t === 'slate' || st.t === 'host' || pair.length > 0 || !!narrWho;
+  let h = `<div class="trt-world">` + `<svg width="0" height="0" style="position:absolute"><filter id="trtChalk"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="4" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.6"/></filter></svg>`
     + TRScenery.roundTableSet(W, H) + TRScenery.roundTable(W * .5, H * (TABLE_CY + .005), W * .3, H * .16, slots);
   // the red threads: who has put whom up, the newest drawn as it is said
   const pos = n => { const i = D.seated.indexOf(n); const p = seatAt(i + 1, slots, W, H); return [p.x, p.y]; };
@@ -170,6 +181,13 @@ function paintTable(root, S, fresh) {
       const isNew = fresh && st.t === 'say' && st.who === a && st.target === b;
       return `<path class="trt-thread${isNew ? '' : ' trt-old'}${fade ? ' trt-faded' : ''}" d="M${x1},${y1} Q${mx},${my} ${x2},${y2}"/>`;
     }).join('') + '</svg>';
+  }
+  // THE VOTE LANDS: a chalk streak from the voter's place into the name's,
+  // after the name is written, and the named seat takes the hit
+  if (st.t === 'slate' && st.ballot && D.seated.includes(st.ballot.voter) && D.seated.includes(st.ballot.target)) {
+    const [x1, y1] = pos(st.ballot.voter), [x2, y2] = pos(st.ballot.target);
+    const dl = fresh ? (.7 + String(st.ballot.target).length * .14 + .25).toFixed(2) : 0;
+    h += `<svg class="trt-threads"><path class="trt-vote${fresh ? ' trt-fresh' : ''}" style="animation-delay:${dl}s" d="M${x1},${y1} L${x2},${y2}"/></svg>`;
   }
   // the count on the baize, while the slates are read
   if (st.t === 'slate' || (r.reads && !r.counted && !r.chair)) {
@@ -189,11 +207,76 @@ function paintTable(root, S, fresh) {
     const pending = fresh && justVoted === n ? 1 : 0;
     const cls = ['trt-seat', speaker === n || pair.includes(n) ? 'trt-speak' : (focus ? 'trt-quiet' : ''),
       st.target === n && speaker !== n && !r.reads ? 'trt-accused' : '',
-      S.traitors.includes(n) ? 'trt-traitor' : '', r.turned && r.chair === n ? 'trt-out' : ''].join(' ');
-    h += `<div class="${cls}" style="left:${p.x}px;top:${p.y}px;width:${pw}px;z-index:${p.z}">`
+      S.traitors.includes(n) ? 'trt-traitor' : '', r.turned && r.chair === n ? 'trt-out' : '',
+      pending ? 'trt-hit' : ''].join(' ');
+    h += `<div class="${cls}" style="left:${p.x}px;top:${p.y}px;width:${pw}px;z-index:${p.z};--hd:${(begin + writeDur + .85).toFixed(2)}s">`
       + `<div class="trt-av">${face(n)}</div><div class="trt-nm${small ? ' trt-sm' : ''}">${esc(n)}</div>`
       + `<div class="trt-ticks">${'/'.repeat(Math.max(0, cnt - pending))}${pending ? `<i style="animation-delay:${(begin + writeDur + .2).toFixed(2)}s">/</i>` : ''}</div></div>`;
   });
+  h += '</div>';
+  // ── THE SHOWDOWN (2026-09-30) ─────────────────────────────────────────
+  // The user: "in round table i dont feel the tension… it doesnt feel like a
+  // video game". A spoken line is now a CUT-IN: the table falls back and
+  // blurs while the camera pushes in on the speaker's place; the speaker's
+  // bust slides in on a slash of colour; an accusation fires a bolt across the
+  // frame into the accused, who shakes; a second voice on the same name
+  // doubles the bolt and flashes the room; an answer from the accused comes
+  // in on steel. Every label is drawn by CSS from a data attribute, so this
+  // layer adds no words to the page's text.
+  const cutOn = !r.chair && !r.reads && (st.t === 'say' || st.t === 'host');
+  const accused = new Set(st.accs.map(x => x[1]));
+  const tgt = st.t === 'say' && st.target && st.target !== st.who && D.seated.includes(st.target) ? st.target : null;
+  // VOICES HEARD SO FAR, not the cluster's total: the first person to say a
+  // name is accusing, not piling on, however many follow.
+  const spokenAt = new Set(), heard = [];
+  for (let k = 0; k <= S.idx; k++) {
+    const x = S.steps[k];
+    if (x.t === 'say' && x.target && x.target !== x.who && !spokenAt.has(x.who + '>' + x.target)) {
+      spokenAt.add(x.who + '>' + x.target); heard.push(x.target);
+    }
+  }
+  const voices = tgt ? heard.filter(n => n === tgt).length : 0;
+  const kind = st.t === 'host' ? 'host' : tgt ? (voices >= 2 ? 'pile' : 'accuse')
+    : st.t === 'say' && accused.has(st.who) ? 'defend' : 'say';
+  // THE CAMERA: in on whoever is talking, back out for everything else
+  let cam = 'translate(0px,0px) scale(1)';
+  if (cutOn || st.t === 'slate' || narrWho) {
+    const who = st.t === 'host' ? null : speaker;
+    const p = who && D.seated.includes(who) ? seatAt(D.seated.indexOf(who) + 1, slots, W, H) : seatAt(0, slots, W, H);
+    const k = cutOn ? 1.32 : narrWho ? 1.2 : 1.12;
+    const tx = Math.min(0, Math.max(W - W * k, W / 2 - p.x * k)), ty = Math.min(0, Math.max(H - H * k, H * .45 - p.y * k));
+    cam = `translate(${tx.toFixed(1)}px,${ty.toFixed(1)}px) scale(${k})`;
+  }
+  const cam0 = S.cam || 'translate(0px,0px) scale(1)';
+  S.cam = cam;
+  if (cutOn) {
+    const who = st.t === 'host' ? D.host.name : st.who;
+    const bust = (n, slug, side) => `<div class="trt-bust trt-bust-${side}"><div class="trt-bav">${face(n, slug)}</div>`
+      + `<div class="trt-bname" data-n="${esc(n)}"></div></div>`;
+    h += `<div class="trt-cut trt-cut-${kind}${fresh ? ' trt-fresh' : ''}" data-v="${voices >= 2 ? '×' + voices : ''}">`
+      + '<div class="trt-speed"></div><div class="trt-slash"></div>'
+      + bust(who, st.t === 'host' ? D.host.slug : null, 'l')
+      + (tgt ? '<svg class="trt-bolt" viewBox="0 0 100 100" preserveAspectRatio="none">'
+        + '<polyline points="27,47 41,42 46,53 57,44 63,54 73,49"/>'
+        + (voices >= 2 ? '<polyline class="trt-bolt2" points="27,52 39,57 47,47 56,58 64,48 73,53"/>' : '') + '</svg>'
+        + bust(tgt, null, 'r') + `<div class="trt-stamp" data-n="${esc(tgt)}"></div>` : '')
+      + '<div class="trt-cutflash"></div></div>';
+  }
+  // THE TENSION: how close the room is to a name, from the debate to the count
+  if (r.phase === 'debate' || r.reads) {
+    const debateT = Math.min(1, heard.length / Math.max(4, D.seated.length * .45));
+    const leadV = Math.max(0, ...Object.values(r.tally));
+    const voteT = r.reads ? Math.min(1, leadV / Math.max(1, Math.ceil((r.total || D.seated.length) / 2))) : 0;
+    const t = r.reads ? voteT : debateT;
+    h += `<div class="trt-tension${t > .66 ? ' trt-hot' : ''}" style="--t:${t.toFixed(3)}"><i></i></div>`;
+  }
+  // THE AIR OF THE ROOM: dust in the candlelight, always moving
+  h += '<div class="trt-motes">' + Array.from({ length: 18 }, (_, i) => {
+    const x = (hash('m' + i) % 1000) / 10, y = (hash('y' + i) % 1000) / 10, d = 9 + hash('d' + i) % 9;
+    return `<i style="left:${x}%;top:${y}%;animation-duration:${d}s;animation-delay:-${hash('z' + i) % d}s"></i>`;
+  }).join('') + '</div>';
+  // THE TITLE, slammed in on the first beat of the night
+  if (S.idx === 0 && fresh) h += `<div class="trt-title" data-a="The Round Table" data-b="Day ${esc(S.day)}"></div>`;
   // THE SLATE, written in chalk in the voter's own hand, and the voter's reason
   if (st.t === 'slate' && st.ballot) {
     const b = st.ballot, nm = b.target || '';
@@ -253,6 +336,11 @@ function paintTable(root, S, fresh) {
   }
   if (card) h += `<div class="trt-slot${onChair ? ' trt-overchair' : ''}">${card}</div>`;
   rt.innerHTML = h;
+  const world = rt.querySelector('.trt-world');
+  world.style.setProperty('--cam', cam);
+  world.style.setProperty('--cam0', fresh ? cam0 : cam);
+  world.classList.toggle('trt-dim', cutOn);
+  if (fresh) world.classList.add('trt-move');
   // motion
   const slot = rt.querySelector('.trt-slot:not(.trt-late)'), slate = rt.querySelector('.trt-slate');
   requestAnimationFrame(() => { if (slot) slot.classList.add('trt-in'); if (slate) slate.classList.add('trt-in'); });
@@ -277,7 +365,9 @@ function paintTable(root, S, fresh) {
     if (st.t === 'slate' && st.ballot) {
       trPlay('tr-slate');
       trChalk(String(st.ballot.target || '').length, begin * 1000, per * 1000);
-    } else if (st.t === 'count') trPlay('tr-drum');
+    } else if (cutOn && kind === 'pile') { trPlay('tr-strike', 250); trPlay('tr-clang', 520); }
+    else if (cutOn && kind === 'accuse') trPlay('tr-strike', 250);
+    else if (st.t === 'count') trPlay('tr-drum');
     else if (st.t === 'chair') { trPlay('tr-chair'); trMusic('tr-reveal', 900); }
     else if (st.t === 'reveal') {
       // the room holds its breath, the heart goes, then the card turns
@@ -348,10 +438,17 @@ const CSS = `
 .trt-seat.trt-host .trt-nm{color:var(--t-candle)}
 .trt-seat.trt-traitor .trt-av::after{content:"";position:absolute;inset:0;z-index:2;border-radius:inherit;box-shadow:inset 0 0 0 2px rgba(201,40,60,.9),inset 0 -26px 34px -16px rgba(142,21,38,.8)}
 .trt-seat.trt-out{filter:grayscale(1) brightness(.35)}
+.trt-seat.trt-hit{animation:trtSeatHit .55s linear var(--hd) both}
+.trt-seat.trt-hit .trt-av{animation:trtSeatGlow 1.6s ease-out var(--hd) both}
+@keyframes trtSeatHit{0%,100%{transform:translate(-50%,-50%)}20%{transform:translate(calc(-50% - 6px),-50%) rotate(-3deg)}45%{transform:translate(calc(-50% + 5px),-50%) rotate(2deg)}70%{transform:translate(calc(-50% - 2px),-50%)}}
+@keyframes trtSeatGlow{0%{box-shadow:0 0 0 2px rgba(222,214,196,.35),0 8px 20px rgba(0,0,0,.8)}15%{box-shadow:0 0 0 3px #fff,0 0 40px rgba(255,255,255,.9)}100%{box-shadow:0 0 0 2px rgba(201,40,60,.8),0 0 18px rgba(201,40,60,.45),0 8px 20px rgba(0,0,0,.8)}}
 .trt-threads{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible;z-index:900}
 .trt-thread{fill:none;stroke:var(--t-blood-hot);stroke-width:3;stroke-linecap:round;filter:drop-shadow(0 0 5px rgba(201,40,60,.9));stroke-dasharray:1400;stroke-dashoffset:1400;animation:trtDraw 1s ease forwards}
 .trt-thread.trt-old{stroke:rgba(201,40,60,.45);filter:none;animation:none;stroke-dashoffset:0}
 .trt-thread.trt-faded{opacity:.35}
+.trt-vote{fill:none;stroke:#f4f2ea;stroke-width:3;stroke-linecap:round;filter:drop-shadow(0 0 6px rgba(255,255,255,.8));opacity:.5}
+.trt-vote.trt-fresh{opacity:1;stroke-dasharray:1600;stroke-dashoffset:1600;animation:trtStreak 1.4s cubic-bezier(.6,0,.4,1) forwards}
+@keyframes trtStreak{0%{stroke-dashoffset:1600;opacity:1}45%{stroke-dashoffset:0;opacity:1}100%{stroke-dashoffset:0;opacity:.35}}
 @keyframes trtDraw{to{stroke-dashoffset:0}}
 .trt-counter{position:absolute;transform:translate(-50%,-50%);text-align:center;z-index:800;font-family:var(--v-display);color:var(--t-candle);text-shadow:0 2px 12px #000}
 .trt-counter b{display:block;font-size:30px;font-weight:900}
@@ -470,5 +567,99 @@ const CSS = `
   18%{transform:translate(calc(-50% - 6px),-50%) scale(1)}22%{transform:translate(calc(-50% + 5px),-50%) scale(1)}26%{transform:translate(-50%,-50%) scale(1)}
   62%{z-index:3;opacity:1}70%{z-index:0}100%{z-index:0;opacity:.13;transform:translate(-50%,-50%) scale(1.05)}}
 .trt-cin{z-index:1}
-@media (max-width:700px){.trt-slot{width:92%}.trt-slate{width:70%}.trt-count{display:none}.trt-count.trt-big{display:block;width:80%}}
+/* ── THE SHOWDOWN ─────────────────────────────────────────────────────── */
+.trt-world{position:absolute;inset:0;transform-origin:0 0;transform:var(--cam);transition:filter .6s}
+.trt-world.trt-move{animation:trtCam 1.1s cubic-bezier(.6,0,.2,1) both}
+@keyframes trtCam{from{transform:var(--cam0)}to{transform:var(--cam)}}
+.trt-world.trt-dim{filter:brightness(.42) blur(2px) saturate(.8)}
+.trt-cut{position:absolute;inset:0;z-index:2000;pointer-events:none;overflow:hidden}
+/* speed lines, turning slowly behind the speaker */
+.trt-speed{position:absolute;left:-50%;top:-50%;width:200%;height:200%;opacity:.22;
+  background:repeating-conic-gradient(from 0deg at 50% 50%,rgba(255,243,210,.9) 0deg .7deg,transparent .7deg 6deg);
+  opacity:.13;-webkit-mask:radial-gradient(circle at 50% 50%,transparent 18%,#000 55%);mask:radial-gradient(circle at 50% 50%,transparent 18%,#000 55%);
+  animation:trtSpin 40s linear infinite}
+@keyframes trtSpin{to{transform:rotate(360deg)}}
+.trt-cut.trt-fresh .trt-speed{animation:trtSpin 40s linear infinite,trtIn .5s ease both}
+/* the slash of colour the speaker stands on */
+.trt-slash{position:absolute;left:-10%;right:-10%;top:30%;height:36%;transform:skewY(-7deg);
+  background:linear-gradient(90deg,rgba(224,160,73,.0),rgba(224,160,73,.55) 20%,rgba(120,70,20,.35) 60%,rgba(0,0,0,0));
+  box-shadow:0 0 0 2px rgba(255,219,149,.35),0 0 60px rgba(224,160,73,.3)}
+.trt-cut.trt-fresh .trt-slash{animation:trtSlash .45s cubic-bezier(.2,.9,.2,1) both}
+@keyframes trtSlash{from{transform:skewY(-7deg) translateX(-110%)}to{transform:skewY(-7deg)}}
+.trt-cut-accuse .trt-slash,.trt-cut-pile .trt-slash{background:linear-gradient(90deg,rgba(201,40,60,0),rgba(201,40,60,.6) 18%,rgba(90,10,20,.45) 60%,rgba(201,40,60,.55) 88%,rgba(0,0,0,0));
+  box-shadow:0 0 0 2px rgba(255,90,100,.4),0 0 70px rgba(201,40,60,.4)}
+.trt-cut-defend .trt-slash{background:linear-gradient(90deg,rgba(143,166,194,0),rgba(143,166,194,.5) 20%,rgba(30,40,60,.4) 60%,rgba(0,0,0,0));
+  box-shadow:0 0 0 2px rgba(180,200,230,.35),0 0 60px rgba(143,166,194,.3)}
+.trt-cut-host .trt-slash{background:linear-gradient(90deg,rgba(255,243,210,0),rgba(255,219,149,.5) 20%,rgba(80,50,20,.4) 60%,rgba(0,0,0,0))}
+/* the busts */
+.trt-bust{position:absolute;bottom:34%;height:38%;aspect-ratio:1/1.12;text-align:center}
+.trt-bust-l{left:9%}
+.trt-bust-r{right:9%;height:31%;bottom:37%}
+.trt-bav{position:relative;width:100%;height:100%;overflow:hidden;border-radius:50% 50% 10% 10%/42% 42% 8% 8%;background:linear-gradient(162deg,#252b37,#080b11);
+  box-shadow:0 0 0 3px #fff3d2,0 0 50px rgba(255,219,149,.45),0 24px 50px rgba(0,0,0,.9);animation:trtIdle 3.2s ease-in-out infinite}
+.trt-bav img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 18%;z-index:1}
+.trt-bav .trs-ini{font-size:34px}
+@keyframes trtIdle{50%{transform:translateY(-5px) scale(1.01)}}
+.trt-cut.trt-fresh .trt-bust-l{animation:trtBustL .55s cubic-bezier(.2,1.1,.3,1) .08s both}
+@keyframes trtBustL{from{transform:translateX(-160%) skewX(-12deg);opacity:0}to{transform:none;opacity:1}}
+.trt-bname{margin-top:10px}
+.trt-bname::before{content:attr(data-n);display:inline-block;padding:4px 14px;font-family:var(--v-display);font-weight:900;font-size:clamp(14px,1.6vw,22px);
+  letter-spacing:.18em;text-transform:uppercase;color:#fff3d2;background:rgba(6,4,3,.85);border:1px solid rgba(255,219,149,.45);transform:skewX(-10deg)}
+.trt-cut::before{position:absolute;left:9%;top:20%;z-index:3;padding:3px 12px;font-family:var(--v-display);font-weight:900;font-size:11px;
+  letter-spacing:.42em;text-transform:uppercase;transform:skewX(-10deg)}
+.trt-cut-accuse::before{content:"Accuses";color:#fff;background:#c9283c}
+.trt-cut-pile::before{content:"Piles on";color:#fff;background:#c9283c}
+.trt-cut-defend::before{content:"Answers";color:#0b1018;background:#b8c8de}
+.trt-cut-host::before{content:"The host";color:#241b11;background:#ffdb95}
+.trt-cut-accuse .trt-bav,.trt-cut-pile .trt-bust-l .trt-bav{box-shadow:0 0 0 3px #ff6a74,0 0 50px rgba(201,40,60,.55),0 24px 50px rgba(0,0,0,.9)}
+.trt-cut-defend .trt-bav{box-shadow:0 0 0 3px #cfdcee,0 0 50px rgba(143,166,194,.5),0 24px 50px rgba(0,0,0,.9)}
+/* the accused, hit */
+.trt-bust-r .trt-bav{box-shadow:0 0 0 3px #c9283c,0 0 60px rgba(201,40,60,.6),0 24px 50px rgba(0,0,0,.9);filter:saturate(.85)}
+.trt-bust-r .trt-bname::before{border-color:rgba(201,40,60,.7);color:#ffd0d4}
+.trt-cut.trt-fresh .trt-bust-r{animation:trtBustR .5s cubic-bezier(.2,1.1,.3,1) .35s both,trtHit .5s linear 1.05s}
+@keyframes trtBustR{from{transform:translateX(170%) skewX(12deg);opacity:0}to{transform:none;opacity:1}}
+@keyframes trtHit{0%,100%{transform:none}15%{transform:translate(-14px,3px) rotate(-3deg)}35%{transform:translate(10px,-3px) rotate(2deg)}55%{transform:translate(-7px,1px)}75%{transform:translate(4px,0)}}
+/* the bolt from one to the other */
+.trt-bolt{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.trt-bolt polyline{fill:none;stroke:#ff5a64;stroke-width:5;stroke-linejoin:bevel;vector-effect:non-scaling-stroke;filter:drop-shadow(0 0 8px #c9283c) drop-shadow(0 0 20px rgba(201,40,60,.8));
+  stroke-dasharray:200;stroke-dashoffset:0}
+.trt-cut.trt-fresh .trt-bolt polyline{stroke-dashoffset:200;animation:trtBolt .38s cubic-bezier(.5,0,.9,.4) .7s forwards}
+.trt-cut.trt-fresh .trt-bolt .trt-bolt2{animation-delay:.95s}
+@keyframes trtBolt{to{stroke-dashoffset:0}}
+.trt-bolt polyline{animation:trtFlick 1.6s steps(2) infinite}
+@keyframes trtFlick{50%{opacity:.75}}
+/* the name, stamped across the slash */
+.trt-stamp{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%) rotate(-7deg);z-index:2}
+.trt-stamp::before{content:attr(data-n);display:block;white-space:nowrap;font-family:var(--v-display);font-weight:900;font-size:clamp(34px,6vw,86px);
+  letter-spacing:.08em;text-transform:uppercase;color:rgba(255,236,238,.95);-webkit-text-stroke:2px #c9283c;text-shadow:0 0 30px rgba(201,40,60,.9),0 6px 0 #4a0710}
+.trt-cut.trt-fresh .trt-stamp{animation:trtStampIn .45s cubic-bezier(.2,1.6,.4,1) 1.02s both}
+@keyframes trtStampIn{from{transform:translate(-50%,-50%) rotate(-7deg) scale(3);opacity:0;filter:blur(8px)}to{transform:translate(-50%,-50%) rotate(-7deg);opacity:1;filter:none}}
+.trt-cut-pile::after{content:attr(data-v);position:absolute;left:50%;top:26%;transform:translateX(-50%) rotate(-7deg);font-family:var(--v-display);font-weight:900;
+  font-size:clamp(26px,3.4vw,48px);color:#ffdb95;text-shadow:0 0 22px rgba(255,160,60,.9);z-index:3}
+.trt-cut-pile.trt-fresh::after{animation:trtStampIn .4s cubic-bezier(.2,1.6,.4,1) 1.3s both}
+/* the room flashes when the name lands */
+.trt-cutflash{position:absolute;inset:0;opacity:0;background:radial-gradient(circle at 50% 45%,rgba(255,120,130,.55),rgba(201,40,60,.2) 45%,transparent 75%)}
+.trt-cut-accuse.trt-fresh .trt-cutflash,.trt-cut-pile.trt-fresh .trt-cutflash{animation:trtFlash .9s ease-out 1.02s}
+.trt-cut-pile.trt-fresh .trt-cutflash{background:radial-gradient(circle at 50% 45%,rgba(255,240,240,.8),rgba(201,40,60,.35) 45%,transparent 75%)}
+.trt-cut-pile.trt-fresh{animation:trtQuake .45s linear 1.3s}
+@keyframes trtQuake{0%,100%{transform:none}25%{transform:translate(6px,-4px)}50%{transform:translate(-5px,3px)}75%{transform:translate(3px,2px)}}
+/* the tension meter */
+.trt-tension{position:absolute;left:50%;top:14px;width:min(40%,420px);height:8px;transform:translateX(-50%);z-index:3300;background:rgba(4,4,6,.7);
+  border:1px solid rgba(222,214,196,.25);box-shadow:0 4px 14px rgba(0,0,0,.6)}
+.trt-tension::before{content:"Tension";position:absolute;left:0;top:-15px;font-family:var(--v-display);font-weight:700;font-size:9px;letter-spacing:.36em;text-transform:uppercase;color:rgba(222,214,196,.62)}
+.trt-tension i{position:absolute;left:0;top:0;bottom:0;width:calc(var(--t) * 100%);background:linear-gradient(90deg,#e0a049,#c9283c);box-shadow:0 0 14px rgba(201,40,60,.7);transition:width .9s cubic-bezier(.2,.9,.3,1)}
+.trt-tension.trt-hot i{animation:trtBeatBar 1s ease-in-out infinite}
+@keyframes trtBeatBar{0%,100%{filter:none}12%{filter:brightness(1.8)}24%{filter:none}36%{filter:brightness(1.5)}}
+/* the air */
+.trt-motes{position:absolute;inset:0;z-index:1900;pointer-events:none}
+.trt-motes i{position:absolute;width:3px;height:3px;border-radius:50%;background:rgba(255,226,170,.8);box-shadow:0 0 6px rgba(255,210,140,.9);opacity:0;animation:trtMote 12s linear infinite}
+@keyframes trtMote{0%{opacity:0;transform:translate(0,0)}15%{opacity:.8}85%{opacity:.5}100%{opacity:0;transform:translate(40px,-120px)}}
+/* the title */
+.trt-title{position:absolute;inset:0;z-index:3500;display:grid;place-items:center;pointer-events:none;animation:trtTitle 2.6s ease both}
+.trt-title::before{content:attr(data-a);font-family:var(--v-display);font-weight:900;font-size:clamp(40px,7vw,104px);letter-spacing:.14em;text-transform:uppercase;
+  color:#fff3d2;text-shadow:0 0 40px rgba(224,160,73,.8),0 8px 0 rgba(0,0,0,.6);grid-area:1/1;transform:translateY(-18%)}
+.trt-title::after{content:attr(data-b);grid-area:1/1;transform:translateY(160%);font-family:var(--v-display);font-weight:700;font-size:13px;letter-spacing:.6em;text-transform:uppercase;color:#e0a049}
+@keyframes trtTitle{0%{opacity:0;transform:scale(1.6);filter:blur(10px)}14%{opacity:1;transform:none;filter:none}70%{opacity:1}100%{opacity:0;transform:scale(.96)}}
+@media (prefers-reduced-motion:reduce){.trt-world,.trt-cut *,.trt-motes i,.trt-title{animation:none!important}}
+@media (max-width:700px){.trt-bust{height:30%}.trt-slot{width:92%}.trt-slate{width:70%}.trt-count{display:none}.trt-count.trt-big{display:block;width:80%}}
 `;

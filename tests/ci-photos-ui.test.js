@@ -113,3 +113,26 @@ describe('a season pack', () => {
     expect(await photoURL('photo:p1')).toBe('data:image/png;base64,QQ');
   });
 });
+
+import { vi } from 'vitest';
+describe('the cloud, like the character gallery', () => {
+  it('says where the photos are, and backs them up with the studio token', async () => {
+    click('[data-act="sub"][data-v="photos"]');
+    expect($('.ci-ph-cloud').textContent).toMatch(/only in this browser/i);
+    window.ciSetSlotPhoto({ persona: 'ci-sienna' }, 'profile', 'aaaa1111');
+    const { putPhotoWithId } = await import('../js/ci/photo-store.js');
+    await putPhotoWithId('aaaa1111', 'data:image/jpeg;base64,QUFB');
+    localStorage.setItem('studio_api_token', 'secret');
+    const puts = [];
+    vi.stubGlobal('fetch', async (u, o = {}) => {
+      if (String(u).includes('/api/gallery/circle-photos')) return new Response(JSON.stringify({ ok: true, images: [] }));
+      puts.push(o.method); return new Response(JSON.stringify({ ok: true }));
+    });
+    await window.ciBackUpPhotos();
+    expect(puts).toEqual(['PUT']);
+    expect($('.ci-ph-alert').textContent).toMatch(/1 photo backed up to the cloud/);
+    expect($('.ci-ph-cloud').textContent).toMatch(/cloud/i);
+    vi.unstubAllGlobals();
+    localStorage.removeItem('studio_api_token');
+  });
+});

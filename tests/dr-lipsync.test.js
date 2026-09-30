@@ -132,3 +132,17 @@ describe('lipsyncCall', () => {
     expect(c.gap).toBeCloseTo(2);
   });
 });
+
+describe('a double shantay is two excellent lip syncs', () => {
+  it('is never given to a queen whose stunt failed on the stage', () => {
+    /* Played: a reveal that would not tear, and "Shantay, you BOTH stay". A
+       failed stunt costs 0.8, so a strong lip syncer could fail it and still
+       clear the bar. */
+    const q = (name, score, stunt) => ({ name, score, stunt });
+    const both = lipsyncCall({ a: q('A', 8.0, 'landed'), b: q('B', 7.8, 'none'), allowDoubleShantay: true });
+    expect(both.call).toBe('double-shantay');
+    const broke = lipsyncCall({ a: q('A', 8.0, 'landed'), b: q('B', 7.8, 'failed'), allowDoubleShantay: true });
+    expect(broke.call).toBe('shantay');
+    expect(broke.loser).toBe('B');
+  });
+});

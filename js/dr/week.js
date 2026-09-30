@@ -1906,9 +1906,21 @@ export function runDragWeek(state, cfg, ctx) {
       const d = LIPSYNC_RECORD.slope * Math.sign(gap) * Math.max(0, Math.abs(gap) - (LIPSYNC_RECORD.dead || 0));
       return Math.max(-LIPSYNC_RECORD.cap, Math.min(LIPSYNC_RECORD.cap, d)) / 2;
     };
+    /* A BLOWOUT IS DECIDED ON THE STAGE. The cap was meant to let "a blowout
+       on the stage still win" and did not: five points of record against a
+       song scored out of ten overturned a legendary lip sync (a stunt landed,
+       the key change taken) for a queen who missed the key change, in
+       episode 2. Four points apart on the stage, the record says nothing.
+       tests/dr-lipsync-record-audit: the better record still survives 79%
+       of 1.0+ PPE gaps (real 89%), and a queen who bombed the song now never
+       stays (was 5%). A ramp that also
+       discounted early records was tried and cut: it dropped the 1.0+ rate
+       to 68% — early records do save queens on the show. */
+    const BLOWOUT = 4;
+    const blownOut = Math.abs(sa.score - sb.score) >= BLOWOUT;
     const bendOf = (n, other) => {
       const hostLean = (bend.find(x => x.name === n)?.bend || 0) * 0.5;
-      return hostLean + recordEdge(n, other);
+      return hostLean + (blownOut ? 0 : recordEdge(n, other));
     };
     // A NO-ELIMINATION WEEK still runs the lip sync — a split premiere ends
     // with two queens performing for their lives and both staying, which is
@@ -1941,6 +1953,7 @@ export function runDragWeek(state, cfg, ctx) {
        call that already knew the result. Both holders choose from the bottom
        as the host named it, which is also why they can land on one name. */
     const doubleLegacy = !!(legacy && living.length >= 7
+      && sa.stunt !== 'failed' && sb.stunt !== 'failed'   // the same rule as the double shantay
       && sa.score >= GREAT && sb.score >= GREAT
       && Math.abs(sa.score - sb.score) < CLOSE);
 
@@ -1964,7 +1977,7 @@ export function runDragWeek(state, cfg, ctx) {
         gap: sa.score - sb.score,
       }
       : lipsyncCall({
-        a: { name: a, score: sa.score }, b: { name: b, score: sb.score },
+        a: { name: a, score: sa.score, stunt: sa.stunt }, b: { name: b, score: sb.score, stunt: sb.stunt },
         bendA: bendOf(a, b), bendB: bendOf(b, a),
         allowDoubleShantay: cfg.allowDoubleShantay,
         allowDoubleSashay: cfg.allowDoubleSashay,

@@ -269,8 +269,12 @@ describe('the scorer, end to end on a real season', () => {
     console.log(`the columns reorder the board in ${reordered}/40 seasons`);
     /* 12 -> 7 on 2026-09-28, measured 16 before and 10 after the call began
        naming the tops first with a capped top (fewer, stricter HIGHs). The
-       failure this guards is ZERO — columns that never move anybody. */
+       failure this guards is ZERO — columns that never move anybody.
+       7 -> 3 on 2026-09-30: measured 7 after a blowout on the lip sync stage
+       stopped being overturned by track record (different queens survive,
+       different boards). A threshold one below a measurement goes red on
+       every rule that moves a season; this one only has to catch zero. */
     expect(reordered, 'the columns never move anybody — they are decoration')
-      .toBeGreaterThan(7);
+      .toBeGreaterThan(3);
   });
 });

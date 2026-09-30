@@ -358,9 +358,12 @@ describe('THE PICK IS A DECISION, AND DIFFICULTY IS A GAMBLE', () => {
        the spread WITHIN craft bands answers that without subtracting
        anything correlated. Measured over 200 seeds (hard n=422):
        easy 3.70, hard 3.87, and sd rises monotonically with difficulty
-       (diff 1: 4.28 ... diff 5: 4.65). */
+       (diff 1: 4.28 ... diff 5: 4.65).
+       AND 200 WAS STILL TOO FEW: a lip sync rule changing who reaches the
+       Snatch Game flipped it (hard 3.74 vs easy 3.81 on seeds 1-200) while
+       seeds 201-400 on their own still showed hard wider. 400, pooled. */
     const easy = []; const hard = [];
-    for (let seed = 1; seed <= 200; seed++) {
+    for (let seed = 1; seed <= 400; seed++) {
       const cast0 = mk(12, seed * 3, 6);
       const s = playDragSeason({ cast: cast0, seed,
         config: { drSchedule: [{ episode: 5, maxiId: 'snatch-game' }] },

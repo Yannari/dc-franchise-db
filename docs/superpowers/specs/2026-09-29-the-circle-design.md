@@ -1685,6 +1685,30 @@ episode, a rating a different episode", and the wiki agrees:
   player's closest friend still in the building.
 - **Audit:** catfish win 42–46%, against 40% before.
 
+**As built (2026-09-30): orientation, personality, repetition.**
+- **Personas carry an orientation** (Men / Women / Both). Attraction stays
+  with the real person. The profile decides the rest:
+  - `CHASE_OFF`: less of a chase toward a profile not into you.
+  - `OUT_OF_CHARACTER`: a catfish doesn't flirt against the persona.
+  - `PERFORMED`: it does flirt in character with no attraction behind it.
+    This strains the cover (more slips, guilt) and has its own lines,
+    `chat.flirt.act`.
+- **Chats have content** (`ci/topics.js`):
+  - Topic chats cover 45% of warm and neutral bond chats. They draw on the
+    persona's job and details; a player's job, hometown and status; and
+    Circle life. A catfish wings a job (`chat.topic.fake`).
+  - Chats in six voices (`lines/chat-voices.js`) use the persona's voice
+    while a catfish's cover holds.
+  - Archetype asides (`lines/asides.js`, 35%) are the real person talking to
+    the empty apartment. Only the scheming archetypes scheme.
+- **Repetition, 20% → 9.6%** of a season's lines (a person repeating
+  themselves: 1.9% → 1.07%):
+  - The busiest pools doubled (`lines/more.js`), ratings middles are kept to
+    three a night, and the report has 12 versions.
+  - `USED_DECAY` = 0.12: at 0.5, a register line used once still beat a
+    fresh plain one.
+  - Guarded by `tests/ci-repetition.test.js`.
+
 ## 19. Setup and the Circle tab
 
 ### 19.1 Cast tab

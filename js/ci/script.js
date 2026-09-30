@@ -99,6 +99,11 @@ const usage = state => (state.usedLines ||= { uses: {}, pairs: {}, day: {} });
 // earlier days — seed 19, day 7 aired one status twice.)
 export const SAME_DAY = 0;
 export const SAID_AGAIN = 0.05;
+// Each earlier use of a line this season: its weight times this. Steep, so a
+// fresh line wins until the pool is used up; at 0.5 a register line (five
+// times the weight) used once still beat a fresh plain one, and came back
+// (measured: 19% of a season's blocks were repeats).
+export const USED_DECAY = 0.12;
 
 export function pickEntry(state, key, facts, pairKey, rng, speaker = null) {
   // A list of keys merges pools: a game's own lines (weighted up) with its
@@ -116,7 +121,7 @@ export function pickEntry(state, key, facts, pairKey, rng, speaker = null) {
     // One person saying the same sentence twice in a season reads as a bug,
     // whoever they say it to (a register's lines win often, so this matters).
     const said = speaker && (u.by?.[e.id] || []).includes(speaker) ? SAID_AGAIN : 1;
-    return [e, samePair ? 0 : (1 + spec) * Math.pow(0.5, uses) * today * said];
+    return [e, samePair ? 0 : (1 + spec) * Math.pow(USED_DECAY, uses) * today * said];
   });
   let total = scored.reduce((s, [, w]) => s + w, 0);
   // Everything that fits has been used on this pair: take the least-used fit.
@@ -366,6 +371,13 @@ const BLOCKS = {
     if (s.data.lead && pa?.players.length > 1) {
       const won = s.data.lead === (pa.roles?.face || pa.players[0]) ? 'faceWins' : 'brainWins';
       out.push({ key: `shared.argue.${won}`, cast: { a, b } });
+    }
+    // After a third of chats, a says one thing to the empty apartment, in the
+    // head of their archetype (the real person; lines/asides.js).
+    const group = asideGroup(state, a, s.data.lead);
+    const hs = [...`${s.id}:aside`].reduce((x, ch) => (x * 31 + ch.charCodeAt(0)) >>> 0, 7);
+    if (group && s.data.ending && !s.data.performed && key !== 'chat.topic.fake' && s.data.intent !== 'probe' && hs % 100 < ASIDE_SHARE) {
+      out.push({ key: `aside.${group}.${s.data.ending}`, cast: { a, b, personA } });
     }
     return out;
   },
@@ -972,6 +984,19 @@ export function writeScene(state, scene) {
 }
 
 export const MIDDLES_PER_NIGHT = 3;
+// How many chats end with a word to the empty apartment (lines/asides.js).
+export const ASIDE_SHARE = 35;
+const ASIDE_GROUP = { villain: 'schemer', mastermind: 'schemer', schemer: 'schemer',
+  hero: 'sweet', 'loyal-soldier': 'sweet', 'social-butterfly': 'sweet', underdog: 'sweet', goat: 'sweet',
+  showmancer: 'romantic', hothead: 'wild', 'chaos-agent': 'wild', wildcard: 'wild', 'challenge-beast': 'wild',
+  floater: 'watcher', 'perceptive-player': 'watcher' };
+/** The real person behind a profile, by archetype (a pair: whoever led this chat). */
+function asideGroup(state, h, lead) {
+  const who = lead || state.profiles[h]?.players?.[0];
+  const person = state.people[who];
+  if (!person || person.ai) return null;
+  return ASIDE_GROUP[person.archetype] || null;
+}
 // How many friendly chats are about something in b's life (ci/topics.js).
 export const TOPIC_SHARE = 45;
 // A catfish can wing a job; a dog, the kids, church or a hometown they don't have is a lie too far.
@@ -1027,7 +1052,8 @@ function bridge(state, aired) {
       const entry = pickEntry(state, key, factsFor(state, s, cast), s.id, rng);
       if (entry) { s.script.blocks.unshift({ key, ...renderEntry(state, entry, cast, rng) }); since = 0; }
     }
-    since += s.script?.blocks?.length || 0;
+    // (an aside is part of its chat, not a beat of its own)
+    since += (s.script?.blocks || []).filter(b => !b.key.startsWith('aside.')).length;
   }
 }
 
@@ -1043,6 +1069,7 @@ export const POOL_KEYS = [
   ...INTENTS_.flatMap(i => ['warm', 'neutral', 'cold'].map(e => `chat.${i}.${e}`)),
   ...['pass', 'dodge', 'fail'].map(r => `chat.probe.${r}`),
   ...['warm', 'neutral', 'cold'].map(e => `chat.flirt.act.${e}`),
+  ...['schemer', 'sweet', 'romantic', 'wild', 'watcher'].flatMap(g => ['warm', 'neutral', 'cold'].map(e => `aside.${g}.${e}`)),
   ...[...Object.keys(TOPICS), 'hometown', 'fake', 'circle-life', 'single', 'taken', 'complicated'].map(t => `chat.topic.${t}`),
   ...SLIPS_.flatMap(k => [`slip.${k}.noticed`, `slip.${k}.missed`]),
   ...Object.keys(TOPICS).flatMap(t => [`slip.topic.${t}.noticed`, `slip.topic.${t}.missed`]), 'slip.misread', 'slip.leak.noticed', 'slip.leak.missed',

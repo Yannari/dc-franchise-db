@@ -120,6 +120,9 @@ describe('the sweep', () => {
     for (const row of rows) {
       const html = dragScreens(row).map(s => s.html).join(' ');
       const plain = html.replace(/<style[\s\S]*?<\/style>/g, ' ')
+        // An emphasised word inside a sentence (the host's "elimination") is
+        // not a word break: drop the tag, not the space around it.
+        .replace(/<\/?em>/g, '')
         .replace(/<[^>]+>/g, ' ')
         .replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;|&rsquo;/g, "'")
         .replace(/&mdash;/g, '—').replace(/&lt;/g, '<').replace(/&gt;/g, '>')

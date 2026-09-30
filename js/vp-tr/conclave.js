@@ -305,23 +305,27 @@ function _cloakFigure(tone, name) {
 // is not inventing a motive and dressing it — it is saying, in words, the term
 // that carried the number.
 
+// REWRITTEN 2026-09-30: the user wanted to feel "in the conclave of the castle
+// with them", and these read like minutes of a meeting ("They begin by
+// reviewing the players who could threaten or benefit the pact"). Now they
+// say what the night looks like: the stair, the door, the candles, the hoods.
 const CLIMB = [
-  'After the other players go to bed, the Traitors leave separately and meet in the turret.',
-  'The Traitors wait until the corridors are empty, then take separate routes to the turret.',
-  'Once the castle is quiet, each Traitor leaves for the turret without drawing attention.',
-  'The Traitors enter the turret one at a time so nobody downstairs sees them together.',
+  'The castle goes quiet. One by one, the Traitors slip out of their rooms and up the turret stair.',
+  'They wait for the last bedroom door to close, then go up separately, a few minutes apart.',
+  'A cloak on the back stair, then another. Nobody downstairs hears a thing.',
+  'They climb one at a time, so that nobody still awake sees two of them together.',
 ];
 const STAIR = [
-  'Nobody else is allowed into this meeting. The Faithfuls will not learn what was discussed here.',
-  'The meeting is private. Only the Traitors and the audience will hear the proposed names.',
-  'Behind the turret door, the Traitors must choose one player to target tonight.',
-  'When the door closes, the Traitors can speak openly about whom they want removed.',
+  'The turret door shuts behind the last of them. Up here, nobody has to pretend.',
+  'Candles, a small round table, and a door that locks. What is said in this room stays in it.',
+  'Behind this door there is nobody to perform for. Only each other, and a name to choose.',
+  'The door closes, and the faces they have worn all day come off with the hoods.',
 ];
 const GREET = [
-  'All living Traitors are present. Each may propose a target before the group decides.',
-  'The Traitors take their places and prepare to compare targets.',
-  'The meeting begins with each Traitor allowed to argue for one name.',
-  'They begin by reviewing the players who could threaten or benefit the pact.',
+  'They take their seats round the candles. For once, nobody at the table has to lie about what they are.',
+  'Hoods down. Each of them has come up the stair with a name already in mind.',
+  'Nobody sits down empty-handed. Each of them has a name, and a reason for it.',
+  'They look at each other across the candles for a moment. Then the talking starts.',
 ];
 
 // ── THE SAME THREE POOLS ON A NIGHT WITH NO CHOICE IN IT ──────────────
@@ -612,16 +616,16 @@ const PLAIN_SIGHT_TEXT = [
  *  unprofessional about it. NOT ONE OF THESE STRINGS NAMES THE HOST. */
 const HOST_LINES = {
   open: [
-    'The Faithfuls have gone to bed. The Traitors are now meeting privately to choose a target.',
-    'Tonight, each Traitor may propose a player to remove. The group must agree before leaving the turret.',
-    'This meeting is hidden from the Faithfuls. Only the Traitors know which names are being considered.',
-    'The Traitors are together in the turret. Their decision will determine who receives a letter before breakfast.',
+    'The castle is asleep. Now the real game starts.',
+    'Welcome back to the turret. Downstairs, they are all trying to get some sleep.',
+    'The Faithfuls are in bed. You are not. Choose well.',
+    'Somebody in this castle is about to have a very bad night. You get to decide who.',
   ],
   shortlist: [
-    'Each Traitor will name a preferred target and explain the strategic reason for that choice.',
-    'Several players may be proposed, but the group can select only one final target.',
-    'The shortlist is open. Watch which target each Traitor supports and why.',
-    'The arguments begin now. The final choice may reveal disagreements inside the pact.',
+    'Names, please. And tell me why.',
+    'Put your names on the table. Then convince each other.',
+    'Each of you, one name. Argue for it.',
+    'Tell me who you want gone, and why they are worth the trouble.',
   ],
   // ── AND THE SAME TWO SLOTS ON A NIGHT WITH NO MEETING ───────────────
   //
@@ -985,8 +989,12 @@ function _buildBeats(rec, ep) {
         ? a.traitor + ' does not put this to anybody. The reason exists, and it stays where '
         + 'it is, which is entirely inside ' + a.traitor + '.'
       : (i === 0
-        ? 'The first Traitor names a target and explains why removing that player would help the pact.'
-        : a.traitor + ' proposes another target and explains the advantage to the pact.');
+        ? a.traitor + ' goes first, and does not need long to think about it.'
+        // a second Traitor can back the same name; "another target" was
+        // written for the night they never do
+        : argued.slice(0, i).some(x => x.target === a.target)
+          ? a.traitor + ' has been thinking the same thing.'
+          : a.traitor + [' has somebody else in mind.', ' has a different name.', ' is not having that, and says who instead.'][(i - 1) % 3]);
     push('argue', _card(soloTitle,
       chalice ? 'III. At the shelves' : plain ? 'III. No argument' : 'III. The argument', 'quill',
       '<p>' + soloLead + '</p>'

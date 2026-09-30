@@ -108,7 +108,10 @@ const SCREEN = {
   prep: 'prep', booth: 'prep', rehearsal: 'prep', set: 'prep',
   maxi: 'chal', maxistage: 'chal',
   mainstage: 'mainstage', runway: 'runway', finrunway: 'runway', critiques: 'critiques',
-  results: 'suspense', rate: 'suspense', finjury: 'suspense', fincut: 'suspense',
+  results: 'suspense',
+  // Rate-a-Queen is the queens ranking each other: gossip, not a verdict. The
+  // suspense cue made it ominous (the user); it takes the werk room's bed.
+  rate: 'werkroom', finjury: 'suspense', fincut: 'suspense',
   lipsync: 'lipsync', legacy: 'lipsync', fincrownls: 'lipsync',
   smackdown: null,   // every smackdown card says its own moment (smackdown.js)
   exit: 'sashay', reunion: 'reunion',
@@ -124,7 +127,7 @@ export const DRAG_SITUATIONS = [
   'finale', 'showcase', 'crowning', 'crowned',
   // The show's own cues (the user's copies, assets/audio/drag/private), each
   // named for the moment it scores:
-  'werkroom', 'untucked', 'the-call', 'the-verdict', 'outro',
+  'werkroom', 'untucked', 'the-call', 'the-verdict', 'outro', 'double-shantay',
   'decision', 'up-for-elimination', 'bottom-two', 'time-has-come', 'closing',
 ];
 
@@ -175,17 +178,40 @@ async function loadManifest() {
   manifest = m;
   return manifest;
 }
+/* ONE DOWNLOAD PER TRACK, AND A SMALL CACHE. The preloader and the player
+   can ask for the same track at once, so a track being fetched is shared
+   rather than fetched twice. And a decoded three-minute bed is ~70 MB of
+   samples, so only the most recent few are kept. */
+const inflight = {};
+const recent = [];
+const KEEP = 8;
+function remember(key) {
+  const at = recent.indexOf(key);
+  if (at >= 0) recent.splice(at, 1);
+  recent.push(key);
+  while (recent.length > KEEP) {
+    const old = recent.shift();
+    if (bed?.src?.buffer === buffers[old]) { recent.push(old); break; }   // never the one playing
+    delete buffers[old];
+  }
+}
 async function decode(c, key, getBytes) {
-  if (buffers[key] !== undefined) return buffers[key];
-  try {
-    const bytes = await getBytes();
-    buffers[key] = bytes ? await c.decodeAudioData(bytes) : null;
-  } catch { buffers[key] = null; }
-  /* A SONG THAT FAILED IS ASKED FOR AGAIN next time: one failed search
-     (offline, rate-limited) silenced that song until a reload. */
-  const got = buffers[key];
-  if (!got && key.startsWith('song:')) delete buffers[key];
-  return got;
+  if (buffers[key] !== undefined) { if (buffers[key]) remember(key); return buffers[key]; }
+  if (inflight[key]) return inflight[key];
+  inflight[key] = (async () => {
+    try {
+      const bytes = await getBytes();
+      buffers[key] = bytes ? await c.decodeAudioData(bytes) : null;
+    } catch { buffers[key] = null; }
+    /* A SONG THAT FAILED IS ASKED FOR AGAIN next time: one failed search
+       (offline, rate-limited) silenced that song until a reload. */
+    const got = buffers[key];
+    if (!got && key.startsWith('song:')) delete buffers[key];
+    if (got) remember(key);
+    delete inflight[key];
+    return got;
+  })();
+  return inflight[key];
 }
 const urlBytes = url => async () => { const r = await fetch(url); return r.ok ? r.arrayBuffer() : null; };
 /* A PRIVATE CUE, WHEREVER THIS PAGE IS. Beside the page when it is served
@@ -221,6 +247,8 @@ const FIXED_SONG = {
   // The credits, after the sign-off cue: the user asked for "a music from
   // RuPaul" and left the pick to us.
   outro: { title: 'Sissy That Walk', artist: 'RuPaul' },
+  // "Shantay, you BOTH stay": the room erupts, and the host's own anthem plays.
+  'double-shantay': { title: "Champion - DJ BunJoe's Olympic Mix", artist: 'RuPaul' },
 };
 /* Where each bed was when it was interrupted, so "I've made my decision"
    picks up after the winner's fanfare instead of starting over. */
@@ -397,8 +425,11 @@ async function start(key, sit, song, suffix = null, fallback = null, fit = {}) {
     const now = c.currentTime;
     const g = c.createGain();
     const vol = song && buf ? SONG_VOL : BED_VOL;
-    g.gain.setValueAtTime(0.0001, now);
-    g.gain.exponentialRampToValueAtTime(vol, now + (song ? 0.4 : 1.2));
+    /* IN FAST. An exponential ramp from silence over 1.2 s is inaudible for
+       most of its length, and it read as the music taking forever to start.
+       A short linear rise is heard at once and still does not click. */
+    g.gain.setValueAtTime(0, now);
+    g.gain.linearRampToValueAtTime(vol, now + (song ? 0.2 : 0.35));
     g.connect(dest);
     let src;
     if (pick.runway) src = crossLoop(c, g, buf, pick.loopFrom, pick.loopTo);
@@ -467,6 +498,8 @@ export function lipsyncMusicOf(kind, data = null) {
      away", a winner named — all under "The Time Has Come" (the user's
      order). Then her goodbye, which is the Last Sun's ('sashay'). A double
      is still one card, and still the verdict. */
+  // A double shantay is a celebration, not a verdict: its own song (the user).
+  if (/lipsync-call$/.test(k) && data?.tier === 'double-shantay') return 'double-shantay';
   if (/lipsync-(suspense|call|legacy-choice|shantay|sashay)$/.test(k)) return 'the-verdict';
   if (/lipsync-win-(name|reaction|runnerup)$|revenge-back/.test(k)) return 'the-verdict';
   if (/(sashay-words|sashay-mood)$/.test(k)) return 'sashay';
@@ -477,6 +510,59 @@ export function lipsyncMusicOf(kind, data = null) {
  * A step was revealed: start, keep, change or stop the music.
  * Called by js/vp-dr/reveal.js on every reveal.
  */
+/** The moment a screen's first card is, as dragMusicStep would read it. */
+function openingSit(suffix, el) {
+  let sit = situationOf(suffix, el);
+  if (MOODS.has(sit) && !(manifest?.[sit]?.length)) sit = situationOf(suffix, { dataset: {}, closest: q => el.closest?.(q) });
+  return sit;
+}
+
+/* ── LOADED BEFORE IT IS NEEDED ──
+   Every distinct moment on the screen just opened, and the next screen's
+   opening, are fetched and decoded in the background — so a click, or the
+   next screen, finds its track already in memory. One at a time, so the
+   first one the viewer will hear is not queued behind the rest. */
+async function warm(sit) {
+  const out = engine.output?.();
+  if (!out || !sit || !musicWanted()) return;
+  const m = await loadManifest();
+  let key = sit;
+  if (!(m?.[key] || []).length && /^chal-/.test(sit)) key = 'challenge';
+  const list = m?.[key] || [];
+  if (list.length) {
+    const t = list[(turns[key] || 0) % list.length];
+    await decode(out.ctx, t.url, t.private ? cueBytes(t.file) : urlBytes(t.url));
+    return;
+  }
+  const rs = FIXED_SONG[sit] || (HOST_SONG.has(sit) ? runwaySongFor(seasonKey()) : null);
+  if (rs) await decode(out.ctx, `song:runway:${rs.title}`, () => previewBytes(rs.title, rs.artist));
+}
+async function warmAround(id) {
+  if (typeof document === 'undefined') return;
+  const here = new Set([...document.querySelectorAll('[data-music]')].map(e => e.dataset.music)
+    .filter(x => x && x !== 'none' && x !== 'lipsync' && !MOODS.has(x)));
+  // The song of this screen's lip sync, if it has one.
+  const song = document.querySelector('[data-song]')?.dataset?.song;
+  const screens = globalThis.vpScreens || [];
+  const at = screens.findIndex(s => s.id === id);
+  const next = at >= 0 ? screens[at + 1] : null;
+  const order = [...here];
+  if (next?.html) {
+    const suffix = (String(next.html).match(/dr-controls-([a-z0-9-]+)/) || [])[1];
+    const chal = (String(next.html).match(/\bdr-chal-([a-z0-9-]+)/) || [])[1];
+    const tag = (String(next.html).match(new RegExp('<div([^>]*)id="dr-step-' + suffix + '-0"')) || [])[1] || '';
+    const own = (tag.match(/data-music="([a-z0-9-]+)"/) || [])[1];
+    const d = SCREEN[suffix];
+    const sit = own && !MOODS.has(own) ? own : d === 'chal' ? (chal && chal !== 'snatch' ? `chal-${chal}` : 'challenge') : d;
+    if (sit) order.push(/^dr-(lipsync|legacy)$/.test(next.id) ? 'bottom-two' : sit);
+  }
+  for (const sit of order) await warm(sit);
+  if (song) {
+    const out = engine.output?.();
+    if (out) await decode(out.ctx, `song:${song}`, async () => (await songBytes(song)) || previewBytes(song));
+  }
+}
+
 export function dragMusicStep(suffix, idx) {
   if (typeof document === 'undefined') return;
   const el = document.getElementById(`dr-step-${suffix}-${idx}`);
@@ -506,7 +592,7 @@ export function dragMusicStep(suffix, idx) {
   if (!sit) { stop(); return; }
   // The verdict is said in silence after the song: the song cuts, then the
   // shantay or the sashay starts its own track.
-  const cut = (sit === 'the-verdict' || sit === 'shantay' || sit === 'sashay' || sit === 'winner' || sit === 'crowned')
+  const cut = (sit === 'the-verdict' || sit === 'double-shantay' || sit === 'shantay' || sit === 'sashay' || sit === 'winner' || sit === 'crowned')
     && (bed?.key?.startsWith('song:') || bed?.key === 'suspense' || bed?.key === 'crowning');
   if (cut) stop(true);
   /* ONE PIECE OF MUSIC UNDER THE WHOLE VERDICT. On the show the elimination
@@ -541,13 +627,32 @@ if (typeof document !== 'undefined' && !globalThis.__drMusic) {
   // Party takes the music with it.
   document.addEventListener('vp:screen', e => {
     stop();
+    const id = String(e?.detail?.id || '');
+    if (!id.startsWith('dr-')) return;
     /* THE LIP SYNC OPENS ON "BOTTOM TWO" (Ephemeral Faze), before a card is
        revealed: the two queens walk to their marks under it, carried on from
        the call's last card (it resumes where it stopped), and "The Time Has
        Come" takes over at the host's speech. The user's placement. */
-    if (/^dr-(lipsync|legacy)$/.test(String(e?.detail?.id || ''))) {
-      start('bottom-two', 'bottom-two', null, e.detail.id === 'dr-legacy' ? 'legacy' : 'lipsync');
+    if (/^dr-(lipsync|legacy)$/.test(id)) {
+      start('bottom-two', 'bottom-two', null, id === 'dr-legacy' ? 'legacy' : 'lipsync');
+    } else {
+      /* EVERY OTHER SCREEN STARTS ITS MUSIC WHEN IT OPENS, not on the first
+         click: the moment of its first card, which is what that click would
+         have started (the same key, so the click carries on rather than
+         restarting). */
+      const ctl = document.querySelector('[id^="dr-controls-"]');
+      const suffix = ctl ? ctl.id.replace('dr-controls-', '') : null;
+      const first = suffix && document.getElementById(`dr-step-${suffix}-0`);
+      if (first) {
+        try {
+          if (loadManifest && manifest === undefined) loadManifest();
+          const sit = openingSit(suffix, first);
+          if (sit && sit !== 'lipsync' && sit !== 'closing') start(sit, sit, null, suffix);
+        } catch { /* the ear, not the screen */ }
+      }
     }
+    // And the tracks this screen and the next one will ask for, loaded now.
+    try { warmAround(id); } catch { /* optional */ }
   });
   document.addEventListener('vp:close', () => stop());
 }

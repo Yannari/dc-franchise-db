@@ -257,7 +257,7 @@ const BEFORE_TABLE_LINES = {
     '{a} doesn’t expect to hear {posAdj} own name tonight, and it shows.',
     '{a} eats a full dinner before the table, taking {posAdj} time.',
     '{a} spends the hour before the table chatting about anything but the vote.',
-    '{a} is relaxed tonight, which in this castle is either confidence or a mistake.',
+    '{a} is relaxed tonight, and some of the others find that suspicious.',
     '{a} hasn’t been named all week and is starting to expect that to hold.',
     '{a} watches everybody else get nervous and feels strangely calm.',
     '{a} goes down to the Round Table like it’s any other evening.',
@@ -718,7 +718,7 @@ const LAST_LIGHT_LINES = {
   'slept-fine': [
     '{a} goes to bed and is asleep in five minutes.',
     '{a} sleeps straight through the night.',
-    '{a} sleeps well, which in this castle is almost a talent.',
+    '{a} sleeps well, unlike most of the castle.',
     '{a} is out like a light.',
     '{a} sleeps soundly and doesn’t hear a thing.',
     '{a} puts the day down and sleeps right through.',
@@ -1548,7 +1548,7 @@ const HOW_THEYRE_TREATED_LINES = {
     '{a} notices someone is working on {obj}.',
     '{a} is being charmed, and knows it.',
     'Somebody keeps checking in on {a}, a bit too often.',
-    '{a} spots the flattery for what it is.',
+    'People are being unusually nice to {a}, and {a} sees through it.',
     '{a} is being handled, and is letting it happen.',
   ],
 };

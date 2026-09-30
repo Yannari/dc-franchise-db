@@ -857,7 +857,7 @@ registerEvent({
 const AUDIT_LINES = {
   solid: [
     '{a} goes back over {mission} on the road home, and can’t find a minute anyone could question.\n{a} (to camera): {cam:story-fine}',
-    'By the gate, {a} has all of {team}’s afternoon in order.\n{a} (to camera): "Every minute accounted for. Let them ask."',
+    'By the gate, {a} can account for every minute of the afternoon.\n{a} (to camera): "Every minute accounted for. Let them ask."',
     '{a} checks {aPos} own afternoon, and it’s clean.\n{a} (to camera): {cam:story-fine}',
     '{a} walks home confident about {mission}.\n{a} (to camera): "Nobody can say I wasn’t pulling my weight."',
   ],

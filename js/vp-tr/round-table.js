@@ -1192,6 +1192,8 @@ const RT_CSS = `
 /* ── THE VERDICT AND THE CHAIR ──────────────────────────────────────── */
 .rt-verdict{text-align:center;padding:8px 0 4px}
 .rt-verdict-face{margin:0 auto 16px;filter:drop-shadow(0 18px 34px rgba(0,0,0,.85))}
+.rt-verdict-face .cv-av{width:110px!important;height:110px!important;display:inline-block;position:relative;overflow:hidden}
+.rt-verdict-face .cv-av img{width:100%;height:100%;object-fit:cover}
 .rt-verdict-nm{
   font-family:var(--rt-display);font-weight:900;font-size:clamp(30px,4.4vw,44px);
   letter-spacing:-.015em;color:var(--rt-bone);margin:0 0 6px;
@@ -2100,22 +2102,22 @@ const READ_BACK = [
 ];
 
 const COUNT_TEXT = [
-  'The chalk is read. The count is the only fact this room owns.',
-  'That is all of them, in the order they were held up.',
-  'Every slate turned. Now the room has to look at the shape it made.',
-  'The count, and the faces round it doing sums they will not say out loud.',
+  'That’s every slate.',
+  'All the slates are up. Here is how it came out.',
+  'Every name has been read. This is the count.',
+  'The slates are all turned over.',
 ];
 const TIE_TEXT = [
-  'Level. The format is unkind about this: only the tied are in question, and they are not allowed to speak for themselves with chalk.',
-  'Level pegging, so the room goes again — without the two people it is about.',
-  'Split down the middle. The tied put their chalk down and watch everybody else pick theirs up.',
-  'Nobody has a majority. The room does it again, and this time the people at risk have no say in it.',
+  'It’s a tie. The two tied players can’t vote, and everyone else votes again, choosing only between them.',
+  'Level. The room votes again, and the two people it is about have no say.',
+  'A tie, so they go again. This time only the tied names are allowed.',
+  'Nobody has a majority. Everyone except the tied pair writes again.',
 ];
 const VERDICT_TEXT = [
-  'The chair is pushed back. The room does not look up.',
-  'Whatever anybody says now, the count already said it.',
-  'A short walk, and the table is one seat emptier for the rest of the season.',
-  'The room watches the door and then very carefully does not look at each other.',
+  'The chair is pushed back. Nobody looks up.',
+  'Nothing anyone says now will change it.',
+  'One more empty seat at the table.',
+  'The room watches the door, then avoids each other’s eyes.',
 ];
 // WHAT THEY SAY ON THE WAY OUT.
 //
@@ -2127,44 +2129,44 @@ const VERDICT_TEXT = [
 // screen's. `speech.text` stays on the record for a reader that wants a
 // sentence rather than a scene.
 const BURN_SAID = [
-  'Before I go — it is {t}. Look at {obj}. It has been {t} this whole time.',
-  'You have made a mistake, and the mistake is sitting right there. {t}.',
-  'I hope you are all very pleased with yourselves. Watch {t}. That is all I will say.',
-  'One thing. {t}. When you finally work it out, remember who told you first.',
-  'I am not angry at all of you. I am angry at {t}, and you should be as well.',
-  'Fine. But start with {t}, because I have run out of time to prove it myself.',
+  'Before I go: it’s {t}. Look at {obj}. It’s been {t} all along.',
+  'You’ve made a mistake, and the mistake is sitting right there. {t}.',
+  'Watch {t}. That’s all I’ll say.',
+  'One thing. {t}. When you work it out, remember who told you first.',
+  'I’m not angry at all of you. I’m angry at {t}, and you should be too.',
+  'Fine. But start with {t}, because I’ve run out of time to prove it.',
 ];
 const QUIET_SAID = [
-  'I have no idea who it is. I hope one of you does.',
-  'I do not blame anybody here. I would probably have written my own name too.',
-  'Well. That is that. Be careful with each other.',
-  'I got it wrong. I hope the rest of you get it right.',
-  'Nothing clever from me. Just think about who wanted this.',
-  'I would wish you luck, but most of you do not seem to need any.',
+  'I’ve no idea who it is. I hope one of you does.',
+  'I don’t blame anyone. I’d probably have written my own name too.',
+  'Well. That’s that. Be careful with each other.',
+  'I got it wrong. I hope you get it right.',
+  'Just think about who wanted this.',
+  'Good luck. You’re going to need it.',
 ];
 const SPEECH_BURN = [
-  'And it is not a quiet exit.',
-  'The parting shot, aimed and delivered.',
-  'Nothing left to protect, so nothing gets protected.',
-  'One last accusation, thrown from the doorway.',
+  'It isn’t a quiet exit.',
+  'One last accusation, from the doorway.',
+  'A parting shot.',
+  'There’s nothing left to lose, so it all comes out.',
 ];
 const SPEECH_QUIET = [
-  'It is said quite evenly, which somehow lands harder.',
-  'A last sentence, and it is almost kind.',
-  'No shouting. Just the name and the door.',
-  'Said evenly, to a room that will be arguing about it by breakfast.',
+  'It’s said calmly, which somehow makes it worse.',
+  'A last sentence, and it’s almost kind.',
+  'No shouting. Just that, and the door.',
+  'Said quietly, to a room that will be arguing about it by breakfast.',
 ];
 const REVEAL_TRAITOR = [
-  'The room got one. It will be unbearable about this for two days and it will get the next one wrong.',
-  'They had it. Out of everything they guessed at this evening, this one was true.',
-  'A hit — and every read that produced it was luck stacked on a hunch.',
-  'Right. The table erupts, and the two still sitting in it erupt loudest.',
+  'They got one.',
+  'The room was right. Of everything they guessed tonight, this was true.',
+  'A Traitor, caught. Mostly on hunches, but caught.',
+  'Right. The table erupts, and the Traitors still sitting in it cheer the loudest.',
 ];
 const REVEAL_FAITHFUL = [
-  'Wrong. The room spent its one certain fact on somebody who was on its side.',
-  'A loyal player, removed by the people they were loyal to.',
-  'The count was clean and the answer was wrong, which is the worst combination this table produces.',
-  'They did that to one of their own, in the open, unanimously enough.',
+  'Wrong. The room has sent home somebody on its own side.',
+  'A loyal player, sent home by the people they were loyal to.',
+  'The vote was clear, and it was wrong.',
+  'They did that to one of their own, in front of everyone.',
 ];
 // FIRST PERSON, SPOKEN AT THE DOOR. The banished turns their own card — the
 // one certainty the format hands the room comes out of the mouth of the person
@@ -2186,35 +2188,52 @@ const ANNOUNCE_FAITHFUL = [
 // THE ROOM, AFTER. Public on every layer — the mood of a table that has just
 // been handed its one true thing, or spent it on an innocent.
 const REACT_TRAITOR_PUBLIC = [
-  'The table comes apart — relief and fury at once, and under both the same cold arithmetic: how many are left.',
-  'For a moment nobody can look at anybody. They were right, and being right feels like nothing they expected it to.',
-  'For the first time all week a read has paid off, and the faces round the table do not quite know what to do with being right.',
-  'Somebody starts to celebrate and thinks better of it. There are still chairs at this table that have not been turned over.',
+  'Relief and anger at once, and then everyone starts counting how many Traitors are left.',
+  'For a moment nobody knows what to say. They were right, and it doesn’t feel how they expected.',
+  'Somebody starts to celebrate, then stops. There are still Traitors at this table.',
+  'Some of them look relieved. Some of them look straight at the people who voted differently.',
 ];
 const REACT_FAITHFUL_PUBLIC = [
-  'The silence goes on a beat too long. Every person at this table is now somebody who did that.',
-  'A hand goes to a mouth. The apology forms and there is no one left in the chair to give it to.',
-  'They look at each other and understand, all at once, that a Traitor is still here, wearing one of these sorry faces.',
-  'Nobody says the obvious thing out loud: whoever wanted this one gone the most is the one to watch now.',
+  'The silence goes on too long. They all did that.',
+  'Somebody starts to apologise, but the chair is already empty.',
+  'They look at each other and realise a Traitor is still here, looking just as sorry as they are.',
+  'Nobody says it, but everyone is thinking it: whoever pushed hardest for that name is the one to watch now.',
+];
+
+// THE PEOPLE WHO WROTE THE NAME, SPEAKING. The reaction card was a paragraph
+// about a mood and a row of faces; the voters now say something.
+const REACT_SAID_TRAITOR = [
+  'I knew it. I knew it.',
+  'Told you. I told all of you.',
+  'Good. One down.',
+  'I didn’t think I’d feel this relieved.',
+  'Right. Who was {nm} closest to?',
+];
+const REACT_SAID_FAITHFUL = [
+  'I’m so sorry.',
+  'I was so sure.',
+  'That’s on me. I wrote that.',
+  'Who talked us into that?',
+  'I feel sick.',
 ];
 // AUDIENCE PRIVILEGE. Only the crowd sees the surviving pact react — same
 // channel as the debate's "what the room cannot see". `{who}` is a Traitor
 // still seated; never rendered on a player layer, where `v.truth` is null.
 const REACT_TRAITOR_HIDDEN = [
-  '{who} keeps a straight face and does the only sum that matters: the pact down by one, and every remaining pair of eyes now free to turn their way.',
-  'A friend just went out that door and {who} mourns nothing — only measures how much warmer the room got, and how much colder.',
-  '{who} grieves loudly for exactly as long as the others are watching, and not one second past it.',
+  '{who} keeps a straight face. One fewer Traitor now, and more eyes free to turn to {obj}.',
+  'A fellow Traitor just walked out, and {who} shows nothing. {Sub} is working out how exposed {sub} is now.',
+  '{who} looks upset for exactly as long as the others are watching.',
 ];
 const REACT_FAITHFUL_HIDDEN = [
-  '{who} lets the room do the grieving and does not have to fake a thing — the table just spent its knife on one of its own.',
-  'Behind a sympathetic face, {who} is having the best night of the week and cannot let a muscle of it show.',
-  'The pact loses no one and the room loses a friend, and {who} keeps the smile off {pos} face by an act of pure will.',
+  '{who} lets the others do the grieving. The room has just sent home one of its own, and that suits the Traitors fine.',
+  'Behind a sympathetic face, {who} is having a very good night.',
+  'The Traitors lose nobody, and {who} works hard to keep that off {pos} face.',
 ];
 const SILENCE_TEXT = [
-  'Nobody is told anything. Not tonight, not at this number, not ever again.',
-  'The chair empties and the room learns precisely nothing from it.',
-  'No answer. The survivors go back to the fire with exactly the beliefs they arrived with.',
-  'The seat is gone and the truth goes with it. From here it is nerve and nothing else.',
+  'Nobody finds out what they were. Not now, and not again.',
+  'The chair empties, and the room learns nothing from it.',
+  'No reveal. They go back to the fire knowing exactly what they knew before.',
+  'The truth leaves with them. From here on, it is all guesswork.',
 ];
 
 /** The room, rather than the argument. Ambient, one under some cards. */
@@ -3150,16 +3169,20 @@ function _buildBeats(v) {
       : [];
     let rh = '<p>' + _pick(isTraitor ? REACT_TRAITOR_PUBLIC : REACT_FAITHFUL_PUBLIC,
       key + '|rxp') + '</p>';
-    if (pushers.length) {
+    // Two of the people who wrote the name say something; the rest are faces.
+    pushers.slice(0, 2).forEach(n => {
+      rh += _said(n, _fill(_fresh(isTraitor ? REACT_SAID_TRAITOR : REACT_SAID_FAITHFUL, key + '|rxs|' + n), { nm: _esc(v.chosen) }));
+    });
+    if (pushers.length > 2) {
       rh += '<div class="rt-faces">'
-        + pushers.slice(0, 8).map(n => _faceChip(n, 26)).join('') + '</div>';
+        + pushers.slice(2, 10).map(n => _faceChip(n, 26)).join('') + '</div>';
     }
     if (survTraitors.length) {
       const who = survTraitors[0];
       const wpr = _pr(who);
       rh += '<div class="rt-irony"><b>What the room cannot see</b><span>'
         + _fill(_pick(isTraitor ? REACT_TRAITOR_HIDDEN : REACT_FAITHFUL_HIDDEN, key + '|rxh'),
-          { who: _esc(who), pos: wpr.pos, sub: wpr.sub, obj: wpr.obj }) + '</span></div>';
+          { who: _esc(who), pos: wpr.pos, sub: wpr.sub, Sub: wpr.Sub, obj: wpr.obj }) + '</span></div>';
     }
     push('verdict', _card(null, 'The room', 'table', rh),
       null, { kind: 'reaction' });

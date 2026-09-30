@@ -39,6 +39,8 @@
 // under tests (no unlocked engine, no IndexedDB).
 import { audio as engine } from '../audio.js';
 import { SONGS } from '../dr/data/songs.js';
+import { RUNWAY_SONGS } from '../dr/data/runway-songs.js';
+import { beatLoop } from './beat-loop.js';
 
 // ── WHAT A WERK ROOM OR UNTUCKED SCENE IS ────────────────────────────
 // Classified BY HAND from each event's note and what it does to the room —
@@ -208,6 +210,49 @@ function stop(cut = false) {
   if (b && !b.pending) fadeOut(b, cut ? 0.08 : 1.2);
 }
 
+/* ── THE RUNWAY THEME ─────────────────────────────────────────────────
+   With no runway track uploaded, the runway walks to one of the host's own
+   records (js/dr/data/runway-songs.js) — its 30-second store clip, looped
+   on the beat. One per SEASON, as on the show, keyed on the season so a
+   replay hears the same one. */
+export function runwaySongFor(seasonKey) {
+  const k = String(seasonKey ?? '');
+  let h = 2166136261;
+  for (let i = 0; i < k.length; i++) h = Math.imul(h ^ k.charCodeAt(i), 16777619);
+  return RUNWAY_SONGS[(h >>> 0) % RUNWAY_SONGS.length];
+}
+const seasonKey = () => { const g = globalThis.gs; return g?._drSeed ?? g?.seasonNumber ?? 0; };
+const loops = new WeakMap();
+
+/**
+ * Loop `buf` from `from` to `to` by starting a fresh copy on the beat grid
+ * and crossfading into it — not the source's own loop, which jumps hard:
+ * a seam the beat finder placed a few milliseconds off is a stutter with a
+ * hard jump and nothing with a crossfade. Returns an object with `stop(when)`
+ * so it passes for a source node everywhere the bed stops one.
+ */
+function crossLoop(c, out, buf, from, to) {
+  const X = 0.15; const S = to - from;
+  const live = new Set(); let timer = null; let next = c.currentTime + 0.02; let first = true; let dead = false;
+  const schedule = () => {
+    while (!dead && next - c.currentTime < 4) {
+      const src = c.createBufferSource(); src.buffer = buf;
+      const g = c.createGain();
+      g.gain.setValueAtTime(first ? 1 : 0.0001, next);
+      if (!first) g.gain.exponentialRampToValueAtTime(1, next + X);
+      g.gain.setValueAtTime(1, next + S);
+      g.gain.exponentialRampToValueAtTime(0.0001, next + S + X);
+      src.connect(g); g.connect(out);
+      src.start(next, from, S + X + 0.02);
+      live.add(src); src.onended = () => live.delete(src);
+      next += S; first = false;
+    }
+    if (!dead) timer = setTimeout(schedule, 1000);
+  };
+  schedule();
+  return { context: c, stop(when) { dead = true; clearTimeout(timer); for (const s of live) { try { s.stop(when); } catch { /* done */ } } } };
+}
+
 /** Start `key` (a situation, or `song:<title>`) unless it is already playing. */
 async function start(key, sit, song, suffix = null, fallback = null) {
   if (bed?.key === key) { bed.suffix = suffix; return; }
@@ -232,18 +277,35 @@ async function start(key, sit, song, suffix = null, fallback = null) {
       pick = await trackFor(fallback);
       if (pick) buf = await decode(c, pick.url, urlBytes(pick.url));
     }
+    if (!buf && sit === 'runway') {
+      const rs = runwaySongFor(seasonKey());
+      if (rs) {
+        buf = await decode(c, `song:runway:${rs.title}`, () => previewBytes(rs.title, rs.artist));
+        if (buf && !loops.has(buf)) {
+          let L = null;
+          try { L = beatLoop(buf.getChannelData(0), buf.sampleRate); } catch { /* no beat */ }
+          loops.set(buf, L || { loopFrom: 1, loopTo: Math.max(2, buf.duration - 1.2) });
+        }
+        pick = buf ? { runway: true, ...loops.get(buf) } : pick;
+      }
+    }
   }
   if (!buf || bed !== mine) { if (bed === mine) bed = { key, pending: false, suffix }; return; }
   try {
     const now = c.currentTime;
-    const src = c.createBufferSource(); src.buffer = buf;
-    if (!song && pick.loopTo) { src.loop = true; src.loopStart = pick.loopFrom || 0; src.loopEnd = Math.min(pick.loopTo, buf.duration); }
     const g = c.createGain();
     const vol = song && buf ? SONG_VOL : BED_VOL;
     g.gain.setValueAtTime(0.0001, now);
     g.gain.exponentialRampToValueAtTime(vol, now + (song ? 0.4 : 1.2));
-    src.connect(g); g.connect(dest);
-    src.start(now, Math.min(pick.start || 0, Math.max(0, buf.duration - 1)));
+    g.connect(dest);
+    let src;
+    if (pick.runway) src = crossLoop(c, g, buf, pick.loopFrom, pick.loopTo);
+    else {
+      src = c.createBufferSource(); src.buffer = buf;
+      if (!song && pick.loopTo) { src.loop = true; src.loopStart = pick.loopFrom || 0; src.loopEnd = Math.min(pick.loopTo, buf.duration); }
+      src.connect(g);
+      src.start(now, Math.min(pick.start || 0, Math.max(0, buf.duration - 1)));
+    }
     mine.src = src; mine.g = g; mine.pending = false;
   } catch { if (bed === mine) bed = null; }
 }
@@ -379,13 +441,13 @@ export function pickPreview(results, title, artist) {
   return fits.sort((x, y) => (variant(x) - variant(y)) || (norm(x.trackName).length - norm(y.trackName).length))[0] || null;
 }
 
-async function previewBytes(title) {
+async function previewBytes(title, artist = SONGS.find(s => s.title === title)?.artist || '') {
   const cache = previews();
   let url = cache[title];
   if (url === undefined) {
-    const artist = SONGS.find(s => s.title === title)?.artist || '';
     try {
-      const q = encodeURIComponent(`${title} ${artist}`.trim());
+      // "Cover Girl - Macutchi's TaterZ DeeP Edit": the store's own spelling, dash and all, searches worse than without it.
+      const q = encodeURIComponent(`${title.replace(/ - /g, ' ')} ${artist}`.trim());
       const r = await fetch(`https://itunes.apple.com/search?term=${q}&media=music&entity=song&limit=50`);
       if (!r.ok) return null;   // rate-limited: try again next time, remember nothing
       url = pickPreview((await r.json())?.results, title, artist)?.previewUrl || null;

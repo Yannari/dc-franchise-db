@@ -1025,6 +1025,18 @@ able to lose the players it needs to on the nights it has (ADDING-A-SHOW
 §16.3), and formats that remove two players need the season to have room for
 them.
 
+
+**As built (Plan 3b).** `js/ci/formats.js` registers each format (`removes`,
+`seats`, `can`, `canNow`, `run`, optional `before`, `hidden`, `human`,
+`quiet`); `js/ci/timeline.js` books them by slot or draws them by position
+(first/early/middle/late/last). All of the table is built except the Egg
+twist as a blocking (it is an arrival, §12) and Block Each Other's "both
+yes" (the bolder keeps their seat). A night may remove 0, 1 or 2; the
+timeline keeps the rest doable, forces a double when a season falls behind,
+and gives back only the days a double truly frees. A booking that cannot
+run falls back to standard, on record. 400 audit seasons end with exactly
+five finalists; standard is ~45% of nights.
+
 ---
 
 ## 11. After the block
@@ -1125,6 +1137,15 @@ Each is an entry format on the timeline:
 | **Chosen by the influencers** from two or more offered profiles | US 4 Ep 1, US 6 Ep 1 |
 | **Chosen by the public** | UK 2 Ep 4 |
 | **Arrive as a pair** — two newcomers get a private chat before joining | US 3 Ep 3 ("Isabella" and "Jackson") |
+
+
+**As built (Plan 3b).** `js/ci/arrivals.js` ENTRIES: snoop, date, invites,
+race, party, lurk, chosen (the Influencers pick one of two waiting profiles;
+the other waits for the next arrival), pair (pulls a later newcomer forward
+on a one-arrival day), and the Egg twist (UK 2 Ep 16: two eggs, the room
+keeps one, the other is blocked unseen; the timeline counts it as a
+removal). Chosen by the public is not built (the audience decides only the
+public Super Influencer and Fan Favorite).
 
 ### 12.3 Newcomers and originals
 
@@ -1360,6 +1381,18 @@ blocking. Who they choose is public.
 Secret tasks with a reward or a penalty: get a named player blocked or be
 blocked (UK 3); win followers in a team mission (US 5); stay undetected
 (§14.9).
+
+
+**As built (Plan 3b).** Powers handed over at a visit (`js/ci/powers.js`):
+immunity, the Hacker, the Joker, the burner. Disrupter alerts (immunity or
+naming an Influencer). Identity twists (`js/ci/twists.js`): the profile swap
+(the people behind two profiles swap until the next blocking morning), the
+clone (the room can vote out the real one), Ride or Die (simplified: one
+always goes, so the count stays exact), second chance (two blocked players,
+one from each of two profiles, return as one shared profile). The AI player
+(`js/ci/ai.js`, a season option) and the Most Human rating. Missions as the
+secret task (the word "mission" is The Traitors'). Not built: the celebrity
+profile (it needs a franchise legend from the cross-show ledger, Plan 6).
 
 ---
 

@@ -224,6 +224,18 @@ export const SCENES_WEAR = {
       { by: 'a', send: 'Never' }, { by: 'b', send: "Then somebody's making things up" }] },
   ]),
 
+  // chat.compare.neutral — they compare notes and it goes nowhere clear.
+  ...E('chat.compare.neutral', [
+    { turns: [{ by: 'a', send: 'Can we compare notes real quick?' }, { by: 'b', send: 'Sure. What have you heard?' },
+      { by: 'a', send: 'Honestly? Not much. You?' }, { by: 'b', send: "Same. Everybody's being careful" }] },
+    { turns: [{ by: 'a', send: 'Anything weird come your way today?' }, { by: 'b', send: "Not really. It's been quiet" },
+      { by: 'a', send: 'Quiet makes me nervous' }] },
+    { turns: [{ by: 'a', send: 'Did anyone say anything about me?' }, { by: 'b', send: 'Not to me. Why, what did you hear?' },
+      { by: 'a', send: 'Nothing. Just checking' }, { by: 'b', send: 'Okay, now I\'m suspicious lol' }] },
+    { turns: [{ by: 'a', say: 'See what they know without giving anything away.', send: 'What do you think is going on in here?' },
+      { by: 'b', send: "I think everybody's playing nice until they don't" }] },
+  ]),
+
   // chat.ally.warm — a asks b to team up, and b says yes.
   ...E('chat.ally.warm', [
     { turns: [{ by: 'a', say: 'Time to lock this in.', send: "Real question. If it comes down to it, are you with me?" },

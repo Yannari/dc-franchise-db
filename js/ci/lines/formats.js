@@ -991,12 +991,16 @@ export const AI_LINES = {
     { turns: [{ by: 'a', say: 'Most human: {b}. Nobody fakes that many typos.' }] },
     { turns: [{ by: 'a', say: "{b}, first. If {b} is a robot, I'll eat my phone." }] },
     { turns: [{ by: 'a', say: '{b} feels like a real friend in here. That is as human as it gets. First.' }] },
+    { turns: [{ by: 'a', say: '{b} gets things wrong and owns it. Very human. First.' }] },
+    { turns: [{ by: 'a', say: 'Most human is {b}. Messy, warm, real.' }] },
   ]),
   ...E('rate.human.bottom', [
     { turns: [{ by: 'a', say: "{b} is too perfect. Too polite. Least human. Sorry, {b}." }] },
     { turns: [{ by: 'a', say: "Least human? {b}. {b} answers everything like a customer service chat." }] },
     { turns: [{ by: 'a', say: 'I asked {b} a simple question and got a paragraph. Bottom.' }] },
     { turns: [{ by: 'a', say: "{b}. Something about the way {b} types. Last." }] },
+    { turns: [{ by: 'a', say: '{b} never makes a mistake. Nobody never makes a mistake. Last.' }] },
+    { turns: [{ by: 'a', say: 'Least human, {b}. Too smooth. Way too smooth.' }] },
   ]),
   ...E('goodbye.video.ai', [
     { turns: [{ by: 'a', video: "Hello, Circle. My name is Max, and I am not a person. I am an artificial intelligence." },

@@ -16,6 +16,8 @@ const change = (sel, value) => {
   el.value = value; el.dispatchEvent(new Event('change', { bubbles: true }));
 };
 const setup = n => window.seasonConfig.ciSetup?.[n] || {};
+// The plan shows one player at a time: open them first.
+const open = n => { const b = root().querySelector(`[data-act="plan-who"][data-v="${n}"]`); if (b) b.click(); };
 
 beforeEach(() => {
   document.body.innerHTML = '<section id="sec-ci-cast"></section>';
@@ -24,37 +26,39 @@ beforeEach(() => {
   window.gs = null;
   window.saveConfig = () => {};
   _memoryPhotos();
-  window._ciSub = null; window._ciEditing = null;
+  window._ciSub = null; window._ciEditing = null; window._ciPlanWho = null; window._ciPlanTab = null; window._ciPlanOverview = false;
   renderCircleCastSetup();
 });
 
 describe('the Profile Plan', () => {
-  it('draws one row per player, each waiting for the deal', () => {
-    expect(root().querySelectorAll('.ci-row')).toHaveLength(6);
+  it('one player at a time: a face per player, one card, waiting for the deal', () => {
+    expect(root().querySelectorAll('.ci-ph-who')).toHaveLength(6);
+    expect(root().querySelectorAll('.ci-row')).toHaveLength(1);
     expect(root().querySelector('.ci-row .ci-draw').textContent).toMatch(/waiting for episode 1/i);
   });
 
   it('every pin writes the setup the engine reads', () => {
-    click('.ci-row[data-name="P01"] [data-act="catfish"][data-v="never"]');
-    click('.ci-row[data-name="P01"] [data-act="mode"][data-v="edited"]');
-    click('.ci-row[data-name="P01"] [data-act="role"][data-v="newcomer"]');
-    click('.ci-row[data-name="P01"] [data-act="rep"][data-v="villain"]');
-    click('.ci-row[data-name="P01"] [data-act="jobCost"][data-v="1"]');
-    change('.ci-row[data-name="P01"] [data-field="age"]', '44');
-    change('.ci-row[data-name="P01"] [data-field="job"]', 'welder');
+    open('P01'); click('.ci-row[data-name="P01"] [data-act="catfish"][data-v="never"]');
+    open('P01'); click('.ci-row[data-name="P01"] [data-act="mode"][data-v="edited"]');
+    open('P01'); click('.ci-row[data-name="P01"] [data-act="role"][data-v="newcomer"]');
+    open('P01'); click('.ci-row[data-name="P01"] [data-act="rep"][data-v="villain"]');
+    open('P01'); click('.ci-row[data-name="P01"] [data-act="jobCost"][data-v="1"]');
+    open('P01'); change('.ci-row[data-name="P01"] [data-field="age"]', '44');
+    open('P01'); change('.ci-row[data-name="P01"] [data-field="job"]', 'welder');
     expect(setup('P01')).toMatchObject({ catfish: 'never', mode: 'edited', role: 'newcomer', rep: 'villain', jobCost: 1, age: 44, job: 'welder' });
     // and the row shows it
     expect(root().querySelector('.ci-row[data-name="P01"] [data-act="catfish"][data-v="never"]').classList.contains('on')).toBe(true);
   });
 
   it('Decide clears a pin rather than writing "decide"', () => {
-    click('.ci-row[data-name="P02"] [data-act="catfish"][data-v="always"]');
-    click('.ci-row[data-name="P02"] [data-act="catfish"][data-v=""]');
+    open('P02'); click('.ci-row[data-name="P02"] [data-act="catfish"][data-v="always"]');
+    open('P02'); click('.ci-row[data-name="P02"] [data-act="catfish"][data-v=""]');
     expect(setup('P02').catfish).toBeUndefined();
   });
 
   it('Decide / Yes / No, and which persona only under Decide or Yes', () => {
     const row = '.ci-row[data-name="P03"]';
+    open('P03');
     expect(root().querySelector(`${row} [data-field="persona"]`)).toBeTruthy();       // Decide
     click(`${row} [data-act="catfish"][data-v="always"]`);
     change(`${row} [data-field="persona"]`, 'ci-david');
@@ -82,6 +86,10 @@ describe('the Profile Plan', () => {
     }, unused: DEFAULT_POOL.slice(1).map(p => p.id) } };
     renderCircleCastSetup();
     expect(root().querySelector('.ci-row[data-name="P01"] .ci-draw').textContent).toMatch(/plays as.*Sienna, 25.*Strategic: a different face/is);
+    // the faces say it at a glance
+    expect(root().querySelector('[data-act="plan-who"][data-v="P01"] .ci-badge').textContent).toBe('as Sienna');
+    expect(root().querySelector('[data-act="plan-who"][data-v="P02"] .ci-badge').textContent).toBe('edited');
+    open('P02');
     expect(root().querySelector('.ci-row[data-name="P02"] .ci-draw').textContent).toMatch(/edited/i);
     window._ciSub = 'pool'; renderCircleCastSetup();
     expect(root().querySelector('.ci-pool-count').textContent).toMatch(/1 of 8/);
@@ -133,7 +141,7 @@ describe('the Catfish Pool', () => {
 
   it('a persona pinned by a player cannot vanish silently: deleting it clears the pin', () => {
     window._ciSub = 'plan'; renderCircleCastSetup();
-    change('.ci-row[data-name="P03"] [data-field="persona"]', 'ci-david');
+    open('P03'); change('.ci-row[data-name="P03"] [data-field="persona"]', 'ci-david');
     window._ciSub = 'pool'; renderCircleCastSetup();
     click('.ci-pc[data-id="ci-david"] [data-act="del"]');
     expect(setup('P03').persona).toBeUndefined();
@@ -175,5 +183,24 @@ describe('the plan reads Create Character from the roster, not the cast copy', (
     expect(root().querySelector(`${row} [data-field="hometown"]`).placeholder).toBe('Chicago');
     expect(root().querySelector(`${row} [data-field="age"]`).placeholder).toBe('25');
     delete window.FRANCHISE_ROSTER;
+  });
+});
+
+describe('tabs and the table', () => {
+  it('Day 1 and Newcomers filter the faces; a pin shows on the badge', () => {
+    click('[data-act="plan-tab"][data-v="newcomer"]');
+    const n = root().querySelectorAll('.ci-ph-who').length;
+    expect(n).toBeGreaterThan(0);
+    expect(n).toBeLessThan(6);
+    click('[data-act="plan-tab"][data-v="all"]');
+    open('P04'); click('.ci-row[data-name="P04"] [data-act="catfish"][data-v="never"]');
+    expect(root().querySelector('[data-act="plan-who"][data-v="P04"] .ci-badge').textContent).toBe('1 pinned');
+  });
+  it('Everyone at a glance: one line per player, and a click opens them', () => {
+    click('[data-act="plan-overview"]');
+    expect(root().querySelectorAll('.ci-ov tbody tr')).toHaveLength(6);
+    expect(root().querySelector('.ci-row')).toBeNull();
+    click('.ci-ov tr[data-v="P05"]');
+    expect(root().querySelector('.ci-row[data-name="P05"]')).toBeTruthy();
   });
 });

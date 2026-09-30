@@ -6906,3 +6906,33 @@ textarea.ci-bio{resize:vertical;width:100%}
 @keyframes ciBlink{50%{opacity:0}}
 .ci-ph-row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
 @media (max-width:900px){.ci-ph-stage{grid-template-columns:1fr}.ci-ph-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.ci-sub button,.ci-sub-ind{width:100px}.ci-sub-ind.pool{transform:translateX(100px)}.ci-sub-ind.photos{transform:translateX(200px)}}
+
+/* ── The Profile Plan, one player at a time (js/ci-cast-ui.js planPanel) ── */
+.ci-plan-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+.ci-plan-bar .ci-ph-tabs{margin-bottom:0}
+.ci-tabs3 .ci-ph-ind.starter{transform:translateX(120px)}.ci-tabs3 .ci-ph-ind.newcomer{transform:translateX(240px)}
+.ci-badge{display:inline-block;margin-top:3px;font:700 9px 'Space Mono',monospace;letter-spacing:.04em;padding:2px 6px;border-radius:999px;background:rgba(255,255,255,.08);color:var(--ci-mut);max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ci-badge.pin{background:rgba(63,216,255,.16);color:var(--ci-cy)}
+.ci-badge.cat{background:rgba(255,79,180,.22);color:#ff9bd6}
+.ci-badge.edit{background:rgba(139,92,255,.25);color:#cbb8ff}
+.ci-badge.self{background:rgba(63,216,136,.18);color:#7ff0bd}
+.ci-ph-ring.ci-ring-cat .ci-ph-face{box-shadow:0 0 0 3px var(--ci-pk),0 0 18px rgba(255,79,180,.6)}
+.ci-ph-ring.ci-ring-edit .ci-ph-face{box-shadow:0 0 0 3px var(--ci-vi)}
+.ci-ph-ring.ci-ring-self .ci-ph-face{box-shadow:0 0 0 3px #3fd88f}
+.ci-ph-ring.ci-ring-pin .ci-ph-face{box-shadow:0 0 0 2px rgba(63,216,255,.7)}
+.ci-ph-who.on .ci-ph-ring .ci-ph-face{box-shadow:0 0 0 3px var(--ci-cy),0 0 22px rgba(63,216,255,.7)}
+.ci-one .ci-row{animation:ciStage .45s cubic-bezier(.2,.8,.2,1)}
+.ci-one .ci-row .ci-av{width:72px;height:72px}
+.ci-grp{grid-column:1/-1;font-size:10px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--ci-pk);margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,.06)}
+.ci-grp:first-child{margin-top:0;padding-top:0;border-top:0}
+.ci-grp em{font-style:normal;color:var(--ci-mut);letter-spacing:.06em;text-transform:none;font-weight:600;margin-left:6px}
+.ci-ov{width:100%;border-collapse:separate;border-spacing:0 6px;font-size:12px}
+.ci-ov th{text-align:left;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ci-mut);font-weight:700;padding:0 10px}
+.ci-ov td{background:var(--ci-card);padding:8px 10px;vertical-align:middle}
+.ci-ov td:first-child{border-radius:10px 0 0 10px;display:flex;align-items:center;gap:8px}
+.ci-ov td:last-child{border-radius:0 10px 10px 0}
+.ci-ov td .ci-av{width:32px;height:32px;font-size:12px}
+.ci-ov td i{color:var(--ci-mut);font-style:normal;font-size:10.5px}
+.ci-ov tr{cursor:pointer;transition:transform .15s}
+.ci-ov tbody tr:hover{transform:translateX(3px)}
+.ci-ov tbody tr:hover td{background:rgba(47,123,255,.22)}

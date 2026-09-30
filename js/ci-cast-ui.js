@@ -112,12 +112,14 @@ function planRow(p, autoRole, autoRep = 'none') {
       <div class="ci-nm">${esc(p.name)}</div><div class="ci-meta">${esc(p.archetype || '')}${p.age ? ` · ${esc(p.age)}` : ''}</div>
       ${seg('role', s.role || '', [['starter', 'Day 1'], ['newcomer', 'Newcomer'], ['', `Decide (${autoRole === 'starter' ? 'Day 1' : 'later'})`]])}</div></div>
     <div class="ci-mid">
+      <div class="ci-grp">Who they play</div>
       <label class="ci-fld"><span class="ci-k">Plays as someone else</span>
         ${seg('catfish', cf, [['', 'Decide'], ['always', 'Yes'], ['never', 'No']])}
         ${cf === 'never' ? '' : `<select class="ci-in" data-field="persona" title="${cf === 'always' ? 'Who they play' : 'If they do, who they play'}"><option value="">${cf === 'always' ? 'Whichever fits best' : 'If they do: whichever fits best'}</option>${personas.map(x =>
           `<option value="${esc(x.id)}"${pick === x.id ? ' selected' : ''}>As ${esc(x.handle)}, ${esc(x.age)}</option>`).join('')}</select>`}</label>
       <label class="ci-fld"><span class="ci-k">If they play themselves</span>
         ${seg('mode', s.mode || '', [['', 'Decide'], ['honest', 'Honest'], ['polished', 'Polished'], ['edited', 'Edited']])}</label>
+      <div class="ci-grp">Their real life <em>grey = from Create Character</em></div>
       <label class="ci-fld"><span class="ci-k">Age · job</span><div class="ci-pair">
         <input class="ci-in ci-age" data-field="age" type="number" min="18" max="90" placeholder="${esc(rf.age ?? ageFrom(rf.birthdate) ?? '')}" value="${esc(s.age ?? '')}" title="From Create Character unless you type one">
         <input class="ci-in" data-field="job" placeholder="${esc(rf.occupation || 'their real job')}" value="${esc(s.job ?? '')}" title="From Create Character unless you type one"></div></label>
@@ -126,6 +128,7 @@ function planRow(p, autoRole, autoRep = 'none') {
       <label class="ci-fld"><span class="ci-k">Status · hometown</span><div class="ci-pair">
         <select class="ci-in" data-field="status">${STATUSES.map(x => `<option${(s.status || 'Single') === x ? ' selected' : ''}>${esc(x)}</option>`).join('')}</select>
         <input class="ci-in" data-field="hometown" placeholder="${esc(rf.hometown || 'hometown')}" value="${esc(s.hometown ?? '')}" title="From Create Character unless you type one"></div></label>
+      <div class="ci-grp">Fame &amp; company</div>
       <label class="ci-fld ci-wide"><span class="ci-k">Already famous?</span>
         ${seg('rep', s.rep || '', [['', 'Auto'], ['none', 'Nobody'], ['known', 'Known'], ['threat', 'A big threat'], ['villain', 'A villain']])}
         <span class="ci-small ci-rep-auto">${s.rep ? 'How the room might already know them. The more famous, the more reason to hide behind a persona.'
@@ -136,6 +139,55 @@ function planRow(p, autoRole, autoRep = 'none') {
     </div>
     ${drawResult(p.name)}
   </div>`;
+}
+
+// ── One player at a time (user: "a tab switcher in the Profile Plan too") ──
+// Tabs for everyone / Day 1 / newcomers, a row of faces whose badges say the
+// state at a glance (what is pinned; after the deal, what they got), one
+// player's card, and "Everyone at a glance" for the whole cast in a table.
+const PIN_KEYS = ['role', 'catfish', 'persona', 'mode', 'age', 'job', 'jobCost', 'status', 'hometown', 'rep', 'partner'];
+const pinsOf = name => PIN_KEYS.filter(k => { const v = setupOf(name)[k]; return v != null && v !== '' && !(k === 'jobCost' && !v); }).length;
+function badgeOf(name) {
+  const d = dealt()?.[name];
+  if (d) return d.mode === 'catfish' ? ['cat', `as ${d.shown?.name}`] : d.mode === 'edited' ? ['edit', 'edited'] : ['self', 'themselves'];
+  const n = pinsOf(name);
+  return n ? ['pin', `${n} pinned`] : ['auto', 'Auto'];
+}
+const CAT_WORD = { '': 'Decide', always: 'Yes', never: 'No' };
+function overviewHTML(list, roleOf, known) {
+  return `<table class="ci-ov"><thead><tr><th>Player</th><th>Arrives</th><th>Plays as someone else</th><th>If themselves</th><th>Already famous?</th><th>Result</th></tr></thead><tbody>${list.map(p => {
+    const s = setupOf(p.name);
+    const legacy = s.catfish && !['never', 'always'].includes(s.catfish) ? s.catfish : null;
+    const persona = poolNow().find(x => x.id === (s.persona ?? legacy));
+    const [cls, word] = badgeOf(p.name);
+    return `<tr data-act="plan-who" data-v="${esc(p.name)}"><td>${face(safeAvatar(p), p.name[0])}<b>${esc(p.name)}</b></td>
+      <td>${roleOf(p) === 'starter' ? 'Day 1' : 'Later'}${s.role ? '' : ' <i>auto</i>'}</td>
+      <td>${esc(legacy ? 'Yes' : CAT_WORD[s.catfish || ''])}${persona ? ` · as ${esc(persona.handle)}` : ''}</td>
+      <td>${esc(s.mode ? s.mode[0].toUpperCase() + s.mode.slice(1) : 'Decide')}</td>
+      <td>${esc(s.rep ? { none: 'Nobody', known: 'Known', threat: 'A big threat', villain: 'A villain' }[s.rep] : `Auto · ${known[p.name] === 'none' ? 'nobody' : known[p.name]}`)}</td>
+      <td><span class="ci-badge ${cls}">${esc(word)}</span></td></tr>`;
+  }).join('')}</tbody></table>`;
+}
+function planPanel(players, roles, known) {
+  if (!players.length) return '<div class="ci-small">Add players to the cast first.</div>';
+  const roleOf = p => setupOf(p.name).role || roles[players.indexOf(p)];
+  const tab = ['starter', 'newcomer'].includes(window._ciPlanTab) ? window._ciPlanTab : 'all';
+  const list = players.filter(p => tab === 'all' || roleOf(p) === tab);
+  const counts = { all: players.length, starter: players.filter(p => roleOf(p) === 'starter').length };
+  counts.newcomer = players.length - counts.starter;
+  const who = list.find(p => p.name === window._ciPlanWho) || list[0];
+  const over = !!window._ciPlanOverview;
+  return `<div class="ci-plan-bar">
+      <div class="ci-ph-tabs ci-tabs3">${[['all', 'Everyone'], ['starter', 'Day 1'], ['newcomer', 'Newcomers']].map(([k, l]) =>
+        `<button type="button" data-act="plan-tab" data-v="${k}" class="${k === tab ? 'on' : ''}">${l}<span>${counts[k]}</span></button>`).join('')}<i class="ci-ph-ind ${tab}"></i></div>
+      <button type="button" class="ci-btn${over ? ' on' : ''}" data-act="plan-overview">${over ? 'Back to one at a time' : 'Everyone at a glance'}</button></div>
+    ${over ? overviewHTML(list, roleOf, known) : `<div class="ci-ph-rail">${list.map(p => {
+      const [cls, word] = badgeOf(p.name);
+      return `<button type="button" class="ci-ph-who${who && p.name === who.name ? ' on' : ''}" data-act="plan-who" data-v="${esc(p.name)}">
+        <div class="ci-ph-ring ci-ring-${cls}"><div class="ci-ph-face"${safeAvatar(p) ? ` style="background-image:url('${esc(safeAvatar(p))}')"` : ''}>${safeAvatar(p) ? '' : esc(p.name[0])}</div></div>
+        <div class="ci-ph-wn">${esc(p.name)}</div><div class="ci-badge ${cls}">${esc(word)}</div></button>`;
+    }).join('') || '<div class="ci-small">Nobody here.</div>'}</div>
+    ${who ? `<div class="ci-rows ci-one">${planRow(who, roles[players.indexOf(who)], known[who.name])}</div>` : ''}`}`;
 }
 
 // ── The Catfish Pool ───────────────────────────────────────────────────
@@ -224,7 +276,7 @@ export function renderCircleCastSetup() {
     <div class="ci-panel">
       <div class="ci-phead"><div class="ci-ring"></div><div class="ci-ptitle">THE PROFILE PLAN</div>
         <div class="ci-pcount">${players.length} players · ${starters} on Day 1 · ${players.length - starters} arrive later · every field optional</div></div>
-      <div class="ci-rows">${players.map((p, i) => planRow(p, roles[i], known[p.name])).join('') || '<div class="ci-small">Add players to the cast first.</div>'}</div>
+      ${planPanel(players, roles, known)}
     </div>` : `
     <div class="ci-panel">
       <div class="ci-phead"><div class="ci-ring ci-ring-pk"></div><div class="ci-ptitle">THE CATFISH POOL</div>
@@ -254,6 +306,9 @@ function onClick(ev) {
   if (!b) return;
   const act = b.dataset.act, v = b.dataset.v;
   if (act === 'sub') { window._ciSub = v; window._ciEditing = null; return renderCircleCastSetup(); }
+  if (act === 'plan-tab') { window._ciPlanTab = v; window._ciPlanWho = null; return renderCircleCastSetup(); }
+  if (act === 'plan-who') { window._ciPlanWho = v; window._ciPlanOverview = false; return renderCircleCastSetup(); }
+  if (act === 'plan-overview') { window._ciPlanOverview = !window._ciPlanOverview; return renderCircleCastSetup(); }
   if (onPhotosClick(b)) return;
   const row = b.closest('.ci-row');
   if (row) {

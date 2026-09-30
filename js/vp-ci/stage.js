@@ -70,6 +70,26 @@ export function themeFor(name) {
 }
 const aptNo = (row, h) => Math.max(0, Object.keys(row.ci.profiles || {}).indexOf(h)) + 1;
 
+// ── where we are (user: "I don't know if they're in their private profile or
+// in the chat"): a label in the corner of every screen, and in the apartments
+// a chat window that stays on screen with the thread so far.
+const CHATWIN = new Set(['chat', 'date', 'plead', 'joker-chat', 'after-party']);
+const WHERE = { chat: 'PRIVATE CHAT', date: 'A DATE', plead: 'THE LAST TWO', 'joker-chat': 'THE JOKER', 'after-party': 'THE AFTER-PARTY',
+  life: 'IN THE APARTMENT', 'home-video': 'A VIDEO FROM HOME', report: 'AFTER THE VISIT', recognise: 'A FACE THEY KNOW',
+  lurk: 'WATCHING IN SECRET', 'hack-undone': 'COMPARING NOTES', 'circle-chat': 'CIRCLE CHAT · EVERYONE', likes: 'THE NEWSFEED',
+  status: 'STATUS UPDATES', ratings: 'THE RATINGS', 'final-ratings': 'THE FINAL RATINGS', hangout: 'THE HANGOUT', game: 'A GAME', party: 'THE PARTY' };
+function whereLabel(row, screen) {
+  const base = WHERE[screen.kind] || String(screen.title || '').toUpperCase();
+  if (!CHATWIN.has(screen.kind) || screen.cast.length < 2) return base;
+  return `${base} · ${screen.cast.map(h => nameOf(row, h)).join(' ↔ ')}`;
+}
+const whereHtml = (row, screen) => `<div class="civ-where">${esc(whereLabel(row, screen))}</div>`;
+function chatWindow(row, screen, idx, fresh) {
+  const feed = feedHtml(row, screen.steps, idx, fresh, 4);
+  return `<div class="civ-chatwin"><div class="civ-chatwin-hd">${esc(whereLabel(row, screen))}</div>
+    <div class="civ-chatwin-feed">${feed || '<div class="civ-chatwin-empty">No messages yet</div>'}</div></div>`;
+}
+
 // ── the Circle UI ──────────────────────────────────────────────────────
 const ICONS = { home: 'M12 3l9 8h-3v9h-5v-6h-2v6H6v-9H3z', chat: 'M4 4h16v12H8l-4 4z', bolt: 'M13 2L4 14h6l-1 8 9-12h-6z', me: 'M12 12a4 4 0 100-8 4 4 0 000 8zm-8 9c0-4 4-6 8-6s8 2 8 6z', img: 'M3 5h18v14H3zm3 11h12l-4-5-3 4-2-2z', bars: 'M4 20V10h4v10zm6 0V4h4v16zm6 0v-7h4v7z' };
 const PLANE = '<svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>';
@@ -119,7 +139,7 @@ function uiStage(row, screen, idx, fresh) {
     ${rail(screen.kind === 'likes' || screen.kind === 'status' ? 'home' : screen.kind === 'ratings' || screen.kind === 'final-ratings' ? 'bars' : 'chat')}
     <div class="civ-feed">${feedHtml(row, steps, idx, fresh)}</div>
     ${peopleHtml(row, screen.cast, talking, screen.title.toUpperCase())}
-    ${inbar(typingSend ? st.text : '', typingSend)}${cap}${pip}</div>`;
+    ${inbar(typingSend ? st.text : '', typingSend)}${cap}${pip}${whereHtml(row, screen)}</div>`;
 }
 
 // ── the apartments ────────────────────────────────────────────────────
@@ -150,7 +170,8 @@ function aptStage(row, screen, idx, fresh) {
   const tvUi = `<div class="civ-uibg"></div><div class="civ-aurora" style="left:30%;top:-20%;width:70%;aspect-ratio:1"></div>${rail('chat')}
     <div class="civ-feed">${feedHtml(row, steps, sending ? idx - 1 : idx, false, 4)}${sending ? '' : ''}</div>
     ${peopleHtml(row, [peer], null, 'CHAT')}${inbar(sending ? st.text : '', sending)}`;
-  return `<div class="civ-layer civ-apt ${side}${sending ? ' push sent' : ''}${cut || (fresh && idx === 0) ? ' enter' : ''}">
+  const win = CHATWIN.has(screen.kind);
+  return `<div class="civ-layer civ-apt ${side}${win ? ' haswin' : ''}${sending ? ' push sent' : ''}${cut || (fresh && idx === 0) ? ' enter' : ''}">
     <div class="civ-room">
       <div class="civ-wall" style="background:${t.pat ? `${t.pat},` : ''}${t.wall}"></div><div class="civ-dado" style="background:${t.dado}"></div><div class="civ-floor"></div>
       <div class="civ-poster" style="${side === 'L' ? 'left:4%' : 'right:5%'};top:10%;width:17%;height:42%;background:${t.p1}"></div>
@@ -162,7 +183,7 @@ function aptStage(row, screen, idx, fresh) {
       <div class="civ-bust ${side}" data-cam="CAM ${aptNo(row, h)} · ${esc(real.toUpperCase())}" style="--glow:${ringOf(row, h)}${cam ? `;background-image:url('${esc(cam)}')` : ''}">${cam ? '' : esc(real[0] || '?')}</div>
     </div>
     <div class="civ-hud"><span>APARTMENT ${aptNo(row, h)} · DAY ${esc(row.day)}</span><span class="lv">Live</span></div>
-    ${catfish}<div class="civ-beam"></div>
+    ${catfish}<div class="civ-beam"></div>${win ? chatWindow(row, screen, idx, fresh) : ''}${whereHtml(row, screen)}
     ${st ? `<div class="civ-dlg${fresh ? ' new' : ''}">${plate}${line}</div>` : ''}
     ${cut ? '<div class="civ-wipe run"></div>' : ''}
   </div>`;
@@ -182,7 +203,7 @@ function alertStage(row, screen, idx, fresh) {
     <div class="civ-aurora big soft" style="left:50%;top:44%;width:62%;aspect-ratio:1;margin:-31% 0 0 -31%"></div>
     <div class="civ-shock"></div><div class="civ-alertTxt">ALERT!</div>
     ${st ? `<div class="civ-alertSub${fresh ? ' new' : ''}">${st.who ? `<b>${esc(nameOf(row, st.who))}:</b> ` : ''}${hashify(st.text)}</div>` : ''}
-    <div class="civ-flash"></div>${building}</div>`;
+    <div class="civ-flash"></div>${building}<div class="civ-where">ALERT</div></div>`;
 }
 
 /** The stage for this screen after step `idx` (-1: at rest, before the first line). */

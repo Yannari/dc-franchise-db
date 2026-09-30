@@ -150,6 +150,25 @@ export const CIV_CSS = `
 .civ-wipe{position:absolute;inset:0;z-index:20;pointer-events:none;background:linear-gradient(100deg,transparent 0 30%,#8b5cff 42%,#3fd8ff 50%,#ff4fb4 58%,transparent 70%);transform:translateX(-120%)}
 .civ-wipe.run{animation:civWipe .7s ease-in-out}
 @keyframes civWipe{to{transform:translateX(120%)}}
+/* where we are, and the chat window in the apartments */
+.civ-where{position:absolute;top:2.5%;left:50%;transform:translateX(-50%);z-index:12;font-weight:800;font-size:1cqw;letter-spacing:.16em;padding:.5cqw 1.2cqw;border-radius:99px;
+  background:linear-gradient(90deg,rgba(47,123,255,.85),rgba(139,92,255,.85),rgba(255,79,180,.85));box-shadow:0 0 2cqw rgba(139,92,255,.5);white-space:nowrap;text-shadow:0 1px 3px rgba(0,0,0,.4)}
+.civ-apt .civ-hud{top:7.5%}
+.civ-apt.haswin .civ-tvset{width:34%;left:29%}
+.civ-apt.haswin.R .civ-tvset{left:37%!important}
+.civ-chatwin{position:absolute;z-index:8;top:12%;bottom:30%;width:31%;right:2.5%;display:flex;flex-direction:column;border-radius:1cqw;overflow:hidden;
+  background:linear-gradient(180deg,rgba(14,17,52,.94),rgba(10,12,40,.94));border:1px solid rgba(63,216,255,.35);box-shadow:0 0 3cqw rgba(47,123,255,.35)}
+.civ-apt.R .civ-chatwin{right:auto;left:2.5%}
+.civ-chatwin-hd{font-weight:800;font-size:.95cqw;letter-spacing:.12em;padding:.8cqw 1cqw;background:rgba(47,123,255,.35);border-bottom:1px solid rgba(63,216,255,.25);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.civ-chatwin-hd:before{content:"🔒  "}
+.civ-chatwin-feed{flex:1;display:flex;flex-direction:column;justify-content:flex-end;gap:.8cqw;padding:1cqw;overflow:hidden}
+.civ-chatwin .civ-av{width:3.2cqw;font-size:1.2cqw}
+.civ-chatwin .civ-card .nm{font-size:.9cqw}.civ-chatwin .civ-card .tx{font-size:1.15cqw}
+.civ-chatwin .civ-card{padding:.7cqw 1cqw}
+.civ-chatwin-empty{text-align:center;color:#8f96c8;font-size:1.1cqw;font-style:italic;margin:auto}
+/* the stage fits the window, so Next is always in reach */
+.civ-stagewrap{position:relative;width:min(100%,calc((100vh - 250px) * 16 / 9));margin:0 auto}
+.civ-btn.civ-nextbtn{font-size:13px;padding:10px 26px;box-shadow:0 0 18px rgba(139,92,255,.55)}
 /* the controls and the script under the stage */
 .civ-controls{display:flex;gap:8px;align-items:center;margin:10px 0}
 .civ-btn{font-weight:700;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#cfd6ff;background:#121838;border:1px solid #2a3470;border-radius:99px;padding:8px 14px;cursor:pointer;font-family:inherit}

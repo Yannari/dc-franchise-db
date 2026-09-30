@@ -77,10 +77,28 @@ function _bbPhaseForScreen(id) {
   return { id:'challenge', label:'Competition', icon:'⚑' };
 }
 
+// The Circle's screens are `ci-<kind>-<n>` (js/vp-ci/screens.js), grouped by
+// the show's own day. Before this they fell through to Total Drama's "Camp".
+const _CI_PHASE = {
+  morning: { id:'ci-morning', label:'The Morning', icon:'☀' }, day: { id:'ci-day', label:'The Day', icon:'◍' },
+  ratings: { id:'ci-ratings', label:'The Ratings', icon:'▦' }, blocking: { id:'ci-blocking', label:'The Blocking', icon:'✦' },
+  final: { id:'ci-final', label:'The Final', icon:'■' },
+};
+const _CI_KIND = { goodbye:'morning', status:'morning', likes:'morning', profiles:'morning', recognise:'morning', arrival:'morning', 'pair-arrival':'morning',
+  alert:'morning', 'power-reveal':'morning', hack:'morning', disrupter:'morning', swap:'morning', 'swap-back':'morning', 'ride-or-die':'morning', report:'morning',
+  ratings:'ratings', hangout:'ratings', save:'ratings', plead:'ratings', statement:'ratings', vote:'ratings', offer:'ratings', antivirus:'ratings', sacrifice:'ratings', 'no-block':'ratings', 'joker-pick':'ratings',
+  blocking:'blocking', visit:'blocking',
+  'final-ratings':'final', meet:'final', reveal:'final' };
+function _ciPhaseForScreen(id) {
+  const kind = id.slice(3).replace(/-\d+$/, '');
+  return _CI_PHASE[_CI_KIND[kind] || 'day'];
+}
+
 export function _vpPhaseForScreen(id = '') {
   if (_TR_PHASES[id]) return _TR_PHASES[id];
   if (id.startsWith('bb-')) return _bbPhaseForScreen(id);
   if (id.startsWith('villa-')) return _pmPhaseForScreen(id);
+  if (id.startsWith('ci-')) return _ciPhaseForScreen(id);
   if (id === 'debug') return { id:'debug', label:'Debug', icon:'⚙' };
   if (id === 'cold-open' || id.includes('previous') || id === 'first-impressions') return { id:'previously', label:'Previously On', icon:'◀' };
   if (id === 'votes' || id.startsWith('votes-') || id === 'jury-vote' || id === 'jury-votes' || id === 'ftc') return { id:'reveal', label:'Vote Reveal', icon:'✦' };

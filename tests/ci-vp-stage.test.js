@@ -92,3 +92,26 @@ describe('ALERT', () => {
     expect(d.querySelector('.civ-alertSub').textContent).toMatch(/ratings are now open/);
   });
 });
+
+describe('you always know where you are', () => {
+  it('a private chat keeps its window on screen: who it is between, and the thread so far', () => {
+    const d = dom(stageInner(row, chat, 2, true));
+    const win = d.querySelector('.civ-chatwin');
+    expect(win.querySelector('.civ-chatwin-hd').textContent).toMatch(/PRIVATE CHAT.*Maddie.*Bridgette/);
+    expect(win.querySelectorAll('.civ-msg')).toHaveLength(1);
+    // a line said aloud before anything was sent: the window is there, empty, and says so
+    expect(dom(stageInner(row, chat, 0, true)).querySelector('.civ-chatwin').textContent).toMatch(/No messages yet/);
+  });
+  it('every screen says what it is in the corner', () => {
+    expect(dom(stageInner(row, chat, 0)).querySelector('.civ-where').textContent).toMatch(/PRIVATE CHAT/);
+    const group = { stage: 'ui', kind: 'circle-chat', title: 'Circle Chat', cast: ['@maddie', '@bri'], steps: [{ who: '@bri', part: 'send', text: 'hi' }] };
+    expect(dom(stageInner(row, group, 0)).querySelector('.civ-where').textContent).toMatch(/CIRCLE CHAT/);
+    const life = { stage: 'apt', kind: 'life', title: 'Alone in the apartment', cast: ['@bri'], steps: [{ who: '@bri', part: 'say', text: 'I miss my dog.' }] };
+    const d = dom(stageInner(row, life, 0));
+    expect(d.querySelector('.civ-where').textContent).toMatch(/IN THE APARTMENT/);
+    expect(d.querySelector('.civ-chatwin')).toBeNull();
+  });
+  it('Next is on the stage itself', () => {
+    expect(dom(stageInner(row, chat, 0)).querySelector('.civ-nextbtn')).toBeNull(); // drawn by the screen, not the stage
+  });
+});

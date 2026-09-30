@@ -41,16 +41,18 @@ export function circleVpScreens(row) {
     const uid = `ci${esc(row.num)}-${si}`;
     reg()[uid] = { row, screen, idx: -1, auto: false };
     return {
-      id: `ci-${screen.id}`,
+      // ci-<kind>-<n>: the player files it by kind (vp-ui.js _ciPhaseForScreen).
+      id: `ci-${screen.kind}-${si}`,
       label: screen.title,
       html: `<style>${CIV_FONTS}${CIV_CSS}</style>
 <div class="civ" data-uid="${uid}">
   <div class="civ-top"><div class="civ-logo">${LOGO}<div>THE CIRCLE<small>Episode ${esc(row.num)} · Day ${esc(row.day)}</small></div></div>
     <div class="civ-title">${esc(screen.title)}</div></div>
-  <div class="civ-stage" id="civ-st-${uid}" onclick="civNext('${uid}')" title="Click for the next line">${stageInner(row, screen, -1)}</div>
+  <div class="civ-stagewrap"><div class="civ-stage" id="civ-st-${uid}" onclick="civNext('${uid}')" title="Click for the next line">${stageInner(row, screen, -1)}</div>
+</div>
   <div class="civ-controls">
     <button type="button" class="civ-btn" onclick="civReset('${uid}')">Restart</button>
-    <button type="button" class="civ-btn main" onclick="civNext('${uid}')">Next</button>
+    <button type="button" class="civ-btn main civ-nextbtn" onclick="civNext('${uid}')" title="Next line: or click the picture, or press space / →">Next ▶</button>
     <button type="button" class="civ-btn" id="civ-auto-${uid}" onclick="civAuto('${uid}')">Auto</button>
     <button type="button" class="civ-btn" onclick="civAll('${uid}')">Reveal all</button>
     <span class="civ-count" id="civ-count-${uid}">0 / ${screen.steps.length}</span>
@@ -124,3 +126,17 @@ export function civAuto(uid) {
 }
 
 if (typeof window !== 'undefined') Object.assign(window, { civNext, civAll, civReset, civAuto });
+
+// The keyboard: space or the right arrow is the next line on whatever Circle
+// screen is showing (never while typing in a field).
+if (typeof document !== 'undefined' && !globalThis.__civKeys) {
+  globalThis.__civKeys = true;
+  document.addEventListener('keydown', e => {
+    if (e.key !== ' ' && e.key !== 'ArrowRight') return;
+    if (e.target?.closest?.('input,textarea,select,[contenteditable]')) return;
+    const root = document.querySelector('.civ[data-uid]');
+    if (!root || !root.offsetParent) return;
+    e.preventDefault();
+    civNext(root.dataset.uid);
+  });
+}

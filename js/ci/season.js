@@ -156,6 +156,9 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
       jokerMeets(state, ds(`joker:${d.day}`), arriving);
     }
     recognise(state, carried);
+    // Day 1 opens like the show: the first Circle Chat, where the strangers
+    // say hello, straight after the profiles and before any private chat.
+    if (d.day === 1) runCircleChat(state, ds('open:1'), { first: true });
 
     // Alone in the apartment, then the chats, the game, and the evening:
     // a party (a party day, or a prize) or Circle Chat; then videos from home.
@@ -169,7 +172,7 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
     }
     if (!d.finale) {
       if (d.party || state.partyNext) { state.partyNext = false; runParty(state, ds(`party:${d.day}`)); }
-      else runCircleChat(state, rng);
+      else if (d.day !== 1) runCircleChat(state, rng);
     }
     const videos = new Set(state.homeVideoFor || []);
     state.homeVideoFor = [];

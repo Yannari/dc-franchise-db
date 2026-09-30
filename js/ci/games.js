@@ -118,8 +118,15 @@ const RUN = {
    */
   ask(state, rng, game, sc, all) {
     const answers = {}, questions = [];
-    for (const asker of all) {
-      const others = all.filter(o => o !== asker);
+    // A small room asks more than once, so the segment is as full as a big
+    // room's: until eight questions are asked, players ask again, never the
+    // same person twice.
+    const askers = [...all];
+    for (const x of shuffled(all, rng)) { if (askers.length >= Math.min(8, all.length * 2)) break; askers.push(x); }
+    for (const asker of askers) {
+      const asked = new Set(questions.filter(q => q.asker === asker).map(q => q.target));
+      const others = all.filter(o => o !== asker && !asked.has(o));
+      if (!others.length) continue;
       const suspect = argmax(others, o => -belief(state, asker, o).real);
       let target, kind;
       if (belief(state, asker, suspect).real < 0.6) { target = suspect; kind = 'catfish'; }

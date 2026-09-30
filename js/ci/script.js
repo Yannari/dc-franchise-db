@@ -367,7 +367,7 @@ const BLOCKS = {
   'circle-chat'(state, s) {
     const posters = [...new Set((s.data.posts || []).map(p => p.by))];
     const [a = s.who[0], b = s.who.find(h => h !== a), c = s.who.find(h => h !== a && h !== b)] = posters;
-    const key = s.data.final ? 'circle.final' : s.data.party ? 'circle.party' : 'circle.open';
+    const key = s.data.first ? 'circle.first' : s.data.final ? 'circle.final' : s.data.party ? 'circle.party' : 'circle.open';
     const rest = [...posters, ...s.who].filter((h, i, l) => l.indexOf(h) === i && ![a, b, c].includes(h));
     const [d, e, f] = rest;
     const out = [{ key, cast: { a, b, c } }];
@@ -981,7 +981,7 @@ export const POOL_KEYS = [
   ...['caps', 'ellipses', 'stage', 'greeting', 'nicknames', 'catchphrase', 'formal', 'hype', 'dry']
     .flatMap(t => [`style.${t}.charmed`, `style.${t}.annoyed`]), 'style.mismatch.suspicious',
   'status.low', 'status.steady', 'status.high', 'status.react', 'likes.most', 'likes.none',
-  'circle.open', 'circle.party', 'circle.final', 'circle.theory',
+  'circle.first', 'circle.open', 'circle.party', 'circle.final', 'circle.theory',
   ...['honest', 'polished', 'edited', 'catfish', 'shared'].map(m => `profile.${m}`),
   'recognise', 'arrival', 'arrival.react', 'afterparty',
   'ratings.open', ...REASONS_.flatMap(r => [`rate.${r}.top`, `rate.${r}.bottom`]),

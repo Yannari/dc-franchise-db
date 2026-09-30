@@ -186,11 +186,13 @@ describe('catfish tests', () => {
       const s = room(6, seed);
       Object.assign(s.profiles['@q0'], { mode: 'catfish', gap: 3 });
       s.people.Q0.stats.mental = 1; s.people.Q0.stats.strategic = 1;
-      for (const h of s.active) if (h !== '@q0') belief(s, h, '@q0').real = 0.3;
+      // ONE suspicious asker, so the test sees one failed answer's cost, not a
+      // segment's net (a later passed answer rightly wins some of it back).
+      for (const h of s.active) if (h !== '@q0') belief(s, h, '@q0').real = h === '@q1' ? 0.3 : 0.9;
       const before = Object.fromEntries(s.active.map(h => [h, belief(s, h, '@q0').real]));
       const sc = runGame(s, streamFor(seed, 'ask'), game('ama'));
       const qs = sc.data.rounds[0].questions;
-      expect(qs).toHaveLength(6);
+      expect(qs.length).toBeGreaterThanOrEqual(6); // a small room asks more than once
       for (const qq of qs.filter(x => x.target === '@q0' && x.kind === 'catfish' && x.result === 'fail')) {
         failures++;
         for (const obs of s.active) if (obs !== qq.asker && obs !== '@q0') expect(belief(s, obs, '@q0').real).toBeLessThan(before[obs]);
@@ -333,5 +335,22 @@ describe('an anonymous portrait', () => {
       for (const m of known) expect(sc.data.rounds[0].guesses[m.about]?.right).toBe(true);
     }
     expect(jabs).toBeGreaterThan(0);
+  });
+});
+
+describe('a small room asks more than once', () => {
+  it('an ask game in a room of six still has eight questions, never the same person asked twice by one player', () => {
+    const s = room(6, 5);
+    const g = GAMES.find(x => x.family === 'ask');
+    const sc = runGame(s, streamFor(5, 'ama'), g);
+    const qs = sc.data.rounds[0].questions;
+    expect(qs.length).toBeGreaterThanOrEqual(8);
+    const pairs = qs.map(q => `${q.asker}>${q.target}`);
+    expect(new Set(pairs).size).toBe(pairs.length);
+  });
+  it('a room of ten: one each, as before', () => {
+    const s = room(10, 5);
+    const sc = runGame(s, streamFor(5, 'ama'), GAMES.find(x => x.family === 'ask'));
+    expect(sc.data.rounds[0].questions).toHaveLength(10);
   });
 });

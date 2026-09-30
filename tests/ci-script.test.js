@@ -13,7 +13,8 @@ function room() {
   const s = newState(3);
   s.day = 4;
   const add = (name, gender, shown, handle, mode = 'honest') => {
-    s.people[name] = { name, gender, archetype: 'floater', stats: { ...STATS }, age: 25 };
+    // A neutral register (warm changes no text): these tests read exact wording.
+    s.people[name] = { name, gender, archetype: 'floater', stats: { ...STATS }, age: 25, chatVoice: { register: 'warm' } };
     s.profiles[handle] = { handle, players: [name], mode, gap: mode === 'catfish' ? 2 : 0,
       shown: { name: handle.slice(1)[0].toUpperCase() + handle.slice(2), gender: shown, age: 24 },
       voice: { emoji: 0.5, hashtags: 0.5, caps: 0 } };

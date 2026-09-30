@@ -54,3 +54,25 @@ describe('a status update', () => {
     expect(dictation('Good morning {e:sun}', 'Status', 'Post')).toBe('Status: "Good morning." Sun emoji. Post.');
   });
 });
+
+describe('a register shapes how a message is typed', () => {
+  const flat = { emoji: 1, hashtags: 1, caps: 0 };
+  it('types lowercase and flat when dry, keeping I as I', () => {
+    expect(styleMessage("Okay I'm so done with today! Who's cooking", { ...flat, register: 'dry' }, () => 0.9))
+      .toBe("okay I'm so done with today. who's cooking");
+  });
+  it('writes it out properly when formal', () => {
+    expect(styleMessage("lol I'm gonna make pasta, wanna join", { ...flat, register: 'formal' }, () => 0.9))
+      .toBe("I'm going to make pasta, want to join.");
+  });
+  it('drops the softeners when blunt', () => {
+    expect(styleMessage('Honestly, I think you lied lol', { ...flat, register: 'blunt' }, () => 0.9)).toBe('I think you lied');
+  });
+  it('shouts sometimes when hype', () => {
+    expect(styleMessage("Let's go team {e:fire}", { ...flat, register: 'hype' }, () => 0)).toBe("LET'S GO TEAM! {e:fire}");
+    expect(styleMessage("Let's go team {e:fire}", { ...flat, register: 'hype' }, () => 0.9)).toBe("Let's go team {e:fire}");
+  });
+  it('never breaks a hashtag or an emoji', () => {
+    expect(styleMessage('Love you guys {t:CircleFam} {e:heart}', { ...flat, register: 'dry' }, () => 0.9)).toBe('love you guys {t:CircleFam} {e:heart}');
+  });
+});

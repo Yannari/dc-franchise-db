@@ -43,6 +43,47 @@ const tidy = s => s.replace(/[ \t]{2,}/g, ' ').replace(/\s+([,.!?])/g, '$1').tri
 const joinAcross = (left, right) =>
   /[A-Za-z0-9)]\s*$/.test(left) && /^\s*[A-Z]/.test(right) ? `${left.trimEnd()}.${right}` : left + right;
 
+// A register (ci/register.js) changes how the words are typed, never what
+// they say: dry types lowercase and flat, formal writes it out, blunt drops
+// the softeners, hype shouts now and then. Emoji and hashtags are untouched.
+const TOKEN = /(\{[et]:[A-Za-z0-9]+\})/;
+const keepCase = (from, to) => (from[0] === from[0].toUpperCase() ? to[0].toUpperCase() + to.slice(1) : to);
+const SPELLED = [[/\bgonna\b/gi, 'going to'], [/\bwanna\b/gi, 'want to'], [/\bgotta\b/gi, 'have to'],
+  [/\bkinda\b/gi, 'kind of'], [/\bya\b/gi, 'you'], [/\bu\b/gi, 'you']];
+function onText(text, f) {
+  return text.split(TOKEN).map(p => (TOKEN.test(p) ? p : f(p))).join('');
+}
+function lastText(text, f) {
+  const parts = text.split(TOKEN);
+  for (let i = parts.length - 1; i >= 0; i--) {
+    if (!TOKEN.test(parts[i]) && /[A-Za-z0-9]/.test(parts[i])) { parts[i] = f(parts[i]); break; }
+  }
+  return parts.join('');
+}
+const firstUp = text => text.replace(/^(\s*)([a-z])/, (m, sp, c) => sp + c.toUpperCase());
+export function byRegister(text, register, rng = () => 0.5) {
+  switch (register) {
+    case 'dry': {
+      const t = onText(text, p => p.toLowerCase().replace(/\bi\b/g, 'I').replace(/!+/g, '.'));
+      return lastText(t, p => p.replace(/\.(\s*)$/, '$1'));
+    }
+    case 'formal': {
+      let t = onText(text, p => SPELLED.reduce((x, [re, to]) => x.replace(re, m => keepCase(m, to)), p)
+        .replace(/\b(lol|lmao|omg|ngl|tbh)\b[,.!]?\s*/gi, ''));
+      t = firstUp(tidy(t)).replace(/!{2,}/g, '!');
+      return lastText(t, p => p.replace(/([A-Za-z0-9)])(\s*)$/, '$1.$2'));
+    }
+    case 'blunt':
+      return firstUp(tidy(onText(text, p => p.replace(/!{2,}/g, '!').replace(/\b(lol|haha|lmao)\b[,.!]?\s*/gi, '')
+        .replace(/^\s*(honestly|omg|okay so|ngl|no offense but),?\s*/i, ''))));
+    case 'hype':
+      if (rng() >= 0.3) return text;
+      return lastText(onText(text, p => p.toUpperCase()), p => p.replace(/\.?(\s*)$/, '!$1').replace(/([!?])!(\s*)$/, '$1$2'));
+    default:
+      return text;
+  }
+}
+
 /** Keep or drop each token by the sender's voice; a loud voice doubles an exclamation. */
 export function styleMessage(text, voice = {}, rng = () => 0.5) {
   const e = voice.emoji ?? 0.5, t = voice.hashtags ?? 0.5, caps = voice.caps ?? 0;
@@ -57,7 +98,7 @@ export function styleMessage(text, voice = {}, rng = () => 0.5) {
       if (rng() < 0.3 + 0.7 * e) out += `{e:${p.v}}`; else dropped = true;
     } else if (rng() < 0.25 + 0.75 * t) out += `{t:${p.v}}`; else dropped = true;
   }
-  const cleaned = tidy(out);
+  const cleaned = tidy(byRegister(tidy(out), voice.register, rng));
   const bare = cleaned.replace(/\{[et]:[A-Za-z0-9]+\}/g, '').trim();
   // A message that was only emoji keeps its first token rather than going blank.
   if (!bare && !/\{[et]:/.test(cleaned)) {

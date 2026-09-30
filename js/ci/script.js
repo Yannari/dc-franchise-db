@@ -15,6 +15,7 @@ import { THEORY_LINE } from './slips.js';
 import { styleOf } from './ratings.js';
 import { isRevealed } from './reveal.js';
 import { styleMessage, displayText, dictation } from './voice.js';
+import { registerOf } from './register.js';
 import { POOLS } from './lines/index.js';
 import { GAMES, PARTY_THEMES, NEVER_HAVE_I_EVER } from './games-data.js';
 import { TRIVIA, FACTS } from './games-content.js';
@@ -27,7 +28,7 @@ export const FACT_KEYS = ['intent', 'ending', 'result', 'known', 'early', 'late'
   'hurt', 'influencer', 'reason', 'motive', 'mode', 'reasonKind', 'band', 'kiss', 'claim', 'lie',
   'tone', 'party', 'final', 'slip', 'noticed', 'place', 'self', 'likesC', 'misread', 'anon',
   'answer', 'strong', 'split', 'qkind', 'right', 'off', 'odd', 'failed', 'barbed', 'slipped', 'mutual', 'warm',
-  'everyone', 'fresh', 'tier', 'many', 'jab'];
+  'everyone', 'fresh', 'tier', 'many', 'jab', 'register'];
 
 export const hostName = () => showWords('the-circle').host || 'Host';
 
@@ -58,7 +59,7 @@ export function factsFor(state, scene, cast) {
   const { a, b } = cast;
   const f = { early: state.day <= 2, late: false, catfish: state.profiles[a]?.mode === 'catfish' };
   if (a && state.mind[a]) f.mood = moodOf(state, a);
-  if (a && state.profiles[a]) { f.group = groupOf(state, a); f.style = styleOf(state, a); }
+  if (a && state.profiles[a]) { f.group = groupOf(state, a); f.style = styleOf(state, a); f.register = registerOf(state, a, cast.personA); }
   const last = [...state.ratings].reverse().find(r => r.day === state.day - 1 && !r.final);
   if (last && a) {
     f.hurt = last.results.slice(-3).some(r => r.profile === a);
@@ -103,7 +104,8 @@ export function pickEntry(state, key, facts, pairKey, rng) {
   const u = usage(state);
   const fits = pool.filter(e => matches(e.when, facts));
   const scored = fits.map(e => {
-    const spec = Object.keys(e.when || {}).length + (e.id.startsWith('g.') ? 1 : 0);
+    // A line written for the speaker's register is how they sound: it wins clearly.
+    const spec = Object.keys(e.when || {}).reduce((n, k) => n + (k === 'register' ? 4 : 1), 0) + (e.id.startsWith('g.') ? 1 : 0);
     const uses = u.uses[e.id] || 0;
     const samePair = (u.pairs[e.id] || []).includes(pairKey);
     const today = (u.day || {})[e.id] === state.day ? SAME_DAY : 1;
@@ -200,16 +202,20 @@ export function renderEntry(state, entry, cast, rng) {
     const speaker = who(t.by);
     const person = personOf(t.by);
     const tag = x => (person ? { ...x, person } : x);
+    // The one at the keyboard: a shared profile types in two voices.
+    const typist = t.by === 'a' ? cast.personA || null
+      : (t.by === 'face' || t.by === 'brain') ? state.profiles[cast.a]?.roles?.[t.by] || null : null;
+    const voiceOf = () => ({ ...(state.profiles[speaker]?.voice || {}), register: registerOf(state, speaker, typist) });
     if (t.react) lines.push(tag({ who: speaker, kind: 'react', text: fill(state, t.react, cast, t.by) }));
     if (t.say) lines.push(tag({ who: speaker, kind: t.by === 'host' ? 'host' : 'say', text: fill(state, t.say, cast, t.by) }));
     if (t.video) lines.push(tag({ who: speaker, kind: 'video', text: fill(state, t.video, cast, t.by) }));
     if (t.post) {
-      const voice = state.profiles[speaker]?.voice;
+      const voice = voiceOf();
       const styled = styleMessage(fill(state, t.post, cast, t.by), voice, rng);
       lines.push(tag({ who: speaker, kind: 'post', text: displayText(styled), spoken: dictation(styled, 'Status', 'Post') }));
     }
     if (t.send) {
-      const voice = state.profiles[speaker]?.voice;
+      const voice = voiceOf();
       const styled = styleMessage(fill(state, t.send, cast, t.by), voice, rng);
       const anon = t.by === 'a' && cast.anonA ? { anon: true } : {};
       lines.push(tag({ who: speaker, kind: 'send', text: displayText(styled), spoken: dictation(styled), ...anon }));

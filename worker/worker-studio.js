@@ -358,6 +358,13 @@ export default {
         return json({ ok: true, key, size: body.byteLength }, 200, cors);
       }
 
+      // ── THE MUSIC, OUT OF ITS OWN BUCKET (js/vp-dr/music.js) ──────────
+      // A separate bucket, not the gallery's: `/gallery/<key>` serves ANY key
+      // in its bucket publicly, and the lip sync songs must never be public.
+      if (url.pathname.startsWith('/audio/') || url.pathname.startsWith('/api/audio/')) {
+        return await audioRoute(request, env, url, cors);
+      }
+
       if (request.method === 'GET' && url.pathname === '/api/ping') {
         const doc = await getJson(env, ROSTER_PATH, { players: [] });
         return json({ ok: true, roster: (doc.players || []).length }, 200, cors);
@@ -2344,6 +2351,92 @@ function encodeJson(obj) { return bytesToB64(new TextEncoder().encode(JSON.strin
 function decodeJson(contentB64) { return JSON.parse(new TextDecoder().decode(b64ToBytes(contentB64))); }
 
 // ── CORS + JSON response ───────────────────────────────────────────────────
+// ── THE MUSIC ─────────────────────────────────────────────────────────
+//
+// Two kinds of file, in the AUDIO bucket (wrangler.toml):
+//
+//   moments/<situation>/<name>.mp3   the user's own royalty-free tracks for the
+//                                    moments of a Drag Race episode (drama,
+//                                    comedy, the runway, a challenge's own
+//                                    track …). PUBLIC to read, like the gallery.
+//   lipsync/<song-slug>.mp3          the real lip sync songs. Commercial
+//                                    recordings, so PRIVATE: read only with the
+//                                    studio token, which is to say only by the
+//                                    user's own browser. Never public, never on
+//                                    the site, never listed to anybody else.
+//
+// Every write needs the studio token. Keys are whitelisted, not sanitised.
+const AUDIO_KEY_MOMENT = /^moments\/[a-z0-9][a-z0-9-]{0,40}\/[a-z0-9][a-z0-9-]{0,60}\.(mp3|m4a|ogg|wav)$/;
+const AUDIO_KEY_SONG = /^lipsync\/[a-z0-9][a-z0-9-]{0,80}\.(mp3|m4a|ogg|wav)$/;
+const AUDIO_TYPES = { mp3: 'audio/mpeg', m4a: 'audio/mp4', ogg: 'audio/ogg', wav: 'audio/wav' };
+
+async function audioRoute(request, env, url, cors) {
+  if (!env.AUDIO) return json({ ok: false, error: 'the audio bucket is not bound (see wrangler.toml)' }, 503, cors);
+  const auth = (request.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
+  const authed = !env.STUDIO_TOKEN || auth === env.STUDIO_TOKEN;
+  const open = { ...cors, 'Access-Control-Allow-Origin': '*' };
+
+  // What is there.
+  if (request.method === 'GET' && url.pathname === '/api/audio/moments') {
+    const out = [];
+    let cursor;
+    do {
+      const page = await env.AUDIO.list({ prefix: 'moments/', cursor });
+      for (const o of page.objects) out.push({ key: o.key, situation: o.key.split('/')[1], size: o.size });
+      cursor = page.truncated ? page.cursor : undefined;
+    } while (cursor);
+    return json({ ok: true, tracks: out }, 200, open, 60);
+  }
+  if (request.method === 'GET' && url.pathname === '/api/audio/lipsync') {
+    if (!authed) return json({ ok: false, error: 'unauthorized' }, 401, cors);
+    const out = [];
+    let cursor;
+    do {
+      const page = await env.AUDIO.list({ prefix: 'lipsync/', cursor, include: ['customMetadata'] });
+      for (const o of page.objects) out.push({ key: o.key, title: o.customMetadata?.title || null, size: o.size });
+      cursor = page.truncated ? page.cursor : undefined;
+    } while (cursor);
+    return json({ ok: true, songs: out }, 200, cors);
+  }
+
+  if (!url.pathname.startsWith('/audio/')) return json({ ok: false, error: 'not found' }, 404, cors);
+  const key = decodeURIComponent(url.pathname.slice('/audio/'.length));
+  const isMoment = AUDIO_KEY_MOMENT.test(key);
+  const isSong = AUDIO_KEY_SONG.test(key);
+  if (!isMoment && !isSong) return json({ ok: false, error: 'bad key' }, 400, cors);
+
+  if (request.method === 'GET' || request.method === 'HEAD') {
+    if (isSong && !authed) return json({ ok: false, error: 'unauthorized' }, 401, cors);
+    const obj = await env.AUDIO.get(key);
+    if (!obj) return new Response('Not found', { status: 404, headers: isSong ? cors : open });
+    const h = new Headers(isSong ? cors : open);
+    h.set('Content-Type', obj.httpMetadata?.contentType || 'audio/mpeg');
+    // A song is private: nothing between here and the browser may keep a copy.
+    h.set('Cache-Control', isSong ? 'private, no-store' : 'public, max-age=86400');
+    if (typeof obj.size === 'number') h.set('Content-Length', String(obj.size));
+    return new Response(request.method === 'HEAD' ? null : obj.body, { headers: h });
+  }
+
+  if (!authed) return json({ ok: false, error: 'unauthorized' }, 401, cors);
+  if (request.method === 'DELETE') {
+    await env.AUDIO.delete(key);
+    return json({ ok: true, deleted: key }, 200, cors);
+  }
+  if (request.method === 'PUT') {
+    const body = await request.arrayBuffer();
+    if (!body.byteLength) return json({ ok: false, error: 'empty body' }, 400, cors);
+    if (body.byteLength > 25 * 1024 * 1024) return json({ ok: false, error: 'too large (25 MB limit)' }, 413, cors);
+    const ext = key.split('.').pop();
+    const title = (request.headers.get('X-Song-Title') || '').slice(0, 200);
+    await env.AUDIO.put(key, body, {
+      httpMetadata: { contentType: AUDIO_TYPES[ext] || 'audio/mpeg' },
+      customMetadata: title ? { title } : {},
+    });
+    return json({ ok: true, key, size: body.byteLength }, 200, cors);
+  }
+  return json({ ok: false, error: 'method not allowed' }, 405, cors);
+}
+
 function corsHeaders(request, env) {
   const allowed = env.ALLOWED_ORIGIN || '*';
   const origin = request.headers.get('Origin') || '';

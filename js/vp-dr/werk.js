@@ -38,6 +38,7 @@ import { roomStage, ROOM_STAGE_CSS } from './room-stage.js';
 import { wireStage } from './finale-stage.js';
 import { _shell, _portrait, _icon, _note, _roomRail, _allianceRail, ROOM_RAIL_CSS } from './style.js';
 import { _controls, _state } from './reveal.js';
+import { musicAttr, musicOfKind } from './music.js';
 
 const esc = v => String(v ?? '').replace(/[&<>"]/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -416,7 +417,7 @@ export function sceneCard(sc, i, suffix, ep, row, { accent = 'dr-a-room', aside 
     ? `<div class="dr-pairtop">${busts}<div>${head}${note}</div>${aside}</div>${body}`
     : `${busts}<div>${head}${note}${body}</div>${aside}`;
 
-  return `<div class="dr-step" id="dr-step-${suffix}-${i}">
+  return `<div${musicAttr(musicOfKind(sc?.kind))} class="dr-step" id="dr-step-${suffix}-${i}">
     <div class="dr-panel ${accent} dr-card dr-k-${kind}${pairCls}">
       ${confess ? `<span class="dr-rec"><i></i>REC</span>
         <span class="dr-vf dr-vf-tl"></span><span class="dr-vf dr-vf-tr"></span>

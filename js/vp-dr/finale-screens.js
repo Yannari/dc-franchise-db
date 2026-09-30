@@ -7,6 +7,7 @@
 // crowning has its own, in js/vp-dr/crowning.js.
 import { _shell, _portrait } from './style.js';
 import { _controls, _state } from './reveal.js';
+import { tagStep } from './music.js';
 import { FINALE_STAGE_CSS, crownLipsyncStage, showcaseStage, interviewStage, cutStage, finaleCard, wireStage } from './finale-stage.js';
 
 const esc = v => String(v ?? '').replace(/[&<>"]/g, c =>
@@ -207,7 +208,11 @@ export function rpBuildCrownLipSync(row) {
   const stage = crownLipsyncStage(row, list, rounds, { ep, uid: `c${ep.num}` });
   const n = rounds.length;
   const label = i => (i === n - 1 ? 'The final' : n === 2 ? 'The semi-final' : `Semi-final ${i + 1}`);
-  const cards = list.map((s, i) => {
+  // Each card carries its round's song; the final's verdict is the winner's track.
+  const songOfRound = r => rounds[r]?.song || null;
+  const cards = list.map((s, i) => tagStep(fincrownCard(s, i),
+    s.t === 'verdict' && s.r === n - 1 ? 'winner' : null, s.t === 'verdict' ? null : songOfRound(s.r))).join('');
+  function fincrownCard(s, i) {
     const id = `dr-step-fincrownls-${i}`;
     if (s.t === 'setup') return finaleCard({ id, ep, host: 'rupaul', tag: 'The host', text: s.text });
     if (s.t === 'talk') return finaleCard({ id, ep, host: 'rupaul', tag: `The host to ${s.who} · ${label(s.r)}`, text: s.text });
@@ -221,7 +226,7 @@ export function rpBuildCrownLipSync(row) {
     const sb = Number(d.scores?.[d.b]) || 0;
     return finaleCard({ id, ep, who: d.winner, cls: 'big', tag: `${label(s.r)} · ${d.song || ''}`,
       text: `${d.a} ${sa.toFixed(1)} · ${d.b} ${sb.toFixed(1)}. ${d.winner} ${s.r === n - 1 ? 'wins the lip sync for the crown' : 'goes through'}.` });
-  }).join('');
+  }
   wireStage('fincrownls', stage, ep, _state);
 
   const rail = `<h4 class="dr-disp">For The Crown</h4>${

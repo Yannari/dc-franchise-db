@@ -30,6 +30,7 @@ import { roomStage, ROOM_STAGE_CSS } from './room-stage.js';
 import { wireStage } from './finale-stage.js';
 import { JUDGES } from '../dr/data/judges.js';
 import { STAGE_BEATS } from '../dr/data/stage-beats.js';
+import { musicAttr, musicOfKind } from './music.js';
 
 const esc = v => String(v ?? '').replace(/[&<>"]/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -1043,7 +1044,7 @@ export function rpBuildUntucked(row) {
     const row = bits.length ? `<div class="dr-bond-row">${bits.join('')}</div>` : '';
 
     const camp = sc.data?.campaign ? ' dr-utk-camp' : '';
-    return `<div class="dr-step" id="dr-step-untucked-${i}">${head}
+    return `<div${musicAttr(musicOfKind(sc?.kind))} class="dr-step" id="dr-step-untucked-${i}">${head}
       <div class="dr-panel ${players.length > 1 ? 'dr-a-bond' : 'dr-a-room'}${loud || /shouting|clap-back/.test(sc.kind || '') ? ' dr-shake' : ''}${heat}${camp} dr-utk">
         <span class="dr-utk-who${players.length > 2 ? ' dr-utk-crowd' : ''}">${players
     .map(n => _portrait(n, ep, { size: players.length > 2 ? 34 : 46 })).join('')}</span>

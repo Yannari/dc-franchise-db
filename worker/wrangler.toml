@@ -29,3 +29,11 @@ database_id = "e00978c3-52eb-48e2-8e0f-d90fc51b2437"
 [[r2_buckets]]
 binding = "GALLERY"
 bucket_name = "dc-gallery"
+
+# The music (js/vp-dr/music.js). Its own bucket, NOT the gallery's: the gallery
+# route serves any key in its bucket publicly, and the lip sync songs are
+# commercial recordings that must stay private (read only with STUDIO_TOKEN).
+# Created with: npx wrangler r2 bucket create dc-audio
+[[r2_buckets]]
+binding = "AUDIO"
+bucket_name = "dc-audio"

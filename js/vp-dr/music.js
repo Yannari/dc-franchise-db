@@ -186,6 +186,22 @@ async function decode(c, key, getBytes) {
   return got;
 }
 const urlBytes = url => async () => { const r = await fetch(url); return r.ok ? r.arrayBuffer() : null; };
+/* A PRIVATE CUE, WHEREVER THIS PAGE IS. Beside the page when it is served
+   from a checkout (assets/audio/drag/private, git-ignored); from the studio's
+   private bucket, with the token, on the published site — where the file
+   does not exist, because the show's recordings are never published. */
+const cueBytes = file => async () => {
+  try {
+    const r = await fetch(DIR + file);
+    if (r.ok) return r.arrayBuffer();
+  } catch { /* not beside the page */ }
+  const t = studioToken(false);
+  if (!t) return null;
+  try {
+    const r = await fetch(`${WORKER}/audio/cues/${String(file).split('/').pop()}`, { headers: { Authorization: `Bearer ${t}` } });
+    return r.ok ? r.arrayBuffer() : null;
+  } catch { return null; }
+};
 
 /* WHERE A MOMENT GOES WHEN ITS TRACK IS NOT HERE. The show's own cues are
    private files, so a copy without them (the published site, another
@@ -344,7 +360,7 @@ async function start(key, sit, song, suffix = null, fallback = null, fit = {}) {
   }
   if (!buf) {
     pick = await trackFor(song ? 'lipsync' : sit);
-    if (pick) buf = await decode(c, pick.url, urlBytes(pick.url));
+    if (pick) buf = await decode(c, pick.url, pick.private ? cueBytes(pick.file) : urlBytes(pick.url));
     /* The verdict track is a private file (assets/audio/drag/private, never
        published): on a copy without it, forget it and play the moment's own. */
     fallback = fallback || FALLBACK[sit] || null;

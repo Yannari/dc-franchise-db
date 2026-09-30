@@ -2368,6 +2368,9 @@ function decodeJson(contentB64) { return JSON.parse(new TextDecoder().decode(b64
 // Every write needs the studio token. Keys are whitelisted, not sanitised.
 const AUDIO_KEY_MOMENT = /^moments\/[a-z0-9][a-z0-9-]{0,40}\/[a-z0-9][a-z0-9-]{0,60}\.(mp3|m4a|ogg|wav)$/;
 const AUDIO_KEY_SONG = /^lipsync\/[a-z0-9][a-z0-9-]{0,80}\.(mp3|m4a|ogg|wav)$/;
+// The show's own cues (the user's copies): private like the songs, never
+// served without the token. The published site fetches them from here.
+const AUDIO_KEY_CUE = /^cues\/[a-z0-9][a-z0-9-]{0,60}\.(mp3|m4a|ogg|wav)$/;
 const AUDIO_TYPES = { mp3: 'audio/mpeg', m4a: 'audio/mp4', ogg: 'audio/ogg', wav: 'audio/wav' };
 
 async function audioRoute(request, env, url, cors) {
@@ -2402,7 +2405,7 @@ async function audioRoute(request, env, url, cors) {
   if (!url.pathname.startsWith('/audio/')) return json({ ok: false, error: 'not found' }, 404, cors);
   const key = decodeURIComponent(url.pathname.slice('/audio/'.length));
   const isMoment = AUDIO_KEY_MOMENT.test(key);
-  const isSong = AUDIO_KEY_SONG.test(key);
+  const isSong = AUDIO_KEY_SONG.test(key) || AUDIO_KEY_CUE.test(key);   // both private
   if (!isMoment && !isSong) return json({ ok: false, error: 'bad key' }, 400, cors);
 
   if (request.method === 'GET' || request.method === 'HEAD') {

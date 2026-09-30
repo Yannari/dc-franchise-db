@@ -785,6 +785,82 @@ export const STAGE_BEATS = [
       ]),
     ],
   },
+  /* ── THE FIRST VERSE AND THE LAST CHORUS ──
+     A lip sync was the host's speech, a card or three per queen, and the
+     verdict: over before the song's thirty-second clip was, and with nothing
+     between the two queens — each one narrated alone, never against the
+     other. These two cards are the head-to-head: how the song starts for both
+     of them, and who owns its end. Two-queen lip syncs only. {a} is the queen
+     ahead on the stage, {b} the other; the song is {s}. Plain English — what
+     they do, where they stand, what the judges see. */
+  {
+    id: 'lipsync-open', step: 'lipsync', scope: 'pair', speaker: 'narrator',
+    note: 'The first verse, both queens: who is ready when the song starts.',
+    tierBy: 'start',
+    tiers: [
+      tier('both-on', 'Both of them start strong.', [
+        "The first line of {s} comes in and both of them are already moving. {a} goes straight to the front of the stage. {b} takes the other side and does not give up an inch of it.",
+        "Neither of them eases in. From the first word of {s}, {a} and {b} are mouthing every line and hitting every beat, and the judges lean forward at the same moment.",
+        "{a} hits the first beat with her whole body. Half a second later {b} does the same, and the room realises this one is going to be close.",
+        "Both queens know the opening of {s} cold. {a} plays to the judges, {b} plays to the back of the room, and through the whole first verse there is nothing between them.",
+        "The track starts and neither queen wastes the intro. {a} is in character by the second bar, and {b} matches her step for step.",
+      ]),
+      tier('one-on', 'One of them is ready and the other is not yet.', [
+        "{a} is ready the second {s} starts: every word, every beat. {b} takes a few bars to find it, and in a lip sync a few bars is a long time.",
+        "The first verse belongs to {a}. She knows exactly where the song is going. {b} is still finding her footing when the chorus arrives.",
+        "{a} starts at full volume. {b} starts carefully, with one eye on the other queen, and the judges notice the difference straight away.",
+        "From the first line, {a} is selling it. {b} has the words right, but her face has not caught up with the song yet.",
+        "{a} walks into the spotlight on the first beat. {b} hangs back, waiting for a moment that {a} is not going to give her.",
+      ]),
+      tier('both-off', 'A nervous start from both of them.', [
+        "The song starts and both of them look a little lost. {a} finds the beat first, but only just.",
+        "Neither queen owns the first verse of {s}. {a} is slightly more sure of the words, and so far that is the only difference.",
+        "It is a nervous start. {a} and {b} both check on the other one before they commit, and the first chorus arrives before either of them has really started.",
+        "The judges wait for somebody to take charge of {s}. For the whole first verse nobody does, and {a} comes closest.",
+        "Both queens are careful at the start, and careful does not read on this stage. {a} loosens up first.",
+      ]),
+    ],
+  },
+  {
+    id: 'lipsync-last-chorus', step: 'lipsync', scope: 'pair', speaker: 'narrator',
+    note: 'The end of the song, both queens: who owns the finish.',
+    tierBy: 'finish',
+    tiers: [
+      tier('runaway', 'The finish is all hers.', [
+        "By the last chorus it is not close. {a} is giving the judges everything she has left. {b} is still performing, but nobody is watching her any more.",
+        "The final chorus of {s} belongs to {a}. She finishes on her knees on the last beat, and the room is on its feet before the music stops.",
+        "{a} saves her best for the end. As {s} builds to its finish she takes the centre of the stage and holds it, and {b} has nowhere left to go.",
+        "In the last thirty seconds {a} pulls away completely. {b} keeps going to the final note, but the judges have already decided where to look.",
+        "{a} hits her final pose exactly on the last beat of {s}. {b} is half a second late, and on this stage half a second is everything.",
+      ]),
+      tier('ahead', 'She edges ahead at the end.', [
+        "The last chorus is where {a} edges ahead. {b} is still in it, but {a} has more left in the tank, and it shows.",
+        "Going into the final chorus there is not much in it. Then {a} finds one more gear, and {b} does not.",
+        "{a} and {b} both finish strong, but {a} finishes stronger: cleaner on the words, sharper on the beat.",
+        "As {s} winds up, {a} takes the front of the stage and {b} ends up performing to her back. It is a small thing, and the judges see it.",
+        "{b} gives a good last chorus. {a} gives a better one, and ends it looking straight at the host.",
+      ]),
+      tier('close', 'Too close to call.', [
+        "The last chorus is a dead heat. {a} and {b} hit the final note together, and nobody in the room could say for sure who won it.",
+        "Neither queen lets go at the end. They finish {s} side by side, both breathing hard, and the judges look at each other.",
+        "It comes down to the last few seconds, and even then there is almost nothing in it. {a} holds her final pose a moment longer. That might be the difference.",
+        "Both of them throw everything at the final chorus. When the music stops the room is loud, and it is not louder for one of them than the other.",
+        "The finish is too close to call. {a} and {b} both end on the beat, both still in character, both waiting.",
+      ]),
+      tier('both-great', 'Both of them were excellent to the end.', [
+        "The last chorus is incredible from both of them. When {s} ends, the whole room is on its feet for two queens at once.",
+        "Neither of them drops a thing at the end. The judges are applauding before the final note, and they are applauding both of them.",
+        "{a} and {b} finish {s} at the very top of their game. It is the kind of lip sync people talk about for seasons.",
+        "Nobody wins the last chorus, because nobody loses it. Both queens end on the beat, both in the spotlight, and the host is smiling.",
+      ]),
+      tier('both-poor', 'Neither of them found the song.', [
+        "The last chorus does not rescue either of them. {s} ends, nobody claps for a second, and the room is quiet.",
+        "By the end neither queen has found the song. They finish because the track finishes, and the judges' faces say the rest.",
+        "Both of them are still searching for {s} when it runs out. The final pose lands on silence.",
+        "The finish is flat on both sides. {a} and {b} look at each other as the music stops, and both of them know.",
+      ]),
+    ],
+  },
   {
     id: 'lipsync-stunt', step: 'lipsync', scope: 'per-queen', speaker: 'narrator',
     note: 'The stunt: the split, the reveal, the jump. Fires only when one is attempted.',

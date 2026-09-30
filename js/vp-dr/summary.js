@@ -353,7 +353,11 @@ export function generateDragSummaryText(row) {
       const body = String(sc.html)
         .replace(/<style[\s\S]*?<\/style>/g, '')
         .replace(/<!--dr-chrome-->[\s\S]*?<!--\/dr-chrome-->/g, '');
-      const chunks = body.split(/<div class="dr-step[^"]*"/);
+      /* ATTRIBUTES MAY COME FIRST. The music tags a card as `<div data-music=…
+         data-song=… data-sfx=… class="dr-step`, and a split on the bare
+         `<div class="dr-step` stopped seeing every tagged card: the drama and
+         comedy scenes of Untucked ran together into one 3,400-character line. */
+      const chunks = body.split(/<div(?:\s+data-[a-z-]+="[^"]*")*\s+class="dr-step[^"]*"/);
       /* CHUNK ZERO IS NOT A STEP AND IT IS NOT NOTHING. This used to be
          `chunks.slice(1)`, which threw away everything before the first
          revealable card — and on the crowning screen that is the bracket, the

@@ -1916,7 +1916,14 @@ export function runDragWeek(state, cfg, ctx) {
        stays (was 5%). A ramp that also
        discounted early records was tried and cut: it dropped the 1.0+ rate
        to 68% — early records do save queens on the show. */
-    const BLOWOUT = 4;
+    /* AND ONE WEEK IS BARELY A RECORD. With one episode behind them (episode
+       2) a gap the stage narrates as a runaway (2.5+, lipsync-last-chorus)
+       is decided on the stage too: read off a played season, a queen who took
+       the song clearly was sent home for the other's single win. From the
+       third episode the four-point rule stands — lowering it everywhere
+       dropped the real show's 1.0+ PPE survival from 80% to 70%. */
+    const recordLen = Math.min(...[a, b].map(q => (state.record[q] || []).filter(r => r in _ppeW).length));
+    const BLOWOUT = recordLen <= 1 ? 2.5 : 4;
     const blownOut = Math.abs(sa.score - sb.score) >= BLOWOUT;
     const bendOf = (n, other) => {
       const hostLean = (bend.find(x => x.name === n)?.bend || 0) * 0.5;

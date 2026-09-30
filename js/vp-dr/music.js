@@ -330,6 +330,18 @@ async function start(key, sit, song, suffix = null, fallback = null, fit = {}) {
   let buf = null; let pick = { start: 0 };
   // Your own file first; the record's 30-second clip when there is none.
   if (song) buf = await decode(c, `song:${song}`, async () => (await songBytes(song)) || previewBytes(song));
+  /* THE CLIP OUTLASTS ITS THIRTY SECONDS. A store clip is half a minute and
+     a lip sync is read at the reader's pace, so a slow reader heard the song
+     stop in the middle of the performance. A clip (not an uploaded song,
+     which plays whole) loops on the beat, the way the runway does. */
+  if (song && buf && buf.duration < 45) {
+    if (!loops.has(buf)) {
+      let L = null;
+      try { L = beatLoop(buf.getChannelData(0), buf.sampleRate); } catch { /* no beat */ }
+      loops.set(buf, L || { loopFrom: 1, loopTo: Math.max(2, buf.duration - 1.2) });
+    }
+    pick = { runway: true, ...loops.get(buf) };
+  }
   if (!buf) {
     pick = await trackFor(song ? 'lipsync' : sit);
     if (pick) buf = await decode(c, pick.url, urlBytes(pick.url));
@@ -409,7 +421,7 @@ export function lipsyncMusicOf(kind, data = null) {
   /* "The time has come…" has its own cue; the song starts on the first move,
      so every performance card says so (an untagged card keeps the moment). */
   if (/lipsync-intro$/.test(k)) return 'time-has-come';
-  if (/lipsync-(beat|hook|stunt)$/.test(k)) return 'lipsync';
+  if (/lipsync-(open|beat|hook|stunt|last-chorus)$/.test(k)) return 'lipsync';
   /* A DOUBLE IS ANNOUNCED IN ONE CARD: the call itself says both stay (or
      both go), with no shantay or sashay card after it. Filed as suspense, a
      double shantay played the wait and never the verdict. */

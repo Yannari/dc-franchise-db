@@ -816,6 +816,19 @@ export function renderStageBeats({
     emit(beatById('lipsync-intro'),
       (lipsync.queens || []).length > 2 && stakes === 'life' ? 'life-group' : stakes, [],
       { song: lipsync.song, artist: lipsync.artist, stakes });
+    /* THE HEAD-TO-HEAD, AT BOTH ENDS OF THE SONG (stage-beats.js
+       lipsync-open / lipsync-last-chorus). Two queens only: {a} is the one
+       ahead on the stage. Read off the same scores that decide the song, so
+       the finish never tells a different story from the call. */
+    const pair = (lipsync.queens || []).length === 2 ? [...lipsync.queens] : null;
+    const scoreOf = n => Number((lipsync.scores || {})[n]) || 0;
+    if (pair) pair.sort((x, y) => scoreOf(y) - scoreOf(x));
+    if (pair) {
+      const strong = n => scoreOf(n) >= 5.5;
+      const startTier = strong(pair[0]) && strong(pair[1]) ? 'both-on'
+        : strong(pair[0]) ? 'one-on' : 'both-off';
+      emit(beatById('lipsync-open'), startTier, pair);
+    }
     /* ── THE SONG DECIDES WHAT THE PERFORMANCE WAS ──
        `lipsync-beat` had four tiers keyed on how well she did and nothing
        about the record she was doing it to, so a queen fighting for her life
@@ -899,6 +912,15 @@ export function renderStageBeats({
       }
       const stunt = lipsync.stunts?.[n];
       if (stunt === 'landed' || stunt === 'failed') emit(stuntBeat, stunt, [n]);
+    }
+    if (pair) {
+      const gap = scoreOf(pair[0]) - scoreOf(pair[1]);
+      const finish = lipsync.call === 'double-shantay' || lipsync.call === 'legacy-double' ? 'both-great'
+        : lipsync.call === 'double-sashay' ? 'both-poor'
+          // A night the host overrules is never narrated as a runaway: the
+          // card cannot say "not close" and then watch her go home.
+          : gap >= 2.5 && !lipsync.overruled ? 'runaway' : gap >= 1 ? 'ahead' : 'close';
+      emit(beatById('lipsync-last-chorus'), finish, pair);
     }
     /* ── THE HOLD, AND THEN THE TWO NAMES ──
        `lipsync-call` is one paragraph that names neither queen — "one queen

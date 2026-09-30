@@ -233,7 +233,13 @@ export function lipsyncCall({
   // The doubles read the RAW performances, not the bent ones. Whether both
   // were extraordinary is a fact about the stage, not a decision the host's
   // agenda is allowed to manufacture.
-  if (allowDoubleShantay && a.score >= GREAT && b.score >= GREAT && Math.abs(gap) < CLOSE) {
+  /* BOTH EXCELLENT MEANS NOTHING WENT WRONG. A failed stunt costs 0.8, so a
+     strong lip syncer could fail her reveal on live television — the
+     tear-away that would not tear — and still score 7+, and the pair was sent
+     through with "Shantay, you BOTH stay". The show does not double-save a
+     queen whose reveal broke. */
+  const clean = a.stunt !== 'failed' && b.stunt !== 'failed';
+  if (allowDoubleShantay && clean && a.score >= GREAT && b.score >= GREAT && Math.abs(gap) < CLOSE) {
     return { call: 'double-shantay', winner: null, loser: null, losers: [], gap };
   }
   if (allowDoubleSashay && a.score <= AWFUL && b.score <= AWFUL) {

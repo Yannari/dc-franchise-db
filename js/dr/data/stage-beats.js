@@ -877,13 +877,21 @@ export const STAGE_BEATS = [
     tierBy: 'always',
     tiers: [
       /* SHE LOST THE SONG AND THE HOST KEPT HER ANYWAY — for the season she
-         has had, a point or so of it at most. The host says it, because the
-         room just watched the other queen win and needs to hear why. */
-      tier('shantay-record', 'She lost the song, and her season saved her.', [
-        "\"{a}.\" A long pause. \"You did not win that lip sync, and you know it. But I have watched you all season, and I am not done watching. Shantay, you stay.\" {a} nods slowly, like somebody who has just been handed something she has to pay back.",
-        "\"{a}, tonight was not your night.\" The host lets that sit. \"But your track record speaks for you, and tonight I am listening to it. Shantay, you stay.\" {a} does not celebrate. She knows exactly how close that was.",
-        "\"This one was hard.\" The host looks from one queen to the other. \"{a}, you have been one of the strongest queens in this competition. That is the only reason you are still standing here. Shantay, you stay.\" {a} exhales and does not look at the queen beside her.",
-        "\"{a}.\" The host shakes his head slightly. \"I am keeping you because of everything you have done before tonight — not because of tonight. Shantay, you stay.\" {a} takes it with both hands and a face that says she heard every word.",
+         has had, a point or so of it at most, and only on a close one: a
+         blowout on the stage is never overturned (week.js BLOWOUT). The host
+         says why, because the room just watched the other queen win.
+
+         NEVER THAT SHE DID BADLY. The first lines said "tonight was not your
+         night" and "not because of tonight" over a queen who had lip synced
+         well and lost a close one — and the host almost never tells a queen
+         her lip sync was bad. Losing a close song is not a bad lip sync. The
+         lines say it was close and that the competition so far decided it.
+         And no "all season": this can happen in episode 3. */
+      tier('shantay-record', 'She lost a close song, and her competition so far saved her.', [
+        "\"{a}.\" A long pause. \"That was close, and both of you know it. When it is this close, I look at everything you have shown me, and I am not done watching you. Shantay, you stay.\" {a} nods slowly, like somebody who has just been handed something she means to pay back.",
+        "\"Ladies, you both came to fight tonight.\" The host looks from one queen to the other. \"{a}, what you have given me in this competition speaks for you. Shantay, you stay.\" {a} does not celebrate. She knows exactly how close that was.",
+        "\"This one was hard.\" The host holds the pause. \"{a}, you have been one of the strongest queens in this competition, and I want to see what you do next. Shantay, you stay.\" {a} exhales and does not look at the queen beside her.",
+        "\"{a}.\" The host lets the room wait. \"There was very little between you tonight, so I am going by the whole competition. Shantay, you stay.\" {a} takes it with both hands and a face that says she heard every word.",
       ]),
       tier('shantay', 'She stays, and she hears it first.', [
         "\"{a} — shantay, you stay.\" {a} clasps two fists under her chin, squeezes them tight, and every breath after that one is lighter than the last.",

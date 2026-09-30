@@ -867,7 +867,10 @@ export function renderStageBeats({
         /* THE HOOK HAS ONE OWNER. `tierId` is absolute now, so two queens
            can both be 'strong' — and both "taking" the same key change is a
            thing that cannot happen. Whoever actually topped the song took it. */
-        const took = fractionalRank(n, lipsync.scores || {}) === 0;
+        // ...except on a double: both were excellent, both stay, and a
+        // "missed" line for one of them contradicted the call that followed.
+        const both = lipsync.call === 'double-shantay' || lipsync.call === 'legacy-double';
+        const took = both || fractionalRank(n, lipsync.scores || {}) === 0;
         const hookLines = hookLinesFor(lipsync.hook, took ? 'nailed' : 'missed');
         /* A LANDED STUNT IS HER MOMENT IN THE BREAK. The missed-hook lines are
            a queen caught with nothing to do when the song opens up — "does

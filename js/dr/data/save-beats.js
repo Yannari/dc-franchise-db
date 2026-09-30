@@ -396,7 +396,7 @@ export const SAVE_BEATS = {
         '"{x}, I heard you. I really did."',
       ],
       neutral: [
-        '"{x}, tonight was not your night, and you know that."',
+        '"{x}, you are better than where you landed tonight, and you know that."',
         '"{x}, I watched you on that stage and I know you have more."',
       ],
       self: [

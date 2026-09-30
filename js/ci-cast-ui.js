@@ -22,6 +22,7 @@ import { DEFAULT_POOL } from './ci/default-pool.js';
 import { JOBS, JOB_GROUPS, DETAILS, TOPICS, STATUSES, PHOTO, jobOf, tellsOf, bioFor, promptFor } from './ci/persona-data.js';
 import { personaStyle } from './ci/cover.js';
 import { circleRoles } from './ci-run.js';
+import { ageFrom } from './ci/profiles.js';
 import { putPhoto, photoURL, cachedPhoto, photoSrc, shrinkImage } from './ci/photo-store.js';
 import { playerAvatarUrl } from './players.js';
 import { setPhotoContext, photosPanelHTML, afterPhotosRender, onPhotosClick, onPhotosChange, onPhotosDrop } from './ci-photos-ui.js';
@@ -34,6 +35,7 @@ const setupOf = name => cfg().ciSetup?.[name] || {};
 const setupFor = name => ((cfg().ciSetup ||= {})[name] ||= {});
 const dealt = () => window.gs?.ci?.dealt || null;
 const REASONS = ['strategic', 'protective', 'family', 'experimental'];
+// Create Character's age, when only a birthdate was given: the engine's own reading.
 // Why a player takes a persona, in the words the real players used (spec 4.2).
 const REASON_WORDS = {
   strategic: 'Strategic: a different face will get further in this room.',
@@ -109,13 +111,13 @@ function planRow(p, autoRole) {
       <label class="ci-fld"><span class="ci-k">If they play themselves</span>
         ${seg('mode', s.mode || '', [['', 'Decide'], ['honest', 'Honest'], ['polished', 'Polished'], ['edited', 'Edited']])}</label>
       <label class="ci-fld"><span class="ci-k">Age · job</span><div class="ci-pair">
-        <input class="ci-in ci-age" data-field="age" type="number" min="18" max="90" value="${esc(s.age ?? p.age ?? '')}">
-        <input class="ci-in" data-field="job" placeholder="their real job" value="${esc(s.job ?? '')}"></div></label>
+        <input class="ci-in ci-age" data-field="age" type="number" min="18" max="90" placeholder="${esc(p.age ?? ageFrom(p.birthdate) ?? '')}" value="${esc(s.age ?? '')}" title="From Create Character unless you type one">
+        <input class="ci-in" data-field="job" placeholder="${esc(p.occupation || 'their real job')}" value="${esc(s.job ?? '')}" title="From Create Character unless you type one"></div></label>
       <label class="ci-fld"><span class="ci-k">The job would cost them here</span>
         ${seg('jobCost', s.jobCost ?? 0, [[0, 'No'], [0.5, 'A little'], [1, 'A lot']])}</label>
       <label class="ci-fld"><span class="ci-k">Status · hometown</span><div class="ci-pair">
         <select class="ci-in" data-field="status">${STATUSES.map(x => `<option${(s.status || 'Single') === x ? ' selected' : ''}>${esc(x)}</option>`).join('')}</select>
-        <input class="ci-in" data-field="hometown" placeholder="hometown" value="${esc(s.hometown ?? '')}"></div></label>
+        <input class="ci-in" data-field="hometown" placeholder="${esc(p.hometown || 'hometown')}" value="${esc(s.hometown ?? '')}" title="From Create Character unless you type one"></div></label>
       <label class="ci-fld"><span class="ci-k">Known as · shares with</span><div class="ci-pair">
         ${seg('rep', s.rep || '', [['', '—'], ['villain', 'A villain']])}
         <select class="ci-in" data-field="partner"><option value="">nobody</option>${others.map(o =>

@@ -34,11 +34,25 @@ export const RANDOM_TAKE = 0.5;
 const EDIT_JOBS = ['student', 'teacher', 'barista', 'personal trainer', 'marketing assistant',
   'bartender', 'nurse', 'graphic designer'];
 
+// Years since a birthdate ('YYYY-MM-DD'), or null. The Profile Plan shows it too.
+export function ageFrom(birthdate) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(birthdate || ''));
+  if (!m) return null;
+  const now = new Date();
+  let a = now.getFullYear() - Number(m[1]);
+  if (now.getMonth() + 1 < Number(m[2]) || (now.getMonth() + 1 === Number(m[2]) && now.getDate() < Number(m[3]))) a--;
+  return a > 0 && a < 120 ? a : null;
+}
+
 export function truthOf(player, setup = {}) {
   return {
     name: player.name, gender: player.gender || 'f', sexuality: player.sexuality || 'straight',
     archetype: player.archetype || 'floater', stats: { ...player.stats },
-    age: setup.age ?? player.age ?? 25, job: setup.job ?? null, hometown: setup.hometown ?? null,
+    // The Profile Plan starts from Create Character (the roster's age or
+    // birthdate, occupation, hometown); anything set on the plan wins.
+    age: setup.age ?? player.age ?? ageFrom(player.birthdate) ?? 25,
+    job: setup.job ?? (player.occupation ? String(player.occupation).toLowerCase() : null),
+    hometown: setup.hometown ?? player.hometown ?? null,
     status: setup.status ?? 'Single', alum: !!(setup.alum ?? player.isReturnee),
     rep: setup.rep ?? null, jobCost: setup.jobCost ?? 0, role: setup.role || 'starter',
     catfish: setup.catfish || 'decide', partner: setup.partner || null,

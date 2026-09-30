@@ -486,21 +486,15 @@ cracks it; that scene shows their own register, and the crack's words
 follow its direction (stiff, sloppy, loud, flat, dated, young). A reader
 near the persona's age hears a fake voice sooner.
 
-### 4.6 The face catalogue
+### 4.6 Catfish faces are the author's own
 
-`js/ci/faces.js` tags every face in `assets/guests/` by **what it shows**, not
-by its folder prefix:
-
-```js
-{ id: 'fan-maddie', file: 'assets/guests/fan-maddie.png',
-  presents: 'woman', age: [20, 28], vibe: ['bookish', 'warm'], look: 'glasses, long dark braids' }
-```
-
-The first pass is drafted by looking at all 84 images. The user corrects it in
-the file, and the file carries a comment saying the folder prefixes are
-makeover roles. A catfish's face is chosen to fit the persona's age and look,
-never at random. The `look` line feeds photo prompts (§19.3) and descriptions
-in lines ("the one with the braids").
+*(Changed 2026-09-30, user: "we're making our own catfish now, no need for
+assets/guests anymore".)* A persona's photo is an image the author makes and
+adds on the Catfish Pool panel; `face` holds that image's id. There is no stock
+face catalogue (a first draft tagged the 84 `assets/guests` images and was
+removed). A persona with no image yet has a `look` line — what its photo should
+show ("long platinum-blond hair, bright lipstick, behind a bar") — which the
+image prompt reads (§19.3) and lines can use ("the one with the braids").
 
 ### 4.7 Alumni on this show
 

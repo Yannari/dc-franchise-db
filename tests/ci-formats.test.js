@@ -197,3 +197,31 @@ describe('double block (US 1 Ep 9, US 3 Ep 9, US 2 Ep 8)', () => {
     }
   });
 });
+
+// ── Task 6: antivirus (US 4 Ep 8-9) ─────────────────────────────────────
+import { FORMATS } from '../js/ci/formats.js';
+describe('antivirus', () => {
+  it('the newcomers start it, every receiver passes it on, and whoever never gets it is blocked', () => {
+    let played = 0;
+    for (const seed of [3, 5, 7, 9, 11, 13]) {
+      const { on, state, day } = booked('rating4', 'ci-antivirus', seed);
+      const av = on('antivirus')[0];
+      if (!av) { expect(state.nights.find(n => n.day === day).fellBack).toBe('antivirus'); continue; }
+      played++;
+      const { holders, passes } = av.data;
+      expect(holders.length).toBeGreaterThanOrEqual(2);
+      for (const h of holders) expect(state.joinedDay[h]).toBeGreaterThan(1);
+      // a chain: every giver is a holder or somebody who received it earlier
+      const got = new Set(holders);
+      for (const p of passes) { expect(got.has(p.from)).toBe(true); expect(got.has(p.to)).toBe(false); got.add(p.to); }
+      const block = on('blocking')[0];
+      expect(got.has(block.data.target)).toBe(false);
+      expect(block.data.channel).toBe('antivirus');
+    }
+    expect(played).toBeGreaterThan(0);
+  });
+  it('cannot run without two newcomers in the building', () => {
+    const s = room(6, 1);
+    expect(FORMATS.antivirus.canNow(s)).toBe(false);
+  });
+});

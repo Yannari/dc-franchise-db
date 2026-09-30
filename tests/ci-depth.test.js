@@ -135,7 +135,7 @@ describe('every big moment airs in full', () => {
         // the walk and the door are in the blocking scene before it.
         // A block the saves or the room decided has its waiting in those scenes.
         const min = sc.kind === 'meet' && sc.who.length < 3 ? 4 : sc.kind === 'visit' && sc.data.inPerson ? 12
-          : sc.kind === 'blocking' && ['unsaved', 'vote', 'instant'].includes(sc.data.channel) ? 9 : SCENE_DEPTH[sc.kind];
+          : sc.kind === 'blocking' && ['unsaved', 'vote', 'instant', 'antivirus'].includes(sc.data.channel) ? 9 : SCENE_DEPTH[sc.kind];
         if (lines < min) (thin[sc.kind] ||= []).push(lines);
       }
     }

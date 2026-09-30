@@ -472,6 +472,17 @@ const BLOCKS = {
       { key: 'plead.pitch', cast: { a: p1, b: i1 } }, { key: 'plead.listen', cast: { a: i1, b: p1 } },
       { key: 'plead.pitch', cast: { a: p2, b: i2 || i1 } }, { key: 'plead.listen', cast: { a: i2 || i1, b: p2 } }];
   },
+  // Antivirus (US 4 Ep 8-9): who passed it to whom, in order.
+  antivirus(state, s) {
+    const { holders, passes, left } = s.data;
+    const out = [{ key: 'antivirus.open', cast: { a: holders[0], b: holders[1] || holders[0] } }];
+    passes.forEach((p, i) => {
+      out.push({ key: 'antivirus.pass', cast: { a: p.from, b: p.to } });
+      if (i < 4) out.push({ key: 'antivirus.got', cast: { a: p.to, b: p.from } });
+    });
+    if (left[0]) out.push({ key: 'antivirus.left', cast: { a: left[0] } });
+    return out;
+  },
   // Room vote (UK 1 Ep 15): the bottom two, every vote in public.
   vote(state, s) {
     const [b1, b2] = s.data.bottom;
@@ -547,17 +558,19 @@ const BLOCKS = {
     // Before the name: the ones at risk, waiting; the Influencer typing it.
     // Everybody waits: for the name, or (in person) for somebody's knock.
     // Nobody types a name when the saves or the room decided: the waiting was there.
-    const untyped = ['unsaved', 'vote', 'instant'].includes(s.data.channel);
+    const untyped = ['unsaved', 'vote', 'instant', 'antivirus'].includes(s.data.channel);
     const out = untyped ? [] : [target, ...others].slice(0, s.data.inPerson ? 3 : 4).map(h => ({ key: 'block.wait', cast: { a: h } }));
     if (s.data.inPerson) {
       // A Super Influencer says it at the door (US 1 Ep 10).
       out.push({ key: 'block.inperson.walk', cast: { a: announcer, c: target } },
         { key: 'block.inperson.door', cast: { a: target, b: announcer } },
         { key: 'block.inperson.tell', cast: { a: announcer, b: target } });
-    } else if (['unsaved', 'vote', 'instant'].includes(s.data.channel)) {
+    } else if (['unsaved', 'vote', 'instant', 'antivirus'].includes(s.data.channel)) {
       // Nobody typed a name: the Circle says who was left, or who the room chose.
       out.push({ key: `block.announce.${s.data.channel}`, cast: { a: target, c: target } });
       if (s.data.channel === 'vote') out.push({ key: 'vote.result', cast: { a: target } });
+      // Nobody chose: the room reacts to how cold that is.
+      if (s.data.channel === 'instant') for (const h of others.slice(0, 2)) out.push({ key: 'block.react.numbers', cast: { a: h, b: target } });
     } else if (s.data.channel === 'statement') {
       out.push({ key: 'block.typing', cast: { a: announcer, c: target }, extra: { reason: s.data.reason } },
         { key: 'block.announce.statement', cast: { a: announcer, c: target } });
@@ -855,6 +868,7 @@ export const POOL_KEYS = [
   ...['save-two', 'plead', 'room-vote', 'forced'].map(f => `alert.${f}`), 'block.announce.unsaved', 'block.announce.vote',
   'block.announce.statement', 'plead.open', 'plead.pitch', 'plead.listen', 'vote.open', 'vote.cast', 'vote.result',
   'statement.open', 'statement.say', 'statement.named', 'save.wait', 'alert.instant', 'alert.double', 'block.announce.instant', 'goodbye.video.close',
+  'block.react.numbers', 'alert.antivirus', 'antivirus.open', 'antivirus.pass', 'antivirus.got', 'antivirus.left', 'block.announce.antivirus',
   'hangout.agree', 'hangout.yield', 'hangout.trade', 'hangout.pact',
   ...BLOCK_WHY_.map(r => `block.announce.${r}`), 'block.react.self', 'block.react.friend', 'block.react.rival', 'block.react.relief',
   ...MOTIVES_.flatMap(m => [`visit.choose.${m}`, `visit.talk.${m}`]), 'visit.wait', 'visit.wait.catfish',

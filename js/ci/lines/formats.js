@@ -456,3 +456,62 @@ export const GOODBYE_CLOSE = {
     { turns: [{ by: 'a', video: "That's it from me. Circle, it's been real. Mostly." }], beat: '{a} gives a little salute before the screen goes dark.' },
   ]),
 };
+
+// ── Task 6: antivirus ──────────────────────────────────────────────────
+// antivirus.open — a and b, the newcomers holding it. antivirus.pass — a
+// passes it to b. antivirus.got — a (safe now) about b (who passed it).
+// antivirus.left — a, the one who never got it. block.announce.antivirus —
+// the Circle names c.
+export const ANTIVIRUS_LINES = {
+  ...E('alert.antivirus', [
+    { turns: [{ by: 'a', react: "'There has been a data breach.' A what?" },
+      { by: 'b', react: "'Only Players with the antivirus will be safe.' Okay, now I'm scared." }] },
+    { turns: [{ by: 'a', react: "'The newest Players hold the antivirus.' The new people? They barely know us." },
+      { by: 'b', say: 'So the people who just walked in decide who stays. Great.' }] },
+    { turns: [{ by: 'a', react: "'Whoever does not receive the antivirus will be blocked.'" },
+      { by: 'b', react: 'Pass it to me. Somebody. Anybody.' }], beat: '{b} stares at the screen, willing it to light up.' },
+  ]),
+  ...E('antivirus.open', [
+    { turns: [{ by: 'a', react: "I'm holding the antivirus? Me? I've been here five minutes." },
+      { by: 'b', react: 'Every single person in this building is about to be very nice to us.' }] },
+    { turns: [{ by: 'a', say: 'No pressure. Just deciding who gets to stay.' }, { by: 'b', say: "Choose with your gut. That's all we have." }] },
+    { turns: [{ by: 'a', react: 'Okay. Who has been good to me so far?' }, { by: 'b', react: "I know exactly who I'm sending it to." }],
+      beat: 'Two new apartments, two people scrolling the same list.' },
+  ]),
+  ...E('antivirus.pass', [
+    { turns: [{ by: 'a', send: "Sending the antivirus to {b}. You're safe." }] },
+    { turns: [{ by: 'a', say: 'This one is easy.', send: '{b}, antivirus is yours.' }] },
+    { turns: [{ by: 'a', send: 'Passing it to {b}. You looked out for me. I look out for you.' }] },
+    { turns: [{ by: 'a', send: "{b}. You're protected." }], beat: '{a} sends it and leans back.' },
+    { turns: [{ by: 'a', send: 'My antivirus goes to {b}.' }] },
+    { turns: [{ by: 'a', say: "Okay. Don't overthink it.", send: 'Antivirus to {b}.' }] },
+    { turns: [{ by: 'a', send: '{b}, you are safe. Now pass it on.' }] },
+    { turns: [{ by: 'a', send: 'Sending it to {b}. I hope that means something to you.' }] },
+  ]),
+  ...E('antivirus.got', [
+    { turns: [{ by: 'a', react: "{b} sent it to me! I'm safe! I'm safe!" }], beat: '{a} jumps up off the couch.' },
+    { turns: [{ by: 'a', react: 'Oh thank God. Thank you, {b}. I will never forget that.' }] },
+    { turns: [{ by: 'a', react: "I'm safe. And now I have to choose. Oh no." }], beat: "{a}'s relief lasts about a second." },
+    { turns: [{ by: 'a', react: '{b} picked me. Okay. Who do I pick?' }] },
+    { turns: [{ by: 'a', react: 'Safe. Breathing again. Okay.' }], beat: '{a} presses a hand to {a.posAdj} chest.' },
+  ]),
+  ...E('antivirus.left', [
+    { turns: [{ by: 'a', react: "Nobody sent it to me. Nobody." }], beat: '{a} stares at the list, every name but {a.posAdj} own.' },
+    { turns: [{ by: 'a', react: "I'm the last one. I'm the only one without it." }] },
+    { turns: [{ by: 'a', react: 'Every single person had a chance to pick me. And nobody did.' }], beat: '{a} sets the tablet down.' },
+  ]),
+  // block.react.numbers — a reacts to b being blocked by the ratings alone.
+  ...E('block.react.numbers', [
+    { turns: [{ by: 'a', react: 'Nobody even chose. The numbers just did it.' }], beat: '{a} stares at the screen.' },
+    { turns: [{ by: 'a', react: 'That is so cold. No Hangout, no speeches, just gone.' }] },
+    { turns: [{ by: 'a', react: "{b} didn't even get to plead. That's brutal." }] },
+    { turns: [{ by: 'a', say: 'So every rank I gave tonight actually mattered. Every one.' }], beat: '{a} sits down slowly.' },
+    { turns: [{ by: 'a', react: 'We all did that. All of us. Together.' }] },
+    { turns: [{ by: 'a', react: "Last place, and that's it? Wow. Bye, {b}." }] },
+  ]),
+  ...E('block.announce.antivirus', [
+    { turns: [{ by: 'host', say: '{c} did not receive the antivirus. {c}, you have been blocked.' }], beat: 'Every apartment goes quiet.' },
+    { turns: [{ by: 'host', say: 'Every Player is protected except one. {c} has been blocked from The Circle.' }] },
+    { turns: [{ by: 'host', say: 'Without the antivirus, {c} is blocked.' }], beat: '{c} reads it alone.' },
+  ]),
+};

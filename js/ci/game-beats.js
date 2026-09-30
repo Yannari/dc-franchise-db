@@ -296,7 +296,8 @@ const FAMILY = {
 export function beatsFor(state, rng, game, sc) {
   const all = sc.seenBy;
   const beats = [];
-  const push = b => beats.push(b);
+  // Plain JSON: a field left undefined would not survive a save.
+  const push = b => beats.push(Object.fromEntries(Object.entries(b).filter(([, v]) => v !== undefined)));
   const reader = all[sc.id % all.length];
   push({ phase: 'announce', kind: 'open', by: reader });
   for (const h of shuffled(all.filter(x => x !== reader), rng).slice(0, 2)) push({ phase: 'announce', kind: 'first', by: h });

@@ -37,6 +37,8 @@ export const FORMATS = {
   super: { removes: 1, seats: 1, hidden: true, can: ctx => ctx.position !== 'first',
     run: (state, rng, rating) => standardBlocking(state, rng, rating, { format: 'super', inPerson: true }) },
   instant: { removes: 1, seats: 0, can: () => true, run: instantBlock },
+  antivirus: { removes: 1, seats: 0, can: ctx => ctx.position === 'middle' || ctx.position === 'late',
+    canNow: state => newcomersIn(state).length >= 2 && state.active.length >= 5, run: antivirus },
   double: { removes: 2, seats: 2, can: ctx => ctx.position !== 'first' && ctx.position !== 'last', run: doubleBlock },
   'save-two': { removes: 1, seats: 2, can: () => true, canNow: state => state.active.length >= 5, run: saveTwoEach },
   plead: { removes: 1, seats: 2, can: () => true, canNow: state => state.active.length >= 6, run: saveThenPlead },
@@ -75,7 +77,7 @@ function savesUntil(state, rng, infl, leave) {
 }
 
 function finish(state, rng, target, by, channel, data) {
-  const sc = addScene(state, 'blocking', [by[0], target], { by, target, channel, ...data }, [...state.active]);
+  const sc = addScene(state, 'blocking', by.length ? [by[0], target] : [target], { by, target, channel, ...data }, [...state.active]);
   applyBlock(state, target, channel, by, sc);
   const visit = runVisit(state, rng, target, by);
   state.pendingGoodbyes.push(target);
@@ -196,6 +198,35 @@ function doubleBlock(state, rng, rating) {
   }
   // Each Influencer alone; neither can block the other.
   return infl.map(i => standardBlocking(state, rng, { ...rating, influencers: [i] }, { format: 'double', atRisk: atRiskOf(state, infl) }));
+}
+
+// ── Antivirus (Plan 3b Task 6; US 4 Ep 8-9, "Data Breach") ────────────
+// The newest arrivals hold the antivirus and pass it on; every receiver is
+// safe and passes it again; whoever never gets it is blocked. Every pass is
+// public: a debt for the receiver, a sting for whoever hoped to be next.
+const newcomersIn = state => state.active.filter(h => (state.joinedDay[h] || 1) > 1)
+  .sort((a, b) => (state.joinedDay[b] || 1) - (state.joinedDay[a] || 1));
+function antivirus(state, rng, rating) {
+  const holders = newcomersIn(state).slice(0, 2);
+  let unsafe = state.active.filter(h => !holders.includes(h));
+  const queue = [...holders], passes = [];
+  while (unsafe.length > 1 && queue.length) {
+    const from = queue.shift();
+    const to = unsafe.map(t => [t, rel(from, t, 'affection') + rel(from, t, 'obligation') * 1.5 + rel(from, t, 'trust') * 0.5 + rng()])
+      .sort((a, b) => b[1] - a[1])[0][0];
+    passes.push({ from, to });
+    unsafe = unsafe.filter(t => t !== to);
+    queue.push(to);
+  }
+  const sc = addScene(state, 'antivirus', [...holders], { holders, passes, left: unsafe }, [...state.active]);
+  for (const { from, to } of passes) {
+    bump(to, from, 'obligation', 2); bump(to, from, 'affection', 1);
+    const c = makeClaim(state, { kind: 'saved', holder: from, about: to, truth: true, secrecy: 'public', by: from });
+    for (const o of state.active) if (o !== from) learn(state, o, c, from, sc);
+  }
+  for (const h of unsafe) feel(state, h, 'stress', 3);
+  for (const h of state.active) delete state.immuneNext[h];
+  return finish(state, rng, unsafe[0], [], 'antivirus', { reason: 'antivirus', format: 'antivirus', order: passes.map(p => p.to) });
 }
 
 // Would an Influencer take the chance to block the other one? Only a player

@@ -31,7 +31,7 @@ beforeEach(() => {
 describe('the Profile Plan', () => {
   it('draws one row per player, each waiting for the deal', () => {
     expect(root().querySelectorAll('.ci-row')).toHaveLength(6);
-    expect(root().querySelector('.ci-row .ci-draw').textContent).toMatch(/not dealt yet/i);
+    expect(root().querySelector('.ci-row .ci-draw').textContent).toMatch(/waiting for episode 1/i);
   });
 
   it('every pin writes the setup the engine reads', () => {
@@ -53,9 +53,26 @@ describe('the Profile Plan', () => {
     expect(setup('P02').catfish).toBeUndefined();
   });
 
-  it('a pin to a persona names one from the pool', () => {
-    change('.ci-row[data-name="P03"] [data-field="catfish"]', 'ci-david');
-    expect(setup('P03').catfish).toBe('ci-david');
+  it('Decide / Yes / No, and which persona only under Decide or Yes', () => {
+    const row = '.ci-row[data-name="P03"]';
+    expect(root().querySelector(`${row} [data-field="persona"]`)).toBeTruthy();       // Decide
+    click(`${row} [data-act="catfish"][data-v="always"]`);
+    change(`${row} [data-field="persona"]`, 'ci-david');
+    expect(setup('P03')).toMatchObject({ catfish: 'always', persona: 'ci-david' });
+    click(`${row} [data-act="catfish"][data-v="never"]`);
+    expect(root().querySelector(`${row} [data-field="persona"]`)).toBeNull();          // No: no persona to pick
+    expect([...root().querySelectorAll(`${row} [data-act="catfish"]`)].map(b => b.textContent)).toEqual(['Decide', 'Yes', 'No']);
+  });
+
+  it('"Already famous?" says what it means, and Auto follows their past seasons', () => {
+    const row = '.ci-row[data-name="P01"]';
+    expect(root().querySelector(row).textContent).toMatch(/Already famous\?/);
+    expect([...root().querySelectorAll(`${row} [data-act="rep"]`)].map(b => b.textContent)).toEqual(expect.arrayContaining(['Nobody', 'Known', 'A big threat', 'A villain']));
+    expect(root().querySelector(`${row} .ci-rep-auto`).textContent).toMatch(/Auto/);
+  });
+
+  it('before the season starts, the card says so in plain words', () => {
+    expect(root().querySelector('.ci-row .ci-draw').textContent).toMatch(/Waiting for episode 1/i);
   });
 
   it('once dealt, each card says what the player got and why', () => {
@@ -116,10 +133,10 @@ describe('the Catfish Pool', () => {
 
   it('a persona pinned by a player cannot vanish silently: deleting it clears the pin', () => {
     window._ciSub = 'plan'; renderCircleCastSetup();
-    change('.ci-row[data-name="P03"] [data-field="catfish"]', 'ci-david');
+    change('.ci-row[data-name="P03"] [data-field="persona"]', 'ci-david');
     window._ciSub = 'pool'; renderCircleCastSetup();
     click('.ci-pc[data-id="ci-david"] [data-act="del"]');
-    expect(setup('P03').catfish).toBeUndefined();
+    expect(setup('P03').persona).toBeUndefined();
   });
 
   it('your own image: stored, shown on the card, and named on the persona', async () => {
@@ -145,5 +162,18 @@ describe('the plan starts from Create Character', () => {
     expect(root().querySelector(`${row} [data-field="job"]`).value).toBe('');
     change(`${row} [data-field="job"]`, 'barista');
     expect(window.seasonConfig.ciSetup.Gwen.job).toBe('barista');
+  });
+});
+
+describe('the plan reads Create Character from the roster, not the cast copy', () => {
+  it('Hasan: the cast entry has none of it; the roster does', () => {
+    window.FRANCHISE_ROSTER = [{ name: 'Hasan', slug: 'hasan', age: 25, occupation: 'Criminal law student', hometown: 'Chicago' }];
+    window.players = [{ name: 'Hasan', slug: 'hasan', archetype: 'mastermind', stats: {} }];
+    window._ciSub = 'plan'; renderCircleCastSetup();
+    const row = '.ci-row[data-name="Hasan"]';
+    expect(root().querySelector(`${row} [data-field="job"]`).placeholder).toBe('Criminal law student');
+    expect(root().querySelector(`${row} [data-field="hometown"]`).placeholder).toBe('Chicago');
+    expect(root().querySelector(`${row} [data-field="age"]`).placeholder).toBe('25');
+    delete window.FRANCHISE_ROSTER;
   });
 });

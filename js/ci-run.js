@@ -23,6 +23,7 @@ import { CIRCLE_FORMAT } from './shows.js';
 import { playCircleSeason } from './ci/season.js';
 import { buildSchedule } from './ci/schedule.js';
 import { carriedFor } from './franchise-carry.js';
+import { buildFranchiseMeta } from './franchise-meta.js';
 import { DEFAULT_POOL } from './ci/default-pool.js';
 
 export const isCircleSeason = () => seasonFormat(seasonConfig) === CIRCLE_FORMAT;
@@ -42,6 +43,32 @@ const _cast = () => {
   const saved = Array.isArray(gs?.ci?.castOrder) && gs.ci.castOrder.length ? gs.ci.castOrder : null;
   return saved || (players || []).map(p => p.name).filter(Boolean);
 };
+
+/** Create Character's facts for a cast member. A cast entry carries only the
+ *  game fields (name, stats, archetype, portrait); the age, birthdate,
+ *  occupation and hometown stay on the roster, found by slug, then name. */
+export function rosterFactsOf(p = {}) {
+  const roster = typeof window !== 'undefined' && Array.isArray(window.FRANCHISE_ROSTER) ? window.FRANCHISE_ROSTER : [];
+  const r = (p.slug && roster.find(x => x.slug === p.slug)) || roster.find(x => x.name === p.name);
+  if (!r) return {};
+  const out = {};
+  for (const k of ['age', 'birthdate', 'occupation', 'hometown']) if (r[k] != null && r[k] !== '') out[k] = r[k];
+  return out;
+}
+
+/** "Already famous?" left on Auto: what the room might know of each player
+ *  from their past seasons in the franchise record. A known schemer reads as a
+ *  villain, a past winner or finalist as a big threat, any other returnee as
+ *  known; nobody has seen a first-timer. */
+export function circleKnownAs(cast = players || []) {
+  let meta = null;
+  try { meta = buildFranchiseMeta(cast, seasonConfig); } catch { meta = null; }
+  return Object.fromEntries((cast || []).filter(p => p && p.name).map(p => {
+    const m = meta?.profiles?.[p.name];
+    const rep = m ? (m.knownSchemer >= 0.5 ? 'villain' : m.repScore >= 0.5 ? 'threat' : 'known') : p.isReturnee ? 'known' : 'none';
+    return [p.name, rep];
+  }));
+}
 
 /** Each player's Profile Plan (Cast tab), as the engine reads it. */
 export function circleSetup() { return { ...(seasonConfig.ciSetup || {}) }; }
@@ -168,7 +195,9 @@ function _build(inputs, rerolls) {
   const problem = circleCastProblem(cast, inputs.setup);
   if (problem) { _refuse(problem); return null; }
   const roles = circleRoles(cast, inputs.setup);
-  const setup = Object.fromEntries(cast.map((n, i) => [n, { ...(inputs.setup[n] || {}), role: roles[i] }]));
+  const known = circleKnownAs((players || []).filter(p => p && cast.includes(p.name)));
+  const setup = Object.fromEntries(cast.map((n, i) => [n, { ...(inputs.setup[n] || {}), role: roles[i],
+    from: rosterFactsOf((players || []).find(p => p && p.name === n) || { name: n }), autoRep: known[n] || 'none' }]));
   const seed = _seed();
   const outer = gs;
   let result, inner;

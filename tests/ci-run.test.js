@@ -252,3 +252,21 @@ describe('a row carries what the screens draw', () => {
     if (honest) expect(honest.face).toBe(`portrait:${honest.people[0]}`);
   });
 });
+
+import { rosterFactsOf } from '../js/ci-run.js';
+describe('Create Character reaches the season through the roster', () => {
+  it('a cast entry has only game fields; the roster has the rest, found by slug or name', () => {
+    window.FRANCHISE_ROSTER = [{ name: 'Hasan', slug: 'hasan', age: 25, occupation: 'Criminal law student', hometown: 'Chicago' }];
+    expect(rosterFactsOf({ name: 'Hasan', slug: 'hasan' })).toMatchObject({ age: 25, occupation: 'Criminal law student', hometown: 'Chicago' });
+    expect(rosterFactsOf({ name: 'Hasan' })).toMatchObject({ hometown: 'Chicago' });
+    expect(rosterFactsOf({ name: 'Nobody' })).toEqual({});
+  });
+  it('the dealt profile of an honest player shows their real job and hometown', () => {
+    freshSeason(13, { ciPool: [] });
+    const first = players[0];
+    window.FRANCHISE_ROSTER = [{ name: first.name, slug: first.slug, occupation: 'Criminal law student', hometown: 'Chicago' }];
+    simulateCircleEpisode();
+    expect(gs.ci.dealt[first.name].shown).toMatchObject({ job: 'criminal law student', hometown: 'Chicago' });
+    delete window.FRANCHISE_ROSTER;
+  });
+});

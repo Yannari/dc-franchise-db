@@ -6767,6 +6767,7 @@
 .ci-in{background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#fff;font:500 12px Montserrat,system-ui,sans-serif;padding:6px 8px;min-width:0;flex:1}
 .ci-in option,.ci-in optgroup{background:#141836;color:#fff}
 .ci-age{max-width:64px;flex:none}
+.ci-wide{grid-column:span 2}
 .ci-draw{border-radius:12px;padding:10px;background:linear-gradient(160deg,rgba(47,123,255,.22),rgba(139,92,255,.14));border:1px solid rgba(139,92,255,.35);display:flex;gap:10px;animation:ciFlip .6s .2s ease both}
 .ci-draw .ci-av{width:44px;height:44px}
 .ci-self{background:rgba(255,255,255,.03);border-color:rgba(255,255,255,.1)}

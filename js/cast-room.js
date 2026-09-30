@@ -433,6 +433,9 @@ export function renderCastRoom() {
     _restoreForm();
     _restoreVillaPanel();
     document.getElementById('tab-cast')?.classList.remove('cast-room-active');
+    // The shows' cast panels are hidden by default (css/simulator.css) and
+    // shown only in their own room view; with the room off, the legacy panel shows them.
+    document.getElementById('tab-cast')?.classList.add('cast-room-off');
     document.getElementById('cast-room')?.remove();
     return;
   }
@@ -458,6 +461,7 @@ export function renderCastRoom() {
     if (fb) fb.innerHTML = _warningsHTML() + _filterBarHTML();
   }
   tab.classList.add('cast-room-active');
+  tab.classList.remove('cast-room-off');
 
   // Adopt the legacy form node into the drawer (once).
   _adoptForm(room);

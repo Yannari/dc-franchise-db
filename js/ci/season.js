@@ -210,7 +210,11 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
         night: d.night ? { format: d.night.format, booked: !!d.night.booked, fellBack: d.night.fellBack || null } : null,
         people: state.active.flatMap(h => peopleOf(state, h)),
         profiles: Object.fromEntries(Object.entries(state.profiles).map(([h, p]) =>
-          [h, { name: p.shown?.name, people: [...p.players], mode: p.mode }])),
+          // face: what the room sees (a persona's `photo:<id>`, a player's
+          // `portrait:<name>`, or null); age/job for the profile card. The
+          // screens read these (js/vp-ci), never the engine's state.
+          [h, { name: p.shown?.name, people: [...p.players], mode: p.mode, face: p.shown?.face ?? null,
+            age: p.shown?.age ?? null, job: p.shown?.job ?? null, personaId: p.personaId ?? null }])),
         blocked: state.blocked.filter(b => b.day === d.day).map(b => b.handle),
         arrivals: arriving, scenes: state.scenes.filter(s => s.day === d.day).length,
         aired: state.scenes.filter(s => s.day === d.day && s.aired)

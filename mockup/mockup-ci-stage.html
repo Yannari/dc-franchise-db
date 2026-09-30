@@ -175,10 +175,10 @@ h1{font-weight:800;font-size:20px;letter-spacing:.02em}
       <div class="lamp" id="lampA"></div>
       <div class="tvset" id="tvA"><div class="cui" id="tvAui"></div></div>
       <div class="rim" style="left:0;background:var(--cy)"></div>
-      <div class="bust L" data-cam="CAM 4 · ALEJANDRO" style="--glow:#3fd8ff;background-image:url(../assets/avatars/alejandro.png)"></div>
+      <div class="bust L" data-cam="CAM 4 · ALEJANDRO" style="--glow:#3fd8ff;background-image:url(/files/alejandro.png)"></div>
     </div>
     <div class="hud"><span id="hudA">APARTMENT 4 · DAY 6 · 10:41 PM</span><span class="lv">Live</span></div>
-    <div class="catfish"><span class="mini" style="background-image:url(../assets/guests/fan-maddie.png)"></span>Playing as "Maddie" · catfish</div>
+    <div class="catfish"><span class="mini" style="background-image:url(/files/fan-maddie.png)"></span>Playing as "Maddie" · catfish</div>
     <div class="beam" id="beam"></div>
     <div id="dlgA"></div>
   </div></div>
@@ -192,7 +192,7 @@ h1{font-weight:800;font-size:20px;letter-spacing:.02em}
       <div class="tvset" id="tvB" style="left:26%"><div class="cui" id="tvBui"></div></div>
       <div class="ping" id="pingB" style="left:44%;top:18%;width:12%;aspect-ratio:1;display:none"></div>
       <div class="rim" style="right:0;background:var(--pk)"></div>
-      <div class="bust R" data-cam="CAM 7 · BRIDGETTE" style="--glow:#ff4fb4;background-image:url(../assets/avatars/bridgette.png)"></div>
+      <div class="bust R" data-cam="CAM 7 · BRIDGETTE" style="--glow:#ff4fb4;background-image:url(/files/bridgette.png)"></div>
     </div>
     <div class="hud"><span>APARTMENT 7 · DAY 6 · 10:42 PM</span><span class="lv">Live</span></div>
     <div id="dlgB"></div>
@@ -217,12 +217,12 @@ Every apartment is its own room: wall colour, wallpaper pattern, posters and lam
 <script>
 const ICONS={home:'M12 3l9 8h-3v9h-5v-6h-2v6H6v-9H3z',chat:'M4 4h16v12H8l-4 4z',bolt:'M13 2L4 14h6l-1 8 9-12h-6z',me:'M12 12a4 4 0 100-8 4 4 0 000 8zm-8 9c0-4 4-6 8-6s8 2 8 6z',img:'M3 5h18v14H3zm3 11h12l-4-5-3 4-2-2z',bars:'M4 20V10h4v10zm6 0V4h4v16zm6 0v-7h4v7z',dice:'M4 4h16v16H4zm4 3a1.5 1.5 0 100 3 1.5 1.5 0 000-3zm8 8a1.5 1.5 0 100 3 1.5 1.5 0 000-3zm-4-4a1.5 1.5 0 100 3 1.5 1.5 0 000-3z'};
 const rail=(sel)=>Object.entries(ICONS).map(([k,d])=>`<div class="${k===sel?'sel':''}"><svg viewBox="0 0 24 24"><path d="${d}"/></svg></div>`).join('');
-const P={maddie:{n:'Maddie',img:'../assets/guests/fan-maddie.png',ring:'#ff4fb4'},brody:{n:'Brody',img:'../assets/avatars/brody.png',ring:'#ff9f2f'},bridgette:{n:'Bridgette',img:'../assets/avatars/bridgette.png',ring:'#2f7bff'},beth:{n:'Beth',img:'../assets/avatars/beth.png',ring:'#3fd88f'},duncan:{n:'Duncan',img:'../assets/avatars/duncan.png',ring:'#b35cff'},heather:{n:'Heather',img:'../assets/avatars/heather.png',ring:'#ffd23f'}};
+const P={maddie:{n:'Maddie',img:'fan-maddie.png',ring:'#ff4fb4'},brody:{n:'Brody',img:'brody.png',ring:'#ff9f2f'},bridgette:{n:'Bridgette',img:'bridgette.png',ring:'#2f7bff'},beth:{n:'Beth',img:'beth.png',ring:'#3fd88f'},duncan:{n:'Duncan',img:'duncan.png',ring:'#b35cff'},heather:{n:'Heather',img:'heather.png',ring:'#ffd23f'}};
 const hashify=t=>t.replace(/#(\w+)/g,'<span class="ht">#$1</span>');
-const msgHTML=(id,t)=>`<div class="msg" style="--ring:${P[id].ring}"><div class="av" style="background-image:url(${P[id].img})"></div><div class="card"><div class="nm">${P[id].n}</div><div class="tx">${hashify(t)}</div></div></div>`;
-const typingHTML=id=>`<div class="msg typing" style="--ring:${P[id].ring}"><div class="av" style="background-image:url(${P[id].img})"></div><div class="card"><span class="dots"><span></span><span></span><span></span></span></div></div>`;
+const msgHTML=(id,t)=>`<div class="msg" style="--ring:${P[id].ring}"><div class="av" style="background-image:url(/files/${P[id].img})"></div><div class="card"><div class="nm">${P[id].n}</div><div class="tx">${hashify(t)}</div></div></div>`;
+const typingHTML=id=>`<div class="msg typing" style="--ring:${P[id].ring}"><div class="av" style="background-image:url(/files/${P[id].img})"></div><div class="card"><span class="dots"><span></span><span></span><span></span></span></div></div>`;
 document.getElementById('rail1').innerHTML=rail('chat');
-document.getElementById('people').innerHTML='<div class="hd">CIRCLE CHAT</div>'+Object.keys(P).map(k=>`<div class="tile" id="t-${k}"><div class="ph" style="background-image:url(${P[k].img})"></div><div class="n">${P[k].n.toUpperCase()}</div></div>`).join('');
+document.getElementById('people').innerHTML='<div class="hd">CIRCLE CHAT</div>'+Object.keys(P).map(k=>`<div class="tile" id="t-${k}"><div class="ph" style="background-image:url(/files/${P[k].img})"></div><div class="n">${P[k].n.toUpperCase()}</div></div>`).join('');
 
 /* ---- apartment themes (data, not drawings) ---- */
 const THEMES={
@@ -243,7 +243,7 @@ document.getElementById('sw').innerHTML=Object.entries(THEMES).map(([k,t])=>`<di
 document.getElementById('sw').onclick=e=>{const s=e.target.closest('.sw');if(!s)return;document.querySelectorAll('.sw').forEach(x=>x.classList.toggle('act',x===s));theme('A',s.dataset.k);show('aptA');};
 
 /* ---- mini Circle UI on each TV ---- */
-function tvUI(id,msgs,peer){document.getElementById(id).innerHTML=`<div class="ui-bg"></div><div class="aurora" style="left:30%;top:-20%;width:70%;aspect-ratio:1"></div><div class="rail">${rail('chat')}</div><div class="feed" id="${id}-feed" style="right:27%">${msgs.map(m=>msgHTML(m[0],m[1])).join('')}</div><div class="people" style="grid-template-columns:1fr"><div class="tile"><div class="ph" style="background-image:url(${P[peer].img})"></div><div class="n">${P[peer].n.toUpperCase()}</div></div></div><div class="inbar" style="right:27%"><div class="box" id="${id}-box"></div><div class="send" id="${id}-send"><svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg></div></div>`;
+function tvUI(id,msgs,peer){document.getElementById(id).innerHTML=`<div class="ui-bg"></div><div class="aurora" style="left:30%;top:-20%;width:70%;aspect-ratio:1"></div><div class="rail">${rail('chat')}</div><div class="feed" id="${id}-feed" style="right:27%">${msgs.map(m=>msgHTML(m[0],m[1])).join('')}</div><div class="people" style="grid-template-columns:1fr"><div class="tile"><div class="ph" style="background-image:url(/files/${P[peer].img})"></div><div class="n">${P[peer].n.toUpperCase()}</div></div></div><div class="inbar" style="right:27%"><div class="box" id="${id}-box"></div><div class="send" id="${id}-send"><svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg></div></div>`;
  document.getElementById(id).querySelectorAll('.msg .tx').forEach(e=>e.style.fontSize='clamp(5px,.75vw,9px)');document.getElementById(id).querySelectorAll('.msg .nm').forEach(e=>e.style.fontSize='clamp(4px,.6vw,8px)');}
 
 /* ---- sequencing ---- */

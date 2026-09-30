@@ -29,7 +29,7 @@ import { maxiById } from './data/challenges.js';
 import { partnerPronouns } from './data/partners.js';
 import { setNightNumber } from './season-age.js';
 import { miniById, buysFor } from './data/minis.js';
-import { SONGS, songById } from './data/songs.js';
+import { drawSong, songById } from './data/songs.js';
 import { runwayById } from './data/runways.js';
 import { panelFor } from './judges.js';
 import { mentorFor } from './data/judges.js';
@@ -1766,7 +1766,7 @@ export function runDragWeek(state, cfg, ctx) {
   }
 
   // 15. The lip sync.
-  const song = (cfg.songTitle && songById(cfg.songTitle)) || pick(rng, SONGS);
+  const song = (cfg.songTitle && songById(cfg.songTitle)) || drawSong(rng);
   let lipsync = null;
   const exits = [];
 

@@ -146,12 +146,16 @@ async function recorded(c, name) {
 }
 
 /** Play one effect now. Obeys the page's mute and volume (engine.output). */
-export async function playSfx(name) {
+const MUSICAL = new Set(['stinger', 'heartbeat', 'shantay', 'sashay']);
+export async function playSfx(name, under = []) {
   const out = engine.output?.();
   if (!out || !VOICES[name]) return;
-  // Under the real elimination music the show has no effect: the music is it.
-  if ((name === 'shantay' || name === 'sashay')) {
-    try { if ((await momentTracks())?.verdict?.length) return; } catch { /* offline */ }
+  /* A MUSICAL EFFECT YIELDS TO THE SHOW'S OWN CUE. The stinger, the
+     heartbeat and the shantay/sashay hits stand in for music; where the
+     real cue plays (the user's files), the show has no effect on top of it.
+     The crowd, the applause and the cameras always play. */
+  if (MUSICAL.has(name) && under.length) {
+    try { const t = await momentTracks(); if (under.some(k => t?.[k]?.length)) return; } catch { /* offline */ }
   }
   const { ctx: c, dest } = out;
   const buf = await recorded(c, name);
@@ -173,7 +177,12 @@ export function dragSfxStep(suffix, idx) {
   const el = document.getElementById(`dr-step-${suffix}-${idx}`);
   if (!el) return;
   const name = sfxOfStep(suffix, el, document.getElementById(`dr-step-${suffix}-${idx - 1}`));
-  if (name) playSfx(name);
+  if (!name) return;
+  // The music under this card, and on the lip sync stage the verdict cue the
+  // pause and the verdict both play under.
+  const m = el.dataset?.music;
+  const under = [m, ...(/lipsync|legacy/.test(suffix) && /suspense|shantay|sashay/.test(m || '') ? ['verdict'] : [])].filter(Boolean);
+  playSfx(name, under);
 }
 
 /* A SCREEN'S OWN SOUND, for cards that do not ask for one: the runway is

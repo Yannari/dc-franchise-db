@@ -52,7 +52,10 @@ describe('every screen knows what it is', () => {
     expect(html).toContain('data-song="Toxic"');
     expect(lipsyncMusicOf('stage:lipsync-shantay')).toBe('shantay');
     expect(lipsyncMusicOf('stage:sashay-words')).toBe('sashay');
-    expect(lipsyncMusicOf('stage:lipsync-beat')).toBe(null);   // the performance is the song
+    // "The time has come" has its own cue; the song starts on the first move.
+    expect(lipsyncMusicOf('stage:lipsync-intro')).toBe('time-has-come');
+    expect(lipsyncMusicOf('stage:lipsync-beat')).toBe('lipsync');
+    expect(lipsyncMusicOf('stage:lipsync-stunt')).toBe('lipsync');
   });
 });
 

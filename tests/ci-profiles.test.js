@@ -190,3 +190,21 @@ describe('the mode pin on the Profile Plan (spec 4.2: honest, polished, edited)'
     expect(modeOf(players[1].name)).toBe('honest');
   });
 });
+
+describe('the Profile Plan starts from Create Character', () => {
+  const base = { name: 'Gwen', gender: 'f', archetype: 'loner', stats: { strategic: 5 } };
+  it('occupation, hometown and age come from the character; the plan overrides them', () => {
+    const t = truthOf({ ...base, age: 26, occupation: 'Student', hometown: 'Toronto, Ontario' });
+    expect(t).toMatchObject({ age: 26, job: 'student', hometown: 'Toronto, Ontario' });
+    const o = truthOf({ ...base, age: 26, occupation: 'Student', hometown: 'Toronto' }, { age: 31, job: 'nurse', hometown: 'Ottawa' });
+    expect(o).toMatchObject({ age: 31, job: 'nurse', hometown: 'Ottawa' });
+  });
+  it('a birthdate with no age gives the age', () => {
+    const t = truthOf({ ...base, birthdate: '1988-03-02' });
+    expect(t.age).toBeGreaterThanOrEqual(37);
+    expect(t.age).toBeLessThanOrEqual(39);
+  });
+  it('nothing on the character: the same as before', () => {
+    expect(truthOf(base)).toMatchObject({ age: 25, job: null, hometown: null });
+  });
+});

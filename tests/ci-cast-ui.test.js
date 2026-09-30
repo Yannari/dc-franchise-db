@@ -133,3 +133,17 @@ describe('the Catfish Pool', () => {
     expect(root().querySelector('.ci-pc[data-id="ci-grace"] .ci-slot').getAttribute('style')).toContain('data:image/png;base64,AAAA');
   });
 });
+
+describe('the plan starts from Create Character', () => {
+  it('shows the character\'s age, occupation and hometown in grey; typing overrides them', () => {
+    window.players = [{ name: 'Gwen', archetype: 'hero', stats: {}, birthdate: '1990-09-21', occupation: 'Student', hometown: 'Toronto, Ontario' }];
+    window._ciSub = 'plan'; renderCircleCastSetup();
+    const row = '.ci-row[data-name="Gwen"]';
+    expect(root().querySelector(`${row} [data-field="job"]`).placeholder).toBe('Student');
+    expect(root().querySelector(`${row} [data-field="hometown"]`).placeholder).toBe('Toronto, Ontario');
+    expect(Number(root().querySelector(`${row} [data-field="age"]`).placeholder)).toBeGreaterThan(30);
+    expect(root().querySelector(`${row} [data-field="job"]`).value).toBe('');
+    change(`${row} [data-field="job"]`, 'barista');
+    expect(window.seasonConfig.ciSetup.Gwen.job).toBe('barista');
+  });
+});

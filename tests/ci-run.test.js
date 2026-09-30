@@ -270,3 +270,26 @@ describe('Create Character reaches the season through the roster', () => {
     delete window.FRANCHISE_ROSTER;
   });
 });
+
+import { circleKnownAs } from '../js/ci-run.js';
+describe('"Already famous?" on Auto reads the celebrity system', () => {
+  const who = (name, extra = {}) => ({ name, slug: name.toLowerCase(), stats: {}, ...extra });
+  it('fame stars decide it: an Icon or Celebrity, a Household Name, a Cult Following, nobody', () => {
+    const stars = { ada: 5, bo: 3, cy: 1, di: 0 };
+    const k = circleKnownAs([who('Ada'), who('Bo'), who('Cy'), who('Di')], { starsOf: p => stars[p.slug] ?? 0 });
+    expect(k.Ada).toMatchObject({ rep: 'celebrity', stars: 5 });
+    expect(k.Bo).toMatchObject({ rep: 'threat', stars: 3 });
+    expect(k.Cy).toMatchObject({ rep: 'known', stars: 1 });
+    expect(k.Di).toMatchObject({ rep: 'none', stars: 0 });
+  });
+  it('the cast form\'s background set to Celebrity counts, and a returnee is at least known', () => {
+    const k = circleKnownAs([who('Ed', { backgroundType: 'celebrity' }), who('Fi', { isReturnee: true })], { starsOf: () => 0 });
+    expect(k.Ed.rep).toBe('celebrity');
+    expect(k.Fi.rep).toBe('known');
+  });
+  it('the season hands the rep to the engine', () => {
+    freshSeason();
+    const k = circleKnownAs(players, { starsOf: () => 0 });
+    expect(Object.values(k).every(x => x.rep === 'none')).toBe(true);
+  });
+});

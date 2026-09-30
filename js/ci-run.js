@@ -24,6 +24,7 @@ import { playCircleSeason } from './ci/season.js';
 import { buildSchedule } from './ci/schedule.js';
 import { carriedFor } from './franchise-carry.js';
 import { buildFranchiseMeta } from './franchise-meta.js';
+import { fameStarsFor } from './alumni.js';
 import { DEFAULT_POOL } from './ci/default-pool.js';
 
 export const isCircleSeason = () => seasonFormat(seasonConfig) === CIRCLE_FORMAT;
@@ -56,17 +57,28 @@ export function rosterFactsOf(p = {}) {
   return out;
 }
 
-/** "Already famous?" left on Auto: what the room might know of each player
- *  from their past seasons in the franchise record. A known schemer reads as a
- *  villain, a past winner or finalist as a big threat, any other returnee as
- *  known; nobody has seen a first-timer. */
-export function circleKnownAs(cast = players || []) {
+/** "Already famous?" left on Auto: what the room might know of each player,
+ *  from the franchise's celebrity system (js/fame.js stars, by slug), the cast
+ *  form's background, and the franchise record. In order:
+ *    a known schemer                                   -> a villain
+ *    4.5+ stars (Icon, Celebrity), or background Celebrity -> a celebrity
+ *    2.5+ stars (Household Name, Star), or a past winner/finalist -> a big threat
+ *    any recorded past or fame, or a returnee          -> known
+ *    otherwise                                         -> nobody
+ *  Returns { name: { rep, stars } }; `starsOf` is for tests. */
+export function circleKnownAs(cast = players || [], { starsOf = p => fameStarsFor(p.slug || String(p.name).toLowerCase().replace(/[^a-z0-9]+/g, '-')) } = {}) {
   let meta = null;
   try { meta = buildFranchiseMeta(cast, seasonConfig); } catch { meta = null; }
   return Object.fromEntries((cast || []).filter(p => p && p.name).map(p => {
     const m = meta?.profiles?.[p.name];
-    const rep = m ? (m.knownSchemer >= 0.5 ? 'villain' : m.repScore >= 0.5 ? 'threat' : 'known') : p.isReturnee ? 'known' : 'none';
-    return [p.name, rep];
+    let stars = null;
+    try { stars = starsOf(p); } catch { stars = null; }
+    const s = Number(stars) || 0;
+    const rep = m?.knownSchemer >= 0.5 ? 'villain'
+      : s >= 4.5 || p.backgroundType === 'celebrity' ? 'celebrity'
+        : s >= 2.5 || m?.repScore >= 0.5 ? 'threat'
+          : m || s > 0 || p.isReturnee || p.backgroundType === 'alumni' ? 'known' : 'none';
+    return [p.name, { rep, stars: stars == null ? null : s }];
   }));
 }
 
@@ -197,7 +209,7 @@ function _build(inputs, rerolls) {
   const roles = circleRoles(cast, inputs.setup);
   const known = circleKnownAs((players || []).filter(p => p && cast.includes(p.name)));
   const setup = Object.fromEntries(cast.map((n, i) => [n, { ...(inputs.setup[n] || {}), role: roles[i],
-    from: rosterFactsOf((players || []).find(p => p && p.name === n) || { name: n }), autoRep: known[n] || 'none' }]));
+    from: rosterFactsOf((players || []).find(p => p && p.name === n) || { name: n }), autoRep: known[n]?.rep || 'none' }]));
   const seed = _seed();
   const outer = gs;
   let result, inner;

@@ -23,6 +23,7 @@ import { JOBS, JOB_GROUPS, DETAILS, TOPICS, STATUSES, PHOTO, jobOf, tellsOf, bio
 import { personaStyle } from './ci/cover.js';
 import { circleRoles, rosterFactsOf, circleKnownAs } from './ci-run.js';
 import { ageFrom } from './ci/profiles.js';
+import { fameTerm } from './fame.js';
 import { putPhoto, photoURL, cachedPhoto, photoSrc, shrinkImage } from './ci/photo-store.js';
 import { playerAvatarUrl } from './players.js';
 import { setPhotoContext, photosPanelHTML, afterPhotosRender, onPhotosClick, onPhotosChange, onPhotosDrop } from './ci-photos-ui.js';
@@ -95,8 +96,12 @@ function safeAvatar(name) {
   try { return playerAvatarUrl(cast().find(p => p.name === name) || name); } catch { return ''; }
 }
 
-const REP_WORDS = { none: 'nobody has seen them before', known: 'known from TV', threat: 'a big threat (a past winner or finalist)', villain: 'known as a villain' };
-function planRow(p, autoRole, autoRep = 'none') {
+const REP_WORDS = { none: 'nobody has seen them before', known: 'known from TV', threat: 'a big threat', villain: 'known as a villain', celebrity: 'a celebrity' };
+const REP_LABEL = { none: 'Nobody', known: 'Known', threat: 'A big threat', villain: 'A villain', celebrity: 'A celebrity' };
+// Stars as the rest of the site draws them: whole stars, a half, then a name.
+const starsText = n => (n > 0 ? `${'★'.repeat(Math.floor(n))}${n % 1 ? '½' : ''} ${fameTerm(n)}` : '');
+function planRow(p, autoRole, auto = { rep: 'none', stars: null }) {
+  const autoRep = auto?.rep || 'none';
   const s = setupOf(p.name);
   // Plays as someone else: Decide / Yes / No. An older saved pin named a
   // persona in `catfish`; it reads as Yes with that persona.
@@ -130,9 +135,10 @@ function planRow(p, autoRole, autoRep = 'none') {
         <input class="ci-in" data-field="hometown" placeholder="${esc(rf.hometown || 'hometown')}" value="${esc(s.hometown ?? '')}" title="From Create Character unless you type one"></div></label>
       <div class="ci-grp">Fame &amp; company</div>
       <label class="ci-fld ci-wide"><span class="ci-k">Already famous?</span>
-        ${seg('rep', s.rep || '', [['', 'Auto'], ['none', 'Nobody'], ['known', 'Known'], ['threat', 'A big threat'], ['villain', 'A villain']])}
+        ${seg('rep', s.rep || '', [['', 'Auto'], ...Object.entries(REP_LABEL)])}
         <span class="ci-small ci-rep-auto">${s.rep ? 'How the room might already know them. The more famous, the more reason to hide behind a persona.'
-          : autoRep === 'none' ? 'Auto: a first-timer, so nobody has seen them before. The more famous, the more reason to hide behind a persona.' : `Auto: ${REP_WORDS[autoRep]}, from their past seasons. The more famous, the more reason to hide behind a persona.`}</span></label>
+          : autoRep === 'none' ? 'Auto: a first-timer, so nobody has seen them before. The more famous, the more reason to hide behind a persona.'
+            : `Auto: ${REP_WORDS[autoRep]}${auto?.stars > 0 ? ` (${starsText(auto.stars)})` : ''}, from their fame and past seasons. The more famous, the more reason to hide behind a persona.`}</span></label>
       <label class="ci-fld"><span class="ci-k">Shares an apartment with</span>
         <select class="ci-in" data-field="partner"><option value="">nobody</option>${others.map(o =>
           `<option value="${esc(o.name)}"${s.partner === o.name ? ' selected' : ''}>${esc(o.name)}</option>`).join('')}</select></label>
@@ -164,7 +170,7 @@ function overviewHTML(list, roleOf, known) {
       <td>${roleOf(p) === 'starter' ? 'Day 1' : 'Later'}${s.role ? '' : ' <i>auto</i>'}</td>
       <td>${esc(legacy ? 'Yes' : CAT_WORD[s.catfish || ''])}${persona ? ` · as ${esc(persona.handle)}` : ''}</td>
       <td>${esc(s.mode ? s.mode[0].toUpperCase() + s.mode.slice(1) : 'Decide')}</td>
-      <td>${esc(s.rep ? { none: 'Nobody', known: 'Known', threat: 'A big threat', villain: 'A villain' }[s.rep] : `Auto · ${known[p.name] === 'none' ? 'nobody' : known[p.name]}`)}</td>
+      <td>${esc(s.rep ? REP_LABEL[s.rep] : `Auto · ${REP_LABEL[known[p.name]?.rep || 'none']}${known[p.name]?.stars > 0 ? ` · ${starsText(known[p.name].stars)}` : ''}`)}</td>
       <td><span class="ci-badge ${cls}">${esc(word)}</span></td></tr>`;
   }).join('')}</tbody></table>`;
 }

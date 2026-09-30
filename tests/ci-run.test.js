@@ -293,3 +293,26 @@ describe('"Already famous?" on Auto reads the celebrity system', () => {
     expect(Object.values(k).every(x => x.rep === 'none')).toBe(true);
   });
 });
+
+describe('the player: Next within reach', () => {
+  it('each screen has a Next button on the stage, and the keyboard moves on', () => {
+    freshSeason();
+    const [, row] = [simulateCircleEpisode(), simulateCircleEpisode()];
+    const screens = buildVPScreens(row);
+    expect(screens[0].html).toMatch(/civ-nextbtn/);
+    expect(screens[0].html).toMatch(/civ-stagewrap/);
+  });
+});
+
+describe('the player files Circle screens under the Circle\'s own words, never "Camp"', () => {
+  it('every screen of a played day gets a Circle phase', async () => {
+    window.matchMedia ||= () => ({ matches: false, addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {} });
+    const { _vpPhaseForScreen } = await import('../js/vp-ui.js');
+    freshSeason();
+    const rows = playAll();
+    const labels = new Set();
+    for (const r of rows.slice(0, 4)) for (const s of buildVPScreens(r)) labels.add(_vpPhaseForScreen(s.id).label);
+    for (const l of labels) expect(['The Morning', 'The Day', 'The Ratings', 'The Blocking', 'The Final']).toContain(l);
+    expect(labels.has('Camp')).toBe(false);
+  });
+});

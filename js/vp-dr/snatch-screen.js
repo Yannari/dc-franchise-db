@@ -76,7 +76,13 @@ export function rpBuildSnatchScript(row, { extraCss = '' } = {}) {
   const totals = {};
   const dead = new Set();
   const points = [0, 0];
-  const add = (state, card) => steps.push({ state: { ...state, points: [...points], dead: [...dead], tot: { ...totals } }, card });
+  /* THE AVERAGE, NOT THE SUM. The engine scores a queen on the mean of the
+     moments that aired (js/dr/chal/snatch-game.js), and a sum rewarded being
+     asked more often: a queen asked three times out-scored one asked twice
+     whose every answer was better, and then lost the week to her. */
+  const counts = {};
+  const avg = () => Object.fromEntries(Object.keys(totals).map(n => [n, totals[n] / Math.max(1, counts[n] || 0)]));
+  const add = (state, card) => steps.push({ state: { ...state, points: [...points], dead: [...dead], tot: avg() }, card });
   const hostCard = (tag, text, cls = '') => `<div class="sgc host ${cls}">${_judgePortrait('rupaul', { stage: true, size: 42 })}
     <div><span class="sgc-tag">${esc(tag)}</span><p>${esc(text)}</p></div></div>`;
   const queenCard = (name, tag, body, cls = '') => `<div class="sgc ${cls}">${_portrait(name, ep, { size: 48, station: true })}
@@ -92,7 +98,8 @@ export function rpBuildSnatchScript(row, { extraCss = '' } = {}) {
 
   // ── THE PANEL, INTRODUCED ──
   for (const i of data.intros) {
-    totals[i.name] = totals[i.name] || 0;
+    totals[i.name] = i.laugh;
+    counts[i.name] = 1;
     add({ pill: 'Meet the panel', headline: `Introducing ${i.character || i.name}`, on: [i.name], laugh: i.laugh,
       close: close(i.name, i.character || i.name, `${i.name} · introducing herself`, i.text) },
     queenCard(i.name, `${i.character || '???'} · ${i.name}`, `<p>${esc(i.text)}${badge(i.laugh)}</p>`, i.tier));
@@ -111,6 +118,7 @@ export function rpBuildSnatchScript(row, { extraCss = '' } = {}) {
       if (a.tier === 'kill') flags[a.name] = 'kill';
       if (a.tier === 'bomb') flags[a.name] = 'bomb';
       totals[a.name] = (totals[a.name] || 0) + a.laugh;
+      counts[a.name] = (counts[a.name] || 0) + 1;
       const more = extraFor(a.name, s => /^confess:/.test(s.kind) && (a.tier === 'kill' || a.tier === 'bomb'));
       add({ ...base, blank: a.card, type: true, on: [a.name], laugh: a.laugh, flags: { ...flags }, bubble: bubbleOf(a.ru),
         close: close(a.name, a.character || a.name, a.name, a.say, a.card) },
@@ -157,26 +165,29 @@ export function rpBuildSnatchScript(row, { extraCss = '' } = {}) {
       who ? queenCard(who, /^confess:/.test(s.kind) ? `Confessional · ${who}` : 'The taping', `<p>${esc(s.text)}</p>`)
         : `<div class="sgc"><div><p>${esc(s.text)}</p></div></div>`);
   }
-  const ranked = seat.map(s => ({ ...s, t: Math.round((totals[s.name] || 0) * 10) / 10 })).sort((a, b) => b.t - a.t);
+  // The number the panel was handed, exactly: the engine's `perf` for her taping.
+  const perfOf = n => Number(row.dr.performances?.[n]?.perf);
+  const ranked = seat.map(s => ({ ...s, t: Number.isFinite(perfOf(s.name)) ? perfOf(s.name) : (avg()[s.name] || 0) }))
+    .sort((a, b) => b.t - a.t);
   add({ pill: "That's the game", headline: "That's the Snatch Game!", bubble: bubbleOf(data.close), on: ranked.slice(0, 1).map(r => r.name),
     close: ruClose('closes the game', data.close) },
     `${hostCard('RuPaul closes the game', data.close)}
-     <div class="sgc"><div style="width:100%"><span class="sgc-tag">Laughs on the night</span>${ranked.map(r =>
-    `<p style="display:grid;grid-template-columns:minmax(0,1fr) 60px;gap:8px;margin:2px 0"><span>${esc(r.character || '???')} <small style="color:#b8a6c0">${esc(r.name)}</small></span><b style="text-align:right">${r.t.toFixed(1)}</b></p>`).join('')}</div></div>`);
+     <div class="sgc"><div style="width:100%"><span class="sgc-tag">The taping, scored · average laugh per moment on camera</span>${ranked.map(r =>
+    `<p style="display:grid;grid-template-columns:minmax(0,1fr) 60px;gap:8px;margin:2px 0"><span>${esc(r.character || '???')} <small style="color:#b8a6c0">${esc(r.name)}</small></span><b style="text-align:right">${Math.max(0, Math.min(10, r.t)).toFixed(1)}</b></p>`).join('')}
+     <p style="margin-top:6px;color:#b8a6c0;font-size:12px">The judges weigh this together with tonight's runway.</p></div></div>`);
 
   // ── THE STAGE AND THE RAIL ──
   const stage = snatchStage({ ep, seat, contestants, states: steps.map(s => s.state), uid: `sg${ep.num}` });
   wireStage(sfx, stage, ep, _state);
   if (typeof window !== 'undefined') {
     window._drSidebar = window._drSidebar || {};
-    const most = Math.max(1, ...Object.values(totals));
     window._drSidebar[sfx] = steps.map(s => {
       // The laughs as the viewer has heard them so far — nothing ahead of the reveal.
       const st = s.state;
       const order = [...seat].sort((a, b) => (st.tot[b.name] || 0) - (st.tot[a.name] || 0));
-      return `<h4 class="dr-disp">Laughs so far</h4>${order.map(q => `<div class="dr-slot">${_portrait(q.name, ep, { size: 28 })}
+      return `<h4 class="dr-disp">Average laugh so far</h4>${order.map(q => `<div class="dr-slot">${_portrait(q.name, ep, { size: 28 })}
         <div style="flex:1;min-width:0"><div class="dr-nm">${esc(q.name)}</div><div style="font-size:10px;color:#ffd166">${esc(q.character || '')}</div>
-        <div style="height:5px;border-radius:9px;background:rgba(255,255,255,.08);margin-top:3px;overflow:hidden"><i style="display:block;height:100%;width:${Math.round(((st.tot[q.name] || 0) / most) * 100)}%;background:linear-gradient(90deg,#ffb238,#ff3d8b)"></i></div></div>
+        <div style="height:5px;border-radius:9px;background:rgba(255,255,255,.08);margin-top:3px;overflow:hidden"><i style="display:block;height:100%;width:${Math.round(Math.max(0, Math.min(10, st.tot[q.name] || 0)) * 10)}%;background:linear-gradient(90deg,#ffb238,#ff3d8b)"></i></div></div>
         ${(st.dead || []).includes(q.name) ? '<span class="dr-chip dr-c-low">passed over</span>' : ''}</div>`).join('')}`;
     });
   }

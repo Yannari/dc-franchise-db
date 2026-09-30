@@ -77,6 +77,23 @@ describe('the taping reads from them', () => {
     expect(good).toBeGreaterThan(10);
   });
 
+  it('scores her on what AIRED: the intro and every answer she was shown giving', () => {
+    /* She won the week with the lowest laughs on the screen, because the panel
+       averaged six rounds and the screen showed two of them. */
+    for (let s = 1; s <= 8; s++) {
+      const out = perform({ living: order, players, assignment: { order, picks }, prep: {}, rng: rngFor(s * 7919 + 13), bond: () => 0, cfg: {} });
+      const d = out.scenes[0].data;
+      for (const n of order) {
+        const shown = [d.intros.find(i => i.name === n)]
+          .concat(d.rounds.flatMap(r => r.answers.filter(a => a.name === n)));
+        const aired = out.performances[n].detail.aired;
+        expect(aired.length, n).toBe(shown.length);
+        const mean = aired.reduce((t, x) => t + x, 0) / aired.length;
+        expect(out.performances[n].perf).toBeCloseTo(mean, 1);
+      }
+    }
+  });
+
   it('gives a queen who is flat or dying the obvious answer, never a kit joke', () => {
     for (let s = 1; s <= 12; s++) {
       const d = perform({ living: order, players, assignment: { order, picks }, prep: {}, rng: rngFor(s * 7919 + 13), bond: () => 0, cfg: {} })

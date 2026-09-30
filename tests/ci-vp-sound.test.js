@@ -83,12 +83,12 @@ describe('the download list (docs/the-circle-music.md) matches the code', () => 
 });
 
 describe("the user's tracks are in place", () => {
-  it('every installed bed and sting file exists on disk; only the five unsupplied stings are missing', () => {
+  it('every bed and sting file exists on disk', () => {
     const missing = [];
     for (const b of Object.values(CI_BEDS)) for (const f of b.files) if (!existsSync(`assets/audio/circle/${f}`)) missing.push(f);
     expect(missing).toEqual([]);
     const noSting = Object.entries(CI_STINGS).filter(([, s]) => !s.files.every(f => existsSync(f))).map(([k]) => k).sort();
-    expect(noSting).toEqual(['ci-blocked', 'ci-door', 'ci-play', 'ci-reveal', 'ci-whoosh']);
+    expect(noSting).toEqual([]);
   });
   it('a kind with several tracks spreads its screens over them, and a screen keeps its track', () => {
     const games = of('game');

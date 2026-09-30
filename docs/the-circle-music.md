@@ -103,14 +103,18 @@ take turns.
 | 6 | `crown.mp3` | crown | the Influencers are crowned |
 | 7 | `gasp.mp3` | gasp | a face they know, a catfish accusation |
 | 8 | `winner.mp3` | sfxwinner (first 12 s, its 16 s of silence cut) | the winner is named |
-| 9 | `blocked.mp3` | **not supplied yet** | BLOCKED appears: deep impact plus a digital glitch ("impact boom glitch", "cinematic hit dark") |
-| 10 | `reveal.mp3` | **not supplied yet** | a place on the board revealed: a drum hit ("reveal hit", "drum hit single") |
-| 11 | `door.mp3` | **not supplied yet** | the knock and the door at a visit ("door knock", "door open") |
-| 12 | `play.mp3` | **not supplied yet** | play pressed on the goodbye video ("video play button", "tape start blip") |
-| 13 | `whoosh.mp3` | **not supplied yet** | a player walks in at the arrivals ("fashion whoosh", "transition swish") |
+| 9 | `blocked.mp3` | made for the show | BLOCKED appears: a suck-in, a deep saturated boom, a crack and a three-step digital glitch |
+| 10 | `reveal.mp3` | made for the show | a place on the board revealed: a low drum hit with a click on top |
+| 11 | `door.mp3` | made for the show | three knocks, the latch, the door swinging open |
+| 12 | `play.mp3` | made for the show | play pressed on the goodbye video: a two-note blip and a tape spinning up |
+| 13 | `whoosh.mp3` | made for the show | a player walks in: a swish that travels left to right |
 
-The five still missing play a built-in synth sound for now. To add one, drop
-a file with that name into the folder, or give it to Claude to level first.
+The last five were made for the show rather than downloaded. They were
+rendered by `tools/circle-make-stings.py` (layered synthesis with a small
+room reverb, levelled like the rest) and checked by measurement. BLOCKED keeps
+a quarter of its energy between 100 and 250 Hz so a laptop speaker can play
+it, not only the sub boom. To replace any of them, drop your own file in
+under the same name.
 
 Two different files are called `winner.mp3`: the music bed is
 `circle/winner.mp3`, the fanfare stinger is `circle/sfx/winner.mp3`.

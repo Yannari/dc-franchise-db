@@ -97,8 +97,9 @@ function hiss(ctx, dest, now, { dur, peak = 0.2, cutoff = 1200, type = 'lowpass'
   src.connect(f); f.connect(g); g.connect(dest); src.start(t); src.stop(t + dur + 0.03);
 }
 // The user's stings (trimmed, levelled to -14 dB, 160 kbps); several files
-// take turns. Blocked, reveal, door, play and whoosh have no file yet: the
-// synth plays until one is dropped in under that name.
+// take turns. Blocked, reveal, door, play and whoosh were rendered for the
+// show (tools/circle-make-stings.py). The synth below each is the fallback
+// for a file that fails to load.
 const sfx = (...names) => names.map(n => `${dir}sfx/${n}.mp3`);
 export const CI_STINGS = {
   'ci-alert':   { files: sfx('alert-1', 'alert-2'),   what: 'ALERT! lands: a bright electronic sting', synth: (c, d, n) => { tone(c, d, n, { type: 'sawtooth', f0: 220, f1: 880, dur: 0.35, peak: 0.16 }); [880, 1320].forEach((f, i) => tone(c, d, n, { type: 'square', f0: f, dur: 0.18, peak: 0.1, at: 0.32 + i * 0.12 })); } },

@@ -476,6 +476,16 @@ uses it as a rule.
 Nobody says the same sentence twice in a season (`pickEntry` remembers the
 speaker), so a register's handful of lines never becomes a tic.
 
+**Keeping a persona up** (`js/ci/cover.js`, Task 15). A persona has a style
+(its register from job and age, or an authored `persona.chatVoice`). The
+strain of holding it is style distance + age (playing younger costs more)
++ smarts (faking expertise costs more than dumbing down), eased by social,
+mental, intuition and `setup.prep`, and wearing on over the season. Gender
+is not an axis. A catfish types in the persona's voice until a voice slip
+cracks it; that scene shows their own register, and the crack's words
+follow its direction (stiff, sloppy, loud, flat, dated, young). A reader
+near the persona's age hears a fake voice sooner.
+
 ### 4.6 The face catalogue
 
 `js/ci/faces.js` tags every face in `assets/guests/` by **what it shows**, not

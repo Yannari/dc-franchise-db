@@ -1,5 +1,5 @@
 {
-  "note": "Drag Race moments on the user's own royalty-free soundtrack (the Perfect Match set in ../mine, chosen there by measurement). Same shape as that manifest; files are relative to this folder. A moment missing here is silent until a track is uploaded for it (the Upload music button, named after the moment). `verdict` is the show's elimination music, under both the shantay and the sashay: the user's own copy, kept in private/ (git-ignored), so a copy without it falls back to shantay/sashay.",
+  "note": "Drag Race moments on the user's own royalty-free soundtrack (the Perfect Match set in ../mine, chosen there by measurement). Same shape as that manifest; files are relative to this folder. A moment missing here is silent until a track is uploaded for it (the Upload music button, named after the moment). `verdict` is the show's elimination music, under both the shantay and the sashay: the user's own copy, kept in private/ (git-ignored), so a copy without it falls back to shantay/sashay. The show's own cues, the user's copies from Downloads/RPDR soundtrack (2026-09-30), each named for its moment: critiques = Top & Bottom (Dredmill), decision = I've Made My Decision (The Last Sun, short cut), up-for-elimination = Up For Elimination (Strobophobia), bottom-two = Bottom Two (Ephemeral Faze), time-has-come = The Time Has Come (Earthrise), closing = If You Can't Love Yourself (Bad Like Yaz). Loop points from each file's measured energy curve, inside its fades. Each cue is fitted to its moment (music.js): `at` skips an intro, `hit` is the second that lands on the card it scores (the verdict's big section on shantay/sashay), `outro` is the ending kept when the moment is shorter than the cue (the head plays, then a crossfade into the outro).",
   "entrances": [
     {
       "file": "../mine/starters/arrival-onlystarters.mp3",
@@ -168,7 +168,80 @@
       ],
       "loopFrom": 10,
       "loopTo": 186,
+      "hit": 9.75,
       "private": true
+    }
+  ],
+  "critiques": [
+    {
+      "file": "private/top-and-bottom.mp3",
+      "at": [
+        20
+      ],
+      "loopFrom": 26,
+      "loopTo": 112,
+      "private": true
+    }
+  ],
+  "decision": [
+    {
+      "file": "private/decision.mp3",
+      "at": [
+        0
+      ],
+      "loopFrom": 1,
+      "loopTo": 27.5,
+      "private": true
+    }
+  ],
+  "up-for-elimination": [
+    {
+      "file": "private/up-for-elimination.mp3",
+      "at": [
+        2.5
+      ],
+      "outro": [
+        28.5,
+        35.6
+      ],
+      "private": true,
+      "head": 5
+    }
+  ],
+  "bottom-two": [
+    {
+      "file": "private/bottom-two.mp3",
+      "at": [
+        14
+      ],
+      "loopFrom": 16,
+      "loopTo": 184,
+      "private": true
+    }
+  ],
+  "time-has-come": [
+    {
+      "file": "private/time-has-come.mp3",
+      "at": [
+        0
+      ],
+      "loopFrom": 8,
+      "loopTo": 112,
+      "private": true
+    }
+  ],
+  "closing": [
+    {
+      "file": "private/love-yourself.mp3",
+      "at": [
+        4.7
+      ],
+      "outro": [
+        27,
+        31.5
+      ],
+      "private": true,
+      "head": 3
     }
   ]
 }

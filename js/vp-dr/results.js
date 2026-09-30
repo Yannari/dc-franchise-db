@@ -29,6 +29,19 @@ import { showWords } from '../shows.js';
 import { tagStep, lipsyncMusicOf, songAttr, songLoaderHtml } from './music.js';
 import { tagSfx, lipsyncSfxOf } from './sfx.js';
 
+/* The music under one line of the call, from the show's own cues: the host's
+   "I've made my decisions" under the call, the winner's fanfare, the sting for
+   a queen up for elimination, and the bed under the two who will lip sync.
+   (Without those files each falls back to the suspense track; music.js.) */
+function callMusicOf(s) {
+  if (s.t === 'confess') return null;
+  if (s.t === 'hold') return 'decision';
+  if (s.t === 'stakes') return 'bottom-two';
+  if (s.raw === 'WIN') return 'winner';
+  if (s.raw === 'BTM2' || s.raw === 'ELIM') return 'up-for-elimination';
+  return 'decision';
+}
+
 /* The room's reaction to one line of the call: the win is a fanfare and the
    crowd, a high placement applause, the bottom two the drop; the pause before
    the last names is the heartbeat. */
@@ -603,7 +616,7 @@ export function rpBuildResults(row) {
         ${moved ? '<span class="dr-moved dr-disp">the host moved her</span>' : '<span></span>'}
         <span class="dr-stamp dr-disp" style="color:${meta.color || '#fff'}">${esc(meta.label || s.r)}</span>
       </div></div>`;
-  })(), s.t === 'confess' ? null : s.raw === 'WIN' ? 'winner' : 'suspense'), callSfxOf(s))).join('');
+  })(), callMusicOf(s)), callSfxOf(s))).join('');
 
   /* ── THE STAGE ── js/vp-dr/call-stage.js. The line stands in the order the
      panel ranked them, which the critiques already showed; the call order

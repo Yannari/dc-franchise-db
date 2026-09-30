@@ -120,6 +120,9 @@ export const DRAG_SITUATIONS = [
   'mini', 'announce', 'prep', 'challenge', 'mainstage', 'runway', 'critiques', 'suspense',
   'winner', 'lipsync', 'verdict', 'shantay', 'sashay', 'save', 'reunion',
   'finale', 'showcase', 'crowning', 'crowned',
+  // The show's own cues (the user's copies, assets/audio/drag/private), each
+  // named for the moment it scores:
+  'decision', 'up-for-elimination', 'bottom-two', 'time-has-come', 'closing',
 ];
 
 // ── PLAYBACK ──────────────────────────────────────────────────────────
@@ -183,6 +186,18 @@ async function decode(c, key, getBytes) {
 }
 const urlBytes = url => async () => { const r = await fetch(url); return r.ok ? r.arrayBuffer() : null; };
 
+/* WHERE A MOMENT GOES WHEN ITS TRACK IS NOT HERE. The show's own cues are
+   private files, so a copy without them (the published site, another
+   checkout) plays the general moment instead. `time-has-come` falls back to
+   silence: the song starts on the first move, as it did before. */
+const FALLBACK = {
+  decision: 'suspense', 'up-for-elimination': 'suspense', 'bottom-two': 'suspense',
+  verdict: null, closing: 'sashay', 'time-has-come': null,
+};
+/* Where each bed was when it was interrupted, so "I've made my decision"
+   picks up after the winner's fanfare instead of starting over. */
+const resume = {};
+
 /** The situation's next track, in turn; `chal-<id>` falls back to `challenge`. */
 async function trackFor(sit) {
   const m = await loadManifest();
@@ -207,7 +222,14 @@ function fadeOut(node, t) {
 }
 function stop(cut = false) {
   const b = bed; bed = null;
-  if (b && !b.pending) fadeOut(b, cut ? 0.08 : 1.2);
+  if (b && !b.pending) {
+    if (b.t0 != null && b.src?.context) {
+      let pos = b.off0 + (b.src.context.currentTime - b.t0);
+      if (b.loop && pos > b.loop[1]) pos = b.loop[0] + ((pos - b.loop[0]) % (b.loop[1] - b.loop[0]));
+      resume[b.key] = { pos, at: b.src.context.currentTime };
+    }
+    fadeOut(b, cut ? 0.08 : 1.2);
+  }
 }
 
 /* ── THE RUNWAY THEME ─────────────────────────────────────────────────
@@ -253,8 +275,47 @@ function crossLoop(c, out, buf, from, to) {
   return { context: c, stop(when) { dead = true; clearTimeout(timer); for (const s of live) { try { s.stop(when); } catch { /* done */ } } } };
 }
 
+/**
+ * A CUE CUT TO THE MOMENT, the way an editor cuts one: its opening from
+ * `from`, then a crossfade into its ending (`outro`), so a moment shorter
+ * than the cue still hears the hit AND the button, and loses the middle.
+ * Passes for a source node where the bed stops one (`context`, `stop`).
+ */
+function editPlay(c, out, buf, from, headLen, outro) {
+  const X = 0.3; const now = c.currentTime + 0.02; const live = [];
+  const seg = (at, off, len, fadeIn) => {
+    const s = c.createBufferSource(); s.buffer = buf; const g = c.createGain();
+    g.gain.setValueAtTime(fadeIn ? 0.0001 : 1, at);
+    if (fadeIn) g.gain.exponentialRampToValueAtTime(1, at + X);
+    g.gain.setValueAtTime(1, at + len);
+    g.gain.exponentialRampToValueAtTime(0.0001, at + len + X);
+    s.connect(g); g.connect(out); s.start(at, off, len + X + 0.02); live.push(s);
+  };
+  seg(now, from, headLen, false);
+  seg(now + headLen, outro[0], outro[1] - outro[0], true);
+  return { context: c, stop(when) { for (const s of live) { try { s.stop(when); } catch { /* done */ } } } };
+}
+
+/* HOW LONG A MOMENT LASTS ON SCREEN, from its cards: a beat to take the
+   card in, then the words at a reading pace (~190 a minute). The music is
+   fitted to this; a reader who lingers hears the loop, one who races hears
+   the cue cut short, which is what a fade is for. */
+const readTime = el => {
+  const words = String(el?.textContent || '').trim().split(/\s+/).filter(Boolean).length;
+  return Math.min(12, 1.5 + words / 3.2);
+};
+/** Seconds from card `idx` until the card where `ends(el)` first holds (or the screen ends). */
+function secondsUntil(suffix, idx, ends) {
+  let t = 0;
+  for (let i = idx; ; i++) {
+    const e = document.getElementById(`dr-step-${suffix}-${i}`);
+    if (!e || (i > idx && ends(e))) return t;
+    t += readTime(e);
+  }
+}
+
 /** Start `key` (a situation, or `song:<title>`) unless it is already playing. */
-async function start(key, sit, song, suffix = null, fallback = null) {
+async function start(key, sit, song, suffix = null, fallback = null, fit = {}) {
   if (bed?.key === key) { bed.suffix = suffix; return; }
   stop();
   const out = engine.output?.();
@@ -272,6 +333,7 @@ async function start(key, sit, song, suffix = null, fallback = null) {
     if (pick) buf = await decode(c, pick.url, urlBytes(pick.url));
     /* The verdict track is a private file (assets/audio/drag/private, never
        published): on a copy without it, forget it and play the moment's own. */
+    fallback = fallback || FALLBACK[sit] || null;
     if (!buf && fallback) {
       if (manifest) delete manifest[sit];
       pick = await trackFor(fallback);
@@ -301,10 +363,24 @@ async function start(key, sit, song, suffix = null, fallback = null) {
     let src;
     if (pick.runway) src = crossLoop(c, g, buf, pick.loopFrom, pick.loopTo);
     else {
-      src = c.createBufferSource(); src.buffer = buf;
-      if (!song && pick.loopTo) { src.loop = true; src.loopStart = pick.loopFrom || 0; src.loopEnd = Math.min(pick.loopTo, buf.duration); }
-      src.connect(g);
-      src.start(now, Math.min(pick.start || 0, Math.max(0, buf.duration - 1)));
+      // Back within a minute and a half: carry on from where it stopped.
+      const r = !song && resume[key] && c.currentTime - resume[key].at < 90 ? resume[key].pos : null;
+      /* THE HIT LANDS ON ITS CARD: a cue with a `hit` starts early enough that
+         its biggest moment arrives as the card it scores is revealed. */
+      const fromHit = !song && r == null && pick.hit != null && fit.toHit != null
+        ? Math.max(0, pick.hit - fit.toHit) : null;
+      const off0 = Math.min(r ?? fromHit ?? pick.start ?? 0, Math.max(0, buf.duration - 1));
+      const whole = pick.outro ? pick.outro[1] - off0 : 0;
+      if (!song && r == null && pick.outro && fit.dur != null && fit.dur < whole) {
+        const tail = pick.outro[1] - pick.outro[0];
+        src = editPlay(c, g, buf, off0, Math.max(pick.head || 1.5, fit.dur - tail), pick.outro);   // `head`: never cut before the cue's own hit
+      } else {
+        src = c.createBufferSource(); src.buffer = buf;
+        if (!song && pick.loopTo) { src.loop = true; src.loopStart = pick.loopFrom || 0; src.loopEnd = Math.min(pick.loopTo, buf.duration); }
+        src.connect(g);
+        src.start(now, off0);
+        if (!song) { mine.t0 = now; mine.off0 = off0; mine.loop = src.loop ? [src.loopStart, src.loopEnd] : null; }
+      }
     }
     mine.src = src; mine.g = g; mine.pending = false;
   } catch { if (bed === mine) bed = null; }
@@ -328,6 +404,10 @@ export const tagStep = (html, sit, song = null) => (sit || song
 /** The lip sync screen's moments, by scene kind. The performance itself is the song (untagged). */
 export function lipsyncMusicOf(kind, data = null) {
   const k = String(kind || '');
+  /* "The time has come…" has its own cue; the song starts on the first move,
+     so every performance card says so (an untagged card keeps the moment). */
+  if (/lipsync-intro$/.test(k)) return 'time-has-come';
+  if (/lipsync-(beat|hook|stunt)$/.test(k)) return 'lipsync';
   /* A DOUBLE IS ANNOUNCED IN ONE CARD: the call itself says both stay (or
      both go), with no shantay or sashay card after it. Filed as suspense, a
      double shantay played the wait and never the verdict. */
@@ -355,8 +435,15 @@ export function dragMusicStep(suffix, idx) {
   // On a screen with no default (the werk room, Untucked) an ordinary scene
   // is silence: the fight's music ends when the fight does.
   // A card with its OWN song (the next duel of a bracket) always gets to change it.
+  /* THE EPISODE'S LAST CARD is the host's sign-off: "if you can't love
+     yourself…" and its own cue. Checked before the keep rule below, which
+     would otherwise hold the goodbye's music over it (it did). */
+  if (suffix === 'exit' && !document.getElementById(`dr-step-exit-${idx + 1}`)) {
+    start('closing', 'closing', null, suffix, null, { dur: readTime(el) });
+    return;
+  }
   if (!el.dataset?.music && !el.dataset?.song && SCREEN[suffix] && bed && bed.suffix === suffix) return;
-  const sit = situationOf(suffix, el);
+  let sit = situationOf(suffix, el);
   if (!sit) { stop(); return; }
   // The verdict is said in silence after the song: the song cuts, then the
   // shantay or the sashay starts its own track.
@@ -366,8 +453,15 @@ export function dragMusicStep(suffix, idx) {
   /* ONE PIECE OF MUSIC UNDER THE WHOLE VERDICT. On the show the elimination
      music starts when the host speaks and runs straight through "shantay" and
      "sashay" — the same key for both, so it never restarts between them. */
-  if ((sit === 'shantay' || sit === 'sashay') && manifest?.verdict?.length) {
-    start('verdict', 'verdict', null, suffix, sit);
+  // The pause before the verdict is where the host says "I've made my
+  // decision", and the verdict music starts there.
+  const waiting = sit === 'suspense' && (suffix === 'lipsync' || suffix === 'legacy');
+  // Only on the stage: her goodbye (the exit screen) has its own music.
+  const onStage = /^(lipsync|legacy|smackdown|fincrownls)$/.test(suffix);
+  if (onStage && (sit === 'shantay' || sit === 'sashay' || waiting) && manifest?.verdict?.length) {
+    // Its big section lands on "shantay" / "sashay away", however long the pause.
+    const toHit = secondsUntil(suffix, idx, e => /^(shantay|sashay)$/.test(e.dataset?.music || ''));
+    start('verdict', 'verdict', null, suffix, sit, { toHit: waiting ? toHit : 0 });
     return;
   }
   if (sit === 'lipsync') {
@@ -375,7 +469,10 @@ export function dragMusicStep(suffix, idx) {
     start(song ? `song:${song}` : 'lipsync', 'lipsync', song, suffix);
     return;
   }
-  start(sit, sit, null, suffix);
+  // The moment runs until a card asks for different music.
+  const dur = sit === 'closing' ? readTime(el)
+    : secondsUntil(suffix, idx, e => !!e.dataset?.music && e.dataset.music !== sit);
+  start(sit, sit, null, suffix, null, { dur });
 }
 
 if (typeof document !== 'undefined' && !globalThis.__drMusic) {

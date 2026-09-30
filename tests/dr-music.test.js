@@ -51,8 +51,10 @@ describe('every screen knows what it is', () => {
     expect(html).toContain('data-music="winner"');
     expect(html).toContain('data-song="Toxic"');
     // The verdict is one moment under one cue; her goodbye after it is the Last Sun's.
-    expect(lipsyncMusicOf('stage:lipsync-shantay')).toBe('the-verdict');
-    expect(lipsyncMusicOf('stage:lipsync-sashay')).toBe('the-verdict');
+    // The pause is the verdict's; from "shantay" on, the decision is made: the goodbye's music.
+    expect(lipsyncMusicOf('stage:lipsync-suspense')).toBe('the-verdict');
+    expect(lipsyncMusicOf('stage:lipsync-shantay')).toBe('sashay');
+    expect(lipsyncMusicOf('stage:lipsync-sashay')).toBe('sashay');
     expect(lipsyncMusicOf('stage:sashay-words')).toBe('sashay');
     // The speech: the tension bed, then "The Time Has Come".
     expect(lipsyncMusicOf('stage:lipsync-speech', { part: 'stakes' })).toBe('bottom-two');

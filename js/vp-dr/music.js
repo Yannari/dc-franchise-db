@@ -500,7 +500,13 @@ export function lipsyncMusicOf(kind, data = null) {
      is still one card, and still the verdict. */
   // A double shantay is a celebration, not a verdict: its own song (the user).
   if (/lipsync-call$/.test(k) && data?.tier === 'double-shantay') return 'double-shantay';
-  if (/lipsync-(suspense|call|legacy-choice|shantay|sashay)$/.test(k)) return 'the-verdict';
+  /* THE DECISION IS MADE AT "SHANTAY". The pause holds The Time Has Come;
+     the moment the host names the queen who stays, the goodbye's music (The
+     Last Sun) starts and runs through "sashay away" and her exit (the user:
+     "we should already use the sashay music, the decision has been made"). */
+  if (/lipsync-(shantay|sashay)$/.test(k)) return 'sashay';
+  if (/lipsync-call$/.test(k) && data?.tier === 'double-sashay') return 'sashay';
+  if (/lipsync-(suspense|call|legacy-choice)$/.test(k)) return 'the-verdict';
   if (/lipsync-win-(name|reaction|runnerup)$|revenge-back/.test(k)) return 'the-verdict';
   if (/(sashay-words|sashay-mood)$/.test(k)) return 'sashay';
   return null;

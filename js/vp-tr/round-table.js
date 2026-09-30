@@ -507,7 +507,7 @@ function _filters() {
 // The 46px offset on every absolutely-positioned layer is the real VP's
 // `.rp-nav` bar, which the standalone mockups do not have.
 const RT_CSS = `
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,400;9..144,600;9..144,700;9..144,900&family=IM+Fell+English:ital@0;1&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,400;9..144,600;9..144,700;9..144,900&family=IM+Fell+English:ital@0;1&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Crimson+Pro:ital,wght@0,400;0,500;0,600;1,400&display=swap');
 
 .rt-root{
   --rt-night:#040705;
@@ -1416,6 +1416,42 @@ const RT_CSS = `
   .rt-tally-bar i{opacity:1;transform:none;filter:none}
   .rt-seat{opacity:1;filter:none;transform:scale(var(--s,1))}
 }
+/* ══ READABILITY PASS (2026-09-29) ══════════════════════════════════════
+   The user found the Round Table hard going. Sixteen full-width slates, one
+   under another, each saying one name and repeating the running count, was
+   four thousand pixels of scroll for sixteen facts. The slates are now a
+   grid of chalkboards read in place, each with the voter's reason under it;
+   the count lives on the pinned board, and on the count card after. Text in
+   a book face, speech the brightest thing with the name over it. */
+.rt-root{--rt-text:'Crimson Pro',Georgia,'Times New Roman',serif}
+.rt-card p{font-family:var(--rt-text);font-size:18px;line-height:1.55}
+.rt-said{grid-template-columns:auto 1fr;gap:12px}
+.rt-said > div{display:flex;flex-direction:column-reverse}
+.rt-said-txt{font-family:var(--rt-text);font-style:normal;font-weight:500;font-size:20px;line-height:1.42;color:#fbf6ea}
+.rt-said cite{margin:0 0 2px;font-size:12px;letter-spacing:.08em;color:#e6c27a}
+.rt-host-line{font-family:var(--rt-text);font-size:20px}
+/* the slates: a grid, read in place */
+.rt-beat[data-phase="read"]:not(.rt-vis),.rt-beat[data-phase="revote"]:not(.rt-vis){display:none}
+.rt-beat[data-phase="read"].rt-vis:not(:has(.rt-host)),
+.rt-beat[data-phase="revote"].rt-vis:not(:has(.rt-host)):has(.rt-slate){display:inline-block;vertical-align:top;width:calc(25% - 12px);margin:0 6px 14px}
+.rt-beat[data-phase="read"]:has(.rt-host) .rt-slate{max-width:calc(25% - 12px);margin:14px 6px 0}
+.rt-beat[data-phase="read"]:has(.rt-host) .rt-reason,.rt-beat[data-phase="read"]:has(.rt-host) .rt-note{max-width:calc(25% - 12px);margin-left:6px}
+.rt-beat[data-phase="read"]:has(.rt-host){margin-bottom:14px}
+.rt-beat .rt-slate{padding:7px}
+.rt-beat .rt-slate-face{padding:12px 8px 9px}
+.rt-beat .rt-slate-name{font-size:clamp(22px,2.2vw,30px)}
+.rt-beat .rt-slate-ord{position:static;display:block;text-align:left;font-size:9.5px;margin:-4px 0 2px}
+.rt-beat .rt-slate-by{margin-top:6px;padding-top:6px;font-size:9px;letter-spacing:.14em}
+.rt-beat[data-phase="read"] .rt-slate-run,.rt-beat[data-phase="revote"] .rt-slate-run{display:none}
+.rt-tally-row{padding-top:7px;padding-bottom:7px}
+.rt-reason{margin:7px 2px 0;font-family:var(--rt-text);font-size:14.5px;line-height:1.38;color:rgba(236,230,214,.9)}
+.rt-beat[data-phase="read"] .rt-note,.rt-beat[data-phase="revote"] .rt-note{margin:5px 2px 0;font-size:13px;line-height:1.35}
+@media (max-width:760px){
+  .rt-beat[data-phase="read"].rt-vis:not(:has(.rt-host)),
+  .rt-beat[data-phase="revote"].rt-vis:not(:has(.rt-host)):has(.rt-slate){width:calc(50% - 12px)}
+  .rt-beat[data-phase="read"]:has(.rt-host) .rt-slate,.rt-beat[data-phase="read"]:has(.rt-host) .rt-reason{max-width:calc(50% - 12px)}
+}
+
 ` + PORTRAIT_CSS;
 
 // ══════════════════════════════════════════════════════════════════════
@@ -2854,11 +2890,16 @@ function _buildBeats(v) {
       seenPair.set(b.voter, b.target);
       leadersBefore = leadersNow;
       const strip = _runStrip(run, leadersNow, b.target);
+      // AND WHY. The format has every player show the name and say why; the
+      // reason is theirs (see `_slateReason`: only what the record says this
+      // voter holds against this name, or which kind of nothing they have).
+      const reason = _slateReason(v, b, key + '|' + roundIx + '|' + i);
       const html = _slate(b, (i + 1) + ' / ' + ballots.length, strip)
+        + (reason ? '<div class="rt-reason">&ldquo;' + _esc(reason) + '&rdquo;</div>' : '')
         + (note ? '<div class="rt-note"' + (tone ? ' data-tone="' + tone + '"' : '')
           + '>' + note + '</div>' : '');
       push(phase, html, (i === 0 && roundIx === 0) ? 'read' : null,
-        { kind: 'read', round: roundIx, ballot: b, tally: { ...run } });
+        { kind: 'read', round: roundIx, ballot: b, tally: { ...run }, reason });
     });
   };
 
@@ -3738,26 +3779,36 @@ const SLATE_CITED = [
   'It’s {T}. {Who} {src}.',
   '{T}. Because {who} {src}.',
   'I wrote {T}, and I’ll tell you why. {Who} {src}.',
+  '{T}. {Who} {src}. That’s enough for me.',
 ];
 const SLATE_NOSRC = {
   hearsay: [
     '{T}. I heard it from {F}, and I believe it.',
     '{F} put {T}’s name in my head, and I can’t get it out.',
     'I’ll be honest, it started with {F}. It’s {T}.',
+    '{T}. {F} made the case, and I agree.',
   ],
   public: [
     '{T}. It’s nothing secret. I was sitting right here when it happened.',
     'It’s {T}. I’m not telling anybody anything new.',
+    '{T}. You all heard the same things I did.',
+    'I’ve gone with {T}, for what happened in front of all of us.',
   ],
   'gone-cold': [
     '{T}. I said it days ago, and nothing since has changed my mind.',
     'I haven’t moved. It was {T} then and it’s {T} now.',
+    '{T}, still. I’m not changing my vote.',
+    'Same name as before. {T}.',
   ],
   feeling: [
     '{T}. I can’t tell you why. It’s a feeling, and I’m going with it.',
     'I don’t have proof. I have {T}, and a bad feeling.',
     'It’s a gut thing. {T}.',
     '{T}. Something about {obj} doesn’t sit right with me.',
+    '{T}. I’ve watched {obj} all day, and I don’t trust {obj}.',
+    'I’ve gone with my instinct. {T}.',
+    '{T}. Call it a hunch.',
+    'I couldn’t pick anyone else. {T}.',
   ],
 };
 function _slateReason(v, b, key) {
@@ -3772,11 +3823,11 @@ function _slateReason(v, b, key) {
   const subs = { T: b.target, Who, who, obj: pr.obj,
     src: src ? _pred(b.target, _sayReason(src.text, key + '|sl|' + b.voter)) : '',
     F: sp && sp.hearsayFrom ? sp.hearsayFrom : '' };
-  if (src) return _fill(_pick(SLATE_CITED, key + '|slc|' + b.voter), subs);
+  if (src) return _fill(_fresh(SLATE_CITED, key + '|slc|' + b.voter), subs);
   let rk = (sp && sp.reasonKind) || 'feeling';
   if (rk === 'hearsay' && !subs.F) rk = 'feeling';
   const pool = SLATE_NOSRC[rk] || SLATE_NOSRC.feeling;
-  return _fill(_pick(pool, key + '|sln|' + rk + '|' + b.voter), subs);
+  return _fill(_fresh(pool, key + '|sln|' + rk + '|' + b.voter), subs);
 }
 
 /**
@@ -3800,7 +3851,7 @@ export function roundTableStageData(ep, observer = 'audience') {
     banish: _esc(_verbs().banish), Banish: _esc(_cap(_verbs().banish)) })) : '');
   const out = beats.map((b, i) => {
     const meta = b.meta ? { ...b.meta } : {};
-    if (meta.kind === 'read' && meta.ballot) meta.reason = _slateReason(v, meta.ballot, key + '|' + (meta.round || 0) + '|' + i);
+    if (meta.kind === 'read' && meta.ballot && !meta.reason) meta.reason = _slateReason(v, meta.ballot, key + '|' + (meta.round || 0) + '|' + i);
     return { phase: b.phase, meta, html: hostHtml(b) + b.html };
   });
   const h = _host();

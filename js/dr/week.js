@@ -162,6 +162,13 @@ export const LIPSYNC_RECORD = { slope: 10, cap: 5, dead: 0.5 };
 
 export function runDragWeek(state, cfg, ctx) {
   const { rng, players, bond = () => 0, popDelta = () => {} } = ctx;
+  /* Her season so far as points per episode (WIN 5 .. BTM2 1), for the
+     lip sync's form term (lipsync.js FORM_WEIGHT). Null before her first. */
+  const FORM_PPE = { WIN: 5, HIGH: 4, SAFE: 3, LOW: 2, BTM: 1, BTM2: 1 };
+  const formOf = n => {
+    const rec = (state.record?.[n] || []).filter(r => r in FORM_PPE);
+    return rec.length ? rec.reduce((t, r) => t + FORM_PPE[r], 0) / rec.length : null;
+  };
   const maxi = maxiById(cfg.maxiId);
   if (!maxi) throw new Error(`drag-race: unknown maxi challenge "${cfg.maxiId}"`);
   // Which night this is, for the lines that need a season behind them.
@@ -1813,7 +1820,7 @@ export function runDragWeek(state, cfg, ctx) {
     const scored = singers.map(n => ({
       n,
       r: lipsyncScore({
-        player: P(n), song, lipsyncRecord: state.lipsyncRecord[n], lastReaction: reactions[n], rng,
+        player: P(n), song, lipsyncRecord: state.lipsyncRecord[n], lastReaction: reactions[n], rng, form: formOf(n),
       }),
     })).sort((x, y) => y.r.score - x.r.score);
 
@@ -1863,10 +1870,10 @@ export function runDragWeek(state, cfg, ctx) {
   } else if (singers.length === 2) {
     const [a, b] = singers;
     const sa = lipsyncScore({
-      player: P(a), song, lipsyncRecord: state.lipsyncRecord[a], lastReaction: reactions[a], rng,
+      player: P(a), song, lipsyncRecord: state.lipsyncRecord[a], lastReaction: reactions[a], rng, form: formOf(a),
     });
     const sb = lipsyncScore({
-      player: P(b), song, lipsyncRecord: state.lipsyncRecord[b], lastReaction: reactions[b], rng,
+      player: P(b), song, lipsyncRecord: state.lipsyncRecord[b], lastReaction: reactions[b], rng, form: formOf(b),
     });
     // The host's lean, at half weight, as the spec requires — PLUS
     // track-record protection scaled by PPE. A queen with 1 WIN and
@@ -1925,9 +1932,16 @@ export function runDragWeek(state, cfg, ctx) {
     const recordLen = Math.min(...[a, b].map(q => (state.record[q] || []).filter(r => r in _ppeW).length));
     const BLOWOUT = recordLen <= 1 ? 2.5 : 4;
     const blownOut = Math.abs(sa.score - sb.score) >= BLOWOUT;
+    /* THE RECORD SPEAKS IN PROPORTION TO HOW CLOSE THE SONG WAS. It was all
+       or nothing: under the blowout line a one-point PPE gap (safe + BTM2
+       against safe + safe) carried the full five points, and a queen who won
+       the song 6.6 to 3.3 went home for it. On the show the record saves a
+       queen in a close lip sync; the wider the stage gap, the less it can
+       say, fading to nothing at the blowout line. */
+    const taper = Math.max(0, 1 - (Math.abs(sa.score - sb.score) / BLOWOUT) ** 2);
     const bendOf = (n, other) => {
       const hostLean = (bend.find(x => x.name === n)?.bend || 0) * 0.5;
-      return hostLean + (blownOut ? 0 : recordEdge(n, other));
+      return hostLean + (blownOut ? 0 : recordEdge(n, other) * taper);
     };
     // A NO-ELIMINATION WEEK still runs the lip sync — a split premiere ends
     // with two queens performing for their lives and both staying, which is
@@ -1964,6 +1978,21 @@ export function runDragWeek(state, cfg, ctx) {
       && sa.score >= GREAT && sb.score >= GREAT
       && Math.abs(sa.score - sb.score) < CLOSE);
 
+    /* A DOUBLE SHANTAY IS A SPECIAL CASE, AND IT GETS RARER THE EARLIER IT IS.
+       Two excellent, clean, near-equal lip syncs make one possible; whether
+       the host gives it is a chance that grows with the season — about one in
+       five in the first weeks, nine in ten near the finale — because a host
+       who saves both queens in week two has a long season left to fill (the
+       user: "less likely too soon, proportional, still a special case"). The
+       dice roll only on a night that could be a double, so an ordinary night
+       draws exactly what it drew before. */
+    const couldDouble = !!cfg.allowDoubleShantay
+      && sa.stunt !== 'failed' && sb.stunt !== 'failed'
+      && sa.score >= GREAT && sb.score >= GREAT && Math.abs(sa.score - sb.score) < CLOSE;
+    const castN = (state.castOrder || []).length || living.length;
+    const finN = cfg.finaleSize || 4;
+    const progress = castN > finN ? Math.max(0, Math.min(1, 1 - (living.length - finN) / (castN - finN))) : 1;
+    const doubleShantayAllowed = couldDouble && rng() < 0.2 + 0.7 * progress;
     const lc = (cfg.noElimination || legacy)
       /* ITS OWN CALL, NOT 'shantay'. The stage picks its prose by this value,
          and `shantay` is the tier that says one queen stays and one goes — so
@@ -1986,7 +2015,7 @@ export function runDragWeek(state, cfg, ctx) {
       : lipsyncCall({
         a: { name: a, score: sa.score, stunt: sa.stunt }, b: { name: b, score: sb.score, stunt: sb.stunt },
         bendA: bendOf(a, b), bendB: bendOf(b, a),
-        allowDoubleShantay: cfg.allowDoubleShantay,
+        allowDoubleShantay: doubleShantayAllowed,
         allowDoubleSashay: cfg.allowDoubleSashay,
       });
 

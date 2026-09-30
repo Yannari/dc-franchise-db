@@ -55,6 +55,15 @@ const GENRE_FIT = 0.4;
    lipsyncScore: it used to accumulate to +1.2 and the only way to earn it was
    to keep being in the bottom. */
 export const CONFIDENCE_CAP = 0.4;
+/* HOW HER SEASON IS GOING, ON THE STAGE. A queen with a strong season walks
+   out to the song knowing she belongs there; one who keeps landing in the
+   bottom walks out rattled. Per point of PPE away from an all-safe 3.0.
+   This is what makes a better season survive a lip sync about as often as
+   it does on the show — by performing better, rather than by the host
+   overruling a stage she lost (which read, on the screen, as a clear winner
+   sent home). tests/dr-lipsync-record-audit fits it. */
+export const FORM_WEIGHT = 0.9;
+export const FORM_CAP = 1.8;
 
 /* The bars the doubles have to clear.
 
@@ -136,7 +145,7 @@ const AWFUL = 3.5;
  *                  crashed out on the main stage is not right yet
  */
 export function lipsyncScore({
-  player, song, lipsyncRecord = [], lastReaction = null, rng = Math.random,
+  player, song, lipsyncRecord = [], lastReaction = null, rng = Math.random, form = null,
 }) {
   const d = dragOf(player);
   const s = (player && player.stats) || {};
@@ -199,7 +208,8 @@ export function lipsyncScore({
   const genreFit = authoredStyle && (GENRE_STYLES[song.genre] || []).includes(authoredStyle)
     ? GENRE_FIT : 0;
 
-  const score = core + genreFit + stuntPts + confidence + noise(rng, 2.5);
+  const formPts = form == null ? 0 : Math.max(-FORM_CAP, Math.min(FORM_CAP, (form - 3) * FORM_WEIGHT));
+  const score = core + genreFit + stuntPts + confidence + formPts + noise(rng, 2.5);
 
   // Four beats for the narration to hang on. They are texture, not arithmetic:
   // the score above is the performance, and these say how it got there.
@@ -212,7 +222,7 @@ export function lipsyncScore({
     score: Math.round(score * 100) / 100,
     stunt,
     beats,
-    parts: { core, genreFit, stuntPts, confidence, moodKey, hook: song.hook },
+    parts: { core, genreFit, stuntPts, confidence, formPts, moodKey, hook: song.hook },
   };
 }
 

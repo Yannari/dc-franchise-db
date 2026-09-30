@@ -49,8 +49,10 @@ function standUp(seed) {
   });
   return s.rows.find(r => r.dr?.challenge?.id === 'stand-up');
 }
+/* Untucked talk about the LIP SYNC song is lip-sync talk: "the second verse"
+   there is the song's, and a seed shift put one on a stand-up night. */
 const words = row => (row.dr.scenes || [])
-  .filter(sc => sc.text && sc.step !== 'lipsync' && sc.step !== 'mini')
+  .filter(sc => sc.text && sc.step !== 'lipsync' && sc.step !== 'mini' && !/untucked:.*song/.test(sc.kind || ''))
   .map(sc => `[${sc.kind}] ${sc.text}`);
 
 describe('the stand-up speaks for itself', () => {

@@ -35,6 +35,13 @@ export const EFFECT = {
 const FIT = { bond: 0.3, checkin: 0.4, ally: 0.1, pitch: 0, repair: 0.1, credit: 0.1, compare: 0.1,
   plant: 0.1, pump: 0, confess: 0, probe: -0.2, confront: -0.3 };
 const WARMING = new Set(['bond', 'checkin', 'flirt', 'ally']);
+// The hyperpersonal effect (spec 5.3) at its strongest: a catfish picked a
+// whole face to be liked, and the warmth a good chat earns shows it. Without
+// it catfish reached the final as often as honest players and lost it
+// (win given final 11% vs 25%, 60 seasons; the real show: 5 of 10 won).
+export const CURATED = 0.3;
+const LIKED = new Set(['affection', 'attraction']);
+const toward = (state, h, dim, v) => (v > 0 && LIKED.has(dim) && state.profiles[h]?.mode === 'catfish' ? v * (1 + CURATED) : v);
 
 export function reception(state, to, from, intent) {
   const base = (rel(to, from, 'affection') + rel(to, from, 'trust')) / 20;
@@ -53,8 +60,8 @@ export function decideEnding(rng, rec) {
 
 function applyEffect(state, from, to, intent, ending) {
   const e = EFFECT[intent][ending];
-  for (const [dim, v] of Object.entries(e)) bump(to, from, dim, v);
-  if (ending !== 'cold') for (const dim of ['affection', 'trust']) if (e[dim] > 0) bump(from, to, dim, e[dim] * 0.6);
+  for (const [dim, v] of Object.entries(e)) bump(to, from, dim, toward(state, from, dim, v));
+  if (ending !== 'cold') for (const dim of ['affection', 'trust']) if (e[dim] > 0) bump(from, to, dim, toward(state, to, dim, e[dim] * 0.6));
   if (ending === 'warm' && WARMING.has(intent)) {
     for (const [a, b] of [[from, to], [to, from]]) { const row = (state.ideal[a] ||= {}); row[b] = (row[b] || 0) + 0.4; }
     feel(state, from, 'loneliness', -1.5);

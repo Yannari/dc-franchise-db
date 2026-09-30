@@ -12,7 +12,7 @@ import { makePlayers, makePool, circleSetup } from './helpers/ci-cast.js';
 import { POOLS } from '../js/ci/lines/index.js';
 import { GAMES } from '../js/ci/games-data.js';
 
-const SEASONS = 100;
+const SEASONS = Number(process.env.CI_SEASONS) || 100;
 const pct = (a, b) => (b ? (100 * a / b).toFixed(1) + '%' : 'n/a');
 const mean = a => (a.length ? (a.reduce((x, y) => x + y, 0) / a.length).toFixed(2) : 'n/a');
 
@@ -68,6 +68,7 @@ describe('The Circle spec audit', () => {
       m.lines += airedAll.reduce((a, x) => a + (x.script?.blocks || []).reduce((b, bl) => b + bl.lines.length, 0), 0);
       m.days.push(rows.length);
       m.blocks.push(state.blocked.length);
+      for (const n of state.nights || []) { (m.formats ||= {})[n.format] = (m.formats[n.format] || 0) + 1; if (n.fellBack) m.fellBack = (m.fellBack || 0) + 1; }
       const profs = Object.values(state.profiles);
       m.profiles += profs.length;
       m.catfish += profs.filter(p => p.mode === 'catfish').length;
@@ -149,6 +150,8 @@ describe('The Circle spec audit', () => {
     const r1 = x => Math.round(x * 10) / 10;
     const tot = o => Object.values(o).reduce((a, b) => a + b, 0);
     const share = o => JSON.stringify(Object.fromEntries(Object.entries(o).map(([k, v]) => [k, pct(v, tot(o))])));
+    console.log('  BLOCKING NIGHTS by format:', JSON.stringify(m.formats), `· fell back ${m.fellBack || 0}`);
+    console.log('');
     console.log('  GAMES');
     console.log(`  games per season ${mean(m.games)} (target 7-10) · parties ${mean(m.parties)} · home videos ${mean(m.homeVideos)}`);
     console.log('  families:', JSON.stringify(m.families));
@@ -167,5 +170,11 @@ describe('The Circle spec audit', () => {
     for (const w of worst) console.log(`    ${w.k.padEnd(28)} ${String(w.size).padStart(3)} entries · ${String(w.plays).padStart(5)} plays · ${String(w.distinct).padStart(4)} distinct · worst repeat ${w.worst}`);
     console.log('');
     expect(m.finished).toBe(SEASONS);
+    // Catfish won 5 of 10 real seasons (spec 2.2), a sample whose own range
+    // runs about 20-80%; 22% before the Plan 3b calibration, ~40% after (400
+    // seasons). A band, not a point: 100 seasons carry about 5 points of noise.
+    // CI_SEASONS=400 for a sharper read.
+    expect(m.catfishWin / SEASONS).toBeGreaterThan(0.30);
+    expect(m.catfishWin / SEASONS).toBeLessThan(0.65);
   });
 });

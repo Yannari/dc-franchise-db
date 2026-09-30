@@ -67,29 +67,29 @@ export const SLIPS = {
     ], beat: '{a} sits up straighter, then slouches again.' },
   ],
   'slip.voice.noticed': [
-    { id: 'slip.voice.noticed.01', turns: [
+    { id: 'slip.voice.noticed.01', when: { crack: 'stiff' }, turns: [
       { by: 'a', send: "That is simply delightful news. I'm so pleased for you" },
       { by: 'b', react: "Simply delightful? Who talks like that at that age?" },
     ], beat: '{b} reads it out loud in a very formal voice.' },
-    { id: 'slip.voice.noticed.02', turns: [
+    { id: 'slip.voice.noticed.02', when: { crack: 'dated' }, turns: [
       { by: 'a', send: "Lol that's so random, I remember when we had to rewind tapes" },
       { by: 'b', react: "Rewind tapes? How old is {a.sub}, really?" },
     ], beat: '{b} starts doing math on {b.posAdj} fingers.' },
-    { id: 'slip.voice.noticed.03', turns: [
+    { id: 'slip.voice.noticed.03', when: { crack: 'dated' }, turns: [
       { by: 'a', send: "No cap that's lowkey bussin fr fr" },
       { by: 'b', react: "Okay, that's somebody trying way too hard to sound young." },
     ], beat: '{b} laughs, then stops laughing.' },
   ],
   'slip.voice.missed': [
-    { id: 'slip.voice.missed.01', turns: [
-      { by: 'a', say: "Would a twenty-three-year-old say that? I don't know. Send it.", send: "That's so cool!! Love that for you" },
+    { id: 'slip.voice.missed.01', when: { crack: 'dated' }, turns: [
+      { by: 'a', say: "Would {a} say that? I don't know. Send it.", send: "That's so cool!! Love that for you" },
       { by: 'b', send: "Thank you!! {e:heart}" },
     ], beat: '{a} gives {a.ref} a nod.' },
-    { id: 'slip.voice.missed.02', turns: [
+    { id: 'slip.voice.missed.02', when: { crack: 'dated' }, turns: [
       { by: 'a', say: "Too many emojis? Not enough? I have no idea anymore." },
       { by: 'a', send: "Omg yes {e:laugh} {e:laugh}" },
     ], beat: '{a} deletes one emoji, puts it back, and sends.' },
-    { id: 'slip.voice.missed.03', turns: [
+    { id: 'slip.voice.missed.03', when: { crack: ['stiff', 'dated'] }, turns: [
       { by: 'a', send: "Well that's just swell" },
       { by: 'a', say: "Swell. I said swell. Nobody says swell. Did {b.sub} notice?" },
     ], beat: '{b} is already typing about something else.' },

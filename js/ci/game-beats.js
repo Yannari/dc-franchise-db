@@ -272,24 +272,18 @@ const FAMILY = {
 
   flirt(state, rng, game, sc, all, push) {
     const ans = sc.data.rounds[0].answers;
-    for (const h of Object.keys(ans)) push({ phase: 'prep', kind: 'practice', by: h, about: ans[h] });
-    const seen = new Set();
-    let i = 0;
-    for (const [a, b] of Object.entries(ans)) {
-      if (seen.has(a)) continue;
-      seen.add(a); seen.add(b);
+    for (const h of shuffled(Object.keys(ans), rng).slice(0, 3)) push({ phase: 'prep', kind: 'practice', by: h, about: ans[h] });
+    Object.entries(ans).forEach(([a, b], i) => {
       push({ phase: 'round', round: i, kind: 'line', by: a, about: b });
-      push({ phase: 'round', round: i, kind: 'answer', by: b, about: a });
-      const second = pick(all.filter(h => h !== a && h !== b), rng);
-      if (second) push({ phase: 'round', round: i, kind: 'react', by: second, about: b, c: a });
+      // A crush who likes them back answers with a line of their own.
+      if (ans[b] === a) push({ phase: 'round', round: i, kind: 'answer', by: b, about: a });
       const watcher = pick(all.filter(h => h !== a && h !== b), rng);
       if (watcher) push({ phase: 'round', round: i, kind: 'react', by: watcher, about: a, c: b });
       remember(state, sc, 'flirted', a, b, game.id);
-      i++;
-    }
+    });
     const w = sc.data.results?.winner;
     if (w) {
-      const voters = shuffled(all.filter(h => !w.includes(h)), rng).slice(0, 5);
+      const voters = shuffled(all.filter(h => !w.includes(h)), rng).slice(0, 4);
       for (const v of voters.length ? voters : [w[1]]) push({ phase: 'verdict', kind: 'vote', by: v, about: w[0] });
       push({ phase: 'verdict', kind: 'date', by: w[0], about: w[1] });
       for (const h of shuffled(all.filter(x => !w.includes(x)), rng).slice(0, 2)) push({ phase: 'verdict', kind: 'react', by: h, about: w[0], c: w[1] });

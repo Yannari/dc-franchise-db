@@ -41,6 +41,15 @@ export function styleOf(state, h) {
 const hasPact = (state, kind, x, y) => state.pacts.some(p => p.kind === kind
   && ((p.a === x && p.b === y) || (p.a === y && p.b === x)));
 
+/** Influencer nights as a share of the ratings a player was in, scaled to the
+ *  season's: a late arrival who led every rating they saw has earned as much
+ *  as an original who did (it counted raw nights, which newcomers can't have). */
+export function influenceRate(state, target) {
+  const all = state.ratings.filter(r => !r.final);
+  const mine = all.filter(r => r.targets?.includes(target)).length;
+  return mine ? (state.influencerCount[target] || 0) / mine * all.length : 0;
+}
+
 export function voterScore(state, rng, voter, target, { final = false } = {}) {
   const w = STYLE_WEIGHTS[styleOf(state, voter)];
   const b = belief(state, voter, target);
@@ -53,7 +62,7 @@ export function voterScore(state, rng, voter, target, { final = false } = {}) {
     threat: -w.h * b.threat * (final ? 0.3 : 1),
     suspicion: -w.s * (1 - b.real) * SUSPICION,
     grudge: -w.r * rel(voter, target, 'resentment'),
-    deserves: final ? w.d * ((state.influencerCount[target] || 0) * 0.8 + rel(voter, target, 'strategicRespect')) : 0,
+    deserves: final ? w.d * (influenceRate(state, target) * 0.8 + rel(voter, target, 'strategicRespect')) : 0,
   };
   const score = Object.values(parts).reduce((x, y) => x + y, 0) + (rng() - 0.5) * 2 * NOISE;
   return { score, parts };
@@ -63,7 +72,9 @@ export function ballot(state, rng, voter, targets, opts = {}) {
   const scored = targets.filter(t => t !== voter).map(t => ({ t, ...voterScore(state, rng, voter, t, opts) }))
     .sort((a, b) => b.score - a.score);
   const reasons = scored.map(x => Object.entries(x.parts).sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))[0][0]);
-  return { voter, order: scored.map(x => x.t), reasons };
+  // What each target's score was made of, for the audit (which term decides).
+  const parts = Object.fromEntries(scored.map(x => [x.t, Object.fromEntries(Object.entries(x.parts).map(([k, v]) => [k, Math.round(v * 100) / 100 || 0]))]));
+  return { voter, order: scored.map(x => x.t), reasons, parts };
 }
 
 export function ratedPool(state) {
@@ -121,11 +132,12 @@ function infer(state, rng, row, scene) {
   return out;
 }
 
-export function runRating(state, rng, { final = false } = {}) {
+export function runRating(state, rng, { final = false, seats = Infinity } = {}) {
   const { voters, targets } = ratedPool(state);
   const ballots = voters.map(v => ballot(state, rng, v, targets, { final }));
   const res = results(ballots, targets);
-  const influencers = final ? [] : influencersFrom(res);
+  // A format seats its own number of Influencers (a sole influencer: one).
+  const influencers = final ? [] : influencersFrom(res).slice(0, seats);
   const sc = addScene(state, final ? 'final-ratings' : 'ratings', voters,
     { ballots, results: res, influencers, reveal: revealOrder(res) }, [...state.active]);
   for (const r of res) state.firstPlaces[r.profile] = (state.firstPlaces[r.profile] || 0) + r.firsts;

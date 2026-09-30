@@ -13,7 +13,8 @@ function room() {
   const s = newState(3);
   s.day = 4;
   const add = (name, gender, shown, handle, mode = 'honest') => {
-    s.people[name] = { name, gender, archetype: 'floater', stats: { ...STATS }, age: 25 };
+    // A neutral register (warm changes no text): these tests read exact wording.
+    s.people[name] = { name, gender, archetype: 'floater', stats: { ...STATS }, age: 25, chatVoice: { register: 'warm' } };
     s.profiles[handle] = { handle, players: [name], mode, gap: mode === 'catfish' ? 2 : 0,
       shown: { name: handle.slice(1)[0].toUpperCase() + handle.slice(2), gender: shown, age: 24 },
       voice: { emoji: 0.5, hashtags: 0.5, caps: 0 } };
@@ -327,9 +328,11 @@ describe('games, parties, apartment life and videos from home — on the page', 
       'party.nhie': e('party.nhie', [{ by: 'a', send: '{q}' }, { by: 'b', react: 'Guilty.' }]),
       'party.nhie.none': e('party.nhie.none', [{ by: 'a', send: '{q}' }]),
     }, () => writeScene(s, sc).blocks);
-    expect(blocks.map(b => b.key)).toEqual(['party.open', 'party.nhie', 'party.nhie.none']);
+    const keys = blocks.map(b => b.key);
+    expect(keys[0]).toBe('party.open');
+    expect(keys.filter(k => k.startsWith('party.nhie'))).toEqual(['party.nhie', 'party.nhie.none']);
     expect(blocks[0].lines[0].text).toBe('90s Party! a windbreaker, butterfly clips and a boom box!');
-    expect(blocks[1].lines[0].text).toBe('Never have I ever lied about my age.');
+    expect(blocks.find(b => b.key === 'party.nhie').lines[0].text).toBe('Never have I ever lied about my age.');
   });
 
   it('shows a life scene and a home video with their own player only', () => {

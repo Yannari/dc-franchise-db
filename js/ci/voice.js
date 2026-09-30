@@ -43,6 +43,93 @@ const tidy = s => s.replace(/[ \t]{2,}/g, ' ').replace(/\s+([,.!?])/g, '$1').tri
 const joinAcross = (left, right) =>
   /[A-Za-z0-9)]\s*$/.test(left) && /^\s*[A-Z]/.test(right) ? `${left.trimEnd()}.${right}` : left + right;
 
+// A register (ci/register.js) changes how the words are typed, never what
+// they say: dry types lowercase and flat, formal writes it out, blunt drops
+// the softeners, hype shouts now and then. Emoji and hashtags are untouched.
+const TOKEN = /(\{[et]:[A-Za-z0-9]+\})/;
+const keepCase = (from, to) => (from[0] === from[0].toUpperCase() ? to[0].toUpperCase() + to.slice(1) : to);
+const SPELLED = [[/\b(\w+)'s gotta\b/gi, (m, w) => `${w} has to`], [/\b(I|you|we|they) gotta\b/gi, (m, w) => `${w} have to`],
+  [/\bgonna\b/gi, 'going to'], [/\bwanna\b/gi, 'want to'], [/\bgotta\b/gi, 'got to'],
+  [/\bkinda\b/gi, 'kind of'], [/\bya\b/gi, 'you'], [/\bu\b/gi, 'you']];
+// Slang dropped at the start takes its comma with it; in the middle it leaves
+// the sentence's own punctuation where it was ("different lol. I'm" → "different. I'm").
+const SLANG_LEAD = /^(\s*)(lol|lmao|omg|ngl|tbh|haha)\b[,!.]?\s*/i;
+const SLANG_MID = /\s+(lol|lmao|omg|ngl|tbh|haha)\b/gi;
+const unslang = p => p.replace(SLANG_LEAD, '$1').replace(SLANG_MID, '');
+function onText(text, f) {
+  return text.split(TOKEN).map(p => (TOKEN.test(p) ? p : f(p))).join('');
+}
+function lastText(text, f) {
+  const parts = text.split(TOKEN);
+  for (let i = parts.length - 1; i >= 0; i--) {
+    if (!TOKEN.test(parts[i]) && /[A-Za-z0-9]/.test(parts[i])) { parts[i] = f(parts[i]); break; }
+  }
+  return parts.join('');
+}
+const firstUp = text => text.replace(/^(\s*)([a-z])/, (m, sp, c) => sp + c.toUpperCase());
+export function byRegister(text, register, rng = () => 0.5) {
+  switch (register) {
+    case 'dry': {
+      const t = onText(text, p => p.toLowerCase().replace(/\bi\b/g, 'I').replace(/!+/g, '.'));
+      return lastText(t, p => p.replace(/\.(\s*)$/, '$1'));
+    }
+    case 'formal': {
+      let t = onText(text, p => unslang(SPELLED.reduce((x, [re, to]) =>
+        x.replace(re, typeof to === 'function' ? to : m => keepCase(m, to)), p)));
+      t = firstUp(tidy(t)).replace(/!{2,}/g, '!');
+      return lastText(t, p => p.replace(/([A-Za-z0-9)])(\s*)$/, '$1.$2'));
+    }
+    case 'blunt':
+      return firstUp(tidy(onText(text, p => unslang(p.replace(/!{2,}/g, '!'))
+        .replace(/^\s*(honestly|omg|okay so|ngl|no offense but),?\s*/i, ''))));
+    case 'hype':
+      if (rng() >= 0.3) return text;
+      return lastText(onText(text, p => p.toUpperCase()), p => p.replace(/\.?(\s*)$/, '!$1').replace(/([!?])!(\s*)$/, '$1$2'));
+    default:
+      return text;
+  }
+}
+
+// What an author wrote about how somebody types (chatVoice, Plan 3a+ Task 14
+// layer 2). Every field is optional and none names a character:
+//   greetings  said to the group, once, in a Circle Chat
+//   openers / fillers / signoffs  the person's own phrases, at `rate` (0.4)
+//   caps 'all' | 'often' · ellipses · brackets (stage directions)
+// Speech gets the phrases (at half the rate) but never capitals, trailing
+// dots or stage directions: those are how a message looks, not how it sounds.
+const COMMON_START = /^(the|this|that|it|it's|so|okay|ok|hey|hi|how|what|who|why|when|where|is|are|do|does|did|can|could|would|will|we|we're|you|you're|your|my|me|just|let's|honestly|guys|everyone|everybody|anyone|please|thank|thanks|good|not|no|yes|yeah|and|but|if|well|wait|oh|omg|lol|real|same|love|there|here|all|one|today|tonight|whatever|nobody|somebody|someone)$/i;
+const pickOf = (list, rng) => list[Math.min(list.length - 1, Math.floor(rng() * list.length))];
+const endsAsking = t => /\?\s*(\{[et]:[A-Za-z0-9]+\}\s*)*$/.test(t);
+export function byAuthored(text, av, rng = () => 0.5, { speech = false, greet = false, reply = false } = {}) {
+  if (!av) return text;
+  let t = text;
+  const rate = (av.rate ?? 0.4) * (speech ? 0.5 : 1);
+  // A lead-in ("Per my last message,") lowers the next word only when it is an
+  // ordinary one: a name stays a name.
+  const lead = (phrase, body) => `${phrase} ${/[,:]$/.test(phrase)
+    ? body.replace(/^(\s*)([A-Za-z']+)/, (m, sp, w) => (COMMON_START.test(w) ? sp + w[0].toLowerCase() + w.slice(1) : m)) : body}`;
+  if (greet && av.greetings?.length && rng() < 0.8) t = lead(pickOf(av.greetings, rng), t);
+  else {
+    // Aloud, alone in the apartment: no lead-in addressed to somebody, no sign-off.
+    // A reply doesn't open with a question of its own; a question isn't signed off.
+    const pool = [...(av.openers || []).filter(x => (!speech || !/[,:]$/.test(x)) && !(reply && /\?$/.test(x))).map(x => ['open', x]),
+      ...(av.fillers || []).map(x => ['fill', x]),
+      ...(speech || endsAsking(t) ? [] : (av.signoffs || []).map(x => ['sign', x]))];
+    if (pool.length && rng() < rate) {
+      const [kind, phrase] = pickOf(pool, rng);
+      if (kind === 'open') t = lead(phrase, t);
+      else if (kind === 'fill') t = lastText(t, p => p.replace(/([.!?]*)(\s*)$/, (m, pun, sp) => `, ${phrase}${pun}${sp}`));
+      else t = `${t.replace(/([A-Za-z0-9)])\s*$/, '$1.')} ${phrase}`;
+    }
+  }
+  if (speech) return tidy(t);
+  if (av.caps === 'all' || (av.caps === 'often' && rng() < 0.4)) t = onText(t, p => p.toUpperCase());
+  // Trailing off: the last sentence, now and then, and never after a question.
+  if (av.ellipses && !endsAsking(t) && rng() < 0.6) t = lastText(t, p => p.replace(/[.!]*(\s*)$/, '...$1'));
+  if (av.brackets?.length && rng() < (av.rate ?? 0.4) / 2) t = `${t} ${pickOf(av.brackets, rng)}`;
+  return tidy(t);
+}
+
 /** Keep or drop each token by the sender's voice; a loud voice doubles an exclamation. */
 export function styleMessage(text, voice = {}, rng = () => 0.5) {
   const e = voice.emoji ?? 0.5, t = voice.hashtags ?? 0.5, caps = voice.caps ?? 0;
@@ -50,14 +137,14 @@ export function styleMessage(text, voice = {}, rng = () => 0.5) {
   for (const p of tokenize(text)) {
     if (p.type === 'text') {
       let v = p.v;
-      if (caps > 0 && rng() < caps * 0.5) v = v.replace(/!/g, '!!');
+      if (caps > 0 && rng() < caps * 0.5) v = v.replace(/!+/g, m => (m.length > 1 ? m : '!!'));
       out = dropped ? joinAcross(out, v) : out + v;
       dropped = false;
     } else if (p.type === 'emoji') {
       if (rng() < 0.3 + 0.7 * e) out += `{e:${p.v}}`; else dropped = true;
     } else if (rng() < 0.25 + 0.75 * t) out += `{t:${p.v}}`; else dropped = true;
   }
-  const cleaned = tidy(out);
+  const cleaned = tidy(byRegister(tidy(out), voice.register, rng));
   const bare = cleaned.replace(/\{[et]:[A-Za-z0-9]+\}/g, '').trim();
   // A message that was only emoji keeps its first token rather than going blank.
   if (!bare && !/\{[et]:/.test(cleaned)) {

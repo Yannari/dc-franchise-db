@@ -36,6 +36,12 @@ describe('texting voice', () => {
     expect(dictation(msg)).toBe(`Message: "Same. Let's go one by one." Laughing emoji. Send.`);
     expect(displayText(styleMessage("Hi you {e:smile} I was hoping", { emoji: 1 }, () => 0))).toBe('Hi you 😊 I was hoping');
   });
+  it('doubles a lone exclamation for a loud voice, but never an already doubled one', () => {
+    const loud = { caps: 2 };
+    expect(styleMessage('We did it! Final five', loud, () => 0)).toBe('We did it!! Final five');
+    expect(styleMessage('We did it!! Final five!!', loud, () => 0)).toBe('We did it!! Final five!!');
+  });
+
   it('never leaves a stray space or an empty message', () => {
     const out = styleMessage('{e:heart}', { emoji: 0, hashtags: 0, caps: 0 }, () => 0.99);
     expect(out.trim().length).toBeGreaterThan(0);
@@ -46,5 +52,36 @@ describe('texting voice', () => {
 describe('a status update', () => {
   it('is posted, not messaged', () => {
     expect(dictation('Good morning {e:sun}', 'Status', 'Post')).toBe('Status: "Good morning." Sun emoji. Post.');
+  });
+});
+
+describe('a register shapes how a message is typed', () => {
+  const flat = { emoji: 1, hashtags: 1, caps: 0 };
+  it('types lowercase and flat when dry, keeping I as I', () => {
+    expect(styleMessage("Okay I'm so done with today! Who's cooking", { ...flat, register: 'dry' }, () => 0.9))
+      .toBe("okay I'm so done with today. who's cooking");
+  });
+  it('writes it out properly when formal', () => {
+    expect(styleMessage("lol I'm gonna make pasta, wanna join", { ...flat, register: 'formal' }, () => 0.9))
+      .toBe("I'm going to make pasta, want to join.");
+  });
+  it('drops the softeners when blunt', () => {
+    expect(styleMessage('Honestly, I think you lied lol', { ...flat, register: 'blunt' }, () => 0.9)).toBe('I think you lied');
+  });
+  it('shouts sometimes when hype', () => {
+    expect(styleMessage("Let's go team {e:fire}", { ...flat, register: 'hype' }, () => 0)).toBe("LET'S GO TEAM! {e:fire}");
+    expect(styleMessage("Let's go team {e:fire}", { ...flat, register: 'hype' }, () => 0.9)).toBe("Let's go team {e:fire}");
+  });
+  it('never breaks a hashtag or an emoji', () => {
+    expect(styleMessage('Love you guys {t:CircleFam} {e:heart}', { ...flat, register: 'dry' }, () => 0.9)).toBe('love you guys {t:CircleFam} {e:heart}');
+  });
+});
+
+describe('formal keeps the sentences apart', () => {
+  it('drops "lol" but not the full stop after it, and spells out gotta properly', () => {
+    const v = { emoji: 1, hashtags: 1, caps: 0, register: 'formal' };
+    expect(styleMessage("It's different lol. I'm still figuring it out", v, () => 0.9)).toBe("It's different. I'm still figuring it out.");
+    expect(styleMessage("Somebody's gotta keep it interesting", v, () => 0.9)).toBe('Somebody has to keep it interesting.');
+    expect(styleMessage('I gotta go', v, () => 0.9)).toBe('I have to go.');
   });
 });

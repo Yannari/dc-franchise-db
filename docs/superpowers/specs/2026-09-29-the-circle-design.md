@@ -436,6 +436,56 @@ make gendered guesses ("That doesn't sound like something a man would say" —
 US 2); players in the sim may *believe* that, and be wrong, but the engine never
 uses it as a rule.
 
+**As built (Plan 3a+ Task 14).** Three layers:
+
+1. **Register, for everyone** (`js/ci/register.js`). Warm, hype, dry,
+   formal, flirty or blunt, derived from archetype, stats and age. It picks
+   which line a player says (register lines in `lines/registers.js` win most
+   draws) and how a message is typed (`voice.js byRegister`: dry is
+   lowercase and flat, formal spells it out, blunt drops the softeners, hype
+   shouts now and then). A shared profile types in the voice of whoever is at
+   the keyboard.
+2. **An authored `chatVoice`**, on the season setup or on the player (setup
+   wins). Every field is optional and the engine never looks for a
+   character:
+
+   ```js
+   chatVoice: {
+     register: 'hype',                    // override the derived one
+     caps: 'all',                         // or 'often'
+     ellipses: true, brackets: ['[takes a bow]'],
+     greetings: ['MY BEAUTIFUL PEOPLE!'], // once per Circle Chat
+     openers: ['Per my last message,'],   // ending "," or ":" leads in; otherwise its own sentence
+     fillers: ['forgetaboutit'], signoffs: ['Thanks!'],
+     rate: 0.4,                           // how often a phrase appears
+     nicknames: true,                     // or ['Big {name}', ...]
+     leaks: ['Love, Grandma'],            // the person showing through a profile
+   }
+   ```
+
+   Speech gets the phrases at half the rate, never capitals, trailing dots,
+   stage directions, lead-ins or sign-offs. A reply never opens with a
+   question; a question is never signed off; an anonymous message hides the
+   sender's phrases.
+3. **Noticed** (engine). Leaks and a register that does not fit the face
+   make voice slips likelier, and the slip quotes the leak. After a Circle
+   Chat somebody may notice how somebody types: charmed (affection) or
+   annoyed (resentment), or, for a catfish whose voice does not fit the
+   face, doubt. Once per observer, person and trait.
+
+Nobody says the same sentence twice in a season (`pickEntry` remembers the
+speaker), so a register's handful of lines never becomes a tic.
+
+**Keeping a persona up** (`js/ci/cover.js`, Task 15). A persona has a style
+(its register from job and age, or an authored `persona.chatVoice`). The
+strain of holding it is style distance + age (playing younger costs more)
++ smarts (faking expertise costs more than dumbing down), eased by social,
+mental, intuition and `setup.prep`, and wearing on over the season. Gender
+is not an axis. A catfish types in the persona's voice until a voice slip
+cracks it; that scene shows their own register, and the crack's words
+follow its direction (stiff, sloppy, loud, flat, dated, young). A reader
+near the persona's age hears a fake voice sooner.
+
 ### 4.6 The face catalogue
 
 `js/ci/faces.js` tags every face in `assets/guests/` by **what it shows**, not

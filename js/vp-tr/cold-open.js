@@ -406,7 +406,7 @@ function _filters() {
 // The 46px offset on every absolutely-positioned layer is the real VP's
 // `.rp-nav` bar, which the standalone mockups do not have.
 const CO_CSS = `
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,400;9..144,600;9..144,700;9..144,900&family=IM+Fell+English:ital@0;1&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,400;9..144,600;9..144,700;9..144,900&family=IM+Fell+English:ital@0;1&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Crimson+Pro:ital,wght@0,400;0,500;0,600;1,400&display=swap');
 
 .co-root{
   --co-night:#080c13;
@@ -963,6 +963,46 @@ const CO_CSS = `
      put the end state back or nobody ever comes down */
   .co-place[data-down="1"] .cv-av{opacity:1;transform:none}
 }
+/* ══ READABILITY PASS (2026-09-29) ══════════════════════════════════════
+   Breakfast was the screen the user found hardest to read: nineteen cards,
+   each a label and a big title round one sentence, speech set small and
+   italic, reactions at 13px. So: one timeline for the arrivals, a book face
+   for the text, speech the brightest thing with the speaker's name over it,
+   reactions at reading size, lighter card chrome. */
+.co-root{--co-text:'Crimson Pro',Georgia,'Times New Roman',serif}
+.co-card{padding:16px 22px 17px}
+.co-card-title{font-size:21px;margin:2px 0 8px}
+.co-card p{font-family:var(--co-text);font-size:18px;line-height:1.55;color:rgba(236,242,246,.9)}
+.co-beat.co-vis{margin-bottom:18px}
+/* the arrivals: one run, a row per group */
+.co-beat[data-phase="down"].co-vis{margin-bottom:0}
+.co-feed-h{margin:0 0 12px;font-family:var(--co-display);font-weight:700;font-size:11px;letter-spacing:.3em;text-transform:uppercase;
+  color:rgba(233,240,245,.7)}
+.co-row{position:relative;display:flex;gap:14px;align-items:flex-start;padding:10px 0 14px 18px;border-left:2px solid rgba(233,240,245,.2)}
+.co-row::before{content:"";position:absolute;left:-6px;top:22px;width:10px;height:10px;border-radius:50%;background:#e9d9b0;box-shadow:0 0 10px rgba(255,226,178,.5)}
+.co-row-faces{display:flex;flex:none;padding-top:2px}
+.co-row-faces .cv-av{position:relative;overflow:hidden;flex:none;box-shadow:0 0 0 2px #151b24}
+.co-row-faces .cv-av-ini{position:absolute;inset:0}
+.co-row-faces .cv-av + .cv-av{margin-left:-11px}
+.co-row-t{min-width:0}
+.co-row-names{display:block;font-family:var(--co-display);font-weight:700;font-size:12.5px;color:#f0e6cf;margin-bottom:2px}
+.co-row p{margin:0;font-family:var(--co-text);font-size:18px;line-height:1.5;color:rgba(236,242,246,.9)}
+.co-beat[data-phase="down"] + .co-beat:not([data-phase="down"]).co-vis{margin-top:22px}
+/* speech: the name over it, the words the brightest thing */
+.co-said{grid-template-columns:auto 1fr;gap:12px}
+.co-said > div{display:flex;flex-direction:column-reverse}
+.co-said-txt{font-family:var(--co-text);font-style:normal;font-weight:500;font-size:20px;line-height:1.42;color:#fbf6ea}
+.co-said cite{margin:0 0 2px;font-size:12px;letter-spacing:.08em;color:#e6c27a}
+/* reactions at reading size */
+.co-react-row{align-items:flex-start}
+.co-react-tx{font-family:var(--co-text);font-size:17px;line-height:1.45;color:rgba(236,242,246,.88)}
+.co-react-tx b{color:#f3e2b5}
+.co-row,.co-feed-h{background:linear-gradient(90deg,rgba(14,19,27,.94),rgba(14,19,27,.82))}
+.co-feed-h{padding:12px 16px 4px;margin:0}
+.co-row{padding:10px 16px 14px 20px;border-left:2px solid rgba(233,240,245,.22)}
+.co-react + .co-said,.co-said + .co-said{margin-top:10px}
+.co-host-line{font-family:var(--co-text);font-size:20px}
+
 ` + PORTRAIT_CSS + PORTRAIT_WALL_CSS;
 
 // ══════════════════════════════════════════════════════════════════════
@@ -1106,10 +1146,10 @@ const COUNT_TEXT = [
 ];
 
 const GAP_TEXT = [
-  'One place remains empty after every surviving player has arrived. Its cup has been turned over to mark the person selected overnight.',
-  'Everyone who can still enter the room is present. The untouched setting and overturned cup identify the missing player.',
-  'The final count leaves one unoccupied chair. The staff have turned over its cup, confirming who was taken overnight.',
-  'No more players are expected down the stairs. The remaining place belongs to the person the Traitors chose.',
+  'Everyone who is coming down is here, and one place is still empty. Its cup has been turned upside down.',
+  'The door has stopped opening. One place is still laid, with its cup turned over.',
+  'That’s everyone. One chair is still empty, and its cup is upside down.',
+  'Nobody else is coming down. The empty place has its cup turned over.',
 ];
 const GAP_SAID = [
   'That is the only empty place. We have our answer.',
@@ -1125,17 +1165,17 @@ const GAP_DOUBLE = [
 ];
 
 const TOLD_TEXT = [
-  'The group confirms what the empty place means: {Nm}.',
-  'With every other player accounted for, the conclusion is unavoidable: {Nm}.',
-  'The overturned cup provides the morning’s answer: {Nm}.',
-  'The final attendance count confirms it: {Nm}.',
+  'Nobody needs to say it, but somebody does. {Nm}.',
+  'It can only mean one thing. {Nm}.',
+  'The cup says it for them. {Nm}.',
+  'Everyone else is here. {Nm}.',
 ];
 
 const AFTER_TEXT = [
-  'The remaining players begin discussing why the Traitors may have chosen this victim.',
-  'The empty chair stays in place while the group turns from confirming the murder to interpreting it.',
-  'The players compare reactions, knowing that grief can be genuine or performed.',
-  'Attention returns to the central fact of the game: at least one person at breakfast helped choose the victim.',
+  'Then the talk turns to why the Traitors picked that name.',
+  'The empty chair stays where it is, and the table starts arguing about what it means.',
+  'People watch each other’s reactions, knowing some of the sadness might be an act.',
+  'And somebody sitting at this table helped choose.',
 ];
 
 const WHOLE_TEXT = [
@@ -1214,10 +1254,10 @@ const DAY_ARRIVAL = [
   + 'starts being a room where somebody is lying.',
 ];
 const DAY_DEATH = [
-  'Breakfast continues, and the players carry what they learned into the rest of the day.',
-  'The group begins the day with one fewer player and a new murder to investigate.',
-  'Once breakfast ends, the players return to the game and begin comparing suspicions.',
-  'The morning closes with the victim confirmed and the surviving players still unsure whom to trust.',
+  'Breakfast carries on, and the day begins.',
+  'The day starts one person short, with a murder to work out.',
+  'Breakfast breaks up, and people start comparing suspicions.',
+  'The morning ends with the murder confirmed and nobody sure who to trust.',
 ];
 // A hidden murder's morning: nobody has been confirmed dead yet.
 const DAY_HIDDEN = [
@@ -1438,30 +1478,23 @@ const RELIEF_TEXT = [
 ];
 // ── grief, gated on a real stored bond ─────────────────────────────────
 const GRIEF_TEXT = [
-  '{who} does not do it quietly. {Sub} was close to {vic} — it showed all week — and there is '
-  + 'no version of this morning where {sub} holds that in.',
-  'It lands hardest on {who}. {Sub} and {vic} had something real, and {sub} is not going to '
-  + 'pretend otherwise for the benefit of the table.',
-  '{who} goes very still, then not still at all. {Sub} counted {vic} a friend and the room '
-  + 'watches {obj} lose the fight to keep {pos} face steady.',
-  '{who} says {vic}’s name once, cracks on it, and stops trying. Whatever else is true in '
-  + 'this room, that grief is not a performance — the two of them were close and the table '
-  + 'knew.',
+  '{who} doesn’t hide it. {Sub} was close to {vic}, and it showed all week.',
+  'It hits {who} hardest. {Sub} and {vic} were properly close.',
+  '{who} goes very still, then can’t hold it together. {Sub} counted {vic} as a friend.',
+  '{who} says {vic}’s name once, cracks, and stops trying. The two of them were close, and the table knew it.',
 ];
 const GRIEF_SAID = [
-  'I trusted {vic} more than anyone else here.',
-  '{vic} was the person I felt safest speaking to.',
-  'Losing {vic} changes who I can rely on in this game.',
-  'They took the person I trusted most.',
+  'I trusted {vic} more than anyone else in here.',
+  '{vic} was the one person I could actually talk to.',
+  'I don’t know who I’m meant to rely on now.',
+  'They took the one person I trusted.',
+  'I keep looking at the chair.',
 ];
 // ── composed: the cold-bonded, who lose nothing ───────────────────────
 const COMPOSED_TEXT = [
-  'Not everyone is undone. {names} keep their faces level — no bond with {vic} to break, and '
-  + 'a morning like this is when the room learns exactly who was close to whom.',
-  '{names} take it standing, dry-eyed. It is not coldness so much as distance: {vic} was never '
-  + 'theirs to lose, and the grief map of the room is being drawn in real time.',
-  'A few of them — {names} — do not flinch. The table reads that too. Who breaks and who does '
-  + 'not tells the room something it will spend the day using.',
+  'Not everyone is upset. {names} keep their faces level. They weren’t close to {vic}, and it shows.',
+  '{names} take it calmly. They were never close to {vic}.',
+  'A few of them, {names}, don’t react at all, and the others notice.',
 ];
 // ── the eyes turn: pushedThenDied, shown never stated ──────────────────
 const EYES_TEXT = [
@@ -1873,18 +1906,19 @@ function _buildBeats(v) {
       // told the reader the answer before the door did.
       : _names(g) + (g.length === 1 ? ' comes down. ' : ' come down together. ')
         + _cap1(_numWord(arrivedSoFar.length)) + ' at the table now.';
-    const chips = g.length > 1
-      ? '<div class="co-arrivals">' + g.map(n => _faceChip(n, 26)).join('') + '</div>'
-      : '';
-    const body = '<p>' + lead + '</p>' + chips
-      + (heard ? _said(who, _esc(heard)) : '');
-    push('down', _card(
-      v.arrival
-        ? (gi === 0 ? 'Through The Door'
-          : isLast ? 'And The Rest' : _pick(MID_HEADERS, key + '|midhdr|' + gi))
-        : gi === 0 ? 'First Arrivals'
-          : isLast ? 'The Table Fills' : 'More Players Arrive',
-      gi === 0 ? 'The stair' : 'Arrivals', gi === 0 ? 'stair' : 'head', body),
+    // ONE TIMELINE, NOT FIVE TITLED CARDS. Each group coming down was its own
+    // card with its own heading ("More Players Arrive", three times running)
+    // wrapped round one sentence. The user found breakfast the hardest screen
+    // to read. Now the first group opens a single "coming down" run and every
+    // group after it is one row on it: the faces, and the sentence.
+    const faces = '<span class="co-row-faces">' + g.map(n => _av(n, 38)).join('') + '</span>';
+    // An arrival morning's lead does not name them, so the names go under the faces.
+    const names = v.arrival ? '<span class="co-row-names">' + g.map(_esc).join(' · ') + '</span>' : '';
+    const body = (gi === 0 ? '<div class="co-feed-h">'
+      + _esc(v.arrival ? 'Through The Door' : 'Coming Down') + '</div>' : '')
+      + '<div class="co-row">' + faces + '<div class="co-row-t">' + names + '<p>' + lead + '</p>'
+      + (heard ? _said(who, _esc(heard)) : '') + '</div></div>';
+    push('down', body,
     gi === 0 ? (v.arrival ? 'arrive' : 'open') : null,
     { kind: 'down', down: [...arrivedSoFar] });
   });
@@ -1965,7 +1999,9 @@ function _buildBeats(v) {
     }
     inner += _said(order[Math.min(1, order.length - 1)] || order[0] || m.name,
       _fill(_pick(GAP_SAID, key + '|gapsaid'), { them: _esc(pr.obj) }))
-      + '<div class="co-wall-wrap">' + wall + '</div>';
+      // The portrait wall that sat here repeated the table board pinned above
+      // the page, name for name, in the middle of the one card that matters.
+      ;
     push('gap', _card('The Cup Is Turned Over', 'The gap', 'cupdown', inner),
       'gap', { kind: 'gap', down: [...v.room], gap: v.missing.map(x => x.name) });
 
@@ -2037,11 +2073,10 @@ function _buildBeats(v) {
         + '<div class="co-react">';
       for (const g of bf.grief.slice(0, 3)) {
         const p2 = _pr(g.mourner);
-        ginner += '<div class="co-react-row">' + _av(g.mourner, 40)
-          + '<span class="co-react-tx"><b>' + _esc(g.mourner) + '</b> '
-          + _fill(_pick(GRIEF_SAID, key + '|gs|' + g.mourner),
-            { vic: _esc(g.victim), obj: _pr(g.victim).obj, Sub: p2.Sub, sub: p2.sub })
-          + '</span></div>';
+        // SAID, IN THEIR OWN VOICE: these lines are first person ("Gerry was
+        // the person I felt safest speaking to"), so they are drawn as speech.
+        ginner += _said(g.mourner, _fill(_pick(GRIEF_SAID, key + '|gs|' + g.mourner),
+          { vic: _esc(g.victim), obj: _pr(g.victim).obj, Sub: p2.Sub, sub: p2.sub }));
       }
       ginner += '</div>';
       push('told', _card('The Ones Who Felt It', 'Grief', 'cup', ginner),

@@ -78,7 +78,7 @@ export const BLOCKING = {
     ], beat: '{a} sits on the floor with {a.posAdj} back against the couch.' },
     { id: 'block.react.self.06', turns: [
       { by: 'a', react: "Of course it's me. Of course it is." },
-      { by: 'a', say: "I knew it the second I saw who the Influencers were." },
+      { by: 'a', say: "I knew it the second I saw who had the power tonight." },
     ], beat: '{a} laughs and wipes {a.posAdj} eyes at the same time.' },
     { id: 'block.react.self.07', turns: [
       { by: 'a', react: "Oh. Oh, wow. Okay." },

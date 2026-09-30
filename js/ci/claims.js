@@ -18,10 +18,10 @@ const JUICY = new Set(['distrusts', 'targeting', 'catfish', 'visitSaid', 'ratedL
 const OPPOSED = { saved: 'targeting', targeting: 'saved', likes: 'distrusts', distrusts: 'likes',
   catfish: 'real', real: 'catfish' };
 
-export function makeClaim(state, { kind, about, holder, value = true, truth, secrecy = 'between', by, to = null }) {
+export function makeClaim(state, { kind, about, holder, value = true, truth, secrecy = 'between', by, to = null, weight = 1 }) {
   if (!CLAIM_KINDS.includes(kind)) throw new Error(`unknown claim kind ${kind}`);
   const claim = { id: `c${state.claims.length + 1}`, day: state.day, kind, about, holder, value,
-    truth: !!truth, secrecy, origin: { by, to } };
+    truth: !!truth, secrecy, origin: { by, to }, ...(weight !== 1 ? { weight } : {}) };
   state.claims.push(claim);
   return claim;
 }
@@ -44,7 +44,8 @@ export function learn(state, obs, claim, from, scene) {
 }
 
 function applyClaim(state, obs, claim, from, scene) {
-  const w = weightFrom(obs, from);
+  // A claim can carry less than its teller's word (a blocked player's parting shot).
+  const w = weightFrom(obs, from) * (claim.weight ?? 1);
   const alarm = 1 + (state.mind[obs]?.paranoia ?? 2) / 10;
   const aboutMe = claim.about === obs;
   const holder = claim.holder;

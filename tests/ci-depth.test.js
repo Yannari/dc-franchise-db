@@ -10,6 +10,7 @@ import { setPlayers } from '../js/core.js';
 import { playCircleSeason } from '../js/ci/season.js';
 import { blockText } from '../js/ci/transcript.js';
 import { GAMES } from '../js/ci/games-data.js';
+import { POOLS } from '../js/ci/lines/index.js';
 import { makePlayers, makePool, circleSetup } from './helpers/ci-cast.js';
 
 export const DEPTH = {
@@ -112,5 +113,50 @@ describe('a game never repeats itself', () => {
       if (dup.length) repeats.push(`${g.id}: ${[...new Set(dup)].join(', ')}`);
     }
     expect(repeats).toEqual([]);
+  });
+});
+
+// Beyond the games: every big moment of a Circle episode, held to what the
+// real show gives it (structure-based minimums: who speaks in the real
+// segment, times two or three lines each).
+export const SCENE_DEPTH = {
+  ratings: 30, 'final-ratings': 15, blocking: 14, goodbye: 18, visit: 22, party: 35, 'circle-chat': 16, meet: 6,
+};
+
+describe('every big moment airs in full', () => {
+  it('meets the minimum for ratings, blockings, goodbyes, visits, parties, Circle Chat and the finale', () => {
+    const thin = {}, seen = {};
+    for (const seed of [2, 7, 19]) {
+      const { state } = seasonWithPair(seed);
+      for (const sc of state.scenes.filter(x => x.aired && SCENE_DEPTH[x.kind])) {
+        const lines = sc.script.blocks.reduce((n, b) => n + blockText(state, b).filter(l => l.trim()).length, 0);
+        (seen[sc.kind] ||= []).push(lines);
+        const min = sc.kind === 'meet' && sc.who.length < 3 ? 4 : SCENE_DEPTH[sc.kind];
+        if (lines < min) (thin[sc.kind] ||= []).push(lines);
+      }
+    }
+    const avg = a => Math.round(a.reduce((x, y) => x + y, 0) / a.length);
+    console.log('\n  lines per scene (mean, min):', JSON.stringify(Object.fromEntries(
+      Object.entries(seen).map(([k, a]) => [k, `${avg(a)} / ${Math.min(...a)} (need ${SCENE_DEPTH[k]})`]))));
+    expect(Object.fromEntries(Object.entries(thin).map(([k, a]) => [k, a.length]))).toEqual({});
+  });
+});
+
+// Length bought with repetition is not depth: a season that airs the same
+// sentence every week reads thinner than a short one. No line airs more than
+// MAX_AIRINGS times in a season (the spec audit prints the full wear table).
+export const MAX_AIRINGS = 4;
+describe('a season never wears a line out', () => {
+  it(`airs no single line more than ${MAX_AIRINGS} times`, () => {
+    const worn = {};
+    for (const seed of [2, 7, 19]) {
+      const { state } = seasonWithPair(seed);
+      const uses = state.usedLines?.uses || {};
+      for (const [k, list] of Object.entries(POOLS)) {
+        const worst = Math.max(0, ...list.map(e => uses[e.id] || 0));
+        if (worst > MAX_AIRINGS) worn[k] = Math.max(worn[k] || 0, worst);
+      }
+    }
+    expect(worn).toEqual({});
   });
 });

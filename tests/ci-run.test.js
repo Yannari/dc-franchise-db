@@ -34,6 +34,23 @@ describe('the Circle can be started', () => {
   });
 });
 
+import { DEFAULT_POOL } from '../js/ci/default-pool.js';
+describe('a season nobody wrote a pool for', () => {
+  const catfishNames = rows => new Set(rows.flatMap(r => Object.values(r.ci.profiles || {}))
+    .filter(p => p.mode === 'catfish').map(p => p.name));
+  it('plays the default Catfish Pool, so some players still hide behind a persona', () => {
+    freshSeason(13, { ciPool: undefined });
+    const names = catfishNames(playAll());
+    expect(names.size).toBeGreaterThan(0);
+    const handles = new Set(DEFAULT_POOL.map(p => p.handle));
+    for (const n of names) expect(handles.has(n), n).toBe(true);
+  });
+  it('an author who emptied the pool gets a season with no catfish', () => {
+    freshSeason(13, { ciPool: [] });
+    expect(catfishNames(playAll()).size).toBe(0);
+  });
+});
+
 describe('a season plays one episode per press', () => {
   it('airs every day of the schedule, then stops, and names the winner', () => {
     freshSeason();

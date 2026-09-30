@@ -8,7 +8,8 @@
 import { describe, expect, it } from 'vitest';
 import { setPlayers } from '../js/core.js';
 import { playCircleSeason } from '../js/ci/season.js';
-import { makePlayers, makePool, circleSetup } from './helpers/ci-cast.js';
+import { makePlayers, circleSetup } from './helpers/ci-cast.js';
+import { DEFAULT_POOL } from '../js/ci/default-pool.js';
 import { POOLS } from '../js/ci/lines/index.js';
 import { GAMES } from '../js/ci/games-data.js';
 
@@ -31,7 +32,7 @@ describe('The Circle spec audit', () => {
       setPlayers(cast);
       const names = cast.map(p => p.name);
       const { rows, state, result } = playCircleSeason({ cast: names, setup: circleSetup(names, { newcomers: 5 }),
-        pool: makePool(6, s), seed: s });
+        pool: DEFAULT_POOL, seed: s }); // what the site plays unauthored
       if (state.active.length === state.options.finalists) m.finished++;
       // Games, parties, home videos (Plan 3a).
       const games = state.scenes.filter(x => x.kind === 'game');
@@ -127,7 +128,7 @@ describe('The Circle spec audit', () => {
       ['days / blockings (mean)', `${mean(m.days)} / ${mean(m.blocks)}`, '11-15 / 6-8'],
       ['catfish share of profiles', pct(m.catfish, m.profiles), '~33%'],
       ['edited share of profiles', mean(m.editedShare), 'some'],
-      ['personas left unused (mean, pool of 6)', mean(m.unused), 'some'],
+      ['personas left unused (mean, pool of 8)', mean(m.unused), 'some'],
       ['catfish winners', pct(m.catfishWin, SEASONS), '~50% (5 of 10 real)'],
       ['catfish exposed before the final (blocked or confessed)', pct(m.catfishExposed, m.catfishTotal), 'most, not all'],
       ['finalist catfish ranked mostly on suspicion', pct(m.finalSuspected, m.finalCatfish), 'some (US 1 "Rebecca")'],

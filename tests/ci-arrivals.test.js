@@ -44,12 +44,25 @@ describe('a date with one of three (US 1 Ep 5)', () => {
 });
 
 describe('invite one by one (US 3 Ep 6)', () => {
-  it('invites in an order everybody can see, warmest first', () => {
+  it('invites in an order everybody can see', () => {
     const r = firstArrival('ci-arrive-invites');
     const inv = r.on('invites')[0];
     expect(inv.data.order.length).toBeGreaterThanOrEqual(3);
-    const [h] = inv.who;
-    expect(rel(inv.data.order[0], h, 'affection')).toBeGreaterThanOrEqual(rel(inv.data.order.at(-1), h, 'affection'));
+  });
+
+  it('the newcomer invites the profile the room likes most first, and the bond follows the order', () => {
+    // A newcomer has no bonds yet: they read the profiles and the likes. Read
+    // on the day, in a flat room — at the end of a season every other day has
+    // moved these bonds too, and the order says nothing about them.
+    const s = room(6, 3);
+    s.active = s.active.filter(h => h !== '@q5');
+    s.likesCount = { '@q3': 6 };
+    ENTRIES.invites.run(s, streamFor(1, 'invites'), ['@q5']);
+    s.active.push('@q5');
+    const { order } = s.scenes.find(x => x.kind === 'invites').data;
+    expect(order[0]).toBe('@q3');
+    const warmth = order.map(o => rel('@q5', o, 'affection'));
+    expect(warmth).toEqual([...warmth].sort((a, b) => b - a));
   });
 });
 

@@ -2,7 +2,7 @@ import { describe, expect, it, beforeEach } from 'vitest';
 import { setGs } from '../js/core.js';
 import { streamFor } from '../js/dr/rng.js';
 import { newState } from '../js/ci/state.js';
-import { truthOf, medianAge, catfishMotive, reasonFor, drawPersonas, buildProfiles, MOTIVE_LINE } from '../js/ci/profiles.js';
+import { truthOf, medianAge, catfishMotive, reasonFor, drawPersonas, buildProfiles, MOTIVE_LINE, EDIT_LINE } from '../js/ci/profiles.js';
 import { makePlayers, makePool } from './helpers/ci-cast.js';
 
 beforeEach(() => setGs({ bonds: {}, relationshipDimensions: {}, episodeHistory: [] }));
@@ -34,8 +34,22 @@ describe('drawing from the Catfish Pool', () => {
     const d = drawPersonas(t, [], streamFor(4, 'pool'), 'stats');
     expect(Object.keys(d.assigned)).toHaveLength(0);
     const median = medianAge(t);
-    const wanting = t.filter(x => catfishMotive(x, median) >= MOTIVE_LINE).map(x => x.name);
+    const wanting = t.filter(x => catfishMotive(x, median) >= EDIT_LINE).map(x => x.name);
     expect(d.edited.sort()).toEqual(wanting.sort());
+  });
+
+  it('a player with a reason to hide something, but not enough to be somebody else, edits instead', () => {
+    // Real US 1: Alana played herself and kept quiet about modelling.
+    expect(EDIT_LINE).toBeLessThan(MOTIVE_LINE);
+    const t = truths(12, 4);
+    const median = medianAge(t);
+    const d = drawPersonas(t, makePool(20, 4), streamFor(4, 'pool'), 'stats');
+    const between = t.filter(x => { const m = catfishMotive(x, median); return m >= EDIT_LINE && m < MOTIVE_LINE; });
+    expect(between.length).toBeGreaterThan(0);
+    for (const x of between) {
+      expect(d.assigned[x.name], x.name).toBeUndefined();
+      expect(d.edited, x.name).toContain(x.name);
+    }
   });
 
   it('a big pool leaves personas unused', () => {

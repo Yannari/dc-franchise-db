@@ -23,6 +23,7 @@ import { CIRCLE_FORMAT } from './shows.js';
 import { playCircleSeason } from './ci/season.js';
 import { buildSchedule } from './ci/schedule.js';
 import { carriedFor } from './franchise-carry.js';
+import { DEFAULT_POOL } from './ci/default-pool.js';
 
 export const isCircleSeason = () => seasonFormat(seasonConfig) === CIRCLE_FORMAT;
 
@@ -122,7 +123,10 @@ function circleSeasonShapeRaw() {
 }
 
 function _inputs() {
-  return { setup: circleSetup(), pool: [...(seasonConfig.ciPool || [])], options: _options() };
+  // No pool written: the default one (ci/default-pool.js). An empty list is
+  // the author's choice of a season with no catfish, and stands.
+  const pool = Array.isArray(seasonConfig.ciPool) ? seasonConfig.ciPool : DEFAULT_POOL;
+  return { setup: circleSetup(), pool: [...pool], options: _options() };
 }
 const _sig = inputs => JSON.stringify(inputs);
 const _fingerprint = r => JSON.stringify([r?.num, r?.ci?.blocked, r?.ci?.active]);

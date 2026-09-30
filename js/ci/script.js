@@ -431,7 +431,7 @@ const BLOCKS = {
     for (const h of s.data.ballots.map(x => x.voter).slice(-2)) out.push({ key: final ? 'final.done' : 'ratings.done', cast: { a: h } });
     if (!final && s.data.hidden) {
       const infl = s.data.influencers;
-      for (const h of s.seenBy.filter(x => !infl.includes(x)).slice(0, 3)) out.push({ key: 'ratings.hidden', cast: { a: h } });
+      for (const h of s.seenBy.filter(x => !infl.includes(x)).slice(0, 5)) out.push({ key: 'ratings.hidden', cast: { a: h } });
       for (const i of infl) out.push({ key: infl.length === 1 ? 'result.super' : 'result.secret', cast: { a: i } });
       return out;
     }
@@ -511,7 +511,8 @@ const BLOCKS = {
     const [announcer, target] = s.who;
     const others = s.seenBy.filter(h => h !== target && h !== announcer && !s.data.by.includes(h));
     // Before the name: the ones at risk, waiting; the Influencer typing it.
-    const out = s.data.inPerson ? [] : [target, ...others].slice(0, 4).map(h => ({ key: 'block.wait', cast: { a: h } }));
+    // Everybody waits: for the name, or (in person) for somebody's knock.
+    const out = [target, ...others].slice(0, s.data.inPerson ? 3 : 4).map(h => ({ key: 'block.wait', cast: { a: h } }));
     if (s.data.inPerson) {
       // A Super Influencer says it at the door (US 1 Ep 10).
       out.push({ key: 'block.inperson.walk', cast: { a: announcer, c: target } },

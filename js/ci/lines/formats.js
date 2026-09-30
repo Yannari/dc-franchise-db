@@ -147,6 +147,9 @@ export const FORMAT_LINES_2 = {
     { turns: [{ by: 'a', react: 'Top? Bottom? Middle? I have no idea. None.' }], beat: '{a} paces the length of the apartment.' },
     { turns: [{ by: 'a', say: "Whoever the Influencers are, they're sitting there right now knowing it. And I don't." }] },
     { turns: [{ by: 'a', react: 'This is the worst kind of waiting. The blind kind.' }] },
+    { turns: [{ by: 'a', react: "If I'm an Influencer, I would know by now. Right?" }], beat: '{a} refreshes the screen.' },
+    { turns: [{ by: 'a', say: 'Everybody in this building is pretending to be calm right now.' }] },
+    { turns: [{ by: 'a', react: "I'm going to act normal. What does normal look like? I forget." }], beat: '{a} sits down, stands up, sits down.' },
   ]),
   ...E('result.secret', [
     { turns: [{ by: 'a', react: "'You are an Influencer. Nobody else knows.' Oh my God." },

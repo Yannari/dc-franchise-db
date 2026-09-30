@@ -1644,6 +1644,27 @@ The live sidebar (`js/vp-ci/sidebar.js`) starts from `row.ci.start` (the room
 as the day began: `roomAt`). It plays forward only what has aired.
 Shared drawing helpers live in `js/vp-ci/parts.js`.
 
+**As built (Plan 5): the game boards.** `js/vp-ci/boards.js` has one board per
+family (48 games, 10 families), titled with the game's name and prize. It is
+fed by the game's beats: `STAGE_DATA.game` keeps them trimmed, and each
+written block carries its beat index `bi`. Only beats whose lines have aired
+are drawn.
+
+- **statement:** AGREE | DISAGREE columns and the room's split.
+- **name:** who named whom, then the award.
+- **ask:** the question card; ANONYMOUS stays anonymous.
+- **guess:** the fact, with ✓/✗ held back until the owner is revealed.
+- **make:** the gallery. An anonymous game's makers stay "?" until guessed,
+  and the winning frame names its maker.
+- **photo:** the Newsfeed with likes and hashtags.
+- **team:** the draft and the score.
+- **gift:** the piles.
+- **flirt:** the lines, then the hearts.
+- **rival:** the hot seat.
+
+Guard: no element may carry two `style` attributes. The browser drops the
+second, and that had hidden every small avatar photo.
+
 ---
 
 ## 19. Setup and the Circle tab

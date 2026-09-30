@@ -64,6 +64,12 @@ describe('the moment makes the sound', () => {
     const [r, w] = find('reveal', /^reveal\.winner$/);
     expect(soundFor(r, w)).toMatchObject({ cue: 'ci-winner', bed: 'ci-winner' });
   });
+  it('a game board ticks as answers land and sounds the reveal', () => {
+    const games = of('game');
+    const hits = games.flatMap(g => g.steps.map((_, i) => soundFor(g, i).cue)).filter(Boolean);
+    expect(hits).toContain('ci-tick');
+    expect(hits.some(c => c === 'ci-reveal' || c === 'ci-crown')).toBe(true);
+  });
   it('a plain line of dialogue plays nothing over the bed', () => {
     const chat = of('chat')[0];
     const i = chat.steps.findIndex(x => x.part === 'say');

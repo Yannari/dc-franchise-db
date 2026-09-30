@@ -165,6 +165,13 @@ export function soundFor(screen, idx) {
     if (k === 'reveal.place' && st.host) return { cue: 'ci-reveal', bed: null };
   }
   if (screen.kind === 'visit' && first(/^visit\.(door|sit)/)) return { cue: 'ci-door', bed: null };
+  // A game board: the first line of each beat sounds like what the beat does.
+  if (screen.stage === 'game' && st.bi != null && screen.steps.findIndex(x => x.bi === st.bi) === idx) {
+    const b = screen.d?.beats?.[st.bi] || {};
+    if (b.kind === 'winner') return { cue: 'ci-crown', bed: null };
+    if (['tally', 'owner', 'results', 'result'].includes(b.kind)) return { cue: 'ci-reveal', bed: null };
+    if (['answer', 'namer', 'guessed', 'vote', 'gift'].includes(b.kind) || /^pick/.test(b.kind || '') || /^question\./.test(b.kind || '')) return { cue: 'ci-tick', bed: null };
+  }
   if (screen.kind === 'goodbye' && st.part === 'video' && screen.steps.findIndex(x => x.part === 'video') === idx) return { cue: 'ci-play', bed: null };
   if (screen.stage === 'arrive' && st.entry && st.about && st.who === st.about) return { cue: 'ci-whoosh', bed: null };
   if ((screen.kind === 'recognise' && idx === 0) || (k === 'circle.theory' && screen.steps.findIndex(x => x.key === k) === idx)) return { cue: 'ci-gasp', bed: null };

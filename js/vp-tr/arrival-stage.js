@@ -162,7 +162,7 @@ function paint(root, S, fresh) {
     const hp = R.at(0, 1.12);
     const hostEl = el.querySelector('.tpa-host');
     hostEl.style.left = hp.x + 'px'; hostEl.style.top = hp.y + 'px';
-    hostEl.innerHTML = `<div class="tpa-glow"></div><div class="tpa-hav">${face(D.host.name, D.host.slug)}</div>`;
+    hostEl.innerHTML = `<div class="tpa-glow"></div><div class="tpa-hav">${face(D.host.name, D.host.slug)}</div><div class="tpa-nm tpa-hnm">${esc(D.host.name)}</div>`;
     S.lastCars = 0; S.wasInside = false; S.wasCloths = false;
   }
   const outEl = el.querySelector('.tpa-out'), inEl = el.querySelector('.tpa-in'), hud = el.querySelector('.tpa-hud');
@@ -178,14 +178,13 @@ function paint(root, S, fresh) {
   // ── OUTSIDE: the car, the people out of it ──────────────────────────
   const carW = Math.min(W * .3, 300);
   carEl.style.width = carW + 'px'; carEl.style.height = carW * 80 / 220 + 'px';
-  carEl.style.top = (H * .62) + 'px';
+  carEl.style.top = (H * .79) + 'px';
   if (!carEl.firstChild) carEl.innerHTML = CAR;
   if (r.cars > S.lastCars && fresh && m.kind === 'car') {
     // the next car in: it rolls up from the left and stops at the door
     carEl.classList.remove('tpa-roll'); void carEl.offsetWidth; carEl.classList.add('tpa-roll');
     trPlay('tr-gravel');
   }
-  carEl.classList.toggle('tpa-parked', r.cars > 0);
   S.lastCars = r.cars;
   const n = Math.max(1, D.names.length);
   folk.innerHTML = r.out.map((name, i) => {
@@ -266,10 +265,12 @@ const CSS = `
 .tpa-gravel{position:absolute;left:0;right:0;top:64%;bottom:0;background:linear-gradient(180deg,#3a342c,#1c1914);
   background-image:radial-gradient(rgba(255,255,255,.06) 1px,transparent 1.5px);background-size:7px 6px;opacity:.95}
 /* the car: rolls in from the left and stops at the door */
-.tpa-car{position:absolute;left:50%;transform:translate(-50%,-60%);opacity:0;z-index:5;filter:drop-shadow(0 12px 12px rgba(0,0,0,.7))}
-.tpa-car.tpa-parked{opacity:1}
-.tpa-car.tpa-roll{animation:tpaRoll 1.9s cubic-bezier(.2,.7,.25,1) both}
-@keyframes tpaRoll{0%{transform:translate(-50%,-60%) translateX(-120vw)}85%{transform:translate(-50%,-60%) translateX(8px)}100%{transform:translate(-50%,-60%)}}
+.tpa-car{position:absolute;left:50%;transform:translate(-50%,-100%);opacity:0;z-index:5;filter:drop-shadow(0 10px 8px rgba(0,0,0,.75))}
+/* in from the left, a stop at the door with the brake lights on, and away to the right */
+.tpa-car.tpa-roll{animation:tpaRoll 6.5s cubic-bezier(.3,.6,.3,1) both}
+@keyframes tpaRoll{0%{opacity:1;transform:translate(-50%,-100%) translateX(-120vw)}
+  26%{transform:translate(-50%,-100%) translateX(10px)}30%{transform:translate(-50%,-100%)}
+  72%{opacity:1;transform:translate(-50%,-100%)}100%{opacity:1;transform:translate(-50%,-100%) translateX(120vw)}}
 /* the people on the gravel */
 .tpa-p{position:absolute;transform:translate(-50%,-50%);text-align:center;transition:filter .6s}
 .tpa-p.tpa-step{animation:tpaStep 1.1s cubic-bezier(.2,.8,.3,1) both}
@@ -285,7 +286,8 @@ const CSS = `
 .tpa-seat{position:absolute;transform:translate(-50%,-50%);text-align:center}
 .tpa-seat.tpa-sit{animation:tpaSit .8s cubic-bezier(.2,.8,.3,1) both;animation-delay:var(--d)}
 @keyframes tpaSit{from{opacity:0;transform:translate(-50%,-50%) translateY(-26px)}to{opacity:1;transform:translate(-50%,-50%)}}
-.tpa-host{position:absolute;width:66px;transform:translate(-50%,-50%);z-index:90}
+.tpa-host{position:absolute;width:66px;transform:translate(-50%,-50%);z-index:90;text-align:center}
+.tpa-hnm{color:#ffdb95;border-color:rgba(255,219,149,.35);position:relative}
 .tpa-glow{position:absolute;left:50%;top:50%;width:380px;height:380px;transform:translate(-50%,-50%);border-radius:50%;pointer-events:none;
   background:radial-gradient(circle,rgba(255,210,140,.26),rgba(255,210,140,.07) 45%,transparent 70%);transition:opacity .8s}
 .tpa-hav{position:relative;width:66px;height:74px;overflow:hidden;border-radius:50% 50% 12% 12%/44% 44% 9% 9%;background:#141922;

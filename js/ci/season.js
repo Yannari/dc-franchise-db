@@ -251,7 +251,7 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
           // screens read these (js/vp-ci), never the engine's state.
           [h, { name: p.shown?.name, people: [...p.players], mode: p.mode, face: p.shown?.face ?? null,
             age: p.shown?.age ?? null, job: p.shown?.job ?? null, personaId: p.personaId ?? null,
-            status: p.shown?.status ?? null, reason: p.reason ?? null,
+            status: p.shown?.status ?? null, reason: p.reason ?? null, edits: [...(p.edits || [])],
             bio: (() => { const pr = p.personaId && state.pool.find(x => x.id === p.personaId); return pr ? (pr.bio || bioFor(pr)) : null; })() }])),
         // Who each player really is (the arrival screens): the viewer is
         // told; the room is not.
@@ -261,7 +261,8 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
         arrivals: arriving, scenes: state.scenes.filter(s => s.day === d.day).length,
         aired: state.scenes.filter(s => s.day === d.day && s.aired)
           .map(s => ({ id: s.id, kind: s.kind, who: s.who, script: s.script || null,
-            ...(s.kind === 'game' ? { game: s.data.gameId } : {}) })) } };
+            ...(s.kind === 'game' ? { game: s.data.gameId } : {}),
+            ...(s.kind === 'recognise' && s.data.profile ? { about: s.data.profile } : {}) })) } };
     rows.push(row);
     gs.episodeHistory.push(row);
   }

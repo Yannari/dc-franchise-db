@@ -166,6 +166,55 @@ export const CIV_CSS = `
 .civ-chatwin .civ-card .nm{font-size:.9cqw}.civ-chatwin .civ-card .tx{font-size:1.15cqw}
 .civ-chatwin .civ-card{padding:.7cqw 1cqw}
 .civ-chatwin-empty{text-align:center;color:#8f96c8;font-size:1.1cqw;font-style:italic;margin:auto}
+/* MEET THE PLAYERS: who walks in, their plan, the profile built on the TV */
+.civ-arrtitle{position:absolute;left:0;right:0;top:40%;transform:translateY(-50%);text-align:center;font-weight:900;font-size:6.4cqw;letter-spacing:.08em;
+  background:linear-gradient(90deg,#3fd8ff,#8b5cff,#ff4fb4);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 2cqw rgba(139,92,255,.55))}
+.civ-arrtitle small{display:block;margin-top:1.2cqw;font-weight:600;font-size:1.5cqw;letter-spacing:.2em;color:#cfd6ff;-webkit-text-fill-color:#cfd6ff;text-transform:uppercase}
+.civ-arrtitle.new{animation:civSlamIn .9s cubic-bezier(.2,1.5,.3,1) both}
+@keyframes civSlamIn{0%{opacity:0;transform:translateY(-50%) scale(1.8);filter:blur(14px)}100%{opacity:1}}
+.civ-arrive.rest .civ-cap{top:auto;bottom:10%}
+.civ-cam,.civ-watch{position:absolute;left:3%;top:14%;width:19cqw;aspect-ratio:1;border-radius:1.2cqw;background:#1b1f45 center 20%/cover;border:.28cqw solid rgba(255,255,255,.85);
+  box-shadow:0 0 0 .5cqw rgba(0,0,0,.25),0 0 3.5cqw var(--glow,#3fd8ff),0 20px 50px rgba(0,0,0,.6);z-index:7;display:grid;place-items:center;font-weight:800;font-size:7cqw;transform:rotate(-2deg)}
+.civ-cam:after,.civ-watch:after{content:attr(data-cam);position:absolute;left:.7cqw;top:.7cqw;font-weight:800;font-size:.8cqw;letter-spacing:.14em;background:rgba(0,0,0,.6);padding:.3cqw .5cqw;border-radius:.3cqw;color:#fff}
+.civ-cam:before,.civ-watch:before{content:"";position:absolute;right:.9cqw;top:.9cqw;width:.7cqw;height:.7cqw;border-radius:50%;background:#ff4a6a;box-shadow:0 0 8px #ff4a6a;animation:civBlink 1.2s infinite}
+.civ-arrive.enter .civ-cam,.civ-arrive.enter .civ-watch{animation:civWalkIn .9s cubic-bezier(.2,1.2,.3,1) both}
+@keyframes civWalkIn{from{transform:translateX(-120%) rotate(-8deg);opacity:0}}
+.civ-id{position:absolute;left:3%;top:52%;width:44%;z-index:7}
+.civ-arrive .civ-id{left:24.5%;top:14%;width:28%}
+.civ-id .nm{font-weight:900;font-size:3cqw;line-height:1.05;letter-spacing:.02em}
+.civ-id .fx{font-weight:600;font-size:1.25cqw;color:#cfd6ff;margin:.6cqw 0 .9cqw;line-height:1.4}
+.civ-fame{display:inline-block;margin-bottom:.9cqw;padding:.5cqw .9cqw;border-radius:.5cqw;background:linear-gradient(90deg,rgba(255,210,63,.22),rgba(255,79,180,.18));border:1px solid rgba(255,210,63,.55)}
+.civ-fame b{font-weight:900;font-size:1cqw;letter-spacing:.16em;color:#ffd23f}
+.civ-fame .st{color:#ffd23f;font-size:1.2cqw;letter-spacing:.1em;text-shadow:0 0 1cqw rgba(255,210,63,.7)}
+.civ-fame small{display:block;font-size:.85cqw;color:#ffe9a8;font-weight:600;margin-top:.2cqw}
+.civ-planchip{display:block;width:fit-content;max-width:100%;font-weight:800;font-size:.95cqw;letter-spacing:.12em;padding:.5cqw .9cqw;border-radius:.4cqw;background:rgba(63,216,255,.16);color:#9fe6ff;border:1px solid rgba(63,216,255,.45)}
+.civ-planchip.cat{background:rgba(255,79,180,.18);color:#ff9fd6;border-color:rgba(255,79,180,.55)}
+.civ-planchip.edit{background:rgba(255,159,47,.16);color:#ffc27a;border-color:rgba(255,159,47,.5)}
+.civ-why{font-size:1.1cqw;line-height:1.45;color:#dfe6ff;margin-top:.7cqw;font-style:italic}
+.civ-watchnote{position:absolute;left:24.5%;top:16%;width:26%;font-weight:700;font-size:1cqw;letter-spacing:.14em;color:#9aa6d6;line-height:1.7}
+.civ-watchnote b{display:block;color:#fff;font-size:2.6cqw;letter-spacing:.02em;line-height:1.3;margin:.3cqw 0}
+.civ-tvframe{position:absolute;right:3%;top:11%;width:40%;bottom:30%;border-radius:1cqw;border:.45cqw solid #0c0c10;overflow:hidden;
+  background:radial-gradient(ellipse at 50% 30%,#2a2a8a,#10124a 60%,#070820);box-shadow:0 0 0 1px #222,0 0 4cqw var(--bias,#3fd8ff);container-type:inline-size}
+.civ-pcard{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;padding:0 6% 4%;text-align:center}
+.civ-pcard .hd{align-self:stretch;margin:0 -8%;padding:1.4cqw;font-weight:800;font-size:2.6cqw;letter-spacing:.16em;background:rgba(47,123,255,.35);border-bottom:1px solid rgba(63,216,255,.3)}
+.civ-pcard .ph{width:30%;aspect-ratio:1;margin-top:4%;border-radius:50%;background:#1b1f45 center 25%/cover;border:.8cqw solid var(--ring,#2f7bff);box-shadow:0 0 5cqw var(--ring,#2f7bff);display:grid;place-items:center;font-weight:800;font-size:9cqw}
+.civ-pcard .nm{font-weight:900;font-size:6cqw;letter-spacing:.06em;margin-top:3%}
+.civ-pcard .fx{font-weight:700;font-size:3.2cqw;color:#9fe6ff;letter-spacing:.08em}
+.civ-pcard .jb{font-weight:600;font-size:3cqw;color:#dfe6ff;margin-top:1%}
+.civ-pcard .bio{font-weight:500;font-size:3.1cqw;line-height:1.4;color:#eef1ff;margin-top:3%;font-style:italic}
+.civ-arrive.build .civ-pcard .ph{animation:civDevelop 1.2s .3s both}
+@keyframes civDevelop{0%{opacity:0;filter:blur(12px) brightness(2);transform:scale(.6)}100%{opacity:1;filter:none;transform:none}}
+.civ-arrive.build .civ-pcard>*:not(.ph){animation:civUp .5s both}
+.civ-arrive.build .civ-pcard .hd{animation-delay:.1s}.civ-arrive.build .civ-pcard .nm{animation-delay:1.1s}
+.civ-arrive.build .civ-pcard .fx{animation-delay:1.4s}.civ-arrive.build .civ-pcard .jb{animation-delay:1.65s}.civ-arrive.build .civ-pcard .bio{animation-delay:1.95s}
+.civ-arrive.build .civ-id>*{animation:civUp .45s both}
+.civ-arrive.build .civ-id>*:nth-child(2){animation-delay:.15s}.civ-arrive.build .civ-id>*:nth-child(3){animation-delay:.3s}.civ-arrive.build .civ-id>*:nth-child(4){animation-delay:.45s}.civ-arrive.build .civ-id>*:nth-child(5){animation-delay:.6s}
+.civ-arrive .civ-dlg{left:3%;right:3%}
+.civ-roll{position:absolute;left:2%;top:2.5%;z-index:12;display:flex;gap:.4cqw;align-items:center}
+.civ-roll span{width:2.2cqw;aspect-ratio:1;border-radius:50%;background:rgba(255,255,255,.08) center 25%/cover;border:.16cqw dashed rgba(255,255,255,.3);display:grid;place-items:center;font-weight:800;font-size:.9cqw;transition:transform .3s}
+.civ-roll span.on{border:.18cqw solid var(--ring,#2f7bff);background-color:#1b1f45;box-shadow:0 0 .8cqw var(--ring,#2f7bff)}
+.civ-roll span.cur{transform:scale(1.3)}
+.civ-roll b{font-weight:800;font-size:.9cqw;letter-spacing:.1em;margin-left:.5cqw;color:#cfd6ff}
 /* the stage fits the window, so Next is always in reach */
 .civ-stagewrap{position:relative;width:min(100%,calc((100vh - 250px) * 16 / 9));margin:0 auto}
 .civ-btn.civ-nextbtn{font-size:13px;padding:10px 26px;box-shadow:0 0 18px rgba(139,92,255,.55)}

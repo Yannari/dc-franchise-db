@@ -47,8 +47,8 @@ describe('where the camera is', () => {
     expect(stageOf('alert')).toBe('alert');
     expect(stageOf('some-new-kind')).toBe('ui');
   });
-  it('every screen is one of the three', () => {
-    for (const row of rows) for (const s of circleScreens(row)) expect(['apt', 'ui', 'alert']).toContain(s.stage);
+  it('every screen is one of the four stages', () => {
+    for (const row of rows) for (const s of circleScreens(row)) expect(['apt', 'ui', 'alert', 'arrive']).toContain(s.stage);
   });
 });
 

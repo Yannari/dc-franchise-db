@@ -84,5 +84,13 @@ describe('a row carries who each player really is, for the arrival screens', () 
     expect(p).toHaveProperty('status');
     expect(p).toHaveProperty('reason');
     expect(p).toHaveProperty('bio');
+    expect(Array.isArray(p.edits)).toBe(true);
+  });
+});
+
+describe('every recognition names the face', () => {
+  it('each fame entry says who it is about, or the viewer cannot tell', () => {
+    for (const k of ['recognise.celebrity', 'recognise.villain', 'recognise.tv'])
+      for (const e of POOLS[k]) expect(JSON.stringify(e.turns), e.id).toMatch(/\{b\}/);
   });
 });

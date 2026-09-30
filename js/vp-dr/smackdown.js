@@ -581,11 +581,14 @@ export function rpBuildSmackdown(row) {
       </div>` : ''}`;
   };
 
-  /* Each card of a duel carries that duel's song (js/vp-dr/music.js), so the
-     music changes with the bracket; the champion gets the winner's track. */
-  let curSong = null;
-  const step = (html, sit = null) => {
-    steps.push(`<div${musicAttr(sit)}${sit ? '' : songAttr(curSong)} class="dr-step" id="dr-step-smackdown-${stepIdx}">${html}</div>`);
+  /* THE MUSIC WAITS FOR THE LIP SYNC (js/vp-dr/music.js). Every card of a
+     duel used to carry its song, so the record started on the ball draw —
+     three cards before anybody moved. Now each card says its own moment: the
+     draw and the picks are the tension bed, the versus card is "the time has
+     come", the song starts on the performance, and the result is the verdict
+     cue, its big section landing on the stamp. */
+  const step = (html, sit = null, song = null) => {
+    steps.push(`<div${musicAttr(sit)}${songAttr(song)} class="dr-step" id="dr-step-smackdown-${stepIdx}">${html}</div>`);
     sidebarPanels.push(buildSidebar());
     stepIdx++;
   };
@@ -618,7 +621,7 @@ export function rpBuildSmackdown(row) {
       <p>Everybody here already went home. Nobody goes home again &mdash; only glory.</p>
     </div>
     ${openScene ? `<div class="dr-scene"><div class="dr-scene-body">${esc(openScene.text)}</div></div>` : ''}
-  </div>`);
+  </div>`, 'finale');
 
   // ── PER-ROUND ──
   let currentRound = 0;
@@ -630,7 +633,6 @@ export function rpBuildSmackdown(row) {
 
   for (let di = 0; di < duels.length; di++) {
     const d = duels[di];
-    curSong = d.song || null;
     const isFinal = d.round === rounds[rounds.length - 1];
 
     // ── ROUND BANNER on new round ──
@@ -659,7 +661,7 @@ export function rpBuildSmackdown(row) {
       : 'The winners face each other.'}</div>
         </div>
         ${rScene ? `<div class="dr-scene" style="margin-top:10px"><div class="dr-scene-body">${esc(rScene.text)}</div></div>` : ''}
-      </div>`);
+      </div>`, 'bottom-two');
     }
 
     const rCol = roundColor(d.round);
@@ -693,7 +695,7 @@ export function rpBuildSmackdown(row) {
           <div class="tm-picked-name">${names.map(n => esc(n)).join(' • ')}</div>
           <div style="font-size:10px;color:#b892a8;letter-spacing:.14em;margin-top:4px">${names.length}-WAY LIP SYNC</div>
         </div>
-      </div>`);
+      </div>`, 'bottom-two');
 
       // Triple song pick
       const tripleChosenSong = poolSongs.find(s => s.title === d.song) || { title: d.song, artist: d.artist || '', tempo: '', mood: '', genre: '' };
@@ -714,11 +716,12 @@ export function rpBuildSmackdown(row) {
             </div>
           </div>
         </div>
-      </div>`);
+      </div>`, 'bottom-two');
 
       for (const n of names) roundBallsUsed.add(n);
 
       // Triple VS card
+      const tripleScene = nextProse('smackdown-duel');
       step(`<div class="dr-panel dr-a-lip">
         <div class="tm-vs triple on">
           <div class="tm-triple-song">&ldquo;${esc(d.song)}&rdquo; &mdash; ${esc(d.artist || '')}</div>
@@ -729,11 +732,10 @@ export function rpBuildSmackdown(row) {
             ${d.fatigue?.[n] != null && d.fatigue[n] < 1 ? fatHud(d.fatigue[n]) : '<div class="tm-vs-sub">FRESH</div>'}
           </div>`).join('')}
         </div>
-      </div>`);
+      </div>`, tripleScene?.text ? 'time-has-come' : 'lipsync', tripleScene?.text ? null : d.song);
 
-      // Triple prose
-      const tripleScene = nextProse('smackdown-duel');
-      if (tripleScene?.text) step(proseCard(tripleScene));
+      // Triple prose: the song starts here.
+      if (tripleScene?.text) step(proseCard(tripleScene), 'lipsync', d.song);
 
       // Triple result
       const tripleScores = names.map(n => {
@@ -774,7 +776,7 @@ export function rpBuildSmackdown(row) {
             </div>`;
   }).join('')}
         </div>
-      </div>`);
+      </div>`, 'shantay');
       continue;
     }
 
@@ -807,7 +809,7 @@ export function rpBuildSmackdown(row) {
         <div class="tm-picked-name">${esc(chooser)}</div>
         <div style="font-size:10px;color:#b892a8;letter-spacing:.14em;margin-top:4px">GETS TO CHOOSE</div>
       </div>
-    </div>`);
+    </div>`, 'bottom-two');
 
     // ── 2. OPPONENT PICK ──
     const stratLabel = d.strategy === 'rival' ? 'TARGETING A RIVAL'
@@ -831,7 +833,7 @@ export function rpBuildSmackdown(row) {
     : d.strategy === 'frontrunner' ? `<div class="tm-pick-reason">${esc(d.b)} has the strongest track record.</div>`
       : `<div class="tm-pick-reason">${esc(d.b)} is the weakest lip syncer available.</div>`}
       </div>
-    </div>`);
+    </div>`, 'bottom-two');
 
     // ── 3. SONG PICK — opponent picks the song ──
     const chosenSong = poolSongs.find(s => s.title === d.song) || { title: d.song, artist: d.artist || '', tempo: '', mood: '', genre: '' };
@@ -852,12 +854,13 @@ export function rpBuildSmackdown(row) {
           </div>
         </div>
       </div>
-    </div>`);
+    </div>`, 'bottom-two');
 
     roundBallsUsed.add(chooser);
     roundBallsUsed.add(d.b);
 
     // ── VERSUS CARD ──
+    const duelScene = nextProse('smackdown-duel');
     const fatA = d.fatigue?.[d.a];
     const fatB = d.fatigue?.[d.b];
 
@@ -881,11 +884,10 @@ export function rpBuildSmackdown(row) {
           ${fatB != null && fatB < 1 ? fatHud(fatB) : '<div class="tm-vs-sub">FRESH</div>'}
         </div>
       </div>
-    </div>`);
+    </div>`, duelScene?.text ? 'time-has-come' : 'lipsync', duelScene?.text ? null : d.song);
 
-    // ── LIP SYNC PROSE ──
-    const duelScene = nextProse('smackdown-duel');
-    if (duelScene?.text) step(proseCard(duelScene));
+    // ── LIP SYNC PROSE: the song starts here ──
+    if (duelScene?.text) step(proseCard(duelScene), 'lipsync', d.song);
 
     // ── RESULT CARD ──
     sideState.lipsyncCount[d.a] = (sideState.lipsyncCount[d.a] || 0) + 1;
@@ -923,7 +925,7 @@ export function rpBuildSmackdown(row) {
           ${fatB != null && fatB < 1 ? fatigueBar(fatB) : ''}
         </div>
       </div>
-    </div>`);
+    </div>`, 'shantay');
   }
 
   // ── CROWNING ──

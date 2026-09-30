@@ -1,5 +1,5 @@
 {
-  "note": "Drag Race's music: the show's own cues only, never another show's. Every file is the user's own copy (Downloads/RPDR soundtrack), kept in private/ (git-ignored, never published); a copy without them is silent there. Each cue is named for its moment and fitted to it (music.js): `at` skips an intro, `hit` lands on the card it scores, `outro` + `head` let a cue longer than its moment be cut to it. critiques = Top & Bottom (Dredmill); decision, suspense, crowning = I've Made My Decision (The Last Sun, short cut); up-for-elimination = Strobophobia; bottom-two and drama = Ephemeral Faze; time-has-come and cry = Earthrise; verdict (the pause, shantay, sashay, a lip sync's winner, her walk off) = The Last Sun; closing = If You Can't Love Yourself (Bad Like Yaz). The runway, the entrances, the returns, the crowning walk, the finale's opening and the reunion play the season's host song (music.js HOST_SONG). Offsets measured at 0.25 s resolution, 2026-09-30.",
+  "note": "Drag Race's music: the show's own cues only, never another show's. Every file is the user's own copy (Downloads/RPDR soundtrack), kept in private/ (git-ignored, never published); a copy without them is silent there. Each cue is named for its moment and fitted to it (music.js): `at` skips an intro, `hit` lands on the card it scores, `outro` + `head` let a cue longer than its moment be cut to it. critiques = Top & Bottom (Dredmill); decision, suspense, crowning = I've Made My Decision (The Last Sun, short cut); up-for-elimination = Strobophobia; bottom-two = Ephemeral Faze; time-has-come = Earthrise; verdict (the pause, shantay, sashay, a lip sync's winner, her walk off) = The Last Sun; closing = If You Can't Love Yourself (Bad Like Yaz). The runway, the entrances, the returns, the crowning walk, the finale's opening and the reunion play the season's host song (music.js HOST_SONG). Offsets measured at 0.25 s resolution, 2026-09-30. Each cue plays ONLY at the moment it is named for: reusing Earthrise under every tear and Ephemeral Faze under every argument put the lip sync's announcement music in the werk room (the user: \"i still dont hear the soundtrack in the correct place\"). Drama, tears, comedy, sweet and romance are silent until cues of their own arrive.",
   "suspense": [
     {
       "file": "private/decision.mp3",
@@ -104,28 +104,6 @@
       ],
       "private": true,
       "head": 3
-    }
-  ],
-  "drama": [
-    {
-      "file": "private/bottom-two.mp3",
-      "at": [
-        14
-      ],
-      "loopFrom": 16,
-      "loopTo": 184,
-      "private": true
-    }
-  ],
-  "cry": [
-    {
-      "file": "private/time-has-come.mp3",
-      "at": [
-        0
-      ],
-      "loopFrom": 8,
-      "loopTo": 112,
-      "private": true
     }
   ]
 }

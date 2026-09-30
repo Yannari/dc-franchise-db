@@ -108,7 +108,8 @@ const SCREEN = {
   maxi: 'chal', maxistage: 'chal',
   mainstage: 'mainstage', runway: 'runway', finrunway: 'runway', critiques: 'critiques',
   results: 'suspense', rate: 'suspense', finjury: 'suspense', fincut: 'suspense',
-  lipsync: 'lipsync', legacy: 'lipsync', smackdown: 'lipsync', fincrownls: 'lipsync',
+  lipsync: 'lipsync', legacy: 'lipsync', fincrownls: 'lipsync',
+  smackdown: null,   // every smackdown card says its own moment (smackdown.js)
   exit: 'sashay', reunion: 'reunion',
   finopen: 'finale', fininterview: 'finale', finshowcase: 'showcase', fincrown: 'crowning',
   chart: null, rel: null,

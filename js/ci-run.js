@@ -88,14 +88,36 @@ export function circleSeasonShape() { return circleSeasonShapeRaw(); }
 /** The Season Timeline's tiles: one episode a day, and how many are still in
  *  (from the season the engine actually played, aired or queued). */
 export function circleEpisodeMap() {
+  const days = circleTimelineDays();
+  return circleSeasonShape().map(d => ({ ep: d.day, active: days.get(d.day)?.end ?? 0,
+    phase: d.final || d.finale ? 'finale' : 'main', engineType: null, tribes: 1 }));
+}
+
+/** Each day for the Season Timeline's tile: what it holds, in the show's
+ *  words, and how many profiles are in at its start and its end. Projected
+ *  from the schedule until the season is played (a blocking takes one, a
+ *  newcomer adds one), then the counts that happened. A card booked on a day
+ *  that cannot use it is dropped by the engine, so the label is what tells
+ *  the author where a blocking or an arrival can go. */
+export function circleTimelineDays() {
   const rows = new Map([...(gs?.episodeHistory || []).filter(r => r?.format === CIRCLE_FORMAT), ...(gs?._ciQueue || [])]
     .map(r => [r.num, r]));
-  let left = (players || []).length;
-  return circleSeasonShape().map(d => {
+  const cast = _cast();
+  const ai = seasonConfig.ciAI === true;
+  let n = circleRoles(cast).filter(r => r === 'starter').length + (ai ? 1 : 0);
+  const out = new Map();
+  for (const d of circleSeasonShape()) {
+    const start = n;
     const row = rows.get(d.day);
-    if (row) left = row.ci?.people?.length ?? left;
-    return { ep: d.day, active: left, phase: d.final || d.finale ? 'finale' : 'main', engineType: null, tribes: 1 };
-  });
+    if (row?.ci?.people) n = row.ci.people.length;
+    else n += (d.arrivals || 0) - (d.block ? 1 : 0);
+    const parts = d.finale ? ['Finale'] : d.final ? ['Final ratings']
+      : [d.block ? 'Blocking' : 'No blocking',
+        d.arrivals ? (d.arrivals === 1 ? 'Newcomer' : `${d.arrivals} newcomers`) : null,
+        d.game ? 'Game' : null, d.party ? 'Party' : null, d.homeVideos ? 'Videos from home' : null];
+    out.set(d.day, { label: parts.filter(Boolean).join(' · '), start, end: n, slot: d.slot, block: !!d.block, arrivals: d.arrivals || 0 });
+  }
+  return out;
 }
 
 /** The author's bookings, by slot, read off the Season Timeline (the same

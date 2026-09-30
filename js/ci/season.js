@@ -188,6 +188,9 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
     // name map lets an episode be shown later without the engine's state.
     const row = { num: d.day, episode: d.day, day: d.day, format: CIRCLE_FORMAT, slot: d.slot,
       ci: { active: [...state.active], rating,
+        // The night's blocking format, and whether the author booked it (or
+        // booked one that could not run, and it fell back).
+        night: d.night ? { format: d.night.format, booked: !!d.night.booked, fellBack: d.night.fellBack || null } : null,
         people: state.active.flatMap(h => peopleOf(state, h)),
         profiles: Object.fromEntries(Object.entries(state.profiles).map(([h, p]) =>
           [h, { name: p.shown?.name, people: [...p.players], mode: p.mode }])),

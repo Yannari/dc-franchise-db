@@ -31,6 +31,37 @@ describe('the ready check', () => {
   });
 });
 
+describe('a card booked where the engine cannot run it', () => {
+  // The engine drops it without a word (js/ci/timeline.js), so the ready
+  // check says so: a warning, never a block.
+  const shape = circleShapeOf({ cast: makePlayers(13).map(p => p.name) });
+  const noBlock = shape.find(d => !d.block && !d.final && !d.finale).day;
+  const noArrival = shape.find(d => d.block && !d.arrivals).day;
+  const blocking = shape.find(d => d.block).day;
+  const warns = sched => validateQuickSetup(circle({ twistSchedule: sched }), makePlayers(13)).filter(r => r.warn);
+
+  it('a blocking format on a day with no blocking', () => {
+    const w = warns([{ type: 'ci-sole-influencer', episode: noBlock }]);
+    expect(w).toHaveLength(1);
+    expect(w[0].msg).toMatch(new RegExp(`Sole Influencer.*episode ${noBlock}.*no blocking`));
+  });
+
+  it('an arrival on a day nobody arrives', () => {
+    const w = warns([{ type: 'ci-arrive-invites', episode: noArrival }]);
+    expect(w).toHaveLength(1);
+    expect(w[0].msg).toMatch(/no newcomer/);
+  });
+
+  it('nothing to say when each card is on a day it can run', () => {
+    expect(warns([{ type: 'ci-sole-influencer', episode: blocking }])).toEqual([]);
+  });
+
+  it('it never blocks the start', () => {
+    const rows = validateQuickSetup(circle({ twistSchedule: [{ type: 'ci-sole-influencer', episode: noBlock }] }), makePlayers(13));
+    expect(rows.every(r => r.ok)).toBe(true);
+  });
+});
+
 describe('the blueprint', () => {
   it('draws the Circle: players, days, finalists — the days the season will play', () => {
     const cast = makePlayers(13);

@@ -156,3 +156,24 @@ describe('an authored voice reads like a person, not a filter', () => {
     expect(byAuthored('Where are we going?', { signoffs: ['Thank you, thank you very much.'] }, always)).toBe('Where are we going?');
   });
 });
+
+describe('nobody repeats themselves', () => {
+  it('passes over a line the same speaker already said, even with a new listener', () => {
+    const s = room(4, 1);
+    POOLS['test.self'] = [
+      { id: 'test.self.1', when: { register: 'dry' }, turns: [{ by: 'a', say: 'Middle. Sure.' }] },
+      { id: 'test.self.2', turns: [{ by: 'a', say: 'generic one' }] },
+      { id: 'test.self.3', turns: [{ by: 'a', say: 'generic two' }] },
+    ];
+    let again = 0, first = 0;
+    for (let i = 0; i < 200; i++) {
+      s.usedLines = { uses: {}, pairs: {}, day: {} };
+      if (pickEntry(s, 'test.self', { register: 'dry' }, 'a|b', streamFor(i, 'x'), '@q0').id !== 'test.self.1') continue;
+      first++;
+      s.usedLines.uses = {}; s.usedLines.day = {};   // another day: only what the speaker said stays
+      if (pickEntry(s, 'test.self', { register: 'dry' }, 'a|c', streamFor(i + 999, 'y'), '@q0').id === 'test.self.1') again++;
+    }
+    delete POOLS['test.self'];
+    expect(again / first).toBeLessThan(0.2);
+  });
+});

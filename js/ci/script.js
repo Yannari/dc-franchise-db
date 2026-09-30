@@ -95,8 +95,9 @@ const usage = state => (state.usedLines ||= { uses: {}, pairs: {}, day: {} });
 // copy, not a coincidence. (At 0.1 it still lost to entries worn down by
 // earlier days — seed 19, day 7 aired one status twice.)
 export const SAME_DAY = 0;
+export const SAID_AGAIN = 0.05;
 
-export function pickEntry(state, key, facts, pairKey, rng) {
+export function pickEntry(state, key, facts, pairKey, rng, speaker = null) {
   // A list of keys merges pools: a game's own lines (weighted up) with its
   // family's, so a game never runs out and repeats itself.
   const pool = Array.isArray(key) ? key.flatMap(k => POOLS[k] || []) : POOLS[key];
@@ -109,22 +110,26 @@ export function pickEntry(state, key, facts, pairKey, rng) {
     const uses = u.uses[e.id] || 0;
     const samePair = (u.pairs[e.id] || []).includes(pairKey);
     const today = (u.day || {})[e.id] === state.day ? SAME_DAY : 1;
-    return [e, samePair ? 0 : (1 + spec) * Math.pow(0.5, uses) * today];
+    // One person saying the same sentence twice in a season reads as a bug,
+    // whoever they say it to (a register's lines win often, so this matters).
+    const said = speaker && (u.by?.[e.id] || []).includes(speaker) ? SAID_AGAIN : 1;
+    return [e, samePair ? 0 : (1 + spec) * Math.pow(0.5, uses) * today * said];
   });
   let total = scored.reduce((s, [, w]) => s + w, 0);
   // Everything that fits has been used on this pair: take the least-used fit.
   if (!total) {
     const e = fits.sort((x, y) => (u.uses[x.id] || 0) - (u.uses[y.id] || 0))[0] || pool.find(p => !p.when);
-    return note(state, e, pairKey);
+    return note(state, e, pairKey, speaker);
   }
   let r = rng() * total;
-  for (const [e, w] of scored) { if ((r -= w) <= 0) return note(state, e, pairKey); }
-  return note(state, scored.at(-1)[0], pairKey);
+  for (const [e, w] of scored) { if ((r -= w) <= 0) return note(state, e, pairKey, speaker); }
+  return note(state, scored.at(-1)[0], pairKey, speaker);
 }
 
-function note(state, e, pairKey) {
+function note(state, e, pairKey, speaker) {
   if (!e) return null;
   const u = usage(state);
+  if (speaker) ((u.by ||= {})[e.id] ||= []).push(speaker);
   u.uses[e.id] = (u.uses[e.id] || 0) + 1;
   (u.day ||= {})[e.id] = state.day;
   (u.pairs[e.id] ||= []).push(pairKey);
@@ -325,8 +330,11 @@ const BLOCKS = {
     const out = [{ key, cast: { a, b, c, personA }, extra: { claim: c0?.kind, lie: c0 ? c0.origin.by === a && !c0.truth : false } }];
     for (const sl of s.data.slips || []) {
       const listener = sl.noticedBy[0] || (sl.by === a ? b : a);
-      const k = sl.misread ? 'slip.misread' : `slip.${sl.kind}.${sl.noticedBy.length ? 'noticed' : 'missed'}`;
-      out.push({ key: k, cast: { a: sl.by, b: listener }, extra: { slip: sl.kind, noticed: sl.noticedBy.length > 0 } });
+      // A voice slip with an author's leak shows the words themselves.
+      const k = sl.misread ? 'slip.misread' : sl.leak ? `slip.leak.${sl.noticedBy.length ? 'noticed' : 'missed'}`
+        : `slip.${sl.kind}.${sl.noticedBy.length ? 'noticed' : 'missed'}`;
+      out.push({ key: k, cast: { a: sl.by, b: listener, ...(sl.leak ? { text: { x: sl.leak } } : {}) },
+        extra: { slip: sl.kind, noticed: sl.noticedBy.length > 0 } });
     }
     const cb = gameCallback(state, a, b, s);
     if (cb) out.push({ key: `callback.${cb.kind}.${cb.dir}`, cast: { a, b, text: { game: cb.game } } });
@@ -376,6 +384,10 @@ const BLOCKS = {
       const to = [spoke[i], ...spoke].find(x => x && x !== h);
       if (to) out.push({ key: 'circle.react', cast: { a: h, b: to } });
     });
+    // Somebody notices how somebody else types (feed.js noticeStyle).
+    for (const n of s.data.styleNotes || []) {
+      out.push({ key: `style.${n.trait}.${n.tone}`, cast: { a: n.by, b: n.about, ...(n.x ? { text: { x: n.x } } : {}) } });
+    }
     out.push({ key: 'circle.leave', cast: { a: c || a } });
     out.push(...(s.data.theories || []).map(t => ({ key: 'circle.theory', cast: { a: t.by, b: t.about }, extra: { claim: 'catfish' } })));
     return out;
@@ -475,6 +487,7 @@ const BLOCKS = {
     const door = fakeAt && fakeIn ? 'both' : fakeAt ? 'catfish' : fakeIn ? null : 'real';
     if (door) out.push({ key: `visit.door.${door}`, cast: { a: to, b: h } });
     if (fakeIn && !fakeAt) out.push({ key: 'visit.door.caught', cast: { a: h, b: to } });
+    out.push({ key: 'visit.sit', cast: { a: h, b: to } });
     out.push({ key: `visit.talk.${s.data.motive}`, cast: { a: h, b: to }, extra: { motive: s.data.motive } });
     // The conversation keeps going: on the real show a visit is a sit-down.
     out.push({ key: `visit.talk2.${s.data.motive}`, cast: { a: h, b: to }, extra: { motive: s.data.motive } });
@@ -635,7 +648,7 @@ export function writeScene(state, scene) {
     const facts = { ...factsFor(state, scene, b.cast), ...extra };
     const rng = streamFor(state.seed, `line:${scene.id}:${i}`);
     const pairKey = [b.cast.a, b.cast.b, b.cast.c].filter(Boolean).sort().join('|');
-    const entry = pickEntry(state, b.keys || b.key, facts, pairKey, rng);
+    const entry = pickEntry(state, b.keys || b.key, facts, pairKey, rng, b.cast.a);
     if (!entry) { (state.missingPools ||= {})[b.key] = (state.missingPools[b.key] || 0) + 1; return; }
     const from = b.keys ? entry.id.replace(/\.[^.]+$/, '') : b.key;
     blocks.push({ key: from, ...(b.phase ? { phase: b.phase } : {}), ...(b.round != null ? { round: b.round } : {}),
@@ -705,7 +718,9 @@ const BLOCK_WHY_ = ['fake', 'threat', 'grudge', 'noBond'];
 export const POOL_KEYS = [
   ...INTENTS_.flatMap(i => ['warm', 'neutral', 'cold'].map(e => `chat.${i}.${e}`)),
   ...['pass', 'dodge', 'fail'].map(r => `chat.probe.${r}`),
-  ...SLIPS_.flatMap(k => [`slip.${k}.noticed`, `slip.${k}.missed`]), 'slip.misread',
+  ...SLIPS_.flatMap(k => [`slip.${k}.noticed`, `slip.${k}.missed`]), 'slip.misread', 'slip.leak.noticed', 'slip.leak.missed',
+  ...['caps', 'ellipses', 'stage', 'greeting', 'nicknames', 'catchphrase', 'formal', 'hype', 'dry']
+    .flatMap(t => [`style.${t}.charmed`, `style.${t}.annoyed`]), 'style.mismatch.suspicious',
   'status.low', 'status.steady', 'status.high', 'status.react', 'likes.most', 'likes.none',
   'circle.open', 'circle.party', 'circle.final', 'circle.theory',
   ...['honest', 'polished', 'edited', 'catfish', 'shared'].map(m => `profile.${m}`),
@@ -748,7 +763,7 @@ export const POOL_KEYS = [
   'home.video', 'host.game', 'host.life', 'shared.argue.faceWins', 'shared.argue.brainWins',
   'circle.more', 'circle.react', 'ratings.done', 'ratings.wait', 'final.open', 'final.done', 'block.wait', 'block.typing',
   ...['friend', 'answers', 'truth', 'apology'].map(m => `visit.talk2.${m}`), 'visit.after', 'goodbye.after',
-  'meet.first', 'meet.react', 'meet.settle', 'meet.arrive.shared', 'meet.found.shared', 'meet.react.shared', 'meet.explain.shared', 'circle.leave', 'circle.final.look', 'block.after', 'visit.walk', 'rate.middle', 'party.dance', 'party.photo', 'party.flirt', 'party.banter', 'party.end',
+  'meet.first', 'meet.react', 'meet.settle', 'meet.arrive.shared', 'meet.found.shared', 'meet.react.shared', 'meet.explain.shared', 'circle.leave', 'circle.final.look', 'block.after', 'visit.walk', 'visit.sit', 'rate.middle', 'party.dance', 'party.photo', 'party.flirt', 'party.banter', 'party.end',
   ...['named-bad', 'named-good', 'rival', 'gift', 'picked-last', 'jab', 'portrait-kind', 'flirted', 'asked-barbed', 'asked-catfish']
     .flatMap(k => [`callback.${k}.mine`, `callback.${k}.theirs`]), 'rate.callback.bad', 'rate.callback.good',
 ];

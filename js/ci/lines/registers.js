@@ -132,20 +132,20 @@ export const REGISTER_LINES = {
 
   // ── The goodbye video ──────────────────────────────────────────────────
   ...R('goodbye.guess', {
-    warm: ["Oh, {b}. I hope you're okay. Let's hear it.", "Whatever {b} says, I'm sending love."],
-    hype: ["Goodbye message! Let's go! Play it!", "Here it comes! What's {b} gonna say?"],
-    dry: ["Here we go. {b}'s farewell tour.", "Can't wait. Truly."],
-    formal: ["Let's see what {b} has to say.", "This will tell us a lot about {b}."],
-    flirty: ["If {b} says something about me, I hope it's nice.", "Come on, {b}. Say something juicy."],
-    blunt: ["Let's see if {b} was real.", "Okay, {b}. Tell the truth for once."],
+    warm: [["Oh, {b}. I hope you're okay. Let's hear it.", "{a} pulls a blanket around {a.posAdj} shoulders."], ["Whatever {b} says, I'm sending love.", "{a} holds a hand over {a.posAdj} heart."]],
+    hype: [["Goodbye message! Let's go! Play it!", "{a} scoots right up to the screen."], ["Here it comes! What's {b} gonna say?", "{a} grabs a pillow and squeezes it."]],
+    dry: [["Here we go. {b}'s farewell tour.", "{a} leans back with a bowl of cereal."], ["Can't wait. Truly.", "{a} doesn't look up from {a.posAdj} nails."]],
+    formal: [["Let's see what {b} has to say.", "{a} sits forward, elbows on {a.posAdj} knees."], ["This will tell us a lot about {b}.", "{a} watches without blinking."]],
+    flirty: [["If {b} says something about me, I hope it's nice.", "{a} checks {a.posAdj} hair in the reflection of the screen."], ["Come on, {b}. Say something juicy.", "{a} rubs {a.posAdj} hands together."]],
+    blunt: [["Let's see if {b} was real.", "{a} crosses {a.posAdj} arms."], ["Okay, {b}. Tell the truth for once.", "{a} narrows {a.posAdj} eyes at the screen."]],
   }, 'react'),
   ...R('goodbye.react.surprised', {
-    warm: [["Aw, {b}. I'm gonna miss {b.obj} so much.", '{a} presses a hand to {a.posAdj} heart.'], "That was beautiful. Bye, {b}."],
-    hype: ["Wow! Okay! {b} went out swinging!", "That was wild! {b}, legend!"],
-    dry: ["Well. Bye, {b}.", "That was a video. With {b} in it."],
-    formal: ["That was a gracious exit from {b}.", "{b} handled that well. Respect."],
-    flirty: ["Bye, {b}. The Circle got a little less cute.", "{b} looked good leaving, I'll say that."],
-    blunt: ["{b}'s gone. That's the game.", "Bye, {b}. Next."],
+    warm: [["Aw, {b}. I'm gonna miss {b.obj} so much.", '{a} presses a hand to {a.posAdj} heart.'], ["That was beautiful. Bye, {b}.", "{a} dabs {a.posAdj} eyes with a tissue."]],
+    hype: [["Wow! Okay! {b} went out swinging!", "{a} applauds the screen."], ["That was wild! {b}, legend!", "{a} raises a glass to the screen."]],
+    dry: [["Well. Bye, {b}.", "{a} gives the screen a small wave."], ["That was a video. With {b} in it.", "{a} goes back to {a.posAdj} cereal."]],
+    formal: [["That was a gracious exit from {b}.", "{a} nods slowly."], ["{b} handled that well. Respect.", "{a} gives a small, approving nod."]],
+    flirty: [["Bye, {b}. The Circle got a little less cute.", "{a} blows a kiss at the screen."], ["{b} looked good leaving, I'll say that.", "{a} fans {a.ref}."]],
+    blunt: [["{b}'s gone. That's the game.", "{a} turns the TV off."], ["Bye, {b}. Next.", "{a} is already back on the couch."]],
   }, 'react'),
 
   // ── Circle Chat and the Newsfeed ──────────────────────────────────────

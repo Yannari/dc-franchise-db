@@ -10,6 +10,21 @@ import { isPair, distance, hiddenFacts, noticeInconsistency, SHARED_PROBE } from
 import { clamp, S } from './state.js';
 import { nudgeBelief, belief } from './beliefs.js';
 import { feel } from './mind.js';
+import { registerOf } from './register.js';
+
+// A voice that does not fit the face (Plan 3a+ Task 14): a "24-year-old" who
+// types like a board memo, or a "50-year-old" who types LET'S GOOO. Only a
+// catfish has a face to not fit.
+export function voiceMismatch(state, h) {
+  const p = state.profiles[h];
+  if (p?.mode !== 'catfish') return 0;
+  const age = p.shown?.age ?? 28, reg = registerOf(state, h);
+  if (reg === 'formal' && age < 30) return 1;
+  if ((reg === 'hype' || reg === 'flirty') && age >= 45) return 1;
+  return 0;
+}
+/** The author's leaks: phrases that belong to the person, not the profile. */
+export const leaksOf = (state, h) => (state.profiles[h]?.players || []).flatMap(n => state.people[n]?.chatVoice?.leaks || []);
 
 export const SLIP = { base: 0.008, stress: 0.06, party: 0.6, skill: 0.07 };
 export const PROBE = { fail: 0.25, dodge: 0.08 };
@@ -41,7 +56,8 @@ function slipKind(state, h, rng) {
   const w = {
     knowledge: (p.tells?.length ? 2 : 1) + hiddenFacts(state, h).length,
     body: p.shown?.gender && p.shown.gender !== real.gender ? 1.5 : 0.2,
-    voice: Math.abs((p.shown?.age ?? real.age) - (real.age ?? 25)) / 10 + distance(state, h) / 10,
+    voice: Math.abs((p.shown?.age ?? real.age) - (real.age ?? 25)) / 10 + distance(state, h) / 10
+      + (leaksOf(state, h).length ? 1.5 : 0) + voiceMismatch(state, h),
     tooPerfect: p.mode === 'catfish' ? 1 : 0.5,
     overreach: 0.6,
     name: p.players.length > 1 ? 1 : 0.3,
@@ -75,6 +91,9 @@ export function rollSlips(state, rng, speaker, listeners, ctx, scene) {
     }
   }
   const slip = { kind, noticedBy };
+  // A voice slip is one of the author's leaks, when there are any ("Love, Tyler").
+  const leaks = kind === 'voice' ? leaksOf(state, speaker) : [];
+  if (leaks.length) slip.leak = leaks[Math.min(leaks.length - 1, Math.floor(rng() * leaks.length))];
   out.push(slip);
   (scene.data.slips ||= []).push({ by: speaker, ...slip });
   return out;

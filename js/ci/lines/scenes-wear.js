@@ -125,6 +125,26 @@ export const SCENES_WEAR = {
     r1("All this work, and one knock could end it.", { beat: '{a} sits on the floor with {a.posAdj} back against the couch.' }),
   ]),
 
+  // visit.sit — a (the visitor) and b (visited) sit down before either says why.
+  ...E('visit.sit', [
+    { turns: [{ by: 'b', say: 'Sit. Please. Do you want some water?' }, { by: 'a', say: "I'm okay. I just want to talk." }],
+      beat: '{a} and {b} sit down on the same couch, not quite looking at each other.' },
+    { turns: [{ by: 'b', say: 'This is so weird. Come in, come in.' }, { by: 'a', say: 'Weird is one word for it.' }],
+      beat: '{b} clears a pile of pillows off the couch.' },
+    { turns: [{ by: 'a', say: 'So this is your apartment.' }, { by: 'b', say: "It's exactly like yours, isn't it?" },
+      { by: 'a', say: 'Exactly like mine. Except you have snacks.' }], beat: 'They both laugh, a little too loud.' },
+    { turns: [{ by: 'b', say: 'Okay. Hi. For real this time.' }, { by: 'a', say: 'Hi. For real.' }],
+      beat: '{a} and {b} sit facing each other, knees almost touching.' },
+    { turns: [{ by: 'a', say: "I don't have long, so I'm just gonna say it." }, { by: 'b', say: 'Okay. Go.' }],
+      beat: '{b} sits on the edge of the coffee table.' },
+    { turns: [{ by: 'b', say: "I don't even know what to say to you." }, { by: 'a', say: "Then let me start." }],
+      beat: '{a} takes a deep breath.' },
+    { turns: [{ by: 'a', say: 'Can I sit?' }, { by: 'b', say: 'Of course. Of course. Sit.' }],
+      beat: 'For a second, neither of them says anything.' },
+    { turns: [{ by: 'b', say: "You look exactly like your pictures. That's a relief." }, { by: 'a', say: "Thanks. That's the nicest thing anyone's said to me all day." }],
+      beat: '{a} sinks into the armchair.', when: { catfish: false } },
+  ]),
+
   // ── The goodbye video ──────────────────────────────────────────────────
   ...E('goodbye.guess', [
     r1("Please be who you said you were, {b}.", { beat: '{a} crosses {a.posAdj} fingers on both hands.' }),
@@ -145,6 +165,49 @@ export const SCENES_WEAR = {
     r1("That's the part nobody tells you. People actually leave.", { beat: '{a} pulls a blanket over {a.posAdj} shoulders.' }),
     r1("Okay, {b}. I heard you. I heard all of it.", { beat: '{a} nods slowly at the blank screen.' }),
     r1("It's so weird. {b} was right here yesterday.", { beat: '{a} scrolls back through the old chats.' }),
+  ]),
+
+  // ── Private chats: getting to know each other ─────────────────────────
+  ...E('chat.bond.warm', [
+    { turns: [{ by: 'a', send: "Okay be honest. How are you actually doing in here?" }, { by: 'b', send: "Honestly? Better now that you asked {e:smile}" },
+      { by: 'a', send: "Good. That's what I'm here for" }, { by: 'b', send: "You're sweet. I mean that" }] },
+    { turns: [{ by: 'a', send: "What's the song stuck in your head right now" }, { by: 'b', send: "Don't laugh. A cereal commercial" },
+      { by: 'a', send: "I'm laughing so hard {e:laugh}" }, { by: 'b', send: "It's catchy!! I stand by it" }] },
+    { turns: [{ by: 'a', send: "I feel like we'd be friends on the outside. Is that weird to say?" }, { by: 'b', send: "Not weird. I was thinking the same thing" },
+      { by: 'a', send: "Okay good. Friends then {e:handshake}" }] },
+    { turns: [{ by: 'a', send: "Quick. Best thing that happened to you today" }, { by: 'b', send: "This message lol" },
+      { by: 'a', send: "Stop {e:heart}" }, { by: 'b', send: "I'm serious! Today was long" }] },
+    { turns: [{ by: 'a', send: "Rate your apartment snack situation 1-10" }, { by: 'b', send: "Solid 4. I ate all the good stuff day one" },
+      { by: 'a', send: "Same. Rookie mistake {e:grimace}" }] },
+    { turns: [{ by: 'a', send: "Can I tell you something? You're one of the easiest people to talk to in here" }, { by: 'b', send: "That means a lot. Seriously" },
+      { by: 'a', send: "Just wanted you to know {e:smile}" }, { by: 'b', send: "Right back at you" }] },
+    { turns: [{ by: 'a', send: "Dance break. Are you dancing right now or am I alone" }, { by: 'b', send: "I'm dancing. Badly. But I'm dancing" },
+      { by: 'a', send: "That's all that matters {e:party}" }] },
+    { turns: [{ by: 'a', send: "Do you ever just stare at the ceiling in here" }, { by: 'b', send: "Every day. I've named the cracks" },
+      { by: 'a', send: "Okay you need more messages. I'm on it" }, { by: 'b', send: "Please {e:laugh}" }] },
+    { turns: [{ by: 'a', send: "What's something that makes you laugh every time" }, { by: 'b', send: "People falling over. I'm sorry. I can't help it" },
+      { by: 'a', send: "Same and I hate that it's same {e:laugh}" }] },
+    { turns: [{ by: 'a', send: "Okay I need a hype message. Go" }, { by: 'b', send: "You're doing amazing and everybody in here likes you" },
+      { by: 'a', send: "Okay I'm crying. Thank you {e:cry}" }, { by: 'b', send: "Anytime. Literally anytime" }] },
+    { turns: [{ by: 'a', send: "If you could have one thing delivered to your apartment right now what is it" }, { by: 'b', send: "A pizza. Obviously" },
+      { by: 'a', send: "Correct answer. The only answer {e:fire}" }] },
+    { turns: [{ by: 'a', send: "I just wanted to say hi. That's it. That's the message" }, { by: 'b', send: "Hi back. Best message I got today {e:heart}" }] },
+  ]),
+
+  // chat.ally.warm — a asks b to team up, and b says yes.
+  ...E('chat.ally.warm', [
+    { turns: [{ by: 'a', say: 'Time to lock this in.', send: "Real question. If it comes down to it, are you with me?" },
+      { by: 'b', send: "I'm with you. I've been with you" }, { by: 'a', send: "Good. Then it's us {e:handshake}" }] },
+    { turns: [{ by: 'a', send: "I don't want to just be friends in here. I want us to be a team" }, { by: 'b', send: "A team. I like that" },
+      { by: 'a', send: "We rate each other high. We tell each other everything" }, { by: 'b', send: "Everything. Deal {e:muscle}" }] },
+    { turns: [{ by: 'a', say: "{b} is the one. I can feel it.", send: "I trust you more than anybody in here. Is that crazy?" },
+      { by: 'b', send: "Not crazy. I was gonna say the same thing" }, { by: 'a', send: "Then let's make it count" }] },
+    { turns: [{ by: 'a', send: "People are starting to pick sides. I want to be on yours" }, { by: 'b', send: "You already are. I just didn't say it out loud" },
+      { by: 'a', send: "Say it out loud then {e:eyes}" }, { by: 'b', send: "You and me. There. I said it" }] },
+    { turns: [{ by: 'a', send: "If one of us gets power, we keep the other one safe. Yes?" }, { by: 'b', send: "Yes. Without question" },
+      { by: 'a', send: "Okay. I feel so much better now {e:heart}" }] },
+    { turns: [{ by: 'a', say: "Don't sound desperate. Sound sure.", send: "I think we should have each other's backs. Officially" },
+      { by: 'b', send: "Officially? Okay. I like official" }, { by: 'a', send: "Nobody else hears about this" }, { by: 'b', send: "Our secret {e:detective}" }] },
   ]),
 
   // ── Circle Chat ────────────────────────────────────────────────────────

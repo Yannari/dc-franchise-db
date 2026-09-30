@@ -17,7 +17,9 @@ export const VOICE_SHEETS = {
     greetings: ['Sending everybody a big hug {e:hug}'], openers: ["How's your heart today?"], fillers: ['love'] },
   showgirl: { register: 'flirty', rate: 0.45, brackets: ['[takes a bow]', '[blows a kiss]', '[exits stage left]'],
     fillers: ['doll'], signoffs: ['Thank you, thank you very much.'] },
+  // A grandmother catfishing as somebody young: her own words leak through.
+  grandma: { register: 'hype', rate: 0.35, fillers: ["let's gooo"], leaks: ['Love, Grandma', 'Bless your heart', 'sweetheart'] },
 };
 
 /** Which synthetic cast member carries which sheet in the transcript. */
-export const VOICE_CAST = { Frank: 'loudUncle', 'Yu Ling': 'psychic', Raven: 'boardChair', Chris: 'wrestler', Sammie: 'cuddler', Kyle: 'showgirl' };
+export const VOICE_CAST = { Frank: 'loudUncle', 'Yu Ling': 'psychic', Raven: 'boardChair', Chris: 'wrestler', Sammie: 'cuddler', Kyle: 'showgirl', Chloe: 'grandma' };

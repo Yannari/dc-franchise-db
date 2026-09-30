@@ -124,7 +124,7 @@ export const DRAG_SITUATIONS = [
   'finale', 'showcase', 'crowning', 'crowned',
   // The show's own cues (the user's copies, assets/audio/drag/private), each
   // named for the moment it scores:
-  'werkroom', 'untucked',
+  'werkroom', 'untucked', 'the-call',
   'decision', 'up-for-elimination', 'bottom-two', 'time-has-come', 'closing',
 ];
 
@@ -214,6 +214,9 @@ const FALLBACK = {};   // Drag Race plays its own show's music or nothing: never
    crowning walk, the finale's opening and the reunion. The season's runway
    theme (one per season), unless a track is uploaded for the moment. */
 const HOST_SONG = new Set(['runway', 'crowned', 'finale', 'reunion', 'entrances', 'returns']);
+/* A MOMENT WITH ONE SONG OF ITS OWN, whatever the season: the main stage
+   walks out to "Cover Girl" (the user's pick), its clip looped on the beat. */
+const FIXED_SONG = { mainstage: { title: 'Cover Girl', artist: 'RuPaul' } };
 /* Where each bed was when it was interrupted, so "I've made my decision"
    picks up after the winner's fanfare instead of starting over. */
 const resume = {};

@@ -18,7 +18,7 @@ describe("the show's cues", () => {
       'private/time-has-come.mp3': ['time-has-come'],
       'private/bottom-two.mp3': ['bottom-two'],
       'private/up-for-elimination.mp3': ['up-for-elimination'],
-      'private/top-and-bottom.mp3': ['critiques'],
+      'private/top-and-bottom.mp3': ['critiques', 'the-call'],
       'private/love-yourself.mp3': ['closing'],
       'private/elimination.mp3': ['verdict'],
       // "I've made my decision": every wait for a verdict.

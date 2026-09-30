@@ -17,7 +17,7 @@ import { TRScenery } from './cutaway-scenery.js';
 import { beatLines } from './stage-lines.js';
 import { footCard, playCard, CARD_CSS } from './stage-cards.js';
 import { trPlay } from './sfx.js';
-import { cutIn as cutInCard } from './stage-cutin.js';
+import { cutIn as cutInCard, confessional } from './stage-cutin.js';
 
 const hash = s => { let h = 7; for (const c of String(s)) h = (Math.imul(h, 31) + c.charCodeAt(0)) >>> 0; return h; };
 const clean = s => String(s || '').replace(/\s+/g, ' ').trim();
@@ -171,18 +171,25 @@ function paint(root, S, fresh) {
   }
   S.lastCars = r.cars;
   const n = Math.max(1, D.names.length);
+  // LIVE TALK: the two people in the exchange, and the camera goes to them
+  const prevSt = S.steps[S.idx - 1] || {}, nextSt = S.steps[S.idx + 1] || {};
+  const partner = st && st.t === 'say'
+    ? [prevSt, nextSt].find(x => x.beat === st.beat && x.t === 'say' && x.who && x.who !== st.who) : null;
+  const talkers = st && st.t === 'say' ? [st.who, partner && partner.who].filter(x => x && r.out.includes(x)) : [];
+  const lit = new Set(talkers.length ? talkers : r.newest ? [r.newest] : []);
   folk.innerHTML = r.out.map((name, i) => {
     const p = terraceAt(i, n, W, H);
     const isNew = name === r.newest && fresh && m.kind === 'intro' && firstOfBeat;
-    return `<div class="tpa-p${name === r.newest ? ' tpa-now' : ''}${isNew ? ' tpa-step' : ''}" style="left:${p.x}px;top:${p.y}px;width:${p.w}px;`
+    return `<div class="tpa-p${lit.has(name) ? ' tpa-now' : ''}${st && st.t === 'say' && name === st.who ? ' tpa-talk' : ''}${isNew ? ' tpa-step' : ''}" style="left:${p.x}px;top:${p.y}px;width:${p.w}px;`
       + `--fx:${(W * .5 - p.x).toFixed(0)}px;z-index:${Math.round(p.y)}">`
       + `<div class="tpa-av">${face(name)}</div><div class="tpa-nm">${esc(name)}</div></div>`;
   }).join('');
   if (fresh && m.kind === 'intro' && firstOfBeat) trPlay('tr-footsteps', 250);
   // camera: in close on whoever just stepped out; back for a car or the drive
-  const k = 1.7;
-  if (!r.inside && r.newest && m.kind === 'intro') {
-    const p = terraceAt(r.out.indexOf(r.newest), n, W, H);
+  const k = talkers.length > 1 ? 1.9 : 1.7;
+  if (!r.inside && lit.size && m.kind === 'intro') {
+    const ps = [...lit].map(x => terraceAt(r.out.indexOf(x), n, W, H));
+    const p = { x: ps.reduce((a, q) => a + q.x, 0) / ps.length, y: ps.reduce((a, q) => a + q.y, 0) / ps.length };
     const tx = W / 2 - p.x * k, ty = H * .42 - p.y * k;
     camOut.style.transform = `translate(${Math.min(0, Math.max(W - W * k, tx))}px,${Math.min(0, Math.max(H - H * k, ty))}px) scale(${k})`;
     camOut.classList.add('tpa-close');
@@ -223,15 +230,17 @@ function paint(root, S, fresh) {
     return;
   }
   start.classList.remove('trs-in');
-  // SAID ON THE GRAVEL, OR TO CAMERA: a cut-in, the other one in the exchange
-  // waiting on the right, the drive gone soft behind them
+  // THREE WAYS OF SPEAKING, and each looks like what it is (the user,
+  // 2026-09-30): somebody's FIRST words to camera are their introduction —
+  // the one big cut-in, with the band of what they are known for; any later
+  // confessional CUTS AWAY to the confessional chair; and talk on the gravel
+  // is live, so the camera just goes in on the two of them (above).
   let cut = '';
-  if (st.t === 'say' || st.t === 'cam') {
-    const prev = S.steps[S.idx - 1] || {}, next = S.steps[S.idx + 1] || {};
-    const partner = [prev, next].find(x => x.beat === st.beat && x.t === 'say' && x.who && x.who !== st.who);
-    cut = cutInCard({ who: st.who, fresh, tone: st.t === 'cam' ? 'cam' : 'morning', label: st.t === 'cam' ? 'To camera' : null,
-      with: st.t === 'say' && partner ? partner.who : null,
-      quick: st.t === 'say' && prev.t === 'say' && prev.beat === st.beat });
+  if (st.t === 'cam') {
+    const first = !S.steps.slice(0, S.idx).some(x => x.t === 'cam' && x.who === st.who);
+    cut = first
+      ? cutInCard({ who: st.who, fresh, tone: 'morning', known: (D.known || {})[st.who] || null })
+      : confessional({ who: st.who, fresh });
   }
   outEl.classList.toggle('tpa-dim', !!cut);
   hud.innerHTML = cut + footCard(st, D.host);
@@ -272,6 +281,7 @@ const CSS = `
 .tpa-p.tpa-step{animation:tpaStep 1.1s cubic-bezier(.2,.8,.3,1) both}
 @keyframes tpaStep{from{transform:translate(-50%,-50%) translateX(var(--fx)) scale(.7);opacity:0}to{transform:translate(-50%,-50%);opacity:1}}
 .tpa-cam.tpa-close .tpa-p:not(.tpa-now){filter:brightness(.4) blur(1px)}
+.tpa-p.tpa-talk{transform:translate(-50%,-50%) scale(1.12)}
 .tpa-p.tpa-now .tpa-av{box-shadow:0 0 0 2px #ffdb95,0 0 26px rgba(255,219,149,.55),0 8px 20px rgba(0,0,0,.8)}
 .tpa-av{position:relative;width:100%;aspect-ratio:1/1.12;overflow:hidden;border-radius:50% 50% 12% 12%/44% 44% 9% 9%;background:#141922;
   box-shadow:0 0 0 2px rgba(222,214,196,.35),0 8px 20px rgba(0,0,0,.8)}

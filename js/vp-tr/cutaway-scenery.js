@@ -395,7 +395,8 @@ export const TRScenery = (function () {
         <linearGradient id="tuBeam" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b8c8f0" stop-opacity=".28"/><stop offset="1" stop-color="#b8c8f0" stop-opacity="0"/></linearGradient>
         <linearGradient id="tuFloor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1a1010"/><stop offset="1" stop-color="#060304"/></linearGradient>
         <radialGradient id="tuCloth" cx=".5" cy=".3" r=".8"><stop offset="0" stop-color="#a01c2c"/><stop offset=".6" stop-color="#5a0a14"/><stop offset="1" stop-color="#2a0408"/></radialGradient>
-        <linearGradient id="tuWood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a2a14"/><stop offset="1" stop-color="#120804"/></linearGradient>
+        <linearGradient id="tuStone" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2a2426"/><stop offset=".35" stop-color="#6a5e5a"/><stop offset=".6" stop-color="#4a4240"/><stop offset="1" stop-color="#1a1618"/></linearGradient>
+        <radialGradient id="tuSlab" cx=".5" cy=".4" r=".7"><stop offset="0" stop-color="#4e4440"/><stop offset=".7" stop-color="#2e2826"/><stop offset="1" stop-color="#1a1618"/></radialGradient>
         <radialGradient id="tuWarm" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffb060" stop-opacity=".45"/><stop offset="1" stop-color="#ffb060" stop-opacity="0"/></radialGradient>
       </defs>`;
     // the stone, and the red dark in it
@@ -435,11 +436,17 @@ export const TRScenery = (function () {
       return c;
     };
     s += candelabra(w * .2) + candelabra(w * .8);
-    // THE TABLE: carved rim, blood-red cloth, candles and a goblet
+    // THE TABLE: a round slab of carved stone on a stone drum (it is a castle
+    // turret — the user: "conclave is in a castle, why are we using wood"),
+    // a blood-red runner across it, candles and a goblet
     const ty = h * .66, rx = w * .22, ry = h * .085;
     s += `<ellipse cx="${cx}" cy="${ty + ry * .6}" rx="${rx * 1.02}" ry="${ry}" fill="#080304"/>`
-      + `<path d="M${cx - rx} ${ty} V${ty + h * .07} A${rx} ${ry} 0 0 0 ${cx + rx} ${ty + h * .07} V${ty}Z" fill="url(#tuWood)"/>`
-      + `<ellipse cx="${cx}" cy="${ty}" rx="${rx}" ry="${ry}" fill="url(#tuCloth)" stroke="#c9a24a" stroke-width="2"/>`
+      + `<path d="M${cx - rx} ${ty} V${ty + h * .07} A${rx} ${ry} 0 0 0 ${cx + rx} ${ty + h * .07} V${ty}Z" fill="url(#tuStone)"/>`
+      + `<path d="M${cx - rx} ${ty} V${ty + h * .07} A${rx} ${ry} 0 0 0 ${cx + rx} ${ty + h * .07} V${ty}Z" fill="url(#ashlarIn)" opacity=".5"/>`
+      + `<ellipse cx="${cx}" cy="${ty}" rx="${rx}" ry="${ry}" fill="url(#tuSlab)" stroke="#5a504a" stroke-width="3"/>`
+      + `<ellipse cx="${cx}" cy="${ty}" rx="${rx * .9}" ry="${ry * .82}" fill="none" stroke="#2a2426" stroke-width="2" opacity=".6"/>`
+      + `<path d="M${cx - rx * .2} ${ty - ry * .98} L${cx + rx * .2} ${ty - ry * .98} L${cx + rx * .24} ${ty + ry * .98} L${cx - rx * .24} ${ty + ry * .98}Z" fill="url(#tuCloth)" opacity=".95"/>`
+      + `<path d="M${cx - rx * .24} ${ty + ry * .98} v${h * .05} h${rx * .48} v${-h * .05}Z" fill="#5a0a14"/>`
       + `<circle cx="${cx}" cy="${ty - h * .05}" r="${h * .3}" fill="url(#candleGlow)" opacity=".9"/>`;
     [-.14, -.07, .07, .14].forEach(o => { s += candle(cx + w * o, ty + (Math.abs(o) > .1 ? 2 : -3), 12, 36); });
     s += `<path d="M${cx - 12} ${ty - 30} Q${cx} ${ty - 10} ${cx + 12} ${ty - 30}Z" fill="#c9a24a"/><rect x="${cx - 2}" y="${ty - 18}" width="4" height="14" fill="#a8842a"/><ellipse cx="${cx}" cy="${ty - 3}" rx="9" ry="3" fill="#a8842a"/>`;

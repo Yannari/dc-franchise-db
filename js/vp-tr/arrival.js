@@ -696,11 +696,11 @@ function _buildBeats(v, ep) {
   // ── the rules, and every one of them is said out loud ───────────────
   const gather = v.revealBeats.find(b => b.kind === 'gather');
   if (gather) {
-    push('flags', _card('The Cars Go Back Down', 'The courtyard', 'trunk',
+    push('flags', _card('The Cars Go Back Down', 'Through the doors', 'trunk',
       '<p>' + _line(gather.text) + '</p>'
-      + '<p class="ar-quiet">Everybody who is going to be in this season is now standing '
-      + 'on the same twenty feet of stone, and none of them has been told a single thing '
-      + 'about what happens next.</p>'), { kind: 'gather' });
+      + '<p class="ar-quiet">Everybody who is going to be in this season is now sitting '
+      + 'at the same table, and none of them has been told a single thing about what '
+      + 'happens next.</p>'), { kind: 'gather' });
   }
   const briefing = v.revealBeats.find(b => b.kind === 'briefing');
   if (briefing) {
@@ -729,18 +729,18 @@ function _buildBeats(v, ep) {
   // ── and then they are asked to stand in a line ──────────────────────
   const form = v.revealBeats.find(b => b.kind === 'form-line');
   if (form) {
-    push('line', _card('The Bags Stay Where They Are', 'What happens next', 'gate',
+    push('line', _card('Blindfolds On The Table', 'What happens next', 'gate',
       '<p>' + _line(form.text) + '</p>'
       + '<p class="ar-quiet">' + (v.isAudience
-        ? 'That rank is the last moment in this season when every person in it is the same '
-          + 'as every other, and it lasts about four minutes.'
+        ? 'This is the last moment in the season when every person at this table is the '
+          + 'same as every other, and it lasts about four minutes.'
         : (v.watcher
-          ? 'You are in that rank. Whatever happens on it happens to you with cloth over '
+          ? 'You are at that table. Whatever happens next happens to you with cloth over '
             + 'your eyes.'
-          : 'Whatever happens on that rank happens with cloth over every face on it.'))
+          : 'Whatever happens at that table happens with cloth over every face at it.'))
       + '</p>'
       + _sums([
-        ['On the flags', String(total), null],
+        ['At the table', String(total), null],
         ['Rules given', String(v.rulePoints.length), null],
         ['Anybody chosen yet', 'No', 'cold'],
       ])), { kind: 'line' });
@@ -976,4 +976,18 @@ export function rpBuildArrival(ep, observer = 'audience') {
     + (st.idx + 1) + ' / ' + total + '</span>'
     + '<button class="ar-btn" onclick="' + call('trArrivalRevealAll') + '">Reveal all</button>'
     + '</div></div>';
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// FOR THE STAGE (arrival-stage.js) — the same beats, the cars, the host
+// ══════════════════════════════════════════════════════════════════════
+export function arrivalStageData(ep, observer = 'audience') {
+  const v = _view(ep, observer);
+  if (!v || !v.intros.length) return null;
+  const h = trHost(ep);
+  return {
+    beats: _buildBeats(v, ep).map(b => ({ phase: b.phase, meta: b.meta ? { ...b.meta } : {}, html: b.html })),
+    groups: v.groups.map(g => ({ id: g.id, arrivals: [...g.arrivals] })),
+    names: v.intros.map(i => i.name), host: { name: h.name, slug: h.slug },
+  };
 }

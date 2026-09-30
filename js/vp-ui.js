@@ -733,7 +733,9 @@ const _BED_VICTORY = new Set(['winner-ceremony', 'reunion', 'season-stats']);
 // Round Table switches to `tr-reveal` itself when the chair is called
 // (js/vp-tr/sfx.js), so the banishment gets its own cue.
 const _BED_TRAITORS = {
-  'tr-arrival': 'tr-intro', 'tr-selection': 'tr-intro',
+  // The Selection is the darkest track by measurement (the reveal cue: nearly all
+  // its energy under 250 Hz) — the blindfolds and the walk round the table.
+  'tr-arrival': 'tr-intro', 'tr-selection': 'tr-reveal',
   'tr-cold-open': 'tr-breakfast',
   'tr-castle-morning': 'tr-castle', 'tr-castle-afternoon': 'tr-castle',
   'tr-mission': 'tr-mission', 'tr-armoury': 'tr-mission',

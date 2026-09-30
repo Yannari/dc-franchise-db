@@ -70,8 +70,30 @@ function paint(root, S, fresh) {
   });
   const start = root.querySelector('.trs-start');
   const setHtml = TRScenery.breakfastSet(W, H);
+  // THE CAMERA. The room and the people live on a layer that persists between
+  // steps, so a move from one framing to the next animates; the counter and
+  // the line card sit on a fixed layer over it.
+  let cam = el.querySelector('.trb-cam'), hud = el.querySelector('.trb-hud');
+  if (!cam || !hud) {
+    el.innerHTML = '<div class="trb-cam"></div><div class="trb-hud"></div>';
+    cam = el.querySelector('.trb-cam'); hud = el.querySelector('.trb-hud');
+  }
+  const frame = (who, instant) => {
+    const i = who ? D.laid.indexOf(who) : -1;
+    cam.style.transition = instant ? 'none' : '';
+    if (i < 0) { cam.style.transform = 'translate(0px,0px) scale(1)'; cam.classList.remove('trb-close'); return; }
+    // IN CLOSE ON WHOEVER IS SPEAKING, the way the castle day flies to a room:
+    // their place brought to the middle of the frame, a little above centre
+    // so the line card below does not cover them.
+    const p = placeAt(i, D.laid.length, W, H), k = 1.85;
+    const tx = W / 2 - p.x * k, ty = H * 0.4 - p.y * k;
+    cam.style.transform = `translate(${Math.min(0, Math.max(W - W * k, tx))}px,${Math.min(0, Math.max(H - H * k, ty))}px) scale(${k})`;
+    cam.classList.add('trb-close');
+  };
   if (S.idx < 0) {
-    el.innerHTML = setHtml + places(D, { down: new Set(), arriving: new Set(), gapShown: false }, W, H, null, false);
+    cam.innerHTML = setHtml + places(D, { down: new Set(), arriving: new Set(), gapShown: false }, W, H, null, false);
+    hud.innerHTML = '';
+    frame(null, true);
     start.innerHTML = `<b>${esc(D.arrival ? 'The Arrival' : 'Breakfast')}</b><span>${D.laid.length} places laid · press Next, or click the room</span>`;
     start.classList.add('trs-in');
     root.querySelector('.trs-corner').classList.remove('trs-in');
@@ -80,7 +102,10 @@ function paint(root, S, fresh) {
   start.classList.remove('trs-in');
   const st = S.steps[S.idx], r = stateAt(S);
   const speaker = st.t === 'say' ? st.who : st.react ? st.who : null;
-  let h = setHtml + places(D, r, W, H, speaker, fresh);
+  cam.innerHTML = setHtml + places(D, r, W, H, speaker, fresh);
+  // dialogue pulls in on the speaker; narration pulls back to the whole room
+  frame(st.t === 'say' || (st.react && st.who) ? speaker : null, !fresh);
+  let h = '';
   // the count in the corner: down, and the places nobody is coming down to
   const empty = D.laid.filter(n => !r.down.has(n)).length;
   const gone = r.gapShown ? D.laid.filter(n => D.missing.includes(n) || D.hidden.includes(n)).length : 0;
@@ -89,8 +114,8 @@ function paint(root, S, fresh) {
     + (gone ? `<span class="trb-hot">${gone} not coming down</span>` : '')
     + (r.whole ? '<span class="trb-good">A full table</span>' : '') + '</div>';
   h += footCard(st, D.host);
-  el.innerHTML = h;
-  playCard(el, st, S, fresh);
+  hud.innerHTML = h;
+  playCard(hud, st, S, fresh);
   // THE SOUND OF IT, once per beat, on a fresh step.
   if (fresh && (S.steps[S.idx - 1] || {}).beat !== st.beat) {
     const k = (st.meta || {}).kind;
@@ -132,7 +157,12 @@ function places(D, r, W, H, speaker, fresh) {
 }
 
 const CSS = `
-.trb{position:absolute;inset:0}
+.trb{position:absolute;inset:0;overflow:hidden}
+.trb-cam{position:absolute;inset:0;transform-origin:0 0;transition:transform 1.1s cubic-bezier(.65,0,.25,1)}
+.trb-hud{position:absolute;inset:0;pointer-events:none}
+.trb-hud>*{pointer-events:auto}
+/* in close, the rest of the room goes soft behind the speaker */
+.trb-cam.trb-close .trb-seat:not(.trb-speak){filter:brightness(.45) blur(1px)}
 .trb-cups{position:absolute;inset:0;width:100%;height:100%;z-index:20;pointer-events:none}
 .trb-turn{animation:trbTurn .8s cubic-bezier(.2,1.4,.4,1)}
 @keyframes trbTurn{from{transform:rotate(180deg);transform-box:fill-box;transform-origin:center}}

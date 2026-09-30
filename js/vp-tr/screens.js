@@ -33,6 +33,8 @@ import { tableStageScreen } from './table-stage.js';
 import { breakfastStageScreen } from './breakfast-stage.js';
 import { conclaveStageScreen } from './conclave-stage.js';
 import { missionFieldStageScreen } from './mission-field-stage.js';
+import { selectionStageScreen } from './selection-stage.js';
+import { arrivalStageScreen } from './arrival-stage.js';
 import { rpBuildWeb } from './web.js';
 import { rpBuildSuspicion, trSuspicionRevealAll } from './suspicion.js';
 // The Alcove is folded into the night castle segment (Plan 11); only its gate
@@ -81,6 +83,12 @@ import { _hasConfessionals } from './confessionals.js';
  * is a phase rather than a night: it can force six extra tables or none at all,
  * so it rides on the LAST row the season wrote.
  */
+/** The premiere row: the one carrying the arrival (written on episode one only). */
+function _isPremiere(r) {
+  return !!(r && r.tr && r.tr.arrival && Array.isArray(r.tr.arrival.introductions)
+    && r.tr.arrival.introductions.length);
+}
+
 export const TRAITORS_SCREENS = [
   // ── BEFORE ANY OF THEM IS ANYTHING (Plan 9, Task 2) ────────────────
   //
@@ -97,7 +105,7 @@ export const TRAITORS_SCREENS = [
     badge: { text: 'Arrival', color: '#e7b978' },
     when: r => !!(r.tr && r.tr.arrival && Array.isArray(r.tr.arrival.introductions)
       && r.tr.arrival.introductions.length),
-    build: rpBuildArrival, revealAll: trArrivalRevealAll,
+    build: (r, o) => arrivalStageScreen(r, o, rpBuildArrival(r, o)), revealAll: trArrivalRevealAll,
     revealAllName: 'trArrivalRevealAll' },
   // ── THE ONLY OTHER SCREEN THAT EXISTS ONCE ────────────────────
   //
@@ -112,10 +120,13 @@ export const TRAITORS_SCREENS = [
     badge: { text: 'Selection', color: '#c9c2ac' },
     when: r => !!(r.tr && r.tr.selection && Array.isArray(r.tr.selection.taps)
       && r.tr.selection.taps.length),
-    build: rpBuildSelection, revealAll: trSelectionRevealAll,
+    build: (r, o) => selectionStageScreen(r, o, rpBuildSelection(r, o)), revealAll: trSelectionRevealAll,
     revealAllName: 'trSelectionRevealAll' },
+  // NOT ON THE PREMIERE. Episode one is the arrival, the briefing and the
+  // Selection; nobody has been murdered, so a breakfast has nothing to find and
+  // the real format does not have one (user, 2026-09-30).
   { id: 'tr-cold-open', label: 'Breakfast', suffix: 'coldopen',
-    when: r => !!(r.tr && r.tr.dawn),
+    when: r => !!(r.tr && r.tr.dawn) && !_isPremiere(r),
     build: (r, o) => breakfastStageScreen(r, o, rpBuildColdOpen(r, o)),
     revealAll: trColdOpenRevealAll, revealAllName: 'trColdOpenRevealAll' },
   // ── THE DAY, INTERLEAVED INTO BROADCAST ORDER (Plan 11) ───────────────

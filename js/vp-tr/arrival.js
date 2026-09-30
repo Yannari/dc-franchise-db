@@ -496,6 +496,11 @@ const AR_CSS = `
 .ar-card p{margin:0 0 9px;font-size:17px;line-height:1.64}
 .ar-card p:last-child{margin-bottom:0}
 .ar-quiet{opacity:.72;font-size:15.5px;font-style:italic}
+.ar-said,.ar-cam{display:flex;gap:10px;align-items:baseline;margin:8px 0;padding:7px 12px;border-left:2px solid rgba(231,185,120,.5);background:rgba(255,243,210,.04)}
+.ar-said cite,.ar-cam cite{flex:none;font-style:normal;font-family:var(--v-display);font-weight:700;font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:rgba(231,185,120,.9)}
+.ar-said-txt,.ar-cam-txt{font-family:var(--ar-hand);font-size:17px;line-height:1.45;color:#f6efdf}
+.ar-cam{border-left-color:rgba(143,166,194,.7);background:rgba(110,150,210,.07)}
+.ar-cam cite{color:#8fa6c2}.ar-cam cite::after{content:" · to camera";letter-spacing:.1em;opacity:.75}
 
 /* one entry on the page: face, name, billing */
 .ar-who{display:flex;align-items:flex-start;gap:13px;margin-bottom:11px}
@@ -645,6 +650,20 @@ function _sums(bits) {
 // THE BEATS — the drive, then the page, then the rules, then the line
 // ══════════════════════════════════════════════════════════════════════
 
+// A LINE OF THE ARRIVAL, as what it is: said out loud on the gravel, said to
+// camera, or narration (its kind kept on the paragraph, so the stage can play
+// the entrance and the talk and leave the reads of each person to this page).
+function _arrLine(l) {
+  const q = t => '&ldquo;' + _line(t) + '&rdquo;';
+  if (l.who && (l.cam || l.kind === 'confessional')) {
+    return '<div class="ar-cam"><cite>' + _esc(l.who) + '</cite> <span class="ar-cam-txt">' + q(l.text) + '</span></div>';
+  }
+  if (l.who && l.said) {
+    return '<div class="ar-said"><cite>' + _esc(l.who) + '</cite> <span class="ar-said-txt">' + q(l.text) + '</span></div>';
+  }
+  return '<p data-k="' + _esc(l.kind || '') + '"' + (l.kind === 'reaction' ? ' class="ar-quiet"' : '') + '>' + _line(l.text) + '</p>';
+}
+
 function _buildBeats(v, ep) {
   const beats = [];
   const push = (phase, html, meta) => beats.push({ phase, html, meta: meta || null });
@@ -686,8 +705,7 @@ function _buildBeats(v, ep) {
         + '<div><div class="ar-who-nm">' + _esc(name) + '</div>'
         + '<div class="ar-who-sub">' + _esc(_billing(it.type))
         + (you ? ' &middot; You' : '') + '</div></div></div>'
-        + (it.lines || []).map(l => '<p' + (l.kind === 'reaction' ? ' class="ar-quiet"' : '')
-          + '>' + _line(l.text) + '</p>').join(''),
+        + (it.lines || []).map(_arrLine).join(''),
         'vellum'),
       { kind: 'intro', name, placed });
     }

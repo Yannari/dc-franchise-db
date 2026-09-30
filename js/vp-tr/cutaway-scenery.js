@@ -378,37 +378,71 @@ export const TRScenery = (function () {
     s += `<rect width="${w}" height="${h}" fill="url(#vignette)"/></svg>`;
     return s;
   }
-  // ── THE TURRET — screen-sized. Round stone, two arrow slits with the moon in
-  // them, the brazier, cloaks on their hooks, and the small round table the
-  // pact meets at, lit from below by its candles. No other light in the castle.
+  // ── THE TURRET — screen-sized. The conclave chamber at the top of the
+  // castle (redrawn 2026-09-30; the user: "the conclave bg and decor is still
+  // really ugly"): curved stone under a gothic arch, a lancet window of dark
+  // stained glass with the moon coming through it in shafts, red velvet
+  // drapes, two banners with the dagger crest, iron candelabras either side,
+  // stone flags and a red rug, and the round table in a blood-red cloth with
+  // its candles and a goblet — the only warm light in the building.
   function turretSet(w, h) {
+    const cx = w / 2;
     let s = `<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" style="position:absolute;inset:0">${DEFS}
       <defs>
-        <radialGradient id="tuRoom" cx=".5" cy=".62" r=".75"><stop offset="0" stop-color="#3a1a10"/><stop offset=".55" stop-color="#1a0a0a"/><stop offset="1" stop-color="#060304"/></radialGradient>
-        <radialGradient id="tuTable" cx=".5" cy=".35" r=".7"><stop offset="0" stop-color="#5a2e14"/><stop offset="1" stop-color="#1e0d05"/></radialGradient>
+        <radialGradient id="tuRoom" cx=".5" cy=".55" r=".8"><stop offset="0" stop-color="#4a1a14"/><stop offset=".5" stop-color="#1e0a0c"/><stop offset="1" stop-color="#050203"/></radialGradient>
+        <linearGradient id="tuDrape" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3a0610"/><stop offset=".3" stop-color="#7a1424"/><stop offset=".55" stop-color="#4a0a14"/><stop offset=".8" stop-color="#8a1a2a"/><stop offset="1" stop-color="#2a040a"/></linearGradient>
+        <linearGradient id="tuGlass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a3a6a"/><stop offset=".5" stop-color="#5a1a3a"/><stop offset="1" stop-color="#1a2440"/></linearGradient>
+        <linearGradient id="tuBeam" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b8c8f0" stop-opacity=".28"/><stop offset="1" stop-color="#b8c8f0" stop-opacity="0"/></linearGradient>
+        <linearGradient id="tuFloor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1a1010"/><stop offset="1" stop-color="#060304"/></linearGradient>
+        <radialGradient id="tuCloth" cx=".5" cy=".3" r=".8"><stop offset="0" stop-color="#a01c2c"/><stop offset=".6" stop-color="#5a0a14"/><stop offset="1" stop-color="#2a0408"/></radialGradient>
+        <linearGradient id="tuWood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a2a14"/><stop offset="1" stop-color="#120804"/></linearGradient>
+        <radialGradient id="tuWarm" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffb060" stop-opacity=".45"/><stop offset="1" stop-color="#ffb060" stop-opacity="0"/></radialGradient>
       </defs>`;
-    s += `<rect width="${w}" height="${h}" fill="url(#ashlarIn)"/><rect width="${w}" height="${h}" fill="url(#tuRoom)" opacity=".92"/>`;
-    // the curve of the wall: stone courses bending round
-    for (let i = 0; i < 7; i++) s += `<path d="M0 ${h * (.1 + i * .08)} Q${w / 2} ${h * (.04 + i * .08)} ${w} ${h * (.1 + i * .08)}" stroke="#000" stroke-width="2" opacity=".25" fill="none"/>`;
-    // arrow slits with moonlight
-    [.3, .7].forEach(f => {
-      s += `<rect x="${w * f - 5}" y="${h * .1}" width="10" height="${h * .22}" rx="5" fill="#2a3a55"/>`
-        + `<circle cx="${w * f}" cy="${h * .2}" r="${h * .2}" fill="url(#moonGlow)" opacity=".55"/>`;
-    });
-    // the brazier, left, and its glow
-    const bx = w * .1, by = h * .62;
-    s += `<circle cx="${bx}" cy="${by}" r="${h * .45}" fill="url(#fireGlow)"/>`
-      + `<path d="M${bx - 26} ${by} h52 l-10 20 h-32Z" fill="#3a2414"/><path d="M${bx - 12} ${by + 20} l-8 ${h * .16} M${bx + 12} ${by + 20} l8 ${h * .16}" stroke="#3a2414" stroke-width="5"/>`
-      + `<ellipse cx="${bx}" cy="${by - 10}" rx="22" ry="20" fill="url(#flame)" class="flick"/>`;
-    // cloaks on hooks, right
-    [.86, .92].forEach((f, i) => { s += `<path d="M${w * f} ${h * .12} q-18 ${h * .3} -8 ${h * .6} h32 q4 ${-h * .34} -10 ${-h * .6}Z" fill="${i ? '#1f3a2e' : '#3a0a14'}"/>`; });
-    // the floor, and the small round table
-    s += `<rect y="${h * .8}" width="${w}" height="${h * .2}" fill="#0c0606"/>`;
-    const cx = w / 2, cy = h * .66, rx = w * .2, ry = h * .09;
-    s += `<ellipse cx="${cx}" cy="${cy + ry * .35}" rx="${rx}" ry="${ry}" fill="#0a0503"/>`
-      + `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="url(#tuTable)" stroke="#6a3a18" stroke-width="2"/>`
-      + `<circle cx="${cx}" cy="${cy - h * .05}" r="${h * .32}" fill="url(#candleGlow)" opacity=".85"/>`;
-    [-.1, -.03, .04, .11].forEach(o => { s += candle(cx + w * o, cy + (o > 0 ? 4 : -2), 14, 40); });
+    // the stone, and the red dark in it
+    s += `<rect width="${w}" height="${h}" fill="url(#ashlarIn)"/><rect width="${w}" height="${h}" fill="url(#tuRoom)" opacity=".9"/>`;
+    for (let i = 0; i < 9; i++) s += `<path d="M0 ${h * (.06 + i * .075)} Q${cx} ${h * (i * .075)} ${w} ${h * (.06 + i * .075)}" stroke="#000" stroke-width="2" opacity=".28" fill="none"/>`;
+    // THE ARCH at the back, and the lancet window in it
+    const aw = w * .2, ay = h * .08, ah = h * .5;
+    s += `<path d="M${cx - aw / 2} ${ay + ah} V${ay + aw * .45} Q${cx - aw / 2} ${ay} ${cx} ${ay - h * .02} Q${cx + aw / 2} ${ay} ${cx + aw / 2} ${ay + aw * .45} V${ay + ah}Z" fill="#0a0406" stroke="#3a2420" stroke-width="10"/>`;
+    const lw = aw * .42, ly = ay + h * .05, lh = ah * .72;
+    s += `<path d="M${cx - lw / 2} ${ly + lh} V${ly + lw * .5} Q${cx - lw / 2} ${ly} ${cx} ${ly - h * .015} Q${cx + lw / 2} ${ly} ${cx + lw / 2} ${ly + lw * .5} V${ly + lh}Z" fill="url(#tuGlass)"/>`;
+    // leading in the glass, and a pale moon behind it
+    s += `<circle cx="${cx}" cy="${ly + lh * .3}" r="${lw * .28}" fill="#dfe6f5" opacity=".35"/>`;
+    for (let i = 1; i < 4; i++) s += `<line x1="${cx - lw / 2}" y1="${ly + lh * i / 4}" x2="${cx + lw / 2}" y2="${ly + lh * i / 4}" stroke="#120a10" stroke-width="3"/>`;
+    s += `<line x1="${cx}" y1="${ly}" x2="${cx}" y2="${ly + lh}" stroke="#120a10" stroke-width="3"/>`;
+    // shafts of moonlight falling across the room
+    s += `<path d="M${cx - lw * .4} ${ly + lh * .2} L${cx - w * .2} ${h} L${cx + w * .02} ${h} L${cx + lw * .4} ${ly + lh * .2}Z" fill="url(#tuBeam)"><animate attributeName="opacity" dur="7s" repeatCount="indefinite" values=".8;1;.7;.95;.8"/></path>`;
+    // the drapes, gathered at the sides
+    const drape = (x0, x1, flip) => `<path d="M${x0} 0 H${x1} C${x1 + (flip ? 30 : -30)} ${h * .3} ${x1 + (flip ? -20 : 20)} ${h * .55} ${x1 + (flip ? 16 : -16)} ${h * .82} H${x0}Z" fill="url(#tuDrape)"/>`
+      + `<path d="M${x0} ${h * .04} H${x1}" stroke="#c9a24a" stroke-width="5"/>`;
+    s += drape(0, w * .11, false) + drape(w, w * .89, true);
+    // banners with the dagger crest
+    const banner = x => `<path d="M${x - w * .035} ${h * .08} H${x + w * .035} V${h * .36} L${x} ${h * .31} L${x - w * .035} ${h * .36}Z" fill="#5a0a14" stroke="#c9a24a" stroke-width="2"/>`
+      + `<path d="M${x} ${h * .12} L${x + 6} ${h * .2} L${x + 3} ${h * .2} L${x + 3} ${h * .27} L${x - 3} ${h * .27} L${x - 3} ${h * .2} L${x - 6} ${h * .2}Z" fill="#e8c878"/>`
+      + `<rect x="${x - 12}" y="${h * .195}" width="24" height="4" fill="#e8c878"/>`;
+    s += banner(w * .22) + banner(w * .78);
+    // the floor: flags in perspective, a red rug under the table
+    s += `<path d="M0 ${h * .7} H${w} V${h} H0Z" fill="url(#tuFloor)"/>`;
+    for (let i = 1; i < 6; i++) s += `<path d="M0 ${h * (.7 + i * i * .012)} H${w}" stroke="#000" stroke-width="1.5" opacity=".5"/>`;
+    for (let i = -6; i <= 6; i++) s += `<path d="M${cx + i * w * .06} ${h * .7} L${cx + i * w * .16} ${h}" stroke="#000" stroke-width="1.5" opacity=".4"/>`;
+    s += `<ellipse cx="${cx}" cy="${h * .82}" rx="${w * .38}" ry="${h * .14}" fill="#4a0a12" opacity=".9"/><ellipse cx="${cx}" cy="${h * .82}" rx="${w * .35}" ry="${h * .12}" fill="none" stroke="#c9a24a" stroke-width="2" opacity=".5"/>`;
+    // the candelabras either side
+    const candelabra = (x) => {
+      let c = `<circle cx="${x}" cy="${h * .36}" r="${h * .32}" fill="url(#tuWarm)"/>`
+        + `<path d="M${x} ${h * .78} V${h * .42}" stroke="#1a1414" stroke-width="7"/><path d="M${x - 26} ${h * .8} H${x + 26} L${x + 10} ${h * .76} H${x - 10}Z" fill="#1a1414"/>`
+        + `<path d="M${x - 44} ${h * .42} Q${x} ${h * .5} ${x + 44} ${h * .42}" stroke="#1a1414" stroke-width="5" fill="none"/>`;
+      for (const o of [-44, -22, 0, 22, 44]) c += candle(x + o, h * (o === 0 ? .4 : Math.abs(o) === 22 ? .44 : .42), 9, 26);
+      return c;
+    };
+    s += candelabra(w * .2) + candelabra(w * .8);
+    // THE TABLE: carved rim, blood-red cloth, candles and a goblet
+    const ty = h * .66, rx = w * .22, ry = h * .085;
+    s += `<ellipse cx="${cx}" cy="${ty + ry * .6}" rx="${rx * 1.02}" ry="${ry}" fill="#080304"/>`
+      + `<path d="M${cx - rx} ${ty} V${ty + h * .07} A${rx} ${ry} 0 0 0 ${cx + rx} ${ty + h * .07} V${ty}Z" fill="url(#tuWood)"/>`
+      + `<ellipse cx="${cx}" cy="${ty}" rx="${rx}" ry="${ry}" fill="url(#tuCloth)" stroke="#c9a24a" stroke-width="2"/>`
+      + `<circle cx="${cx}" cy="${ty - h * .05}" r="${h * .3}" fill="url(#candleGlow)" opacity=".9"/>`;
+    [-.14, -.07, .07, .14].forEach(o => { s += candle(cx + w * o, ty + (Math.abs(o) > .1 ? 2 : -3), 12, 36); });
+    s += `<path d="M${cx - 12} ${ty - 30} Q${cx} ${ty - 10} ${cx + 12} ${ty - 30}Z" fill="#c9a24a"/><rect x="${cx - 2}" y="${ty - 18}" width="4" height="14" fill="#a8842a"/><ellipse cx="${cx}" cy="${ty - 3}" rx="9" ry="3" fill="#a8842a"/>`;
     s += `<rect width="${w}" height="${h}" fill="url(#vignette)"/></svg>`;
     return s;
   }
@@ -760,6 +794,106 @@ export const TRScenery = (function () {
       for (let i = 0; i < 26; i++) { const x = i < 13 ? R(0, 330, r) : R(1270, 1600, r); s += pine(x, R(300, 345, r), R(60, 120, r)); }
       // the loch
       s += `<rect x="0" y="330" width="1600" height="30" fill="${night ? '#0d1626' : '#7a6a7a'}" opacity=".55"/>`;
+      return s;
+    },
+    // ── THE FRONT OF THE CASTLE, FROM THE FORECOURT (the arrival) ────────
+    // A full-frame set (1600 × 900, sliced to fill): a Scottish Baronial house
+    // at dusk — red sandstone, a battlemented central tower, round towers under
+    // tall slate cones, crow-stepped gables, corbelled bartizans on the
+    // corners, lit mullioned windows and the great door — with the hills and
+    // the loch behind, pines either side and a gravel forecourt in front.
+    // Drawn for the drive, where the cars pull up and the cast get out.
+    facade() {
+      const r = rng(23);
+      const W = 1600, G = 640;                        // G: the foot of the walls
+      let s = `<svg viewBox="0 0 ${W} 900" preserveAspectRatio="xMidYMax slice" style="position:absolute;inset:0;width:100%;height:100%">${DEFS}
+      <defs>
+        <linearGradient id="fcSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b1a3a"/><stop offset=".45" stop-color="#5a3a5e"/><stop offset=".72" stop-color="#c8746a"/><stop offset="1" stop-color="#f2b27a"/></linearGradient>
+        <linearGradient id="fcStone" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ff9a5a" stop-opacity=".32"/><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#1a0a14" stop-opacity=".45"/></linearGradient>
+        <linearGradient id="fcDown" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#12060a" stop-opacity=".55"/></linearGradient>
+        <linearGradient id="fcCone" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5c6478"/><stop offset=".45" stop-color="#2e3444"/><stop offset="1" stop-color="#161a24"/></linearGradient>
+        <radialGradient id="fcWin" cx=".5" cy=".6" r=".7"><stop offset="0" stop-color="#ffe6a8"/><stop offset=".6" stop-color="#f0a84a"/><stop offset="1" stop-color="#8a4a18"/></radialGradient>
+        <radialGradient id="fcGlow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffcf80" stop-opacity=".55"/><stop offset="1" stop-color="#ffcf80" stop-opacity="0"/></radialGradient>
+        <linearGradient id="fcGravel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6e6258"/><stop offset="1" stop-color="#2e2824"/></linearGradient>
+        <linearGradient id="fcLoch" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e8a27a" stop-opacity=".75"/><stop offset="1" stop-color="#3a3050" stop-opacity=".9"/></linearGradient>
+        <pattern id="fcPeb" width="9" height="7" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1" fill="#fff" opacity=".08"/><circle cx="6.5" cy="5" r=".8" fill="#000" opacity=".18"/></pattern>
+      </defs>
+      <rect width="${W}" height="900" fill="url(#fcSky)"/>`;
+      // the first stars, and a low sun behind the hills
+      for (let i = 0; i < 40; i++) s += `<circle cx="${R(0, W, r)}" cy="${R(10, 200, r)}" r="${R(.6, 1.6, r)}" fill="#fff" opacity="${R(.2, .7, r)}"/>`;
+      s += `<circle cx="1180" cy="455" r="90" fill="#ffd9a0" opacity=".35"/><circle cx="1180" cy="455" r="46" fill="#ffe6c0" opacity=".6"/>`;
+      // mountains, far and near
+      s += `<path d="M0 470 L120 400 L230 440 L380 350 L520 420 L640 380 L780 440 L920 370 L1080 430 L1220 360 L1380 420 L1500 380 L1600 410 V560 H0Z" fill="#6a4a6e" opacity=".85"/>`;
+      s += `<path d="M0 520 C150 470 260 500 400 470 C560 440 700 500 860 480 C1020 460 1160 500 1320 470 C1450 450 1540 480 1600 470 V580 H0Z" fill="#43304c"/>`;
+      // the loch, with the sky in it
+      s += `<rect x="0" y="540" width="${W}" height="46" fill="url(#fcLoch)"/>`;
+      for (let i = 0; i < 18; i++) s += `<rect x="${R(0, W, r)}" y="${R(548, 580, r)}" width="${R(30, 120, r)}" height="1.4" fill="#ffe0c0" opacity="${R(.15, .4, r)}"/>`;
+      // pines either side
+      const pine = (x, y, h, c) => `<path d="M${x} ${y - h} L${x - h * .22} ${y - h * .55} L${x - h * .1} ${y - h * .55} L${x - h * .3} ${y - h * .22} L${x - h * .14} ${y - h * .22} L${x - h * .38} ${y} L${x + h * .38} ${y} L${x + h * .14} ${y - h * .22} L${x + h * .3} ${y - h * .22} L${x + h * .1} ${y - h * .55} L${x + h * .22} ${y - h * .55}Z" fill="${c}"/>`;
+      for (let i = 0; i < 34; i++) { const left = i % 2 === 0; const x = left ? R(-20, 280, r) : R(1320, 1620, r); s += pine(x, R(600, 660, r), R(120, 230, r), i % 3 ? '#1a1e1c' : '#232824'); }
+      // ── the house ──
+      const wall = (d) => `<path d="${d}" fill="url(#ashlar)"/><path d="${d}" fill="#8a3a2a" opacity=".35"/><path d="${d}" fill="url(#fcStone)"/><path d="${d}" fill="url(#fcDown)"/>`;
+      const cone = (cx, baseY, rad, hgt) => `<path d="M${cx - rad - 6} ${baseY} L${cx} ${baseY - hgt} L${cx + rad + 6} ${baseY} Z" fill="url(#fcCone)"/>`
+        + `<path d="M${cx - rad - 6} ${baseY} L${cx} ${baseY - hgt} L${cx + rad + 6} ${baseY} Z" fill="url(#slate)" opacity=".5"/>`
+        + `<line x1="${cx}" y1="${baseY - hgt}" x2="${cx}" y2="${baseY - hgt - 22}" stroke="#2a2a30" stroke-width="3"/><circle cx="${cx}" cy="${baseY - hgt - 24}" r="4" fill="#c9a24a"/>`;
+      const crow = (x0, x1, y, peak) => {
+        const steps = 5, dx = (x1 - x0) / 2 / steps, dy = (y - peak) / steps; let d = `M${x0} ${y}`;
+        for (let i = 0; i < steps; i++) d += ` L${x0 + i * dx} ${y - (i + 1) * dy} L${x0 + (i + 1) * dx} ${y - (i + 1) * dy}`;
+        for (let i = steps; i > 0; i--) d += ` L${x1 - (i - 1) * dx - dx} ${y - i * dy} L${x1 - (i - 1) * dx - dx} ${y - (i - 1) * dy}`;
+        return d + ` L${x1} ${y} Z`;
+      };
+      const win = (x, y, w, h, lit) => `<rect x="${x - 3}" y="${y - 3}" width="${w + 6}" height="${h + 6}" fill="#6a2a1e"/>`
+        + `<path d="M${x} ${y + w / 2} A${w / 2} ${w / 2} 0 0 1 ${x + w} ${y + w / 2} V${y + h} H${x}Z" fill="${lit ? 'url(#fcWin)' : '#1a1624'}"/>`
+        + `<line x1="${x + w / 2}" y1="${y + 4}" x2="${x + w / 2}" y2="${y + h}" stroke="#3a1a12" stroke-width="2"/><line x1="${x}" y1="${y + h * .55}" x2="${x + w}" y2="${y + h * .55}" stroke="#3a1a12" stroke-width="2"/>`
+        + (lit ? `<ellipse cx="${x + w / 2}" cy="${y + h / 2}" rx="${w * 1.6}" ry="${h * .9}" fill="url(#fcGlow)"/>` : '');
+      const lit = () => r() < .78;
+      // chimney stacks behind the roofs
+      for (const cx of [360, 560, 1040, 1240]) s += `<rect x="${cx}" y="300" width="34" height="80" fill="#7a3424"/><rect x="${cx - 4}" y="296" width="42" height="8" fill="#5a2418"/>`
+        + `<rect x="${cx + 6}" y="286" width="8" height="12" fill="#6a4a3a"/><rect x="${cx + 20}" y="286" width="8" height="12" fill="#6a4a3a"/>`;
+      // wings: slate roofs, walls, crow-stepped gables at the outer ends
+      s += `<path d="M300 400 L360 330 L640 330 L640 400Z" fill="url(#slate)"/><path d="M960 400 L960 330 L1240 330 L1300 400Z" fill="url(#slate)"/>`;
+      s += wall(`M300 400 H640 V${G} H300Z`) + wall(`M960 400 H1300 V${G} H960Z`);
+      s += wall(crow(250, 400, 400, 280)) + wall(`M250 400 H400 V${G} H250Z`);
+      s += wall(crow(1200, 1350, 400, 280)) + wall(`M1200 400 H1350 V${G} H1200Z`);
+      // dormers on the wing roofs
+      for (const dx of [440, 540, 1010, 1110]) s += `<path d="M${dx} 400 V360 L${dx + 24} 338 L${dx + 48} 360 V400Z" fill="#7a3424"/>` + win(dx + 12, 364, 24, 30, lit());
+      // bartizans: corbelled corner turrets with little cones
+      for (const bx of [250, 1350]) s += `<path d="M${bx - 22} 420 H${bx + 22} L${bx + 14} 452 H${bx - 14}Z" fill="#6a2a1e"/>` + wall(`M${bx - 22} 330 H${bx + 22} V420 H${bx - 22}Z`) + cone(bx, 332, 22, 90) + win(bx - 7, 352, 14, 30, lit());
+      // the central tower, battlemented, and its flag
+      s += wall(`M660 250 H940 V${G} H660Z`);
+      s += `<path d="M650 250 H950 V232 H650Z" fill="#6a2a1e"/>`;
+      for (let x = 650; x < 950; x += 30) s += `<rect x="${x}" y="212" width="18" height="22" fill="#7a3424"/><rect x="${x}" y="212" width="18" height="22" fill="url(#ashlar)" opacity=".7"/>`;
+      s += `<line x1="800" y1="212" x2="800" y2="120" stroke="#2a2a30" stroke-width="4"/><path d="M800 124 C830 118 850 132 880 126 L880 160 C850 166 830 152 800 158Z" fill="#8e1526"><animate attributeName="d" dur="3s" repeatCount="indefinite" values="M800 124 C830 118 850 132 880 126 L880 160 C850 166 830 152 800 158Z;M800 124 C830 132 850 116 880 124 L880 158 C850 150 830 166 800 158Z;M800 124 C830 118 850 132 880 126 L880 160 C850 166 830 152 800 158Z"/></path>`;
+      // round towers flanking the centre, under tall cones
+      for (const tx of [640, 960]) {
+        s += wall(`M${tx - 46} 300 H${tx + 46} V${G} H${tx - 46}Z`) + `<rect x="${tx - 46}" y="300" width="92" height="${G - 300}" fill="url(#fcDown)" opacity=".5"/>`;
+        s += `<rect x="${tx - 52}" y="296" width="104" height="10" fill="#6a2a1e"/>` + cone(tx, 298, 46, 150);
+        s += win(tx - 10, 340, 20, 44, lit()) + win(tx - 10, 430, 20, 44, lit()) + win(tx - 10, 520, 20, 44, lit());
+      }
+      // windows: three floors across the wings and the tower
+      for (const [x0, x1] of [[320, 600], [1000, 1280]]) for (const y of [430, 520]) for (let x = x0; x <= x1; x += 70) s += win(x, y, 26, 54, lit());
+      for (const x of [268, 358, 1218, 1308]) { s += win(x, 430, 24, 50, lit()); s += win(x, 520, 24, 50, lit()); }
+      for (const x of [720, 858]) for (const y of [290, 380]) s += win(x, y, 30, 60, lit());
+      s += win(785, 300, 30, 50, true);
+      // the great door: an arch, lit from inside, lanterns either side, steps
+      s += `<ellipse cx="800" cy="570" rx="140" ry="90" fill="url(#fcGlow)"/>`;
+      s += `<path d="M752 ${G} V520 A48 48 0 0 1 848 520 V${G}Z" fill="#4a1c12"/><path d="M760 ${G} V522 A40 40 0 0 1 840 522 V${G}Z" fill="#ffd28a"/>`;
+      s += `<path d="M760 ${G} V522 A40 40 0 0 1 840 522 V${G}Z" fill="url(#fcWin)" opacity=".8"><animate attributeName="opacity" dur="2.8s" repeatCount="indefinite" values=".75;.95;.8;.9;.75"/></path>`;
+      s += `<rect x="720" y="${G}" width="160" height="10" fill="#8a7a6a"/><rect x="706" y="${G + 10}" width="188" height="10" fill="#7a6a5a"/>`;
+      for (const lx of [728, 872]) s += `<rect x="${lx - 2}" y="520" width="4" height="20" fill="#2a2a30"/><rect x="${lx - 8}" y="540" width="16" height="22" rx="2" fill="#ffe0a0"/><circle cx="${lx}" cy="551" r="30" fill="url(#fcGlow)"/>`;
+      // ── the forecourt ──
+      s += `<path d="M0 ${G + 20} H${W} V900 H0Z" fill="url(#fcGravel)"/><path d="M0 ${G + 20} H${W} V900 H0Z" fill="url(#fcPeb)"/>`;
+      s += `<path d="M0 ${G + 20} H${W}" stroke="#3a2a22" stroke-width="3"/>`;
+      // lawns either side, and the balustrade along the terrace
+      s += `<path d="M0 ${G + 20} H330 C260 720 150 780 0 800Z" fill="#2a3a24"/><path d="M${W} ${G + 20} H1270 C1340 720 1450 780 ${W} 800Z" fill="#2a3a24"/>`;
+      for (const [x0, x1] of [[260, 690], [910, 1340]]) {
+        s += `<rect x="${x0}" y="${G - 4}" width="${x1 - x0}" height="8" fill="#9a5a44"/>`;
+        for (let x = x0 + 8; x < x1 - 4; x += 14) s += `<path d="M${x} ${G + 4} q5 7 0 14 h6 q-5 -7 0 -14z" fill="#8a4a34"/>`;
+        s += `<rect x="${x0}" y="${G + 18}" width="${x1 - x0}" height="6" fill="#7a3a28"/>`;
+      }
+      // a low mist on the loch side, and the light on the gravel from the door
+      s += `<ellipse cx="800" cy="${G + 60}" rx="320" ry="60" fill="url(#fcGlow)" opacity=".7"/>`;
+      s += `<rect width="${W}" height="900" fill="url(#vignette)"/></svg>`;
       return s;
     },
   };

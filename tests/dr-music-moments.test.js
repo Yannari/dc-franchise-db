@@ -22,7 +22,7 @@ describe("the show's cues", () => {
       'private/love-yourself.mp3': ['closing'],
       // The Last Sun is her goodbye, and nothing else (the user: the call "is using the sashay music").
       'private/decision.mp3': ['sashay'],
-      'private/arrivals.mp3': ['entrances'],
+      'private/arrivals.mp3': ['entrances', 'returns'],
       'private/werkroom.mp3': ['werkroom'],
       'private/untucked.mp3': ['untucked'],
       'private/rehearsal.mp3': ['prep'],

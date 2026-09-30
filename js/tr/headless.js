@@ -892,6 +892,136 @@ function _missionRecord(m) {
  * unless a season asks; the audience record knowing the number is not a reason
  * to let the host say it on the gravel.
  */
+// ── WHAT GOES THROUGH THEIR HEADS (2026-09-30) ────────────────────────
+//
+// The user: "we need confessional to understand what's going through their
+// head — are they excited about being chosen or not, sad about being a
+// Faithful or not". Everybody chosen says how the hand felt; a few who were
+// not say how the nothing felt. The FEELING is their archetype's — the one
+// fact about how somebody plays that the season holds on night one — and the
+// lines claim nothing else: no names, no count, nobody else's role.
+const _SEL_FEEL = {
+  traitor: {
+    thrilled: ['mastermind', 'schemer', 'villain', 'chaos-agent', 'wildcard'],
+    torn: ['hero', 'loyal-soldier', 'social-butterfly', 'underdog', 'goat', 'showmancer'],
+  },
+  faithful: {
+    gutted: ['mastermind', 'schemer', 'villain', 'chaos-agent', 'wildcard'],
+    relieved: ['hero', 'loyal-soldier', 'goat', 'underdog', 'social-butterfly', 'showmancer', 'floater'],
+  },
+};
+const _SEL_CONF = {
+  thrilled: [
+    'The hand landed and I nearly laughed out loud. I have wanted this for years.',
+    'A Traitor. Me. I had to bite the inside of my cheek to keep a straight face.',
+    'When that hand touched my shoulder my heart went through the floor. In a good way.',
+    'They picked the right person. I am going to be very, very good at this.',
+  ],
+  torn: [
+    'I felt the hand and my stomach dropped. I’m going to have to lie to people I actually like.',
+    'I didn’t want this. I really didn’t. But I’m not going to waste it.',
+    'My family are going to watch me lie to everyone. I don’t know how I feel about that.',
+    'I came here to catch Traitors. Now I am one. I honestly don’t know what to do with that.',
+  ],
+  steely: [
+    'Right. Fine. A job’s a job, and I’m going to do this one properly.',
+    'I wasn’t expecting it. Doesn’t matter. I’ll play what I’m given.',
+    'No nerves. Just a lot of people downstairs who have no idea.',
+  ],
+  gutted: [
+    'Nothing. No hand. I sat there waiting for it and it never came. Gutted.',
+    'I really wanted to be a Traitor. I’d have been brilliant. Their loss.',
+    'I heard the footsteps go right past me. Right past. Honestly, I’m a bit insulted.',
+  ],
+  relieved: [
+    'No hand. Thank God. I couldn’t lie to these people for a day, never mind a month.',
+    'I’m a Faithful, and I’m so relieved. Now I just have to find them.',
+    'The footsteps stopped somewhere near me and I nearly died. Then they walked on.',
+  ],
+  hunter: [
+    'Faithful. Good. Somebody at that table just lied to my face, and I’m going to find out who.',
+    'I didn’t get picked, so now I get to hunt. Suits me.',
+    'Some of them just took their blindfolds off and smiled at me. I’ll remember every one of those smiles.',
+  ],
+};
+function _selectionConfessionals(line, chosen) {
+  const archOf = n => ((players || []).find(p => p && p.name === n) || {}).archetype || '';
+  const used = new Set();
+  const say = (name, feel) => ({ who: name, feel,
+    text: _pPickUnique(_SEL_CONF[feel], 'tr|selconf|' + feel + '|' + name, used) });
+  const out = [];
+  for (const n of chosen) {
+    const a = archOf(n);
+    out.push({ ...say(n, _SEL_FEEL.traitor.thrilled.includes(a) ? 'thrilled'
+      : _SEL_FEEL.traitor.torn.includes(a) ? 'torn' : 'steely'), role: 'traitor' });
+  }
+  // three who were not tapped, one of each feeling where the cast allows it
+  const rest = line.filter(n => !chosen.includes(n))
+    .sort((x, y) => _pHash('tr|selpick|' + x) - _pHash('tr|selpick|' + y));
+  const feelOf = n => { const a = archOf(n);
+    return _SEL_FEEL.faithful.gutted.includes(a) ? 'gutted' : _SEL_FEEL.faithful.relieved.includes(a) ? 'relieved' : 'hunter'; };
+  const picked = [];
+  for (const f of ['gutted', 'relieved', 'hunter']) {
+    const n = rest.find(x => !picked.includes(x) && feelOf(x) === f);
+    if (n) picked.push(n);
+  }
+  for (const n of rest) { if (picked.length >= 3) break; if (!picked.includes(n)) picked.push(n); }
+  for (const n of picked) out.push({ ...say(n, feelOf(n)), role: 'faithful' });
+  return out;
+}
+
+// ── THE FIRST MEETING (2026-09-30) ────────────────────────────────────
+//
+// The user: "there should be a conclave scene right after selection — they
+// discover each other at the first conclave meeting". They come up one at a
+// time in the order the hand found them; the first waits alone; each hood
+// that comes down is met by somebody already in the room, as warmly as the
+// two of them already feel (the STARTING BOND, read, never written); and the
+// last word is the pact's. Names only the chosen, so it is turret-gated.
+const _DISC_ALONE = [
+  'Am I the first? Please don’t let me be the only one.',
+  'Nobody else yet. Just me and a lot of candles.',
+  'Whoever walks through that door next, I have to trust with everything.',
+];
+const _DISC_MEET = {
+  warm: [
+    ['You? Oh, thank God.', 'I was hoping it would be you.'],
+    ['Get in here. I’m so glad it’s you.', 'Same. We are going to be very good at this.'],
+    ['I knew it. I had a feeling about you.', 'Then keep that feeling to yourself downstairs.'],
+  ],
+  neutral: [
+    ['Well. Hello, partner.', 'Hello. So it’s us, then.'],
+    ['Huh. I would not have guessed you.', 'That’s rather the point.'],
+    ['You kept a very straight face down there.', 'So did you.'],
+  ],
+  cold: [
+    ['Oh, brilliant. Of all people.', 'Believe me, I’m thrilled too.'],
+    ['You? Seriously?', 'Try to hide your disappointment.'],
+    ['This is going to be a long month.', 'Then let’s make it a short one for everybody else.'],
+  ],
+};
+const _DISC_PACT = [
+  'So. Us against the lot of them.',
+  'Nobody in this room cracks. Agreed?',
+  'From tonight, the only people we can trust are in this room.',
+  'They have no idea. Let’s keep it that way.',
+];
+function _firstMeeting(order) {
+  if (!order.length) return [];
+  const pick = (pool, k) => pool[_pHash('tr|meet|' + k) % pool.length];
+  const out = [{ who: order[0], text: pick(_DISC_ALONE, order.join('|')) }];
+  for (let i = 1; i < order.length; i++) {
+    const n = order[i], inRoom = order.slice(0, i);
+    // met by whoever in the room feels most strongly about them, either way
+    const by = inRoom.reduce((b, x) => (Math.abs(getBond(x, n)) > Math.abs(getBond(b, n)) ? x : b), inRoom[inRoom.length - 1]);
+    const b = getBond(by, n);
+    const pair = pick(_DISC_MEET[b >= 2 ? 'warm' : b <= -2 ? 'cold' : 'neutral'], by + '>' + n);
+    out.push({ who: by, to: n, text: pair[0] }, { who: n, to: by, text: pair[1] });
+  }
+  if (order.length > 1) out.push({ who: order[order.length - 1], text: pick(_DISC_PACT, 'pact|' + order.join('|')), pact: true });
+  return out;
+}
+
 function _selectionRecord(ep, cast, traitors, { announceCount = false } = {}) {
   const line = [...(cast || [])];
   const chosen = [...(traitors || [])];
@@ -992,6 +1122,11 @@ function _selectionRecord(ep, cast, traitors, { announceCount = false } = {}) {
         + 'in the same room.' },
     ],
     reminder: 'The hand on the shoulder made a Traitor. Nothing about that ever changes.',
+    // TO CAMERA, AFTERWARDS: role-bearing, so the page shows them to the
+    // audience and to nobody but the speaker on a player's copy
+    confessionals: _selectionConfessionals(line, chosen),
+    // the chosen, meeting upstairs for the first time: turret-gated
+    meeting: _firstMeeting(taps.map(t => t.name)),
   };
 }
 
@@ -1833,6 +1968,159 @@ const _ARRIVE_ONE = {
     '{name} counts the group on the flags without appearing to.',
   ],
 };
+// ── SAID ON THE GRAVEL (2026-09-30) ───────────────────────────────────
+//
+// The user, on the arrival: "do dialogue, do confessional — do they know each
+// other, do they like each other, what do you think of that person, who are
+// you". The premiere had twenty people and not one spoken word. Now:
+//
+//   CONFESSIONAL   everybody says who they are, to camera, in their own voice;
+//                  the voice is their ARCHETYPE, the one fact about how they
+//                  play that the season holds before anybody has played.
+//   GREETING       two strangers meeting SAY it, and how warmly is their
+//                  STARTING BOND (seeded before the drive, including any real
+//                  past the franchise carries) — read, never written.
+//   FIRST READ     one person a car tells the camera what they made of the
+//                  one they just met, off the same bond.
+//
+// Nothing here invents a history: a shared season is still only ever the
+// ledger's, and a stranger's line knows only the name they were just told.
+const _CONFESS = {
+  mastermind: [
+    'I’m {name}. I don’t need to be the loudest person in the room. I need to be the one who saw it coming.',
+    '{name}. I plan. The rest of them are pieces on a board, and I’d rather be the one moving them.',
+    'Hi, I’m {name}. I’ve played this game in my head for years. Now I get to do it for real.',
+  ],
+  schemer: [
+    'I’m {name}, and I will lie to your face and you’ll thank me for it.',
+    '{name}. If you wanted somebody honest, you’ve come to the wrong castle.',
+    'I’m {name}. I’m very good at making people think things were their idea.',
+  ],
+  hothead: [
+    'I’m {name}. I say what I think. If that’s a problem, it’s your problem.',
+    '{name}. I’ve got a temper. I’m working on it. Not very hard.',
+    'I’m {name}, and if somebody comes for me at that table, they’ll hear about it.',
+  ],
+  'challenge-beast': [
+    'I’m {name}. Put me in a mission and I’ll win you the money. Simple.',
+    '{name}. I’m competitive about everything. Everything.',
+    'I’m {name}. I’m here to fill that pot, not to sit around talking about feelings.',
+  ],
+  'social-butterfly': [
+    'Hi! I’m {name}, and I’m going to be friends with every single person in there. Well, most of them.',
+    'I’m {name}. I talk to everyone. It’s not a strategy, it’s just me. It’s also a strategy.',
+    '{name}. People tell me things. I don’t even have to ask.',
+  ],
+  'loyal-soldier': [
+    'I’m {name}. If I’m with you, I’m with you. All the way.',
+    '{name}. I keep my word. In there that might get me into trouble, but I keep it.',
+    'I’m {name}. Loyalty is the one thing I’ve got, and I’m not trading it.',
+  ],
+  wildcard: [
+    'I’m {name}. Honestly? I don’t know what I’m going to do. That’s the fun part.',
+    '{name}. People can’t work me out. Neither can I, most days.',
+    'I’m {name}, and nobody in that castle is going to see me coming. Including me.',
+  ],
+  'chaos-agent': [
+    'I’m {name}. I like it when things get messy. So yes, this is my kind of place.',
+    '{name}. If it’s quiet at that table, I’ll fix it.',
+    'I’m {name}. I’m not here to keep the peace.',
+  ],
+  floater: [
+    'I’m {name}. I’m easy to get on with. That’s going to keep me here a long time.',
+    '{name}. I don’t make enemies. I don’t see the point.',
+    'I’m {name}. Nobody’s going to think about me much, and that suits me fine.',
+  ],
+  underdog: [
+    'I’m {name}. Nobody’s ever picked me first for anything. I’m used to proving people wrong.',
+    '{name}. I know I don’t look like a threat. Good.',
+    'I’m {name}, and I didn’t come all this way to go home first.',
+  ],
+  hero: [
+    'I’m {name}. I want to win this the right way, or not at all.',
+    '{name}. I’m going to find the Traitors. That’s the whole plan.',
+    'I’m {name}. If somebody in there needs looking after, I’ll do it.',
+  ],
+  villain: [
+    'I’m {name}. I’m not here to make friends. I’m here to take the money home.',
+    '{name}. Let them hate me. They’ll still be scared of me.',
+    'I’m {name}. Honestly, I’d make a brilliant Traitor. Let’s see if the castle agrees.',
+  ],
+  goat: [
+    'I’m {name}. I’m just happy to be here, honestly. Look at this place!',
+    '{name}. I’m not really a planner. I sort of go with it.',
+    'I’m {name}, and I have no idea what I’m doing. But I’m going to have fun doing it.',
+  ],
+  'perceptive-player': [
+    'I’m {name}. I notice things. Who sits where, who looks away. It adds up.',
+    '{name}. Reading people is most of my job. This is just a bigger room.',
+    'I’m {name}. Give me a few days and I’ll know who’s lying.',
+  ],
+  showmancer: [
+    'I’m {name}. I’m here for the money, obviously. But if somebody in there catches my eye, I won’t complain.',
+    '{name}. I fall for people quickly. That might be a problem in there.',
+    'I’m {name}. I’m a romantic, which is a terrible thing to be in a game about lying.',
+  ],
+  _: [
+    'I’m {name}. Let’s see what this castle has got.',
+    '{name}. I’m here to win. That’s it, that’s the plan.',
+  ],
+};
+// Two strangers: {a} is on the gravel already, {b} has just got out. {b}
+// knows {a}'s name only where {a} has just said it.
+const _GREET = {
+  warm: [
+    ['Hi! I’m {a}.', '{b}. Oh, thank God, a friendly face.'],
+    ['Please tell me you’re as nervous as I am.', 'Worse. I’m {b}, by the way.'],
+    ['I love your coat.', 'Thank you! I’m {b}. I think we’re going to get on.'],
+    ['You look like you know what you’re doing.', 'I really don’t. I’m {b}.'],
+    ['Come and stand with me, I don’t know anybody. I’m {a}.', '{b}. Deal.'],
+  ],
+  neutral: [
+    ['Hi. {a}.', '{b}. Nice to meet you.'],
+    ['Long drive?', 'Very. I’m {b}.'],
+    ['Did they tell you anything in the car?', 'Not a word. I’m {b}.'],
+    ['{a}. And you are?', '{b}. Cold, mainly.'],
+    ['Bit of a castle, isn’t it?', 'Just a bit. I’m {b}.'],
+  ],
+  cold: [
+    ['Hi! I’m {a}!', 'Right. {b}.'],
+    ['Nice of you to finally turn up.', 'I didn’t know we were keeping score.'],
+    ['You’re standing on my bag.', 'Then move your bag.'],
+    ['Hi, I’m {a}. And you are…?', 'Busy. {b}.'],
+  ],
+};
+// After a narrated recognition or a shared season, {b} answers {a}, out loud.
+const _GREET_KNOWN = {
+  warm: ['It’s good to see you, {a}. Really.', 'Just like old times, {a}.', 'Come here, {a}. I missed you.'],
+  neutral: ['{a}. I wondered if you’d be here.', 'Hello, {a}. Here we go again.'],
+  cold: ['Don’t look so pleased to see me, {a}.', '{a}. Still holding a grudge, then?', 'Of all the people, {a}.'],
+};
+const _GREET_SEEN = {
+  warm: ['Guilty. Be nice to me.', 'That’s me. Hi!'],
+  neutral: ['That’s me. Don’t hold it against me.', 'Yes. Please don’t make it a thing.'],
+  cold: ['Great. So I’m already a target.', 'And you are…? No, don’t tell me. I don’t care.'],
+};
+// To camera, about the one they have just met.
+const _FIRST_READ = {
+  warm: [
+    '{o}? I liked {o} straight away. I hope that isn’t a mistake.',
+    '{o} seems lovely. Which, in here, is exactly what a Traitor would seem like.',
+    'I’d trust {o}. Ask me again in a week.',
+  ],
+  neutral: [
+    '{o} is hard to read. In this game, that is not a compliment.',
+    'I don’t know about {o} yet. Nice enough. We’ll see.',
+    '{o} said all the right things. I’m just not sure I believed any of them.',
+  ],
+  cold: [
+    'Something about {o} I don’t like. I can’t tell you what yet.',
+    '{o} was a bit much. I’ll be keeping an eye on that one.',
+    'If I had to pick a Traitor right now? {o}. No reason. Just a feeling.',
+  ],
+};
+const _warmth = b => (b >= 2 ? 'warm' : b <= -2 ? 'cold' : 'neutral');
+
 const _MEET_NEUTRAL = [
   '{a} and {b} shake hands and forget each other&rsquo;s names straight away. They laugh about it.',
   '{a} asks {b} how the journey was. {b} says long, and they both look up at the castle.',
@@ -2317,7 +2605,11 @@ function _threatTier(bg) {
  * @param backgrounds `gs.tr.backgrounds` — the FROZEN snapshot, never the database
  * @param host        the CONFIGURED host key, or null. Never a name in prose.
  */
-export function buildArrivalRecord(cast, backgrounds = {}, host = null) {
+export function buildArrivalRecord(cast, backgrounds = {}, host = null, opts = {}) {
+  // THE STARTING BONDS, read and never written: how warmly two people meet is
+  // how the season already has them. Absent (a direct call), everybody meets
+  // as a stranger with no feeling either way.
+  const bondOf = typeof opts.bondOf === 'function' ? opts.bondOf : () => 0;
   const line = [...(cast || [])].filter(Boolean);
   if (!line.length) return null;
   const bgOf = n => (backgrounds && backgrounds[n]) || null;
@@ -2375,6 +2667,9 @@ export function buildArrivalRecord(cast, backgrounds = {}, host = null) {
       // the only sentence on this record allowed to state a past, and it
       // states one only where the ledger holds one.
       if (bg && bg.summary) lines.push({ kind: 'record', text: bg.summary });
+      // CONFESSIONAL: who they are, in their own words
+      lines.push({ kind: 'confessional', who: name, text: _pFill(_pPickUnique(
+        _CONFESS[person && person.archetype] || _CONFESS._, seed + '|conf|' + name, used), { name }) });
       // ── WHO THIS PERSON IS, out of what the season already knows ──────
       //
       // Stats, then archetype, then what the room will assume. Each reads a
@@ -2441,15 +2736,31 @@ export function buildArrivalRecord(cast, backgrounds = {}, host = null) {
           pool = _MEET_RECOGNISED;
           subs = { a: nearest, b: name };
         }
-        // 3. NOTHING ON THE RECORD, SO NOTHING IS CLAIMED.
+        // 3. NOTHING ON THE RECORD, SO NOTHING IS CLAIMED -- and two strangers
+        //    SAY hello rather than being narrated nodding at each other.
+        const warmth = _warmth(Number(bondOf(by || nearest, name)) || 0);
         if (!by) {
           by = nearest;
-          pool = _MEET_NEUTRAL;
-          subs = { a: nearest, b: name };
+          const pair = _GREET[warmth][_pHash(seed + '|greet|' + by + '|' + name) % _GREET[warmth].length];
+          const gs2 = { a: by, b: name };
+          lines.push({ kind: 'reaction', who: by, said: true, text: _pFill(pair[0], gs2) });
+          lines.push({ kind: 'reaction', who: name, said: true, text: _pFill(pair[1], gs2) });
+        } else {
+          const text = _pFill(_pPickUnique(pool, seed + '|meet|' + by + '|' + name, used), subs);
+          lines.push({ kind: 'reaction', text });
+          if (basis) recognitions.push({ by, of: name, basis, text });
+          // and the one recognised answers, out loud, as warmly as they feel
+          const back = pool === _MEET_SHARED ? _GREET_KNOWN[warmth] : _GREET_SEEN[warmth];
+          lines.push({ kind: 'reaction', who: name, said: true,
+            text: _pFill(back[_pHash(seed + '|back|' + by + '|' + name) % back.length], { a: by }) });
         }
-        const text = _pFill(_pPickUnique(pool, seed + '|meet|' + by + '|' + name, used), subs);
-        lines.push({ kind: 'reaction', text });
-        if (basis) recognitions.push({ by, of: name, basis, text });
+        // FIRST READ: the last one out of each car tells the camera what they
+        // made of the person they just met
+        if (name === group.arrivals[group.arrivals.length - 1]) {
+          const fr = _FIRST_READ[warmth];
+          lines.push({ kind: 'reaction', who: name, cam: true,
+            text: _pFill(fr[_pHash(seed + '|read|' + name) % fr.length], { o: by }) });
+        }
       }
       onTheFlags.push(name);
     }
@@ -3028,7 +3339,7 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   // placement, which is the exact failure the snapshot exists to prevent. The
   // host travels as the CONFIGURED KEY and is never named on the record.
   const arrival = buildArrivalRecord(cast, gs.tr.backgrounds,
-    host || (seasonConfig && seasonConfig.host) || null);
+    host || (seasonConfig && seasonConfig.host) || null, { bondOf: getBond });
 
   const log = [];
   let ep = 1;

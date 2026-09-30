@@ -17,59 +17,44 @@ import { TRScenery } from './cutaway-scenery.js';
 import { beatLines } from './stage-lines.js';
 import { footCard, playCard, CARD_CSS } from './stage-cards.js';
 import { trPlay } from './sfx.js';
+import { cutIn as cutInCard } from './stage-cutin.js';
 
 const hash = s => { let h = 7; for (const c of String(s)) h = (Math.imul(h, 31) + c.charCodeAt(0)) >>> 0; return h; };
 const clean = s => String(s || '').replace(/\s+/g, ' ').trim();
 
-// ON THE STAGE AN ARRIVAL IS WHAT THEY DO, NOT WHAT THE NARRATOR THINKS OF
-// THEM. The page gives every person five or six lines (the entrance, the
-// billing, three reads of their game, the first exchange); played one at a
-// time that is 120 steps of analysis before anybody reaches the table. Here an
-// arrival is the entrance, under their name, and the first exchange with
-// somebody already on the gravel, which is the one line that happens between
-// two people. The page underneath keeps all of it.
-// a whole-word match, because one of the cast is called "B"
-const namedIn = (n, text) => {
-  const esc = n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  return new RegExp('(^|[^A-Za-z])' + esc + '(?![A-Za-z])').test(text);
-};
-function trimIntros(steps, names) {
-  const out = [];
-  let i = 0;
-  while (i < steps.length) {
-    const s = steps[i];
-    if (s.kind !== 'intro') { out.push(s); i++; continue; }
-    const run = [];
-    while (i < steps.length && steps[i].beat === s.beat) run.push(steps[i++]);
-    const who = run[0].tag;
-    const body = run.slice(1);
-    if (!body.length) { out.push(run[0]); continue; }
-    out.push({ ...body[0], tag: who });
-    const last = body[body.length - 1];
-    if (body.length > 1 && names.some(n => n !== who && namedIn(n, last.text))) out.push(last);
-  }
-  return out;
-}
+// ON THE STAGE AN ARRIVAL IS WHAT THEY DO AND SAY, NOT WHAT THE NARRATOR
+// THINKS OF THEM. The page gives every person their entrance, a confessional,
+// three reads of their game and the first exchange on the gravel; played one
+// at a time the reads are a hundred steps of analysis before anybody reaches
+// the table. So the stage plays the entrance (under their name), what they say
+// to camera, and what is said between them and whoever they walk into — and
+// leaves the reads (`data-k` profile/personality/threat/record) to the page.
+const READS = new Set(['establish', 'profile', 'personality', 'threat', 'record']);
+const unq = t => clean(t).replace(/^[“"]+|[”"]+$/g, '');
 
 function parse(data) {
-  return trimIntros(beatLines(data.beats, (n, part) => {
-    if (part === 'sums') return [];
-    if (part === 'who') {
-      // the name plate of an arrival: the stage draws the person, the card
-      // carries who they are
-      return [{ t: 'narr', tag: clean(n.querySelector('.ar-who-nm')?.textContent),
-        text: clean(n.querySelector('.ar-who-sub')?.textContent) }];
+  // the host's stage directions: the first sets the scene, the rest are on
+  // the page (the stage already shows the host speaking)
+  let hostActs = 0;
+  const steps = beatLines(data.beats, (n, part) => {
+    if (part === 'sums' || part === 'who') return [];
+    if (n.tagName === 'P' && READS.has(n.dataset.k)) return [];
+    if (part === 'cam') {
+      return [{ t: 'cam', who: clean(n.querySelector('cite')?.textContent), text: unq(n.querySelector('.ar-cam-txt')?.textContent) }];
     }
     if (part === 'host') {
       const out = [];
       const act = clean(n.querySelector('.ar-host-do')?.textContent);
-      if (act) out.push({ t: 'narr', tag: 'The host', text: act });
-      const line = clean(n.querySelector('.ar-host-line')?.textContent).replace(/^[“"]+|[”"]+$/g, '');
+      if (act && !hostActs++) out.push({ t: 'narr', tag: 'The host', text: act });
+      const line = unq(n.querySelector('.ar-host-line')?.textContent);
       if (line) out.push({ t: 'host', text: line });
       return out;
     }
     return null;
-  }), data.names);
+  });
+  // the entrance carries the person's name
+  return steps.map((st, i) => (st.kind === 'intro' && (steps[i - 1] || {}).beat !== st.beat
+    ? { ...st, tag: st.meta.name } : st));
 }
 
 export function arrivalStageScreen(ep, observer, pageHtml) {
@@ -155,8 +140,7 @@ function paint(root, S, fresh) {
     el.innerHTML = '<div class="tpa-out"><div class="tpa-cam"><div class="tpa-set"></div><div class="tpa-car"></div><div class="tpa-folk"></div></div></div>'
       + '<div class="tpa-in"><div class="tpa-cam"><div class="tpa-set"></div><div class="tpa-cloths"></div><div class="tpa-ring"></div><div class="tpa-host"></div></div></div>'
       + '<div class="tpa-hud"></div>';
-    el.querySelector('.tpa-out .tpa-set').innerHTML = TRScenery.backdrop('grounds', W, H, 'evening')
-      + `<div class="tpa-door" style="left:${W * .5}px;top:${H * .5}px"></div><div class="tpa-gravel"></div>`;
+    el.querySelector('.tpa-out .tpa-set').innerHTML = TRScenery.facade();
     el.querySelector('.tpa-in .tpa-set').innerHTML = TRScenery.roundTableSet(W, H)
       + TRScenery.roundTable(W * .5, H * (TABLE_CY + .005), W * .3, H * .16, slots);
     const hp = R.at(0, 1.12);
@@ -239,7 +223,18 @@ function paint(root, S, fresh) {
     return;
   }
   start.classList.remove('trs-in');
-  hud.innerHTML = footCard(st, D.host);
+  // SAID ON THE GRAVEL, OR TO CAMERA: a cut-in, the other one in the exchange
+  // waiting on the right, the drive gone soft behind them
+  let cut = '';
+  if (st.t === 'say' || st.t === 'cam') {
+    const prev = S.steps[S.idx - 1] || {}, next = S.steps[S.idx + 1] || {};
+    const partner = [prev, next].find(x => x.beat === st.beat && x.t === 'say' && x.who && x.who !== st.who);
+    cut = cutInCard({ who: st.who, fresh, tone: st.t === 'cam' ? 'cam' : 'morning', label: st.t === 'cam' ? 'To camera' : null,
+      with: st.t === 'say' && partner ? partner.who : null,
+      quick: st.t === 'say' && prev.t === 'say' && prev.beat === st.beat });
+  }
+  outEl.classList.toggle('tpa-dim', !!cut);
+  hud.innerHTML = cut + footCard(st, D.host);
   playCard(hud, st, S, fresh);
   const corner = root.querySelector('.trs-corner');
   corner.innerHTML = r.inside ? `The Round Table · <b>${r.cloths ? 'Blindfolds' : 'The rules'}</b>`
@@ -255,6 +250,7 @@ const CSS = `
 .tpa-hud{pointer-events:none;z-index:3000}.tpa-hud>*{pointer-events:auto}
 /* the cut: the front of the castle falls away and the chamber comes up */
 .tpa-out{transition:opacity 1.1s ease,filter 1.1s ease}
+.tpa-out.tpa-dim .tpa-cam{filter:brightness(.42) blur(2px)}
 .tpa-out.tpa-gone{opacity:0;filter:blur(4px) brightness(.4);pointer-events:none}
 .tpa-in{opacity:0;transition:opacity 1.4s ease .5s;pointer-events:none}
 .tpa-in.tpa-on{opacity:1;pointer-events:auto}

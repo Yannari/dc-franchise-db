@@ -143,14 +143,18 @@ export function rpBuildCut(row) {
      a spotlight hunting along it, each cut queen going dark, and the two
      left for the crown lit gold. */
   const stage = cutStage(row, list, { ep, line, cut: cutQueens, uid: `k${ep.num}` });
-  const cards = list.map((s, i) => finaleCard({
+  /* The pause is the wait (The Time Has Come); the top two named is the
+     win's song (Champion — the user's pick); the queens cut leave under the
+     goodbye's music. */
+  const cutMusic = s => (s.t === 'suspense' ? 'suspense' : s.t === 'cut' ? 'the-win' : 'sashay');
+  const cards = list.map((s, i) => tagStep(finaleCard({
     id: `dr-step-fincut-${i}`, ep,
     host: s.t === 'suspense' || s.t === 'cut' ? 'rupaul' : null,
     who: s.t === 'react' || s.t === 'last' ? s.who : null,
     tag: s.t === 'suspense' ? 'The host' : s.t === 'cut' ? 'The host · the cut' : s.t === 'react' ? `${s.who} · cut` : `${s.who} · her last words`,
     cls: s.t === 'react' ? 'red' : '',
     text: s.text,
-  })).join('');
+  }), cutMusic(s))).join('');
   wireStage('fincut', stage, ep, _state);
 
   const rail = `<h4 class="dr-disp">The Cut</h4>${

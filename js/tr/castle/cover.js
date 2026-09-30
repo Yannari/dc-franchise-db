@@ -85,8 +85,11 @@ function _accountTopic() {
     }
   }
   const rounds = gs?.tr?.rounds || [];
+  // not tonight's: that murder is the conclave's, and the conclave is shown
+  // after the night (see `_lastGone` in grief.js)
+  const done = rows.length;
   for (let i = rounds.length - 1; i >= 0; i--) {
-    if (rounds[i] && rounds[i].murdered) return `the night ${rounds[i].murdered} was murdered`;
+    if (rounds[i] && rounds[i].murdered && !(rounds[i].ep > done)) return `the night ${rounds[i].murdered} was murdered`;
   }
   // NOT "what they really are": that printed singular they over players the
   // roster gives a gender, and read as a riddle. On day one the thing a

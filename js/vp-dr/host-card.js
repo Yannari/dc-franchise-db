@@ -14,6 +14,7 @@ const esc = v => String(v ?? '').replace(/[&<>"]/g, c =>
 
 export const HOST_CARD_CSS = `
 /* THE HOST'S CARD. */
+.dr-step:has(> .dr-host){container-type:inline-size}
 .dr-panel.dr-host{display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:center;padding:18px 24px;position:relative;overflow:hidden;
   --dr-accent:#FFD66B;
   background:radial-gradient(120% 160% at 0% 50%,rgba(255,214,107,.18),transparent 55%),linear-gradient(135deg,#2c1226,#150914)}
@@ -48,6 +49,15 @@ export const HOST_CARD_CSS = `
 .dr-host-shantay .dr-host-said{color:#d9ffe9}
 .dr-panel.dr-host-sashay{--dr-accent:#FF294B;background:radial-gradient(120% 160% at 0% 50%,rgba(255,41,75,.2),transparent 55%),linear-gradient(135deg,#2a0e14,#14070a)}
 .dr-panel.dr-host-win{--dr-accent:#FFD66B;background:radial-gradient(120% 160% at 0% 50%,rgba(255,214,107,.28),transparent 55%),linear-gradient(135deg,#2c2210,#140f07)}
+/* A NARROW COLUMN (the finale's cards sit beside the bracket rail): the
+   portrait and her name on a row above the words, and the words smaller. */
+@container (max-width:560px){
+  .dr-panel.dr-host{grid-template-columns:1fr;gap:10px;padding:14px 16px}
+  .dr-host-por{flex-direction:row;gap:10px}
+  .dr-host-por .dr-por{width:52px!important;height:52px!important}
+  .dr-host-said{font-size:17px}.dr-host-line{font-size:15px}
+  .dr-host-big .dr-host-line{font-size:30px}
+}
 @media (max-width:620px){.dr-host{grid-template-columns:1fr;justify-items:start;gap:12px;padding:16px}
   .dr-host-por{flex-direction:row}.dr-host-said{font-size:18px}}
 @media (prefers-reduced-motion:reduce){.dr-step.dr-vis .dr-host,.dr-step.dr-vis .dr-host::after,.dr-step.dr-vis .dr-host-big .dr-host-line,.dr-step.dr-vis .dr-host-por .dr-por{animation:none}}

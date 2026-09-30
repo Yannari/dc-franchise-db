@@ -2,6 +2,7 @@
 // Ages spread 21-56 so the catfish motive has something to read; archetypes
 // from the real fifteen; mostly straight, a few not.
 import { rngFor } from '../../js/dr/rng.js';
+import { readFileSync } from 'node:fs';
 
 const ARCH = ['mastermind', 'schemer', 'hothead', 'challenge-beast', 'social-butterfly',
   'loyal-soldier', 'wildcard', 'chaos-agent', 'floater', 'underdog', 'hero', 'villain',
@@ -47,4 +48,17 @@ export function makePool(k = 6, seed = 7) {
 /** The first `n - newcomers` start on Day 1; the rest arrive later, in order. */
 export function circleSetup(names, { newcomers = 5 } = {}) {
   return Object.fromEntries(names.map((n, i) => [n, { role: i < names.length - newcomers ? 'starter' : 'newcomer' }]));
+}
+
+// The cast the site actually plays: n players drawn from franchise_roster.json
+// (most have no age; a third are returnees or alumni by their own flags).
+// Calibrate on THIS, not on makePlayers — a synthetic spread of ages once
+// carried the catfish rate by itself (2026-09-30: 31% synthetic, ~8% real).
+let _roster = null;
+export function rosterCast(n = 13, seed = 7) {
+  _roster ||= (() => { const r = JSON.parse(readFileSync('franchise_roster.json', 'utf8')); return (Array.isArray(r) ? r : r.players || []).filter(p => p && p.name && p.stats); })();
+  const rng = rngFor(seed * 7907 + 3);
+  const a = [..._roster];
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a.slice(0, n).map(p => ({ ...p, stats: { ...p.stats } }));
 }

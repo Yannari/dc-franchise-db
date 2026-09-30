@@ -179,12 +179,15 @@ function _build(inputs, rerolls) {
   } finally { setGs(outer); }
   const winner = result.result?.winner?.profile ?? result.result?.winner ?? null;
   const winnerPeople = winner ? (result.state.profiles[winner]?.players || []) : [];
-  return { cast, setup, seed, rows: result.rows, inner, winnerPeople, fanFavorite: result.result?.fanFavorite || null };
+  return { cast, setup, seed, rows: result.rows, inner, winnerPeople, fanFavorite: result.result?.fanFavorite || null,
+    dealt: result.state.dealt || {}, unused: result.state.dealtUnused || [] };
 }
 
 function _commit(built, inputs, rerolls, airedCount) {
   gs.ci = { seed: built.seed, castOrder: [...built.cast], setup: built.setup, winners: built.winnerPeople,
-    fanFavorite: built.fanFavorite, rerolls: { ...rerolls }, built: _sig(inputs) };
+    fanFavorite: built.fanFavorite, rerolls: { ...rerolls }, built: _sig(inputs),
+    // What each player was dealt, for the cast cards; and the personas nobody took.
+    dealt: built.dealt, unused: built.unused };
   gs._ciQueue = built.rows.slice(airedCount);
   gs.relationshipDimensions = built.inner.relationshipDimensions || {};
   gs.bonds = built.inner.bonds || {};

@@ -1018,6 +1018,7 @@ export function renderCast() {
   try { window.renderCastRoom?.(); } catch {}   // Visual Casting Room (additive; legacy UI is the fallback)
   // A villa season's islander panel follows the cast it sets up.
   try { window.renderPerfectMatchCastSetup?.(); } catch { /* optional chrome */ }
+  try { window.renderCircleCastSetup?.(); } catch { /* optional chrome */ }
 }
 export function renderCard(p) {
   const ov=overall(p.stats), th=parseFloat(threat(p.stats)), tier=threatTier(th), tc=tribeColor(p.tribe);
@@ -1518,6 +1519,7 @@ export function renderConfig() {
   if (g('cfg-ci-pick-by')) g('cfg-ci-pick-by').value = seasonConfig.ciPickBy === 'random' ? 'random' : 'stats';
   if (g('cfg-ci-ai')) g('cfg-ci-ai').checked = seasonConfig.ciAI === true;
   try { window.renderPerfectMatchCastSetup?.(); } catch { /* the panel is optional chrome */ }
+  try { window.renderCircleCastSetup?.(); } catch { /* the panel is optional chrome */ }
   set('cfg-tr-traitor-mode', seasonConfig.trTraitorMode || 'random');
   if (g('cfg-tr-auto-double')) g('cfg-tr-auto-double').checked = seasonConfig.trAutoDouble !== false;
   if (g('cfg-tr-endgame-reveal')) g('cfg-tr-endgame-reveal').checked = seasonConfig.trEndgameReveal === true;

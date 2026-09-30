@@ -6731,3 +6731,91 @@
   background: color-mix(in srgb, #3fd8ff 16%, transparent); border: 1px solid color-mix(in srgb, #3fd8ff 40%, transparent); line-height: 1.45; }
 .ci-msg + .ci-msg { display: block; width: fit-content; }
 .ci-stage { margin: 4px 0; font-style: italic; color: var(--muted, #888); }
+
+/* ── THE CIRCLE: Profile Plan + Catfish Pool (js/ci-cast-ui.js) ──────────
+   Mockup v3 (approved 2026-09-30). The show's own screen palette, dark in
+   both themes like the screens in the apartments. Light motion, off for
+   anyone who asks for less. */
+#sec-ci-cast{--ci-cy:#3fd8ff;--ci-bl:#2f7bff;--ci-vi:#8b5cff;--ci-pk:#ff4fb4;--ci-navy:#0a0f2e;--ci-card:rgba(20,24,52,.78);--ci-mut:#8f96c8;
+  font-family:Montserrat,system-ui,sans-serif;color:#fff;margin-top:6px}
+#sec-ci-cast *{box-sizing:border-box}
+#sec-ci-cast button{font-family:inherit}
+.ci-panel{background:radial-gradient(120% 140% at 0% 0%,rgba(47,123,255,.16),transparent 55%),var(--ci-navy);border:1px solid rgba(63,216,255,.18);border-radius:18px;padding:18px;margin-bottom:22px;position:relative;overflow:hidden}
+.ci-panel:before{content:"";position:absolute;right:-90px;top:-90px;width:260px;height:260px;border-radius:50%;border:26px solid rgba(63,216,255,.06);animation:ciDrift 14s ease-in-out infinite;pointer-events:none}
+.ci-phead{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap;position:relative}
+.ci-ring{width:26px;height:26px;border-radius:50%;border:4px solid var(--ci-cy);animation:ciBreathe 3.2s ease-in-out infinite}
+.ci-ring-pk{border-color:var(--ci-pk);--ci-glow:255,79,180}
+.ci-ptitle{font-weight:800;font-size:15px;letter-spacing:.14em}
+.ci-pcount{margin-left:auto;display:flex;gap:8px;align-items:center;font-size:12px;color:var(--ci-mut);flex-wrap:wrap}
+.ci-btn{background:rgba(63,216,255,.1);border:1px solid rgba(63,216,255,.35);color:#dff7ff;font-weight:600;font-size:11.5px;padding:7px 11px;border-radius:999px;cursor:pointer}
+.ci-btn:hover{background:rgba(63,216,255,.2)}.ci-btn-pk{border-color:rgba(255,79,180,.45);background:rgba(255,79,180,.1);color:#ffe0f1}
+.ci-rows{display:grid;gap:10px}
+.ci-row{display:grid;grid-template-columns:250px minmax(0,1fr) 290px;gap:14px;align-items:stretch;background:var(--ci-card);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:12px;transition:transform .18s,border-color .18s,box-shadow .18s}
+.ci-row:hover,.ci-pc:hover{transform:translateY(-2px);border-color:rgba(63,216,255,.28);box-shadow:0 10px 30px -14px rgba(63,216,255,.45)}
+.ci-who{display:flex;gap:10px;align-items:center}
+.ci-av{width:52px;height:52px;border-radius:50%;border:3px solid var(--ring,var(--ci-cy));flex:none;position:relative;overflow:hidden;display:grid;place-items:center;background:#1b1f45;font-weight:800}
+.ci-av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.ci-nm{font-weight:700;font-size:14px}.ci-meta{font-size:11px;color:var(--ci-mut);margin-top:2px}
+.ci-seg{display:inline-flex;flex-wrap:wrap;background:rgba(0,0,0,.35);border-radius:999px;padding:3px;gap:2px;margin-top:4px}
+.ci-seg button{font-size:10.5px;font-weight:600;padding:4px 9px;border-radius:999px;color:var(--ci-mut);cursor:pointer;background:none;border:0;white-space:nowrap;transition:background .15s,color .15s}
+.ci-seg button.on{background:var(--ci-cy);color:#04121a;animation:ciPop .22s ease}
+.ci-k{font-size:9.5px;letter-spacing:.14em;color:var(--ci-mut);font-weight:700;text-transform:uppercase}
+.ci-k em{font-style:normal;color:var(--ci-cy);margin-left:6px;letter-spacing:.1em}
+.ci-mid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px 14px;align-content:start}
+.ci-fld{display:flex;flex-direction:column;gap:4px;min-width:0}
+.ci-pair{display:flex;gap:6px;align-items:center;min-width:0}.ci-wrap{flex-wrap:wrap}
+.ci-in{background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#fff;font:500 12px Montserrat,system-ui,sans-serif;padding:6px 8px;min-width:0;flex:1}
+.ci-in option,.ci-in optgroup{background:#141836;color:#fff}
+.ci-age{max-width:64px;flex:none}
+.ci-draw{border-radius:12px;padding:10px;background:linear-gradient(160deg,rgba(47,123,255,.22),rgba(139,92,255,.14));border:1px solid rgba(139,92,255,.35);display:flex;gap:10px;animation:ciFlip .6s .2s ease both}
+.ci-draw .ci-av{width:44px;height:44px}
+.ci-self{background:rgba(255,255,255,.03);border-color:rgba(255,255,255,.1)}
+.ci-wait{background:rgba(255,255,255,.02);border:1px dashed rgba(255,255,255,.14);flex-direction:column;justify-content:center;text-align:center;animation:none}
+.ci-dk{font-size:9.5px;letter-spacing:.14em;font-weight:800;color:var(--ci-pk);text-transform:uppercase}
+.ci-self .ci-dk{color:var(--ci-cy)}.ci-wait .ci-dk{color:var(--ci-mut)}
+.ci-dn{font-weight:800;font-size:13.5px;margin-top:2px}.ci-dm{font-size:11px;color:#cfd3f2}
+.ci-why{font-size:11px;color:#b9bee6;margin-top:5px;line-height:1.45;font-style:italic}
+.ci-pin{font-size:9px;letter-spacing:.1em;color:#04121a;background:var(--ci-cy);padding:2px 6px;border-radius:999px;margin-left:4px}
+.ci-pool{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;align-items:start}
+.ci-pc{background:var(--ci-card);border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:14px 12px 12px;display:flex;flex-direction:column;gap:7px;position:relative;transition:transform .18s,border-color .18s,box-shadow .18s}
+.ci-tag{position:absolute;top:10px;right:10px;font-size:9px;font-weight:800;letter-spacing:.1em;padding:3px 7px;border-radius:999px}
+.ci-tag.taken{background:var(--ci-pk);color:#fff}.ci-tag.stock{background:rgba(255,255,255,.08);color:var(--ci-mut)}.ci-tag.wait{display:none}
+.ci-slot{width:96px;height:96px;border-radius:50%;margin:0 auto;border:2px dashed rgba(139,92,255,.6);display:grid;place-items:center;text-align:center;font-size:10px;font-weight:600;color:#cbb8ff;background:rgba(139,92,255,.08) center/cover no-repeat;cursor:pointer;line-height:1.3;padding:8px;position:relative}
+.ci-slot:not(.has):before{content:"";position:absolute;inset:-6px;border-radius:50%;border:2px solid transparent;border-top-color:rgba(139,92,255,.7);animation:ciSpin 3s linear infinite}
+.ci-slot.has{border:3px solid var(--ci-vi);box-shadow:0 0 0 5px rgba(139,92,255,.12)}
+.ci-handle{text-align:center;font-weight:800;font-size:15px}.ci-hm{text-align:center;font-size:11px;color:var(--ci-mut)}
+.ci-bio{font-size:11.5px;color:#d7daf4;line-height:1.45}
+.ci-chips{display:flex;gap:4px;flex-wrap:wrap}
+.ci-chip{font-size:10.5px;font-weight:600;padding:3px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.14);color:#cfd3f2;background:none;cursor:pointer;transition:background .15s,border-color .15s}
+.ci-chip.on{border-color:var(--ci-pk);color:#fff;background:rgba(255,79,180,.18);animation:ciPop .22s ease}
+.ci-tells{font-size:10.5px;color:#aeb3dc}.ci-tells b{color:#fff;font-weight:600}
+.ci-acts{display:flex;gap:6px;margin-top:auto;padding-top:4px}
+.ci-acts button{flex:1;font-size:10.5px;font-weight:600;padding:5px 0;border-radius:8px;background:rgba(255,255,255,.05);color:#cfd3f2;border:0;cursor:pointer}
+.ci-acts button:hover{background:rgba(63,216,255,.14)}
+.ci-add{border:2px dashed rgba(63,216,255,.35);border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--ci-cy);font-weight:700;font-size:13px;min-height:240px;cursor:pointer;background:none}
+.ci-plus{width:54px;height:54px;border-radius:50%;border:3px solid var(--ci-cy);display:grid;place-items:center;font-size:28px}
+.ci-small{font-size:10.5px;color:var(--ci-mut);line-height:1.4;font-weight:500}
+.ci-editor{grid-column:span 2;background:linear-gradient(160deg,rgba(47,123,255,.14),rgba(139,92,255,.1)),var(--ci-card);border:1px solid rgba(139,92,255,.45);border-radius:16px;padding:14px;display:grid;grid-template-columns:130px minmax(0,1fr);gap:14px;animation:ciRise .35s ease both}
+.ci-ed-left{display:flex;flex-direction:column;gap:10px;align-items:center;text-align:center}
+.ci-editor .ci-slot{width:110px;height:110px}
+.ci-eg{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px 12px;min-width:0}
+.ci-full{grid-column:span 2}
+.ci-types{display:flex;gap:8px;align-items:center;background:rgba(0,0,0,.3);border-radius:10px;padding:7px 9px;flex-wrap:wrap}
+.ci-reg{font-size:10px;font-weight:800;letter-spacing:.1em;padding:3px 8px;border-radius:999px;background:var(--ci-cy);color:#04121a;flex:none}
+.ci-bubble{font-size:11.5px;background:#2a2f63;border-radius:12px 12px 12px 3px;padding:6px 9px;color:#eef;flex:1;min-width:180px;animation:ciPop .25s ease}
+textarea.ci-bio{resize:vertical;width:100%}
+.ci-prompt{font-size:10.5px;background:rgba(0,0,0,.3);border-radius:8px;padding:7px 9px;color:#dfe2ff;line-height:1.45;display:flex;gap:8px;justify-content:space-between;margin-top:6px}
+.ci-link{background:none;border:0;color:var(--ci-cy);font-weight:700;font-size:10px;cursor:pointer;padding:0;letter-spacing:.06em;text-transform:uppercase}
+/* Only the first few rise in: a row held invisible until its animation runs
+   must never be one below the fold. */
+.ci-rows .ci-row:nth-child(-n+5),.ci-pool .ci-pc:nth-child(-n+4){animation:ciRise .45s ease backwards}
+.ci-rows .ci-row:nth-child(2){animation-delay:.05s}.ci-rows .ci-row:nth-child(3){animation-delay:.1s}.ci-rows .ci-row:nth-child(4){animation-delay:.15s}.ci-rows .ci-row:nth-child(5){animation-delay:.2s}
+@keyframes ciBreathe{0%,100%{box-shadow:0 0 10px rgba(var(--ci-glow,63,216,255),.45)}50%{box-shadow:0 0 22px rgba(var(--ci-glow,63,216,255),.9)}}
+@keyframes ciRise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes ciFlip{from{opacity:0;transform:perspective(600px) rotateY(-70deg)}to{opacity:1;transform:none}}
+@keyframes ciSpin{to{transform:rotate(360deg)}}
+@keyframes ciPop{0%{transform:scale(.85)}60%{transform:scale(1.08)}100%{transform:scale(1)}}
+@keyframes ciDrift{0%,100%{transform:translate(0,0)}50%{transform:translate(-18px,14px)}}
+@media (prefers-reduced-motion:reduce){#sec-ci-cast *,#sec-ci-cast *:before{animation:none!important;transition:none!important}}
+@media (max-width:1100px){.ci-row{grid-template-columns:1fr}.ci-pool{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:640px){.ci-pool{grid-template-columns:1fr}.ci-editor{grid-column:span 1;grid-template-columns:1fr}.ci-eg,.ci-mid{grid-template-columns:1fr}.ci-full{grid-column:span 1}}

@@ -476,14 +476,14 @@ export function renderCastRoom() {
 // It lives in the legacy cast panel, which this room hides, so it is ADOPTED —
 // moved, ids and listener intact — exactly as the edit form is, and handed back
 // when the room is switched off. CONFIG_SCOPE still hides it on other shows.
+// The Circle's panel (js/ci-cast-ui.js) is adopted the same way.
+const _ADOPTED = ['sec-pm-cast', 'sec-ci-cast'];
 function _adoptVillaPanel(room) {
-  const sec = document.getElementById('sec-pm-cast');
-  if (sec && sec.parentElement !== room) room.appendChild(sec);
+  for (const id of _ADOPTED) { const sec = document.getElementById(id); if (sec && sec.parentElement !== room) room.appendChild(sec); }
 }
 function _restoreVillaPanel() {
-  const sec = document.getElementById('sec-pm-cast');
   const home = document.querySelector('#tab-cast .cast-panel');
-  if (sec && home && sec.parentElement !== home) home.appendChild(sec);
+  for (const id of _ADOPTED) { const sec = document.getElementById(id); if (sec && home && sec.parentElement !== home) home.appendChild(sec); }
 }
 
 function _shellHTML() {
@@ -498,6 +498,7 @@ function _shellHTML() {
           <button class="cr-viewbtn active" data-view="grid" onclick="crSetView('grid')">Grid</button>
           <button class="cr-viewbtn" data-view="tribes" onclick="crSetView('tribes')">Tribes</button>
           <button class="cr-viewbtn" data-view="villa" onclick="crSetView('villa')" hidden>Villa</button>
+          <button class="cr-viewbtn" data-view="circle" onclick="crSetView('circle')" hidden>&#11093; Circle</button>
         </div>
         <button class="cr-viewbtn cr-statsbtn${typeof window !== 'undefined' && window._crShowAllStats ? ' active' : ''}" id="cr-statsbtn"
           onclick="crToggleStats()" title="Show all 9 stats on every card" aria-pressed="${typeof window !== 'undefined' && !!window._crShowAllStats}">⚏ Stats</button>
@@ -643,6 +644,7 @@ export function crSetView(view) {
   if (room) _syncViewButtons(room);
   crRenderGrid();
   if (room?.dataset.view === 'villa') { try { window.renderPerfectMatchCastSetup?.(); } catch { /* optional panel */ } }
+  if (room?.dataset.view === 'circle') { try { window.renderCircleCastSetup?.(); } catch { /* optional panel */ } }
 }
 
 // ── THE VILLA VIEW ─────────────────────────────────────────────────────
@@ -653,15 +655,22 @@ export function crSetView(view) {
 function _isVilla() {
   try { return !!window.isPerfectMatchSeason?.(); } catch { return false; }
 }
+// The Circle's the same way: no tribes; a Circle view with each player's
+// Profile Plan and the Catfish Pool (js/ci-cast-ui.js).
+function _isCircle() {
+  try { return !!window.isCircleSeason?.(); } catch { return false; }
+}
 function _syncViewButtons(room) {
   const villa = _isVilla();
+  const circle = _isCircle();
   let view = window._crView || 'grid';
-  if ((view === 'villa' && !villa) || (view === 'tribes' && villa)) view = 'grid';
+  if ((view === 'villa' && !villa) || (view === 'circle' && !circle) || (view === 'tribes' && (villa || circle))) view = 'grid';
   room.dataset.view = view;
   room.querySelectorAll('.cr-viewbtn[data-view]').forEach(b => {
     b.classList.toggle('active', b.dataset.view === view);
     if (b.dataset.view === 'villa') b.hidden = !villa;
-    if (b.dataset.view === 'tribes') b.hidden = villa;
+    if (b.dataset.view === 'circle') b.hidden = !circle;
+    if (b.dataset.view === 'tribes') b.hidden = villa || circle;
   });
 }
 
@@ -777,6 +786,8 @@ const CR_CSS = `
 /* The Villa view replaces the grid and its filters; the grid hides the villa. */
 #cast-room[data-view="villa"] #cr-body, #cast-room[data-view="villa"] #cr-filterwrap { display:none; }
 #cast-room:not([data-view="villa"]) #sec-pm-cast { display:none !important; }
+#cast-room[data-view="circle"] #cr-body, #cast-room[data-view="circle"] #cr-filterwrap { display:none; }
+#cast-room:not([data-view="circle"]) #sec-ci-cast { display:none !important; }
 .cr-topbar { display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:14px; }
 .cr-title-wrap { display:flex; align-items:baseline; gap:12px; }
 .cr-title { font-family:var(--font-display,sans-serif); font-size:26px; letter-spacing:.5px; margin:0; text-transform:uppercase; }

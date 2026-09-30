@@ -74,6 +74,24 @@ describe('the season options', () => {
   });
 });
 
+describe('what the draw dealt, for the cast cards', () => {
+  it('each player: a persona and why, or themselves and what they edited', () => {
+    freshSeason(13, { ciPool: undefined });
+    simulateCircleEpisode();
+    const dealt = gs.ci.dealt;
+    expect(Object.keys(dealt).sort()).toEqual(players.map(p => p.name).sort());
+    const cat = Object.entries(dealt).filter(([, d]) => d.mode === 'catfish');
+    expect(cat.length).toBeGreaterThan(0);
+    for (const [, d] of cat) {
+      expect(DEFAULT_POOL.map(p => p.id)).toContain(d.personaId);
+      expect(d.shown.name).toBe(DEFAULT_POOL.find(p => p.id === d.personaId).handle);
+      expect(['strategic', 'protective', 'family', 'experimental']).toContain(d.reason);
+    }
+    for (const [, d] of Object.entries(dealt).filter(([, x]) => x.mode === 'edited')) expect(d.edits.length).toBeGreaterThan(0);
+    expect(gs.ci.unused.length + cat.length).toBe(DEFAULT_POOL.length);
+  });
+});
+
 describe('a season plays one episode per press', () => {
   it('airs every day of the schedule, then stops, and names the winner', () => {
     freshSeason();

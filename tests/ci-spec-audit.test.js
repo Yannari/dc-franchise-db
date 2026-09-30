@@ -8,7 +8,7 @@
 import { describe, expect, it } from 'vitest';
 import { setPlayers } from '../js/core.js';
 import { playCircleSeason } from '../js/ci/season.js';
-import { makePlayers, circleSetup } from './helpers/ci-cast.js';
+import { makePlayers, rosterCast, circleSetup } from './helpers/ci-cast.js';
 import { DEFAULT_POOL } from '../js/ci/default-pool.js';
 import { POOLS } from '../js/ci/lines/index.js';
 import { GAMES } from '../js/ci/games-data.js';
@@ -28,7 +28,8 @@ describe('The Circle spec audit', () => {
       pools: {}, pairRepeats: 0, missing: {}, airedPerDay: [], blocksPerScene: [], lines: 0,
       games: [], families: {}, purposes: {}, prizes: {}, immuneSaved: 0, gameSlips: 0, chatSlips: 0, partySlips: 0, parties: [], homeVideos: [] };
     for (let s = 1; s <= SEASONS; s++) {
-      const cast = makePlayers(13, s);
+      // The roster the site plays (CI_CAST=synthetic for the old made-up casts).
+      const cast = process.env.CI_CAST === 'synthetic' ? makePlayers(13, s) : rosterCast(13, s);
       setPlayers(cast);
       const names = cast.map(p => p.name);
       const { rows, state, result } = playCircleSeason({ cast: names, setup: circleSetup(names, { newcomers: 5 }),

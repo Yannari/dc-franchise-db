@@ -80,6 +80,14 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
   const truths = cast.map(name => truthOf(players.find(p => p.name === name) || { name, stats: {} }, setup[name] || {}));
   const draw = drawPersonas(truths, pool, streamFor(seed, 'pool'), state.options.pickBy);
   const handles = buildProfiles(state, truths, draw, pool, streamFor(seed, 'profiles'));
+  // What the draw dealt each player, as it stood before anything aired: the
+  // cast cards show it (js/ci-cast-ui.js). Twists change profiles later.
+  state.dealt = Object.fromEntries(truths.map(t => {
+    const p = state.profiles[state.handleOf[t.name]];
+    return [t.name, { mode: p.mode, personaId: p.personaId ?? null, reason: p.reason ?? null,
+      edits: [...(p.edits || [])], shown: { ...p.shown }, with: p.players.filter(n => n !== t.name) }];
+  }));
+  state.dealtUnused = [...state.unused];
   // The AI player (US 6), a season option: one more starter from Day 1.
   if (state.options.ai) handles.push(addAI(state));
   openLedger(state);

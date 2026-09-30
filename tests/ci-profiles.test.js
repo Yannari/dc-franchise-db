@@ -7,6 +7,15 @@ import { makePlayers, makePool } from './helpers/ci-cast.js';
 
 beforeEach(() => setGs({ bonds: {}, relationshipDimensions: {}, episodeHistory: [] }));
 const truths = (n, seed, setup = {}) => makePlayers(n, seed).map(p => truthOf(p, setup[p.name] || {}));
+// The first seed whose cast has a player between the edit line and the persona
+// line (the motive weights are calibrated, so no fixed seed is safe).
+function castWithBetween(n = 12) {
+  for (let seed = 1; seed < 200; seed++) {
+    const t = truths(n, seed), med = medianAge(t);
+    if (t.some(x => { const m = catfishMotive(x, med); return m >= EDIT_LINE && m < MOTIVE_LINE; })) return { t, seed };
+  }
+  throw new Error('no cast with a player between the lines');
+}
 
 describe('the catfish motive', () => {
   it('rises with strategy, boldness and costly facts, and falls with loyalty', () => {
@@ -41,9 +50,9 @@ describe('drawing from the Catfish Pool', () => {
   it('a player with a reason to hide something, but not enough to be somebody else, edits instead', () => {
     // Real US 1: Alana played herself and kept quiet about modelling.
     expect(EDIT_LINE).toBeLessThan(MOTIVE_LINE);
-    const t = truths(12, 4);
+    const { t, seed } = castWithBetween();
     const median = medianAge(t);
-    const d = drawPersonas(t, makePool(20, 4), streamFor(4, 'pool'), 'stats');
+    const d = drawPersonas(t, makePool(20, seed), streamFor(seed, 'pool'), 'stats');
     const between = t.filter(x => { const m = catfishMotive(x, median); return m >= EDIT_LINE && m < MOTIVE_LINE; });
     expect(between.length).toBeGreaterThan(0);
     for (const x of between) {
@@ -153,10 +162,10 @@ describe('the mode pin on the Profile Plan (spec 4.2: honest, polished, edited)'
   });
 
   it('Honest never edits, however much they have to hide', () => {
-    const t = truths(12, 4);
+    const { t, seed } = castWithBetween();
     const keen = t.filter(x => { const m = catfishMotive(x, median(t)); return m >= EDIT_LINE && m < MOTIVE_LINE; })[0];
     keen.mode = 'honest';
-    const d = drawPersonas(t, makePool(20, 4), streamFor(4, 'pool'), 'stats');
+    const d = drawPersonas(t, makePool(20, seed), streamFor(seed, 'pool'), 'stats');
     expect(d.edited).not.toContain(keen.name);
   });
 

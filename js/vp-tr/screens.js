@@ -33,6 +33,7 @@ import { tableStageScreen } from './table-stage.js';
 import { breakfastStageScreen } from './breakfast-stage.js';
 import { conclaveStageScreen } from './conclave-stage.js';
 import { missionFieldStageScreen } from './mission-field-stage.js';
+import { missionBespokeStageScreen } from './mission-bespoke-stage.js';
 import { selectionStageScreen } from './selection-stage.js';
 import { arrivalStageScreen } from './arrival-stage.js';
 import { rpBuildWeb } from './web.js';
@@ -151,7 +152,8 @@ export const TRAITORS_SCREENS = [
   { id: 'tr-mission', label: 'The Mission', suffix: 'mission',
     badge: { text: 'Mission', color: '#c8a24a' },
     when: r => !!(r.tr && r.tr.mission),
-    build: (r, o) => missionFieldStageScreen(r, o, rpBuildMission(r, o)),
+    // a themed afternoon gets its own stage; an archetype one the field's
+    build: (r, o) => missionBespokeStageScreen(r, o, missionFieldStageScreen(r, o, rpBuildMission(r, o))),
     revealAll: trMissionRevealAll, revealAllName: 'trMissionRevealAll' },
   // THE ARMOURY, IMMEDIATELY AFTER THE AFTERNOON THAT EARNED IT. It is the
   // mission's own reward and it happens on the way back from it, so it sits

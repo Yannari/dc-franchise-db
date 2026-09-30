@@ -17,40 +17,8 @@
 //   video   — the goodbye video on the TV, the real face behind the profile.
 //   studio  — the finale: the couch, the board from last place to the winner.
 import { faceOf } from './steps.js';
-import { esc, hashify, faceUrl, ringOf, nameOf, realOf, isCatfish, bg, aptNo, captionHtml } from './parts.js';
-
-// ── shared pieces ──────────────────────────────────────────────────────
-const CHIP = { say: 'SAYS ALOUD', react: 'REACTS', send: 'SENT', post: 'POSTED', video: 'ON VIDEO' };
-function dlg(row, st, fresh, cls = '') {
-  if (!st) return '';
-  if (st.host) return captionHtml(st, fresh);
-  if (!st.who) return `<div class="civ-dlg ${cls}${fresh ? ' new' : ''}"><div class="civ-line stage">${esc(st.text)}</div></div>`;
-  const plate = `<div class="civ-plate">${esc(realOf(row, st.who))}${isCatfish(row, st.who) ? ` <i>· as ${esc(nameOf(row, st.who))}</i>` : ''}</div>`;
-  const body = st.part === 'send' ? `<span class="civ-chip cmd">TO THE CIRCLE</span><span class="civ-cmd">${hashify(st.text)}</span>`
-    : `<span class="civ-chip say">${CHIP[st.part] || 'SAYS'}</span>${hashify(st.text)}`;
-  return `<div class="civ-dlg ${cls}${fresh ? ' new' : ''}">${plate}<div class="civ-line">${body}</div></div>`;
-}
-/** The real person on their apartment camera. */
-function cam(row, h, cls = '', label = null) {
-  if (!h) return '';
-  const url = faceUrl(faceOf(row, h, 'cam'));
-  const real = realOf(row, h);
-  return `<div class="civ-mcam ${cls}" data-cam="${esc(label ?? `CAM ${aptNo(row, h)} · ${real.toUpperCase()}`)}" style="--glow:${ringOf(row, h)}${url ? `;background-image:url('${esc(url)}')` : ''}">${url ? '' : esc(real[0] || '?')}</div>`;
-}
-/** A profile as the room sees it: photo and name. */
-function tile(row, h, cls = '', badge = '') {
-  const url = faceUrl(faceOf(row, h, 'profile'));
-  return `<div class="civ-mtile ${cls}" data-h="${esc(h)}" style="--ring:${ringOf(row, h)}"><div class="ph"${bg(url)}>${url ? '' : esc(nameOf(row, h)[0] || '?')}</div>
-    <div class="n">${esc(nameOf(row, h).toUpperCase())}</div>${badge}</div>`;
-}
-const where = text => `<div class="civ-where">${esc(text)}</div>`;
-const upTo = (screen, idx) => screen.steps.slice(0, idx + 1);
-/** The last one who spoke, up to this step (a stage direction keeps the camera where it was). */
-function speakerAt(screen, idx) {
-  for (let i = idx; i >= 0; i--) if (screen.steps[i]?.who) return screen.steps[i].who;
-  return null;
-}
-const bgUi = '<div class="civ-uibg"></div><div class="civ-aurora" style="left:58%;top:-18%;width:52%;aspect-ratio:1"></div>';
+import { esc, hashify, faceUrl, ringOf, nameOf, realOf, isCatfish, bg, aptNo, captionHtml, dlg, cam, tile, where, upTo, speakerAt, bgUi } from './parts.js';
+import { gameStage } from './boards.js';
 
 // ── THE RATINGS ────────────────────────────────────────────────────────
 const RESULT = /^result\./;
@@ -240,4 +208,4 @@ function studioStage(row, screen, idx, fresh) {
     ${where('THE FINALE · LIVE')}${dlg(row, st, fresh)}</div>`;
 }
 
-export const MOMENTS = { rate: rateStage, hangout: hangoutStage, blocked: blockedStage, room: roomStage, video: videoStage, studio: studioStage };
+export const MOMENTS = { game: gameStage, rate: rateStage, hangout: hangoutStage, blocked: blockedStage, room: roomStage, video: videoStage, studio: studioStage };

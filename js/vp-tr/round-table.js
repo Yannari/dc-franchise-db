@@ -1706,6 +1706,39 @@ const DEFLECT_BECAUSE = [
   'Think about it. {D} {dsrc}.',
   'Because {d} {dsrc}.',
 ];
+// THE SAME FACT, A SECOND TIME. The table dump the user read had ten people
+// saying "X named Brick out loud, and Brick was gone by morning" in ten
+// spellings, because one fact carried most of the room. Said a second time at
+// the same table, it is pointed back to — with who said it first — the way a
+// room actually argues. {P} the first to say it, {t} the name, {v} what it is
+// about (the person the fact is about, or the accused where there is none).
+/** Whole-word: one of the cast is called "B". */
+function _namedIn(n, text) {
+  const t = String(text || ''), i = t.indexOf(n);
+  if (i < 0) return false;
+  const before = t.charAt(i - 1), after = t.charAt(i + String(n).length);
+  return !/[A-Za-z]/.test(before) && !/[A-Za-z]/.test(after);
+}
+const CITE_AGAIN = [
+  'I’m with {P}. {t}. The {v} thing, I can’t get past it either.',
+  '{t}. What {P} said about {v}. That’s mine too.',
+  '{P}’s already said it, and {P}’s right. {t}.',
+  'Same as {P}. {t}. Nobody has explained {v} to me either.',
+];
+// THE HOST, WHEN THE ROOM TURNS: said to the accused after their answer, on
+// a name three or more people are carrying. {T} the accused, {n} how many.
+// and the same person saying their own point again, which a person does by
+// saying they are saying it again
+const CITE_OWN = [
+  'Like I said. {t}. The {v} thing.',
+  'I’ll say it again, then. {t}. {v}.',
+];
+const HOST_PRESS = [
+  '{T}, that is {n} people at this table. Would you like another go?',
+  '{N} of them, {T}. I am not sure that answer is going to be enough.',
+  'Anybody else? No? Then {T}, I would start worrying.',
+];
+
 const MINDCHANGE_SAID = [
   'I had someone else an hour ago. Not now. It’s {t}.',
   'Okay. That’s changed my mind. {t}.',
@@ -1862,6 +1895,14 @@ const REASON_PHRASINGS = [
     'named {1} at that table, and nobody saw {1} again',
     'named {1} out loud, and {1} was gone by morning',
     'said {1} out loud, and the castle woke up one short',
+  ]],
+  // THE SHIELD RUMOUR, minted in js/tr/powers.js as "was the one person the
+  // Traitors could not touch, and they went nowhere near X" — accurate and
+  // unsayable. Said out loud about the holder, by a person.
+  [/^was the one person the Traitors could not touch, and they went nowhere near (.+)$/, [
+    'had the one shield in the castle, and the Traitors never even tried',
+    'was the one person they couldn’t touch, and they didn’t bother trying',
+    'held the shield, and nobody upstairs so much as looked that way',
   ]],
   [/^never once voted against (.+)$/, [
     'went the whole way without ever writing {1}’s name',
@@ -2752,10 +2793,23 @@ function _buildBeats(v) {
   // moved says so. The reason is still only ever one the record says that
   // speaker holds (`_sayReason` inside `_reasonRenderings`' closed set), or
   // which kind of nothing they have — never an invented fact.
+  const saidFacts = new Map();   // stored reason → who said it first tonight
+  const factAbout = raw => { for (const [re] of REASON_PHRASINGS) { const m = re.exec(raw); if (m) return m[1]; } return null; };
   const spoken = (who, salt, citedPool, barePool, extra) => {
     const speeches = speechFor.get(extra.t) || [];
     const sp = speeches.find(x => x.speaker === who) || null;
     const src = sp && (sp.sources || []).length ? sp.sources[0] : null;
+    // said already tonight, by somebody else: point back to it
+    // THE FACT IS THE REASON AND WHO IT IS ABOUT: the stored text leaves the
+    // subject off ("wanted Brick gone the night Brick died"), so the same
+    // words said about Chase and about Chet are two different accusations
+    const fk = src && src.text ? extra.t + '|' + src.text : null;
+    if (fk && saidFacts.has(fk)) {
+      const P = saidFacts.get(fk);
+      return { line: _fill(_fresh(P === who ? CITE_OWN : CITE_AGAIN, key + '|again|' + salt + '|' + who),
+        { P: _esc(P), t: _esc(extra.t), T: _esc(extra.t), v: _esc(factAbout(src.text) || extra.t) }), subs: {} };
+    }
+    if (fk && !saidFacts.has(fk)) saidFacts.set(fk, who);
     const src2 = sp && (sp.sources || [])[1] ? sp.sources[1] : null;
     const pr = _pr(extra.t);
     // Singular "they" over a gendered player was a shipped bug class; a
@@ -2781,8 +2835,12 @@ function _buildBeats(v) {
       return sp && (sp.sources || []).length;
     });
     const lead = cited || c.acc[0];
+    // not anybody who already said the name out loud on this card: "B has
+    // convinced me" from a person who agreed five lines ago is a second
+    // decision nobody made
+    const spokeHere = new Set([cited || c.acc[0], ...c.acc.filter(n => n !== (cited || c.acc[0])).slice(0, 2)]);
     const movers = [...new Set(speeches.flatMap(s => s.mindChanges || []))]
-      .filter(n => n !== c.t);
+      .filter(n => n !== c.t && !spokeHere.has(n));
     const pr = _pr(c.t);
     let inner = '<div class="rt-accused">' + _av(c.t, 54)
       + '<span class="rt-accused-nm">' + _esc(c.t) + '</span>'
@@ -2811,6 +2869,10 @@ function _buildBeats(v) {
     // THE ACCUSED GETS THE FLOOR, in their own voice.
     inner += '<p class="rt-dir">' + _fill(_fresh(ACCUSED_REPLY, key + '|rep|' + c.t), { T: _esc(c.t), pos: pr.pos }) + '</p>';
     inner += _said(c.t, pickDefence(key + '|def|' + c.t));
+    if (c.acc.length >= 3 && !v.endgame) {
+      inner += _hostBand(_fill(_fresh(HOST_PRESS, key + '|press|' + c.t),
+        { T: _esc(c.t), n: _numWord(c.acc.length), N: _cap(_numWord(c.acc.length)) }));
+    }
     // AND THROWS A NAME BACK — only one they actually put up tonight
     // (`byTarget` proves it), with their own reason when they hold one.
     const deflectTo = [...byTarget.entries()].find(([tgt, accs]) => tgt !== c.t && accs.includes(c.t));
@@ -2818,7 +2880,13 @@ function _buildBeats(v) {
       const d = deflectTo[0];
       const back = v.speeches.find(sp => sp.speaker === c.t && sp.target === d && (sp.sources || []).length);
       let line = _fill(_fresh(DEFLECT_SAID, key + '|dfl|' + c.t), { D: _esc(d), d: _esc(d) });
-      if (back) {
+      const bk = back ? d + '|' + back.sources[0].text : null;
+      if (bk && saidFacts.has(bk)) {
+        // already said at this table: point to it rather than say it again
+        const P = saidFacts.get(bk);
+        line += P === c.t ? ' Like I said.' : ' You all heard what ' + _esc(P) + ' said.';
+      } else if (back) {
+        saidFacts.set(bk, c.t);
         line += ' ' + _fill(_fresh(DEFLECT_BECAUSE, key + '|dsrc|' + c.t),
           { D: _esc(d), d: _esc(d), dsrc: _esc(_firstPerson(_pred(d, _sayReason(back.sources[0].text, key + '|d|' + c.t)), c.t)) });
       }
@@ -2964,7 +3032,13 @@ function _buildBeats(v) {
       // the card says an argument happened and never says what argument.
       // NOT IN QUOTATION MARKS: the opening beat is narration, and quoted it
       // read as something one of them had said out loud at the table.
-      + (c.since ? '<p class="rt-clash-since"><b>How it started:</b> ' + _esc(c.since)
+      // HOW IT STARTED, only when it is the start of a fight between the two
+      // of them: an opening beat that names neither, or describes nothing
+      // ("Axel and Chef Hatchet talk about nothing at all for twenty
+      // minutes"), explained nothing and read as nonsense at the table
+      + (c.since && [c.a, c.b].every(n => _namedIn(n, c.since))
+        && /argu|row|fight|shout|accus|lie|lying|lied|promis|deal|swore|betray|blame|name|vote|wrote|snap|turn/i.test(c.since)
+        ? '<p class="rt-clash-since"><b>How it started:</b> ' + _esc(c.since)
         + '</p>' : '') + '</div>',
     null, { kind: 'clash', pair: [c.a, c.b] });
   }

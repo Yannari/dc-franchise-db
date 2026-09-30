@@ -47,6 +47,19 @@ export function cutIn(o) {
     + '</div>';
 }
 
+// ── THE LINE-UP: a whole car, introduced at once ─────────────────────
+// Everybody who got out of one car, side by side on the band, each with the
+// seasons they are known for. The arrival's one big introduction per car.
+export function lineup(o) {
+  const names = o.names || [];
+  return `<div class="tci tci-morning tci-line${o.fresh ? ' tci-fresh' : ''}"${o.label ? ` data-l="${esc(o.label)}"` : ''}>`
+    + '<div class="tci-speed"></div><div class="tci-slash"></div><div class="tci-lrow">'
+    + names.map((n, i) => `<div class="tci-lb" style="--i:${i}"><div class="tci-av">${face(n)}</div>`
+      + `<div class="tci-nm" data-n="${esc(n)}"></div>`
+      + ((o.known && o.known[n] && o.known[n].length) ? '<div class="tci-known">' + o.known[n].slice(0, 3).map(k => `<i data-t="${esc(k)}"></i>`).join('') + '</div>' : '')
+      + '</div>').join('') + '</div></div>';
+}
+
 // ── THE CONFESSIONAL: a SCENE SWITCH, not an overlay ─────────────────
 //
 // The user (2026-09-30): "we don't really see the difference between when
@@ -147,6 +160,12 @@ export const CUTIN_CSS = `
 .tci-bolt polyline{fill:none;stroke:var(--rim);stroke-width:6;stroke-linejoin:bevel;filter:drop-shadow(0 0 8px var(--glow));stroke-dasharray:100}
 .tci.tci-fresh .tci-bolt polyline{stroke-dashoffset:100;animation:tciBolt .38s cubic-bezier(.5,0,.9,.4) .7s forwards}
 @keyframes tciBolt{to{stroke-dashoffset:0}}
+/* the line-up */
+.tci-lrow{position:absolute;left:4%;right:4%;top:24%;display:flex;justify-content:center;gap:4%}
+.tci-lb{width:min(20%,210px);text-align:center}
+.tci-lb .tci-av{aspect-ratio:1/1.12;height:auto}
+.tci-lb .tci-known{width:130%;margin-left:-15%}
+.tci.tci-fresh .tci-lb{animation:tciInL .5s cubic-bezier(.2,1.1,.3,1) both;animation-delay:calc(.1s + var(--i) * .18s)}
 /* the band: what they are known for */
 .tci-known{display:flex;flex-wrap:wrap;justify-content:center;gap:5px;margin-top:8px;width:170%;margin-left:-35%}
 .tci-known i::before{content:attr(data-t);display:inline-block;padding:3px 9px;white-space:nowrap;font-style:normal;font-family:var(--v-display);font-weight:700;

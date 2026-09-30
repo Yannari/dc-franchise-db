@@ -1249,6 +1249,21 @@ export const TWIST_CATALOG = [
     category:'blocking', phase:'any', engineType:'ci-forced-statement', ciFormat:'forced', ciSlots:['first','early'],
     desc:'Before anyone rates, every player has to say in the Circle Chat who they would block, out loud and in front of everyone, and everyone named hears it. Then the ratings happen, with all of that in the air. Whoever comes top does not get a Hangout: the name they said that morning is blocked, exactly as they said it. The blocked player gets to meet one person before they leave.',
     incompatible:['ci-standard','ci-sole-influencer','ci-three-influencers','ci-save-one-first','ci-secret-influencers','ci-super-influencer','ci-block-each-other','ci-save-two-each','ci-save-then-plead','ci-room-vote'] },
+  { id:'ci-public-super', emoji:'\u{1F4E3}', name:'Public Super Influencer', format:'the-circle',
+    category:'blocking', phase:'any', engineType:'ci-public-super', ciFormat:'public-super', ciSlots:['late','last'],
+    desc:'Everyone rates as usual and the results stay hidden, but tonight the ratings do not choose the Super Influencer: the audience at home does, by who they have liked watching most. That player decides alone who to block and has to walk to their door and say it in person. It can go to someone the building rated low, which the building finds out at exactly the moment they get the knock.',
+    incompatible:['ci-standard','ci-sole-influencer','ci-super-influencer','ci-no-blocking','ci-secret-mission'] },
+  { id:'ci-no-blocking', emoji:'\u{1F54A}', name:'No Blocking', format:'the-circle',
+    category:'blocking', phase:'any', engineType:'ci-no-blocking', ciFormat:'none', ciSlots:['early','middle'],
+    desc:'Everyone rates, the Influencers are named, and then the Circle announces there will be no blocking tonight. Nobody leaves, and the whole building breathes out. The season still has to lose the same number of players, so a later night will take two instead of one; the relief tonight is borrowed from someone else\'s worst night.',
+    incompatible:['ci-standard','ci-double-block','ci-public-super','ci-secret-mission'] },
+  { id:'ci-secret-mission', emoji:'\u{1F3AF}', name:'Secret Mission', format:'the-circle',
+    category:'blocking', phase:'any', engineType:'ci-secret-mission', ciFormat:'mission', ciSlots:['middle','late'],
+    desc:'Before the ratings, the Circle secretly gives one player a mission: get a named target blocked tonight. They cannot say why; they can only nudge their friends. The ratings and the Hangout go ahead as normal. If the Influencers block the target, the mission succeeds. If they block anyone else, the Circle blocks the player on the mission instead, and the Influencers\' choice is spared.',
+    incompatible:['ci-standard','ci-no-blocking','ci-public-super'] },
+  { id:'ci-disrupter', emoji:'\u{1F6A8}', name:'Disrupter Alert', format:'the-circle',
+    category:'social', phase:'any', engineType:'ci-disrupter', ciEvent:'disrupter',
+    desc:'Without warning, an alert goes out to every apartment: first to respond wins. Nobody knows what they are racing for until someone wins it. The prize is either immunity at the next blocking or the right to name one of the next Influencers. Being first rewards paying attention and nerve, not popularity, so it often lands on someone the ratings would never have helped.' },
   /* ── THE CIRCLE'S ARRIVALS (Plan 3b Task 7) ──
      How a newcomer comes in, booked on an arrival day by slot (a slot's
      booking may list a blocking and an arrival) or drawn by how many arrive.

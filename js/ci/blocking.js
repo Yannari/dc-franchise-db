@@ -64,7 +64,7 @@ export function publicSaves(state, rng, infl, atRisk) {
   return saved;
 }
 
-export function standardBlocking(state, rng, ratingRow, { format = 'standard', saves = false, secret = false, inPerson = false, atRisk: only = null } = {}) {
+export function standardBlocking(state, rng, ratingRow, { format = 'standard', saves = false, secret = false, inPerson = false, atRisk: only = null, mark = {}, decide = null } = {}) {
   // A tie that makes everybody left an influencer would leave nobody at risk:
   // then only the top two decide.
   let infl = ratingRow.influencers;
@@ -74,12 +74,15 @@ export function standardBlocking(state, rng, ratingRow, { format = 'standard', s
   for (const h of atRisk) feel(state, h, 'stress', 2);
   const hangout = addScene(state, 'hangout', infl, { atRisk, format, ...(secret ? { secret: true } : {}) }, infl);
   const d = deliberate(state, rng, infl, atRisk);
+  // A mission can overrule the Hangout (UK 3 Ep 8): it names who actually goes.
+  let channel = 'influencers';
+  if (decide) { const r = decide(d); if (r.target !== d.target) { d.target = r.target; channel = r.channel || channel; } }
   Object.assign(hangout.data, d);
   for (const h of state.active) delete state.immuneNext[h];
   const announcement = addScene(state, 'blocking', [d.announcer, d.target],
-    { by: infl, target: d.target, reason: d.reason, channel: 'influencers', format,
-      ...(secret ? { secret: true } : {}), ...(inPerson ? { inPerson: true } : {}) }, [...state.active]);
-  applyBlock(state, d.target, 'influencers', infl, announcement, { secret });
+    { by: infl, target: d.target, reason: d.reason, channel, format,
+      ...(secret ? { secret: true } : {}), ...(inPerson ? { inPerson: true } : {}), ...mark }, [...state.active]);
+  applyBlock(state, d.target, channel, channel === 'influencers' ? infl : [], announcement, { secret });
   // A super influencer delivers it in person, and that meeting is the visit
   // (US 1 Ep 10). A secret one is nobody the blocked player can go and ask.
   const visit = inPerson ? runVisit(state, rng, d.target, infl, { to: infl[0], inPerson: true })

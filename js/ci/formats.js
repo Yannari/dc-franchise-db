@@ -37,6 +37,14 @@ export const FORMATS = {
   super: { removes: 1, seats: 1, hidden: true, can: ctx => ctx.position !== 'first',
     run: (state, rng, rating) => standardBlocking(state, rng, rating, { format: 'super', inPerson: true }) },
   instant: { removes: 1, seats: 0, can: () => true, run: instantBlock },
+  'public-super': { removes: 1, seats: 1, hidden: true, can: ctx => ctx.position === 'late' || ctx.position === 'last',
+    // UK 2 Ep 17: the audience's choice, handed in by season.js (public.js
+    // is the only reader of the audience; the engine never reads it itself).
+    pick: (res, state) => [res.map(r => r.profile).includes(state.publicChoice) ? state.publicChoice : res[0].profile],
+    run: (state, rng, rating) => standardBlocking(state, rng, rating, { format: 'public-super', inPerson: true, mark: { public: true } }) },
+  none: { removes: 0, seats: 2, can: ctx => ctx.position === 'early' || ctx.position === 'middle', run: noBlocking },
+  mission: { removes: 1, seats: 2, quiet: true, can: ctx => ctx.position !== 'first' && ctx.position !== 'last',
+    canNow: state => state.active.length >= 6, before: (state, rng) => missionBefore(state, rng), run: missionNight },
   antivirus: { removes: 1, seats: 0, can: ctx => ctx.position === 'middle' || ctx.position === 'late',
     canNow: state => newcomersIn(state).length >= 2 && state.active.length >= 5, run: antivirus },
   double: { removes: 2, seats: 2, can: ctx => ctx.position !== 'first' && ctx.position !== 'last', run: doubleBlock },
@@ -232,6 +240,38 @@ function antivirus(state, rng, rating) {
   return finish(state, rng, unsafe[0], [], 'antivirus', { reason: 'antivirus', format: 'antivirus', order: passes.map(p => p.to) });
 }
 
+// ── Circle-wide twists (Plan 3b Task 9a) ─────────────────────────────
+
+
+// US 7 Ep 1: no blocking tonight. The timeline makes a later night take two.
+function noBlocking(state, rng, rating) {
+  addScene(state, 'no-block', [...rating.influencers], { influencers: rating.influencers }, [...state.active]);
+  for (const h of state.active) { feel(state, h, 'stress', -1.5); feel(state, h, 'elation', 0.5); }
+  for (const h of state.active) delete state.immuneNext[h];
+  return null;
+}
+
+// UK 3 Ep 8: before the ratings the Circle gives one player a secret target.
+// If the target is blocked tonight, the mission succeeds; if not, the one on
+// the mission is blocked instead. They lobby their friends quietly.
+function missionBefore(state, rng) {
+  const holder = state.active[Math.floor(rng() * state.active.length)];
+  const others = state.active.filter(o => o !== holder);
+  const target = others[Math.floor(rng() * others.length)];
+  const sc = addScene(state, 'mission', [holder], { holder, target }, [holder]);
+  for (const o of others) if (o !== target && rel(o, holder, 'affection') > 2 && rng() < S(state, holder, 'social') / 10) {
+    bump(o, target, 'trust', -0.8); bump(o, holder, 'obligation', -0.3);
+  }
+  feel(state, holder, 'stress', 2);
+  state.mission = { holder, target, scene: sc.id };
+}
+function missionNight(state, rng, rating) {
+  const m = state.mission; state.mission = null;
+  if (!m || !state.active.includes(m.holder)) return standardBlocking(state, rng, rating, { format: 'mission' });
+  return standardBlocking(state, rng, rating, { format: 'mission', mark: { mission: m },
+    decide: d => (d.target === m.target ? { target: d.target } : { target: m.holder, channel: 'mission' }) });
+}
+
 // Would an Influencer take the chance to block the other one? Only a player
 // who may scheme (the archetype rule), and then as much as they resent and
 // fear the other, against what they feel for them, scaled by nerve.
@@ -267,7 +307,8 @@ export function prepareNight(state, night = { format: 'standard' }, rng = null) 
     night.fellBack = format; format = 'standard';
   }
   night.format = format;
-  if (format !== 'standard') addScene(state, 'alert', [...state.active], { format }, [...state.active]);
+  // A secret format (a mission) is not announced: only its holder knows.
+  if (format !== 'standard' && !FORMATS[format].quiet) addScene(state, 'alert', [...state.active], { format }, [...state.active]);
   (state.nights ||= []).push({ day: state.day, format, ...(night.fellBack ? { fellBack: night.fellBack } : {}) });
   // Some formats act before a ballot is cast (a forced statement).
   if (FORMATS[format].before && rng) FORMATS[format].before(state, rng, night);

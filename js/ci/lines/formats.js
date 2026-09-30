@@ -748,3 +748,96 @@ export const POWER_LINES = {
     { turns: [{ by: 'a', react: "The burner is {b}'s. Wow. The whole time." }, { by: 'b', react: 'Busted. Completely busted.' }] },
   ]),
 };
+
+// ── Task 9a: Circle-wide twists ────────────────────────────────────────
+// noblock.alert — a reads it, b reacts; noblock.influencer — a (an
+// Influencer) about b (the other); noblock.relief — a. mission.given — a
+// (holder) learns the target b, alone. mission.success — a (holder) after b
+// was blocked. block.announce.mission — the Circle blocks c, whose mission
+// failed. disrupter.alert — a sees b won; disrupter.win.<effect> — a (the
+// winner); disrupter.slow — a (too slow) about b; disrupter.pick — a names
+// b an Influencer.
+export const TWIST_LINES = {
+  ...E('alert.public-super', [
+    { turns: [{ by: 'a', react: "'Tonight, the audience will choose a Super Influencer.' The audience? At home?" },
+      { by: 'b', react: 'So it is not about the ratings at all. It is about who they like watching.' }] },
+    { turns: [{ by: 'a', react: "'The public has chosen.' Chosen who? They won't say." }, { by: 'b', say: 'Somebody out there picked one of us. Wow.' }] },
+    { turns: [{ by: 'a', react: 'The people at home get a say tonight. I hope they like me.' },
+      { by: 'b', react: 'I hope they were paying attention to the right things.' }], beat: '{b} fixes {b.posAdj} hair, just in case.' },
+  ]),
+  ...E('alert.none', [
+    { turns: [{ by: 'a', react: 'Wait, what did it just say?' }, { by: 'b', react: 'Nobody is being blocked tonight?' }] },
+    { turns: [{ by: 'a', react: "Hold on. Is this a twist? There's always a twist." }, { by: 'b', say: "I'll believe it in the morning." }] },
+    { turns: [{ by: 'a', react: 'Something is different tonight. I can feel it.' }, { by: 'b', react: 'Me too. I do not trust it.' }] },
+  ]),
+  ...E('noblock.alert', [
+    { turns: [{ by: 'a', react: "'There will be no blocking tonight.' No blocking? Nobody leaves?" },
+      { by: 'b', react: 'Oh my God. Oh my God. Everybody stays.' }], beat: 'In every apartment, somebody sits down very suddenly.' },
+    { turns: [{ by: 'a', react: 'No blocking! We all survive!' }, { by: 'b', say: 'Which means next time is going to be twice as bad. Right?' }] },
+    { turns: [{ by: 'a', react: "'Nobody will be blocked.' I have never loved a sentence more." }, { by: 'b', react: 'Do not celebrate yet. The Circle always gets its blocking back.' }] },
+  ]),
+  ...E('noblock.influencer', [
+    { turns: [{ by: 'a', react: "I'm an Influencer and I don't have to block anyone? Best night of my life." }] },
+    { turns: [{ by: 'a', react: 'All that power and nothing to do with it. I am not complaining.' }], beat: '{a} laughs with relief.' },
+    { turns: [{ by: 'a', say: 'At least nobody can say {b} and I got it wrong tonight.' }] },
+  ]),
+  ...E('noblock.relief', [
+    { turns: [{ by: 'a', react: 'I was sure it was going to be me. Sure of it.' }], beat: '{a} lies flat on the floor.' },
+    { turns: [{ by: 'a', react: 'One more night. I will take one more night.' }] },
+    { turns: [{ by: 'a', react: 'Everybody made it. For now.' }] },
+    { turns: [{ by: 'a', say: "I'm going to sleep for ten hours. Nobody wake me up." }], beat: '{a} pulls a blanket over {a.posAdj} head.' },
+  ]),
+  ...E('mission.given', [
+    { turns: [{ by: 'a', react: "'You have a secret task. Get {b} blocked tonight, or you will be blocked instead.'" },
+      { by: 'a', say: 'Oh no. Oh no. {b}? And I cannot tell anyone why.' }], beat: '{a} reads it three times, going pale.' },
+    { turns: [{ by: 'a', react: "A secret task. {b} goes, or I do. Okay. Okay. Think." }], beat: '{a} starts pacing.' },
+    { turns: [{ by: 'a', say: "I have to get {b} blocked without looking like I'm trying to get {b} blocked." },
+      { by: 'a', react: 'This is the hardest thing the Circle has ever asked me to do.' }] },
+  ]),
+  ...E('mission.success', [
+    { turns: [{ by: 'a', react: 'It was {b}. Task complete. I am still here.' }], beat: '{a} lets out the breath {a.sub} has been holding all day.' },
+    { turns: [{ by: 'a', react: "{b}. Thank God. And nobody knows I had anything to do with it." }] },
+    { turns: [{ by: 'a', react: 'I did it. I feel terrible. I did it.' }] },
+  ]),
+  // block.react.guess — a guesses who the secret Influencers were; b is a
+  // guess (a player a suspects), which may be wrong.
+  ...E('block.react.guess', [
+    { turns: [{ by: 'a', react: 'Who did that? My money is on {b}. Something about {b} today.' }], beat: '{a} narrows {a.posAdj} eyes at the screen.' },
+    { turns: [{ by: 'a', say: "If I had to bet, I'd say {b} was one of them. But I have no idea." }] },
+    { turns: [{ by: 'a', react: "Was it {b}? {b} has been way too quiet today." }] },
+    { turns: [{ by: 'a', say: "I'm going to act like I know who it was. I do not know who it was." }] },
+    { turns: [{ by: 'a', react: 'Somebody in here is pretending to be shocked right now.' }], beat: '{a} looks at every face on the screen.' },
+  ]),
+  ...E('block.announce.mission', [
+    { turns: [{ by: 'host', say: "{c} was given a secret task today, and did not complete it. {c}, you have been blocked." }],
+      beat: 'Every apartment turns to the screen at once.' },
+    { turns: [{ by: 'host', say: 'The Influencers made their choice, but {c} had a secret task and failed it. {c} is blocked instead.' }] },
+    { turns: [{ by: 'host', say: "Nobody knew {c} had a secret task. Now everybody does. {c} has been blocked." }] },
+  ]),
+  ...E('disrupter.alert', [
+    { turns: [{ by: 'a', react: "'First to respond wins.' Wins what?" }, { by: 'b', react: "I already replied. I didn't even read it." }],
+      beat: '{b} was typing before the alert finished loading.' },
+    { turns: [{ by: 'a', react: 'An alert! Reply! Reply!' }, { by: 'b', react: 'Too slow, everybody. Too slow.' }] },
+    { turns: [{ by: 'a', react: 'What is a Disrupter alert? What do I do?' }, { by: 'b', say: 'You press the button. That is what you do.' }] },
+  ]),
+  ...E('disrupter.win.immunity', [
+    { turns: [{ by: 'a', react: "I won? I'm immune? From just replying fast?" }], beat: '{a} jumps onto the couch.' },
+    { turns: [{ by: 'a', react: "Immune at the next blocking. That's the best thing I ever did with my thumbs." }] },
+    { turns: [{ by: 'a', react: 'Safe! I am safe! Always check your notifications, people.' }] },
+  ]),
+  ...E('disrupter.win.pick', [
+    { turns: [{ by: 'a', react: 'I get to name an Influencer? Me?' }, { by: 'a', say: 'Oh, I know exactly who.' }], beat: "{a}'s eyes go wide." },
+    { turns: [{ by: 'a', react: 'The next Influencer is my call. The power. The actual power.' }] },
+    { turns: [{ by: 'a', react: 'I was just trying to be fast. Now I am picking an Influencer.' }] },
+  ]),
+  ...E('disrupter.slow', [
+    { turns: [{ by: 'a', react: 'By one second. One second, {b}.' }], beat: '{a} throws the tablet onto the couch.' },
+    { turns: [{ by: 'a', react: "I was making a sandwich. I lost to {b} because of a sandwich." }] },
+    { turns: [{ by: 'a', react: "{b} won that? {b} doesn't even check the chat." }] },
+  ]),
+  ...E('disrupter.pick', [
+    { turns: [{ by: 'a', say: "I won it fair and square. I'm making {b} an Influencer." }], beat: '{a} presses the button.' },
+    { turns: [{ by: 'a', say: '{b}. You are an Influencer tonight, and you have me to thank.' }] },
+    { turns: [{ by: 'a', say: "I'm picking {b}. {b} is going to owe me big." }] },
+  ]),
+};

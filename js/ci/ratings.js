@@ -140,7 +140,7 @@ export function runRating(state, rng, { final = false, seats = Infinity, pick = 
   if (!final) for (const h of burnerVoters(state, rng)) ballots.push({ ...ballot(state, rng, h, targets), burner: true });
   const res = results(ballots, targets);
   // A format seats its own number of Influencers (a sole influencer: one).
-  let influencers = final ? [] : (pick ? pick(res) : influencersFrom(res).slice(0, seats));
+  let influencers = final ? [] : (pick ? pick(res, state) : influencersFrom(res).slice(0, seats));
   // The Joker names the second Influencer of an ordinary night (US 2).
   if (!final && !hidden && seats === 2 && !pick) influencers = jokerPick(state, influencers);
   const sc = addScene(state, final ? 'final-ratings' : 'ratings', voters,

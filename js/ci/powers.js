@@ -95,13 +95,13 @@ export function jokerMeets(state, rng, arrivals) {
 
 /** At the next ordinary ratings night: the Joker names the second Influencer. */
 export function jokerPick(state, influencers) {
-  const p = live(state, 'joker')[0];
+  const p = live(state, 'joker')[0] || live(state, 'pick')[0];
   if (!p || influencers.length !== 2) return influencers;
   const pick = state.active.filter(o => o !== p.holder && o !== influencers[0])
     .sort((a, b) => rel(p.holder, b, 'affection') - rel(p.holder, a, 'affection'))[0];
   p.done = true;
   if (!pick) return influencers;
-  addScene(state, 'joker-pick', [p.holder, pick], { holder: p.holder, pick }, [...state.active]);
+  addScene(state, 'joker-pick', [p.holder, pick], { holder: p.holder, pick, disrupter: p.kind === 'pick' }, [...state.active]);
   bump(pick, p.holder, 'obligation', 2);
   return [influencers[0], pick];
 }
@@ -122,4 +122,21 @@ export function burnerVoters(state, rng) {
     if (--p.ballots <= 0) p.done = true;
   }
   return out;
+}
+
+// ── Disrupter alerts (US 7) ──────────────────────────────────────────────
+// "First to respond": the fastest reply wins an unknown effect. Being first
+// rewards attention (intuition) and nerve, not popularity.
+export const DISRUPT = { immunity: 0.6 };
+export function runDisrupter(state, rng) {
+  const order = [...state.active].map(h => [h, S(state, h, 'intuition') * 0.5 + S(state, h, 'boldness') * 0.3 + rng() * 4])
+    .sort((a, b) => b[1] - a[1]).map(([h]) => h);
+  const winner = order[0];
+  if (!winner) return null;
+  const effect = rng() < DISRUPT.immunity ? 'immunity' : 'pick';
+  if (effect === 'immunity') state.immuneNext[winner] = true;
+  else state.powers.push({ kind: 'pick', from: null, holder: winner, day: state.day, done: false, told: true });
+  feel(state, winner, 'elation', 2);
+  for (const h of order.slice(1, 3)) feel(state, h, 'stress', 0.5);
+  return addScene(state, 'disrupter', [winner], { winner, order: order.slice(0, 3), effect }, [...state.active]);
 }

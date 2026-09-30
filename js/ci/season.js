@@ -29,8 +29,8 @@ import { standardBlocking, goodbyeVideo, deliverReports } from './blocking.js';
 import { FORMATS, prepareNight, runBlocking } from './formats.js';
 import { bookSeason } from './timeline.js';
 import { arrive, chooseNewcomer } from './arrivals.js';
-import { powersMorning, jokerMeets } from './powers.js';
-import { openLedger, noteJoin, airDay, fanFavorite } from './public.js';
+import { powersMorning, jokerMeets, runDisrupter } from './powers.js';
+import { openLedger, noteJoin, airDay, fanFavorite, publicPick } from './public.js';
 import { buildSchedule } from './schedule.js';
 import { finalDay, finaleDay } from './finale.js';
 import { chooseAired } from './airing.js';
@@ -134,6 +134,7 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
     if (!d.finale) apartmentLife(state, streamFor(seed, `life:${d.day}`));
     const ctx = contextFor(state, d);
     if (!d.finale) for (const plan of planChats(state, rng, ctx)) runChat(state, rng, plan, ctx);
+    if (d.disrupter) runDisrupter(state, streamFor(seed, `disrupter:${d.day}`));
     if (d.game) {
       const g = pickGame(state, streamFor(seed, `game:${d.day}`), { days: schedule.length });
       if (g) runGame(state, streamFor(seed, `game:${d.day}:play`), g);
@@ -150,6 +151,7 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
     let rating = null;
     if (d.block) {
       const night = prepareNight(state, { ...(d.night || { format: 'standard' }) }, streamFor(seed, `night:${d.day}`));
+      state.publicChoice = night.format === 'public-super' ? publicPick(state) : null;
       const f = FORMATS[night.format] || FORMATS.standard;
       rating = runRating(state, rng, { seats: f.seats ?? 2, pick: f.pick, hidden: !!f.hidden });
       runBlocking(state, rng, rating, night);

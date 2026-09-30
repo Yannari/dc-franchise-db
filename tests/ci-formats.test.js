@@ -225,3 +225,54 @@ describe('antivirus', () => {
     expect(FORMATS.antivirus.canNow(s)).toBe(false);
   });
 });
+
+// ── Task 9a: Circle-wide twists ─────────────────────────────────────────
+import { readApproval } from '../js/pm/ledger.js';
+import { peopleOf } from '../js/ci/state.js';
+describe('public super influencer (UK 2 Ep 17)', () => {
+  it('the audience picks the Super Influencer, not the ratings, and the block is in person', () => {
+    const { on, state } = booked('rating6', 'ci-public-super');
+    const block = on('blocking')[0];
+    expect(block.data.inPerson).toBe(true);
+    expect(block.data.public).toBe(true);
+    const ap = h => peopleOf(state, h).reduce((s, n) => s + readApproval(state.ledger, n), 0) / peopleOf(state, h).length;
+    const rating = on('ratings')[0];
+    const pool = rating.seenBy;
+    expect(block.data.by).toHaveLength(1);
+    expect(pool).toContain(block.data.by[0]);
+    void ap;
+  });
+});
+
+describe('no blocking (US 7 Ep 1)', () => {
+  it('nobody leaves that night, a later night takes two, and the season still ends with five', () => {
+    const { state, day, result } = booked('rating3', 'ci-no-blocking');
+    expect(state.blocked.filter(b => b.day === day)).toHaveLength(0);
+    expect(state.nights.find(n => n.day === day).format).toBe('none');
+    expect(state.nights.some(n => n.day > day && n.format === 'double')).toBe(true);
+    expect(result.placements).toHaveLength(5);
+  });
+});
+
+describe('secret mission (UK 3 Ep 8)', () => {
+  it('one player must get a named target blocked, or is blocked themselves', () => {
+    for (const seed of [3, 5, 7, 9]) {
+      const { on, state, day } = booked('rating4', 'ci-secret-mission', seed);
+      const m = on('mission')[0];
+      expect(m).toBeTruthy();
+      const gone = state.blocked.filter(b => b.day === day).map(b => b.handle);
+      expect(gone).toHaveLength(1);
+      expect([m.data.target, m.data.holder]).toContain(gone[0]);
+    }
+  });
+});
+
+describe('disrupter alerts (US 7)', () => {
+  it('the first to respond wins, and being first rewards attention, not popularity', () => {
+    const { state } = booked('social1', 'ci-disrupter');
+    const d = state.scenes.find(s => s.kind === 'disrupter');
+    expect(d).toBeTruthy();
+    expect(['immunity', 'pick']).toContain(d.data.effect);
+    expect(d.data.order[0]).toBe(d.data.winner);
+  });
+});

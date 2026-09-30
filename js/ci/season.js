@@ -28,7 +28,7 @@ import { runRating } from './ratings.js';
 import { standardBlocking, goodbyeVideo, deliverReports } from './blocking.js';
 import { FORMATS, prepareNight, runBlocking } from './formats.js';
 import { bookSeason } from './timeline.js';
-import { arrive } from './arrivals.js';
+import { arrive, chooseNewcomer } from './arrivals.js';
 import { openLedger, noteJoin, airDay, fanFavorite } from './public.js';
 import { buildSchedule } from './schedule.js';
 import { finalDay, finaleDay } from './finale.js';
@@ -107,8 +107,20 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
       // Finale day is the studio: the phones are off after the final ratings.
       if (!d.finale) morningFeed(state, rng);
     }
+    // Chosen by the Influencers: they pick which of two waiting profiles comes
+    // in now; the other waits for the next arrival (US 4 Ep 1, US 6 Ep 1).
+    let entry = d.entry || 'snoop', entryCtx = {};
+    if (entry === 'chosen') {
+      const by = state.ratings.filter(r => !r.final && !r.hidden).at(-1)?.influencers?.filter(i => state.active.includes(i)) || [];
+      if (d.arrivals === 1 && queue.length >= 2 && by.length) {
+        const offered = queue.slice(0, 2);
+        const pick = chooseNewcomer(state, streamFor(seed, `chosen:${d.day}`), offered, by);
+        if (pick !== queue[0]) queue.splice(0, 2, pick, queue[0]);
+        entryCtx = { offered, by };
+      } else entry = 'snoop';
+    }
     const arriving = queue.splice(0, d.arrivals);
-    if (arriving.length) { arrive(state, rng, arriving); for (const h of arriving) noteJoin(state, h); }
+    if (arriving.length) { arrive(state, streamFor(seed, `arrive:${d.day}`), arriving, entry, entryCtx); for (const h of arriving) noteJoin(state, h); }
     recognise(state, carried);
 
     // Alone in the apartment, then the chats, the game, and the evening:
@@ -131,8 +143,9 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
 
     let rating = null;
     if (d.block) {
-      const night = prepareNight(state, { ...(d.night || { format: 'standard' }) });
-      rating = runRating(state, rng, { seats: FORMATS[night.format]?.seats ?? 2 });
+      const night = prepareNight(state, { ...(d.night || { format: 'standard' }) }, streamFor(seed, `night:${d.day}`));
+      const f = FORMATS[night.format] || FORMATS.standard;
+      rating = runRating(state, rng, { seats: f.seats ?? 2, pick: f.pick, hidden: !!f.hidden });
       runBlocking(state, rng, rating, night);
     }
     if (d.final) { finalRow = finalDay(state, rng); rating = finalRow; }

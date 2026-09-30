@@ -132,14 +132,14 @@ function infer(state, rng, row, scene) {
   return out;
 }
 
-export function runRating(state, rng, { final = false, seats = Infinity } = {}) {
+export function runRating(state, rng, { final = false, seats = Infinity, pick = null, hidden = false } = {}) {
   const { voters, targets } = ratedPool(state);
   const ballots = voters.map(v => ballot(state, rng, v, targets, { final }));
   const res = results(ballots, targets);
   // A format seats its own number of Influencers (a sole influencer: one).
-  const influencers = final ? [] : influencersFrom(res).slice(0, seats);
+  const influencers = final ? [] : (pick ? pick(res) : influencersFrom(res).slice(0, seats));
   const sc = addScene(state, final ? 'final-ratings' : 'ratings', voters,
-    { ballots, results: res, influencers, reveal: revealOrder(res) }, [...state.active]);
+    { ballots, results: res, influencers, reveal: revealOrder(res), ...(hidden ? { hidden: true } : {}) }, [...state.active]);
   for (const r of res) state.firstPlaces[r.profile] = (state.firstPlaces[r.profile] || 0) + r.firsts;
   for (const i of influencers) state.influencerCount[i] = (state.influencerCount[i] || 0) + 1;
   for (const p of state.pacts.filter(x => x.kind === 'rate')) {
@@ -149,6 +149,17 @@ export function runRating(state, rng, { final = false, seats = Infinity } = {}) 
     }
   }
   const n = res.length;
+  // Hidden results (secret and super influencers): nobody learns a place, so
+  // nothing below — threat, the feelings of a place, inferred betrayals — can
+  // come from tonight.
+  if (hidden) {
+    for (const h of state.active) delete state.unratedNext[h];
+    const row = { day: state.day, final, voters, targets, ballots, results: res, influencers, hidden: true,
+      reveal: revealOrder(res), inferred: [], sceneId: sc.id };
+    sc.data.inferred = [];
+    state.ratings.push(row);
+    return row;
+  }
   for (const obs of state.active) for (const r of res) {
     if (r.profile === obs) continue;
     const seen = 10 * (1 - (r.place - 1) / Math.max(1, n - 1));

@@ -232,7 +232,7 @@ export function renderEntry(state, entry, cast, rng, ctx = {}) {
     const greet = ctx.kind === 'circle-chat' && ctx.greeted && !ctx.greeted.has(speaker);
     if (t.react) lines.push(tag({ who: speaker, kind: 'react', text: fill(state, t.react, cast, t.by) }));
     if (t.say) {
-      const said = t.by === 'host' ? fill(state, t.say, cast, t.by) : byAuthored(nick(fill(state, t.say, cast, t.by)), av, rng, { speech: true });
+      const said = t.by === 'host' ? fill(state, t.say, cast, t.by) : byAuthored(nick(fill(state, t.say, cast, t.by)), av, rng, { speech: true, reply });
       lines.push(tag({ who: speaker, kind: t.by === 'host' ? 'host' : 'say', text: said }));
     }
     if (t.video) lines.push(tag({ who: speaker, kind: 'video', text: fill(state, t.video, cast, t.by) }));
@@ -418,7 +418,8 @@ const BLOCKS = {
         continue;
       }
       out.push({ key: `rate.${b.reasons[0]}.top`, cast: { a: b.voter, b: first }, extra: { band: 'top' } });
-      const mid = b.order.length >= 5 ? b.order[Math.floor(b.order.length / 2)] : null;
+      // Four names still have a middle (a small room late in the season).
+      const mid = b.order.length >= 4 ? b.order[Math.floor(b.order.length / 2)] : null;
       if (mid) out.push({ key: 'rate.middle', cast: { a: b.voter, b: mid } });
       if (last && last !== first) out.push({ key: `rate.${b.reasons.at(-1)}.bottom`, cast: { a: b.voter, b: last }, extra: { band: 'bottom' } });
       const bad = last && gameCallback(state, b.voter, last, s, { sameDay: true, dir: 'theirs',
@@ -429,6 +430,12 @@ const BLOCKS = {
     }
     // Rankings sent; the waiting before the results.
     for (const h of s.data.ballots.map(x => x.voter).slice(-2)) out.push({ key: final ? 'final.done' : 'ratings.done', cast: { a: h } });
+    if (!final && s.data.hidden) {
+      const infl = s.data.influencers;
+      for (const h of s.seenBy.filter(x => !infl.includes(x)).slice(0, 5)) out.push({ key: 'ratings.hidden', cast: { a: h } });
+      for (const i of infl) out.push({ key: infl.length === 1 ? 'result.super' : 'result.secret', cast: { a: i } });
+      return out;
+    }
     if (!final) {
       for (const h of [...s.data.reveal.flat()].reverse().slice(0, 2)) out.push({ key: 'ratings.wait', cast: { a: h } });
       for (const group of s.data.reveal.slice(0, -1)) {
@@ -444,6 +451,104 @@ const BLOCKS = {
     return out;
   },
   'final-ratings'(state, s) { return BLOCKS.ratings(state, s, true); },
+  // A public save before the Hangout: the save, the saved, one who wasn't.
+  save(state, s) {
+    const { by, saved } = s.data;
+    const out = [{ key: 'save.announce', cast: { a: by, b: saved } }, { key: 'save.react', cast: { a: saved, b: by } }];
+    // Only a player still waiting to be saved can be passed over.
+    const waiting = s.data.waiting || [];
+    const passed = waiting.filter(h => rel(h, by, 'affection') > 3)
+      .sort((x, y) => rel(y, by, 'affection') - rel(x, by, 'affection'))[0];
+    if (passed) out.push({ key: 'save.passed', cast: { a: passed, b: by } });
+    const hoping = waiting.find(h => h !== passed);
+    if (hoping) out.push({ key: 'save.wait', cast: { a: hoping, b: by } });
+    return out;
+  },
+  // Save then plead (US 4 Ep 10): the last two, face to face.
+  plead(state, s) {
+    const [p1, p2] = s.data.pleaders;
+    const [i1, i2] = s.data.by;
+    return [{ key: 'plead.open', cast: { a: p1, b: p2 } },
+      { key: 'plead.pitch', cast: { a: p1, b: i1 } }, { key: 'plead.listen', cast: { a: i1, b: p1 } },
+      { key: 'plead.pitch', cast: { a: p2, b: i2 || i1 } }, { key: 'plead.listen', cast: { a: i2 || i1, b: p2 } }];
+  },
+  // How a newcomer came in (Plan 3b Task 7).
+  date(state, s) {
+    const [h, chosen] = s.who;
+    const out = [{ key: 'date.pick', cast: { a: h, b: chosen } }, { key: 'date.chat', cast: { a: h, b: chosen } },
+      { key: 'date.gift', cast: { a: h, b: chosen } }];
+    for (const o of s.data.options.filter(x => x !== chosen).slice(0, 1)) out.push({ key: 'date.passed', cast: { a: o, b: h } });
+    return out;
+  },
+  invites(state, s) {
+    const [h] = s.who;
+    const out = s.data.order.slice(0, 3).map((o, i) => ({ key: i ? 'invites.next' : 'invites.first', cast: { a: h, b: o } }));
+    const skipped = s.seenBy.find(o => o !== h && !s.data.order.includes(o));
+    if (skipped) out.push({ key: 'invites.last', cast: { a: skipped, b: h } });
+    return out;
+  },
+  race(state, s) {
+    const [h] = s.who;
+    const [first, ...rest] = s.data.order;
+    return [...(first ? [{ key: 'race.win', cast: { a: first, b: h } }] : []),
+      ...rest.slice(0, 2).map(o => ({ key: 'race.lose', cast: { a: o, b: h } }))];
+  },
+  newparty(state, s) {
+    const [h] = s.who;
+    return [{ key: 'newparty.throw', cast: { a: h } },
+      ...s.data.guests.slice(0, 2).map(g => ({ key: 'newparty.guest', cast: { a: g, b: h } })),
+      ...s.data.left.slice(0, 2).map(o => ({ key: 'newparty.left', cast: { a: o, b: h } }))];
+  },
+  lurk(state, s) {
+    const [h] = s.who;
+    return [{ key: 'lurk.watch', cast: { a: h } }, ...s.data.watched.slice(0, 2).map(o => ({ key: 'lurk.reveal', cast: { a: o, b: h } }))];
+  },
+  chosen(state, s) {
+    const { chosen, by } = s.data;
+    return [{ key: 'chosen.offer', cast: { a: by[0] } }, { key: 'chosen.pick', cast: { a: by[0], b: chosen } },
+      { key: 'chosen.thanks', cast: { a: chosen, b: by[0] } }];
+  },
+  'pair-arrival'(state, s) { return [{ key: 'pairarrival.chat', cast: { a: s.who[0], b: s.who[1] } }]; },
+  // Antivirus (US 4 Ep 8-9): who passed it to whom, in order.
+  antivirus(state, s) {
+    const { holders, passes, left } = s.data;
+    const out = [{ key: 'antivirus.open', cast: { a: holders[0], b: holders[1] || holders[0] } }];
+    passes.forEach((p, i) => {
+      out.push({ key: 'antivirus.pass', cast: { a: p.from, b: p.to } });
+      if (i < 4) out.push({ key: 'antivirus.got', cast: { a: p.to, b: p.from } });
+    });
+    if (left[0]) out.push({ key: 'antivirus.left', cast: { a: left[0] } });
+    return out;
+  },
+  // Room vote (UK 1 Ep 15): the bottom two, every vote in public.
+  vote(state, s) {
+    const [b1, b2] = s.data.bottom;
+    const out = [{ key: 'vote.open', cast: { a: b1, b: b2 } }];
+    for (const [v, t] of Object.entries(s.data.votes).slice(0, 6)) out.push({ key: 'vote.cast', cast: { a: v, b: t } });
+    return out;
+  },
+  // Forced statement (US 5 Ep 1): everyone names who they would block.
+  statement(state, s) {
+    const out = [{ key: 'statement.open', cast: { a: s.who[0], b: s.who[1] } }];
+    for (const [h, t] of Object.entries(s.data.picks).slice(0, 8)) out.push({ key: 'statement.say', cast: { a: h, b: t } });
+    const named = {};
+    for (const t of Object.values(s.data.picks)) named[t] = (named[t] || 0) + 1;
+    for (const t of Object.keys(named).sort((x, y) => named[y] - named[x]).slice(0, 2)) {
+      const by = Object.keys(s.data.picks).find(h => s.data.picks[h] === t);
+      out.push({ key: 'statement.named', cast: { a: t, b: by } });
+    }
+    return out;
+  },
+  // "Would you like to block your fellow Influencer?" (UK 3 Ep 16)
+  offer(state, s) {
+    const [A, B] = s.who;
+    const out = [{ key: 'offer.open', cast: { a: A, b: B } }];
+    for (const [x, y] of [[A, B], [B, A]]) out.push({ key: s.data.answers[x] ? 'offer.yes' : 'offer.no', cast: { a: x, b: y } });
+    const t = s.data.target;
+    if (t) out.push({ key: 'offer.betrayed', cast: { a: t, b: t === A ? B : A } });
+    else out.push({ key: 'offer.declined', cast: { a: A, b: B } });
+    return out;
+  },
   // The Circle's alert: somebody reads the rule out loud, somebody reacts.
   alert(state, s) {
     const [a, b] = [...s.who].sort((x, y) => S(state, y, 'boldness') - S(state, x, 'boldness'));
@@ -463,29 +568,63 @@ const BLOCKS = {
       return out;
     }
     const [a, b] = s.who;
-    const out = [{ key: 'hangout.open', cast: { a, b } }];
+    const trio = s.who.length >= 3;
+    const out = [trio ? { key: 'hangout.open.trio', cast: { a, b, c: s.who[2] } } : { key: 'hangout.open', cast: { a, b } }];
     // They take turns bringing up each name.
     (s.data.views || []).slice(0, 5).forEach((v, i) => {
       const cut = v.handle === s.data.target;
       const reason = cut ? s.data.reason : 'noBond';
-      const [x, y] = i % 2 ? [b, a] : [a, b];
+      const who = s.who.length >= 3 ? [s.who[i % 3], s.who[(i + 1) % 3]] : i % 2 ? [b, a] : [a, b];
+      const [x, y] = who;
       out.push({ key: `hangout.view.${reason}.${cut ? 'cut' : 'keep'}`, cast: { a: x, b: y, c: v.handle }, extra: { reason } });
     });
     const kind = s.data.offers.some(o => o.trade) ? 'trade' : s.data.yielded ? 'yield' : 'agree';
-    out.push({ key: `hangout.${kind}`, cast: { a: s.data.decider, b: s.data.yielded || b, c: s.data.target } });
+    // Three: all agreed, or two outvoted the third, who knows it.
+    const outvoted = trio ? (s.data.offers || []).filter(o => o.target && o.target !== s.data.target).map(o => o.by) : [];
+    if (trio) out.push(outvoted.length ? { key: 'hangout.trio.outvoted', cast: { a: s.data.decider, b: outvoted[0], c: s.data.target } }
+      : { key: 'hangout.trio.agree', cast: { a: s.who[0], b: s.who[1], c: s.data.target } });
+    else out.push({ key: `hangout.${kind}`, cast: { a: s.data.decider, b: s.data.yielded || b, c: s.data.target } });
     if (s.data.offers.some(o => o.pact)) out.push({ key: 'hangout.pact', cast: { a, b } });
     return out;
   },
   blocking(state, s) {
-    const [announcer, target] = s.who;
+    // From the data: an instant block has a target and nobody who chose it.
+    const target = s.data.target ?? s.who[1];
+    const announcer = s.data.by?.length ? (s.who[0] === target ? s.data.by[0] : s.who[0]) : null;
     const others = s.seenBy.filter(h => h !== target && h !== announcer && !s.data.by.includes(h));
     // Before the name: the ones at risk, waiting; the Influencer typing it.
-    const out = [target, ...others].slice(0, 4).map(h => ({ key: 'block.wait', cast: { a: h } }));
-    out.push({ key: 'block.typing', cast: { a: announcer, c: target }, extra: { reason: s.data.reason } },
-      // A sole Influencer announces in the first person.
-      { key: `block.announce.${s.data.by.length === 1 ? 'solo.' : ''}${s.data.reason}`, cast: { a: announcer, c: target }, extra: { reason: s.data.reason } },
+    // Everybody waits: for the name, or (in person) for somebody's knock.
+    // Nobody types a name when the saves or the room decided: the waiting was there.
+    const untyped = ['unsaved', 'vote', 'instant', 'antivirus'].includes(s.data.channel);
+    const out = untyped ? [] : [target, ...others].slice(0, s.data.inPerson ? 3 : 4).map(h => ({ key: 'block.wait', cast: { a: h } }));
+    if (s.data.inPerson) {
+      // A Super Influencer says it at the door (US 1 Ep 10).
+      out.push({ key: 'block.inperson.walk', cast: { a: announcer, c: target } },
+        { key: 'block.inperson.door', cast: { a: target, b: announcer } },
+        { key: 'block.inperson.tell', cast: { a: announcer, b: target } });
+    } else if (['unsaved', 'vote', 'instant', 'antivirus'].includes(s.data.channel)) {
+      // Nobody typed a name: the Circle says who was left, or who the room chose.
+      out.push({ key: `block.announce.${s.data.channel}`, cast: { a: target, c: target } });
+      if (s.data.channel === 'vote') out.push({ key: 'vote.result', cast: { a: target } });
+      // Nobody chose: the room reacts to how cold that is.
+      if (s.data.channel === 'instant') for (const h of others.slice(0, 2)) out.push({ key: 'block.react.numbers', cast: { a: h, b: target } });
+      // Nobody saved them: the room takes in what that means.
+      if (s.data.channel === 'unsaved') for (const h of others.slice(0, 2)) out.push({ key: 'block.react.unsaved', cast: { a: h, b: target } });
+    } else if (s.data.channel === 'statement') {
+      out.push({ key: 'block.typing', cast: { a: announcer, c: target }, extra: { reason: s.data.reason } },
+        { key: 'block.announce.statement', cast: { a: announcer, c: target } });
+    } else if (s.data.secret) {
+      // Nobody may learn who chose: the Circle names the blocked player itself.
+      out.push({ key: 'block.announce.secret', cast: { a: target, c: target } });
+    } else {
+      out.push({ key: 'block.typing', cast: { a: announcer, c: target }, extra: { reason: s.data.reason } },
+        // A sole Influencer announces in the first person; an offer taken, as itself.
+        { key: s.data.reason === 'offer' ? 'block.announce.offer'
+          : `block.announce.${s.data.by.length === 1 ? 'solo.' : ''}${s.data.reason}`, cast: { a: announcer, c: target }, extra: { reason: s.data.reason } });
+    }
+    out.push(
       { key: 'block.react.self', cast: { a: target }, extra: { self: true } },
-      { key: 'block.after', cast: { a: announcer, b: target } },
+      ...(announcer ? [{ key: 'block.after', cast: { a: announcer, b: target } }] : []),
       ...s.data.by.filter(i => i !== announcer).slice(0, 2).map(i => ({ key: 'block.after', cast: { a: i, b: target } })));
     const friend = others.find(h => rel(h, target, 'affection') > 3);
     const rival = others.find(h => rel(h, target, 'resentment') > 3 && h !== friend);
@@ -496,18 +635,23 @@ const BLOCKS = {
   },
   visit(state, s) {
     const [h, to] = s.who;
-    const out = [{ key: `visit.choose.${s.data.motive}`, cast: { a: h, b: to }, extra: { motive: s.data.motive } }];
-    out.push({ key: 'visit.walk', cast: { a: h, b: to } });
+    // In person (a Super Influencer came to the door): nobody chose, nobody waited.
+    const out = s.data.inPerson ? [] : [{ key: `visit.choose.${s.data.motive}`, cast: { a: h, b: to }, extra: { motive: s.data.motive } }];
+    if (!s.data.inPerson) out.push({ key: 'visit.walk', cast: { a: h, b: to } });
     // Everybody waits, the one about to be visited included: nobody knows whose door it is.
-    for (const w of [to, ...state.active.filter(x => x !== to)].slice(0, 5)) {
+    if (!s.data.inPerson) for (const w of [to, ...state.active.filter(x => x !== to)].slice(0, 5)) {
       out.push({ key: state.profiles[w].mode === 'catfish' ? 'visit.wait.catfish' : 'visit.wait', cast: { a: w, b: h } });
     }
-    // The door opens both ways: the visitor sees who was behind the profile too.
-    const fakeAt = state.profiles[h].mode === 'catfish', fakeIn = state.profiles[to].mode === 'catfish';
-    const door = fakeAt && fakeIn ? 'both' : fakeAt ? 'catfish' : fakeIn ? null : 'real';
-    if (door) out.push({ key: `visit.door.${door}`, cast: { a: to, b: h } });
-    if (fakeIn && !fakeAt) out.push({ key: 'visit.door.caught', cast: { a: h, b: to } });
-    out.push({ key: 'visit.sit', cast: { a: h, b: to } });
+    // The door opens both ways: each sees who was behind the other profile.
+    // Usually the visited player opens it; in person, the blocked one does.
+    const ip = !!s.data.inPerson;
+    const [host, guest] = ip ? [h, to] : [to, h];
+    const fakeGuest = state.profiles[guest].mode === 'catfish', fakeHost = state.profiles[host].mode === 'catfish';
+    const door = fakeGuest && fakeHost ? 'both' : fakeGuest ? 'catfish' : fakeHost ? null : 'real';
+    // In person the knock already happened in the blocking scene; only a reveal is new.
+    if (door && !(ip && door === 'real')) out.push({ key: `visit.door.${door}`, cast: { a: host, b: guest } });
+    if (fakeHost && !fakeGuest) out.push({ key: 'visit.door.caught', cast: { a: guest, b: host } });
+    out.push({ key: 'visit.sit', cast: { a: guest, b: host } });
     // One Influencer, or two: "it was both of us" only when it was.
     const sole = (s.data.by?.length ?? 2) === 1;
     out.push({ key: `visit.talk.${s.data.motive}`, cast: { a: h, b: to }, extra: { motive: s.data.motive, sole } });
@@ -518,8 +662,9 @@ const BLOCKS = {
       out.push({ key: 'visit.hand', cast: { a: h, b: to, c: c0.about }, extra: { claim: c0.kind } });
     }
     if (s.data.kiss) out.push({ key: 'visit.kiss', cast: { a: h, b: to }, extra: { kiss: true } });
-    out.push({ key: 'visit.bye', cast: { a: h, b: to } });
-    out.push({ key: 'visit.after', cast: { a: to, b: h } });
+    // In person the Super Influencer is the one who leaves.
+    out.push(ip ? { key: 'visit.inperson.bye', cast: { a: to, b: h } } : { key: 'visit.bye', cast: { a: h, b: to } });
+    out.push(ip ? { key: 'visit.inperson.after', cast: { a: h, b: to } } : { key: 'visit.after', cast: { a: to, b: h } });
     return out;
   },
   report(state, s) {
@@ -532,6 +677,8 @@ const BLOCKS = {
     const out = viewers.slice(0, 4).map(v => ({ key: 'goodbye.guess', cast: { a: v, b: h } }));
     out.push({ key: p.mode === 'catfish' ? `goodbye.video.catfish.${p.reason || 'strategic'}` : `goodbye.video.${p.mode}`,
       cast: { a: h }, extra: { mode: p.mode, reasonKind: p.reason || undefined } });
+    // Every goodbye ends the same way on the show: a lesson, then good luck (spec 11.2).
+    out.push({ key: 'goodbye.video.close', cast: { a: h } });
     if (s.data.warning) {
       const { kind, about } = s.data.warning;
       // Met in person at the visit: the warning is something seen, not a hunch.
@@ -753,6 +900,16 @@ export const POOL_KEYS = [
   'hangout.open', ...BLOCK_WHY_.map(r => `hangout.view.${r}.cut`), 'hangout.view.noBond.keep',
   'alert.sole', 'hangout.solo.open', ...BLOCK_WHY_.map(r => `hangout.solo.view.${r}.cut`), 'hangout.solo.view.noBond.keep', 'hangout.solo.decide',
   ...BLOCK_WHY_.map(r => `block.announce.solo.${r}`),
+  ...['trio', 'save-first', 'secret', 'super', 'mutual'].map(f => `alert.${f}`), 'ratings.hidden', 'result.secret', 'result.super',
+  'save.announce', 'save.react', 'save.passed', 'offer.open', 'offer.yes', 'offer.no', 'offer.betrayed', 'offer.declined',
+  'block.announce.secret', 'block.announce.offer', 'block.inperson.walk', 'block.inperson.door', 'block.inperson.tell',
+  'hangout.open.trio', 'hangout.trio.agree', 'hangout.trio.outvoted', 'visit.inperson.bye', 'visit.inperson.after',
+  ...['save-two', 'plead', 'room-vote', 'forced'].map(f => `alert.${f}`), 'block.announce.unsaved', 'block.announce.vote',
+  'block.announce.statement', 'plead.open', 'plead.pitch', 'plead.listen', 'vote.open', 'vote.cast', 'vote.result',
+  'statement.open', 'statement.say', 'statement.named', 'save.wait', 'alert.instant', 'alert.double', 'block.announce.instant', 'goodbye.video.close',
+  'block.react.numbers', 'block.react.unsaved', 'date.pick', 'date.chat', 'date.gift', 'date.passed', 'invites.first', 'invites.next', 'invites.last',
+  'race.win', 'race.lose', 'newparty.throw', 'newparty.guest', 'newparty.left', 'lurk.watch', 'lurk.reveal',
+  'chosen.offer', 'chosen.pick', 'chosen.thanks', 'pairarrival.chat', 'alert.antivirus', 'antivirus.open', 'antivirus.pass', 'antivirus.got', 'antivirus.left', 'block.announce.antivirus',
   'hangout.agree', 'hangout.yield', 'hangout.trade', 'hangout.pact',
   ...BLOCK_WHY_.map(r => `block.announce.${r}`), 'block.react.self', 'block.react.friend', 'block.react.rival', 'block.react.relief',
   ...MOTIVES_.flatMap(m => [`visit.choose.${m}`, `visit.talk.${m}`]), 'visit.wait', 'visit.wait.catfish',

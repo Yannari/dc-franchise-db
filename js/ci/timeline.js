@@ -16,11 +16,13 @@ export const POSITIONS = ['first', 'early', 'middle', 'late', 'last'];
 
 // Weights by position. Standard dominates every stretch, as it does on the show.
 export const NIGHT_DRAWS = {
-  first: [['standard', 6], ['sole', 2]],
-  early: [['standard', 7], ['sole', 1]],
-  middle: [['standard', 7]],
-  late: [['standard', 6], ['sole', 1]],
-  last: [['standard', 6]],
+  first: [['standard', 6], ['sole', 2], ['forced', 1]],
+  early: [['standard', 7], ['sole', 1], ['save-first', 1], ['forced', 0.5]],
+  middle: [['standard', 7], ['save-first', 2], ['trio', 1], ['secret', 1], ['mutual', 0.5], ['save-two', 1], ['plead', 1],
+    ['instant', 1], ['double', 1], ['antivirus', 1]],
+  late: [['standard', 6], ['sole', 1], ['secret', 2], ['super', 2], ['mutual', 0.5], ['plead', 1], ['room-vote', 1],
+    ['instant', 0.5], ['double', 0.5]],
+  last: [['standard', 6], ['super', 3]],
 };
 
 export function positionOf(i, n) {
@@ -31,6 +33,15 @@ export function positionOf(i, n) {
 }
 
 const formatOfTwist = id => TWIST_CATALOG.find(t => t.id === id && t.format === 'the-circle' && t.category === 'blocking')?.ciFormat;
+const entryOfTwist = id => TWIST_CATALOG.find(t => t.id === id && t.format === 'the-circle' && t.category === 'arrivals')?.ciEntry;
+// A slot's booking: one id, or a list (a night can have a blocking and an arrival).
+const idsAt = (bookings, slot) => [].concat(bookings[slot] || []);
+
+// How newcomers come in (spec 12.2), by how many arrive that day.
+export const ENTRY_DRAWS = {
+  one: [['snoop', 3], ['date', 1.5], ['invites', 1], ['race', 1], ['lurk', 1], ['chosen', 1], ['party', 1], ['pair', 1]],
+  more: [['snoop', 2], ['pair', 2], ['party', 1.5], ['race', 1]],
+};
 
 function weighted(rng, options) {
   const total = options.reduce((s, [, w]) => s + w, 0);
@@ -53,7 +64,8 @@ export function bookSeason(schedule, rng, { total, finalists = 5, bookings = {} 
     // last) can be given back for each extra.
     const fits = f => FORMATS[f] && FORMATS[f].can(ctx)
       && need - FORMATS[f].removes >= 0 && FORMATS[f].removes - 1 <= Math.max(0, later.length - 1);
-    const bookedId = bookings[d.slot];
+    const ids = idsAt(bookings, d.slot);
+    const bookedId = ids.find(id => formatOfTwist(id)) || ids.find(id => !entryOfTwist(id));
     const booked = bookedId && formatOfTwist(bookedId);
     let night;
     if (bookedId && booked && fits(booked)) night = { format: booked, booked: true };
@@ -72,5 +84,21 @@ export function bookSeason(schedule, rng, { total, finalists = 5, bookings = {} 
     }
     need -= FORMATS[night.format].removes;
   });
+  // Arrival days: booked by slot, or drawn by how many arrive. A pair on a
+  // one-arrival day pulls a newcomer forward from the last later arrival day
+  // (a 13-player season spreads its newcomers one a day, and the real show
+  // still brought two in together: US 3 Ep 3).
+  for (const d of out) {
+    if (!(d.arrivals > 0)) continue;
+    const booked = idsAt(bookings, d.slot).map(entryOfTwist).find(Boolean);
+    let entry = booked || weighted(rng, ENTRY_DRAWS[d.arrivals >= 2 ? 'more' : 'one']);
+    if (entry === 'pair' && d.arrivals < 2) {
+      const from = out.filter(x => x.day > d.day && x.arrivals > 0).at(-1);
+      if (from) { from.arrivals--; d.arrivals++; d.pulledFrom = from.slot; }
+      else entry = 'snoop';
+    }
+    d.entry = entry;
+    if (booked) d.entryBooked = true;
+  }
   return out;
 }

@@ -12,7 +12,8 @@ import { makePlayers, makePool, circleSetup } from './helpers/ci-cast.js';
 import { POOLS } from '../js/ci/lines/index.js';
 import { GAMES } from '../js/ci/games-data.js';
 
-const SEASONS = Number(process.env.CI_SEASONS) || 100;
+// 200 by default: at 100 the catfish-win band (2.2) failed on noise about one run in twelve.
+const SEASONS = Number(process.env.CI_SEASONS) || 200;
 const pct = (a, b) => (b ? (100 * a / b).toFixed(1) + '%' : 'n/a');
 const mean = a => (a.length ? (a.reduce((x, y) => x + y, 0) / a.length).toFixed(2) : 'n/a');
 

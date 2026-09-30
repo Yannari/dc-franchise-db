@@ -24,32 +24,65 @@ export function atRiskOf(state, influencers) {
   return exposed.length ? exposed : pool;
 }
 
-export function applyBlock(state, h, channel, by, scene) {
+export function applyBlock(state, h, channel, by, scene, { secret = false } = {}) {
   state.active = state.active.filter(x => x !== h);
-  state.blocked.push({ handle: h, day: state.day, channel, by: [...by] });
+  state.blocked.push({ handle: h, day: state.day, channel, by: [...by], ...(secret ? { secret: true } : {}) });
   for (const i of by) {
-    bump(h, i, 'resentment', 3);
+    // A secret Influencer is nobody the blocked player can resent: they don't know.
+    if (!secret) bump(h, i, 'resentment', 3);
     const aff = rel(i, h, 'affection');
     if (aff > 0) feel(state, i, 'guilt', aff / 3);
   }
   for (const o of state.active) if (rel(o, h, 'affection') > 3) feel(state, o, 'stress', 1);
 }
 
-export function standardBlocking(state, rng, ratingRow, { format = 'standard' } = {}) {
+// A public save before the Hangout (US 5 Ep 4): each Influencer takes the
+// player they owe most off the list, in front of everyone. The saved player
+// owes them, and the room knows who stood by whom.
+export function saveOne(state, rng, i, pool) {
+  const pick = pool.map(t => [t, rel(i, t, 'affection') + rel(i, t, 'obligation') * 1.5 + rel(i, t, 'trust') * 0.5
+    + (state.pacts.some(p => (p.a === i && p.b === t) || (p.a === t && p.b === i)) ? 4 : 0) + rng()])
+    .sort((a, b) => b[1] - a[1])[0][0];
+  // `waiting`: who was still unsaved when this save came (who can feel passed over).
+  const sc = addScene(state, 'save', [i, pick], { by: i, saved: pick, waiting: pool.filter(t => t !== pick) }, [...state.active]);
+  bump(pick, i, 'obligation', 2); bump(pick, i, 'affection', 1);
+  const c = makeClaim(state, { kind: 'saved', holder: i, about: pick, truth: true, secrecy: 'public', by: i });
+  for (const o of state.active) if (o !== i) learn(state, o, c, i, sc);
+  // Not being picked, in public, stings those who hoped to be.
+  for (const o of pool.filter(t => t !== pick)) if (rel(o, i, 'affection') > 3) bump(o, i, 'resentment', 0.5);
+  return pick;
+}
+
+export function publicSaves(state, rng, infl, atRisk) {
+  const saved = [];
+  for (const i of infl) {
+    const pool = atRisk.filter(t => !saved.includes(t));
+    if (pool.length <= 2) break;
+    saved.push(saveOne(state, rng, i, pool));
+  }
+  return saved;
+}
+
+export function standardBlocking(state, rng, ratingRow, { format = 'standard', saves = false, secret = false, inPerson = false, atRisk: only = null } = {}) {
   // A tie that makes everybody left an influencer would leave nobody at risk:
   // then only the top two decide.
   let infl = ratingRow.influencers;
   if (!atRiskOf(state, infl).length) infl = infl.slice(0, 2);
-  const atRisk = atRiskOf(state, infl);
+  let atRisk = only || atRiskOf(state, infl);
+  if (saves) { const saved = publicSaves(state, rng, infl, atRisk); atRisk = atRisk.filter(t => !saved.includes(t)); }
   for (const h of atRisk) feel(state, h, 'stress', 2);
-  const hangout = addScene(state, 'hangout', infl, { atRisk, format }, infl);
+  const hangout = addScene(state, 'hangout', infl, { atRisk, format, ...(secret ? { secret: true } : {}) }, infl);
   const d = deliberate(state, rng, infl, atRisk);
   Object.assign(hangout.data, d);
   for (const h of state.active) delete state.immuneNext[h];
   const announcement = addScene(state, 'blocking', [d.announcer, d.target],
-    { by: infl, target: d.target, reason: d.reason, channel: 'influencers', format }, [...state.active]);
-  applyBlock(state, d.target, 'influencers', infl, announcement);
-  const visit = runVisit(state, rng, d.target, infl);
+    { by: infl, target: d.target, reason: d.reason, channel: 'influencers', format,
+      ...(secret ? { secret: true } : {}), ...(inPerson ? { inPerson: true } : {}) }, [...state.active]);
+  applyBlock(state, d.target, 'influencers', infl, announcement, { secret });
+  // A super influencer delivers it in person, and that meeting is the visit
+  // (US 1 Ep 10). A secret one is nobody the blocked player can go and ask.
+  const visit = inPerson ? runVisit(state, rng, d.target, infl, { to: infl[0], inPerson: true })
+    : runVisit(state, rng, d.target, secret ? [] : infl);
   state.pendingGoodbyes.push(d.target);
   return { target: d.target, hangout, announcement, visit };
 }
@@ -70,10 +103,12 @@ export function chooseVisit(state, rng, h, blockers) {
 
 export const REPORT_LIE = 1.2;
 
-export function runVisit(state, rng, h, blockers) {
+export function runVisit(state, rng, h, blockers, { to: forced = null, inPerson = false } = {}) {
   if (!state.active.length) return null;
-  const { to, motive } = chooseVisit(state, rng, h, blockers);
-  const sc = addScene(state, 'visit', [h, to], { motive, kiss: false, handed: null, by: [...blockers] });
+  const chosen = forced ? { to: forced, motive: 'answers' } : chooseVisit(state, rng, h, blockers);
+  const { to, motive } = chosen;
+  const sc = addScene(state, 'visit', [h, to], { motive, kiss: false, handed: null, by: [...blockers],
+    ...(inPerson ? { inPerson: true } : {}) });
   revealTo(state, to, h, sc);
   revealTo(state, h, to, sc);
   const suspect = state.active.filter(o => o !== to).map(o => [o, belief(state, h, o).real])

@@ -23,6 +23,14 @@ describe("the show's cues", () => {
       'private/elimination.mp3': ['verdict'],
       // "I've made my decision": every wait for a verdict.
       'private/decision.mp3': ['decision', 'suspense', 'crowning'],
+      'private/arrivals.mp3': ['entrances'],
+      'private/werkroom.mp3': ['werkroom'],
+      'private/untucked.mp3': ['untucked'],
+      'private/rehearsal.mp3': ['prep'],
+      'private/rehearsal-2.mp3': ['prep'],
+      'private/challenge.mp3': ['challenge'],
+      'private/challenge-2.mp3': ['challenge'],
+      'private/chal-rusical.mp3': ['chal-rusical'],
     };
     const m = JSON.parse(readFileSync('assets/audio/drag/manifest.json', 'utf8'));
     for (const [sit, list] of Object.entries(m)) {

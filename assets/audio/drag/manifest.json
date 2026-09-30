@@ -1,5 +1,5 @@
 {
-  "note": "Drag Race's music: the show's own cues only, never another show's. Every file is the user's own copy (Downloads/RPDR soundtrack), kept in private/ (git-ignored, never published); a copy without them is silent there. Each cue is named for its moment and fitted to it (music.js): `at` skips an intro, `hit` lands on the card it scores, `outro` + `head` let a cue longer than its moment be cut to it. critiques = Top & Bottom (Dredmill); decision, suspense, crowning = I've Made My Decision (The Last Sun, short cut); up-for-elimination = Strobophobia; bottom-two = Ephemeral Faze; time-has-come = Earthrise; verdict (the pause, shantay, sashay, a lip sync's winner, her walk off) = The Last Sun; closing = If You Can't Love Yourself (Bad Like Yaz). The runway, the entrances, the returns, the crowning walk, the finale's opening and the reunion play the season's host song (music.js HOST_SONG). Offsets measured at 0.25 s resolution, 2026-09-30. Each cue plays ONLY at the moment it is named for: reusing Earthrise under every tear and Ephemeral Faze under every argument put the lip sync's announcement music in the werk room (the user: \"i still dont hear the soundtrack in the correct place\"). Drama, tears, comedy, sweet and romance are silent until cues of their own arrive.",
+  "note": "Drag Race's music: the show's own cues only, never another show's. Every file is the user's own copy (Downloads/RPDR soundtrack), kept in private/ (git-ignored, never published); a copy without them is silent there. Each cue is named for its moment and fitted to it (music.js): `at` skips an intro, `hit` lands on the card it scores, `outro` + `head` let a cue longer than its moment be cut to it. critiques = Top & Bottom (Dredmill); decision, suspense, crowning = I've Made My Decision (The Last Sun, short cut); up-for-elimination = Strobophobia; bottom-two = Ephemeral Faze; time-has-come = Earthrise; verdict (the pause, shantay, sashay, a lip sync's winner, her walk off) = The Last Sun; closing = If You Can't Love Yourself (Bad Like Yaz). The runway, the entrances, the returns, the crowning walk, the finale's opening and the reunion play the season's host song (music.js HOST_SONG). Offsets measured at 0.25 s resolution, 2026-09-30. Each cue plays ONLY at the moment it is named for: reusing Earthrise under every tear and Ephemeral Faze under every argument put the lip sync's announcement music in the werk room (the user: \"i still dont hear the soundtrack in the correct place\"). Drama, tears, comedy, sweet and romance are silent until cues of their own arrive. 2026-09-30, the user's beds (Downloads/RPDR Music): entrances = Arrivals; werkroom = Werkroom (cold open, morning, mini, announcement, the choice, elimination day); prep = Rehearsal and Rehearsal#2 in turn; challenge = Challenge Music and #2 in turn; chal-rusical = the Rusical's own; untucked = Untucked. A mood scene with no cue of its own keeps the room's bed (music.js MOODS). \"Challenge Music--Bad Performance\" arrived empty (0 bytes) and is not used.",
   "suspense": [
     {
       "file": "private/decision.mp3",
@@ -104,6 +104,90 @@
       ],
       "private": true,
       "head": 3
+    }
+  ],
+  "entrances": [
+    {
+      "file": "private/arrivals.mp3",
+      "at": [
+        0
+      ],
+      "loopFrom": 2,
+      "loopTo": 117,
+      "private": true
+    }
+  ],
+  "werkroom": [
+    {
+      "file": "private/werkroom.mp3",
+      "at": [
+        0
+      ],
+      "loopFrom": 2,
+      "loopTo": 148,
+      "private": true
+    }
+  ],
+  "untucked": [
+    {
+      "file": "private/untucked.mp3",
+      "at": [
+        0
+      ],
+      "loopFrom": 2,
+      "loopTo": 180,
+      "private": true
+    }
+  ],
+  "prep": [
+    {
+      "file": "private/rehearsal.mp3",
+      "at": [
+        0
+      ],
+      "loopFrom": 2,
+      "loopTo": 228,
+      "private": true
+    },
+    {
+      "file": "private/rehearsal-2.mp3",
+      "at": [
+        5
+      ],
+      "loopFrom": 6,
+      "loopTo": 195,
+      "private": true
+    }
+  ],
+  "challenge": [
+    {
+      "file": "private/challenge.mp3",
+      "at": [
+        0
+      ],
+      "loopFrom": 3,
+      "loopTo": 160,
+      "private": true
+    },
+    {
+      "file": "private/challenge-2.mp3",
+      "at": [
+        0
+      ],
+      "loopFrom": 3,
+      "loopTo": 108,
+      "private": true
+    }
+  ],
+  "chal-rusical": [
+    {
+      "file": "private/chal-rusical.mp3",
+      "at": [
+        0
+      ],
+      "loopFrom": 1,
+      "loopTo": 50,
+      "private": true
     }
   ]
 }

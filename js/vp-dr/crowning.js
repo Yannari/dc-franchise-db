@@ -442,7 +442,9 @@ const SPOKEN = new Set(['crown-summon', 'crown-congeniality', 'crown-address',
   'finale-congeniality', 'finale-runnerup', 'finale-crowning', 'finale-prance']);
 
 /** The ids that end the season on the winner being named. */
-const NAME_BEATS = new Set(['crown-name', 'finale-crowning']);
+// The double crown's own naming beat is a naming beat too: it lights both
+// plinths, fires the confetti and starts the win's music.
+const NAME_BEATS = new Set(['crown-name', 'finale-crowning', 'crown-double']);
 
 /**
  * The crowning.
@@ -650,7 +652,7 @@ export function rpBuildCrowning(row) {
         st.phase = 'crowned';
         st.mood = 'gold';
         st.burst = true;
-        st.banner = { text: 'Condragulations', sub: wins.join(' & ') };
+        st.banner = { text: wins.length > 1 ? 'Two winners' : 'Condragulations', sub: wins.join(' & ') };
       } else if (beat === 'crown-runnerup' || beat === 'finale-runnerup') {
         runner = who || runner;
         st.stamped = runner;
@@ -770,11 +772,11 @@ export function rpBuildCrowning(row) {
       const beat = sc.data?.beat || String(sc.kind || '').split(':')[1] || '';
       const who = (sc.data?.players || [])[0];
       if (beat === 'crown-place' && who) gone.push(who);
-      if (NAME_BEATS.has(beat) && who) won = who;
+      if (NAME_BEATS.has(beat) && who) won = alsoCrowned.length ? [...alsoCrowned] : [who];
       const left = line.filter(n => !gone.includes(n));
-      return `<h4 class="dr-disp">Still standing · ${won ? 1 : left.length}</h4>${
+      return `<h4 class="dr-disp">${won ? (won.length > 1 ? 'The winners · 2' : 'The winner') : `Still standing · ${left.length}`}</h4>${
         line.map(n => {
-          const dark = gone.includes(n) || (won && n !== won);
+          const dark = gone.includes(n) || (won && !won.includes(n));
           return `<div class="dr-slot${dark ? ' dr-waiting' : ''}">
             ${_portrait(n, ep, { size: 32 })}
             <div><div class="dr-nm">${esc(n)}</div></div>

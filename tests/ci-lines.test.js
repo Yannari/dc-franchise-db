@@ -16,7 +16,7 @@ const ENTRIES = Object.entries(POOLS).flatMap(([k, list]) => list.map(e => [k, e
 const turnTexts = e => (e.turns || []).flatMap(t => ['react', 'say', 'send', 'post', 'video'].filter(x => t[x]).map(x => [t.by, x, t[x]]));
 const allTexts = e => [e.stage, e.beat, ...turnTexts(e).map(t => t[2])].filter(Boolean);
 const SLOT = /\{([^}]*)\}/g;
-const OK_SLOT = /^([abc])(\.(real|aka|face|brain|sub|obj|pos|posAdj|ref|Sub|Obj|PosAdj))?$|^([et]):([A-Za-z0-9]+)$|^(q|game|ans|x|n)$/;
+const OK_SLOT = /^([abc])(\.(real|aka|face|brain|sub|obj|pos|posAdj|ref|Sub|Obj|PosAdj))?$|^([et]):([A-Za-z0-9]+)$|^(q|game|ans|x|n|topic|town)$/;
 
 describe('the pools are well-formed', () => {
   it('has unique ids that start with their pool key, and only known pool keys', () => {

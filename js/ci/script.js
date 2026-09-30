@@ -21,6 +21,7 @@ import { shownRegister, shownVoice, crackOf } from './cover.js';
 import { POOLS } from './lines/index.js';
 import { GAMES, PARTY_THEMES, NEVER_HAVE_I_EVER } from './games-data.js';
 import { TRIVIA, FACTS } from './games-content.js';
+import { topicsOf, wingsIt, JOB_TOPIC, townOf } from './topics.js';
 
 // 'face' and 'brain': the two people behind a shared profile, speaking to
 // each other in their own apartment (spec §14.8).
@@ -155,7 +156,7 @@ export function fill(state, text, cast, speakerRole) {
   // {q} and {game}: the Circle's own words (a rule, a prompt) and a game's
   // name, handed in by the builder — never a name the pool invents.
   const t = cast.text || {};
-  text = text.replace(/\{(q|game|ans|x|n)\}/g, (m, k, at, whole) => {
+  text = text.replace(/\{(q|game|ans|x|n|topic|town)\}/g, (m, k, at, whole) => {
     if (t[k] === undefined) return m;
     const starts = /(^|[.!?…]\s+|['"]\s*)$/.test(whole.slice(0, at));
     if (k === 'x') {
@@ -165,6 +166,8 @@ export function fill(state, text, cast, speakerRole) {
       if (starts || PROPER.test(v)) return v;
       return v.charAt(0).toLowerCase() + v.slice(1);
     }
+    // a topic or a town can open a sentence ("Night shifts. Sure.")
+    if (k === 'topic' || k === 'town') return starts ? String(t[k]).charAt(0).toUpperCase() + String(t[k]).slice(1) : t[k];
     if (k !== 'n') return t[k];
     // A count is said, not typed: "six likes", "three to two".
     const said = String(t[k]).replace(/\b\d+\b/g, d => NUMBER_WORDS[+d] ?? d);
@@ -328,12 +331,25 @@ const BLOCKS = {
     const [a, b] = s.who;
     const c0 = s.data.claims?.length ? claimOf(state, s.data.claims[0]) : null;
     const c = c0 ? (c0.about === a || c0.about === b ? c0.holder : c0.about) : undefined;
-    const key = s.data.intent === 'probe'
+    let key = s.data.intent === 'probe'
       ? `chat.probe.${s.data.probes?.[0]?.result || 'pass'}`
       // a catfish flirting in character, with nothing real behind it: its own lines
       : s.data.performed ? `chat.flirt.act.${s.data.ending}` : `chat.${s.data.intent}.${s.data.ending}`;
+    // A friendly chat is often ABOUT something: b's life (ci/topics.js). A
+    // catfish (or an edited job) has to wing a job they don't have.
+    let text;
+    if (s.data.intent === 'bond' && s.data.ending !== 'cold' && !c0) {
+      const fake = wingsIt(state, b);
+      const ts = topicsOf(state, b).filter(t => !fake || !PERSONAL_TOPICS.has(t));
+      const hsh = [...String(s.id)].reduce((x, ch) => (x * 31 + ch.charCodeAt(0)) >>> 0, 7);
+      if (ts.length && hsh % 100 < TOPIC_SHARE) {
+        const t = ts[(hsh >>> 7) % ts.length];
+        key = fake && JOB_TOPIC(t) ? 'chat.topic.fake' : `chat.topic.${t}`;
+        text = { topic: TOPICS[t]?.label || t, town: townOf(state.profiles[b]?.shown?.hometown) || undefined };
+      }
+    }
     const personA = s.data.lead && state.profiles[a]?.players.length > 1 ? s.data.lead : undefined;
-    const out = [{ key, cast: { a, b, c, personA }, extra: { claim: c0?.kind, lie: c0 ? c0.origin.by === a && !c0.truth : false } }];
+    const out = [{ key, cast: { a, b, c, personA, ...(text ? { text } : {}) }, extra: { claim: c0?.kind, lie: c0 ? c0.origin.by === a && !c0.truth : false } }];
     for (const sl of s.data.slips || []) {
       const listener = sl.noticedBy[0] || (sl.by === a ? b : a);
       // A voice slip with an author's leak shows the words themselves.
@@ -420,6 +436,9 @@ const BLOCKS = {
       ? s.who.slice(0, 3).map(h => ({ key: 'final.open', cast: { a: h } }))
       : [{ key: 'ratings.open', cast: { a: s.who[0] } }];
     const n = s.data.results.length;
+    // Everybody says their first and their last; the middle only for a few
+    // (the show lingers on three or four rankers a night, not all of them).
+    let middles = 0;
     for (const b of s.data.ballots) {
       const first = b.order[0], last = b.order.at(-1);
       if (s.data.human) {
@@ -434,8 +453,8 @@ const BLOCKS = {
       }
       out.push({ key: `rate.${b.reasons[0]}.top`, cast: { a: b.voter, b: first }, extra: { band: 'top' } });
       // Four names still have a middle (a small room late in the season).
-      const mid = b.order.length >= 4 ? b.order[Math.floor(b.order.length / 2)] : null;
-      if (mid) out.push({ key: 'rate.middle', cast: { a: b.voter, b: mid } });
+      const mid = b.order.length >= 4 && middles < MIDDLES_PER_NIGHT ? b.order[Math.floor(b.order.length / 2)] : null;
+      if (mid) { middles++; out.push({ key: 'rate.middle', cast: { a: b.voter, b: mid } }); }
       if (last && last !== first) out.push({ key: `rate.${b.reasons.at(-1)}.bottom`, cast: { a: b.voter, b: last }, extra: { band: 'bottom' } });
       const bad = last && gameCallback(state, b.voter, last, s, { sameDay: true, dir: 'theirs',
         kinds: ['named-bad', 'rival', 'jab', 'asked-barbed', 'picked-last', 'asked-catfish'] });
@@ -952,6 +971,12 @@ export function writeScene(state, scene) {
   return scene.script;
 }
 
+export const MIDDLES_PER_NIGHT = 3;
+// How many friendly chats are about something in b's life (ci/topics.js).
+export const TOPIC_SHARE = 45;
+// A catfish can wing a job; a dog, the kids, church or a hometown they don't have is a lie too far.
+const PERSONAL_TOPICS = new Set(['kids', 'dog', 'church', 'hometown']);
+
 // The night's scenes that can open a day (season.js: the blocking follows the
 // ratings into the next episode).
 const NIGHT_KINDS = new Set(['hangout', 'blocking', 'save', 'plead', 'vote', 'offer', 'visit', 'antivirus', 'no-block']);
@@ -1018,6 +1043,7 @@ export const POOL_KEYS = [
   ...INTENTS_.flatMap(i => ['warm', 'neutral', 'cold'].map(e => `chat.${i}.${e}`)),
   ...['pass', 'dodge', 'fail'].map(r => `chat.probe.${r}`),
   ...['warm', 'neutral', 'cold'].map(e => `chat.flirt.act.${e}`),
+  ...[...Object.keys(TOPICS), 'hometown', 'fake', 'circle-life', 'single', 'taken', 'complicated'].map(t => `chat.topic.${t}`),
   ...SLIPS_.flatMap(k => [`slip.${k}.noticed`, `slip.${k}.missed`]),
   ...Object.keys(TOPICS).flatMap(t => [`slip.topic.${t}.noticed`, `slip.topic.${t}.missed`]), 'slip.misread', 'slip.leak.noticed', 'slip.leak.missed',
   ...['caps', 'ellipses', 'stage', 'greeting', 'nicknames', 'catchphrase', 'formal', 'hype', 'dry']

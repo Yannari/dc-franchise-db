@@ -27,7 +27,7 @@ import { isPerfectMatchSeason, simulatePerfectMatchEpisode, perfectMatchCanRerun
 import { EPISODE_WORDS as PM_EPISODE_WORDS, SLOT_NAMES as PM_SLOT_NAMES, seasonSchedule as pmDrawSchedule, CHALLENGE_NAMES as PM_CHALLENGE_NAMES, RITUAL_NAMES as PM_RITUAL_NAMES, CHALLENGE_NIGHTS as PM_CHALLENGE_NIGHTS } from './pm/schedule.js';
 import { episodeText as pmEpisodeText, momentTitle as pmMomentTitle } from './pm/transcript.js';
 import { isCircleSeason, simulateCircleEpisode, circleCanRerun, lastCircleRefusal, rerunCircleEpisode,
-  circlePendingChange, circleSeasonShape, circleEpisodeMap, circleTimelineDays } from './ci-run.js';
+  circlePendingChange, circleSeasonShape, circleEpisodeMap, circleTimelineDays, circleBlockShape } from './ci-run.js';
 import { isDragSeason, simulateDragEpisode, invalidateDragQueue,
   dragEpisodesAired, dragScheduleRecorded, rerunDragEpisode, dragCanRerun } from './dr-run.js';
 import { dragBadges } from './dr/badges.js';
@@ -42,7 +42,7 @@ import { JUDGES as DR_JUDGES } from './dr/data/judges.js';
 import { SONGS as DR_SONGS } from './dr/data/songs.js';
 import { GROUP_THEMES as DR_GG_THEMES } from './dr/chal/girl-group.js';
 import { roundExits, exitVerbs, SHOWS, showWords, showName, DEFAULT_FORMAT, DRAG_FORMAT, TRAITORS_FORMAT,
-  PERFECT_MATCH_FORMAT } from './shows.js';
+  PERFECT_MATCH_FORMAT, CIRCLE_FORMAT } from './shows.js';
 import { seasonFormat } from './core.js';
 import { loadRankingBoards } from './ranking-boards.js';
 import { TRAITORS_SCREENS } from './vp-tr/screens.js';
@@ -385,7 +385,10 @@ export function buildHubAftermath(ep) {
   // A public vote has shares, not ballots: the villa's rows carry them.
   const voteShape = ep.pm?.shares?.length
     ? [...ep.pm.shares].sort((x, y) => y.share - x.share).map(s => `${s.couple.join(" & ")} ${Math.round(s.share * 100)}%`).join(" · ")
-    : voteEntries.map(([name, count]) => `${name} ${count}`).join(' · ') || 'No standard vote';
+    // The Circle has ratings, not ballots: the shape is who held the power.
+    : seasonFormat(ep) === CIRCLE_FORMAT
+      ? circleBlockShape(roundExits(ep, CIRCLE_FORMAT).map((x, i) => ({ ...x, ...(ep.exits?.[i] || {}) })))
+      : voteEntries.map(([name, count]) => `${name} ${count}`).join(' · ') || 'No standard vote';
   const votesNegated = (ep.idolPlays || []).reduce((sum, play) => sum + Math.max(0, Number(play.votesNegated || 0)), 0);
   const decidingVoters = [...new Set((ep.votingLog || []).filter(vote => eliminated.includes(vote.voted) && !vote.sitdSacrificed).map(vote => vote.voter))];
   let why = eliminatedLabel ? `${eliminatedLabel} received the highest valid total after the ballots were resolved.` : 'The episode ended without a standard elimination vote.';
@@ -406,6 +409,15 @@ export function buildHubAftermath(ep) {
       : exits.length
         ? exits.map(x => `${x.name} ${x.verb}${DOOR[x.channel] ? ` ${DOOR[x.channel]}` : ''}.`).join(' ')
         : 'Nobody left the villa tonight.';
+  } else if (seasonFormat(ep) === CIRCLE_FORMAT) {
+    // No vote: the players rate each other, and whoever the night's format
+    // hands the power blocks (a secret night does not say who).
+    // The row's own exits: roundExits keeps only name/verb/channel, and the
+    // profile and who blocked are the point of the sentence.
+    const exits = Array.isArray(ep.exits) ? ep.exits.filter(x => x && x.name) : [];
+    why = exits.length
+      ? exits.map(x => `${x.name}${x.profile && x.profile !== x.name ? ` (playing as ${x.profile})` : ''} was blocked${x.by?.length && !x.secret ? ` by ${x.by.join(' and ')}` : ''}.`).join(' ')
+      : `${showWords(CIRCLE_FORMAT).noExitLine}.`;
   } else if (seasonFormat(ep) === DRAG_FORMAT) {
     // No vote to explain: the panel ranked the week and the host decided.
     const exits = roundExits(ep, 'drag-race');
@@ -663,7 +675,7 @@ export function renderSeasonHub() {
       : model.latest ? `Episode ${model.latest.num} aftermath` : `Before Episode ${model.nextEpisode}`;
   const aftermathRows = (items, tone = '') => items.map(item => `<li class="${tone}">${_hubEsc(item)}</li>`).join('');
   const aftermathHtml = !_spoilerFree && aftermath ? `<section class="hub-aftermath">
-    <header class="hub-aftermath-head"><div><span>Episode consequence report</span><strong>What changed tonight</strong></div><div class="hub-vote-shape"><small>Final vote shape</small><b>${_hubEsc(aftermath.voteShape)}</b></div></header>
+    <header class="hub-aftermath-head"><div><span>Episode consequence report</span><strong>What changed tonight</strong></div><div class="hub-vote-shape"><small>${_hubEsc(showWords(seasonFormat(seasonConfig)).shapeLabel || 'Final vote shape')}</small><b>${_hubEsc(aftermath.voteShape)}</b></div></header>
     <div class="hub-aftermath-grid">
       <article class="hub-aftermath-card hub-aftermath-why"><span class="hub-aftermath-index">01</span><div><label>Why the result happened</label><p>${_hubEsc(aftermath.why)}</p>${aftermath.decidingVoters.length ? `<small>Deciding ballots: ${_hubEsc(aftermath.decidingVoters.join(', '))}</small>` : ''}</div></article>
       ${aftermath.advantages.length ? `<article class="hub-aftermath-card"><span class="hub-aftermath-index">02</span><div><label>Advantage impact</label><ul>${aftermathRows(aftermath.advantages, 'advantage')}</ul></div></article>` : ''}
@@ -687,7 +699,7 @@ export function renderSeasonHub() {
     <header class="hub-headline"><div><div class="hub-kicker">${model.setting.icon} ${_hubEsc(model.setting.label)} · ${_hubEsc(phaseLabel)}</div><div class="hub-state-badge">${_hubEsc(stateLabel)}</div><h1>${_hubEsc(model.title)}</h1><p>${_hubEsc(headlineStatus)}</p></div><div class="hub-headline-right"><button type="button" class="hub-sf${_spoilerFree ? ' is-on' : ''}" role="switch" aria-checked="${_spoilerFree}" onclick="toggleSpoilerFree(${!_spoilerFree})" title="${_spoilerFree ? 'Results are hidden until you watch the episode' : 'Results are shown on this screen as soon as an episode is simulated'}"><span class="hub-sf-track"><span class="hub-sf-knob"></span></span><span class="hub-sf-label">Spoiler-free<small>${_spoilerFree ? 'On · outcomes hidden' : 'Off · outcomes shown'}</small></span></button><button class="hub-primary" onclick="${primaryClick}">${_hubEsc(model.primaryLabel)}<span>→</span></button></div></header>
     ${secondaryActions}
     <div class="hub-progress${_spoilerFree && model.latest ? ' hub-progress-hidden' : ''}" role="progressbar" aria-label="${_spoilerFree && model.latest ? 'Season progress hidden' : 'Season progress'}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${_spoilerFree && model.latest ? 0 : model.progress}"><span style="width:${_spoilerFree && model.latest ? 100 : model.progress}%"></span></div>
-    ${model.latest ? `<section class="hub-last-night"><div class="hub-last-label">Last episode</div><div class="hub-last-person">${_spoilerFree ? '<span class="hub-spoiler-mark">?</span>' : latestElim ? latestPortraits : '<span class="hub-no-boot">No elimination</span>'}</div><div class="hub-last-copy"><strong>${_spoilerFree ? 'Outcome hidden until you watch' : _hubEsc(model.latestOutcome)}</strong><span>Episode ${model.latest.num}${!_spoilerFree && model.latest.challengeLabel ? ` · ${_hubEsc(model.latest.challengeLabel)}` : ''}</span></div><div class="hub-last-votes">${_spoilerFree ? '<em>Votes hidden</em>' : latestVotes}</div><button class="hub-watch" onclick="openVisualPlayer(${Number(model.latest.num)})">▶ Watch</button></section>` : `<section class="hub-premiere-note"><strong>The premiere is next.</strong><span>Nobody has voted yet. Opening bonds and first impressions will finally become consequences.</span></section>`}
+    ${model.latest ? `<section class="hub-last-night"><div class="hub-last-label">Last episode</div><div class="hub-last-person">${_spoilerFree ? '<span class="hub-spoiler-mark">?</span>' : latestElim ? latestPortraits : `<span class="hub-no-boot">${_hubEsc(showWords(seasonFormat(seasonConfig)).noExitLine || 'No elimination')}</span>`}</div><div class="hub-last-copy"><strong>${_spoilerFree ? 'Outcome hidden until you watch' : _hubEsc(model.latestOutcome)}</strong><span>Episode ${model.latest.num}${!_spoilerFree && model.latest.challengeLabel ? ` · ${_hubEsc(model.latest.challengeLabel)}` : ''}</span></div><div class="hub-last-votes">${_spoilerFree ? '<em>Votes hidden</em>' : latestVotes}</div><button class="hub-watch" onclick="openVisualPlayer(${Number(model.latest.num)})">▶ Watch</button></section>` : `<section class="hub-premiere-note"><strong>The premiere is next.</strong><span>Nobody has voted yet. Opening bonds and first impressions will finally become consequences.</span></section>`}
     ${aftermathHtml}
     <div class="hub-grid"><div class="hub-main-column"><div class="hub-section-title"><span>${_spoilerFree && model.latest ? 'Cast after the episode' : 'Cast still in the game'}</span><small>${_spoilerFree && model.latest ? 'Hidden' : `${model.remaining} remaining`}</small></div><div class="hub-tribes">${castHtml}</div></div><aside class="hub-briefing"><div class="hub-section-title"><span>Going forward</span><small>Public context</small></div><div class="hub-next-card"><label>Next episode</label><strong>${_spoilerFree && model.latest ? 'Available after revealing the outcome' : _hubEsc(model.twistLabel)}</strong></div><div class="hub-story-list">${publicStorylines.map((line, index) => `<div><b>${String(index + 1).padStart(2, '0')}</b><span>${_hubEsc(line)}</span></div>`).join('')}</div></aside></div>
   </section>`;

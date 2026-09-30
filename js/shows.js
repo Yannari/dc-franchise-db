@@ -455,6 +455,8 @@ export const SHOWS = {
     words: {
       seasonComplete: 'The final ratings are in.',
       noExitLine: 'Nobody was blocked',
+      // The hub's corner, where a voting show prints its tally.
+      shapeLabel: 'How it was decided',
       openingStoryline: 'Eight strangers, eight apartments, and nobody knows who is real.',
       quietRound: 'A quiet day in The Circle',
       player: 'player', players: 'players', round: 'Episode',

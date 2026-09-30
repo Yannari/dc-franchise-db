@@ -74,6 +74,37 @@ describe('the season options', () => {
   });
 });
 
+import { getEpisodeEliminations, buildHubAftermath } from '../js/run-ui.js';
+import { circleBlockShape } from '../js/ci-run.js';
+import { showWords } from '../js/shows.js';
+describe('the site knows who was blocked', () => {
+  it('a blocking row names who left; the hub says it in the Circle\'s words', () => {
+    freshSeason();
+    const aired = playAll();
+    const night = aired.find(r => r.ci.blocked.length);
+    const people = night.ci.blocked.flatMap(h => night.ci.profiles[h]?.people || []);
+    expect(getEpisodeEliminations(night).sort()).toEqual(people.sort());
+    const hub = buildHubAftermath(night);
+    expect(hub.why).toMatch(/was blocked/);
+    expect(`${hub.why} ${hub.voteShape}`).not.toMatch(/vote|ballot|eliminat/i);
+    // every blocking night says HOW, never "No blocking" beside a blocking
+    for (const r of aired.filter(x => x.ci.blocked.length)) expect(buildHubAftermath(r).voteShape, `ep ${r.num}`).not.toBe('No blocking');
+    expect(circleBlockShape([{ name: 'A', channel: 'instant', by: [] }])).toBe('Lowest rated, blocked on the spot');
+    expect(circleBlockShape([{ name: 'A', channel: 'influencers', by: ['Kayla', 'Jake'] }])).toBe('Influencers: Kayla & Jake');
+    expect(circleBlockShape([{ name: 'A', channel: 'influencers', by: ['Kayla'], secret: true }])).toBe('Secret Influencers');
+    expect(showWords('the-circle').shapeLabel).toBeTruthy();
+    // an Influencer night says who did it; a catfish is named with the profile
+    const infl = aired.find(r => r.exits?.some(x => x.channel === 'influencers' && x.by.length && !x.secret));
+    expect(buildHubAftermath(infl).why).toMatch(/ by /);
+    const cat = aired.find(r => r.exits?.some(x => x.profile && x.profile !== x.name));
+    if (cat) expect(buildHubAftermath(cat).why).toMatch(/playing as/);
+    const quiet = aired.find(r => !r.ci.blocked.length && r.num > 1 && r.num < aired.length - 1);
+    expect(getEpisodeEliminations(quiet)).toEqual([]);
+    const q = buildHubAftermath(quiet);
+    expect(`${q.why} ${q.voteShape}`).not.toMatch(/vote|ballot|eliminat/i);
+  });
+});
+
 describe('what the draw dealt, for the cast cards', () => {
   it('each player: a persona and why, or themselves and what they edited', () => {
     freshSeason(13, { ciPool: undefined });

@@ -239,6 +239,23 @@ export function simulateCircleEpisode() {
   return row;
 }
 
+// How a night's blocking was decided, for the hub's corner (the place a
+// voting show prints its tally). By channel (js/ci/blocking.js, formats.js).
+const CHANNEL_WORDS = {
+  instant: 'Lowest rated, blocked on the spot', egg: 'The room chose which egg stayed',
+  clone: 'The room found the fake clone', mission: 'A secret task decided it',
+  antivirus: 'Never got the antivirus', unsaved: 'Nobody saved them', statement: 'Named by the room',
+  vote: 'The players chose', sacrifice: "Took their Ride or Die's place",
+};
+export function circleBlockShape(exits = []) {
+  if (!exits.length) return 'No blocking';
+  const x = exits[0];
+  if (x.secret) return 'Secret Influencers';
+  if (CHANNEL_WORDS[x.channel]) return CHANNEL_WORDS[x.channel];
+  const by = [...new Set(exits.flatMap(e => e.by || []))];
+  return by.length ? `${by.length > 1 || x.channel === 'influencers' ? 'Influencers' : 'Decided by'}: ${by.join(' & ')}` : 'Blocked';
+}
+
 export function circleEpisodesLeft() { return Array.isArray(gs?._ciQueue) ? gs._ciQueue.length : null; }
 
 /** A season with a seed can re-run any episode: the dice are per day. */

@@ -235,7 +235,20 @@ describe('an aired episode can be watched and read', () => {
     expect(screens.every(s => s.html.includes('Episode 2'))).toBe(true);
     const text = generateSummaryText(row);
     // a line from the first screen appears in the backlog too
-    const firstLine = screens[0].html.match(/class="ci-(?:say|msg)">([^<]+)</)?.[1]?.replace(/&quot;/g, '"').replace(/&amp;/g, '&');
+    const firstLine = screens[0].html.match(/data-text="([^"]+)"/)?.[1]?.replace(/&quot;/g, '"').replace(/&amp;/g, '&').replace(/&#39;/g, "'");
     expect(text).toContain(firstLine.slice(0, 30));
+  });
+});
+
+describe('a row carries what the screens draw', () => {
+  it('each profile: the face the room sees, age and job; a catfish names its persona', () => {
+    freshSeason(13, { ciPool: undefined });
+    const row = simulateCircleEpisode();
+    const ps = Object.values(row.ci.profiles);
+    for (const p of ps) { expect(p).toHaveProperty('face'); expect(p.age).toBeTruthy(); }
+    const cat = ps.find(p => p.mode === 'catfish');
+    expect(cat.personaId).toBeTruthy();
+    const honest = ps.find(p => p.mode === 'honest');
+    if (honest) expect(honest.face).toBe(`portrait:${honest.people[0]}`);
   });
 });

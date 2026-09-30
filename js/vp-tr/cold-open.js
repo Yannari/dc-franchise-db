@@ -1520,6 +1520,45 @@ function _card(title, label, ic, inner) {
     + (title ? '<h3 class="co-card-title">' + _esc(title) + '</h3>' : '')
     + inner + '</div>';
 }
+// ── ON THE STAIR (2026-09-30) ─────────────────────────────────────────
+//
+// The user: "breakfast barely has dialogue — dialogue reads well in watch it
+// played mode". Each group coming down is now met by somebody already at the
+// table, and they SAY something, as warmly or coldly as the two of them feel
+// (`v.feel`, the season's own bonds). Nobody at breakfast knows who is dead
+// yet, so every line is about the waiting, and the one question the room is
+// really asking — "has anybody seen…" — is only ever asked about somebody who
+// has not come down; if they then walk in, the asker says so.
+const STAIR_TALK = {
+  warm: [
+    ['Oh, thank God. Come here.', 'I’m here. I’m here. Who else is down?'],
+    ['I was starting to panic about you.', 'Me too. About everyone.'],
+    ['Sit with me. I saved you a seat.', 'You’re an angel. Did you sleep at all?'],
+    ['You made it.', 'Just about. My heart’s going a mile a minute.'],
+  ],
+  neutral: [
+    ['Morning.', 'Is it? Feels like the middle of the night.'],
+    ['Did you sleep?', 'Not really. You?'],
+    ['Nobody knows anything yet.', 'Then I’m not saying anything either.'],
+    ['Coffee’s over there.', 'I don’t think I could keep it down.'],
+  ],
+  cold: [
+    ['Oh. You’re alive, then.', 'Try not to sound so disappointed.'],
+    ['Took your time.', 'Didn’t realise I was being timed.'],
+    ['Look who it is.', 'Don’t start. Not this morning.'],
+  ],
+};
+const STAIR_ASK = [
+  ['Has anybody seen {x}?', 'Not yet.'],
+  ['Where’s {x}? Anybody?', 'No. Not since last night.'],
+  ['Still no {x}.', 'Give it a minute. Please just give it a minute.'],
+];
+const STAIR_FOUND = [
+  ['There you are! Don’t do that to me.', 'Do what? It’s breakfast.'],
+  ['{x}! We were asking where you were.', 'I was doing my hair. Relax.'],
+  ['Oh, you’re alive. Thank God.', 'Charming. Good morning to you too.'],
+];
+
 function _said(who, line) {
   return '<div class="co-said">' + _av(who, 44)
     + '<div><div class="co-said-txt">&ldquo;' + line + '&rdquo;</div>'
@@ -1652,6 +1691,8 @@ function _view(ep, observer) {
     // and last night's public ballots — never a raw alignment. Faithful-safe
     // on every layer, so it is not stripped. `null` on episode one and on any
     // morning with no record.
+    // who is warm or cold with whom this morning (see `_morning` in headless.js)
+    feel: dawn.feel || {},
     breakfast: (dawn.breakfast && missing.length && !hidden) ? {
       victims: [...(dawn.breakfast.victims || [])],
       pushed: dawn.breakfast.pushed || {},
@@ -1812,12 +1853,20 @@ function _buildBeats(v) {
   const groups = _groupsFor(early, shape);
 
   const arrivedSoFar = [];
+  const warmth = (a, b) => (v.feel || {})[[a, b].sort().join('|')] || 0;
+  let asked = null;       // { by, x }: the name the room asked after, and who asked
+  const talkUsed = new Set();
+  // no exchange twice in one morning: from the hashed start, the first not yet said
+  const freshPair = (pool, k) => { const i0 = _hash(k) % pool.length;
+    for (let d = 0; d < pool.length; d++) { const p = pool[(i0 + d) % pool.length]; if (!talkUsed.has(p[0])) { talkUsed.add(p[0]); return p; } }
+    return pool[i0]; };
   // No two clusters get the same lead sentence — two stragglers in a row drawing
   // the identical "a gap on the stair, and then just {who}" line is the same
   // repetition the quotes are deduped against.
   const leadSaid = new Set();
   groups.forEach((g, gi) => {
     if (!g.length) return;
+    const seated = [...arrivedSoFar];
     arrivedSoFar.push(...g);
     const who = g[0];
     const isLast = gi === groups.length - 1;
@@ -1851,10 +1900,39 @@ function _buildBeats(v) {
     const faces = '<span class="co-row-faces">' + g.map(n => _av(n, 38)).join('') + '</span>';
     // An arrival morning's lead does not name them, so the names go under the faces.
     const names = v.arrival ? '<span class="co-row-names">' + g.map(_esc).join(' · ') + '</span>' : '';
+    // THE TALK: somebody already down meets them, and says it
+    let talk = '';
+    if (!v.arrival && seated.length) {
+      const k = key + '|stair|' + gi;
+      const found = asked && g.includes(asked.x) ? asked : null;
+      if (found) {
+        const pair = freshPair(STAIR_FOUND, k);
+        talk = _said(found.by, _esc(_fill(pair[0], { x: found.x }))) + _said(found.x, _esc(_fill(pair[1], { x: found.x })));
+        asked = null;
+      } else {
+        // whoever at the table feels most strongly about the one walking in
+        const by = seated.reduce((b, x) => (Math.abs(warmth(x, who)) > Math.abs(warmth(b, who)) ? x : b), seated[_hash(k + '|by') % seated.length]);
+        const w = warmth(by, who);
+        const pool = STAIR_TALK[w > 0 ? 'warm' : w < 0 ? 'cold' : 'neutral'];
+        const pair = freshPair(pool, k + '|' + by);
+        talk = _said(by, _esc(pair[0])) + _said(who, _esc(pair[1]));
+        // and, once a morning, somebody asks after a face that is not down yet
+        // somebody who IS coming down, later: a scare that resolves. Never the
+        // murdered — nobody says the victim's name before the cup is turned
+        // over (tests/tr-breakfast.test.js), and that silence is the morning
+        const notYet = order.filter(n => n && !arrivedSoFar.includes(n) && n !== who && n !== lastOne);
+        if (!asked && gi === 1 && notYet.length) {
+          const x = notYet[_hash(k + '|x') % notYet.length];
+          const q = freshPair(STAIR_ASK, k + '|q');
+          talk += _said(by, _esc(_fill(q[0], { x }))) + _said(who, _esc(_fill(q[1], { x })));
+          asked = { by, x };
+        }
+      }
+    }
     const body = (gi === 0 ? '<div class="co-feed-h">'
       + _esc(v.arrival ? 'Through The Door' : 'Coming Down') + '</div>' : '')
       + '<div class="co-row">' + faces + '<div class="co-row-t">' + names + '<p>' + lead + '</p>'
-      + (heard ? _said(who, _esc(heard)) : '') + '</div></div>';
+      + (heard ? _said(who, _esc(heard)) : '') + talk + '</div></div>';
     push('down', body,
     gi === 0 ? (v.arrival ? 'arrive' : 'open') : null,
     { kind: 'down', down: [...arrivedSoFar] });

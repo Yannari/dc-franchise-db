@@ -1266,8 +1266,21 @@ function _withoutDecoys(hidden, fn) {
 function _morning() {
   const rows = gs.episodeHistory || [];
   const prev = rows.length ? rows[rows.length - 1] : null;
+  // HOW THE ROOM FEELS ABOUT ITSELF THIS MORNING: every pair of living
+  // players with a real warm (+1) or cold (-1) bond, keyed "a|b" in name
+  // order. The breakfast stair is where people talk to each other first
+  // thing, and how warmly is how the season has them — read, never written.
+  const feel = {};
+  const alive = (gs.activePlayers || []).filter(Boolean);
+  for (let i = 0; i < alive.length; i++) {
+    for (let j = i + 1; j < alive.length; j++) {
+      const b = getBond(alive[i], alive[j]);
+      if (b >= 2 || b <= -2) feel[[alive[i], alive[j]].sort().join('|')] = b >= 2 ? 1 : -1;
+    }
+  }
   return {
     ofEp: prev ? prev.num : null,
+    feel,
     lastNight: prev ? (prev.exits || []).map(x => ({ ...x })) : [],
     pot: prev ? (prev.tr?.pot ?? 0) : 0,
     // THE PACT STRUCK AND NOTHING HAPPENED, and it is the audience's fact

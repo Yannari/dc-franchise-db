@@ -21,7 +21,7 @@ import { newState, addScene, bump, peopleOf } from './state.js';
 import { truthOf, drawPersonas, buildProfiles } from './profiles.js';
 import { setBelief, nudgeBelief } from './beliefs.js';
 import { bioFor } from './persona-data.js';
-import { S } from './state.js';
+import { S, rel } from './state.js';
 import { initMind, driftMind } from './mind.js';
 import { seedAttraction, planChats, contextFor } from './chat.js';
 import { runChat } from './conversation.js';
@@ -74,6 +74,29 @@ export const STAGE_DATA = {
   reveal: d => ({ placements: (d.placements || []).map(p => ({ profile: p.profile, place: p.place })) }),
   party: d => ({ theme: d.theme, props: d.props || [] }),
 };
+
+// Who suspects whom, the closest bonds, the worst grudges, who holds power:
+// the room at a moment, for the screens' sidebar. Rounded and capped.
+export function roomAt(state) {
+  const act = [...state.active];
+  const suspects = [], bonds = [], rivals = [];
+  for (const o of act) for (const t of act) {
+    if (o === t) continue;
+    const real = state.beliefs?.[o]?.[t]?.real;
+    if (real != null && real < 0.5) suspects.push([o, t, Math.round(real * 100)]);
+  }
+  act.forEach((a, i) => act.slice(i + 1).forEach(b => {
+    const aff = (rel(a, b, 'affection') + rel(b, a, 'affection')) / 2;
+    const res = Math.max(rel(a, b, 'resentment'), rel(b, a, 'resentment'));
+    if (aff > 3) bonds.push([a, b, Math.round(aff * 10) / 10]);
+    // Grudges run lower than affection (it reaches 10; resentment rarely passes 3).
+    if (res >= 1.5) rivals.push([a, b, Math.round(res * 10) / 10]);
+  }));
+  const infl = (state.ratings || []).filter(r => !r.final && !r.hidden).at(-1)?.influencers || [];
+  return { active: act, influencers: infl.filter(h => act.includes(h)),
+    suspects: suspects.sort((x, y) => x[2] - y[2]).slice(0, 8),
+    bonds: bonds.sort((x, y) => y[2] - x[2]).slice(0, 6), rivals: rivals.sort((x, y) => y[2] - x[2]).slice(0, 5) };
+}
 
 export const FAME_SEEN = { celebrity: 0.8, threat: 0.45, villain: 0.45, known: 0.18 };
 function recogniseFame(state, rng) {
@@ -153,6 +176,7 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
   let finalRow = null, result = null;
   for (const d of schedule) {
     state.day = d.day;
+    const start = roomAt(state);
     // A re-run turns this day's dice once more (options.rerolls[day]); every
     // other day keeps its own, so earlier episodes come back identical.
     const turn = (state.options.rerolls || {})[d.day];
@@ -269,6 +293,9 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
         // told; the room is not.
         cast: Object.fromEntries(Object.values(state.people).map(t => [t.name,
           { age: t.age ?? null, job: t.job ?? null, hometown: t.hometown ?? null, rep: t.rep || 'none', stars: t.stars ?? null }])),
+        // The room as the day began (the screens' live sidebar): nothing in
+        // it can spoil the episode, which the sidebar then plays forward.
+        start,
         blocked: state.blocked.filter(b => b.day === d.day).map(b => b.handle),
         arrivals: arriving, scenes: state.scenes.filter(s => s.day === d.day).length,
         aired: state.scenes.filter(s => s.day === d.day && s.aired)

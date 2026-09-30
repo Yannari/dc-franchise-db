@@ -239,11 +239,12 @@ describe('plays as someone else: Decide / Yes / No, and which persona', () => {
 
 describe('already famous? how the room might already know them', () => {
   const p = { name: 'X', gender: 'f', archetype: 'floater', age: 25, stats: { strategic: 5, boldness: 5, loyalty: 5 } };
-  it('the more famous, the more reason to hide: nobody < known < a big threat < a villain', () => {
+  it('the more famous, the more reason to hide: nobody < known < a big threat < a villain < a celebrity', () => {
     const m = rep => catfishMotive(truthOf(p, rep ? { rep } : {}), 25);
     expect(m('none')).toBeLessThan(m('known'));
     expect(m('known')).toBeLessThan(m('threat'));
     expect(m('threat')).toBeLessThan(m('villain'));
+    expect(m('villain')).toBeLessThan(m('celebrity'));
   });
   it('left alone, it follows what the season hands in from their past (autoRep), else returnee or not', () => {
     expect(truthOf(p, { autoRep: 'threat' }).rep).toBe('threat');

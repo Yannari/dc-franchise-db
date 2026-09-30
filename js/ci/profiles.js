@@ -21,7 +21,7 @@ import { jobOf, tellsOf } from './persona-data.js';
 // nerve must carry the motive themselves. 0.07/0.05 gave 14% catfish on real
 // casts (synthetic casts, whose ages spread 21-58, had hidden it at 31%);
 // 0.10/0.07 gives 32%, and catfish win about a third of seasons.
-export const MOTIVE = { age: 0.08, alum: 0.6, threatRep: 1.0, villainRep: 1.4, job: 1.0,
+export const MOTIVE = { age: 0.08, alum: 0.6, threatRep: 1.0, villainRep: 1.4, celebRep: 1.6, job: 1.0,
   strategic: 0.10, boldness: 0.07, loyalty: 0.06 };
 // 0.75 gave 6.1 of 13 a persona once the pool had eight (47%) — the audit's
 // pool of six had been capping it. 1.0 gives 4.1 (31%) with the default pool.
@@ -45,9 +45,10 @@ export function ageFrom(birthdate) {
 }
 
 // How the room might already know them (the Profile Plan's "Already famous?"):
-// nobody; known from TV; a big threat (a past winner or finalist); a villain.
-// The more famous, the more reason to hide behind a persona.
-export const REPS = ['none', 'known', 'threat', 'villain'];
+// nobody; known from TV; a big threat (a past winner or finalist, a household
+// name); a villain; a celebrity (the franchise's fame stars, js/fame.js). The
+// more famous, the more reason to hide behind a persona.
+export const REPS = ['none', 'known', 'threat', 'villain', 'celebrity'];
 
 export function truthOf(player, setup = {}) {
   // An older saved pin named a persona in `catfish`; it reads as Yes + that persona.
@@ -94,7 +95,8 @@ export function medianAge(truths) {
 /** What each true fact costs to show in this room (spec §4.3). */
 export function factCosts(t, median) {
   return { age: Math.abs(t.age - median) * MOTIVE.age, alum: t.alum ? MOTIVE.alum : 0,
-    rep: t.rep === 'villain' ? MOTIVE.villainRep : t.rep === 'threat' ? MOTIVE.threatRep : 0, job: (t.jobCost || 0) * MOTIVE.job };
+    rep: t.rep === 'celebrity' ? MOTIVE.celebRep : t.rep === 'villain' ? MOTIVE.villainRep : t.rep === 'threat' ? MOTIVE.threatRep : 0,
+    job: (t.jobCost || 0) * MOTIVE.job };
 }
 
 export function catfishMotive(t, median) {

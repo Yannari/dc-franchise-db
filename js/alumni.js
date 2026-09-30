@@ -92,6 +92,10 @@ function fameStarsOf(id) {
   return hit ? hit.stars : 0;
 }
 
+/** A player's fame stars (0-5, js/fame.js), by slug; null when the page has
+ *  not handed over the databases yet (setFameContext). */
+export function fameStarsFor(slug) { return fameStarsOf(slug); }
+
 export function alumniPool({ exclude = [], format = null, minNative = 6 } = {}) {
   const db = alumniDatabase();
   if (!db) return [];

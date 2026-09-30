@@ -17,6 +17,7 @@
 import { circleScreens } from './steps.js';
 import { stageInner, paintStage } from './stage.js';
 import { CIV_CSS, CIV_FONTS } from './style.js';
+import { bedFor, playStep } from './sound.js';
 
 const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const reg = () => (typeof window !== 'undefined' ? (window._civ ||= {}) : {});
@@ -44,8 +45,9 @@ export function circleVpScreens(row) {
       // ci-<kind>-<n>: the player files it by kind (vp-ui.js _ciPhaseForScreen).
       id: `ci-${screen.kind}-${si}`,
       label: screen.title,
-      html: `<style>${CIV_FONTS}${CIV_CSS}</style>
-<div class="civ" data-uid="${uid}">
+      // The root carries the scene's music bed (vp-ui.js reads data-ambient
+      // off the first element after its stage cue, so the style goes inside).
+      html: `<div class="civ" data-uid="${uid}" data-ambient="${bedFor(screen)}"><style>${CIV_FONTS}${CIV_CSS}</style>
   <div class="civ-top"><div class="civ-logo">${LOGO}<div>THE CIRCLE<small>Episode ${esc(row.num)} · Day ${esc(row.day)}</small></div></div>
     <div class="civ-title">${esc(screen.title)}</div></div>
   <div class="civ-stagewrap"><div class="civ-stage" id="civ-st-${uid}" onclick="civNext('${uid}')" title="Click for the next line">${stageInner(row, screen, -1)}</div>
@@ -80,6 +82,7 @@ function paint(uid, fresh) {
   script?.querySelectorAll('[data-s]').forEach(el => el.classList.toggle('vis', Number(el.dataset.s) <= S.idx));
   const count = document.getElementById(`civ-count-${uid}`);
   if (count) count.textContent = `${Math.max(0, S.idx + 1)} / ${S.screen.steps.length}`;
+  if (fresh) playStep(S.screen, S.idx);
   if (fresh) { try { script?.querySelector(`[data-s="${S.idx}"]`)?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch { /* jsdom */ } }
 }
 export function civNext(uid) {

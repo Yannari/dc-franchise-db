@@ -37,6 +37,9 @@ export const FORMATS = {
   super: { removes: 1, seats: 1, hidden: true, can: ctx => ctx.position !== 'first',
     run: (state, rng, rating) => standardBlocking(state, rng, rating, { format: 'super', inPerson: true }) },
   instant: { removes: 1, seats: 0, can: () => true, run: instantBlock },
+  // US 6 Ep 3: rank from most to least human; the most human blocks alone.
+  'most-human': { removes: 1, seats: 1, human: true, can: ctx => ctx.position !== 'last',
+    run: (state, rng, rating) => standardBlocking(state, rng, rating, { format: 'most-human' }) },
   'public-super': { removes: 1, seats: 1, hidden: true, can: ctx => ctx.position === 'late' || ctx.position === 'last',
     // UK 2 Ep 17: the audience's choice, handed in by season.js (public.js
     // is the only reader of the audience; the engine never reads it itself).

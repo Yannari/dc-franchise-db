@@ -106,3 +106,47 @@ describe('the egg twist (UK 2 Ep 16)', () => {
     }
   });
 });
+
+// ── 9b part 3: the AI player and Most Human (US 6) ─────────────────────
+import { attractionOk } from '../js/ci/chat.js';
+import { probe } from '../js/ci/slips.js';
+import { schemeEligible, addScene } from '../js/ci/state.js';
+import { room } from './helpers/ci-room.js';
+import { addAI, AI_HANDLE } from '../js/ci/ai.js';
+import { streamFor } from '../js/dr/rng.js';
+describe('the AI player (US 6)', () => {
+  it('plays from Day 1 as one more player, and the season still ends with five', () => {
+    const cast = makePlayers(13, 5); setPlayers(cast);
+    const names = cast.map(p => p.name);
+    const { state, result } = playCircleSeason({ cast: names, setup: circleSetup(names, { newcomers: 5 }), pool: makePool(6, 5), seed: 5, options: { ai: true } });
+    expect(state.joinedDay[AI_HANDLE]).toBe(1);
+    expect(result.placements).toHaveLength(5);
+  });
+  it('never schemes, cannot flirt, and fails human questions more than a person with the same cover', () => {
+    const s = room(5, 2);
+    addAI(s); s.active.push(AI_HANDLE);
+    expect(schemeEligible(s, AI_HANDLE)).toBe(false);
+    for (const h of s.active.filter(x => x !== AI_HANDLE)) expect(attractionOk(s, AI_HANDLE, h)).toBe(false);
+    const fails = h => {
+      let n = 0;
+      for (let i = 0; i < 400; i++) {
+        const sc = addScene(s, 'chat', ['@q0', h], {});
+        if (probe(s, streamFor(i, 'p'), '@q0', h, sc) === 'fail') n++;
+      }
+      return n;
+    };
+    Object.assign(s.profiles['@q1'], { mode: 'catfish', gap: s.profiles[AI_HANDLE].gap });
+    Object.assign(s.people.Q1.stats, s.people['The AI'].stats);
+    expect(fails(AI_HANDLE)).toBeGreaterThan(fails('@q1') * 1.2);
+  });
+});
+
+describe('Most Human (US 6 Ep 3)', () => {
+  it('players rank from most to least human, and the most human blocks alone', () => {
+    const { on } = booked('rating3', 'ci-most-human');
+    const r = on('ratings')[0];
+    expect(r.data.human).toBe(true);
+    const block = on('blocking')[0];
+    expect(block.data.by).toEqual([r.data.results[0].profile]);
+  });
+});

@@ -11,6 +11,7 @@ import { clamp, S } from './state.js';
 import { nudgeBelief, belief } from './beliefs.js';
 import { feel } from './mind.js';
 import { coverStrain, coverParts } from './cover.js';
+import { AI_PROBE } from './ai.js';
 
 // A voice that does not fit the face (Plan 3a+ Task 14): a "24-year-old" who
 // types like a board memo, or a "50-year-old" who types LET'S GOOO. Only a
@@ -111,7 +112,8 @@ export function probe(state, rng, asker, target, scene) {
   const record = r => { (scene.data.probes ||= []).push({ asker, target, result: r }); return r; };
   if (!p?.gap) { nudgeBelief(state, asker, target, 'real', 0.12, scene); return record('pass'); }
   // Two heads check every answer (spec §14.8: slow, but hard to trap).
-  const fail = clamp(PROBE.fail * p.gap * (1 - S(state, target, 'mental') / 15), 0, 0.8)
+  // The AI gets stuck on very human questions ("what did you have for breakfast").
+  const fail = clamp(PROBE.fail * p.gap * (1 - S(state, target, 'mental') / 15) * (p.ai ? AI_PROBE : 1), 0, 0.8)
     * (isPair(state, target) ? SHARED_PROBE : 1);
   const dodge = clamp(S(state, target, 'strategic') * PROBE.dodge, 0, 0.8);
   feel(state, target, 'stress', 0.8);

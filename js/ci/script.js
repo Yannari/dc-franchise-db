@@ -413,6 +413,11 @@ const BLOCKS = {
     const n = s.data.results.length;
     for (const b of s.data.ballots) {
       const first = b.order[0], last = b.order.at(-1);
+      if (s.data.human) {
+        out.push({ key: 'rate.human.top', cast: { a: b.voter, b: first } });
+        if (last && last !== first) out.push({ key: 'rate.human.bottom', cast: { a: b.voter, b: last } });
+        continue;
+      }
       if (final) {
         out.push({ key: `final.rate.${b.reasons[0]}`, cast: { a: b.voter, b: first }, extra: { final: true } });
         if (last && last !== first) out.push({ key: `rate.${b.reasons.at(-1)}.bottom`, cast: { a: b.voter, b: last }, extra: { band: 'bottom', final: true } });
@@ -753,7 +758,7 @@ const BLOCKS = {
     const p = state.profiles[h];
     const viewers = s.seenBy.filter(x => x !== h);
     const out = viewers.slice(0, 4).map(v => ({ key: 'goodbye.guess', cast: { a: v, b: h } }));
-    out.push({ key: p.mode === 'catfish' ? `goodbye.video.catfish.${p.reason || 'strategic'}` : `goodbye.video.${p.mode}`,
+    out.push({ key: p.ai ? 'goodbye.video.ai' : p.mode === 'catfish' ? `goodbye.video.catfish.${p.reason || 'strategic'}` : `goodbye.video.${p.mode}`,
       cast: { a: h }, extra: { mode: p.mode, reasonKind: p.reason || undefined } });
     // Every goodbye ends the same way on the show: a lesson, then good luck (spec 11.2).
     out.push({ key: 'goodbye.video.close', cast: { a: h } });
@@ -788,6 +793,9 @@ const BLOCKS = {
     };
     const fake = h => state.profiles[h].mode === 'catfish';
     const pair = h => state.profiles[h].players.length > 1;
+    // The AI arrives as a screen (US 6).
+    if (state.profiles[a]?.ai && present.length) return [{ key: 'meet.arrive.ai', cast: { a, b: present.at(-1) } },
+      ...present.slice(0, 2).map(h => ({ key: 'meet.react', cast: { a: h, b: a }, extra: { catfish: true } })), { key: 'meet.settle', cast: { a, b: present.at(-1) } }];
     // A shared profile walks in as two people: that is the reveal.
     if (present.length === 1 && pair(present[0])) {
       return [{ key: 'meet.found.shared', cast: { a, b: present[0] } }, { key: 'meet.explain.shared', cast: { a: present[0], b: a } },
@@ -990,7 +998,7 @@ export const POOL_KEYS = [
   'hack.send', 'hack.read', 'hack.undone', 'joker.chat', 'joker.pick', 'burner.exposed',
   'alert.public-super', 'alert.none', 'block.react.guess', 'noblock.alert', 'noblock.influencer', 'noblock.relief', 'mission.given', 'mission.success',
   'block.announce.mission', 'swap.told', 'swap.back', 'clone.alert', 'clone.plea.old', 'clone.plea.new', 'clone.vote.new', 'clone.vote.old',
-  'clone.out', 'secondchance.back', 'secondchance.react', 'secondchance.recognize', 'egg.intro', 'egg.vote.first', 'egg.vote.second', 'egg.stays', 'egg.goes', 'rod.partner', 'sacrifice.go', 'sacrifice.kept', 'sacrifice.saved', 'disrupter.alert', 'disrupter.win.immunity', 'disrupter.win.pick', 'disrupter.slow', 'disrupter.pick', 'date.pick', 'date.chat', 'date.gift', 'date.passed', 'invites.first', 'invites.next', 'invites.last',
+  'clone.out', 'alert.most-human', 'rate.human.top', 'rate.human.bottom', 'goodbye.video.ai', 'meet.arrive.ai', 'secondchance.back', 'secondchance.react', 'secondchance.recognize', 'egg.intro', 'egg.vote.first', 'egg.vote.second', 'egg.stays', 'egg.goes', 'rod.partner', 'sacrifice.go', 'sacrifice.kept', 'sacrifice.saved', 'disrupter.alert', 'disrupter.win.immunity', 'disrupter.win.pick', 'disrupter.slow', 'disrupter.pick', 'date.pick', 'date.chat', 'date.gift', 'date.passed', 'invites.first', 'invites.next', 'invites.last',
   'race.win', 'race.lose', 'newparty.throw', 'newparty.guest', 'newparty.left', 'lurk.watch', 'lurk.reveal',
   'chosen.offer', 'chosen.pick', 'chosen.thanks', 'pairarrival.chat', 'alert.antivirus', 'antivirus.open', 'antivirus.pass', 'antivirus.got', 'antivirus.left', 'block.announce.antivirus',
   'hangout.agree', 'hangout.yield', 'hangout.trade', 'hangout.pact',

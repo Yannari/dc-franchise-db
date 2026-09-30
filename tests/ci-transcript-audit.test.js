@@ -4,6 +4,7 @@
 //     CI_SEED=19 npm run ci:transcript  any other seed
 //     CI_CAST=16 …                      another cast size (a third arrive later)
 //     CI_BOOK=rating2=ci-sole-influencer  book a night's format by slot
+//     CI_AI=1                           the AI player (US 6) joins on Day 1
 //
 // Writes transcripts/ci-season-<seed>.txt and .html (gitignored) and prints the
 // path. Uses js/ci/transcript.js — the same renderer the screens will use.
@@ -50,7 +51,7 @@ it('writes a season transcript', () => {
   if (process.env.CI_VOICES !== '0') for (const p of pool) if (PERSONA_VOICES[p.handle]) p.chatVoice = PERSONA_VOICES[p.handle];
   // CI_BOOK="rating2=ci-sole-influencer,rating5=..." books nights by slot.
   const bookings = Object.fromEntries((process.env.CI_BOOK || '').split(',').filter(Boolean).map(x => x.split('=')));
-  const { rows, state, result } = playCircleSeason({ cast: names, setup, pool, seed, options: { bookings } });
+  const { rows, state, result } = playCircleSeason({ cast: names, setup, pool, seed, options: { bookings, ai: process.env.CI_AI === '1' } });
   const dir = join(ROOT, 'transcripts');
   mkdirSync(dir, { recursive: true });
   const base = join(dir, `ci-season-${seed}`);

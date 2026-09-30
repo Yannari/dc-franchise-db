@@ -31,6 +31,7 @@ import { bookSeason } from './timeline.js';
 import { arrive, chooseNewcomer } from './arrivals.js';
 import { powersMorning, jokerMeets, runDisrupter } from './powers.js';
 import { runEvent, endSwap } from './twists.js';
+import { addAI } from './ai.js';
 import { openLedger, noteJoin, airDay, fanFavorite, publicPick } from './public.js';
 import { buildSchedule } from './schedule.js';
 import { finalDay, finaleDay } from './finale.js';
@@ -79,6 +80,8 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
   const truths = cast.map(name => truthOf(players.find(p => p.name === name) || { name, stats: {} }, setup[name] || {}));
   const draw = drawPersonas(truths, pool, streamFor(seed, 'pool'), state.options.pickBy);
   const handles = buildProfiles(state, truths, draw, pool, streamFor(seed, 'profiles'));
+  // The AI player (US 6), a season option: one more starter from Day 1.
+  if (state.options.ai) handles.push(addAI(state));
   openLedger(state);
   seedAttraction(state, streamFor(seed, 'spark'));
   applyCarried(state, carried);
@@ -166,7 +169,7 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
       const night = prepareNight(state, { ...(d.night || { format: 'standard' }) }, streamFor(seed, `night:${d.day}`));
       state.publicChoice = night.format === 'public-super' ? publicPick(state) : null;
       const f = FORMATS[night.format] || FORMATS.standard;
-      rating = runRating(state, rng, { seats: f.seats ?? 2, pick: f.pick, hidden: !!f.hidden });
+      rating = runRating(state, rng, { seats: f.seats ?? 2, pick: f.pick, hidden: !!f.hidden, human: !!f.human });
       runBlocking(state, rng, rating, night);
     }
     if (d.final) { finalRow = finalDay(state, rng); rating = finalRow; }

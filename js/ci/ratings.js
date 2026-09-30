@@ -70,8 +70,16 @@ export function voterScore(state, rng, voter, target, { final = false } = {}) {
   return { score, parts };
 }
 
+// "Most Human" (US 6 Ep 3): rank from most to least human. A profile reads
+// human as much as the voter believes it is real, and warms to it.
+export function humanScore(state, rng, voter, target) {
+  const b = belief(state, voter, target);
+  const parts = { human: b.real * 6, warmth: rel(voter, target, 'affection') * 0.3 + rel(voter, target, 'trust') * 0.2 };
+  return { score: parts.human + parts.warmth + (rng() - 0.5) * 2 * NOISE * 0.6, parts };
+}
+
 export function ballot(state, rng, voter, targets, opts = {}) {
-  const scored = targets.filter(t => t !== voter).map(t => ({ t, ...voterScore(state, rng, voter, t, opts) }))
+  const scored = targets.filter(t => t !== voter).map(t => ({ t, ...(opts.human ? humanScore(state, rng, voter, t) : voterScore(state, rng, voter, t, opts)) }))
     .sort((a, b) => b.score - a.score);
   const reasons = scored.map(x => Object.entries(x.parts).sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))[0][0]);
   // What each target's score was made of, for the audit (which term decides).
@@ -134,9 +142,9 @@ function infer(state, rng, row, scene) {
   return out;
 }
 
-export function runRating(state, rng, { final = false, seats = Infinity, pick = null, hidden = false } = {}) {
+export function runRating(state, rng, { final = false, seats = Infinity, pick = null, hidden = false, human = false } = {}) {
   const { voters, targets } = ratedPool(state);
-  const ballots = voters.map(v => ballot(state, rng, v, targets, { final }));
+  const ballots = voters.map(v => ballot(state, rng, v, targets, { final, human }));
   // A burner profile casts its holder's second ballot (US 3), until exposed.
   if (!final) for (const h of burnerVoters(state, rng)) ballots.push({ ...ballot(state, rng, h, targets), burner: true });
   const res = results(ballots, targets);
@@ -145,7 +153,7 @@ export function runRating(state, rng, { final = false, seats = Infinity, pick = 
   // The Joker names the second Influencer of an ordinary night (US 2).
   if (!final && !hidden && seats === 2 && !pick) influencers = rideOrDieInfluencers(state, jokerPick(state, influencers));
   const sc = addScene(state, final ? 'final-ratings' : 'ratings', voters,
-    { ballots, results: res, influencers, reveal: revealOrder(res), ...(hidden ? { hidden: true } : {}) }, [...state.active]);
+    { ballots, results: res, influencers, reveal: revealOrder(res), ...(hidden ? { hidden: true } : {}), ...(human ? { human: true } : {}) }, [...state.active]);
   for (const r of res) state.firstPlaces[r.profile] = (state.firstPlaces[r.profile] || 0) + r.firsts;
   for (const i of influencers) state.influencerCount[i] = (state.influencerCount[i] || 0) + 1;
   for (const p of state.pacts.filter(x => x.kind === 'rate')) {

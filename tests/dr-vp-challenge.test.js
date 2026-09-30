@@ -128,7 +128,14 @@ describe('the maxi', () => {
     expect(html, 'has the question card').toContain('sgx-q');
     expect(html, 'has the laugh-o-meter').toContain('sgx-meter');
     expect(html, 'has answer cards').toContain('class="card"');
-    expect(html, 'has the closing tally').toContain('Laughs on the night');
+    expect(html, 'has the closing tally').toContain('The taping, scored');
+    // The closing list is in the order the panel judged, not a sum of how
+    // often each queen happened to be asked.
+    const perfs = row.dr.performances;
+    const byPerf = Object.keys(perfs).sort((a, b) => perfs[b].perf - perfs[a].perf);
+    const tally = html.slice(html.indexOf('The taping, scored'));
+    const pos = n => tally.indexOf(`>${n}</small>`);
+    for (let i = 1; i < byPerf.length; i++) expect(pos(byPerf[i - 1]), byPerf[i]).toBeLessThan(pos(byPerf[i]));
     const taping = row.dr.scenes.find(s => s.kind === 'snatch-taping').data;
     // Every line the engine picked is on the screen, word for word.
     const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');

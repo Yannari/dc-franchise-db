@@ -299,11 +299,21 @@ export function perform(ctx) {
   const first = c => String(c.name).split(' ')[0];
   const openLine = fillSnatch(pick(SHOW_OPEN), { x: contestants[0].name, y: contestants[1].name });
 
+  /* ── WHAT AIRED IS WHAT SHE DID ──
+     Every queen's number is the average of the moments the viewer SAW: her
+     introduction and each answer she gave when the host went to her (after
+     his follow-up, if he threw her one). It used to be the average of all six
+     rounds, most of which never aired, and the screen could show a queen
+     killing on every card she was asked while the panel judged the rounds it
+     had not shown — she won the week with the lowest laughs on the screen. */
+  const aired = Object.fromEntries(living.map(n => [n, []]));
+
   // ── THE PANEL IS INTRODUCED ──
   const intros = seat.map(n => {
     const c = charOf(n);
     const kit = kitFor(c?.id);
     const s = scoreOf(n);
+    aired[n].push(s);
     const tier = tierOf(s);
     /* A good intro is her celebrity's own line. A dying one is the name and
        the catchphrase and a silence. */
@@ -404,6 +414,8 @@ export function perform(ctx) {
       };
     });
 
+    for (const n of featured) aired[n].push(scoreNow(n));
+
     // ── THE CROSS-TALK ──
     // The funniest queen on this card turns on somebody else's answer. A
     // queen allowed to taunt heckles; a nice one builds on the bit instead.
@@ -463,6 +475,8 @@ export function perform(ctx) {
     if (bond(a, b) >= 2 && rng() < 0.4) {
       perRound[a] = perRound[a].map(s => Math.round((s + 0.8) * 100) / 100);
       perRound[b] = perRound[b].map(s => Math.round((s + 0.8) * 100) / 100);
+      aired[a] = aired[a].map(s => s + 0.8);
+      aired[b] = aired[b].map(s => s + 0.8);
       events.push(evt('double-act', {
         players: [a, b], bond: [[a, b, 1]], pop: { [a]: 2, [b]: 2 },
         data: { characters: [charOf(a)?.name || null, charOf(b)?.name || null] },
@@ -472,9 +486,10 @@ export function perform(ctx) {
 
   for (const n of living) {
     const scores = perRound[n];
-    const perf = scores.reduce((s, x) => s + x, 0) / scores.length;
-    const flops = scores.filter(s => s < FLOP).length;
-    const kills = scores.filter(s => s > KILL).length;
+    const seen = aired[n].length ? aired[n] : scores;
+    const perf = seen.reduce((s, x) => s + x, 0) / seen.length;
+    const flops = seen.filter(s => s < FLOP).length;
+    const kills = seen.filter(s => s > KILL).length;
     /* DYING IS WHAT THE VIEWER SAW: the host stopped going to her after two
        dead answers on camera. Counting flops over rounds nobody was shown
        called a queen dead whose every aired answer got a laugh. */
@@ -494,7 +509,7 @@ export function perform(ctx) {
       detail: {
         character: charOf(n)?.name || null,
         characterId: assignment.picks[n]?.choice || null,
-        rounds: scores, flops, kills,
+        rounds: scores, aired: seen.map(s => Math.round(s * 100) / 100), flops, kills,
         hostBeats: hostBeats.filter(h => h.name === n),
       },
     };

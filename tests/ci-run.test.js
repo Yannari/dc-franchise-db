@@ -51,6 +51,27 @@ describe('a season nobody wrote a pool for', () => {
   });
 });
 
+describe('the season options', () => {
+  it('plays the Days asked for; a number too small for the cast is raised to the fewest it needs', () => {
+    freshSeason(13, { ciDays: 1 });
+    const fewest = circleSeasonShape().length;
+    expect(fewest).toBeGreaterThanOrEqual(10);
+    for (const ciDays of [8, 12, 20, 30]) {
+      freshSeason(13, { ciDays });
+      const want = Math.max(ciDays, fewest);
+      expect(circleSeasonShape().length, `ciDays ${ciDays}`).toBe(want);
+      expect(playAll(), `ciDays ${ciDays}`).toHaveLength(want);
+      expect(gs.activePlayers.length).toBe(5);
+    }
+  });
+
+  it('four finalists end the season on four', () => {
+    freshSeason(13, { ciFinalists: 4 });
+    playAll();
+    expect(gs.activePlayers.length).toBe(4);
+  });
+});
+
 describe('a season plays one episode per press', () => {
   it('airs every day of the schedule, then stops, and names the winner', () => {
     freshSeason();

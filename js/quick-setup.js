@@ -20,9 +20,10 @@
 
 import { TWIST_CATALOG, twistModeClashes, seasonConfig, players, seasonFormat, formatIsRunnable, formatName } from './core.js';
 import { SEASON_SETTINGS, settingsForFormat, defaultSettingFor } from './settings.js';
-import { SHOWS as SHOW_REGISTRY, showName, showIcon, showWords, HOSTS_BY_FORMAT } from './shows.js';
+import { SHOWS as SHOW_REGISTRY, showName, showIcon, showWords, HOSTS_BY_FORMAT, CIRCLE_FORMAT } from './shows.js';
 import { houseStructure } from './bb-run.js';
 import { buildSchedule, defaultRoleSplit } from './pm/schedule.js';
+import { circleCastProblem, circleShapeOf } from './ci-run.js';
 import { SEASON_OBJECTIVES } from './franchise-meta.js';
 
 // ══════════════════════════════════════════════════════════════════════
@@ -69,6 +70,19 @@ export function blueprintFor(config = {}, castSize = 0) {
     const eps = Number(config.pmEpisodes) > 0 ? Number(config.pmEpisodes) : buildSchedule(defaultRoleSplit(N)).length;
     segs.push({ label: `${eps} episodes`, ok: true });
     segs.push({ label: 'final: four couples, public vote', ok: true });
+    return segs;
+  }
+
+  // ── THE CIRCLE ────────────────────────────────────────────────────
+  // A cast, the days it makes (one episode a day), and the final ratings.
+  if (seasonFormat(config) === CIRCLE_FORMAT) {
+    const finalists = config.ciFinalists === 4 ? 4 : 5;
+    const names = Array.from({ length: N }, (_, i) => `p${i}`);
+    const problem = circleCastProblem(names, {}, finalists);
+    segs.push({ label: `${N} ${N === 1 ? 'player' : 'players'}`, ok: !problem, why: problem || undefined });
+    const days = circleShapeOf({ cast: names, config }).length;
+    segs.push({ label: `${days} days`, ok: days > 0 });
+    segs.push({ label: `final ${finalists}, rated by the players`, ok: true });
     return segs;
   }
 
@@ -202,6 +216,25 @@ export function validateQuickSetup(config = {}, playerList = []) {
   const finaleSize = Number(config.finaleSize) || 0;
   const fmt = config.finaleFormat || 'traditional';
   const sched = (config.twistSchedule || []).filter(Boolean);
+
+  // ── THE CIRCLE ──
+  // No tribes, no merge, no jury, no Final N: a cast, the days it makes and
+  // the finalists the last ratings pick from. Judged by the rule the run loop
+  // refuses by (js/ci-run.js), in its words, so the two never disagree.
+  if (seasonFormat(config) === CIRCLE_FORMAT) {
+    const names = playerList.map(p => p.name);
+    const finalists = config.ciFinalists === 4 ? 4 : 5;
+    const problem = circleCastProblem(names, config.ciSetup || {}, finalists);
+    rows.push({ key: 'cast', ok: !problem,
+      msg: problem ? `This cast can't start a Circle season: ${problem}.` : `${N} players cast, ${finalists} finalists.` });
+    const days = circleShapeOf({ cast: names, setup: config.ciSetup || {}, config }).length;
+    const mine = sched.filter(t => _catById(t.type)?.format === CIRCLE_FORMAT);
+    const late = mine.find(t => Number(t.episode) > days);
+    rows.push({ key: 'twists', ok: !late,
+      msg: late ? `${_catById(late.type).name} is booked on episode ${late.episode}, but the season has ${days} days.`
+        : mine.length ? `${mine.length} card${mine.length === 1 ? '' : 's'} booked on the Season Timeline.` : 'Nothing booked: each night draws its own format.' });
+    return rows;
+  }
 
   // ── cast ──
   {
@@ -677,6 +710,33 @@ function _structureCardHTML() {
         ${_stepperHTML('jury', 'cfg-jury', 'Jury size')}
       </div>
       ${_houseNoteHTML()}
+    </section>`;
+  }
+
+  // The Circle's own card, for the house's reason: no tribes, no merge, no
+  // jury and no Final N. What an author sets is how long it runs and how many
+  // reach the last ratings; both write through to CIRCLE OPTIONS.
+  if (_format() === CIRCLE_FORMAT) {
+    const fin = _g('cfg-ci-finalists')?.value === '4' ? '4' : '5';
+    const days = _g('cfg-ci-days')?.value || '';
+    return `<section class="qs-card">
+      <div class="qs-card-head"><span class="qs-card-icon">▚</span><h3>Structure</h3>
+        <span class="qs-card-hint">An apartment each, one episode a day, and the players rate each other.</span></div>
+      ${caststrip}
+      <div class="qs-grid2">
+        <label class="qs-field">
+          <span class="qs-label">Days</span>
+          <input id="qs-ci-days" class="qs-input" type="number" min="8" max="30" placeholder="Automatic"
+            value="${esc(days)}" oninput="qsSetIdentity('cfg-ci-days','qs-ci-days')">
+        </label>
+        <label class="qs-field">
+          <span class="qs-label">The final</span>
+          <select id="qs-ci-finalists" class="qs-input" onchange="qsSetIdentity('cfg-ci-finalists','qs-ci-finalists')">
+            <option value="5"${fin === '5' ? ' selected' : ''}>Five finalists</option>
+            <option value="4"${fin === '4' ? ' selected' : ''}>Four finalists</option>
+          </select>
+        </label>
+      </div>
     </section>`;
   }
 
@@ -1233,7 +1293,16 @@ const CONFIG_SCOPE = {
     'sec-tr-options':        ['traitors'],
     // The villa's options and each islander's cast setup — every one read by
     // js/pm-run.js or js/pm/profile.js, and nothing else shows on a villa.
+    // The Circle's options: the heading, and the container, so a hint never
+    // sits alone on another show (the bb-options-body lesson above).
+    'sec-ci-divider':        ['the-circle'],
+    'sec-ci-options':        ['the-circle'],
+    'ci-options-body':       ['the-circle'],
     'sec-pm-divider':        ['perfect-match'],
+    // The whole villa options block. Its selects were scoped and the cards
+    // around them were not, so "Night one" and "The final" (headings and
+    // hints, no controls) sat on every other show's setup page.
+    'sec-pm-season':         ['perfect-match'],
     'sec-pm-options':        ['perfect-match'],
     'sec-pm-pointer':        ['perfect-match'],
     'sec-pm-dialect':        ['perfect-match'],
@@ -1250,6 +1319,12 @@ const CONFIG_SCOPE = {
     'cfg-pm-split-or-steal': ['perfect-match'],
     'cfg-pm-first-in': ['perfect-match'],
     'cfg-pm-final-couples': ['perfect-match'],
+    // The Circle's options (spec 19.2), each read by js/ci-run.js.
+    'cfg-ci-days':           ['the-circle'],
+    'cfg-ci-finalists':      ['the-circle'],
+    'cfg-ci-newcomer-rule':  ['the-circle'],
+    'cfg-ci-pick-by':        ['the-circle'],
+    'cfg-ci-ai':             ['the-circle'],
     'sec-tr-divider':        ['traitors'],
     'sec-dr-options':        ['drag-race'],
     'sec-dr-divider':        ['drag-race'],

@@ -59,9 +59,11 @@ export function circleRoles(cast = _cast(), setup = circleSetup()) {
   });
 }
 
-/** The first reason this cast cannot start a season, or null. */
-export function circleCastProblem(cast = _cast(), setup = circleSetup()) {
-  const finalists = seasonConfig.ciFinalists === 4 ? 4 : 5;
+const _finalists = (config = seasonConfig) => (config?.ciFinalists === 4 ? 4 : 5);
+
+/** The first reason this cast cannot start a season, or null. Quick Setup's
+ *  ready check says the same words (js/quick-setup.js). */
+export function circleCastProblem(cast = _cast(), setup = circleSetup(), finalists = _finalists()) {
   if (cast.length < finalists + 1) return `a season needs more players than finalists: ${cast.length} players, ${finalists} finalists`;
   const roles = circleRoles(cast, setup);
   if (roles.filter(r => r === 'starter').length < 3) return 'a season needs at least three players on Day 1';
@@ -70,7 +72,7 @@ export function circleCastProblem(cast = _cast(), setup = circleSetup()) {
 
 function _options() {
   return {
-    finalists: seasonConfig.ciFinalists === 4 ? 4 : 5,
+    finalists: _finalists(),
     days: Number(seasonConfig.ciDays) > 0 ? Number(seasonConfig.ciDays) : null,
     newcomerRule: seasonConfig.ciNewcomerRule || 'rate-not-rated',
     pickBy: seasonConfig.ciPickBy === 'random' ? 'random' : 'stats',
@@ -112,13 +114,16 @@ export function circleBookings() {
   return out;
 }
 // The shape without bookings (bookings are read off it: no loop).
-function circleSeasonShapeRaw() {
-  const cast = _cast();
-  const roles = circleRoles(cast);
-  const ai = seasonConfig.ciAI === true;
+function circleSeasonShapeRaw() { return circleShapeOf({ cast: _cast(), setup: circleSetup(), config: seasonConfig }); }
+
+/** The days a cast and a config make, without touching the live season: the
+ *  run loop and Quick Setup's blueprint read the same answer. [] if none. */
+export function circleShapeOf({ cast = [], setup = {}, config = {} } = {}) {
+  const roles = circleRoles(cast, setup);
+  const ai = config.ciAI === true;
   try {
     return buildSchedule({ total: cast.length + (ai ? 1 : 0), starters: roles.filter(r => r === 'starter').length + (ai ? 1 : 0),
-      finalists: seasonConfig.ciFinalists === 4 ? 4 : 5, days: Number(seasonConfig.ciDays) > 0 ? Number(seasonConfig.ciDays) : null });
+      finalists: _finalists(config), days: Number(config.ciDays) > 0 ? Number(config.ciDays) : null });
   } catch { return []; }
 }
 

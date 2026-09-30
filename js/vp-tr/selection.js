@@ -916,96 +916,56 @@ const ARRIVAL = [
 // starts again. The pool is registered off the record, never off an episode
 // number, which is the rule this whole file is built on.
 const RESUME = [
-  'They have heard the rules now. Traitors and Faithfuls, murders and banishments, and '
-  + 'the fact that some of them are about to be chosen. They are back on the gravel, and '
-  + 'nobody is making small talk any more.',
-  'The same {c} people, back out on the same drive, but quieter. They know what the game '
-  + 'is now. They do not know who is about to be picked to play the other side of it.',
-  'Ten minutes ago they were strangers shaking hands. Now they know that some of them will '
-  + 'be chosen as Traitors, and every handshake feels different.',
-  'Bags still on the gravel. Rules explained. {C} people standing in the cold, waiting to '
-  + 'find out which of them will be asked to lie to the rest.',
+  'They have heard the rules now: Traitors and Faithfuls, murders and banishments, and some of them about to be chosen. They are still at the table, and nobody is making small talk any more.',
+  'The same {c} people, at the same table, but quieter. They know what the game is now. They do not know who is about to be picked to play the other side of it.',
+  'Ten minutes ago they were strangers shaking hands. Now they know that some of them will be chosen as Traitors, and every handshake feels different.',
+  'Rules explained. {C} people round the table, waiting to find out which of them will be asked to lie to the rest.',
 ];
 const GREET = [
-  'In a moment I am going to choose the Traitors. You will all be blindfolded. If you feel '
-  + 'a hand on your shoulder, that is your answer.',
-  'I need all of you in a line. You are about to put blindfolds on, and when I walk behind '
-  + 'you, some of you will feel a tap. Those people are the Traitors.',
-  'Before we go any further, I need to choose who among you will be lying to everybody '
-  + 'else. Line up. Blindfolds on. And do not move.',
-  'Some of you want to be chosen. Some of you are terrified of it. In about two minutes '
-  + 'you will all find out, and you will not be allowed to react.',
+  'In a moment I am going to choose the Traitors. You will all be blindfolded. If you feel a hand on your shoulder, that is your answer.',
+  'Stay in your seats. You are about to put blindfolds on, and when I walk behind you, some of you will feel a tap. Those people are the Traitors.',
+  'Before we go any further, I need to choose who among you will be lying to everybody else. Blindfolds on. And do not move.',
+  'Some of you want to be chosen. Some of you are terrified of it. In about two minutes you will all find out, and you will not be allowed to react.',
 ];
 const BLINDFOLD = [
-  'The blindfolds went on and the drive went silent. Without their eyes, every sound on '
-  + 'the gravel became enormous — the wind, somebody shifting their weight, a bird somewhere '
-  + 'behind the castle.',
-  '{C} blindfolds, tied at the back. The last thing any of them saw was the person standing '
-  + 'next to them. After that, nothing but the sound of their own breathing.',
-  'One by one, the cloth went over their eyes and was tied tight. The chatter stopped. '
-  + 'Nobody wanted to be the last person still talking.',
-  'They stood there blind, arms at their sides, trying to keep their breathing steady. '
-  + 'Some of them were visibly shaking. All of them were listening.',
+  'The blindfolds go on and the chamber goes silent. Without their eyes, every sound becomes enormous: a chair creaking, somebody breathing, the candles.',
+  '{C} blindfolds, tied at the back. The last thing any of them saw was the person sitting opposite. After that, nothing but their own breathing.',
+  'One by one, the cloth goes over their eyes and is tied tight. The chatter stops. Nobody wants to be the last one still talking.',
+  'They sit there blind, hands on the table, trying to keep their breathing steady. Some of them are visibly shaking. All of them are listening.',
 ];
 const RANK = [
-  '{N} of them, shoulder to shoulder across the front of the castle, blindfolded and '
-  + 'standing completely still. From the outside it looks like a firing squad. From the '
-  + 'inside it feels like one.',
-  'A line of {n} people stretched across the gravel, each of them facing forward and '
-  + 'seeing nothing. Their hands were clenched. Some of them were counting heartbeats.',
-  '{N} in a row, blindfolded, waiting. None of them knew who was standing next to them any '
-  + 'more. None of them would be able to say afterwards where in the line they had been.',
-  'The line filled the width of the drive. {N} people, all blind, all quiet, all trying to '
-  + 'figure out whether the host was already behind them or still at the front.',
+  '{N} of them round the Round Table, blindfolded and completely still. Every chair has somebody in it who cannot see.',
+  '{N} people round one table, each facing inward and seeing nothing. Hands are clenched on the wood. Some of them are counting heartbeats.',
+  '{N} of them at the table, blindfolded, waiting. None of them could say afterwards who was sitting on either side.',
+  'Every seat taken. {N} people, all blind, all quiet, all trying to work out whether the host is already behind them.',
 ];
 const WALK = [
-  'The footsteps started behind the line. Slow, deliberate, crunching on the gravel. '
-  + 'Every person in the rank could hear exactly where the host was. Nobody could see.',
-  'One set of footsteps, walking the length of the line. The host paused behind shoulders, '
-  + 'let the silence stretch, and moved on. Some of those pauses meant nothing. Some of '
-  + 'them meant everything.',
-  'The walk began at one end of the rank and moved slowly along it. The host stopped, '
-  + 'started, shuffled a coat sleeve, let a shoe scrape the gravel. Every sound was '
-  + 'designed to make it impossible to know what was real.',
-  'Crunch. Crunch. Crunch. Then silence. Then crunch again. Every person in that line was '
-  + 'trying to count the steps and place the host behind a specific shoulder, and every '
-  + 'one of them was wrong.',
+  'The footsteps start behind the chairs. Slow and deliberate on the stone. Every person at the table can hear exactly where the host is. Nobody can see.',
+  'One set of footsteps, walking round the table. The host pauses behind chairs, lets the silence stretch, and moves on. Some of those pauses mean nothing. Some mean everything.',
+  'The walk begins at one end of the table and moves slowly round it. The host stops, starts, brushes a chair back. Every sound is designed to make it impossible to tell what is real.',
+  'Step. Step. Step. Then silence. Then steps again. Every person at that table is trying to place the host behind a particular chair, and every one of them is wrong.',
 ];
 // The tap, from the outside — what the audience sees land.
 const TAP_SEEN = [
-  "The host stops behind {who} and places a hand on {who}'s shoulder. {Who} does not "
-  + 'move. Does not flinch. The hand lifts, and the footsteps continue.',
-  'The footsteps go quiet behind {who}. A flat hand, pressed firmly onto the shoulder. '
-  + '{Who} swallows hard but keeps completely still. The walk resumes.',
-  "The hand lands on {who}, holds for a long second, and lifts. {who}'s jaw tightens "
-  + 'under the blindfold but nothing else moves. The people on either side have no idea '
-  + 'what just happened.',
-  'The host taps {who} on the shoulder — slow, unmistakable. {Who} breathes in sharply '
-  + 'through the nose and then forces it back to normal. The gravel starts up again.',
-  "A hand on {who}'s shoulder. The person standing next to {who} is close enough to hear "
-  + 'the fabric move, but blindfolded, that sound could be anything.',
+  'The host stops behind {who}’s chair and places a hand on {who}’s shoulder. {Who} does not move. Does not flinch. The hand lifts, and the footsteps continue.',
+  'The footsteps stop behind {who}. A flat hand, pressed firmly onto the shoulder. {Who} swallows hard but keeps completely still. The walk resumes.',
+  'The hand lands on {who}, holds for a long second, and lifts. {Who}’s jaw tightens under the blindfold, but nothing else moves. The people either side have no idea.',
+  'The host taps {who} on the shoulder, slowly. {Who} breathes in sharply, then forces it back to normal. The footsteps start up again.',
+  'A hand on {who}’s shoulder. The person in the next chair is close enough to hear the fabric move, but blindfolded, that sound could be anything.',
 ];
 // The tap, from inside the cloth, when it is YOUR shoulder.
 const TAP_MINE = [
-  'A hand on your shoulder. Your stomach drops. You do not move, you do not breathe, you '
-  + 'do not make a sound. The hand lifts, and the footsteps walk away.',
-  'You feel it land — a firm hand, pressing down on your shoulder. Your heart is hammering '
-  + 'but your face is behind a blindfold and nobody can see it. You are a Traitor now.',
-  'The gravel goes quiet right behind you. Then the hand. You clench every muscle in your '
-  + 'body to stop yourself from reacting. The people next to you cannot know.',
-  'It is you. You have been chosen. You have no idea who else was tapped and you will not '
-  + 'find out until you are taken upstairs.',
+  'A hand on your shoulder. Your stomach drops. You do not move, you do not breathe, you do not make a sound. The hand lifts, and the footsteps walk away.',
+  'You feel it land: a firm hand, pressing down on your shoulder. Your heart is hammering, but your face is behind a blindfold and nobody can see it. You are a Traitor now.',
+  'The footsteps stop right behind your chair. Then the hand. You clench every muscle to stop yourself reacting. The people either side cannot know.',
+  'It is you. You have been chosen. You have no idea who else was tapped, and you will not find out until you are taken upstairs.',
 ];
 // The tap, from inside the cloth, when it is somebody else's.
 const TAP_HEARD = [
-  'The footsteps stop somewhere along the line. There is a long pause. Then they start '
-  + 'again. Someone was just tapped, and you have no idea who.',
-  'You hear the gravel go quiet — somewhere to your left, or maybe your right. A pause. '
-  + 'Then the walking picks back up. Somebody near you just became a Traitor.',
-  'The host stops. You hold your breath, but the hand does not come for you. The footsteps '
-  + 'resume. Whoever it landed on is standing somewhere in this line, saying nothing.',
-  "A pause in the footsteps. Your heart pounds. But the hand is on someone else's "
-  + 'shoulder — you cannot tell whose. The walk continues.',
+  'The footsteps stop somewhere round the table. A long pause. Then they start again. Someone was just tapped, and you have no idea who.',
+  'You hear the footsteps stop, somewhere to your left, or maybe your right. A pause. Then they start again. Somebody near you just became a Traitor.',
+  'The host stops. You hold your breath, but the hand does not come for you. The footsteps resume. Whoever it landed on is sitting somewhere at this table, saying nothing.',
+  'A pause in the footsteps. Your heart pounds. But the hand is on someone else’s shoulder, and you cannot tell whose. The walk continues.',
 ];
 // FOUR VARIANTS, EACH WRITTEN TWICE, because the gap between two taps is
 // routinely ONE. Task 8 shipped "They denied it, and was believed" across
@@ -1016,32 +976,27 @@ const GAP = {
   one: [
     'only one person between this tap and the last.',
     'just one shoulder apart from the previous.',
-    'one person further along the line.',
+    'one chair further round the table.',
     'barely a step from the last one.',
   ],
   many: [
     '{n} people between this tap and the last.',
-    '{n} shoulders further along the line.',
+    '{n} chairs further round the table.',
     '{n} people along from the last tap.',
-    '{n} people further down the line.',
+    '{n} seats further round.',
   ],
   none: [
     'right next to the last one.',
-    'the very next person in line — no gap at all.',
+    'the very next chair, no gap at all.',
     'immediately beside the previous tap.',
     'shoulder to shoulder with the last one, though neither of them knows it.',
   ],
 };
 const UNMASK = [
-  'The blindfolds come off. Everyone blinks in the light, looks around, laughs nervously. '
-  + '{N} of them already know something the other {m} do not, and they are smiling '
-  + 'exactly the same way as everyone else.',
-  'Cloth off. Daylight. And immediately, {c} people scanning each other\'s faces for '
-  + 'something — a twitch, a flush, a look held too long. {N} of them are already hiding.',
-  'The blindfolds are pulled off and everyone looks at each other like it\'s the first '
-  + 'time. Hugs, nervous laughter, relief. {N} of them are performing every second of it.',
-  'Eyes open. The castle is still there. So is everyone else. {N} of them have just been '
-  + 'chosen as Traitors and they are standing right there, chatting, as if nothing happened.',
+  'The blindfolds come off. Everyone blinks in the candlelight, looks round the table, laughs nervously. {N} of them already know something the other {m} do not, and they are smiling exactly the same way.',
+  'Cloth off. And immediately, {c} people scanning each other’s faces across the table for something: a twitch, a flush, a look held too long. {N} of them are already hiding.',
+  'The blindfolds come off and everyone looks round the table as if for the first time. Nervous laughter, relief. {N} of them are performing every second of it.',
+  'Eyes open. The table is still there. So is everyone else. {N} of them have just been chosen as Traitors, and they are sitting right there, chatting, as if nothing happened.',
 ];
 const TURRET = [
   'One at a time, they are sent upstairs. A narrow staircase, a heavy door, and then the '
@@ -1089,8 +1044,8 @@ const HOST_CLOSE = {
   rest: [
     'You heard the footsteps stop. You felt nothing. Somewhere in this castle, the '
     + 'Traitors are meeting each other for the first time, and you do not know who they are.',
-    'The blindfold is off but you are no less in the dark. Someone standing near you on '
-    + 'that gravel was chosen, and they will look you in the eye at breakfast like it never '
+    'The blindfold is off but you are no less in the dark. Someone sitting near you at '
+    + 'that table was chosen, and they will look you in the eye at breakfast like it never '
     + 'happened.',
     'You know there are Traitors. You do not know their names. That is the entire game, '
     + 'and it starts now.',
@@ -1273,7 +1228,7 @@ function _pushCeremony(v, group, phase, push) {
   const reacts = (v.contestantBeats || []).filter(b => _same(b.afterTap, group));
   spoken.forEach((b, i) => {
     const last = i === spoken.length - 1;
-    push(phase, _card('', b.ruleId ? 'The rules, said out loud' : 'On the gravel',
+    push(phase, _card('', b.ruleId ? 'The rules, said out loud' : 'At the table',
       'chevron',
       _hostBand(v.host, _esc(b.text))
       + (b.action ? '<p class="tp-quiet">' + _esc(b.action) + '</p>' : '')
@@ -1308,16 +1263,16 @@ function _buildBeats(v) {
   // welcome from the same person in the same hour is the format's host
   // introducing themselves twice.
   push('arrival', v.afterBriefing
-    ? _card('Back Out Onto The Gravel', 'The arrival', 'trunk',
+    ? _card('Back At The Table', 'The arrival', 'trunk',
       '<p>' + _fill(_pick(RESUME, key + '|resume'), S) + '</p>'
       + _sums([
-        ['In the rank', String(n), null],
+        ['At the table', String(n), null],
         ['Told the rules', 'All of them', null],
         ['Told who', 'Nobody', 'cold'],
       ]))
     : _card('Up The Drive', 'The arrival', 'trunk',
       '<p>' + _fill(_pick(ARRIVAL, key + '|arrive'), S) + '</p>'
-      + _sums([['In the rank', String(n), null], ['Told anything', 'Nobody', 'cold']])
+      + _sums([['At the table', String(n), null], ['Told anything', 'Nobody', 'cold']])
       + _hostBand(v.host, _esc(_pick(GREET, key + '|greet')))),
   { kind: 'arrival' });
 
@@ -1332,7 +1287,7 @@ function _buildBeats(v) {
   { kind: 'rank' });
 
   // ── the walk ────────────────────────────────────────────────────────
-  push('walk', _card('The Walk', 'Gravel', 'drive',
+  push('walk', _card('The Walk', 'Round the table', 'drive',
     '<p>' + _fill(_pick(WALK, key + '|walk'), S) + '</p>'
     + '<p class="tp-quiet">' + (v.isAudience
       ? _fill('{N} of them will be tapped. The other {m} will hear the footsteps stop '
@@ -1369,8 +1324,8 @@ function _buildBeats(v) {
         + '</div></div></div>'
         + '<p>' + _fill(_esc(line), { who: _esc(t.name), Who: _esc(t.name) }) + '</p>'
         + '<div class="tp-place">' + _ic('rank', 15)
-        + '<span>Number </span><b>' + (t.at + 1) + '</b>'
-        + '<span>of ' + n + ' in the line'
+        + '<span>Chair </span><b>' + (t.at + 1) + '</b>'
+        + '<span>of ' + n + ' round the table'
         + (prev >= 0 ? ' — ' + _fill(_pick(_gapPool(t.at - prev - 1), key + '|gap|' + t.order),
           { n: _word(Math.max(0, t.at - prev - 1)) }) : '')
         + '</span></div>';
@@ -1381,7 +1336,7 @@ function _buildBeats(v) {
       tone = 'cold';
       inner = '<div class="tp-who"><span class="tp-anon">'
         + _ic('band', 30, 'rgba(159,176,192,.7)') + '</span>'
-        + '<div><div class="tp-who-nm"><em>Somewhere in the line</em></div>'
+        + '<div><div class="tp-who-nm"><em>Somewhere round the table</em></div>'
         + '<div class="tp-who-sub">A sound, and no direction to it.</div></div></div>'
         + '<p>' + _pickUnique(TAP_HEARD, key + '|heard|' + t.order, used) + '</p>';
     }
@@ -1540,7 +1495,7 @@ function _rank(state, idx) {
 
   const foundSoFar = marked.size;
   const foot = [];
-  foot.push('<span><b>' + v.line.length + '</b> in the rank</span>');
+  foot.push('<span><b>' + v.line.length + '</b> at the table</span>');
   if (v.isAudience) {
     foot.push('<span data-tone="wax"><b>' + foundSoFar + '</b> of '
       + v.tapCount + ' tapped so far</span>');
@@ -1755,4 +1710,22 @@ export function rpBuildSelection(ep, observer = 'audience') {
     + (st.idx + 1) + ' / ' + total + '</span>'
     + '<button class="tp-btn" onclick="' + call('trSelectionRevealAll') + '">Reveal all</button>'
     + '</div></div>';
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// FOR THE STAGE (selection-stage.js) — the same beats, and who sits where
+// ══════════════════════════════════════════════════════════════════════
+//
+// The page's own beats and host lines, the seating (`line`, in the order the
+// cast sat down), and the taps behind the same observer gate the page keeps:
+// a tap this observer never learned has no name, and the stage draws it as a
+// stop somewhere round the table and nothing more.
+export function selectionStageData(ep, observer = 'audience') {
+  const v = _view(ep, observer);
+  if (!v || !v.line || !v.line.length) return null;
+  return {
+    beats: _buildBeats(v).map(b => ({ phase: b.phase, meta: b.meta ? { ...b.meta } : {}, html: b.html })),
+    line: [...v.line], taps: v.taps.map(t => ({ ...t })), turret: v.turret ? [...v.turret] : null,
+    host: v.host, isAudience: v.isAudience, watcher: v.watcher || null,
+  };
 }

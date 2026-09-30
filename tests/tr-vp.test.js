@@ -2238,6 +2238,14 @@ describe('the morning and the book are reachable from a played season', () => {
         const screens = buildVPScreens(ep);
         const co = screens.find(x => x.id === 'tr-cold-open');
         const db = screens.find(x => x.id === 'tr-status');
+        // THE PREMIERE HAS NO BREAKFAST (nobody has been murdered yet), and
+        // must not grow one back.
+        const premiere = !!(ep.tr.arrival && (ep.tr.arrival.introductions || []).length);
+        if (premiere) {
+          expect(co, `ep ${ep.num}: the premiere drew a breakfast`).toBeFalsy();
+          expect(db, `ep ${ep.num}: the board is not reachable`).toBeTruthy();
+          continue;
+        }
         expect(co, `ep ${ep.num}: the cold open is not reachable`).toBeTruthy();
         expect(db, `ep ${ep.num}: the board is not reachable`).toBeTruthy();
         expect(strip(co.html).length, `ep ${ep.num}: the cold open rendered nothing`)
@@ -7655,8 +7663,8 @@ describe('the arrival cannot leak a role, because it is drawn before there is on
         return html.slice(at)
           // the one mark a player layer legitimately adds to their own entry
           .replace(/ &middot; You/g, '')
-          .replace(/You are in that rank[\s\S]*?your eyes\./g, '')
-          .replace(/That rank is the last moment[\s\S]*?four minutes\./g, '');
+          .replace(/You are at that table[\s\S]*?your eyes\./g, '')
+          .replace(/This is the last moment[\s\S]*?four minutes\./g, '');
       };
       const aud = streamOf('audience');
       expect(streamOf('player:' + s.chosen[0]),

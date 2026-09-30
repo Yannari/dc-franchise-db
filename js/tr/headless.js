@@ -905,16 +905,16 @@ function _selectionRecord(ep, cast, traitors, { announceCount = false } = {}) {
 
   const hostBeats = [
     { kind: 'open', visibility: 'all', afterTap: null,
-      action: 'The host steps off the front of the rank and walks to one end of it.',
+      action: 'The host rises from the head of the table and walks to the first chair.',
       text: 'In a moment I am going to walk behind every one of you. You will hear exactly '
         + 'where I am. You will have no idea who I am standing behind.' },
     // THE LINE THE WHOLE EVENING TURNS ON, AND IT IS SAID FIRST.
     { kind: 'rule', visibility: 'all', afterTap: null, ruleId: 'tap-means-traitor',
-      action: 'The footsteps start along the gravel behind the rank.',
+      action: 'The footsteps start on the stone behind the chairs.',
       text: 'If you feel my hand on your shoulder, you have been chosen as a Traitor.' },
     { kind: 'rule', visibility: 'all', afterTap: null,
       action: 'The footsteps carry on without stopping.',
-      text: 'You will lie to the people standing beside you. You will eat breakfast with '
+      text: 'You will lie to the people sitting beside you. You will eat breakfast with '
         + 'them, agree with them, comfort them, and help them decide which one of them to '
         + 'send home.' },
     { kind: 'rule', visibility: 'all', afterTap: after(0), ruleId: 'traitors-murder',
@@ -922,20 +922,20 @@ function _selectionRecord(ep, cast, traitors, { announceCount = false } = {}) {
       text: 'And every night, once this castle is asleep, you will meet in secret and '
         + 'choose one of them to murder.' },
     { kind: 'rule', visibility: 'all', afterTap: after(0), ruleId: 'faithfuls-banish',
-      action: 'The host turns at the end of the rank and starts back.',
+      action: 'The host is halfway round the table, and does not slow down.',
       text: 'If you feel nothing at all, you are a Faithful, and your task is very easy to '
         + 'say and extremely hard to do. Find the Traitors. Banish every single one of them '
         + 'before they have finished with you.' },
     { kind: 'rule', visibility: 'all', afterTap: after(1), ruleId: 'do-not-react',
       action: 'The hand lifts and the footsteps do not hurry.',
-      text: 'Do not speak. Do not move. Nobody standing next to you may know what has just '
+      text: 'Do not speak. Do not move. Nobody sitting next to you may know what has just '
         + 'happened to you.' },
     { kind: 'rule', visibility: 'all', afterTap: after(2),
       action: 'The host stops walking.',
       text: 'From this minute, every friendship in this castle may be real and every one of '
         + 'them may be work, and none of you will be told which is which.' },
     { kind: 'close', visibility: 'all', afterTap: 'final',
-      action: 'The host returns to the front of the rank.',
+      action: 'The host returns to the head of the table.',
       text: 'When I tell you to take the blindfolds off, look very carefully at the people '
         + 'around you. Some of them have just been handed an excellent reason to lie to '
         + 'your face.' },
@@ -958,21 +958,21 @@ function _selectionRecord(ep, cast, traitors, { announceCount = false } = {}) {
   return {
     ep, line, chosen, taps, turret: [...chosen],
     ceremonyId: 'selection',
-    staging: 'The whole cast in one rank across the gravel with their blindfolds tied and '
-      + 'their bags still on the flags behind them. The host waits until the drive is '
-      + 'completely silent before saying anything at all.',
+    staging: 'The whole cast seated round the Round Table with their blindfolds tied, '
+      + 'in the chamber with the doors shut. The host waits at the head of the table until '
+      + 'the room is completely silent before saying anything at all.',
     hostBeats,
     // NAME-FREE BY CONSTRUCTION. These are what the RANK did, collectively,
     // and a rank that cannot see is the only witness any of them has.
     contestantBeats: [
       { kind: 'reaction', participants: [], visibility: 'all', afterTap: null,
-        text: 'Nobody in the rank moves. Two of them are visibly counting the footsteps and '
+        text: 'Nobody at the table moves. Two of them are visibly counting the footsteps and '
           + 'both of them lose count.' },
       { kind: 'reaction', participants: [], visibility: 'all', afterTap: after(0),
-        text: 'The gravel stops somewhere along the line and starts again. Every head in '
-          + 'the rank stays facing exactly forward.' },
+        text: 'The footsteps stop somewhere behind the chairs and start again. Every head '
+          + 'at the table stays facing exactly forward.' },
       { kind: 'reaction', participants: [], visibility: 'all', afterTap: 'final',
-        text: 'The bands come off and the drive is instantly full of people being extremely '
+        text: 'The bands come off and the table is instantly full of people being extremely '
           + 'normal at each other.' },
     ],
     rulePoints,
@@ -980,11 +980,11 @@ function _selectionRecord(ep, cast, traitors, { announceCount = false } = {}) {
     // carries its ORDER and not its name: the names are on `taps`, behind the
     // gate that already withholds them.
     revealBeats: [
-      { kind: 'rank', text: 'The cast are put shoulder to shoulder in the order they '
-        + 'happened to be standing.' },
+      { kind: 'rank', text: 'The cast sit round the table in the order they happened to '
+        + 'come in.' },
       { kind: 'blindfold', text: 'The bands go on and are tied at the back.' },
-      { kind: 'silence', text: 'The drive goes quiet enough to hear the weather.' },
-      { kind: 'footsteps', text: 'The host begins to walk the line.' },
+      { kind: 'silence', text: 'The room goes quiet enough to hear the candles.' },
+      { kind: 'footsteps', text: 'The host begins to walk round the table.' },
       ...taps.map((t, i) => ({ kind: 'tap', order: i,
         text: 'A hand goes down on one shoulder and stays there.' })),
       { kind: 'unmask', text: 'The blindfolds come off.' },
@@ -1963,7 +1963,7 @@ const _PROFILE = {
     + 'everybody else has put it down.',
     'There is no version of a mission where {name} is the one who gives out first, and '
     + 'the room will work that out in about a week.',
-    '{name} does not look quick. {sub} looks like somebody who finishes things, which is '
+    '{name} does not look quick, but {sub} looks like somebody who finishes things, which is '
     + 'worth more here.',
     '{name} will still be hauling when the rest of the team has started watching, and the '
     + 'missions here run long enough for that to decide things.',
@@ -2112,7 +2112,7 @@ const _PERSONALITY = {
   'loyal-soldier': [
     '{name} picks a side early and stays on it, right through to the end of everything.',
     'Whoever {name} trusts tonight is who {sub} will still be defending three banishments from now.',
-    '{name} does not scheme. {sub} does not need to, and would not enjoy it.',
+    '{name} does not scheme, does not need to, and would not enjoy it.',
     "There is a version of this where {name}'s loyalty is the best thing here and a version where it is fatal.",
     '{name} will be lied to by somebody {sub} would have gone to the end with.',
     'Straight down the line, every night, no matter what the line costs.',
@@ -2484,23 +2484,23 @@ export function buildArrivalRecord(cast, backgrounds = {}, host = null) {
 function _premiereRules(castSize) {
   const hostBeats = [
     { kind: 'welcome', visibility: 'all',
-      action: 'The host comes down the steps and stops at the bottom of them, with the '
-        + 'whole drive facing up.',
-      text: 'Welcome to the castle. There are ' + castSize + ' of you standing on these '
-        + 'flags and every one of you arrived here exactly the same way. That stops being '
+      action: 'The doors of the chamber close behind the last of them, and the host is '
+        + 'already standing at the head of the table.',
+      text: 'Welcome to the castle. There are ' + castSize + ' of you sitting at this '
+        + 'table and every one of you arrived here exactly the same way. That stops being '
         + 'true in about ten minutes, so I would like you to hear the rules while you all '
         + 'still trust each other.' },
     { kind: 'rule', visibility: 'all', ruleId: 'faithfuls-and-traitors',
-      action: 'The host waits for the drive to go quiet.',
+      action: 'The host waits for the table to go quiet.',
       text: 'Most of you will play this game as Faithfuls. Hidden among you, chosen by me '
         + 'and known only to each other, will be Traitors.' },
     { kind: 'rule', visibility: 'all', ruleId: 'traitors-murder',
-      action: 'The host looks along the front of the group while saying it.',
+      action: 'The host looks round the whole table while saying it.',
       text: 'Every night, while the rest of you are asleep, the Traitors will meet in '
         + 'secret and choose one of you to murder. In the morning that person will simply '
         + 'not come down to breakfast, and nobody is going to explain it to you.' },
     { kind: 'rule', visibility: 'all', ruleId: 'missions-build-the-pot',
-      action: 'The host turns and points back down the drive.',
+      action: 'The host points to the windows and the hills beyond them.',
       text: 'Every day you will leave this castle and work for money. Each mission you '
         + 'finish adds to the prize pot, and that pot is the only thing in this building '
         + 'that belongs to all of you at once.' },
@@ -2510,7 +2510,7 @@ function _premiereRules(castSize) {
         + 'murdered that night. Understand what else it does: everybody who watched you '
         + 'take it now knows you are safe, and safe is a very interesting thing to be.' },
     { kind: 'rule', visibility: 'all', ruleId: 'round-table-banishment',
-      action: 'The host indicates the doors at the top of the steps.',
+      action: 'The host rests a hand on the table.',
       text: 'Every evening you will sit at the Round Table. You will make your accusations '
         + "to each other's faces, and then each of you will write down one name. "
         + 'Whoever the room names goes out by banishment, and tells you exactly what they '
@@ -2521,19 +2521,19 @@ function _premiereRules(castSize) {
         + 'between them. Leave one Traitor at that last table and the Traitors take all of '
         + 'it, and the rest of you go home with a very good story and nothing else.' },
     { kind: 'charge', visibility: 'all',
-      action: 'The host starts back up the steps.',
+      action: 'The host sits back down at the head of the table.',
       text: 'So there it is. Find them, or be one of them, and be trusted either way.' },
     { kind: 'transition', visibility: 'all',
-      action: 'The host stops at the top and turns round.',
-      text: 'One more thing, and then you can unpack. I need all of you in a line, facing '
-        + 'me, and I need you to stop looking at each other. That part of this is over.' },
+      action: 'In front of every chair, a folded black blindfold.',
+      text: 'One more thing, and then you can unpack. There is a blindfold in front of each '
+        + 'of you. Put it on, and stop looking at each other. That part of this is over.' },
   ];
   const rulePoints = hostBeats
     .map((b, i) => (b.ruleId ? { id: b.ruleId, explainedByBeat: i } : null))
     .filter(Boolean);
   return {
-    staging: 'The whole cast on the courtyard flags at the top of the drive, luggage still '
-      + 'at their feet, and the host on the steps above them with the doors shut.',
+    staging: 'A single-track road, a gate, and then the drive: the cars come up it one at a '
+      + 'time towards a castle with every window lit and the great doors already open.',
     hostBeats,
     // ── AND WHAT NINE RULES DO TO TWENTY PEOPLE ────────────────────────
     //
@@ -2556,32 +2556,33 @@ function _premiereRules(castSize) {
     // stimulus is a reaction to nothing.
     contestantBeats: [
       { kind: 'reaction', participants: [], visibility: 'all', afterHostBeat: 1,
-        text: 'Nobody on the flags moves. One or two look at the person standing beside '
+        text: 'Nobody at the table moves. One or two look at the person sitting beside '
           + 'them anyway, which is the last time anybody in this castle will do that '
           + 'without meaning something by it.' },
       { kind: 'reaction', participants: [], visibility: 'all', afterHostBeat: 2,
-        text: 'Somebody laughs at the word murder, hears exactly how it landed on a silent '
-          + 'courtyard, and stops.' },
+        text: 'Somebody laughs at the word murder, hears exactly how it landed in a silent '
+          + 'chamber, and stops.' },
       { kind: 'reaction', participants: [], visibility: 'all', afterHostBeat: 4,
         text: 'Two of them ask at the same moment whether a shield is announced. Neither '
           + 'gets an answer, which is itself an answer and lands as one.' },
       { kind: 'reaction', participants: [], visibility: 'all', afterHostBeat: 5,
-        text: 'Banishment gets a small noise out of the back of the group. Several people '
+        text: 'Banishment gets a small noise from the far side of the table. Several people '
           + 'work out at the same time that the vote is public and that they will have to '
           + 'say a name to a face.' },
       { kind: 'reaction', participants: [], visibility: 'all', afterHostBeat: 8,
-        text: 'Everybody looks down at luggage they have just been told they are not going '
-          + 'to be allowed to pick up.' },
+        text: 'Everybody looks down at the folded blindfold in front of them, and nobody '
+          + 'touches it yet.' },
     ],
     rulePoints,
     // ONE REVEAL STEP PER ACTION, stored apart from the speech, because a
     // ceremony that folds its staging into its narration cannot be re-cut.
     revealBeats: [
-      { kind: 'gather', text: 'The cars are sent back down the drive empty.' },
-      { kind: 'briefing', text: 'The host reads the rules to the flags, start to finish, '
+      { kind: 'gather', text: 'The cars are sent back down the drive empty, and the cast are '
+        + 'shown through the great doors to the Round Table.' },
+      { kind: 'briefing', text: 'The host reads the rules to the table, start to finish, '
         + 'without being interrupted once.' },
-      { kind: 'form-line', text: 'The bags are left where they are and the cast form one '
-        + 'rank across the front of the castle.' },
+      { kind: 'form-line', text: 'Nobody leaves the table. In front of every chair, a '
+        + 'blindfold.' },
     ],
     reminder: 'Missions pay into the prize pot. The Round Table banishes one player a '
       + 'night. The Traitors murder one after dark. Remove every Traitor and the Faithfuls '

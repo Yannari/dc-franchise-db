@@ -1309,6 +1309,8 @@ export function saveConfig() {
     // Pool are edited on their own panels and carried, like pmSetup; an
     // unwritten pool stays unwritten, so the default pool plays (ci/default-pool.js).
     ciSetup: seasonConfig.ciSetup || {},
+    // Each player's own photos (js/ci/photos.js), edited on the Photos tab.
+    ciPhotos: seasonConfig.ciPhotos || {},
     ...(Array.isArray(seasonConfig.ciPool) ? { ciPool: seasonConfig.ciPool } : {}),
     ciDays: g('cfg-ci-days') ? (parseInt(g('cfg-ci-days').value) > 0 ? parseInt(g('cfg-ci-days').value) : null) : (seasonConfig.ciDays ?? null),
     ciFinalists: g('cfg-ci-finalists') ? (g('cfg-ci-finalists').value === '4' ? 4 : 5) : (seasonConfig.ciFinalists === 4 ? 4 : 5),

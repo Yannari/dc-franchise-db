@@ -80,8 +80,10 @@ describe('a save keeps what the Circle was given', () => {
     page();
     const ciSetup = { Ann: { role: 'newcomer', catfish: 'never' } };
     const ciPool = [{ id: 'mine', handle: 'Rae' }];
-    window.seasonConfig = { format: 'the-circle', ciSetup, ciPool };
+    const ciPhotos = { Ann: { real: 'photo:x1' } };
+    window.seasonConfig = { format: 'the-circle', ciSetup, ciPool, ciPhotos };
     saveConfig();
+    expect(window.seasonConfig.ciPhotos).toEqual(ciPhotos);
     expect(window.seasonConfig.ciSetup).toEqual(ciSetup);
     expect(window.seasonConfig.ciPool).toEqual(ciPool);
     // An unwritten pool stays unwritten (the default pool plays), not [].

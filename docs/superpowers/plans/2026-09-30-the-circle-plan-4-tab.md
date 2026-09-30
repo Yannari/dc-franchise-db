@@ -78,5 +78,26 @@ Left for later:
 - Villa, castle and runway still get Total Drama's Quick Structure card.
 - Drag Race's hub corner still says "No standard vote" (its words, not ours).
 - The Objectives card waits for the Circle's ledger (Plan 6).
-- The Photos panel is Plan 4b.
+- ~~The Photos panel is Plan 4b.~~ Done 2026-09-30 (below).
 - The screens (Plan 5) still show the persona's initial, not its image.
+
+## Plan 4b: the Photos panel (2026-09-30, mockup v3 approved)
+
+A third tab in the Circle view (js/ci-photos-ui.js; rules in js/ci/photos.js).
+The show's own look: the ring logo, the players' "Circle, ..." commands, the
+pink ALERT!, the profile card. Personas and Players tabs, a row of avatars
+whose rings fill as photos are added, one person's slots at a time, and a
+console that types the prompt.
+
+- Slots per PERSON, never per episode: a per-episode list would reveal who is
+  blocked and who wins. Persona: profile, earned, means something, naughty,
+  nice, throwback, childhood. Player: the same plus "real me"; once dealt, a
+  player behind a persona keeps only "real me".
+- Fallbacks: earned -> profile; a player's profile and real me -> portrait;
+  posted photos have none (the post shows without an image). A season never
+  waits on art.
+- A batch drop sorts files by name (`sienna-naughty.png`); the rest wait in a
+  tray. Images are cropped square, shrunk to 512px, and kept in IndexedDB.
+- A season pack (export/import JSON with the images) gives another person the
+  same faces. Publishing through the cloud waits for Plan 6.
+- Still to do in Plan 5: the screens read `photoFor` to show these.

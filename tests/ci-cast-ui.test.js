@@ -24,6 +24,7 @@ beforeEach(() => {
   window.gs = null;
   window.saveConfig = () => {};
   _memoryPhotos();
+  window._ciSub = null; window._ciEditing = null;
   renderCircleCastSetup();
 });
 
@@ -65,12 +66,14 @@ describe('the Profile Plan', () => {
     renderCircleCastSetup();
     expect(root().querySelector('.ci-row[data-name="P01"] .ci-draw').textContent).toMatch(/plays as.*Sienna, 25.*Strategic: a different face/is);
     expect(root().querySelector('.ci-row[data-name="P02"] .ci-draw').textContent).toMatch(/edited/i);
+    window._ciSub = 'pool'; renderCircleCastSetup();
     expect(root().querySelector('.ci-pool-count').textContent).toMatch(/1 of 8/);
     expect(root().querySelector('.ci-pc[data-id="ci-sienna"] .ci-tag').textContent).toBe('P01');
   });
 });
 
 describe('the Catfish Pool', () => {
+  beforeEach(() => { window._ciSub = 'pool'; renderCircleCastSetup(); });
   it('shows the default pool until the author changes it', () => {
     expect(root().querySelectorAll('.ci-pc')).toHaveLength(DEFAULT_POOL.length);
     expect(window.seasonConfig.ciPool).toBeUndefined();
@@ -112,7 +115,9 @@ describe('the Catfish Pool', () => {
   });
 
   it('a persona pinned by a player cannot vanish silently: deleting it clears the pin', () => {
+    window._ciSub = 'plan'; renderCircleCastSetup();
     change('.ci-row[data-name="P03"] [data-field="catfish"]', 'ci-david');
+    window._ciSub = 'pool'; renderCircleCastSetup();
     click('.ci-pc[data-id="ci-david"] [data-act="del"]');
     expect(setup('P03').catfish).toBeUndefined();
   });

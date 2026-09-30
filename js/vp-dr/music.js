@@ -130,7 +130,7 @@ export const DRAG_SITUATIONS = [
   'finale', 'showcase', 'crowning', 'crowned',
   // The show's own cues (the user's copies, assets/audio/drag/private), each
   // named for the moment it scores:
-  'werkroom', 'untucked', 'the-call', 'the-verdict', 'outro', 'double-shantay', 'champion',
+  'werkroom', 'untucked', 'the-call', 'the-verdict', 'outro', 'double-shantay', 'the-win',
   'decision', 'up-for-elimination', 'bottom-two', 'time-has-come', 'closing',
 ];
 
@@ -253,7 +253,9 @@ const FIXED_SONG = {
   // The finale's own records, one each, so no song carries the whole night.
   finale: { title: 'Glamazon', artist: 'RuPaul' },
   // The win: Champion, when the top two are named at the cut and when the crown lands (the user's pick).
-  champion: { title: "Champion - DJ BunJoe's Olympic Mix", artist: 'RuPaul' },
+  // Named 'the-win', not 'champion': a moment name must never be a song title
+  // (an upload named champion.mp3 would be both).
+  'the-win': { title: "Champion - DJ BunJoe's Olympic Mix", artist: 'RuPaul' },
   crowned: { title: "Champion - DJ BunJoe's Olympic Mix", artist: 'RuPaul' },
   reunion: { title: 'Bring Back My Girls', artist: 'RuPaul' },
   // "Shantay, you BOTH stay": the room erupts, and the host's own anthem plays.

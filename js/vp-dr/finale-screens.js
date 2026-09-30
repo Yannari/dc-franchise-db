@@ -146,7 +146,7 @@ export function rpBuildCut(row) {
   /* The pause is the wait (The Time Has Come); the top two named is the
      win's song (Champion — the user's pick); the queens cut leave under the
      goodbye's music. */
-  const cutMusic = s => (s.t === 'suspense' ? 'suspense' : s.t === 'cut' ? 'champion' : 'sashay');
+  const cutMusic = s => (s.t === 'suspense' ? 'suspense' : s.t === 'cut' ? 'the-win' : 'sashay');
   const cards = list.map((s, i) => tagStep(finaleCard({
     id: `dr-step-fincut-${i}`, ep,
     host: s.t === 'suspense' || s.t === 'cut' ? 'rupaul' : null,

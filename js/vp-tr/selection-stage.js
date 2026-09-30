@@ -19,6 +19,8 @@ import { TRScenery } from './cutaway-scenery.js';
 import { beatLines } from './stage-lines.js';
 import { footCard, playCard, CARD_CSS } from './stage-cards.js';
 import { trPlay } from './sfx.js';
+import { cutIn as cutInCard } from './stage-cutin.js';
+import { CLOAK } from './conclave-stage.js';
 
 const hash = s => { let h = 7; for (const c of String(s)) h = (Math.imul(h, 31) + c.charCodeAt(0)) >>> 0; return h; };
 const clean = s => String(s || '').replace(/\s+/g, ' ').trim();
@@ -32,6 +34,10 @@ function parse(data) {
       return cap ? [{ t: 'narr', tag: 'What you now have', text: clean(cap.textContent), aud: true }] : [];
     }
     if (SKIP_PARTS.has(part)) return [];
+    if (part === 'cam') {
+      return [{ t: 'cam', who: clean(n.querySelector('cite')?.textContent),
+        text: clean(n.querySelector('.tp-cam-txt')?.textContent).replace(/^[“"]+|[”"]+$/g, '') }];
+    }
     if (part === 'veil') {
       const p = n.querySelector('p');
       return [{ t: 'narr', tag: clean(n.querySelector('.tp-veil-h')?.textContent), text: clean(p?.textContent) }];
@@ -101,7 +107,7 @@ function stateAt(S) {
       host = Math.min(0.98, host + 0.35 / slots);
     }
     if (m.kind === 'unmask' || m.kind === 'veil') { blind = false; walking = false; host = 0; }
-    if (m.kind === 'turret' || m.kind === 'count' || m.kind === 'both' || m.kind === 'close') turret = true;
+    if (m.kind === 'turret' || m.kind === 'meeting' || m.kind === 'tcams' || m.kind === 'count' || m.kind === 'both' || m.kind === 'close') turret = true;
   }
   const cur = S.steps[S.idx] || {};
   const freshTap = (cur.meta || {}).kind === 'tap' && (S.steps[S.idx - 1] || {}).beat !== cur.beat ? lastTap : null;
@@ -171,11 +177,24 @@ function paint(root, S, fresh) {
   // THE TURRET: the chosen, arriving one at a time under the lamp
   if (r.turret && D.turret && D.turret.length) {
     if (!tur.classList.contains('tps-on')) {
-      tur.innerHTML = TRScenery.turretSet(W, H) + '<div class="tps-cloaks">' + D.turret.map((n, i) =>
-        `<div class="tps-cloak" style="--d:${(0.8 + i * 0.9).toFixed(1)}s"><div class="tps-hood"></div><div class="tps-cav">${face(n)}</div><div class="tps-cnm">${esc(n)}</div></div>`).join('') + '</div>';
+      tur.innerHTML = TRScenery.turretSet(W, H) + '<div class="tps-cloaks">' + D.turret.map(n =>
+        `<div class="tps-cloak" data-n="${esc(n)}">${CLOAK}<div class="tps-cav">${face(n)}</div><div class="tps-cnm">${esc(n)}</div></div>`).join('') + '</div>';
       tur.classList.add('tps-on');
-      if (fresh) { trPlay('tr-door'); D.turret.forEach((_, i) => trPlay('tr-footsteps', 800 + i * 900)); }
+      if (fresh) trPlay('tr-door');
     }
+    // WHO IS UP THE STAIR YET: through the first meeting, a cloak is there
+    // once its owner has spoken or is about to be spoken to; before it, the
+    // room is empty; after it, everybody is in it
+    const meetIdx = S.steps.map((x, k) => (x.t === 'say' && (x.meta || {}).kind === 'turret' ? k : -1)).filter(k => k >= 0);
+    let here;
+    if (!meetIdx.length || S.idx > meetIdx[meetIdx.length - 1]) here = new Set(D.turret);
+    else here = new Set(S.steps.slice(0, S.idx + 2).filter((x, k) => meetIdx.includes(k)).map(x => x.who));
+    tur.querySelectorAll('.tps-cloak').forEach(c => {
+      const was = c.classList.contains('tps-here'), now = here.has(c.dataset.n);
+      c.classList.toggle('tps-here', now);
+      c.classList.toggle('tps-new', now && !was && fresh);
+      if (now && !was && fresh) trPlay('tr-footsteps');
+    });
   } else { tur.classList.remove('tps-on'); tur.innerHTML = ''; }
   // sounds of the ring
   if (bandsFresh) trPlay('tr-hush');
@@ -188,7 +207,20 @@ function paint(root, S, fresh) {
     return;
   }
   start.classList.remove('trs-in');
-  hud.innerHTML = footCard(st, D.host, { over: r.turret });
+  // TO CAMERA: a Traitor upstairs under the hood, a Faithful downstairs in blue
+  const traitorCam = st.t === 'cam' && (st.meta || {}).kind === 'tcams';
+  const prevSt = S.steps[S.idx - 1] || {};
+  let cut = st.t === 'cam' ? cutInCard({ who: st.who, fresh, tone: traitorCam ? 'blood' : 'cam', hood: traitorCam,
+    label: 'To camera', quick: prevSt.t === 'cam' }) : '';
+  // the first meeting: each line under the hood, the one it is said to waiting opposite
+  if (st.t === 'say' && (st.meta || {}).kind === 'turret') {
+    const next = S.steps[S.idx + 1] || {};
+    const other = [prevSt, next].find(x => x.beat === st.beat && x.t === 'say' && x.who && x.who !== st.who);
+    cut = cutInCard({ who: st.who, fresh, tone: 'blood', hood: true, with: other ? other.who : null,
+      quick: prevSt.t === 'say' && prevSt.beat === st.beat });
+  }
+  tur.classList.toggle('tps-dim', !!cut);
+  hud.innerHTML = cut + footCard(st, D.host, { over: r.turret });
   playCard(hud, st, S, fresh);
   const corner = root.querySelector('.trs-corner');
   corner.innerHTML = r.turret ? 'The turret · <b>The chosen</b>'
@@ -237,14 +269,17 @@ const CSS = `
 /* the turret */
 .tps-turret{opacity:0;transition:opacity 1s;pointer-events:none;z-index:2000}
 .tps-turret.tps-on{opacity:1}
-.tps-cloaks{position:absolute;left:50%;top:50%;transform:translate(-50%,-55%);display:flex;gap:40px}
-.tps-cloak{position:relative;width:110px;text-align:center;opacity:0;animation:tpsArrive 1s ease forwards;animation-delay:var(--d)}
+.tps-cloaks{position:absolute;left:50%;top:44%;transform:translate(-50%,-55%);display:flex;gap:60px}
+.tps-cloak{position:relative;width:150px;aspect-ratio:100/150;text-align:center;opacity:0;transition:opacity .4s}
+.tps-cloak.tps-here{opacity:1}
+.tps-cloak.tps-new{animation:tpsArrive 1s ease both}
+.tps-turret.tps-dim .tps-cloaks,.tps-turret.tps-dim>svg{filter:brightness(.45) blur(2px);transition:filter .5s}
+.tps-cloak .trc-cloak{position:absolute;left:0;top:0;width:100%;height:auto;filter:drop-shadow(0 14px 18px rgba(0,0,0,.8))}
 @keyframes tpsArrive{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
 .tps-hood{position:absolute;left:-22%;right:-22%;top:-18%;height:92%;border-radius:50% 50% 30% 30%/60% 60% 20% 20%;z-index:2;pointer-events:none;
   background:radial-gradient(60% 70% at 50% 62%,transparent 50%,#2a0508 53%,#12030a 100%)}
-.tps-cav{position:relative;width:110px;height:122px;overflow:hidden;border-radius:50% 50% 12% 12%/44% 44% 9% 9%;background:#140608;
-  box-shadow:0 0 0 2px rgba(201,40,60,.7),0 0 40px rgba(142,21,38,.6)}
+.tps-cav{position:absolute;left:26%;top:16%;width:48%;aspect-ratio:1/1.1;overflow:hidden;border-radius:50% 50% 44% 44%;background:#140608;box-shadow:0 0 18px rgba(0,0,0,.9) inset}
 .tps-cav img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 18%;z-index:1}
-.tps-cnm{margin-top:10px;font-family:var(--v-display);font-weight:700;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#f3dcd8}
-@media (prefers-reduced-motion:reduce){.tps-seat .tps-band{animation:none!important}.tps-cloak{animation:none;opacity:1}}
+.tps-cnm{position:absolute;left:50%;top:92%;transform:translateX(-50%);white-space:nowrap;font-family:var(--v-display);font-weight:700;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#f3dcd8}
+@media (prefers-reduced-motion:reduce){.tps-seat .tps-band{animation:none!important}.tps-cloak{animation:none!important}}
 `;

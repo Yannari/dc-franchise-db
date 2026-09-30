@@ -5693,9 +5693,15 @@ describe('the selection screen renders the one certainty and cannot manufacture 
       // Every one of the six additions is prose spoken aloud to a rank of
       // blindfolded people and names nobody — the word sweep below is what
       // holds that, and it is unchanged.
-      expect(Object.keys(s).sort()).toEqual(['ceremonyId', 'chosen', 'contestantBeats',
-        'ep', 'hostBeats', 'line', 'reminder', 'revealBeats', 'rulePoints', 'staging',
-        'taps', 'turret']);
+      // Two more (2026-09-30), and unlike the six above both DO name people:
+      // `confessionals` (each chosen Traitor, and three Faithfuls, to camera)
+      // and `meeting` (the chosen, upstairs, hoods down). Both imply a role,
+      // so both are gated in js/vp-tr/selection.js `_view`: the meeting to
+      // whoever knows the turret, a confessional to the audience and its
+      // own speaker. The word sweep below still holds for them.
+      expect(Object.keys(s).sort()).toEqual(['ceremonyId', 'chosen', 'confessionals',
+        'contestantBeats', 'ep', 'hostBeats', 'line', 'meeting', 'reminder', 'revealBeats',
+        'rulePoints', 'staging', 'taps', 'turret']);
       const flat = JSON.stringify(s);
       for (const word of ['sourceType', 'confidence', 'credibility', 'public',
         'observed', 'deduced', 'rumor', 'belief']) {

@@ -139,11 +139,11 @@ function paint(root, S, fresh) {
   const pact = D.turret.length ? D.turret : [];
   const st = S.idx >= 0 ? S.steps[S.idx] : null;
   const speaker = st && (st.t === 'say' ? st.who : st.focus || (st.t === 'slip' ? st.by : null));
-  const pw = Math.min(H * .13, W * .1);
+  const pw = Math.min(H * .2, W * .13);
   pact.forEach((n, i) => {
     const p = seatAt(i, pact.length, W, H);
     h += `<div class="trc-seat${speaker === n ? ' trc-speak' : (speaker ? ' trc-quiet' : '')}" style="left:${p.x}px;top:${p.y}px;width:${pw}px">`
-      + `<div class="trc-hood"></div><div class="trc-av">${face(n)}</div><div class="trc-nm">${esc(n)}</div></div>`;
+      + CLOAK + `<div class="trc-av">${face(n)}</div><div class="trc-nm">${esc(n)}</div></div>`;
   });
   if (!st) {
     el.innerHTML = h + '</div>' + AIR;
@@ -232,6 +232,14 @@ function paint(root, S, fresh) {
   corner.classList.add('trs-in');
 }
 
+// A HOODED CLOAK, the face inside the hood: the conclave's figure
+export const CLOAK = '<svg class="trc-cloak" viewBox="0 0 100 130" aria-hidden="true"><defs>'
+  + '<linearGradient id="trcCl" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#1e0408"/><stop offset=".35" stop-color="#5a0c16"/>'
+  + '<stop offset=".6" stop-color="#3a060e"/><stop offset="1" stop-color="#120205"/></linearGradient></defs>'
+  + '<path d="M50 3 C21 3 11 30 13 58 C14 72 19 80 25 85 L6 130 H94 L75 85 C81 80 86 72 87 58 C89 30 79 3 50 3Z" fill="url(#trcCl)"/>'
+  + '<path d="M25 85 C35 95 65 95 75 85" stroke="#c9a24a" stroke-width="1.5" fill="none" opacity=".6"/>'
+  + '<ellipse cx="50" cy="50" rx="27" ry="31" fill="#070103"/></svg>';
+
 // the air of the turret: embers rising off the candles, and the light moving
 const AIR = '<div class="trc-air"><div class="trc-flicker"></div>' + Array.from({ length: 16 }, (_, i) =>
   `<i style="left:${20 + (hash('e' + i) % 600) / 10}%;animation-duration:${6 + hash('d' + i) % 6}s;animation-delay:-${hash('z' + i) % 9}s"></i>`).join('') + '</div>';
@@ -259,16 +267,19 @@ const CSS = `
 @keyframes trcCutFlash{from{opacity:1}to{opacity:0}}
 @media (prefers-reduced-motion:reduce){.trc-world,.trc-air *,.trc-title,.trc-bleed{animation:none!important}}
 .trc-seat{position:absolute;transform:translate(-50%,-50%);text-align:center;z-index:10;transition:filter .45s,transform .45s}
-.trc-av{position:relative;width:100%;aspect-ratio:1/1.12;overflow:hidden;border-radius:50% 50% 12% 12%/44% 44% 9% 9%;background:#140608;
-  box-shadow:0 0 0 2px rgba(201,40,60,.7),0 0 30px rgba(142,21,38,.5),0 10px 24px rgba(0,0,0,.85)}
+.trc-seat{aspect-ratio:100/150}
+.trc-cloak{position:absolute;left:0;top:0;width:100%;height:auto;filter:drop-shadow(0 14px 18px rgba(0,0,0,.8))}
+.trc-av{position:absolute;left:26%;top:16%;width:48%;aspect-ratio:1/1.1;overflow:hidden;border-radius:50% 50% 44% 44%;background:#140608;
+  box-shadow:0 0 18px rgba(0,0,0,.9) inset,0 0 20px rgba(142,21,38,.4)}
+.trc-av::after{content:"";position:absolute;inset:0;z-index:2;background:radial-gradient(70% 60% at 50% 60%,transparent 55%,rgba(7,1,3,.85));pointer-events:none}
 .trc-av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 18%;z-index:1;filter:saturate(.85) brightness(.92)}
 .trc-hood{position:absolute;left:-18%;right:-18%;top:-16%;bottom:28%;border-radius:50% 50% 30% 30%/60% 60% 20% 20%;
   background:radial-gradient(60% 70% at 50% 60%,transparent 52%,#2a0508 54%,#12030a 100%);z-index:2;pointer-events:none}
-.trc-nm{display:inline-block;margin-top:6px;padding:2px 8px;font-family:var(--v-display);font-weight:700;font-size:10px;letter-spacing:.2em;text-transform:uppercase;
+.trc-nm{position:absolute;left:50%;top:92%;transform:translateX(-50%);white-space:nowrap;padding:2px 8px;font-family:var(--v-display);font-weight:700;font-size:10px;letter-spacing:.2em;text-transform:uppercase;
   color:#f3dcd8;background:rgba(20,4,6,.8);border:1px solid rgba(201,40,60,.4)}
 .trc-seat.trc-quiet{filter:brightness(.5)}
 .trc-seat.trc-speak{transform:translate(-50%,-50%) scale(1.14);z-index:20}
-.trc-seat.trc-speak .trc-av{box-shadow:0 0 0 2px #ff9a9f,0 0 44px rgba(201,40,60,.8),0 10px 24px rgba(0,0,0,.85)}
+.trc-seat.trc-speak .trc-cloak{filter:drop-shadow(0 0 22px rgba(201,40,60,.8)) drop-shadow(0 14px 18px rgba(0,0,0,.8))}
 .trc-cards{position:absolute;left:50%;top:60%;transform:translate(-50%,-50%);display:flex;gap:12px;z-index:15}
 .trc-card{padding:8px 8px 7px;text-align:center;background:linear-gradient(170deg,#efe5cc,#cdbd98);color:#241b11;box-shadow:0 12px 28px rgba(0,0,0,.7);transform:rotate(-2deg)}
 .trc-card:nth-child(even){transform:rotate(2deg)}

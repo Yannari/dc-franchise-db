@@ -769,6 +769,12 @@ const TP_CSS = `
 .tp-card p{margin:0 0 10px;color:rgba(240,236,224,.9)}
 .tp-card p:last-child{margin-bottom:0}
 .tp-quiet{color:rgba(240,236,224,.62);font-style:italic}
+.tp-said{display:flex;gap:10px;align-items:baseline;margin:9px 0;padding:8px 12px;border-left:2px solid rgba(201,40,60,.6);background:rgba(142,21,38,.08)}
+.tp-said cite{flex:none;font-style:normal;font-family:var(--v-display);font-weight:700;font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:#e58490}
+.tp-said-txt{font-size:16.5px;line-height:1.45;color:#f0ece0}
+.tp-cam{display:flex;gap:10px;align-items:baseline;margin:9px 0;padding:8px 12px;border-left:2px solid rgba(143,166,194,.7);background:rgba(110,150,210,.07)}
+.tp-cam cite{flex:none;font-style:normal;font-family:var(--v-display);font-weight:700;font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:#8fa6c2}
+.tp-cam-txt{font-size:16.5px;line-height:1.45;color:#f0ece0}
 
 /* who — a face and a line about them */
 .tp-who{display:flex;align-items:center;gap:13px;margin:2px 0 12px}
@@ -1173,6 +1179,12 @@ function _view(ep, observer) {
     tapCount: s.taps.length,
     // The turret's roll, and it is null rather than empty where it is withheld.
     turret: turretKnown ? [...(s.turret || chosen)] : null,
+    // TO CAMERA, and a confessional tells you somebody's role: the audience
+    // hears them all, a player hears their own and nobody else's.
+    // the chosen meeting upstairs: only for those who know who was chosen
+    meeting: turretKnown ? (s.meeting || []).map(x => ({ ...x })) : null,
+    confessionals: (s.confessionals || []).filter(c => isAudience || (!!watcher && c.who === watcher))
+      .map(c => ({ who: c.who, role: c.role, text: c.text })),
     // -- THE CEREMONY, AND IT IS THE SAME FOR EVERY READER (Plan 9, Task 2)
     //
     // Not behind either gate, and it must never be put behind one. Every line
@@ -1360,6 +1372,14 @@ function _buildBeats(v) {
     ])),
   { kind: 'unmask' });
 
+  // ── DOWNSTAIRS, TO CAMERA: what not being chosen felt like ──────────
+  const cams = role => (v.confessionals || []).filter(c => c.role === role);
+  const camRows = list => list.map(c => '<div class="tp-cam"><cite>' + _esc(c.who) + '</cite> '
+    + '<span class="tp-cam-txt">&ldquo;' + _esc(c.text) + '&rdquo;</span></div>').join('');
+  if (cams('faithful').length) {
+    push('unmask', _card('No Hand', 'To camera', 'band', camRows(cams('faithful'))), { kind: 'fcams' });
+  }
+
   // ── the turret ──────────────────────────────────────────────────────
   if (v.turretKnown && v.turret && v.turret.length) {
     const roll = v.turret.map(name =>
@@ -1367,9 +1387,19 @@ function _buildBeats(v) {
       + '<div class="tp-three-nm">' + _esc(name) + '</div>'
       + '<div class="tp-three-sub">' + (v.watcher === name ? 'You' : 'A Traitor, from tonight')
       + '</div></div>').join('');
+    // THE FIRST MEETING, one hood at a time, INSIDE the turret card: the
+    // turret is the one place a tapped player may learn the other names
+    // (tests/tr-vp.test.js holds every partner name to that card alone)
+    const meet = v.meeting && v.meeting.length > 1 ? '<p>One at a time, in the order the hand '
+      + 'found them. Every hood that comes down is a face the others spent the whole afternoon '
+      + 'talking to.</p>' + v.meeting.map(x => '<div class="tp-said"><cite>' + _esc(x.who) + '</cite> '
+      + '<span class="tp-said-txt">&ldquo;' + _esc(x.text) + '&rdquo;</span></div>').join('') : '';
     push('turret', _card('The Turret', 'The meeting', 'cloak',
-      '<p>' + _fill(_pick(TURRET, key + '|turret'), S) + '</p>'
-      + '<div class="tp-three">' + roll + '</div>'
+      '<p>' + (v.meeting && v.meeting.length > 1
+        ? 'After dark, the chosen are called up to the turret separately. None of them knows who '
+          + 'else is coming up the stair.'
+        : _fill(_pick(TURRET, key + '|turret'), S)) + '</p>'
+      + '<div class="tp-three">' + roll + '</div>' + meet
       + '<p class="tp-quiet">' + (v.wasTapped
         ? 'These are the only names you will ever know for sure. Every other suspicion, every '
           + 'other accusation — you will have to earn those.'
@@ -1377,6 +1407,11 @@ function _buildBeats(v) {
           + 'anyone believes about anyone is a guess.')
       + '</p>', 'lamp'),
     { kind: 'turret' });
+
+    // ── UPSTAIRS, TO CAMERA: what the hand felt like ──────────────────
+    if (cams('traitor').length) {
+      push('turret', _card('The Hand', 'To camera', 'cloak', camRows(cams('traitor')), 'lamp'), { kind: 'tcams' });
+    }
 
     push('turret', _card('The First Count', 'The arithmetic', 'tally',
       '<p>' + _fill(_pick(CALCULATION, key + '|calc'),

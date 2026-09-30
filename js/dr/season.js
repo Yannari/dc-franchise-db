@@ -1942,8 +1942,22 @@ export function playDragSeason({
 
   // The Smackdown, if the season books one: the queens already sent home come
   // back and lip sync for a title, one episode before the crowning.
-  if (config.drSmackdown && state.out.length >= 2) {
-    const smack = runSmackdown(state, { num: num++, seed }, ctx);
+  /* ALREADY AIRED IS ALREADY AIRED. A re-run of the finale resumes the season
+     from the aired rows, and the week loop knows to skip the weeks behind it —
+     these two did not, so re-running the finale booked the Smackdown (and the
+     Reunion) again ahead of it and the season grew an episode every press. */
+  const aired = kind => !!resumeAt && (state.episodes || []).some(e => e?.dr?.[kind]);
+  /* THE CROWN'S DICE ARE KEYED ON THE COMPETITION, not on the finale's episode
+     number: the Smackdown and the Reunion are optional episodes, and keying on
+     the number let switching one on change who wins (tests/dr-smackdown: "it
+     decides nothing about the crown"). The re-run counter still applies when
+     the re-run reaches the finale. */
+  const crownKey = num;
+  const crownSalt = (base, finNo) => base + crownKey
+    + (rr && finNo >= Number(rr.from) ? 1000000 * (Number(rr.nonce) || 0) : 0);
+  if (config.drSmackdown && state.out.length >= 2 && !aired('smackdown')) {
+    const smNum = num++;
+    const smack = runSmackdown(state, { num: smNum, seed }, weekCtx(smNum));
     if (smack) rows.push(beat(state, smack, cast));
   }
 
@@ -1970,8 +1984,11 @@ export function playDragSeason({
      sent home far more often — she has no other shot at anything. With the
      field voting evenly the sash went to a finalist 59% of seasons. */
   const finalistBias = Object.fromEntries((state.living || []).map(n => [n, FINALIST_SASH_WEIGHT]));
+  /* The finale's number, known before the vote: the sash is announced there,
+     so it is drawn from the finale's own dice (see below). */
+  const finNum = num + (config.drReunion && !aired('reunion') ? 1 : 0);
   const vote = runAudienceVote({
-    eligible: [...state.castOrder], rng, blocks: 600, bias: finalistBias,
+    eligible: [...state.castOrder], rng: streamFor(seed, crownSalt(7000, finNum)), blocks: 600, bias: finalistBias,
     _gs: { popularity: state.popularity, episodeHistory: rows },
   });
   if (vote) {
@@ -1979,19 +1996,25 @@ export function playDragSeason({
     state.congenialityTally = vote.tally;
   }
 
-  if (config.drReunion) {
-    rows.push(beat(state, runReunion(state, { num: num++ }, ctx), cast));
+  if (config.drReunion && !aired('reunion')) {
+    const reNum = num++;
+    rows.push(beat(state, runReunion(state, { num: reNum }, weekCtx(reNum)), cast));
   }
 
   const last = schedule[schedule.length - 1] || {};
+  /* THE FINALE'S OWN DICE, WITH THE RE-RUN IN THEM. Every week draws from
+     `wSalt`, which folds in the re-run counter; the finale drew from the
+     season's base dice, so re-running it replayed the same coin flips and
+     crowned the same queen every press. */
+  const finaleNum = num++;
   const finale = runFinale(state, {
-    num: num++, type: finaleType, rotatingId: last.rotatingId, judgeWeights: config.drJudgeWeights,
+    num: finaleNum, type: finaleType, rotatingId: last.rotatingId, judgeWeights: config.drJudgeWeights,
     doubleCrown: !!config.drDoubleCrown,
     /* THE JURY IS AN ALL STARS RULE, like the lipstick: it belongs to the
        mode, not to a week, so it is read off the season config here rather
        than booked per episode from the designer. */
     jury: !!(config.drAllStars && config.drAllStarsJury),
-  }, ctx);
+  }, { ...ctx, rng: streamFor(seed, crownSalt(8000, finaleNum)) });
   /* THE WINNER CANNOT TAKE THE SASH TOO. The vote ran before the crowning,
      so it could not exclude a winner nobody knew yet — if the country's
      favourite turns out to be the queen who wins, the sash goes to the runner

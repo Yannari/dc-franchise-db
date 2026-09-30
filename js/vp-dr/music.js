@@ -374,8 +374,8 @@ async function start(key, sit, song, suffix = null, fallback = null, fit = {}) {
       pick = await trackFor(fallback);
       if (pick) buf = await decode(c, pick.url, urlBytes(pick.url));
     }
-    if (!buf && HOST_SONG.has(sit)) {
-      const rs = runwaySongFor(seasonKey());
+    if (!buf && (FIXED_SONG[sit] || HOST_SONG.has(sit))) {
+      const rs = FIXED_SONG[sit] || runwaySongFor(seasonKey());
       if (rs) {
         buf = await decode(c, `song:runway:${rs.title}`, () => previewBytes(rs.title, rs.artist));
         if (buf && !loops.has(buf)) {
@@ -523,7 +523,16 @@ if (typeof document !== 'undefined' && !globalThis.__drMusic) {
   globalThis.__drMusic = true;
   // A new screen starts in silence until its first moment; leaving the Viewing
   // Party takes the music with it.
-  document.addEventListener('vp:screen', () => stop());
+  document.addEventListener('vp:screen', e => {
+    stop();
+    /* THE LIP SYNC OPENS ON "BOTTOM TWO" (Ephemeral Faze), before a card is
+       revealed: the two queens walk to their marks under it, carried on from
+       the call's last card (it resumes where it stopped), and "The Time Has
+       Come" takes over at the host's speech. The user's placement. */
+    if (/^dr-(lipsync|legacy)$/.test(String(e?.detail?.id || ''))) {
+      start('bottom-two', 'bottom-two', null, e.detail.id === 'dr-legacy' ? 'legacy' : 'lipsync');
+    }
+  });
   document.addEventListener('vp:close', () => stop());
 }
 

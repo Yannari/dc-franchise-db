@@ -33,6 +33,8 @@ export function truthOf(player, setup = {}) {
     // A shared profile (spec §14.8): who is the face and who the brain, and the
     // facts of a life the profile might hide ("three kids at home").
     face: setup.face ?? null, brain: setup.brain ?? null, facts: [...(setup.facts || [])],
+    // How they type, if an author wrote it (ci/register.js, voice.js byAuthored).
+    chatVoice: setup.chatVoice ?? player.chatVoice ?? null,
   };
 }
 

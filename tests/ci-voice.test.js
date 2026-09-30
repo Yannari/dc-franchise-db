@@ -76,3 +76,12 @@ describe('a register shapes how a message is typed', () => {
     expect(styleMessage('Love you guys {t:CircleFam} {e:heart}', { ...flat, register: 'dry' }, () => 0.9)).toBe('love you guys {t:CircleFam} {e:heart}');
   });
 });
+
+describe('formal keeps the sentences apart', () => {
+  it('drops "lol" but not the full stop after it, and spells out gotta properly', () => {
+    const v = { emoji: 1, hashtags: 1, caps: 0, register: 'formal' };
+    expect(styleMessage("It's different lol. I'm still figuring it out", v, () => 0.9)).toBe("It's different. I'm still figuring it out.");
+    expect(styleMessage("Somebody's gotta keep it interesting", v, () => 0.9)).toBe('Somebody has to keep it interesting.');
+    expect(styleMessage('I gotta go', v, () => 0.9)).toBe('I have to go.');
+  });
+});

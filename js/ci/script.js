@@ -14,8 +14,8 @@ import { rel, peopleOf } from './state.js';
 import { THEORY_LINE } from './slips.js';
 import { styleOf } from './ratings.js';
 import { isRevealed } from './reveal.js';
-import { styleMessage, displayText, dictation } from './voice.js';
-import { registerOf } from './register.js';
+import { styleMessage, displayText, dictation, byAuthored } from './voice.js';
+import { registerOf, nicknameFor } from './register.js';
 import { POOLS } from './lines/index.js';
 import { GAMES, PARTY_THEMES, NEVER_HAVE_I_EVER } from './games-data.js';
 import { TRIVIA, FACTS } from './games-content.js';
@@ -189,7 +189,7 @@ export function fill(state, text, cast, speakerRole) {
   }).replace(/,,/g, ',').replace(/,\s*([.!?])/g, '$1');
 }
 
-export function renderEntry(state, entry, cast, rng) {
+export function renderEntry(state, entry, cast, rng, ctx = {}) {
   const lines = [];
   const who = role => (role === 'host' ? 'host' : role === 'face' || role === 'brain' ? cast.a : cast[role]);
   const personOf = role => {
@@ -198,29 +198,51 @@ export function renderEntry(state, entry, cast, rng) {
     return (role === 'face' || role === 'brain') && p ? (p.roles?.[role] || p.players[0]).split(' ')[0] : null;
   };
   if (entry.stage) lines.push({ who: cast.a, kind: 'stage', text: fill(state, entry.stage, cast, 'narration') });
-  for (const t of entry.turns || []) {
+  (entry.turns || []).forEach((t, ti) => {
     const speaker = who(t.by);
+    // Answering somebody, rather than starting something.
+    const reply = ti > 0 && entry.turns.slice(0, ti).some(x => x.by !== t.by);
     const person = personOf(t.by);
     const tag = x => (person ? { ...x, person } : x);
     // The one at the keyboard: a shared profile types in two voices.
     const typist = t.by === 'a' ? cast.personA || null
       : (t.by === 'face' || t.by === 'brain') ? state.profiles[cast.a]?.roles?.[t.by] || null : null;
     const voiceOf = () => ({ ...(state.profiles[speaker]?.voice || {}), register: registerOf(state, speaker, typist) });
+    // The person at the keyboard, for what the author wrote about them.
+    const p0 = state.profiles[speaker];
+    const typer = typist || p0?.roles?.face || p0?.players?.[0];
+    const av = typer ? state.people[typer]?.chatVoice : null;
+    const nick = text => {
+      if (!av?.nicknames) return text;
+      const names = Object.keys(state.profiles).filter(h => h !== speaker && state.profiles[h].shown?.name)
+        .map(h => [state.profiles[h].shown.name, h]).sort((x, y) => y[0].length - x[0].length);
+      if (!names.length) return text;
+      const esc = n => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const re = new RegExp(`\\b(${names.map(([n]) => esc(n)).join('|')})\\b`, 'g');
+      const byName = Object.fromEntries(names);
+      return text.replace(re, m => nicknameFor(state, typer, byName[m]) || m);
+    };
+    const greet = ctx.kind === 'circle-chat' && ctx.greeted && !ctx.greeted.has(speaker);
     if (t.react) lines.push(tag({ who: speaker, kind: 'react', text: fill(state, t.react, cast, t.by) }));
-    if (t.say) lines.push(tag({ who: speaker, kind: t.by === 'host' ? 'host' : 'say', text: fill(state, t.say, cast, t.by) }));
+    if (t.say) {
+      const said = t.by === 'host' ? fill(state, t.say, cast, t.by) : byAuthored(nick(fill(state, t.say, cast, t.by)), av, rng, { speech: true });
+      lines.push(tag({ who: speaker, kind: t.by === 'host' ? 'host' : 'say', text: said }));
+    }
     if (t.video) lines.push(tag({ who: speaker, kind: 'video', text: fill(state, t.video, cast, t.by) }));
     if (t.post) {
       const voice = voiceOf();
-      const styled = styleMessage(fill(state, t.post, cast, t.by), voice, rng);
+      const styled = byAuthored(styleMessage(nick(fill(state, t.post, cast, t.by)), voice, rng), av, rng);
       lines.push(tag({ who: speaker, kind: 'post', text: displayText(styled), spoken: dictation(styled, 'Status', 'Post') }));
     }
     if (t.send) {
       const voice = voiceOf();
-      const styled = styleMessage(fill(state, t.send, cast, t.by), voice, rng);
+      // An anonymous message hides its sender's signature phrases.
       const anon = t.by === 'a' && cast.anonA ? { anon: true } : {};
+      const styled = byAuthored(styleMessage(nick(fill(state, t.send, cast, t.by)), voice, rng), anon.anon ? null : av, rng, { greet, reply });
+      if (greet) ctx.greeted.add(speaker);
       lines.push(tag({ who: speaker, kind: 'send', text: displayText(styled), spoken: dictation(styled), ...anon }));
     }
-  }
+  });
   return { id: entry.id, lines, beat: entry.beat ? fill(state, entry.beat, cast, 'narration') : null };
 }
 
@@ -606,6 +628,8 @@ export function sceneBlocks(state, scene) {
 
 export function writeScene(state, scene) {
   const blocks = [];
+  // Who has already said hello to the group in this scene (an authored greeting).
+  const ctx = { kind: scene.kind, greeted: new Set() };
   sceneBlocks(state, scene).forEach((b, i) => {
     const extra = Object.fromEntries(Object.entries(b.extra || {}).filter(([, v]) => v !== undefined));
     const facts = { ...factsFor(state, scene, b.cast), ...extra };
@@ -615,7 +639,7 @@ export function writeScene(state, scene) {
     if (!entry) { (state.missingPools ||= {})[b.key] = (state.missingPools[b.key] || 0) + 1; return; }
     const from = b.keys ? entry.id.replace(/\.[^.]+$/, '') : b.key;
     blocks.push({ key: from, ...(b.phase ? { phase: b.phase } : {}), ...(b.round != null ? { round: b.round } : {}),
-      ...renderEntry(state, entry, b.cast, rng) });
+      ...renderEntry(state, entry, b.cast, rng, ctx) });
   });
   // A slip happens inside the conversation: weave it into the chat before the
   // chat's closing beat, rather than printing it as a second scene.

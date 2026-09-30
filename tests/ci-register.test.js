@@ -78,3 +78,81 @@ describe('the register reaches the screen', () => {
     expect(luis).toBe('okay who is cooking tonight. not me');
   });
 });
+
+// Layer 2: what an author writes about how somebody types. Any field may be
+// empty; none of this names a character.
+import { byAuthored } from '../js/ci/voice.js';
+import { nicknameFor } from '../js/ci/register.js';
+
+describe('an authored chat voice', () => {
+  const always = () => 0;
+  it('types in capitals when told to, and leaves emoji alone', () => {
+    expect(byAuthored('Love you guys {e:heart}', { caps: 'all' }, () => 0.99)).toBe('LOVE YOU GUYS {e:heart}');
+  });
+  it('opens, fills and signs off with the author\'s own phrases', () => {
+    expect(byAuthored('How is everyone', { openers: ['Per my last message,'] }, always)).toBe('Per my last message, how is everyone');
+    expect(byAuthored('See you tomorrow {e:heart}', { fillers: ['bless'] }, always)).toBe('See you tomorrow, bless {e:heart}');
+    expect(byAuthored('Have a good night', { signoffs: ['Love, Tyler'] }, always)).toBe('Have a good night. Love, Tyler');
+  });
+  it('keeps a name capitalized after a lead-in, and never leads in or signs off aloud', () => {
+    expect(byAuthored('Nathan is sweet', { openers: ['Sweetheart,'] }, always)).toBe('Sweetheart, Nathan is sweet');
+    expect(byAuthored('I rank Nathan first', { openers: ['Sweetheart,'], signoffs: ['Love, T'] }, always, { speech: true })).toBe('I rank Nathan first');
+  });
+  it('greets the group once in a Circle Chat', () => {
+    expect(byAuthored("What's up", { greetings: ['MY BEAUTIFUL PEOPLE!'] }, always, { greet: true })).toBe("MY BEAUTIFUL PEOPLE! What's up");
+    expect(byAuthored("What's up", { greetings: ['MY BEAUTIFUL PEOPLE!'] }, always)).toBe("What's up");
+  });
+  it('trails off and adds stage directions', () => {
+    expect(byAuthored('The cards are saying something.', { ellipses: true }, always)).toBe('The cards are saying something...');
+    expect(byAuthored('Thank you all', { brackets: ['[takes a bow]'] }, always)).toBe('Thank you all [takes a bow]');
+  });
+  it('speaks the phrases aloud too, but never shouts or trails off in speech', () => {
+    expect(byAuthored('Okay, I have to rank', { caps: 'all', ellipses: true, fillers: ['forgetaboutit'] }, always, { speech: true }))
+      .toBe('Okay, I have to rank, forgetaboutit');
+  });
+  it('leaves a message alone at a rate of nothing', () => {
+    expect(byAuthored('Hi there', { openers: ['Yo'], rate: 0 }, always)).toBe('Hi there');
+  });
+});
+
+describe('nicknames', () => {
+  it('gives each person one nickname and keeps it', () => {
+    const s = room(4, 1);
+    s.people.Q0.chatVoice = { nicknames: true };
+    const n1 = nicknameFor(s, 'Q0', '@q1');
+    expect(n1).toMatch(/Q1/);
+    expect(nicknameFor(s, 'Q0', '@q1')).toBe(n1);
+    s.people.Q2.chatVoice = { nicknames: ['Sweet {name}'] };
+    expect(nicknameFor(s, 'Q2', '@q1')).toBe('Sweet Q1');
+    expect(nicknameFor(s, 'Q3', '@q1')).toBe(null);
+  });
+  it('uses them in what the player types and says', () => {
+    const s = room(4, 1);
+    s.people.Q0.chatVoice = { register: 'warm', nicknames: ['Big {name}'], rate: 0 };
+    const entry = { id: 'x.1', turns: [{ by: 'a', say: 'Q1 is first.' }, { by: 'a', send: 'Hey Q1, you up?' }] };
+    const lines = renderEntry(s, entry, { a: '@q0', b: '@q1' }, () => 0.9).lines.map(l => l.text);
+    expect(lines).toEqual(['Big Q1 is first.', 'Hey Big Q1, you up?']);
+  });
+});
+
+import { truthOf } from '../js/ci/profiles.js';
+describe('where a chat voice comes from', () => {
+  it('is read from the season setup, or from the player, the setup winning', () => {
+    const p = { name: 'X', stats: {}, chatVoice: { register: 'dry' } };
+    expect(truthOf(p, {}).chatVoice).toEqual({ register: 'dry' });
+    expect(truthOf(p, { chatVoice: { register: 'hype' } }).chatVoice).toEqual({ register: 'hype' });
+    expect(truthOf({ name: 'Y', stats: {} }, {}).chatVoice).toBe(null);
+  });
+});
+
+describe('an authored voice reads like a person, not a filter', () => {
+  const always = () => 0;
+  it('never trails off after a question, and trails off once, not everywhere', () => {
+    expect(byAuthored('What is your idea of a date?', { ellipses: true }, always)).toBe('What is your idea of a date?');
+    expect(byAuthored('Very weird. Okay, talk later.', { ellipses: true }, () => 0.5)).toBe('Very weird. Okay, talk later...');
+  });
+  it('does not ask a question as a reply, or sign off a question', () => {
+    expect(byAuthored('Cereal. For dinner', { openers: ["How's your heart today?"] }, always, { reply: true })).toBe('Cereal. For dinner');
+    expect(byAuthored('Where are we going?', { signoffs: ['Thank you, thank you very much.'] }, always)).toBe('Where are we going?');
+  });
+});

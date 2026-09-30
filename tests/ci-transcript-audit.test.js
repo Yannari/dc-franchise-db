@@ -14,6 +14,7 @@ import { setPlayers } from '../js/core.js';
 import { playCircleSeason } from '../js/ci/season.js';
 import { seasonText, seasonHtml } from '../js/ci/transcript.js';
 import { makePlayers, makePool, circleSetup } from './helpers/ci-cast.js';
+import { VOICE_SHEETS, VOICE_CAST } from './helpers/ci-voices.js';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 // Readable stand-ins for the synthetic cast, which alternates f/m.
@@ -39,6 +40,10 @@ it('writes a season transcript', () => {
   if (pair) {
     Object.assign(setup.Mateo, { catfish: 'never', face: 'Mateo', brain: 'Luis', job: 'personal trainer' });
     Object.assign(setup.Luis, { catfish: 'never', partner: 'Mateo', facts: ['three kids at home'] });
+  }
+  // Authored chat voices on a few of the cast (CI_VOICES=0 to read without).
+  if (process.env.CI_VOICES !== '0') {
+    for (const [name, sheet] of Object.entries(VOICE_CAST)) if (setup[name]) setup[name].chatVoice = VOICE_SHEETS[sheet];
   }
   const { rows, state, result } = playCircleSeason({ cast: names, setup, pool: makePool(6, seed), seed });
   const dir = join(ROOT, 'transcripts');

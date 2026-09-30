@@ -46,3 +46,20 @@ export function registerOf(state, handle, who = null) {
   if (!names.length) return 'warm';
   return registerOfPerson(state.people[names[0]]);
 }
+
+// Nicknames (an authored chatVoice.nicknames: true for the house patterns, or
+// the author's own, with {name}). One per person, kept for the season.
+const NICKS = { f: ['{name}-girl', 'Miss {name}', 'Lil {name}', '{name}-bear'], m: ['{name}-o', 'Big {name}', 'Lil {name}', '{name}-man'],
+  nb: ['{name}-bear', 'Lil {name}', '{name}-o'] };
+const hash = s => [...s].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
+export function nicknameFor(state, person, handle) {
+  const cv = state.people[person]?.chatVoice;
+  const shown = state.profiles[handle]?.shown;
+  if (!cv?.nicknames || !shown?.name) return null;
+  const mine = ((state.nicknames ||= {})[person] ||= {});
+  if (!mine[handle]) {
+    const patterns = Array.isArray(cv.nicknames) ? cv.nicknames : NICKS[shown.gender] || NICKS.nb;
+    mine[handle] = patterns[hash(person + handle) % patterns.length].replace('{name}', shown.name);
+  }
+  return mine[handle];
+}

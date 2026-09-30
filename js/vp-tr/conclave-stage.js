@@ -17,6 +17,7 @@ import { TRScenery } from './cutaway-scenery.js';
 import { trPlay } from './sfx.js';
 import { beatLines } from './stage-lines.js';
 import { footCard, playCard, CARD_CSS } from './stage-cards.js';
+import { cutIn, CUTIN_CSS } from './stage-cutin.js';
 
 const hash = s => { let h = 7; for (const c of String(s)) h = (Math.imul(h, 31) + c.charCodeAt(0)) >>> 0; return h; };
 const clean = s => String(s || '').replace(/\s+/g, ' ').trim();
@@ -94,7 +95,7 @@ export function conclaveStageScreen(ep, observer, pageHtml) {
   if (typeof queueMicrotask === 'function' && typeof window !== 'undefined' && window.trStageMountAll) {
     queueMicrotask(window.trStageMountAll);
   }
-  return trsFold(stageShell(uid, '<div class="trc"></div><div class="trs-corner"></div><div class="trs-start"></div>', CARD_CSS + CSS), pageHtml);
+  return trsFold(stageShell(uid, '<div class="trc"></div><div class="trs-corner"></div><div class="trs-start"></div>', CARD_CSS + CUTIN_CSS + CSS), pageHtml);
 }
 
 function stateAt(S) {
@@ -134,7 +135,7 @@ function paint(root, S, fresh) {
     s.classList.toggle('trs-done', S.idx >= 0 && s.dataset.k !== 'night'); s.classList.toggle('trs-now', S.idx >= 0 && s.dataset.k === 'night');
   });
   const start = root.querySelector('.trs-start');
-  let h = TRScenery.turretSet(W, H);
+  let h = '<div class="trc-world">' + TRScenery.turretSet(W, H);
   const pact = D.turret.length ? D.turret : [];
   const st = S.idx >= 0 ? S.steps[S.idx] : null;
   const speaker = st && (st.t === 'say' ? st.who : st.focus || (st.t === 'slip' ? st.by : null));
@@ -145,7 +146,7 @@ function paint(root, S, fresh) {
       + `<div class="trc-hood"></div><div class="trc-av">${face(n)}</div><div class="trc-nm">${esc(n)}</div></div>`;
   });
   if (!st) {
-    el.innerHTML = h;
+    el.innerHTML = h + '</div>' + AIR;
     start.innerHTML = `<b>The Conclave</b><span>${pact.length ? pact.length + ' in the turret' : 'The turret'} · press Next, or click the room</span>`;
     start.classList.add('trs-in');
     root.querySelector('.trs-corner').classList.remove('trs-in');
@@ -176,6 +177,34 @@ function paint(root, S, fresh) {
       + '<path d="M22 50 Q50 26 78 50 Q50 74 22 50Z" fill="none" stroke="#c9283c" stroke-width="3"/><circle cx="50" cy="50" r="8" fill="#c9283c"/></svg></div>'
       + '<div class="trc-shock"></div></div>';
   }
+  h += '</div>';
+  // ── THE CONCLAVE, PLAYED (2026-09-30) ────────────────────────────────
+  // A line said in the turret is a hooded cut-in in blood; a name put on the
+  // table is a bolt from the one who proposes it into the face they propose;
+  // an overrule comes in on steel. The camera pushes in on whoever has the
+  // floor, candlelight moves on everything, and when the wax goes down the
+  // red comes in from the edges of the room.
+  const away = !!(st.down && st.down.length);
+  if (!away && !r.letter) {
+    if (st.t === 'say' && st.who) h += cutIn({ who: st.who, tone: 'blood', hood: pact.includes(st.who), fresh });
+    else if (st.t === 'slip' && st.by && st.target) h += cutIn({ who: st.by, tone: st.struck ? 'steel' : 'blood', hood: true,
+      label: st.struck ? 'Overruled' : 'Proposes', at: st.target, fresh });
+  }
+  // the camera, in on whoever has the floor
+  let cam = 'translate(0px,0px) scale(1)';
+  const fi = speaker ? pact.indexOf(speaker) : -1;
+  if (fi >= 0 && !r.letter && !away) {
+    const p = seatAt(fi, pact.length, W, H), k = 1.3;
+    const tx = Math.min(0, Math.max(W - W * k, W / 2 - p.x * k)), ty = Math.min(0, Math.max(H - H * k, H * .45 - p.y * k));
+    cam = `translate(${tx.toFixed(1)}px,${ty.toFixed(1)}px) scale(${k})`;
+  } else if (r.letter) cam = `translate(${(-W * .06).toFixed(1)}px,${(-H * .05).toFixed(1)}px) scale(1.12)`;
+  const cam0 = S.cam || 'translate(0px,0px) scale(1)';
+  S.cam = cam;
+  // the title, on the first beat of the night
+  if (S.idx === 0 && fresh) h += `<div class="trc-title" data-a="The Conclave" data-b="Night ${esc(S.day)}"></div>`;
+  // the wax is down: the red comes in from the edges
+  if (r.letter) h += `<div class="trc-bleed${fresh && st.t === 'letter' ? ' trc-fresh' : ''}"></div>`;
+  h += AIR;
   // downstairs, cut in
   if (st.down && st.down.length) {
     h += '<div class="trc-downstairs"><div class="trc-dframe">' + st.down.slice(0, 2).map(n =>
@@ -184,11 +213,16 @@ function paint(root, S, fresh) {
   const bare = st.t === 'tally' || st.t === 'letter' || st.t === 'slip';
   h += footCard(bare ? null : st, D.host);
   el.innerHTML = h;
+  const world = el.querySelector('.trc-world');
+  world.style.setProperty('--cam', cam);
+  world.style.setProperty('--cam0', fresh ? cam0 : cam);
+  if (fresh) world.classList.add('trc-move');
+  world.classList.toggle('trc-dim', !!el.querySelector('.tci'));
   if (!bare) playCard(el, st, S, fresh);
   // THE SOUND OF IT, on a fresh step: the door, the quill, the wax.
   if (fresh) {
     if (S.idx === 0) trPlay('tr-door');
-    else if (st.t === 'slip') trPlay(st.struck ? 'tr-strike' : 'tr-quill');
+    else if (st.t === 'slip') { trPlay(st.struck ? 'tr-strike' : 'tr-quill'); if (!st.struck) trPlay('tr-heartbeat', 700); }
     else if (st.t === 'letter') { trPlay('tr-quill', 900); trPlay('tr-wax', 2400); }
   }
   root.querySelector('.trs-view').classList.toggle('trc-away', !!(st.down && st.down.length));
@@ -198,8 +232,32 @@ function paint(root, S, fresh) {
   corner.classList.add('trs-in');
 }
 
+// the air of the turret: embers rising off the candles, and the light moving
+const AIR = '<div class="trc-air"><div class="trc-flicker"></div>' + Array.from({ length: 16 }, (_, i) =>
+  `<i style="left:${20 + (hash('e' + i) % 600) / 10}%;animation-duration:${6 + hash('d' + i) % 6}s;animation-delay:-${hash('z' + i) % 9}s"></i>`).join('') + '</div>';
+
 const CSS = `
-.trc{position:absolute;inset:0}
+.trc{position:absolute;inset:0;overflow:hidden}
+.trc-world{position:absolute;inset:0;transform-origin:0 0;transform:var(--cam);transition:filter .6s}
+.trc-world.trc-move{animation:trcCam 1.1s cubic-bezier(.6,0,.2,1) both}
+@keyframes trcCam{from{transform:var(--cam0)}to{transform:var(--cam)}}
+.trc-world.trc-dim{filter:brightness(.4) blur(2px)}
+.trc-air{position:absolute;inset:0;z-index:1500;pointer-events:none}
+.trc-flicker{position:absolute;inset:0;background:radial-gradient(60% 55% at 50% 62%,rgba(255,170,90,.14),transparent 70%);animation:trcFlick 2.3s steps(9) infinite}
+@keyframes trcFlick{0%,100%{opacity:.8}20%{opacity:1}35%{opacity:.6}50%{opacity:.95}70%{opacity:.7}85%{opacity:1}}
+.trc-air i{position:absolute;bottom:-4%;width:3px;height:3px;border-radius:50%;background:#ffb46a;box-shadow:0 0 8px #ff7a2a;opacity:0;animation:trcEmber 8s linear infinite}
+@keyframes trcEmber{0%{opacity:0;transform:translate(0,0)}10%{opacity:.9}100%{opacity:0;transform:translate(30px,-90vh)}}
+.trc-title{position:absolute;inset:0;z-index:3500;display:grid;place-items:center;pointer-events:none;animation:trcTitle 2.8s ease both}
+.trc-title::before{content:attr(data-a);grid-area:1/1;transform:translateY(-18%);font-family:var(--v-display);font-weight:900;font-size:clamp(40px,7vw,104px);
+  letter-spacing:.16em;text-transform:uppercase;color:#ffd0d4;text-shadow:0 0 40px rgba(201,40,60,.9),0 8px 0 rgba(0,0,0,.6)}
+.trc-title::after{content:attr(data-b);grid-area:1/1;transform:translateY(160%);font-family:var(--v-display);font-weight:700;font-size:13px;letter-spacing:.6em;text-transform:uppercase;color:#c9283c}
+@keyframes trcTitle{0%{opacity:0;transform:scale(1.6);filter:blur(10px)}14%{opacity:1;transform:none;filter:none}70%{opacity:1}100%{opacity:0;transform:scale(.96)}}
+.trc-bleed{position:absolute;inset:0;z-index:25;pointer-events:none;box-shadow:inset 0 0 160px 60px rgba(120,8,20,.75)}
+.trc-bleed.trc-fresh{animation:trcBleed 2.6s ease 2.6s both}
+@keyframes trcBleed{from{box-shadow:inset 0 0 0 0 rgba(120,8,20,0)}to{box-shadow:inset 0 0 160px 60px rgba(120,8,20,.75)}}
+.trc-downstairs::before{content:"";position:absolute;inset:-100vh -100vw;background:rgba(200,220,255,.5);animation:trcCutFlash .35s ease-out both;pointer-events:none}
+@keyframes trcCutFlash{from{opacity:1}to{opacity:0}}
+@media (prefers-reduced-motion:reduce){.trc-world,.trc-air *,.trc-title,.trc-bleed{animation:none!important}}
 .trc-seat{position:absolute;transform:translate(-50%,-50%);text-align:center;z-index:10;transition:filter .45s,transform .45s}
 .trc-av{position:relative;width:100%;aspect-ratio:1/1.12;overflow:hidden;border-radius:50% 50% 12% 12%/44% 44% 9% 9%;background:#140608;
   box-shadow:0 0 0 2px rgba(201,40,60,.7),0 0 30px rgba(142,21,38,.5),0 10px 24px rgba(0,0,0,.85)}
@@ -243,7 +301,7 @@ const CSS = `
 .trc-shock{position:absolute;right:20px;bottom:16px;width:0;height:0;border-radius:50%;box-shadow:0 0 0 0 rgba(201,40,60,.8);opacity:0;pointer-events:none}
 .trc-letter.trc-fresh .trc-shock{animation:trcShock .9s ease-out 2.75s}
 @keyframes trcShock{0%{opacity:1;box-shadow:0 0 0 0 rgba(201,40,60,.85)}100%{opacity:0;box-shadow:0 0 0 160px rgba(201,40,60,0)}}
-.trs-view.trc-away .trc>svg,.trs-view.trc-away .trc-seat,.trs-view.trc-away .trc-cards,.trs-view.trc-away .trc-letter{filter:brightness(.3) saturate(.4);transition:filter .6s}
+.trs-view.trc-away .trc-world>svg,.trs-view.trc-away .trc-seat,.trs-view.trc-away .trc-cards,.trs-view.trc-away .trc-letter{filter:brightness(.3) saturate(.4);transition:filter .6s}
 .trc-downstairs{position:absolute;left:50%;top:36%;transform:translate(-50%,-50%);z-index:40;animation:trcDown .6s ease both}
 @keyframes trcDown{from{opacity:0;transform:translate(-50%,-44%)}}
 .trc-dframe{display:flex;gap:26px;padding:18px 26px 14px;background:radial-gradient(70% 90% at 50% 40%,rgba(143,166,194,.28),rgba(8,12,20,.92));

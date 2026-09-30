@@ -190,3 +190,65 @@ describe('the mode pin on the Profile Plan (spec 4.2: honest, polished, edited)'
     expect(modeOf(players[1].name)).toBe('honest');
   });
 });
+
+describe('the Profile Plan starts from Create Character', () => {
+  const base = { name: 'Gwen', gender: 'f', archetype: 'loner', stats: { strategic: 5 } };
+  it('occupation, hometown and age come from the character; the plan overrides them', () => {
+    const t = truthOf({ ...base, age: 26, occupation: 'Student', hometown: 'Toronto, Ontario' });
+    expect(t).toMatchObject({ age: 26, job: 'student', hometown: 'Toronto, Ontario' });
+    const o = truthOf({ ...base, age: 26, occupation: 'Student', hometown: 'Toronto' }, { age: 31, job: 'nurse', hometown: 'Ottawa' });
+    expect(o).toMatchObject({ age: 31, job: 'nurse', hometown: 'Ottawa' });
+  });
+  it('a birthdate with no age gives the age', () => {
+    const t = truthOf({ ...base, birthdate: '1988-03-02' });
+    expect(t.age).toBeGreaterThanOrEqual(37);
+    expect(t.age).toBeLessThanOrEqual(39);
+  });
+  it('nothing on the character: the same as before', () => {
+    expect(truthOf(base)).toMatchObject({ age: 25, job: null, hometown: null });
+  });
+});
+
+describe('plays as someone else: Decide / Yes / No, and which persona', () => {
+  const pool = () => makePool(8, 11);
+  it('Yes with a persona takes that persona', () => {
+    const players = makePlayers(8, 6);
+    const t = players.map((p, i) => truthOf(p, i === 0 ? { catfish: 'always', persona: 'persona-3' } : {}));
+    const d = drawPersonas(t, pool(), streamFor(6, 'pool'), 'stats');
+    expect(d.assigned[players[0].name]?.personaId).toBe('persona-3');
+  });
+  it('Decide with a persona: if the motive says they catfish, it is that persona', () => {
+    for (let seed = 1; seed < 40; seed++) {
+      const players = makePlayers(12, seed);
+      const med = medianAge(players.map(p => truthOf(p)));
+      const keen = players.find(p => catfishMotive(truthOf(p), med) >= MOTIVE_LINE);
+      if (!keen) continue;
+      const t = players.map(p => truthOf(p, p === keen ? { persona: 'persona-8' } : {}));
+      const d = drawPersonas(t, pool(), streamFor(seed, 'pool'), 'stats');
+      if (!d.assigned[keen.name]) continue;
+      expect(d.assigned[keen.name].personaId).toBe('persona-8');
+      return;
+    }
+    throw new Error('no cast with a keen player');
+  });
+  it('an older saved pin (a persona id as catfish) still reads as Yes with that persona', () => {
+    const t = truthOf(makePlayers(1, 1)[0], { catfish: 'persona-2' });
+    expect(t).toMatchObject({ catfish: 'always', persona: 'persona-2' });
+  });
+});
+
+describe('already famous? how the room might already know them', () => {
+  const p = { name: 'X', gender: 'f', archetype: 'floater', age: 25, stats: { strategic: 5, boldness: 5, loyalty: 5 } };
+  it('the more famous, the more reason to hide: nobody < known < a big threat < a villain', () => {
+    const m = rep => catfishMotive(truthOf(p, rep ? { rep } : {}), 25);
+    expect(m('none')).toBeLessThan(m('known'));
+    expect(m('known')).toBeLessThan(m('threat'));
+    expect(m('threat')).toBeLessThan(m('villain'));
+  });
+  it('left alone, it follows what the season hands in from their past (autoRep), else returnee or not', () => {
+    expect(truthOf(p, { autoRep: 'threat' }).rep).toBe('threat');
+    expect(truthOf({ ...p, isReturnee: true }).rep).toBe('known');
+    expect(truthOf(p).rep).toBe('none');
+    expect(truthOf(p, { autoRep: 'villain', rep: 'none' }).rep).toBe('none');
+  });
+});

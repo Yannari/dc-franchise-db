@@ -21,7 +21,8 @@
 import { DEFAULT_POOL } from './ci/default-pool.js';
 import { JOBS, JOB_GROUPS, DETAILS, TOPICS, STATUSES, PHOTO, jobOf, tellsOf, bioFor, promptFor } from './ci/persona-data.js';
 import { personaStyle } from './ci/cover.js';
-import { circleRoles } from './ci-run.js';
+import { circleRoles, rosterFactsOf, circleKnownAs } from './ci-run.js';
+import { ageFrom } from './ci/profiles.js';
 import { putPhoto, photoURL, cachedPhoto, photoSrc, shrinkImage } from './ci/photo-store.js';
 import { playerAvatarUrl } from './players.js';
 import { setPhotoContext, photosPanelHTML, afterPhotosRender, onPhotosClick, onPhotosChange, onPhotosDrop } from './ci-photos-ui.js';
@@ -34,6 +35,7 @@ const setupOf = name => cfg().ciSetup?.[name] || {};
 const setupFor = name => ((cfg().ciSetup ||= {})[name] ||= {});
 const dealt = () => window.gs?.ci?.dealt || null;
 const REASONS = ['strategic', 'protective', 'family', 'experimental'];
+// Create Character's age, when only a birthdate was given: the engine's own reading.
 // Why a player takes a persona, in the words the real players used (spec 4.2).
 const REASON_WORDS = {
   strategic: 'Strategic: a different face will get further in this room.',
@@ -72,7 +74,7 @@ function face(url, letter, ring = '') {
 // ── The Profile Plan ───────────────────────────────────────────────────
 function drawResult(name) {
   const d = dealt()?.[name];
-  if (!d) return `<div class="ci-draw ci-wait"><div class="ci-dk">Not dealt yet</div><div class="ci-why">Decided when the season is dealt, on the first Simulate. Pin anything on the left to fix it first.</div></div>`;
+  if (!d) return `<div class="ci-draw ci-wait"><div class="ci-dk">Waiting for episode 1</div><div class="ci-why">Who plays as someone else is decided when you press Simulate. Anything you set on the left is kept.</div></div>`;
   const s = d.shown || {};
   const line = [s.job, s.hometown].filter(Boolean).join(' · ');
   if (d.mode === 'catfish') {
@@ -93,8 +95,16 @@ function safeAvatar(name) {
   try { return playerAvatarUrl(cast().find(p => p.name === name) || name); } catch { return ''; }
 }
 
-function planRow(p, autoRole) {
+const REP_WORDS = { none: 'nobody has seen them before', known: 'known from TV', threat: 'a big threat (a past winner or finalist)', villain: 'known as a villain' };
+function planRow(p, autoRole, autoRep = 'none') {
   const s = setupOf(p.name);
+  // Plays as someone else: Decide / Yes / No. An older saved pin named a
+  // persona in `catfish`; it reads as Yes with that persona.
+  const legacy = s.catfish && !['never', 'always'].includes(s.catfish) ? s.catfish : null;
+  const cf = legacy ? 'always' : s.catfish || '';
+  const pick = s.persona ?? legacy ?? '';
+  // Create Character's facts: on the roster, not on the cast copy.
+  const rf = { ...rosterFactsOf(p), ...Object.fromEntries(['age', 'birthdate', 'occupation', 'hometown'].filter(k => p[k] != null && p[k] !== '').map(k => [k, p[k]])) };
   const personas = poolNow();
   const others = cast().filter(x => x.name !== p.name);
   return `<div class="ci-row" data-name="${esc(p.name)}">
@@ -103,23 +113,26 @@ function planRow(p, autoRole) {
       ${seg('role', s.role || '', [['starter', 'Day 1'], ['newcomer', 'Newcomer'], ['', `Decide (${autoRole === 'starter' ? 'Day 1' : 'later'})`]])}</div></div>
     <div class="ci-mid">
       <label class="ci-fld"><span class="ci-k">Plays as someone else</span>
-        ${seg('catfish', ['never', 'always'].includes(s.catfish) ? s.catfish : personas.some(x => x.id === s.catfish) ? 'as' : '', [['', 'Decide'], ['never', 'Never'], ['always', 'Always']], '')}
-        <select class="ci-in" data-field="catfish"><option value="">As a persona…</option>${personas.map(x =>
-          `<option value="${esc(x.id)}"${s.catfish === x.id ? ' selected' : ''}>As ${esc(x.handle)}, ${esc(x.age)}</option>`).join('')}</select></label>
+        ${seg('catfish', cf, [['', 'Decide'], ['always', 'Yes'], ['never', 'No']])}
+        ${cf === 'never' ? '' : `<select class="ci-in" data-field="persona" title="${cf === 'always' ? 'Who they play' : 'If they do, who they play'}"><option value="">${cf === 'always' ? 'Whichever fits best' : 'If they do: whichever fits best'}</option>${personas.map(x =>
+          `<option value="${esc(x.id)}"${pick === x.id ? ' selected' : ''}>As ${esc(x.handle)}, ${esc(x.age)}</option>`).join('')}</select>`}</label>
       <label class="ci-fld"><span class="ci-k">If they play themselves</span>
         ${seg('mode', s.mode || '', [['', 'Decide'], ['honest', 'Honest'], ['polished', 'Polished'], ['edited', 'Edited']])}</label>
       <label class="ci-fld"><span class="ci-k">Age · job</span><div class="ci-pair">
-        <input class="ci-in ci-age" data-field="age" type="number" min="18" max="90" value="${esc(s.age ?? p.age ?? '')}">
-        <input class="ci-in" data-field="job" placeholder="their real job" value="${esc(s.job ?? '')}"></div></label>
+        <input class="ci-in ci-age" data-field="age" type="number" min="18" max="90" placeholder="${esc(rf.age ?? ageFrom(rf.birthdate) ?? '')}" value="${esc(s.age ?? '')}" title="From Create Character unless you type one">
+        <input class="ci-in" data-field="job" placeholder="${esc(rf.occupation || 'their real job')}" value="${esc(s.job ?? '')}" title="From Create Character unless you type one"></div></label>
       <label class="ci-fld"><span class="ci-k">The job would cost them here</span>
         ${seg('jobCost', s.jobCost ?? 0, [[0, 'No'], [0.5, 'A little'], [1, 'A lot']])}</label>
       <label class="ci-fld"><span class="ci-k">Status · hometown</span><div class="ci-pair">
         <select class="ci-in" data-field="status">${STATUSES.map(x => `<option${(s.status || 'Single') === x ? ' selected' : ''}>${esc(x)}</option>`).join('')}</select>
-        <input class="ci-in" data-field="hometown" placeholder="hometown" value="${esc(s.hometown ?? '')}"></div></label>
-      <label class="ci-fld"><span class="ci-k">Known as · shares with</span><div class="ci-pair">
-        ${seg('rep', s.rep || '', [['', '—'], ['villain', 'A villain']])}
+        <input class="ci-in" data-field="hometown" placeholder="${esc(rf.hometown || 'hometown')}" value="${esc(s.hometown ?? '')}" title="From Create Character unless you type one"></div></label>
+      <label class="ci-fld ci-wide"><span class="ci-k">Already famous?</span>
+        ${seg('rep', s.rep || '', [['', 'Auto'], ['none', 'Nobody'], ['known', 'Known'], ['threat', 'A big threat'], ['villain', 'A villain']])}
+        <span class="ci-small ci-rep-auto">${s.rep ? 'How the room might already know them. The more famous, the more reason to hide behind a persona.'
+          : autoRep === 'none' ? 'Auto: a first-timer, so nobody has seen them before. The more famous, the more reason to hide behind a persona.' : `Auto: ${REP_WORDS[autoRep]}, from their past seasons. The more famous, the more reason to hide behind a persona.`}</span></label>
+      <label class="ci-fld"><span class="ci-k">Shares an apartment with</span>
         <select class="ci-in" data-field="partner"><option value="">nobody</option>${others.map(o =>
-          `<option value="${esc(o.name)}"${s.partner === o.name ? ' selected' : ''}>${esc(o.name)}</option>`).join('')}</select></div></label>
+          `<option value="${esc(o.name)}"${s.partner === o.name ? ' selected' : ''}>${esc(o.name)}</option>`).join('')}</select></label>
     </div>
     ${drawResult(p.name)}
   </div>`;
@@ -190,6 +203,7 @@ export function renderCircleCastSetup() {
   if (!root) return;
   const players = cast();
   const roles = circleRoles(players.map(p => p.name), cfg().ciSetup || {});
+  const known = circleKnownAs(players);
   const pool = poolNow();
   const taken = takenBy();
   const d = dealt();
@@ -210,7 +224,7 @@ export function renderCircleCastSetup() {
     <div class="ci-panel">
       <div class="ci-phead"><div class="ci-ring"></div><div class="ci-ptitle">THE PROFILE PLAN</div>
         <div class="ci-pcount">${players.length} players · ${starters} on Day 1 · ${players.length - starters} arrive later · every field optional</div></div>
-      <div class="ci-rows">${players.map((p, i) => planRow(p, roles[i])).join('') || '<div class="ci-small">Add players to the cast first.</div>'}</div>
+      <div class="ci-rows">${players.map((p, i) => planRow(p, roles[i], known[p.name])).join('') || '<div class="ci-small">Add players to the cast first.</div>'}</div>
     </div>` : `
     <div class="ci-panel">
       <div class="ci-phead"><div class="ci-ring ci-ring-pk"></div><div class="ci-ptitle">THE CATFISH POOL</div>
@@ -244,6 +258,8 @@ function onClick(ev) {
   const row = b.closest('.ci-row');
   if (row) {
     const s = setupFor(row.dataset.name);
+    // An older pin (a persona id in `catfish`) keeps its persona when the answer changes.
+    if (act === 'catfish' && s.catfish && !['never', 'always'].includes(s.catfish)) { s.persona ??= s.catfish; delete s.catfish; }
     if (act === 'jobCost') s.jobCost = Number(v);
     else if (v === '' || v == null) delete s[act];
     else s[act] = v;
@@ -302,7 +318,10 @@ function onChange(ev) {
 
 /** A pin to a persona that is gone would be ignored by the engine: clear it. */
 function clearPins(match) {
-  for (const s of Object.values(cfg().ciSetup || {})) if (s.catfish && !['never', 'always'].includes(s.catfish) && match(s.catfish)) delete s.catfish;
+  for (const s of Object.values(cfg().ciSetup || {})) {
+    if (s.catfish && !['never', 'always'].includes(s.catfish) && match(s.catfish)) delete s.catfish;
+    if (s.persona && match(s.persona)) delete s.persona;
+  }
 }
 
 function done(persist = true) { if (persist) save(); renderCircleCastSetup(); }

@@ -32,8 +32,8 @@ export function cutIn(o) {
   return `<div class="tci tci-${o.tone || 'morning'}${o.fresh ? ' tci-fresh' : ''}"${o.label ? ` data-l="${esc(o.label)}"` : ''}>`
     + '<div class="tci-speed"></div><div class="tci-slash"></div>'
     + bust(o.who, o.slug, 'l')
-    + (o.at ? '<svg class="tci-bolt" viewBox="0 0 100 100" preserveAspectRatio="none">'
-      + '<polyline points="28,47 41,43 47,52 57,45 63,53 72,49"/></svg>' + bust(o.at, null, 'r') : '')
+    + (o.at ? '<svg class="tci-bolt" viewBox="0 0 1000 560" preserveAspectRatio="none">'
+      + '<polyline pathLength="100" points="280,263 410,240 470,291 570,251 630,296 720,274"/></svg>' + bust(o.at, null, 'r') : '')
     + '</div>';
 }
 
@@ -77,8 +77,8 @@ export const CUTIN_CSS = `
   background:radial-gradient(58% 70% at 50% 66%,transparent 50%,#2a0508 54%,#0e0205 100%)}
 .tci-hooded .tci-av{border-radius:46% 46% 10% 10%/52% 52% 8% 8%}
 .tci-bolt{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
-.tci-bolt polyline{fill:none;stroke:var(--rim);stroke-width:4;stroke-linejoin:bevel;vector-effect:non-scaling-stroke;filter:drop-shadow(0 0 8px var(--glow));stroke-dasharray:200}
-.tci.tci-fresh .tci-bolt polyline{stroke-dashoffset:200;animation:tciBolt .38s cubic-bezier(.5,0,.9,.4) .7s forwards}
+.tci-bolt polyline{fill:none;stroke:var(--rim);stroke-width:6;stroke-linejoin:bevel;filter:drop-shadow(0 0 8px var(--glow));stroke-dasharray:100}
+.tci.tci-fresh .tci-bolt polyline{stroke-dashoffset:100;animation:tciBolt .38s cubic-bezier(.5,0,.9,.4) .7s forwards}
 @keyframes tciBolt{to{stroke-dashoffset:0}}
 @media (max-width:700px){.tci-bust{height:28%}}
 @media (prefers-reduced-motion:reduce){.tci *{animation:none!important}}

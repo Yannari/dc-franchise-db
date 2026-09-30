@@ -21,7 +21,7 @@ import { jobOf, tellsOf } from './persona-data.js';
 // nerve must carry the motive themselves. 0.07/0.05 gave 14% catfish on real
 // casts (synthetic casts, whose ages spread 21-58, had hidden it at 31%);
 // 0.10/0.07 gives 32%, and catfish win about a third of seasons.
-export const MOTIVE = { age: 0.08, alum: 0.6, villainRep: 1.4, job: 1.0,
+export const MOTIVE = { age: 0.08, alum: 0.6, threatRep: 1.0, villainRep: 1.4, job: 1.0,
   strategic: 0.10, boldness: 0.07, loyalty: 0.06 };
 // 0.75 gave 6.1 of 13 a persona once the pool had eight (47%) — the audit's
 // pool of six had been capping it. 1.0 gives 4.1 (31%) with the default pool.
@@ -34,14 +34,45 @@ export const RANDOM_TAKE = 0.5;
 const EDIT_JOBS = ['student', 'teacher', 'barista', 'personal trainer', 'marketing assistant',
   'bartender', 'nurse', 'graphic designer'];
 
+// Years since a birthdate ('YYYY-MM-DD'), or null. The Profile Plan shows it too.
+export function ageFrom(birthdate) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(birthdate || ''));
+  if (!m) return null;
+  const now = new Date();
+  let a = now.getFullYear() - Number(m[1]);
+  if (now.getMonth() + 1 < Number(m[2]) || (now.getMonth() + 1 === Number(m[2]) && now.getDate() < Number(m[3]))) a--;
+  return a > 0 && a < 120 ? a : null;
+}
+
+// How the room might already know them (the Profile Plan's "Already famous?"):
+// nobody; known from TV; a big threat (a past winner or finalist); a villain.
+// The more famous, the more reason to hide behind a persona.
+export const REPS = ['none', 'known', 'threat', 'villain'];
+
 export function truthOf(player, setup = {}) {
+  // An older saved pin named a persona in `catfish`; it reads as Yes + that persona.
+  const legacyPin = setup.catfish && !['decide', 'never', 'always'].includes(setup.catfish) ? setup.catfish : null;
+  // Set on the plan, else what the season hands in from their past seasons
+  // (ci-run.js circleKnownAs), else a returnee is at least known.
+  const rep = REPS.includes(setup.rep) ? setup.rep : REPS.includes(setup.autoRep) ? setup.autoRep
+    : (setup.alum ?? player.isReturnee) ? 'known' : 'none';
   return {
     name: player.name, gender: player.gender || 'f', sexuality: player.sexuality || 'straight',
     archetype: player.archetype || 'floater', stats: { ...player.stats },
-    age: setup.age ?? player.age ?? 25, job: setup.job ?? null, hometown: setup.hometown ?? null,
-    status: setup.status ?? 'Single', alum: !!(setup.alum ?? player.isReturnee),
-    rep: setup.rep ?? null, jobCost: setup.jobCost ?? 0, role: setup.role || 'starter',
-    catfish: setup.catfish || 'decide', partner: setup.partner || null,
+    // The Profile Plan starts from Create Character (the roster's age or
+    // birthdate, occupation, hometown); anything set on the plan wins.
+    // `setup.from` is the roster's copy (ci-run.js rosterFactsOf): a cast
+    // entry does not carry these.
+    age: setup.age ?? player.age ?? setup.from?.age ?? ageFrom(player.birthdate ?? setup.from?.birthdate) ?? 25,
+    job: setup.job ?? ((player.occupation ?? setup.from?.occupation) ? String(player.occupation ?? setup.from.occupation).toLowerCase() : null),
+    hometown: setup.hometown ?? player.hometown ?? setup.from?.hometown ?? null,
+    status: setup.status ?? 'Single', alum: rep !== 'none', rep,
+    jobCost: setup.jobCost ?? 0, role: setup.role || 'starter',
+    // Plays as someone else: 'decide' (the motive decides), 'always' (yes) or
+    // 'never' (no); and, for Decide or Yes, which persona when they do.
+    catfish: legacyPin ? 'always' : setup.catfish === 'always' || setup.catfish === 'never' ? setup.catfish : 'decide',
+    persona: setup.persona ?? legacyPin ?? null,
+    partner: setup.partner || null,
     // The Profile Plan's mode pin for a player without a persona: 'honest',
     // 'polished' or 'edited'; null lets the motive decide (spec 4.2).
     mode: ['honest', 'polished', 'edited'].includes(setup.mode) ? setup.mode : null,
@@ -63,7 +94,7 @@ export function medianAge(truths) {
 /** What each true fact costs to show in this room (spec §4.3). */
 export function factCosts(t, median) {
   return { age: Math.abs(t.age - median) * MOTIVE.age, alum: t.alum ? MOTIVE.alum : 0,
-    rep: t.rep === 'villain' ? MOTIVE.villainRep : 0, job: (t.jobCost || 0) * MOTIVE.job };
+    rep: t.rep === 'villain' ? MOTIVE.villainRep : t.rep === 'threat' ? MOTIVE.threatRep : 0, job: (t.jobCost || 0) * MOTIVE.job };
 }
 
 export function catfishMotive(t, median) {
@@ -91,7 +122,7 @@ export function fitScore(t, persona, median) {
   if (f.archetypes && !f.archetypes.includes(t.archetype)) s -= 0.5;
   if (t.age > median + 5 && persona.age < t.age) s += 1;
   if (t.age < median - 5 && persona.age > t.age) s += 1;
-  if (t.alum || t.rep) s += 0.5;
+  if (t.alum) s += 0.5;
   return s;
 }
 
@@ -109,8 +140,14 @@ export function drawPersonas(truths, pool, rng, pickBy = 'stats') {
     assigned[t.name] = { personaId: p.id, reason: reasonFor(t, p) };
     left.splice(left.indexOf(p), 1);
   };
-  const best = t => left.map(p => [p, fitScore(t, p, median)]).filter(([, s]) => s > -1)
-    .sort((a, b) => b[1] - a[1])[0]?.[0];
+  // The persona chosen on the plan, when it is still free and suits them;
+  // else the one that hides them best.
+  const best = t => {
+    const mine = t.persona && left.find(x => x.id === t.persona);
+    if (mine && reasonFor(t, mine)) return mine;
+    return left.map(p => [p, fitScore(t, p, median)]).filter(([, s]) => s > -1)
+      .sort((a, b) => b[1] - a[1])[0]?.[0];
+  };
 
   // A player whose partner comes earlier in the cast joins that partner's
   // profile (spec §14.8): they draw nothing of their own, or the persona they
@@ -120,10 +157,10 @@ export function drawPersonas(truths, pool, rng, pickBy = 'stats') {
   for (const t of truths) { if (t.partner && seen.has(t.partner)) follower.add(t.name); seen.add(t.name); }
   const drawing = truths.filter(t => !follower.has(t.name));
 
-  // Pins first. A pin to a persona that is not in the pool is ignored.
+  // Pins first: Yes with a persona. A persona that is not in the pool is ignored.
   for (const t of drawing) {
-    if (['decide', 'never', 'always'].includes(t.catfish)) continue;
-    const p = left.find(x => x.id === t.catfish);
+    if (t.catfish !== 'always' || !t.persona) continue;
+    const p = left.find(x => x.id === t.persona);
     if (p && reasonFor(t, p)) take(t, p);
   }
   const open = drawing.filter(t => !assigned[t.name] && t.catfish !== 'never');

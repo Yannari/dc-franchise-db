@@ -3,7 +3,7 @@
 // dr-music.test.js — music for the moment (js/vp-dr/music.js)
 // ══════════════════════════════════════════════════════════════════════
 import { describe, expect, it } from 'vitest';
-import { musicOfKind, situationOf, songForFile, momentForFile, tagStep, lipsyncMusicOf, DRAG_SITUATIONS } from '../js/vp-dr/music.js';
+import { musicOfKind, situationOf, songForFile, momentForFile, tagStep, lipsyncMusicOf, DRAG_SITUATIONS, pickPreview } from '../js/vp-dr/music.js';
 import { WERK_EVENTS } from '../js/dr/data/werk-events.js';
 import { UNTUCKED_EVENTS } from '../js/dr/data/untucked-events.js';
 import { SONGS } from '../js/dr/data/songs.js';
@@ -73,6 +73,26 @@ describe('uploading files by name', () => {
     expect(songForFile('Emotions.mp3')?.title).toBe('Emotions');
     expect(songForFile('Emotion.mp3')?.title).toBe('Emotion');
     expect(songForFile('holiday photos.mp3')).toBe(null);
+  });
+
+  it('plays the record\'s clip, never a cover or a remix', () => {
+    const r = (trackName, artistName) => ({ trackName, artistName, previewUrl: `${trackName}|${artistName}` });
+    const results = [
+      r('Toxic (Karaoke Version)', 'Karaoke Stars'), r('Toxic', 'Toxic Tribute Band'),
+      r('Toxic (Y2K & Alexander Lewis Remix)', 'Britney Spears'), r('Toxic', 'Britney Spears'),
+    ];
+    expect(pickPreview(results, 'Toxic', 'Britney Spears')?.previewUrl).toBe('Toxic|Britney Spears');
+    expect(pickPreview([r('Toxic', 'Toxic Tribute Band')], 'Toxic', 'Britney Spears')).toBe(null);
+    expect(pickPreview([r('Emotions', 'Mariah Carey')], 'Emotion', 'Carly Rae Jepsen')).toBe(null);
+    expect(pickPreview([r('Single Ladies (Put a Ring on It)', 'Beyoncé')], 'Single Ladies (Put a Ring on It)', 'Beyonce')).toBeTruthy();
+    // Found by searching all 132 songs: each of these was picked over the record.
+    expect(pickPreview([r('Telephone (Kaskade Mix)', 'Lady Gaga'), r('Telephone (feat. Beyoncé)', 'Lady Gaga')], 'Telephone', 'Lady Gaga')?.trackName)
+      .toBe('Telephone (feat. Beyoncé)');
+    expect(pickPreview([r('Last Dance (Live)', 'Donna Summer'), r('Last Dance (Single Version)', 'Donna Summer'), r('Last Dance', 'Donna Summer')], 'Last Dance', 'Donna Summer')?.trackName)
+      .toBe('Last Dance');
+    expect(pickPreview([r('Last Dance (Live)', 'Donna Summer')], 'Last Dance', 'Donna Summer')).toBeTruthy();   // the singer, live, beats a generic track
+    expect(pickPreview([r('Stupid Girls', 'P!nk')], 'Stupid Girls', 'Pink')).toBeTruthy();
+    expect(pickPreview([r('And All That Jazz', 'Catherine Zeta-Jones, Renée Zellweger & Taye Diggs')], 'All That Jazz', 'Catherine Zeta-Jones')).toBeTruthy();
   });
 
   it('never confuses a moment name with a song title', () => {

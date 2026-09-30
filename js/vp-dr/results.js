@@ -35,12 +35,16 @@ import { tagSfx, lipsyncSfxOf } from './sfx.js';
    (Without those files each falls back to the suspense track; music.js.) */
 function callMusicOf(s) {
   if (s.t === 'confess') return null;
-  if (s.t === 'hold') return 'decision';
+  if (s.t === 'hold') return 'the-call';
   if (s.t === 'stakes') return 'bottom-two';
   // The winner is named under the same cue: the show does not change the
   // music for "Condragulations" (the fanfare and the crowd are the effect).
   if (s.raw === 'BTM2' || s.raw === 'ELIM') return 'up-for-elimination';
-  return 'decision';
+  /* TOP & BOTTOM, NOT THE DECISION CUE. "I've Made My Decision" is a cut of
+     The Last Sun — the verdict's own music — and under the call it sounded
+     like a sashay (the user: "the call is using the sashay music"). The call
+     is the tops and the bottoms named: Dredmill. */
+  return 'the-call';
 }
 
 /* The room's reaction to one line of the call: the win is a fanfare and the

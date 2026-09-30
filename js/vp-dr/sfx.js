@@ -218,6 +218,9 @@ export function lipsyncSfxOf(sc) {
   if (k === 'lipsync-suspense' || k === 'lipsync-call') return 'heartbeat';
   if (k === 'lipsync-beat') return tier === 'legendary' ? 'roar' : tier === 'strong' ? 'cheer' : tier === 'lost' ? 'groan' : null;
   if (k === 'lipsync-hook') return tier === 'nailed' ? 'roar' : null;
+  // The finish: the room goes up for a runaway or a finish nobody lost.
+  if (k === 'lipsync-last-chorus') return tier === 'runaway' || tier === 'both-great' ? 'roar'
+    : tier === 'close' || tier === 'ahead' ? 'cheer' : null;
   if (k === 'lipsync-stunt') return tier === 'landed' ? 'slam' : tier === 'failed' ? 'gasp' : null;
   if (k === 'lipsync-shantay') return 'shantay';
   if (k === 'lipsync-sashay') return 'sashay';

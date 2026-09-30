@@ -183,7 +183,7 @@ describe('the transcript, read', () => {
        again. The check still does its job — it catches a beat that has
        swallowed the NEXT one, which is what a run-on looks like — rather than
        a card that simply has more prose on it than it used to. */
-    for (const l of body) expect(l.length, 'a beat ran into the next').toBeLessThan(2600);
+    for (const l of body) expect(l.length, `a beat ran into the next: ${l.trim().slice(0, 400)}`).toBeLessThan(2600);
   });
 
   it('THE COLD OPEN DOES NOT CARRY TONIGHT\'S EXIT MESSAGE', () => {

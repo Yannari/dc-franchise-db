@@ -24,7 +24,10 @@ const APT = new Set(['chat', 'date', 'plead', 'joker-chat', 'life', 'home-video'
 const ALERT = new Set(['alert', 'power-reveal', 'disrupter', 'hack', 'no-block', 'mission']);
 // Meet the players: who walks in, who they really are, and the profile built.
 const ARRIVE = new Set(['profiles', 'arrival']);
-export const stageOf = kind => (ARRIVE.has(kind) ? 'arrive' : APT.has(kind) ? 'apt' : ALERT.has(kind) ? 'alert' : 'ui');
+// The big moments (js/vp-ci/moments.js), each on its own set.
+const MOMENT = { ratings: 'rate', 'final-ratings': 'rate', hangout: 'hangout', blocking: 'blocked',
+  visit: 'room', meet: 'room', goodbye: 'video', reveal: 'studio' };
+export const stageOf = kind => MOMENT[kind] || (ARRIVE.has(kind) ? 'arrive' : APT.has(kind) ? 'apt' : ALERT.has(kind) ? 'alert' : 'ui');
 
 // Whose arrival a block is: the player making their profile, or, for a
 // reaction, the newcomer somebody else is looking at.
@@ -48,7 +51,9 @@ export function circleScreens(row) {
     const steps = [];
     const arrive = ARRIVE.has(s.kind);
     for (const b of s.script.blocks) {
-      const tag = arrive ? { about: subjectOf(s, b) } : {};
+      // Every step knows its block (the pool it came from) and, on a big
+      // moment, who that block is about.
+      const tag = { key: b.key, ...(arrive ? { about: subjectOf(s, b) } : {}), ...(b.on ? { on: b.on } : {}) };
       const first = steps.length;
       for (const l of b.lines || []) {
         steps.push({ who: l.who && l.who !== 'host' ? l.who : null, host: l.who === 'host' || l.kind === 'host',
@@ -58,7 +63,7 @@ export function circleScreens(row) {
       if (arrive && steps[first]) steps[first].entry = true;
     }
     const cast = [...new Set([...(s.who || []), ...steps.map(x => x.who).filter(Boolean), ...(s.about ? [s.about] : [])])].filter(h => row.ci.profiles?.[h]);
-    return { id: s.id || `s${si}`, kind: s.kind, stage: stageOf(s.kind),
+    return { id: s.id || `s${si}`, kind: s.kind, stage: stageOf(s.kind), ...(s.d ? { d: s.d } : {}), who: s.who || [],
       title: g ? `A game: ${g.name}` : TITLES[s.kind] || s.kind, cast, steps };
   });
 }

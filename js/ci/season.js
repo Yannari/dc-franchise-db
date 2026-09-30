@@ -63,6 +63,18 @@ export function applyCarried(state, carried) {
 // (a fan base), and warms to a fan favourite or resents a known villain. A
 // catfish hiding their fame is never recognised this way: that is why a
 // celebrity catfishes.
+// What the big moments' screens draw (js/vp-ci/moments.js), kept small: a
+// ranking board, the names at risk, who was blocked, the finale board.
+const board = d => ({ ballots: (d.ballots || []).map(b => ({ voter: b.voter, order: b.order })),
+  results: (d.results || []).map(r => ({ profile: r.profile, place: r.place })), influencers: d.influencers || [] });
+export const STAGE_DATA = {
+  ratings: board, 'final-ratings': board,
+  hangout: d => ({ atRisk: d.atRisk || [], target: d.target ?? null }),
+  blocking: d => ({ target: d.target ?? null, by: d.by || [], channel: d.channel || null, secret: !!d.secret }),
+  reveal: d => ({ placements: (d.placements || []).map(p => ({ profile: p.profile, place: p.place })) }),
+  party: d => ({ theme: d.theme, props: d.props || [] }),
+};
+
 export const FAME_SEEN = { celebrity: 0.8, threat: 0.45, villain: 0.45, known: 0.18 };
 function recogniseFame(state, rng) {
   const seen = state.recognised;
@@ -262,7 +274,8 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
         aired: state.scenes.filter(s => s.day === d.day && s.aired)
           .map(s => ({ id: s.id, kind: s.kind, who: s.who, script: s.script || null,
             ...(s.kind === 'game' ? { game: s.data.gameId } : {}),
-            ...(s.kind === 'recognise' && s.data.profile ? { about: s.data.profile } : {}) })) } };
+            ...(s.kind === 'recognise' && s.data.profile ? { about: s.data.profile } : {}),
+            ...(STAGE_DATA[s.kind] ? { d: STAGE_DATA[s.kind](s.data, s) } : {}) })) } };
     rows.push(row);
     gs.episodeHistory.push(row);
   }

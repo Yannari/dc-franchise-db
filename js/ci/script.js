@@ -901,6 +901,9 @@ export function sceneBlocks(state, scene) {
   return (BLOCKS[scene.kind]?.(state, scene) || []).filter(b => b.cast.a);
 }
 
+// Scene kinds whose screens read each block's cast (js/vp-ci/moments.js).
+export const ON_STAGE = new Set(['ratings', 'final-ratings', 'hangout', 'blocking', 'visit', 'meet', 'reveal', 'goodbye']);
+
 export function writeScene(state, scene) {
   const blocks = [];
   // Who has already said hello to the group in this scene (an authored greeting).
@@ -913,8 +916,12 @@ export function writeScene(state, scene) {
     const entry = pickEntry(state, b.keys || b.key, facts, pairKey, rng, b.cast.a);
     if (!entry) { (state.missingPools ||= {})[b.key] = (state.missingPools[b.key] || 0) + 1; return; }
     const from = b.keys ? entry.id.replace(/\.[^.]+$/, '') : b.key;
+    // The big moments' screens need to know who each block is about (the
+    // name on the ranking slot, the tile at risk, the place on the board).
+    const on = ON_STAGE.has(scene.kind)
+      ? Object.fromEntries(['a', 'b', 'c'].filter(k => typeof b.cast[k] === 'string').map(k => [k, b.cast[k]])) : null;
     blocks.push({ key: from, ...(b.phase ? { phase: b.phase } : {}), ...(b.round != null ? { round: b.round } : {}),
-      ...renderEntry(state, entry, b.cast, rng, ctx) });
+      ...(on ? { on } : {}), ...renderEntry(state, entry, b.cast, rng, ctx) });
   });
   // A slip happens inside the conversation: weave it into the chat before the
   // chat's closing beat, rather than printing it as a second scene.

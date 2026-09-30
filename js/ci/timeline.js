@@ -17,10 +17,10 @@ export const POSITIONS = ['first', 'early', 'middle', 'late', 'last'];
 // Weights by position. Standard dominates every stretch, as it does on the show.
 export const NIGHT_DRAWS = {
   first: [['standard', 6], ['sole', 2]],
-  early: [['standard', 7], ['sole', 1]],
-  middle: [['standard', 7]],
-  late: [['standard', 6], ['sole', 1]],
-  last: [['standard', 6]],
+  early: [['standard', 7], ['sole', 1], ['save-first', 1]],
+  middle: [['standard', 7], ['save-first', 2], ['trio', 1], ['secret', 1], ['mutual', 0.5]],
+  late: [['standard', 6], ['sole', 1], ['secret', 2], ['super', 2], ['mutual', 0.5]],
+  last: [['standard', 6], ['super', 3]],
 };
 
 export function positionOf(i, n) {

@@ -25,9 +25,9 @@ import { SCENES_MORE } from './scenes-more.js';
 import { SCENES_WEAR } from './scenes-wear.js';
 import { REGISTER_LINES } from './registers.js';
 import { VOICE_NOTICED } from './voice-noticed.js';
-import { FORMAT_LINES } from './formats.js';
+import { FORMAT_LINES, FORMAT_LINES_2 } from './formats.js';
 
 export const POOLS = {};
-for (const part of [CHAT_A, CHAT_B, SLIPS, FEED, CIRCLE, PROFILES, RATINGS, HANGOUT, BLOCKING, VISIT, GOODBYE, FINALE, HOST, GAME_LINES, LIFE_LINES, SHARED_LINES, G_STATEMENT_NAME, G_ASK_GUESS, G_MAKE, G_REST, G_MORE, G_CALLBACKS, SCENES_MORE, SCENES_WEAR, REGISTER_LINES, VOICE_NOTICED, FORMAT_LINES]) {
+for (const part of [CHAT_A, CHAT_B, SLIPS, FEED, CIRCLE, PROFILES, RATINGS, HANGOUT, BLOCKING, VISIT, GOODBYE, FINALE, HOST, GAME_LINES, LIFE_LINES, SHARED_LINES, G_STATEMENT_NAME, G_ASK_GUESS, G_MAKE, G_REST, G_MORE, G_CALLBACKS, SCENES_MORE, SCENES_WEAR, REGISTER_LINES, VOICE_NOTICED, FORMAT_LINES, FORMAT_LINES_2]) {
   for (const [k, v] of Object.entries(part)) POOLS[k] = [...(POOLS[k] || []), ...v];
 }

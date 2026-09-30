@@ -87,3 +87,192 @@ export const FORMAT_LINES = {
     { turns: [{ by: 'a', react: "{c}. Final answer. Don't overthink it." }, { by: 'a', say: 'I will overthink it for the rest of my life.' }] },
   ]),
 };
+
+// ── Task 3: the other Hangout formats ─────────────────────────────────
+// alert.* as above. ratings.hidden — a, when the results are not shown.
+// result.secret / result.super — a learns in private that it is them.
+// save.announce — a (Influencer) saves b in the Circle Chat; save.react — a
+// (saved) about b (the saver); save.passed — a (not saved) about b (the
+// saver). offer.open — a reads the offer, b is the other Influencer;
+// offer.yes / offer.no — a's answer about b; offer.betrayed — a (blocked)
+// about b (who took it); offer.declined — a and b both said no.
+// block.announce.secret — the Circle names c; block.announce.offer — a
+// (who took the offer) and c (blocked). block.inperson.walk / .tell — a is
+// the Super Influencer, c or b the blocked player; .door — a is the
+// blocked player, b the Super Influencer at the door.
+export const FORMAT_LINES_2 = {
+  ...E('alert.trio', [
+    { turns: [{ by: 'a', react: "'Tonight, the top three Players will become Influencers.' Three?" },
+      { by: 'b', react: 'Three people have to agree? Good luck with that.' }] },
+    { turns: [{ by: 'a', react: "'There will be three Influencers tonight.' Okay. More people, more politics." },
+      { by: 'b', say: 'Two of them can outvote the third. Somebody is getting overruled.' }] },
+    { turns: [{ by: 'a', react: "Three Influencers. So it's a vote now." }, { by: 'b', react: 'Please let me be one of the three.' }],
+      beat: '{b} crosses {b.posAdj} fingers.' },
+  ]),
+  ...E('alert.save-first', [
+    { turns: [{ by: 'a', react: "'Before the Influencers block, each of them must save one Player.' In public?" },
+      { by: 'b', react: "So we're about to find out who everybody's real friend is." }] },
+    { turns: [{ by: 'a', react: "'Each Influencer will save one Player in the Circle Chat.' Oh, this is going to hurt somebody." },
+      { by: 'b', say: 'If I am not saved, I will know exactly what that means.' }] },
+    { turns: [{ by: 'a', react: 'A public save. Everybody sees who picks who.' }, { by: 'b', react: 'That is so much pressure. I love it.' }],
+      beat: '{b} pulls {b.posAdj} knees up to {b.posAdj} chest.' },
+  ]),
+  ...E('alert.secret', [
+    { turns: [{ by: 'a', react: "'Tonight, the results will not be shown.' Wait, what?" },
+      { by: 'b', react: "So the Influencers could be anybody. They could be the person I'm talking to." }] },
+    { turns: [{ by: 'a', react: "'The Influencers will remain secret.' Oh, that's evil." },
+      { by: 'b', say: "Everybody's going to be lying about where they placed." }] },
+    { turns: [{ by: 'a', react: 'Secret Influencers. Nobody will know who did it.' }, { by: 'b', react: 'Which means everybody will guess.' }],
+      beat: '{b} narrows {b.posAdj} eyes at the screen.' },
+  ]),
+  ...E('alert.super', [
+    { turns: [{ by: 'a', react: "'Tonight there will be one Super Influencer.' Super?" },
+      { by: 'b', react: "One person. Total power. And we don't even get to see the results." }] },
+    { turns: [{ by: 'a', react: "'The Super Influencer will block in person.' In person? At your door?" },
+      { by: 'b', say: 'Imagine opening your door and it is the person who blocked you.' }] },
+    { turns: [{ by: 'a', react: 'A Super Influencer. Nobody knows who, or who they are coming for.' },
+      { by: 'b', react: 'Every knock is going to give me a heart attack.' }], beat: '{b} checks that the door is locked.' },
+  ]),
+  ...E('alert.mutual', [
+    { turns: [{ by: 'a', react: "'The Influencers may choose to block each other.' Each other?" },
+      { by: 'b', react: 'This is how friendships end.' }] },
+    { turns: [{ by: 'a', react: "'Each Influencer can block their fellow Influencer.' In front of everyone?" },
+      { by: 'b', say: 'Nobody would actually do that. Right? Right?' }] },
+    { turns: [{ by: 'a', react: 'The Influencers can turn on each other. Oh, I cannot wait.' },
+      { by: 'b', react: 'I am getting snacks for this.' }], beat: '{b} runs to the kitchen.' },
+  ]),
+  ...E('ratings.hidden', [
+    { turns: [{ by: 'a', react: "No results? I don't even know if I'm safe." }], beat: '{a} stares at the blank screen.' },
+    { turns: [{ by: 'a', react: 'I have never wanted to see a number this badly.' }] },
+    { turns: [{ by: 'a', react: 'Top? Bottom? Middle? I have no idea. None.' }], beat: '{a} paces the length of the apartment.' },
+    { turns: [{ by: 'a', say: "Whoever the Influencers are, they're sitting there right now knowing it. And I don't." }] },
+    { turns: [{ by: 'a', react: 'This is the worst kind of waiting. The blind kind.' }] },
+  ]),
+  ...E('result.secret', [
+    { turns: [{ by: 'a', react: "'You are an Influencer. Nobody else knows.' Oh my God." },
+      { by: 'a', say: 'Poker face. Poker face.' }], beat: '{a} covers {a.posAdj} mouth with both hands.' },
+    { turns: [{ by: 'a', react: 'Me? Secretly? Okay. Tell nobody. Not even the plants.' }] },
+    { turns: [{ by: 'a', react: 'An Influencer, and nobody will ever know it was me. That is so much power.' }],
+      beat: '{a} smiles at the screen very slowly.' },
+  ]),
+  ...E('result.super', [
+    { turns: [{ by: 'a', react: "'You are the Super Influencer.' Me? Alone?" },
+      { by: 'a', say: 'And I have to go to their door. I have to say it to their face.' }], beat: '{a} sits down on the floor.' },
+    { turns: [{ by: 'a', react: 'Super Influencer. Oh no. Oh yes. Oh no.' }] },
+    { turns: [{ by: 'a', react: "Nobody knows it's me. And tonight I walk into somebody's apartment and end their game." }],
+      beat: '{a} looks at the door for a long moment.' },
+  ]),
+  ...E('save.announce', [
+    { turns: [{ by: 'a', send: "I'm saving {b}. You've had my back from day one." }], beat: 'Every apartment reads it at once.' },
+    { turns: [{ by: 'a', say: 'Only one choice for me.', send: 'My save goes to {b}. No hesitation.' }] },
+    { turns: [{ by: 'a', send: "{b}, you're safe with me tonight. I hope you know why." }] },
+    { turns: [{ by: 'a', send: 'This was easy. I am saving {b}.' }], beat: '{a} sends it before {a.sub} can second-guess it.' },
+  ]),
+  ...E('save.react', [
+    { turns: [{ by: 'a', react: "{b} saved me. In front of everybody. I'm going to cry." }] },
+    { turns: [{ by: 'a', react: 'Safe! {b}, I owe you. I owe you big.' }], beat: '{a} jumps up and down on the couch.' },
+    { turns: [{ by: 'a', react: '{b} picked me. That tells me everything I need to know.' }] },
+    { turns: [{ by: 'a', react: 'Oh, thank God. Thank you, {b}. Thank you, thank you.' }], beat: '{a} presses both hands to {a.posAdj} heart.' },
+  ]),
+  ...E('save.passed', [
+    { turns: [{ by: 'a', react: "{b} didn't pick me. Okay. Noted." }], beat: '{a} sets the tablet down very carefully.' },
+    { turns: [{ by: 'a', react: 'I really thought {b} would save me. I really did.' }] },
+    { turns: [{ by: 'a', react: "So that's where I stand with {b}. Good to know." }] },
+    { turns: [{ by: 'a', react: 'Everybody just watched {b} choose someone over me.' }], beat: "{a}'s smile doesn't reach {a.posAdj} eyes." },
+  ]),
+  ...E('offer.open', [
+    { turns: [{ by: 'a', react: "'Would you like to block your fellow Influencer?' Oh, this is cruel." },
+      { by: 'b', react: 'They are asking me too. Of course they are.' }] },
+    { turns: [{ by: 'a', react: "I could end {b}'s game right now. With one word." },
+      { by: 'b', say: "If {a} says yes, I'm gone. If I say yes, {a} is gone." }] },
+    { turns: [{ by: 'a', react: 'The Circle is asking if I want to block {b}. It is actually asking.' }], beat: '{a} laughs, then does not.' },
+  ]),
+  ...E('offer.yes', [
+    { turns: [{ by: 'a', say: "It's a game. {b} would do the same to me." }, { by: 'a', react: 'Circle, yes.' }], beat: '{a} does not look away from the screen.' },
+    { turns: [{ by: 'a', say: 'I will never get a cleaner shot at {b}.' }, { by: 'a', react: 'Yes. Send it.' }] },
+    { turns: [{ by: 'a', say: 'Sorry, {b}. This is how I win.' }], beat: '{a} presses the button fast.' },
+  ]),
+  ...E('offer.no', [
+    { turns: [{ by: 'a', say: 'No. Never. {b} is my person.' }] },
+    { turns: [{ by: 'a', say: "I'm not doing that to {b}. That's not who I am." }], beat: '{a} shakes {a.posAdj} head at the screen.' },
+    { turns: [{ by: 'a', say: 'Circle, no. And I hope {b} says no too.' }] },
+    { turns: [{ by: 'a', react: 'No. I could never look {b} in the eye again.' }] },
+  ]),
+  ...E('offer.betrayed', [
+    { turns: [{ by: 'a', react: '{b} said yes? {b} said yes?' }, { by: 'a', say: 'I said no. I said no for {b}.' }],
+      beat: '{a} stares at the screen, a hand over {a.posAdj} mouth.' },
+    { turns: [{ by: 'a', react: 'Wow. {b}. Wow.' }, { by: 'a', say: 'Everybody just saw who {b} really is.' }] },
+    { turns: [{ by: 'a', react: 'I trusted {b} with everything. And {b} took the first chance to get rid of me.' }],
+      beat: '{a} sinks down onto the floor.' },
+  ]),
+  ...E('offer.declined', [
+    { turns: [{ by: 'a', react: '{b} said no too. Oh, thank God.' }, { by: 'b', react: '{a} said no. We are good. We are so good.' }] },
+    { turns: [{ by: 'a', react: 'Neither of us took it. That means something.' }, { by: 'b', say: 'Now we go and block somebody else, together.' }] },
+    { turns: [{ by: 'a', react: 'Both no. Both loyal.' }, { by: 'b', react: 'I knew {a} would say no. I knew it.' }],
+      beat: '{a} and {b} both let out a breath in separate apartments.' },
+  ]),
+  ...E('block.announce.secret', [
+    { turns: [{ by: 'host', say: 'The secret Influencers have made their decision. {c} has been blocked.' }], beat: 'Every apartment goes quiet.' },
+    { turns: [{ by: 'host', say: 'Players, {c} has been blocked from The Circle. The Influencers remain secret.' }] },
+    { turns: [{ by: 'host', say: 'Somebody in this building just blocked {c}, and nobody knows who.' }], beat: 'Every apartment waits for a name that never comes.' },
+  ]),
+  ...E('block.announce.offer', [
+    { turns: [{ by: 'a', send: 'I had the chance, and I took it. I am blocking... {c}' }], beat: 'Every apartment waits on the dots.' },
+    { turns: [{ by: 'a', send: "It's the game. I'm sorry, {c}. I'm blocking you." }] },
+    { turns: [{ by: 'a', send: 'This is the hardest thing I have done in here. I am blocking... {c}' }] },
+  ]),
+  // hangout.open.trio — a, b and c, the three Influencers. trio.agree — a
+  // and b (and the third) settle on c together; trio.outvoted — a's side wins,
+  // b is overruled, c is blocked.
+  ...E('hangout.open.trio', [
+    { turns: [{ by: 'a', send: 'Three of us. Okay. This is going to be a conversation.' }, { by: 'b', send: 'Majority rules, right?' },
+      { by: 'c', send: 'Majority rules. Let\'s go one by one' }] },
+    { turns: [{ by: 'a', react: "'Influencers, you will now meet in the Hangout.' All three of us." },
+      { by: 'b', send: 'Hi both! This is so weird' }, { by: 'c', send: 'Weird is one word for it lol' }] },
+    { turns: [{ by: 'a', send: 'Before anything. Two of us can outvote the third. Let\'s not let it get ugly' },
+      { by: 'b', send: 'Agreed' }, { by: 'c', send: "Agreed. Let's just be honest" }] },
+  ]),
+  ...E('hangout.trio.agree', [
+    { turns: [{ by: 'a', send: 'So we all agree. It\'s {c}.' }, { by: 'b', send: 'All three of us. That makes it easier' }],
+      beat: 'In three apartments, three people let out a breath.' },
+    { turns: [{ by: 'a', send: "Unanimous. {c}." }, { by: 'b', send: 'Unanimous' }] },
+    { turns: [{ by: 'a', send: "Nobody's arguing? Okay. It's {c}." }, { by: 'b', send: "I'm not arguing. It's {c}" }] },
+  ]),
+  ...E('hangout.trio.outvoted', [
+    { turns: [{ by: 'a', send: "It's two against one. It's {c}. I'm sorry." }, { by: 'b', send: "Fine. For the record, I said no" }],
+      beat: '{b} sits back from the screen, arms folded.' },
+    { turns: [{ by: 'a', send: "Majority says {c}." }, { by: 'b', say: "I just got outvoted. In my own Hangout." }] },
+    { turns: [{ by: 'b', send: "I don't love it. But I get it" }, { by: 'a', send: "Thank you. It's {c}" },
+      { by: 'b', react: 'I will remember this.' }] },
+  ]),
+  // visit.inperson.bye — a, the Super Influencer, leaves b's apartment;
+  // visit.inperson.after — a (blocked) alone after, b (the one who came).
+  ...E('visit.inperson.bye', [
+    { turns: [{ by: 'a', say: "I should go. I'm so sorry." }, { by: 'b', say: 'Go. Win it. Make it worth it.' }], beat: '{a} hugs {b} one more time at the door.' },
+    { turns: [{ by: 'a', say: 'Thank you for not hating me.' }, { by: 'b', say: "Give it a day. Then I won't." }], beat: 'They both laugh, and {a} goes.' },
+    { turns: [{ by: 'a', say: 'I have to go back now.' }, { by: 'b', say: 'I know. Close the door gently.' }], beat: '{a} closes the door behind {a.obj}.' },
+  ]),
+  ...E('visit.inperson.after', [
+    { turns: [{ by: 'a', react: "{b} came all the way here to do it. I respect that. I hate it, but I respect it." }],
+      beat: '{a} sits down on the couch where {b} just was.' },
+    { turns: [{ by: 'a', react: 'That was the strangest goodbye of my life.' }], beat: '{a} stares at the closed door.' },
+    { turns: [{ by: 'a', react: 'Okay. Pack your bag. It\'s over.' }], beat: '{a} starts folding clothes very slowly.' },
+  ]),
+  ...E('block.inperson.walk', [
+    { turns: [{ by: 'a', say: "I have to go to {c}'s door. I have to say it to {c.posAdj} face." }], beat: '{a} takes a long breath and opens the door.' },
+    { turns: [{ by: 'a', say: "Every step down this hallway, I'm changing my mind and changing it back." }],
+      beat: '{a} walks slowly past door after door.' },
+    { turns: [{ by: 'a', say: 'Okay. This is it. {c} has no idea.' }], beat: '{a} stops outside a door and raises a hand to knock.' },
+  ]),
+  ...E('block.inperson.door', [
+    { turns: [{ by: 'a', react: 'Somebody is at my door. Oh no. Oh no.' }], beat: '{a} opens the door and freezes.' },
+    { turns: [{ by: 'a', react: "Hi. You're... you're the Super Influencer?" }, { by: 'b', say: 'Can I come in?' }] },
+    { turns: [{ by: 'a', react: "It's you. It's really you." }, { by: 'b', say: "I'm so sorry. I had to do this in person." }] },
+  ]),
+  ...E('block.inperson.tell', [
+    { turns: [{ by: 'a', say: "I'm the Super Influencer, and I came to tell you myself. I'm blocking you." }, { by: 'b', react: 'Me. Okay. Okay.' }] },
+    { turns: [{ by: 'a', say: "I didn't want you to find out from a screen. It's you tonight." }, { by: 'b', react: 'Thank you for coming. I think.' }] },
+    { turns: [{ by: 'a', say: 'This is the worst part of the whole game. I have to block you.' }, { by: 'b', say: 'Can I at least give you a hug?' }],
+      beat: 'They hug in the doorway for a long time.' },
+  ]),
+};

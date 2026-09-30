@@ -13,7 +13,7 @@ import { GAMES } from './games-data.js';
 const TITLES = {
   profiles: 'Setting up the profiles', recognise: 'A face they know', status: 'Status update',
   likes: 'The Newsfeed', chat: 'Private chat', 'circle-chat': 'Circle Chat', arrival: 'A new Player',
-  'after-party': 'The after-party', ratings: 'The Ratings', hangout: 'The Hangout', alert: 'An alert',
+  'after-party': 'The after-party', ratings: 'The Ratings', hangout: 'The Hangout', alert: 'An alert', save: 'A save', offer: 'The offer',
   blocking: 'The blocking', visit: 'The visit', report: 'What the visit "said"', goodbye: 'The goodbye video',
   'final-ratings': 'The final ratings', meet: 'The finalists meet', reveal: 'The winner',
   game: 'A game', party: 'The party', life: 'Alone in the apartment', 'home-video': 'A video from home',

@@ -39,7 +39,10 @@ const WARMING = new Set(['bond', 'checkin', 'flirt', 'ally']);
 // whole face to be liked, and the warmth a good chat earns shows it. Without
 // it catfish reached the final as often as honest players and lost it
 // (win given final 11% vs 25%, 60 seasons; the real show: 5 of 10 won).
-export const CURATED = 0.3;
+// 0.3 read ~40% of seasons won by a catfish; with the Plan 3b formats
+// (hidden ratings, public saves) that fell to ~35%, and 0.4 reads 46%
+// (400 seasons).
+export const CURATED = 0.4;
 const LIKED = new Set(['affection', 'attraction']);
 const toward = (state, h, dim, v) => (v > 0 && LIKED.has(dim) && state.profiles[h]?.mode === 'catfish' ? v * (1 + CURATED) : v);
 

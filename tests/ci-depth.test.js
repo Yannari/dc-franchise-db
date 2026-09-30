@@ -131,7 +131,9 @@ describe('every big moment airs in full', () => {
       for (const sc of state.scenes.filter(x => x.aired && SCENE_DEPTH[x.kind])) {
         const lines = sc.script.blocks.reduce((n, b) => n + blockText(state, b).filter(l => l.trim()).length, 0);
         (seen[sc.kind] ||= []).push(lines);
-        const min = sc.kind === 'meet' && sc.who.length < 3 ? 4 : SCENE_DEPTH[sc.kind];
+        // A visit delivered in person (a Super Influencer) opens at the talk:
+        // the walk and the door are in the blocking scene before it.
+        const min = sc.kind === 'meet' && sc.who.length < 3 ? 4 : sc.kind === 'visit' && sc.data.inPerson ? 12 : SCENE_DEPTH[sc.kind];
         if (lines < min) (thin[sc.kind] ||= []).push(lines);
       }
     }

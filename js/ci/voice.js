@@ -111,8 +111,9 @@ export function byAuthored(text, av, rng = () => 0.5, { speech = false, greet = 
   if (greet && av.greetings?.length && rng() < 0.8) t = lead(pickOf(av.greetings, rng), t);
   else {
     // Aloud, alone in the apartment: no lead-in addressed to somebody, no sign-off.
-    // A reply doesn't open with a question of its own; a question isn't signed off.
-    const pool = [...(av.openers || []).filter(x => (!speech || !/[,:]$/.test(x)) && !(reply && /\?$/.test(x))).map(x => ['open', x]),
+    // A reply doesn't open with a question of its own; a question isn't signed off;
+    // aloud, an opener is a sentence of its own, never a lead-in or a question.
+    const pool = [...(av.openers || []).filter(x => (!speech || !/[,:?]$/.test(x)) && !(reply && /\?$/.test(x))).map(x => ['open', x]),
       ...(av.fillers || []).map(x => ['fill', x]),
       ...(speech || endsAsking(t) ? [] : (av.signoffs || []).map(x => ['sign', x]))];
     if (pool.length && rng() < rate) {

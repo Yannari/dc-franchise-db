@@ -194,6 +194,22 @@ export const SCENES_WEAR = {
     { turns: [{ by: 'a', send: "I just wanted to say hi. That's it. That's the message" }, { by: 'b', send: "Hi back. Best message I got today {e:heart}" }] },
   ]),
 
+  // chat.bond.cold — a reaches out, and b isn't having it.
+  ...E('chat.bond.cold', [
+    { turns: [{ by: 'a', send: "Hi! Figured I'd say hello since we haven't talked yet" }, { by: 'b', send: 'Hey' },
+      { by: 'a', say: "'Hey.' That's it. That's the whole message." }] },
+    { turns: [{ by: 'a', send: "What's your favorite thing about being in here so far?" }, { by: 'b', send: "Honestly? The quiet" },
+      { by: 'a', react: 'Okay. I can take a hint.' }] },
+    { turns: [{ by: 'a', send: 'Wanna play twenty questions?' }, { by: 'b', send: "Maybe later. I'm in the middle of something" },
+      { by: 'a', send: 'Oh okay no worries' }], beat: '{a} stares at the screen a little longer than {a.sub} needs to.' },
+    { turns: [{ by: 'a', send: 'Hey {b}! Loved your status this morning' }, { by: 'b', send: 'Thanks' },
+      { by: 'a', react: 'One word. Wow.' }] },
+    { turns: [{ by: 'a', say: "Let's try this again.", send: 'How are you holding up?' }, { by: 'b', send: "I'm good. You?" },
+      { by: 'a', send: 'Good!' }, { by: 'a', react: "And that's where it died." }] },
+    { turns: [{ by: 'a', send: "I feel like I don't know you at all yet" }, { by: 'b', send: "Yeah it's been a busy few days" },
+      { by: 'a', send: 'Totally. Maybe tomorrow?' }, { by: 'b', send: 'Maybe' }] },
+  ]),
+
   // chat.ally.warm — a asks b to team up, and b says yes.
   ...E('chat.ally.warm', [
     { turns: [{ by: 'a', say: 'Time to lock this in.', send: "Real question. If it comes down to it, are you with me?" },

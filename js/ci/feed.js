@@ -94,9 +94,9 @@ export function noticeStyle(state, rng, sc) {
   return note;
 }
 
-export function runCircleChat(state, rng, { party = false, final = false } = {}) {
+export function runCircleChat(state, rng, { party = false, final = false, first = false } = {}) {
   const all = [...state.active];
-  const sc = addScene(state, 'circle-chat', all, { party, final, posts: [], theories: [] }, all);
+  const sc = addScene(state, 'circle-chat', all, { party, final, first, posts: [], theories: [] }, all);
   for (const h of all) {
     const n = Math.round(S(state, h, 'social') / 5 * rng() + (party ? 1 : 0));
     for (let i = 0; i < n; i++) {

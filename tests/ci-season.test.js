@@ -44,7 +44,9 @@ describe('a whole season', () => {
     expect(JSON.stringify(two.rows)).toBe(JSON.stringify(one.rows));
     const pool = makePool(6, 11).map(p => ({ ...p, bio: 'rewritten by the author' }));
     const three = play(13, 11, { pool });
-    expect(JSON.stringify(three.rows)).toBe(JSON.stringify(one.rows));
+    // The row shows each profile's bio (the arrival screens); the game is the rest.
+    const game = rows => JSON.stringify(rows, (k, v) => (k === 'bio' ? undefined : v));
+    expect(game(three.rows)).toBe(game(one.rows));
   });
 
   for (const [n, newcomers] of [[7, 2], [18, 10]]) {

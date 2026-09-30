@@ -19,7 +19,9 @@ import { streamFor } from '../dr/rng.js';
 import { CIRCLE_FORMAT } from '../shows.js';
 import { newState, addScene, bump, peopleOf } from './state.js';
 import { truthOf, drawPersonas, buildProfiles } from './profiles.js';
-import { setBelief } from './beliefs.js';
+import { setBelief, nudgeBelief } from './beliefs.js';
+import { bioFor } from './persona-data.js';
+import { S } from './state.js';
 import { initMind, driftMind } from './mind.js';
 import { seedAttraction, planChats, contextFor } from './chat.js';
 import { runChat } from './conversation.js';
@@ -54,6 +56,36 @@ export function applyCarried(state, carried) {
 }
 
 /** A catfish wearing an alum's face is recognised by anyone who knows that alum. */
+// A famous face is recognised (user, 2026-09-30). A player who shows their
+// own face and is famous may be recognised by anyone who sees their profile:
+// the more famous, and the sharper the one looking, the likelier. Once a pair.
+// The one who recognises them knows the profile is real, sees a bigger threat
+// (a fan base), and warms to a fan favourite or resents a known villain. A
+// catfish hiding their fame is never recognised this way: that is why a
+// celebrity catfishes.
+export const FAME_SEEN = { celebrity: 0.8, threat: 0.45, villain: 0.45, known: 0.18 };
+function recogniseFame(state, rng) {
+  const seen = state.recognised;
+  for (const [h, p] of Object.entries(state.profiles)) {
+    if (!state.active.includes(h) || p.mode === 'catfish') continue;
+    const person = state.people[p.players[0]];
+    const base = FAME_SEEN[person?.rep];
+    if (!base) continue;
+    // An edited profile that hides the fame still shows the face: half as likely.
+    const odds = base * ((p.edits || []).includes('fame') ? 0.5 : 1);
+    for (const obs of state.active) {
+      const key = `fame:${obs}>${h}`;
+      if (obs === h || seen[key]) continue;
+      seen[key] = true;
+      if (rng() >= odds * S(state, obs, 'intuition') / 10) continue;
+      const sc = addScene(state, 'recognise', [obs], { profile: h, fame: person.rep }, [obs]);
+      nudgeBelief(state, obs, h, 'real', 0.35, sc);
+      nudgeBelief(state, obs, h, 'threat', person.rep === 'celebrity' ? 0.45 : 0.3, sc);
+      if (person.rep === 'villain') bump(obs, h, 'resentment', 1); else bump(obs, h, 'affection', 0.8);
+    }
+  }
+}
+
 function recognise(state, carried) {
   const known = carried?.sums || [];
   const seen = state.recognised;
@@ -156,6 +188,10 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
       jokerMeets(state, ds(`joker:${d.day}`), arriving);
     }
     recognise(state, carried);
+    recogniseFame(state, ds(`fame:${d.day}`));
+    // Day 1 opens like the show: the first Circle Chat, where the strangers
+    // say hello, straight after the profiles and before any private chat.
+    if (d.day === 1) runCircleChat(state, ds('open:1'), { first: true });
 
     // Alone in the apartment, then the chats, the game, and the evening:
     // a party (a party day, or a prize) or Circle Chat; then videos from home.
@@ -169,7 +205,7 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
     }
     if (!d.finale) {
       if (d.party || state.partyNext) { state.partyNext = false; runParty(state, ds(`party:${d.day}`)); }
-      else runCircleChat(state, rng);
+      else if (d.day !== 1) runCircleChat(state, rng);
     }
     const videos = new Set(state.homeVideoFor || []);
     state.homeVideoFor = [];
@@ -214,7 +250,13 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
           // `portrait:<name>`, or null); age/job for the profile card. The
           // screens read these (js/vp-ci), never the engine's state.
           [h, { name: p.shown?.name, people: [...p.players], mode: p.mode, face: p.shown?.face ?? null,
-            age: p.shown?.age ?? null, job: p.shown?.job ?? null, personaId: p.personaId ?? null }])),
+            age: p.shown?.age ?? null, job: p.shown?.job ?? null, personaId: p.personaId ?? null,
+            status: p.shown?.status ?? null, reason: p.reason ?? null,
+            bio: (() => { const pr = p.personaId && state.pool.find(x => x.id === p.personaId); return pr ? (pr.bio || bioFor(pr)) : null; })() }])),
+        // Who each player really is (the arrival screens): the viewer is
+        // told; the room is not.
+        cast: Object.fromEntries(Object.values(state.people).map(t => [t.name,
+          { age: t.age ?? null, job: t.job ?? null, hometown: t.hometown ?? null, rep: t.rep || 'none', stars: t.stars ?? null }])),
         blocked: state.blocked.filter(b => b.day === d.day).map(b => b.handle),
         arrivals: arriving, scenes: state.scenes.filter(s => s.day === d.day).length,
         aired: state.scenes.filter(s => s.day === d.day && s.aired)

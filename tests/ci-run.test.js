@@ -316,3 +316,20 @@ describe('the player files Circle screens under the Circle\'s own words, never "
     expect(labels.has('Camp')).toBe(false);
   });
 });
+
+describe('who is known as a villain', () => {
+  const who = (name, extra = {}) => ({ name, slug: name.toLowerCase(), stats: {}, ...extra });
+  it('someone who has aired before and played a villain or a schemer; a mastermind reads as a big threat', () => {
+    const stars = { hea: 1.5, sco: 1, mas: 1, new: 0 };
+    const k = circleKnownAs([who('Hea', { archetype: 'villain' }), who('Sco', { archetype: 'schemer' }), who('Mas', { archetype: 'mastermind' }), who('New', { archetype: 'villain' })],
+      { starsOf: p => stars[p.slug] ?? 0 });
+    expect(k.Hea.rep).toBe('villain');
+    expect(k.Sco.rep).toBe('villain');
+    expect(k.Mas.rep).toBe('threat');
+    expect(k.New.rep).toBe('none');          // a first-timer: nobody has seen them play anything
+  });
+  it('a celebrity stays a celebrity, whatever they played', () => {
+    const k = circleKnownAs([who('Ale', { archetype: 'villain' })], { starsOf: () => 5 });
+    expect(k.Ale.rep).toBe('celebrity');
+  });
+});

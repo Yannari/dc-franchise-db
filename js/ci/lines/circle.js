@@ -2,6 +2,44 @@
 // a, b and c are the first three to post. `circle.theory`: a says in public
 // that b is not who they say they are (the engine made that claim public).
 export const CIRCLE = {
+  // Day 1: the very first Circle Chat. Strangers, a blank screen, and
+  // nobody wants to be the first to type (spec: US 1 Ep 1 opens this way).
+  'circle.first': [
+    { id: 'circle.first.01', turns: [
+      { by: 'a', react: "'Circle Chat is now open.' Oh my God. Okay. Everybody's gonna be in there." },
+      { by: 'b', send: "HELLO EVERYONE!!! {e:party} So happy to be here with you all" },
+      { by: 'a', react: "Okay, {b} went first. Thank God.", send: "Heyyy everybody! Can't wait to get to know you all {e:heart}" },
+      { by: 'c', send: "Hi hi hi!! Circle fam {e:hug} {t:DayOne}" },
+    ], beat: '{a} lets out a breath and sits back on the couch.' },
+    { id: 'circle.first.02', turns: [
+      { by: 'a', send: "Okay I'll say it. Is everybody else as nervous as me right now?? {e:sweat}" },
+      { by: 'b', send: "SO nervous lol. My hands are shaking" },
+      { by: 'c', react: "Nervous. Everybody's nervous. Good. Nobody's playing yet.", send: "Same!! We're all in this together {e:heart}" },
+    ] },
+    { id: 'circle.first.03', turns: [
+      { by: 'a', react: "Don't be first. Never be first. Let somebody else set the tone." },
+      { by: 'b', send: "Well somebody has to break the ice so... hi!! {e:smile}" },
+      { by: 'c', send: "Hi!! I love that you went first lol" },
+      { by: 'a', react: "Okay, the ice is broken.", send: "Hey guys! So excited to meet everybody {e:smile}" },
+    ] },
+    { id: 'circle.first.04', turns: [
+      { by: 'a', send: "Quick question for the group: what are we all eating tonight? First impressions matter {e:laugh}" },
+      { by: 'b', send: "Honestly just snacks. I'm too nervous to cook" },
+      { by: 'c', send: "Pizza. Always pizza. Judge me {e:laugh}" },
+      { by: 'a', react: "Pizza. I like {c} already." },
+    ] },
+    { id: 'circle.first.05', turns: [
+      { by: 'a', send: "Hey everybody! Let's make this the nicest group chat in Circle history {e:heart} {t:GoodVibesOnly}" },
+      { by: 'b', react: "'Good vibes only.' Says every single person who's about to stab somebody in the back.", send: "Love that!! Good vibes {e:clap}" },
+      { by: 'c', send: "Good vibes only {e:hug}" },
+    ], beat: '{b} raises an eyebrow at the screen and says nothing more.' },
+    { id: 'circle.first.06', turns: [
+      { by: 'a', react: "Everybody's typing at once. Okay. Read the room. Who's loud, who's quiet." },
+      { by: 'b', send: "WHAT'S UP CIRCLE {e:fire}{e:fire}" },
+      { by: 'c', send: "Hi everyone :) nice to meet you all" },
+      { by: 'a', react: "{b} is loud, {c} is careful. Noted." },
+    ] },
+  ],
   'circle.open': [
     { id: 'circle.open.01', turns: [
       { by: 'a', react: "'Circle Chat is now open.' Okay. I'm not gonna be the first one to talk." },

@@ -60,9 +60,11 @@ export function rosterFactsOf(p = {}) {
 /** "Already famous?" left on Auto: what the room might know of each player,
  *  from the franchise's celebrity system (js/fame.js stars, by slug), the cast
  *  form's background, and the franchise record. In order:
- *    a known schemer                                   -> a villain
+ *    a known schemer in the record                     -> a villain
  *    4.5+ stars (Icon, Celebrity), or background Celebrity -> a celebrity
- *    2.5+ stars (Household Name, Star), or a past winner/finalist -> a big threat
+ *    aired before, and played a villain or a schemer   -> a villain
+ *    2.5+ stars (Household Name, Star), a past winner/finalist,
+ *      or aired before as a mastermind                 -> a big threat
  *    any recorded past or fame, or a returnee          -> known
  *    otherwise                                         -> nobody
  *  Returns { name: { rep, stars } }; `starsOf` is for tests. */
@@ -74,10 +76,16 @@ export function circleKnownAs(cast = players || [], { starsOf = p => fameStarsFo
     let stars = null;
     try { stars = starsOf(p); } catch { stars = null; }
     const s = Number(stars) || 0;
+    // Seen on TV before: a record, any fame, or a returnee.
+    const aired = !!m || s > 0 || p.isReturnee || p.backgroundType === 'alumni';
+    // How they played on screen is how the audience knows them (user,
+    // 2026-09-30): the backfilled seasons hold no betrayals, so the record's
+    // schemer score alone found nobody. A first-timer is never auto-marked.
     const rep = m?.knownSchemer >= 0.5 ? 'villain'
       : s >= 4.5 || p.backgroundType === 'celebrity' ? 'celebrity'
-        : s >= 2.5 || m?.repScore >= 0.5 ? 'threat'
-          : m || s > 0 || p.isReturnee || p.backgroundType === 'alumni' ? 'known' : 'none';
+        : aired && ['villain', 'schemer'].includes(p.archetype) ? 'villain'
+          : s >= 2.5 || m?.repScore >= 0.5 || (aired && p.archetype === 'mastermind') ? 'threat'
+            : aired ? 'known' : 'none';
     return [p.name, { rep, stars: stars == null ? null : s }];
   }));
 }
@@ -209,7 +217,7 @@ function _build(inputs, rerolls) {
   const roles = circleRoles(cast, inputs.setup);
   const known = circleKnownAs((players || []).filter(p => p && cast.includes(p.name)));
   const setup = Object.fromEntries(cast.map((n, i) => [n, { ...(inputs.setup[n] || {}), role: roles[i],
-    from: rosterFactsOf((players || []).find(p => p && p.name === n) || { name: n }), autoRep: known[n]?.rep || 'none' }]));
+    from: rosterFactsOf((players || []).find(p => p && p.name === n) || { name: n }), autoRep: known[n]?.rep || 'none', autoStars: known[n]?.stars ?? null }]));
   const seed = _seed();
   const outer = gs;
   let result, inner;

@@ -722,6 +722,44 @@ function _card(title, label, ic, inner) {
     + '<h3 class="cv-card-title">' + _esc(title) + '</h3>'
     + inner + '</div>';
 }
+// ── THE PACT TALKS BACK (2026-09-30) ──────────────────────────────────
+//
+// The user: "we need more dialogue in the conclave". A proposal was a speech
+// into silence; now somebody answers it — backing the name when it is the one
+// they came up the stair with, pushing their own when it is not — and the
+// proposer gets the last word. The overrule is said out loud by both sides,
+// and the name is spoken before the wax. {t} the name proposed, {mine} the
+// answering Traitor's own, {T} tonight's. No exit verb is written here.
+const TALK_AGREE = [
+  '{t}. Yes. I was going to say the same.',
+  'Fine by me. {t} has been getting far too close.',
+  'Good. Nobody will look at us for {t}.',
+  '{t} works. Clean, quiet, nobody sees it coming.',
+];
+// a pushback and the proposer's answer TO THAT pushback, as pairs, so the
+// comeback always answers what was actually said
+const TALK_PUSH = [
+  ['{t}? {t} is harmless. It’s {mine} who worries me.', 'Harmless people win this game. That’s exactly the problem.'],
+  ['Not {t}. If {t} goes tonight, they’ll look straight at us.', 'They’ll look at whoever they already suspect. That isn’t us.'],
+  ['I hear you. But {mine} is the one asking the questions.', 'Questions I can handle. {t} is the one getting answers.'],
+  ['You’re wasting a night on {t}. {mine} is the problem.', '{mine} can wait a night. {t} can’t.'],
+];
+const TALK_LOSES = [
+  'Fine. But when this goes wrong, remember I said {t}.',
+  'I don’t like it. I’ll go along with it, but I don’t like it.',
+  'You’re making a mistake. I want that on the record.',
+];
+const TALK_WINS = [
+  'Noted. Now let’s move on.',
+  'It won’t go wrong.',
+  'Then you can be the first to say you told us so.',
+];
+const TALK_SETTLE = [
+  'Then it’s settled. {T}.',
+  'That’s it, then. {T}. Write it down.',
+  '{T}. Nobody changes their mind on the stairs.',
+];
+
 function _said(who, line) {
   return '<div class="cv-said">' + _av(who, 46)
     + '<div><div class="cv-said-txt">&ldquo;' + line + '&rdquo;</div>'
@@ -948,6 +986,28 @@ function _buildBeats(rec, ep) {
     + '<div class="cv-cloaks">' + cloaks + '</div>' + chips), null, 'cloaks');
 
   // ── III. the arguments, one beat each ──
+  // SOMEBODY ANSWERS: the next Traitor round the table, backing the name or
+  // pushing their own; if they push, the proposer has the last word
+  const talkUsed = new Set();
+  const _pickFresh = (pool, k) => {
+    const i0 = _hash(k) % pool.length;
+    for (let d = 0; d < pool.length; d++) {
+      const x = pool[(i0 + d) % pool.length], id = Array.isArray(x) ? x[0] : x;
+      if (!talkUsed.has(id)) { talkUsed.add(id); return x; }
+    }
+    return pool[i0];
+  };
+  const _answer = (a, i) => {
+    if (plain || forced || argued.length < 2) return '';
+    const by = argued[(i + 1) % argued.length];
+    if (!by || by.traitor === a.traitor) return '';
+    const k = key + '|ans|' + i + '|' + by.traitor;
+    const agree = by.target === a.target;
+    const subs = { t: _esc(a.target), mine: _esc(by.target) };
+    if (agree) return _said(by.traitor, _fill(_pickFresh(TALK_AGREE, k), subs));
+    const pair = _pickFresh(TALK_PUSH, k);
+    return _said(by.traitor, _fill(pair[0], subs)) + _said(a.traitor, _fill(pair[1], subs));
+  };
   argued.forEach((a, i) => {
     const subs = Object.assign({ t: a.target, T: a.target, a: a.traitor, A: a.traitor },
       _pr(a.target));
@@ -998,7 +1058,8 @@ function _buildBeats(rec, ep) {
     push('argue', _card(soloTitle,
       chalice ? 'III. At the shelves' : plain ? 'III. No argument' : 'III. The argument', 'quill',
       '<p>' + soloLead + '</p>'
-      + _slip({ target: a.target, by: a.traitor, reason, unsaid, solo: plain })),
+      + _slip({ target: a.target, by: a.traitor, reason, unsaid, solo: plain })
+      + _answer(a, i)),
     i === 0 ? 'shortlist' : null, 'argue');
   });
 
@@ -1075,6 +1136,8 @@ function _buildBeats(rec, ep) {
           Object.assign({ t: lost, T: lost, a: x.loser, A: x.loser }, _pr(lost))),
         });
       }).join('')
+      + _said(o.loser, _fill(_pick(TALK_LOSES, key + '|loses'), { t: _esc(kept) }))
+      + _said(o.winner, _pick(TALK_WINS, key + '|wins'))
       + '<p>' + _pick(OVERRULE_KEPT, key + '|kept') + '</p>'),
     'overrule', 'overrule');
   }
@@ -1291,7 +1354,12 @@ function _buildBeats(rec, ep) {
       // person, which is exactly how the defect was reported.
       ? ' &mdash; a Traitor, sitting in this room &mdash; is the name that goes on the letter.</b> '
       : ' is selected as tonight\'s target.</b> ')
-    + _pick(forced ? NAME_TEXT_FORCED : NAME_TEXT, key + '|name') + '</p>'), null, 'name');
+    + _pick(forced ? NAME_TEXT_FORCED : NAME_TEXT, key + '|name') + '</p>'
+    // AND SOMEBODY SAYS IT: whoever carried the name
+    + ((!forced && !plain && argued.length)
+      ? _said((argued.find(a => a.target === rec.target) || argued[0]).traitor,
+        _fill(_pick(TALK_SETTLE, key + '|settle'), { T: _esc(rec.target) }))
+      : '')), null, 'name');
 
   // ── VIII. the wax ──
   //

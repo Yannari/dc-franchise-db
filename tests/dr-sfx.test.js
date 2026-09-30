@@ -107,6 +107,16 @@ describe('the soundtrack', () => {
     }
   });
 
+  it("plays this show's music and no other show's", () => {
+    // The user, twice: Drag Race was playing Perfect Match's tracks. Not even as a fallback.
+    const m = JSON.parse(readFileSync('assets/audio/drag/manifest.json', 'utf8'));
+    for (const [sit, list] of Object.entries(m)) {
+      if (!Array.isArray(list)) continue;
+      for (const t of list) expect(t.file, sit).not.toMatch(/\.\.\//);
+    }
+    expect(readFileSync('js/vp-dr/music.js', 'utf8')).not.toMatch(/audio\/mine/);
+  });
+
   it("keeps the show's own music out of the repo", () => {
     const ignore = readFileSync('.gitignore', 'utf8');
     expect(ignore).toMatch(/^assets\/audio\/drag\/private\/$/m);

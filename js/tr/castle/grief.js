@@ -74,8 +74,17 @@ function _ballotBehind(actor) {
  */
 function _lastGone() {
   const rounds = gs?.tr?.rounds || [];
+  // TONIGHT'S MURDER IS NOT KNOWN YET. The night resolves the murder before
+  // the night's castle scenes run, so the newest round already carries a
+  // victim nobody downstairs will learn about until breakfast — and the vigil
+  // mourned them on the night screen, BEFORE the conclave that kills them
+  // (the user: "Jasmine was grieving Topher before even murdering him").
+  // `episodeHistory` holds the finished episodes, so a round numbered past it
+  // is tonight's: its banishment happened in front of everybody, its murder
+  // has not happened yet as far as the castle knows.
+  const done = (gs?.episodeHistory || []).length;
   for (let i = rounds.length - 1; i >= 0; i--) {
-    if (rounds[i].murdered) return { name: rounds[i].murdered, byMurder: true };
+    if (rounds[i].murdered && !(rounds[i].ep > done)) return { name: rounds[i].murdered, byMurder: true };
     if (rounds[i].banished) return { name: rounds[i].banished, byMurder: false };
   }
   const cast = Object.keys(gs?.tr?.alignment || {});

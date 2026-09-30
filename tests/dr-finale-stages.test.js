@@ -27,7 +27,7 @@ const SCREENS = [
   ['finshowcase', rpBuildShowcase, /^finale:finale-showcase/],
   ['fininterview', rpBuildInterview, /^finale:finale-interview/],
   ['fincut', rpBuildCut, /^finale:finale-cut/],
-  ['fincrownls', rpBuildCrownLipSync, /^finale:(finale-crown-lipsync|finale-preduel|duel-beat|duel-hook)$/],
+  ['fincrownls', rpBuildCrownLipSync, /^finale:(finale-crown-lipsync|finale-preduel|duel-beat|duel-hook|duel-open|duel-finish|crown-speech)$/],
 ];
 // The host's card lights her quoted words and the speech's key words with
 // inline tags (js/vp-dr/host-card.js): dropped here, so a line reads whole.

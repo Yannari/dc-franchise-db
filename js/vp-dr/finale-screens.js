@@ -186,6 +186,7 @@ export function rpBuildCrownLipSync(row) {
     'finale:finale-crown-lipsync', 'finale-duel',
     'finale:finale-preduel', 'finale:finale-interview',
     'finale:duel-beat', 'finale:duel-hook', 'finale:crown-speech',
+    'finale:duel-open', 'finale:duel-finish',
   ]);
   const scenes = (row?.dr?.scenes || []).filter(s =>
     LS_KINDS.has(s.kind) && (s.text || s.data?.duel));
@@ -205,6 +206,9 @@ export function rpBuildCrownLipSync(row) {
     const who = (sc.data?.players || [])[0] || '';
     if (sc.kind === 'finale:finale-crown-lipsync') list.push({ t: 'setup', r: 0, text: sc.text });
     else if (sc.kind === 'finale:crown-speech') list.push({ t: 'speech', r, part: sc.data?.part, final: !!sc.data?.final, text: sc.text });
+    else if (sc.kind === 'finale:duel-open' || sc.kind === 'finale:duel-finish') {
+      list.push({ t: sc.kind === 'finale:duel-open' ? 'open' : 'finish', r, who, tier: sc.data?.tier, text: sc.text });
+    }
     else if (sc.kind === 'finale:finale-preduel' || sc.kind === 'finale:finale-interview') list.push({ t: 'talk', r, who, text: sc.text });
     else if (sc.kind === 'finale:duel-beat') list.push({ t: 'beat', r, who, tier: sc.data?.tier, tempo: sc.data?.tempo, text: sc.text });
     else if (sc.kind === 'finale:duel-hook') list.push({ t: 'hook', r, who, tier: sc.data?.tier, hook: sc.data?.hook, text: sc.text });
@@ -223,7 +227,7 @@ export function rpBuildCrownLipSync(row) {
      (Champion) when the final is decided. */
   const musicOf = s => s.t === 'setup' || s.t === 'talk' ? ['bottom-two', null]
     : s.t === 'speech' ? [/^(two|song|stakes)$/.test(s.part || '') ? 'bottom-two' : 'time-has-come', null]
-      : s.t === 'beat' || s.t === 'hook' ? ['lipsync', songOfRound(s.r)]
+      : s.t === 'beat' || s.t === 'hook' || s.t === 'open' || s.t === 'finish' ? ['lipsync', songOfRound(s.r)]
         : s.t === 'verdict' ? [s.r === n - 1 ? 'the-win' : 'sashay', null] : [null, null];
   const cards = list.map((s, i) => tagStep(fincrownCard(s, i), ...musicOf(s))).join('');
   function fincrownCard(s, i) {
@@ -232,6 +236,8 @@ export function rpBuildCrownLipSync(row) {
     if (s.t === 'speech') return hostCard({ id, ep, text: s.text, tone: s.part === 'for' ? 'big' : s.part === 'time' ? 'hush' : 'plain' });
     if (s.t === 'talk') return hostCard({ id, ep, text: s.text, who: s.who, tone: 'plain' });
     if (s.t === 'beat') return finaleCard({ id, ep, who: s.who, tag: `${s.who} · ${label(s.r)}`, text: s.text });
+    if (s.t === 'open') return finaleCard({ id, ep, tag: `${label(s.r)} · the first verse`, text: s.text });
+    if (s.t === 'finish') return finaleCard({ id, ep, who: s.who, cls: s.tier === 'runaway' ? 'big' : '', tag: `${label(s.r)} · the last chorus`, text: s.text });
     if (s.t === 'hook') {
       return finaleCard({ id, ep, who: s.who, cls: s.tier === 'nailed' ? 'big' : 'red',
         tag: `${s.who} ${s.tier === 'nailed' ? 'takes the moment' : 'loses the moment'}`, text: s.text });

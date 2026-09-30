@@ -144,6 +144,11 @@ const musicWanted = () => (engine.isMusicEnabled ? engine.isMusicEnabled() : tru
 
 /* The tracks, from both places: the repo's manifest (with its loop points)
    and whatever has been uploaded to the studio (the whole file loops). */
+/** Every uploaded or published track, by situation (sfx.js reads its `sfx-<name>` files here). */
+export const momentTracks = () => loadManifest();
+
+/** The sound effects a file can replace (js/vp-dr/sfx.js plays them): upload `sfx-<name>.mp3`. */
+export const DRAG_SFX = ['stinger', 'heartbeat', 'cheer', 'roar', 'slam', 'gasp', 'groan', 'shantay', 'sashay', 'win', 'flash', 'applause'];
 async function loadManifest() {
   if (manifest !== undefined) return manifest;
   const m = {};
@@ -168,7 +173,11 @@ async function decode(c, key, getBytes) {
     const bytes = await getBytes();
     buffers[key] = bytes ? await c.decodeAudioData(bytes) : null;
   } catch { buffers[key] = null; }
-  return buffers[key];
+  /* A SONG THAT FAILED IS ASKED FOR AGAIN next time: one failed search
+     (offline, rate-limited) silenced that song until a reload. */
+  const got = buffers[key];
+  if (!got && key.startsWith('song:')) delete buffers[key];
+  return got;
 }
 const urlBytes = url => async () => { const r = await fetch(url); return r.ok ? r.arrayBuffer() : null; };
 
@@ -399,6 +408,7 @@ export function momentForFile(fileName) {
     .replace(/\s*(#|-|_|\s)\s*\d+$/, '').replace(/[\s_]+/g, '-');
   if (DRAG_SITUATIONS.includes(base)) return base;
   if (/^chal-[a-z0-9-]+$/.test(base)) return base;
+  if (/^sfx-[a-z]+$/.test(base) && DRAG_SFX.includes(base.slice(4))) return base;
   return null;
 }
 

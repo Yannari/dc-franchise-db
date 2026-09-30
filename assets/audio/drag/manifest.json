@@ -1,0 +1,163 @@
+{
+  "note": "Drag Race moments on the user's own royalty-free soundtrack (the Perfect Match set in ../mine, chosen there by measurement). Same shape as that manifest; files are relative to this folder. A moment missing here is silent until a track is uploaded for it (the Upload music button, named after the moment).",
+  "entrances": [
+    {
+      "file": "../mine/starters/arrival-onlystarters.mp3",
+      "at": [
+        1.0
+      ],
+      "loopFrom": 17.5,
+      "loopTo": 80
+    }
+  ],
+  "returns": [
+    {
+      "file": "../mine/ex/ex-arrival.mp3",
+      "at": [
+        4.0
+      ],
+      "loopFrom": 5,
+      "loopTo": 140
+    }
+  ],
+  "drama": [
+    {
+      "file": "../mine/drama/drama-conflict.mp3",
+      "at": [
+        0
+      ],
+      "loopFrom": 7,
+      "loopTo": 110
+    }
+  ],
+  "comedy": [
+    {
+      "file": "../mine/comedy/comedy.mp3",
+      "at": [
+        0
+      ],
+      "loopFrom": 3.5,
+      "loopTo": 60
+    }
+  ],
+  "cry": [
+    {
+      "file": "../mine/goodbye/sad-2-goodbye-message.mp3",
+      "at": [
+        40
+      ],
+      "loopFrom": 20,
+      "loopTo": 120
+    }
+  ],
+  "sweet": [
+    {
+      "file": "../mine/final-wait/winner-waitingfor-reval-4.mp3",
+      "at": [
+        0
+      ],
+      "loopFrom": 15,
+      "loopTo": 72
+    }
+  ],
+  "romance": [
+    {
+      "file": "../mine/kiss/first-kiss-2.mp3",
+      "at": [
+        0,
+        40
+      ],
+      "loopFrom": 0,
+      "loopTo": 100
+    },
+    {
+      "file": "../mine/kiss/first-kiss.mp3",
+      "at": [
+        34,
+        74
+      ],
+      "loopFrom": 2,
+      "loopTo": 175
+    }
+  ],
+  "suspense": [
+    {
+      "file": "../mine/suspense/elimination-suspense-2.mp3",
+      "at": [
+        1.0
+      ],
+      "loopFrom": 2,
+      "loopTo": 125
+    }
+  ],
+  "crowning": [
+    {
+      "file": "../mine/final-wait/winner-waitingforthereveal-1.mp3",
+      "at": [
+        0.5
+      ],
+      "loopFrom": 9.5,
+      "loopTo": 100
+    }
+  ],
+  "winner": [
+    {
+      "file": "../mine/final-wait/winner-waitingforeveal-2.mp3",
+      "at": [
+        5
+      ],
+      "loopFrom": 10,
+      "loopTo": 80
+    }
+  ],
+  "crowned": [
+    {
+      "file": "../mine/final-wait/winner-waitingforeveal-2.mp3",
+      "at": [
+        5
+      ],
+      "loopFrom": 10,
+      "loopTo": 80
+    }
+  ],
+  "shantay": [
+    {
+      "file": "../mine/final-wait/winner-waitingfor-reval-4.mp3",
+      "at": [
+        0
+      ],
+      "loopFrom": 15,
+      "loopTo": 72
+    }
+  ],
+  "sashay": [
+    {
+      "file": "../mine/goodbye/sad-2-goodbye-message.mp3",
+      "at": [
+        0
+      ],
+      "loopFrom": 0,
+      "loopTo": 120
+    }
+  ],
+  "finale": [
+    {
+      "file": "../mine/intro/intro.mp3",
+      "at": [
+        1.5
+      ],
+      "loopFrom": 2,
+      "loopTo": 60
+    }
+  ],
+  "reunion": [
+    {
+      "file": "../mine/intro/intro.mp3",
+      "at": [
+        1.5
+      ],
+      "loopFrom": 2,
+      "loopTo": 60
+    }
+  ]
+}

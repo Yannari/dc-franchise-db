@@ -91,7 +91,7 @@ export const SCENES_MORE = {
   ]),
   ...E('visit.talk2.answers', [
     talk("If you could do it again, would you?", "Honestly? I don't know. Probably."),
-    talk("Who else was in on it?", "It was just the two of us. I promise."),
+    talk("Who else was in on it?", "It was just the two of us. I promise.", { when: { sole: false } }),
     talk("Was there anything I could have done?", "Talk to more people. That's it. That's the whole thing."),
     talk("At least you told me to my face.", "You deserved that much."),
   ]),

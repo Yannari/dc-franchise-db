@@ -26,6 +26,8 @@ import { runChat } from './conversation.js';
 import { morningFeed, runCircleChat } from './feed.js';
 import { runRating } from './ratings.js';
 import { standardBlocking, goodbyeVideo, deliverReports } from './blocking.js';
+import { FORMATS, prepareNight, runBlocking } from './formats.js';
+import { bookSeason } from './timeline.js';
 import { arrive } from './arrivals.js';
 import { openLedger, noteJoin, airDay, fanFavorite } from './public.js';
 import { buildSchedule } from './schedule.js';
@@ -84,6 +86,10 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
   const queue = handles.filter(isNewcomer);
   const schedule = buildSchedule({ total: handles.length, starters: starters.length,
     finalists: state.options.finalists, days: state.options.days });
+  // What each ratings night is: booked by slot, or drawn (Plan 3b).
+  const booked = bookSeason(schedule, streamFor(seed, 'timeline'),
+    { total: handles.length, finalists: state.options.finalists, bookings: state.options.bookings || {} });
+  schedule.splice(0, schedule.length, ...booked);
   state.schedule = schedule;
 
   const rows = [];
@@ -124,7 +130,11 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
     if (videos.size) videoFromHome(state, streamFor(seed, `home:${d.day}`), [...videos]);
 
     let rating = null;
-    if (d.block) { rating = runRating(state, rng); standardBlocking(state, rng, rating); }
+    if (d.block) {
+      const night = prepareNight(state, { ...(d.night || { format: 'standard' }) });
+      rating = runRating(state, rng, { seats: FORMATS[night.format]?.seats ?? 2 });
+      runBlocking(state, rng, rating, night);
+    }
     if (d.final) { finalRow = finalDay(state, rng); rating = finalRow; }
     if (d.finale) result = finaleDay(state, rng, finalRow);
 

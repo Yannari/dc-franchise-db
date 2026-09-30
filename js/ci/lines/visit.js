@@ -195,7 +195,7 @@ export const VISIT = {
       { by: 'a', say: "Of course I came here. You owe me an answer." },
       { by: 'b', say: "It came down to numbers. I'm sorry." },
     ] },
-    { id: 'visit.talk.answers.04', turns: [
+    { id: 'visit.talk.answers.04', when: { sole: false }, turns: [
       { by: 'a', say: "Just be honest with me. Was it you?" },
       { by: 'b', say: "It was both of us. I'm not gonna lie to your face." },
       { by: 'a', say: "Okay. I respect that more than you know." },

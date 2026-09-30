@@ -337,6 +337,8 @@ export const TWIST_CATEGORIES = [
   { id: 'team', label: 'Team Dynamics' },
   // The villa's dumpings: how a vote night decides who leaves (Perfect Match).
   { id: 'dumping', label: 'Dumpings' },
+  // How a ratings night ends (The Circle): the Hangout, a sole influencer, ...
+  { id: 'blocking', label: 'Blockings' },
   { id: 'arrivals', label: 'Arrivals' },
   { id: 'first', label: 'Night One' },
   { id: 'games', label: 'Villa Challenges' },
@@ -1186,6 +1188,19 @@ export const TWIST_CATALOG = [
   { id:'pm-immunity', emoji:'\u{1F3C6}', name:'Immunity Challenge', format:'perfect-match',
     category:'immunity', phase:'any', engineType:'pm-immunity', pmOn:['public-vote'], pmApply:{ immunity:true },
     desc:'Before the vote, the couples compete in a challenge, and the couple who win are safe: whatever the public or the villa decide tonight, they cannot be at risk. Won on the challenge — strength, nerve and getting on with each other — never on popularity.' },
+  /* ── THE CIRCLE'S BLOCKINGS (Plan 3b) ──
+     How a ratings night ends, booked on the Season Timeline by slot or drawn
+     by where the night sits in the season. `ciFormat` is the engine's name
+     (js/ci/formats.js) and `ciSlots` the positions it can be booked on:
+     first, early, middle, late, last. */
+  { id:'ci-standard', emoji:'\u{1F6AB}', name:'The Hangout', format:'the-circle',
+    category:'blocking', phase:'any', engineType:'ci-standard', ciFormat:'standard', ciSlots:['first','early','middle','late','last'],
+    desc:'Every player ranks everyone else from first to last, and the two with the best average become Influencers. The two of them meet in the Hangout, a private chat nobody else can see, and go through the names at risk one by one: who is a threat, who they trust, who they think is a catfish. Anyone they cannot agree on stays in play, and a tie for second puts three Influencers in the room, who all have to agree. They choose one player to block, announce it to everyone, and the blocked player gets to meet one person face to face before they leave.',
+    incompatible:['ci-sole-influencer'] },
+  { id:'ci-sole-influencer', emoji:'\u{1F451}', name:'Sole Influencer', format:'the-circle',
+    category:'blocking', phase:'any', engineType:'ci-sole-influencer', ciFormat:'sole', ciSlots:['first','early','late'],
+    desc:'Every player ranks everyone else as usual, but tonight only the single top-rated player becomes an Influencer. There is no Hangout partner to argue with or hide behind: they sit alone in their apartment, go through every name at risk out loud, and decide by themselves. The whole building knows exactly who made the call, so whoever they choose to block will come looking for answers, and anyone they spared owes them. They announce one name, and that player is blocked and gets to meet one person before they leave.',
+    incompatible:['ci-standard'] },
   /* ── THE VILLA'S DUMPINGS (Perfect Match, Plan 4.5) ──
      How a vote night decides who leaves, booked on the Season Timeline like
      every other show's twists. `pmFormat` is the engine's own name for it and

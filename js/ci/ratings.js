@@ -132,11 +132,12 @@ function infer(state, rng, row, scene) {
   return out;
 }
 
-export function runRating(state, rng, { final = false } = {}) {
+export function runRating(state, rng, { final = false, seats = Infinity } = {}) {
   const { voters, targets } = ratedPool(state);
   const ballots = voters.map(v => ballot(state, rng, v, targets, { final }));
   const res = results(ballots, targets);
-  const influencers = final ? [] : influencersFrom(res);
+  // A format seats its own number of Influencers (a sole influencer: one).
+  const influencers = final ? [] : influencersFrom(res).slice(0, seats);
   const sc = addScene(state, final ? 'final-ratings' : 'ratings', voters,
     { ballots, results: res, influencers, reveal: revealOrder(res) }, [...state.active]);
   for (const r of res) state.firstPlaces[r.profile] = (state.firstPlaces[r.profile] || 0) + r.firsts;

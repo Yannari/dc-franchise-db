@@ -35,19 +35,19 @@ export function applyBlock(state, h, channel, by, scene) {
   for (const o of state.active) if (rel(o, h, 'affection') > 3) feel(state, o, 'stress', 1);
 }
 
-export function standardBlocking(state, rng, ratingRow) {
+export function standardBlocking(state, rng, ratingRow, { format = 'standard' } = {}) {
   // A tie that makes everybody left an influencer would leave nobody at risk:
   // then only the top two decide.
   let infl = ratingRow.influencers;
   if (!atRiskOf(state, infl).length) infl = infl.slice(0, 2);
   const atRisk = atRiskOf(state, infl);
   for (const h of atRisk) feel(state, h, 'stress', 2);
-  const hangout = addScene(state, 'hangout', infl, { atRisk }, infl);
+  const hangout = addScene(state, 'hangout', infl, { atRisk, format }, infl);
   const d = deliberate(state, rng, infl, atRisk);
   Object.assign(hangout.data, d);
   for (const h of state.active) delete state.immuneNext[h];
   const announcement = addScene(state, 'blocking', [d.announcer, d.target],
-    { by: infl, target: d.target, reason: d.reason, channel: 'influencers' }, [...state.active]);
+    { by: infl, target: d.target, reason: d.reason, channel: 'influencers', format }, [...state.active]);
   applyBlock(state, d.target, 'influencers', infl, announcement);
   const visit = runVisit(state, rng, d.target, infl);
   state.pendingGoodbyes.push(d.target);
@@ -73,7 +73,7 @@ export const REPORT_LIE = 1.2;
 export function runVisit(state, rng, h, blockers) {
   if (!state.active.length) return null;
   const { to, motive } = chooseVisit(state, rng, h, blockers);
-  const sc = addScene(state, 'visit', [h, to], { motive, kiss: false, handed: null });
+  const sc = addScene(state, 'visit', [h, to], { motive, kiss: false, handed: null, by: [...blockers] });
   revealTo(state, to, h, sc);
   revealTo(state, h, to, sc);
   const suspect = state.active.filter(o => o !== to).map(o => [o, belief(state, h, o).real])

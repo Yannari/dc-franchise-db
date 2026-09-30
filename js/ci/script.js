@@ -472,6 +472,43 @@ const BLOCKS = {
       { key: 'plead.pitch', cast: { a: p1, b: i1 } }, { key: 'plead.listen', cast: { a: i1, b: p1 } },
       { key: 'plead.pitch', cast: { a: p2, b: i2 || i1 } }, { key: 'plead.listen', cast: { a: i2 || i1, b: p2 } }];
   },
+  // How a newcomer came in (Plan 3b Task 7).
+  date(state, s) {
+    const [h, chosen] = s.who;
+    const out = [{ key: 'date.pick', cast: { a: h, b: chosen } }, { key: 'date.chat', cast: { a: h, b: chosen } },
+      { key: 'date.gift', cast: { a: h, b: chosen } }];
+    for (const o of s.data.options.filter(x => x !== chosen).slice(0, 1)) out.push({ key: 'date.passed', cast: { a: o, b: h } });
+    return out;
+  },
+  invites(state, s) {
+    const [h] = s.who;
+    const out = s.data.order.slice(0, 3).map((o, i) => ({ key: i ? 'invites.next' : 'invites.first', cast: { a: h, b: o } }));
+    const skipped = s.seenBy.find(o => o !== h && !s.data.order.includes(o));
+    if (skipped) out.push({ key: 'invites.last', cast: { a: skipped, b: h } });
+    return out;
+  },
+  race(state, s) {
+    const [h] = s.who;
+    const [first, ...rest] = s.data.order;
+    return [...(first ? [{ key: 'race.win', cast: { a: first, b: h } }] : []),
+      ...rest.slice(0, 2).map(o => ({ key: 'race.lose', cast: { a: o, b: h } }))];
+  },
+  newparty(state, s) {
+    const [h] = s.who;
+    return [{ key: 'newparty.throw', cast: { a: h } },
+      ...s.data.guests.slice(0, 2).map(g => ({ key: 'newparty.guest', cast: { a: g, b: h } })),
+      ...s.data.left.slice(0, 2).map(o => ({ key: 'newparty.left', cast: { a: o, b: h } }))];
+  },
+  lurk(state, s) {
+    const [h] = s.who;
+    return [{ key: 'lurk.watch', cast: { a: h } }, ...s.data.watched.slice(0, 2).map(o => ({ key: 'lurk.reveal', cast: { a: o, b: h } }))];
+  },
+  chosen(state, s) {
+    const { chosen, by } = s.data;
+    return [{ key: 'chosen.offer', cast: { a: by[0] } }, { key: 'chosen.pick', cast: { a: by[0], b: chosen } },
+      { key: 'chosen.thanks', cast: { a: chosen, b: by[0] } }];
+  },
+  'pair-arrival'(state, s) { return [{ key: 'pairarrival.chat', cast: { a: s.who[0], b: s.who[1] } }]; },
   // Antivirus (US 4 Ep 8-9): who passed it to whom, in order.
   antivirus(state, s) {
     const { holders, passes, left } = s.data;
@@ -571,6 +608,8 @@ const BLOCKS = {
       if (s.data.channel === 'vote') out.push({ key: 'vote.result', cast: { a: target } });
       // Nobody chose: the room reacts to how cold that is.
       if (s.data.channel === 'instant') for (const h of others.slice(0, 2)) out.push({ key: 'block.react.numbers', cast: { a: h, b: target } });
+      // Nobody saved them: the room takes in what that means.
+      if (s.data.channel === 'unsaved') for (const h of others.slice(0, 2)) out.push({ key: 'block.react.unsaved', cast: { a: h, b: target } });
     } else if (s.data.channel === 'statement') {
       out.push({ key: 'block.typing', cast: { a: announcer, c: target }, extra: { reason: s.data.reason } },
         { key: 'block.announce.statement', cast: { a: announcer, c: target } });
@@ -868,7 +907,9 @@ export const POOL_KEYS = [
   ...['save-two', 'plead', 'room-vote', 'forced'].map(f => `alert.${f}`), 'block.announce.unsaved', 'block.announce.vote',
   'block.announce.statement', 'plead.open', 'plead.pitch', 'plead.listen', 'vote.open', 'vote.cast', 'vote.result',
   'statement.open', 'statement.say', 'statement.named', 'save.wait', 'alert.instant', 'alert.double', 'block.announce.instant', 'goodbye.video.close',
-  'block.react.numbers', 'alert.antivirus', 'antivirus.open', 'antivirus.pass', 'antivirus.got', 'antivirus.left', 'block.announce.antivirus',
+  'block.react.numbers', 'block.react.unsaved', 'date.pick', 'date.chat', 'date.gift', 'date.passed', 'invites.first', 'invites.next', 'invites.last',
+  'race.win', 'race.lose', 'newparty.throw', 'newparty.guest', 'newparty.left', 'lurk.watch', 'lurk.reveal',
+  'chosen.offer', 'chosen.pick', 'chosen.thanks', 'pairarrival.chat', 'alert.antivirus', 'antivirus.open', 'antivirus.pass', 'antivirus.got', 'antivirus.left', 'block.announce.antivirus',
   'hangout.agree', 'hangout.yield', 'hangout.trade', 'hangout.pact',
   ...BLOCK_WHY_.map(r => `block.announce.${r}`), 'block.react.self', 'block.react.friend', 'block.react.rival', 'block.react.relief',
   ...MOTIVES_.flatMap(m => [`visit.choose.${m}`, `visit.talk.${m}`]), 'visit.wait', 'visit.wait.catfish',

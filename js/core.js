@@ -1249,6 +1249,34 @@ export const TWIST_CATALOG = [
     category:'blocking', phase:'any', engineType:'ci-forced-statement', ciFormat:'forced', ciSlots:['first','early'],
     desc:'Before anyone rates, every player has to say in the Circle Chat who they would block, out loud and in front of everyone, and everyone named hears it. Then the ratings happen, with all of that in the air. Whoever comes top does not get a Hangout: the name they said that morning is blocked, exactly as they said it. The blocked player gets to meet one person before they leave.',
     incompatible:['ci-standard','ci-sole-influencer','ci-three-influencers','ci-save-one-first','ci-secret-influencers','ci-super-influencer','ci-block-each-other','ci-save-two-each','ci-save-then-plead','ci-room-vote'] },
+  /* ── THE CIRCLE'S ARRIVALS (Plan 3b Task 7) ──
+     How a newcomer comes in, booked on an arrival day by slot (a slot's
+     booking may list a blocking and an arrival) or drawn by how many arrive.
+     `ciEntry` is the engine's name (js/ci/arrivals.js ENTRIES). */
+  { id:'ci-arrive-snoop', emoji:'\u{1F440}', name:'Snoop and Choose', format:'the-circle',
+    category:'arrivals', phase:'any', engineType:'ci-arrive-snoop', ciEntry:'snoop',
+    desc:'The newcomer builds a profile and secretly watches the Circle Chat before anyone knows they exist, reading how everyone talks to everyone. Then they announce themselves and invite exactly one player to a private after-party chat. That player gets a head start on the new arrival; everyone else wonders why it was not them and what was said.' },
+  { id:'ci-arrive-date', emoji:'\u{1F339}', name:'A Date With One of Three', format:'the-circle',
+    category:'arrivals', phase:'any', engineType:'ci-arrive-date', ciEntry:'date',
+    desc:'The Circle shows the newcomer three players and tells them to take one on a virtual dinner date and send them a gift. The newcomer picks, the date happens in a private chat, and the gift arrives at the chosen player\'s door. The whole building hears who was picked, and the two who were offered and passed over feel it.' },
+  { id:'ci-arrive-invites', emoji:'\u{1F4E8}', name:'Invite One by One', format:'the-circle',
+    category:'arrivals', phase:'any', engineType:'ci-arrive-invites', ciEntry:'invites',
+    desc:'The newcomer meets the building by inviting players into private chats one at a time, and every player can see the order. The first invitation is the warmest chat and the strongest start; each later one is a little shorter. Whoever never gets invited at all spends the evening wondering what that means.' },
+  { id:'ci-arrive-race', emoji:'\u{1F3C1}', name:'Race to Message', format:'the-circle',
+    category:'arrivals', phase:'any', engineType:'ci-arrive-race', ciEntry:'race',
+    desc:'The Circle announces a new player and tells everyone that only the first few to message them will get a chat. Everyone races for the keyboard. The fastest gets a real conversation and the newcomer\'s first loyalty; the next ones get less; whoever was slow gets nothing. Speed rewards nerve and people skills, not popularity.' },
+  { id:'ci-arrive-party', emoji:'\u{1F389}', name:'The Newcomer Throws a Party', format:'the-circle',
+    category:'arrivals', phase:'any', engineType:'ci-arrive-party', ciEntry:'party',
+    desc:'The newcomer has to throw a party on their first night and choose who is invited. About half the building gets a message and a good time, and a first bond with the host. The other half sees the party happening without them, and every one of them notices exactly who was left out, including themselves.' },
+  { id:'ci-arrive-lurk', emoji:'\u{1F575}', name:'Lurk Silently', format:'the-circle',
+    category:'arrivals', phase:'any', engineType:'ci-arrive-lurk', ciEntry:'lurk',
+    desc:'The newcomer arrives in secret and watches the Circle for a while, including where everyone stood in the last ratings, before anyone knows they exist. When they are finally revealed they already know who is strong and who is struggling, and the rest of the building has the uncomfortable feeling of having been watched.' },
+  { id:'ci-arrive-chosen', emoji:'\u{1F5F3}', name:'Chosen by the Influencers', format:'the-circle',
+    category:'arrivals', phase:'any', engineType:'ci-arrive-chosen', ciEntry:'chosen',
+    desc:'Two new profiles are waiting to come in, and the last Influencers are shown both and have to choose which one enters tonight. They only have the profiles to go on. The chosen newcomer walks in owing the Influencers who picked them; the other waits for the next arrival. Needs two waiting newcomers and Influencers to choose.' },
+  { id:'ci-arrive-pair', emoji:'\u{1F46F}', name:'Arrive as a Pair', format:'the-circle',
+    category:'arrivals', phase:'any', engineType:'ci-arrive-pair', ciEntry:'pair',
+    desc:'Two newcomers arrive on the same night, and before either meets anyone else the Circle puts them in a private chat with each other. They walk into the building already knowing one person, and usually already allied: two new votes that can move together from day one. Needs two arrivals on the same day.' },
   /* ── THE VILLA'S DUMPINGS (Perfect Match, Plan 4.5) ──
      How a vote night decides who leaves, booked on the Season Timeline like
      every other show's twists. `pmFormat` is the engine's own name for it and

@@ -210,6 +210,20 @@ export const SCENES_WEAR = {
       { by: 'a', send: 'Totally. Maybe tomorrow?' }, { by: 'b', send: 'Maybe' }] },
   ]),
 
+  // chat.compare.warm — a and b compare what they have been told, and find it doesn't match.
+  ...E('chat.compare.warm', [
+    { turns: [{ by: 'a', send: 'Can I ask you something weird? Did anyone tell you I was coming after you?' }, { by: 'b', send: '...Maybe. Why?' },
+      { by: 'a', send: "Because I wasn't. Somebody is stirring" }, { by: 'b', send: 'Okay now I need to know who {e:eyes}' }] },
+    { turns: [{ by: 'a', say: "Put the stories side by side.", send: "Let's compare notes. What did you hear today?" },
+      { by: 'b', send: 'You first' }, { by: 'a', send: 'Fine. I heard you ranked me last' }, { by: 'b', send: 'I ranked you second. Somebody lied to you' }] },
+    { turns: [{ by: 'a', send: "Somebody told me you don't trust me" }, { by: 'b', send: "That's funny, because somebody told ME you don't trust ME" },
+      { by: 'a', send: 'Same person, I bet' }, { by: 'b', send: 'I bet too {e:detective}' }] },
+    { turns: [{ by: 'a', send: 'I think we are being played. Both of us' }, { by: 'b', send: 'By who?' },
+      { by: 'a', send: 'Whoever keeps telling us different things' }, { by: 'b', send: 'Okay. From now on we check with each other first' }] },
+    { turns: [{ by: 'a', send: 'Be honest. Did you say anything bad about me in a chat?' }, { by: 'b', send: 'Never. Did you about me?' },
+      { by: 'a', send: 'Never' }, { by: 'b', send: "Then somebody's making things up" }] },
+  ]),
+
   // chat.ally.warm — a asks b to team up, and b says yes.
   ...E('chat.ally.warm', [
     { turns: [{ by: 'a', say: 'Time to lock this in.', send: "Real question. If it comes down to it, are you with me?" },

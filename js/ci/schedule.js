@@ -20,9 +20,10 @@ export function buildSchedule({ total, starters, finalists = 5, days = null }) {
   const socialAt = new Set(Array.from({ length: social }, (_, k) => Math.floor((k + 0.5) * mid / social)));
   const day = (n, slot, over = {}) => ({ day: n, slot, block: false, arrivals: 0, final: false, finale: false, ...over });
   const out = [day(1, 'rating1', { block: true })];
-  let r = 1;
+  // Slots are unique (the timeline books by slot): social1, social2, ...
+  let r = 1, so = 0;
   for (let i = 0; i < mid; i++) {
-    out.push(socialAt.has(i) ? day(i + 2, 'social') : day(i + 2, `rating${++r}`, { block: true }));
+    out.push(socialAt.has(i) ? day(i + 2, `social${++so}`) : day(i + 2, `rating${++r}`, { block: true }));
   }
   out.push(day(D - 1, 'final-ratings', { final: true }), day(D, 'finale', { finale: true }));
 
@@ -31,7 +32,7 @@ export function buildSchedule({ total, starters, finalists = 5, days = null }) {
   // the middle has a game. Videos from home land two days before the final
   // ratings, as a late-season ritual (US 1, US 4, US 6, US 7).
   out[0].game = true;
-  out.filter(d => d.slot === 'social').forEach(d => { d.game = true; d.party = true; });
+  out.filter(d => d.slot.startsWith('social')).forEach(d => { d.game = true; d.party = true; });
   out.filter(d => d.block && d.day > 1).forEach((d, i) => { if (i % 2 === 0) d.game = true; });
   for (const d of out) { d.game = !!d.game; d.party = !!d.party; d.homeVideos = d.day === D - 3; }
 

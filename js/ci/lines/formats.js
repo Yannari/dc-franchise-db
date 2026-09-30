@@ -509,9 +509,133 @@ export const ANTIVIRUS_LINES = {
     { turns: [{ by: 'a', react: 'We all did that. All of us. Together.' }] },
     { turns: [{ by: 'a', react: "Last place, and that's it? Wow. Bye, {b}." }] },
   ]),
+  // block.react.unsaved — a, after b was the only one nobody saved.
+  ...E('block.react.unsaved', [
+    { turns: [{ by: 'a', react: 'Everybody got saved except {b}. That is so rough.' }], beat: '{a} puts the tablet down.' },
+    { turns: [{ by: 'a', react: "I watched {b}'s name sit there, save after save. I couldn't breathe for {b.obj}." }] },
+    { turns: [{ by: 'a', react: 'Last one standing. The worst place to be standing.' }] },
+    { turns: [{ by: 'a', say: 'Every save was a choice not to save {b}. We all watched it happen.' }] },
+    { turns: [{ by: 'a', react: 'Poor {b}. Nobody picked {b.obj}. Not one person.' }], beat: '{a} shakes {a.posAdj} head slowly.' },
+  ]),
   ...E('block.announce.antivirus', [
     { turns: [{ by: 'host', say: '{c} did not receive the antivirus. {c}, you have been blocked.' }], beat: 'Every apartment goes quiet.' },
     { turns: [{ by: 'host', say: 'Every Player is protected except one. {c} has been blocked from The Circle.' }] },
     { turns: [{ by: 'host', say: 'Without the antivirus, {c} is blocked.' }], beat: '{c} reads it alone.' },
+  ]),
+};
+
+// ── Task 7: arrivals ───────────────────────────────────────────────────
+// date.pick — a (newcomer) chooses b for the date. date.chat — a and b on
+// the date. date.gift — a sends b a gift. date.passed — a (offered, not
+// chosen) about b (newcomer). invites.first / .next — a (newcomer) invites
+// b. invites.last — a (never invited) about b (newcomer). race.win — a got
+// to b (newcomer) first; race.lose — a was too slow for b. newparty.throw —
+// a (newcomer) plans it; newparty.guest — a (guest) at b's party;
+// newparty.left — a (not invited) about b's party. lurk.watch — a
+// (newcomer) watching unseen; lurk.reveal — a finds out b was watching.
+// chosen.offer — a (Influencer) looks at the two profiles; chosen.pick — a
+// lets b in; chosen.thanks — a (newcomer) about b (Influencer).
+// pairarrival.chat — a and b, two newcomers, before anyone else.
+export const ARRIVAL_LINES = {
+  ...E('date.pick', [
+    { turns: [{ by: 'a', react: "'Choose one Player to take on a date.' Three options. Okay." }, { by: 'a', say: "{b}. It has to be {b}." }] },
+    { turns: [{ by: 'a', say: 'Everybody says {b} is the one to know. So, {b}.' }], beat: '{a} taps {b}\'s picture.' },
+    { turns: [{ by: 'a', react: 'A date? On my first day? Fine. {b}.' }] },
+  ]),
+  ...E('date.chat', [
+    { turns: [{ by: 'a', send: 'So this is our date. Candlelight emoji. Very classy' }, { by: 'b', send: 'I dressed up for this, just so you know' },
+      { by: 'a', send: 'Honestly? Best first date I have had in months' }] },
+    { turns: [{ by: 'a', send: "I picked you because everyone says you're the real deal" }, { by: 'b', send: "Well, now I have to live up to that" },
+      { by: 'a', send: "You're doing great so far {e:wink}" }] },
+    { turns: [{ by: 'b', send: 'So why me? Honest answer' }, { by: 'a', send: 'Your profile made me smile. That is it. That is the reason' },
+      { by: 'b', send: 'Okay that is actually really sweet' }] },
+  ]),
+  ...E('date.gift', [
+    { turns: [{ by: 'b', react: 'There is a box at my door. A gift? From {a}?' }], beat: '{b} tears the wrapping off.' },
+    { turns: [{ by: 'b', react: "{a} sent me a teddy bear the size of the couch. I'm keeping it forever." }] },
+    { turns: [{ by: 'b', react: 'A gift! Nobody has sent me anything in here. Thank you, {a}.' }], beat: '{b} hugs the box.' },
+  ]),
+  ...E('date.passed', [
+    { turns: [{ by: 'a', react: 'I was one of the three. And {b} picked someone else.' }] },
+    { turns: [{ by: 'a', react: "So close. Okay. {b} doesn't know what {b.sub}'s missing." }], beat: '{a} flops back on the couch.' },
+    { turns: [{ by: 'a', react: 'Passed over by the new person on day one. Cool. Cool cool.' }] },
+  ]),
+  ...E('invites.first', [
+    { turns: [{ by: 'a', send: 'Hi {b}! You are my very first chat in here' }, { by: 'b', send: "First? I'm honored" },
+      { by: 'a', send: 'You should be {e:laugh}' }] },
+    { turns: [{ by: 'a', say: 'Start with the one everyone likes.', send: "Hey {b}! I'm new. Show me the ropes?" }, { by: 'b', send: 'Rule one: talk to me first. Oh wait, you did' }] },
+    { turns: [{ by: 'a', send: "{b}, I've heard a lot about you. All good things" }, { by: 'b', send: "Only good things? I'll take it" }] },
+  ]),
+  ...E('invites.next', [
+    { turns: [{ by: 'a', send: 'Hi {b}! Your turn. How are you?' }, { by: 'b', send: "Good! Glad I made the list" }] },
+    { turns: [{ by: 'a', send: 'Hey {b}, just wanted to say hi properly' }, { by: 'b', send: 'Hi properly! Welcome in' }] },
+    { turns: [{ by: 'a', send: "{b}! Okay, tell me one thing I need to know about this place" }, { by: 'b', send: 'Everyone is nice. Nobody is safe' }] },
+    { turns: [{ by: 'a', send: 'Hi {b}. Quick hello before I lose track of everyone' }, { by: 'b', send: "Lol it's a lot. You'll figure it out" }] },
+  ]),
+  ...E('invites.last', [
+    { turns: [{ by: 'a', react: '{b} invited four people. Not me. I am not taking that personally. I am taking it very personally.' }] },
+    { turns: [{ by: 'a', react: 'Still waiting for my invite from {b}. Still waiting.' }], beat: '{a} refreshes the screen.' },
+    { turns: [{ by: 'a', react: "Everybody got a chat with {b} except me. Noted." }] },
+  ]),
+  ...E('race.win', [
+    { turns: [{ by: 'a', react: 'First! I got to {b} first!' }, { by: 'a', send: 'Hey {b}! Welcome! I was the fastest, just so you know' },
+      { by: 'b', send: 'I saw! That was impressive' }], beat: '{a} throws both arms in the air.' },
+    { turns: [{ by: 'a', say: 'Type, type, type!', send: 'Hi {b}!!' }, { by: 'b', send: 'You were so fast lol. Hi!' }] },
+    { turns: [{ by: 'a', react: 'Nobody types faster than me. Nobody.' }, { by: 'a', send: 'Welcome {b}! You are stuck with me now' },
+      { by: 'b', send: "Happily stuck. Hi!" }] },
+  ]),
+  ...E('race.lose', [
+    { turns: [{ by: 'a', react: 'Too slow. Somebody beat me to {b}. Of course.' }], beat: '{a} drops the tablet onto the couch.' },
+    { turns: [{ by: 'a', react: 'I was typing! I was typing!' }] },
+    { turns: [{ by: 'a', react: "Second place in a race to say hi. That's a new low." }] },
+  ]),
+  ...E('newparty.throw', [
+    { turns: [{ by: 'a', react: "'You must throw a party tonight.' On my first night? No pressure." },
+      { by: 'a', say: "Okay. Who's on the list and who isn't. This is going to hurt somebody." }], beat: '{a} pulls up the list of names.' },
+    { turns: [{ by: 'a', say: 'Party at mine! Invite-only. Sorry, everybody else.' }] },
+    { turns: [{ by: 'a', react: 'My first move in this game is deciding who is NOT invited. Great.' }] },
+  ]),
+  ...E('newparty.guest', [
+    { turns: [{ by: 'a', react: "I'm invited to {b}'s party! The new person likes me!" }], beat: '{a} puts on {a.posAdj} best shirt.' },
+    { turns: [{ by: 'a', send: "{b}, best party in the building. It's not close" }, { by: 'b', send: 'Glad you came!' }] },
+    { turns: [{ by: 'a', react: 'Invite-only, and I made the list. Look at me.' }] },
+  ]),
+  ...E('newparty.left', [
+    { turns: [{ by: 'a', react: '{b} is throwing a party and I am not invited. Cool. I have my own party. With my plant.' }] },
+    { turns: [{ by: 'a', react: "Half the building is at {b}'s party. I'm in the other half." }], beat: '{a} can hear the music through the wall.' },
+    { turns: [{ by: 'a', react: "{b} doesn't even know me yet and I'm already off the list." }] },
+  ]),
+  ...E('lurk.watch', [
+    { turns: [{ by: 'a', react: "They have no idea I'm here. None." }, { by: 'a', say: 'Okay. Who is running this place?' }], beat: '{a} leans in close to the screen.' },
+    { turns: [{ by: 'a', say: 'I can see everything and nobody can see me. I love this.' }] },
+    { turns: [{ by: 'a', say: "Taking notes. Who's strong, who's struggling, who's lying." }], beat: '{a} writes names on a notepad.' },
+  ]),
+  ...E('lurk.reveal', [
+    { turns: [{ by: 'a', react: '{b} was watching us this whole time? That is creepy. That is genius.' }] },
+    { turns: [{ by: 'a', react: 'Wait. {b} saw everything? Everything we said?' }], beat: '{a} scrolls back through the day, horrified.' },
+    { turns: [{ by: 'a', react: 'So {b} walks in already knowing everything. Great. Love that.' }] },
+  ]),
+  ...E('chosen.offer', [
+    { turns: [{ by: 'a', react: "'Influencers, choose which new Player will enter.' Two profiles. One spot." }], beat: '{a} looks from one picture to the other.' },
+    { turns: [{ by: 'a', say: 'I get to decide who comes in? That is so much power for a Tuesday.' }] },
+    { turns: [{ by: 'a', react: 'Two new faces. Whoever I pick is going to owe me.' }] },
+  ]),
+  ...E('chosen.pick', [
+    { turns: [{ by: 'a', say: '{b}. Something about that profile. {b} gets in.' }] },
+    { turns: [{ by: 'a', say: "I'm letting {b} in. I hope {b} remembers who did." }], beat: '{a} presses the button.' },
+    { turns: [{ by: 'a', say: 'It has to be {b}. Final answer.' }] },
+  ]),
+  ...E('chosen.thanks', [
+    { turns: [{ by: 'a', send: 'I heard you picked me to come in. Thank you {b}' }, { by: 'b', send: 'Of course! I had a good feeling about you' }] },
+    { turns: [{ by: 'a', react: '{b} chose me. I am going to remember that.' }] },
+    { turns: [{ by: 'a', send: "{b}! You're the reason I'm here. I owe you" }, { by: 'b', send: "Don't make me regret it lol" }] },
+  ]),
+  ...E('pairarrival.chat', [
+    { turns: [{ by: 'a', send: 'Hi! Are you new too?' }, { by: 'b', send: 'Brand new. We should stick together' },
+      { by: 'a', send: 'Deal. Two new people, one plan' }] },
+    { turns: [{ by: 'a', send: 'Okay, before we go in there. You and me?' }, { by: 'b', send: "You and me. Nobody's splitting us up" },
+      { by: 'a', send: "Let's go meet everybody" }], beat: 'Two new apartments, two people taking a deep breath.' },
+    { turns: [{ by: 'b', send: 'So we walk in already allies. That is a cheat code' }, { by: 'a', send: "Don't tell anyone" },
+      { by: 'b', send: 'My lips are sealed {e:wink}' }] },
   ]),
 };

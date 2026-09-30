@@ -151,6 +151,7 @@ import * as trTableStageMod from './vp-tr/table-stage.js';
 import * as trSelectionStageMod from './vp-tr/selection-stage.js';
 import * as trArrivalStageMod from './vp-tr/arrival-stage.js';
 import * as trSuspicionStageMod from './vp-tr/suspicion-stage.js';
+import * as trMissionBespokeStageMod from './vp-tr/mission-bespoke-stage.js';
 import * as trSelectionMod from './vp-tr/selection.js';
 import * as trSuspicionMod from './vp-tr/suspicion.js';
 import * as trConfessionalsMod from './vp-tr/confessionals.js';
@@ -278,7 +279,7 @@ const extractedModules = [
   brunchMod, luckyHuntMod, sayUncleMod, tripleDogDareMod, slasherNightMod, monsterCashMod, mineOverMatterMod, treasureIslandMod, operationClassifiedMod, hideAndBeSneakyMod, offTheChainMod, alienEggMod, beachBlanketBogusMod, crazytownMod, chefshankMod, oneFluMod, mastersOfDisastersMod, fullMetalDramaMod, oceansHeistMod, millionBucksBCMod, sportsMarathonMod, superHeroldMod, hauntedHouseMod, hungOutMod, merryGoRoundMod, mazeOfTheFallenMod, demonsPlainerVpMod, princessPrideMod, getAClueMod, rockNRuleMod, crouchingCourtneyMod, houstonMod, topDogMod, walkEgyptMod, crazyFunTimeMod, frozenCrossingMod, vikingSourMod, bridalBrawlsMod, greatFakeOutMod, africanLyingSafariMod, rapaPhooeyMod, drumhellerMod, planesTrainsMod, picnicHangingDorkMod, slapSlapRevMod, broadwayBabyMod, amazonRaceMod, nightMuseumMod, brutalerMod,
   truthOrSharkMod, rockTheDockMod, tropicalTakedownMod, midnightManhuntMod, greecesPiecesMod, hangarBlackMod, iceIceBabyMod, findersCreepersMod, backstabbersAhoyMod, projectRunawayMod, hawaiianPunchMod, aftermayhemMod, socialManipMod, auctionVpMod, settingsMod, themesMod, campEventsMod, twistsMod, rescueIslandMod,
   episodeMod, finaleMod, textBacklogMod, aftermathMod,
-  castUiMod, castRoomMod, studioMod, quickSetupMod, trArrivalMod, trConclaveMod, trRoundTableMod, trColdOpenMod, trHouseStatusMod, trMissionMod, trArmouryMod, trRecruitmentMod, trEndgameMod, trCastleDayMod, trCastleStageMod, trTableStageMod, trSelectionStageMod, trArrivalStageMod, trSuspicionStageMod, trSelectionMod, trSuspicionMod, trConfessionalsMod, trDebugMod, trRunMod, drRunMod, pmRunMod, ciRunMod, ciCastUiMod, pmVpMod, pmCastUiMod, drJudgesUiMod, vpDrRevealMod, vpDrScreensMod, vpDrChartMod, vpDrWerkMod, vpDrArrivalsMod, vpDrChalMod, vpDrStageMod, vpDrResultsMod, bbRunMod, rivalsMod, runUiMod, vpScreensMod, vpFinaleMod, vpUiMod, vpCoachesMod,
+  castUiMod, castRoomMod, studioMod, quickSetupMod, trArrivalMod, trConclaveMod, trRoundTableMod, trColdOpenMod, trHouseStatusMod, trMissionMod, trArmouryMod, trRecruitmentMod, trEndgameMod, trCastleDayMod, trCastleStageMod, trTableStageMod, trSelectionStageMod, trArrivalStageMod, trSuspicionStageMod, trMissionBespokeStageMod, trSelectionMod, trSuspicionMod, trConfessionalsMod, trDebugMod, trRunMod, drRunMod, pmRunMod, ciRunMod, ciCastUiMod, pmVpMod, pmCastUiMod, drJudgesUiMod, vpDrRevealMod, vpDrScreensMod, vpDrChartMod, vpDrWerkMod, vpDrArrivalsMod, vpDrChalMod, vpDrStageMod, vpDrResultsMod, bbRunMod, rivalsMod, runUiMod, vpScreensMod, vpFinaleMod, vpUiMod, vpCoachesMod,
   savestateMod,
   statsExportMod,
   audioMod,

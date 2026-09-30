@@ -33,8 +33,9 @@ import { rpBuildTraitorsDebug } from './vp-tr/debug.js';
 import { rpBuildDragSummary } from './vp-dr/summary.js';
 import { dragScreens } from './vp-dr/screens.js';
 import { perfectMatchVpScreens } from './vp-pm/screens.js';
+import { circleVpScreens } from './vp-ci/screens.js';
 import { momentTitle as pmMomentTitle } from './pm/transcript.js';
-import { DRAG_FORMAT, HOSTS_BY_FORMAT } from './shows.js';
+import { DRAG_FORMAT, HOSTS_BY_FORMAT, CIRCLE_FORMAT } from './shows.js';
 import { rpBuildBBCarePackagePlay } from './vp-bb-twists.js';
 import { rpBuildBBCarePackage } from './vp-bb-care-package.js';
 import { rpBuildBBCoinOfDestiny } from './vp-bb-coin.js';
@@ -14068,6 +14069,13 @@ export function buildVPScreens(epRecord) {
   // or more beats, each a visual-novel stage above its script with the Heart
   // Map beside it; the engine's numbers behind the wrench, like the other
   // shows' Debug screens. Assigned AND returned — callers ignore the return.
+  // ── THE CIRCLE ────────────────────────────────────────────────────
+  // Until Plan 5's stages: every aired scene as a screen, its lines as the
+  // transcript writes them (js/vp-ci/screens.js). Assigned AND returned.
+  if (epRecord.format === CIRCLE_FORMAT) {
+    vpScreens = circleVpScreens(epRecord);
+    return vpScreens;
+  }
   if (epRecord.format === 'perfect-match') {
     const prev = ((typeof window !== 'undefined' && window.gs?.episodeHistory) || []).find(r => r && r.num === epRecord.num - 1) || null;
     let debug = false;

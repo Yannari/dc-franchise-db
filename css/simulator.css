@@ -6719,3 +6719,15 @@
   .pm-isls{grid-template-columns:1fr}
   .pm-studio-summary{justify-content:flex-start}
 }
+
+/* ── The Circle, until Plan 5's stages (js/vp-ci/screens.js) ──
+   A readout: messages as the screen shows them, lines said aloud, stage
+   directions. Colors from the page's tokens, so both themes work. */
+.ci-page .rp-title { margin-bottom: 14px; }
+.ci-block { margin: 0 0 14px; padding-bottom: 10px; border-bottom: 1px solid color-mix(in srgb, var(--muted, #888) 25%, transparent); }
+.ci-block:last-child { border-bottom: 0; }
+.ci-say { margin: 4px 0; line-height: 1.5; }
+.ci-msg { margin: 4px 0 4px 22px; padding: 6px 12px; border-radius: 14px 14px 14px 4px; display: inline-block; max-width: 85%;
+  background: color-mix(in srgb, #3fd8ff 16%, transparent); border: 1px solid color-mix(in srgb, #3fd8ff 40%, transparent); line-height: 1.45; }
+.ci-msg + .ci-msg { display: block; width: fit-content; }
+.ci-stage { margin: 4px 0; font-style: italic; color: var(--muted, #888); }

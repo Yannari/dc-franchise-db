@@ -115,3 +115,19 @@ describe('games, parties and apartment life in a season (Plan 3a)', () => {
     expect(state.scenes.filter(s => s.kind === 'life').length).toBeGreaterThanOrEqual(sched.length);
   });
 });
+
+// Plan 4: re-running an episode turns that day's dice again, and only that day's.
+import { makePlayers as _mp, makePool as _pool, circleSetup as _setup } from './helpers/ci-cast.js';
+import { setPlayers as _sp } from '../js/core.js';
+import { playCircleSeason as _play } from '../js/ci/season.js';
+describe('re-running an episode', () => {
+  it('leaves every earlier day identical and deals the re-run day again', () => {
+    const cast = _mp(13, 4); _sp(cast);
+    const names = cast.map(p => p.name);
+    const sig = r => JSON.stringify([r.ci.blocked, r.ci.aired.map(s => [s.kind, s.who])]);
+    const a = _play({ cast: names, setup: _setup(names, { newcomers: 5 }), pool: _pool(6, 4), seed: 4, options: { script: false } });
+    const b = _play({ cast: names, setup: _setup(names, { newcomers: 5 }), pool: _pool(6, 4), seed: 4, options: { script: false, rerolls: { 4: 1 } } });
+    for (let d = 0; d < 3; d++) expect(sig(b.rows[d])).toBe(sig(a.rows[d]));
+    expect(sig(b.rows[3])).not.toBe(sig(a.rows[3]));
+  });
+});

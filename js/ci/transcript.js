@@ -10,7 +10,7 @@ import { peopleOf } from './state.js';
 import { hostName } from './script.js';
 import { GAMES } from './games-data.js';
 
-const TITLES = {
+export const TITLES = {
   profiles: 'Setting up the profiles', recognise: 'A face they know', status: 'Status update',
   likes: 'The Newsfeed', chat: 'Private chat', 'circle-chat': 'Circle Chat', arrival: 'A new Player',
   'after-party': 'The after-party', ratings: 'The Ratings', hangout: 'The Hangout', alert: 'An alert', save: 'A save', offer: 'The offer', plead: 'The last two', vote: 'The vote', statement: 'Who would you block?', antivirus: 'The antivirus', date: 'A date', invites: 'The invitations', race: 'The race to message', newparty: "The newcomer's party", lurk: 'Watching in secret', chosen: 'Chosen by the Influencers', 'pair-arrival': 'Two new Players', 'power-reveal': 'News from the Circle', hack: 'The Hacker', 'hack-undone': 'Comparing notes', 'joker-chat': 'The Joker', 'joker-pick': "The Joker's pick", 'burner-exposed': 'The burner', 'no-block': 'No blocking', mission: 'A secret task', disrupter: 'First to respond', swap: 'The profile swap', 'swap-back': 'The swap ends', clone: 'The clone', 'ride-or-die': 'Ride or Die', sacrifice: 'Ride or Die: the choice', 'second-chance': 'A second chance', egg: 'The eggs',
@@ -92,4 +92,26 @@ export function seasonHtml(state, rows, result = null) {
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>The Circle — transcript</title>
 <style>body{background:#0b0e24;color:#e8ecff;font:15px/1.55 Georgia,serif;max-width:900px;margin:24px auto;padding:0 16px}
 pre{white-space:pre-wrap;font:inherit}</style></head><body><pre>${esc(seasonText(state, rows, result))}</pre></body></html>`;
+}
+
+// ── From a saved row alone (Plan 4) ──────────────────────────────────────
+// The run tab keeps rows, never the engine's state. A row carries its aired
+// scenes, written, and a name map; that is all these readers need.
+export function rowState(row) {
+  const profiles = Object.fromEntries(Object.entries(row?.ci?.profiles || {}).map(([h, p]) =>
+    [h, { handle: h, shown: { name: p.name }, players: p.people || [], mode: p.mode }]));
+  return { profiles };
+}
+/** One episode as text: the text backlog's Circle transcript. */
+export function episodeText(row) {
+  return dayText(rowState(row), row);
+}
+/** One episode's aired scenes, each with its title and its lines as text. */
+export function episodeScenes(row) {
+  const st = rowState(row);
+  return (row?.ci?.aired || []).filter(s => s.script?.blocks?.length).map(s => {
+    const g = s.kind === 'game' ? GAMES.find(x => x.id === s.game) : null;
+    return { id: s.id, kind: s.kind, title: g ? `A game: ${g.name}` : TITLES[s.kind] || s.kind,
+      blocks: s.script.blocks.map(b => blockText(st, b)) };
+  });
 }

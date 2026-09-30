@@ -26,6 +26,8 @@ import { isPerfectMatchSeason, simulatePerfectMatchEpisode, perfectMatchCanRerun
   perfectMatchSlots, perfectMatchVillaCounts, perfectMatchEpisodes, perfectMatchNights, perfectMatchDrawnChallenges, perfectMatchDrawnNights } from './pm-run.js';
 import { EPISODE_WORDS as PM_EPISODE_WORDS, SLOT_NAMES as PM_SLOT_NAMES, seasonSchedule as pmDrawSchedule, CHALLENGE_NAMES as PM_CHALLENGE_NAMES, RITUAL_NAMES as PM_RITUAL_NAMES, CHALLENGE_NIGHTS as PM_CHALLENGE_NIGHTS } from './pm/schedule.js';
 import { episodeText as pmEpisodeText, momentTitle as pmMomentTitle } from './pm/transcript.js';
+import { isCircleSeason, simulateCircleEpisode, circleCanRerun, lastCircleRefusal, rerunCircleEpisode,
+  circlePendingChange, circleSeasonShape, circleEpisodeMap } from './ci-run.js';
 import { isDragSeason, simulateDragEpisode, invalidateDragQueue,
   dragEpisodesAired, dragScheduleRecorded, rerunDragEpisode, dragCanRerun } from './dr-run.js';
 import { dragBadges } from './dr/badges.js';
@@ -590,7 +592,7 @@ export function renderSeasonHub() {
   const _bbSeason = isBigBrotherSeason();
   // A castle has no tribes and no merge either, so Total Drama's phase names
   // describe nothing about it. What it has is a number of people left.
-  const phaseLabel = (_bbSeason || isTraitorsSeason() || isPerfectMatchSeason())
+  const phaseLabel = (_bbSeason || isTraitorsSeason() || isPerfectMatchSeason() || isCircleSeason())
     ? (model.phase === 'complete' ? 'Complete' : model.remaining ? 'Final ' + model.remaining : 'Setup')
     : model.phase === 'pre-merge' ? 'Pre-Merge' : model.phase === 'post-merge' ? 'Post-Merge' : model.phase === 'finale' ? 'Finale' : model.phase === 'complete' ? 'Complete' : 'Setup';
   const primaryClick = model.primaryAction === 'results' ? "showTab('results')" : model.primaryAction === 'current' ? `viewEpisode(${model.liveEpisode})` : 'simulateNext()';
@@ -1651,6 +1653,30 @@ export function simulateNext() {
   // The whole season plays on the first press (js/pm-run.js); popularity is
   // the engine's own two ledgers, written from what aired, so updatePopularity
   // — which reads a Total Drama episode — is skipped, and the save is not.
+  // ── THE CIRCLE ──────────────────────────────────────────────────────
+  //
+  // Sixth engine, sixth branch, on the FORMAT alone like the rest. The whole
+  // season plays on the first press (js/ci-run.js) and the rows queue; the
+  // audience is the engine's own ledger, so updatePopularity is skipped.
+  if (isCircleSeason()) {
+    const ciEp = simulateCircleEpisode();
+    if (!ciEp) {
+      const why = lastCircleRefusal();
+      alert(why ? `This cast can't start a Circle season yet: ${why}.`
+        : gs.activePlayers && gs.activePlayers.length ? 'This season is already complete.'
+          : 'Add players to Cast Builder first.');
+      return;
+    }
+    const pending = circlePendingChange();
+    if (pending && pending !== _ciNoticeShown) { _ciNoticeShown = pending; alert(pending); }
+    saveGameState();
+    _refreshFeed();
+    _autoRevealSpoiler(ciEp.num);
+    viewingEpNum = ciEp.num;
+    renderRunTab();
+    document.getElementById('run-main').scrollTop = 0;
+    return;
+  }
   if (isPerfectMatchSeason()) {
     const pmEp = simulatePerfectMatchEpisode();
     if (!pmEp) {
@@ -1847,6 +1873,8 @@ function _canReplay(epNum) {
   if (isTraitorsSeason()) return !!(gs && gs._trSeed);
   // The villa has no re-roll yet; the button stays away rather than re-airing.
   if (isPerfectMatchSeason()) return perfectMatchCanRerun();
+  // The Circle re-deals a day off its stored seed, like the villa.
+  if (isCircleSeason()) return circleCanRerun();
   /* THE MAIN STAGE ASKS THE SAME QUESTION THE CASTLE DOES. It used to ask
      "is there a checkpoint", which made the button a property of THIS BROWSER
      SESSION rather than of the season: it vanished on reload, and vanished
@@ -1866,6 +1894,7 @@ export function replayEpisode(epNum) {
   // once more with the current picks and cast setup, every earlier episode
   // stays exactly as it aired, and the later ones are simulated again.
   if (isPerfectMatchSeason()) { _replayVillaEpisode(epNum); return; }
+  if (isCircleSeason()) { _replayCircleEpisode(epNum); return; }
   /* THE MAIN STAGE, WHICH NO LONGER NEEDS ONE EITHER. `rerunDragEpisode`
      rolls the season back off the rows that aired, so a drag re-run survives
      a reload and a browser that never managed to write a checkpoint. The
@@ -1984,6 +2013,7 @@ export function replayEpisode(epNum) {
  * a re-run that fails changes nothing.
  */
 let _pmNoticeShown = null;
+let _ciNoticeShown = null;
 /**
  * THE VILLA'S PRESET. One press draws a season the way the real show would
  * for THIS cast and length — a format on every vote night, a rule on every
@@ -2139,6 +2169,34 @@ function _randomizeVilla() {
 }
 // An extra vote in a big cast has no catalogue twist of its own: it draws.
 const DUMP_SLOT_OK = slot => slot === 'vote1' || slot === 'vote2' || slot === 'vote-post' || slot === 'vote-couples' || slot === 'vote3' || slot === 'semi';
+
+// The Circle's re-run: the villa's pattern — this day's dice turn again, the
+// aired past stays, the later episodes are cleared to be simulated again.
+function _replayCircleEpisode(epNum) {
+  const laterEps = (gs.episodeHistory || []).filter(e => e.num > epNum);
+  const msg = laterEps.length
+    ? `Re-run Episode ${epNum}?\n\nEpisode ${epNum} will be dealt again, and Episodes ${epNum + 1}–${epNum + laterEps.length} will be cleared — simulate them again from there. Every earlier episode stays exactly as it is.`
+    : `Re-run Episode ${epNum} into a different day?`;
+  if (!confirm(msg)) return;
+  const before = snapshotGs();
+  let ep = null, failure = null, refused = null;
+  try {
+    if (rerunCircleEpisode(epNum)) ep = simulateCircleEpisode();
+    if (!ep) refused = lastCircleRefusal();
+  } catch (e) { failure = e; }
+  if (!ep) {
+    gs = before;
+    repairGsSets(gs);
+    try { renderRunTab(); } catch { /* state is already back */ }
+    const why = failure ? (failure.message || String(failure)) : refused;
+    alert(`Episode ${epNum} could not be re-run, so nothing was changed.${why ? `\n\n${why}` : ''}`);
+    return;
+  }
+  saveGameState();
+  _refreshFeed();
+  viewingEpNum = ep.num;
+  renderRunTab();
+}
 
 function _replayVillaEpisode(epNum) {
   const laterEps = (gs.episodeHistory || []).filter(e => e.num > epNum);
@@ -2763,6 +2821,8 @@ export function buildEpisodeMap() {
      As many episodes as the cast makes (or the author set) — js/pm-run.js
      perfectMatchSeasonShape, the same answer the season plays. Played nights report their own villa;
      the rest carry the last count forward (the public decides the rest). */
+  // The Circle is its schedule, counted from the season it played (js/ci-run.js).
+  if (isCircleSeason()) return circleEpisodeMap();
   if (isPerfectMatchSeason()) {
     const counts = perfectMatchVillaCounts();
     return perfectMatchSeasonShape().schedule.map(e => ({ ep: e.ep, active: counts.get(e.ep) ?? (players || []).length,
@@ -5255,6 +5315,8 @@ export function showRandomizerPanel() {
   const existing = document.getElementById('randomizer-panel');
   if (existing) { existing.remove(); return; }
   if (isPerfectMatchSeason()) { _randomizeVilla(); return; }
+  // The Circle draws its own nights; a card booked on the timeline pins one.
+  if (isCircleSeason()) { alert('The Circle draws each night\'s format, arrivals and twists itself. Book a card on an episode to pin it.'); return; }
 
   // A house has no Island, no Action and no World Tour, and no slot for a
   // TWIST_CATALOG challenge twist. Offering the Total Drama panel here was

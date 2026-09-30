@@ -3,6 +3,7 @@
 // are the user's own (docs/the-circle-music.md), and a missing file is silence
 // for a bed and a synthesised sting for a moment.
 import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'fs';
 import { setPlayers } from '../js/core.js';
 import { playCircleSeason } from '../js/ci/season.js';
 import { circleScreens } from '../js/vp-ci/steps.js';
@@ -67,5 +68,16 @@ describe('the moment makes the sound', () => {
     const chat = of('chat')[0];
     const i = chat.steps.findIndex(x => x.part === 'say');
     expect(soundFor(chat, i).cue).toBeNull();
+  });
+});
+
+describe('the download list (docs/the-circle-music.md) matches the code', () => {
+  it('every bed and every sting the code looks for is on the list, under its own folder', () => {
+    const doc = readFileSync('docs/the-circle-music.md', 'utf8');
+    const beds = doc.split('## Stingers')[0], stings = doc.split('## Stingers')[1];
+    for (const b of Object.values(CI_BEDS)) expect(beds, b.file).toContain('`' + b.file.split('/').pop() + '`');
+    for (const s of Object.values(CI_STINGS)) expect(stings, s.file).toContain('`' + s.file.split('/').pop() + '`');
+    expect((beds.match(/^\| \d+ \|/gm) || []).length).toBe(Object.keys(CI_BEDS).length);
+    expect((stings.match(/^\| \d+ \|/gm) || []).length).toBe(Object.keys(CI_STINGS).length);
   });
 });

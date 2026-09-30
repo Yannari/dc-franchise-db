@@ -1620,6 +1620,30 @@ recognitions of one face a day and three a season, and the watcher's TV has
 that profile open. Two newcomers' private chat (`pair-arrival`) plays in the
 apartments.
 
+**As built (Plan 5, 2026-09-30): the big moments, sound, sidebar.**
+`js/vp-ci/moments.js` gives each big moment its own set:
+- **rate:** a voter's ranking screen, then the board read from the bottom
+  and the crown.
+- **hangout:** Influencers face to face, the names at risk marked safe or on
+  the table.
+- **blocked:** the dots, the name, BLOCKED slamming onto the tile.
+- **room:** the hallway, "Whose door?", two real people in one frame; the
+  finale lounge.
+- **video:** the goodbye video's real face.
+- **studio:** the couch and the board from last place to the winner.
+
+The party dims the Circle UI and shows its theme and props. Nothing is drawn
+before its line. Written blocks keep their cast (`on`) for these kinds, and
+aired rows carry a small `d` per moment (about 6% of a season).
+
+Sound lives in `js/vp-ci/sound.js`: 18 beds by scene kind and 13 stings read
+off the step. Files are the user's own (`docs/the-circle-music.md`). A
+missing bed is silence; a missing sting falls back to synth.
+
+The live sidebar (`js/vp-ci/sidebar.js`) starts from `row.ci.start` (the room
+as the day began: `roomAt`). It plays forward only what has aired.
+Shared drawing helpers live in `js/vp-ci/parts.js`.
+
 ---
 
 ## 19. Setup and the Circle tab

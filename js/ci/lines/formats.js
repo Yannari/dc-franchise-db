@@ -183,6 +183,15 @@ export const FORMAT_LINES_2 = {
     { turns: [{ by: 'a', react: "So that's where I stand with {b}. Good to know." }] },
     { turns: [{ by: 'a', react: 'Everybody just watched {b} choose someone over me.' }], beat: "{a}'s smile doesn't reach {a.posAdj} eyes." },
   ]),
+  // save.wait — a, still unsaved, as b saves somebody else.
+  ...E('save.wait', [
+    { turns: [{ by: 'a', react: 'Save me. Somebody. Please.' }], beat: '{a} refreshes the chat over and over.' },
+    { turns: [{ by: 'a', react: "Not me again. Okay. There's still time." }] },
+    { turns: [{ by: 'a', react: 'Every name that is not mine makes the list shorter.' }], beat: '{a} counts the names left on {a.posAdj} fingers.' },
+    { turns: [{ by: 'a', react: '{b}, look at me. Look at me. Please.' }] },
+    { turns: [{ by: 'a', react: "I'm still here. I'm still unsaved. Breathe." }], beat: '{a} hugs a cushion to {a.posAdj} chest.' },
+    { turns: [{ by: 'a', say: 'If I am the last one, I am going to scream.' }] },
+  ]),
   ...E('offer.open', [
     { turns: [{ by: 'a', react: "'Would you like to block your fellow Influencer?' Oh, this is cruel." },
       { by: 'b', react: 'They are asking me too. Of course they are.' }] },
@@ -277,5 +286,129 @@ export const FORMAT_LINES_2 = {
     { turns: [{ by: 'a', say: "I didn't want you to find out from a screen. It's you tonight." }, { by: 'b', react: 'Thank you for coming. I think.' }] },
     { turns: [{ by: 'a', say: 'This is the worst part of the whole game. I have to block you.' }, { by: 'b', say: 'Can I at least give you a hug?' }],
       beat: 'They hug in the doorway for a long time.' },
+  ]),
+};
+
+// ── Task 4: public formats ─────────────────────────────────────────────
+// alert.* as above. block.announce.unsaved / .vote — the Circle names c.
+// block.announce.statement — a (top-rated) and c, the name a said that
+// morning. plead.open — a and b, the last two. plead.pitch — a pleads to b
+// (an Influencer). plead.listen — a (an Influencer) after hearing b.
+// vote.open — a and b, the lowest two. vote.cast — a votes to block b.
+// vote.result — a (blocked) about the tally. statement.open — a reads the
+// rule, b reacts. statement.say — a names b. statement.named — a (named)
+// about b (who named them).
+export const FORMAT_LINES_3 = {
+  ...E('alert.save-two', [
+    { turns: [{ by: 'a', react: "'The Influencers will save Players one at a time in the Circle Chat.' In public?" },
+      { by: 'b', react: 'And whoever is left at the end is gone. Oh, that is brutal.' }] },
+    { turns: [{ by: 'a', react: "'There will be no Hangout tonight.' Then how do they block?" },
+      { by: 'b', say: 'By saving everybody else. One by one. Out loud.' }] },
+    { turns: [{ by: 'a', react: 'A public save, over and over, until one person is left.' }, { by: 'b', react: 'Please do not let that person be me.' }],
+      beat: '{b} grips the edge of the couch.' },
+  ]),
+  ...E('alert.plead', [
+    { turns: [{ by: 'a', react: "'The last two unsaved Players will plead their case face to face.' Face to face?" },
+      { by: 'b', react: 'So if you end up in the last two, you have to beg. On camera.' }] },
+    { turns: [{ by: 'a', react: "'The Influencers will save Players until two remain.' And then?" },
+      { by: 'b', say: 'And then those two fight for it. Out loud.' }] },
+    { turns: [{ by: 'a', react: 'Saves, then pleading. This is a talent show now.' }, { by: 'b', react: 'I need to practice a speech. Just in case.' }],
+      beat: '{b} starts mouthing words at the mirror.' },
+  ]),
+  ...E('alert.room-vote', [
+    { turns: [{ by: 'a', react: "'The two lowest-rated Players will face a vote.' A vote? By who?" },
+      { by: 'b', react: 'By all of us. In public. Oh no.' }] },
+    { turns: [{ by: 'a', react: "'Every Player will vote in the Circle Chat.' So everybody sees everybody's vote." },
+      { by: 'b', say: 'There is no hiding tonight.' }] },
+    { turns: [{ by: 'a', react: 'The lowest two, and the whole room decides.' }, { by: 'b', react: 'I hope I am voting, not being voted on.' }],
+      beat: '{b} crosses {b.posAdj} fingers on both hands.' },
+  ]),
+  ...E('alert.forced', [
+    { turns: [{ by: 'a', react: "'Before the ratings, every Player must say who they would block.' Out loud?" },
+      { by: 'b', react: 'In front of everyone? Before we even rate?' }] },
+    { turns: [{ by: 'a', react: "'The top-rated Player's choice will be blocked.' So what you say right now could actually happen." },
+      { by: 'b', say: 'Choose your words very carefully, everybody.' }] },
+    { turns: [{ by: 'a', react: 'We have to name somebody. Right now. Publicly.' }, { by: 'b', react: 'This is how you make enemies in one sentence.' }],
+      beat: '{b} puts the tablet face down on the couch.' },
+  ]),
+  ...E('block.announce.unsaved', [
+    { turns: [{ by: 'host', say: 'Every Player has been saved except one. {c}, you have been blocked.' }], beat: 'Every apartment goes quiet.' },
+    { turns: [{ by: 'host', say: "The last name standing is {c}. {c} has been blocked from The Circle." }] },
+    { turns: [{ by: 'host', say: 'Nobody saved {c}. {c} is blocked.' }], beat: '{c} sits alone with the empty chat.' },
+  ]),
+  ...E('block.announce.vote', [
+    { turns: [{ by: 'host', say: 'The votes are in. {c} has been blocked from The Circle.' }], beat: 'Every apartment goes quiet.' },
+    { turns: [{ by: 'host', say: 'The room has decided. {c} is blocked.' }] },
+    { turns: [{ by: 'host', say: 'With the most votes, {c} has been blocked.' }], beat: '{c} reads the names of everyone who voted.' },
+  ]),
+  ...E('block.announce.statement', [
+    { turns: [{ by: 'a', send: 'I said it this morning, and I meant it. I am blocking... {c}' }], beat: 'Every apartment waits on the dots.' },
+    { turns: [{ by: 'a', send: "{c}, you heard me say it. I'm sorry. It's you." }] },
+    { turns: [{ by: 'a', send: 'I named you before any of this, {c}. I have to stand by it.' }] },
+  ]),
+  ...E('plead.open', [
+    { turns: [{ by: 'a', react: "It's me and {b}. The last two. Okay." }, { by: 'b', react: 'Me and {a}. One of us goes home tonight.' }],
+      beat: 'Two screens light up with two faces.' },
+    { turns: [{ by: 'a', say: "Unsaved. I have to talk my way out of this." }, { by: 'b', say: 'Deep breath. Say it from the heart.' }] },
+    { turns: [{ by: 'a', react: 'Face to face. I have to look at them while I beg.' }, { by: 'b', react: "Whatever {a} says, I have to say it better." }] },
+  ]),
+  ...E('plead.pitch', [
+    { turns: [{ by: 'a', say: "{b}, I know I haven't been the loudest in here. But I'm loyal, and I'll prove it." }], beat: '{a} looks straight into the camera.' },
+    { turns: [{ by: 'a', say: "Keep me, and I will never forget it. That's a promise, {b}." }] },
+    { turns: [{ by: 'a', say: "I came here to play. Let me keep playing, {b}. Please." }], beat: "{a}'s voice cracks on the last word." },
+    { turns: [{ by: 'a', say: "{b}, I have been rooting for you from the start. I'm asking you to root for me now." }] },
+  ]),
+  ...E('plead.listen', [
+    { turns: [{ by: 'a', react: "{b} just made that really hard. Really hard." }] },
+    { turns: [{ by: 'a', react: 'That was... actually good. Okay. {b} is in this.' }], beat: '{a} sits back, arms folded.' },
+    { turns: [{ by: 'a', react: "I believed every word {b} said. That's the problem." }] },
+  ]),
+  ...E('vote.open', [
+    { turns: [{ by: 'a', react: "The lowest two. Me and {b}. In front of everybody." }, { by: 'b', react: 'Please, please, please.' }],
+      beat: 'In two apartments, two people stop breathing.' },
+    { turns: [{ by: 'a', react: "It's me and {b}. And now everyone gets to choose." }, { by: 'b', say: "I've never been this scared of a group chat." }] },
+    { turns: [{ by: 'a', react: 'Lowest two. Of course.' }, { by: 'b', react: "Okay. It's a vote. Votes can surprise you." }] },
+  ]),
+  ...E('vote.cast', [
+    { turns: [{ by: 'a', send: 'I vote to block {b}. I\'m sorry.' }] },
+    { turns: [{ by: 'a', say: "Here goes. Everyone's going to see this.", send: 'My vote is {b}.' }] },
+    { turns: [{ by: 'a', send: '{b}. Nothing personal.' }] },
+    { turns: [{ by: 'a', send: 'This is so hard. {b}.' }], beat: '{a} sends it and immediately looks away.' },
+    { turns: [{ by: 'a', say: "I'm going with my gut.", send: 'Voting {b}.' }] },
+    { turns: [{ by: 'a', send: 'I have to go with {b}. I hope you understand.' }] },
+    { turns: [{ by: 'a', send: 'Strategy says {b}. My heart says sorry.' }] },
+    { turns: [{ by: 'a', send: 'My vote goes to {b}.' }], beat: '{a} pushes the tablet away across the coffee table.' },
+  ]),
+  ...E('vote.result', [
+    { turns: [{ by: 'a', react: 'I saw every single name. I will remember every single name.' }], beat: '{a} scrolls back up through the votes.' },
+    { turns: [{ by: 'a', react: 'So that is how the room really feels about me.' }] },
+    { turns: [{ by: 'a', react: 'Wow. Okay. I know exactly who voted for me.' }], beat: '{a} sits very still.' },
+  ]),
+  ...E('statement.open', [
+    { turns: [{ by: 'a', react: "'Every Player must now say who they would block.' Right now?" }, { by: 'b', react: 'Right now. In the chat. Oh no.' }] },
+    { turns: [{ by: 'a', react: "Okay. Everybody names somebody. Everybody sees it." }, { by: 'b', say: "There's no nice way to do this." }] },
+    { turns: [{ by: 'a', react: 'We all have to name someone before the ratings.' }, { by: 'b', react: "So whoever I name is going to rank me last. Great." }] },
+  ]),
+  ...E('statement.say', [
+    { turns: [{ by: 'a', send: "If I had to block someone, it would be {b}." }] },
+    { turns: [{ by: 'a', say: 'Just say it. Rip the bandage off.', send: '{b}. Sorry. It had to be somebody.' }] },
+    { turns: [{ by: 'a', send: "I'd block {b}. We just haven't clicked." }] },
+    { turns: [{ by: 'a', send: "My answer is {b}. Please don't hate me." }] },
+    { turns: [{ by: 'a', send: "{b}. It's strategy, not personal." }] },
+    { turns: [{ by: 'a', say: "Why did I agree to be on this show?", send: 'I would block {b}.' }] },
+    { turns: [{ by: 'a', send: "Honestly? {b}. You're a threat." }] },
+    { turns: [{ by: 'a', send: '{b}, and I think you know why.' }] },
+    { turns: [{ by: 'a', send: "I'd have to say {b}. I don't know you well enough yet." }] },
+    { turns: [{ by: 'a', send: "It's {b} for me." }], beat: '{a} sends it and winces.' },
+    { turns: [{ by: 'a', say: 'Okay. Deep breath.', send: '{b}.' }] },
+    { turns: [{ by: 'a', send: "Sorry, {b}. You're my answer." }] },
+    { turns: [{ by: 'a', send: 'I choose {b}. Nothing against you as a person.' }] },
+    { turns: [{ by: 'a', send: 'My pick is {b}.' }], beat: '{a} stares at the message after sending it.' },
+  ]),
+  ...E('statement.named', [
+    { turns: [{ by: 'a', react: '{b} said my name. Out loud. Before the ratings.' }], beat: '{a} sets {a.posAdj} jaw.' },
+    { turns: [{ by: 'a', react: 'Okay, {b}. I heard you. Now watch where I rank you.' }] },
+    { turns: [{ by: 'a', react: '{b}? I thought we were fine.' }] },
+    { turns: [{ by: 'a', react: 'That is a lot of people saying my name.' }], beat: '{a} pulls a blanket over {a.posAdj} head.' },
   ]),
 };

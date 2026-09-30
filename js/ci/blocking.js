@@ -39,31 +39,36 @@ export function applyBlock(state, h, channel, by, scene, { secret = false } = {}
 // A public save before the Hangout (US 5 Ep 4): each Influencer takes the
 // player they owe most off the list, in front of everyone. The saved player
 // owes them, and the room knows who stood by whom.
+export function saveOne(state, rng, i, pool) {
+  const pick = pool.map(t => [t, rel(i, t, 'affection') + rel(i, t, 'obligation') * 1.5 + rel(i, t, 'trust') * 0.5
+    + (state.pacts.some(p => (p.a === i && p.b === t) || (p.a === t && p.b === i)) ? 4 : 0) + rng()])
+    .sort((a, b) => b[1] - a[1])[0][0];
+  // `waiting`: who was still unsaved when this save came (who can feel passed over).
+  const sc = addScene(state, 'save', [i, pick], { by: i, saved: pick, waiting: pool.filter(t => t !== pick) }, [...state.active]);
+  bump(pick, i, 'obligation', 2); bump(pick, i, 'affection', 1);
+  const c = makeClaim(state, { kind: 'saved', holder: i, about: pick, truth: true, secrecy: 'public', by: i });
+  for (const o of state.active) if (o !== i) learn(state, o, c, i, sc);
+  // Not being picked, in public, stings those who hoped to be.
+  for (const o of pool.filter(t => t !== pick)) if (rel(o, i, 'affection') > 3) bump(o, i, 'resentment', 0.5);
+  return pick;
+}
+
 export function publicSaves(state, rng, infl, atRisk) {
   const saved = [];
   for (const i of infl) {
     const pool = atRisk.filter(t => !saved.includes(t));
     if (pool.length <= 2) break;
-    const pick = pool.map(t => [t, rel(i, t, 'affection') + rel(i, t, 'obligation') * 1.5 + rel(i, t, 'trust') * 0.5
-      + (state.pacts.some(p => (p.a === i && p.b === t) || (p.a === t && p.b === i)) ? 4 : 0) + rng()])
-      .sort((a, b) => b[1] - a[1])[0][0];
-    saved.push(pick);
-    const sc = addScene(state, 'save', [i, pick], { by: i, saved: pick }, [...state.active]);
-    bump(pick, i, 'obligation', 2); bump(pick, i, 'affection', 1);
-    const c = makeClaim(state, { kind: 'saved', holder: i, about: pick, truth: true, secrecy: 'public', by: i });
-    for (const o of state.active) if (o !== i) learn(state, o, c, i, sc);
-    // Not being picked, in public, stings those who hoped to be.
-    for (const o of pool.filter(t => t !== pick)) if (rel(o, i, 'affection') > 3) bump(o, i, 'resentment', 0.5);
+    saved.push(saveOne(state, rng, i, pool));
   }
   return saved;
 }
 
-export function standardBlocking(state, rng, ratingRow, { format = 'standard', saves = false, secret = false, inPerson = false } = {}) {
+export function standardBlocking(state, rng, ratingRow, { format = 'standard', saves = false, secret = false, inPerson = false, atRisk: only = null } = {}) {
   // A tie that makes everybody left an influencer would leave nobody at risk:
   // then only the top two decide.
   let infl = ratingRow.influencers;
   if (!atRiskOf(state, infl).length) infl = infl.slice(0, 2);
-  let atRisk = atRiskOf(state, infl);
+  let atRisk = only || atRiskOf(state, infl);
   if (saves) { const saved = publicSaves(state, rng, infl, atRisk); atRisk = atRisk.filter(t => !saved.includes(t)); }
   for (const h of atRisk) feel(state, h, 'stress', 2);
   const hangout = addScene(state, 'hangout', infl, { atRisk, format, ...(secret ? { secret: true } : {}) }, infl);

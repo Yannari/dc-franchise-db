@@ -10,7 +10,7 @@ import { streamFor } from '../dr/rng.js';
 
 export const ALWAYS_AIRS = new Set(['profiles', 'recognise', 'arrival', 'after-party', 'likes', 'circle-chat',
   'ratings', 'hangout', 'blocking', 'visit', 'report', 'goodbye', 'final-ratings', 'meet', 'reveal',
-  'game', 'party', 'life', 'home-video', 'alert', 'save', 'offer']);
+  'game', 'party', 'life', 'home-video', 'alert', 'save', 'offer', 'plead', 'vote', 'statement']);
 export const CHATS_PER_DAY = 9;
 export const STATUSES_PER_DAY = 3;
 const DRAMA = { bond: 0.5, checkin: 0.8, ally: 1.2, flirt: 1.3, probe: 1.6, pump: 1.2, compare: 1.8,

@@ -454,9 +454,40 @@ const BLOCKS = {
   save(state, s) {
     const { by, saved } = s.data;
     const out = [{ key: 'save.announce', cast: { a: by, b: saved } }, { key: 'save.react', cast: { a: saved, b: by } }];
-    const passed = s.seenBy.filter(h => h !== by && h !== saved && rel(h, by, 'affection') > 3)
+    // Only a player still waiting to be saved can be passed over.
+    const waiting = s.data.waiting || [];
+    const passed = waiting.filter(h => rel(h, by, 'affection') > 3)
       .sort((x, y) => rel(y, by, 'affection') - rel(x, by, 'affection'))[0];
     if (passed) out.push({ key: 'save.passed', cast: { a: passed, b: by } });
+    const hoping = waiting.find(h => h !== passed);
+    if (hoping) out.push({ key: 'save.wait', cast: { a: hoping, b: by } });
+    return out;
+  },
+  // Save then plead (US 4 Ep 10): the last two, face to face.
+  plead(state, s) {
+    const [p1, p2] = s.data.pleaders;
+    const [i1, i2] = s.data.by;
+    return [{ key: 'plead.open', cast: { a: p1, b: p2 } },
+      { key: 'plead.pitch', cast: { a: p1, b: i1 } }, { key: 'plead.listen', cast: { a: i1, b: p1 } },
+      { key: 'plead.pitch', cast: { a: p2, b: i2 || i1 } }, { key: 'plead.listen', cast: { a: i2 || i1, b: p2 } }];
+  },
+  // Room vote (UK 1 Ep 15): the bottom two, every vote in public.
+  vote(state, s) {
+    const [b1, b2] = s.data.bottom;
+    const out = [{ key: 'vote.open', cast: { a: b1, b: b2 } }];
+    for (const [v, t] of Object.entries(s.data.votes).slice(0, 6)) out.push({ key: 'vote.cast', cast: { a: v, b: t } });
+    return out;
+  },
+  // Forced statement (US 5 Ep 1): everyone names who they would block.
+  statement(state, s) {
+    const out = [{ key: 'statement.open', cast: { a: s.who[0], b: s.who[1] } }];
+    for (const [h, t] of Object.entries(s.data.picks).slice(0, 8)) out.push({ key: 'statement.say', cast: { a: h, b: t } });
+    const named = {};
+    for (const t of Object.values(s.data.picks)) named[t] = (named[t] || 0) + 1;
+    for (const t of Object.keys(named).sort((x, y) => named[y] - named[x]).slice(0, 2)) {
+      const by = Object.keys(s.data.picks).find(h => s.data.picks[h] === t);
+      out.push({ key: 'statement.named', cast: { a: t, b: by } });
+    }
     return out;
   },
   // "Would you like to block your fellow Influencer?" (UK 3 Ep 16)
@@ -512,12 +543,21 @@ const BLOCKS = {
     const others = s.seenBy.filter(h => h !== target && h !== announcer && !s.data.by.includes(h));
     // Before the name: the ones at risk, waiting; the Influencer typing it.
     // Everybody waits: for the name, or (in person) for somebody's knock.
-    const out = [target, ...others].slice(0, s.data.inPerson ? 3 : 4).map(h => ({ key: 'block.wait', cast: { a: h } }));
+    // Nobody types a name when the saves or the room decided: the waiting was there.
+    const untyped = ['unsaved', 'vote'].includes(s.data.channel);
+    const out = untyped ? [] : [target, ...others].slice(0, s.data.inPerson ? 3 : 4).map(h => ({ key: 'block.wait', cast: { a: h } }));
     if (s.data.inPerson) {
       // A Super Influencer says it at the door (US 1 Ep 10).
       out.push({ key: 'block.inperson.walk', cast: { a: announcer, c: target } },
         { key: 'block.inperson.door', cast: { a: target, b: announcer } },
         { key: 'block.inperson.tell', cast: { a: announcer, b: target } });
+    } else if (['unsaved', 'vote'].includes(s.data.channel)) {
+      // Nobody typed a name: the Circle says who was left, or who the room chose.
+      out.push({ key: `block.announce.${s.data.channel}`, cast: { a: target, c: target } });
+      if (s.data.channel === 'vote') out.push({ key: 'vote.result', cast: { a: target } });
+    } else if (s.data.channel === 'statement') {
+      out.push({ key: 'block.typing', cast: { a: announcer, c: target }, extra: { reason: s.data.reason } },
+        { key: 'block.announce.statement', cast: { a: announcer, c: target } });
     } else if (s.data.secret) {
       // Nobody may learn who chose: the Circle names the blocked player itself.
       out.push({ key: 'block.announce.secret', cast: { a: target, c: target } });
@@ -807,6 +847,9 @@ export const POOL_KEYS = [
   'save.announce', 'save.react', 'save.passed', 'offer.open', 'offer.yes', 'offer.no', 'offer.betrayed', 'offer.declined',
   'block.announce.secret', 'block.announce.offer', 'block.inperson.walk', 'block.inperson.door', 'block.inperson.tell',
   'hangout.open.trio', 'hangout.trio.agree', 'hangout.trio.outvoted', 'visit.inperson.bye', 'visit.inperson.after',
+  ...['save-two', 'plead', 'room-vote', 'forced'].map(f => `alert.${f}`), 'block.announce.unsaved', 'block.announce.vote',
+  'block.announce.statement', 'plead.open', 'plead.pitch', 'plead.listen', 'vote.open', 'vote.cast', 'vote.result',
+  'statement.open', 'statement.say', 'statement.named', 'save.wait',
   'hangout.agree', 'hangout.yield', 'hangout.trade', 'hangout.pact',
   ...BLOCK_WHY_.map(r => `block.announce.${r}`), 'block.react.self', 'block.react.friend', 'block.react.rival', 'block.react.relief',
   ...MOTIVES_.flatMap(m => [`visit.choose.${m}`, `visit.talk.${m}`]), 'visit.wait', 'visit.wait.catfish',

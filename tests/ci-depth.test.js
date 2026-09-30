@@ -133,7 +133,9 @@ describe('every big moment airs in full', () => {
         (seen[sc.kind] ||= []).push(lines);
         // A visit delivered in person (a Super Influencer) opens at the talk:
         // the walk and the door are in the blocking scene before it.
-        const min = sc.kind === 'meet' && sc.who.length < 3 ? 4 : sc.kind === 'visit' && sc.data.inPerson ? 12 : SCENE_DEPTH[sc.kind];
+        // A block the saves or the room decided has its waiting in those scenes.
+        const min = sc.kind === 'meet' && sc.who.length < 3 ? 4 : sc.kind === 'visit' && sc.data.inPerson ? 12
+          : sc.kind === 'blocking' && ['unsaved', 'vote'].includes(sc.data.channel) ? 9 : SCENE_DEPTH[sc.kind];
         if (lines < min) (thin[sc.kind] ||= []).push(lines);
       }
     }

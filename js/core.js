@@ -1221,6 +1221,22 @@ export const TWIST_CATALOG = [
     category:'blocking', phase:'any', engineType:'ci-block-each-other', ciFormat:'mutual', ciSlots:['middle','late'],
     desc:'The two Influencers are chosen as usual, and before the Hangout the Circle offers each of them, in front of everyone, the chance to block the OTHER Influencer instead. If both decline, they go to the Hangout and block someone as normal. If only one of them takes the offer, the one who declined is blocked on the spot, and the whole building saw who was willing to turn on their partner. The blocked player still gets to meet one person before they leave.',
     incompatible:['ci-standard','ci-sole-influencer','ci-three-influencers','ci-save-one-first','ci-secret-influencers','ci-super-influencer'] },
+  { id:'ci-save-two-each', emoji:'\u{1F9F7}', name:'Save Two Each', format:'the-circle',
+    category:'blocking', phase:'any', engineType:'ci-save-two-each', ciFormat:'save-two', ciSlots:['middle'],
+    desc:'The two Influencers are chosen as usual, but there is no Hangout. Instead they take turns in the Circle Chat, in front of everyone, saving one player at a time. Every save is public, so every player watches the list get shorter and learns exactly where they stand with both Influencers. When only one player is left unsaved, that player is blocked, and they get to meet one person before they leave.',
+    incompatible:['ci-standard','ci-sole-influencer','ci-three-influencers','ci-save-one-first','ci-secret-influencers','ci-super-influencer','ci-block-each-other'] },
+  { id:'ci-save-then-plead', emoji:'\u{1F64F}', name:'Save Then Plead', format:'the-circle',
+    category:'blocking', phase:'any', engineType:'ci-save-then-plead', ciFormat:'plead', ciSlots:['middle','late'],
+    desc:'The two Influencers take turns saving players in public until only two are left. Those two then have to plead their case to the Influencers face to face on video, and a good plea can change a mind that seemed made up. The Influencers go to the Hangout and choose between the two; the other one is safe. The blocked player gets to meet one person before they leave.',
+    incompatible:['ci-standard','ci-sole-influencer','ci-three-influencers','ci-save-one-first','ci-secret-influencers','ci-super-influencer','ci-block-each-other','ci-save-two-each'] },
+  { id:'ci-room-vote', emoji:'\u{1F5F3}', name:'Room Vote', format:'the-circle',
+    category:'blocking', phase:'any', engineType:'ci-room-vote', ciFormat:'room-vote', ciSlots:['late'],
+    desc:'Everyone rates as usual, and the two lowest-rated players are named. Every other player then votes in the Circle Chat on which of the two should be blocked, and every vote is public, so both of the bottom two see exactly who wanted them gone. The one with the most votes is blocked; a tie is settled by the top-rated player. The blocked player gets to meet one person before they leave.',
+    incompatible:['ci-standard','ci-sole-influencer','ci-three-influencers','ci-save-one-first','ci-secret-influencers','ci-super-influencer','ci-block-each-other','ci-save-two-each','ci-save-then-plead'] },
+  { id:'ci-forced-statement', emoji:'\u{1F4E2}', name:'Forced Statement', format:'the-circle',
+    category:'blocking', phase:'any', engineType:'ci-forced-statement', ciFormat:'forced', ciSlots:['first','early'],
+    desc:'Before anyone rates, every player has to say in the Circle Chat who they would block, out loud and in front of everyone, and everyone named hears it. Then the ratings happen, with all of that in the air. Whoever comes top does not get a Hangout: the name they said that morning is blocked, exactly as they said it. The blocked player gets to meet one person before they leave.',
+    incompatible:['ci-standard','ci-sole-influencer','ci-three-influencers','ci-save-one-first','ci-secret-influencers','ci-super-influencer','ci-block-each-other','ci-save-two-each','ci-save-then-plead','ci-room-vote'] },
   /* ── THE VILLA'S DUMPINGS (Perfect Match, Plan 4.5) ──
      How a vote night decides who leaves, booked on the Season Timeline like
      every other show's twists. `pmFormat` is the engine's own name for it and

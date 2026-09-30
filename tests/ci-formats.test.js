@@ -104,3 +104,59 @@ describe('block each other (UK 3 Ep 16)', () => {
     for (let i = 0; i < 30; i++) expect(blockEachOther(s, streamFor(i, 'x'), ['@q0', '@q1']).answers['@q0']).toBe(false);
   });
 });
+
+// ── Task 4: public formats ──────────────────────────────────────────────
+describe('save two each (US 1 Ep 7)', () => {
+  it('the Influencers save one at a time in public until one is left, and that one is blocked; no Hangout', () => {
+    const { on } = booked('rating3', 'ci-save-two-each');
+    const saves = on('save');
+    const block = on('blocking')[0];
+    expect(on('hangout')).toHaveLength(0);
+    expect(saves.length).toBeGreaterThanOrEqual(2);
+    expect(saves.map(s => s.data.saved)).not.toContain(block.data.target);
+    expect(block.data.channel).toBe('unsaved');
+    // turns alternate between the Influencers
+    expect(saves[0].data.by).not.toBe(saves[1].data.by);
+  });
+});
+
+describe('save then plead (US 4 Ep 10)', () => {
+  it('saves until two are left, both plead face to face, and the Influencers block one of the two', () => {
+    const { on } = booked('rating4', 'ci-save-then-plead');
+    const plead = on('plead')[0];
+    expect(plead.data.pleaders).toHaveLength(2);
+    expect(plead.data.pleaders).toContain(on('blocking')[0].data.target);
+    expect(on('hangout')[0].data.atRisk.sort()).toEqual([...plead.data.pleaders].sort());
+  });
+});
+
+describe('room vote (UK 1 Ep 15)', () => {
+  it('names the bottom two; everyone else votes in public; the most votes is blocked, and everybody knows who voted how', () => {
+    const { on, state } = booked('rating5', 'ci-room-vote');
+    const vote = on('vote')[0];
+    const rating = on('ratings')[0];
+    const bottom = rating.data.results.slice(-2).map(r => r.profile);
+    expect([...vote.data.bottom].sort()).toEqual([...bottom].sort());
+    const tally = {};
+    for (const v of Object.values(vote.data.votes)) tally[v] = (tally[v] || 0) + 1;
+    const block = on('blocking')[0];
+    expect(bottom).toContain(block.data.target);
+    expect(tally[block.data.target]).toBeGreaterThanOrEqual(Math.max(...Object.values(tally)));
+    expect(Object.keys(vote.data.votes)).not.toContain(bottom[0]);
+    // a public vote is a claim everyone learns
+    const claims = state.claims.filter(c => c.kind === 'targeting' && c.day === vote.day);
+    expect(claims.length).toBe(Object.keys(vote.data.votes).length);
+  });
+});
+
+describe('forced statement (US 5 Ep 1)', () => {
+  it('before the ratings, everyone names who they would block; the top-rated player\'s name is blocked', () => {
+    const { on } = booked('rating1', 'ci-forced-statement');
+    const st = on('statement')[0];
+    const rating = on('ratings')[0];
+    expect(st.id < rating.id || Number(st.id.slice(1)) < Number(rating.id.slice(1))).toBe(true);
+    const top = rating.data.results[0].profile;
+    expect(on('blocking')[0].data.target).toBe(st.data.picks[top]);
+    expect(Object.keys(st.data.picks).length).toBe(st.who.length);
+  });
+});

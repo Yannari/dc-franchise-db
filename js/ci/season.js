@@ -131,7 +131,7 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
 
     let rating = null;
     if (d.block) {
-      const night = prepareNight(state, { ...(d.night || { format: 'standard' }) });
+      const night = prepareNight(state, { ...(d.night || { format: 'standard' }) }, streamFor(seed, `night:${d.day}`));
       const f = FORMATS[night.format] || FORMATS.standard;
       rating = runRating(state, rng, { seats: f.seats ?? 2, pick: f.pick, hidden: !!f.hidden });
       runBlocking(state, rng, rating, night);

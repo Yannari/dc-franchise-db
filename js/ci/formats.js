@@ -9,7 +9,10 @@
 // that cannot run when its night comes falls back to standard, on record.
 import { addScene, rel, bump, S, clamp, schemeEligible } from './state.js';
 import { belief } from './beliefs.js';
-import { standardBlocking, applyBlock, runVisit, atRiskOf } from './blocking.js';
+import { standardBlocking, applyBlock, runVisit, atRiskOf, saveOne } from './blocking.js';
+import { blockScore, deliberate } from './hangout.js';
+import { makeClaim, learn } from './claims.js';
+import { feel } from './mind.js';
 
 export const FORMATS = {
   // Every season: the top two meet in the Hangout and block one.
@@ -33,6 +36,11 @@ export const FORMATS = {
   // the block delivered at the blocked player's door.
   super: { removes: 1, seats: 1, hidden: true, can: ctx => ctx.position !== 'first',
     run: (state, rng, rating) => standardBlocking(state, rng, rating, { format: 'super', inPerson: true }) },
+  'save-two': { removes: 1, seats: 2, can: () => true, canNow: state => state.active.length >= 5, run: saveTwoEach },
+  plead: { removes: 1, seats: 2, can: () => true, canNow: state => state.active.length >= 6, run: saveThenPlead },
+  'room-vote': { removes: 1, seats: 2, can: () => true, canNow: state => state.active.length >= 5, run: roomVote },
+  forced: { removes: 1, seats: 2, can: ctx => ctx.position === 'first' || ctx.position === 'early',
+    before: (state, rng) => forcedStatements(state, rng), run: forcedBlock },
   // UK 3 Ep 16: the Influencers may block each other first.
   mutual: { removes: 1, seats: 2, can: () => true,
     canNow: state => state.active.length >= 5,
@@ -50,6 +58,97 @@ export const FORMATS = {
       return { target: out.target, announcement: sc, visit };
     } },
 };
+
+// ── Public formats (Plan 3b Task 4) ──────────────────────────────────
+
+// The Influencers take turns saving one player each, in the Circle Chat,
+// until `leave` are left unsaved.
+function savesUntil(state, rng, infl, leave) {
+  let atRisk = atRiskOf(state, infl);
+  for (let turn = 0; atRisk.length > leave; turn++) {
+    const saved = saveOne(state, rng, infl[turn % infl.length], atRisk);
+    atRisk = atRisk.filter(t => t !== saved);
+  }
+  return atRisk;
+}
+
+function finish(state, rng, target, by, channel, data) {
+  const sc = addScene(state, 'blocking', [by[0], target], { by, target, channel, ...data }, [...state.active]);
+  applyBlock(state, target, channel, by, sc);
+  const visit = runVisit(state, rng, target, by);
+  state.pendingGoodbyes.push(target);
+  return { target, announcement: sc, visit };
+}
+
+// US 1 Ep 7: whoever is never saved is blocked. No Hangout.
+function saveTwoEach(state, rng, rating) {
+  const infl = rating.influencers.slice(0, 2);
+  const [left] = savesUntil(state, rng, infl, 1);
+  for (const h of state.active) delete state.immuneNext[h];
+  return finish(state, rng, left, infl, 'unsaved', { reason: 'unsaved', format: 'save-two' });
+}
+
+// US 4 Ep 10: saves until two are left; they plead face to face; then the
+// Influencers decide between them. A plea lands as much as the pleader can
+// talk (social, nerve) and the listener already feels for them.
+export const PLEA = { scale: 0.25 };
+function saveThenPlead(state, rng, rating) {
+  const infl = rating.influencers.slice(0, 2);
+  const pleaders = savesUntil(state, rng, infl, 2);
+  const sc = addScene(state, 'plead', [...pleaders, ...infl], { pleaders, by: infl }, [...state.active]);
+  for (const p of pleaders) {
+    const pull = (S(state, p, 'social') + S(state, p, 'boldness')) / 20 + rng() * 0.3;
+    for (const i of infl) bump(i, p, 'affection', pull * (1 + Math.max(0, rel(i, p, 'affection')) / 10) * PLEA.scale * 4);
+    feel(state, p, 'stress', 2);
+  }
+  return standardBlocking(state, rng, { ...rating, influencers: infl }, { format: 'plead', atRisk: pleaders });
+}
+
+// UK 1 Ep 15: the bottom two are named, and everyone else votes in public.
+// A tie goes to the top-rated player. Every vote is a claim the room learns.
+function roomVote(state, rng, rating) {
+  const bottom = rating.results.slice(-2).map(r => r.profile).filter(h => state.active.includes(h));
+  const voters = state.active.filter(h => !bottom.includes(h));
+  const votes = {};
+  for (const v of voters) votes[v] = bottom.map(t => [t, blockScore(state, v, t).total + rng() * 0.5]).sort((a, b) => b[1] - a[1])[0][0];
+  const sc = addScene(state, 'vote', [...bottom], { bottom, votes }, [...state.active]);
+  for (const [v, t] of Object.entries(votes)) {
+    const c = makeClaim(state, { kind: 'targeting', holder: v, about: t, truth: true, secrecy: 'public', by: v });
+    for (const o of state.active) if (o !== v) learn(state, o, c, v, sc);
+  }
+  const tally = Object.fromEntries(bottom.map(t => [t, Object.values(votes).filter(x => x === t).length]));
+  const top = rating.results[0].profile;
+  const target = tally[bottom[0]] === tally[bottom[1]] ? votes[top] || bottom[0]
+    : bottom.sort((a, b) => tally[b] - tally[a])[0];
+  sc.data.tally = tally;
+  for (const h of state.active) delete state.immuneNext[h];
+  return finish(state, rng, target, voters.filter(v => votes[v] === target), 'vote', { reason: 'vote', format: 'room-vote', tally });
+}
+
+// US 5 Ep 1: before the ratings, everyone says in public who they would
+// block, and the top-rated player's answer becomes the block. Saying it is a
+// claim: the named resent the namer before a single ballot is cast.
+function forcedStatements(state, rng) {
+  const picks = {};
+  for (const h of state.active) {
+    picks[h] = state.active.filter(t => t !== h).map(t => [t, blockScore(state, h, t).total + rng() * 0.5])
+      .sort((a, b) => b[1] - a[1])[0][0];
+  }
+  const sc = addScene(state, 'statement', [...state.active], { picks }, [...state.active]);
+  for (const [h, t] of Object.entries(picks)) {
+    const c = makeClaim(state, { kind: 'targeting', holder: h, about: t, truth: true, secrecy: 'public', by: h });
+    for (const o of state.active) if (o !== h) learn(state, o, c, h, sc);
+  }
+  return sc;
+}
+function forcedBlock(state, rng, rating) {
+  const st = state.scenes.filter(s => s.kind === 'statement' && s.day === state.day).at(-1);
+  const top = rating.results[0].profile;
+  const target = st?.data.picks[top];
+  if (!target || !state.active.includes(target)) return standardBlocking(state, rng, rating, { format: 'forced' });
+  for (const h of state.active) delete state.immuneNext[h];
+  return finish(state, rng, target, [top], 'statement', { reason: 'statement', format: 'forced' });
+}
 
 // Would an Influencer take the chance to block the other one? Only a player
 // who may scheme (the archetype rule), and then as much as they resent and
@@ -78,7 +177,7 @@ export function blockEachOther(state, rng, [A, B]) {
 /** Before the ratings: settle tonight's format (a booking that cannot run
  *  tonight falls back to standard, on record) and, if it is not the usual
  *  Hangout, the Circle tells the players the rule before it happens (§16.4). */
-export function prepareNight(state, night = { format: 'standard' }) {
+export function prepareNight(state, night = { format: 'standard' }, rng = null) {
   let format = night.format || 'standard';
   if (!FORMATS[format] || !(FORMATS[format].canNow?.(state) ?? true)) {
     night.fellBack = format; format = 'standard';
@@ -86,6 +185,8 @@ export function prepareNight(state, night = { format: 'standard' }) {
   night.format = format;
   if (format !== 'standard') addScene(state, 'alert', [...state.active], { format }, [...state.active]);
   (state.nights ||= []).push({ day: state.day, format, ...(night.fellBack ? { fellBack: night.fellBack } : {}) });
+  // Some formats act before a ballot is cast (a forced statement).
+  if (FORMATS[format].before && rng) FORMATS[format].before(state, rng, night);
   return night;
 }
 

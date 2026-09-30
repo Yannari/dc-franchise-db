@@ -12,6 +12,7 @@ import { nudgeBelief, belief } from './beliefs.js';
 import { feel } from './mind.js';
 import { coverStrain, coverParts } from './cover.js';
 import { AI_PROBE } from './ai.js';
+import { TOPICS } from './persona-data.js';
 
 // A voice that does not fit the face (Plan 3a+ Task 14): a "24-year-old" who
 // types like a board memo, or a "50-year-old" who types LET'S GOOO. Only a
@@ -31,6 +32,8 @@ function earFor(state, obs, target) {
 /** The author's leaks: phrases that belong to the person, not the profile. */
 export const leaksOf = (state, h) => (state.profiles[h]?.players || []).flatMap(n => state.people[n]?.chatVoice?.leaks || []);
 
+// How often a knowledge slip is about one of the persona's own topics.
+export const TOPIC_SLIP = 0.7;
 export const SLIP = { base: 0.008, stress: 0.06, party: 0.6, skill: 0.07 };
 export const PROBE = { fail: 0.25, dodge: 0.08 };
 export const THEORY_LINE = 0.35;
@@ -98,6 +101,10 @@ export function rollSlips(state, rng, speaker, listeners, ctx, scene) {
     }
   }
   const slip = { kind, noticedBy };
+  // A knowledge slip on a persona with topics is ABOUT one of them: the fake
+  // nurse who has never heard of a night shift (ci/persona-data.js).
+  const topics = kind === 'knowledge' ? (state.profiles[speaker].tells || []).filter(t => TOPICS[t]) : [];
+  if (topics.length && rng() < TOPIC_SLIP) slip.topic = topics[Math.floor(rng() * topics.length)];
   // A voice slip is one of the author's leaks, when there are any ("Love, Tyler").
   const leaks = kind === 'voice' ? leaksOf(state, speaker) : [];
   if (leaks.length) slip.leak = leaks[Math.min(leaks.length - 1, Math.floor(rng() * leaks.length))];

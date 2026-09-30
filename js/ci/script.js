@@ -7,6 +7,7 @@
 // that creates a belief is a write). Players only know PROFILES: in their
 // speech and their messages a catfish is the persona, name and pronouns. The
 // host knows the truth ("Rebecca, aka Seaburn").
+import { TOPICS } from './persona-data.js';
 import { showWords } from '../shows.js';
 import { streamFor } from '../dr/rng.js';
 import { pronounsOf } from '../pronouns-of.js';
@@ -335,6 +336,7 @@ const BLOCKS = {
       const listener = sl.noticedBy[0] || (sl.by === a ? b : a);
       // A voice slip with an author's leak shows the words themselves.
       const k = sl.misread ? 'slip.misread' : sl.leak ? `slip.leak.${sl.noticedBy.length ? 'noticed' : 'missed'}`
+        : sl.topic ? `slip.topic.${sl.topic}.${sl.noticedBy.length ? 'noticed' : 'missed'}`
         : `slip.${sl.kind}.${sl.noticedBy.length ? 'noticed' : 'missed'}`;
       out.push({ key: k, cast: { a: sl.by, b: listener, ...(sl.leak ? { text: { x: sl.leak } } : {}) },
         extra: { slip: sl.kind, noticed: sl.noticedBy.length > 0, ...(sl.kind === 'voice' && !sl.leak ? { crack: crackOf(state, sl.by) } : {}) } });
@@ -914,6 +916,7 @@ export function writeScene(state, scene) {
   if (scene.kind === 'chat' && blocks.length > 1 && !blocks[0].key.startsWith('slip.')) {
     for (const b of blocks.slice(1).filter(x => x.key.startsWith('slip.'))) {
       blocks[0].lines.push(...b.lines);
+      (blocks[0].woven ||= []).push(b.key);   // which slip pool was woven in
       if (b.beat) blocks[0].lines.push({ who: b.lines[0]?.who, kind: 'stage', text: b.beat });
     }
     blocks.splice(1, blocks.length - 1, ...blocks.slice(1).filter(x => !x.key.startsWith('slip.')));
@@ -973,7 +976,8 @@ const BLOCK_WHY_ = ['fake', 'threat', 'grudge', 'noBond'];
 export const POOL_KEYS = [
   ...INTENTS_.flatMap(i => ['warm', 'neutral', 'cold'].map(e => `chat.${i}.${e}`)),
   ...['pass', 'dodge', 'fail'].map(r => `chat.probe.${r}`),
-  ...SLIPS_.flatMap(k => [`slip.${k}.noticed`, `slip.${k}.missed`]), 'slip.misread', 'slip.leak.noticed', 'slip.leak.missed',
+  ...SLIPS_.flatMap(k => [`slip.${k}.noticed`, `slip.${k}.missed`]),
+  ...Object.keys(TOPICS).flatMap(t => [`slip.topic.${t}.noticed`, `slip.topic.${t}.missed`]), 'slip.misread', 'slip.leak.noticed', 'slip.leak.missed',
   ...['caps', 'ellipses', 'stage', 'greeting', 'nicknames', 'catchphrase', 'formal', 'hype', 'dry']
     .flatMap(t => [`style.${t}.charmed`, `style.${t}.annoyed`]), 'style.mismatch.suspicious',
   'status.low', 'status.steady', 'status.high', 'status.react', 'likes.most', 'likes.none',

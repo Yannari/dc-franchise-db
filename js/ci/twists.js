@@ -19,7 +19,8 @@
 import { rel, bump, S, addScene } from './state.js';
 import { initMind, feel } from './mind.js';
 import { belief } from './beliefs.js';
-import { voiceOf } from './profiles.js';
+import { voiceOf, personaShown } from './profiles.js';
+import { tellsOf } from './persona-data.js';
 import { rolesFor } from './shared.js';
 
 const single = (state, h) => state.profiles[h]?.players.length === 1;
@@ -91,12 +92,12 @@ export const EVENTS = {
       const roles = rolesFor(state, people);
       const face = state.people[roles.face];
       const shown = persona
-        ? { name: persona.handle, age: persona.age, gender: persona.gender, job: persona.job, status: persona.status, face: persona.face }
+        ? personaShown(persona)
         : { name: face.name, age: face.age, gender: face.gender, job: face.job, status: face.status, face: `portrait:${face.name}` };
       let handle = `@${String(shown.name).toLowerCase().replace(/[^a-z0-9]/g, '')}`, k = 2;
       while (state.profiles[handle]) handle = `@${String(shown.name).toLowerCase().replace(/[^a-z0-9]/g, '')}${k++}`;
       state.profiles[handle] = { handle, players: people, mode: persona ? 'catfish' : 'shared', shared: true, roles,
-        personaId: persona?.id ?? null, reason: persona ? 'strategic' : null, shown, edits: [], tells: [...(persona?.tells || [])],
+        personaId: persona?.id ?? null, reason: persona ? 'strategic' : null, shown, edits: [], tells: persona ? tellsOf(persona) : [],
         gap: persona ? 2 : 0.5, voice: voiceOf(shown.age ?? 30, face.stats), personaVoice: persona?.chatVoice || null, secondChance: true };
       for (const n of people) state.handleOf[n] = handle;
       state.active.push(handle); state.joinedDay[handle] = state.day; initMind(state, handle);

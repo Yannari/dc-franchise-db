@@ -21,7 +21,7 @@ export function newState(seed, options = {}) {
     joinedDay: {}, likesCount: {}, recognised: {},
     beliefs: {}, beliefLog: [], mind: {}, claims: [], know: {}, revealed: {}, ideal: {},
     pacts: [], groups: [], ratings: [], influencerCount: {}, firstPlaces: {},
-    scenes: [], seq: 0, pool: [], unused: [], pendingGoodbyes: [], pendingReports: [], ledger: null,
+    scenes: [], seq: 0, pool: [], unused: [], pendingGoodbyes: [], pendingReports: [], ledger: null, powers: [],
   };
 }
 

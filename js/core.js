@@ -1277,6 +1277,22 @@ export const TWIST_CATALOG = [
   { id:'ci-arrive-pair', emoji:'\u{1F46F}', name:'Arrive as a Pair', format:'the-circle',
     category:'arrivals', phase:'any', engineType:'ci-arrive-pair', ciEntry:'pair',
     desc:'Two newcomers arrive on the same night, and before either meets anyone else the Circle puts them in a private chat with each other. They walk into the building already knowing one person, and usually already allied: two new votes that can move together from day one. Needs two arrivals on the same day.' },
+  /* ── THE CIRCLE'S POWERS (Plan 3b Task 8) ──
+     Handed over at a visit: booked on a blocking night by slot (in the
+     slot's list), or drawn now and then mid-season. `ciPower` is the
+     engine's name (js/ci/powers.js POWERS). */
+  { id:'ci-power-immunity', emoji:'\u{1F6E1}', name:'Immunity to Give Away', format:'the-circle',
+    category:'power', phase:'any', engineType:'ci-power-immunity', ciPower:'immunity',
+    desc:'The blocked player is given immunity, not for themselves but to pass on. At their visit they hand it to the player they trust most, who cannot be blocked at the next blocking, whatever the ratings say. The Circle tells everyone the next morning who holds it and who gave it, so the gift is also a public statement of loyalty.' },
+  { id:'ci-power-hacker', emoji:'\u{1F4BB}', name:'The Hacker', format:'the-circle',
+    category:'power', phase:'any', engineType:'ci-power-hacker', ciPower:'hacker',
+    desc:'The blocked player hands the Hacker to the player they visit. The next morning the Hacker takes over one other player\'s profile for a single private chat, and says whatever they like to that player\'s closest friend, who has no idea it is not really them. Only then does the Circle announce that there has been a Hacker. If the two who were played compare notes they can undo it, and even guess who did it, rightly or wrongly.' },
+  { id:'ci-power-joker', emoji:'\u{1F0CF}', name:'The Joker', format:'the-circle',
+    category:'power', phase:'any', engineType:'ci-power-joker', ciPower:'joker',
+    desc:'The blocked player gives the Joker to the player they visit. The holder takes a second, masked profile: they get to meet the next new arrivals before anyone else, and at the next ordinary ratings night they name one of the two Influencers themselves. The whole building is told a Joker exists, not who it is, and a sharp newcomer may work it out.' },
+  { id:'ci-power-burner', emoji:'\u{1F4F1}', name:'The Burner Profile', format:'the-circle',
+    category:'power', phase:'any', engineType:'ci-power-burner', ciPower:'burner',
+    desc:'The blocked player gifts a second profile to the player they visit, who secretly plays it as well as their own. For the next two ratings the burner casts its own ballot, which means its holder effectively votes twice. Every ratings night someone might notice something off about it, and if the burner is exposed it is shut down on the spot and the whole building trusts its holder a little less.' },
   /* ── THE VILLA'S DUMPINGS (Perfect Match, Plan 4.5) ──
      How a vote night decides who leaves, booked on the Season Timeline like
      every other show's twists. `pmFormat` is the engine's own name for it and

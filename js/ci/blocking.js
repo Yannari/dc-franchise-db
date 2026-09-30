@@ -17,6 +17,7 @@ import { revealTo } from './reveal.js';
 import { attractionOk } from './chat.js';
 import { deliberate } from './hangout.js';
 import { THEORY_LINE } from './slips.js';
+import { handOver } from './powers.js';
 
 export function atRiskOf(state, influencers) {
   const pool = state.active.filter(h => !influencers.includes(h));
@@ -105,12 +106,17 @@ export const REPORT_LIE = 1.2;
 
 export function runVisit(state, rng, h, blockers, { to: forced = null, inPerson = false } = {}) {
   if (!state.active.length) return null;
-  const chosen = forced ? { to: forced, motive: 'answers' } : chooseVisit(state, rng, h, blockers);
+  // A night with a power to give: they visit someone they trust, to hand it over.
+  const power = !forced && state.nightPower;
+  const friend = power && state.active.filter(c => !blockers.includes(c))
+    .sort((x, y) => rel(h, y, 'affection') + rel(h, y, 'trust') - rel(h, x, 'affection') - rel(h, x, 'trust'))[0];
+  const chosen = forced ? { to: forced, motive: 'answers' } : friend ? { to: friend, motive: 'power' } : chooseVisit(state, rng, h, blockers);
   const { to, motive } = chosen;
   const sc = addScene(state, 'visit', [h, to], { motive, kiss: false, handed: null, by: [...blockers],
     ...(inPerson ? { inPerson: true } : {}) });
   revealTo(state, to, h, sc);
   revealTo(state, h, to, sc);
+  if (friend) { handOver(state, rng, h, to, power, sc); state.nightPower = null; }
   const suspect = state.active.filter(o => o !== to).map(o => [o, belief(state, h, o).real])
     .sort((a, b) => a[1] - b[1])[0];
   if (suspect && suspect[1] < 0.5) {

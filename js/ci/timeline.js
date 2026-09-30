@@ -34,6 +34,9 @@ export function positionOf(i, n) {
 
 const formatOfTwist = id => TWIST_CATALOG.find(t => t.id === id && t.format === 'the-circle' && t.category === 'blocking')?.ciFormat;
 const entryOfTwist = id => TWIST_CATALOG.find(t => t.id === id && t.format === 'the-circle' && t.category === 'arrivals')?.ciEntry;
+const powerOfTwist = id => TWIST_CATALOG.find(t => t.id === id && t.format === 'the-circle' && t.category === 'power')?.ciPower;
+// Powers a blocked player hands over (spec 14), drawn now and then mid-season.
+export const POWER_DRAWS = { chance: 0.2, kinds: [['immunity', 2], ['hacker', 1], ['joker', 1], ['burner', 1]] };
 // A slot's booking: one id, or a list (a night can have a blocking and an arrival).
 const idsAt = (bookings, slot) => [].concat(bookings[slot] || []);
 
@@ -76,6 +79,9 @@ export function bookSeason(schedule, rng, { total, finalists = 5, bookings = {} 
       night = { format: options.length ? weighted(rng, options) : 'standard' };
     }
     night.position = ctx.position;
+    const bookedPower = ids.map(powerOfTwist).find(Boolean);
+    if (bookedPower) night.power = bookedPower;
+    else if ((ctx.position === 'middle' || ctx.position === 'late') && rng() < POWER_DRAWS.chance) night.power = weighted(rng, POWER_DRAWS.kinds);
     d.night = night;
     const extra = FORMATS[night.format].removes - 1;
     // Give back the latest later nights (never the last) for each extra removal.

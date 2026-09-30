@@ -111,7 +111,7 @@ function saveThenPlead(state, rng, rating) {
 // UK 1 Ep 15: the bottom two are named, and everyone else votes in public.
 // A tie goes to the top-rated player. Every vote is a claim the room learns.
 function roomVote(state, rng, rating) {
-  const bottom = rating.results.slice(-2).map(r => r.profile).filter(h => state.active.includes(h));
+  const bottom = rating.results.map(r => r.profile).filter(h => state.active.includes(h) && !state.immuneNext[h]).slice(-2);
   const voters = state.active.filter(h => !bottom.includes(h));
   const votes = {};
   for (const v of voters) votes[v] = bottom.map(t => [t, blockScore(state, v, t).total + rng() * 0.5]).sort((a, b) => b[1] - a[1])[0][0];
@@ -170,7 +170,10 @@ function blockLowest(state, rng, target, format) {
 }
 function instantBlock(state, rng, rating) {
   for (const h of state.active) delete state.immuneNext[h];
-  return blockLowest(state, rng, rating.results.at(-1).profile, 'instant');
+  // A given immunity holds even here: the lowest who is not immune.
+  const lowest = rating.results.map(r => r.profile).filter(h => state.active.includes(h) && !state.immuneNext[h]);
+  for (const h of state.active) delete state.immuneNext[h];
+  return blockLowest(state, rng, lowest.at(-1) || rating.results.at(-1).profile, 'instant');
 }
 
 // Two in one night, three ways the real seasons did it: the lowest at once
@@ -186,7 +189,7 @@ function doubleBlock(state, rng, rating) {
   if (variant === 'each' && infl.length < 2) variant = 'instant-then-hangout';
   const night = state.nights?.at(-1);
   if (night) night.variant = variant;
-  const lowest = rating.results.map(r => r.profile).filter(h => !infl.includes(h));
+  const lowest = rating.results.map(r => r.profile).filter(h => !infl.includes(h) && !state.immuneNext[h]);
   if (variant === 'lowest-two') {
     for (const h of state.active) delete state.immuneNext[h];
     const [a, b] = [lowest.at(-1), lowest.at(-2)];
@@ -208,7 +211,7 @@ const newcomersIn = state => state.active.filter(h => (state.joinedDay[h] || 1) 
   .sort((a, b) => (state.joinedDay[b] || 1) - (state.joinedDay[a] || 1));
 function antivirus(state, rng, rating) {
   const holders = newcomersIn(state).slice(0, 2);
-  let unsafe = state.active.filter(h => !holders.includes(h));
+  let unsafe = state.active.filter(h => !holders.includes(h) && !state.immuneNext[h]);
   const queue = [...holders], passes = [];
   while (unsafe.length > 1 && queue.length) {
     const from = queue.shift();
@@ -257,6 +260,8 @@ export function blockEachOther(state, rng, [A, B]) {
  *  tonight falls back to standard, on record) and, if it is not the usual
  *  Hangout, the Circle tells the players the rule before it happens (§16.4). */
 export function prepareNight(state, night = { format: 'standard' }, rng = null) {
+  // A power the blocked player will hand over at tonight's visit.
+  state.nightPower = night.power || null;
   let format = night.format || 'standard';
   if (!FORMATS[format] || !(FORMATS[format].canNow?.(state) ?? true)) {
     night.fellBack = format; format = 'standard';

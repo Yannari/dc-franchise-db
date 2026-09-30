@@ -244,7 +244,8 @@ export function renderEntry(state, entry, cast, rng, ctx = {}) {
     if (t.send) {
       const voice = voiceOf();
       // An anonymous message hides its sender's signature phrases.
-      const anon = t.by === 'a' && cast.anonA ? { anon: true } : {};
+      // Anonymous, or behind a named mask (the Joker): the room sees the mask.
+      const anon = t.by === 'a' && cast.anonA ? { anon: cast.anonAs || true } : {};
       const styled = byAuthored(styleMessage(nick(fill(state, t.send, cast, t.by)), voice, rng), anon.anon ? null : av, rng, { greet, reply });
       if (greet) ctx.greeted.add(speaker);
       lines.push(tag({ who: speaker, kind: 'send', text: displayText(styled), spoken: dictation(styled), ...anon }));
@@ -472,6 +473,21 @@ const BLOCKS = {
       { key: 'plead.pitch', cast: { a: p1, b: i1 } }, { key: 'plead.listen', cast: { a: i1, b: p1 } },
       { key: 'plead.pitch', cast: { a: p2, b: i2 || i1 } }, { key: 'plead.listen', cast: { a: i2 || i1, b: p2 } }];
   },
+  // Powers (Plan 3b Task 8).
+  'power-reveal'(state, s) {
+    const readers = s.seenBy.filter(h => h !== s.who[0]);
+    const [a, b] = [readers[0] || s.who[0], readers[1] || readers[0] || s.who[0]];
+    if (s.data.kind === 'immunity') return [{ key: 'power.reveal.immunity', cast: { a, b: s.data.holder, c: s.data.from } }];
+    return [{ key: `power.reveal.${s.data.kind}`, cast: { a, b } }];
+  },
+  hack(state, s) {
+    const { hacker, as, to } = s.data;
+    return [{ key: 'hack.send', cast: { a: hacker, b: to, c: as } }, { key: 'hack.read', cast: { a: to, b: as } }];
+  },
+  'hack-undone'(state, s) { return [{ key: 'hack.undone', cast: { a: s.data.to, b: s.data.as } }]; },
+  'joker-chat'(state, s) { return [{ key: 'joker.chat', cast: { a: s.data.holder, b: s.data.newcomer, anonA: true, anonAs: 'The Joker' } }]; },
+  'joker-pick'(state, s) { return [{ key: 'joker.pick', cast: { a: s.data.holder, b: s.data.pick } }]; },
+  'burner-exposed'(state, s) { return [{ key: 'burner.exposed', cast: { a: s.data.by, b: s.data.holder } }]; },
   // How a newcomer came in (Plan 3b Task 7).
   date(state, s) {
     const [h, chosen] = s.who;
@@ -657,6 +673,7 @@ const BLOCKS = {
     out.push({ key: `visit.talk.${s.data.motive}`, cast: { a: h, b: to }, extra: { motive: s.data.motive, sole } });
     // The conversation keeps going: on the real show a visit is a sit-down.
     out.push({ key: `visit.talk2.${s.data.motive}`, cast: { a: h, b: to }, extra: { motive: s.data.motive, sole } });
+    if (s.data.power) out.push({ key: `visit.power.${s.data.power}`, cast: { a: h, b: to } });
     if (s.data.handed) {
       const c0 = claimOf(state, s.data.handed);
       out.push({ key: 'visit.hand', cast: { a: h, b: to, c: c0.about }, extra: { claim: c0.kind } });
@@ -907,7 +924,9 @@ export const POOL_KEYS = [
   ...['save-two', 'plead', 'room-vote', 'forced'].map(f => `alert.${f}`), 'block.announce.unsaved', 'block.announce.vote',
   'block.announce.statement', 'plead.open', 'plead.pitch', 'plead.listen', 'vote.open', 'vote.cast', 'vote.result',
   'statement.open', 'statement.say', 'statement.named', 'save.wait', 'alert.instant', 'alert.double', 'block.announce.instant', 'goodbye.video.close',
-  'block.react.numbers', 'block.react.unsaved', 'date.pick', 'date.chat', 'date.gift', 'date.passed', 'invites.first', 'invites.next', 'invites.last',
+  'block.react.numbers', 'block.react.unsaved', 'visit.choose.power', 'visit.talk.power', 'visit.talk2.power',
+  ...['immunity', 'hacker', 'joker', 'burner'].map(k => `visit.power.${k}`), ...['immunity', 'joker', 'hacker'].map(k => `power.reveal.${k}`),
+  'hack.send', 'hack.read', 'hack.undone', 'joker.chat', 'joker.pick', 'burner.exposed', 'date.pick', 'date.chat', 'date.gift', 'date.passed', 'invites.first', 'invites.next', 'invites.last',
   'race.win', 'race.lose', 'newparty.throw', 'newparty.guest', 'newparty.left', 'lurk.watch', 'lurk.reveal',
   'chosen.offer', 'chosen.pick', 'chosen.thanks', 'pairarrival.chat', 'alert.antivirus', 'antivirus.open', 'antivirus.pass', 'antivirus.got', 'antivirus.left', 'block.announce.antivirus',
   'hangout.agree', 'hangout.yield', 'hangout.trade', 'hangout.pact',

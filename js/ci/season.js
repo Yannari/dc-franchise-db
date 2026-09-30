@@ -29,6 +29,7 @@ import { standardBlocking, goodbyeVideo, deliverReports } from './blocking.js';
 import { FORMATS, prepareNight, runBlocking } from './formats.js';
 import { bookSeason } from './timeline.js';
 import { arrive, chooseNewcomer } from './arrivals.js';
+import { powersMorning, jokerMeets } from './powers.js';
 import { openLedger, noteJoin, airDay, fanFavorite } from './public.js';
 import { buildSchedule } from './schedule.js';
 import { finalDay, finaleDay } from './finale.js';
@@ -104,6 +105,7 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
       for (const h of state.active) driftMind(state, h);
       for (const h of state.pendingGoodbyes.splice(0)) goodbyeVideo(state, rng, h);
       deliverReports(state, rng);
+      powersMorning(state, streamFor(seed, `powers:${d.day}`));
       // Finale day is the studio: the phones are off after the final ratings.
       if (!d.finale) morningFeed(state, rng);
     }
@@ -120,7 +122,11 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
       } else entry = 'snoop';
     }
     const arriving = queue.splice(0, d.arrivals);
-    if (arriving.length) { arrive(state, streamFor(seed, `arrive:${d.day}`), arriving, entry, entryCtx); for (const h of arriving) noteJoin(state, h); }
+    if (arriving.length) {
+      arrive(state, streamFor(seed, `arrive:${d.day}`), arriving, entry, entryCtx);
+      for (const h of arriving) noteJoin(state, h);
+      jokerMeets(state, streamFor(seed, `joker:${d.day}`), arriving);
+    }
     recognise(state, carried);
 
     // Alone in the apartment, then the chats, the game, and the evening:

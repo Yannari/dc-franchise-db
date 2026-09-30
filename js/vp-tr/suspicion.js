@@ -1167,7 +1167,7 @@ function _buildBeats(v) {
     const topAccuser = _topAccuser(v, row.name);
     const lead = row.accusers === 0
       ? 'No Faithful currently suspects ' + _esc(row.name) + '. '
-        + _word(row.cleared) + ' ' + _s(row.cleared, 'person has', 'people have')
+        + _Word(row.cleared) + ' ' + _s(row.cleared, 'person has', 'people have')
         + ' considered and dismissed the name.'
       : _Word(row.accusers) + ' ' + _s(row.accusers, 'Faithful currently suspects',
         'Faithfuls currently suspect') + ' ' + _esc(row.name) + '.'
@@ -1754,4 +1754,32 @@ export function rpBuildSuspicion(ep, observer = 'audience') {
     + (st.idx + 1) + ' / ' + total + '</span>'
     + '<button class="sn-btn" onclick="' + call('trSuspicionRevealAll') + '">Reveal all</button>'
     + '</div></div>';
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// THE STAGE'S DATA (suspicion-stage.js) — the page's own beats, and the
+// plans and reads they draw, through the same gate the page keeps: a player
+// layer gets its own lean and its own board and nothing else, and the truth
+// is only ever handed to the audience.
+// ══════════════════════════════════════════════════════════════════════
+export function suspicionStageData(ep, observer = 'audience') {
+  const v = _view(ep, observer);
+  if (!v || !v.inRoom || !v.living.length) return null;
+  const truth = v.truthKnown ? (v.truth || {}) : {};
+  const plans = v.truthKnown ? (v.plans || []) : (v.myPlan ? [v.myPlan] : []);
+  const reads = {};
+  for (const b of v.boards || []) {
+    reads[b.observer] = b.entries.filter(e => e.score > 0).slice(0, 4).map(e => e.name);
+  }
+  if (!v.truthKnown && v.watcher) {
+    reads[v.watcher] = (v.mine || []).filter(e => e.score > 0).slice(0, 4).map(e => e.name);
+  }
+  return {
+    beats: _buildBeats(v).map(b => ({ phase: b.phase, meta: b.meta ? { ...b.meta } : {}, html: b.html })),
+    living: [...v.living],
+    plans: plans.map(p => ({ observer: p.observer, target: p.target })),
+    traitors: v.truthKnown ? v.living.filter(n => truth[n] === 'traitor') : [],
+    truth: v.truthKnown ? { ...truth } : null,
+    watcher: v.watcher, reads,
+  };
 }

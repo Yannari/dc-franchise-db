@@ -280,7 +280,24 @@ export function lipsyncStage(row, beats, { ep, goesHome = null, callAt = -1 } = 
       phase: 'song', k, meters, tug, on: who, mood: null, banner: null, stamps: {}, scores: done ? Object.fromEntries(queens.map(q => [q, scoreOf(q).toFixed(1)])) : {},
       stars: false, shake: false, moment: false, confess: null,
     };
-    if (idx < 0 || kind === 'stage:lipsync-intro') { st.phase = 'intro'; st.on = null; }
+    if (idx < 0 || kind === 'stage:lipsync-intro' || kind === 'stage:lipsync-speech') { st.phase = 'intro'; st.on = null; }
+    /* THE SPEECH'S BIG WORDS, ACROSS THE STAGE: the stakes slam in, "the time
+       has come" shakes the room, and the three words land on their own. */
+    if (kind === 'stage:lipsync-speech') {
+      const part = sc.data?.part; const sk = sc.data?.stakes;
+      if (part === 'stakes') {
+        st.banner = sk === 'win' ? { text: 'For the win', sub: 'nobody goes home' }
+          : sk === 'legacy' ? { text: 'For your legacy', sub: 'the winner holds the lipstick' }
+            : { text: 'Up for elimination', sub: 'last chance', fail: true };
+        st.shake = sk !== 'win';
+      } else if (part === 'time') {
+        st.banner = { text: 'The time has come', sub: '' };
+        st.shake = true;
+      } else if (part === 'for') {
+        st.banner = { text: sk === 'win' ? 'For. The. Win.' : sk === 'legacy' ? 'For. Your. Legacy.' : 'For. Your. Life.', sub: '' };
+        st.shake = true; st.moment = true;
+      }
+    }
     if (kind === 'stage:lipsync-hook') {
       const good = sc.data?.tier === 'nailed';
       st.moment = true; st.mood = good ? 'good' : 'bad';

@@ -9,6 +9,7 @@ import { rngFor } from '../js/dr/rng.js';
 import { characterById } from '../js/dr/data/snatch-characters.js';
 import { playDragSeason } from '../js/dr/season.js';
 import { runMaxi, applyEvents } from '../js/dr/maxi.js';
+import { perform } from '../js/dr/chal/snatch-game.js';
 
 const STATS = ['physical', 'endurance', 'mental', 'social', 'strategic', 'loyalty', 'boldness', 'intuition', 'temperament'];
 const mk = (name, drag = {}, over = {}) => ({
@@ -362,60 +363,33 @@ describe('THE PICK IS A DECISION, AND DIFFICULTY IS A GAMBLE', () => {
        AND 200 WAS STILL TOO FEW: a lip sync rule changing who reaches the
        Snatch Game flipped it (hard 3.74 vs easy 3.81 on seeds 1-200) while
        seeds 201-400 on their own still showed hard wider. 400, pooled. */
+    /* ── AND THEN IT FLIPPED A THIRD TIME, SO IT MEASURES THE MECHANIC ──
+       Scored on what AIRED (two or three moments, not six), the per-moment
+       noise averages out less, and the whole-season comparison sat within one
+       standard error of the effect: 3.785 against 3.794 on 400 seeds. It went
+       red on every change that moved a season. So: the same queen, the same
+       stats, the same nights — once as an easy character, once as a hard one.
+       Nothing differs but the difficulty, and 400 nights are plenty. */
+    const stats = { boldness: 6, strategic: 5, loyalty: 5 };
+    const drag = { comedy: 7, acting: 7, style: 'pageant', dance: 5, design: 5, runway: 5, lipsync: 5, singing: 5 };
+    const order = ['E1', 'E2', 'E3', 'H1', 'H2', 'H3'];
+    const players = Object.fromEntries(order.map(n => [n, { name: n, archetype: 'hero', stats, drag }]));
+    // Britney (difficulty 1) and Maggie Smith (difficulty 5): neither suits a pageant queen, so style adds nothing to either.
+    const picks = Object.fromEntries(order.map(n => [n, { choice: n[0] === 'E' ? 'britney-spears' : 'maggie-smith', penalty: 0 }]));
+    expect(characterById('britney-spears').difficulty).toBe(1);
+    expect(characterById('maggie-smith').difficulty).toBe(5);
     const easy = []; const hard = [];
     for (let seed = 1; seed <= 400; seed++) {
-      const cast0 = mk(12, seed * 3, 6);
-      const s = playDragSeason({ cast: cast0, seed,
-        config: { drSchedule: [{ episode: 5, maxiId: 'snatch-game' }] },
-        bond: () => 0, addBond: () => {}, popDelta: () => {} });
-      const ep = s.rows.find(r => r.dr.challenge?.id === 'snatch-game');
-      if (!ep) continue;
-      for (const p of Object.values(ep.dr.assignment.picks)) {
-        const c = characterById(p.choice);
-        const perf = ep.dr.performances?.[p.name]?.perf;
-        if (!c || perf == null) continue;
-        const q = s.rows[0] && cast0.find(x => x.name === p.name);
-        /* THE BASELINE HAS TO BE THE ENGINE'S BASELINE. This subtracted a
-           flat comedy*0.55 + acting*0.35, which is what the score used to
-           be. The weights TILT on `needs` now — a part she has to inhabit
-           leans on acting, a loud quotable one on comedy — so a flat
-           baseline left that tilt sitting in the residual as noise, on top
-           of the variance the test is trying to measure. It is a difference
-           of up to 0.28 x (comedy - acting), which on a random cast is
-           easily wider than the swing itself: the easy pile came out with a
-           LARGER spread than the hard one and the mechanic looked broken
-           while working. Same weights as js/dr/chal/snatch-game.js. */
-        /* The craft band she is in, on the engine's OWN weights — they tilt
-           on `needs`, so a flat comedy*0.55 + acting*0.35 is not the
-           baseline any more (js/dr/chal/snatch-game.js). */
-        const wComedy = c.needs === 'acting' ? 0.34 : 0.62;
-        const base = q ? q.drag.comedy * wComedy + q.drag.acting * (0.9 - wComedy) : 0;
-        const at = { perf, band: Math.floor(base) };
-        if (c.difficulty <= 2) easy.push(at);
-        else if (c.difficulty >= 4) hard.push(at);
-      }
+      const out = perform({ living: order, players, assignment: { order, picks }, prep: {}, rng: rngFor(seed * 7919 + 11), bond: () => 0, cfg: {} });
+      for (const n of order) (n[0] === 'E' ? easy : hard).push(out.performances[n].perf);
     }
-    expect(hard.length, 'nobody ever took a hard character').toBeGreaterThan(200);
     const mean = a => a.reduce((x, y) => x + y, 0) / a.length;
     const sd = a => { const m = mean(a); return Math.sqrt(mean(a.map(x => (x - m) ** 2))); };
-    /* The spread WITHIN each craft band, pooled. Bands of one craft point,
-       and a band needs eight queens in it before it is allowed an opinion. */
-    const pooled = (set) => {
-      const by = {};
-      for (const r of set) (by[r.band] ||= []).push(r.perf);
-      let num = 0; let den = 0;
-      for (const v of Object.values(by)) {
-        if (v.length < 8) continue;
-        num += sd(v) ** 2 * (v.length - 1); den += v.length - 1;
-      }
-      return Math.sqrt(num / den);
-    };
-    const [sHard, sEasy] = [pooled(hard), pooled(easy)];
-    expect(sHard, `hard sd ${sHard.toFixed(3)} vs easy ${sEasy.toFixed(3)}`)
-      .toBeGreaterThan(sEasy);
+    const [sHard, sEasy] = [sd(hard), sd(easy)];
+    expect(sHard, `hard sd ${sHard.toFixed(3)} vs easy ${sEasy.toFixed(3)}`).toBeGreaterThan(sEasy + 0.15);
     // And it is a gamble rather than a tax: the ceiling has to be reachable.
-    const easyMean = mean(easy.map(r => r.perf));
-    const shone = hard.filter(r => r.perf > easyMean + 1.5).length / hard.length;
+    const easyMean = mean(easy);
+    const shone = hard.filter(x => x > easyMean + 1.5).length / hard.length;
     expect(shone, 'a hard character never pays off').toBeGreaterThan(0.1);
   });
 });

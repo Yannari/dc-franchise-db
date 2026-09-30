@@ -411,8 +411,9 @@ describe('the lipstick is not spoiled', () => {
     let checked = 0;
     let doubles = 0;
     // Wide enough that a double win (rare by design) turns up whatever the
-    // earlier weeks happen to draw.
-    for (let s = 90; s < 106; s++) {
+    // earlier weeks happen to draw. (90-105 was, until a failed stunt stopped
+    // counting as a double: the path got rarer and 16 seasons drew none.)
+    for (let s = 90; s < 136; s++) {
       for (const r of weekly(season(s, { drAllStars: true }))) {
         const lip = r.dr.lipsync;
         if (!lip?.legacy || !lip.eliminated) continue;

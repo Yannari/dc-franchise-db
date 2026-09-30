@@ -126,6 +126,8 @@ const VOICES = {
   // "Sashay away": the air goes out of the room.
   sashay: (c, d, n) => { noise(c, d, n, { dur: 0.9, vol: 0.14, type: 'bandpass', f: 2400, f2: 180, q: 1.5, a: 0.05 }); boom(c, d, n, { t: 0.35, vol: 0.5, f: 80, f2: 30, dur: 1.1 }); vowel(c, d, n, { t: 0.3, f: 210, f2: 160, dur: 1.0, formants: [600, 1000], vol: 0.5 }); },
   win: (c, d, n) => { brass(c, d, n, { freqs: [261.6, 329.6, 392], dur: 0.35, vol: 0.05 }); brass(c, d, n, { t: 0.32, freqs: [349.2, 440, 523.3, 698.5], dur: 1.2, vol: 0.05 }); crowd(c, d, n, { t: 0.2, size: 1.3, dur: 2.4 }); claps(c, d, n, { t: 0.3, dur: 2.6 }); },
+  // "FOR. YOUR. LIFE." — a hit, no crowd: nobody cheers the speech.
+  impact: (c, d, n) => { boom(c, d, n, { vol: 0.75, f: 85, f2: 30, dur: 0.9 }); noise(c, d, n, { dur: 0.12, vol: 0.35, type: 'highpass', f: 1800 }); brass(c, d, n, { freqs: [55, 82.4, 110], dur: 1.4, vol: 0.05 }); },
   // The runway: camera shutters, a few at once.
   flash: (c, d, n) => { for (let i = 0; i < 5; i++) { const t = Math.random() * 0.5; noise(c, d, n, { t, dur: 0.03, vol: 0.45, type: 'highpass', f: 3000, a: 0.002 }); noise(c, d, n, { t: t + 0.05, dur: 0.025, vol: 0.3, type: 'highpass', f: 4000, a: 0.002 }); } },
   applause: (c, d, n) => { claps(c, d, n, { dur: 2.0, rate: 30, vol: 0.5 }); },
@@ -181,7 +183,7 @@ export function dragSfxStep(suffix, idx) {
   // The music under this card, and on the lip sync stage the verdict cue the
   // pause and the verdict both play under.
   const m = el.dataset?.music;
-  const under = [m, ...(/lipsync|legacy/.test(suffix) && /suspense|shantay|sashay/.test(m || '') ? ['verdict'] : [])].filter(Boolean);
+  const under = [m].filter(Boolean);
   playSfx(name, under);
 }
 
@@ -213,6 +215,8 @@ export function lipsyncSfxOf(sc) {
   const k = String(sc?.kind || '').replace(/^stage:/, '');
   const tier = sc?.data?.tier;
   if (k === 'lipsync-intro' || k === 'lipsync-legacy-choice') return 'stinger';
+  // The speech: the stakes land, and the three words hit.
+  if (k === 'lipsync-speech') return sc?.data?.part === 'stakes' ? 'stinger' : sc?.data?.part === 'for' ? 'impact' : null;
   if (k === 'lipsync-call' && tier === 'double-shantay') return 'shantay';   // both stay: one card says it
   if (k === 'lipsync-call' && tier === 'double-sashay') return 'sashay';
   if (k === 'lipsync-suspense' || k === 'lipsync-call') return 'heartbeat';

@@ -48,8 +48,8 @@ describe('the lip sync sounds like what happened', () => {
     // A double is one card: the call says it, and it must sound like the verdict.
     expect(lipsyncSfxOf({ kind: 'stage:lipsync-call', data: { tier: 'double-shantay' } })).toBe('shantay');
     expect(lipsyncSfxOf({ kind: 'stage:lipsync-call', data: { tier: 'double-sashay' } })).toBe('sashay');
-    expect(lipsyncMusicOf('stage:lipsync-call', { tier: 'double-shantay' })).toBe('shantay');
-    expect(lipsyncMusicOf('stage:lipsync-call', { tier: 'shantay' })).toBe('suspense');
+    expect(lipsyncMusicOf('stage:lipsync-call', { tier: 'double-shantay' })).toBe('the-verdict');
+    expect(lipsyncMusicOf('stage:lipsync-call', { tier: 'shantay' })).toBe('the-verdict');
   });
 
   it('puts them on the real screen: the drop, the room, the verdict', () => {

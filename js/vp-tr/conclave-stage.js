@@ -17,7 +17,7 @@ import { TRScenery } from './cutaway-scenery.js';
 import { trPlay } from './sfx.js';
 import { beatLines } from './stage-lines.js';
 import { footCard, playCard, CARD_CSS } from './stage-cards.js';
-import { cutIn, CUTIN_CSS } from './stage-cutin.js';
+import { cutIn } from './stage-cutin.js';
 
 const hash = s => { let h = 7; for (const c of String(s)) h = (Math.imul(h, 31) + c.charCodeAt(0)) >>> 0; return h; };
 const clean = s => String(s || '').replace(/\s+/g, ' ').trim();
@@ -95,7 +95,7 @@ export function conclaveStageScreen(ep, observer, pageHtml) {
   if (typeof queueMicrotask === 'function' && typeof window !== 'undefined' && window.trStageMountAll) {
     queueMicrotask(window.trStageMountAll);
   }
-  return trsFold(stageShell(uid, '<div class="trc"></div><div class="trs-corner"></div><div class="trs-start"></div>', CARD_CSS + CUTIN_CSS + CSS), pageHtml);
+  return trsFold(stageShell(uid, '<div class="trc"></div><div class="trs-corner"></div><div class="trs-start"></div>', CARD_CSS + CSS), pageHtml);
 }
 
 function stateAt(S) {

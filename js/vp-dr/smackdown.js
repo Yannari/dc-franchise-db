@@ -776,7 +776,7 @@ export function rpBuildSmackdown(row) {
             </div>`;
   }).join('')}
         </div>
-      </div>`, 'shantay');
+      </div>`, 'the-verdict');
       continue;
     }
 
@@ -925,7 +925,7 @@ export function rpBuildSmackdown(row) {
           ${fatB != null && fatB < 1 ? fatigueBar(fatB) : ''}
         </div>
       </div>
-    </div>`, 'shantay');
+    </div>`, 'the-verdict');
   }
 
   // ── CROWNING ──

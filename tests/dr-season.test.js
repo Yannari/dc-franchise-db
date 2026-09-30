@@ -758,7 +758,8 @@ describe('WHO SINGS, AND WHAT FOR', () => {
     // And the host never says the winning line before the song.
     const order = e.dr.scenes.map(x => x.kind || '');
     const winCall = order.indexOf('stage:result-win');
-    const song = order.indexOf('stage:lipsync-intro');
+    // The speech's first card (or the prose intro, on stakes without a speech).
+    const song = Math.max(order.indexOf('stage:lipsync-intro'), order.indexOf('stage:lipsync-speech'));
     expect(song, 'the song never started').toBeGreaterThan(-1);
     if (winCall >= 0) expect(winCall, 'the winner was named before the song').toBeGreaterThan(song);
     // The chart still gets its winner from the live call.

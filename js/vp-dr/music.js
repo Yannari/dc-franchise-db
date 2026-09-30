@@ -124,7 +124,7 @@ export const DRAG_SITUATIONS = [
   'finale', 'showcase', 'crowning', 'crowned',
   // The show's own cues (the user's copies, assets/audio/drag/private), each
   // named for the moment it scores:
-  'werkroom', 'untucked', 'the-call',
+  'werkroom', 'untucked', 'the-call', 'the-verdict', 'outro',
   'decision', 'up-for-elimination', 'bottom-two', 'time-has-come', 'closing',
 ];
 
@@ -156,7 +156,7 @@ const musicWanted = () => (engine.isMusicEnabled ? engine.isMusicEnabled() : tru
 export const momentTracks = () => loadManifest();
 
 /** The sound effects a file can replace (js/vp-dr/sfx.js plays them): upload `sfx-<name>.mp3`. */
-export const DRAG_SFX = ['stinger', 'heartbeat', 'cheer', 'roar', 'slam', 'gasp', 'groan', 'shantay', 'sashay', 'win', 'flash', 'applause'];
+export const DRAG_SFX = ['stinger', 'heartbeat', 'cheer', 'roar', 'slam', 'gasp', 'groan', 'shantay', 'sashay', 'win', 'flash', 'applause', 'impact'];
 async function loadManifest() {
   if (manifest !== undefined) return manifest;
   const m = {};
@@ -216,7 +216,12 @@ const FALLBACK = {};   // Drag Race plays its own show's music or nothing: never
 const HOST_SONG = new Set(['runway', 'crowned', 'finale', 'reunion', 'entrances', 'returns']);
 /* A MOMENT WITH ONE SONG OF ITS OWN, whatever the season: the main stage
    walks out to "Cover Girl" (the user's pick), its clip looped on the beat. */
-const FIXED_SONG = { mainstage: { title: 'Cover Girl', artist: 'RuPaul' } };
+const FIXED_SONG = {
+  mainstage: { title: 'Cover Girl', artist: 'RuPaul' },
+  // The credits, after the sign-off cue: the user asked for "a music from
+  // RuPaul" and left the pick to us.
+  outro: { title: 'Sissy That Walk', artist: 'RuPaul' },
+};
 /* Where each bed was when it was interrupted, so "I've made my decision"
    picks up after the winner's fanfare instead of starting over. */
 const resume = {};
@@ -316,7 +321,7 @@ function editPlay(c, out, buf, from, headLen, outro) {
   };
   seg(now, from, headLen, false);
   seg(now + headLen, outro[0], outro[1] - outro[0], true);
-  return { context: c, stop(when) { for (const s of live) { try { s.stop(when); } catch { /* done */ } } } };
+  return { context: c, length: headLen + (outro[1] - outro[0]), stop(when) { for (const s of live) { try { s.stop(when); } catch { /* done */ } } } };
 }
 
 /* HOW LONG A MOMENT LASTS ON SCREEN, from its cards: a beat to take the
@@ -418,6 +423,13 @@ async function start(key, sit, song, suffix = null, fallback = null, fit = {}) {
       }
     }
     mine.src = src; mine.g = g; mine.pending = false;
+    /* THE SIGN-OFF HANDS OVER TO THE CREDITS. "If you can't love yourself"
+       plays its cue, and when it ends the host's own record rolls under the
+       credits, until the viewer moves on. */
+    if (sit === 'closing') {
+      const len = src.length || (buf.duration - (pick.start || 0));
+      setTimeout(() => { if (bed === mine) start('outro', 'outro', null, suffix); }, Math.max(1, len - 0.4) * 1000);
+    }
   } catch { if (bed === mine) bed = null; }
 }
 
@@ -444,16 +456,20 @@ export function lipsyncMusicOf(kind, data = null) {
   /* "The time has come…" has its own cue; the song starts on the first move,
      so every performance card says so (an untagged card keeps the moment). */
   if (/lipsync-intro$/.test(k)) return 'time-has-come';
+  /* THE SPEECH (the user's order): the tension bed under the queens, the
+     song and the stakes; "The Time Has Come" from "the time has come". */
+  if (/lipsync-speech$/.test(k)) return /^(two|song|stakes)$/.test(data?.part || '') ? 'bottom-two' : 'time-has-come';
   if (/lipsync-(open|beat|hook|stunt|last-chorus)$/.test(k)) return 'lipsync';
   /* A DOUBLE IS ANNOUNCED IN ONE CARD: the call itself says both stay (or
      both go), with no shantay or sashay card after it. Filed as suspense, a
      double shantay played the wait and never the verdict. */
-  if (/lipsync-call$/.test(k) && data?.tier === 'double-shantay') return 'shantay';
-  if (/lipsync-call$/.test(k) && data?.tier === 'double-sashay') return 'sashay';
-  if (/lipsync-(suspense|call|legacy-choice)$/.test(k)) return 'suspense';
-  if (/lipsync-shantay$/.test(k)) return 'shantay';
-  if (/(lipsync-sashay|sashay-words|sashay-mood)$/.test(k)) return 'sashay';
-  if (/lipsync-win-(name|reaction|runnerup)$|revenge-back/.test(k)) return 'winner';
+  /* THE VERDICT IS ONE MOMENT: the pause, "shantay, you stay", "sashay
+     away", a winner named — all under "The Time Has Come" (the user's
+     order). Then her goodbye, which is the Last Sun's ('sashay'). A double
+     is still one card, and still the verdict. */
+  if (/lipsync-(suspense|call|legacy-choice|shantay|sashay)$/.test(k)) return 'the-verdict';
+  if (/lipsync-win-(name|reaction|runnerup)$|revenge-back/.test(k)) return 'the-verdict';
+  if (/(sashay-words|sashay-mood)$/.test(k)) return 'sashay';
   return null;
 }
 
@@ -490,7 +506,7 @@ export function dragMusicStep(suffix, idx) {
   if (!sit) { stop(); return; }
   // The verdict is said in silence after the song: the song cuts, then the
   // shantay or the sashay starts its own track.
-  const cut = (sit === 'shantay' || sit === 'sashay' || sit === 'winner' || sit === 'crowned')
+  const cut = (sit === 'the-verdict' || sit === 'shantay' || sit === 'sashay' || sit === 'winner' || sit === 'crowned')
     && (bed?.key?.startsWith('song:') || bed?.key === 'suspense' || bed?.key === 'crowning');
   if (cut) stop(true);
   /* ONE PIECE OF MUSIC UNDER THE WHOLE VERDICT. On the show the elimination
@@ -502,7 +518,7 @@ export function dragMusicStep(suffix, idx) {
   // Only on the stage: her goodbye (the exit screen) has its own music.
   const onStage = /^(lipsync|legacy|smackdown|fincrownls|exit)$/.test(suffix);
   // A lip sync for the WIN ends under it too: the host names the winner there.
-  if (onStage && (sit === 'shantay' || sit === 'sashay' || sit === 'winner' || waiting) && manifest?.verdict?.length) {
+  if (false && onStage && waiting && manifest?.verdict?.length) {   // retired: the verdict is 'the-verdict' now
     // Its big section lands on the verdict ("shantay", "sashay away", the winner's name), however long the pause.
     const toHit = secondsUntil(suffix, idx, e => /^(shantay|sashay|winner)$/.test(e.dataset?.music || ''));
     start('verdict', 'verdict', null, suffix, sit, { toHit: waiting ? toHit : 0 });

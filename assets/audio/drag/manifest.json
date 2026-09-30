@@ -1,36 +1,24 @@
 {
-  "note": "Drag Race's music: the show's own cues only, never another show's. Every file is the user's own copy (Downloads/RPDR soundtrack), kept in private/ (git-ignored, never published); a copy without them is silent there. Each cue is named for its moment and fitted to it (music.js): `at` skips an intro, `hit` lands on the card it scores, `outro` + `head` let a cue longer than its moment be cut to it. critiques = Top & Bottom (Dredmill); decision, suspense, crowning = I've Made My Decision (The Last Sun, short cut); up-for-elimination = Strobophobia; bottom-two = Ephemeral Faze; time-has-come = Earthrise; verdict (the pause, shantay, sashay, a lip sync's winner, her walk off) = The Last Sun; closing = If You Can't Love Yourself (Bad Like Yaz). The runway, the entrances, the returns, the crowning walk, the finale's opening and the reunion play the season's host song (music.js HOST_SONG). Offsets measured at 0.25 s resolution, 2026-09-30. Each cue plays ONLY at the moment it is named for: reusing Earthrise under every tear and Ephemeral Faze under every argument put the lip sync's announcement music in the werk room (the user: \"i still dont hear the soundtrack in the correct place\"). Drama, tears, comedy, sweet and romance are silent until cues of their own arrive. 2026-09-30, the user's beds (Downloads/RPDR Music): entrances = Arrivals; werkroom = Werkroom (cold open, morning, mini, announcement, the choice, elimination day); prep = Rehearsal and Rehearsal#2 in turn; challenge = Challenge Music and #2 in turn; chal-rusical = the Rusical's own; untucked = Untucked. A mood scene with no cue of its own keeps the room's bed (music.js MOODS). \"Challenge Music--Bad Performance\" arrived empty (0 bytes) and is not used. the-call = Top & Bottom (Dredmill): the host naming the tops and the bottoms. The decision cue (The Last Sun, short) no longer plays under the call \u2014 it sounded like the sashay.",
+  "note": "Drag Race's music: the show's own cues only, never another show's. Every file is the user's own copy (Downloads/RPDR soundtrack), kept in private/ (git-ignored, never published); a copy without them is silent there. Each cue is named for its moment and fitted to it (music.js): `at` skips an intro, `hit` lands on the card it scores, `outro` + `head` let a cue longer than its moment be cut to it. critiques = Top & Bottom (Dredmill); decision, suspense, crowning = I've Made My Decision (The Last Sun, short cut); up-for-elimination = Strobophobia; bottom-two = Ephemeral Faze; time-has-come = Earthrise; verdict (the pause, shantay, sashay, a lip sync's winner, her walk off) = The Last Sun; closing = If You Can't Love Yourself (Bad Like Yaz). The runway, the entrances, the returns, the crowning walk, the finale's opening and the reunion play the season's host song (music.js HOST_SONG). Offsets measured at 0.25 s resolution, 2026-09-30. Each cue plays ONLY at the moment it is named for: reusing Earthrise under every tear and Ephemeral Faze under every argument put the lip sync's announcement music in the werk room (the user: \"i still dont hear the soundtrack in the correct place\"). Drama, tears, comedy, sweet and romance are silent until cues of their own arrive. 2026-09-30, the user's beds (Downloads/RPDR Music): entrances = Arrivals; werkroom = Werkroom (cold open, morning, mini, announcement, the choice, elimination day); prep = Rehearsal and Rehearsal#2 in turn; challenge = Challenge Music and #2 in turn; chal-rusical = the Rusical's own; untucked = Untucked. A mood scene with no cue of its own keeps the room's bed (music.js MOODS). \"Challenge Music--Bad Performance\" arrived empty (0 bytes) and is not used. the-call = Top & Bottom (Dredmill): the host naming the tops and the bottoms. The decision cue (The Last Sun, short) no longer plays under the call \u2014 it sounded like the sashay. 2026-09-30, the user's lip sync order: the speech under Bottom Two, then The Time Has Come from 'the time has come'; the song; the verdict (the pause, shantay, sashay away, a winner) under The Time Has Come ('the-verdict'); her goodbye under I've Made My Decision (The Last Sun, 'sashay'); the sign-off cue, then 'outro' \u2014 Sissy That Walk. The finale's waits (suspense, crowning) are The Time Has Come too: the Last Sun is the goodbye now. The long Last Sun (elimination.mp3) is unused.",
   "suspense": [
     {
-      "file": "private/decision.mp3",
+      "file": "private/time-has-come.mp3",
       "at": [
         0
       ],
-      "loopFrom": 1,
-      "loopTo": 27.5,
+      "loopFrom": 8,
+      "loopTo": 112,
       "private": true
     }
   ],
   "crowning": [
     {
-      "file": "private/decision.mp3",
+      "file": "private/time-has-come.mp3",
       "at": [
         0
       ],
-      "loopFrom": 1,
-      "loopTo": 27.5,
-      "private": true
-    }
-  ],
-  "verdict": [
-    {
-      "file": "private/elimination.mp3",
-      "at": [
-        0
-      ],
-      "loopFrom": 10,
-      "loopTo": 186,
-      "hit": 9.75,
+      "loopFrom": 8,
+      "loopTo": 112,
       "private": true
     }
   ],
@@ -42,17 +30,6 @@
       ],
       "loopFrom": 26,
       "loopTo": 112,
-      "private": true
-    }
-  ],
-  "decision": [
-    {
-      "file": "private/decision.mp3",
-      "at": [
-        0
-      ],
-      "loopFrom": 1,
-      "loopTo": 27.5,
       "private": true
     }
   ],
@@ -198,6 +175,28 @@
       ],
       "loopFrom": 26,
       "loopTo": 112,
+      "private": true
+    }
+  ],
+  "the-verdict": [
+    {
+      "file": "private/time-has-come.mp3",
+      "at": [
+        0
+      ],
+      "loopFrom": 8,
+      "loopTo": 112,
+      "private": true
+    }
+  ],
+  "sashay": [
+    {
+      "file": "private/decision.mp3",
+      "at": [
+        0
+      ],
+      "loopFrom": 1,
+      "loopTo": 27.5,
       "private": true
     }
   ]

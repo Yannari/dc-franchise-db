@@ -35,6 +35,9 @@ import { castleDayScenes, castleDayChips } from './castle-day.js';
 import { scriptParts } from './tidy.js';
 import { playerAvatarUrl } from '../players.js';
 import { TRScenery } from './cutaway-scenery.js';
+// a cycle (stage-cutin imports this file's helpers), safe because both sides
+// only read the other's bindings when a screen is built, never at load
+import { cutIn, CUTIN_CSS } from './stage-cutin.js';
 
 const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const reg = () => (typeof window !== 'undefined' ? (window.__trStage ||= {}) : {});
@@ -177,7 +180,7 @@ export function castleStageHTML(ep, observer = 'audience', segment = null) {
  * contents are the caller's), the controls. Inert, and carrying no words.
  */
 function stageShell(uid, viewInner, extraCss = '') {
-  return `<style>${CSS}${extraCss}</style><div class="trs" data-uid="${esc(uid)}">`
+  return `<style>${CSS}${CUTIN_CSS}${extraCss}</style><div class="trs" data-uid="${esc(uid)}">`
     + '<div class="trs-band"><div class="trs-band-l"><div class="trs-eyebrow"></div><div class="trs-title"></div></div>'
     + '<div class="trs-fund"><b></b><span></span></div></div>'
     + '<div class="trs-clock"></div>'
@@ -282,14 +285,28 @@ function drawPeople(root, S, st, geo, fresh) {
       + `<div class="trs-av">${face(p)}</div><div class="trs-nm">${esc(p)}${S.traitors.includes(p) ? '<em> · Traitor</em>' : ''}</div></div>`;
   }).join('');
   if (fresh && st.enter) later(S, () => scene.querySelectorAll('.trs-fig').forEach(f => f.classList.add('trs-in')), 60);
-  // the line, pinned over whoever says it
+  // A SPOKEN LINE IS A CUT-IN (stage-cutin.js): the speaker's bust slides in
+  // over the room on their colour, the room goes soft behind them, and the
+  // line sits under the bust. A confessional keeps its own letterboxed look.
+  const cutting = !!speaker && !cam;
+  view.classList.toggle('trs-cutting', cutting);
+  if (cutting) {
+    const night = /trs-night/.test(view.className);
+    const prev = S.steps[S.idx - 1];
+    const others = people.filter(p => p !== speaker);
+    scene.insertAdjacentHTML('beforeend', cutIn({ who: speaker, fresh,
+      quick: !!(prev && prev.kind === 'say' && prev.si === st.si),
+      with: others.length === 1 ? others[0] : null,
+      tone: S.traitors.includes(speaker) ? 'blood' : night ? 'steel' : 'morning' }));
+  }
+  // the line, pinned over whoever says it (under the bust, in a cut-in)
   if (speaker) {
     const i = Math.max(0, people.indexOf(speaker));
     const top = floor - figW * 4 / 3 - 26;
     const el = document.createElement('div');
-    el.className = 'trs-line' + (cam ? ' trs-camline' : '') + (S.traitors.includes(speaker) ? ' trs-traitor' : '');
-    el.style.left = Math.min(Math.max(xs[i] * 100, 26), 74) + '%';
-    el.style.top = Math.max(top, H * 0.22) + 'px';
+    el.className = 'trs-line' + (cam ? ' trs-camline' : '') + (S.traitors.includes(speaker) ? ' trs-traitor' : '') + (cutting ? ' trs-cutline' : '');
+    el.style.left = cutting ? '56%' : Math.min(Math.max(xs[i] * 100, 26), 74) + '%';
+    el.style.top = cutting ? (H * 0.94) + 'px' : Math.max(top, H * 0.22) + 'px';
     el.innerHTML = `<div class="trs-card"><div class="trs-who"><i></i>${esc(speaker)}${cam ? ' · to camera' : ''}</div><p></p></div>`;
     scene.appendChild(el);
     const p = el.querySelector('p'), txt = '“' + String(st.text).replace(/^["“]|["”]$/g, '') + '”';
@@ -618,6 +635,9 @@ const CSS = `
 .trs-fig.trs-traitor .trs-av::after{content:"";position:absolute;inset:0;z-index:2;border-radius:inherit;box-shadow:inset 0 0 0 2px rgba(179,38,51,.9),inset 0 -40px 50px -20px rgba(117,18,30,.7)}
 .trs-line{position:absolute;max-width:46%;transform:translate(-50%,-100%) scale(.96);opacity:0;transition:transform .35s cubic-bezier(.2,1.4,.4,1),opacity .25s;z-index:7}
 .trs-line.trs-in{transform:translate(-50%,-100%) scale(1);opacity:1}
+.trs-line.trs-cutline{max-width:62%;z-index:2100}
+.trs-line.trs-cutline .trs-card::before,.trs-line.trs-cutline .trs-card::after{display:none}
+.trs-view.trs-cutting .trs-world,.trs-view.trs-cutting .trs-set,.trs-view.trs-cutting .trs-fig{filter:brightness(.42) blur(2px);transition:filter .5s}
 .trs-card{position:relative;padding:13px 18px 12px;border-radius:3px;background:linear-gradient(170deg,#efe5cc,#d9cba6);color:var(--v-ink);box-shadow:0 14px 30px rgba(0,0,0,.6),inset 0 0 30px rgba(120,90,40,.18)}
 .trs-card::after{content:"";position:absolute;left:50%;bottom:-8px;width:16px;height:16px;margin-left:-8px;transform:rotate(45deg);background:#dacca8}
 .trs-who{font-family:var(--v-display);font-weight:700;font-size:10.5px;letter-spacing:.28em;text-transform:uppercase;color:#6b4a1f;margin-bottom:4px;display:flex;gap:6px;align-items:center}

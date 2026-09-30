@@ -747,7 +747,7 @@ export function rpBuildLipSync(row) {
     const decor = lipsyncCardDecor(sc);
     return `<div class="dr-step" id="dr-step-lipsync-${i}">
     <div class="dr-panel dr-a-lip dr-beat${who ? (right ? ' dr-beat-b' : ' dr-beat-a') : ''}${decor.cls}">
-      ${/^stage:(lipsync-intro|lipsync-suspense|lipsync-shantay|lipsync-sashay|lipsync-call|lipsync-win-name|lipsync-win-runnerup|lipsync-legacy-choice)$/
+      ${/^stage:(lipsync-intro|lipsync-speech|lipsync-suspense|lipsync-shantay|lipsync-sashay|lipsync-call|lipsync-win-name|lipsync-win-runnerup|lipsync-legacy-choice)$/
     .test(sc.kind || '')
     ? `<span class="dr-hostsay">${_judgePortrait('rupaul', { stage: true, size: 42 })}
         ${who ? _portrait(who, ep, { size: 42 }) : ''}</span>`

@@ -37,6 +37,7 @@ import { selectionStageScreen } from './selection-stage.js';
 import { arrivalStageScreen } from './arrival-stage.js';
 import { rpBuildWeb } from './web.js';
 import { rpBuildSuspicion, trSuspicionRevealAll } from './suspicion.js';
+import { suspicionStageScreen } from './suspicion-stage.js';
 // The Alcove is folded into the night castle segment (Plan 11); only its gate
 // is needed here, for that segment's `when`.
 import { _hasConfessionals } from './confessionals.js';
@@ -187,7 +188,7 @@ export const TRAITORS_SCREENS = [
     badge: { text: 'Voting Plans', color: '#7fa8c9' },
     when: r => !!(r.tr && r.tr.beliefs && Array.isArray(r.tr.beliefs.castle)
       && r.tr.beliefs.castle.length),
-    build: rpBuildSuspicion, revealAll: trSuspicionRevealAll,
+    build: (r, o) => suspicionStageScreen(r, o, rpBuildSuspicion(r, o)), revealAll: trSuspicionRevealAll,
     revealAllName: 'trSuspicionRevealAll' },
   { id: 'tr-round-table', label: 'The Round Table', suffix: 'roundtable',
     badge: { text: 'Round Table', color: '#b91c3c' },

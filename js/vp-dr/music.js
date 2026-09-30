@@ -127,7 +127,7 @@ export const DRAG_SITUATIONS = [
   'finale', 'showcase', 'crowning', 'crowned',
   // The show's own cues (the user's copies, assets/audio/drag/private), each
   // named for the moment it scores:
-  'werkroom', 'untucked', 'the-call', 'the-verdict', 'outro',
+  'werkroom', 'untucked', 'the-call', 'the-verdict', 'outro', 'double-shantay',
   'decision', 'up-for-elimination', 'bottom-two', 'time-has-come', 'closing',
 ];
 
@@ -247,6 +247,8 @@ const FIXED_SONG = {
   // The credits, after the sign-off cue: the user asked for "a music from
   // RuPaul" and left the pick to us.
   outro: { title: 'Sissy That Walk', artist: 'RuPaul' },
+  // "Shantay, you BOTH stay": the room erupts, and the host's own anthem plays.
+  'double-shantay': { title: "Champion - DJ BunJoe's Olympic Mix", artist: 'RuPaul' },
 };
 /* Where each bed was when it was interrupted, so "I've made my decision"
    picks up after the winner's fanfare instead of starting over. */
@@ -496,6 +498,8 @@ export function lipsyncMusicOf(kind, data = null) {
      away", a winner named — all under "The Time Has Come" (the user's
      order). Then her goodbye, which is the Last Sun's ('sashay'). A double
      is still one card, and still the verdict. */
+  // A double shantay is a celebration, not a verdict: its own song (the user).
+  if (/lipsync-call$/.test(k) && data?.tier === 'double-shantay') return 'double-shantay';
   if (/lipsync-(suspense|call|legacy-choice|shantay|sashay)$/.test(k)) return 'the-verdict';
   if (/lipsync-win-(name|reaction|runnerup)$|revenge-back/.test(k)) return 'the-verdict';
   if (/(sashay-words|sashay-mood)$/.test(k)) return 'sashay';
@@ -588,7 +592,7 @@ export function dragMusicStep(suffix, idx) {
   if (!sit) { stop(); return; }
   // The verdict is said in silence after the song: the song cuts, then the
   // shantay or the sashay starts its own track.
-  const cut = (sit === 'the-verdict' || sit === 'shantay' || sit === 'sashay' || sit === 'winner' || sit === 'crowned')
+  const cut = (sit === 'the-verdict' || sit === 'double-shantay' || sit === 'shantay' || sit === 'sashay' || sit === 'winner' || sit === 'crowned')
     && (bed?.key?.startsWith('song:') || bed?.key === 'suspense' || bed?.key === 'crowning');
   if (cut) stop(true);
   /* ONE PIECE OF MUSIC UNDER THE WHOLE VERDICT. On the show the elimination

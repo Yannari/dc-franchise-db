@@ -217,7 +217,7 @@ export function lipsyncSfxOf(sc) {
   if (k === 'lipsync-intro' || k === 'lipsync-legacy-choice') return 'stinger';
   // The speech: the stakes land, and the three words hit.
   if (k === 'lipsync-speech') return sc?.data?.part === 'stakes' ? 'stinger' : sc?.data?.part === 'for' ? 'impact' : null;
-  if (k === 'lipsync-call' && tier === 'double-shantay') return 'shantay';   // both stay: one card says it
+  if (k === 'lipsync-call' && tier === 'double-shantay') return 'roar';   // both stay: the room erupts
   if (k === 'lipsync-call' && tier === 'double-sashay') return 'sashay';
   if (k === 'lipsync-suspense' || k === 'lipsync-call') return 'heartbeat';
   if (k === 'lipsync-beat') return tier === 'legendary' ? 'roar' : tier === 'strong' ? 'cheer' : tier === 'lost' ? 'groan' : null;

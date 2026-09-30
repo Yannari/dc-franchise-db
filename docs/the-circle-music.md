@@ -51,50 +51,66 @@ dark pulses for the blockings.
 
 ## Music beds: `assets/audio/circle/`
 
-| # | File | When it plays | What it should sound like | Search words |
-|---|---|---|---|---|
-| 1 | `morning.mp3` | a quiet morning, a no-blocking day | bright, easy, a little cheeky; sunrise pop | "morning pop", "upbeat ukulele electronic", "happy lifestyle" |
-| 2 | `apartment.mp3` | private chats, apartment life, dates, the after-party | light pop / lo-fi you can talk over; the most-heard track, so pick one you won't tire of | "lo-fi pop", "chill vlog", "light electronic background" |
-| 3 | `circle-chat.mp3` | Circle Chat, statuses, the Newsfeed, invitations | upbeat and social, a bit busier than the apartment | "social media pop", "upbeat electronic", "tech pop bubbly" |
-| 4 | `scheming.mp3` | a lie reported, watching in secret, the Joker, secret missions | sneaky, plotting; pizzicato strings or tiptoe synth | "sneaky pizzicato", "mischief", "comedic suspense" |
-| 5 | `drama.mp3` | a face they know, an accusation, a power revealed, swaps and clones | tense and dramatic; reality-TV "oh no she didn't" | "reality tv drama", "dramatic tension hits", "suspense strings" |
-| 6 | `arrival.mp3` | meet the players, a new player, two new players | curious and stylish; a runway walk-in | "fashion electronic", "stylish intro", "confident pop beat" |
-| 7 | `game.mp3` | a Circle game, the first-to-respond race | playful game-show energy | "game show", "quiz fun electronic", "playful competition" |
-| 8 | `party.mp3` | a party, the newcomer's party | a real dance track | "dance pop", "party edm", "club house upbeat" |
-| 9 | `ratings.mp3` | players rating each other | a slow build; pulse and pads, thinking music | "slow build tension", "pulse ambient", "decision music" |
-| 10 | `results.mp3` | the ratings results read from the bottom | suspense with a ticking pulse; switches in when the results start | "countdown suspense", "ticking tension", "results reveal" |
-| 11 | `hangout.mp3` | the Influencers' Hangout, saves, pleas, votes | tense, deliberate, whispery | "tense deliberation", "dark minimal electronic", "investigation" |
-| 12 | `blocking.mp3` | the blocking, up to the name | dark drone and heartbeat; the scariest track | "dark drone heartbeat", "elimination tension", "horror pulse subtle" |
-| 13 | `after-block.mp3` | right after BLOCKED, until the scene ends | shock turning sad; soft piano or strings | "sad piano", "emotional aftermath", "heartbreak ambient" |
-| 14 | `visit.mp3` | the blocked player walks the hallway to a door | anticipation; footsteps-tempo suspense | "anticipation suspense", "creeping tension", "hallway suspense" |
-| 15 | `goodbye.mp3` | the goodbye video, videos from home | emotional and warm; a bittersweet farewell | "emotional farewell", "bittersweet piano", "heartfelt acoustic" |
-| 16 | `finale.mp3` | the final ratings, the finale studio board | epic build; big drums and synths | "epic build up", "finale cinematic electronic", "trailer rise" |
-| 17 | `meet.mp3` | finalists meeting in person | emotional reunion; hopeful and swelling | "emotional reunion", "uplifting cinematic", "hopeful strings" |
-| 18 | `winner.mp3` | from the moment the winner is named | full celebration | "victory celebration", "triumphant pop", "confetti party" |
+**Installed 2026-09-30** from `Downloads/The Circle Music`. Each track was
+trimmed of silence, levelled to one loudness (-17 dB) and re-encoded at
+128 kbps. A kind with several tracks keeps them all: each screen picks one
+and keeps it, so episodes don't always sound the same.
 
-**If you only get six:** `apartment`, `circle-chat`, `blocking`,
-`after-block`, `ratings` and `winner`. Those cover most of every episode and
-its biggest moment.
+| # | Files | From your folder | When it plays |
+|---|---|---|---|
+| 1 | `morning.mp3` | morning | a quiet morning, a no-blocking day |
+| 2 | `apartment.mp3` | apartment | private chats, apartment life, dates, the after-party |
+| 3 | `circle-chat-1.mp3` `circle-chat-2.mp3` `circle-chat-3.mp3` | circle-chat #1–3 | Circle Chat, statuses, the Newsfeed, invitations |
+| 4 | `scheming-1.mp3` `scheming-2.mp3` `scheming-3.mp3` `scheming-4.mp3` | scheming #1–4 (#4 the comedy-adjacent one) | a lie reported, watching in secret, the Joker, secret missions |
+| 5 | `drama-1.mp3` `drama-2.mp3` | drama #1–2 | a face they know, an accusation, a power revealed, swaps and clones |
+| 6 | `arrival.mp3` | arrival | meet the players, a new player |
+| 7 | `game-1.mp3` … `game-5.mp3` (`game-2.mp3` `game-3.mp3` `game-4.mp3`) | game #1–5 | a Circle game, the first-to-respond race |
+| 8 | `party.mp3` | party | a party, the newcomer's party |
+| 9 | `ratings.mp3` | ratings #3 | players rating each other |
+| 10 | `results-1.mp3` `results-2.mp3` | Results, Results #2 | the results read from the bottom (the music turns here) |
+| 11 | `hangout.mp3` | hangout | the Influencers' Hangout, saves, pleas, votes |
+| 12 | `blocking.mp3` | blocking | the blocking, up to the name |
+| 13 | `after-block.mp3` | after-block #1 | from BLOCKED to the end of the scene |
+| 14 | `visit.mp3` | visit or hangout-suspense-before-meeting | the hallway and the door |
+| 15 | `goodbye-1.mp3` `goodbye-2.mp3` | goodbye, goodbye #2 | the goodbye video, videos from home |
+| 16 | `finale.mp3` | finale | the final ratings, the finale studio board |
+| 17 | `meet.mp3` | meet | finalists meeting in person |
+| 18 | `meet-wait.mp3` | Final-meeting-waiting-to-meet-people #2 | the first finalist waiting alone for the others |
+| 19 | `winner.mp3` | winner | from the moment the winner is named |
+
+`ratings #1` and `ratings #2` were the same files as `Results` and
+`Results #2` (byte for byte). They are used once, for the results, so the
+music changes when the results start instead of restarting the same track.
+
+Some tracks sit quieter than the rest and could not be raised further without
+clipping: scheming #1, #2 and #4, the goodbyes, and meet-wait. The player
+lifts those on playback (`lift` in `js/vp-ci/sound.js`).
 
 ---
 
 ## Stingers: `assets/audio/circle/sfx/`
 
-| # | File | The moment | What it should sound like | Search words |
-|---|---|---|---|---|
-| 1 | `alert.mp3` | ALERT! slams onto every TV | bright electronic alarm sting, 1–2 s | "notification alarm sting", "tech alert", "broadcast sting" |
-| 2 | `send.mp3` | a message is dictated and sent | soft whoosh, a paper plane | "message sent whoosh", "swoosh ui" |
-| 3 | `message.mp3` | a status or a video lands on the feed | a phone chime / pop | "notification chime", "message pop", "ui bubble" |
-| 4 | `typing.mp3` | "the Influencers are typing…" | soft keyboard taps, 1–2 s | "keyboard typing short", "phone typing" |
-| 5 | `blocked.mp3` | BLOCKED appears | deep impact plus a digital glitch; the heaviest sound | "impact boom glitch", "cinematic hit dark", "error glitch hit" |
-| 6 | `tick.mp3` | a name placed in a ranking slot | a crisp click | "ui click", "tick select" |
-| 7 | `reveal.mp3` | a place on the board is revealed | a drum hit / reveal thud | "reveal hit", "drum hit single", "boom reveal" |
-| 8 | `crown.mp3` | the Influencers are crowned | a rising magical shimmer | "success shimmer", "achievement sparkle", "level up" |
-| 9 | `door.mp3` | the knock, the door opening at a visit | knock-knock plus the door | "door knock", "door open" |
-| 10 | `play.mp3` | play pressed on the goodbye video | a blip and video start | "video play button", "tape start blip" |
-| 11 | `winner.mp3` | the winner is named | a fanfare burst | "fanfare win", "victory sting", "crowd cheer short" |
-| 12 | `whoosh.mp3` | a player walks in at the arrivals | a stylish swish | "fashion whoosh", "transition swish" |
-| 13 | `gasp.mp3` | a face they know, a catfish accusation | a drama sting, dun-dun-DUN | "drama sting", "reality tv gasp", "shock sting" |
+Levelled to -14 dB and re-encoded at 160 kbps. Where there are two files, they
+take turns.
+
+| # | Files | From your folder | The moment |
+|---|---|---|---|
+| 1 | `alert-1.mp3` `alert-2.mp3` | alert, alert #2 | ALERT! slams onto every TV |
+| 2 | `send-1.mp3` `send-2.mp3` | send, send #2 | a message is dictated and sent |
+| 3 | `message.mp3` | message | a status or a video lands on the feed |
+| 4 | `typing.mp3` | typing (first 3 s) | "the Influencers are typing…" |
+| 5 | `tick.mp3` | tick | a name placed in a ranking slot |
+| 6 | `crown.mp3` | crown | the Influencers are crowned |
+| 7 | `gasp.mp3` | gasp | a face they know, a catfish accusation |
+| 8 | `winner.mp3` | sfxwinner (first 12 s, its 16 s of silence cut) | the winner is named |
+| 9 | `blocked.mp3` | **not supplied yet** | BLOCKED appears: deep impact plus a digital glitch ("impact boom glitch", "cinematic hit dark") |
+| 10 | `reveal.mp3` | **not supplied yet** | a place on the board revealed: a drum hit ("reveal hit", "drum hit single") |
+| 11 | `door.mp3` | **not supplied yet** | the knock and the door at a visit ("door knock", "door open") |
+| 12 | `play.mp3` | **not supplied yet** | play pressed on the goodbye video ("video play button", "tape start blip") |
+| 13 | `whoosh.mp3` | **not supplied yet** | a player walks in at the arrivals ("fashion whoosh", "transition swish") |
+
+The five still missing play a built-in synth sound for now. To add one, drop
+a file with that name into the folder, or give it to Claude to level first.
 
 Two different files are called `winner.mp3`: the music bed is
 `circle/winner.mp3`, the fanfare stinger is `circle/sfx/winner.mp3`.

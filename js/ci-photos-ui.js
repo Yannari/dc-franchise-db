@@ -12,7 +12,7 @@
 // ci-cast-ui.js draws the tab and hands this module its context, so the two
 // never import each other.
 import { KINDS, KIND_LABEL, KIND_WHEN, slotsFor, photoFor, promptForSlot, parseDrop, packPhotos, unpackPhotos } from './ci/photos.js';
-import { putPhoto, putPhotoWithId, photoURL, cachedPhoto, shrinkImage } from './ci/photo-store.js';
+import { putPhoto, putPhotoWithId, photoURL, cachedPhoto, photoSrc, shrinkImage, backUpPhotos } from './ci/photo-store.js';
 import { jobOf } from './ci/persona-data.js';
 
 let ctx = null;
@@ -37,7 +37,7 @@ const slotsOf = w => slotsFor(whoRef(w), ctx.dealt());
 /** A face id as something an <img> can show. */
 function url(face) {
   if (!face) return '';
-  if (face.startsWith('photo:')) return cachedPhoto(face) || '';
+  if (face.startsWith('photo:')) return photoSrc(face) || '';
   if (face.startsWith('portrait:')) return ctx.avatar(face.slice(9)) || '';
   return '';
 }
@@ -88,15 +88,17 @@ export function photosPanelHTML() {
       <div class="ci-ph-logo"><svg viewBox="0 0 58 58"><circle cx="29" cy="29" r="23" fill="none" stroke="url(#ciPhLogo)" stroke-width="7"/><circle cx="29" cy="6" r="3.2" fill="#fff"/></svg></div>
       <div class="ci-ph-brand"><div class="ci-ph-show">THE CIRCLE</div><div class="ci-ph-title">PHOTOS</div></div>
       <div class="ci-ph-meter">${ring(pct, '', '', 24, 54).replace('<div class="ci-ph-face"></div>', '')}<div class="ci-ph-pct">${Math.round(pct * 100)}%</div></div>
-      <div class="ci-ph-stat"><span class="ci-ph-count">${own} of ${total} are yours</span><br>the rest fall back</div>
-      <div class="ci-ph-acts"><button type="button" class="ci-btn" data-act="ph-export">Circle, export the pack</button>
+      <div class="ci-ph-stat"><span class="ci-ph-count">${own} of ${total} are yours</span><br>the rest fall back
+        <div class="ci-ph-cloud">${hasToken() ? '&#9729; New photos go to the cloud, like the character gallery' : '&#9679; Only in this browser until you back them up'}</div></div>
+      <div class="ci-ph-acts"><button type="button" class="ci-btn" data-act="ph-backup">Circle, back up to the cloud</button>
+        <button type="button" class="ci-btn" data-act="ph-export">Circle, export the pack</button>
         <label class="ci-btn">Circle, import a pack<input type="file" accept="application/json,.json" data-phimport hidden></label></div>
     </div>
     ${W()._ciAlert ? `<div class="ci-ph-alert"><b>ALERT!</b><span>${esc(W()._ciAlert)}</span></div>` : ''}
     <label class="ci-ph-drop">&#8682; <span>Drop a batch anywhere. <code>sienna-naughty.png</code> finds its own slot; anything else waits in a tray.</span>
       <input type="file" accept="image/*" multiple data-phbatch hidden></label>
     ${tray.length ? `<div class="ci-ph-tray"><span class="ci-k">The tray</span>${tray.map((t, i) =>
-      `<button type="button" class="ci-ph-tr${W()._ciTraySel === i ? ' on' : ''}" data-act="ph-tray" data-v="${i}" title="${esc(t.name)}" style="background-image:url('${esc(cachedPhoto(`photo:${t.id}`) || '')}')"></button>`).join('')}
+      `<button type="button" class="ci-ph-tr${W()._ciTraySel === i ? ' on' : ''}" data-act="ph-tray" data-v="${i}" title="${esc(t.name)}" style="background-image:url('${esc(photoSrc(`photo:${t.id}`) || '')}')"></button>`).join('')}
       <span class="ci-small">${W()._ciTraySel != null ? 'Now pick the slot it belongs in.' : 'Pick one, then pick its slot.'}</span></div>` : ''}
     <div class="ci-ph-tabs"><button type="button" data-act="ph-tab" data-v="personas" class="${tab === 'personas' ? 'on' : ''}">Personas<span>${nP}</span></button>
       <button type="button" data-act="ph-tab" data-v="players" class="${tab === 'players' ? 'on' : ''}">Players<span>${nC}</span></button><i class="ci-ph-ind ${tab}"></i></div>
@@ -182,7 +184,9 @@ export async function ciDropFiles(files) {
 function silently(fn) { const d = ctx.done; ctx.done = () => {}; try { fn(); } finally { ctx.done = d; } }
 
 export async function ciExportPack() {
-  const pack = await packPhotos(ctx.cfg(), id => photoURL(`photo:${id}`));
+  // Only images this browser holds go in the file; one it has only in the
+  // cloud is read from there by whoever imports the pack.
+  const pack = await packPhotos(ctx.cfg(), async id => { const u = await photoURL(`photo:${id}`); return u?.startsWith('data:') ? u : null; });
   try {
     if (typeof URL?.createObjectURL === 'function') {
       const a = document.createElement('a');
@@ -229,6 +233,7 @@ export function onPhotosClick(b) {
     try { navigator.clipboard?.writeText(txt); } catch { /* no clipboard */ }
     return true;
   } else if (act === 'ph-export') { ciExportPack(); return true; }
+  else if (act === 'ph-backup') { ciBackUpPhotos(); return true; }
   ctx.done(false);
   return true;
 }
@@ -258,5 +263,29 @@ export function onPhotosDrop(files) {
   if (imgs.length) Promise.all(imgs.map(readFile)).then(ciDropFiles);
 }
 
-if (typeof window !== 'undefined') Object.assign(window, { ciSetSlotPhoto, ciDropFiles, ciExportPack, ciImportPack });
+const hasToken = () => { try { return !!localStorage.getItem('studio_api_token'); } catch { return false; } };
+/** Every photo the season names: the pool's and the players'. */
+function allFaces() {
+  const c = ctx.cfg();
+  return [...ctx.poolNow().flatMap(p => [p.face, ...Object.values(p.photos || {})]),
+    ...Object.values(c.ciPhotos || {}).flatMap(s => Object.values(s || {}))].filter(Boolean);
+}
+/** Back up to the cloud, asking for the studio token the way the character
+ *  gallery does (player.html) and remembering it on this device. */
+export async function ciBackUpPhotos() {
+  let token = '';
+  try { token = localStorage.getItem('studio_api_token') || ''; } catch { /* private mode */ }
+  if (!token && typeof prompt === 'function') {
+    token = (prompt('Paste your studio token to back up the catfish photos. It is the same token the gallery and the Casting Studio use, and it is remembered on this device.') || '').trim();
+    if (token) { try { localStorage.setItem('studio_api_token', token); } catch { /* this session only */ } }
+  }
+  if (!token) return;
+  try {
+    const r = await backUpPhotos(allFaces(), token);
+    W()._ciAlert = `${r.uploaded} photo${r.uploaded === 1 ? '' : 's'} backed up to the cloud${r.already ? `, ${r.already} already there` : ''}.${r.failed ? ` ${r.failed} could not be sent: this browser does not have ${r.failed === 1 ? 'it' : 'them'}.` : ''}`;
+  } catch (e) { W()._ciAlert = `The cloud said no: ${e.message}`; }
+  ctx.done(false);
+}
+
+if (typeof window !== 'undefined') Object.assign(window, { ciSetSlotPhoto, ciDropFiles, ciExportPack, ciImportPack, ciBackUpPhotos });
 export { KINDS };

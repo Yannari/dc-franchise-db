@@ -1684,7 +1684,7 @@ export function conclaveVisibleTo(rec, observer) {
 function _shutDoor(observer, css) {
   const who = String(observer || '').slice('player:'.length);
   const h = _host();
-  return '<div class="cv-root" data-ambient="tense">' + css
+  return '<div class="cv-root" data-ambient="tr-conclave">' + css
     + '<div class="cv-shell" data-phase="gather">'
     + '<div class="cv-scenery" aria-hidden="true">'
     + '<div class="cv-fore">' + _buildFore() + '</div>'
@@ -1742,7 +1742,7 @@ export function rpBuildConclave(ep, observer = 'audience') {
       ? '<style>' + LIST_CSS + '</style>' : '') + _filterBank();
 
   if (!rec) {
-    return '<div class="cv-root" style="' + vars + '" data-ambient="tense">' + cssOnce
+    return '<div class="cv-root" style="' + vars + '" data-ambient="tr-conclave">' + cssOnce
       + '<div class="cv-shell" data-phase="gather"><div class="cv-body"><div class="cv-shut">'
       + '<div class="cv-shut-door">' + _icon('lantern', 92, 'rgba(224,160,73,.4)') + '</div>'
       + '<h2 class="cv-shut-h">No Conclave Tonight</h2>'
@@ -1865,7 +1865,7 @@ export function rpBuildConclave(ep, observer = 'audience') {
   // every paint and there is no closure to hold them.
   const call = fn => fn + "('" + suffix + "'," + total + ',' + epNum + ')';
 
-  return '<div class="cv-root" style="' + vars + '" data-ambient="tense">' + cssOnce
+  return '<div class="cv-root" style="' + vars + '" data-ambient="tr-conclave">' + cssOnce
     + '<div class="cv-shell" id="cv-shell-' + suffix + '" data-phase="' + beats[0].phase + '">'
     // Every plane, the light cone and the dust inside it, and the grain, all
     // inside ONE layer that carries the clip. The shell used to carry it, and

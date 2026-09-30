@@ -37,7 +37,8 @@ function callMusicOf(s) {
   if (s.t === 'confess') return null;
   if (s.t === 'hold') return 'decision';
   if (s.t === 'stakes') return 'bottom-two';
-  if (s.raw === 'WIN') return 'winner';
+  // The winner is named under the same cue: the show does not change the
+  // music for "Condragulations" (the fanfare and the crowd are the effect).
   if (s.raw === 'BTM2' || s.raw === 'ELIM') return 'up-for-elimination';
   return 'decision';
 }

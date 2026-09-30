@@ -23,6 +23,13 @@ export function trPlay(name, ms = 0) {
   const go = () => { try { a.sfx(name); } catch (e) { /* sound must never break a screen */ } };
   if (ms > 0) setTimeout(go, ms); else go();
 }
+/** Switches the music bed (js/audio.js BED_CATALOG), now or after `ms`. */
+export function trMusic(name, ms = 0) {
+  const a = audio();
+  if (!a || typeof a.ambient !== 'function') return;
+  const go = () => { try { a.ambient(name); } catch (e) { /* never break a screen */ } };
+  if (ms > 0) setTimeout(go, ms); else go();
+}
 /** One chalk stroke per letter, in time with the letters appearing. */
 export function trChalk(letters, startMs, perMs) {
   for (let i = 0; i < letters; i++) trPlay('tr-chalk', startMs + i * perMs);
@@ -43,7 +50,7 @@ const RULES = {
       trPlay(reveal.getAttribute('data-side') === 'traitor' ? 'tr-traitor' : 'tr-faithful', 420);
       return;
     }
-    if (el.querySelector('.rt-verdict')) { trPlay('tr-chair'); return; }
+    if (el.querySelector('.rt-verdict')) { trPlay('tr-chair'); trMusic('tr-reveal', 900); return; }
     if (el.querySelector('.rt-tally')) { trPlay('tr-drum'); return; }
     if (phase === 'tie') trPlay('tr-heartbeat');
   },

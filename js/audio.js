@@ -315,6 +315,19 @@ export const BED_CATALOG = {
   'victory':        { build: bedVictory,       file: 'assets/audio/bed-victory.mp3',    volume: 0.45 },
   'challenge':      { build: bedChallenge,     file: 'assets/audio/bed-challenge.mp3',  volume: 0.40 },
   'aftermath':      { build: bedAftermath,     file: 'assets/audio/bed-aftermath.mp3',  volume: 0.40 },
+  // THE TRAITORS — the user's own tracks (Downloads/Traitors music), trimmed to
+  // their audible span and re-encoded at 160 kbps (assets/audio/traitors/).
+  // Volumes are set from measured loudness so they sit level with each other:
+  // the mission track is 15 dB hotter than the reveal and the conclave.
+  'tr-intro':      { build: bedTribalTension, file: 'assets/audio/traitors/intro.mp3',      volume: 0.48 },
+  'tr-breakfast':  { build: bedCampDay,       file: 'assets/audio/traitors/breakfast.mp3',  volume: 0.58 },
+  'tr-castle':     { build: bedCampDay,       file: 'assets/audio/traitors/castle-day.mp3', volume: 0.47 },
+  'tr-mission':    { build: bedChallenge,     file: 'assets/audio/traitors/mission.mp3',    volume: 0.19 },
+  'tr-roundtable': { build: bedTribalTension, file: 'assets/audio/traitors/roundtable.mp3', volume: 0.39 },
+  'tr-reveal':     { build: bedTribalTension, file: 'assets/audio/traitors/reveal.mp3',     volume: 0.90 },
+  'tr-night':      { build: bedCampNight,     file: 'assets/audio/traitors/night.mp3',      volume: 0.26 },
+  'tr-conclave':   { build: bedCampNight,     file: 'assets/audio/traitors/conclave.mp3',   volume: 0.84 },
+  'tr-endgame':    { build: bedVictory,       file: 'assets/audio/traitors/endgame.mp3',    volume: 0.32 },
 };
 
 export function resolveCue(name) { return CUE_CATALOG[name] || null; }

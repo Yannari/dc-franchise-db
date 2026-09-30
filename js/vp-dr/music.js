@@ -190,10 +190,11 @@ const urlBytes = url => async () => { const r = await fetch(url); return r.ok ? 
    private files, so a copy without them (the published site, another
    checkout) plays the general moment instead. `time-has-come` falls back to
    silence: the song starts on the first move, as it did before. */
-const FALLBACK = {
-  decision: 'suspense', 'up-for-elimination': 'suspense', 'bottom-two': 'suspense',
-  verdict: null, closing: 'sashay', 'time-has-come': null,
-};
+const FALLBACK = {};   // Drag Race plays its own show's music or nothing: never another show's.
+/* THE HOST'S OWN RECORD scores the moments that are hers: the runway, the
+   crowning walk, the finale's opening and the reunion. The season's runway
+   theme (one per season), unless a track is uploaded for the moment. */
+const HOST_SONG = new Set(['runway', 'crowned', 'finale', 'reunion', 'entrances', 'returns']);
 /* Where each bed was when it was interrupted, so "I've made my decision"
    picks up after the winner's fanfare instead of starting over. */
 const resume = {};
@@ -339,7 +340,7 @@ async function start(key, sit, song, suffix = null, fallback = null, fit = {}) {
       pick = await trackFor(fallback);
       if (pick) buf = await decode(c, pick.url, urlBytes(pick.url));
     }
-    if (!buf && sit === 'runway') {
+    if (!buf && HOST_SONG.has(sit)) {
       const rs = runwaySongFor(seasonKey());
       if (rs) {
         buf = await decode(c, `song:runway:${rs.title}`, () => previewBytes(rs.title, rs.artist));
@@ -457,10 +458,11 @@ export function dragMusicStep(suffix, idx) {
   // decision", and the verdict music starts there.
   const waiting = sit === 'suspense' && (suffix === 'lipsync' || suffix === 'legacy');
   // Only on the stage: her goodbye (the exit screen) has its own music.
-  const onStage = /^(lipsync|legacy|smackdown|fincrownls)$/.test(suffix);
-  if (onStage && (sit === 'shantay' || sit === 'sashay' || waiting) && manifest?.verdict?.length) {
-    // Its big section lands on "shantay" / "sashay away", however long the pause.
-    const toHit = secondsUntil(suffix, idx, e => /^(shantay|sashay)$/.test(e.dataset?.music || ''));
+  const onStage = /^(lipsync|legacy|smackdown|fincrownls|exit)$/.test(suffix);
+  // A lip sync for the WIN ends under it too: the host names the winner there.
+  if (onStage && (sit === 'shantay' || sit === 'sashay' || sit === 'winner' || waiting) && manifest?.verdict?.length) {
+    // Its big section lands on the verdict ("shantay", "sashay away", the winner's name), however long the pause.
+    const toHit = secondsUntil(suffix, idx, e => /^(shantay|sashay|winner)$/.test(e.dataset?.music || ''));
     start('verdict', 'verdict', null, suffix, sit, { toHit: waiting ? toHit : 0 });
     return;
   }

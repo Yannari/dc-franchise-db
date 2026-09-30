@@ -53,3 +53,6 @@ assets/gallery/
 
 # Perfect Match season transcripts (npm run pm:transcript): generated to read, never committed.
 transcripts/
+
+# Show music the user owns a copy of: played locally, never published.
+assets/audio/drag/private/

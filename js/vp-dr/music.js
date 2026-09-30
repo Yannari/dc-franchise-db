@@ -116,7 +116,7 @@ const SCREEN = {
 export const DRAG_SITUATIONS = [
   'entrances', 'returns', 'drama', 'comedy', 'cry', 'sweet', 'romance',
   'mini', 'announce', 'prep', 'challenge', 'mainstage', 'runway', 'critiques', 'suspense',
-  'winner', 'lipsync', 'shantay', 'sashay', 'save', 'reunion',
+  'winner', 'lipsync', 'verdict', 'shantay', 'sashay', 'save', 'reunion',
   'finale', 'showcase', 'crowning', 'crowned',
 ];
 
@@ -209,7 +209,7 @@ function stop(cut = false) {
 }
 
 /** Start `key` (a situation, or `song:<title>`) unless it is already playing. */
-async function start(key, sit, song, suffix = null) {
+async function start(key, sit, song, suffix = null, fallback = null) {
   if (bed?.key === key) { bed.suffix = suffix; return; }
   stop();
   const out = engine.output?.();
@@ -225,6 +225,13 @@ async function start(key, sit, song, suffix = null) {
   if (!buf) {
     pick = await trackFor(song ? 'lipsync' : sit);
     if (pick) buf = await decode(c, pick.url, urlBytes(pick.url));
+    /* The verdict track is a private file (assets/audio/drag/private, never
+       published): on a copy without it, forget it and play the moment's own. */
+    if (!buf && fallback) {
+      if (manifest) delete manifest[sit];
+      pick = await trackFor(fallback);
+      if (pick) buf = await decode(c, pick.url, urlBytes(pick.url));
+    }
   }
   if (!buf || bed !== mine) { if (bed === mine) bed = { key, pending: false, suffix }; return; }
   try {
@@ -274,6 +281,7 @@ export function dragMusicStep(suffix, idx) {
   if (typeof document === 'undefined') return;
   const el = document.getElementById(`dr-step-${suffix}-${idx}`);
   if (!el) return;
+  if (manifest === undefined) loadManifest();   // the verdict needs to know what exists
   /* AN UNTAGGED CARD KEEPS THE MOMENT. A confessional after the verdict is
      still the verdict; it must not restart the song because the screen's
      default is the song. Only the first card of a screen falls back on it. */
@@ -288,6 +296,13 @@ export function dragMusicStep(suffix, idx) {
   const cut = (sit === 'shantay' || sit === 'sashay' || sit === 'winner' || sit === 'crowned')
     && (bed?.key?.startsWith('song:') || bed?.key === 'suspense' || bed?.key === 'crowning');
   if (cut) stop(true);
+  /* ONE PIECE OF MUSIC UNDER THE WHOLE VERDICT. On the show the elimination
+     music starts when the host speaks and runs straight through "shantay" and
+     "sashay" — the same key for both, so it never restarts between them. */
+  if ((sit === 'shantay' || sit === 'sashay') && manifest?.verdict?.length) {
+    start('verdict', 'verdict', null, suffix, sit);
+    return;
+  }
   if (sit === 'lipsync') {
     const song = el.dataset?.song || el.closest?.('[data-song]')?.dataset?.song || null;
     start(song ? `song:${song}` : 'lipsync', 'lipsync', song, suffix);

@@ -1,5 +1,5 @@
 {
-  "note": "Drag Race moments on the user's own royalty-free soundtrack (the Perfect Match set in ../mine, chosen there by measurement). Same shape as that manifest; files are relative to this folder. A moment missing here is silent until a track is uploaded for it (the Upload music button, named after the moment).",
+  "note": "Drag Race moments on the user's own royalty-free soundtrack (the Perfect Match set in ../mine, chosen there by measurement). Same shape as that manifest; files are relative to this folder. A moment missing here is silent until a track is uploaded for it (the Upload music button, named after the moment). `verdict` is the show's elimination music, under both the shantay and the sashay: the user's own copy, kept in private/ (git-ignored), so a copy without it falls back to shantay/sashay.",
   "entrances": [
     {
       "file": "../mine/starters/arrival-onlystarters.mp3",
@@ -158,6 +158,17 @@
       ],
       "loopFrom": 2,
       "loopTo": 60
+    }
+  ],
+  "verdict": [
+    {
+      "file": "private/elimination.mp3",
+      "at": [
+        0
+      ],
+      "loopFrom": 10,
+      "loopTo": 186,
+      "private": true
     }
   ]
 }

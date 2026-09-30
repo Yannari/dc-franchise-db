@@ -149,6 +149,10 @@ async function recorded(c, name) {
 export async function playSfx(name) {
   const out = engine.output?.();
   if (!out || !VOICES[name]) return;
+  // Under the real elimination music the show has no effect: the music is it.
+  if ((name === 'shantay' || name === 'sashay')) {
+    try { if ((await momentTracks())?.verdict?.length) return; } catch { /* offline */ }
+  }
   const { ctx: c, dest } = out;
   const buf = await recorded(c, name);
   if (buf) {

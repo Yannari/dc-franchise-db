@@ -94,7 +94,16 @@ describe('the soundtrack', () => {
     for (const [sit, list] of Object.entries(m)) {
       if (!Array.isArray(list)) continue;
       expect(DRAG_SITUATIONS, sit).toContain(sit);
-      for (const t of list) expect(existsSync(`assets/audio/drag/${t.file}`), `${sit}: ${t.file}`).toBe(true);
+      for (const t of list) {
+        // A private track (the show's own music) is the user's copy: git-ignored, never published.
+        if (t.private) { expect(t.file, sit).toMatch(/^private\//); continue; }
+        expect(existsSync(`assets/audio/drag/${t.file}`), `${sit}: ${t.file}`).toBe(true);
+      }
     }
+  });
+
+  it("keeps the show's own music out of the repo", () => {
+    const ignore = readFileSync('.gitignore', 'utf8');
+    expect(ignore).toMatch(/^assets\/audio\/drag\/private\/$/m);
   });
 });

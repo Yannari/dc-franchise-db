@@ -170,5 +170,8 @@ export const VOICE_NOTICED = {
     r1("That's not how somebody {b.posAdj} age texts. Something's off.", { beat: '{a} scrolls back through everything {b} ever posted.' }),
     r1('The pictures say one thing. The way {b} types says something else.'),
     r1("I don't think {b} writes like {b} looks.", { beat: '{a} holds the tablet up next to {b}\'s profile picture.' }),
+    r1('Something about how {b} types just does not match that face.'),
+    r1("I'm starting to think {b} isn't who {b.sub} says {b.sub} is. It's the way {b.sub} writes.", { beat: '{a} scrolls back and rereads.' }),
+    r1("That message did not sound like the {b} in those pictures."),
   ]),
 };

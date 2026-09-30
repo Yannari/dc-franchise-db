@@ -22,6 +22,8 @@ export const PERSONA_APPEAL = 1.4;
 
 export function attractionOk(state, me, you) {
   const t = state.people[state.profiles[me].players[0]];
+  // The AI cannot flirt (US 6): it has no attraction to anyone.
+  if (t.ai) return false;
   const g = state.profiles[you].shown.gender;
   if (t.sexuality === 'bi') return true;
   if (t.sexuality === 'gay') return g === t.gender;

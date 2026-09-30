@@ -135,3 +135,22 @@ Spec audit: formats per season by slot against the real seasons; removals
 always exact; catfish band still holds; every new pool under the wear guard.
 Read three transcripts end to end; fix the prose; update the spec, the
 ledger and memory; merge, push, confirm 0 apart.
+
+---
+
+## Ledger
+
+- Task 1: complete (catfish 22% -> 42%; audit band 30-65%).
+- Task 2: complete (timeline, sole influencer).
+- Task 3: complete (trio, save first, secret, super, block each other; CURATED 0.3 -> 0.4).
+- Task 4: complete (save two each, plead, room vote, forced statement).
+- Task 5: complete (instant, double).
+- Task 6: complete (antivirus).
+- Task 7: complete (eight arrival entries; unique slots; bookings take a list).
+- Task 8: complete (immunity, Hacker, Joker, burner).
+- Task 9: complete (public super, no blocking, secret task, disrupter; swap, clone, Ride or Die; second chance, egg; the AI and Most Human).
+- Task 10: complete (400 seasons: all end with five, catfish 45.5%, every target in range; worn pools topped up; two default seasons read).
+- Ruling: Ride or Die keeps the count exact (someone always goes) instead of the real "both go unless one sacrifices" — the timeline cannot plan an unknown removal — cost if wrong: a rarer, harsher night the show had.
+- Ruling: "mission" is The Traitors' word in this repo; the Circle's is a secret task — cost if wrong: a word.
+- Ruling: the public Super Influencer is computed in public.js and handed in by season.js — the engine still never reads the audience ledger — cost if wrong: none found.
+- Deferred: the celebrity profile (needs the franchise ledger, Plan 6); newcomers chosen by the public.

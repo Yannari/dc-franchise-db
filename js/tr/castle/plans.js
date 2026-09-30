@@ -183,7 +183,7 @@ const OFFER_LINES = {
   'noticed-quietly': [
     '{b} notices and says nothing.\n{b} (to camera): "Some names go quiet for a reason. I’ll wait."',
     '{b} says nothing about it to anybody, and keeps count.\n{b} (to camera): "{a} has stopped mentioning a certain name. I’m watching."',
-    '{b} files it away.\n{b} (to camera): {cam:holding-info}',
+    '{b} says nothing, and remembers it.\n{b} (to camera): {cam:holding-info}',
     '{b} notices, and keeps quiet.\n{b} (to camera): "Something’s changed with {a}. I’ll wait."',
   ],
 };

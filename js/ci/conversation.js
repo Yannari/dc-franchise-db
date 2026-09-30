@@ -15,6 +15,7 @@ import { makeClaim, learn, passOnWeight, contradictions } from './claims.js';
 import { rollSlips, probe } from './slips.js';
 import { revealTo } from './reveal.js';
 import { attractionOk } from './chat.js';
+import { coverParts } from './cover.js';
 
 // What the receiver comes to feel toward the sender, by intent and ending.
 export const EFFECT = {
@@ -36,15 +37,22 @@ const FIT = { bond: 0.3, checkin: 0.4, ally: 0.1, pitch: 0, repair: 0.1, credit:
   plant: 0.1, pump: 0, confess: 0, probe: -0.2, confront: -0.3 };
 const WARMING = new Set(['bond', 'checkin', 'flirt', 'ally']);
 // The hyperpersonal effect (spec 5.3) at its strongest: a catfish picked a
-// whole face to be liked, and the warmth a good chat earns shows it. Without
-// it catfish reached the final as often as honest players and lost it
-// (win given final 11% vs 25%, 60 seasons; the real show: 5 of 10 won).
-// 0.3 read ~40% of seasons won by a catfish; with the Plan 3b formats
-// (hidden ratings, public saves) that fell to ~35%, and 0.4 reads 46%
-// (400 seasons).
-export const CURATED = 0.4;
+// whole face to be liked, and a good chat shows it. EARNED, not given to the
+// type: the bonus grows with the person's people skills (social) and with how
+// close the persona sits to them (ci/cover.js: style, age, smarts). A
+// charming catfish playing someone like themselves gets most of it; a clumsy
+// one playing somebody far away gets next to none, and slips more too.
+// Without any of it catfish reached the final as often as honest players and
+// lost it (win given final 11% vs 25%, 60 seasons; the real show: 5 of 10).
+export const CURATED_MAX = 1.25;
+export function curatedFor(state, h) {
+  if (state.profiles[h]?.mode !== 'catfish') return 0;
+  const p = coverParts(state, h);
+  const fit = 1 / (1 + p.style + p.age + p.smarts);
+  return CURATED_MAX * (S(state, h, 'social') / 10) * fit;
+}
 const LIKED = new Set(['affection', 'attraction']);
-const toward = (state, h, dim, v) => (v > 0 && LIKED.has(dim) && state.profiles[h]?.mode === 'catfish' ? v * (1 + CURATED) : v);
+const toward = (state, h, dim, v) => (v > 0 && LIKED.has(dim) ? v * (1 + curatedFor(state, h)) : v);
 
 export function reception(state, to, from, intent) {
   const base = (rel(to, from, 'affection') + rel(to, from, 'trust')) / 20;

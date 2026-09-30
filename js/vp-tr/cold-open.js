@@ -1043,35 +1043,24 @@ const HOST_LINES = {
 };
 
 const STILL_TEXT = [
-  'The castle at this hour is only weather and stone. Something in the roof shifts, gives up '
-  + 'and settles again. The fire in the long room went out at some point in the night and '
-  + 'nobody was awake to see it happen.',
-  'Nothing has happened yet. The corridors are grey, the glass is cold to the touch, and the '
-  + 'long room is exactly as the staff left it: laid, straightened, and completely still.',
-  'It is the quietest hour this building has. Whatever was decided upstairs was decided hours '
-  + 'ago, and the stone has already forgotten it.',
-  'Somewhere above, a door that was not shut properly moves an inch on its own. The long room '
-  + 'holds its breath the way empty rooms do.',
+  'The castle is silent. The fire in the long room went out in the night, and nobody saw it happen.',
+  'Nothing has happened yet. The corridors are grey and cold, and the long room is exactly as the staff left it.',
+  'It’s the quietest hour of the day. Whatever was decided upstairs was decided hours ago.',
+  'Somewhere upstairs, a door that wasn’t shut properly moves on its own. The long room is empty.',
 ];
 
 const STIR_TEXT = [
-  'The light comes up over the water first and gets to the glass last. The east windows fill '
-  + 'from the bottom, and the shafts land across the boards one after another.',
-  'First light. Not sunrise — the hour before it, when the sky goes from black to blue and '
-  + 'the hills come back one ridge at a time.',
-  'Outside, the water turns from ink to pewter. The three tall windows take the colour in '
-  + 'order, left to right, and the room stops being dark without ever becoming bright.',
-  'The sun is not up yet but the sky has already decided. Somewhere on the second floor a '
-  + 'tap runs, and the building starts.',
+  'The light comes up over the water, and the east windows slowly fill with it.',
+  'First light. The sky turns from black to blue, and the hills appear one ridge at a time.',
+  'Outside, the loch goes from black to grey. The room is no longer dark, but it isn’t bright either.',
+  'The sun isn’t up yet. Somewhere on the second floor a tap runs, and the castle starts to wake.',
 ];
 
 const DOWN_TEXT = [
-  'Footsteps on the stair, and they carry. {who} is down first, still in last night\'s jumper.',
-  '{who} comes down before anyone else and does the thing everybody does: looks at the table, '
-  + 'not at the door.',
-  'The stair gives them away long before they reach the bottom. {who} arrives, and stops one '
-  + 'step short of the floor to look.',
-  '{who} is down early. Not rested — early. There is a difference and the room can see it.',
+  'Footsteps on the stairs. {who} is down first, still in last night’s jumper.',
+  '{who} comes down before anyone else and looks at the table, not the door.',
+  '{who} stops on the bottom step to look round the room.',
+  '{who} is down early. Not rested, just early, and it shows.',
 ];
 const DOWN_MORE = [
   'Then the rest of it, in twos and threes.',
@@ -1085,14 +1074,10 @@ const DOWN_MORE = [
 // a latecomer, which is the reported bug: "Brick comes down before anyone else"
 // on the fifth group down. These say the opposite — late, alone, after the rest.
 const DOWN_LATE_ONE = [
-  '{who} comes down alone, a step behind the last group, and takes the nearest empty chair '
-  + 'without a word.',
-  'A gap on the stair, and then just {who}, reading the room from the bottom step before '
-  + 'crossing to the table.',
-  '{who} arrives on their own after the others, and does the arithmetic on the empty places '
-  + 'before sitting down.',
-  'One more set of footsteps, slower than the rest: {who}, last of this lot, taking the table '
-  + 'in on the way past.',
+  '{who} comes down alone, just behind the last group, and takes the nearest chair without a word.',
+  'A pause on the stairs, then {who}, looking round the room before crossing to the table.',
+  '{who} arrives alone and counts the empty places before sitting down.',
+  'One more set of footsteps, slower than the rest: {who}.',
 ];
 // Middle-cluster headers, varied so three groups in a row do not all read
 // "They Keep Coming".
@@ -1137,12 +1122,10 @@ const ARRIVE_SAID = [
 ];
 
 const COUNT_TEXT = [
-  'They start counting without admitting they are counting. Eyes go round the table and back '
-  + 'again, which is the same sum done twice by people hoping for a different answer.',
-  'The room does the arithmetic it now does every morning: how many chairs, how many people, '
-  + 'and how long it takes for those two numbers to disagree.',
-  'Nobody says the number out loud. Everybody has it.',
-  'There is a particular quiet that happens when a room counts itself. This is it.',
+  'They start counting without admitting it. Eyes go round the table, and round again.',
+  'The room does what it does every morning now: counts the chairs, then the people.',
+  'Nobody says the number out loud. They have all done the sum.',
+  'The room goes quiet while everyone counts.',
 ];
 
 const GAP_TEXT = [
@@ -1179,14 +1162,10 @@ const AFTER_TEXT = [
 ];
 
 const WHOLE_TEXT = [
-  'Everybody comes down. Every single place fills, and the room does not know what to do with '
-  + 'that at all — a full table this far in is not relief, it is a question.',
-  'Nobody is missing. It takes the room two full counts to believe it, and then a much longer '
-  + 'silence to work out what it means.',
-  'The table fills. All of it. Somewhere behind that is a decision that did not survive '
-  + 'contact with the night, and nobody at this table can see it.',
-  'A full table. The relief lasts about eleven seconds, which is how long it takes somebody to '
-  + 'realise that a night with nothing in it is still a night somebody spent choosing.',
+  'Everybody comes down. Every place is filled, and the room doesn’t know what to make of it.',
+  'Nobody is missing. It takes two counts before anyone believes it.',
+  'The whole table fills. Something stopped the Traitors last night, and nobody here knows what.',
+  'A full table. The relief lasts a few seconds, until someone asks why.',
 ];
 // A TABLE THAT CAME DOWN WHOLE BECAUSE THERE IS A LIST INSTEAD. Public, like
 // the card underneath it: the names are read out over the toast, so the room is
@@ -1203,22 +1182,16 @@ const TRIAL_MORNING_TEXT = [
 // everybody, because everybody was there when the hands went up — which is the
 // whole difference between this morning and a blocked one.
 const BOUGHT_TEXT = [
-  'Nobody is missing, and for once the room knows exactly why: it voted, out loud and to a '
-  + 'person, to buy the night off. The pact was not allowed to work.',
-  'A full table, and no mystery in it at all. Every hand went up for the banishment last '
-  + 'night, and the hands are the reason everybody is here to see it.',
-  'The places all fill. That was the deal, and the deal is the only night this season '
-  + 'anybody can account for.',
-  'Everybody comes down. They paid for that, they paid in front of each other, and the '
-  + 'arithmetic of what it cost is already going round the table.',
+  'Nobody is missing, and this time they know why: they all voted to buy the night off, so the Traitors couldn’t kill.',
+  'A full table, and no mystery about it. The deal they took last night bought this.',
+  'Every place fills. That was the deal, and it worked.',
+  'Everybody comes down. They paid for this, together, and they are already working out what it cost.',
 ];
 const WHOLE_AUDIENCE = [
-  'A name WAS written last night. You watched it happen. Something between that room and this '
-  + 'one ate it, and not one person at this table will ever be told so.',
-  'The turret chose. The morning refused. Everyone here is going to spend the day reading a '
-  + 'blank page as if it said something.',
-  'There is a decision missing from this table and only the people at home know where it went.',
-  'You know what was supposed to happen this morning. They do not, and they never will.',
+  'A name was chosen last night. You saw it. Something stopped it, and nobody at this table will ever be told.',
+  'The Traitors chose someone, but the murder didn’t happen. Everyone here will spend the day trying to read a blank page.',
+  'Only the audience knows what should have happened this morning.',
+  'You know what was supposed to happen. They don’t, and they never will.',
 ];
 
 // ── the day card, AND WHY THERE ARE THREE POOLS OF IT ──────────────────
@@ -1244,14 +1217,10 @@ const WHOLE_AUDIENCE = [
 // blocked morning by the audience AND by a player, so it may not know that
 // anything was stopped, only that nobody is gone.
 const DAY_ARRIVAL = [
-  'Breakfast finishes and the castle starts filling itself in — who sits where, who talks '
-  + 'to whom, who is already counting. None of it means anything yet. All of it will.',
-  'The first day begins with nothing behind it. Every read this room makes from here is '
-  + 'built on a morning where nobody had anything to hide yet.',
-  'They go out into the first day of it knowing exactly as much about each other as they '
-  + 'did on the drive, which is nothing, and it is the last morning that will be true.',
-  'And then the day starts, and the castle stops being a building full of strangers and '
-  + 'starts being a room where somebody is lying.',
+  'Breakfast finishes, and people start working out who to sit with and who to talk to.',
+  'The first day begins. Nobody has anything to hide yet.',
+  'They go out into the first day knowing nothing about each other. It’s the last morning that will be true.',
+  'The day starts, and from now on, somebody here is lying.',
 ];
 const DAY_DEATH = [
   'Breakfast carries on, and the day begins.',
@@ -1266,14 +1235,10 @@ const DAY_HIDDEN = [
   'The morning closes on a guess the whole table is making in silence.',
 ];
 const DAY_QUIET = [
-  'Breakfast ends with everybody still in it, and the day starts on a morning that gave '
-  + 'the room nothing to work with at all.',
-  'Nobody is carried out of this one. They go into the day with a full table behind them '
-  + 'and the same questions they sat down with.',
-  'The day starts anyway. A morning that took nobody still has to be spent, and this room '
-  + 'is going to spend it arguing about a night it cannot see.',
-  'Every chair gets pushed back in. Whatever last night was, it is going to have to be '
-  + 'guessed at from here, because the table is not going to tell them.',
+  'Breakfast ends with everyone still here, and nothing to go on.',
+  'Nobody was taken. They go into the day with the same questions they sat down with.',
+  'The day starts anyway, and the room spends it arguing about a night it can’t see.',
+  'The chairs are pushed back in. Whatever happened last night, they’ll have to guess.',
 ];
 
 // ══════════════════════════════════════════════════════════════════════
@@ -1447,15 +1412,10 @@ const TEASE_TASK = [
 
 // ── the hold: down to the last places, the room watching the door ──────
 const HOLD_TEXT = [
-  'It comes down to the last places, and the counting stops being quiet. The room is '
-  + 'watching the foot of the stair now, openly, the way you watch a door you are not sure '
-  + 'is going to open.',
-  'Two settings left, and the whole table has found the same two chairs. Nobody is pretending '
-  + 'to eat. The stair is the only thing anybody is listening to.',
-  'The morning narrows to the places still empty. Every head is half-turned toward the door, '
-  + 'and the silence has weight to it now — the good kind of quiet has gone.',
-  'And then the arithmetic runs out of easy answers. A couple of places, no more, and the '
-  + 'room holds there, watching, because a last empty chair only ever means one thing.',
+  'It’s down to the last few places. Everyone is openly watching the stairs now.',
+  'Two places left, and the whole table is looking at the same two chairs. Nobody is eating.',
+  'Every head is half-turned to the door, and the room has gone very quiet.',
+  'A couple of places left. The room waits, because a last empty chair can only mean one thing.',
 ];
 const HOLD_SAID = [
   'Come on. Come on, come down.',
@@ -1465,16 +1425,10 @@ const HOLD_SAID = [
 ];
 // ── the relief that leaves one place as the only answer ────────────────
 const RELIEF_TEXT = [
-  '{who} comes down, and the breath the room lets out is loud enough to hear. Relief — real, '
-  + 'ugly relief — and it lasts exactly as long as it takes everyone to see that one place '
-  + 'is still empty.',
-  'The stair gives up {who}, and half the table sags with the relief of it. Then the other '
-  + 'half does the sum that is left, and the relief curdles: there is still a setting nobody '
-  + 'is sitting at.',
-  'Then {who}, at last, and the room nearly cheers before it remembers itself — because {who} '
-  + 'coming down does not fill the place everyone is really watching.',
-  '{who} arrives to a room that almost laughs with relief, and the laugh dies in the same '
-  + 'second, because the arithmetic only has one answer left in it now.',
+  '{who} comes down, and the room breathes out. The relief lasts until everyone sees one place is still empty.',
+  '{who} appears on the stairs, and half the table relaxes. Then they count again. One place is still empty.',
+  'Then {who}, at last. The room nearly cheers, but {who} isn’t the one they are waiting for.',
+  '{who} arrives, and the room almost laughs with relief, until it remembers the empty chair.',
 ];
 // ── grief, gated on a real stored bond ─────────────────────────────────
 const GRIEF_TEXT = [
@@ -1498,37 +1452,24 @@ const COMPOSED_TEXT = [
 ];
 // ── the eyes turn: pushedThenDied, shown never stated ──────────────────
 const EYES_TEXT = [
-  'And then the room does the other thing it does now. {vic} was the name {who} spent last '
-  + 'night pushing at the table — and {vic} is the name the night took. Nobody says it. '
-  + 'Everybody thinks it, and the looks that find {who} across the toast are not friendly ones.',
-  'Somebody remembers out loud who wanted {vic} gone yesterday. It was {who}. And now {vic} '
-  + 'is a turned-over cup, and {who} is a person the room is suddenly reading very carefully.',
-  'There is a colder arithmetic underneath the grief. {who} argued hardest against {vic} last '
-  + 'night; this morning {vic} is dead. It does not prove anything. It does not have to — the '
-  + 'eyes are already moving.',
-  'The table has a long memory and a short fuse this morning. {who} pushed {vic} at the Round '
-  + 'Table, {vic} did not come down, and the room has quietly filed that away where it files '
-  + 'the things it means to use.',
+  'And then people remember: {who} pushed hard for {vic} at the Round Table last night, and now {vic} is dead. Nobody says it, but several people look at {who}.',
+  'Somebody remembers out loud that {who} wanted {vic} gone yesterday. Now {vic} is dead, and people are watching {who} very carefully.',
+  '{who} argued hardest against {vic} last night. This morning {vic} is dead. It proves nothing, but people have noticed.',
+  '{who} pushed for {vic} at the Round Table, and {vic} didn’t come down. The room hasn’t forgotten that.',
 ];
 
 // ── WHO SITS WHERE — caused by real stored bonds (bf.pairs) ────────────
 // A warm pair drawing together over the loss. Public: a friendship anybody at
 // the table watched form. Never alignment.
 const SIT_TEXT = [
-  '{pair} sit together, the way they have all week. Whatever else this morning is, it does not '
-  + 'change who trusts who.',
-  'People take the seats they always take. {pair} end up side by side again — a friendship the '
-  + 'whole table already knows about.',
-  'The room settles into its usual shape. {pair} are next to each other, heads close, saying '
-  + 'the small things you say when the big thing is unspeakable.',
-  '{pair} find each other first. They have been a pair since the start and a bad morning only '
-  + 'pulls them tighter.',
+  '{pair} sit together, as they have all week. This morning doesn’t change who trusts who.',
+  'People take their usual seats. {pair} sit side by side again.',
+  '{pair} sit next to each other, heads close, talking quietly.',
+  '{pair} find each other first. A bad morning only brings them closer.',
 ];
 const SIT_SOLO = [
-  'People take the seats they always take. A week in, everyone has a place, and the empty one is '
-  + 'suddenly very easy to see.',
-  'The room arranges itself the way it has every morning. Same chairs, same neighbours — which '
-  + 'is exactly how the gap stands out.',
+  'People take their usual seats, which makes the empty one easy to see.',
+  'Everyone sits where they always sit, and the gap stands out.',
 ];
 // ── THE FLASHBACK — the LAST the castle saw of the victim. VICTIM ONLY.
 // It shows the person who is gone, the night before, and nothing else: no
@@ -1548,18 +1489,13 @@ const FLASH_NOCLOSE = [
 // ── THE EMPTY CHAIR — the victim's own neighbours, by the fixed seating.
 // Caused by `gs.tr.castOrder`: who actually sat either side of them. {a},{b},{vic}.
 const CHAIR_TEXT = [
-  '{who} had sat next to {vic} every morning this week. Today there is a chair between them and '
-  + 'nobody in it, and {who} keeps almost turning to say something to it.',
-  'The gap is not abstract to {who}. That was the person on {pos} left every meal, and now it is '
-  + 'a place setting with the cup turned over.',
-  '{who} does not move the empty chair and does not sit anywhere else either. It stays exactly '
-  + 'where {vic} left it, and the room lets it.',
+  '{who} sat next to {vic} every morning this week. Today the chair is empty, and {who} keeps almost turning to speak to it.',
+  '{vic} always sat on {pos} left. Now it’s an empty place with the cup turned over.',
+  '{who} doesn’t move the empty chair, and doesn’t move seats either.',
 ];
 const CHAIR_SOLO = [
-  'Nobody sits in the empty place and nobody moves it. It stays laid, cup down, in the spot where '
-  + '{vic} sat every other morning this week.',
-  'The chair stays where it is. A week of the same seats, and its owner is not hard to name — '
-  + 'no one is going to be the one to move it.',
+  'Nobody sits in the empty place, and nobody moves it.',
+  'The chair stays where it is. Nobody sits in it, and nobody moves it.',
 ];
 
 const MURMUR = [

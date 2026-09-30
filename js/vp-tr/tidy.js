@@ -168,8 +168,44 @@ export function scriptParts(text) {
     });
 }
 
+// SINGULAR "THEY" TAKES A PLURAL VERB. Pools write "{Sub} is still deciding",
+// which is right for he and she and wrong for they: "Somebody asks Bowie who
+// they is thinking of. They says they is still deciding." Found reading a day.
+// Only the verbs the pools actually put after a pronoun, and only directly
+// after "they", so nothing else in a sentence can be touched.
+const THEY_VERB = { is: 'are', was: 'were', has: 'have', does: 'do', says: 'say', looks: 'look',
+  "isn’t": "aren’t", "wasn’t": "weren’t", "doesn’t": "don’t", "hasn’t": "haven’t",
+  "isn't": "aren't", "wasn't": "weren't", "doesn't": "don't", "hasn't": "haven't",
+  seems: 'seem', goes: 'go', knows: 'know', wants: 'want', thinks: 'think', keeps: 'keep',
+  makes: 'make', needs: 'need', likes: 'like', tries: 'try', gets: 'get', sounds: 'sound' };
+const THEY_RE = new RegExp('\\b(they|They)\\s+(' + Object.keys(THEY_VERB)
+  .map(v => v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')(?![\\w’\'])', 'g');
+export function theyAgree(text) {
+  return String(text == null ? '' : text).replace(THEY_RE, (m, t, v) => t + ' ' + THEY_VERB[v]);
+}
+
+// A SPEECH LINE ENDS AT ITS CLOSING QUOTE. Several events append a sentence
+// to their note (`note += ' It had been sitting open since…'`), and when the
+// note ends in speech the sentence lands on the speech line — which then fails
+// SPEECH and is drawn as one run of narration with a quote in the middle of
+// it. The trailing sentence goes on a line of its own.
+const SPEECH_TAIL = /^([^:\n"“]{1,40}?(?: \(to camera\))?: ["“][^"”\n]*["”])\s+(\S[^\n]*)$/;
+function splitSpeechTails(s) {
+  if (s.indexOf(':') < 0) return s;
+  return s.split('\n').map(l => {
+    const m = SPEECH_TAIL.exec(l.trim());
+    return m ? m[1] + '\n' + m[2] : l;
+  }).join('\n');
+}
+// A LINE STARTS WITH A CAPITAL. A slot that opens a line ("{who} call it a
+// strategic alliance", filled with "the people still in the castle") printed
+// it lowercase.
+function capLines(s) {
+  return s.split('\n').map(l => l.replace(/^(\s*)([a-z])/, (m, sp, c) => sp + c.toUpperCase())).join('\n');
+}
+
 export function tidyNames(text) {
-  const s = String(text == null ? '' : text);
+  const s = capLines(splitSpeechTails(theyAgree(String(text == null ? '' : text))));
   const re = _castPattern();
   if (!re || !s) return s;
   // A SCRIPT IS TIDIED LINE BY LINE, and speech is never touched: a pronoun

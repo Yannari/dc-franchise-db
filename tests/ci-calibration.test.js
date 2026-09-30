@@ -6,7 +6,7 @@
 import { describe, expect, it } from 'vitest';
 import { room } from './helpers/ci-room.js';
 import { rel } from '../js/ci/state.js';
-import { runChat, CURATED } from '../js/ci/conversation.js';
+import { runChat } from '../js/ci/conversation.js';
 import { voterScore } from '../js/ci/ratings.js';
 import { streamFor } from '../js/dr/rng.js';
 
@@ -22,7 +22,6 @@ describe('a curated face is easier to like (spec 5.3, the hyperpersonal effect)'
       }
       return total;
     };
-    expect(CURATED).toBeGreaterThan(0);
     expect(warmth('catfish')).toBeGreaterThan(warmth('honest') * 1.1);
   });
 });
@@ -65,5 +64,22 @@ describe('a goodbye video is a grievance more often than an accusation', () => {
     const drop = before - belief(s, '@q3', '@q1').real;
     expect(drop).toBeGreaterThan(0);
     expect(drop).toBeLessThan(0.25 * 1.2 * SOUR_GRAPES + 1e-9);
+  });
+});
+
+import { curatedFor, CURATED_MAX } from '../js/ci/conversation.js';
+describe('the curated-face bonus is earned by the player, not given to the type', () => {
+  it('is nothing for an honest profile', () => {
+    const s = room(3, 1);
+    expect(curatedFor(s, '@q0')).toBe(0);
+  });
+  it('grows with how well the person carries the persona: people skills and a cover close to themselves', () => {
+    const skilled = room(3, 1), clumsy = room(3, 1);
+    Object.assign(skilled.profiles['@q0'], { mode: 'catfish', gap: 1, shown: { name: 'Pat', gender: 'f', age: 27, job: 'nurse' } });
+    Object.assign(skilled.people.Q0, { age: 28, archetype: 'hero', stats: { ...skilled.people.Q0.stats, social: 9, loyalty: 8 } });
+    Object.assign(clumsy.profiles['@q0'], { mode: 'catfish', gap: 1, shown: { name: 'Pat', gender: 'f', age: 23, job: 'personal trainer' } });
+    Object.assign(clumsy.people.Q0, { age: 64, archetype: 'loyal-soldier', stats: { ...clumsy.people.Q0.stats, social: 2, mental: 8, boldness: 2 } });
+    expect(curatedFor(skilled, '@q0')).toBeGreaterThan(curatedFor(clumsy, '@q0') * 3);
+    expect(curatedFor(skilled, '@q0')).toBeLessThanOrEqual(CURATED_MAX);
   });
 });

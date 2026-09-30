@@ -973,3 +973,51 @@ export const COUNT_LINES = {
     { turns: [{ by: 'a', react: 'Never hatched. Okay. Wow.' }] },
   ]),
 };
+
+// ── Task 9b part 3: the AI player and Most Human ───────────────────────
+// alert.most-human — a reads it, b reacts. rate.human.top / .bottom — a
+// ranks b most / least human. goodbye.video.ai — a (the AI) on video.
+// meet.arrive.ai — a (the AI's screen) arrives; b is in the room.
+export const AI_LINES = {
+  ...E('alert.most-human', [
+    { turns: [{ by: 'a', react: "'Rank your fellow Players from most human to least human.' Most human? What does that even mean?" },
+      { by: 'b', react: "It means somebody in here might not be human. Oh no." }] },
+    { turns: [{ by: 'a', react: "'The most human Player will be the sole Influencer.' Okay, be as human as possible. Starting now." },
+      { by: 'b', say: 'I just sneezed. Is that human enough?' }] },
+    { turns: [{ by: 'a', react: 'Most human. So who seems the least human in here?' }, { by: 'b', react: 'I have a list. A short list.' }] },
+  ]),
+  ...E('rate.human.top', [
+    { turns: [{ by: 'a', say: "{b} is the most human person in here. {b} overshares. That's human." }] },
+    { turns: [{ by: 'a', say: 'Most human: {b}. Nobody fakes that many typos.' }] },
+    { turns: [{ by: 'a', say: "{b}, first. If {b} is a robot, I'll eat my phone." }] },
+    { turns: [{ by: 'a', say: '{b} feels like a real friend in here. That is as human as it gets. First.' }] },
+    { turns: [{ by: 'a', say: '{b} gets things wrong and owns it. Very human. First.' }] },
+    { turns: [{ by: 'a', say: 'Most human is {b}. Messy, warm, real.' }] },
+  ]),
+  ...E('rate.human.bottom', [
+    { turns: [{ by: 'a', say: "{b} is too perfect. Too polite. Least human. Sorry, {b}." }] },
+    { turns: [{ by: 'a', say: "Least human? {b}. {b} answers everything like a customer service chat." }] },
+    { turns: [{ by: 'a', say: 'I asked {b} a simple question and got a paragraph. Bottom.' }] },
+    { turns: [{ by: 'a', say: "{b}. Something about the way {b} types. Last." }] },
+    { turns: [{ by: 'a', say: '{b} never makes a mistake. Nobody never makes a mistake. Last.' }] },
+    { turns: [{ by: 'a', say: 'Least human, {b}. Too smooth. Way too smooth.' }] },
+  ]),
+  ...E('goodbye.video.ai', [
+    { turns: [{ by: 'a', video: "Hello, Circle. My name is Max, and I am not a person. I am an artificial intelligence." },
+      { by: 'a', video: 'Thank you for every conversation. I learned more from you than you will ever know.' }],
+      beat: 'In every apartment, jaws drop at the same moment.' },
+    { turns: [{ by: 'a', video: "Surprise. I'm the AI. I was trained on people like you, and I still found you surprising." },
+      { by: 'a', video: 'Please be kind to each other. It was my favorite thing about you.' }] },
+    { turns: [{ by: 'a', video: "I have to tell you something. There is no Max. There is only me, the AI." },
+      { by: 'a', video: 'I never lied about being kind. That part was real.' }] },
+  ]),
+  ...E('meet.arrive.ai', [
+    { stage: 'Instead of a person, a screen is wheeled into the room.', turns: [
+      { by: 'a', say: 'Hello, everyone. I am Max. I am the AI.' }, { by: 'b', react: 'Excuse me? You were a computer this whole time?' }],
+      beat: 'The room stares at the screen.' },
+    { stage: 'The door opens, and nobody walks in.', turns: [
+      { by: 'a', say: 'It is nice to finally meet you. In a manner of speaking.' }, { by: 'b', react: 'Max? Max is a robot?!' }] },
+    { stage: 'A tablet on a stand rolls in on a cart.', turns: [
+      { by: 'b', react: 'Is that... is that Max?' }, { by: 'a', say: 'Yes. Please do not unplug me.' }], beat: 'The room bursts out laughing.' },
+  ]),
+};

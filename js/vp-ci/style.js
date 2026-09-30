@@ -339,6 +339,28 @@ export const CIV_CSS = `
 .civ-partybar b{font-weight:900;font-size:1.2cqw;letter-spacing:.16em;background:linear-gradient(90deg,#ff4fb4,#ffd23f);-webkit-background-clip:text;background-clip:text;color:transparent}
 .civ-partybar span{font-weight:700;font-size:.8cqw;letter-spacing:.1em;padding:.2cqw .5cqw;border-radius:99px;background:rgba(255,255,255,.12)}
 .civ-party .civ-where{display:none}
+/* the live sidebar, beside the script under the stage */
+.civ-under{display:grid;grid-template-columns:1fr 290px;gap:12px;align-items:start}
+@media (max-width:760px){.civ-under{grid-template-columns:1fr}}
+.civ-side{background:rgba(10,14,40,.75);border:1px solid rgba(139,92,255,.3);border-radius:12px;padding:10px 12px;max-height:420px;overflow:auto;font-size:12px}
+.civ-sidehd{font-weight:900;letter-spacing:.16em;font-size:12px;margin-bottom:8px;background:linear-gradient(90deg,#3fd8ff,#ff4fb4);-webkit-background-clip:text;background-clip:text;color:transparent}
+.civ-sidehd small{letter-spacing:.08em;font-weight:600;color:#9aa6d6;-webkit-text-fill-color:#9aa6d6;margin-left:6px}
+.civ-splist{display:flex;flex-direction:column;gap:5px}
+.civ-sp{display:flex;gap:8px;align-items:center;transition:opacity .4s,filter .4s}
+.civ-sp .ph{flex:none;width:30px;height:30px;border-radius:50%;background:#1b1f45 center 25%/cover;border:2px solid var(--ring,#2f7bff);display:grid;place-items:center;font-weight:800;font-size:12px}
+.civ-sp .t{min-width:0;line-height:1.25}.civ-sp b{font-weight:800}
+.civ-sp small{display:block;color:#9aa6d6;font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.civ-sp small i{color:#ff9fd6;font-style:normal;font-weight:700}
+.civ-sp.out{opacity:.4;filter:grayscale(1)}
+.civ-crown{color:#ffd23f;margin-left:5px}
+.civ-x{margin-left:6px;font-size:9px;font-weight:900;letter-spacing:.12em;color:#fff;background:#ff2a4a;padding:1px 4px;border-radius:3px}
+.civ-sidesec{margin-top:10px;font-weight:900;font-size:10px;letter-spacing:.16em;color:#9aa6d6}
+.civ-sidesec ul{list-style:none;margin:4px 0 0;padding:0;font-weight:500;font-size:12px;letter-spacing:0;color:#dfe6ff}
+.civ-sidesec li{margin:3px 0}
+.civ-meter{display:inline-block;width:44px;height:5px;border-radius:3px;background:rgba(255,255,255,.15);vertical-align:middle;margin-left:4px}
+.civ-meter i{display:block;height:100%;border-radius:3px;background:linear-gradient(90deg,#ff2a4a,#ffd23f)}
+.civ-heart{color:#ff4fb4}.civ-bolt{color:#ffd23f}
+.civ-sidenote{margin-top:10px;font-size:10.5px;color:#7f88b8;font-style:italic}
 /* the stage fits the window, so Next is always in reach */
 .civ-stagewrap{position:relative;width:min(100%,calc((100vh - 250px) * 16 / 9));margin:0 auto}
 .civ-btn.civ-nextbtn{font-size:13px;padding:10px 26px;box-shadow:0 0 18px rgba(139,92,255,.55)}

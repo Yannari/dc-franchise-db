@@ -18,6 +18,7 @@ import { circleScreens } from './steps.js';
 import { stageInner, paintStage } from './stage.js';
 import { CIV_CSS, CIV_FONTS } from './style.js';
 import { bedFor, playStep } from './sound.js';
+import { sidebarHtml } from './sidebar.js';
 
 const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const reg = () => (typeof window !== 'undefined' ? (window._civ ||= {}) : {});
@@ -40,7 +41,7 @@ export function circleVpScreens(row) {
   }
   return screens.map((screen, si) => {
     const uid = `ci${esc(row.num)}-${si}`;
-    reg()[uid] = { row, screen, idx: -1, auto: false };
+    reg()[uid] = { row, screen, idx: -1, auto: false, screens, si };
     return {
       // ci-<kind>-<n>: the player files it by kind (vp-ui.js _ciPhaseForScreen).
       id: `ci-${screen.kind}-${si}`,
@@ -59,7 +60,8 @@ export function circleVpScreens(row) {
     <button type="button" class="civ-btn" onclick="civAll('${uid}')">Reveal all</button>
     <span class="civ-count" id="civ-count-${uid}">0 / ${screen.steps.length}</span>
   </div>
-  <div class="civ-script" id="civ-script-${uid}">${scriptHtml(row, screen)}</div>
+  <div class="civ-under"><div class="civ-script" id="civ-script-${uid}">${scriptHtml(row, screen)}</div>
+    <aside class="civ-side" id="civ-side-${uid}">${sidebarHtml(row, screens, si, -1)}</aside></div>
 </div>`,
     };
   });
@@ -80,6 +82,8 @@ function paint(uid, fresh) {
   paintStage(document.getElementById(`civ-st-${uid}`), S.row, S.screen, S.idx, fresh);
   const script = document.getElementById(`civ-script-${uid}`);
   script?.querySelectorAll('[data-s]').forEach(el => el.classList.toggle('vis', Number(el.dataset.s) <= S.idx));
+  const side = document.getElementById(`civ-side-${uid}`);
+  if (side && S.screens) side.innerHTML = sidebarHtml(S.row, S.screens, S.si, S.idx);
   const count = document.getElementById(`civ-count-${uid}`);
   if (count) count.textContent = `${Math.max(0, S.idx + 1)} / ${S.screen.steps.length}`;
   if (fresh) playStep(S.screen, S.idx);

@@ -233,6 +233,19 @@ export function validateQuickSetup(config = {}, playerList = []) {
     rows.push({ key: 'twists', ok: !late,
       msg: late ? `${_catById(late.type).name} is booked on episode ${late.episode}, but the season has ${days} days.`
         : mine.length ? `${mine.length} card${mine.length === 1 ? '' : 's'} booked on the Season Timeline.` : 'Nothing booked: each night draws its own format.' });
+    // A card on a day that cannot use it is dropped by the engine without a
+    // word (js/ci/timeline.js). Say so here; a warning, never a block.
+    const shape = new Map(circleShapeOf({ cast: names, setup: config.ciSetup || {}, config }).map(d => [d.day, d]));
+    for (const t of mine) {
+      const c = _catById(t.type), d = shape.get(Number(t.episode));
+      if (!d) continue;
+      const edge = d.day === 1 || d.final || d.finale;
+      const why = (c.ciFormat || c.ciPower) && !d.block ? 'a day with no blocking'
+        : c.ciEntry && !d.arrivals ? 'a day with no newcomer'
+          : c.ciTwist && edge ? (d.day === 1 ? 'Day 1' : 'the last two days')
+            : c.ciEvent && (d.block || edge) ? 'a blocking day' : null;
+      if (why) rows.push({ key: 'twists', ok: true, warn: true, msg: `${c.name} is booked on episode ${t.episode}, ${why}: it won't run there.` });
+    }
     return rows;
   }
 

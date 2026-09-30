@@ -27,7 +27,7 @@ import { isPerfectMatchSeason, simulatePerfectMatchEpisode, perfectMatchCanRerun
 import { EPISODE_WORDS as PM_EPISODE_WORDS, SLOT_NAMES as PM_SLOT_NAMES, seasonSchedule as pmDrawSchedule, CHALLENGE_NAMES as PM_CHALLENGE_NAMES, RITUAL_NAMES as PM_RITUAL_NAMES, CHALLENGE_NIGHTS as PM_CHALLENGE_NIGHTS } from './pm/schedule.js';
 import { episodeText as pmEpisodeText, momentTitle as pmMomentTitle } from './pm/transcript.js';
 import { isCircleSeason, simulateCircleEpisode, circleCanRerun, lastCircleRefusal, rerunCircleEpisode,
-  circlePendingChange, circleSeasonShape, circleEpisodeMap } from './ci-run.js';
+  circlePendingChange, circleSeasonShape, circleEpisodeMap, circleTimelineDays } from './ci-run.js';
 import { isDragSeason, simulateDragEpisode, invalidateDragQueue,
   dragEpisodesAired, dragScheduleRecorded, rerunDragEpisode, dragCanRerun } from './dr-run.js';
 import { dragBadges } from './dr/badges.js';
@@ -4006,6 +4006,10 @@ export function renderTimeline() {
   const _pmNights = _pmEps ? perfectMatchNights() : null;
   const _pmDrawnGames = _pmEps ? perfectMatchDrawnChallenges() : null;
   const _pmDrawnNights = _pmEps ? perfectMatchDrawnNights() : null;
+  // THE CIRCLE'S DAYS: what each day holds (a blocking, newcomers, a game)
+  // and how many are in. A blocking card only runs on a blocking day and an
+  // arrival only on a newcomer day, so the tile is where the author sees it.
+  const _ciDays = isCircleSeason() ? circleTimelineDays() : null;
 
   let html = '';
   epMap.forEach(({ ep, active, phase }) => {
@@ -4375,7 +4379,9 @@ export function renderTimeline() {
       : isJuryEp ? 'fd-ep-marker jury'
         : isMergeEp ? 'fd-ep-marker merge' : 'fd-ep-marker';
     const _pmN = _pmNights?.get(ep) || null;
+    const _ciD = _ciDays?.get(ep) || null;
     const markerText  = _pmN && !isFinale ? (_pmN.end !== _pmN.start ? `${_pmN.start} → ${_pmN.end} in the villa` : `${_pmN.end} in the villa`)
+      : _ciD ? (_ciD.end !== _ciD.start ? `${_ciD.start} → ${_ciD.end} in the Circle` : `${_ciD.end} in the Circle`)
       : isFinale ? 'FINALE'
       : isJuryEp ? `JURY · ${active} left`
         : isMergeEp ? `MERGE · ${active} left` : `${active} left`;
@@ -4384,7 +4390,8 @@ export function renderTimeline() {
     // Drama, and left alone it would print a meaningless PRE on every night.
     const _pmEp = _pmEps?.get(ep) || null;
     // …and the night's set piece, so Movie Night and the rest are on the map.
-    const phaseLabel  = _pmEp ? [(_pmEp.finalRecoupling ? 'Final recoupling' : PM_EPISODE_WORDS[_pmEp.moment]) || '', ...(_pmEp.rituals || []).map(r => PM_RITUAL_NAMES[r] || r)].filter(Boolean).join(' · ').toUpperCase()
+    const phaseLabel  = _ciD ? _ciD.label.toUpperCase()
+      : _pmEp ? [(_pmEp.finalRecoupling ? 'Final recoupling' : PM_EPISODE_WORDS[_pmEp.moment]) || '', ...(_pmEp.rituals || []).map(r => PM_RITUAL_NAMES[r] || r)].filter(Boolean).join(' · ').toUpperCase()
       : isTraitorsSeason() ? ''
       : phase === 'ri-duel' ? 'RI DUEL' : phase === 'finale' ? '' : phase === 'pre-merge' ? 'PRE' : 'POST';
 

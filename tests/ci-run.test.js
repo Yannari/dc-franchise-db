@@ -8,7 +8,9 @@ import { isCircleSeason, simulateCircleEpisode, circleEpisodesLeft, circleCastPr
 import { makePlayers } from './helpers/ci-cast.js';
 
 function freshSeason(n = 13, extra = {}) {
-  Object.assign(seasonConfig, { format: 'the-circle', seasonNumber: 1, ciSetup: {}, ciPool: [], twistSchedule: [], ...extra });
+  // Every Circle option reset: a test that sets one must not leak it into the next.
+  Object.assign(seasonConfig, { format: 'the-circle', seasonNumber: 1, ciSetup: {}, ciPool: [], twistSchedule: [],
+    ciDays: null, ciFinalists: 5, ciNewcomerRule: 'rate-not-rated', ciPickBy: 'stats', ciAI: false, ...extra });
   setPlayers(makePlayers(n, 5));
   setGs({ initialized: true, episodeHistory: [], popularity: {}, activePlayers: [], ci: { seed: 505 } });
 }
@@ -127,12 +129,48 @@ describe('re-running an episode', () => {
   });
 });
 
+import { circleTimelineDays } from '../js/ci-run.js';
+describe('the Season Timeline tiles say what each day is', () => {
+  it('before anything airs: what the day holds, and how many are in, projected', () => {
+    freshSeason();
+    const shape = circleSeasonShape();
+    const days = circleTimelineDays();
+    expect(days.size).toBe(shape.length);
+    const first = days.get(1);
+    expect(first.label).toMatch(/Blocking/);
+    expect(first.end).toBe(first.start - 1);
+    const arrival = shape.find(d => d.arrivals > 0);
+    const tile = days.get(arrival.day);
+    expect(tile.label).toMatch(/(Newcomer|\d newcomers)/);
+    expect(tile.end).toBe(tile.start + arrival.arrivals - (arrival.block ? 1 : 0));
+    const social = shape.find(d => !d.block && !d.final && !d.finale);
+    expect(days.get(social.day).label).toMatch(/No blocking/);
+    expect(days.get(shape.find(d => d.final).day)).toMatchObject({ label: 'Final ratings', end: 5 });
+    expect(days.get(shape.find(d => d.finale).day).label).toBe('Finale');
+  });
+
+  it('once the season is played, the counts are the ones that happened', () => {
+    freshSeason();
+    const aired = playAll();
+    const days = circleTimelineDays();
+    for (const r of aired) expect(days.get(r.num).end, `day ${r.num}`).toBe(r.ci.people.length);
+  });
+});
+
 describe('the Season Timeline books by episode', () => {
   it('a Circle card booked on episode N books the slot day N is', () => {
     freshSeason();
     const day3 = circleSeasonShape().find(d => d.day === 3);
     seasonConfig.twistSchedule = [{ type: 'ci-sole-influencer', episode: 3 }, { type: 'some-other-show-twist', episode: 3 }];
     expect(circleBookings()).toEqual({ [day3.slot]: ['ci-sole-influencer'] });
+  });
+
+  it('and the episode that airs that day plays the card', () => {
+    freshSeason();
+    const day = [...circleTimelineDays()].find(([, d]) => d.block && d.start > 6)[0];
+    seasonConfig.twistSchedule = [{ type: 'ci-sole-influencer', episode: day }];
+    const row = playAll().find(r => r.num === day);
+    expect(row.ci.night).toEqual({ format: 'sole', booked: true, fellBack: null });
   });
 });
 

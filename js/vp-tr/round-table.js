@@ -507,7 +507,7 @@ function _filters() {
 // The 46px offset on every absolutely-positioned layer is the real VP's
 // `.rp-nav` bar, which the standalone mockups do not have.
 const RT_CSS = `
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,400;9..144,600;9..144,700;9..144,900&family=IM+Fell+English:ital@0;1&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Crimson+Pro:ital,wght@0,400;0,500;0,600;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,400;9..144,600;9..144,700;9..144,900&family=IM+Fell+English:ital@0;1&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Crimson+Pro:ital,wght@0,400;0,500;0,600;1,400&family=Caveat:wght@600;700&family=Kalam:wght@400;700&family=Gochi+Hand&family=Shadows+Into+Light&family=Reenie+Beanie&display=swap');
 
 .rt-root{
   --rt-night:#040705;
@@ -1430,26 +1430,25 @@ const RT_CSS = `
 .rt-said-txt{font-family:var(--rt-text);font-style:normal;font-weight:500;font-size:20px;line-height:1.42;color:#fbf6ea}
 .rt-said cite{margin:0 0 2px;font-size:12px;letter-spacing:.08em;color:#e6c27a}
 .rt-host-line{font-family:var(--rt-text);font-size:20px}
-/* the slates: a grid, read in place */
-.rt-beat[data-phase="read"]:not(.rt-vis),.rt-beat[data-phase="revote"]:not(.rt-vis){display:none}
-.rt-beat[data-phase="read"].rt-vis:not(:has(.rt-host)),
-.rt-beat[data-phase="revote"].rt-vis:not(:has(.rt-host)):has(.rt-slate){display:inline-block;vertical-align:top;width:calc(25% - 12px);margin:0 6px 14px}
-.rt-beat[data-phase="read"]:has(.rt-host) .rt-slate{max-width:calc(25% - 12px);margin:14px 6px 0}
-.rt-beat[data-phase="read"]:has(.rt-host) .rt-reason,.rt-beat[data-phase="read"]:has(.rt-host) .rt-note{max-width:calc(25% - 12px);margin-left:6px}
-.rt-beat[data-phase="read"]:has(.rt-host){margin-bottom:14px}
-.rt-beat .rt-slate{padding:7px}
-.rt-beat .rt-slate-face{padding:12px 8px 9px}
-.rt-beat .rt-slate-name{font-size:clamp(22px,2.2vw,30px)}
-.rt-beat .rt-slate-ord{position:static;display:block;text-align:left;font-size:9.5px;margin:-4px 0 2px}
-.rt-beat .rt-slate-by{margin-top:6px;padding-top:6px;font-size:9px;letter-spacing:.14em}
-.rt-beat[data-phase="read"] .rt-slate-run,.rt-beat[data-phase="revote"] .rt-slate-run{display:none}
 .rt-tally-row{padding-top:7px;padding-bottom:7px}
-.rt-reason{margin:7px 2px 0;font-family:var(--rt-text);font-size:14.5px;line-height:1.38;color:rgba(236,230,214,.9)}
+/* the voter's reason, under the board they held up */
+.rt-reason{max-width:520px;margin:12px auto 0;text-align:center;font-family:var(--rt-text);font-size:18px;line-height:1.45;color:#f3ecdc}
+/* THE CHALK — each letter goes on after the board has turned, the stick
+   travelling the line; a repaint or Reveal all lands on the written name */
+.rt-slate-name{position:relative;display:inline-block;font-size:clamp(40px,5.6vw,60px)}
+.rt-slate-name span{display:inline-block;white-space:pre}
+.rt-beat.rt-vis .rt-slate-name span{clip-path:inset(-30% 100% -30% -30%);animation:rtChalk .13s linear forwards;animation-delay:calc(.55s + var(--i) * .13s)}
+@keyframes rtChalk{to{clip-path:inset(-30% -30% -30% -30%)}}
+.rt-stick{position:absolute;left:0;top:55%;width:36px;height:9px;border-radius:2px 4px 4px 2px;opacity:0;pointer-events:none;
+  background:linear-gradient(180deg,#fffef8,#d9d6c8 70%,#b9b5a4);box-shadow:0 3px 6px rgba(0,0,0,.55)}
+.rt-beat.rt-vis .rt-stick{animation:rtStickGo calc(var(--n) * .13s) linear .55s forwards,rtStickBob .13s ease-in-out .55s infinite alternate,rtStickVis calc(var(--n) * .13s + .45s) linear .4s forwards}
+@keyframes rtStickGo{from{left:0}to{left:100%}}
+@keyframes rtStickBob{from{transform:translate(-2px,-70%) rotate(-40deg)}to{transform:translate(-2px,-10%) rotate(-32deg)}}
+@keyframes rtStickVis{0%{opacity:0}12%{opacity:1}88%{opacity:1}100%{opacity:0}}
+.rt-beat.rt-vis .rt-reason{animation:rtReasonIn .5s ease both;animation-delay:calc(.75s + var(--n,6) * .13s)}
+@keyframes rtReasonIn{from{opacity:0;transform:translateY(6px)}}
+@media (prefers-reduced-motion:reduce){.rt-beat.rt-vis .rt-slate-name span{animation:none;clip-path:none}.rt-stick{display:none}}
 .rt-beat[data-phase="read"] .rt-note,.rt-beat[data-phase="revote"] .rt-note{margin:5px 2px 0;font-size:13px;line-height:1.35}
-@media (max-width:760px){
-  .rt-beat[data-phase="read"].rt-vis:not(:has(.rt-host)),
-  .rt-beat[data-phase="revote"].rt-vis:not(:has(.rt-host)):has(.rt-slate){width:calc(50% - 12px)}
-  .rt-beat[data-phase="read"]:has(.rt-host) .rt-slate,.rt-beat[data-phase="read"]:has(.rt-host) .rt-reason{max-width:calc(50% - 12px)}
 }
 
 ` + PORTRAIT_CSS;
@@ -1624,6 +1623,113 @@ const HOST_SENDOFF = [
   'Go up. Traitors, the castle is yours for a few hours. Do try to be interesting about it.',
 ];
 
+
+// ── SPOKEN AT THE TABLE (2026-09-29) — see "THE DEBATE IS SPOKEN" ──────
+// First person, contractions, one thing each. {T} the name, {Who}/{who} its
+// pronoun, {src} the speaker's own recorded reason as a predicate.
+const ACCUSE_CITED = [
+  'It’s {T}. {Who} {src}.',
+  'I’m saying {T}. {Who} {src}, and nobody has explained that to me.',
+  '{T}. {Who} {src}. I can’t get past it.',
+  'Look at {T}. {Who} {src}.',
+  'I think it’s {T}, and here’s why. {Who} {src}.',
+  '{T}. Think about it. {Who} {src}.',
+];
+const ACCUSE_SECOND = [
+  'And that’s not all. {Who} {src2}.',
+  'There’s more. {Who} {src2}.',
+  'And another thing. {Who} {src2}.',
+  'That’s not the only thing, either. {Who} {src2}.',
+];
+// With nothing to cite, the speaker says which KIND of nothing it is.
+const ACCUSE_NOSRC = {
+  hearsay: [
+    '{F} said it first, and I think {F} is right. It’s {T}.',
+    'I heard it from {F}, and it makes sense to me. {T}.',
+    'I’ll be honest, {F} put it in my head. But I think it’s {T}.',
+    'I’m going with what {F} said. {T}.',
+  ],
+  public: [
+    'It happened right here at this table. I think it’s {T}.',
+    'I’m not saying anything new. I think it’s {T}.',
+    'You saw the same things I did. It’s {T}.',
+    'Nothing secret about it. It’s {T}.',
+  ],
+  'gone-cold': [
+    'I said {T} days ago, and I haven’t changed my mind.',
+    'I’ve had {T} down for a while. Nothing has changed that.',
+    'Same name as before. {T}.',
+    'I’m sticking with {T}.',
+  ],
+  feeling: [
+    'I can’t prove it. I just don’t trust {T}.',
+    'It’s a feeling, but it’s a strong one. {T}.',
+    '{T}. Something’s off, and I can’t say what.',
+    'I don’t have evidence. I have a bad feeling about {T}.',
+    'Call it instinct. It’s {T}.',
+    'I’ve been watching {T}, and something isn’t right.',
+  ],
+};
+const OTHER_CITED = [
+  'I’ve got {T} too. {Who} {src}.',
+  'Same name. {Who} {src}.',
+  'I agree. {Who} {src}.',
+  'It’s {T} for me as well. {Who} {src}.',
+];
+const OTHER_AGREE = [
+  'I’m with {A}. It’s {T}.',
+  'Same. {T}.',
+  'I was going to say {T} too.',
+  'I agree with {A}.',
+  '{A}’s right.',
+  'I’ve got the same name.',
+];
+// A Traitor burying a fellow: said as reluctance, true on both readings.
+const SACRIFICE_SAID = [
+  'I didn’t want to say this.',
+  'I’ve kept quiet long enough.',
+  'I’ve been going back and forth, and I’m done.',
+  'This isn’t easy for me.',
+];
+const DEFLECT_SAID = [
+  'Before you look at me, look at {D}.',
+  'Why is nobody asking about {D}?',
+  'If we’re throwing names around, here’s one back. {D}.',
+  'I’d be looking at {D}, not me.',
+];
+const DEFLECT_BECAUSE = [
+  '{D} {dsrc}.',
+  'Think about it. {D} {dsrc}.',
+  'Because {d} {dsrc}.',
+];
+const MINDCHANGE_SAID = [
+  'I had someone else an hour ago. Not now. It’s {t}.',
+  'Okay. That’s changed my mind. {t}.',
+  'I wasn’t sure before. I am now. {t}.',
+  '{A} has convinced me. I’m writing {t}.',
+];
+// The clashes, spoken. `speaker` is which of the pair talks first; {o} the other.
+const CLASH_SAID = {
+  counter: { speaker: 'b',
+    say: ['You’ve been pointing at me all night, {o}. What about you?', 'Why are you so sure, {o}?', 'I’ll answer when {o} explains why {o} is so keen.'],
+    reply: ['I’m not the one being asked.', 'Nice try.', 'Just answer the question.'] },
+  'ganged-up': { speaker: 'b',
+    say: ['That’s three of you with the same name in ten minutes. Who set that up?', 'Funny how you all landed on me at once.', 'Did you lot rehearse this?'],
+    reply: ['Nobody rehearsed anything.', 'We just agree.', 'Maybe we’re just right.'] },
+  'grievance-fresh': { speaker: 'a', keepLine: true,
+    say: ['We had this out yesterday, {o}, and I haven’t forgotten it.', 'This is about yesterday, {o}, and you know it.'],
+    reply: ['Neither have I.', 'Then let’s have it out properly.'] },
+  'old-grievance': { speaker: 'a', keepLine: true,
+    say: ['This goes back further than tonight, {o}.', 'You know exactly why I don’t trust you, {o}.'],
+    reply: ['Say it properly, then.', 'That was a long time ago.'] },
+  'grievance-old': { speaker: 'a', keepLine: true,
+    say: ['This goes back further than tonight, {o}.', 'You know exactly why I don’t trust you, {o}.'],
+    reply: ['Say it properly, then.', 'That was a long time ago.'] },
+  'broken-word': { speaker: 'a', keepLine: true,
+    say: ['You gave me your word, {o}.', 'We had a deal, {o}.'],
+    reply: ['Things changed.', 'I never promised that.'] },
+};
+
 const ACCUSE_LINES = [
   '{A} keeps coming back to {t}, and will not be talked off it.',
   '{A} says it is {t}, looking straight down the table and refusing to look away.',
@@ -1653,23 +1759,23 @@ const ACCUSE_SAID = [
   'If I am wrong about {t}, I will be the next one out of that door, and I will take it.',
 ];
 const ACCUSED_REPLY = [
-  '{T} takes it flat, which half the room reads as innocence and the other half as practice.',
-  '{T} answers too fast, and the room hears the speed rather than the words.',
-  '{T} says the only true thing {sub} has left: that being suspected is not evidence.',
-  '{T} laughs, and it lands badly.',
-  '{T} shakes {pos} head before {a} has even finished.',
-  '{T} turns it round and asks who put the idea in {a}’s head.',
+  '{T} shakes {pos} head.',
+  '{T} laughs, and it doesn’t go down well.',
+  '{T} answers straight away.',
+  '{T} takes a breath before answering.',
+  '{T} looks round the table before answering.',
+  '{T} doesn’t wait to be asked.',
 ];
 // THE ACCUSED ANSWERS, in their own voice — the show gives everyone the floor to
 // defend themselves before the slates. First person; asserts nothing but the
 // bare fact of being accused, which every layer can see. Original lines.
 const ACCUSED_DEFENCE = [
-  'I did not touch anyone. I cannot prove that to you, and I know exactly how that sounds from where I am sitting.',
-  'You want a Traitor and I am the easiest name in this room. Those are not the same thing, and you all know it.',
-  'Ask yourself who is loudest about me tonight. Then ask yourself why they need me gone before I can talk.',
-  'If you send me out and I turn out to be Faithful, you have done the Traitors’ work for them, in front of everybody.',
-  'Every one of you has had an hour today you could not fully account for. Tonight you have decided it is mine.',
-  'Write my name if you have already made your minds up. But you will be back here next week with the same problem.',
+  'I didn’t touch anyone. I can’t prove it, and I know how that sounds.',
+  'I’m the easy name in this room. That doesn’t make me a Traitor.',
+  'Ask yourselves who’s loudest about me tonight, and why they want me gone.',
+  'If you send me out and I’m Faithful, you’ve done the Traitors’ job for them.',
+  'Every one of you had an hour today you can’t account for. Tonight you’ve decided it’s mine.',
+  'Write my name if you’ve already decided. You’ll be back here next week with the same problem.',
 ];
 // AND SOMETIMES THROWS IT BACK — only at a name they ACTUALLY put up tonight
 // (`byTarget` says so), never an invented one. `{d}` is that name.
@@ -1791,6 +1897,16 @@ function _pred(name, text) {
   const t = String(text || '');
   return name && t.indexOf(name + ' ') === 0 ? t.slice(name.length + 1) : t;
 }
+// SAID BY THE PERSON IT MENTIONS. A stored reason is minted in the third
+// person ("answered a riddle fast and wrong with Jen beside him"), so when Jen
+// is the one saying it out loud, "Jen" is "me" and "Jen's" is "my".
+function _firstPerson(text, speaker) {
+  if (!speaker) return text;
+  const n = String(speaker).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return String(text)
+    .replace(new RegExp('\\b' + n + '(’s|\'s)', 'g'), 'my')
+    .replace(new RegExp('\\b' + n + '\\b', 'g'), 'me');
+}
 function _sayReason(text, seed) {
   const raw = String(text || '');
   for (const [re, pool] of REASON_PHRASINGS) {
@@ -1898,9 +2014,9 @@ const MINDCHANGE_TEXT = [
   + 'where {who} is now.',
 ];
 const MINDCHANGE_MORE = [
-  'And {who} is not the only one the argument turned.',
-  'A couple of others quietly change their vote to match {obj}.',
-  'The name travels; it does not stop at one slate.',
+  'And {who} isn’t the only one.',
+  'A couple of others come round to {t} as well.',
+  'The name spreads round the table.',
 ];
 
 // THE AUDIENCE'S PRIVILEGE, and nobody else's. Stripped off the record in
@@ -2160,6 +2276,8 @@ function _faceChip(name, size) {
  * the private ballots it has to catch are pairs of people who are BOTH at this
  * table for perfectly public reasons.
  */
+const RT_HANDS = ["'Caveat',cursive", "'Kalam',cursive", "'Gochi Hand',cursive",
+  "'Shadows Into Light',cursive", "'Reenie Beanie',cursive"];
 function _slate(b, ord, run) {
   return '<div class="rt-slate" data-voter="' + _esc(b.voter) + '"'
     + ' data-target="' + _esc(b.target || '') + '"'
@@ -2167,7 +2285,13 @@ function _slate(b, ord, run) {
     + '<div class="rt-slate-face">'
     + '<div class="rt-slate-ord">' + _esc(ord) + '</div>'
     + (b.target
-      ? '<div class="rt-slate-name">' + _esc(b.target) + '</div>'
+      // WRITTEN, NOT PRINTED: letter by letter in the voter's own hand, once
+      // the board has turned. The letters are spans, so the text reads back
+      // whole; the hand is stable per voter.
+      ? '<div class="rt-slate-name" style="font-family:' + RT_HANDS[_hash('hand|' + b.voter) % RT_HANDS.length]
+        + ';--n:' + String(b.target).length + '">'
+        + [...String(b.target)].map((ch, k) => '<span style="--i:' + k + '">' + _esc(ch) + '</span>').join('')
+        + '<i class="rt-stick" aria-hidden="true"></i></div>'
       : '<div class="rt-slate-none">left blank</div>')
     // "WRITTEN BY", AND IT IS NOT DECORATION EVEN THOUGH IT IS NOT DRAWN.
     // On the slate the relation is obvious: a name in chalk, a rule under it,
@@ -2516,11 +2640,7 @@ function _buildBeats(v) {
     const nline = _fill(_pick(nd.pool, key + '|needle|' + (nd.who || '-')),
       { Nm: _esc(nd.who || ''), them: npr ? npr.obj : '', they: npr ? npr.sub : '',
         their: npr ? npr.posAdj : '', n: nd.n == null ? '' : _numWord(nd.n) });
-    push('gather', _hostBand(nline)
-      + (nd.who
-        ? '<div class="rt-faces">' + _faceChip(nd.who, 30) + '</div>'
-        : ''),
-    null, { kind: 'needle', who: nd.who });
+    push('gather', _hostBand(nline), null, { kind: 'needle', who: nd.who });
   }
 
   // ── the debate ──────────────────────────────────────────────────────
@@ -2575,102 +2695,90 @@ function _buildBeats(v) {
     }
     return ACCUSED_DEFENCE[i];
   };
+  // ── THE DEBATE IS SPOKEN (2026-09-29) ──────────────────────────────
+  //
+  // The user, reading a real table: "they don't talk in dialogue so I really
+  // don't understand what's going on". The cards narrated ABOUT talking —
+  // "Josee asks Bowie a question with the answer already written on his
+  // face", "every part of this reached her secondhand, from Stephanie" — and
+  // the one spoken line was a slogan with no reason in it. So every accuser
+  // now SAYS the name and the reason, in the first person; the others who put
+  // the same name up say theirs or back the lead; the accused answers, and
+  // throws a name back only when they really put it up; a listener who is
+  // moved says so. The reason is still only ever one the record says that
+  // speaker holds (`_sayReason` inside `_reasonRenderings`' closed set), or
+  // which kind of nothing they have — never an invented fact.
+  const spoken = (who, salt, citedPool, barePool, extra) => {
+    const speeches = speechFor.get(extra.t) || [];
+    const sp = speeches.find(x => x.speaker === who) || null;
+    const src = sp && (sp.sources || []).length ? sp.sources[0] : null;
+    const src2 = sp && (sp.sources || [])[1] ? sp.sources[1] : null;
+    const pr = _pr(extra.t);
+    // Singular "they" over a gendered player was a shipped bug class; a
+    // player whose pronoun reads plural is named instead.
+    const subs = { ...extra, T: _esc(extra.t), t: _esc(extra.t),
+      Who: pr.sub === 'they' ? _esc(extra.t) : pr.Sub, who: pr.sub === 'they' ? _esc(extra.t) : pr.sub,
+      obj: pr.obj, pos: pr.pos,
+      src: src ? _esc(_firstPerson(_pred(extra.t, _sayReason(src.text, key + '|' + salt + '|' + extra.t)), who)) : '',
+      src2: src2 ? _esc(_firstPerson(_pred(extra.t, _sayReason(src2.text, key + '|' + salt + '2|' + extra.t)), who)) : '',
+      F: sp && sp.hearsayFrom ? _esc(sp.hearsayFrom) : '' };
+    if (subs.src) return { line: _fill(_fresh(citedPool, key + '|' + salt + '|' + who), subs), subs };
+    if (!barePool) return { line: '', subs };
+    let rk = (sp && sp.reasonKind) || 'feeling';
+    if (rk === 'hearsay' && !subs.F) rk = 'feeling';
+    return { line: _fill(_fresh(barePool[rk] || barePool.feeling, key + '|' + salt + '|' + rk + '|' + who), subs), subs };
+  };
   clusters.forEach((c, ci) => {
     const speeches = speechFor.get(c.t) || [];
-    // THE LEAD ACCUSER'S OWN SPEECH, not merely the first one filed against
-    // this name. `lead` is who the card quotes, so citing somebody else's
-    // reason under `lead`'s face would put a sentence in the wrong mouth --
-    // which is the defect the ACCUSE_SAID note two hundred lines up records
-    // being caught by a single read of the output.
-    // ── AND THE CARD QUOTES SOMEBODY WHO HAS A REASON, WHERE ONE EXISTS ──
-    //
-    // `c.acc[0]` is whoever filed first, and if that person's read was a
-    // feeling the card printed no reason at all -- on a table where five other
-    // accusers were all holding the same citable one. Measured: 1 table in 12
-    // came out that way, and it is exactly the "there is no reasoning" defect
-    // this screen has been chased about.
-    //
-    // The rule above is unchanged and is the reason this is a re-election
-    // rather than a swap: `lead` is whose FACE is on the card, so the sentence
-    // under it must be that person's own. So the card elects the first accuser
-    // in speaking order who actually holds a citable reason, and falls back to
-    // the first accuser when nobody does -- a name nobody can argue for is
-    // still a name that got said.
+    // THE CARD LEADS WITH SOMEBODY WHO HAS A REASON, where one exists: the
+    // first accuser in speaking order holding a citable one, else the first.
     const cited = c.acc.find(n => {
       const sp = speeches.find(x => x.speaker === n);
       return sp && (sp.sources || []).length;
     });
-    const leadName = cited || c.acc[0];
-    const mine = speeches.find(sp => sp.speaker === leadName) || speeches[0] || null;
-    const src = mine && (mine.sources || []).length ? mine.sources[0] : null;
+    const lead = cited || c.acc[0];
     const movers = [...new Set(speeches.flatMap(s => s.mindChanges || []))]
       .filter(n => n !== c.t);
-    const lead = leadName;
     const pr = _pr(c.t);
-    const apr = _pr(lead);
-    const subs = { A: lead, a: lead, T: c.t, t: c.t, sub: pr.sub, Sub: pr.Sub,
-      obj: pr.obj, pos: pr.pos,
-      src: src ? _esc(_pred(c.t, _sayReason(src.text, key + '|1|' + c.t))) : '',
-      src2: (mine && (mine.sources || [])[1])
-        ? _esc(_pred(c.t, _sayReason(mine.sources[1].text, key + '|2|' + c.t))) : '',
-      // THE ACCUSER'S pronouns, under their own keys. `sub`/`pos` above are
-      // the ACCUSED's and always have been, so a sentence about the person
-      // doing the accusing had no pronoun available and had to say the name
-      // again -- three times in two sentences, in the rendered output.
-      asub: apr.sub, Asub: apr.Sub, aobj: apr.obj, apos: apr.pos,
-      f: mine && mine.hearsayFrom ? _esc(mine.hearsayFrom) : '' };
     let inner = '<div class="rt-accused">' + _av(c.t, 54)
       + '<span class="rt-accused-nm">' + _esc(c.t) + '</span>'
       + '<span class="rt-accused-ct">' + c.acc.length
       + (c.acc.length === 1 ? ' voice' : ' voices') + '<br>at this name</span></div>';
-    inner += '<p>' + _fill(_fresh(ACCUSE_LINES, key + '|acc|' + c.t), subs) + '</p>';
-    inner += _said(lead, _fill(_fresh(ACCUSE_SAID, key + '|say|' + c.t), subs));
-    // THE MOVE, WITHOUT NAMING IT. See SACRIFICE_LINES: the room reads this as
-    // a late convert and the audience gets the truth in the irony block below.
-    if (sacrificing.has(lead + '>' + c.t)) {
-      inner += '<p>' + _fill(_fresh(SACRIFICE_LINES, key + '|sac|' + c.t), subs) + '</p>';
+    // THE LEAD ACCUSER: the name, and why.
+    const L = spoken(lead, 'lead', ACCUSE_CITED, ACCUSE_NOSRC, { t: c.t, A: _esc(lead) });
+    const burying = sacrificing.has(lead + '>' + c.t);
+    inner += _said(lead, (burying ? _fresh(SACRIFICE_SAID, key + '|sacsay|' + c.t) + ' ' : '') + L.line);
+    // THE MOVE, WITHOUT NAMING IT. The room reads a late convert; the truth
+    // is the audience's, in the irony block below.
+    if (burying) inner += '<p>' + _fill(_fresh(SACRIFICE_LINES, key + '|sac|' + c.t), { A: _esc(lead), a: _esc(lead), t: _esc(c.t), T: _esc(c.t), aobj: _pr(lead).obj }) + '</p>';
+    if (L.subs.src2) inner += _said(lead, _fill(_fresh(ACCUSE_SECOND, key + '|second|' + c.t), L.subs));
+    // THE OTHERS WHO PUT THE SAME NAME UP: their own reason, or they back the lead.
+    const others = c.acc.filter(n => n !== lead);
+    others.slice(0, 2).forEach((n, oi) => {
+      const O = spoken(n, 'other' + oi, OTHER_CITED, null, { t: c.t, A: _esc(lead) });
+      inner += _said(n, O.line || _fill(_fresh(OTHER_AGREE, key + '|agree|' + c.t + '|' + n), { ...O.subs, A: _esc(lead) }));
+    });
+    if (others.length > 2) {
+      const rest = others.slice(2);
+      inner += '<div class="rt-faces">' + rest.slice(0, 8).map(n => _faceChip(n, 26)).join('') + '</div>'
+        + '<p>' + (rest.length === 1 ? _esc(rest[0]) + ' says the same name.'
+          : _cap(_numWord(rest.length)) + ' more say the same name.') + '</p>';
     }
-    // THE SOURCE, CITED — only when the speaker actually holds one. And when
-    // they do not, WHICH KIND OF NOTHING they are working from, rather than
-    // the name-and-silence this printed before. `hearsay` needs a name it can
-    // point at, so it falls back to the `feeling` pool without one.
-    if (src) {
-      inner += '<p>' + _fill(_fresh(CLAIM_SOURCE, key + '|src|' + c.t), subs) + '</p>';
-      // THE CASE, not the one fact. Only when a genuine second clue exists —
-      // `_reasonFor` dedupes by sentence, so this is never the first one
-      // reworded.
-      if (subs.src2) {
-        inner += '<p>' + _fill(_fresh(CLAIM_SECOND, key + '|src2|' + c.t), subs) + '</p>';
-      }
-    } else {
-      let rk = (mine && mine.reasonKind) || 'feeling';
-      if (rk === 'hearsay' && !subs.f) rk = 'feeling';
-      const pool = NO_SOURCE[rk] || NO_SOURCE.feeling;
-      inner += '<p>' + _fill(_fresh(pool, key + '|nosrc|' + rk + '|' + c.t), subs) + '</p>';
-    }
-    if (c.acc.length > 1) {
-      inner += '<div class="rt-faces">'
-        + c.acc.slice(0, 8).map(n => _faceChip(n, 26)).join('') + '</div>';
-    }
-    inner += '<p>' + _fill(_fresh(ACCUSED_REPLY, key + '|rep|' + c.t), subs) + '</p>';
-    // THE ACCUSED GETS THE FLOOR, in their own voice — every table on the real
-    // show lets the named player answer before the slates. And they throw it
-    // back ONLY at a name they actually put up tonight (`byTarget` proves it),
-    // never one invented for the sentence.
+    // THE ACCUSED GETS THE FLOOR, in their own voice.
+    inner += '<p class="rt-dir">' + _fill(_fresh(ACCUSED_REPLY, key + '|rep|' + c.t), { T: _esc(c.t), pos: pr.pos }) + '</p>';
     inner += _said(c.t, pickDefence(key + '|def|' + c.t));
+    // AND THROWS A NAME BACK — only one they actually put up tonight
+    // (`byTarget` proves it), with their own reason when they hold one.
     const deflectTo = [...byTarget.entries()].find(([tgt, accs]) => tgt !== c.t && accs.includes(c.t));
     if (deflectTo) {
-      const dsubs = { ...subs, d: _esc(deflectTo[0]), D: _esc(deflectTo[0]) };
-      inner += '<p>' + _fill(_fresh(ACCUSED_DEFLECT, key + '|dfl|' + c.t), dsubs) + '</p>';
-      // AND THE REASON FOR IT, when the deflector holds one. `v.speeches` is
-      // the whole table's, so this is the deflector's OWN record against the
-      // name they just said — never the reason somebody else has for it.
-      const back = v.speeches.find(sp => sp.speaker === c.t && sp.target === deflectTo[0]
-        && (sp.sources || []).length);
+      const d = deflectTo[0];
+      const back = v.speeches.find(sp => sp.speaker === c.t && sp.target === d && (sp.sources || []).length);
+      let line = _fill(_fresh(DEFLECT_SAID, key + '|dfl|' + c.t), { D: _esc(d), d: _esc(d) });
       if (back) {
-        inner += '<p>' + _fill(_fresh(DEFLECT_SOURCE, key + '|dsrc|' + c.t),
-          { ...dsubs, dsrc: _esc(_pred(deflectTo[0], _sayReason(back.sources[0].text, key + '|d|' + c.t))) }) + '</p>';
+        line += ' ' + _fill(_fresh(DEFLECT_BECAUSE, key + '|dsrc|' + c.t),
+          { D: _esc(d), d: _esc(d), dsrc: _esc(_firstPerson(_pred(d, _sayReason(back.sources[0].text, key + '|d|' + c.t)), c.t)) });
       }
+      inner += _said(c.t, line);
     }
     // THE AUDIENCE'S PRIVILEGE. `v.truth` is null on every other layer and at
     // every finale table, so this block simply does not exist for them.
@@ -2679,34 +2787,23 @@ function _buildBeats(v) {
       const traitorAccusers = c.acc.filter(n => v.truth[n] === 'traitor').length;
       const steered = real === 'faithful' && traitorAccusers * 2 > c.acc.length;
       const pool = real === 'traitor' ? IRONY_TRUE : (steered ? IRONY_STEER : IRONY_FALSE);
-      // THE ONE CASE THE THREE GENERAL POOLS CANNOT COVER, because it is not
-      // about whether the room is right — it is right — but about WHO IS
-      // HELPING IT BE RIGHT, and why. The audience layer is the only one that
-      // may be told.
       const betrayers = c.acc.filter(n => sacrificing.has(n + '>' + c.t));
       const line = betrayers.length
         ? _esc(betrayers[0]) + ' is not agreeing with the room. ' + _esc(betrayers[0])
-          + ' is burying somebody who was in the turret this week, before '
-          + _esc(c.t) + ' can be asked a question with an answer.'
-        : _fill(_fresh(pool, key + '|iro|' + c.t), subs);
-      inner += '<div class="rt-irony"><b>What the room cannot see</b><span>'
-        + line + '</span></div>';
+          + ' is burying a fellow Traitor, before ' + _esc(c.t) + ' can be asked a question with an answer.'
+        : _fill(_fresh(pool, key + '|iro|' + c.t), { t: _esc(c.t), T: _esc(c.t) });
+      inner += '<div class="rt-irony"><b>What the room cannot see</b><span>' + line + '</span></div>';
     }
     if (ci === clusters.length - 1 && !movers.length) inner += _murmur(key + '|m2|' + c.t);
     push('debate', _card(null, 'The debate', 'hand', inner),
       ci === 0 ? 'debate' : null,
       { kind: 'debate', target: c.t, accusers: [...c.acc] });
 
-    // ── THE MIND CHANGE — a separate beat, only when the claim MOVED ──
-    // somebody. A vote turns because an argument moved it, never because the
-    // writer needed a flip. It is what makes a late table (reads accumulated)
-    // longer and sharper than an early one.
+    // ── THE MIND CHANGE — said by the person whose mind changed ──
     if (movers.length) {
       const mv = movers[0];
-      const mpr = _pr(mv);
-      const msubs = { who: _esc(mv), t: c.t, sub: mpr.sub, Sub: mpr.Sub,
-        obj: mpr.obj, pos: mpr.pos };
-      let mi = '<p>' + _fill(_fresh(MINDCHANGE_TEXT, key + '|mc|' + c.t + '|' + mv), msubs) + '</p>';
+      const msubs = { who: _esc(mv), t: _esc(c.t), A: _esc(lead) };
+      let mi = _said(mv, _fill(_fresh(MINDCHANGE_SAID, key + '|mc|' + c.t + '|' + mv), msubs));
       if (movers.length > 1) {
         mi += '<div class="rt-faces">'
           + movers.slice(0, 8).map(n => _faceChip(n, 26)).join('') + '</div>'
@@ -2798,12 +2895,23 @@ function _buildBeats(v) {
     defended: 'Somebody speaks up for them',
   };
   for (const c of (v.clashes || [])) {
+    // SAID, NOT SUMMARISED. The engine's line reports the exchange ("Bowie
+    // asks Ripper, in front of everybody, why he is so certain"); where the
+    // kind has a spoken form, the two of them say it instead, and the line
+    // stays only where it carries history the exchange cannot.
+    const cs = CLASH_SAID[c.kind];
+    let talk = '';
+    if (cs) {
+      const [sp, other] = cs.speaker === 'b' ? [c.b, c.a] : [c.a, c.b];
+      const ck = key + '|clash|' + c.kind + '|' + c.a + '|' + c.b;
+      talk = _said(sp, _fill(_fresh(cs.say, ck), { o: _esc(other) }))
+        + (cs.reply ? _said(other, _fill(_fresh(cs.reply, ck + '|r'), { o: _esc(sp) })) : '');
+    }
     push('debate', '<div class="rt-clash">'
       + '<div class="rt-clash-k">' + _ic('candles', 11)
       + _esc(CLASH_KIND[c.kind] || 'It gets sharp') + '</div>'
-      + '<div class="rt-clash-pair">' + _faceChip(c.a, 26)
-      + '<span class="rt-clash-v"></span>' + _faceChip(c.b, 26) + '</div>'
-      + '<p class="rt-clash-t">' + _esc(tidyNames(c.line)) + '</p>'
+      + (cs && !cs.keepLine ? '' : '<p class="rt-clash-t">' + _esc(tidyNames(c.line)) + '</p>')
+      + talk
       // WHAT IT IS ABOUT, quoted off the thread's opening beat. Without this
       // the card says an argument happened and never says what argument.
       // NOT IN QUOTATION MARKS: the opening beat is narration, and quoted it
@@ -2895,7 +3003,7 @@ function _buildBeats(v) {
       // voter holds against this name, or which kind of nothing they have).
       const reason = _slateReason(v, b, key + '|' + roundIx + '|' + i);
       const html = _slate(b, (i + 1) + ' / ' + ballots.length, strip)
-        + (reason ? '<div class="rt-reason">&ldquo;' + _esc(reason) + '&rdquo;</div>' : '')
+        + (reason ? '<div class="rt-reason" style="--n:' + String(b.target || '').length + '">&ldquo;' + _esc(reason) + '&rdquo;</div>' : '')
         + (note ? '<div class="rt-note"' + (tone ? ' data-tone="' + tone + '"' : '')
           + '>' + note + '</div>' : '');
       push(phase, html, (i === 0 && roundIx === 0) ? 'read' : null,
@@ -3821,7 +3929,7 @@ function _slateReason(v, b, key) {
   const who = pr.sub === 'they' ? b.target : pr.sub;
   const src = sp && (sp.sources || []).length ? sp.sources[0] : null;
   const subs = { T: b.target, Who, who, obj: pr.obj,
-    src: src ? _pred(b.target, _sayReason(src.text, key + '|sl|' + b.voter)) : '',
+    src: src ? _firstPerson(_pred(b.target, _sayReason(src.text, key + '|sl|' + b.voter)), b.voter) : '',
     F: sp && sp.hearsayFrom ? sp.hearsayFrom : '' };
   if (src) return _fill(_fresh(SLATE_CITED, key + '|slc|' + b.voter), subs);
   let rk = (sp && sp.reasonKind) || 'feeling';

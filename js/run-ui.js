@@ -2898,7 +2898,7 @@ export function buildEpisodeMap() {
       eps.push({
         ep: r.num,
         active,
-        phase: r.dr && r.dr.finale ? 'finale' : 'main',
+        phase: r.dr && (r.dr.finale || r.dr.reunion) ? 'finale' : 'main',
         /* WHAT THE NIGHT WAS, from the night. A booked twist still names the
            week, but a call the host made on the stage names it too — a week
            the timeline shows as ordinary while the season grew by one is the
@@ -2917,7 +2917,13 @@ export function buildEpisodeMap() {
     }
     // A finished season has nothing left to project.
     if (_drRows.length && active <= finale
-      && _drRows.some(r => r.dr && r.dr.finale)) return eps;
+      && _drRows.some(r => r.dr && r.dr.finale)) {
+      // ...except the reunion, which airs after the crowning.
+      if (seasonConfig.drReunion && !_drRows.some(r => r.dr && r.dr.reunion)) {
+        eps.push({ ep, active: finale, phase: 'finale', engineType: null, tribes: 1 });
+      }
+      return eps;
+    }
     // A guard, not a rule: the loop below always shrinks unless the week is
     // free, and a season cannot book more free weeks than it has episodes.
     while (active > finale && ep < 60) {
@@ -2938,10 +2944,11 @@ export function buildEpisodeMap() {
       if (!isFree) active = Math.max(finale, active - (isDouble ? 2 : 1));
       ep++;
     }
-    // The reunion sits between the last elimination and the crowning, which is
-    // where the show's own track record chart puts it.
+    // The Smackdown sits between the last elimination and the crowning.
     if (smackdown) eps.push({ ep: ep++, active, phase: 'main', engineType: 'dr-smackdown' });
-    eps.push({ ep, active: finale, phase: 'finale', engineType: null, tribes: 1 });
+    eps.push({ ep: ep++, active: finale, phase: 'finale', engineType: null, tribes: 1 });
+    // The reunion comes after the crowning: the whole cast, back on the sofa.
+    if (seasonConfig.drReunion) eps.push({ ep, active: finale, phase: 'finale', engineType: null, tribes: 1 });
     return eps;
   }
 

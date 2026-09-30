@@ -312,7 +312,7 @@ describe('a hundred drag seasons', () => {
     for (const o of SEASONS) {
       if (!o.congeniality) continue;
       if (o.congeniality === o.winner) sashedWinner++;
-      const place = o.rows[o.rows.length - 1].dr.finale.placements.indexOf(o.congeniality);
+      const place = o.rows.find(r => r.dr?.finale).dr.finale.placements.indexOf(o.congeniality);
       spots.push(place >= 0 ? place + 1 : 99);
     }
     const finalists = spots.filter(x => x !== 99).length;

@@ -37,6 +37,7 @@ import { rpBuildMainStage, rpBuildRunway, rpBuildCritiques, rpBuildUntucked } fr
 import { rpBuildResults, rpBuildLipSync, rpBuildExit, rpBuildFinaleOpen } from './results.js';
 import { rpBuildSmackdown } from './smackdown.js';
 import { rpBuildCrowning } from './crowning.js';
+import { rpBuildReunion } from './reunion.js';
 import { rpBuildSaveIntro, rpBuildSaveHold, rpBuildSaveLuck } from './save.js';
 import { MAXI_EVENTS } from '../dr/data/maxi-events.js';
 
@@ -335,13 +336,13 @@ const SECTIONS = [
     title: 'The Lip Sync Smackdown', subtitle: 'the queens who already went home' },
 
   /* ── THE REUNION ──
-     Between the last elimination and the crowning, which is where the real
-     show's own track record chart puts it. It is the one episode that reads
-     the WHOLE season rather than the row in front of it, and every topic on
-     it was derived from what actually happened. */
+     AFTER the crowning (the user's call): the winner in her crown and the
+     whole season on the table. It is the one episode that reads the WHOLE
+     season rather than the row in front of it, and every line on it quotes
+     what actually happened (js/dr/reunion.js, js/vp-dr/reunion.js). */
   { id: 'dr-reunion', icon: icon('sofa'), label: 'The Reunion', suffix: 'reunion', phase: 'untucked', accent: 'dr-a-bond',
     opens: ['reunion-open'], badge: { text: 'REUNITED', color: '#7B2FF7' },
-    title: 'The Reunion', subtitle: 'the season, argued about' },
+    title: 'The Reunion', subtitle: 'the whole season, back on one stage' },
 
   /* ── THE FINALE, WHICH IS ITS OWN NIGHT ──
      All of this used to fall into `dr-exit` above — the stage opening, every
@@ -863,6 +864,8 @@ const BUILDERS = {
      stages it: a sticky line of lit name plates that goes dark from the
      bottom up as the places are called. */
   'dr-finale-crown': rpBuildCrowning,
+  // The reunion is a talk show: the sofa, the hot seat, the awards (reunion.js).
+  'dr-reunion': rpBuildReunion,
   // `finale-open` is a marker with no prose, so the generic renderer drew
   // this screen empty on every finale.
   'dr-finale-open': rpBuildFinaleOpen,

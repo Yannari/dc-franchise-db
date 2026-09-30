@@ -427,6 +427,7 @@ function mount(root) {
 export function trStageMountAll() {
   if (typeof document === 'undefined') return;
   // A stage folded away behind its Watch button mounts when it is opened.
+  _applyAlways();
   document.querySelectorAll('.trs[data-uid]').forEach(root => { if (!root.closest('[hidden]')) mount(root); });
 }
 export function trStageNext(uid) {
@@ -457,15 +458,26 @@ export function trStageTranscript(uid) {
   const box = root && root.closest('.trs-watchbox');
   if (!box) return;
   box.hidden = true;
-  const btn = box.previousElementSibling;
+  const btn = box.closest('.trs-opt') && box.closest('.trs-opt').querySelector('.trs-watchbtn');
   if (btn) btn.classList.remove('trs-on');
+  _watching(box.closest('.trs-opt'));
+}
+// WHILE THE STAGE PLAYS, THE WRITTEN PAGE STEPS AWAY. Its Continue button
+// drives the transcript, not the stage, and a second set of controls under the
+// one being watched read as the stage's own (the user, 2026-09-30).
+function _watching(opt) {
+  if (!opt) return;
+  const box = opt.querySelector('.trs-watchbox');
+  opt.classList.toggle('trs-watching', !!box && !box.hidden);
 }
 /** The Watch button: opens the stage over the written page, or folds it away. */
 export function trStageWatch(btn) {
-  const box = btn && btn.nextElementSibling;
+  const opt = btn && btn.closest('.trs-opt');
+  const box = opt && opt.querySelector('.trs-watchbox');
   if (!box) return;
   box.hidden = !box.hidden;
   btn.classList.toggle('trs-on', !box.hidden);
+  _watching(opt);
   if (box.hidden) return;
   const root = box.querySelector('.trs[data-uid]');
   if (!root) return;
@@ -491,8 +503,36 @@ if (typeof document !== 'undefined' && !globalThis.__trStageHooks) {
  * no word of it reaches the text backlog, which reads this markup as narration.
  */
 export function trsFold(stage, pageHtml) {
-  return '<div class="trs-opt"><button type="button" class="trs-watchbtn" onclick="trStageWatch(this)"></button>'
+  return '<div class="trs-opt"><div class="trs-optbar">'
+    + '<button type="button" class="trs-alwaysbtn" onclick="trStageAlways(this)"></button>'
+    + '<button type="button" class="trs-watchbtn" onclick="trStageWatch(this)"></button></div>'
     + '<div class="trs-watchbox" hidden>' + stage + '</div></div>' + pageHtml;
+}
+
+// "ALWAYS WATCH IT PLAYED" — a per-viewer preference (this browser only):
+// with it on, every Traitors screen that has a stage opens straight into it.
+const ALWAYS_KEY = 'tr-watch-always';
+function _always() {
+  try { return localStorage.getItem(ALWAYS_KEY) === '1'; } catch (e) { return false; }
+}
+/** Opens every folded stage on the screen when the preference is on, and
+ *  shows the toggle's state. Called on every screen mount. */
+function _applyAlways() {
+  const on = _always();
+  document.querySelectorAll('.trs-opt').forEach(opt => {
+    const t = opt.querySelector('.trs-alwaysbtn');
+    if (t) t.classList.toggle('trs-on', on);
+    if (!on) return;
+    const box = opt.querySelector('.trs-watchbox'), btn = opt.querySelector('.trs-watchbtn');
+    if (box && box.hidden) { box.hidden = false; if (btn) btn.classList.add('trs-on'); }
+    _watching(opt);
+  });
+}
+export function trStageAlways(btn) {
+  const on = !_always();
+  try { localStorage.setItem(ALWAYS_KEY, on ? '1' : '0'); } catch (e) { /* storage blocked: session only */ }
+  if (btn) btn.classList.toggle('trs-on', on);
+  if (on) { _applyAlways(); trStageMountAll(); }
 }
 
 /** The castle segment screen: its page, with the stage folded above it. */
@@ -631,12 +671,20 @@ const CSS = `
 .trs-btn:hover{color:var(--v-lantern-hot)!important}
 .trs-next{padding:11px 44px;color:var(--v-ink)!important;background:linear-gradient(180deg,#f0c77a,#b8863e)!important;box-shadow:0 0 0 1px #ffdb95,0 0 24px rgba(224,160,73,.4)}
 .trs-count{min-width:70px;font-family:var(--v-display);font-size:10.5px;letter-spacing:.2em;color:var(--v-mute)}
+.trs-opt.trs-watching~*{display:none!important}
 .trs-opt{display:flex;flex-direction:column;align-items:flex-end;gap:10px;margin:0 0 12px}
 .trs-watchbox{width:100%}
 .trs-watchbox[hidden]{display:none}
 .trs-watchbtn{padding:8px 16px;border:0;cursor:pointer;font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:10.5px;letter-spacing:.28em;
   text-transform:uppercase;color:#c9ba95;background:linear-gradient(180deg,#141922,#0b0e14);box-shadow:0 0 0 1px rgba(224,160,73,.3)}
 .trs-watchbtn::before{content:"Watch it played"}
+.trs-optbar{display:flex;gap:8px;align-items:center}
+.trs-alwaysbtn{padding:8px 12px;border:0;cursor:pointer;font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:9.5px;letter-spacing:.2em;
+  text-transform:uppercase;color:#6a7484;background:transparent;box-shadow:0 0 0 1px rgba(224,160,73,.18)}
+.trs-alwaysbtn::before{content:"Always watch: off"}
+.trs-alwaysbtn.trs-on{color:#ffdb95;box-shadow:0 0 0 1px rgba(224,160,73,.55)}
+.trs-alwaysbtn.trs-on::before{content:"Always watch: on"}
+.trs-alwaysbtn:hover{color:#c9ba95}
 .trs-watchbtn.trs-on::before{content:"Close the stage"}
 .trs-watchbtn:hover{color:#ffdb95}
 @media (max-width:700px){

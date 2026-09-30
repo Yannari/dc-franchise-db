@@ -159,7 +159,7 @@ describe('a confessional, once there is one to give', () => {
       });
       for (const r of rows) {
         expect(r.scene.tier).toBe('alone');
-        expect(r.scene.text, `a hole in "${r.scene.text}"`).not.toMatch(/about\s*\./);
+        expect(r.scene.text, `a hole in "${r.scene.text}"`).not.toMatch(/\babout\s*\./);
         expect(r.scene.text).not.toMatch(/\{b\}/);
       }
     }

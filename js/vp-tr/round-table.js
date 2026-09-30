@@ -1544,22 +1544,23 @@ const HOST_LINES = {
 // public facts -- accusations made out loud at this table -- so the beat is
 // identical on every observer layer, which is what a host beat has to be.
 
+// {Nm} is the person about to speak first; {Tg} the name {n} of them hold.
+// Every line ENDS by handing {Nm} the floor, because {Nm} is who talks next.
 const NEEDLE_CONVERGE = [
-  '{Nm}. That is {n} people who have said your name tonight and you have answered none of them properly. '
-  + 'Would you like to try, or would you like to keep looking at the table?',
-  '{Nm}, {n} of them have decided you are the interesting one this evening. How does that feel from where you are sitting?',
-  'Let us start with {Nm}, since {n} of them already have. {Nm}, they think it is you. Are they right?',
-  '{Nm}. You have had all day to think of an answer to this. I do hope it is a good one.',
-  'I want to hear from {Nm} first, and I want the rest of you to watch {them} do it.',
-  '{Nm}, you are the name in this room. Tell them why they are wrong, and tell them properly.',
+  '{Tg}, your name has been going round this castle all day. I count {n} people here carrying it. {Nm}, you look like one of them. Go on.',
+  'I think we all know whose name is in the room tonight. {Tg}, you will get your turn. {Nm}, you first.',
+  'I think {n} of you have come in here with the same name. {Nm}, you are the one who cannot sit still. Say it.',
+  '{Tg}, I would get comfortable. {Nm} has something to say to you, and {they} will not be the last.',
+  'Somebody at this table has been waiting all day to say a name. {Nm}. The floor is yours.',
+  '{Nm}, you have been looking at {Tg} since you sat down. Why don’t you tell the table why.',
 ];
 const NEEDLE_ACCUSER = [
-  '{Nm}, you have been very sure of yourself tonight. What happens to you if you are wrong?',
-  '{Nm} has done most of the talking at this table. {Nm}, if that slate comes back the wrong colour, this room will remember it was you.',
-  'You have led this, {Nm}. I hope you have thought about tomorrow morning as well as tonight.',
-  '{Nm}, you built this case. In a few minutes you will find out whether you built it out of anything.',
-  '{Nm}, you are asking everybody here to follow you. That is a great deal to ask of people who do not know you.',
-  'A confident evening for {Nm}. I hope for your sake it was more than that.',
+  '{Nm}, you look like you have been sitting on something since breakfast. Go on.',
+  'Who wants to start? No, don’t all rush. {Nm}, you have the face of somebody with a name. Let us have it.',
+  '{Nm}, you have been very sure of yourself today. Let us hear how sure. Go on.',
+  'I can see {Nm} wants to go first, so let us not keep {them} waiting.',
+  '{Nm}. You have been itching to say something since you sat down. Now is the time.',
+  'Somebody has to be brave. {Nm}, I rather think it is you.',
 ];
 const NEEDLE_SILENT = [
   '{Nm}. You have not said a word. Is that a strategy, or is it a hiding place?',
@@ -1583,7 +1584,7 @@ const NEEDLE_NOBODY = [
  * three are read off `v.accusations`, which is what was said out loud at this
  * table and is therefore public on every layer.
  */
-function _needle(v) {
+function _needle(v, opener, openTarget) {
   const counts = new Map();
   const made = new Map();
   for (const a of v.accusations) {
@@ -1594,13 +1595,13 @@ function _needle(v) {
     || String(x[0]).localeCompare(String(y[0])))[0];
   // 1. The name this room keeps coming back to -- but only if it IS coming
   //    back to it. One person naming one person is not a convergence.
-  const t = top(counts);
-  if (t && t[1] >= 2 && v.seated.indexOf(t[0]) >= 0) {
-    return { pool: NEEDLE_CONVERGE, who: t[0], n: t[1] };
+  //    The host names it, and hands the floor to whoever opens against it.
+  if (opener && openTarget && v.seated.indexOf(opener) >= 0 && (counts.get(openTarget) || 0) >= 2
+    && v.seated.indexOf(openTarget) >= 0) {
+    return { pool: NEEDLE_CONVERGE, who: opener, target: openTarget, n: counts.get(openTarget) };
   }
-  // 2. Whoever is driving it.
-  const m = top(made);
-  if (m && v.seated.indexOf(m[0]) >= 0) return { pool: NEEDLE_ACCUSER, who: m[0] };
+  // 2. Whoever opens the debate.
+  if (opener && v.seated.indexOf(opener) >= 0) return { pool: NEEDLE_ACCUSER, who: opener };
   // 3. Somebody who has neither accused nor been accused. Deterministic pick,
   //    never random: this screen is rebuilt on every reveal.
   const spoke = new Set([...counts.keys(), ...made.keys()]);
@@ -2649,28 +2650,6 @@ function _buildBeats(v) {
     null, { kind: 'gather' });
   }
 
-  // ── AND THE HOST GOES AT SOMEBODY ─────────────────────────────────────
-  //
-  // Not on a finale table: by the endgame the host has stopped prompting and
-  // the room argues into a silence, which is the whole texture of those
-  // votes (spec §8) and a needling host would flatten it.
-  if (!v.endgame) {
-    const nd = _needle(v);
-    const npr = nd.who ? _pr(nd.who) : null;
-    const nline = _fill(_pick(nd.pool, key + '|needle|' + (nd.who || '-')),
-      { Nm: _esc(nd.who || ''), them: npr ? npr.obj : '', they: npr ? npr.sub : '',
-        their: npr ? npr.posAdj : '', n: nd.n == null ? '' : _numWord(nd.n) });
-    push('gather', _hostBand(nline), null, { kind: 'needle', who: nd.who });
-  }
-
-  // ── the debate ──────────────────────────────────────────────────────
-  //
-  // SPEECH-DRIVEN when the debate produced speeches with provenance (see
-  // roundtable.js `speechesFrom`): each claim cites a source its speaker
-  // actually knows, the accused answers, and any listener the claim MOVED is
-  // shown moving — a mind-change caused by an argument, never by the writer
-  // needing a flip. When no speech carries a source (an early table where
-  // nobody has a read yet), the room says so rather than inventing reasons.
   const byTarget = new Map();
   for (const a of v.accusations) {
     if (!byTarget.has(a.target)) byTarget.set(a.target, []);
@@ -2695,6 +2674,46 @@ function _buildBeats(v) {
     speechFor.get(s.target).push(s);
   }
 
+  // ── AND THE HOST GOES AT SOMEBODY ─────────────────────────────────────
+  //
+  // Not on a finale table: by the endgame the host has stopped prompting and
+  // the room argues into a silence, which is the whole texture of those
+  // votes (spec §8) and a needling host would flatten it.
+  let needled = false;
+  if (!v.endgame) {
+    // THE HOST HANDS THE FLOOR TO WHOEVER ACTUALLY OPENS. "I want to hear from
+    // Bowie first" over a debate Josee then opened was the host saying one
+    // thing and the table doing another (the user, 2026-09-30). The opener is
+    // the lead of the first cluster, chosen exactly as the debate chooses it.
+    const c0 = clusters[0];
+    const opener = c0 ? (c0.acc.find(n => {
+      const sp = (speechFor.get(c0.t) || []).find(x => x.speaker === n);
+      return sp && (sp.sources || []).length;
+    }) || c0.acc[0]) : null;
+    const nd = _needle(v, opener, c0 ? c0.t : null);
+    const npr = nd.who ? _pr(nd.who) : null;
+    const nline = _fill(_pick(nd.pool, key + '|needle|' + (nd.who || '-')),
+      { Nm: _esc(nd.who || ''), them: npr ? npr.obj : '', they: npr ? npr.sub : '',
+        their: npr ? npr.posAdj : '', n: nd.n == null ? '' : _numWord(nd.n),
+        Tg: _esc(nd.target || '') });
+    // Handing the floor over is the LAST thing the host says before the
+    // opener talks, so it goes after the debate's own opening line rather
+    // than before it ("Amy, you first." then "Talk…" then Amy was a host
+    // talking over the person just invited to speak).
+    if (opener && nd.who === opener) {
+      needled = true;
+      push('debate', _hostBand(nline), 'debate', { kind: 'needle', who: nd.who });
+    } else push('gather', _hostBand(nline), null, { kind: 'needle', who: nd.who });
+  }
+
+  // ── the debate ──────────────────────────────────────────────────────
+  //
+  // SPEECH-DRIVEN when the debate produced speeches with provenance (see
+  // roundtable.js `speechesFrom`): each claim cites a source its speaker
+  // actually knows, the accused answers, and any listener the claim MOVED is
+  // shown moving — a mind-change caused by an argument, never by the writer
+  // needing a flip. When no speech carries a source (an early table where
+  // nobody has a read yet), the room says so rather than inventing reasons.
   if (!clusters.length) {
     push('debate', _card('Nobody Has A Name', 'The debate', 'hand',
       '<p>Nothing has happened yet that anybody can point at. They talk round the table '
@@ -2816,7 +2835,7 @@ function _buildBeats(v) {
     }
     if (ci === clusters.length - 1 && !movers.length) inner += _murmur(key + '|m2|' + c.t);
     push('debate', _card(null, 'The debate', 'hand', inner),
-      ci === 0 ? 'debate' : null,
+      ci === 0 && !needled ? 'debate' : null,
       { kind: 'debate', target: c.t, accusers: [...c.acc] });
 
     // ── THE MIND CHANGE — said by the person whose mind changed ──

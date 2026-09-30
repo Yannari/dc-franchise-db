@@ -62,6 +62,7 @@ import { LIST_CSS, listStage } from './conclave-list.js';
 import { _noiseTile, _filterBank, _buildFar, _buildMid, _buildFore,
   _buildHeroScene, _doorway } from './scenery.js';
 
+import { trSfxReveal } from './sfx.js';
 /** The show's own words for a departure. Never written out below. */
 function _verbs() {
   const [banish, murder] = exitVerbs('traitors');
@@ -1606,6 +1607,7 @@ export function trConclaveRevealNext(suffix, total, epNum) {
   if (st.idx >= total - 1) return;
   st.idx++;
   _reapplyVisibility(suffix, st.idx, total);
+  trSfxReveal('cv', suffix, st.idx);
   const el = document.getElementById('cv-step-' + suffix + '-' + st.idx);
   if (el && el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
   // The overrule is struck and the wax is PRESSED. Both land on the whole room.

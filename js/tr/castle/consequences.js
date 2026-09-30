@@ -993,7 +993,7 @@ const COUNT_MOVED = {
     '{a} points it out.\n{a}: "Two tables. Two different names."\n{b}: "We just see it differently."',
     '{a} and {b} keep splitting.\n{a}: "We’ve never once agreed."\n{b}: "We see it differently."\n{a} (to camera): "Every time. {b} is never with me."',
     '{a} wonders why.\n{a}: "Are you avoiding me on purpose?"\n{b}: "Don’t be paranoid."',
-    '{a} files it away.\n{a} (to camera): {cam:ballots}',
+    '{a} says nothing, and remembers it.\n{a} (to camera): {cam:ballots}',
   ],
   'flat-denial': [
     '{b} claims to have been on {a}’s name last week. The ballots said otherwise, and they were read out.\n{b}: "I’ve been with you the whole time."\n{a}: "No, you haven’t."',

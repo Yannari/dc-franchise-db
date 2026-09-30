@@ -145,7 +145,7 @@ const OVERRULED = {
     '{loser} makes a note of who sided with who in the turret.\n{loser} (to camera): "There’s a pecking order up there now. I’m not at the top of it."',
     '{loser} sits on the edge of the bed, still annoyed.\n{loser} (to camera): "We’re meant to be a team. It didn’t feel like one tonight."',
     '{loser} thinks about going it alone.\n{loser} (to camera): "If I have to, I can do this without them."',
-    '{loser} files it away.\n{loser} (to camera): "One day that argument will matter. Not today."',
+    '{loser} lets the argument go, for now.\n{loser} (to camera): "One day that argument will matter. Not today."',
     '{loser} can’t sleep after the turret.\n{loser} (to camera): "Losing an argument up there feels like losing a vote down here."',
   ],
 };

@@ -22,7 +22,7 @@ import { DEFAULT_POOL } from './ci/default-pool.js';
 import { JOBS, JOB_GROUPS, DETAILS, TOPICS, STATUSES, PHOTO, jobOf, tellsOf, bioFor, promptFor } from './ci/persona-data.js';
 import { personaStyle } from './ci/cover.js';
 import { circleRoles } from './ci-run.js';
-import { putPhoto, photoURL, cachedPhoto, shrinkImage } from './ci/photo-store.js';
+import { putPhoto, photoURL, cachedPhoto, photoSrc, shrinkImage } from './ci/photo-store.js';
 import { playerAvatarUrl } from './players.js';
 import { setPhotoContext, photosPanelHTML, afterPhotosRender, onPhotosClick, onPhotosChange, onPhotosDrop } from './ci-photos-ui.js';
 
@@ -78,7 +78,7 @@ function drawResult(name) {
   if (d.mode === 'catfish') {
     const persona = poolNow().find(p => p.id === d.personaId);
     const pinned = setupOf(name).catfish === d.personaId;
-    return `<div class="ci-draw ci-cat">${face(cachedPhoto(persona?.face), (s.name || '?')[0], 'var(--ci-pk)')}<div>
+    return `<div class="ci-draw ci-cat">${face(photoSrc(persona?.face), (s.name || '?')[0], 'var(--ci-pk)')}<div>
       <div class="ci-dk">Plays as${pinned ? ' <span class="ci-pin">Pinned</span>' : ''}</div><div class="ci-dn">${esc(s.name)}, ${esc(s.age)}</div>
       <div class="ci-dm">${esc(line)}</div><div class="ci-why">${esc(REASON_WORDS[d.reason] || '')}</div></div></div>`;
   }
@@ -132,7 +132,7 @@ function takenBy() {
   return out;
 }
 function slot(persona) {
-  const url = cachedPhoto(persona.face);
+  const url = photoSrc(persona.face);
   return `<label class="ci-slot${url ? ' has' : ''}"${url ? ` style="background-image:url('${esc(url)}')"` : ''}>
     <input type="file" accept="image/*" data-photo="${esc(persona.id)}" hidden>${url ? '' : 'Drop your image<br>or click'}</label>`;
 }

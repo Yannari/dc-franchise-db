@@ -337,7 +337,11 @@ export default {
         // cased because a dot is not in the alphabet.
         // Numbered queue keys, and — for DELETE only — the posted archive,
         // so a claimed photo can still be removed outright if it must be.
-        const legalPut = /^[a-z0-9][a-z0-9-]*\/\d{1,3}\.(png|jpe?g|webp|gif)$/.test(key);
+        // The Circle's catfish images (js/ci/photo-store.js) are the author's
+        // own art, kept like a character's: one flat folder, named by the
+        // photo's id rather than a numbered slot.
+        const legalPut = /^[a-z0-9][a-z0-9-]*\/\d{1,3}\.(png|jpe?g|webp|gif)$/.test(key)
+          || /^circle-photos\/[a-z0-9]{6,40}\.(png|jpe?g|webp)$/.test(key);
         const legalDel = legalPut
           || /^[a-z0-9][a-z0-9-]*\/posted\/[a-z0-9][a-z0-9-]{0,60}\.(png|jpe?g|webp|gif)$/.test(key);
         if (request.method === 'PUT' ? !legalPut : !legalDel) {

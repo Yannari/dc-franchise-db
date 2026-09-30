@@ -57,3 +57,26 @@ the timeline's slots, randomize). ADDING-A-SHOW §2, §3, §10.
 
 **Deferred to Plan 4b:** the Photos panel (§19.3: slots, prompts, IndexedDB,
 season pack) — it is its own feature with its own storage.
+
+## Status (2026-09-30): Tasks 1-8 done, on main
+
+What playing it in the browser found, that no test had:
+- Quick Setup blocked Start on a Circle cast ("not assigned to a tribe").
+- The hub showed the final cast on a reviewed episode (rows had no snapshot).
+- saveConfig would have dropped the Profile Plan and the Pool on every save.
+- Circle rows had no `exits`, so every screen said "Nobody was blocked". Rows
+  now carry exits (who, the profile, who blocked, the channel), and the hub
+  says "X was blocked by A and B", with the corner "How it was decided".
+- The villa's option cards and Drag Race's save showed on every show.
+- The catfish rate was calibrated on synthetic casts: 14% on the real roster.
+  The audit now plays `rosterCast`; the motive is recalibrated on it
+  (33% catfish, 37% catfish wins, 200/200 seasons finish).
+
+Left for later:
+- The Episode Format Designer's show toggle lists only Total Drama and Big
+  Brother.
+- Villa, castle and runway still get Total Drama's Quick Structure card.
+- Drag Race's hub corner still says "No standard vote" (its words, not ours).
+- The Objectives card waits for the Circle's ledger (Plan 6).
+- The Photos panel is Plan 4b.
+- The screens (Plan 5) still show the persona's initial, not its image.

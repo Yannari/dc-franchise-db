@@ -1620,6 +1620,21 @@ catalogue. A counter shows how many personas the cast's motives would use
 ("4 of 7 would be taken") so the author can see before the season starts that
 some will be left over as twist stock.
 
+**As built (Plan 4, 2026-09-30).** The Casting Room has a **Circle** view
+(js/ci-cast-ui.js), switched to like the villa's. Every Profile Plan field is
+a pin the engine reads; the mode pin is honest / polished / edited, and
+"Never" rules out a persona, not an edit. The reason override is not built
+(a reason follows from the persona and the stats). There is **no draw
+preview**, as on the villa: a row shows what the draw gave once the season
+is dealt (`gs.ci.dealt`, captured before anything airs). A persona is
+**picked, not typed** (user: "how does the simulator read it?"):
+js/ci/persona-data.js holds 19 jobs (each with a register, smarts and the
+topics a real one would know), 8 life details and 18 topics. A knowledge slip
+by a persona is about one of its topics and is written from that topic's own
+pool (js/ci/lines/slip-topics.js). The bio and the photo prompt are written
+from the picks. The images are the author's own, kept in IndexedDB
+(js/ci/photo-store.js).
+
 ### 19.2 Season options
 
 Length (auto from cast, or set), newcomer rule (§8.5), rating style (ranking
@@ -1628,6 +1643,13 @@ or stars), who takes a persona (**by stats** or **at random**, §4.3a), finalist
 powers and arrivals are **Season Timeline cards**, never a separate picker
 (the user's rule from Perfect Match: "there's already a schedule system,
 adapt it").
+
+**As built (Plan 4).** CIRCLE OPTIONS on the setup page: days (a number too
+small for the cast is raised to the fewest it needs), finalists, the newcomer
+rule, who plays as someone else, the AI player. Quick Setup has its own
+Circle card, blueprint and ready check. The ready check warns about a
+Timeline card booked on a day that cannot run it. Rating style, Fan Favorite
+on/off and UK English have no control yet: nothing reads them.
 
 ### 19.3 The Photos panel
 

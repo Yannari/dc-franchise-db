@@ -194,7 +194,16 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
     airDay(state);
     // `num` and the people still in are what the site's run tab reads; the
     // name map lets an episode be shown later without the engine's state.
-    const row = { num: d.day, episode: d.day, day: d.day, format: CIRCLE_FORMAT, slot: d.slot,
+    // Who left, in the shape every screen reads (shows.js roundExits): the
+    // people behind each blocked profile, the profile the room knew, and who
+    // did the blocking.
+    const exits = state.blocked.filter(b => b.day === d.day).flatMap(b => {
+      const p = state.profiles[b.handle] || {};
+      const by = (b.by || []).map(h => state.profiles[h]?.shown?.name).filter(Boolean);
+      return (p.players || []).map(name => ({ name, verb: 'blocked', channel: b.channel || 'blocking',
+        profile: p.shown?.name || null, by, ...(b.secret ? { secret: true } : {}) }));
+    });
+    const row = { num: d.day, episode: d.day, day: d.day, format: CIRCLE_FORMAT, slot: d.slot, exits,
       ci: { active: [...state.active], rating,
         // The night's blocking format, and whether the author booked it (or
         // booked one that could not run, and it fell back).

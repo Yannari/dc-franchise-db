@@ -28,7 +28,9 @@ import { playerAvatarUrl } from './players.js';
 const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const cfg = () => window.seasonConfig || {};
 const cast = () => (window.players || []).filter(p => p && p.name);
-const setupOf = name => ((cfg().ciSetup ||= {})[name] ||= {});
+// Reading never writes: drawing the panel must not leave an empty entry per player.
+const setupOf = name => cfg().ciSetup?.[name] || {};
+const setupFor = name => ((cfg().ciSetup ||= {})[name] ||= {});
 const dealt = () => window.gs?.ci?.dealt || null;
 const REASONS = ['strategic', 'protective', 'family', 'experimental'];
 // Why a player takes a persona, in the words the real players used (spec 4.2).
@@ -228,7 +230,7 @@ function onClick(ev) {
   const act = b.dataset.act, v = b.dataset.v;
   const row = b.closest('.ci-row');
   if (row) {
-    const s = setupOf(row.dataset.name);
+    const s = setupFor(row.dataset.name);
     if (act === 'jobCost') s.jobCost = Number(v);
     else if (v === '' || v == null) delete s[act];
     else s[act] = v;
@@ -261,7 +263,7 @@ function onChange(ev) {
   const el = ev.target;
   const row = el.closest('.ci-row');
   if (row && el.dataset.field) {
-    const s = setupOf(row.dataset.name);
+    const s = setupFor(row.dataset.name);
     const f = el.dataset.field, v = el.value;
     if (v === '') delete s[f];
     else s[f] = f === 'age' ? Number(v) : v;

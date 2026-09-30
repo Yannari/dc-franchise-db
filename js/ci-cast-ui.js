@@ -235,6 +235,8 @@ function editor(p) {
       <label class="ci-fld"><span class="ci-k">Age · presents as</span><div class="ci-pair">
         <input class="ci-in ci-age" type="number" min="18" max="80" data-pfield="age" value="${esc(p.age)}">
         ${seg('gender', p.gender, [['f', 'Woman'], ['m', 'Man']])}</div></label>
+      <label class="ci-fld"><span class="ci-k">Into</span>${seg('sexuality', p.sexuality || 'straight', [['straight', p.gender === 'm' ? 'Women' : 'Men'], ['gay', p.gender === 'm' ? 'Men' : 'Women'], ['bi', 'Both']])}
+        <span class="ci-small">What the profile says. Who the player behind it is really into stays theirs: a catfish flirts in character, and that is an act.</span></label>
       <label class="ci-fld"><span class="ci-k">Job</span><select class="ci-in" data-pfield="jobId">${jobSel}</select></label>
       <label class="ci-fld"><span class="ci-k">Relationship status</span><select class="ci-in" data-pfield="status">${STATUSES.map(x =>
         `<option${p.status === x ? ' selected' : ''}>${esc(x)}</option>`).join('')}</select></label>
@@ -330,7 +332,7 @@ function onClick(ev) {
   if (act === 'default') { delete c.ciPool; window._ciEditing = null; return done(); }
   if (act === 'none') { c.ciPool = []; window._ciEditing = null; clearPins(() => true); return done(); }
   if (act === 'new') {
-    const p = { id: newId(), handle: 'New persona', face: null, age: 25, gender: 'f', jobId: 'college-student', status: 'Single',
+    const p = { id: newId(), handle: 'New persona', face: null, age: 25, gender: 'f', sexuality: 'straight', jobId: 'college-student', status: 'Single',
       hometown: null, details: [], photo: { hair: 'long-dark', style: 'casual', setting: 'home' }, reasons: ['strategic', 'protective'], bio: null, fits: {} };
     ownPool().push(p); window._ciEditing = p.id; return done();
   }
@@ -341,6 +343,7 @@ function onClick(ev) {
   else if (act === 'dup') { const copy = { ...JSON.parse(JSON.stringify(persona)), id: newId(), handle: `${persona.handle} 2`, face: persona.face }; ownPool().splice(ownPool().indexOf(persona) + 1, 0, copy); }
   else if (act === 'del') { c.ciPool = ownPool().filter(p => p.id !== id); clearPins(pin => pin === id); if (window._ciEditing === id) window._ciEditing = null; }
   else if (act === 'gender') persona.gender = v;
+  else if (act === 'sexuality') persona.sexuality = v;
   else if (act === 'register') { if (v) persona.register = v; else delete persona.register; }
   else if (act === 'detail') persona.details = toggle(persona.details || [], v);
   else if (act === 'reason') persona.reasons = toggle(persona.reasons || [], v);

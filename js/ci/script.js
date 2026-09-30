@@ -329,7 +329,9 @@ const BLOCKS = {
     const c0 = s.data.claims?.length ? claimOf(state, s.data.claims[0]) : null;
     const c = c0 ? (c0.about === a || c0.about === b ? c0.holder : c0.about) : undefined;
     const key = s.data.intent === 'probe'
-      ? `chat.probe.${s.data.probes?.[0]?.result || 'pass'}` : `chat.${s.data.intent}.${s.data.ending}`;
+      ? `chat.probe.${s.data.probes?.[0]?.result || 'pass'}`
+      // a catfish flirting in character, with nothing real behind it: its own lines
+      : s.data.performed ? `chat.flirt.act.${s.data.ending}` : `chat.${s.data.intent}.${s.data.ending}`;
     const personA = s.data.lead && state.profiles[a]?.players.length > 1 ? s.data.lead : undefined;
     const out = [{ key, cast: { a, b, c, personA }, extra: { claim: c0?.kind, lie: c0 ? c0.origin.by === a && !c0.truth : false } }];
     for (const sl of s.data.slips || []) {
@@ -888,9 +890,12 @@ const BLOCKS = {
       liked.add(b);
       tail.push({ key: 'party.photo', cast: { a: ph.by, b, text: { n: String(ph.likers.length) } } });
     }
+    // The flirting: up to two couples, nobody in both (a party is where it happens).
     const fl = (d.flirts || [])[0];
+    const fl2 = fl && (d.flirts || []).find(x => !x.includes(fl[0]) && !x.includes(fl[1]));
     tail.push(fl ? { key: 'party.flirt', cast: { a: fl[0], b: fl[1] } }
       : { key: 'party.banter', cast: { a: s.who[1] || s.who[0], b: s.who[2] || s.who[0] } });
+    if (fl2) tail.push({ key: 'party.flirt', cast: { a: fl2[0], b: fl2[1] } });
     if (d.dancers?.[0]) tail.push({ key: 'party.end', cast: { a: d.dancers.at(-1) } });
     // Dancing first, then the photos, then the game, the flirting and the end.
     return [out[0], ...tail.slice(0, (d.dancers || []).length + (d.photos || []).length), ...out.slice(1), ...tail.slice((d.dancers || []).length + (d.photos || []).length)];
@@ -1012,6 +1017,7 @@ const BLOCK_WHY_ = ['fake', 'threat', 'grudge', 'noBond'];
 export const POOL_KEYS = [
   ...INTENTS_.flatMap(i => ['warm', 'neutral', 'cold'].map(e => `chat.${i}.${e}`)),
   ...['pass', 'dodge', 'fail'].map(r => `chat.probe.${r}`),
+  ...['warm', 'neutral', 'cold'].map(e => `chat.flirt.act.${e}`),
   ...SLIPS_.flatMap(k => [`slip.${k}.noticed`, `slip.${k}.missed`]),
   ...Object.keys(TOPICS).flatMap(t => [`slip.topic.${t}.noticed`, `slip.topic.${t}.missed`]), 'slip.misread', 'slip.leak.noticed', 'slip.leak.missed',
   ...['caps', 'ellipses', 'stage', 'greeting', 'nicknames', 'catchphrase', 'formal', 'hype', 'dry']

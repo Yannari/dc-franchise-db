@@ -23,7 +23,7 @@ export function addAI(state) {
   state.people[AI_NAME] = { name: AI_NAME, ai: true, gender: 'm', sexuality: 'straight', archetype: 'hero', stats: { ...STATS },
     age: 26, job: 'veterinary intern', role: 'starter', catfish: 'always', facts: [], prep: 1,
     chatVoice: { register: 'warm', rate: 0 } };
-  const shown = { name: 'Max', age: 26, gender: 'm', job: 'veterinary intern', status: 'Single', face: 'guest-ai' };
+  const shown = { name: 'Max', age: 26, gender: 'm', sexuality: 'straight', job: 'veterinary intern', status: 'Single', face: 'guest-ai' };
   const voice = { ...voiceOf(26, STATS), hashtags: 1, emoji: 0.8 };
   state.profiles[AI_HANDLE] = { handle: AI_HANDLE, players: [AI_NAME], mode: 'catfish', personaId: null, reason: 'experimental',
     shown, edits: [], tells: ['what did you have for breakfast'], gap: 1.5, voice, personaVoice: { register: 'warm' }, ai: true };

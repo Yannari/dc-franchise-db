@@ -14,7 +14,7 @@ import { feel, mood } from './mind.js';
 import { makeClaim, learn, passOnWeight, contradictions } from './claims.js';
 import { rollSlips, probe } from './slips.js';
 import { revealTo } from './reveal.js';
-import { attractionOk } from './chat.js';
+import { attractionOk, performedFlirt } from './chat.js';
 import { coverParts } from './cover.js';
 
 // What the receiver comes to feel toward the sender, by intent and ending.
@@ -45,6 +45,8 @@ const WARMING = new Set(['bond', 'checkin', 'flirt', 'ally']);
 // Without any of it catfish reached the final as often as honest players and
 // lost it (win given final 11% vs 25%, 60 seasons; the real show: 5 of 10).
 export const CURATED_MAX = 1.25;
+// How much harder a performed flirt is to keep up (slip risk's `specific`).
+export const PERFORMED_STRAIN = 0.7;
 export function curatedFor(state, h) {
   if (state.profiles[h]?.mode !== 'catfish') return 0;
   const p = coverParts(state, h);
@@ -146,6 +148,9 @@ export function runChat(state, rng, plan, ctx = {}) {
     ending = decideEnding(rng, reception(state, to, from, intent));
   }
   sc.data.ending = ending;
+  // A catfish flirting in character with no attraction behind it: an act,
+  // harder to keep up (more slips) and it weighs on them.
+  if (intent === 'flirt' && performedFlirt(state, from, to)) { sc.data.performed = true; feel(state, from, 'guilt', 0.3); }
   applyEffect(state, from, to, intent, ending);
   const turns = 2 + Math.floor(rng() * 5);
   for (let i = 0; i < turns; i++) {
@@ -153,7 +158,8 @@ export function runChat(state, rng, plan, ctx = {}) {
     const listener = speaker === from ? to : from;
     sc.data.turns.push({ from: speaker, tone: ending });
     rollSlips(state, rng, speaker, [listener],
-      { specific: intent === 'probe' ? 1 : 0.3, party: !!ctx.party, attention: 0.6 }, sc);
+      { specific: (intent === 'probe' ? 1 : 0.3) + (sc.data.performed && speaker === from ? PERFORMED_STRAIN : 0),
+        party: !!ctx.party, attention: 0.6 }, sc);
   }
   RUN[intent]?.(state, rng, sc, from, to, ending, ctx);
   if (ending === 'warm') gossip(state, rng, sc, from, to);

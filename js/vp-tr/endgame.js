@@ -69,6 +69,7 @@ import { PORTRAIT_CSS, TR_NAV_TOP } from './style.js';
 import { _noiseTile, _fieldRng } from './scenery.js';
 import { _portrait, _icon } from './conclave.js';
 
+import { trSfxReveal } from './sfx.js';
 const TR = 'traitors';
 
 /** The show's own words for the two doors. Never written out. */
@@ -2764,6 +2765,7 @@ export function trEndgameRevealNext(suffix, total, epNum) {
   if (st.idx >= total - 1) return;
   st.idx++;
   _reapplyVisibility(suffix, st.idx, total);
+  trSfxReveal('lt', suffix, st.idx);
   _scrollTo(document.getElementById('lt-step-' + suffix + '-' + st.idx));
   _updateStage(epNum, st.idx);
 }

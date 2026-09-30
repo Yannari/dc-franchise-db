@@ -5,7 +5,7 @@
 import { describe, expect, it } from 'vitest';
 import { existsSync, readFileSync } from 'node:fs';
 import { lipsyncSfxOf, sfxOfStep, tagSfx, SFX_VOICES, DRAG_SFX } from '../js/vp-dr/sfx.js';
-import { tagStep, momentForFile, songForFile, DRAG_SITUATIONS } from '../js/vp-dr/music.js';
+import { tagStep, momentForFile, songForFile, DRAG_SITUATIONS, lipsyncMusicOf } from '../js/vp-dr/music.js';
 import { rpBuildLipSync, rpBuildResults } from '../js/vp-dr/results.js';
 import { playDragSeason } from '../js/dr/season.js';
 import { rngFor } from '../js/dr/rng.js';
@@ -45,6 +45,11 @@ describe('the lip sync sounds like what happened', () => {
     expect(lipsyncSfxOf({ kind: 'stage:lipsync-shantay' })).toBe('shantay');
     expect(lipsyncSfxOf({ kind: 'stage:lipsync-sashay' })).toBe('sashay');
     expect(lipsyncSfxOf({ kind: 'confess:x' })).toBe(null);
+    // A double is one card: the call says it, and it must sound like the verdict.
+    expect(lipsyncSfxOf({ kind: 'stage:lipsync-call', data: { tier: 'double-shantay' } })).toBe('shantay');
+    expect(lipsyncSfxOf({ kind: 'stage:lipsync-call', data: { tier: 'double-sashay' } })).toBe('sashay');
+    expect(lipsyncMusicOf('stage:lipsync-call', { tier: 'double-shantay' })).toBe('shantay');
+    expect(lipsyncMusicOf('stage:lipsync-call', { tier: 'shantay' })).toBe('suspense');
   });
 
   it('puts them on the real screen: the drop, the room, the verdict', () => {

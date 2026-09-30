@@ -326,8 +326,13 @@ export const tagStep = (html, sit, song = null) => (sit || song
   ? String(html).replace('<div class="dr-step', `<div${musicAttr(sit)}${songAttr(song)} class="dr-step`) : html);
 
 /** The lip sync screen's moments, by scene kind. The performance itself is the song (untagged). */
-export function lipsyncMusicOf(kind) {
+export function lipsyncMusicOf(kind, data = null) {
   const k = String(kind || '');
+  /* A DOUBLE IS ANNOUNCED IN ONE CARD: the call itself says both stay (or
+     both go), with no shantay or sashay card after it. Filed as suspense, a
+     double shantay played the wait and never the verdict. */
+  if (/lipsync-call$/.test(k) && data?.tier === 'double-shantay') return 'shantay';
+  if (/lipsync-call$/.test(k) && data?.tier === 'double-sashay') return 'sashay';
   if (/lipsync-(suspense|call|legacy-choice)$/.test(k)) return 'suspense';
   if (/lipsync-shantay$/.test(k)) return 'shantay';
   if (/(lipsync-sashay|sashay-words|sashay-mood)$/.test(k)) return 'sashay';

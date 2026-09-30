@@ -256,9 +256,9 @@ function paintTable(root, S, fresh) {
     h += `<div class="trt-cut trt-cut-${kind}${fresh ? ' trt-fresh' : ''}" data-v="${voices >= 2 ? '×' + voices : ''}">`
       + '<div class="trt-speed"></div><div class="trt-slash"></div>'
       + bust(who, st.t === 'host' ? D.host.slug : null, 'l')
-      + (tgt ? '<svg class="trt-bolt" viewBox="0 0 100 100" preserveAspectRatio="none">'
-        + '<polyline points="27,47 41,42 46,53 57,44 63,54 73,49"/>'
-        + (voices >= 2 ? '<polyline class="trt-bolt2" points="27,52 39,57 47,47 56,58 64,48 73,53"/>' : '') + '</svg>'
+      + (tgt ? '<svg class="trt-bolt" viewBox="0 0 1000 560" preserveAspectRatio="none">'
+        + '<polyline pathLength="100" points="270,263 410,235 460,296 570,246 630,302 730,274"/>'
+        + (voices >= 2 ? '<polyline class="trt-bolt2" pathLength="100" points="270,291 390,319 470,263 560,324 640,268 730,296"/>' : '') + '</svg>'
         + bust(tgt, null, 'r') + `<div class="trt-stamp" data-n="${esc(tgt)}"></div>` : '')
       + '<div class="trt-cutflash"></div></div>';
   }
@@ -326,7 +326,7 @@ function paintTable(root, S, fresh) {
   } else if (st.t === 'say' || st.t === 'reveal') {
     const who = st.t === 'reveal' ? st.who : st.who;
     const tgt = st.t === 'say' && r.phase === 'debate' && st.target ? st.target : null;
-    const voices = tgt ? st.accs.filter(x => x[1] === tgt).length : 0;
+    const voices = tgt ? heard.filter(n => n === tgt).length : 0;
     card = '<div class="trt-dcard">'
       + (tgt ? `<div class="trt-dhead"><span class="trt-qf trt-acc">${face(tgt)}</span><div><div class="trt-k">The debate</div><b>${esc(tgt)}</b></div>`
         + (voices ? `<div class="trt-v"><em>${voices}</em>${voices === 1 ? 'voice' : 'voices'} at this name</div>` : '') + '</div>' : '')
@@ -621,9 +621,9 @@ const CSS = `
 @keyframes trtHit{0%,100%{transform:none}15%{transform:translate(-14px,3px) rotate(-3deg)}35%{transform:translate(10px,-3px) rotate(2deg)}55%{transform:translate(-7px,1px)}75%{transform:translate(4px,0)}}
 /* the bolt from one to the other */
 .trt-bolt{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
-.trt-bolt polyline{fill:none;stroke:#ff5a64;stroke-width:5;stroke-linejoin:bevel;vector-effect:non-scaling-stroke;filter:drop-shadow(0 0 8px #c9283c) drop-shadow(0 0 20px rgba(201,40,60,.8));
-  stroke-dasharray:200;stroke-dashoffset:0}
-.trt-cut.trt-fresh .trt-bolt polyline{stroke-dashoffset:200;animation:trtBolt .38s cubic-bezier(.5,0,.9,.4) .7s forwards}
+.trt-bolt polyline{fill:none;stroke:#ff5a64;stroke-width:7;stroke-linejoin:bevel;filter:drop-shadow(0 0 8px #c9283c) drop-shadow(0 0 20px rgba(201,40,60,.8));
+  stroke-dasharray:100;stroke-dashoffset:0}
+.trt-cut.trt-fresh .trt-bolt polyline{stroke-dashoffset:100;animation:trtBolt .38s cubic-bezier(.5,0,.9,.4) .7s forwards}
 .trt-cut.trt-fresh .trt-bolt .trt-bolt2{animation-delay:.95s}
 @keyframes trtBolt{to{stroke-dashoffset:0}}
 .trt-bolt polyline{animation:trtFlick 1.6s steps(2) infinite}

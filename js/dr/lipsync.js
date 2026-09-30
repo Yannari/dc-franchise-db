@@ -62,8 +62,8 @@ export const CONFIDENCE_CAP = 0.4;
    it does on the show — by performing better, rather than by the host
    overruling a stage she lost (which read, on the screen, as a clear winner
    sent home). tests/dr-lipsync-record-audit fits it. */
-export const FORM_WEIGHT = 0.9;
-export const FORM_CAP = 1.8;
+export const FORM_WEIGHT = 0.4;
+export const FORM_CAP = 0.8;
 
 /* The bars the doubles have to clear.
 

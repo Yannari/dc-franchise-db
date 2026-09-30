@@ -17,7 +17,13 @@ import { clamp, personMayScheme } from './state.js';
 
 export const MOTIVE = { age: 0.08, alum: 0.6, villainRep: 1.4, job: 1.0,
   strategic: 0.07, boldness: 0.05, loyalty: 0.06 };
-export const MOTIVE_LINE = 0.75;
+// 0.75 gave 6.1 of 13 a persona once the pool had eight (47%) — the audit's
+// pool of six had been capping it. 1.0 gives 4.1 (31%) with the default pool.
+export const MOTIVE_LINE = 1.0;
+// Below the persona line, a reason to hide one costly fact (a job, an age, a
+// marriage) while playing yourself: an EDITED profile. US 1's Alana kept
+// quiet about modelling. Above both lines with no persona left, edited too.
+export const EDIT_LINE = 0.75;
 export const RANDOM_TAKE = 0.5;
 const EDIT_JOBS = ['student', 'teacher', 'barista', 'personal trainer', 'marketing assistant',
   'bartender', 'nurse', 'graphic designer'];
@@ -131,7 +137,7 @@ export function drawPersonas(truths, pool, rng, pickBy = 'stats') {
     }
   }
   const edited = open.filter(t => !assigned[t.name]
-    && (t.catfish === 'always' || motive[t.name] >= MOTIVE_LINE)).map(t => t.name);
+    && (t.catfish === 'always' || motive[t.name] >= EDIT_LINE)).map(t => t.name);
   return { assigned, unused: left.map(p => p.id), edited };
 }
 

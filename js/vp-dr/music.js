@@ -101,9 +101,10 @@ export const songAttr = title => (title ? ` data-song="${String(title).replace(/
 // week's challenge: its own track (`chal-<id>`), or the generic `challenge`.
 const SCREEN = {
   arrivals: 'entrances', return: 'returns', rejoin: 'returns', revenge: 'returns', finreturn: 'returns',
-  coldopen: null, morning: null, elimday: null, untucked: null, choice: null,
+  // The werk room's own bed, under every day in it (the user's cues).
+  coldopen: 'werkroom', morning: 'werkroom', elimday: 'werkroom', choice: 'werkroom', untucked: 'untucked',
   saveintro: 'save', savehold: 'save', saveluck: 'save',
-  mini: 'mini', announce: 'announce',
+  mini: 'werkroom', announce: 'werkroom',
   prep: 'prep', booth: 'prep', rehearsal: 'prep', set: 'prep',
   maxi: 'chal', maxistage: 'chal',
   mainstage: 'mainstage', runway: 'runway', finrunway: 'runway', critiques: 'critiques',
@@ -123,6 +124,7 @@ export const DRAG_SITUATIONS = [
   'finale', 'showcase', 'crowning', 'crowned',
   // The show's own cues (the user's copies, assets/audio/drag/private), each
   // named for the moment it scores:
+  'werkroom', 'untucked',
   'decision', 'up-for-elimination', 'bottom-two', 'time-has-come', 'closing',
 ];
 
@@ -416,6 +418,8 @@ async function start(key, sit, song, suffix = null, fallback = null, fit = {}) {
   } catch { if (bed === mine) bed = null; }
 }
 
+const MOODS = new Set(['drama', 'comedy', 'cry', 'sweet', 'romance']);
+
 /** The situation of one revealed step (exported for the tests and the debug view). */
 export function situationOf(suffix, el) {
   const own = el?.dataset?.music;
@@ -474,6 +478,12 @@ export function dragMusicStep(suffix, idx) {
   }
   if (!el.dataset?.music && !el.dataset?.song && SCREEN[suffix] && bed && bed.suffix === suffix) return;
   let sit = situationOf(suffix, el);
+  /* A MOOD WITH NO CUE OF ITS OWN KEEPS THE ROOM'S BED. A drama card in
+     Untucked used to stop the music for a track that does not exist; the
+     room keeps playing until a cue for the mood arrives. */
+  if (MOODS.has(sit) && manifest !== undefined && !(manifest?.[sit]?.length)) {
+    sit = situationOf(suffix, { dataset: {}, closest: s => el.closest?.(s) });
+  }
   if (!sit) { stop(); return; }
   // The verdict is said in silence after the song: the song cuts, then the
   // shantay or the sashay starts its own track.

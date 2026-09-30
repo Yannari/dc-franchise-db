@@ -98,7 +98,8 @@ describe('the soundtrack', () => {
     const m = JSON.parse(readFileSync('assets/audio/drag/manifest.json', 'utf8'));
     for (const [sit, list] of Object.entries(m)) {
       if (!Array.isArray(list)) continue;
-      expect(DRAG_SITUATIONS, sit).toContain(sit);
+      // A moment, or one challenge's own track (`chal-<id>`, which falls back to `challenge`).
+      expect(DRAG_SITUATIONS.includes(sit) || /^chal-[a-z0-9-]+$/.test(sit), sit).toBe(true);
       for (const t of list) {
         // A private track (the show's own music) is the user's copy: git-ignored, never published.
         if (t.private) { expect(t.file, sit).toMatch(/^private\//); continue; }

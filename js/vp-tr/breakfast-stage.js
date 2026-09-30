@@ -17,6 +17,7 @@ import { TRScenery } from './cutaway-scenery.js';
 import { trPlay } from './sfx.js';
 import { beatLines } from './stage-lines.js';
 import { footCard, playCard, CARD_CSS } from './stage-cards.js';
+import { cutIn, CUTIN_CSS } from './stage-cutin.js';
 
 const hash = s => { let h = 7; for (const c of String(s)) h = (Math.imul(h, 31) + c.charCodeAt(0)) >>> 0; return h; };
 const GAP_KINDS = new Set(['gap', 'told', 'after', 'flash', 'chair', 'grief', 'eyes', 'sit']);
@@ -34,21 +35,35 @@ export function breakfastStageScreen(ep, observer, pageHtml) {
   if (typeof queueMicrotask === 'function' && typeof window !== 'undefined' && window.trStageMountAll) {
     queueMicrotask(window.trStageMountAll);
   }
-  return trsFold(stageShell(uid, '<div class="trb"></div><div class="trs-corner"></div><div class="trs-start"></div>', CARD_CSS + CSS), pageHtml);
+  return trsFold(stageShell(uid, '<div class="trb"></div><div class="trs-corner"></div><div class="trs-start"></div>', CARD_CSS + CUTIN_CSS + CSS), pageHtml);
 }
 
 // Who is down, and whether the room has found the gap yet, at step idx.
+// THE STAIR BEAT SEATS PEOPLE ON THE LINE THAT NAMES THEM. A 'down' beat
+// carries everybody down by its end, but its first line is the host asking
+// the room to wait; seating the whole group there put them at the table
+// before anybody had come down. Within a stair beat, a person sits when a line
+// names them, and anybody the beat carries whom no line names sits on its last.
+const named = (n, text) => {
+  const i = String(text || '').indexOf(n);
+  return i >= 0 && !/[A-Za-z]/.test(String(text).charAt(i - 1) || '') && !/[A-Za-z]/.test(String(text).charAt(i + n.length) || '');
+};
 function stateAt(S) {
-  let down = [], prevDown = [], gapShown = false, whole = false;
+  let down = new Set(), prev = new Set(), gapShown = false, whole = false;
   for (let k = 0; k <= S.idx; k++) {
-    const m = S.steps[k].meta || {};
-    if (Array.isArray(m.down)) { if (k === S.idx) prevDown = down; down = m.down; }
+    const st = S.steps[k], m = st.meta || {};
+    if (k === S.idx) prev = new Set(down);
+    if (Array.isArray(m.down)) {
+      if (m.kind === 'down' || m.kind === 'relief') {
+        const last = (S.steps[k + 1] || {}).beat !== st.beat;
+        for (const n of m.down) if (last || named(n, st.text)) down.add(n);
+      } else down = new Set(m.down);
+    }
     if (GAP_KINDS.has(m.kind) || (m.kind === 'day' && (m.gap || []).length)) gapShown = true;
     if (m.kind === 'whole') whole = true;
   }
-  const cur = S.steps[S.idx] || {};
-  const arriving = cur.beat !== (S.steps[S.idx - 1] || {}).beat ? down.filter(n => !prevDown.includes(n)) : [];
-  return { down: new Set(down), arriving: new Set(arriving), gapShown, whole };
+  const arriving = [...down].filter(n => !prev.has(n));
+  return { down, arriving: new Set(arriving), gapShown, whole };
 }
 
 // The places: two rows along the table, alternating sides in seating order.
@@ -78,14 +93,14 @@ function paint(root, S, fresh) {
     el.innerHTML = '<div class="trb-cam"></div><div class="trb-hud"></div>';
     cam = el.querySelector('.trb-cam'); hud = el.querySelector('.trb-hud');
   }
-  const frame = (who, instant) => {
+  const frame = (who, instant, zoom) => {
     const i = who ? D.laid.indexOf(who) : -1;
     cam.style.transition = instant ? 'none' : '';
     if (i < 0) { cam.style.transform = 'translate(0px,0px) scale(1)'; cam.classList.remove('trb-close'); return; }
     // IN CLOSE ON WHOEVER IS SPEAKING, the way the castle day flies to a room:
     // their place brought to the middle of the frame, a little above centre
     // so the line card below does not cover them.
-    const p = placeAt(i, D.laid.length, W, H), k = 1.85;
+    const p = placeAt(i, D.laid.length, W, H), k = zoom || 1.85;
     const tx = W / 2 - p.x * k, ty = H * 0.4 - p.y * k;
     cam.style.transform = `translate(${Math.min(0, Math.max(W - W * k, tx))}px,${Math.min(0, Math.max(H - H * k, ty))}px) scale(${k})`;
     cam.classList.add('trb-close');
@@ -103,15 +118,46 @@ function paint(root, S, fresh) {
   const st = S.steps[S.idx], r = stateAt(S);
   const speaker = st.t === 'say' ? st.who : st.react ? st.who : null;
   cam.innerHTML = setHtml + places(D, r, W, H, speaker, fresh);
-  // dialogue pulls in on the speaker; narration pulls back to the whole room
-  frame(st.t === 'say' || (st.react && st.who) ? speaker : null, !fresh);
+  const m = st.meta || {};
+  const firstOfBeat = (S.steps[S.idx - 1] || {}).beat !== st.beat;
+  const gone = D.laid.filter(n => D.missing.includes(n) || D.hidden.includes(n));
+  // THE CAMERA: dialogue pulls in on the speaker; the empty place, once the
+  // room has found it, holds the frame; narration pulls back to the room
+  const onGap = r.gapShown && m.kind === 'gap' && st.t !== 'say' && gone.length;
+  if (onGap) frame(gone[0], !fresh, 1.6);
+  else frame(st.t === 'say' || (st.react && st.who) ? speaker : null, !fresh, st.t === 'say' ? 1.4 : 1.85);
+  cam.classList.toggle('trb-dim', st.t === 'say');
+  cam.classList.toggle('trb-dread', !!onGap);
   let h = '';
+  // A SPOKEN LINE IS A CUT-IN (stage-cutin.js)
+  if (st.t === 'say') h += cutIn({ who: st.who, tone: 'morning', fresh });
+  // THE DOOR: whoever has just come down arrives as a framed portrait through
+  // the door, the way the programme cuts to each face walking in, and then
+  // takes their place at the table
+  if (fresh && r.arriving.size && (m.kind === 'down' || m.kind === 'relief')) {
+    const list = [...r.arriving];
+    h += `<div class="trb-entry" style="--n:${list.length}">` + list.map((n, i) =>
+      `<div class="trb-frame" style="--i:${i}"><div class="trb-fav">${face(n)}</div><div class="trb-fnm" data-n="${esc(n)}"></div></div>`).join('') + '</div>';
+    trPlay('tr-door'); trPlay('tr-footsteps', 350);
+  }
+  // THE PORTRAIT ON THE WALL: through the host's words for the murdered, the
+  // framed face hangs over the room; on the beat the frame comes down, it
+  // falls, cracks and goes grey
+  const frameBeat = S.steps.find(x => x.tag === 'The Frame Comes Down');
+  if (frameBeat && gone.length && st.beat === frameBeat.beat) {
+    const dropNow = st.tag === 'The Frame Comes Down';
+    const dropped = dropNow || S.steps.slice(0, S.idx).some(x => x.beat === st.beat && x.tag === 'The Frame Comes Down');
+    h += `<div class="trb-memorial${dropped ? ' trb-dropped' : ''}${dropNow && fresh ? ' trb-drop' : ''}">`
+      + `<div class="trb-mframe"><div class="trb-mav">${face(gone[0])}</div><i class="trb-crack"></i></div>`
+      + `<div class="trb-mnm" data-n="${esc(gone[0])}"></div></div>`;
+    if (dropNow && fresh) trPlay('tr-frame-drop', 500);
+  }
   // the count in the corner: down, and the places nobody is coming down to
   const empty = D.laid.filter(n => !r.down.has(n)).length;
-  const gone = r.gapShown ? D.laid.filter(n => D.missing.includes(n) || D.hidden.includes(n)).length : 0;
+  const goneN = r.gapShown ? gone.length : 0;
   h += `<div class="trb-count"><span><b>${r.down.size}</b> / ${D.room.length} down</span>`
     + (empty && !r.gapShown ? `<span>${empty} ${empty === 1 ? 'place' : 'places'} still empty</span>` : '')
-    + (gone ? `<span class="trb-hot">${gone} not coming down</span>` : '')
+    + (goneN ? `<span class="trb-hot">${goneN} not coming down</span>` : '')
     + (r.whole ? '<span class="trb-good">A full table</span>' : '') + '</div>';
   h += footCard(st, D.host);
   hud.innerHTML = h;
@@ -119,7 +165,7 @@ function paint(root, S, fresh) {
   // THE SOUND OF IT, once per beat, on a fresh step.
   if (fresh && (S.steps[S.idx - 1] || {}).beat !== st.beat) {
     const k = (st.meta || {}).kind;
-    if (k === 'down') trPlay('tr-footsteps');
+    if (k === 'down') {}
     else if (k === 'gap') trPlay('tr-cup');
     else if (k === 'count' && /last|places/i.test(String(st.tag || ''))) trPlay('tr-heartbeat');
   }
@@ -176,7 +222,7 @@ const CSS = `
 .trb-chair{width:62%;margin:0 auto;aspect-ratio:1/1.3;border-radius:40% 40% 6% 6%/30% 30% 6% 6%;background:linear-gradient(180deg,#3a2414,#1a0d06);
   box-shadow:inset 0 0 0 2px rgba(138,90,46,.5),0 6px 14px rgba(0,0,0,.6);opacity:.85}
 .trb-seat.trb-gone .trb-chair{background:linear-gradient(180deg,#2a0a10,#120406);box-shadow:inset 0 0 0 2px rgba(201,40,60,.6),0 0 24px rgba(201,40,60,.35)}
-.trb-seat.trb-arrive{animation:trbArrive .7s cubic-bezier(.2,1.2,.4,1) both}
+.trb-seat.trb-arrive{animation:trbArrive .7s cubic-bezier(.2,1.2,.4,1) 2.3s both}
 @keyframes trbArrive{from{opacity:0;transform:translate(-50%,-30%) scale(.8)}}
 .trb-seat.trb-quiet{filter:brightness(.55) saturate(.75)}
 .trb-seat.trb-speak{transform:translate(-50%,-50%) scale(1.16);z-index:60!important}
@@ -187,5 +233,50 @@ const CSS = `
 .trb-count b{font-size:15px;color:#ffdb95}
 .trb-count .trb-hot{color:#e87a82;box-shadow:0 0 0 1px rgba(201,40,60,.6);animation:trbPulse 1.6s infinite}
 .trb-count .trb-good{color:#8fd19e}
+/* ── THE BREAKFAST ROOM, PLAYED (2026-09-30) ─────────────────────────── */
+.trb-cam.trb-dim{filter:brightness(.5) blur(2px)}
+.trb-cam.trb-dread{filter:saturate(.7)}
+.trb-cam.trb-dread .trb-seat.trb-gone .trb-chair{animation:trbDread 1.4s ease-in-out infinite}
+@keyframes trbDread{50%{box-shadow:inset 0 0 0 2px rgba(255,90,100,.9),0 0 44px rgba(201,40,60,.7)}}
+/* the door: framed portraits walking in */
+.trb-entry{position:absolute;inset:0;z-index:2100;display:flex;align-items:center;justify-content:center;gap:3%;pointer-events:none;
+  background:linear-gradient(90deg,rgba(4,3,2,0),rgba(4,3,2,.72) 30%,rgba(4,3,2,.72) 70%,rgba(4,3,2,0));animation:trbEntryBg 3.2s ease both}
+@keyframes trbEntryBg{0%{opacity:0}12%{opacity:1}78%{opacity:1}100%{opacity:0}}
+.trb-frame{width:min(19%,190px);opacity:0;text-align:center;animation:trbWalk 3.2s cubic-bezier(.2,.9,.3,1) both;animation-delay:calc(var(--i) * .22s)}
+@keyframes trbWalk{0%{opacity:0;transform:translateX(60vw) rotate(4deg)}18%{opacity:1;transform:translateX(-8px) rotate(-1deg)}24%{transform:none}
+  76%{opacity:1;transform:none}100%{opacity:0;transform:translateY(40px) scale(.7)}}
+.trb-fav{position:relative;aspect-ratio:3/4;overflow:hidden;background:#141922;
+  border:10px solid transparent;border-image:linear-gradient(135deg,#f3d58a,#9a6a22 30%,#f7e2a6 50%,#8a5a18 72%,#e8c270) 1;
+  box-shadow:0 0 0 2px #3a2208,0 24px 60px rgba(0,0,0,.9),0 0 50px rgba(255,210,140,.25)}
+.trb-fav img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 16%;z-index:1}
+.trb-fav .trs-ini{font-size:30px}
+.trb-fnm::before{content:attr(data-n);display:inline-block;margin-top:10px;padding:4px 12px;font-family:var(--v-display);font-weight:900;font-size:clamp(11px,1.2vw,15px);
+  letter-spacing:.2em;text-transform:uppercase;color:#241b11;background:linear-gradient(180deg,#f7e2a6,#c99a48)}
+/* the portrait of the murdered */
+.trb-memorial{position:absolute;left:50%;top:44%;width:min(24%,230px);transform:translate(-50%,-50%);z-index:2050;text-align:center;pointer-events:none;
+  animation:trbHang 1s ease both}
+@keyframes trbHang{from{opacity:0;transform:translate(-50%,-58%)}}
+.trb-mframe{position:relative;aspect-ratio:3/4;overflow:hidden;background:#141922;
+  border:12px solid transparent;border-image:linear-gradient(135deg,#f3d58a,#9a6a22 30%,#f7e2a6 50%,#8a5a18 72%,#e8c270) 1;
+  box-shadow:0 0 0 2px #3a2208,0 30px 70px rgba(0,0,0,.95),0 0 80px rgba(255,210,140,.2)}
+.trb-mav{position:absolute;inset:0}
+.trb-mav img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 16%;z-index:1;transition:filter 1.2s}
+.trb-mnm::before{content:attr(data-n);display:inline-block;margin-top:12px;padding:4px 14px;font-family:var(--v-display);font-weight:900;font-size:clamp(12px,1.3vw,17px);
+  letter-spacing:.22em;text-transform:uppercase;color:#f3dcd8;background:rgba(40,6,10,.9);border:1px solid rgba(201,40,60,.6)}
+.trb-crack{position:absolute;inset:0;z-index:3;opacity:0;background:
+  linear-gradient(62deg,transparent 48.6%,rgba(255,255,255,.85) 49.2%,transparent 49.8%),
+  linear-gradient(-38deg,transparent 58.6%,rgba(255,255,255,.7) 59.1%,transparent 59.7%),
+  linear-gradient(12deg,transparent 30.5%,rgba(255,255,255,.6) 31%,transparent 31.5%)}
+.trb-memorial.trb-dropped .trb-mav img{filter:grayscale(1) brightness(.75)}
+.trb-memorial.trb-dropped .trb-crack{opacity:1}
+.trb-memorial.trb-dropped{transform:translate(-50%,-50%) rotate(-7deg) translateY(10%)}
+.trb-memorial.trb-drop{animation:trbFall 1.3s cubic-bezier(.5,0,.8,.4) both}
+@keyframes trbFall{0%{transform:translate(-50%,-50%)}25%{transform:translate(-50%,-50%) rotate(3deg)}
+  70%{transform:translate(-50%,-50%) rotate(-9deg) translateY(12%)}80%{transform:translate(-50%,-50%) rotate(-6deg) translateY(9%)}100%{transform:translate(-50%,-50%) rotate(-7deg) translateY(10%)}}
+.trb-memorial.trb-drop .trb-crack{animation:trbCrack .2s steps(1) .95s both}
+@keyframes trbCrack{from{opacity:0}to{opacity:1}}
+.trb-memorial.trb-drop .trb-mav img{filter:none;animation:trbGrey 1s ease 1s forwards}
+@keyframes trbGrey{to{filter:grayscale(1) brightness(.75)}}
+@media (prefers-reduced-motion:reduce){.trb-entry,.trb-frame,.trb-memorial{animation:none!important;opacity:1}}
 @keyframes trbPulse{50%{box-shadow:0 0 0 1px rgba(201,40,60,.6),0 0 18px rgba(201,40,60,.5)}}
 `;

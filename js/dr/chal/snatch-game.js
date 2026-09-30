@@ -17,38 +17,18 @@ import { prepareRoom, walkthrough } from '../prep.js';
 import { dragOf } from '../queen.js';
 import { noise, riskFor } from '../perform.js';
 import { evt } from '../rules.js';
+import { judgeById } from '../judges.js';
+import { kitFor } from '../data/snatch-kits/index.js';
+import {
+  SNATCH_QUESTIONS, FLAT_SAYS, BOMB_SAYS, RU_REACTS, RU_ROPE, SHOW_OPEN, SHOW_CLOSE,
+  ASK, REVEAL, PASSED_OVER, ASSIST, INTRO_FLAT, INTRO_DEAD, fillSnatch, quoteLine,
+} from '../data/snatch-script.js';
 
 const ROUNDS = 6;
 /** Three answers landing on silence. Not an average — a run. */
 const FLOP = 3;
 const KILL = 8.5;
 
-const QUESTIONS = [
-  'RuPaul is so old, ___',
-  'My drag mother always told me, "Girl, ___"',
-  'I knew I was a star when ___',
-  'The judges would gag if I showed up to the reunion in ___',
-  'My ex-boyfriend is so dumb, he thinks a tuck is ___',
-  'The worst thing about being famous is ___',
-  'I keep ___ in my wig at all times',
-  'The last time I was at a pool party, ___',
-  'Girl, my plastic surgeon is so good, he ___',
-  "I'd never tell RuPaul this, but ___",
-  'My drag is so expensive, I had to ___ just to pay for it',
-  'At my last gig, the crowd was so dead, ___',
-  'When I look in the mirror, I see ___ staring back at me',
-  'The secret to a good lip sync is ___',
-  'I once went on a date so bad, he ___',
-  'My catchphrase is "___"',
-  'You know you are a real drag queen when ___',
-  'I would never be caught dead wearing ___',
-  'If I could read any queen in this room, I would say ___',
-  'The thing the cameras do not show you is ___',
-  "I'd sell my best wig for ___",
-  "If I weren't doing drag, I'd be ___",
-  'The biggest scandal at the pageant was ___',
-  'My celebrity crush is ___ because ___',
-];
 
 // ── THE HOST, WHO WAS NOT IN THIS AT ALL ──────────────────────────────
 //
@@ -222,167 +202,269 @@ export function prepare(ctx) {
   };
 }
 
+// ── THE TAPING, AS THE SHOW PLAYS IT ──────────────────────────────────
+//
+// The host reads a card to one of two celebrity contestants, goes down the
+// panel to a few of the queens, and each one answers AS HER CELEBRITY. Then
+// the contestant turns over what she wrote, and a queen who wrote the same
+// thing scores her a point. See js/dr/data/snatch-script.js for the format
+// and js/dr/data/snatch-kits for what each celebrity says.
+//
+// THE NUMBERS STILL DECIDE EVERYTHING. Every round, every queen gets a score
+// (the model below is unchanged); the words are chosen FROM that score and
+// never the other way round. A queen scoring a laugh or better gets her
+// celebrity's real answer to that card; a queen who is flat reaches for the
+// obvious answer in the voice; a queen who is dying loses the voice too.
+// The screen renders what is picked here and chooses nothing.
+
+/** The laugh-o-meter's words, and where each starts. */
+const TIERS = [[KILL, 'kill'], [6, 'laugh'], [FLOP, 'flat'], [-99, 'bomb']];
+const tierOf = s => TIERS.find(([min]) => s >= min)[1];
+const laughOf = s => Math.round(Math.max(0, Math.min(10, s)) * 10) / 10;
+
+/** Who taunts on a panel: the franchise rule, unchanged. */
+const NICE = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
+const VILLAIN = new Set(['villain', 'mastermind', 'schemer']);
+function mayHeckle(p) {
+  const a = p?.archetype || '';
+  if (NICE.has(a)) return false;
+  if (VILLAIN.has(a)) return true;
+  const st = p?.stats || {};
+  return (Number(st.strategic) || 5) >= 6 && (Number(st.loyalty) || 5) <= 4;
+}
+
+/** The two contestants at the desk: Michelle, and tonight's other judge. */
+function contestantsFor(cfg = {}) {
+  const other = cfg.guest?.name
+    ? { id: `guest:${cfg.guest.slug || String(cfg.guest.name).toLowerCase().replace(/\s+/g, '-')}`, name: cfg.guest.name, slug: cfg.guest.slug || null }
+    : (() => { const j = judgeById(cfg.rotatingId || 'carson'); return j ? { id: j.id, name: j.name } : { id: 'ross', name: 'Ross Mathews' }; })();
+  return [{ id: 'michelle', name: 'Michelle Visage' }, other];
+}
+
 export function perform(ctx) {
-  const { living, players, assignment, prep, rng, bond } = ctx;
+  const { living, players, assignment, prep, rng, bond, cfg } = ctx;
   const performances = {};
   const events = [];
-  const rounds = [];
   const hostBeats = [];
   const charOf = n => characterById(assignment.picks[n]?.choice);
+  const seat = (assignment.order || []).filter(n => living.includes(n));
+  for (const n of living) if (!seat.includes(n)) seat.push(n);
 
-  const perRound = {};
-  for (const n of living) perRound[n] = [];
-  const questionPool = [...QUESTIONS];
-
-  // Whom the host has already worked with, so one queen does not get the
-  // whole taping.
-  const engaged = {};
+  // Lines are picked here, once, and never twice in one taping.
+  const used = new Set();
+  const pick = (pool, key = '') => {
+    const list = pool || [];
+    if (!list.length) return '';
+    const fresh = list.filter(l => !used.has(key + l));
+    const from = fresh.length ? fresh : list;
+    const l = from[Math.floor(rng() * from.length)];
+    used.add(key + l);
+    return l;
+  };
 
   /* ── DIFFICULTY BUYS VARIANCE, AND IT HAS TO BE DRAWN ONCE ──
-     Difficulty only ever SUBTRACTED, so a hard character was strictly worse
-     than an easy one and there was never a reason on the board to reach for
-     one. That is not what a hard impression is: a tightrope pays MORE when
-     she lands it and costs more when she does not.
-
-     THE SWING IS PER NIGHT, NOT PER ROUND, and that is the whole trick. The
-     first attempt scaled the round noise by difficulty and changed nothing
-     measurable — across the rounds it simply averaged out, and the standard
-     deviation of the final score was flat at about 2.2 whatever she picked.
      Whether the character WORKS is one fact about the night, not six
      independent ones, so it is drawn once and carried into every round: an
      easy character lands near her craft almost every time, a hard one is
-     either the best thing on that desk or the thing that ends her week.
-
-     And the flat penalty comes down to pay for it. A hard character should be
-     a gamble, not a tax with a gamble attached. */
+     either the best thing on that desk or the thing that ends her week. The
+     upside is worth more than the downside is cheap (measured: symmetric,
+     hard characters bombed 40% and shone 7%), and it stays smaller than
+     craft, or a gamble on the character becomes the whole night. */
   const nightOf = {};
   for (const n of living) {
     const c = charOf(n);
     const diff = c ? c.difficulty : 3;
     const swing = noise(rng, 0.08 + diff * 0.2);
-    /* ── AND THE UPSIDE IS WORTH MORE THAN THE DOWNSIDE IS CHEAP ──
-       A symmetric swing was not enough, and measuring said so: pooled over a
-       hundred and twenty tapings, hard characters bombed 40% of the time and
-       shone 7%, against 17% and 28% for easy ones. Two reasons, and only one
-       of them is a bug. The bug was that the swing did not pay: a hard
-       character has to be BETTER when it works, not merely more variable.
-       The other is a selection effect and it is correct — the queens who
-       reach are the ones with nothing to protect, and they are weaker on
-       average. A gamble taken by somebody who needs one should still be a
-       gamble; it should not also be a worse bet than not gambling.
-
-       AND IT HAS TO STAY SMALLER THAN CRAFT. The first sizing of this swung
-       hard enough to drown the thing the challenge is actually about: a queen
-       with two more points of comedy went from winning 55% of her head-to-
-       heads to 43%, which is worse than a coin. A gamble on the character is
-       a term in the night, not the night. */
     nightOf[n] = swing > 0 ? swing * (1 + diff * 0.5) : swing;
   }
 
-  for (let r = 0; r < ROUNDS; r++) {
-    const beat = [];
-    for (const n of living) {
-      const d = dragOf(players[n]);
-      const c = charOf(n);
-      // Out of her depth is measured against the stat the character NEEDS, so
-      // a comic can carry a hard comic bit and drown in a hard acting one.
-      const fit = c
-        ? (c.style === d.style ? 1.2 : 0) - Math.max(0, c.difficulty - d[c.needs] / 2) * 0.22
-        : -1;
-      /* ── `needs` NOW CARRIES THE IMPRESSION IT SAID IT CARRIED ──
-         The field is documented as "which stat carries the impression" and it
-         did not: the score was comedy 0.55 / acting 0.35 for every character
-         on the desk, so a part she has to INHABIT paid her comedy exactly as
-         much as a loud quotable one did. `needs` only ever showed up in the
-         shortlist and in the out-of-depth penalty.
-         The weights tilt now. The sum is the same either way, so nobody gets
-         more total credit for the kind of bit she picked — the question is
-         which of her two stats has to hold it up. */
-      const wComedy = c?.needs === 'acting' ? 0.34 : 0.62;
-      const wActing = 0.9 - wComedy;
-      const score = d.comedy * wComedy + d.acting * wActing + fit + (prep[n] || 0)
-        - (assignment.picks[n]?.penalty || 0) + (nightOf[n] || 0) + noise(rng, 1.5);
-      const rounded = Math.round(score * 100) / 100;
-      perRound[n].push(rounded);
-      beat.push({ name: n, score: rounded });
-    }
+  /* One score for one moment on the panel. `needs` carries the impression:
+     a part she has to INHABIT leans on acting, a loud quotable one on
+     comedy, and the total weight is the same either way. */
+  const scoreOf = n => {
+    const d = dragOf(players[n]);
+    const c = charOf(n);
+    const fit = c
+      ? (c.style === d.style ? 1.2 : 0) - Math.max(0, c.difficulty - d[c.needs] / 2) * 0.22
+      : -1;
+    const wComedy = c?.needs === 'acting' ? 0.34 : 0.62;
+    const wActing = 0.9 - wComedy;
+    const s = d.comedy * wComedy + d.acting * wActing + fit + (prep[n] || 0)
+      - (assignment.picks[n]?.penalty || 0) + (nightOf[n] || 0) + noise(rng, 1.5);
+    return Math.round(s * 100) / 100;
+  };
 
-    // ── AND THEN THE HOST DOES SOMETHING ABOUT IT ──
-    //
-    // He picks the most interesting thing on the desk this round — the best
-    // answer or the worst, never the middle, because the middle is not
-    // television. Whether the exchange helps her is not his decision: a queen
-    // with a character can take a setup and run, and a queen without one is
-    // simply given more rope.
-    const sorted = [...beat].sort((x, y) => y.score - x.score);
-    const candidates = [sorted[0], sorted[sorted.length - 1]]
-      .filter(x => x && (engaged[x.name] || 0) < 2);
-    for (let i = 0; i < ENGAGE_PER_ROUND && candidates.length; i++) {
-      const pickIdx = rng() < 0.5 ? 0 : candidates.length - 1;
-      const chosen = candidates.splice(pickIdx, 1)[0];
-      if (!chosen) break;
-      const n = chosen.name;
+  const contestants = contestantsFor(cfg);
+  // Ru calls them by first name at the desk; the full name is for the intro.
+  const first = c => String(c.name).split(' ')[0];
+  const openLine = fillSnatch(pick(SHOW_OPEN), { x: contestants[0].name, y: contestants[1].name });
+
+  // ── THE PANEL IS INTRODUCED ──
+  const intros = seat.map(n => {
+    const c = charOf(n);
+    const kit = kitFor(c?.id);
+    const s = scoreOf(n);
+    const tier = tierOf(s);
+    /* A good intro is her celebrity's own line. A dying one is the name and
+       the catchphrase and a silence. */
+    const text = (tier === 'kill' || tier === 'laugh') && kit?.intro?.length
+      ? quoteLine(pick(kit.intro, `intro:${n}:`))
+      : fillSnatch(pick(tier === 'bomb' ? INTRO_DEAD : INTRO_FLAT, 'intro:'), { c: c?.name || 'somebody', catch: kit?.catch || '' });
+    return { name: n, character: c?.name || null, characterId: c?.id || null, text, tier, laugh: laughOf(s) };
+  });
+
+  const perRound = Object.fromEntries(living.map(n => [n, []]));
+  const asked = Object.fromEntries(living.map(n => [n, 0]));
+  const bombs = Object.fromEntries(living.map(n => [n, 0]));
+  const passedOver = new Set();
+  const engaged = {};
+  const points = [0, 0];
+  const deck = [...SNATCH_QUESTIONS];
+  const rounds = [];
+  const perAsk = living.length >= 9 ? 4 : 3;
+
+  for (let r = 0; r < ROUNDS; r++) {
+    // Every queen plays every round; the edit shows a few of them.
+    const beat = living.map(n => ({ name: n, score: scoreOf(n) }));
+    for (const b of beat) perRound[b.name].push(b.score);
+    const scoreNow = n => perRound[n][perRound[n].length - 1];
+
+    const q = deck.splice(Math.floor(rng() * deck.length), 1)[0] || SNATCH_QUESTIONS[r % SNATCH_QUESTIONS.length];
+    const asker = r % 2;
+    const x = contestants[asker];
+    const contestantCard = q.obvious[Math.floor(rng() * q.obvious.length)];
+
+    /* ── WHO HE GOES TO ──
+       The queens he has asked least, in the order they sit, so everybody is
+       heard across the taping and nobody's turn gives the round away. A queen
+       who has died twice is not asked again — which is the cruellest thing the
+       real host does, and he does it without comment. */
+    const newlyPassed = [];
+    for (const n of living) {
+      if (bombs[n] >= 2 && !passedOver.has(n)) { passedOver.add(n); newlyPassed.push(n); }
+    }
+    const pool = seat.filter(n => !passedOver.has(n));
+    const chosen = [...pool].sort((a, b) => (asked[a] - asked[b]) || (rng() - 0.5)).slice(0, Math.min(perAsk, pool.length));
+    const featured = seat.filter(n => chosen.includes(n));
+
+    // ── THE HOST DOES SOMETHING WITH ONE OF THEM ──
+    // The best answer or the worst: the middle is not television.
+    // Her number before the host touched it, so a reader can see why he chose her.
+    const pre = Object.fromEntries(featured.map(n => [n, scoreNow(n)]));
+    const byScore = [...featured].sort((a, b) => pre[b] - pre[a]);
+    const ends = [byScore[0], byScore[byScore.length - 1]].filter(n => n && (engaged[n] || 0) < 2);
+    let rope = null;
+    if (ends.length && ENGAGE_PER_ROUND) {
+      const n = ends[rng() < 0.5 ? 0 : ends.length - 1];
       engaged[n] = (engaged[n] || 0) + 1;
       const d = dragOf(players[n]);
-      // Can she take it? Comedy and nerve, because a setup only works on
-      // somebody willing to grab it.
       const takes = (d.comedy + (Number(players[n]?.stats?.boldness) || 5)) / 2;
       const worked = rng() < 0.25 + takes / 20;
       const delta = worked ? ROPE : -HANG;
-      perRound[n][perRound[n].length - 1] =
-        Math.round((perRound[n][perRound[n].length - 1] + delta) * 100) / 100;
+      perRound[n][perRound[n].length - 1] = Math.round((scoreNow(n) + delta) * 100) / 100;
       hostBeats.push({ round: r + 1, name: n, worked, delta });
+      const good = pre[n] >= 6;
+      const after = laughOf(scoreNow(n));
+      /* A rescue that helped without landing is its own line: "this time she
+         gets the laugh" cannot sit over a meter reading a chuckle. */
+      const kind = worked ? (good ? 'push' : after >= 6 ? 'rescue' : 'partial') : (good ? 'push' : 'rescue');
+      rope = { name: n, worked, laugh: after,
+        text: pick((worked ? RU_ROPE.worked : RU_ROPE.failed)[kind], 'rope:') };
       events.push(worked
-        ? evt('host-played-along', {
-          players: [n], pop: { [n]: 2 },
-          data: { round: r + 1, character: charOf(n)?.name || null },
-        })
-        : evt('left-to-hang', {
-          players: [n], pop: { [n]: -1 },
-          data: { round: r + 1, character: charOf(n)?.name || null },
-        }));
+        ? evt('host-played-along', { players: [n], pop: { [n]: 2 }, data: { round: r + 1, character: charOf(n)?.name || null } })
+        : evt('left-to-hang', { players: [n], pop: { [n]: -1 }, data: { round: r + 1, character: charOf(n)?.name || null } }));
     }
 
-    /* ── PICK THE QUESTION AND THE FEATURED QUEENS ──
-       The VP needs to show 2-3 queens answering each round, not all of them.
-       Feature the queen the host engaged, plus the best and worst scorers
-       that round — the ones who made television. */
-    const qIdx = Math.floor(rng() * questionPool.length);
-    const question = questionPool.splice(qIdx, 1)[0] || QUESTIONS[r % QUESTIONS.length];
-    const byScore = [...beat].sort((x, y) => y.score - x.score);
-    const hostTarget = hostBeats.find(h => h.round === r + 1)?.name || null;
-    const featured = [];
-    const seen = new Set();
-    const addFeatured = n => {
-      if (!n || seen.has(n)) return;
-      seen.add(n);
-      const s = beat.find(x => x.name === n)?.score || 0;
-      const reaction = s >= KILL ? 'kill' : s >= 6 ? 'laugh' : s >= FLOP ? 'silence' : 'bomb';
-      featured.push({ name: n, score: s, reaction,
-        character: charOf(n)?.name || null, hostBeat: n === hostTarget });
-    };
-    if (hostTarget) addFeatured(hostTarget);
-    addFeatured(byScore[0]?.name);
-    addFeatured(byScore[byScore.length - 1]?.name);
-    if (featured.length < 3 && byScore.length > 2) addFeatured(byScore[1]?.name);
+    const answers = featured.map(n => {
+      // Her answer is her first attempt; the host's follow-up comes after it.
+      const s = pre[n];
+      const tier = tierOf(s);
+      const c = charOf(n);
+      const kit = kitFor(c?.id);
+      asked[n] += 1;
+      if (tier === 'bomb') bombs[n] += 1;
+      let card; let say;
+      const own = kit?.a?.[q.id];
+      if ((tier === 'kill' || tier === 'laugh') && own) {
+        [card, say] = own;
+        say = quoteLine(say);
+      } else {
+        /* THE OBVIOUS ANSWER, which is the one the contestant is most likely
+           to have written — so the queen with nothing is the queen who
+           matches. */
+        card = rng() < 0.3 ? contestantCard : q.obvious[Math.floor(rng() * q.obvious.length)];
+        say = fillSnatch(pick(tier === 'bomb' ? BOMB_SAYS : FLAT_SAYS, `say:${tier}:`),
+          { card, catch: kit?.catch || '', c: c?.name || 'her celebrity' });
+      }
+      const ru = pick(RU_REACTS[tier], `ru:${tier}:`);
+      return {
+        name: n, character: c?.name || null, characterId: c?.id || null,
+        card, say, tier, laugh: laughOf(s), score: pre[n], ru,
+        rope: rope && rope.name === n ? { worked: rope.worked, text: rope.text, laugh: rope.laugh } : null,
+      };
+    });
 
-    rounds.push({ round: r + 1, question, answers: beat, featured });
+    // ── THE CROSS-TALK ──
+    // The funniest queen on this card turns on somebody else's answer. A
+    // queen allowed to taunt heckles; a nice one builds on the bit instead.
+    let cross = null;
+    const top = [...answers].sort((a, b) => b.laugh - a.laugh)[0];
+    const targets = answers.filter(a => a.name !== top?.name);
+    if (top && targets.length && top.laugh >= 6 && rng() < 0.45) {
+      const t = targets[Math.floor(rng() * targets.length)];
+      const kit = kitFor(top.characterId);
+      if (mayHeckle(players[top.name]) && kit?.heckle?.length) {
+        const landed = top.laugh >= 6;
+        cross = { kind: 'heckle', from: top.name, to: t.name, laugh: top.laugh,
+          text: quoteLine(fillSnatch(pick(kit.heckle, `heckle:${top.name}:`), { b: t.character || t.name })) };
+        events.push(evt('snatch-heckle', {
+          players: [top.name, t.name], bond: [[top.name, t.name, -1]],
+          pop: { [top.name]: landed ? 1 : -1, [t.name]: landed ? -0.5 : 0 },
+          data: { round: r + 1, from: top.character, to: t.character },
+        }));
+      } else {
+        cross = { kind: 'assist', from: top.name, to: t.name, laugh: Math.max(top.laugh, t.laugh),
+          text: fillSnatch(pick(ASSIST[t.laugh >= 6 ? 'build' : 'rescue'], 'assist:'), { c: top.character || top.name, t: t.character || t.name }) };
+        events.push(evt('snatch-assist', {
+          players: [top.name, t.name], bond: [[top.name, t.name, 1]],
+          pop: { [top.name]: 1, [t.name]: 1 },
+          data: { round: r + 1, from: top.character, to: t.character },
+        }));
+      }
+    }
+
+    // ── THE CARD, TURNED OVER ──
+    const matches = answers.filter(a => a.card === contestantCard).map(a => a.name);
+    if (matches.length) points[asker] += 1;
+    const m = matches.map(n => answers.find(a => a.name === n)?.character || n).join(' and ');
+    const reveal = {
+      card: contestantCard, matches,
+      text: fillSnatch(pick(matches.length ? REVEAL.match : REVEAL.miss, 'reveal:'), { x: first(x), card: contestantCard, m }),
+    };
+
+    rounds.push({
+      round: r + 1, qid: q.id, question: q.text, asker,
+      ask: fillSnatch(pick(ASK, 'ask:'), { x: first(x), q: q.text.replace('___', 'blank') }),
+      answers, cross, reveal,
+      passed: newlyPassed.map(n => ({ name: n, character: charOf(n)?.name || null,
+        text: fillSnatch(pick(PASSED_OVER, 'passed:'), { c: charOf(n)?.name || n }) })),
+      // Every queen's number for the round, for readers who want the whole taping.
+      scores: beat.map(b => ({ name: b.name, score: scoreNow(b.name) })),
+    });
   }
 
   // Two queens sitting next to each other who like each other build a bit
   // together, and the whole taping lifts for both. Snatch Game is the one
   // challenge where being liked is worth points rather than votes.
-  for (let i = 1; i < assignment.order.length; i++) {
-    const a = assignment.order[i - 1];
-    const b = assignment.order[i];
+  for (let i = 1; i < seat.length; i++) {
+    const a = seat[i - 1];
+    const b = seat[i];
     if (!perRound[a] || !perRound[b]) continue;
     if (bond(a, b) >= 2 && rng() < 0.4) {
       perRound[a] = perRound[a].map(s => Math.round((s + 0.8) * 100) / 100);
       perRound[b] = perRound[b].map(s => Math.round((s + 0.8) * 100) / 100);
       events.push(evt('double-act', {
-        players: [a, b],
-        bond: [[a, b, 1]],
-        pop: { [a]: 2, [b]: 2 },
+        players: [a, b], bond: [[a, b, 1]], pop: { [a]: 2, [b]: 2 },
         data: { characters: [charOf(a)?.name || null, charOf(b)?.name || null] },
       }));
     }
@@ -393,11 +475,12 @@ export function perform(ctx) {
     const perf = scores.reduce((s, x) => s + x, 0) / scores.length;
     const flops = scores.filter(s => s < FLOP).length;
     const kills = scores.filter(s => s > KILL).length;
-    if (flops >= 3) {
+    /* DYING IS WHAT THE VIEWER SAW: the host stopped going to her after two
+       dead answers on camera. Counting flops over rounds nobody was shown
+       called a queen dead whose every aired answer got a laugh. */
+    if (passedOver.has(n)) {
       events.push(evt('dying', {
-        players: [n],
-        pop: { [n]: -3 },
-        state: { snatchDied: n },
+        players: [n], pop: { [n]: -3 }, state: { snatchDied: n },
         data: { character: charOf(n)?.name || null, flops },
       }));
     }
@@ -421,6 +504,12 @@ export function perform(ctx) {
     performances,
     runwayOverride: null,
     events,
-    scenes: [{ step: 'maxi-pre', kind: 'snatch-taping', data: { rounds, hostBeats } }],
+    scenes: [{
+      step: 'maxi-pre', kind: 'snatch-taping',
+      data: {
+        contestants, open: openLine, intros, rounds, points, hostBeats,
+        close: pick(SHOW_CLOSE, 'close:'),
+      },
+    }],
   };
 }

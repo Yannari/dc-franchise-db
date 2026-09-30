@@ -122,11 +122,17 @@ describe('the maxi', () => {
     const html = rpBuildMaxi(row);
     const one = Object.values(row.dr.performances)[0];
     expect(html).toContain(one.detail.character);
-    expect(html, 'has the game-show desk').toContain('sg-desk');
-    expect(html, 'has round headers').toContain('sg-round-hdr');
-    expect(html, 'has answer cards').toContain('sg-answer');
-    expect(html, 'has the laugh-o-meter').toMatch(/sg-meter/);
-    expect(html, 'has the scoreboard').toContain('sg-scoreboard');
+    // The Tiered Panel: the desk, the question card, a booth per queen, the
+    // meter, and an answer card per queen the host went to.
+    expect(html, 'has the game-show desk').toContain('sgx-desk');
+    expect(html, 'has the question card').toContain('sgx-q');
+    expect(html, 'has the laugh-o-meter').toContain('sgx-meter');
+    expect(html, 'has answer cards').toContain('class="card"');
+    expect(html, 'has the closing tally').toContain('Laughs on the night');
+    const taping = row.dr.scenes.find(s => s.kind === 'snatch-taping').data;
+    // Every line the engine picked is on the screen, word for word.
+    const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    for (const r of taping.rounds) for (const a of r.answers) expect(html).toContain(esc(a.say));
   });
 
   it('THE BALL SHOWS THREE LOOKS AND FLAGS THE SEWN ONE', () => {

@@ -1899,7 +1899,12 @@ export function renderChallengeBeats({
   const perfScores = Object.fromEntries(
     living.filter(n => performances[n]).map(n => [n, performances[n].perf]));
 
-  for (const n of living) {
+  /* THE SNATCH GAME NARRATES ITSELF. Its taping (js/dr/chal/snatch-game.js)
+     writes every answer she gave, on camera, in her celebrity's words; a
+     summary line on top of that ("six questions, six laughs") described a
+     taping the viewer had just watched, and contradicted it whenever the
+     average over six rounds disagreed with the three she was shown in. */
+  for (const n of family.family === 'snatch-game' ? [] : living) {
     if (!performances[n]) continue;
     const tierId = tierAt(fractionalRank(n, perfScores), PERF_TIERS);
     const herEvents = (maxiEvents || []).filter(e => (e.players || [])[0] === n).map(e => e.type);

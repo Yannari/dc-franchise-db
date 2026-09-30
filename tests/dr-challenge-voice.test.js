@@ -63,20 +63,33 @@ describe('the performance beat speaks the challenge', () => {
   });
 
   it('tags the beat with the family that narrated it', () => {
-    const row = play('snatch-game');
+    const row = play('roast');
     const kinds = (row.dr.scenes || []).map(s => s.kind).filter(k => k.startsWith('perform:'));
     expect(kinds.length, 'no performance beats at all').toBeGreaterThan(0);
-    for (const k of kinds) expect(k).toBe('perform:snatch-game');
+    for (const k of kinds) expect(k).toBe('perform:roast');
   });
 
-  it('A SNATCH GAME DOES NOT READ LIKE A RUSICAL', () => {
+  it('A ROAST DOES NOT READ LIKE A RUSICAL', () => {
     // The assertion the two files exist for.
-    const snatch = perfText(play('snatch-game'));
+    const roast = perfText(play('roast'));
     const rusical = perfText(play('rusical'));
-    expect(snatch.length, 'the snatch game narrated nothing').toBeGreaterThan(3);
+    expect(roast.length, 'the roast narrated nothing').toBeGreaterThan(3);
     expect(rusical.length, 'the rusical narrated nothing').toBeGreaterThan(3);
-    const shared = snatch.filter(t => rusical.includes(t));
+    const shared = roast.filter(t => rusical.includes(t));
     expect(shared, `these lines appeared in both: ${shared[0] || ''}`).toEqual([]);
+  });
+
+  /* THE SNATCH GAME NARRATES ITSELF, and so has no summary beat to compare:
+     its taping records every answer in the celebrity's own words (see
+     tests/dr-snatch-kits.test.js). What it must not do is ALSO carry the
+     generic summary, which contradicted the answers the viewer had just
+     been shown. */
+  it('a Snatch Game is its taping, not a summary of one', () => {
+    const row = play('snatch-game');
+    expect(perfText(row)).toEqual([]);
+    const taping = (row.dr.scenes || []).find(s => s.kind === 'snatch-taping')?.data;
+    expect(taping?.rounds?.length).toBe(6);
+    expect(taping.rounds.flatMap(r => r.answers).length).toBeGreaterThan(12);
   });
 
   it('and neither reads like a makeover, a roast or a ball', () => {

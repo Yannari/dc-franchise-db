@@ -44,6 +44,7 @@ import { buysLabel } from '../dr/data/minis.js';
 import { sceneCard, WERK_CSS } from './werk.js';
 import { characterById } from '../dr/data/snatch-characters.js';
 import { rpBuildTournament } from './smackdown.js';
+import { hasSnatchScript, rpBuildSnatchScript } from './snatch-screen.js';
 
 const esc = v => String(v ?? '').replace(/[&<>"]/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -3261,7 +3262,10 @@ function _pickLine(pool, rng, name, character) {
 export function rpBuildMaxi(row) {
   if (row?.dr?.tournament) return rpBuildTournament(row);
   if (row?.dr?.challenge?.id === 'ball') return rpBuildBall(row);
-  if (row?.dr?.challenge?.id === 'snatch-game') return rpBuildSnatchGame(row);
+  /* The scripted taping; a season saved before it existed keeps the old screen. */
+  if (row?.dr?.challenge?.id === 'snatch-game') {
+    return hasSnatchScript(row) ? rpBuildSnatchScript(row, { extraCss: CHAL_CSS }) : rpBuildSnatchGame(row);
+  }
   const ep = epOf(row);
   const ch = row?.dr?.challenge;
   const perfs = row?.dr?.performances || {};

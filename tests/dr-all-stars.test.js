@@ -402,7 +402,9 @@ describe('the lipstick is not spoiled', () => {
   it('and the ceremony still names her exactly once — per lipstick', () => {
     let checked = 0;
     let doubles = 0;
-    for (let s = 90; s < 96; s++) {
+    // Wide enough that a double win (rare by design) turns up whatever the
+    // earlier weeks happen to draw.
+    for (let s = 90; s < 106; s++) {
       for (const r of weekly(season(s, { drAllStars: true }))) {
         const lip = r.dr.lipsync;
         if (!lip?.legacy || !lip.eliminated) continue;

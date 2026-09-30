@@ -838,7 +838,7 @@ const BLOCKS = {
   // with every answer that matters, the reveal, the verdict, the prize.
   game(state, s) {
     const g = GAMES.find(x => x.id === s.data.gameId);
-    return (s.data.beats || []).map(b => {
+    return (s.data.beats || []).map((b, bi) => {
       const key = gameKey(g.family, b);
       const promptId = b.promptId;
       // The engine keeps ids; the words are looked up here.
@@ -852,7 +852,8 @@ const BLOCKS = {
       const ans = b.answer ? (g.say || ['Agree', 'Disagree'])[b.answer === 'agree' ? 0 : 1] : undefined;
       const extra = {};
       for (const k of GAME_FACTS) if (b[k] !== undefined) extra[k] = b[k];
-      return { key, keys: keys.length ? keys : [key], phase: b.phase, round: b.round,
+      // bi: which beat this is, for the game board (js/vp-ci/boards.js).
+      return { key, keys: keys.length ? keys : [key], phase: b.phase, round: b.round, bi,
         cast: { a: b.by, b: b.about, c: b.c, anonA: b.kind === 'question' && b.anon,
           text: { q, x, n: b.n === undefined ? undefined : String(b.n), game: g.name, ans } }, extra };
     });
@@ -921,7 +922,7 @@ export function writeScene(state, scene) {
     const on = ON_STAGE.has(scene.kind)
       ? Object.fromEntries(['a', 'b', 'c'].filter(k => typeof b.cast[k] === 'string').map(k => [k, b.cast[k]])) : null;
     blocks.push({ key: from, ...(b.phase ? { phase: b.phase } : {}), ...(b.round != null ? { round: b.round } : {}),
-      ...(on ? { on } : {}), ...renderEntry(state, entry, b.cast, rng, ctx) });
+      ...(on ? { on } : {}), ...(b.bi != null ? { bi: b.bi } : {}), ...renderEntry(state, entry, b.cast, rng, ctx) });
   });
   // A slip happens inside the conversation: weave it into the chat before the
   // chat's closing beat, rather than printing it as a second scene.

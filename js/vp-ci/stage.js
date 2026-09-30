@@ -22,7 +22,7 @@
 // A catfish is two people on this stage: the TV and the feed show the
 // PERSONA (its name, its photo); the cam card shows who is really typing.
 import { faceOf } from './steps.js';
-import { esc, hashify, faceUrl, ringOf, nameOf, realOf, isCatfish, bg, avatar, THEMES, themeFor, aptNo,
+import { esc, hashify, faceUrl, ringOf, nameOf, realOf, isCatfish, bg, ringBg, avatar, THEMES, themeFor, aptNo,
   captionHtml, profileCard, starsText, facts } from './parts.js';
 import { MOMENTS } from './moments.js';
 import { PARTY_THEMES } from '../ci/games-data.js';
@@ -224,7 +224,7 @@ function arriveStage(row, screen, idx, fresh) {
   const introduced = new Set(steps.slice(0, idx + 1).map(x => x.about).filter(Boolean));
   const roll = screen.kind === 'profiles' && order.length > 1 ? `<div class="civ-roll">${order.map(h => {
     const url = faceUrl(faceOf(row, h, 'profile'));
-    return `<span class="${introduced.has(h) ? 'on' : ''}${h === about ? ' cur' : ''}" style="--ring:${ringOf(row, h)}"${bg(introduced.has(h) ? url : '')}>${introduced.has(h) && !url ? esc(nameOf(row, h)[0]) : ''}</span>`;
+    return `<span class="${introduced.has(h) ? 'on' : ''}${h === about ? ' cur' : ''}" ${ringBg(ringOf(row, h), introduced.has(h) ? url : '')}>${introduced.has(h) && !url ? esc(nameOf(row, h)[0]) : ''}</span>`;
   }).join('')}<b>${introduced.size} / ${order.length}</b></div>` : '';
   const bgl = `<div class="civ-uibg"></div><div class="civ-aurora" style="left:52%;top:-14%;width:56%;aspect-ratio:1"></div><div class="civ-aurora soft" style="left:52%;top:-14%;width:56%;aspect-ratio:1"></div>`;
   const where = `<div class="civ-where">${title}</div>`;

@@ -3,7 +3,7 @@
 // are the user's own (docs/the-circle-music.md), and a missing file is silence
 // for a bed and a synthesised sting for a moment.
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { setPlayers } from '../js/core.js';
 import { playCircleSeason } from '../js/ci/season.js';
 import { circleScreens } from '../js/vp-ci/steps.js';
@@ -24,13 +24,13 @@ describe('every scene has a bed, every bed a file', () => {
       const bed = bedFor(s);
       expect(bed, s.kind).toBeTruthy();
       expect(BED_CATALOG[bed], bed).toBeTruthy();
-      expect(BED_CATALOG[bed].file).toMatch(/^assets\/audio\/circle\/[a-z-]+\.mp3$/);
+      expect(BED_CATALOG[bed].file).toMatch(/^assets\/audio\/circle\/[a-z0-9-]+\.mp3$/);
     }
   });
   it('every sting is a cue, with a file and a synth for when the file is not there', () => {
     for (const [name, s] of Object.entries(CI_STINGS)) {
       expect(CUE_CATALOG[name], name).toBeTruthy();
-      expect(s.file).toMatch(/^assets\/audio\/circle\/sfx\/[a-z-]+\.mp3$/);
+      for (const f of s.files) expect(f).toMatch(/^assets\/audio\/circle\/sfx\/[a-z0-9-]+\.mp3$/);
       expect(typeof s.synth).toBe('function');
     }
     expect(Object.keys(CI_BEDS).length).toBeGreaterThanOrEqual(12);
@@ -64,6 +64,12 @@ describe('the moment makes the sound', () => {
     const [r, w] = find('reveal', /^reveal\.winner$/);
     expect(soundFor(r, w)).toMatchObject({ cue: 'ci-winner', bed: 'ci-winner' });
   });
+  it('a game board ticks as answers land and sounds the reveal', () => {
+    const games = of('game');
+    const hits = games.flatMap(g => g.steps.map((_, i) => soundFor(g, i).cue)).filter(Boolean);
+    expect(hits).toContain('ci-tick');
+    expect(hits.some(c => c === 'ci-reveal' || c === 'ci-crown')).toBe(true);
+  });
   it('a plain line of dialogue plays nothing over the bed', () => {
     const chat = of('chat')[0];
     const i = chat.steps.findIndex(x => x.part === 'say');
@@ -75,9 +81,25 @@ describe('the download list (docs/the-circle-music.md) matches the code', () => 
   it('every bed and every sting the code looks for is on the list, under its own folder', () => {
     const doc = readFileSync('docs/the-circle-music.md', 'utf8');
     const beds = doc.split('## Stingers')[0], stings = doc.split('## Stingers')[1];
-    for (const b of Object.values(CI_BEDS)) expect(beds, b.file).toContain('`' + b.file.split('/').pop() + '`');
-    for (const s of Object.values(CI_STINGS)) expect(stings, s.file).toContain('`' + s.file.split('/').pop() + '`');
+    for (const b of Object.values(CI_BEDS)) for (const f of b.files) expect(beds, f).toContain('`' + f + '`');
+    for (const s of Object.values(CI_STINGS)) for (const f of s.files) expect(stings, f).toContain('`' + f.split('/').pop() + '`');
     expect((beds.match(/^\| \d+ \|/gm) || []).length).toBe(Object.keys(CI_BEDS).length);
     expect((stings.match(/^\| \d+ \|/gm) || []).length).toBe(Object.keys(CI_STINGS).length);
+  });
+});
+
+describe("the user's tracks are in place", () => {
+  it('every bed and sting file exists on disk', () => {
+    const missing = [];
+    for (const b of Object.values(CI_BEDS)) for (const f of b.files) if (!existsSync(`assets/audio/circle/${f}`)) missing.push(f);
+    expect(missing).toEqual([]);
+    const noSting = Object.entries(CI_STINGS).filter(([, s]) => !s.files.every(f => existsSync(f))).map(([k]) => k).sort();
+    expect(noSting).toEqual([]);
+  });
+  it('a kind with several tracks spreads its screens over them, and a screen keeps its track', () => {
+    const games = of('game');
+    const picked = new Set(games.map(s => bedFor(s)));
+    if (games.length >= 6) expect(picked.size).toBeGreaterThan(1);
+    for (const s of games) expect(bedFor(s)).toBe(bedFor(s));
   });
 });

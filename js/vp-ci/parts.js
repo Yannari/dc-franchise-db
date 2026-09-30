@@ -28,6 +28,8 @@ export const nameOf = (row, h) => row.ci.profiles?.[h]?.name || String(h || '').
 export const realOf = (row, h) => (row.ci.profiles?.[h]?.people || []).join(' & ') || nameOf(row, h);
 export const isCatfish = (row, h) => row.ci.profiles?.[h]?.mode === 'catfish';
 export const bg = url => (url ? ` style="background-image:url('${esc(url)}')"` : '');
+/** One style attribute for a ring colour and a photo (two style attributes and the browser drops the photo). */
+export const ringBg = (ring, url) => ` style="--ring:${ring}${url ? `;background-image:url('${esc(url)}')` : ''}"`;
 export function avatar(row, h, cls = 'civ-av') {
   const url = faceUrl(faceOf(row, h, 'profile'));
   return `<div class="${cls}" style="--ring:${ringOf(row, h)}${url ? `;background-image:url('${esc(url)}')` : ''}">${url ? '' : esc(nameOf(row, h)[0] || '?')}</div>`;
@@ -68,3 +70,37 @@ export function profileCard(row, h, label = 'PROFILE') {
     <div class="fx">${facts(p.age, p.status)}</div>${p.job ? `<div class="jb">${esc(p.job)}</div>` : ''}
     ${p.bio ? `<div class="bio">“${esc(p.bio)}”</div>` : ''}</div>`;
 }
+
+// ── shared pieces ──────────────────────────────────────────────────────
+export const CHIP = { say: 'SAYS ALOUD', react: 'REACTS', send: 'SENT', post: 'POSTED', video: 'ON VIDEO' };
+export function dlg(row, st, fresh, cls = '') {
+  if (!st) return '';
+  if (st.host) return captionHtml(st, fresh);
+  if (!st.who) return `<div class="civ-dlg ${cls}${fresh ? ' new' : ''}"><div class="civ-line stage">${esc(st.text)}</div></div>`;
+  const plate = `<div class="civ-plate">${esc(realOf(row, st.who))}${isCatfish(row, st.who) ? ` <i>· as ${esc(nameOf(row, st.who))}</i>` : ''}</div>`;
+  const body = st.part === 'send' ? `<span class="civ-chip cmd">TO THE CIRCLE</span><span class="civ-cmd">${hashify(st.text)}</span>`
+    : `<span class="civ-chip say">${CHIP[st.part] || 'SAYS'}</span>${hashify(st.text)}`;
+  return `<div class="civ-dlg ${cls}${fresh ? ' new' : ''}">${plate}<div class="civ-line">${body}</div></div>`;
+}
+/** The real person on their apartment camera. */
+export function cam(row, h, cls = '', label = null) {
+  if (!h) return '';
+  const url = faceUrl(faceOf(row, h, 'cam'));
+  const real = realOf(row, h);
+  return `<div class="civ-mcam ${cls}" data-cam="${esc(label ?? `CAM ${aptNo(row, h)} · ${real.toUpperCase()}`)}" style="--glow:${ringOf(row, h)}${url ? `;background-image:url('${esc(url)}')` : ''}">${url ? '' : esc(real[0] || '?')}</div>`;
+}
+/** A profile as the room sees it: photo and name. */
+export function tile(row, h, cls = '', badge = '') {
+  const url = faceUrl(faceOf(row, h, 'profile'));
+  return `<div class="civ-mtile ${cls}" data-h="${esc(h)}" style="--ring:${ringOf(row, h)}"><div class="ph"${bg(url)}>${url ? '' : esc(nameOf(row, h)[0] || '?')}</div>
+    <div class="n">${esc(nameOf(row, h).toUpperCase())}</div>${badge}</div>`;
+}
+export const where = text => `<div class="civ-where">${esc(text)}</div>`;
+export const upTo = (screen, idx) => screen.steps.slice(0, idx + 1);
+/** The last one who spoke, up to this step (a stage direction keeps the camera where it was). */
+export function speakerAt(screen, idx) {
+  for (let i = idx; i >= 0; i--) if (screen.steps[i]?.who) return screen.steps[i].who;
+  return null;
+}
+export const bgUi = '<div class="civ-uibg"></div><div class="civ-aurora" style="left:58%;top:-18%;width:52%;aspect-ratio:1"></div>';
+

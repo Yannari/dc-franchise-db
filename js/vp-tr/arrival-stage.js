@@ -17,7 +17,7 @@ import { TRScenery } from './cutaway-scenery.js';
 import { beatLines } from './stage-lines.js';
 import { footCard, playCard, CARD_CSS } from './stage-cards.js';
 import { trPlay } from './sfx.js';
-import { cutIn as cutInCard, confessional } from './stage-cutin.js';
+import { confessional, lineup } from './stage-cutin.js';
 
 const hash = s => { let h = 7; for (const c of String(s)) h = (Math.imul(h, 31) + c.charCodeAt(0)) >>> 0; return h; };
 const clean = s => String(s || '').replace(/\s+/g, ' ').trim();
@@ -52,9 +52,60 @@ function parse(data) {
     }
     return null;
   });
-  // the entrance carries the person's name
-  return steps.map((st, i) => (st.kind === 'intro' && (steps[i - 1] || {}).beat !== st.beat
-    ? { ...st, tag: st.meta.name } : st));
+  return byCar(steps);
+}
+
+// ── ONE CAR AT A TIME, NOT ONE PERSON AT A TIME (2026-09-30) ─────────────
+//
+// The user: "the arrival can become too repetitive". Twenty people each got
+// the same four beats — introduction, confessional, greeting, reply — so the
+// drive was one shape played twenty times. A premiere cuts it by car: the car
+// pulls up, everybody in it is shown together in one line-up with what they
+// are known for, ONE of them talks to camera, ONE exchange happens on the
+// gravel (a known face or a shared season first, where the car has one), and
+// the car's first read to camera closes it. Everything else each of them
+// said stays on the page underneath.
+const h32 = s2 => { let h = 7; for (const c of String(s2)) h = (Math.imul(h, 31) + c.charCodeAt(0)) >>> 0; return h; };
+function byCar(steps) {
+  const out = [];
+  let i = 0;
+  while (i < steps.length) {
+    const st = steps[i], m = st.meta || {};
+    if (m.kind !== 'car') { if (m.kind !== 'intro') out.push(st); i++; continue; }
+    const beat = st.beat, label = st.tag || '';
+    while (i < steps.length && steps[i].beat === beat) out.push(steps[i++]);
+    // the people out of this car, each with their own steps
+    const per = [];
+    while (i < steps.length && (steps[i].meta || {}).kind === 'intro') {
+      const name = steps[i].meta.name;
+      let p = per.find(x => x.name === name);
+      if (!p) { p = { name, steps: [] }; per.push(p); }
+      p.steps.push(steps[i++]);
+    }
+    if (!per.length) continue;
+    const names = per.map(p => p.name), key = names.join('|');
+    out.push({ t: 'lineup', names, label, beat: -1, meta: { kind: 'lineup', names } });
+    // ONE to camera
+    const spot = per[h32(key + '|spot') % per.length];
+    const intro = spot.steps.find(x => x.t === 'cam');
+    if (intro) out.push(intro);
+    // ONE exchange: a recognition or a shared season first, then any greeting
+    const talk = per.filter(p => p.steps.some(x => x.t === 'say'));
+    const known = talk.filter(p => p.steps.some(x => x.t === 'narr' && x.text && /“|"|recognis|before|season|know/i.test(x.text)));
+    const ex = (known.length ? known : talk)[h32(key + '|ex') % Math.max(1, (known.length ? known : talk).length)];
+    if (ex) {
+      // the exchange, with the narrated moment it answers when there is one
+      // ("'I know exactly who you are,' Alejandro tells Amy" before Amy's reply)
+      const first = ex.steps.findIndex(x => x.t === 'say');
+      const before = ex.steps[first - 1];
+      if (before && before.t === 'narr') out.push(before);
+      ex.steps.slice(first).filter(x => x.t === 'say').forEach(x => out.push(x));
+      // and their first read to camera, about the one we just watched them meet
+      const cams = ex.steps.filter(x => x.t === 'cam');
+      if (cams.length > 1) out.push(cams[cams.length - 1]);
+    }
+  }
+  return out;
 }
 
 export function arrivalStageScreen(ep, observer, pageHtml) {
@@ -105,6 +156,7 @@ function stateAt(S) {
     const m = S.steps[k].meta || {};
     if (m.kind === 'car') { car = m.id; cars++; newest = null; }
     if (m.kind === 'intro' && !out.includes(m.name)) { out.push(m.name); newest = m.name; }
+    if (m.kind === 'lineup') for (const n of m.names) if (!out.includes(n)) { out.push(n); newest = n; }
     if (m.kind === 'gather' || m.kind === 'briefing' || m.kind === 'rule' || m.kind === 'line') inside = true;
     if (m.kind === 'line') cloths = true;
   }
@@ -176,18 +228,18 @@ function paint(root, S, fresh) {
   const partner = st && st.t === 'say'
     ? [prevSt, nextSt].find(x => x.beat === st.beat && x.t === 'say' && x.who && x.who !== st.who) : null;
   const talkers = st && st.t === 'say' ? [st.who, partner && partner.who].filter(x => x && r.out.includes(x)) : [];
-  const lit = new Set(talkers.length ? talkers : r.newest ? [r.newest] : []);
+  const lit = new Set(talkers.length ? talkers : (st && st.t === 'lineup') ? st.names : r.newest ? [r.newest] : []);
   folk.innerHTML = r.out.map((name, i) => {
     const p = terraceAt(i, n, W, H);
-    const isNew = name === r.newest && fresh && m.kind === 'intro' && firstOfBeat;
+    const isNew = fresh && ((name === r.newest && m.kind === 'intro' && firstOfBeat) || (st && st.t === 'lineup' && st.names.includes(name)));
     return `<div class="tpa-p${lit.has(name) ? ' tpa-now' : ''}${st && st.t === 'say' && name === st.who ? ' tpa-talk' : ''}${isNew ? ' tpa-step' : ''}" style="left:${p.x}px;top:${p.y}px;width:${p.w}px;`
       + `--fx:${(W * .5 - p.x).toFixed(0)}px;z-index:${Math.round(p.y)}">`
       + `<div class="tpa-av">${face(name)}</div><div class="tpa-nm">${esc(name)}</div></div>`;
   }).join('');
-  if (fresh && m.kind === 'intro' && firstOfBeat) trPlay('tr-footsteps', 250);
+  if (fresh && ((m.kind === 'intro' && firstOfBeat) || m.kind === 'lineup')) trPlay('tr-footsteps', 250);
   // camera: in close on whoever just stepped out; back for a car or the drive
   const k = talkers.length > 1 ? 1.9 : 1.7;
-  if (!r.inside && lit.size && m.kind === 'intro') {
+  if (!r.inside && lit.size && (m.kind === 'intro' || m.kind === 'lineup')) {
     const ps = [...lit].map(x => terraceAt(r.out.indexOf(x), n, W, H));
     const p = { x: ps.reduce((a, q) => a + q.x, 0) / ps.length, y: ps.reduce((a, q) => a + q.y, 0) / ps.length };
     const tx = W / 2 - p.x * k, ty = H * .42 - p.y * k;
@@ -236,12 +288,8 @@ function paint(root, S, fresh) {
   // confessional CUTS AWAY to the confessional chair; and talk on the gravel
   // is live, so the camera just goes in on the two of them (above).
   let cut = '';
-  if (st.t === 'cam') {
-    const first = !S.steps.slice(0, S.idx).some(x => x.t === 'cam' && x.who === st.who);
-    cut = first
-      ? cutInCard({ who: st.who, fresh, tone: 'morning', known: (D.known || {})[st.who] || null })
-      : confessional({ who: st.who, fresh });
-  }
+  if (st.t === 'lineup') cut = lineup({ names: st.names, known: D.known || {}, label: st.label, fresh });
+  else if (st.t === 'cam') cut = confessional({ who: st.who, fresh });
   outEl.classList.toggle('tpa-dim', !!cut);
   hud.innerHTML = cut + footCard(st, D.host);
   playCard(hud, st, S, fresh);

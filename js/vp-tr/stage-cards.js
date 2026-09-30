@@ -17,7 +17,15 @@ export function footCard(st, host, opts = {}) {
     return `<div class="${cls}"><div class="tsc-card tsc-hostcard"><span class="tsc-f tsc-hf">${face(host.name, host.slug)}</span>`
       + `<div><div class="tsc-k">${esc(host.name)}</div><p class="tsc-type" data-q="1"></p></div></div></div>`;
   }
-  if (st.t === 'say' || st.t === 'cam') {
+  // LIVE TALK: the speaker's portrait breaks out of the box and their name
+  // sits on a tab, so a line said in the room reads as somebody talking
+  // rather than as an intertitle (the camera does the rest, on the stage)
+  if (st.t === 'say') {
+    return `<div class="${cls}"><div class="tsc-card tsc-live">` + (opts.head || '')
+      + `<span class="tsc-pop">${face(st.who)}</span><span class="tsc-name">${esc(st.who)}</span>`
+      + '<p class="tsc-type" data-q="1"></p></div></div>';
+  }
+  if (st.t === 'cam') {
     return `<div class="${cls}"><div class="tsc-card${st.t === 'cam' ? ' tsc-camcard' : ''}">`
       + (opts.head || '')
       + `<div class="tsc-quote"><span class="tsc-f">${face(st.who)}</span><div><p class="tsc-type" data-q="1"></p>`
@@ -64,6 +72,17 @@ export const CARD_CSS = `
 .tsc-quote small{display:block;margin-top:4px;font-family:var(--v-display);font-size:9.5px;font-weight:700;letter-spacing:.28em;color:rgba(222,214,196,.62);text-transform:uppercase}
 .tsc-hostcard{display:flex;gap:14px;align-items:center;background:radial-gradient(80% 140% at 50% 50%,rgba(74,40,16,.98),rgba(10,6,4,.98))}
 .tsc-hostcard p{font-style:italic;color:#fff3d2}
+.tsc-live{position:relative;padding:18px 22px 14px 132px;min-height:74px;background:linear-gradient(160deg,rgba(34,18,8,.97),rgba(10,6,4,.98));border-color:rgba(255,219,149,.35)}
+.tsc-live p{margin:0;font-family:var(--v-hand);font-size:clamp(17px,1.55vw,21px);line-height:1.4;color:#f6efdf;min-height:1.4em}
+.tsc-pop{position:absolute;left:16px;bottom:10px;width:100px;height:112px;overflow:hidden;border-radius:50% 50% 12% 12%/44% 44% 9% 9%;background:#141922;
+  box-shadow:0 0 0 3px #ffdb95,0 0 24px rgba(255,219,149,.45),0 12px 24px rgba(0,0,0,.8)}
+.tsc-pop img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 18%;z-index:1}
+.tsc-name{position:absolute;left:124px;top:-13px;padding:3px 13px;font-family:var(--v-display);font-weight:900;font-size:11.5px;letter-spacing:.2em;
+  text-transform:uppercase;color:#241b11;background:linear-gradient(180deg,#f7e2a6,#c99a48);transform:skewX(-10deg);box-shadow:0 4px 10px rgba(0,0,0,.6)}
+.tsc-slot.tsc-in .tsc-pop{animation:tscPop .45s cubic-bezier(.2,1.5,.4,1) both}
+.tsc-slot.tsc-in .tsc-name{animation:tscTab .35s ease-out .1s both}
+@keyframes tscPop{from{transform:translateY(24px) scale(.7);opacity:0}to{transform:none;opacity:1}}
+@keyframes tscTab{from{transform:skewX(-10deg) translateX(-14px);opacity:0}to{transform:skewX(-10deg);opacity:1}}
 .tsc-camcard{background:linear-gradient(170deg,#1a2230,#0f141d);border-color:rgba(143,166,194,.4)}
 .tsc-camcard .tsc-quote p{color:#dfe7f2}.tsc-camcard small{color:#8fa6c2}
 .tsc-narr{display:flex;flex-direction:column;align-items:center;gap:6px}

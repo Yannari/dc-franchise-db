@@ -8,6 +8,7 @@
 import { _shell, _portrait } from './style.js';
 import { _controls, _state } from './reveal.js';
 import { tagStep } from './music.js';
+import { hostCard, HOST_CARD_CSS } from './host-card.js';
 import { FINALE_STAGE_CSS, crownLipsyncStage, showcaseStage, interviewStage, cutStage, finaleCard, wireStage } from './finale-stage.js';
 
 const esc = v => String(v ?? '').replace(/[&<>"]/g, c =>
@@ -184,7 +185,7 @@ export function rpBuildCrownLipSync(row) {
   const LS_KINDS = new Set([
     'finale:finale-crown-lipsync', 'finale-duel',
     'finale:finale-preduel', 'finale:finale-interview',
-    'finale:duel-beat', 'finale:duel-hook',
+    'finale:duel-beat', 'finale:duel-hook', 'finale:crown-speech',
   ]);
   const scenes = (row?.dr?.scenes || []).filter(s =>
     LS_KINDS.has(s.kind) && (s.text || s.data?.duel));
@@ -203,6 +204,7 @@ export function rpBuildCrownLipSync(row) {
     const r = Number.isInteger(sc.data?.round) ? sc.data.round - 1 : decided;
     const who = (sc.data?.players || [])[0] || '';
     if (sc.kind === 'finale:finale-crown-lipsync') list.push({ t: 'setup', r: 0, text: sc.text });
+    else if (sc.kind === 'finale:crown-speech') list.push({ t: 'speech', r, part: sc.data?.part, final: !!sc.data?.final, text: sc.text });
     else if (sc.kind === 'finale:finale-preduel' || sc.kind === 'finale:finale-interview') list.push({ t: 'talk', r, who, text: sc.text });
     else if (sc.kind === 'finale:duel-beat') list.push({ t: 'beat', r, who, tier: sc.data?.tier, tempo: sc.data?.tempo, text: sc.text });
     else if (sc.kind === 'finale:duel-hook') list.push({ t: 'hook', r, who, tier: sc.data?.tier, hook: sc.data?.hook, text: sc.text });
@@ -214,12 +216,21 @@ export function rpBuildCrownLipSync(row) {
   const label = i => (i === n - 1 ? 'The final' : n === 2 ? 'The semi-final' : `Semi-final ${i + 1}`);
   // Each card carries its round's song; the final's verdict is the winner's track.
   const songOfRound = r => rounds[r]?.song || null;
-  const cards = list.map((s, i) => tagStep(fincrownCard(s, i),
-    s.t === 'verdict' && s.r === n - 1 ? 'winner' : null, s.t === 'verdict' ? null : songOfRound(s.r))).join('');
+  /* THE MUSIC, THE WEEKLY LIP SYNC'S ORDER: the host's talk and the first
+     half of the speech under Bottom Two, The Time Has Come from "the time
+     has come", the round's song from the first move, and the verdict — the
+     goodbye's music when a semi-final sends a queen home, the win's song
+     (Champion) when the final is decided. */
+  const musicOf = s => s.t === 'setup' || s.t === 'talk' ? ['bottom-two', null]
+    : s.t === 'speech' ? [/^(two|song|stakes)$/.test(s.part || '') ? 'bottom-two' : 'time-has-come', null]
+      : s.t === 'beat' || s.t === 'hook' ? ['lipsync', songOfRound(s.r)]
+        : s.t === 'verdict' ? [s.r === n - 1 ? 'the-win' : 'sashay', null] : [null, null];
+  const cards = list.map((s, i) => tagStep(fincrownCard(s, i), ...musicOf(s))).join('');
   function fincrownCard(s, i) {
     const id = `dr-step-fincrownls-${i}`;
-    if (s.t === 'setup') return finaleCard({ id, ep, host: 'rupaul', tag: 'The host', text: s.text });
-    if (s.t === 'talk') return finaleCard({ id, ep, host: 'rupaul', tag: `The host to ${s.who} · ${label(s.r)}`, text: s.text });
+    if (s.t === 'setup') return hostCard({ id, ep, text: s.text, tone: 'plain' });
+    if (s.t === 'speech') return hostCard({ id, ep, text: s.text, tone: s.part === 'for' ? 'big' : s.part === 'time' ? 'hush' : 'plain' });
+    if (s.t === 'talk') return hostCard({ id, ep, text: s.text, who: s.who, tone: 'plain' });
     if (s.t === 'beat') return finaleCard({ id, ep, who: s.who, tag: `${s.who} · ${label(s.r)}`, text: s.text });
     if (s.t === 'hook') {
       return finaleCard({ id, ep, who: s.who, cls: s.tier === 'nailed' ? 'big' : 'red',
@@ -238,7 +249,7 @@ export function rpBuildCrownLipSync(row) {
       ${_portrait(nm, ep, { size: 32 })}
       <div><div class="dr-nm">${esc(nm)}</div></div></div>`).join('')}`;
 
-  return `<style>${FINALE_STAGE_CSS}</style>${_shell(
+  return `<style>${FINALE_STAGE_CSS}${HOST_CARD_CSS}</style>${_shell(
     `${stage.html}<div class="fsx-cards">${cards}</div>`, ep, {
       phase: 'lipsync', title: 'Lip Sync For The Crown',
       subtitle: 'this is for everything',

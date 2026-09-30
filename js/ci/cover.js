@@ -16,6 +16,7 @@
 // is typed in the person's own register (script.js via shownRegister).
 import { clamp, S, peopleOf } from './state.js';
 import { registerOf, registerOfPerson } from './register.js';
+import { jobOf } from './persona-data.js';
 
 // What a job sounds like, and how much it knows. Unlisted jobs fall back to age.
 const JOBS = [
@@ -30,10 +31,13 @@ const JOBS = [
 
 /** What a persona is supposed to sound like: { register, smarts }. */
 export function personaStyle(persona = {}) {
+  // A picked job (ci/persona-data.js) says it outright; a typed one is read
+  // by its words; the author's own choice of style wins over both.
+  const picked = jobOf(persona);
   const job = String(persona.job || '').toLowerCase();
-  const hit = JOBS.find(([re]) => re.test(job));
+  const hit = picked ? [null, picked.register, picked.smarts] : JOBS.find(([re]) => re.test(job));
   const age = persona.age ?? 28;
-  const register = persona.chatVoice?.register
+  const register = persona.register || persona.chatVoice?.register
     || (hit ? hit[1] : age < 25 ? 'hype' : age < 40 ? 'warm' : 'formal');
   return { register, smarts: hit ? hit[2] : age >= 40 ? 6 : 5 };
 }

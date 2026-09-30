@@ -13,7 +13,7 @@ describe('the default Catfish Pool', () => {
     expect(new Set(DEFAULT_POOL.map(p => p.handle)).size).toBe(8);
     expect(new Set(DEFAULT_POOL.map(p => p.id)).size).toBe(8);
     for (const p of DEFAULT_POOL) {
-      for (const k of ['id', 'handle', 'age', 'gender', 'job', 'status', 'bio', 'look']) expect(p[k], `${p.id}.${k}`).toBeTruthy();
+      for (const k of ['id', 'handle', 'age', 'gender', 'jobId', 'status', 'bio', 'photo']) expect(p[k], `${p.id}.${k}`).toBeTruthy();
       expect(p.reasons.length).toBeGreaterThan(0);
       for (const r of p.reasons) expect(['strategic', 'protective', 'family', 'experimental']).toContain(r);
     }

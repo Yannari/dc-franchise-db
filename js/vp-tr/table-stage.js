@@ -21,7 +21,7 @@
 import { roundTableStageData } from './round-table.js';
 import { trsStageShell as stageShell, trsFold, trsReg as reg, trsEsc as esc, trsFace as face, trsLater as later } from './castle-stage.js';
 import { TRScenery } from './cutaway-scenery.js';
-import { trPlay, trChalk } from './sfx.js';
+import { trPlay, trChalk, trMusic } from './sfx.js';
 import { beatLines } from './stage-lines.js';
 
 const hash = s => { let h = 7; for (const c of String(s)) h = (Math.imul(h, 31) + c.charCodeAt(0)) >>> 0; return h; };
@@ -278,7 +278,7 @@ function paintTable(root, S, fresh) {
       trPlay('tr-slate');
       trChalk(String(st.ballot.target || '').length, begin * 1000, per * 1000);
     } else if (st.t === 'count') trPlay('tr-drum');
-    else if (st.t === 'chair') trPlay('tr-chair');
+    else if (st.t === 'chair') { trPlay('tr-chair'); trMusic('tr-reveal', 900); }
     else if (st.t === 'reveal') {
       // the room holds its breath, the heart goes, then the card turns
       trPlay('tr-hold', 1200);

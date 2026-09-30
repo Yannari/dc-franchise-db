@@ -729,6 +729,19 @@ const _VP_STING = {
 //   plus a victory bed for the finale crowning.
 // Checked in PRIORITY ORDER (first match wins) so overlapping names resolve right.
 const _BED_VICTORY = new Set(['winner-ceremony', 'reunion', 'season-stats']);
+// The Traitors: one track per part of the day (assets/audio/traitors/). The
+// Round Table switches to `tr-reveal` itself when the chair is called
+// (js/vp-tr/sfx.js), so the banishment gets its own cue.
+const _BED_TRAITORS = {
+  'tr-arrival': 'tr-intro', 'tr-selection': 'tr-intro',
+  'tr-cold-open': 'tr-breakfast',
+  'tr-castle-morning': 'tr-castle', 'tr-castle-afternoon': 'tr-castle',
+  'tr-mission': 'tr-mission', 'tr-armoury': 'tr-mission',
+  'tr-suspicion': 'tr-roundtable', 'tr-round-table': 'tr-roundtable',
+  'tr-castle-night': 'tr-night', 'tr-status': 'tr-night', 'tr-web': 'tr-night',
+  'tr-conclave': 'tr-conclave', 'tr-recruitment': 'tr-conclave',
+  'tr-endgame': 'tr-endgame',
+};
 // Tribal phase: the council, the votes, the jury vote, double-boot re-votes.
 const _BED_TRIBAL_EXACT = new Set([
   'tribal', 'votes', 'votes-2', 'voting-plans-2', 'ftc', 'jury-vote', 'jury-votes',
@@ -774,6 +787,7 @@ export function bedForScreen(id, explicitBed) {
   if (explicitBed) return explicitBed;
   if (!id) return null;
   if (id === 'aftermath' || id.startsWith('aftermath-') || id.startsWith('aftermayhem-')) return 'aftermath';
+  if (_BED_TRAITORS[id]) return _BED_TRAITORS[id];
   if (_BED_VICTORY.has(id)) return 'victory';
   if (_BED_TRIBAL_EXACT.has(id) || _BED_TRIBAL_PREFIX.some(p => id.startsWith(p))) return 'tribal-tension';
   if (_BED_CHALLENGE_IDS.has(id) || _BED_CHALLENGE_PREFIXES.some(p => id.startsWith(p))) return 'challenge';

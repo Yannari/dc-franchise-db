@@ -14,6 +14,7 @@
 // third of the cast a persona (spec §2.2: about a third of real casts).
 import { rolesFor } from './shared.js';
 import { clamp, personMayScheme } from './state.js';
+import { jobOf, tellsOf } from './persona-data.js';
 
 export const MOTIVE = { age: 0.08, alum: 0.6, villainRep: 1.4, job: 1.0,
   strategic: 0.07, boldness: 0.05, loyalty: 0.06 };
@@ -179,6 +180,15 @@ function editsFor(t, median, rng) {
   return { shown, edits };
 }
 
+/** What the room sees of a persona: the picked job's name unless the author
+ *  titled it, and the job and style picks the cover model reads. */
+export function personaShown(persona) {
+  return { name: persona.handle, age: persona.age, gender: persona.gender,
+    job: persona.job || jobOf(persona)?.name?.toLowerCase() || null,
+    status: persona.status, hometown: persona.hometown ?? null, face: persona.face ?? null,
+    ...(persona.jobId ? { jobId: persona.jobId } : {}), ...(persona.register ? { register: persona.register } : {}) };
+}
+
 export function buildProfiles(state, truths, draw, pool, rng) {
   const median = medianAge(truths);
   const personas = Object.fromEntries(pool.map(p => [p.id, p]));
@@ -212,9 +222,8 @@ export function buildProfiles(state, truths, draw, pool, rng) {
       hometown: t.hometown, face: `portrait:${t.name}` };
     if (persona) {
       mode = 'catfish';
-      shown = { name: persona.handle, age: persona.age, gender: persona.gender, job: persona.job,
-        status: persona.status, hometown: persona.hometown, face: persona.face };
-      tells = [...(persona.tells || [])];
+      shown = personaShown(persona);
+      tells = tellsOf(persona);
       // Not gender: keeping a persona up is style, age and smarts (ci/cover.js).
       gap = 1 + Math.abs(persona.age - t.age) / 10;
     } else if (draw.edited.includes(t.name)) {

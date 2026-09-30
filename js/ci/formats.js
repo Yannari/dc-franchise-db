@@ -37,6 +37,14 @@ export const FORMATS = {
   super: { removes: 1, seats: 1, hidden: true, can: ctx => ctx.position !== 'first',
     run: (state, rng, rating) => standardBlocking(state, rng, rating, { format: 'super', inPerson: true }) },
   instant: { removes: 1, seats: 0, can: () => true, run: instantBlock },
+  'public-super': { removes: 1, seats: 1, hidden: true, can: ctx => ctx.position === 'late' || ctx.position === 'last',
+    // UK 2 Ep 17: the audience's choice, handed in by season.js (public.js
+    // is the only reader of the audience; the engine never reads it itself).
+    pick: (res, state) => [res.map(r => r.profile).includes(state.publicChoice) ? state.publicChoice : res[0].profile],
+    run: (state, rng, rating) => standardBlocking(state, rng, rating, { format: 'public-super', inPerson: true, mark: { public: true } }) },
+  none: { removes: 0, seats: 2, can: ctx => ctx.position === 'early' || ctx.position === 'middle', run: noBlocking },
+  mission: { removes: 1, seats: 2, quiet: true, can: ctx => ctx.position !== 'first' && ctx.position !== 'last',
+    canNow: state => state.active.length >= 6, before: (state, rng) => missionBefore(state, rng), run: missionNight },
   antivirus: { removes: 1, seats: 0, can: ctx => ctx.position === 'middle' || ctx.position === 'late',
     canNow: state => newcomersIn(state).length >= 2 && state.active.length >= 5, run: antivirus },
   double: { removes: 2, seats: 2, can: ctx => ctx.position !== 'first' && ctx.position !== 'last', run: doubleBlock },
@@ -111,7 +119,7 @@ function saveThenPlead(state, rng, rating) {
 // UK 1 Ep 15: the bottom two are named, and everyone else votes in public.
 // A tie goes to the top-rated player. Every vote is a claim the room learns.
 function roomVote(state, rng, rating) {
-  const bottom = rating.results.slice(-2).map(r => r.profile).filter(h => state.active.includes(h));
+  const bottom = rating.results.map(r => r.profile).filter(h => state.active.includes(h) && !state.immuneNext[h]).slice(-2);
   const voters = state.active.filter(h => !bottom.includes(h));
   const votes = {};
   for (const v of voters) votes[v] = bottom.map(t => [t, blockScore(state, v, t).total + rng() * 0.5]).sort((a, b) => b[1] - a[1])[0][0];
@@ -170,7 +178,10 @@ function blockLowest(state, rng, target, format) {
 }
 function instantBlock(state, rng, rating) {
   for (const h of state.active) delete state.immuneNext[h];
-  return blockLowest(state, rng, rating.results.at(-1).profile, 'instant');
+  // A given immunity holds even here: the lowest who is not immune.
+  const lowest = rating.results.map(r => r.profile).filter(h => state.active.includes(h) && !state.immuneNext[h]);
+  for (const h of state.active) delete state.immuneNext[h];
+  return blockLowest(state, rng, lowest.at(-1) || rating.results.at(-1).profile, 'instant');
 }
 
 // Two in one night, three ways the real seasons did it: the lowest at once
@@ -186,7 +197,7 @@ function doubleBlock(state, rng, rating) {
   if (variant === 'each' && infl.length < 2) variant = 'instant-then-hangout';
   const night = state.nights?.at(-1);
   if (night) night.variant = variant;
-  const lowest = rating.results.map(r => r.profile).filter(h => !infl.includes(h));
+  const lowest = rating.results.map(r => r.profile).filter(h => !infl.includes(h) && !state.immuneNext[h]);
   if (variant === 'lowest-two') {
     for (const h of state.active) delete state.immuneNext[h];
     const [a, b] = [lowest.at(-1), lowest.at(-2)];
@@ -208,7 +219,7 @@ const newcomersIn = state => state.active.filter(h => (state.joinedDay[h] || 1) 
   .sort((a, b) => (state.joinedDay[b] || 1) - (state.joinedDay[a] || 1));
 function antivirus(state, rng, rating) {
   const holders = newcomersIn(state).slice(0, 2);
-  let unsafe = state.active.filter(h => !holders.includes(h));
+  let unsafe = state.active.filter(h => !holders.includes(h) && !state.immuneNext[h]);
   const queue = [...holders], passes = [];
   while (unsafe.length > 1 && queue.length) {
     const from = queue.shift();
@@ -227,6 +238,38 @@ function antivirus(state, rng, rating) {
   for (const h of unsafe) feel(state, h, 'stress', 3);
   for (const h of state.active) delete state.immuneNext[h];
   return finish(state, rng, unsafe[0], [], 'antivirus', { reason: 'antivirus', format: 'antivirus', order: passes.map(p => p.to) });
+}
+
+// ── Circle-wide twists (Plan 3b Task 9a) ─────────────────────────────
+
+
+// US 7 Ep 1: no blocking tonight. The timeline makes a later night take two.
+function noBlocking(state, rng, rating) {
+  addScene(state, 'no-block', [...rating.influencers], { influencers: rating.influencers }, [...state.active]);
+  for (const h of state.active) { feel(state, h, 'stress', -1.5); feel(state, h, 'elation', 0.5); }
+  for (const h of state.active) delete state.immuneNext[h];
+  return null;
+}
+
+// UK 3 Ep 8: before the ratings the Circle gives one player a secret target.
+// If the target is blocked tonight, the mission succeeds; if not, the one on
+// the mission is blocked instead. They lobby their friends quietly.
+function missionBefore(state, rng) {
+  const holder = state.active[Math.floor(rng() * state.active.length)];
+  const others = state.active.filter(o => o !== holder);
+  const target = others[Math.floor(rng() * others.length)];
+  const sc = addScene(state, 'mission', [holder], { holder, target }, [holder]);
+  for (const o of others) if (o !== target && rel(o, holder, 'affection') > 2 && rng() < S(state, holder, 'social') / 10) {
+    bump(o, target, 'trust', -0.8); bump(o, holder, 'obligation', -0.3);
+  }
+  feel(state, holder, 'stress', 2);
+  state.mission = { holder, target, scene: sc.id };
+}
+function missionNight(state, rng, rating) {
+  const m = state.mission; state.mission = null;
+  if (!m || !state.active.includes(m.holder)) return standardBlocking(state, rng, rating, { format: 'mission' });
+  return standardBlocking(state, rng, rating, { format: 'mission', mark: { mission: m },
+    decide: d => (d.target === m.target ? { target: d.target } : { target: m.holder, channel: 'mission' }) });
 }
 
 // Would an Influencer take the chance to block the other one? Only a player
@@ -257,12 +300,15 @@ export function blockEachOther(state, rng, [A, B]) {
  *  tonight falls back to standard, on record) and, if it is not the usual
  *  Hangout, the Circle tells the players the rule before it happens (§16.4). */
 export function prepareNight(state, night = { format: 'standard' }, rng = null) {
+  // A power the blocked player will hand over at tonight's visit.
+  state.nightPower = night.power || null;
   let format = night.format || 'standard';
   if (!FORMATS[format] || !(FORMATS[format].canNow?.(state) ?? true)) {
     night.fellBack = format; format = 'standard';
   }
   night.format = format;
-  if (format !== 'standard') addScene(state, 'alert', [...state.active], { format }, [...state.active]);
+  // A secret format (a mission) is not announced: only its holder knows.
+  if (format !== 'standard' && !FORMATS[format].quiet) addScene(state, 'alert', [...state.active], { format }, [...state.active]);
   (state.nights ||= []).push({ day: state.day, format, ...(night.fellBack ? { fellBack: night.fellBack } : {}) });
   // Some formats act before a ballot is cast (a forced statement).
   if (FORMATS[format].before && rng) FORMATS[format].before(state, rng, night);

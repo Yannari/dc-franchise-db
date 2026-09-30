@@ -244,7 +244,8 @@ export function renderEntry(state, entry, cast, rng, ctx = {}) {
     if (t.send) {
       const voice = voiceOf();
       // An anonymous message hides its sender's signature phrases.
-      const anon = t.by === 'a' && cast.anonA ? { anon: true } : {};
+      // Anonymous, or behind a named mask (the Joker): the room sees the mask.
+      const anon = t.by === 'a' && cast.anonA ? { anon: cast.anonAs || true } : {};
       const styled = byAuthored(styleMessage(nick(fill(state, t.send, cast, t.by)), voice, rng), anon.anon ? null : av, rng, { greet, reply });
       if (greet) ctx.greeted.add(speaker);
       lines.push(tag({ who: speaker, kind: 'send', text: displayText(styled), spoken: dictation(styled), ...anon }));
@@ -472,6 +473,71 @@ const BLOCKS = {
       { key: 'plead.pitch', cast: { a: p1, b: i1 } }, { key: 'plead.listen', cast: { a: i1, b: p1 } },
       { key: 'plead.pitch', cast: { a: p2, b: i2 || i1 } }, { key: 'plead.listen', cast: { a: i2 || i1, b: p2 } }];
   },
+  // Circle-wide twists (Plan 3b Task 9a).
+  'no-block'(state, s) {
+    const [i1, i2] = s.data.influencers;
+    const others = s.seenBy.filter(h => !s.data.influencers.includes(h));
+    return [{ key: 'noblock.alert', cast: { a: others[0] || i1, b: others[1] || i2 || i1 } },
+      ...(i1 ? [{ key: 'noblock.influencer', cast: { a: i1, b: i2 || i1 } }] : []),
+      ...others.slice(2, 4).map(h => ({ key: 'noblock.relief', cast: { a: h } }))];
+  },
+  mission(state, s) { return [{ key: 'mission.given', cast: { a: s.data.holder, b: s.data.target } }]; },
+  disrupter(state, s) {
+    const [w, ...slow] = s.data.order;
+    return [{ key: 'disrupter.alert', cast: { a: slow[0] || w, b: w } }, { key: `disrupter.win.${s.data.effect}`, cast: { a: w } },
+      ...slow.slice(0, 2).map(h => ({ key: 'disrupter.slow', cast: { a: h, b: w } }))];
+  },
+  // Twists that change the count (Plan 3b Task 9b).
+  'second-chance'(state, s) {
+    const out = [{ key: 'secondchance.back', cast: { a: s.data.handle } }];
+    const key = s.data.known ? 'secondchance.recognize' : 'secondchance.react';
+    for (const h of s.seenBy.filter(x => x !== s.data.handle).slice(0, 2)) out.push({ key, cast: { a: h, b: s.data.handle } });
+    return out;
+  },
+  egg(state, s) {
+    const out = s.data.eggs.map(e => ({ key: 'egg.intro', cast: { a: e, anonA: true, anonAs: 'An egg' } }));
+    // Nobody knows who is inside: they vote for "the first egg" or "the second".
+    for (const [v, e] of Object.entries(s.data.votes).slice(0, 3)) out.push({ key: e === s.data.eggs[0] ? 'egg.vote.first' : 'egg.vote.second', cast: { a: v } });
+    out.push({ key: 'egg.stays', cast: { a: s.data.stays } }, { key: 'egg.goes', cast: { a: s.data.goes } });
+    return out;
+  },
+  // Identity twists (Plan 3b Task 9b).
+  swap(state, s) {
+    const [A, B] = s.data.handles;
+    return [{ key: 'swap.told', cast: { a: A, b: B } }, { key: 'swap.told', cast: { a: B, b: A } }];
+  },
+  'swap-back'(state, s) { return s.data.handles.map(h => ({ key: 'swap.back', cast: { a: h } })); },
+  clone(state, s) {
+    const { original, clone, votes, fake } = s.data;
+    const out = [{ key: 'clone.alert', cast: { a: Object.keys(votes)[0] || original } },
+      { key: 'clone.plea.old', cast: { a: original } }, { key: 'clone.plea.new', cast: { a: clone } }];
+    for (const [v, t] of Object.entries(votes).slice(0, 4)) out.push({ key: t === clone ? 'clone.vote.new' : 'clone.vote.old', cast: { a: v } });
+    out.push({ key: 'clone.out', cast: { a: fake } });
+    return out;
+  },
+  'ride-or-die'(state, s) {
+    return s.data.pairs.slice(0, 2).flatMap(([a, b]) => [{ key: 'rod.partner', cast: { a, b } }]);
+  },
+  sacrifice(state, s) {
+    const { goes, stays, chose } = s.data;
+    return chose ? [{ key: 'sacrifice.go', cast: { a: goes, b: stays } }, { key: 'sacrifice.saved', cast: { a: goes, b: stays } }]
+      : [{ key: 'sacrifice.kept', cast: { a: stays, b: goes } }];
+  },
+  // Powers (Plan 3b Task 8).
+  'power-reveal'(state, s) {
+    const readers = s.seenBy.filter(h => h !== s.who[0]);
+    const [a, b] = [readers[0] || s.who[0], readers[1] || readers[0] || s.who[0]];
+    if (s.data.kind === 'immunity') return [{ key: 'power.reveal.immunity', cast: { a, b: s.data.holder, c: s.data.from } }];
+    return [{ key: `power.reveal.${s.data.kind}`, cast: { a, b } }];
+  },
+  hack(state, s) {
+    const { hacker, as, to } = s.data;
+    return [{ key: 'hack.send', cast: { a: hacker, b: to, c: as } }, { key: 'hack.read', cast: { a: to, b: as } }];
+  },
+  'hack-undone'(state, s) { return [{ key: 'hack.undone', cast: { a: s.data.to, b: s.data.as } }]; },
+  'joker-chat'(state, s) { return [{ key: 'joker.chat', cast: { a: s.data.holder, b: s.data.newcomer, anonA: true, anonAs: 'The Joker' } }]; },
+  'joker-pick'(state, s) { return [{ key: s.data.disrupter ? 'disrupter.pick' : 'joker.pick', cast: { a: s.data.holder, b: s.data.pick } }]; },
+  'burner-exposed'(state, s) { return [{ key: 'burner.exposed', cast: { a: s.data.by, b: s.data.holder } }]; },
   // How a newcomer came in (Plan 3b Task 7).
   date(state, s) {
     const [h, chosen] = s.who;
@@ -595,7 +661,7 @@ const BLOCKS = {
     // Before the name: the ones at risk, waiting; the Influencer typing it.
     // Everybody waits: for the name, or (in person) for somebody's knock.
     // Nobody types a name when the saves or the room decided: the waiting was there.
-    const untyped = ['unsaved', 'vote', 'instant', 'antivirus'].includes(s.data.channel);
+    const untyped = ['unsaved', 'vote', 'instant', 'antivirus', 'mission'].includes(s.data.channel);
     const out = untyped ? [] : [target, ...others].slice(0, s.data.inPerson ? 3 : 4).map(h => ({ key: 'block.wait', cast: { a: h } }));
     if (s.data.inPerson) {
       // A Super Influencer says it at the door (US 1 Ep 10).
@@ -610,10 +676,20 @@ const BLOCKS = {
       if (s.data.channel === 'instant') for (const h of others.slice(0, 2)) out.push({ key: 'block.react.numbers', cast: { a: h, b: target } });
       // Nobody saved them: the room takes in what that means.
       if (s.data.channel === 'unsaved') for (const h of others.slice(0, 2)) out.push({ key: 'block.react.unsaved', cast: { a: h, b: target } });
+    } else if (s.data.channel === 'mission') {
+      // The mission failed: the Circle blocks the one who carried it.
+      out.push({ key: 'block.announce.mission', cast: { a: target, c: target } });
     } else if (s.data.channel === 'statement') {
       out.push({ key: 'block.typing', cast: { a: announcer, c: target }, extra: { reason: s.data.reason } },
         { key: 'block.announce.statement', cast: { a: announcer, c: target } });
     } else if (s.data.secret) {
+      // The building guesses who chose, each from what they already believe:
+      // whoever they see as the biggest threat (right or wrong).
+      for (const h of others.slice(0, 2)) {
+        const guess = s.seenBy.filter(o => o !== h && o !== target)
+          .sort((x, y) => (state.beliefs[h]?.[y]?.threat ?? 3) - (state.beliefs[h]?.[x]?.threat ?? 3))[0];
+        if (guess) out.push({ key: 'block.react.guess', cast: { a: h, b: guess } });
+      }
       // Nobody may learn who chose: the Circle names the blocked player itself.
       out.push({ key: 'block.announce.secret', cast: { a: target, c: target } });
     } else {
@@ -622,6 +698,7 @@ const BLOCKS = {
         { key: s.data.reason === 'offer' ? 'block.announce.offer'
           : `block.announce.${s.data.by.length === 1 ? 'solo.' : ''}${s.data.reason}`, cast: { a: announcer, c: target }, extra: { reason: s.data.reason } });
     }
+    if (s.data.mission && s.data.mission.target === target) out.push({ key: 'mission.success', cast: { a: s.data.mission.holder, b: target } });
     out.push(
       { key: 'block.react.self', cast: { a: target }, extra: { self: true } },
       ...(announcer ? [{ key: 'block.after', cast: { a: announcer, b: target } }] : []),
@@ -657,6 +734,7 @@ const BLOCKS = {
     out.push({ key: `visit.talk.${s.data.motive}`, cast: { a: h, b: to }, extra: { motive: s.data.motive, sole } });
     // The conversation keeps going: on the real show a visit is a sit-down.
     out.push({ key: `visit.talk2.${s.data.motive}`, cast: { a: h, b: to }, extra: { motive: s.data.motive, sole } });
+    if (s.data.power) out.push({ key: `visit.power.${s.data.power}`, cast: { a: h, b: to } });
     if (s.data.handed) {
       const c0 = claimOf(state, s.data.handed);
       out.push({ key: 'visit.hand', cast: { a: h, b: to, c: c0.about }, extra: { claim: c0.kind } });
@@ -907,7 +985,12 @@ export const POOL_KEYS = [
   ...['save-two', 'plead', 'room-vote', 'forced'].map(f => `alert.${f}`), 'block.announce.unsaved', 'block.announce.vote',
   'block.announce.statement', 'plead.open', 'plead.pitch', 'plead.listen', 'vote.open', 'vote.cast', 'vote.result',
   'statement.open', 'statement.say', 'statement.named', 'save.wait', 'alert.instant', 'alert.double', 'block.announce.instant', 'goodbye.video.close',
-  'block.react.numbers', 'block.react.unsaved', 'date.pick', 'date.chat', 'date.gift', 'date.passed', 'invites.first', 'invites.next', 'invites.last',
+  'block.react.numbers', 'block.react.unsaved', 'visit.choose.power', 'visit.talk.power', 'visit.talk2.power',
+  ...['immunity', 'hacker', 'joker', 'burner'].map(k => `visit.power.${k}`), ...['immunity', 'joker', 'hacker'].map(k => `power.reveal.${k}`),
+  'hack.send', 'hack.read', 'hack.undone', 'joker.chat', 'joker.pick', 'burner.exposed',
+  'alert.public-super', 'alert.none', 'block.react.guess', 'noblock.alert', 'noblock.influencer', 'noblock.relief', 'mission.given', 'mission.success',
+  'block.announce.mission', 'swap.told', 'swap.back', 'clone.alert', 'clone.plea.old', 'clone.plea.new', 'clone.vote.new', 'clone.vote.old',
+  'clone.out', 'secondchance.back', 'secondchance.react', 'secondchance.recognize', 'egg.intro', 'egg.vote.first', 'egg.vote.second', 'egg.stays', 'egg.goes', 'rod.partner', 'sacrifice.go', 'sacrifice.kept', 'sacrifice.saved', 'disrupter.alert', 'disrupter.win.immunity', 'disrupter.win.pick', 'disrupter.slow', 'disrupter.pick', 'date.pick', 'date.chat', 'date.gift', 'date.passed', 'invites.first', 'invites.next', 'invites.last',
   'race.win', 'race.lose', 'newparty.throw', 'newparty.guest', 'newparty.left', 'lurk.watch', 'lurk.reveal',
   'chosen.offer', 'chosen.pick', 'chosen.thanks', 'pairarrival.chat', 'alert.antivirus', 'antivirus.open', 'antivirus.pass', 'antivirus.got', 'antivirus.left', 'block.announce.antivirus',
   'hangout.agree', 'hangout.yield', 'hangout.trade', 'hangout.pact',

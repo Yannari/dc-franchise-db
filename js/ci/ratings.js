@@ -11,6 +11,8 @@
 import { rel, bump, S, clamp, addScene } from './state.js';
 import { belief, nudgeBelief } from './beliefs.js';
 import { feel, mood } from './mind.js';
+import { burnerVoters, jokerPick } from './powers.js';
+import { rideOrDieInfluencers } from './twists.js';
 
 // a affection · t trust · o obligation · p pact · v "will they save me"
 // h threat · s suspicion · r resentment · d "deserves it" (final only)
@@ -135,9 +137,13 @@ function infer(state, rng, row, scene) {
 export function runRating(state, rng, { final = false, seats = Infinity, pick = null, hidden = false } = {}) {
   const { voters, targets } = ratedPool(state);
   const ballots = voters.map(v => ballot(state, rng, v, targets, { final }));
+  // A burner profile casts its holder's second ballot (US 3), until exposed.
+  if (!final) for (const h of burnerVoters(state, rng)) ballots.push({ ...ballot(state, rng, h, targets), burner: true });
   const res = results(ballots, targets);
   // A format seats its own number of Influencers (a sole influencer: one).
-  const influencers = final ? [] : (pick ? pick(res) : influencersFrom(res).slice(0, seats));
+  let influencers = final ? [] : (pick ? pick(res, state) : influencersFrom(res).slice(0, seats));
+  // The Joker names the second Influencer of an ordinary night (US 2).
+  if (!final && !hidden && seats === 2 && !pick) influencers = rideOrDieInfluencers(state, jokerPick(state, influencers));
   const sc = addScene(state, final ? 'final-ratings' : 'ratings', voters,
     { ballots, results: res, influencers, reveal: revealOrder(res), ...(hidden ? { hidden: true } : {}) }, [...state.active]);
   for (const r of res) state.firstPlaces[r.profile] = (state.firstPlaces[r.profile] || 0) + r.firsts;

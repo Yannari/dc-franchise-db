@@ -17,6 +17,8 @@ import { revealTo } from './reveal.js';
 import { attractionOk } from './chat.js';
 import { deliberate } from './hangout.js';
 import { THEORY_LINE } from './slips.js';
+import { handOver } from './powers.js';
+import { rideOrDieTarget } from './twists.js';
 
 export function atRiskOf(state, influencers) {
   const pool = state.active.filter(h => !influencers.includes(h));
@@ -63,7 +65,7 @@ export function publicSaves(state, rng, infl, atRisk) {
   return saved;
 }
 
-export function standardBlocking(state, rng, ratingRow, { format = 'standard', saves = false, secret = false, inPerson = false, atRisk: only = null } = {}) {
+export function standardBlocking(state, rng, ratingRow, { format = 'standard', saves = false, secret = false, inPerson = false, atRisk: only = null, mark = {}, decide = null } = {}) {
   // A tie that makes everybody left an influencer would leave nobody at risk:
   // then only the top two decide.
   let infl = ratingRow.influencers;
@@ -73,12 +75,17 @@ export function standardBlocking(state, rng, ratingRow, { format = 'standard', s
   for (const h of atRisk) feel(state, h, 'stress', 2);
   const hangout = addScene(state, 'hangout', infl, { atRisk, format, ...(secret ? { secret: true } : {}) }, infl);
   const d = deliberate(state, rng, infl, atRisk);
+  // A mission can overrule the Hangout (UK 3 Ep 8): it names who actually goes.
+  let channel = 'influencers';
+  if (decide) { const r = decide(d); if (r.target !== d.target) { d.target = r.target; channel = r.channel || channel; } }
+  // Ride or Die (US 6): a blocked player's partner may go in their place.
+  { const r = rideOrDieTarget(state, rng, d.target); if (r.target !== d.target) { d.target = r.target; channel = r.channel || channel; } }
   Object.assign(hangout.data, d);
   for (const h of state.active) delete state.immuneNext[h];
   const announcement = addScene(state, 'blocking', [d.announcer, d.target],
-    { by: infl, target: d.target, reason: d.reason, channel: 'influencers', format,
-      ...(secret ? { secret: true } : {}), ...(inPerson ? { inPerson: true } : {}) }, [...state.active]);
-  applyBlock(state, d.target, 'influencers', infl, announcement, { secret });
+    { by: infl, target: d.target, reason: d.reason, channel, format,
+      ...(secret ? { secret: true } : {}), ...(inPerson ? { inPerson: true } : {}), ...mark }, [...state.active]);
+  applyBlock(state, d.target, channel, channel === 'influencers' ? infl : [], announcement, { secret });
   // A super influencer delivers it in person, and that meeting is the visit
   // (US 1 Ep 10). A secret one is nobody the blocked player can go and ask.
   const visit = inPerson ? runVisit(state, rng, d.target, infl, { to: infl[0], inPerson: true })
@@ -105,12 +112,17 @@ export const REPORT_LIE = 1.2;
 
 export function runVisit(state, rng, h, blockers, { to: forced = null, inPerson = false } = {}) {
   if (!state.active.length) return null;
-  const chosen = forced ? { to: forced, motive: 'answers' } : chooseVisit(state, rng, h, blockers);
+  // A night with a power to give: they visit someone they trust, to hand it over.
+  const power = !forced && state.nightPower;
+  const friend = power && state.active.filter(c => !blockers.includes(c))
+    .sort((x, y) => rel(h, y, 'affection') + rel(h, y, 'trust') - rel(h, x, 'affection') - rel(h, x, 'trust'))[0];
+  const chosen = forced ? { to: forced, motive: 'answers' } : friend ? { to: friend, motive: 'power' } : chooseVisit(state, rng, h, blockers);
   const { to, motive } = chosen;
   const sc = addScene(state, 'visit', [h, to], { motive, kiss: false, handed: null, by: [...blockers],
     ...(inPerson ? { inPerson: true } : {}) });
   revealTo(state, to, h, sc);
   revealTo(state, h, to, sc);
+  if (friend) { handOver(state, rng, h, to, power, sc); state.nightPower = null; }
   const suspect = state.active.filter(o => o !== to).map(o => [o, belief(state, h, o).real])
     .sort((a, b) => a[1] - b[1])[0];
   if (suspect && suspect[1] < 0.5) {

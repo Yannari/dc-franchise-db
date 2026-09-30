@@ -1249,6 +1249,39 @@ export const TWIST_CATALOG = [
     category:'blocking', phase:'any', engineType:'ci-forced-statement', ciFormat:'forced', ciSlots:['first','early'],
     desc:'Before anyone rates, every player has to say in the Circle Chat who they would block, out loud and in front of everyone, and everyone named hears it. Then the ratings happen, with all of that in the air. Whoever comes top does not get a Hangout: the name they said that morning is blocked, exactly as they said it. The blocked player gets to meet one person before they leave.',
     incompatible:['ci-standard','ci-sole-influencer','ci-three-influencers','ci-save-one-first','ci-secret-influencers','ci-super-influencer','ci-block-each-other','ci-save-two-each','ci-save-then-plead','ci-room-vote'] },
+  { id:'ci-public-super', emoji:'\u{1F4E3}', name:'Public Super Influencer', format:'the-circle',
+    category:'blocking', phase:'any', engineType:'ci-public-super', ciFormat:'public-super', ciSlots:['late','last'],
+    desc:'Everyone rates as usual and the results stay hidden, but tonight the ratings do not choose the Super Influencer: the audience at home does, by who they have liked watching most. That player decides alone who to block and has to walk to their door and say it in person. It can go to someone the building rated low, which the building finds out at exactly the moment they get the knock.',
+    incompatible:['ci-standard','ci-sole-influencer','ci-super-influencer','ci-no-blocking','ci-secret-mission'] },
+  { id:'ci-no-blocking', emoji:'\u{1F54A}', name:'No Blocking', format:'the-circle',
+    category:'blocking', phase:'any', engineType:'ci-no-blocking', ciFormat:'none', ciSlots:['early','middle'],
+    desc:'Everyone rates, the Influencers are named, and then the Circle announces there will be no blocking tonight. Nobody leaves, and the whole building breathes out. The season still has to lose the same number of players, so a later night will take two instead of one; the relief tonight is borrowed from someone else\'s worst night.',
+    incompatible:['ci-standard','ci-double-block','ci-public-super','ci-secret-mission'] },
+  { id:'ci-secret-mission', emoji:'\u{1F3AF}', name:'Secret Mission', format:'the-circle',
+    category:'blocking', phase:'any', engineType:'ci-secret-mission', ciFormat:'mission', ciSlots:['middle','late'],
+    desc:'Before the ratings, the Circle secretly gives one player a mission: get a named target blocked tonight. They cannot say why; they can only nudge their friends. The ratings and the Hangout go ahead as normal. If the Influencers block the target, the mission succeeds. If they block anyone else, the Circle blocks the player on the mission instead, and the Influencers\' choice is spared.',
+    incompatible:['ci-standard','ci-no-blocking','ci-public-super'] },
+  { id:'ci-disrupter', emoji:'\u{1F6A8}', name:'Disrupter Alert', format:'the-circle',
+    category:'social', phase:'any', engineType:'ci-disrupter', ciEvent:'disrupter',
+    desc:'Without warning, an alert goes out to every apartment: first to respond wins. Nobody knows what they are racing for until someone wins it. The prize is either immunity at the next blocking or the right to name one of the next Influencers. Being first rewards paying attention and nerve, not popularity, so it often lands on someone the ratings would never have helped.' },
+  /* ── THE CIRCLE'S IDENTITY TWISTS (Plan 3b Task 9b) ──
+     Booked on a day by slot (in the slot's list) or drawn rarely.
+     `ciTwist` is the engine's name (js/ci/twists.js EVENTS). */
+  { id:'ci-profile-swap', emoji:'\u{1F501}', name:'The Profile Swap', format:'the-circle',
+    category:'social', phase:'any', engineType:'ci-profile-swap', ciTwist:'swap',
+    desc:'Two players are told, privately, that until the next blocking they will play each other\'s profiles. Each one moves into the other\'s chats, answers as them and has to keep up their friendships and their way of typing, while the rest of the building has no idea. Every slip is a chance to be caught, and anything said in those chats stays with the profile, not the person. The swap ends on the morning of the next blocking.' },
+  { id:'ci-clone', emoji:'\u{1F46F}', name:'The Clone', format:'the-circle',
+    category:'returns', phase:'any', engineType:'ci-clone', ciTwist:'clone',
+    desc:'A blocked player comes back into the Circle wearing an active player\'s exact name and photos, and the building suddenly has two of the same person. Everyone else votes on which one is fake. The original has history and friendships to lean on; the clone has one day of notes and nerve. Whoever the room calls fake is blocked on the spot, and the room can get it wrong.' },
+  { id:'ci-second-chance', emoji:'\u{1F504}', name:'Second Chance', format:'the-circle',
+    category:'returns', phase:'any', engineType:'ci-second-chance', ciTwist:'second-chance',
+    desc:'Two blocked players are brought back into the Circle, but not as themselves: together, sharing one apartment and one new profile, often a persona nobody has seen before. Every message is a negotiation between two people, and they come back knowing exactly who blocked them. The season has one more player to lose because of it. Needs two players already blocked.' },
+  { id:'ci-arrive-egg', emoji:'\u{1F95A}', name:'The Egg Twist', format:'the-circle',
+    category:'arrivals', phase:'any', engineType:'ci-arrive-egg', ciEntry:'egg',
+    desc:'Two new players arrive hidden behind eggs instead of profile pictures. Each gives the building a short introduction, and then everyone votes on which egg gets to stay. The other one is blocked on the spot, before anyone has seen their face. Needs two arrivals on the same day; the timeline pulls a later newcomer forward if it has to.' },
+  { id:'ci-ride-or-die', emoji:'\u{1F91D}', name:'Ride or Die', format:'the-circle',
+    category:'social', phase:'any', engineType:'ci-ride-or-die', ciTwist:'ride-or-die',
+    desc:'Secret compatibility answers pair every player with a Ride or Die. Until the final ratings, if one of a pair is blocked, their partner can choose to go in their place, and the top-rated player\'s partner becomes a secret second Influencer. Players learn who their own partner is and nobody else\'s, so every blocking is also a question of who would take the fall for whom.' },
   /* ── THE CIRCLE'S ARRIVALS (Plan 3b Task 7) ──
      How a newcomer comes in, booked on an arrival day by slot (a slot's
      booking may list a blocking and an arrival) or drawn by how many arrive.
@@ -1277,6 +1310,22 @@ export const TWIST_CATALOG = [
   { id:'ci-arrive-pair', emoji:'\u{1F46F}', name:'Arrive as a Pair', format:'the-circle',
     category:'arrivals', phase:'any', engineType:'ci-arrive-pair', ciEntry:'pair',
     desc:'Two newcomers arrive on the same night, and before either meets anyone else the Circle puts them in a private chat with each other. They walk into the building already knowing one person, and usually already allied: two new votes that can move together from day one. Needs two arrivals on the same day.' },
+  /* ── THE CIRCLE'S POWERS (Plan 3b Task 8) ──
+     Handed over at a visit: booked on a blocking night by slot (in the
+     slot's list), or drawn now and then mid-season. `ciPower` is the
+     engine's name (js/ci/powers.js POWERS). */
+  { id:'ci-power-immunity', emoji:'\u{1F6E1}', name:'Immunity to Give Away', format:'the-circle',
+    category:'power', phase:'any', engineType:'ci-power-immunity', ciPower:'immunity',
+    desc:'The blocked player is given immunity, not for themselves but to pass on. At their visit they hand it to the player they trust most, who cannot be blocked at the next blocking, whatever the ratings say. The Circle tells everyone the next morning who holds it and who gave it, so the gift is also a public statement of loyalty.' },
+  { id:'ci-power-hacker', emoji:'\u{1F4BB}', name:'The Hacker', format:'the-circle',
+    category:'power', phase:'any', engineType:'ci-power-hacker', ciPower:'hacker',
+    desc:'The blocked player hands the Hacker to the player they visit. The next morning the Hacker takes over one other player\'s profile for a single private chat, and says whatever they like to that player\'s closest friend, who has no idea it is not really them. Only then does the Circle announce that there has been a Hacker. If the two who were played compare notes they can undo it, and even guess who did it, rightly or wrongly.' },
+  { id:'ci-power-joker', emoji:'\u{1F0CF}', name:'The Joker', format:'the-circle',
+    category:'power', phase:'any', engineType:'ci-power-joker', ciPower:'joker',
+    desc:'The blocked player gives the Joker to the player they visit. The holder takes a second, masked profile: they get to meet the next new arrivals before anyone else, and at the next ordinary ratings night they name one of the two Influencers themselves. The whole building is told a Joker exists, not who it is, and a sharp newcomer may work it out.' },
+  { id:'ci-power-burner', emoji:'\u{1F4F1}', name:'The Burner Profile', format:'the-circle',
+    category:'power', phase:'any', engineType:'ci-power-burner', ciPower:'burner',
+    desc:'The blocked player gifts a second profile to the player they visit, who secretly plays it as well as their own. For the next two ratings the burner casts its own ballot, which means its holder effectively votes twice. Every ratings night someone might notice something off about it, and if the burner is exposed it is shut down on the spot and the whole building trusts its holder a little less.' },
   /* ── THE VILLA'S DUMPINGS (Perfect Match, Plan 4.5) ──
      How a vote night decides who leaves, booked on the Season Timeline like
      every other show's twists. `pmFormat` is the engine's own name for it and

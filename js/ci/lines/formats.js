@@ -639,3 +639,337 @@ export const ARRIVAL_LINES = {
       { by: 'b', send: 'My lips are sealed {e:wink}' }] },
   ]),
 };
+
+// ── Task 8: powers ─────────────────────────────────────────────────────
+// visit.choose.power — a (blocked) decides who gets it; b is that player.
+// visit.talk.power / talk2.power — a and b at the visit. visit.power.<kind>
+// — a hands b the power. power.reveal.immunity — a reads that b holds it
+// (c gave it). power.reveal.joker / .hacker — a reads the alert, b reacts.
+// hack.send — a (Hacker) speaks as c to b (b believes it is c). hack.read
+// — a (fooled) about b (who it seemed to be). hack.undone — a and b compare
+// notes and find the lie. joker.chat — a (the Joker, masked) meets b (a
+// newcomer). joker.guess — b works out who a is. joker.pick — a names b
+// an Influencer. burner.exposed — a catches b's burner.
+export const POWER_LINES = {
+  ...E('visit.choose.power', [
+    { turns: [{ by: 'a', react: "'You have a power to give away.' So I'm not leaving empty-handed." },
+      { by: 'a', say: "There's only one person I'd trust with it. {b}." }], beat: '{a} is already putting on shoes.' },
+    { turns: [{ by: 'a', say: "I can't win anymore. But {b} can. {b} gets it." }] },
+    { turns: [{ by: 'a', say: 'This is my last move in this game, and it goes to {b}.' }], beat: '{a} takes a deep breath at the door.' },
+  ]),
+  ...E('visit.talk.power', [
+    { turns: [{ by: 'a', say: "I didn't come to say goodbye. I came to give you something." }, { by: 'b', say: 'Give me what?' }] },
+    { turns: [{ by: 'a', say: "You were always good to me. So I'm going to be good to you." }, { by: 'b', say: 'What are you talking about?' }] },
+    { turns: [{ by: 'b', say: 'I thought you might go and yell at the Influencers.' }, { by: 'a', say: "They don't get my time. You do." }] },
+  ]),
+  ...E('visit.talk2.power', [
+    { turns: [{ by: 'a', say: 'Promise me you will use it well.' }, { by: 'b', say: 'I promise. I swear.' }] },
+    { turns: [{ by: 'b', say: 'Why me?' }, { by: 'a', say: "Because you're the only one I'd trust with it." }] },
+    { turns: [{ by: 'a', say: 'Win this for both of us.' }, { by: 'b', say: 'I will. For both of us.' }] },
+  ]),
+  ...E('visit.power.immunity', [
+    { turns: [{ by: 'a', say: "The Circle gave me something to pass on. You're immune at the next blocking." },
+      { by: 'b', react: 'Safe? Me? You could have given it to anybody.' }], beat: '{b} grabs {a} in a hug.' },
+    { turns: [{ by: 'a', say: "You can't be blocked at the next blocking. Nobody can touch you." }, { by: 'b', react: 'I owe you everything.' }] },
+    { turns: [{ by: 'a', say: "You're immune. For real. Do not waste it." }, { by: 'b', react: 'I will not waste one second of it.' }] },
+  ]),
+  ...E('visit.power.hacker', [
+    { turns: [{ by: 'a', say: "You're the Hacker now. For one chat, you can be anybody you want." },
+      { by: 'b', react: 'Anybody? Oh, I know exactly who.' }], beat: "{b}'s eyes light up." },
+    { turns: [{ by: 'a', say: 'Pick someone, take their profile, say whatever you like. Nobody will know.' }, { by: 'b', react: 'That is evil. I love it.' }] },
+    { turns: [{ by: 'a', say: "The Hacker. Use it on whoever did this to me." }, { by: 'b', say: 'With pleasure.' }] },
+  ]),
+  ...E('visit.power.joker', [
+    { turns: [{ by: 'a', say: "You're the Joker. A secret profile. You meet the new people first, and you pick an Influencer." },
+      { by: 'b', react: 'I pick an Influencer? Me?' }], beat: '{b} sits down hard on the couch.' },
+    { turns: [{ by: 'a', say: 'Nobody will know it is you. Play it smart.' }, { by: 'b', react: 'A secret identity. Okay. Okay!' }] },
+    { turns: [{ by: 'a', say: 'The Joker is yours. Make them wonder.' }, { by: 'b', say: 'They are going to wonder so hard.' }] },
+  ]),
+  ...E('visit.power.burner', [
+    { turns: [{ by: 'a', say: "Here's a second profile. Play it alongside yours, and it votes too." },
+      { by: 'b', react: 'Two votes? That is a lot of power.' }], beat: '{b} looks at the second login like it might bite.' },
+    { turns: [{ by: 'a', say: "It's a burner. If they catch it, it's gone. So don't get caught." }, { by: 'b', react: 'I have never been more nervous and more excited.' }] },
+    { turns: [{ by: 'a', say: 'A second profile. Nobody knows it is yours.' }, { by: 'b', say: 'Nobody will ever know.' }] },
+  ]),
+  ...E('power.reveal.immunity', [
+    { turns: [{ by: 'a', react: "'{b} is immune from the next blocking, thanks to {c}.' Of course." }] },
+    { turns: [{ by: 'a', react: "{b} is immune? So {b} is untouchable next time. Great." }], beat: '{a} rereads the alert.' },
+    { turns: [{ by: 'a', react: "{c} made {b} immune on the way out. That tells you everything about who {c} trusted." }] },
+  ]),
+  ...E('power.reveal.joker', [
+    { turns: [{ by: 'a', react: "'There is a Joker in the Circle.' A what?" }, { by: 'b', react: 'A secret player. Watching us. Great.' }] },
+    { turns: [{ by: 'a', react: "'The Joker will choose one of the next Influencers.' So somebody in here is pulling strings." },
+      { by: 'b', say: 'And we have no idea who.' }] },
+    { turns: [{ by: 'a', react: 'A Joker. Somebody has a second profile and a lot of power.' }, { by: 'b', react: 'Trust nobody. Again.' }],
+      beat: '{b} looks at the door as if the Joker might walk through it.' },
+  ]),
+  ...E('power.reveal.hacker', [
+    { turns: [{ by: 'a', react: "'There has been a Hacker.' Wait. Somebody took over a profile?" }, { by: 'b', react: 'So a message I got today might not be real?' }] },
+    { turns: [{ by: 'a', react: "'The Hacker used another Player's profile.' Oh no. Which one?" }, { by: 'b', say: 'Every chat I had today, I am rereading.' }],
+      beat: '{b} scrolls back through the day.' },
+    { turns: [{ by: 'a', react: 'A Hacker. So nobody knows who they were really talking to.' }, { by: 'b', react: 'I feel sick.' }] },
+  ]),
+  ...E('hack.send', [
+    { turns: [{ by: 'a', say: "Time to be {c}. Let's make this count." }, { by: 'a', react: "Oh, {b} is going to believe every word." }],
+      beat: '{a} cracks {a.posAdj} knuckles and starts typing as {c}.' },
+    { turns: [{ by: 'a', say: "I'm {c} now. And {c} is about to say something {c} will regret." }] },
+    { turns: [{ by: 'a', say: 'One chat. As {c}. To {b}. Here we go.' }], beat: '{a} types slowly, choosing every word.' },
+  ]),
+  ...E('hack.read', [
+    { turns: [{ by: 'a', react: '{b} said that? About me? I thought we were close.' }], beat: '{a} reads it three times.' },
+    { turns: [{ by: 'a', react: "Wow. So that's what {b} really thinks." }] },
+    { turns: [{ by: 'a', react: "I can't believe {b} would say that to me." }], beat: '{a} sets the tablet face down.' },
+  ]),
+  ...E('hack.undone', [
+    { turns: [{ by: 'a', send: 'Did you really say that to me this morning?' }, { by: 'b', send: 'Say what? I never messaged you today' },
+      { by: 'a', send: "Then that was the Hacker" }, { by: 'b', send: 'Somebody used my profile to get to you. Unbelievable' }] },
+    { turns: [{ by: 'a', send: 'I need to ask you something and I need the truth' }, { by: 'b', send: 'Always. What?' },
+      { by: 'a', send: 'That message this morning. Was it you?' }, { by: 'b', send: "No. That wasn't me. I swear" }] },
+    { turns: [{ by: 'b', send: 'Hey. The Hacker. Did anything weird come from me?' }, { by: 'a', send: 'Yes. And I almost believed it' },
+      { by: 'b', send: 'It was not me. We need to find out who' }] },
+  ]),
+  ...E('joker.chat', [
+    { turns: [{ by: 'a', send: "Welcome in. I'm the Joker. Don't ask who I am" }, { by: 'b', send: 'The Joker? Okay, that is terrifying and cool' },
+      { by: 'a', send: 'Stick with me and you will be fine' }] },
+    { turns: [{ by: 'a', send: 'Hi. You get to meet me before anybody else. Consider yourself lucky' }, { by: 'b', send: 'Who are you though?' },
+      { by: 'a', send: 'Somebody who can help you. That is all you need to know' }] },
+    { turns: [{ by: 'a', send: 'Joker here. Tell me who you like so far and I will tell you who to watch' }, { by: 'b', send: "I've been here five minutes!" },
+      { by: 'a', send: 'Then you are right on time' }] },
+  ]),
+  ...E('joker.pick', [
+    { turns: [{ by: 'a', say: "As the Joker, I'm making {b} an Influencer. {b} owes me now." }], beat: '{a} presses the button.' },
+    { turns: [{ by: 'a', say: '{b}. You are an Influencer tonight. You just do not know why.' }] },
+    { turns: [{ by: 'a', say: "It's {b}. I trust {b} with this more than anyone." }] },
+  ]),
+  ...E('burner.exposed', [
+    { turns: [{ by: 'a', react: "That second profile is {b}. It has to be. Same typos, same jokes." }, { by: 'b', react: 'They found it. Oh no.' }],
+      beat: '{b} closes the second login with shaking hands.' },
+    { turns: [{ by: 'a', react: "{b} has been voting twice. I knew something was off." }] },
+    { turns: [{ by: 'a', react: "The burner is {b}'s. Wow. The whole time." }, { by: 'b', react: 'Busted. Completely busted.' }] },
+  ]),
+};
+
+// ── Task 9a: Circle-wide twists ────────────────────────────────────────
+// noblock.alert — a reads it, b reacts; noblock.influencer — a (an
+// Influencer) about b (the other); noblock.relief — a. mission.given — a
+// (holder) learns the target b, alone. mission.success — a (holder) after b
+// was blocked. block.announce.mission — the Circle blocks c, whose mission
+// failed. disrupter.alert — a sees b won; disrupter.win.<effect> — a (the
+// winner); disrupter.slow — a (too slow) about b; disrupter.pick — a names
+// b an Influencer.
+export const TWIST_LINES = {
+  ...E('alert.public-super', [
+    { turns: [{ by: 'a', react: "'Tonight, the audience will choose a Super Influencer.' The audience? At home?" },
+      { by: 'b', react: 'So it is not about the ratings at all. It is about who they like watching.' }] },
+    { turns: [{ by: 'a', react: "'The public has chosen.' Chosen who? They won't say." }, { by: 'b', say: 'Somebody out there picked one of us. Wow.' }] },
+    { turns: [{ by: 'a', react: 'The people at home get a say tonight. I hope they like me.' },
+      { by: 'b', react: 'I hope they were paying attention to the right things.' }], beat: '{b} fixes {b.posAdj} hair, just in case.' },
+  ]),
+  ...E('alert.none', [
+    { turns: [{ by: 'a', react: 'Wait, what did it just say?' }, { by: 'b', react: 'Nobody is being blocked tonight?' }] },
+    { turns: [{ by: 'a', react: "Hold on. Is this a twist? There's always a twist." }, { by: 'b', say: "I'll believe it in the morning." }] },
+    { turns: [{ by: 'a', react: 'Something is different tonight. I can feel it.' }, { by: 'b', react: 'Me too. I do not trust it.' }] },
+  ]),
+  ...E('noblock.alert', [
+    { turns: [{ by: 'a', react: "'There will be no blocking tonight.' No blocking? Nobody leaves?" },
+      { by: 'b', react: 'Oh my God. Oh my God. Everybody stays.' }], beat: 'In every apartment, somebody sits down very suddenly.' },
+    { turns: [{ by: 'a', react: 'No blocking! We all survive!' }, { by: 'b', say: 'Which means next time is going to be twice as bad. Right?' }] },
+    { turns: [{ by: 'a', react: "'Nobody will be blocked.' I have never loved a sentence more." }, { by: 'b', react: 'Do not celebrate yet. The Circle always gets its blocking back.' }] },
+  ]),
+  ...E('noblock.influencer', [
+    { turns: [{ by: 'a', react: "I'm an Influencer and I don't have to block anyone? Best night of my life." }] },
+    { turns: [{ by: 'a', react: 'All that power and nothing to do with it. I am not complaining.' }], beat: '{a} laughs with relief.' },
+    { turns: [{ by: 'a', say: 'At least nobody can say {b} and I got it wrong tonight.' }] },
+  ]),
+  ...E('noblock.relief', [
+    { turns: [{ by: 'a', react: 'I was sure it was going to be me. Sure of it.' }], beat: '{a} lies flat on the floor.' },
+    { turns: [{ by: 'a', react: 'One more night. I will take one more night.' }] },
+    { turns: [{ by: 'a', react: 'Everybody made it. For now.' }] },
+    { turns: [{ by: 'a', say: "I'm going to sleep for ten hours. Nobody wake me up." }], beat: '{a} pulls a blanket over {a.posAdj} head.' },
+  ]),
+  ...E('mission.given', [
+    { turns: [{ by: 'a', react: "'You have a secret task. Get {b} blocked tonight, or you will be blocked instead.'" },
+      { by: 'a', say: 'Oh no. Oh no. {b}? And I cannot tell anyone why.' }], beat: '{a} reads it three times, going pale.' },
+    { turns: [{ by: 'a', react: "A secret task. {b} goes, or I do. Okay. Okay. Think." }], beat: '{a} starts pacing.' },
+    { turns: [{ by: 'a', say: "I have to get {b} blocked without looking like I'm trying to get {b} blocked." },
+      { by: 'a', react: 'This is the hardest thing the Circle has ever asked me to do.' }] },
+  ]),
+  ...E('mission.success', [
+    { turns: [{ by: 'a', react: 'It was {b}. Task complete. I am still here.' }], beat: '{a} lets out the breath {a.sub} has been holding all day.' },
+    { turns: [{ by: 'a', react: "{b}. Thank God. And nobody knows I had anything to do with it." }] },
+    { turns: [{ by: 'a', react: 'I did it. I feel terrible. I did it.' }] },
+  ]),
+  // block.react.guess — a guesses who the secret Influencers were; b is a
+  // guess (a player a suspects), which may be wrong.
+  ...E('block.react.guess', [
+    { turns: [{ by: 'a', react: 'Who did that? My money is on {b}. Something about {b} today.' }], beat: '{a} narrows {a.posAdj} eyes at the screen.' },
+    { turns: [{ by: 'a', say: "If I had to bet, I'd say {b} was one of them. But I have no idea." }] },
+    { turns: [{ by: 'a', react: "Was it {b}? {b} has been way too quiet today." }] },
+    { turns: [{ by: 'a', say: "I'm going to act like I know who it was. I do not know who it was." }] },
+    { turns: [{ by: 'a', react: 'Somebody in here is pretending to be shocked right now.' }], beat: '{a} looks at every face on the screen.' },
+  ]),
+  ...E('block.announce.mission', [
+    { turns: [{ by: 'host', say: "{c} was given a secret task today, and did not complete it. {c}, you have been blocked." }],
+      beat: 'Every apartment turns to the screen at once.' },
+    { turns: [{ by: 'host', say: 'The Influencers made their choice, but {c} had a secret task and failed it. {c} is blocked instead.' }] },
+    { turns: [{ by: 'host', say: "Nobody knew {c} had a secret task. Now everybody does. {c} has been blocked." }] },
+  ]),
+  ...E('disrupter.alert', [
+    { turns: [{ by: 'a', react: "'First to respond wins.' Wins what?" }, { by: 'b', react: "I already replied. I didn't even read it." }],
+      beat: '{b} was typing before the alert finished loading.' },
+    { turns: [{ by: 'a', react: 'An alert! Reply! Reply!' }, { by: 'b', react: 'Too slow, everybody. Too slow.' }] },
+    { turns: [{ by: 'a', react: 'What is a Disrupter alert? What do I do?' }, { by: 'b', say: 'You press the button. That is what you do.' }] },
+  ]),
+  ...E('disrupter.win.immunity', [
+    { turns: [{ by: 'a', react: "I won? I'm immune? From just replying fast?" }], beat: '{a} jumps onto the couch.' },
+    { turns: [{ by: 'a', react: "Immune at the next blocking. That's the best thing I ever did with my thumbs." }] },
+    { turns: [{ by: 'a', react: 'Safe! I am safe! Always check your notifications, people.' }] },
+  ]),
+  ...E('disrupter.win.pick', [
+    { turns: [{ by: 'a', react: 'I get to name an Influencer? Me?' }, { by: 'a', say: 'Oh, I know exactly who.' }], beat: "{a}'s eyes go wide." },
+    { turns: [{ by: 'a', react: 'The next Influencer is my call. The power. The actual power.' }] },
+    { turns: [{ by: 'a', react: 'I was just trying to be fast. Now I am picking an Influencer.' }] },
+  ]),
+  ...E('disrupter.slow', [
+    { turns: [{ by: 'a', react: 'By one second. One second, {b}.' }], beat: '{a} throws the tablet onto the couch.' },
+    { turns: [{ by: 'a', react: "I was making a sandwich. I lost to {b} because of a sandwich." }] },
+    { turns: [{ by: 'a', react: "{b} won that? {b} doesn't even check the chat." }] },
+  ]),
+  ...E('disrupter.pick', [
+    { turns: [{ by: 'a', say: "I won it fair and square. I'm making {b} an Influencer." }], beat: '{a} presses the button.' },
+    { turns: [{ by: 'a', say: '{b}. You are an Influencer tonight, and you have me to thank.' }] },
+    { turns: [{ by: 'a', say: "I'm picking {b}. {b} is going to owe me big." }] },
+  ]),
+};
+
+// ── Task 9b: identity twists ───────────────────────────────────────────
+// swap.told — a learns (alone) they will play b's profile. swap.back — a,
+// back in their own profile. clone.alert — a reads that there are two of
+// the same profile. clone.plea.old / .new — the original / the clone makes
+// the case (never by name: both have the same one). clone.vote.new / .old —
+// a calls the new one / the old one fake. clone.out — a, voted fake.
+// rod.partner — a learns b is their Ride or Die. sacrifice.go — a goes in
+// b's place; sacrifice.kept — a let b go; sacrifice.saved — b about a.
+export const IDENTITY_LINES = {
+  ...E('swap.told', [
+    { turns: [{ by: 'a', react: "'Until the next blocking, you will play {b}'s profile.' I'm {b} now?" }, { by: 'a', say: "Okay. Think like {b}. Type like {b}." }],
+      beat: "{a} scrolls through {b}'s old messages to learn the voice." },
+    { turns: [{ by: 'a', react: "A profile swap. With {b}. Nobody else knows. This is insane." }] },
+    { turns: [{ by: 'a', say: "I have to keep all of {b}'s friendships alive and not wreck them. No pressure." }], beat: '{a} takes notes like it is an exam.' },
+  ]),
+  ...E('swap.back', [
+    { turns: [{ by: 'a', react: 'I am me again. I have never been so happy to be me.' }], beat: '{a} logs back into {a.posAdj} own profile.' },
+    { turns: [{ by: 'a', react: 'Back in my own chats. What did they say while I was gone?' }] },
+    { turns: [{ by: 'a', react: 'Swap is over. I hope I get my friends back the way I left them.' }] },
+  ]),
+  ...E('clone.alert', [
+    { turns: [{ by: 'a', react: 'There are two of them. Two. Same name, same pictures.' }, { by: 'a', say: 'One of them is fake. Which one?' }],
+      beat: '{a} holds the tablet up close to compare the two.' },
+    { turns: [{ by: 'a', react: "'A clone has entered The Circle.' A clone? Of who?" }] },
+    { turns: [{ by: 'a', react: 'Two identical profiles. My brain hurts.' }] },
+  ]),
+  ...E('clone.plea.old', [
+    { turns: [{ by: 'a', send: "Guys. It's me. The real one. Ask me anything we've talked about" }], beat: '{a} types faster than {a.sub} ever has.' },
+    { turns: [{ by: 'a', send: 'I have been here since day one. You know me. You know my words' }] },
+    { turns: [{ by: 'a', say: 'Somebody is wearing my face. I need everyone to remember who I actually am.' }], when: { catfish: false } },
+    { turns: [{ by: 'a', send: "Ask me about our first chat. Go on. The copy won't know" }] },
+    { turns: [{ by: 'a', say: 'Of all the profiles to copy, they picked mine. Great.', send: "I'm the one you know. Don't let this thing split us up" }], when: { catfish: true } },
+  ]),
+  ...E('clone.plea.new', [
+    { turns: [{ by: 'a', say: 'Sell it. Sell it like your life depends on it.', send: "I don't know who that is, but it isn't me" }] },
+    { turns: [{ by: 'a', send: "Whoever that other account is, they have been studying me. Don't fall for it" }], beat: '{a} bites {a.posAdj} lip and hits send.' },
+    { turns: [{ by: 'a', say: 'One day of notes. That is all I have. Make it count.', send: "I'm the real one. Trust your gut" }] },
+  ]),
+  ...E('clone.vote.new', [
+    { turns: [{ by: 'a', say: "The new one is fake. The old one has been talking to me for days. I'd know." }] },
+    { turns: [{ by: 'a', say: "I'm voting the new account as the fake. It's too polished." }] },
+    { turns: [{ by: 'a', say: 'The one who just showed up is lying. Simple.' }] },
+  ]),
+  ...E('clone.vote.old', [
+    { turns: [{ by: 'a', say: "I actually think the old one is the fake. Something has been off for days." }] },
+    { turns: [{ by: 'a', say: "The new one sounds more real to me than the original ever did. Weird, but that's my vote." }] },
+    { turns: [{ by: 'a', say: "I'm voting the original as the fake. Call it a hunch." }], beat: '{a} winces as {a.sub} sends it.' },
+  ]),
+  ...E('clone.out', [
+    { turns: [{ by: 'a', react: 'They picked the other one. They think I am the fake.' }], beat: '{a} stares at the screen, stunned.' },
+    { turns: [{ by: 'a', react: 'Blocked as a fake. As myself. Unbelievable.' }], when: { catfish: false } },
+    { turns: [{ by: 'a', react: "Called a fake by the room. The irony is not lost on me." }], when: { catfish: true } },
+    { turns: [{ by: 'a', react: 'After all of that, the room believed the copy.' }], beat: '{a} sits down slowly on the floor.' },
+    { turns: [{ by: 'a', react: 'So that is it. The room chose.' }] },
+  ]),
+  ...E('rod.partner', [
+    { turns: [{ by: 'a', react: "'Your Ride or Die is {b}.' Oh, I can work with that." }], beat: '{a} smiles at the screen.' },
+    { turns: [{ by: 'a', react: '{b}? My Ride or Die is {b}? I did not see that coming.' }] },
+    { turns: [{ by: 'a', say: "If {b} goes down, I might have to go down with {b.obj}. I need to think about that." }] },
+  ]),
+  ...E('sacrifice.go', [
+    { turns: [{ by: 'a', say: "I'll go. Keep {b} in. {b} has more game left than I do." }], beat: '{a} presses the button before {a.sub} can change {a.posAdj} mind.' },
+    { turns: [{ by: 'a', say: 'Ride or die means ride or die. I go.' }] },
+    { turns: [{ by: 'a', say: "{b} is not leaving tonight. I am." }], beat: '{a} wipes {a.posAdj} eyes.' },
+  ]),
+  ...E('sacrifice.kept', [
+    { turns: [{ by: 'a', say: "I'm sorry, {b}. I can't. I came here to win." }], beat: '{a} looks away from the screen.' },
+    { turns: [{ by: 'a', say: 'I love {b}. But not enough to leave for {b.obj}.' }] },
+    { turns: [{ by: 'a', react: 'I stayed. I hope {b} understands. I will never know if {b} does.' }] },
+  ]),
+  ...E('sacrifice.saved', [
+    { turns: [{ by: 'b', react: '{a} went for me? {a} left so I could stay?' }], beat: '{b} holds both hands over {b.posAdj} mouth.' },
+    { turns: [{ by: 'b', react: 'I will win this for {a}. I swear I will.' }] },
+    { turns: [{ by: 'b', react: 'Nobody has ever done anything like that for me.' }] },
+  ]),
+};
+
+// ── Task 9b part 2 ─────────────────────────────────────────────────────
+// secondchance.back — the pair (a, as face and brain) learn they are back.
+// secondchance.react — a (in the building) about the new profile b.
+// egg.intro — a, an egg, introduces themselves (never by face). egg.vote —
+// a votes to keep b. egg.stays — a, kept. egg.goes — a, blocked unseen.
+export const COUNT_LINES = {
+  ...E('secondchance.back', [
+    { stage: '{a.face} and {a.brain} sit side by side in a brand-new apartment.', turns: [
+      { by: 'face', say: "We're back. Both of us. In one apartment." },
+      { by: 'brain', say: 'And we know exactly who sent us home.' }], beat: '{a.face} and {a.brain} bump fists.' },
+    { stage: 'Two blocked players, one new profile, one keyboard.', turns: [
+      { by: 'brain', say: "Second chance. We don't waste it." },
+      { by: 'face', say: 'We argue about every message, and we win anyway.' }] },
+    { stage: '{a.face} reads the alert over {a.brain}\'s shoulder.', turns: [
+      { by: 'face', react: "'You have been given a second chance.' Together?" },
+      { by: 'brain', say: "Together. Nobody in there knows it's us." }] },
+  ]),
+  ...E('secondchance.react', [
+    { turns: [{ by: 'a', react: 'A new player? This late? Something about {b} feels familiar.' }], beat: "{a} studies {b}'s profile." },
+    { turns: [{ by: 'a', react: '{b} just showed up out of nowhere. I do not trust out of nowhere.' }] },
+    { turns: [{ by: 'a', react: "Welcome, {b}. I guess. Who even are you?" }] },
+  ]),
+  ...E('secondchance.recognize', [
+    { turns: [{ by: 'a', react: 'Wait. {b} is back? We said goodbye to {b}!' }], beat: '{a} leans right up to the screen.' },
+    { turns: [{ by: 'a', react: "{b} came back. And {b} knows exactly who blocked {b.obj}." }] },
+    { turns: [{ by: 'a', react: "A second chance for {b}. Oh, this is not good for somebody." }], beat: '{a} starts pacing.' },
+  ]),
+  ...E('egg.intro', [
+    { turns: [{ by: 'a', send: "Hi Circle! I'm an egg right now, but I promise I'm a lot of fun" }] },
+    { turns: [{ by: 'a', send: "Keep me and you won't regret it. I'm loyal, I'm funny and I'm a great listener" }] },
+    { turns: [{ by: 'a', send: "Hello from inside the egg! Pick me. I'll make it worth it" }] },
+    { turns: [{ by: 'a', send: 'I know you can not see me. Just trust the vibe' }] },
+  ]),
+  ...E('egg.vote.first', [
+    { turns: [{ by: 'a', say: 'Two eggs. I pick the first one. It made me laugh.' }] },
+    { turns: [{ by: 'a', say: "I'm voting for the first egg. That intro had real energy." }] },
+    { turns: [{ by: 'a', say: 'Keep the first egg. I have a good feeling. About an egg. What is my life.' }] },
+  ]),
+  ...E('egg.vote.second', [
+    { turns: [{ by: 'a', say: 'The second egg. It sounded like somebody I would actually talk to.' }] },
+    { turns: [{ by: 'a', say: "I'm keeping the second one. Don't ask me why. Vibes." }] },
+    { turns: [{ by: 'a', say: 'Second egg. Final answer. I am voting for an egg. This show.' }] },
+  ]),
+  ...E('egg.stays', [
+    { turns: [{ by: 'a', react: 'They picked me! I get to hatch!' }], beat: '{a} jumps up and down in the new apartment.' },
+    { turns: [{ by: 'a', react: 'I stay. And now I have to be as fun as I promised.' }] },
+    { turns: [{ by: 'a', react: 'Kept! Out of the egg and into the game.' }] },
+  ]),
+  ...E('egg.goes', [
+    { turns: [{ by: 'a', react: 'Blocked before anyone even saw my face.' }], beat: '{a} stares at the screen in disbelief.' },
+    { turns: [{ by: 'a', react: 'That is the shortest game anyone has ever played.' }] },
+    { turns: [{ by: 'a', react: 'Never hatched. Okay. Wow.' }] },
+  ]),
+};

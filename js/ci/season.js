@@ -25,11 +25,13 @@ import { seedAttraction, planChats, contextFor } from './chat.js';
 import { runChat } from './conversation.js';
 import { morningFeed, runCircleChat } from './feed.js';
 import { runRating } from './ratings.js';
-import { standardBlocking, goodbyeVideo, deliverReports } from './blocking.js';
+import { standardBlocking, goodbyeVideo, deliverReports, applyBlock } from './blocking.js';
 import { FORMATS, prepareNight, runBlocking } from './formats.js';
 import { bookSeason } from './timeline.js';
 import { arrive, chooseNewcomer } from './arrivals.js';
-import { openLedger, noteJoin, airDay, fanFavorite } from './public.js';
+import { powersMorning, jokerMeets, runDisrupter } from './powers.js';
+import { runEvent, endSwap } from './twists.js';
+import { openLedger, noteJoin, airDay, fanFavorite, publicPick } from './public.js';
 import { buildSchedule } from './schedule.js';
 import { finalDay, finaleDay } from './finale.js';
 import { chooseAired } from './airing.js';
@@ -104,6 +106,19 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
       for (const h of state.active) driftMind(state, h);
       for (const h of state.pendingGoodbyes.splice(0)) goodbyeVideo(state, rng, h);
       deliverReports(state, rng);
+      powersMorning(state, streamFor(seed, `powers:${d.day}`));
+      endSwap(state);
+      if (d.twist) {
+        const nextBlock = schedule.find(x => x.day > d.day && x.block)?.day ?? d.day + 1;
+        const finalDayN = schedule.find(x => x.final)?.day ?? schedule.length;
+        const out = runEvent(state, streamFor(seed, `twist:${d.day}`), d.twist,
+          { until: d.twist === 'swap' ? nextBlock : finalDayN });
+        // A clone vote ends with whoever the room called fake leaving.
+        if (d.twist === 'clone' && out?.fake) {
+          applyBlock(state, out.fake, 'clone', [], out.scene);
+          state.pendingGoodbyes.push(out.fake);
+        }
+      }
       // Finale day is the studio: the phones are off after the final ratings.
       if (!d.finale) morningFeed(state, rng);
     }
@@ -120,7 +135,11 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
       } else entry = 'snoop';
     }
     const arriving = queue.splice(0, d.arrivals);
-    if (arriving.length) { arrive(state, streamFor(seed, `arrive:${d.day}`), arriving, entry, entryCtx); for (const h of arriving) noteJoin(state, h); }
+    if (arriving.length) {
+      arrive(state, streamFor(seed, `arrive:${d.day}`), arriving, entry, entryCtx);
+      for (const h of arriving) noteJoin(state, h);
+      jokerMeets(state, streamFor(seed, `joker:${d.day}`), arriving);
+    }
     recognise(state, carried);
 
     // Alone in the apartment, then the chats, the game, and the evening:
@@ -128,6 +147,7 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
     if (!d.finale) apartmentLife(state, streamFor(seed, `life:${d.day}`));
     const ctx = contextFor(state, d);
     if (!d.finale) for (const plan of planChats(state, rng, ctx)) runChat(state, rng, plan, ctx);
+    if (d.disrupter) runDisrupter(state, streamFor(seed, `disrupter:${d.day}`));
     if (d.game) {
       const g = pickGame(state, streamFor(seed, `game:${d.day}`), { days: schedule.length });
       if (g) runGame(state, streamFor(seed, `game:${d.day}:play`), g);
@@ -144,6 +164,7 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
     let rating = null;
     if (d.block) {
       const night = prepareNight(state, { ...(d.night || { format: 'standard' }) }, streamFor(seed, `night:${d.day}`));
+      state.publicChoice = night.format === 'public-super' ? publicPick(state) : null;
       const f = FORMATS[night.format] || FORMATS.standard;
       rating = runRating(state, rng, { seats: f.seats ?? 2, pick: f.pick, hidden: !!f.hidden });
       runBlocking(state, rng, rating, night);

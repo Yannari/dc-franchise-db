@@ -6,6 +6,7 @@ import { playCircleSeason } from '../js/ci/season.js';
 import { rel } from '../js/ci/state.js';
 import { makePlayers, makePool, circleSetup } from './helpers/ci-cast.js';
 import { ENTRIES } from '../js/ci/arrivals.js';
+import { room } from './helpers/ci-room.js';
 
 function season(bookings, seed = 5) {
   const cast = makePlayers(13, seed); setPlayers(cast);
@@ -54,11 +55,13 @@ describe('invite one by one (US 3 Ep 6)', () => {
 
 describe('race to message (US 6 Ep 6)', () => {
   it('the others race; the first to reach the newcomer gets the bond', () => {
-    const r = firstArrival('ci-arrive-race');
-    const race = r.on('race')[0];
-    const [h] = race.who;
+    // A flat room, so only the race itself can move a bond.
+    const s = room(6, 3);
+    s.active = s.active.filter(h => h !== '@q5');
+    ENTRIES.race.run(s, streamFor(1, 'race'), ['@q5']);
+    const race = s.scenes.find(x => x.kind === 'race');
     expect(race.data.order.length).toBeGreaterThanOrEqual(2);
-    expect(rel(h, race.data.order[0], 'affection')).toBeGreaterThan(rel(h, race.data.order.at(-1), 'affection'));
+    expect(rel('@q5', race.data.order[0], 'affection')).toBeGreaterThan(rel('@q5', race.data.order.at(-1), 'affection'));
   });
 });
 

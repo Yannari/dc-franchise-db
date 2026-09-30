@@ -520,13 +520,18 @@ export const FINALE_BEATS = [
   {
     id: 'finale-crown-lipsync', step: 'finale-lipsync', scope: 'once', speaker: 'host',
     note: 'The host sets up the final lip sync. Not for your life — for the crown.',
-    tiers: [tier('setup', 'Two queens stand before me.', [
-      "\"Two queens stand before me,\" the host says, and the words hit differently tonight because tonight nobody is going home — tonight somebody is being crowned. \"Ladies, this is your last chance to impress me. The time has come for you to lip sync… for the CROWN.\"",
-      "The host lets the room settle. \"You have both fought your way here. Now there is one thing left.\" A beat. \"The time has come… for you to lip sync… for the crown.\" The word gets the reaction it always gets and the two queens on stage do not move a muscle.",
-      "\"Nobody is sashaying away tonight,\" the host says. \"Tonight, one of you is being crowned.\" He turns to both of them. \"Good luck — and don't fuck it up.\" The music cue is already coming up under his last word.",
-      "The same ritual as every week and not the same at all, and the host plays that for everything it is worth. \"Two queens stand before me.\" The pause stretches. \"Lip sync… for the crown.\" The room holds its breath and the two queens on that stage hold everything else.",
-      "\"This is the last lip sync of the season,\" the host says, and for once there is nothing behind the words but what they mean. \"Two queens. One crown. Lip sync for the crown.\" The music drops and the two of them move at the same time and the room goes up.",
-      "The host looks at each of them in turn and then at the room. \"I want to see everything you have left. Everything.\" He steps back. \"Now lip sync… for the CROWN.\" And they do.",
+    /* THE NIGHT'S OPENING, NOT THE SPEECH. Each round now opens with the host's
+       speech a card a line ("Two queens stand before me" ... "FOR. THE.
+       CROWN!"), so this card no longer says it: it said "two queens" to a
+       four-queen bracket and "nobody is going home" to the semi-finals. It
+       frames the night, for any number of finalists. */
+    tiers: [tier('setup', 'The host opens the last lip syncs of the season.', [
+      "The host lets the room settle. \"Tonight nobody leaves the ordinary way,\" he says. \"Tonight somebody leaves with a crown.\" The finalists take their places at the back of the stage.",
+      "\"You have all fought your way here,\" the host says. \"There is one thing left to do, and it is the thing this show has always come down to.\" The room knows what he means before he says it.",
+      "The lights come down to the stage and the finalists. \"This is where the season ends,\" the host says. \"Not with a challenge, and not with a runway. With a lip sync.\"",
+      "\"I have watched every one of you all season,\" the host says. \"Now I want to see everything you have left.\" The finalists look at each other, and nobody looks away first.",
+      "The host does not rush it. \"One crown,\" he says, and lets the word sit. \"And you are going to lip sync for it.\" The room goes up before the first song is even named.",
+      "\"Every week you lip synced to stay,\" the host says. \"Tonight you lip sync to win.\" He steps back, and the stage belongs to the finalists.",
     ])],
   },
 

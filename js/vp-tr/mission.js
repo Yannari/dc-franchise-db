@@ -59,6 +59,7 @@ import { _portrait, _icon } from './conclave.js';
 import { isBespokeMissionRec, rpBuildBespokeMission, bespokeRevealNext, bespokeRevealAll }
   from './mission-bespoke.js';
 
+import { trSfxReveal } from './sfx.js';
 const TR = 'traitors';
 
 // ── deterministic picking ─────────────────────────────────────────────
@@ -1261,6 +1262,7 @@ export function trMissionRevealNext(suffix, total, epNum) {
   if (st.idx >= total - 1) return;
   st.idx++;
   _reapplyVisibility(suffix, st.idx, total);
+  trSfxReveal('mi', suffix, st.idx);
   _scrollTo(document.getElementById('mi-step-' + suffix + '-' + st.idx));
   _updateBoard(epNum, st.idx);
 }

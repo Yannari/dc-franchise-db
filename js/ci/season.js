@@ -101,7 +101,11 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
   let finalRow = null, result = null;
   for (const d of schedule) {
     state.day = d.day;
-    const rng = streamFor(seed, `day:${d.day}`);
+    // A re-run turns this day's dice once more (options.rerolls[day]); every
+    // other day keeps its own, so earlier episodes come back identical.
+    const turn = (state.options.rerolls || {})[d.day];
+    const ds = name => streamFor(seed, turn ? `${name}#${turn}` : name);
+    const rng = ds(`day:${d.day}`);
     if (d.day === 1) {
       for (const h of starters) { state.active.push(h); state.joinedDay[h] = 1; initMind(state, h); noteJoin(state, h); }
       addScene(state, 'profiles', [...starters], {}, [...starters]);
@@ -109,12 +113,12 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
       for (const h of state.active) driftMind(state, h);
       for (const h of state.pendingGoodbyes.splice(0)) goodbyeVideo(state, rng, h);
       deliverReports(state, rng);
-      powersMorning(state, streamFor(seed, `powers:${d.day}`));
+      powersMorning(state, ds(`powers:${d.day}`));
       endSwap(state);
       if (d.twist) {
         const nextBlock = schedule.find(x => x.day > d.day && x.block)?.day ?? d.day + 1;
         const finalDayN = schedule.find(x => x.final)?.day ?? schedule.length;
-        const out = runEvent(state, streamFor(seed, `twist:${d.day}`), d.twist,
+        const out = runEvent(state, ds(`twist:${d.day}`), d.twist,
           { until: d.twist === 'swap' ? nextBlock : finalDayN });
         // A clone vote ends with whoever the room called fake leaving.
         if (d.twist === 'clone' && out?.fake) {
@@ -132,41 +136,41 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
       const by = state.ratings.filter(r => !r.final && !r.hidden).at(-1)?.influencers?.filter(i => state.active.includes(i)) || [];
       if (d.arrivals === 1 && queue.length >= 2 && by.length) {
         const offered = queue.slice(0, 2);
-        const pick = chooseNewcomer(state, streamFor(seed, `chosen:${d.day}`), offered, by);
+        const pick = chooseNewcomer(state, ds(`chosen:${d.day}`), offered, by);
         if (pick !== queue[0]) queue.splice(0, 2, pick, queue[0]);
         entryCtx = { offered, by };
       } else entry = 'snoop';
     }
     const arriving = queue.splice(0, d.arrivals);
     if (arriving.length) {
-      arrive(state, streamFor(seed, `arrive:${d.day}`), arriving, entry, entryCtx);
+      arrive(state, ds(`arrive:${d.day}`), arriving, entry, entryCtx);
       for (const h of arriving) noteJoin(state, h);
-      jokerMeets(state, streamFor(seed, `joker:${d.day}`), arriving);
+      jokerMeets(state, ds(`joker:${d.day}`), arriving);
     }
     recognise(state, carried);
 
     // Alone in the apartment, then the chats, the game, and the evening:
     // a party (a party day, or a prize) or Circle Chat; then videos from home.
-    if (!d.finale) apartmentLife(state, streamFor(seed, `life:${d.day}`));
+    if (!d.finale) apartmentLife(state, ds(`life:${d.day}`));
     const ctx = contextFor(state, d);
     if (!d.finale) for (const plan of planChats(state, rng, ctx)) runChat(state, rng, plan, ctx);
-    if (d.disrupter) runDisrupter(state, streamFor(seed, `disrupter:${d.day}`));
+    if (d.disrupter) runDisrupter(state, ds(`disrupter:${d.day}`));
     if (d.game) {
-      const g = pickGame(state, streamFor(seed, `game:${d.day}`), { days: schedule.length });
-      if (g) runGame(state, streamFor(seed, `game:${d.day}:play`), g);
+      const g = pickGame(state, ds(`game:${d.day}`), { days: schedule.length });
+      if (g) runGame(state, ds(`game:${d.day}:play`), g);
     }
     if (!d.finale) {
-      if (d.party || state.partyNext) { state.partyNext = false; runParty(state, streamFor(seed, `party:${d.day}`)); }
+      if (d.party || state.partyNext) { state.partyNext = false; runParty(state, ds(`party:${d.day}`)); }
       else runCircleChat(state, rng);
     }
     const videos = new Set(state.homeVideoFor || []);
     state.homeVideoFor = [];
     if (d.homeVideos) for (const h of state.active) if (!(state.homeVideosSeen || []).includes(h)) videos.add(h);
-    if (videos.size) videoFromHome(state, streamFor(seed, `home:${d.day}`), [...videos]);
+    if (videos.size) videoFromHome(state, ds(`home:${d.day}`), [...videos]);
 
     let rating = null;
     if (d.block) {
-      const night = prepareNight(state, { ...(d.night || { format: 'standard' }) }, streamFor(seed, `night:${d.day}`));
+      const night = prepareNight(state, { ...(d.night || { format: 'standard' }) }, ds(`night:${d.day}`));
       state.publicChoice = night.format === 'public-super' ? publicPick(state) : null;
       const f = FORMATS[night.format] || FORMATS.standard;
       rating = runRating(state, rng, { seats: f.seats ?? 2, pick: f.pick, hidden: !!f.hidden, human: !!f.human });
@@ -180,8 +184,13 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
     chooseAired(state, d.day);
     if (state.options.script !== false) writeDay(state, d.day);
     airDay(state);
-    const row = { episode: d.day, day: d.day, format: CIRCLE_FORMAT, slot: d.slot,
+    // `num` and the people still in are what the site's run tab reads; the
+    // name map lets an episode be shown later without the engine's state.
+    const row = { num: d.day, episode: d.day, day: d.day, format: CIRCLE_FORMAT, slot: d.slot,
       ci: { active: [...state.active], rating,
+        people: state.active.flatMap(h => peopleOf(state, h)),
+        profiles: Object.fromEntries(Object.entries(state.profiles).map(([h, p]) =>
+          [h, { name: p.shown?.name, people: [...p.players], mode: p.mode }])),
         blocked: state.blocked.filter(b => b.day === d.day).map(b => b.handle),
         arrivals: arriving, scenes: state.scenes.filter(s => s.day === d.day).length,
         aired: state.scenes.filter(s => s.day === d.day && s.aired)

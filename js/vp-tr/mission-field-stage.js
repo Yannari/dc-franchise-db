@@ -15,6 +15,7 @@ import { missionStageData } from './mission.js';
 import { isBespokeMissionRec } from './mission-bespoke.js';
 import { trsStageShell as stageShell, trsFold, trsReg as reg, trsEsc as esc, trsFace as face, trsLater as later } from './castle-stage.js';
 import { TRScenery } from './cutaway-scenery.js';
+import { trPlay } from './sfx.js';
 import { beatLines } from './stage-lines.js';
 import { footCard, playCard, CARD_CSS } from './stage-cards.js';
 
@@ -124,6 +125,7 @@ function paint(root, S, fresh) {
   el.innerHTML = h;
   if (st.t !== 'count') playCard(el, card, S, fresh);
   // the fund counts up at the count
+  if (st.t === 'count' && fresh) trPlay('tr-coins', 450);
   if (st.t === 'count' && fresh) {
     const b = el.querySelector('.trm-fund b');
     const from = D.potBefore, to = D.pot, t0 = performance.now(), dur = 1600;

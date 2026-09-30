@@ -10,6 +10,7 @@
 // ci/formats.js can be drawn, and a night that removes two gives a later
 // blocking day back, so the season always ends with its finalists.
 import { TWIST_CATALOG } from '../core.js';
+import { CIRCLE_FORMAT } from '../shows.js';
 import { FORMATS } from './formats.js';
 
 export const POSITIONS = ['first', 'early', 'middle', 'late', 'last'];
@@ -32,13 +33,13 @@ export function positionOf(i, n) {
   return f < 0.34 ? 'early' : f < 0.67 ? 'middle' : 'late';
 }
 
-const formatOfTwist = id => TWIST_CATALOG.find(t => t.id === id && t.format === 'the-circle' && t.category === 'blocking')?.ciFormat;
-const entryOfTwist = id => TWIST_CATALOG.find(t => t.id === id && t.format === 'the-circle' && t.category === 'arrivals')?.ciEntry;
-const powerOfTwist = id => TWIST_CATALOG.find(t => t.id === id && t.format === 'the-circle' && t.category === 'power')?.ciPower;
+const formatOfTwist = id => TWIST_CATALOG.find(t => t.id === id && t.format === CIRCLE_FORMAT && t.category === 'blocking')?.ciFormat;
+const entryOfTwist = id => TWIST_CATALOG.find(t => t.id === id && t.format === CIRCLE_FORMAT && t.category === 'arrivals')?.ciEntry;
+const powerOfTwist = id => TWIST_CATALOG.find(t => t.id === id && t.format === CIRCLE_FORMAT && t.category === 'power')?.ciPower;
 // Powers a blocked player hands over (spec 14), drawn now and then mid-season.
 export const POWER_DRAWS = { chance: 0.2, kinds: [['immunity', 2], ['hacker', 1], ['joker', 1], ['burner', 1]] };
 export const DISRUPTER_CHANCE = 0.3;
-const twistOfId = id => TWIST_CATALOG.find(t => t.id === id && t.format === 'the-circle' && t.ciTwist)?.ciTwist;
+const twistOfId = id => TWIST_CATALOG.find(t => t.id === id && t.format === CIRCLE_FORMAT && t.ciTwist)?.ciTwist;
 // Identity twists, drawn rarely (booked by slot as often as the author likes).
 export const TWIST_DRAWS = { swap: 0.08, clone: 0.06, 'ride-or-die': 0.12 };
 // A slot's booking: one id, or a list (a night can have a blocking and an arrival).

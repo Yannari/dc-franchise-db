@@ -49,6 +49,7 @@ import { PORTRAIT_CSS, TR_NAV_TOP, TR_STICKY_TOP, trHost } from './style.js';
 import { _noiseTile, _fieldRng } from './scenery.js';
 import { _portrait, _icon } from './conclave.js';
 
+import { trSfxReveal } from './sfx.js';
 // NO EXIT VERB IS IMPORTED, for the reason selection.js gives: this is the
 // other screen in the set where nobody leaves, and a word held and never said
 // is a field written and never read.
@@ -856,6 +857,7 @@ export function trArrivalRevealNext(suffix, total, epNum) {
   if (st.idx >= total - 1) return;
   st.idx++;
   _reapplyVisibility(suffix, st.idx, total);
+  trSfxReveal('ar', suffix, st.idx);
   _scrollTo(document.getElementById('ar-step-' + suffix + '-' + st.idx));
   _updateRegister(epNum, st.idx);
 }

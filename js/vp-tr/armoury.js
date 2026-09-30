@@ -30,6 +30,7 @@
 import { seasonConfig, players } from '../core.js';
 import { _portrait } from './conclave.js';
 
+import { trSfxReveal } from './sfx.js';
 // ── faces ─────────────────────────────────────────────────────────────
 function _slugOf(name) {
   const p = (players || []).find(x => x && x.name === name);
@@ -590,6 +591,7 @@ export function trArmouryRevealNext(suffix, total, epNum) {
   if (st.idx >= total - 1) return;
   st.idx++;
   _reapply(suffix, st.idx, total);
+  trSfxReveal('am', suffix, st.idx);
   const el = document.getElementById('am-step-' + suffix + '-' + st.idx);
   if (el && el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }

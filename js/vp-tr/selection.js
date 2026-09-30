@@ -62,6 +62,7 @@ import { PORTRAIT_CSS, TR_NAV_TOP, TR_STICKY_TOP, trHost } from './style.js';
 import { _noiseTile, _fieldRng } from './scenery.js';
 import { _portrait, _icon } from './conclave.js';
 
+import { trSfxReveal } from './sfx.js';
 // NO EXIT VERB IS IMPORTED HERE, AND THAT IS DELIBERATE RATHER THAN AN
 // OVERSIGHT. Every other castle screen pulls the show's two doors out of the
 // registry because it prints a departure; this one is the only screen in the
@@ -1630,6 +1631,7 @@ export function trSelectionRevealNext(suffix, total, epNum) {
   if (st.idx >= total - 1) return;
   st.idx++;
   _reapplyVisibility(suffix, st.idx, total);
+  trSfxReveal('tp', suffix, st.idx);
   _scrollTo(document.getElementById('tp-step-' + suffix + '-' + st.idx));
   _updateRank(epNum, st.idx);
 }

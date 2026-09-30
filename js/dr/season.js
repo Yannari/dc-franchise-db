@@ -1967,75 +1967,93 @@ export function playDragSeason({
      that reads the WHOLE season rather than the row in front of it.
      OPT-IN, because it changes a season's episode count and every caller that
      has ever counted them. */
-  /* ── MISS CONGENIALITY ──
-     THE SHARED AUDIENCE VOTE, not a second way of printing the chart. This
-     show does not get to write its own: `runAudienceVote` is the one place
-     the franchise decides what "the country's favourite" means, and it is
-     already weighted in SPREADS rather than points so a show whose numbers
-     look nothing like Big Brother's resolves without a per-show constant.
-     RUN BEFORE THE REUNION, because that is where season nine announced it —
-     with the vote tallied in public — and a reunion topic that could never
-     fire is the written-but-unreachable bug in a bigger chair. The finale
-     announces it too, which is the modern format; both read one value.
-     Eligible is everybody but the winner, who is not known yet — so the
-     board is the whole cast and the winner is removed after. */
-  /* FINALISTS ARE ON THE BALLOT, AND THE COUNTRY LEANS AWAY FROM THEM.
-     A finalist can take the sash, but the audience sends it to somebody
-     sent home far more often — she has no other shot at anything. With the
-     field voting evenly the sash went to a finalist 59% of seasons. */
-  const finalistBias = Object.fromEntries((state.living || []).map(n => [n, FINALIST_SASH_WEIGHT]));
-  /* The finale's number, known before the vote: the sash is announced there,
-     so it is drawn from the finale's own dice (see below). */
-  const finNum = num + (config.drReunion && !aired('reunion') ? 1 : 0);
-  const vote = runAudienceVote({
-    eligible: [...state.castOrder], rng: streamFor(seed, crownSalt(7000, finNum)), blocks: 600, bias: finalistBias,
-    _gs: { popularity: state.popularity, episodeHistory: rows },
-  });
-  if (vote) {
-    state.congeniality = vote.winner;
-    state.congenialityTally = vote.tally;
+  /* A RE-RUN OF THE REUNION finds the finale already aired (the reunion
+     comes after it now): the crown is not decided again. Its results are
+     read back off the aired row, and only the reunion runs. */
+  const airedFinale = resumeAt ? (state.episodes || []).find(e => e?.dr?.finale) : null;
+  let finale = airedFinale;
+  if (airedFinale) {
+    const f = airedFinale.dr.finale || {};
+    state.winner = f.winner || state.winner;
+    state.winners = f.winners?.length ? [...f.winners] : [state.winner].filter(Boolean);
+    state.doubleCrown = !!f.doubleCrown;
+    state.runnerUp = f.runnerUp || (f.placements || [])[1] || state.runnerUp || null;
+    if (f.congeniality) state.congeniality = f.congeniality;
+  } else {
+    /* ── MISS CONGENIALITY ──
+       THE SHARED AUDIENCE VOTE, not a second way of printing the chart. This
+       show does not get to write its own: `runAudienceVote` is the one place
+       the franchise decides what "the country's favourite" means, and it is
+       already weighted in SPREADS rather than points so a show whose numbers
+       look nothing like Big Brother's resolves without a per-show constant.
+       RUN BEFORE THE REUNION, because that is where season nine announced it —
+       with the vote tallied in public — and a reunion topic that could never
+       fire is the written-but-unreachable bug in a bigger chair. The finale
+       announces it too, which is the modern format; both read one value.
+       Eligible is everybody but the winner, who is not known yet — so the
+       board is the whole cast and the winner is removed after. */
+    /* FINALISTS ARE ON THE BALLOT, AND THE COUNTRY LEANS AWAY FROM THEM.
+       A finalist can take the sash, but the audience sends it to somebody
+       sent home far more often — she has no other shot at anything. With the
+       field voting evenly the sash went to a finalist 59% of seasons. */
+    const finalistBias = Object.fromEntries((state.living || []).map(n => [n, FINALIST_SASH_WEIGHT]));
+    /* The finale's number, known before the vote: the sash is announced there,
+       so it is drawn from the finale's own dice (see below). */
+    const finNum = num;
+    const vote = runAudienceVote({
+      eligible: [...state.castOrder], rng: streamFor(seed, crownSalt(7000, finNum)), blocks: 600, bias: finalistBias,
+      _gs: { popularity: state.popularity, episodeHistory: rows },
+    });
+    if (vote) {
+      state.congeniality = vote.winner;
+      state.congenialityTally = vote.tally;
+    }
+
+    const last = schedule[schedule.length - 1] || {};
+    /* THE FINALE'S OWN DICE, WITH THE RE-RUN IN THEM. Every week draws from
+       `wSalt`, which folds in the re-run counter; the finale drew from the
+       season's base dice, so re-running it replayed the same coin flips and
+       crowned the same queen every press. */
+    const finaleNum = num++;
+    finale = runFinale(state, {
+      num: finaleNum, type: finaleType, rotatingId: last.rotatingId, judgeWeights: config.drJudgeWeights,
+      doubleCrown: !!config.drDoubleCrown,
+      /* THE JURY IS AN ALL STARS RULE, like the lipstick: it belongs to the
+         mode, not to a week, so it is read off the season config here rather
+         than booked per episode from the designer. */
+      jury: !!(config.drAllStars && config.drAllStarsJury),
+    }, { ...ctx, rng: streamFor(seed, crownSalt(8000, finaleNum)) });
+    /* THE WINNER CANNOT TAKE THE SASH TOO. The vote ran before the crowning,
+       so it could not exclude a winner nobody knew yet — if the country's
+       favourite turns out to be the queen who wins, the sash goes to the runner
+       up on the tally instead. */
+    if (state.congeniality && state.congeniality === state.winner) {
+      const next = (state.congenialityTally || []).find(t => t.name !== state.winner);
+      state.congeniality = next ? next.name : null;
+    }
+    /* THE SEASON'S PAIRS, ON THE ROW. `js/life-hook.js` reads `showmance` off an
+       APPEARANCE to decide who walked out of a season together, and a drag
+       appearance carried none — so the romance thread existed in the werk room,
+       on the screen and in the ratings signal, and stopped dead at the franchise
+       boundary. Kept on the finale row rather than threaded through the exporter
+       as another argument, the way `congeniality` had to be. */
+    finale.dr.romances = (state.romances || []).map(pair => [...pair]);
+    if (state.congeniality) {
+      finale.dr.congeniality = state.congeniality;
+      finale.dr.congenialityTally = state.congenialityTally;
+      insertCongenialityScene(finale, state.congeniality, rng);
+    }
+    rows.push(beat(state, finale, cast));
   }
 
+  /* ── THE REUNION, AFTER THE CROWNING ──
+     The user's call: the winner sits in her crown and the whole season is
+     on the table (js/dr/reunion.js). It reads the finale, so it runs after
+     it. */
   if (config.drReunion && !aired('reunion')) {
     const reNum = num++;
     rows.push(beat(state, runReunion(state, { num: reNum }, weekCtx(reNum)), cast));
   }
-
-  const last = schedule[schedule.length - 1] || {};
-  /* THE FINALE'S OWN DICE, WITH THE RE-RUN IN THEM. Every week draws from
-     `wSalt`, which folds in the re-run counter; the finale drew from the
-     season's base dice, so re-running it replayed the same coin flips and
-     crowned the same queen every press. */
-  const finaleNum = num++;
-  const finale = runFinale(state, {
-    num: finaleNum, type: finaleType, rotatingId: last.rotatingId, judgeWeights: config.drJudgeWeights,
-    doubleCrown: !!config.drDoubleCrown,
-    /* THE JURY IS AN ALL STARS RULE, like the lipstick: it belongs to the
-       mode, not to a week, so it is read off the season config here rather
-       than booked per episode from the designer. */
-    jury: !!(config.drAllStars && config.drAllStarsJury),
-  }, { ...ctx, rng: streamFor(seed, crownSalt(8000, finaleNum)) });
-  /* THE WINNER CANNOT TAKE THE SASH TOO. The vote ran before the crowning,
-     so it could not exclude a winner nobody knew yet — if the country's
-     favourite turns out to be the queen who wins, the sash goes to the runner
-     up on the tally instead. */
-  if (state.congeniality && state.congeniality === state.winner) {
-    const next = (state.congenialityTally || []).find(t => t.name !== state.winner);
-    state.congeniality = next ? next.name : null;
-  }
-  /* THE SEASON'S PAIRS, ON THE ROW. `js/life-hook.js` reads `showmance` off an
-     APPEARANCE to decide who walked out of a season together, and a drag
-     appearance carried none — so the romance thread existed in the werk room,
-     on the screen and in the ratings signal, and stopped dead at the franchise
-     boundary. Kept on the finale row rather than threaded through the exporter
-     as another argument, the way `congeniality` had to be. */
-  finale.dr.romances = (state.romances || []).map(pair => [...pair]);
-  if (state.congeniality) {
-    finale.dr.congeniality = state.congeniality;
-    finale.dr.congenialityTally = state.congenialityTally;
-    insertCongenialityScene(finale, state.congeniality, rng);
-  }
-  rows.push(beat(state, finale, cast));
 
   return {
     rows, state, schedule: played, winner: state.winner, runnerUp: state.runnerUp,

@@ -90,7 +90,7 @@ describe('playDragSeason', () => {
       expect(r.exits.length, `episode ${r.num} (${r.dr.lipsync?.call})`)
         .toBe(doubled ? 0 : 1);
     }
-    expect(rows[rows.length - 1].dr.finale.type).toBe('top4');
+    expect(rows.find(r => r.dr?.finale).dr.finale.type).toBe('top4');
     expect(finale.placements.length).toBe(4);
     expect(winner).toBe(finale.placements[0]);
     expect(runnerUp).toBe(finale.placements[1]);
@@ -559,7 +559,7 @@ describe('the format is announced', () => {
       expect(noteOn(week)?.data?.tier, `episode ${at} did not announce it`).toBe('no-elimination');
       // Nothing is repaid: the season runs a week longer instead.
       expect(rows.some(r => r.dr.lipsync?.paidBack), 'a payback happened').toBe(false);
-      expect(rows[rows.length - 1].dr.finale.placements.length,
+      expect(rows.find(r => r.dr?.finale).dr.finale.placements.length,
         'the finale came out oversized').toBe(4);
     }
   });

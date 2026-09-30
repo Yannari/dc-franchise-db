@@ -30,11 +30,13 @@ describe('re-running the finale', () => {
     for (let seed = 1; seed <= 6; seed++) {
       const c = cast(12, seed * 11);
       const first = playDragSeason({ cast: c, seed, config }).rows;
-      const finale = first[first.length - 1];
-      expect(finale.dr.finale, `seed ${seed}`).toBeTruthy();
-      const before = first.slice(0, -1);
+      // The reunion comes AFTER the crowning now (the user's call).
+      const fi = first.findIndex(r => r.dr?.finale);
+      const finale = first[fi];
+      expect(finale?.dr?.finale, `seed ${seed}`).toBeTruthy();
+      expect(first[fi + 1]?.dr?.reunion, 'the season booked no reunion after the finale').toBeTruthy();
+      const before = first.slice(0, fi);
       expect(before.some(r => r.dr?.smackdown), 'the season booked a smackdown').toBe(true);
-      expect(before.some(r => r.dr?.reunion), 'the season booked a reunion').toBe(true);
       // The room as the last elimination week left it — what the viewer resumes from.
       const lastWeek = [...before].reverse().find(r => r.dr?.state);
       const winners = new Set([finale.dr.finale.winner]);
@@ -44,9 +46,10 @@ describe('re-running the finale', () => {
           config: { ...config, drReroll: { from: finale.num, nonce } },
           resume: { state: lastWeek.dr.state, num: finale.num, episodes: before },
         }).rows;
-        // Only the finale comes back: no second Smackdown, no second Reunion.
-        expect(again.map(r => r.num), `seed ${seed} nonce ${nonce}`).toEqual([finale.num]);
+        // The finale comes back, then its reunion — no second Smackdown before it.
+        expect(again.map(r => r.num), `seed ${seed} nonce ${nonce}`).toEqual([finale.num, finale.num + 1]);
         expect(again[0].dr.finale).toBeTruthy();
+        expect(again[1].dr.reunion).toBeTruthy();
         winners.add(again[0].dr.finale.winner);
       }
       if (winners.size > 1) moved++;

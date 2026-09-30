@@ -916,7 +916,10 @@ function _airDragRow(row) {
   } catch { /* a night must never fail on its own retelling */ }
 
   if (row.dr?.finale) {
-    gs.phase = 'complete';
+    /* The reunion airs AFTER the crowning now, so the season is only over
+       when nothing is left in the queue — marking it complete here left the
+       reunion queued and unreachable. */
+    gs.phase = (gs._drQueue || []).length ? 'stage' : 'complete';
     gs.drWinner = row.dr.finale.winner || null;
     gs.drRunnerUp = row.dr.finale.runnerUp || null;
     // What the season leaves the franchise (js/dr/ledger-record.js): her

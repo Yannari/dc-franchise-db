@@ -10,8 +10,9 @@
 import { describe, expect, it } from 'vitest';
 import { playDragSeason } from '../js/dr/season.js';
 import { reunionTopics } from '../js/dr/reunion.js';
-import { REUNION_BEATS, unwrittenReunionTiers } from '../js/dr/data/reunion-beats.js';
+import { REUNION_LINES } from '../js/dr/data/reunion-beats.js';
 import { dragScreens } from '../js/vp-dr/screens.js';
+import { generateDragSummaryText } from '../js/vp-dr/summary.js';
 import { rngFor } from '../js/dr/rng.js';
 
 const STATS = ['physical', 'endurance', 'mental', 'social', 'strategic',
@@ -40,15 +41,13 @@ function season(seed, config = {}) {
 
 describe('the reunion', () => {
   it('has no unwritten pools', () => {
-    expect(unwrittenReunionTiers()).toEqual([]);
-    for (const b of REUNION_BEATS) {
-      for (const t of b.tiers) {
-        expect(t.lines.length, `${b.id} has too few variants`).toBeGreaterThanOrEqual(4);
-      }
+    for (const [key, lines] of Object.entries(REUNION_LINES)) {
+      expect(lines.length, `${key} is empty`).toBeGreaterThanOrEqual(1);
+      for (const l of lines) expect(l.trim(), `${key} has a blank line`).not.toBe('');
     }
   });
 
-  it('is opt-in and sits before the crowning, eliminating nobody', () => {
+  it('is opt-in and comes after the crowning, eliminating nobody', () => {
     const off = season(3, { drReunion: false });
     expect(off.rows.some(r => r.dr.reunion), 'a reunion appeared unasked').toBe(false);
 
@@ -56,9 +55,31 @@ describe('the reunion', () => {
     const i = on.rows.findIndex(r => r.dr.reunion);
     expect(i, 'no reunion').toBeGreaterThan(-1);
     expect(on.rows[i].exits.length, 'the reunion sent somebody home').toBe(0);
-    // Between the last elimination and the finale, which is where the real
-    // show's own track record chart puts its Reunion column.
-    expect(on.rows[i + 1]?.dr?.finale, 'the reunion is not before the finale').toBeTruthy();
+    // AFTER the crowning (the user's call): the winner sits in her crown.
+    expect(on.rows[i - 1]?.dr?.finale, 'the reunion does not follow the finale').toBeTruthy();
+    expect(i, 'the reunion is not the last episode').toBe(on.rows.length - 1);
+  });
+
+  /* THE SEASON, NOT EIGHT CARDS. Every queen who did not win gets the hot
+     seat, in the order they went home, and the lines quote the season's own
+     facts — the song she went home to, the challenge she won. */
+  it('seats every queen but the winner, and quotes what actually happened', () => {
+    for (let s = 0; s < 6; s++) {
+      const out = season(s);
+      const ru = out.rows.find(r => r.dr.reunion);
+      const seats = ru.dr.scenes.filter(sc => sc.data?.seg === 'seat' && sc.data?.speaker === 'segment')
+        .map(sc => sc.data.players[0]);
+      const winners = out.winners || [out.winner];
+      const expected = out.state.castOrder.filter(n => !winners.includes(n));
+      expect([...seats].sort(), `seed ${s}`).toEqual([...expected].sort());
+      expect(ru.dr.scenes.length, `seed ${s}: a superficial reunion`).toBeGreaterThan(40);
+      // Every exit's song is named in her seat.
+      const text = ru.dr.scenes.map(sc => sc.text).join(' ');
+      for (const row of out.rows.filter(r => r.dr?.lipsync && (r.exits || []).length && !r.dr.finale)) {
+        if (row.dr.lipsync.song) expect(text, `seed ${s}: episode ${row.num}'s song`).toContain(row.dr.lipsync.song);
+      }
+      expect(text).not.toMatch(/\{[a-z]+\}/);   // no unfilled placeholder
+    }
   });
 
   /* THE TEST THAT SEPARATES A MEMORY FROM A FORMAT. Every topic has to come
@@ -118,8 +139,33 @@ describe('the reunion', () => {
     const html = screens.find(s => s.label === 'The Reunion').html;
     for (const sc of ru.dr.scenes) {
       if (!sc.text) continue;
+      // A segment's title card draws its title and subtitle as two lines.
+      if (sc.data?.speaker === 'segment') {
+        expect(html, `${sc.kind}'s title is not on the screen`).toContain(sc.data.title);
+        continue;
+      }
+      // A number or an award is a plate: its label and its queen.
+      if (sc.data?.speaker === 'stat' || sc.data?.speaker === 'award') {
+        expect(html).toContain(sc.data.stat || sc.data.award);
+        expect(html).toContain(sc.data.players[0]);
+        continue;
+      }
       const run = sc.text.split(/["'“”’]/).sort((a, b) => b.length - a.length)[0].trim();
       expect(html, `${sc.kind} is on the row and not on the screen`).toContain(run);
+    }
+  });
+
+  /* THE TRANSCRIPT IS THE SCREEN, retold: every spoken line of the reunion
+     must reach the text backlog too. */
+  it('reaches the transcript, every spoken line of it', () => {
+    const out = season(2);
+    const ru = out.rows.find(r => r.dr.reunion);
+    const text = generateDragSummaryText(ru);
+    const spoken = ru.dr.scenes.filter(sc => ['host', 'queen', 'room'].includes(sc.data?.speaker));
+    expect(spoken.length).toBeGreaterThan(30);
+    for (const sc of spoken) {
+      const run = sc.text.split(/["'“”’]/).sort((a, b) => b.length - a.length)[0].trim();
+      expect(text, `${sc.data.key} is not in the transcript`).toContain(run);
     }
   });
 });

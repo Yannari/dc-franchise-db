@@ -21,6 +21,7 @@
 import { roundTableStageData } from './round-table.js';
 import { trsStageShell as stageShell, trsFold, trsReg as reg, trsEsc as esc, trsFace as face, trsLater as later } from './castle-stage.js';
 import { TRScenery } from './cutaway-scenery.js';
+import { trPlay, trChalk } from './sfx.js';
 import { beatLines } from './stage-lines.js';
 
 const hash = s => { let h = 7; for (const c of String(s)) h = (Math.imul(h, 31) + c.charCodeAt(0)) >>> 0; return h; };
@@ -271,6 +272,20 @@ function paintTable(root, S, fresh) {
   if (st.t === 'say') type(rt.querySelector('.trt-type'), q(st.text), 16);
   if (st.t === 'narr') type(rt.querySelector('.trt-type'), st.text, 12);
   if (st.t === 'reveal') revealSequence(rt, S, st, fresh);
+  // THE SOUND OF IT (sfx.js), on a fresh step only, in time with the motion.
+  if (fresh) {
+    if (st.t === 'slate' && st.ballot) {
+      trPlay('tr-slate');
+      trChalk(String(st.ballot.target || '').length, begin * 1000, per * 1000);
+    } else if (st.t === 'count') trPlay('tr-drum');
+    else if (st.t === 'chair') trPlay('tr-chair');
+    else if (st.t === 'reveal') {
+      // the room holds its breath, the heart goes, then the card turns
+      trPlay('tr-hold', 1200);
+      trPlay('tr-heartbeat', 1900);
+      trPlay((st.alignment || D.chosenAlignment) === 'traitor' ? 'tr-traitor' : 'tr-faithful', 4550);
+    }
+  }
   // the corner
   const corner = root.querySelector('.trs-corner');
   const label = r.turned ? 'The reveal' : r.chair ? 'The chair' : r.counted ? 'The count' : r.reads ? 'The slates' : r.phase === 'debate' ? 'The debate' : 'The table sits';

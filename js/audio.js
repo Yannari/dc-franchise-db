@@ -62,6 +62,193 @@ function voiceTabSwoosh(ctx, d, now) { _noise(ctx, d, { dur: 0.18, peak: 0.08, t
 function voiceButtonTick(ctx, d, now){ _env(ctx, d, { type:'square', f0: 1200, dur: 0.04, peak: 0.07, now }); }
 function voiceSaveChime(ctx, d, now) { [784,1047].forEach((f,i)=>_env(ctx,d,{type:'triangle',f0:f,dur:0.25,peak:0.12,now:now+i*0.08})); }
 
+
+// ══════════════════════════════════════════════════════════════════════
+// THE TRAITORS — one sound per moment (2026-09-30)
+// ══════════════════════════════════════════════════════════════════════
+// Synthesised, like everything above: stone, chalk, ceramic, wax, a
+// heartbeat, a chair on flagstones. Fired by js/vp-tr/sfx.js when a castle
+// screen reveals the beat they belong to. Music beds come later, from files.
+
+// A tone with a shaped attack, for swells and chords.
+function _swell(ctx, dest, { type = 'sine', f, f1 = null, attack = 0.02, hold = 0, dur, peak = 0.2, now, detune = 0 }) {
+  const o = ctx.createOscillator(), g = ctx.createGain();
+  o.type = type; o.frequency.setValueAtTime(f, now);
+  if (detune && o.detune) o.detune.setValueAtTime(detune, now);
+  if (f1 != null) o.frequency.exponentialRampToValueAtTime(Math.max(1, f1), now + dur);
+  g.gain.setValueAtTime(0.0001, now);
+  g.gain.exponentialRampToValueAtTime(peak, now + attack);
+  if (hold) g.gain.setValueAtTime(peak, now + attack + hold);
+  g.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+  o.connect(g); g.connect(dest);
+  o.start(now); o.stop(now + dur + 0.05);
+}
+// Noise through a filter that can sweep, with its own envelope.
+function _sweep(ctx, dest, { dur, peak = 0.2, type = 'bandpass', f0 = 1000, f1 = null, q = 1, attack = 0.005, now }) {
+  const len = Math.max(1, Math.floor(ctx.sampleRate * dur));
+  const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+  const src = ctx.createBufferSource(); src.buffer = buf;
+  const filt = ctx.createBiquadFilter(); filt.type = type;
+  filt.frequency.setValueAtTime(f0, now);
+  if (f1 != null) filt.frequency.exponentialRampToValueAtTime(Math.max(20, f1), now + dur);
+  if (filt.Q) filt.Q.setValueAtTime(q, now);
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0.0001, now);
+  g.gain.exponentialRampToValueAtTime(peak, now + attack);
+  g.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+  src.connect(filt); filt.connect(g); g.connect(dest);
+  src.start(now); src.stop(now + dur + 0.02);
+}
+
+// A hand on the shoulder in a silent hall: a soft cloth thump, and the room
+// dropping away under it.
+function voiceTrTap(ctx, d, now) {
+  _sweep(ctx, d, { dur: 0.14, peak: 0.22, type: 'lowpass', f0: 900, now });
+  _swell(ctx, d, { f: 110, f1: 70, dur: 0.25, peak: 0.25, now });
+  _swell(ctx, d, { type: 'sine', f: 55, attack: 0.4, dur: 2.2, peak: 0.12, now: now + 0.05 });
+}
+// Footsteps on a stone stair: five heels, slightly uneven.
+function voiceTrFootsteps(ctx, d, now) {
+  [0, 0.31, 0.6, 0.93, 1.22].forEach((t, i) => {
+    _sweep(ctx, d, { dur: 0.09, peak: 0.16 - i * 0.012, type: 'bandpass', f0: 700 + (i % 2) * 180, q: 1.4, now: now + t });
+    _swell(ctx, d, { f: 95, f1: 60, dur: 0.1, peak: 0.12, now: now + t });
+  });
+}
+// A cup turned over on a laid table: the china clink, then the dread under it.
+function voiceTrCup(ctx, d, now) {
+  [2380, 3170, 4650].forEach((f, i) => _swell(ctx, d, { f, dur: 0.5 - i * 0.1, peak: 0.07, now }));
+  _sweep(ctx, d, { dur: 0.05, peak: 0.1, type: 'highpass', f0: 3000, now });
+  [73.4, 77.8, 110].forEach(f => _swell(ctx, d, { type: 'sawtooth', f, attack: 0.9, dur: 3.2, peak: 0.035, now: now + 0.25 }));
+  _sweep(ctx, d, { dur: 3.2, peak: 0.05, type: 'lowpass', f0: 300, attack: 0.9, now: now + 0.25 });
+}
+// The portrait taken off the wall and let go: the thud, and the glass.
+function voiceTrFrameDrop(ctx, d, now) {
+  _swell(ctx, d, { f: 90, f1: 40, dur: 0.5, peak: 0.35, now });
+  _sweep(ctx, d, { dur: 0.35, peak: 0.25, type: 'lowpass', f0: 500, now });
+  _sweep(ctx, d, { dur: 0.7, peak: 0.12, type: 'highpass', f0: 3500, now: now + 0.02 });
+  [3900, 5200, 6100, 4400].forEach((f, i) => _swell(ctx, d, { f, dur: 0.25, peak: 0.03, now: now + 0.04 + i * 0.05 }));
+}
+// A heartbeat, twice: lub-dub, lub-dub.
+function voiceTrHeartbeat(ctx, d, now) {
+  [0, 0.78].forEach(t => {
+    _swell(ctx, d, { f: 62, f1: 40, dur: 0.16, peak: 0.42, now: now + t });
+    _swell(ctx, d, { f: 55, f1: 36, dur: 0.14, peak: 0.3, now: now + t + 0.2 });
+  });
+}
+// One stroke of chalk on slate.
+function voiceTrChalk(ctx, d, now) {
+  _sweep(ctx, d, { dur: 0.11, peak: 0.07, type: 'bandpass', f0: 3800, f1: 2600, q: 3, attack: 0.012, now });
+  _sweep(ctx, d, { dur: 0.06, peak: 0.03, type: 'highpass', f0: 6000, now: now + 0.03 });
+}
+// A slate turned face-up and set on the wood.
+function voiceTrSlate(ctx, d, now) {
+  _sweep(ctx, d, { dur: 0.22, peak: 0.08, type: 'bandpass', f0: 600, f1: 2200, now });
+  _sweep(ctx, d, { dur: 0.06, peak: 0.18, type: 'bandpass', f0: 1200, q: 2, now: now + 0.2 });
+  _swell(ctx, d, { f: 210, f1: 160, dur: 0.12, peak: 0.12, now: now + 0.2 });
+}
+// The count: a single deep drum.
+function voiceTrDrum(ctx, d, now) {
+  _swell(ctx, d, { f: 68, f1: 42, dur: 0.9, peak: 0.45, now });
+  _sweep(ctx, d, { dur: 0.25, peak: 0.12, type: 'lowpass', f0: 350, now });
+}
+// A chair pushed back on flagstones, then the room's floor drops.
+function voiceTrChair(ctx, d, now) {
+  for (let i = 0; i < 7; i++) {
+    _sweep(ctx, d, { dur: 0.08, peak: 0.1, type: 'bandpass', f0: 420 + i * 60, q: 5, now: now + i * 0.055 });
+  }
+  _swell(ctx, d, { f: 49, f1: 36, attack: 0.02, dur: 2.4, peak: 0.3, now: now + 0.45 });
+  _sweep(ctx, d, { dur: 1.2, peak: 0.1, type: 'lowpass', f0: 260, now: now + 0.45 });
+}
+// Before the card turns: a held, rising tone — the whole room not breathing.
+function voiceTrHold(ctx, d, now) {
+  [98, 98.7, 147].forEach(f => _swell(ctx, d, { type: 'sawtooth', f, f1: f * 1.06, attack: 1.6, dur: 1.9, peak: 0.045, now }));
+  _sweep(ctx, d, { dur: 1.9, peak: 0.06, type: 'bandpass', f0: 300, f1: 1400, attack: 1.6, now });
+}
+// FAITHFUL: a warm major chord opening out, with a shimmer on top.
+function voiceTrFaithful(ctx, d, now) {
+  [261.6, 329.6, 392, 523.3].forEach((f, i) => _swell(ctx, d, { type: 'triangle', f, attack: 0.25, hold: 0.6, dur: 3.2, peak: 0.1, now: now + i * 0.04 }));
+  [1046.5, 1318.5, 1568].forEach((f, i) => _swell(ctx, d, { f, attack: 0.4, dur: 2.4, peak: 0.025, now: now + 0.15 + i * 0.12 }));
+  _swell(ctx, d, { f: 65.4, attack: 0.1, dur: 2.6, peak: 0.18, now });
+}
+// TRAITOR: a low hit, a dark minor cluster, and a crack of noise.
+function voiceTrTraitor(ctx, d, now) {
+  _swell(ctx, d, { f: 55, f1: 30, dur: 1.8, peak: 0.55, now });
+  _sweep(ctx, d, { dur: 0.6, peak: 0.3, type: 'lowpass', f0: 900, f1: 120, now });
+  [110, 130.8, 155.6, 116.5].forEach((f, i) => _swell(ctx, d, { type: 'sawtooth', f, attack: 0.05, hold: 0.5, dur: 3, peak: 0.05, now: now + 0.02 * i }));
+  _sweep(ctx, d, { dur: 2.8, peak: 0.05, type: 'bandpass', f0: 180, attack: 0.3, now: now + 0.1 });
+}
+// The turret door: a slow iron-hinge creak, then the latch.
+function voiceTrDoor(ctx, d, now) {
+  const o = ctx.createOscillator(), f = ctx.createBiquadFilter(), g = ctx.createGain();
+  o.type = 'sawtooth';
+  o.frequency.setValueAtTime(70, now);
+  [0.2, 0.4, 0.55, 0.75, 0.9, 1.1].forEach((t, i) => o.frequency.linearRampToValueAtTime(i % 2 ? 62 : 118, now + t));
+  f.type = 'bandpass'; f.frequency.setValueAtTime(900, now); if (f.Q) f.Q.setValueAtTime(6, now);
+  g.gain.setValueAtTime(0.0001, now);
+  g.gain.exponentialRampToValueAtTime(0.09, now + 0.15);
+  g.gain.exponentialRampToValueAtTime(0.0001, now + 1.2);
+  o.connect(f); f.connect(g); g.connect(d);
+  o.start(now); o.stop(now + 1.25);
+  _sweep(ctx, d, { dur: 0.07, peak: 0.2, type: 'bandpass', f0: 1500, q: 3, now: now + 1.25 });
+  _swell(ctx, d, { f: 140, f1: 90, dur: 0.12, peak: 0.15, now: now + 1.25 });
+}
+// A quill writing a name.
+function voiceTrQuill(ctx, d, now) {
+  for (let i = 0; i < 6; i++) {
+    _sweep(ctx, d, { dur: 0.09, peak: 0.11, type: 'bandpass', f0: 4800 - (i % 3) * 500, q: 4, attack: 0.02, now: now + i * 0.13 });
+  }
+}
+// Wax pressed onto the letter: a soft squash, and the seal.
+function voiceTrWax(ctx, d, now) {
+  _sweep(ctx, d, { dur: 0.3, peak: 0.16, type: 'lowpass', f0: 700, f1: 150, attack: 0.03, now });
+  _swell(ctx, d, { f: 92, f1: 55, dur: 0.4, peak: 0.35, now: now + 0.05 });
+  _swell(ctx, d, { f: 41, attack: 0.05, dur: 1.6, peak: 0.16, now: now + 0.08 });
+}
+// A name struck out.
+function voiceTrStrike(ctx, d, now) {
+  _sweep(ctx, d, { dur: 0.18, peak: 0.14, type: 'highpass', f0: 1500, f1: 5000, now });
+  _swell(ctx, d, { f: 180, f1: 90, dur: 0.2, peak: 0.1, now: now + 0.1 });
+}
+// Coins into the chest.
+function voiceTrCoins(ctx, d, now) {
+  const hits = [0, 0.07, 0.11, 0.19, 0.24, 0.3, 0.38, 0.43, 0.52, 0.6, 0.69, 0.8];
+  hits.forEach((t, i) => {
+    const f = 2600 + ((i * 431) % 1900);
+    _swell(ctx, d, { f, dur: 0.18, peak: 0.05, now: now + t });
+    _swell(ctx, d, { f: f * 1.51, dur: 0.12, peak: 0.02, now: now + t });
+  });
+  _swell(ctx, d, { f: 120, f1: 80, dur: 0.3, peak: 0.12, now: now + 0.85 });
+}
+// Tyres on the gravel drive.
+function voiceTrGravel(ctx, d, now) {
+  for (let i = 0; i < 14; i++) {
+    _sweep(ctx, d, { dur: 0.06, peak: 0.16 + (i % 3) * 0.03, type: 'bandpass', f0: 1400 + (i * 173) % 900, q: 1.5, now: now + i * 0.08 + (i % 2) * 0.02 });
+  }
+  _sweep(ctx, d, { dur: 1.3, peak: 0.05, type: 'lowpass', f0: 250, now });
+}
+// A letter opened: paper.
+function voiceTrLetter(ctx, d, now) {
+  _sweep(ctx, d, { dur: 0.25, peak: 0.08, type: 'highpass', f0: 2500, f1: 6000, now });
+  _sweep(ctx, d, { dur: 0.3, peak: 0.06, type: 'bandpass', f0: 3200, q: 1, now: now + 0.22 });
+}
+// The armoury: metal on metal.
+function voiceTrClang(ctx, d, now) {
+  [523, 1377, 2051, 2890].forEach((f, i) => _swell(ctx, d, { type: 'triangle', f, dur: 1.4 - i * 0.2, peak: 0.07, now }));
+  _sweep(ctx, d, { dur: 0.05, peak: 0.2, type: 'bandpass', f0: 2500, q: 2, now });
+}
+// A bell tolling, for the endgame.
+function voiceTrToll(ctx, d, now) {
+  [98, 196.5, 294, 392.7, 517].forEach((f, i) => _swell(ctx, d, { f, dur: 4 - i * 0.5, peak: 0.1 - i * 0.015, now }));
+  _sweep(ctx, d, { dur: 0.08, peak: 0.1, type: 'bandpass', f0: 1800, now });
+}
+// The blindfold: a hush falls and a low wind moves.
+function voiceTrHush(ctx, d, now) {
+  _sweep(ctx, d, { dur: 2.6, peak: 0.07, type: 'bandpass', f0: 400, f1: 180, attack: 0.9, q: 0.8, now });
+  _swell(ctx, d, { f: 65.4, attack: 1.2, dur: 2.8, peak: 0.1, now });
+}
+
 // --- Ambient bed builders (looping pad) ---
 function _padBed(ctx, dest, freqs) {
   const oscs = freqs.map(f => { const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = f; return o; });
@@ -93,6 +280,29 @@ export const CUE_CATALOG = {
   'tab-swoosh':        { duck: false, build: voiceTabSwoosh },
   'button-tick':       { duck: false, build: voiceButtonTick },
   'save-chime':        { duck: false, build: voiceSaveChime },
+  // The Traitors (js/vp-tr/sfx.js decides when)
+  'tr-tap':        { duck: true,  build: voiceTrTap },
+  'tr-footsteps':  { duck: false, build: voiceTrFootsteps },
+  'tr-cup':        { duck: true,  build: voiceTrCup },
+  'tr-frame-drop': { duck: true,  build: voiceTrFrameDrop },
+  'tr-heartbeat':  { duck: true,  build: voiceTrHeartbeat },
+  'tr-chalk':      { duck: false, build: voiceTrChalk },
+  'tr-slate':      { duck: false, build: voiceTrSlate },
+  'tr-drum':       { duck: true,  build: voiceTrDrum },
+  'tr-chair':      { duck: true,  build: voiceTrChair },
+  'tr-hold':       { duck: true,  build: voiceTrHold },
+  'tr-faithful':   { duck: true,  build: voiceTrFaithful },
+  'tr-traitor':    { duck: true,  build: voiceTrTraitor },
+  'tr-door':       { duck: false, build: voiceTrDoor },
+  'tr-quill':      { duck: false, build: voiceTrQuill },
+  'tr-wax':        { duck: true,  build: voiceTrWax },
+  'tr-strike':     { duck: false, build: voiceTrStrike },
+  'tr-coins':      { duck: false, build: voiceTrCoins },
+  'tr-gravel':     { duck: false, build: voiceTrGravel },
+  'tr-letter':     { duck: false, build: voiceTrLetter },
+  'tr-clang':      { duck: false, build: voiceTrClang },
+  'tr-toll':       { duck: true,  build: voiceTrToll },
+  'tr-hush':       { duck: true,  build: voiceTrHush },
 };
 
 // Each bed prefers its mp3 file (looped). Drop the files in assets/audio/ to

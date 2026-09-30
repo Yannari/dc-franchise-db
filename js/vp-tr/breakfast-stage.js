@@ -14,6 +14,7 @@
 import { coldOpenStageData } from './cold-open.js';
 import { trsStageShell as stageShell, trsFold, trsReg as reg, trsEsc as esc, trsFace as face } from './castle-stage.js';
 import { TRScenery } from './cutaway-scenery.js';
+import { trPlay } from './sfx.js';
 import { beatLines } from './stage-lines.js';
 import { footCard, playCard, CARD_CSS } from './stage-cards.js';
 
@@ -90,6 +91,13 @@ function paint(root, S, fresh) {
   h += footCard(st, D.host);
   el.innerHTML = h;
   playCard(el, st, S, fresh);
+  // THE SOUND OF IT, once per beat, on a fresh step.
+  if (fresh && (S.steps[S.idx - 1] || {}).beat !== st.beat) {
+    const k = (st.meta || {}).kind;
+    if (k === 'down') trPlay('tr-footsteps');
+    else if (k === 'gap') trPlay('tr-cup');
+    else if (k === 'count' && /last|places/i.test(String(st.tag || ''))) trPlay('tr-heartbeat');
+  }
   const corner = root.querySelector('.trs-corner');
   corner.innerHTML = `${D.arrival ? 'The arrival' : 'The breakfast room'} · <b>${r.gapShown ? 'A cup turned over' : r.down.size ? 'Coming down' : 'Before anybody'}</b>`;
   corner.classList.add('trs-in');

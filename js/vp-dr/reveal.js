@@ -24,6 +24,7 @@
 
 import { applyVnMode, skipTypewriter, resetVnStep, vnSupported, isVnMode, vnToggleBtn, toggleVnMode } from './vn-reader.js';
 import { dragMusicStep, drLoadSongs } from './music.js';
+import { dragSfxStep } from './sfx.js';
 // On window through this module (js/main.js), for the lip sync screen's button.
 export { drLoadSongs };
 
@@ -89,6 +90,7 @@ export function _reapplyVisibility(suffix, upToIdx, total) {
      says what it is, and the track starts, carries on or fades. */
   if (upToIdx >= 0) {
     try { dragMusicStep(suffix, upToIdx); } catch { /* the ear, not the reveal */ }
+    try { dragSfxStep(suffix, upToIdx); } catch { /* the ear, not the reveal */ }
   }
 
   const newest = document.getElementById(`dr-step-${suffix}-${upToIdx}`);

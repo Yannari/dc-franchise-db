@@ -144,6 +144,11 @@ const musicWanted = () => (engine.isMusicEnabled ? engine.isMusicEnabled() : tru
 
 /* The tracks, from both places: the repo's manifest (with its loop points)
    and whatever has been uploaded to the studio (the whole file loops). */
+/** Every uploaded or published track, by situation (sfx.js reads its `sfx-<name>` files here). */
+export const momentTracks = () => loadManifest();
+
+/** The sound effects a file can replace (js/vp-dr/sfx.js plays them): upload `sfx-<name>.mp3`. */
+export const DRAG_SFX = ['stinger', 'heartbeat', 'cheer', 'roar', 'slam', 'gasp', 'groan', 'shantay', 'sashay', 'win', 'flash', 'applause'];
 async function loadManifest() {
   if (manifest !== undefined) return manifest;
   const m = {};
@@ -168,7 +173,11 @@ async function decode(c, key, getBytes) {
     const bytes = await getBytes();
     buffers[key] = bytes ? await c.decodeAudioData(bytes) : null;
   } catch { buffers[key] = null; }
-  return buffers[key];
+  /* A SONG THAT FAILED IS ASKED FOR AGAIN next time: one failed search
+     (offline, rate-limited) silenced that song until a reload. */
+  const got = buffers[key];
+  if (!got && key.startsWith('song:')) delete buffers[key];
+  return got;
 }
 const urlBytes = url => async () => { const r = await fetch(url); return r.ok ? r.arrayBuffer() : null; };
 
@@ -211,7 +220,8 @@ async function start(key, sit, song, suffix = null) {
   const mine = bed = { key, pending: true, suffix };
   const { ctx: c, dest } = out;
   let buf = null; let pick = { start: 0 };
-  if (song) buf = await decode(c, `song:${song}`, () => songBytes(song));
+  // Your own file first; the record's 30-second clip when there is none.
+  if (song) buf = await decode(c, `song:${song}`, async () => (await songBytes(song)) || previewBytes(song));
   if (!buf) {
     pick = await trackFor(song ? 'lipsync' : sit);
     if (pick) buf = await decode(c, pick.url, urlBytes(pick.url));
@@ -297,14 +307,78 @@ if (typeof document !== 'undefined' && !globalThis.__drMusic) {
 // ── THE LIP SYNC SONGS, AND THE UPLOAD ───────────────────────────────
 const norm = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]/g, '');
 
-/** A song's own file, from the studio — only with the token, never asking mid-show. */
+/**
+ * A song's own file, from the studio — only with the token, never asking
+ * mid-show. The upload keeps the file's own extension, so each is tried.
+ */
 async function songBytes(title) {
   const t = studioToken(false);
   if (!t) return null;
-  try {
-    const r = await fetch(`${WORKER}/audio/lipsync/${slugify(title)}.mp3`, { headers: { Authorization: `Bearer ${t}` } });
-    return r.ok ? r.arrayBuffer() : null;
-  } catch { return null; }
+  for (const ext of ['mp3', 'm4a', 'ogg', 'wav']) {
+    try {
+      const r = await fetch(`${WORKER}/audio/lipsync/${slugify(title)}.${ext}`, { headers: { Authorization: `Bearer ${t}` } });
+      if (r.ok) return r.arrayBuffer();
+      if (r.status !== 404) return null;   // no token, no bucket: stop asking
+    } catch { return null; }
+  }
+  return null;
+}
+
+/* ── THE 30-SECOND CLIP, WHEN THERE IS NO FILE ──────────────────────
+   The iTunes search API is free, needs no sign-in, and both the search and
+   the clip allow a browser to read them. A song nobody has uploaded still
+   plays its real record for thirty seconds, instead of a generic track. */
+const PREVIEW_CACHE = 'dr_song_previews';
+let previewCache = null;
+function previews() {
+  if (previewCache) return previewCache;
+  try { previewCache = JSON.parse(localStorage.getItem(PREVIEW_CACHE) || '{}') || {}; } catch { previewCache = {}; }
+  return previewCache;
+}
+function rememberPreview(title, url) {
+  previews()[title] = url;
+  try { localStorage.setItem(PREVIEW_CACHE, JSON.stringify(previewCache)); } catch { /* private window */ }
+}
+
+/* A remix, a live take or an acoustic cut is the right singer and the wrong
+   record — measured: "Telephone (Kaskade Mix)", "Physical (Acoustic)" and
+   "Last Dance (Live)" were first in their results. Kept only as a last resort. */
+const VARIANT = /\b(re-?mix|mix\w*|radio|club|dub|acoustic|live|karaoke|instrumental|version|edit|demo|a cappella|cover|tribute|sped up|slowed)\b/i;
+// "P!nk" is Pink: the bang is a letter, not punctuation.
+const artistKey = s => norm(String(s || '').replace(/!/g, 'i'));
+
+/**
+ * The search result that IS the record. The artist must match, so a karaoke
+ * cover or a tribute act never plays. The title must match from its start
+ * (or end: "And All That Jazz"). Then the original beats a variant, and the
+ * shortest title wins, so "Toxic" beats "Toxic (feat. …)".
+ */
+export function pickPreview(results, title, artist) {
+  const t = norm(title); const a = artistKey(artist);
+  const variant = x => VARIANT.test(x.trackName) && !VARIANT.test(title);
+  const fits = (results || []).filter(x => {
+    if (!x?.previewUrl) return false;
+    const n = norm(x.trackName); const xa = artistKey(x.artistName);
+    return (n.startsWith(t) || n.endsWith(t)) && (!a || xa.includes(a) || (xa && a.includes(xa)));
+  });
+  return fits.sort((x, y) => (variant(x) - variant(y)) || (norm(x.trackName).length - norm(y.trackName).length))[0] || null;
+}
+
+async function previewBytes(title) {
+  const cache = previews();
+  let url = cache[title];
+  if (url === undefined) {
+    const artist = SONGS.find(s => s.title === title)?.artist || '';
+    try {
+      const q = encodeURIComponent(`${title} ${artist}`.trim());
+      const r = await fetch(`https://itunes.apple.com/search?term=${q}&media=music&entity=song&limit=50`);
+      if (!r.ok) return null;   // rate-limited: try again next time, remember nothing
+      url = pickPreview((await r.json())?.results, title, artist)?.previewUrl || null;
+      rememberPreview(title, url);
+    } catch { return null; }
+  }
+  if (!url) return null;
+  try { const r = await fetch(url); return r.ok ? r.arrayBuffer() : null; } catch { return null; }
 }
 
 /**
@@ -334,6 +408,7 @@ export function momentForFile(fileName) {
     .replace(/\s*(#|-|_|\s)\s*\d+$/, '').replace(/[\s_]+/g, '-');
   if (DRAG_SITUATIONS.includes(base)) return base;
   if (/^chal-[a-z0-9-]+$/.test(base)) return base;
+  if (/^sfx-[a-z]+$/.test(base) && DRAG_SFX.includes(base.slice(4))) return base;
   return null;
 }
 

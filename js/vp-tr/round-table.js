@@ -78,6 +78,7 @@ import { PORTRAIT_CSS, TR_NAV_TOP } from './style.js';
 import { _noiseTile, _fieldRng } from './scenery.js';
 import { _portrait, _icon } from './conclave.js';
 
+import { trSfxReveal } from './sfx.js';
 const TR = 'traitors';
 
 /** The show's own word for the door this table opens. Never written out. */
@@ -3712,6 +3713,7 @@ export function trRoundTableRevealNext(suffix, total, epNum) {
   if (st.idx >= total - 1) return;
   st.idx++;
   _reapplyVisibility(suffix, st.idx, total);
+  trSfxReveal('rt', suffix, st.idx);
   _scrollTo(document.getElementById('rt-step-' + suffix + '-' + st.idx));
   const el = document.getElementById('rt-step-' + suffix + '-' + st.idx);
   // The chair goes back and the whole room feels it.

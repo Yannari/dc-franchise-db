@@ -14,6 +14,7 @@
 import { conclaveStageData, conclaveVisibleTo } from './conclave.js';
 import { trsStageShell as stageShell, trsFold, trsReg as reg, trsEsc as esc, trsFace as face, trsLater as later } from './castle-stage.js';
 import { TRScenery } from './cutaway-scenery.js';
+import { trPlay } from './sfx.js';
 import { beatLines } from './stage-lines.js';
 import { footCard, playCard, CARD_CSS } from './stage-cards.js';
 
@@ -184,6 +185,12 @@ function paint(root, S, fresh) {
   h += footCard(bare ? null : st, D.host);
   el.innerHTML = h;
   if (!bare) playCard(el, st, S, fresh);
+  // THE SOUND OF IT, on a fresh step: the door, the quill, the wax.
+  if (fresh) {
+    if (S.idx === 0) trPlay('tr-door');
+    else if (st.t === 'slip') trPlay(st.struck ? 'tr-strike' : 'tr-quill');
+    else if (st.t === 'letter') { trPlay('tr-quill', 900); trPlay('tr-wax', 2400); }
+  }
   root.querySelector('.trs-view').classList.toggle('trc-away', !!(st.down && st.down.length));
   const corner = root.querySelector('.trs-corner');
   corner.innerHTML = st.down && st.down.length ? 'Downstairs · <b>Meanwhile</b>'

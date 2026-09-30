@@ -70,6 +70,7 @@ import { _noiseTile, _fieldRng } from './scenery.js';
 import { _portrait, _icon } from './conclave.js';
 import { ruleReminder, variantReminder } from '../tr-rules.js';
 
+import { trSfxReveal } from './sfx.js';
 const TR = 'traitors';
 
 /** The show's own words for the two doors. Never written out. */
@@ -2385,6 +2386,7 @@ export function trColdOpenRevealNext(suffix, total, epNum) {
   if (st.idx >= total - 1) return;
   st.idx++;
   _reapplyVisibility(suffix, st.idx, total);
+  trSfxReveal('co', suffix, st.idx);
   _scrollTo(document.getElementById('co-step-' + suffix + '-' + st.idx));
   _updateStage(epNum, st.idx);
 }

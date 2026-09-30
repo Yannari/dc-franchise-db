@@ -27,6 +27,17 @@ import { _controls, _seedRail, _state } from './reveal.js';
 import { GRID_RESULTS } from '../dr/grid.js';
 import { showWords } from '../shows.js';
 import { tagStep, lipsyncMusicOf, songAttr, songLoaderHtml } from './music.js';
+import { tagSfx, lipsyncSfxOf } from './sfx.js';
+
+/* The room's reaction to one line of the call: the win is a fanfare and the
+   crowd, a high placement applause, the bottom two the drop; the pause before
+   the last names is the heartbeat. */
+function callSfxOf(s) {
+  if (s.t === 'hold') return 'heartbeat';
+  if (s.t === 'stakes') return 'stinger';
+  if (s.t === 'confess') return null;
+  return s.raw === 'WIN' ? 'win' : s.raw === 'HIGH' ? 'applause' : s.raw === 'BTM2' || s.raw === 'ELIM' ? 'stinger' : null;
+}
 
 const esc = v => String(v ?? '').replace(/[&<>"]/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -561,7 +572,7 @@ export function rpBuildResults(row) {
 
   /* The music under the call (js/vp-dr/music.js): the wait is suspense, and
      "Condragulations" is the winner's track. */
-  const steps = list.map((s, i) => tagStep((() => {
+  const steps = list.map((s, i) => tagSfx(tagStep((() => {
     if (s.t === 'hold' || s.t === 'stakes') {
       return `<div class="dr-step" id="dr-step-results-${i}">
       <div class="dr-panel dr-a-room dr-hold${s.t === 'stakes' ? ' dr-stakes' : ''}">
@@ -592,7 +603,7 @@ export function rpBuildResults(row) {
         ${moved ? '<span class="dr-moved dr-disp">the host moved her</span>' : '<span></span>'}
         <span class="dr-stamp dr-disp" style="color:${meta.color || '#fff'}">${esc(meta.label || s.r)}</span>
       </div></div>`;
-  })(), s.t === 'confess' ? null : s.raw === 'WIN' ? 'winner' : 'suspense')).join('');
+  })(), s.t === 'confess' ? null : s.raw === 'WIN' ? 'winner' : 'suspense'), callSfxOf(s))).join('');
 
   /* ── THE STAGE ── js/vp-dr/call-stage.js. The line stands in the order the
      panel ranked them, which the critiques already showed; the call order
@@ -675,7 +686,7 @@ export function rpBuildLipSync(row) {
   };
   // Each card carries its moment for the music (js/vp-dr/music.js): the
   // performance is the song, the call the suspense, then the verdict.
-  const steps = beats.map((sc, i) => tagStep((() => {
+  const steps = beats.map((sc, i) => tagSfx(tagStep((() => {
     const who = sideOf(sc);
     const right = who && who === b;
 
@@ -724,7 +735,7 @@ export function rpBuildLipSync(row) {
         ${who ? _portrait(who, ep, { size: 42 }) : ''}</span>`
     : who || sc.kind?.startsWith('confess:') ? _portrait(who || (sc.data?.players || [])[0], ep, { size: 42 }) : ''}
       <div>${decor.tag}<p>${esc(sc.text)}</p></div></div></div>`;
-  })(), lipsyncMusicOf(sc.kind))).join('');
+  })(), lipsyncMusicOf(sc.kind)), lipsyncSfxOf(sc))).join('');
 
   // The verdict: the host's call, her names, or — on a night the song is a
   // prize — the winner's name.

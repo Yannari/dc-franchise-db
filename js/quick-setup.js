@@ -1265,6 +1265,8 @@ const CONFIG_SCOPE = {
     // and nothing claimed it, so the checkbox drew on all four shows.
     'sec-dr-as-jury':        ['drag-race'],
     'sec-dr-call-label':     ['drag-race'],
+    'sec-dr-music-label':    ['drag-race'],
+    'sec-dr-music':          ['drag-race'],
     // ── THE EXPLAINER ROWS, WHICH HAD NO IDS AND SO NO SCOPE ────────
     //
     // Each show's options block opens with a couple of fixed rows stating the

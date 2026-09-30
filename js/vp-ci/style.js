@@ -215,6 +215,130 @@ export const CIV_CSS = `
 .civ-roll span.on{border:.18cqw solid var(--ring,#2f7bff);background-color:#1b1f45;box-shadow:0 0 .8cqw var(--ring,#2f7bff)}
 .civ-roll span.cur{transform:scale(1.3)}
 .civ-roll b{font-weight:800;font-size:.9cqw;letter-spacing:.1em;margin-left:.5cqw;color:#cfd6ff}
+/* ── the big moments (js/vp-ci/moments.js) ── */
+.civ-mcam{position:relative;aspect-ratio:1;border-radius:1.1cqw;background:#1b1f45 center 20%/cover;border:.26cqw solid rgba(255,255,255,.85);display:grid;place-items:center;font-weight:800;font-size:5cqw;
+  box-shadow:0 0 0 .4cqw rgba(0,0,0,.25),0 0 3cqw var(--glow,#3fd8ff),0 16px 40px rgba(0,0,0,.55)}
+.civ-mcam:after{content:attr(data-cam);position:absolute;left:.6cqw;top:.6cqw;font-weight:800;font-size:.75cqw;letter-spacing:.14em;background:rgba(0,0,0,.6);padding:.25cqw .45cqw;border-radius:.3cqw;color:#fff;white-space:nowrap}
+.civ-mcam:before{content:"";position:absolute;right:.8cqw;top:.8cqw;width:.6cqw;height:.6cqw;border-radius:50%;background:#ff4a6a;box-shadow:0 0 8px #ff4a6a;animation:civBlink 1.2s infinite}
+.civ-mcam.side{position:absolute;left:3%;bottom:6%;width:17cqw;z-index:7;transform:rotate(-2deg)}
+.civ-mcam.side.in{animation:civWalkIn .6s cubic-bezier(.2,1.2,.3,1) both}
+.civ-mcam.center{position:absolute;left:50%;top:14%;width:22cqw;margin-left:-11cqw;z-index:7}
+.civ-dlg.right{left:23%;right:3%}
+.civ-mtile{position:relative;display:flex;align-items:center;gap:.8cqw;background:rgba(26,30,70,.85);border-radius:.6cqw;padding:.5cqw .7cqw;transition:all .35s}
+.civ-mtile .ph{flex:none;width:3cqw;aspect-ratio:1;border-radius:50%;background:#1b1f45 center 25%/cover;border:.18cqw solid var(--ring,#2f7bff);display:grid;place-items:center;font-weight:800;font-size:1.2cqw}
+.civ-mtile .n{font-weight:800;font-size:1.05cqw;letter-spacing:.06em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.civ-mtile.hidden{opacity:.45}.civ-mtile.hidden .ph{border-style:dashed;border-color:rgba(255,255,255,.35)}
+.civ-mtile.talk{background:rgba(47,123,255,.5);box-shadow:0 0 1.6cqw rgba(63,216,255,.7);transform:scale(1.05)}
+.civ-badge{margin-left:auto;font-weight:900;font-size:.7cqw;letter-spacing:.14em;padding:.2cqw .45cqw;border-radius:.25cqw;background:linear-gradient(90deg,#ffd23f,#ff9f2f);color:#2a1a00}
+.civ-badge.red{background:#ff2a4a;color:#fff}
+/* the Ratings */
+.civ-board{position:absolute;right:3%;top:11%;bottom:24%;width:40%;display:flex;flex-direction:column;gap:.45cqw;padding:1cqw;border-radius:1cqw;background:rgba(10,12,40,.82);border:1px solid rgba(139,92,255,.45);box-shadow:0 0 3cqw rgba(139,92,255,.35);z-index:5}
+.civ-board.two{display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:min-content;align-content:start}
+.civ-board .hd{grid-column:1/-1;text-align:center;font-weight:900;font-size:1.2cqw;letter-spacing:.2em;padding:.4cqw 0 .6cqw;background:linear-gradient(90deg,#3fd8ff,#8b5cff,#ff4fb4);-webkit-background-clip:text;background-clip:text;color:transparent}
+.civ-rate.reveal .civ-board{left:50%;right:auto;width:52%;margin-left:-26%;bottom:auto;max-height:66%}
+.civ-slot{display:flex;align-items:center;gap:.7cqw}
+.civ-slot>b{flex:none;width:2.2cqw;text-align:center;font-weight:900;font-size:1.3cqw;color:#9aa6d6}
+.civ-slot .civ-mtile{flex:1}
+.civ-slot.now .civ-mtile{box-shadow:0 0 1.8cqw rgba(63,216,255,.8);background:rgba(47,123,255,.5)}
+.civ-slot.land .civ-mtile{animation:civLand .7s cubic-bezier(.2,1.4,.4,1) both}
+@keyframes civLand{0%{opacity:0;transform:translateX(30%) scale(1.3);filter:blur(4px)}100%{opacity:1;transform:none;filter:none}}
+.civ-slot.crown .civ-mtile{background:linear-gradient(90deg,rgba(255,210,63,.35),rgba(255,79,180,.3));box-shadow:0 0 2cqw rgba(255,210,63,.6)}
+.civ-slot.crown>b{color:#ffd23f}.civ-slot.crown>b:after{content:" \\265B"}
+.civ-boardnote{margin:auto;text-align:center;font-size:1.3cqw;color:#cfd6ff;font-style:italic;padding:0 8%}
+.civ-stamp{position:absolute;right:6%;bottom:6%;font-weight:900;font-size:2.4cqw;letter-spacing:.2em;color:#3fd88f;border:.3cqw solid #3fd88f;padding:.2cqw 1cqw;border-radius:.5cqw;transform:rotate(-12deg);animation:civSlamIn .5s both}
+.civ-confetti{position:absolute;inset:0;z-index:15;pointer-events:none;background-image:radial-gradient(circle,#ffd23f 0 .3cqw,transparent .35cqw),radial-gradient(circle,#ff4fb4 0 .3cqw,transparent .35cqw),radial-gradient(circle,#3fd8ff 0 .25cqw,transparent .3cqw);
+  background-size:13cqw 17cqw,17cqw 13cqw,11cqw 15cqw;animation:civConfetti 2.6s linear both}
+@keyframes civConfetti{0%{background-position:0 -60cqw,3cqw -70cqw,5cqw -50cqw;opacity:1}90%{opacity:1}100%{background-position:2cqw 60cqw,-2cqw 70cqw,6cqw 65cqw;opacity:0}}
+/* the Hangout */
+.civ-hcam{position:absolute;top:13%;width:21cqw;z-index:6;transition:transform .4s}
+.civ-hcam.L{left:3%;transform:perspective(60cqw) rotateY(14deg)}.civ-hcam.R{right:3%;transform:perspective(60cqw) rotateY(-14deg)}.civ-hcam.M{left:50%;margin-left:-8cqw;width:16cqw;top:3%}
+.civ-hcam.talk .civ-mcam{box-shadow:0 0 0 .4cqw rgba(255,210,63,.6),0 0 4cqw var(--glow,#3fd8ff)}
+.civ-atrisk{position:absolute;left:28%;right:28%;top:15%;bottom:28%;z-index:5;display:flex;flex-direction:column;gap:.6cqw}
+.civ-atrisk .hd{text-align:center;font-weight:900;font-size:1.1cqw;letter-spacing:.22em;color:#ff8fb0}
+.civ-atrisk .grid{display:grid;grid-template-columns:1fr 1fr;gap:.6cqw}
+.civ-mtile.keep{opacity:.55}.civ-mtile.cut{background:rgba(255,42,74,.28);box-shadow:0 0 1.4cqw rgba(255,42,74,.5)}
+.civ-mtile.doomed{background:rgba(255,42,74,.55);box-shadow:0 0 2.4cqw rgba(255,42,74,.9);transform:scale(1.08);opacity:1}
+.civ-verdict{position:absolute;right:.5cqw;bottom:-.7cqw;font-weight:900;font-size:.62cqw;letter-spacing:.12em;padding:.15cqw .4cqw;border-radius:.2cqw;background:#10143a;border:1px solid rgba(255,255,255,.2)}
+.civ-mtile.cut .civ-verdict{color:#ff8fa0;border-color:#ff2a4a}.civ-mtile.keep .civ-verdict{color:#3fd88f}
+/* the blocking */
+.civ-redwash{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 60%,transparent 40%,rgba(120,0,30,.45));opacity:.3;transition:opacity 1s}
+.civ-blocked.done .civ-redwash{opacity:1}
+.civ-bgrid{position:absolute;left:24%;right:3%;top:12%;display:grid;grid-template-columns:repeat(4,1fr);gap:.6cqw;z-index:4}
+.civ-mtile.out{filter:grayscale(1) brightness(.45);background:rgba(60,0,10,.7);box-shadow:inset 0 0 0 .2cqw #ff2a4a}
+.civ-mtile.out .civ-badge{filter:none}
+.civ-msgbox{position:absolute;left:30%;right:9%;top:52%;z-index:6;min-height:7cqw;padding:1.2cqw 1.6cqw;border-radius:.8cqw;background:rgba(238,240,247,.96);color:#1a1d3a;font-weight:600;font-size:1.5cqw;line-height:1.4;box-shadow:0 0 3cqw rgba(47,123,255,.4)}
+.civ-msgbox .from{font-weight:900;font-size:.85cqw;letter-spacing:.16em;color:#2f7bff;margin-bottom:.3cqw}
+.civ-msgbox.idle{background:rgba(20,24,60,.85);color:#dfe6ff;font-style:italic;text-align:center;display:grid;place-items:center}
+.civ-msgbox .civ-dots span{background:#2f7bff}
+.civ-msgbox.sent{animation:civUp .5s both}
+.civ-slam{position:absolute;inset:0;z-index:16;display:grid;place-content:center;text-align:center;pointer-events:none;animation:civSlamOut 2.4s both}
+.civ-slam span{font-weight:900;font-size:13cqw;letter-spacing:.06em;color:#ff2a4a;text-shadow:0 0 4cqw rgba(255,42,74,.8),-.5cqw 0 #2ae8ff;animation:civPop .8s cubic-bezier(.2,1.6,.3,1) both}
+@keyframes civPop{0%{opacity:0;transform:scale(2.6);filter:blur(16px)}100%{opacity:1;transform:none;filter:none}}
+.civ-slam small{font-weight:800;font-size:2.4cqw;letter-spacing:.3em}
+@keyframes civSlamOut{0%,70%{opacity:1;background:rgba(20,0,6,.93)}100%{opacity:0;background:transparent}}
+.civ-flash.red{background:#ff2a4a;animation:civFlash .5s .35s}
+/* a real room: the hallway, the door, face to face */
+.civ-hall,.civ-room2{background:#120d0a}
+.civ-corridor{position:absolute;inset:0;background:linear-gradient(180deg,#2a2018 0 12%,#e8dcc4 12% 16%,#3a2c22 16%),linear-gradient(90deg,#1a120c,#4a3a2c 50%,#1a120c);background-blend-mode:multiply;perspective:40cqw}
+.civ-corridor:before{content:"";position:absolute;left:30%;right:30%;top:20%;bottom:10%;background:radial-gradient(ellipse at 50% 30%,#ffe9b8,#c49a5a 40%,#2a1c10 80%);filter:blur(2px);opacity:.8}
+.civ-corridor i{position:absolute;top:24%;bottom:14%;width:9%;border-radius:.4cqw .4cqw 0 0;background:linear-gradient(#6a4a2e,#3a2616);box-shadow:inset 0 0 0 .3cqw #8a6a44}
+.civ-corridor i:nth-child(1){left:6%}.civ-corridor i:nth-child(2){left:19%;transform:scale(.85)}.civ-corridor i:nth-child(3){right:19%;transform:scale(.85)}.civ-corridor i:nth-child(4){right:6%}
+.civ-hall.walking .civ-corridor{animation:civWalk 6s ease-out both}
+@keyframes civWalk{from{transform:scale(1.25)}to{transform:scale(1)}}
+.civ-waits{position:absolute;left:4%;right:4%;top:14%;display:flex;justify-content:center;gap:1.4cqw;z-index:6}
+.civ-waits .civ-mcam{width:14cqw;opacity:.6;transition:all .35s}.civ-waits .civ-mcam.now{opacity:1;transform:scale(1.12)}
+.civ-knock{position:absolute;left:0;right:0;top:48%;text-align:center;font-weight:900;font-size:2.4cqw;letter-spacing:.2em;color:#ffe9b8;text-transform:uppercase;text-shadow:0 0 2cqw rgba(255,200,120,.6);animation:civPulse 1.6s infinite}
+.civ-realroom{position:absolute;inset:0;background:linear-gradient(180deg,#3b2a20 0 70%,#1f1510 70%),radial-gradient(ellipse at 50% 20%,rgba(255,220,160,.5),transparent 60%);background-blend-mode:screen}
+.civ-realroom.lounge{background:linear-gradient(180deg,#1d1840 0 68%,#0d0a20 68%),radial-gradient(ellipse at 50% 10%,rgba(139,92,255,.6),transparent 60%);background-blend-mode:screen}
+.civ-door{position:absolute;top:8%;bottom:30%;width:50%;background:linear-gradient(#6a4a2e,#3a2616);box-shadow:inset 0 0 0 .4cqw #8a6a44;z-index:9;transform:translateX(-100%);opacity:0}
+.civ-door.L{left:0}.civ-door.R{right:0;transform:translateX(100%)}
+.civ-room2.open .civ-door{animation:civDoor 1.3s cubic-bezier(.6,0,.3,1) both}
+.civ-room2.open .civ-door.R{animation-name:civDoorR}
+@keyframes civDoor{0%{transform:none;opacity:1}100%{transform:translateX(-100%);opacity:1}}
+@keyframes civDoorR{0%{transform:none;opacity:1}100%{transform:translateX(100%);opacity:1}}
+.civ-two{position:absolute;left:8%;right:8%;top:11%;display:flex;justify-content:center;gap:5cqw;z-index:6}
+.civ-two.many{gap:1.6cqw;left:3%;right:3%}
+.civ-person{display:flex;flex-direction:column;align-items:center;gap:.6cqw;width:24cqw;transition:transform .35s}
+.civ-two.many .civ-person{width:15cqw}
+.civ-person .civ-mcam{width:100%}
+.civ-person.talk{transform:translateY(-.8cqw)}.civ-person.talk .civ-mcam{box-shadow:0 0 0 .4cqw rgba(255,210,63,.6),0 0 4cqw var(--glow,#3fd8ff)}
+.civ-person.enter{animation:civWalkIn .9s cubic-bezier(.2,1.2,.3,1) both}
+.civ-was,.civ-wasnt{font-weight:700;font-size:1cqw;letter-spacing:.08em;padding:.3cqw .7cqw;border-radius:.3cqw;background:rgba(0,0,0,.45)}
+.civ-wasnt{color:#ff9fd6;border:1px solid rgba(255,79,180,.5)}
+/* the goodbye video */
+.civ-bigtv{position:absolute;left:24%;right:4%;top:10%;bottom:26%;border-radius:1cqw;border:.5cqw solid #0c0c10;background:#05060f;overflow:hidden;box-shadow:0 0 0 1px #222,0 0 4cqw rgba(63,216,255,.4);z-index:5}
+.civ-video:not(.after) .civ-bigtv{left:12%;right:12%}
+.civ-vid{position:absolute;inset:0;background-color:#161a4a;background-position:center;background-size:contain;background-repeat:no-repeat;display:grid;place-items:center;font-weight:900;font-size:12cqw;filter:saturate(.9)}
+.civ-vid:after{content:"\\25CF  REC";position:absolute;left:1.4cqw;top:1.2cqw;font-weight:800;font-size:1cqw;letter-spacing:.16em;color:#ff4a6a;animation:civBlink 1.2s infinite}
+.civ-vid.play{animation:civVidIn .8s both}
+@keyframes civVidIn{from{filter:brightness(3) blur(10px)}}
+.civ-vidname{position:absolute;left:1.4cqw;top:3.2cqw;font-weight:900;font-size:1.6cqw;letter-spacing:.08em;text-shadow:0 2px 8px #000}
+.civ-vidname i{font-style:normal;font-weight:600;font-size:1.1cqw;color:#ff9fd6}
+.civ-sub{position:absolute;left:8%;right:8%;bottom:5.5cqw;text-align:center;font-weight:600;font-size:1.6cqw;line-height:1.35;background:rgba(0,0,0,.6);padding:.6cqw 1cqw;border-radius:.5cqw;animation:civUp .4s both}
+.civ-bar{position:absolute;left:1.4cqw;right:1.4cqw;bottom:1.4cqw;height:.4cqw;background:rgba(255,255,255,.2);border-radius:.2cqw}
+.civ-bar i{display:block;height:100%;background:#ff4a6a;border-radius:.2cqw;transition:width 1.4s linear}
+.civ-vidcard{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.2cqw;text-align:center;font-weight:700;font-size:1.3cqw;letter-spacing:.16em;color:#cfd6ff;background:radial-gradient(ellipse,#1a1c5a,#05060f)}
+.civ-vidcard b{font-size:2.6cqw;color:#fff;letter-spacing:.06em}
+.civ-vidcard .ph{width:10cqw;aspect-ratio:1;border-radius:50%;background:#1b1f45 center 25%/cover;border:.3cqw solid #fff;display:grid;place-items:center;font-weight:900;font-size:4cqw}
+.civ-play{width:5cqw;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;font-size:2cqw;background:linear-gradient(135deg,var(--bl),var(--pk));box-shadow:0 0 3cqw rgba(255,79,180,.6);animation:civPulse 1.4s infinite}
+/* the finale studio */
+.civ-studiobg{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,#3a2a8a,#120f3a 45%,#05040f 80%),repeating-linear-gradient(90deg,rgba(255,255,255,.03) 0 2px,transparent 2px 8cqw)}
+.civ-board.studio{left:50%;right:auto;width:44%;margin-left:-22%;top:9%;bottom:auto}
+.civ-aka{font-weight:700;font-size:.85cqw;color:#ff9fd6;white-space:nowrap}
+.civ-couch{position:absolute;left:3%;right:3%;bottom:23%;display:flex;justify-content:center;gap:1.4cqw;z-index:6}
+.civ-seat{width:8.5cqw;transition:transform .35s}.civ-seat .civ-mcam{width:100%;font-size:3.5cqw}
+.civ-seat.talk{transform:translateY(-1cqw)}
+.civ-seat.win .civ-mcam{box-shadow:0 0 0 .5cqw #ffd23f,0 0 5cqw #ffd23f}
+.civ-winner{position:absolute;left:0;right:0;top:40%;text-align:center;z-index:16;font-weight:900;font-size:9cqw;letter-spacing:.14em;color:#ffd23f;text-shadow:0 0 4cqw rgba(255,210,63,.8);animation:civSlamIn 1s both,civFade 1s 2.6s both}
+@keyframes civFade{to{opacity:0}}
+/* the party: the Circle UI with the lights down */
+.civ-party:before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;mix-blend-mode:screen;opacity:.55;
+  background:radial-gradient(circle at 20% 30%,rgba(255,79,180,.6),transparent 25%),radial-gradient(circle at 80% 20%,rgba(63,216,255,.6),transparent 25%),radial-gradient(circle at 60% 80%,rgba(255,210,63,.5),transparent 25%);animation:civDisco 3s linear infinite alternate}
+@keyframes civDisco{to{filter:hue-rotate(160deg);transform:scale(1.1)}}
+.civ-partybar{position:absolute;left:11%;right:25%;top:2.5%;z-index:9;display:flex;gap:.6cqw;align-items:center;justify-content:center;flex-wrap:wrap}
+.civ-partybar b{font-weight:900;font-size:1.2cqw;letter-spacing:.16em;background:linear-gradient(90deg,#ff4fb4,#ffd23f);-webkit-background-clip:text;background-clip:text;color:transparent}
+.civ-partybar span{font-weight:700;font-size:.8cqw;letter-spacing:.1em;padding:.2cqw .5cqw;border-radius:99px;background:rgba(255,255,255,.12)}
+.civ-party .civ-where{display:none}
 /* the stage fits the window, so Next is always in reach */
 .civ-stagewrap{position:relative;width:min(100%,calc((100vh - 250px) * 16 / 9));margin:0 auto}
 .civ-btn.civ-nextbtn{font-size:13px;padding:10px 26px;box-shadow:0 0 18px rgba(139,92,255,.55)}

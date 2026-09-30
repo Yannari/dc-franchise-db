@@ -412,3 +412,47 @@ export const FORMAT_LINES_3 = {
     { turns: [{ by: 'a', react: 'That is a lot of people saying my name.' }], beat: '{a} pulls a blanket over {a.posAdj} head.' },
   ]),
 };
+
+// ── Task 5: removals ───────────────────────────────────────────────────
+// alert.instant / alert.double as above; block.announce.instant — the
+// Circle names c, the lowest-rated, blocked at once.
+export const FORMAT_LINES_4 = {
+  ...E('alert.instant', [
+    { turns: [{ by: 'a', react: "'The lowest-rated Player will be blocked immediately.' Immediately?" },
+      { by: 'b', react: 'No Hangout. No Influencers. Just the number.' }] },
+    { turns: [{ by: 'a', react: "'There will be no Influencers tonight.' Then who blocks?" },
+      { by: 'b', say: 'The ratings do. Whoever comes last is gone.' }] },
+    { turns: [{ by: 'a', react: 'An instant block. The ratings are the whole thing tonight.' },
+      { by: 'b', react: 'Every single rank matters. Every single one.' }], beat: '{b} rereads the rule twice.' },
+  ]),
+  ...E('alert.double', [
+    { turns: [{ by: 'a', react: "'Tonight, two Players will be blocked.' Two?" },
+      { by: 'b', react: 'Two people go home tonight. Two.' }] },
+    { turns: [{ by: 'a', react: "'This will be a double blocking.' Oh no. Oh no, no, no." },
+      { by: 'b', say: 'Nobody is safe tonight. Nobody.' }] },
+    { turns: [{ by: 'a', react: 'A double blocking. The building is about to get a lot quieter.' },
+      { by: 'b', react: 'I need to sit down for this.' }], beat: '{b} sits down on the floor.' },
+  ]),
+  ...E('block.announce.instant', [
+    { turns: [{ by: 'host', say: 'The lowest-rated Player tonight is {c}. {c}, you have been blocked immediately.' }], beat: 'Every apartment goes quiet.' },
+    { turns: [{ by: 'host', say: 'With the lowest rating, {c} has been blocked from The Circle, effective now.' }] },
+    { turns: [{ by: 'host', say: '{c}, you finished last in the ratings. You are blocked.' }], beat: '{c} reads it, and then reads it again.' },
+  ]),
+};
+
+// goodbye.video.close — a, on video, before the screen goes dark: what they
+// learned, and good luck (spec 11.2 steps 5-6).
+export const GOODBYE_CLOSE = {
+  ...E('goodbye.video.close', [
+    { turns: [{ by: 'a', video: "Trust your gut in there. Mine was right more than I let it be. Good luck, everybody." }] },
+    { turns: [{ by: 'a', video: 'Play hard, but be nice to each other. It is still just people in there. Good luck.' }] },
+    { turns: [{ by: 'a', video: 'Somebody in there is not who they say they are. Be careful. Good luck.' }] },
+    { turns: [{ by: 'a', video: "I don't regret a single message. Okay, maybe one. Good luck, everybody." }], beat: '{a} laughs and waves at the camera.' },
+    { turns: [{ by: 'a', video: 'Talk to everybody. That is the whole game. Good luck.' }] },
+    { turns: [{ by: 'a', video: "I'm going to miss this weird little building. Win it for me." }], beat: '{a} blows a kiss at the camera.' },
+    { turns: [{ by: 'a', video: 'Keep your friends close and your ratings closer. Good luck, Circle.' }] },
+    { turns: [{ by: 'a', video: 'To everybody still in there: make it count. Good luck.' }] },
+    { turns: [{ by: 'a', video: 'Be yourself in there. It is harder than it sounds. Good luck, everybody.' }] },
+    { turns: [{ by: 'a', video: "That's it from me. Circle, it's been real. Mostly." }], beat: '{a} gives a little salute before the screen goes dark.' },
+  ]),
+};

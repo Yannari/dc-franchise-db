@@ -36,6 +36,8 @@ export const FORMATS = {
   // the block delivered at the blocked player's door.
   super: { removes: 1, seats: 1, hidden: true, can: ctx => ctx.position !== 'first',
     run: (state, rng, rating) => standardBlocking(state, rng, rating, { format: 'super', inPerson: true }) },
+  instant: { removes: 1, seats: 0, can: () => true, run: instantBlock },
+  double: { removes: 2, seats: 2, can: ctx => ctx.position !== 'first' && ctx.position !== 'last', run: doubleBlock },
   'save-two': { removes: 1, seats: 2, can: () => true, canNow: state => state.active.length >= 5, run: saveTwoEach },
   plead: { removes: 1, seats: 2, can: () => true, canNow: state => state.active.length >= 6, run: saveThenPlead },
   'room-vote': { removes: 1, seats: 2, can: () => true, canNow: state => state.active.length >= 5, run: roomVote },
@@ -148,6 +150,52 @@ function forcedBlock(state, rng, rating) {
   if (!target || !state.active.includes(target)) return standardBlocking(state, rng, rating, { format: 'forced' });
   for (const h of state.active) delete state.immuneNext[h];
   return finish(state, rng, target, [top], 'statement', { reason: 'statement', format: 'forced' });
+}
+
+// ── Removals (Plan 3b Task 5) ────────────────────────────────────────
+
+// US 1 Ep 9 (Bill), UK 1 Ep 10, 17: the lowest-rated player is blocked at
+// once, by nobody, and sometimes leaves without a visit.
+export const INSTANT = { noVisit: 0.4 };
+function blockLowest(state, rng, target, format) {
+  const visit = rng() >= INSTANT.noVisit;
+  const sc = addScene(state, 'blocking', [target], { by: [], target, channel: 'instant', reason: 'instant', format,
+    ...(visit ? {} : { noVisit: true }) }, [...state.active]);
+  applyBlock(state, target, 'instant', [], sc);
+  const v = visit ? runVisit(state, rng, target, []) : null;
+  state.pendingGoodbyes.push(target);
+  return { target, announcement: sc, visit: v };
+}
+function instantBlock(state, rng, rating) {
+  for (const h of state.active) delete state.immuneNext[h];
+  return blockLowest(state, rng, rating.results.at(-1).profile, 'instant');
+}
+
+// Two in one night, three ways the real seasons did it: the lowest at once
+// and then a Hangout (US 1 Ep 9), each Influencer blocking one alone (US 3
+// Ep 9), or the lowest two together (US 2 Ep 8). The timeline gave a later
+// blocking day back for the extra one.
+export const DOUBLE_VARIANTS = [['instant-then-hangout', 2], ['each', 1.5], ['lowest-two', 1]];
+function doubleBlock(state, rng, rating) {
+  const total = DOUBLE_VARIANTS.reduce((s, [, w]) => s + w, 0);
+  let r = rng() * total, variant = DOUBLE_VARIANTS[0][0];
+  for (const [v, w] of DOUBLE_VARIANTS) { if ((r -= w) <= 0) { variant = v; break; } }
+  const infl = rating.influencers.slice(0, 2);
+  if (variant === 'each' && infl.length < 2) variant = 'instant-then-hangout';
+  const night = state.nights?.at(-1);
+  if (night) night.variant = variant;
+  const lowest = rating.results.map(r => r.profile).filter(h => !infl.includes(h));
+  if (variant === 'lowest-two') {
+    for (const h of state.active) delete state.immuneNext[h];
+    const [a, b] = [lowest.at(-1), lowest.at(-2)];
+    return [blockLowest(state, rng, a, 'double'), blockLowest(state, rng, b, 'double')];
+  }
+  if (variant === 'instant-then-hangout') {
+    const first = blockLowest(state, rng, lowest.at(-1), 'double');
+    return [first, standardBlocking(state, rng, rating, { format: 'double' })];
+  }
+  // Each Influencer alone; neither can block the other.
+  return infl.map(i => standardBlocking(state, rng, { ...rating, influencers: [i] }, { format: 'double', atRisk: atRiskOf(state, infl) }));
 }
 
 // Would an Influencer take the chance to block the other one? Only a player

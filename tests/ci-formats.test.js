@@ -160,3 +160,40 @@ describe('forced statement (US 5 Ep 1)', () => {
     expect(Object.keys(st.data.picks).length).toBe(st.who.length);
   });
 });
+
+// ── Task 5: removals ────────────────────────────────────────────────────
+describe('instant block (US 1 Ep 9, UK 1 Ep 10, 17)', () => {
+  it('blocks the lowest-rated at once; nobody is an Influencer; there may be no visit', () => {
+    const { on, state, day } = booked('rating4', 'ci-instant-block');
+    const rating = on('ratings')[0];
+    const block = on('blocking')[0];
+    expect(block.data.target).toBe(rating.data.results.at(-1).profile);
+    expect(block.data.channel).toBe('instant');
+    expect(rating.data.influencers).toEqual([]);
+    expect(on('hangout')).toHaveLength(0);
+    expect(on('visit').length).toBe(block.data.noVisit ? 0 : 1);
+    expect(state.blocked.filter(b => b.day === day)).toHaveLength(1);
+  });
+});
+
+describe('double block (US 1 Ep 9, US 3 Ep 9, US 2 Ep 8)', () => {
+  it('removes two in one night, gives a later day back, and still ends with the finalists', () => {
+    for (const seed of [3, 5, 8, 11]) {
+      const { state, day, result } = booked('rating3', 'ci-double-block', seed);
+      const gone = state.blocked.filter(b => b.day === day);
+      expect(gone, `seed ${seed}`).toHaveLength(2);
+      expect(state.schedule.some(d => d.gaveBack === 'rating3')).toBe(true);
+      expect(result.placements).toHaveLength(5);
+      const night = state.nights.find(n => n.day === day);
+      expect(['instant-then-hangout', 'each', 'lowest-two']).toContain(night.variant);
+    }
+  });
+  it('each Influencer blocking alone never blocks the other Influencer', () => {
+    for (const seed of [2, 4, 6, 9, 12, 14]) {
+      const { state, day, on } = booked('rating3', 'ci-double-block', seed);
+      if (state.nights.find(n => n.day === day).variant !== 'each') continue;
+      const infl = on('ratings')[0].data.influencers;
+      for (const b of state.blocked.filter(x => x.day === day)) expect(infl).not.toContain(b.handle);
+    }
+  });
+});

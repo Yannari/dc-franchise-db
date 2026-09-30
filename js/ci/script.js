@@ -418,7 +418,8 @@ const BLOCKS = {
         continue;
       }
       out.push({ key: `rate.${b.reasons[0]}.top`, cast: { a: b.voter, b: first }, extra: { band: 'top' } });
-      const mid = b.order.length >= 5 ? b.order[Math.floor(b.order.length / 2)] : null;
+      // Four names still have a middle (a small room late in the season).
+      const mid = b.order.length >= 4 ? b.order[Math.floor(b.order.length / 2)] : null;
       if (mid) out.push({ key: 'rate.middle', cast: { a: b.voter, b: mid } });
       if (last && last !== first) out.push({ key: `rate.${b.reasons.at(-1)}.bottom`, cast: { a: b.voter, b: last }, extra: { band: 'bottom' } });
       const bad = last && gameCallback(state, b.voter, last, s, { sameDay: true, dir: 'theirs',
@@ -539,19 +540,21 @@ const BLOCKS = {
     return out;
   },
   blocking(state, s) {
-    const [announcer, target] = s.who;
+    // From the data: an instant block has a target and nobody who chose it.
+    const target = s.data.target ?? s.who[1];
+    const announcer = s.data.by?.length ? (s.who[0] === target ? s.data.by[0] : s.who[0]) : null;
     const others = s.seenBy.filter(h => h !== target && h !== announcer && !s.data.by.includes(h));
     // Before the name: the ones at risk, waiting; the Influencer typing it.
     // Everybody waits: for the name, or (in person) for somebody's knock.
     // Nobody types a name when the saves or the room decided: the waiting was there.
-    const untyped = ['unsaved', 'vote'].includes(s.data.channel);
+    const untyped = ['unsaved', 'vote', 'instant'].includes(s.data.channel);
     const out = untyped ? [] : [target, ...others].slice(0, s.data.inPerson ? 3 : 4).map(h => ({ key: 'block.wait', cast: { a: h } }));
     if (s.data.inPerson) {
       // A Super Influencer says it at the door (US 1 Ep 10).
       out.push({ key: 'block.inperson.walk', cast: { a: announcer, c: target } },
         { key: 'block.inperson.door', cast: { a: target, b: announcer } },
         { key: 'block.inperson.tell', cast: { a: announcer, b: target } });
-    } else if (['unsaved', 'vote'].includes(s.data.channel)) {
+    } else if (['unsaved', 'vote', 'instant'].includes(s.data.channel)) {
       // Nobody typed a name: the Circle says who was left, or who the room chose.
       out.push({ key: `block.announce.${s.data.channel}`, cast: { a: target, c: target } });
       if (s.data.channel === 'vote') out.push({ key: 'vote.result', cast: { a: target } });
@@ -569,7 +572,7 @@ const BLOCKS = {
     }
     out.push(
       { key: 'block.react.self', cast: { a: target }, extra: { self: true } },
-      { key: 'block.after', cast: { a: announcer, b: target } },
+      ...(announcer ? [{ key: 'block.after', cast: { a: announcer, b: target } }] : []),
       ...s.data.by.filter(i => i !== announcer).slice(0, 2).map(i => ({ key: 'block.after', cast: { a: i, b: target } })));
     const friend = others.find(h => rel(h, target, 'affection') > 3);
     const rival = others.find(h => rel(h, target, 'resentment') > 3 && h !== friend);
@@ -622,6 +625,8 @@ const BLOCKS = {
     const out = viewers.slice(0, 4).map(v => ({ key: 'goodbye.guess', cast: { a: v, b: h } }));
     out.push({ key: p.mode === 'catfish' ? `goodbye.video.catfish.${p.reason || 'strategic'}` : `goodbye.video.${p.mode}`,
       cast: { a: h }, extra: { mode: p.mode, reasonKind: p.reason || undefined } });
+    // Every goodbye ends the same way on the show: a lesson, then good luck (spec 11.2).
+    out.push({ key: 'goodbye.video.close', cast: { a: h } });
     if (s.data.warning) {
       const { kind, about } = s.data.warning;
       // Met in person at the visit: the warning is something seen, not a hunch.
@@ -849,7 +854,7 @@ export const POOL_KEYS = [
   'hangout.open.trio', 'hangout.trio.agree', 'hangout.trio.outvoted', 'visit.inperson.bye', 'visit.inperson.after',
   ...['save-two', 'plead', 'room-vote', 'forced'].map(f => `alert.${f}`), 'block.announce.unsaved', 'block.announce.vote',
   'block.announce.statement', 'plead.open', 'plead.pitch', 'plead.listen', 'vote.open', 'vote.cast', 'vote.result',
-  'statement.open', 'statement.say', 'statement.named', 'save.wait',
+  'statement.open', 'statement.say', 'statement.named', 'save.wait', 'alert.instant', 'alert.double', 'block.announce.instant', 'goodbye.video.close',
   'hangout.agree', 'hangout.yield', 'hangout.trade', 'hangout.pact',
   ...BLOCK_WHY_.map(r => `block.announce.${r}`), 'block.react.self', 'block.react.friend', 'block.react.rival', 'block.react.relief',
   ...MOTIVES_.flatMap(m => [`visit.choose.${m}`, `visit.talk.${m}`]), 'visit.wait', 'visit.wait.catfish',

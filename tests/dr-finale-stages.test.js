@@ -29,7 +29,10 @@ const SCREENS = [
   ['fincut', rpBuildCut, /^finale:finale-cut/],
   ['fincrownls', rpBuildCrownLipSync, /^finale:(finale-crown-lipsync|finale-preduel|duel-beat|duel-hook)$/],
 ];
-const plain = html => html.replace(/<style[\s\S]*?<\/style>/g, '');
+// The host's card lights her quoted words and the speech's key words with
+// inline tags (js/vp-dr/host-card.js): dropped here, so a line reads whole.
+const plain = html => html.replace(/<style[\s\S]*?<\/style>/g, '')
+  .replace(/<span class="dr-host-said">|<\/?em>/g, '').replace(/<\/span>/g, '');
 const escd = t => t.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
 describe('the finale stages', () => {

@@ -518,6 +518,11 @@ export function crownLipsyncStage(row, list, rounds, { ep, uid = 'x' } = {}) {
       st.phase = 'intro';
       st.hostOn = true;
       st.banner = { text: 'Lip sync for the crown', sub: n > 1 ? `${n} lip syncs tonight` : 'one song, one crown' };
+    } else if (s.t === 'speech') {
+      st.phase = 'intro';
+      if (s.part === 'stakes') { st.banner = { text: s.final ? 'For the crown' : 'For the final', sub: 'last chance' }; st.shake = true; }
+      else if (s.part === 'time') { st.banner = { text: 'The time has come', sub: '' }; st.shake = true; }
+      else if (s.part === 'for') { st.banner = { text: 'For. The. Crown.', sub: '' }; st.shake = true; }
     } else if (s.t === 'talk') {
       st.phase = 'talk';
       st.talk = s.who;

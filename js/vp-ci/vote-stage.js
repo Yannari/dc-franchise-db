@@ -33,7 +33,7 @@ export function voteStage(row, screen, idx, fresh) {
   }).join('');
   return `<div class="civ-layer cv${done ? ' done' : ''}${block ? ' block' : ' imm'}">
     <div class="cv-bg"></div><div class="cv-rays"></div>
-    <div class="cv-head"><span class="cv-live"><i></i>LIVE</span><b>THE AUDIENCE VOTES</b><small>${block ? 'The Influencers put up two. The audience saves one.' : 'One player is made safe from tonight\'s blocking. Influencers can\'t win it.'}</small></div>
+    <div class="cv-head"><span class="cv-live"><i></i>LIVE</span><b>AMERICA VOTES</b><small>${block ? 'The Influencers put up two. America saves one.' : 'One player is made safe from tonight\'s blocking. Influencers can\'t win it.'}</small></div>
     <div class="cv-cards n${cands.length}">${cards}</div>
     ${done ? `<div class="cv-closed${landing ? ' slam' : ''}">VOTING CLOSED</div>` : `<div class="cv-counting">COUNTING THE VOTES<span class="cv-dots"><i></i><i></i><i></i></span></div>`}
     ${landing ? '<div class="cv-flash"></div>' : ''}

@@ -83,3 +83,30 @@ describe('a booked season plays', () => {
     expect(result.placements).toHaveLength(5);
   });
 });
+
+// The Randomize button (ci-run.js circleRandomDraw) writes the draw onto the
+// timeline as cards; the season then plays exactly those (user: "the
+// randomizer doesn't work in the Circle").
+describe('a drawn season (Randomize)', () => {
+  const cardOf = (cat, key, v) => TWIST_CATALOG.find(t => t.format === 'the-circle' && t.category === cat && t[key] === v)?.id;
+  it('booking every drawn card back plays the same nights, and fixed draws nothing the timeline does not show', () => {
+    for (const seed of [1, 2, 3, 4, 5, 6, 7, 8]) {
+      const drawn = bookSeason(skeleton(), streamFor(seed, 'randomize'), { total: 13, finalists: 5 });
+      const bookings = {};
+      for (const d of drawn) {
+        const ids = [];
+        if (d.night) ids.push(cardOf('blocking', 'ciFormat', d.night.format));
+        if (d.night?.power) ids.push(cardOf('power', 'ciPower', d.night.power));
+        if (d.twist) ids.push(TWIST_CATALOG.find(t => t.ciTwist === d.twist).id);
+        if (d.arrivals > 0 && d.entry) ids.push(cardOf('arrivals', 'ciEntry', d.entry));
+        if (d.disrupter) ids.push('ci-disrupter');
+        if (ids.length) bookings[d.slot] = ids.filter(Boolean);
+      }
+      for (const salt of ['a', 'b', 'c']) {
+        const played = bookSeason(skeleton(), streamFor(seed, `play:${salt}`), { total: 13, finalists: 5, bookings, fixed: true });
+        const shape = s => s.map(d => [d.slot, d.block, d.night?.format, d.night?.power, d.twist, d.entry, !!d.disrupter].join(':'));
+        expect(shape(played)).toEqual(shape(drawn));
+      }
+    }
+  });
+});

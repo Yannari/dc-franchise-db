@@ -26,7 +26,7 @@ import { isPerfectMatchSeason, simulatePerfectMatchEpisode, perfectMatchCanRerun
   perfectMatchSlots, perfectMatchVillaCounts, perfectMatchEpisodes, perfectMatchNights, perfectMatchDrawnChallenges, perfectMatchDrawnNights } from './pm-run.js';
 import { EPISODE_WORDS as PM_EPISODE_WORDS, SLOT_NAMES as PM_SLOT_NAMES, seasonSchedule as pmDrawSchedule, CHALLENGE_NAMES as PM_CHALLENGE_NAMES, RITUAL_NAMES as PM_RITUAL_NAMES, CHALLENGE_NIGHTS as PM_CHALLENGE_NIGHTS } from './pm/schedule.js';
 import { episodeText as pmEpisodeText, momentTitle as pmMomentTitle } from './pm/transcript.js';
-import { isCircleSeason, simulateCircleEpisode, circleCanRerun, lastCircleRefusal, rerunCircleEpisode,
+import { circleRandomDraw, isCircleSeason, simulateCircleEpisode, circleCanRerun, lastCircleRefusal, rerunCircleEpisode,
   circlePendingChange, circleSeasonShape, circleEpisodeMap, circleTimelineDays, circleBlockShape } from './ci-run.js';
 import { isDragSeason, simulateDragEpisode, invalidateDragQueue,
   dragEpisodesAired, dragScheduleRecorded, rerunDragEpisode, dragCanRerun } from './dr-run.js';
@@ -2125,6 +2125,20 @@ export function pmSetChallenge(ep, value) {
   const games = new Set(TWIST_CATALOG.filter(t => t.pmApply && 'challenge' in t.pmApply).map(t => t.id));
   seasonConfig.twistSchedule = (seasonConfig.twistSchedule || []).filter(b => !(b && Number(b.episode) === Number(ep) && games.has(b.type)));
   if (value) seasonConfig.twistSchedule.push({ id: `tw-${Date.now()}-${ep}`, episode: Number(ep), type: 'pm-villa-challenge', pmGame: value === 'random' ? '' : value });
+  localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
+  renderTimeline();
+}
+
+/** The Circle's Randomize: the engine's own draw, booked as cards (ci-run.js
+ *  circleRandomDraw). Cards the author booked by hand stay; an earlier draw
+ *  is replaced. */
+function _randomizeCircle() {
+  const ids = new Set(TWIST_CATALOG.filter(t => t.format === CIRCLE_FORMAT).map(t => t.id));
+  const had = (seasonConfig.twistSchedule || []).filter(b => b && b.random && ids.has(b.type)).length;
+  if (had && !confirm(`Replace the ${had} drawn card${had === 1 ? '' : 's'} on the timeline with a new random season? Cards you booked yourself stay.`)) return;
+  const book = circleRandomDraw(Math.random);
+  const keep = (seasonConfig.twistSchedule || []).filter(b => !(b && b.random && ids.has(b.type)));
+  seasonConfig.twistSchedule = [...keep, ...book.map(([ep, type], i) => ({ id: `tw-${Date.now()}-${i}`, episode: ep, type, random: true }))];
   localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
   renderTimeline();
 }
@@ -5342,7 +5356,7 @@ export function showRandomizerPanel() {
   if (existing) { existing.remove(); return; }
   if (isPerfectMatchSeason()) { _randomizeVilla(); return; }
   // The Circle draws its own nights; a card booked on the timeline pins one.
-  if (isCircleSeason()) { alert('The Circle draws each night\'s format, arrivals and twists itself. Book a card on an episode to pin it.'); return; }
+  if (isCircleSeason()) { _randomizeCircle(); return; }
 
   // A house has no Island, no Action and no World Tour, and no slot for a
   // TWIST_CATALOG challenge twist. Offering the Total Drama panel here was

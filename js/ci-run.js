@@ -22,6 +22,7 @@ import { gs, setGs, players, seasonConfig, seasonFormat, TWIST_CATALOG, kinshipB
 import { CIRCLE_FORMAT } from './shows.js';
 import { playCircleSeason } from './ci/season.js';
 import { buildSchedule, rhythmOf } from './ci/schedule.js';
+import { bookSeason } from './ci/timeline.js';
 import { carriedFor } from './franchise-carry.js';
 import { recordBuiltSeason } from './franchise-meta.js';
 import { ciLedgerRecord } from './ci/ledger-record.js';
@@ -128,6 +129,8 @@ function _options() {
     pickBy: seasonConfig.ciPickBy === 'random' ? 'random' : 'stats',
     ai: seasonConfig.ciAI === true,
     bookings: circleBookings(),
+    // A season the Randomize button drew plays exactly what the timeline shows.
+    fixed: (seasonConfig.twistSchedule || []).some(b => b?.random && _circleIds().has(b.type)),
   };
 }
 
@@ -188,19 +191,64 @@ export function circleBookings() {
   }
   return out;
 }
+const _circleIds = () => new Set(TWIST_CATALOG.filter(t => t.format === CIRCLE_FORMAT).map(t => t.id));
+
+/** RANDOMIZE (user: "the randomizer doesn't work in the Circle"). The engine's
+ *  own draw (ci/timeline.js bookSeason), around the cards the author booked
+ *  by hand, written onto the timeline as cards: every night's format (the
+ *  standard Hangout too), every arrival's style, each power, twist and
+ *  disrupter. Returns [episode, cardId] pairs; run-ui books them. */
+export function circleRandomDraw(rng = Math.random) {
+  const shape = circleSeasonShapeRaw();
+  if (!shape.length) return [];
+  const ids = _circleIds();
+  const own = (seasonConfig.twistSchedule || []).filter(b => b && ids.has(b.type) && !b.random);
+  const slotAt = new Map(shape.map(d => [d.day, d.slot]));
+  const bookings = {};
+  for (const b of own) { const slot = slotAt.get(Number(b.episode)); if (slot) (bookings[slot] ||= []).push(b.type); }
+  const total = _cast().length + (seasonConfig.ciAI === true ? 1 : 0);
+  const drawn = bookSeason(shape, rng, { total, finalists: _finalists(), bookings });
+  const cards = TWIST_CATALOG.filter(t => t.format === CIRCLE_FORMAT);
+  const find = (cat, key, v) => cards.find(t => t.category === cat && t[key] === v)?.id
+    || cards.find(t => t[key] === v)?.id;
+  const out = [];
+  for (const d of drawn) {
+    const ep = d.day;
+    const have = new Set(own.filter(b => Number(b.episode) === ep).map(b => b.type));
+    const add = id => { if (id && !have.has(id)) out.push([ep, id]); };
+    if (d.night) add(find('blocking', 'ciFormat', d.night.format));
+    if (d.night?.power) add(find('power', 'ciPower', d.night.power));
+    if (d.twist) add(cards.find(t => t.ciTwist === d.twist)?.id);
+    if (d.arrivals > 0 && d.entry && !d.entryBooked) add(find('arrivals', 'ciEntry', d.entry));
+    if (d.disrupter) add('ci-disrupter');
+  }
+  return out;
+}
+
 // The shape without bookings (bookings are read off it: no loop).
 function circleSeasonShapeRaw() { return circleShapeOf({ cast: _cast(), setup: circleSetup(), config: seasonConfig }); }
 
 /** The days a cast and a config make, without touching the live season: the
  *  run loop and Quick Setup's blueprint read the same answer. [] if none. */
 export function circleShapeOf({ cast = [], setup = {}, config = {} } = {}) {
-  const roles = circleRoles(cast, setup);
+  // Names, whichever way the cast came in. The rhythm used to hash
+  // `cast.map(p => p.name)` over a list of names: every name undefined, so
+  // the timeline showed a different calendar from the one the engine played,
+  // and a card booked on an episode ran a day early or late.
+  const names = cast.map(p => (typeof p === 'string' ? p : p?.name)).filter(Boolean);
+  const roles = circleRoles(names, setup);
   const ai = config.ciAI === true;
+  // Profiles, as the engine counts them: a partner pinned to someone earlier
+  // in the cast joins their profile (ci/profiles.js), so a pair is one.
+  const seen = new Set(), joins = new Set();
+  for (const n of names) { const p = setup[n]?.partner; if (p && seen.has(p)) joins.add(n); seen.add(n); }
+  const handles = names.map((n, i) => ({ n, role: roles[i] })).filter(x => !joins.has(x.n));
+  const isStarter = x => x.role === 'starter' || [...joins].some(j => setup[j]?.partner === x.n && roles[names.indexOf(j)] === 'starter');
   try {
-    return buildSchedule({ total: cast.length + (ai ? 1 : 0), starters: roles.filter(r => r === 'starter').length + (ai ? 1 : 0),
+    return buildSchedule({ total: handles.length + (ai ? 1 : 0), starters: handles.filter(isStarter).length + (ai ? 1 : 0),
       finalists: _finalists(config), days: Number(config.ciDays) > 0 ? Number(config.ciDays) : null,
       // the same rhythm the engine will play (schedule.js rhythmOf)
-      rhythm: rhythmOf(cast.map(p => p.name)) });
+      rhythm: rhythmOf(names) });
   } catch { return []; }
 }
 

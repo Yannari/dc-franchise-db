@@ -142,6 +142,10 @@ function planRow(p, autoRole, auto = { rep: 'none', stars: null }) {
       <label class="ci-fld"><span class="ci-k">Shares an apartment with</span>
         <select class="ci-in" data-field="partner"><option value="">nobody</option>${others.map(o =>
           `<option value="${esc(o.name)}"${s.partner === o.name ? ' selected' : ''}>${esc(o.name)}</option>`).join('')}</select></label>
+      ${s.partner ? `<label class="ci-fld"><span class="ci-k">They are</span>
+        <select class="ci-in" data-field="relation"><option value="">not said</option>${RELATION_LABELS.map(([v, l]) =>
+          `<option value="${v}"${s.relation === v ? ' selected' : ''}>${l}</option>`).join('')}</select>
+        <span class="ci-small">${esc(RELATION_NOTES[s.relation] || 'What the two are to each other: it changes how they argue over every message, their life in the apartment, and the reveal at the finale.')}</span></label>` : ''}
     </div>
     ${drawResult(p.name)}
   </div>`;
@@ -151,7 +155,19 @@ function planRow(p, autoRole, auto = { rep: 'none', stars: null }) {
 // Tabs for everyone / Day 1 / newcomers, a row of faces whose badges say the
 // state at a glance (what is pinned; after the deal, what they got), one
 // player's card, and "Everyone at a glance" for the whole cast in a table.
-const PIN_KEYS = ['role', 'catfish', 'persona', 'mode', 'age', 'job', 'jobCost', 'status', 'hometown', 'rep', 'partner'];
+const PIN_KEYS = ['role', 'catfish', 'persona', 'mode', 'age', 'job', 'jobCost', 'status', 'hometown', 'rep', 'partner', 'relation'];
+// What two people sharing an apartment are to each other (ci/shared.js RELATIONS).
+const RELATION_LABELS = [['couple', 'A couple'], ['married', 'Married'], ['siblings', 'Siblings'], ['twins', 'Twins'],
+  ['parent', 'Parent and child'], ['friends', 'Best friends'], ['cousins', 'Cousins']];
+const RELATION_NOTES = {
+  twins: 'Twins sound alike: their voice barely wobbles, so they are hard to catch.',
+  parent: 'The older one is the parent, and pulls rank: the parent wins more of the arguments over a message.',
+  siblings: 'Siblings bicker: who wins the argument is more of a coin flip.',
+  couple: 'A couple argues like a couple, and shares one blanket on the couch.',
+  married: 'Married: years of practice arguing, and the remote is a marriage issue.',
+  friends: 'Best friends: a very long sleepover.',
+  cousins: "Cousins: every summer at Grandma's, with cameras.",
+};
 const pinsOf = name => PIN_KEYS.filter(k => { const v = setupOf(name)[k]; return v != null && v !== '' && !(k === 'jobCost' && !v); }).length;
 function badgeOf(name) {
   const d = dealt()?.[name];

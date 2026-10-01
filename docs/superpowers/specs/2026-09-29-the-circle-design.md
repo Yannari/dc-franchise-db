@@ -1709,6 +1709,25 @@ episode, a rating a different episode", and the wiki agrees:
     fresh plain one.
   - Guarded by `tests/ci-repetition.test.js`.
 
+**As built (2026-09-30): what a pair is to each other.** In the Profile
+Plan, "They are" (shown once a partner is picked) can be couple, married,
+siblings, twins, parent and child, best friends or cousins (`ci/shared.js`
+RELATIONS). It changes the game:
+- twins type alike (`TWIN_VOICE`, so the voice barely wobbles);
+- a parent pulls rank (`PARENT_RANK`; the older one is the parent);
+- siblings bicker (`SIBLING_CHAOS`, so who wins is more of a coin flip).
+
+It also changes the words (`lines/pairs.js`):
+- each relationship has its own arguments, drawn alongside the general
+  ones so they don't repeat. A parent and child argue as parentWins /
+  kidWins.
+- each has its own apartment life (half of a pair's alone time), finale
+  reveal and goodbye video.
+
+The pair roles are older/younger and parent/kid. Slots: {a.parentWord}
+(Mom/Dad), {a.kidWord}, {a.olderSib}, {a.youngerSib}. Unset, a pair stays
+as before: lines that never say what they are.
+
 ## 19. Setup and the Circle tab
 
 ### 19.1 Cast tab

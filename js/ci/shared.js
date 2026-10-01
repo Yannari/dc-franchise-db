@@ -12,6 +12,16 @@
 import { S } from './state.js';
 import { nudgeBelief } from './beliefs.js';
 
+// What the two are to each other (user, 2026-09-30), picked by the author.
+// Unset, the lines never say. It changes the game, not only the words:
+//   twins    sound alike (TWIN_VOICE: the voice barely wobbles)
+//   parent   pulls rank (PARENT_RANK: wins more of the arguments)
+//   siblings bicker (SIBLING_CHAOS: the argument is more of a coin flip)
+export const RELATIONS = ['couple', 'married', 'siblings', 'twins', 'parent', 'friends', 'cousins'];
+export const TWIN_VOICE = 0.3;
+export const PARENT_RANK = 1.8;
+export const SIBLING_CHAOS = 2;
+
 const FACE_INTENTS = new Set(['flirt', 'bond', 'checkin', 'repair']);
 const BRAIN_INTENTS = new Set(['pitch', 'probe', 'plant', 'ally', 'pump', 'compare', 'credit']);
 export const SHARED_PACE = 0.7;       // chats a day, as a share of one person's
@@ -45,7 +55,10 @@ export function leadFor(state, h, intent, rng) {
   const roles = state.profiles[h].roles || rolesFor(state, names);
   let best = names[0], top = -Infinity;
   for (const n of names) {
-    let pull = S(state, h, 'boldness', { who: n }) * 0.3 + S(state, h, 'strategic', { who: n }) * 0.2 + rng() * 2;
+    const rel = state.profiles[h].relation;
+    let pull = S(state, h, 'boldness', { who: n }) * 0.3 + S(state, h, 'strategic', { who: n }) * 0.2
+      + rng() * (rel === 'siblings' ? 2 + SIBLING_CHAOS : 2);
+    if (rel === 'parent' && n === roles.parent) pull += PARENT_RANK;
     if (n === roles.face && FACE_INTENTS.has(intent)) pull += 2;
     if (n === roles.brain && BRAIN_INTENTS.has(intent)) pull += 2;
     if (pull > top) { top = pull; best = n; }
@@ -58,7 +71,18 @@ export function distance(state, h) {
   const names = firstOf(state, h);
   if (names.length < 2) return 0;
   const [x, y] = names.map(n => state.people[n].stats);
-  return ['boldness', 'social', 'temperament'].reduce((s, k) => s + Math.abs((x[k] ?? 5) - (y[k] ?? 5)), 0);
+  const d = ['boldness', 'social', 'temperament'].reduce((s, k) => s + Math.abs((x[k] ?? 5) - (y[k] ?? 5)), 0);
+  // Twins grew up finishing each other's sentences: they type alike.
+  return state.profiles[h]?.relation === 'twins' ? d * TWIN_VOICE : d;
+}
+
+/** The roles a pair has beyond face and brain: older and younger, and for a
+ *  parent and child, which is which (the older one is the parent). */
+export function pairRoles(state, names, relation) {
+  const [x, y] = names;
+  const ax = state.people[x]?.age ?? 0, ay = state.people[y]?.age ?? 0;
+  const older = ay > ax ? y : x, younger = older === x ? y : x;
+  return { older, younger, ...(relation === 'parent' ? { parent: older, kid: younger } : {}) };
 }
 
 /** Facts about the partner who is not the face — the life the profile hides. */

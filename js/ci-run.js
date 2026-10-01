@@ -18,11 +18,14 @@
 // IMPORTING THIS MODULE IS THE WIRING: it sets `window._ciRunnable`, which
 // `formatIsRunnable()` reads. Drop the import from js/main.js and the show
 // silently un-ships with every test still green.
-import { gs, setGs, players, seasonConfig, seasonFormat, TWIST_CATALOG } from './core.js';
+import { gs, setGs, players, seasonConfig, seasonFormat, TWIST_CATALOG, kinshipBetween } from './core.js';
 import { CIRCLE_FORMAT } from './shows.js';
 import { playCircleSeason } from './ci/season.js';
 import { buildSchedule, rhythmOf } from './ci/schedule.js';
 import { carriedFor } from './franchise-carry.js';
+import { recordBuiltSeason } from './franchise-meta.js';
+import { ciLedgerRecord } from './ci/ledger-record.js';
+import { pairRelation } from './ci/shared.js';
 import { buildFranchiseMeta } from './franchise-meta.js';
 import { fameStarsFor } from './alumni.js';
 import { DEFAULT_POOL } from './ci/default-pool.js';
@@ -220,28 +223,51 @@ function _build(inputs, rerolls) {
   const problem = circleCastProblem(cast, inputs.setup);
   if (problem) { _refuse(problem); return null; }
   const roles = circleRoles(cast, inputs.setup);
-  const known = circleKnownAs((players || []).filter(p => p && cast.includes(p.name)));
+  // The franchise as it stood when this season was first built: a re-run
+  // reuses it, so a season never reads its own record (written to the ledger
+  // when its last episode airs) and an aired episode comes back the same.
+  const startOf = gs?.ci?.startOf;
+  const known = startOf?.known || circleKnownAs((players || []).filter(p => p && cast.includes(p.name)));
+  const carried = startOf?.carried || carriedFor((players || []).filter(p => p && cast.includes(p.name)), seasonConfig || {});
   const setup = Object.fromEntries(cast.map((n, i) => [n, { ...(inputs.setup[n] || {}), role: roles[i],
     from: rosterFactsOf((players || []).find(p => p && p.name === n) || { name: n }), autoRep: known[n]?.rep || 'none', autoStars: known[n]?.stars ?? null }]));
+  // What two people sharing an apartment are to each other: the cast's
+  // Relationships tab (the same rows every show reads), then life, then an
+  // old Circle-only setting (ci/shared.js pairRelation).
+  for (const n of cast) {
+    const partner = setup[n].partner;
+    if (!partner) continue;
+    const rel = pairRelation(n, partner, { kin: kinshipBetween(n, partner), carried: carried?.kin || [],
+      setupRel: setup[n].relation || setup[partner]?.relation || null });
+    if (rel) setup[n].relation = rel; else delete setup[n].relation;
+  }
   const seed = _seed();
   const outer = gs;
-  let result, inner;
+  let result, inner, record = null;
   try {
-    const carried = carriedFor((players || []).filter(p => p && cast.includes(p.name)), seasonConfig || {});
     result = playCircleSeason({ cast, setup, pool: inputs.pool, seed, carried, options: { ...inputs.options, rerolls } });
     inner = gs;
+    // What this season leaves the franchise, read while its own relationship
+    // layer is still the live one (ci/ledger-record.js). Recorded when the
+    // last episode airs.
+    try {
+      const w = result.result?.winner;
+      const winnerPeople = w ? (result.state.profiles[w.profile ?? w]?.players || []) : [];
+      record = ciLedgerRecord(result.rows, result.state, { cast, winners: winnerPeople, result: result.result,
+        seasonName: seasonConfig?.name || null, archetypeOf: n => (players || []).find(p => p?.name === n)?.archetype || null });
+    } catch { record = null; }
   } finally { setGs(outer); }
   const winner = result.result?.winner?.profile ?? result.result?.winner ?? null;
   const winnerPeople = winner ? (result.state.profiles[winner]?.players || []) : [];
   return { cast, setup, seed, rows: result.rows, inner, winnerPeople, fanFavorite: result.result?.fanFavorite || null,
-    dealt: result.state.dealt || {}, unused: result.state.dealtUnused || [] };
+    dealt: result.state.dealt || {}, unused: result.state.dealtUnused || [], record, startOf: { known, carried } };
 }
 
 function _commit(built, inputs, rerolls, airedCount) {
   gs.ci = { seed: built.seed, castOrder: [...built.cast], setup: built.setup, winners: built.winnerPeople,
     fanFavorite: built.fanFavorite, rerolls: { ...rerolls }, built: _sig(inputs),
     // What each player was dealt, for the cast cards; and the personas nobody took.
-    dealt: built.dealt, unused: built.unused };
+    dealt: built.dealt, unused: built.unused, record: built.record || null, startOf: built.startOf || null };
   gs._ciQueue = built.rows.slice(airedCount);
   gs.relationshipDimensions = built.inner.relationshipDimensions || {};
   gs.bonds = built.inner.bonds || {};
@@ -283,7 +309,17 @@ export function simulateCircleEpisode() {
   gs.activePlayers = [...(row.ci?.people || [])];
   gs.episode = row.num;
   gs.phase = gs._ciQueue.length ? 'circle' : 'complete';
-  if (!gs._ciQueue.length) gs.ciWinners = [...(gs.ci?.winners || [])];
+  if (!gs._ciQueue.length) {
+    gs.ciWinners = [...(gs.ci?.winners || [])];
+    // The season is over: what it leaves the franchise goes on the ledger,
+    // where the next season of any show reads it (franchise-meta.js).
+    try {
+      const num = Number(gs.seasonNumber || seasonConfig?.seasonNumber);
+      if (gs.ci?.record && num && recordBuiltSeason(gs.ci.record, num)) {
+        if (typeof window !== 'undefined') window.persistFranchiseLedger?.();
+      }
+    } catch (e) { console.warn('Franchise ledger record failed:', e); }
+  }
   // What the run tab shows when this episode is reviewed later: who was in
   // after it, not who is in now. The site's own whitelist snapshot (the run
   // tab's side panel reads it whole); the bare fields where it is not loaded.

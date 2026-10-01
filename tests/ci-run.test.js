@@ -6,6 +6,7 @@ import { gs, setGs, players, setPlayers, seasonConfig, formatIsRunnable } from '
 import { isCircleSeason, simulateCircleEpisode, circleEpisodesLeft, circleCastProblem, lastCircleRefusal,
   circleCanRerun, rerunCircleEpisode, circleSeasonShape, circleBookings } from '../js/ci-run.js';
 import { makePlayers } from './helpers/ci-cast.js';
+import { setFranchiseLedger, activeSeasons, seasonKey } from '../js/franchise-meta.js';
 
 function freshSeason(n = 13, extra = {}) {
   // Every Circle option reset: a test that sets one must not leak it into the next.
@@ -13,6 +14,8 @@ function freshSeason(n = 13, extra = {}) {
     ciDays: null, ciFinalists: 5, ciNewcomerRule: 'rate-not-rated', ciPickBy: 'stats', ciAI: false, ...extra });
   setPlayers(makePlayers(n, 5));
   setGs({ initialized: true, episodeHistory: [], popularity: {}, activePlayers: [], ci: { seed: 505 } });
+  // A finished season writes the franchise ledger; each test starts from an empty one.
+  setFranchiseLedger({ v: 2, active: 'main', franchises: { main: { name: 'Main', seasons: {} } } });
 }
 function playAll() {
   const aired = [];
@@ -337,5 +340,16 @@ describe('who is known as a villain', () => {
   it('a celebrity stays a celebrity, whatever they played', () => {
     const k = circleKnownAs([who('Ale', { archetype: 'villain' })], { starsOf: () => 5 });
     expect(k.Ale.rep).toBe('celebrity');
+  });
+});
+
+describe('a season never reads its own record', () => {
+  it('re-running after the season ended (and was written to the ledger) brings the aired episodes back unchanged', () => {
+    freshSeason();
+    const aired = playAll();
+    expect(activeSeasons()[seasonKey('the-circle', 1)]).toBeTruthy();   // the finished season is on the ledger
+    const before = JSON.stringify(aired.slice(0, 5).map(r => [r.ci.blocked, r.ci.active]));
+    expect(rerunCircleEpisode(6)).toBe(true);
+    expect(JSON.stringify(gs.episodeHistory.slice(0, 5).map(r => [r.ci.blocked, r.ci.active]))).toBe(before);
   });
 });

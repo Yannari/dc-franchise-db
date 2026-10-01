@@ -22,6 +22,8 @@ import { DEFAULT_POOL } from './ci/default-pool.js';
 import { JOBS, JOB_GROUPS, DETAILS, TOPICS, STATUSES, PHOTO, jobOf, tellsOf, bioFor, promptFor } from './ci/persona-data.js';
 import { personaStyle } from './ci/cover.js';
 import { circleRoles, rosterFactsOf, circleKnownAs } from './ci-run.js';
+import { REL_KINSHIP, relationships, setRelationships, kinshipBetween } from './core.js';
+import { relationFromKin, KIN_OF } from './ci/shared.js';
 import { ageFrom } from './ci/profiles.js';
 import { fameTerm } from './fame.js';
 import { putPhoto, photoURL, cachedPhoto, photoSrc, shrinkImage } from './ci/photo-store.js';
@@ -142,10 +144,7 @@ function planRow(p, autoRole, auto = { rep: 'none', stars: null }) {
       <label class="ci-fld"><span class="ci-k">Shares an apartment with</span>
         <select class="ci-in" data-field="partner"><option value="">nobody</option>${others.map(o =>
           `<option value="${esc(o.name)}"${s.partner === o.name ? ' selected' : ''}>${esc(o.name)}</option>`).join('')}</select></label>
-      ${s.partner ? `<label class="ci-fld"><span class="ci-k">They are</span>
-        <select class="ci-in" data-field="relation"><option value="">not said</option>${RELATION_LABELS.map(([v, l]) =>
-          `<option value="${v}"${s.relation === v ? ' selected' : ''}>${l}</option>`).join('')}</select>
-        <span class="ci-small">${esc(RELATION_NOTES[s.relation] || 'What the two are to each other: it changes how they argue over every message, their life in the apartment, and the reveal at the finale.')}</span></label>` : ''}
+      ${s.partner ? kinField(p.name, s) : ''}
     </div>
     ${drawResult(p.name)}
   </div>`;
@@ -157,8 +156,41 @@ function planRow(p, autoRole, auto = { rep: 'none', stars: null }) {
 // player's card, and "Everyone at a glance" for the whole cast in a table.
 const PIN_KEYS = ['role', 'catfish', 'persona', 'mode', 'age', 'job', 'jobCost', 'status', 'hometown', 'rep', 'partner', 'relation'];
 // What two people sharing an apartment are to each other (ci/shared.js RELATIONS).
-const RELATION_LABELS = [['couple', 'A couple'], ['married', 'Married'], ['siblings', 'Siblings'], ['twins', 'Twins'],
-  ['parent', 'Parent and child'], ['friends', 'Best friends'], ['cousins', 'Cousins']];
+// "They are" IS the cast's Relationships tab (core.js REL_KINSHIP): one row
+// for the two of them, which Big Brother and Perfect Match read too, so the
+// pair is the same pair on every show. The Circle plays seven of them in its
+// own words (ci/shared.js relationFromKin); the rest play with the general
+// lines, and the note says so.
+const KIN_GROUPS = ['Family', 'Together', 'Friends', 'History'];
+function kinField(name, s) {
+  const partner = s.partner;
+  let kin = kinshipBetween(name, partner);
+  // A season set before this read the Circle's own setting: show it as the row it means.
+  if (kin === 'none' && s.relation && KIN_OF[s.relation]) kin = KIN_OF[s.relation];
+  const opts = KIN_GROUPS.map(g => `<optgroup label="${g}">${Object.entries(REL_KINSHIP)
+    .filter(([k, v]) => v.group === g && v.axis !== 'drag')
+    .map(([k, v]) => `<option value="${k}"${kin === k ? ' selected' : ''}>${esc(v.label)}</option>`).join('')}</optgroup>`).join('');
+  const circle = relationFromKin(kin);
+  const note = kin === 'none' ? 'What the two are to each other. Saved on the Relationships tab, so every show and every season knows it.'
+    : circle ? `${RELATION_NOTES[circle]} Saved on the Relationships tab: every show reads it.`
+      : 'Saved on the Relationships tab, where every show reads it. The Circle has no lines of its own for this one yet: they argue in the general words.';
+  return `<label class="ci-fld"><span class="ci-k">They are</span>
+    <select class="ci-in" data-kin="${esc(partner)}"><option value="none">not said</option>${opts}</select>
+    <span class="ci-small">${esc(note)}</span></label>`;
+}
+/** Write the pair's row on the Relationships tab (and drop the Circle-only setting). */
+function setKin(name, partner, kin) {
+  const key = [name, partner].sort().join('|');
+  const list = [...(relationships || [])];
+  const row = list.find(r => [r.a, r.b].sort().join('|') === key);
+  if (row) row.kin = kin;
+  else if (kin !== 'none') list.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 4), a: name, b: partner,
+    type: 'neutral', bond: 0, kin, leanA: 0, leanB: 0, note: '' });
+  // A row that now says nothing at all (no relation, no feeling, no note) goes.
+  setRelationships(list.filter(r => r.kin !== 'none' || r.type !== 'neutral' || r.note));
+  try { localStorage.setItem('simulator_rels', JSON.stringify(relationships)); } catch { /* storage full or blocked */ }
+  for (const n of [name, partner]) { const st = (cfg().ciSetup || {})[n]; if (st) delete st.relation; }
+}
 const RELATION_NOTES = {
   twins: 'Twins sound alike: their voice barely wobbles, so they are hard to catch.',
   parent: 'The older one is the parent, and pulls rank: the parent wins more of the arguments over a message.',
@@ -372,6 +404,7 @@ function onChange(ev) {
   const el = ev.target;
   if (onPhotosChange(el)) return;
   const row = el.closest('.ci-row');
+  if (row && el.dataset.kin) { setKin(row.dataset.name, el.dataset.kin, el.value); return done(); }
   if (row && el.dataset.field) {
     const s = setupFor(row.dataset.name);
     const f = el.dataset.field, v = el.value;

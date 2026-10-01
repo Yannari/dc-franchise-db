@@ -18,6 +18,30 @@ import { nudgeBelief } from './beliefs.js';
 //   parent   pulls rank (PARENT_RANK: wins more of the arguments)
 //   siblings bicker (SIBLING_CHAOS: the argument is more of a coin flip)
 export const RELATIONS = ['couple', 'married', 'siblings', 'twins', 'parent', 'friends', 'cousins'];
+// The franchise's own relations (core.js REL_KINSHIP, the cast's
+// Relationships tab, which Big Brother and Perfect Match read too) as the ones
+// the Circle plays. A relation with no Circle lines yet (exes, in-laws, a
+// grandparent) plays with the general ones.
+const FROM_KIN = {
+  twins: 'twins', siblings: 'siblings', 'step-siblings': 'siblings', 'parent-child': 'parent', cousins: 'cousins',
+  married: 'married', engaged: 'couple', partners: 'couple', dating: 'couple',
+  'best-friends': 'friends', 'childhood-friends': 'friends', 'old-friends': 'friends', roommates: 'friends',
+};
+export const relationFromKin = kin => FROM_KIN[kin] || null;
+// And back: what the Circle's "They are" writes on the Relationships tab.
+export const KIN_OF = { twins: 'twins', siblings: 'siblings', parent: 'parent-child', cousins: 'cousins',
+  married: 'married', couple: 'dating', friends: 'best-friends' };
+/** What two people sharing a profile are to each other: the Relationships
+ *  tab first, then what life made of them (a couple married since their last
+ *  show), then an old Circle-only setting. */
+export function pairRelation(a, b, { kin = 'none', carried = [], setupRel = null } = {}) {
+  const fromTab = relationFromKin(kin);
+  if (fromTab) return fromTab;
+  const k = [a, b].sort().join('|');
+  const life = (carried || []).find(x => [x.a, x.b].sort().join('|') === k && relationFromKin(x.kin));
+  if (life) return relationFromKin(life.kin);
+  return RELATIONS.includes(setupRel) ? setupRel : null;
+}
 export const TWIN_VOICE = 0.3;
 export const PARENT_RANK = 1.8;
 export const SIBLING_CHAOS = 2;

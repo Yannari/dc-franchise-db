@@ -3121,6 +3121,18 @@ function _buildBeats(v) {
     'ganged-up': 'Too many accusers to be a coincidence',
     defended: 'Somebody speaks up for them',
   };
+  // the SECOND clash of a kind at one table: two cards headed "An old argument
+  // reaches the table" one after the other read as a stuck record
+  const CLASH_KIND_AGAIN = {
+    counter: 'And another, thrown straight back',
+    'grievance-fresh': 'Another argument from yesterday',
+    'old-grievance': 'And another old argument',
+    'grievance-old': 'Another one that has run all week',
+    'broken-word': 'Another promise, quoted back',
+    'ganged-up': 'Another pile-on, and another complaint about it',
+    defended: 'Somebody else speaks up',
+  };
+  const kindSeen = new Set();
   const gangReplied = new Map();   // who defended a pile-on → against whom
   for (const c of (v.clashes || [])) {
     // SAID, NOT SUMMARISED. The engine's line reports the exchange ("Bowie
@@ -3138,9 +3150,12 @@ function _buildBeats(v) {
         + (cs.reply ? _said(other, _fill(_fresh(turned ? cs.turnedReply : cs.reply, ck + '|r'), subs)) : '');
       if (c.kind === 'ganged-up') gangReplied.set(other, sp);
     }
+    const heading = (kindSeen.has(c.kind) && CLASH_KIND_AGAIN[c.kind])
+      || CLASH_KIND[c.kind] || 'It gets sharp';
+    kindSeen.add(c.kind);
     push('debate', '<div class="rt-clash">'
       + '<div class="rt-clash-k">' + _ic('candles', 11)
-      + _esc(CLASH_KIND[c.kind] || 'It gets sharp') + '</div>'
+      + _esc(heading) + '</div>'
       + (cs && !cs.keepLine ? '' : '<p class="rt-clash-t">' + _esc(tidyNames(c.line)) + '</p>')
       + talk
       // the defender is chosen before the chalk comes out, and can still
@@ -4191,6 +4206,26 @@ const SLATE_CITED = [
   '{T}. Because {who} {src}.',
   'I wrote {T}, and I’ll tell you why. {Who} {src}.',
   '{T}. {Who} {src}. That’s enough for me.',
+  '{T}. For me it’s this: {who} {src}.',
+  'Mine says {T}. {Who} {src}.',
+  '{T}. Think about it. {Who} {src}.',
+  'I’ve gone with {T}. {Who} {src}.',
+  '{T}, and here’s why. {Who} {src}.',
+  'There was only one name I could write. {T}. {Who} {src}.',
+];
+const SLATE_SAME = [
+  '{T}. Same reason as {P}.',
+  '{P} already said why. {T}.',
+  '{T}, for the reason {P} gave.',
+  'What {P} said. {T}.',
+  'I’m with {P} on this. {T}.',
+  'I’d only be repeating {P}. {T}.',
+  '{T}. {P} said it better than I would.',
+  'Same reason, same name. {T}.',
+  'Nothing to add to what {P} said. {T}.',
+  'You heard {P}. I think the same. {T}.',
+  '{T}. I had the same thing in my head before {P} said it.',
+  'Same as {P}, and for the same reason. {T}.',
 ];
 const SLATE_NOSRC = {
   hearsay: [
@@ -4198,6 +4233,14 @@ const SLATE_NOSRC = {
     '{F} put {T}’s name in my head, and I can’t get it out.',
     'I’ll be honest, it started with {F}. It’s {T}.',
     '{T}. {F} made the case to me today, and I agree.',
+    '{F} said {T} to me this afternoon. I’ve thought about it since, and I agree.',
+    '{T}. I’m going on what {F} told me.',
+    'It was {F} who put me onto {T}, and I haven’t been able to shake it.',
+    '{T}. {F} was sure, and that was enough for me.',
+    'Somebody I trust said {T}. That was {F}. I’m going with it.',
+    '{T}, because {F} said it before anybody else did.',
+    '{F} talked me into {T} today, and nothing tonight has talked me out of it.',
+    '{T}. I listened to {F}, and I believe it.',
   ],
   public: [
     '{T}. It’s nothing secret. I was sitting right here when it happened.',
@@ -4253,8 +4296,23 @@ function _slateReason(v, b, key) {
   const subs = { T: b.target, Who, who, obj: pr.obj,
     src: src ? _firstPerson(_pred(b.target, _sayReason(src.text, key + '|sl|' + b.voter)), b.voter) : '',
     F: sp && sp.hearsayFrom ? sp.hearsayFrom : '' };
-  if (src) return _fill(_fresh(SLATE_CITED, key + '|slc|' + b.voter), subs)
-    .replace(/\?\./g, '?').replace(/\?,/g, '?').replace(/\.\./g, '.');
+  if (src) {
+    // THE SAME FACT, A SECOND TIME: two writers holding the same reason read
+    // it out word for word. The second points back at the first.
+    const said = (v._slateSaid ||= new Map());
+    const fk = b.target + '|' + src.text;
+    const first = said.get(fk);
+    if (first && first !== b.voter) {
+      return _fill(_fresh(SLATE_SAME, key + '|ssm|' + b.voter), { T: b.target, P: first });
+    }
+    if (!first) said.set(fk, b.voter);
+    // A REASON THAT ENDS ON A QUESTION ends the sentence too: "...save a
+    // Traitor? and I can't get past it" was a frame running on past it
+    const asks = /\?\s*$/.test(subs.src);
+    const pool = asks ? SLATE_CITED.filter(l => /\{src\}\.$/.test(l)) : SLATE_CITED;
+    return _fill(_fresh(pool.length ? pool : SLATE_CITED, key + '|slc|' + b.voter), subs)
+      .replace(/\?\./g, '?').replace(/\?,/g, '?').replace(/\.\./g, '.');
+  }
   let rk = (sp && sp.reasonKind) || 'feeling';
   if (rk === 'hearsay' && !subs.F) rk = 'feeling';
   const pool = SLATE_NOSRC[rk] || SLATE_NOSRC.feeling;

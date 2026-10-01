@@ -82,7 +82,10 @@ function hangoutStage(row, screen, idx, fresh) {
     if (m && x.on?.c) verdict[x.on.c] = m[1];
   }
   const current = VIEW.test(st?.key || '') ? st.on?.c : null;
-  const decided = seen.some(x => /^hangout\.(agree|trade|yield|trio\.|solo\.decide)/.test(x.key || '')) ? d.target : null;
+  // The show cuts before the name (the decision airs in the blocking's
+  // flashback): the board ends DECIDED with two names still on the table.
+  const sealed = seen.some(x => /^hangout\.(solo\.)?sealed$/.test(x.key || ''));
+  const decided = null;
   const talking = st?.who || speakerAt(screen, idx);
   const cams = infl.map((h, i) => `<div class="civ-hcam ${i === 0 ? 'L' : i === 1 ? 'R' : 'M'}${h === talking ? ' talk' : ''}">${cam(row, h, '', `INFLUENCER · ${realOf(row, h).toUpperCase()}`)}</div>`).join('');
   const tiles = d.atRisk.map(h => {
@@ -91,7 +94,7 @@ function hangoutStage(row, screen, idx, fresh) {
     return tile(row, h, cls, v ? `<span class="civ-verdict">${v === 'keep' ? '✓ SAFE' : '✗ ON THE TABLE'}</span>` : '');
   }).join('');
   return `<div class="civ-layer civ-hangout">${bgUi}${cams}
-    <div class="civ-atrisk"><div class="hd">${decided ? 'THE DECISION' : 'AT RISK'}</div><div class="grid">${tiles}</div></div>
+    <div class="civ-atrisk"><div class="hd">${sealed ? "THEY'VE DECIDED" : 'AT RISK'}</div><div class="grid">${tiles}</div></div>
     ${where(infl.length > 1 ? 'THE HANGOUT · INFLUENCERS ONLY' : 'THE INFLUENCER DECIDES')}${dlg(row, st, fresh)}</div>`;
 }
 
@@ -102,7 +105,10 @@ function blockedStage(row, screen, idx, fresh) {
   const st = idx >= 0 ? screen.steps[idx] : null;
   const seen = upTo(screen, idx);
   const target = d.target;
-  const namedAt = screen.steps.findIndex(x => NAMED.test(x.key || ''));
+  // The message that names them (not the aside said aloud before sending it).
+  const firstNamed = screen.steps.findIndex(x => NAMED.test(x.key || ''));
+  const sentAt = screen.steps.findIndex(x => NAMED.test(x.key || '') && x.part === 'send');
+  const namedAt = sentAt >= 0 ? sentAt : firstNamed;
   const named = namedAt >= 0 && namedAt <= idx;
   const slam = named && fresh && idx === namedAt;
   const typing = !named && seen.some(x => x.key === 'block.typing');
@@ -112,9 +118,21 @@ function blockedStage(row, screen, idx, fresh) {
   const tiles = room.map(h => tile(row, h, [h === target && named ? 'out' : '', h === waiting ? 'talk' : ''].join(' '),
     d.by.includes(h) ? '<span class="civ-badge">INFLUENCER</span>' : h === target && named ? '<span class="civ-badge red">BLOCKED</span>' : '')).join('');
   const announcer = d.secret ? null : d.by[0];
-  const msg = named ? `<div class="civ-msgbox sent">${announcer ? `<div class="from">${esc(nameOf(row, announcer).toUpperCase())}</div>` : '<div class="from">THE CIRCLE</div>'}${hashify(screen.steps[namedAt].text)}</div>`
-    : typing ? `<div class="civ-msgbox"><div class="from">${d.by.length ? 'THE INFLUENCERS' : 'THE CIRCLE'}</div><span class="civ-dots"><span></span><span></span><span></span></span></div>`
-      : `<div class="civ-msgbox idle">${d.by.length ? 'The Influencers have made their decision.' : 'The Circle has made its decision.'}</div>`;
+  // THE FLASHBACK: the Hangout's decision, after the name (script.js).
+  if (st?.fb) return flashbackStage(row, screen, idx, fresh, st);
+  // The announcement builds a message at a time (lines/blocking-build.js):
+  // the last two pieces stay up while the next is typed, then the name.
+  const builtSteps = seen.filter(x => /^block\.build\./.test(x.key || '') && x.part === 'send');
+  const built = builtSteps.map(x => x.text);
+  // Whoever actually typed it (the boldest Influencer), not the first listed.
+  const typist = builtSteps[0]?.who || screen.steps.find(x => NAMED.test(x.key || '') && x.part === 'send')?.who || announcer;
+  const from = `<div class="from">${typist ? esc(nameOf(row, typist).toUpperCase()) : d.by.length ? 'THE INFLUENCERS' : 'THE CIRCLE'}</div>`;
+  const lastBuilt = seen.length && /^block\.build\./.test(seen.at(-1).key || '') && fresh;
+  const thread = built.slice(-2).map((t, i, l) => `<div class="civ-msgbox piece${lastBuilt && i === l.length - 1 ? ' sent' : ''}">${i === 0 ? from : ''}${hashify(t)}</div>`).join('');
+  const msg = named ? `${thread}<div class="civ-msgbox sent">${built.length ? '' : from}${hashify(screen.steps[namedAt].text)}</div>`
+    : typing ? `${thread}<div class="civ-msgbox">${built.length ? '' : from}<span class="civ-dots"><span></span><span></span><span></span></span></div>`
+      : built.length ? thread
+        : `<div class="civ-msgbox idle">${d.by.length ? 'The Influencers have made their decision.' : 'The Circle has made its decision.'}</div>`;
   // A stage direction keeps the camera on whoever it is about.
   const speaker = st?.who && st.part !== 'send' ? st.who : st?.part === 'stage' ? speakerAt(screen, idx) : null;
   return `<div class="civ-layer civ-blocked${named ? ' done' : ''}"><div class="civ-uibg"></div><div class="civ-redwash"></div>
@@ -122,6 +140,24 @@ function blockedStage(row, screen, idx, fresh) {
     ${speaker ? cam(row, speaker, `side${fresh ? ' in' : ''}`) : ''}
     ${slam ? `<div class="civ-slam"><span>BLOCKED</span><small>${esc(nameOf(row, target).toUpperCase())}</small></div><div class="civ-flash red"></div>` : ''}
     ${where('THE BLOCKING')}${st && st.part !== 'send' ? dlg(row, st, fresh, speaker ? 'right' : '') : ''}</div>`;
+}
+
+// ── EARLIER, IN THE HANGOUT ────────────────────────────────────────────
+// The flashback after the name: warm, faded and grainy so it reads as
+// "earlier" at a glance; the Influencers on their cameras, who they settled
+// on and why, and the lines that settled it.
+const WHY = { fake: "WE DON'T THINK THEY'RE REAL", threat: 'TOO BIG A THREAT', grudge: 'IT GOT PERSONAL', noBond: 'NO REAL CONNECTION', offer: 'AN OFFER WAS MADE' };
+function flashbackStage(row, screen, idx, fresh, st) {
+  const d = screen.d || {};
+  const opening = fresh && st.fb === 'flashback-open';
+  const talking = st.who || speakerAt(screen, idx);
+  const cams = (d.by || []).slice(0, 3).map((h, i) => `<div class="civ-fbcam ${i === 0 ? 'L' : i === 1 ? 'R' : 'M'}${h === talking ? ' talk' : ''}">${cam(row, h, '', `INFLUENCER · ${realOf(row, h).toUpperCase()}`)}</div>`).join('');
+  const why = WHY[d.reason] || '';
+  return `<div class="civ-layer civ-fbk${opening ? ' open' : ''}"><div class="civ-fbk-bg"></div><div class="civ-fbk-grain"></div>
+    <div class="civ-fbk-band">EARLIER<b>IN THE HANGOUT</b></div>${cams}
+    <div class="civ-fbk-mid"><div class="lbl">THEY SETTLED ON</div><div class="nm">${esc(nameOf(row, d.target).toUpperCase())}</div>${why ? `<div class="why">${why}</div>` : ''}</div>
+    <div class="civ-fbk-vig"></div>${opening ? '<div class="civ-fbk-flash"></div>' : ''}
+    ${where('THE HANGOUT · EARLIER')}${dlg(row, st, fresh, 'fb')}</div>`;
 }
 
 // ── A REAL ROOM: the visit and the finale meet ─────────────────────────

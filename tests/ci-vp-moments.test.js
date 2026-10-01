@@ -63,7 +63,11 @@ describe('the Ratings', () => {
 describe('the blocking', () => {
   it('nobody is blocked on screen until the name is sent; then the tile goes dark with BLOCKED', () => {
     for (const x of of('blocking')) {
-      const named = firstIdx(x.screen, /^(block\.announce\.|vote\.result|block\.inperson\.tell)/);
+      // The slam lands on the message that names them (an aside said aloud
+      // before it is still the waiting).
+      const NAMED = /^(block\.announce\.|vote\.result|block\.inperson\.tell)/;
+      const sent = x.screen.steps.findIndex(s => NAMED.test(s.key || '') && s.part === 'send');
+      const named = sent >= 0 ? sent : firstIdx(x.screen, NAMED);
       expect(named, x.screen.steps.map(s => s.key).join(',')).toBeGreaterThanOrEqual(0);
       if (named > 0) expect(at(x, named - 1).querySelector('.civ-mtile.out')).toBeNull();
       const d = at(x, named, true);
@@ -82,7 +86,15 @@ describe('the Hangout', () => {
       const cutAt = firstIdx(x.screen, /view\.\w+\.cut$/);
       if (cutAt < 0) continue;
       expect(at(x, cutAt - 1).querySelector('.civ-mtile.cut')).toBeNull();
-      expect(at(x, cutAt).querySelector('.civ-mtile.cut').dataset.h).toBe(x.screen.d.target);
+      // Two names go on the table, the one they block and the runner-up:
+      // the debate does not give the answer away.
+      const onTable = [x.screen.d.target, x.screen.d.runnerUp].filter(Boolean);
+      expect(onTable).toContain(at(x, cutAt).querySelector('.civ-mtile.cut').dataset.h);
+      const end = at(x, x.screen.steps.length - 1);
+      expect([...end.querySelectorAll('.civ-mtile.cut')].map(e => e.dataset.h).sort()).toEqual([...onTable].sort());
+      // ...and the screen never shows the decision: that airs in the blocking.
+      expect(end.querySelector('.civ-mtile.doomed')).toBeNull();
+      expect(x.screen.steps.some(s => /^hangout\.(agree|trade|yield|trio\.|solo\.decide)/.test(s.key || ''))).toBe(false);
     }
   });
 });

@@ -53,7 +53,8 @@ export function circleScreens(row) {
     for (const b of s.script.blocks) {
       // Every step knows its block (the pool it came from) and, on a big
       // moment, who that block is about.
-      const tag = { key: b.key, ...(arrive ? { about: subjectOf(s, b) } : {}), ...(b.on ? { on: b.on } : {}), ...(b.bi != null ? { bi: b.bi } : {}) };
+      const tag = { key: b.key, ...(arrive ? { about: subjectOf(s, b) } : {}), ...(b.on ? { on: b.on } : {}), ...(b.bi != null ? { bi: b.bi } : {}),
+        ...(/^flashback/.test(b.phase || '') ? { fb: b.phase } : {}) };
       const first = steps.length;
       for (const l of b.lines || []) {
         steps.push({ who: l.who && l.who !== 'host' ? l.who : null, host: l.who === 'host' || l.kind === 'host',

@@ -22,7 +22,7 @@ describe('The Circle spec audit', () => {
   it('measures a hundred seasons', () => {
     const m = { finished: 0, days: [], blocks: [], catfish: 0, profiles: 0, catfishWin: 0, catfishTotal: 0,
       catfishExposed: 0, finalCatfish: 0, finalSuspected: 0, influencer3: 0, wrongFake: [], inferred: [], inferredRight: 0, inferredAll: 0,
-      visitsCatfish: 0, visits: 0, newcomerFinal: 0, scenesPerDay: [], chatsPerDay: [], intents: {},
+      visitsCatfish: 0, visits: 0, newcomerFinal: 0, newIn: 0, newAll: 0, origIn: 0, origAll: 0, scenesPerDay: [], chatsPerDay: [], intents: {},
       probes: {}, slips: [], misreads: [], slipsNoticed: 0, slipsAll: 0, ffIsWinner: 0, pacts: [], pactKept: 0, pactChecks: 0,
       reports: [], unused: [], editedShare: [],
       pools: {}, pairRepeats: 0, missing: {}, airedPerDay: [], blocksPerScene: [], lines: 0,
@@ -105,6 +105,11 @@ describe('The Circle spec audit', () => {
         if (v.who.some(h => state.profiles[h].mode === 'catfish')) m.visitsCatfish++;
       }
       if (state.active.some(h => state.joinedDay[h] > 1)) m.newcomerFinal++;
+      // Per head: an original (days of history) should out-last a newcomer.
+      for (const h of Object.keys(state.profiles)) {
+        const isNew = (state.joinedDay[h] || 1) > 1, made = state.active.includes(h);
+        if (isNew) { m.newAll++; if (made) m.newIn++; } else { m.origAll++; if (made) m.origIn++; }
+      }
       for (let d = 1; d <= rows.length; d++) {
         const day = state.scenes.filter(x => x.day === d);
         m.scenesPerDay.push(day.length);
@@ -139,7 +144,9 @@ describe('The Circle spec audit', () => {
       ['…of which right', pct(m.inferredRight, m.inferredAll), 'not all'],
       ['rating pacts kept', pct(m.pactKept, m.pactChecks), 'most'],
       ['visits involving a catfish', pct(m.visitsCatfish, m.visits), 'a meaningful share'],
-      ['seasons with a newcomer in the final', pct(m.newcomerFinal, SEASONS), 'common (US 4 "Imani")'],
+      ['seasons with a newcomer in the final', pct(m.newcomerFinal, SEASONS), 'common (US 4 "Imani"); 5 of 13 are newcomers'],
+      ['newcomers who reach the final (per head)', pct(m.newIn, m.newAll), 'below originals (US 1: all five finalists originals)'],
+      ['originals who reach the final (per head)', pct(m.origIn, m.origAll), 'above newcomers'],
       ['scenes per day / chats per day', `${mean(m.scenesPerDay)} / ${mean(m.chatsPerDay)}`, 'dense'],
       ['slips per season (noticed)', `${mean(m.slips)} (${pct(m.slipsNoticed, m.slipsAll)})`, 'a few, some noticed'],
       ['…of which misreads (an honest answer read as a tell)', mean(m.misreads), 'a handful'],

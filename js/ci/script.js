@@ -578,7 +578,8 @@ const BLOCKS = {
       }
       out.push({ key: `rate.${b.reasons[0]}.top`, cast: { a: b.voter, b: first }, extra: { band: 'top' } });
       // Four names still have a middle (a small room late in the season).
-      const mid = b.order.length >= 4 && middles < MIDDLES_PER_NIGHT ? b.order[Math.floor(b.order.length / 2)] : null;
+      // A small room late in the season has time for one more ranker's middle.
+      const mid = b.order.length >= 4 && middles < MIDDLES_PER_NIGHT + (s.data.ballots.length <= 6 ? 1 : 0) ? b.order[Math.floor(b.order.length / 2)] : null;
       if (mid) { middles++; out.push({ key: 'rate.middle', cast: { a: b.voter, b: mid } }); }
       if (last && last !== first) out.push({ key: `rate.${b.reasons.at(-1)}.bottom`, cast: { a: b.voter, b: last }, extra: { band: 'bottom' } });
       const bad = last && gameCallback(state, b.voter, last, s, { sameDay: true, dir: 'theirs',

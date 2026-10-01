@@ -8,10 +8,12 @@
 // one who cares more about the other and is less bold, with dice. The one who
 // gave way may ask for something back ("save mine next time").
 import { allied, ALLY_SHIELD } from './alliances.js';
-import { rel, bump, S, clamp, makePact } from './state.js';
+import { rel, bump, S, clamp, makePact, familiarity } from './state.js';
 import { belief } from './beliefs.js';
 
 export const PROTECT = 6;
+// How much easier a stranger is to block than somebody known for a week.
+export const OUTSIDER = 5;
 
 export function blockScore(state, inf, t) {
   const b = belief(state, inf, t);
@@ -23,7 +25,9 @@ export function blockScore(state, inf, t) {
   };
   const shielded = state.pacts.some(p => p.kind === 'protect' && ((p.a === inf && p.b === t) || (p.a === t && p.b === inf)));
   const ally = allied(state, inf, t) ? ALLY_SHIELD * S(state, inf, 'loyalty') / 10 : 0;
-  return { total: Object.values(parts).reduce((a, v) => a + v, 0) - (shielded ? PROTECT : 0) - ally, parts };
+  // Easier to cut somebody you have no history with (state.js familiarity).
+  const outsider = OUTSIDER * (1 - familiarity(state, inf, t));
+  return { total: Object.values(parts).reduce((a, v) => a + v, 0) - (shielded ? PROTECT : 0) - ally + outsider, parts };
 }
 
 const pickOf = (state, rng, inf, atRisk) => atRisk

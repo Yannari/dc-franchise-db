@@ -34,6 +34,15 @@ export function addScene(state, kind, who, data = {}, seenBy = who) {
 
 // Handles ('@maddie') during the season; person names after a reveal.
 export const rel = (a, b, dim) => getRelationshipDimension(a, b, dim);
+// HISTORY: how long two players have been in The Circle together, 0..1 over
+// a week. The originals have days of chats and in-jokes; a newcomer has none
+// (US 1: every finalist an original, despite five newcomers). It fades as a
+// newcomer settles in.
+export const HISTORY_DAYS = 6;
+export function familiarity(state, a, b) {
+  const since = Math.max(state.joinedDay?.[a] || 1, state.joinedDay?.[b] || 1);
+  return Math.min(Math.max(0, state.day - since), HISTORY_DAYS) / HISTORY_DAYS;
+}
 export const bump = (a, b, dim, delta) => addRelationshipDimension(a, b, dim, delta);
 
 export const peopleOf = (state, handle) => state.profiles[handle]?.players || [];

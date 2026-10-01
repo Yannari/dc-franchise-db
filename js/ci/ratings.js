@@ -9,6 +9,7 @@
 // tie for second (UK 1 Ep 6). Ballots are secret: afterwards each player can
 // only INFER who broke a pact with them, and may be wrong (§8.6).
 import { allied, planAgainst, ALLIANCE_PULL, PLAN_PUSH } from './alliances.js';
+import { familiarity } from './state.js';
 import { rel, bump, S, clamp, addScene } from './state.js';
 import { belief, nudgeBelief } from './beliefs.js';
 import { feel, mood } from './mind.js';
@@ -25,6 +26,8 @@ export const STYLE_WEIGHTS = {
   gut:        { a: 0.9, t: 0.4, o: 0.4, p: 0.4, v: 0.2, h: 0.3, s: 1.4, r: 0.6, d: 0.8 },
 };
 export const PACT_PULL = 6;
+// How much a week of shared history is worth on a ballot (affection points).
+export const HISTORY_PULL = 4;
 export const NOISE = 2.0;
 // How much a doubt costs on a ballot. At 10 a catfish won 7-15% of seasons
 // against the real show's 5 in 10 (audit:ci-spec, 2026-09-29).
@@ -58,6 +61,10 @@ export function voterScore(state, rng, voter, target, { final = false } = {}) {
   const b = belief(state, voter, target);
   const parts = {
     affection: w.a * rel(voter, target, 'affection'),
+    // The history behind it (state.js familiarity): somebody you've known since
+    // day one outranks somebody who arrived yesterday. It counts, but it is
+    // never the reason a voter gives (ballot() leaves it out of `reasons`).
+    history: final ? 0 : w.a * HISTORY_PULL * familiarity(state, voter, target),
     trust: w.t * rel(voter, target, 'trust'),
     obligation: w.o * rel(voter, target, 'obligation'),
     pact: hasPact(state, 'rate', voter, target) ? w.p * PACT_PULL * S(state, voter, 'loyalty') / 10 : 0,
@@ -85,7 +92,7 @@ export function humanScore(state, rng, voter, target) {
 export function ballot(state, rng, voter, targets, opts = {}) {
   const scored = targets.filter(t => t !== voter).map(t => ({ t, ...(opts.human ? humanScore(state, rng, voter, t) : voterScore(state, rng, voter, t, opts)) }))
     .sort((a, b) => b.score - a.score);
-  const reasons = scored.map(x => Object.entries(x.parts).sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))[0][0]);
+  const reasons = scored.map(x => Object.entries(x.parts).filter(([k]) => k !== 'history').sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))[0][0]);
   // What each target's score was made of, for the audit (which term decides).
   const parts = Object.fromEntries(scored.map(x => [x.t, Object.fromEntries(Object.entries(x.parts).map(([k, v]) => [k, Math.round(v * 100) / 100 || 0]))]));
   return { voter, order: scored.map(x => x.t), reasons, parts };

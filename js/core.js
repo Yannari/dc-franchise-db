@@ -147,21 +147,40 @@ export const REL_KINSHIP = {
   'ex-friends':{ label: 'Ex-best-friends', family: false, tense: true, group: 'History' },
 };
 
+// The roster's family & ties (js/ties.js registers this; core.js stays a
+// leaf). A tie set on the CHARACTER answers for any pair the season's
+// Relationships tab says nothing about, so every show that reads kinship gets
+// it without retyping. A kin typed on the tab still wins: a season can say two
+// siblings are estranged this time.
+let _kinFallback = null;
+export function setKinFallback(fb) { _kinFallback = fb && typeof fb === 'object' ? fb : null; }
+const _validKin = k => !!k && k !== 'none' && !!REL_KINSHIP[k];
+
 /** The declared relation between two houseguests, or 'none'. */
 export function kinshipBetween(a, b) {
   if (!a || !b) return 'none';
   const key = [a, b].sort().join('|');
   const rel = (relationships || []).find(r => [r.a, r.b].sort().join('|') === key);
-  return rel?.kin && REL_KINSHIP[rel.kin] ? rel.kin : 'none';
+  if (_validKin(rel?.kin)) return rel.kin;
+  const tie = _kinFallback?.between?.(a, b);
+  return _validKin(tie) ? tie : 'none';
 }
 
 /** Every declared pair of a given kind, or of every kind in a set. */
 export function kinshipPairs(kinds = null) {
   const want = kinds ? new Set([].concat(kinds)) : null;
-  return (relationships || [])
-    .filter(r => r?.kin && REL_KINSHIP[r.kin] && r.kin !== 'none'
-      && (!want || want.has(r.kin)))
+  const typed = (relationships || [])
+    .filter(r => _validKin(r?.kin) && (!want || want.has(r.kin)))
     .map(r => ({ a: r.a, b: r.b, kin: r.kin, label: REL_KINSHIP[r.kin].label, note: r.note || '' }));
+  if (!_kinFallback?.pairs) return typed;
+  // The roster's ties among this cast, for the pairs the tab left without a kin.
+  const decided = new Set((relationships || []).filter(r => _validKin(r?.kin)).map(r => [r.a, r.b].sort().join('|')));
+  const cast = (players || []).map(p => p?.name).filter(Boolean);
+  const fromProfiles = (_kinFallback.pairs(cast) || [])
+    .filter(e => _validKin(e.kin) && !decided.has([e.a, e.b].sort().join('|')) && (!want || want.has(e.kin)))
+    .map(e => ({ a: e.a, b: e.b, kin: e.kin, label: REL_KINSHIP[e.kin].label, note: '', fromProfile: true,
+      ...(e.derived ? { derived: true } : {}), ...(e.couple ? { couple: true } : {}) }));
+  return [...typed, ...fromProfiles];
 }
 
 /** Everybody related to anybody — what a family twist is cast from. */

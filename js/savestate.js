@@ -1,6 +1,6 @@
 // js/savestate.js — Game state persistence: save, snapshot, init, reset
 import { gs, gsCheckpoints, players, seasonConfig, relationships, preGameAlliances,
-         prepGsForSave, repairGsSets, setGs, setGsCheckpoints, setViewingEpNum, seasonFormat} from './core.js';
+         prepGsForSave, repairGsSets, setGs, setGsCheckpoints, setViewingEpNum, seasonFormat, kinshipPairs} from './core.js';
 import { pStats, pronouns } from './players.js';
 import { bKey } from './bonds.js';
 import { checkShowmanceBreakup, checkLoveTriangleBreakup } from './romance.js';
@@ -783,7 +783,21 @@ export function buildInitialBonds() {
     if (Number(r.leanA)) bondLean[`${r.a}→${r.b}`] = Number(r.leanA);
     if (Number(r.leanB)) bondLean[`${r.b}→${r.a}`] = Number(r.leanB);
   });
-  relationships.forEach(r => {
+  // Family & ties set on the characters (js/ties.js): a pair the tab has no
+  // kin for starts where its tie puts it, exactly as a typed row would. Not a
+  // couple: the life layer carries a couple in (lifeSeeds, below), bond and
+  // established showmance both, and paying it here too would double it.
+  const _profile = kinshipPairs().filter(p => p.fromProfile && !p.couple);
+  const _rows = [
+    ...relationships.map(r => {
+      if (r.kin && r.kin !== 'none') return r;
+      const p = _profile.find(x => bKey(x.a, x.b) === bKey(r.a, r.b));
+      return p ? { ...r, kin: p.kin } : r;
+    }),
+    ..._profile.filter(p => !relationships.some(r => bKey(r.a, r.b) === bKey(p.a, p.b)))
+      .map(p => ({ a: p.a, b: p.b, kin: p.kin, bond: NaN })),
+  ];
+  _rows.forEach(r => {
     const def = _KIN_DEFAULT[r.kin];
     if (!def) return;
     const k = bKey(r.a, r.b);

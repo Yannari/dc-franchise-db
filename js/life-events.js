@@ -365,6 +365,9 @@ export const isTerminal = key => !!kindOf(key)?.terminal;
  */
 export function needsApproval(event, { policy = {}, contradictsAuthored = false } = {}) {
   if (isTerminal(event?.kind)) return true;
+  // A divorce always asks (user, 2026-09-30: "married is the starting
+  // point" — life can end a marriage, but never on a policy set months ago).
+  if (event?.kind === 'divorced') return true;
   if (contradictsAuthored) return true;
   const sig = significanceOf(event?.kind);
   return (policy[sig] || 'ask') === 'ask';
@@ -427,14 +430,30 @@ export function lineFor(event, names = {}, reader = null, genders = null) {
  */
 export const TRACK_START = { relationship: 'single', education: 'none', career: 'employed' };
 
-export function deriveState(events = [], { seasonRank = null, statuses = ['approved'], self = null } = {}) {
+// ── WHERE A LIFE STARTS: the couple set on the character ──
+//
+// User (2026-09-30): "married is the starting point". A couple tie authored on
+// the character (js/ties.js registers this) is where their relationship track
+// STARTS, before any event: no wedding to invent, and the log moves it on from
+// there (a separation, a divorce — which always asks). `start(slug)` returns
+// { stage, with } or null.
+let _lifeStart = null;
+export function setLifeStart(fn) { _lifeStart = typeof fn === 'function' ? fn : null; }
+export function lifeStartOf(slug) {
+  try {
+    const st = _lifeStart?.(slug);
+    return st && st.stage && st.with && st.with !== slug ? { stage: st.stage, with: st.with } : null;
+  } catch { return null; }
+}
+
+export function deriveState(events = [], { seasonRank = null, statuses = ['approved'], self = null, start = null } = {}) {
   const state = {
-    relationship: { stage: 'single', with: null },
+    relationship: start ? { stage: start.stage, with: start.with } : { stage: 'single', with: null },
     education: { stage: 'none' },
     career: { stage: 'career' in TRACK_START ? TRACK_START.career : 'employed' },
     children: 0,
     terminal: null,
-    trackStage: {},
+    trackStage: start ? { relationship: start.stage } : {},
   };
   // ORDERED BY THE CALENDAR, NOT BY `seq`.
   //
@@ -564,12 +583,13 @@ export function order(seasonRank = null) {
  */
 export function stateOf(slug, events = [], { seasonRank = null, statuses = ['approved'] } = {}) {
   const mine = events.filter(e => involves(e, slug));
-  const st = deriveState(mine, { seasonRank, statuses, self: slug });
+  const start = lifeStartOf(slug);
+  const st = deriveState(mine, { seasonRank, statuses, self: slug, start });
   // "with" must be the OTHER person, whichever side of the row they sat on.
   if (st.relationship.with === slug) {
     const last = mine.filter(e => statuses.includes(e.status) && kindOf(e.kind)?.track === 'relationship')
       .sort(order(seasonRank)).pop();
-    st.relationship.with = last ? (last.player === slug ? last.whom : last.player) : null;
+    st.relationship.with = last ? (last.player === slug ? last.whom : last.player) : (start?.with || null);
   }
   return st;
 }

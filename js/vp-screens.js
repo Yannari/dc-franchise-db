@@ -14073,7 +14073,13 @@ export function buildVPScreens(epRecord) {
   // Until Plan 5's stages: every aired scene as a screen, its lines as the
   // transcript writes them (js/vp-ci/screens.js). Assigned AND returned.
   if (epRecord.format === CIRCLE_FORMAT) {
-    vpScreens = circleVpScreens(epRecord);
+    // The neighbours, for Previously and Next time: the next episode as it
+    // played (a rewatch), or the one the season has built and not aired yet.
+    const _hist = ((typeof window !== 'undefined' && window.gs?.episodeHistory) || []).filter(r => r && r.format === CIRCLE_FORMAT);
+    const _prev = _hist.find(r => r.num === epRecord.num - 1) || null;
+    const _next = _hist.find(r => r.num === epRecord.num + 1)
+      || ((typeof window !== 'undefined' && window.gs?._ciQueue) || []).find(r => r && r.num === epRecord.num + 1) || null;
+    vpScreens = circleVpScreens(epRecord, { prev: _prev, next: _next });
     return vpScreens;
   }
   if (epRecord.format === 'perfect-match') {

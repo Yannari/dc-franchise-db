@@ -105,7 +105,7 @@ function _blScene(v, s) {
   const L = s.L;
   const bottles = Array.from({ length: 6 }, (_, i) =>
     '<g class="ms-bl-bottle' + (i < s.bottles ? ' read' : '') + '" data-b="' + i + '" transform="translate(' + (74 + i * 44) + ',252)">'
-    + '<path d="M-7 -20h14v8l4 7v20a3 3 0 0 1-3 3h-16a3 3 0 0 1-3-3v-20l4-7z" fill="#12312a" stroke="#aab7bc" stroke-width="1"/>'
+    + '<path d="M-7 -20h14v8l4 7v20a3 3 0 0 1-3 3h-16a3 3 0 0 1-3-3v-20l4-7z" fill="var(--bl-glass,#12312a)" stroke="#8ab0a0" stroke-width="1"/><path d="M-6 -4 v14" stroke="#e8fff0" stroke-width="1.5" opacity=".35"/>'
     + '<rect class="paper" x="-6" y="-2" width="12" height="13" fill="#4a4437"/></g>').join('');
   // the frame: eight pieces up the shield-shaped beacon on the raft
   const pieces = Array.from({ length: 8 }, (_, i) => {
@@ -125,16 +125,27 @@ function _blScene(v, s) {
       + '<circle r="14" fill="#0a151a" stroke="#3b5560" stroke-width="2"/>'
       + '<image href="' + _esc(_url(nm)) + '" x="-13" y="-13" width="26" height="26" clip-path="url(#ms-bl-c-' + e + ')"/></g>';
   }).join('');
-  return '<rect width="1080" height="360" fill="url(#ms-bl-sky-' + e + ')"/>'
-    + '<circle cx="890" cy="54" r="26" fill="rgba(241,234,219,.22)"/><circle cx="890" cy="54" r="13" fill="rgba(241,234,219,.6)"/>'
-    + '<path d="M0 150 C160 120 260 168 400 140 C540 112 660 158 800 132 C900 114 1000 150 1080 128 V360 H0Z" fill="#081218"/>'
+  // THE LOCH (redrawn 2026-09-30): the last light behind layered mountains,
+  // the loch holding it, a shingle shore, the pole in the shallows
+  let shingle = '';
+  for (let i = 0; i < 60; i++) shingle += '<ellipse cx="' + ((i * 5.1) % 300).toFixed(0) + '" cy="' + (290 + (i * 7) % 66) + '" rx="' + (3 + i % 4) + '" ry="' + (2 + i % 2) + '" fill="' + (i % 3 ? '#3a3a36' : '#4a4842') + '"/>';
+  return '<g style="--bl-wood:url(#ms-bl-wood-' + e + ');--bl-glass:url(#ms-bl-glass-' + e + ')">'
+    + '<rect width="1080" height="360" fill="url(#ms-bl-sky-' + e + ')"/>'
+    + '<circle cx="890" cy="96" r="90" fill="url(#ms-bl-glow-' + e + ')"/>'
+    + '<circle cx="890" cy="54" r="13" fill="rgba(241,234,219,.75)"/>'
+    + '<path d="M0 140 L90 96 L170 118 L280 70 L380 112 L470 86 L560 120 L680 78 L790 108 L900 84 L1000 110 L1080 92 V170 H0Z" fill="#2a2a3e" opacity=".85"/>'
+    + '<path d="M0 158 C120 130 240 162 380 140 C520 118 660 156 800 134 C920 116 1000 148 1080 130 V180 H0Z" fill="#181c28"/>'
+    + '<path d="M0 150 V360 H1080 V150 C900 160 700 152 540 156 C360 160 180 152 0 150Z" fill="url(#ms-bl-loch-' + e + ')"/>'
+    + '<path d="M870 160 C872 220 868 280 874 360 H906 C910 280 906 220 910 160Z" fill="#f2c870" opacity=".1"/>'
     + '<g class="ms-bl-water"><path d="M0 178 q60 -10 120 0 t120 0 t120 0 t120 0 t120 0 t120 0 t120 0 t120 0 t120 0" fill="none" stroke="rgba(170,183,188,.16)" stroke-width="2"/>'
     + '<path d="M0 214 q60 -10 120 0 t120 0 t120 0 t120 0 t120 0 t120 0 t120 0 t120 0 t120 0" fill="none" stroke="rgba(170,183,188,.12)" stroke-width="2"/></g>'
-    + '<path d="M0 276 C120 262 180 300 300 288 L300 360 H0Z" fill="#101a1c"/>'
+    + '<path d="M0 276 C120 262 180 300 300 288 L300 360 H0Z" fill="#26262a"/>' + shingle
     + bottles
-    + '<rect x="446" y="150" width="12" height="150" rx="4" fill="#3b5560"/>'
+    + '<rect x="446" y="150" width="12" height="150" rx="3" fill="var(--bl-wood,#3b5560)" stroke="#2a1e12" stroke-width="1.5"/>'
+    + '<ellipse cx="452" cy="300" rx="22" ry="4" fill="#c8d4dc" opacity=".25"/><path d="M444 236 h16 M444 248 h16" stroke="#c9a877" stroke-width="3"/>'
     + figures
-    + '<g class="ms-bl-raft"><path d="M726 254h160l-14 22H740z" fill="#22303a" stroke="#3b5560" stroke-width="2"/>'
+    + '<g class="ms-bl-raft"><path d="M726 254h160l-14 22H740z" fill="var(--bl-wood,#22303a)" stroke="#2a1e12" stroke-width="2"/>'
+    + '<path d="M760 254v22 M796 254v22 M832 254v22" stroke="#2a1e12" stroke-width="1.5" opacity=".7"/><ellipse cx="806" cy="282" rx="96" ry="6" fill="#000" opacity=".3"/>'
     + '<g class="ms-bl-frame">' + pieces + '</g>'
     + '<g class="ms-bl-fire' + (s.lit ? ' lit' : '') + '" transform="translate(806,150)">'
     + '<path class="f1" d="M0 84c26-26 34-44 30-66-10 12-16 14-20 12 6-18 2-34-14-46-2 18-10 26-20 34-14 12-20 26-20 40 0 14 10 26 24 32z" fill="#ff5a1f"/>'
@@ -142,7 +153,7 @@ function _blScene(v, s) {
     + '<path class="f3" d="M0 84c8-10 10-18 9-26-3 5-5 6-7 5 2-7 0-13-5-17-1 7-3 10-7 14-4 4-6 9-6 14 0 6 4 10 9 12z" fill="#ffe08a"/></g></g>'
     + '<g class="ms-bl-torch" transform="translate(986,268)"><rect x="-3" y="0" width="6" height="40" fill="#5b4326"/>'
     + '<path d="M0 -18c8 10 10 16 10 22a10 10 0 0 1-20 0c0-6 2-12 10-22z" fill="#ffb347"/></g>'
-    + '<g class="ms-bl-glint"><circle r="10" fill="rgba(242,204,91,.9)"/></g>';
+    + '<g class="ms-bl-glint"><circle r="10" fill="rgba(242,204,91,.9)"/></g></g>';
 }
 
 function _blStage(v, states, n) {
@@ -150,7 +161,11 @@ function _blStage(v, states, n) {
   const e = v.epNum;
   const defs = '<clipPath id="ms-bl-c-' + e + '"><circle r="13"/></clipPath>'
     + '<linearGradient id="ms-bl-sky-' + e + '" x1="0" x2="0" y1="0" y2="1">'
-    + '<stop offset="0" stop-color="#0b1b24"/><stop offset=".55" stop-color="#0a151a"/><stop offset="1" stop-color="#060c0f"/></linearGradient>';
+    + '<stop offset="0" stop-color="#141a30"/><stop offset=".55" stop-color="#3a2e48"/><stop offset=".85" stop-color="#8a5050"/><stop offset="1" stop-color="#c8784e"/></linearGradient>'
+    + '<radialGradient id="ms-bl-glow-' + e + '"><stop offset="0" stop-color="#ffe0b0" stop-opacity=".45"/><stop offset="1" stop-color="#ffe0b0" stop-opacity="0"/></radialGradient>'
+    + '<linearGradient id="ms-bl-loch-' + e + '" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#6a5060"/><stop offset=".2" stop-color="#2a3448"/><stop offset="1" stop-color="#0a1018"/></linearGradient>'
+    + '<linearGradient id="ms-bl-wood-' + e + '" x1="0" x2="1"><stop offset="0" stop-color="#4a3420"/><stop offset=".5" stop-color="#7a5a34"/><stop offset="1" stop-color="#3a2614"/></linearGradient>'
+    + '<linearGradient id="ms-bl-glass-' + e + '" x1="0" x2="1"><stop offset="0" stop-color="#0e3a2a"/><stop offset=".4" stop-color="#2a6a50"/><stop offset="1" stop-color="#0a2a1e"/></linearGradient>';
   return stageShell({ epNum: e, defs, scene: _blScene(v, s),
     cap: [s.time + ' left', (BL_CAP[s.capPhase] || BL_CAP.poles)[1]],
     pot: v.potBefore + (s.done && v.tally.lit ? v.earned : 0),
@@ -577,8 +592,8 @@ export const BEACON = {
 @keyframes ms-bl-wave{to{transform:translateX(-120px)}}
 .ms-bl-bottle .paper{transition:fill .6s,filter .6s}
 .ms-bl-bottle.read .paper{fill:#f1eadb;filter:drop-shadow(0 0 7px rgba(241,234,219,.9))}
-.ms-bl-piece{fill:#12222a;stroke:#3b5560;stroke-width:2;transition:fill .7s,stroke .7s}
-.ms-bl-piece.set{fill:#5b4326;stroke:#c9a877}
+.ms-bl-piece{fill:#2a2a30;stroke:#4a4a52;stroke-width:2;opacity:.6;transition:fill .7s,stroke .7s,opacity .7s}
+.ms-bl-piece.set{fill:var(--bl-wood,#5b4326);stroke:#c9a877;opacity:1}
 .ms-bl-fire{opacity:0;transition:opacity .9s;transform-box:fill-box;transform-origin:50% 100%}
 .ms-bl-fire.lit{opacity:1}
 .ms-bl-fire.lit .f1{animation:ms-bl-flick .45s ease-in-out infinite alternate}

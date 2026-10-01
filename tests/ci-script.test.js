@@ -173,7 +173,8 @@ describe('repetition within a day, and slips inside the chat', () => {
       slips: [{ by: '@shubham', kind: 'tooPerfect', noticedBy: ['@sammie'], misread: true }] });
     writeScene(s, sc);
     delete POOLS['chat.bond.warm']; delete POOLS['slip.misread'];
-    expect(sc.script.blocks).toHaveLength(1);
+    // (a word to the empty apartment may follow the chat: lines/asides.js)
+    expect(sc.script.blocks.filter(b => !b.key.startsWith('aside.'))).toHaveLength(1);
     const kinds = sc.script.blocks[0].lines.map(l => `${l.kind}:${l.text}`);
     expect(kinds).toEqual(['send:Hi Sammie', 'send:I love it here', 'react:Too nice.', 'stage:Sammie frowns.']);
     expect(sc.script.blocks[0].beat).toBe('Shubham smiles.');

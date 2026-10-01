@@ -21,10 +21,13 @@ import { shownRegister, shownVoice, crackOf } from './cover.js';
 import { POOLS } from './lines/index.js';
 import { GAMES, PARTY_THEMES, NEVER_HAVE_I_EVER } from './games-data.js';
 import { TRIVIA, FACTS } from './games-content.js';
+import { topicsOf, wingsIt, JOB_TOPIC, townOf } from './topics.js';
 
 // 'face' and 'brain': the two people behind a shared profile, speaking to
 // each other in their own apartment (spec §14.8).
-export const ROLES = ['a', 'b', 'c', 'host', 'face', 'brain'];
+export const ROLES = ['a', 'b', 'c', 'host', 'face', 'brain', 'older', 'younger', 'parent', 'kid'];
+// The two people behind a shared profile, by the part they play in a line.
+const PAIR_ROLES = new Set(['face', 'brain', 'older', 'younger', 'parent', 'kid']);
 export const FACT_KEYS = ['intent', 'ending', 'result', 'known', 'early', 'late', 'catfish', 'outed',
   'suspects', 'theory', 'pact', 'friends', 'rivals', 'flirty', 'newcomer', 'mood', 'group', 'style',
   'hurt', 'influencer', 'reason', 'motive', 'mode', 'reasonKind', 'band', 'kiss', 'claim', 'lie',
@@ -98,6 +101,11 @@ const usage = state => (state.usedLines ||= { uses: {}, pairs: {}, day: {} });
 // earlier days — seed 19, day 7 aired one status twice.)
 export const SAME_DAY = 0;
 export const SAID_AGAIN = 0.05;
+// Each earlier use of a line this season: its weight times this. Steep, so a
+// fresh line wins until the pool is used up; at 0.5 a register line (five
+// times the weight) used once still beat a fresh plain one, and came back
+// (measured: 19% of a season's blocks were repeats).
+export const USED_DECAY = 0.12;
 
 export function pickEntry(state, key, facts, pairKey, rng, speaker = null) {
   // A list of keys merges pools: a game's own lines (weighted up) with its
@@ -115,7 +123,7 @@ export function pickEntry(state, key, facts, pairKey, rng, speaker = null) {
     // One person saying the same sentence twice in a season reads as a bug,
     // whoever they say it to (a register's lines win often, so this matters).
     const said = speaker && (u.by?.[e.id] || []).includes(speaker) ? SAID_AGAIN : 1;
-    return [e, samePair ? 0 : (1 + spec) * Math.pow(0.5, uses) * today * said];
+    return [e, samePair ? 0 : (1 + spec) * Math.pow(USED_DECAY, uses) * today * said];
   });
   let total = scored.reduce((s, [, w]) => s + w, 0);
   // Everything that fits has been used on this pair: take the least-used fit.
@@ -155,7 +163,7 @@ export function fill(state, text, cast, speakerRole) {
   // {q} and {game}: the Circle's own words (a rule, a prompt) and a game's
   // name, handed in by the builder — never a name the pool invents.
   const t = cast.text || {};
-  text = text.replace(/\{(q|game|ans|x|n)\}/g, (m, k, at, whole) => {
+  text = text.replace(/\{(q|game|ans|x|n|topic|town)\}/g, (m, k, at, whole) => {
     if (t[k] === undefined) return m;
     const starts = /(^|[.!?…]\s+|['"]\s*)$/.test(whole.slice(0, at));
     if (k === 'x') {
@@ -165,6 +173,8 @@ export function fill(state, text, cast, speakerRole) {
       if (starts || PROPER.test(v)) return v;
       return v.charAt(0).toLowerCase() + v.slice(1);
     }
+    // a topic or a town can open a sentence ("Night shifts. Sure.")
+    if (k === 'topic' || k === 'town') return starts ? String(t[k]).charAt(0).toUpperCase() + String(t[k]).slice(1) : t[k];
     if (k !== 'n') return t[k];
     // A count is said, not typed: "six likes", "three to two".
     const said = String(t[k]).replace(/\b\d+\b/g, d => NUMBER_WORDS[+d] ?? d);
@@ -183,7 +193,12 @@ export function fill(state, text, cast, speakerRole) {
     // Staging and beats describe the apartment: the person in it is the real one.
     if (!prop) return speakerRole === 'narration' ? (onScreen ? onScreen.split(' ')[0] : realFirst(state, h)) : shown;
     if (prop === 'real') return realFirst(state, h);
-    if (prop === 'face' || prop === 'brain') return (p.roles?.[prop] || p.players[0]).split(' ')[0];
+    if (PAIR_ROLES.has(prop)) return (p.roles?.[prop] || p.players[0]).split(' ')[0];
+    // what a kid calls the parent, and what the parent calls the kid
+    if (prop === 'parentWord') return state.people[p.roles?.parent]?.gender === 'm' ? 'Dad' : 'Mom';
+    if (prop === 'kidWord') return state.people[p.roles?.kid]?.gender === 'm' ? 'son' : 'daughter';
+    if (prop === 'olderSib') return state.people[p.roles?.older]?.gender === 'm' ? 'big brother' : 'big sister';
+    if (prop === 'youngerSib') return state.people[p.roles?.younger]?.gender === 'm' ? 'little brother' : 'little sister';
     if (prop === 'aka') return p.mode === 'catfish' || p.players.length > 1
       ? `${shown}, aka ${realFirst(state, h)},` : shown;
     if (PRONOUN_KEYS.includes(prop)) {
@@ -198,11 +213,11 @@ export function fill(state, text, cast, speakerRole) {
 
 export function renderEntry(state, entry, cast, rng, ctx = {}) {
   const lines = [];
-  const who = role => (role === 'host' ? 'host' : role === 'face' || role === 'brain' ? cast.a : cast[role]);
+  const who = role => (role === 'host' ? 'host' : PAIR_ROLES.has(role) ? cast.a : cast[role]);
   const personOf = role => {
     const p = state.profiles[cast.a];
     if (role === 'a' && cast.personA) return cast.personA.split(' ')[0];
-    return (role === 'face' || role === 'brain') && p ? (p.roles?.[role] || p.players[0]).split(' ')[0] : null;
+    return PAIR_ROLES.has(role) && p ? (p.roles?.[role] || p.players[0]).split(' ')[0] : null;
   };
   if (entry.stage) lines.push({ who: cast.a, kind: 'stage', text: fill(state, entry.stage, cast, 'narration') });
   (entry.turns || []).forEach((t, ti) => {
@@ -213,7 +228,7 @@ export function renderEntry(state, entry, cast, rng, ctx = {}) {
     const tag = x => (person ? { ...x, person } : x);
     // The one at the keyboard: a shared profile types in two voices.
     const typist = t.by === 'a' ? cast.personA || null
-      : (t.by === 'face' || t.by === 'brain') ? state.profiles[cast.a]?.roles?.[t.by] || null : null;
+      : PAIR_ROLES.has(t.by) ? state.profiles[cast.a]?.roles?.[t.by] || null : null;
     // A catfish types in the persona's register until the cover cracks (ci/cover.js).
     const voiceOf = () => ({ ...(state.profiles[speaker]?.voice || {}), register: shownRegister(state, speaker, ctx.scene, typist) });
     // The person at the keyboard, for what the author wrote about them.
@@ -328,10 +343,25 @@ const BLOCKS = {
     const [a, b] = s.who;
     const c0 = s.data.claims?.length ? claimOf(state, s.data.claims[0]) : null;
     const c = c0 ? (c0.about === a || c0.about === b ? c0.holder : c0.about) : undefined;
-    const key = s.data.intent === 'probe'
-      ? `chat.probe.${s.data.probes?.[0]?.result || 'pass'}` : `chat.${s.data.intent}.${s.data.ending}`;
+    let key = s.data.intent === 'probe'
+      ? `chat.probe.${s.data.probes?.[0]?.result || 'pass'}`
+      // a catfish flirting in character, with nothing real behind it: its own lines
+      : s.data.performed ? `chat.flirt.act.${s.data.ending}` : `chat.${s.data.intent}.${s.data.ending}`;
+    // A friendly chat is often ABOUT something: b's life (ci/topics.js). A
+    // catfish (or an edited job) has to wing a job they don't have.
+    let text;
+    if (s.data.intent === 'bond' && s.data.ending !== 'cold' && !c0) {
+      const fake = wingsIt(state, b);
+      const ts = topicsOf(state, b).filter(t => !fake || !PERSONAL_TOPICS.has(t));
+      const hsh = [...String(s.id)].reduce((x, ch) => (x * 31 + ch.charCodeAt(0)) >>> 0, 7);
+      if (ts.length && hsh % 100 < TOPIC_SHARE) {
+        const t = ts[(hsh >>> 7) % ts.length];
+        key = fake && JOB_TOPIC(t) ? 'chat.topic.fake' : `chat.topic.${t}`;
+        text = { topic: TOPICS[t]?.label || t, town: townOf(state.profiles[b]?.shown?.hometown) || undefined };
+      }
+    }
     const personA = s.data.lead && state.profiles[a]?.players.length > 1 ? s.data.lead : undefined;
-    const out = [{ key, cast: { a, b, c, personA }, extra: { claim: c0?.kind, lie: c0 ? c0.origin.by === a && !c0.truth : false } }];
+    const out = [{ key, cast: { a, b, c, personA, ...(text ? { text } : {}) }, extra: { claim: c0?.kind, lie: c0 ? c0.origin.by === a && !c0.truth : false } }];
     for (const sl of s.data.slips || []) {
       const listener = sl.noticedBy[0] || (sl.by === a ? b : a);
       // A voice slip with an author's leak shows the words themselves.
@@ -347,7 +377,21 @@ const BLOCKS = {
     const pa = state.profiles[a];
     if (s.data.lead && pa?.players.length > 1) {
       const won = s.data.lead === (pa.roles?.face || pa.players[0]) ? 'faceWins' : 'brainWins';
-      out.push({ key: `shared.argue.${won}`, cast: { a, b } });
+      // What they are to each other picks the words; a parent and child by who won.
+      const rel = pa.relation;
+      const relKey = rel === 'parent' ? `shared.argue.${s.data.lead === pa.roles?.parent ? 'parentWins' : 'kidWins'}.parent`
+        : rel ? `shared.argue.${won}.${rel}` : null;
+      // The relationship's own lines alongside the general ones: a pair argues
+      // before nearly every message, so one small pool would repeat in days.
+      out.push(relKey && POOLS[relKey]?.length ? { key: relKey, keys: [relKey, `shared.argue.${won}`], cast: { a, b } }
+        : { key: `shared.argue.${won}`, cast: { a, b } });
+    }
+    // After a third of chats, a says one thing to the empty apartment, in the
+    // head of their archetype (the real person; lines/asides.js).
+    const group = asideGroup(state, a, s.data.lead);
+    const hs = [...`${s.id}:aside`].reduce((x, ch) => (x * 31 + ch.charCodeAt(0)) >>> 0, 7);
+    if (group && s.data.ending && !s.data.performed && key !== 'chat.topic.fake' && s.data.intent !== 'probe' && hs % 100 < ASIDE_SHARE) {
+      out.push({ key: `aside.${group}.${s.data.ending}`, cast: { a, b, personA } });
     }
     return out;
   },
@@ -418,6 +462,9 @@ const BLOCKS = {
       ? s.who.slice(0, 3).map(h => ({ key: 'final.open', cast: { a: h } }))
       : [{ key: 'ratings.open', cast: { a: s.who[0] } }];
     const n = s.data.results.length;
+    // Everybody says their first and their last; the middle only for a few
+    // (the show lingers on three or four rankers a night, not all of them).
+    let middles = 0;
     for (const b of s.data.ballots) {
       const first = b.order[0], last = b.order.at(-1);
       if (s.data.human) {
@@ -432,8 +479,8 @@ const BLOCKS = {
       }
       out.push({ key: `rate.${b.reasons[0]}.top`, cast: { a: b.voter, b: first }, extra: { band: 'top' } });
       // Four names still have a middle (a small room late in the season).
-      const mid = b.order.length >= 4 ? b.order[Math.floor(b.order.length / 2)] : null;
-      if (mid) out.push({ key: 'rate.middle', cast: { a: b.voter, b: mid } });
+      const mid = b.order.length >= 4 && middles < MIDDLES_PER_NIGHT ? b.order[Math.floor(b.order.length / 2)] : null;
+      if (mid) { middles++; out.push({ key: 'rate.middle', cast: { a: b.voter, b: mid } }); }
       if (last && last !== first) out.push({ key: `rate.${b.reasons.at(-1)}.bottom`, cast: { a: b.voter, b: last }, extra: { band: 'bottom' } });
       const bad = last && gameCallback(state, b.voter, last, s, { sameDay: true, dir: 'theirs',
         kinds: ['named-bad', 'rival', 'jab', 'asked-barbed', 'picked-last', 'asked-catfish'] });
@@ -767,6 +814,8 @@ const BLOCKS = {
     const out = viewers.slice(0, 4).map(v => ({ key: 'goodbye.guess', cast: { a: v, b: h } }));
     out.push({ key: p.ai ? 'goodbye.video.ai' : p.mode === 'catfish' ? `goodbye.video.catfish.${p.reason || 'strategic'}` : `goodbye.video.${p.mode}`,
       cast: { a: h }, extra: { mode: p.mode, reasonKind: p.reason || undefined } });
+    // A pair that is something to each other says goodbye as that.
+    if (p.relation && p.players.length > 1 && POOLS[`goodbye.pair.${p.relation}`]?.length) out.push({ key: `goodbye.pair.${p.relation}`, cast: { a: h } });
     // A shout-out to their closest friend still in the building, when there is one.
     const bestie = viewers.filter(v => rel(h, v, 'affection') > 3).sort((x, y) => rel(h, y, 'affection') - rel(h, x, 'affection'))[0];
     if (bestie && !p.ai) out.push({ key: 'goodbye.shout', cast: { a: h, b: bestie } });
@@ -808,12 +857,12 @@ const BLOCKS = {
       ...present.slice(0, 2).map(h => ({ key: 'meet.react', cast: { a: h, b: a }, extra: { catfish: true } })), { key: 'meet.settle', cast: { a, b: present.at(-1) } }];
     // A shared profile walks in as two people: that is the reveal.
     if (present.length === 1 && pair(present[0])) {
-      return [{ key: 'meet.found.shared', cast: { a, b: present[0] } }, { key: 'meet.explain.shared', cast: { a: present[0], b: a } },
+      return [{ key: 'meet.found.shared', cast: { a, b: present[0] } }, { key: sharedExplain(state, present[0]), cast: { a: present[0], b: a } },
         ...(fake(present[0]) ? [explain(present[0], a)] : [])];
     }
     if (pair(a)) {
       const b = present.at(-1);
-      const out = [{ key: 'meet.arrive.shared', cast: { a, b } }, { key: 'meet.explain.shared', cast: { a, b } }];
+      const out = [{ key: 'meet.arrive.shared', cast: { a, b } }, { key: sharedExplain(state, a), cast: { a, b } }];
       if (fake(a)) out.push(explain(a, b));
       for (const h of present.filter(x => x !== b).slice(-3)) out.push({ key: 'meet.react.shared', cast: { a: h, b: a } });
       out.push({ key: 'meet.settle', cast: { a, b } });
@@ -888,14 +937,23 @@ const BLOCKS = {
       liked.add(b);
       tail.push({ key: 'party.photo', cast: { a: ph.by, b, text: { n: String(ph.likers.length) } } });
     }
+    // The flirting: up to two couples, nobody in both (a party is where it happens).
     const fl = (d.flirts || [])[0];
+    const fl2 = fl && (d.flirts || []).find(x => !x.includes(fl[0]) && !x.includes(fl[1]));
     tail.push(fl ? { key: 'party.flirt', cast: { a: fl[0], b: fl[1] } }
       : { key: 'party.banter', cast: { a: s.who[1] || s.who[0], b: s.who[2] || s.who[0] } });
+    if (fl2) tail.push({ key: 'party.flirt', cast: { a: fl2[0], b: fl2[1] } });
     if (d.dancers?.[0]) tail.push({ key: 'party.end', cast: { a: d.dancers.at(-1) } });
     // Dancing first, then the photos, then the game, the flirting and the end.
     return [out[0], ...tail.slice(0, (d.dancers || []).length + (d.photos || []).length), ...out.slice(1), ...tail.slice((d.dancers || []).length + (d.photos || []).length)];
   },
-  life(state, s) { return [{ key: `life.${s.data.habit}`, cast: { a: s.who[0], personA: s.data.person } }]; },
+  life(state, s) {
+    // A pair that is something to each other: often it's the two of them.
+    const p = state.profiles[s.who[0]];
+    const hs = [...`${s.id}:pair`].reduce((x, ch) => (x * 31 + ch.charCodeAt(0)) >>> 0, 7);
+    if (p?.relation && p.players.length > 1 && hs % 100 < PAIR_LIFE) return [{ key: `life.pair.${p.relation}`, cast: { a: s.who[0] } }];
+    return [{ key: `life.${s.data.habit}`, cast: { a: s.who[0], personA: s.data.person } }];
+  },
   // Private to the apartment: only its player is cast.
   'home-video'(state, s) { return [{ key: 'home.video', cast: { a: s.who[0] } }]; },
 };
@@ -945,6 +1003,33 @@ export function writeScene(state, scene) {
   }
   scene.script = { blocks };
   return scene.script;
+}
+
+export const MIDDLES_PER_NIGHT = 3;
+// How often a pair's time alone in the apartment is the two of them together.
+export const PAIR_LIFE = 50;
+// How many chats end with a word to the empty apartment (lines/asides.js).
+export const ASIDE_SHARE = 35;
+const ASIDE_GROUP = { villain: 'schemer', mastermind: 'schemer', schemer: 'schemer',
+  hero: 'sweet', 'loyal-soldier': 'sweet', 'social-butterfly': 'sweet', underdog: 'sweet', goat: 'sweet',
+  showmancer: 'romantic', hothead: 'wild', 'chaos-agent': 'wild', wildcard: 'wild', 'challenge-beast': 'wild',
+  floater: 'watcher', 'perceptive-player': 'watcher' };
+/** The real person behind a profile, by archetype (a pair: whoever led this chat). */
+function asideGroup(state, h, lead) {
+  const who = lead || state.profiles[h]?.players?.[0];
+  const person = state.people[who];
+  if (!person || person.ai) return null;
+  return ASIDE_GROUP[person.archetype] || null;
+}
+// How many friendly chats are about something in b's life (ci/topics.js).
+export const TOPIC_SHARE = 45;
+// A catfish can wing a job; a dog, the kids, church or a hometown they don't have is a lie too far.
+const PERSONAL_TOPICS = new Set(['kids', 'dog', 'church', 'hometown']);
+
+/** How a pair explains itself at the finale: by what they are, when the author said. */
+function sharedExplain(state, h) {
+  const rel = state.profiles[h]?.relation;
+  return rel && POOLS[`meet.explain.shared.${rel}`]?.length ? `meet.explain.shared.${rel}` : 'meet.explain.shared';
 }
 
 // The night's scenes that can open a day (season.js: the blocking follows the
@@ -997,7 +1082,8 @@ function bridge(state, aired) {
       const entry = pickEntry(state, key, factsFor(state, s, cast), s.id, rng);
       if (entry) { s.script.blocks.unshift({ key, ...renderEntry(state, entry, cast, rng) }); since = 0; }
     }
-    since += s.script?.blocks?.length || 0;
+    // (an aside is part of its chat, not a beat of its own)
+    since += (s.script?.blocks || []).filter(b => !b.key.startsWith('aside.')).length;
   }
 }
 
@@ -1012,6 +1098,9 @@ const BLOCK_WHY_ = ['fake', 'threat', 'grudge', 'noBond'];
 export const POOL_KEYS = [
   ...INTENTS_.flatMap(i => ['warm', 'neutral', 'cold'].map(e => `chat.${i}.${e}`)),
   ...['pass', 'dodge', 'fail'].map(r => `chat.probe.${r}`),
+  ...['warm', 'neutral', 'cold'].map(e => `chat.flirt.act.${e}`),
+  ...['schemer', 'sweet', 'romantic', 'wild', 'watcher'].flatMap(g => ['warm', 'neutral', 'cold'].map(e => `aside.${g}.${e}`)),
+  ...[...Object.keys(TOPICS), 'hometown', 'fake', 'circle-life', 'single', 'taken', 'complicated'].map(t => `chat.topic.${t}`),
   ...SLIPS_.flatMap(k => [`slip.${k}.noticed`, `slip.${k}.missed`]),
   ...Object.keys(TOPICS).flatMap(t => [`slip.topic.${t}.noticed`, `slip.topic.${t}.missed`]), 'slip.misread', 'slip.leak.noticed', 'slip.leak.missed',
   ...['caps', 'ellipses', 'stage', 'greeting', 'nicknames', 'catchphrase', 'formal', 'hype', 'dry']
@@ -1073,6 +1162,9 @@ export const POOL_KEYS = [
   'party.open', 'party.nhie', 'party.nhie.none',
   ...['workout', 'skincare', 'cooking', 'reading', 'singing', 'plushie', 'praying', 'pacing'].map(h => `life.${h}`),
   'home.video', 'host.game', 'host.life', 'shared.argue.faceWins', 'shared.argue.brainWins',
+  ...['couple', 'married', 'siblings', 'twins', 'friends', 'cousins'].flatMap(k => [`shared.argue.faceWins.${k}`, `shared.argue.brainWins.${k}`]),
+  'shared.argue.parentWins.parent', 'shared.argue.kidWins.parent',
+  ...['couple', 'married', 'siblings', 'twins', 'parent', 'friends', 'cousins'].flatMap(k => [`life.pair.${k}`, `meet.explain.shared.${k}`, `goodbye.pair.${k}`]),
   'circle.more', 'circle.react', 'ratings.done', 'ratings.wait', 'final.open', 'final.done', 'block.wait', 'block.typing',
   ...['friend', 'answers', 'truth', 'apology'].map(m => `visit.talk2.${m}`), 'visit.after', 'goodbye.after',
   'meet.first', 'meet.react', 'meet.settle', 'meet.arrive.shared', 'meet.found.shared', 'meet.react.shared', 'meet.explain.shared', 'circle.leave', 'circle.final.look', 'block.after', 'visit.walk', 'visit.sit', 'rate.middle', 'party.dance', 'party.photo', 'party.flirt', 'party.banter', 'party.end',

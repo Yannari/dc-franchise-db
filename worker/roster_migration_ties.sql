@@ -1,0 +1,18 @@
+-- ══════════════════════════════════════════════════════════════════════
+-- roster_migration_ties.sql — family and ties on the character
+-- ══════════════════════════════════════════════════════════════════════
+--
+-- User (2026-09-30): "do those relationship settings persist between shows,
+-- like a married couple stays married in life after the show". A family tie
+-- is a fact about two people, not about a season, so it lives on the
+-- character: a JSON array of {name, kin, role?} (js/ties.js reads it).
+--
+-- It has to live HERE: Publish regenerates franchise_roster.json wholesale
+-- from this table, so a field the database never hears about is deleted the
+-- next time somebody presses the button.
+--
+-- Apply once, from the repo root (SQLite has no ADD COLUMN IF NOT EXISTS, so a
+-- second run errors with "duplicate column name" and changes nothing):
+--   npx wrangler d1 execute dc-franchise --remote --config worker/wrangler.toml \
+--     --file=worker/roster_migration_ties.sql
+ALTER TABLE roster ADD COLUMN ties TEXT;

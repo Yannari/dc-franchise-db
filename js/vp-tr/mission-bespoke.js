@@ -492,16 +492,22 @@ export function bespokeStageData(ep) {
   // THE THEME'S OWN SET, at rest: the scene each afternoon's page already draws
   // (the loch, the causeway, the church), lifted out of its strip so the stage
   // plays in the right place rather than on a generic field
-  let scene = null;
+  let scene = null, sceneCls = 'ms';
   try {
     if (th && th.stage && th.sideStates) {
       const total = v.phases.reduce((a, p) => a + p.cards.length, 0) + v.phases.length + 2;
       const html = th.stage(v, th.sideStates(v, total), 0);
-      const a = html.indexOf('<svg class="ms-scene"'), b = html.indexOf('<div class="ms-layer');
-      if (a >= 0 && b > a) scene = html.slice(a, b);
+      // two shells exist: the shared one (ms-scene) and the funeral's own (fx-scene)
+      for (const [tag, cls] of [['<svg class="ms-scene"', 'ms'], ['<svg class="fx-scene"', 'fx']]) {
+        const a = html.indexOf(tag);
+        if (a < 0) continue;
+        const next = html.indexOf('<div', a);
+        const b = html.lastIndexOf('</svg>', next < 0 ? html.length : next);
+        if (b > a) { scene = html.slice(a, b + 6); sceneCls = cls; break; }
+      }
     }
   } catch { scene = null; }
-  return { v, title: th && th.title ? th.title(v) : null, host: { name: h.name, slug: h.slug }, scene };
+  return { v, title: th && th.title ? th.title(v) : null, host: { name: h.name, slug: h.slug }, scene, sceneCls };
 }
 
 export function isBespokeMissionRec(m) { return !!(m && m.id && THEME[m.id]); }

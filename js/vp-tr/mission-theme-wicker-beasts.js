@@ -77,20 +77,27 @@ function _wbBeast(ti, s, e) {
   const at = ti === 0 ? 'translate(830,150) scale(1.5)' : 'translate(972,176) scale(1.3)';
   const body = ti === 0
     // a stag: deep chest, long legs, head up, antlers
-    ? '<path class="body" d="M-30 6 C-34 -10 -20 -18 -6 -18 L14 -18 C28 -18 34 -8 32 4 C30 16 18 22 4 22 L-14 22 C-24 22 -28 16 -30 6 Z"/>'
+    ? '<path class="leg" d="M-18 22 L-20 60 M-4 22 L-6 60 M14 22 L16 60 M26 20 L28 60"/>'
+      + '<path class="body" d="M-30 6 C-34 -10 -20 -18 -6 -18 L14 -18 C28 -18 34 -8 32 4 C30 16 18 22 4 22 L-14 22 C-24 22 -28 16 -30 6 Z"/>'
       + '<path class="body" d="M26 -14 C34 -26 40 -34 42 -46 L50 -44 C48 -30 42 -20 36 -10 Z"/>'
-      + '<path class="horn" d="M44 -46 L38 -66 M44 -46 L54 -64 M40 -58 L30 -62 M50 -56 L60 -60 M38 -66 L32 -74 M54 -64 L60 -72"/>'
-      + '<path class="leg" d="M-18 22 L-20 60 M-4 22 L-6 60 M14 22 L16 60 M26 20 L28 60"/>'
+      + '<path class="body" d="M40 -48 C44 -54 52 -54 56 -48 C54 -42 46 -40 40 -44 Z"/>'
+      + '<path class="strand" d="M-28 0 C-10 -6 10 -6 30 2 M-26 12 C-6 6 12 8 30 12 M-20 -12 C-4 -16 14 -14 26 -10 M30 -12 C36 -24 40 -34 44 -44"/>'
+      + '<path class="horn" d="M44 -46 L38 -66 M44 -46 L54 -64 M40 -58 L30 -62 M50 -56 L60 -60 M38 -66 L32 -74 M54 -64 L60 -72 M42 -62 L36 -60"/>'
     // a boar: heavy shoulders, low head, tusks
-    : '<path class="body" d="M-34 10 C-36 -6 -22 -16 -6 -16 L10 -16 C26 -16 34 -6 32 8 C30 20 16 24 2 24 L-16 24 C-28 24 -32 20 -34 10 Z"/>'
+    : '<path class="leg" d="M-22 24 L-24 56 M-6 24 L-8 56 M10 24 L12 56 M24 22 L26 56"/>'
+      + '<path class="body" d="M-34 10 C-36 -6 -22 -16 -6 -16 L10 -16 C26 -16 34 -6 32 8 C30 20 16 24 2 24 L-16 24 C-28 24 -32 20 -34 10 Z"/>'
       + '<path class="body" d="M30 -6 C42 -8 52 0 52 8 C52 16 42 20 32 18 Z"/>'
-      + '<path class="horn" d="M50 12 C56 10 58 4 56 -2 M46 16 C52 16 55 12 55 8"/>'
-      + '<path class="leg" d="M-22 24 L-24 56 M-6 24 L-8 56 M10 24 L12 56 M24 22 L26 56"/>';
+      + '<path class="strand" d="M-32 4 C-12 -4 10 -4 30 4 M-30 16 C-10 10 12 12 30 16 M-22 -10 C-6 -14 12 -12 24 -8 M34 2 C40 0 46 4 50 8"/>'
+      + '<path class="body" d="M-12 -16 L-8 -26 L-2 -16 M2 -16 L6 -28 L12 -16" />'
+      + '<path class="horn" d="M50 12 C56 10 58 4 56 -2 M46 16 C52 16 55 12 55 8"/>';
   const fire = '<g class="fire" transform="translate(0,26)"><path class="f" d="M-22 34c-6-26 6-44 10-64 8 22 16 38 8 64z" fill="#ff8a2a"/>'
     + '<path class="f" d="M-2 34c-6-32 8-54 12-78 10 26 16 48 6 78z" fill="#ffd66b"/>'
     + '<path class="f" d="M16 34c-4-22 6-34 10-50 6 18 10 32 4 50z" fill="#ff8a2a"/></g>';
   // The fire burns BEHIND the willow, so the beast is still a beast while it goes.
-  return '<g class="ms-wb-beast' + lit + first + '" data-t="' + ti + '" transform="' + at + '">' + fire + body + '</g>';
+  // a shadow under it on the grass, and the willow lit from the low sun
+  const shade = '<ellipse cx="4" cy="62" rx="44" ry="6" fill="#000" opacity=".45"/>';
+  return '<g class="ms-wb-beast' + lit + first + '" data-t="' + ti + '" transform="' + at + '" style="--weave:url(#ms-wb-weave-' + e + ')">'
+    + shade + fire + body + '</g>';
 }
 
 function _wbScene(v, s) {
@@ -112,13 +119,46 @@ function _wbScene(v, s) {
     + ' C 520 ' + (268 + ti * 30) + ', 700 ' + (250 + ti * 20) + ', ' + (ti ? 958 : 812) + ' ' + (ti ? 200 : 208)
     + '" fill="none" stroke="' + WB_TEAM[ti] + '" stroke-width="3" pathLength="100"'
     + ' style="stroke-dasharray:100;stroke-dashoffset:' + (100 - s.fuse[ti]) + '"/>').join('');
+  // pines along the far bank, drawn once per scene off a fixed spread
+  let pines = '';
+  for (let i = 0; i < 46; i++) {
+    const x = (i * 23.7 + (i % 5) * 7) % 1080, hgt = 26 + ((i * 37) % 30), y = 206 + ((i * 13) % 8);
+    pines += '<path d="M' + x.toFixed(0) + ' ' + (y - hgt) + ' l-' + (hgt * .28).toFixed(0) + ' ' + hgt + ' h' + (hgt * .56).toFixed(0) + 'z" fill="#141a12" opacity=".95"/>';
+  }
+  let reeds = '';
+  for (let i = 0; i < 40; i++) {
+    const x = 520 + ((i * 47) % 230), y = 344 + ((i * 7) % 16), hgt = 16 + ((i * 11) % 22);
+    reeds += '<path d="M' + x + ' ' + y + ' q' + ((i % 3) - 1) * 4 + ' -' + hgt / 2 + ' ' + ((i % 2) ? 5 : -4) + ' -' + hgt + '" stroke="#1d2a14" stroke-width="2" fill="none"/>';
+  }
+  let grass = '';
+  for (let i = 0; i < 70; i++) {
+    const x = (i * 15.3) % 1080, y = 250 + ((i * 29) % 100);
+    if (x > 545 && x < 715) continue;
+    grass += '<path d="M' + x.toFixed(0) + ' ' + y + ' l-2 -7 M' + (x + 3).toFixed(0) + ' ' + y + ' l1 -9 M' + (x + 6).toFixed(0) + ' ' + y + ' l3 -6" stroke="#3e5226" stroke-width="1.4" opacity=".7"/>';
+  }
+  let branches = '';
+  for (let i = 0; i < 34; i++) {
+    const x1 = 50 + ((i * 41) % 290), y1 = 296 - ((i * 23) % 70), a = ((i * 53) % 180) * Math.PI / 180, l = 40 + ((i * 17) % 40);
+    branches += '<path d="M' + x1 + ' ' + y1 + ' l' + (Math.cos(a) * l).toFixed(0) + ' ' + (-Math.abs(Math.sin(a)) * l * .5).toFixed(0)
+      + '" stroke="' + (i % 3 ? '#7a5a2e' : '#a8803f') + '" stroke-width="' + (2 + (i % 3)) + '" stroke-linecap="round"/>';
+  }
   return '<rect width="1080" height="360" fill="url(#ms-wb-sky-' + e + ')"/>'
-    + '<path d="M0 214 C180 196 320 226 520 210 C700 196 860 220 1080 202 V360 H0Z" fill="#232a18"/>'
-    + '<path d="M0 232 C200 220 340 246 540 232 C740 218 880 240 1080 226 V360 H0Z" fill="#2a3a1c"/>'
-    + '<path d="M548 210 C566 260 566 310 556 360 H706 C694 310 694 258 712 210 Z" fill="#223e5c" opacity=".92"/>'
-    + '<g class="ms-wb-ripple"><path d="M556 258 q24 -8 48 0 t48 0 t48 0" fill="none" stroke="#3f6c9b" stroke-width="2"/>'
-    + '<path d="M552 310 q26 -8 52 0 t52 0 t52 0" fill="none" stroke="#3f6c9b" stroke-width="2"/></g>'
-    + '<path d="M40 300 L120 210 L196 268 L268 196 L346 300 Z" fill="#3a3122" stroke="#6b5b3a" stroke-width="2"/>'
+    + '<circle cx="900" cy="150" r="120" fill="url(#ms-wb-sun-' + e + ')"/>'
+    + '<path d="M0 170 L90 140 L170 160 L260 120 L360 156 L460 132 L560 158 L660 126 L770 150 L880 118 L980 146 L1080 130 V230 H0Z" fill="#4a3a52" opacity=".55"/>'
+    + '<path d="M0 196 C160 176 300 200 460 184 C640 166 820 196 1080 176 V240 H0Z" fill="#33303a" opacity=".8"/>'
+    + pines
+    + '<rect y="196" width="1080" height="30" fill="url(#ms-wb-mist-' + e + ')"/>'
+    + '<path d="M0 214 C180 196 320 226 520 210 C700 196 860 220 1080 202 V360 H0Z" fill="#2a3420"/>'
+    + '<path d="M0 232 C200 220 340 246 540 232 C740 218 880 240 1080 226 V360 H0Z" fill="url(#ms-wb-grass-' + e + ')"/>'
+    + grass
+    + '<path d="M548 210 C566 260 566 310 556 360 H706 C694 310 694 258 712 210 Z" fill="url(#ms-wb-water-' + e + ')"/>'
+    + '<path d="M600 214 C604 260 604 310 600 360 H620 C622 310 622 260 618 214Z" fill="#f2b06a" opacity=".18"/>'
+    + '<g class="ms-wb-ripple"><path d="M556 258 q24 -8 48 0 t48 0 t48 0" fill="none" stroke="#7aa0c8" stroke-width="1.6" opacity=".7"/>'
+    + '<path d="M552 310 q26 -8 52 0 t52 0 t52 0" fill="none" stroke="#7aa0c8" stroke-width="1.6" opacity=".7"/></g>'
+    + reeds
+    + '<ellipse cx="196" cy="304" rx="160" ry="14" fill="#000" opacity=".35"/>'
+    + '<path d="M40 300 L120 210 L196 268 L268 196 L346 300 Z" fill="#2e2618"/>'
+    + branches
     + coils
     + '<g class="ms-wb-hare' + (s.hare ? ' taken' : '') + '" transform="translate(196,248)">'
     + '<path d="M-14 12c0-12 8-18 16-18 8 0 12 6 12 12 0 4-2 6-6 6z" fill="#8f6e2c" stroke="#e2b95a" stroke-width="1.6"/>'
@@ -134,7 +174,13 @@ function _wbStage(v, states, n) {
   const s = states[Math.max(0, Math.min(states.length - 1, n))] || states[0];
   const e = v.epNum;
   const defs = '<linearGradient id="ms-wb-sky-' + e + '" x1="0" x2="0" y1="0" y2="1">'
-    + '<stop offset="0" stop-color="#2a1f12"/><stop offset=".6" stop-color="#1d1a13"/><stop offset="1" stop-color="#14110c"/></linearGradient>';
+    + '<stop offset="0" stop-color="#1c1a2e"/><stop offset=".45" stop-color="#4a3048"/><stop offset=".75" stop-color="#b8644a"/><stop offset="1" stop-color="#e8a060"/></linearGradient>'
+    + '<radialGradient id="ms-wb-sun-' + e + '"><stop offset="0" stop-color="#ffe0a0" stop-opacity=".9"/><stop offset=".25" stop-color="#ffb070" stop-opacity=".45"/><stop offset="1" stop-color="#ff9050" stop-opacity="0"/></radialGradient>'
+    + '<linearGradient id="ms-wb-mist-' + e + '" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#e8c8b0" stop-opacity="0"/><stop offset=".5" stop-color="#e8c8b0" stop-opacity=".22"/><stop offset="1" stop-color="#e8c8b0" stop-opacity="0"/></linearGradient>'
+    + '<linearGradient id="ms-wb-water-' + e + '" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#c8786a"/><stop offset=".3" stop-color="#4a5a78"/><stop offset="1" stop-color="#1a2638"/></linearGradient>'
+    + '<linearGradient id="ms-wb-grass-' + e + '" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#3c4a24"/><stop offset="1" stop-color="#1a2210"/></linearGradient>'
+    + '<pattern id="ms-wb-weave-' + e + '" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(32)">'
+    + '<rect width="7" height="7" fill="#5e4422"/><path d="M0 1.5h7M0 5h7" stroke="#b08a48" stroke-width="1.8"/><path d="M2 0v7M5.5 0v7" stroke="#2e2010" stroke-width=".8" opacity=".55"/></pattern>';
   return stageShell({ epNum: e, defs, scene: _wbScene(v, s),
     cap: [s.time + ' left', (WB_CAP[s.capPhase] || WB_CAP.debris)[1]],
     pot: v.potBefore + (s.done ? v.earned : 0),
@@ -519,11 +565,13 @@ export const WICKER = {
 .ms-wb-ripple path{animation:ms-wb-wave 5s ease-in-out infinite alternate}
 @keyframes ms-wb-wave{to{transform:translateX(-26px)}}
 .ms-wb-fuse{transition:stroke-dashoffset 1.1s ease-out;filter:drop-shadow(0 0 3px rgba(255,138,42,.5))}
-.ms-wb-beast .body{fill:#3a3122;stroke:#e2b95a;stroke-width:2;transition:fill .8s}
-.ms-wb-beast .horn,.ms-wb-beast .leg{stroke:#e2b95a;stroke-width:2.4;fill:none;stroke-linecap:round}
+.ms-wb-beast .body{fill:var(--weave,#5e4422);stroke:#2e2010;stroke-width:1.6;transition:filter .8s}
+.ms-wb-beast .strand{fill:none;stroke:#c9a05a;stroke-width:1.2;opacity:.75}
+.ms-wb-beast .leg{stroke:#5e4422;stroke-width:6;fill:none;stroke-linecap:round}
+.ms-wb-beast .horn{stroke:#8a6630;stroke-width:3;fill:none;stroke-linecap:round}
 .ms-wb-beast .fire{opacity:0;transition:opacity .9s}
 .ms-wb-beast.lit .fire{opacity:1}
-.ms-wb-beast.lit .body{fill:#5a3a14}
+.ms-wb-beast.lit .body{filter:brightness(1.35) drop-shadow(0 0 6px #ff9a3a)}
 .ms-wb-beast.lit .f{transform-box:fill-box;transform-origin:50% 100%;animation:ms-wb-flick .4s ease-in-out infinite alternate}
 .ms-wb-beast.first .body{filter:drop-shadow(0 0 16px rgba(255,138,42,.7))}
 .ms-wb-hare .glow{opacity:0;transition:opacity .6s}

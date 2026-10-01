@@ -30,6 +30,34 @@ export function attractionOk(state, me, you) {
   return g !== t.gender;
 }
 
+// A profile shows an orientation: a persona's, or the player's own. Who a
+// person is DRAWN to stays with the real person (attractionOk); the profile's
+// orientation decides who looks like they would be into you, and who a
+// catfish flirts with in character.
+const into = (sexuality, own, other) => sexuality === 'bi' || (sexuality === 'gay' ? own === other : own !== other);
+/** Does `you`'s profile look like it would be into `me`'s profile? */
+export function wouldReturn(state, me, you) {
+  const m = state.profiles[me]?.shown, y = state.profiles[you]?.shown;
+  if (!m || !y) return true;
+  return into(y.sexuality || 'straight', y.gender, m.gender);
+}
+/** Would the profile `me` shows (for a catfish, the character) be into `you`? */
+export function personaInto(state, me, you) {
+  const m = state.profiles[me]?.shown, y = state.profiles[you]?.shown;
+  if (!m || !y) return true;
+  return into(m.sexuality || 'straight', m.gender, y.gender);
+}
+// Flirting with a profile that is not into you: rarely worth it.
+export const CHASE_OFF = 0.35;
+// A catfish flirting against the persona's orientation breaks character.
+export const OUT_OF_CHARACTER = 0.3;
+// A catfish flirting in character with someone who likes the persona, with no
+// real attraction: strategy (Seaburn as "Rebecca", US 1).
+export const PERFORMED = 0.8;
+/** A flirt a catfish performs as the persona, with no attraction behind it. */
+export const performedFlirt = (state, me, you) => state.profiles[me]?.mode === 'catfish'
+  && !attractionOk(state, me, you) && personaInto(state, me, you);
+
 /** First sparks: every compatible pair gets 0..SPARK attraction, one way at a time. */
 export function seedAttraction(state, rng) {
   const all = Object.keys(state.profiles);
@@ -56,7 +84,11 @@ export function utilities(state, me, you, ctx = {}, who = null) {
   return {
     bond: st('social') * (1 - Math.abs(aff) / 10) + lonely * 0.25,
     ally: aff > 0 && tr > 0 ? st('strategic') * (aff + tr) / 8 : 0,
-    flirt: attractionOk(state, me, you) ? att / 10 * (0.5 + st('boldness') * 0.5) : 0,
+    flirt: Math.max(
+      (attractionOk(state, me, you) ? att / 10 * (0.5 + st('boldness') * 0.5) : 0)
+        * (wouldReturn(state, me, you) ? 1 : CHASE_OFF) * (catfish && !personaInto(state, me, you) ? OUT_OF_CHARACTER : 1),
+      performedFlirt(state, me, you) && !state.people[state.profiles[me].players[0]]?.ai
+        ? rel(you, me, 'attraction') / 10 * st('strategic') * PERFORMED * (wouldReturn(state, me, you) ? 1 : CHASE_OFF) : 0),
     probe: (1 - b.real) * st('intuition') * (1 + para),
     pump: ctx.newsOf?.includes(you) ? st('strategic') * 0.8 : 0,
     compare: ctx.contradictionWith?.[me]?.[you] ? 1.5 : 0,

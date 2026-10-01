@@ -141,7 +141,8 @@ describe('the argument airs', () => {
     const blocks = writeScene(s, sc).blocks;
     for (const k of Object.keys(POOLS)) delete POOLS[k];
     Object.assign(POOLS, saved);
-    expect(blocks.map(b => b.key)).toEqual(['shared.argue.faceWins', 'chat.flirt.warm']);
+    // (a word to the empty apartment may follow the chat: lines/asides.js)
+    expect(blocks.map(b => b.key).filter(k => !k.startsWith('aside.'))).toEqual(['shared.argue.faceWins', 'chat.flirt.warm']);
     const [stage, l1, l2] = blocks[0].lines;
     expect(stage.text).toBe('Mateo and Luis share one keyboard.');
     expect(l1).toMatchObject({ person: 'Luis', kind: 'say', text: "Don't send that." });

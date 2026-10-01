@@ -74,27 +74,59 @@ const DC_CAP = { wade: ['Part one', 'The Wade'], ledge: ['Part two', 'The Ledge'
 function _dcScene(v, s) {
   const e = v.epNum;
   const crates = Array.from({ length: Math.max(1, s.teams.reduce((a, t) => a + t.quota, 0)) }, (_, i) =>
-    '<rect class="ms-dc-crate' + (i < s.boxes ? ' up' : '') + '" data-cr="' + i + '" x="' + (452 + (i % 6) * 34)
-    + '" y="' + (120 - Math.floor(i / 6) * 26) + '" width="28" height="22" rx="2"/>').join('');
-  return '<rect width="1080" height="360" fill="url(#ms-dc-sky-' + e + ')"/>'
-    + '<path d="M0 214 C180 206 300 220 460 212 C620 204 760 218 1080 208 V360 H0Z" fill="#2b2a24"/>'
+    '<rect class="ms-dc-crate' + (i < s.boxes ? ' up' : '') + '" data-cr="' + i + '" x="' + (780 + (i % 6) * 34)
+    + '" y="' + (300 - Math.floor(i / 6) * 26) + '" width="28" height="22" rx="2"/>').join('');
+  // THE CAUSEWAY (redrawn 2026-09-30): an overcast dusk over the firth, the
+  // tidal island with its chapel, the causeway's stones running out to it
+  // between marker poles, wet rock and weed in the foreground
+  let clouds = '';
+  for (let i = 0; i < 9; i++) clouds += '<ellipse cx="' + (i * 130 + 40) + '" cy="' + (40 + (i % 3) * 24) + '" rx="' + (120 + (i % 4) * 30) + '" ry="' + (14 + (i % 3) * 5) + '" fill="#8a9aa8" opacity="' + (.12 + (i % 3) * .05) + '"/>';
+  let stones = '';
+  for (let i = 0; i < 14; i++) {
+    const t = i / 13, y = 330 - t * 118, w = 150 - t * 120, x = 540 - w / 2 + Math.sin(i * 1.7) * 6;
+    stones += '<rect x="' + x.toFixed(0) + '" y="' + y.toFixed(0) + '" width="' + w.toFixed(0) + '" height="' + (10 - t * 6).toFixed(1) + '" rx="2" fill="' + (i % 2 ? '#4e4a44' : '#5a554e') + '"/>';
+  }
+  let poles = '';
+  for (let i = 0; i < 6; i++) {
+    const t = i / 6, y = 320 - t * 108, xo = 100 - t * 80, hgt = 46 - t * 34;
+    poles += '<rect x="' + (540 - xo).toFixed(0) + '" y="' + (y - hgt).toFixed(0) + '" width="' + (4 - t * 2).toFixed(1) + '" height="' + hgt.toFixed(0) + '" fill="#2a2420"/>'
+      + '<rect x="' + (540 + xo).toFixed(0) + '" y="' + (y - hgt).toFixed(0) + '" width="' + (4 - t * 2).toFixed(1) + '" height="' + hgt.toFixed(0) + '" fill="#2a2420"/>';
+  }
+  let rocks = '';
+  for (let i = 0; i < 12; i++) {
+    const x = (i < 6 ? 30 + i * 60 : 700 + (i - 6) * 62), y = 320 + (i % 3) * 12;
+    rocks += '<ellipse cx="' + x + '" cy="' + y + '" rx="' + (26 + (i % 4) * 8) + '" ry="' + (12 + (i % 3) * 4) + '" fill="#26282a"/>'
+      + '<path d="M' + (x - 20) + ' ' + (y - 4) + ' q10 -8 20 0 t20 0" stroke="#3a5a2a" stroke-width="3" fill="none" opacity=".8"/>';
+  }
+  return '<g style="--dc-tide:url(#ms-dc-tide-' + e + ');--dc-wood:url(#ms-dc-wood-' + e + ')">'
+    + '<rect width="1080" height="360" fill="url(#ms-dc-sky-' + e + ')"/>' + clouds
+    + '<path d="M0 200 L120 176 L240 192 L380 168 L520 186 L660 166 L800 184 L940 170 L1080 186 V215 H0Z" fill="#3a4450" opacity=".6"/>'
+    + '<rect y="205" width="1080" height="155" fill="url(#ms-dc-firth-' + e + ')"/>'
+    + '<path d="M380 214 C430 196 650 196 700 214Z" fill="#2c2e2c"/>'
     + '<g class="ms-dc-chapel" transform="translate(430,0)">'
-    + '<path d="M22 212 V96 h176 V212Z" fill="#20232a" stroke="#43525c" stroke-width="3"/>'
-    + '<path d="M14 96 L110 44 L206 96Z" fill="#171a20" stroke="#43525c" stroke-width="3"/>'
-    + '<rect x="96" y="150" width="28" height="62" rx="14" fill="#0d1014"/>'
-    + '<g class="ms-dc-bell" transform="translate(110,64)"><path d="M-12 12 a12 14 0 0 1 24 0z" fill="#b08d4a"/>'
-    + '<circle cy="14" r="3" fill="#b08d4a"/></g></g>'
+    + '<path d="M60 206 V140 h100 V206Z" fill="#4a4844" stroke="#2a2826" stroke-width="2"/>'
+    + '<path d="M54 140 L110 108 L166 140Z" fill="#2e2c2a"/>'
+    + '<path d="M96 206 V180 a14 14 0 0 1 28 0 V206Z" fill="#141210"/>'
+    + '<path d="M150 140 V96 h14 V140Z" fill="#4a4844"/><path d="M146 96 L157 82 L168 96Z" fill="#2e2c2a"/>'
+    + '<rect x="72" y="160" width="10" height="16" rx="5" fill="#f2c870" opacity=".85"/>'
+    + '<g class="ms-dc-bell" transform="translate(157,100)"><path d="M-6 8 a6 8 0 0 1 12 0z" fill="#b08d4a"/>'
+    + '<circle cy="9" r="1.6" fill="#b08d4a"/></g></g>'
+    + stones + poles
     + crates
-    + '<g class="ms-dc-font" transform="translate(238,250)"><path d="M-20 18 h40 l-6 -20 h-28z" fill="#1b2026" stroke="#43525c" stroke-width="2"/>'
+    + rocks
+    + '<g class="ms-dc-font" transform="translate(238,250)"><path d="M-24 18 h48 l-8 -22 h-32z" fill="#5a554e" stroke="#2a2826" stroke-width="2"/><ellipse cy="-4" rx="18" ry="5" fill="#2a3a44"/>'
     + '<circle class="glint" cy="-4" r="10" fill="rgba(242,204,91,.9)"/></g>'
     + '<g class="ms-dc-sea"><rect class="water" x="0" y="0" width="1080" height="360"/>'
-    + '<path class="wave" d="M0 8 q60 -8 120 0 t120 0 t120 0 t120 0 t120 0 t120 0 t120 0 t120 0 t120 0" fill="none" stroke="rgba(180,214,230,.35)" stroke-width="3"/></g>';
+    + '<path class="wave" d="M0 8 q60 -8 120 0 t120 0 t120 0 t120 0 t120 0 t120 0 t120 0 t120 0 t120 0" fill="none" stroke="rgba(180,214,230,.35)" stroke-width="3"/></g></g>';
 }
 function _dcStage(v, states, n) {
   const s = states[Math.max(0, Math.min(states.length - 1, n))] || states[0];
   const e = v.epNum;
   const defs = '<linearGradient id="ms-dc-sky-' + e + '" x1="0" x2="0" y1="0" y2="1">'
-    + '<stop offset="0" stop-color="#1d2a33"/><stop offset=".6" stop-color="#151d24"/><stop offset="1" stop-color="#0f141a"/></linearGradient>';
+    + '<stop offset="0" stop-color="#3a4a5a"/><stop offset=".55" stop-color="#7a8a96"/><stop offset="1" stop-color="#c8b8a0"/></linearGradient>'
+    + '<linearGradient id="ms-dc-firth-' + e + '" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#8a9aa4"/><stop offset=".25" stop-color="#4a5e6a"/><stop offset="1" stop-color="#1a2630"/></linearGradient>'
+    + '<linearGradient id="ms-dc-tide-' + e + '" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#6a8a9a" stop-opacity=".38"/><stop offset=".3" stop-color="#3a5a6a" stop-opacity=".55"/><stop offset="1" stop-color="#14222c" stop-opacity=".85"/></linearGradient>'
+    + '<linearGradient id="ms-dc-wood-' + e + '" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#8a6a40"/><stop offset="1" stop-color="#4a3420"/></linearGradient>';
   return stageShell({ epNum: e, defs, scene: _dcScene(v, s),
     cap: ['tide ' + s.label, (DC_CAP[s.capPhase] || DC_CAP.wade)[1]],
     pot: s.potAfter, vars: '--ms-accent:#9fd8ff;--ms-ink:#e8eef2', label: 'The causeway, staged' });
@@ -161,9 +193,33 @@ function _noScene(v, s) {
   const drawers = (v.teams || []).map((t, i) =>
     '<g class="ms-no-drawer' + (i < (s.compartments || 0) ? ' open' : '') + '" data-dw="' + i + '" transform="translate(' + (120 + i * 760) + ',290)">'
     + '<rect width="86" height="44" rx="4"/><rect class="pull" x="34" y="18" width="18" height="6" rx="3"/></g>').join('');
+  // THE DOME (redrawn 2026-09-30, "some of your decor looks childish"): ribs
+  // curving overhead, the shutter slit open on the stars and the moon, a
+  // telescope on its mount, the brass orrery on a stone plinth, flagstones
+  let stars = '';
+  for (let i = 0; i < 60; i++) {
+    const x = 470 + ((i * 37) % 140), y = 8 + ((i * 53) % 150);
+    stars += '<circle cx="' + x + '" cy="' + y + '" r="' + (0.6 + (i % 3) * .5) + '" fill="#fff" opacity="' + (.3 + (i % 4) * .15) + '"/>';
+  }
+  let ribs = '';
+  for (let i = -5; i <= 5; i++) ribs += '<path d="M540 -40 Q' + (540 + i * 150) + ' 40 ' + (540 + i * 112) + ' 250" stroke="#2a2030" stroke-width="' + (i === 0 ? 0 : 7) + '" fill="none" opacity=".9"/>';
+  let flags = '';
+  for (let i = 0; i < 9; i++) flags += '<path d="M' + (540 + (i - 4) * 40) + ' 252 L' + (540 + (i - 4) * 150) + ' 360" stroke="#000" stroke-width="1.4" opacity=".35"/>';
   return '<rect width="1080" height="360" fill="url(#ms-no-sky-' + e + ')"/>'
+    + '<path d="M470 0 H610 V250 H470Z" fill="url(#ms-no-night-' + e + ')"/>' + stars
+    + '<circle cx="580" cy="56" r="18" fill="#e8ecf4" opacity=".9"/><circle cx="586" cy="52" r="18" fill="#1a1c34" opacity=".55"/>'
+    + '<path d="M470 0 H610 V250 H470Z" fill="none" stroke="#3a3040" stroke-width="6"/>'
+    + ribs
+    + '<path d="M0 250 Q540 214 1080 250 V360 H0Z" fill="url(#ms-no-floor-' + e + ')"/>' + flags
     + '<g class="ms-no-stars"></g>'
-    + '<g class="ms-no-orrery" transform="translate(540,150)">' + rings
+    // the telescope, left, on its mount
+    + '<g transform="translate(250,250)" opacity=".95"><path d="M-30 0 L0 -60 L30 0" stroke="#2a2230" stroke-width="5" fill="none"/>'
+    + '<rect x="-70" y="-108" width="130" height="22" rx="10" transform="rotate(-28)" fill="url(#ms-no-brass-' + e + ')" stroke="#4a3a20" stroke-width="2"/></g>'
+    // the plinth
+    + '<path d="M500 250 L510 216 H570 L580 250Z" fill="#4a4248" stroke="#2a2428" stroke-width="2"/>'
+    + '<rect x="526" y="176" width="28" height="42" fill="#3a3238"/>'
+    + '<ellipse cx="540" cy="150" rx="200" ry="200" fill="url(#ms-no-glow-' + e + ')"/>'
+    + '<g class="ms-no-orrery" transform="translate(540,150)" style="--brass:url(#ms-no-brass-' + e + ');--planet:url(#ms-no-planet-' + e + ')">' + rings
     + '<circle class="ms-no-sun' + (s.open ? ' lit' : '') + '" r="24"/></g>'
     + drawers;
 }
@@ -171,7 +227,12 @@ function _noStage(v, states, n) {
   const s = states[Math.max(0, Math.min(states.length - 1, n))] || states[0];
   const e = v.epNum;
   const defs = '<linearGradient id="ms-no-sky-' + e + '" x1="0" x2="0" y1="0" y2="1">'
-    + '<stop offset="0" stop-color="#171426"/><stop offset=".6" stop-color="#120f1c"/><stop offset="1" stop-color="#0c0a14"/></linearGradient>';
+    + '<stop offset="0" stop-color="#1c1626"/><stop offset=".6" stop-color="#2a1e2e"/><stop offset="1" stop-color="#140f18"/></linearGradient>'
+    + '<linearGradient id="ms-no-night-' + e + '" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#0a0e24"/><stop offset="1" stop-color="#26244a"/></linearGradient>'
+    + '<linearGradient id="ms-no-floor-' + e + '" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#3a3036"/><stop offset="1" stop-color="#120e12"/></linearGradient>'
+    + '<linearGradient id="ms-no-brass-' + e + '" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#f6dc8a"/><stop offset=".45" stop-color="#b08a3a"/><stop offset=".7" stop-color="#e8c470"/><stop offset="1" stop-color="#6a4e1e"/></linearGradient>'
+    + '<radialGradient id="ms-no-planet-' + e + '" cx=".35" cy=".35" r=".7"><stop offset="0" stop-color="#e8dccc"/><stop offset=".6" stop-color="#8a7a6a"/><stop offset="1" stop-color="#2a2420"/></radialGradient>'
+    + '<radialGradient id="ms-no-glow-' + e + '"><stop offset="0" stop-color="#ffd890" stop-opacity=".22"/><stop offset="1" stop-color="#ffd890" stop-opacity="0"/></radialGradient>';
   return stageShell({ epNum: e, defs, scene: _noScene(v, s),
     cap: [s.trueRings + ' of 6 rings true', (NO_CAP[s.capPhase] || NO_CAP.ledger)[1]],
     pot: s.potAfter, vars: '--ms-accent:#e0c46a;--ms-ink:#efe7d6', label: 'The orrery, staged' });
@@ -229,26 +290,48 @@ function _laScene(v, s) {
     const cols = Math.max(1, (s.claims || []).length);
     const x = 540 + (i - (cols - 1) / 2) * Math.min(420, 900 / cols);
     return '<g class="ms-la-desk' + ((s.counted || [])[i] ? ' sealed' : '') + '" data-dk="' + i + '" transform="translate(' + x.toFixed(0) + ',150)">'
-      + '<rect class="top" x="-70" y="60" width="140" height="16" rx="3"/>'
+      + '<rect class="top" x="-70" y="60" width="140" height="16" rx="3"/><rect x="-66" y="58" width="132" height="5" rx="2" fill="var(--la-baize,#2a5a3a)"/>'
+      + '<rect x="-30" y="50" width="34" height="10" rx="1" fill="#6a2a1e"/><rect x="10" y="52" width="30" height="8" rx="1" fill="#2a3a5a"/>'
       + '<rect class="leg" x="-58" y="76" width="10" height="70"/><rect class="leg" x="48" y="76" width="10" height="70"/>'
       + '<g class="ms-la-screen"><rect x="-64" y="-46" width="128" height="106" rx="4"/>'
       + '<path d="M-64 -46 h128" stroke="#8a6f3a" stroke-width="3"/></g>'
       + '<text class="cnt" y="34" text-anchor="middle">' + _esc(String(c)) + '</text></g>';
   }).join('');
-  return '<rect width="1080" height="360" fill="url(#ms-la-room-' + e + ')"/>'
-    + '<path d="M0 232 H1080 V360 H0Z" fill="#20180f"/>'
+  // THE COUNTING ROOM (redrawn 2026-09-30): oak panelling to the dado, tall
+  // windows on a grey afternoon, portraits, brass lamps, a parquet floor
+  let panels = '';
+  for (let i = 0; i < 12; i++) panels += '<rect x="' + (i * 90 + 8) + '" y="150" width="74" height="74" rx="3" fill="none" stroke="#1e140a" stroke-width="3" opacity=".7"/>';
+  let parquet = '';
+  for (let i = 0; i < 28; i++) parquet += '<path d="M' + (i * 40) + ' 232 L' + (i * 40 - 60) + ' 360" stroke="#1a1208" stroke-width="2" opacity=".5"/>';
+  const win = x => '<rect x="' + x + '" y="20" width="70" height="110" rx="35" fill="url(#ms-la-win-' + e + ')"/><path d="M' + (x + 35) + ' 20 V130 M' + x + ' 75 H' + (x + 70) + '" stroke="#2a1e12" stroke-width="4"/>'
+    + '<rect x="' + (x - 4) + '" y="128" width="78" height="8" fill="#3a2a18"/>';
+  const portrait = (x, y) => '<rect x="' + x + '" y="' + y + '" width="46" height="58" fill="url(#ms-la-oil-' + e + ')" stroke="#b08a48" stroke-width="5"/>';
+  return '<g style="--la-baize:url(#ms-la-baize-' + e + ');--la-wood:url(#ms-la-oak-' + e + ')">'
+    + '<rect width="1080" height="360" fill="url(#ms-la-room-' + e + ')"/>'
+    + win(110) + win(940) + portrait(330, 40) + portrait(704, 40)
+    + '<rect y="146" width="1080" height="86" fill="url(#ms-la-oak-' + e + ')"/>' + panels
+    + '<rect y="142" width="1080" height="6" fill="#4a3420"/>'
+    + '<path d="M0 232 H1080 V360 H0Z" fill="url(#ms-la-floor-' + e + ')"/>' + parquet
     + '<g class="ms-la-lamps"><circle cx="220" cy="40" r="10"/><circle cx="540" cy="30" r="10"/><circle cx="860" cy="40" r="10"/></g>'
+    + '<circle cx="540" cy="30" r="120" fill="url(#ms-la-lampglow-' + e + ')"/>'
     + desks
     + '<g class="ms-la-chest' + ((s.counted || []).some(Boolean) ? ' open' : '') + '" transform="translate(540,300)">'
     + '<rect class="body" x="-70" y="-24" width="140" height="48" rx="4"/>'
     + '<path class="lid" d="M-70 -24 h140 v-16 a70 16 0 0 0 -140 0z"/>'
-    + '<circle class="coin" cy="-8" r="9"/></g>';
+    + '<circle class="coin" cy="-8" r="9"/>'
+    + '<path d="M-70 -10 h140 M-40 -24 v48 M40 -24 v48" stroke="#b08a48" stroke-width="3" opacity=".9"/></g></g>';
 }
 function _laStage(v, states, n) {
   const s = states[Math.max(0, Math.min(states.length - 1, n))] || states[0];
   const e = v.epNum;
   const defs = '<linearGradient id="ms-la-room-' + e + '" x1="0" x2="0" y1="0" y2="1">'
-    + '<stop offset="0" stop-color="#2a2016"/><stop offset=".7" stop-color="#1a140d"/><stop offset="1" stop-color="#110d08"/></linearGradient>';
+    + '<stop offset="0" stop-color="#3a3428"/><stop offset=".7" stop-color="#2a241a"/><stop offset="1" stop-color="#1a160e"/></linearGradient>'
+    + '<linearGradient id="ms-la-win-' + e + '" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#c8d4dc"/><stop offset="1" stop-color="#7a8a98"/></linearGradient>'
+    + '<linearGradient id="ms-la-oak-' + e + '" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#5a3e22"/><stop offset="1" stop-color="#3a2614"/></linearGradient>'
+    + '<linearGradient id="ms-la-floor-' + e + '" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#5a3a1e"/><stop offset="1" stop-color="#22160a"/></linearGradient>'
+    + '<linearGradient id="ms-la-baize-' + e + '" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#3a7a4a"/><stop offset="1" stop-color="#1e4a2a"/></linearGradient>'
+    + '<linearGradient id="ms-la-oil-' + e + '" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#4a3a2a"/><stop offset=".5" stop-color="#7a5a3a"/><stop offset="1" stop-color="#2a1e14"/></linearGradient>'
+    + '<radialGradient id="ms-la-lampglow-' + e + '"><stop offset="0" stop-color="#ffd890" stop-opacity=".25"/><stop offset="1" stop-color="#ffd890" stop-opacity="0"/></radialGradient>';
   return stageShell({ epNum: e, defs, scene: _laScene(v, s),
     cap: ['claims ' + (s.claims || []).join(' · '), (LA_CAP[s.capPhase] || LA_CAP.survey)[1]],
     pot: s.potAfter, vars: '--ms-accent:#d8b25a;--ms-ink:#efe3c8', label: 'The counting room, staged' });
@@ -319,20 +402,39 @@ function _avScene(v, s) {
     + '<rect x="-70" y="-26" width="140" height="52" rx="4"/>'
     + '<path class="deed" d="M-20 -12 h40 v24 h-40z"/>'
     + '<text class="lab" y="44" text-anchor="middle">' + _esc(String(lab)) + '</text></g>').join('');
-  return '<rect width="1080" height="360" fill="url(#ms-av-vault-' + e + ')"/>'
-    + '<path d="M0 132 C160 108 300 140 460 124 C620 108 760 136 1080 118 V0 H0Z" fill="#16110d"/>'
+  // THE BURNT WING (redrawn 2026-09-30): scorched stone and broken window
+  // arches, the roof fallen in and the grey sky through charred rafters,
+  // light in shafts, ash and embers on the floor
+  let rafters = '';
+  for (let i = 0; i < 9; i++) rafters += '<path d="M' + (60 + i * 120) + ' 0 L' + (110 + i * 120) + ' 70" stroke="#120c08" stroke-width="' + (10 + (i % 3) * 3) + '" stroke-linecap="round"/>';
+  let embers = '';
+  for (let i = 0; i < 30; i++) embers += '<circle cx="' + ((i * 37) % 1080) + '" cy="' + (250 + (i * 13) % 100) + '" r="' + (1 + i % 3) + '" fill="' + (i % 4 ? '#ff7a2a' : '#ffc060') + '" opacity="' + (.4 + (i % 3) * .2) + '"/>';
+  const arch = x => '<path d="M' + x + ' 210 V110 a40 40 0 0 1 80 0 V210Z" fill="#0c0806"/><path d="M' + (x + 10) + ' 140 l20 -20 l12 14 l14 -18 l14 24" stroke="#2a2018" stroke-width="3" fill="none"/>';
+  return '<g style="--av-timber:url(#ms-av-timber-' + e + ')">'
+    + '<rect width="1080" height="360" fill="url(#ms-av-vault-' + e + ')"/>'
+    + '<rect width="1080" height="70" fill="url(#ms-av-sky-' + e + ')"/>' + rafters
+    + '<path d="M0 60 H1080 V230 H0Z" fill="url(#ms-av-wall-' + e + ')"/>'
+    + '<path d="M0 60 H1080 V230 H0Z" fill="url(#ashlar)" opacity=".18"/>'
+    + arch(180) + arch(500) + arch(820)
+    + '<path d="M200 0 L120 360 L320 360 L260 0Z" fill="#e8dcc8" opacity=".06"/><path d="M700 0 L640 360 L820 360 L760 0Z" fill="#e8dcc8" opacity=".05"/>'
+    + '<path d="M0 132 C160 108 300 140 460 124 C620 108 760 136 1080 118 V0 H0Z" fill="#16110d" opacity=".0"/>'
+    + '<path d="M0 230 H1080 V360 H0Z" fill="url(#ms-av-floor-' + e + ')"/>' + embers
     + '<g class="ms-av-dust"></g>' + props + bays
     + '<g class="ms-av-worm" transform="translate(' + (120 + (s.worm || 0) * 8) + ',232)">'
     + '<ellipse rx="26" ry="12" fill="#2a2018" stroke="#6b5a42" stroke-width="2"/><circle cx="16" cy="-2" r="5" fill="#c9a877"/></g>'
     + '<g class="ms-av-flue' + (s.flueLit ? ' lit' : '') + '" transform="translate(966,96)">'
     + '<rect x="-24" y="-60" width="48" height="140" rx="4" fill="#191410" stroke="#4a3b2a" stroke-width="3"/>'
-    + '<circle class="glow" cy="20" r="16" fill="rgba(242,204,91,.9)"/></g>';
+    + '<circle class="glow" cy="20" r="16" fill="rgba(242,204,91,.9)"/></g></g>';
 }
 function _avStage(v, states, n) {
   const s = states[Math.max(0, Math.min(states.length - 1, n))] || states[0];
   const e = v.epNum;
   const defs = '<linearGradient id="ms-av-vault-' + e + '" x1="0" x2="0" y1="0" y2="1">'
-    + '<stop offset="0" stop-color="#241c14"/><stop offset=".6" stop-color="#171009"/><stop offset="1" stop-color="#0f0b06"/></linearGradient>';
+    + '<stop offset="0" stop-color="#2a221c"/><stop offset=".6" stop-color="#1c1610"/><stop offset="1" stop-color="#100c08"/></linearGradient>'
+    + '<linearGradient id="ms-av-sky-' + e + '" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#8a8a90"/><stop offset="1" stop-color="#4a4448"/></linearGradient>'
+    + '<linearGradient id="ms-av-wall-' + e + '" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#3a302a"/><stop offset=".5" stop-color="#2a221c"/><stop offset="1" stop-color="#16100c"/></linearGradient>'
+    + '<linearGradient id="ms-av-floor-' + e + '" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#3a3430"/><stop offset="1" stop-color="#141210"/></linearGradient>'
+    + '<linearGradient id="ms-av-timber-' + e + '" x1="0" x2="1"><stop offset="0" stop-color="#5a4028"/><stop offset=".5" stop-color="#8a6a40"/><stop offset="1" stop-color="#4a3220"/></linearGradient>';
   return stageShell({ epNum: e, defs, scene: _avScene(v, s),
     cap: [(s.deeds || 0) + ' deeds out', (AV_CAP[s.capPhase] || AV_CAP.shoring)[1]],
     pot: s.potAfter, vars: '--ms-accent:#c9a877;--ms-ink:#efe2cc', label: 'The vault, staged' });
@@ -605,9 +707,9 @@ const CAUSEWAY = {
 @media(prefers-reduced-motion:reduce){.dc-root *,.dc-root *::before,.dc-root *::after{animation:none !important;transition:none !important}.dc-card{opacity:1;transform:none}.dc-drizzle,.dc-swell{display:none}}
 
 /* ── THE STAGE ───────────────────────────────────────────────────────── */
-.ms-dc-crate{fill:#3a3026;stroke:#7a6549;stroke-width:2;opacity:.25;transition:opacity .7s,fill .7s}
-.ms-dc-crate.up{opacity:1;fill:#5b4326}
-.ms-dc-sea .water{fill:rgba(31,74,99,.82)}
+.ms-dc-crate{fill:var(--dc-wood,#3a3026);stroke:#2a1e12;stroke-width:2;opacity:.22;transition:opacity .7s}
+.ms-dc-crate.up{opacity:1}
+.ms-dc-sea .water{fill:var(--dc-tide,rgba(31,74,99,.82))}
 .ms-dc-sea rect{transition:y 1.1s ease-out,height 1.1s ease-out}
 .ms-dc-sea .wave{transition:transform 1.1s ease-out}
 .ms-dc-bell{transform-box:fill-box;transform-origin:50% 0}
@@ -616,10 +718,10 @@ const CAUSEWAY = {
 .ms-dc-font .glint{opacity:0;transition:opacity .6s}
 .ms-dc-font.taken .glint{opacity:1;animation:ms-glow 1.4s ease-in-out infinite}
 @keyframes ms-glow{50%{opacity:.3}}
-.ms-no-ring circle{stroke:#4a4133;transition:stroke .7s,filter .7s}
-.ms-no-ring .bead{fill:#4a4133;stroke:none}
-.ms-no-ring.true circle{stroke:#e0c46a;filter:drop-shadow(0 0 6px rgba(224,196,106,.7))}
-.ms-no-ring.true .bead{fill:#e0c46a}
+.ms-no-ring circle{stroke:var(--brass,#4a4133);opacity:.75;transition:opacity .7s,filter .7s}
+.ms-no-ring .bead{fill:var(--planet,#4a4133);stroke:#2a2014;stroke-width:1;opacity:1}
+.ms-no-ring.true circle{opacity:1;filter:drop-shadow(0 0 6px rgba(224,196,106,.8)) brightness(1.25)}
+.ms-no-ring.true .bead{filter:drop-shadow(0 0 5px rgba(255,230,160,.9))}
 .ms-no-ring{transform-box:fill-box;transform-origin:50% 50%;animation:ms-no-turn 40s linear infinite}
 .ms-no-ring:nth-child(2n){animation-duration:28s;animation-direction:reverse}
 @keyframes ms-no-turn{to{transform:rotate(360deg)}}
@@ -629,19 +731,19 @@ const CAUSEWAY = {
 .ms-no-drawer .pull{fill:#4a4133}
 .ms-no-drawer.open{transform:translateY(14px)}
 .ms-no-drawer.open rect{stroke:#e0c46a}
-.ms-la-desk .top,.ms-la-desk .leg{fill:#3a2b18}
+.ms-la-desk .top,.ms-la-desk .leg{fill:var(--la-wood,#3a2b18);stroke:#1e140a;stroke-width:1}
 .ms-la-desk .ms-la-screen rect{fill:#2a2016;stroke:#8a6f3a;stroke-width:2;transition:transform .8s,opacity .8s}
 .ms-la-desk.sealed .ms-la-screen rect{opacity:1}
 .ms-la-desk:not(.sealed) .ms-la-screen{opacity:.25;transform:translateY(30px)}
 .ms-la-desk .cnt{font:20px 'Courier Prime',monospace;fill:#efe3c8}
 .ms-la-lamps circle{fill:#ffd98a;opacity:.8;animation:ms-glow 3s ease-in-out infinite}
-.ms-la-chest .body,.ms-la-chest .lid{fill:#2a2016;stroke:#8a6f3a;stroke-width:2}
+.ms-la-chest .body,.ms-la-chest .lid{fill:var(--la-wood,#2a2016);stroke:#b08a48;stroke-width:2.5}
 .ms-la-chest .lid{transform-box:fill-box;transform-origin:50% 100%;transition:transform .9s cubic-bezier(.3,1.3,.5,1)}
 .ms-la-chest.open .lid{transform:rotate(-38deg) translateY(-6px)}
 .ms-la-chest .coin{fill:#d8b25a;opacity:0;transition:opacity .7s}
 .ms-la-chest.open .coin{opacity:1;filter:drop-shadow(0 0 10px rgba(216,178,90,.9))}
-.ms-av-prop .post,.ms-av-prop .head{fill:#3a2e20;stroke:#6b5a42;stroke-width:2;transition:fill .6s,transform .7s}
-.ms-av-prop.up .post,.ms-av-prop.up .head{fill:#6b5a42}
+.ms-av-prop .post,.ms-av-prop .head{fill:var(--av-timber,#3a2e20);stroke:#2a1e12;stroke-width:2;opacity:.55;transition:opacity .6s,transform .7s}
+.ms-av-prop.up .post,.ms-av-prop.up .head{opacity:1}
 .ms-av-prop.down{transform-box:fill-box;transform-origin:50% 100%}
 .ms-av-prop.down .post{fill:#2a201a;transform:rotate(22deg)}
 .ms-av-bay rect{fill:#1d1710;stroke:#4a3b2a;stroke-width:2;transition:stroke .7s}
@@ -894,9 +996,9 @@ const ORRERY = {
 @media(prefers-reduced-motion:reduce){.no-root *,.no-root *::before,.no-root *::after{animation:none !important;transition:none !important}.no-card{opacity:1;transform:none}}
 
 /* ── THE STAGE ───────────────────────────────────────────────────────── */
-.ms-dc-crate{fill:#3a3026;stroke:#7a6549;stroke-width:2;opacity:.25;transition:opacity .7s,fill .7s}
-.ms-dc-crate.up{opacity:1;fill:#5b4326}
-.ms-dc-sea .water{fill:rgba(31,74,99,.82)}
+.ms-dc-crate{fill:var(--dc-wood,#3a3026);stroke:#2a1e12;stroke-width:2;opacity:.22;transition:opacity .7s}
+.ms-dc-crate.up{opacity:1}
+.ms-dc-sea .water{fill:var(--dc-tide,rgba(31,74,99,.82))}
 .ms-dc-sea rect{transition:y 1.1s ease-out,height 1.1s ease-out}
 .ms-dc-sea .wave{transition:transform 1.1s ease-out}
 .ms-dc-bell{transform-box:fill-box;transform-origin:50% 0}
@@ -905,10 +1007,10 @@ const ORRERY = {
 .ms-dc-font .glint{opacity:0;transition:opacity .6s}
 .ms-dc-font.taken .glint{opacity:1;animation:ms-glow 1.4s ease-in-out infinite}
 @keyframes ms-glow{50%{opacity:.3}}
-.ms-no-ring circle{stroke:#4a4133;transition:stroke .7s,filter .7s}
-.ms-no-ring .bead{fill:#4a4133;stroke:none}
-.ms-no-ring.true circle{stroke:#e0c46a;filter:drop-shadow(0 0 6px rgba(224,196,106,.7))}
-.ms-no-ring.true .bead{fill:#e0c46a}
+.ms-no-ring circle{stroke:var(--brass,#4a4133);opacity:.75;transition:opacity .7s,filter .7s}
+.ms-no-ring .bead{fill:var(--planet,#4a4133);stroke:#2a2014;stroke-width:1;opacity:1}
+.ms-no-ring.true circle{opacity:1;filter:drop-shadow(0 0 6px rgba(224,196,106,.8)) brightness(1.25)}
+.ms-no-ring.true .bead{filter:drop-shadow(0 0 5px rgba(255,230,160,.9))}
 .ms-no-ring{transform-box:fill-box;transform-origin:50% 50%;animation:ms-no-turn 40s linear infinite}
 .ms-no-ring:nth-child(2n){animation-duration:28s;animation-direction:reverse}
 @keyframes ms-no-turn{to{transform:rotate(360deg)}}
@@ -918,19 +1020,19 @@ const ORRERY = {
 .ms-no-drawer .pull{fill:#4a4133}
 .ms-no-drawer.open{transform:translateY(14px)}
 .ms-no-drawer.open rect{stroke:#e0c46a}
-.ms-la-desk .top,.ms-la-desk .leg{fill:#3a2b18}
+.ms-la-desk .top,.ms-la-desk .leg{fill:var(--la-wood,#3a2b18);stroke:#1e140a;stroke-width:1}
 .ms-la-desk .ms-la-screen rect{fill:#2a2016;stroke:#8a6f3a;stroke-width:2;transition:transform .8s,opacity .8s}
 .ms-la-desk.sealed .ms-la-screen rect{opacity:1}
 .ms-la-desk:not(.sealed) .ms-la-screen{opacity:.25;transform:translateY(30px)}
 .ms-la-desk .cnt{font:20px 'Courier Prime',monospace;fill:#efe3c8}
 .ms-la-lamps circle{fill:#ffd98a;opacity:.8;animation:ms-glow 3s ease-in-out infinite}
-.ms-la-chest .body,.ms-la-chest .lid{fill:#2a2016;stroke:#8a6f3a;stroke-width:2}
+.ms-la-chest .body,.ms-la-chest .lid{fill:var(--la-wood,#2a2016);stroke:#b08a48;stroke-width:2.5}
 .ms-la-chest .lid{transform-box:fill-box;transform-origin:50% 100%;transition:transform .9s cubic-bezier(.3,1.3,.5,1)}
 .ms-la-chest.open .lid{transform:rotate(-38deg) translateY(-6px)}
 .ms-la-chest .coin{fill:#d8b25a;opacity:0;transition:opacity .7s}
 .ms-la-chest.open .coin{opacity:1;filter:drop-shadow(0 0 10px rgba(216,178,90,.9))}
-.ms-av-prop .post,.ms-av-prop .head{fill:#3a2e20;stroke:#6b5a42;stroke-width:2;transition:fill .6s,transform .7s}
-.ms-av-prop.up .post,.ms-av-prop.up .head{fill:#6b5a42}
+.ms-av-prop .post,.ms-av-prop .head{fill:var(--av-timber,#3a2e20);stroke:#2a1e12;stroke-width:2;opacity:.55;transition:opacity .6s,transform .7s}
+.ms-av-prop.up .post,.ms-av-prop.up .head{opacity:1}
 .ms-av-prop.down{transform-box:fill-box;transform-origin:50% 100%}
 .ms-av-prop.down .post{fill:#2a201a;transform:rotate(22deg)}
 .ms-av-bay rect{fill:#1d1710;stroke:#4a3b2a;stroke-width:2;transition:stroke .7s}
@@ -1133,9 +1235,9 @@ const ACCOUNT = {
 @media(prefers-reduced-motion:reduce){.la-root *,.la-root *::before,.la-root *::after{animation:none !important;transition:none !important}.la-card{opacity:1;transform:none}.la-dust{display:none}}
 
 /* ── THE STAGE ───────────────────────────────────────────────────────── */
-.ms-dc-crate{fill:#3a3026;stroke:#7a6549;stroke-width:2;opacity:.25;transition:opacity .7s,fill .7s}
-.ms-dc-crate.up{opacity:1;fill:#5b4326}
-.ms-dc-sea .water{fill:rgba(31,74,99,.82)}
+.ms-dc-crate{fill:var(--dc-wood,#3a3026);stroke:#2a1e12;stroke-width:2;opacity:.22;transition:opacity .7s}
+.ms-dc-crate.up{opacity:1}
+.ms-dc-sea .water{fill:var(--dc-tide,rgba(31,74,99,.82))}
 .ms-dc-sea rect{transition:y 1.1s ease-out,height 1.1s ease-out}
 .ms-dc-sea .wave{transition:transform 1.1s ease-out}
 .ms-dc-bell{transform-box:fill-box;transform-origin:50% 0}
@@ -1144,10 +1246,10 @@ const ACCOUNT = {
 .ms-dc-font .glint{opacity:0;transition:opacity .6s}
 .ms-dc-font.taken .glint{opacity:1;animation:ms-glow 1.4s ease-in-out infinite}
 @keyframes ms-glow{50%{opacity:.3}}
-.ms-no-ring circle{stroke:#4a4133;transition:stroke .7s,filter .7s}
-.ms-no-ring .bead{fill:#4a4133;stroke:none}
-.ms-no-ring.true circle{stroke:#e0c46a;filter:drop-shadow(0 0 6px rgba(224,196,106,.7))}
-.ms-no-ring.true .bead{fill:#e0c46a}
+.ms-no-ring circle{stroke:var(--brass,#4a4133);opacity:.75;transition:opacity .7s,filter .7s}
+.ms-no-ring .bead{fill:var(--planet,#4a4133);stroke:#2a2014;stroke-width:1;opacity:1}
+.ms-no-ring.true circle{opacity:1;filter:drop-shadow(0 0 6px rgba(224,196,106,.8)) brightness(1.25)}
+.ms-no-ring.true .bead{filter:drop-shadow(0 0 5px rgba(255,230,160,.9))}
 .ms-no-ring{transform-box:fill-box;transform-origin:50% 50%;animation:ms-no-turn 40s linear infinite}
 .ms-no-ring:nth-child(2n){animation-duration:28s;animation-direction:reverse}
 @keyframes ms-no-turn{to{transform:rotate(360deg)}}
@@ -1157,19 +1259,19 @@ const ACCOUNT = {
 .ms-no-drawer .pull{fill:#4a4133}
 .ms-no-drawer.open{transform:translateY(14px)}
 .ms-no-drawer.open rect{stroke:#e0c46a}
-.ms-la-desk .top,.ms-la-desk .leg{fill:#3a2b18}
+.ms-la-desk .top,.ms-la-desk .leg{fill:var(--la-wood,#3a2b18);stroke:#1e140a;stroke-width:1}
 .ms-la-desk .ms-la-screen rect{fill:#2a2016;stroke:#8a6f3a;stroke-width:2;transition:transform .8s,opacity .8s}
 .ms-la-desk.sealed .ms-la-screen rect{opacity:1}
 .ms-la-desk:not(.sealed) .ms-la-screen{opacity:.25;transform:translateY(30px)}
 .ms-la-desk .cnt{font:20px 'Courier Prime',monospace;fill:#efe3c8}
 .ms-la-lamps circle{fill:#ffd98a;opacity:.8;animation:ms-glow 3s ease-in-out infinite}
-.ms-la-chest .body,.ms-la-chest .lid{fill:#2a2016;stroke:#8a6f3a;stroke-width:2}
+.ms-la-chest .body,.ms-la-chest .lid{fill:var(--la-wood,#2a2016);stroke:#b08a48;stroke-width:2.5}
 .ms-la-chest .lid{transform-box:fill-box;transform-origin:50% 100%;transition:transform .9s cubic-bezier(.3,1.3,.5,1)}
 .ms-la-chest.open .lid{transform:rotate(-38deg) translateY(-6px)}
 .ms-la-chest .coin{fill:#d8b25a;opacity:0;transition:opacity .7s}
 .ms-la-chest.open .coin{opacity:1;filter:drop-shadow(0 0 10px rgba(216,178,90,.9))}
-.ms-av-prop .post,.ms-av-prop .head{fill:#3a2e20;stroke:#6b5a42;stroke-width:2;transition:fill .6s,transform .7s}
-.ms-av-prop.up .post,.ms-av-prop.up .head{fill:#6b5a42}
+.ms-av-prop .post,.ms-av-prop .head{fill:var(--av-timber,#3a2e20);stroke:#2a1e12;stroke-width:2;opacity:.55;transition:opacity .6s,transform .7s}
+.ms-av-prop.up .post,.ms-av-prop.up .head{opacity:1}
 .ms-av-prop.down{transform-box:fill-box;transform-origin:50% 100%}
 .ms-av-prop.down .post{fill:#2a201a;transform:rotate(22deg)}
 .ms-av-bay rect{fill:#1d1710;stroke:#4a3b2a;stroke-width:2;transition:stroke .7s}
@@ -1446,9 +1548,9 @@ const VAULT = {
 @media(prefers-reduced-motion:reduce){.av-root *,.av-root *::before,.av-root *::after{animation:none !important;transition:none !important}.av-card{opacity:1;transform:none}.av-ash{display:none}}
 
 /* ── THE STAGE ───────────────────────────────────────────────────────── */
-.ms-dc-crate{fill:#3a3026;stroke:#7a6549;stroke-width:2;opacity:.25;transition:opacity .7s,fill .7s}
-.ms-dc-crate.up{opacity:1;fill:#5b4326}
-.ms-dc-sea .water{fill:rgba(31,74,99,.82)}
+.ms-dc-crate{fill:var(--dc-wood,#3a3026);stroke:#2a1e12;stroke-width:2;opacity:.22;transition:opacity .7s}
+.ms-dc-crate.up{opacity:1}
+.ms-dc-sea .water{fill:var(--dc-tide,rgba(31,74,99,.82))}
 .ms-dc-sea rect{transition:y 1.1s ease-out,height 1.1s ease-out}
 .ms-dc-sea .wave{transition:transform 1.1s ease-out}
 .ms-dc-bell{transform-box:fill-box;transform-origin:50% 0}
@@ -1457,10 +1559,10 @@ const VAULT = {
 .ms-dc-font .glint{opacity:0;transition:opacity .6s}
 .ms-dc-font.taken .glint{opacity:1;animation:ms-glow 1.4s ease-in-out infinite}
 @keyframes ms-glow{50%{opacity:.3}}
-.ms-no-ring circle{stroke:#4a4133;transition:stroke .7s,filter .7s}
-.ms-no-ring .bead{fill:#4a4133;stroke:none}
-.ms-no-ring.true circle{stroke:#e0c46a;filter:drop-shadow(0 0 6px rgba(224,196,106,.7))}
-.ms-no-ring.true .bead{fill:#e0c46a}
+.ms-no-ring circle{stroke:var(--brass,#4a4133);opacity:.75;transition:opacity .7s,filter .7s}
+.ms-no-ring .bead{fill:var(--planet,#4a4133);stroke:#2a2014;stroke-width:1;opacity:1}
+.ms-no-ring.true circle{opacity:1;filter:drop-shadow(0 0 6px rgba(224,196,106,.8)) brightness(1.25)}
+.ms-no-ring.true .bead{filter:drop-shadow(0 0 5px rgba(255,230,160,.9))}
 .ms-no-ring{transform-box:fill-box;transform-origin:50% 50%;animation:ms-no-turn 40s linear infinite}
 .ms-no-ring:nth-child(2n){animation-duration:28s;animation-direction:reverse}
 @keyframes ms-no-turn{to{transform:rotate(360deg)}}
@@ -1470,19 +1572,19 @@ const VAULT = {
 .ms-no-drawer .pull{fill:#4a4133}
 .ms-no-drawer.open{transform:translateY(14px)}
 .ms-no-drawer.open rect{stroke:#e0c46a}
-.ms-la-desk .top,.ms-la-desk .leg{fill:#3a2b18}
+.ms-la-desk .top,.ms-la-desk .leg{fill:var(--la-wood,#3a2b18);stroke:#1e140a;stroke-width:1}
 .ms-la-desk .ms-la-screen rect{fill:#2a2016;stroke:#8a6f3a;stroke-width:2;transition:transform .8s,opacity .8s}
 .ms-la-desk.sealed .ms-la-screen rect{opacity:1}
 .ms-la-desk:not(.sealed) .ms-la-screen{opacity:.25;transform:translateY(30px)}
 .ms-la-desk .cnt{font:20px 'Courier Prime',monospace;fill:#efe3c8}
 .ms-la-lamps circle{fill:#ffd98a;opacity:.8;animation:ms-glow 3s ease-in-out infinite}
-.ms-la-chest .body,.ms-la-chest .lid{fill:#2a2016;stroke:#8a6f3a;stroke-width:2}
+.ms-la-chest .body,.ms-la-chest .lid{fill:var(--la-wood,#2a2016);stroke:#b08a48;stroke-width:2.5}
 .ms-la-chest .lid{transform-box:fill-box;transform-origin:50% 100%;transition:transform .9s cubic-bezier(.3,1.3,.5,1)}
 .ms-la-chest.open .lid{transform:rotate(-38deg) translateY(-6px)}
 .ms-la-chest .coin{fill:#d8b25a;opacity:0;transition:opacity .7s}
 .ms-la-chest.open .coin{opacity:1;filter:drop-shadow(0 0 10px rgba(216,178,90,.9))}
-.ms-av-prop .post,.ms-av-prop .head{fill:#3a2e20;stroke:#6b5a42;stroke-width:2;transition:fill .6s,transform .7s}
-.ms-av-prop.up .post,.ms-av-prop.up .head{fill:#6b5a42}
+.ms-av-prop .post,.ms-av-prop .head{fill:var(--av-timber,#3a2e20);stroke:#2a1e12;stroke-width:2;opacity:.55;transition:opacity .6s,transform .7s}
+.ms-av-prop.up .post,.ms-av-prop.up .head{opacity:1}
 .ms-av-prop.down{transform-box:fill-box;transform-origin:50% 100%}
 .ms-av-prop.down .post{fill:#2a201a;transform:rotate(22deg)}
 .ms-av-bay rect{fill:#1d1710;stroke:#4a3b2a;stroke-width:2;transition:stroke .7s}

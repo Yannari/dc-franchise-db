@@ -725,9 +725,9 @@ const ESTABLISH_SINGLE = [
   '{a} is watching the others.',
   '{a} is around, not saying much.',
   '{a} is there, hands in {aPos} pockets.',
-  '{a} has a cup of tea going cold.',
-  '{a} is half listening to the room.',
-  '{a} stands by the window for a bit.',
+  '{a} is half listening to the others.',
+  '{a} is a step behind the rest of them.',
+  '{a} is keeping half an eye on the room.',
 ];
 // ── THE CLOSING LINE WHEN NOTHING COUNTABLE MOVED ──────────────────────
 //
@@ -1162,6 +1162,25 @@ const CONSEQ_COVER_DEFLECT = {
 };
 // cover-blend — {a} hides inside the grief around {topic} (a murdered player's
 // friend, whose circle {a} is not really part of).
+// cover-bluff — {a} points at the Traitors' own side, to {topic}, to look
+// like the last person who could be one.
+const CONSEQ_COVER_BLUFF = {
+  held: [
+    '{topic} believes {a} now. Somebody who points at their own side cannot be one of them, as far as {topic} is concerned.',
+    '{a} gave {topic} a doubt about the pact and took {topic}’s trust in return.',
+  ],
+  slipped: [
+    '{a} gave {topic} more than intended, and {topic} is going to take it to the table.',
+    'The hint was too good. {topic} has a name now, and {a} cannot take it back.',
+  ],
+  turned: [
+    '{topic} asked the one question {a} had no answer for, and is still thinking about it.',
+    '{topic} wanted a reason, and {a} did not have one ready.',
+  ],
+  abandoned: [
+    '{a} thought better of it and left the name unsaid.',
+  ],
+};
 const CONSEQ_COVER_BLEND = {
   held: [
     '{a} joined in the grief for {topic}, and looked like just another person who was sad.',
@@ -1728,6 +1747,7 @@ const TOPIC_CONFIG = {
   'suspicion-third': { reaction: false, byDirection: true, conseq: CONSEQ_SUSP_THIRD },
   'testing-probe': { reaction: false, dir: _testDir, conseq: CONSEQ_TESTING },
   'cover-deflect': { reaction: false, dir: _coverDir, conseq: CONSEQ_COVER_DEFLECT },
+  'cover-bluff': { reaction: false, dir: _coverDir, conseq: CONSEQ_COVER_BLUFF },
   'cover-blend': { reaction: false, dir: _coverDir, conseq: CONSEQ_COVER_BLEND },
   'cover-account': { reaction: false, dir: _coverDir, conseq: CONSEQ_COVER_ACCOUNT },
   'cover-weight': { reaction: false, dir: _coverDir, conseq: CONSEQ_COVER_WEIGHT },
@@ -1979,6 +1999,7 @@ function _groundedAction(s, subs) {
     'suspicion-third': '{a} brings up {topic}.',
     'testing-probe': '{other} has been quietly testing {topic}.',
     /* viewer phrase */ 'cover-deflect': '{a} tries to push the suspicion onto {topic}.',
+    /* viewer phrase */ 'cover-bluff': '{a} talks to {topic} about the Traitors as if {a} were hunting them.',
     /* viewer phrase */ 'cover-blend': '{a} stays close to the people grieving {topic}. It is a good place for a Traitor to be seen.',
     /* viewer phrase */ 'cover-account': '{a} goes over {aPos} story about {topic} again.',
     /* viewer phrase */ 'cover-weight': '{a} is alone with {topic}, and with the lie that goes with it.',
@@ -3814,7 +3835,13 @@ function _composeScene(s, key, used, cast) {
     // "whatever this is" filler landing above a consequence that names it in
     // full. The topic pools are mode/warmth-neutral, so they serve every shape;
     // legacy scenes (no recorded topic) keep the subject-free pools below.
-    const leads = subs.topic
+    // A COVER STORY IS ONE THREAD WITH A NEW SUBJECT EVERY NIGHT: the
+    // Traitor's account of whichever murder is newest. Naming tonight's
+    // subject over the thread's whole history read "Back to the night Chef
+    // Hatchet was murdered. It has come up on day 2…", three nights before he
+    // was murdered. A cover recall says the story is old, not what it is about.
+    const topicLead = subs.topic && s.kind !== 'cover';
+    const leads = topicLead
       ? (tail.days ? RECALL_LEAD_DAYS_TOPIC : RECALL_LEAD_TODAY_TOPIC)
       : RECALL_LEAD_RECORDED;
     const lead = _fill(_pickUnique(leads, key + '|lead', used), subs);

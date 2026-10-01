@@ -835,7 +835,7 @@ const COUNT_TEXT = [
   'Then the box, and the arithmetic, done in front of everybody so that nobody can argue '
   + 'about it later.',
   'The count. This is the only honest number produced anywhere on this estate.',
-  'And the money, weighed and entered while they were all still dripping on the flags.',
+  'And the money, weighed and entered in front of all of them.',
   'The take, counted out on a trestle at the end of it.',
 ];
 

@@ -1017,7 +1017,7 @@ registerEvent({
     const because = branch === 'read-it' && sense === 'cracked'
       ? ` ${a} had seen ${b} come apart once already and was waiting for it to happen twice.`
       : branch === 'read-it' && sense === 'walked'
-        ? ` Whatever ${b} did the last time somebody asked had worked, and ${a} wanted to know how.`
+        ? ` ${b} had got out of a question like this once already, and ${a} was watching for how.`
         : '';
     const note = lineFor(BODY_READ_LINES[branch],
       `susp-body-language-read|${branch}|${ctx.ep}|${sense}`, { a, b });

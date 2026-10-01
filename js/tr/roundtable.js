@@ -316,7 +316,7 @@ const CLASH_LINES = {
     '{a} makes {b} account for it at the table rather than in a corridor, which is the point.',
     '{b} broke something with {a} this week and {a} has chosen the worst possible moment for it.',
     'The room did not know those two had a deal. It knows now, and it knows it broke.',
-    '{a} says the words {b} used. {b} does not deny using them.',
+    '{a} says the words {b} used, one at a time, in front of everybody.',
   ],
   'ganged-up': [
     '{b} points out that three people have said the same name in ten minutes and asks who arranged that.',

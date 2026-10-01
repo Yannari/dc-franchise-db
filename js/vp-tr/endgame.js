@@ -2436,7 +2436,9 @@ function _buildBeats(v) {
     v.reveals.forEach((r, i) => {
       const isT = r.role === 'traitor';
       const pr = _pron(r.name);
-      const pool = isT ? UNMASK_TRAITOR : UNMASK_FAITHFUL;
+      // two at the table: no "one or two people", nobody else to reach over
+      const pool = (isT ? UNMASK_TRAITOR : UNMASK_FAITHFUL).filter(l => v.reveals.length > 2
+        || !/one or two people|somebody reaches over|the person who very nearly/.test(l));
       // THE ROOM ONLY REACTS TO A CLOAK. A Faithful turning over is a relief;
       // a Traitor turning over is the scene, so the reaction is spent there
       // and the person reacting is somebody who was actually in the room.

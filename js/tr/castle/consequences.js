@@ -380,6 +380,13 @@ const GOT_IT_WRONG = {
     '{a} barely speaks.\n{b}: "Do you want to talk about {gone}?"\n{a}: "Not tonight."\n{b} (to camera): "{a} took {gone} really hard. Harder than {aSub} lets on."',
     '{a} says it twice, and the second time {b} stops.\n{a}: "Not tonight."\n{a}: "Not tonight, please."',
   ],
+  // somebody whose slate said another name: the room got it wrong, not them
+  'alone-not-mine': [
+    '{a} didn’t write {gone}’s name, and stands in the corridor anyway, working out how the rest of them got there.\n{a} (to camera): "It wasn’t my name. That doesn’t make it better."',
+    '{a} goes to bed thinking about {gone}’s face at the reveal.\n{a} (to camera): {cam:cant-sleep}',
+    '{a} goes over the whole table again, looking for where the room went wrong.\n{a} (to camera): {cam:replay-week}',
+    '{a} lies awake, thinking about {gone}.\n{a} (to camera): {cam:cant-sleep}',
+  ],
   'alone-with-it': [
     '{a} stands in the corridor for a long time, working out how many of them got it wrong.\n{a} (to camera): {cam:was-wrong}',
     'Nobody sees {a} do the maths. {a} wrote {gone}’s name.\n{a} (to camera): {cam:vote-cost}',
@@ -428,12 +435,14 @@ registerEvent({
     const loudOnes = accusersOf(round, gone, ctx.living);
     const st = pStats(a);
     if (!b) {
-      const soloNote = line(GOT_IT_WRONG['alone-with-it'], 'after-the-room-got-it-wrong',
-        'alone-with-it', ctx.ep, { a, gone });
+      // "{a} wrote {gone}'s name" is only said of somebody whose slate did
+      const soloBranch = wroteIt ? 'alone-with-it' : 'alone-not-mine';
+      const soloNote = line(GOT_IT_WRONG[soloBranch], 'after-the-room-got-it-wrong',
+        soloBranch, ctx.ep, { a, gone });
       const solo = arcContinue(api, 'grief', [a], ctx.ep, soloNote, { source: sceneWhy });
       // A person who wrote the name and watched the reveal is not fine.
       if (wroteIt) api.setEmotionalState(a, 'paranoid', { source: sceneWhy });
-      return { branch: 'alone-with-it', actor: a, subject: gone,
+      return { branch: soloBranch, actor: a, subject: gone,
         topic: gone, topicKind: 'after-wrong',
         threadId: solo.thread?.id, cited: solo.cited, bondDelta: 0 };
     }
@@ -1110,7 +1119,7 @@ const EMPTY_SEAT = {
     '{a} walks past {gone}’s room, door already open.\n{a} (to camera): {cam:few-left}',
     '{a} thinks about the first day, when {gone} was still here.\n{a} (to camera): {cam:few-left}',
     '{a} sits by the fire where {gone} used to sit.\n{a} (to camera): {cam:few-left}',
-    '{a} misses {gone} quietly.\n{a} (to camera): {cam:after-table}',
+    '{a} misses {gone} quietly.\n{a} (to camera): "{gone} should still be here. That’s all I keep thinking."',
     '{a} finds a jumper {gone} left on the sofa.\n{a} (to camera): "Somebody should post it on. It’s daft, the things that get you."',
     '{a} goes to bed early.\n{a} (to camera): {cam:after-table}',
     '{a} counts who is left in the room.\n{a} (to camera): {cam:ballots}',
@@ -1554,7 +1563,7 @@ registerEvent({
 // a maybe.
 const NEED_YOU = {
   agreed: [
-    '{a} asks {b} for tomorrow.\n{a}: "Whatever happens, you and me."\n{b}: "Yes. No conditions."\n{a}: "Thank you."',
+    '{a} asks {b} to stick together tomorrow.\n{a}: "Whatever happens, you and me."\n{b}: "Yes. No conditions."\n{a}: "Thank you."',
     '{b} doesn’t negotiate.\n{a}: "I need you."\n{b}: "You’ve got me."',
     '{b} says yes straight away.\n{b}: "I’m with you. All the way."\n{a}: "Thank you."\n{a} (to camera): "That’s all I needed to hear."',
     '{a} and {b} shake on it.\n{b}: "Tomorrow, we’re together."\n{a}: "Together."',

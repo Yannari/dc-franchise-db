@@ -1686,7 +1686,7 @@ const VOTED_LINES = {
     '{a} watches {b}’s name come up three times.\n{b}: "Still here."\n{a}: "Just."\n{a} (to camera): "Every time it came up I stopped breathing."',
     '{b}’s name is in the air all evening, and {a} has to sit there and hear it.\n{b}: "You didn’t say anything."\n{a}: "I couldn’t. I’d have made it worse."\n{a} (to camera): "Horrible. I just had to sit there."',
     '{a} watches {b} get votes.\n{a}: "You’re still here."\n{b}: "Just."',
-    '{a} squeezes {b}’s hand under the table.\n{a}: "You’re okay. You’re okay."\n{b}: "Am I?"\n{b} (to camera): "That was close. Too close."',
+    '{a} finds {b}’s hand and squeezes it.\n{a}: "You’re okay. You’re okay."\n{b}: "Am I?"\n{b} (to camera): "That was close. Too close."',
   ],
 };
 

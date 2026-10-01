@@ -532,6 +532,14 @@ const OVERRULE_TEXT = [
   + '{L} is the only person in the room who minds.',
   '{W} wins it. {L}&rsquo;s case for {T} gets as far as being heard and no further.',
 ];
+// THE ROOM WAS AGAINST THE WINNER. The conclave resolves on each Traitor's own
+// weight, not a headcount, so two backing one name can lose to one backing
+// another; "runs out of people willing to be convinced" said the opposite.
+const OVERRULE_OUTNUMBERED = [
+  'Two of them came up the stair wanting {T}. {W} wanted {C} more, and talked them both out of it.',
+  'It is two against one for {T}, and the one is {W}. {W} wins it anyway.',
+  '{T} has the numbers and {W} has the argument. The argument wins.',
+];
 const OVERRULE_KEPT = [
   'It is settled in the sense that the writing starts. It is not settled in any '
   + 'other sense.',
@@ -1150,8 +1158,10 @@ function _buildBeats(rec, ep) {
     const o = overruled[0];
     const kept = overruled.map(x => x.theirTarget).filter(Boolean)[0] || '';
     push('overrule', _card('The Overrule', 'V. Somebody loses', 'dagger',
-      '<p>' + _fill(_pick(OVERRULE_TEXT, key + '|over'), {
-        t: kept, T: kept, L: o.loser, W: o.winner, l: o.loser, w: o.winner,
+      '<p>' + _fill(_pick(
+        argued.filter(x => x.target === kept).length > argued.filter(x => x.target === rec.target).length
+          ? OVERRULE_OUTNUMBERED : OVERRULE_TEXT, key + '|over'), {
+        t: kept, T: kept, C: rec.target, L: o.loser, W: o.winner, l: o.loser, w: o.winner,
         pos: _pr(o.loser).pos, sub: _pr(kept).sub,
       }) + '</p>'
       + overruled.filter(x => x.theirTarget).map(x => {

@@ -413,12 +413,24 @@ const ESTABLISH_PAIR = {
   ],
 };
 /** Nobody else in the room, which is a scene in its own right and not a fault. */
+// ANY HOUR, ANY PLACE: these open scenes on the road and the hilltop as well
+// as indoors, so no room and no door. Fourteen, because a whole day of solo
+// scenes is drawn without repeats (see `_primedUsed`).
 const ESTABLISH_SOLO = [
   'Nobody else is around. {a} is alone.',
   '{a} is alone, with nobody to perform for.',
-  '{a} has the room to {aRef}.',
-  '{a} is on {aPos} own, and has shut the door.',
+  '{a} has a few minutes to {aRef}.',
+  '{a} is on {aPos} own for once.',
   '{a} is alone, and glad of it.',
+  'For a few minutes, nobody needs anything from {a}.',
+  '{a} has slipped away from the others.',
+  'The others are somewhere else. {a} is not.',
+  '{a} is by {aRef}, and nobody comes looking.',
+  'Nobody is watching {a}, or nobody {a} can see.',
+  '{a} gets a moment alone.',
+  'It is just {a} for a while.',
+  '{a} has found the one quiet spot going.',
+  '{a} is the only one there.',
 ];
 /** Three or more, which the pair templates cannot honestly describe. */
 const ESTABLISH_GROUP = [
@@ -734,7 +746,7 @@ const ESTABLISH_SINGLE = [
   '{a} is there, hands in {aPos} pockets.',
   '{a} is half listening to the others.',
   '{a} is a step behind the rest of them.',
-  '{a} is keeping half an eye on the room.',
+  '{a} is keeping half an eye on the others.',
 ];
 // ── THE CLOSING LINE WHEN NOTHING COUNTABLE MOVED ──────────────────────
 //
@@ -1639,6 +1651,12 @@ const CONSEQ_AFTER_WRONG = {
     '{a} puts {topic} down to the cost of playing the game, and moves on.',
     '{a} thinks the vote made sense at the time, even though {topic} was a Faithful, and won’t apologise.',
   ],
+  // {a} wrote another name: the room was wrong, and {a} was part of the room
+  bystander: [
+    '{a} did not write {topic}’s name, and it does not feel any better.',
+    'It was not {a}’s slate, but it was {a}’s table, and {topic} is still gone.',
+    '{a} had another name on the wood, and {topic} went home anyway.',
+  ],
   quiet: [
     '{a} wouldn’t say {topic}’s name again, and people noticed.',
     '{a} kept {aPos} feelings about {topic} to {aRef}.',
@@ -1730,6 +1748,7 @@ function _afterWrongDir(s) {
   if (AW_OWNED.has(b)) return 'owned';
   if (AW_BLAMED.has(b)) return 'blamed';
   if (AW_DEFENDED.has(b)) return 'defended';
+  if (b === 'alone-not-mine') return 'bystander';
   return 'quiet';
 }
 const AR_CREDITED = new Set(['credit-where-due']);
@@ -4393,10 +4412,31 @@ function _unscheduledBand(id) {
  * run rather than taking a step of their own: a heading with nothing under it
  * yet is a promise the reveal has not kept.
  */
-function _buildBeats(v) {
+// ONE DAY, THREE SCREENS. Each castle screen composes only its own scenes, so
+// a sentence the morning screen printed could print again in the afternoon
+// ("Cameron is on his own, and has shut the door" twice in one day). The
+// earlier screens' scenes are composed first, with the keys they had on their
+// own screens, so the set already holds every line they printed.
+function _primedUsed(ep, observer, segment) {
+  const used = new Set();
+  if (!segment || !SEGMENT_PHASES[segment]) return used;
+  for (const sg of Object.keys(SEGMENT_PHASES)) {
+    if (sg === segment) break;
+    const pv = _view(ep, observer, sg);
+    if (!pv) continue;
+    const k = 'dy|' + pv.ep;
+    pv.scenes.forEach((raw, i) =>
+      _composeScene({ ...raw, epNum: pv.ep }, k + '|' + i + '|' + raw.eventId, used, pv.cast));
+  }
+  _view(ep, observer, segment);   // leave the module flags on this screen's episode
+  return used;
+}
+const SEG_IX = { morning: 0, afternoon: 1, night: 2 };
+
+function _buildBeats(v, primed = null) {
   const beats = [];
   const key = 'dy|' + v.ep;
-  const used = new Set();
+  const used = primed || new Set();
   let hour = null;
   let band = null;
   for (let i = 0; i < v.scenes.length; i++) {
@@ -4442,7 +4482,9 @@ function _buildBeats(v) {
     phase: 'night',
     html: '<div class="dy-weave">'
       + '<h3>The Day, Added Up</h3>'
-      + '<p>' + _esc(_pick(WEAVE_LEAD, key + '|weave')) + '</p>'
+      // three castle screens a day each close on this card: keyed by the
+      // screen, or all three print the same sentence
+      + '<p>' + _esc(WEAVE_LEAD[(_hash(key + '|weave') + (SEG_IX[v.segment] || 0)) % WEAVE_LEAD.length]) + '</p>'
       + '<div class="dy-sums">' + sums.map(b =>
         '<span class="dy-sum"><span class="dy-sum-k">' + _esc(b[0]) + '</span>'
         + '<span class="dy-sum-v"' + (b[2] ? ' data-tone="' + b[2] + '"' : '') + '>'
@@ -4451,7 +4493,7 @@ function _buildBeats(v) {
       // THE ONE HOST LINE, LAST. The host walked through none of this — six
       // of the seven hours happen with nobody presenting them — so the host
       // arrives only once the day is over, exactly as in the corridor.
-      + _hostBand(_pick(HOST_CLOSE[mood], key + '|host')),
+      + _hostBand(HOST_CLOSE[mood][(_hash(key + '|host') + (SEG_IX[v.segment] || 0)) % HOST_CLOSE[mood].length]),
     meta: { kind: 'sum' },
   });
   return beats;
@@ -4722,7 +4764,7 @@ export function rpBuildCastleDay(ep, observer = 'audience', segment = null) {
       + 'one conversation went anywhere worth writing down.');
   }
 
-  const castleBeats = v.scenes.length ? _buildBeats(v) : [];
+  const castleBeats = v.scenes.length ? _buildBeats(v, _primedUsed(ep, observer, segment)) : [];
   const beats = [...castleBeats, ...confBeats];
   const total = beats.length;
   const epNum = ep.num || v.ep || 0;
@@ -4809,10 +4851,10 @@ export function rpBuildCastleDay(ep, observer = 'audience', segment = null) {
 export function castleDayScenes(ep, observer = 'audience', segment = null) {
   // `segment` narrows to one castle screen's phases — the stage (castle-stage.js)
   // plays the same scenes that screen's page draws, composed with the same keys.
+  const used = _primedUsed(ep, observer, segment);
   const v = _view(ep, observer, segment);
   if (!v) return [];
   const key = 'dy|' + v.ep;
-  const used = new Set();
   return v.scenes.map((raw, i) =>
     _composeScene({ ...raw, epNum: v.ep }, key + '|' + i + '|' + raw.eventId, used, v.cast));
 }

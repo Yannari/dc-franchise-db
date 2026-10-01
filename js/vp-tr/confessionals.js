@@ -1458,8 +1458,20 @@ export function _hasConfessionals(r) {
  * rather than present and unused, so a later edit to a card cannot print one.
  */
 function _view(ep, observer) {
-  const b = ep && ep.tr && ep.tr.beliefs;
-  if (!b || !Array.isArray(b.boards)) return null;
+  const b0 = ep && ep.tr && ep.tr.beliefs;
+  if (!b0 || !Array.isArray(b0.boards)) return null;
+  // THE BOARD IS TAKEN BEFORE THE TABLE and the alcove is after it: tonight's
+  // banished player sat in the chair, or was named in it ("Courtney is the one
+  // I cannot put down", minutes after Courtney left). Out of both, and out of
+  // the count of who is still in the castle.
+  const gone = new Set(((ep && ep.exits) || [])
+    .filter(x => x && x.name && x.channel !== 'murder').map(x => x.name));
+  const b = !gone.size ? b0 : {
+    ...b0,
+    living: (b0.living || []).filter(n => !gone.has(n)),
+    boards: b0.boards.filter(bd => !gone.has(bd.observer))
+      .map(bd => ({ ...bd, entries: (bd.entries || []).filter(e => !gone.has(e.name)) })),
+  };
   const obs = observer == null ? 'audience' : String(observer);
   const isAudience = obs === 'audience';
   const watcher = obs.indexOf('player:') === 0 ? obs.slice('player:'.length) : null;

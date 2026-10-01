@@ -386,6 +386,16 @@ export const SOLO_BANK = {
     guarded: ["Waiting.", "Later.", "We'll see."],
     traitor: ["I'll wait and see who the Faithfuls turn on today, then join in.", "No point picking a name until I see where the room goes.", "Let them decide. I'll just agree."],
   },
+  // THE SAME MOMENT WITH A FULL CASTLE: "We're getting close to the end" on
+  // night two, with eighteen still in it. Read by speech.js while more than
+  // ten are standing; it is about the loss, not the count.
+  'cam-few-left-early': {
+    blunt: ["Someone else gone. I hate this part.", "It doesn't get easier.", "That chair's going to stay empty now."],
+    sharp: ["Every name that goes changes the maths.", "One less voice. Somebody's going to fill that space.", "Watch who moves into the gap."],
+    warm: ["I keep thinking about who's gone.", "I miss them already.", "It's only been a few days, and it's already sad."],
+    guarded: ["One less.", "It's started.", "Quieter now."],
+    traitor: ["One less to fool. Plenty still to go.", "The castle's still crowded. That helps me.", "Lots of places to hide, for now."],
+  },
   'cam-few-left': {
     blunt: ["There's hardly any of us left now.", "It's going so fast.", "Every day there's less of us."],
     sharp: ["The fewer there are, the harder it is to hide. For everyone.", "We're getting close to the end. You can feel it.", "Small room now. Every vote matters more."],

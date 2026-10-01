@@ -12,7 +12,7 @@
 // All weights are proportional (stat × factor). MOTIVE_LINE is a gameplay
 // constant tuned by audit:ci-spec so that a pool big enough gives roughly a
 // third of the cast a persona (spec §2.2: about a third of real casts).
-import { rolesFor } from './shared.js';
+import { rolesFor, pairRoles, RELATIONS } from './shared.js';
 import { clamp, personMayScheme } from './state.js';
 import { jobOf, tellsOf } from './persona-data.js';
 
@@ -76,6 +76,7 @@ export function truthOf(player, setup = {}) {
     catfish: legacyPin ? 'always' : setup.catfish === 'always' || setup.catfish === 'never' ? setup.catfish : 'decide',
     persona: setup.persona ?? legacyPin ?? null,
     partner: setup.partner || null,
+    relation: RELATIONS.includes(setup.relation) ? setup.relation : null,
     // The Profile Plan's mode pin for a player without a persona: 'honest',
     // 'polished' or 'edited'; null lets the motive decide (spec 4.2).
     mode: ['honest', 'polished', 'edited'].includes(setup.mode) ? setup.mode : null,
@@ -229,7 +230,7 @@ function editsFor(t, median, rng) {
 /** What the room sees of a persona: the picked job's name unless the author
  *  titled it, and the job and style picks the cover model reads. */
 export function personaShown(persona) {
-  return { name: persona.handle, age: persona.age, gender: persona.gender,
+  return { name: persona.handle, age: persona.age, gender: persona.gender, sexuality: persona.sexuality || 'straight',
     job: persona.job || jobOf(persona)?.name?.toLowerCase() || null,
     status: persona.status, hometown: persona.hometown ?? null, face: persona.face ?? null,
     ...(persona.jobId ? { jobId: persona.jobId } : {}), ...(persona.register ? { register: persona.register } : {}) };
@@ -251,11 +252,13 @@ export function buildProfiles(state, truths, draw, pool, rng) {
       p.players.push(t.name); p.shared = true;
       if (p.mode !== 'catfish') p.mode = 'shared';
       p.gap = Math.max(p.gap, 0.5);
-      p.roles = rolesFor(state, p.players);
+      // What they are to each other, set on either of them.
+      p.relation = t.relation || state.people[t.partner]?.relation || null;
+      p.roles = { ...rolesFor(state, p.players), ...pairRoles(state, p.players, p.relation) };
       // An honest pair shows the face: their name, their photos.
       if (p.mode === 'shared' && p.roles.face !== p.players[0]) {
         const f = state.people[p.roles.face];
-        p.shown = { name: f.name, age: f.age, gender: f.gender, job: f.job, status: f.status,
+        p.shown = { name: f.name, age: f.age, gender: f.gender, sexuality: f.sexuality || 'straight', job: f.job, status: f.status,
           hometown: f.hometown, face: `portrait:${f.name}` };
       }
       state.handleOf[t.name] = partnerHandle;
@@ -264,7 +267,7 @@ export function buildProfiles(state, truths, draw, pool, rng) {
     const a = draw.assigned[t.name];
     const persona = a && personas[a.personaId];
     let mode = 'honest', shown, edits = [], tells = [], gap = 0;
-    const own = { name: t.name, age: t.age, gender: t.gender, job: t.job, status: t.status,
+    const own = { name: t.name, age: t.age, gender: t.gender, sexuality: t.sexuality || 'straight', job: t.job, status: t.status,
       hometown: t.hometown, face: `portrait:${t.name}` };
     if (persona) {
       mode = 'catfish';

@@ -137,6 +137,9 @@ describe('every big moment airs in full', () => {
         // A goodbye late in the season has fewer watchers: about three lines each, plus the video.
         const min = sc.kind === 'meet' && sc.who.length < 3 ? 4 : sc.kind === 'visit' && sc.data.inPerson ? 12
           : sc.kind === 'goodbye' ? Math.min(SCENE_DEPTH.goodbye, 3 * (sc.seenBy.length - 1) + 2)
+          // Ratings: about three lines a ranker (the middle only for a few, script.js
+          // MIDDLES_PER_NIGHT) plus the results; a secret night reads no board.
+          : sc.kind === 'ratings' ? Math.min(SCENE_DEPTH.ratings, 3 * sc.data.ballots.length + (sc.data.hidden ? 6 : 10))
           : sc.kind === 'blocking' && ['unsaved', 'vote', 'instant', 'antivirus', 'mission'].includes(sc.data.channel) ? 9 : SCENE_DEPTH[sc.kind];
         if (lines < min) (thin[sc.kind] ||= []).push(lines);
       }

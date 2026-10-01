@@ -1299,7 +1299,7 @@ export const POOL_KEYS = [
   ...['reply', 'react', 'observe'].map(k => `game.rival.${k}`),
   ...['practice', 'answer', 'react', 'vote', 'date'].map(k => `game.flirt.${k}`),
   'game.team.pick', 'game.team.last', 'game.team.result', 'game.gift.round', 'game.gift.none',
-  'game.rival.round', 'game.flirt.round', ...['party', 'photo', 'video', 'immunity', 'gift'].map(k => `game.prize.${k}`),
+  'game.rival.round', 'game.flirt.round', ...['party', 'photo', 'video', 'immunity', 'gift', 'trophy', 'trophy.react'].map(k => `game.prize.${k}`),
   'party.open', 'party.nhie', 'party.nhie.none',
   ...['workout', 'skincare', 'cooking', 'reading', 'singing', 'plushie', 'praying', 'pacing'].map(h => `life.${h}`),
   'home.video', 'host.game', 'host.life', 'shared.argue.faceWins', 'shared.argue.brainWins',

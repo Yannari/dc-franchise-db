@@ -731,6 +731,27 @@ const MISSION_BLAME_LINES = {
   ],
 };
 
+// THE SAME ARGUMENT WITH NOTHING BEHIND IT: about today's mission, which has
+// not happened, so nobody can be blamed for it — only not wanted.
+const MISSION_TODAY_LINES = {
+  'named-the-weak-link': [
+    '{a} says it on the road, loud enough.\n{a}: "Whatever it is today, I don’t want {b} on my team."\n{b}: "Wow."\n{a}: "Somebody had to say it."',
+    '{a}: "If today needs anyone fast, it isn’t {b}."\n{b}: "Thanks for that."',
+  ],
+  'took-the-blame': [
+    '{b} gets in first.\n{b}: "I know I’ve been quiet on the missions. Today I’ll pull my weight."\n{a}: "…Oh. Okay."',
+    '{b}: "Put me wherever you need me today. I mean it."\n{a}: "Well. Thanks for saying it."',
+  ],
+  'blamed-them-back': [
+    '{a}: "Just don’t slow us down today, {b}."\n{b}: "Worry about yourself."\n{a}: "I am."',
+    '{a} starts on {b} before the van has stopped.\n{b}: "We haven’t even started yet!"\n{a} (to camera): "Fair point. I still mean it."',
+  ],
+  'nobody-backed-it': [
+    '{a}: "Bet you {b} is the weak link today."\nNobody takes the bet.\n{a} (to camera): "Left hanging. Great."',
+    '{a} tries to start something about today’s teams. Nobody joins in.\n{b}: "Seems it’s just you, then."',
+  ],
+};
+
 // WHAT TODAY HOLDS, said on the same road: what they expect from the mission
 // they are driving to, which is the only thing about it anybody can know yet.
 const MISSION_AHEAD_LINES = [
@@ -773,8 +794,10 @@ registerEvent({
     if ((ctx.ep || 0) < 2) return 0;
     if ((ctx.living || []).length < 5) return 0;
     const [a, b] = ctx.actors;
-    // AND {b} HAS TO HAVE DONE BADLY IN IT, on {a}'s own team, by the record
-    if (!_yesterdaysMission(ctx.ep, b, a)) return 0;
+    // NOT gated on the mission record: what fires must not depend on which
+    // missions ran (tests/tr-missions.test.js plays seasons with the money
+    // missions on and off and asks for bit-identical castles). The record
+    // decides the WORDS instead — see fire().
     const t = findOpenThread('suspicion', [a, b]) || findOpenThread(FAMILY, [a, b]);
     if (!t && getBond(a, b) > 0) return 0;
     return t ? 2 : 1.2;
@@ -796,8 +819,16 @@ registerEvent({
     for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
 
     const sceneWhy = 'blamed them out loud for how the mission went';
-    const mName = (_yesterdaysMission(ctx.ep, b, a) || {}).name || 'yesterday';
-    let note = lineFor(MISSION_BLAME_LINES[branch], `confront-blamed-for-the-mission|${branch}|${ctx.ep}`, { a, b, m: mName });
+    // GROUNDED OR NOT: when the record says {b} really had a bad moment in
+    // yesterday's mission on {a}'s team, it is blame for yesterday; when it
+    // does not, nobody can be blamed for anything, and the same argument is
+    // about TODAY's — who {a} does not want beside them. Words only: the
+    // branch, the bond and the stream are the same either way.
+    const ym = _yesterdaysMission(ctx.ep, b, a);
+    const mName = (ym && ym.name) || 'yesterday';
+    let note = ym
+      ? lineFor(MISSION_BLAME_LINES[branch], `confront-blamed-for-the-mission|${branch}|${ctx.ep}`, { a, b, m: mName })
+      : lineFor(MISSION_TODAY_LINES[branch], `confront-today|${branch}|${ctx.ep}`, { a, b });
     // and, now and then, where it goes next: what they expect from today's
     // (a hash, not a draw: an extra rng() here would shift every later scene)
     const hk = [...(a + '|' + b + '|' + ctx.ep)].reduce((h, c) => (Math.imul(h, 31) + c.charCodeAt(0)) >>> 0, 7);

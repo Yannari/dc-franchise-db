@@ -458,38 +458,68 @@ export const TRScenery = (function () {
   // pole either side for the two teams, and the prize chest on its trestle in
   // the middle where the money goes.
   function fieldSet(w, h) {
+    // THE MISSION FIELD (redrawn 2026-09-30, "some of the decor looks
+    // childish"): a Highland afternoon — cloud bands, three ranges of hills
+    // going blue with distance, the castle small and proper on its rise, the
+    // loch holding the sky, a striped field with heather and a dry-stone
+    // wall, pine stands either side, team banners, and the prize chest
+    // iron-bound on a draped trestle.
+    const r = rng(41);
     let s = `<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" style="position:absolute;inset:0">${DEFS}
       <defs>
-        <linearGradient id="fdSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7f98b8"/><stop offset=".7" stop-color="#c9d0d4"/><stop offset="1" stop-color="#e4d8bf"/></linearGradient>
-        <linearGradient id="fdGrass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4e6a38"/><stop offset="1" stop-color="#2a3a1e"/></linearGradient>
-        <linearGradient id="fdChest" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6a3a18"/><stop offset="1" stop-color="#2a1408"/></linearGradient>
+        <linearGradient id="fdSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5a7090"/><stop offset=".55" stop-color="#a8b4c0"/><stop offset="1" stop-color="#e2d6bc"/></linearGradient>
+        <linearGradient id="fdGrass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5a7440"/><stop offset="1" stop-color="#26341a"/></linearGradient>
+        <linearGradient id="fdLoch" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c8d4dc"/><stop offset="1" stop-color="#5a7088"/></linearGradient>
+        <linearGradient id="fdChest" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7a4a22"/><stop offset="1" stop-color="#2a1408"/></linearGradient>
+        <linearGradient id="fdCloth" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8e1a2a"/><stop offset="1" stop-color="#4a0a14"/></linearGradient>
       </defs>`;
-    s += `<rect width="${w}" height="${h}" fill="url(#fdSky)"/>`
-      + `<circle cx="${w * .8}" cy="${h * .14}" r="${h * .45}" fill="url(#candleGlow)" opacity=".35"/>`;
-    s += `<path d="M0 ${h * .38} C${w * .15} ${h * .22} ${w * .32} ${h * .34} ${w * .48} ${h * .26} C${w * .64} ${h * .18} ${w * .82} ${h * .32} ${w} ${h * .24} V${h} H0Z" fill="#6e7a8e"/>`
-      + `<path d="M0 ${h * .44} C${w * .2} ${h * .36} ${w * .45} ${h * .45} ${w * .62} ${h * .38} C${w * .8} ${h * .32} ${w * .92} ${h * .42} ${w} ${h * .38} V${h} H0Z" fill="#56664a"/>`;
-    // the castle, small, on its rise
-    const cx = w * .72, cy = h * .37;
-    s += `<g fill="#6e3226" opacity=".85"><rect x="${cx - 40}" y="${cy - 22}" width="80" height="22"/><rect x="${cx - 12}" y="${cy - 44}" width="24" height="44"/>`
-      + `<path d="M${cx - 16} ${cy - 44} L${cx} ${cy - 58} L${cx + 16} ${cy - 44}Z" fill="#3a3d48"/><path d="M${cx - 44} ${cy - 22} L${cx - 30} ${cy - 34} L${cx - 14} ${cy - 22}Z M${cx + 14} ${cy - 22} L${cx + 30} ${cy - 34} L${cx + 44} ${cy - 22}Z" fill="#3a3d48"/></g>`;
-    // the loch, a band of light across the middle distance
-    s += `<path d="M0 ${h * .47} C${w * .3} ${h * .44} ${w * .6} ${h * .5} ${w} ${h * .46} V${h * .52} C${w * .6} ${h * .55} ${w * .3} ${h * .5} 0 ${h * .53}Z" fill="#9fb4cc" opacity=".75"/>`;
-    // the field
+    s += `<rect width="${w}" height="${h}" fill="url(#fdSky)"/>`;
+    for (let i = 0; i < 8; i++) s += `<ellipse cx="${(i * .14 + R(0, .06, r)) * w}" cy="${h * (.06 + (i % 3) * .05)}" rx="${w * R(.1, .18, r)}" ry="${h * .025}" fill="#fff" opacity="${R(.18, .35, r).toFixed(2)}"/>`;
+    s += `<circle cx="${w * .8}" cy="${h * .12}" r="${h * .4}" fill="url(#candleGlow)" opacity=".3"/>`;
+    // three ranges, going blue with distance
+    s += `<path d="M0 ${h * .32} L${w * .1} ${h * .24} L${w * .2} ${h * .29} L${w * .34} ${h * .2} L${w * .48} ${h * .27} L${w * .62} ${h * .19} L${w * .76} ${h * .26} L${w * .9} ${h * .21} L${w} ${h * .25} V${h * .5} H0Z" fill="#7a8aa4" opacity=".75"/>`
+      + `<path d="M0 ${h * .38} C${w * .15} ${h * .26} ${w * .32} ${h * .36} ${w * .48} ${h * .28} C${w * .64} ${h * .2} ${w * .82} ${h * .34} ${w} ${h * .26} V${h} H0Z" fill="#5e6e80"/>`
+      + `<path d="M0 ${h * .44} C${w * .2} ${h * .36} ${w * .45} ${h * .45} ${w * .62} ${h * .38} C${w * .8} ${h * .32} ${w * .92} ${h * .42} ${w} ${h * .38} V${h} H0Z" fill="#4a5a42"/>`;
+    // the castle on its rise: a baronial keep, round towers under cones, lit windows
+    const cx = w * .72, cy = h * .37, k = h / 700;
+    s += `<g transform="translate(${cx},${cy}) scale(${k})">`
+      + `<path d="M-70 0 V-36 h140 V0Z" fill="#7a3a2a"/><path d="M-20 0 V-80 h40 V0Z" fill="#8a4430"/>`
+      + `<path d="M-24 -80 h48 v-8 h-6 v6 h-6 v-6 h-6 v6 h-6 v-6 h-6 v6 h-6 v-6 h-6 v6 h-6Z" fill="#6a3020"/>`
+      + `<path d="M-60 0 V-50 h20 V0Z M40 0 V-50 h20 V0Z" fill="#7a3a2a"/><path d="M-64 -50 L-50 -78 L-36 -50Z M36 -50 L50 -78 L64 -50Z" fill="#3a3e4a"/>`
+      + `<path d="M-74 -36 L-58 -48 L-42 -36Z M42 -36 L58 -48 L74 -36Z" fill="#3a3e4a"/>`
+      + [[-8, -60], [4, -60], [-8, -36], [4, -36], [-56, -36], [44, -36], [-30, -22], [24, -22]].map(([x, y]) => `<rect x="${x}" y="${y}" width="5" height="8" fill="#ffd890"/>`).join('')
+      + `</g>`;
+    // the loch, holding the sky, with a glint
+    s += `<path d="M0 ${h * .47} C${w * .3} ${h * .44} ${w * .6} ${h * .5} ${w} ${h * .46} V${h * .53} C${w * .6} ${h * .56} ${w * .3} ${h * .51} 0 ${h * .54}Z" fill="url(#fdLoch)" opacity=".9"/>`
+      + `<path d="M${w * .74} ${h * .48} h${w * .06} M${w * .7} ${h * .5} h${w * .1}" stroke="#fff" stroke-width="2" opacity=".5"/>`;
+    // the field: mown stripes, heather, a dry-stone wall
     s += `<path d="M0 ${h * .52} C${w * .3} ${h * .5} ${w * .7} ${h * .54} ${w} ${h * .5} V${h} H0Z" fill="url(#fdGrass)"/>`;
-    for (let i = 0; i < 60; i++) { const x = (i * 97) % w, y = h * .56 + ((i * 53) % (h * .42)); s += `<path d="M${x} ${y} l2 -7 l2 7" stroke="#3a5028" stroke-width="1.5" fill="none" opacity=".7"/>`; }
-    // pines at the edges
-    const pine = (x, y, hh) => `<path d="M${x} ${y - hh} L${x - hh * .28} ${y - hh * .45} L${x - hh * .14} ${y - hh * .45} L${x - hh * .36} ${y} L${x + hh * .36} ${y} L${x + hh * .14} ${y - hh * .45} L${x + hh * .28} ${y - hh * .45}Z" fill="#18221a"/>`;
-    [[.03, .62, 160], [.08, .58, 120], [.95, .6, 150], [.9, .57, 110]].forEach(([x, y, hh]) => { s += pine(w * x, h * y, hh * h / 700); });
-    // the prize chest on its trestle
+    for (let i = 0; i < 9; i++) s += `<path d="M${w * (i / 8)} ${h} L${w * (.5 + (i / 8 - .5) * .25)} ${h * .53}" stroke="#fff" stroke-width="${w * .04}" opacity=".035"/>`;
+    s += `<path d="M0 ${h * .555} C${w * .3} ${h * .535} ${w * .7} ${h * .575} ${w} ${h * .535}" stroke="#6a6a62" stroke-width="${h * .018}" fill="none" stroke-dasharray="${h * .025} ${h * .006}" opacity=".85"/>`;
+    for (let i = 0; i < 90; i++) { const x = R(0, w, r), y = R(h * .58, h, r); s += `<circle cx="${x}" cy="${y}" r="${R(1.5, 3.5, r)}" fill="${i % 3 ? '#6a3a5e' : '#7e4a6e'}" opacity=".55"/>`; }
+    for (let i = 0; i < 70; i++) { const x = (i * 97) % w, y = h * .58 + ((i * 53) % (h * .4)); s += `<path d="M${x} ${y} l-2 -8 M${x + 3} ${y} l1 -10 M${x + 6} ${y} l3 -7" stroke="#3a5028" stroke-width="1.5" fill="none" opacity=".75"/>`; }
+    // pine stands at the edges
+    const pine = (x, y, hh, c) => `<path d="M${x} ${y - hh} L${x - hh * .22} ${y - hh * .55} L${x - hh * .1} ${y - hh * .55} L${x - hh * .3} ${y - hh * .22} L${x - hh * .14} ${y - hh * .22} L${x - hh * .38} ${y} L${x + hh * .38} ${y} L${x + hh * .14} ${y - hh * .22} L${x + hh * .3} ${y - hh * .22} L${x + hh * .1} ${y - hh * .55} L${x + hh * .22} ${y - hh * .55}Z" fill="${c}"/>`;
+    for (let i = 0; i < 7; i++) s += pine(w * (.0 + i * .025), h * (.6 + (i % 2) * .03), (110 + (i % 3) * 40) * k, i % 2 ? '#1a2418' : '#22301e');
+    for (let i = 0; i < 7; i++) s += pine(w * (.85 + i * .025), h * (.6 + (i % 2) * .03), (110 + (i % 3) * 40) * k, i % 2 ? '#1a2418' : '#22301e');
+    // team banners either side
+    for (const [x, col] of [[.3, '#8e1a2a'], [.7, '#1a3a6a']]) {
+      s += `<path d="M${w * x} ${h * .62} V${h * .4}" stroke="#2a2018" stroke-width="4"/>`
+        + `<path d="M${w * x} ${h * .41} h${w * .05} l-${w * .012} ${h * .03} l${w * .012} ${h * .03} h-${w * .05}Z" fill="${col}"/>`;
+    }
+    // the prize chest, iron-bound, on a draped trestle
     const bx = w / 2, by = h * .56;
-    s += `<rect x="${bx - w * .06}" y="${by}" width="${w * .12}" height="${h * .015}" fill="#3a2414"/>`
+    s += `<ellipse cx="${bx}" cy="${by + h * .1}" rx="${w * .09}" ry="${h * .015}" fill="#000" opacity=".3"/>`
       + `<path d="M${bx - w * .05} ${by + h * .015} l-8 ${h * .08} M${bx + w * .05} ${by + h * .015} l8 ${h * .08}" stroke="#3a2414" stroke-width="5"/>`
-      + `<rect x="${bx - w * .045}" y="${by - h * .08}" width="${w * .09}" height="${h * .08}" rx="4" fill="url(#fdChest)" stroke="#c9a04e" stroke-width="2"/>`
-      + `<path d="M${bx - w * .045} ${by - h * .08} q${w * .045} ${-h * .05} ${w * .09} 0" fill="#7a4420" stroke="#c9a04e" stroke-width="2"/>`
-      + `<rect x="${bx - 7}" y="${by - h * .06}" width="14" height="16" rx="2" fill="#d8b15e"/>`;
-    s += `<rect width="${w}" height="${h}" fill="url(#vignette)" opacity=".7"/></svg>`;
+      + `<path d="M${bx - w * .065} ${by} h${w * .13} v${h * .05} q-${w * .065} ${h * .015} -${w * .13} 0Z" fill="url(#fdCloth)"/>`
+      + `<rect x="${bx - w * .045}" y="${by - h * .08}" width="${w * .09}" height="${h * .08}" rx="4" fill="url(#fdChest)" stroke="#2a2a2e" stroke-width="2"/>`
+      + `<path d="M${bx - w * .045} ${by - h * .08} q${w * .045} ${-h * .05} ${w * .09} 0" fill="#8a4e22" stroke="#2a2a2e" stroke-width="2"/>`
+      + `<path d="M${bx - w * .03} ${by - h * .1} V${by} M${bx + w * .03} ${by - h * .1} V${by}" stroke="#3a3a40" stroke-width="5"/>`
+      + `<rect x="${bx - 8}" y="${by - h * .062}" width="16" height="18" rx="2" fill="#d8b15e" stroke="#8a6a2a"/>`;
+    s += `<rect width="${w}" height="${h}" fill="url(#vignette)" opacity=".6"/></svg>`;
     return s;
   }
+
   // ── THE ROUND TABLE SET — drawn from the US show's chamber, not a banquet hall.
   // The table is a set built in its own room: a dark octagon of walnut panels,
   // each bay a brass lattice lit amber from behind, thin white light bars set in

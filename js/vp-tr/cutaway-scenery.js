@@ -389,7 +389,7 @@ export const TRScenery = (function () {
     const cx = w / 2;
     let s = `<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" style="position:absolute;inset:0">${DEFS}
       <defs>
-        <radialGradient id="tuRoom" cx=".5" cy=".55" r=".8"><stop offset="0" stop-color="#4a1a14"/><stop offset=".5" stop-color="#1e0a0c"/><stop offset="1" stop-color="#050203"/></radialGradient>
+        <radialGradient id="tuRoom" cx=".5" cy=".6" r=".75"><stop offset="0" stop-color="#ff9a4a" stop-opacity=".08"/><stop offset=".45" stop-color="#2a0e0c" stop-opacity=".45"/><stop offset="1" stop-color="#050203" stop-opacity=".97"/></radialGradient>
         <linearGradient id="tuDrape" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3a0610"/><stop offset=".3" stop-color="#7a1424"/><stop offset=".55" stop-color="#4a0a14"/><stop offset=".8" stop-color="#8a1a2a"/><stop offset="1" stop-color="#2a040a"/></linearGradient>
         <linearGradient id="tuGlass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a3a6a"/><stop offset=".5" stop-color="#5a1a3a"/><stop offset="1" stop-color="#1a2440"/></linearGradient>
         <linearGradient id="tuBeam" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b8c8f0" stop-opacity=".28"/><stop offset="1" stop-color="#b8c8f0" stop-opacity="0"/></linearGradient>
@@ -399,9 +399,25 @@ export const TRScenery = (function () {
         <radialGradient id="tuSlab" cx=".5" cy=".4" r=".7"><stop offset="0" stop-color="#4e4440"/><stop offset=".7" stop-color="#2e2826"/><stop offset="1" stop-color="#1a1618"/></radialGradient>
         <radialGradient id="tuWarm" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffb060" stop-opacity=".45"/><stop offset="1" stop-color="#ffb060" stop-opacity="0"/></radialGradient>
       </defs>`;
-    // the stone, and the red dark in it
-    s += `<rect width="${w}" height="${h}" fill="url(#ashlarIn)"/><rect width="${w}" height="${h}" fill="url(#tuRoom)" opacity=".9"/>`;
-    for (let i = 0; i < 9; i++) s += `<path d="M0 ${h * (.06 + i * .075)} Q${cx} ${h * (i * .075)} ${w} ${h * (.06 + i * .075)}" stroke="#000" stroke-width="2" opacity=".28" fill="none"/>`;
+    // THE STONE: real masonry — staggered courses of grey blocks with mortar
+    // between, each a slightly different stone, the candlelight warming the
+    // middle and the dark taking the edges. (It read as wooden planks when it
+    // was a tint over thin lines; the user: "the conclave is still wood".)
+    const rr = rng(97);
+    s += `<rect width="${w}" height="${h * .72}" fill="#1a1716"/>`;
+    const rowH = h * .062;
+    for (let row = 0; row * rowH < h * .72; row++) {
+      const y = row * rowH, off = (row % 2) * .5;
+      let x = -off * w * .07;
+      while (x < w) {
+        const bw = w * (.055 + rr() * .035);
+        const shade = Math.floor(58 + rr() * 26);
+        s += `<rect x="${(x + 2).toFixed(1)}" y="${(y + 2).toFixed(1)}" width="${(bw - 4).toFixed(1)}" height="${(rowH - 4).toFixed(1)}" rx="3" fill="rgb(${shade},${shade - 6},${shade - 10})"/>`
+          + `<rect x="${(x + 2).toFixed(1)}" y="${(y + 2).toFixed(1)}" width="${(bw - 4).toFixed(1)}" height="3" fill="#fff" opacity=".06"/>`;
+        x += bw;
+      }
+    }
+    s += `<rect width="${w}" height="${h}" fill="url(#tuRoom)" opacity=".82"/>`;
     // THE ARCH at the back, and the lancet window in it
     const aw = w * .2, ay = h * .08, ah = h * .5;
     s += `<path d="M${cx - aw / 2} ${ay + ah} V${ay + aw * .45} Q${cx - aw / 2} ${ay} ${cx} ${ay - h * .02} Q${cx + aw / 2} ${ay} ${cx + aw / 2} ${ay + aw * .45} V${ay + ah}Z" fill="#0a0406" stroke="#3a2420" stroke-width="10"/>`;

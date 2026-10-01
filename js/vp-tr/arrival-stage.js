@@ -193,16 +193,20 @@ function ring(slots, W, H) {
 // What is true at step idx: outside or in, who is out of the cars, which car
 // is on the gravel, whether the blindfolds are down.
 function stateAt(S) {
-  let inside = false, car = null, cars = 0, out = [], cloths = false, newest = null;
+  let inside = false, car = null, cars = 0, out = [], cloths = false, newest = null, blind = false;
   for (let k = 0; k <= S.idx; k++) {
-    const m = S.steps[k].meta || {};
+    const st = S.steps[k], m = st.meta || {};
+    // THE BLINDFOLDS: on the table when the host first mentions them, and ON
+    // THE FACES once the host has told them to put them on
+    if (inside && /blindfold/i.test(st.text || '')) cloths = true;
+    if (inside && st.t === 'host' && /put it on/i.test(st.text || '')) blind = true;
     if (m.kind === 'car') { car = m.id; cars++; newest = null; }
     if (m.kind === 'intro' && !out.includes(m.name)) { out.push(m.name); newest = m.name; }
     if (m.kind === 'lineup') for (const n of m.names) if (!out.includes(n)) { out.push(n); newest = n; }
     if (m.kind === 'gather' || m.kind === 'briefing' || m.kind === 'rule' || m.kind === 'line') inside = true;
-    if (m.kind === 'line') cloths = true;
+    if (m.kind === 'line') { cloths = true; blind = true; }
   }
-  return { inside, car, cars, out, cloths, newest };
+  return { inside, car, cars, out, cloths: cloths && !blind, newest, blind };
 }
 
 // the terrace line: arrivals stand along the gravel in the order they came
@@ -248,7 +252,7 @@ function paint(root, S, fresh) {
   const carEl = outEl.querySelector('.tpa-car'), folk = outEl.querySelector('.tpa-folk');
   const ringEl = inEl.querySelector('.tpa-ring'), cloths = inEl.querySelector('.tpa-cloths');
   const start = root.querySelector('.trs-start');
-  const r = S.idx >= 0 ? stateAt(S) : { inside: false, car: null, cars: 0, out: [], cloths: false, newest: null };
+  const r = S.idx >= 0 ? stateAt(S) : { inside: false, car: null, cars: 0, out: [], cloths: false, newest: null, blind: false };
   const st = S.idx >= 0 ? S.steps[S.idx] : null;
   const m = (st && st.meta) || {};
   const firstOfBeat = st && (S.steps[S.idx - 1] || {}).beat !== st.beat;
@@ -295,17 +299,20 @@ function paint(root, S, fresh) {
   const cutIn = r.inside && !S.wasInside && fresh;
   if (cutIn) trPlay('tr-door');
   const pw = Math.min(H * .085, R.gap * .56);
+  const bandsOn = r.blind && !S.wasBlind && fresh;
   ringEl.innerHTML = r.inside ? D.names.map((name, i) => {
     const p = R.at((i + 1) / slots);
-    return `<div class="tpa-seat${cutIn ? ' tpa-sit' : ''}" style="left:${p.x}px;top:${p.y}px;width:${pw}px;z-index:${100 + Math.round(p.y)};--d:${(0.5 + i * 0.07).toFixed(2)}s">`
-      + `<div class="tpa-av">${face(name)}</div><div class="tpa-nm">${esc(name)}</div></div>`;
+    return `<div class="tpa-seat${cutIn ? ' tpa-sit' : ''}${r.blind ? ' tpa-blind' : ''}${bandsOn ? ' tpa-bandin' : ''}" style="left:${p.x}px;top:${p.y}px;width:${pw}px;z-index:${100 + Math.round(p.y)};--d:${(0.5 + i * 0.07).toFixed(2)}s;--b:${(i * 0.09).toFixed(2)}s">`
+      + `<div class="tpa-av">${face(name)}<i class="tpa-band"></i></div><div class="tpa-nm">${esc(name)}</div></div>`;
   }).join('') : '';
+  if (bandsOn) trPlay('tr-hush');
+  S.wasBlind = r.blind;
   const clothsFresh = r.cloths && !S.wasCloths && fresh;
   cloths.innerHTML = r.cloths ? D.names.map((_, i) => {
     const p = R.at((i + 1) / slots, .78);
     return `<i class="tpa-cloth${clothsFresh ? ' tpa-drop' : ''}" style="left:${p.x}px;top:${p.y}px;--d:${(i * 0.08).toFixed(2)}s"></i>`;
   }).join('') : '';
-  if (clothsFresh) trPlay('tr-hush');
+  if (clothsFresh) trPlay('tr-letter');
   S.wasInside = r.inside; S.wasCloths = r.cloths;
   // camera: the host holds the room while they speak
   const hostSpeaks = r.inside && st && st.t === 'host';
@@ -380,6 +387,12 @@ const CSS = `
   letter-spacing:.14em;text-transform:uppercase;color:#ded6c4;background:rgba(4,7,5,.74);border:1px solid rgba(222,214,196,.17)}
 /* the chamber */
 .tpa-seat{position:absolute;transform:translate(-50%,-50%);text-align:center}
+.tpa-band{position:absolute;left:-6%;right:-6%;top:27%;height:17%;z-index:3;transform:scaleX(0);transform-origin:0 50%;
+  background:linear-gradient(180deg,#1a1a1c,#050506 60%,#1a1a1c);box-shadow:0 2px 6px rgba(0,0,0,.7);border-radius:3px}
+.tpa-seat.tpa-blind .tpa-band{transform:scaleX(1)}
+.tpa-seat.tpa-blind{filter:brightness(.85) saturate(.85)}
+.tpa-seat.tpa-bandin .tpa-band{animation:tpaBand .6s cubic-bezier(.2,.9,.3,1) both;animation-delay:var(--b)}
+@keyframes tpaBand{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 .tpa-seat.tpa-sit{animation:tpaSit .8s cubic-bezier(.2,.8,.3,1) both;animation-delay:var(--d)}
 @keyframes tpaSit{from{opacity:0;transform:translate(-50%,-50%) translateY(-26px)}to{opacity:1;transform:translate(-50%,-50%)}}
 .tpa-host{position:absolute;width:66px;transform:translate(-50%,-50%);z-index:90;text-align:center}

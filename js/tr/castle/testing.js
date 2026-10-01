@@ -935,7 +935,7 @@ const DECOY_LINES = {
   malicious: [
     '{b} takes the planted secret and uses it, on purpose.\n{a} (to camera): "{b} used my fake secret to get something. That’s not a slip. That’s a play."',
     '{b} trades {a}’s "secret" for leverage the moment it’s useful.\n{a} (to camera): "Now I know exactly what {b} does with things I tell {bObj}."',
-    '{b} spends the fake secret deliberately.\n{a} (to camera): {cam:holding-info}',
+    '{b} spends the fake secret deliberately.\n{a} (to camera): "{b} used it the first chance there was. That tells me everything."',
     '{b} uses {a}’s secret against {aObj}.\n{a} (to camera): "Fake secret, real betrayal."',
   ],
   caughtTest: [

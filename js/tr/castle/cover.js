@@ -826,7 +826,8 @@ registerEvent({
     const { thread, cited } = arcContinue(api, FAMILY, [a, b], ctx.ep,
       lineFor(DOUBLE_BLUFF_LINES[branch], `cover-double-bluff|${branch}|${ctx.ep}`, { a, b }),
       { source: sceneWhy });
-    const out = { branch, topic: b, topicKind: 'cover-deflect', pair: [a, b], speaker: a, respondent: b,
+    // a double bluff is told TO {b}, about {a}'s own side: {b} is the audience, not a target
+    const out = { branch, topic: b, topicKind: 'cover-bluff', pair: [a, b], speaker: a, respondent: b,
       threadId: thread?.id, cited, bondDelta };
     // `masterful` only where it was. A move that got asked the next question,
     // or was declined outright, is not a Traitor doing the thing well — and

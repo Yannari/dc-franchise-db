@@ -1413,7 +1413,7 @@ const ROAD_RAISE_LINES = {
   ],
   // Raised, and put back down again without an answer.
   'let-it-lie': [
-    '{a} carries it the whole way out, and the whole way back.\n{a} (to camera): {cam:drop-it}',
+    '{a} keeps it to {aRef} the whole way out.\n{a} (to camera): {cam:drop-it}',
     '{a} almost says it, twice.\n{b}: "What?"\n{a}: "Nothing. Doesn’t matter."',
     '{a} decides not to bring it up.\n{a} (to camera): "Not worth ruining a nice walk over."',
     '{a} keeps quiet about it.\n{a} (to camera): {cam:holding-info}',

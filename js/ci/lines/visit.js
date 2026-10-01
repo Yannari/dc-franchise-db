@@ -70,7 +70,7 @@ export const VISIT = {
       { by: 'a', react: "Is {b} coming here? Please don't come here." },
     ], beat: '{a} sits very still on the couch, staring at the door.' },
     { id: 'visit.wait.03', turns: [
-      { by: 'a', say: "If {b} walks through that door, what do I say? 'Hi, sorry I didn't save you'?" },
+      { by: 'a', say: "If {b} walks through that door, what do I say? 'Hi, sorry you got blocked'?" },
     ], beat: '{a} practices a smile in the mirror.' },
     { id: 'visit.wait.04', turns: [
       { by: 'a', react: "I'm not even wearing pants. Why am I not wearing pants?" },

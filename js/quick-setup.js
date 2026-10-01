@@ -1180,7 +1180,7 @@ const CONFIG_SCOPE = {
     'cfg-bb-safety-stops':   ['big-brother'],
     'cfg-bb-havenot-count':  ['big-brother'],
     'cfg-bb-departures':     ['big-brother'],
-    'f-tribe':               ['total-drama'],  // a house has no tribes to join
+    'f-tribe':               ['total-drama', 'the-circle'],  // a house has no tribes to join; the Circle's are its categories
     // The cast form's castle-only field, which says so on its own label —
     // "Background (The Traitors)" — and was drawn on every show anyway, so a
     // queen was being cast as a Civilian. The label naming a show is exactly

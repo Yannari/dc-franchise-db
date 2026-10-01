@@ -21,7 +21,8 @@
 import { DEFAULT_POOL } from './ci/default-pool.js';
 import { JOBS, JOB_GROUPS, DETAILS, TOPICS, STATUSES, PHOTO, jobOf, tellsOf, bioFor, promptFor } from './ci/persona-data.js';
 import { personaStyle } from './ci/cover.js';
-import { circleRoles, rosterFactsOf, circleKnownAs } from './ci-run.js';
+import { circleRoles, rosterFactsOf, circleKnownAs, facePersonas } from './ci-run.js';
+import { isFace, categoryKind, FACE_LINKS, CIRCLE_CATEGORIES } from './ci/categories.js';
 import { REL_KINSHIP, relationships, setRelationships, kinshipBetween } from './core.js';
 import { relationFromKin, KIN_OF } from './ci/shared.js';
 import { ageFrom } from './ci/profiles.js';
@@ -32,7 +33,11 @@ import { setPhotoContext, photosPanelHTML, afterPhotosRender, onPhotosClick, onP
 
 const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const cfg = () => window.seasonConfig || {};
-const cast = () => (window.players || []).filter(p => p && p.name);
+// The people who play: a Catfish face is in the cast to be played AS (ci/categories.js).
+const cast = () => (window.players || []).filter(p => p && p.name && !isFace(p));
+const faceOf = name => (window.players || []).find(p => p && p.name === name);
+// A persona's picture: the author's kept image, or a roster character's portrait.
+const personaPic = f => (String(f || '').startsWith('portrait:') ? safeAvatar(faceOf(f.slice(9)) || f.slice(9)) : photoSrc(f));
 // Reading never writes: drawing the panel must not leave an empty entry per player.
 const setupOf = name => cfg().ciSetup?.[name] || {};
 const setupFor = name => ((cfg().ciSetup ||= {})[name] ||= {});
@@ -56,8 +61,24 @@ const SAMPLE = {
   dry: "cool so we're all just gonna pretend yesterday didn't happen. love that for us",
 };
 
-/** The pool the season will play: the author's, or the default. */
-const poolNow = () => (Array.isArray(cfg().ciPool) ? cfg().ciPool : DEFAULT_POOL);
+/** The pool the season will play: the author's (or the default), and the
+ *  Catfish faces from the cast. With faces and no pool of the author's own,
+ *  the faces are the whole pool (ci-run.js _inputs says the same). */
+const poolNow = () => {
+  const faces = facePersonas(cast().map(p => p.name), cfg().ciSetup || {});
+  return [...(Array.isArray(cfg().ciPool) ? cfg().ciPool : faces.length ? [] : DEFAULT_POOL), ...faces];
+};
+// Who plays: Day 1 or Newcomers is the category the player was put in (the
+// cast form's dropdown or the Cast Room's columns); the chip and "When they
+// arrive" move them between the two.
+function setCategory(name, role) {
+  const p = faceOf(name);
+  if (!p) return;
+  p.tribe = role ? CIRCLE_CATEGORIES.find(c => c.kind === role).name : '';
+  const st = (cfg().ciSetup || {})[name]; if (st) delete st.role;
+  try { window.saveCast?.(); } catch { /* the page may not have it */ }
+}
+const roleSetOf = name => setupOf(name).role || (['starter', 'newcomer'].includes(categoryKind(faceOf(name)?.tribe)) ? categoryKind(faceOf(name).tribe) : '');
 /** The author's own pool, copied from the default the first time it changes. */
 function ownPool() {
   const c = cfg();
@@ -83,7 +104,7 @@ function drawResult(name) {
   if (d.mode === 'catfish') {
     const persona = poolNow().find(p => p.id === d.personaId);
     const pinned = setupOf(name).catfish === d.personaId;
-    return `<div class="ci-draw ci-cat">${face(photoSrc(persona?.face), (s.name || '?')[0], 'var(--ci-pk)')}<div>
+    return `<div class="ci-draw ci-cat">${face(personaPic(persona?.face), (s.name || '?')[0], 'var(--ci-pk)')}<div>
       <div class="ci-dk">Plays as${pinned ? ' <span class="ci-pin">Pinned</span>' : ''}</div><div class="ci-dn">${esc(s.name)}, ${esc(s.age)}</div>
       <div class="ci-dm">${esc(line)}</div><div class="ci-why">${esc(REASON_WORDS[d.reason] || '')}</div></div></div>`;
   }
@@ -118,13 +139,14 @@ function planRow(p, autoRole, auto = { rep: 'none', stars: null }) {
     <div class="ci-who">${face(safeAvatar(p), p.name[0])}<div>
       <div class="ci-nm">${esc(p.name)}</div><div class="ci-meta">${esc(p.archetype || '')}${p.age ? ` · ${esc(p.age)}` : ''}</div>
       <div class="ci-k ci-role-k">When they arrive</div>
-      ${seg('role', s.role || '', [['starter', 'Day 1'], ['newcomer', 'Newcomer'], ['', `Decide (${autoRole === 'starter' ? 'Day 1' : 'later'})`]])}</div></div>
+      ${seg('role', roleSetOf(p.name), [['starter', 'Day 1'], ['newcomer', 'Newcomer'], ['', `Decide (${autoRole === 'starter' ? 'Day 1' : 'later'})`]])}</div></div>
     <div class="ci-mid">
       <div class="ci-grp">Who they play</div>
       <label class="ci-fld"><span class="ci-k">Plays as someone else</span>
         ${seg('catfish', cf, [['', 'Decide'], ['always', 'Yes'], ['never', 'No']])}
         ${cf === 'never' ? '' : `<select class="ci-in" data-field="persona" title="${cf === 'always' ? 'Who they play' : 'If they do, who they play'}"><option value="">${cf === 'always' ? 'Whichever fits best' : 'If they do: whichever fits best'}</option>${personas.map(x =>
-          `<option value="${esc(x.id)}"${pick === x.id ? ' selected' : ''}>As ${esc(x.handle)}, ${esc(x.age)}</option>`).join('')}</select>`}</label>
+          `<option value="${esc(x.id)}"${pick === x.id ? ' selected' : ''}>As ${esc(x.handle)}, ${esc(x.age)}${x.fromRoster ? ' (a real person)' : ''}</option>`).join('')}</select>`}</label>
+      ${String(pick).startsWith('face:') && cf !== 'never' ? faceLinkField(p.name, pick.slice(5)) : ''}
       <label class="ci-fld"><span class="ci-k">If they play themselves</span>
         ${seg('mode', s.mode || '', [['', 'Decide'], ['honest', 'Honest'], ['polished', 'Polished'], ['edited', 'Edited']])}</label>
       <div class="ci-grp">Their real life <em>grey = from Create Character</em></div>
@@ -192,6 +214,16 @@ function setKin(name, partner, kin) {
   try { localStorage.setItem('simulator_rels', JSON.stringify(relationships)); } catch { /* storage full or blocked */ }
   for (const n of [name, partner]) { const st = (cfg().ciSetup || {})[n]; if (st) delete st.relation; }
 }
+/** Who the player is to the real person they play as: the Relationships tab's
+ *  row, so it sticks the way a shared apartment's does (every show and every
+ *  later season reads it). */
+function faceLinkField(name, faceName) {
+  const kin = kinshipBetween(name, faceName);
+  return `<label class="ci-fld"><span class="ci-k">${esc(faceName)} is their</span>
+    <select class="ci-in" data-facekin="${esc(faceName)}">${FACE_LINKS.map(([k, l]) =>
+      `<option value="${k}"${(kin === 'none' ? '' : kin) === k ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select>
+    <span class="ci-small">Saved on the Relationships tab. Family or a partner: they play them for family; anyone else: for the game.</span></label>`;
+}
 const RELATION_NOTES = {
   twins: 'Twins sound alike: their voice barely wobbles, so they are hard to catch.',
   parent: 'The older one is the parent, and pulls rank: the parent wins more of the arguments over a message.',
@@ -253,7 +285,9 @@ function takenBy() {
   return out;
 }
 function slot(persona) {
-  const url = photoSrc(persona.face);
+  const url = personaPic(persona.face);
+  // A real person's portrait is theirs: change it in Create Character.
+  if (persona.fromRoster) return `<div class="ci-slot has"${url ? ` style="background-image:url('${esc(url)}')"` : ''}></div>`;
   return `<label class="ci-slot${url ? ' has' : ''}"${url ? ` style="background-image:url('${esc(url)}')"` : ''}>
     <input type="file" accept="image/*" data-photo="${esc(persona.id)}" hidden>${url ? '' : 'Drop your image<br>or click'}</label>`;
 }
@@ -261,14 +295,15 @@ function poolCard(p, taken) {
   const t = taken[p.id];
   const job = jobOf(p);
   return `<div class="ci-pc" data-id="${esc(p.id)}">
-    <span class="ci-tag ${t ? 'taken' : dealt() ? 'stock' : 'wait'}">${esc(t || (dealt() ? 'STOCK' : ''))}</span>
+    <span class="ci-tag ${t ? 'taken' : dealt() ? 'stock' : 'wait'}">${esc(t || (dealt() ? 'STOCK' : p.fromRoster ? 'REAL PERSON' : ''))}</span>
     ${slot(p)}
     <div class="ci-handle">${esc(p.handle)}</div>
-    <div class="ci-hm">${esc(p.age)} · ${esc(p.job || job?.name?.toLowerCase() || '')} · ${esc(p.status || '')}</div>
+    <div class="ci-hm">${[p.age, p.job || job?.name?.toLowerCase(), p.status].filter(Boolean).map(esc).join(' · ')}</div>
     <div class="ci-bio">${esc(p.bio || bioFor(p))}</div>
     <div class="ci-chips">${REASONS.map(r => `<span class="ci-chip${(p.reasons || []).includes(r) ? ' on' : ''}">${r}</span>`).join('')}</div>
     <div class="ci-tells">Gets caught on: <b>${esc(tellsOf(p).map(t2 => TOPICS[t2]?.label || t2).join(', ') || 'nothing yet')}</b></div>
-    <div class="ci-acts"><button type="button" data-act="edit">Edit</button><button type="button" data-act="dup">Duplicate</button><button type="button" data-act="del">Delete</button></div>
+    ${p.fromRoster ? `<div class="ci-acts ci-small">${p.playedBy ? `A real person from the roster, played by ${esc(p.playedBy)}` : 'A real person from the roster. Nobody is pinned to them yet: the draw can give them to a catfish.'}</div>`
+      : '<div class="ci-acts"><button type="button" data-act="edit">Edit</button><button type="button" data-act="dup">Duplicate</button><button type="button" data-act="del">Delete</button></div>'}
   </div>`;
 }
 function editor(p) {
@@ -371,8 +406,8 @@ function onClick(ev) {
     ev.stopPropagation();
     const players = cast(), roles = circleRoles(players.map(x => x.name), cfg().ciSetup || {});
     const p = players.find(x => x.name === v);
-    const now = setupOf(v).role || roles[players.indexOf(p)];
-    setupFor(v).role = now === 'starter' ? 'newcomer' : 'starter';
+    const now = roleSetOf(v) || roles[players.indexOf(p)];
+    setCategory(v, now === 'starter' ? 'newcomer' : 'starter');
     return done();
   }
   if (act === 'plan-who') { window._ciPlanWho = v; window._ciPlanOverview = false; return renderCircleCastSetup(); }
@@ -383,6 +418,7 @@ function onClick(ev) {
     const s = setupFor(row.dataset.name);
     // An older pin (a persona id in `catfish`) keeps its persona when the answer changes.
     if (act === 'catfish' && s.catfish && !['never', 'always'].includes(s.catfish)) { s.persona ??= s.catfish; delete s.catfish; }
+    if (act === 'role') { setCategory(row.dataset.name, v || ''); return done(); }
     if (act === 'jobCost') s.jobCost = Number(v);
     else if (v === '' || v == null) delete s[act];
     else s[act] = v;
@@ -417,6 +453,9 @@ function onChange(ev) {
   if (onPhotosChange(el)) return;
   const row = el.closest('.ci-row');
   if (row && el.dataset.kin) { setKin(row.dataset.name, el.dataset.kin, el.value); return done(); }
+  if (row && el.dataset.facekin) { setKin(row.dataset.name, el.dataset.facekin, el.value || 'none'); return done(); }
+  // Playing as a real person is a Yes: the draw only honors a pinned persona on a Yes.
+  if (row && el.dataset.field === 'persona' && el.value.startsWith('face:')) setupFor(row.dataset.name).catfish = 'always';
   if (row && el.dataset.field) {
     const s = setupFor(row.dataset.name);
     const f = el.dataset.field, v = el.value;

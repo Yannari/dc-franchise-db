@@ -89,6 +89,8 @@ export function ciLedgerRecord(rows = [], state = null, { cast = null, winners =
       chalWins: 0, schemesCaught: 0,
       archetype: archetypeOf(n),
       popularity: 0,
+      // A real person from the roster they played as (a Catfish face, ci/categories.js).
+      playedAs: String(state.profiles[h]?.personaId || '').startsWith('face:') ? state.profiles[h].personaId.slice(5) : null,
     };
   }
   // Friendship is both ways or not at all.

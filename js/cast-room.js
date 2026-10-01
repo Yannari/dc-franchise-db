@@ -13,6 +13,7 @@
 // through window (self-registered below), so there is no import cycle.
 // ══════════════════════════════════════════════════════════════════════
 
+import { CIRCLE_CATEGORIES } from './ci/categories.js';
 import { STATS, ARCHETYPE_NAMES, ARCHETYPES, players, relationships, seasonConfig } from './core.js';
 import { threat, threatTier, overall, tribeColor, playerAvatarUrl } from './players.js';
 import { seasonFormat } from './core.js';
@@ -121,7 +122,9 @@ export function castWarnings(pool, rels, configuredTribes, opts = {}) {
   const cast = pool || [];
   // A house has no tribes, so every tribe-shaped warning is about a thing the
   // format does not have. Optional 4th argument keeps the 3-arg contract.
-  const house = opts.format === 'big-brother';
+  // A house has no tribes; the Circle's categories are not teams to balance,
+  // and a player left out of them is on Decide, which is fine.
+  const house = opts.format === 'big-brother' || opts.format === 'the-circle';
   const groups = {};
   cast.filter(p => p.tribe).forEach(p => (groups[p.tribe] ??= []).push(p));
   const names = Object.keys(groups);
@@ -185,7 +188,11 @@ const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').re
 // Distinct tribe names actually present in the cast.
 function _castTribeNames() { return [...new Set(players.map(p => p.tribe).filter(Boolean))]; }
 // Configured tribe names (from season setup), if any.
-function _configuredTribeNames() { return (seasonConfig.tribes || []).map(t => t.name).filter(Boolean); }
+function _configuredTribeNames() {
+  // The Circle's categories are fixed (ci/categories.js): Day 1, Newcomers, Catfish faces.
+  if (_isCircle()) return CIRCLE_CATEGORIES.map(c => c.name);
+  return (seasonConfig.tribes || []).map(t => t.name).filter(Boolean);
+}
 // The tribe list the casting tools distribute across.
 function _toolTribeNames() {
   const cfg = _configuredTribeNames();
@@ -255,7 +262,7 @@ function _card(p, opts = {}) {
   const th = parseFloat(threat(p.stats)), tier = threatTier(th);
   const tribeChip = p.tribe
     ? `<span class="cr-chip" style="background:${tc}22;color:${tc};border-color:${tc}55">${esc(p.tribe)}</span>`
-    : `<span class="cr-chip cr-chip-none">No tribe</span>`;
+    : `<span class="cr-chip cr-chip-none">${_isCircle() ? 'Decide' : 'No tribe'}</span>`;
   const ret = p.isReturnee ? `<span class="cr-badge-ret" title="Returning player">RETURNING</span>` : '';
   const tribeSelect = opts.withSelect ? _tribeSelect(p) : '';
   return `<div class="cr-card" tabindex="0" role="button" aria-label="Edit ${esc(p.name)}"
@@ -275,7 +282,7 @@ function _card(p, opts = {}) {
 
 function _tribeSelect(p) {
   const names = _toolTribeNames();
-  const opts = [`<option value=""${!p.tribe ? ' selected' : ''}>Unassigned</option>`]
+  const opts = [`<option value=""${!p.tribe ? ' selected' : ''}>${_isCircle() ? 'Decide' : 'Unassigned'}</option>`]
     .concat(names.map(n => `<option value="${esc(n)}"${p.tribe === n ? ' selected' : ''}>${esc(n)}</option>`)).join('');
   return `<select class="cr-tribe-sel" data-pid="${esc(p.id)}" aria-label="Set tribe for ${esc(p.name)}"
     onclick="event.stopPropagation()" onchange="crChangeTribe(event)">${opts}</select>`;
@@ -321,7 +328,7 @@ function _filterBarHTML() {
   const opt = (v, label, sel) => `<option value="${esc(v)}"${sel === v ? ' selected' : ''}>${label}</option>`;
   const archOpts = [opt('', 'All archetypes', f.archetype)]
     .concat(Object.keys(ARCHETYPES).map(k => opt(k, esc(ARCHETYPE_NAMES[k] || k), f.archetype))).join('');
-  const tribeOpts = [opt('', 'All tribes', f.tribe), opt('__none__', 'No tribe', f.tribe)]
+  const tribeOpts = [opt('', _isCircle() ? 'All categories' : 'All tribes', f.tribe), opt('__none__', _isCircle() ? 'Decide' : 'No tribe', f.tribe)]
     .concat(_castTribeNames().map(n => opt(n, esc(n), f.tribe))).join('');
   const retOpts = [opt('all', 'All players', f.returnee), opt('returning', 'Returning', f.returnee), opt('new', 'New', f.returnee)].join('');
   const genderOpts = [opt('', 'Any gender', f.gender), opt('m', 'He/Him', f.gender), opt('f', 'She/Her', f.gender), opt('nb', 'They/Them', f.gender)].join('');
@@ -404,11 +411,12 @@ function _tribesBodyHTML(shown) {
   const unBody = un.length ? un.map(p => _card(p, { draggable: true, withSelect: true })).join('') : `<div class="cr-lane-hint">drop players here</div>`;
   lanes.push(`<div class="cr-lane cr-lane-un" data-tribe="" ondragover="crDragOver(event)" ondragleave="crDragLeave(event)" ondrop="crDrop(event)">
     <div class="cr-lane-head"><span class="cr-lane-dot" style="background:var(--muted)"></span>
-      <span class="cr-lane-name">Unassigned</span><span class="cr-lane-meta">${unAll.length}</span></div>
+      <span class="cr-lane-name">${_isCircle() ? 'Decide (a player, Day 1 or later)' : 'Unassigned'}</span><span class="cr-lane-meta">${unAll.length}</span></div>
     <div class="cr-lane-body">${unBody}</div>
   </div>`);
 
-  const toolbar = `<div class="cr-toolbar">
+  // The shuffling tools would deal Catfish faces in as players: not on the Circle.
+  const toolbar = _isCircle() ? `<div class="cr-toolbar"><span class="cr-toolbar-label">Drag each person into a category: Day 1 and Newcomers play; a Catfish face is someone a player plays as.</span></div>` : `<div class="cr-toolbar">
     <span class="cr-toolbar-label">Casting tools</span>
     <button class="cr-tool" onclick="crBalance()" title="Snake-distribute by total stats">Balance</button>
     <button class="cr-tool" onclick="crSnake()" title="Snake draft by threat">Snake Draft</button>
@@ -668,13 +676,13 @@ function _syncViewButtons(room) {
   const villa = _isVilla();
   const circle = _isCircle();
   let view = window._crView || 'grid';
-  if ((view === 'villa' && !villa) || (view === 'circle' && !circle) || (view === 'tribes' && (villa || circle))) view = 'grid';
+  if ((view === 'villa' && !villa) || (view === 'circle' && !circle) || (view === 'tribes' && villa)) view = 'grid';
   room.dataset.view = view;
   room.querySelectorAll('.cr-viewbtn[data-view]').forEach(b => {
     b.classList.toggle('active', b.dataset.view === view);
     if (b.dataset.view === 'villa') b.hidden = !villa;
     if (b.dataset.view === 'circle') b.hidden = !circle;
-    if (b.dataset.view === 'tribes') b.hidden = villa || circle;
+    if (b.dataset.view === 'tribes') { b.hidden = villa; b.textContent = circle ? 'Categories' : 'Tribes'; }
   });
 }
 

@@ -1,4 +1,5 @@
 // js/players.js - Player stats, pronouns, threat scoring, challenge records
+import { CIRCLE_CATEGORIES } from './ci/categories.js';
 import { gs, players, STATS, THREAT_TIERS, ARCHETYPES, DEFAULT_STATS, seasonConfig, seasonFormat } from './core.js';
 import {
   resolvePortrait, avatarUrl as registryAvatarUrl, legacyPortraitSelection,
@@ -44,6 +45,9 @@ export function tribeColor(tribe) {
   // Check user-configured tribe colors first
   const configured = (seasonConfig.tribes || []).find(t => t.name.toLowerCase() === tribe.toLowerCase());
   if (configured) return configured.color;
+  // The Circle's fixed categories (ci/categories.js).
+  const category = CIRCLE_CATEGORIES.find(c => c.name === tribe);
+  if (category) return category.color;
   // Fallback: keyword match then hash palette
   if (t.includes('champion')) return '#f59e0b';
   if (t.includes('contender')) return '#ef4444';

@@ -30,6 +30,8 @@ import { pairRelation } from './ci/shared.js';
 import { buildFranchiseMeta } from './franchise-meta.js';
 import { fameStarsFor } from './alumni.js';
 import { DEFAULT_POOL } from './ci/default-pool.js';
+import { categoryKind, isFace, reasonFromKin } from './ci/categories.js';
+import { ageFrom } from './ci/profiles.js';
 
 export const isCircleSeason = () => seasonFormat(seasonConfig) === CIRCLE_FORMAT;
 
@@ -44,10 +46,39 @@ function _seed() {
   return gs.ci.seed;
 }
 
+// The people who PLAY: a Catfish face is in the cast list (filled like a
+// tribe, ci/categories.js) but plays nobody's game; someone plays as them.
 const _cast = () => {
   const saved = Array.isArray(gs?.ci?.castOrder) && gs.ci.castOrder.length ? gs.ci.castOrder : null;
-  return saved || (players || []).map(p => p.name).filter(Boolean);
+  return saved || (players || []).filter(p => p?.name && !isFace(p)).map(p => p.name);
 };
+const _categoryRole = n => {
+  const k = categoryKind((players || []).find(p => p?.name === n)?.tribe);
+  return k === 'starter' || k === 'newcomer' ? k : null;
+};
+
+/** The Catfish faces as personas: real characters from the roster, put in the
+ *  Catfish faces category (user: "make the catfish real characters added like
+ *  everyone, so they can be used for future seasons or other shows"). Built
+ *  from their profile; their portrait is the photo. The player who plays as
+ *  one (the Profile Plan's "Plays as") and who they are to them (the
+ *  Relationships tab) give the reason: family for a relative or a partner,
+ *  strategy for anyone else; "experimental" lets a player who never schemes
+ *  still take a stranger's face. */
+export function facePersonas(cast = _cast(), setup = circleSetup()) {
+  return (players || []).filter(isFace).map(p => {
+    const facts = rosterFactsOf(p);
+    const id = `face:${p.name}`;
+    const by = cast.find(n => setup[n]?.persona === id) || null;
+    const kin = by ? kinshipBetween(by, p.name) : 'none';
+    return { id, handle: p.name, fromRoster: p.name, face: `portrait:${p.name}`,
+      age: Number(facts.age) || ageFrom(facts.birthdate) || 25, gender: p.gender === 'm' ? 'm' : 'f',
+      sexuality: p.sexuality || 'straight', job: facts.occupation || '', hometown: facts.hometown || null,
+      status: 'Single', details: [], photo: {}, fits: {}, bio: '',
+      ...(p.chatVoice ? { chatVoice: p.chatVoice } : {}),
+      reasons: [reasonFromKin(kin), 'experimental'], kin, playedBy: by };
+  });
+}
 
 /** Create Character's facts for a cast member. A cast entry carries only the
  *  game fields (name, stats, archetype, portrait); the age, birthdate,
@@ -101,9 +132,11 @@ export function circleSetup() { return { ...(seasonConfig.ciSetup || {}) }; }
  *  rest split as the US seasons did (about eight of thirteen start). */
 export function circleRoles(cast = _cast(), setup = circleSetup()) {
   const starters = Math.max(3, Math.round(cast.length * 0.62));
-  let open = starters - cast.filter(n => setup[n]?.role === 'starter').length;
+  // A role set in the Profile Plan, else the category the player was put in.
+  const roleOf = n => setup[n]?.role || _categoryRole(n);
+  let open = starters - cast.filter(n => roleOf(n) === 'starter').length;
   return cast.map(n => {
-    const set = setup[n]?.role;
+    const set = roleOf(n);
     if (set === 'starter' || set === 'newcomer') return set;
     if (open > 0) { open--; return 'starter'; }
     return 'newcomer';
@@ -255,8 +288,11 @@ export function circleShapeOf({ cast = [], setup = {}, config = {} } = {}) {
 function _inputs() {
   // No pool written: the default one (ci/default-pool.js). An empty list is
   // the author's choice of a season with no catfish, and stands.
-  const pool = Array.isArray(seasonConfig.ciPool) ? seasonConfig.ciPool : DEFAULT_POOL;
-  return { setup: circleSetup(), pool: [...pool], options: _options() };
+  // Catfish faces (real characters) join the pool; with faces and no pool
+  // of the author's own, the faces are the whole pool.
+  const faces = facePersonas();
+  const pool = Array.isArray(seasonConfig.ciPool) ? seasonConfig.ciPool : faces.length ? [] : DEFAULT_POOL;
+  return { setup: circleSetup(), pool: [...pool, ...faces], options: _options() };
 }
 const _sig = inputs => JSON.stringify(inputs);
 const _fingerprint = r => JSON.stringify([r?.num, r?.ci?.blocked, r?.ci?.active]);

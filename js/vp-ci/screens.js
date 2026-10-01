@@ -39,6 +39,7 @@ export function circleVpScreens(row) {
   if (!screens.length) {
     return [{ id: 'ci-empty', label: 'The day', html: `<style>${CIV_FONTS}${CIV_CSS}</style><div class="civ"><div class="civ-top"><div class="civ-logo">${LOGO}<div>THE CIRCLE<small>Episode ${esc(row.num)} · Day ${esc(row.day)}</small></div></div></div><p class="civ-ln vis">A quiet day in The Circle.</p></div>` }];
   }
+  if (typeof document !== 'undefined') queueMicrotask?.(() => applyTv(tvOn()));
   return screens.map((screen, si) => {
     const uid = `ci${esc(row.num)}-${si}`;
     reg()[uid] = { row, screen, idx: -1, auto: false, screens, si };
@@ -59,11 +60,43 @@ export function circleVpScreens(row) {
     <button type="button" class="civ-btn" id="civ-auto-${uid}" onclick="civAuto('${uid}')">Auto</button>
     <button type="button" class="civ-btn" onclick="civAll('${uid}')">Reveal all</button>
     <span class="civ-count" id="civ-count-${uid}">0 / ${screen.steps.length}</span>
+    <button type="button" class="civ-btn civ-tvbtn" onclick="civTv()" title="Fullscreen: just the picture (space / → / click for the next line, Esc to leave)">${TV_ICON} <span class="civ-tvOn">TV mode</span><span class="civ-tvOff">Exit TV mode</span></button>
   </div>
   <div class="civ-under"><div class="civ-script" id="civ-script-${uid}">${scriptHtml(row, screen)}</div>
     <aside class="civ-side" id="civ-side-${uid}">${sidebarHtml(row, screens, si, -1)}</aside></div>
 </div>`,
     };
+  });
+}
+
+// ── TV mode: just the picture, as big as the window ───────────────────
+// User: "do a fullscreen button like Perfect Match". The same switch as
+// vp-pm's TV mode: a class on the PLAYER (#visual-player), which survives
+// every screen change, plus the browser's real fullscreen on it. Remembered
+// per viewer; leaving fullscreen with Esc leaves TV mode too.
+const TV_ICON = '<svg viewBox="0 0 24 24" width="13" height="13" style="vertical-align:-2px"><rect x="2" y="4" width="20" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 21h8M12 17v4" stroke="currentColor" stroke-width="2"/></svg>';
+function tvOn() { try { return localStorage.getItem('ci-tv') === '1'; } catch { return false; } }
+function applyTv(on) {
+  if (typeof document === 'undefined') return;
+  document.getElementById('visual-player')?.classList.toggle('ci-tv', !!on);
+}
+export function civTv() {
+  const on = !tvOn();
+  try { localStorage.setItem('ci-tv', on ? '1' : '0'); } catch { /* per-viewer convenience only */ }
+  applyTv(on);
+  const player = typeof document !== 'undefined' ? document.getElementById('visual-player') : null;
+  try {
+    if (on && player?.requestFullscreen && !document.fullscreenElement) player.requestFullscreen().catch(() => {});
+    if (!on && document.fullscreenElement) document.exitFullscreen().catch(() => {});
+  } catch { /* fullscreen refused (an iframe, a phone): the bigger stage still applies */ }
+}
+if (typeof document !== 'undefined' && !globalThis.__civTv) {
+  globalThis.__civTv = true;
+  document.addEventListener('fullscreenchange', () => {
+    if (!document.fullscreenElement && tvOn() && document.getElementById('visual-player')?.classList.contains('ci-tv')) {
+      try { localStorage.setItem('ci-tv', '0'); } catch { /* fine */ }
+      applyTv(false);
+    }
   });
 }
 
@@ -87,7 +120,17 @@ function paint(uid, fresh) {
   const count = document.getElementById(`civ-count-${uid}`);
   if (count) count.textContent = `${Math.max(0, S.idx + 1)} / ${S.screen.steps.length}`;
   if (fresh) playStep(S.screen, S.idx);
-  if (fresh) { try { script?.querySelector(`[data-s="${S.idx}"]`)?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch { /* jsdom */ } }
+  // The new line is brought into view INSIDE the script box only. This was
+  // scrollIntoView, which also scrolls every ancestor: the page jumped down to
+  // the script on every click (user: "the screen always scrolls down").
+  if (fresh && script) {
+    const ln = script.querySelector(`[data-s="${S.idx}"]`);
+    if (ln) {
+      const top = ln.offsetTop - script.offsetTop, bottom = top + ln.offsetHeight;
+      if (bottom > script.scrollTop + script.clientHeight) script.scrollTop = bottom - script.clientHeight + 6;
+      else if (top < script.scrollTop) script.scrollTop = Math.max(0, top - 6);
+    }
+  }
 }
 export function civNext(uid) {
   const S = sync(uid);
@@ -132,7 +175,7 @@ export function civAuto(uid) {
   tick();
 }
 
-if (typeof window !== 'undefined') Object.assign(window, { civNext, civAll, civReset, civAuto });
+if (typeof window !== 'undefined') Object.assign(window, { civNext, civAll, civReset, civAuto, civTv });
 
 // The keyboard: space or the right arrow is the next line on whatever Circle
 // screen is showing (never while typing in a field).

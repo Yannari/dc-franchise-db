@@ -447,7 +447,7 @@ export const CIV_CSS = `
 .civ-btn.main{background:linear-gradient(90deg,var(--bl),var(--vi));color:#fff;border-color:transparent}
 .civ-btn.on{box-shadow:0 0 14px rgba(63,216,255,.6);color:#fff}
 .civ-count{margin-left:auto;font-size:12px;color:#9aa6d6;font-variant-numeric:tabular-nums}
-.civ-script{background:rgba(10,14,40,.6);border:1px solid rgba(63,216,255,.15);border-radius:12px;padding:10px 14px;max-height:260px;overflow:auto}
+.civ-tvbtn{margin-left:auto}.civ-tvbtn .civ-tvOff{display:none}.ci-tv .civ-tvbtn .civ-tvOn{display:none}.ci-tv .civ-tvbtn .civ-tvOff{display:inline}.ci-tv .civ .civ-under{display:none}.ci-tv .civ .civ-stagewrap{width:min(100%,calc((100vh - 210px) * 16 / 9))}.ci-tv .civ .civ-stage{cursor:pointer}#visual-player.ci-tv:has(.civ) #vp-sidebar{display:none}#visual-player.ci-tv:has(.civ):fullscreen{overflow:auto;background:#05061a}#visual-player.ci-tv:has(.civ):fullscreen .civ .civ-stagewrap{width:min(100%,calc((100vh - 185px) * 16 / 9))}.civ-script{background:rgba(10,14,40,.6);border:1px solid rgba(63,216,255,.15);border-radius:12px;padding:10px 14px;max-height:260px;overflow:auto}
 .civ-ln{margin:0 0 6px;font-size:13px;line-height:1.5;color:#dfe6ff;opacity:.28;transition:opacity .3s}
 .civ-ln.vis{opacity:1}
 .civ-ln b{font-weight:800;letter-spacing:.04em}

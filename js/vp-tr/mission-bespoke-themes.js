@@ -74,27 +74,59 @@ const DC_CAP = { wade: ['Part one', 'The Wade'], ledge: ['Part two', 'The Ledge'
 function _dcScene(v, s) {
   const e = v.epNum;
   const crates = Array.from({ length: Math.max(1, s.teams.reduce((a, t) => a + t.quota, 0)) }, (_, i) =>
-    '<rect class="ms-dc-crate' + (i < s.boxes ? ' up' : '') + '" data-cr="' + i + '" x="' + (452 + (i % 6) * 34)
-    + '" y="' + (120 - Math.floor(i / 6) * 26) + '" width="28" height="22" rx="2"/>').join('');
-  return '<rect width="1080" height="360" fill="url(#ms-dc-sky-' + e + ')"/>'
-    + '<path d="M0 214 C180 206 300 220 460 212 C620 204 760 218 1080 208 V360 H0Z" fill="#2b2a24"/>'
+    '<rect class="ms-dc-crate' + (i < s.boxes ? ' up' : '') + '" data-cr="' + i + '" x="' + (780 + (i % 6) * 34)
+    + '" y="' + (300 - Math.floor(i / 6) * 26) + '" width="28" height="22" rx="2"/>').join('');
+  // THE CAUSEWAY (redrawn 2026-09-30): an overcast dusk over the firth, the
+  // tidal island with its chapel, the causeway's stones running out to it
+  // between marker poles, wet rock and weed in the foreground
+  let clouds = '';
+  for (let i = 0; i < 9; i++) clouds += '<ellipse cx="' + (i * 130 + 40) + '" cy="' + (40 + (i % 3) * 24) + '" rx="' + (120 + (i % 4) * 30) + '" ry="' + (14 + (i % 3) * 5) + '" fill="#8a9aa8" opacity="' + (.12 + (i % 3) * .05) + '"/>';
+  let stones = '';
+  for (let i = 0; i < 14; i++) {
+    const t = i / 13, y = 330 - t * 118, w = 150 - t * 120, x = 540 - w / 2 + Math.sin(i * 1.7) * 6;
+    stones += '<rect x="' + x.toFixed(0) + '" y="' + y.toFixed(0) + '" width="' + w.toFixed(0) + '" height="' + (10 - t * 6).toFixed(1) + '" rx="2" fill="' + (i % 2 ? '#4e4a44' : '#5a554e') + '"/>';
+  }
+  let poles = '';
+  for (let i = 0; i < 6; i++) {
+    const t = i / 6, y = 320 - t * 108, xo = 100 - t * 80, hgt = 46 - t * 34;
+    poles += '<rect x="' + (540 - xo).toFixed(0) + '" y="' + (y - hgt).toFixed(0) + '" width="' + (4 - t * 2).toFixed(1) + '" height="' + hgt.toFixed(0) + '" fill="#2a2420"/>'
+      + '<rect x="' + (540 + xo).toFixed(0) + '" y="' + (y - hgt).toFixed(0) + '" width="' + (4 - t * 2).toFixed(1) + '" height="' + hgt.toFixed(0) + '" fill="#2a2420"/>';
+  }
+  let rocks = '';
+  for (let i = 0; i < 12; i++) {
+    const x = (i < 6 ? 30 + i * 60 : 700 + (i - 6) * 62), y = 320 + (i % 3) * 12;
+    rocks += '<ellipse cx="' + x + '" cy="' + y + '" rx="' + (26 + (i % 4) * 8) + '" ry="' + (12 + (i % 3) * 4) + '" fill="#26282a"/>'
+      + '<path d="M' + (x - 20) + ' ' + (y - 4) + ' q10 -8 20 0 t20 0" stroke="#3a5a2a" stroke-width="3" fill="none" opacity=".8"/>';
+  }
+  return '<g style="--dc-tide:url(#ms-dc-tide-' + e + ');--dc-wood:url(#ms-dc-wood-' + e + ')">'
+    + '<rect width="1080" height="360" fill="url(#ms-dc-sky-' + e + ')"/>' + clouds
+    + '<path d="M0 200 L120 176 L240 192 L380 168 L520 186 L660 166 L800 184 L940 170 L1080 186 V215 H0Z" fill="#3a4450" opacity=".6"/>'
+    + '<rect y="205" width="1080" height="155" fill="url(#ms-dc-firth-' + e + ')"/>'
+    + '<path d="M380 214 C430 196 650 196 700 214Z" fill="#2c2e2c"/>'
     + '<g class="ms-dc-chapel" transform="translate(430,0)">'
-    + '<path d="M22 212 V96 h176 V212Z" fill="#20232a" stroke="#43525c" stroke-width="3"/>'
-    + '<path d="M14 96 L110 44 L206 96Z" fill="#171a20" stroke="#43525c" stroke-width="3"/>'
-    + '<rect x="96" y="150" width="28" height="62" rx="14" fill="#0d1014"/>'
-    + '<g class="ms-dc-bell" transform="translate(110,64)"><path d="M-12 12 a12 14 0 0 1 24 0z" fill="#b08d4a"/>'
-    + '<circle cy="14" r="3" fill="#b08d4a"/></g></g>'
+    + '<path d="M60 206 V140 h100 V206Z" fill="#4a4844" stroke="#2a2826" stroke-width="2"/>'
+    + '<path d="M54 140 L110 108 L166 140Z" fill="#2e2c2a"/>'
+    + '<path d="M96 206 V180 a14 14 0 0 1 28 0 V206Z" fill="#141210"/>'
+    + '<path d="M150 140 V96 h14 V140Z" fill="#4a4844"/><path d="M146 96 L157 82 L168 96Z" fill="#2e2c2a"/>'
+    + '<rect x="72" y="160" width="10" height="16" rx="5" fill="#f2c870" opacity=".85"/>'
+    + '<g class="ms-dc-bell" transform="translate(157,100)"><path d="M-6 8 a6 8 0 0 1 12 0z" fill="#b08d4a"/>'
+    + '<circle cy="9" r="1.6" fill="#b08d4a"/></g></g>'
+    + stones + poles
     + crates
-    + '<g class="ms-dc-font" transform="translate(238,250)"><path d="M-20 18 h40 l-6 -20 h-28z" fill="#1b2026" stroke="#43525c" stroke-width="2"/>'
+    + rocks
+    + '<g class="ms-dc-font" transform="translate(238,250)"><path d="M-24 18 h48 l-8 -22 h-32z" fill="#5a554e" stroke="#2a2826" stroke-width="2"/><ellipse cy="-4" rx="18" ry="5" fill="#2a3a44"/>'
     + '<circle class="glint" cy="-4" r="10" fill="rgba(242,204,91,.9)"/></g>'
     + '<g class="ms-dc-sea"><rect class="water" x="0" y="0" width="1080" height="360"/>'
-    + '<path class="wave" d="M0 8 q60 -8 120 0 t120 0 t120 0 t120 0 t120 0 t120 0 t120 0 t120 0 t120 0" fill="none" stroke="rgba(180,214,230,.35)" stroke-width="3"/></g>';
+    + '<path class="wave" d="M0 8 q60 -8 120 0 t120 0 t120 0 t120 0 t120 0 t120 0 t120 0 t120 0 t120 0" fill="none" stroke="rgba(180,214,230,.35)" stroke-width="3"/></g></g>';
 }
 function _dcStage(v, states, n) {
   const s = states[Math.max(0, Math.min(states.length - 1, n))] || states[0];
   const e = v.epNum;
   const defs = '<linearGradient id="ms-dc-sky-' + e + '" x1="0" x2="0" y1="0" y2="1">'
-    + '<stop offset="0" stop-color="#1d2a33"/><stop offset=".6" stop-color="#151d24"/><stop offset="1" stop-color="#0f141a"/></linearGradient>';
+    + '<stop offset="0" stop-color="#3a4a5a"/><stop offset=".55" stop-color="#7a8a96"/><stop offset="1" stop-color="#c8b8a0"/></linearGradient>'
+    + '<linearGradient id="ms-dc-firth-' + e + '" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#8a9aa4"/><stop offset=".25" stop-color="#4a5e6a"/><stop offset="1" stop-color="#1a2630"/></linearGradient>'
+    + '<linearGradient id="ms-dc-tide-' + e + '" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#6a8a9a" stop-opacity=".38"/><stop offset=".3" stop-color="#3a5a6a" stop-opacity=".55"/><stop offset="1" stop-color="#14222c" stop-opacity=".85"/></linearGradient>'
+    + '<linearGradient id="ms-dc-wood-' + e + '" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#8a6a40"/><stop offset="1" stop-color="#4a3420"/></linearGradient>';
   return stageShell({ epNum: e, defs, scene: _dcScene(v, s),
     cap: ['tide ' + s.label, (DC_CAP[s.capPhase] || DC_CAP.wade)[1]],
     pot: s.potAfter, vars: '--ms-accent:#9fd8ff;--ms-ink:#e8eef2', label: 'The causeway, staged' });
@@ -634,9 +666,9 @@ const CAUSEWAY = {
 @media(prefers-reduced-motion:reduce){.dc-root *,.dc-root *::before,.dc-root *::after{animation:none !important;transition:none !important}.dc-card{opacity:1;transform:none}.dc-drizzle,.dc-swell{display:none}}
 
 /* ── THE STAGE ───────────────────────────────────────────────────────── */
-.ms-dc-crate{fill:#3a3026;stroke:#7a6549;stroke-width:2;opacity:.25;transition:opacity .7s,fill .7s}
-.ms-dc-crate.up{opacity:1;fill:#5b4326}
-.ms-dc-sea .water{fill:rgba(31,74,99,.82)}
+.ms-dc-crate{fill:var(--dc-wood,#3a3026);stroke:#2a1e12;stroke-width:2;opacity:.22;transition:opacity .7s}
+.ms-dc-crate.up{opacity:1}
+.ms-dc-sea .water{fill:var(--dc-tide,rgba(31,74,99,.82))}
 .ms-dc-sea rect{transition:y 1.1s ease-out,height 1.1s ease-out}
 .ms-dc-sea .wave{transition:transform 1.1s ease-out}
 .ms-dc-bell{transform-box:fill-box;transform-origin:50% 0}
@@ -923,9 +955,9 @@ const ORRERY = {
 @media(prefers-reduced-motion:reduce){.no-root *,.no-root *::before,.no-root *::after{animation:none !important;transition:none !important}.no-card{opacity:1;transform:none}}
 
 /* ── THE STAGE ───────────────────────────────────────────────────────── */
-.ms-dc-crate{fill:#3a3026;stroke:#7a6549;stroke-width:2;opacity:.25;transition:opacity .7s,fill .7s}
-.ms-dc-crate.up{opacity:1;fill:#5b4326}
-.ms-dc-sea .water{fill:rgba(31,74,99,.82)}
+.ms-dc-crate{fill:var(--dc-wood,#3a3026);stroke:#2a1e12;stroke-width:2;opacity:.22;transition:opacity .7s}
+.ms-dc-crate.up{opacity:1}
+.ms-dc-sea .water{fill:var(--dc-tide,rgba(31,74,99,.82))}
 .ms-dc-sea rect{transition:y 1.1s ease-out,height 1.1s ease-out}
 .ms-dc-sea .wave{transition:transform 1.1s ease-out}
 .ms-dc-bell{transform-box:fill-box;transform-origin:50% 0}
@@ -1162,9 +1194,9 @@ const ACCOUNT = {
 @media(prefers-reduced-motion:reduce){.la-root *,.la-root *::before,.la-root *::after{animation:none !important;transition:none !important}.la-card{opacity:1;transform:none}.la-dust{display:none}}
 
 /* ── THE STAGE ───────────────────────────────────────────────────────── */
-.ms-dc-crate{fill:#3a3026;stroke:#7a6549;stroke-width:2;opacity:.25;transition:opacity .7s,fill .7s}
-.ms-dc-crate.up{opacity:1;fill:#5b4326}
-.ms-dc-sea .water{fill:rgba(31,74,99,.82)}
+.ms-dc-crate{fill:var(--dc-wood,#3a3026);stroke:#2a1e12;stroke-width:2;opacity:.22;transition:opacity .7s}
+.ms-dc-crate.up{opacity:1}
+.ms-dc-sea .water{fill:var(--dc-tide,rgba(31,74,99,.82))}
 .ms-dc-sea rect{transition:y 1.1s ease-out,height 1.1s ease-out}
 .ms-dc-sea .wave{transition:transform 1.1s ease-out}
 .ms-dc-bell{transform-box:fill-box;transform-origin:50% 0}
@@ -1475,9 +1507,9 @@ const VAULT = {
 @media(prefers-reduced-motion:reduce){.av-root *,.av-root *::before,.av-root *::after{animation:none !important;transition:none !important}.av-card{opacity:1;transform:none}.av-ash{display:none}}
 
 /* ── THE STAGE ───────────────────────────────────────────────────────── */
-.ms-dc-crate{fill:#3a3026;stroke:#7a6549;stroke-width:2;opacity:.25;transition:opacity .7s,fill .7s}
-.ms-dc-crate.up{opacity:1;fill:#5b4326}
-.ms-dc-sea .water{fill:rgba(31,74,99,.82)}
+.ms-dc-crate{fill:var(--dc-wood,#3a3026);stroke:#2a1e12;stroke-width:2;opacity:.22;transition:opacity .7s}
+.ms-dc-crate.up{opacity:1}
+.ms-dc-sea .water{fill:var(--dc-tide,rgba(31,74,99,.82))}
 .ms-dc-sea rect{transition:y 1.1s ease-out,height 1.1s ease-out}
 .ms-dc-sea .wave{transition:transform 1.1s ease-out}
 .ms-dc-bell{transform-box:fill-box;transform-origin:50% 0}

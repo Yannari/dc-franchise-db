@@ -187,7 +187,7 @@ const CSS = `
 .trq-ms{position:absolute!important;left:0!important;right:0!important;top:0!important;height:56%!important;margin:0!important;border-radius:0!important;box-shadow:none!important;z-index:0!important}
 .trq-ms::after{content:"";position:absolute;left:0;right:0;bottom:0;height:40%;background:linear-gradient(180deg,transparent,#0a0908);pointer-events:none}
 .trq-floor{position:absolute;left:0;right:0;top:55%;bottom:0;background:radial-gradient(80% 90% at 50% 0%,#2a2218,#0a0908 75%)}
-.trq-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.15),rgba(0,0,0,.45))}
+.trq-shade{position:absolute;inset:0;background:linear-gradient(180deg,transparent 50%,rgba(0,0,0,.4))}
 .trq-banner{position:absolute;transform:translate(-50%,-50%);z-index:5}
 .trq-banner::before{content:attr(data-n);display:inline-block;padding:6px 18px;font-family:var(--v-display);font-weight:900;font-size:clamp(12px,1.3vw,17px);
   letter-spacing:.24em;text-transform:uppercase;color:#241b11;background:linear-gradient(180deg,#f7e2a6,#c99a48);transform:skewX(-10deg);box-shadow:0 8px 20px rgba(0,0,0,.6)}

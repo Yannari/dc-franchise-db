@@ -390,7 +390,7 @@ export const SOLO_BANK = {
     blunt: ["There's hardly any of us left now.", "It's going so fast.", "Every day there's less of us."],
     sharp: ["The fewer there are, the harder it is to hide. For everyone.", "We're getting close to the end. You can feel it.", "Small room now. Every vote matters more."],
     warm: ["I miss everyone who's gone.", "I remember when this walk was full of people laughing.", "It's sad, how small we've got."],
-    guarded: ["Not many left.", "Getting smaller.", "Soon be over."],
+    guarded: ["Not many left.", "Getting smaller.", "Getting quieter."],
     traitor: ["Fewer of them means fewer votes to steer. It's getting tight.", "Every day there's fewer places to hide.", "I've got to last. Not long now."],
   },
   'cam-the-end': {

@@ -1057,8 +1057,11 @@ registerEvent({
     const scores = {
       'wrote-it-down': (st.mental / 10) * 0.45 + (st.strategic / 10) * 0.2,
       'went-through-it-again': (st.intuition / 10) * 0.4 + 0.15,
-      'gave-up-tracking': (1 - st.mental / 10) * 0.4 + (1 - st.temperament / 10) * 0.15,
-      'checked-their-own-record': (1 - st.boldness / 10) * 0.3 + (st.intuition / 10) * 0.2,
+      // "too much to track" and "my own week of votes" need a week behind them
+      'gave-up-tracking': (gs?.episodeHistory || []).length >= 3
+        ? (1 - st.mental / 10) * 0.4 + (1 - st.temperament / 10) * 0.15 : 0,
+      'checked-their-own-record': (gs?.episodeHistory || []).length >= 3
+        ? (1 - st.boldness / 10) * 0.3 + (st.intuition / 10) * 0.2 : 0,
     };
     const keys = Object.keys(scores);
     const total = keys.reduce((acc, k) => acc + Math.max(0, scores[k]), 0);

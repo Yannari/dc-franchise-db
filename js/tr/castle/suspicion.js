@@ -450,7 +450,7 @@ const COLD_CASE_LINES = {
     '{a} won’t let an old thing go.\n{a}: "Tell me again what you were doing that night."\n{b}: "I’ve told you."\n{a}: "Tell me again."',
   ],
   'answered-at-last': [
-    '{b} finally gives {a} a straight answer to the old question.\n{b}: "Fine. I was on the phone to production about my back. That’s it. That’s the big secret."\n{a}: "Why didn’t you just say?"\n{b}: "Because you never asked nicely."',
+    '{b} finally gives {a} a straight answer to the old question.\n{b}: "Fine. I was on the phone to my mum. I was homesick. That’s it. That’s the big secret."\n{a}: "Why didn’t you just say?"\n{b}: "Because you never asked nicely."',
     'It turns out there was always an explanation.\n{b}: "I was crying in the bathroom. I didn’t want anyone to know."\n{a}: "Oh. God. I’m sorry."',
     '{b} gives {a} the answer at last, and it’s dull.\n{b}: "I was asleep. Honestly. That’s all."\n{a}: "Then why didn’t you just say that?"\n{b}: "I did. You didn’t listen."',
     '{a} gets an answer {aSub} can actually believe.\n{a}: "Okay. I believe you."\n{b}: "Finally."',

@@ -1463,7 +1463,7 @@ const EYES_TEXT = [
 // A warm pair drawing together over the loss. Public: a friendship anybody at
 // the table watched form. Never alignment.
 const SIT_TEXT = [
-  '{pair} sit together, as they have all week. This morning doesn’t change who trusts who.',
+  '{pair} sit together again. This morning doesn’t change who trusts who.',
   'People take their usual seats. {pair} sit side by side again.',
   '{pair} sit next to each other, heads close, talking quietly.',
   '{pair} find each other first. A bad morning only brings them closer.',
@@ -1490,7 +1490,7 @@ const FLASH_NOCLOSE = [
 // ── THE EMPTY CHAIR — the victim's own neighbours, by the fixed seating.
 // Caused by `gs.tr.castOrder`: who actually sat either side of them. {a},{b},{vic}.
 const CHAIR_TEXT = [
-  '{who} sat next to {vic} every morning this week. Today the chair is empty, and {who} keeps almost turning to speak to it.',
+  '{who} sat next to {vic} at every meal. Today the chair is empty, and {who} keeps almost turning to speak to it.',
   '{vic} always sat on {pos} left. Now it’s an empty place with the cup turned over.',
   '{who} doesn’t move the empty chair, and doesn’t move seats either.',
 ];

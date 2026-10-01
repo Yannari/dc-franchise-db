@@ -775,7 +775,7 @@ const BODY_SHORT_LINES = {
     '{a} looks at the line walking home and thinks how short it has got.\n{a} (to camera): {cam:few-left}',
     '{a} keeps thinking about the empty place on {team}.\n{a} (to camera): {cam:few-left}',
     '{a} walks back, quieter than usual.\n{a} (to camera): "Missions are harder when you know who should be there."',
-    '{a} thinks about the first mission, when everyone was still here.\n{a} (to camera): {cam:few-left}',
+    '{a} thinks about the first mission, when everyone was still here.\n{a} (to camera): "It already feels like a long time ago."',
     '{a} walks home on {aPos} own after {mission}.\n{a} (to camera): "Every mission there are fewer of us doing it. You notice it most on the walk back."',
   ],
   useful: [

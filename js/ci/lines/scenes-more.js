@@ -16,7 +16,7 @@ const talk = (a, b, extra = {}) => ({ turns: [{ by: 'a', say: a }, { by: 'b', sa
 
 export const SCENES_MORE = {
   ...E('circle.more', [
-    { turns: [{ by: 'a', send: "Okay but who's cooking tonight because it's not me lol" }, { by: 'b', send: "Cereal for dinner gang {e:laugh}" }, { by: 'c', send: "Cereal gang represent" }] },
+    { when: { time: ['day', 'evening'] }, turns: [{ by: 'a', send: "Okay but who's cooking tonight because it's not me lol" }, { by: 'b', send: "Cereal for dinner gang {e:laugh}" }, { by: 'c', send: "Cereal gang represent" }] },
     { turns: [{ by: 'a', send: "Real talk, how is everybody holding up?" }, { by: 'b', send: "Surviving. Barely. Lol" }, { by: 'c', send: "Thriving honestly {e:sparkle}" }] },
     { turns: [{ by: 'a', send: "Shoutout to everybody still in here. We made it this far {e:clap}" }, { by: 'b', send: "{t:CircleFam} forever" }, { by: 'c', send: "Group hug {e:hug}" }], when: { early: false } },
     { turns: [{ by: 'a', send: "Can we play a game in here? Two truths and a lie. Go" }, { by: 'b', send: "I've never been on a plane, I love pineapple on pizza, I can juggle" }, { by: 'c', send: "The plane one is the lie. Easy" }], beat: '{b} laughs at the screen and does not confirm it.' },

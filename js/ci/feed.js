@@ -16,6 +16,8 @@ import { registerOf } from './register.js';
 
 export const LIKES_EACH = 3;
 export const PUBLIC_THEORY = 0.15;
+// How much shorter a morning Circle Chat runs than a later one (posts each).
+export const MORNING_BRIEF = 0.5;
 
 // A narration label only (CLAUDE.md: thresholds pick words, never outcomes).
 function toneOf(state, h) {
@@ -94,11 +96,14 @@ export function noticeStyle(state, rng, sc) {
   return note;
 }
 
-export function runCircleChat(state, rng, { party = false, final = false, first = false } = {}) {
+// `when`: the time of day it opens (morning, day, evening), so it is written
+// for that hour — no 'hope you slept well' an hour before the ratings.
+export function runCircleChat(state, rng, { party = false, final = false, first = false, when = 'day' } = {}) {
   const all = [...state.active];
-  const sc = addScene(state, 'circle-chat', all, { party, final, first, posts: [], theories: [] }, all);
+  const sc = addScene(state, 'circle-chat', all, { party, final, first, when, posts: [], theories: [] }, all);
   for (const h of all) {
-    const n = Math.round(S(state, h, 'social') / 5 * rng() + (party ? 1 : 0));
+    // A morning hello is quick: a message or two each, not a conversation.
+    const n = Math.round(S(state, h, 'social') / 5 * rng() * (when === 'morning' ? MORNING_BRIEF : 1) + (party ? 1 : 0));
     for (let i = 0; i < n; i++) {
       sc.data.posts.push({ by: h });
       rollSlips(state, rng, h, all, { specific: 0.2, party, attention: 0.3 }, sc);

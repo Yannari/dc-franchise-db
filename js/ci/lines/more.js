@@ -69,7 +69,7 @@ export const MORE_LINES = {
   ]),
   // ── Circle Chat ──────────────────────────────────────────────────────
   ...M('circle.react', [
-    R("Oh, {b} is feeling brave tonight."),
+    R("Oh, {b} is feeling brave."),
     R("{b} with the energy. I see you."),
     R("That's the most {b} message ever typed."),
     R("Wait. Is {b} being serious right now?"),
@@ -81,7 +81,7 @@ export const MORE_LINES = {
     R("I'm laughing. {b} got me with that one."),
   ]),
   ...M('circle.more', [
-    { turns: [{ by: 'a', send: "Movie night in every apartment. What are we watching?" }, { by: 'b', send: "Something scary. I want to scream at something that isn't this game" }, { by: 'c', send: "Rom com or nothing {e:hearteyes}" }] },
+    { when: { time: 'evening' }, turns: [{ by: 'a', send: "Movie night in every apartment. What are we watching?" }, { by: 'b', send: "Something scary. I want to scream at something that isn't this game" }, { by: 'c', send: "Rom com or nothing {e:hearteyes}" }] },
     { turns: [{ by: 'a', send: "Confession: I've talked to my TV more than to any of you" }, { by: 'b', send: "The TV is a great listener honestly" }, { by: 'c', send: "My fridge knows all my secrets {e:laugh}" }] },
     { turns: [{ by: 'a', send: "Who's the early bird in here? Be honest" }, { by: 'b', send: "Up at 5am doing yoga. Don't hate me" }, { by: 'c', send: "I hate you a little {e:laugh}" }] },
     { turns: [{ by: 'a', send: "Weirdest thing you've eaten in here so far. Go" }, { by: 'b', send: "Peanut butter on a pickle. It was a dare. From myself" }, { by: 'c', send: "That's a crime {e:shock}" }] },

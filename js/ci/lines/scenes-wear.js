@@ -255,7 +255,7 @@ export const SCENES_WEAR = {
   // ── Circle Chat ────────────────────────────────────────────────────────
   ...E('circle.more', [
     msg("Is anybody else's apartment freezing or is it just me", "Just you lol. Mine's a sauna", "I'll trade you"),
-    msg("What's everybody doing tonight {e:eyes}", "Same thing as every night. Talking to a screen", "Living the dream {e:laugh}"),
+    msg("What's everybody doing later {e:eyes}", "Same thing as every night. Talking to a screen", "Living the dream {e:laugh}"),
     msg("Rate your day 1-10. Go", "7. Would be 10 with pizza", "8 because I talked to you guys {e:heart}"),
     msg("Okay who's the early riser in here", "Not me. Never me", "Me. I've been up since six {e:sun}"),
     msg("Group workout tomorrow? Everybody in their own apartment lol", "I'll be there in spirit", "My couch and I will be cheering"),

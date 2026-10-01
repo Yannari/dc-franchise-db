@@ -29,7 +29,7 @@ import { topicsOf, wingsIt, JOB_TOPIC, townOf } from './topics.js';
 export const ROLES = ['a', 'b', 'c', 'host', 'face', 'brain', 'older', 'younger', 'parent', 'kid'];
 // The two people behind a shared profile, by the part they play in a line.
 const PAIR_ROLES = new Set(['face', 'brain', 'older', 'younger', 'parent', 'kid']);
-export const FACT_KEYS = ['intent', 'ending', 'result', 'known', 'early', 'late', 'catfish', 'outed',
+export const FACT_KEYS = ['time', 'intent', 'ending', 'result', 'known', 'early', 'late', 'catfish', 'outed',
   'suspects', 'theory', 'pact', 'friends', 'rivals', 'flirty', 'newcomer', 'mood', 'group', 'style',
   'hurt', 'influencer', 'reason', 'motive', 'mode', 'reasonKind', 'band', 'kiss', 'claim', 'lie',
   'tone', 'party', 'final', 'slip', 'noticed', 'place', 'self', 'likesC', 'misread', 'anon',
@@ -64,6 +64,8 @@ function groupOf(state, h) {
 export function factsFor(state, scene, cast) {
   const { a, b } = cast;
   const f = { early: state.day <= 2, late: false, catfish: state.profiles[a]?.mode === 'catfish' };
+  // The hour a scene happens at: a line about this morning or tonight only fits then.
+  f.time = scene.data?.when || (scene.data?.party || scene.kind === 'party' || scene.kind === 'ratings' ? 'evening' : 'day');
   if (a && state.mind[a]) f.mood = moodOf(state, a);
   if (a && state.profiles[a]) { f.group = groupOf(state, a); f.style = styleOf(state, a); f.register = shownRegister(state, a, scene, cast.personA); }
   const last = [...state.ratings].reverse().find(r => r.day === state.day - 1 && !r.final);

@@ -67,14 +67,17 @@ function parse(data) {
 // said stays on the page underneath.
 const h32 = s2 => { let h = 7; for (const c of String(s2)) h = (Math.imul(h, 31) + c.charCodeAt(0)) >>> 0; return h; };
 function byCar(steps) {
-  const out = [];
+  // 1. the cars, each with its own people and their steps
+  const cars = [], out = [];
   let i = 0;
   while (i < steps.length) {
     const st = steps[i], m = st.meta || {};
-    if (m.kind !== 'car') { if (m.kind !== 'intro') out.push(st); i++; continue; }
-    const beat = st.beat, label = st.tag || '';
-    while (i < steps.length && steps[i].beat === beat) out.push(steps[i++]);
-    // the people out of this car, each with their own steps
+    if (m.kind !== 'car') {
+      if (m.kind !== 'intro') (cars.length ? (cars[cars.length - 1].after = cars[cars.length - 1].after || []) : out).push(st);
+      i++; continue;
+    }
+    const beat = st.beat, head = [];
+    while (i < steps.length && steps[i].beat === beat) head.push(steps[i++]);
     const per = [];
     while (i < steps.length && (steps[i].meta || {}).kind === 'intro') {
       const name = steps[i].meta.name;
@@ -82,29 +85,68 @@ function byCar(steps) {
       if (!p) { p = { name, steps: [] }; per.push(p); }
       p.steps.push(steps[i++]);
     }
-    if (!per.length) continue;
-    const names = per.map(p => p.name), key = names.join('|');
-    out.push({ t: 'lineup', names, label, beat: -1, meta: { kind: 'lineup', names } });
-    // ONE to camera
-    const spot = per[h32(key + '|spot') % per.length];
-    const intro = spot.steps.find(x => x.t === 'cam');
-    if (intro) out.push(intro);
-    // ONE exchange: a recognition or a shared season first, then any greeting
-    const talk = per.filter(p => p.steps.some(x => x.t === 'say'));
-    const known = talk.filter(p => p.steps.some(x => x.t === 'narr' && x.text && /“|"|recognis|before|season|know/i.test(x.text)));
-    const ex = (known.length ? known : talk)[h32(key + '|ex') % Math.max(1, (known.length ? known : talk).length)];
-    if (ex) {
-      // the exchange, with the narrated moment it answers when there is one
-      // ("'I know exactly who you are,' Alejandro tells Amy" before Amy's reply)
-      const first = ex.steps.findIndex(x => x.t === 'say');
-      const before = ex.steps[first - 1];
-      if (before && before.t === 'narr') out.push(before);
-      ex.steps.slice(first).filter(x => x.t === 'say').forEach(x => out.push(x));
-      // and their first read to camera, about the one we just watched them meet
-      const cams = ex.steps.filter(x => x.t === 'cam');
-      if (cams.length > 1) out.push(cams[cams.length - 1]);
-    }
+    if (per.length) cars.push({ head, per, label: st.tag || '' });
   }
+  // 2. A SHAPE PER CAR, so the drive is not one pattern seven times. The first
+  //    and last cars are played in full; between them the cars rotate through
+  //    an exchange with no introduction, two people introducing themselves
+  //    back to back, and a car that simply arrives — never two in a row the same.
+  // the middle cars rotate through three shapes, starting where the cast's
+  // hash puts them, so the order differs season to season but never repeats
+  const MID = ['talk', 'quick', 'pair'];
+  const off = h32(cars.map(c => c.per[0] && c.per[0].name).join('|')) % MID.length;
+  // THE WORDING, WITH THE NAMES TAKEN OUT: two exchanges that read the same
+  // with different people in them are the same exchange twice
+  const allNames = cars.flatMap(c => c.per.map(p => p.name)).sort((x, y) => y.length - x.length);
+  const shapeOf = t => allNames.reduce((acc, n) => acc.split(n).join('#'), String(t || '')).replace(/Total Drama \d+/g, '#');
+  const shown = new Set();
+  const lead = p => { const f = p.steps.findIndex(x => x.t === 'say'); const b = p.steps[f - 1]; return b && b.t === 'narr' ? b.text : ''; };
+  const exchange = (car, key, wantKnown) => {
+    const talk = car.per.filter(p => p.steps.some(x => x.t === 'say') && !shown.has(shapeOf(lead(p))));
+    if (!talk.length) return [];
+    const isKnown = p => p.steps.some(x => x.t === 'narr' && x.text && /“|"|recognis|before|season|know/i.test(x.text));
+    const pool = talk.filter(p => isKnown(p) === wantKnown);
+    const ex = (pool.length ? pool : talk)[h32(key) % (pool.length || talk.length)];
+    if (lead(ex)) shown.add(shapeOf(lead(ex)));
+    const res = [];
+    const first = ex.steps.findIndex(x => x.t === 'say');
+    const before = ex.steps[first - 1];
+    if (before && before.t === 'narr') res.push(before);
+    ex.steps.slice(first).filter(x => x.t === 'say').forEach(x => res.push(x));
+    const cams = ex.steps.filter(x => x.t === 'cam');
+    if (cams.length > 1) res.push(cams[cams.length - 1]);
+    return res;
+  };
+  let carried = null;   // a quick car's people, arriving with the next one
+  cars.forEach((car, ci) => {
+    const names = car.per.map(p => p.name), key = names.join('|');
+    let shape = ci === 0 || ci === cars.length - 1 ? 'full' : MID[(ci - 1 + off) % MID.length];
+    if (car.per.length < 2 && shape === 'pair') shape = 'talk';
+    // A QUICK CAR does not stop the drive: its people get out as the next
+    // car pulls up, and the two are introduced in one line-up
+    if (shape === 'quick' && ci < cars.length - 1) {
+      carried = { names, head: car.head, after: car.after || [] };
+      return;
+    }
+    const all = carried ? [...carried.names, ...names] : names;
+    const label = carried ? 'Two more cars' : car.label;
+    out.push(...(carried ? carried.head : car.head));
+    out.push({ t: 'lineup', names: all, label, beat: -1, meta: { kind: 'lineup', names: all } });
+    if (carried) { out.push(...carried.after); carried = null; }
+    const intro = p => p && p.steps.find(x => x.t === 'cam');
+    if (shape === 'full') {
+      const spot = car.per[h32(key + '|spot') % car.per.length];
+      if (intro(spot)) out.push(intro(spot));
+      out.push(...exchange(car, key + '|ex', true));
+    } else if (shape === 'talk') {
+      out.push(...exchange(car, key + '|ex', false));
+    } else if (shape === 'pair') {
+      const a = h32(key + '|a') % car.per.length, b = (a + 1) % car.per.length;
+      [car.per[a], car.per[b]].forEach(p => { if (intro(p)) out.push(intro(p)); });
+    }
+    // 'quick': the car arrives, the line-up says who, and the drive moves on
+    out.push(...(car.after || []));
+  });
   return out;
 }
 

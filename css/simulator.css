@@ -6914,6 +6914,13 @@ textarea.ci-bio{resize:vertical;width:100%}
 .ci-badge{display:inline-block;margin-top:3px;font:700 9px 'Space Mono',monospace;letter-spacing:.04em;padding:2px 6px;border-radius:999px;background:rgba(255,255,255,.08);color:var(--ci-mut);max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ci-badge.pin{background:rgba(63,216,255,.16);color:var(--ci-cy)}
 .ci-badge.cat{background:rgba(255,79,180,.22);color:#ff9bd6}
+/* When they arrive: a chip under each face, click to flip Day 1 / Newcomer */
+.ci-arrive{display:inline-block;margin-top:4px;font:800 9px 'Space Mono',monospace;letter-spacing:.06em;padding:3px 8px;border-radius:6px;cursor:pointer;border:1px solid transparent;transition:transform .15s,box-shadow .15s}
+.ci-arrive.starter{background:rgba(63,216,255,.18);color:#7fe6ff;border-color:rgba(63,216,255,.4)}
+.ci-arrive.newcomer{background:rgba(255,190,70,.18);color:#ffd27a;border-color:rgba(255,190,70,.45)}
+.ci-arrive.set{box-shadow:0 0 0 1px currentColor inset}
+.ci-arrive:hover{transform:translateY(-1px);box-shadow:0 0 10px currentColor}
+.ci-role-k{margin:6px 0 3px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;font-size:10px;color:var(--ci-cy)}
 .ci-badge.edit{background:rgba(139,92,255,.25);color:#cbb8ff}
 .ci-badge.self{background:rgba(63,216,136,.18);color:#7ff0bd}
 .ci-ph-ring.ci-ring-cat .ci-ph-face{box-shadow:0 0 0 3px var(--ci-pk),0 0 18px rgba(255,79,180,.6)}

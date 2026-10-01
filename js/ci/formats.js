@@ -46,6 +46,13 @@ export const FORMATS = {
     pick: (res, state) => [res.map(r => r.profile).includes(state.publicChoice) ? state.publicChoice : res[0].profile],
     run: (state, rng, rating) => standardBlocking(state, rng, rating, { format: 'public-super', inPerson: true, mark: { public: true } }) },
   none: { removes: 0, seats: 2, can: ctx => ctx.position === 'early' || ctx.position === 'middle', run: noBlocking },
+  // The audience at home decides (an original twist, not the real show's):
+  // the Influencers nominate two, the audience saves one; or the audience
+  // makes its favourite non-Influencer immune before the Hangout.
+  'audience-block': { removes: 1, seats: 2, can: ctx => ctx.position === 'middle' || ctx.position === 'late',
+    canNow: state => state.active.length >= 5, run: audienceBlock },
+  'audience-immunity': { removes: 1, seats: 2, can: ctx => ctx.position !== 'first' && ctx.position !== 'last',
+    canNow: state => state.active.length >= 5, run: audienceImmunity },
   mission: { removes: 1, seats: 2, quiet: true, can: ctx => ctx.position !== 'first' && ctx.position !== 'last',
     canNow: state => state.active.length >= 6, before: (state, rng) => missionBefore(state, rng), run: missionNight },
   antivirus: { removes: 1, seats: 0, can: ctx => ctx.position === 'middle' || ctx.position === 'late',
@@ -248,6 +255,52 @@ function antivirus(state, rng, rating) {
 
 
 // US 7 Ep 1: no blocking tonight. The timeline makes a later night take two.
+// ── THE AUDIENCE VOTES ─────────────────────────────────────────────────
+// The audience's standing is handed in by season.js (state.publicStanding:
+// approval from what aired, public.js); nothing here reads the audience
+// itself. The vote is a share of the audience, from that standing: the
+// better liked, the bigger the share, never all of it.
+export const VOTE_HEAT = 12;   // how sharply approval turns into a share of the vote
+export function sharesOf(values) {
+  const e = values.map(v => Math.exp((Number(v) || 0) / VOTE_HEAT));
+  const sum = e.reduce((a, b) => a + b, 0) || 1;
+  const raw = e.map(x => x / sum * 100);
+  const out = raw.map(Math.floor);
+  let left = 100 - out.reduce((a, b) => a + b, 0);
+  raw.map((x, i) => [x - Math.floor(x), i]).sort((a, b) => b[0] - a[0]).forEach(([, i]) => { if (left > 0) { out[i]++; left--; } });
+  return out;
+}
+const standing = (state, h) => state.publicStanding?.[h] ?? 0;
+/** The Influencers nominate two (their pick and their runner-up); the audience saves one. */
+function audienceBlock(state, rng, rating) {
+  return standardBlocking(state, rng, rating, { format: 'audience-block',
+    decide: d => {
+      const nominees = [d.target, d.runnerUp?.handle].filter(Boolean);
+      if (nominees.length < 2) return { target: d.target };
+      const shares = sharesOf(nominees.map(h => standing(state, h)));
+      const saved = shares[0] >= shares[1] ? 0 : 1;
+      const target = nominees[1 - saved];
+      for (const h of nominees) feel(state, h, 'stress', 2);
+      feel(state, nominees[saved], 'elation', 2);
+      addScene(state, 'audience', nominees, { mode: 'block', candidates: nominees, shares, saved: nominees[saved], target, by: [...rating.influencers] }, [...state.active]);
+      return { target, channel: 'audience' };
+    } });
+}
+/** Before the Hangout: the audience's favourite non-Influencer is safe tonight. */
+function audienceImmunity(state, rng, rating) {
+  const pool = state.active.filter(h => !rating.influencers.includes(h));
+  const ranked = [...pool].sort((a, b) => standing(state, b) - standing(state, a) || (a < b ? -1 : 1));
+  const candidates = ranked.slice(0, Math.min(4, ranked.length));
+  if (candidates.length) {
+    const shares = sharesOf(candidates.map(h => standing(state, h)));
+    const winner = candidates[0];
+    state.immuneNext[winner] = true;
+    feel(state, winner, 'elation', 2);
+    addScene(state, 'audience', candidates, { mode: 'immunity', candidates, shares, winner }, [...state.active]);
+  }
+  return standardBlocking(state, rng, rating, { format: 'audience-immunity' });
+}
+
 function noBlocking(state, rng, rating) {
   addScene(state, 'no-block', [...rating.influencers], { influencers: rating.influencers }, [...state.active]);
   for (const h of state.active) { feel(state, h, 'stress', -1.5); feel(state, h, 'elation', 0.5); }

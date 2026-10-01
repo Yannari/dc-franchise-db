@@ -20,9 +20,10 @@ export const NIGHT_DRAWS = {
   first: [['standard', 6], ['sole', 2], ['forced', 1]],
   early: [['standard', 7], ['sole', 1], ['save-first', 1], ['forced', 0.5]],
   middle: [['standard', 7], ['save-first', 2], ['trio', 1], ['secret', 1], ['mutual', 0.5], ['save-two', 1], ['plead', 1],
-    ['instant', 1], ['double', 1], ['antivirus', 1], ['mission', 0.7], ['none', 0.4], ['most-human', 0.5]],
+    ['instant', 1], ['double', 1], ['antivirus', 1], ['mission', 0.7], ['none', 0.4], ['most-human', 0.5],
+    ['audience-block', 0.6], ['audience-immunity', 0.6]],
   late: [['standard', 6], ['sole', 1], ['secret', 2], ['super', 2], ['mutual', 0.5], ['plead', 1], ['room-vote', 1],
-    ['instant', 0.5], ['double', 0.5], ['public-super', 1], ['mission', 0.5]],
+    ['instant', 0.5], ['double', 0.5], ['public-super', 1], ['mission', 0.5], ['audience-block', 0.8], ['audience-immunity', 0.5]],
   last: [['standard', 6], ['super', 3]],
 };
 

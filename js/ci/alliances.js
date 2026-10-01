@@ -23,6 +23,7 @@
 import { rel, bump, S, clamp, addScene } from './state.js';
 import { feel } from './mind.js';
 import { learn, passOnWeight } from './claims.js';
+import { belief } from './beliefs.js';
 
 export const ALLIANCE_PULL = 4;   // how far an ally climbs a member's ballot (x the voter's loyalty)
 export const PLAN_PUSH = 3;       // how far an agreed target falls on a member's ballot
@@ -96,9 +97,11 @@ export function checkIn(state, rng) {
       if (!best || best[1] <= 0) continue;
       for (const y of here) if (y !== x && learn(state, y, best[0], x, sc)) sc.data.shared.push({ by: x, claim: best[0].id });
     }
-    // Who do they agree to rate low? The outsider they resent and fear most, together.
+    // Who do they agree to rate low? The outsider they resent and fear most,
+    // together: a threat counts as much as a grudge (a room with few grudges
+    // still has someone it would rather not see on top).
     const outsiders = state.active.filter(h => !here.includes(h));
-    const target = outsiders.map(t => [t, here.reduce((n, m) => n + rel(m, t, 'resentment') - rel(m, t, 'affection') * 0.3, 0)])
+    const target = outsiders.map(t => [t, here.reduce((n, m) => n + rel(m, t, 'resentment') + (belief(state, m, t).threat - 3) * 0.5 - rel(m, t, 'affection') * 0.3, 0)])
       .sort((p, q) => q[1] - p[1])[0];
     if (target && target[1] > 0) { a.plan = { target: target[0], day: state.day }; sc.data.plan = target[0]; }
     for (const x of here) for (const y of here) if (x !== y) bump(x, y, 'trust', 0.3);

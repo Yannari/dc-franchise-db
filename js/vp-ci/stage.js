@@ -43,6 +43,8 @@ const WHERE = { chat: 'PRIVATE CHAT', date: 'A DATE', plead: 'THE LAST TWO', 'jo
 function whereLabel(row, screen) {
   // A group chat goes by its alliance's name.
   if (screen.kind === 'group-chat' && screen.d?.name) return `GROUP CHAT · ${String(screen.d.name).toUpperCase()}`;
+  // One with no name (a peace talk, a ratings plan) goes by who is in it.
+  if (screen.kind === 'group-chat') return `GROUP CHAT · ${screen.cast.map(h => nameOf(row, h)).join(', ')}`;
   const base = WHERE[screen.kind] || String(screen.title || '').toUpperCase();
   if (!CHATWIN.has(screen.kind) || screen.cast.length < 2) return base;
   return `${base} · ${screen.cast.map(h => nameOf(row, h)).join(' ↔ ')}`;

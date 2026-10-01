@@ -26,6 +26,8 @@ export const APPROVAL = {
   wronglyKicked: 1.0,   // thrown out of an alliance for a treason they didn't commit
   doubleAgent: -0.6,    // caught in two alliances
   trophy: 0.4,          // won a judged game
+  peacemaker: 0.6,      // brought two feuding players together, and it worked
+  ganged: -0.4,         // gathered people to put someone at the bottom
 };
 
 export function openLedger(state) { state.ledger = createLedger(); }
@@ -55,6 +57,8 @@ export function sceneApproval(state, sc) {
     case 'group-chat':
       if (sc.data.event === 'kick' && !sc.data.right) add(sc.data.kicked, APPROVAL.wronglyKicked);
       if (sc.data.event === 'confront') add(sc.data.agent, APPROVAL.doubleAgent);
+      if (sc.data.event === 'peace' && sc.data.ending === 'warm') add(sc.data.mediator, APPROVAL.peacemaker);
+      if (sc.data.event === 'plan' && sc.data.agreed?.length) add(sc.data.by, APPROVAL.ganged);
       break;
     case 'game': if (sc.data.prize?.kind === 'trophy') for (const w of sc.data.prize.to) add(w, APPROVAL.trophy); break;
     case 'visit': if (sc.data.kiss) for (const h of sc.who) add(h, APPROVAL.kiss); break;

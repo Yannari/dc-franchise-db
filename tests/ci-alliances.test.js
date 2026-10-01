@@ -10,6 +10,9 @@ import { playCircleSeason } from '../js/ci/season.js';
 import { voterScore } from '../js/ci/ratings.js';
 import { rosterCast, circleSetup } from './helpers/ci-cast.js';
 import { DEFAULT_POOL } from '../js/ci/default-pool.js';
+import { room } from './helpers/ci-room.js';
+import { bump } from '../js/ci/state.js';
+import { drift } from '../js/ci/alliances.js';
 
 const runs = [1, 2, 3, 4, 5, 6, 7, 8].map(seed => {
   const cast = rosterCast(12, seed); setPlayers(cast); const names = cast.map(p => p.name);
@@ -71,7 +74,15 @@ describe('every way it comes apart', () => {
     for (const { sc } of c) expect(sc.data.other).not.toBe(sc.data.name);
   });
   it('a member gone cold walks out; a group down to one is over', () => {
-    expect(scenes.some(x => x.sc.data.event === 'leave')).toBe(true);
+    // Walk-outs are rare in a season (about one in seven), so the rule is
+    // checked on a room: a member whose bonds with the group have gone cold leaves.
+    const s = room(6);
+    s.alliances = [{ id: 'al1', name: 'The Vault', members: ['@q0', '@q1', '@q2'], founder: '@q0', day: 1, status: 'active', plan: null }];
+    for (const m of ['@q1', '@q2']) { bump('@q0', m, 'resentment', 6); bump('@q0', m, 'trust', -4); }
+    s.day = 3;
+    const left = drift(s, () => 0);
+    expect(left.map(x => x.data.left)).toEqual(['@q0']);
+    expect(s.alliances[0].members).not.toContain('@q0');
     for (const state of runs) for (const a of state.alliances.filter(x => x.status === 'active')) expect(a.members.length).toBeGreaterThanOrEqual(2);
   });
 });

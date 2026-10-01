@@ -128,7 +128,8 @@ export function utilities(state, me, you, ctx = {}, who = null) {
         ? rel(you, me, 'attraction') / 10 * st('strategic') * PERFORMED * (wouldReturn(state, me, you) ? 1 : CHASE_OFF) : 0),
     probe: (1 - b.real) * st('intuition') * (1 + para),
     pump: ctx.newsOf?.includes(you) ? st('strategic') * 0.8 : 0,
-    compare: ctx.contradictionWith?.[me]?.[you] ? 1.5 : 0,
+    // Two stories that don't match: the sharper you are, the more you need to check.
+    compare: ctx.contradictionWith?.[me]?.[you] ? 0.6 + st('intuition') * 0.9 : 0,
     plant: schemeEligible(state, me) && ctx.rivalOf?.[me] && ctx.rivalOf[me] !== you
       ? st('strategic') * (aff + 10) / 20 : 0,
     // Claiming credit you did not earn is manipulation: a nice player only
@@ -174,6 +175,14 @@ export function planChats(state, rng, ctx) {
       const after = MORNING_AFTER.has(o.intent);
       if (after ? extra >= EXTRA_TALK : used >= budget) continue;
       const plan = { from: o.from, to: o.to, intent: o.intent };
+      // Comparing notes with the same person: at most PER_TOPIC people a day
+      // (once gossip spread a contradiction, seven players checked with one
+      // player on one morning).
+      if (o.intent === 'compare') {
+        const k = `compare:${o.to}`;
+        if ((talked[k] || 0) >= PER_TOPIC) continue;
+        talked[k] = (talked[k] || 0) + 1;
+      }
       if (o.intent === 'debrief') {
         const t = debriefTopic(state, o.from, o.to, ctx);
         const k = `${t.topic}:${t.about}`;

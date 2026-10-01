@@ -27,6 +27,7 @@ import { bioFor } from './persona-data.js';
 import { S, rel } from './state.js';
 import { initMind, driftMind } from './mind.js';
 import { seedAttraction, planChats, contextFor } from './chat.js';
+import { groupChats } from './groupchats.js';
 import { runChat } from './conversation.js';
 import { morningFeed, runCircleChat } from './feed.js';
 import { runRating } from './ratings.js';
@@ -86,7 +87,7 @@ export const STAGE_DATA = {
   party: d => ({ theme: d.theme, props: d.props || [] }),
   // The Newsfeed: how many likes each player's post got this morning.
   likes: d => ({ counts: likeCounts(d.likes) }),
-  'group-chat': d => ({ name: d.name, formed: !!d.formed, declined: d.declined || [], plan: d.plan || null }),
+  'group-chat': d => ({ name: d.name, formed: !!d.formed, declined: d.declined || [], plan: d.plan || null, event: d.event || null }),
   audience: d => ({ mode: d.mode, candidates: [...d.candidates], shares: [...d.shares], saved: d.saved ?? null, target: d.target ?? null, winner: d.winner ?? null }),
   // A game's beats, trimmed to what a board draws (js/vp-ci/boards.js).
   game: d => ({ gameId: d.gameId, family: d.family, beats: (d.beats || []).map(b =>
@@ -285,6 +286,8 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
       formAlliance(state, ds(`ally:${d.day}`)); checkIn(state, ds(`ally-check:${d.day}`));
       // ...and come apart: a double agent caught, a member who has gone cold.
       doubleAgents(state, ds(`ally-double:${d.day}`)); drift(state, ds(`ally-drift:${d.day}`));
+      // ...and the ones that are not alliances: a friend group, a peace talk, a ratings plan.
+      groupChats(state, ds(`gc:${d.day}`), { ratingSoon: !!d.block && !d.final });
     }
     if (d.disrupter) runDisrupter(state, ds(`disrupter:${d.day}`));
     if (d.game) {

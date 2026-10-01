@@ -1633,7 +1633,7 @@ const HOST_SENDOFF = [
 // pronoun, {src} the speaker's own recorded reason as a predicate.
 const ACCUSE_CITED = [
   'It’s {T}. {Who} {src}.',
-  'I’m saying {T}. {Who} {src}, and nobody has explained that to me.',
+  'I’m saying {T}. {Who} {src}. Nobody has explained that to me.',
   '{T}. {Who} {src}. I can’t get past it.',
   'Look at {T}. {Who} {src}.',
   'I think it’s {T}, and here’s why. {Who} {src}.',
@@ -1878,37 +1878,68 @@ const CLAIM_SOURCE = [
 // `clues` dedupes by sentence and `_resolveClue` matches on it — vary the text
 // at mint time and one fact becomes several clues. What varies is how the card
 // SAYS it, which is this file's job and costs the model nothing.
+// EVERY REASON SAYS WHY IT POINTS AT A TRAITOR (rewritten 2026-09-30). The
+// user, reading "I think it's Josee, and here's why. She was the one person
+// they couldn't touch, and they didn't bother trying": "what does that mean as
+// a reasoning for a Traitor accusation?" A stored reason is a FACT; said out
+// loud at a table it has to carry the inference too — what the fact suggests
+// and why — or it is a non sequitur with a name in front of it. Every line is
+// still only the fact the speaker holds (this file never invents evidence);
+// what changes is that the speaker now says what they think it means.
+// Predicates with no subject — the line in front supplies it ("{Who} {src}").
 const REASON_PHRASINGS = [
   [/^kept (.+) in on the night .+ was revealed$/, [
-    'still had {1} down as safe on the night {1} was turned over',
-    'wrote a different name on the night {1} was revealed',
-    'was not among the people who called {1}, on the night it turned out {1} was one',
-    'never came close to writing {1}’s name the night {1} went',
-    'spent that whole table defending a name that came back a Traitor',
-    'looked at {1} on reveal night and picked somebody else',
-    'sat through {1}’s reveal having backed {1} an hour earlier',
+    'was voting for somebody else on the night {1} got caught. The whole room could see {1} was a Traitor, and that is a funny night to look the other way',
+    'defended {1} right up to the moment {1} turned out to be a Traitor. You protect your own',
+    'never wrote {1}’s name, not even on the night the rest of us caught {1}. Why would a Faithful save a Traitor?',
+    'stuck with {1} when the rest of the table had worked {1} out. That is not loyalty to a stranger, that is loyalty to a partner',
+    'was the one still looking the other way when {1}’s card turned over. Some of us were surprised. Not everybody',
+    'kept {1} safe on the very night {1} was exposed. If you knew what {1} was, that is exactly what you would do',
   ]],
   [/^wanted (.+) gone the night .+ died$/, [
-    'put {1}’s name up at the table, and {1} did not survive the night',
-    'was pushing {1} hours before the Traitors got to {1}',
-    'wanted {1} out at the table and got it by morning, from a different direction',
-    'named {1} at that table, and nobody saw {1} again',
-    'named {1} out loud, and {1} was gone by morning',
-    'said {1} out loud, and the castle woke up one short',
+    'put {1}’s name up at the table, and the Traitors took {1} that same night. Either they finished the job, or it was the same job all along',
+    'pushed for {1} at the table, and {1} was dead by morning. Nobody else wanted {1} gone that badly',
+    'wanted {1} out, and the Traitors took {1} that night. When the vote won’t do it, the night will',
+    'named {1} at that table, and nobody saw {1} again. That is one way to make sure you win an argument',
+    'was after {1} at the table, and by breakfast {1}’s chair was empty. I don’t believe in coincidences in this place',
+    'tried to get {1} out with a vote, and the Traitors got {1} out that same night instead. Same target, two routes',
+    'argued for {1} to go, and {1} went, just not the way the rest of us voted. Somebody made sure',
   ]],
-  // THE SHIELD RUMOUR, minted in js/tr/powers.js as "was the one person the
-  // Traitors could not touch, and they went nowhere near X" — accurate and
-  // unsayable. Said out loud about the holder, by a person.
+  [/^wanted (.+) gone the night the Traitors came for .+$/, [
+    'put {1}’s name up at the table, and that same night the Traitors came for {1}. Same name, same night, twice',
+    'pushed for {1}, and the Traitors went after {1} that very night. The shield is the only reason {1} is still here',
+  ]],
   [/^was the one person the Traitors could not touch, and they went nowhere near (.+)$/, [
-    'had the one shield in the castle, and the Traitors never even tried',
-    'was the one person they couldn’t touch, and they didn’t bother trying',
-    'held the shield, and nobody upstairs so much as looked that way',
+    'had the shield, and the Traitors never even tried for it. Why waste a night on one of your own?',
+    'was holding the shield and the Traitors did not go near it. If you were a Traitor, you would know not to bother either',
+    'had the shield, and nobody upstairs so much as tested it. They only leave alone the people they don’t need to get rid of',
+  ]],
+  [/^never once voted against (.+), and .+ was a Traitor$/, [
+    'never once voted against {1}, and {1} was a Traitor. You do not protect somebody that long by accident',
+    'went the whole way without writing {1}’s name, and {1} turned out to be a Traitor. They were looking after each other',
+  ]],
+  [/^helped put (.+) out, and .+ was a Faithful$/, [
+    'helped send {1} home, and {1} was a Faithful. That is a Faithful the Traitors never had to come for',
+    'pushed {1} out of this castle, and {1} was one of us. Who gains from that? Not the Faithfuls',
   ]],
   [/^never once voted against (.+)$/, [
-    'went the whole way without ever writing {1}’s name',
-    'never once put {1} up, and was never once put up by {1}',
-    'passed up every chance to name {1}, week after week',
-    'has managed a whole season without naming {1} once',
+    'has never once written {1}’s name. Not once. People who never turn on each other are usually in it together',
+    'and {1} never vote against each other. That looks like a pair to me, and a pair in here is a pact',
+    'protects {1} every single night. Faithfuls fall out with each other. Traitors don’t',
+    'has had every chance to write {1}’s name, and never has. I want to know why',
+    'has voted against nearly everybody in this castle except {1}. Ask yourselves why {1} is the exception',
+  ]],
+  [/^has never once written a name somebody else had not already put up$/, [
+    'has never once named anybody first, only ever piled onto somebody else’s name. That is how you hide at this table',
+    'never starts anything. Waits for a name to be going round, then joins in. Safest way to vote if you have something to hide',
+  ]],
+  [/^threw a board (.+) should have won$/, [
+    'threw a board that should have been easy. Losing the pot money on purpose is a Traitor’s job',
+    'lost a game {1} should have won, and lost it badly. I watched. It did not look like an accident',
+  ]],
+  [/^finished a board nobody thought (.+) could$/, [
+    'solved a board nobody thought {1} could, like the answers were already known',
+    'got through that board faster than anybody, which is easy if you already know who everybody is',
   ]],
 ];
 
@@ -1957,13 +1988,31 @@ function _firstPerson(text, speaker) {
     .replace(new RegExp('\\b' + n + '(’s|\'s)', 'g'), 'my')
     .replace(new RegExp('\\b' + n + '\\b', 'g'), 'me');
 }
+// ONE TABLE, ONE SAYING OF EACH PHRASING. The same reason held by four
+// people came out in the same words four times; within a table (the cache is
+// keyed on the table's key) each phrasing is used once before any repeats.
+const _phrUsed = new Map();
 function _sayReason(text, seed) {
   const raw = String(text || '');
+  const tableKey = String(seed).split('|').slice(0, 2).join('|');
+  if (!_phrUsed.has(tableKey)) { if (_phrUsed.size > 64) _phrUsed.clear(); _phrUsed.set(tableKey, new Map()); }
+  const used = _phrUsed.get(tableKey);
   for (const [re, pool] of REASON_PHRASINGS) {
     const m = re.exec(raw);
     if (!m) continue;
-    const pick = pool[_hash(seed + '|' + raw) % pool.length];
-    return pick.replace(/\{1\}/g, m[1]);
+    // stable per (table, seed): a repaint asks the same question and gets the same answer
+    const memo = used.get(seed + '|' + raw);
+    if (memo) return memo;
+    const taken = new Set([...used.values()]);
+    const start = _hash(seed + '|' + raw) % pool.length;
+    let pick = null;
+    for (let d = 0; d < pool.length; d++) {
+      const cand = pool[(start + d) % pool.length].replace(/\{1\}/g, m[1] || '');
+      if (!taken.has(cand)) { pick = cand; break; }
+    }
+    pick = pick || pool[start].replace(/\{1\}/g, m[1] || '');
+    used.set(seed + '|' + raw, pick);
+    return pick;
   }
   return raw;
 }
@@ -2820,7 +2869,8 @@ function _buildBeats(v) {
       src: src ? _esc(_firstPerson(_pred(extra.t, _sayReason(src.text, key + '|' + salt + '|' + extra.t)), who)) : '',
       src2: src2 ? _esc(_firstPerson(_pred(extra.t, _sayReason(src2.text, key + '|' + salt + '2|' + extra.t)), who)) : '',
       F: sp && sp.hearsayFrom ? _esc(sp.hearsayFrom) : '' };
-    if (subs.src) return { line: _fill(_fresh(citedPool, key + '|' + salt + '|' + who), subs), subs };
+    // a reason can end on a question now; the frame's own full stop must not follow it
+    if (subs.src) return { line: _fill(_fresh(citedPool, key + '|' + salt + '|' + who), subs).replace(/\?\./g, '?').replace(/\?,/g, '?').replace(/\.\./g, '.'), subs };
     if (!barePool) return { line: '', subs };
     let rk = (sp && sp.reasonKind) || 'feeling';
     if (rk === 'hearsay' && !subs.F) rk = 'feeling';

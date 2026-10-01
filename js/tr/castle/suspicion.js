@@ -1600,7 +1600,7 @@ const DOOR_LINES = {
   heard: [
     '{a} is awake when {b} walks past the door, and times how long until {bSub} comes back.\n{a} (to camera): "Twenty minutes. {b} was gone twenty minutes. The bathroom’s next door."',
     '{a} hears footsteps in the corridor after lights out, and knows whose they are.\n{a} (to camera): "I know {b}’s walk. That was {b}."',
-    '{a} lies still and listens to {b} go down the corridor.\n{a} (to camera): {cam:heard-doors}',
+    '{a} heard {b}’s door go in the night, and says so.\n{a}: "You were up last night."\n{b}: "Bathroom."\n{a} (to camera): {cam:heard-doors}',
     '{a} hears {b}’s door open at about two in the morning.\n{a} (to camera): "Where are you going at two in the morning, {b}?"',
   ],
   imagined: [

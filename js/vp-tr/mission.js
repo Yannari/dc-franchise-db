@@ -753,7 +753,7 @@ const HOST_LINES = {
     'And into the box it goes, where it will sit being extremely valuable to whoever is left.',
     'Well done. Every penny of that belongs to whoever is standing at the end of this, '
     + 'and not one of you knows who that is.',
-    'The fund is heavier than it was this morning. So is everybody, mostly with mud.',
+    'The fund is heavier than it was this morning. Most of you look it.',
     'Banked. It is a lovely number and it has no opinion about which of you deserves it.',
   ],
 };
@@ -836,7 +836,7 @@ const COUNT_TEXT = [
   + 'about it later.',
   'The count. This is the only honest number produced anywhere on this estate.',
   'And the money, weighed and entered while they were all still dripping on the flags.',
-  'The take, counted out on the tailgate in the rain.',
+  'The take, counted out on a trestle at the end of it.',
 ];
 
 const STING = [
@@ -1386,7 +1386,7 @@ export function rpBuildMission(ep, observer = 'audience') {
     + ' &middot; Out On The Estate</div>'
     + '<h1 class="mi-title">THE MISSION</h1>'
     + '<div class="mi-title-rule"><i></i>' + _icon('coffer', 40, '#f4dda2') + '<i></i></div>'
-    + '<p class="mi-sub">A wet afternoon, two teams, and a box that gets heavier. Every '
+    + '<p class="mi-sub">A long afternoon, two teams, and a box that gets heavier. Every '
     + 'hour of it is worked by people who have no idea which of them will be alive to '
     + 'open it.</p>'
     + '</div></div>'

@@ -743,8 +743,8 @@ const NAMED_A = [
   'I know how I look. I know exactly how I look.',
   'Somebody decided it was me and now everybody is standing behind them nodding.',
   'It has been my name for two days now.',
-  'Everybody in this castle wants somebody to be sure about, and I am the '
-  + 'closest thing to a sure thing they have got.',
+  'Everybody in this castle wants to be sure about somebody, and right now '
+  + 'that somebody is me.',
   'I have stopped defending myself.',
   'They want a name, and I am a name.',
   'You can feel it before anybody opens their mouth.',
@@ -942,7 +942,7 @@ const DROP_A = [
   '{t} was my name until this afternoon.',
   'I took {t} off the list.',
   'Everybody is still on {t} and I have quietly stopped being.',
-  'I gave {t} up.',
+  'I let go of {t}.',
 ];
 const DROP_B = [
   'Either that is the best thing I do in here or it is the last.',

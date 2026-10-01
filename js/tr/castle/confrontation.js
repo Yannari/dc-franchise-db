@@ -699,32 +699,62 @@ registerEvent({
 // are the one thing people can be blamed for with evidence. `journey-out` is
 // deliberate: this is the argument that starts BEFORE the next one, carrying
 // yesterday's failure onto today's road.
+// EVERY LINE SAYS WHICH MISSION (the user, 2026-09-30: "they talk about
+// the mission before the mission"). This runs on the road OUT to today's, so
+// a line that only said "we lost money because of you" read as today's,
+// which has not happened. Each one names yesterday's afternoon ({m}), and the
+// event only fires when the record says {b} really had a bad moment in it.
 const MISSION_BLAME_LINES = {
   'named-the-weak-link': [
-    '{a} says it out loud on the road: yesterday went wrong at {b}.\n{a}: "It was you. You froze."\n{b}: "Wow."\n{a}: "Somebody had to say it."',
-    '{a} blames {b} for the mission.\n{a}: "We lost money because of you."\n{b}: "Thanks for that."',
-    '{a} names {b} as the weak link.\n{a}: "We lost it at your bit. Everyone saw."\n{b}: "Thanks for that."\n{b} (to camera): "In front of everyone. Lovely."',
-    '{a} doesn’t hold back.\n{a}: "You were the problem yesterday. Own it."',
+    '{a} brings up yesterday on the road.\n{a}: "{m}. It went wrong at you, {b}. You froze."\n{b}: "Wow."\n{a}: "Somebody had to say it."',
+    '{a} has not let {m} go.\n{a}: "We lost money yesterday because of you."\n{b}: "Thanks for that."',
+    '{a} names {b} as yesterday’s weak link.\n{a}: "At {m}, we lost it at your bit. Everyone saw."\n{b}: "Thanks for that."\n{b} (to camera): "In front of everyone. Lovely."',
+    '{a} doesn’t hold back.\n{a}: "You were the problem at {m} yesterday. Don’t be the problem today."',
   ],
   'took-the-blame': [
-    '{b} doesn’t argue.\n{b}: "It was me. I’m sorry. What can I do today to make it up?"\n{a}: "…Oh. Okay."',
-    '{b} agrees before {a} finishes.\n{b}: "You’re right. I messed up."\n{a}: "…Oh. Right. Okay."\n{a} (to camera): "Didn’t expect that. Took the wind out of me."',
-    '{b} owns the mistake.\n{b}: "My fault. Fully."\n{a}: "Well. Thanks for saying it."',
-    '{b} apologises for the mission.\n{b}: "I let everyone down."\n{a}: "It happens."',
+    '{b} doesn’t argue.\n{b}: "Yesterday was me. I’m sorry. Let me make it up today."\n{a}: "…Oh. Okay."',
+    '{b} agrees before {a} finishes.\n{b}: "You’re right. I messed up {m}."\n{a}: "…Oh. Right. Okay."\n{a} (to camera): "Didn’t expect that. Took the wind out of me."',
+    '{b} owns yesterday.\n{b}: "{m} was my fault. Fully. It won’t happen today."\n{a}: "Well. Thanks for saying it."',
+    '{b} apologises for yesterday.\n{b}: "I let everyone down at {m}."\n{a}: "It happens. Just not twice."',
   ],
   'blamed-them-back': [
-    '{b} points out where {a} was while it went wrong.\n{b}: "Where were you, though? Because I didn’t see you."\n{a}: "I was—"\n{b}: "Exactly."',
-    '{a} blames {b}, {b} blames {a}.\n{b}: "Pot, kettle."\n{a}: "Oh, please."',
-    '{b} fights back.\n{b}: "Where were you when it went wrong?"\n{a}: "That’s not the point."\n{b} (to camera): "{a} wants to blame me? {a} did nothing."',
-    '{a} and {b} blame each other.\n{a}: "You froze."\n{b}: "You wandered off!"\n{a} (to camera): "Probably both of us, honestly."',
+    '{b} remembers {m} differently.\n{b}: "Where were you yesterday, though? Because I didn’t see you."\n{a}: "I was—"\n{b}: "Exactly."',
+    '{a} blames {b} for yesterday, {b} blames {a}.\n{b}: "Pot, kettle."\n{a}: "Oh, please."',
+    '{b} fights back.\n{b}: "Where were you when {m} went wrong?"\n{a}: "That’s not the point."\n{b} (to camera): "{a} wants to blame me? {a} did nothing yesterday."',
+    '{a} and {b} blame each other for yesterday.\n{a}: "You froze."\n{b}: "You wandered off!"\n{a} (to camera): "Probably both of us, honestly."',
   ],
   'nobody-backed-it': [
-    '{a} looks round for support after blaming {b}. Nobody meets {aPos} eye.\n{b}: "Seems it’s just you, then."\n{a}: "They’re just being polite."',
-    '{a} says it, and nobody picks it up.\n{a}: "It was {b}’s fault."\nSilence.\n{a} (to camera): "Left hanging. Great."',
-    'Nobody agrees with {a} out loud.\n{a} (to camera): "They were thinking it. They just wouldn’t say it."',
-    '{a} blames {b}, alone.\n{b}: "Nobody agrees with you, {a}."\n{a}: "They will."',
+    '{a} looks round for support after blaming {b} for yesterday. Nobody meets {aPos} eye.\n{b}: "Seems it’s just you, then."\n{a}: "They’re just being polite."',
+    '{a} says it, and nobody picks it up.\n{a}: "{m} was {b}’s fault."\nSilence.\n{a} (to camera): "Left hanging. Great."',
+    'Nobody agrees with {a} about yesterday, out loud.\n{a} (to camera): "They were thinking it. They just wouldn’t say it."',
+    '{a} blames {b} for {m}, alone.\n{b}: "Nobody agrees with you, {a}."\n{a}: "They will."',
   ],
 };
+
+// WHAT TODAY HOLDS, said on the same road: what they expect from the mission
+// they are driving to, which is the only thing about it anybody can know yet.
+const MISSION_AHEAD_LINES = [
+  '{a}: "Whatever it is today, I’m not standing next to {b}."\n{b}: "Suits me."',
+  '{a}: "If it’s anything like {m}, I want to be on a different team from {b}."\n{b} (to camera): "Charming."',
+  '{a}: "Just don’t freeze today, {b}. That’s all I’m asking."\n{b}: "Noted."',
+];
+
+/** Yesterday's mission, and whether {name} had a bad moment in it, off the record. */
+export function _yesterdaysMission(ep, name, other) {
+  const ms = (gs.tr && gs.tr.missions) || [];
+  const m = [...ms].reverse().find(x => x && x.ep != null && x.ep < ep);
+  if (!m) return null;
+  const teamOf = n => (m.teams || []).find(t => (t.members || []).includes(n));
+  const tb = teamOf(name), ta = teamOf(other);
+  if (!tb || !ta || tb !== ta) return null;           // you blame a teammate, not a rival
+  // a themed afternoon records each beat: a bad one by {name}
+  const BAD = /weak|freeze|wrong|lost|out|bad|lose|stop|dull/;
+  const beats = (m.phases || []).flatMap(p => p.beats || []);
+  if (beats.length) return beats.some(x => x.player === name && BAD.test(String(x.kind))) ? m : null;
+  // an archetype afternoon records the team: theirs had to be the losing side
+  const other2 = (m.teams || []).find(t => t !== tb);
+  return other2 && Number(tb.perf) < Number(other2.perf) ? m : null;
+}
 
 registerEvent({
   id: 'confront-blamed-for-the-mission',
@@ -743,6 +773,8 @@ registerEvent({
     if ((ctx.ep || 0) < 2) return 0;
     if ((ctx.living || []).length < 5) return 0;
     const [a, b] = ctx.actors;
+    // AND {b} HAS TO HAVE DONE BADLY IN IT, on {a}'s own team, by the record
+    if (!_yesterdaysMission(ctx.ep, b, a)) return 0;
     const t = findOpenThread('suspicion', [a, b]) || findOpenThread(FAMILY, [a, b]);
     if (!t && getBond(a, b) > 0) return 0;
     return t ? 2 : 1.2;
@@ -764,7 +796,14 @@ registerEvent({
     for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
 
     const sceneWhy = 'blamed them out loud for how the mission went';
-    const note = lineFor(MISSION_BLAME_LINES[branch], `confront-blamed-for-the-mission|${branch}|${ctx.ep}`, { a, b });
+    const mName = (_yesterdaysMission(ctx.ep, b, a) || {}).name || 'yesterday';
+    let note = lineFor(MISSION_BLAME_LINES[branch], `confront-blamed-for-the-mission|${branch}|${ctx.ep}`, { a, b, m: mName });
+    // and, now and then, where it goes next: what they expect from today's
+    // (a hash, not a draw: an extra rng() here would shift every later scene)
+    const hk = [...(a + '|' + b + '|' + ctx.ep)].reduce((h, c) => (Math.imul(h, 31) + c.charCodeAt(0)) >>> 0, 7);
+    if (branch !== 'took-the-blame' && hk % 100 < 35) {
+      note += '\n' + lineFor(MISSION_AHEAD_LINES, `confront-blamed-ahead|${ctx.ep}`, { a, b, m: mName });
+    }
     // Taking the blame is the one branch that does not cost the pair — it is
     // the only apology available in this family.
     const bondDelta = branch === 'took-the-blame' ? 0.5

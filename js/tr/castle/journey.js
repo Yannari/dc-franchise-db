@@ -71,6 +71,12 @@ function _deaths() { return murderCount(gs); }
 // on which the road-cover topic falls back to the last afternoon out. Reading
 // the log is a PURE READ; it changes no state and no firing.
 function _lastMurdered() {
+  // the finished episodes first: they hold night one, which leaves no round
+  const rows = gs?.episodeHistory || [];
+  for (let i = rows.length - 1; i >= 0; i--) {
+    const ex = (rows[i] && rows[i].exits) || [];
+    for (let j = ex.length - 1; j >= 0; j--) if (ex[j] && ex[j].channel === 'murder' && ex[j].name) return ex[j].name;
+  }
   const rounds = gs?.tr?.rounds || [];
   for (let i = rounds.length - 1; i >= 0; i--) {
     if (rounds[i] && rounds[i].murdered) return rounds[i].murdered;
@@ -406,7 +412,8 @@ registerEvent({
     // out. A pure read of the round log — no rng draw, no state write, so the
     // firing stream is bit-identical to before.
     const victim = _lastMurdered();
-    const topic = victim ? `the night ${victim} was murdered` : 'what happened on the mission';
+    // on the road OUT, today's mission has not happened: the account is of yesterday's
+    const topic = victim ? `the night ${victim} was murdered` : 'what happened on yesterday’s mission';
     const sceneWhy = branch === 'stopped-rehearsing' ? 'decided the rehearsing was the dangerous part'
       : branch === 'could-not-get-it-straight' ? 'could not get one evening into the same order twice'
         : 'ran through their account of the night on the road';

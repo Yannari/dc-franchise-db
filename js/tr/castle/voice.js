@@ -1335,7 +1335,7 @@ export const BENIGN_BRANCHES = new Set([
   // The solo branches of both windows. There is nobody to be leaned on by,
   // and none of these writes an emotional state the smooth register would
   // contradict — the two that do are on the adverse list above.
-  'alone-with-it', 'read-the-room', 'filed-it', 'awake-with-it',
+  'alone-with-it', 'alone-not-mine', 'read-the-room', 'filed-it', 'awake-with-it',
   'checked-the-door', 'rehearsing',
   // ── TASK 7 STAGE 5: THE REWRITE BATCHES (see the note on the adverse
   // list above for the rule these were sorted by) ──────────────────────

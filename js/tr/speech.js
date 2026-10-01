@@ -118,7 +118,10 @@ export function speakScript(text, { key = '' } = {}) {
     const [, who, cam, kind, purpose, arg, rest] = m;
     const you = speakers.find(n => n !== who) || '';
     // `{cam:grief}` reads BANK['cam-grief']; `{say:x}` reads BANK['x'].
-    const bank = kind === 'cam' && BANK['cam-' + purpose] ? 'cam-' + purpose : purpose;
+    let bank = kind === 'cam' && BANK['cam-' + purpose] ? 'cam-' + purpose : purpose;
+    // "few left" is a late-season feeling; with a full castle, the early form
+    if (bank === 'cam-few-left' && BANK['cam-few-left-early']
+      && (gs?.activePlayers || []).length > 10) bank = 'cam-few-left-early';
     const said0 = _pick(bank, who, key + '|' + i);
     // A spoken line starts with a capital, whatever filled its first slot.
     const said = said0 == null ? null

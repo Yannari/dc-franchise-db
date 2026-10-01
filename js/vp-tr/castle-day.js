@@ -1639,6 +1639,12 @@ const CONSEQ_AFTER_WRONG = {
     '{a} puts {topic} down to the cost of playing the game, and moves on.',
     '{a} thinks the vote made sense at the time, even though {topic} was a Faithful, and won’t apologise.',
   ],
+  // {a} wrote another name: the room was wrong, and {a} was part of the room
+  bystander: [
+    '{a} did not write {topic}’s name, and it does not feel any better.',
+    'It was not {a}’s slate, but it was {a}’s table, and {topic} is still gone.',
+    '{a} had another name on the wood, and {topic} went home anyway.',
+  ],
   quiet: [
     '{a} wouldn’t say {topic}’s name again, and people noticed.',
     '{a} kept {aPos} feelings about {topic} to {aRef}.',
@@ -1730,6 +1736,7 @@ function _afterWrongDir(s) {
   if (AW_OWNED.has(b)) return 'owned';
   if (AW_BLAMED.has(b)) return 'blamed';
   if (AW_DEFENDED.has(b)) return 'defended';
+  if (b === 'alone-not-mine') return 'bystander';
   return 'quiet';
 }
 const AR_CREDITED = new Set(['credit-where-due']);

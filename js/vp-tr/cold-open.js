@@ -1433,7 +1433,7 @@ const RELIEF_TEXT = [
 ];
 // ── grief, gated on a real stored bond ─────────────────────────────────
 const GRIEF_TEXT = [
-  '{who} doesn’t hide it. {Sub} was close to {vic}, and it showed all week.',
+  '{who} doesn’t hide it. {Sub} was close to {vic}, and everybody could see it.',
   'It hits {who} hardest. {Sub} and {vic} were properly close.',
   '{who} goes very still, then can’t hold it together. {Sub} counted {vic} as a friend.',
   '{who} says {vic}’s name once, cracks, and stops trying. The two of them were close, and the table knew it.',
@@ -2086,11 +2086,12 @@ function _buildBeats(v) {
         { who: _esc(g0.mourner), vic: _esc(g0.victim), sub: gpr.sub, Sub: gpr.Sub,
           obj: gpr.obj, pos: gpr.pos }) + '</p>'
         + '<div class="co-react">';
+      const griefSaid = new Set();   // two mourners never say the same sentence
       for (const g of bf.grief.slice(0, 3)) {
         const p2 = _pr(g.mourner);
         // SAID, IN THEIR OWN VOICE: these lines are first person ("Gerry was
         // the person I felt safest speaking to"), so they are drawn as speech.
-        ginner += _said(g.mourner, _fill(_pick(GRIEF_SAID, key + '|gs|' + g.mourner),
+        ginner += _said(g.mourner, _fill(_pickAway(GRIEF_SAID, key + '|gs|' + g.mourner, griefSaid),
           { vic: _esc(g.victim), obj: _pr(g.victim).obj, Sub: p2.Sub, sub: p2.sub }));
       }
       ginner += '</div>';

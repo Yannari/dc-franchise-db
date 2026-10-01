@@ -2178,7 +2178,7 @@ const READ_FIRST = [
 // sentence coming round twice on one reading.
 const READ_JOIN = [
   'That is another for {t}.',
-  '{T} takes a second look down the table, and a third name is already coming.',
+  '{T} looks down the table as another one goes up.',
   'The pile in front of {t} grows.',
   'Same name again. Nobody in the room misses it.',
   'Another one for {t}, and the room has stopped being surprised by it.',
@@ -3190,8 +3190,9 @@ function _buildBeats(v) {
         // guard with a comment about a stuck record; this is the same defect
         // one branch up. Advancing an offset per draw keeps it deterministic
         // and makes two consecutive joins impossible to match.
-        note = _fill(READ_JOIN[(_hash(key + '|jn|' + b.voter) + joinIx++)
-          % READ_JOIN.length], subs);
+        // unique across the whole reading (and the revote after it) until the
+        // pool runs out: "Caleb does not react this time" three times at one table
+        note = _fill(_fresh(READ_JOIN, key + '|jn|' + b.voter + '|' + joinIx++), subs);
       } else if (b.target && !named.has(b.target) && !surprised && roundIx === 0) {
         // ONCE a round. On a night the debate never converged, half the slates
         // are names nobody said, and four variants of the same observation in
@@ -3264,7 +3265,7 @@ function _buildBeats(v) {
     emitRead(r.ballots, 'revote', ri + 1);
     const t = _tally(r.ballots, v.dagger);
     push('revote', '<div class="rt-count" data-round="' + (ri + 1) + '">'
-      + _card('The Second Count', 'The count', 'tally',
+      + _card('The ' + (['Second', 'Third', 'Fourth', 'Fifth'][ri] || 'Last') + ' Count', 'The count', 'tally',
         '<p>' + _pick(COUNT_TEXT, key + '|ct2' + ri) + '</p>' + _tallyBoard(t, _leaders(t)))
       + '</div>', null, { kind: 'count', round: ri + 1, tally: t });
   });

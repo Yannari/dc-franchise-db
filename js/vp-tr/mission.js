@@ -799,7 +799,7 @@ const TEAM_TEXT = [
 // and everybody has to do" said nothing about the afternoon at all and was
 // printed on eight of the missions in a five-season dump.
 const WORK_TEXT = [
-  'And then it was hours of it, in the rain, with the castle a long way off up the hill.',
+  'And then it was hours of it, with the castle a long way off and nobody looking at the clock.',
   'The horn went and both teams started, and after that it was a question of who kept going.',
   'What follows took most of the daylight and all of everybody.',
   'They went at it until the light went, which out here is the whole of the working day.',

@@ -724,6 +724,10 @@ const ESTABLISH_SINGLE = [
   '{a} is keeping {aPos} thoughts to {aRef}.',
   '{a} is watching the others.',
   '{a} is around, not saying much.',
+  '{a} is there, hands in {aPos} pockets.',
+  '{a} has a cup of tea going cold.',
+  '{a} is half listening to the room.',
+  '{a} stands by the window for a bit.',
 ];
 // ── THE CLOSING LINE WHEN NOTHING COUNTABLE MOVED ──────────────────────
 //

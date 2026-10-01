@@ -78,7 +78,8 @@ export function dlg(row, st, fresh, cls = '') {
   if (st.host) return captionHtml(st, fresh, 'foot');
   if (!st.who) return `<div class="civ-dlg ${cls}${fresh ? ' new' : ''}"><div class="civ-line stage">${esc(st.text)}</div></div>`;
   const plate = `<div class="civ-plate">${esc(realOf(row, st.who))}${isCatfish(row, st.who) ? ` <i>· as ${esc(nameOf(row, st.who))}</i>` : ''}</div>`;
-  const body = st.part === 'send' ? `<span class="civ-chip cmd">TO THE CIRCLE</span><span class="civ-cmd">${hashify(st.text)}</span>`
+  // The Hangout is private: a message there goes to the other Influencer.
+  const body = st.part === 'send' ? `<span class="civ-chip cmd">${/^hangout\./.test(st.key || '') ? 'IN THE HANGOUT' : 'TO THE CIRCLE'}</span><span class="civ-cmd">${hashify(st.text)}</span>`
     : `<span class="civ-chip say">${CHIP[st.part] || 'SAYS'}</span>${hashify(st.text)}`;
   return `<div class="civ-dlg ${cls}${fresh ? ' new' : ''}">${plate}<div class="civ-line">${body}</div></div>`;
 }

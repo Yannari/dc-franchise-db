@@ -25,7 +25,7 @@ const ALERT = new Set(['alert', 'power-reveal', 'disrupter', 'hack', 'no-block',
 // Meet the players: who walks in, who they really are, and the profile built.
 const ARRIVE = new Set(['profiles', 'arrival']);
 // The big moments (js/vp-ci/moments.js), each on its own set.
-const MOMENT = { game: 'game', ratings: 'rate', 'final-ratings': 'rate', hangout: 'hangout', blocking: 'blocked',
+const MOMENT = { likes: 'feed', game: 'game', ratings: 'rate', 'final-ratings': 'rate', hangout: 'hangout', blocking: 'blocked',
   visit: 'room', meet: 'room', goodbye: 'video', reveal: 'studio' };
 export const stageOf = kind => MOMENT[kind] || (ARRIVE.has(kind) ? 'arrive' : APT.has(kind) ? 'apt' : ALERT.has(kind) ? 'alert' : 'ui');
 
@@ -53,7 +53,8 @@ export function circleScreens(row) {
     for (const b of s.script.blocks) {
       // Every step knows its block (the pool it came from) and, on a big
       // moment, who that block is about.
-      const tag = { key: b.key, ...(arrive ? { about: subjectOf(s, b) } : {}), ...(b.on ? { on: b.on } : {}), ...(b.bi != null ? { bi: b.bi } : {}) };
+      const tag = { key: b.key, ...(arrive ? { about: subjectOf(s, b) } : {}), ...(b.on ? { on: b.on } : {}), ...(b.bi != null ? { bi: b.bi } : {}),
+        ...(/^flashback/.test(b.phase || '') ? { fb: b.phase } : {}) };
       const first = steps.length;
       for (const l of b.lines || []) {
         steps.push({ who: l.who && l.who !== 'host' ? l.who : null, host: l.who === 'host' || l.kind === 'host',

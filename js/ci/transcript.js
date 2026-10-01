@@ -34,6 +34,8 @@ const shownName = (state, h) => (state.profiles[h]?.shown?.name || realName(stat
 
 export function blockText(state, block) {
   const out = [];
+  // The Hangout's decision, aired after the name (script.js hangoutFlashback).
+  if (block.phase === 'flashback-open') out.push('  — EARLIER, IN THE HANGOUT —');
   let dictated = false;
   for (const l of block.lines) {
     const shownAs = shownName(state, l.who);

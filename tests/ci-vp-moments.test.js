@@ -63,7 +63,11 @@ describe('the Ratings', () => {
 describe('the blocking', () => {
   it('nobody is blocked on screen until the name is sent; then the tile goes dark with BLOCKED', () => {
     for (const x of of('blocking')) {
-      const named = firstIdx(x.screen, /^(block\.announce\.|vote\.result|block\.inperson\.tell)/);
+      // The slam lands on the message that names them (an aside said aloud
+      // before it is still the waiting).
+      const NAMED = /^(block\.announce\.|vote\.result|block\.inperson\.tell)/;
+      const sent = x.screen.steps.findIndex(s => NAMED.test(s.key || '') && s.part === 'send');
+      const named = sent >= 0 ? sent : firstIdx(x.screen, NAMED);
       expect(named, x.screen.steps.map(s => s.key).join(',')).toBeGreaterThanOrEqual(0);
       if (named > 0) expect(at(x, named - 1).querySelector('.civ-mtile.out')).toBeNull();
       const d = at(x, named, true);
@@ -82,7 +86,15 @@ describe('the Hangout', () => {
       const cutAt = firstIdx(x.screen, /view\.\w+\.cut$/);
       if (cutAt < 0) continue;
       expect(at(x, cutAt - 1).querySelector('.civ-mtile.cut')).toBeNull();
-      expect(at(x, cutAt).querySelector('.civ-mtile.cut').dataset.h).toBe(x.screen.d.target);
+      // Two names go on the table, the one they block and the runner-up:
+      // the debate does not give the answer away.
+      const onTable = [x.screen.d.target, x.screen.d.runnerUp].filter(Boolean);
+      expect(onTable).toContain(at(x, cutAt).querySelector('.civ-mtile.cut').dataset.h);
+      const end = at(x, x.screen.steps.length - 1);
+      expect([...end.querySelectorAll('.civ-mtile.cut')].map(e => e.dataset.h).sort()).toEqual([...onTable].sort());
+      // ...and the screen never shows the decision: that airs in the blocking.
+      expect(end.querySelector('.civ-mtile.doomed')).toBeNull();
+      expect(x.screen.steps.some(s => /^hangout\.(agree|trade|yield|trio\.|solo\.decide)/.test(s.key || ''))).toBe(false);
     }
   });
 });
@@ -125,5 +137,20 @@ describe('the finale studio', () => {
       expect(at(x, win - 1).querySelector('.civ-slot.crown')).toBeNull();
       expect(at(x, win).querySelector('.civ-slot.crown b').textContent).toBe('1');
     }
+  });
+});
+
+describe('the Newsfeed board', () => {
+  it('draws every post with its likes, hidden until the first line, then ranked with the top crowned', async () => {
+    const { likeCounts } = await import('../js/ci/season.js');
+    expect(likeCounts({ a: ['b', 'c'], b: ['c'], c: [] })).toEqual({ a: 0, b: 1, c: 2 });
+    const x = all.find(x => x.screen.kind === 'likes');
+    expect(x.screen.stage).toBe('feed');
+    const before = stageInner(x.row, x.screen, -1, false);
+    expect(before).toMatch(/<b>\?<\/b>/);
+    const after = stageInner(x.row, x.screen, 0, true);
+    expect(after).toMatch(/MOST LIKES/);
+    expect(after).not.toMatch(/<b>\?<\/b>/);
+    expect((after.match(/civ-fpost/g) || []).length).toBe(Object.keys(x.screen.d.counts).length);
   });
 });

@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Blocking and Visit Mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#07081c;--text:#eef1ff;--muted:#9aa3d6;--pk:#ff4fb4;--pu:#8b5cff;--cy:#3fd8ff;--gold:#ffd23f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 Montserrat,system-ui,sans-serif}
+.wrap{max-width:1100px;margin:0 auto;padding:28px 16px 70px}
+h1{font-size:22px;margin:0 0 6px}
+.lede{color:var(--muted);margin:0 0 26px;max-width:820px}
+.step{display:flex;gap:10px;align-items:baseline;margin:34px 0 10px}
+.step b{background:linear-gradient(90deg,var(--pk),var(--pu));border-radius:99px;width:26px;height:26px;display:inline-grid;place-items:center;font-size:13px;flex:none}
+.step h2{font-size:16px;margin:0}.step span{color:var(--muted);font-size:13px}
+.frame{position:relative;width:100%;aspect-ratio:16/9;border-radius:14px;overflow:hidden;container-type:inline-size;box-shadow:0 20px 60px rgba(0,0,0,.5);border:1px solid rgba(139,92,255,.25)}
+.note{color:var(--muted);font-size:13px;margin:8px 2px 0}
+/* shared pieces, in the screens' own vocabulary */
+.where{position:absolute;top:2.5%;left:50%;transform:translateX(-50%);z-index:12;font-weight:800;font-size:1cqw;letter-spacing:.16em;padding:.5cqw 1.2cqw;border-radius:99px;background:linear-gradient(90deg,rgba(47,123,255,.9),rgba(139,92,255,.9),rgba(255,79,180,.9));white-space:nowrap}
+.cam{position:absolute;border-radius:1cqw;border:.3cqw solid rgba(255,255,255,.9);background:#1b1f45 center 22%/cover;box-shadow:0 0 2.6cqw var(--glow,#8b5cff)}
+.cam .tag{position:absolute;left:.7cqw;top:.6cqw;font-size:.8cqw;font-weight:800;letter-spacing:.12em;background:rgba(0,0,0,.55);padding:.15cqw .55cqw;border-radius:.3cqw}
+.cam .tag:before{content:"";display:inline-block;width:.55cqw;height:.55cqw;border-radius:50%;background:#ff4a6a;margin-right:.4cqw;box-shadow:0 0 6px #ff4a6a}
+.dlg{position:absolute;left:4%;right:4%;bottom:4%;z-index:9;background:linear-gradient(135deg,rgba(18,20,56,.92),rgba(40,20,80,.88));border:1px solid rgba(120,160,255,.35);border-radius:.9cqw;padding:1.7cqw 2cqw 1.3cqw;backdrop-filter:blur(10px)}
+.dlg .plate{position:absolute;top:-1.3cqw;left:1.6cqw;font-weight:800;font-size:1cqw;letter-spacing:.1em;padding:.35cqw .9cqw;border-radius:.4cqw;background:linear-gradient(90deg,#2f7bff,#ff4fb4)}
+.dlg .ln{font-size:1.55cqw;font-weight:600}
+.chip{display:inline-block;font-size:.85cqw;font-weight:800;letter-spacing:.12em;padding:.2cqw .6cqw;border-radius:.3cqw;background:rgba(255,255,255,.12);margin-right:.8cqw;vertical-align:middle}
+
+/* 1 — the announcement */
+.ui{position:absolute;inset:0;background:radial-gradient(70% 80% at 60% 20%,#2a1d6e,#0a0b2a 70%)}
+.ring{position:absolute;right:-8%;top:-30%;width:62%;aspect-ratio:1;border-radius:50%;border:2.4cqw solid transparent;background:linear-gradient(#0000,#0000) padding-box,linear-gradient(135deg,#ff4fb4,#8b5cff,#3fd8ff) border-box;opacity:.35;filter:blur(1px)}
+.ann{position:absolute;left:6%;right:31%;top:12%;bottom:30%;display:flex;flex-direction:column;justify-content:flex-end;gap:1.1cqw}
+.msg{display:flex;gap:1.2cqw;align-items:flex-start}
+.av{flex:none;width:3.8cqw;aspect-ratio:1;border-radius:50%;border:.28cqw solid var(--r,#ff4fb4);background:#1b1f45 center 25%/cover}
+.card{background:rgba(26,30,80,.85);border-radius:.6cqw;padding:.9cqw 1.4cqw;max-width:88%}
+.card .nm{font-weight:800;font-size:1cqw;letter-spacing:.06em;color:#ffb3dd}
+.card .tx{font-size:1.45cqw;font-weight:500;line-height:1.38}
+.card.dim{opacity:.55}
+.dots{display:inline-flex;gap:.45cqw}.dots i{width:.75cqw;height:.75cqw;border-radius:50%;background:#cfd6ff;animation:b 1.2s infinite}.dots i:nth-child(2){animation-delay:.15s}.dots i:nth-child(3){animation-delay:.3s}
+@keyframes b{50%{transform:translateY(-35%);opacity:.5}}
+.reactors{position:absolute;right:2.5%;top:12%;bottom:30%;width:26%;display:grid;grid-template-rows:repeat(3,1fr);gap:1cqw}
+.rx{position:relative;border-radius:.9cqw;overflow:hidden;background:#151a44;border:1px solid rgba(255,255,255,.12)}
+.rx .ph{position:absolute;inset:0;background:center 22%/cover}
+.rx .q{position:absolute;left:0;right:0;bottom:0;padding:.6cqw .9cqw;font-size:1cqw;font-weight:700;background:linear-gradient(transparent,rgba(5,6,20,.92) 40%)}
+.rx .q small{display:block;font-size:.75cqw;letter-spacing:.14em;color:var(--cy)}
+.rx.hot{box-shadow:0 0 0 .3cqw var(--gold),0 0 2.4cqw rgba(255,210,63,.5)}
+
+/* 2 — the flashback */
+.fb{position:absolute;inset:0;background:radial-gradient(80% 90% at 50% 30%,#3a2f55,#120f22 75%);filter:sepia(.35) saturate(.75)}
+.fb:after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(255,255,255,.035) 0 2px,transparent 2px 4px);pointer-events:none}
+.fb-vig{position:absolute;inset:0;box-shadow:inset 0 0 12cqw rgba(0,0,0,.85);z-index:3;pointer-events:none}
+.fb-band{position:absolute;left:4%;top:7%;z-index:6;font-weight:900;letter-spacing:.3em;font-size:1.1cqw;color:#ffe2b0}
+.fb-band b{display:block;font-size:2.6cqw;letter-spacing:.08em;color:#fff2da}
+.fb-cams{position:absolute;left:8%;right:8%;top:20%;display:flex;justify-content:space-between;filter:sepia(.55) saturate(.7) contrast(.95)}
+.fb-cams .cam{position:relative;width:21cqw;aspect-ratio:4/5}
+.fb-mid{position:absolute;left:33%;right:33%;top:26%;text-align:center}
+.fb-mid .lbl{font-weight:800;font-size:1cqw;letter-spacing:.2em;color:#ffcfa0}
+.fb-mid .nm{font-weight:900;font-size:2.4cqw;margin-top:.4cqw}
+.fb-mid .why{display:inline-block;margin-top:.8cqw;font-weight:800;font-size:.95cqw;letter-spacing:.14em;color:#1a1020;background:#ffd9a0;padding:.3cqw .8cqw;border-radius:.3cqw}
+
+/* 3, 4, 5 — SVG sets */
+.set{position:absolute;inset:0;width:100%;height:100%}
+.walker{position:absolute;left:50%;top:29%;width:16cqw;aspect-ratio:4/5;transform:translateX(-50%)}
+.steps{position:absolute;left:50%;bottom:29%;transform:translateX(-50%);display:flex;gap:1.4cqw}
+.steps i{width:1.2cqw;height:.5cqw;border-radius:50%;background:rgba(80,60,140,.35)}
+.waitcam{position:absolute;right:7%;top:14%;width:19cqw;aspect-ratio:4/5}
+.whose{position:absolute;left:36%;top:57%;font-weight:900;font-size:3cqw;letter-spacing:.04em;text-shadow:0 0 2cqw rgba(0,0,0,.6)}
+.whose small{display:block;font-size:1cqw;letter-spacing:.2em;color:#ffe08a;margin-bottom:.4cqw}
+.strip{position:absolute;left:36%;top:73%;display:flex;gap:.8cqw}
+.strip span{width:5cqw;aspect-ratio:4/5;border-radius:.6cqw;border:.2cqw solid rgba(255,255,255,.6);background:#1b1f45 center 22%/cover;opacity:.55}
+.strip span.on{opacity:1;box-shadow:0 0 1.4cqw var(--gold)}
+.knock{position:absolute;left:24%;top:30%;font-weight:900;font-size:2.2cqw;letter-spacing:.2em;color:#fff;text-shadow:0 0 2cqw #ffd23f}
+.two{position:absolute;left:31%;right:31%;top:13%;display:flex;justify-content:space-between;z-index:4}
+.two .cam{position:relative;width:15cqw;aspect-ratio:4/5}
+.two .was{text-align:center;margin-top:.6cqw;font-size:1cqw;font-weight:700;background:rgba(10,12,40,.7);border-radius:99px;padding:.25cqw .8cqw;width:max-content;margin-left:auto;margin-right:auto}
+.two .was i{font-style:normal;color:var(--pk)}
+.music{position:absolute;right:3%;top:2.5%;z-index:12;font-size:.85cqw;font-weight:800;letter-spacing:.12em;padding:.4cqw .9cqw;border-radius:99px;background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.2)}
+.ask{background:rgba(255,210,63,.08);border:1px solid rgba(255,210,63,.35);border-radius:12px;padding:14px 18px;margin-top:34px}
+.ask h3{margin:0 0 6px;font-size:15px;color:var(--gold)}
+.ask ol{margin:6px 0 0;padding-left:20px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>The blocking and the visit, rebuilt</h1>
+  <p class="lede">The night as the real show cuts it: the Hangout keeps the name secret, the announcement drags it out one message at a time, a flashback shows why, then the walk through a bright hallway, everyone waiting in their own apartment, and the door. Mockup: still frames of what each screen looks like at one click.</p>
+
+  <!-- 1 -->
+  <div class="step"><b>1</b><h2>The announcement, one message at a time</h2><span>4–5 messages, each clue true to their real reason</span></div>
+  <div class="frame">
+    <div class="ui"></div><div class="ring"></div>
+    <div class="where">CIRCLE CHAT · THE INFLUENCERS HAVE DECIDED</div>
+    <div class="ann">
+      <div class="msg"><div class="av" style="background-image:url(../assets/avatars/bowie.png)"></div><div class="card dim"><div class="nm">BOWIE</div><div class="tx">Hey everyone. This was honestly the hardest conversation we've had in here.</div></div></div>
+      <div class="msg"><div class="av" style="--r:#3fd8ff;background-image:url(../assets/avatars/zee.png)"></div><div class="card dim"><div class="nm">ZEE</div><div class="tx">We went back and forth on every single name.</div></div></div>
+      <div class="msg"><div class="av" style="background-image:url(../assets/avatars/bowie.png)"></div><div class="card"><div class="nm">BOWIE</div><div class="tx">The person we're blocking is someone we never really got a straight answer from...</div></div></div>
+      <div class="msg"><div class="av" style="--r:#3fd8ff;background-image:url(../assets/avatars/zee.png)"></div><div class="card"><span class="dots"><i></i><i></i><i></i></span></div></div>
+    </div>
+    <div class="reactors">
+      <div class="rx hot"><div class="ph" style="background-image:url(../assets/avatars/caleb.png)"></div><div class="q"><small>CALEB · ALOUD</small>"A straight answer? That's me. That's literally me."</div></div>
+      <div class="rx"><div class="ph" style="background-image:url(../assets/avatars/nichelle.png)"></div><div class="q"><small>NICHELLE · ALOUD</small>"I answered everything! Didn't I?"</div></div>
+      <div class="rx"><div class="ph" style="background-image:url(../assets/avatars/chase.png)"></div><div class="q"><small>CHASE · ALOUD</small>"Just say it. Just say it."</div></div>
+    </div>
+    <div class="dlg"><div class="plate">THE CIRCLE</div><div class="ln">Every apartment stares at the dots.</div></div>
+  </div>
+  <p class="note">Between messages, the cameras cut to the players a clue could fit — the ones who think it's them (from what each believes about how they've played). The name lands on the last message, with the BLOCKED slam the screen already has.</p>
+
+  <!-- 2 -->
+  <div class="step"><b>2</b><h2>The flashback: how they got there</h2><span>right after the name</span></div>
+  <div class="frame">
+    <div class="fb"></div><div class="fb-vig"></div>
+    <div class="fb-band">EARLIER<b>IN THE HANGOUT</b></div>
+    <div class="fb-cams">
+      <div class="cam" style="--glow:#ffb36b;background-image:url(../assets/avatars/bowie.png)"><span class="tag">INFLUENCER · BOWIE</span></div>
+      <div class="cam" style="--glow:#ffb36b;background-image:url(../assets/avatars/zee.png)"><span class="tag">INFLUENCER · ZEE</span></div>
+    </div>
+    <div class="fb-mid"><div class="lbl">THEY SETTLED ON</div><div class="nm">CALEB</div><div class="why">"WE DON'T THINK HE'S REAL"</div></div>
+    <div class="dlg" style="filter:sepia(.25)"><div class="plate">ZEE</div><div class="ln"><span class="chip">SAYS</span>Every time we ask Caleb something, the answer changes. I can't trust that.</div></div>
+  </div>
+  <p class="note">Warm, faded and grainy so it reads as "earlier" at a glance. Only the lines from the Hangout that decided it, ending on the agreement. The Hangout screen itself now cuts away before the name ("So we're agreed." — "We're agreed.").</p>
+
+  <!-- 3 -->
+  <div class="step"><b>3</b><h2>The walk</h2><span>a bright Circle hallway, centred</span></div>
+  <div class="frame">
+    <svg class="set" id="hall" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice"></svg>
+    <div class="where">A VISIT · THE BLOCKED PLAYER WALKS</div>
+    <div class="music">♪ THE WALK</div>
+    <div class="cam walker" style="--glow:#ff4fb4;background-image:url(../assets/avatars/caleb.png)"><span class="tag">THE HALLWAY · CALEB</span></div>
+    <div class="dlg"><div class="plate">CALEB</div><div class="ln"><span class="chip">SAYS ALOUD</span>I know exactly whose door I'm knocking on.</div></div>
+  </div>
+  <p class="note">Drawn in SVG: light walls, a neon stripe in the Circle's colours, numbered doors with their own lights, the ring on the far wall. The camera pushes slowly down the hall as the clicks go by.</p>
+
+  <!-- 4 -->
+  <div class="step"><b>4</b><h2>Whose door? Waiting in their own apartment</h2><span>a cut to each one, then the knock</span></div>
+  <div class="frame">
+    <svg class="set" id="apt" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice"></svg>
+    <div class="where">A VISIT · EVERYBODY WAITS</div>
+    <div class="whose"><small>APARTMENT 6</small>Whose door?</div>
+    <div class="strip"><span style="background-image:url(../assets/avatars/nichelle.png)"></span><span class="on" style="background-image:url(../assets/avatars/ripper.png)"></span><span style="background-image:url(../assets/avatars/axel.png)"></span></div>
+    <div class="cam waitcam" style="--glow:#ffd23f;background-image:url(../assets/avatars/ripper.png)"><span class="tag">CAM 6 · RIPPER</span></div>
+    <div class="dlg"><div class="plate">RIPPER</div><div class="ln"><span class="chip">SAYS ALOUD</span>If Caleb walks through that door, what do I say? 'Hi, sorry you got blocked'?</div></div>
+  </div>
+  <p class="note">Their own room (the same theme their apartment has all season) with their door in view. The strip shows who's still waiting. On the knock, that door lights up and shakes: KNOCK KNOCK.</p>
+
+  <!-- 5 -->
+  <div class="step"><b>5</b><h2>The door opens: their apartment, face to face</h2><span>the music changes here</span></div>
+  <div class="frame">
+    <svg class="set" id="room" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice"></svg>
+    <div class="where">FACE TO FACE · RIPPER'S APARTMENT</div>
+    <div class="music">♪ NOW: THE TALK</div>
+    <div class="two">
+      <div><div class="cam" style="--glow:#ff4fb4;background-image:url(../assets/avatars/caleb.png)"><span class="tag">CALEB</span></div><div class="was">the real Caleb</div></div>
+      <div><div class="cam" style="--glow:#ffd23f;background-image:url(../assets/avatars/ripper.png)"><span class="tag">RIPPER</span></div><div class="was">the real Ripper</div></div>
+    </div>
+    <div class="dlg"><div class="plate">CALEB</div><div class="ln"><span class="chip">SAYS</span>So. You're actually you. I wasn't sure.</div></div>
+  </div>
+  <p class="note">The visited player's apartment, lit warm, a couch the two of them sit on. The hallway music cuts out on the door and a softer bed comes in for the talk; it changes again for "after the visit".</p>
+
+  <div class="ask">
+    <h3>Before I build it</h3>
+    <ol>
+      <li>Should the <b>Hangout</b> screen hide the final name (cut before it, so the announcement is the reveal), as the show does?</li>
+      <li>Does the look of the hallway, the waiting apartment and the visit room work for you?</li>
+    </ol>
+  </div>
+</div>
+
+<script>
+// ── the hallway: one-point perspective, everything computed from the vanishing point ──
+(function hall() {
+  const svg = document.getElementById('hall');
+  const VX = 800, VY = 390, BL = 600, BR = 1000, BT = 270, BB = 560; // back wall
+  const wallTop = x => (x <= BL ? BT * x / BL : BT * (1600 - x) / (1600 - BR));
+  const wallBot = x => (x <= BL ? 900 - (900 - BB) * x / BL : 900 - (900 - BB) * (1600 - x) / (1600 - BR));
+  let s = `<defs>
+    <linearGradient id="wallL" x1="0" x2="1"><stop offset="0" stop-color="#f6f3fb"/><stop offset="1" stop-color="#dcd6ee"/></linearGradient>
+    <linearGradient id="wallR" x1="1" x2="0"><stop offset="0" stop-color="#f6f3fb"/><stop offset="1" stop-color="#dcd6ee"/></linearGradient>
+    <linearGradient id="floor" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#cfd2e4"/><stop offset="1" stop-color="#e9eaf4"/></linearGradient>
+    <linearGradient id="neon" x1="0" x2="1"><stop offset="0" stop-color="#ff4fb4"/><stop offset=".5" stop-color="#8b5cff"/><stop offset="1" stop-color="#3fd8ff"/></linearGradient>
+    <linearGradient id="door" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#3a3f7a"/><stop offset="1" stop-color="#262a58"/></linearGradient>
+    <radialGradient id="glow"><stop offset="0" stop-color="#fff6d8" stop-opacity=".95"/><stop offset="1" stop-color="#fff6d8" stop-opacity="0"/></radialGradient>
+    <filter id="soft"><feGaussianBlur stdDeviation="6"/></filter>
+    <filter id="blur2"><feGaussianBlur stdDeviation="2"/></filter>
+  </defs>`;
+  // ceiling, walls, floor
+  s += `<polygon points="0,0 1600,0 ${BR},${BT} ${BL},${BT}" fill="#fbfaff"/>`;
+  for (let i = 1; i <= 5; i++) { // ceiling light strips
+    const t = i / 6, y = BT * (1 - t) + 0 * t, yy = y * (1 - Math.pow(t, 0.6));
+    const k = 1 - Math.pow(1 - t, 1.8); const y2 = BT * k;
+    const xl = VX - (VX - BL) * k - 40 * (1 - k), xr = VX + (BR - VX) * k + 40 * (1 - k);
+    s += `<rect x="${VX - (VX - BL) * k * 0.55}" y="${y2 - 6 * (1 - k) - 3}" width="${(BR - BL) * k * 0.55 * 2 * 0.5 + 120 * (1 - k)}" height="${6 + 10 * (1 - k)}" rx="4" fill="#fffbe8" opacity=".95" transform="translate(${-60 * (1 - k)},0)"/>`;
+  }
+  s += `<polygon points="0,0 ${BL},${BT} ${BL},${BB} 0,900" fill="url(#wallL)"/>`;
+  s += `<polygon points="1600,0 ${BR},${BT} ${BR},${BB} 1600,900" fill="url(#wallR)"/>`;
+  s += `<polygon points="0,900 ${BL},${BB} ${BR},${BB} 1600,900" fill="url(#floor)"/>`;
+  // the runner: a Circle-coloured carpet down the middle
+  s += `<polygon points="520,900 ${VX - 70},${BB} ${VX + 70},${BB} 1080,900" fill="#2a2360"/>`;
+  s += `<polygon points="560,900 ${VX - 56},${BB} ${VX + 56},${BB} 1040,900" fill="none" stroke="url(#neon)" stroke-width="5" opacity=".85"/>`;
+  // back wall with the ring
+  s += `<rect x="${BL}" y="${BT}" width="${BR - BL}" height="${BB - BT}" fill="#2b2466"/>`;
+  s += `<circle cx="${VX}" cy="${(BT + BB) / 2}" r="92" fill="none" stroke="url(#neon)" stroke-width="22"/><circle cx="${VX}" cy="${(BT + BB) / 2 - 92}" r="11" fill="#fff"/>`;
+  s += `<circle cx="${VX}" cy="${(BT + BB) / 2}" r="120" fill="url(#neon)" opacity=".18" filter="url(#soft)"/>`;
+  // neon stripe along both walls at waist height
+  const stripe = side => {
+    const near = side === 'L' ? 0 : 1600, far = side === 'L' ? BL : BR;
+    const yNear = 900 - (900 - 0) * 0.42, yFar = wallBot(far) - (wallBot(far) - wallTop(far)) * 0.42;
+    return `<line x1="${near}" y1="${yNear}" x2="${far}" y2="${yFar}" stroke="url(#neon)" stroke-width="9" stroke-linecap="round"/>
+      <line x1="${near}" y1="${yNear}" x2="${far}" y2="${yFar}" stroke="url(#neon)" stroke-width="26" opacity=".25" filter="url(#soft)"/>`;
+  };
+  s += stripe('L') + stripe('R');
+  // doors: a quad on the wall between x1 and x2 (near to far), 78% of the wall's height from the floor
+  const door = (side, x1, x2, num) => {
+    const X = x => (side === 'L' ? x : 1600 - x);
+    const pt = (x, f) => { const t = wallTop(x), b = wallBot(x); return [X(x), b - (b - t) * f]; };
+    const H = 0.74;
+    const [a, b, c, d] = [pt(x1, 0), pt(x1, H), pt(x2, H), pt(x2, 0)];
+    const fr = 14 * (1 - x1 / 700);
+    const mid = (p, q, f) => [p[0] + (q[0] - p[0]) * f, p[1] + (q[1] - p[1]) * f];
+    // frame, panel, number plate, handle, a light above it
+    const top = mid(b, c, 0.5); const lampY = top[1] - 40 * (1 - x1 / 700);
+    let o = `<ellipse cx="${top[0]}" cy="${lampY + 30}" rx="${90 * (1 - x1 / 760)}" ry="${110 * (1 - x1 / 760)}" fill="url(#glow)" opacity=".7"/>`;
+    o += `<polygon points="${a} ${b} ${c} ${d}" fill="#ffffff" stroke="#ffffff" stroke-width="${fr}" stroke-linejoin="round"/>`;
+    o += `<polygon points="${a} ${b} ${c} ${d}" fill="url(#door)"/>`;
+    const p1 = mid(a, b, 0.12), p2 = mid(a, b, 0.88), p3 = mid(d, c, 0.88), p4 = mid(d, c, 0.12);
+    const inset = (p, q, f) => [p[0] + (q[0] - p[0]) * f, p[1] + (q[1] - p[1]) * f];
+    o += `<polygon points="${inset(p1, p4, 0.14)} ${inset(p2, p3, 0.14)} ${inset(p3, p2, 0.14)} ${inset(p4, p1, 0.14)}" fill="none" stroke="#5a60a8" stroke-width="${3 * (1 - x1 / 800) + 1}"/>`;
+    const plate = mid(mid(b, c, 0.5), mid(a, d, 0.5), 0.2);
+    const sz = 30 * (1 - x1 / 720) + 6;
+    o += `<rect x="${plate[0] - sz * 0.75}" y="${plate[1] - sz * 0.55}" width="${sz * 1.5}" height="${sz * 1.1}" rx="${sz * 0.2}" fill="#ffd23f"/>`;
+    o += `<text x="${plate[0]}" y="${plate[1] + sz * 0.32}" font-family="Montserrat" font-weight="900" font-size="${sz * 0.85}" text-anchor="middle" fill="#2a1d00">${num}</text>`;
+    const h = mid(mid(c, d, 0.45), mid(b, a, 0.45), side === 'L' ? 0.12 : 0.12);
+    o += `<circle cx="${h[0]}" cy="${h[1]}" r="${7 * (1 - x1 / 800) + 2}" fill="#ffd23f"/>`;
+    o += `<rect x="${top[0] - 22 * (1 - x1 / 700)}" y="${lampY}" width="${44 * (1 - x1 / 700)}" height="${10 * (1 - x1 / 700) + 2}" rx="4" fill="#fff4c8"/>`;
+    return o;
+  };
+  s += door('L', 70, 250, 1) + door('L', 360, 450, 3) + door('L', 520, 560, 5);
+  s += door('R', 70, 250, 2) + door('R', 360, 450, 4) + door('R', 520, 560, 6);
+  // plants by the far wall
+  const plant = x => `<rect x="${x - 14}" y="${BB - 46}" width="28" height="40" rx="6" fill="#ffffff"/><ellipse cx="${x}" cy="${BB - 66}" rx="26" ry="32" fill="#3fbf7a"/><ellipse cx="${x - 14}" cy="${BB - 56}" rx="14" ry="20" fill="#2f9a60"/>`;
+  s += plant(BL + 40) + plant(BR - 40);
+  svg.innerHTML = s;
+})();
+
+// ── an apartment (Ripper's, the 'citrus' theme) with its door, from the couch ──
+function apartment(svgId, open) {
+  const svg = document.getElementById(svgId);
+  let s = `<defs>
+    <linearGradient id="${svgId}w" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#ffbe55"/><stop offset="1" stop-color="#f08a1e"/></linearGradient>
+    <pattern id="${svgId}dots" width="36" height="36" patternUnits="userSpaceOnUse"><circle cx="18" cy="18" r="3.5" fill="#ffffff" opacity=".22"/></pattern>
+    <linearGradient id="${svgId}fl" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#7a4a2a"/><stop offset="1" stop-color="#3e2414"/></linearGradient>
+    <linearGradient id="${svgId}dr" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#3a3f7a"/><stop offset="1" stop-color="#262a58"/></linearGradient>
+    <linearGradient id="${svgId}hall" x1="0" x2="1"><stop offset="0" stop-color="#f6f3fb"/><stop offset="1" stop-color="#d9d3ee"/></linearGradient>
+    <radialGradient id="${svgId}lamp"><stop offset="0" stop-color="#fff2b0" stop-opacity=".9"/><stop offset="1" stop-color="#fff2b0" stop-opacity="0"/></radialGradient>
+    <linearGradient id="${svgId}neon" x1="0" x2="1"><stop offset="0" stop-color="#ff4fb4"/><stop offset=".5" stop-color="#8b5cff"/><stop offset="1" stop-color="#3fd8ff"/></linearGradient>
+    <filter id="${svgId}soft"><feGaussianBlur stdDeviation="10"/></filter>
+  </defs>`;
+  // back wall, pattern, skirting, floor
+  s += `<rect width="1600" height="900" fill="url(#${svgId}w)"/><rect width="1600" height="700" fill="url(#${svgId}dots)"/>`;
+  s += `<rect y="560" width="1600" height="150" fill="rgba(160,70,0,.28)"/><rect y="556" width="1600" height="6" fill="rgba(255,255,255,.35)"/>`;
+  s += `<polygon points="0,700 1600,700 1600,900 0,900" fill="url(#${svgId}fl)"/>`;
+  for (let i = 0; i < 9; i++) s += `<line x1="${i * 200}" y1="700" x2="${i * 200 - 120}" y2="900" stroke="rgba(0,0,0,.18)" stroke-width="3"/>`;
+  // the door, left, with its frame and number
+  const dx = 150, dw = 300, dt = 150, db = 702;
+  s += `<rect x="${dx - 18}" y="${dt - 18}" width="${dw + 36}" height="${db - dt + 18}" rx="6" fill="#ffffff"/>`;
+  if (open) {
+    s += `<rect x="${dx}" y="${dt}" width="${dw}" height="${db - dt}" fill="url(#${svgId}hall)"/>`;
+    s += `<line x1="${dx}" y1="${dt + 200}" x2="${dx + dw}" y2="${dt + 230}" stroke="url(#${svgId}neon)" stroke-width="8"/>`;
+    s += `<polygon points="${dx},${dt} ${dx + 70},${dt + 30} ${dx + 70},${db - 10} ${dx},${db}" fill="url(#${svgId}dr)"/>`;
+    s += `<rect x="${dx}" y="${dt}" width="${dw}" height="${db - dt}" fill="#fff4c8" opacity=".25"/>`;
+  } else {
+    s += `<rect x="${dx}" y="${dt}" width="${dw}" height="${db - dt}" fill="url(#${svgId}dr)"/>`;
+    s += `<rect x="${dx + 40}" y="${dt + 40}" width="${dw - 80}" height="${(db - dt) / 2 - 60}" rx="6" fill="none" stroke="#5a60a8" stroke-width="5"/>`;
+    s += `<rect x="${dx + 40}" y="${dt + (db - dt) / 2}" width="${dw - 80}" height="${(db - dt) / 2 - 50}" rx="6" fill="none" stroke="#5a60a8" stroke-width="5"/>`;
+    s += `<circle cx="${dx + dw - 40}" cy="${(dt + db) / 2 + 10}" r="13" fill="#ffd23f"/>`;
+    s += `<rect x="${dx + dw / 2 - 40}" y="${dt + 70}" width="80" height="56" rx="10" fill="#ffd23f"/><text x="${dx + dw / 2}" y="${dt + 112}" font-family="Montserrat" font-weight="900" font-size="40" text-anchor="middle" fill="#2a1d00">6</text>`;
+    // light under the door: somebody in the hallway
+    s += `<rect x="${dx + 6}" y="${db - 6}" width="${dw - 12}" height="8" fill="#fff4c8" opacity=".9"/><ellipse cx="${dx + dw / 2}" cy="${db + 6}" rx="${dw * 0.6}" ry="24" fill="#fff4c8" opacity=".35" filter="url(#${svgId}soft)"/>`;
+  }
+  // a poster, a lamp, a plant, the couch
+  s += open ? `<rect x="1200" y="130" width="160" height="210" rx="4" fill="#f4efe6"/><rect x="1212" y="142" width="136" height="186" fill="url(#${svgId}neon)"/><circle cx="1280" cy="235" r="44" fill="none" stroke="#fff" stroke-width="10" opacity=".85"/>`
+    : `<rect x="640" y="150" width="230" height="300" rx="4" fill="#f4efe6"/><rect x="656" y="166" width="198" height="268" fill="url(#${svgId}neon)"/><circle cx="755" cy="300" r="62" fill="none" stroke="#fff" stroke-width="14" opacity=".85"/>`;
+  s += `<ellipse cx="1240" cy="240" rx="260" ry="240" fill="url(#${svgId}lamp)"/><rect x="1228" y="250" width="10" height="440" fill="#2a1a10"/><path d="M1180 250 L1290 250 L1265 170 L1205 170 Z" fill="#fff6dc"/>`;
+  s += `<rect x="1380" y="600" width="90" height="100" rx="12" fill="#ffffff"/><ellipse cx="1425" cy="560" rx="70" ry="80" fill="#3fbf7a"/><ellipse cx="1395" cy="585" rx="40" ry="50" fill="#2f9a60"/>`;
+  if (open) {
+    // the couch the two sit on
+    s += `<rect x="470" y="560" width="660" height="150" rx="36" fill="#8b5cff"/><rect x="440" y="610" width="720" height="140" rx="40" fill="#7a4cf0"/><rect x="420" y="590" width="80" height="170" rx="30" fill="#6a3ee0"/><rect x="1100" y="590" width="80" height="170" rx="30" fill="#6a3ee0"/>`;
+    s += `<ellipse cx="800" cy="840" rx="420" ry="40" fill="rgba(0,0,0,.25)"/>`;
+  }
+  svg.innerHTML = s;
+}
+apartment('apt', false);
+apartment('room', true);
+</script>
+</body>
+</html>

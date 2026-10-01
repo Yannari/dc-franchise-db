@@ -152,10 +152,13 @@ export function soundFor(screen, idx) {
   if (!st) return { cue: null, bed: null };
   const k = st.key || '';
   const first = i => screen.steps.findIndex(x => i.test(x.key || '')) === idx;
+  // The Newsfeed: the likes land and the most-liked is crowned.
+  if (screen.stage === 'feed') return { cue: idx === 0 ? 'ci-crown' : null, bed: null };
   // A teaser: every clip cuts in on a whoosh.
   if (screen.stage === 'teaser') return { cue: st.clip ? 'ci-whoosh' : null, bed: null };
   if (screen.stage === 'alert' && idx === 0) return { cue: 'ci-alert', bed: null };
   if (screen.kind === 'blocking') {
+    if (st.fb === 'flashback-open') return { cue: 'ci-whoosh', bed: 'ci-drama' };
     if (NAMED.test(k) && first(NAMED)) return { cue: 'ci-blocked', bed: 'ci-after-block' };
     if (k === 'block.typing') return { cue: 'ci-typing', bed: null };
   }

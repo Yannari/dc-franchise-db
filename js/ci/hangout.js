@@ -64,5 +64,11 @@ export function deliberate(state, rng, influencers, atRisk) {
   const parts = blockScore(state, decider, target).parts;
   const reason = Object.entries(parts).sort((a, b) => b[1] - a[1])[0][0];
   const announcer = [...influencers].sort((x, y) => S(state, y, 'boldness') - S(state, x, 'boldness'))[0];
-  return { target, reason, views, offers, announcer, decider, yielded };
+  // The other name they kept coming back to: on screen the Hangout puts two
+  // names on the table and cuts before the decision (the show keeps it for
+  // Circle Chat). No dice: it reads the scores already drawn.
+  const second = views.filter(v => v.handle !== target)
+    .map(v => [v.handle, Object.values(v.by).reduce((a, x) => a + x, 0)]).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
+  const runnerUp = second ? { handle: second, reason: Object.entries(blockScore(state, decider, second).parts).sort((a, b) => b[1] - a[1])[0][0] } : null;
+  return { target, reason, views, offers, announcer, decider, yielded, runnerUp };
 }

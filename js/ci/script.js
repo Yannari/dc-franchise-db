@@ -7,6 +7,7 @@
 // that creates a belief is a write). Players only know PROFILES: in their
 // speech and their messages a catfish is the persona, name and pronouns. The
 // host knows the truth ("Rebecca, aka Seaburn").
+import { blockScore } from './hangout.js';
 import { TOPICS } from './persona-data.js';
 import { showWords } from '../shows.js';
 import { streamFor } from '../dr/rng.js';
@@ -338,6 +339,54 @@ function gameKey(family, b) {
   }
 }
 
+// ── the Hangout keeps its secret ──────────────────────────────────────
+// Two names go on the table (the one they block and the runner-up), so the
+// debate does not give the answer away; the decision itself is kept for the
+// blocking, as a flashback after the name.
+const onTable = (s, h) => h === s.data.target || h === s.data.runnerUp?.handle;
+const viewReason = (s, h) => (h === s.data.target ? s.data.reason : h === s.data.runnerUp?.handle ? s.data.runnerUp.reason : 'noBond');
+function hangoutViews(s) {
+  const views = s.data.views || [];
+  const list = views.slice(0, 5);
+  for (const must of [s.data.target, s.data.runnerUp?.handle].filter(Boolean)) {
+    if (list.some(v => v.handle === must)) continue;
+    const v = views.find(x => x.handle === must);
+    const swap = [...list].reverse().findIndex(x => !onTable(s, x.handle));
+    if (v && swap >= 0) list[list.length - 1 - swap] = v;
+  }
+  return list;
+}
+const hangoutOf = (state, s, target) => state.scenes.find(x => x.kind === 'hangout' && x.day === s.day && x.data?.target === target);
+/** The Hangout's decision, as it aired nowhere else: the blocking's flashback. */
+function hangoutFlashback(state, s, target) {
+  const h = hangoutOf(state, s, target);
+  if (!h) return [];
+  const fb = [];
+  if (h.who.length === 1) {
+    fb.push({ key: `hangout.solo.view.${h.data.reason}.cut`, cast: { a: h.who[0], c: target }, extra: { reason: h.data.reason } },
+      { key: 'hangout.solo.decide', cast: { a: h.who[0], c: target } });
+  } else {
+    const [a, b] = h.who;
+    const trio = h.who.length >= 3;
+    const lead = h.data.decider || a;
+    fb.push({ key: `hangout.view.${h.data.reason}.cut`, cast: { a: lead, b: h.who.find(x => x !== lead) || b, c: target }, extra: { reason: h.data.reason } });
+    const kind = h.data.offers?.some(o => o.trade) ? 'trade' : h.data.yielded ? 'yield' : 'agree';
+    const outvoted = trio ? (h.data.offers || []).filter(o => o.target && o.target !== target).map(o => o.by) : [];
+    fb.push(trio ? (outvoted.length ? { key: 'hangout.trio.outvoted', cast: { a: h.data.decider, b: outvoted[0], c: target } }
+      : { key: 'hangout.trio.agree', cast: { a: h.who[0], b: h.who[1], c: target } })
+      : { key: `hangout.${kind}`, cast: { a: h.data.decider, b: h.data.yielded || b, c: target } });
+  }
+  return fb.map((x, i) => ({ ...x, phase: i === 0 ? 'flashback-open' : 'flashback' }));
+}
+/** Who a clue could fit, as the Influencer who wrote it sees them: the ones who'd think it's them. */
+function fearsFor(state, s, target) {
+  const h = hangoutOf(state, s, target);
+  const pool = (h?.data?.atRisk || []).filter(x => x !== target && state.profiles[x] && !s.data.by.includes(x));
+  const by = s.data.by?.[0];
+  const fit = x => (by ? blockScore(state, by, x).parts[s.data.reason] ?? 0 : 0);
+  return pool.sort((x, y) => fit(y) - fit(x));
+}
+
 const BLOCKS = {
   chat(state, s) {
     const [a, b] = s.who;
@@ -404,7 +453,11 @@ const BLOCKS = {
       ...(reader ? [{ key: 'status.react', cast: { a: reader, b: a } }] : [])];
   },
   likes(state, s) {
-    const counts = Object.entries(state.likesCount || {}).filter(([h]) => s.who.includes(h)).sort((x, y) => y[1] - x[1]);
+    // From the scene's own record (the board draws the same counts), not the
+    // live counter, which a later morning has already replaced.
+    const tally = {};
+    for (const [h, liked] of Object.entries(s.data.likes || {})) { tally[h] ??= 0; for (const o of liked || []) tally[o] = (tally[o] || 0) + 1; }
+    const counts = Object.entries(tally).filter(([h]) => s.who.includes(h)).sort((x, y) => y[1] - x[1]);
     const out = counts.length ? [{ key: 'likes.most', cast: { a: counts[0][0] } }] : [];
     const none = counts.find(([, n]) => n === 0);
     if (none) out.push({ key: 'likes.none', cast: { a: none[0] } });
@@ -686,31 +739,28 @@ const BLOCKS = {
     if (s.who.length === 1) {
       const [a] = s.who;
       const out = [{ key: 'hangout.solo.open', cast: { a } }];
-      for (const v of (s.data.views || []).slice(0, 5)) {
-        const cut = v.handle === s.data.target;
-        const reason = cut ? s.data.reason : 'noBond';
-        out.push({ key: `hangout.solo.view.${reason}.${cut ? 'cut' : 'keep'}`, cast: { a, c: v.handle }, extra: { reason } });
+      for (const v of hangoutViews(s)) {
+        const reason = viewReason(s, v.handle);
+        out.push({ key: `hangout.solo.view.${reason}.${onTable(s, v.handle) ? 'cut' : 'keep'}`, cast: { a, c: v.handle }, extra: { reason } });
       }
-      out.push({ key: 'hangout.solo.decide', cast: { a, c: s.data.target } });
+      // The decision itself airs later, in the blocking's flashback.
+      out.push({ key: 'hangout.solo.sealed', cast: { a } });
       return out;
     }
     const [a, b] = s.who;
     const trio = s.who.length >= 3;
     const out = [trio ? { key: 'hangout.open.trio', cast: { a, b, c: s.who[2] } } : { key: 'hangout.open', cast: { a, b } }];
     // They take turns bringing up each name.
-    (s.data.views || []).slice(0, 5).forEach((v, i) => {
-      const cut = v.handle === s.data.target;
-      const reason = cut ? s.data.reason : 'noBond';
+    hangoutViews(s).forEach((v, i) => {
+      const cut = onTable(s, v.handle);
+      const reason = viewReason(s, v.handle);
       const who = s.who.length >= 3 ? [s.who[i % 3], s.who[(i + 1) % 3]] : i % 2 ? [b, a] : [a, b];
       const [x, y] = who;
       out.push({ key: `hangout.view.${reason}.${cut ? 'cut' : 'keep'}`, cast: { a: x, b: y, c: v.handle }, extra: { reason } });
     });
-    const kind = s.data.offers.some(o => o.trade) ? 'trade' : s.data.yielded ? 'yield' : 'agree';
-    // Three: all agreed, or two outvoted the third, who knows it.
-    const outvoted = trio ? (s.data.offers || []).filter(o => o.target && o.target !== s.data.target).map(o => o.by) : [];
-    if (trio) out.push(outvoted.length ? { key: 'hangout.trio.outvoted', cast: { a: s.data.decider, b: outvoted[0], c: s.data.target } }
-      : { key: 'hangout.trio.agree', cast: { a: s.who[0], b: s.who[1], c: s.data.target } });
-    else out.push({ key: `hangout.${kind}`, cast: { a: s.data.decider, b: s.data.yielded || b, c: s.data.target } });
+    // The show cuts before the name: the decision airs in the blocking's
+    // flashback, after the announcement has named them.
+    out.push({ key: 'hangout.sealed', cast: { a: s.data.decider || a, b: s.who.find(h => h !== (s.data.decider || a)) || b } });
     if (s.data.offers.some(o => o.pact)) out.push({ key: 'hangout.pact', cast: { a, b } });
     return out;
   },
@@ -754,10 +804,23 @@ const BLOCKS = {
       // Nobody may learn who chose: the Circle names the blocked player itself.
       out.push({ key: 'block.announce.secret', cast: { a: target, c: target } });
     } else {
+      // THE BUILD-UP (the show drags it out, one message at a time): an
+      // opener, a clue true to the real reason, and between them the ones the
+      // clue could fit, sure it's them; the target last, then the dots.
+      const solo = s.data.by.length === 1;
+      const clue = ['fake', 'threat', 'grudge', 'noBond', 'offer'].includes(s.data.reason) ? s.data.reason : 'noBond';
+      const [herring] = fearsFor(state, s, target);
+      out.splice(2);
+      out.push({ key: `block.build.open${solo ? '.solo' : ''}`, cast: { a: announcer } });
+      if (herring) out.push({ key: `block.fear.${clue}`, cast: { a: herring } });
+      out.push({ key: `block.build.clue.${clue}`, cast: { a: announcer } });
+      out.push({ key: 'block.fear.dots', cast: { a: target } });
       out.push({ key: 'block.typing', cast: { a: announcer, c: target }, extra: { reason: s.data.reason } },
         // A sole Influencer announces in the first person; an offer taken, as itself.
         { key: s.data.reason === 'offer' ? 'block.announce.offer'
-          : `block.announce.${s.data.by.length === 1 ? 'solo.' : ''}${s.data.reason}`, cast: { a: announcer, c: target }, extra: { reason: s.data.reason } });
+          : `block.announce.${solo ? 'solo.' : ''}${s.data.reason}`, cast: { a: announcer, c: target }, extra: { reason: s.data.reason } });
+      // And how they got there: the Hangout's decision, as a flashback.
+      out.push(...hangoutFlashback(state, s, target));
     }
     if (s.data.mission && s.data.mission.target === target) out.push({ key: 'mission.success', cast: { a: s.data.mission.holder, b: target } });
     out.push(
@@ -1104,6 +1167,8 @@ const MOTIVES_ = ['friend', 'answers', 'truth', 'apology'];
 const WHY_ = ['strategic', 'protective', 'experimental', 'family'];
 const BLOCK_WHY_ = ['fake', 'threat', 'grudge', 'noBond'];
 export const POOL_KEYS = [
+  // the suspense before the name (lines/blocking-build.js)
+  'hangout.sealed', 'hangout.solo.sealed', 'block.build.open', 'block.build.open.solo', 'block.build.clue.fake', 'block.fear.fake', 'block.build.clue.threat', 'block.fear.threat', 'block.build.clue.grudge', 'block.fear.grudge', 'block.build.clue.noBond', 'block.fear.noBond', 'block.build.clue.offer', 'block.fear.offer', 'block.fear.dots',
   ...INTENTS_.flatMap(i => ['warm', 'neutral', 'cold'].map(e => `chat.${i}.${e}`)),
   ...['pass', 'dodge', 'fail'].map(r => `chat.probe.${r}`),
   ...['warm', 'neutral', 'cold'].map(e => `chat.flirt.act.${e}`),

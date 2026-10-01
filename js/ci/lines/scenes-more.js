@@ -80,7 +80,7 @@ export const SCENES_MORE = {
     s1("I'm about to change somebody's life. That's heavy."),
     s1("Make it quick. Make it kind. Get it over with."),
     s1("I'm gonna make them wait. Just a little. Dot, dot, dot."),
-    s1("I wish it wasn't {c}. It has to be {c}."),
+    s1("I wish it was anybody else. It has to be this way."),
     s1("Deep breath. Circle, message."),
   ]),
   ...E('visit.talk2.friend', [

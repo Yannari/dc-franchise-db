@@ -5,7 +5,7 @@
 // Perfect Match's two ledgers, IMPORTED (js/pm/ledger.js): approval (-100..100)
 // and fame (never falls). The only file under js/ci/ allowed to touch them —
 // no player's decision may read the public (tests/ci-guards.test.js).
-import { createLedger, noteArrival, recordAired, closeEpisode, readApproval } from '../pm/ledger.js';
+import { createLedger, noteArrival, recordAired, closeEpisode, readApproval, labelFor } from '../pm/ledger.js';
 import { peopleOf } from './state.js';
 
 export const APPROVAL = {
@@ -18,6 +18,14 @@ export const APPROVAL = {
   kiss: 0.5,
   protectiveReveal: 0.8,
   strategicReveal: -0.3,
+  // What the audience makes of the newer scenes (2026-10-01).
+  deep: 0.4,            // a heart-to-heart
+  welcome: 0.25,        // first to welcome a newcomer warmly
+  jealousCold: -0.3,    // a jealous message that turned sour
+  allianceBetrayal: -1.5, // an Influencer blocking their own ally
+  wronglyKicked: 1.0,   // thrown out of an alliance for a treason they didn't commit
+  doubleAgent: -0.6,    // caught in two alliances
+  trophy: 0.4,          // won a judged game
 };
 
 export function openLedger(state) { state.ledger = createLedger(); }
@@ -31,15 +39,24 @@ export function sceneApproval(state, sc) {
       const [from, to] = sc.who;
       add(from, (APPROVAL.chat[sc.data.ending] || 0) + (APPROVAL.intent[sc.data.intent] || 0));
       add(to, (APPROVAL.chat[sc.data.ending] || 0) * 0.5);
+      if (sc.data.deep) { add(from, APPROVAL.deep); add(to, APPROVAL.deep); }
+      if (sc.data.intent === 'jealous' && sc.data.ending === 'cold') add(from, APPROVAL.jealousCold);
       break;
     }
     case 'circle-chat': for (const t of sc.data.theories || []) add(t.by, APPROVAL.theory); break;
     case 'blocking': {
       const t = sc.data.target;
       add(t, sc.data.reason === 'fake' && state.profiles[t].mode !== 'catfish' ? APPROVAL.wronglyBlocked : APPROVAL.blocked);
+      for (const br of sc.data.betrayed || []) add(br.betrayer, APPROVAL.allianceBetrayal);
       break;
     }
     case 'report': add(sc.who[0], APPROVAL.visitLie); break;
+    case 'welcome': if (sc.data.ending === 'warm' && sc.data.first) add(sc.who[0], APPROVAL.welcome); break;
+    case 'group-chat':
+      if (sc.data.event === 'kick' && !sc.data.right) add(sc.data.kicked, APPROVAL.wronglyKicked);
+      if (sc.data.event === 'confront') add(sc.data.agent, APPROVAL.doubleAgent);
+      break;
+    case 'game': if (sc.data.prize?.kind === 'trophy') for (const w of sc.data.prize.to) add(w, APPROVAL.trophy); break;
     case 'visit': if (sc.data.kiss) for (const h of sc.who) add(h, APPROVAL.kiss); break;
     case 'goodbye': {
       const p = state.profiles[sc.who[0]];
@@ -59,6 +76,20 @@ export function airDay(state) {
     }
   }
   return closeEpisode(state.ledger, state.day, null);
+}
+
+/** The audience, for the record (the screens' Debug): approval -100..100, fame, the label. */
+export function publicSnapshot(state) {
+  const L = state.ledger;
+  if (!L) return {};
+  const out = {};
+  for (const h of Object.keys(state.profiles)) {
+    const ppl = peopleOf(state, h);
+    const ap = ppl.reduce((s, n) => s + readApproval(L, n), 0) / Math.max(1, ppl.length);
+    const fame = ppl.reduce((s, n) => s + (L.fame?.[n] || 0), 0);
+    out[h] = { approval: Math.round(ap * 10) / 10, fame: Math.round(fame * 10) / 10, label: labelFor(ap) };
+  }
+  return out;
 }
 
 export function fanFavorite(state) {

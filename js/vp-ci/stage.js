@@ -22,6 +22,7 @@
 // A catfish is two people on this stage: the TV and the feed show the
 // PERSONA (its name, its photo); the cam card shows who is really typing.
 import { teaserStage } from './teaser-stage.js';
+import { webStage } from './web-stage.js';
 import { faceOf } from './steps.js';
 import { esc, hashify, faceUrl, ringOf, nameOf, realOf, isCatfish, bg, ringBg, avatar, THEMES, themeFor, aptNo,
   captionHtml, profileCard, starsText, facts } from './parts.js';
@@ -265,6 +266,7 @@ function arriveStage(row, screen, idx, fresh) {
 /** The stage for this screen after step `idx` (-1: at rest, before the first line). */
 export function stageInner(row, screen, idx, fresh = false) {
   if (screen.stage === 'teaser') return teaserStage(row, screen, idx, fresh);
+  if (screen.stage === 'web') return webStage(row, screen, idx, fresh);
   if (MOMENTS[screen.stage]) return MOMENTS[screen.stage](row, screen, idx, fresh);
   if (screen.stage === 'arrive') return arriveStage(row, screen, idx, fresh);
   if (screen.stage === 'alert') return alertStage(row, screen, idx, fresh);

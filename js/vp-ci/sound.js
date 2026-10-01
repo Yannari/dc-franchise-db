@@ -74,7 +74,7 @@ const BED_BY_KIND = {
   meet: 'ci-meet', reveal: 'ci-finale', 'power-reveal': 'ci-drama', swap: 'ci-drama', 'swap-back': 'ci-drama', clone: 'ci-drama',
   'ride-or-die': 'ci-hangout', sacrifice: 'ci-drama', 'second-chance': 'ci-drama', alert: 'ci-drama',
   // the edit's teasers (teasers.js): suspense under the clips
-  previously: 'ci-drama', comingup: 'ci-drama', nexttime: 'ci-drama',
+  previously: 'ci-drama', comingup: 'ci-drama', nexttime: 'ci-drama', web: 'ci-ratings',
 };
 /** The bed a screen opens on (a track of it). The first finalist in waits alone. */
 export function bedFor(screen) {
@@ -154,6 +154,8 @@ export function soundFor(screen, idx) {
   const first = i => screen.steps.findIndex(x => i.test(x.key || '')) === idx;
   // The Newsfeed: the likes land and the most-liked is crowned.
   if (screen.stage === 'feed') return { cue: idx === 0 ? 'ci-crown' : null, bed: null };
+  // The web: each change ticks in.
+  if (screen.stage === 'web') return { cue: st.change ? 'ci-tick' : null, bed: null };
   // A teaser: every clip cuts in on a whoosh.
   if (screen.stage === 'teaser') return { cue: st.clip ? 'ci-whoosh' : null, bed: null };
   if (screen.stage === 'alert' && idx === 0) return { cue: 'ci-alert', bed: null };

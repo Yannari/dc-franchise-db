@@ -14,6 +14,8 @@
 // seeded bonds for free (ADDING-A-SHOW §8.3). The caller (js/ci-run.js, Plan 4)
 // passes franchise-carry's `carriedFor(...)` as `carried`; the ledger write is
 // Plan 6.
+import { changesOf } from './web-data.js';
+import { snapshotEnd } from './snapshot.js';
 import { formAlliance, checkIn, activeAlliances, afterRatings, doubleAgents, drift } from './alliances.js';
 import { gs, setGs, players } from '../core.js';
 import { streamFor } from '../dr/rng.js';
@@ -35,7 +37,7 @@ import { arrive, chooseNewcomer } from './arrivals.js';
 import { powersMorning, jokerMeets, runDisrupter } from './powers.js';
 import { runEvent, endSwap } from './twists.js';
 import { addAI } from './ai.js';
-import { openLedger, noteJoin, airDay, fanFavorite, publicPick } from './public.js';
+import { openLedger, noteJoin, airDay, fanFavorite, publicPick, publicSnapshot } from './public.js';
 import { buildSchedule, rhythmOf } from './schedule.js';
 import { finalDay, finaleDay } from './finale.js';
 import { chooseAired } from './airing.js';
@@ -66,7 +68,7 @@ export function applyCarried(state, carried) {
 // celebrity catfishes.
 // What the big moments' screens draw (js/vp-ci/moments.js), kept small: a
 // ranking board, the names at risk, who was blocked, the finale board.
-const board = d => ({ ballots: (d.ballots || []).map(b => ({ voter: b.voter, order: b.order })),
+const board = d => ({ ballots: (d.ballots || []).map(b => ({ voter: b.voter, order: b.order, ...(b.reasons ? { reasons: b.reasons } : {}) })),
   results: (d.results || []).map(r => ({ profile: r.profile, place: r.place })), influencers: d.influencers || [] });
 const BEAT_KEEP = new Set(['phase', 'round', 'kind', 'by', 'about', 'c', 'n', 'answer', 'right', 'promptId', 'factId', 'qid',
   'tone', 'qkind', 'anon', 'tier', 'split', 'strong', 'everyone', 'mutual', 'many', 'warm', 'off']);
@@ -331,6 +333,13 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
     });
     const row = { num: d.day, episode: d.day, day: d.day, format: CIRCLE_FORMAT, slot: d.slot, exits,
       ci: { active: [...state.active], rating,
+        // The room at the end of the episode (snapshot.js): the web screen and Debug read it.
+        end: (() => {
+          const end = snapshotEnd(state, publicSnapshot(state));
+          // What moved since the last episode (the web screen and the backlog).
+          end.changes = changesOf(rows.at(-1)?.ci?.end || null, end, h => state.profiles[h]?.shown?.name || h);
+          return end;
+        })(),
         // The night's blocking format, and whether the author booked it (or
         // booked one that could not run, and it fell back).
         night: d.night ? { format: d.night.format, booked: !!d.night.booked, fellBack: d.night.fellBack || null } : null,

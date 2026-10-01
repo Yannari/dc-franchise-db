@@ -93,6 +93,19 @@ export function dayText(state, row) {
       out.push(...blockText(state, b), '');
     }
   }
+  // THE CIRCLE WEB: what moved tonight (ci/web-data.js; the web screen says the same).
+  const end = row.ci.end;
+  if (end) {
+    const name = h => row.ci.profiles?.[h]?.name || h;
+    out.push('── The Circle web');
+    const changes = end.changes || [];
+    if (changes.length) for (const c of changes) out.push(`  • ${c.text}`);
+    else out.push('  • A quiet night in The Circle: nobody moved much.');
+    const standing = (end.alliances || []).map(a => [a, a.members.filter(m => end.people.includes(m))])
+      .filter(([a, m]) => a.status === 'active' && m.length >= 2);
+    if (standing.length) out.push(`  Alliances standing: ${standing.map(([a, m]) => `${a.name} (${m.map(name).join(', ')})`).join('; ')}`);
+    out.push('');
+  }
   return out.join('\n');
 }
 

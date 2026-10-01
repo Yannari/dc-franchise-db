@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Circle Web Mockup</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#07081c;--text:#eef1ff;--muted:#9aa3d6;--pk:#ff4fb4;--pu:#8b5cff;--cy:#3fd8ff;--gold:#ffd23f;--red:#ff4a6a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 Montserrat,system-ui,sans-serif}
+.wrap{max-width:1180px;margin:0 auto;padding:28px 16px 60px}
+h1{font-size:22px;margin:0 0 6px}.lede{color:var(--muted);margin:0 0 22px;max-width:860px}
+.frame{position:relative;width:100%;aspect-ratio:16/9;border-radius:14px;overflow:hidden;container-type:inline-size;background:radial-gradient(70% 80% at 40% 30%,#241a63,#07081c 72%);border:1px solid rgba(139,92,255,.3);box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.top{position:absolute;left:3%;top:4%;z-index:5}
+.top small{display:block;font-weight:800;font-size:1cqw;letter-spacing:.25em;color:var(--cy)}
+.top b{font-weight:900;font-size:2.6cqw;letter-spacing:.04em;background:linear-gradient(90deg,var(--pk),var(--pu),var(--cy));-webkit-background-clip:text;background-clip:text;color:transparent}
+.tabs{position:absolute;left:3%;top:15%;z-index:6;display:flex;gap:.5cqw;flex-wrap:wrap;max-width:58%}
+.tab{font:800 .95cqw Montserrat;letter-spacing:.1em;padding:.55cqw 1.1cqw;border-radius:99px;border:1px solid rgba(255,255,255,.18);background:rgba(10,12,40,.6);color:#cfd6ff;cursor:pointer;transition:all .25s}
+.tab.on{background:linear-gradient(90deg,var(--pk),var(--pu));color:#fff;border-color:transparent;box-shadow:0 0 1.4cqw rgba(255,79,180,.5)}
+.tab select{font:inherit;background:transparent;color:inherit;border:0;outline:0}
+.web{position:absolute;left:3%;top:21%;width:58%;height:76%}
+.web svg{width:100%;height:100%;overflow:visible}
+.ring{fill:none;stroke:url(#ringG);stroke-width:1.2;opacity:.35}
+.node image{clip-path:circle(50%)}
+.node .rim{fill:none;stroke-width:3}
+.node text{font:800 13px Montserrat;fill:#fff;text-anchor:middle;paint-order:stroke;stroke:#07081c;stroke-width:4px}
+.node.dim{opacity:.18}
+.edge{fill:none;stroke-linecap:round;transition:opacity .4s}
+.edge.bond{stroke:#3fd8ff}
+.edge.rival{stroke:#ff4a6a;stroke-dasharray:6 6}
+.edge.crush{stroke:#ff4fb4}
+.edge.new{stroke-dasharray:600;stroke-dashoffset:600;animation:draw 1.6s ease-out forwards}
+.edge.up{animation:pulse 1.4s ease-in-out infinite}
+.edge.gone{stroke:#8b8fb8;stroke-dasharray:3 7;opacity:.5}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes pulse{50%{stroke-width:7;opacity:1}}
+.heart{font-size:16px;text-anchor:middle;animation:beat 1.2s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes beat{50%{transform:scale(1.25)}}
+.arc{fill:none;stroke-width:16;stroke-linecap:round;opacity:.35}
+.arclbl{font:900 12px Montserrat;letter-spacing:.08em}
+.side{position:absolute;right:2.5%;top:4%;bottom:4%;width:35%;display:flex;flex-direction:column;gap:1cqw;z-index:5}
+.card{background:rgba(10,12,40,.72);border:1px solid rgba(139,92,255,.3);border-radius:1cqw;padding:1.1cqw 1.3cqw;backdrop-filter:blur(6px)}
+.card h3{margin:0 0 .6cqw;font:900 1cqw Montserrat;letter-spacing:.22em;color:var(--cy)}
+.chg{display:flex;gap:.7cqw;align-items:center;font-size:1.05cqw;margin:.45cqw 0;animation:slide .5s both}
+.chg:nth-child(2){animation-delay:.1s}.chg:nth-child(3){animation-delay:.2s}.chg:nth-child(4){animation-delay:.3s}.chg:nth-child(5){animation-delay:.4s}.chg:nth-child(6){animation-delay:.5s}
+@keyframes slide{from{opacity:0;transform:translateX(8%)}}
+.tag{flex:none;font:900 .75cqw Montserrat;letter-spacing:.1em;padding:.2cqw .5cqw;border-radius:.3cqw}
+.t-new{background:#3fd8ff;color:#06112a}.t-up{background:#3fbf7a;color:#03140b}.t-down{background:#ff4a6a;color:#fff}.t-heart{background:#ff4fb4;color:#fff}.t-gone{background:#5a5f8a;color:#fff}
+.al{display:flex;align-items:center;gap:.6cqw;margin:.4cqw 0;font-size:1.05cqw}
+.al .sw{width:1cqw;height:1cqw;border-radius:50%}
+.al b{font-weight:800}
+.al small{color:var(--muted)}
+.legend{display:flex;gap:1.2cqw;flex-wrap:wrap;font-size:.85cqw;color:var(--muted)}
+.legend i{display:inline-block;width:1.8cqw;height:.3cqw;border-radius:2px;vertical-align:middle;margin-right:.4cqw}
+.ask{background:rgba(255,210,63,.08);border:1px solid rgba(255,210,63,.35);border-radius:12px;padding:14px 18px;margin-top:26px}
+.ask h3{margin:0 0 6px;font-size:15px;color:var(--gold)}
+.note{color:var(--muted);font-size:13px;margin:10px 2px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>The Circle tonight: the web</h1>
+  <p class="lede">The last screen of every episode. Everyone on the ring, their ties drawn between them; tabs to look at one thing at a time; and what moved since last episode, animated in and listed on the right. Mockup with made-up ties: click the tabs.</p>
+
+  <div class="frame" id="frame">
+    <div class="top"><small>EPISODE 6 · AFTER TONIGHT</small><b>THE CIRCLE WEB</b></div>
+    <div class="tabs" id="tabs">
+      <span class="tab on" data-t="all">EVERYTHING</span>
+      <span class="tab" data-t="alliance">ALLIANCES</span>
+      <span class="tab" data-t="romance">ROMANCE</span>
+      <span class="tab" data-t="rival">RIVALRIES</span>
+      <span class="tab" data-t="person">PERSON: <select id="who"></select></span>
+    </div>
+    <div class="web"><svg id="web" viewBox="-360 -300 720 600"></svg></div>
+    <div class="side">
+      <div class="card"><h3>SINCE LAST EPISODE</h3>
+        <div class="chg"><span class="tag t-new">NEW</span><b>Coffee Club</b>&nbsp;formed: Caleb, Ripper, Nichelle</div>
+        <div class="chg"><span class="tag t-heart">CRUSH</span>Axel → Nichelle, a new crush</div>
+        <div class="chg"><span class="tag t-up">CLOSER</span>Bowie and Zee, after a heart-to-heart</div>
+        <div class="chg"><span class="tag t-down">GRUDGE</span>Chase ⚡ Caleb, after the ratings</div>
+        <div class="chg"><span class="tag t-gone">LEFT</span>Chase was thrown out of <b>&nbsp;The Night Owls</b></div>
+        <div class="chg"><span class="tag t-gone">BLOCKED</span>Scary Girl left The Circle</div>
+      </div>
+      <div class="card"><h3>ALLIANCES</h3>
+        <div class="al"><span class="sw" style="background:#ffd23f"></span><b>Coffee Club</b><small>Caleb · Ripper · Nichelle</small></div>
+        <div class="al"><span class="sw" style="background:#3fd8ff"></span><b>The Night Owls</b><small>Bowie · Zee</small></div>
+      </div>
+      <div class="card"><div class="legend"><span><i style="background:#3fd8ff"></i>close</span><span><i style="background:#ff4fb4"></i>crush / ♥ both ways</span><span><i style="background:#ff4a6a"></i>grudge</span><span><i style="background:#8b8fb8"></i>broken</span></div></div>
+    </div>
+  </div>
+  <p class="note">New ties draw themselves in; ties that grew pulse; broken ones fade to dashes. A person tab shows only that player's ties. The real screen reads the season's numbers at the end of the episode and compares them with the end of the last one.</p>
+
+  <div class="ask"><h3>Before I build it</h3>
+    It sits at the end of every episode (after "Next time"?) or just before it — and does the look work for you?</div>
+</div>
+
+<script>
+const P = ['caleb','ripper','nichelle','bowie','zee','chase','axel','marcus'];
+const NAME = { caleb:'Caleb', ripper:'Ripper', nichelle:'Nichelle', bowie:'Bowie', zee:'Zee', chase:'Chase', axel:'Axel', marcus:'Marcus' };
+const RING = { caleb:'#ff4fb4', ripper:'#ffd23f', nichelle:'#8b5cff', bowie:'#3fd8ff', zee:'#3fbf7a', chase:'#ff8a4c', axel:'#ff4a6a', marcus:'#b35cff' };
+// made-up ties: kind, strength 1-3, movement
+const E = [
+  ['caleb','ripper','bond',3,'new'], ['caleb','nichelle','bond',2,'new'], ['ripper','nichelle','bond',2,'new'],
+  ['bowie','zee','bond',3,'up'], ['bowie','marcus','bond',1,''], ['axel','nichelle','crush',2,'new'],
+  ['zee','marcus','crush',3,'mutual'], ['chase','caleb','rival',2,'new'], ['chase','bowie','rival',1,''],
+  ['chase','zee','bond',1,'gone'], ['axel','marcus','rival',1,''],
+];
+const ALLI = [{ name:'Coffee Club', color:'#ffd23f', m:['caleb','ripper','nichelle'] }, { name:'The Night Owls', color:'#3fd8ff', m:['bowie','zee'] }];
+const R = 230, pos = {};
+P.forEach((h, i) => { const a = -Math.PI / 2 + i * 2 * Math.PI / P.length; pos[h] = [Math.cos(a) * R, Math.sin(a) * R, a]; });
+const sel = document.getElementById('who');
+sel.innerHTML = P.map(h => `<option value="${h}">${NAME[h]}</option>`).join('');
+function draw(tab, who) {
+  const keep = e => tab === 'all' || (tab === 'romance' && e[2] === 'crush') || (tab === 'rival' && e[2] === 'rival')
+    || (tab === 'alliance' && ALLI.some(a => a.m.includes(e[0]) && a.m.includes(e[1]))) || (tab === 'person' && (e[0] === who || e[1] === who));
+  const involved = new Set(E.filter(keep).flatMap(e => [e[0], e[1]]));
+  let s = `<defs><linearGradient id="ringG"><stop offset="0" stop-color="#ff4fb4"/><stop offset=".5" stop-color="#8b5cff"/><stop offset="1" stop-color="#3fd8ff"/></linearGradient></defs>`;
+  s += `<circle class="ring" r="${R}"/><circle class="ring" r="${R + 40}" style="opacity:.12"/>`;
+  // alliance arcs: a soft band behind its members
+  if (tab === 'all' || tab === 'alliance') for (const al of ALLI) {
+    const pts = al.m.map(h => pos[h]);
+    const path = pts.map((p, i) => `${i ? 'L' : 'M'}${p[0] * 1.02},${p[1] * 1.02}`).join(' ') + (pts.length > 2 ? ' Z' : '');
+    s += `<path class="arc" d="${path}" stroke="${al.color}" fill="${al.color}" fill-opacity=".08"/>`;
+    const c = pts.reduce((a, p) => [a[0] + p[0] / pts.length, a[1] + p[1] / pts.length], [0, 0]);
+    s += `<text class="arclbl" x="${c[0] * 0.55}" y="${c[1] * 0.55}" fill="${al.color}" text-anchor="middle">${al.name.toUpperCase()}</text>`;
+  }
+  for (const e of E.filter(keep)) {
+    const [a, b, kind, w, mv] = e, A = pos[a], B = pos[b];
+    const mx = (A[0] + B[0]) * 0.35, my = (A[1] + B[1]) * 0.35;
+    const cls = ['edge', kind === 'crush' ? 'crush' : kind, mv === 'new' ? 'new' : '', mv === 'up' ? 'up' : '', mv === 'gone' ? 'gone' : ''].join(' ');
+    s += `<path class="${cls}" d="M${A[0]},${A[1]} Q${mx},${my} ${B[0]},${B[1]}" stroke-width="${1.5 + w * 1.6}"/>`;
+    if (kind === 'crush') s += `<text class="heart" x="${(A[0] + B[0]) / 2 * 0.62}" y="${(A[1] + B[1]) / 2 * 0.62 + 5}">${mv === 'mutual' ? '💞' : '💗'}</text>`;
+  }
+  for (const h of P) {
+    const [x, y] = pos[h], dim = tab !== 'all' && !involved.has(h) && !(tab === 'person' && h === who);
+    s += `<g class="node${dim ? ' dim' : ''}" transform="translate(${x},${y})"><circle r="34" fill="#13163d"/><image href="../assets/avatars/${h}.png" x="-32" y="-32" width="64" height="64"/>
+      <circle class="rim" r="33" stroke="${RING[h]}"/><text y="52">${NAME[h].toUpperCase()}</text></g>`;
+  }
+  document.getElementById('web').innerHTML = s;
+}
+let tab = 'all';
+document.getElementById('tabs').addEventListener('click', e => {
+  const t = e.target.closest('.tab'); if (!t || e.target.tagName === 'SELECT') return;
+  tab = t.dataset.t; document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === t)); draw(tab, sel.value);
+});
+sel.addEventListener('change', () => { tab = 'person'; document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x.dataset.t === 'person')); draw(tab, sel.value); });
+draw('all');
+</script>
+</body>
+</html>

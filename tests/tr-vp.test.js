@@ -84,7 +84,7 @@ const ROSTER = roster.players.slice(0, 20);
 const CAST = ROSTER.map(p => p.name);
 
 /** One real season, played once and shared. A season costs about 40ms. */
-function season(seed, cfg) {
+function season(seed, cfg, play = {}) {
   setPlayers(ROSTER);
   // A SEASON'S OPTIONAL SYSTEMS HAVE TO BE PLAYED, NOT ASSUMED. The Armoury
   // (js/tr/armoury.js) only runs when the author chose it, so a sweep played
@@ -96,7 +96,7 @@ function season(seed, cfg) {
   if (cfg) Object.assign(seasonConfig, cfg);
   else seasonConfig.trShieldSource = 'mission';
   const s = playTraitorsSeason({ cast: CAST, traitorCount: 3, seed ,
-    randomMurderTwists: ALL_MURDER_TWISTS });
+    randomMurderTwists: ALL_MURDER_TWISTS, ...play });
   // `gs.episodeHistory` is what the VP reads, and it is written by the season
   // as it plays. Copied out because the next season replaces gs wholesale.
   return { season: s, episodes: (gs.episodeHistory || []).map(e => ({ ...e })) };
@@ -110,6 +110,10 @@ const RUNS = SEEDS.map(sd => season(sd));
 // that the standing-roll guard (correctly) objects to.
 RUNS.push(season(8, { trShieldSource: 'armoury', trArmourySize: 4, trShieldCount: 1 }));
 seasonConfig.trShieldSource = 'mission';
+// AND ONE WITH A PLAIN-SIGHT NIGHT SCHEDULED. Two guards below need one, and
+// leaving it to the random-twist roll made them pass or fail on whichever way
+// an unrelated castle scene shifted the stream (it did, 2026-09-30).
+RUNS.push(season(5, null, { murderSchedule: { 4: 'plain-sight' } }));
 
 /** Every episode across every seed that actually held a conclave. */
 const NIGHTS = RUNS.flatMap(r => r.episodes.filter(e => e.tr && e.tr.conclave)

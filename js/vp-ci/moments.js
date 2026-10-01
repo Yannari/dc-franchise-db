@@ -118,7 +118,7 @@ function blockedStage(row, screen, idx, fresh) {
   // A stage direction keeps the camera on whoever it is about.
   const speaker = st?.who && st.part !== 'send' ? st.who : st?.part === 'stage' ? speakerAt(screen, idx) : null;
   return `<div class="civ-layer civ-blocked${named ? ' done' : ''}"><div class="civ-uibg"></div><div class="civ-redwash"></div>
-    <div class="civ-bgrid">${tiles}</div>${msg}
+    <div class="civ-bstack"><div class="civ-bgrid">${tiles}</div>${msg}</div>
     ${speaker ? cam(row, speaker, `side${fresh ? ' in' : ''}`) : ''}
     ${slam ? `<div class="civ-slam"><span>BLOCKED</span><small>${esc(nameOf(row, target).toUpperCase())}</small></div><div class="civ-flash red"></div>` : ''}
     ${where('THE BLOCKING')}${st && st.part !== 'send' ? dlg(row, st, fresh, speaker ? 'right' : '') : ''}</div>`;

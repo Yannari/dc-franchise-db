@@ -57,9 +57,9 @@ export function themeFor(name) {
 export const aptNo = (row, h) => Math.max(0, Object.keys(row.ci.profiles || {}).indexOf(h)) + 1;
 export const starsText = n => (n > 0 ? '★'.repeat(Math.floor(n)) + (n % 1 >= 0.5 ? '½' : '') : '');
 export const facts = (...xs) => xs.filter(x => x != null && x !== '').map(esc).join(' · ');
-export function captionHtml(st, fresh) {
-  if (st.host) return `<div class="civ-cap host${fresh ? ' new' : ''}"><b>THE CIRCLE</b>${hashify(st.text)}</div>`;
-  return `<div class="civ-cap${fresh ? ' new' : ''}">${esc(st.text)}</div>`;
+export function captionHtml(st, fresh, cls = '') {
+  if (st.host) return `<div class="civ-cap host ${cls}${fresh ? ' new' : ''}"><b>THE CIRCLE</b>${hashify(st.text)}</div>`;
+  return `<div class="civ-cap ${cls}${fresh ? ' new' : ''}">${esc(st.text)}</div>`;
 }
 export function profileCard(row, h, label = 'PROFILE') {
   const p = row.ci.profiles[h];
@@ -75,7 +75,7 @@ export function profileCard(row, h, label = 'PROFILE') {
 export const CHIP = { say: 'SAYS ALOUD', react: 'REACTS', send: 'SENT', post: 'POSTED', video: 'ON VIDEO' };
 export function dlg(row, st, fresh, cls = '') {
   if (!st) return '';
-  if (st.host) return captionHtml(st, fresh);
+  if (st.host) return captionHtml(st, fresh, 'foot');
   if (!st.who) return `<div class="civ-dlg ${cls}${fresh ? ' new' : ''}"><div class="civ-line stage">${esc(st.text)}</div></div>`;
   const plate = `<div class="civ-plate">${esc(realOf(row, st.who))}${isCatfish(row, st.who) ? ` <i>· as ${esc(nameOf(row, st.who))}</i>` : ''}</div>`;
   const body = st.part === 'send' ? `<span class="civ-chip cmd">TO THE CIRCLE</span><span class="civ-cmd">${hashify(st.text)}</span>`

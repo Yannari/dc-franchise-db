@@ -49,6 +49,12 @@ export const CHAT_DEPTH = {
     two("Hey. Something's been bugging me", "Okay. Talk to me"),
     two("I've been going back and forth on whether to message you", "Well, now you have. Go ahead"),
     two("Can I be real with you for a minute?", "Always. Go ahead"),
+    two("Are you free? This one's not small talk", "I'm free. Tell me what's going on"),
+    two("Hey. I wanted to talk to you before anybody else", "Okay, now I'm nervous. Go"),
+    two("Quick serious one, then we can go back to being silly", "Deal. Hit me"),
+    two("Morning. Can I run something by you?", "Morning. Of course you can"),
+    two("I trust you, so I'm coming to you with this", "I appreciate that. Go ahead"),
+    two("Okay, deep breath. We need to talk about something", "I'm here. Talk to me"),
   ]),
   ...E('chat.close.warm', [
     two("Okay I have to go but this was the best chat of my day", "Mine too {e:heart}"),

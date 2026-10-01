@@ -14,7 +14,7 @@ import { contradictions } from './claims.js';
 import { isPair, SHARED_PACE } from './shared.js';
 
 export const INTENTS = ['bond', 'ally', 'flirt', 'probe', 'pump', 'compare', 'plant', 'credit',
-  'repair', 'confront', 'checkin', 'pitch', 'confess', 'jealous'];
+  'repair', 'confront', 'checkin', 'pitch', 'confess', 'jealous', 'defend', 'debrief'];
 export const SPARK = 6;
 // A persona is chosen to be liked: "online, hot girls get more likes" (US 1
 // Ep 1, Seaburn on why he played Rebecca). Catfish draw first sparks higher.
@@ -68,6 +68,43 @@ export function seedAttraction(state, rng) {
   }
 }
 
+// THE MORNING AFTER (user, 2026-10-01: "the goodbye video ... they don't talk
+// much about that or explore the strategic aspect of the game"). Before
+// these, a goodbye warning moved every belief in the building and not one
+// chat that day mentioned it. Two players talk over what they both saw:
+// the warning, the blocking, the ratings. How much a topic is worth talking
+// about; the strategic talk it most, the chill barely (st('strategic')).
+export const TOPIC_PULL = { warning: 1.0, blocked: 0.9, ratings: 1.0 };
+// How many chats a day one topic gets: a warning talked over in four chats
+// on the same morning reads as a loop (measured: 442 of 554 debriefs were
+// about warnings before the cap).
+export const PER_TOPIC = 2;
+// The morning-after chat comes on top of a player's social chats, not in
+// their place: one a day at most. Taking a social chat's slot cost a catfish
+// the warm chats a persona earns its edge in (winners 40.5% -> 33.5%, 200
+// seasons; with every debrief effect switched off still 35%: it was the
+// displacement).
+export const EXTRA_TALK = 1;
+const MORNING_AFTER = new Set(['debrief', 'defend']);
+// The accused messages people to set the record straight: how much, beyond
+// strategic sense, their nerves push them.
+export const DEFEND_NERVES = 0.5;
+// Your name in somebody's goodbye is the most urgent thing in your day:
+// before this, one accused player in ten said a word about it.
+export const DEFEND_URGENCY = 0.6;
+/** The best thing `me` and `you` both saw to talk over, and how much it pulls. */
+export function debriefTopic(state, me, you, ctx = {}) {
+  let best = null;
+  for (const t of ctx.topics || []) {
+    if (t.about === me || t.about === you || !t.seen.includes(me) || !t.seen.includes(you)) continue;
+    // A friend of the blocked takes it harder; a topic is worth more when it is about someone I have feelings on.
+    const care = 1 + Math.abs(rel(me, t.about, 'affection')) / 10 + belief(state, me, t.about).threat / 20;
+    const w = TOPIC_PULL[t.topic] * care;
+    if (!best || w > best.w) best = { ...t, w };
+  }
+  return best;
+}
+
 export function utilities(state, me, you, ctx = {}, who = null) {
   // Two people want different chats; the one who wants it more pushes it.
   if (!who && isPair(state, me)) {
@@ -107,11 +144,18 @@ export function utilities(state, me, you, ctx = {}, who = null) {
     // party (party.js jealous): the bolder, and the bigger the crush, the more
     // they need to ask.
     jealous: ctx.jealousOf?.[me]?.of === you ? (0.5 + st('boldness') * 0.7) * (0.4 + att / 10) : 0,
+    // Warned about in a goodbye video: set it straight with whoever saw it,
+    // friends first (the nervous and the strategic most).
+    defend: ctx.accused?.[me] && ctx.accused[me].seen.includes(you)
+      ? (DEFEND_URGENCY + st('strategic') * 0.8 + para * DEFEND_NERVES) * clamp((aff + tr + 10) / 20, 0.1, 1.2) : 0,
+    // Talking over what just happened, with someone you can talk to.
+    debrief: aff + tr > -2 ? st('strategic') * (debriefTopic(state, me, you, ctx)?.w || 0) * clamp((aff + tr + 6) / 16, 0.2, 1.1) : 0,
   };
 }
 
 export function planChats(state, rng, ctx) {
   const plans = [];
+  const talked = {};
   const order = state.active.map(h => [h, rng()]).sort((a, b) => a[1] - b[1]).map(([h]) => h);
   for (const me of order) {
     let budget = clamp(Math.round(1 + S(state, me, 'social') / 4 - mood(state, me, 'stress') / 6), 1, 4);
@@ -125,7 +169,22 @@ export function planChats(state, rng, ctx) {
       if (w > 0) options.push({ from: me, to: you, intent, w: w * (0.7 + 0.6 * rng()) });
     }
     options.sort((a, b) => b.w - a.w);
-    for (const o of options.slice(0, budget)) plans.push({ from: o.from, to: o.to, intent: o.intent });
+    let used = 0, extra = 0;
+    for (const o of options) {
+      const after = MORNING_AFTER.has(o.intent);
+      if (after ? extra >= EXTRA_TALK : used >= budget) continue;
+      const plan = { from: o.from, to: o.to, intent: o.intent };
+      if (o.intent === 'debrief') {
+        const t = debriefTopic(state, o.from, o.to, ctx);
+        const k = `${t.topic}:${t.about}`;
+        if ((talked[k] || 0) >= PER_TOPIC) continue;
+        talked[k] = (talked[k] || 0) + 1;
+        plan.topic = t.topic; plan.about = t.about;
+      }
+      if (after) extra++; else used++;
+      if (o.intent === 'defend') plan.about = ctx.accused[o.from].by;
+      plans.push(plan);
+    }
   }
   return plans;
 }
@@ -170,6 +229,23 @@ export function contextFor(state, day) {
       if (other) (contradictionWith[h] ||= {})[other] = true;
     }
   }
+  // What everybody saw today and last night, to talk over (debriefTopic):
+  // a goodbye's warning and a blocking happen this morning, the ratings closed
+  // yesterday. Each carries who saw it: nobody discusses what they missed.
+  const topics = [], accused = {};
+  for (const s of state.scenes.filter(x => x.day === state.day)) {
+    if (s.kind === 'goodbye' && s.data.warning && live(s.data.warning.about)) {
+      topics.push({ topic: 'warning', about: s.data.warning.about, by: s.who[0], kind: s.data.warning.kind, seen: s.seenBy });
+      accused[s.data.warning.about] = { by: s.who[0], kind: s.data.warning.kind, seen: s.seenBy };
+    }
+    if (s.kind === 'blocking' && s.data.target && !live(s.data.target)) topics.push({ topic: 'blocked', about: s.data.target, seen: s.seenBy });
+  }
+  if (lastRating && !lastRating.hidden) {
+    const top = lastRating.results[0]?.profile;
+    const scene = state.scenes.find(s => s.kind === 'ratings' && s.day === y);
+    if (top && live(top) && scene) topics.push({ topic: 'ratings', about: top, seen: scene.seenBy });
+  }
   return { day: day?.day ?? day, ratingSoon: !!(day?.block || day?.final), party: false,
-    hurting, newsOf, creditable, protectedBy, rivalOf, contradictionWith, jealousOf };
+    hurting, newsOf, creditable, protectedBy, rivalOf, contradictionWith, jealousOf, topics, accused,
+    powerHolders: lastRating && !lastRating.hidden ? (lastRating.influencers || []).filter(live) : [] };
 }

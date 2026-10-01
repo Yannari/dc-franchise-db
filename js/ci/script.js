@@ -34,7 +34,7 @@ export const FACT_KEYS = ['time', 'intent', 'ending', 'result', 'known', 'early'
   'hurt', 'influencer', 'reason', 'motive', 'mode', 'reasonKind', 'band', 'kiss', 'claim', 'lie',
   'tone', 'party', 'final', 'slip', 'noticed', 'place', 'self', 'likesC', 'misread', 'anon',
   'answer', 'strong', 'split', 'qkind', 'right', 'off', 'odd', 'failed', 'barbed', 'slipped', 'mutual', 'warm',
-  'everyone', 'fresh', 'tier', 'many', 'jab', 'register', 'crack', 'sole', 'blocks', 'infl'];
+  'everyone', 'fresh', 'tier', 'many', 'jab', 'register', 'crack', 'sole', 'blocks', 'infl', 'warnKind'];
 
 export const hostName = () => showWords('the-circle').host || 'Host';
 
@@ -407,10 +407,15 @@ const BLOCKS = {
   chat(state, s) {
     const [a, b] = s.who;
     const c0 = s.data.claims?.length ? claimOf(state, s.data.claims[0]) : null;
-    // A jealous chat is about the rival the crush flirted with (party.js).
+    // A jealous chat is about the rival the crush flirted with (party.js); a
+    // morning-after chat about who they are discussing (chat.js debriefTopic).
+    const morningAfter = s.data.intent === 'defend' || s.data.intent === 'debrief';
     const c = s.data.intent === 'jealous' ? s.data.rival || undefined
+      : morningAfter ? s.data.about || undefined
       : c0 ? (c0.about === a || c0.about === b ? c0.holder : c0.about) : undefined;
-    let key = s.data.intent === 'probe'
+    let key = s.data.intent === 'debrief'
+      ? `chat.debrief.${s.data.topic}${s.data.topic === 'warning' && s.data.ending !== 'neutral' ? `.${s.data.stance}` : ''}.${s.data.ending}`
+      : s.data.intent === 'probe'
       ? `chat.probe.${s.data.probes?.[0]?.result || 'pass'}`
       // a catfish flirting in character, with nothing real behind it: its own lines
       : s.data.performed ? `chat.flirt.act.${s.data.ending}` : `chat.${s.data.intent}.${s.data.ending}`;
@@ -428,7 +433,7 @@ const BLOCKS = {
       }
     }
     const personA = s.data.lead && state.profiles[a]?.players.length > 1 ? s.data.lead : undefined;
-    const out = [{ key, cast: { a, b, c, personA, ...(text ? { text } : {}) }, extra: { claim: c0?.kind, lie: c0 ? c0.origin.by === a && !c0.truth : false } }];
+    const out = [{ key, cast: { a, b, c, personA, ...(text ? { text } : {}) }, extra: { claim: c0?.kind, lie: c0 ? c0.origin.by === a && !c0.truth : false, warnKind: s.data.kind || undefined } }];
     for (const sl of s.data.slips || []) {
       const listener = sl.noticedBy[0] || (sl.by === a ? b : a);
       // A voice slip with an author's leak shows the words themselves.
@@ -1177,7 +1182,7 @@ export const MIDDLES_PER_NIGHT = 3;
 // How many chats open with a hello, and close with a sign-off (chat-depth.js).
 export const HELLO_SHARE = 70;
 export const CLOSE_SHARE = 75;
-const SERIOUS_CHATS = new Set(['confront', 'repair', 'probe', 'compare', 'confess', 'jealous', 'plant', 'pump']);
+const SERIOUS_CHATS = new Set(['confront', 'repair', 'probe', 'compare', 'confess', 'jealous', 'plant', 'pump', 'defend', 'debrief']);
 // How often a pair's time alone in the apartment is the two of them together.
 export const PAIR_LIFE = 50;
 // How many chats end with a word to the empty apartment (lines/asides.js).
@@ -1262,7 +1267,12 @@ function bridge(state, aired) {
 
 // Every pool key sceneBlocks can ask for — the writing backlog, and what the
 // coverage guard checks (tests/ci-lines.test.js).
-const INTENTS_ = ['bond', 'ally', 'flirt', 'pump', 'compare', 'plant', 'credit', 'repair', 'confront', 'checkin', 'pitch', 'confess', 'jealous'];
+const INTENTS_ = ['bond', 'ally', 'flirt', 'pump', 'compare', 'plant', 'credit', 'repair', 'confront', 'checkin', 'pitch', 'confess', 'jealous', 'defend'];
+// The morning after (chat.js debriefTopic): a topic, and for a warning whether the opener buys it.
+const DEBRIEF_KEYS_ = [
+  ...['agree', 'doubt'].flatMap(st => ['warm', 'cold'].map(e => `chat.debrief.warning.${st}.${e}`)), 'chat.debrief.warning.neutral',
+  ...['blocked', 'ratings'].flatMap(t => ['warm', 'neutral', 'cold'].map(e => `chat.debrief.${t}.${e}`)),
+];
 const REASONS_ = ['affection', 'trust', 'obligation', 'pact', 'alliance', 'protection', 'threat', 'suspicion', 'grudge', 'deserves'];
 const SLIPS_ = ['knowledge', 'body', 'voice', 'tooPerfect', 'overreach', 'name'];
 const MOTIVES_ = ['friend', 'answers', 'truth', 'apology'];
@@ -1279,7 +1289,7 @@ export const POOL_KEYS = [
   'arrival.alert', 'arrival.react.crush', 'arrival.react.threat', 'arrival.react.suspicious', 'arrival.react.ally', 'arrival.react.worried', 'welcome.warm', 'welcome.neutral', 'welcome.cold',
   // the suspense before the name (lines/blocking-build.js)
   'hangout.sealed', 'hangout.solo.sealed', 'block.build.open', 'block.build.open.solo', 'block.build.clue.fake', 'block.fear.fake', 'block.build.clue.threat', 'block.fear.threat', 'block.build.clue.grudge', 'block.fear.grudge', 'block.build.clue.noBond', 'block.fear.noBond', 'block.build.clue.offer', 'block.fear.offer', 'block.fear.dots',
-  ...INTENTS_.flatMap(i => ['warm', 'neutral', 'cold'].map(e => `chat.${i}.${e}`)),
+  ...INTENTS_.flatMap(i => ['warm', 'neutral', 'cold'].map(e => `chat.${i}.${e}`)), ...DEBRIEF_KEYS_,
   ...['pass', 'dodge', 'fail'].map(r => `chat.probe.${r}`),
   ...['warm', 'neutral', 'cold'].map(e => `chat.flirt.act.${e}`),
   ...['schemer', 'sweet', 'romantic', 'wild', 'watcher'].flatMap(g => ['warm', 'neutral', 'cold'].map(e => `aside.${g}.${e}`)),

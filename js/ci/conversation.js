@@ -9,7 +9,7 @@
 // one thing while the numbers did another.
 import { isPair, leadFor } from './shared.js';
 import { rel, bump, S, clamp, addScene, makePact } from './state.js';
-import { belief } from './beliefs.js';
+import { belief, nudgeBelief } from './beliefs.js';
 import { feel, mood } from './mind.js';
 import { makeClaim, learn, passOnWeight, contradictions } from './claims.js';
 import { rollSlips, probe } from './slips.js';
@@ -40,9 +40,18 @@ export const EFFECT = {
   // "Saw you and {c} last night." Warm: the crush is touched they cared.
   // Cold: "you don't own me".
   jealous:  { warm: { affection: 0.6, attraction: 0.5 }, neutral: {}, cold: { affection: -0.6, resentment: 0.6 } },
+  // "You don't believe what Kitty said, right?" Believed: closer. Not: they
+  // keep their distance (the doubt itself is moved in RUN).
+  defend:   { warm: { trust: 0.8, affection: 0.3 }, neutral: {}, cold: { trust: -0.6 } },
+  // Talking over what happened: the people you compare notes with are the
+  // people you end up trusting (and who you fall out with when you disagree).
+  debrief:  { warm: { trust: 0.9, affection: 0.4 }, neutral: { trust: 0.2 }, cold: { trust: -0.4, resentment: 0.3 } },
 };
 const FIT = { bond: 0.3, checkin: 0.4, ally: 0.1, pitch: 0, repair: 0.1, credit: 0.1, compare: 0.1,
-  plant: 0.1, pump: 0, confess: 0, probe: -0.2, confront: -0.3 };
+  plant: 0.1, pump: 0, confess: 0, probe: -0.2, confront: -0.3, defend: 0, debrief: 0.2 };
+// How much the listener's own feelings about the person discussed decide the
+// chat: you do not agree to doubt your friend, or to defend your rival.
+export const SIDE_TAKEN = 1 / 15;
 const WARMING = new Set(['bond', 'checkin', 'flirt', 'ally']);
 // The hyperpersonal effect (spec 5.3) at its strongest: a catfish picked a
 // whole face to be liked, and a good chat shows it. EARNED, not given to the
@@ -64,8 +73,9 @@ export function curatedFor(state, h) {
 const LIKED = new Set(['affection', 'attraction']);
 const toward = (state, h, dim, v) => (v > 0 && LIKED.has(dim) ? v * (1 + curatedFor(state, h)) : v);
 
-export function reception(state, to, from, intent) {
-  const base = (rel(to, from, 'affection') + rel(to, from, 'trust')) / 20;
+export function reception(state, to, from, intent, sc = null) {
+  const base = (rel(to, from, 'affection') + rel(to, from, 'trust')) / 20
+    + (sc ? sideTaken(state, to, from, intent, sc.data) : 0);
   const fit = intent === 'flirt' || intent === 'jealous'
     ? (attractionOk(state, to, from) ? rel(to, from, 'attraction') / 10 - 0.2 : -0.6)
     : FIT[intent] ?? 0;
@@ -136,6 +146,40 @@ const RUN = {
   // Asking the crush about the flirting they watched (party.js jealous).
   // Reassured: the sting eases, the rival matters less. Brushed off: it
   // stays. Told off: they cool on the crush, and it costs them.
+  // The accused, setting it straight. Believed: the doubt eases (a catfish
+  // warning loses its grip, a "don't trust them" loses its edge). Not: it
+  // reads as protesting too much.
+  defend(state, rng, sc, from, to, ending) {
+    const catfishy = sc.data.kind === 'catfish';
+    if (ending === 'warm') {
+      if (catfishy) nudgeBelief(state, to, from, 'real', 0.12, sc);
+      else nudgeBelief(state, to, from, 'threat', -0.6, sc);
+      feel(state, from, 'paranoia', -0.8);
+    } else if (ending === 'cold') {
+      if (catfishy) nudgeBelief(state, to, from, 'real', -0.06, sc);
+      nudgeBelief(state, to, from, 'threat', 0.4, sc);
+      feel(state, from, 'paranoia', 0.6);
+    }
+  },
+  // Comparing notes on what they both saw. A warning: the listener comes
+  // round to the speaker's read (warm) or digs in (cold). The ratings: the
+  // one on top is the one to watch. A blocking: whoever holds the power
+  // tonight is who they watch.
+  debrief(state, rng, sc, from, to, ending, ctx) {
+    const { topic, about, stance } = sc.data;
+    if (!about || ending === 'neutral') return;
+    if (topic === 'warning') {
+      const sign = (stance === 'agree' ? 1 : -1) * (ending === 'warm' ? 1 : -0.5);
+      if (sc.data.kind === 'catfish') nudgeBelief(state, to, about, 'real', -0.08 * sign, sc);
+      else { bump(to, about, 'trust', -0.6 * sign); nudgeBelief(state, to, about, 'threat', 0.4 * sign, sc); }
+    } else if (topic === 'ratings') {
+      if (ending === 'warm') for (const x of [from, to]) nudgeBelief(state, x, about, 'threat', 0.5, sc);
+      else bump(to, from, 'resentment', 0.3);
+    } else if (topic === 'blocked' && ending === 'warm') {
+      for (const i of ctx.powerHolders || []) if (i !== from && i !== to) for (const x of [from, to]) nudgeBelief(state, x, i, 'threat', 0.3, sc);
+      for (const x of [from, to]) bump(x, x === from ? to : from, 'obligation', 0.3);
+    }
+  },
   jealous(state, rng, sc, from, to, ending, ctx) {
     const rival = ctx.jealousOf?.[from]?.rival;
     sc.data.rival = rival || null;
@@ -144,6 +188,21 @@ const RUN = {
     if (ending === 'cold') { bump(from, to, 'attraction', -0.8); feel(state, from, 'stress', 0.6); }
   },
 };
+
+/** How the listener's own view of who is being discussed tilts the chat. */
+function sideTaken(state, to, from, intent, d) {
+  if (intent === 'defend') {
+    // Defending yourself lands with someone who never bought the warning.
+    return (belief(state, to, from).real - 0.6) + (rel(to, d.about, 'affection') < 0 ? 0.15 : 0);
+  }
+  if (intent !== 'debrief' || !d.about) return 0;
+  const feel = rel(to, d.about, 'affection') - rel(to, d.about, 'resentment');
+  // Agreeing that someone is a problem: harder the more the listener likes them.
+  if (d.topic === 'warning') return (d.stance === 'agree' ? -feel : feel) * SIDE_TAKEN;
+  if (d.topic === 'ratings') return -feel * SIDE_TAKEN;
+  // Missing the one who was blocked: easy to share with someone who misses them too.
+  return feel * SIDE_TAKEN * 0.5;
+}
 
 /** On a warm chat each side may pass on the juiciest thing the other hasn't heard. */
 function gossip(state, rng, sc, from, to) {
@@ -157,13 +216,25 @@ function gossip(state, rng, sc, from, to) {
 export function runChat(state, rng, plan, ctx = {}) {
   const { from, to, intent } = plan;
   const sc = addScene(state, 'chat', [from, to], { intent, ending: null, turns: [], claims: [], pact: null });
+  // What a morning-after chat is about (chat.js debriefTopic, ctx.accused).
+  if (intent === 'defend') { sc.data.about = plan.about || null; sc.data.kind = ctx.accused?.[from]?.kind || null; }
+  if (intent === 'debrief') {
+    sc.data.topic = plan.topic; sc.data.about = plan.about;
+    if (plan.topic === 'warning') {
+      const t = (ctx.topics || []).find(x => x.topic === 'warning' && x.about === plan.about);
+      sc.data.kind = t?.kind || null;
+      // Whether the one who opens the chat buys the warning.
+      const doubt = sc.data.kind === 'catfish' ? 1 - belief(state, from, plan.about).real : -rel(from, plan.about, 'trust') / 10 + 0.3;
+      sc.data.stance = doubt + rel(from, plan.about, 'resentment') / 20 > 0.35 ? 'agree' : 'doubt';
+    }
+  }
   if (isPair(state, from)) sc.data.lead = leadFor(state, from, intent, rng);
   let ending;
   if (intent === 'probe') {
     const r = probe(state, rng, from, to, sc);
     ending = r === 'pass' ? 'warm' : r === 'dodge' ? 'neutral' : 'cold';
   } else {
-    ending = decideEnding(rng, reception(state, to, from, intent));
+    ending = decideEnding(rng, reception(state, to, from, intent, sc));
   }
   sc.data.ending = ending;
   // A catfish flirting in character with no attraction behind it: an act,

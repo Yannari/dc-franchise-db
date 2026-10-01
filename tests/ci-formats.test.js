@@ -153,7 +153,8 @@ describe('room vote (UK 1 Ep 15)', () => {
     const { on, state } = booked('rating5', 'ci-room-vote');
     const vote = on('vote')[0];
     const rating = on('ratings')[0];
-    const bottom = rating.data.results.slice(-2).map(r => r.profile);
+    // the lowest two who can be put up (an immune player is passed over)
+    const bottom = rating.data.results.map(r => r.profile).filter(h => !vote.data.immune.includes(h)).slice(-2);
     expect([...vote.data.bottom].sort()).toEqual([...bottom].sort());
     const tally = {};
     for (const v of Object.values(vote.data.votes)) tally[v] = (tally[v] || 0) + 1;

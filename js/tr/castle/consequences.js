@@ -1119,7 +1119,7 @@ const EMPTY_SEAT = {
     '{a} walks past {gone}’s room, door already open.\n{a} (to camera): {cam:few-left}',
     '{a} thinks about the first day, when {gone} was still here.\n{a} (to camera): {cam:few-left}',
     '{a} sits by the fire where {gone} used to sit.\n{a} (to camera): {cam:few-left}',
-    '{a} misses {gone} quietly.\n{a} (to camera): {cam:after-table}',
+    '{a} misses {gone} quietly.\n{a} (to camera): "{gone} should still be here. That’s all I keep thinking."',
     '{a} finds a jumper {gone} left on the sofa.\n{a} (to camera): "Somebody should post it on. It’s daft, the things that get you."',
     '{a} goes to bed early.\n{a} (to camera): {cam:after-table}',
     '{a} counts who is left in the room.\n{a} (to camera): {cam:ballots}',
@@ -1563,7 +1563,7 @@ registerEvent({
 // a maybe.
 const NEED_YOU = {
   agreed: [
-    '{a} asks {b} for tomorrow.\n{a}: "Whatever happens, you and me."\n{b}: "Yes. No conditions."\n{a}: "Thank you."',
+    '{a} asks {b} to stick together tomorrow.\n{a}: "Whatever happens, you and me."\n{b}: "Yes. No conditions."\n{a}: "Thank you."',
     '{b} doesn’t negotiate.\n{a}: "I need you."\n{b}: "You’ve got me."',
     '{b} says yes straight away.\n{b}: "I’m with you. All the way."\n{a}: "Thank you."\n{a} (to camera): "That’s all I needed to hear."',
     '{a} and {b} shake on it.\n{b}: "Tomorrow, we’re together."\n{a}: "Together."',

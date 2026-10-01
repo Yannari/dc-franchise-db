@@ -2907,6 +2907,12 @@ function _buildBeats(v) {
     // THE OTHERS WHO PUT THE SAME NAME UP: their own reason, or they back the lead.
     const others = c.acc.filter(n => n !== lead);
     others.slice(0, 2).forEach((n, oi) => {
+      // the person the lead heard it FROM is at the table too: they say so,
+      // rather than "I'm with {lead}" about their own rumour
+      if (L.subs && L.subs.F && L.subs.F === _esc(n)) {
+        inner += _said(n, 'I said it to ' + _esc(lead) + ' this afternoon, and I’ll say it here. ' + _esc(c.t) + '.');
+        return;
+      }
       const O = spoken(n, 'other' + oi, OTHER_CITED, null, { t: c.t, A: _esc(lead) });
       inner += _said(n, O.line || _fill(_fresh(OTHER_AGREE, key + '|agree|' + c.t + '|' + n), { ...O.subs, A: _esc(lead) }));
     });

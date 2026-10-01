@@ -715,15 +715,15 @@ function _mode(s, cast) {
 // solitary one — "Brightly ends up in the middle of the group" is one — so an
 // opening that put them alone contradicted the next line. `ESTABLISH_SOLO`
 // is the pool for scenes that ARE alone.
+// NEUTRAL ON PURPOSE: the scene after it may be calm or troubled, and an
+// opening that set a mood ("has something on his mind") was contradicted by a
+// calm one ("Honestly, I'm feeling alright today") in the same card.
 const ESTABLISH_SINGLE = [
   '{a} is quiet.',
-  '{a} has something on {aPos} mind.',
   '{a} isn’t saying much.',
-  '{a} is thinking something over.',
   '{a} is keeping {aPos} thoughts to {aRef}.',
   '{a} is watching the others.',
-  '{a} is lost in thought.',
-  '{a} is somewhere else in {aPos} head.',
+  '{a} is around, not saying much.',
 ];
 // ── THE CLOSING LINE WHEN NOTHING COUNTABLE MOVED ──────────────────────
 //
@@ -1011,6 +1011,11 @@ const CONSEQ_TESTING = {
     '{topic} turned it round and learned more about {other} than {other} learned about {tObj}.',
     '{topic} caught {other} testing {tObj}, and {other} can’t try that again.',
   ],
+  bargained: [
+    '{topic} said yes, on terms. {other} got the promise, and now owes one back.',
+    'A deal, struck on {topic}’s terms. {other} will find out later what it cost.',
+    '{other} has {topic} on side now, at a price {topic} set.',
+  ],
   inconclusive: [
     '{other} found no evidence that either cleared or implicated {topic}.',
     '{other} learned nothing conclusive about {topic}; nobody would confirm or contradict {topic}’s account.',
@@ -1026,6 +1031,8 @@ const CONSEQ_TESTING = {
 const TEST_SPOTTED = new Set(['named-the-test', 'saw-through-it', 'turned-it-round',
   'asked-it-back', 'made-a-condition', 'asked-why-twice', 'said-it-aloud',
   'clocked-the-check', 'caughtTest']);
+// AGREED, ON TERMS: a yes with a price is a bargain struck, not a test caught
+const TEST_BARGAINED = new Set(['made-a-condition']);
 const TEST_HELD = new Set(['complied', 'over-delivered', 'checks-out', 'sincere',
   'stayed-calm', 'reassured', 'consistent', 'read-it-right', 'kept-it',
   'followed-through', 'keptQuiet', 'confirmed']);
@@ -1035,6 +1042,7 @@ const TEST_FAILED = new Set(['refused', 'inconsistent', 'reluctant', 'refuses',
 /** 'held' | 'failed' | 'spotted' | 'inconclusive' for a testing scene. */
 function _testDir(s) {
   const b = String(s.branch || '');
+  if (TEST_BARGAINED.has(b)) return 'bargained';
   if (TEST_SPOTTED.has(b)) return 'spotted';
   if (TEST_HELD.has(b)) return 'held';
   if (TEST_FAILED.has(b)) return 'failed';
@@ -1050,9 +1058,18 @@ function _confrontDir(s) {
   if (b === 'turned') return 'turned';
   if (b === 'blew-up') return 'blew-up';
   if (b === 'worked' || b === 'weathered' || b === 'overreached') return 'defended';
+  // MADE UP, NOT HELD: a branch that ended in a hug or a handshake fell through
+  // to 'held' and was captioned "openly at war" under "No more of this." / "Agreed."
+  if (b === 'cleared-the-air' || b === 'said-what-they-meant' || /made-up|apolog|forg|settled/.test(b)) return 'aired';
+  if (b === 'made-it-worse') return 'blew-up';
   return 'held';
 }
 const CONSEQ_CONFRONT = {
+  aired: [
+    '{a} and {topic} said it to each other’s faces, and it is out of the way now.',
+    'It got said, and it got settled. {a} and {topic} are easier with each other for it.',
+    'Nobody won, but {a} and {topic} walked off on better terms than they arrived.',
+  ],
   held: [
     '{a} got nothing out of {topic}, and the room saw {topic} stay calm under pressure.',
     'The accusation proved nothing, except that {a} and {topic} are now open enemies.',
@@ -1825,7 +1842,7 @@ function _receiptConsequence(s, subs, tone, key, used) {
     const c = e.susp, bObj = _prOf(c.b).obj;
     const pool = c.dir > 0
       ? (e.bond.dir > 0 ? [
-        '{a} gets on with {b}, but trusts {bObj} less after that.',
+        '{a} likes {b} a little more after that, and suspects {bObj} a little more too.',
         '{a} likes {b} more, and suspects {bObj} more too.',
         '{a} and {b} get closer, but {a} is watching {bObj} now.',
         '{a} is friendlier with {b}, and more suspicious of {bObj} at the same time.',

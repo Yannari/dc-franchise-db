@@ -572,7 +572,7 @@ const WORTH_LINES = {
     '{a} is done with {mission} before the road bends.\n{a}: "The money’s the money. Who are we talking about at the table?"\n{b}: "Straight to business."',
     '{a} wants to talk about tonight, not the mission.\n{a}: "Forget the mission. Who’s going tonight?"\n{b}: "You tell me."',
     '{a} moves on from {mission} immediately.\n{a}: "Right. The Round Table."\n{b}: "Give it five minutes."',
-    '{a} has already stopped thinking about the afternoon.\n{a} (to camera): {cam:plan}',
+    '{a} has already stopped thinking about the afternoon.\n{a} (to camera): "The afternoon’s done. Tonight is what matters."',
   ],
 };
 
@@ -1085,7 +1085,7 @@ const TOOK_EXTRA_LINES = {
     '{a} finds {who}’s eagerness suspicious.\n{a} (to camera): {cam:holding-info}',
   ],
   'used-it': [
-    '{a} brings up {who}’s bonus, and uses it to argue {who} isn’t the name for tonight.\n{a}: "You can’t vote out someone who just did that for the pot."\n{b}: "I suppose not."\n{b} (to camera): "{a} was steering me. I could tell."',
+    '{a} brings up {who}’s bonus, and uses it to argue {who} isn’t the name for tonight.\n{a}: "You can’t send somebody home who just did that for the pot."\n{b}: "I suppose not."\n{b} (to camera): "{a} was steering me. I could tell."',
     '{a} uses {who}’s good deed to push the vote elsewhere.\n{a}: "It can’t be {who}. Not after today."',
     '{a} spins {who}’s bonus into an argument.\n{a} (to camera): {cam:plan}',
     '{a} makes {who}’s extra work count for something.\n{b}: "You really want {who} safe, don’t you?"\n{a}: "Someone who earns the pot shouldn’t be in danger."',
@@ -1748,7 +1748,7 @@ const GOOD_HANDS_LINES = {
     '{a} says nothing at the time about how {who} managed to {task}, and thinks about it since.\n{a} (to camera): {cam:holding-info}',
     '{a} files away how good {who} was.\n{a} (to camera): "Remember that. {who}’s more capable than {who} lets on."',
     '{a} keeps quiet about {who}’s skill.\n{a} (to camera): {cam:watching}',
-    '{a} notes {who}’s performance and doesn’t tell {b}.\n{a} (to camera): "Useful to know."',
+    '{a} brings up {who}’s performance on the walk, and {b} doesn’t argue.\n{a}: "You saw that too."\n{b}: "I did."',
   ],
   'found-it-suspicious': [
     '{who} was far too good at it for {a}’s liking.\n{a}: "Where did {who} learn to do that?"\n{b}: "Maybe {who}’s just good."\n{a}: "Maybe."',

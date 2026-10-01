@@ -360,7 +360,7 @@ const BED_LINES = {
   'said-it-out-loud': [
     '{a} tells {b} in a whisper.\n{a}: "{c}’s bed was empty last night."\n{b}: "For how long?"',
     '{a} tells {b} about the empty bed, and can’t unsay it.\n{a}: "{c} wasn’t in bed last night."\n{b}: "What time?"\n{a}: "Late. Really late."',
-    '{a} shares the empty bed with {b}.\n{a}: "{c}’s bed was empty last night."\n{b}: "For how long?"\n{b} (to camera): "Well. That changes things."',
+    '{a} tells {b} about the empty bed.\n{a}: "{c}’s bed was empty last night."\n{b}: "For how long?"\n{b} (to camera): "Well. That changes things."',
     '{a} lets it out.\n{a}: "I shouldn’t have told you that."',
   ],
   'they-had-a-reason': [

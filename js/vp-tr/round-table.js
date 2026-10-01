@@ -1623,7 +1623,7 @@ const HOST_SENDOFF = [
   'The rest of you, go to bed. Traitors — you have work tonight, and one of these faces will not be at breakfast.',
   'Off you go. Traitors, whoever you are: choose well. The rest of you, sleep if you can manage it.',
   'That is tonight. Somewhere in this room are people who now have a second decision to make, and they will be making it without you.',
-  'Goodnight to all of you. To two or three of you, good luck — you have somebody to {kill} before morning.',
+  'Goodnight to all of you. To some of you, good luck — you have somebody to {kill} before morning.',
   'Go up. Traitors, the castle is yours for a few hours. Do try to be interesting about it.',
 ];
 
@@ -2371,6 +2371,9 @@ function _card(title, label, ic, inner, iconFn) {
     + inner + '</div>';
 }
 function _said(who, line) {
+  // a reason may end on a question now, and whatever frame it sits in must
+  // not put its own full stop or comma after the question mark
+  line = String(line).replace(/\?\./g, '?').replace(/\?,/g, '?').replace(/(?<!\.)\.\.(?!\.)/g, '.');
   return '<div class="rt-said">' + _av(who, 44)
     + '<div><div class="rt-said-txt">&ldquo;' + line + '&rdquo;</div>'
     + '<cite>' + _esc(who) + '</cite></div></div>';

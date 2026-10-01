@@ -94,7 +94,7 @@ function _accountTopic() {
   // NOT "what they really are": that printed singular they over players the
   // roster gives a gender, and read as a riddle. On day one the thing a
   // Traitor has to account for is the line on the gravel.
-  return 'the blindfolds';
+  return 'the tap on the shoulder';
 }
 
 // ── REWRITE (Task 7 stage 5). Fourth on the blame table. The audit's verdict

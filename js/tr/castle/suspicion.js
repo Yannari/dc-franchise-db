@@ -11,6 +11,7 @@
 // RIGHT about someone once its channel clears gateChannel() at 200+
 // emissions with a durable edge. Nothing here has been measured, so nothing
 // here calls learn().
+import { gs } from '../../core.js';
 import { pStats } from '../../players.js';
 // getBond is a PURE READ and the one bonds.js name a castle file may still
 // hold; every WRITE goes through the scene API (see ./effects.js).
@@ -571,7 +572,7 @@ registerEvent({
 // watched being made.
 const WHISPER_LINES = {
   'compared-notes': [
-    '{a} and {b} compare notes on {c} over breakfast, quietly.\n{a}: {say:suspect:{c}}\n{b}: {say:agree-suspect:{c}}\n{a}: "Right. So it’s not just me."',
+    '{a} and {b} compare notes on {c}, quietly.\n{a}: {say:suspect:{c}}\n{b}: {say:agree-suspect:{c}}\n{a}: "Right. So it’s not just me."',
     'Out of earshot of {c}, {a} and {b} go through what they’ve both noticed.\n{b}: "{c} was the last one up the night before the murder."\n{a}: "And the first one down. I noticed that too."',
     '{a} and {b} swap what they’ve got on {c}.\n{a}: "You go first."\n{b}: "{c} changed {cPos} vote at the last second. Twice."\n{a}: "Same thing I saw."',
     '{a} and {b} find they’ve been watching the same person.\n{a}: "Tell me I’m not the only one looking at {c}."\n{b}: "You’re not. I’ve been watching {c} for days."',
@@ -850,6 +851,9 @@ registerEvent({
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     if ((ctx.living || []).length < 3) return 0;
+    // a crosscheck reconstructs somebody's NIGHT: on the first day there has
+    // not been one ("go through Dakota's day hour by hour" with nobody dead)
+    if (!(gs?.episodeHistory || []).length) return 0;
     const [a, b] = ctx.actors;
     return getBond(a, b) <= 2 ? 1.5 : 0.5;
   },
@@ -1480,7 +1484,7 @@ const MISREAD_LINES = {
   ],
   'told-somebody': [
     '{a} takes {aPos} theory about {b} to {c}.\n{a}: "Watch {b}’s hands when the murders come up."\n{c}: "Why?"\n{a}: "Just watch."',
-    '{a} tells {c} what {aSub} has noticed about {b}.\n{a}: {say:suspect:{b}}\n{c}: "Because of a sleeve?"\n{a}: "It’s not just the sleeve."',
+    '{a} tells {c} what {aSub} has noticed about {b}.\n{a}: {say:suspect:{b}}\n{c}: "Based on what?"\n{a}: "Little things. They add up."',
     '{a} shares {aPos} read on {b} with {c}.\n{c}: "I don’t see it."\n{a}: "You will."',
     '{a} gets {c} watching {b} all morning.\n{c} (to camera): "I watched {b} all morning. I saw someone eating toast."',
   ],

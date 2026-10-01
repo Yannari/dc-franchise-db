@@ -1192,7 +1192,7 @@ const CRIES_ALONE_LINES = {
   'came-down-angry': [
     '{a} came down to breakfast angry, not sad.\n{a} (to camera): "I cried, and then I got angry, and angry is more useful."',
     '{a} walks into breakfast with a face like thunder.\n{a} (to camera): {cam:grief:{v}}',
-    '{a} has done crying. Now {aSub} wants a name.\n{a} (to camera): "Somebody at that table did this. I’m not being sad about it any more. I’m going to find them."',
+    '{a} has done crying. Now {aSub} wants a name.\n{a} (to camera): "Somebody in this castle did this. I’m not being sad about it any more. I’m going to find them."',
     '{a} sat through breakfast staring round the table, and hasn’t stopped.\n{a} (to camera): "I want them to see me looking. I want them nervous."',
   ],
 };

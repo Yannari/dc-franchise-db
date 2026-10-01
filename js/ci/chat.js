@@ -14,7 +14,7 @@ import { contradictions } from './claims.js';
 import { isPair, SHARED_PACE } from './shared.js';
 
 export const INTENTS = ['bond', 'ally', 'flirt', 'probe', 'pump', 'compare', 'plant', 'credit',
-  'repair', 'confront', 'checkin', 'pitch', 'confess'];
+  'repair', 'confront', 'checkin', 'pitch', 'confess', 'jealous'];
 export const SPARK = 6;
 // A persona is chosen to be liked: "online, hot girls get more likes" (US 1
 // Ep 1, Seaburn on why he played Rebecca). Catfish draw first sparks higher.
@@ -103,6 +103,10 @@ export function utilities(state, me, you, ctx = {}, who = null) {
     checkin: ctx.hurting?.includes(you) && aff > 2 ? st('social') : 0,
     pitch: ctx.ratingSoon && aff > 3 ? st('strategic') : 0,
     confess: catfish && aff > 5 ? guilt * st('loyalty') : 0,
+    // The morning after watching the crush flirt with somebody else at the
+    // party (party.js jealous): the bolder, and the bigger the crush, the more
+    // they need to ask.
+    jealous: ctx.jealousOf?.[me]?.of === you ? (0.5 + st('boldness') * 0.7) * (0.4 + att / 10) : 0,
   };
 }
 
@@ -136,6 +140,9 @@ export function contextFor(state, day) {
     ...state.scenes.filter(s => s.day === y && s.kind === 'visit').flatMap(s => s.who),
     ...(lastRating?.influencers || []),
   ])].filter(live);
+  // Who watched their crush flirt with somebody else yesterday (party.js).
+  const jealousOf = {};
+  for (const j of state.jealous || []) if (j.day === y && live(j.by) && live(j.of)) jealousOf[j.by] = { of: j.of, rival: j.rival };
   const creditable = {}, protectedBy = {};
   const hang = state.scenes.find(s => s.day === y && s.kind === 'hangout');
   if (hang?.data?.views) {
@@ -164,5 +171,5 @@ export function contextFor(state, day) {
     }
   }
   return { day: day?.day ?? day, ratingSoon: !!(day?.block || day?.final), party: false,
-    hurting, newsOf, creditable, protectedBy, rivalOf, contradictionWith };
+    hurting, newsOf, creditable, protectedBy, rivalOf, contradictionWith, jealousOf };
 }

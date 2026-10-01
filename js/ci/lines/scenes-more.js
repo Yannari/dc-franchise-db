@@ -273,6 +273,18 @@ export const SCENES_MORE = {
     { turns: [{ by: 'a', react: "I'm gonna message {b}. It's a party. It's allowed.", send: "Hey party person" }, { by: 'b', send: "Hey yourself {e:wink}" }] },
     { turns: [{ by: 'a', send: "If this were a real party I'd be next to you right now" }, { by: 'b', send: "Then I'd be the luckiest person there" }] },
   ]),
+  // Watching the crush flirt with somebody else, in front of everyone
+  // (party.js jealous): a has the crush on b, and c is the one flirting.
+  ...E('party.jealous', [
+    s1("Excuse me? {c} is flirting with {b}? In the group chat? In front of everybody?"),
+    s1("{b} is flirting with {c}. {b} has never once flirted with me like that."),
+    r1("Oh. Okay. {b} and {c}. Cool. That's cool. I'm cool.", { beat: '{a} stares at the screen and does not type a thing.' }),
+    s1("I'm not jealous. I'm just going to remember this when I rate {c}."),
+    s1("I thought {b} and I had something. Apparently {c} thinks so too."),
+    s1("{c}, back off. Politely. But back off."),
+    s1("Watching {b} flirt with {c} just ruined this whole party for me."),
+    s1("Fine. Let {b} have a party crush. I'm the one {b.sub} talks to every day."),
+  ]),
   ...E('party.banter', [
     { turns: [{ by: 'a', send: "Who's winning the dance-off? Me. I'm winning" }, { by: 'b', send: "Nobody's even competing lol" }] },
     { turns: [{ by: 'a', send: "I'm three snacks deep and it's not even ten" }, { by: 'b', send: "Rookie numbers {e:laugh}" }] },

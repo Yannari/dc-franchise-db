@@ -140,7 +140,10 @@ describe('every big moment airs in full', () => {
           // Ratings: about three lines a ranker (the middle only for a few, script.js
           // MIDDLES_PER_NIGHT) plus the results; a secret night reads no board.
           : sc.kind === 'ratings' ? Math.min(SCENE_DEPTH.ratings, 3 * sc.data.ballots.length + (sc.data.hidden ? 6 : 10))
-          : sc.kind === 'blocking' && ['unsaved', 'vote', 'instant', 'antivirus', 'mission'].includes(sc.data.channel) ? 9 : SCENE_DEPTH[sc.kind];
+          : sc.kind === 'blocking' && ['unsaved', 'vote', 'instant', 'antivirus', 'mission'].includes(sc.data.channel) ? 9
+          // A blocking airs a wait and a reaction per watcher: a room of six
+          // reads 13-19 lines (measured, seeds 2/7/19/3/11), seven and up 15-22.
+          : sc.kind === 'blocking' ? Math.min(SCENE_DEPTH.blocking, 2 * (sc.seenBy || []).length + 1) : SCENE_DEPTH[sc.kind];
         if (lines < min) (thin[sc.kind] ||= []).push(lines);
       }
     }

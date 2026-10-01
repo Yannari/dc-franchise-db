@@ -82,9 +82,11 @@ export const STAGE_DATA = {
 
 // Who suspects whom, the closest bonds, the worst grudges, who holds power:
 // the room at a moment, for the screens' sidebar. Rounded and capped.
+// A crush the sidebar names (attraction 0-10).
+export const SPARK_AT = 4.5;
 export function roomAt(state) {
   const act = [...state.active];
-  const suspects = [], bonds = [], rivals = [];
+  const suspects = [], bonds = [], rivals = [], sparks = [];
   for (const o of act) for (const t of act) {
     if (o === t) continue;
     const real = state.beliefs?.[o]?.[t]?.real;
@@ -96,11 +98,17 @@ export function roomAt(state) {
     if (aff > 3) bonds.push([a, b, Math.round(aff * 10) / 10]);
     // Grudges run lower than affection (it reaches 10; resentment rarely passes 3).
     if (res >= 1.5) rivals.push([a, b, Math.round(res * 10) / 10]);
+    // Sparks: a crush one way, or both ways (attraction, 0-10).
+    const ab = rel(a, b, 'attraction'), ba = rel(b, a, 'attraction');
+    if (ab >= SPARK_AT && ba >= SPARK_AT) sparks.push([a, b, 'mutual', Math.round((ab + ba) * 5) / 10]);
+    else if (ab >= SPARK_AT || ba >= SPARK_AT) sparks.push(ab >= ba ? [a, b, 'crush', Math.round(ab * 10) / 10] : [b, a, 'crush', Math.round(ba * 10) / 10]);
   }));
   const infl = (state.ratings || []).filter(r => !r.final && !r.hidden).at(-1)?.influencers || [];
   return { active: act, influencers: infl.filter(h => act.includes(h)),
     suspects: suspects.sort((x, y) => x[2] - y[2]).slice(0, 8),
-    bonds: bonds.sort((x, y) => y[2] - x[2]).slice(0, 6), rivals: rivals.sort((x, y) => y[2] - x[2]).slice(0, 5) };
+    bonds: bonds.sort((x, y) => y[2] - x[2]).slice(0, 6), rivals: rivals.sort((x, y) => y[2] - x[2]).slice(0, 5),
+    // Both ways first, then the biggest crushes.
+    sparks: sparks.sort((x, y) => (y[2] === 'mutual') - (x[2] === 'mutual') || y[3] - x[3]).slice(0, 5) };
 }
 
 export const FAME_SEEN = { celebrity: 0.8, threat: 0.45, villain: 0.45, known: 0.18 };

@@ -654,6 +654,8 @@ const RECORD_POINTS = { WIN: 2, HIGH: 1, SAFE: 0, LOW: -0.5, BTM: -1, BTM2: -1.2
    beaten". */
 export const RESUME_SCALE = 1.35;
 export const RESUME_CLAMP = 2.3;
+/* Four points apart on the crown song, the season says nothing (week.js's line). */
+export const CROWN_BLOWOUT = 4;
 
 export function recordStrength(record = []) {
   const rated = record.filter(r => r in RECORD_POINTS);
@@ -710,6 +712,15 @@ function duel(state, a, b, ctx, song, finale = null) {
       edge[n] = clamp((recordStrength(state.record[n] || []) - recAvg) * RESUME_SCALE, RESUME_CLAMP)
         + clamp(((Number(showcase[n]) || 0) - showAvg) * 0.24, 1.3);
     }
+    /* A CLEAR WIN ON THE STAGE TAKES THE CROWN. The weekly lip sync's rule
+       (js/dr/week.js): the season and the showcase decide a close song and
+       say less the wider the gap, nothing at all from four points apart.
+       Before this the full edge (up to 3.6) applied to every crown song, so
+       a queen could lose the last chorus clearly and still be crowned on her
+       résumé (the user: "a clear lip sync winner should win"). */
+    const gap = Math.abs(sa.score - sb.score);
+    const taper = Math.max(0, 1 - (gap / CROWN_BLOWOUT) ** 2);
+    for (const n of [a, b]) edge[n] = (edge[n] || 0) * taper;
     sa.score += edge[a] || 0;
     sb.score += edge[b] || 0;
   }

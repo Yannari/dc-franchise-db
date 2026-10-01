@@ -41,7 +41,7 @@ export const REGISTER_LINES = {
     hype: ["{b} is a beast! Put the beast first! Stay on the beast's good side!", "First place, {b}! I want the winner on my team!"],
     dry: ["{b} is winning this. Might as well be first. Sure.", "First: {b}. Self-preservation."],
     formal: ["{b} is the strongest player in here. It's wiser to be {b.posAdj} ally. First position.", "Strategically, {b} goes first."],
-    flirty: ["{b}, first. Powerful is very attractive, just so you know.", "First place for {b}. I like to stay close to whoever's winning."],
+    flirty: ["{b}, first. Powerful is very attractive, just so you know.", "First place for {b}. I like to stay close to whoever can take me further."],
     blunt: ["{b} runs this place. I'm not dumb. First.", "First, {b}. You don't fight the strongest one. You join {b.obj}."],
   }),
   ...R('rate.threat.bottom', {

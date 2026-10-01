@@ -143,7 +143,10 @@ describe('every big moment airs in full', () => {
           : sc.kind === 'blocking' && ['unsaved', 'vote', 'instant', 'antivirus', 'mission'].includes(sc.data.channel) ? 9
           // A blocking airs a wait and a reaction per watcher: a room of six
           // reads 13-19 lines (measured, seeds 2/7/19/3/11), seven and up 15-22.
-          : sc.kind === 'blocking' ? Math.min(SCENE_DEPTH.blocking, 2 * (sc.seenBy || []).length + 1) : SCENE_DEPTH[sc.kind];
+          : sc.kind === 'blocking' ? Math.min(SCENE_DEPTH.blocking, 2 * (sc.seenBy || []).length + 1)
+          // Circle Chat: about two lines a player in the room. A room of six late
+          // in the season reads 15 (seed 2, day 10, a morning chat).
+          : sc.kind === 'circle-chat' ? Math.min(SCENE_DEPTH['circle-chat'], 2 * sc.who.length + 3) : SCENE_DEPTH[sc.kind];
         if (lines < min) (thin[sc.kind] ||= []).push(lines);
       }
     }

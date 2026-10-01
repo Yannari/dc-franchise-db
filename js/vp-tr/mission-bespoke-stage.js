@@ -103,7 +103,7 @@ function paint(root, S, fresh) {
   for (let k = 0; k <= S.idx; k++) { const x = S.steps[k]; if (x.k === 'beat' && x.who) tone[x.who] = x.tone; }
   const paid = st && S.steps.slice(0, S.idx + 1).some(x => x.t === 'money');
   const lit = new Set(st ? [st.who, st.to, ...(st.whoList || [])].filter(Boolean) : []);
-  let h = '<div class="trq-world">' + (S.data.scene ? `<div class="trq-floor"></div><section class="ms trq-ms" data-phase="rest">${S.data.scene}</section>` : TRScenery.fieldSet(W, H))
+  let h = '<div class="trq-world">' + (S.data.scene ? `<div class="trq-floor"></div><section class="${S.data.sceneCls === 'fx' ? 'fx' : 'ms'} trq-ms" data-phase="rest" data-scene="proc">${S.data.scene}</section>` : TRScenery.fieldSet(W, H))
     + '<div class="trq-shade"></div>';
   teams.forEach(t => {
     const p = pos['@' + t.name];

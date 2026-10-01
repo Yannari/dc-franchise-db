@@ -10,7 +10,7 @@ import { streamFor } from '../dr/rng.js';
 
 export const ALWAYS_AIRS = new Set(['profiles', 'recognise', 'arrival', 'after-party', 'likes', 'circle-chat',
   'ratings', 'hangout', 'blocking', 'visit', 'report', 'goodbye', 'final-ratings', 'meet', 'reveal',
-  'game', 'party', 'life', 'home-video', 'alert', 'save', 'offer', 'plead', 'vote', 'statement', 'antivirus', 'date', 'invites', 'race', 'newparty', 'lurk', 'chosen', 'pair-arrival', 'welcome', 'power-reveal', 'hack', 'hack-undone', 'joker-chat', 'joker-pick', 'burner-exposed', 'no-block', 'mission', 'disrupter', 'swap', 'swap-back', 'clone', 'ride-or-die', 'sacrifice', 'second-chance', 'egg']);
+  'game', 'party', 'life', 'home-video', 'alert', 'save', 'offer', 'plead', 'vote', 'statement', 'antivirus', 'date', 'invites', 'race', 'newparty', 'lurk', 'chosen', 'pair-arrival', 'welcome', 'group-chat', 'power-reveal', 'hack', 'hack-undone', 'joker-chat', 'joker-pick', 'burner-exposed', 'no-block', 'mission', 'disrupter', 'swap', 'swap-back', 'clone', 'ride-or-die', 'sacrifice', 'second-chance', 'egg']);
 export const CHATS_PER_DAY = 9;
 export const STATUSES_PER_DAY = 3;
 export const FAME_PER_DAY = 2;

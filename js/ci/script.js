@@ -521,6 +521,29 @@ const BLOCKS = {
     if (!reactions.length) { const other = s.seenBy.find(h => h !== a); if (other) out.push({ key: 'arrival.react', cast: { a: other, b: a } }); }
     return out;
   },
+  // A group chat (alliances.js): founded (the pitch, the name, who says no),
+  // or a standing alliance checking in (the gossip, the agreed target).
+  'group-chat'(state, s) {
+    const [a, b, c] = s.who;
+    const x = s.data.name;
+    // An alliance coming apart (alliances.js): treason, a double agent, a walk-out.
+    if (s.data.event === 'kick') return [{ key: 'group.kick', cast: { a: s.data.by[0], b: s.data.kicked, text: { game: x } } }];
+    if (s.data.event === 'confront') return [{ key: `group.confront.${s.data.kicked ? 'out' : 'stay'}`, cast: { a: s.data.by, b: s.data.agent, text: { game: x, q: s.data.other } } }];
+    if (s.data.event === 'leave') return [{ key: 'group.leave', cast: { a: s.data.left, b: s.data.to, text: { game: x } } }];
+    if (s.data.formed !== false && s.data.accepted) {
+      const yes = s.data.accepted || [];
+      const out = [{ key: 'group.form.pitch', cast: { a, b: yes[0] || b, c: yes[1] || c || b } }];
+      if (s.data.accepted.length) out.push({ key: 'group.form.name', cast: { a, b: s.data.accepted[0], c: s.data.accepted[1] || s.data.accepted[0], text: { game: x } } });
+      for (const d of (s.data.declined || []).slice(0, 2)) out.push({ key: 'group.form.declined', cast: { a, b: d } });
+      if (!s.data.formed) out.push({ key: 'group.form.fizzle', cast: { a } });
+      return out;
+    }
+    const out = [{ key: 'group.check.open', cast: { a, b, c: c || b, text: { game: x } } }];
+    const sh = (s.data.shared || [])[0];
+    if (sh) out.push({ key: 'group.check.share', cast: { a: sh.by, b: s.who.find(h => h !== sh.by) } });
+    if (s.data.plan) out.push({ key: 'group.check.plan', cast: { a, b: b || a, c: s.data.plan, text: { game: x } } });
+    return out;
+  },
   // Racing to the newcomer: a (who got there first, or second) and b (new).
   welcome(state, s) { return [{ key: `welcome.${s.data.ending}`, cast: { a: s.who[0], b: s.who[1] } }]; },
   'after-party'(state, s) { return [{ key: 'afterparty', cast: { a: s.who[0], b: s.who[1] } }]; },
@@ -844,6 +867,12 @@ const BLOCKS = {
     if (friend) out.push({ key: 'block.react.friend', cast: { a: friend, b: target } });
     if (rival) out.push({ key: 'block.react.rival', cast: { a: rival, b: target } });
     for (const h of others.filter(x => x !== friend && x !== rival).slice(0, 3)) out.push({ key: 'block.react.relief', cast: { a: h, b: target } });
+    // One of their own blocked them: the alliance that just broke (alliances.js).
+    for (const br of (s.data.betrayed || []).slice(0, 1)) {
+      // The one blocked by their own ally first, then the rest of the group.
+      out.push({ key: 'alliance.betrayed.self', cast: { a: target, b: br.betrayer, text: { game: br.name } } });
+      for (const m of br.members.filter(m => m !== br.betrayer).slice(0, 2)) out.push({ key: 'alliance.betrayed', cast: { a: m, b: br.betrayer, c: target, text: { game: br.name } } });
+    }
     return out;
   },
   visit(state, s) {
@@ -1175,12 +1204,14 @@ function bridge(state, aired) {
 // Every pool key sceneBlocks can ask for — the writing backlog, and what the
 // coverage guard checks (tests/ci-lines.test.js).
 const INTENTS_ = ['bond', 'ally', 'flirt', 'pump', 'compare', 'plant', 'credit', 'repair', 'confront', 'checkin', 'pitch', 'confess', 'jealous'];
-const REASONS_ = ['affection', 'trust', 'obligation', 'pact', 'protection', 'threat', 'suspicion', 'grudge', 'deserves'];
+const REASONS_ = ['affection', 'trust', 'obligation', 'pact', 'alliance', 'protection', 'threat', 'suspicion', 'grudge', 'deserves'];
 const SLIPS_ = ['knowledge', 'body', 'voice', 'tooPerfect', 'overreach', 'name'];
 const MOTIVES_ = ['friend', 'answers', 'truth', 'apology'];
 const WHY_ = ['strategic', 'protective', 'experimental', 'family'];
 const BLOCK_WHY_ = ['fake', 'threat', 'grudge', 'noBond'];
 export const POOL_KEYS = [
+  // alliances and their group chats (lines/alliances.js)
+  'group.form.pitch', 'group.form.name', 'group.form.declined', 'group.form.fizzle', 'group.check.open', 'group.check.share', 'group.check.plan', 'alliance.betrayed', 'alliance.betrayed.self', 'group.kick', 'group.confront.out', 'group.confront.stay', 'group.leave',
   // the room takes in a newcomer (lines/arrivals-room.js)
   'arrival.alert', 'arrival.react.crush', 'arrival.react.threat', 'arrival.react.suspicious', 'arrival.react.ally', 'arrival.react.worried', 'welcome.warm', 'welcome.neutral', 'welcome.cold',
   // the suspense before the name (lines/blocking-build.js)
@@ -1200,7 +1231,8 @@ export const POOL_KEYS = [
   'recognise', 'arrival', 'arrival.react', 'afterparty',
   'ratings.open', ...REASONS_.flatMap(r => [`rate.${r}.top`, `rate.${r}.bottom`]),
   'result.bottom', 'result.middle', 'result.top', 'result.influencers', 'result.sole',
-  ...REASONS_.map(r => `final.rate.${r}`),
+  // No alliance on the final night (ratings.js: final -> 0): the winner is who deserves it.
+  ...REASONS_.filter(r => r !== 'alliance').map(r => `final.rate.${r}`),
   'hangout.open', ...BLOCK_WHY_.map(r => `hangout.view.${r}.cut`), 'hangout.view.noBond.keep',
   'alert.sole', 'hangout.solo.open', ...BLOCK_WHY_.map(r => `hangout.solo.view.${r}.cut`), 'hangout.solo.view.noBond.keep', 'hangout.solo.decide',
   ...BLOCK_WHY_.map(r => `block.announce.solo.${r}`),

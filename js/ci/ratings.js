@@ -8,6 +8,7 @@
 // eighth… fifth and sixth…"), and the top two become Influencers — three on a
 // tie for second (UK 1 Ep 6). Ballots are secret: afterwards each player can
 // only INFER who broke a pact with them, and may be wrong (§8.6).
+import { allied, planAgainst, ALLIANCE_PULL, PLAN_PUSH } from './alliances.js';
 import { rel, bump, S, clamp, addScene } from './state.js';
 import { belief, nudgeBelief } from './beliefs.js';
 import { feel, mood } from './mind.js';
@@ -60,6 +61,9 @@ export function voterScore(state, rng, voter, target, { final = false } = {}) {
     trust: w.t * rel(voter, target, 'trust'),
     obligation: w.o * rel(voter, target, 'obligation'),
     pact: hasPact(state, 'rate', voter, target) ? w.p * PACT_PULL * S(state, voter, 'loyalty') / 10 : 0,
+    // An alliance: allies rate each other up, and down the one they agreed on.
+    alliance: final ? 0 : (allied(state, voter, target) ? w.p * ALLIANCE_PULL * S(state, voter, 'loyalty') / 10 : 0)
+      - (planAgainst(state, voter, target) ? w.p * PLAN_PUSH * S(state, voter, 'loyalty') / 10 : 0),
     protection: final ? 0 : w.v * (b.likesMe + 10) / 20 * 4,
     threat: -w.h * b.threat * (final ? 0.3 : 1),
     suspicion: -w.s * (1 - b.real) * SUSPICION,

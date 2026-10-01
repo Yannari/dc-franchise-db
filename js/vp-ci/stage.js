@@ -34,12 +34,14 @@ export { faceUrl, themeFor, starsText };
 // ── where we are (user: "I don't know if they're in their private profile or
 // in the chat"): a label in the corner of every screen, and in the apartments
 // a chat window that stays on screen with the thread so far.
-const CHATWIN = new Set(['welcome', 'chat', 'date', 'plead', 'joker-chat', 'after-party']);
+const CHATWIN = new Set(['group-chat', 'welcome', 'chat', 'date', 'plead', 'joker-chat', 'after-party']);
 const WHERE = { chat: 'PRIVATE CHAT', date: 'A DATE', plead: 'THE LAST TWO', 'joker-chat': 'THE JOKER', 'after-party': 'THE AFTER-PARTY',
   life: 'IN THE APARTMENT', 'home-video': 'A VIDEO FROM HOME', report: 'AFTER THE VISIT', recognise: 'A FACE THEY KNOW',
   lurk: 'WATCHING IN SECRET', 'hack-undone': 'COMPARING NOTES', 'circle-chat': 'CIRCLE CHAT · EVERYONE', likes: 'THE NEWSFEED',
   status: 'STATUS UPDATES', ratings: 'THE RATINGS', 'final-ratings': 'THE FINAL RATINGS', hangout: 'THE HANGOUT', game: 'A GAME', party: 'THE PARTY' };
 function whereLabel(row, screen) {
+  // A group chat goes by its alliance's name.
+  if (screen.kind === 'group-chat' && screen.d?.name) return `GROUP CHAT · ${String(screen.d.name).toUpperCase()}`;
   const base = WHERE[screen.kind] || String(screen.title || '').toUpperCase();
   if (!CHATWIN.has(screen.kind) || screen.cast.length < 2) return base;
   return `${base} · ${screen.cast.map(h => nameOf(row, h)).join(' ↔ ')}`;

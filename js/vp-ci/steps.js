@@ -20,7 +20,7 @@
 import { TITLES } from '../ci/transcript.js';
 import { GAMES } from '../ci/games-data.js';
 
-const APT = new Set(['welcome', 'chat', 'date', 'plead', 'joker-chat', 'life', 'home-video', 'report', 'recognise', 'lurk', 'hack-undone', 'after-party', 'pair-arrival']);
+const APT = new Set(['group-chat', 'welcome', 'chat', 'date', 'plead', 'joker-chat', 'life', 'home-video', 'report', 'recognise', 'lurk', 'hack-undone', 'after-party', 'pair-arrival']);
 const ALERT = new Set(['alert', 'power-reveal', 'disrupter', 'hack', 'no-block', 'mission']);
 // Meet the players: who walks in, who they really are, and the profile built.
 const ARRIVE = new Set(['profiles', 'arrival']);

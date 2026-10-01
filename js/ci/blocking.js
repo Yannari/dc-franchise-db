@@ -9,6 +9,7 @@
 // learn each other's truth. The visited player now holds private knowledge
 // — and a schemer may lie about it later (US 7: Madelyn invented what Heather
 // said at her visit, and it steered the next blocking).
+import { onBlocked } from './alliances.js';
 import { rel, bump, S, clamp, addScene, isActive, schemeEligible } from './state.js';
 import { belief } from './beliefs.js';
 import { feel, mood } from './mind.js';
@@ -36,6 +37,8 @@ export function applyBlock(state, h, channel, by, scene, { secret = false } = {}
     if (aff > 0) feel(state, i, 'guilt', aff / 3);
   }
   for (const o of state.active) if (rel(o, h, 'affection') > 3) feel(state, o, 'stress', 1);
+  // Their alliances lose them; one of their own blocking them breaks it.
+  onBlocked(state, h, secret ? [] : by, scene);
 }
 
 // A public save before the Hangout (US 5 Ep 4): each Influencer takes the

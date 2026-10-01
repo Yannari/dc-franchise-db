@@ -1339,6 +1339,7 @@ const CONFIG_SCOPE = {
     'cfg-ci-newcomer-rule':  ['the-circle'],
     'cfg-ci-pick-by':        ['the-circle'],
     'cfg-ci-ai':             ['the-circle'],
+    'cfg-ci-surprises':      ['the-circle'],
     'sec-tr-divider':        ['traitors'],
     'sec-dr-options':        ['drag-race'],
     'sec-dr-divider':        ['drag-race'],

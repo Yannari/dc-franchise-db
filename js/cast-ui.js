@@ -1327,6 +1327,8 @@ export function saveConfig() {
     ciNewcomerRule: g('cfg-ci-newcomer-rule')?.value || seasonConfig.ciNewcomerRule || 'rate-not-rated',
     ciPickBy: g('cfg-ci-pick-by') ? (g('cfg-ci-pick-by').value === 'random' ? 'random' : 'stats') : (seasonConfig.ciPickBy === 'random' ? 'random' : 'stats'),
     ciAI: g('cfg-ci-ai') ? g('cfg-ci-ai').checked : seasonConfig.ciAI === true,
+    // On unless switched off (an older save has no setting: the draws it always had).
+    ciSurprises: g('cfg-ci-surprises') ? g('cfg-ci-surprises').checked : seasonConfig.ciSurprises !== false,
     trAutoDouble: g('cfg-tr-auto-double') ? g('cfg-tr-auto-double').checked : true,
     trEndgameReveal: g('cfg-tr-endgame-reveal') ? g('cfg-tr-endgame-reveal').checked : false,
     trEndgameSize: parseInt(g('cfg-tr-endgame-size')?.value) || 3,
@@ -1530,6 +1532,7 @@ export function renderConfig() {
   if (g('cfg-ci-newcomer-rule')) g('cfg-ci-newcomer-rule').value = ['none', 'full'].includes(seasonConfig.ciNewcomerRule) ? seasonConfig.ciNewcomerRule : 'rate-not-rated';
   if (g('cfg-ci-pick-by')) g('cfg-ci-pick-by').value = seasonConfig.ciPickBy === 'random' ? 'random' : 'stats';
   if (g('cfg-ci-ai')) g('cfg-ci-ai').checked = seasonConfig.ciAI === true;
+  if (g('cfg-ci-surprises')) g('cfg-ci-surprises').checked = seasonConfig.ciSurprises !== false;
   try { window.renderPerfectMatchCastSetup?.(); } catch { /* the panel is optional chrome */ }
   try { window.renderCircleCastSetup?.(); } catch { /* the panel is optional chrome */ }
   set('cfg-tr-traitor-mode', seasonConfig.trTraitorMode || 'random');

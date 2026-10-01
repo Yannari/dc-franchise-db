@@ -413,7 +413,10 @@ registerEvent({
     // firing stream is bit-identical to before.
     const victim = _lastMurdered();
     // on the road OUT, today's mission has not happened: the account is of yesterday's
-    const topic = victim ? `the night ${victim} was murdered` : 'what happened on yesterday’s mission';
+    // and on the first day there has been no mission either: what a Traitor
+    // has to keep straight is the afternoon the hand came down
+    const topic = victim ? `the night ${victim} was murdered`
+      : (gs?.episodeHistory || []).length ? 'what happened on yesterday’s mission' : 'the first afternoon at the table';
     const sceneWhy = branch === 'stopped-rehearsing' ? 'decided the rehearsing was the dangerous part'
       : branch === 'could-not-get-it-straight' ? 'could not get one evening into the same order twice'
         : 'ran through their account of the night on the road';
@@ -1621,7 +1624,7 @@ const COLUMN_SHAPE_LINES = {
   'read-the-order': [
     '{a} watches who chooses whom on the road, and does the maths quietly.\n{a} (to camera): {cam:watching}',
     '{a} notes who walks with who.\n{a} (to camera): "Watch who walks with who. That’s the real vote."',
-    '{a} reads the line like a map.\n{a} (to camera): {cam:notes}',
+    '{a} watches the column string out along the road, and who has paired off with whom.\n{a} (to camera): {cam:notes}',
     '{a} counts the pairs on the road out.\n{a} (to camera): {cam:watching}',
   ],
   // Two people who should not be together, are.

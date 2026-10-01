@@ -538,7 +538,8 @@ registerEvent({
     const lost = peopleLost(gs);
     const scores = {
       'looked-at-it-properly': (st.temperament / 10) * 0.45,
-      'the-empty-rooms': Math.min(0.9, lost * 0.18) + (st.loyalty / 10) * 0.2,
+      // nobody gone, no empty rooms ("Fewer of us every day" on the first morning)
+      'the-empty-rooms': lost ? Math.min(0.9, lost * 0.18) + (st.loyalty / 10) * 0.2 : 0,
       'got-on-with-it': (1 - st.social / 10) * 0.3 + 0.3,
       'wanted-to-go-home': (1 - st.temperament / 10) * 0.3 + Math.min(0.25, lost * 0.05),
     };
@@ -979,7 +980,9 @@ registerEvent({
       'brought-it-home': (1 - st.temperament / 10) * 0.5,
       'shook-it-off': (st.temperament / 10) * 0.45,
       'watched-them-come-in': (st.intuition / 10) * 0.4,
-      'came-back-decided': (st.intuition / 10) * 0.3 + (st.boldness / 10) * 0.2,
+      // the first evening has no Round Table: nobody is voting for anybody yet
+      'came-back-decided': (gs?.episodeHistory || []).length
+        ? (st.intuition / 10) * 0.3 + (st.boldness / 10) * 0.2 : 0,
     };
     const keys = Object.keys(scores);
     const total = keys.reduce((acc, k) => acc + Math.max(0, scores[k]), 0);
@@ -1880,7 +1883,7 @@ const OPEN_ROAD_LINES = {
     '{a} isn’t performing. {Sub} is just walking.',
     '{a} doesn’t think about how {sub} looks at all.',
     '{a} just walks out, relaxed.',
-    '{a} has nothing to hide on the walk, and it shows.',
+    '{a} walks out with the others and doesn’t give it a second thought.',
   ],
 };
 

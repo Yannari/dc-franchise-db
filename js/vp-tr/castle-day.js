@@ -237,8 +237,15 @@ const HOURS = {
     'Night, and every noise in a stone building is somebody.',
   ] },
 };
+// THE FIRST MORNING has a breakfast but no murder behind it: nobody is missing,
+// and there is no news. Set by `_view` for the episode being drawn.
+let _firstDay = false;
+const _NEEDS_A_DEATH = /\b(news|empty|missing|grief|mourn)/i;
+const _alive = pool => (_firstDay ? pool.filter(l => !_NEEDS_A_DEATH.test(l)) : pool);
 function _hour(w) {
-  return HOURS[w] || { label: String(w || 'The Day'), sun: 'noon',
+  const h = HOURS[w];
+  if (h && _firstDay) return { ...h, lines: _alive(h.lines) };
+  return h || { label: String(w || 'The Day'), sun: 'noon',
     lines: ['An hour of the day, and the castle spent it the way it spends them.'] };
 }
 
@@ -3386,6 +3393,7 @@ function _sceneFor(scene, watcher) {
 function _view(ep, observer, segment = null) {
   const c = ep && ep.tr && ep.tr.castle;
   if (!c) return null;
+  _firstDay = Number(c.ep != null ? c.ep : (ep.tr && ep.tr.ep) || ep.num || 0) === 1;
   const obs = observer == null ? 'audience' : String(observer);
   const isAudience = obs !== null && obs.indexOf('player:') !== 0;
   const watcher = obs.indexOf('player:') === 0 ? obs.slice('player:'.length) : null;
@@ -3794,9 +3802,9 @@ function _composeScene(s, key, used, cast) {
   // and branch; legacy events keep the generic family/tone pools.
   const topicCfg = (s.topic && TOPIC_CONFIG[s.topicKind]) ? TOPIC_CONFIG[s.topicKind] : null;
 
-  const estPool = mode === 'group' ? ESTABLISH_GROUP
+  const estPool = _alive(mode === 'group' ? ESTABLISH_GROUP
     : mode === 'pair' ? (ESTABLISH_PAIR[stage] || ESTABLISH_PAIR.morning)
-      : mode === 'solo' ? ESTABLISH_SOLO : ESTABLISH_SINGLE;
+      : mode === 'solo' ? ESTABLISH_SOLO : ESTABLISH_SINGLE);
   const establish = _cap(_fill(_pickUnique(estPool, key + '|est', used), subs));
 
   const audience = [

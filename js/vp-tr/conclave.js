@@ -1033,11 +1033,14 @@ function _buildBeats(rec, ep) {
     const pair = _pickFresh(TALK_PUSH, k);
     return _said(by.traitor, _fill(pair[0], subs)) + _said(a.traitor, _fill(pair[1], subs));
   };
+  // the overrule shows the losing slip again: with the words it was put with
+  const saidReason = new Map();
   argued.forEach((a, i) => {
     const subs = Object.assign({ t: a.target, T: a.target, a: a.traitor, A: a.traitor },
       _pr(a.target));
     const reason = _fill(_pickAway(REASON_LINES[a.reason] || REASON_LINES.convenient,
       key + '|why|' + a.traitor + '|' + a.target, said), subs);
+    saidReason.set(a.traitor + '|' + a.target, reason);
     // The unsaid fires on `onto-me` and only there: that is the one label the
     // engine records where the stated argument and the real motive are
     // genuinely different things, and it is the audience's whole privilege.
@@ -1156,7 +1159,7 @@ function _buildBeats(rec, ep) {
         const theirReason = (argued.find(a => a.traitor === x.loser) || {}).reason;
         return _struckSlip({
           target: lost, by: x.loser,
-          reason: _fill(_pick(REASON_LINES[theirReason] || REASON_LINES.convenient,
+          reason: saidReason.get(x.loser + '|' + lost) || _fill(_pick(REASON_LINES[theirReason] || REASON_LINES.convenient,
             key + '|why|' + x.loser + '|' + lost),
           Object.assign({ t: lost, T: lost, a: x.loser, A: x.loser }, _pr(lost))),
         });

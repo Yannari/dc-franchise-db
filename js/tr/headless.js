@@ -2088,6 +2088,9 @@ const _GREET = {
     ['I love your coat.', 'Thank you! I’m {b}. I think we’re going to get on.'],
     ['You look like you know what you’re doing.', 'I really don’t. I’m {b}.'],
     ['Come and stand with me, I don’t know anybody. I’m {a}.', '{b}. Deal.'],
+    ['Thank God, somebody normal.', 'Don’t speak too soon. I’m {b}.'],
+    ['Can I stand next to you? I’m {a}.', 'Please do. {b}.'],
+    ['Oh, I like you already. I’m {a}.', 'Give it a day. I’m {b}.'],
   ],
   neutral: [
     ['Hi. {a}.', '{b}. Nice to meet you.'],
@@ -2095,12 +2098,22 @@ const _GREET = {
     ['Did they tell you anything in the car?', 'Not a word. I’m {b}.'],
     ['{a}. And you are?', '{b}. Cold, mainly.'],
     ['Bit of a castle, isn’t it?', 'Just a bit. I’m {b}.'],
+    ['Have you been here long?', 'About a minute. I’m {b}.'],
+    ['Do we hug? I don’t know the rules.', 'Nobody does yet. {b}.'],
+    ['Is it always this cold up here?', 'I hope not. I’m {b}.'],
+    ['Any idea what happens next?', 'None at all. {b}.'],
+    ['I’m {a}. I’ll forget your name in a minute, sorry.', '{b}. I’ll remind you.'],
+    ['First impressions, then. I’m {a}.', '{b}. No pressure.'],
+    ['So, which one of us is lying already?', 'Not me. I’m {b}.'],
   ],
   cold: [
     ['Hi! I’m {a}!', 'Right. {b}.'],
     ['Nice of you to finally turn up.', 'I didn’t know we were keeping score.'],
     ['You’re standing on my bag.', 'Then move your bag.'],
     ['Hi, I’m {a}. And you are…?', 'Busy. {b}.'],
+    ['Big entrance.', 'Somebody had to make one.'],
+    ['Do you always stare like that?', 'Only at people worth staring at.'],
+    ['You must be the one who kept the car waiting.', 'And you must be the one who noticed.'],
   ],
 };
 // After a narrated recognition or a shared season, {b} answers {a}, out loud.
@@ -2125,6 +2138,8 @@ const _FIRST_READ = {
     'I’d trust {o}. Ask me again in a week.',
     'First person I met, and already I’d want {o} on my side.',
     '{o} made me laugh in the first thirty seconds. That’s rare.',
+    '{o} put me at ease straight away. I needed that.',
+    'I could see myself getting close to {o}. Maybe too close.',
   ],
   neutral: [
     '{o} is hard to read. In this game, that is not a compliment.',
@@ -2132,6 +2147,10 @@ const _FIRST_READ = {
     '{o} said all the right things. I’m just not sure I believed any of them.',
     '{o} shook my hand and looked straight past me at the castle.',
     'I couldn’t tell you one thing about {o}. That’s either nothing or everything.',
+    '{o} was friendly. Everybody is friendly on day one.',
+    'I’ll know more about {o} after the first Round Table.',
+    '{o} seems normal. I’m not sure normal exists in a place like this.',
+    'Nothing to say about {o} yet, and I’m not going to make something up.',
   ],
   cold: [
     'Something about {o} I don’t like. I can’t tell you what yet.',
@@ -2139,6 +2158,8 @@ const _FIRST_READ = {
     'If I had to pick a Traitor right now? {o}. No reason. Just a feeling.',
     'Two minutes with {o} and I already need a break.',
     '{o} is going to be trouble. I can always tell.',
+    '{o} looked at me like I was competition. Fair enough. I am.',
+    'I didn’t warm to {o}, and I don’t think {o} warmed to me.',
   ],
 };
 const _warmth = b => (b >= 2 ? 'warm' : b <= -2 ? 'cold' : 'neutral');
@@ -2352,8 +2373,8 @@ const _PROFILE = {
     '{name} will not win the castle on any one thing. That is not the same as not winning it.',
     '{name} can hold a conversation, carry a crate, and read a room &mdash; none of it '
     + 'brilliantly, all of it well enough to stay.',
-    '{name} has no weakness worth naming and no weapon worth naming, and the room will '
-    + 'underestimate the first half.',
+    '{name} has no obvious weakness and no obvious weapon. The room will take that to '
+    + 'mean harmless, which is not the same thing.',
     'Whatever this season asks for, {name} can do a version of it.',
     '{name} is the player nobody writes down on the first night, for reasons that will '
     + 'stop being reasons by the fourth.',
@@ -2399,7 +2420,7 @@ const _PERSONALITY = {
     '{name} makes enemies without meaning to and keeps making them anyway.',
     'Somebody will get accused loudly this week, and {name} will be the one doing the accusing.',
     '{name} does not manage {posAdj} temper so much as travel with it.',
-    'Honest to a fault and loud about it &mdash; {name} is impossible to read and impossible to hide behind.',
+    'Honest to a fault and loud about it &mdash; with {name} you always know where you stand, and so does everybody else.',
     '{name} will be right at some point and nobody will hear it over the volume.',
     'Every Round Table {name} sits at gets more interesting and less survivable.',
   ],
@@ -2604,6 +2625,18 @@ const _THREAT = {
     'Nobody has a reason to trust {name} and nobody has a reason not to, which is the most '
     + 'dangerous place on the flags.',
     'By the weekend somebody will have decided what {name} is, and they will be confident about it.',
+    'Nobody in this castle has seen {name} before tonight, so every first impression counts double.',
+    '{name} walks in with no history at all, and the room will fill the gap for {obj}.',
+    'Whatever {name} says in the first hour is all anybody here will have to go on.',
+    'There is nothing to look up about {name}. The others will have to work {obj} out the hard way.',
+    'Nobody here owes {name} anything, and nobody holds anything against {obj} either.',
+    '{name} has no friends in this castle yet, and no enemies. Both will change quickly.',
+    'The first thing {name} gets wrong in here, the room will remember.',
+    'Strangers get judged fast in a place like this, and {name} is a stranger to all of them.',
+    '{name} can be anybody in here. The hard part will be staying the same person for a month.',
+    'For now {name} is just a face on the flags. That will not last long.',
+    'Nobody has a story about {name} yet. Somebody will have one by breakfast.',
+    'A blank page, as far as the room is concerned, and {name} decides what goes on it.',
   ],
 };
 

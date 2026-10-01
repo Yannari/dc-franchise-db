@@ -1514,7 +1514,7 @@ function _view(ep, observer) {
 const ROLE_LABEL = {
   named: 'The name in the room',
   reader: 'Alone with a list',
-  pact: 'After the table',
+  pact: 'Behind a straight face',
   adrift: 'Nothing to give',
 };
 /** The two halves each seat's opening line is drawn from. See the pool header. */

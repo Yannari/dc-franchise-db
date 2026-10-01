@@ -228,7 +228,7 @@ export const BANK = {
       "Watch {x} at the table tonight. Just watch.",
     ],
     sharp: [
-      "Have you noticed {x} never says a name first?",
+      "Have you noticed {x} never gives an opinion first?",
       "{x} agrees with whoever spoke last. Every single time.",
       "I've been watching {x}. The story keeps changing slightly.",
       "{x} is very good at not being noticed. That's what bothers me.",

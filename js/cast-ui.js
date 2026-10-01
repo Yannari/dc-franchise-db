@@ -6,7 +6,7 @@ import { DEFAULT_ROSTER } from './roster-data.js';
 import { audio } from './audio.js';
 // Only the helper — `seasonConfig` is a live global here (it is reassigned
 // wholesale in saveConfig, which an import binding would not allow).
-import { seasonFormat, formatIsRunnable, formatName, TWIST_CATALOG, downloadFile } from './core.js';
+import { seasonFormat, formatIsRunnable, formatName, TWIST_CATALOG, downloadFile, kinshipPairs } from './core.js';
 import { ensurePortraitSelection, migrateCastPortraits, baseAvatarSlug,
   playerAvatarUrl, portraitOptions, hasShowPortraits, loadPortraitCatalog } from './players.js';
 import { SHOWS, HOSTS_BY_FORMAT, DEFAULT_FORMAT, DRAG_FORMAT } from './shows.js';
@@ -2011,12 +2011,32 @@ function renderDragFamilies() {
 export function renderRelList() {
   renderDragFamilies();
   const list = document.getElementById('rel-list');
-  if (!relationships.length) { list.innerHTML=`<div class="rel-empty">No relationships defined.<br>Click <strong>+ Add</strong> or load <strong>S9/S10 Bonds</strong> preset.</div>`; return; }
+  // Family & ties set on the characters (js/ties.js), for the pairs in this
+  // cast the tab has no row for. Shown, never deletable here: the tie lives on
+  // the person (Create Character). "Set feeling" makes it an ordinary row, so
+  // a season can still say how they feel this time.
+  const pairKey = (a, b) => [a, b].sort().join('|');
+  const rowed = new Set(relationships.map(r => pairKey(r.a, r.b)));
+  const profileKin = new Map(kinshipPairs().filter(p => p.fromProfile).map(p => [pairKey(p.a, p.b), p]));
+  const fromProfiles = [...profileKin.values()].filter(p => !rowed.has(pairKey(p.a, p.b)));
+  if (!relationships.length && !fromProfiles.length) { list.innerHTML=`<div class="rel-empty">No relationships defined.<br>Click <strong>+ Add</strong> or load <strong>S9/S10 Bonds</strong> preset.</div>`; return; }
+  const kinBadge = k => `<span class="rel-badge" style="background:rgba(163,113,247,0.14);color:#a371f7">${REL_KINSHIP[k].label}</span>`;
+  const profileBadge = p => `<span class="rel-badge" style="background:rgba(63,185,80,0.14);color:#3fb950" title="${p.derived ? 'Worked out from the ties set on the characters' : 'Set on the characters in Create Character'}">${p.derived ? 'Worked out' : 'From their profiles'}</span>`;
+  const profileCards = fromProfiles.map(p => `<div class="rel-card rel-card-profile"><div class="rel-players"><div style="display:flex;align-items:center;gap:6px">${miniAvatar(p.a)}<span style="font-size:12px;font-weight:600">${p.a}</span><span class="rel-arrow">↔</span>${miniAvatar(p.b)}<span style="font-size:12px;font-weight:600">${p.b}</span></div></div>${kinBadge(p.kin)}${profileBadge(p)}<div class="rel-actions"><button class="btn btn-secondary btn-sm" onclick="relFromProfile('${encodeURIComponent(p.a)}','${encodeURIComponent(p.b)}','${p.kin}')">Set feeling</button></div></div>`).join('');
   const sorted = [...relationships].sort((a,b) => { if(a.type==='unbreakable'&&b.type!=='unbreakable') return -1; if(b.type==='unbreakable'&&a.type!=='unbreakable') return 1; return Math.abs(b.bond)-Math.abs(a.bond); });
-  list.innerHTML = sorted.map(r => { const rt=REL_TYPES[r.type]||REL_TYPES.neutral; return `<div class="rel-card"><div class="rel-players"><div style="display:flex;align-items:center;gap:6px">${miniAvatar(r.a)}<span style="font-size:12px;font-weight:600">${r.a}</span><span class="rel-arrow">\u2194</span>${miniAvatar(r.b)}<span style="font-size:12px;font-weight:600">${r.b}</span></div>${r.note?`<div class="rel-note" title="${r.note}">${r.note}</div>`:''}</div>${
+  list.innerHTML = profileCards + sorted.map(r => { const rt=REL_TYPES[r.type]||REL_TYPES.neutral; const pk = profileKin.get(pairKey(r.a, r.b)); return `<div class="rel-card"><div class="rel-players"><div style="display:flex;align-items:center;gap:6px">${miniAvatar(r.a)}<span style="font-size:12px;font-weight:600">${r.a}</span><span class="rel-arrow">↔</span>${miniAvatar(r.b)}<span style="font-size:12px;font-weight:600">${r.b}</span></div>${r.note?`<div class="rel-note" title="${r.note}">${r.note}</div>`:''}</div>${
     r.kin && r.kin!=='none' && REL_KINSHIP[r.kin]
-      ? `<span class="rel-badge" style="background:rgba(163,113,247,0.14);color:#a371f7">${REL_KINSHIP[r.kin].label}</span>`
-      : ''}<span class="rel-badge" style="background:${rt.bg};color:${rt.color}">${rt.label}</span><div class="rel-actions"><button class="btn btn-secondary btn-sm" onclick="openRelForm('${r.id}')">Edit</button><button class="btn btn-danger btn-sm" onclick="deleteRel('${r.id}')">\u2715</button></div></div>`; }).join('');
+      ? kinBadge(r.kin)
+      : pk ? kinBadge(pk.kin) + profileBadge(pk) : ''}<span class="rel-badge" style="background:${rt.bg};color:${rt.color}">${rt.label}</span><div class="rel-actions"><button class="btn btn-secondary btn-sm" onclick="openRelForm('${r.id}')">Edit</button><button class="btn btn-danger btn-sm" onclick="deleteRel('${r.id}')">✕</button></div></div>`; }).join('');
+}
+
+/** A profile tie made into an ordinary row for this season, then opened to set the feeling. */
+export function relFromProfile(a, b, kin) {
+  a = decodeURIComponent(a); b = decodeURIComponent(b);
+  const id = `prof-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`;
+  relationships.push({ id, a, b, kin, type: 'neutral', bond: REL_TYPES.neutral?.bond ?? 0, leanA: 0, leanB: 0, note: '' });
+  saveRels(); renderRelList();
+  openRelForm(id);
 }
 
 // ══════════════════════════════════════════════════════════════════════

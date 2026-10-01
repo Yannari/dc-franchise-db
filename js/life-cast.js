@@ -75,7 +75,9 @@ const slugOf = name => String(name || '').toLowerCase().replace(/[^a-z0-9]+/g, '
  */
 export function lifeSeeds(cast = [], log = [], seasons = []) {
   const out = { pairs: [], showmances: [], soloPartners: [] };
-  if (!cast.length || !log.length) return out;
+  // Not on an empty log: a couple set on the character (js/ties.js, life-events
+  // lifeStartOf) is together before the log says anything about them.
+  if (!cast.length) return out;
 
   const seasonRank = new Map(seasons.map(s => [s.seasonId, airKey(s)]));
   const nameBySlug = new Map();

@@ -28,7 +28,8 @@
 // seed the next time the button was pressed. Rows are MOVED rather than
 // copied, so the queue plus the history is one season's worth of rows and
 // never two — this repo has shipped an 19MB `gs` from exactly that mistake.
-import { gs, setGs, players, seasonConfig, seasonFormat, TWIST_CATALOG } from './core.js';
+import { gs, setGs, players, seasonConfig, seasonFormat, TWIST_CATALOG, kinshipPairs } from './core.js';
+import { tieStartBonds } from './ties.js';
 import { playTraitorsSeason } from './tr/headless.js';
 import { trLedgerRecord } from './tr/ledger-record.js';
 import { recordBuiltSeason } from './franchise-meta.js';
@@ -240,7 +241,10 @@ function _playWholeSeason(rerollFromEp = null, rerollSeed = null, rerolls = null
       cast,
       // What the franchise remembers about these people (js/franchise-carry.js):
       // real pasts replace the fixture's random opening bonds for those pairs.
-      carried: carriedFor((players || []).filter(p => p && cast.includes(p.name)), seasonConfig || {}).sums,
+      // And who they ARE to each other (the Relationships tab, and the family
+      // & ties set on the characters — js/ties.js): sisters start warm.
+      carried: tieStartBonds(cast, kinshipPairs(),
+        carriedFor((players || []).filter(p => p && cast.includes(p.name)), seasonConfig || {}).sums),
       traitorCount: Math.max(2, Math.min(5, Number(seasonConfig.traitorCount) || 3)),
       potCeiling: Number(seasonConfig.trPotCeiling) || undefined,
       // The castle's own endgame size (setup: final 2-5). Falls back to the

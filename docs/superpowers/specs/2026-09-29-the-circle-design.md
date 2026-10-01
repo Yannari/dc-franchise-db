@@ -1728,6 +1728,30 @@ The pair roles are older/younger and parent/kid. Slots: {a.parentWord}
 (Mom/Dad), {a.kidWord}, {a.olderSib}, {a.youngerSib}. Unset, a pair stays
 as before: lines that never say what they are.
 
+**As built (2026-09-30): family and ties on the person.** User: "do those
+relationship settings persist between shows ... married is the starting
+point". A tie is a fact about two people, not a season, so it lives on the
+CHARACTER:
+- **Where it is set:** Create Character → Family & ties (`ties` on the
+  roster: `[{name, kin, role?}]` in the Relationships tab's words). It goes
+  through the whole Publish chain: schema, migration, Worker, read-back, and
+  the guard in `tests/roster-ties-field.test.js`.
+- **Read both ways, with the family nobody typed** (`js/ties.js`): an aunt,
+  a cousin, a grandparent, in-laws. What was typed beats what is worked out.
+- **Every show** (`js/ties-kin.js` → core.js `kinshipBetween`/`kinshipPairs`):
+  a pair the season's tab says nothing about gets its tie. The tab lists them
+  as "From their profiles" / "Worked out". They can't be deleted there, but
+  "Set feeling" makes one an ordinary row. A kin typed on the tab still wins.
+  - Bonds: Total Drama, BB and Drag Race seed through `buildInitialBonds`;
+    the Traitors through `tieStartBonds`. PM and the Circle read the kin.
+- **Married is the starting point** (`life-events.js` `lifeStartOf`): a
+  couple tie is where the life track STARTS, with no wedding invented. So
+  Dramagram says "Married to X", and the couple walks into a season together
+  through `lifeSeeds`, whose bond is not paid twice.
+  - The log moves it on, and a divorce always asks. A couple reads as exes
+    only when the log ended THAT couple.
+  - Dramagram shows the couple chip only; family is not a status.
+
 ## 19. Setup and the Circle tab
 
 ### 19.1 Cast tab

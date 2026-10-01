@@ -730,6 +730,8 @@ $('#commit').onclick = async () => {
     fetch('franchise_roster.json').then(r => r.json()).catch(() => ({ players: [] })),
   ]);
   events = log;
+  // Family & ties on the character: a couple set there is where their life starts.
+  try { (await import('./js/ties.js')).useRoster(roster); } catch { /* ties are an extra */ }
   ctx = lifeContext(pdb, sdb, roster);
   genders = new Map([...ctx.people].map(([slug, p]) => [slug, p.gender]));
   seasons = ctx.seasons;

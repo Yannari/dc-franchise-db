@@ -722,6 +722,8 @@ async function renderDebutProfile(id) {
       loadLiveSeason(),
     ]);
     const list = Array.isArray(roster) ? roster : (roster?.players || []);
+    // Family & ties on the character: a couple set there is where their life starts.
+    try { (await import('./js/ties.js')).useRoster(list); } catch { /* ties are an extra */ }
     rp = list.find(p => p.slug === id) || null;
     live = liveSeason;
     if (live) {

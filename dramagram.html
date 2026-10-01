@@ -869,6 +869,8 @@ let viewing = null;
   // Tone comes from the archetype: a villain does not caption a wedding the way
   // a hero does. Read from the published roster, which is where it is authored.
   const rosterList = Array.isArray(roster) ? roster : (roster.players || []);
+  // Family & ties on the character: a couple set there is where their life starts.
+  try { (await import('./js/ties.js')).useRoster(rosterList); } catch { /* ties are an extra */ }
   archetypeBySlug = Object.fromEntries(rosterList.map(r => [r.slug, r.archetype]));
   gendersBySlug = new Map(rosterList.filter(r => r && r.slug).map(r => [r.slug, r.gender]));
   rows = directory({ careers: allCareers, seasons, events: allEvents, live });

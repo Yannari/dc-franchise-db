@@ -95,6 +95,37 @@ function _tcLayout(v) {
     at: board.map((nm, i) => ({ n: nm, x: x0 + (i % cols) * size, y: y0 + Math.floor(i / cols) * size })) };
 }
 
+// A GOTHIC INTERIOR behind the scene (2026-09-30, "some of the decor looks
+// childish"): clustered columns, tall lancet windows with cold light coming
+// through, vault ribs overhead, a flagstone floor with candles along it.
+function _gothicHall(e, tint) {
+  let s = '<rect width="1080" height="360" fill="url(#gh-wall-' + e + ')"/>'
+    + '<rect width="1080" height="360" fill="url(#gh-stone-' + e + ')" opacity=".35"/>';
+  for (let i = 0; i < 6; i++) {
+    const x = 60 + i * 192;
+    s += '<path d="M' + x + ' 0 Q' + (x + 96) + ' 90 ' + (x + 192) + ' 0" stroke="#0e0c10" stroke-width="10" fill="none" opacity=".8"/>';
+  }
+  for (const x of [130, 320, 760, 950]) {
+    s += '<path d="M' + (x - 26) + ' 230 V70 a26 34 0 0 1 52 0 V230Z" fill="url(#gh-glass-' + e + ')"/>'
+      + '<path d="M' + x + ' 40 V230 M' + (x - 26) + ' 120 H' + (x + 26) + ' M' + (x - 26) + ' 175 H' + (x + 26) + '" stroke="#0a0a0e" stroke-width="3"/>'
+      + '<path d="M' + (x - 20) + ' 230 L' + (x - 70) + ' 360 L' + (x + 70) + ' 360 L' + (x + 20) + ' 230Z" fill="' + tint + '" opacity=".07"/>';
+  }
+  for (const x of [40, 225, 415, 665, 855, 1040]) {
+    s += '<rect x="' + (x - 16) + '" y="0" width="32" height="300" fill="url(#gh-col-' + e + ')"/>'
+      + '<rect x="' + (x - 22) + '" y="286" width="44" height="14" fill="#2a2628"/>';
+  }
+  s += '<path d="M0 290 H1080 V360 H0Z" fill="url(#gh-floor-' + e + ')"/>';
+  for (let i = 0; i < 14; i++) s += '<path d="M' + (i * 80) + ' 290 L' + (i * 80 - 40) + ' 360" stroke="#000" stroke-width="1.5" opacity=".35"/>';
+  return s;
+}
+function _gothicDefs(e) {
+  return '<pattern id="gh-stone-' + e + '" width="48" height="22" patternUnits="userSpaceOnUse"><path d="M0 0.5H48M0 11.5H48M0.5 0V11M24.5 11V22" stroke="#000" stroke-width="1.2" opacity=".55"/></pattern>'
+    + '<linearGradient id="gh-wall-' + e + '" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#1e1c24"/><stop offset=".6" stop-color="#2c2830"/><stop offset="1" stop-color="#18161a"/></linearGradient>'
+    + '<linearGradient id="gh-glass-' + e + '" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#4a5a8a"/><stop offset=".5" stop-color="#6a3a5a"/><stop offset="1" stop-color="#2a3a5a"/></linearGradient>'
+    + '<linearGradient id="gh-col-' + e + '" x1="0" x2="1"><stop offset="0" stop-color="#1a181c"/><stop offset=".4" stop-color="#4a4448"/><stop offset=".6" stop-color="#3a3438"/><stop offset="1" stop-color="#141216"/></linearGradient>'
+    + '<linearGradient id="gh-floor-' + e + '" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#3a3434"/><stop offset="1" stop-color="#121010"/></linearGradient>';
+}
+
 function _tcScene(v, s) {
   const e = v.epNum;
   const L = s.L;
@@ -117,7 +148,7 @@ function _tcScene(v, s) {
       + '" transform="translate(' + x.toFixed(0) + ',' + y.toFixed(0) + ') scale(1.2)">'
       + '<g transform="translate(-18,-18)">' + (PIECES[q.piece] || '') + '</g></g>';
   }).join('');
-  return '<rect width="1080" height="360" fill="url(#ms-tc-hall-' + e + ')"/>'
+  return _gothicHall(e, '#c8d8ff')
     + '<g opacity=".12" fill="#efe9dc"><rect x="0" y="0" width="1080" height="360" fill="url(#ms-tc-floor-' + e + ')"/></g>'
     + '<g class="ms-tc-statue" transform="translate(540,14) scale(1.05)">'
     + '<path d="M0 4c14 0 22 11 22 25v11l11 52H-33l11-52V29C-22 15-14 4 0 4z" fill="#2f4a40" stroke="#5f8a78" stroke-width="2"/>'
@@ -126,7 +157,9 @@ function _tcScene(v, s) {
     + '<rect x="' + (540 - (L.cols * L.size) / 2 - 6) + '" y="' + (196 - (L.rows * L.size) / 2 - 6) + '" width="' + (L.cols * L.size + 12)
     + '" height="' + (L.rows * L.size + 12) + '" fill="none" stroke="#7b6224" stroke-width="6"/>'
     + squares + pieces
-    + '<g class="ms-tc-candles"><circle cx="72" cy="310" r="8" fill="#ffd66b"/><circle cx="1008" cy="310" r="8" fill="#ffd66b"/></g>';
+    + '<g class="ms-tc-candles">' + [72, 1008].map(x => '<g transform="translate(' + x + ',300)"><circle r="60" fill="#ffc870" opacity=".12"/>'
+      + '<path d="M0 60 V0 M-24 8 Q0 24 24 8" stroke="#2a2420" stroke-width="4" fill="none"/>'
+      + [-24, 0, 24].map(dx => '<rect x="' + (dx - 3) + '" y="' + (dx ? -10 : -18) + '" width="6" height="14" fill="#efe6d0"/><circle cx="' + dx + '" cy="' + (dx ? -14 : -22) + '" r="4" fill="#ffd66b"/>').join('') + '</g>').join('') + '</g>';
 }
 
 function _tcStage(v, states, n) {
@@ -136,7 +169,7 @@ function _tcStage(v, states, n) {
     + '<linearGradient id="ms-tc-hall-' + e + '" x1="0" x2="0" y1="0" y2="1">'
     + '<stop offset="0" stop-color="#141418"/><stop offset="1" stop-color="#0b0b0d"/></linearGradient>'
     + '<pattern id="ms-tc-floor-' + e + '" width="120" height="120" patternUnits="userSpaceOnUse">'
-    + '<rect width="60" height="60" fill="#efe9dc" opacity=".5"/><rect x="60" y="60" width="60" height="60" fill="#efe9dc" opacity=".5"/></pattern>';
+    + '<rect width="60" height="60" fill="#efe9dc" opacity=".5"/><rect x="60" y="60" width="60" height="60" fill="#efe9dc" opacity=".5"/></pattern>' + _gothicDefs(e);
   return stageShell({ epNum: e, defs, scene: _tcScene(v, s),
     cap: [s.right + ' of 5 right', (TC_CAP[s.capPhase] || TC_CAP.owl)[1]],
     pot: v.potBefore + (s.done ? v.earned : 0),

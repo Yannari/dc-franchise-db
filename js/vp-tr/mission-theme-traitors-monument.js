@@ -119,9 +119,21 @@ function _tmScene(v, s) {
     '<g class="ms-tm-fallen' + (s.said ? ' said' : '') + '" transform="translate(' + (70 + i * 54) + ',312)">'
     + '<circle r="21" fill="#15181a" stroke="#454d51" stroke-width="2"/>'
     + '<image href="' + _esc(_url(nm)) + '" x="-19" y="-19" width="38" height="38" clip-path="url(#ms-tm-c-' + e + ')"/></g>').join('');
-  return '<rect width="1080" height="360" fill="url(#ms-tm-sky-' + e + ')"/>'
-    + '<circle cx="150" cy="60" r="34" fill="rgba(230,223,204,.12)"/><circle cx="150" cy="60" r="15" fill="rgba(230,223,204,.4)"/>'
-    + '<path d="M0 214 C140 196 240 224 380 210 C520 196 640 222 780 208 C900 196 1000 216 1080 204 V360 H0Z" fill="#141a18"/>'
+  // THE MOOR (redrawn 2026-09-30): a cold dusk with cloud, far hills in
+  // layers, standing stones on the skyline, heather and a low mist
+  let heather = '';
+  for (let i = 0; i < 90; i++) heather += '<circle cx="' + ((i * 12.1) % 1080).toFixed(0) + '" cy="' + (226 + (i * 17) % 130) + '" r="' + (2 + i % 3) + '" fill="' + (i % 3 ? '#4a2a44' : '#5e3454') + '" opacity=".7"/>';
+  let clouds = '';
+  for (let i = 0; i < 7; i++) clouds += '<ellipse cx="' + (i * 170 + 60) + '" cy="' + (30 + (i % 3) * 20) + '" rx="' + (130 + (i % 3) * 30) + '" ry="14" fill="#9aa4b4" opacity=".14"/>';
+  return '<rect width="1080" height="360" fill="url(#ms-tm-sky-' + e + ')"/>' + clouds
+    + '<circle cx="150" cy="60" r="60" fill="rgba(230,223,204,.1)"/><circle cx="150" cy="60" r="15" fill="rgba(230,223,204,.6)"/>'
+    + '<path d="M0 180 L140 140 L260 168 L400 128 L540 160 L680 132 L820 162 L960 136 L1080 158 V240 H0Z" fill="#2a3040" opacity=".8"/>'
+    + '<path d="M0 200 C180 178 320 206 480 190 C640 174 820 200 1080 182 V250 H0Z" fill="#1e2420"/>'
+    + '<g fill="#1a1e1c"><rect x="250" y="168" width="8" height="26"/><rect x="266" y="160" width="10" height="34"/><rect x="284" y="172" width="7" height="22"/>'
+    + '<rect x="790" y="164" width="9" height="30"/><rect x="806" y="170" width="7" height="24"/></g>'
+    + '<rect y="186" width="1080" height="34" fill="#c8d0d8" opacity=".08"/>'
+    + '<path d="M0 214 C140 196 240 224 380 210 C520 196 640 222 780 208 C900 196 1000 216 1080 204 V360 H0Z" fill="url(#ms-tm-moor-' + e + ')"/>'
+    + heather
     + '<g fill="#101513"><path d="M96 300 V236 c-18-6-12-52 12-60 24 8 30 54 12 60 V300Z"/>'
     + '<path d="M1000 300 V244 c-16-6-10-46 10-54 20 8 26 48 10 54 V300Z"/></g>'
     + '<g class="ms-tm-stone"><path d="M440 320 L452 64 Q540 26 628 64 L640 320 Z" fill="url(#ms-tm-g-' + e + ')" stroke="#5d676d" stroke-width="2"/>'
@@ -145,7 +157,8 @@ function _tmStage(v, states, n) {
     + '<linearGradient id="ms-tm-g-' + e + '" x1="0" x2="1"><stop offset="0" stop-color="#454d51"/>'
     + '<stop offset=".5" stop-color="#363d40"/><stop offset="1" stop-color="#262b2e"/></linearGradient>'
     + '<linearGradient id="ms-tm-sky-' + e + '" x1="0" x2="0" y1="0" y2="1">'
-    + '<stop offset="0" stop-color="#1a2126"/><stop offset=".6" stop-color="#141a1d"/><stop offset="1" stop-color="#0f1213"/></linearGradient>';
+    + '<stop offset="0" stop-color="#1c2232"/><stop offset=".5" stop-color="#3a3a4e"/><stop offset=".85" stop-color="#7a5e62"/><stop offset="1" stop-color="#a87a66"/></linearGradient>'
+    + '<linearGradient id="ms-tm-moor-' + e + '" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#2e3426"/><stop offset="1" stop-color="#121410"/></linearGradient>';
   return stageShell({ epNum: e, defs, scene: _tmScene(v, s),
     cap: [s.answered + ' of 6 answered', (TM_CAP[s.capPhase] || TM_CAP.cipher)[1]],
     pot: v.potBefore + (s.done && !v.tally.tookShield ? v.earned : 0),

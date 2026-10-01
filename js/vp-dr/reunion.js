@@ -26,7 +26,7 @@ const said = t => esc(t).replace(/&quot;([^]*?)&quot;/g, '<span class="ru-said">
 const BOOT = `<svg viewBox="0 0 40 40" width="38" height="38" aria-hidden="true"><path d="M13 4h10v17c0 2 1 3 3 4l7 3c2 1 3 3 3 5v2H22l-3-4-3 4h-4l1-9-2-8z" fill="#FFD66B" stroke="#8a6a1a" stroke-width="1.2" stroke-linejoin="round"/><path d="M12 35h4l1-5" fill="none" stroke="#8a6a1a" stroke-width="1.2"/></svg>`;
 
 const SEG_ICON = {
-  open: '✦', numbers: '#', seat: '●', feud: '⚡', bonds: '♥', double: '✦✦', awards: '★', winner: '♛', close: '✦',
+  open: '✦', numbers: '#', early: '◐', seat: '●', room: '?', feud: '⚡', bonds: '♥', double: '✦✦', awards: '★', winner: '♛', close: '✦',
 };
 
 const REUNION_CSS = `
@@ -153,11 +153,11 @@ export function rpBuildReunion(row) {
 
   /* THE SOFA FOLLOWS THE CONVERSATION: the queen in the seat lifts, the queen
      talking glows, the segment's name under the row. Per step. */
-  const segTitle = { open: 'The Reunion', numbers: 'The season in numbers', seat: 'The hot seat', feud: 'The feuds',
+  const segTitle = { open: 'The Reunion', numbers: 'The season in numbers', early: 'The first ones out', seat: 'The hot seat', room: 'Ask the room', feud: 'The feuds',
     bonds: 'Friends, sisters and more', double: 'Shantay, you both stay', awards: 'The awards', winner: 'The winner', close: 'Goodnight' };
   const lights = scenes.map(sc => {
     const d = sc.data || {};
-    const on = d.speaker === 'segment' ? (d.players || []) : d.seg === 'seat' || d.seg === 'feud' || d.seg === 'bonds' || d.seg === 'double' || d.seg === 'winner' ? (d.players || []).slice(0, d.seg === 'seat' ? 1 : 2) : (d.players || []).slice(0, 1);
+    const on = d.speaker === 'segment' ? (d.players || []) : d.seg === 'seat' || d.seg === 'early' || d.seg === 'feud' || d.seg === 'bonds' || d.seg === 'double' || d.seg === 'winner' ? (d.players || []).slice(0, d.seg === 'seat' ? 1 : 2) : (d.players || []).slice(0, 1);
     const talk = d.speaker === 'queen' ? [speakerOf(sc)] : [];
     return { on, talk, seg: segTitle[d.seg] || 'The Reunion' };
   });

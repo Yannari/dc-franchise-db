@@ -102,6 +102,37 @@ function _cmPane(i, cls) {
     + ' A76 76 0 0 1 ' + p[2] + ' L' + p[3] + ' A22 22 0 0 0 ' + p[0] + 'Z"/>';
 }
 
+// A GOTHIC INTERIOR behind the scene (2026-09-30, "some of the decor looks
+// childish"): clustered columns, tall lancet windows with cold light coming
+// through, vault ribs overhead, a flagstone floor with candles along it.
+function _gothicHall(e, tint) {
+  let s = '<rect width="1080" height="360" fill="url(#gh-wall-' + e + ')"/>'
+    + '<rect width="1080" height="360" fill="url(#gh-stone-' + e + ')" opacity=".35"/>';
+  for (let i = 0; i < 6; i++) {
+    const x = 60 + i * 192;
+    s += '<path d="M' + x + ' 0 Q' + (x + 96) + ' 90 ' + (x + 192) + ' 0" stroke="#0e0c10" stroke-width="10" fill="none" opacity=".8"/>';
+  }
+  for (const x of [130, 320, 760, 950]) {
+    s += '<path d="M' + (x - 26) + ' 230 V70 a26 34 0 0 1 52 0 V230Z" fill="url(#gh-glass-' + e + ')"/>'
+      + '<path d="M' + x + ' 40 V230 M' + (x - 26) + ' 120 H' + (x + 26) + ' M' + (x - 26) + ' 175 H' + (x + 26) + '" stroke="#0a0a0e" stroke-width="3"/>'
+      + '<path d="M' + (x - 20) + ' 230 L' + (x - 70) + ' 360 L' + (x + 70) + ' 360 L' + (x + 20) + ' 230Z" fill="' + tint + '" opacity=".07"/>';
+  }
+  for (const x of [40, 225, 415, 665, 855, 1040]) {
+    s += '<rect x="' + (x - 16) + '" y="0" width="32" height="300" fill="url(#gh-col-' + e + ')"/>'
+      + '<rect x="' + (x - 22) + '" y="286" width="44" height="14" fill="#2a2628"/>';
+  }
+  s += '<path d="M0 290 H1080 V360 H0Z" fill="url(#gh-floor-' + e + ')"/>';
+  for (let i = 0; i < 14; i++) s += '<path d="M' + (i * 80) + ' 290 L' + (i * 80 - 40) + ' 360" stroke="#000" stroke-width="1.5" opacity=".35"/>';
+  return s;
+}
+function _gothicDefs(e) {
+  return '<pattern id="gh-stone-' + e + '" width="48" height="22" patternUnits="userSpaceOnUse"><path d="M0 0.5H48M0 11.5H48M0.5 0V11M24.5 11V22" stroke="#000" stroke-width="1.2" opacity=".55"/></pattern>'
+    + '<linearGradient id="gh-wall-' + e + '" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#1e1c24"/><stop offset=".6" stop-color="#2c2830"/><stop offset="1" stop-color="#18161a"/></linearGradient>'
+    + '<linearGradient id="gh-glass-' + e + '" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#4a5a8a"/><stop offset=".5" stop-color="#6a3a5a"/><stop offset="1" stop-color="#2a3a5a"/></linearGradient>'
+    + '<linearGradient id="gh-col-' + e + '" x1="0" x2="1"><stop offset="0" stop-color="#1a181c"/><stop offset=".4" stop-color="#4a4448"/><stop offset=".6" stop-color="#3a3438"/><stop offset="1" stop-color="#141216"/></linearGradient>'
+    + '<linearGradient id="gh-floor-' + e + '" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#3a3434"/><stop offset="1" stop-color="#121010"/></linearGradient>';
+}
+
 function _cmScene(v, s) {
   const e = v.epNum;
   const names = v.teams.map(x => x.name);
@@ -136,7 +167,7 @@ function _cmScene(v, s) {
       + '<path class="item" d="M-3 14 l3 9 l3-9z"/></g>';
   }).join('');
   const sh = v.shield || {};
-  return '<rect width="1080" height="360" fill="#141518"/>'
+  return _gothicHall(e, '#ffd8a0')
     + '<g class="ms-cm-arches" stroke="#2c2f36" stroke-width="8" fill="none">'
     + '<path d="M228 360 V150 Q290 66 352 150 V360"/><path d="M728 360 V150 Q790 66 852 150 V360"/></g>'
     + '<path d="M0 0 H1080 V360 H0Z" fill="url(#ms-cm-light-' + e + ')"/>'
@@ -160,7 +191,7 @@ function _cmStage(v, states, n) {
     + '<linearGradient id="ms-cm-light-' + e + '" x1="0" x2="1" y1="0" y2="1">'
     + '<stop offset="0" stop-color="rgba(184,38,58,.10)"/><stop offset=".5" stop-color="rgba(42,79,179,.08)"/>'
     + '<stop offset="1" stop-color="rgba(47,138,93,.08)"/></linearGradient>';
-  return stageShell({ epNum: e, defs, scene: _cmScene(v, s),
+  return stageShell({ epNum: e, defs: defs + _gothicDefs(e), scene: _cmScene(v, s),
     cap: [s.total + ' items named', (CM_CAP[s.capPhase] || CM_CAP.book)[1]],
     pot: v.potBefore + (s.done ? v.earned : 0),
     vars: '--ms-mono:\'Anonymous Pro\',monospace;--ms-accent:#f1e3b6;--ms-ink:#ece4d2',

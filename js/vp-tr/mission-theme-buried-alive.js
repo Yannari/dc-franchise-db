@@ -88,7 +88,7 @@ function _baScene(v, s) {
   const plots = s.L.map((q, i) => {
     const cls = s.plot[i] || '';
     const who = q.p.who;
-    return '<g class="ms-ba-plot ' + cls + '" data-p="' + i + '" transform="translate(' + q.x.toFixed(0) + ',' + q.y + ')">'
+    return '<g class="ms-ba-plot ' + cls + '" data-p="' + i + '" transform="translate(' + q.x.toFixed(0) + ',' + q.y + ')" style="--ba-earth:url(#ms-ba-earth-' + e + ');--ba-stone:url(#ms-ba-stone-' + e + ')">'
       + '<rect class="earth" x="-44" y="-16" width="88" height="54" rx="4"/>'
       + '<path class="stone" d="M-16 -46 h32 v30 h-32z M-16 -46 a16 16 0 0 1 32 0" />'
       + '<g class="hole"><rect x="-40" y="-12" width="80" height="46" rx="3" fill="#0a0806"/></g>'
@@ -102,12 +102,33 @@ function _baScene(v, s) {
       + '<g class="lamp"><circle r="26" fill="rgba(242,204,91,.25)"/><circle r="10" fill="rgba(242,204,91,.9)"/></g>'
       + '</g>';
   }).join('');
+  // THE CHURCHYARD (redrawn 2026-09-30): a dying amber dusk under a crescent
+  // moon, a gothic church with a spire and one lit window, gnarled yews, rows
+  // of weathered stones going back into the mist, a dry-stone wall
+  let stones = '';
+  for (let i = 0; i < 26; i++) {
+    const x = 20 + ((i * 41) % 1040), y = 136 + (i % 3) * 8, k = i % 4, sc = .55 + (i % 3) * .12;
+    stones += '<g transform="translate(' + x + ',' + y + ') scale(' + sc.toFixed(2) + ')" opacity=".85">'
+      + (k === 0 ? '<path d="M-8 0 V-26 a8 8 0 0 1 16 0 V0Z" fill="#4a4640"/>'
+        : k === 1 ? '<path d="M-3 0 V-20 h-9 v-6 h9 v-8 h6 v8 h9 v6 h-9 V0Z" fill="#4a4640"/>'
+          : k === 2 ? '<rect x="-10" y="-18" width="20" height="18" fill="#423e38"/>'
+            : '<path d="M-6 0 V-30 L0 -36 L6 -30 V0Z" fill="#4a4640"/>') + '</g>';
+  }
+  const yew = (x, sc) => '<g transform="translate(' + x + ',150) scale(' + sc + ')"><path d="M-6 0 C-8 -30 -4 -50 0 -70 C4 -50 8 -30 6 0Z" fill="#1a1612"/>'
+    + '<ellipse cx="0" cy="-80" rx="44" ry="34" fill="#141a12"/><ellipse cx="-24" cy="-60" rx="26" ry="20" fill="#121810"/><ellipse cx="26" cy="-62" rx="28" ry="20" fill="#16201a"/></g>';
   return '<rect width="1080" height="360" fill="url(#ms-ba-sky-' + e + ')"/>'
-    + '<path d="M0 120 C120 96 220 130 340 112 C460 94 560 124 700 106 C820 90 960 120 1080 100 V360 H0Z" fill="#171412"/>'
-    + '<g class="ms-ba-church" transform="translate(880,26)"><path d="M0 94 V34 h56 V94Z" fill="#100e0d" stroke="#2a2420"/>'
-    + '<path d="M-2 34 L28 6 L58 34Z" fill="#100e0d" stroke="#2a2420"/><rect x="22" y="-18" width="10" height="26" fill="#2a2420"/>'
-    + '<rect x="20" y="58" width="16" height="36" rx="8" fill="#1c1714"/></g>'
-    + '<path d="M0 150 C160 140 300 162 480 150 C660 138 820 160 1080 146 V360 H0Z" fill="#1d1a16"/>'
+    + '<path d="M150 40 a26 26 0 1 0 22 40 a20 20 0 1 1 -22 -40z" fill="#efe8d6" opacity=".9"/>'
+    + '<path d="M0 118 C120 100 220 126 340 112 C460 98 560 122 700 108 C820 96 960 118 1080 104 V200 H0Z" fill="#2a2430" opacity=".7"/>'
+    + '<g class="ms-ba-church" transform="translate(860,0)">'
+    + '<path d="M0 140 V70 h90 V140Z" fill="#26221e"/><path d="M-4 70 L45 40 L94 70Z" fill="#1c1916"/>'
+    + '<path d="M66 140 V40 h22 V140Z" fill="#2c2824"/><path d="M62 40 L77 -6 L92 40Z" fill="#1c1916"/>'
+    + '<path d="M38 140 V112 a8 8 0 0 1 16 0 V140Z" fill="#100e0c"/>'
+    + '<path d="M14 100 V86 a6 6 0 0 1 12 0 V100Z" fill="#f2c870" opacity=".9"/><circle cx="20" cy="94" r="18" fill="#f2c870" opacity=".12"/></g>'
+    + yew(70, 1.1) + yew(760, .9) + yew(1010, 1.2)
+    + stones
+    + '<rect y="130" width="1080" height="34" fill="url(#ms-ba-mist-' + e + ')"/>'
+    + '<path d="M0 150 C160 140 300 162 480 150 C660 138 820 160 1080 146 V360 H0Z" fill="url(#ms-ba-ground-' + e + ')"/>'
+    + '<path d="M0 158 C200 150 380 166 560 156 C760 146 900 162 1080 152" stroke="#5a5248" stroke-width="7" fill="none" stroke-dasharray="14 4" opacity=".7"/>'
     + plots
     + '<g class="ms-ba-lamp2" transform="translate(120,92)"><rect x="-2" y="0" width="4" height="52" fill="#3a3129"/>'
     + '<path d="M0 -16 a12 12 0 0 1 12 12 v6 h-24 v-6 a12 12 0 0 1 12 -12z" fill="#2a2420" stroke="#c8a24a"/>'
@@ -119,7 +140,11 @@ function _baStage(v, states, n) {
   const e = v.epNum;
   const defs = '<clipPath id="ms-ba-c-' + e + '"><circle r="19"/></clipPath>'
     + '<linearGradient id="ms-ba-sky-' + e + '" x1="0" x2="0" y1="0" y2="1">'
-    + '<stop offset="0" stop-color="#241c18"/><stop offset=".6" stop-color="#171310"/><stop offset="1" stop-color="#0d0b09"/></linearGradient>';
+    + '<stop offset="0" stop-color="#1e1a2e"/><stop offset=".5" stop-color="#4a3040"/><stop offset=".8" stop-color="#a0584a"/><stop offset="1" stop-color="#d8905c"/></linearGradient>'
+    + '<linearGradient id="ms-ba-mist-' + e + '" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#c8b8c8" stop-opacity="0"/><stop offset=".5" stop-color="#c8b8c8" stop-opacity=".2"/><stop offset="1" stop-color="#c8b8c8" stop-opacity="0"/></linearGradient>'
+    + '<linearGradient id="ms-ba-ground-' + e + '" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#2e3424"/><stop offset="1" stop-color="#12140e"/></linearGradient>'
+    + '<linearGradient id="ms-ba-earth-' + e + '" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#5a4430"/><stop offset="1" stop-color="#2a1e14"/></linearGradient>'
+    + '<linearGradient id="ms-ba-stone-' + e + '" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#8a8478"/><stop offset=".6" stop-color="#5a554c"/><stop offset="1" stop-color="#3a3630"/></linearGradient>';
   return stageShell({ epNum: e, defs, scene: _baScene(v, s),
     cap: [s.time + ' left', (BA_CAP[s.capPhase] || BA_CAP.clues)[1]],
     pot: s.potAfter,
@@ -536,8 +561,8 @@ export const BURIED = {
 .ba-counter{font:13px/1 'Share Tech Mono',monospace;color:#7f8982;letter-spacing:.1em}
 
 /* ── THE STAGE: the churchyard ───────────────────────────────────────── */
-.ms-ba-plot .earth{fill:#2b241c;stroke:#3d342a;stroke-width:2;transition:opacity .6s}
-.ms-ba-plot .stone{fill:#241f1b;stroke:#4a4038;stroke-width:2}
+.ms-ba-plot .earth{fill:var(--ba-earth,#2b241c);stroke:#1e160e;stroke-width:2;transition:opacity .6s}
+.ms-ba-plot .stone{fill:var(--ba-stone,#241f1b);stroke:#2a2620;stroke-width:1.5}
 .ms-ba-plot .hole{opacity:0;transition:opacity .7s}
 .ms-ba-plot.dug .hole,.ms-ba-plot.found .hole,.ms-ba-plot.up .hole{opacity:1}
 .ms-ba-plot.dug .earth,.ms-ba-plot.found .earth,.ms-ba-plot.up .earth{opacity:.25}

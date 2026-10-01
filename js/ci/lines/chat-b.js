@@ -63,6 +63,21 @@ export const CHAT_B = {
       { by: 'b', send: "Honestly everybody is being nice to everybody. It's scary lol" },
       { by: 'a', send: "Too nice {e:eyes}" },
     ], beat: 'Both of them look at the Circle Chat for a long time after.' },
+    { id: 'chat.pump.neutral.04', turns: [
+      { by: 'a', send: "Okay, spill. Who are you closest with in here?" },
+      { by: 'b', react: "Nice try.", send: "Everybody! I'm a people person lol" },
+      { by: 'a', say: "That's a non-answer if I ever heard one." },
+    ] },
+    { id: 'chat.pump.neutral.05', turns: [
+      { by: 'a', send: "Have you heard anything interesting today?" },
+      { by: 'b', send: "Not really. Quiet day for me" },
+      { by: 'a', react: "Quiet day. In The Circle. Sure." },
+    ], beat: '{a} makes a note to ask someone else.' },
+    { id: 'chat.pump.neutral.06', turns: [
+      { by: 'a', send: "Who do you think is running this place right now?" },
+      { by: 'b', send: "Honestly I can't tell. That's what worries me" },
+      { by: 'a', send: "Same. Keep me posted" },
+    ] },
   ],
   'chat.pump.cold': [
     { id: 'chat.pump.cold.01', turns: [

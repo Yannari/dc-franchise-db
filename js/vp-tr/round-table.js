@@ -2134,8 +2134,12 @@ const MINDCHANGE_MORE = [
 const IRONY_TRUE = [
   'And the room is right — {t} really is a Traitor. They have no proof, but they have the right name.',
   'Correct, even though the reasoning that got them here was wrong.',
-  'They have the right name. Watch how little that is worth in a minute.',
   'True — which at this table is a coincidence more often than it is a deduction.',
+];
+// the same truth, on a name the room then lets go: these two say what is
+// about to happen, so they are only drawn when it does
+const IRONY_TRUE_LOST = [
+  'They have the right name. Watch how little that is worth in a minute.',
   'The room has it. The room will now talk itself out of it.',
 ];
 const IRONY_FALSE = [
@@ -2970,7 +2974,8 @@ function _buildBeats(v) {
       const real = v.truth[c.t];
       const traitorAccusers = c.acc.filter(n => v.truth[n] === 'traitor').length;
       const steered = real === 'faithful' && traitorAccusers * 2 > c.acc.length;
-      const pool = real === 'traitor' ? IRONY_TRUE : (steered ? IRONY_STEER : IRONY_FALSE);
+      const pool = real === 'traitor' ? (v.chosen && v.chosen !== c.t ? IRONY_TRUE_LOST : IRONY_TRUE)
+        : (steered ? IRONY_STEER : IRONY_FALSE);
       const betrayers = c.acc.filter(n => sacrificing.has(n + '>' + c.t));
       const line = betrayers.length
         ? _esc(betrayers[0]) + ' is not agreeing with the room. ' + _esc(betrayers[0])
@@ -3402,7 +3407,7 @@ function _buildBeats(v) {
   // after a table -- so it is the same beat on every observer layer.
   //
   // Not on a finale table, where there is no night after the vote.
-  if (!v.endgame) {
+  if (!v.endgame && !v.noNight) {
     push('verdict', _hostBand(_fill(_pick(HOST_SENDOFF, key + '|sendoff'),
       { kill: _esc(_verbs().doMurder) })), null, { kind: 'sendoff' });
   }
@@ -3953,6 +3958,8 @@ export function rpBuildRoundTable(ep, observer = 'audience') {
   // a different vote — banishing one of those names takes it off the list.
   const v = _view(rec, observer, (ep && ep.tr && ep.tr.trial) || null,
     (ep && ep.tr && ep.tr.strategy) || null);
+  // the endgame follows this table tonight: there is no night to send them to
+  if (v && ep && ep.tr && ep.tr.endgame) v.noNight = true;
   const beats = _buildBeats(v);
   const total = beats.length;
   const epNum = ep.num || v.ep || 0;
@@ -4167,6 +4174,8 @@ export function roundTableStageData(ep, observer = 'audience') {
   _tableUsed = new Set();
   const v = _view(rec, observer, (ep && ep.tr && ep.tr.trial) || null,
     (ep && ep.tr && ep.tr.strategy) || null);
+  // the endgame follows this table tonight: there is no night to send them to
+  if (v && ep && ep.tr && ep.tr.endgame) v.noNight = true;
   const beats = _buildBeats(v);
   const seedEp = v.ep != null ? v.ep : (ep.num || 0);
   const key = 'rt|' + v.ep + '|' + (v.chosen || '');

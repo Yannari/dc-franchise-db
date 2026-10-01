@@ -117,6 +117,7 @@ function planRow(p, autoRole, auto = { rep: 'none', stars: null }) {
   return `<div class="ci-row" data-name="${esc(p.name)}">
     <div class="ci-who">${face(safeAvatar(p), p.name[0])}<div>
       <div class="ci-nm">${esc(p.name)}</div><div class="ci-meta">${esc(p.archetype || '')}${p.age ? ` · ${esc(p.age)}` : ''}</div>
+      <div class="ci-k ci-role-k">When they arrive</div>
       ${seg('role', s.role || '', [['starter', 'Day 1'], ['newcomer', 'Newcomer'], ['', `Decide (${autoRole === 'starter' ? 'Day 1' : 'later'})`]])}</div></div>
     <div class="ci-mid">
       <div class="ci-grp">Who they play</div>
@@ -239,7 +240,8 @@ function planPanel(players, roles, known) {
       const [cls, word] = badgeOf(p.name);
       return `<button type="button" class="ci-ph-who${who && p.name === who.name ? ' on' : ''}" data-act="plan-who" data-v="${esc(p.name)}">
         <div class="ci-ph-ring ci-ring-${cls}"><div class="ci-ph-face"${safeAvatar(p) ? ` style="background-image:url('${esc(safeAvatar(p))}')"` : ''}>${safeAvatar(p) ? '' : esc(p.name[0])}</div></div>
-        <div class="ci-ph-wn">${esc(p.name)}</div><div class="ci-badge ${cls}">${esc(word)}</div></button>`;
+        <div class="ci-ph-wn">${esc(p.name)}</div><div class="ci-badge ${cls}">${esc(word)}</div>
+        <span class="ci-arrive ${roleOf(p)}${setupOf(p.name).role ? ' set' : ''}" data-act="role-flip" data-v="${esc(p.name)}" title="Click to switch Day 1 / Newcomer">${roleOf(p) === 'starter' ? 'DAY 1' : 'NEWCOMER'}${setupOf(p.name).role ? ' ✎' : ''}</span></button>`;
     }).join('') || '<div class="ci-small">Nobody here.</div>'}</div>
     ${who ? `<div class="ci-rows ci-one">${planRow(who, roles[players.indexOf(who)], known[who.name])}</div>` : ''}`}`;
 }
@@ -331,7 +333,8 @@ export function renderCircleCastSetup() {
   root.innerHTML = tabsHTML + (sub === 'plan' ? `
     <div class="ci-panel">
       <div class="ci-phead"><div class="ci-ring"></div><div class="ci-ptitle">THE PROFILE PLAN</div>
-        <div class="ci-pcount">${players.length} players · ${starters} on Day 1 · ${players.length - starters} arrive later · every field optional</div></div>
+        <div class="ci-pcount">${players.length} players · ${starters} on Day 1 · ${players.length - starters} arrive later · every field optional</div>
+        <div class="ci-small">Click the DAY 1 / NEWCOMER chip under a face to switch it (✎ = set by you). Players you leave on Decide fill in the rest to keep about 6 in 10 on Day 1.</div></div>
       ${planPanel(players, roles, known)}
     </div>` : `
     <div class="ci-panel">
@@ -363,6 +366,15 @@ function onClick(ev) {
   const act = b.dataset.act, v = b.dataset.v;
   if (act === 'sub') { window._ciSub = v; window._ciEditing = null; return renderCircleCastSetup(); }
   if (act === 'plan-tab') { window._ciPlanTab = v; window._ciPlanWho = null; return renderCircleCastSetup(); }
+  // The arrival chip under a face: Day 1 <-> Newcomer, there and then.
+  if (act === 'role-flip') {
+    ev.stopPropagation();
+    const players = cast(), roles = circleRoles(players.map(x => x.name), cfg().ciSetup || {});
+    const p = players.find(x => x.name === v);
+    const now = setupOf(v).role || roles[players.indexOf(p)];
+    setupFor(v).role = now === 'starter' ? 'newcomer' : 'starter';
+    return done();
+  }
   if (act === 'plan-who') { window._ciPlanWho = v; window._ciPlanOverview = false; return renderCircleCastSetup(); }
   if (act === 'plan-overview') { window._ciPlanOverview = !window._ciPlanOverview; return renderCircleCastSetup(); }
   if (onPhotosClick(b)) return;

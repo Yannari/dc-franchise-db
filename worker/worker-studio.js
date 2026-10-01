@@ -76,7 +76,7 @@ const VOICE_PATH = 'voice-profiles.json';
 const LIFE_PATH = 'life_events.json';
 const AVATAR_DIR = 'assets/avatars';
 const SLUG_RE = /^[a-z0-9][a-z0-9-]*$/;
-const ROSTER_FIELDS = ['name', 'slug', 'gender', 'sexuality', 'archetype', 'stats', 'voice', 'profileSources', 'continuityNote', 'drag'];
+const ROSTER_FIELDS = ['name', 'slug', 'gender', 'sexuality', 'archetype', 'stats', 'voice', 'profileSources', 'continuityNote', 'drag', 'ties'];
 
 export default {
   async fetch(request, env) {
@@ -693,6 +693,26 @@ function dragToJson(raw) {
   return Object.keys(clean).length ? JSON.stringify(clean) : null;
 }
 
+// Family and ties on the character (js/ties.js): {name, kin, role?}, the
+// Relationships tab's vocabulary. Validated here so a typo cannot become a
+// relation no show reads.
+const TIE_KINDS = new Set(['twins', 'siblings', 'step-siblings', 'parent-child', 'grandparent', 'aunt-uncle', 'cousins',
+  'in-laws', 'married', 'engaged', 'partners', 'dating', 'best-friends', 'childhood-friends', 'old-friends',
+  'roommates', 'colleagues', 'teammates', 'estranged', 'exes', 'ex-friends']);
+const TIE_ROLES = new Set(['parent', 'child', 'grandparent', 'grandchild', 'elder', 'younger']);
+function tiesToJson(raw) {
+  if (raw == null) return null;
+  if (!Array.isArray(raw)) throw new ValidationError('ties must be a list');
+  const out = [];
+  for (const t of raw) {
+    if (!t || typeof t !== 'object') continue;
+    const name = typeof t.name === 'string' ? t.name.trim() : '';
+    if (!name || !TIE_KINDS.has(t.kin)) continue;
+    out.push({ name, kin: t.kin, ...(TIE_ROLES.has(t.role) ? { role: t.role } : {}) });
+  }
+  return out.length ? JSON.stringify(out.slice(0, 40)) : null;
+}
+
 function rosterRowToJson(r) {
   const stats = {};
   for (const k of STAT_KEYS) if (r[k] != null) stats[k] = r[k];
@@ -726,6 +746,14 @@ function rosterRowToJson(r) {
       const drag = JSON.parse(r.drag);
       if (drag && typeof drag === 'object' && !Array.isArray(drag)) out.drag = drag;
     } catch { /* malformed legacy block is omitted rather than published broken */ }
+  }
+  // Family and ties: read back out, or Publish deletes them (the same
+  // reasoning as the continuity note and the craft block above).
+  if (r.ties) {
+    try {
+      const ties = JSON.parse(r.ties);
+      if (Array.isArray(ties) && ties.length) out.ties = ties;
+    } catch { /* malformed ties are omitted rather than published broken */ }
   }
   // The bio, as fields. Published alongside the rest so the static site can ask
   // demographic questions without reaching for D1 — and so the answer on the
@@ -820,6 +848,7 @@ async function rosterSave(env, payload) {
   }
 
   const drag = dragToJson(payload.drag);
+  const ties = tiesToJson(payload.ties);
 
   const d = db(env);
   const existing = await d.prepare('SELECT slug FROM roster WHERE slug = ?').bind(slug).first();
@@ -828,9 +857,9 @@ async function rosterSave(env, payload) {
     `INSERT INTO roster (slug,name,gender,sexuality,archetype,${STAT_KEYS.join(',')},
                          voice,profile_sources,continuity_note,age,birthdate,ethnicity,nationality,
                          hometown,occupation,descriptor,backstory,personality,
-                         casting_interview,drag,
+                         casting_interview,drag,ties,
                          is_returnee,retired,updated_at)
-     VALUES (?,?,?,?,?,${STAT_KEYS.map(() => '?').join(',')},?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now'))
+     VALUES (?,?,?,?,?,${STAT_KEYS.map(() => '?').join(',')},?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now'))
      ON CONFLICT(slug) DO UPDATE SET
        name=excluded.name, gender=excluded.gender, sexuality=excluded.sexuality,
        archetype=excluded.archetype,
@@ -843,7 +872,7 @@ async function rosterSave(env, payload) {
        descriptor=excluded.descriptor, backstory=excluded.backstory,
        personality=excluded.personality,
        casting_interview=excluded.casting_interview,
-       drag=excluded.drag,
+       drag=excluded.drag, ties=excluded.ties,
        is_returnee=excluded.is_returnee,
        retired=excluded.retired, updated_at=datetime('now')`
   ).bind(
@@ -856,7 +885,7 @@ async function rosterSave(env, payload) {
     text(payload.hometown), text(payload.occupation),
     text(payload.descriptor), text(payload.backstory), text(payload.personality),
     text(payload.castingInterview),
-    drag,
+    drag, ties,
     payload.isReturnee ? 1 : 0,
     payload.retired ? 1 : 0,
   ).run();

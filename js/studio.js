@@ -215,6 +215,75 @@ function _wireFamilyLinks(ed, d) {
   });
 }
 
+// ── Family & ties (js/ties.js) ──────────────────────────────────────────
+// Who this character IS to other characters, in the Relationships tab's own
+// words. A fact about the person, not a season: set once here and every show
+// reads it, both ways (set it on one of the two), with the family nobody
+// typed worked out from it. Direction is asked only where the words need it.
+const TIE_GROUPS = [
+  ['Family', [['twins', 'Twins'], ['siblings', 'Siblings'], ['step-siblings', 'Step-siblings'], ['parent-child', 'Parent & child'],
+    ['grandparent', 'Grandparent & grandchild'], ['aunt-uncle', 'Aunt/uncle & niece/nephew'], ['cousins', 'Cousins'], ['in-laws', 'In-laws']]],
+  ['Together', [['married', 'Married'], ['engaged', 'Engaged'], ['partners', 'Partners'], ['dating', 'Dating']]],
+  ['Friends', [['best-friends', 'Best friends'], ['childhood-friends', 'Grew up together'], ['old-friends', 'Friends from before'],
+    ['roommates', 'Lived together'], ['colleagues', 'Worked together'], ['teammates', 'Same team']]],
+  ['History', [['estranged', 'Estranged family'], ['exes', 'Exes'], ['ex-friends', 'Ex-best-friends']]],
+];
+// Who is who, for the relations that have a direction: what THIS character is.
+const TIE_ROLES = {
+  'parent-child': [['parent', 'they are the parent'], ['child', 'they are the child']],
+  grandparent: [['grandparent', 'they are the grandparent'], ['grandchild', 'they are the grandchild']],
+  'aunt-uncle': [['elder', 'they are the aunt/uncle'], ['younger', 'they are the niece/nephew']],
+};
+function _personSelect(selected, self) {
+  const names = [...new Set(_roster().map(r => r && r.name).filter(n => n && n !== self))].sort();
+  return `<option value="">— pick someone —</option>${names.map(n =>
+    `<option value="${_esc(n)}"${n === selected ? ' selected' : ''}>${_esc(n)}</option>`).join('')}`;
+}
+function _renderTies(d) {
+  const ties = (d.ties || []);
+  if (!ties.length) return '<div class="st-hint" style="margin:4px 0 2px">No ties yet.</div>';
+  return ties.map((t, i) => `<div class="st-tie-row" data-idx="${i}" style="display:flex;gap:6px;align-items:center;margin:3px 0;flex-wrap:wrap">
+    <select class="st-input st-tie-name" style="flex:1;min-width:150px">${_personSelect(t.name, d.name)}</select>
+    <select class="st-input st-tie-kin" style="width:210px">${TIE_GROUPS.map(([g, list]) => `<optgroup label="${g}">${list.map(([k, l]) =>
+      `<option value="${k}"${k === t.kin ? ' selected' : ''}>${l}</option>`).join('')}</optgroup>`).join('')}</select>
+    ${TIE_ROLES[t.kin] ? `<select class="st-input st-tie-role" style="width:200px">${TIE_ROLES[t.kin].map(([r, l]) =>
+      `<option value="${r}"${r === (t.role || TIE_ROLES[t.kin][0][0]) ? ' selected' : ''}>${l}</option>`).join('')}</select>` : ''}
+    <button type="button" class="st-btn st-btn-sm st-tie-rm" title="Remove" style="padding:2px 7px">×</button>
+  </div>`).join('');
+}
+function _readTies(container) {
+  const out = [];
+  for (const row of container.querySelectorAll('.st-tie-row')) {
+    const name = (row.querySelector('.st-tie-name')?.value || '').trim();
+    const kin = row.querySelector('.st-tie-kin')?.value || 'siblings';
+    const role = row.querySelector('.st-tie-role')?.value;
+    out.push({ name, kin, ...(TIE_ROLES[kin] ? { role: role && TIE_ROLES[kin].some(([r]) => r === role) ? role : TIE_ROLES[kin][0][0] } : {}) });
+  }
+  return out;
+}
+function _wireTies(ed, d) {
+  const container = ed.querySelector('#st-f-ties');
+  if (!container) return;
+  d.ties = Array.isArray(d.ties) ? d.ties : [];
+  const redraw = () => { container.innerHTML = _renderTies(d); };
+  container.addEventListener('change', e => {
+    d.ties = _readTies(container);
+    // a relation with a direction shows its who-is-who; one without hides it
+    if (e.target.closest('.st-tie-kin')) redraw();
+  });
+  container.addEventListener('click', e => {
+    if (!e.target.closest('.st-tie-rm')) return;
+    e.target.closest('.st-tie-row').remove();
+    d.ties = _readTies(container);
+    redraw();
+  });
+  ed.querySelector('#st-f-ties-add')?.addEventListener('click', () => {
+    d.ties.push({ name: '', kin: 'siblings' });
+    redraw();
+    container.querySelector('.st-tie-row:last-child .st-tie-name')?.focus();
+  });
+}
+
 function _persistRoster(arr) {
   try { window.setFRANCHISE_ROSTER && window.setFRANCHISE_ROSTER(arr); } catch {}
   try { localStorage.setItem('simulator_franchise_roster', JSON.stringify(arr)); } catch {}
@@ -247,6 +316,7 @@ function _blankChar() {
     _editingSlug: null,
     voice:'', avatarDataUri:'', portraits: [], removePortraits: [], stats: Object.fromEntries(STAT_KEYS.map(k => [k, 5])),
     drag: _emptyDrag(),
+    ties: [],
   };
 }
 
@@ -1242,6 +1312,7 @@ async function _editBySlug(slug) {
        nowhere to come back from — and until the `drag` column exists in the
        live database, the roster row is exactly where it has not made it to. */
     drag: { ..._emptyDrag(), ...((rich && rich.drag) || {}), ...(base.drag || {}) },
+    ties: (Array.isArray(base.ties) ? base.ties : Array.isArray(rich && rich.ties) ? rich.ties : []).map(t => ({ ...t })),
     age: pick(base.age, rich && rich.age, parsed.age),
     ethnicity: pick(base.ethnicity, rich && rich.ethnicity, parsed.ethnicity, legacy.ethnicity),
     nationality: pick(base.nationality, rich && rich.nationality, parsed.nationality, legacy.nationality),
@@ -1716,6 +1787,14 @@ function _renderEditor() {
         <div class="st-radar-wrap"><canvas id="st-radar" width="220" height="220"></canvas></div>
       </div>
 
+      <!-- FAMILY & TIES (js/ties.js). Who this character is to other
+           characters. Set once, here, on the person: every show, every season,
+           Dramagram and life after the show read it, both ways, and the family
+           nobody typed (an aunt, a cousin) is worked out from it. -->
+      <div class="st-l">Family &amp; ties <span class="st-hint">siblings, a parent, a spouse, an ex: set it on one of the two, both see it</span></div>
+      <div id="st-f-ties">${_renderTies(d)}</div>
+      <button type="button" class="st-btn st-btn-sm" id="st-f-ties-add" style="margin-bottom:10px">+ Add a tie</button>
+
       <details class="st-drag" id="st-drag-panel"${_hasDrag(d) ? ' open' : ''}>
         <summary>Drag Race — craft <span class="st-hint">only this show reads these</span></summary>
         <div class="st-sliders">${DRAG_KEYS.map(_dragSliderHTML).join('')}</div>
@@ -1989,6 +2068,7 @@ function _renderEditor() {
   }));
   ed.querySelector('#st-f-drag-style')?.addEventListener('change', e => { d.drag.style = e.target.value; });
   _wireFamilyLinks(ed, d);
+  _wireTies(ed, d);
   ed.querySelector('#st-f-drag-traits')?.addEventListener('change', e => {
     if (!e.target.classList.contains('st-trait-cb')) return;
     const box = ed.querySelector('#st-f-drag-traits');
@@ -2852,6 +2932,9 @@ async function _save() {
   // claim every character has a considered craft line, and the roster file is
   // read by hand.
   if (_hasDrag(d)) entry.drag = { ...d.drag, traits: [...(d.drag.traits || [])] };
+  // Family & ties: always sent, so removing the last tie clears it in the
+  // database too (the Worker stores an empty list as NULL).
+  entry.ties = (d.ties || []).filter(t => t && t.name && t.kin && t.name !== d.name).map(t => ({ ...t }));
 
   // 1) live projection into the roster the Cast Builder reads
   const arr = _roster().slice();
@@ -2880,6 +2963,7 @@ async function _save() {
        whether or not `_hasDrag` would send it to the server: this is the local
        draft, and a row of fives here costs nothing and loses nothing. */
     drag: d.drag ? { ...d.drag, traits: [...(d.drag.traits || [])] } : null,
+    ties: entry.ties,
     voice: d.voice, avatarDataUri: d.avatarDataUri || '' };
   try { await _idbPut('characters', rich); } catch {}
   if (d.avatarDataUri) { window.__studioAvatars = window.__studioAvatars || {}; window.__studioAvatars[d.slug] = d.avatarDataUri; }

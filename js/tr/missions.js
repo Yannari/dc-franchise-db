@@ -786,7 +786,7 @@ const CHESS_HELD = [
   'There was a stretch where {who} simply stopped, and the pieces sat there being obvious.',
 ];
 const CHESS_PRESSED = [
-  '{who} put the record back together in front of people who did not know {they} could, and could not stop once {they} had started.',
+  '{who} played the whole game from memory in front of people who did not know {they} could, and could not stop once {they} had started.',
   'The finish came off {who}\'s side of the hall before anybody else had the opening straight.',
   '{who} named the square before the argument about it had properly begun, and then had to sit with having done it.',
   'Whatever {who} had walked in with, it was more than the rest of the hall had, and it showed on the board.',

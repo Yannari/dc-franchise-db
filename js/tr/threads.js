@@ -260,8 +260,15 @@ export function heatAt(t, ep) {
 }
 
 export function openThreadsFor(name, ep) {
+  // ONLY STORIES EVERYBODY IN IS STILL HERE FOR. A thread between somebody and
+  // a player since murdered or banished was continued as a live conversation:
+  // Chef Hatchet, murdered overnight, was saying "Your secret's safe" to Caleb
+  // after breakfast. The dead are mourned by the grief events, which name them
+  // from the record; they are never a party to a scene.
+  const here = new Set(gs.activePlayers || []);
+  const live = t => !here.size || t.parties.every(p => here.has(p));
   return (gs.tr?.threads || [])
-    .filter(t => t.state === 'open' && t.parties.includes(name) && heatAt(t, ep) > 0);
+    .filter(t => t.state === 'open' && t.parties.includes(name) && live(t) && heatAt(t, ep) > 0);
 }
 
 /** The story most worth continuing for this person right now. */

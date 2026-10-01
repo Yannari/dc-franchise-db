@@ -2062,12 +2062,37 @@ describe('a universal claim is evidenced, wired, or it does not ship', () => {
         }
       }
     }
+    // RARE, SO SEARCHED FOR RATHER THAN HOPED FOR. Measured 2026-10-01 at 2
+    // wired sentences in 200 seasons once a romance with a departed partner
+    // stopped being playable (those ghost scenes had been most of the hits).
+    // A twenty-season sample is a coin toss at that rate, so when it comes up
+    // empty the search keeps playing seasons, up to 200, until one prints:
+    // the question is still "is the machinery reachable", asked of enough
+    // seasons to answer it.
+    for (let seed = 91021; wired === 0 && seed <= 91200; seed++) {
+      setPlayers(ROSTER);
+      seedFranchiseHistory(CAST);
+      playTraitorsSeason({ cast: CAST, traitorCount: 3, seed });
+      for (const ep of (gs.episodeHistory || [])) {
+        let html = '';
+        try { html = rpBuildCastleDay(ep, 'audience') || ''; } catch { continue; }
+        const text = _vpTextLines(screenNarration(html)).join(' ');
+        for (const re of WIRED_TEMPLATES) {
+          for (const m of text.matchAll(re)) {
+            wired++;
+            const slot = (m[1] || '').trim();
+            if (!slot || /\{who\}/.test(slot)
+              || /\b(?:everyone|everybody|the whole castle)\b/i.test(slot)) overclaimed.push(m[0].slice(0, 140));
+          }
+        }
+      }
+    }
     // eslint-disable-next-line no-console
     console.log('[tr-castle-prose] consensus wiring: ' + wired + ' wired sentences printed, '
       + evidenced + ' of them reaching the universal form');
     expect(wired,
       'not one of the five sentences routed through api.consensusPhrase reached a '
-      + 'screen in twenty seasons — the machinery is built and unreachable, which is '
+      + 'screen in two hundred seasons — the machinery is built and unreachable, which is '
       + 'the exact failure mode it was wired to close').toBeGreaterThan(0);
     expect(overclaimed.slice(0, 4),
       'a wired sentence printed an unfilled slot or an unevidenced universal').toEqual([]);

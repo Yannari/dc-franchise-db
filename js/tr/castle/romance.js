@@ -164,8 +164,12 @@ function pick(rng, arr) { return arr[Math.floor(rng() * arr.length)]; }
 export function _threadForActors(kind, actors) {
   const threads = gs.tr?.threads || [];
   const names = actors || [];
+  // both of them still here: a romance with somebody since murdered or
+  // banished is grief, not a scene (Chet, gone, was still carrying Blaineley's bag)
+  const here = new Set(gs.activePlayers || []);
+  const live = t => !here.size || t.parties.every(p => here.has(p));
   const matches = threads.filter(t => t.state === 'open' && t.kind === kind
-    && names.some(n => t.parties.includes(n)));
+    && names.some(n => t.parties.includes(n)) && live(t));
   if (!matches.length) return null;
   return matches.reduce((a, b) => (b.lastEp > a.lastEp ? b : a));
 }
@@ -185,7 +189,9 @@ export function _threadForActors(kind, actors) {
 export const MAX_ACTIVE_ROMANCES = 4;
 export function _activeRomanceCount() {
   const threads = gs.tr?.threads || [];
-  return threads.filter(t => t.state === 'open' && (t.kind === SPARK_KIND || t.kind === SHOWMANCE_KIND)).length;
+  const here = new Set(gs.activePlayers || []);
+  return threads.filter(t => t.state === 'open' && (t.kind === SPARK_KIND || t.kind === SHOWMANCE_KIND)
+    && (!here.size || t.parties.every(p => here.has(p)))).length;
 }
 
 // ── REWRITE (Task 7 stage 6). TOP OF THE BLAME TABLE after batch 1, at 12 of

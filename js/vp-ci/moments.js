@@ -208,4 +208,40 @@ function studioStage(row, screen, idx, fresh) {
     ${where('THE FINALE · LIVE')}${dlg(row, st, fresh)}</div>`;
 }
 
-export const MOMENTS = { game: gameStage, rate: rateStage, hangout: hangoutStage, blocked: blockedStage, room: roomStage, video: videoStage, studio: studioStage };
+// ── THE NEWSFEED ───────────────────────────────────────────────────────
+// This morning's posts and the likes they got: hidden until the first line,
+// then counted up and ranked, the most-liked crowned, a post nobody liked
+// left at zero. The lines on this screen talk about exactly this board.
+function postsOf(row) {
+  const out = {};
+  for (const s of row.ci.aired || []) {
+    if (s.kind !== 'status') continue;
+    const l = (s.script?.blocks || []).flatMap(b => b.lines || []).find(x => x.kind === 'post' && x.text);
+    if (l && s.who?.[0]) out[s.who[0]] = l.text;
+  }
+  return out;
+}
+function feedStage(row, screen, idx, fresh) {
+  const st = idx >= 0 ? screen.steps[idx] : null;
+  const counts = screen.d?.counts || {};
+  const posts = postsOf(row);
+  const shown = idx >= 0;
+  const who = Object.keys(counts).filter(h => row.ci.profiles?.[h]);
+  const order = shown ? [...who].sort((a, b) => counts[b] - counts[a] || nameOf(row, a).localeCompare(nameOf(row, b))) : who;
+  const top = shown && order.length ? counts[order[0]] : null;
+  const talking = st?.who || null;
+  const cards = order.map((h, i) => {
+    const n = counts[h] || 0;
+    const cls = [shown && n === top && n > 0 ? 'top' : '', shown && n === 0 ? 'zero' : '', h === talking ? 'talk' : ''].join(' ');
+    const url = faceUrl(faceOf(row, h, 'profile'));
+    return `<div class="civ-fpost ${cls}" style="--ring:${ringOf(row, h)};--i:${i}">
+      <div class="ph"${bg(url)}>${url ? '' : esc(nameOf(row, h)[0] || '?')}</div>
+      <div class="bd"><div class="nm">${esc(nameOf(row, h).toUpperCase())}${shown && n === top && n > 0 ? '<span class="civ-fcrown">♛ MOST LIKES</span>' : ''}</div>
+        <div class="tx">${posts[h] ? hashify(posts[h]) : '<i>posted this morning</i>'}</div></div>
+      <div class="lk${fresh && shown && idx === 0 ? ' count' : ''}"><span class="hrt">♥</span><b>${shown ? n : '?'}</b></div></div>`;
+  }).join('');
+  return `<div class="civ-layer civ-feedb">${bgUi}<div class="civ-fhd">THE NEWSFEED<small>This morning's posts · likes</small></div>
+    <div class="civ-fgrid">${cards}</div>${where('THE NEWSFEED')}${dlg(row, st, fresh)}</div>`;
+}
+
+export const MOMENTS = { feed: feedStage, game: gameStage, rate: rateStage, hangout: hangoutStage, blocked: blockedStage, room: roomStage, video: videoStage, studio: studioStage };

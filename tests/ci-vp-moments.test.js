@@ -127,3 +127,18 @@ describe('the finale studio', () => {
     }
   });
 });
+
+describe('the Newsfeed board', () => {
+  it('draws every post with its likes, hidden until the first line, then ranked with the top crowned', async () => {
+    const { likeCounts } = await import('../js/ci/season.js');
+    expect(likeCounts({ a: ['b', 'c'], b: ['c'], c: [] })).toEqual({ a: 0, b: 1, c: 2 });
+    const x = all.find(x => x.screen.kind === 'likes');
+    expect(x.screen.stage).toBe('feed');
+    const before = stageInner(x.row, x.screen, -1, false);
+    expect(before).toMatch(/<b>\?<\/b>/);
+    const after = stageInner(x.row, x.screen, 0, true);
+    expect(after).toMatch(/MOST LIKES/);
+    expect(after).not.toMatch(/<b>\?<\/b>/);
+    expect((after.match(/civ-fpost/g) || []).length).toBe(Object.keys(x.screen.d.counts).length);
+  });
+});

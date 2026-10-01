@@ -404,7 +404,11 @@ const BLOCKS = {
       ...(reader ? [{ key: 'status.react', cast: { a: reader, b: a } }] : [])];
   },
   likes(state, s) {
-    const counts = Object.entries(state.likesCount || {}).filter(([h]) => s.who.includes(h)).sort((x, y) => y[1] - x[1]);
+    // From the scene's own record (the board draws the same counts), not the
+    // live counter, which a later morning has already replaced.
+    const tally = {};
+    for (const [h, liked] of Object.entries(s.data.likes || {})) { tally[h] ??= 0; for (const o of liked || []) tally[o] = (tally[o] || 0) + 1; }
+    const counts = Object.entries(tally).filter(([h]) => s.who.includes(h)).sort((x, y) => y[1] - x[1]);
     const out = counts.length ? [{ key: 'likes.most', cast: { a: counts[0][0] } }] : [];
     const none = counts.find(([, n]) => n === 0);
     if (none) out.push({ key: 'likes.none', cast: { a: none[0] } });

@@ -69,12 +69,20 @@ const board = d => ({ ballots: (d.ballots || []).map(b => ({ voter: b.voter, ord
   results: (d.results || []).map(r => ({ profile: r.profile, place: r.place })), influencers: d.influencers || [] });
 const BEAT_KEEP = new Set(['phase', 'round', 'kind', 'by', 'about', 'c', 'n', 'answer', 'right', 'promptId', 'factId', 'qid',
   'tone', 'qkind', 'anon', 'tier', 'split', 'strong', 'everyone', 'mutual', 'many', 'warm', 'off']);
+/** Likes received, from a likes scene's record (liker -> the profiles they liked). */
+export function likeCounts(likes = {}) {
+  const out = {};
+  for (const [h, liked] of Object.entries(likes || {})) { out[h] ??= 0; for (const o of liked || []) out[o] = (out[o] || 0) + 1; }
+  return out;
+}
 export const STAGE_DATA = {
   ratings: board, 'final-ratings': board,
   hangout: d => ({ atRisk: d.atRisk || [], target: d.target ?? null }),
   blocking: d => ({ target: d.target ?? null, by: d.by || [], channel: d.channel || null, secret: !!d.secret }),
   reveal: d => ({ placements: (d.placements || []).map(p => ({ profile: p.profile, place: p.place })) }),
   party: d => ({ theme: d.theme, props: d.props || [] }),
+  // The Newsfeed: how many likes each player's post got this morning.
+  likes: d => ({ counts: likeCounts(d.likes) }),
   // A game's beats, trimmed to what a board draws (js/vp-ci/boards.js).
   game: d => ({ gameId: d.gameId, family: d.family, beats: (d.beats || []).map(b =>
     Object.fromEntries(Object.entries(b).filter(([k, v]) => BEAT_KEEP.has(k) && v != null && v !== false))) }),

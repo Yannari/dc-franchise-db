@@ -12,7 +12,7 @@ import { GAMES } from './games-data.js';
 
 export const TITLES = {
   profiles: 'Setting up the profiles', recognise: 'A face they know', status: 'Status update',
-  likes: 'The Newsfeed', chat: 'Private chat', 'circle-chat': 'Circle Chat', arrival: 'A new Player', welcome: 'Welcome to The Circle', 'group-chat': 'A group chat', audience: 'The audience votes',
+  likes: 'The Newsfeed', chat: 'Private chat', 'circle-chat': 'Circle Chat', arrival: 'A new Player', welcome: 'Welcome to The Circle', 'group-chat': 'A group chat', audience: 'America votes',
   'after-party': 'The after-party', ratings: 'The Ratings', hangout: 'The Hangout', alert: 'An alert', save: 'A save', offer: 'The offer', plead: 'The last two', vote: 'The vote', statement: 'Who would you block?', antivirus: 'The antivirus', date: 'A date', invites: 'The invitations', race: 'The race to message', newparty: "The newcomer's party", lurk: 'Watching in secret', chosen: 'Chosen by the Influencers', 'pair-arrival': 'Two new Players', 'power-reveal': 'News from the Circle', hack: 'The Hacker', 'hack-undone': 'Comparing notes', 'joker-chat': 'The Joker', 'joker-pick': "The Joker's pick", 'burner-exposed': 'The burner', 'no-block': 'No blocking', mission: 'A secret task', disrupter: 'First to respond', swap: 'The profile swap', 'swap-back': 'The swap ends', clone: 'The clone', 'ride-or-die': 'Ride or Die', sacrifice: 'Ride or Die: the choice', 'second-chance': 'A second chance', egg: 'The eggs',
   blocking: 'The blocking', visit: 'The visit', report: 'What the visit "said"', goodbye: 'The goodbye video',
   'final-ratings': 'The final ratings', meet: 'The finalists meet', reveal: 'The winner',
@@ -112,6 +112,8 @@ export function dayText(state, row) {
 export function castText(state) {
   return Object.values(state.profiles).map(p => {
     const real = realName(state, p.handle);
+    // The clone twist: a blocked player back as a copy of a profile still in.
+    if (p.clone) return `  ${real} — back after being blocked, as a copy of ${state.profiles[p.clone]?.shown?.name || p.shown.name} (the clone)`;
     if (p.mode === 'catfish') return `  ${real} — playing as ${p.shown.name}, ${p.shown.age} (catfish, ${p.reason || 'no reason given'})`;
     if (p.mode === 'shared') return `  ${real} — sharing one profile as ${p.shown.name}`;
     if (p.mode === 'edited') return `  ${real} — as themselves, but edited (${p.edits.join(', ')})`;

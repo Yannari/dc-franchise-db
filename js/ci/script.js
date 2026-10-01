@@ -34,7 +34,7 @@ export const FACT_KEYS = ['time', 'intent', 'ending', 'result', 'known', 'early'
   'hurt', 'influencer', 'reason', 'motive', 'mode', 'reasonKind', 'band', 'kiss', 'claim', 'lie',
   'tone', 'party', 'final', 'slip', 'noticed', 'place', 'self', 'likesC', 'misread', 'anon',
   'answer', 'strong', 'split', 'qkind', 'right', 'off', 'odd', 'failed', 'barbed', 'slipped', 'mutual', 'warm',
-  'everyone', 'fresh', 'tier', 'many', 'jab', 'register', 'crack', 'sole', 'blocks', 'infl'];
+  'everyone', 'fresh', 'tier', 'many', 'jab', 'register', 'crack', 'sole', 'blocks', 'infl', 'warnKind'];
 
 export const hostName = () => showWords('the-circle').host || 'Host';
 
@@ -117,6 +117,11 @@ export const USED_DECAY = 0.12;
 // days it was not enough: visits are days apart.
 export const RECENT = 0.01;
 const poolKey = key => (Array.isArray(key) ? key.join('+') : key);
+// The same sentence written into two pools ("Please don't be me. Please don't
+// be me." is in three): the same-day rule goes by the words too, not only by
+// the entry, so a day never hears it twice.
+// Line by line: two exchanges can share one line ("Thank-you note: you're the best").
+const wordsOf = e => (e.turns || []).flatMap(t => [t.say, t.react, t.send, t.video]).filter(x => x && x.length > 12);
 
 export function pickEntry(state, key, facts, pairKey, rng, speaker = null) {
   // A list of keys merges pools: a game's own lines (weighted up) with its
@@ -126,21 +131,29 @@ export function pickEntry(state, key, facts, pairKey, rng, speaker = null) {
   const u = usage(state);
   const fits = pool.filter(e => matches(e.when, facts));
   const recent = (u.recent ||= {})[poolKey(key)] || [];
+  const speakers = [].concat(speaker || []);
   const scored = fits.map(e => {
     // A line written for the speaker's register is how they sound: it wins clearly.
     const spec = Object.keys(e.when || {}).reduce((n, k) => n + (k === 'register' ? 4 : 1), 0) + (e.id.startsWith('g.') ? 1 : 0);
     const uses = u.uses[e.id] || 0;
     const samePair = (u.pairs[e.id] || []).includes(pairKey);
-    const today = (u.day || {})[e.id] === state.day ? SAME_DAY : recent.includes(e.id) ? RECENT : 1;
+    const today = (u.day || {})[e.id] === state.day || wordsOf(e).some(w => (u.words || {})[w] === state.day) ? SAME_DAY
+      : recent.includes(e.id) ? RECENT : 1;
     // One person saying the same sentence twice in a season reads as a bug,
     // whoever they say it to (a register's lines win often, so this matters).
-    const said = speaker && (u.by?.[e.id] || []).includes(speaker) ? SAID_AGAIN : 1;
+    // Both sides of an exchange: the reply ("Absolutely not.") repeats as surely as the line.
+    const said = speakers.some(sp => (u.by?.[e.id] || []).includes(sp)) ? SAID_AGAIN : 1;
     return [e, samePair ? 0 : (1 + spec) * Math.pow(USED_DECAY, uses) * today * said];
   });
+  // Held back means held back: a worn pool's decay is as steep as RECENT, so
+  // while a fresh-enough line has any weight, the recent ones get none.
+  if (scored.some(([e, w]) => w > 0 && !recent.includes(e.id))) for (const x of scored) if (recent.includes(x[0].id)) x[1] = 0;
   let total = scored.reduce((s, [, w]) => s + w, 0);
   // Everything that fits has been used on this pair: take the least-used fit.
   if (!total) {
-    const e = fits.sort((x, y) => (u.uses[x.id] || 0) - (u.uses[y.id] || 0))[0] || pool.find(p => !p.when);
+    // ...not heard today first (by its words too), then the least used.
+    const heardToday = x => ((u.day || {})[x.id] === state.day || wordsOf(x).some(w => (u.words || {})[w] === state.day)) ? 1 : 0;
+    const e = fits.sort((x, y) => heardToday(x) - heardToday(y) || (u.uses[x.id] || 0) - (u.uses[y.id] || 0))[0] || pool.find(p => !p.when);
     return note(state, e, pairKey, speaker, key, pool.length);
   }
   let r = rng() * total;
@@ -156,9 +169,10 @@ function note(state, e, pairKey, speaker, key = null, size = 0) {
     r.push(e.id);
     r.splice(0, Math.max(0, r.length - Math.max(1, size >> 1)));
   }
-  if (speaker) ((u.by ||= {})[e.id] ||= []).push(speaker);
+  for (const sp of [].concat(speaker || [])) ((u.by ||= {})[e.id] ||= []).push(sp);
   u.uses[e.id] = (u.uses[e.id] || 0) + 1;
   (u.day ||= {})[e.id] = state.day;
+  for (const w of wordsOf(e)) (u.words ||= {})[w] = state.day;
   (u.pairs[e.id] ||= []).push(pairKey);
   return e;
 }
@@ -407,10 +421,15 @@ const BLOCKS = {
   chat(state, s) {
     const [a, b] = s.who;
     const c0 = s.data.claims?.length ? claimOf(state, s.data.claims[0]) : null;
-    // A jealous chat is about the rival the crush flirted with (party.js).
+    // A jealous chat is about the rival the crush flirted with (party.js); a
+    // morning-after chat about who they are discussing (chat.js debriefTopic).
+    const morningAfter = s.data.intent === 'defend' || s.data.intent === 'debrief';
     const c = s.data.intent === 'jealous' ? s.data.rival || undefined
+      : morningAfter ? s.data.about || undefined
       : c0 ? (c0.about === a || c0.about === b ? c0.holder : c0.about) : undefined;
-    let key = s.data.intent === 'probe'
+    let key = s.data.intent === 'debrief'
+      ? `chat.debrief.${s.data.topic}${s.data.topic === 'warning' && s.data.ending !== 'neutral' ? `.${s.data.stance}` : ''}.${s.data.ending}`
+      : s.data.intent === 'probe'
       ? `chat.probe.${s.data.probes?.[0]?.result || 'pass'}`
       // a catfish flirting in character, with nothing real behind it: its own lines
       : s.data.performed ? `chat.flirt.act.${s.data.ending}` : `chat.${s.data.intent}.${s.data.ending}`;
@@ -428,7 +447,7 @@ const BLOCKS = {
       }
     }
     const personA = s.data.lead && state.profiles[a]?.players.length > 1 ? s.data.lead : undefined;
-    const out = [{ key, cast: { a, b, c, personA, ...(text ? { text } : {}) }, extra: { claim: c0?.kind, lie: c0 ? c0.origin.by === a && !c0.truth : false } }];
+    const out = [{ key, cast: { a, b, c, personA, ...(text ? { text } : {}) }, extra: { claim: c0?.kind, lie: c0 ? c0.origin.by === a && !c0.truth : false, warnKind: s.data.kind || undefined } }];
     for (const sl of s.data.slips || []) {
       const listener = sl.noticedBy[0] || (sl.by === a ? b : a);
       // A voice slip with an author's leak shows the words themselves.
@@ -549,6 +568,28 @@ const BLOCKS = {
   'group-chat'(state, s) {
     const [a, b, c] = s.who;
     const x = s.data.name;
+    // The group chats that are not alliances (groupchats.js).
+    if (s.data.event === 'squad') {
+      const [f, ...rest] = s.who;
+      const out = [{ key: 'group.squad.open', cast: { a: f, b: rest[0], c: rest[1] || rest[0], text: { game: x } } },
+        { key: 'group.squad.banter', cast: { a: rest[0], b: rest[1] || f, c: f } }];
+      const sh = (s.data.shared || [])[0];
+      if (sh) out.push({ key: 'group.squad.share', cast: { a: sh.by, b: s.who.find(h => h !== sh.by), c: sh.about } });
+      return out;
+    }
+    if (s.data.event === 'peace') {
+      const { mediator: m, pair: [p, q] } = s.data;
+      return [{ key: 'group.peace.open', cast: { a: m, b: p, c: q } },
+        { key: `group.peace.${s.data.ending}`, cast: { a: p, b: q, c: m } }];
+    }
+    if (s.data.event === 'plan') {
+      const { by: f, target: t } = s.data;
+      const asked = s.who.filter(h => h !== f);
+      const out = [{ key: 'group.plan.pitch', cast: { a: f, b: asked[0], c: t } }];
+      for (const h of asked) out.push({ key: s.data.agreed.includes(h) ? 'group.plan.agree' : 'group.plan.decline', cast: { a: h, b: f, c: t } });
+      if (s.data.agreed.length) out.push({ key: 'group.plan.seal', cast: { a: f, b: s.data.agreed[0], c: t } });
+      return out;
+    }
     // An alliance coming apart (alliances.js): treason, a double agent, a walk-out.
     if (s.data.event === 'kick') return [{ key: 'group.kick', cast: { a: s.data.by[0], b: s.data.kicked, text: { game: x } } }];
     if (s.data.event === 'confront') return [{ key: `group.confront.${s.data.kicked ? 'out' : 'stay'}`, cast: { a: s.data.by, b: s.data.agent, text: { game: x, q: s.data.other } } }];
@@ -697,8 +738,10 @@ const BLOCKS = {
   },
   // Identity twists (Plan 3b Task 9b).
   swap(state, s) {
+    // Written after the swap: whoever is behind A now was behind B this
+    // morning, so each is told about the profile they now hold ({b} = a).
     const [A, B] = s.data.handles;
-    return [{ key: 'swap.told', cast: { a: A, b: B } }, { key: 'swap.told', cast: { a: B, b: A } }];
+    return [{ key: 'swap.told', cast: { a: A, b: A } }, { key: 'swap.told', cast: { a: B, b: B } }];
   },
   'swap-back'(state, s) { return s.data.handles.map(h => ({ key: 'swap.back', cast: { a: h } })); },
   clone(state, s) {
@@ -1131,6 +1174,21 @@ export function sceneBlocks(state, scene) {
 export const ON_STAGE = new Set(['ratings', 'final-ratings', 'hangout', 'blocking', 'visit', 'meet', 'reveal', 'goodbye']);
 
 export function writeScene(state, scene) {
+  // Who is behind each profile is read as of this scene (state.js peopleOf).
+  state._writing = scene.id;
+  try {
+    const out = writeSceneNow(state, scene);
+    // A swapped profile: the line says who was really typing ("IVY (for RIPPER)").
+    for (const b of scene.script?.blocks || []) for (const l of b.lines || []) {
+      const p = l.who && state.profiles[l.who];
+      if (!p?.home || l.person) continue;
+      const now = peopleOf(state, l.who);
+      if (now.join('|') !== p.home.join('|')) l.person = now[0].split(' ')[0];
+    }
+    return out;
+  } finally { state._writing = null; }
+}
+function writeSceneNow(state, scene) {
   const blocks = [];
   // Who has already said hello to the group in this scene (an authored greeting).
   const ctx = { kind: scene.kind, scene, greeted: new Set() };
@@ -1139,7 +1197,7 @@ export function writeScene(state, scene) {
     const facts = { ...factsFor(state, scene, b.cast), ...extra };
     const rng = streamFor(state.seed, `line:${scene.id}:${i}`);
     const pairKey = b.pairKey || [b.cast.a, b.cast.b, b.cast.c].filter(Boolean).sort().join('|');
-    const entry = pickEntry(state, b.keys || b.key, facts, pairKey, rng, b.cast.a);
+    const entry = pickEntry(state, b.keys || b.key, facts, pairKey, rng, [b.cast.a, b.cast.b].filter(h => typeof h === 'string'));
     if (!entry) { (state.missingPools ||= {})[b.key] = (state.missingPools[b.key] || 0) + 1; return; }
     const from = b.keys ? entry.id.replace(/\.[^.]+$/, '') : b.key;
     // The big moments' screens need to know who each block is about (the
@@ -1177,7 +1235,7 @@ export const MIDDLES_PER_NIGHT = 3;
 // How many chats open with a hello, and close with a sign-off (chat-depth.js).
 export const HELLO_SHARE = 70;
 export const CLOSE_SHARE = 75;
-const SERIOUS_CHATS = new Set(['confront', 'repair', 'probe', 'compare', 'confess', 'jealous', 'plant', 'pump']);
+const SERIOUS_CHATS = new Set(['confront', 'repair', 'probe', 'compare', 'confess', 'jealous', 'plant', 'pump', 'defend', 'debrief']);
 // How often a pair's time alone in the apartment is the two of them together.
 export const PAIR_LIFE = 50;
 // How many chats end with a word to the empty apartment (lines/asides.js).
@@ -1262,7 +1320,12 @@ function bridge(state, aired) {
 
 // Every pool key sceneBlocks can ask for — the writing backlog, and what the
 // coverage guard checks (tests/ci-lines.test.js).
-const INTENTS_ = ['bond', 'ally', 'flirt', 'pump', 'compare', 'plant', 'credit', 'repair', 'confront', 'checkin', 'pitch', 'confess', 'jealous'];
+const INTENTS_ = ['bond', 'ally', 'flirt', 'pump', 'compare', 'plant', 'credit', 'repair', 'confront', 'checkin', 'pitch', 'confess', 'jealous', 'defend'];
+// The morning after (chat.js debriefTopic): a topic, and for a warning whether the opener buys it.
+const DEBRIEF_KEYS_ = [
+  ...['agree', 'doubt'].flatMap(st => ['warm', 'cold'].map(e => `chat.debrief.warning.${st}.${e}`)), 'chat.debrief.warning.neutral',
+  ...['blocked', 'ratings'].flatMap(t => ['warm', 'neutral', 'cold'].map(e => `chat.debrief.${t}.${e}`)),
+];
 const REASONS_ = ['affection', 'trust', 'obligation', 'pact', 'alliance', 'protection', 'threat', 'suspicion', 'grudge', 'deserves'];
 const SLIPS_ = ['knowledge', 'body', 'voice', 'tooPerfect', 'overreach', 'name'];
 const MOTIVES_ = ['friend', 'answers', 'truth', 'apology'];
@@ -1273,13 +1336,16 @@ export const POOL_KEYS = [
   'alert.audience-block', 'alert.audience-immunity', 'audience.open.block', 'audience.open.immunity', 'audience.wait', 'audience.wait.immunity', 'audience.result.block', 'audience.result.immunity', 'audience.react.saved', 'audience.react.blocked', 'audience.react.immune', 'audience.react.missed', 'block.announce.audience',
   // a chat that builds (lines/chat-depth.js)
   'chat.hello', 'chat.hello.serious', 'chat.hello.cool', 'chat.close.warm', 'chat.close.neutral', 'chat.deep',
+  // the group chats that are not alliances (lines/groupchats.js)
+  'group.squad.open', 'group.squad.banter', 'group.squad.share', 'group.peace.open', 'group.peace.warm', 'group.peace.neutral', 'group.peace.cold',
+  'group.plan.pitch', 'group.plan.agree', 'group.plan.decline', 'group.plan.seal',
   // alliances and their group chats (lines/alliances.js)
   'group.form.pitch', 'group.form.name', 'group.form.declined', 'group.form.fizzle', 'group.check.open', 'group.check.share', 'group.check.plan', 'alliance.betrayed', 'alliance.betrayed.self', 'group.kick', 'group.confront.out', 'group.confront.stay', 'group.leave',
   // the room takes in a newcomer (lines/arrivals-room.js)
   'arrival.alert', 'arrival.react.crush', 'arrival.react.threat', 'arrival.react.suspicious', 'arrival.react.ally', 'arrival.react.worried', 'welcome.warm', 'welcome.neutral', 'welcome.cold',
   // the suspense before the name (lines/blocking-build.js)
   'hangout.sealed', 'hangout.solo.sealed', 'block.build.open', 'block.build.open.solo', 'block.build.clue.fake', 'block.fear.fake', 'block.build.clue.threat', 'block.fear.threat', 'block.build.clue.grudge', 'block.fear.grudge', 'block.build.clue.noBond', 'block.fear.noBond', 'block.build.clue.offer', 'block.fear.offer', 'block.fear.dots',
-  ...INTENTS_.flatMap(i => ['warm', 'neutral', 'cold'].map(e => `chat.${i}.${e}`)),
+  ...INTENTS_.flatMap(i => ['warm', 'neutral', 'cold'].map(e => `chat.${i}.${e}`)), ...DEBRIEF_KEYS_,
   ...['pass', 'dodge', 'fail'].map(r => `chat.probe.${r}`),
   ...['warm', 'neutral', 'cold'].map(e => `chat.flirt.act.${e}`),
   ...['schemer', 'sweet', 'romantic', 'wild', 'watcher'].flatMap(g => ['warm', 'neutral', 'cold'].map(e => `aside.${g}.${e}`)),

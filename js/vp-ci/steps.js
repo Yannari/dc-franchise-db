@@ -64,7 +64,10 @@ export function circleScreens(row) {
       if (arrive && steps[first]) steps[first].entry = true;
     }
     const cast = [...new Set([...(s.who || []), ...steps.map(x => x.who).filter(Boolean), ...(s.about ? [s.about] : [])])].filter(h => row.ci.profiles?.[h]);
-    return { id: s.id || `s${si}`, kind: s.kind, stage: stageOf(s.kind), ...(s.d ? { d: s.d } : {}), who: s.who || [],
+    // On a profile-swap day, who was behind each profile when this scene aired.
+    const rowView = s.people ? { ...row, ci: { ...row.ci, profiles: Object.fromEntries(Object.entries(row.ci.profiles || {})
+      .map(([h, p]) => [h, s.people[h] ? { ...p, people: s.people[h] } : p])) } } : null;
+    return { id: s.id || `s${si}`, kind: s.kind, stage: stageOf(s.kind), ...(s.d ? { d: s.d } : {}), who: s.who || [], ...(rowView ? { rowView } : {}),
       title: g ? `A game: ${g.name}` : TITLES[s.kind] || s.kind, cast, steps };
   });
 }

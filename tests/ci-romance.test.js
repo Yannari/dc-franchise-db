@@ -53,7 +53,14 @@ describe('the morning after', () => {
   });
   it('ends every way, and the lines name the rival', () => {
     const chats = scenes.filter(x => x.sc.kind === 'chat' && x.sc.data.intent === 'jealous');
-    expect(new Set(chats.map(x => x.sc.data.ending)).size).toBe(3);
+    // A cold ending is about one jealous chat in nine (6 of 56 over twenty
+    // seasons), so five seasons can miss it: the endings are counted over more.
+    const more = [6, 7, 8, 9, 10, 11, 12].flatMap(seed => {
+      const cast = rosterCast(12, seed); setPlayers(cast); const names = cast.map(p => p.name);
+      return playCircleSeason({ cast: names, setup: circleSetup(names), pool: DEFAULT_POOL, seed }).state.scenes
+        .filter(s => s.kind === 'chat' && s.data.intent === 'jealous');
+    });
+    expect(new Set([...chats.map(x => x.sc.data.ending), ...more.map(s => s.data.ending)]).size).toBe(3);
     const aired = chats.filter(x => x.sc.aired);
     expect(aired.length).toBeGreaterThan(2);
     for (const { sc, state } of aired) {

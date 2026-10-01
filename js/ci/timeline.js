@@ -27,6 +27,10 @@ export const NIGHT_DRAWS = {
   last: [['standard', 6], ['super', 3]],
 };
 
+// A special format already used this season is that much less likely again:
+// drawn night by night, a season could run America's Save twice in three days.
+export const SEEN_AGAIN = 0.3;
+
 export function positionOf(i, n) {
   if (i === 0) return 'first';
   if (i === n - 1) return 'last';
@@ -60,7 +64,10 @@ function weighted(rng, options) {
 }
 
 /** The schedule with `night` on every blocking day (and days a double gave back). */
-export function bookSeason(schedule, rng, { total, finalists = 5, bookings = {} } = {}) {
+// `fixed`: the timeline already holds a drawn season (the Randomize button,
+// ci-run.js circleRandomDraw), so nothing more is drawn behind the author's
+// back: no extra power, twist or disrupter the timeline does not show.
+export function bookSeason(schedule, rng, { total, finalists = 5, bookings = {}, fixed = false } = {}) {
   const out = schedule.map(d => ({ ...d }));
   // Twists that change how many must be blocked, placed first: a second
   // chance brings one profile back (+1); an egg twist blocks a newcomer on
@@ -81,6 +88,7 @@ export function bookSeason(schedule, rng, { total, finalists = 5, bookings = {} 
   const nights = out.filter(d => d.block);
   const n = nights.length;
   let need = total - finalists, removed = 0;
+  const used = new Set();
   nights.forEach((d, i) => {
     if (!d.block) return;                          // given back to a double earlier
     for (const e of deltas.filter(x => !x.applied && x.day <= d.day)) {
@@ -109,13 +117,15 @@ export function bookSeason(schedule, rng, { total, finalists = 5, bookings = {} 
     // behind), on record, never a surprise draw.
     else if (bookedId) night = { format: mustDouble && fits('double') ? 'double' : 'standard', fellBack: booked || bookedId };
     else {
-      const options = (NIGHT_DRAWS[ctx.position] || [['standard', 1]]).filter(([f]) => fits(f));
+      const options = (NIGHT_DRAWS[ctx.position] || [['standard', 1]]).filter(([f]) => fits(f))
+        .map(([f, w]) => [f, f !== 'standard' && used.has(f) ? w * SEEN_AGAIN : w]);
       night = { format: options.length ? weighted(rng, options) : mustDouble ? 'double' : 'standard' };
     }
     night.position = ctx.position;
+    used.add(night.format);
     const bookedPower = ids.map(powerOfTwist).find(Boolean);
     if (bookedPower) night.power = bookedPower;
-    else if ((ctx.position === 'middle' || ctx.position === 'late') && rng() < POWER_DRAWS.chance) night.power = weighted(rng, POWER_DRAWS.kinds);
+    else if (!fixed && (ctx.position === 'middle' || ctx.position === 'late') && rng() < POWER_DRAWS.chance) night.power = weighted(rng, POWER_DRAWS.kinds);
     d.night = night;
     // Give back the later nights the season no longer needs (latest first,
     // never the last): a double ahead of schedule frees one; a double that
@@ -130,7 +140,7 @@ export function bookSeason(schedule, rng, { total, finalists = 5, bookings = {} 
   // Disrupter alerts (US 7): booked on a day, or drawn on some social days.
   for (const d of out) {
     if (d.block || d.final || d.finale || d.day === 1) continue;
-    if (idsAt(bookings, d.slot).includes('ci-disrupter') || (d.slot.startsWith('social') && rng() < DISRUPTER_CHANCE)) d.disrupter = true;
+    if (idsAt(bookings, d.slot).includes('ci-disrupter') || (!fixed && d.slot.startsWith('social') && rng() < DISRUPTER_CHANCE)) d.disrupter = true;
   }
   // Identity twists (spec 14): booked on a day, or drawn now and then.
   let rodDrawn = false;
@@ -139,6 +149,7 @@ export function bookSeason(schedule, rng, { total, finalists = 5, bookings = {} 
     if (d.twist || d.twistFellBack) continue;       // placed in the first pass
     const booked = idsAt(bookings, d.slot).map(twistOfId).find(Boolean);
     if (booked) { d.twist = booked; continue; }
+    if (fixed) continue;
     if (d.slot.startsWith('social') && rng() < TWIST_DRAWS.swap) d.twist = 'swap';
     else if (d.block && d.night?.position === 'middle' && rng() < TWIST_DRAWS.clone) d.twist = 'clone';
     else if (!rodDrawn && d.day <= Math.ceil(out.length / 2) && rng() < TWIST_DRAWS['ride-or-die']) { d.twist = 'ride-or-die'; rodDrawn = true; }

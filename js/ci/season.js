@@ -20,13 +20,14 @@ import { formAlliance, checkIn, activeAlliances, afterRatings, doubleAgents, dri
 import { gs, setGs, players } from '../core.js';
 import { streamFor } from '../dr/rng.js';
 import { CIRCLE_FORMAT } from '../shows.js';
-import { newState, addScene, bump, peopleOf } from './state.js';
+import { newState, addScene, bump, peopleOf, peopleAtScene } from './state.js';
 import { truthOf, drawPersonas, buildProfiles } from './profiles.js';
 import { setBelief, nudgeBelief } from './beliefs.js';
 import { bioFor } from './persona-data.js';
 import { S, rel } from './state.js';
 import { initMind, driftMind } from './mind.js';
 import { seedAttraction, planChats, contextFor } from './chat.js';
+import { groupChats } from './groupchats.js';
 import { runChat } from './conversation.js';
 import { morningFeed, runCircleChat } from './feed.js';
 import { runRating } from './ratings.js';
@@ -71,7 +72,7 @@ export function applyCarried(state, carried) {
 const board = d => ({ ballots: (d.ballots || []).map(b => ({ voter: b.voter, order: b.order, ...(b.reasons ? { reasons: b.reasons } : {}) })),
   results: (d.results || []).map(r => ({ profile: r.profile, place: r.place })), influencers: d.influencers || [] });
 const BEAT_KEEP = new Set(['phase', 'round', 'kind', 'by', 'about', 'c', 'n', 'answer', 'right', 'promptId', 'factId', 'qid',
-  'tone', 'qkind', 'anon', 'tier', 'split', 'strong', 'everyone', 'mutual', 'many', 'warm', 'off']);
+  'tone', 'qkind', 'anon', 'tier', 'split', 'strong', 'everyone', 'mutual', 'many', 'warm', 'off', 'all', 'votes']);
 /** Likes received, from a likes scene's record (liker -> the profiles they liked). */
 export function likeCounts(likes = {}) {
   const out = {};
@@ -86,7 +87,7 @@ export const STAGE_DATA = {
   party: d => ({ theme: d.theme, props: d.props || [] }),
   // The Newsfeed: how many likes each player's post got this morning.
   likes: d => ({ counts: likeCounts(d.likes) }),
-  'group-chat': d => ({ name: d.name, formed: !!d.formed, declined: d.declined || [], plan: d.plan || null }),
+  'group-chat': d => ({ name: d.name, formed: !!d.formed, declined: d.declined || [], plan: d.plan || null, event: d.event || null }),
   audience: d => ({ mode: d.mode, candidates: [...d.candidates], shares: [...d.shares], saved: d.saved ?? null, target: d.target ?? null, winner: d.winner ?? null }),
   // A game's beats, trimmed to what a board draws (js/vp-ci/boards.js).
   game: d => ({ gameId: d.gameId, family: d.family, beats: (d.beats || []).map(b =>
@@ -197,7 +198,7 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
     finalists: state.options.finalists, days: state.options.days, rhythm: state.options.rhythm ?? rhythmOf(cast) });
   // What each ratings night is: booked by slot, or drawn (Plan 3b).
   const booked = bookSeason(schedule, streamFor(seed, 'timeline'),
-    { total: handles.length, finalists: state.options.finalists, bookings: state.options.bookings || {} });
+    { total: handles.length, finalists: state.options.finalists, bookings: state.options.bookings || {}, fixed: !!state.options.fixed });
   schedule.splice(0, schedule.length, ...booked);
   state.schedule = schedule;
 
@@ -285,6 +286,8 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
       formAlliance(state, ds(`ally:${d.day}`)); checkIn(state, ds(`ally-check:${d.day}`));
       // ...and come apart: a double agent caught, a member who has gone cold.
       doubleAgents(state, ds(`ally-double:${d.day}`)); drift(state, ds(`ally-drift:${d.day}`));
+      // ...and the ones that are not alliances: a friend group, a peace talk, a ratings plan.
+      groupChats(state, ds(`gc:${d.day}`), { ratingSoon: !!d.block && !d.final });
     }
     if (d.disrupter) runDisrupter(state, ds(`disrupter:${d.day}`));
     if (d.game) {
@@ -366,6 +369,7 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
         arrivals: arriving, scenes: state.scenes.filter(s => s.day === d.day).length,
         aired: state.scenes.filter(s => s.day === d.day && s.aired)
           .map(s => ({ id: s.id, kind: s.kind, who: s.who, script: s.script || null,
+            ...((p => (p ? { people: p } : {}))(peopleAtScene(state, s.id, Object.keys(state.profiles)))),
             ...(s.kind === 'game' ? { game: s.data.gameId } : {}),
             ...(s.kind === 'recognise' && s.data.profile ? { about: s.data.profile } : {}),
             ...(STAGE_DATA[s.kind] ? { d: STAGE_DATA[s.kind](s.data, s) } : {}) })) } };

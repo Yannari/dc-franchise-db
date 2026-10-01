@@ -15,6 +15,13 @@
 import { rolesFor, pairRoles, RELATIONS } from './shared.js';
 import { clamp, personMayScheme } from './state.js';
 import { jobOf, tellsOf } from './persona-data.js';
+import { placeOf } from './topics.js';
+
+// Most roster characters have no age, and a profile has to show one. It used
+// to be 25 for all of them (a season read: five players and a newcomer, all
+// 25). A steady one per person instead, 21 to 32, the show's usual range;
+// the Profile Plan sets a real one.
+export const unknownAge = name => 21 + [...String(name || '')].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7) % 12;
 
 // Calibrated on the roster the site plays (tests/helpers/ci-cast.js
 // rosterCast), 2026-09-30: most roster players have no age, so strategy and
@@ -64,9 +71,9 @@ export function truthOf(player, setup = {}) {
     // birthdate, occupation, hometown); anything set on the plan wins.
     // `setup.from` is the roster's copy (ci-run.js rosterFactsOf): a cast
     // entry does not carry these.
-    age: setup.age ?? player.age ?? setup.from?.age ?? ageFrom(player.birthdate ?? setup.from?.birthdate) ?? 25,
+    age: setup.age ?? player.age ?? setup.from?.age ?? ageFrom(player.birthdate ?? setup.from?.birthdate) ?? unknownAge(player.name),
     job: setup.job ?? ((player.occupation ?? setup.from?.occupation) ? String(player.occupation ?? setup.from.occupation).toLowerCase() : null),
-    hometown: setup.hometown ?? player.hometown ?? setup.from?.hometown ?? null,
+    hometown: placeOf(setup.hometown ?? player.hometown ?? setup.from?.hometown ?? null),
     status: setup.status ?? 'Single', alum: rep !== 'none', rep,
     // Fame stars (js/fame.js), handed in by the season (ci-run.js); for the screens.
     stars: Number.isFinite(setup.autoStars) ? setup.autoStars : null,

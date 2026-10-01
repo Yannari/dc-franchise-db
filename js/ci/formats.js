@@ -133,7 +133,9 @@ function roomVote(state, rng, rating) {
   const voters = state.active.filter(h => !bottom.includes(h));
   const votes = {};
   for (const v of voters) votes[v] = bottom.map(t => [t, blockScore(state, v, t).total + rng() * 0.5]).sort((a, b) => b[1] - a[1])[0][0];
-  const sc = addScene(state, 'vote', [...bottom], { bottom, votes }, [...state.active]);
+  // An immune player in the bottom two is passed over: the next one up takes the seat.
+  const immune = rating.results.map(r => r.profile).filter(h => state.active.includes(h) && state.immuneNext[h]);
+  const sc = addScene(state, 'vote', [...bottom], { bottom, votes, immune }, [...state.active]);
   for (const [v, t] of Object.entries(votes)) {
     const c = makeClaim(state, { kind: 'targeting', holder: v, about: t, truth: true, secrecy: 'public', by: v });
     for (const o of state.active) if (o !== v) learn(state, o, c, v, sc);

@@ -47,8 +47,12 @@ const FAMILY = {
       }
       const agree = all.filter(h => r.answers[h] === 'agree').length;
       const split = agree === 0 || agree === all.length ? 'all' : r.lone ? 'lone' : 'split';
+      // Everyone's answer: the show puts the whole room on screen at once
+      // (user: "I don't see the answer of everyone, so I'm confused by some
+      // people's reactions"). Only three say theirs out loud.
       push({ phase: 'round', round: i, kind: 'results', by: pick(all.filter(h => !shown.includes(h)).concat(shown), rng),
-        n: agree, split, promptId: p.id });
+        n: agree, split, promptId: p.id,
+        all: { agree: all.filter(h => r.answers[h] === 'agree'), disagree: all.filter(h => r.answers[h] === 'disagree') } });
       if (r.lone) {
         loneCount[r.lone] = (loneCount[r.lone] || 0) + 1;
         const noticer = by(all.filter(h => h !== r.lone), h => S(state, h, 'intuition'))[0];
@@ -84,8 +88,9 @@ const FAMILY = {
       for (const v of [namers[0], others[0], namers[1] || others[1]].filter(Boolean)) {
         push({ phase: 'round', round: i, kind: 'namer', by: v, about: r.answers[v], tone: p.tone, promptId: p.id });
       }
+      // Every vote goes up with the tally: only three said theirs out loud.
       push({ phase: 'round', round: i, kind: 'tally', by: namers[0], about: top, n: counts[top], tone: p.tone, promptId: p.id,
-        everyone: counts[top] === all.length - 1 });
+        everyone: counts[top] === all.length - 1, votes: { ...r.answers } });
       push({ phase: 'round', round: i, kind: 'reply', by: top, tone: p.tone, promptId: p.id, n: counts[top] });
       (tally[top] ||= { good: 0, bad: 0, funny: 0 })[p.tone] += counts[top];
       for (const v of namers) remember(state, sc, `named-${p.tone}`, v, top, p.id);

@@ -16,7 +16,7 @@
 //                a secret second Influencer. (The real rule blocks both
 //                unless one sacrifices; here someone always goes, so the
 //                season still loses exactly the players it must.)
-import { rel, bump, S, addScene } from './state.js';
+import { rel, bump, S, addScene, noteIdentity } from './state.js';
 import { initMind, feel } from './mind.js';
 import { belief } from './beliefs.js';
 import { voiceOf, personaShown } from './profiles.js';
@@ -26,6 +26,7 @@ import { rolesFor } from './shared.js';
 const single = (state, h) => state.profiles[h]?.players.length === 1;
 
 function swapPeople(state, A, B) {
+  noteIdentity(state, [A, B]);
   const pa = state.profiles[A].players, pb = state.profiles[B].players;
   state.profiles[A].players = pb; state.profiles[B].players = pa;
   for (const n of pb) state.handleOf[n] = A;

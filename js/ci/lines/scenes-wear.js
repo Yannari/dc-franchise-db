@@ -59,7 +59,7 @@ export const SCENES_WEAR = {
   ...E('ratings.done', [
     s1("Sent. I'd do it the same way again. I think."),
     s1("Okay. Rankings are in. I need a snack.", { beat: '{a} walks straight to the fridge.' }),
-    s1("That was harder than last time. It gets harder every time."),
+    s1("That was harder than last time. It gets harder every time.", { when: { early: false } }),
     s1("I just made some people very happy and some people very mad."),
   ]),
   ...E('ratings.wait', [
@@ -86,7 +86,7 @@ export const SCENES_WEAR = {
     r1("Whoever it is, please don't be me. I'm not ready.", { beat: '{a} grips the edge of the couch.' }),
     r1("Every single one of those dots is taking a year off my life.", { beat: '{a} watches the screen through {a.posAdj} fingers.' }),
     r1("I'm not breathing. I'm not breathing until I see a name."),
-    r1("Please don't be me. Please don't be me.", { beat: '{a} rocks back and forth on the couch.' }),
+    r1("Okay. Whatever happens, happens. Please let it not happen to me.", { beat: '{a} rocks back and forth on the couch.' }),
     r1("If it's me, I'm going out with my head up. Maybe.", { beat: '{a} sits up straight, then slumps again.' }),
   ]),
   ...E('block.after', [

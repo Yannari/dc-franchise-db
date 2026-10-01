@@ -52,7 +52,7 @@ export function circleVpScreens(row, { prev = null, next = null, debug = false }
   if (typeof document !== 'undefined') queueMicrotask?.(() => applyTv(tvOn()));
   const out = screens.map((screen, si) => {
     const uid = `ci${esc(row.num)}-${si}`;
-    reg()[uid] = { row, screen, idx: -1, auto: false, screens, si };
+    reg()[uid] = { row: screen.rowView || row, screen, idx: -1, auto: false, screens, si };
     return {
       // ci-<kind>-<n>: the player files it by kind (vp-ui.js _ciPhaseForScreen).
       id: `ci-${screen.kind}-${si}`,
@@ -62,7 +62,7 @@ export function circleVpScreens(row, { prev = null, next = null, debug = false }
       html: `<div class="civ" data-uid="${uid}" data-ambient="${bedFor(screen)}"><style>${CIV_FONTS}${CIV_CSS}${TEASER_CSS}${VISIT_CSS}${WEB_CSS}${VOTE_CSS}</style>
   <div class="civ-top"><div class="civ-logo">${LOGO}<div>THE CIRCLE<small>Episode ${esc(row.num)} · Day ${esc(row.day)}</small></div></div>
     <div class="civ-title">${esc(screen.title)}</div></div>
-  <div class="civ-stagewrap"><div class="civ-stage" id="civ-st-${uid}" onclick="civNext('${uid}')" title="Click for the next line">${stageInner(row, screen, -1)}</div>
+  <div class="civ-stagewrap"><div class="civ-stage" id="civ-st-${uid}" onclick="civNext('${uid}')" title="Click for the next line">${stageInner(screen.rowView || row, screen, -1)}</div>
 </div>
   <div class="civ-controls">
     <button type="button" class="civ-btn" onclick="civReset('${uid}')">Restart</button>

@@ -45,7 +45,32 @@ export function familiarity(state, a, b) {
 }
 export const bump = (a, b, dim, delta) => addRelationshipDimension(a, b, dim, delta);
 
-export const peopleOf = (state, handle) => state.profiles[handle]?.players || [];
+// Who is behind a profile. A day is written after it is played (season.js
+// writeDay), so a scene from before a profile swap must read who was behind
+// the profile THEN: on the swap day, Ripper's morning lines carried Ivy's
+// stage directions. While a scene is written (state._writing = its id), the
+// first identity change logged after it says who was behind the profile.
+export const peopleOf = (state, handle) => {
+  if (state._writing != null) {
+    for (const e of state.identityLog || []) if (state._writing <= e.upTo && e.before[handle]) return e.before[handle];
+  }
+  return state.profiles[handle]?.players || [];
+};
+/** Who was behind each profile when scene `id` happened, where that differs
+ *  from now: { handle: [people] }, or null (season.js puts it on the aired scene). */
+export function peopleAtScene(state, id, handles) {
+  if (!(state.identityLog || []).length) return null;
+  const was = state._writing; state._writing = id;
+  const out = {};
+  for (const h of handles) { const then = peopleOf(state, h); if (then.join('|') !== (state.profiles[h]?.players || []).join('|')) out[h] = [...then]; }
+  state._writing = was;
+  return Object.keys(out).length ? out : null;
+}
+/** Before a twist moves people between profiles: who was behind them, up to the last scene so far. */
+export function noteIdentity(state, handles) {
+  for (const h of handles) if (state.profiles[h]) state.profiles[h].home ??= [...state.profiles[h].players];
+  (state.identityLog ||= []).push({ upTo: state.seq, before: Object.fromEntries(handles.map(h => [h, [...(state.profiles[h]?.players || [])]])) });
+}
 
 /** A promise between two profiles: 'rate' (put me first) or 'protect' (we save each other). */
 export function makePact(state, kind, a, b) {

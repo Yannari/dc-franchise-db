@@ -182,7 +182,7 @@ export const G_MORE = {
     s1("Okay, {b}. You want a rival? You've got one."),
     s1("It stings a little, coming from {b}. I thought we were good."),
   ]),
-  ...E('game.gift.thanks', 4, [
+  ...E('game.gift.thanks', 9, [
     { turns: [{ by: 'a', react: "A gift from {b}! Oh, I love {b}.", send: "{b} you made my whole day {e:heart}" }] },
     { turns: [{ by: 'a', send: "Thank-you note for {b}: you're a real one {e:crown}" }] },
     { turns: [{ by: 'a', react: "{b} picked me. {b} actually picked me.", send: "Thank you {b}. I won't forget it" }] },

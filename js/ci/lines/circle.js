@@ -146,7 +146,7 @@ export const CIRCLE = {
       { by: 'a', say: "Party mode. Be fun. Don't say anything stupid.", send: "Okay who's the best dancer in here, I need a dance-off" },
       { by: 'b', send: "It's me. Obviously {e:crown}" },
       { by: 'c', send: "Prove it lol" },
-      { by: 'b', send: "Can't. No cameras. Just trust me {e:laugh}" },
+      { by: 'b', send: "Can't. Nobody can see me dance in here. Just trust me {e:laugh}" },
     ] },
   ],
   'circle.final': [

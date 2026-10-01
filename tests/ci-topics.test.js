@@ -19,12 +19,17 @@ const topicChats = state => state.scenes.filter(s => s.aired && s.kind === 'chat
 
 describe('friendly chats are about something', () => {
   it('a real share of aired bond chats is about the other person\'s life', () => {
+    // A share of the friendly chats, not a count: a season with more game talk
+    // airs fewer friendly chats (2026-10-01), and the share is what matters.
+    let topicN = 0, bondN = 0;
     for (const state of seasons) {
       const bond = state.scenes.filter(s => s.aired && s.kind === 'chat' && s.data.intent === 'bond' && s.data.ending !== 'cold');
       const topic = topicChats(state);
-      expect(topic.length, 'topic chats').toBeGreaterThan(3);
+      expect(topic.length, 'topic chats').toBeGreaterThanOrEqual(2);
       expect(topic.length / bond.length).toBeLessThan(0.7);
+      topicN += topic.length; bondN += bond.length;
     }
+    expect(topicN / bondN).toBeGreaterThan(0.15);
   });
   it('the topic is one of the other person\'s own; a catfish always wings it, an honest player never does', () => {
     for (const state of seasons) for (const sc of topicChats(state)) {

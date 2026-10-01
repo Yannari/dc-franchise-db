@@ -45,7 +45,10 @@ describe('the Profile Plan', () => {
     open('P01'); click('.ci-row[data-name="P01"] [data-act="jobCost"][data-v="1"]');
     open('P01'); change('.ci-row[data-name="P01"] [data-field="age"]', '44');
     open('P01'); change('.ci-row[data-name="P01"] [data-field="job"]', 'welder');
-    expect(setup('P01')).toMatchObject({ catfish: 'never', mode: 'edited', role: 'newcomer', rep: 'villain', jobCost: 1, age: 44, job: 'welder' });
+    expect(setup('P01')).toMatchObject({ catfish: 'never', mode: 'edited', rep: 'villain', jobCost: 1, age: 44, job: 'welder' });
+    // When they arrive is the player's category, filled like a tribe (ci/categories.js)
+    expect(window.players.find(p => p.name === 'P01').tribe).toBe('Newcomers');
+    expect(setup('P01').role).toBeUndefined();
     // and the row shows it
     expect(root().querySelector('.ci-row[data-name="P01"] [data-act="catfish"][data-v="never"]').classList.contains('on')).toBe(true);
   });

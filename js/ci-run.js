@@ -22,6 +22,7 @@ import { gs, setGs, players, seasonConfig, seasonFormat, TWIST_CATALOG, kinshipB
 import { CIRCLE_FORMAT } from './shows.js';
 import { playCircleSeason } from './ci/season.js';
 import { buildSchedule, rhythmOf } from './ci/schedule.js';
+import { bookSeason } from './ci/timeline.js';
 import { carriedFor } from './franchise-carry.js';
 import { recordBuiltSeason } from './franchise-meta.js';
 import { ciLedgerRecord } from './ci/ledger-record.js';
@@ -29,6 +30,8 @@ import { pairRelation } from './ci/shared.js';
 import { buildFranchiseMeta } from './franchise-meta.js';
 import { fameStarsFor } from './alumni.js';
 import { DEFAULT_POOL } from './ci/default-pool.js';
+import { categoryKind, isFace, reasonFromKin } from './ci/categories.js';
+import { ageFrom, unknownAge } from './ci/profiles.js';
 
 export const isCircleSeason = () => seasonFormat(seasonConfig) === CIRCLE_FORMAT;
 
@@ -43,10 +46,39 @@ function _seed() {
   return gs.ci.seed;
 }
 
+// The people who PLAY: a Catfish face is in the cast list (filled like a
+// tribe, ci/categories.js) but plays nobody's game; someone plays as them.
 const _cast = () => {
   const saved = Array.isArray(gs?.ci?.castOrder) && gs.ci.castOrder.length ? gs.ci.castOrder : null;
-  return saved || (players || []).map(p => p.name).filter(Boolean);
+  return saved || (players || []).filter(p => p?.name && !isFace(p)).map(p => p.name);
 };
+const _categoryRole = n => {
+  const k = categoryKind((players || []).find(p => p?.name === n)?.tribe);
+  return k === 'starter' || k === 'newcomer' ? k : null;
+};
+
+/** The Catfish faces as personas: real characters from the roster, put in the
+ *  Catfish faces category (user: "make the catfish real characters added like
+ *  everyone, so they can be used for future seasons or other shows"). Built
+ *  from their profile; their portrait is the photo. The player who plays as
+ *  one (the Profile Plan's "Plays as") and who they are to them (the
+ *  Relationships tab) give the reason: family for a relative or a partner,
+ *  strategy for anyone else; "experimental" lets a player who never schemes
+ *  still take a stranger's face. */
+export function facePersonas(cast = _cast(), setup = circleSetup()) {
+  return (players || []).filter(isFace).map(p => {
+    const facts = rosterFactsOf(p);
+    const id = `face:${p.name}`;
+    const by = cast.find(n => setup[n]?.persona === id) || null;
+    const kin = by ? kinshipBetween(by, p.name) : 'none';
+    return { id, handle: p.name, fromRoster: p.name, face: `portrait:${p.name}`,
+      age: Number(facts.age) || ageFrom(facts.birthdate) || unknownAge(p.name), gender: p.gender === 'm' ? 'm' : 'f',
+      sexuality: p.sexuality || 'straight', job: facts.occupation || '', hometown: facts.hometown || null,
+      status: 'Single', details: [], photo: {}, fits: {}, bio: '',
+      ...(p.chatVoice ? { chatVoice: p.chatVoice } : {}),
+      reasons: [reasonFromKin(kin), 'experimental'], kin, playedBy: by };
+  });
+}
 
 /** Create Character's facts for a cast member. A cast entry carries only the
  *  game fields (name, stats, archetype, portrait); the age, birthdate,
@@ -100,9 +132,11 @@ export function circleSetup() { return { ...(seasonConfig.ciSetup || {}) }; }
  *  rest split as the US seasons did (about eight of thirteen start). */
 export function circleRoles(cast = _cast(), setup = circleSetup()) {
   const starters = Math.max(3, Math.round(cast.length * 0.62));
-  let open = starters - cast.filter(n => setup[n]?.role === 'starter').length;
+  // A role set in the Profile Plan, else the category the player was put in.
+  const roleOf = n => setup[n]?.role || _categoryRole(n);
+  let open = starters - cast.filter(n => roleOf(n) === 'starter').length;
   return cast.map(n => {
-    const set = setup[n]?.role;
+    const set = roleOf(n);
     if (set === 'starter' || set === 'newcomer') return set;
     if (open > 0) { open--; return 'starter'; }
     return 'newcomer';
@@ -128,6 +162,8 @@ function _options() {
     pickBy: seasonConfig.ciPickBy === 'random' ? 'random' : 'stats',
     ai: seasonConfig.ciAI === true,
     bookings: circleBookings(),
+    // A season the Randomize button drew plays exactly what the timeline shows.
+    fixed: (seasonConfig.twistSchedule || []).some(b => b?.random && _circleIds().has(b.type)),
   };
 }
 
@@ -188,27 +224,75 @@ export function circleBookings() {
   }
   return out;
 }
+const _circleIds = () => new Set(TWIST_CATALOG.filter(t => t.format === CIRCLE_FORMAT).map(t => t.id));
+
+/** RANDOMIZE (user: "the randomizer doesn't work in the Circle"). The engine's
+ *  own draw (ci/timeline.js bookSeason), around the cards the author booked
+ *  by hand, written onto the timeline as cards: every night's format (the
+ *  standard Hangout too), every arrival's style, each power, twist and
+ *  disrupter. Returns [episode, cardId] pairs; run-ui books them. */
+export function circleRandomDraw(rng = Math.random) {
+  const shape = circleSeasonShapeRaw();
+  if (!shape.length) return [];
+  const ids = _circleIds();
+  const own = (seasonConfig.twistSchedule || []).filter(b => b && ids.has(b.type) && !b.random);
+  const slotAt = new Map(shape.map(d => [d.day, d.slot]));
+  const bookings = {};
+  for (const b of own) { const slot = slotAt.get(Number(b.episode)); if (slot) (bookings[slot] ||= []).push(b.type); }
+  const total = _cast().length + (seasonConfig.ciAI === true ? 1 : 0);
+  const drawn = bookSeason(shape, rng, { total, finalists: _finalists(), bookings });
+  const cards = TWIST_CATALOG.filter(t => t.format === CIRCLE_FORMAT);
+  const find = (cat, key, v) => cards.find(t => t.category === cat && t[key] === v)?.id
+    || cards.find(t => t[key] === v)?.id;
+  const out = [];
+  for (const d of drawn) {
+    const ep = d.day;
+    const have = new Set(own.filter(b => Number(b.episode) === ep).map(b => b.type));
+    const add = id => { if (id && !have.has(id)) out.push([ep, id]); };
+    if (d.night) add(find('blocking', 'ciFormat', d.night.format));
+    if (d.night?.power) add(find('power', 'ciPower', d.night.power));
+    if (d.twist) add(cards.find(t => t.ciTwist === d.twist)?.id);
+    if (d.arrivals > 0 && d.entry && !d.entryBooked) add(find('arrivals', 'ciEntry', d.entry));
+    if (d.disrupter) add('ci-disrupter');
+  }
+  return out;
+}
+
 // The shape without bookings (bookings are read off it: no loop).
 function circleSeasonShapeRaw() { return circleShapeOf({ cast: _cast(), setup: circleSetup(), config: seasonConfig }); }
 
 /** The days a cast and a config make, without touching the live season: the
  *  run loop and Quick Setup's blueprint read the same answer. [] if none. */
 export function circleShapeOf({ cast = [], setup = {}, config = {} } = {}) {
-  const roles = circleRoles(cast, setup);
+  // Names, whichever way the cast came in. The rhythm used to hash
+  // `cast.map(p => p.name)` over a list of names: every name undefined, so
+  // the timeline showed a different calendar from the one the engine played,
+  // and a card booked on an episode ran a day early or late.
+  const names = cast.map(p => (typeof p === 'string' ? p : p?.name)).filter(Boolean);
+  const roles = circleRoles(names, setup);
   const ai = config.ciAI === true;
+  // Profiles, as the engine counts them: a partner pinned to someone earlier
+  // in the cast joins their profile (ci/profiles.js), so a pair is one.
+  const seen = new Set(), joins = new Set();
+  for (const n of names) { const p = setup[n]?.partner; if (p && seen.has(p)) joins.add(n); seen.add(n); }
+  const handles = names.map((n, i) => ({ n, role: roles[i] })).filter(x => !joins.has(x.n));
+  const isStarter = x => x.role === 'starter' || [...joins].some(j => setup[j]?.partner === x.n && roles[names.indexOf(j)] === 'starter');
   try {
-    return buildSchedule({ total: cast.length + (ai ? 1 : 0), starters: roles.filter(r => r === 'starter').length + (ai ? 1 : 0),
+    return buildSchedule({ total: handles.length + (ai ? 1 : 0), starters: handles.filter(isStarter).length + (ai ? 1 : 0),
       finalists: _finalists(config), days: Number(config.ciDays) > 0 ? Number(config.ciDays) : null,
       // the same rhythm the engine will play (schedule.js rhythmOf)
-      rhythm: rhythmOf(cast.map(p => p.name)) });
+      rhythm: rhythmOf(names) });
   } catch { return []; }
 }
 
 function _inputs() {
   // No pool written: the default one (ci/default-pool.js). An empty list is
   // the author's choice of a season with no catfish, and stands.
-  const pool = Array.isArray(seasonConfig.ciPool) ? seasonConfig.ciPool : DEFAULT_POOL;
-  return { setup: circleSetup(), pool: [...pool], options: _options() };
+  // Catfish faces (real characters) join the pool; with faces and no pool
+  // of the author's own, the faces are the whole pool.
+  const faces = facePersonas();
+  const pool = Array.isArray(seasonConfig.ciPool) ? seasonConfig.ciPool : faces.length ? [] : DEFAULT_POOL;
+  return { setup: circleSetup(), pool: [...pool, ...faces], options: _options() };
 }
 const _sig = inputs => JSON.stringify(inputs);
 const _fingerprint = r => JSON.stringify([r?.num, r?.ci?.blocked, r?.ci?.active]);

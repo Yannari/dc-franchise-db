@@ -361,3 +361,31 @@ describe('a season never reads its own record', () => {
     expect(JSON.stringify(gs.episodeHistory.slice(0, 5).map(r => [r.ci.blocked, r.ci.active]))).toBe(before);
   });
 });
+
+// The Season Timeline's calendar is the engine's calendar. The timeline hashed
+// the rhythm from `cast.map(p => p.name)` over a list of names, so it drew a
+// different season shape and every card booked by episode ran on the wrong
+// day (user: "the randomizer doesn't work in the Circle").
+import { circleShapeOf } from '../js/ci-run.js';
+import { playCircleSeason } from '../js/ci/season.js';
+describe('the timeline shows the days the engine plays', () => {
+  const daysOf = s => s.map(d => `${d.day}:${d.slot}`).join(' ');
+  it('for any cast, and with two players sharing one profile', () => {
+    for (const seed of [1, 2, 3, 4, 5, 6]) {
+      const cast = makePlayers(13, seed); setPlayers(cast);
+      const names = cast.map(p => p.name);
+      for (const setup of [{}, { [names[1]]: { partner: names[0], role: 'starter' }, [names[0]]: { role: 'starter' } }]) {
+        const roles = Object.fromEntries(names.map(n => [n, { ...(setup[n] || {}) }]));
+        // the engine gets each player's role written in, as ci-run.js _build does
+        const shape = circleShapeOf({ cast: names, setup: roles, config: {} });
+        const r = Math.max(3, Math.round(names.length * 0.62));
+        let open = r - names.filter(n => roles[n].role === 'starter').length;
+        for (const n of names) if (!roles[n].role) { roles[n].role = open > 0 ? 'starter' : 'newcomer'; if (open > 0) open--; }
+        const { state } = playCircleSeason({ cast: names, setup: roles, pool: [], seed });
+        // the slots, day by day, before a double gives a night back
+        const played = state.schedule.map(d => ({ day: d.day, slot: d.slot }));
+        expect(daysOf(played)).toBe(daysOf(shape));
+      }
+    }
+  });
+});

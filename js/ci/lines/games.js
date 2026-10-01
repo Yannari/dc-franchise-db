@@ -531,7 +531,7 @@ export const GAME_LINES = {
     ] },
     { id: 'game.gift.round.04', turns: [
       { by: 'b', react: "Who sent me a gift? {a}! Of course it was {a}." },
-      { by: 'b', send: "Thank-you note: you're the best {e:heart} {t:ThankYouBestie}" },
+      { by: 'b', send: "You're the sweetest. Officially my favorite person today {e:heart}" },
     ] },
   ],
   'game.gift.none': [

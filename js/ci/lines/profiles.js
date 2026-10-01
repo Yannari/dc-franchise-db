@@ -16,6 +16,24 @@ export const PROFILES = {
     { id: 'profile.honest.04', turns: [
       { by: 'a', say: "Relationship status: single. Very single. Circle, add a laughing emoji." },
     ] },
+    { id: 'profile.honest.05', turns: [
+      { by: 'a', say: "This picture is from last week. No makeup, no angles. If they like me, they like the real me." },
+    ] },
+    { id: 'profile.honest.06', turns: [
+      { by: 'a', say: "Circle, write: 'What you see is what you get. Ask me anything.' Send that as my bio." },
+    ], beat: '{a} reads the bio back out loud, twice.' },
+    { id: 'profile.honest.07', turns: [
+      { by: 'a', react: "My hair's a mess in this one. Whatever. That's my hair." },
+    ] },
+    { id: 'profile.honest.08', turns: [
+      { by: 'a', say: "I'm not going to pretend in here. I'd forget what I said by Tuesday anyway." },
+    ] },
+    { id: 'profile.honest.09', turns: [
+      { by: 'a', say: "Circle, use the one where I'm laughing. That's what I look like most of the time." },
+    ], beat: '{a} smiles at the photo for a long moment.' },
+    { id: 'profile.honest.10', turns: [
+      { by: 'a', say: "Honest profile, honest game. Let's see how far that gets me." },
+    ] },
   ],
   'profile.polished': [
     { id: 'profile.polished.01', turns: [
@@ -27,6 +45,30 @@ export const PROFILES = {
     { id: 'profile.polished.03', turns: [
       { by: 'a', say: "Circle, open the picture on the top left. That's the one. That's cute, but it's not trying too hard." },
     ] },
+    { id: 'profile.polished.04', turns: [
+      { by: 'a', say: "Circle, show me the vacation album. No. The other vacation album. There. That's the one." },
+    ], beat: '{a} zooms in, zooms out, and zooms in again.' },
+    { id: 'profile.polished.05', turns: [
+      { by: 'a', say: "It's still me. It's just me on a really, really good day." },
+    ] },
+    { id: 'profile.polished.06', turns: [
+      { by: 'a', say: "This one. I look like I just heard the best news of my life. Perfect." },
+    ], beat: '{a} blows a kiss at the screen.' },
+    { id: 'profile.polished.07', turns: [
+      { by: 'a', say: "Bio. Something fun but not too much. Circle, write: 'Here for a good time and good people.' Smiley face." },
+    ] },
+    { id: 'profile.polished.08', turns: [
+      { by: 'a', say: "No selfies from the bathroom. Nobody trusts a bathroom selfie." },
+    ] },
+    { id: 'profile.polished.09', turns: [
+      { by: 'a', react: "Okay, these pictures are from a wedding. I look great. That's the one." },
+    ], beat: '{a} nods slowly, very pleased.' },
+    { id: 'profile.polished.10', turns: [
+      { by: 'a', say: "Circle, crop that one a little tighter. Perfect. Just my face, looking happy." },
+    ] },
+    { id: 'profile.polished.11', turns: [
+      { by: 'a', say: "The trick is to look friendly but a little mysterious. Circle, that one. Friendly. Mysterious." },
+    ] },
   ],
   'profile.edited': [
     { id: 'profile.edited.01', turns: [
@@ -37,6 +79,15 @@ export const PROFILES = {
     ], beat: '{a} watches the new job title appear on the profile.' },
     { id: 'profile.edited.03', turns: [
       { by: 'a', say: "If they knew the real number, they'd treat me differently. So the number changes." },
+    ] },
+    { id: 'profile.edited.04', turns: [
+      { by: 'a', say: "Everything on this profile is true. Almost everything. Circle, save it before I change my mind." },
+    ] },
+    { id: 'profile.edited.05', turns: [
+      { by: 'a', say: "A small change. Tiny. Nobody's going to ask me about it. Probably." },
+    ], beat: '{a} chews on a thumbnail.' },
+    { id: 'profile.edited.06', turns: [
+      { by: 'a', say: "It's still my face. I just want them to meet me before they meet that part of me." },
     ] },
   ],
   'profile.catfish': [

@@ -30,6 +30,13 @@ const KEYWORDS = [
 
 // A nationality in the hometown field is not a place to ask about ("you're from Swiss?").
 const DEMONYM = /^(swiss|british|english|french|german|spanish|italian|canadian|american|mexican|brazilian|korean|japanese|chinese|filipino|polish|irish|scottish|dutch|greek)$/i;
+/** A hometown worth printing: the field as written, unless it is a nationality ("from Swiss"). */
+// Capitalized as a place is ("Sao paulo" in the roster prints "Sao Paulo"),
+// leaving the small words of a name alone ("Rio de Janeiro").
+const SMALL = new Set(['de', 'da', 'do', 'dos', 'das', 'del', 'la', 'le', 'of', 'on', 'upon', 'the', 'and', 'en', 'sur']);
+const capPlace = s => s.replace(/[A-Za-z\u00C0-\u024F]+/g, (w, i) => (i > 0 && SMALL.has(w.toLowerCase()) ? w
+  : w[0] === w[0].toLowerCase() ? w[0].toUpperCase() + w.slice(1) : w));
+export const placeOf = hometown => (townOf(hometown) ? capPlace(String(hometown).trim()) : null);
 /** The town as a person would say it: the first part ("Toronto", not "Toronto, Ontario"). */
 export function townOf(hometown) {
   const t = String(hometown || '').split(',')[0].trim();

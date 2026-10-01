@@ -151,6 +151,11 @@ export const G_REST = {
     { turns: [{ by: 'a', react: "{b} picked me!", send: "Thank-you note: you're the best {e:heart} {t:ThankYouBestie}" }] },
     { turns: [{ by: 'a', send: "{b} I owe you one. A big one {e:hug}" }] },
     { turns: [{ by: 'a', react: "I didn't expect that from {b}. At all.", send: "Thank you {b}!! That means so much" }] },
+    { turns: [{ by: 'a', send: "{b}!!! You did NOT have to do that {e:hearteyes}" }] },
+    { turns: [{ by: 'a', react: "Okay, now I have to be nice to {b} forever.", send: "Thank you {b}. Seriously. You made my day" }] },
+    { turns: [{ by: 'a', send: "Best gift in the building and it's not close. Thanks {b} {e:crown}" }] },
+    { turns: [{ by: 'a', react: "Me? {b} picked me?", send: "I'm keeping this forever. Thank you {b} {e:heart}" }] },
+    { turns: [{ by: 'a', send: "{b} you're too sweet. I owe you a real gift when we get out {e:party}" }] },
   ]),
   ...E('game.gift.noticed', [
     s1("{b} and {c} picked each other. That's an alliance. That's a whole alliance."),

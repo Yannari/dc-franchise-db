@@ -10,6 +10,7 @@ import { seasonFormat, formatIsRunnable, formatName, TWIST_CATALOG, downloadFile
 import { ensurePortraitSelection, migrateCastPortraits, baseAvatarSlug,
   playerAvatarUrl, portraitOptions, hasShowPortraits, loadPortraitCatalog } from './players.js';
 import { SHOWS, HOSTS_BY_FORMAT, DEFAULT_FORMAT, DRAG_FORMAT } from './shows.js';
+import { CIRCLE_CATEGORIES } from './ci/categories.js';
 // The drag family is derived from the same rows the tab already saves.
 import { dragRelationsFrom, familiesFromRelations, familyTree, relationsFromRoster } from './dr/family.js';
 import { activeSeasons, franchiseHistorySummary,
@@ -214,6 +215,15 @@ export function renderTribeSelect() {
   const sel = document.getElementById('f-tribe');
   if (!sel) return;
   const current = sel.value;
+  // The Circle's categories are fixed and filled like tribes (ci/categories.js).
+  const circle = seasonFormat(seasonConfig) === 'the-circle';
+  const lbl = document.querySelector('#grp-f-tribe .form-label');
+  if (lbl) lbl.textContent = circle ? 'Category' : 'Tribe';
+  if (circle) {
+    sel.innerHTML = '<option value="">— Decide (a player) —</option>' + CIRCLE_CATEGORIES.map(c =>
+      `<option value="${c.name}"${c.name === current ? ' selected' : ''}>${c.name}</option>`).join('');
+    return;
+  }
   // Configured tribes + any tribes already used by cast players (in case cast was built before tribe builder)
   const configuredNames = (seasonConfig.tribes || []).map(t => t.name);
   const castNames = [...new Set(players.map(p => p.tribe).filter(Boolean))];

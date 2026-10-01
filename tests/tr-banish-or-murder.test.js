@@ -213,7 +213,8 @@ describe('the deal at the dinner', () => {
       (gs.episodeHistory || []).find(e => e.num === taken.round.ep), 'audience');
     expect(takenHtml).toContain('Every Hand');
     expect(takenHtml).toMatch(/The Room (Is Paid|Pays)/);
-    expect(takenHtml).toContain('The Count');
+    // the chalk was drawn: a first count, which on a tie is "A Level Count"
+    expect(takenHtml).toMatch(/The Count|A Level Count/);
   });
 
   it('never prints an alignment beside a hand', () => {

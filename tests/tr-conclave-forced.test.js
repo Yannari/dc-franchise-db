@@ -60,8 +60,13 @@ function sweep(seeds) {
   for (const seed of seeds) {
     setPlayers(ROSTER);
     seasonConfig.trShieldSource = 'mission';
+    // THREE SEASONS PIN A FORCED NIGHT, so the arms below never rest on how
+    // many the draw happened to produce: a stream change elsewhere took a
+    // 30-seed sweep from three forced nights to two, and the floor went red
+    // over nothing this file is about.
     playTraitorsSeason({ cast: CAST, traitorCount: 3, seed ,
-      randomMurderTwists: ALL_MURDER_TWISTS });
+      randomMurderTwists: ALL_MURDER_TWISTS,
+      ...(seed <= 3 ? { murderSchedule: { 5: 'name-your-own' } } : {}) });
     for (const ep of gs.episodeHistory || []) {
       const c = ep.tr && ep.tr.conclave;
       if (!c) continue;

@@ -746,6 +746,22 @@ function _reasonFor(speaker, target, ep) {
   return { kind: 'cited', sources: cite(b) };
 }
 
+/** One reason per ballot -- see `slateReasons` on the round. Reads only. */
+export function slateReasonsFrom(ballots, ep) {
+  const out = [];
+  const seen = new Set();
+  for (const b of ballots || []) {
+    if (!b || !b.voter || !b.voted) continue;
+    const k = b.voter + '|' + b.voted;
+    if (seen.has(k)) continue;
+    seen.add(k);
+    const r = _reasonFor(b.voter, b.voted, ep);
+    out.push({ voter: b.voter, target: b.voted, reasonKind: r.kind,
+      sources: (r.sources || []).map(s => ({ ...s })), hearsayFrom: r.from || null });
+  }
+  return out;
+}
+
 /**
  * Turn the round's accusations into speeches, dropping any the speaker cannot
  * back with a record they hold. Reads only — the debate already broadcast, so
@@ -1183,6 +1199,12 @@ export function runRoundTable(ep, rng = Math.random, { reveal = true } = {}) {
     // cites a source the speaker holds; the VP renders claim/response/
     // mind-change beats off it.
     speeches: speechesFrom(accusations, ep),
+    // WHY EACH SLATE SAYS WHAT IT SAYS, for every writer and not only the few
+    // who spoke in the debate. A slate's reason used to come from the writer's
+    // own speech, so the silent majority -- most of the room -- read out "a
+    // feeling" even when they held a dated, specific reason. Same pure read as
+    // `speechesFrom`: no draw, no belief written.
+    slateReasons: slateReasonsFrom([...ballots, ...revotes.flatMap(r => r.ballots)], ep),
     // THE ARGUMENTS, as opposed to the list of names. See `clashes` above:
     // the one hour of this format whose whole purpose is people accusing each
     // other to their faces produced no confrontation at all until this

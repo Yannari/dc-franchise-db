@@ -367,6 +367,13 @@ export const CIV_CSS = `
 .civ-grow em{margin-left:auto;font-style:normal;font-weight:900;font-size:.75cqw;letter-spacing:.14em;padding:.2cqw .5cqw;border-radius:.3cqw;background:rgba(255,255,255,.12)}
 .civ-grow em.proud{color:#3fd88f}.civ-grow em.disaster{color:#ff5b7a}
 .civ-gvotes{display:flex;gap:.25cqw;flex-wrap:wrap}
+.civ-grest{display:flex;flex-wrap:wrap;gap:.35cqw;margin-top:.2cqw}
+.civ-grest.land .civ-gchip{animation:civUp .45s both}
+.civ-grest.land .civ-gchip:nth-child(2){animation-delay:.06s}.civ-grest.land .civ-gchip:nth-child(3){animation-delay:.12s}.civ-grest.land .civ-gchip:nth-child(4){animation-delay:.18s}.civ-grest.land .civ-gchip:nth-child(n+5){animation-delay:.24s}
+.civ-gchip{display:inline-flex;align-items:center;gap:.35cqw;padding:.15cqw .55cqw .15cqw .15cqw;border-radius:2cqw;background:rgba(255,255,255,.07);font-size:.85cqw;font-weight:800;letter-spacing:.04em;color:#e8ecff}
+.civ-gchip i{font-style:normal}
+.civ-gchip.lone{background:rgba(255,210,63,.18);box-shadow:0 0 0 .12cqw #ffd23f}
+.civ-gcount{display:inline-block;margin-left:.4cqw;padding:0 .45cqw;border-radius:1cqw;background:rgba(255,255,255,.12);color:#fff;font-size:.85cqw;letter-spacing:0}
 .civ-gmini{display:inline-grid;place-items:center;width:2.3cqw;height:2.3cqw;border-radius:50%;background:#1b1f45 center 25%/cover;border:.16cqw solid var(--ring,#2f7bff);font-weight:800;font-size:.9cqw;vertical-align:middle}
 .civ-gmini.big{width:6cqw;height:6cqw;font-size:2.4cqw;flex:none}
 .civ-gaward{margin-top:auto;text-align:center;font-weight:900;font-size:2.4cqw;letter-spacing:.1em;color:#ffd23f;text-shadow:0 0 2cqw rgba(255,210,63,.7);animation:civSlamIn .6s both}

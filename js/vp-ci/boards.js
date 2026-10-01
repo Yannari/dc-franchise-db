@@ -64,10 +64,17 @@ const BOARDS = {
     const lone = beats.find(b => b.kind === 'lone')?.about;
     const res = beats.find(b => b.kind === 'results');
     const [yes, no] = g.say || ['Agree', 'Disagree'];
-    const col = ans => beats.filter(b => b.kind === 'answer' && b.answer === ans)
-      .map(b => tile(row, b.by, `${b.i === cur?.i ? 'land' : ''} ${b.by === lone ? 'lone' : ''}`, b.strong ? '<span class="civ-badge">SURE</span>' : '')).join('');
+    // The ones who said it out loud, big; once the results are up, everyone
+    // else in their column too, with a name on every face.
+    const spoken = beats.filter(b => b.kind === 'answer');
+    const said = new Set(spoken.map(b => b.by));
+    const col = ans => spoken.filter(b => b.answer === ans)
+      .map(b => tile(row, b.by, `${b.i === cur?.i ? 'land' : ''} ${b.by === lone ? 'lone' : ''}`, b.strong ? '<span class="civ-badge">SURE</span>' : '')).join('')
+      + (res?.all ? `<div class="civ-grest${res.i === cur?.i ? ' land' : ''}">${(res.all[ans] || []).filter(h => !said.has(h))
+        .map(h => `<span class="civ-gchip${h === lone ? ' lone' : ''}" data-h="${esc(h)}">${mini(row, h)}<i>${esc(nameOf(row, h))}</i></span>`).join('')}</div>` : '');
+    const count = ans => (res?.all ? ` <span class="civ-gcount">${(res.all[ans] || []).length}</span>` : '');
     return `${card(`STATEMENT ${r + 1}`, promptText(g, prompt?.promptId))}
-      <div class="civ-gcols"><div><h4 class="yes">${esc(yes.toUpperCase())}</h4>${col('agree')}</div><div><h4 class="no">${esc(no.toUpperCase())}</h4>${col('disagree')}</div></div>
+      <div class="civ-gcols"><div><h4 class="yes">${esc(yes.toUpperCase())}${count('agree')}</h4>${col('agree')}</div><div><h4 class="no">${esc(no.toUpperCase())}${count('disagree')}</h4>${col('disagree')}</div></div>
       ${res ? `<div class="civ-gnote">${res.split === 'lone' ? 'ONE AGAINST THE ROOM' : res.split === 'split' ? 'THE ROOM IS SPLIT' : 'THE ROOM AGREES'}</div>` : ''}`;
   },
   name(row, g, { list, cur }) {
@@ -77,10 +84,13 @@ const BOARDS = {
     const prompt = beats.find(b => b.kind === 'prompt');
     const tone = TONE[prompt?.tone] || 'good';
     const votes = {};
-    for (const b of beats.filter(x => x.kind === 'namer')) (votes[b.about] ||= []).push(b.by);
     const tally = beats.find(b => b.kind === 'tally');
+    // Before the tally, the votes said out loud; from the tally on, every vote.
+    if (tally?.votes) for (const [by, about] of Object.entries(tally.votes)) (votes[about] ||= []).push(by);
+    else for (const b of beats.filter(x => x.kind === 'namer')) (votes[b.about] ||= []).push(b.by);
     const rows = Object.entries(votes).sort((a, b) => b[1].length - a[1].length).map(([h, by]) =>
-      `<div class="civ-grow${tally?.about === h ? ' won ' + tone : ''}">${tile(row, h, 'row')}<span class="civ-gvotes">${by.map(x => mini(row, x)).join('')}</span><b>${by.length}</b></div>`).join('');
+      `<div class="civ-grow${tally?.about === h ? ' won ' + tone : ''}">${tile(row, h, 'row')}<span class="civ-gvotes">${by.map(x => tally?.votes
+        ? `<span class="civ-gchip" data-v="${esc(x)}">${mini(row, x)}<i>${esc(nameOf(row, x))}</i></span>` : mini(row, x)).join('')}</span><b>${by.length}</b></div>`).join('');
     return `${card(g.name.toUpperCase(), promptText(g, prompt?.promptId), tone)}${rows}
       ${tally ? `<div class="civ-gaward ${tone}">${tally.everyone ? 'EVERYONE SAID ' : ''}${esc(nameOf(row, tally.about).toUpperCase())}</div>` : ''}`;
   },

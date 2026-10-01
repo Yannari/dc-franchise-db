@@ -72,7 +72,7 @@ export function applyCarried(state, carried) {
 const board = d => ({ ballots: (d.ballots || []).map(b => ({ voter: b.voter, order: b.order, ...(b.reasons ? { reasons: b.reasons } : {}) })),
   results: (d.results || []).map(r => ({ profile: r.profile, place: r.place })), influencers: d.influencers || [] });
 const BEAT_KEEP = new Set(['phase', 'round', 'kind', 'by', 'about', 'c', 'n', 'answer', 'right', 'promptId', 'factId', 'qid',
-  'tone', 'qkind', 'anon', 'tier', 'split', 'strong', 'everyone', 'mutual', 'many', 'warm', 'off']);
+  'tone', 'qkind', 'anon', 'tier', 'split', 'strong', 'everyone', 'mutual', 'many', 'warm', 'off', 'all', 'votes']);
 /** Likes received, from a likes scene's record (liker -> the profiles they liked). */
 export function likeCounts(likes = {}) {
   const out = {};

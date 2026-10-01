@@ -140,3 +140,44 @@ describe('markup', () => {
     }
   });
 });
+
+// User: "in the game Ice Breaker I don't see the answer of everyone, so I'm
+// confused by some people's reactions". Three answer out loud; once the
+// results are up, the board shows the whole room in its two columns.
+describe('a statement game shows the whole room once the results are up', () => {
+  it('before the results only who spoke; from the results on, every player in their column', () => {
+    for (const x of byFamily.statement || []) {
+      const beats = x.screen.d.beats;
+      for (const res of beats.filter(b => b.kind === 'results')) {
+        const at0 = stepOf(x.screen, b => b === res);
+        if (at0 < 1) continue;
+        const before = at(x, at0 - 1);
+        expect(before.querySelectorAll('.civ-gchip')).toHaveLength(0);
+        const d = at(x, at0, true);
+        const shown = [...d.querySelectorAll('.civ-gcols [data-h]')].map(e => e.dataset.h).sort();
+        const everyone = [...res.all.agree, ...res.all.disagree].sort();
+        expect(shown).toEqual(everyone);
+        // each in the column they answered
+        const cols = d.querySelectorAll('.civ-gcols > div');
+        for (const h of res.all.agree) expect(cols[0].querySelector(`[data-h="${h}"]`)).toBeTruthy();
+        for (const h of res.all.disagree) expect(cols[1].querySelector(`[data-h="${h}"]`)).toBeTruthy();
+      }
+    }
+    expect((byFamily.statement || []).length).toBeGreaterThan(0);
+  });
+});
+
+describe('a naming game shows every vote once the tally is up', () => {
+  it('each voter, under who they named', () => {
+    for (const x of byFamily.name || []) {
+      for (const t of x.screen.d.beats.filter(b => b.kind === 'tally')) {
+        const k = stepOf(x.screen, b => b === t);
+        if (k < 0) continue;
+        const d = at(x, k, true);
+        const voters = [...d.querySelectorAll('.civ-gvotes [data-v]')].map(e => e.dataset.v).sort();
+        expect(voters).toEqual(Object.keys(t.votes).sort());
+      }
+    }
+    expect((byFamily.name || []).length).toBeGreaterThan(0);
+  });
+});

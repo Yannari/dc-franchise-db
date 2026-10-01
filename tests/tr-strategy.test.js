@@ -56,7 +56,13 @@ function truceSweep(n) {
     const s = play(seed);
     for (const t of s.truces) {
       out.push({ seed, truce: t, ...s,
-        sparedWasTraitor: alignmentAt(t.spared, t.ep) === 'traitor',
+        // A TRAITOR WHEN THE DEAL WAS STRUCK, not merely by the end of that
+        // episode: alignment is per episode, and somebody recruited by
+        // ultimatum on the night of the truce reads as a Traitor "at" that
+        // episode while having been a Faithful when it was offered. The
+        // engine rightly pushes no preference for them (seed 2, Alejandro).
+        sparedWasTraitor: alignmentAt(t.spared, t.ep - 1) === 'traitor'
+          && alignmentAt(t.spared, t.ep) === 'traitor',
         againstWasTraitor: alignmentAt(t.against, t.ep) === 'traitor' });
     }
   }
@@ -495,7 +501,10 @@ describe('the truce', () => {
           // it. The weights decided it, but "weight 0.58 against 0.49" is the
           // debug screen's language and printed as a sentence it read as one.
           expect(html).toContain('listens to ' + truce.against + ' more');
-          expect(html).not.toContain(String(truce.theirWeight));
+          // as a NUMBER, not a substring: "10.5px" in the stylesheet holds
+          // "0.5", and a weight of exactly 0.5 read as printed
+          const w = String(truce.theirWeight).replace('.', '\\.');
+          expect(html).not.toMatch(new RegExp('(^|[^\\d.])' + w + '(?![\\d])'));
           // And a player at that table may not read any of it.
           const watcher = (row.tr.table.seated || []).find(n => n !== truce.by);
           expect(rpBuildRoundTable(row, `player:${watcher}`)).not.toContain('the deal</b>');

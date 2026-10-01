@@ -908,8 +908,12 @@ describe('the twist catalogue: one shape a night, and each leaves its own trail'
     // at all. Re-swept over 2,000 seeds with the catalogue on: 42 (ep6), 45
     // (ep2), 196 (ep8) and 249 (ep4) each produce exactly one such night. Two
     // are pinned here and the other two are the spares.
+    // RE-SWEPT 2026-10-01: the writing pass's day-one event gates moved the
+    // stream and 42, 196 and 249 stopped reaching the state. Swept 1-361 with
+    // the same harness: 19 (ep7), 45 (ep2), 290 (ep4), 361 (ep3). The first
+    // two are pinned; 290 and 361 are the spares.
     const found = [];
-    for (const seed of [42, 45]) {
+    for (const seed of [19, 45]) {
       // `season()` and not a bare `playTraitorsSeason`: the seeds were swept
       // with the bespoke missions on, because that is how `seasons()` plays
       // them, and a season played without them is a different season.

@@ -1680,6 +1680,42 @@ const OTHER_CITED = [
   'I agree. {Who} {src}.',
   'It’s {T} for me as well. {Who} {src}.',
 ];
+// A JOINER WITH NO CITABLE REASON BUT A RECORD OF WHERE IT CAME FROM: the
+// person who said it to them, or a read they have carried for days. Both used
+// to collapse into "I was going to say {T} too."
+const OTHER_BARE = {
+  hearsay: [
+    '{F} said the same thing to me this afternoon. It’s {T}.',
+    'I heard it from {F} earlier, and I think {F}’s right. {T}.',
+    '{F} put {T} in my head today, and nothing since has talked me out of it.',
+  ],
+  'gone-cold': [
+    'I’ve had {T} on my list for days.',
+    '{T}. It was my name before tonight, too.',
+  ],
+};
+// THE QUIET END OF THE TABLE: somebody who has not spoken says the name they
+// are about to write, and the reason the record holds for it.
+const QUIET_LEAD = [
+  'Most of the table has not said a word yet. A few of them do now.',
+  'The quiet end of the table has been listening. Some of it speaks up.',
+  'The host waits, and the people who have said nothing start to fill the silence.',
+];
+const QUIET_CITED = [
+  'I haven’t said anything yet, so here it is. {T}. {Who} {src}.',
+  'Since nobody’s asked me: {T}. {Who} {src}.',
+  'I’ve been sitting here thinking it. {T}. {Who} {src}.',
+];
+const QUIET_HEARSAY = [
+  '{F} said it to me earlier, and I haven’t been able to shake it. {T}.',
+  'I’ll say it, since nobody else has. {T}. {F} put it in my head.',
+];
+// …and when that slate is turned over, they do not make the case twice
+const SLATE_SAID_EARLIER = [
+  'Like I said. {T}.',
+  '{T}. You heard my reason.',
+  'I told you before the chalk. {T}.',
+];
 const OTHER_AGREE = [
   'I’m with {A}. It’s {T}.',
   'Same. {T}.',
@@ -2636,6 +2672,8 @@ function _view(rec, observer, trial = null, strategy = null) {
     // loud at this table, and the other three say only that there is nothing
     // to cite.
     speeches: (rec.speeches || []).filter(s => s && s.speaker && s.target),
+    // said aloud as each slate turns over: public on every layer
+    slateReasons: (rec.slateReasons || []).filter(s => s && s.voter && s.target),
     chosen: rec.chosen || null,
     // The deal, as it was watched. Public on every layer — see `_tableRecord`.
     deal: rec.deal ? { ...rec.deal, ballots: (rec.deal.ballots || []).map(b => ({ ...b })) } : null,
@@ -2933,7 +2971,7 @@ function _buildBeats(v) {
         inner += _said(n, 'I said it to ' + _esc(lead) + ' this afternoon, and I’ll say it here. ' + _esc(c.t) + '.');
         return;
       }
-      const O = spoken(n, 'other' + oi, OTHER_CITED, null, { t: c.t, A: _esc(lead) });
+      const O = spoken(n, 'other' + oi, OTHER_CITED, OTHER_BARE, { t: c.t, A: _esc(lead) });
       inner += _said(n, O.line || _fill(_fresh(OTHER_AGREE, key + '|agree|' + c.t + '|' + n), { ...O.subs, A: _esc(lead) }));
     });
     if (others.length > 2) {
@@ -3083,6 +3121,18 @@ function _buildBeats(v) {
     'ganged-up': 'Too many accusers to be a coincidence',
     defended: 'Somebody speaks up for them',
   };
+  // the SECOND clash of a kind at one table: two cards headed "An old argument
+  // reaches the table" one after the other read as a stuck record
+  const CLASH_KIND_AGAIN = {
+    counter: 'And another, thrown straight back',
+    'grievance-fresh': 'Another argument from yesterday',
+    'old-grievance': 'And another old argument',
+    'grievance-old': 'Another one that has run all week',
+    'broken-word': 'Another promise, quoted back',
+    'ganged-up': 'Another pile-on, and another complaint about it',
+    defended: 'Somebody else speaks up',
+  };
+  const kindSeen = new Set();
   const gangReplied = new Map();   // who defended a pile-on → against whom
   for (const c of (v.clashes || [])) {
     // SAID, NOT SUMMARISED. The engine's line reports the exchange ("Bowie
@@ -3100,9 +3150,12 @@ function _buildBeats(v) {
         + (cs.reply ? _said(other, _fill(_fresh(turned ? cs.turnedReply : cs.reply, ck + '|r'), subs)) : '');
       if (c.kind === 'ganged-up') gangReplied.set(other, sp);
     }
+    const heading = (kindSeen.has(c.kind) && CLASH_KIND_AGAIN[c.kind])
+      || CLASH_KIND[c.kind] || 'It gets sharp';
+    kindSeen.add(c.kind);
     push('debate', '<div class="rt-clash">'
       + '<div class="rt-clash-k">' + _ic('candles', 11)
-      + _esc(CLASH_KIND[c.kind] || 'It gets sharp') + '</div>'
+      + _esc(heading) + '</div>'
       + (cs && !cs.keepLine ? '' : '<p class="rt-clash-t">' + _esc(tidyNames(c.line)) + '</p>')
       + talk
       // the defender is chosen before the chalk comes out, and can still
@@ -3123,6 +3176,59 @@ function _buildBeats(v) {
         ? '<p class="rt-clash-since"><b>How it started:</b> ' + _esc(c.since)
         + '</p>' : '') + '</div>',
     null, { kind: 'clash', pair: [c.a, c.b] });
+  }
+
+  // ── THE QUIET END OF THE TABLE ───────────────────────────────────
+  //
+  // A table where four people spoke and eleven wrote read as four people and
+  // a pile of hunches. When fewer than six have spoken, up to three who have
+  // not say the name they are about to write, with the reason the record
+  // holds for that slate (`slateReasons`) -- a dated fact, or who told them.
+  // Only names they really write, and only reasons they really hold.
+  {
+    const spokeAtTable = new Set((v.speeches || []).map(s => s.speaker));
+    const quietSaid = new Set();
+    v._quietSaid = quietSaid;
+    if (!v.endgame && spokeAtTable.size < 6) {
+      const wrote = new Set((v.first || []).map(b => b.voter + '|' + b.target));
+      const quiet = (v.slateReasons || []).filter(r => !spokeAtTable.has(r.voter)
+        && wrote.has(r.voter + '|' + r.target)
+        && (((r.sources || []).length && r.reasonKind === 'cited')
+          || (r.reasonKind === 'hearsay' && r.hearsayFrom && r.hearsayFrom !== r.voter)))
+        .sort((x, y) => _hash(key + '|q|' + x.voter) - _hash(key + '|q|' + y.voter))
+        .slice(0, 3);
+      if (quiet.length) {
+        let qi = '<p>' + _esc(_pick(QUIET_LEAD, key + '|ql')) + '</p>';
+        for (const r of quiet) {
+          const pr = _pr(r.target);
+          const subs = { T: _esc(r.target), t: _esc(r.target), F: _esc(r.hearsayFrom || ''),
+            Who: pr.sub === 'they' ? _esc(r.target) : pr.Sub };
+          let line;
+          if ((r.sources || []).length) {
+            subs.src = _esc(_firstPerson(_pred(r.target,
+              _sayReason(r.sources[0].text, key + '|qs|' + r.voter)), r.voter));
+            line = _fill(_fresh(QUIET_CITED, key + '|qc|' + r.voter), subs);
+          } else {
+            line = _fill(_fresh(QUIET_HEARSAY, key + '|qh|' + r.voter), subs);
+          }
+          qi += _said(r.voter, line);
+          quietSaid.add(r.voter + '|' + r.target);
+        }
+        // ON THE LAST DEBATE CARD, not a card of its own: the table is paced
+        // to a 20-30 card band (tests/tr-vp.test.js) and this is the tail of
+        // the argument, not a new scene
+        const block = '<div class="rt-quiet"><div class="rt-clash-k">' + _ic('candles', 11)
+          + 'The quiet end of the table</div>' + qi + '</div>';
+        const last = [...beats].reverse().find(b => b.phase === 'debate');
+        if (last) {
+          last.html += block;
+          last.meta = { ...(last.meta || {}), quiet: quiet.map(r => r.voter) };
+        } else {
+          push('debate', _card('The Quiet End Of The Table', 'The debate', 'candles', qi),
+            null, { kind: 'quiet', voices: quiet.map(r => r.voter) });
+        }
+      }
+    }
   }
 
   push('slates', _card('Write A Name', 'The slates', 'chalk',
@@ -4100,13 +4206,41 @@ const SLATE_CITED = [
   '{T}. Because {who} {src}.',
   'I wrote {T}, and I’ll tell you why. {Who} {src}.',
   '{T}. {Who} {src}. That’s enough for me.',
+  '{T}. For me it’s this: {who} {src}.',
+  'Mine says {T}. {Who} {src}.',
+  '{T}. Think about it. {Who} {src}.',
+  'I’ve gone with {T}. {Who} {src}.',
+  '{T}, and here’s why. {Who} {src}.',
+  'There was only one name I could write. {T}. {Who} {src}.',
+];
+const SLATE_SAME = [
+  '{T}. Same reason as {P}.',
+  '{P} already said why. {T}.',
+  '{T}, for the reason {P} gave.',
+  'What {P} said. {T}.',
+  'I’m with {P} on this. {T}.',
+  'I’d only be repeating {P}. {T}.',
+  '{T}. {P} said it better than I would.',
+  'Same reason, same name. {T}.',
+  'Nothing to add to what {P} said. {T}.',
+  'You heard {P}. I think the same. {T}.',
+  '{T}. I had the same thing in my head before {P} said it.',
+  'Same as {P}, and for the same reason. {T}.',
 ];
 const SLATE_NOSRC = {
   hearsay: [
     '{T}. I heard it from {F}, and I believe it.',
     '{F} put {T}’s name in my head, and I can’t get it out.',
     'I’ll be honest, it started with {F}. It’s {T}.',
-    '{T}. {F} made the case, and I agree.',
+    '{T}. {F} made the case to me today, and I agree.',
+    '{F} said {T} to me this afternoon. I’ve thought about it since, and I agree.',
+    '{T}. I’m going on what {F} told me.',
+    'It was {F} who put me onto {T}, and I haven’t been able to shake it.',
+    '{T}. {F} was sure, and that was enough for me.',
+    'Somebody I trust said {T}. That was {F}. I’m going with it.',
+    '{T}, because {F} said it before anybody else did.',
+    '{F} talked me into {T} today, and nothing tonight has talked me out of it.',
+    '{T}. I listened to {F}, and I believe it.',
   ],
   public: [
     '{T}. It’s nothing secret. I was sitting right here when it happened.',
@@ -4145,8 +4279,15 @@ const SLATE_NOSRC = {
 };
 function _slateReason(v, b, key) {
   if (!b || !b.target) return '';
-  const sp = (v.speeches || []).find(s => s.speaker === b.voter && s.target === b.target);
+  // the writer's own speech if they made one, else the reason the record holds
+  // for this slate (every writer has one now -- see `slateReasons`)
+  const said = (v.speeches || []).find(s => s.speaker === b.voter && s.target === b.target);
+  const held = (v.slateReasons || []).find(s => s.voter === b.voter && s.target === b.target);
+  const sp = said && ((said.sources || []).length || !held) ? said : (held || said);
   const pr = _pr(b.target);
+  if (v._quietSaid && v._quietSaid.has(b.voter + '|' + b.target)) {
+    return _fill(_fresh(SLATE_SAID_EARLIER, key + '|sse|' + b.voter), { T: b.target });
+  }
   // Singular "they" over a gendered player was a shipped bug class; a player
   // whose pronoun reads as a plural is named instead.
   const Who = pr.sub === 'they' ? b.target : pr.Sub;
@@ -4155,8 +4296,23 @@ function _slateReason(v, b, key) {
   const subs = { T: b.target, Who, who, obj: pr.obj,
     src: src ? _firstPerson(_pred(b.target, _sayReason(src.text, key + '|sl|' + b.voter)), b.voter) : '',
     F: sp && sp.hearsayFrom ? sp.hearsayFrom : '' };
-  if (src) return _fill(_fresh(SLATE_CITED, key + '|slc|' + b.voter), subs)
-    .replace(/\?\./g, '?').replace(/\?,/g, '?').replace(/\.\./g, '.');
+  if (src) {
+    // THE SAME FACT, A SECOND TIME: two writers holding the same reason read
+    // it out word for word. The second points back at the first.
+    const said = (v._slateSaid ||= new Map());
+    const fk = b.target + '|' + src.text;
+    const first = said.get(fk);
+    if (first && first !== b.voter) {
+      return _fill(_fresh(SLATE_SAME, key + '|ssm|' + b.voter), { T: b.target, P: first });
+    }
+    if (!first) said.set(fk, b.voter);
+    // A REASON THAT ENDS ON A QUESTION ends the sentence too: "...save a
+    // Traitor? and I can't get past it" was a frame running on past it
+    const asks = /\?\s*$/.test(subs.src);
+    const pool = asks ? SLATE_CITED.filter(l => /\{src\}\.$/.test(l)) : SLATE_CITED;
+    return _fill(_fresh(pool.length ? pool : SLATE_CITED, key + '|slc|' + b.voter), subs)
+      .replace(/\?\./g, '?').replace(/\?,/g, '?').replace(/\.\./g, '.');
+  }
   let rk = (sp && sp.reasonKind) || 'feeling';
   if (rk === 'hearsay' && !subs.F) rk = 'feeling';
   const pool = SLATE_NOSRC[rk] || SLATE_NOSRC.feeling;

@@ -161,7 +161,7 @@ export const BANK = {
       "Whoever did that to {x}, I'm coming for you. That's it.",
       "I'm angry. I'm not sad, I'm angry.",
       "They've taken the wrong person, because now I'm properly in this.",
-      "{x} was a good one. And someone at that table knew it was coming.",
+      "{x} was a good one. And someone in this castle knew it was coming.",
     ],
     sharp: [
       "Losing {x} tells me something. {x} was onto someone, or someone thought so.",

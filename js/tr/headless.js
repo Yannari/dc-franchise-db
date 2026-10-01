@@ -673,6 +673,9 @@ function _tableRecord(ep, { endgame = false } = {}) {
       reasonKind: s.reasonKind || ((s.sources || []).length ? 'cited' : 'feeling'),
       hearsayFrom: s.hearsayFrom || null,
       swayed: [...(s.swayed || [])], mindChanges: [...(s.mindChanges || [])] })),
+    // a reason for every slate, speaker or not (js/tr/roundtable.js)
+    slateReasons: (round.slateReasons || []).map(s => ({ ...s,
+      sources: (s.sources || []).map(src => ({ ...src })) })),
     chosen: round.banished || null,
     // ── THE DEAL AT THE DINNER (js/tr/banish-or-murder.js) ────────────
     //
@@ -2626,9 +2629,9 @@ const _THREAT = {
     + 'dangerous place on the flags.',
     'By the weekend somebody will have decided what {name} is, and they will be confident about it.',
     'Nobody in this castle has seen {name} before tonight, so every first impression counts double.',
-    '{name} walks in with no history at all, and the room will fill the gap for {obj}.',
+    'Whatever the room does not know about {name}, it will fill in by itself.',
     'Whatever {name} says in the first hour is all anybody here will have to go on.',
-    'There is nothing to look up about {name}. The others will have to work {obj} out the hard way.',
+    'The others will have to work {name} out the hard way, one conversation at a time.',
     'Nobody here owes {name} anything, and nobody holds anything against {obj} either.',
     '{name} has no friends in this castle yet, and no enemies. Both will change quickly.',
     'The first thing {name} gets wrong in here, the room will remember.',

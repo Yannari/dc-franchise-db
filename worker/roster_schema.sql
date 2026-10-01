@@ -70,6 +70,13 @@ CREATE TABLE IF NOT EXISTS roster (
   -- season leaks the ending into a tape recorded before the door shut.
   casting_interview TEXT,
 
+  -- Family and ties: who this character IS to other characters (siblings, a
+  -- parent, a spouse, an ex). A JSON array of {name, kin, role?}, the
+  -- Relationships tab's own vocabulary (core.js REL_KINSHIP). A fact about the
+  -- person, not about a season: set once, read by every show (js/ties.js),
+  -- both ways, with the family nobody typed worked out from it.
+  ties TEXT,
+
   is_returnee INTEGER DEFAULT 0,      -- roster flag carried over from the JSON
   retired     INTEGER DEFAULT 0,      -- 1 = hidden from casting, history preserved
   updated_at  TEXT                    -- ISO timestamp of the last write

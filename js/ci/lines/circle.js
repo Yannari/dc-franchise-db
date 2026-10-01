@@ -87,6 +87,7 @@ export const CIRCLE = {
     { id: 'circle.open.m3', when: { time: 'morning' }, turns: [
       { by: 'a', send: "Rise and shine everybody! New day, new chances {e:sparkle}" },
       { by: 'b', react: "Who has this much energy in the morning?", send: "Love the energy. Can't match it yet" },
+      { by: 'c', send: "Give me ten minutes and a coffee and I'll be right there with you" },
     ] },
     { id: 'circle.open.m4', when: { time: 'morning' }, turns: [
       { by: 'a', send: "Breakfast check. What's everybody eating?" },
@@ -101,6 +102,7 @@ export const CIRCLE = {
     { id: 'circle.open.m6', when: { time: 'morning' }, turns: [
       { by: 'a', send: "It's way too early for Circle Chat and I love it" },
       { by: 'b', send: "Still in my pajamas and proud of it {e:laugh}" },
+      { by: 'c', send: "Pajama gang reporting for duty" },
     ] },
     { id: 'circle.open.e1', when: { time: 'evening' }, turns: [
       { by: 'a', send: "Evening Circle! How was everybody's day?" },
@@ -115,6 +117,7 @@ export const CIRCLE = {
     { id: 'circle.open.e3', when: { time: 'evening' }, turns: [
       { by: 'a', react: "'Circle Chat is now open.' At this hour?", send: "Late night Circle Chat?? I'm here for it {e:eyes}" },
       { by: 'b', send: "Night owls unite" },
+      { by: 'c', send: "I was literally about to fall asleep. Now I'm wide awake lol" },
     ] },
     { id: 'circle.open.e4', when: { time: 'evening' }, turns: [
       { by: 'a', send: "Dinner check. What did everybody make tonight?" },
@@ -124,6 +127,7 @@ export const CIRCLE = {
     { id: 'circle.open.e5', when: { time: 'evening' }, turns: [
       { by: 'a', say: "End of the day. Don't say anything you'll regret at 2 a.m.", send: "Long day in here. Sending love to everybody {e:heart}" },
       { by: 'b', react: "Sending love. Hm.", send: "Love back!" },
+      { by: 'c', send: "Group hug through the screens {e:heart}" },
     ] },
   ],
   'circle.party': [

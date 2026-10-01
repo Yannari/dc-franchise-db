@@ -510,9 +510,19 @@ const BLOCKS = {
   },
   arrival(state, s) {
     const [a] = s.who;
-    const other = s.seenBy.find(h => h !== a);
-    return [{ key: 'arrival', cast: { a } }, ...(other ? [{ key: 'arrival.react', cast: { a: other, b: a } }] : [])];
+    const reactions = s.data.reactions || [];
+    // The alert lands in somebody's apartment first, then the newcomer, then
+    // the room, each in their own way (arrivals.js roomReacts).
+    const reader = reactions[0]?.by || s.seenBy.find(h => h !== a);
+    const out = [];
+    if (reader) out.push({ key: 'arrival.alert', cast: { a: reader } });
+    out.push({ key: 'arrival', cast: { a } });
+    for (const r of reactions) out.push({ key: `arrival.react.${r.kind}`, cast: { a: r.by, b: a } });
+    if (!reactions.length) { const other = s.seenBy.find(h => h !== a); if (other) out.push({ key: 'arrival.react', cast: { a: other, b: a } }); }
+    return out;
   },
+  // Racing to the newcomer: a (who got there first, or second) and b (new).
+  welcome(state, s) { return [{ key: `welcome.${s.data.ending}`, cast: { a: s.who[0], b: s.who[1] } }]; },
   'after-party'(state, s) { return [{ key: 'afterparty', cast: { a: s.who[0], b: s.who[1] } }]; },
   ratings(state, s, final = false) {
     const out = final
@@ -1171,6 +1181,8 @@ const MOTIVES_ = ['friend', 'answers', 'truth', 'apology'];
 const WHY_ = ['strategic', 'protective', 'experimental', 'family'];
 const BLOCK_WHY_ = ['fake', 'threat', 'grudge', 'noBond'];
 export const POOL_KEYS = [
+  // the room takes in a newcomer (lines/arrivals-room.js)
+  'arrival.alert', 'arrival.react.crush', 'arrival.react.threat', 'arrival.react.suspicious', 'arrival.react.ally', 'arrival.react.worried', 'welcome.warm', 'welcome.neutral', 'welcome.cold',
   // the suspense before the name (lines/blocking-build.js)
   'hangout.sealed', 'hangout.solo.sealed', 'block.build.open', 'block.build.open.solo', 'block.build.clue.fake', 'block.fear.fake', 'block.build.clue.threat', 'block.fear.threat', 'block.build.clue.grudge', 'block.fear.grudge', 'block.build.clue.noBond', 'block.fear.noBond', 'block.build.clue.offer', 'block.fear.offer', 'block.fear.dots',
   ...INTENTS_.flatMap(i => ['warm', 'neutral', 'cold'].map(e => `chat.${i}.${e}`)),

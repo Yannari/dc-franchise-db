@@ -63,7 +63,7 @@ export function variantOf(base, screen) {
 
 const BED_BY_KIND = {
   profiles: 'ci-arrival', arrival: 'ci-arrival', 'pair-arrival': 'ci-arrival', chosen: 'ci-arrival', newparty: 'ci-party',
-  chat: 'ci-apartment', date: 'ci-apartment', life: 'ci-apartment', 'home-video': 'ci-goodbye', 'after-party': 'ci-apartment',
+  chat: 'ci-apartment', welcome: 'ci-apartment', date: 'ci-apartment', life: 'ci-apartment', 'home-video': 'ci-goodbye', 'after-party': 'ci-apartment',
   'circle-chat': 'ci-circle-chat', status: 'ci-circle-chat', likes: 'ci-circle-chat', invites: 'ci-circle-chat', race: 'ci-circle-chat',
   report: 'ci-scheming', lurk: 'ci-scheming', hack: 'ci-scheming', 'hack-undone': 'ci-scheming', 'joker-chat': 'ci-scheming',
   'joker-pick': 'ci-scheming', mission: 'ci-scheming', 'burner-exposed': 'ci-drama', recognise: 'ci-drama', disrupter: 'ci-game',

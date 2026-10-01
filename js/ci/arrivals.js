@@ -10,6 +10,9 @@ import { rel, bump, addScene, S, makePact } from './state.js';
 import { initMind, feel } from './mind.js';
 import { nudgeBelief, belief } from './beliefs.js';
 import { applyBlock } from './blocking.js';
+import { attractionOk, SPARK, PERSONA_APPEAL } from './chat.js';
+import { mood } from './mind.js';
+import { streamFor } from '../dr/rng.js';
 
 function join(state, h, entry) {
   state.active.push(h);
@@ -159,5 +162,76 @@ export function chooseNewcomer(state, rng, offered, by) {
 export function arrive(state, rng, handles, entry = 'snoop', ctx = {}) {
   const e = ENTRIES[entry] && handles.length >= ENTRIES[entry].min ? entry : 'snoop';
   ENTRIES[e].run(state, rng, handles, ctx);
+  // The room takes in the news, and races to the newcomer (each on its own stream).
+  for (const h of handles) if (state.active.includes(h)) roomReacts(state, streamFor(state.seed, `react:${state.day}:${h}`), h);
   return e;
+}
+
+// ── "A new Player has entered The Circle." ────────────────────────────
+// User (2026-10-01): "they're barely reacting to the new player arrival". On
+// the show every apartment stops: excitement, a crush, "that's a threat",
+// "is that even real", and "new people are safe and I'm not". Then the race:
+// whoever messages the newcomer first gets the head start (US 1 Ep 2-3).
+//
+// Each reaction is the observer's strongest pull toward the newcomer, all
+// proportional; each leaves its mark. The two keenest then message first;
+// being first is worth the most (the newcomer warms to the first friendly
+// face), which is the edge the user asked for: a way to bring someone close.
+export const ARRIVAL_REACTORS = 4;
+export const RACE = 2;
+export const FIRST_WARMTH = 1.5;
+function pulls(state, rng, o, h, hurting) {
+  const st = k => S(state, o, k) / 10;
+  return {
+    crush: attractionOk(state, o, h) ? rel(o, h, 'attraction') / 10 * 3 : 0,
+    threat: st('strategic') * 2.4 * rng(),
+    suspicious: st('intuition') * 2.4 * rng() * (state.profiles[h]?.mode === 'catfish' ? 1.4 : 0.8),
+    ally: st('social') * 2.4 * rng() * (1 + mood(state, o, 'loneliness') / 10),
+    worried: (hurting.includes(o) ? 2 : 0) + mood(state, o, 'stress') / 10 * rng(),
+  };
+}
+function roomReacts(state, rng, h) {
+  const others = state.active.filter(o => o !== h);
+  // First sparks with a newcomer, as the first cast had on day one (chat.js seedAttraction).
+  for (const o of others) {
+    if (attractionOk(state, o, h)) bump(o, h, 'attraction', rng() * SPARK * (state.profiles[h].mode === 'catfish' ? PERSONA_APPEAL : 1));
+    if (attractionOk(state, h, o)) bump(h, o, 'attraction', rng() * SPARK * (state.profiles[o].mode === 'catfish' ? PERSONA_APPEAL : 1));
+  }
+  const last = [...state.ratings].reverse().find(r => !r.final && !r.hidden);
+  const hurting = last ? last.results.slice(-3).map(r => r.profile) : [];
+  const felt = others.map(o => {
+    const [kind, w] = Object.entries(pulls(state, rng, o, h, hurting)).sort((a, b) => b[1] - a[1])[0];
+    return { by: o, kind, w };
+  }).sort((a, b) => b.w - a.w);
+  // The strongest few, a different feeling each where the room allows it.
+  const shown = [], kinds = new Set();
+  for (const r of felt) if (shown.length < ARRIVAL_REACTORS && !kinds.has(r.kind)) { shown.push(r); kinds.add(r.kind); }
+  for (const r of felt) if (shown.length < ARRIVAL_REACTORS && !shown.includes(r)) shown.push(r);
+  // What they saw: the arrival itself (everybody in the building saw the alert).
+  const arrival = state.scenes.filter(s => s.kind === 'arrival' && s.who[0] === h).at(-1);
+  for (const r of felt) {
+    if (r.kind === 'threat') bump(r.by, h, 'resentment', 0.2 + r.w * 0.1);
+    else if (r.kind === 'suspicious' && arrival?.seenBy?.includes(r.by)) nudgeBelief(state, r.by, h, 'real', -0.05 * r.w, arrival);
+    else if (r.kind === 'ally') bump(r.by, h, 'affection', 0.3 + r.w * 0.15);
+    else if (r.kind === 'crush') feel(state, r.by, 'elation', 0.3 + r.w * 0.1);
+    else if (r.kind === 'worried') feel(state, r.by, 'stress', 0.3 + r.w * 0.15);
+  }
+  if (arrival) arrival.data.reactions = shown.map(({ by, kind }) => ({ by, kind }));
+  // THE RACE: the keenest message first (a crush, a would-be ally, or a
+  // strategist keeping a threat close); the newcomer warms most to the first.
+  const keen = felt.filter(r => r.kind !== 'worried' && r.kind !== 'suspicious').slice(0, RACE);
+  keen.forEach((r, i) => {
+    const pWarm = Math.min(0.9, Math.max(0.1, 0.45 + rel(h, r.by, 'attraction') / 20 + S(state, h, 'social') / 40 - (i ? 0.1 : 0)));
+    const roll = rng();
+    const ending = roll < pWarm ? 'warm' : roll < pWarm + 0.25 ? 'neutral' : 'cold';
+    const first = i === 0;
+    if (ending === 'warm') {
+      bump(h, r.by, 'affection', first ? FIRST_WARMTH : FIRST_WARMTH / 2);
+      bump(h, r.by, 'trust', first ? 0.6 : 0.3);
+      bump(r.by, h, 'affection', 0.5);
+      feel(state, h, 'loneliness', -1);
+    } else if (ending === 'neutral') bump(h, r.by, 'affection', 0.3);
+    else { bump(h, r.by, 'affection', -0.4); feel(state, r.by, 'stress', 0.3); }
+    addScene(state, 'welcome', [r.by, h], { ending, first, why: r.kind }, [r.by, h]);
+  });
 }

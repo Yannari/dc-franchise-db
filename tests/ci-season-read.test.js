@@ -44,3 +44,41 @@ describe('a read of whole seasons', () => {
     }
   });
 });
+
+// A profile swap day is written after it is played: the scenes before the
+// swap must still name the person who was behind each profile then, and a
+// line typed for a swapped profile says who was typing.
+import { setPlayers as _sp } from '../js/core.js';
+describe('a profile swap', () => {
+  it('the morning before the swap reads the owners; during it, the typist is named', () => {
+    let checked = 0;
+    for (const seed of [1, 2, 3, 4, 5, 6, 7, 8]) {
+      const cast = rosterCast(13, seed); _sp(cast); const names = cast.map(p => p.name);
+      const { state, rows } = playCircleSeason({ cast: names, setup: circleSetup(names), pool: DEFAULT_POOL, seed,
+        options: { bookings: { social1: 'ci-profile-swap' } } });
+      const swap = state.scenes.find(s => s.kind === 'swap');
+      if (!swap) continue;
+      checked++;
+      const [A, B] = swap.data.handles;
+      const [pa, pb] = swap.data.people;   // the owners before the swap
+      // before: a stage direction under A's line names A's owner, never B's
+      for (const s of state.scenes.filter(x => x.day === swap.day && x.id < swap.id && x.script)) {
+        for (const b of s.script.blocks) {
+          for (const l of b.lines) if (l.who === A) expect(l.person, `${s.kind} ${l.text}`).toBeUndefined();
+          // a stage direction under A's own line is about A's owner, not the one who takes A over later
+          const onlyA = b.lines.length && b.lines.every(l => l.who === A);
+          if (onlyA && b.beat && !pa[0].startsWith(pb[0].split(' ')[0])) expect(b.beat, b.key).not.toContain(pb[0].split(' ')[0]);
+        }
+      }
+      // during: A's lines are typed by B's owner, and say so
+      const during = state.scenes.filter(x => x.id > swap.id && x.day === swap.day && x.script)
+        .flatMap(s => s.script.blocks.flatMap(b => b.lines)).filter(l => l.who === A && l.kind !== 'stage');
+      for (const l of during) expect(l.person).toBe(pb[0].split(' ')[0]);
+      // and the screen draws that day's earlier scenes with the morning's people
+      const row = rows.find(r => r.day === swap.day);
+      const early = row.ci.aired.find(s => s.id < swap.id && s.who.includes(A));
+      if (early) expect(early.people?.[A]).toEqual(pa);
+    }
+    expect(checked).toBeGreaterThan(2);
+  });
+});

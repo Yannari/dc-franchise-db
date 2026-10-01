@@ -868,7 +868,7 @@ export const TWIST_LINES = {
 export const IDENTITY_LINES = {
   ...E('swap.told', [
     { turns: [{ by: 'a', react: "'Until the next blocking, you will play {b}'s profile.' I'm {b} now?" }, { by: 'a', say: "Okay. Think like {b}. Type like {b}." }],
-      beat: "{a} scrolls through {b}'s old messages to learn the voice." },
+      beat: "{a} scrolls back through every old message on the new profile, learning the voice." },
     { turns: [{ by: 'a', react: "A profile swap. With {b}. Nobody else knows. This is insane." }] },
     { turns: [{ by: 'a', say: "I have to keep all of {b}'s friendships alive and not wreck them. No pressure." }], beat: '{a} takes notes like it is an exam.' },
   ]),

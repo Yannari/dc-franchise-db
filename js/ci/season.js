@@ -20,7 +20,7 @@ import { formAlliance, checkIn, activeAlliances, afterRatings, doubleAgents, dri
 import { gs, setGs, players } from '../core.js';
 import { streamFor } from '../dr/rng.js';
 import { CIRCLE_FORMAT } from '../shows.js';
-import { newState, addScene, bump, peopleOf } from './state.js';
+import { newState, addScene, bump, peopleOf, peopleAtScene } from './state.js';
 import { truthOf, drawPersonas, buildProfiles } from './profiles.js';
 import { setBelief, nudgeBelief } from './beliefs.js';
 import { bioFor } from './persona-data.js';
@@ -369,6 +369,7 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
         arrivals: arriving, scenes: state.scenes.filter(s => s.day === d.day).length,
         aired: state.scenes.filter(s => s.day === d.day && s.aired)
           .map(s => ({ id: s.id, kind: s.kind, who: s.who, script: s.script || null,
+            ...((p => (p ? { people: p } : {}))(peopleAtScene(state, s.id, Object.keys(state.profiles)))),
             ...(s.kind === 'game' ? { game: s.data.gameId } : {}),
             ...(s.kind === 'recognise' && s.data.profile ? { about: s.data.profile } : {}),
             ...(STAGE_DATA[s.kind] ? { d: STAGE_DATA[s.kind](s.data, s) } : {}) })) } };

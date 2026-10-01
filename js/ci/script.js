@@ -729,8 +729,10 @@ const BLOCKS = {
   },
   // Identity twists (Plan 3b Task 9b).
   swap(state, s) {
+    // Written after the swap: whoever is behind A now was behind B this
+    // morning, so each is told about the profile they now hold ({b} = a).
     const [A, B] = s.data.handles;
-    return [{ key: 'swap.told', cast: { a: A, b: B } }, { key: 'swap.told', cast: { a: B, b: A } }];
+    return [{ key: 'swap.told', cast: { a: A, b: A } }, { key: 'swap.told', cast: { a: B, b: B } }];
   },
   'swap-back'(state, s) { return s.data.handles.map(h => ({ key: 'swap.back', cast: { a: h } })); },
   clone(state, s) {
@@ -1163,6 +1165,21 @@ export function sceneBlocks(state, scene) {
 export const ON_STAGE = new Set(['ratings', 'final-ratings', 'hangout', 'blocking', 'visit', 'meet', 'reveal', 'goodbye']);
 
 export function writeScene(state, scene) {
+  // Who is behind each profile is read as of this scene (state.js peopleOf).
+  state._writing = scene.id;
+  try {
+    const out = writeSceneNow(state, scene);
+    // A swapped profile: the line says who was really typing ("IVY (for RIPPER)").
+    for (const b of scene.script?.blocks || []) for (const l of b.lines || []) {
+      const p = l.who && state.profiles[l.who];
+      if (!p?.home || l.person) continue;
+      const now = peopleOf(state, l.who);
+      if (now.join('|') !== p.home.join('|')) l.person = now[0].split(' ')[0];
+    }
+    return out;
+  } finally { state._writing = null; }
+}
+function writeSceneNow(state, scene) {
   const blocks = [];
   // Who has already said hello to the group in this scene (an authored greeting).
   const ctx = { kind: scene.kind, scene, greeted: new Set() };

@@ -161,9 +161,33 @@ function _noScene(v, s) {
   const drawers = (v.teams || []).map((t, i) =>
     '<g class="ms-no-drawer' + (i < (s.compartments || 0) ? ' open' : '') + '" data-dw="' + i + '" transform="translate(' + (120 + i * 760) + ',290)">'
     + '<rect width="86" height="44" rx="4"/><rect class="pull" x="34" y="18" width="18" height="6" rx="3"/></g>').join('');
+  // THE DOME (redrawn 2026-09-30, "some of your decor looks childish"): ribs
+  // curving overhead, the shutter slit open on the stars and the moon, a
+  // telescope on its mount, the brass orrery on a stone plinth, flagstones
+  let stars = '';
+  for (let i = 0; i < 60; i++) {
+    const x = 470 + ((i * 37) % 140), y = 8 + ((i * 53) % 150);
+    stars += '<circle cx="' + x + '" cy="' + y + '" r="' + (0.6 + (i % 3) * .5) + '" fill="#fff" opacity="' + (.3 + (i % 4) * .15) + '"/>';
+  }
+  let ribs = '';
+  for (let i = -5; i <= 5; i++) ribs += '<path d="M540 -40 Q' + (540 + i * 150) + ' 40 ' + (540 + i * 112) + ' 250" stroke="#2a2030" stroke-width="' + (i === 0 ? 0 : 7) + '" fill="none" opacity=".9"/>';
+  let flags = '';
+  for (let i = 0; i < 9; i++) flags += '<path d="M' + (540 + (i - 4) * 40) + ' 252 L' + (540 + (i - 4) * 150) + ' 360" stroke="#000" stroke-width="1.4" opacity=".35"/>';
   return '<rect width="1080" height="360" fill="url(#ms-no-sky-' + e + ')"/>'
+    + '<path d="M470 0 H610 V250 H470Z" fill="url(#ms-no-night-' + e + ')"/>' + stars
+    + '<circle cx="580" cy="56" r="18" fill="#e8ecf4" opacity=".9"/><circle cx="586" cy="52" r="18" fill="#1a1c34" opacity=".55"/>'
+    + '<path d="M470 0 H610 V250 H470Z" fill="none" stroke="#3a3040" stroke-width="6"/>'
+    + ribs
+    + '<path d="M0 250 Q540 214 1080 250 V360 H0Z" fill="url(#ms-no-floor-' + e + ')"/>' + flags
     + '<g class="ms-no-stars"></g>'
-    + '<g class="ms-no-orrery" transform="translate(540,150)">' + rings
+    // the telescope, left, on its mount
+    + '<g transform="translate(250,250)" opacity=".95"><path d="M-30 0 L0 -60 L30 0" stroke="#2a2230" stroke-width="5" fill="none"/>'
+    + '<rect x="-70" y="-108" width="130" height="22" rx="10" transform="rotate(-28)" fill="url(#ms-no-brass-' + e + ')" stroke="#4a3a20" stroke-width="2"/></g>'
+    // the plinth
+    + '<path d="M500 250 L510 216 H570 L580 250Z" fill="#4a4248" stroke="#2a2428" stroke-width="2"/>'
+    + '<rect x="526" y="176" width="28" height="42" fill="#3a3238"/>'
+    + '<ellipse cx="540" cy="150" rx="200" ry="200" fill="url(#ms-no-glow-' + e + ')"/>'
+    + '<g class="ms-no-orrery" transform="translate(540,150)" style="--brass:url(#ms-no-brass-' + e + ');--planet:url(#ms-no-planet-' + e + ')">' + rings
     + '<circle class="ms-no-sun' + (s.open ? ' lit' : '') + '" r="24"/></g>'
     + drawers;
 }
@@ -171,7 +195,12 @@ function _noStage(v, states, n) {
   const s = states[Math.max(0, Math.min(states.length - 1, n))] || states[0];
   const e = v.epNum;
   const defs = '<linearGradient id="ms-no-sky-' + e + '" x1="0" x2="0" y1="0" y2="1">'
-    + '<stop offset="0" stop-color="#171426"/><stop offset=".6" stop-color="#120f1c"/><stop offset="1" stop-color="#0c0a14"/></linearGradient>';
+    + '<stop offset="0" stop-color="#1c1626"/><stop offset=".6" stop-color="#2a1e2e"/><stop offset="1" stop-color="#140f18"/></linearGradient>'
+    + '<linearGradient id="ms-no-night-' + e + '" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#0a0e24"/><stop offset="1" stop-color="#26244a"/></linearGradient>'
+    + '<linearGradient id="ms-no-floor-' + e + '" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#3a3036"/><stop offset="1" stop-color="#120e12"/></linearGradient>'
+    + '<linearGradient id="ms-no-brass-' + e + '" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#f6dc8a"/><stop offset=".45" stop-color="#b08a3a"/><stop offset=".7" stop-color="#e8c470"/><stop offset="1" stop-color="#6a4e1e"/></linearGradient>'
+    + '<radialGradient id="ms-no-planet-' + e + '" cx=".35" cy=".35" r=".7"><stop offset="0" stop-color="#e8dccc"/><stop offset=".6" stop-color="#8a7a6a"/><stop offset="1" stop-color="#2a2420"/></radialGradient>'
+    + '<radialGradient id="ms-no-glow-' + e + '"><stop offset="0" stop-color="#ffd890" stop-opacity=".22"/><stop offset="1" stop-color="#ffd890" stop-opacity="0"/></radialGradient>';
   return stageShell({ epNum: e, defs, scene: _noScene(v, s),
     cap: [s.trueRings + ' of 6 rings true', (NO_CAP[s.capPhase] || NO_CAP.ledger)[1]],
     pot: s.potAfter, vars: '--ms-accent:#e0c46a;--ms-ink:#efe7d6', label: 'The orrery, staged' });
@@ -616,10 +645,10 @@ const CAUSEWAY = {
 .ms-dc-font .glint{opacity:0;transition:opacity .6s}
 .ms-dc-font.taken .glint{opacity:1;animation:ms-glow 1.4s ease-in-out infinite}
 @keyframes ms-glow{50%{opacity:.3}}
-.ms-no-ring circle{stroke:#4a4133;transition:stroke .7s,filter .7s}
-.ms-no-ring .bead{fill:#4a4133;stroke:none}
-.ms-no-ring.true circle{stroke:#e0c46a;filter:drop-shadow(0 0 6px rgba(224,196,106,.7))}
-.ms-no-ring.true .bead{fill:#e0c46a}
+.ms-no-ring circle{stroke:var(--brass,#4a4133);opacity:.75;transition:opacity .7s,filter .7s}
+.ms-no-ring .bead{fill:var(--planet,#4a4133);stroke:#2a2014;stroke-width:1;opacity:1}
+.ms-no-ring.true circle{opacity:1;filter:drop-shadow(0 0 6px rgba(224,196,106,.8)) brightness(1.25)}
+.ms-no-ring.true .bead{filter:drop-shadow(0 0 5px rgba(255,230,160,.9))}
 .ms-no-ring{transform-box:fill-box;transform-origin:50% 50%;animation:ms-no-turn 40s linear infinite}
 .ms-no-ring:nth-child(2n){animation-duration:28s;animation-direction:reverse}
 @keyframes ms-no-turn{to{transform:rotate(360deg)}}
@@ -905,10 +934,10 @@ const ORRERY = {
 .ms-dc-font .glint{opacity:0;transition:opacity .6s}
 .ms-dc-font.taken .glint{opacity:1;animation:ms-glow 1.4s ease-in-out infinite}
 @keyframes ms-glow{50%{opacity:.3}}
-.ms-no-ring circle{stroke:#4a4133;transition:stroke .7s,filter .7s}
-.ms-no-ring .bead{fill:#4a4133;stroke:none}
-.ms-no-ring.true circle{stroke:#e0c46a;filter:drop-shadow(0 0 6px rgba(224,196,106,.7))}
-.ms-no-ring.true .bead{fill:#e0c46a}
+.ms-no-ring circle{stroke:var(--brass,#4a4133);opacity:.75;transition:opacity .7s,filter .7s}
+.ms-no-ring .bead{fill:var(--planet,#4a4133);stroke:#2a2014;stroke-width:1;opacity:1}
+.ms-no-ring.true circle{opacity:1;filter:drop-shadow(0 0 6px rgba(224,196,106,.8)) brightness(1.25)}
+.ms-no-ring.true .bead{filter:drop-shadow(0 0 5px rgba(255,230,160,.9))}
 .ms-no-ring{transform-box:fill-box;transform-origin:50% 50%;animation:ms-no-turn 40s linear infinite}
 .ms-no-ring:nth-child(2n){animation-duration:28s;animation-direction:reverse}
 @keyframes ms-no-turn{to{transform:rotate(360deg)}}
@@ -1144,10 +1173,10 @@ const ACCOUNT = {
 .ms-dc-font .glint{opacity:0;transition:opacity .6s}
 .ms-dc-font.taken .glint{opacity:1;animation:ms-glow 1.4s ease-in-out infinite}
 @keyframes ms-glow{50%{opacity:.3}}
-.ms-no-ring circle{stroke:#4a4133;transition:stroke .7s,filter .7s}
-.ms-no-ring .bead{fill:#4a4133;stroke:none}
-.ms-no-ring.true circle{stroke:#e0c46a;filter:drop-shadow(0 0 6px rgba(224,196,106,.7))}
-.ms-no-ring.true .bead{fill:#e0c46a}
+.ms-no-ring circle{stroke:var(--brass,#4a4133);opacity:.75;transition:opacity .7s,filter .7s}
+.ms-no-ring .bead{fill:var(--planet,#4a4133);stroke:#2a2014;stroke-width:1;opacity:1}
+.ms-no-ring.true circle{opacity:1;filter:drop-shadow(0 0 6px rgba(224,196,106,.8)) brightness(1.25)}
+.ms-no-ring.true .bead{filter:drop-shadow(0 0 5px rgba(255,230,160,.9))}
 .ms-no-ring{transform-box:fill-box;transform-origin:50% 50%;animation:ms-no-turn 40s linear infinite}
 .ms-no-ring:nth-child(2n){animation-duration:28s;animation-direction:reverse}
 @keyframes ms-no-turn{to{transform:rotate(360deg)}}
@@ -1457,10 +1486,10 @@ const VAULT = {
 .ms-dc-font .glint{opacity:0;transition:opacity .6s}
 .ms-dc-font.taken .glint{opacity:1;animation:ms-glow 1.4s ease-in-out infinite}
 @keyframes ms-glow{50%{opacity:.3}}
-.ms-no-ring circle{stroke:#4a4133;transition:stroke .7s,filter .7s}
-.ms-no-ring .bead{fill:#4a4133;stroke:none}
-.ms-no-ring.true circle{stroke:#e0c46a;filter:drop-shadow(0 0 6px rgba(224,196,106,.7))}
-.ms-no-ring.true .bead{fill:#e0c46a}
+.ms-no-ring circle{stroke:var(--brass,#4a4133);opacity:.75;transition:opacity .7s,filter .7s}
+.ms-no-ring .bead{fill:var(--planet,#4a4133);stroke:#2a2014;stroke-width:1;opacity:1}
+.ms-no-ring.true circle{opacity:1;filter:drop-shadow(0 0 6px rgba(224,196,106,.8)) brightness(1.25)}
+.ms-no-ring.true .bead{filter:drop-shadow(0 0 5px rgba(255,230,160,.9))}
 .ms-no-ring{transform-box:fill-box;transform-origin:50% 50%;animation:ms-no-turn 40s linear infinite}
 .ms-no-ring:nth-child(2n){animation-duration:28s;animation-direction:reverse}
 @keyframes ms-no-turn{to{transform:rotate(360deg)}}

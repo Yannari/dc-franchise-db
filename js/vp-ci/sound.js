@@ -171,7 +171,12 @@ export function soundFor(screen, idx) {
     if (k === 'reveal.winner' && st.host) return { cue: 'ci-winner', bed: 'ci-winner' };
     if (k === 'reveal.place' && st.host) return { cue: 'ci-reveal', bed: null };
   }
-  if (screen.kind === 'visit' && first(/^visit\.(door|sit)/)) return { cue: 'ci-door', bed: null };
+  if (screen.kind === 'visit' && first(/^visit\.(door|sit)/)) {
+    // The walk's music stops at the door (user: 'the music should change
+    // after the door opens'): the talk, or the shock of a catfish.
+    return { cue: 'ci-door', bed: /^visit\.door\.(catfish|both|caught)/.test(k) ? 'ci-drama' : 'ci-meet' };
+  }
+  if (screen.kind === 'visit' && first(/^visit\.(after|inperson\.after)/)) return { cue: null, bed: 'ci-apartment' };
   // A game board: the first line of each beat sounds like what the beat does.
   if (screen.stage === 'game' && st.bi != null && screen.steps.findIndex(x => x.bi === st.bi) === idx) {
     const b = screen.d?.beats?.[st.bi] || {};

@@ -19,6 +19,7 @@
 import { faceOf } from './steps.js';
 import { esc, hashify, faceUrl, ringOf, nameOf, realOf, isCatfish, bg, aptNo, captionHtml, dlg, cam, tile, where, upTo, speakerAt, bgUi } from './parts.js';
 import { gameStage } from './boards.js';
+import { visitStage } from './visit-stage.js';
 
 // ── THE RATINGS ────────────────────────────────────────────────────────
 const RESULT = /^result\./;
@@ -165,6 +166,8 @@ const TOGETHER = /^visit\.(door|sit|talk|power|hand|kiss|bye|inperson\.bye)/;
 function roomStage(row, screen, idx, fresh) {
   const st = idx >= 0 ? screen.steps[idx] : null;
   if (screen.kind === 'meet') return meetStage(row, screen, idx, fresh, st);
+  // The visit: the hallway, everybody's apartment, the door (visit-stage.js).
+  if (screen.kind === 'visit') return visitStage(row, screen, idx, fresh);
   const [visitor, host] = screen.who;
   const k = st?.key || '';
   const doorAt = screen.steps.findIndex(x => TOGETHER.test(x.key || ''));

@@ -103,9 +103,22 @@ describe('the visit and the meet', () => {
   it('two real people share a frame only after the door opens', () => {
     for (const x of of('visit')) {
       const door = firstIdx(x.screen, /^visit\.(door|sit)/);
-      if (door > 0) expect(at(x, door - 1).querySelector('.civ-two')).toBeNull();
+      if (door > 0) expect(at(x, door - 1).querySelector('.cva-two')).toBeNull();
       const d = at(x, door);
-      expect(d.querySelectorAll('.civ-two .civ-person')).toHaveLength(2);
+      expect(d.querySelectorAll('.cva-two .cva-person')).toHaveLength(2);
+    }
+  });
+  it('the walk is the hallway; each one waits in their own apartment; the last one waiting gets the knock', () => {
+    for (const x of of('visit').filter(v => v.screen.steps.some(s => /^visit\.wait/.test(s.key || '')))) {
+      const walk = firstIdx(x.screen, /^visit\.(choose|walk)/);
+      if (walk >= 0) expect(at(x, walk).querySelector('.cvh-svg')).not.toBeNull();
+      const waits = x.screen.steps.map((s, i) => (/^visit\.wait/.test(s.key || '') ? i : -1)).filter(i => i >= 0);
+      for (const i of waits) expect(at(x, i).querySelector('.cva-svg'), x.screen.steps[i].key).not.toBeNull();
+      // whose door it is stays secret until the knock: the visited player waits last
+      const lastSpeaker = [...waits].reverse().map(i => x.screen.steps[i].who).find(Boolean);
+      expect(lastSpeaker).toBe(x.screen.who[1]);
+      expect(at(x, waits.at(-1)).querySelector('.cva-door.knock')).not.toBeNull();
+      expect(at(x, waits[0]).querySelector('.cva-door.knock')).toBeNull();
     }
   });
   it('at the finale everyone who has arrived is in the room', () => {

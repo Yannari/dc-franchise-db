@@ -840,7 +840,9 @@ const BLOCKS = {
     const out = s.data.inPerson ? [] : [{ key: `visit.choose.${s.data.motive}`, cast: { a: h, b: to }, extra: { motive: s.data.motive } }];
     if (!s.data.inPerson) out.push({ key: 'visit.walk', cast: { a: h, b: to } });
     // Everybody waits, the one about to be visited included: nobody knows whose door it is.
-    if (!s.data.inPerson) for (const w of [to, ...state.active.filter(x => x !== to)].slice(0, 5)) {
+    // The show keeps whose door it is for the knock: the others wait first,
+    // the one being visited last, and the knock is theirs.
+    if (!s.data.inPerson) for (const w of [...state.active.filter(x => x !== to && x !== h).slice(0, 3), to]) {
       out.push({ key: state.profiles[w].mode === 'catfish' ? 'visit.wait.catfish' : 'visit.wait', cast: { a: w, b: h } });
     }
     // The door opens both ways: each sees who was behind the other profile.

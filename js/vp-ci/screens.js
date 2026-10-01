@@ -17,6 +17,7 @@
 import { circleScreens } from './steps.js';
 import { withTeasers } from './teasers.js';
 import { TEASER_CSS } from './teaser-stage.js';
+import { VISIT_CSS } from './visit-stage.js';
 import { stageInner, paintStage } from './stage.js';
 import { CIV_CSS, CIV_FONTS } from './style.js';
 import { bedFor, playStep } from './sound.js';
@@ -52,7 +53,7 @@ export function circleVpScreens(row, { prev = null, next = null } = {}) {
       label: screen.title,
       // The root carries the scene's music bed (vp-ui.js reads data-ambient
       // off the first element after its stage cue, so the style goes inside).
-      html: `<div class="civ" data-uid="${uid}" data-ambient="${bedFor(screen)}"><style>${CIV_FONTS}${CIV_CSS}${TEASER_CSS}</style>
+      html: `<div class="civ" data-uid="${uid}" data-ambient="${bedFor(screen)}"><style>${CIV_FONTS}${CIV_CSS}${TEASER_CSS}${VISIT_CSS}</style>
   <div class="civ-top"><div class="civ-logo">${LOGO}<div>THE CIRCLE<small>Episode ${esc(row.num)} · Day ${esc(row.day)}</small></div></div>
     <div class="civ-title">${esc(screen.title)}</div></div>
   <div class="civ-stagewrap"><div class="civ-stage" id="civ-st-${uid}" onclick="civNext('${uid}')" title="Click for the next line">${stageInner(row, screen, -1)}</div>

@@ -6,60 +6,63 @@
 // `visit.hand`: a tells b that c is not real. `report`: a, who was visited,
 // tells b that the visit warned about c — a lie.
 export const VISIT = {
+  // The show keeps WHO for the knock: the blocked player says why, never the
+  // name (user, 2026-10-01: "always respect the show"). {b} is still cast,
+  // for the visit itself; these lines must not use it.
   'visit.choose.friend': [
     { id: 'visit.choose.friend.01', turns: [
       { by: 'a', react: "'You may visit one Player before you leave.' I know exactly who." },
-      { by: 'a', say: "{b} was my person in here. I'm not leaving without a hug." },
+      { by: 'a', say: "There's one person in here who was really my person. I'm not leaving without a hug." },
     ] },
     { id: 'visit.choose.friend.02', turns: [
-      { by: 'a', say: "I just want to meet {b}. That's it. No game. Just a friend." },
+      { by: 'a', say: "I just want to meet my friend. That's it. No game." },
     ], beat: '{a} grabs a jacket on the way out.' },
     { id: 'visit.choose.friend.03', turns: [
-      { by: 'a', say: "I'm going to see {b}. I need {b.obj} to know I'm rooting for {b.obj}." },
+      { by: 'a', say: "Somebody in here needs to know I'm rooting for them. In person." },
     ] },
   ],
   'visit.choose.answers': [
     { id: 'visit.choose.answers.01', turns: [
-      { by: 'a', say: "{b} blocked me. I want to look {b.obj} in the eye and hear why." },
+      { by: 'a', say: "Somebody blocked me. I want to look them in the eye and hear why." },
     ], beat: '{a} walks out of the apartment without looking back.' },
     { id: 'visit.choose.answers.02', turns: [
       { by: 'a', react: "Oh, I'm going to see an Influencer. You'd better believe it." },
-      { by: 'a', say: "{b} gets to explain this one in person." },
+      { by: 'a', say: "Somebody gets to explain this one in person." },
     ] },
     { id: 'visit.choose.answers.03', turns: [
-      { by: 'a', say: "I'm not mad. Okay, I'm a little mad. I'm going to see {b}." },
+      { by: 'a', say: "I'm not mad. Okay, I'm a little mad. And I know whose door I'm knocking on." },
     ] },
     { id: 'visit.choose.answers.04', turns: [
-      { by: 'a', say: "I'm not leaving without looking {b} in the eye." },
+      { by: 'a', say: "I'm not leaving without looking one of them in the eye." },
     ], beat: '{a} puts on shoes without sitting down.' },
     { id: 'visit.choose.answers.05', turns: [
       { by: 'a', react: "I know who's getting a knock on the door tonight." },
-      { by: 'a', say: "{b} is gonna explain this to my face." },
+      { by: 'a', say: "And they're gonna explain this to my face." },
     ] },
     { id: 'visit.choose.answers.06', turns: [
-      { by: 'a', say: "It's {b}. {b} made this decision. {b} can own it." },
+      { by: 'a', say: "They made this decision. They can own it. Face to face." },
     ] },
   ],
   'visit.choose.truth': [
     { id: 'visit.choose.truth.01', turns: [
-      { by: 'a', say: "I've had a feeling about {b} since day one. Now I get to find out." },
+      { by: 'a', say: "I've had a feeling about one profile since day one. Now I get to find out." },
     ] },
     { id: 'visit.choose.truth.02', turns: [
-      { by: 'a', say: "If I'm leaving, I'm leaving with an answer. Is {b} who {b.sub} says {b.sub} is?" },
+      { by: 'a', say: "If I'm leaving, I'm leaving with an answer. Is that profile real or not?" },
     ], beat: '{a} ties {a.posAdj} shoes, fast.' },
     { id: 'visit.choose.truth.03', turns: [
-      { by: 'a', react: "Oh, I know who I'm visiting. I'm going to find out if {b} is real." },
+      { by: 'a', react: "Oh, I know who I'm visiting. I'm going to find out who's really behind that screen." },
     ] },
   ],
   'visit.choose.apology': [
     { id: 'visit.choose.apology.01', turns: [
-      { by: 'a', say: "{b} deserves to hear it from me, face to face. I owe {b.obj} that." },
+      { by: 'a', say: "Somebody deserves to hear it from me, face to face. I owe them that." },
     ] },
     { id: 'visit.choose.apology.02', turns: [
-      { by: 'a', say: "I'm going to see {b}. I need to say sorry before I go." },
+      { by: 'a', say: "I have one more thing to do. I need to say sorry before I go." },
     ], beat: '{a} takes a breath at the door before opening it.' },
     { id: 'visit.choose.apology.03', turns: [
-      { by: 'a', say: "{b} was nothing but good to me, and I wasn't always straight with {b.obj}. That has to change tonight." },
+      { by: 'a', say: "Somebody was nothing but good to me, and I wasn't always straight with them. That changes tonight." },
     ] },
   ],
   'visit.wait': [

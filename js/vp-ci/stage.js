@@ -21,6 +21,7 @@
 //
 // A catfish is two people on this stage: the TV and the feed show the
 // PERSONA (its name, its photo); the cam card shows who is really typing.
+import { teaserStage } from './teaser-stage.js';
 import { faceOf } from './steps.js';
 import { esc, hashify, faceUrl, ringOf, nameOf, realOf, isCatfish, bg, ringBg, avatar, THEMES, themeFor, aptNo,
   captionHtml, profileCard, starsText, facts } from './parts.js';
@@ -44,8 +45,8 @@ function whereLabel(row, screen) {
   return `${base} · ${screen.cast.map(h => nameOf(row, h)).join(' ↔ ')}`;
 }
 const whereHtml = (row, screen) => `<div class="civ-where">${esc(whereLabel(row, screen))}</div>`;
-function chatWindow(row, screen, idx, fresh) {
-  const feed = feedHtml(row, screen.steps, idx, fresh, 4);
+function chatWindow(row, screen, idx, fresh, me = null) {
+  const feed = feedHtml(row, screen.steps, idx, fresh, me);
   return `<div class="civ-chatwin"><div class="civ-chatwin-hd">${esc(whereLabel(row, screen))}</div>
     <div class="civ-chatwin-feed">${feed || '<div class="civ-chatwin-empty">No messages yet</div>'}</div></div>`;
 }
@@ -55,21 +56,32 @@ const ICONS = { home: 'M12 3l9 8h-3v9h-5v-6h-2v6H6v-9H3z', chat: 'M4 4h16v12H8l-
 const PLANE = '<svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>';
 const rail = sel => `<div class="civ-rail">${Object.entries(ICONS).map(([k, d]) => `<div class="${k === sel ? 'sel' : ''}"><svg viewBox="0 0 24 24"><path d="${d}"/></svg></div>`).join('')}</div>`;
 const MSG = new Set(['send', 'post', 'video']);
-function msgHtml(row, st, cls = '') {
+function msgHtml(row, st, cls = '', tick = '') {
   const kind = st.part === 'post' ? ' post' : st.part === 'video' ? ' video' : '';
-  return `<div class="civ-msg ${cls}" style="--ring:${ringOf(row, st.who)}">${avatar(row, st.who)}<div class="civ-card${kind}"><div class="nm">${esc(nameOf(row, st.who))}</div><div class="tx">${hashify(st.text)}</div></div></div>`;
+  return `<div class="civ-msg ${cls}" style="--ring:${ringOf(row, st.who)}">${avatar(row, st.who)}<div class="civ-card${kind}"><div class="nm">${esc(nameOf(row, st.who))}</div><div class="tx">${hashify(st.text)}</div>${tick ? `<div class="civ-tick">${tick}</div>` : ''}</div></div>`;
 }
 function typingHtml(row, h) {
   return `<div class="civ-typing" style="--ring:${ringOf(row, h)}">${avatar(row, h)}<div class="civ-card"><span class="civ-dots"><span></span><span></span><span></span></span></div></div>`;
 }
-function feedHtml(row, steps, idx, fresh, keep = 5) {
+// THE WHOLE THREAD, like a chat (user: "the part of the screen with the chat
+// should act like it"). Every message so far, newest at the bottom; the feed
+// scrolls (paintStage glides it down to the new one, and the viewer can
+// scroll back). `me` is whose screen this is: their own messages sit on the
+// right, everybody else's on the left, the way a phone draws a chat. The
+// last message they sent says Seen once the other side has answered.
+function feedHtml(row, steps, idx, fresh, me = null) {
   const shown = [];
   for (let i = 0; i <= idx; i++) if (MSG.has(steps[i].part) && steps[i].who) shown.push(i);
-  const last = shown.slice(-keep);
-  return last.map(i => {
+  const lastMine = me ? [...shown].reverse().find(i => steps[i].who === me) : undefined;
+  const seen = lastMine != null && steps.slice(lastMine + 1, idx + 1).some(x => x.who && x.who !== me);
+  const body = shown.map(i => {
     const isNew = fresh && i === idx;
-    return (isNew ? typingHtml(row, steps[i].who) : '') + msgHtml(row, steps[i], isNew ? 'new late' : '');
+    const mine = me && steps[i].who === me;
+    const tick = i === lastMine ? (seen ? '✓✓ Seen' : '✓ Delivered') : '';
+    // An incoming message is typed first; your own was typed in the bar.
+    return (isNew && !mine ? typingHtml(row, steps[i].who) : '') + msgHtml(row, steps[i], `${mine ? 'mine' : ''}${isNew ? (mine ? ' new' : ' new late') : ''}`, tick);
   }).join('');
+  return body ? `<div class="civ-thread">${body}</div>` : '';
 }
 function peopleHtml(row, cast, talking, title) {
   const who = cast.length ? cast : row.ci.active || [];
@@ -129,7 +141,7 @@ function aptStage(row, screen, idx, fresh) {
     : st.who ? `<div class="civ-line"><span class="civ-chip say">${st.part === 'react' ? 'REACTS' : 'SAYS ALOUD'}</span>${esc(st.text)}</div>`
       : `<div class="civ-line stage">${st.host ? '<b>THE CIRCLE · </b>' : ''}${esc(st.text)}</div>`;
   const tvUi = `<div class="civ-uibg"></div><div class="civ-aurora" style="left:30%;top:-20%;width:70%;aspect-ratio:1"></div>${rail('chat')}
-    <div class="civ-feed">${feedHtml(row, steps, sending ? idx - 1 : idx, false, 4)}${sending ? '' : ''}</div>
+    <div class="civ-feed">${feedHtml(row, steps, sending ? idx - 1 : idx, false, h)}</div>
     ${peopleHtml(row, [peer], null, screen.kind === 'recognise' ? 'PROFILE' : 'CHAT')}${inbar(sending ? st.text : '', sending)}`;
   // A face they know: the TV has their profile open, full screen.
   const tv = screen.kind === 'recognise' && peer !== h ? `<div class="civ-uibg"></div>${profileCard(row, peer, 'PROFILE')}` : tvUi;
@@ -146,7 +158,7 @@ function aptStage(row, screen, idx, fresh) {
       <div class="civ-bust ${side}" data-cam="CAM ${aptNo(row, h)} · ${esc(real.toUpperCase())}" style="--glow:${ringOf(row, h)}${cam ? `;background-image:url('${esc(cam)}')` : ''}">${cam ? '' : esc(real[0] || '?')}</div>
     </div>
     <div class="civ-hud"><span>APARTMENT ${aptNo(row, h)} · DAY ${esc(row.day)}</span><span class="lv">Live</span></div>
-    ${catfish}<div class="civ-beam"></div>${win ? chatWindow(row, screen, idx, fresh) : ''}${whereHtml(row, screen)}
+    ${catfish}<div class="civ-beam"></div>${win ? chatWindow(row, screen, idx, fresh, h) : ''}${whereHtml(row, screen)}
     ${st ? `<div class="civ-dlg${fresh ? ' new' : ''}">${plate}${line}</div>` : ''}
     ${cut ? '<div class="civ-wipe run"></div>' : ''}
   </div>`;
@@ -250,6 +262,7 @@ function arriveStage(row, screen, idx, fresh) {
 
 /** The stage for this screen after step `idx` (-1: at rest, before the first line). */
 export function stageInner(row, screen, idx, fresh = false) {
+  if (screen.stage === 'teaser') return teaserStage(row, screen, idx, fresh);
   if (MOMENTS[screen.stage]) return MOMENTS[screen.stage](row, screen, idx, fresh);
   if (screen.stage === 'arrive') return arriveStage(row, screen, idx, fresh);
   if (screen.stage === 'alert') return alertStage(row, screen, idx, fresh);
@@ -258,9 +271,22 @@ export function stageInner(row, screen, idx, fresh = false) {
 }
 
 /** Draw it, and type any dictated message into its input bar. */
+const FEEDS = '.civ-feed, .civ-chatwin-feed';
 export function paintStage(el, row, screen, idx, fresh = false) {
   if (!el) return;
+  // A chat does not redraw from the top: where each feed was scrolled is
+  // kept, then it glides to the newest message.
+  const was = [...el.querySelectorAll(FEEDS)].map(f => f.scrollTop);
   el.innerHTML = stageInner(row, screen, idx, fresh);
+  const feeds = [...el.querySelectorAll(FEEDS)];
+  feeds.forEach((f, i) => {
+    if (was[i] != null) f.scrollTop = was[i];
+    const glide = () => { try { f.scrollTo({ top: f.scrollHeight, behavior: fresh ? 'smooth' : 'auto' }); } catch { f.scrollTop = f.scrollHeight; } };
+    if (typeof requestAnimationFrame === 'function') requestAnimationFrame(glide); else glide();
+    // a message that lands late (after its typing dots) grows the feed again
+    if (fresh && typeof setTimeout === 'function') setTimeout(() => { if (f.isConnected) glide(); }, 1350);
+  });
+
   const box = el.querySelector('.civ-box[data-type]');
   if (!box) return;
   const text = box.dataset.type;

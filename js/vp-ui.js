@@ -83,12 +83,14 @@ const _CI_PHASE = {
   morning: { id:'ci-morning', label:'The Morning', icon:'☀' }, day: { id:'ci-day', label:'The Day', icon:'◍' },
   ratings: { id:'ci-ratings', label:'The Ratings', icon:'▦' }, blocking: { id:'ci-blocking', label:'The Blocking', icon:'✦' },
   final: { id:'ci-final', label:'The Final', icon:'■' },
+  previously: { id:'ci-previously', label:'Previously', icon:'◀' }, nexttime: { id:'ci-nexttime', label:'Next Time', icon:'▶' },
 };
 const _CI_KIND = { goodbye:'morning', status:'morning', likes:'morning', profiles:'morning', recognise:'morning', arrival:'morning', 'pair-arrival':'morning',
   alert:'morning', 'power-reveal':'morning', hack:'morning', disrupter:'morning', swap:'morning', 'swap-back':'morning', 'ride-or-die':'morning', report:'morning',
   ratings:'ratings', hangout:'ratings', save:'ratings', plead:'ratings', statement:'ratings', vote:'ratings', offer:'ratings', antivirus:'ratings', sacrifice:'ratings', 'no-block':'ratings', 'joker-pick':'ratings',
   blocking:'blocking', visit:'blocking',
-  'final-ratings':'final', meet:'final', reveal:'final' };
+  'final-ratings':'final', meet:'final', reveal:'final',
+  previously:'previously', comingup:'ratings', nexttime:'nexttime' };
 function _ciPhaseForScreen(id) {
   const kind = id.slice(3).replace(/-\d+$/, '');
   return _CI_PHASE[_CI_KIND[kind] || 'day'];

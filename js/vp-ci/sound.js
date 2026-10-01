@@ -73,6 +73,8 @@ const BED_BY_KIND = {
   blocking: 'ci-blocking', 'no-block': 'ci-morning', visit: 'ci-visit', goodbye: 'ci-goodbye',
   meet: 'ci-meet', reveal: 'ci-finale', 'power-reveal': 'ci-drama', swap: 'ci-drama', 'swap-back': 'ci-drama', clone: 'ci-drama',
   'ride-or-die': 'ci-hangout', sacrifice: 'ci-drama', 'second-chance': 'ci-drama', alert: 'ci-drama',
+  // the edit's teasers (teasers.js): suspense under the clips
+  previously: 'ci-drama', comingup: 'ci-drama', nexttime: 'ci-drama',
 };
 /** The bed a screen opens on (a track of it). The first finalist in waits alone. */
 export function bedFor(screen) {
@@ -150,6 +152,8 @@ export function soundFor(screen, idx) {
   if (!st) return { cue: null, bed: null };
   const k = st.key || '';
   const first = i => screen.steps.findIndex(x => i.test(x.key || '')) === idx;
+  // A teaser: every clip cuts in on a whoosh.
+  if (screen.stage === 'teaser') return { cue: st.clip ? 'ci-whoosh' : null, bed: null };
   if (screen.stage === 'alert' && idx === 0) return { cue: 'ci-alert', bed: null };
   if (screen.kind === 'blocking') {
     if (NAMED.test(k) && first(NAMED)) return { cue: 'ci-blocked', bed: 'ci-after-block' };

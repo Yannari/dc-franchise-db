@@ -15,6 +15,8 @@
 // on every navigation; a screen the page has just drawn is at rest (no
 // `data-idx` yet), whatever it was last time.
 import { circleScreens } from './steps.js';
+import { withTeasers } from './teasers.js';
+import { TEASER_CSS } from './teaser-stage.js';
 import { stageInner, paintStage } from './stage.js';
 import { CIV_CSS, CIV_FONTS } from './style.js';
 import { bedFor, playStep } from './sound.js';
@@ -28,14 +30,15 @@ const PART = { say: 'ALOUD', react: 'REACTS', send: 'SENT', post: 'POSTED', vide
 function scriptHtml(row, screen) {
   const nameOf = h => row.ci.profiles?.[h]?.name || String(h || '').replace(/^@/, '');
   return screen.steps.map((st, i) => {
-    const k = st.host ? 'THE CIRCLE' : PART[st.part] || '';
-    const who = st.who ? `<b>${esc(nameOf(st.who))}</b> ` : '';
+    const k = st.clip ? (st.clip.aloud ? 'ALOUD' : 'SENT') : st.host ? 'THE CIRCLE' : PART[st.part] || '';
+    const who = st.who ? `<b>${esc(nameOf(st.who))}</b> ` : st.clip ? `<b>${esc(st.clip.real)}</b> ` : '';
     return `<p class="civ-ln ${esc(st.part)}" data-s="${i}" data-text="${esc(st.text)}">${k ? `<span class="k">${k}</span>` : ''}${who}${esc(st.text)}</p>`;
   }).join('');
 }
 
-export function circleVpScreens(row) {
-  const screens = circleScreens(row);
+/** `prev` / `next`: the neighbouring episodes, for Previously and Next time (teasers.js). */
+export function circleVpScreens(row, { prev = null, next = null } = {}) {
+  const screens = withTeasers(row, circleScreens(row), { prev, next, screensOf: circleScreens });
   if (!screens.length) {
     return [{ id: 'ci-empty', label: 'The day', html: `<style>${CIV_FONTS}${CIV_CSS}</style><div class="civ"><div class="civ-top"><div class="civ-logo">${LOGO}<div>THE CIRCLE<small>Episode ${esc(row.num)} · Day ${esc(row.day)}</small></div></div></div><p class="civ-ln vis">A quiet day in The Circle.</p></div>` }];
   }
@@ -49,7 +52,7 @@ export function circleVpScreens(row) {
       label: screen.title,
       // The root carries the scene's music bed (vp-ui.js reads data-ambient
       // off the first element after its stage cue, so the style goes inside).
-      html: `<div class="civ" data-uid="${uid}" data-ambient="${bedFor(screen)}"><style>${CIV_FONTS}${CIV_CSS}</style>
+      html: `<div class="civ" data-uid="${uid}" data-ambient="${bedFor(screen)}"><style>${CIV_FONTS}${CIV_CSS}${TEASER_CSS}</style>
   <div class="civ-top"><div class="civ-logo">${LOGO}<div>THE CIRCLE<small>Episode ${esc(row.num)} · Day ${esc(row.day)}</small></div></div>
     <div class="civ-title">${esc(screen.title)}</div></div>
   <div class="civ-stagewrap"><div class="civ-stage" id="civ-st-${uid}" onclick="civNext('${uid}')" title="Click for the next line">${stageInner(row, screen, -1)}</div>

@@ -34,6 +34,7 @@ import { rpBuildDragSummary } from './vp-dr/summary.js';
 import { dragScreens } from './vp-dr/screens.js';
 import { perfectMatchVpScreens } from './vp-pm/screens.js';
 import { circleVpScreens } from './vp-ci/screens.js';
+import { gs as _coreGs } from './core.js';
 import { momentTitle as pmMomentTitle } from './pm/transcript.js';
 import { DRAG_FORMAT, HOSTS_BY_FORMAT, CIRCLE_FORMAT } from './shows.js';
 import { rpBuildBBCarePackagePlay } from './vp-bb-twists.js';
@@ -14075,10 +14076,11 @@ export function buildVPScreens(epRecord) {
   if (epRecord.format === CIRCLE_FORMAT) {
     // The neighbours, for Previously and Next time: the next episode as it
     // played (a rewatch), or the one the season has built and not aired yet.
-    const _hist = ((typeof window !== 'undefined' && window.gs?.episodeHistory) || []).filter(r => r && r.format === CIRCLE_FORMAT);
+    const _gs = _coreGs || (typeof window !== 'undefined' ? window.gs : null);
+    const _hist = (_gs?.episodeHistory || []).filter(r => r && r.format === CIRCLE_FORMAT);
     const _prev = _hist.find(r => r.num === epRecord.num - 1) || null;
     const _next = _hist.find(r => r.num === epRecord.num + 1)
-      || ((typeof window !== 'undefined' && window.gs?._ciQueue) || []).find(r => r && r.num === epRecord.num + 1) || null;
+      || (_gs?._ciQueue || []).find(r => r && r.num === epRecord.num + 1) || null;
     vpScreens = circleVpScreens(epRecord, { prev: _prev, next: _next });
     return vpScreens;
   }

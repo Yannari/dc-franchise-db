@@ -238,7 +238,13 @@ describe('an aired episode can be watched and read', () => {
   it('the VP shows every aired scene, and the text backlog says the same lines', () => {
     freshSeason();
     const [, row] = [simulateCircleEpisode(), simulateCircleEpisode()];
-    const screens = buildVPScreens(row);
+    const all = buildVPScreens(row);
+    // The edit's teasers (vp-ci/teasers.js) sit around the aired scenes:
+    // episode 2 opens on Previously and closes on Next time.
+    const TEASER = /^ci-(previously|comingup|nexttime)-/;
+    expect(all[0].id).toMatch(/^ci-previously-/);
+    expect(all.at(-1).id).toMatch(/^ci-nexttime-/);
+    const screens = all.filter(s => !TEASER.test(s.id));
     const aired = row.ci.aired.filter(s => s.script?.blocks?.length).length;
     expect(screens.length).toBe(aired);
     expect(screens.every(s => s.html.includes('Episode 2'))).toBe(true);
@@ -321,7 +327,7 @@ describe('the player files Circle screens under the Circle\'s own words, never "
     const rows = playAll();
     const labels = new Set();
     for (const r of rows.slice(0, 4)) for (const s of buildVPScreens(r)) labels.add(_vpPhaseForScreen(s.id).label);
-    for (const l of labels) expect(['The Morning', 'The Day', 'The Ratings', 'The Blocking', 'The Final']).toContain(l);
+    for (const l of labels) expect(['Previously', 'The Morning', 'The Day', 'The Ratings', 'The Blocking', 'The Final', 'Next Time']).toContain(l);
     expect(labels.has('Camp')).toBe(false);
   });
 });

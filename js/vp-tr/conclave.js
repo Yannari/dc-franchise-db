@@ -309,6 +309,21 @@ function _cloakFigure(tone, name) {
 // with them", and these read like minutes of a meeting ("They begin by
 // reviewing the players who could threaten or benefit the pact"). Now they
 // say what the night looks like: the stair, the door, the candles, the hoods.
+// THE LAST ONE. With a single Traitor left there is no "one at a time",
+// nobody to look at across the candles, and no meeting: one person, one name.
+const CLIMB_ALONE = [
+  'The castle goes quiet, and the last Traitor climbs the turret stair alone.',
+  'One set of footsteps on the back stair tonight. There used to be more.',
+];
+const STAIR_ALONE = [
+  'The door closes on an empty room. Nobody to argue with, and nobody to share it with.',
+  'The candles are lit for one. Whatever is decided up here, one person decides it.',
+];
+const GREET_ALONE = [
+  'One chair taken at the table. The others are a reminder of who is not coming up any more.',
+  'No discussion tonight. Just a name, and the person who has to write it.',
+];
+
 const CLIMB = [
   'The castle goes quiet. One by one, the Traitors slip out of their rooms and up the turret stair.',
   'They wait for the last bedroom door to close, then go up separately, a few minutes apart.',
@@ -422,7 +437,7 @@ const REASON_LINES = {
     '{T} has publicly suspected me. Keeping {obj} here gives the Faithfuls another chance to investigate me.',
     '{T} is watching me closely and may persuade other players to do the same.',
     '{T} has begun connecting evidence to me. I want {obj} removed before that suspicion spreads.',
-    '{T} is the most dangerous name to me because {sub} already suspects me and will pull others along.',
+    '{T} is the most dangerous name to me. {T} already suspects me and will pull others along.',
   ],
   // ── EARNED STANDING, WHICH IS NOT THE SAME AS BEING LIKED ─────────
   //
@@ -620,6 +635,15 @@ const HOST_LINES = {
     'Welcome back to the turret. Downstairs, they are all trying to get some sleep.',
     'The Faithfuls are in bed. You are not. Choose well.',
     'Somebody in this castle is about to have a very bad night. You get to decide who.',
+  ],
+  // one Traitor left: no meeting, no "convince each other"
+  openAlone: [
+    'Just you tonight. The castle is asleep, and the others are gone.',
+    'One of you left. That makes this very simple, and very lonely.',
+  ],
+  shortlistAlone: [
+    'Nobody to argue with tonight. Who is it?',
+    'It is your name to give. Give it.',
   ],
   shortlist: [
     'Names, please. And tell me why.',
@@ -915,14 +939,15 @@ function _buildBeats(rec, ep) {
     beats.push({ phase, html, hostSlot: hostSlot || null, slot: slot || null,
       stage: stage == null ? null : stage });
 
+  const alone = (rec.turret || []).length === 1;
   // ── I. the climb ──
   push('gather', _card(chalice ? 'No Climb, A Library' : plain ? 'No Climb Tonight' : forced ? 'The Climb, Told' : 'The Climb',
     'I. The turret', 'door',
     plain
       ? '<p>' + (chalice ? _pick(CHALICE_TEXT, key + '|chalice') : _pick(PLAIN_SIGHT_TEXT, key + '|plain')) + '</p>'
         + (rec.line ? '<p>' + _esc(rec.line) + '</p>' : '')
-      : '<p>' + _pick(forced ? CLIMB_FORCED : CLIMB, key + '|climb') + '</p><p>'
-        + _pick(forced ? STAIR_FORCED : STAIR, key + '|stair') + '</p>'
+      : '<p>' + _pick(forced ? CLIMB_FORCED : alone ? CLIMB_ALONE : CLIMB, key + '|climb') + '</p><p>'
+        + _pick(forced ? STAIR_FORCED : alone ? STAIR_ALONE : STAIR, key + '|stair') + '</p>'
         // A HIDDEN NIGHT: the audience is told now what the castle will not be.
         + (rec.variant === 'hidden' && !rec.blocked
           ? '<p class="cv-explain">Tonight the murder stays hidden. Whoever they choose, and a few others, '
@@ -982,7 +1007,7 @@ function _buildBeats(rec, ep) {
   'II. The cloaks', 'cloak',
   '<p>' + (plain
     ? 'They are in different rooms tonight, and only one of them is deciding anything.'
-    : _pick(forced ? GREET_FORCED : GREET, key + '|greet')) + '</p>'
+    : _pick(forced ? GREET_FORCED : alone ? GREET_ALONE : GREET, key + '|greet')) + '</p>'
     + '<div class="cv-cloaks">' + cloaks + '</div>' + chips), null, 'cloaks');
 
   // ── III. the arguments, one beat each ──
@@ -1921,7 +1946,7 @@ export function rpBuildConclave(ep, observer = 'audience') {
       // `name-your-own` night takes the no-choice variant of the same two.
       // Derived from the record rather than passed in, so a variant that adds
       // a suffixed pool gets it read without touching this expression.
-      HOST_LINES[b.hostSlot + _hostSuffix(rec.variant)] || HOST_LINES[b.hostSlot],
+      HOST_LINES[b.hostSlot + _hostSuffix(rec.variant)] || ((rec.turret || []).length === 1 && HOST_LINES[b.hostSlot + 'Alone']) || HOST_LINES[b.hostSlot],
       'tr|host|' + b.hostSlot + '|' + seedEp + '|' + rec.target)) : '')
     // With a gutter this episode, a beat with no castle scene of its own gets an
     // EMPTY cell (the minute was simply blank); with no gutter at all, no cell.
@@ -2041,7 +2066,7 @@ export function conclaveStageData(ep, observer = 'audience') {
     beats: beats.map(b => ({ phase: b.phase,
       meta: { kind: b.slot || b.phase, margin: b.margin ? { t: b.margin.t, who: b.margin.who || null, m: b.margin.m } : null },
       html: (b.hostSlot ? _hostBand(_pick(
-        HOST_LINES[b.hostSlot + _hostSuffix(rec.variant)] || HOST_LINES[b.hostSlot],
+        HOST_LINES[b.hostSlot + _hostSuffix(rec.variant)] || ((rec.turret || []).length === 1 && HOST_LINES[b.hostSlot + 'Alone']) || HOST_LINES[b.hostSlot],
         'tr|host|' + b.hostSlot + '|' + seedEp + '|' + rec.target)) : '') + b.html })),
     turret: [...(rec.turret || [])], target: rec.target || null, second: rec.second || null,
     variant: rec.variant || null, host: { name: h.name, slug: h.slug },

@@ -41,9 +41,16 @@ function season(seed, config = {}) {
 
 describe('the reunion', () => {
   it('has no unwritten pools', () => {
-    for (const [key, lines] of Object.entries(REUNION_LINES)) {
-      expect(lines.length, `${key} is empty`).toBeGreaterThanOrEqual(1);
-      for (const l of lines) expect(l.trim(), `${key} has a blank line`).not.toBe('');
+    // A pool is lines, or question-and-answer items ({ q, a }) and
+    // line-and-reply items ({ a, b }) that keep a reply with what it answers.
+    const words = it => (typeof it === 'string' ? [it]
+      : [it.q, ...(Array.isArray(it.a) ? it.a : [it.a]), ...(it.b || [])].filter(x => x != null));
+    for (const [key, items] of Object.entries(REUNION_LINES)) {
+      expect(items.length, `${key} is empty`).toBeGreaterThanOrEqual(1);
+      for (const it of items) {
+        for (const l of words(it)) expect(String(l).trim(), `${key} has a blank line`).not.toBe('');
+        if (typeof it !== 'string' && it.q) expect(it.a.length, `${key}: a question with no answer`).toBeGreaterThanOrEqual(1);
+      }
     }
   });
 
@@ -67,16 +74,28 @@ describe('the reunion', () => {
     for (let s = 0; s < 6; s++) {
       const out = season(s);
       const ru = out.rows.find(r => r.dr.reunion);
-      const seats = ru.dr.scenes.filter(sc => sc.data?.seg === 'seat' && sc.data?.speaker === 'segment')
-        .map(sc => sc.data.players[0]);
+      // A seat of her own, or a place in the first-ones-out segment.
+      const seats = ru.dr.scenes.filter(sc => sc.data?.speaker === 'segment'
+        && (sc.data?.seg === 'seat' || sc.data?.seg === 'early'))
+        .flatMap(sc => (sc.data.seg === 'early' ? sc.data.players : [sc.data.players[0]]));
       const winners = out.winners || [out.winner];
       const expected = out.state.castOrder.filter(n => !winners.includes(n));
       expect([...seats].sort(), `seed ${s}`).toEqual([...expected].sort());
       expect(ru.dr.scenes.length, `seed ${s}: a superficial reunion`).toBeGreaterThan(40);
-      // Every exit's song is named in her seat.
+      // A queen with a seat of her own is asked about her exit: its song or
+      // its episode. The first ones out share a quick segment, where the
+      // question can be about the fans or the day after.
       const text = ru.dr.scenes.map(sc => sc.text).join(' ');
+      const own = new Set(ru.dr.scenes.filter(sc => sc.data?.seg === 'seat' && sc.data?.speaker === 'segment')
+        .map(sc => sc.data.players[0]));
       for (const row of out.rows.filter(r => r.dr?.lipsync && (r.exits || []).length && !r.dr.finale)) {
-        if (row.dr.lipsync.song) expect(text, `seed ${s}: episode ${row.num}'s song`).toContain(row.dr.lipsync.song);
+        for (const x of row.exits) {
+          const name = typeof x === 'string' ? x : x?.name;
+          if (!own.has(name)) continue;
+          const seat = ru.dr.scenes.filter(sc => sc.data?.seg === 'seat' && sc.data?.players?.[0] === name).map(sc => sc.text).join(' ');
+          const named = (row.dr.lipsync.song && seat.includes(row.dr.lipsync.song)) || new RegExp(`episode ${row.num}\\b`, 'i').test(seat);
+          expect(named, `seed ${s}: ${name}'s seat never mentions her exit`).toBe(true);
+        }
       }
       expect(text).not.toMatch(/\{[a-z]+\}/);   // no unfilled placeholder
     }
@@ -166,6 +185,31 @@ describe('the reunion', () => {
     for (const sc of spoken) {
       const run = sc.text.split(/["'“”’]/).sort((a, b) => b.length - a.length)[0].trim();
       expect(text, `${sc.data.key} is not in the transcript`).toContain(run);
+    }
+  });
+
+  /* NOT A FORM. The first full reunion asked every queen the same five
+     questions from five-line pools, repeated lines, and answered questions
+     nobody asked ("What have the fans been saying?" — "Panic."). */
+  it('never says a line twice, and never leaves a question hanging', () => {
+    // A question the host asks a QUEEN must be followed by a queen speaking.
+    const questions = /^(early-qa|seat-exit-qa|seat-finalist-qa|seat-receipt-host|seat-high-host|seat-look-host|seat-robbed-host|seat-villain-host|seat-survivor-host|seat-frontrunner-host|seat-quiet-host|winner-host|winner-journey-host|winner-runnerup-host)$/;
+    for (let s = 0; s < 12; s++) {
+      const out = season(s);
+      const sc = out.rows.find(r => r.dr.reunion).dr.scenes.filter(x => x.text && x.data?.speaker !== 'segment');
+      const seen = new Set();
+      for (const x of sc) {
+        if (x.data.speaker === 'stat' || x.data.speaker === 'award') continue;
+        expect(seen.has(x.text), `seed ${s}: said twice: ${x.text.slice(0, 60)}`).toBe(false);
+        seen.add(x.text);
+      }
+      sc.forEach((x, i) => {
+        if (x.data.speaker !== 'host' || !questions.test(x.data.key)) return;
+        expect(sc[i + 1]?.data?.speaker, `seed ${s}: unanswered: ${x.text.slice(0, 70)}`).toBe('queen');
+      });
+      // The seats are not all one kind.
+      const kinds = new Set(sc.filter(x => x.data.seg === 'seat' && x.data.speaker === 'host').map(x => x.data.key));
+      expect(kinds.size, `seed ${s}: every seat asked the same thing`).toBeGreaterThan(3);
     }
   });
 });

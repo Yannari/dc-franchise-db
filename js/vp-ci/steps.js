@@ -20,7 +20,7 @@
 import { TITLES } from '../ci/transcript.js';
 import { GAMES } from '../ci/games-data.js';
 
-const APT = new Set(['chat', 'date', 'plead', 'joker-chat', 'life', 'home-video', 'report', 'recognise', 'lurk', 'hack-undone', 'after-party', 'pair-arrival']);
+const APT = new Set(['group-chat', 'welcome', 'chat', 'date', 'plead', 'joker-chat', 'life', 'home-video', 'report', 'recognise', 'lurk', 'hack-undone', 'after-party', 'pair-arrival']);
 const ALERT = new Set(['alert', 'power-reveal', 'disrupter', 'hack', 'no-block', 'mission']);
 // Meet the players: who walks in, who they really are, and the profile built.
 const ARRIVE = new Set(['profiles', 'arrival']);
@@ -32,7 +32,7 @@ export const stageOf = kind => MOMENT[kind] || (ARRIVE.has(kind) ? 'arrive' : AP
 // Whose arrival a block is: the player making their profile, or, for a
 // reaction, the newcomer somebody else is looking at.
 function subjectOf(s, b) {
-  if (b.key.endsWith('.react')) return s.who?.[0] || null;
+  if (/\.react(\.|$)/.test(b.key) || b.key === 'arrival.alert') return s.who?.[0] || null;
   return (b.lines || []).find(l => l.who && l.who !== 'host')?.who || null;
 }
 

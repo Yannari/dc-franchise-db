@@ -7,6 +7,7 @@
 // these), each picks, and if they disagree one gives way. Who gives way: the
 // one who cares more about the other and is less bold, with dice. The one who
 // gave way may ask for something back ("save mine next time").
+import { allied, ALLY_SHIELD } from './alliances.js';
 import { rel, bump, S, clamp, makePact } from './state.js';
 import { belief } from './beliefs.js';
 
@@ -21,7 +22,8 @@ export function blockScore(state, inf, t) {
     noBond: -(rel(inf, t, 'affection') * 0.8 + rel(inf, t, 'trust') * 0.4 + rel(inf, t, 'obligation') * 0.6),
   };
   const shielded = state.pacts.some(p => p.kind === 'protect' && ((p.a === inf && p.b === t) || (p.a === t && p.b === inf)));
-  return { total: Object.values(parts).reduce((a, v) => a + v, 0) - (shielded ? PROTECT : 0), parts };
+  const ally = allied(state, inf, t) ? ALLY_SHIELD * S(state, inf, 'loyalty') / 10 : 0;
+  return { total: Object.values(parts).reduce((a, v) => a + v, 0) - (shielded ? PROTECT : 0) - ally, parts };
 }
 
 const pickOf = (state, rng, inf, atRisk) => atRisk

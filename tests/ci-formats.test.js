@@ -280,7 +280,11 @@ describe('secret mission (UK 3 Ep 8)', () => {
       expect(m).toBeTruthy();
       const gone = goneOf();
       expect(gone).toHaveLength(1);
-      expect([m.data.target, m.data.holder]).toContain(gone[0]);
+      // ...unless a Ride or Die partner went in their place (that twist's own
+      // rule, seed 7: the target was blocked, the partner sacrificed).
+      const sac = on('sacrifice')[0];
+      const stoodIn = sac && sac.who.includes(gone[0]) && sac.who.some(h => [m.data.target, m.data.holder].includes(h));
+      if (!stoodIn) expect([m.data.target, m.data.holder]).toContain(gone[0]);
     }
   });
 });

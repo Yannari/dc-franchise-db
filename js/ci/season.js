@@ -14,6 +14,7 @@
 // seeded bonds for free (ADDING-A-SHOW §8.3). The caller (js/ci-run.js, Plan 4)
 // passes franchise-carry's `carriedFor(...)` as `carried`; the ledger write is
 // Plan 6.
+import { formAlliance, checkIn, activeAlliances, afterRatings, doubleAgents, drift } from './alliances.js';
 import { gs, setGs, players } from '../core.js';
 import { streamFor } from '../dr/rng.js';
 import { CIRCLE_FORMAT } from '../shows.js';
@@ -83,6 +84,7 @@ export const STAGE_DATA = {
   party: d => ({ theme: d.theme, props: d.props || [] }),
   // The Newsfeed: how many likes each player's post got this morning.
   likes: d => ({ counts: likeCounts(d.likes) }),
+  'group-chat': d => ({ name: d.name, formed: !!d.formed, declined: d.declined || [], plan: d.plan || null }),
   // A game's beats, trimmed to what a board draws (js/vp-ci/boards.js).
   game: d => ({ gameId: d.gameId, family: d.family, beats: (d.beats || []).map(b =>
     Object.fromEntries(Object.entries(b).filter(([k, v]) => BEAT_KEEP.has(k) && v != null && v !== false))) }),
@@ -97,6 +99,7 @@ export const EVENING_CHAT = 0.2;
 export function roomAt(state) {
   const act = [...state.active];
   const suspects = [], bonds = [], rivals = [], sparks = [];
+  const alliances = activeAlliances(state).map(a => [a.name, a.members.filter(m => act.includes(m))]).filter(([, m]) => m.length >= 2);
   for (const o of act) for (const t of act) {
     if (o === t) continue;
     const real = state.beliefs?.[o]?.[t]?.real;
@@ -118,7 +121,7 @@ export function roomAt(state) {
     suspects: suspects.sort((x, y) => x[2] - y[2]).slice(0, 8),
     bonds: bonds.sort((x, y) => y[2] - x[2]).slice(0, 6), rivals: rivals.sort((x, y) => y[2] - x[2]).slice(0, 5),
     // Both ways first, then the biggest crushes.
-    sparks: sparks.sort((x, y) => (y[2] === 'mutual') - (x[2] === 'mutual') || y[3] - x[3]).slice(0, 5) };
+    sparks: sparks.sort((x, y) => (y[2] === 'mutual') - (x[2] === 'mutual') || y[3] - x[3]).slice(0, 5), alliances };
 }
 
 export const FAME_SEEN = { celebrity: 0.8, threat: 0.45, villain: 0.45, known: 0.18 };
@@ -272,6 +275,12 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
     const ctx = contextFor(state, d);
     if (!d.finale) for (const plan of planChats(state, rng, ctx)) runChat(state, rng, plan, ctx);
     if (ccMain === 'day') runCircleChat(state, ds(`cc:${d.day}:day`), { when: 'day' });
+    // Group chats: an alliance may form, a standing one may check in (alliances.js).
+    if (!d.finale) {
+      formAlliance(state, ds(`ally:${d.day}`)); checkIn(state, ds(`ally-check:${d.day}`));
+      // ...and come apart: a double agent caught, a member who has gone cold.
+      doubleAgents(state, ds(`ally-double:${d.day}`)); drift(state, ds(`ally-drift:${d.day}`));
+    }
     if (d.disrupter) runDisrupter(state, ds(`disrupter:${d.day}`));
     if (d.game) {
       const g = pickGame(state, ds(`game:${d.day}`), { days: schedule.length });
@@ -292,6 +301,8 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
       state.publicChoice = night.format === 'public-super' ? publicPick(state) : null;
       const f = FORMATS[night.format] || FORMATS.standard;
       rating = runRating(state, rng, { seats: f.seats ?? 2, pick: f.pick, hidden: !!f.hidden, human: !!f.human });
+      // Did an ally rate me low? (alliances.js: the group may vote them out.)
+      afterRatings(state, ds(`ally-rate:${d.day}`), rating);
       // An instant block happens on the spot (US 1 Ep 9); every other night
       // ends the episode on the ratings and blocks at the start of the next.
       if (night.format === 'instant') {

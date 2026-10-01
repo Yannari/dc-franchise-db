@@ -10,13 +10,13 @@ import { streamFor } from '../dr/rng.js';
 
 export const ALWAYS_AIRS = new Set(['profiles', 'recognise', 'arrival', 'after-party', 'likes', 'circle-chat',
   'ratings', 'hangout', 'blocking', 'visit', 'report', 'goodbye', 'final-ratings', 'meet', 'reveal',
-  'game', 'party', 'life', 'home-video', 'alert', 'save', 'offer', 'plead', 'vote', 'statement', 'antivirus', 'date', 'invites', 'race', 'newparty', 'lurk', 'chosen', 'pair-arrival', 'power-reveal', 'hack', 'hack-undone', 'joker-chat', 'joker-pick', 'burner-exposed', 'no-block', 'mission', 'disrupter', 'swap', 'swap-back', 'clone', 'ride-or-die', 'sacrifice', 'second-chance', 'egg']);
+  'game', 'party', 'life', 'home-video', 'alert', 'save', 'offer', 'plead', 'vote', 'statement', 'antivirus', 'date', 'invites', 'race', 'newparty', 'lurk', 'chosen', 'pair-arrival', 'welcome', 'group-chat', 'power-reveal', 'hack', 'hack-undone', 'joker-chat', 'joker-pick', 'burner-exposed', 'no-block', 'mission', 'disrupter', 'swap', 'swap-back', 'clone', 'ride-or-die', 'sacrifice', 'second-chance', 'egg']);
 export const CHATS_PER_DAY = 9;
 export const STATUSES_PER_DAY = 3;
 export const FAME_PER_DAY = 2;
 export const FAME_PER_SEASON = 3;
 const DRAMA = { bond: 0.5, checkin: 0.8, ally: 1.2, flirt: 1.3, probe: 1.6, pump: 1.2, compare: 1.8,
-  plant: 2, credit: 1.4, repair: 1.2, confront: 2, pitch: 1, confess: 2.5 };
+  plant: 2, credit: 1.4, repair: 1.2, confront: 2, pitch: 1, confess: 2.5, jealous: 1.8 };
 const TONE = { low: 2, high: 1.5, steady: 0.5 };
 
 export function chooseAired(state, day) {

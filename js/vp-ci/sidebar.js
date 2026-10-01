@@ -52,11 +52,14 @@ export function sidebarHtml(row, screens, si, idx) {
     .map(([a, b, kind]) => kind === 'mutual'
       ? `<li>${who(a)} <span class="civ-heart">♥</span> ${who(b)} <small>both ways</small></li>`
       : `<li>${who(a)} <span class="civ-heart">→</span> ${who(b)} <small>a crush</small></li>`).join('');
+  const allies = (start.alliances || []).map(([name, m]) => [name, m.filter(live)]).filter(([, m]) => m.length >= 2).slice(0, 4)
+    .map(([name, m]) => `<li><b class="civ-alname">${esc(name)}</b> ${m.map(who).join(', ')}</li>`).join('');
   const rivals = start.rivals.filter(([a, b]) => live(a) && live(b)).slice(0, 4).map(([a, b]) => `<li>${who(a)} <span class="civ-bolt">⚡</span> ${who(b)}</li>`).join('');
   return `<div class="civ-sidehd">THE ROOM <small>Day ${esc(row.day)} · live</small></div>
     <div class="civ-splist">${players}</div>
     ${sus ? `<div class="civ-sidesec">SUSPICIONS<ul>${sus}</ul></div>` : ''}
     ${bonds ? `<div class="civ-sidesec">CLOSEST<ul>${bonds}</ul></div>` : ''}
+    ${allies ? `<div class="civ-sidesec">ALLIANCES<ul>${allies}</ul></div>` : ''}
     ${sparks ? `<div class="civ-sidesec">SPARKS<ul>${sparks}</ul></div>` : ''}
     ${rivals ? `<div class="civ-sidesec">GRUDGES<ul>${rivals}</ul></div>` : ''}
     <div class="civ-sidenote">As the day began. Suspicions and bonds move after the episode.</div>`;

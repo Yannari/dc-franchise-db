@@ -212,4 +212,25 @@ describe('the reunion', () => {
       expect(kinds.size, `seed ${s}: every seat asked the same thing`).toBeGreaterThan(3);
     }
   });
+
+  /* THE STAGE CUTS TO WHOEVER IS TALKING. One speaker at a time: on every
+     step the two-shot at the top shows that step's line and its speaker. */
+  it('puts every speaker on the stage on her own step', () => {
+    const out = season(5);
+    const ru = out.rows.find(r => r.dr.reunion);
+    const html = dragScreens(ru).find(s => s.label === 'The Reunion').html;
+    document.body.innerHTML = html;
+    const steps = ru.dr.scenes.filter(sc => sc.kind !== 'reunion-open');
+    const cut = window._drRevealExtra.reunion;
+    steps.forEach((sc, i) => {
+      if (sc.data?.speaker !== 'queen') return;
+      cut(i);
+      const shot = document.getElementById('ru-shot');
+      const who = sc.data.speakerName || sc.data.players[0];
+      expect(shot.querySelector('.ru-sp b')?.textContent, `step ${i}`).toBe(who);
+      const run = sc.text.split(/["'“”’]/).sort((a, b) => b.length - a.length)[0].trim();
+      expect(shot.textContent, `step ${i}: the line is not on the stage`).toContain(run);
+    });
+  });
 });
+

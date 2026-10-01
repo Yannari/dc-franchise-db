@@ -11,7 +11,7 @@
 //
 // The rail follows the segments: who has had the seat, and the awards as
 // they are handed out — built per step, so it never shows an award early.
-import { _shell, _portrait } from './style.js';
+import { _shell, _portrait, _judgePortrait } from './style.js';
 import { _controls } from './reveal.js';
 import { tagStep } from './music.js';
 import { hostCard, HOST_CARD_CSS } from './host-card.js';
@@ -35,7 +35,8 @@ const REUNION_CSS = `
 .ru-sofa{position:sticky;top:0;z-index:3;contain:inline-size;padding:10px 10px 8px;border-radius:18px;
   background:radial-gradient(90% 140% at 50% 0%,rgba(123,47,247,.35),transparent 70%),linear-gradient(180deg,#1d0c2a,#12081a);
   border:1px solid rgba(190,140,255,.22);box-shadow:0 14px 30px rgba(0,0,0,.45)}
-.ru-sofa-row{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 6px}
+.ru-sofa-row{display:flex;flex-wrap:nowrap;justify-content:safe center;gap:6px;overflow-x:auto;scrollbar-width:none;padding-top:11px}
+.ru-q{flex:0 0 auto}
 .ru-q{display:flex;flex-direction:column;align-items:center;gap:2px;width:52px;transition:transform .35s,opacity .35s,filter .35s}
 .ru-q .dr-por{border-radius:50%;border:2px solid rgba(255,255,255,.18)}
 .ru-q small{font:600 9px/1.15 system-ui,sans-serif;color:#cdb8d8;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:52px}
@@ -44,12 +45,73 @@ const REUNION_CSS = `
 .ru-sofa[data-live] .ru-q{opacity:.42;filter:saturate(.5)}
 .ru-sofa .ru-q.ru-on{opacity:1;filter:none;transform:translateY(-6px) scale(1.12)}
 .ru-sofa .ru-q.ru-on .dr-por{border-color:#FF3D9A;box-shadow:0 0 0 3px rgba(255,61,154,.35),0 0 20px rgba(255,61,154,.5)}
-.ru-sofa .ru-q.ru-talk{opacity:1;filter:none}
-.ru-sofa .ru-q.ru-talk .dr-por{border-color:#9be7ff;box-shadow:0 0 16px rgba(155,231,255,.5)}
+.ru-sofa .ru-q.ru-speaking{opacity:1;filter:none}
+.ru-sofa .ru-q.ru-speaking .dr-por,.ru-sofa .ru-q.ru-speaking .dr-bust{border-color:#9be7ff;box-shadow:0 0 16px rgba(155,231,255,.5)}
 /* On a phone the sofa is one row you can swipe, not three rows of faces. */
 @media (max-width:640px){.ru-sofa-row{flex-wrap:nowrap;justify-content:flex-start;overflow-x:auto;scrollbar-width:none;padding-top:6px}
   .ru-q{flex:0 0 auto}}
 .ru-sofa-seg{margin:8px 0 0;text-align:center;font:700 10px/1 system-ui,sans-serif;letter-spacing:.3em;text-transform:uppercase;color:#bfa6ff}
+/* ── THE STAGE: one speaker at a time ──
+   The reunion is a conversation, so the top of the screen is a two-shot:
+   whoever is talking, large and lit, and the queen she is talking to across
+   from her. Every click cuts to the next speaker; the cards below stay as
+   the transcript. */
+.ru-stage{position:relative;min-height:178px;margin:-2px -2px 10px;border-radius:14px;overflow:hidden;
+  background:radial-gradient(60% 120% at 22% 40%,rgba(255,61,154,.20),transparent 62%),
+    radial-gradient(80% 90% at 80% 100%,rgba(123,47,247,.28),transparent 70%),linear-gradient(180deg,#22102e,#120819)}
+.ru-stage::after{content:"";position:absolute;inset:auto 0 0 0;height:34px;pointer-events:none;
+  background:linear-gradient(180deg,transparent,rgba(0,0,0,.35))}
+.ru-shot{position:relative;z-index:1;display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center;padding:16px 18px;min-height:178px}
+.ru-shot .ru-sp{display:flex;flex-direction:column;align-items:center;gap:6px;width:112px}
+.ru-shot .ru-sp .dr-por,.ru-shot .ru-sp .dr-bust{border-radius:50%}
+.ru-shot .ru-sp img,.ru-shot .ru-sp .dr-por,.ru-shot .ru-sp .dr-bust{box-shadow:0 0 0 3px #FF3D9A,0 0 34px rgba(255,61,154,.55)}
+.ru-shot.ru-k-host .ru-sp img,.ru-shot.ru-k-host .ru-sp .dr-por,.ru-shot.ru-k-host .ru-sp .dr-bust{box-shadow:0 0 0 3px #FFD66B,0 0 34px rgba(255,214,107,.5)}
+.ru-shot .ru-sp b{font:800 12px/1.1 system-ui,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:#fff;text-align:center}
+.ru-shot.ru-k-host .ru-sp b{color:#FFD66B}
+.ru-shot .ru-ln{margin:0;font-size:17px;line-height:1.5;color:#c9b3c2;text-wrap:pretty}
+.ru-shot .ru-ln .ru-said{color:#fff;font-weight:600;font-size:18.5px}
+.ru-shot .ru-to{display:flex;flex-direction:column;align-items:center;gap:5px;width:74px;opacity:.75}
+.ru-shot .ru-to small{font:700 9px/1.1 system-ui,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#cdb8d8;text-align:center}
+.ru-shot .ru-to img,.ru-shot .ru-to .dr-por{border-radius:50%;filter:saturate(.75)}
+.ru-shot.ru-hot{animation:ruHot .5s ease-out}
+.ru-shot.ru-hot .ru-sp img,.ru-shot.ru-hot .ru-sp .dr-por,.ru-shot.ru-hot .ru-sp .dr-bust{box-shadow:0 0 0 3px #FF294B,0 0 40px rgba(255,41,75,.65)}
+.ru-shot.ru-warm .ru-sp img,.ru-shot.ru-warm .ru-sp .dr-por,.ru-shot.ru-warm .ru-sp .dr-bust{box-shadow:0 0 0 3px #3BE08A,0 0 34px rgba(59,224,138,.45)}
+@keyframes ruHot{0%,100%{transform:none}20%{transform:translateX(-4px)}40%{transform:translateX(4px)}60%{transform:translateX(-2px)}}
+/* the cut */
+.ru-shot.ru-cut .ru-sp{animation:ruSpIn .45s cubic-bezier(.2,1.2,.3,1) both}
+.ru-shot.ru-cut .ru-ln{animation:ruLnIn .5s .08s ease-out both}
+.ru-shot.ru-cut .ru-to{animation:ruToIn .5s .15s ease-out both}
+@keyframes ruSpIn{0%{opacity:0;transform:translateX(-22px) scale(.92)}100%{opacity:1;transform:none}}
+@keyframes ruLnIn{0%{opacity:0;transform:translateY(8px)}100%{opacity:1;transform:none}}
+@keyframes ruToIn{0%{opacity:0}100%{opacity:.75}}
+/* a segment's title, on the stage */
+.ru-shot.ru-k-seg{grid-template-columns:1fr;text-align:center;justify-items:center}
+.ru-shot.ru-k-seg .ru-seg-ic{font-size:22px;color:#FF3D9A}
+.ru-shot.ru-k-seg h3{margin:4px 0 0;font:800 clamp(24px,5vw,38px)/1.05 'Anton','Impact',system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#fff}
+.ru-shot.ru-k-seg p{margin:6px 0 0;color:#f3b9d6;font-size:14px}
+.ru-shot.ru-k-seg .ru-seg-pors{display:flex;gap:8px;justify-content:center;margin-top:10px}
+.ru-shot.ru-k-seg .ru-seg-pors .dr-por,.ru-shot.ru-k-seg .ru-seg-pors img{border-radius:50%;box-shadow:0 0 0 2px #FF3D9A}
+.ru-shot.ru-cut.ru-k-seg{animation:ruSegIn .6s cubic-bezier(.2,1.3,.3,1) both}
+/* the room, and the plates */
+.ru-shot.ru-k-room{grid-template-columns:auto 1fr}
+.ru-shot.ru-k-room .ru-ln{font-style:italic;color:#d9c9ea}
+.ru-shot.ru-k-room .ru-pair{display:flex}
+.ru-shot.ru-k-room .ru-pair > *{margin-left:-14px}
+.ru-shot.ru-k-room .ru-pair > *:first-child{margin-left:0}
+.ru-shot.ru-k-plate .ru-sp img,.ru-shot.ru-k-plate .ru-sp .dr-por,.ru-shot.ru-k-plate .ru-sp .dr-bust{box-shadow:0 0 0 3px #FFD66B,0 0 40px rgba(255,214,107,.55)}
+.ru-shot.ru-k-plate .ru-pk{font:700 11px/1 system-ui,sans-serif;letter-spacing:.26em;text-transform:uppercase;color:#FFD66B}
+.ru-shot.ru-k-plate .ru-pn{margin-top:6px;font:800 26px/1.1 system-ui,sans-serif;color:#fff}
+.ru-shot.ru-k-plate .ru-pd{margin-top:4px;color:#d9c79b;font-size:14px}
+.ru-shot.ru-k-plate .ru-pv{font:800 40px/1 'Anton','Impact',system-ui,sans-serif;color:#FFD66B}
+@media (max-width:640px){
+  .ru-shot{grid-template-columns:auto 1fr;gap:10px;padding:12px;min-height:150px}
+  .ru-shot .ru-to{display:none}
+  .ru-shot .ru-sp{width:74px}
+  .ru-shot .ru-ln{font-size:14.5px}
+  .ru-shot .ru-ln .ru-said{font-size:15.5px}
+  .ru-stage{min-height:150px}
+  .ru-q small{display:none}
+}
 /* A SEGMENT'S TITLE CARD. */
 .ru-seg{position:relative;padding:22px 20px;border-radius:16px;text-align:center;overflow:hidden;
   background:linear-gradient(135deg,#3b0f4d,#170922 60%,#2b0b24);border:1px solid rgba(255,61,154,.3)}
@@ -147,7 +209,47 @@ export function rpBuildReunion(row) {
     : sc.data?.seg === 'close' ? 'outro' : 'reunion';
   const steps = scenes.map((sc, i) => tagStep(card(sc, i), musicOf(sc))).join('');
 
-  const sofa = `<!--dr-chrome--><div class="ru-sofa" id="ru-sofa"><div class="ru-sofa-row">${
+  /* ── THE SHOTS ── one per step: who is talking, to whom, and the line. */
+  const big = n => _portrait(n, ep, { size: 96 });
+  const small = n => _portrait(n, ep, { size: 58 });
+  const RU = _judgePortrait('rupaul', { stage: true, size: 96 });
+  const sp = (por, name) => `<div class="ru-sp">${por}<b>${esc(name)}</b></div>`;
+  const to = n => (n ? `<div class="ru-to">${small(n)}<small>to ${esc(n)}</small></div>` : '<span></span>');
+  // A name on the stage is a queen of this cast, never a stand-in like "her".
+  const isQueen = n => !!n && cast.includes(n);
+  const shotOf = sc => {
+    const d = sc.data || {};
+    if (d.speaker === 'segment') {
+      const pors = (d.players || []).slice(0, 4).map(n => _portrait(n, ep, { size: 54 })).join('');
+      return { k: 'seg', html: `<div><span class="ru-seg-ic">${SEG_ICON[d.seg] || '✦'}</span><h3>${esc(d.title)}</h3>${
+        d.sub ? `<p>${esc(d.sub)}</p>` : ''}${pors ? `<div class="ru-seg-pors">${pors}</div>` : ''}</div>` };
+    }
+    if (d.speaker === 'host') {
+      const addressed = (d.players || []).filter(isQueen)[0] || null;
+      return { k: 'host', html: `${sp(RU, 'RuPaul')}<p class="ru-ln">${said(sc.text)}</p>${to(addressed)}` };
+    }
+    if (d.speaker === 'room') {
+      const pr = (d.players || []).filter(isQueen).slice(0, 2);
+      return { k: 'room', html: `<div class="ru-pair">${pr.map(small).join('')}</div><p class="ru-ln">${said(sc.text)}</p>` };
+    }
+    if (d.speaker === 'stat' || d.speaker === 'award') {
+      const n = (d.players || [])[0];
+      const award = d.speaker === 'award';
+      return { k: 'plate', html: `${n ? sp(big(n), '') : '<span></span>'}<div><div class="ru-pk">${esc(award ? d.award : d.stat)}</div>
+        <div class="ru-pn">${esc(n || '')}</div>${d.detail ? `<div class="ru-pd">${esc(d.detail)}</div>` : ''}</div>
+        <span class="ru-pv">${award ? (d.boot ? BOOT : '★') : esc(d.value ?? '')}</span>` };
+    }
+    // A queen talks — to the other queen in the moment, if there is one.
+    const who = speakerOf(sc);
+    const ps = (d.players || []).filter(isQueen);
+    const other = ps.find(n => n !== who) || null;
+    const mood = /feud|shade|villain|receipt/.test(d.key || '') ? 'hot' : /ally|friend|romance|cools|early-sofa/.test(d.key || '') ? 'warm' : '';
+    return { k: 'queen', mood, html: `${sp(big(who), who)}<p class="ru-ln">${said(sc.text)}</p>${to(other)}` };
+  };
+  const shots = scenes.map(shotOf);
+  const opening = { k: 'seg', html: `<div><span class="ru-seg-ic">✦</span><h3>The Reunion</h3><p>the whole season, back on one stage</p></div>` };
+
+  const sofa = `<!--dr-chrome--><div class="ru-sofa" id="ru-sofa"><div class="ru-stage"><div class="ru-shot ru-k-seg" id="ru-shot">${opening.html}</div></div><div class="ru-sofa-row">${
     cast.map(n => `<div class="ru-q${winners.includes(n) ? ' ru-crown' : ''}" data-q="${esc(n)}">${_portrait(n, ep, { size: 34 })}<small>${esc(n)}</small></div>`).join('')
   }</div><p class="ru-sofa-seg" id="ru-sofa-seg">The Reunion</p></div><!--/dr-chrome-->`;
 
@@ -171,15 +273,24 @@ export function rpBuildReunion(row) {
       const sofaEl = document.getElementById('ru-sofa');
       if (!sofaEl) return;
       const L = lights[Math.max(0, Math.min(idx, lights.length - 1))];
-      if (!L || idx < 0) { sofaEl.removeAttribute('data-live'); return; }
+      if (!L || idx < 0) { sofaEl.removeAttribute('data-live'); cut(opening); return; }
       sofaEl.setAttribute('data-live', '');
       for (const el of sofaEl.querySelectorAll('.ru-q')) {
         const n = el.getAttribute('data-q');
         el.classList.toggle('ru-on', L.on.includes(n));
-        el.classList.toggle('ru-talk', L.talk.includes(n) && !L.on.includes(n));
+        el.classList.toggle('ru-speaking', L.talk.includes(n) && !L.on.includes(n));
       }
       const segEl = document.getElementById('ru-sofa-seg');
       if (segEl) segEl.textContent = L.seg;
+      cut(shots[Math.min(idx, shots.length - 1)]);
+    };
+    const cut = shot => {
+      const el = document.getElementById('ru-shot');
+      if (!el || !shot) return;
+      el.className = `ru-shot ru-k-${shot.k}${shot.mood ? ` ru-${shot.mood}` : ''}`;
+      el.innerHTML = shot.html;
+      void el.offsetWidth;   // restart the cut's animation on every step
+      el.classList.add('ru-cut');
     };
     window._drRevealExtra = window._drRevealExtra || {};
     window._drRevealExtra.reunion = idx => apply(idx);

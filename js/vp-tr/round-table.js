@@ -1508,7 +1508,7 @@ const HOST_LINES = {
   // about, one clause further in.
   verdict: [
     '{Nm}. The room has spoken, and you are {banish}.',
-    'That is a majority. {Nm} is {banish} — say goodbye to the people who did it.',
+    'The most names on the wood. {Nm} is {banish} — say goodbye to the people who did it.',
     'It is done. {Nm} is {banish}, tonight, by the hands of everybody sitting here.',
     '{Nm} is {banish}. Whatever the truth turns out to be, this room chose it together.',
   ],
@@ -3100,6 +3100,11 @@ function _buildBeats(v) {
       + _esc(CLASH_KIND[c.kind] || 'It gets sharp') + '</div>'
       + (cs && !cs.keepLine ? '' : '<p class="rt-clash-t">' + _esc(tidyNames(c.line)) + '</p>')
       + talk
+      // the defender is chosen before the chalk comes out, and can still
+      // write the name: say so, rather than let the slate contradict the card
+      + (c.kind === 'defended' && (v.first || []).some(b => b.voter === c.a && b.target === c.b)
+        ? '<p class="rt-clash-t">' + _esc(c.a) + ' says all of that, and still writes '
+          + _esc(c.b) + '’s name when the chalk comes round.</p>' : '')
       // WHAT IT IS ABOUT, quoted off the thread's opening beat. Without this
       // the card says an argument happened and never says what argument.
       // NOT IN QUOTATION MARKS: the opening beat is narration, and quoted it
@@ -4116,6 +4121,18 @@ const SLATE_NOSRC = {
     'I’ve gone with my instinct. {T}.',
     '{T}. Call it a hunch.',
     'I couldn’t pick anyone else. {T}.',
+    '{T}. Honestly, it’s barely more than a guess.',
+    'Nothing I can prove. But it’s {T}.',
+    '{T}. I could be completely wrong.',
+    'I went round the table twice in my head, and I kept stopping at {T}.',
+    '{T}. Sorry. It had to be somebody.',
+    'It’s {T}. Ask me tomorrow and I might say something different.',
+    '{T}. I just don’t feel like I know {obj} at all.',
+    'I’m not proud of it, but it’s {T}.',
+    '{T}. That’s all I’ve got.',
+    'My gut says {T}, so that’s what I’ve written.',
+    '{T}. I wish I had more than that.',
+    '{T}. It’s early, and that’s the best I can do.',
   ],
 };
 function _slateReason(v, b, key) {

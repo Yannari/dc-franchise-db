@@ -971,6 +971,21 @@ const CONSEQ_SUSP_THIRD = {
     'The doubt about {topic} eased between {a} and {b}. It is not gone; it is lighter.',
     '{a} lets some of the doubt about {topic} go, because {b} didn’t think there was much in it.',
   ],
+  // nobody with {a}: there is no {b} to share it with
+  alone: [
+    '{a} saw it alone and has told nobody yet. {topic} is being watched now.',
+    'Nobody else saw it. {a} is keeping it, and keeping an eye on {topic}.',
+  ],
+  // {b} put up a different name: {a} is still on {topic}, {b} is not
+  split: [
+    '{a} is still on {topic}. {b} has another name, and neither talked the other round.',
+    '{b} did not buy it. {a} still has {topic}; {b} is looking somewhere else.',
+  ],
+  // the hour they were checking turned out to have one of THEM in it
+  inside: [
+    'They set out to check {topic} and found one of themselves in the same hour. {a} and {b} are warier of each other now.',
+    'They were checking {topic}’s hour, and one of them turns out to have been in it too. That is what {a} and {b} will both remember.',
+  ],
   flat: [
     "{topic}'s name went between {a} and {b} and settled nothing. The read on {topic} is exactly where it started.",
     '{a} and {b} talk about {topic} and get nowhere.',
@@ -1029,7 +1044,7 @@ const CONSEQ_TESTING = {
   ],
   inconclusive: [
     '{other} found no evidence that either cleared or implicated {topic}.',
-    '{other} learned nothing conclusive about {topic}; nobody would confirm or contradict {topic}’s account.',
+    '{other} learned nothing about {topic} either way.',
     'The answers left {other} no more certain about {topic} than before.',
     '{other} still cannot decide whether {topic}’s account is reliable.',
     'The check produced no useful conclusion about {topic}.',
@@ -1751,7 +1766,9 @@ const TOPIC_CONFIG = {
   'road-cover': { reaction: false, conseq: CONSEQ_ROAD_COVER },
   'road-cover-back': { reaction: false, conseq: CONSEQ_ROAD_COVER_BACK },
   'road-walk-test': { reaction: false, conseq: CONSEQ_ROAD_WALK_TEST },
-  'suspicion-third': { reaction: false, byDirection: true, conseq: CONSEQ_SUSP_THIRD },
+  'suspicion-third': { reaction: false, conseq: CONSEQ_SUSP_THIRD,
+    dir: s => (s.branch === 'saw-it-alone' ? 'alone' : s.branch === 'named-somebody-else' ? 'split'
+      : s.branch === 'one-of-us-was-there' ? 'inside' : _suspDir(s)) },
   'testing-probe': { reaction: false, dir: _testDir, conseq: CONSEQ_TESTING },
   'cover-deflect': { reaction: false, dir: _coverDir, conseq: CONSEQ_COVER_DEFLECT },
   'cover-bluff': { reaction: false, dir: _coverDir, conseq: CONSEQ_COVER_BLUFF },

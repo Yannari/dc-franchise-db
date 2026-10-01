@@ -1731,7 +1731,17 @@ const CITE_AGAIN = [
 // saying they are saying it again
 const CITE_OWN = [
   'Like I said. {t}. The {v} thing.',
-  'I’ll say it again, then. {t}. {v}.',
+  'I’ll say it again, then. {t}. Think about {v}.',
+];
+// when the fact is about the accused themselves there is no separate {v} to
+// point at ("Nobody has explained Bridgette to me either", of Bridgette)
+const CITE_AGAIN_SELF = [
+  '{P}’s already said it, and {P}’s right. {t}.',
+  'I’m with {P}. It’s {t}.',
+];
+const CITE_OWN_SELF = [
+  'Like I said. {t}.',
+  'I’ll say it again, then. {t}.',
 ];
 const HOST_PRESS = [
   '{T}, that is {n} people at this table. Would you like another go?',
@@ -1938,7 +1948,7 @@ const REASON_PHRASINGS = [
     'lost a game {1} should have won, and lost it badly. I watched. It did not look like an accident',
   ]],
   [/^finished a board nobody thought (.+) could$/, [
-    'solved a board nobody thought {1} could, like the answers were already known',
+    'solved a board nobody expected to see solved, like the answers were already known',
     'got through that board faster than anybody, which is easy if you already know who everybody is',
   ]],
 ];
@@ -2855,8 +2865,11 @@ function _buildBeats(v) {
     const fk = src && src.text ? extra.t + '|' + src.text : null;
     if (fk && saidFacts.has(fk)) {
       const P = saidFacts.get(fk);
-      return { line: _fill(_fresh(P === who ? CITE_OWN : CITE_AGAIN, key + '|again|' + salt + '|' + who),
-        { P: _esc(P), t: _esc(extra.t), T: _esc(extra.t), v: _esc(factAbout(src.text) || extra.t) }), subs: {} };
+      const v = factAbout(src.text);
+      const self = !v || v === extra.t;
+      const pool = P === who ? (self ? CITE_OWN_SELF : CITE_OWN) : (self ? CITE_AGAIN_SELF : CITE_AGAIN);
+      return { line: _fill(_fresh(pool, key + '|again|' + salt + '|' + who),
+        { P: _esc(P), t: _esc(extra.t), T: _esc(extra.t), v: _esc(v || extra.t) }), subs: {} };
     }
     if (fk && !saidFacts.has(fk)) saidFacts.set(fk, who);
     const src2 = sp && (sp.sources || [])[1] ? sp.sources[1] : null;
@@ -4114,7 +4127,8 @@ function _slateReason(v, b, key) {
   const subs = { T: b.target, Who, who, obj: pr.obj,
     src: src ? _firstPerson(_pred(b.target, _sayReason(src.text, key + '|sl|' + b.voter)), b.voter) : '',
     F: sp && sp.hearsayFrom ? sp.hearsayFrom : '' };
-  if (src) return _fill(_fresh(SLATE_CITED, key + '|slc|' + b.voter), subs);
+  if (src) return _fill(_fresh(SLATE_CITED, key + '|slc|' + b.voter), subs)
+    .replace(/\?\./g, '?').replace(/\?,/g, '?').replace(/\.\./g, '.');
   let rk = (sp && sp.reasonKind) || 'feeling';
   if (rk === 'hearsay' && !subs.F) rk = 'feeling';
   const pool = SLATE_NOSRC[rk] || SLATE_NOSRC.feeling;

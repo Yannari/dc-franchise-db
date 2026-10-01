@@ -14,6 +14,8 @@ import { feel } from './mind.js';
 import { runCircleChat } from './feed.js';
 
 export const NHIE_ROUNDS = 4;
+// A crush this strong (attraction, 0-10) minds watching the flirting.
+export const JEALOUS_AT = 4.5;
 
 function drawTheme(state, rng) {
   const thrown = (state.partiesThrown ||= []);
@@ -60,7 +62,29 @@ export function runParty(state, rng, { theme = null } = {}) {
     for (const o of likers) bump(o, h, 'affection', 0.2);
     return { by: h, likers };
   });
-  Object.assign(sc.data, { dancers, photos, flirts });
+  // JEALOUSY (user: "do we have possible romance here"). The flirting is in
+  // Circle Chat, in front of everyone: somebody with a crush on one of the
+  // two watches it happen. Only the flirts that air (script.js party: the
+  // first couple, and a second with nobody in both), so the reaction is to
+  // something the viewer saw. They resent the rival, cool a little on the
+  // crush, and it stays with them: tomorrow they message the crush about it
+  // (state.jealous, read by the chat planner).
+  const fl = flirts[0], fl2 = fl && flirts.find(x => !x.includes(fl[0]) && !x.includes(fl[1]));
+  // One a night, the biggest crush: every party with two would wear it out.
+  const jealous = [];
+  const top = [fl, fl2].filter(Boolean).flatMap(pair => all.filter(z => !pair.includes(z))
+    .flatMap(z => pair.map((crush, i) => ({ by: z, of: crush, rival: pair[1 - i], heat: rel(z, crush, 'attraction') }))))
+    .filter(j => j.heat >= JEALOUS_AT && attractionOk(state, j.by, j.of))
+    .sort((x, y) => y.heat - x.heat)[0];
+  for (const best of top ? [top] : []) {
+    // Proportional: the bigger the crush, the bigger the sting.
+    bump(best.by, best.rival, 'resentment', best.heat * 0.15);
+    bump(best.by, best.of, 'affection', -best.heat * 0.04);
+    feel(state, best.by, 'stress', best.heat * 0.08);
+    jealous.push({ by: best.by, of: best.of, rival: best.rival });
+    (state.jealous ||= []).push({ by: best.by, of: best.of, rival: best.rival, day: state.day });
+  }
+  Object.assign(sc.data, { dancers, photos, flirts, jealous });
   runCircleChat(state, rng, { party: true });
   return sc;
 }

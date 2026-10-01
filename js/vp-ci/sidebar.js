@@ -18,7 +18,7 @@ const CROWN = /^result\.(influencers|sole|super|secret)$/;
 
 /** What has happened on screen by step `idx` of screen `si`. */
 export function playedTo(row, screens, si, idx) {
-  const start = row.ci.start || { active: row.ci.active || [], influencers: [], suspects: [], bonds: [], rivals: [] };
+  const start = row.ci.start || { active: row.ci.active || [], influencers: [], suspects: [], bonds: [], rivals: [], sparks: [] };
   const inRoom = [...start.active];
   let influencers = [...start.influencers];
   const out = new Set();
@@ -48,11 +48,16 @@ export function sidebarHtml(row, screens, si, idx) {
   const sus = start.suspects.filter(([o, t]) => live(o) && live(t)).slice(0, 5)
     .map(([o, t, real]) => `<li>${who(o)} doubts ${who(t)} is real <span class="civ-meter"><i style="width:${real}%"></i></span></li>`).join('');
   const bonds = start.bonds.filter(([a, b]) => live(a) && live(b)).slice(0, 4).map(([a, b]) => `<li>${who(a)} <span class="civ-heart">♥</span> ${who(b)}</li>`).join('');
+  const sparks = (start.sparks || []).filter(([a, b]) => live(a) && live(b)).slice(0, 4)
+    .map(([a, b, kind]) => kind === 'mutual'
+      ? `<li>${who(a)} <span class="civ-heart">♥</span> ${who(b)} <small>both ways</small></li>`
+      : `<li>${who(a)} <span class="civ-heart">→</span> ${who(b)} <small>a crush</small></li>`).join('');
   const rivals = start.rivals.filter(([a, b]) => live(a) && live(b)).slice(0, 4).map(([a, b]) => `<li>${who(a)} <span class="civ-bolt">⚡</span> ${who(b)}</li>`).join('');
   return `<div class="civ-sidehd">THE ROOM <small>Day ${esc(row.day)} · live</small></div>
     <div class="civ-splist">${players}</div>
     ${sus ? `<div class="civ-sidesec">SUSPICIONS<ul>${sus}</ul></div>` : ''}
     ${bonds ? `<div class="civ-sidesec">CLOSEST<ul>${bonds}</ul></div>` : ''}
+    ${sparks ? `<div class="civ-sidesec">SPARKS<ul>${sparks}</ul></div>` : ''}
     ${rivals ? `<div class="civ-sidesec">GRUDGES<ul>${rivals}</ul></div>` : ''}
     <div class="civ-sidenote">As the day began. Suspicions and bonds move after the episode.</div>`;
 }

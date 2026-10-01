@@ -342,7 +342,9 @@ const BLOCKS = {
   chat(state, s) {
     const [a, b] = s.who;
     const c0 = s.data.claims?.length ? claimOf(state, s.data.claims[0]) : null;
-    const c = c0 ? (c0.about === a || c0.about === b ? c0.holder : c0.about) : undefined;
+    // A jealous chat is about the rival the crush flirted with (party.js).
+    const c = s.data.intent === 'jealous' ? s.data.rival || undefined
+      : c0 ? (c0.about === a || c0.about === b ? c0.holder : c0.about) : undefined;
     let key = s.data.intent === 'probe'
       ? `chat.probe.${s.data.probes?.[0]?.result || 'pass'}`
       // a catfish flirting in character, with nothing real behind it: its own lines
@@ -942,7 +944,13 @@ const BLOCKS = {
     const fl2 = fl && (d.flirts || []).find(x => !x.includes(fl[0]) && !x.includes(fl[1]));
     tail.push(fl ? { key: 'party.flirt', cast: { a: fl[0], b: fl[1] } }
       : { key: 'party.banter', cast: { a: s.who[1] || s.who[0], b: s.who[2] || s.who[0] } });
+    // Somebody watching with a crush on one of them (party.js jealous).
+    const jealousOf = pair => (d.jealous || []).find(j => pair.includes(j.of) && pair.includes(j.rival));
+    const j1 = fl && jealousOf(fl);
+    if (j1) tail.push({ key: 'party.jealous', cast: { a: j1.by, b: j1.of, c: j1.rival } });
     if (fl2) tail.push({ key: 'party.flirt', cast: { a: fl2[0], b: fl2[1] } });
+    const j2 = fl2 && jealousOf(fl2);
+    if (j2) tail.push({ key: 'party.jealous', cast: { a: j2.by, b: j2.of, c: j2.rival } });
     if (d.dancers?.[0]) tail.push({ key: 'party.end', cast: { a: d.dancers.at(-1) } });
     // Dancing first, then the photos, then the game, the flirting and the end.
     return [out[0], ...tail.slice(0, (d.dancers || []).length + (d.photos || []).length), ...out.slice(1), ...tail.slice((d.dancers || []).length + (d.photos || []).length)];
@@ -1089,7 +1097,7 @@ function bridge(state, aired) {
 
 // Every pool key sceneBlocks can ask for — the writing backlog, and what the
 // coverage guard checks (tests/ci-lines.test.js).
-const INTENTS_ = ['bond', 'ally', 'flirt', 'pump', 'compare', 'plant', 'credit', 'repair', 'confront', 'checkin', 'pitch', 'confess'];
+const INTENTS_ = ['bond', 'ally', 'flirt', 'pump', 'compare', 'plant', 'credit', 'repair', 'confront', 'checkin', 'pitch', 'confess', 'jealous'];
 const REASONS_ = ['affection', 'trust', 'obligation', 'pact', 'protection', 'threat', 'suspicion', 'grudge', 'deserves'];
 const SLIPS_ = ['knowledge', 'body', 'voice', 'tooPerfect', 'overreach', 'name'];
 const MOTIVES_ = ['friend', 'answers', 'truth', 'apology'];
@@ -1167,7 +1175,7 @@ export const POOL_KEYS = [
   ...['couple', 'married', 'siblings', 'twins', 'parent', 'friends', 'cousins'].flatMap(k => [`life.pair.${k}`, `meet.explain.shared.${k}`, `goodbye.pair.${k}`]),
   'circle.more', 'circle.react', 'ratings.done', 'ratings.wait', 'final.open', 'final.done', 'block.wait', 'block.typing',
   ...['friend', 'answers', 'truth', 'apology'].map(m => `visit.talk2.${m}`), 'visit.after', 'goodbye.after',
-  'meet.first', 'meet.react', 'meet.settle', 'meet.arrive.shared', 'meet.found.shared', 'meet.react.shared', 'meet.explain.shared', 'circle.leave', 'circle.final.look', 'block.after', 'visit.walk', 'visit.sit', 'rate.middle', 'party.dance', 'party.photo', 'party.flirt', 'party.banter', 'party.end',
+  'meet.first', 'meet.react', 'meet.settle', 'meet.arrive.shared', 'meet.found.shared', 'meet.react.shared', 'meet.explain.shared', 'circle.leave', 'circle.final.look', 'block.after', 'visit.walk', 'visit.sit', 'rate.middle', 'party.dance', 'party.photo', 'party.jealous', 'party.flirt', 'party.banter', 'party.end',
   ...['named-bad', 'named-good', 'rival', 'gift', 'picked-last', 'jab', 'portrait-kind', 'flirted', 'asked-barbed', 'asked-catfish']
     .flatMap(k => [`callback.${k}.mine`, `callback.${k}.theirs`]), 'rate.callback.bad', 'rate.callback.good',
 ];

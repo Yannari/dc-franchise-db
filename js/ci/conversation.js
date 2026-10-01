@@ -32,6 +32,9 @@ export const EFFECT = {
   checkin:  { warm: { affection: 1.2, trust: 0.8 }, neutral: { affection: 0.4 }, cold: {} },
   pitch:    { warm: { trust: 0.8, obligation: 0.6 }, neutral: {}, cold: { trust: -0.3 } },
   confess:  { warm: { trust: 1.0 }, neutral: { trust: -0.5 }, cold: { trust: -2, resentment: 1.5 } },
+  // "Saw you and {c} last night." Warm: the crush is touched they cared.
+  // Cold: "you don't own me".
+  jealous:  { warm: { affection: 0.6, attraction: 0.5 }, neutral: {}, cold: { affection: -0.6, resentment: 0.6 } },
 };
 const FIT = { bond: 0.3, checkin: 0.4, ally: 0.1, pitch: 0, repair: 0.1, credit: 0.1, compare: 0.1,
   plant: 0.1, pump: 0, confess: 0, probe: -0.2, confront: -0.3 };
@@ -58,7 +61,7 @@ const toward = (state, h, dim, v) => (v > 0 && LIKED.has(dim) ? v * (1 + curated
 
 export function reception(state, to, from, intent) {
   const base = (rel(to, from, 'affection') + rel(to, from, 'trust')) / 20;
-  const fit = intent === 'flirt'
+  const fit = intent === 'flirt' || intent === 'jealous'
     ? (attractionOk(state, to, from) ? rel(to, from, 'attraction') / 10 - 0.2 : -0.6)
     : FIT[intent] ?? 0;
   return base + fit + mood(state, to, 'loneliness') / 20;
@@ -125,6 +128,16 @@ const RUN = {
     sc.data.confessed = true;
   },
   confront(state, rng, sc, from, to, ending) { if (ending === 'cold') bump(from, to, 'resentment', 0.8); },
+  // Asking the crush about the flirting they watched (party.js jealous).
+  // Reassured: the sting eases, the rival matters less. Brushed off: it
+  // stays. Told off: they cool on the crush, and it costs them.
+  jealous(state, rng, sc, from, to, ending, ctx) {
+    const rival = ctx.jealousOf?.[from]?.rival;
+    sc.data.rival = rival || null;
+    if (ending === 'warm') { feel(state, from, 'stress', -0.8); if (rival) bump(from, rival, 'resentment', -0.4); }
+    if (ending === 'neutral') feel(state, from, 'paranoia', 0.4);
+    if (ending === 'cold') { bump(from, to, 'attraction', -0.8); feel(state, from, 'stress', 0.6); }
+  },
 };
 
 /** On a warm chat each side may pass on the juiciest thing the other hasn't heard. */

@@ -19,12 +19,13 @@
 //   gift      — the gifts piling up at each recipient
 //   flirt     — the lines, then the hearts
 //   rival     — the hot seat and everyone stating their case
+import { prizeOf } from '../ci/games.js';
 import { GAMES } from '../ci/games-data.js';
 import { FACTS } from '../ci/games-content.js';
 import { esc, hashify, nameOf, ringOf, faceUrl, bg, ringBg, dlg, cam, tile, where, speakerAt, bgUi } from './parts.js';
 import { faceOf } from './steps.js';
 
-const PRIZE = { immunity: 'PRIZE · IMMUNITY', video: 'PRIZE · A VIDEO FROM HOME', party: 'PRIZE · A PARTY', photo: 'PRIZE · A NEW PHOTO' };
+const PRIZE = { immunity: 'PRIZE · IMMUNITY', video: 'PRIZE · A VIDEO FROM HOME', party: 'PRIZE · A PARTY', photo: 'PRIZE · A NEW PHOTO', trophy: 'PRIZE · A TROPHY' };
 const TONE = { good: 'good', bad: 'bad', funny: 'funny' };
 
 /** What the board knows at step `idx`: the beats aired so far, and the one on screen now. */
@@ -208,7 +209,7 @@ export function gameStage(row, screen, idx, fresh) {
   const view = played(screen, idx);
   const board = (BOARDS[g.family] || (() => rules(g)))(row, g, view);
   return `<div class="civ-layer civ-game fam-${esc(g.family)}">${bgUi}
-    <div class="civ-gtitle"><b>${esc(g.name.toUpperCase())}</b>${PRIZE[g.prize] ? `<span>${PRIZE[g.prize]}</span>` : ''}</div>
+    <div class="civ-gtitle"><b>${esc(g.name.toUpperCase())}</b>${PRIZE[prizeOf(g)] ? `<span>${PRIZE[prizeOf(g)]}</span>` : ''}</div>
     <div class="civ-gboard${fresh ? ' fresh' : ''}">${board}</div>
     ${talking && st?.part !== 'send' ? cam(row, talking, `side${fresh ? ' in' : ''}`) : ''}
     ${where(`A GAME · ${g.name.toUpperCase()}`)}${dlg(row, st, fresh, 'right')}</div>`;

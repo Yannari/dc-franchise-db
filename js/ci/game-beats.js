@@ -308,6 +308,9 @@ export function beatsFor(state, rng, game, sc) {
   if (sc.data.prize) {
     const [a, b] = sc.data.prize.to;
     push({ phase: 'prize', kind: `prize.${sc.data.prize.kind}`, by: a, about: b });
+    // A trophy gets noticed: somebody in the room has an opinion about it.
+    const watcher = sc.data.prize.kind === 'trophy' ? all.filter(h => h !== a)[sc.id % Math.max(1, all.length - 1)] : null;
+    if (watcher) push({ phase: 'prize', kind: 'prize.trophy.react', by: watcher, about: a });
   }
   sc.data.beats = beats;
   return beats;

@@ -368,15 +368,25 @@ function winnersOf(state, game, sc, all) {
  * safe at the next blocking (standardBlocking honors and clears it; the
  * final ratings never read it). gift: the winner sends someone a gift.
  */
+// A judged contest with no other prize gives the winner a trophy at the door
+// (US 2 Poetry Slam's golden quill, US 3's rap battle): a reward, no power.
+const TROPHY_FAMILIES = new Set(['make', 'photo']);
+export const prizeOf = game => (game.prize && game.prize !== 'none' ? game.prize : TROPHY_FAMILIES.has(game.family) ? 'trophy' : null);
 export function awardPrize(state, rng, game, winners, sc) {
-  if (!game.prize || game.prize === 'none' || !winners.length) return null;
-  sc.data.prize = { kind: game.prize, to: [...winners] };
+  const kind = prizeOf(game);
+  if (!kind || !winners.length) return null;
+  sc.data.prize = { kind, to: [...winners] };
   const all = sc.seenBy;
   for (const w of winners) {
     if (game.prize === 'party') state.partyNext = true;
     if (game.prize === 'photo') for (const o of all) if (o !== w) bump(o, w, 'affection', 0.2);
     if (game.prize === 'video') (state.homeVideoFor ||= []).push(w);
     if (game.prize === 'immunity') state.immuneNext[w] = true;
+    // A trophy: the winner glows, and the room starts to see them as a threat.
+    if (kind === 'trophy') {
+      feel(state, w, 'elation', 1);
+      for (const o of all) if (o !== w) nudgeBelief(state, o, w, 'threat', 0.3, sc);
+    }
     if (game.prize === 'gift') {
       const to = argmax(all.filter(o => o !== w), o => rel(w, o, 'affection') + rng());
       bump(to, w, 'affection', 1);

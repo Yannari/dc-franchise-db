@@ -365,7 +365,7 @@ export const MORE_LINES = {
     "Rejected by a screen. A new low.",
   ]),
   ...M('aside.watcher.warm', [
-    "{b} likes me. And {b} just told me who {b.sub} doesn't like. Useful.",
+    "{b} likes me. People tell you things when they like you. Useful.",
     "Warm chat. Warm chats are where people forget to be careful.",
     "I'm keeping {b} close. Close enough to hear everything.",
     "Good chat. I talked less than {b}. That's the trick.",

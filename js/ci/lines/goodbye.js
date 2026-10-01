@@ -123,7 +123,7 @@ export const GOODBYE = {
   ],
   'goodbye.video.catfish.family': [
     { id: 'goodbye.video.catfish.family.01', turns: [
-      { by: 'a', video: "Hi, everybody. I'm {a.real}. {a} is real. {a} is someone I love, and I played as them." },
+      { by: 'a', video: "Hi, everybody. I'm {a.real}. {a} is real. {a} is someone I love, and I played as {a.obj}." },
       { by: 'a', video: "I hope I made them proud. Good luck, everybody." },
     ] },
     { id: 'goodbye.video.catfish.family.02', turns: [

@@ -85,8 +85,8 @@ export const G_ASK_GUESS = {
     e('game.guess.owner.02', [{ by: 'a', react: "Yes, that was mine. Don't judge me." }]),
     e('game.guess.owner.03', [{ by: 'a', react: "'{x}' That's me. I stand by it." }]),
     e('game.guess.owner.04', [{ by: 'a', react: "They got me. How did they get me?" }]),
-    e('game.guess.owner.05', [{ by: 'a', say: "Was that too much? Was that too real for my profile?" }], { when: { off: true } }),
-    e('game.guess.owner.06', [{ by: 'a', say: "Oh no. That doesn't sound like somebody my age. Does it?" }], { when: { off: true } }),
+    e('game.guess.owner.05', [{ by: 'a', say: "Yep, that one's mine. Was that too much? Was that too real for my profile?" }], { when: { off: true } }),
+    e('game.guess.owner.06', [{ by: 'a', say: "That's mine. Oh no. That doesn't sound like somebody my age. Does it?" }], { when: { off: true } }),
   ],
   'game.guess.conclusion': [
     e('game.guess.conclusion.01', [{ by: 'a', say: "{b} surprised me in that game. More than once." }]),

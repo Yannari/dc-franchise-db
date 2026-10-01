@@ -117,6 +117,11 @@ export const USED_DECAY = 0.12;
 // days it was not enough: visits are days apart.
 export const RECENT = 0.01;
 const poolKey = key => (Array.isArray(key) ? key.join('+') : key);
+// The same sentence written into two pools ("Please don't be me. Please don't
+// be me." is in three): the same-day rule goes by the words too, not only by
+// the entry, so a day never hears it twice.
+// Line by line: two exchanges can share one line ("Thank-you note: you're the best").
+const wordsOf = e => (e.turns || []).flatMap(t => [t.say, t.react, t.send, t.video]).filter(x => x && x.length > 12);
 
 export function pickEntry(state, key, facts, pairKey, rng, speaker = null) {
   // A list of keys merges pools: a game's own lines (weighted up) with its
@@ -132,7 +137,8 @@ export function pickEntry(state, key, facts, pairKey, rng, speaker = null) {
     const spec = Object.keys(e.when || {}).reduce((n, k) => n + (k === 'register' ? 4 : 1), 0) + (e.id.startsWith('g.') ? 1 : 0);
     const uses = u.uses[e.id] || 0;
     const samePair = (u.pairs[e.id] || []).includes(pairKey);
-    const today = (u.day || {})[e.id] === state.day ? SAME_DAY : recent.includes(e.id) ? RECENT : 1;
+    const today = (u.day || {})[e.id] === state.day || wordsOf(e).some(w => (u.words || {})[w] === state.day) ? SAME_DAY
+      : recent.includes(e.id) ? RECENT : 1;
     // One person saying the same sentence twice in a season reads as a bug,
     // whoever they say it to (a register's lines win often, so this matters).
     // Both sides of an exchange: the reply ("Absolutely not.") repeats as surely as the line.
@@ -145,7 +151,9 @@ export function pickEntry(state, key, facts, pairKey, rng, speaker = null) {
   let total = scored.reduce((s, [, w]) => s + w, 0);
   // Everything that fits has been used on this pair: take the least-used fit.
   if (!total) {
-    const e = fits.sort((x, y) => (u.uses[x.id] || 0) - (u.uses[y.id] || 0))[0] || pool.find(p => !p.when);
+    // ...not heard today first (by its words too), then the least used.
+    const heardToday = x => ((u.day || {})[x.id] === state.day || wordsOf(x).some(w => (u.words || {})[w] === state.day)) ? 1 : 0;
+    const e = fits.sort((x, y) => heardToday(x) - heardToday(y) || (u.uses[x.id] || 0) - (u.uses[y.id] || 0))[0] || pool.find(p => !p.when);
     return note(state, e, pairKey, speaker, key, pool.length);
   }
   let r = rng() * total;
@@ -164,6 +172,7 @@ function note(state, e, pairKey, speaker, key = null, size = 0) {
   for (const sp of [].concat(speaker || [])) ((u.by ||= {})[e.id] ||= []).push(sp);
   u.uses[e.id] = (u.uses[e.id] || 0) + 1;
   (u.day ||= {})[e.id] = state.day;
+  for (const w of wordsOf(e)) (u.words ||= {})[w] = state.day;
   (u.pairs[e.id] ||= []).push(pairKey);
   return e;
 }

@@ -66,7 +66,7 @@ export const SCENES_MORE = {
     s1("I hope they rated me the way I rated them."),
   ]),
   ...E('block.wait', [
-    r1("Please don't be me. Please don't be me."),
+    r1("Not me. Not me. Not me. Please, not me."),
     r1("Why are they typing so slow? Just say it!"),
     r1("If it's me, it's me. I played my game.", { beat: '{a} holds very still.' }),
     r1("I'm shaking. I'm actually shaking."),
@@ -136,6 +136,13 @@ export const SCENES_MORE = {
     r1("I knew it. I knew it!", { when: { catfish: true } }),
     r1("There you are!"),
     r1("Finally. Come here."),
+    r1("{b}! In real life! I can't believe it.", { when: { catfish: false } }),
+    r1("You sound exactly how you type, {b}. Exactly.", { when: { catfish: false } }),
+    r1("Hold on. Hold on. You're {b}?", { when: { catfish: true } }),
+    r1("I talked to you every day and I had no idea.", { when: { catfish: true } }),
+    r1("Oh, you got me. You really got me, {b}.", { when: { catfish: true } }),
+    r1("Okay, hug first. Questions later."),
+    r1("I've waited all season for this. Hi, {b}!"),
   ]),
   // The last Circle Chat: a finalist looks back, to the one closest to them (b).
   ...E('circle.final.look', [

@@ -84,6 +84,11 @@ export const RATINGS = {
     { id: 'rate.protection.top.01', turns: [{ by: 'a', say: "If {b} is an Influencer, I'm safe. So {b} goes first. That's strategy." }] },
     { id: 'rate.protection.top.02', turns: [{ by: 'a', say: "First position, {b}. {b.Sub} likes me, and I need {b.obj} up top." }] },
     { id: 'rate.protection.top.03', turns: [{ by: 'a', say: "Put {b} first. I need at least one Influencer on my side tonight." }] },
+    { id: 'rate.protection.top.04', turns: [{ by: 'a', say: "{b} has my back, and I have {b.posAdj}. First." }] },
+    { id: 'rate.protection.top.05', turns: [{ by: 'a', say: "First is {b}. If I'm up there, I need a friend up there with me." }] },
+    { id: 'rate.protection.top.06', turns: [{ by: 'a', say: "{b} would never put me at the bottom. So {b} goes first." }] },
+    { id: 'rate.protection.top.07', turns: [{ by: 'a', say: "Top spot for {b}. We look out for each other in here." }] },
+    { id: 'rate.protection.top.08', turns: [{ by: 'a', say: "Circle, put {b} first. {b} keeps me safe." }] },
   ],
   'rate.protection.bottom': [
     { id: 'rate.protection.bottom.01', turns: [{ by: 'a', say: "{b} wouldn't save me. So {b} doesn't get my help. Last place." }] },

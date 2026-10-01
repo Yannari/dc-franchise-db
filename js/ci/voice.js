@@ -136,6 +136,10 @@ export function styleMessage(text, voice = {}, rng = () => 0.5) {
   const e = voice.emoji ?? 0.5, t = voice.hashtags ?? 0.5, caps = voice.caps ?? 0;
   let out = '', dropped = false;
   for (const p of tokenize(text)) {
+    // A hashtag that opens the message IS the message ("#CircleFam forever",
+    // the Hashtag game's answers): dropping it left "forever" on its own.
+    const opens = !out.replace(/\{[et]:[A-Za-z0-9]+\}/g, '').trim();
+    if (p.type === 'tag' && opens) { out += `{t:${p.v}}`; dropped = false; continue; }
     if (p.type === 'text') {
       let v = p.v;
       if (caps > 0 && rng() < caps * 0.5) v = v.replace(/!+/g, m => (m.length > 1 ? m : '!!'));

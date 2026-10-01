@@ -358,7 +358,7 @@ export const CHAT_A = {
     ], beat: '{a} jumps up and punches the air.' },
     { id: 'chat.ally.warm.02', turns: [
       { by: 'a', send: "Can I be honest? I think we'd be really strong together in this game" },
-      { by: 'b', send: "Honestly I've been thinking the same thing" },
+      { by: 'b', send: "Honestly? Same. I was waiting for you to say it first" },
       { by: 'a', send: "So let's do it. We protect each other if either of us is Influencer" },
       { by: 'b', send: "Deal. Nobody else needs to know {e:detective}" },
     ], beat: '{b} closes the chat and says "I have an ally" to the empty room.' },

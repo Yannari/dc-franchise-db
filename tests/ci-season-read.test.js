@@ -82,3 +82,30 @@ describe('a profile swap', () => {
     expect(checked).toBeGreaterThan(2);
   });
 });
+
+// Round two of reading seasons.
+import { styleMessage } from '../js/ci/voice.js';
+import { placeOf } from '../js/ci/topics.js';
+import { POOLS } from '../js/ci/lines/index.js';
+describe('a second read', () => {
+  it('a hashtag that opens a message is the message: kept by a voice that never uses one', () => {
+    expect(styleMessage('{t:CircleFam} forever', { hashtags: 0, emoji: 0 }, () => 0.99)).toBe('{t:CircleFam} forever');
+    expect(styleMessage('Good morning {t:Blessed}', { hashtags: 0, emoji: 0 }, () => 0.99)).toBe('Good morning');
+  });
+  it('the same words never air twice in a day, even from two pools', () => {
+    for (const { rows } of runs) for (const row of rows) {
+      const said = row.ci.aired.flatMap(s => (s.script?.blocks || []).flatMap(b => b.lines))
+        .filter(l => l.kind !== 'host' && l.kind !== 'stage' && (l.text || '').length > 30).map(l => l.text);
+      const twice = said.filter((t, i) => said.indexOf(t) !== i);
+      expect(twice, `day ${row.day}`).toEqual([]);
+    }
+  });
+  it('an owner who slipped still says the answer was theirs', () => {
+    for (const e of POOLS['game.guess.owner'].filter(x => x.when?.off)) expect(e.turns[0].say || e.turns[0].react).toMatch(/mine|me\b/i);
+  });
+  it('a hometown prints as a place', () => {
+    expect(placeOf('Sao paulo')).toBe('Sao Paulo');
+    expect(placeOf('Rio de Janeiro')).toBe('Rio de Janeiro');
+    expect(placeOf('Swiss')).toBe(null);
+  });
+});

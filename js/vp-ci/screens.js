@@ -18,6 +18,8 @@ import { circleScreens } from './steps.js';
 import { withTeasers } from './teasers.js';
 import { TEASER_CSS } from './teaser-stage.js';
 import { VISIT_CSS } from './visit-stage.js';
+import { webScreen, WEB_CSS } from './web-stage.js';
+import { circleDebugScreen } from './debug.js';
 import { stageInner, paintStage } from './stage.js';
 import { CIV_CSS, CIV_FONTS } from './style.js';
 import { bedFor, playStep } from './sound.js';
@@ -38,13 +40,16 @@ function scriptHtml(row, screen) {
 }
 
 /** `prev` / `next`: the neighbouring episodes, for Previously and Next time (teasers.js). */
-export function circleVpScreens(row, { prev = null, next = null } = {}) {
+export function circleVpScreens(row, { prev = null, next = null, debug = false } = {}) {
   const screens = withTeasers(row, circleScreens(row), { prev, next, screensOf: circleScreens });
+  // The last screen of the episode (before Debug): the Circle web.
+  const web = webScreen(row, prev);
+  if (web) screens.push(web);
   if (!screens.length) {
     return [{ id: 'ci-empty', label: 'The day', html: `<style>${CIV_FONTS}${CIV_CSS}</style><div class="civ"><div class="civ-top"><div class="civ-logo">${LOGO}<div>THE CIRCLE<small>Episode ${esc(row.num)} · Day ${esc(row.day)}</small></div></div></div><p class="civ-ln vis">A quiet day in The Circle.</p></div>` }];
   }
   if (typeof document !== 'undefined') queueMicrotask?.(() => applyTv(tvOn()));
-  return screens.map((screen, si) => {
+  const out = screens.map((screen, si) => {
     const uid = `ci${esc(row.num)}-${si}`;
     reg()[uid] = { row, screen, idx: -1, auto: false, screens, si };
     return {
@@ -53,7 +58,7 @@ export function circleVpScreens(row, { prev = null, next = null } = {}) {
       label: screen.title,
       // The root carries the scene's music bed (vp-ui.js reads data-ambient
       // off the first element after its stage cue, so the style goes inside).
-      html: `<div class="civ" data-uid="${uid}" data-ambient="${bedFor(screen)}"><style>${CIV_FONTS}${CIV_CSS}${TEASER_CSS}${VISIT_CSS}</style>
+      html: `<div class="civ" data-uid="${uid}" data-ambient="${bedFor(screen)}"><style>${CIV_FONTS}${CIV_CSS}${TEASER_CSS}${VISIT_CSS}${WEB_CSS}</style>
   <div class="civ-top"><div class="civ-logo">${LOGO}<div>THE CIRCLE<small>Episode ${esc(row.num)} · Day ${esc(row.day)}</small></div></div>
     <div class="civ-title">${esc(screen.title)}</div></div>
   <div class="civ-stagewrap"><div class="civ-stage" id="civ-st-${uid}" onclick="civNext('${uid}')" title="Click for the next line">${stageInner(row, screen, -1)}</div>
@@ -71,6 +76,9 @@ export function circleVpScreens(row, { prev = null, next = null } = {}) {
 </div>`,
     };
   });
+  // The engine's numbers, last of all, behind the vp_debug switch (debug.js).
+  if (debug) out.push(circleDebugScreen(row));
+  return out;
 }
 
 // ── TV mode: just the picture, as big as the window ───────────────────
@@ -180,6 +188,30 @@ export function civAuto(uid) {
 }
 
 if (typeof window !== 'undefined') Object.assign(window, { civNext, civAll, civReset, civAuto, civTv });
+
+// The web's tabs (web-stage.js): a tab or a person re-draws the screen where
+// it stands; it is not the next line.
+if (typeof document !== 'undefined' && !globalThis.__civWeb) {
+  globalThis.__civWeb = true;
+  const redraw = (el, set) => {
+    const root = el.closest('.civ[data-uid]');
+    const S = root && reg()[root.dataset.uid];
+    if (!S) return;
+    set(S.screen);
+    paint(root.dataset.uid, false);
+  };
+  document.addEventListener('click', e => {
+    const t = e.target?.closest?.('[data-webtab]');
+    if (!t) return;
+    e.stopPropagation();
+    redraw(t, sc => { sc.tab = t.dataset.webtab; });
+  }, true);
+  document.addEventListener('change', e => {
+    const s = e.target?.closest?.('[data-webwho]');
+    if (!s) return;
+    redraw(s, sc => { sc.tab = 'person'; sc.who1 = s.value; });
+  });
+}
 
 // The keyboard: space or the right arrow is the next line on whatever Circle
 // screen is showing (never while typing in a field).

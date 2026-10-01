@@ -14081,7 +14081,9 @@ export function buildVPScreens(epRecord) {
     const _prev = _hist.find(r => r.num === epRecord.num - 1) || null;
     const _next = _hist.find(r => r.num === epRecord.num + 1)
       || (_gs?._ciQueue || []).find(r => r && r.num === epRecord.num + 1) || null;
-    vpScreens = circleVpScreens(epRecord, { prev: _prev, next: _next });
+    let _ciDebug = false;
+    try { _ciDebug = window.localStorage?.getItem('vp_debug') === 'true'; } catch { /* storage can throw */ }
+    vpScreens = circleVpScreens(epRecord, { prev: _prev, next: _next, debug: _ciDebug });
     return vpScreens;
   }
   if (epRecord.format === 'perfect-match') {

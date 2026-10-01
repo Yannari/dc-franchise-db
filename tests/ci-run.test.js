@@ -241,9 +241,11 @@ describe('an aired episode can be watched and read', () => {
     const all = buildVPScreens(row);
     // The edit's teasers (vp-ci/teasers.js) sit around the aired scenes:
     // episode 2 opens on Previously and closes on Next time.
-    const TEASER = /^ci-(previously|comingup|nexttime)-/;
+    const TEASER = /^ci-(previously|comingup|nexttime|web)-/;
     expect(all[0].id).toMatch(/^ci-previously-/);
-    expect(all.at(-1).id).toMatch(/^ci-nexttime-/);
+    // ...then Next time, and the Circle web is the very last screen.
+    expect(all.at(-2).id).toMatch(/^ci-nexttime-/);
+    expect(all.at(-1).id).toMatch(/^ci-web-/);
     const screens = all.filter(s => !TEASER.test(s.id));
     const aired = row.ci.aired.filter(s => s.script?.blocks?.length).length;
     expect(screens.length).toBe(aired);
@@ -327,7 +329,7 @@ describe('the player files Circle screens under the Circle\'s own words, never "
     const rows = playAll();
     const labels = new Set();
     for (const r of rows.slice(0, 4)) for (const s of buildVPScreens(r)) labels.add(_vpPhaseForScreen(s.id).label);
-    for (const l of labels) expect(['Previously', 'The Morning', 'The Day', 'The Ratings', 'The Blocking', 'The Final', 'Next Time']).toContain(l);
+    for (const l of labels) expect(['Previously', 'The Morning', 'The Day', 'The Ratings', 'The Blocking', 'The Final', 'Next Time', 'The Web']).toContain(l);
     expect(labels.has('Camp')).toBe(false);
   });
 });

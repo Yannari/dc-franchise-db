@@ -553,6 +553,27 @@ const BLOCKS = {
     if (s.data.plan) out.push({ key: 'group.check.plan', cast: { a, b: b || a, c: s.data.plan, text: { game: x } } });
     return out;
   },
+  // THE AUDIENCE VOTES (formats.js audience-block / audience-immunity).
+  audience(state, s) {
+    const d = s.data;
+    const pct = h => String(d.shares[d.candidates.indexOf(h)]);
+    if (d.mode === 'block') {
+      const [x, y] = d.candidates;
+      const out = [{ key: 'audience.open.block', cast: { a: x, b: y } }];
+      for (const h of d.candidates) out.push({ key: 'audience.wait', cast: { a: h } });
+      out.push({ key: 'audience.result.block', cast: { a: d.saved, b: d.target, text: { n: pct(d.saved) } } });
+      out.push({ key: 'audience.react.saved', cast: { a: d.saved, b: d.target } });
+      out.push({ key: 'audience.react.blocked', cast: { a: d.target, b: d.saved } });
+      return out;
+    }
+    const [w, ...rest] = d.candidates;
+    const out = [{ key: 'audience.open.immunity', cast: { a: w, b: rest[0] || w } }];
+    for (const h of [...rest.slice(0, 2), w]) out.push({ key: 'audience.wait.immunity', cast: { a: h } });
+    out.push({ key: 'audience.result.immunity', cast: { a: w, text: { n: pct(w) } } });
+    out.push({ key: 'audience.react.immune', cast: { a: w } });
+    if (rest[0]) out.push({ key: 'audience.react.missed', cast: { a: rest[0], b: w } });
+    return out;
+  },
   // Racing to the newcomer: a (who got there first, or second) and b (new).
   welcome(state, s) { return [{ key: `welcome.${s.data.ending}`, cast: { a: s.who[0], b: s.who[1] } }]; },
   'after-party'(state, s) { return [{ key: 'afterparty', cast: { a: s.who[0], b: s.who[1] } }]; },
@@ -817,14 +838,14 @@ const BLOCKS = {
     // Before the name: the ones at risk, waiting; the Influencer typing it.
     // Everybody waits: for the name, or (in person) for somebody's knock.
     // Nobody types a name when the saves or the room decided: the waiting was there.
-    const untyped = ['unsaved', 'vote', 'instant', 'antivirus', 'mission'].includes(s.data.channel);
+    const untyped = ['unsaved', 'vote', 'instant', 'antivirus', 'mission', 'audience'].includes(s.data.channel);
     const out = untyped ? [] : [target, ...others].slice(0, s.data.inPerson ? 3 : 4).map(h => ({ key: 'block.wait', cast: { a: h } }));
     if (s.data.inPerson) {
       // A Super Influencer says it at the door (US 1 Ep 10).
       out.push({ key: 'block.inperson.walk', cast: { a: announcer, c: target } },
         { key: 'block.inperson.door', cast: { a: target, b: announcer } },
         { key: 'block.inperson.tell', cast: { a: announcer, b: target } });
-    } else if (['unsaved', 'vote', 'instant', 'antivirus'].includes(s.data.channel)) {
+    } else if (['unsaved', 'vote', 'instant', 'antivirus', 'audience'].includes(s.data.channel)) {
       // Nobody typed a name: the Circle says who was left, or who the room chose.
       out.push({ key: `block.announce.${s.data.channel}`, cast: { a: target, c: target } });
       if (s.data.channel === 'vote') out.push({ key: 'vote.result', cast: { a: target } });
@@ -1229,6 +1250,8 @@ const MOTIVES_ = ['friend', 'answers', 'truth', 'apology'];
 const WHY_ = ['strategic', 'protective', 'experimental', 'family'];
 const BLOCK_WHY_ = ['fake', 'threat', 'grudge', 'noBond'];
 export const POOL_KEYS = [
+  // the audience votes (lines/audience.js)
+  'alert.audience-block', 'alert.audience-immunity', 'audience.open.block', 'audience.open.immunity', 'audience.wait', 'audience.wait.immunity', 'audience.result.block', 'audience.result.immunity', 'audience.react.saved', 'audience.react.blocked', 'audience.react.immune', 'audience.react.missed', 'block.announce.audience',
   // a chat that builds (lines/chat-depth.js)
   'chat.hello', 'chat.hello.serious', 'chat.hello.cool', 'chat.close.warm', 'chat.close.neutral', 'chat.deep',
   // alliances and their group chats (lines/alliances.js)

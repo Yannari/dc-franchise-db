@@ -80,10 +80,13 @@ export function standardBlocking(state, rng, ratingRow, { format = 'standard', s
   const d = deliberate(state, rng, infl, atRisk);
   // A mission can overrule the Hangout (UK 3 Ep 8): it names who actually goes.
   let channel = 'influencers';
-  if (decide) { const r = decide(d); if (r.target !== d.target) { d.target = r.target; channel = r.channel || channel; } }
+  const pick = d.target;
+  if (decide) { const r = decide(d); if (r.target !== d.target || r.channel) { d.target = r.target; channel = r.channel || channel; } }
   // Ride or Die (US 6): a blocked player's partner may go in their place.
   { const r = rideOrDieTarget(state, rng, d.target); if (r.target !== d.target) { d.target = r.target; channel = r.channel || channel; } }
-  Object.assign(hangout.data, d);
+  // The Hangout scene keeps the Influencers' own pick: a twist that overrules
+  // it (the audience, a mission, Ride or Die) airs as its own scene.
+  Object.assign(hangout.data, d, { target: pick });
   for (const h of state.active) delete state.immuneNext[h];
   const announcement = addScene(state, 'blocking', [d.announcer, d.target],
     { by: infl, target: d.target, reason: d.reason, channel, format,

@@ -37,7 +37,7 @@ import { arrive, chooseNewcomer } from './arrivals.js';
 import { powersMorning, jokerMeets, runDisrupter } from './powers.js';
 import { runEvent, endSwap } from './twists.js';
 import { addAI } from './ai.js';
-import { openLedger, noteJoin, airDay, fanFavorite, publicPick, publicSnapshot } from './public.js';
+import { openLedger, noteJoin, airDay, fanFavorite, publicPick, publicSnapshot, publicStanding } from './public.js';
 import { buildSchedule, rhythmOf } from './schedule.js';
 import { finalDay, finaleDay } from './finale.js';
 import { chooseAired } from './airing.js';
@@ -87,6 +87,7 @@ export const STAGE_DATA = {
   // The Newsfeed: how many likes each player's post got this morning.
   likes: d => ({ counts: likeCounts(d.likes) }),
   'group-chat': d => ({ name: d.name, formed: !!d.formed, declined: d.declined || [], plan: d.plan || null }),
+  audience: d => ({ mode: d.mode, candidates: [...d.candidates], shares: [...d.shares], saved: d.saved ?? null, target: d.target ?? null, winner: d.winner ?? null }),
   // A game's beats, trimmed to what a board draws (js/vp-ci/boards.js).
   game: d => ({ gameId: d.gameId, family: d.family, beats: (d.beats || []).map(b =>
     Object.fromEntries(Object.entries(b).filter(([k, v]) => BEAT_KEEP.has(k) && v != null && v !== false))) }),
@@ -219,6 +220,8 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
     } else {
       for (const h of state.active) driftMind(state, h);
       if (tonight) {
+        // An audience vote reads the audience's standing, handed in here (formats.js).
+        state.publicStanding = String(tonight.night?.format || '').startsWith('audience-') ? publicStanding(state) : null;
         runBlocking(state, ds(`block:${d.day}`), tonight.rating, tonight.night);
         tonight = null;
       }

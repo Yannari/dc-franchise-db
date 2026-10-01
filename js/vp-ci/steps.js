@@ -25,7 +25,7 @@ const ALERT = new Set(['alert', 'power-reveal', 'disrupter', 'hack', 'no-block',
 // Meet the players: who walks in, who they really are, and the profile built.
 const ARRIVE = new Set(['profiles', 'arrival']);
 // The big moments (js/vp-ci/moments.js), each on its own set.
-const MOMENT = { likes: 'feed', game: 'game', ratings: 'rate', 'final-ratings': 'rate', hangout: 'hangout', blocking: 'blocked',
+const MOMENT = { audience: 'vote', likes: 'feed', game: 'game', ratings: 'rate', 'final-ratings': 'rate', hangout: 'hangout', blocking: 'blocked',
   visit: 'room', meet: 'room', goodbye: 'video', reveal: 'studio' };
 export const stageOf = kind => MOMENT[kind] || (ARRIVE.has(kind) ? 'arrive' : APT.has(kind) ? 'apt' : ALERT.has(kind) ? 'alert' : 'ui');
 

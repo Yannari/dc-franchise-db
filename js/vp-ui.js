@@ -86,7 +86,7 @@ const _CI_PHASE = {
   previously: { id:'ci-previously', label:'Previously', icon:'◀' }, nexttime: { id:'ci-nexttime', label:'Next Time', icon:'▶' },
   web: { id:'ci-web', label:'The Web', icon:'◎' },
 };
-const _CI_KIND = { goodbye:'morning', status:'morning', likes:'morning', profiles:'morning', recognise:'morning', arrival:'morning', welcome:'morning', 'pair-arrival':'morning',
+const _CI_KIND = { goodbye:'morning', status:'morning', likes:'morning', profiles:'morning', recognise:'morning', arrival:'morning', welcome:'morning', audience:'blocking', 'pair-arrival':'morning',
   alert:'morning', 'power-reveal':'morning', hack:'morning', disrupter:'morning', swap:'morning', 'swap-back':'morning', 'ride-or-die':'morning', report:'morning',
   ratings:'ratings', hangout:'ratings', save:'ratings', plead:'ratings', statement:'ratings', vote:'ratings', offer:'ratings', antivirus:'ratings', sacrifice:'ratings', 'no-block':'ratings', 'joker-pick':'ratings',
   blocking:'blocking', visit:'blocking',

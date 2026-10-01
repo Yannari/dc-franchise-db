@@ -92,6 +92,13 @@ export function publicSnapshot(state) {
   return out;
 }
 
+/** Every profile's standing with the audience, for an audience vote (season.js
+ *  hands it to the night; no engine module reads the ledger). */
+export function publicStanding(state, pool = state.active) {
+  const ap = h => peopleOf(state, h).reduce((s, n) => s + readApproval(state.ledger, n), 0) / Math.max(1, peopleOf(state, h).length);
+  return Object.fromEntries(pool.map(h => [h, Math.round(ap(h) * 10) / 10]));
+}
+
 export function fanFavorite(state) {
   return Object.keys(state.people)
     .sort((a, b) => readApproval(state.ledger, b) - readApproval(state.ledger, a) || (a < b ? -1 : 1))[0];

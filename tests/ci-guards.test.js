@@ -9,7 +9,7 @@ const DIR = join(process.cwd(), 'js/ci');
 const files = readdirSync(DIR).filter(f => f.endsWith('.js'));
 const src = f => readFileSync(join(DIR, f), 'utf8').replace(/\/\/.*$/gm, '');
 
-const KINDS = ['profiles', 'recognise', 'status', 'likes', 'chat', 'circle-chat', 'arrival', 'welcome', 'group-chat',
+const KINDS = ['profiles', 'recognise', 'status', 'likes', 'chat', 'circle-chat', 'arrival', 'welcome', 'group-chat', 'audience',
   'after-party', 'ratings', 'hangout', 'blocking', 'visit', 'report', 'goodbye',
   'final-ratings', 'meet', 'reveal', 'game', 'party', 'life', 'home-video', 'alert', 'save', 'offer', 'plead', 'vote', 'statement', 'antivirus', 'date', 'invites', 'race', 'newparty', 'lurk', 'chosen', 'pair-arrival', 'power-reveal', 'hack', 'hack-undone', 'joker-chat', 'joker-pick', 'burner-exposed', 'no-block', 'mission', 'disrupter', 'swap', 'swap-back', 'clone', 'ride-or-die', 'sacrifice', 'second-chance', 'egg'];
 

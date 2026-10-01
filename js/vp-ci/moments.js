@@ -20,6 +20,7 @@ import { faceOf } from './steps.js';
 import { esc, hashify, faceUrl, ringOf, nameOf, realOf, isCatfish, bg, aptNo, captionHtml, dlg, cam, tile, where, upTo, speakerAt, bgUi } from './parts.js';
 import { gameStage } from './boards.js';
 import { visitStage } from './visit-stage.js';
+import { voteStage } from './vote-stage.js';
 
 // ── THE RATINGS ────────────────────────────────────────────────────────
 const RESULT = /^result\./;
@@ -283,4 +284,4 @@ function feedStage(row, screen, idx, fresh) {
     <div class="civ-fgrid">${cards}</div>${where('THE NEWSFEED')}${dlg(row, st, fresh)}</div>`;
 }
 
-export const MOMENTS = { feed: feedStage, game: gameStage, rate: rateStage, hangout: hangoutStage, blocked: blockedStage, room: roomStage, video: videoStage, studio: studioStage };
+export const MOMENTS = { vote: voteStage, feed: feedStage, game: gameStage, rate: rateStage, hangout: hangoutStage, blocked: blockedStage, room: roomStage, video: videoStage, studio: studioStage };

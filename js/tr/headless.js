@@ -2105,14 +2105,17 @@ const _GREET = {
 };
 // After a narrated recognition or a shared season, {b} answers {a}, out loud.
 const _GREET_KNOWN = {
-  warm: ['It’s good to see you, {a}. Really.', 'Just like old times, {a}.', 'Come here, {a}. I missed you.'],
-  neutral: ['{a}. I wondered if you’d be here.', 'Hello, {a}. Here we go again.'],
-  cold: ['Don’t look so pleased to see me, {a}.', '{a}. Still holding a grudge, then?', 'Of all the people, {a}.'],
+  warm: ['It’s good to see you, {a}. Really.', 'Just like old times, {a}.', 'Come here, {a}. I missed you.',
+    '{a}! Oh, thank God. At least I know one person.', 'You look exactly the same, {a}. Annoyingly.', 'We said we’d never do one of these again, {a}.'],
+  neutral: ['{a}. I wondered if you’d be here.', 'Hello, {a}. Here we go again.', 'Well. This should be interesting, {a}.',
+    'Don’t tell anyone how that one ended, {a}.', '{a}. Of course it’s you.', 'Remember the rules, {a}? None of them apply here.'],
+  cold: ['Don’t look so pleased to see me, {a}.', '{a}. Still holding a grudge, then?', 'Of all the people, {a}.',
+    'I was hoping you’d turned it down, {a}.', 'Keep your distance this time, {a}.', 'Let’s not pretend we’re friends, {a}.'],
 };
 const _GREET_SEEN = {
-  warm: ['Guilty. Be nice to me.', 'That’s me. Hi!'],
-  neutral: ['That’s me. Don’t hold it against me.', 'Yes. Please don’t make it a thing.'],
-  cold: ['Great. So I’m already a target.', 'And you are…? No, don’t tell me. I don’t care.'],
+  warm: ['Guilty. Be nice to me.', 'That’s me. Hi!', 'Ha! I didn’t think anyone watched it.', 'You’ve seen it? Oh no. Which bits?'],
+  neutral: ['That’s me. Don’t hold it against me.', 'Yes. Please don’t make it a thing.', 'That was a long time ago.', 'Different show. Different me.'],
+  cold: ['Great. So I’m already a target.', 'And you are…? No, don’t tell me. I don’t care.', 'Then you know not to cross me.', 'Lovely. Tell everyone, why don’t you.'],
 };
 // To camera, about the one they have just met.
 const _FIRST_READ = {
@@ -2120,16 +2123,22 @@ const _FIRST_READ = {
     '{o}? I liked {o} straight away. I hope that isn’t a mistake.',
     '{o} seems lovely. Which, in here, is exactly what a Traitor would seem like.',
     'I’d trust {o}. Ask me again in a week.',
+    'First person I met, and already I’d want {o} on my side.',
+    '{o} made me laugh in the first thirty seconds. That’s rare.',
   ],
   neutral: [
     '{o} is hard to read. In this game, that is not a compliment.',
     'I don’t know about {o} yet. Nice enough. We’ll see.',
     '{o} said all the right things. I’m just not sure I believed any of them.',
+    '{o} shook my hand and looked straight past me at the castle.',
+    'I couldn’t tell you one thing about {o}. That’s either nothing or everything.',
   ],
   cold: [
     'Something about {o} I don’t like. I can’t tell you what yet.',
     '{o} was a bit much. I’ll be keeping an eye on that one.',
     'If I had to pick a Traitor right now? {o}. No reason. Just a feeling.',
+    'Two minutes with {o} and I already need a break.',
+    '{o} is going to be trouble. I can always tell.',
   ],
 };
 const _warmth = b => (b >= 2 ? 'warm' : b <= -2 ? 'cold' : 'neutral');
@@ -2166,6 +2175,10 @@ const _MEET_SHARED = [
   '{b} sees {a} on the flags and stops. {season}. Neither of them needs to explain it '
   + 'to the people watching.',
   '{a} gets to {b} last, deliberately. &ldquo;{season}.&rdquo; {b} says, &ldquo;I remember.&rdquo;',
+  '{b} spots {a} before the car door is even shut. They were both on {season}, and it shows on both their faces.',
+  '{a} laughs out loud when {b} gets out. {season} again, apparently.',
+  'The last time {a} and {b} stood this close was {season}. Neither of them has forgotten how it ended.',
+  '{a} and {b} share a look across the gravel that only somebody who watched {season} would understand.',
 ];
 
 // ── THE MONTAGE ───────────────────────────────────────────────────────
@@ -2754,7 +2767,7 @@ export function buildArrivalRecord(cast, backgrounds = {}, host = null, opts = {
         const warmth = _warmth(Number(bondOf(by || nearest, name)) || 0);
         if (!by) {
           by = nearest;
-          const pair = _GREET[warmth][_pHash(seed + '|greet|' + by + '|' + name) % _GREET[warmth].length];
+          const pair = _pPickUnique(_GREET[warmth], seed + '|greet|' + by + '|' + name, used);
           const gs2 = { a: by, b: name };
           lines.push({ kind: 'reaction', who: by, said: true, text: _pFill(pair[0], gs2) });
           lines.push({ kind: 'reaction', who: name, said: true, text: _pFill(pair[1], gs2) });
@@ -2765,14 +2778,14 @@ export function buildArrivalRecord(cast, backgrounds = {}, host = null, opts = {
           // and the one recognised answers, out loud, as warmly as they feel
           const back = pool === _MEET_SHARED ? _GREET_KNOWN[warmth] : _GREET_SEEN[warmth];
           lines.push({ kind: 'reaction', who: name, said: true,
-            text: _pFill(back[_pHash(seed + '|back|' + by + '|' + name) % back.length], { a: by }) });
+            text: _pFill(_pPickUnique(back, seed + '|back|' + by + '|' + name, used), { a: by }) });
         }
         // FIRST READ: the last one out of each car tells the camera what they
         // made of the person they just met
         if (name === group.arrivals[group.arrivals.length - 1]) {
           const fr = _FIRST_READ[warmth];
           lines.push({ kind: 'reaction', who: name, cam: true,
-            text: _pFill(fr[_pHash(seed + '|read|' + name) % fr.length], { o: by }) });
+            text: _pFill(_pPickUnique(fr, seed + '|read|' + name, used), { o: by }) });
         }
       }
       onTheFlags.push(name);

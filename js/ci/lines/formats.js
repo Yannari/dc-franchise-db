@@ -668,9 +668,9 @@ export const ARRIVAL_LINES = {
 export const POWER_LINES = {
   ...E('visit.choose.power', [
     { turns: [{ by: 'a', react: "'You have a power to give away.' So I'm not leaving empty-handed." },
-      { by: 'a', say: "There's only one person I'd trust with it. {b}." }], beat: '{a} is already putting on shoes.' },
-    { turns: [{ by: 'a', say: "I can't win anymore. But {b} can. {b} gets it." }] },
-    { turns: [{ by: 'a', say: 'This is my last move in this game, and it goes to {b}.' }], beat: '{a} takes a deep breath at the door.' },
+      { by: 'a', say: "There's only one person I'd trust with it. And they have no idea I'm coming." }], beat: '{a} is already putting on shoes.' },
+    { turns: [{ by: 'a', say: "I can't win anymore. But somebody in here still can. They get it." }] },
+    { turns: [{ by: 'a', say: 'This is my last move in this game, and I know exactly who it goes to.' }], beat: '{a} takes a deep breath at the door.' },
   ]),
   ...E('visit.talk.power', [
     { turns: [{ by: 'a', say: "I didn't come to say goodbye. I came to give you something." }, { by: 'b', say: 'Give me what?' }] },

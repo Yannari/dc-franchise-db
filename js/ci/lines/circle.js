@@ -41,13 +41,13 @@ export const CIRCLE = {
     ] },
   ],
   'circle.open': [
-    { id: 'circle.open.01', turns: [
+    { id: 'circle.open.01', when: { time: 'morning' }, turns: [
       { by: 'a', react: "'Circle Chat is now open.' Okay. I'm not gonna be the first one to talk." },
       { by: 'b', send: "What's poppin' everybody?? {e:party}" },
       { by: 'a', react: "Of course it's {b}. Okay, go.", send: "Morning everyone! How's everybody doing?" },
       { by: 'c', send: "Surviving lol {e:sweat}" },
     ] },
-    { id: 'circle.open.02', turns: [
+    { id: 'circle.open.02', when: { time: ['day', 'evening'] }, turns: [
       { by: 'a', send: "Okay who else is sick of their own cooking already {e:laugh}" },
       { by: 'b', send: "ME. I've had cereal three times today" },
       { by: 'c', send: "Three?? Respect {e:clap}" },
@@ -63,7 +63,7 @@ export const CIRCLE = {
       { by: 'c', send: "Learned the dance from the music video channel lol" },
       { by: 'a', send: "Okay we need to see that dance {e:laugh}" },
     ] },
-    { id: 'circle.open.05', turns: [
+    { id: 'circle.open.05', when: { time: 'morning' }, turns: [
       { by: 'a', say: "Say something, but don't say too much.", send: "Hey everyone! Hope you all slept better than me lol" },
       { by: 'b', send: "I slept like a baby honestly {e:halo}" },
       { by: 'a', react: "Of course {b.sub} did." },
@@ -73,6 +73,58 @@ export const CIRCLE = {
       { by: 'b', react: "What's that supposed to mean?", send: "Nice is good! Nice is the vibe lol" },
       { by: 'c', send: "Too nice maybe {e:detective}" },
     ], beat: 'For a moment nobody types anything.' },
+    // The hour it opens at (feed.js runCircleChat `when`).
+    { id: 'circle.open.m1', when: { time: 'morning' }, turns: [
+      { by: 'a', send: "Good morning Circle {e:sun} Who's actually awake?" },
+      { by: 'b', send: "Awake is a strong word. I'm vertical" },
+      { by: 'c', send: "Coffee first. Then personality {e:laugh}" },
+    ] },
+    { id: 'circle.open.m2', when: { time: 'morning' }, turns: [
+      { by: 'a', react: "'Circle Chat is now open.' Before breakfast? Okay.", send: "Morning fam! Did anybody else dream about this place??" },
+      { by: 'b', send: "I dreamed I got blocked and woke up screaming lol" },
+      { by: 'a', send: "Okay that's dark {e:shock}" },
+    ] },
+    { id: 'circle.open.m3', when: { time: 'morning' }, turns: [
+      { by: 'a', send: "Rise and shine everybody! New day, new chances {e:sparkle}" },
+      { by: 'b', react: "Who has this much energy in the morning?", send: "Love the energy. Can't match it yet" },
+    ] },
+    { id: 'circle.open.m4', when: { time: 'morning' }, turns: [
+      { by: 'a', send: "Breakfast check. What's everybody eating?" },
+      { by: 'b', send: "Leftover pizza. Cold. No regrets" },
+      { by: 'c', send: "That's the best breakfast and I'll fight anyone on it" },
+    ] },
+    { id: 'circle.open.m5', when: { time: 'morning' }, turns: [
+      { by: 'a', say: "Morning chat. Be light. Be likeable.", send: "Hi everyone {e:smile} How did we all sleep?" },
+      { by: 'b', send: "Like a rock. This bed is incredible" },
+      { by: 'c', send: "Badly. Too much to think about lol" },
+    ] },
+    { id: 'circle.open.m6', when: { time: 'morning' }, turns: [
+      { by: 'a', send: "It's way too early for Circle Chat and I love it" },
+      { by: 'b', send: "Still in my pajamas and proud of it {e:laugh}" },
+    ] },
+    { id: 'circle.open.e1', when: { time: 'evening' }, turns: [
+      { by: 'a', send: "Evening Circle! How was everybody's day?" },
+      { by: 'b', send: "Long. So long. But good {e:smile}" },
+      { by: 'c', send: "I talked to a TV for twelve hours. Normal day" },
+    ] },
+    { id: 'circle.open.e2', when: { time: 'evening' }, turns: [
+      { by: 'a', send: "Okay who's already in bed?" },
+      { by: 'b', send: "Me. Under the covers. Typing from the dark lol" },
+      { by: 'a', react: "Same, honestly." },
+    ] },
+    { id: 'circle.open.e3', when: { time: 'evening' }, turns: [
+      { by: 'a', react: "'Circle Chat is now open.' At this hour?", send: "Late night Circle Chat?? I'm here for it {e:eyes}" },
+      { by: 'b', send: "Night owls unite" },
+    ] },
+    { id: 'circle.open.e4', when: { time: 'evening' }, turns: [
+      { by: 'a', send: "Dinner check. What did everybody make tonight?" },
+      { by: 'b', send: "Pasta. Again. It's a lifestyle" },
+      { by: 'c', send: "I made a sandwich and called it cooking" },
+    ] },
+    { id: 'circle.open.e5', when: { time: 'evening' }, turns: [
+      { by: 'a', say: "End of the day. Don't say anything you'll regret at 2 a.m.", send: "Long day in here. Sending love to everybody {e:heart}" },
+      { by: 'b', react: "Sending love. Hm.", send: "Love back!" },
+    ] },
   ],
   'circle.party': [
     { id: 'circle.party.01', turns: [

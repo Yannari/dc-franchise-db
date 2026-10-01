@@ -92,6 +92,8 @@ export const STAGE_DATA = {
 // the room at a moment, for the screens' sidebar. Rounded and capped.
 // A crush the sidebar names (attraction 0-10).
 export const SPARK_AT = 4.5;
+// How often an evening gets a second Circle Chat (no party that night).
+export const EVENING_CHAT = 0.2;
 export function roomAt(state) {
   const act = [...state.active];
   const suspects = [], bonds = [], rivals = [], sparks = [];
@@ -256,13 +258,20 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
     recogniseFame(state, ds(`fame:${d.day}`));
     // Day 1 opens like the show: the first Circle Chat, where the strangers
     // say hello, straight after the profiles and before any private chat.
-    if (d.day === 1) runCircleChat(state, ds('open:1'), { first: true });
+    if (d.day === 1) runCircleChat(state, ds('open:1'), { first: true, when: 'day' });
+    // CIRCLE CHAT AT ITS HOUR (user: 'how many Circle Chats are we supposed
+    // to have'). The transcripts: one or two an episode, at any time of day
+    // (15%, 32%, 93% of the way through). The main one is the morning or the
+    // middle of the day; some evenings get a second. Each on its own stream.
+    const ccMain = d.day > 1 && !d.finale ? (ds(`cc:${d.day}`)() < 0.5 ? 'morning' : 'day') : null;
+    if (ccMain === 'morning') runCircleChat(state, ds(`cc:${d.day}:morning`), { when: 'morning' });
 
     // Alone in the apartment, then the chats, the game, and the evening:
     // a party (a party day, or a prize) or Circle Chat; then videos from home.
     if (!d.finale) apartmentLife(state, ds(`life:${d.day}`));
     const ctx = contextFor(state, d);
     if (!d.finale) for (const plan of planChats(state, rng, ctx)) runChat(state, rng, plan, ctx);
+    if (ccMain === 'day') runCircleChat(state, ds(`cc:${d.day}:day`), { when: 'day' });
     if (d.disrupter) runDisrupter(state, ds(`disrupter:${d.day}`));
     if (d.game) {
       const g = pickGame(state, ds(`game:${d.day}`), { days: schedule.length });
@@ -270,7 +279,7 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
     }
     if (!d.finale) {
       if (d.party || state.partyNext) { state.partyNext = false; runParty(state, ds(`party:${d.day}`)); }
-      else if (d.day !== 1) runCircleChat(state, rng);
+      else if (d.day !== 1 && ds(`cc:${d.day}:late`)() < EVENING_CHAT) runCircleChat(state, ds(`cc:${d.day}:evening`), { when: 'evening' });
     }
     const videos = new Set(state.homeVideoFor || []);
     state.homeVideoFor = [];

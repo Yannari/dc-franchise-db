@@ -15,7 +15,7 @@ import { runCircleChat } from './feed.js';
 import { runRating } from './ratings.js';
 
 export function finalDay(state, rng) {
-  runCircleChat(state, rng, { final: true });
+  runCircleChat(state, rng, { final: true, when: 'evening' });
   return runRating(state, rng, { final: true });
 }
 

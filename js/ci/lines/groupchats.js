@@ -215,7 +215,7 @@ export const GROUPCHAT_LINES = {
     { turns: [
       { by: 'a', send: "Before tonight. I want {c} at the bottom of all three of our lists" },
       { by: 'b', send: "That's bold. Say more" },
-      { by: 'a', send: "Three low ratings in one night and {c} is gone from the top. That's it" },
+      { by: 'a', send: "Three low ratings in one night and {c} has no way to the top. That's it" },
     ] },
     { turns: [
       { by: 'a', send: "Quick question before tonight. Do we want {c} as an Influencer?" },

@@ -8,6 +8,9 @@ export const FINALE = {
     { id: 'final.rate.affection.01', turns: [{ by: 'a', say: "Last rating ever. My heart says {b}. First place." }] },
     { id: 'final.rate.affection.02', turns: [{ by: 'a', say: "{b} has been my person since the start. Circle, put {b} in first position." }] },
     { id: 'final.rate.affection.03', turns: [{ by: 'a', say: "This one's with my heart. {b}, first." }] },
+    { id: 'final.rate.affection.04', turns: [{ by: 'a', say: "Every hard day in here, {b} was there. {b} gets my first place." }] },
+    { id: 'final.rate.affection.05', turns: [{ by: 'a', say: "I don't even have to think about it. {b}. First." }], beat: '{a} smiles at the screen.' },
+    { id: 'final.rate.affection.06', turns: [{ by: 'a', say: "Circle, first position: {b}. My best friend in this whole building." }] },
   ],
   'final.rate.trust': [
     { id: 'final.rate.trust.01', turns: [{ by: 'a', say: "{b} never lied to me. Not once. First place." }] },
@@ -180,7 +183,7 @@ export const FINALE = {
       { by: 'a', react: "Oh! Okay. Wow. Thank you, everybody." },
     ], beat: '{a} claps along with everyone else.' },
     { id: 'reveal.place.03', turns: [
-      { by: 'host', say: "Next up, {a.aka}!" },
+      { by: 'host', say: "Let's see where {a.aka} finished!" },
       { by: 'a', react: "I'm just happy to be here. Really." },
     ] },
     { id: 'reveal.place.04', turns: [

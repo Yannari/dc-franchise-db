@@ -31,7 +31,7 @@ import { buildFranchiseMeta } from './franchise-meta.js';
 import { fameStarsFor } from './alumni.js';
 import { DEFAULT_POOL } from './ci/default-pool.js';
 import { categoryKind, isFace, reasonFromKin } from './ci/categories.js';
-import { ageFrom } from './ci/profiles.js';
+import { ageFrom, unknownAge } from './ci/profiles.js';
 
 export const isCircleSeason = () => seasonFormat(seasonConfig) === CIRCLE_FORMAT;
 
@@ -72,7 +72,7 @@ export function facePersonas(cast = _cast(), setup = circleSetup()) {
     const by = cast.find(n => setup[n]?.persona === id) || null;
     const kin = by ? kinshipBetween(by, p.name) : 'none';
     return { id, handle: p.name, fromRoster: p.name, face: `portrait:${p.name}`,
-      age: Number(facts.age) || ageFrom(facts.birthdate) || 25, gender: p.gender === 'm' ? 'm' : 'f',
+      age: Number(facts.age) || ageFrom(facts.birthdate) || unknownAge(p.name), gender: p.gender === 'm' ? 'm' : 'f',
       sexuality: p.sexuality || 'straight', job: facts.occupation || '', hometown: facts.hometown || null,
       status: 'Single', details: [], photo: {}, fits: {}, bio: '',
       ...(p.chatVoice ? { chatVoice: p.chatVoice } : {}),

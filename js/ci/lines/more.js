@@ -59,7 +59,7 @@ export const MORE_LINES = {
     "{b} has too many friends in here. Bottom.",
     "Last is {b}. If {b.sub} gets power, I'm in trouble.",
     "I like {b}. That's exactly why {b.sub} scares me. Last.",
-    "{b}, last. You're winning, and I can't let you.",
+    { turns: [{ by: 'a', say: "{b}, last. You're winning, and I can't let you." }], when: { early: false } },
   ]),
   ...M('rate.middle', [
     "{b} in the middle. {b.Sub} could go either way.",

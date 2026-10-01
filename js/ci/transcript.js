@@ -112,6 +112,8 @@ export function dayText(state, row) {
 export function castText(state) {
   return Object.values(state.profiles).map(p => {
     const real = realName(state, p.handle);
+    // The clone twist: a blocked player back as a copy of a profile still in.
+    if (p.clone) return `  ${real} — back after being blocked, as a copy of ${state.profiles[p.clone]?.shown?.name || p.shown.name} (the clone)`;
     if (p.mode === 'catfish') return `  ${real} — playing as ${p.shown.name}, ${p.shown.age} (catfish, ${p.reason || 'no reason given'})`;
     if (p.mode === 'shared') return `  ${real} — sharing one profile as ${p.shown.name}`;
     if (p.mode === 'edited') return `  ${real} — as themselves, but edited (${p.edits.join(', ')})`;

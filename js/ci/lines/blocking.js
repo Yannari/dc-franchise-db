@@ -97,6 +97,16 @@ export const BLOCKING = {
     { id: 'block.react.friend.03', turns: [
       { by: 'a', react: "Oh, {b}. I'm so sorry." },
     ], beat: '{a} sits down on the floor.' },
+    { id: 'block.react.friend.04', turns: [
+      { by: 'a', react: "{b}? No. Circle, that's not right. That can't be right." },
+    ], beat: '{a} reads the name again and again.' },
+    { id: 'block.react.friend.05', turns: [
+      { by: 'a', react: "I didn't even get to say goodbye to {b}." },
+      { by: 'a', say: "This game is so cruel sometimes." },
+    ] },
+    { id: 'block.react.friend.06', turns: [
+      { by: 'a', react: "That's my friend. That's my friend they just blocked." },
+    ], beat: '{a} paces from the couch to the kitchen and back.' },
   ],
   'block.react.rival': [
     { id: 'block.react.rival.01', turns: [

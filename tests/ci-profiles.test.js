@@ -2,7 +2,7 @@ import { describe, expect, it, beforeEach } from 'vitest';
 import { setGs } from '../js/core.js';
 import { streamFor } from '../js/dr/rng.js';
 import { newState } from '../js/ci/state.js';
-import { truthOf, medianAge, catfishMotive, reasonFor, drawPersonas, buildProfiles, MOTIVE_LINE, EDIT_LINE } from '../js/ci/profiles.js';
+import { truthOf, medianAge, catfishMotive, reasonFor, drawPersonas, buildProfiles, MOTIVE_LINE, EDIT_LINE, unknownAge } from '../js/ci/profiles.js';
 import { makePlayers, makePool } from './helpers/ci-cast.js';
 
 beforeEach(() => setGs({ bonds: {}, relationshipDimensions: {}, episodeHistory: [] }));
@@ -205,7 +205,15 @@ describe('the Profile Plan starts from Create Character', () => {
     expect(t.age).toBeLessThanOrEqual(39);
   });
   it('nothing on the character: the same as before', () => {
-    expect(truthOf(base)).toMatchObject({ age: 25, job: null, hometown: null });
+    // no age: a steady one per person, 21 to 32 (not 25 for everybody)
+    const t = truthOf(base);
+    expect(t).toMatchObject({ age: unknownAge(base.name), job: null, hometown: null });
+    expect(t.age).toBeGreaterThanOrEqual(21); expect(t.age).toBeLessThanOrEqual(32);
+    expect(new Set(['Gwen', 'Rock', 'Tammy', 'Connor', 'Eureka', 'Tristan'].map(unknownAge)).size).toBeGreaterThan(2);
+  });
+  it('a nationality in the hometown field is not a hometown', () => {
+    expect(truthOf({ ...base, hometown: 'Swiss' }).hometown).toBe(null);
+    expect(truthOf({ ...base, hometown: 'Toronto, Ontario' }).hometown).toBe('Toronto, Ontario');
   });
 });
 

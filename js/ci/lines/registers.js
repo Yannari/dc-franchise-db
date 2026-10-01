@@ -5,8 +5,8 @@
 // Slots and facts are those of the pool each list joins.
 const R = (key, byRegister, kind = 'say') => ({
   [key]: Object.entries(byRegister).flatMap(([register, lines]) => lines.map((line, i) => {
-    const [text, beat] = Array.isArray(line) ? line : [line];
-    return { id: `${key}.${register}${i + 1}`, when: { register }, turns: [{ by: 'a', [kind]: text }], ...(beat ? { beat } : {}) };
+    const [text, beat, more] = Array.isArray(line) ? line : [line];
+    return { id: `${key}.${register}${i + 1}`, when: { register, ...(more || {}) }, turns: [{ by: 'a', [kind]: text }], ...(beat ? { beat } : {}) };
   })),
 });
 
@@ -38,17 +38,18 @@ export const REGISTER_LINES = {
   }),
   ...R('rate.threat.top', {
     warm: ["{b} is going to go far, and I want {b.obj} to know I'm with {b.obj}. First.", "First is {b}. Strong players need friends too."],
-    hype: ["{b} is a beast! Put the beast first! Stay on the beast's good side!", "First place, {b}! I want the winner on my team!"],
-    dry: ["{b} is winning this. Might as well be first. Sure.", "First: {b}. Self-preservation."],
+    hype: ["{b} is a beast! Put the beast first! Stay on the beast's good side!", ["First place, {b}! I want the winner on my team!", null, { early: false }]],
+    dry: [["{b} is winning this. Might as well be first. Sure.", null, { early: false }], "First: {b}. Self-preservation."],
     formal: ["{b} is the strongest player in here. It's wiser to be {b.posAdj} ally. First position.", "Strategically, {b} goes first."],
     flirty: ["{b}, first. Powerful is very attractive, just so you know.", "First place for {b}. I like to stay close to whoever can take me further."],
-    blunt: ["{b} runs this place. I'm not dumb. First.", "First, {b}. You don't fight the strongest one. You join {b.obj}."],
+    blunt: [["{b} runs this place. I'm not dumb. First.", null, { early: false }], "First, {b}. You don't fight the strongest one. You join {b.obj}."],
   }),
   ...R('rate.threat.bottom', {
     warm: ["This breaks my heart. {b}, you're too good at this. Last.", "I adore {b}. That's the problem. Last place."],
     hype: ["{b} is too strong! Somebody's gotta do it! Last!", "Bottom for {b}! Big threat, big move!"],
-    dry: ["{b} is winning. Not on my watch. Last.", "Last: {b}. It's math."],
-    formal: ["{b} is the biggest threat in this game. I'm placing {b.obj} last.", "If {b} stays on top, none of us win. Last position."],
+    // "winning", "on top", "runs this place": a standing, so never before a ratings night has shown one
+    dry: [["{b} is winning. Not on my watch. Last.", null, { early: false }], "Last: {b}. It's math."],
+    formal: ["{b} is the biggest threat in this game. I'm placing {b.obj} last.", ["If {b} stays on top, none of us win. Last position.", null, { early: false }]],
     flirty: ["{b}, last. It's because you're too good. Take it as a compliment.", "Sorry, gorgeous. {b} goes last. Too dangerous."],
     blunt: ["{b} has to go. Last.", "{b} is a threat. Bottom. I'll say it to {b.posAdj} face."],
   }),

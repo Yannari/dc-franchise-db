@@ -59,7 +59,7 @@ export const SCENES_WEAR = {
   ...E('ratings.done', [
     s1("Sent. I'd do it the same way again. I think."),
     s1("Okay. Rankings are in. I need a snack.", { beat: '{a} walks straight to the fridge.' }),
-    s1("That was harder than last time. It gets harder every time."),
+    s1("That was harder than last time. It gets harder every time.", { when: { early: false } }),
     s1("I just made some people very happy and some people very mad."),
   ]),
   ...E('ratings.wait', [

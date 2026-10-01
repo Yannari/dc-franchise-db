@@ -30,6 +30,8 @@ const KEYWORDS = [
 
 // A nationality in the hometown field is not a place to ask about ("you're from Swiss?").
 const DEMONYM = /^(swiss|british|english|french|german|spanish|italian|canadian|american|mexican|brazilian|korean|japanese|chinese|filipino|polish|irish|scottish|dutch|greek)$/i;
+/** A hometown worth printing: the field as written, unless it is a nationality ("from Swiss"). */
+export const placeOf = hometown => (townOf(hometown) ? String(hometown).trim() : null);
 /** The town as a person would say it: the first part ("Toronto", not "Toronto, Ontario"). */
 export function townOf(hometown) {
   const t = String(hometown || '').split(',')[0].trim();

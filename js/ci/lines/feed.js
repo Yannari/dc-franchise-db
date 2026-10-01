@@ -148,5 +148,11 @@ export const FEED = {
     { id: 'likes.none.03', turns: [
       { by: 'a', react: "No likes. Cool. Cool, cool, cool." },
     ], beat: '{a} lies down on the floor.' },
+    { id: 'likes.none.04', turns: [
+      { by: 'a', react: "Nothing? My post was cute! What do these people want?" },
+    ] },
+    { id: 'likes.none.05', turns: [
+      { by: 'a', say: "Zero likes. Okay. Tomorrow I'm posting the best status this building has ever seen." },
+    ], beat: '{a} starts drafting right away.' },
   ],
 };

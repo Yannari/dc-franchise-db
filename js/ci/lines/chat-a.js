@@ -253,8 +253,34 @@ export const CHAT_A = {
     ], beat: '{b} rolls {b.posAdj} eyes at the screen and shuts the chat.' },
     { id: 'chat.flirt.cold.03', turns: [
       { by: 'a', say: "Let's see if {b} is interested.", send: "So when do I get to take you out? {e:eyes}" },
-      { by: 'b', react: "Gagging already.", send: "Lol when we're both out of here, as friends, maybe" },
+      { by: 'b', react: "Way too fast.", send: "Lol when we're both out of here, as friends, maybe" },
     ], leaves: true, beat: '{b} leaves the chat before {a} can reply.' },
+    { id: 'chat.flirt.cold.04', turns: [
+      { by: 'a', send: "Not gonna lie, I've been thinking about you all day {e:hearteyes}" },
+      { by: 'b', react: "All day? We've talked twice.", send: "Haha that's sweet. Let's slow down a little though" },
+      { by: 'a', send: "Slow is good. Slow is fine {e:sweat}" },
+    ], beat: '{a} drops {a.posAdj} face onto a pillow.' },
+    { id: 'chat.flirt.cold.05', turns: [
+      { by: 'a', send: "Is it weird that you're my favorite person in here already? {e:wink}" },
+      { by: 'b', react: "It's a little weird.", send: "Lol you don't know me yet" },
+      { by: 'a', send: "Then let me get to know you" },
+      { by: 'b', send: "Let's start with friends and see" },
+    ] },
+    { id: 'chat.flirt.cold.06', turns: [
+      { by: 'a', say: "Go big or go home.", send: "So are we a thing yet or" },
+      { by: 'b', react: "We are not a thing.", send: "Lol we are absolutely not a thing" },
+      { by: 'a', send: "Noted. Retreating {e:laugh}" },
+    ], beat: '{b} shakes {b.posAdj} head and closes the chat.' },
+    { id: 'chat.flirt.cold.07', turns: [
+      { by: 'a', send: "Your profile picture is my new favorite thing {e:fire}" },
+      { by: 'b', react: "Okay. That's a lot.", send: "Thanks lol. What else is new?" },
+      { by: 'a', send: "Nothing. That was it" },
+    ], beat: '{a} stares at the screen, regretting everything.' },
+    { id: 'chat.flirt.cold.08', turns: [
+      { by: 'a', send: "Real question. Single? {e:eyes}" },
+      { by: 'b', react: "Straight to it.", send: "I'm here to play the game, not to date. Sorry!" },
+      { by: 'a', send: "Respect. Game it is" },
+    ] },
   ],
   'chat.checkin.warm': [
     { id: 'chat.checkin.warm.01', turns: [

@@ -131,7 +131,7 @@ export const SCENES_MORE = {
     r1("{b}! You're real!", { when: { catfish: false } }),
     r1("Wait. That's {b}? That's not the {b} I know.", { when: { catfish: true } }),
     r1("Get in here, {b}!"),
-    r1("Oh my God, {b}. You look exactly like I pictured."),
+    r1("Oh my God, {b}. You look exactly like I pictured.", { when: { catfish: false } }),
     r1("{b}? Stop. Stop it!"),
     r1("I knew it. I knew it!", { when: { catfish: true } }),
     r1("There you are!"),
@@ -245,7 +245,7 @@ export const SCENES_MORE = {
     talk("I need to sit down. My legs don't work.", "Sit, sit. Oh my God."),
     talk("You're all so much taller than I thought.", "You're so much louder than I thought!"),
     { turns: [{ by: 'a', react: "This is so weird. Good weird. So weird." }], beat: 'Everyone in the room is talking at once.' },
-    talk("I can't believe I'm finally hearing your voice.", "Is it what you expected?"),
+    talk("I can't believe I'm finally hearing your voice.", "I know! It's so weird. I sound nothing like my messages."),
     { turns: [{ by: 'a', react: "Okay. Okay. I'm here. Who's next?" }], beat: '{a} squeezes onto the couch between the others.' },
   ]),
   ...E('party.dance', [

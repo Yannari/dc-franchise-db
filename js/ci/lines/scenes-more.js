@@ -277,7 +277,7 @@ export const SCENES_MORE = {
   // (party.js jealous): a has the crush on b, and c is the one flirting.
   ...E('party.jealous', [
     s1("Excuse me? {c} is flirting with {b}? In the group chat? In front of everybody?"),
-    s1("{b} called {c} cute. {b} has never called me cute. Not once."),
+    s1("{b} is flirting with {c}. {b} has never once flirted with me like that."),
     r1("Oh. Okay. {b} and {c}. Cool. That's cool. I'm cool.", { beat: '{a} stares at the screen and does not type a thing.' }),
     s1("I'm not jealous. I'm just going to remember this when I rate {c}."),
     s1("I thought {b} and I had something. Apparently {c} thinks so too."),

@@ -109,6 +109,14 @@ export const SAID_AGAIN = 0.05;
 // times the weight) used once still beat a fresh plain one, and came back
 // (measured: 19% of a season's blocks were repeats).
 export const USED_DECAY = 0.12;
+// A line among its pool's last picks (half the pool) is held back while
+// anything else fits. The decay alone forgets order: in a six-line pool
+// where every line has aired once they are all equal again, and two visits
+// on back-to-back nights played the same exchange word for word (user,
+// 2026-10-01; 7 adjacent pairs in 60 seasons shared four lines or more). By
+// days it was not enough: visits are days apart.
+export const RECENT = 0.01;
+const poolKey = key => (Array.isArray(key) ? key.join('+') : key);
 
 export function pickEntry(state, key, facts, pairKey, rng, speaker = null) {
   // A list of keys merges pools: a game's own lines (weighted up) with its
@@ -117,12 +125,13 @@ export function pickEntry(state, key, facts, pairKey, rng, speaker = null) {
   if (!pool?.length) return null;
   const u = usage(state);
   const fits = pool.filter(e => matches(e.when, facts));
+  const recent = (u.recent ||= {})[poolKey(key)] || [];
   const scored = fits.map(e => {
     // A line written for the speaker's register is how they sound: it wins clearly.
     const spec = Object.keys(e.when || {}).reduce((n, k) => n + (k === 'register' ? 4 : 1), 0) + (e.id.startsWith('g.') ? 1 : 0);
     const uses = u.uses[e.id] || 0;
     const samePair = (u.pairs[e.id] || []).includes(pairKey);
-    const today = (u.day || {})[e.id] === state.day ? SAME_DAY : 1;
+    const today = (u.day || {})[e.id] === state.day ? SAME_DAY : recent.includes(e.id) ? RECENT : 1;
     // One person saying the same sentence twice in a season reads as a bug,
     // whoever they say it to (a register's lines win often, so this matters).
     const said = speaker && (u.by?.[e.id] || []).includes(speaker) ? SAID_AGAIN : 1;
@@ -132,16 +141,21 @@ export function pickEntry(state, key, facts, pairKey, rng, speaker = null) {
   // Everything that fits has been used on this pair: take the least-used fit.
   if (!total) {
     const e = fits.sort((x, y) => (u.uses[x.id] || 0) - (u.uses[y.id] || 0))[0] || pool.find(p => !p.when);
-    return note(state, e, pairKey, speaker);
+    return note(state, e, pairKey, speaker, key, pool.length);
   }
   let r = rng() * total;
-  for (const [e, w] of scored) { if ((r -= w) <= 0) return note(state, e, pairKey, speaker); }
-  return note(state, scored.at(-1)[0], pairKey, speaker);
+  for (const [e, w] of scored) { if ((r -= w) <= 0) return note(state, e, pairKey, speaker, key, pool.length); }
+  return note(state, scored.at(-1)[0], pairKey, speaker, key, pool.length);
 }
 
-function note(state, e, pairKey, speaker) {
+function note(state, e, pairKey, speaker, key = null, size = 0) {
   if (!e) return null;
   const u = usage(state);
+  if (key != null) {
+    const r = ((u.recent ||= {})[poolKey(key)] ||= []);
+    r.push(e.id);
+    r.splice(0, Math.max(0, r.length - Math.max(1, size >> 1)));
+  }
   if (speaker) ((u.by ||= {})[e.id] ||= []).push(speaker);
   u.uses[e.id] = (u.uses[e.id] || 0) + 1;
   (u.day ||= {})[e.id] = state.day;
@@ -973,8 +987,13 @@ const BLOCKS = {
     if (warned) out.push({ key: 'goodbye.react.warned', cast: { a: warned, b: h } });
     const suspecter = viewers.find(v => v !== guilty && v !== warned && peekReal(state, v, h) < 0.5);
     if (suspecter) out.push({ key: p.mode === 'catfish' ? 'goodbye.react.vindicated' : 'goodbye.react.surprised', cast: { a: suspecter, b: h } });
-    // Everybody else watching reacts too, and a friend has the last word.
-    for (const v of viewers.filter(x => ![guilty, warned, suspecter].includes(x)).slice(0, 3)) {
+    // Everybody else watching reacts too (whoever waited for the video first:
+    // a player who waited and never reacts reads as cut off), and a friend
+    // has the last word.
+    const waited = viewers.slice(0, 4);
+    const others = viewers.filter(x => ![guilty, warned, suspecter].includes(x))
+      .sort((x, y) => waited.includes(y) - waited.includes(x));
+    for (const v of others.slice(0, Math.max(3, others.filter(x => waited.includes(x)).length))) {
       out.push({ key: 'goodbye.react.surprised', cast: { a: v, b: h } });
     }
     const friend = viewers.filter(v => rel(v, h, 'affection') > 2).sort((x, y) => rel(y, h, 'affection') - rel(x, h, 'affection'))[0];

@@ -16,8 +16,13 @@ import { rollSlips, probe } from './slips.js';
 import { revealTo } from './reveal.js';
 import { attractionOk, performedFlirt } from './chat.js';
 import { coverParts } from './cover.js';
+import { streamFor } from '../dr/rng.js';
 
 // What the receiver comes to feel toward the sender, by intent and ending.
+// How often a warm chat between close players goes deep, at most.
+export const DEEP_MAX = 0.6;
+const DEEP_INTENTS = new Set(['bond', 'flirt', 'ally', 'checkin', 'repair', 'confess', 'jealous']);
+
 export const EFFECT = {
   bond:     { warm: { affection: 1.2, trust: 0.6 }, neutral: { affection: 0.4 }, cold: { affection: -0.4 } },
   ally:     { warm: { trust: 1.5, affection: 0.6, obligation: 0.8 }, neutral: { trust: 0.3 }, cold: { trust: -0.6 } },
@@ -165,6 +170,15 @@ export function runChat(state, rng, plan, ctx = {}) {
   // harder to keep up (more slips) and it weighs on them.
   if (intent === 'flirt' && performedFlirt(state, from, to)) { sc.data.performed = true; feel(state, from, 'guilt', 0.3); }
   applyEffect(state, from, to, intent, ending);
+  // A warm chat between two people already close can go deep (home, why
+  // they're here): as likely as they are close, and it brings them closer.
+  if (ending === 'warm' && DEEP_INTENTS.has(intent)) {
+    const close = (rel(from, to, 'affection') + rel(to, from, 'affection')) / 20;
+    if (streamFor(state.seed, `deep:${sc.id}`)() < clamp(close - 0.15, 0, DEEP_MAX)) {
+      sc.data.deep = true;
+      for (const [x, y] of [[from, to], [to, from]]) { bump(x, y, 'affection', 0.6); bump(x, y, 'trust', 0.5); feel(state, x, 'loneliness', -1); }
+    }
+  }
   const turns = 2 + Math.floor(rng() * 5);
   for (let i = 0; i < turns; i++) {
     const speaker = i % 2 === 0 ? from : to;

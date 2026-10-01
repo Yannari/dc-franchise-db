@@ -174,8 +174,11 @@ describe('repetition within a day, and slips inside the chat', () => {
     writeScene(s, sc);
     delete POOLS['chat.bond.warm']; delete POOLS['slip.misread'];
     // (a word to the empty apartment may follow the chat: lines/asides.js)
-    expect(sc.script.blocks.filter(b => !b.key.startsWith('aside.'))).toHaveLength(1);
-    const kinds = sc.script.blocks[0].lines.map(l => `${l.kind}:${l.text}`);
+    // (a word to the empty apartment may follow the chat: lines/asides.js; and
+    // the chat opens with a hello and may close with a sign-off: chat-depth.js)
+    expect(sc.script.blocks.filter(b => !/^(aside\.|chat\.(close|deep))/.test(b.key))).toHaveLength(1);
+    const all = sc.script.blocks[0].lines.map(l => `${l.kind}:${l.text}`);
+    const kinds = all.slice(all.indexOf('send:Hi Sammie'));
     expect(kinds).toEqual(['send:Hi Sammie', 'send:I love it here', 'react:Too nice.', 'stage:Sammie frowns.']);
     expect(sc.script.blocks[0].beat).toBe('Shubham smiles.');
   });

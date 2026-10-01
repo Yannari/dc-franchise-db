@@ -22,7 +22,8 @@ describe('forming', () => {
   it('every season has named alliances of two to four, founded in a group chat that says the name', () => {
     for (const state of runs) expect((state.alliances || []).length, 'a season with no alliance').toBeGreaterThan(0);
     const formed = scenes.filter(x => x.sc.data.formed);
-    for (const { sc } of formed.filter(x => x.sc.aired)) expect(text(sc)).toContain(sc.data.name);
+    // in each player's own texting voice (all caps, all lowercase): the name, whatever its case
+    for (const { sc } of formed.filter(x => x.sc.aired)) expect(text(sc).toLowerCase()).toContain(sc.data.name.toLowerCase());
     for (const state of runs) for (const a of state.alliances) expect(new Set(a.history?.length ? [] : [a.name]).size).toBeLessThanOrEqual(1);
     const sizes = runs.flatMap(s => s.alliances.map(a => a.founder && 1 + (s.scenes.find(x => x.data?.alliance === a.id && x.data.formed)?.data.accepted.length || 0)));
     expect(Math.min(...sizes)).toBeGreaterThanOrEqual(2);

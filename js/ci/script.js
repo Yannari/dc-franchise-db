@@ -441,6 +441,15 @@ const BLOCKS = {
     }
     // After a third of chats, a says one thing to the empty apartment, in the
     // head of their archetype (the real person; lines/asides.js).
+    // THE CHAT BUILDS (user: "conversations aren't long enough to get deep"):
+    // a hello (moved to the front once the slips are woven in), and a close
+    // the way it went, or a heart-to-heart (conversation.js `deep`).
+    const hh = [...`${s.id}:hello`].reduce((x, ch) => (x * 31 + ch.charCodeAt(0)) >>> 0, 7);
+    // A chat that goes cold opens cool (nobody says 'for you? always' and then
+    // walks out), and has no sign-off: whoever left, left.
+    if (hh % 100 < HELLO_SHARE) out.push({ key: SERIOUS_CHATS.has(s.data.intent) ? 'chat.hello.serious' : s.data.ending === 'cold' ? 'chat.hello.cool' : 'chat.hello', cast: { a, b } });
+    if (s.data.deep) out.push({ key: 'chat.deep', cast: { a, b } });
+    else if (s.data.ending && s.data.ending !== 'cold' && (hh >>> 9) % 100 < CLOSE_SHARE) out.push({ key: `chat.close.${s.data.ending}`, cast: { a, b } });
     const group = asideGroup(state, a, s.data.lead);
     const hs = [...`${s.id}:aside`].reduce((x, ch) => (x * 31 + ch.charCodeAt(0)) >>> 0, 7);
     if (group && s.data.ending && !s.data.performed && key !== 'chat.topic.fake' && s.data.intent !== 'probe' && hs % 100 < ASIDE_SHARE) {
@@ -1111,6 +1120,10 @@ export function writeScene(state, scene) {
   }
   // A game remembered opens the chat; the argument over the message comes
   // before the message itself.
+  // The hello opens the conversation itself (its lines join the chat's
+  // block, which stays the chat's main block).
+  const hello = scene.kind === 'chat' ? blocks.findIndex(x => x.key.startsWith('chat.hello')) : -1;
+  if (hello > 0) { const [h] = blocks.splice(hello, 1); blocks[0].lines.unshift(...h.lines); (blocks[0].hello ||= h.key); }
   for (const prefix of ['callback.', 'shared.argue.']) {
     const at = blocks.findIndex(x => x.key.startsWith(prefix));
     if (at > 0) blocks.unshift(...blocks.splice(at, 1));
@@ -1120,6 +1133,10 @@ export function writeScene(state, scene) {
 }
 
 export const MIDDLES_PER_NIGHT = 3;
+// How many chats open with a hello, and close with a sign-off (chat-depth.js).
+export const HELLO_SHARE = 70;
+export const CLOSE_SHARE = 75;
+const SERIOUS_CHATS = new Set(['confront', 'repair', 'probe', 'compare', 'confess', 'jealous', 'plant', 'pump']);
 // How often a pair's time alone in the apartment is the two of them together.
 export const PAIR_LIFE = 50;
 // How many chats end with a word to the empty apartment (lines/asides.js).
@@ -1197,7 +1214,8 @@ function bridge(state, aired) {
       if (entry) { s.script.blocks.unshift({ key, ...renderEntry(state, entry, cast, rng) }); since = 0; }
     }
     // (an aside is part of its chat, not a beat of its own)
-    since += (s.script?.blocks || []).filter(b => !b.key.startsWith('aside.')).length;
+    // A sign-off or a heart-to-heart is the same chat, not another beat.
+    since += (s.script?.blocks || []).filter(b => !b.key.startsWith('aside.') && !/^chat\.(close|deep)/.test(b.key)).length;
   }
 }
 
@@ -1210,6 +1228,8 @@ const MOTIVES_ = ['friend', 'answers', 'truth', 'apology'];
 const WHY_ = ['strategic', 'protective', 'experimental', 'family'];
 const BLOCK_WHY_ = ['fake', 'threat', 'grudge', 'noBond'];
 export const POOL_KEYS = [
+  // a chat that builds (lines/chat-depth.js)
+  'chat.hello', 'chat.hello.serious', 'chat.hello.cool', 'chat.close.warm', 'chat.close.neutral', 'chat.deep',
   // alliances and their group chats (lines/alliances.js)
   'group.form.pitch', 'group.form.name', 'group.form.declined', 'group.form.fizzle', 'group.check.open', 'group.check.share', 'group.check.plan', 'alliance.betrayed', 'alliance.betrayed.self', 'group.kick', 'group.confront.out', 'group.confront.stay', 'group.leave',
   // the room takes in a newcomer (lines/arrivals-room.js)

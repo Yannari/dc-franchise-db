@@ -662,22 +662,40 @@ def floor_lamp(name, loc, T, shade='#f3ead6'):
     sphere(f'Bulb{name}', 0.05, (x, y, 1.55), mat('bulb', '#ffffff', emit=T['light'], strength=30))
     point(f'{name}L', (x, y, 1.55), 40, T['light'], 0.08)
 
-def memory_wall(T, cx, y, z0, cols=8, rows=2, fw=0.52, fh=0.66, gap=0.1):
-    """The memory wall: a lit panel with a frame for every houseguest."""
-    W = cols * fw + (cols - 1) * gap + 0.5
-    Hh = rows * fh + (rows - 1) * gap + 0.5
-    box('MemPanel', (W, 0.08, Hh), (cx, y, z0 + Hh / 2), mat('mempanel', T['deep'], 0.4), bevel=0.01)
-    box('MemEdge', (W + 0.06, 0.04, Hh + 0.06), (cx, y + 0.03, z0 + Hh / 2), mat('memedge', '#ffffff', emit=T['accent2'], strength=8), bevel=0)
-    scr = mat('memscreen', '#1b2232', 0.15, coat=0.8)
-    rim = mat('memrim', '#ffffff', emit=T['accent'], strength=5)
-    for r in range(rows):
-        for c in range(cols):
-            x = cx - W / 2 + 0.25 + fw / 2 + c * (fw + gap)
-            z = z0 + Hh - 0.25 - fh / 2 - r * (fh + gap)
-            box(f'MemRim{r}{c}', (fw + 0.03, 0.02, fh + 0.03), (x, y - 0.045, z), rim, bevel=0)
-            box(f'MemScreen{r}{c}', (fw, 0.02, fh), (x, y - 0.06, z), scr, bevel=0)
-    # the title strip under the wall
-    box('MemStrip', (W * 0.6, 0.02, 0.12), (cx, y - 0.05, z0 + 0.12), mat('memstrip', '#ffffff', emit=T['accent'], strength=6), bevel=0)
+def mat_damask(name, a, b, scale=6.0):
+    """Damask-style wallpaper: a diamond trellis in two tones, the memory wall's backing."""
+    m = bpy.data.materials.new(name); m['tdcolor'] = a
+    nt, p = _bsdf(m)
+    v = _wallvec(nt)
+    mp = nt.nodes.new('ShaderNodeMapping')
+    mp.inputs['Rotation'].default_value = (0, 0, math.radians(45))
+    br = nt.nodes.new('ShaderNodeTexBrick')
+    br.inputs['Scale'].default_value = scale
+    br.inputs['Brick Width'].default_value = 1.0; br.inputs['Row Height'].default_value = 1.0
+    br.inputs['Mortar Size'].default_value = 0.035; br.offset = 0.0
+    br.inputs['Color1'].default_value = hexc(a); br.inputs['Color2'].default_value = hexc(a)
+    br.inputs['Mortar'].default_value = hexc(b)
+    nt.links.new(v, mp.inputs['Vector']); nt.links.new(mp.outputs['Vector'], br.inputs['Vector'])
+    nt.links.new(br.outputs['Color'], p.inputs['Base Color'])
+    p.inputs['Roughness'].default_value = 0.85
+    return m
+
+MEM_PANEL_W, MEM_PANEL_H, MEM_GAP = 1.35, 2.15, 0.3
+
+def memory_wall(T, cx, y, z0):
+    """The memory wall (BB US): two tall wallpapered panels, each trimmed in gold; the viewer hangs a
+    framed portrait for every houseguest, staggered in two columns per panel, so the wall always holds
+    exactly the season's cast. Painted here: the panels, the trim, and the plaque under them."""
+    paper = mat_damask('memdamask', _darker(T['pop'], 0.5), _darker(T['pop'], 0.68))
+    gold = mat('memgold', T['accent'], 0.3, 1.0)
+    for i, sx in enumerate((-1, 1)):
+        x = cx + sx * (MEM_PANEL_W + MEM_GAP) / 2
+        box(f'MemPanel{i}', (MEM_PANEL_W, 0.04, MEM_PANEL_H), (x, y - 0.02, z0 + MEM_PANEL_H / 2), paper, bevel=0)
+        for (w_, h_, dx, dz) in ((MEM_PANEL_W + 0.1, 0.05, 0, MEM_PANEL_H / 2 + 0.025), (MEM_PANEL_W + 0.1, 0.05, 0, -MEM_PANEL_H / 2 - 0.025),
+                                 (0.05, MEM_PANEL_H, -MEM_PANEL_W / 2 - 0.025, 0), (0.05, MEM_PANEL_H, MEM_PANEL_W / 2 + 0.025, 0)):
+            box(f'MemTrim{i}{dx}{dz}', (w_, 0.06, h_), (x + dx, y - 0.03, z0 + MEM_PANEL_H / 2 + dz), gold, bevel=0)
+        cyl(f'MemLamp{i}', 0.05, 0.12, (x, y - 0.12, z0 + MEM_PANEL_H + 0.12), gold, rot=(90, 0, 0))
+        area(f'MemWash{i}', (MEM_PANEL_W, 0.2), (x, y - 0.5, z0 + MEM_PANEL_H + 0.25), 70, T['light'], rot=(40, 0, 0))
 
 def ring_light(name, loc, r, T):
     """A ring chandelier: a lit torus on three cables."""
@@ -697,7 +715,7 @@ def room_living(T):
     shell(T, W, D, H, floor_mat=mat_planks('planks', T['wood_a'], T['wood_b'], seam=T['wood_b'], scale=0.9, rough=T['floor_rough']))
     box('Graphic', (0.02, D + 2, H), (-W / 2 + 0.01, D / 2 - 0.5, H / 2), mat_graphic('graphic', T['graphic'], scale=0.3, angle=-35), bevel=0)
     two_way_mirrors(T, -W / 2 + 0.03, (2.0, 5.2), z0=0.6, h=1.9, w=1.5)
-    memory_wall(T, 0, D - 0.06, 1.42)
+    memory_wall(T, 0, D - 0.06, 0.95)
     # the nominees' chairs, side by side at the back, facing the room
     for sx in (-1, 1):
         armchair(f'NomChair{sx}', (sx * 0.6, LIVING_NOM_Y, 0), 0, T['pop'])
@@ -734,6 +752,49 @@ def room_living(T):
 
 LIVING_NOM_Y = 5.9
 LIVING_SOFA_X, LIVING_SOFA_Y, LIVING_SOFA_L = 2.75, 3.6, 3.8
+
+def bed(name, loc, T, width=1.1, length=2.0, headboard='#3f7cc1', duvet='#efe4c9', throw=None, pillows=('#ffffff', '#ffffff'), hb_h=1.4, tufts=True):
+    """A bed with its head against the back wall: frame, mattress, duvet, pillows, a throw, an upholstered headboard."""
+    x, y, z = loc
+    frame = mat('bedframe', T['deep'], 0.5)
+    box(f'{name}Frame', (width + 0.1, length + 0.05, 0.3), (x, y - length / 2, 0.15), frame)
+    box(f'{name}Mattress', (width, length, 0.22), (x, y - length / 2, 0.41), mat('mattress', '#f4f1ea', 0.8), bevel=0.04)
+    box(f'{name}Duvet', (width + 0.06, length * 0.72, 0.1), (x, y - length * 0.62, 0.55), mat(f'duvet{duvet}', duvet, 0.85), bevel=0.04)
+    if throw:
+        box(f'{name}Throw', (width + 0.1, 0.45, 0.06), (x, y - length + 0.35, 0.6), mat(f'throw{throw}', throw, 0.9), bevel=0.02)
+    for i, c in enumerate(pillows):
+        dx = (i - (len(pillows) - 1) / 2) * (width / max(1, len(pillows)))
+        ob = box(f'{name}Pillow{i}', (width / len(pillows) - 0.06, 0.34, 0.16), (x + dx, y - 0.25, 0.6), mat(f'pillow{c}', c, 0.8), bevel=0.05)
+        ob.rotation_euler = (math.radians(-18), 0, 0)
+    hb = mat(f'headboard{headboard}', headboard, 0.7)
+    box(f'{name}Head', (width + 0.3, 0.12, hb_h), (x, y + 0.02, hb_h / 2), hb, bevel=0.05)
+    if tufts:
+        n = 4
+        for i in range(n):
+            box(f'{name}Tuft{i}', (0.02, 0.01, hb_h - 0.25), (x - (width + 0.3) / 2 + (i + 1) * (width + 0.3) / (n + 1), y - 0.045, hb_h / 2), mat(f'tuft{headboard}', _darker(headboard), 0.7), bevel=0)
+
+def _darker(hexcol, k=0.78):
+    h = hexcol.lstrip('#')
+    r, g, b = (int(h[i:i + 2], 16) for i in (0, 2, 4))
+    return '#%02x%02x%02x' % (int(r * k), int(g * k), int(b * k))
+
+def nightstand(name, loc, T, lamp=True):
+    x, y, z = loc
+    box(f'{name}Body', (0.5, 0.42, 0.55), (x, y, 0.275), mat_wood('standwood', T['wood_a'], T['wood_b']))
+    box(f'{name}Drawer', (0.42, 0.01, 0.16), (x, y - 0.215, 0.4), mat('drawerface', _darker(T['wood_a'], 0.9), 0.5), bevel=0)
+    if lamp:
+        cyl(f'{name}LampBase', 0.08, 0.26, (x, y, 0.68), mat('lampbase', T['accent'], 0.3, coat=0.6), r2=0.05)
+        cyl(f'{name}LampShade', 0.16, 0.2, (x, y, 0.9), mat('lampshade', '#f6ead0', 0.6), r2=0.12)
+        sphere(f'Bulb{name}', 0.04, (x, y, 0.86), mat('bulb', '#ffffff', emit=T['light'], strength=30))
+        point(f'{name}L', (x, y, 0.88), 25, T['light'], 0.06)
+
+def fairy_wall(T, x0, x1, z0, z1, y, n=60, seed=3):
+    """A wall of small warm lights."""
+    import random
+    rnd = random.Random(seed)
+    m = mat('fairy', '#ffffff', emit=T['light'], strength=20)
+    for i in range(n):
+        sphere(f'Fairy{i}', 0.025, (rnd.uniform(x0, x1), y, rnd.uniform(z0, z1)), m)
 
 def neon_text(name, text, loc, size, color, rot=(90, 0, 0), strength=10, extrude=0.02):
     cu = bpy.data.curves.new(name, 'FONT')
@@ -1119,6 +1180,17 @@ def anchors(room, theme='default', w=1920, h=1080):
                            'w': round(abs(b.x - a.x) * 100, 2), 'h': round(abs(b.y - a.y) * 100, 2)})
     if frames:
         out['wall'] = sorted(frames, key=lambda f: (f['r'], f['c']))
+    panels = []
+    for name in ('MemPanel0', 'MemPanel1'):
+        ob = sc.objects.get(name)
+        if ob:
+            xs = [v.co.x for v in ob.data.vertices]; zs = [v.co.z for v in ob.data.vertices]
+            a_ = world_to_camera_view(sc, cam, ob.matrix_world @ Vector((min(xs), 0, min(zs))))
+            b_ = world_to_camera_view(sc, cam, ob.matrix_world @ Vector((max(xs), 0, max(zs))))
+            panels.append({'x': round(min(a_.x, b_.x) * 100, 2), 'y': round(min(a_.y, b_.y) * 100, 2),
+                           'w': round(abs(b_.x - a_.x) * 100, 2), 'h': round(abs(b_.y - a_.y) * 100, 2)})
+    if panels:
+        out['panels'] = panels
     def rect_of(name):
         ob = sc.objects.get(name)
         if not ob: return None

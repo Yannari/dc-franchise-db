@@ -344,13 +344,13 @@ button{font:inherit;color:inherit}
 .set.photo{background-size:cover!important;background-position:center!important}
 .set.photo::before,.set.photo::after,.set.photo .floor{display:none}
 /* the house in the chosen look (TD B · Flat); every room of the default season */
-.set-kitchen.photo{background:url('../assets/bb/house/default/kitchen-td-b.webp?v=5')}
-.set-ceremony.photo{background:url('../assets/bb/house/default/living-td-b.webp?v=5')}
-.set-bedroom.photo{background:url('../assets/bb/house/default/bedroom-td-b.webp?v=5')}
-.set-hoh.photo{background:url('../assets/bb/house/default/hoh-td-b.webp?v=5')}
-.set-dr.photo{background:url('../assets/bb/house/default/dr-td-b.webp?v=5')}
-.set-yard.photo{background:url('../assets/bb/house/default/yard-td-b.webp?v=5')}
-.set-dining.photo{background:url('../assets/bb/house/default/dining-td-b.webp?v=5')}
+.set-kitchen.photo{background:url('../assets/bb/house/default/kitchen-td-b.webp?v=6')}
+.set-ceremony.photo{background:url('../assets/bb/house/default/living-td-b.webp?v=6')}
+.set-bedroom.photo{background:url('../assets/bb/house/default/bedroom-td-b.webp?v=6')}
+.set-hoh.photo{background:url('../assets/bb/house/default/hoh-td-b.webp?v=6')}
+.set-dr.photo{background:url('../assets/bb/house/default/dr-td-b.webp?v=6')}
+.set-yard.photo{background:url('../assets/bb/house/default/yard-td-b.webp?v=6')}
+.set-dining.photo{background:url('../assets/bb/house/default/dining-td-b.webp?v=6')}
 .front{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .nomscreen{position:absolute;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4%;
   background:radial-gradient(ellipse at 50% 20%,#ff5fb4,#d02c7a 55%,#7a1048);box-shadow:inset 0 0 0 .2cqw rgba(255,255,255,.25);overflow:hidden}
@@ -358,11 +358,12 @@ button{font:inherit;color:inherit}
 .nhead{position:relative;font:900 1.7cqw Archivo;font-stretch:75%;letter-spacing:.12cqw;color:#fff;padding:.25cqw 1.2cqw;
   background:linear-gradient(180deg,#9b2d8f,#5e1660);box-shadow:0 0 0 .18cqw #f1c6e6;text-shadow:0 .15cqw 0 #3a0a3a}
 .nslots{position:relative;display:flex;gap:6%;width:84%;justify-content:center}
-.nslot{position:relative;width:34%;aspect-ratio:1;background:linear-gradient(180deg,#2b3ea8,#16226a);box-shadow:0 0 0 .22cqw #cfd6e6,inset 0 0 1.2cqw rgba(0,0,0,.5);
+.nslot{position:relative;width:34%;aspect-ratio:1;background:linear-gradient(180deg,#2b3ea8,#16226a);border:.3cqw solid #d8deea;box-shadow:0 .3cqw .8cqw rgba(0,0,0,.35),inset 0 0 1.2cqw rgba(0,0,0,.5);box-sizing:border-box;
   display:grid;place-items:center;overflow:hidden}
 .nslot i{font:900 5cqw/1 Archivo;font-style:normal;color:#fff;text-shadow:0 .25cqw 0 rgba(0,0,0,.35)}
-.nslot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 14%}
-.nslot b{position:absolute;left:0;right:0;bottom:0;font:800 .9cqw Archivo;font-stretch:80%;letter-spacing:.08cqw;color:#fff;background:rgba(122,16,72,.85);text-transform:uppercase;padding:.15cqw 0}
+.nslot img{position:absolute;inset:0;width:100%;height:82%;object-fit:cover;object-position:50% 18%}
+.nslot.on{background:#fff}
+.nslot b{position:absolute;left:0;right:0;bottom:0;height:18%;display:grid;place-items:center;font:800 1cqw Archivo;font-stretch:80%;letter-spacing:.1cqw;color:#fff;background:linear-gradient(180deg,#9b2d8f,#5e1660);text-transform:uppercase}
 .nslot.flip{animation:nflip .7s cubic-bezier(.3,.7,.2,1) both}
 @keyframes nflip{0%{transform:rotateY(90deg);filter:brightness(3)}100%{transform:none}}
 .nkeys{position:absolute;transform:translateX(-50%);display:flex;justify-content:center;gap:12%}
@@ -382,15 +383,25 @@ button{font:inherit;color:inherit}
 @keyframes chipin{from{transform:translate(-50%,40%) scale(.3) rotate(-120deg);opacity:0}}
 .wall.onwall{inset:0;left:0;right:0;top:0;display:block;perspective:none;z-index:1}
 .wall.onwall .mw{position:absolute;transform:none;border-radius:.15cqw;width:auto}
+.mf{position:absolute;padding:.32cqw;background:linear-gradient(135deg,#fbe7a6,#c9952f 35%,#f6d77e 55%,#8a6010);box-shadow:0 .35cqw .7cqw rgba(0,0,0,.45);transition:filter .6s,box-shadow .5s}
+.mf.dark{background:linear-gradient(135deg,#4a4a52,#141418 45%,#3a3a42 70%,#0b0b0e)}
+.mf .mfin{position:relative;width:100%;height:100%;overflow:hidden;background:var(--c);box-shadow:inset 0 0 0 .14cqw rgba(0,0,0,.55)}
+.mf .mfin img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 16%}
+.mf.out .mfin img{filter:grayscale(1) contrast(1.1)}
+.mf.out .mfin{background:#777}
+.mf.nom{box-shadow:0 0 0 .18cqw #ff3355,0 0 1.6cqw rgba(255,51,85,.85)}
+.mf.fresh{animation:mfpop .8s ease-out}
+@keyframes mfpop{40%{transform:scale(1.18);filter:brightness(1.6)}}
+.mft{position:absolute;left:50%;bottom:-.9cqw;transform:translateX(-50%);font:800 .55cqw Archivo;letter-spacing:.06cqw;background:#f5c542;color:#2a1d00;padding:.05cqw .35cqw;border-radius:.15cqw}
 .wall.onwall .mw .lb{font-size:.5cqw}
 .wall.onwall .mw.safe .key{width:1.1cqw}
 .set-dr.photo~.drring{display:none}
 
 /* the other looks, kitchen only, for comparison */
-body[data-house="a"] .set-kitchen.photo{background:url('../assets/bb/house/default/kitchen-td-a.webp?v=5')}
-body[data-house="c"] .set-kitchen.photo{background:url('../assets/bb/house/default/kitchen-td-c.webp?v=5')}
-body[data-house="toon"] .set-kitchen.photo{background:url('../assets/bb/house/default/kitchen-toon.webp?v=5')}
-body[data-house="real"] .set-kitchen.photo{background:url('../assets/bb/house/default/kitchen.webp?v=5')}
+body[data-house="a"] .set-kitchen.photo{background:url('../assets/bb/house/default/kitchen-td-a.webp?v=6')}
+body[data-house="c"] .set-kitchen.photo{background:url('../assets/bb/house/default/kitchen-td-c.webp?v=6')}
+body[data-house="toon"] .set-kitchen.photo{background:url('../assets/bb/house/default/kitchen-toon.webp?v=6')}
+body[data-house="real"] .set-kitchen.photo{background:url('../assets/bb/house/default/kitchen.webp?v=6')}
 
 /* background houseguests: in the room, not in the conversation. Further back,
    so smaller, softer and dimmer; they never get a lower third. They are the
@@ -755,7 +766,7 @@ function tileHtml(n, x, cls, L, lock, extra = '', more = '') {
 const PHOTO = new Set(['kitchen', 'ceremony', 'bedroom', 'hoh', 'dr', 'yard', 'dining']);
 // Projected by Blender: where each seat, key slot and memory-wall frame lands on screen
 // ([% from left, % from bottom, depth]). Regenerate with anchors() when a room changes.
-const ANCH = {"dining":{"seats":{"S0":{"at":[89.21,36.94,3.547],"w":11.65},"S1":{"at":[81.83,42.25,4.435],"w":9.32},"S2":{"at":[72.6,45.58,5.258],"w":7.86},"S3":{"at":[62.93,47.46,5.875],"w":7.04},"S4":{"at":[37.07,47.46,5.875],"w":7.04},"S5":{"at":[27.4,45.58,5.258],"w":7.86},"S6":{"at":[18.17,42.25,4.435],"w":9.32},"S7":{"at":[10.79,36.94,3.547],"w":11.65}},"head":{"at":[71.81,53.99,6.266],"w":7.45},"box":{"at":[65.63,50.31,5.333],"w":5.48},"screen":{"x":37.18,"y":56.39,"w":25.97,"h":27.4}},"ceremony":{"seats":{"N-1":{"at":[45.07,47.56,7.436],"w":5.1},"N1":{"at":[54.93,47.56,7.436],"w":5.1},"L0":{"at":[7.72,35.61,3.801],"w":9.97},"R0":{"at":[92.28,35.61,3.801],"w":9.97},"L1":{"at":[15.79,39.99,4.698],"w":8.06},"R1":{"at":[84.21,39.99,4.698],"w":8.06},"L2":{"at":[21.28,42.97,5.596],"w":6.77},"R2":{"at":[78.72,42.97,5.596],"w":6.77},"L3":{"at":[25.25,45.12,6.493],"w":5.84},"R3":{"at":[74.75,45.12,6.493],"w":5.84},"stand":{"at":[30.82,45.72,3.824],"w":9.91}},"wall":[{"r":0,"c":0,"x":33.1,"y":68.84,"w":3.54,"h":8.29},{"r":0,"c":1,"x":37.41,"y":68.84,"w":3.56,"h":8.29},{"r":0,"c":2,"x":41.72,"y":68.84,"w":3.59,"h":8.29},{"r":0,"c":3,"x":46.04,"y":68.84,"w":3.61,"h":8.29},{"r":0,"c":4,"x":50.35,"y":68.84,"w":3.64,"h":8.29},{"r":0,"c":5,"x":54.66,"y":68.84,"w":3.67,"h":8.29},{"r":0,"c":6,"x":58.97,"y":68.84,"w":3.69,"h":8.29},{"r":0,"c":7,"x":63.28,"y":68.84,"w":3.72,"h":8.29},{"r":1,"c":0,"x":33.21,"y":59.41,"w":3.51,"h":8.18},{"r":1,"c":1,"x":37.5,"y":59.41,"w":3.54,"h":8.18},{"r":1,"c":2,"x":41.78,"y":59.41,"w":3.56,"h":8.18},{"r":1,"c":3,"x":46.06,"y":59.41,"w":3.59,"h":8.18},{"r":1,"c":4,"x":50.35,"y":59.41,"w":3.62,"h":8.18},{"r":1,"c":5,"x":54.63,"y":59.41,"w":3.64,"h":8.18},{"r":1,"c":6,"x":58.91,"y":59.41,"w":3.67,"h":8.18},{"r":1,"c":7,"x":63.19,"y":59.41,"w":3.69,"h":8.18}]}};
+const ANCH = {"dining":{"seats":{"S0":{"at":[89.21,36.94,3.547],"w":11.65},"S1":{"at":[81.83,42.25,4.435],"w":9.32},"S2":{"at":[72.6,45.58,5.258],"w":7.86},"S3":{"at":[62.93,47.46,5.875],"w":7.04},"S4":{"at":[37.07,47.46,5.875],"w":7.04},"S5":{"at":[27.4,45.58,5.258],"w":7.86},"S6":{"at":[18.17,42.25,4.435],"w":9.32},"S7":{"at":[10.79,36.94,3.547],"w":11.65}},"head":{"at":[71.81,53.99,6.266],"w":7.45},"box":{"at":[65.63,50.31,5.333],"w":5.48},"screen":{"x":37.18,"y":56.39,"w":25.97,"h":27.4}},"ceremony":{"seats":{"N-1":{"at":[45.07,47.56,7.436],"w":5.1},"N1":{"at":[54.93,47.56,7.436],"w":5.1},"L0":{"at":[7.72,35.61,3.801],"w":9.97},"R0":{"at":[92.28,35.61,3.801],"w":9.97},"L1":{"at":[15.79,39.99,4.698],"w":8.06},"R1":{"at":[84.21,39.99,4.698],"w":8.06},"L2":{"at":[21.28,42.97,5.596],"w":6.77},"R2":{"at":[78.72,42.97,5.596],"w":6.77},"L3":{"at":[25.25,45.12,6.493],"w":5.84},"R3":{"at":[74.75,45.12,6.493],"w":5.84},"stand":{"at":[30.82,45.72,3.824],"w":9.91}},"panels":[{"x":39.75,"y":50.63,"w":9.2,"h":26.55},{"x":51.02,"y":50.63,"w":9.42,"h":26.55}]}};
 // The HOH is the point of the shot: drawn standing behind the box, bigger than a seat at that depth.
 const seatOf = (S, n) => {
   const a = ANCH[S.set]; const id = S.seated[n];
@@ -836,7 +847,7 @@ function setHtml(S, st, prevSt, L, fresh) {
   }
   if (S.set === 'dining') {
     const A = ANCH.dining;
-    h += `<img class="front" src="../assets/bb/house/${season}/dining-td-b-nombox.webp?v=5" alt="" style="z-index:${zOf(A.box)}">`;
+    h += `<img class="front" src="../assets/bb/house/${season}/dining-td-b-nombox.webp?v=6" alt="" style="z-index:${zOf(A.box)}">`;
     h += nomScreenHtml(A, L, st, fresh, NOM_SLOTS(S)) + keyBoxHtml(A, L, st, fresh, NOM_SLOTS(S));
   }
   if (S.medalOn && L.veto === S.medalOn) {
@@ -849,11 +860,33 @@ function setHtml(S, st, prevSt, L, fresh) {
   return h;
 }
 
+function memoryFrames(panels, n) {
+  // Real BB: two wallpapered panels, portraits in two staggered columns on each.
+  const out = [];
+  const per = [Math.ceil(n / 2), Math.floor(n / 2)];
+  panels.forEach((p, pi) => {
+    const k = per[pi], rows = Math.ceil(k / 2);
+    const pitch = (p.h * 0.92) / (rows + 0.5);
+    const fh = pitch * 0.97, fw = Math.min(p.w * 0.42, fh * 0.8 * 9 / 16 * 1.25);
+    for (let j = 0; j < k; j++) {
+      const col = j % 2, row = Math.floor(j / 2);
+      const top = p.y + p.h - p.h * 0.04 - row * pitch - (col ? pitch / 2 : 0);
+      out.push({ x: p.x + p.w * (col ? 0.73 : 0.27) - fw / 2, y: top - fh, w: fw, h: fh });
+    }
+  });
+  return out;
+}
 function wallHtml(L, st, fresh, onwall = false) {
-  const frames = onwall ? ANCH[SCREENS[cur].set].wall : null;
+  const A = onwall ? ANCH[SCREENS[cur].set] : null;
+  const frames = A && A.panels ? memoryFrames(A.panels, HOUSE.length) : (onwall ? A.wall : null);
   return `<div class="wall${onwall ? ' onwall' : ''}">${HOUSE.map((n, i) => {
     const fr = frames && frames[i];
     const place = fr ? `left:${fr.x}%;bottom:${fr.y}%;width:${fr.w}%;height:${fr.h}%;` : '';
+    if (A && A.panels) {
+      const s = L.status[n];
+      const isFresh2 = fresh && st && (st.out === n || (st.nom || []).includes(n));
+      return `<div class="mf ${s} ${i % 3 === 2 ? 'dark' : ''} ${isFresh2 ? 'fresh' : ''}" style="${place}--c:${col(n)}"><div class="mfin">${img(n)}</div>${s === 'hoh' ? '<span class="mft">HOH</span>' : ''}</div>`;
+    }
     const s = L.status[n];
     const d = i - (HOUSE.length - 1) / 2;
     const isFresh = fresh && st && (st.key === n || st.out === n || (st.nom || []).includes(n));
@@ -905,7 +938,7 @@ function paint(fresh = false) {
   const camNow = S.set === 'quad' ? 'none' : camOf(S, idx);
   const camPrev = fresh && idx > 0 ? camOf(S, idx - 1) : camNow;
   const cut = fresh && prevSt && st && ((st.k === 'dr') !== (prevSt.k === 'dr'));
-  const onwall = S.wall && !isDr && PHOTO.has(S.set) && ANCH[S.set] && ANCH[S.set].wall && (S.wall !== 'after' || (L.out.length && st && st.k !== 'host'));
+  const onwall = !isDr && PHOTO.has(S.set) && ANCH[S.set] && (ANCH[S.set].panels || ANCH[S.set].wall);
   let h = `<div class="cam" style="${camStyle(camPrev)}"><div class="lens ${cut ? 'cut' : ''}">${setHtml(S, st, prevSt, L, fresh).replace(/(<div class="set [^"]*"[^>]*><div class="floor"><\/div><\/div>)/, m => m + (onwall ? wallHtml(L, st, fresh, true) : ''))}</div></div>`;
   h += `<div class="grain"></div><div class="vign"></div>`;
   if (!onwall && S.wall && !isDr && (S.wall !== 'after' || (L.out.length && st && st.k !== 'host'))) h += wallHtml(L, st, fresh);
@@ -1059,7 +1092,7 @@ const ROOM_FILE = { kitchen: 'kitchen', ceremony: 'living', bedroom: 'bedroom', 
 let season = 'default';
 (() => {
   const css = SEASONS.slice(1).map(([id]) => Object.entries(ROOM_FILE).map(([set, f]) =>
-    `body[data-season="${id}"] .set-${set}.photo{background-image:url('../assets/bb/house/${id}/${f}-td-b.webp?v=5')}`).join('\n')).join('\n');
+    `body[data-season="${id}"] .set-${set}.photo{background-image:url('../assets/bb/house/${id}/${f}-td-b.webp?v=6')}`).join('\n')).join('\n');
   const el = document.createElement('style'); el.textContent = css; document.head.appendChild(el);
 })();
 let seasonI = 0;

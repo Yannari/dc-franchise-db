@@ -672,6 +672,9 @@ function _tableRecord(ep, { endgame = false } = {}) {
       // rather than any record's contents.
       reasonKind: s.reasonKind || ((s.sources || []).length ? 'cited' : 'feeling'),
       hearsayFrom: s.hearsayFrom || null,
+      // the Traitors the ACCUSED named at earlier tables, for their defence
+      // (public: said at the table, revealed at the door)
+      targetCalled: (s.targetCalled || []).map(c => ({ ...c })),
       swayed: [...(s.swayed || [])], mindChanges: [...(s.mindChanges || [])] })),
     // a reason for every slate, speaker or not (js/tr/roundtable.js)
     slateReasons: (round.slateReasons || []).map(s => ({ ...s,

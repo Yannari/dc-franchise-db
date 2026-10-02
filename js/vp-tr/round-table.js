@@ -2002,6 +2002,23 @@ const DEFENCE_BY = {
     'If {v} and I were working together, do you think I’d have been that obvious about it?',
     '{v} lied to my face for days, {A}. You think that makes me feel good?',
   ],
+  // THEY HAVE CAUGHT ONE BEFORE, and say so. Used when the accused named a
+  // revealed Traitor at an earlier table (`speech.targetCalled`): {x} is that
+  // Traitor. Answers a "you put a Faithful out" every time and anything else
+  // sometimes. `lead` lines are for the one who drove that vote.
+  'redeemed-lead': [
+    'A few nights ago I was the one who stood up and said {x}. {x} was a Traitor. You were all happy to follow me then.',
+    'I got {v} wrong. I got {x} right, and I got it right first. You don’t get to count only one of those.',
+    'I led the vote on {x}. Remember how that turned out? Then think about why I’m the one sitting here now.',
+    'If I were a Traitor, why would I hand you {x}?',
+    'Every one of you wrote {x} because I said it first. Now I’m the problem?',
+  ],
+  'redeemed-join': [
+    'I wrote {x} too, and {x} was a Traitor. I’ve been right as often as anybody at this table.',
+    'Yes, I got {v} wrong. So did most of you. I also wrote {x}, and that one was right.',
+    'You keep bringing up {v}. Nobody ever brings up {x}, and I wrote that one too.',
+    'I was on the right side of {x}. Doesn’t that count for anything in here?',
+  ],
   // "helped put X out, and X was a Faithful"
   'faithful-out': [
     'We all got {v} wrong. I wrote the name the same as most of you did.',
@@ -2082,6 +2099,8 @@ const COMEBACK_BY = {
     'Then give me a reason not to feel it.', 'I know what I’ve seen.'],
   hearsay: ['It isn’t only {F} saying it.', 'I believe {F}. That’s enough for me.',
     '{F} hasn’t been wrong yet.'],
+  redeemed: ['One right call doesn’t cancel out a wrong one.', 'A Traitor would give up another Traitor to save their own neck.',
+    'You got {x}. Fine. That was then.', 'Funny how you only got it right once people were already looking at you.'],
   'gone-cold': ['And you’ve given me nothing to change my mind.', 'Days, and you still haven’t answered it.',
     'I’ll stop saying it when you give me a reason to.'],
   generic: ['That’s not an answer.', 'You still haven’t told us why.', 'We’ll see.'],
@@ -3401,6 +3420,15 @@ function _buildBeats(v) {
       F: _esc((leadSp && leadSp.hearsayFrom) || '') };
     // a line about {v} needs a {v}; a reason about the accused alone has none
     const fits = l => (dsubs.v || l.indexOf('{v}') < 0) && (dsubs.F || l.indexOf('{F}') < 0);
+    // A RIGHT CALL ANSWERS A WRONG ONE: if the accused has named a revealed
+    // Traitor before tonight, that is what they say, always against "you put
+    // a Faithful out" and on about a third of the other cards
+    const called = (leadSp && leadSp.targetCalled) || [];
+    if (called.length && (cat === 'faithful-out' || _hash(key + '|redeem|' + c.t) % 3 === 0)) {
+      const best = called.find(x => x.lead) || called[called.length - 1];
+      dsubs.x = _esc(best.name);
+      cat = best.lead ? 'redeemed-lead' : 'redeemed-join';
+    }
     const defPool = (DEFENCE_BY[cat] || []).filter(fits);
     const defLine = defPool.length
       ? _fill(_fresh(defPool, key + '|def|' + c.t), dsubs)
@@ -3409,7 +3437,7 @@ function _buildBeats(v) {
     inner += _said(c.t, defLine);
     // THE LEAD COMES BACK, on most cards: the exchange, not two statements
     if (_hash(key + '|cb|' + c.t) % 3 !== 0 && lead !== c.t) {
-      const cbPool = (COMEBACK_BY[cat] || COMEBACK_BY.generic).filter(fits);
+      const cbPool = (COMEBACK_BY[cat] || COMEBACK_BY[String(cat).replace(/-(lead|join)$/, '')] || COMEBACK_BY.generic).filter(fits);
       if (cbPool.length) inner += _said(lead, _fill(_fresh(cbPool, key + '|cb|' + c.t), dsubs));
     }
     if (c.acc.length >= 3 && !v.endgame) {

@@ -794,8 +794,12 @@ export function speechesFrom(accusations, ep) {
       const board = suspicionBoard(l, ep, living);
       return board[0] && board[0].name === a.target && board[0].score > 0;
     });
+    // what the accused can answer with: every Traitor they named before
+    // tonight, the earliest first (public, see `priceTheAccusers`)
+    const called = ((gs.tr && gs.tr.calls && gs.tr.calls[a.target]) || [])
+      .filter(c => c.right && c.ep < ep).map(c => ({ name: c.name, lead: !!c.lead, ep: c.ep }));
     speeches.push({ speaker: a.accuser, target: a.target, sources, swayed, mindChanges,
-      reasonKind: reason.kind, hearsayFrom: reason.from || null });
+      reasonKind: reason.kind, hearsayFrom: reason.from || null, targetCalled: called });
   }
   return speeches;
 }
@@ -1020,6 +1024,29 @@ function _betrayalLine(turn, k, turns, ep) {
 // broke the phase.
 const CALLED_IT_CREDIT = 0.12;
 const WRONGLY_DROVE_OUT = 0.16;
+// ── A RIGHT CALL ANSWERS A WRONG ONE ──────────────────────────────────
+//
+// The user, on a season: Cody pushed out a Faithful in episode 2 and was
+// targeted for it in 3; pushed again in 3 and caught a Traitor; and in 4 was
+// targeted AGAIN for the Faithful, as if 3 had never happened. It nearly had:
+// the general credit above lowers every read by 0.12 against a 0.16 mark (he
+// stays net suspicious for being right), and a joiner's right call reaches
+// nobody at all.
+//
+// REDEMPTION is narrow by construction, so it cannot deflate the board the
+// way the broad credit once did (see above): it reaches ONLY an observer who
+// is still holding "put a Faithful out" against this accuser, and lowers that
+// read. Leading pays more than joining, as everywhere else here.
+const REDEEM_LEAD = 0.1;
+const REDEEM_JOIN = 0.07;
+const _WRONG_OUT = /(?:campaigned to get|helped put) .+ out, and .+ was a Faithful$/;
+/** Does this observer hold "they put a Faithful out" against this player? */
+function _holdsWrongOut(observer, subject, ep) {
+  const b = believes(observer, alignmentFactId(subject), ep);
+  if (!b || b.valence === 'false' || (b.effectiveConfidence || 0) <= 0) return false;
+  if (typeof b.source === 'string' && _WRONG_OUT.test(b.source)) return true;
+  return Array.isArray(b.clues) && b.clues.some(c => c && typeof c.source === 'string' && _WRONG_OUT.test(c.source));
+}
 
 /**
  * Price everybody who publicly named the person the room has just banished.
@@ -1066,6 +1093,22 @@ function priceTheAccusers(banished, wasTraitor, accusations, ep, rng) {
     addStanding(gs, accuser, wasTraitor
       ? (accuser === drove ? STANDING_RIGHT_LEAD : STANDING_RIGHT_JOIN)
       : (accuser === drove ? STANDING_WRONG_LEAD : STANDING_WRONG_JOIN));
+    // THE CASTLE REMEMBERS EVERY CALL, right or wrong, and whether they led:
+    // public (it was said at the table and the card was turned at the door),
+    // so a later defence may quote it. Plain objects: survives a save.
+    if (gs.tr) {
+      gs.tr.calls = gs.tr.calls || {};
+      (gs.tr.calls[accuser] = gs.tr.calls[accuser] || []).push(
+        { name: banished, ep, lead: accuser === drove, right: !!wasTraitor });
+    }
+    // and a right call answers a wrong one, with whoever still holds it
+    if (wasTraitor && (accuser === drove ? REDEEM_LEAD : REDEEM_JOIN) > 0) {
+      for (const observer of living) {
+        if (observer === accuser || !_holdsWrongOut(observer, accuser, ep)) continue;
+        sceneDoubt(observer, accuser, accuser === drove ? REDEEM_LEAD : REDEEM_JOIN,
+          { source: `named ${banished}, and ${banished} was a Traitor`, ep });
+      }
+    }
     // The credit is the lead accuser's alone (see the note on the constants);
     // the MARK is everybody's, because everybody who named a Faithful was
     // wrong about that Faithful, whoever started it.

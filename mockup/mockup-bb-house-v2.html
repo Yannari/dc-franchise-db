@@ -340,6 +340,10 @@ button{font:inherit;color:inherit}
 .rest .s{font:500 1.6cqw Archivo;color:rgba(255,255,255,.75)}
 .rest .go{margin-top:2.4cqw;font:700 1cqw 'Chakra Petch';letter-spacing:.4cqw;color:#001018;background:#22e1ff;padding:.6cqw 1.6cqw;border-radius:.3cqw}
 
+/* rendered rooms (tools/bb-house/house.py): the photo replaces the light sketch */
+.set.photo{background-size:cover!important;background-position:center!important}
+.set.photo::before,.set.photo::after,.set.photo .floor{display:none}
+.set-kitchen.photo{background:url('../assets/bb/house/default/kitchen.webp')}
 /* the aperture wipe */
 .ap{position:absolute;inset:0;z-index:30;pointer-events:none;width:100%;height:100%}
 
@@ -636,14 +640,14 @@ const camStyle = c => c === 'none' ? 'transform:none' : `transform:${c.split('|'
 
 function tileHtml(n, x, cls, L, lock, extra = '', more = '') {
   const ry = ((50 - x) * 0.28).toFixed(1);
-  const conf = 90 + (n.length * 7) % 10;
   return `<div class="gt ${cls}" style="left:${x}%;--c:${col(n)};--ry:${ry}deg;${more}">
-    <div class="trk ${lock ? 'lock' : ''}"><i></i><i></i><i></i><i></i><span class="id">ID ${n.toUpperCase()}<s>${conf}.${(n.length * 3) % 10}%</s></span></div>
-    <div class="tile"><span class="i">${n[0]}</span>${img(n)}${lock ? '<span class="scan"></span>' : ''}${extra}</div>
+    <div class="tile"><span class="i">${n[0]}</span>${img(n)}${extra}</div>
     <div class="plate"><b>${n}</b>${chipsFor(n, L)}</div></div>`;
 }
+const PHOTO = new Set(['kitchen']);
+const photo = set => PHOTO.has(set) ? ' photo' : '';
 function miniSet(set, nv, people = []) {
-  return `<div class="set set-${set}" style="--hoh:${col(HOH)}"><div class="floor"></div></div>`;
+  return `<div class="set set-${set}${photo(set)}" style="--hoh:${col(HOH)}"><div class="floor"></div></div>`;
 }
 
 function setHtml(S, st, prevSt, L, fresh) {
@@ -664,7 +668,7 @@ function setHtml(S, st, prevSt, L, fresh) {
     }
     return h;
   }
-  let h = `<div class="set set-${S.set}" style="--hoh:${col(HOH)}"><div class="floor"></div></div>`;
+  let h = `<div class="set set-${S.set}${photo(S.set)}" style="--hoh:${col(HOH)}"><div class="floor"></div></div>`;
   if (S.spyObj) {
     const hot = !!(st && st.spy);
     const q = [['kitchen', 'KITCHEN'], ['yard', 'BACKYARD'], ['bedroom', 'BEDROOM'], ['ceremony', 'LIVING']];

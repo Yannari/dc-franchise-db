@@ -141,7 +141,7 @@ def cloth(name, red, sheen):
 stone("trc_wall", (0.19, 0.17, 0.15), (0.11, 0.10, 0.09), (0.05, 0.045, 0.04), 0.88, 0.95, 0.42, 0.7, mortar_size=0.018)
 stone("trc_floor", (0.075, 0.068, 0.062), (0.05, 0.046, 0.042), (0.03, 0.028, 0.026), 0.45, 0.95, 0.72, 0.5)
 stone("trc_dressed", (0.20, 0.185, 0.165), (0.144, 0.13, 0.112), (0.07, 0.065, 0.06), 0.7, 0.9, 0.45, 0.3)
-stone("trc_tdress", (0.2, 0.18, 0.16), (0.15, 0.135, 0.12), (0.09, 0.08, 0.07), 0.5, 2.5, 0.6, 0.3)   # light enough to read as stone under the cel bands
+stone("trc_tdress", (0.085, 0.077, 0.07), (0.06, 0.055, 0.05), (0.07, 0.065, 0.06), 0.5, 2.5, 0.6, 0.3)
 simple("trc_iron", (0.03, 0.028, 0.026), 0.45, metal=0.9)
 simple("trc_gold", (0.6, 0.38, 0.12), 0.35, metal=1.0)
 simple("trc_wax", (0.85, 0.78, 0.62), 0.45, sss=0.5)
@@ -417,7 +417,7 @@ cam = bpy.data.objects.get("trc_cam") or bpy.data.objects.new("trc_cam", cd)
 if cam.name not in sc.collection.objects: sc.collection.objects.link(cam)
 cam.location = (0, -4.9, 1.7); cam.rotation_euler = (math.radians(86), 0, 0); sc.camera = cam
 
-sc.render.engine = 'CYCLES'; sc.cycles.samples = 192; sc.cycles.use_denoising = True
+sc.render.engine = 'CYCLES'; sc.cycles.samples = 128; sc.cycles.use_denoising = True
 sc.render.resolution_x, sc.render.resolution_y, sc.render.resolution_percentage = 1920, 1080, 100
 sc.view_settings.view_transform = 'AgX'; sc.view_settings.look = 'AgX - Punchy'; sc.view_settings.exposure = -0.4
 sc.render.image_settings.file_format = 'WEBP'; sc.render.image_settings.quality = 82
@@ -444,13 +444,13 @@ def render_plates():
     sc.render.film_transparent = False; sc.render.image_settings.color_mode = 'RGB'
 
 
-# ── the illustrated look (tools/blender/traitors-toon.py), before any render ──
-def apply_toon(exposure=None):
+# ── the painted look (tools/blender/traitors-paint.py), before any render ──
+def apply_paint():
     repo = os.path.dirname(os.path.dirname(os.path.dirname(os.path.normpath(OUT))))
     g = {}
-    exec(open(os.path.join(repo, "tools", "blender", "traitors-toon.py"), encoding="utf-8").read(), g)
-    g["toonify"](sc, exposure=exposure)
+    exec(open(os.path.join(repo, "tools", "blender", "traitors-paint.py"), encoding="utf-8").read(), g)
+    g["paint"](sc)
 
 if os.path.isdir(OUT):
-    apply_toon()
+    apply_paint()
     render_plates()

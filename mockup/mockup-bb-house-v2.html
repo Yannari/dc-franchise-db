@@ -350,11 +350,17 @@ button{font:inherit;color:inherit}
 .set-hoh.photo{background:url('../assets/bb/house/default/hoh-td-b.webp')}
 .set-dr.photo{background:url('../assets/bb/house/default/dr-td-b.webp')}
 .set-yard.photo{background:url('../assets/bb/house/default/yard-td-b.webp')}
+.set-dining.photo{background:url('../assets/bb/house/default/dining-td-b.webp')}
+.front{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.slotkey{position:absolute;width:2.3cqw;transform:translateX(-50%) rotate(-90deg);transform-origin:50% 50%;filter:drop-shadow(0 .2cqw .3cqw rgba(0,0,0,.5))}
+.slotkey svg{width:100%;display:block}
+.chipx.key{background:#f5c542;color:#2a1d00}
+.wall.onwall{inset:0;left:0;right:0;top:0;display:block;perspective:none;z-index:1}
+.wall.onwall .mw{position:absolute;transform:none;border-radius:.15cqw;width:auto}
+.wall.onwall .mw .lb{font-size:.5cqw}
+.wall.onwall .mw.safe .key{width:1.1cqw}
 .set-dr.photo~.drring{display:none}
-.wall.onwall{left:32.6%;right:auto;width:34.8%;top:23.6%;display:grid;grid-template-columns:repeat(8,1fr);gap:.62cqw .66cqw;perspective:none;z-index:1}
-.wall.onwall .mw{width:auto;transform:none;border-radius:.2cqw}
-.wall.onwall .mw.nom{transform:none}
-.wall.onwall .mw .lb{font-size:.55cqw}
+
 /* the other looks, kitchen only, for comparison */
 body[data-house="a"] .set-kitchen.photo{background:url('../assets/bb/house/default/kitchen-td-a.webp')}
 body[data-house="c"] .set-kitchen.photo{background:url('../assets/bb/house/default/kitchen-td-c.webp')}
@@ -565,24 +571,29 @@ const SCREENS = [
       { k: 'dr', by: 'Heather', t: `They can see you, Courtney.`, push: true },
     ] },
 
-  { id: 'noms', tab: 'Nominations', set: 'ceremony', cam: 4, room: 'Living Room', day: 23, time: '13:30', kicker: 'Cam 04 · Living room', title: 'Nomination ceremony', sub: 'Heather opens the key box',
-    cast: [['Heather', 24]], wall: true, keybox: true,
+  { id: 'noms', tab: 'Nominations', set: 'dining', cam: 3, room: 'Dining Room', day: 23, time: '13:30', kicker: 'Cam 03 · Dining room', title: 'Nomination ceremony', sub: 'Heather at the head of the table',
+    seated: { Heather: 'head', Duncan: 'L1', Gwen: 'R1', Alejandro: 'L2', Courtney: 'R2', Bridgette: 'L3', Scott: 'R3', Geoff: 'L4', Zoey: 'R4' },
+    wall: true,
     steps: [
       { k: 'bb', t: `This is the nomination ceremony.` },
-      { k: 'say', by: 'Heather', t: `It is my responsibility as Head of Household to nominate two houseguests for eviction. I'll pull the first key.` },
-      { k: 'beat', t: `The first key comes out. Duncan's face is on it.`, key: 'Duncan' },
-      { k: 'beat', t: `Geoff.`, key: 'Geoff' },
+      { k: 'say', by: 'Heather', t: `It is my responsibility as Head of Household to nominate two houseguests for eviction. The keys of everyone who is safe are in this box.` },
+      { k: 'say', by: 'Heather', t: `I'll pull the first key. If it's yours, you're safe.` },
+      { k: 'beat', t: `Heather pulls the first key, reads the face on it and spins the box round to Duncan.`, key: 'Duncan' },
+      { k: 'say', by: 'Duncan', t: `Thanks, Heather.` },
+      { k: 'beat', t: `Geoff's key is next. He hangs it round his neck and grins at nobody in particular.`, key: 'Geoff' },
       { k: 'beat', t: `Zoey.`, key: 'Zoey' },
-      { k: 'beat', t: `Bridgette. She takes the key without looking at either of the two people still sitting down.`, key: 'Bridgette' },
-      { k: 'beat', t: `Scott, who lets out a breath he has clearly been holding since Tuesday.`, key: 'Scott' },
-      { k: 'beat', t: `Alejandro. He takes his key and does not look at Courtney.`, key: 'Alejandro' },
-      { k: 'beat', t: `Two faces left in the box. Gwen and Courtney take the two chairs.`, nom: ['Gwen', 'Courtney'], toast: ['NOMINATED', '#ff3355'], at: [['Heather', 20], ['Gwen', 56], ['Courtney', 76]] },
+      { k: 'beat', t: `Bridgette takes her key without looking at either of the two people still waiting.`, key: 'Bridgette' },
+      { k: 'beat', t: `Scott's key comes out. He lets go of a breath he has clearly been holding since Tuesday.`, key: 'Scott' },
+      { k: 'beat', t: `Alejandro takes his key, says thank you, and does not look across the table at Courtney.`, key: 'Alejandro' },
+      { k: 'beat', t: `The box is empty. Gwen and Courtney are the only two at the table without a key.`, nom: ['Gwen', 'Courtney'], toast: ['NOMINATED', '#ff3355'] },
+      { k: 'beat', t: `Heather stands up.` },
       { k: 'say', by: 'Heather', t: `I have nominated you, Gwen, and you, Courtney. Gwen, you've made it very clear you don't want me here.`, push: true },
       { k: 'say', by: 'Heather', t: `Courtney, you made it clear at two in the morning, which is a choice.` },
-      { k: 'beat', t: `Courtney turns slowly to Alejandro.` },
-      { k: 'say', by: 'Courtney', t: `Scott. You said Scott.`, at: [['Gwen', 30], ['Courtney', 54], ['Alejandro', 76]], push: true },
+      { k: 'beat', t: `Courtney turns in her chair and looks straight across the table at Alejandro.` },
+      { k: 'say', by: 'Courtney', t: `Scott. You said Scott.`, push: true },
       { k: 'say', by: 'Alejandro', t: `I said I'd give her a name. I never said she'd take it.`, pops: [['Courtney', 'Betrayed', 'down', 'Alejandro']] },
       { k: 'bb', t: `This nomination ceremony is adjourned.` },
+      { k: 'beat', t: `One by one the keys go back up on the memory wall. Two faces up there have gone red.` },
     ] },
 
   { id: 'yard', tab: 'Asked twice', set: 'yard', cam: 5, room: 'Backyard', day: 24, time: '16:22', kicker: 'Cam 05 · Backyard', title: 'Asked twice', sub: 'Afternoon, Day 24',
@@ -656,7 +667,10 @@ function ledger(si, ii) {
   }
   return L;
 }
-function castAt(S, i) { for (let j = i; j >= 0; j--) if (S.steps[j]?.at) return S.steps[j].at; return S.cast || []; }
+function castAt(S, i) {
+  if (S.seated) return Object.keys(S.seated).map(n => [n, seatOf(S, n).at[0]]);
+  for (let j = i; j >= 0; j--) if (S.steps[j]?.at) return S.steps[j].at; return S.cast || [];
+}
 function bgAt(S, i) { for (let j = i; j >= 0; j--) if (S.steps[j]?.bgAt) return S.steps[j].bgAt; return S.bg || []; }
 function chipsFor(n, L) {
   const c = [];
@@ -664,6 +678,7 @@ function chipsFor(n, L) {
   if (L.out.includes(n)) c.push('<span class="chipx out">Evicted</span>');
   else if (L.nom.includes(n)) c.push('<span class="chipx nom">Nom</span>');
   if (L.veto === n) c.push('<span class="chipx veto">Veto</span>');
+  if (L.status[n] === 'safe' && SCREENS[cur].seated) c.push('<span class="chipx key">Key</span>');
   return c.join('');
 }
 function camOf(S, i) {
@@ -671,6 +686,7 @@ function camOf(S, i) {
   if (!st || !st.push || !st.by) return 'none';
   if (st.k === 'host') return 'scale(1.18)|62% 30%';
   if (st.k === 'dr') return 'scale(1.18)|50% 42%';
+  if (S.seated && S.seated[st.by]) { const a = seatOf(S, st.by); return `scale(1.3)|${a.at[0]}% ${100 - a.at[1] - a.w * 1.1}%`; }
   const p = castAt(S, i).find(([n]) => n === st.by);
   return `scale(1.22)|${p ? p[1] : 50}% 58%`;
 }
@@ -682,7 +698,18 @@ function tileHtml(n, x, cls, L, lock, extra = '', more = '') {
     <div class="tile"><span class="i">${n[0]}</span>${img(n)}${extra}</div>
     <div class="plate"><b>${n}</b>${chipsFor(n, L)}</div></div>`;
 }
-const PHOTO = new Set(['kitchen', 'ceremony', 'bedroom', 'hoh', 'dr', 'yard']);
+const PHOTO = new Set(['kitchen', 'ceremony', 'bedroom', 'hoh', 'dr', 'yard', 'dining']);
+// Projected by Blender: where each seat, key slot and memory-wall frame lands on screen
+// ([% from left, % from bottom, depth]). Regenerate with anchors() when a room changes.
+const ANCH = {"dining":{"head":{"at":[50.0,53.71,6.41],"w":7.89},"seats":{"L0":{"at":[5.14,4.12,1.61],"w":27.82},"R0":{"at":[94.86,4.12,1.61],"w":27.82},"L1":{"at":[18.07,23.2,2.262],"w":19.8},"R1":{"at":[81.93,23.2,2.262],"w":19.8},"L2":{"at":[25.21,33.75,2.914],"w":15.37},"R2":{"at":[74.79,33.75,2.914],"w":15.37},"L3":{"at":[29.74,40.44,3.565],"w":12.56},"R3":{"at":[70.26,40.44,3.565],"w":12.56},"L4":{"at":[32.87,45.06,4.217],"w":10.62},"R4":{"at":[67.13,45.06,4.217],"w":10.62},"L5":{"at":[35.17,48.44,4.869],"w":9.2},"R5":{"at":[64.83,48.44,4.869],"w":9.2},"L6":{"at":[36.92,51.03,5.521],"w":8.11},"R6":{"at":[63.08,51.03,5.521],"w":8.11}},"box":{"at":[50.0,56.94,5.481],"w":14.13},"slots":[[55.05,57.99,5.474],[54.54,58.3,5.619],[53.4,58.56,5.741],[51.82,58.73,5.823],[50.0,58.78,5.852],[48.18,58.73,5.823],[46.6,58.56,5.741],[45.46,58.3,5.619],[44.95,57.99,5.474],[45.21,57.65,5.33],[46.25,57.35,5.207],[47.94,57.15,5.125],[50.0,57.07,5.096],[52.06,57.15,5.125],[53.75,57.35,5.207],[54.79,57.65,5.33]],"wall":[{"r":0,"c":0,"x":27.13,"y":83.21,"w":4.65,"h":11.51},{"r":0,"c":1,"x":32.97,"y":83.21,"w":4.73,"h":11.51},{"r":0,"c":2,"x":38.8,"y":83.21,"w":4.81,"h":11.51},{"r":0,"c":3,"x":44.64,"y":83.21,"w":4.89,"h":11.51},{"r":0,"c":4,"x":50.47,"y":83.21,"w":4.97,"h":11.51},{"r":0,"c":5,"x":56.31,"y":83.21,"w":5.05,"h":11.51},{"r":0,"c":6,"x":62.14,"y":83.21,"w":5.13,"h":11.51},{"r":0,"c":7,"x":67.98,"y":83.21,"w":5.21,"h":11.51},{"r":1,"c":0,"x":27.48,"y":70.34,"w":4.58,"h":11.16},{"r":1,"c":1,"x":33.23,"y":70.34,"w":4.66,"h":11.16},{"r":1,"c":2,"x":38.97,"y":70.34,"w":4.74,"h":11.16},{"r":1,"c":3,"x":44.72,"y":70.34,"w":4.81,"h":11.16},{"r":1,"c":4,"x":50.46,"y":70.34,"w":4.89,"h":11.16},{"r":1,"c":5,"x":56.21,"y":70.34,"w":4.97,"h":11.16},{"r":1,"c":6,"x":61.96,"y":70.34,"w":5.04,"h":11.16},{"r":1,"c":7,"x":67.7,"y":70.34,"w":5.12,"h":11.16}]},"ceremony":{"wall":[{"r":0,"c":0,"x":33.15,"y":66.65,"w":3.54,"h":8.23},{"r":0,"c":1,"x":37.45,"y":66.65,"w":3.56,"h":8.23},{"r":0,"c":2,"x":41.75,"y":66.65,"w":3.58,"h":8.23},{"r":0,"c":3,"x":46.05,"y":66.65,"w":3.6,"h":8.23},{"r":0,"c":4,"x":50.35,"y":66.65,"w":3.62,"h":8.23},{"r":0,"c":5,"x":54.65,"y":66.65,"w":3.64,"h":8.23},{"r":0,"c":6,"x":58.94,"y":66.65,"w":3.66,"h":8.23},{"r":0,"c":7,"x":63.24,"y":66.65,"w":3.68,"h":8.23},{"r":1,"c":0,"x":33.24,"y":57.26,"w":3.53,"h":8.15},{"r":1,"c":1,"x":37.52,"y":57.26,"w":3.55,"h":8.15},{"r":1,"c":2,"x":41.79,"y":57.26,"w":3.57,"h":8.15},{"r":1,"c":3,"x":46.07,"y":57.26,"w":3.58,"h":8.15},{"r":1,"c":4,"x":50.34,"y":57.26,"w":3.6,"h":8.15},{"r":1,"c":5,"x":54.62,"y":57.26,"w":3.62,"h":8.15},{"r":1,"c":6,"x":58.9,"y":57.26,"w":3.64,"h":8.15},{"r":1,"c":7,"x":63.17,"y":57.26,"w":3.66,"h":8.15}]}};
+// The HOH is the point of the shot: drawn standing behind the box, bigger than a seat at that depth.
+const seatOf = (S, n) => {
+  const a = ANCH[S.set]; const id = S.seated[n];
+  if (id === 'head') return { at: [a.head.at[0], a.box.at[1] + 1.5, a.box.at[2] + 0.4], w: a.head.w * 1.55 };
+  const t = a.seats[id]; return { at: t.at, w: t.w * 0.72 };
+};
+const zOf = a => Math.round(100 - a.at[2] * 10);
+const KEY_ORDER = S => S.steps.filter(x => x.key).map(x => x.key);
 const photo = set => PHOTO.has(set) ? ' photo' : '';
 function miniSet(set, nv, people = []) {
   return `<div class="set set-${set}${photo(set)}" style="--hoh:${col(HOH)}"><div class="floor"></div></div>`;
@@ -726,10 +753,23 @@ function setHtml(S, st, prevSt, L, fresh) {
   const prevCast = idx > 0 ? castAt(S, idx - 1) : null;
   const speaker = st && (st.k === 'say' || st.k === 'host') ? st.by : null;
   for (const [n, x] of cast) {
-    const entered = fresh && (idx === 0 || (prevCast !== cast && !(prevCast || []).some(([m]) => m === n)));
+    const entered = fresh && (idx === 0 || (!S.seated && prevCast !== cast && !(prevCast || []).some(([m]) => m === n)));
     const lock = fresh && n === speaker && (!prevSt || prevSt.by !== n || prevSt.k === 'dr');
     const cls = [n === speaker ? 'speak' : (st && st.push) ? 'out' : '', entered ? 'in' : ''].join(' ');
-    h += tileHtml(n, x, cls, L, lock);
+    if (S.seated) {
+      const a = seatOf(S, n);
+      h += tileHtml(n, x, cls, L, lock, '', `bottom:${(a.at[1] * 0.5625).toFixed(2)}cqw;width:${a.w.toFixed(2)}cqw;z-index:${zOf(a)}`);
+    } else h += tileHtml(n, x, cls, L, lock);
+  }
+  if (S.set === 'dining') {
+    const A = ANCH.dining;
+    h += `<img class="front" src="../assets/bb/house/default/dining-td-b-nom.webp" alt="" style="z-index:${zOf(A.box)}">`;
+    // the keys still in the box: one per safe houseguest not yet drawn, standing in its slot
+    KEY_ORDER(S).forEach((n, i) => {
+      if (L.status[n] === 'safe') return;
+      const sl = A.slots[(i * 3 + 2) % A.slots.length];
+      h += `<span class="slotkey" style="left:${sl[0]}%;bottom:${(sl[1] * 0.5625 + 0.4).toFixed(2)}cqw;z-index:${zOf(A.box) + 1}">${KEY}</span>`;
+    });
   }
   if (S.medalOn && L.veto === S.medalOn) {
     const p = cast.find(([n]) => n === S.medalOn);
@@ -740,12 +780,15 @@ function setHtml(S, st, prevSt, L, fresh) {
 }
 
 function wallHtml(L, st, fresh, onwall = false) {
+  const frames = onwall ? ANCH[SCREENS[cur].set].wall : null;
   return `<div class="wall${onwall ? ' onwall' : ''}">${HOUSE.map((n, i) => {
+    const fr = frames && frames[i];
+    const place = fr ? `left:${fr.x}%;bottom:${fr.y}%;width:${fr.w}%;height:${fr.h}%;` : '';
     const s = L.status[n];
     const d = i - (HOUSE.length - 1) / 2;
     const isFresh = fresh && st && (st.key === n || st.out === n || (st.nom || []).includes(n));
     const lab = s === 'hoh' ? 'HOH' : s === 'nom' ? 'Nominated' : s === 'out' ? '' : n;
-    return `<div class="mw ${s}${L.veto === n ? ' veto' : ''} ${isFresh ? 'fresh' : ''}" style="--c:${col(n)};--ry:${(-d * 4).toFixed(1)}deg;--tz:${(-Math.abs(d) * .9).toFixed(1)}cqw">
+    return `<div class="mw ${s}${L.veto === n ? ' veto' : ''} ${isFresh ? 'fresh' : ''}" style="${place}--c:${col(n)};--ry:${(-d * 4).toFixed(1)}deg;--tz:${(-Math.abs(d) * .9).toFixed(1)}cqw">
       <span class="i">${n[0]}</span>${img(n)}${s === 'safe' ? `<span class="key">${KEY}</span>` : ''}${lab ? `<span class="lb">${lab}</span>` : ''}</div>`;
   }).join('')}</div>`;
 }
@@ -757,13 +800,14 @@ function hudHtml(S, st, prevSt, fresh) {
   if (isDr || S.drScreen) camNo = '01';
   const room = isDr || S.drScreen ? 'Diary Room' : S.room || '';
   const sw = fresh && prevSt && st && (prevSt.by !== st.by || prevSt.k !== st.k) ? 'sw' : '';
-  const feeds = [['kitchen', 'CAM 02 · KITCHEN', 'kitchen'], ['bedroom', 'CAM 09 · BEDROOM', 'bedroom'], ['hoh', 'CAM 14 · HOH', 'hoh'], ['yard', 'CAM 05 · YARD', 'yard'], ['dr', 'CAM 01 · DIARY', 'dr'], ['ceremony', 'CAM 04 · LIVING', 'ceremony']];
+  const feeds = [['kitchen', 'CAM 02 · KITCHEN', 'kitchen'], ['bedroom', 'CAM 09 · BEDROOM', 'bedroom'], ['hoh', 'CAM 14 · HOH', 'hoh'], ['yard', 'CAM 05 · YARD', 'yard'], ['dr', 'CAM 01 · DIARY', 'dr'], ['ceremony', 'CAM 04 · LIVING', 'ceremony'], ['dining', 'CAM 03 · DINING', 'dining']];
   const active = isDr ? 'dr' : S.set;
+  const strip = feeds.filter(f => f[2] !== 'dr' || isDr || S.drScreen).filter(f => f[2] !== 'dining' || S.set === 'dining').slice(-5);
   return `<div class="hud">
     <div class="bug">${eyeSvg('eye')}<div class="wm">BIG BROTHER<span>WEEK 4</span></div>
       <span class="live">LIVE</span>${S.set === 'quad' ? '' : `<span class="camlab ${sw}" style="margin-left:.6cqw"><b>CAM ${camNo}</b>${room.toUpperCase()}${S.nv && !isDr ? ' · NV' : ''}</span>`}</div>
     <div class="clockw">DAY ${S.day} <span class="sig"><i></i><i></i><i></i><i></i></span><div class="big clock" data-t="${S.time}">${S.time}</div></div>
-    ${S.set === 'quad' ? '' : `<div class="feeds">${feeds.filter(f => f[2] !== 'dr' || isDr || S.drScreen).slice(0, 5).map(([s, lab, key]) => `<div class="ft ${key === active ? 'on' : ''}">${miniSet(s)}<span>${lab}</span></div>`).join('')}</div>`}
+    ${S.set === 'quad' ? '' : `<div class="feeds">${strip.map(([s, lab, key]) => `<div class="ft ${key === active ? 'on' : ''}">${miniSet(s)}<span>${lab}</span></div>`).join('')}</div>`}
   </div>`;
 }
 
@@ -791,7 +835,7 @@ function paint(fresh = false) {
   const camNow = S.set === 'quad' ? 'none' : camOf(S, idx);
   const camPrev = fresh && idx > 0 ? camOf(S, idx - 1) : camNow;
   const cut = fresh && prevSt && st && ((st.k === 'dr') !== (prevSt.k === 'dr'));
-  const onwall = S.wall && !isDr && PHOTO.has(S.set) && S.set === 'ceremony' && (S.wall !== 'after' || (L.out.length && st && st.k !== 'host'));
+  const onwall = S.wall && !isDr && PHOTO.has(S.set) && ANCH[S.set] && ANCH[S.set].wall && (S.wall !== 'after' || (L.out.length && st && st.k !== 'host'));
   let h = `<div class="cam" style="${camStyle(camPrev)}"><div class="lens ${cut ? 'cut' : ''}">${setHtml(S, st, prevSt, L, fresh).replace(/(<div class="set [^"]*"[^>]*><div class="floor"><\/div><\/div>)/, m => m + (onwall ? wallHtml(L, st, fresh, true) : ''))}</div></div>`;
   h += `<div class="grain"></div><div class="vign"></div>`;
   if (!onwall && S.wall && !isDr && (S.wall !== 'after' || (L.out.length && st && st.k !== 'host'))) h += wallHtml(L, st, fresh);
@@ -808,14 +852,19 @@ function paint(fresh = false) {
       const p = cast.find(([m]) => m === n);
       const [w0, w] = tone === 'down' ? ['70%', '38%'] : tone === 'deal' ? ['0%', '100%'] : ['40%', '72%'];
       const bc = { up: '#12b76a', down: '#ff3355', deal: '#f5c542', love: '#ff4fb0' }[tone];
-      h += `<div class="pop" style="left:${p ? p[1] : 50}%"><span class="d ${tone}">${tone === 'down' ? '▼' : tone === 'up' ? '▲' : tone === 'love' ? '♥' : '◆'} ${label}</span><b>${n} → ${about}</b><span class="bar" style="--w0:${w0};--w:${w};--bc:${bc}"><i></i></span></div>`;
+      const sa = S.seated && S.seated[n] ? seatOf(S, n) : null;
+      h += `<div class="pop" style="left:${p ? p[1] : 50}%;${sa ? `bottom:${(sa.at[1] * 0.5625 + sa.w * 1.25 + 3).toFixed(2)}cqw` : ''}"><span class="d ${tone}">${tone === 'down' ? '▼' : tone === 'up' ? '▲' : tone === 'love' ? '♥' : '◆'} ${label}</span><b>${n} → ${about}</b><span class="bar" style="--w0:${w0};--w:${w};--bc:${bc}"><i></i></span></div>`;
     }
     if (st.toast) h += `<div class="toast" style="--tc:${st.toast[1]}"><b>${st.toast[0]}</b></div>`;
     for (const [n, text] of st.react || []) {
       const b = bgAt(S, idx).find(([m]) => m === n);
       h += `<div class="rx" style="left:${b ? b[1] : 50}%">${text}</div>`;
     }
-    if (st.key) h += `<div class="flykey" style="--dx:${(HOUSE.indexOf(st.key) - 4) * 6.6 - 8}cqw;--dy:-14cqw">${KEY}</div>`;
+    if (st.key && S.seated) {
+      const A = ANCH.dining, o = A.box.at, t = seatOf(S, st.key);
+      const dy = -((t.at[1] - o[1]) * 0.5625 + t.w * 1.25 * 0.55);
+      h += `<div class="flykey" style="left:${o[0]}%;bottom:${(o[1] * 0.5625 + 1).toFixed(2)}cqw;--dx:${(t.at[0] - o[0]).toFixed(2)}cqw;--dy:${dy.toFixed(2)}cqw;z-index:99">${KEY}</div>`;
+    } else if (st.key) h += `<div class="flykey" style="--dx:${(HOUSE.indexOf(st.key) - 4) * 6.6 - 8}cqw;--dy:-14cqw">${KEY}</div>`;
     if (cut) h += `<div class="flash"></div>`;
     if (st.push && camPrev !== camNow) h += `<div class="zoom"><b>ZOOM 2.0×</b></div>`;
   }

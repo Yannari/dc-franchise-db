@@ -311,10 +311,8 @@ function drawPeople(root, S, st, geo, fresh) {
     scene.appendChild(el);
     const p = el.querySelector('p'), txt = '“' + String(st.text).replace(/^["“]|["”]$/g, '') + '”';
     if (fresh) {
-      let k = 0;
       requestAnimationFrame(() => el.classList.add('trs-in'));
-      const t = setInterval(() => { p.textContent = txt.slice(0, ++k); if (k >= txt.length) clearInterval(t); }, 16);
-      S.timers.push(t);
+      words(p, txt, 120);
     } else { el.classList.add('trs-in'); p.textContent = txt; }
   }
 }
@@ -680,6 +678,10 @@ const CSS = `
 .trs-pf .trs-ini{font-size:10px}
 .trs-up{color:#8fd19e}.trs-dn{color:#e87a82}
 @keyframes trsPop{from{transform:translateX(30px);opacity:0}}
+/* a line arrives a word at a time, every word already in its place */
+.trs-w{display:inline-block;opacity:0;animation:trsWord .42s cubic-bezier(.2,.7,.2,1) forwards}
+@keyframes trsWord{from{opacity:0;transform:translateY(.35em);filter:blur(3px)}to{opacity:1;transform:none;filter:none}}
+@media (prefers-reduced-motion:reduce){.trs-w{animation:none;opacity:1}}
 .trs-start{position:absolute;left:50%;bottom:8%;transform:translate(-50%,8px);opacity:0;transition:.5s;z-index:8;text-align:center;pointer-events:none;
   padding:12px 26px;background:linear-gradient(90deg,transparent,rgba(4,5,8,.86) 16%,rgba(4,5,8,.86) 84%,transparent)}
 .trs-start.trs-in{opacity:1;transform:translate(-50%,0)}
@@ -717,4 +719,25 @@ const CSS = `
 // Shared with table-stage.js under prefixed names: main.js hangs every exported
 // function on `window`, and a bare `esc` or `face` there would replace
 // somebody else's.
-export { esc as trsEsc, reg as trsReg, face as trsFace, later as trsLater, stageShell as trsStageShell };
+/**
+ * THE LINE, SHOWN WHOLE AND LIT A WORD AT A TIME.
+ *
+ * It used to be typed a character at a time, and a centred card re-centred
+ * itself on every letter: the sentence grew out of the middle both ways and
+ * the line under it jumped as it wrapped. Every word is laid out now, at once
+ * and invisible, and fades up where it already sits -- nothing moves. The
+ * whole line is lit in about a second whatever its length.
+ */
+function words(el, txt, delay = 0) {
+  if (!el) return;
+  const parts = String(txt == null ? '' : txt).split(/(\s+)/);
+  const n = parts.filter(w => w.trim()).length || 1;
+  const step = Math.max(14, Math.min(55, 1100 / n));
+  let i = 0;
+  el.innerHTML = parts.map(w => (!w.trim() ? w
+    : '<span class="trs-w" style="animation-delay:' + Math.round(delay + (i++) * step) + 'ms">'
+      + esc(w) + '</span>')).join('');
+}
+
+export { esc as trsEsc, reg as trsReg, face as trsFace, later as trsLater, stageShell as trsStageShell,
+  words as trsWords };

@@ -7,7 +7,7 @@
 // host's, a player's (with their face), the narration, a reaction, or the
 // audience's aside in blood-red. One look and one set of motion for all of
 // them, so breakfast, the turret and the missions read as one programme.
-import { trsEsc as esc, trsFace as face } from './castle-stage.js';
+import { trsEsc as esc, trsFace as face, trsWords as words } from './castle-stage.js';
 
 /** The card for step `st`, or ''. `host` is `{ name, slug }`. */
 export function footCard(st, host, opts = {}) {
@@ -49,11 +49,8 @@ export function playCard(el, st, S, fresh) {
   if (!p) return;
   const txt = p.dataset.q ? '“' + st.text + '”' : st.text;
   if (!fresh) { p.textContent = txt; return; }
-  p.textContent = '';
-  let k = 0;
-  const t = setInterval(() => { p.textContent = txt.slice(0, ++k); if (k >= txt.length) clearInterval(t); },
-    p.dataset.q ? 16 : 12);
-  S.timers.push(t);
+  // the card arrives first, then its words (see `trsWords`)
+  words(p, txt, 160);
 }
 
 
@@ -79,6 +76,16 @@ export const CARD_CSS = `
 .tsc-pop img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 18%;z-index:1}
 .tsc-name{position:absolute;left:124px;top:-13px;padding:3px 13px;font-family:var(--v-display);font-weight:900;font-size:11.5px;letter-spacing:.2em;
   text-transform:uppercase;color:#241b11;background:linear-gradient(180deg,#f7e2a6,#c99a48);transform:skewX(-10deg);box-shadow:0 4px 10px rgba(0,0,0,.6)}
+/* EACH KIND OF CARD ARRIVES ITS OWN WAY, from an edge or a depth, never out of the middle */
+.tsc-slot.tsc-in .tsc-narr{animation:tscRise .55s cubic-bezier(.2,.7,.2,1) both}
+.tsc-slot.tsc-in .tsc-hostcard{animation:tscWipe .5s cubic-bezier(.3,.7,.2,1) both}
+.tsc-slot.tsc-in .tsc-camcard{animation:tscSettle .6s cubic-bezier(.2,.7,.2,1) both}
+.tsc-slot.tsc-in .tsc-live{animation:tscSlide .4s cubic-bezier(.2,.8,.2,1) both}
+@keyframes tscRise{from{opacity:0;transform:translateY(16px);filter:blur(4px)}to{opacity:1;transform:none;filter:none}}
+@keyframes tscWipe{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+@keyframes tscSettle{from{opacity:0;transform:scale(1.04)}to{opacity:1;transform:none}}
+@keyframes tscSlide{from{opacity:0;transform:translateX(-22px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.tsc-slot.tsc-in .tsc-card{animation:none}}
 .tsc-slot.tsc-in .tsc-pop{animation:tscPop .45s cubic-bezier(.2,1.5,.4,1) both}
 .tsc-slot.tsc-in .tsc-name{animation:tscTab .35s ease-out .1s both}
 @keyframes tscPop{from{transform:translateY(24px) scale(.7);opacity:0}to{transform:none;opacity:1}}

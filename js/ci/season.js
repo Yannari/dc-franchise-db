@@ -28,6 +28,7 @@ import { S, rel } from './state.js';
 import { initMind, driftMind } from './mind.js';
 import { seedAttraction, planChats, contextFor } from './chat.js';
 import { groupChats } from './groupchats.js';
+import { compareNotes } from './twotiming.js';
 import { runChat } from './conversation.js';
 import { morningFeed, runCircleChat } from './feed.js';
 import { runRating } from './ratings.js';
@@ -291,6 +292,8 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
       doubleAgents(state, ds(`ally-double:${d.day}`)); drift(state, ds(`ally-drift:${d.day}`));
       // ...and the ones that are not alliances: a friend group, a peace talk, a ratings plan.
       groupChats(state, ds(`gc:${d.day}`), { ratingSoon: !!d.block && !d.final });
+      // Two people the same player is romancing compare notes (twotiming.js).
+      compareNotes(state, ds(`notes:${d.day}`));
     }
     if (d.disrupter) runDisrupter(state, ds(`disrupter:${d.day}`));
     if (d.game) {

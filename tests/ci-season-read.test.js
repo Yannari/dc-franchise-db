@@ -95,7 +95,7 @@ describe('a second read', () => {
   it('the same words never air twice in a day, even from two pools', () => {
     for (const { rows } of runs) for (const row of rows) {
       const said = row.ci.aired.flatMap(s => (s.script?.blocks || []).flatMap(b => b.lines))
-        .filter(l => l.kind !== 'host' && l.kind !== 'stage' && (l.text || '').length > 30).map(l => l.text);
+        .filter(l => !l.copied && l.kind !== 'host' && l.kind !== 'stage' && (l.text || '').length > 30).map(l => l.text);
       const twice = said.filter((t, i) => said.indexOf(t) !== i);
       expect(twice, `day ${row.day}`).toEqual([]);
     }

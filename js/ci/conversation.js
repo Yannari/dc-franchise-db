@@ -17,6 +17,7 @@ import { revealTo } from './reveal.js';
 import { attractionOk, performedFlirt } from './chat.js';
 import { coverParts } from './cover.js';
 import { streamFor } from '../dr/rng.js';
+import { noteFlirt } from './twotiming.js';
 
 // What the receiver comes to feel toward the sender, by intent and ending.
 // How often a warm chat between close players goes deep, at most.
@@ -260,6 +261,8 @@ export function runChat(state, rng, plan, ctx = {}) {
         party: !!ctx.party, attention: 0.6 }, sc);
   }
   RUN[intent]?.(state, rng, sc, from, to, ending, ctx);
+  // A romance on the go, and a line maybe sent before (twotiming.js); its own dice.
+  noteFlirt(state, streamFor(state.seed, `fling:${sc.id}`), sc);
   if (ending === 'warm') gossip(state, rng, sc, from, to);
   return sc;
 }

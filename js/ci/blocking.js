@@ -219,7 +219,11 @@ export function goodbyeVideo(state, rng, h) {
     .sort((a, b) => b[1] - a[1])[0];
   if (top && top[1] > 3) {
     const o = top[0];
-    const c = belief(state, h, o).real < THEORY_LINE
+    // Played by them (twotiming.js): the goodbye says so, in front of everyone.
+    const played = state.claims.some(x => x.kind === 'playing' && x.holder === o && state.know[h]?.[x.id]);
+    const c = played
+      ? makeClaim(state, { kind: 'playing', holder: o, about: o, truth: true, secrecy: 'public', by: h, weight: SOUR_GRAPES })
+      : belief(state, h, o).real < THEORY_LINE
       ? makeClaim(state, { kind: 'catfish', holder: h, about: o, truth: state.profiles[o].mode === 'catfish', secrecy: 'public', by: h, weight: SOUR_GRAPES })
       : makeClaim(state, { kind: 'distrusts', holder: h, about: o, truth: rel(h, o, 'trust') < 0, secrecy: 'public', by: h, weight: SOUR_GRAPES });
     for (const x of all) if (x !== o) learn(state, x, c, h, sc);

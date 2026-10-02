@@ -347,6 +347,15 @@ function fearsFor(state, s, target) {
 const BLOCKS = {
   chat(state, s) {
     const [a, b] = s.who;
+    // Two people the same player is romancing, putting it together (twotiming.js).
+    if (s.data.intent === 'notes') {
+      const p = s.data.about;
+      const x = s.data.copy ? state.copiedTexts?.[s.data.copy] : null;
+      const out = [{ key: x ? 'notes.find.copy' : 'notes.find', cast: { a, b, c: p, ...(x ? { text: { x } } : {}) } }];
+      if (s.data.openlyTaken) out.push({ key: 'notes.taken', cast: { a: b, b: a, c: p } });
+      out.push({ key: 'notes.plan', cast: { a, b, c: p } });
+      return out;
+    }
     const c0 = s.data.claims?.length ? claimOf(state, s.data.claims[0]) : null;
     // A jealous chat is about the rival the crush flirted with (party.js); a
     // morning-after chat about who they are discussing (chat.js debriefTopic).
@@ -515,6 +524,14 @@ const BLOCKS = {
       const out = [{ key: 'group.plan.pitch', cast: { a: f, b: asked[0], c: t } }];
       for (const h of asked) out.push({ key: s.data.agreed.includes(h) ? 'group.plan.agree' : 'group.plan.decline', cast: { a: h, b: f, c: t } });
       if (s.data.agreed.length) out.push({ key: 'group.plan.seal', cast: { a: f, b: s.data.agreed[0], c: t } });
+      return out;
+    }
+    // Caught playing two people (twotiming.js): the two of them, and the player.
+    if (s.data.event === 'busted') {
+      const { player: p, pair: [q, r], response, kept, lost } = s.data;
+      const out = [{ key: 'busted.open', cast: { a: q, b: r, c: p } }, { key: s.data.openlyTaken ? 'busted.accuse.taken' : 'busted.accuse', cast: { a: r, b: p, c: q } }];
+      out.push(response === 'charm' ? { key: 'busted.charm', cast: { a: p, b: kept, c: lost } } : { key: s.data.cheat ? 'busted.confess.cheat' : `busted.${response}`, cast: { a: p, b: q, c: r } });
+      out.push(response === 'charm' ? { key: 'busted.end.charm', cast: { a: lost, b: p, c: kept } } : { key: `busted.end.${response}`, cast: { a: q, b: p, c: r } });
       return out;
     }
     // An alliance coming apart (alliances.js): treason, a double agent, a walk-out.
@@ -1039,7 +1056,8 @@ const BLOCKS = {
       return { key, keys: keys.length ? keys : [key], phase: b.phase, round: b.round, bi,
         cast: { a: b.by, b: b.about, c: b.c, anonA: b.kind === 'question' && b.anon,
           text: { q, x, n: b.n === undefined ? undefined : String(b.n), game: g.name, ans } }, extra };
-    });
+    }).concat(s.data.twoTimer ? [{ key: 'game.twotime', phase: 'aftermath',
+      cast: { a: s.data.twoTimer.watcher, b: s.data.twoTimer.by, c: s.data.twoTimer.with[0], text: { game: g.name } } }] : []);
   },
   // A party: props at the door, then Never Have I Ever in Circle Chat (1×02).
   party(state, s) {
@@ -1080,6 +1098,8 @@ const BLOCKS = {
     if (fl2) tail.push({ key: 'party.flirt', cast: { a: fl2[0], b: fl2[1] } });
     const j2 = fl2 && jealousOf(fl2);
     if (j2) tail.push({ key: 'party.jealous', cast: { a: j2.by, b: j2.of, c: j2.rival } });
+    // Flirting with two people at once, in front of everyone (twotiming.js).
+    if (d.twoTimer) tail.push({ key: 'party.twotime', cast: { a: d.twoTimer.by, b: d.twoTimer.with[0], c: d.twoTimer.with[1] } });
     if (d.dancers?.[0]) tail.push({ key: 'party.end', cast: { a: d.dancers.at(-1) } });
     // Dancing first, then the photos, then the game, the flirting and the end.
     return [out[0], ...tail.slice(0, (d.dancers || []).length + (d.photos || []).length), ...out.slice(1), ...tail.slice((d.dancers || []).length + (d.photos || []).length)];
@@ -1158,7 +1178,29 @@ function writeSceneNow(state, scene) {
     if (at > 0) blocks.unshift(...blocks.splice(at, 1));
   }
   scene.script = { blocks };
+  if (scene.kind === 'chat' && scene.data.copyOf) copyPaste(state, scene);
   return scene.script;
+}
+
+// A line sent before, sent again (twotiming.js noteFlirt): the first message of
+// this flirt becomes the first message of the earlier one, word for word, with
+// only the name swapped. The engine decided it; the words are the earlier
+// chat's, so the two people who compare notes can quote it.
+function copyPaste(state, scene) {
+  const earlier = state.scenes.find(z => z.id === scene.data.copyOf.scene);
+  // The first message may not have aired: it was still sent, so write it now.
+  if (earlier && !earlier.script) { const keep = state._writing; writeScene(state, earlier); state._writing = keep; }
+  const sent = sc => (sc?.script?.blocks || []).flatMap(b => b.lines || []).find(l => l.kind === 'send' && l.who === scene.who[0]);
+  const was = sent(earlier), now = sent(scene);
+  if (!was || !now) return;
+  const nameOf = h => state.profiles[h]?.shown?.name || '';
+  const before = nameOf(scene.data.copyOf.to), after = nameOf(scene.who[1]);
+  const swap = t => (t && before && after ? t.split(before).join(after) : t);
+  now.text = swap(was.text);
+  now.copied = true;   // said twice on purpose (tests/ci-season-read.test.js)
+  if (was.spoken) now.spoken = swap(was.spoken);
+  // Kept beside the scenes, not in them: a scene's data holds no English.
+  (state.copiedTexts ||= {})[scene.id] = now.text;
 }
 
 export const MIDDLES_PER_NIGHT = 3;
@@ -1313,6 +1355,9 @@ export const POOL_KEYS = [
   'hangout.agree', 'hangout.yield', 'hangout.trade', 'hangout.pact',
   ...BLOCK_WHY_.map(r => `block.announce.${r}`), 'block.react.self', 'block.react.friend', 'block.react.rival', 'block.react.relief',
   ...MOTIVES_.filter(m => m !== 'confront').flatMap(m => [`visit.choose.${m}`, `visit.talk.${m}`]), 'visit.choose.confront', 'visit.wait', 'visit.wait.catfish',
+  // Playing two people, and getting caught (twotiming.js, lines/twotiming.js).
+  'notes.find', 'notes.find.copy', 'notes.taken', 'notes.plan', 'busted.open', 'busted.accuse', 'busted.accuse.taken', 'busted.confess.cheat',
+  ...['charm', 'confess', 'deny'].flatMap(k => [`busted.${k}`, `busted.end.${k}`]), 'party.twotime', 'game.twotime', 'goodbye.warning.playing',
   ...['fire', 'take', 'defend'].map(k => `visit.talk.confront.${k}`), ...['walkout', 'cooled'].flatMap(k => [`visit.talk2.confront.${k}`, `visit.bye.${k}`]), 'visit.after.confront',
   'visit.door.real', 'visit.door.catfish', 'visit.door.caught', 'visit.door.both', 'visit.hand', 'visit.kiss', 'visit.bye', 'report',
   'goodbye.guess', ...['honest', 'polished', 'edited', 'shared'].map(m => `goodbye.video.${m}`),

@@ -15,6 +15,8 @@ import { belief, nudgeBelief, noteAlly } from './beliefs.js';
 import { feel } from './mind.js';
 import { makeClaim, learn } from './claims.js';
 import { rollSlips, probe } from './slips.js';
+import { gameTwoTimer } from './twotiming.js';
+import { streamFor } from '../dr/rng.js';
 import { isPair, leadFor } from './shared.js';
 
 const NICE = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
@@ -317,6 +319,8 @@ const RUN = {
     sc.data.rounds.push({ promptId: 'flirt', answers });
     const top = Object.keys(votes).sort((x, y) => votes[y] - votes[x])[0];
     sc.data.results = { votes, winner: top ? [top, answers[top]] : null };
+    // Picking one crush while the other one watches (twotiming.js).
+    gameTwoTimer(state, streamFor(state.seed, `game2:${sc.id}`), sc);
   },
 
   /** Name your biggest rival, and why you deserve it more (1×10 State Your Case). */

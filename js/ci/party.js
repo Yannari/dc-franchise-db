@@ -12,6 +12,8 @@ import { attractionOk } from './chat.js';
 import { rollSlips } from './slips.js';
 import { feel } from './mind.js';
 import { runCircleChat } from './feed.js';
+import { partyTwoTimer } from './twotiming.js';
+import { streamFor } from '../dr/rng.js';
 
 export const NHIE_ROUNDS = 4;
 // A crush this strong (attraction, 0-10) minds watching the flirting.
@@ -85,6 +87,8 @@ export function runParty(state, rng, { theme = null } = {}) {
     (state.jealous ||= []).push({ by: best.by, of: best.of, rival: best.rival, day: state.day });
   }
   Object.assign(sc.data, { dancers, photos, flirts, jealous });
+  // Flirting with two people in one night, in front of everyone (twotiming.js).
+  partyTwoTimer(state, streamFor(state.seed, `party2:${sc.id}`), sc);
   runCircleChat(state, rng, { party: true });
   return sc;
 }

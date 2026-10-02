@@ -12,8 +12,9 @@ import { nudgeBelief, noteAlly } from './beliefs.js';
 import { feel } from './mind.js';
 
 export const CLAIM_KINDS = ['distrusts', 'likes', 'targeting', 'catfish', 'real', 'ally',
-  'saved', 'ratedLow', 'visitSaid'];
-const JUICY = new Set(['distrusts', 'targeting', 'catfish', 'visitSaid', 'ratedLow']);
+  'saved', 'ratedLow', 'visitSaid', 'playing'];
+// 'playing': HOLDER is romancing more than one person (twotiming.js).
+const JUICY = new Set(['distrusts', 'targeting', 'catfish', 'visitSaid', 'ratedLow', 'playing']);
 // Pairs that cannot both be true of the same holder and subject.
 const OPPOSED = { saved: 'targeting', targeting: 'saved', likes: 'distrusts', distrusts: 'likes',
   catfish: 'real', real: 'catfish' };
@@ -83,6 +84,13 @@ function applyClaim(state, obs, claim, from, scene) {
       break;
     case 'saved':
       if (aboutMe && holder !== obs) bump(obs, holder, 'obligation', 1.5 * w);
+      break;
+    case 'playing':
+      // A player, word gets round: trusted less, and a crush cools on them.
+      if (holder !== obs) {
+        bump(obs, holder, 'trust', -0.8 * w);
+        if (rel(obs, holder, 'attraction') > 0) { bump(obs, holder, 'attraction', -1.2 * w); bump(obs, holder, 'resentment', 0.6 * w); }
+      }
       break;
     case 'ratedLow':
       if (aboutMe && holder !== obs) {

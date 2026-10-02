@@ -39,8 +39,16 @@ export function fill(text, who, ctx = {}) {
   });
 }
 
+/**
+ * For tests only: muted, a scene is not written at all (no pick, no ledger).
+ * A season played muted must match one played with words, event for event —
+ * the proof that picking a line never moves the engine.
+ */
+export const writing = { muted: false };
+
 /** Pick and fill. Returns { lines, text } — `text` is the transcript the old screens and the backlog print. */
 export function writeScene(scene, ctx = {}, rng = Math.random) {
+  if (writing.muted) return { lines: [{ kind: 'beat', by: null, text: scene.kind }], text: scene.kind, lineId: null };
   const facts = factsFor(scene, ctx);
   // A family's '.any' pool fits every ending, so it is merged with the ending's own.
   const ending = scene.data?.ending || scene.data?.result || 'any';

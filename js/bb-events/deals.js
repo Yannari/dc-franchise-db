@@ -27,6 +27,7 @@ import {
   resentmentOf, beatsInvolving, spotlightOrder, actFacts,
 } from './_read.js';
 import { freshLine } from '../bb/aired.js';
+import { makeScene } from '../bb/script/scene.js';
 
 // ── helpers ───────────────────────────────────────────────────────────
 
@@ -38,6 +39,20 @@ function _variant(list, ctx, ...salt) {
 }
 
 const _others = (house, ...exclude) => house.filter(n => n && !exclude.includes(n));
+
+/**
+ * Which room a private talk happens in: picked by hash, so it never draws a
+ * die. `people` are the ones talking; the HOH room needs the HOH among them
+ * (the house's own rule, house-events _roomAllows — a scene's room skips it).
+ */
+function _room(rooms, ctx, ...people) {
+  const ok = rooms.filter(r => r !== 'hoh-room' || (ctx?.hoh && people.includes(ctx.hoh)));
+  const pool = ok.length ? ok : ['backyard'];
+  const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${people.join('|')}`;
+  let hash = 0;
+  for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
+  return pool[hash % pool.length];
+}
 /** Least-seen first, weighted toward whoever this week is about. */
 const _leastSeen = pool => spotlightOrder(pool);
 const _nominees = ctx => (ctx?.nominees || []).filter(Boolean);
@@ -197,14 +212,6 @@ const finalTwo = {
   },
   fire(house, ctx, api) {
     const { a, b } = _pactPair(house, ctx);
-    const p = pronouns(a);
-    const text = _variant([
-      `${a} says the words out loud — "final two, whatever happens" — and ${b} says them back. Neither of them writes anything down and both of them will remember the exact wording.`,
-      `${a} asks ${b} whether what they have is really a final two. ${b} says ${pronouns(b).sub} assumed it already was. They shake on it anyway.`,
-      `“If it's us at the end, I'm not going to feel bad about beating you,” ${a} says. ${b} laughs. “You won't beat me.” They agree to get there together.`,
-      `${a} has been circling this all week and finally asks. ${b} agrees so quickly that ${p.sub} wonders, briefly, how many other people have been asked the same thing.`,
-    ], ctx, a, b);
-
     api.addBond(a, b, 1.6);
     // A final two is the strongest deal in the game; record it as one so the
     // alliance lifecycle can see it.
@@ -212,7 +219,8 @@ const finalTwo = {
     api.remember(a, b, 'final-two', 3, { week: ctx.week?.num || 0 });
     api.remember(b, a, 'final-two', 3, { week: ctx.week?.num || 0 });
     api.setTarget(a, biggestThreat(_others(house, a, b)) || furthestFrom(a, house), `in the way of the final two with ${b}`);
-    return { text, players: [a, b], badgeText: 'FINAL TWO', badgeClass: 'gold' };
+    const scene = makeScene('talk.final-two', { a, b }, { ending: 'made' }, [], _room(['bedroom', 'backyard', 'hoh-room'], ctx, a, b));
+    return { scene, players: [a, b], badgeText: 'FINAL TWO', badgeClass: 'gold' };
   },
 };
 
@@ -228,24 +236,11 @@ const votePitch = {
   },
   fire(house, ctx, api) {
     const { pitcher, mark } = _pitchPair(house, ctx);
-    const p = pronouns(pitcher);
     const other = _nominees(ctx).find(n => n !== pitcher);
     // Persuasion against judgement — proportional, and the relationship counts.
     const force = pStats(pitcher).social / 10 + bondFactor(bond(pitcher, mark)) * 0.6;
     const guard = pStats(mark).intuition / 10 + (trustOf(mark, other) > 2 ? 0.4 : 0);
     const lands = force > guard;
-
-    const text = lands ? _variant([
-      `${pitcher} tells ${mark} exactly who becomes the next target if ${pitcher} leaves. ${mark} asks for the names again and starts counting votes.`,
-      `“You don't owe me anything. I'm asking anyway,” ${pitcher} says. ${mark} promises to think about it and stays to hear the rest of the pitch.`,
-      `${pitcher} finds the one thing ${mark} is actually worried about and talks about that instead of about the vote. By the end ${mark} is the one making the argument.`,
-      `It takes ${pitcher} four minutes and one very well-chosen name${other ? ` — ${other}'s` : ''} — and ${mark} stops nodding politely and starts nodding.`,
-    ], ctx, pitcher, mark) : _variant([
-      `${pitcher} makes the pitch and ${mark} listens to all of it with the patience people reserve for something they decided about days ago.`,
-      `“I hear you,” ${mark} says. When ${pitcher} asks where their vote is going, ${mark} repeats the same answer.`,
-      `${pitcher} pushes slightly too hard at the end, and watches ${mark}'s face close.`,
-      `The pitch is good. ${mark} is simply not available to be pitched to, and both of them know it before ${pitcher} finishes.`,
-    ], ctx, pitcher, mark);
 
     if (lands) {
       api.addBond(pitcher, mark, 1.1);
@@ -254,8 +249,12 @@ const votePitch = {
       api.addBond(pitcher, mark, -0.4);
       api.suspicion(mark, pitcher, 0.6);
     }
+    const scene = makeScene('talk.campaign', { a: pitcher, b: mark, c: other || null }, { ending: lands ? 'lands' : 'refused' }, [],
+      _room(['backyard', 'bedroom', 'kitchen'], ctx, pitcher, mark));
+    // The other nominee is talked ABOUT, not in the room.
+    scene.seenBy = [pitcher, mark];
     return {
-      text, players: [pitcher, mark],
+      scene, players: [pitcher, mark],
       badgeText: lands ? 'PITCH LANDS' : 'PITCH REFUSED',
       badgeClass: lands ? 'green' : 'grey',
     };
@@ -311,7 +310,6 @@ const safetyDeal = {
   },
   fire(house, ctx, api) {
     const { hoh, other, fake } = _safetyPair(house, ctx);
-    const p = pronouns(other);
     const honest = !fake && !willScheme(hoh);
     // ── THE FAKE DEAL, TOLD AS ONE ──
     //
@@ -321,18 +319,8 @@ const safetyDeal = {
     // High bond and low intuition shakes the hand smiling; the reverse takes
     // the deal knowing exactly what it is worth.
     if (fake) {
-      const ph = pronouns(hoh);
       const fooled = perceived(other, hoh) + (pStats(hoh).social - 5) * 0.2
         - pStats(other).intuition * 0.25 > -0.5;
-      const text = fooled ? _variant([
-        `${hoh} tells ${other}, “You keep my name out of next week, and I keep yours out of the box.” They shake on it. ${hoh} already has ${other}'s name at the top of ${ph.posAdj} list, and nothing in ${ph.posAdj} face says so.`,
-        `${other} leaves the HOH room with a deal and a good feeling. ${hoh} watches the door close and goes back to planning ${other}'s nomination.`,
-        `The handshake is warm, the terms are clear, and exactly one of them intends to keep any of it.`,
-      ], ctx, hoh, other) : _variant([
-        `${hoh} offers safety. ${other} takes the deal, thanks ${ph.obj} — and starts packing a mental bag on the way downstairs. A promise from ${hoh} this week is a weather report, not a contract.`,
-        `${other} shakes the hand, holds the eye contact a beat too long, and both of them understand the deal for what it is: a receipt to wave later.`,
-        `“Sure,” ${other} says, “deal.” ${p.Sub} has counted the room. ${p.Sub} knows whose name is actually in ${hoh}'s head. Saying no would only move the date up.`,
-      ], ctx, hoh, other);
       api.sideDeal?.(hoh, other, 'safety', { genuine: false, reason: 'one week of safety' });
       // The debt: when the nomination lands, this memory is what the fallout
       // reads — a PROVABLE broken promise, not a vibe.
@@ -340,17 +328,11 @@ const safetyDeal = {
       if (!fooled) api.suspicion(other, hoh, 1.4);
       else api.addBond(other, hoh, 0.6);
       api.popDelta?.(hoh, -0.5);
-      return { text, players: [hoh, other],
+      const scene = makeScene('talk.safety', { a: hoh, b: other }, { ending: fooled ? 'lie' : 'seen' }, [], 'hoh-room');
+      return { scene, players: [hoh, other],
         badgeText: fooled ? 'A LIE, SHAKEN ON' : 'BOTH KNOW BETTER',
         badgeClass: 'red' };
     }
-    const text = _variant([
-      `In the HOH room, ${other} offers one quiet week: no nomination now, no retaliation if ${other} wins next. ${hoh} repeats the terms before shaking on it.`,
-      `${other} asks ${hoh} directly whether ${other} is going up. ${hoh} says no—if ${other} leaves ${hoh} alone next week. ${other} agrees before the offer can change.`,
-      `${hoh} tells ${other}, “You keep my name out of next week, and I keep yours out of the box.” ${other} asks whether that includes a replacement nomination. It does. They shake on it.`,
-      `${other} enters the HOH room expecting to plead. Instead, ${hoh} offers safety in exchange for one week without a shot coming back. ${other} accepts, then asks to hear the promise once more.`,
-    ], ctx, hoh, other);
-
     api.addBond(hoh, other, 0.9);
     // A safety deal is a real deal, but a one-week one — genuine only when the
     // person offering it means it.
@@ -358,7 +340,8 @@ const safetyDeal = {
     api.remember(other, hoh, 'promise', honest ? 2 : 3, { promise: 'one week of safety' });
     api.remember(hoh, other, 'promise', 2, { promise: 'one week of safety' });
     if (!honest) api.suspicion(other, hoh, 0.5);
-    return { text, players: [hoh, other], badgeText: 'SAFETY DEAL', badgeClass: 'green' };
+    const scene = makeScene('talk.safety', { a: hoh, b: other }, { ending: 'deal' }, [], 'hoh-room');
+    return { scene, players: [hoh, other], badgeText: 'SAFETY DEAL', badgeClass: 'green' };
   },
 };
 
@@ -417,20 +400,14 @@ const numbersCheck = {
     const counters = _leastSeen(house.filter(n => pStats(n).strategic >= 5 && !_nominees(ctx).includes(n)));
     const a = counters[0];
     const b = closestTo(a, _others(house, a)) || counters[1] || _others(house, a)[0];
-    const p = pronouns(a);
     const short = pStats(a).strategic < 7;
-    const text = _variant([
-      `${a} and ${b} count the vote twice on their fingers and get the same answer both times, which neither of them entirely believes.`,
-      `"Say the names." ${b} says the names. ${a} makes ${pronouns(b).obj} say them again, slower, because one of them sounded wrong the first time.`,
-      `They have the votes. They have had the votes since Tuesday. ${a} keeps counting anyway, because counting is the only thing there is to do.`,
-      `${a} works out that the whole week comes down to one person, tells ${b} who it is, and watches ${pronouns(b).posAdj} face do something complicated.`,
-    ], ctx, a, b);
 
     api.addBond(a, b, 0.7);
     api.remember(a, b, 'confidence', 1, { about: 'the vote count' });
     // A miscount is how blindsides happen, and the less strategic miscount more.
     if (short) api.suspicion(a, furthestFrom(a, _voters(house, ctx)) || b, 0.8);
-    return { text, players: [a, b], badgeText: 'COUNTING VOTES', badgeClass: 'blue' };
+    const scene = makeScene('talk.debrief', { a, b }, { ending: short ? 'shaky' : 'sure' }, [], _room(['bedroom', 'backyard', 'pantry'], ctx, a, b));
+    return { scene, players: [a, b], badgeText: 'COUNTING VOTES', badgeClass: 'blue' };
   },
 };
 
@@ -775,8 +752,6 @@ const reaffirmDeal = {
   fire(house, ctx, api) {
     const { a, b, deal } = _partners(house);
     const solid = sincerityOf(deal, a) > 0.55 && sincerityOf(deal, b) > 0.55;
-    const p = pronouns(a);
-    const files = p.sub === 'they' ? 'file' : 'files';
     // ── one of them is planning the cut ──
     //
     // The late-game version of this scene: the words get said again, warmly,
@@ -787,42 +762,22 @@ const reaffirmDeal = {
     const cutter = targetOf(a) === b ? a : targetOf(b) === a ? b : null;
     if (cutter && house.length <= 6) {
       const kept = cutter === a ? b : a;
-      const pc = pronouns(cutter);
       const fooled = perceived(kept, cutter) + (pStats(cutter).social - 5) * 0.2
         - pStats(kept).intuition * 0.25 > -0.5;
-      const text = fooled ? _variant([
-        `${cutter} says it again — "still us, still the end" — and means every word except the ones that matter. ${kept} hears exactly what ${pronouns(kept).sub} wanted to hear.`,
-        `The handshake is the same handshake it has been for weeks. Only one of them knows it is a goodbye.`,
-        `${cutter} reaffirms the final two with the ease of somebody who has already had the other conversation, in ${pc.posAdj} own head, twice.`,
-      ], ctx, cutter, kept) : _variant([
-        `${cutter} says the words. ${kept} says them back, and counts the seconds ${cutter} held eye contact, and does not like the number.`,
-        `"Still us?" "Still us." Both of them smile. ${kept} spends the rest of the evening quietly working out what ${pronouns(kept).sub} would need to win without ${cutter}.`,
-        `The final two gets reaffirmed in the kitchen, out loud, and ${kept} notices ${cutter} has started saying "whatever happens" a little too often.`,
-      ], ctx, cutter, kept);
       api.remember(kept, cutter, 'promise', 3, { promise: 'final two, restated', fake: true });
       if (!fooled) api.suspicion(kept, cutter, 1.3);
       else api.addBond(kept, cutter, 0.5);
       api.popDelta?.(cutter, -0.4);
-      return { text, players: [cutter, kept],
+      const scene = makeScene('talk.reaffirm', { a: cutter, b: kept }, { ending: fooled ? 'cut' : 'seen' }, [], _room(['bedroom', 'backyard', 'kitchen'], ctx, cutter, kept));
+      return { scene, players: [cutter, kept],
         badgeText: fooled ? 'A GOODBYE, DRESSED AS A PROMISE' : 'SAID TOO OFTEN',
         badgeClass: 'red' };
     }
-    const text = solid ? _variant([
-      `${a} finds ${b} alone and says it again, plainly: still us, still the end. ${b} does not need to hear it and is glad to anyway.`,
-      `Neither of them says much. ${a} bumps ${b}'s shoulder on the way past and ${b} nods once. Weeks in, that is the entire conversation and it is enough.`,
-      `"We good?" "We're good." ${a} and ${b} have had this exchange before, and it has not stopped being true yet.`,
-      `${a} and ${b} compare their preferred boot orders. They disagree over one name, argue the timing for `
-        + `five minutes, and leave with a plan both can actually repeat.`,
-    ], ctx, a, b) : _variant([
-      `${a} asks ${b} whether they are still good, and listens to how long the pause is. It is not long. It is not nothing, either.`,
-      `"Still us, right?" ${b} says all the right words. ${a} walks away not entirely convinced and unable to say which word did it.`,
-      `${a} tests ${b} with a name — floats losing somebody ${b} would never agree to lose — and watches ${pronouns(b).obj} agree far too easily. ${p.Sub} ${files} that away.`,
-      `They reaffirm the deal. Both of them mean it slightly less than they did last week and neither says so.`,
-    ], ctx, a, b);
     api.addBond(a, b, solid ? 0.8 : 0.2);
     if (!solid) api.remember(a, b, 'doubted-the-deal', 1);
+    const scene = makeScene('talk.reaffirm', { a, b }, { ending: solid ? 'solid' : 'doubt' }, [], _room(['bedroom', 'backyard', 'kitchen'], ctx, a, b));
     return {
-      text, players: [a, b],
+      scene, players: [a, b],
       badgeText: solid ? 'STILL SOLID' : 'DOUBT CREEPING IN',
       badgeClass: solid ? 'green' : 'orange',
     };

@@ -55,11 +55,15 @@ describe('the pools keep their contract', () => {
   });
 
   it('only writes the third houseguest into a scene that has one', () => {
-    // c exists only when the ending is 'smoothed' (and in a nomination speech,
-    // where it is the second nominee); a {c} anywhere else prints a raw slot
+    // c exists only where the scene always has one: the 'smoothed' friction
+    // ending, a nomination speech (the second nominee), and the talk families
+    // about somebody who is not in the room. Anywhere else an entry may only
+    // speak of c behind `when: { third: true }`; otherwise it prints a raw slot.
+    const WITH_C = [/\.smoothed$/, /^noms\.speech\./, /^talk\.(gossip|pitch-target|hoh-decide)\./];
     for (const [key, pool] of all) {
-      if (key.endsWith('.smoothed') || key.startsWith('noms.speech.')) continue;
+      if (WITH_C.some(re => re.test(key))) continue;
       for (const e of pool) {
+        if (e.when?.third === true) continue;
         const text = JSON.stringify(e.turns);
         expect(/\{c[}.]|"by":"c"/.test(text), `${key} ${e.id} speaks for a third houseguest who is not there`).toBe(false);
       }
@@ -70,7 +74,8 @@ describe('the pools keep their contract', () => {
 describe('the pools read for every houseguest', () => {
   it('never puts a verb that only agrees with he or she after a pronoun slot', () => {
     // "{b.sub} has" prints "they has" for a houseguest who uses they/them.
-    const bad = /\{[a-z]+\.[sS]ub\}('s|'d|\s+[a-z']*(s|'t)\b)/;
+    // ("{b.sub} didn't" and "{b.sub}'d" are fine: they agree with they.)
+    const bad = /\{[a-z]+\.[sS]ub\}('s\b|\s+(has|is|was|does|doesn't|isn't|wasn't|hasn't|[a-z]+[^s']s)\b)/;
     for (const [key, pool] of Object.entries(POOLS)) {
       for (const e of pool) for (const t of e.turns) {
         const text = t.say || t.dr || t.beat;

@@ -25,6 +25,7 @@ import {
   showmanceOf, willScheme, isNice, isVillainous, archetype, beatsInvolving, spotlightOrder,
 } from './_read.js';
 import { freshLine } from '../bb/aired.js';
+import { makeScene } from '../bb/script/scene.js';
 
 // ── helpers ───────────────────────────────────────────────────────────
 
@@ -194,45 +195,11 @@ const blowUp = {
       .concat(house.filter(n => house.some(m => bond(n, m) <= -2))));
     const a = _choose(hot, ctx, 'blow') || house[0];
     const b = furthestFrom(a, _others(house, a));
-    const p = pronouns(a);
     const pub = _others(house, a, b);
     const aStats = pStats(a);
     const aType = archetype(a);
     const volatile = aStats.temperament <= 3 || ['hothead', 'chaos-agent', 'villain'].includes(aType);
     const calculated = aStats.strategic >= 7 && aStats.temperament >= 4;
-    const text = _variant(volatile ? [
-      `${a} finds another one of ${b}'s dirty pans in the sink and carries it into the bedroom. ${b} tells ${a} to put it down. ${a} drops it on the floor instead.`,
-      `${b} interrupts ${a} during a group conversation. ${a} snaps, “You do that every time I talk,” and begins listing every example ${a} can remember.`,
-      `${a} hears that ${b} called ${pronouns(a).obj} difficult. ${a} storms into the kitchen and asks ${b} to repeat it in front of ${pronouns(a).obj}. ${b} does.`,
-      `${b} eats food ${a} had been saving. ${a} opens the empty container in front of the house and demands to know why ${b} never thinks about anyone else.`,
-      `${a} wakes up after another bad night and tells ${b} to stop whispering in the bedroom. ${b} laughs, and ${a} is out of bed before anyone can calm them down.`,
-      `${b} makes a joke about ${a}'s game in front of everyone. ${a} does not laugh. The second joke turns the backyard into a shouting match.`,
-      `${a} accuses ${b} of following them from room to room to break up conversations. ${b} calls that paranoid, which is the last quiet sentence either of them says.`,
-      `${b} tells ${a} to lower their voice. ${a} gets louder and asks why ${b} only has a problem when ${a} speaks.`,
-      `${a} finds out ${b} repeated something personal as part of a joke. ${a} confronts ${b} in the living room and refuses every attempt to call it harmless.`,
-      `${b} moves ${a}'s things off the bathroom counter again. ${a} dumps everything back, and an argument about space becomes an argument about respect.`,
-    ] : calculated ? [
-      `${a} waits until the whole alliance is together, then asks ${b} why three people heard three versions of the same plan. ${b} tries to leave; ${a} keeps asking.`,
-      `${a} confronts ${b} with the exact time and place of every conflicting promise. ${b} calls it an ambush, and the careful conversation becomes a loud one.`,
-      `${a} asks ${b} to explain a vote that does not match what they agreed. ${b} blames the house. ${a} names the people who say otherwise.`,
-      `${a} tells ${b} they have been caught playing both sides. ${b} denies it until ${a} calls two witnesses into the room.`,
-      `${a} begins the conversation calmly: “I want to give you a chance to tell me the truth.” ${b}'s first answer is a lie ${a} can disprove.`,
-      `${a} lays out why ${b}'s plan leaves them exposed. ${b} says ${a} is only angry because the plan was not theirs, and the argument turns personal.`,
-      `${a} asks ${b} whether their deal ever meant anything. ${b} gives a game answer to a personal question, and ${a} finally loses patience.`,
-      `${a} confronts ${b} about using their name as a backup target. ${b} calls it good strategy. ${a} asks whether humiliating an ally was strategy too.`,
-    ] : [
-      `${a} asks ${b} to wash the dishes they left in the sink. ${b} tells ${a} to stop ordering people around, and soon they are yelling about everything except dishes.`,
-      `${a} learns that ${b} left them out of another strategy meeting. ${b} says there was no meeting. Three people in the room know that is not true.`,
-      `${b} takes the bed beside the air conditioner after ${a} asked them not to. Neither will move, and the rest of the bedroom gets dragged into it.`,
-      `${a} asks why ${b} keeps leaving rooms whenever they enter. ${b} says they are imagining it. ${a} names the last four times.`,
-      `${b} complains that ${a} never helps clean. ${a} begins listing everything they did that morning while ${b} talks over them.`,
-      `${a} hears that ${b} has been calling them the easy vote. ${a} confronts ${b} at the kitchen table while everyone is still eating.`,
-      `${b} tells ${a} they are taking the game too personally. ${a} asks how being lied to by a friend is supposed to feel impersonal.`,
-      `${a} asks ${b} for a private conversation. ${b} refuses to leave the group, so ${a} says everything in front of them instead.`,
-      `${b} accuses ${a} of hiding food. ${a} opens every cupboard to prove otherwise, getting angrier with each door.`,
-      `${a} tries to clear up a rumor with ${b}. ${b} will not name the source, and ${a} decides that means ${b} started it.`,
-    ], ctx, a, b, aType, volatile ? 'volatile' : calculated ? 'calculated' : 'general');
-
     api.addBond(a, b, -2.6);
     api.setTarget(a, b, 'screamed at me in front of the whole house');
     api.setTarget(b, a, 'started it');
@@ -247,7 +214,10 @@ const blowUp = {
       if (bond(watcher, a) > bond(watcher, b)) api.addBond(watcher, b, -0.4);
       else if (bond(watcher, b) > bond(watcher, a)) api.addBond(watcher, a, -0.4);
     });
-    return { text, players: [a, b], badgeText: 'BLOW-UP', badgeClass: 'red' };
+    // Public by definition: the whole house is in the room for it.
+    const scene = makeScene('talk.confront', { a, b }, { ending: volatile ? 'volatile' : calculated ? 'calculated' : 'general' }, pub,
+      ['kitchen', 'living-room', 'backyard'][(a.length + b.length + (ctx?.week?.num || 0)) % 3]);
+    return { scene, players: [a, b], badgeText: 'BLOW-UP', badgeClass: 'red' };
   },
 };
 
@@ -302,22 +272,17 @@ const infoTrade = {
     // The intel is about whoever is currently the biggest threat in the room.
     const { a, b, subject } = _infoTrio(house, ctx);
 
-    const text = _variant([
-      `${a} tells ${b} exactly what ${subject} said and who else was in the room. ${b} asks them to repeat the wording before answering.`,
-      `“You didn't hear this from me,” ${a} says before telling ${b} what ${subject} has been saying. ${b} promises, then asks who else knows.`,
-      `${a} pulls ${b} into the storage room with new information about ${subject}. By dinner, both of them are quietly checking the story with other people.`,
-      `${a} tells ${b} what ${p_of(a)} heard about ${subject}. In return, ${b} shares where the vote stood that morning.`,
-    ], ctx, a, b, subject);
-
     api.addBond(a, b, 0.8);
     api.suspicion(b, subject, 1.4);
     api.remember(b, a, 'confidence', 1, { about: subject });
-    return { text, players: [a, b, subject], badgeText: 'INTEL TRADED', badgeClass: 'blue' };
+    // The subject is talked ABOUT: on the card, not in the room.
+    const scene = makeScene('talk.gossip', { a, b, c: subject }, { ending: 'traded' }, [],
+      ['pantry', 'bedroom', 'backyard'][(a.length + subject.length + (ctx?.week?.num || 0)) % 3]);
+    scene.seenBy = [a, b];
+    return { scene, players: [a, b, subject], badgeText: 'INTEL TRADED', badgeClass: 'blue' };
   },
 };
 
-// Small helper used inside a template above.
-function p_of(name) { return pronouns(name).sub; }
 
 const rumour = {
   id: 'social-rumour',
@@ -481,18 +446,12 @@ const comfortOnTheBlock = {
     const kind = _leastSeen(house.filter(n => !noms.includes(n) && (isNice(n) || pStats(n).loyalty >= 7)));
     const helper = _choose(kind, ctx, 'comfort') || kind[0];
     const nominee = noms.sort((a, b) => bond(helper, b) - bond(helper, a))[0];
-    const p = pronouns(nominee);
-    const text = _variant([
-      `${helper} sits beside ${nominee} after the ceremony and asks if they want company. ${pronouns(helper).Sub} stays even when ${nominee} does not feel like talking.`,
-      `“You don't have to pretend you're okay with me,” ${helper} tells ${nominee}. ${nominee} finally admits how scared ${pronouns(nominee).sub} ${pronouns(nominee).sub === 'they' ? 'are' : 'is'}.`,
-      `${helper} makes ${nominee} a cup of tea and brings it to the bedroom. They talk about anything except votes until ${nominee} feels ready to get up.`,
-      `${helper} finds ${nominee} alone in the backyard and sits beside ${p.obj}. ${helper} listens while ${nominee} talks through the ceremony.`,
-    ], ctx, helper, nominee);
-
     api.addBond(helper, nominee, 1.9);
     api.remember(nominee, helper, 'kindness', 3, { when: 'on the block' });
     api.popDelta(helper, 1);
-    return { text, players: [helper, nominee], badgeText: 'KINDNESS', badgeClass: 'green' };
+    const scene = makeScene('talk.comfort', { a: helper, b: nominee }, { ending: 'kind' }, [],
+      ['backyard', 'bedroom'][(helper.length + (ctx?.week?.num || 0)) % 2]);
+    return { scene, players: [helper, nominee], badgeText: 'KINDNESS', badgeClass: 'green' };
   },
 };
 

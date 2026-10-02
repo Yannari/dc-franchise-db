@@ -83,6 +83,70 @@ export default {
       { by: 'a', say: "I can't believe it. Guys, I can't believe it." },
       { by: 'a', dr: "I hate this part already. I'm going to have to look two people in the eye and put them on the block." },
     ] },
+    { id: 'hw.a15', turns: [
+      { by: 'a', say: "Somebody get me a towel. And the key. Mostly the key." },
+      { by: 'a', dr: "That room upstairs is mine for a week. The bed, the snacks, the shower with actual pressure. And the nominations." },
+    ] },
+    { id: 'hw.a16', turns: [
+      { by: 'a', say: "Is it real? Somebody pinch me. Not you. Somebody nice." },
+      { by: 'a', dr: "I know exactly who just started being nervous. I watched their faces when they called my name." },
+    ] },
+    { id: 'hw.a17', turns: [
+      { beat: '{a} punches the air, then remembers the cameras and tries to look humble.' },
+      { by: 'a', dr: "Humble lasted about four seconds. I'm Head of Household. I'm allowed a little bit of a strut." },
+    ] },
+    { id: 'hw.a18', turns: [
+      { by: 'a', say: "Group hug! Everybody! Even the people who look worried!" },
+      { by: 'a', dr: "Especially the people who look worried. I want them close, where I can see them." },
+    ] },
+    { id: 'hw.rs1', when: { register: 'schemer' }, turns: [
+      { by: 'a', say: "Oh, don't look so scared, everybody. I'm sure I'll be very fair." },
+      { by: 'a', dr: "I already know who's going up. I knew before I'd stopped running. Now I get to watch them come up the stairs and beg." },
+    ] },
+    { id: 'hw.rs2', when: { register: 'schemer' }, turns: [
+      { beat: '{a} smiles at the room, slowly, one face at a time.' },
+      { by: 'a', dr: "Power suits me. I've always thought so. Now everybody else gets to find out." },
+    ] },
+    { id: 'hw.rf1', when: { register: 'fiery' }, turns: [
+      { by: 'a', say: "YES! LET'S GO! WHO'S LAUGHING NOW?" },
+      { by: 'a', dr: "Every single person who talked down to me this week, I hope you enjoyed it. Because the ride's over." },
+    ] },
+    { id: 'hw.rf2', when: { register: 'fiery' }, turns: [
+      { by: 'a', say: "Don't come near me, I'm shaking! I'm SHAKING!" },
+      { by: 'a', dr: "I've been angry all week. Now I've got the keys. That's a very dangerous combination, and I love it." },
+    ] },
+    { id: 'hw.ry1', when: { register: 'shy' }, turns: [
+      { by: 'a', say: "Oh. Oh no. Wait, I won? Me?" },
+      { by: 'a', dr: "I've been invisible for weeks, and that was the plan. I don't think I'm invisible any more." },
+    ] },
+    { id: 'hw.ry2', when: { register: 'shy' }, turns: [
+      { beat: '{a} covers {a.posAdj} face with both hands while the house claps.' },
+      { by: 'a', dr: "Everybody looking at me at once is my worst nightmare. And now they'll be looking at me all week." },
+    ] },
+    { id: 'hw.rw1', when: { register: 'sweet' }, turns: [
+      { by: 'a', say: "I'm so sorry. I'm sorry! I'm so happy, but I'm sorry!" },
+      { by: 'a', dr: "I want to celebrate, I really do. But in five days I have to hurt two people I like, and I can already feel it." },
+    ] },
+    { id: 'hw.rw2', when: { register: 'sweet' }, turns: [
+      { by: 'a', say: "Everybody's coming up to see the room. Everybody. I mean it." },
+      { by: 'a', dr: "Some people use the HOH room to scare the house. I'd rather use it to make friends. Mostly." },
+    ] },
+    { id: 'hw.rc1', when: { register: 'competitor' }, turns: [
+      { by: 'a', say: "That's how you do it! Did everyone see my time?" },
+      { by: 'a', dr: "People said I was all muscle and no plan. The plan was to win. Look at that." },
+    ] },
+    { id: 'hw.rc2', when: { register: 'competitor' }, turns: [
+      { by: 'a', say: "I trained my whole life for this. Well. Not this exactly. But this!" },
+      { by: 'a', dr: "Competitions are where I'm comfortable. The talking afterwards is the part I have to work at." },
+    ] },
+    { id: 'hw.rk1', when: { register: 'cool' }, turns: [
+      { by: 'a', say: "Thanks, everyone. Really." },
+      { by: 'a', dr: "I didn't scream. I didn't cry. I just watched who clapped first and who clapped last. That's the real information." },
+    ] },
+    { id: 'hw.rk2', when: { register: 'cool' }, turns: [
+      { beat: '{a} smiles, nods, and says almost nothing.' },
+      { by: 'a', dr: "The win is the easy part. The next five days are the game." },
+    ] },
   ],
   'hoh.win.first': [
     { id: 'hw.f1', turns: [
@@ -356,6 +420,26 @@ export default {
     { id: 'nd.a12', turns: [{ by: 'a', dr: "There's a chair in the living room with my name on it now. I'd like it to have somebody else's by Monday." }] },
     { id: 'nd.a13', when: { late: true }, turns: [{ by: 'a', dr: "This close to the end, every week on the block could be the one. I didn't get this far to leave now." }] },
     { id: 'nd.a14', when: { early: true }, turns: [{ by: 'a', dr: "Nominated in the first days. Nobody even knows me yet. I'm going to have to make them, fast." }] },
+    { id: 'nd.a15', turns: [{ by: 'a', dr: "I keep looking at that screen and thinking it's a mistake. It's not a mistake. It's my face." }] },
+    { id: 'nd.a16', turns: [{ by: 'a', dr: "The worst part isn't the block. It's the hug from {b} afterwards. Don't hug me. Just don't." }] },
+    { id: 'nd.a17', turns: [{ by: 'a', dr: "I've got four days to change about six minds. I've done harder things. I think." }] },
+    { id: 'nd.a18', turns: [{ by: 'a', dr: "Okay. Deep breath. Nobody wins this game without sitting in that chair at least once." }] },
+    { id: 'nd.a19', turns: [{ by: 'a', dr: "{b} looked at everybody at that table except me. That told me everything." }] },
+    { id: 'nd.a20', turns: [{ by: 'a', dr: "I'm going to be the nicest, most helpful, most charming person in this house for the next four days. And then I'm getting revenge." }] },
+    { id: 'nd.a21', turns: [{ by: 'a', dr: "My name. On the screen. In front of everyone. I need a minute." }] },
+    { id: 'nd.a22', turns: [{ by: 'a', dr: "Everyone keeps saying \"you'll be fine\". Nobody who's actually fine has ever been told they'll be fine." }] },
+    { id: 'nd.rs1', when: { register: 'schemer' }, turns: [{ by: 'a', dr: "{b} thinks putting me up was a power move. It was a mistake. {b} just doesn't know it yet." }] },
+    { id: 'nd.rs2', when: { register: 'schemer' }, turns: [{ by: 'a', dr: "Fine. I'm on the block. I've got four days and a list of everyone's secrets. Let's see who blinks first." }] },
+    { id: 'nd.rf1', when: { register: 'fiery' }, turns: [{ by: 'a', dr: "I wanted to flip the table. I didn't. Somebody give me a medal for that." }] },
+    { id: 'nd.rf2', when: { register: 'fiery' }, turns: [{ by: 'a', dr: "{b} put me up and then had the nerve to look sad about it? Don't look sad. Own it!" }] },
+    { id: 'nd.ry1', when: { register: 'shy' }, turns: [{ by: 'a', dr: "I kept my head down so this wouldn't happen. Turns out keeping your head down just makes you easy to put up." }] },
+    { id: 'nd.ry2', when: { register: 'shy' }, turns: [{ by: 'a', dr: "Now I have to go and talk to everybody. Talking to everybody is the thing I'm worst at. Brilliant." }] },
+    { id: 'nd.rw1', when: { register: 'sweet' }, turns: [{ by: 'a', dr: "I've been nice to everyone in this house. Every single person. And it still got me here." }] },
+    { id: 'nd.rw2', when: { register: 'sweet' }, turns: [{ by: 'a', dr: "I'm not angry with {b}. I'm hurt. Which is worse, honestly, because I can't even shout about it." }] },
+    { id: 'nd.rc1', when: { register: 'competitor' }, turns: [{ by: 'a', dr: "On the block means one thing to me. Win the veto. That's it. That's the whole plan." }] },
+    { id: 'nd.rc2', when: { register: 'competitor' }, turns: [{ by: 'a', dr: "{b} put up the person most likely to win the veto. Bold. Let's see how that works out." }] },
+    { id: 'nd.rk1', when: { register: 'cool' }, turns: [{ by: 'a', dr: "I'm not going to panic. Panicking is how people go home from this chair. I'm going to count." }] },
+    { id: 'nd.rk2', when: { register: 'cool' }, turns: [{ by: 'a', dr: "I saw this coming three days ago. That's why I already know who I'm talking to first." }] },
   ],
   'noms.dr.pawn': [
     { id: 'nd.p1', turns: [{ by: 'a', dr: "{b} says I'm a pawn. Every pawn in Big Brother history has heard that sentence. Some of them went home." }] },
@@ -423,6 +507,70 @@ export default {
     { id: 'vw.a10', when: { late: true }, turns: [
       { by: 'a', say: 'This is the most important one I could have won. This one!' },
       { by: 'a', dr: 'This late in the game, the veto decides who sits in those two chairs. I just decided it.' },
+    ] },
+    { id: 'vw.a11', turns: [
+      { by: 'a', say: "Mine! It's mine!" },
+      { by: 'a', dr: "Every person in this house is about to want to have a quiet word with me. I'm going to enjoy every single one." },
+    ] },
+    { id: 'vw.a12', turns: [
+      { beat: '{a} holds the medallion so tightly the knuckles go white.' },
+      { by: 'a', dr: "I'm not letting go of this thing until the meeting. I'll sleep with it if I have to." },
+    ] },
+    { id: 'vw.a13', turns: [
+      { by: 'a', say: "Somebody's week just got a lot more interesting." },
+      { by: 'a', dr: "Use it, don't use it. Either way, I'm the most popular person in the house until Monday." },
+    ] },
+    { id: 'vw.a14', turns: [
+      { by: 'a', say: "Okay. Okay. I need to sit down. Where's a chair?" },
+      { by: 'a', dr: "I've never won anything that mattered this much. Now I have to decide what to do with it, and that's the scary part." },
+    ] },
+    { id: 'vw.rs1', when: { register: 'schemer' }, turns: [
+      { by: 'a', say: "Well. Isn't this interesting." },
+      { by: 'a', dr: "Everybody on that block is going to be my very best friend for three days. I'm going to let them." },
+    ] },
+    { id: 'vw.rs2', when: { register: 'schemer' }, turns: [
+      { beat: '{a} spins the medallion on one finger, watching the nominees.' },
+      { by: 'a', dr: "I don't need to use it to win this week. I just need everybody to think I might." },
+    ] },
+    { id: 'vw.rf1', when: { register: 'fiery' }, turns: [
+      { by: 'a', say: "THAT'S MINE! NOBODY TOUCH IT!" },
+      { by: 'a', dr: "Some people in this house wanted me to lose that very, very badly. I hope they're watching me wear it." },
+    ] },
+    { id: 'vw.rf2', when: { register: 'fiery' }, turns: [
+      { by: 'a', say: "Told you! I TOLD you!" },
+      { by: 'a', dr: "I don't know who I told. Everyone, probably. I'm right, though." },
+    ] },
+    { id: 'vw.ry1', when: { register: 'shy' }, turns: [
+      { by: 'a', say: "Um. Did I... did I win?" },
+      { by: 'a', dr: "I've never had anybody want something from me in here. Now everybody does. It's a lot." },
+    ] },
+    { id: 'vw.ry2', when: { register: 'shy' }, turns: [
+      { beat: '{a} holds the medallion as if it might break.' },
+      { by: 'a', dr: "I don't really like being the centre of attention. This necklace is very much the centre of attention." },
+    ] },
+    { id: 'vw.rw1', when: { register: 'sweet' }, turns: [
+      { by: 'a', say: "I did it! Oh my gosh, I actually did it!" },
+      { by: 'a', dr: "If I can use this to save somebody I care about, that's the best thing that could happen to me this week." },
+    ] },
+    { id: 'vw.rw2', when: { register: 'sweet' }, turns: [
+      { by: 'a', say: "Guys, come here, everybody hug!" },
+      { by: 'a', dr: "I know I should be thinking strategy. I'm thinking about whose face is going to light up if I use it." },
+    ] },
+    { id: 'vw.rc1', when: { register: 'competitor' }, turns: [
+      { by: 'a', say: "Another one for the collection!" },
+      { by: 'a', dr: "Put me in a competition and I'll win it. Put me in a conversation and I'll figure it out. Eventually." },
+    ] },
+    { id: 'vw.rc2', when: { register: 'competitor' }, turns: [
+      { by: 'a', say: "Was that close? It didn't feel close." },
+      { by: 'a', dr: "I love this part. Everybody stops pretending I'm not a threat." },
+    ] },
+    { id: 'vw.rk1', when: { register: 'cool' }, turns: [
+      { by: 'a', say: "Good game, everybody." },
+      { by: 'a', dr: "Using it, not using it, I don't decide tonight. I decide after I've heard every single person out." },
+    ] },
+    { id: 'vw.rk2', when: { register: 'cool' }, turns: [
+      { beat: '{a} puts the medallion on without a word and walks inside.' },
+      { by: 'a', dr: "The less excited I look, the less anybody can read what I'm going to do with it." },
     ] },
   ],
   'veto.win.self': [
@@ -493,6 +641,18 @@ export default {
     { id: 'vp.a10', turns: [{ by: 'a', say: "Please. I'm asking. I don't ask for much in here." }] },
     { id: 'vp.a11', when: { late: true }, turns: [{ by: 'a', say: "{b}, there are so few of us left. Take me off, and I'll remember it all the way to the end." }] },
     { id: 'vp.a12', turns: [{ by: 'a', say: "Whatever happens, {b}, congratulations on the veto. You earned it. I'd love it if you used it on me." }] },
+    { id: 'vp.rs1', when: { register: 'schemer' }, turns: [{ by: 'a', say: "Use it on me, {b}, and I'll make sure you never regret it. You know I keep track of my friends." }] },
+    { id: 'vp.rs2', when: { register: 'schemer' }, turns: [{ by: 'a', say: "Think about who's going up if I come down. Now think about whether that helps you. I think it does." }] },
+    { id: 'vp.rf1', when: { register: 'fiery' }, turns: [{ by: 'a', say: "I'm not going to stand here and grovel. Use it on me or don't, {b}, but don't pretend it's a hard choice." }] },
+    { id: 'vp.rf2', when: { register: 'fiery' }, turns: [{ by: 'a', say: "I've been straight with you, maybe too straight. That's who I am. Take it or leave it." }] },
+    { id: 'vp.ry1', when: { register: 'shy' }, turns: [{ by: 'a', say: "I'm not great at speeches. I'd just really like to stay, {b}. That's all." }] },
+    { id: 'vp.ry2', when: { register: 'shy' }, turns: [{ by: 'a', say: "I know I haven't talked to you as much as other people have. I'd like the chance to." }] },
+    { id: 'vp.rw1', when: { register: 'sweet' }, turns: [{ by: 'a', say: "Whatever you decide, I'll still be your friend tomorrow. I just hope I'm your friend who's off the block." }] },
+    { id: 'vp.rw2', when: { register: 'sweet' }, turns: [{ by: 'a', say: "{b}, I love you to bits. Please, please use it on me." }] },
+    { id: 'vp.rc1', when: { register: 'competitor' }, turns: [{ by: 'a', say: "Take me off and I'll win the next one for both of us. You've seen me compete." }] },
+    { id: 'vp.rc2', when: { register: 'competitor' }, turns: [{ by: 'a', say: "I'd rather be beaten in a competition than voted out on a Thursday. Give me the chance to compete, {b}." }] },
+    { id: 'vp.rk1', when: { register: 'cool' }, turns: [{ by: 'a', say: "Here's the maths, {b}. Pull me down and you gain an ally. Leave me up and you gain nothing." }] },
+    { id: 'vp.rk2', when: { register: 'cool' }, turns: [{ by: 'a', say: "I won't waste your time. You already know what I'd do with another week. Use it on me." }] },
   ],
   'veto.plea.friends': [
     { id: 'vp.f1', turns: [{ by: 'a', say: "You know where I stand with you. Use it on me and I won't forget it." }] },
@@ -536,6 +696,9 @@ export default {
     { id: 'vd.u6', turns: [{ by: 'a', dr: "This veto is my chance to change the week. Keeping things the same doesn't help my game. Saving {b} does." }] },
     { id: 'vd.u7', turns: [{ by: 'a', dr: "I've gone back and forth all night. I keep landing in the same place. {b} comes off." }] },
     { id: 'vd.u8', turns: [{ by: 'a', dr: "Everybody thinks I'm going to sit on it. They're about to find out I'm not as predictable as they think." }] },
+    { id: 'vd.u9', turns: [{ by: 'a', dr: "{b} would do the same for me. I'm sure of that. Almost sure. Sure enough." }] },
+    { id: 'vd.u10', turns: [{ by: 'a', dr: "If I leave {b} up there and {b} goes home, I'll never forgive myself. So {b} comes down." }] },
+    { id: 'vd.u11', turns: [{ by: 'a', dr: "I've done the maths. Pulling {b} down gives us the votes. Leaving {b} up there doesn't." }] },
   ],
   'veto.dr.self': [
     { id: 'vd.s1', turns: [{ by: 'a', dr: "Easiest decision I'll ever make in this house. I'm taking myself off that block." }] },
@@ -554,6 +717,9 @@ export default {
     { id: 'vd.k6', turns: [{ by: 'a', dr: "{b} and I aren't close enough for me to take that risk. Maybe next week. Not this week." }] },
     { id: 'vd.k7', turns: [{ by: 'a', dr: "If I use it, somebody on that couch takes the seat, and every one of them has been nice to me this week. Nominations stay as they are." }] },
     { id: 'vd.k8', turns: [{ by: 'a', dr: "I'm going to let {b} make the speech, I'm going to nod, and I'm going to keep the veto right where it is." }] },
+    { id: 'vd.k9', turns: [{ by: 'a', dr: "If I pull {b} down, I'm the one the house blames for whoever goes up. Not this week." }] },
+    { id: 'vd.k10', turns: [{ by: 'a', dr: "The safest thing I can do is nothing. In this house, nothing is a move too." }] },
+    { id: 'vd.k11', turns: [{ by: 'a', dr: "{b} has a good speech ready. I've heard it in my head all night. The answer's still no." }] },
   ],
 
   // ── the replacement nominee, in the Diary Room ─────────────────────
@@ -629,6 +795,58 @@ export default {
     { id: 'eg.a12', turns: [
       { by: 'a', say: "That's it. That's my game. I'm proud of it." },
       { beat: 'Nobody says anything. {b} squeezes {a.posAdj} hand.' },
+    ] },
+    { id: 'eg.rs1', when: { register: 'schemer' }, turns: [
+      { by: 'a', say: "Well played. Truly. I'd have done the same thing." },
+      { by: 'a', say: "{b}, watch them. All of them." },
+    ] },
+    { id: 'eg.rs2', when: { register: 'schemer' }, turns: [
+      { beat: '{a} hugs the house goodbye, and whispers something in every ear.' },
+      { by: 'b', say: "What did you say to everyone?" },
+      { by: 'a', say: "Something different each time. Have fun." },
+    ] },
+    { id: 'eg.rf1', when: { register: 'fiery' }, turns: [
+      { by: 'a', say: "Don't hug me if you voted me out. I mean it!" },
+      { beat: 'About half the room steps back.' },
+      { by: 'b', say: "I'm still hugging you." },
+    ] },
+    { id: 'eg.rf2', when: { register: 'fiery' }, turns: [
+      { by: 'a', say: "Fine! I'm going! But I'm going LOUD!" },
+      { by: 'b', say: "We'd expect nothing less." },
+    ] },
+    { id: 'eg.ry1', when: { register: 'shy' }, turns: [
+      { by: 'a', say: "Um. Bye, everyone. Thanks for... yeah. Thanks." },
+      { by: 'b', say: "Come here, you." },
+    ] },
+    { id: 'eg.ry2', when: { register: 'shy' }, turns: [
+      { beat: '{a} gives a small wave from the hallway instead of a speech.' },
+      { by: 'b', say: "That's it? No speech?" },
+      { by: 'a', say: "That was the speech." },
+    ] },
+    { id: 'eg.rw1', when: { register: 'sweet' }, turns: [
+      { by: 'a', say: "I love every single one of you. Even you. Especially you." },
+      { by: 'b', say: "Stop it, you're going to make us all cry." },
+      { by: 'a', say: "Good! Cry! It's healthy!" },
+    ] },
+    { id: 'eg.rw2', when: { register: 'sweet' }, turns: [
+      { by: 'a', say: "No hard feelings. Honestly. Look after each other in here." },
+      { by: 'b', say: "We will. I promise." },
+    ] },
+    { id: 'eg.rc1', when: { register: 'competitor' }, turns: [
+      { by: 'a', say: "I'd have won the next one. You all know I would have." },
+      { by: 'b', say: "That's exactly why you're leaving." },
+      { by: 'a', say: "...Fair enough." },
+    ] },
+    { id: 'eg.rc2', when: { register: 'competitor' }, turns: [
+      { by: 'a', say: "Somebody win an HOH for me. {b}, I'm looking at you." },
+      { by: 'b', say: "I'll win one in your name." },
+    ] },
+    { id: 'eg.rk1', when: { register: 'cool' }, turns: [
+      { by: 'a', say: "I knew the numbers. I just hoped they'd change. They didn't. Good game, everyone." },
+    ] },
+    { id: 'eg.rk2', when: { register: 'cool' }, turns: [
+      { by: 'a', say: "It's a game. It was a good one. I'll see you all on the other side." },
+      { beat: '{a} shakes hands down the line, calm to the last one.' },
     ] },
   ],
   'evict.goodbye.blindsided': [

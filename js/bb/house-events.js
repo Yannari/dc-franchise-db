@@ -9,6 +9,7 @@ import { isDrinksNight, nightModifier } from '../bb-events/drinks-night.js';
 import { scheduleWeightedEvents } from '../event-scheduler.js';
 import { markAired } from './aired.js';
 import { writeScene } from './script/write.js';
+import { stableRng } from './knowledge.js';
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
@@ -507,7 +508,12 @@ export function scheduleHouseBeats(events, house, ctx, options = {}) {
       // transcript fills `text` so every screen that prints text still works.
       let raw = event.fire(house, beatCtx, api, rngArg);
       if (raw && raw.scene && !raw.text) {
-        const written = writeScene(raw.scene, beatCtx, rngArg || Math.random);
+        // The words draw from their OWN dice, never the scheduler's: converting
+        // an event from prose to a script must not move a single later draw,
+        // or the season after it changes (tests/bb-talk.test.js plays a season
+        // with the words muted and holds every event and outcome to it).
+        const words = stableRng(gs.bb?.seasonSalt || 0, ctx.week?.num || 0, ctx.act || '', meta.index, event.id);
+        const written = writeScene(raw.scene, beatCtx, words);
         raw = { ...raw, text: written.text, lines: written.lines, lineId: written.lineId, location: raw.location || raw.scene.room || undefined };
       }
       const result = validateBeat(event, raw, beatCtx);

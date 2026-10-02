@@ -142,6 +142,18 @@ describe('the visit and the meet', () => {
   });
 });
 
+describe('the shared sets', () => {
+  // the Hangout, the finale lounge and the finale studio are Blender renders
+  // (tools/blender/circle-sets.py), drawn behind each screen's UI
+  it('each screen stands in its own set', () => {
+    for (const [kind, set] of [['hangout', 'hangout'], ['meet', 'lounge'], ['reveal', 'studio']]) {
+      const xs = of(kind);
+      expect(xs.length, kind).toBeGreaterThan(0);
+      for (const x of xs) expect(at(x, 0).querySelector('img.civ-set.full')?.getAttribute('src'), kind).toBe(`assets/sets/circle/${set}.webp`);
+    }
+  });
+});
+
 describe('the goodbye video', () => {
   it('the video waits for play; then the real face plays', () => {
     for (const x of of('goodbye')) {

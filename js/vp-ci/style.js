@@ -107,6 +107,9 @@ export const CIV_CSS = `
 .civ-win .who{position:absolute;left:.5cqw;bottom:.4cqw;font-weight:700;font-size:.8cqw;letter-spacing:.1em;background:rgba(0,0,0,.55);padding:.2cqw .5cqw;border-radius:.3cqw}
 /* apartments */
 .civ-set{position:absolute;max-width:none;object-fit:cover}
+.civ-set.full{inset:0;width:100%;height:100%}
+/* the Hangout, earlier: the same room, faded warm and soft */
+.civ-set.fbk{filter:sepia(.55) saturate(.7) brightness(.75) blur(.15cqw)}
 .civ-room{position:absolute;inset:0;transition:transform 2.6s cubic-bezier(.3,.1,.2,1);transform-origin:50% 30%}
 .civ-apt.push .civ-room{transform:scale(1.1) translateY(2%)}
 .civ-tvset{position:absolute;left:30%;width:44%;top:9%;aspect-ratio:16/9;border-radius:.5cqw;border:.45cqw solid #0c0c10;background:#000;overflow:hidden;box-shadow:0 0 0 1px #222,0 0 5cqw var(--bias,#3fd8ff),0 0 12cqw var(--bias,#3fd8ff);container-type:inline-size}
@@ -248,6 +251,8 @@ export const CIV_CSS = `
 .civ-hcam.L{left:3%;transform:perspective(60cqw) rotateY(14deg)}.civ-hcam.R{right:3%;transform:perspective(60cqw) rotateY(-14deg)}.civ-hcam.M{left:50%;margin-left:-8cqw;width:16cqw;top:3%}
 .civ-hcam.talk .civ-mcam{box-shadow:0 0 0 .4cqw rgba(255,210,63,.6),0 0 4cqw var(--glow,#3fd8ff)}
 .civ-atrisk{position:absolute;left:28%;right:28%;top:15%;bottom:28%;z-index:5;display:flex;flex-direction:column;gap:.6cqw}
+/* on the Hangout's LED wall (assets/sets/circle/hangout.webp) */
+.civ-hangout .civ-atrisk{left:32.5%;right:32.5%;top:17%;bottom:44%}
 .civ-atrisk .hd{text-align:center;font-weight:900;font-size:1.1cqw;letter-spacing:.22em;color:#ff8fb0}
 .civ-atrisk .grid{display:grid;grid-template-columns:1fr 1fr;gap:.6cqw}
 .civ-mtile.keep{opacity:.55}.civ-mtile.cut{background:rgba(255,42,74,.28);box-shadow:0 0 1.4cqw rgba(255,42,74,.5)}
@@ -271,27 +276,12 @@ export const CIV_CSS = `
 .civ-slam small{font-weight:800;font-size:2.4cqw;letter-spacing:.3em}
 @keyframes civSlamOut{0%,70%{opacity:1;background:rgba(20,0,6,.93)}100%{opacity:0;background:transparent}}
 .civ-flash.red{background:#ff2a4a;animation:civFlash .5s .35s}
-/* a real room: the hallway, the door, face to face */
-.civ-hall,.civ-room2{background:#120d0a}
-.civ-corridor{position:absolute;inset:0;background:linear-gradient(180deg,#2a2018 0 12%,#e8dcc4 12% 16%,#3a2c22 16%),linear-gradient(90deg,#1a120c,#4a3a2c 50%,#1a120c);background-blend-mode:multiply;perspective:40cqw}
-.civ-corridor:before{content:"";position:absolute;left:30%;right:30%;top:20%;bottom:10%;background:radial-gradient(ellipse at 50% 30%,#ffe9b8,#c49a5a 40%,#2a1c10 80%);filter:blur(2px);opacity:.8}
-.civ-corridor i{position:absolute;top:24%;bottom:14%;width:9%;border-radius:.4cqw .4cqw 0 0;background:linear-gradient(#6a4a2e,#3a2616);box-shadow:inset 0 0 0 .3cqw #8a6a44}
-.civ-corridor i:nth-child(1){left:6%}.civ-corridor i:nth-child(2){left:19%;transform:scale(.85)}.civ-corridor i:nth-child(3){right:19%;transform:scale(.85)}.civ-corridor i:nth-child(4){right:6%}
-.civ-hall.walking .civ-corridor{animation:civWalk 6s ease-out both}
-@keyframes civWalk{from{transform:scale(1.25)}to{transform:scale(1)}}
-.civ-waits{position:absolute;left:4%;right:4%;top:14%;display:flex;justify-content:center;gap:1.4cqw;z-index:6}
-.civ-waits .civ-mcam{width:14cqw;opacity:.6;transition:all .35s}.civ-waits .civ-mcam.now{opacity:1;transform:scale(1.12)}
-.civ-knock{position:absolute;left:0;right:0;top:48%;text-align:center;font-weight:900;font-size:2.4cqw;letter-spacing:.2em;color:#ffe9b8;text-transform:uppercase;text-shadow:0 0 2cqw rgba(255,200,120,.6);animation:civPulse 1.6s infinite}
-.civ-realroom{position:absolute;inset:0;background:linear-gradient(180deg,#3b2a20 0 70%,#1f1510 70%),radial-gradient(ellipse at 50% 20%,rgba(255,220,160,.5),transparent 60%);background-blend-mode:screen}
-.civ-realroom.lounge{background:linear-gradient(180deg,#1d1840 0 68%,#0d0a20 68%),radial-gradient(ellipse at 50% 10%,rgba(139,92,255,.6),transparent 60%);background-blend-mode:screen}
-.civ-door{position:absolute;top:8%;bottom:30%;width:50%;background:linear-gradient(#6a4a2e,#3a2616);box-shadow:inset 0 0 0 .4cqw #8a6a44;z-index:9;transform:translateX(-100%);opacity:0}
-.civ-door.L{left:0}.civ-door.R{right:0;transform:translateX(100%)}
-.civ-room2.open .civ-door{animation:civDoor 1.3s cubic-bezier(.6,0,.3,1) both}
-.civ-room2.open .civ-door.R{animation-name:civDoorR}
-@keyframes civDoor{0%{transform:none;opacity:1}100%{transform:translateX(-100%);opacity:1}}
-@keyframes civDoorR{0%{transform:none;opacity:1}100%{transform:translateX(100%);opacity:1}}
+/* a real room: the finale meet */
+.civ-room2{background:#120d0a}
 .civ-two{position:absolute;left:8%;right:8%;top:11%;display:flex;justify-content:center;gap:5cqw;z-index:6}
 .civ-two.many{gap:1.6cqw;left:3%;right:3%}
+/* the finalists sit on the lounge's long sofa (assets/sets/circle/lounge.webp) */
+.civ-room2.lounge .civ-two{top:22%}
 .civ-person{display:flex;flex-direction:column;align-items:center;gap:.6cqw;width:24cqw;transition:transform .35s}
 .civ-two.many .civ-person{width:15cqw}
 .civ-person .civ-mcam{width:100%}
@@ -316,7 +306,6 @@ export const CIV_CSS = `
 .civ-vidcard .ph{width:10cqw;aspect-ratio:1;border-radius:50%;background:#1b1f45 center 25%/cover;border:.3cqw solid #fff;display:grid;place-items:center;font-weight:900;font-size:4cqw}
 .civ-play{width:5cqw;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;font-size:2cqw;background:linear-gradient(135deg,var(--bl),var(--pk));box-shadow:0 0 3cqw rgba(255,79,180,.6);animation:civPulse 1.4s infinite}
 /* the finale studio */
-.civ-studiobg{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,#3a2a8a,#120f3a 45%,#05040f 80%),repeating-linear-gradient(90deg,rgba(255,255,255,.03) 0 2px,transparent 2px 8cqw)}
 .civ-board.studio{left:50%;right:auto;width:44%;margin-left:-22%;top:9%;bottom:auto}
 .civ-aka{font-weight:700;font-size:.85cqw;color:#ff9fd6;white-space:nowrap}
 .civ-couch{position:absolute;left:3%;right:3%;bottom:23%;display:flex;justify-content:center;gap:1.4cqw;z-index:6}

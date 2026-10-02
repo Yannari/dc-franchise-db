@@ -17,7 +17,7 @@
 //   video   — the goodbye video on the TV, the real face behind the profile.
 //   studio  — the finale: the couch, the board from last place to the winner.
 import { faceOf } from './steps.js';
-import { esc, hashify, faceUrl, ringOf, nameOf, realOf, isCatfish, bg, aptNo, captionHtml, dlg, cam, tile, where, upTo, speakerAt, bgUi } from './parts.js';
+import { esc, hashify, faceUrl, ringOf, nameOf, realOf, isCatfish, bg, aptNo, captionHtml, dlg, cam, tile, where, upTo, speakerAt, bgUi, setImg } from './parts.js';
 import { gameStage } from './boards.js';
 import { visitStage } from './visit-stage.js';
 import { voteStage } from './vote-stage.js';
@@ -95,7 +95,7 @@ function hangoutStage(row, screen, idx, fresh) {
     const cls = [v === 'keep' ? 'keep' : v === 'cut' ? 'cut' : '', h === current ? 'talk' : '', h === decided ? 'doomed' : ''].join(' ');
     return tile(row, h, cls, v ? `<span class="civ-verdict">${v === 'keep' ? '✓ SAFE' : '✗ ON THE TABLE'}</span>` : '');
   }).join('');
-  return `<div class="civ-layer civ-hangout">${bgUi}${cams}
+  return `<div class="civ-layer civ-hangout">${setImg('hangout')}${cams}
     <div class="civ-atrisk"><div class="hd">${sealed ? "THEY'VE DECIDED" : 'AT RISK'}</div><div class="grid">${tiles}</div></div>
     ${where(infl.length > 1 ? 'THE HANGOUT · INFLUENCERS ONLY' : 'THE INFLUENCER DECIDES')}${dlg(row, st, fresh)}</div>`;
 }
@@ -155,7 +155,7 @@ function flashbackStage(row, screen, idx, fresh, st) {
   const talking = st.who || speakerAt(screen, idx);
   const cams = (d.by || []).slice(0, 3).map((h, i) => `<div class="civ-fbcam ${i === 0 ? 'L' : i === 1 ? 'R' : 'M'}${h === talking ? ' talk' : ''}">${cam(row, h, '', `INFLUENCER · ${realOf(row, h).toUpperCase()}`)}</div>`).join('');
   const why = WHY[d.reason] || '';
-  return `<div class="civ-layer civ-fbk${opening ? ' open' : ''}"><div class="civ-fbk-bg"></div><div class="civ-fbk-grain"></div>
+  return `<div class="civ-layer civ-fbk${opening ? ' open' : ''}">${setImg('hangout', 'fbk')}<div class="civ-fbk-grain"></div>
     <div class="civ-fbk-band">EARLIER<b>IN THE HANGOUT</b></div>${cams}
     <div class="civ-fbk-mid"><div class="lbl">THEY SETTLED ON</div><div class="nm">${esc(nameOf(row, d.target).toUpperCase())}</div>${why ? `<div class="why">${why}</div>` : ''}</div>
     <div class="civ-fbk-vig"></div>${opening ? '<div class="civ-fbk-flash"></div>' : ''}
@@ -163,34 +163,11 @@ function flashbackStage(row, screen, idx, fresh, st) {
 }
 
 // ── A REAL ROOM: the visit and the finale meet ─────────────────────────
-const TOGETHER = /^visit\.(door|sit|talk|power|hand|kiss|bye|inperson\.bye)/;
 function roomStage(row, screen, idx, fresh) {
   const st = idx >= 0 ? screen.steps[idx] : null;
   if (screen.kind === 'meet') return meetStage(row, screen, idx, fresh, st);
   // The visit: the hallway, everybody's apartment, the door (visit-stage.js).
-  if (screen.kind === 'visit') return visitStage(row, screen, idx, fresh);
-  const [visitor, host] = screen.who;
-  const k = st?.key || '';
-  const doorAt = screen.steps.findIndex(x => TOGETHER.test(x.key || ''));
-  const together = doorAt >= 0 && idx >= doorAt && !/^visit\.(after|inperson\.after)/.test(k);
-  const opening = together && fresh && idx === doorAt;
-  if (together) {
-    const person = h => `<div class="civ-person${h === st?.who ? ' talk' : ''}">${cam(row, h, 'big', realOf(row, h).toUpperCase())}
-      ${isCatfish(row, h) ? `<div class="civ-wasnt">played as <b>${esc(nameOf(row, h))}</b> · catfish</div>` : `<div class="civ-was">the real ${esc(nameOf(row, h))}</div>`}</div>`;
-    return `<div class="civ-layer civ-room2${opening ? ' open' : ''}"><div class="civ-realroom"></div><div class="civ-door L"></div><div class="civ-door R"></div>
-      <div class="civ-two">${person(visitor)}${person(host)}</div>
-      ${where('FACE TO FACE · ONE ROOM, TWO PLAYERS')}${dlg(row, st, fresh)}</div>`;
-  }
-  if (/^visit\.(after|inperson\.after)/.test(k)) {
-    return `<div class="civ-layer civ-room2 after"><div class="civ-realroom"></div>${cam(row, st.who || host, 'center')}${where('AFTER THE VISIT')}${dlg(row, st, fresh)}</div>`;
-  }
-  // Before the door: the one walking the hallway, and every apartment wondering whose door it is.
-  const waiting = [...new Set(upTo(screen, idx).filter(x => /^visit\.wait/.test(x.key || '')).map(x => x.who))];
-  const walking = /^visit\.(choose|walk)/.test(k) || !waiting.length;
-  return `<div class="civ-layer civ-hall${walking ? ' walking' : ''}"><div class="civ-corridor"><i></i><i></i><i></i><i></i></div>
-    ${walking ? cam(row, visitor, 'center', `THE HALLWAY · ${realOf(row, visitor).toUpperCase()}`)
-      : `<div class="civ-waits">${waiting.map(h => cam(row, h, h === st?.who ? 'now' : '')).join('')}</div><div class="civ-knock">Whose door?</div>`}
-    ${where(walking ? 'A VISIT · THE BLOCKED PLAYER WALKS' : 'A VISIT · EVERYBODY WAITS')}${dlg(row, st, fresh)}</div>`;
+  return visitStage(row, screen, idx, fresh);
 }
 function meetStage(row, screen, idx, fresh, st) {
   const [arriving, ...present] = screen.who;
@@ -198,7 +175,7 @@ function meetStage(row, screen, idx, fresh, st) {
   const everyone = walkedIn ? [...present, arriving] : present.length ? present : [arriving];
   const faces = everyone.map(h => `<div class="civ-person small${h === arriving && fresh && idx === 0 ? ' enter' : ''}${h === st?.who ? ' talk' : ''}">${cam(row, h, 'big', realOf(row, h).toUpperCase())}
     ${isCatfish(row, h) ? `<div class="civ-wasnt">was <b>${esc(nameOf(row, h))}</b></div>` : `<div class="civ-was">${esc(nameOf(row, h))}</div>`}</div>`).join('');
-  return `<div class="civ-layer civ-room2 lounge"><div class="civ-realroom lounge"></div><div class="civ-two many">${faces}</div>
+  return `<div class="civ-layer civ-room2 lounge">${setImg('lounge')}<div class="civ-two many">${faces}</div>
     ${where('THE FINALE · MEETING IN PERSON')}${dlg(row, st, fresh)}</div>`;
 }
 
@@ -241,7 +218,7 @@ function studioStage(row, screen, idx, fresh) {
       : '<div class="civ-mtile row hidden"><div class="ph">?</div><div class="n">· · ·</div></div>'}</div>`;
   }).join('');
   const couch = pl.map(p => p.profile).map(h => `<div class="civ-seat${h === st?.who ? ' talk' : ''}${h === winner ? ' win' : ''}">${cam(row, h, 'seat', realOf(row, h).toUpperCase())}</div>`).join('');
-  return `<div class="civ-layer civ-studio"><div class="civ-studiobg"></div><div class="civ-aurora big" style="left:50%;top:-30%;width:70%;aspect-ratio:1;margin-left:-35%"></div>
+  return `<div class="civ-layer civ-studio">${setImg('studio')}
     <div class="civ-board studio"><div class="hd">THE FINAL BOARD</div>${board}</div>
     <div class="civ-couch">${couch}</div>
     ${winner && fresh && st?.key === 'reveal.winner' ? '<div class="civ-confetti"></div><div class="civ-winner">WINNER</div>' : ''}

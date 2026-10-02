@@ -68,6 +68,9 @@ export const roomImg = (row, h, open = false) => `assets/sets/circle/apt/${roomO
 // Where the door, its number plate and the TV screen sit in every render, in
 // percent of the frame (geo() in the build script measures them from the camera).
 export const ROOM_GEO = { door: [10.9, 14.84, 13.25, 50.65], plate: [15.28, 16.61, 4.01, 4.27], tv: [40.69, 10.68, 33.26, 33.26] };
+// The shared sets (tools/blender/circle-sets.py): the Hangout, the finale
+// lounge, the finale studio. Drawn full frame behind the screen's UI.
+export const setImg = (key, cls = '') => `<img class="civ-set full${cls ? ` ${cls}` : ''}" src="assets/sets/circle/${key}.webp" alt="" aria-hidden="true">`;
 export const geoStyle = ([l, t, w, h]) => `left:${l}%;top:${t}%;width:${w}%;height:${h}%`;
 export const starsText = n => (n > 0 ? '★'.repeat(Math.floor(n)) + (n % 1 >= 0.5 ? '½' : '') : '');
 export const facts = (...xs) => xs.filter(x => x != null && x !== '').map(esc).join(' · ');

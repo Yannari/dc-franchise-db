@@ -253,12 +253,19 @@ function camTo(root, place) {
   return { floor: ty + (r.y + r.h) * k - 6, h: r.h * k };
 }
 
+// rendered in day, evening and night as assets/sets/traitors/<kind>-<light>.webp
+const RENDERED_SETS = new Set(['lane']);
+
 function drawSet(root, place, light) {
   const set = $(root, 'set'), view = $(root, 'view');
   if (!String(place).startsWith('set:')) { set.classList.remove('trs-on'); return; }
   const kind = place.slice(4);
   if (set.dataset.k !== kind + light) {
-    set.innerHTML = TRScenery.backdrop(kind, view.clientWidth || 1200, view.clientHeight || 675, light);
+    // a set with a render (tools/blender/traitors-<kind>.py) draws the plate
+    // for its light; the rest are still drawn
+    set.innerHTML = RENDERED_SETS.has(kind)
+      ? `<img class="trs-plate" src="assets/sets/traitors/${kind}-${light}.webp" alt="">`
+      : TRScenery.backdrop(kind, view.clientWidth || 1200, view.clientHeight || 675, light);
     set.dataset.k = kind + light;
   }
   set.classList.add('trs-on');

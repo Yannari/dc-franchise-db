@@ -1373,8 +1373,259 @@ DRESS = {
     'summer-school': {'wall': school_wall, 'floor': school_floor},
 }
 
+
+# ══════════════════════════════════════════════════════════════════════
+# COMPETITION ARENAS. The real show stages most comps in a handful of
+# spaces (the backyard rigged for endurance, rows of stations, podiums and
+# buzzers, a game-show stage) and changes the apparatus. Eight arenas, plus
+# the Block Buster's own set; js/bb/comp-arenas.js says which comp plays
+# where. Each comp's own apparatus is drawn over the arena by its screen.
+# ══════════════════════════════════════════════════════════════════════
+def _studio(T, W=12.0, D=8.0, H=4.2, floor='#2a3550', wall=None):
+    """A competition studio: dark walls, a floor that reads as a stage, a lighting truss overhead."""
+    shell(T, W, D, H, wall_mat=mat('studiowall', wall or T['deep'], 0.8),
+          floor_mat=mat_tiles('studiofloor', floor, _darker(floor, 0.88), grout=_darker(floor, 0.7), scale=0.8, rough=0.5))
+    truss = mat('truss', '#9aa2ad', 0.35, 0.8)
+    for y in (2.0, 5.0):
+        box(f'Truss{y}', (W - 1, 0.16, 0.16), (0, y, H - 0.4), truss, bevel=0)
+        for i in range(6):
+            x = -W / 2 + 1.2 + i * (W - 2.4) / 5
+            cyl(f'Can{y}{i}', 0.09, 0.22, (x, y, H - 0.6), mat('canbody', '#1e2228', 0.4, 0.6), verts=16)
+            sphere(f'CanLens{y}{i}', 0.07, (x, y - 0.0, H - 0.72), mat('canlens', '#ffffff', emit=T['light'], strength=18)).visible_shadow = False
+
+def _night_yard(T, W=14.0, D=10.0, H=4.6):
+    shell(T, W, D, H, floor_mat=mat('turfnight', '#4f7a43', 0.9), wall_mat=mat('yardwall', T['wall2'], 0.85), roof=False)
+    world('#1d2747', 1.0)
+
+def _day_yard(T, W=14.0, D=10.0, H=4.2):
+    shell(T, W, D, H, floor_mat=mat('turf', '#7fae55', 0.9), wall_mat=mat('yardwall', T['wall2'], 0.85), roof=False)
+    world(T.get('sky', '#8fc8ef'), 1.0)
+    sd = bpy.data.lights.new('Sun', 'SUN'); sd.energy = 4.0
+    _link(bpy.data.objects.new('Sun', sd)).rotation_euler = (math.radians(45), 0, math.radians(-30))
+
+def floodlight(name, x, y, H):
+    cyl(f'{name}Pole', 0.07, H, (x, y, H / 2), mat('pole', '#3a3f48', 0.4, 0.6), verts=16)
+    box(f'{name}Head', (0.9, 0.3, 0.5), (x, y - 0.1, H), mat('floodhead', '#2a2e35', 0.4, 0.5), bevel=0.02)
+    for i in range(3):
+        box(f'{name}Lamp{i}', (0.22, 0.02, 0.36), (x - 0.28 + i * 0.28, y - 0.26, H), mat('floodlamp', '#ffffff', emit='#fff3d6', strength=30), bevel=0)
+
+def room_arena_endurance(T):
+    """The backyard at night, rigged for endurance: the wall with its handholds, six platforms, floodlights."""
+    W, D, H = 14.0, 10.0, 4.6
+    _night_yard(T, W, D, H)
+    rig = mat('rigwall', T['accent2'], 0.6)
+    box('Rig', (9.0, 0.4, 3.6), (0, D - 2.2, 1.9), rig, bevel=0.02)
+    box('RigTop', (9.4, 0.6, 0.2), (0, D - 2.2, 3.8), mat('rigtop', T['deep'], 0.5), bevel=0.01)
+    hold = mat('hold', T['pop'], 0.5)
+    hold2 = mat('hold2', T['accent'], 0.5)
+    for i in range(6):
+        x = -3.75 + i * 1.5
+        box(f'Lane{i}', (0.06, 0.42, 3.6), (x + 0.75, D - 2.22, 1.9), mat('laneline', '#ffffff', 0.6), bevel=0) if i < 5 else None
+        for k in range(5):
+            sphere(f'Hold{i}{k}', 0.07, (x + (0.25 if k % 2 else -0.25), D - 2.42, 0.9 + k * 0.55), hold if k % 2 else hold2, scale=(1, 0.6, 1))
+        box(f'Plat{i}', (0.9, 0.9, 0.25), (x, D - 3.0, 0.125), mat('plat', T['cabinet'], 0.5), bevel=0.02)
+        neon_text(f'LaneNo{i}', str(i + 1), (x, D - 2.43, 3.4), 0.32, '#ffffff', strength=8)
+    neon_eye((0, D - 2.45, 4.25), 0.8, rot=(90, 0, 0))
+    floodlight('FloodL', -6.2, 3.5, 4.2)
+    floodlight('FloodR', 6.2, 3.5, 4.2)
+    area('RigKey', (8, 1), (0, 2.5, 4.3), 900, '#fff3d6', rot=(-55, 0, 0))
+    for x in (-5.5, 5.5):
+        plant(f'Planter{x}', (x, D - 1.0, 0), height=1.6, pot=T['deep'])
+    spot('wall', (-W / 2 + 0.05, 6.0, 2.4), 90, 1.2)
+    camera((0, -1.4, 1.7), (84, 0, 0), lens=20, dof=(9.0, 5.0))
+
+def room_arena_course(T):
+    """The backyard by day as an obstacle course: start pads, ramps, ball tracks, a finish arch."""
+    W, D, H = 14.0, 10.0, 4.2
+    _day_yard(T, W, D, H)
+    cols = [T['pop'], T['accent'], T['accent2'], '#7fd36a', '#b07cff', '#ff9a3d']
+    for i in range(6):
+        x = -3.75 + i * 1.5
+        box(f'Start{i}', (1.0, 0.8, 0.08), (x, 1.6, 0.04), mat(f'start{i}', cols[i], 0.6), bevel=0)
+        r = box(f'Ramp{i}', (0.9, 2.0, 0.08), (x, 3.6, 0.45), mat('ramp', T['cabinet'], 0.5), bevel=0.01)
+        r.rotation_euler = (math.radians(14), 0, 0)
+        box(f'Track{i}', (0.18, 2.6, 0.12), (x, 6.0, 1.0), mat(f'track{i}', cols[i], 0.4), bevel=0.01).rotation_euler = (math.radians(-12), 0, 0)
+        sphere(f'Ball{i}', 0.12, (x, 5.0, 1.32), mat(f'ball{i}', cols[(i + 2) % 6], 0.3, coat=0.6))
+    for x in (-4.6, 4.6):
+        box(f'ArchPost{x}', (0.3, 0.3, 3.2), (x, D - 1.4, 1.6), mat('archpost', T['deep'], 0.5), bevel=0.02)
+    box('ArchTop', (9.5, 0.4, 0.6), (0, D - 1.4, 3.3), mat('archtop', T['accent'], 0.5), bevel=0.02)
+    for i in range(16):
+        box(f'Check{i}', (0.55, 0.42, 0.28), (-4.2 + i * 0.56, D - 1.4, 3.12 + (0.14 if i % 2 else -0.14) * 0.0), mat('checkw' if i % 2 else 'checkb', '#ffffff' if i % 2 else '#1a1a1a', 0.5), bevel=0)
+    neon_text('Finish', 'FINISH', (0, D - 1.62, 3.32), 0.34, '#ffffff', strength=4)
+    for i, x in enumerate((-6, -5, 5, 6)):
+        cyl(f'Cone{i}', 0.18, 0.5, (x, 2.6 + (i % 2) * 1.5, 0.25), mat('cone', '#ff8a2b', 0.5), r2=0.03, verts=24)
+    spot('floor', (5.6, 1.6, 0))
+    camera((0, -1.6, 1.8), (82, 0, 0), lens=20, dof=(9.0, 5.0))
+
+def room_arena_puzzle(T):
+    """Puzzle stations: six tables in two rows, an upright board on each, a countdown on the back wall."""
+    W, D, H = 12.0, 8.0, 4.2
+    _studio(T, W, D, H)
+    board = mat('board', T['cabinet'], 0.5)
+    tile_cols = [T['pop'], T['accent'], T['accent2'], '#ffffff']
+    for r, y in enumerate((3.0, 5.2)):
+        for c in range(3):
+            x = -3.4 + c * 3.4
+            box(f'Table{r}{c}', (1.6, 0.8, 0.8), (x, y, 0.4), mat('stationtable', T['deep'], 0.4), bevel=0.02)
+            box(f'TableTop{r}{c}', (1.7, 0.9, 0.05), (x, y, 0.82), mat('stationtop', T['accent'], 0.4), bevel=0.01)
+            box(f'Board{r}{c}', (1.4, 0.06, 1.0), (x, y + 0.3, 1.35), board, bevel=0.01)
+            for i in range(4):
+                for j in range(3):
+                    box(f'Tile{r}{c}{i}{j}', (0.28, 0.02, 0.26), (x - 0.48 + i * 0.32, y + 0.26, 1.08 + j * 0.3),
+                        mat(f'tile{(i + j + r + c) % 4}', tile_cols[(i + j + r + c) % 4], 0.5), bevel=0)
+            box(f'Pad{r}{c}', (0.9, 0.9, 0.02), (x, y - 0.9, 0.01), mat('pad', T['accent2'], 0.6), bevel=0)
+    box('Timer', (3.2, 0.1, 1.1), (0, D - 0.1, 2.9), mat('timerbody', '#111520', 0.4), bevel=0.02)
+    neon_text('TimerText', '04:59', (0, D - 0.18, 2.88), 0.62, T['led'], strength=12)
+    neon_eye((-4.6, D - 0.08, 2.9), 0.6)
+    neon_eye((4.6, D - 0.08, 2.9), 0.6)
+    area('Key', (8, 4), (0, 3.5, H - 0.1), 700, T['light'])
+    world(T['world'], 0.5)
+    camera((0, -2.6, 2.3), (78, 0, 0), lens=20, dof=(7.0, 5.0))
+
+def room_arena_podiums(T):
+    """Quiz podiums: a curved row of lit podiums with buzzers, a host lectern, the question screen."""
+    W, D, H = 12.0, 8.0, 4.2
+    _studio(T, W, D, H)
+    n = 6
+    for i in range(n):
+        a = math.radians(-50 + i * 20)
+        x, y = 4.6 * math.sin(a), 6.2 - 4.6 * math.cos(a) + 0.4
+        g = _group(f'Pod{i}', (x, y, 0), math.degrees(a))
+        _child(g, box(f'PodBody{i}', (0.9, 0.6, 1.05), (0, 0, 0.525), mat('podbody', T['deep'], 0.4), bevel=0.04))
+        _child(g, box(f'PodFace{i}', (0.8, 0.02, 0.55), (0, -0.31, 0.55), mat(f'podface{i % 3}', '#ffffff', emit=[T['accent'], T['pop'], T['accent2']][i % 3], strength=4), bevel=0))
+        _child(g, box(f'PodTop{i}', (0.98, 0.68, 0.06), (0, 0, 1.08), mat('podtop', T['accent'], 0.4, 0.4), bevel=0.01))
+        _child(g, sphere(f'Buzzer{i}', 0.09, (0, 0.05, 1.14), mat('buzzer', '#ff3b3b', 0.3), scale=(1, 1, 0.55)))
+    box('Lectern', (0.8, 0.6, 1.15), (4.9, 3.0, 0.575), mat('lectern', T['accent'], 0.4, 0.4), bevel=0.04)
+    box('QScreen', (5.0, 0.1, 2.0), (0, D - 0.1, 2.5), mat('qframe', '#111520', 0.4), bevel=0.04)
+    box('QPanel', (4.6, 0.04, 1.6), (0, D - 0.16, 2.5), mat('qpanel', '#ffffff', emit=T['accent2'], strength=1.4), bevel=0)
+    neon_text('QMark', '?', (0, D - 0.2, 2.45), 1.0, '#ffffff', strength=10)
+    area('Key', (8, 4), (0, 3.5, H - 0.1), 700, T['light'])
+    world(T['world'], 0.5)
+    camera((0, -1.4, 1.7), (84, 0, 0), lens=22, dof=(6.0, 5.0))
+
+def room_arena_stage(T):
+    """The game-show stage: a raised round stage under an arch of bulbs, curtains, a big wheel behind."""
+    W, D, H = 12.0, 8.0, 4.6
+    _studio(T, W, D, H, floor='#3a2440', wall='#2a1a2e')
+    cyl('Stage', 3.2, 0.4, (0, 4.6, 0.2), mat('stage', T['accent2'], 0.4), verts=96)
+    cyl('StageRim', 3.25, 0.06, (0, 4.6, 0.41), mat('stagerim', '#ffffff', emit=T['led2'], strength=12), verts=96, bevel=0)
+    for i in range(3):
+        box(f'Step{i}', (2.0, 0.4, 0.13 * (i + 1)), (0, 1.6 - i * 0.0 + 0.4 * i, 0.065 * (i + 1)), mat('step', T['deep'], 0.5), bevel=0)
+    curtain = mat('curtain', T['pop'], 0.85)
+    curtain2 = mat('curtain2', _darker(T['pop'], 0.8), 0.85)
+    for sx in (-1, 1):
+        for i in range(8):
+            cyl(f'Curtain{sx}{i}', 0.16, H, (sx * (3.6 + i * 0.28), D - 0.4 - (i % 2) * 0.08, H / 2), curtain if i % 2 else curtain2, verts=16)
+    # an arch of bulbs
+    bulb = mat('bulbs', '#ffffff', emit='#ffe2a0', strength=24)
+    for i in range(29):
+        a = math.pi * i / 28
+        sphere(f'ArchBulb{i}', 0.07, (3.3 * math.cos(a), D - 0.5, 1.0 + 2.9 * math.sin(a)), bulb).visible_shadow = False
+    # the big wheel behind the stage
+    cyl('Wheel', 1.4, 0.12, (0, D - 0.3, 2.3), mat('wheelrim', T['accent'], 0.3, 0.6), rot=(90, 0, 0), verts=64)
+    cols = [T['pop'], '#ffffff', T['accent2'], T['accent']]
+    for i in range(12):
+        a = i * math.tau / 12
+        seg = box(f'Wedge{i}', (0.66, 0.04, 0.5), (1.0 * math.sin(a), D - 0.38, 2.3 + 1.0 * math.cos(a)), mat(f'wedge{i % 4}', cols[i % 4], 0.5), bevel=0)
+        seg.rotation_euler = (0, a, 0)
+    cyl('WheelFace', 0.75, 0.13, (0, D - 0.33, 2.3), mat('wheelface', T['deep'], 0.5), rot=(90, 0, 0), verts=64, bevel=0)
+    cyl('WheelHub', 0.25, 0.2, (0, D - 0.45, 2.3), mat('hub', T['accent'], 0.3, 0.8), rot=(90, 0, 0), verts=32)
+    area('Spot', (2, 2), (0, 2.0, H - 0.2), 900, '#fff1d0', rot=(-30, 0, 0))
+    world('#2a1a2e', 0.5)
+    camera((0, -1.4, 1.6), (84, 0, 0), lens=22, dof=(6.0, 5.0))
+
+def room_arena_lanes(T):
+    """Skill lanes in the backyard: five painted lanes running to targets on the back wall."""
+    W, D, H = 14.0, 10.0, 4.2
+    _day_yard(T, W, D, H)
+    cols = [T['pop'], T['accent'], T['accent2'], '#7fd36a', '#b07cff']
+    for i in range(5):
+        x = -4.4 + i * 2.2
+        box(f'Lane{i}', (1.7, 8.0, 0.012), (x, 5.0, 0.006), mat(f'lane{i}', cols[i], 0.7), bevel=0)
+        box(f'LaneEdge{i}', (0.06, 8.0, 0.014), (x - 0.88, 5.0, 0.008), mat('laneline', '#ffffff', 0.6), bevel=0)
+        for r, c in enumerate(('#ffffff', cols[i], '#ffffff', '#1a1a1a')):
+            cyl(f'Target{i}{r}', 0.75 - r * 0.18, 0.04 + r * 0.01, (x, D - 0.05 - r * 0.01, 1.6), mat(f'tgt{r}{i}', c, 0.5), rot=(90, 0, 0), verts=48, bevel=0)
+        box(f'Launcher{i}', (0.7, 0.5, 0.7), (x, 1.5, 0.35), mat('launcher', T['deep'], 0.5), bevel=0.03)
+        cyl(f'LaunchBall{i}', 0.15, 0.3, (x, 1.5, 0.85), mat(f'ball{i}', cols[(i + 2) % 5], 0.3), verts=24)
+    camera((0, -1.4, 1.7), (84, 0, 0), lens=20, dof=(9.0, 5.0))
+
+def room_arena_pool(T):
+    """The pool comp: platforms over the water, buckets on poles, a ladder, the slide."""
+    W, D, H = 14.0, 10.0, 4.2
+    _day_yard(T, W, D, H)
+    box('PoolDeck', (11.0, 6.6, 0.12), (0, 5.2, 0.06), mat('deck', '#e7dcc4', 0.7), bevel=0)
+    box('Pool', (9.6, 5.2, 0.13), (0, 5.2, 0.07), mat('pool', '#45b6d6', 0.1), bevel=0)
+    for i in range(9):
+        box(f'Ripple{i}', (1.0 + 0.3 * (i % 3), 0.015, 0.005), (-4.0 + i * 1.0, 3.4 + 0.5 * (i % 5), 0.14), mat('ripple', '#d6f4fb', 0.2), bevel=0)
+    for i in range(5):
+        x = -3.6 + i * 1.8
+        box(f'Plat{i}', (0.9, 0.9, 0.12), (x, 5.6, 0.9), mat('plat', T['cabinet'], 0.5), bevel=0.02)
+        cyl(f'PlatLeg{i}', 0.06, 0.85, (x, 5.6, 0.45), mat('pole', '#3a3f48', 0.4, 0.6), verts=12)
+        cyl(f'Pole{i}', 0.04, 2.4, (x, 7.4, 1.2), mat('pole', '#3a3f48', 0.4, 0.6), verts=12)
+        cyl(f'Bucket{i}', 0.22, 0.32, (x, 7.4, 2.5), mat(f'bucket{i % 3}', [T['pop'], T['accent'], T['accent2']][i % 3], 0.5), r2=0.17, verts=24)
+    box('Slide', (0.8, 3.2, 0.1), (5.6, 4.2, 1.2), mat('slide', T['accent'], 0.4, coat=0.5), bevel=0.02).rotation_euler = (math.radians(-22), 0, 0)
+    box('SlideTower', (1.0, 1.0, 2.4), (5.6, 6.0, 1.2), mat('tower', T['deep'], 0.5), bevel=0.02)
+    neon_eye((0, D - 0.06, 2.7), 1.6)
+    camera((0, -1.4, 1.9), (82, 0, 0), lens=20, dof=(9.0, 5.0))
+
+def room_arena_luck(T):
+    """The luck booth: a striped tent wall, a prize wheel, a bulb-lit counter of dice and cups."""
+    W, D, H = 12.0, 8.0, 4.2
+    _studio(T, W, D, H, floor='#3a2a26')
+    box('Tent', (W, 0.02, H), (0, D - 0.01, H / 2), mat_wallpaper('tentstripes', 'stripes', T['pop'], '#f6ead0'), bevel=0)
+    cyl('PrizeWheel', 1.5, 0.14, (0, D - 0.25, 2.4), mat('wheelrim', T['accent'], 0.3, 0.6), rot=(90, 0, 0), verts=64)
+    cols = [T['accent2'], '#ffffff', T['pop'], T['accent']]
+    for i in range(16):
+        a = i * math.tau / 16
+        seg = box(f'Wedge{i}', (0.56, 0.04, 0.5), (1.1 * math.sin(a), D - 0.34, 2.4 + 1.1 * math.cos(a)), mat(f'wedge{i % 4}', cols[i % 4], 0.5), bevel=0)
+        seg.rotation_euler = (0, a, 0)
+    cyl('WheelFace', 0.82, 0.15, (0, D - 0.3, 2.4), mat('wheelface', T['deep'], 0.5), rot=(90, 0, 0), verts=64, bevel=0)
+    cyl('WheelHub', 0.26, 0.2, (0, D - 0.42, 2.4), mat('hub', T['accent'], 0.3, 0.8), rot=(90, 0, 0), verts=32)
+    box('Pointer', (0.14, 0.1, 0.36), (0, D - 0.4, 4.0), mat('pointer', '#ffffff', 0.4), bevel=0)
+    box('Counter', (6.0, 0.9, 1.0), (0, 3.4, 0.5), mat('counter', T['deep'], 0.4), bevel=0.03)
+    box('CounterTop', (6.2, 1.0, 0.06), (0, 3.4, 1.02), mat('countertop', T['accent'], 0.4), bevel=0.01)
+    bulb = mat('bulbs', '#ffffff', emit='#ffe2a0', strength=22)
+    for i in range(20):
+        sphere(f'CounterBulb{i}', 0.05, (-2.85 + i * 0.3, 2.94, 0.85), bulb).visible_shadow = False
+    for i in range(5):
+        b = box(f'Die{i}', (0.22, 0.22, 0.22), (-2.0 + i * 1.0, 3.4, 1.16), mat('die', '#ffffff', 0.4), bevel=0.03)
+        b.rotation_euler = (0, 0, math.radians(15 * i))
+        cyl(f'Cup{i}', 0.13, 0.3, (-1.5 + i * 1.0, 3.5, 1.2), mat(f'cup{i % 3}', [T['pop'], T['accent2'], T['accent']][i % 3], 0.4), r2=0.1, verts=24)
+    area('Key', (8, 4), (0, 3.0, H - 0.1), 700, T['light'])
+    world(T['world'], 0.5)
+    camera((0, -1.2, 1.7), (84, 0, 0), lens=22, dof=(6.0, 5.0))
+
+def room_arena_blockbuster(T):
+    """The Block Buster arena: three lit lanes for the three nominees, a tiered back wall, the sign."""
+    W, D, H = 12.0, 8.0, 4.6
+    _studio(T, W, D, H, floor='#141a2c', wall='#0f1424')
+    grid = mat('ledgrid', '#ffffff', emit=T['led'], strength=6)
+    for i in range(13):
+        box(f'GridX{i}', (0.03, 7.0, 0.006), (-6.0 + i * 1.0, 4.0, 0.006), grid, bevel=0)
+    for j in range(8):
+        box(f'GridY{j}', (12.0, 0.03, 0.006), (0, 0.6 + j * 1.0, 0.006), grid, bevel=0)
+    cols = [T['pop'], T['accent'], T['accent2']]
+    for i in range(3):
+        x = -3.2 + i * 3.2
+        box(f'BBLane{i}', (1.8, 4.6, 0.05), (x, 4.6, 0.03), mat(f'bblane{i}', cols[i], 0.5), bevel=0)
+        box(f'BBStation{i}', (1.4, 0.8, 1.0), (x, 6.6, 0.5), mat('station', '#1e2436', 0.4), bevel=0.04)
+        box(f'BBStationGlow{i}', (1.3, 0.02, 0.12), (x, 6.19, 0.85), mat(f'bbglow{i}', '#ffffff', emit=cols[i], strength=14), bevel=0)
+        box(f'BBPedestal{i}', (0.9, 0.9, 0.18), (x, 2.6, 0.09), mat('pedestal', '#ffffff', 0.4), bevel=0.02)
+    for k in range(3):
+        box(f'Tier{k}', (11.0 - k * 1.6, 0.6, 0.5), (0, D - 0.3 - k * 0.0, 0.25 + k * 0.5), mat(f'tier{k}', _darker(T['deep'], 1.0 - k * 0.1), 0.5), bevel=0.02)
+    neon_text('BBSign', 'BLOCK BUSTER', (0, D - 0.12, 3.15), 0.62, T['accent'], strength=14)
+    neon_eye((0, D - 0.12, 2.25), 0.7)
+    area('Key', (8, 4), (0, 4.0, H - 0.1), 800, T['light'])
+    world('#0f1424', 0.5)
+    camera((0, -1.4, 2.0), (80, 0, 0), lens=22, dof=(6.0, 5.0))
+
+ARENA_ROOMS = {'arena-endurance': room_arena_endurance, 'arena-course': room_arena_course, 'arena-puzzle': room_arena_puzzle,
+               'arena-podiums': room_arena_podiums, 'arena-stage': room_arena_stage, 'arena-lanes': room_arena_lanes,
+               'arena-pool': room_arena_pool, 'arena-luck': room_arena_luck, 'arena-blockbuster': room_arena_blockbuster}
+
 ROOMS = {'kitchen': room_kitchen, 'living': room_living, 'bedroom': room_bedroom, 'hoh': room_hoh, 'dr': room_dr,
          'yard': room_yard, 'storage': room_storage, 'havenot': room_havenot, 'dining': room_dining}
+ROOMS.update(ARENA_ROOMS)
 
 # ══════════════════════════════════════════════════════════════════════
 # Build and render

@@ -14054,7 +14054,7 @@ export function buildVPScreens(epRecord) {
           const priorEvicted = (_g?.episodeHistory || [])
             .filter(r => r && r.format === 'big-brother' && r.num < epRecord.num)
             .flatMap(r => [r.evicted, r.secondEvicted]).filter(Boolean);
-          vpScreens = bbStepScreens(epRecord, vpScreens, { host: _bbHost(), priorEvicted });
+          vpScreens = bbStepScreens(epRecord, vpScreens, { host: _bbHost(), priorEvicted, plea: name => _bbFinalPleaSpeech(epRecord, name) });
         } catch (err) { console.warn('BB stepped viewer fell back to the classic screens:', err); }
       }
     } catch (err) {

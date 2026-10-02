@@ -110,6 +110,24 @@ on it), `js/bb/script/{scene,facts,write}.js`, pools in `js/bb/script/lines/`,
 Measured over 6 seeded 8-week seasons: 62% snipe, 27% blowup, 12% smoothed;
 0 of 52 pair-weeks with two rows.
 
+**Phase 4 status (2026-10-02):** the ceremonies speak. `js/bb/script/ceremony.js`
+reads each finished ceremony act inside `addBeats` (week.js) and writes
+`act.script`: the HOH's and the veto winner's reactions, the nomination speech
+(endings pawn / target / expendables / backdoor), each nominee's Diary Room
+(pawn / target / blindsided), the veto holder's Diary Room (use / self / keep),
+the nominees' pleas to the holder (by bond: friends / neutral / cold), the
+replacement nominee (blindsided / expected) and the eviction goodbye
+(blindsided / expected). Pools: `js/bb/script/lines/ceremony.js`, 28 keys; a
+family's `.any` pool merges with each ending (`write.js`). The words draw from
+`stableRng(seasonSalt, week, part)`, never the engine's rng: a test plays the
+same season with the pools removed and gets the same HOHs, blocks and
+evictions. Eviction-night pleas stay the vote operation's resolved speech
+(`_bbFinalPleaSpeech`), passed into the stepped viewer so the screen, the
+classic board and the backlog say the same thing. Measured on 3 real-roster
+seasons: 408 ceremony lines, 2 repeats, 0 unfilled slots. Still to do: HOH-room
+visits and campaigning belong to Phase 5 (talk intents); the final HOH parts
+and the jury still speak the engine's prose.
+
 ### 4.3 BB's clock and facts
 
 - **`clock` is a BB day:** `week.num * 10 + dayIndex`, where `dayIndex` comes

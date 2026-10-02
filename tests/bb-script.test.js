@@ -55,12 +55,26 @@ describe('the pools keep their contract', () => {
   });
 
   it('only writes the third houseguest into a scene that has one', () => {
-    // c exists only when the ending is 'smoothed'; a {c} anywhere else prints a raw slot
+    // c exists only when the ending is 'smoothed' (and in a nomination speech,
+    // where it is the second nominee); a {c} anywhere else prints a raw slot
     for (const [key, pool] of all) {
-      if (key.endsWith('.smoothed')) continue;
+      if (key.endsWith('.smoothed') || key.startsWith('noms.speech.')) continue;
       for (const e of pool) {
         const text = JSON.stringify(e.turns);
         expect(/\{c[}.]|"by":"c"/.test(text), `${key} ${e.id} speaks for a third houseguest who is not there`).toBe(false);
+      }
+    }
+  });
+});
+
+describe('the pools read for every houseguest', () => {
+  it('never puts a verb that only agrees with he or she after a pronoun slot', () => {
+    // "{b.sub} has" prints "they has" for a houseguest who uses they/them.
+    const bad = /\{[a-z]+\.[sS]ub\}('s|'d|\s+[a-z']*(s|'t)\b)/;
+    for (const [key, pool] of Object.entries(POOLS)) {
+      for (const e of pool) for (const t of e.turns) {
+        const text = t.say || t.dr || t.beat;
+        expect(bad.test(text), `${key} ${e.id}: ${text}`).toBe(false);
       }
     }
   });

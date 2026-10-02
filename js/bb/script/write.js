@@ -42,7 +42,10 @@ export function fill(text, who, ctx = {}) {
 /** Pick and fill. Returns { lines, text } — `text` is the transcript the old screens and the backlog print. */
 export function writeScene(scene, ctx = {}, rng = Math.random) {
   const facts = factsFor(scene, ctx);
-  const key = `${scene.kind}.${scene.data?.ending || scene.data?.result || 'any'}`;
+  // A family's '.any' pool fits every ending, so it is merged with the ending's own.
+  const ending = scene.data?.ending || scene.data?.result || 'any';
+  const own = `${scene.kind}.${ending}`, any = `${scene.kind}.any`;
+  const key = ending !== 'any' && POOLS[any] ? (POOLS[own] ? [own, any] : any) : own;
   const who = scene.who || {};
   const pairKey = [who.a, who.b].filter(Boolean).sort().join('|');
   const speakers = Object.values(who).filter(Boolean);

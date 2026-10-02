@@ -3734,7 +3734,7 @@ export function generateSummaryText(ep) {
     try {
       const prior = ((typeof gs !== 'undefined' && gs?.episodeHistory) || [])
         .filter(r => r && r.format === 'big-brother' && r.num < ep.num).flatMap(r => [r.evicted, r.secondEvicted]).filter(Boolean);
-      aired = bbStepTranscript(ep, { host: bbHostName(), priorEvicted: prior });
+      aired = bbStepTranscript(ep, { host: bbHostName(), priorEvicted: prior, plea: name => _bbFinalPleaSpeech(ep, name) });
     } catch { aired = ''; }
     return generateBBSummaryText(ep) + (aired ? '\n' + aired : '');
   }

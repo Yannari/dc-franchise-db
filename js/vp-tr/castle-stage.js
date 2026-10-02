@@ -253,12 +253,19 @@ function camTo(root, place) {
   return { floor: ty + (r.y + r.h) * k - 6, h: r.h * k };
 }
 
+// rendered in day, evening and night as assets/sets/traitors/<kind>-<light>.webp
+const RENDERED_SETS = new Set(['lane']);
+
 function drawSet(root, place, light) {
   const set = $(root, 'set'), view = $(root, 'view');
   if (!String(place).startsWith('set:')) { set.classList.remove('trs-on'); return; }
   const kind = place.slice(4);
   if (set.dataset.k !== kind + light) {
-    set.innerHTML = TRScenery.backdrop(kind, view.clientWidth || 1200, view.clientHeight || 675, light);
+    // a set with a render (tools/blender/traitors-<kind>.py) draws the plate
+    // for its light; the rest are still drawn
+    set.innerHTML = RENDERED_SETS.has(kind)
+      ? `<img class="trs-plate" src="assets/sets/traitors/${kind}-${light}.webp" alt="">`
+      : TRScenery.backdrop(kind, view.clientWidth || 1200, view.clientHeight || 675, light);
     set.dataset.k = kind + light;
   }
   set.classList.add('trs-on');
@@ -438,6 +445,21 @@ function mount(root) {
   S.idx = -1; S.lastNight = null;
   chrome(root, S);
   paint(uid, false);
+  // A STAGE MOUNTS BEFORE ITS VIEW HAS SETTLED: the conclave's hooded figures
+  // were placed for a view 64px tall and hung off the top of the room until the
+  // first Next. Positions are pixels, so the stage repaints when the view's
+  // size actually changes, not only on a window resize.
+  const view = $(root, 'view');
+  if (view && typeof ResizeObserver !== 'undefined') {
+    let last = view.clientWidth + 'x' + view.clientHeight;
+    new ResizeObserver(() => {
+      const now = view.clientWidth + 'x' + view.clientHeight;
+      if (now === last || !view.clientWidth) return;
+      last = now;
+      S.set = null; const set = $(root, 'set'); if (set) set.dataset.k = '';
+      paint(uid, false);
+    }).observe(view);
+  }
 }
 export function trStageMountAll() {
   if (typeof document === 'undefined') return;
@@ -682,6 +704,8 @@ const CSS = `
 .trs-w{display:inline-block;opacity:0;animation:trsWord .42s cubic-bezier(.2,.7,.2,1) forwards}
 @keyframes trsWord{from{opacity:0;transform:translateY(.35em);filter:blur(3px)}to{opacity:1;transform:none;filter:none}}
 @media (prefers-reduced-motion:reduce){.trs-w{animation:none;opacity:1}}
+/* a rendered set (assets/sets/traitors), filling the stage the way a drawn set did */
+.trs-plate{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none;user-select:none}
 .trs-start{position:absolute;left:50%;bottom:8%;transform:translate(-50%,8px);opacity:0;transition:.5s;z-index:3300;text-align:center;pointer-events:none;
   padding:12px 26px;background:linear-gradient(90deg,transparent,rgba(4,5,8,.86) 16%,rgba(4,5,8,.86) 84%,transparent)}
 .trs-start.trs-in{opacity:1;transform:translate(-50%,0)}

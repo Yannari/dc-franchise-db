@@ -9,13 +9,37 @@
 import { gs } from '../../core.js';
 import { getBond } from '../../bonds.js';
 import { players } from '../../core.js';
+import { pStats } from '../../players.js';
 
 export const BB_FACT_KEYS = ['ending', 'result', 'intent', 'reason', 'act', 'early', 'late', 'band',
-  'showmance', 'alliance', 'hohA', 'hohB', 'nomA', 'nomB', 'havenot', 'third', 'nice', 'villain', 'again'];
+  'showmance', 'alliance', 'hohA', 'hohB', 'nomA', 'nomB', 'havenot', 'third', 'nice', 'villain', 'again',
+  // where the scene is: a line that stages a room ("pulls her into the storage room") airs only there
+  'room',
+  // how the speaker (a) talks: the picker weights a line written for it well above a plain one
+  'register'];
 
 const NICE = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
 const VILLAIN = new Set(['villain', 'mastermind', 'schemer']);
 const archOf = n => players.find(p => p.name === n)?.archetype;
+
+/**
+ * How somebody talks, read from who they are. Narrative text selection only
+ * (thresholds are allowed there, never in gameplay): schemer, fiery, shy,
+ * sweet, competitor, cool, or plain.
+ */
+export function registerOf(name) {
+  const arch = archOf(name);
+  let s = {};
+  try { s = pStats(name) || {}; } catch { s = {}; }
+  const t = s.temperament ?? 5, so = s.social ?? 5, st = s.strategic ?? 5;
+  if (VILLAIN.has(arch)) return 'schemer';
+  if (['hothead', 'chaos-agent'].includes(arch) || t <= 3) return 'fiery';
+  if (['goat', 'underdog', 'floater'].includes(arch) || so <= 3) return 'shy';
+  if (NICE.has(arch)) return 'sweet';
+  if (arch === 'challenge-beast') return 'competitor';
+  if (arch === 'perceptive-player' || (st >= 7 && t >= 6)) return 'cool';
+  return 'plain';
+}
 
 function sharesAlliance(a, b) {
   return (gs.namedAlliances || []).some(al => al.active !== false && (al.members || []).includes(a) && (al.members || []).includes(b));
@@ -34,6 +58,7 @@ export function factsFor(scene, ctx = {}) {
     early: week <= 2,
     late: house > 0 && house <= 6,
     third: !!c,
+    room: scene.room || null,
   };
   if (a) {
     f.hohA = a === ctx.hoh || (ctx.hohs || []).includes(a);
@@ -41,6 +66,7 @@ export function factsFor(scene, ctx = {}) {
     f.havenot = (ctx.week?.haveNots || gs.bb?.haveNots || []).includes?.(a) || false;
     f.nice = NICE.has(archOf(a));
     f.villain = VILLAIN.has(archOf(a));
+    f.register = registerOf(a);
   }
   if (a && b) {
     const bond = getBond(a, b);

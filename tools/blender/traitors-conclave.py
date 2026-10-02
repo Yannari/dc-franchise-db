@@ -417,7 +417,7 @@ cam = bpy.data.objects.get("trc_cam") or bpy.data.objects.new("trc_cam", cd)
 if cam.name not in sc.collection.objects: sc.collection.objects.link(cam)
 cam.location = (0, -4.9, 1.7); cam.rotation_euler = (math.radians(86), 0, 0); sc.camera = cam
 
-sc.render.engine = 'CYCLES'; sc.cycles.samples = 192; sc.cycles.use_denoising = True
+sc.render.engine = 'CYCLES'; sc.cycles.samples = 128; sc.cycles.use_denoising = True
 sc.render.resolution_x, sc.render.resolution_y, sc.render.resolution_percentage = 1920, 1080, 100
 sc.view_settings.view_transform = 'AgX'; sc.view_settings.look = 'AgX - Punchy'; sc.view_settings.exposure = -0.4
 sc.render.image_settings.file_format = 'WEBP'; sc.render.image_settings.quality = 82
@@ -443,5 +443,14 @@ def render_plates():
     for o in room: o.hide_render = False; o.is_holdout = False
     sc.render.film_transparent = False; sc.render.image_settings.color_mode = 'RGB'
 
+
+# ── the painted look (tools/blender/traitors-paint.py), before any render ──
+def apply_paint():
+    repo = os.path.dirname(os.path.dirname(os.path.dirname(os.path.normpath(OUT))))
+    g = {}
+    exec(open(os.path.join(repo, "tools", "blender", "traitors-paint.py"), encoding="utf-8").read(), g)
+    g["paint"](sc)
+
 if os.path.isdir(OUT):
+    apply_paint()
     render_plates()

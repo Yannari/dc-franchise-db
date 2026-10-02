@@ -18,9 +18,9 @@
 //   toast  [text, colour]
 //
 // The words for ceremonies here are the format's own (BB US): "This is the
-// nomination ceremony", "By a vote of...". What a houseguest SAYS at them is
-// Phase 4 (pools, picked by the shared picker); until then each line is a
-// plain, true statement of what the record says happened.
+// nomination ceremony", "By a vote of...". What a houseguest SAYS at them was
+// written by the engine when the ceremony happened (act.script, from
+// bb/script/ceremony.js); a save from before that falls back to a plain line.
 import { arenaFor } from '../bb/comp-arenas.js';
 
 const ROOM_SET = { 'kitchen': 'kitchen', 'living-room': 'ceremony', 'bedroom': 'bedroom', 'hoh-room': 'hoh',
@@ -39,6 +39,16 @@ const WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'e
 const word = n => WORDS[n] || String(n);
 const hash = s => { let h = 0; for (const c of String(s)) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h; };
 const pickBy = (list, key) => list[hash(key) % list.length];
+
+/** A written script (act.script.*) as steps. The camera moves in on its first spoken line. */
+function scriptSteps(lines, extra = {}) {
+  let pushed = false;
+  return (lines || []).filter(l => l && l.text).map(l => {
+    const k = l.kind === 'dr' ? 'dr' : l.kind === 'beat' ? 'beat' : 'say';
+    const push = k === 'say' && !pushed ? (pushed = true) : false;
+    return { k, by: l.by || null, t: l.text, ...(push ? { push: true } : {}), ...extra };
+  });
+}
 
 /** Seats a room has, in the order the viewer fills them. */
 const LIVING_SEATS = ['L0', 'R0', 'L1', 'R1', 'L2', 'R2', 'L3', 'R3'];
@@ -96,7 +106,9 @@ function compScreen(act, ctx, kind) {
     steps.push({ k: 'beat', t: isHoh ? `${winner} wins Head of Household!` : `${winner} wins the Power of Veto!`,
       toast: [isHoh ? 'HEAD OF HOUSEHOLD' : 'POWER OF VETO', '#d99a10'], ...(isHoh ? { hoh: winner } : { veto: winner }) });
   }
-  if (!(isHoh && act.secret)) steps.push({ k: 'say', by: winner, push: true, t: pickBy(isHoh
+  const reaction = kind === 'final' ? null : isHoh ? act.script?.hoh : act.script?.veto;
+  if (reaction?.length && !(isHoh && act.secret)) steps.push(...scriptSteps(reaction));
+  else if (!(isHoh && act.secret)) steps.push({ k: 'say', by: winner, push: true, t: pickBy(isHoh
     ? ['Yes! Oh my god, yes!', 'I needed that. I really needed that.', 'Head of Household. Say it again.', 'Okay. Okay! Breathe.']
     : ['That veto is mine.', 'Yes! I am not going anywhere this week.', 'Power of Veto, baby!', 'I needed that one.'], `${ctx.week}|${kind}|${winner}`) });
   return {
@@ -132,7 +144,9 @@ function nomScreen(act, ctx) {
   });
   const named = noms.map((n, i) => (i === noms.length - 1 && noms.length > 1 ? `and you, ${n}` : `you, ${n}`)).join(noms.length > 2 ? ', ' : ' ');
   steps.push({ k: 'say', by: hoh, push: true, t: `I have nominated ${named}.` });
-  if (act.target) {
+  if (act.script?.noms?.length) {
+    steps.push(...scriptSteps(act.script.noms));
+  } else if (act.target) {
     const why = act.target === act.backdoorTarget ? null
       : act.structure === 'expendables' ? `This isn't personal. I had to put two people up, and I went with the people I've connected with least.`
         : act.pawn ? `${act.pawn}, you're up there as a pawn, and you know that. ${act.target}, I think you know why you're sitting there.`
@@ -140,6 +154,7 @@ function nomScreen(act, ctx) {
     if (why) steps.push({ k: 'say', by: hoh, t: why });
   }
   steps.push({ k: 'bb', t: 'This nomination ceremony is adjourned.' });
+  for (const n of noms) steps.push(...scriptSteps(act.script?.nomDr?.[n]));
   return { id: 'bb-noms-v', kind: 'noms', anchor: 'noms', set: 'dining', room: ROOM_NAME.dining, cam: CAM.dining,
     title: 'Nomination Ceremony', kicker: 'Cam 03 · Dining room', sub: `${hoh} at the head of the table`,
     day: ctx.day, time: ACT_TIME.nominations, seated, steps };
@@ -234,14 +249,18 @@ function vetoMeetingScreen(act, ctx) {
   steps.push({ k: 'say', by: holder, t: holderOnBlock
     ? `I have called this meeting because I won the Power of Veto.`
     : `I have called this meeting because I won the Power of Veto. I'm going to give the nominees a chance to tell me why I should use it on them.` });
+  const written = act.script?.pleas || {};
   if (!holderOnBlock) {
-    for (const n of before) steps.push({ k: 'say', by: n, push: true, t: pickBy([
+    for (const n of before) if (written[n]?.length) steps.push(...scriptSteps(written[n]));
+    else steps.push({ k: 'say', by: n, push: true, t: pickBy([
       `You know where I stand with you. Use it on me and I won't forget it.`,
       `I'm not going to beg. I'd just like to stay, and I think you know I'd return the favour.`,
       `Whatever you decide, I'll respect it. I just hope it's me.`,
       `I've been straight with you since day one. That's all I've got.`,
     ], `${ctx.week}|plea|${n}`) });
   }
+  // The holder's Diary Room, cut in before the answer, the way the show edits it.
+  steps.push(...scriptSteps(act.script?.holderDr));
   steps.push({ k: 'say', by: holder, push: true, t: `I've decided...`, medal: 'glint' });
   const after = (act.nominees || before).slice();
   if (act.used && act.saved) {
@@ -264,6 +283,7 @@ function vetoMeetingScreen(act, ctx) {
         : `Since the veto has been used, I have to name a replacement nominee.` });
       steps.push({ k: 'say', by: namer, push: true, t: `${act.replacement}, I'm sorry. You're going up.`,
         nom: after, seat: { [act.replacement]: after.indexOf(act.replacement) ? 'N1' : 'N-1', [act.saved]: 'stand2' }, toast: [act.diamond ? 'DIAMOND VETO' : 'RENOMINATED', '#ff3355'] });
+      steps.push(...scriptSteps(act.script?.renom));
     }
   } else {
     steps.push({ k: 'say', by: holder, push: true, t: `...not to use the Power of Veto.`, toast: ['NOT USED', '#d99a10'] });
@@ -292,6 +312,12 @@ function evictionScreen(act, ctx, host) {
   const pleas = ctx.pleas || [];
   const said = new Set();
   for (const n of noms) {
+    // The plea the vote operation resolved, as the classic screen and the
+    // backlog print it (vp-screens _bbFinalPleaSpeech), when the caller has it.
+    let full = null;
+    try { full = ctx.plea ? ctx.plea(n) : null; } catch { full = null; }
+    full = full && stripTags(full).replace(/^["“]|["”]$/g, '').trim();
+    if (full) { steps.push({ k: 'say', by: n, push: true, t: full }); continue; }
     const p = pleas.find(x => x.speaker === n);
     const pool = [...(PLEA[p?.argumentType] || []), ...PLEA.default].filter(x => !said.has(x));
     const line = pickBy(pool, `${ctx.week}|${n}`);
@@ -319,7 +345,9 @@ function evictionScreen(act, ctx, host) {
   if (evicted) {
     if (ballots.length) steps.push({ k: 'host', by: host, push: true, t: a === ballots.length ? `By a unanimous vote...` : `By a vote of ${word(a)} to ${word(others)}...`, votes: [a, others] });
     steps.push({ k: 'host', by: host, t: `...${evicted}, you are evicted from the Big Brother house.`, out: evicted, toast: ['EVICTED', '#ff3355'], shake: true });
-    steps.push({ k: 'beat', t: `${evicted} hugs the house goodbye, picks up a bag, and walks to the front door.` });
+    const bye = scriptSteps(act.script?.goodbye);
+    if (bye.length) steps.push({ k: 'beat', t: `${evicted} has a few seconds with the house.` }, ...bye, { k: 'beat', t: `${evicted} picks up a bag and walks to the front door.` });
+    else steps.push({ k: 'beat', t: `${evicted} hugs the house goodbye, picks up a bag, and walks to the front door.` });
     steps.push({ k: 'beat', t: `The front door closes. On the memory wall, ${evicted}'s portrait goes black and white.`, exit: evicted });
   }
   const rest = ctx.house.filter(n => !noms.includes(n));
@@ -501,10 +529,10 @@ export function chooseAired(beats, cap, seen = new Set()) {
  * Returns screens in the order the week happened; each carries `anchor`, the
  * part of the week a legacy twist screen belongs after.
  */
-export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [] } = {}) {
+export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = null } = {}) {
   const house = (row.houseAtStart || []).slice();
   const ctx = { week: row.num || 1, hoh: row.hoh, house, nominees: (row.initialNominees || []).slice(), vetoHolder: row.vetoWinner,
-    pleas: row.finalPleas || [], anchor: 'start', day: 1, jury: [...(row.jury || [])], finalTwo: [...(row.finalTwo || [])] };
+    pleas: row.finalPleas || [], plea, anchor: 'start', day: 1, jury: [...(row.jury || [])], finalTwo: [...(row.finalTwo || [])] };
   let finalPart = 0;
   // Houseguests who walk in later in the week (rivals) are not in the house until they do.
   const late = (row.acts || []).find(a => a.type === 'rivals-open')?.arrived || [];

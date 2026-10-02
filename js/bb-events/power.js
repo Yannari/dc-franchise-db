@@ -26,6 +26,7 @@ import {
   actFacts, alliancesOf, deFactoAllies,
 } from './_read.js';
 import { freshLine } from '../bb/aired.js';
+import { makeScene } from '../bb/script/scene.js';
 
 // ── helpers ───────────────────────────────────────────────────────────
 
@@ -100,7 +101,6 @@ const hohPitch = {
     const hoh = _hoh(ctx);
     const pitchers = _quiet(_others(house, hoh));
     const pitcher = pitchers.find(n => willScheme(n) || pStats(n).social >= 5) || pitchers[0];
-    const p = pronouns(pitcher);
     // The name they push: someone they fear or resent, never a friend.
     const mark = furthestFrom(pitcher, _others(house, hoh, pitcher))
       || _others(house, hoh, pitcher)[0];
@@ -110,18 +110,6 @@ const hohPitch = {
     const resist = pStats(hoh).intuition * 0.55 + pStats(hoh).strategic * 0.3
       + (grudge(hoh, pitcher) ? 2.5 : 0);
     const lands = push + (rng() * 5 - 2.5) > resist;
-
-    const text = lands ? _variant([
-      `${pitcher} finds a reason to be upstairs, admires the room for exactly as long as politeness needs, and then says ${mark}'s name out loud.`,
-      `"I'm not telling you what to do." ${pitcher} then tells ${hoh} what to do, and ${hoh} finds ${p.ref} agreeing with it.`,
-      `${pitcher} lets the conversation drift toward ${mark}, then asks ${hoh} whether keeping ${mark} is really good for their game.`,
-      `It takes ${pitcher} four minutes to turn ${hoh}'s own doubts about ${mark} into ${hoh}'s own idea.`,
-    ], ctx, pitcher, mark) : _variant([
-      `${pitcher} pitches ${mark} hard, and a little too hard. ${hoh} nods along and privately moves ${pitcher} up the list.`,
-      `${pitcher} comes up with a name ready. ${hoh} has heard that eagerness before and knows what it usually means.`,
-      `"You'd be doing the whole house a favour." ${hoh} notices that the favour is mostly to ${pitcher}.`,
-      `${pitcher} overplays it. ${hoh} says nothing, agrees with nothing, and remembers everything.`,
-    ], ctx, pitcher, mark);
 
     if (lands) {
       api.setTarget(hoh, mark, `${pitcher} put the name in the room`);
@@ -133,8 +121,11 @@ const hohPitch = {
       api.remember(hoh, pitcher, 'grievance', 2, { about: 'tried to run my week' });
       api.addBond(hoh, pitcher, -0.5);
     }
+    // The name is talked ABOUT; only the two of them are in the room.
+    const scene = makeScene('talk.pitch-target', { a: pitcher, b: hoh, c: mark }, { ending: lands ? 'lands' : 'overplayed' }, [], 'hoh-room');
+    scene.seenBy = [pitcher, hoh];
     return {
-      text, players: [pitcher, hoh],
+      scene, players: [pitcher, hoh],
       badgeText: lands ? 'THE NAME LANDS' : 'OVERPLAYED IT',
       badgeClass: lands ? 'blue' : 'red',
     };
@@ -795,13 +786,6 @@ const hohRoomCourt = {
     // The nominees are not upstairs being seen with the person who put them up.
     const inner = _quiet(_others(house, hoh, ..._noms(ctx))).slice(0, 3);
     const outside = _others(house, hoh, ...inner)[0] || null;
-    const text = _variant([
-      `The HOH room fills up after lights-out and stays full. ${inner.join(', ')} are on the bed with ${hoh}; everybody else is downstairs listening to the ceiling.`,
-      `${hoh} holds court upstairs for two hours. Nothing is decided. Being in the room is the point, and ${outside || 'the rest of the house'} is not in the room.`,
-      `Somebody starts a game up there and the laughing carries down the stairs. ${outside ? `${outside} turns over and puts a pillow on ${pronouns(outside).posAdj} head.` : 'The rest of the house pretends not to hear it.'}`,
-      `${inner.slice(0, 2).join(' and ')} have been in the HOH room since dinner. In this house that is not a friendship, it is a public statement about who is safe.`,
-    ], ctx, hoh, ...inner);
-
     inner.forEach(n => { api.addBond(hoh, n, 0.8); inner.forEach(m => { if (m !== n) api.addBond(n, m, 0.4); }); });
     // Being visibly outside the room is its own information.
     if (outside) {
@@ -809,7 +793,8 @@ const hohRoomCourt = {
       api.remember(outside, hoh, 'left-me-out', 1);
       api.addBond(outside, hoh, -0.4);
     }
-    return { text, players: [hoh, ...inner, outside].filter(Boolean), badgeText: 'HOLDING COURT', badgeClass: 'blue' };
+    const scene = makeScene('talk.hoh-visit', { a: hoh, b: inner[0] || outside, c: inner[1] || null }, { ending: 'court' }, inner, 'hoh-room');
+    return { scene, players: [hoh, ...inner, outside].filter(Boolean), badgeText: 'HOLDING COURT', badgeClass: 'blue' };
   },
 };
 
@@ -951,21 +936,14 @@ const hohDeciding = {
     const mark = targetOf(hoh);
     // Somebody they trust enough to say a name to. That is the whole risk.
     const confidant = closestTo(hoh, _others(house, hoh, mark)) || _others(house, hoh, mark)[0];
-    const p = pronouns(hoh);
-    const s = pStats(hoh);
-    const text = _variant([
-      `${hoh} says the name out loud for the first time. "<strong>${mark}</strong>." ${confidant} does not react fast enough, and ${hoh} notices that too.`,
-      `"If I don't do it this week, somebody else gets the chance and I lose it." ${hoh} is talking about <strong>${mark}</strong>, and ${confidant} already knew that before the sentence finished.`,
-      `${hoh} lays it out for ${confidant} like a problem with one answer: <strong>${mark}</strong> goes up, and the only question left is who sits beside ${pronouns(mark).obj}.`,
-      `${confidant} asks who it is. ${hoh} takes long enough to answer that ${confidant} works it out anyway. "<strong>${mark}</strong>." "Yeah," ${confidant} says. "Yeah."`,
-    ], ctx, hoh, mark);
-
     api.addBond(hoh, confidant, 0.9);
     api.remember(confidant, hoh, 'told-me-first', 2, { about: mark });
     // Being told first is the most valuable thing in this house, and it is also
     // the moment the plan stops being private.
     api.suspicion(confidant, mark, 0.5);
-    return { text, players: [hoh, confidant, mark].filter(Boolean), badgeText: 'A NAME OUT LOUD', badgeClass: 'gold' };
+    const scene = makeScene('talk.hoh-decide', { a: hoh, b: confidant, c: mark }, { ending: 'named' }, [], 'hoh-room');
+    scene.seenBy = [hoh, confidant];
+    return { scene, players: [hoh, confidant, mark].filter(Boolean), badgeText: 'A NAME OUT LOUD', badgeClass: 'gold' };
   },
 };
 

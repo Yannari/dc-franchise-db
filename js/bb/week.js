@@ -69,6 +69,7 @@ import {
   buildHouseVotePlans,
 } from './strategy.js';
 import { scheduleHouseBeats } from './house-events.js';
+import { writeCeremony } from './script/ceremony.js';
 import { campaignArgument } from '../bb-events/_read.js';
 import { runBBCompetition } from './comps.js';
 import { runVoteOperation, resolveFinalPleas } from './vote-operation.js';
@@ -1864,6 +1865,10 @@ export function simulateBBWeek(options = {}) {
   const competitionLibrary = options.competitions || [];
 
   const addBeats = (act, extra = {}) => {
+    // What the houseguests SAID at the ceremony, written now from the finished
+    // act and its own dice (bb/script/ceremony.js). Before the beats, which can
+    // move the bonds the words read.
+    try { const script = writeCeremony(act, week, house, extra); if (script) act.script = script; } catch { /* words never stop a week */ }
     // Ceremony acts schedule beats too, and a competition night can move a
     // relationship as far as a whole morning of house life. Same limit.
     const bondsBefore = { ...(gs.bonds || {}) };

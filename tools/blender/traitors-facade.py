@@ -381,6 +381,15 @@ sc.view_settings.view_transform = 'AgX'; sc.view_settings.look = 'AgX - Punchy';
 sc.render.image_settings.file_format = 'WEBP'; sc.render.image_settings.quality = 82
 sc.render.film_transparent = False; sc.render.image_settings.color_mode = 'RGB'
 
+
+# ── the painted look (tools/blender/traitors-paint.py), before any render ──
+def apply_paint():
+    repo = os.path.dirname(os.path.dirname(os.path.dirname(os.path.normpath(OUT))))
+    g = {}
+    exec(open(os.path.join(repo, "tools", "blender", "traitors-paint.py"), encoding="utf-8").read(), g)
+    g["paint"](sc)
+
 if os.path.isdir(OUT) and RENDER:
+    apply_paint()
     sc.render.filepath = os.path.join(OUT, "facade.webp")
     bpy.ops.render.render(write_still=True, scene=sc.name)

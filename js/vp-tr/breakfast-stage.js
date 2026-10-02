@@ -13,7 +13,6 @@
 // Like every other file in this directory it imports no engine state.
 import { coldOpenStageData } from './cold-open.js';
 import { trsStageShell as stageShell, trsFold, trsReg as reg, trsEsc as esc, trsFace as face } from './castle-stage.js';
-import { TRScenery } from './cutaway-scenery.js';
 import { trPlay } from './sfx.js';
 import { beatLines } from './stage-lines.js';
 import { footCard, playCard, CARD_CSS } from './stage-cards.js';
@@ -65,11 +64,34 @@ function stateAt(S) {
   return { down, arriving: new Set(arriving), gapShown, whole };
 }
 
+// THE ROOM IS A RENDER (tools/blender/traitors-breakfast.py), drawn
+// object-fit: cover; everything on it is placed in the render's own
+// perspective. These numbers are that script's `measure()` and sprite boxes
+// (fractions of the 1920x1080 render): where a seated head and a laid place
+// fall on each side of the table, and how far a metre along it moves across
+// the picture (further on the near side, which is closer to us).
+export const BK_PLATE = 'assets/sets/traitors/breakfast.webp';
+const BK = {
+  far:  { head: 0.4691, seat: 0.5669, place: 0.567, perM: 0.09002, placePerM: 0.09443 },
+  near: { head: 0.64,   // over the chair's back, not the seated head (0.6222)
+          seat: 0.7409, place: 0.6358, perM: 0.11463, placePerM: 0.1043 },
+  // each sprite's box, rendered at the middle of the table: [x0, y0, x1, y1]
+  sprite: {"chair-far": [0.4716, 0.4034, 0.5284, 0.6552], "chair-near": [0.4641, 0.5754, 0.5359, 0.8514], "place-far": [0.4757, 0.5407, 0.5308, 0.5821], "place-near": [0.4737, 0.6157, 0.5339, 0.6543], "turned-far": [0.4757, 0.5418, 0.5308, 0.5821], "turned-near": [0.4737, 0.6157, 0.5339, 0.6543]},
+  run: 4.7,                                   // seats run 4.7m either side of the middle
+};
+/** The render's box in the view's pixels (cover), and a point on it. */
+function bkBox(W, H) {
+  const k = Math.max(W / 1920, H / 1080), dw = 1920 * k, dh = 1080 * k, ox = (W - dw) / 2, oy = (H - dh) / 2;
+  return { ox, oy, dw, dh, x: f => ox + f * dw, y: f => oy + f * dh };
+}
+
 // The places: two rows along the table, alternating sides in seating order.
 function placeAt(i, n, W, H) {
   const cols = Math.ceil(n / 2), col = Math.floor(i / 2), far = i % 2 === 0;
-  const x = W * (.1 + (col + .5) / cols * .8) + (far ? 0 : W * .4 / cols);
-  return { x: Math.min(x, W * .93), y: far ? H * .4 : H * .69, far };
+  const row = far ? BK.far : BK.near, b = bkBox(W, H);
+  // metres along the table; the near side sits half a place along from the far
+  const m = Math.min(BK.run + .2, -BK.run + (col + .5) / cols * 2 * BK.run + (far ? 0 : BK.run / cols));
+  return { x: b.x(.5 + m * row.perM), y: b.y(row.head), far, m, row, b };
 }
 
 function paint(root, S, fresh) {
@@ -83,7 +105,7 @@ function paint(root, S, fresh) {
     s.classList.toggle('trs-done', false); s.classList.toggle('trs-now', S.idx >= 0 && me === 0);
   });
   const start = root.querySelector('.trs-start');
-  const setHtml = TRScenery.breakfastSet(W, H);
+  const setHtml = `<img class="trb-plate" src="${BK_PLATE}" alt="" draggable="false">`;
   // THE CAMERA. The room and the people live on a layer that persists between
   // steps, so a move from one framing to the next animates; the counter and
   // the line card sit on a fixed layer over it.
@@ -99,8 +121,8 @@ function paint(root, S, fresh) {
     // IN CLOSE ON WHOEVER IS SPEAKING, the way the castle day flies to a room:
     // their place brought to the middle of the frame, a little above centre
     // so the line card below does not cover them.
-    const p = placeAt(i, D.laid.length, W, H), k = zoom || 1.85;
-    const tx = W / 2 - p.x * k, ty = H * 0.4 - p.y * k;
+    const p = placeAt(i, D.laid.length, W, H), k = zoom || 1.4;
+    const tx = W / 2 - p.x * k, ty = H * 0.45 - p.y * k;
     cam.style.transform = `translate(${Math.min(0, Math.max(W - W * k, tx))}px,${Math.min(0, Math.max(H - H * k, ty))}px) scale(${k})`;
     cam.classList.add('trb-close');
   };
@@ -123,8 +145,9 @@ function paint(root, S, fresh) {
   // THE CAMERA: dialogue pulls in on the speaker; the empty place, once the
   // room has found it, holds the frame; narration pulls back to the room
   const onGap = r.gapShown && m.kind === 'gap' && st.t !== 'say' && gone.length;
-  if (onGap) frame(gone[0], !fresh, 1.6);
-  else frame(st.t === 'say' || (st.react && st.who) ? speaker : null, !fresh, 1.85);
+  // a render can be pushed in only so far before it goes soft
+  if (onGap) frame(gone[0], !fresh, 1.3);
+  else frame(st.t === 'say' || (st.react && st.who) ? speaker : null, !fresh, 1.4);
   cam.classList.toggle('trb-dread', !!onGap);
   let h = '';
   // THE DOOR: whoever has just come down arrives as a framed portrait through
@@ -172,29 +195,35 @@ function paint(root, S, fresh) {
 
 function places(D, r, W, H, speaker, fresh) {
   const n = D.laid.length;
-  const pw = Math.min(H * .1, W * .8 / Math.ceil(n / 2) * .62);
   const gone = new Set([...D.missing, ...D.hidden]);
-  let out = '<svg class="trb-cups" viewBox="0 0 ' + W + ' ' + H + '">';
-  let seats = '';
+  // a sprite of the render, moved along the table by m metres
+  const sprite = (key, m, perM, b, cls, z) => {
+    const [x0, y0, x1, y1] = BK.sprite[key], dx = m * perM;
+    return `<img class="trb-sp ${cls}" src="assets/sets/traitors/bk-${key}.webp" alt="" draggable="false" style="left:${b.x(x0 + dx)}px;top:${b.y(y0)}px;`
+      + `width:${(x1 - x0) * b.dw}px;height:${(y1 - y0) * b.dh}px;z-index:${z}">`;
+  };
+  let out = '', seats = '';
   D.laid.forEach((name, i) => {
-    const p = placeAt(i, n, W, H);
-    // the place setting on the cloth, in front of (far side) or behind (near side) the person
-    const cy = p.far ? H * .5 : H * .575, cx = p.x;
+    const p = placeAt(i, n, W, H), side = p.far ? 'far' : 'near';
+    // a face about the width of a person's shoulders at that distance
+    const pw = .55 * p.row.perM * p.b.dw;
     const turned = r.gapShown && gone.has(name);
-    out += `<ellipse cx="${cx}" cy="${cy}" rx="${pw * .3}" ry="${pw * .09}" fill="#f7f3ea" stroke="#b5ab94"/>`
-      + (turned
-        ? `<path d="M${cx + pw * .18} ${cy - pw * .02} h${pw * .2} l${-pw * .03} ${-pw * .16} h${-pw * .14}Z" fill="#8e1526" class="trb-turn"/>`
-        : `<path d="M${cx + pw * .18} ${cy - pw * .16} h${pw * .2} l${-pw * .03} ${pw * .15} h${-pw * .14}Z" fill="#f7f3ea" stroke="#b5ab94"/>`);
     const isDown = r.down.has(name);
+    // the place laid on the cloth, its cup turned over once the room has found the gap
+    out += sprite((turned ? 'turned-' : 'place-') + side, p.m, p.row.placePerM, p.b, turned ? 'trb-turn' : '', p.far ? 8 : 20);
+    // an empty place is its chair; a far chair stands behind whoever sits in it
+    // EVERY PLACE HAS ITS CHAIR, and whoever is down sits in it: the face over
+    // the chair's back (a near face with no chair floated on the cloth)
+    out += sprite('chair-' + side, p.m, p.row.perM, p.b, turned ? 'trb-chair-gone' : '', p.far ? 5 : 25);
     const cls = ['trb-seat', p.far ? 'trb-far' : 'trb-near', isDown ? 'trb-down' : 'trb-empty',
       fresh && r.arriving.has(name) ? 'trb-arrive' : '', speaker === name ? 'trb-speak' : (speaker ? 'trb-quiet' : ''),
       turned ? 'trb-gone' : ''].join(' ');
+    if (!isDown && !turned) return;
     seats += `<div class="${cls}" style="left:${p.x}px;top:${p.y}px;width:${pw}px;z-index:${p.far ? 10 : 30}">`
       + (isDown ? `<div class="trb-av">${face(name)}</div><div class="trb-nm">${esc(name)}</div>`
-        : `<div class="trb-chair"></div>${turned ? `<div class="trb-nm trb-nm-gone">${esc(name)}</div>` : ''}`)
+        : `<div class="trb-nm trb-nm-gone">${esc(name)}</div>`)
       + '</div>';
   });
-  out += '</svg>';
   return out + seats;
 }
 
@@ -205,9 +234,12 @@ const CSS = `
 .trb-hud>*{pointer-events:auto}
 /* in close, the rest of the room goes soft behind the speaker */
 .trb-cam.trb-close .trb-seat:not(.trb-speak){filter:brightness(.45) blur(1px)}
-.trb-cups{position:absolute;inset:0;width:100%;height:100%;z-index:20;pointer-events:none}
-.trb-turn{animation:trbTurn .8s cubic-bezier(.2,1.4,.4,1)}
-@keyframes trbTurn{from{transform:rotate(180deg);transform-box:fill-box;transform-origin:center}}
+.trb-plate{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none;user-select:none}
+.trb-sp{position:absolute;pointer-events:none;user-select:none}
+.trb-sp.trb-turn{animation:trbTurn .8s cubic-bezier(.2,1.4,.4,1)}
+@keyframes trbTurn{from{opacity:0;transform:translateY(-30%) rotate(-25deg)}}
+.trb-sp.trb-chair-gone{filter:drop-shadow(0 0 14px rgba(201,40,60,.75))}
+.trb-cam.trb-dread .trb-sp.trb-chair-gone{animation:trbDread 1.4s ease-in-out infinite}
 .trb-seat{position:absolute;transform:translate(-50%,-50%);text-align:center;transition:filter .45s,transform .45s}
 .trb-av{position:relative;width:100%;aspect-ratio:1/1.12;overflow:hidden;border-radius:50% 50% 12% 12%/44% 44% 9% 9%;
   background:linear-gradient(162deg,#252b37,#080b11);box-shadow:0 0 0 2px rgba(222,214,196,.35),0 8px 20px rgba(0,0,0,.8)}
@@ -232,8 +264,7 @@ const CSS = `
 /* ── THE BREAKFAST ROOM, PLAYED (2026-09-30) ─────────────────────────── */
 .trb-cam.trb-dim{filter:brightness(.5) blur(2px)}
 .trb-cam.trb-dread{filter:saturate(.7)}
-.trb-cam.trb-dread .trb-seat.trb-gone .trb-chair{animation:trbDread 1.4s ease-in-out infinite}
-@keyframes trbDread{50%{box-shadow:inset 0 0 0 2px rgba(255,90,100,.9),0 0 44px rgba(201,40,60,.7)}}
+@keyframes trbDread{50%{filter:drop-shadow(0 0 30px rgba(255,70,90,.95))}}
 /* the door: framed portraits walking in */
 .trb-entry{position:absolute;inset:0;z-index:2100;display:flex;align-items:center;justify-content:center;gap:3%;pointer-events:none;
   background:linear-gradient(90deg,rgba(4,3,2,0),rgba(4,3,2,.72) 30%,rgba(4,3,2,.72) 70%,rgba(4,3,2,0));animation:trbEntryBg 3.2s ease both}

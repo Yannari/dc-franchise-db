@@ -110,6 +110,45 @@ on it), `js/bb/script/{scene,facts,write}.js`, pools in `js/bb/script/lines/`,
 Measured over 6 seeded 8-week seasons: 62% snipe, 27% blowup, 12% smoothed;
 0 of 52 pair-weeks with two rows.
 
+**Phase 4 status (2026-10-02):** the ceremonies speak. `js/bb/script/ceremony.js`
+reads each finished ceremony act inside `addBeats` (week.js) and writes
+`act.script`: the HOH's and the veto winner's reactions, the nomination speech
+(endings pawn / target / expendables / backdoor), each nominee's Diary Room
+(pawn / target / blindsided), the veto holder's Diary Room (use / self / keep),
+the nominees' pleas to the holder (by bond: friends / neutral / cold), the
+replacement nominee (blindsided / expected) and the eviction goodbye
+(blindsided / expected). Pools: `js/bb/script/lines/ceremony.js`, 28 keys; a
+family's `.any` pool merges with each ending (`write.js`). The words draw from
+`stableRng(seasonSalt, week, part)`, never the engine's rng: a test plays the
+same season with the pools removed and gets the same HOHs, blocks and
+evictions. Eviction-night pleas stay the vote operation's resolved speech
+(`_bbFinalPleaSpeech`), passed into the stepped viewer so the screen, the
+classic board and the backlog say the same thing. Measured on 3 real-roster
+seasons: 408 ceremony lines, 2 repeats, 0 unfilled slots. Still to do: HOH-room
+visits and campaigning belong to Phase 5 (talk intents); the final HOH parts
+and the jury still speak the engine's prose.
+
+**Phase 5 status (2026-10-02):** the eleven intents of §4.5 are the eleven
+events that already played them, converted, not duplicated: campaign
+(`deals-vote-pitch`), float a final two (`deals-final-two`), ask safety
+(`deals-safety`), debrief (`deals-numbers-check`), test loyalty
+(`deals-reaffirm`), confront (`social-blow-up`), gossip (`social-info-trade`),
+comfort (`social-comfort-block`), pitch a target (`power-hoh-pitch`), HOH
+visit (`power-hoh-room-court`), who-are-you-putting-up (`power-hoh-deciding`).
+Each keeps its casting, weight and consequences; its words moved to
+`js/bb/script/lines/talk.js`. The event's weight IS the intent's utility, so
+there is no second scheduler. **Displacement: zero, by measurement** — house
+scenes now pick words with `stableRng(seasonSalt, week, act, beat, event)`
+instead of the scheduler's rng, and five seeded seasons (about 7,200 events)
+replayed identically before and after the conversion; `tests/bb-talk.test.js`
+holds it with a muted-words season. **Personality:** a `register` fact
+(schemer / fiery / shy / sweet / competitor / cool / plain, from archetype and
+stats; narrative selection only) gates ~105 variants across the busiest
+ceremony and talk pools; the picker weights a register line well above a
+plain one and its decay rotates them. A `room` fact gates staging that names a
+room. Pools sized by sweep (plays per season vs entries); 3-season read: under
+3% of lines repeat, none within a week.
+
 ### 4.3 BB's clock and facts
 
 - **`clock` is a BB day:** `week.num * 10 + dayIndex`, where `dayIndex` comes

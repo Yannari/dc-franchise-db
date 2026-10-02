@@ -40,6 +40,7 @@ import { rpBuildWeb } from './web.js';
 import { rpBuildSuspicion, trSuspicionRevealAll } from './suspicion.js';
 import { suspicionStageScreen } from './suspicion-stage.js';
 import { offerStageScreen } from './offer-stage.js';
+import { armouryStageScreen } from './armoury-stage.js';
 // The Alcove is folded into the night castle segment (Plan 11); only its gate
 // is needed here, for that segment's `when`.
 import { _hasConfessionals } from './confessionals.js';
@@ -164,7 +165,8 @@ export const TRAITORS_SCREENS = [
   { id: 'tr-armoury', label: 'The Armoury', suffix: 'armoury',
     badge: { text: 'Armoury', color: '#8fe0c4' },
     when: r => !!(r.tr && r.tr.armoury && (r.tr.armoury.entrants || []).length),
-    build: rpBuildArmoury, revealAll: trArmouryRevealAll, revealAllName: 'trArmouryRevealAll' },
+    build: (r, o) => armouryStageScreen(r, o, rpBuildArmoury(r, o)),
+    revealAll: trArmouryRevealAll, revealAllName: 'trArmouryRevealAll' },
   // THE AFTERNOON — the road back and the manoeuvring before the table — sits
   // between the mission and the Round Table. Still pre-banishment, still guarded.
   { id: 'tr-castle-afternoon', label: 'The Afternoon', suffix: 'castleday-afternoon',

@@ -128,12 +128,17 @@ describe('the Big Brother visual player', () => {
   });
 
   it('shows the competition by name, not just its winner', () => {
+    // What the viewer plays (buildVPScreens): each comp's own themed board, which
+    // prints its title in capitals (LOG ROLL, COLD COMFORT...).
     const ep = week();
+    gs.episodeHistory = [ep];
     const comps = (ep.acts || []).map(a => a.competition).filter(Boolean);
-    const html = revealed(ep).map(s => s.html).join('');
+    const html = buildVPScreens(ep).map(s => s.html).join('').replace(/&amp;/g, '&');
+    const lower = html.toLowerCase();
     expect(comps.length).toBeGreaterThan(0);
     for (const comp of comps) {
-      expect(html).toContain(comp.name);
+      // a themed board prints its title in capitals, the way the show does
+      expect(lower).toContain(comp.name.toLowerCase());
       // and what happened in it, not only the result
       expect(comp.beats.some(b => html.includes(b.text.slice(0, 30)))).toBe(true);
     }

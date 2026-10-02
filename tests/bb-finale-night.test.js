@@ -277,7 +277,10 @@ describe('the reunion', () => {
     expect(screen.html).not.toMatch(/undefined|NaN|\[object Object\]/);
     const act = ep.acts.find(a => a.type === 'reunion');
     for (const s of act.segments) {
-      expect(screen.html, `a ${s.kind} segment never rendered`).toContain(s.text.slice(0, 40));
+      // The segment's words, as the viewer airs them: a quotation is spoken, and the
+      // engine's attribution around it ("Wayne says,") is not printed into the line.
+      const said = (s.text.match(/^"([^"]+)"/)?.[1] || s.text).slice(0, 30);
+      expect(screen.html, `a ${s.kind} segment never rendered`).toContain(said);
     }
   });
 });

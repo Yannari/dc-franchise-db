@@ -1,4 +1,6 @@
 // js/text-backlog.js - Text backlog generators for non-challenge episode sections
+import { bbStepTranscript } from './vp-bb-ep/steps.js';
+import { bbHostName } from './bb-aftermath.js';
 import { transcriptHeaderLines } from './transcript-header.js';
 import { gs, seasonConfig, players, plainText } from './core.js';
 import { juryLines } from './bb/jury.js';
@@ -3728,7 +3730,13 @@ export function generateSummaryText(ep) {
   // transcript, built from the same acts the visual player renders, so the two
   // never drift apart.
   if (ep.format === 'big-brother' || ep.isBigBrother) {
-    return generateBBSummaryText(ep);
+    let aired = '';
+    try {
+      const prior = ((typeof gs !== 'undefined' && gs?.episodeHistory) || [])
+        .filter(r => r && r.format === 'big-brother' && r.num < ep.num).flatMap(r => [r.evicted, r.secondEvicted]).filter(Boolean);
+      aired = bbStepTranscript(ep, { host: bbHostName(), priorEvicted: prior });
+    } catch { aired = ''; }
+    return generateBBSummaryText(ep) + (aired ? '\n' + aired : '');
   }
   // A castle is a third show and shares even less of the structure below than
   // the house does: no tribes, no challenge, no Tribal Council, no camp. It

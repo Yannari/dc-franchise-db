@@ -11,7 +11,7 @@
 //
 // Switch back to the old screens: localStorage 'bb-classic-vp' = '1'.
 import { bbWeekSteps, REPLACED, ANCHOR_OF } from './steps.js';
-import { stageHtml, camStyle, esc, col, img, eyeSvg, SEASON_DIR } from './stage.js';
+import { stageHtml, camStyle, esc, escT, col, img, eyeSvg, SEASON_DIR } from './stage.js';
 import { BBX_CSS, BBX_FONTS } from './style.js';
 
 const reg = () => (typeof window !== 'undefined' ? (window._bbx ||= {}) : (globalThis._bbx ||= {}));
@@ -52,7 +52,8 @@ function scriptHtml(S) {
       : st.k === 'bb' ? '<span class="bbx-who bb">Big Brother</span>'
         : st.k === 'dr' ? `<span class="bbx-who dr">${esc(st.by)} · DR</span>`
           : `<span class="bbx-who">${esc(st.by)}${st.k === 'host' ? ' (live)' : ''}</span>`;
-    return `<div class="bbx-ln" data-s="${i}">${who}<span>${st.k === 'beat' ? `<i>${esc(st.t)}</i>` : esc(st.t)}</span></div>`;
+    const line = st.k === 'beat' ? `<i>${escT(st.t)}</i>` : st.k === 'bb' ? escT(st.t) : `"${escT(st.t)}"`;
+    return `<div class="bbx-ln" data-s="${i}">${who}<span>${line}</span></div>`;
   }).join('') || '<div class="bbx-empty">Nothing aired here.</div>';
 }
 
@@ -63,6 +64,9 @@ function sideHtml(L, S) {
       ${L.nom.map(n => row(n, L.out.includes(n) ? 'Evicted' : 'Nominated', L.out.includes(n) ? 'out' : 'nom')).join('')}
       ${L.veto ? row(L.veto, 'Veto', 'veto') : ''}</div>
     ${L.vetoPlay.length ? `<div class="bbx-panel"><h4>Veto players</h4>${[...new Set(L.vetoPlay)].map(n => row(n, 'Plays', '')).join('')}</div>` : ''}
+    ${S.kind === 'jury-q' ? `<div class="bbx-panel"><h4>WHERE THE JURY IS</h4>${Object.keys(L.stances || {}).length
+      ? Object.values(L.stances).map(([j, stance, asked]) => row(j, `${esc(stance)} on ${esc(asked)}`, '')).join('')
+      : '<div class="bbx-pend">Nobody has asked a question yet.</div>'}</div>` : ''}
     ${L.ballots.length ? `<div class="bbx-panel"><h4>The vote · the house can't see this</h4>${L.ballots.map(([v, e]) => row(v, `evict ${esc(e)}`, 'nom')).join('')}</div>` : ''}`;
 }
 
@@ -77,23 +81,71 @@ export function bbStepScreens(row, legacy = [], { host = 'Valeria', priorEvicted
   const steps = bbWeekSteps(row, { host, priorEvicted });
   if (!steps.length) return legacy;
   const o = { season: seasonOf(row), host };
-  // twist screens, by the anchor they followed in the old running order
-  const after = { start: [], hoh: [], noms: [], veto: [], cer: [], evict: [] };
-  let anchor = 'start';
-  for (const L of legacy) {
-    const a = ANCHOR_OF(L.id);
-    if (a) { anchor = a; continue; }
-    if (REPLACED.test(L.id)) continue;
-    after[anchor].push(L);
+  // Twist and House Life screens, by the part of the week they followed in the old running
+  // order. Counted by OCCURRENCE: on a double or triple eviction the first cycle's eviction
+  // is a different place from the second's, and filing both under "after the eviction"
+  // stacked every cycle's House Life together at the end of the night.
+  const after = { 'start#0': [] };
+  {
+    const occ = {}; let type = 'start'; let key = 'start#0';
+    for (const L of legacy) {
+      const a = ANCHOR_OF(L.id);
+      if (a) { if (a !== type) { occ[a] = (occ[a] || 0) + 1; type = a; key = `${a}#${occ[a]}`; after[key] ||= []; } continue; }
+      if (REPLACED.test(L.id)) continue;
+      after[key].push(L);
+    }
   }
-  const out = [...after.start];
-  const placed = new Set(['start']);
+  // the same counting over the stepped screens: each screen's key, and where each key ends
+  const keyOf = [];
+  {
+    const occ = {}; let type = 'start'; let key = 'start#0';
+    for (const S of steps) {
+      if (S.kind !== 'scene' && S.anchor && S.anchor !== type) { occ[S.anchor] = (occ[S.anchor] || 0) + 1; type = S.anchor; key = `${S.anchor}#${occ[S.anchor]}`; }
+      keyOf.push(key);
+    }
+  }
+  const lastAt = {};
+  keyOf.forEach((k, i) => { lastAt[k] = i; });
+  // A twist's classic screen whose act left a slot goes exactly there.
+  const slotMatch = type => {
+    const keys = [type, type.replace(/-/g, '')];
+    return L => keys.some(k => L.id === `bb-${k}` || L.id.startsWith(`bb-${k}-`) || L.id.startsWith(`bb-${k}`) && /^\d*$/.test(L.id.slice(3 + k.length)));
+  };
+  const taken = new Set();
+  const forSlots = slots => (slots || []).flatMap(t => legacy.filter(L => !taken.has(L) && !REPLACED.test(L.id) && slotMatch(t)(L)))
+    .filter(L => (taken.has(L) ? false : (taken.add(L), true)));
+  const lead = forSlots(steps.leadingSlots);
+  const slotted = steps.map(S => forSlots(S.slotsAfter));
+  const boards = legacy.filter(L => steps.some(S => S.legacy && S.legacy.test(L.id)));
+  for (const k of Object.keys(after)) after[k] = after[k].filter(L => !taken.has(L) && !boards.includes(L));
+  const placed = new Set();
+  const out = [...lead];
+  if (lastAt['start#0'] === undefined) { out.push(...after['start#0']); placed.add('start#0'); }
+  // The core screens keep the classic ids (bb-hoh, bb-noms, bb-cer, bb-evict...): the
+  // navigator's chapters and everything that finds a screen by id still find it. A second
+  // cycle's copy (a double eviction) gets the classic suffix.
+  const seenIds = {};
+  const ids = steps.map(S => {
+    if (S.kind === 'scene' || !/v\d*$/.test(S.id)) return S.id;   // a scene, or an id already final
+    const base = S.id.replace(/-v\d*$/, '').replace(/v$/, '');
+    seenIds[base] = (seenIds[base] || 0) + 1;
+    return seenIds[base] === 1 ? base : `${base}-${seenIds[base]}`;
+  });
   steps.forEach((S, si) => {
+    const board = S.legacy ? legacy.find(L => !taken.has(L) && S.legacy.test(L.id)) : null;
+    const flushKey = () => {
+      const k = keyOf[si];
+      if (lastAt[k] === si && !placed.has(k)) { out.push(...(after[k] || [])); placed.add(k); }
+    };
+    if (board) {
+      taken.add(board); out.push(board); out.push(...slotted[si]); flushKey();
+      return;
+    }
     const uid = `bbx${esc(row.num)}-${si}`;
     reg()[uid] = { screens: steps, si, idx: -1, o, auto: false, timer: null };
     out.push({
-      id: S.id === 'bb-house-v' ? `bb-house-v${si}` : (S.kind === 'scene' ? S.id : `${S.id}${si}`),
-      label: S.title,
+      id: ids[si],
+      label: S.label || S.title,
       html: `<div class="bbx" data-uid="${uid}"><style>${BBX_FONTS}${BBX_CSS}${SHELL_CSS}</style>
   <div class="bbx-stage stage" id="bbx-st-${uid}" onclick="bbxNext('${uid}')" title="Click for the next line">${stageHtml(steps, si, -1, false, o).html}</div>
   <div class="bbx-ctrl">
@@ -107,18 +159,23 @@ export function bbStepScreens(row, legacy = [], { host = 'Valeria', priorEvicted
     <span class="bbx-count" id="bbx-count-${uid}">0 / ${S.steps.length}</span>
   </div>
   <div class="bbx-under"><div class="bbx-script" id="bbx-script-${uid}">${scriptHtml(S)}</div>
-    <aside class="bbx-side" id="bbx-side-${uid}">${sideHtml({ hoh: null, nom: [], veto: null, out: [], vetoPlay: [], ballots: [] }, S)}</aside></div>
+    <aside class="bbx-side" id="bbx-side-${uid}">${sideHtml({ hoh: null, nom: [], veto: null, out: [], vetoPlay: [], ballots: [], stances: {} }, S)}</aside></div>
 </div>`,
     });
-    // the twist screens that followed this part of the week, once its last screen has aired
-    const nextAnchor = steps[si + 1]?.anchor ?? steps[si + 1]?.kind;
-    const myAnchor = S.kind === 'scene' ? S.anchor : S.anchor;
-    if (myAnchor && !placed.has(myAnchor) && steps.slice(si + 1).every(x => x.anchor !== myAnchor)) {
-      out.push(...(after[myAnchor] || [])); placed.add(myAnchor);
-    }
-    void nextAnchor;
+    out.push(...slotted[si]);
+    // the twist and House Life screens that followed this part of the week, once it has aired
+    flushKey();
   });
-  for (const k of Object.keys(after)) if (!placed.has(k)) out.push(...after[k]);
+  // A part of the classic week with no stepped screen of its own (a cycle with no draw):
+  // its screens go after the last stepped screen of the same kind that came before it.
+  for (const k of Object.keys(after)) if (!placed.has(k) && after[k].length) {
+    const [type, n] = k.split('#');
+    let host = null;
+    for (let m = Number(n) - 1; m >= 0 && !host; m--) if (placed.has(`${type}#${m}`)) host = `${type}#${m}`;
+    const at = host ? out.lastIndexOf(after[host].at(-1) ?? null) : -1;
+    if (at >= 0) out.splice(at + 1, 0, ...after[k]); else out.push(...after[k]);
+    placed.add(k);
+  }
   return out;
 }
 

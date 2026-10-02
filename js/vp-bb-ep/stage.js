@@ -19,6 +19,8 @@ const V = 7;   // bump when the renders change, so a browser never shows a stale
 const roomUrl = (season, set) => `assets/bb/house/${season}/${ROOM_FILE[set] || set}-td-b.webp?v=${V}`;
 
 export const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+/** For text between tags: a quotation mark needs no escaping there. */
+export const escT = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const PALETTE = ['#ec4899', '#6366f1', '#10b981', '#22c55e', '#f59e0b', '#3b82f6', '#eab308', '#f97316', '#ef4444', '#14b8a6', '#a855f7', '#84cc16', '#06b6d4', '#f43f5e', '#8b5cf6', '#0ea5e9'];
 export const col = n => { let h = 0; for (const c of String(n)) h = (h * 31 + c.charCodeAt(0)) >>> 0; return PALETTE[h % PALETTE.length]; };
 const avatar = n => { try { return playerAvatarUrl(n) || ''; } catch { return ''; } };
@@ -47,7 +49,7 @@ const MEDAL = `<svg viewBox="0 0 60 80"><defs><radialGradient id="bbxmg" cx=".4"
 /** Everything settled by step `idx` of screen `si`: earlier screens count as watched in full. */
 export function ledgerAt(screens, si, idx) {
   const S0 = screens[si] || screens[0] || {};
-  const L = { status: {}, nom: [], veto: null, out: [], votes: null, vetoPlay: [], ballots: [], revealed: [], hoh: null, moves: [] };
+  const L = { status: {}, nom: [], veto: null, out: [], votes: null, vetoPlay: [], ballots: [], revealed: [], hoh: null, moves: [], stances: {} };
   for (const n of S0.priorOut || []) { L.status[n] = 'out'; L.out.push(n); }
   for (let s = 0; s <= si; s++) {
     const steps = screens[s].steps; const upto = s < si ? steps.length - 1 : idx;
@@ -59,6 +61,7 @@ export function ledgerAt(screens, si, idx) {
       if (st.vetoPlay && s === si) L.vetoPlay.push(...st.vetoPlay);
       if (st.reveal && s === si) L.revealed.push(st.reveal);
       if (st.ballot && s === si) L.ballots.push(st.ballot);
+      if (st.stance && s === si) L.stances[st.stance[0]] = st.stance;
       if (st.votes && s === si) L.votes = st.votes;
       if (st.out) { L.out.push(st.out); L.status[st.out] = 'out'; L.nom.forEach(n => { if (n !== st.out) L.status[n] = ''; }); }
       (st.pops || []).forEach(p => L.moves.push(p));
@@ -216,14 +219,14 @@ function lineHtml(S, st, fresh, L) {
   if (!st) return '';
   if (st.k === 'bb') {
     const bars = Array.from({ length: 28 }, (_, i) => `<i style="animation-delay:${(i * 73 % 900) / 1000}s;animation-duration:${.5 + (i * 37 % 50) / 100}s"></i>`).join('');
-    return `<div class="bbv ${fresh ? 'fresh' : ''}">${eyeSvg('eye')}<div class="who">BIG BROTHER</div><div class="tx">${esc(st.t)}</div><div class="wave">${bars}</div></div>`;
+    return `<div class="bbv ${fresh ? 'fresh' : ''}">${eyeSvg('eye')}<div class="who">BIG BROTHER</div><div class="tx">${escT(st.t)}</div><div class="wave">${bars}</div></div>`;
   }
-  if (st.k === 'beat') return `<div class="cc"><span class="ccl">[ CC ]</span><span>${esc(st.t)}</span></div>`;
+  if (st.k === 'beat') return `<div class="cc"><span class="ccl">[ CC ]</span><span>${escT(st.t)}</span></div>`;
   const kind = st.k === 'dr' ? 'dr' : st.k === 'host' ? 'host' : '';
   const role = st.k === 'dr' ? 'Diary Room' : st.k === 'host' ? 'Host · Live' : L.status[st.by] === 'hoh' ? 'Head of Household'
     : L.nom.includes(st.by) && !L.out.includes(st.by) ? 'Nominated' : L.veto === st.by ? 'Veto holder' : 'Houseguest';
   return `<div class="l3 ${kind} ${fresh ? 'fresh' : ''}" style="--c:${col(st.by)}"><div class="tagr"><span class="nm">${esc(st.by)}</span><span class="role">${role}</span></div>
-    <div class="body"><div class="tx" data-full="${esc(st.t)}">${fresh ? '' : esc(st.t)}</div></div></div>`;
+    <div class="body"><div class="tx" data-full="${esc(st.t)}">${fresh ? '' : escT(st.t)}</div></div></div>`;
 }
 
 /** The whole stage for step `idx` of screen `si`. `o` = { season, host }. */

@@ -682,6 +682,8 @@ const CSS = `
 .trs-w{display:inline-block;opacity:0;animation:trsWord .42s cubic-bezier(.2,.7,.2,1) forwards}
 @keyframes trsWord{from{opacity:0;transform:translateY(.35em);filter:blur(3px)}to{opacity:1;transform:none;filter:none}}
 @media (prefers-reduced-motion:reduce){.trs-w{animation:none;opacity:1}}
+/* a rendered set (assets/sets/traitors), filling the stage the way a drawn set did */
+.trs-plate{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none;user-select:none}
 .trs-start{position:absolute;left:50%;bottom:8%;transform:translate(-50%,8px);opacity:0;transition:.5s;z-index:3300;text-align:center;pointer-events:none;
   padding:12px 26px;background:linear-gradient(90deg,transparent,rgba(4,5,8,.86) 16%,rgba(4,5,8,.86) 84%,transparent)}
 .trs-start.trs-in{opacity:1;transform:translate(-50%,0)}

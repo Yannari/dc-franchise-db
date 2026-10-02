@@ -14,7 +14,6 @@
 import { missionStageData } from './mission.js';
 import { isBespokeMissionRec } from './mission-bespoke.js';
 import { trsStageShell as stageShell, trsFold, trsReg as reg, trsEsc as esc, trsFace as face, trsLater as later } from './castle-stage.js';
-import { TRScenery } from './cutaway-scenery.js';
 import { trPlay } from './sfx.js';
 import { beatLines } from './stage-lines.js';
 import { footCard, playCard, CARD_CSS } from './stage-cards.js';
@@ -79,7 +78,9 @@ function paint(root, S, fresh) {
   const teamsShown = seen.some(s => (s.meta || {}).kind === 'field');
   const counted = seen.some(s => s.t === 'count');
   const extras = seen.filter(s => s.t === 'extra');
-  let h = TRScenery.fieldSet(W, H);
+  // THE FIELD IS A RENDER (tools/blender/traitors-field.py): teams stand on the
+  // grass at .53/.65, the chest between them, the horizon at about .31
+  let h = '<img class="trs-plate" src="assets/sets/traitors/field.webp" alt="">';
   // the two teams, under their banners
   if (teamsShown || !st) {
     const nT = D.teams.length;

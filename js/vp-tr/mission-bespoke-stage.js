@@ -15,7 +15,6 @@
 // Like every other file in this directory it imports no engine state.
 import { bespokeStageData, isBespokeMissionRec } from './mission-bespoke.js';
 import { trsStageShell as stageShell, trsFold, trsReg as reg, trsEsc as esc, trsFace as face } from './castle-stage.js';
-import { TRScenery } from './cutaway-scenery.js';
 import { footCard, playCard, CARD_CSS } from './stage-cards.js';
 import { confessional } from './stage-cutin.js';
 import { trPlay } from './sfx.js';
@@ -103,7 +102,7 @@ function paint(root, S, fresh) {
   for (let k = 0; k <= S.idx; k++) { const x = S.steps[k]; if (x.k === 'beat' && x.who) tone[x.who] = x.tone; }
   const paid = st && S.steps.slice(0, S.idx + 1).some(x => x.t === 'money');
   const lit = new Set(st ? [st.who, st.to, ...(st.whoList || [])].filter(Boolean) : []);
-  let h = '<div class="trq-world">' + (S.data.scene ? `<div class="trq-floor"></div><section class="${S.data.sceneCls === 'fx' ? 'fx' : 'ms'} trq-ms" data-phase="rest" data-scene="proc">${S.data.scene}</section>` : TRScenery.fieldSet(W, H))
+  let h = '<div class="trq-world">' + (S.data.scene ? `<div class="trq-floor"></div><section class="${S.data.sceneCls === 'fx' ? 'fx' : 'ms'} trq-ms" data-phase="rest" data-scene="proc">${S.data.scene}</section>` : '<img class="trs-plate" src="assets/sets/traitors/field.webp" alt="">')
     + '<div class="trq-shade"></div>';
   teams.forEach(t => {
     const p = pos['@' + t.name];

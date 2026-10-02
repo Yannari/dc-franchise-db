@@ -39,6 +39,7 @@ import { arrivalStageScreen } from './arrival-stage.js';
 import { rpBuildWeb } from './web.js';
 import { rpBuildSuspicion, trSuspicionRevealAll } from './suspicion.js';
 import { suspicionStageScreen } from './suspicion-stage.js';
+import { offerStageScreen } from './offer-stage.js';
 // The Alcove is folded into the night castle segment (Plan 11); only its gate
 // is needed here, for that segment's `when`.
 import { _hasConfessionals } from './confessionals.js';
@@ -219,7 +220,8 @@ export const TRAITORS_SCREENS = [
   { id: 'tr-recruitment', label: 'The Offer', suffix: 'recruitment',
     badge: { text: 'The Offer', color: '#8b5cf6' },
     when: r => !!(r.tr && r.tr.recruitment),
-    build: rpBuildRecruitment, revealAll: trRecruitmentRevealAll, revealAllName: 'trRecruitmentRevealAll' },
+    build: (r, o) => offerStageScreen(r, o, rpBuildRecruitment(r, o)),
+    revealAll: trRecruitmentRevealAll, revealAllName: 'trRecruitmentRevealAll' },
   // ── THE CASTLE DAY IS NOW THREE SEGMENTS, ABOVE ──────────────────────
   //
   // It used to be one screen here, at the foot after the conclave, because two

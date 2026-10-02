@@ -28,7 +28,13 @@ const CONVERTED = {
   gossip: 'social-info-trade', comfort: 'social-comfort-block', 'pitch-target': 'power-hoh-pitch',
   'hoh-visit': 'power-hoh-room-court', 'hoh-decide': 'power-hoh-deciding',
 };
-const EVENT_IDS = new Set(Object.values(CONVERTED));
+// Phase 6: the rest of the house, converted a file at a time. Each batch adds its ids.
+const PHASE6 = [
+  // bb-events/social.js
+  'social-alliance-forms', 'social-late-night-trust', 'social-paranoia', 'social-rumour',
+  'social-showmance-spark', 'social-grudge-hardens', 'social-drifting-out',
+];
+const EVENT_IDS = new Set([...Object.values(CONVERTED), ...PHASE6]);
 
 function playSeason(seed, shift) {
   const cast = Array.from({ length: 14 }, (_, i) => POOL[(i * 11 + 3 + shift) % POOL.length]).map(p => ({ name: p.name,
@@ -70,7 +76,8 @@ describe('every intent airs as a script', () => {
     for (const eps of seasons) for (const b of beatsOf(eps)) {
       if (!EVENT_IDS.has(b.eventId)) continue;
       fired.add(b.eventId);
-      expect(Array.isArray(b.lines) && b.lines.length >= 2, `${b.eventId} week ${b.week} has no script`).toBe(true);
+      // A script: at least one line somebody SAYS (a lone Diary Room counts), never only narration.
+      expect(Array.isArray(b.lines) && b.lines.some(l => l.kind !== 'beat'), `${b.eventId} week ${b.week} has no script`).toBe(true);
     }
     for (const id of EVENT_IDS) expect(fired.has(id), `${id} never fired in three seasons`).toBe(true);
   });
@@ -152,7 +159,7 @@ describe('the talk pools', () => {
   const FIXED = { 'talk.safety': 'hoh-room', 'talk.pitch-target': 'hoh-room', 'talk.hoh-visit': 'hoh-room', 'talk.hoh-decide': 'hoh-room' };
   it('only stages a room where the scene is', () => {
     for (const [key, pool] of Object.entries(POOLS)) {
-      if (!key.startsWith('talk.')) continue;
+      if (!/^(talk|social)\./.test(key)) continue;
       const fixed = FIXED[key.split('.').slice(0, 2).join('.')];
       for (const e of pool) for (const t of e.turns) {
         if (!t.beat) continue;

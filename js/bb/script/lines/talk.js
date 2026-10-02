@@ -104,7 +104,7 @@ export default {
     { id: 'tc.l10', when: { band: ['cold', 'enemies'] }, turns: [
       { by: 'a', say: "I know we've never been close." },
       { by: 'b', say: "That's one way to put it." },
-      { by: 'a', say: "So here's the thing. If I stay, I owe you. If I go, you're just another vote nobody remembers." },
+      { by: 'a', say: "So here's the thing. If I stay, I owe you. If I go, you've lost the one person in here who would." },
       { by: 'b', say: '...Huh.' },
       { by: 'b', dr: "It's the first time {a} has ever made sense to me. Annoying." },
     ] },
@@ -167,7 +167,7 @@ export default {
     { id: 'tc.r2', turns: [
       { by: 'b', say: "I hear you. I do." },
       { by: 'a', say: "But?" },
-      { by: 'b', say: "But I made a promise before you came in here, and I'm keeping it." },
+      { by: 'b', say: "But I made a promise to somebody else this week, and I'm keeping it." },
       { by: 'a', say: "Okay. Thanks for telling me." },
     ] },
     { id: 'tc.r3', turns: [
@@ -498,7 +498,7 @@ export default {
       { by: 'a', say: "The whole week comes down to one person." },
       { by: 'b', say: 'Who?' },
       { by: 'a', say: "The one who hasn't said a name to anybody. Silence is a vote too." },
-      { by: 'b', say: "Then let's make sure the silence is ours." },
+      { by: 'b', say: "Then we talk to them tonight, before anyone else does." },
     ] },
     { id: 'tn.s5', turns: [
       { by: 'a', say: "Nobody does anything weird this week. We just let it happen." },
@@ -518,7 +518,7 @@ export default {
     ] },
     { id: 'tn.s8', when: { late: true }, turns: [
       { by: 'a', say: "With this few people, one vote is everything. We've got it. Barely." },
-      { by: 'b', say: "Barely is still got." },
+      { by: 'b', say: "Barely still counts." },
       { by: 'a', say: "Barely is how people go home." },
     ] },
   ],
@@ -603,9 +603,9 @@ export default {
       { by: 'b', say: "Nothing. Changes." },
     ] },
     { id: 'tr.s7', turns: [
-      { by: 'b', say: "I told my mum about you, in my head. She approves." },
-      { by: 'a', say: "Of me, or of the deal?" },
-      { by: 'b', say: "Both. Mostly the deal." },
+      { by: 'b', say: "You know what I like about us? No drama." },
+      { by: 'a', say: "Don't say that. You'll jinx it." },
+      { by: 'b', say: "Fine. Some drama. Very small drama." },
     ] },
     { id: 'tr.s8', turns: [
       { by: 'a', dr: "{b} is the only person in this house I don't have to double-check. Do you know how rare that is in here?" },
@@ -614,8 +614,8 @@ export default {
     ] },
     { id: 'tr.s9', when: { showmance: true }, turns: [
       { by: 'b', say: "Promise me the game doesn't come between us." },
-      { by: 'a', say: "The game IS us. That's the point." },
-      { by: 'b', say: "That's either really sweet or really creepy." },
+      { by: 'a', say: "The game is how we met. It doesn't get to break us up." },
+      { by: 'b', say: "That's either really sweet or a bit cheesy." },
       { by: 'a', say: "It's both. Still us?" },
       { by: 'b', say: "Still us." },
     ] },
@@ -696,7 +696,7 @@ export default {
       { by: 'b', dr: "There's always a reason." },
     ] },
     { id: 'tr.d3', turns: [
-      { by: 'a', say: "What would you think about going after your closest friend next week?" },
+      { by: 'a', say: "What would you think about cutting one of your friends loose next week?" },
       { by: 'b', say: "Sure. Whatever you think." },
       { by: 'a', dr: "That was too easy. {b} would never let that go without a fight, unless {b} wasn't listening." },
     ] },
@@ -829,7 +829,7 @@ export default {
     { id: 'tr.c4', turns: [
       { by: 'a', say: "Finale night, you and me, still standing. I can see it." },
       { by: 'b', say: "Me too." },
-      { by: 'a', dr: "I can see it too. {b} just isn't in the picture." },
+      { by: 'a', dr: "I can see finale night. I just can't see {b} in it." },
     ] },
     { id: 'tr.c5', turns: [
       { by: 'b', say: "Promise me nothing's changed." },
@@ -1000,10 +1000,10 @@ export default {
       { by: 'b', say: "It was strategic. You know that." },
       { by: 'a', say: "I asked you a personal question and you gave me a game answer." },
       { by: 'b', say: "This IS a game!" },
-      { by: 'a', say: "Then you just lost a player." },
+      { by: 'a', say: "Then you've just lost a teammate." },
     ] },
     { id: 'tx.c5', turns: [
-      { by: 'a', say: "Your name came up as a backup plan. My name came up in yours." },
+      { by: 'a', say: "I've heard your plan. My name's in it, as the backup." },
       { by: 'b', say: "It's called having options." },
       { by: 'a', say: "And I'm an option?" },
       { by: 'b', say: "Everybody's an option." },
@@ -1018,7 +1018,7 @@ export default {
     { id: 'tx.c7', turns: [
       { by: 'a', say: "You're telling people I'm the one who can't be trusted." },
       { by: 'b', say: "I'm telling people what I think." },
-      { by: 'a', say: "Then think it to my face. Go on." },
+      { by: 'a', say: "Then say it to my face. Go on." },
       { by: 'b', dr: "{a} wants a scene. I'm not giving {a.obj} one. Much." },
     ] },
     { id: 'tx.c8', turns: [
@@ -1422,7 +1422,7 @@ export default {
       { by: 'a', say: "Then stop looking like you're already packing." },
     ] },
     { id: 'tk.k12', turns: [
-      { by: 'a', say: "Want me to do your hair? It always used to calm me down." },
+      { by: 'a', say: "Want me to do your hair? Somebody did mine on a bad day once. It helped more than it should have." },
       { by: 'b', say: "...Yeah. Okay." },
       { beat: 'For twenty minutes, nobody mentions the block.' },
     ] },
@@ -1463,7 +1463,7 @@ export default {
       { by: 'a', say: "You don't have to feel it. They do." },
     ] },
     { id: 'tk.k19', turns: [
-      { by: 'a', say: "Whatever you need this week. Practice your speech on me. Cry on me. Anything." },
+      { by: 'a', say: "Whatever you need this week. Practise your speech on me. Cry on me. Anything." },
       { by: 'b', say: "You'd let me practise my speech on you?" },
       { by: 'a', say: "Ten times, if you want." },
       { by: 'b', dr: "{a} has nothing to gain from being nice to me this week. That's why it means something." },
@@ -1496,7 +1496,7 @@ export default {
     { id: 'tk.rc1', when: { register: 'competitor' }, turns: [
       { by: 'a', say: "Listen. The veto's coming. You win that, none of this matters." },
       { by: 'b', say: "And if I don't?" },
-      { by: 'a', say: "Then we train for the plea. I'll be your coach." },
+      { by: 'a', say: "Then we work on your speech. I'll be your coach." },
     ] },
     { id: 'tk.rk1', when: { register: 'cool' }, turns: [
       { by: 'a', say: "Let's look at it calmly. Who are the votes you can actually get?" },
@@ -1542,13 +1542,13 @@ export default {
       { by: 'a', say: "I'll say one name and then I'll leave you alone." },
       { by: 'b', say: "Go on." },
       { by: 'a', say: "{c}." },
-      { beat: '{b} doesn\'t answer, but writes nothing else down for the rest of the night.' },
+      { beat: '{b} doesn\'t answer. But later that night, there is only one name on the notepad by the bed.' },
     ] },
     { id: 'tp.l7', turns: [
       { by: 'a', say: "What did {c} say to you when you won?" },
       { by: 'b', say: "Congratulations, I think." },
       { by: 'a', say: "Funny. That's not what {c} said downstairs." },
-      { by: 'b', dr: "I don't know if {a} is telling me the truth. I know I believe it." },
+      { by: 'b', dr: "I don't know if {a} is telling me the truth. But I believe it, and that's what counts this week." },
     ] },
     { id: 'tp.l8', turns: [
       { by: 'a', say: "If you don't take the shot at {c} now, you won't get another one." },
@@ -1660,7 +1660,7 @@ export default {
     { id: 'th.c9', turns: [
       { beat: '{a} and {b} lie on the HOH bed watching the camera feeds of the house below.' },
       { by: 'b', say: "Look at them all down there. Like a nature documentary." },
-      { by: 'a', say: "Be nice. One of them is going to be us next week." },
+      { by: 'a', say: "Be nice. Next week we could be the ones down there." },
     ] },
     { id: 'th.c10', turns: [
       { by: 'a', say: "Stay as long as you want. Seriously." },
@@ -1686,8 +1686,8 @@ export default {
     ] },
     { id: 'th.c14', turns: [
       { beat: '{b} is flicking through the photos by the HOH bed.' },
-      { by: 'b', say: "Is this your family? You look exactly like your dad." },
-      { by: 'a', say: "Everybody says that. Nobody means it as a compliment." },
+      { by: 'b', say: "Are these from home? Everyone's smiling in them except you." },
+      { by: 'a', say: "I'm smiling on the inside. I always have been." },
     ] },
     { id: 'th.c15', turns: [
       { by: 'b', say: "What's it like? Being up here?" },

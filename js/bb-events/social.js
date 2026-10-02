@@ -70,6 +70,20 @@ const _w = (value, ctx) => band(value * _actFit(ctx));
 /** Everyone still in the house and not currently the centre of this act. */
 const _others = (house, ...exclude) => house.filter(n => n && !exclude.includes(n));
 
+/**
+ * Which room a scene happens in: by hash, so it never draws a die. `people`
+ * are the ones in it; the HOH room needs the HOH (house-events _roomAllows —
+ * a scene's own room skips that rule, so it is applied here).
+ */
+function _room(rooms, ctx, ...people) {
+  const ok = rooms.filter(r => r !== 'hoh-room' || (ctx?.hoh && people.includes(ctx.hoh)));
+  const pool = ok.length ? ok : ['backyard'];
+  const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${people.join('|')}`;
+  let hash = 0;
+  for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
+  return pool[hash % pool.length];
+}
+
 /** Prefer people who have not already carried a beat, so the spotlight moves. */
 /** Least-seen first, weighted toward whoever this week is about. */
 const _leastSeen = pool => spotlightOrder(pool);
@@ -132,21 +146,14 @@ const allianceForms = {
   },
   fire(house, ctx, api) {
     const { a, b } = _alliancePair(house, ctx);
-
-    const p = pronouns(a);
     const strategic = (pStats(a).strategic + pStats(b).strategic) / 2;
-    const text = _variant([
-      `${a} and ${b} are the last two awake. ${a} finally asks, “Are we actually looking out for each other?” ${b} says yes, then asks who else needs to know.`,
-      `“I'm not asking you to pick a side,” ${a} tells ${b}. ${b} laughs. “You kind of are.” After a long pause, ${b} agrees anyway.`,
-      `${a} brings up one name, then another, watching ${b}'s reaction each time. ${b} catches on and asks, “Are you trying to make something with me?” ${a} says yes.`,
-      `${b} asks ${a} who they really trust. ${a} looks toward the door before answering, then says ${b}'s name. They agree to keep it between them.`,
-    ], ctx, a, b);
 
     // A real alliance is worth real bond, scaled by how strategic the pair are.
     api.addBond(a, b, 1.4 + (strategic / 10));
     api.remember(a, b, 'alliance', 2, { formed: ctx.week?.num || 0 });
     api.remember(b, a, 'alliance', 2, { formed: ctx.week?.num || 0 });
-    return { text, players: [a, b], badgeText: 'DEAL STRUCK', badgeClass: 'green' };
+    const scene = makeScene('social.alliance', { a, b }, { ending: 'formed' }, [], _room(['bedroom', 'backyard', 'hoh-room'], ctx, a, b));
+    return { scene, players: [a, b], badgeText: 'DEAL STRUCK', badgeClass: 'green' };
   },
 };
 
@@ -162,19 +169,12 @@ const lateNightTrust = {
     const pool = _leastSeen(house.filter(n => house.some(m => m !== n && bond(n, m) >= 2)));
     const a = _choose(pool, ctx, 'trust') || pool[0];
     const b = closestTo(a, _others(house, a));
-    const p = pronouns(a);
     const secret = pStats(a).loyalty >= 6;
-    const text = _variant([
-      `Everyone else goes to bed, but ${a} and ${b} stay at the kitchen table. They stop talking game and spend another hour telling stories about home.`,
-      `${a} tells ${b} something personal they have not shared with anyone else in the house. ${b} thanks them for trusting them and promises it stays there.`,
-      `Around two in the morning, ${a} finally tells ${b} what has been bothering ${pronouns(a).obj} all week. ${b} listens without interrupting or trying to fix it.`,
-      `${a} and ${b} lie awake talking about the people they miss outside the house. When they finally say goodnight, both of them feel closer.`,
-    ], ctx, a, b);
-
     api.addBond(a, b, secret ? 1.8 : 1.1);
     api.remember(a, b, 'confidence', secret ? 2 : 1, {});
     if (secret) api.remember(b, a, 'confidence', 2, {});
-    return { text, players: [a, b], badgeText: 'TRUST BUILT', badgeClass: 'green' };
+    const scene = makeScene('social.trust', { a, b }, { ending: secret ? 'deep' : 'warm' }, [], _room(['kitchen', 'backyard', 'bedroom'], ctx, a, b));
+    return { scene, players: [a, b], badgeText: 'TRUST BUILT', badgeClass: 'green' };
   },
 };
 
@@ -234,20 +234,13 @@ const paranoiaSpiral = {
     const a = _choose(prone, ctx, 'para') || house[0];
     // Paranoia lands hardest on someone you actually trusted. That is the point.
     const victim = closestTo(a, _others(house, a));
-    const p = pronouns(a);
     const wrong = bond(a, victim) >= 3;   // they were, in fact, loyal
-    const text = _variant([
-      `${a} keeps replaying a conversation with ${victim}. By morning, a long pause and one strange look have become proof that ${victim} is hiding something.`,
-      `Nobody has checked in with ${a} all afternoon. ${a} starts asking whether ${victim} told everyone to keep their distance.`,
-      `${a} counts the votes again and cannot make the numbers work. After a while, ${a} decides ${victim} must be lying about where they stand.`,
-      `“${victim} is being weird with me,” ${a} tells anyone who will listen. When somebody says they have not noticed anything, ${a} becomes even more certain.`,
-    ], ctx, a, victim);
-
     api.suspicion(a, victim, 2.2);
     api.addBond(a, victim, -0.9);
     api.remember(a, victim, 'suspicion', wrong ? 1 : 2, { founded: !wrong });
+    const scene = makeScene('social.paranoia', { a, b: victim }, { ending: wrong ? 'wrong' : 'founded' }, [], _room(['bedroom', 'kitchen', 'backyard'], ctx, a, victim));
     return {
-      text, players: [a, victim],
+      scene, players: [a, victim],
       badgeText: wrong ? 'PARANOIA' : 'SUSPICION', badgeClass: wrong ? 'grey' : 'red',
     };
   },
@@ -297,23 +290,10 @@ const rumour = {
     // Aim at a pair who are close — a rumour is worth most where it breaks something.
     const { liar, mark, victim } = _rumourTrio(house, ctx);
 
-    const p = pronouns(liar);
     const skilled = pStats(liar).social / 10;
     const sharp = pStats(mark).intuition / 10;
     // Does it land? Persuasion against perception — proportional, not a coin flip.
     const lands = skilled * (1 - sharp * 0.8) > 0.28;
-    const text = lands ? _variant([
-      `${liar} tells ${mark} something ${victim} really said, but changes one important word. ${mark} asks twice whether that was the exact quote. ${liar} says it was.`,
-      `“I'm only telling you because I'd want to know,” ${liar} says. Then ${p.sub} tells ${mark} that ${victim} has been putting ${mark}'s name forward as a target.`,
-      `${liar} gives ${mark} a mostly true story about ${victim}, with just enough changed to make it sound personal. ${mark} believes it.`,
-      `${liar} warns ${mark} that ${victim} cannot be trusted, then leaves before ${mark} can ask too many questions. ${mark} spends the evening watching ${victim}.`,
-    ], ctx, liar, mark, victim) : _variant([
-      `${mark} asks where ${liar} heard it, who was there and what ${victim} said word for word. ${liar} finally backs off and says, “Maybe I misunderstood.”`,
-      `${mark} listens to the story about ${victim} and only says, “Okay.” As soon as ${liar} leaves, ${mark} goes looking for ${victim}.`,
-      `${liar} pulls ${mark} aside and repeats a cutting comment ${victim} supposedly made in private. The story sounds too clean, and ${mark} knows ${victim} would never use those words. ${mark} asks ${liar} why ${liar} is trying to start something.`,
-      `${mark} nods while ${liar} talks, but does not believe the rumor. Now ${mark} wants to know why ${liar} thought it would work.`,
-    ], ctx, liar, mark, victim);
-
     if (lands) {
       api.addBond(mark, victim, -1.6);
       api.suspicion(mark, victim, 2.0);
@@ -324,8 +304,12 @@ const rumour = {
       api.addBond(mark, liar, -1.2);
       api.remember(mark, liar, 'deceit', 2, { caught: true });
     }
+    // The victim is talked ABOUT; only the two of them are in the room.
+    const scene = makeScene('social.rumour', { a: liar, b: mark, c: victim }, { ending: lands ? 'lands' : 'caught' }, [],
+      _room(['pantry', 'bedroom', 'backyard'], ctx, liar, mark));
+    scene.seenBy = [liar, mark];
     return {
-      text, players: [liar, mark, victim],
+      scene, players: [liar, mark, victim],
       badgeText: lands ? 'RUMOUR LANDS' : 'RUMOUR CAUGHT',
       badgeClass: lands ? 'red' : 'gold',
     };
@@ -345,14 +329,6 @@ const showmanceSpark = {
   fire(house, ctx, api) {
     const { a, b } = _romancePair(house, ctx);
 
-    const p = pronouns(a);
-    const text = _variant([
-      `${a} and ${b} spend most of the day together. When somebody asks what they have been talking about, neither gives a clear answer.`,
-      `${a} rests a hand on ${b}'s shoulder while they talk. It stays there long enough for two people across the yard to notice.`,
-      `${a} whispers something to ${b}, and ${b} bursts out laughing. For the rest of the evening, they keep finding each other across the room.`,
-      `${a} and ${b} stay up talking after everyone else goes to bed. When they finally separate, both check whether anyone is still awake.`,
-    ], ctx, a, b);
-
     const started = api.showmance(a, b, { context: 'the Big Brother house', intensity: 0.35, bondDelta: 1.2 });
     if (!started) api.addBond(a, b, 0.8);
     // A showmance is a target on two backs at once.
@@ -362,11 +338,27 @@ const showmanceSpark = {
     // Not a showmance. This writes a spark, and a spark still has to survive the
     // week and mature before anybody makes a move — calling it a showmance here
     // promised a couple the game had not created yet.
-    return { text, players: [a, b], badgeText: started ? 'A SPARK' : 'SOMETHING THERE', badgeClass: 'gold' };
+    const scene = makeScene('social.spark', { a, b }, { ending: started ? 'spark' : 'something' }, [], _room(['backyard', 'kitchen', 'living-room'], ctx, a, b));
+    return { scene, players: [a, b], badgeText: started ? 'A SPARK' : 'SOMETHING THERE', badgeClass: 'gold' };
   },
 };
 
 // ── memory turning into intent ────────────────────────────────────────
+
+/** A memory type, as the family of thing that was done: the grudge lines key on it. */
+const _GRUDGE_KIND = {
+  betrayal: 'betrayal', 'alliance-betrayal': 'betrayal', 'crossed-me': 'betrayal', abandonment: 'betrayal',
+  'took-my-ally': 'betrayal', 'went-behind-my-back': 'betrayal',
+  'voted-me-out': 'vote', 'voted-me-out-once': 'vote', 'renominated-me': 'vote', 'forced-me-up': 'vote', 'made-me-the-pawn': 'vote',
+  'lied-to-my-face': 'lie', deceit: 'lie', 'two-faced': 'lie', 'leaked-information': 'lie',
+  'blamed-me-for-a-vote-i-did-not-cast': 'lie', 'wrongly-accused': 'lie',
+  humiliation: 'humiliation', humiliated: 'humiliation', 'came-at-me-in-public': 'humiliation', insult: 'humiliation',
+  'threatened-me-live': 'humiliation',
+  'broke-a-promise': 'promise', 'broken-promise': 'promise', 'broke-a-final-two': 'promise', 'broken-final-two': 'promise',
+  'left-me-out': 'left-out', 'decided-without-me': 'left-out',
+  'kept-me-awake': 'house', 'never-cleans-up': 'house', 'ate-my-food': 'house',
+  'coming-for-me': 'plan', 'planning-the-cut': 'plan', 'overheard-plot': 'plan',
+};
 
 const grudgeHardens = {
   id: 'social-grudge-hardens',
@@ -382,7 +374,6 @@ const grudgeHardens = {
       _others(house, n).some(m => grudge(n, m) >= 2 && !isHunting(n, m))));
     const a = _choose(carrying, ctx, 'grudge') || carrying[0];
     const enemy = _others(house, a).sort((x, y) => grudge(a, y) - grudge(a, x))[0];
-    const p = pronouns(a);
     // The thing held AGAINST them. Sorting every memory by strength picked up
     // kindnesses too, and the house heard somebody's grudge was "the told me
     // the truth".
@@ -413,21 +404,14 @@ const grudgeHardens = {
       'kept-me-awake': 'nights of noise', 'never-cleans-up': 'mess', 'ate-my-food': 'food-stealing', irritation: 'constant needling',
     })[kind] || null;
 
-    const text = _variant([
-      grievance
-        ? `${a} tells an ally that ${enemy}'s ${grievance} settled it. ${a} is no longer asking for an explanation; `
-          + `${a} is asking whether the votes exist to send ${enemy} home.`
-        : `${a} tells an ally that ${pronouns(a).sub} is done giving ${enemy} the benefit of the doubt. ${a} is no longer asking for an explanation; `
-          + `${a} is asking whether the votes exist to send ${enemy} home.`,
-      `${a} is friendly to ${enemy} at dinner, then waits until ${enemy} leaves and says, “The next time I have power, they're going up.”`,
-      `“I'm over it,” ${a} says when ${enemy}'s name comes up. A minute later, ${a} is listing every reason ${enemy} cannot stay.`,
-      `${a} goes over what ${enemy} did, who helped and who knew. By the end of the conversation, ${a} has decided exactly when to take the shot.`,
-    ], ctx, a, enemy);
-
     api.setTarget(a, enemy, grievance ? `has not forgiven the ${grievance}` : 'has run out of patience');
     api.suspicion(a, enemy, 1.5);
     api.remember(a, enemy, 'resolve', 2, { about: kind });
-    return { text, players: [a, enemy], badgeText: 'GRUDGE HARDENS', badgeClass: 'red' };
+    // What the enemy did, as a family the lines can speak to. The enemy is not in the room.
+    const scene = makeScene('social.grudge', { a, b: enemy }, { ending: 'hardens', reason: _GRUDGE_KIND[kind] || null }, [],
+      _room(['backyard', 'kitchen', 'bedroom'], ctx, a));
+    scene.seenBy = [a];
+    return { scene, players: [a, enemy], badgeText: 'GRUDGE HARDENS', badgeClass: 'red' };
   },
 };
 
@@ -467,21 +451,14 @@ const driftingOut = {
   fire(house, ctx, api) {
     const adrift = _leastSeen(house.filter(n => !_others(house, n).some(m => bond(n, m) >= 2)));
     const a = _choose(adrift, ctx, 'drift') || adrift[0];
-    const p = pronouns(a);
     const nearest = closestTo(a, _others(house, a));
-    const text = _variant([
-      `${a} walks into the bedroom and the conversation keeps going, but nobody asks what ${p.sub} thinks. Later, ${a} corners ${nearest} and says, “If there is a plan, I need to be in the room when it is made.”`,
-      `${a} asks two people where the vote stands and gets the same vague answer twice. ${a} takes ${nearest} aside and asks the question a third time. This time, ${nearest} gives ${pronouns(a).obj} a name.`,
-      `${a} realizes ${p.sub} has gone all day without one private game conversation. ${a} dries ${p.posAdj} hands, finds ${nearest} and says, “Tell me what I missed.”`,
-      `Everybody is friendly with ${a}, but nobody has brought ${p.obj} into a plan. ${a} stops waiting for an invitation and asks ${nearest} directly whether there is room for ${pronouns(a).obj}.`,
-    ], ctx, a, nearest);
-
     // Drifting is not neutral: it is a decision to fix it, aimed at the nearest hand.
     if (nearest) {
       api.addBond(a, nearest, 0.9);
       api.remember(a, nearest, 'reach', 1, {});
     }
-    return { text, players: [a, nearest].filter(Boolean), badgeText: 'ADRIFT', badgeClass: 'grey' };
+    const scene = makeScene('social.adrift', { a, b: nearest || null }, { ending: 'adrift' }, [], _room(['kitchen', 'bedroom'], ctx, a, nearest));
+    return { scene, players: [a, nearest].filter(Boolean), badgeText: 'ADRIFT', badgeClass: 'grey' };
   },
 };
 

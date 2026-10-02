@@ -3,6 +3,7 @@
 import FRICTION from './friction.js';
 import CEREMONY from './ceremony.js';
 import TALK from './talk.js';
+import SOCIAL from './social.js';
 
-export const POOLS = { ...FRICTION, ...CEREMONY, ...TALK };
+export const POOLS = { ...FRICTION, ...CEREMONY, ...TALK, ...SOCIAL };
 export const POOL_KEYS = Object.keys(POOLS);

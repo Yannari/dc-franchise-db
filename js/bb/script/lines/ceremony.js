@@ -57,7 +57,7 @@ export default {
     ] },
     { id: 'hw.a8', turns: [
       { by: 'a', say: 'Did that just happen? Tell me that just happened.' },
-      { by: 'a', dr: 'I want to scream. I want to call my mum. I want to see which of them comes up those stairs first.' },
+      { by: 'a', dr: 'I want to scream. I want to call home. I want to see which of them comes up those stairs first.' },
     ] },
     { id: 'hw.a9', turns: [
       { beat: '{a} hugs the nearest person, then the next one, then stops short of one person and offers a high five instead.' },
@@ -117,7 +117,7 @@ export default {
     ] },
     { id: 'hw.ry1', when: { register: 'shy' }, turns: [
       { by: 'a', say: "Oh. Oh no. Wait, I won? Me?" },
-      { by: 'a', dr: "I've been invisible for weeks, and that was the plan. I don't think I'm invisible any more." },
+      { by: 'a', dr: "I've kept my head down since I walked in, and that was the plan. Nobody's going to overlook me now." },
     ] },
     { id: 'hw.ry2', when: { register: 'shy' }, turns: [
       { beat: '{a} covers {a.posAdj} face with both hands while the house claps.' },
@@ -189,11 +189,11 @@ export default {
     ] },
     { id: 'hw.g4', turns: [
       { by: 'a', say: "I know, I know. I'm sorry. Actually, I'm not sorry." },
-      { by: 'a', dr: 'I already know how my room looks. This time I want to know what my nominations look like before I even get there.' },
+      { by: 'a', dr: 'I already know what the room looks like. This time I want my nominations decided before I have even unpacked.' },
     ] },
     { id: 'hw.g5', turns: [
       { by: 'a', say: "Somebody had to win it. It might as well be me. Again." },
-      { by: 'a', dr: "Last time I played it safe. This time there's nobody I need to be safe from." },
+      { by: 'a', dr: "Last time I played it safe. This time I'm not playing safe." },
     ] },
     { id: 'hw.g6', turns: [
       { by: 'a', say: 'Two for me! Count them!' },
@@ -243,7 +243,7 @@ export default {
       { by: 'a', say: "{c}, you're safe with me. Win the veto if you can, but you're not the one I want out." },
     ] },
     { id: 'ns.p4', turns: [
-      { by: 'a', say: "This isn't personal, {c}. You're sitting there so somebody else stays where I want them." },
+      { by: 'a', say: "This isn't personal, {c}. I needed somebody I trust sitting next to {b}." },
       { by: 'a', say: "{b}, it isn't personal for you either. It's strategic, and I think you'd have done the same to me." },
     ] },
     { id: 'ns.p5', when: { band: ['cold', 'enemies'] }, turns: [
@@ -393,7 +393,7 @@ export default {
     ] },
     { id: 'ns.b6', turns: [
       { by: 'a', say: "You're both safe with me, and I mean it. This is about the bigger picture." },
-      { by: 'b', dr: "The bigger picture. {a} has a plan, and I'm in the frame. I hope it works, because I'm the one on the block." },
+      { by: 'b', dr: "The bigger picture. {a} has a plan, and I'm part of it whether I like it or not. I hope it works, because I'm the one on the block." },
     ] },
     { id: 'ns.b7', turns: [
       { by: 'a', say: "Nobody at this table should panic yet. Things change this week." },
@@ -414,7 +414,7 @@ export default {
     { id: 'nd.a6', turns: [{ by: 'a', dr: "I'm not going home this week. I'm not. I'll win that veto with my teeth if I have to." }] },
     { id: 'nd.a7', turns: [{ by: 'a', dr: "My first thought was my family watching at home. My second thought was who's going to vote for me." }] },
     { id: 'nd.a8', turns: [{ by: 'a', dr: 'You can tell who\'s glad you\'re up there. They hug you a little too hard.' }] },
-    { id: 'nd.a9', turns: [{ by: 'a', dr: 'Right now I have to count to a majority. And right now I can count to two. Myself and maybe one other person.' }] },
+    { id: 'nd.a9', turns: [{ by: 'a', dr: "I need a majority to stay. Right now I can count one vote I'm sure of, and I'm not even sure of that one." }] },
     { id: 'nd.a10', turns: [{ by: 'a', dr: "I'm calm. I'm very calm. Please don't look at my hands." }] },
     { id: 'nd.a11', turns: [{ by: 'a', dr: "I came here to play, not to sit around and get comfortable. Being on the block is part of playing. I'll get off it." }] },
     { id: 'nd.a12', turns: [{ by: 'a', dr: "There's a chair in the living room with my name on it now. I'd like it to have somebody else's by Monday." }] },
@@ -453,7 +453,7 @@ export default {
     { id: 'nd.t1', turns: [{ by: 'a', dr: "{b} made it very clear I'm the target. Good. Now I know exactly who I'm fighting." }] },
     { id: 'nd.t2', turns: [{ by: 'a', dr: "I'm the target. I can feel it. People are already being careful about where they sit next to me." }] },
     { id: 'nd.t3', turns: [{ by: 'a', dr: "{b} wants me gone. I'm going to make this the longest week of {b.posAdj} life." }] },
-    { id: 'nd.t4', turns: [{ by: 'a', dr: "When you're the target, the house stops talking to you like a person. You're already a goodbye." }] },
+    { id: 'nd.t4', turns: [{ by: 'a', dr: "When you're the target, the house stops talking to you like a person. You're already a goodbye speech." }] },
     { id: 'nd.t5', turns: [{ by: 'a', dr: "The other nominee gets the sympathy. I get the stares. That's how you know which one you are." }] },
     { id: 'nd.t6', turns: [{ by: 'a', dr: "If I win the veto, {b}'s whole week falls apart. That's the only thought in my head." }] },
   ],
@@ -463,7 +463,7 @@ export default {
     { id: 'nd.b3', turns: [{ by: 'a', dr: "I didn't see it. I genuinely didn't see it. And that's the part that scares me most." }] },
     { id: 'nd.b4', turns: [{ by: 'a', dr: "{b} looked me in the eye this morning and told me I was safe. This morning." }] },
     { id: 'nd.b5', turns: [{ by: 'a', dr: "Of all the people in this house, {b} is the last one I thought would turn that key on me." }] },
-    { id: 'nd.b6', turns: [{ by: 'a', dr: "I'm hurt. I'm not going to pretend I'm not. But hurt doesn't win vetos, so I'll be hurt later." }] },
+    { id: 'nd.b6', turns: [{ by: 'a', dr: "I'm hurt. I'm not going to pretend I'm not. But hurt doesn't win vetoes, so I'll be hurt later." }] },
   ],
 
   // ── winning the Power of Veto ──────────────────────────────────────
@@ -482,7 +482,7 @@ export default {
     ] },
     { id: 'vw.a4', turns: [
       { beat: '{a} holds the medallion up to the camera and kisses it.' },
-      { by: 'a', dr: 'The veto is the most powerful thing in this house that nobody wants to talk about. I want to talk about it.' },
+      { by: 'a', dr: 'Everyone pretends the veto is just a necklace. It is the whole week, and it is around my neck.' },
     ] },
     { id: 'vw.a5', turns: [
       { by: 'a', say: 'Somebody hold me. I think my arms are going to fall off.' },
@@ -711,8 +711,8 @@ export default {
   'veto.dr.keep': [
     { id: 'vd.k1', turns: [{ by: 'a', dr: "I'm not using it. If I pull somebody off, somebody else goes up, and that somebody might be my friend." }] },
     { id: 'vd.k2', turns: [{ by: 'a', dr: "{b} is going to ask me for this. I'm going to say no. I don't feel great about it." }] },
-    { id: 'vd.k3', turns: [{ by: 'a', dr: "The nominations stay the same. I didn't make them, and I don't want my name on changing them." }] },
-    { id: 'vd.k4', turns: [{ by: 'a', dr: "Using the veto makes you enemies. Not using it makes you fewer. I'm keeping it in the box." }] },
+    { id: 'vd.k3', turns: [{ by: 'a', dr: "The nominations stay the same. I didn't make them, and I don't want my name attached to changing them." }] },
+    { id: 'vd.k4', turns: [{ by: 'a', dr: "Using the veto makes you enemies. Keeping it makes you fewer of them. It stays in the box." }] },
     { id: 'vd.k5', turns: [{ by: 'a', dr: "If I use it on {b}, I'm the one who put the replacement in danger. I'm not taking that blood on my hands." }] },
     { id: 'vd.k6', turns: [{ by: 'a', dr: "{b} and I aren't close enough for me to take that risk. Maybe next week. Not this week." }] },
     { id: 'vd.k7', turns: [{ by: 'a', dr: "If I use it, somebody on that couch takes the seat, and every one of them has been nice to me this week. Nominations stay as they are." }] },
@@ -725,7 +725,7 @@ export default {
   // ── the replacement nominee, in the Diary Room ─────────────────────
   'veto.renom.any': [
     { id: 'vr.a1', turns: [{ by: 'a', dr: "I was safe. I was on the couch. Then my name came out of {b.posAdj} mouth." }] },
-    { id: 'vr.a2', turns: [{ by: 'a', dr: "The replacement nominee. That's the worst seat in the house, because it was always the plan." }] },
+    { id: 'vr.a2', turns: [{ by: 'a', dr: "The replacement nominee. That's the worst seat in the house, because the replacement is usually who they wanted all along." }] },
     { id: 'vr.a3', turns: [{ by: 'a', dr: "I had five minutes' warning. Five minutes. Everybody else had all week to campaign." }] },
     { id: 'vr.a4', turns: [{ by: 'a', dr: "Walking to that chair, I could hear everybody breathe out. Everybody who wasn't me." }] },
     { id: 'vr.a5', turns: [{ by: 'a', dr: "The veto was supposed to make this week calmer. It made it calmer for everybody except me." }] },
@@ -743,7 +743,7 @@ export default {
     { id: 'vr.e1', turns: [{ by: 'a', dr: "I knew it was going to be me. The second that veto got used, I knew." }] },
     { id: 'vr.e2', turns: [{ by: 'a', dr: "{b} and I have never got on. I'd have been more surprised if it was anybody else." }] },
     { id: 'vr.e3', turns: [{ by: 'a', dr: "I saw it coming. I just hoped I was wrong. I'm hardly ever wrong about {b}." }] },
-    { id: 'vr.e4', turns: [{ by: 'a', dr: "No surprise. I'd already packed my campaign in my head. Now I just have to run it." }] },
+    { id: 'vr.e4', turns: [{ by: 'a', dr: "No surprise. I'd already planned my campaign in my head. Now I just have to run it." }] },
     { id: 'vr.e5', turns: [{ by: 'a', dr: "{b} has been looking at me all week like I'm a problem. Now {b} has made me one." }] },
     { id: 'vr.e6', turns: [{ by: 'a', dr: "Fine. I'm up. I've been fighting {b} for weeks anyway. Now it's out in the open." }] },
   ],
@@ -783,7 +783,7 @@ export default {
       { by: 'a', say: 'I have to go. They are going to drag me out.' },
     ] },
     { id: 'eg.a9', turns: [
-      { by: 'a', say: "Love you all. Even the ones who voted for me. Maybe especially you." },
+      { by: 'a', say: "Love you all. Even the ones who voted me out. Maybe especially you." },
     ] },
     { id: 'eg.a10', when: { late: true }, turns: [
       { by: 'a', say: "I'll see most of you in the jury house. Bring snacks." },
@@ -871,7 +871,7 @@ export default {
       { beat: '{a} stands still for a second too long, looking at the house.' },
       { by: 'a', say: "I'm not angry. I'm just impressed. Mostly angry." },
     ] },
-    { id: 'eg.b6', turns: [
+    { id: 'eg.b6', when: { late: true }, turns: [
       { by: 'a', say: 'Some of you are going to have a very awkward jury house. Just saying.' },
       { by: 'b', say: 'Go. Go before you say something.' },
     ] },

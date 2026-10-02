@@ -64,6 +64,53 @@ TD_STAGE = {
     'light': '#ffd28e', 'fill': '#ffe6cf', 'world': '#8a4c50', 'led': '#ffb45e', 'led2': '#ffd28e',
     'graphic': ['#3b1f2b', '#e8a33d', '#3d8c84', '#3b1f2b', '#e0673f'],
 }
+# Each season's house, in the Total Drama look: overrides on TD_PALETTE. `wallpaper` dresses every wall
+# that a room does not paint itself; `sky` is the yard's.
+THEME_TD = {
+    'temptation': {   # BB19: the Den. Red velvet, gold, the garden's emerald, dark wood
+        'wall': '#7a2b37', 'wall2': '#8e3a46', 'ceiling': '#4a2027', 'accent': '#d9a441', 'accent2': '#2f6b4f', 'pop': '#c43d4f', 'deep': '#3a1820',
+        'cabinet': '#e8d3b0', 'island': '#7a2b37', 'splash': '#2f6b4f', 'floor_a': '#6a4433', 'floor_b': '#5e3b2c', 'grout': '#3d2018',
+        'wood_a': '#8a5532', 'wood_b': '#6b3e22', 'fabric': '#c43d4f', 'fabric2': '#7a2b37', 'metal': '#d9a441', 'handle': '#d9a441',
+        'light': '#ffcf8a', 'world': '#7a3a40', 'led': '#ff7a6e', 'led2': '#ffcf8a', 'sky': '#e9a07e',
+        'graphic': ['#3a1820', '#c43d4f', '#d9a441', '#3a1820', '#2f6b4f'], 'wallpaper': ('stripes', '#7a2b37', '#6c2431'),
+    },
+    'machine': {      # BB26: the house an AI runs. White, teal light, a grid in every wall
+        'wall': '#e6ecee', 'wall2': '#d4dde0', 'ceiling': '#f2f6f7', 'accent': '#3ad6c4', 'accent2': '#2a8fb8', 'pop': '#ff6b8a', 'deep': '#1d2b33',
+        'cabinet': '#ffffff', 'island': '#1d2b33', 'splash': '#3ad6c4', 'floor_a': '#cfd8dc', 'floor_b': '#c6d0d4', 'grout': '#9fb0b6',
+        'wood_a': '#b7c4c9', 'wood_b': '#9fb0b6', 'fabric': '#2a8fb8', 'fabric2': '#1d2b33', 'metal': '#c9d6db', 'handle': '#3ad6c4',
+        'light': '#e6fffb', 'world': '#b9d6dc', 'led': '#3ad6c4', 'led2': '#7ef0e2', 'sky': '#bfe9ee',
+        'graphic': ['#1d2b33', '#3ad6c4', '#e6ecee', '#1d2b33', '#2a8fb8'], 'wallpaper': ('grid', '#e6ecee', '#9fd9d2'),
+    },
+    'mystery': {      # BB27: a hotel with secrets. Green stripes, dark wood, brass
+        'wall': '#2f5446', 'wall2': '#3b6656', 'ceiling': '#d8c9a3', 'accent': '#c9a24a', 'accent2': '#4fbf8b', 'pop': '#9c3b3b', 'deep': '#1f2f2a',
+        'cabinet': '#5a3a26', 'island': '#2f5446', 'splash': '#e6dcc4', 'floor_a': '#5e3e2a', 'floor_b': '#563827', 'grout': '#3a2618',
+        'wood_a': '#6e4a30', 'wood_b': '#4f321f', 'fabric': '#9c3b3b', 'fabric2': '#2f5446', 'metal': '#c9a24a', 'handle': '#c9a24a',
+        'light': '#ffd99a', 'world': '#556b5e', 'led': '#ffd99a', 'led2': '#c9a24a', 'sky': '#8fb3a6',
+        'graphic': ['#1f2f2a', '#2f5446', '#c9a24a', '#1f2f2a', '#9c3b3b'], 'wallpaper': ('stripes', '#2f5446', '#386152'),
+    },
+    'high-rollers': { # BB23's room, taken seriously: felt green, casino red, gold
+        'wall': '#1f4a35', 'wall2': '#2a5a42', 'ceiling': '#2a1f22', 'accent': '#d4ad3c', 'accent2': '#b32a36', 'pop': '#e8463f', 'deep': '#1a1416',
+        'cabinet': '#2a1f22', 'island': '#b32a36', 'splash': '#d4ad3c', 'floor_a': '#8a2230', 'floor_b': '#7a1d2a', 'grout': '#4a1018',
+        'wood_a': '#5a3020', 'wood_b': '#40200f', 'fabric': '#b32a36', 'fabric2': '#1f4a35', 'metal': '#d4ad3c', 'handle': '#d4ad3c',
+        'light': '#ffd57a', 'world': '#3a2a2a', 'led': '#ff4a5a', 'led2': '#ffd57a', 'sky': '#4a3a5a',
+        'graphic': ['#1a1416', '#b32a36', '#d4ad3c', '#1a1416', '#1f4a35'], 'wallpaper': ('stripes', '#1f4a35', '#1b4230'),
+    },
+    'summer-camp': {  # BB21: a camp. Pine boards, plaid red, forest green, lantern light
+        'wall': '#a8743f', 'wall2': '#b9834c', 'ceiling': '#8a5c30', 'accent': '#f2c14e', 'accent2': '#3f7d5a', 'pop': '#c8463c', 'deep': '#3a2a1c',
+        'cabinet': '#7a5230', 'island': '#3f7d5a', 'splash': '#c8463c', 'floor_a': '#9a6a3a', 'floor_b': '#8f6034', 'grout': '#6a4424',
+        'wood_a': '#b9834c', 'wood_b': '#8a5c30', 'fabric': '#c8463c', 'fabric2': '#3f7d5a', 'metal': '#9aa0a0', 'handle': '#3a2a1c',
+        'light': '#ffcf7a', 'world': '#7a9a7a', 'led': '#ffcf7a', 'led2': '#f2c14e', 'sky': '#9bd0e8',
+        'graphic': ['#3a2a1c', '#c8463c', '#f2c14e', '#3a2a1c', '#3f7d5a'], 'wallpaper': ('boards', '#a8743f', '#9a6936'),
+    },
+    'summer-school': {  # BB11: a high school. Cream halls, school blue, gold, red
+        'wall': '#e8e2cf', 'wall2': '#d9d1b8', 'ceiling': '#f2eee2', 'accent': '#f2c14e', 'accent2': '#3b82c4', 'pop': '#d6453d', 'deep': '#24395c',
+        'cabinet': '#ffffff', 'island': '#3b82c4', 'splash': '#7dd3fc', 'floor_a': '#e3dcc6', 'floor_b': '#cfc6ac', 'grout': '#b3aa90',
+        'wood_a': '#c49a62', 'wood_b': '#a47a48', 'fabric': '#d6453d', 'fabric2': '#3b82c4', 'metal': '#9fb3c8', 'handle': '#24395c',
+        'light': '#fff6dc', 'world': '#b8c8d8', 'led': '#7dd3fc', 'led2': '#f2c14e', 'sky': '#9fd4f2',
+        'graphic': ['#24395c', '#3b82c4', '#f2c14e', '#24395c', '#d6453d'], 'wallpaper': ('band', '#e8e2cf', '#3b82c4'),
+    },
+}
+
 TD_LOOKS = {
     # A: cel. Two soft bands under the fill, lines in each thing's own darker colour.
     'a': {'palette': TD_PALETTE, 'bands': [(0.0, (0.72, 0.7, 0.86)), (0.3, (0.88, 0.87, 0.95)), (0.7, (1, 1, 1))], 'ink': 'material', 'thick': 1.7},
@@ -315,8 +362,61 @@ def mat_graphic(name, colors, scale=0.35, angle=35, rough=0.6):
     p.inputs['Roughness'].default_value = rough
     return m
 
+def _wallvec(nt):
+    """(along the wall, up the wall): x + y runs along a back wall and a side wall alike."""
+    tc = nt.nodes.new('ShaderNodeTexCoord')
+    sep = nt.nodes.new('ShaderNodeSeparateXYZ')
+    add = nt.nodes.new('ShaderNodeMath'); add.operation = 'ADD'
+    comb = nt.nodes.new('ShaderNodeCombineXYZ')
+    L = nt.links
+    L.new(tc.outputs['Object'], sep.inputs[0])
+    L.new(sep.outputs['X'], add.inputs[0]); L.new(sep.outputs['Y'], add.inputs[1])
+    L.new(add.outputs[0], comb.inputs['X']); L.new(sep.outputs['Z'], comb.inputs['Y'])
+    return comb.outputs[0]
+
+def mat_wallpaper(name, kind, a, b):
+    m = bpy.data.materials.new(name); m['tdcolor'] = a
+    nt, p = _bsdf(m)
+    v = _wallvec(nt)
+    L = nt.links
+    if kind in ('boards', 'grid'):
+        br = nt.nodes.new('ShaderNodeTexBrick')
+        br.inputs['Color1'].default_value = hexc(a); br.inputs['Color2'].default_value = hexc(a)
+        br.inputs['Mortar'].default_value = hexc(b)
+        if kind == 'boards':      # vertical pine boards
+            sw = nt.nodes.new('ShaderNodeSeparateXYZ'); cb = nt.nodes.new('ShaderNodeCombineXYZ')
+            L.new(v, sw.inputs[0]); L.new(sw.outputs['Y'], cb.inputs['X']); L.new(sw.outputs['X'], cb.inputs['Y'])
+            v = cb.outputs[0]
+            br.inputs['Scale'].default_value = 1.0; br.inputs['Brick Width'].default_value = 3.0; br.inputs['Row Height'].default_value = 0.18
+            br.inputs['Mortar Size'].default_value = 0.006; br.offset = 0.0
+        else:                     # a panel grid
+            br.inputs['Scale'].default_value = 1.0; br.inputs['Brick Width'].default_value = 0.8; br.inputs['Row Height'].default_value = 0.8
+            br.inputs['Mortar Size'].default_value = 0.008; br.offset = 0.0
+        L.new(v, br.inputs['Vector']); L.new(br.outputs['Color'], p.inputs['Base Color'])
+    else:
+        sep = nt.nodes.new('ShaderNodeSeparateXYZ'); L.new(v, sep.inputs[0])
+        r = nt.nodes.new('ShaderNodeValToRGB'); r.color_ramp.interpolation = 'CONSTANT'
+        if kind == 'stripes':     # wide vertical stripes
+            mul = nt.nodes.new('ShaderNodeMath'); mul.operation = 'MULTIPLY'; mul.inputs[1].default_value = 3.2
+            fr = nt.nodes.new('ShaderNodeMath'); fr.operation = 'FRACT'
+            L.new(sep.outputs['X'], mul.inputs[0]); L.new(mul.outputs[0], fr.inputs[0]); L.new(fr.outputs[0], r.inputs['Fac'])
+            r.color_ramp.elements[0].color = hexc(a); r.color_ramp.elements[1].position = 0.5; r.color_ramp.elements[1].color = hexc(b)
+        else:                     # 'band': a painted stripe at waist height, the way a school corridor is painted
+            L.new(sep.outputs['Y'], r.inputs['Fac'])
+            r.color_ramp.elements[0].color = hexc(b); r.color_ramp.elements[1].position = 0.32; r.color_ramp.elements[1].color = hexc(a)
+            e = r.color_ramp.elements.new(0.27); e.color = hexc('#ffffff')
+        L.new(r.outputs['Color'], p.inputs['Base Color'])
+    p.inputs['Roughness'].default_value = 0.8
+    return m
+
+SPOTS = []
+def spot(kind, loc, rot_z=0, size=1.0):
+    """A place a season can dress: 'wall' (a feature hung facing rot_z) or 'floor' (a free-standing prop)."""
+    SPOTS.append({'kind': kind, 'loc': loc, 'rot': rot_z, 'size': size})
+
 def shell(T, W=9.0, D=7.0, H=3.2, floor_mat=None, wall_mat=None, roof=True):
-    wall = wall_mat or mat('wall', T['wall'], 0.8)
+    wp = T.get('wallpaper')
+    wall = wall_mat or (mat_wallpaper('wall', *wp) if wp else mat('wall', T['wall'], 0.8))
     fl = floor_mat or mat_tiles('floor', T['floor_a'], T['floor_b'], grout=T.get('grout', '#5e584f'), scale=T.get('floor_scale', 0.75), rough=T['floor_rough'])
     box('Floor', (W + 6, D + 6, 0.1), (0, D / 2 - 1, -0.05), fl, bevel=0)
     box('BackWall', (W, 0.2, H), (0, D + 0.1, H / 2), wall, bevel=0)
@@ -498,6 +598,8 @@ def room_kitchen(T):
     box('DoorHall', (0.04, 1.34, 2.3), (W / 2 + 0.03, 2.4, 1.15), mat('hall', '#ffffff', emit=T['accent2'], strength=1.2), bevel=0)
     plant('Fig', (W / 2 - 0.55, 4.6, 0), height=1.7, pot=T['deep'])
 
+    spot('wall', (W / 2 - 0.03, 3.7, 1.8), -90, 0.8)
+    spot('floor', (-3.55, 3.3, 0))
     downlights(T, (-3.0, -1.0, 1.0, 3.0), (1.6, 5.4), H, power=45)
     area('CeilSoft', (6, 3), (0, 3.6, H - 0.05), 90, T['light'])
     area('Fill', (5, 2), (0, -2.0, 2.0), 150, T['fill'], rot=(-80, 0, 0))
@@ -621,6 +723,9 @@ def room_living(T):
     box('SlideMullion', (0.06, 0.06, 2.35), (W / 2 - 0.04, 2.3, 1.2), mat('slideframe', '#2a2d33', 0.4, 0.6), bevel=0)
     neon_eye((W / 2 - 0.05, 5.3, 2.35), 0.5, rot=(90, 0, -90))
     ring_light('Ring', (0, 3.0, H - 0.45), 0.85, T)
+    spot('wall', (3.75, D - 0.03, 1.9), 0, 0.9)
+    spot('wall', (-3.75, D - 0.03, 1.9), 0, 0.9)
+    spot('floor', (4.2, 2.6, 0))
     downlights(T, (-3.4, 3.4), (2.0, 6.2), H, power=40)
     area('CeilSoft', (6, 3), (0, 4.0, H - 0.05), 80, T['light'])
     area('Fill', (5, 2), (0, -2.0, 2.0), 150, T['fill'], rot=(-80, 0, 0))
@@ -719,6 +824,8 @@ def room_bedroom(T):
         box(f'DresserLine{i}', (0.01, 1.5, 0.006), (W / 2 - 0.56, 2.8, 0.3 + i * 0.25), mat('gap', '#07080a', 0.9), bevel=0)
     plant('PlantR', (W / 2 - 0.4, 4.6, 0), height=1.3, pot=T['accent'])
     neon_eye((W / 2 - 0.05, 2.8, 2.1), 0.42, rot=(90, 0, -90))
+    spot('wall', (W / 2 - 0.03, 5.7, 1.75), -90, 0.8)
+    spot('floor', (-3.0, 2.4, 0))
     downlights(T, (-3.0, 3.0), (2.0, 5.0), H, power=30)
     area('CeilSoft', (6, 3), (0, 3.5, H - 0.05), 60, T['light'])
     area('Fill', (5, 2), (0, -2.0, 2.0), 140, T['fill'], rot=(-80, 0, 0))
@@ -752,6 +859,8 @@ def room_hoh(T):
     box('MiniFridge', (0.5, 0.5, 0.6), (3.4, 3.4, 0.3), mat('steel', T['metal'], 0.22, 1.0))
     plant('PlantR', (3.5, 2.3, 0), height=1.2, pot=T['deep'])
     two_way_mirrors(T, -W / 2 + 0.03, (1.7,), z0=0.6, h=1.9, w=1.2)
+    spot('wall', (-W / 2 + 0.03, 4.9, 1.85), 90, 0.8)
+    spot('floor', (-2.3, 2.0, 0))
     neon_text('HohSign', 'HOH', (0, D - 0.06, 2.62), 0.38, T['accent'], strength=14)
     drape = mat('drape', T['pop'], 0.85)
     drape2 = mat('drape2', _darker(T['pop'], 0.82), 0.85)
@@ -797,6 +906,7 @@ def room_dr(T):
     for i, (r, c) in enumerate(((0.95, T['accent2']), (1.22, T['pop']), (1.5, T['accent']))):
         ring(f'DrRing{i}', (0, D - 0.08, 1.15), r, 0.035, mat(f'drring{i}', '#ffffff', emit=c, strength=10))
     neon_eye((W / 2 - 0.05, 1.6, 2.3), 0.38, rot=(90, 0, -90))
+    spot('wall', (-W / 2 + 0.03, 1.7, 1.75), 90, 0.7)
     # pedestals either side, lit from the top
     for sx in (-1, 1):
         cyl(f'Pedestal{sx}', 0.22, 1.0, (sx * 1.85, D - 0.7, 0.5), mat('pedestal', T['wall2'], 0.5))
@@ -863,6 +973,8 @@ def room_yard(T):
     # planters along the side walls, a basketball hoop on the right wall
     for i, y in enumerate((3.0, 6.0, 8.8)):
         plant(f'PlanterL{i}', (-W / 2 + 0.6, y, 0), height=1.6, pot=T['deep'])
+    spot('wall', (-4.9, D - 0.03, 2.3), 0, 1.6)
+    spot('floor', (3.6, 2.3, 0))
     box('Backboard', (0.05, 1.2, 0.8), (W / 2 - 0.05, 7.0, 3.0), mat('backboard', '#ffffff', 0.4), bevel=0.01)
     bpy.ops.mesh.primitive_torus_add(major_radius=0.23, minor_radius=0.015, location=(W / 2 - 0.35, 7.0, 2.7))
     rim = bpy.context.active_object; rim.name = 'HoopRim'; rim.data.materials.append(mat('hoop', '#e0673f', 0.4, 0.6))
@@ -901,6 +1013,7 @@ def room_storage(T):
     box('SlopLabel', (0.3, 0.01, 0.12), (0, 1.5, 0.35), mat('slopLabel', '#ffffff', 0.6), bevel=0)
     box('Fridge2', (0.9, 0.7, 2.0), (-W / 2 + 0.5, 2.2, 1.0), mat('steel', T['metal'], 0.22, 1.0))
     box('Washer', (0.7, 0.65, 0.85), (W / 2 - 0.45, 2.3, 0.43), mat('washer', '#ffffff', 0.3))
+    spot('wall', (W / 2 - 0.03, 3.4, 1.9), -90, 0.7)
     cyl('WasherDoor', 0.22, 0.02, (W / 2 - 0.8, 2.3, 0.48), mat('washerdoor', '#7a94b0', 0.1), rot=(0, 90, 0))
     downlights(T, (-1.5, 1.5), (2.2,), H, power=60)
     area('Fill', (4, 2), (0, -2.0, 2.0), 140, T['fill'], rot=(-80, 0, 0))
@@ -993,6 +1106,8 @@ def room_dining(T):
     two_way_mirrors(T, -W / 2 + 0.03, (2.4, 5.4), z0=0.6, h=1.9, w=1.5)
     two_way_mirrors(T, W / 2 - 0.03, (2.4, 5.4), z0=0.6, h=1.9, w=1.5)
     memory_wall(T, 0, D - 0.06, 1.35)
+    spot('wall', (-3.55, D - 0.03, 1.85), 0, 0.8)
+    spot('wall', (3.55, D - 0.03, 1.85), 0, 0.8)
     # the table: long, stone top, a runner, the chairs
     L_ = DINING_DY * DINING_SEATS + 0.6
     cy = DINING_Y0 + DINING_DY * (DINING_SEATS - 1) / 2 + 0.25
@@ -1086,6 +1201,153 @@ def anchors(room, theme='default', w=1920, h=1080):
     open(path, 'w').write(json.dumps(out, indent=1))
     return path
 
+
+# ══════════════════════════════════════════════════════════════════════
+# DRESSING: each season's wall feature and floor prop, built facing -y at the
+# origin and then turned and placed into the room's spot.
+# ══════════════════════════════════════════════════════════════════════
+def _place(sp, name):
+    return _group(name, sp['loc'], sp['rot'])
+
+def _apple(g, name, r, z):
+    _child(g, sphere(f'{name}Apple', r, (0, 0, z), mat('apple', '#c8323c', 0.35), scale=(1.0, 1.0, 0.92)))
+    _child(g, cyl(f'{name}Stem', r * 0.06, r * 0.5, (0, 0, z + r * 1.05), mat('stem', '#4a3a28', 0.7)))
+    lf = _child(g, sphere(f'{name}Leaf', r * 0.32, (r * 0.3, 0, z + r * 1.1), mat('leafg', '#3f8a3a', 0.5), scale=(1.0, 0.25, 0.5)))
+    lf.rotation_euler = (0, math.radians(-30), 0)
+
+def tempt_wall(T, sp):
+    k = sp['size']; g = _place(sp, 'TemptWall')
+    _child(g, box('TwFrame', (0.9 * k, 0.06, 1.1 * k), (0, 0.03, 0), mat('gold', T['accent'], 0.25, 1.0), bevel=0))
+    _child(g, box('TwCanvas', (0.74 * k, 0.07, 0.94 * k), (0, 0.02, 0), mat('canvas', T['deep'], 0.8), bevel=0))
+    _apple(g, 'Tw', 0.2 * k, -0.04 * k)
+    for sx in (-1, 1):
+        _child(g, cyl(f'TwSconce{sx}', 0.04, 0.22, (sx * 0.62 * k, -0.08, 0.15 * k), mat('gold', T['accent'], 0.25, 1.0)))
+        _child(g, sphere(f'BulbTw{sx}', 0.045, (sx * 0.62 * k, -0.08, 0.3 * k), mat('flame', '#ffffff', emit='#ffcf8a', strength=20)))
+
+def tempt_floor(T, sp):
+    g = _place(sp, 'TemptFloor')
+    _child(g, cyl('TfPlinth', 0.3, 0.6, (0, 0, 0.3), mat('plinth', T['deep'], 0.5)))
+    _child(g, cyl('TfTrim', 0.32, 0.04, (0, 0, 0.6), mat('gold', T['accent'], 0.25, 1.0)))
+    _apple(g, 'Tf', 0.36, 0.98)
+
+def machine_wall(T, sp):
+    k = sp['size']; g = _place(sp, 'CoraWall')
+    _child(g, cyl('CwDisc', 0.5 * k, 0.04, (0, 0, 0), mat('coradisc', T['deep'], 0.3), rot=(90, 0, 0), verts=96))
+    for i, (r, c) in enumerate(((0.44, T['accent']), (0.33, T['accent2']), (0.22, T['accent']))):
+        _child(g, cyl(f'CwRing{i}', r * k, 0.045 + i * 0.005, (0, -0.005 * i, 0), mat(f'coraring{i}', '#ffffff', emit=c, strength=10), rot=(90, 0, 0), verts=96, bevel=0))
+        _child(g, cyl(f'CwGap{i}', (r - 0.035) * k, 0.05 + i * 0.005, (0, -0.005 * i - 0.002, 0), mat('coradisc', T['deep'], 0.3), rot=(90, 0, 0), verts=96, bevel=0))
+    _child(g, cyl('CwLens', 0.12 * k, 0.08, (0, -0.03, 0), mat('coralens', '#ffffff', emit=T['led2'], strength=16), rot=(90, 0, 0), verts=64, bevel=0))
+    _child(g, cyl('CwPupil', 0.05 * k, 0.09, (0, -0.04, 0), mat('corapupil', '#0b1418', 0.2), rot=(90, 0, 0), verts=48, bevel=0))
+
+def machine_floor(T, sp):
+    g = _place(sp, 'CoraFloor')
+    _child(g, box('CfTower', (0.5, 0.4, 1.7), (0, 0, 0.85), mat('tower', '#ffffff', 0.25), bevel=0.02))
+    for i in range(6):
+        _child(g, box(f'CfLed{i}', (0.36, 0.01, 0.02), (0, -0.205, 0.35 + i * 0.22), mat('towerled', '#ffffff', emit=T['accent'], strength=14), bevel=0))
+    _child(g, box('CfScreen', (0.34, 0.01, 0.2), (0, -0.205, 1.52), mat('towerscreen', '#ffffff', emit=T['accent2'], strength=8), bevel=0))
+
+def mystery_wall(T, sp):
+    k = sp['size']; g = _place(sp, 'KeyBoard')
+    _child(g, box('KbBoard', (1.0 * k, 0.05, 0.75 * k), (0, 0.02, 0), mat_wood('kbwood', T['wood_a'], T['wood_b']), bevel=0))
+    _child(g, box('KbPlaque', (0.4 * k, 0.06, 0.08 * k), (0, -0.01, 0.3 * k), mat('gold', T['accent'], 0.25, 1.0), bevel=0))
+    for r in range(3):
+        for c in range(5):
+            x = (-0.4 + c * 0.2) * k; z = (0.12 - r * 0.2) * k
+            _child(g, cyl(f'KbHook{r}{c}', 0.012, 0.06, (x, -0.04, z), mat('gold', T['accent'], 0.25, 1.0), rot=(90, 0, 0), bevel=0))
+            if (r + c) % 3:
+                _child(g, box(f'KbKey{r}{c}', (0.03, 0.01, 0.1 * k), (x, -0.05, z - 0.06 * k), mat('brasskey', T['accent'], 0.3, 1.0), bevel=0))
+                _child(g, box(f'KbTag{r}{c}', (0.05, 0.01, 0.035), (x, -0.052, z - 0.13 * k), mat('keytag', T['pop'], 0.7), bevel=0))
+
+def mystery_floor(T, sp):
+    g = _place(sp, 'Clock')
+    wood = mat_wood('clockwood', T['wood_a'], T['wood_b'])
+    _child(g, box('CkBody', (0.55, 0.38, 1.9), (0, 0, 0.95), wood, bevel=0))
+    _child(g, box('CkHood', (0.65, 0.44, 0.5), (0, 0, 2.05), wood, bevel=0))
+    _child(g, cyl('CkFace', 0.19, 0.02, (0, -0.23, 2.05), mat('clockface', '#f1e6c8', 0.6), rot=(90, 0, 0), verts=48, bevel=0))
+    for ang, ln in ((20, 0.13), (110, 0.09)):
+        h_ = _child(g, box(f'CkHand{ang}', (0.012, 0.01, ln), (0, -0.245, 2.05), mat('clockhand', '#2a1a10', 0.5), bevel=0))
+        h_.rotation_euler = (0, math.radians(ang), 0)
+        h_.location = (math.sin(math.radians(ang)) * ln / 2, -0.245, 2.05 + math.cos(math.radians(ang)) * ln / 2)
+    _child(g, box('CkWindow', (0.3, 0.01, 0.9), (0, -0.195, 1.05), mat('clockglass', '#1f2a26', 0.2), bevel=0))
+    _child(g, cyl('CkPendulum', 0.09, 0.01, (0, -0.2, 0.8), mat('gold', T['accent'], 0.25, 1.0), rot=(90, 0, 0), bevel=0))
+
+def roller_wall(T, sp):
+    k = sp['size']; g = _place(sp, 'Roulette')
+    _child(g, cyl('RwRim', 0.5 * k, 0.06, (0, 0, 0), mat_wood('rwwood', T['wood_a'], T['wood_b']), rot=(90, 0, 0), verts=96, bevel=0))
+    n = 24
+    for i in range(n):
+        a = i * math.tau / n
+        seg = _child(g, box(f'RwSeg{i}', (0.08 * k, 0.02, 0.1 * k), (0.37 * k * math.sin(a), -0.035, 0.37 * k * math.cos(a)),
+                            mat('rwred' if i % 2 else 'rwblack', '#b32a36' if i % 2 else '#1a1416', 0.4), bevel=0))
+        seg.rotation_euler = (0, a, 0)
+    _child(g, cyl('RwHub', 0.26 * k, 0.04, (0, -0.04, 0), mat('felt', '#1f4a35', 0.8), rot=(90, 0, 0), verts=64, bevel=0))
+    _child(g, cyl('RwCone', 0.09 * k, 0.12, (0, -0.08, 0), mat('gold', T['accent'], 0.25, 1.0), rot=(90, 0, 0), r2=0.02, verts=32, bevel=0))
+
+def roller_floor(T, sp):
+    g = _place(sp, 'Slot')
+    _child(g, box('SlBody', (0.62, 0.5, 1.25), (0, 0, 0.625), mat('slotbody', T['accent2'], 0.35), bevel=0))
+    _child(g, cyl('SlTop', 0.31, 0.5, (0, 0, 1.25), mat('gold', T['accent'], 0.25, 1.0), rot=(90, 0, 0), verts=48, bevel=0))
+    _child(g, box('SlScreen', (0.48, 0.01, 0.26), (0, -0.255, 0.95), mat('slotscreen', '#fff6dc', 0.4), bevel=0))
+    for i, c in enumerate(('#c8323c', '#d4ad3c', '#c8323c')):
+        _child(g, cyl(f'SlReel{i}', 0.05, 0.01, ((i - 1) * 0.15, -0.262, 0.95), mat(f'reel{i}', c, 0.4), rot=(90, 0, 0), bevel=0))
+    _child(g, box('SlTray', (0.5, 0.12, 0.06), (0, -0.28, 0.45), mat('gold', T['accent'], 0.25, 1.0), bevel=0))
+    _child(g, cyl('SlLever', 0.018, 0.5, (0.36, 0, 1.05), mat('steel', '#c9c9c9', 0.25, 1.0), bevel=0))
+    _child(g, sphere('SlKnob', 0.055, (0.36, 0, 1.32), mat('knob', '#e8463f', 0.3)))
+
+def camp_wall(T, sp):
+    """A camp sign: two planks, carved letters, an arrow to the lake."""
+    k = sp['size']; g = _place(sp, 'CampSign')
+    plank = mat_wood('signwood', T['wood_a'], T['wood_b'])
+    _child(g, box('CsPlankA', (1.2 * k, 0.05, 0.3 * k), (0, 0.02, 0.17 * k), plank, bevel=0))
+    _child(g, box('CsPlankB', (1.0 * k, 0.05, 0.24 * k), (-0.05 * k, 0.02, -0.17 * k), plank, bevel=0))
+    _child(g, box('CsArrow', (0.12 * k, 0.05, 0.12 * k), (0.47 * k, 0.02, -0.17 * k), plank, bevel=0, rot=(0, 45, 0)))
+    for sx in (-1, 1):
+        _child(g, cyl(f'CsNail{sx}', 0.015, 0.02, (sx * 0.5 * k, -0.01, 0.17 * k), mat('nail', '#3a2a1c', 0.4, 0.6), rot=(90, 0, 0), bevel=0))
+    t1 = neon_text('CsText', 'CAMP BB', (0, 0, 0), 0.17 * k, '#f1e6c8', strength=1.0, extrude=0.01)
+    t1.parent = g; t1.location = (0, -0.01, 0.13 * k); t1.rotation_euler = (math.radians(90), 0, 0)
+    t2 = neon_text('CsText2', 'TO THE LAKE', (0, 0, 0), 0.1 * k, '#f1e6c8', strength=1.0, extrude=0.01)
+    t2.parent = g; t2.location = (-0.05 * k, -0.01, -0.2 * k); t2.rotation_euler = (math.radians(90), 0, 0)
+
+def camp_floor(T, sp):
+    g = _place(sp, 'Stump')
+    _child(g, cyl('StStump', 0.28, 0.5, (0, 0, 0.25), mat('bark', '#6a4424', 0.9), r2=0.25, verts=24))
+    _child(g, cyl('StRing', 0.25, 0.01, (0, 0, 0.505), mat('stumptop', '#c99a62', 0.8), verts=24, bevel=0))
+    _child(g, box('LnBase', (0.2, 0.2, 0.04), (0, 0, 0.53), mat('lantern', '#3a2a1c', 0.4, 0.6), bevel=0))
+    _child(g, cyl('LnGlass', 0.08, 0.22, (0, 0, 0.66), mat('lanternglow', '#ffffff', emit=T['light'], strength=18), verts=16, bevel=0))
+    _child(g, box('LnTop', (0.2, 0.2, 0.04), (0, 0, 0.79), mat('lantern', '#3a2a1c', 0.4, 0.6), bevel=0))
+    _child(g, cyl('LnHandle', 0.006, 0.12, (0, 0, 0.86), mat('lantern', '#3a2a1c', 0.4, 0.6), bevel=0))
+    point('LanternL', (sp['loc'][0], sp['loc'][1], 0.66), 30, T['light'], 0.05)
+
+def school_wall(T, sp):
+    k = sp['size']; g = _place(sp, 'Pennants')
+    cols = [T['accent2'], T['accent'], T['pop'], T['accent2'], T['accent'], T['pop']]
+    for i, c in enumerate(cols):
+        x = (-0.75 + i * 0.3) * k
+        pn = _child(g, cyl(f'PnFlag{i}', 0.13 * k, 0.01, (x, -0.02, 0.15 * k), mat(f'pennant{i % 3}', c, 0.7), verts=3, rot=(90, 0, 0), bevel=0))
+        pn.rotation_euler = (math.radians(90), math.radians(-90), 0)
+    _child(g, box('PnString', (1.8 * k, 0.01, 0.01), (0, -0.02, 0.26 * k), mat('cord', '#111111', 0.6), bevel=0))
+    _child(g, cyl('PnClock', 0.17 * k, 0.04, (0, -0.02, -0.25 * k), mat('clockface', '#ffffff', 0.5), rot=(90, 0, 0), verts=48))
+    _child(g, cyl('PnClockRim', 0.19 * k, 0.03, (0, -0.005, -0.25 * k), mat('clockrim', T['deep'], 0.4), rot=(90, 0, 0), verts=48, bevel=0))
+
+def school_floor(T, sp):
+    g = _place(sp, 'Lockers')
+    lk = mat('locker', T['accent2'], 0.4, 0.3)
+    for i in range(3):
+        x = (i - 1) * 0.42
+        _child(g, box(f'LkBody{i}', (0.4, 0.45, 1.8), (x, 0, 0.9), lk, bevel=0))
+        for v in range(3):
+            _child(g, box(f'LkVent{i}{v}', (0.22, 0.01, 0.015), (x, -0.23, 1.6 - v * 0.04), mat('vent', T['deep'], 0.5), bevel=0))
+        _child(g, box(f'LkHandle{i}', (0.03, 0.02, 0.12), (x + 0.13, -0.235, 1.0), mat('steel', '#c9c9c9', 0.25, 1.0), bevel=0))
+
+DRESS = {
+    'temptation': {'wall': tempt_wall, 'floor': tempt_floor},
+    'machine': {'wall': machine_wall, 'floor': machine_floor},
+    'mystery': {'wall': mystery_wall, 'floor': mystery_floor},
+    'high-rollers': {'wall': roller_wall, 'floor': roller_floor},
+    'summer-camp': {'wall': camp_wall, 'floor': camp_floor},
+    'summer-school': {'wall': school_wall, 'floor': school_floor},
+}
+
 ROOMS = {'kitchen': room_kitchen, 'living': room_living, 'bedroom': room_bedroom, 'hoh': room_hoh, 'dr': room_dr,
          'yard': room_yard, 'storage': room_storage, 'havenot': room_havenot, 'dining': room_dining}
 
@@ -1094,10 +1356,16 @@ ROOMS = {'kitchen': room_kitchen, 'living': room_living, 'bedroom': room_bedroom
 # ══════════════════════════════════════════════════════════════════════
 def build(room, theme='default', td=None):
     clear(); _MATS.clear()
-    T = dict(THEMES[theme])
+    T = dict(THEMES['default'])
     if td:
         T.update(TD_LOOKS[td]['palette'])
+    T.update(THEME_TD.get(theme, {}))
+    SPOTS.clear()
     ROOMS[room](T)
+    # the season's own things, in the room's measured spots
+    for sp in SPOTS:
+        fn = DRESS.get(theme, {}).get(sp['kind'])
+        if fn: fn(T, sp)
 
 def render(room, theme='default', samples=160, w=1920, h=1080, preview=False):
     sc = bpy.context.scene

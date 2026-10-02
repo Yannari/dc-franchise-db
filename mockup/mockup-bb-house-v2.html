@@ -413,6 +413,7 @@ body.tvm .main{grid-template-columns:1fr;max-width:1600px}
 <header class="top">
   <div class="logo" id="logo"></div>
   <div class="sp"></div>
+  <button class="tbtn" id="season">Season: The House</button>
   <button class="tbtn" id="house">House: TD B · Flat</button>
   <button class="tbtn" id="theme">Theme</button>
 </header>
@@ -769,7 +770,7 @@ function setHtml(S, st, prevSt, L, fresh) {
   }
   if (S.set === 'dining') {
     const A = ANCH.dining;
-    h += `<img class="front" src="../assets/bb/house/default/dining-td-b-nom.webp" alt="" style="z-index:${zOf(A.box)}">`;
+    h += `<img class="front" src="../assets/bb/house/${season}/dining-td-b-nom.webp" alt="" style="z-index:${zOf(A.box)}">`;
     // the keys still in the box: one per safe houseguest not yet drawn, standing in its slot
     KEY_ORDER(S).forEach((n, i) => {
       if (L.status[n] === 'safe') return;
@@ -989,6 +990,22 @@ $('#restart').onclick = () => { idx = -1; paint(false); };
 $('#auto').onclick = () => { auto = !auto; syncAuto(); queueAuto(); };
 $('#tv').onclick = () => { document.body.classList.toggle('tvm'); $('#tv').classList.toggle('on'); };
 $('#rundown').addEventListener('click', e => { const b = e.target.closest('.seg'); if (b && !busy) go(+b.dataset.i); });
+// Each season's house: the same rooms redressed (tools/bb-house/house.py THEME_TD + DRESS).
+const SEASONS = [['default', 'The House'], ['temptation', 'Temptation'], ['machine', 'Machine Summer'], ['mystery', 'Mystery'],
+  ['high-rollers', "High Roller's"], ['summer-camp', 'Summer Camp'], ['summer-school', 'Summer School']];
+const ROOM_FILE = { kitchen: 'kitchen', ceremony: 'living', bedroom: 'bedroom', hoh: 'hoh', dr: 'dr', yard: 'yard', dining: 'dining' };
+let season = 'default';
+(() => {
+  const css = SEASONS.slice(1).map(([id]) => Object.entries(ROOM_FILE).map(([set, f]) =>
+    `body[data-season="${id}"] .set-${set}.photo{background-image:url('../assets/bb/house/${id}/${f}-td-b.webp')}`).join('\n')).join('\n');
+  const el = document.createElement('style'); el.textContent = css; document.head.appendChild(el);
+})();
+let seasonI = 0;
+$('#season').onclick = () => {
+  seasonI = (seasonI + 1) % SEASONS.length; season = SEASONS[seasonI][0];
+  document.body.dataset.season = season; $('#season').textContent = 'Season: ' + SEASONS[seasonI][1];
+  paint(false);
+};
 const HOUSES = [['b', 'TD B · Flat'], ['a', 'TD A · Cel (kitchen)'], ['c', 'TD C · Stage (kitchen)'], ['toon', 'Toon v1 (kitchen)'], ['real', 'Real (kitchen)']];
 let houseI = 0;
 $('#house').onclick = () => { houseI = (houseI + 1) % HOUSES.length; document.body.dataset.house = HOUSES[houseI][0]; $('#house').textContent = 'House: ' + HOUSES[houseI][1]; };

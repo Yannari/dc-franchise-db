@@ -34,6 +34,7 @@ import { rpBuildDragSummary } from './vp-dr/summary.js';
 import { dragScreens } from './vp-dr/screens.js';
 import { perfectMatchVpScreens } from './vp-pm/screens.js';
 import { circleVpScreens } from './vp-ci/screens.js';
+import { bbStepScreens } from './vp-bb-ep/screens.js';
 import { gs as _coreGs } from './core.js';
 import { momentTitle as pmMomentTitle } from './pm/transcript.js';
 import { DRAG_FORMAT, HOSTS_BY_FORMAT, CIRCLE_FORMAT } from './shows.js';
@@ -14036,6 +14037,26 @@ export function buildVPScreens(epRecord) {
   if (epRecord.format === 'big-brother' || epRecord.isBigBrother) {
     try {
       vpScreens = buildBBWeekScreens(epRecord);
+      // The stepped viewer (js/vp-bb-ep): the week as scenes and ceremonies, one click
+      // per line, the twist screens kept. The old screens stay one switch away, and are
+      // what plays if the new ones cannot be built.
+      // OPT-IN until it covers what the classic screens do for duo weeks, double and
+      // triple evictions and the powers band (tests/bb-duos-screens, bb-triple-eviction,
+      // bb-powers-visible). The switch is on both sets of screens.
+      let stepped = false;
+      try { stepped = window.localStorage?.getItem('bb-vp') === 'stepped'; } catch { /* storage can throw */ }
+      if (!stepped && vpScreens[0]) {
+        vpScreens[0] = { ...vpScreens[0], html: `<div style="display:flex;justify-content:flex-end;margin:0 0 8px"><button type="button" class="bbx-switch" onclick="bbxSwitchViewer('stepped')" style="border:1px solid #22e1ff;background:#0d1220;color:#22e1ff;border-radius:8px;padding:7px 12px;font:600 11px monospace;letter-spacing:1px;cursor:pointer">▶ TRY THE NEW STEPPED VIEWER</button></div>${vpScreens[0].html}` };
+      }
+      if (stepped && !epRecord.isFinale) {
+        try {
+          const _g = _coreGs || (typeof window !== 'undefined' ? window.gs : null);
+          const priorEvicted = (_g?.episodeHistory || [])
+            .filter(r => r && r.format === 'big-brother' && r.num < epRecord.num)
+            .flatMap(r => [r.evicted, r.secondEvicted]).filter(Boolean);
+          vpScreens = bbStepScreens(epRecord, vpScreens, { host: _bbHost(), priorEvicted });
+        } catch (err) { console.warn('BB stepped viewer fell back to the classic screens:', err); }
+      }
     } catch (err) {
       vpScreens = [{ id: 'bb-error', label: 'Week', html:
         `<div class="rp-page"><div class="rp-eyebrow">Week ${epRecord.num}</div>

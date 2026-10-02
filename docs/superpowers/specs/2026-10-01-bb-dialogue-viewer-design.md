@@ -149,6 +149,22 @@ plain one and its decay rotates them. A `room` fact gates staging that names a
 room. Pools sized by sweep (plays per season vs entries); 3-season read: under
 3% of lines repeat, none within a week.
 
+**Phase 6 status (2026-10-02, in progress):** converted so far — social.js,
+deals.js and power.js in full; alliance-life.js; the week engine's own
+alliance beats (formed / recruited / betrayal / repair / collapsed, via
+`bb/script/inject.js scriptBeat`); campaign pitches (`campaignCase` split
+from `campaignArgument`: the CASE keyed on the argument the engine chose,
+joined with the voter's REPLY); house-life.js except have-nots and the house
+meeting; house-friction.js in full. Every batch: five seeded seasons replay
+identically, a season read, and pools grown until under ~3% of lines repeat.
+New guards: no pool entry may be narration only; staging that names a room
+needs `when.room`. **Writing rule (user, 2026-10-02):** plain English, no
+clever writing, and the old prose is not a model — a plain-English pass
+rewrote ~200 lines. Still to convert, by airtime: venue, phases, blocs,
+consequence-arcs, story-followups, fallout, location-texture, reign, bonds,
+editorial-social, schemes, the house meeting, the ~22 engine beats with no
+event id, and the twist families. `freshLine` goes when the last caller does.
+
 ### 4.3 BB's clock and facts
 
 - **`clock` is a BB day:** `week.num * 10 + dayIndex`, where `dayIndex` comes

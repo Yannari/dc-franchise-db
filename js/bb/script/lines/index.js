@@ -5,6 +5,7 @@ import CEREMONY from './ceremony.js';
 import TALK from './talk.js';
 import SOCIAL from './social.js';
 import DEALS from './deals.js';
+import ALLIANCE from './alliance.js';
 
-export const POOLS = { ...FRICTION, ...CEREMONY, ...TALK, ...SOCIAL, ...DEALS };
+export const POOLS = { ...FRICTION, ...CEREMONY, ...TALK, ...SOCIAL, ...DEALS, ...ALLIANCE };
 export const POOL_KEYS = Object.keys(POOLS);

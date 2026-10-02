@@ -27,24 +27,28 @@
 // a group, it is a spreadsheet.
 
 import { gs } from '../core.js';
-import { pronouns } from '../players.js';
 import {
   pStats, bond, perceived, band, spotlightOrder, beatsInvolving, targetOf,
 } from './_read.js';
-import { freshLine } from '../bb/aired.js';
+import { makeScene } from '../bb/script/scene.js';
 
 // ── helpers ───────────────────────────────────────────────────────────
 
-function _variant(list, ctx, ...salt) {
-  const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${ctx?.act || ''}|${salt.join('|')}`;
+/**
+ * Which room a scene happens in: by hash, never a die. `people` are the ones
+ * in it; the HOH room needs the HOH (the house's own rule, house-events
+ * _roomAllows, which a scene's own room skips).
+ */
+function _room(rooms, ctx, ...people) {
+  const ok = rooms.filter(r => r !== 'hoh-room' || (ctx?.hoh && people.includes(ctx.hoh)));
+  const pool = ok.length ? ok : ['backyard'];
+  const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${people.join('|')}`;
   let hash = 0;
   for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
-  return freshLine(list, hash, ctx);
+  return pool[hash % pool.length];
 }
 
 const _quiet = pool => spotlightOrder(pool);
-const _list = names => (names.length <= 1 ? (names[0] || '')
-  : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`);
 
 /**
  * House life, not ceremony.
@@ -118,26 +122,16 @@ const missedMeeting = {
   },
   fire(house, ctx, api) {
     const { al, members, organiser, absent } = _missedCast(house, ctx);
-    const p = pronouns(absent);
     const rest = members.filter(n => n !== absent);
     const decision = targetOf(organiser) || ctx?.week?.plan?.target || null;
 
-    const text = _variant([
-      `${absent} was in the shower. By the time ${p.sub} ${p.sub === 'they' ? 'come' : 'comes'} back out, ${_list(rest)} have already agreed on ${decision ? `${decision}` : 'a name'} and moved on to talking about breakfast.`,
-      `“We were going to fill you in.” ${organiser} says it easily, which is the part ${absent} keeps turning over: not that the meeting happened without ${p.obj}, but that nobody thought it needed explaining.`,
-      `${absent} finds out about it sideways — ${rest[1] || rest[0]} refers to something that was decided, then stops. There are ${members.length} people in <strong>${al.name}</strong> and ${members.length - 1} of them were in that room.`,
-      `${absent} counts the chairs afterwards. ${_list(rest)} were all in the storage room for twenty minutes and ${p.sub} ${p.sub === 'they' ? 'were' : 'was'} outside, in a hammock, being told nothing.`,
-      `${organiser} presents it as a plan the group made. ${absent} does not remember making it, does not say so, and starts paying attention to who leaves a room first.`,
-      `“It wasn't a meeting,” ${organiser} says. ${absent} points out that ${members.length - 1} of ${members.length} is not a coincidence, and ${organiser} changes the subject to the veto.`,
-    ], ctx, this.id, absent, organiser);
-
-    // Being left out is not a betrayal, which is why it works — nobody can be
-    // accused of anything, and the person it happened to never forgets it.
     api.addBond(absent, organiser, -0.9);
     api.suspicion(absent, organiser, 1.0);
     api.remember(absent, organiser, 'decided-without-me', 2, { about: al.name });
     rest.filter(n => n !== organiser).forEach(n => api.suspicion(absent, n, 0.3));
-    return { text, players: [...members],
+    const scene = makeScene('alliance.missed', { a: organiser, b: absent }, { ending: 'left-out', alliance: al.name, target: decision || null },
+      members, 'bedroom');
+    return { scene, players: [...members],
       badgeText: 'NOT IN THE ROOM', badgeClass: 'blue' };
   },
 };
@@ -178,23 +172,15 @@ const innerCircle = {
   },
   fire(house, ctx, api) {
     const { al, members, a, b, periph } = _innerCast(house, ctx);
-    const p = pronouns(periph);
     const call = targetOf(a) || targetOf(b) || ctx?.week?.plan?.target || null;
-
-    const text = _variant([
-      `${a} and ${b} settle it upstairs before anybody else is awake. ${periph} hears about ${call ? `${call}` : 'the decision'} at lunch, from ${a}, phrased as something <strong>${al.name}</strong> decided together.`,
-      `There is an alliance, and then there is the two people inside it who never have to explain themselves to each other. ${periph} has worked out which one ${p.sub} ${p.sub === 'they' ? 'are' : 'is'} in.`,
-      `${periph} asks when the group agreed on this. ${b} says “last night,” and does not offer a location, and ${periph} does not ask for one.`,
-      `${a} and ${b} come down the stairs looking finished. Whatever ${_list(members.filter(n => n !== a && n !== b))} contribute after that is a comment on a decision, not a vote in one.`,
-      `${periph} is not being cut out of <strong>${al.name}</strong>. ${p.Sub} ${p.sub === 'they' ? 'are' : 'is'} simply never one of the first two people told.`,
-      `“We just talked it through so it'd be quicker.” ${a} means it kindly. ${periph} hears an alliance with a smaller alliance living inside it.`,
-    ], ctx, this.id, periph, a);
 
     api.suspicion(periph, a, 0.8);
     api.suspicion(periph, b, 0.8);
     api.addBond(periph, a, -0.5);
     api.remember(periph, a, 'an-alliance-inside-the-alliance', 2, { about: al.name, with: b });
-    return { text, players: [periph, a, b], badgeText: 'THE REAL TWO', badgeClass: 'blue' };
+    const scene = makeScene('alliance.inner', { a, b, c: periph }, { ending: 'two', alliance: al.name, target: call || null }, [],
+      _room(['kitchen', 'backyard', 'bedroom'], ctx, a, b, periph));
+    return { scene, players: [periph, a, b], badgeText: 'THE REAL TWO', badgeClass: 'blue' };
   },
 };
 
@@ -229,23 +215,16 @@ const comparesNotes = {
   },
   fire(house, ctx, api) {
     const { name, first, second, orgA, orgB, worse } = _overlapCast(house, ctx);
-    const p = pronouns(name);
     const target = ctx?.week?.plan?.target || targetOf(orgA) || targetOf(orgB) || null;
-
-    const text = _variant([
-      `${orgA} explains the week to ${name} in the pantry. Forty minutes later ${orgB} explains the same week in the backyard, and the two versions agree on everything except who is standing behind whom.`,
-      `${name} is in <strong>${first.al.name}</strong> and <strong>${second.al.name}</strong> and has just discovered that ${target ? `${target} going` : 'this vote'} means two entirely different things depending on which room ${p.sub} ${p.sub === 'they' ? 'hear' : 'hears'} it in.`,
-      `Both stories are true. That is the problem. ${orgA} tells ${name} the plan protects the group; ${orgB} tells ${name} the plan protects the group; neither of them uses the same list of people.`,
-      `${name} nods along with ${orgB}, waits until ${p.sub} ${p.sub === 'they' ? 'are' : 'is'} alone, and starts putting the two conversations side by side. One of them has ${p.obj} at the bottom of it.`,
-      `“Same page?” ${orgA} asks. ${name} says yes. ${p.Sub} ${p.sub === 'they' ? 'have' : 'has'} been on two pages since both groups formed, and this is the first time those pages have contradicted each other out loud.`,
-      `${name} makes the mistake of repeating a detail from <strong>${second.al.name}</strong> to ${orgA}, catches it half a sentence in, and covers it with a question about slop.`,
-    ], ctx, this.id, name, orgA);
 
     api.suspicion(name, worse, 1.0);
     api.remember(name, worse, 'two-versions-of-the-same-plan', 2,
       { about: `${first.al.name} and ${second.al.name}` });
     api.addBond(name, worse, -0.5);
-    return { text, players: [name, orgA, orgB], badgeText: 'THE STORIES DIFFER', badgeClass: 'blue' };
+    const scene = makeScene('alliance.overlap', { a: name, b: orgA, c: orgB },
+      { ending: 'differ', alliance: first.al.name, alliance2: second.al.name, target: target || null }, [],
+      _room(['pantry', 'backyard', 'bedroom'], ctx, name, orgA, orgB));
+    return { scene, players: [name, orgA, orgB], badgeText: 'THE STORIES DIFFER', badgeClass: 'blue' };
   },
 };
 
@@ -277,26 +256,18 @@ const unauthorizedVote = {
   },
   fire(house, ctx, api) {
     const { al, members, holdout, organiser } = _holdoutCast(house, ctx);
-    const p = pronouns(holdout);
     const rest = members.filter(n => n !== holdout);
     const noms = ((ctx?.nominees && ctx.nominees.length ? ctx.nominees
       : (ctx?.week?.finalNominees || [])) || []).filter(Boolean);
-
-    const text = _variant([
-      `${organiser} goes round the room asking everybody to say the name out loud. ${holdout} says, “I'll vote with the house,” which is not a name, and the room notices that it is not a name.`,
-      `“I'm not locking anything in before the vote.” ${holdout} says it pleasantly, in front of ${_list(rest)}, and the temperature in the room drops about four degrees.`,
-      `${organiser} wants ${members.length} votes counted before the campaigning starts. ${holdout} gives ${p.posAdj} word on everything except the ballot, and repeats it twice when asked.`,
-      `${holdout} points out, correctly, that nobody in <strong>${al.name}</strong> has ever had to promise a vote in writing. ${organiser} points out that nobody has ever refused to give one either.`,
-      `Somebody asks ${holdout} directly whether ${noms[0] || 'the target'} is the vote. ${p.Sub} ${p.sub === 'they' ? 'say' : 'says'}, “Probably,” and there is no version of that word the rest of them like.`,
-      `${holdout} explains that ${p.sub} ${p.sub === 'they' ? 'want' : 'wants'} to hear both nominees out first. It is the most reasonable sentence anybody has said all day and every person in <strong>${al.name}</strong> leaves the room worried.`,
-    ], ctx, this.id, holdout, organiser);
 
     rest.forEach(n => {
       api.suspicion(n, holdout, 0.9);
       api.addBond(n, holdout, -0.45);
     });
     api.remember(organiser, holdout, 'would-not-promise-the-vote', 2, { about: al.name });
-    return { text, players: [...members],
+    const scene = makeScene('alliance.holdout', { a: holdout, b: organiser }, { ending: 'refuses', alliance: al.name, target: noms[0] || null },
+      members, _room(['living-room', 'bedroom'], ctx, holdout, organiser));
+    return { scene, players: [...members],
       badgeText: 'WILL NOT SAY IT', badgeClass: 'red' };
   },
 };
@@ -331,26 +302,16 @@ const sideDealProtected = {
   },
   fire(house, ctx, api, rng) {
     const { al, member, partner, deal, sharp } = _protectCast(house, ctx);
-    const p = pronouns(member);
-    const kind = deal.tier === 'final-two' ? 'a final two'
-      : deal.tier === 'final-three' ? 'a final three' : 'an arrangement';
 
-    const text = _variant([
-      `${partner}'s name comes up and ${member} finds three reasons it should not. All three are good reasons. None of them is the reason.`,
-      `“${partner} is useless to everybody, that's exactly why we keep ${pronouns(partner).obj} around.” ${member} reaches for the argument before anybody has finished suggesting the name. ${sharp} notices how ready it was.`,
-      `${member} steers <strong>${al.name}</strong> off ${partner} the way somebody steers a car off a kerb — smoothly, and without mentioning the kerb.`,
-      `Somebody suggests ${partner} as the backup plan. ${member} agrees enthusiastically, then spends the next ten minutes on a better backup plan, and then a better one than that.`,
-      `${member} shook on ${kind} with ${partner} and has told nobody in <strong>${al.name}</strong>. What the group sees is a member who is unusually careful about one specific name.`,
-      `${sharp} notices that ${member} never argues against ${partner} — ${p.sub} just always ${p.sub === 'they' ? 'have' : 'has'} somebody better. It is a small thing. ${sharp} keeps it anyway.`,
-    ], ctx, this.id, member, partner);
-
-    // Whether the sharpest person in the room catches it is a read, not a
-    // certainty — proportional to how good they actually are at this.
     const caught = (rng ? rng() : 0.5) < pStats(sharp).intuition / 12;
     api.remember(member, partner, 'protected-them-quietly', 1, { about: al.name });
     api.suspicion(sharp, member, caught ? 1.2 : 0.35);
     if (caught) api.remember(sharp, member, 'is-protecting-somebody', 2, { about: partner });
-    return { text, players: [member, partner, sharp],
+    // The partner is talked about; the member and the sharp one are in the room.
+    const scene = makeScene('alliance.protect', { a: member, b: partner, c: sharp }, { ending: caught ? 'caught' : 'steered', alliance: al.name }, [],
+      _room(['backyard', 'bedroom', 'kitchen'], ctx, member, sharp));
+    scene.seenBy = [member, sharp];
+    return { scene, players: [member, partner, sharp],
       badgeText: caught ? 'SOMEBODY IS WATCHING' : 'QUIETLY STEERED',
       badgeClass: caught ? 'red' : 'grey' };
   },
@@ -424,18 +385,7 @@ const wrongBlame = {
   },
   fire(house, ctx, api) {
     const { al, members, blamed, accuser, evicted, strays, key } = _blameCast(house, ctx);
-    const p = pronouns(blamed);
     const rest = members.filter(n => n !== blamed);
-    const count = strays === 1 ? 'one vote' : `${strays} votes`;
-
-    const text = _variant([
-      `<strong>${al.name}</strong> was supposed to be ${members.length} votes in the same direction and ${count} went the other way. By the time the bedroom lights go off, ${_list(rest)} have decided it was ${blamed}.`,
-      `Nobody has any evidence. ${accuser} has something better than evidence — a feeling ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} had about ${blamed} since ${evicted} was nominated, and a room willing to agree with it.`,
-      `“It wasn't me.” ${blamed} says it once, calmly, which ${accuser} treats as suspicious, and then a second time, less calmly, which ${accuser} treats as confirmation.`,
-      `The alliance compares every promised vote with the result and finds ${count} that cannot be explained. Suspicion settles on the member whose commitment was never firm.`,
-      `${accuser} does not accuse ${blamed}. ${accuser} simply stops finishing sentences when ${blamed} walks in, and before the next competition everybody in <strong>${al.name}</strong> is doing the same thing.`,
-      `${blamed} did not do it. ${p.Sub} ${p.sub === 'they' ? 'spend' : 'spends'} the evening being told, kindly, that nobody is angry — which is how ${p.sub} ${p.sub === 'they' ? 'find' : 'finds'} out ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} already been convicted.`,
-    ], ctx, this.id, blamed, accuser);
 
     rest.forEach(n => {
       api.addBond(n, blamed, -0.8);
@@ -445,7 +395,8 @@ const wrongBlame = {
     api.addBond(blamed, accuser, -0.7);
     gs.bb ||= {};
     gs.bb.allianceWrongBlameSeen = key;
-    return { text, players: [...members],
+    const scene = makeScene('alliance.blame', { a: accuser, b: blamed }, { ending: 'wrong', alliance: al.name }, members, 'bedroom');
+    return { scene, players: [...members],
       badgeText: 'SOMEBODY HAS TO HAVE DONE IT', badgeClass: 'red' };
   },
 };
@@ -480,27 +431,16 @@ const nameSlips = {
   },
   fire(house, ctx, api) {
     const { al, members, talker, heard } = _slipCast(house, ctx);
-    const p = pronouns(heard);
     const others = members.filter(n => n !== heard);
 
-    const text = _variant([
-      `${talker} says it in the middle of a sentence about washing up. “—well, that's <strong>${al.name}</strong>, isn't it.” ${heard} keeps drying the same plate for considerably longer than the plate needs.`,
-      `Nobody outside the group was supposed to know there WAS a name. ${talker} uses it like a word everybody has, and ${heard} watches ${others[0] || 'the room'} go very still.`,
-      `“What do you call yourselves?” ${talker} asks, not unkindly, and answers it before ${heard} can. It is the right answer.`,
-      `${talker} makes a joke about <strong>${al.name}</strong> having a meeting. Half the kitchen laughs. The half that laughs is entirely made up of people who are not in it.`,
-      `${heard} has spent ${(ctx?.week?.num || 0) > 3 ? 'weeks' : 'days'} making sure the name never left the storage room. ${talker} says it out loud at the table, casually, twice, and then asks somebody to pass the salt.`,
-      `${talker} does not know what ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} just done. ${heard} does. So does every other member of <strong>${al.name}</strong> in the room, and none of them can react without confirming it.`,
-    ], ctx, this.id, talker, heard);
-
-    // The wall is down in both directions: they know they are visible, and the
-    // outsider is now somebody who knows too much.
     members.forEach(m => {
       api.suspicion(m, talker, 0.9);
       api.suspicion(talker, m, 0.5);
     });
     api.remember(heard, talker, 'knows-what-we-are-called', 2, { about: al.name });
     api.addBond(heard, talker, -0.4);
-    return { text, players: [talker, ...members].filter((n, i, a) => n && a.indexOf(n) === i),
+    const scene = makeScene('alliance.slip', { a: talker, b: heard }, { ending: 'name', alliance: al.name }, members, 'kitchen');
+    return { scene, players: [talker, ...members].filter((n, i, a) => n && a.indexOf(n) === i),
       badgeText: 'THEY KNOW THE NAME', badgeClass: 'red' };
   },
 };

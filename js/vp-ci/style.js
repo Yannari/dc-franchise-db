@@ -252,7 +252,14 @@ export const CIV_CSS = `
 .civ-hcam.talk .civ-mcam{box-shadow:0 0 0 .4cqw rgba(255,210,63,.6),0 0 4cqw var(--glow,#3fd8ff)}
 .civ-atrisk{position:absolute;left:28%;right:28%;top:15%;bottom:28%;z-index:5;display:flex;flex-direction:column;gap:.6cqw}
 /* on the Hangout's LED wall (assets/sets/circle/hangout.webp) */
-.civ-hangout .civ-atrisk{left:32.5%;right:32.5%;top:17%;bottom:44%}
+.civ-hangout .civ-atrisk{left:32.5%;right:32.5%;top:14%;bottom:44%;justify-content:center}
+/* seven or more at risk: three narrow columns, so twelve still fit the wall */
+.civ-atrisk.dense{gap:.4cqw}
+.civ-atrisk.dense .grid{grid-template-columns:1fr 1fr 1fr;gap:.4cqw}
+.civ-atrisk.dense .civ-mtile{gap:.45cqw;padding:.35cqw .45cqw;border-radius:.45cqw}
+.civ-atrisk.dense .civ-mtile .ph{width:2.2cqw;font-size:.9cqw}
+.civ-atrisk.dense .civ-mtile .n{font-size:.78cqw;letter-spacing:.03em}
+.civ-atrisk.dense .civ-verdict{font-size:.6cqw;padding:.1cqw .3cqw}
 .civ-atrisk .hd{text-align:center;font-weight:900;font-size:1.1cqw;letter-spacing:.22em;color:#ff8fb0}
 .civ-atrisk .grid{display:grid;grid-template-columns:1fr 1fr;gap:.6cqw}
 .civ-mtile.keep{opacity:.55}.civ-mtile.cut{background:rgba(255,42,74,.28);box-shadow:0 0 1.4cqw rgba(255,42,74,.5)}

@@ -96,7 +96,7 @@ function hangoutStage(row, screen, idx, fresh) {
     return tile(row, h, cls, v ? `<span class="civ-verdict">${v === 'keep' ? '✓ SAFE' : '✗ ON THE TABLE'}</span>` : '');
   }).join('');
   return `<div class="civ-layer civ-hangout">${setImg('hangout')}${cams}
-    <div class="civ-atrisk"><div class="hd">${sealed ? "THEY'VE DECIDED" : 'AT RISK'}</div><div class="grid">${tiles}</div></div>
+    <div class="civ-atrisk${d.atRisk.length > 6 ? ' dense' : ''}"><div class="hd">${sealed ? "THEY'VE DECIDED" : 'AT RISK'}</div><div class="grid">${tiles}</div></div>
     ${where(infl.length > 1 ? 'THE HANGOUT · INFLUENCERS ONLY' : 'THE INFLUENCER DECIDES')}${dlg(row, st, fresh)}</div>`;
 }
 

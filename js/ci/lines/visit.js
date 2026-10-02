@@ -181,6 +181,26 @@ export const VISIT = {
       { by: 'b', say: "I didn't want this for you. I swear." },
       { by: 'a', say: "I know. I'm not here about the game. I'm here because I like you." },
     ] },
+    { id: 'visit.talk.friend.04', turns: [
+      { by: 'a', say: "I didn't come here to talk about the game." },
+      { by: 'b', say: "Thank God. I'm so tired of the game." },
+    ], beat: '{a} and {b} kick their shoes off and sink into the couch.' },
+    { id: 'visit.talk.friend.05', turns: [
+      { by: 'b', say: "You came to see me? Out of everybody?" },
+      { by: 'a', say: "Out of everybody. It wasn't even close." },
+    ] },
+    { id: 'visit.talk.friend.06', turns: [
+      { by: 'a', say: "You're even funnier in person. That's not fair." },
+      { by: 'b', say: "Wait till you hear my real laugh. It's embarrassing." },
+    ], beat: '{b} laughs, and {a} was right: it is.' },
+    { id: 'visit.talk.friend.07', turns: [
+      { by: 'b', say: "I'm so mad they did this to you." },
+      { by: 'a', say: "Don't be mad. Be smart. Stay in this." },
+    ] },
+    { id: 'visit.talk.friend.08', turns: [
+      { by: 'a', say: "I needed one real hug before I go." },
+      { by: 'b', say: "Come here. You get two." },
+    ], beat: '{a} and {b} hug for a long time.' },
   ],
   'visit.talk.answers': [
     { id: 'visit.talk.answers.01', turns: [
@@ -211,6 +231,43 @@ export const VISIT = {
       { by: 'a', say: "Why me? Tell me the truth." },
       { by: 'b', say: "Because you were good at this. Too good." },
       { by: 'a', say: "That's the nicest mean thing anybody's ever said to me." },
+    ] },
+    { id: 'visit.talk.answers.07', turns: [
+      { by: 'b', say: "Come in. I know why you're here." },
+      { by: 'a', say: "Then you know I'm not leaving without a straight answer." },
+      { by: 'b', say: "You had the most people in your corner. That scared me." },
+    ] },
+    { id: 'visit.talk.answers.08', turns: [
+      { by: 'a', say: "Was it something I said?" },
+      { by: 'b', say: "It was what you didn't say. I never knew where you stood." },
+      { by: 'a', say: "I stood with you. That's where I stood." },
+    ] },
+    { id: 'visit.talk.answers.09', when: { sole: false }, turns: [
+      { by: 'a', say: "Whose idea was it? Yours or theirs?" },
+      { by: 'b', say: "We both got there. I'm not gonna hide behind anybody." },
+    ] },
+    { id: 'visit.talk.answers.10', when: { sole: true }, turns: [
+      { by: 'a', say: "So it was all you. Nobody else to blame." },
+      { by: 'b', say: "Nobody else. I made the call, and I'm owning it." },
+    ] },
+    { id: 'visit.talk.answers.11', turns: [
+      { by: 'b', say: "Before you say anything, I'm sorry." },
+      { by: 'a', say: "Don't be sorry. Just tell me why." },
+      { by: 'b', say: "You were close to too many people. I couldn't beat that later." },
+    ] },
+    { id: 'visit.talk.answers.12', turns: [
+      { by: 'a', say: "Did you even think about it, or was it easy?" },
+      { by: 'b', say: "It was the hardest thing I've done in here." },
+      { by: 'a', say: "Good. It should have been." },
+    ] },
+    { id: 'visit.talk.answers.13', turns: [
+      { by: 'a', say: "You were so sweet to me in every chat." },
+      { by: 'b', say: "I meant all of it. This part was the game." },
+      { by: 'a', say: "Yeah, well. The game feels pretty mean right now." },
+    ], beat: '{a} sits down without taking {a.posAdj} eyes off {b}.' },
+    { id: 'visit.talk.answers.14', turns: [
+      { by: 'a', say: "I would have kept you safe. You know that, right?" },
+      { by: 'b', say: "I know. That's what makes this so bad." },
     ] },
   ],
   'visit.talk.truth': [

@@ -1,0 +1,1124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BB Live Viewer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..900&family=Chakra+Petch:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════════════════════════════════
+   BIG BROTHER — BB//LIVE, mockup v2 (spec 2026-10-01 §4.7.1)
+   Live TV x the modern broadcast package. v1 (a webcam frame and visual-
+   novel busts) was rejected as not Big Brother and not tech-forward.
+
+   THE CAMERA IS THE EYE. The logo is an aperture; rooms change on the
+   aperture closing and opening; Big Brother speaking opens the eye.
+   FACES ARE TRACKED. Houseguests are glass tiles on a glossy studio floor;
+   recognition brackets lock onto whoever speaks.
+   IT IS BROADCAST. Lines are lower thirds; stage directions are closed
+   captions; the feed switcher, clock and signal never leave the screen.
+   ══════════════════════════════════════════════════════════════════════ */
+:root{
+  --bg:#eef1f6; --bg2:#e3e8f0; --card:#ffffff; --ink:#0c1220; --muted:#667085; --line:#d5dce7; --acc:#0a7cff; --chip:#eef2f8;
+}
+:root[data-theme="dark"]{
+  --bg:#05070d; --bg2:#0a0e18; --card:#0d1220; --ink:#e8eefb; --muted:#7d89a3; --line:#1a2234; --acc:#22e1ff; --chip:#131a2b;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#05070d; --bg2:#0a0e18; --card:#0d1220; --ink:#e8eefb; --muted:#7d89a3; --line:#1a2234; --acc:#22e1ff; --chip:#131a2b;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:Archivo,system-ui,sans-serif;-webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(1200px 500px at 50% -200px,color-mix(in srgb,var(--acc) 12%,transparent),transparent)}
+button{font:inherit;color:inherit}
+.hud-f{font-family:'Chakra Petch',monospace}
+
+/* ── page chrome ─────────────────────────────────────────────────────── */
+.top{max-width:1360px;margin:0 auto;padding:18px 16px 12px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.logo{display:flex;align-items:center;gap:12px}
+.logo svg{width:46px;height:46px}
+.logo h1{margin:0;font-weight:900;font-stretch:125%;font-size:20px;letter-spacing:1px;line-height:1}
+.logo h1 em{font-style:normal;color:var(--acc)}
+.logo p{margin:4px 0 0;font:600 10.5px 'Chakra Petch';letter-spacing:2px;color:var(--muted);text-transform:uppercase}
+.top .sp{flex:1}
+.tbtn{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:8px 13px;font:600 11px 'Chakra Petch';letter-spacing:1.4px;text-transform:uppercase;cursor:pointer}
+.tbtn:hover{border-color:var(--acc)}
+.main{max-width:1360px;margin:0 auto;padding:0 16px 40px;display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px}
+@media(max-width:980px){.main{grid-template-columns:minmax(0,1fr)}}
+.main>section{min-width:0}
+
+/* the rundown: the episode as a broadcast running order */
+.rundown{display:flex;gap:4px;margin:0 0 10px;overflow-x:auto;scrollbar-width:thin;padding-bottom:2px}
+.seg{flex:1 0 104px;position:relative;border:0;background:var(--card);border-radius:6px;padding:8px 10px 9px;cursor:pointer;text-align:left;border:1px solid var(--line);overflow:hidden}
+.seg .t{display:block;font:600 9.5px 'Chakra Petch';letter-spacing:1.2px;color:var(--muted)}
+.seg b{display:block;font-weight:800;font-stretch:80%;font-size:13.5px;letter-spacing:.3px;text-transform:uppercase;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.seg .bar{position:absolute;left:0;bottom:0;height:3px;background:var(--acc);width:0;transition:width .3s}
+.seg.on{border-color:var(--acc)}
+.seg.on .t{color:var(--acc)}
+.seg.done .bar{width:100%;opacity:.35}
+
+.ctrl{display:flex;gap:6px;align-items:center;margin:10px 0 0;flex-wrap:wrap}
+.cbtn{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:9px 13px;font:600 11px 'Chakra Petch';letter-spacing:1.4px;text-transform:uppercase;cursor:pointer;display:inline-flex;gap:7px;align-items:center}
+.cbtn.pri{background:var(--acc);color:#001018;border-color:var(--acc)}
+.cbtn.on{border-color:var(--acc);color:var(--acc)}
+.cbtn:disabled{opacity:.35;cursor:default}
+.prog{margin-left:auto;font:600 10.5px 'Chakra Petch';color:var(--muted);letter-spacing:1.6px}
+.script{margin-top:12px;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:12px 16px;max-height:230px;overflow:auto}
+.script h3{margin:0 0 8px;font:600 10px 'Chakra Petch';letter-spacing:2px;color:var(--muted);text-transform:uppercase}
+.ln{display:grid;grid-template-columns:96px 1fr;gap:10px;font-size:13.5px;line-height:1.5;padding:3px 0;color:var(--muted)}
+.ln.now{color:var(--ink)}
+.ln .who{font-weight:800;font-stretch:80%;text-transform:uppercase;letter-spacing:.4px;color:var(--ink);font-size:12.5px;padding-top:1px}
+.ln .who.dr{color:#d9a520}.ln .who.bb{color:var(--acc)}.ln .who.ccx{color:var(--muted);font:600 10px 'Chakra Petch';letter-spacing:1.4px;padding-top:3px}
+.ln i{font-style:italic}
+.empty{font-size:12.5px;color:var(--muted);font-style:italic}
+
+.side{display:flex;flex-direction:column;gap:12px}
+.panel{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:13px 14px}
+.panel h4{margin:0 0 10px;font:600 10px 'Chakra Petch';letter-spacing:2px;color:var(--muted);text-transform:uppercase;display:flex;justify-content:space-between}
+.prow{display:flex;align-items:center;gap:10px;padding:5px 0}
+.prow .nm{font-weight:800;font-stretch:85%;text-transform:uppercase;letter-spacing:.3px;font-size:13.5px}
+.prow .tag{margin-left:auto;font:700 9px 'Chakra Petch';letter-spacing:1.3px;padding:3px 7px;border-radius:4px;text-transform:uppercase}
+.tag.hoh{background:#f5c542;color:#2a1d00}.tag.nom{background:#ff3355;color:#fff}.tag.veto{background:transparent;border:1px solid #d9a520;color:#d9a520}.tag.out{background:var(--chip);color:var(--muted)}
+.mini{width:30px;height:30px;border-radius:7px;overflow:hidden;flex:none;position:relative;background:var(--c);box-shadow:0 0 0 1.5px color-mix(in srgb,var(--c) 70%,transparent)}
+.mini img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 14%}
+.mini .i{position:absolute;inset:0;display:grid;place-items:center;font-weight:900;color:#fff;font-size:12px}
+.pend{font-size:12px;color:var(--muted);font-style:italic}
+.mv{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:4px 0}
+.mv .d{font:700 9px 'Chakra Petch';letter-spacing:1.2px;padding:2px 6px;border-radius:4px;text-transform:uppercase}
+.mv .d.up{background:#12b76a22;color:#12b76a}.mv .d.down{background:#ff335522;color:#ff3355}.mv .d.deal{background:#f5c54226;color:#c99a1a}.mv .d.love{background:#ff4fb022;color:#ff4fb0}
+.grid9{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.grid9 .mini{width:100%;height:auto;aspect-ratio:1}
+.grid9 .mini.out{filter:grayscale(1);opacity:.4}
+
+/* ══════════════════════════════════════════════════════════════════════
+   THE STAGE. Self-lit (it is a screen) in both themes; sized in cqw.
+   ══════════════════════════════════════════════════════════════════════ */
+.stage{position:relative;aspect-ratio:16/9;container-type:inline-size;overflow:hidden;border-radius:14px;background:#03050a;cursor:pointer;user-select:none;isolation:isolate;
+  box-shadow:0 0 0 1px rgba(34,225,255,.18),0 30px 70px -20px rgba(0,20,60,.55)}
+.cam{position:absolute;inset:0;transition:transform 1s cubic-bezier(.2,.75,.15,1)}
+.lens{position:absolute;inset:0}
+.lens.cut{animation:cut .32s steps(4,end)}
+@keyframes cut{0%{transform:translateX(1.4cqw);filter:hue-rotate(40deg) saturate(2)}50%{transform:translateX(-.8cqw)}100%{transform:none;filter:none}}
+.stage.bbspeaks .cam{filter:brightness(.25) saturate(.4) blur(.25cqw);transition:filter .6s}
+
+/* ── sets: graded light, an architectural light line or two, the glossy floor ── */
+.set{position:absolute;inset:0;overflow:hidden}
+.set::before,.set::after{content:"";position:absolute;inset:0;pointer-events:none}
+.floor{position:absolute;left:0;right:0;bottom:0;height:34%;z-index:0;
+  background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,0) 30%),linear-gradient(180deg,var(--fl1,#0b1120),var(--fl2,#03050a));
+  border-top:.1cqw solid rgba(255,255,255,.18)}
+.floor::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,rgba(255,255,255,.035) 0 .1cqw,transparent .1cqw 6cqw);
+  -webkit-mask:linear-gradient(180deg,#000,transparent 80%);mask:linear-gradient(180deg,#000,transparent 80%);transform:perspective(20cqw) rotateX(40deg);transform-origin:top}
+.set-kitchen{--fl1:#2a1a10;--fl2:#0b0705;background:
+  radial-gradient(16cqw 22cqw at 26% 10%,rgba(255,180,90,.42),transparent 70%),radial-gradient(16cqw 22cqw at 50% 10%,rgba(255,180,90,.5),transparent 70%),
+  radial-gradient(16cqw 22cqw at 74% 10%,rgba(255,180,90,.42),transparent 70%),
+  linear-gradient(100deg,rgba(120,190,255,.22),transparent 34%),linear-gradient(180deg,#22160f 0%,#160e09 70%)}
+.set-kitchen::before{background:linear-gradient(90deg,transparent 25.9%,rgba(255,210,150,.5) 26%,transparent 26.1%,transparent 49.9%,rgba(255,210,150,.5) 50%,transparent 50.1%,transparent 73.9%,rgba(255,210,150,.5) 74%,transparent 74.1%);
+  -webkit-mask:linear-gradient(180deg,#000 0,#000 9%,transparent 9.2%);mask:linear-gradient(180deg,#000 0,#000 9%,transparent 9.2%)}
+.set-kitchen::after{background:radial-gradient(1.1cqw 1.1cqw at 26% 10%,#ffe2b0,transparent),radial-gradient(1.1cqw 1.1cqw at 50% 10%,#ffe2b0,transparent),radial-gradient(1.1cqw 1.1cqw at 74% 10%,#ffe2b0,transparent),
+  linear-gradient(180deg,transparent 60%,rgba(255,200,140,.18) 63%,transparent 69.5%)}
+.set-bedroom{--fl1:#0d1426;--fl2:#04060c;background:radial-gradient(40cqw 30cqw at 82% 6%,rgba(110,140,230,.38),transparent 70%),linear-gradient(180deg,#0f1424,#070a12)}
+.set-bedroom::before{background:repeating-linear-gradient(-26deg,rgba(170,195,255,.11) 0 1.4cqw,transparent 1.4cqw 3.6cqw);
+  -webkit-mask:radial-gradient(50cqw 30cqw at 72% 26%,#000,transparent 75%);mask:radial-gradient(50cqw 30cqw at 72% 26%,#000,transparent 75%)}
+.set-hoh{--fl1:color-mix(in srgb,var(--hoh) 30%,#0b0710);--fl2:#05030a;background:radial-gradient(50cqw 34cqw at 60% 14%,color-mix(in srgb,var(--hoh) 50%,transparent),transparent 70%),
+  radial-gradient(18cqw 14cqw at 90% 34%,rgba(255,225,190,.35),transparent 70%),linear-gradient(180deg,color-mix(in srgb,var(--hoh) 18%,#120a18),#08050c)}
+.set-hoh::before{background:linear-gradient(180deg,transparent 7.8%,color-mix(in srgb,var(--hoh) 80%,#fff) 8%,transparent 8.4%);opacity:.6}
+.set-dr{--fl1:#0a0820;--fl2:#020108;background:radial-gradient(40cqw 36cqw at 50% 40%,rgba(90,60,255,.35),transparent 70%),linear-gradient(180deg,#0b0820,#03020a)}
+.set-ceremony{--fl1:#06142a;--fl2:#02050c;background:radial-gradient(70cqw 26cqw at 50% -6%,rgba(30,140,255,.45),transparent 70%),linear-gradient(180deg,#07142a,#030812)}
+.set-ceremony::before{background:repeating-linear-gradient(90deg,transparent 0 9.9cqw,rgba(40,170,255,.16) 9.9cqw 10cqw);-webkit-mask:linear-gradient(180deg,#000,transparent 70%);mask:linear-gradient(180deg,#000,transparent 70%)}
+.set-ceremony::after{background:linear-gradient(90deg,transparent,rgba(34,225,255,.09),transparent);animation:sweep 6s ease-in-out infinite alternate}
+@keyframes sweep{from{transform:translateX(-35%)}to{transform:translateX(35%)}}
+.set-yard{--fl1:#1683b0;--fl2:#0a3d5c;background:radial-gradient(30cqw 26cqw at 86% 4%,rgba(255,250,225,.95),transparent 70%),linear-gradient(180deg,#5bb2e8 0%,#a9dcf2 50%,#e3d7bd 69%)}
+.set-yard .floor{background:repeating-radial-gradient(circle at 30% 40%,rgba(255,255,255,.3) 0 .35cqw,transparent .45cqw 2.2cqw),linear-gradient(180deg,#36b2d9,#0d6d98);
+  background-size:8cqw 4.5cqw,100% 100%;animation:caustic 6s linear infinite}
+@keyframes caustic{to{background-position:8cqw 4.5cqw,0 0}}
+.set-yard::after{background:radial-gradient(20cqw 12cqw at 6% 14%,rgba(20,60,30,.3),transparent 70%)}
+.stage.nv .lens{filter:grayscale(1) sepia(1) hue-rotate(62deg) saturate(2.4) brightness(1.08) contrast(1.08)}
+.stage.nv .grain{opacity:.22}
+.grain{position:absolute;inset:0;z-index:7;pointer-events:none;opacity:.05;mix-blend-mode:screen;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");animation:grain .5s steps(3) infinite}
+@keyframes grain{33%{transform:translate(-2%,1%)}66%{transform:translate(1%,-2%)}}
+
+/* ── houseguests: glass tiles, tracked ───────────────────────────────── */
+.gt{position:absolute;bottom:18.6cqw;width:11.4cqw;transform:translateX(-50%);z-index:3;transition:filter .45s}
+.gt .tile{position:relative;aspect-ratio:4/5;border-radius:1.3cqw;overflow:hidden;background:linear-gradient(160deg,color-mix(in srgb,var(--c) 85%,#fff),color-mix(in srgb,var(--c) 45%,#000));
+  box-shadow:inset 0 0 0 .14cqw rgba(255,255,255,.35),0 1.6cqw 3cqw rgba(0,0,0,.45);transform:perspective(50cqw) rotateY(var(--ry,0deg));transition:transform .5s cubic-bezier(.2,.8,.2,1),box-shadow .4s;
+  -webkit-box-reflect:below .5cqw linear-gradient(transparent 58%,rgba(255,255,255,.22))}
+.gt .tile img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 14%}
+.gt .tile .i{position:absolute;inset:0;display:grid;place-items:center;font:900 5cqw Archivo;color:rgba(255,255,255,.9)}
+.gt .tile::after{content:"";position:absolute;inset:0;background:linear-gradient(125deg,rgba(255,255,255,.28) 0%,transparent 34%,transparent 70%,rgba(255,255,255,.08));pointer-events:none}
+.gt .plate{position:absolute;left:50%;top:calc(100% + 1.3cqw);transform:translateX(-50%);display:flex;gap:.5cqw;align-items:center;white-space:nowrap;z-index:2}
+.gt .plate b{font:800 1.25cqw Archivo;font-stretch:78%;letter-spacing:.14cqw;color:#fff;text-transform:uppercase;text-shadow:0 .2cqw .6cqw rgba(0,0,0,.8)}
+.chipx{font:700 .82cqw 'Chakra Petch';letter-spacing:.1cqw;padding:.18cqw .5cqw;border-radius:.3cqw;text-transform:uppercase}
+.chipx.hoh{background:#f5c542;color:#2a1d00}.chipx.nom{background:#ff3355;color:#fff}.chipx.veto{border:.1cqw solid #f5c542;color:#f5c542}.chipx.out{background:#333;color:#aaa}
+.gt{filter:brightness(.62) saturate(.75)}
+.gt.speak{filter:none;z-index:4}
+.gt.speak .tile{transform:perspective(50cqw) rotateY(0) scale(1.1) translateY(-.6cqw);box-shadow:inset 0 0 0 .16cqw color-mix(in srgb,var(--c) 70%,#fff),0 0 3cqw color-mix(in srgb,var(--c) 55%,transparent),0 2cqw 4cqw rgba(0,0,0,.5)}
+.gt.out{filter:brightness(.4) saturate(.5) blur(.25cqw)}
+.gt.in .tile{animation:tin .7s cubic-bezier(.2,.8,.2,1) both}
+@keyframes tin{from{opacity:0;transform:perspective(50cqw) rotateY(var(--ry,0deg)) translateY(3cqw) scale(.94)}}
+.gt.gone .tile img{filter:grayscale(1) brightness(.6)}
+/* recognition brackets: lock on the speaker */
+.trk{position:absolute;inset:-1.1cqw -1.1cqw;pointer-events:none;opacity:0;z-index:3}
+.gt.speak .trk{opacity:1}
+.trk i{position:absolute;width:2cqw;height:2cqw;border:.2cqw solid #22e1ff;filter:drop-shadow(0 0 .5cqw #22e1ff)}
+.trk i:nth-child(1){left:0;top:0;border-right:0;border-bottom:0}.trk i:nth-child(2){right:0;top:0;border-left:0;border-bottom:0}
+.trk i:nth-child(3){left:0;bottom:0;border-right:0;border-top:0}.trk i:nth-child(4){right:0;bottom:0;border-left:0;border-top:0}
+.trk .id{position:absolute;left:0;top:-2.3cqw;font:700 .9cqw 'Chakra Petch';letter-spacing:.12cqw;color:#001018;background:#22e1ff;padding:.2cqw .6cqw;border-radius:.2cqw;white-space:nowrap}
+.trk .id s{text-decoration:none;opacity:.6;margin-left:.6cqw}
+.trk.lock i{animation:lock .5s cubic-bezier(.2,.8,.2,1) both}
+.trk.lock i:nth-child(1){--lx:-2cqw;--ly:-2cqw}.trk.lock i:nth-child(2){--lx:2cqw;--ly:-2cqw}.trk.lock i:nth-child(3){--lx:-2cqw;--ly:2cqw}.trk.lock i:nth-child(4){--lx:2cqw;--ly:2cqw}
+@keyframes lock{from{transform:translate(var(--lx),var(--ly));opacity:0}}
+.trk.lock .id{animation:idin .5s .2s both}
+@keyframes idin{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+.scan{position:absolute;left:0;right:0;height:18%;top:-20%;background:linear-gradient(180deg,transparent,rgba(34,225,255,.55),transparent);z-index:2;animation:scan .9s ease-out .1s both;mix-blend-mode:screen}
+@keyframes scan{to{top:105%}}
+
+/* ── broadcast HUD ───────────────────────────────────────────────────── */
+.hud{position:absolute;inset:0;z-index:8;pointer-events:none}
+.bug{position:absolute;left:2.6cqw;top:2.4cqw;display:flex;align-items:center;gap:1cqw}
+.bug .eye{width:4.6cqw;height:auto}
+.bug .wm{font:900 1.2cqw Archivo;font-stretch:125%;letter-spacing:.2cqw;color:#fff;line-height:1.05}
+.bug .wm span{display:block;font:600 .85cqw 'Chakra Petch';letter-spacing:.24cqw;color:#22e1ff;font-stretch:100%}
+.live{display:inline-flex;align-items:center;gap:.5cqw;font:700 1cqw 'Chakra Petch';letter-spacing:.16cqw;color:#fff;background:#ff2e4d;padding:.3cqw .8cqw;border-radius:.3cqw;margin-left:1cqw}
+.live::before{content:"";width:.7cqw;height:.7cqw;border-radius:50%;background:#fff;animation:blink 1.2s steps(2) infinite}
+@keyframes blink{50%{opacity:.2}}
+.camlab{font:600 1.05cqw 'Chakra Petch';letter-spacing:.18cqw;color:#fff;padding:.3cqw .8cqw;border:.1cqw solid rgba(255,255,255,.35);border-radius:.3cqw;background:rgba(0,0,0,.35);backdrop-filter:blur(.6cqw)}
+.camlab b{color:#22e1ff;font-weight:700;margin-right:.7cqw}
+.camlab.sw{animation:camsw .4s}
+@keyframes camsw{0%{background:#22e1ff;color:#001018}}
+.clockw{position:absolute;right:2.6cqw;top:2.6cqw;text-align:right;font:600 1.05cqw 'Chakra Petch';letter-spacing:.18cqw;color:#fff}
+.clockw .big{font:700 1.7cqw 'Chakra Petch';letter-spacing:.12cqw;color:#fff}
+.sig{display:inline-flex;gap:.2cqw;align-items:flex-end;margin-left:.8cqw;vertical-align:-.1cqw}
+.sig i{width:.35cqw;background:#22e1ff;border-radius:.1cqw}
+.sig i:nth-child(1){height:.6cqw}.sig i:nth-child(2){height:.9cqw}.sig i:nth-child(3){height:1.2cqw}.sig i:nth-child(4){height:1.5cqw;opacity:.35}
+.feeds{position:absolute;right:2.6cqw;top:7.4cqw;display:flex;flex-direction:column;gap:.5cqw}
+.ft{width:9cqw;aspect-ratio:16/9;border-radius:.4cqw;position:relative;overflow:hidden;box-shadow:0 0 0 .1cqw rgba(255,255,255,.25);opacity:.55;transition:opacity .3s,box-shadow .3s}
+.ft .set{position:absolute;inset:0}
+.ft .set .floor{height:30%}
+.ft span{position:absolute;left:.4cqw;bottom:.25cqw;font:700 .65cqw 'Chakra Petch';letter-spacing:.08cqw;color:#fff;text-shadow:0 0 .4cqw #000;z-index:2}
+.ft.on{opacity:1;box-shadow:0 0 0 .16cqw #22e1ff,0 0 1.2cqw rgba(34,225,255,.5)}
+.zoom{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);width:10cqw;height:10cqw;z-index:8;pointer-events:none;animation:zoomr 1s ease-out forwards}
+.zoom::before,.zoom::after{content:"";position:absolute;background:#22e1ff}
+.zoom::before{left:50%;top:0;bottom:0;width:.12cqw}.zoom::after{top:50%;left:0;right:0;height:.12cqw}
+.zoom b{position:absolute;left:calc(100% + .6cqw);top:0;font:700 .9cqw 'Chakra Petch';color:#22e1ff;white-space:nowrap;letter-spacing:.1cqw}
+@keyframes zoomr{0%{opacity:0;transform:translate(-50%,-50%) scale(1.6)}25%{opacity:.9;transform:translate(-50%,-50%) scale(1)}100%{opacity:0}}
+.vign{position:absolute;inset:0;z-index:6;pointer-events:none;background:radial-gradient(ellipse at center,transparent 60%,rgba(0,0,0,.5)),repeating-linear-gradient(0deg,rgba(255,255,255,.018) 0 1px,transparent 1px 3px)}
+
+/* ── the line: a broadcast lower third ───────────────────────────────── */
+.l3{position:absolute;left:3.4cqw;right:3.4cqw;bottom:2.6cqw;z-index:9}
+.l3 .tagr{display:flex;align-items:stretch;height:3.2cqw;margin-left:.6cqw}
+.l3 .tagr .nm{position:relative;display:flex;align-items:center;gap:1cqw;padding:0 2.2cqw 0 1.6cqw;background:linear-gradient(90deg,var(--c),color-mix(in srgb,var(--c) 55%,#0a0f1e));
+  clip-path:polygon(0 0,100% 0,calc(100% - 1.4cqw) 100%,0 100%);font:900 1.75cqw Archivo;font-stretch:72%;letter-spacing:.2cqw;color:#fff;text-transform:uppercase;text-shadow:0 .1cqw .3cqw rgba(0,0,0,.35)}
+.l3 .tagr .role{display:flex;align-items:center;padding:0 1.6cqw 0 1.8cqw;margin-left:-1.2cqw;background:rgba(5,9,18,.92);clip-path:polygon(1.4cqw 0,100% 0,calc(100% - 1.4cqw) 100%,0 100%);
+  font:700 .95cqw 'Chakra Petch';letter-spacing:.2cqw;color:#cfe9ff;text-transform:uppercase}
+.l3 .body{position:relative;background:linear-gradient(180deg,rgba(6,10,20,.9),rgba(3,6,12,.95));border-radius:0 .9cqw .9cqw .9cqw;padding:1.6cqw 2.2cqw 1.7cqw;min-height:7.8cqw;
+  box-shadow:inset 0 .15cqw 0 color-mix(in srgb,var(--c) 80%,#fff),0 1.4cqw 3cqw rgba(0,0,0,.5);backdrop-filter:blur(1cqw);overflow:hidden}
+.l3 .body::before{content:"";position:absolute;left:0;top:0;bottom:0;width:.35cqw;background:var(--c)}
+.l3 .tx{font:500 2.05cqw/1.42 Archivo;color:#f3f6ff;letter-spacing:.01cqw}
+.l3.fresh .tagr .nm{animation:wipe .45s cubic-bezier(.2,.8,.2,1) both}
+.l3.fresh .tagr .role{animation:wipe .45s .12s cubic-bezier(.2,.8,.2,1) both}
+.l3.fresh .body{animation:rise .35s ease-out both}
+.l3.fresh .body::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.12) 50%,transparent 70%);animation:shine .9s .1s ease-out both}
+@keyframes wipe{from{clip-path:polygon(0 0,0 0,0 100%,0 100%)}}
+@keyframes rise{from{opacity:0;transform:translateY(1cqw)}}
+@keyframes shine{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+.l3.dr{--c:#f5c542}
+.l3.dr .tx{font-style:italic}
+.l3.dr .tx::before{content:"\201C"}.l3.dr .tx::after{content:"\201D"}
+.l3.host{--c:#ff2e4d}
+/* stage directions: closed captions */
+.cc{position:absolute;left:50%;bottom:3.6cqw;transform:translateX(-50%);z-index:9;max-width:78cqw;text-align:center}
+.cc span{font:600 1.7cqw/1.75 'Chakra Petch';letter-spacing:.04cqw;color:#fff;background:#000;padding:.25cqw .8cqw;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.cc .ccl{display:table;margin-left:auto;margin-right:auto;font:700 .8cqw 'Chakra Petch';letter-spacing:.3cqw;color:rgba(255,255,255,.55);margin-bottom:.6cqw}
+
+/* ── Big Brother speaks ──────────────────────────────────────────────── */
+.bbv{position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 10cqw}
+.bbv .eye{width:15cqw;filter:drop-shadow(0 0 3cqw rgba(34,225,255,.55))}
+.bbv .who{margin-top:1.6cqw;font:700 1.05cqw 'Chakra Petch';letter-spacing:.6cqw;color:#22e1ff}
+.bbv .tx{margin-top:1.2cqw;font:800 3.1cqw/1.18 Archivo;font-stretch:115%;color:#fff;letter-spacing:.04cqw;text-shadow:0 0 2.2cqw rgba(34,225,255,.4)}
+.wave{display:flex;gap:.35cqw;align-items:center;height:3cqw;margin-top:1.4cqw}
+.wave i{width:.35cqw;border-radius:.2cqw;background:#22e1ff;height:20%;animation:wv .9s ease-in-out infinite alternate;opacity:.85}
+@keyframes wv{to{height:100%}}
+.bbv.fresh .eye{animation:eyeopen .8s cubic-bezier(.2,.8,.2,1) both}
+.bbv.fresh .tx{animation:rise .6s .25s both}
+@keyframes eyeopen{from{transform:scale(.6);opacity:0;filter:blur(1cqw)}}
+
+/* the eye: an aperture. The ring turns; the blades breathe. */
+.eye .ring{transform-origin:0 0;animation:spin 14s linear infinite}
+.eye .ring2{transform-origin:0 0;animation:spin 22s linear infinite reverse}
+@keyframes spin{to{transform:rotate(360deg)}}
+.eye .pup{transform-origin:0 0;animation:breathe 4s ease-in-out infinite}
+@keyframes breathe{50%{transform:scale(.82)}}
+
+/* ── objects: spy screen, LED wall, key box, medallion, memory wall ──── */
+.obj{position:absolute;z-index:2}
+.spy{left:3.6cqw;top:9cqw;width:27cqw;border-radius:.8cqw;overflow:hidden;background:#04070d;box-shadow:0 0 0 .2cqw #1c2638,0 0 3cqw rgba(34,225,255,.2);display:grid;grid-template-columns:1fr 1fr;gap:.25cqw;padding:.25cqw}
+.spy .q{position:relative;aspect-ratio:16/9;overflow:hidden;border-radius:.2cqw}
+.spy .q .set{position:absolute;inset:0}
+.spy .q span{position:absolute;left:.4cqw;top:.3cqw;font:700 .7cqw 'Chakra Petch';color:#fff;letter-spacing:.08cqw;z-index:3;text-shadow:0 0 .3cqw #000}
+.spy .q.hot{box-shadow:inset 0 0 0 .18cqw #22e1ff}
+.spy .q.hot span::after{content:" ● LIVE";color:#ff2e4d;animation:blink 1s steps(2) infinite}
+.spy .q .fig{position:absolute;bottom:8%;width:14%;aspect-ratio:3/4;border-radius:40% 40% .3cqw .3cqw;background:rgba(150,255,170,.6)}
+.spy .q.nvq .set{filter:grayscale(1) sepia(1) hue-rotate(62deg) saturate(2.4)}
+.ledtv{left:8%;top:9cqw;width:17cqw;margin-left:0;aspect-ratio:16/9;border-radius:.6cqw;overflow:hidden;background:#05070d;box-shadow:0 0 0 .3cqw #101624,0 0 4cqw rgba(255,46,77,.18);transition:box-shadow .4s,transform .5s}
+.ledtv.on{box-shadow:0 0 0 .3cqw #ff2e4d,0 0 5cqw rgba(255,46,77,.45);transform:scale(1.03)}
+.ledtv.dim img{filter:brightness(.28) blur(.2cqw)}
+.ledtv img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 14%}
+.ledtv::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,.18) 0 .12cqw,transparent .12cqw .3cqw),linear-gradient(0deg,rgba(0,0,0,.55),transparent 40%)}
+.ledtv .lb{position:absolute;left:1cqw;bottom:.8cqw;z-index:2;font:900 1.4cqw Archivo;font-stretch:72%;letter-spacing:.2cqw;color:#fff}
+.ledtv .lb span{display:block;font:700 .75cqw 'Chakra Petch';letter-spacing:.2cqw;color:#ff2e4d}
+.votes{position:absolute;left:16.5%;top:23%;transform:translate(-50%,-50%);z-index:9;display:flex;gap:2cqw;align-items:center}
+.votes .v{text-align:center}
+.votes .n{font:700 5cqw/1 'Chakra Petch';color:#fff;text-shadow:0 0 3cqw rgba(255,46,77,.6);min-width:7cqw}
+.votes .k{font:800 .85cqw Archivo;font-stretch:78%;letter-spacing:.3cqw;color:#ff9db0;text-transform:uppercase}
+.votes .sep{width:.2cqw;height:5cqw;background:linear-gradient(180deg,transparent,#ff2e4d,transparent)}
+.votes.fresh .n{animation:roll .9s steps(8) both}
+@keyframes roll{0%{opacity:.2;filter:blur(.4cqw)}}
+.kbox{left:58%;bottom:20cqw;width:11cqw;transform:translateX(-50%)}
+.kbox svg{width:100%;display:block;filter:drop-shadow(0 0 2cqw rgba(34,225,255,.35))}
+.flykey{position:absolute;z-index:9;width:5cqw;left:58%;bottom:25cqw;animation:fly 1.1s cubic-bezier(.3,.7,.2,1) both}
+@keyframes fly{0%{transform:translate(-50%,0) rotate(-30deg) scale(.6);opacity:0}25%{opacity:1;transform:translate(-50%,-3cqw) rotate(0) scale(1.1)}100%{transform:translate(calc(-50% + var(--dx)),var(--dy)) scale(.4);opacity:0}}
+.medal{width:6.4cqw;z-index:5;transform:translateX(-50%);bottom:33cqw}
+.medal svg{width:100%;display:block;filter:drop-shadow(0 0 1.4cqw rgba(245,197,66,.7))}
+.medal.fresh{animation:drop 1.1s cubic-bezier(.2,.9,.3,1.25) both}
+@keyframes drop{from{transform:translateX(-50%) translateY(-10cqw) rotate(-30deg);opacity:0}}
+.medal.glint svg{animation:glint 1.1s ease-out}
+@keyframes glint{35%{filter:drop-shadow(0 0 5cqw #ffe9a8) brightness(1.7)}}
+.wall{position:absolute;left:0;right:0;top:7.4cqw;z-index:5;display:flex;justify-content:center;gap:.7cqw;perspective:60cqw}
+.mw{position:relative;width:5.9cqw;aspect-ratio:4/5;border-radius:.6cqw;overflow:hidden;background:var(--c);transform:rotateY(var(--ry)) translateZ(var(--tz));
+  box-shadow:inset 0 0 0 .12cqw rgba(255,255,255,.3),0 .8cqw 1.6cqw rgba(0,0,0,.5);filter:brightness(.6) saturate(.7);transition:filter .5s,box-shadow .4s,transform .5s}
+.mw img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 14%}
+.mw .i{position:absolute;inset:0;display:grid;place-items:center;font:900 2cqw Archivo;color:#fff}
+.mw .lb{position:absolute;left:0;right:0;bottom:0;z-index:2;font:700 .7cqw 'Chakra Petch';letter-spacing:.06cqw;text-align:center;padding:.2cqw 0;background:rgba(0,0,0,.7);color:#fff;text-transform:uppercase}
+.mw.hoh{filter:none;box-shadow:inset 0 0 0 .16cqw #f5c542,0 0 1.6cqw rgba(245,197,66,.5)}
+.mw.hoh .lb{background:#f5c542;color:#2a1d00}
+.mw.safe{filter:none}
+.mw.safe .key{position:absolute;right:.25cqw;top:.25cqw;z-index:2;width:2cqw;filter:drop-shadow(0 0 .4cqw rgba(0,0,0,.8))}
+.mw.nom{filter:none;box-shadow:inset 0 0 0 .18cqw #ff3355,0 0 2cqw rgba(255,51,85,.7);transform:rotateY(var(--ry)) translateZ(var(--tz)) translateY(.7cqw)}
+.mw.nom .lb{background:#ff3355}
+.mw.veto{box-shadow:inset 0 0 0 .16cqw #f5c542}
+.mw.out{filter:grayscale(1) brightness(.35)}
+.mw.out::after{content:"EVICTED";position:absolute;left:-20%;right:-20%;top:40%;z-index:3;transform:rotate(-24deg);text-align:center;font:900 .9cqw Archivo;font-stretch:80%;letter-spacing:.2cqw;background:#ff3355;color:#fff;padding:.15cqw 0}
+.mw.fresh{animation:mwpop .7s ease-out}
+@keyframes mwpop{35%{transform:rotateY(var(--ry)) translateZ(calc(var(--tz) + 3cqw)) scale(1.12)}}
+
+/* DR: the ring of light behind the chair */
+.drring{position:absolute;left:50%;top:40%;width:36cqw;aspect-ratio:1;transform:translate(-50%,-50%);z-index:1}
+.drring svg{width:100%;display:block}
+.drring .r1{transform-origin:50% 50%;animation:spin 30s linear infinite}
+
+/* ── pops, toasts ────────────────────────────────────────────────────── */
+.pop{position:absolute;z-index:9;transform:translateX(-50%);bottom:42cqw;display:flex;align-items:center;gap:.6cqw;white-space:nowrap;
+  background:rgba(5,9,18,.88);border:.1cqw solid rgba(255,255,255,.15);border-radius:.6cqw;padding:.5cqw .9cqw .5cqw .5cqw;animation:pop 2.4s cubic-bezier(.2,.8,.2,1) forwards;backdrop-filter:blur(.6cqw)}
+.pop .d{font:700 .85cqw 'Chakra Petch';letter-spacing:.12cqw;padding:.25cqw .5cqw;border-radius:.25cqw;text-transform:uppercase}
+.pop .d.up{background:#12b76a;color:#fff}.pop .d.down{background:#ff3355;color:#fff}.pop .d.deal{background:#f5c542;color:#2a1d00}.pop .d.love{background:#ff4fb0;color:#fff}
+.pop b{font:800 1.15cqw Archivo;font-stretch:80%;letter-spacing:.06cqw;color:#fff;text-transform:uppercase}
+.pop .bar{width:5cqw;height:.4cqw;border-radius:.2cqw;background:rgba(255,255,255,.15);overflow:hidden}
+.pop .bar i{display:block;height:100%;width:var(--w);background:var(--bc);animation:bar 1s .2s cubic-bezier(.2,.8,.2,1) both}
+@keyframes bar{from{width:var(--w0)}}
+@keyframes pop{0%{opacity:0;transform:translate(-50%,1.2cqw)}10%{opacity:1;transform:translate(-50%,0)}82%{opacity:1}100%{opacity:0;transform:translate(-50%,-1.5cqw)}}
+.toast{position:absolute;left:0;right:0;top:50%;z-index:11;transform:translateY(-50%);height:10cqw;display:grid;place-items:center;pointer-events:none;overflow:hidden;
+  background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--tc) 85%,#000) 18%,var(--tc) 50%,color-mix(in srgb,var(--tc) 85%,#000) 82%,transparent);animation:band 2s cubic-bezier(.2,.9,.2,1) forwards}
+.toast b{font:900 6cqw Archivo;font-stretch:125%;letter-spacing:.8cqw;color:#fff;text-shadow:0 .3cqw 0 rgba(0,0,0,.25)}
+.toast::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 35%,rgba(255,255,255,.45) 50%,transparent 65%);animation:shine 1s .15s both}
+@keyframes band{0%{clip-path:inset(50% 0 50% 0)}12%{clip-path:inset(0 0 0 0)}80%{clip-path:inset(0 0 0 0);opacity:1}100%{clip-path:inset(0 0 0 0);opacity:0}}
+.stage.shake .cam{animation:shake .45s}
+@keyframes shake{20%{transform:translateX(-.9cqw)}40%{transform:translateX(.9cqw)}60%{transform:translateX(-.4cqw)}}
+.flash{position:absolute;inset:0;z-index:12;background:#fff;animation:flash .3s ease-out forwards;pointer-events:none}
+@keyframes flash{from{opacity:.75}to{opacity:0}}
+
+/* at rest: the title card */
+.rest{position:absolute;inset:0;z-index:9;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:radial-gradient(ellipse at center,rgba(0,0,0,.25),rgba(0,0,0,.72))}
+.rest .eye{width:9cqw;filter:drop-shadow(0 0 2cqw rgba(34,225,255,.5))}
+.rest .k{margin-top:1.4cqw;font:700 1.15cqw 'Chakra Petch';letter-spacing:.5cqw;color:#22e1ff;text-transform:uppercase}
+.rest .t{font:900 5.4cqw/1 Archivo;font-stretch:120%;color:#fff;margin:1cqw 0 .8cqw;letter-spacing:.1cqw;text-transform:uppercase}
+.rest .s{font:500 1.6cqw Archivo;color:rgba(255,255,255,.75)}
+.rest .go{margin-top:2.4cqw;font:700 1cqw 'Chakra Petch';letter-spacing:.4cqw;color:#001018;background:#22e1ff;padding:.6cqw 1.6cqw;border-radius:.3cqw}
+
+/* rendered rooms (tools/bb-house/house.py): the photo replaces the light sketch */
+.set.photo{background-size:cover!important;background-position:center!important}
+.set.photo::before,.set.photo::after,.set.photo .floor{display:none}
+/* the house in the chosen look (TD B · Flat); every room of the default season */
+.set-kitchen.photo{background:url('../assets/bb/house/default/kitchen-td-b.webp?v=6')}
+.set-ceremony.photo{background:url('../assets/bb/house/default/living-td-b.webp?v=6')}
+.set-bedroom.photo{background:url('../assets/bb/house/default/bedroom-td-b.webp?v=6')}
+.set-hoh.photo{background:url('../assets/bb/house/default/hoh-td-b.webp?v=6')}
+.set-dr.photo{background:url('../assets/bb/house/default/dr-td-b.webp?v=6')}
+.set-yard.photo{background:url('../assets/bb/house/default/yard-td-b.webp?v=6')}
+.set-dining.photo{background:url('../assets/bb/house/default/dining-td-b.webp?v=6')}
+.front{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.nomscreen{position:absolute;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4%;
+  background:radial-gradient(ellipse at 50% 20%,#ff5fb4,#d02c7a 55%,#7a1048);box-shadow:inset 0 0 0 .2cqw rgba(255,255,255,.25);overflow:hidden}
+.nomscreen::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(115deg,rgba(255,255,255,.07) 0 1cqw,transparent 1cqw 3cqw)}
+.nhead{position:relative;font:900 1.7cqw Archivo;font-stretch:75%;letter-spacing:.12cqw;color:#fff;padding:.25cqw 1.2cqw;
+  background:linear-gradient(180deg,#9b2d8f,#5e1660);box-shadow:0 0 0 .18cqw #f1c6e6;text-shadow:0 .15cqw 0 #3a0a3a}
+.nslots{position:relative;display:flex;gap:6%;width:84%;justify-content:center}
+.nslot{position:relative;width:34%;aspect-ratio:1;background:linear-gradient(180deg,#2b3ea8,#16226a);border:.3cqw solid #d8deea;box-shadow:0 .3cqw .8cqw rgba(0,0,0,.35),inset 0 0 1.2cqw rgba(0,0,0,.5);box-sizing:border-box;
+  display:grid;place-items:center;overflow:hidden}
+.nslot i{font:900 5cqw/1 Archivo;font-style:normal;color:#fff;text-shadow:0 .25cqw 0 rgba(0,0,0,.35)}
+.nslot img{position:absolute;inset:0;width:100%;height:82%;object-fit:cover;object-position:50% 18%}
+.nslot.on{background:#fff}
+.nslot b{position:absolute;left:0;right:0;bottom:0;height:18%;display:grid;place-items:center;font:800 1cqw Archivo;font-stretch:80%;letter-spacing:.1cqw;color:#fff;background:linear-gradient(180deg,#9b2d8f,#5e1660);text-transform:uppercase}
+.nslot.flip{animation:nflip .7s cubic-bezier(.3,.7,.2,1) both}
+@keyframes nflip{0%{transform:rotateY(90deg);filter:brightness(3)}100%{transform:none}}
+.nkeys{position:absolute;transform:translateX(-50%);display:flex;justify-content:center;gap:12%}
+.nkey{width:30%;aspect-ratio:1;clip-path:polygon(30% 0,70% 0,100% 30%,100% 70%,70% 100%,30% 100%,0 70%,0 30%);
+  background:radial-gradient(circle at 40% 35%,#ffd36b,#e0731f 60%,#a8430c);display:grid;place-items:center;transition:transform .5s}
+.nkey b{font:900 .8cqw Archivo;color:#5a1d00}
+.nkey.turned{transform:rotate(90deg)}
+.nkey.now{animation:nturn .6s cubic-bezier(.3,.8,.3,1.2) both}
+@keyframes nturn{from{transform:rotate(0)}to{transform:rotate(90deg)}}
+.chipx.key{background:#f5c542;color:#2a1d00}
+.vchip{position:absolute;left:50%;top:40%;z-index:60;width:11cqw;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#fff8d8,#f5c542 55%,#a87a10);box-shadow:0 0 0 .3cqw #fff3c4,0 1.2cqw 3cqw rgba(0,0,0,.5);
+  display:grid;place-items:center;overflow:hidden;animation:chipin .9s cubic-bezier(.2,.9,.3,1.3) both}
+.vchip img{width:78%;height:78%;object-fit:cover;object-position:50% 14%;border-radius:50%;box-shadow:0 0 0 .2cqw #a87a10}
+.vchip b{font:900 1.3cqw/1.05 Archivo;font-stretch:80%;letter-spacing:.06cqw;color:#3d2a00;text-align:center;text-transform:uppercase}
+.vchip i{position:absolute;bottom:-3.2cqw;left:50%;transform:translateX(-50%);white-space:nowrap;font:700 .9cqw 'Chakra Petch';letter-spacing:.14cqw;color:#fff;text-transform:uppercase;font-style:normal}
+@keyframes chipin{from{transform:translate(-50%,40%) scale(.3) rotate(-120deg);opacity:0}}
+.wall.onwall{inset:0;left:0;right:0;top:0;display:block;perspective:none;z-index:1}
+.wall.onwall .mw{position:absolute;transform:none;border-radius:.15cqw;width:auto}
+.mf{position:absolute;padding:.32cqw;background:linear-gradient(135deg,#fbe7a6,#c9952f 35%,#f6d77e 55%,#8a6010);box-shadow:0 .35cqw .7cqw rgba(0,0,0,.45);transition:filter .6s,box-shadow .5s}
+.mf.dark{background:linear-gradient(135deg,#4a4a52,#141418 45%,#3a3a42 70%,#0b0b0e)}
+.mf .mfin{position:relative;width:100%;height:100%;overflow:hidden;background:var(--c);box-shadow:inset 0 0 0 .14cqw rgba(0,0,0,.55)}
+.mf .mfin img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 16%}
+.mf.out .mfin img{filter:grayscale(1) contrast(1.1)}
+.mf.out .mfin{background:#777}
+.mf.nom{box-shadow:0 0 0 .18cqw #ff3355,0 0 1.6cqw rgba(255,51,85,.85)}
+.mf.fresh{animation:mfpop .8s ease-out}
+@keyframes mfpop{40%{transform:scale(1.18);filter:brightness(1.6)}}
+.mft{position:absolute;left:50%;bottom:-.9cqw;transform:translateX(-50%);font:800 .55cqw Archivo;letter-spacing:.06cqw;background:#f5c542;color:#2a1d00;padding:.05cqw .35cqw;border-radius:.15cqw}
+.wall.onwall .mw .lb{font-size:.5cqw}
+.wall.onwall .mw.safe .key{width:1.1cqw}
+.set-dr.photo~.drring{display:none}
+
+/* the other looks, kitchen only, for comparison */
+body[data-house="a"] .set-kitchen.photo{background:url('../assets/bb/house/default/kitchen-td-a.webp?v=6')}
+body[data-house="c"] .set-kitchen.photo{background:url('../assets/bb/house/default/kitchen-td-c.webp?v=6')}
+body[data-house="toon"] .set-kitchen.photo{background:url('../assets/bb/house/default/kitchen-toon.webp?v=6')}
+body[data-house="real"] .set-kitchen.photo{background:url('../assets/bb/house/default/kitchen.webp?v=6')}
+
+/* background houseguests: in the room, not in the conversation. Further back,
+   so smaller, softer and dimmer; they never get a lower third. They are the
+   room's witnesses: whatever is said here, they heard. */
+.bgp{position:absolute;bottom:25.5cqw;width:7.6cqw;transform:translateX(-50%);z-index:2;transition:filter .5s,opacity .5s}
+.bgp .tile{position:relative;aspect-ratio:4/5;border-radius:.8cqw;overflow:hidden;background:var(--c);
+  box-shadow:inset 0 0 0 .1cqw rgba(255,255,255,.3),0 .8cqw 1.6cqw rgba(0,0,0,.35);
+  -webkit-mask:linear-gradient(180deg,#000 62%,transparent 96%);mask:linear-gradient(180deg,#000 62%,transparent 96%)}
+.bgp .tile img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 14%}
+.bgp{filter:blur(.12cqw) brightness(.78) saturate(.85)}
+.bgp .doing{position:absolute;left:50%;top:-1.9cqw;transform:translateX(-50%);white-space:nowrap;font:600 .78cqw 'Chakra Petch';letter-spacing:.08cqw;color:#fff;
+  background:rgba(5,9,18,.72);padding:.15cqw .55cqw;border-radius:.25cqw;text-transform:uppercase}
+.bgp.react{filter:none}
+.bgp.react .tile{box-shadow:inset 0 0 0 .14cqw #fff,0 0 1.6cqw rgba(255,255,255,.35)}
+.bgp.in{animation:bgin .7s ease-out both}
+@keyframes bgin{from{opacity:0;transform:translateX(-30%)}}
+.rx{position:absolute;z-index:9;bottom:39.5cqw;transform:translateX(-50%);white-space:nowrap;font:italic 600 1.05cqw Archivo;color:#fff;
+  background:rgba(5,9,18,.85);border:.1cqw solid rgba(255,255,255,.2);padding:.35cqw .8cqw;border-radius:.5cqw;animation:pop 2.6s cubic-bezier(.2,.8,.2,1) forwards}
+.rx::before{content:"";display:inline-block;width:.6cqw;height:.6cqw;border-radius:50%;background:#22e1ff;margin-right:.5cqw;vertical-align:.08cqw}
+/* the aperture wipe */
+.ap{position:absolute;inset:0;z-index:30;pointer-events:none;width:100%;height:100%}
+
+/* quad (cold open) */
+.quad{position:absolute;inset:0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:.35cqw;background:#000;padding:.35cqw}
+.qf{position:relative;overflow:hidden;border-radius:.5cqw;filter:brightness(.45) saturate(.6);transition:filter .5s,box-shadow .3s}
+.qf.on{filter:none;box-shadow:inset 0 0 0 .2cqw #22e1ff}
+.qf .set{position:absolute;inset:0}
+.qf .gt{width:7.4cqw;bottom:8.6cqw}
+.qf .gt .plate{display:none}
+.qf .lab{position:absolute;left:1.2cqw;bottom:.9cqw;z-index:5;font:700 .95cqw 'Chakra Petch';letter-spacing:.14cqw;color:#fff;text-shadow:0 0 .5cqw #000}
+.qf .lab::before{content:"● ";color:#ff2e4d}
+.qf.nvq .lens2{filter:grayscale(1) sepia(1) hue-rotate(62deg) saturate(2.4) brightness(1.08)}
+.qf .lens2{position:absolute;inset:0}
+.qf .cc{bottom:3.2cqw;max-width:40cqw}
+.qf .cc span{font-size:1.25cqw}
+
+body.tvm .top,body.tvm .side,body.tvm .script,body.tvm .rundown{display:none}
+body.tvm .main{grid-template-columns:1fr;max-width:1600px}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="logo" id="logo"></div>
+  <div class="sp"></div>
+  <button class="tbtn" id="season">Season: The House</button>
+  <button class="tbtn" id="house">House: TD B · Flat</button>
+  <button class="tbtn" id="theme">Theme</button>
+</header>
+<main class="main">
+  <section>
+    <nav class="rundown" id="rundown"></nav>
+    <div class="stage" id="stage" tabindex="0" aria-label="Episode stage. Click or press the right arrow for the next line."></div>
+    <div class="ctrl">
+      <button class="cbtn" id="back">◀ Back</button>
+      <button class="cbtn pri" id="next">Next ▶</button>
+      <button class="cbtn" id="all">Reveal all</button>
+      <button class="cbtn" id="restart">Restart</button>
+      <button class="cbtn" id="auto">Auto</button>
+      <button class="cbtn" id="tv">TV mode</button>
+      <span class="prog" id="prog"></span>
+    </div>
+    <div class="script" id="script"></div>
+  </section>
+  <aside class="side" id="side"></aside>
+</main>
+
+<script>
+// ══════════════════════════════════════════════════════════════════════
+// Cast
+// ══════════════════════════════════════════════════════════════════════
+const AV = '../assets/avatars/';
+const CAST = {
+  Heather:['heather.png','#ec4899'], Gwen:['gwen.png','#6366f1'], Courtney:['courtney.png','#10b981'], Duncan:['duncan.png','#22c55e'],
+  Alejandro:['alejandro.png','#f59e0b'], Bridgette:['bridgette.png','#3b82f6'], Geoff:['geoff.png','#eab308'], Scott:['scott.png','#f97316'],
+  Zoey:['zoey.png','#ef4444'], Valeria:['valeria.png','#ff2e4d'],
+};
+const HOUSE = ['Heather','Gwen','Courtney','Duncan','Alejandro','Bridgette','Geoff','Scott','Zoey'];
+const HOH = 'Heather';
+const col = n => (CAST[n] || [, '#64748b'])[1];
+const img = n => CAST[n] ? `<img src="${AV + CAST[n][0]}" alt="" onerror="this.remove()">` : '';
+const mini = (n, cls = '') => `<span class="mini ${cls}" style="--c:${col(n)}"><span class="i">${n[0]}</span>${img(n)}</span>`;
+
+// ══════════════════════════════════════════════════════════════════════
+// The eye: an aperture. Six blades round a lit iris, two rings turning.
+// ══════════════════════════════════════════════════════════════════════
+function eyeSvg(cls = 'eye') {
+  const blades = Array.from({ length: 6 }, (_, i) => `<path d="M0 -9 L7.8 -4.5 L3 0 Z" transform="rotate(${i * 60})" fill="#0a2a3a" stroke="#22e1ff" stroke-width=".5" opacity=".95"/>`).join('');
+  return `<svg class="${cls}" viewBox="-30 -18 60 36" aria-hidden="true">
+    <defs><radialGradient id="irs${cls}" r="1"><stop offset="0" stop-color="#9ff6ff"/><stop offset=".45" stop-color="#22e1ff"/><stop offset="1" stop-color="#0a5cff"/></radialGradient>
+    <linearGradient id="lid${cls}" x1="0" x2="1"><stop offset="0" stop-color="#cfe9ff"/><stop offset=".5" stop-color="#ffffff"/><stop offset="1" stop-color="#8ab6ff"/></linearGradient></defs>
+    <path d="M-28 0 C-15 -17 15 -17 28 0 C15 17 -15 17 -28 0Z" fill="#050b16" stroke="url(#lid${cls})" stroke-width="1.8"/>
+    <g class="ring2"><circle r="13" fill="none" stroke="#22e1ff" stroke-opacity=".35" stroke-width=".6" stroke-dasharray="1.2 2.2"/></g>
+    <circle r="11" fill="url(#irs${cls})"/>
+    <g class="ring"><circle r="9.6" fill="none" stroke="#e8fdff" stroke-width=".7" stroke-dasharray="5 2.6" opacity=".8"/></g>
+    <g class="pup">${blades}<circle r="3.1" fill="#02060c"/></g>
+    <circle cx="4" cy="-4.4" r="1.7" fill="#fff" opacity=".9"/>
+  </svg>`;
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// Objects
+// ══════════════════════════════════════════════════════════════════════
+const KEY = `<svg viewBox="0 0 44 18"><defs><linearGradient id="kg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff2b8"/><stop offset=".5" stop-color="#f5c542"/><stop offset="1" stop-color="#a87a10"/></linearGradient></defs>
+  <circle cx="9" cy="9" r="7.5" fill="url(#kg)"/><circle cx="9" cy="9" r="3" fill="#2a1d00"/><circle cx="9" cy="9" r="1.6" fill="#22e1ff"/>
+  <path d="M16 7.4h26v3.2h-3.2v4h-3.4v-4h-3.2v3h-3.4v-3h-12.8z" fill="url(#kg)"/></svg>`;
+const MEDAL = `<svg viewBox="0 0 60 80"><defs><radialGradient id="mg" cx=".4" cy=".35" r=".8"><stop offset="0" stop-color="#fff4c2"/><stop offset=".5" stop-color="#f5c542"/><stop offset="1" stop-color="#8a6010"/></radialGradient></defs>
+  <path d="M17 0 L30 24 L43 0" fill="none" stroke="#c9961e" stroke-width="3.2"/>
+  <circle cx="30" cy="50" r="26" fill="url(#mg)"/><circle cx="30" cy="50" r="20.5" fill="none" stroke="#fff6d0" stroke-width="1" opacity=".75"/>
+  <text x="30" y="46" text-anchor="middle" font-family="Chakra Petch" font-weight="700" font-size="6.5" fill="#3d2a00" letter-spacing="1">POWER OF</text>
+  <text x="30" y="59" text-anchor="middle" font-family="Archivo" font-weight="900" font-size="14" fill="#3d2a00" letter-spacing="1">VETO</text></svg>`;
+const KBOX = `<svg viewBox="0 0 120 84"><defs><linearGradient id="kb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#16314f"/><stop offset="1" stop-color="#060d18"/></linearGradient></defs>
+  <path d="M10 26 L60 8 L110 26 L110 74 L60 82 L10 74Z" fill="url(#kb)" stroke="#22e1ff" stroke-opacity=".6" stroke-width="1.2"/>
+  <path d="M10 26 L60 40 L110 26 M60 40 L60 82" stroke="#22e1ff" stroke-opacity=".35" stroke-width="1"/>
+  <ellipse cx="60" cy="24" rx="20" ry="5" fill="#22e1ff" opacity=".35"/>
+  <g transform="translate(35 60) scale(.5)">${'<path d="M-28 0 C-15 -17 15 -17 28 0 C15 17 -15 17 -28 0Z" fill="none" stroke="#22e1ff" stroke-width="2"/><circle r="9" fill="#22e1ff" opacity=".7"/>'}</g></svg>`;
+const DRRING = `<svg viewBox="-100 -100 200 200"><defs><radialGradient id="dg" r=".5"><stop offset=".6" stop-color="#5b3cff" stop-opacity="0"/><stop offset=".86" stop-color="#7c5cff" stop-opacity=".55"/><stop offset="1" stop-color="#22e1ff" stop-opacity="0"/></radialGradient></defs>
+  <circle r="98" fill="url(#dg)"/><g class="r1"><circle r="86" fill="none" stroke="#a593ff" stroke-width="1.2" stroke-dasharray="3 6" opacity=".7"/></g>
+  <circle r="78" fill="none" stroke="#22e1ff" stroke-width="2.2" opacity=".85"/><circle r="72" fill="none" stroke="#22e1ff" stroke-width=".6" opacity=".4"/></svg>`;
+
+// ══════════════════════════════════════════════════════════════════════
+// The mockup week (same script as v1). A step:
+//   k     'say' | 'beat' (closed caption) | 'dr' (Diary Room cut) | 'bb' (Big Brother speaks) | 'host' (live) | 'feed' (cold open)
+//   by    speaker   t  the line   push  the camera zooms on the speaker
+//   pops  [[name, label, tone]]  (fresh only)   toast [text, colour]
+//   key   drawn safe   nom [a,b]   veto  holder   medal 'on'|'glint'   out  evicted   deal [a,b]   spy  votes [x,y]
+//   at    who is on stage from here on
+// ══════════════════════════════════════════════════════════════════════
+const SCREENS = [
+  { id: 'open', tab: 'Cold open', set: 'quad', day: 23, time: '07:58', kicker: 'Previously on', title: 'Big Brother', sub: 'Week 4 · Heather holds the keys',
+    feeds: [
+      { set: 'kitchen', label: 'CAM 02 · KITCHEN', cast: [['Gwen', 35], ['Heather', 66]] },
+      { set: 'bedroom', label: 'CAM 09 · BEDROOM', nv: true, cast: [['Alejandro', 38], ['Courtney', 64]] },
+      { set: 'hoh', label: 'CAM 14 · HOH ROOM', cast: [['Heather', 50]] },
+      { set: 'yard', label: 'CAM 05 · BACKYARD', cast: [['Bridgette', 40], ['Geoff', 62]] },
+    ],
+    steps: [
+      { k: 'feed', i: 2, t: `Heather won Head of Household on Thursday, and she has been telling people about it ever since.` },
+      { k: 'feed', i: 0, t: `Gwen and Heather have not said a civil word to each other in nine days.` },
+      { k: 'feed', i: 1, t: `Alejandro has started visiting the bedroom after lights out.` },
+      { k: 'feed', i: 3, t: `And Bridgette is about to be asked for a favour she can't give twice.` },
+      { k: 'bb', t: `Good morning, houseguests. Today is nomination day.` },
+    ] },
+
+  { id: 'kitchen', tab: 'The coffee', set: 'kitchen', cam: 2, room: 'Kitchen', day: 23, time: '09:14', kicker: 'Cam 02 · Kitchen', title: 'The coffee', sub: 'Morning, Day 23',
+    cast: [['Gwen', 24], ['Bridgette', 48], ['Heather', 72]],
+    bg: [['Scott', 60, 'Eating cereal'], ['Zoey', 37, 'Making toast']],
+    steps: [
+      { k: 'beat', t: `The coffee pot is empty. Gwen holds it up to the light as if that might help. Behind her, Scott is eating cereal and Zoey is waiting on the toaster.` },
+      { k: 'say', by: 'Gwen', t: `Who finished the coffee?` },
+      { k: 'say', by: 'Heather', t: `I'm Head of Household, Gwen. I have a whole room upstairs. Why would I need your coffee?` },
+      { k: 'say', by: 'Gwen', t: `Because it was full at eight, and you were the only one up at eight.`, push: true },
+      { k: 'say', by: 'Heather', t: `Wow. You've been timing me. That's not creepy at all.`, react: [['Scott', 'Scott stops chewing.']] },
+      { k: 'say', by: 'Bridgette', t: `There's another bag in the storage room. I'll grab it. Nobody needs to get nominated over coffee.`, pops: [['Gwen', 'Trust', 'up', 'Bridgette']] },
+      { k: 'say', by: 'Heather', t: `Nobody's getting nominated over coffee.` },
+      { k: 'beat', t: `Heather takes a long sip from her mug. It is very clearly coffee. Zoey picks up her toast and quietly leaves the room.`, bgAt: [['Scott', 60, 'Eating cereal']] },
+      { k: 'say', by: 'Heather', t: `Probably.`, push: true, pops: [['Gwen', 'Trust', 'down', 'Heather']] },
+      { k: 'dr', by: 'Gwen', t: `She didn't even want the coffee. She wanted me to know she could take it. Which, fine. Message received.` },
+    ] },
+
+  { id: 'bedroom', tab: 'After lights out', set: 'bedroom', nv: true, cam: 9, room: 'Bedroom', day: 22, time: '02:11', kicker: 'Cam 09 · Bedroom · Night vision', title: 'After lights out', sub: 'Night, Day 22',
+    cast: [['Alejandro', 36], ['Courtney', 62]],
+    steps: [
+      { k: 'beat', t: `Lights out. Two beds, close enough to whisper across.` },
+      { k: 'say', by: 'Alejandro', t: `Are you awake?` },
+      { k: 'say', by: 'Courtney', t: `I am now.` },
+      { k: 'say', by: 'Alejandro', t: `Heather's putting Gwen up. Everybody knows that. The only question is who sits next to her.` },
+      { k: 'say', by: 'Courtney', t: `And you think it's me.` },
+      { k: 'say', by: 'Alejandro', t: `I think it's you, unless somebody gives Heather a better name. I can give her one.`, push: true },
+      { k: 'say', by: 'Courtney', t: `Whose?` },
+      { k: 'say', by: 'Alejandro', t: `Scott's. He's been up to the HOH room twice today, and both times he came down looking like a man who'd been told no.` },
+      { k: 'dr', by: 'Courtney', t: `Alejandro has never once done something for free. So the real question is what this costs me.` },
+      { k: 'say', by: 'Courtney', t: `What do you want for it?` },
+      { k: 'say', by: 'Alejandro', t: `Your vote on Thursday. That's all.` },
+      { k: 'say', by: 'Courtney', t: `Fine. But if I'm sitting in that chair tomorrow, the whole house hears about this conversation.`, push: true,
+        pops: [['Courtney', 'Deal', 'deal', 'Alejandro']], deal: ['Alejandro', 'Courtney'] },
+    ] },
+
+  { id: 'hoh', tab: 'The second chair', set: 'hoh', cam: 14, room: 'HOH Room', day: 23, time: '11:40', kicker: 'Cam 14 · Head of Household', title: 'The second chair', sub: 'Late morning, Day 23',
+    cast: [['Heather', 52], ['Duncan', 72]], spyObj: true,
+    steps: [
+      { k: 'beat', t: `Duncan knocks once and walks in without waiting, then drops onto the couch like he pays rent.` },
+      { k: 'say', by: 'Duncan', t: `Nice room. Do they give you the good snacks too, or is that extra?` },
+      { k: 'say', by: 'Heather', t: `You didn't come up here for snacks.` },
+      { k: 'say', by: 'Duncan', t: `Nope. I came up to find out if I'm going on the block.` },
+      { k: 'say', by: 'Heather', t: `Gwen's going up. That's not news.` },
+      { k: 'say', by: 'Duncan', t: `Yeah, I figured. And the second chair?` },
+      { k: 'beat', t: `Heather doesn't answer. She is watching the spy screen, where two people in the bedroom are sitting very close together.`, spy: true },
+      { k: 'say', by: 'Heather', t: `Who's been in the bedroom with Alejandro for the last twenty minutes?`, spy: true },
+      { k: 'say', by: 'Duncan', t: `...Courtney.`, spy: true },
+      { k: 'say', by: 'Heather', t: `Then I guess it's not you.`, push: true, pops: [['Duncan', 'Safe', 'up', 'Heather'], ['Heather', 'Target', 'down', 'Courtney']] },
+      { k: 'dr', by: 'Duncan', t: `I just saved myself by telling her something she could already see on her own TV. Best twenty minutes I've spent in this house.` },
+    ] },
+
+  { id: 'dr', tab: 'Diary Room', set: 'dr', cam: 1, room: 'Diary Room', day: 23, time: '12:05', kicker: 'Diary Room', title: 'Nomination day', sub: 'Heather, before the ceremony',
+    cast: [], drScreen: true,
+    steps: [
+      { k: 'bb', t: `Heather, please come to the Diary Room.` },
+      { k: 'dr', by: 'Heather', t: `Nomination day. Honestly, it's my favourite day. Everyone is suddenly so nice to me.` },
+      { k: 'dr', by: 'Heather', t: `Gwen goes up because she hates me. Courtney goes up because she's been whispering about me in the dark, and she thinks the cameras can't see her.` },
+      { k: 'beat', t: `Heather leans toward the lens.` },
+      { k: 'dr', by: 'Heather', t: `They can see you, Courtney.`, push: true },
+    ] },
+
+  { id: 'noms', tab: 'Nominations', set: 'dining', cam: 3, room: 'Dining Room', day: 23, time: '13:30', kicker: 'Cam 03 · Dining room', title: 'Nomination ceremony', sub: 'Heather at the head of the table',
+    seated: { Heather: 'head', Duncan: 'S0', Alejandro: 'S1', Gwen: 'S2', Bridgette: 'S3', Zoey: 'S4', Courtney: 'S5', Scott: 'S6', Geoff: 'S7' },
+    steps: [
+      { k: 'bb', t: `This is the nomination ceremony.` },
+      { k: 'say', by: 'Heather', t: `It is my responsibility as Head of Household to nominate two houseguests for eviction. I'm going to turn the first key.` },
+      { k: 'beat', t: `Heather turns the first key. A face fills the first slot on the screen.`, reveal: 'Gwen' },
+      { k: 'say', by: 'Gwen', t: `Shocker.` },
+      { k: 'beat', t: `Heather puts her hand on the second key and leaves it there a second longer than she needs to.` },
+      { k: 'beat', t: `She turns it.`, reveal: 'Courtney', nom: ['Gwen', 'Courtney'], toast: ['NOMINATED', '#ff3355'] },
+      { k: 'say', by: 'Heather', t: `I have nominated you, Gwen, and you, Courtney. Gwen, you've made it very clear you don't want me here.`, push: true },
+      { k: 'say', by: 'Heather', t: `Courtney, you made it clear at two in the morning, which is a choice.` },
+      { k: 'beat', t: `Courtney looks straight across the table at Alejandro.` },
+      { k: 'say', by: 'Courtney', t: `Scott. You said Scott.`, push: true },
+      { k: 'say', by: 'Alejandro', t: `I said I'd give her a name. I never said she'd take it.`, pops: [['Courtney', 'Betrayed', 'down', 'Alejandro']] },
+      { k: 'bb', t: `This nomination ceremony is adjourned.` },
+    ] },
+
+  { id: 'vetopick', tab: 'Veto player pick', set: 'ceremony', cam: 4, room: 'Living Room', day: 24, time: '10:15', kicker: 'Cam 04 · Living room', title: 'Veto player pick', sub: 'The HOH and the nominees draw chips',
+    seated: { Heather: 'stand', Gwen: 'N-1', Courtney: 'N1', Duncan: 'L0', Geoff: 'L1', Alejandro: 'L2', Zoey: 'R1', Bridgette: 'R2', Scott: 'R0' },
+    wall: true,
+    steps: [
+      { k: 'bb', t: `Heather, Gwen and Courtney, please come to the living room for the veto player pick.` },
+      { k: 'say', by: 'Heather', t: `The two nominees and I play in the veto. Each of us draws one chip for the other three spots. If you pull houseguest's choice, you pick anybody you want.` },
+      { k: 'beat', t: `Heather reaches into the bag and pulls out the first chip.`, chip: { drawer: 'Heather', chip: 'Zoey' }, vetoPlay: ['Heather', 'Gwen', 'Courtney', 'Zoey'] },
+      { k: 'say', by: 'Zoey', t: `Okay! I'm in. Let's do this.` },
+      { k: 'beat', t: `Gwen draws next. The chip says HOUSEGUEST'S CHOICE.`, chip: { drawer: 'Gwen', chip: 'choice' } },
+      { k: 'say', by: 'Gwen', t: `Houseguest's choice. Bridgette, you're with me.`, vetoPlay: ['Bridgette'], push: true },
+      { k: 'say', by: 'Bridgette', t: `Of course.` },
+      { k: 'beat', t: `Courtney draws the last chip, looks at it, and laughs without smiling. It's Scott.`, chip: { drawer: 'Courtney', chip: 'Scott' }, vetoPlay: ['Scott'] },
+      { k: 'say', by: 'Scott', t: `Great. Love that for me.` },
+      { k: 'dr', by: 'Courtney', t: `Scott. Of course I pulled Scott. The name Alejandro was supposed to give Heather instead of mine. If Scott wins this veto, he is not using it on me.` },
+    ] },
+
+  { id: 'yard', tab: 'Asked twice', set: 'yard', cam: 5, room: 'Backyard', day: 24, time: '16:22', kicker: 'Cam 05 · Backyard', title: 'Asked twice', sub: 'Afternoon, Day 24',
+    cast: [['Bridgette', 38], ['Geoff', 64]],
+    steps: [
+      { k: 'beat', t: `The pool. Bridgette has her feet in the water. Geoff is floating on an inflatable bagel he has refused to give back for three days.` },
+      { k: 'say', by: 'Geoff', t: `You've been quiet since the ceremony.` },
+      { k: 'say', by: 'Bridgette', t: `Courtney asked me to use the veto on her if I win it. Then Gwen asked me twenty minutes later. Same couch.` },
+      { k: 'say', by: 'Geoff', t: `Oof. Okay. What did you tell them?` },
+      { k: 'say', by: 'Bridgette', t: `"Let me win it first." Which is what you say when you have no idea.`, push: true },
+      { k: 'beat', t: `Geoff paddles the bagel over with one hand until he bumps into her knees.` },
+      { k: 'say', by: 'Geoff', t: `Hey. Whatever you pick, I'm with you. Even if it's the dumb one.` },
+      { k: 'say', by: 'Bridgette', t: `Thanks. I think.`, pops: [['Bridgette', 'Showmance', 'love', 'Geoff']] },
+      { k: 'dr', by: 'Geoff', t: `If she wins that veto she's going to make somebody cry either way. I just want it on the record that it's not going to be her.` },
+    ] },
+
+  { id: 'veto', tab: 'Veto meeting', set: 'ceremony', cam: 4, room: 'Living Room', day: 25, time: '14:00', kicker: 'Cam 04 · Living room', title: 'The veto meeting', sub: 'Bridgette won the Power of Veto',
+    seated: { Gwen: 'N-1', Courtney: 'N1', Bridgette: 'stand', Heather: 'L1', Duncan: 'L0', Geoff: 'L2', Alejandro: 'R1', Zoey: 'R2', Scott: 'R0' },
+    wall: true, medalOn: 'Bridgette',
+    steps: [
+      { k: 'bb', t: `This is the Power of Veto meeting.`, veto: 'Bridgette' },
+      { k: 'say', by: 'Bridgette', t: `I have called this meeting because I won the Power of Veto. I'm going to give the nominees a chance to tell me why I should use it on them. Gwen, you can go first.`, medal: 'on' },
+      { k: 'say', by: 'Gwen', t: `You know me, Bridge. I haven't lied to you once in this house, and I'm not starting now. Use it on me and I owe you. For real.`, push: true },
+      { k: 'say', by: 'Courtney', t: `I've been your friend since day one. Look at who is actually coming after me, and ask yourself why. That's all I'm going to say.`, push: true },
+      { k: 'say', by: 'Bridgette', t: `Both of you came to me this week, and both of you said things I'm going to remember for a long time.` },
+      { k: 'say', by: 'Bridgette', t: `I've decided...`, medal: 'glint', push: true },
+      { k: 'say', by: 'Bridgette', t: `...not to use the Power of Veto.`, push: true, toast: ['NOT USED', '#d99a10'] },
+      { k: 'say', by: 'Bridgette', t: `I'm sorry. I couldn't pick one of you over the other, so I'm not picking at all.` },
+      { k: 'say', by: 'Gwen', t: `That is picking, Bridge.`, push: true },
+      { k: 'say', by: 'Bridgette', t: `I know. This veto meeting is adjourned.`, pops: [['Gwen', 'Trust', 'down', 'Bridgette'], ['Courtney', 'Trust', 'down', 'Bridgette']] },
+    ] },
+
+  { id: 'evict', tab: 'Live eviction', set: 'ceremony', cam: 1, room: 'Living Room', day: 27, time: 'LIVE', kicker: 'Live · Eviction night', title: 'Eviction night', sub: 'Two nominees, six votes',
+    seated: { Gwen: 'N-1', Courtney: 'N1', Heather: 'L1', Duncan: 'L0', Bridgette: 'L2', Geoff: 'R2', Alejandro: 'R1', Zoey: 'L3', Scott: 'R0' },
+    wall: 'after', tvObj: true,
+    steps: [
+      { k: 'host', by: 'Valeria', t: `Good evening, houseguests. In a few moments one of you will be evicted. First, our nominees have a chance to make their final pleas. Gwen, you're first.` },
+      { k: 'say', by: 'Gwen', t: `I'm not going to stand here and make promises I can't keep. I'm loyal to the people who are loyal to me. Keep me, and you'll know exactly what you're getting.`, push: true },
+      { k: 'say', by: 'Courtney', t: `Everybody in this room knows I'd have been safe this week if one person had told the truth. I'm not naming names.`, push: true },
+      { k: 'say', by: 'Courtney', t: `Alejandro.`, pops: [['Alejandro', 'Exposed', 'down', 'Courtney']] },
+      { k: 'host', by: 'Valeria', t: `Thank you both. It's time for the live vote. One by one, you'll go to the Diary Room and vote to evict. Heather, as Head of Household, you only vote in the event of a tie. Duncan, you're first.` },
+      { k: 'dr', by: 'Duncan', t: `I vote to evict Courtney.`, ballot: ['Duncan', 'Courtney'] },
+      { k: 'dr', by: 'Alejandro', t: `I vote to evict Gwen.`, ballot: ['Alejandro', 'Gwen'] },
+      { k: 'dr', by: 'Bridgette', t: `I'm sorry, Gwen. I vote to evict Gwen.`, ballot: ['Bridgette', 'Gwen'] },
+      { k: 'dr', by: 'Geoff', t: `I vote to evict Courtney.`, ballot: ['Geoff', 'Courtney'] },
+      { k: 'dr', by: 'Scott', t: `Sorry, Courtney. Nothing personal. I vote to evict Courtney.`, ballot: ['Scott', 'Courtney'] },
+      { k: 'dr', by: 'Zoey', t: `I vote to evict Courtney.`, ballot: ['Zoey', 'Courtney'] },
+      { k: 'host', by: 'Valeria', t: `The votes are in. When I reveal the result, the evicted houseguest will have a few moments to say their goodbyes and walk out the front door.` },
+      { k: 'host', by: 'Valeria', t: `By a vote of four to two...`, push: true, votes: [4, 2] },
+      { k: 'host', by: 'Valeria', t: `...Courtney, you are evicted from the Big Brother house.`, out: 'Courtney', toast: ['EVICTED', '#ff3355'], shake: true },
+      { k: 'beat', t: `Bridgette is the first one up. Courtney hugs her and holds on a second longer than she has to.` },
+      { k: 'say', by: 'Courtney', t: `Win it. Please.` },
+      { k: 'beat', t: `At the door she stops and turns round to Alejandro.` },
+      { k: 'say', by: 'Courtney', t: `You told me Scott. Remember that when it's your turn.`, push: true, pops: [['Alejandro', 'Grudge', 'down', 'Courtney']] },
+      { k: 'beat', t: `The front door closes behind her. On the memory wall, her picture goes black and white.`, exit: 'Courtney' },
+    ] },
+];
+
+// ══════════════════════════════════════════════════════════════════════
+// Painting: the whole picture for "the first idx+1 steps have happened".
+// Only a fresh step animates.
+// ══════════════════════════════════════════════════════════════════════
+const $ = s => document.querySelector(s);
+const stage = $('#stage');
+let cur = 0, idx = -1, typing = null, autoT = null, auto = false, busy = false;
+const seen = new Set();
+const esc = s => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+const unesc = s => s.replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&amp;/g, '&');
+
+function ledger(si, ii) {
+  const L = { status: {}, nom: [], veto: null, deals: [], moves: [], out: [], votes: null, vetoPlay: [], ballots: [], revealed: [] };
+  HOUSE.forEach(n => L.status[n] = n === HOH ? 'hoh' : '');
+  for (let s = 0; s <= si; s++) {
+    const steps = SCREENS[s].steps; const upto = s < si ? steps.length - 1 : ii;
+    for (let i = 0; i <= upto; i++) {
+      const st = steps[i];
+      if (st.key) L.status[st.key] = 'safe';
+      if (st.nom) { L.nom = st.nom.slice(); st.nom.forEach(n => L.status[n] = 'nom'); }
+      if (st.veto) L.veto = st.veto;
+      if (st.deal) L.deals.push(st.deal);
+      if (st.vetoPlay) L.vetoPlay.push(...st.vetoPlay);
+      if (st.reveal && s === si) L.revealed.push(st.reveal);
+      if (st.ballot && s === si) L.ballots.push(st.ballot);
+      if (st.out) { L.out.push(st.out); L.status[st.out] = 'out'; L.nom.forEach(n => { if (n !== st.out) L.status[n] = ''; }); }
+      if (st.votes && s === si) L.votes = st.votes;
+      (st.pops || []).forEach(p => L.moves.push(p));
+    }
+  }
+  return L;
+}
+function castAt(S, i) {
+  if (S.seated) {
+    // somebody who has walked out of the room is no longer in their seat
+    const gone = new Set(S.steps.slice(0, i + 1).filter(x => x.exit).map(x => x.exit));
+    return Object.keys(S.seated).filter(n => !gone.has(n)).map(n => [n, seatOf(S, n).at[0]]);
+  }
+  for (let j = i; j >= 0; j--) if (S.steps[j]?.at) return S.steps[j].at; return S.cast || [];
+}
+function bgAt(S, i) { for (let j = i; j >= 0; j--) if (S.steps[j]?.bgAt) return S.steps[j].bgAt; return S.bg || []; }
+function chipsFor(n, L) {
+  const c = [];
+  if (n === HOH) c.push('<span class="chipx hoh">HOH</span>');
+  if (L.out.includes(n)) c.push('<span class="chipx out">Evicted</span>');
+  else if (L.nom.includes(n)) c.push('<span class="chipx nom">Nom</span>');
+  if (L.veto === n) c.push('<span class="chipx veto">Veto</span>');
+  return c.join('');
+}
+function camOf(S, i) {
+  const st = S.steps[i];
+  if (!st || !st.push || !st.by) return 'none';
+  if (st.k === 'host') return 'scale(1.18)|62% 30%';
+  if (st.k === 'dr') return 'scale(1.18)|50% 42%';
+  if (S.seated && S.seated[st.by]) { const a = seatOf(S, st.by); return `scale(1.3)|${a.at[0]}% ${100 - a.at[1] - a.w * 1.1}%`; }
+  const p = castAt(S, i).find(([n]) => n === st.by);
+  return `scale(1.22)|${p ? p[1] : 50}% 58%`;
+}
+const camStyle = c => c === 'none' ? 'transform:none' : `transform:${c.split('|')[0]};transform-origin:${c.split('|')[1]}`;
+
+function tileHtml(n, x, cls, L, lock, extra = '', more = '') {
+  const ry = ((50 - x) * 0.28).toFixed(1);
+  return `<div class="gt ${cls}" style="left:${x}%;--c:${col(n)};--ry:${ry}deg;${more}">
+    <div class="tile"><span class="i">${n[0]}</span>${img(n)}${extra}</div>
+    <div class="plate"><b>${n}</b>${chipsFor(n, L)}</div></div>`;
+}
+const PHOTO = new Set(['kitchen', 'ceremony', 'bedroom', 'hoh', 'dr', 'yard', 'dining']);
+// Projected by Blender: where each seat, key slot and memory-wall frame lands on screen
+// ([% from left, % from bottom, depth]). Regenerate with anchors() when a room changes.
+const ANCH = {"dining":{"seats":{"S0":{"at":[89.21,36.94,3.547],"w":11.65},"S1":{"at":[81.83,42.25,4.435],"w":9.32},"S2":{"at":[72.6,45.58,5.258],"w":7.86},"S3":{"at":[62.93,47.46,5.875],"w":7.04},"S4":{"at":[37.07,47.46,5.875],"w":7.04},"S5":{"at":[27.4,45.58,5.258],"w":7.86},"S6":{"at":[18.17,42.25,4.435],"w":9.32},"S7":{"at":[10.79,36.94,3.547],"w":11.65}},"head":{"at":[71.81,53.99,6.266],"w":7.45},"box":{"at":[65.63,50.31,5.333],"w":5.48},"screen":{"x":37.18,"y":56.39,"w":25.97,"h":27.4}},"ceremony":{"seats":{"N-1":{"at":[45.07,47.56,7.436],"w":5.1},"N1":{"at":[54.93,47.56,7.436],"w":5.1},"L0":{"at":[7.72,35.61,3.801],"w":9.97},"R0":{"at":[92.28,35.61,3.801],"w":9.97},"L1":{"at":[15.79,39.99,4.698],"w":8.06},"R1":{"at":[84.21,39.99,4.698],"w":8.06},"L2":{"at":[21.28,42.97,5.596],"w":6.77},"R2":{"at":[78.72,42.97,5.596],"w":6.77},"L3":{"at":[25.25,45.12,6.493],"w":5.84},"R3":{"at":[74.75,45.12,6.493],"w":5.84},"stand":{"at":[30.82,45.72,3.824],"w":9.91}},"panels":[{"x":39.75,"y":50.63,"w":9.2,"h":26.55},{"x":51.02,"y":50.63,"w":9.42,"h":26.55}]}};
+// The HOH is the point of the shot: drawn standing behind the box, bigger than a seat at that depth.
+const seatOf = (S, n) => {
+  const a = ANCH[S.set]; const id = S.seated[n];
+  if (id === 'head') return { at: a.head.at, w: a.head.w * 1.25 };
+  const t = a.seats[id]; return { at: t.at, w: t.w * (S.set === 'dining' ? 0.72 : 1.0) };
+};
+const zOf = a => Math.round(100 - a.at[2] * 10);
+// The nominations screen and the key box (modern BB): one key per nominee; a turned key fills a slot.
+const NOM_SLOTS = S => S.steps.filter(x => x.reveal).length;
+function nomScreenHtml(A, L, st, fresh, n) {
+  const r = A.screen;
+  const slots = Array.from({ length: n }, (_, i) => {
+    const who = L.revealed[i];
+    const flip = fresh && st && st.reveal && who === st.reveal;
+    return `<div class="nslot ${who ? 'on' : ''} ${flip ? 'flip' : ''}">${who ? `${img(who)}<b>${who}</b>` : '<i>?</i>'}</div>`;
+  }).join('');
+  return `<div class="nomscreen" style="left:${r.x}%;bottom:${r.y}%;width:${r.w}%;height:${r.h}%"><div class="nhead">NOMINATIONS</div><div class="nslots">${slots}</div></div>`;
+}
+function keyBoxHtml(A, L, st, fresh, n) {
+  const b = A.box;
+  const keys = Array.from({ length: n }, (_, i) => {
+    const turned = i < L.revealed.length;
+    const now = fresh && st && st.reveal && i === L.revealed.length - 1;
+    return `<span class="nkey ${turned ? 'turned' : ''} ${now ? 'now' : ''}"><b>BB</b></span>`;
+  }).join('');
+  return `<div class="nkeys" style="left:${b.at[0]}%;bottom:${(b.at[1] * 0.5625).toFixed(2)}cqw;width:${(b.w * 1.15).toFixed(2)}cqw;z-index:${zOf(b) + 2}">${keys}</div>`;
+}
+const photo = set => PHOTO.has(set) ? ' photo' : '';
+function miniSet(set, nv, people = []) {
+  return `<div class="set set-${set}${photo(set)}" style="--hoh:${col(HOH)}"><div class="floor"></div></div>`;
+}
+
+function setHtml(S, st, prevSt, L, fresh) {
+  if (S.set === 'quad') {
+    const on = st ? st.i : -1;
+    return `<div class="quad">${S.feeds.map((f, i) => `<div class="qf ${i === on || (st && st.k === 'bb') ? 'on' : ''} ${f.nv ? 'nvq' : ''}">
+      <div class="lens2">${miniSet(f.set)}${f.cast.map(([n, x]) => tileHtml(n, x, i === on ? 'speak' : '', L, false)).join('')}</div>
+      <div class="lab">${f.label}</div>
+      ${i === on ? `<div class="cc"><span>${st.t}</span></div>` : ''}</div>`).join('')}</div>`;
+  }
+  const isDr = st && st.k === 'dr';
+  if (S.drScreen || isDr) {
+    let h = `<div class="set set-dr${photo('dr')}"><div class="floor"></div></div><div class="drring">${DRRING}</div>`;
+    const who = isDr ? st.by : null;
+    if (who) {
+      const lock = fresh && (!prevSt || prevSt.k !== 'dr' || prevSt.by !== who);
+      h += tileHtml(who, 50, 'speak', L, lock, '', 'width:15cqw;bottom:17cqw');
+    }
+    return h;
+  }
+  let h = `<div class="set set-${S.set}${photo(S.set)}" style="--hoh:${col(HOH)}"><div class="floor"></div></div>`;
+  if (S.spyObj) {
+    const hot = !!(st && st.spy);
+    const q = [['kitchen', 'KITCHEN'], ['yard', 'BACKYARD'], ['bedroom', 'BEDROOM'], ['ceremony', 'LIVING']];
+    h += `<div class="obj spy">${q.map(([s, n]) => `<div class="q ${hot && s === 'bedroom' ? 'hot' : ''} ${s === 'bedroom' ? 'nvq' : ''}">${miniSet(s)}<span>${n}</span>
+      ${s === 'bedroom' ? '<i class="fig" style="left:36%"></i><i class="fig" style="left:52%"></i>' : ''}</div>`).join('')}</div>`;
+  }
+  if (S.tvObj && !(L.out.length && st && st.k !== 'host')) h += `<div class="obj ledtv ${st && st.k === 'host' ? 'on' : ''} ${L.votes && st && st.k === 'host' ? 'dim' : ''}">${img('Valeria')}<div class="lb"><span>● LIVE · HOST</span>VALERIA</div></div>`;
+  if (S.keybox && !L.nom.length) h += `<div class="obj kbox">${KBOX}</div>`;
+  if (idx < 0) return h;
+  const reacting = new Set((st && st.react || []).map(r => r[0]));
+  const prevBg = idx > 0 ? bgAt(S, idx - 1).map(b => b[0]) : [];
+  for (const [n, x, doing] of bgAt(S, idx)) {
+    const entered = fresh && idx === 0;
+    h += `<div class="bgp ${reacting.has(n) ? 'react' : ''} ${entered ? 'in' : ''}" style="left:${x}%;--c:${col(n)}"><span class="doing">${n} · ${doing}</span><div class="tile">${img(n)}</div></div>`;
+  }
+  const cast = castAt(S, idx);
+  const prevCast = idx > 0 ? castAt(S, idx - 1) : null;
+  const speaker = st && (st.k === 'say' || st.k === 'host') ? st.by : null;
+  for (const [n, x] of cast) {
+    const entered = fresh && (idx === 0 || (!S.seated && prevCast !== cast && !(prevCast || []).some(([m]) => m === n)));
+    const lock = fresh && n === speaker && (!prevSt || prevSt.by !== n || prevSt.k === 'dr');
+    const cls = [n === speaker ? 'speak' : (st && st.push) ? 'out' : '', entered ? 'in' : ''].join(' ');
+    if (S.seated) {
+      const a = seatOf(S, n);
+      h += tileHtml(n, x, cls, L, lock, '', `bottom:${(a.at[1] * 0.5625).toFixed(2)}cqw;width:${a.w.toFixed(2)}cqw;z-index:${zOf(a)}`);
+    } else h += tileHtml(n, x, cls, L, lock);
+  }
+  if (S.set === 'dining') {
+    const A = ANCH.dining;
+    h += `<img class="front" src="../assets/bb/house/${season}/dining-td-b-nombox.webp?v=6" alt="" style="z-index:${zOf(A.box)}">`;
+    h += nomScreenHtml(A, L, st, fresh, NOM_SLOTS(S)) + keyBoxHtml(A, L, st, fresh, NOM_SLOTS(S));
+  }
+  if (S.medalOn && L.veto === S.medalOn) {
+    const p = cast.find(([n]) => n === S.medalOn);
+    const on = S.steps.slice(0, idx + 1).some(s => s.medal);
+    const ma = S.seated && S.seated[S.medalOn] ? seatOf(S, S.medalOn) : null;
+    const mpos = ma ? `left:${ma.at[0]}%;bottom:${(ma.at[1] * 0.5625 + ma.w * 1.25 * 0.15).toFixed(2)}cqw;width:${(ma.w * 0.42).toFixed(2)}cqw;z-index:${zOf(ma) + 1}` : `left:${p[1]}%`;
+    if (p && on) h += `<div class="obj medal ${fresh && st.medal === 'on' ? 'fresh' : ''} ${fresh && st.medal === 'glint' ? 'glint' : ''}" style="${mpos}">${MEDAL}</div>`;
+  }
+  return h;
+}
+
+function memoryFrames(panels, n) {
+  // Real BB: two wallpapered panels, portraits in two staggered columns on each.
+  const out = [];
+  const per = [Math.ceil(n / 2), Math.floor(n / 2)];
+  panels.forEach((p, pi) => {
+    const k = per[pi], rows = Math.ceil(k / 2);
+    const pitch = (p.h * 0.92) / (rows + 0.5);
+    const fh = pitch * 0.97, fw = Math.min(p.w * 0.42, fh * 0.8 * 9 / 16 * 1.25);
+    for (let j = 0; j < k; j++) {
+      const col = j % 2, row = Math.floor(j / 2);
+      const top = p.y + p.h - p.h * 0.04 - row * pitch - (col ? pitch / 2 : 0);
+      out.push({ x: p.x + p.w * (col ? 0.73 : 0.27) - fw / 2, y: top - fh, w: fw, h: fh });
+    }
+  });
+  return out;
+}
+function wallHtml(L, st, fresh, onwall = false) {
+  const A = onwall ? ANCH[SCREENS[cur].set] : null;
+  const frames = A && A.panels ? memoryFrames(A.panels, HOUSE.length) : (onwall ? A.wall : null);
+  return `<div class="wall${onwall ? ' onwall' : ''}">${HOUSE.map((n, i) => {
+    const fr = frames && frames[i];
+    const place = fr ? `left:${fr.x}%;bottom:${fr.y}%;width:${fr.w}%;height:${fr.h}%;` : '';
+    if (A && A.panels) {
+      const s = L.status[n];
+      const isFresh2 = fresh && st && (st.out === n || (st.nom || []).includes(n));
+      return `<div class="mf ${s} ${i % 3 === 2 ? 'dark' : ''} ${isFresh2 ? 'fresh' : ''}" style="${place}--c:${col(n)}"><div class="mfin">${img(n)}</div>${s === 'hoh' ? '<span class="mft">HOH</span>' : ''}</div>`;
+    }
+    const s = L.status[n];
+    const d = i - (HOUSE.length - 1) / 2;
+    const isFresh = fresh && st && (st.key === n || st.out === n || (st.nom || []).includes(n));
+    const lab = s === 'hoh' ? 'HOH' : s === 'nom' ? 'Nominated' : s === 'out' ? '' : n;
+    return `<div class="mw ${s}${L.veto === n ? ' veto' : ''} ${isFresh ? 'fresh' : ''}" style="${place}--c:${col(n)};--ry:${(-d * 4).toFixed(1)}deg;--tz:${(-Math.abs(d) * .9).toFixed(1)}cqw">
+      <span class="i">${n[0]}</span>${img(n)}${s === 'safe' ? `<span class="key">${KEY}</span>` : ''}${lab ? `<span class="lb">${lab}</span>` : ''}</div>`;
+  }).join('')}</div>`;
+}
+
+function hudHtml(S, st, prevSt, fresh) {
+  const isDr = st && st.k === 'dr';
+  let camNo = String(S.cam || 0).padStart(2, '0');
+  if (st && (st.k === 'say' || st.k === 'host') && S.cast) camNo += '·' + 'ABCD'[Math.max(0, castAt(S, idx).findIndex(([n]) => n === st.by)) % 4];
+  if (isDr || S.drScreen) camNo = '01';
+  const room = isDr || S.drScreen ? 'Diary Room' : S.room || '';
+  const sw = fresh && prevSt && st && (prevSt.by !== st.by || prevSt.k !== st.k) ? 'sw' : '';
+  const feeds = [['kitchen', 'CAM 02 · KITCHEN', 'kitchen'], ['bedroom', 'CAM 09 · BEDROOM', 'bedroom'], ['hoh', 'CAM 14 · HOH', 'hoh'], ['yard', 'CAM 05 · YARD', 'yard'], ['dr', 'CAM 01 · DIARY', 'dr'], ['ceremony', 'CAM 04 · LIVING', 'ceremony'], ['dining', 'CAM 03 · DINING', 'dining']];
+  const active = isDr ? 'dr' : S.set;
+  const strip = feeds.filter(f => f[2] !== 'dr' || isDr || S.drScreen).filter(f => f[2] !== 'dining' || S.set === 'dining').slice(-5);
+  return `<div class="hud">
+    <div class="bug">${eyeSvg('eye')}<div class="wm">BIG BROTHER<span>WEEK 4</span></div>
+      <span class="live">LIVE</span>${S.set === 'quad' ? '' : `<span class="camlab ${sw}" style="margin-left:.6cqw"><b>CAM ${camNo}</b>${room.toUpperCase()}${S.nv && !isDr ? ' · NV' : ''}</span>`}</div>
+    <div class="clockw">DAY ${S.day} <span class="sig"><i></i><i></i><i></i><i></i></span><div class="big clock" data-t="${S.time}">${S.time}</div></div>
+    ${S.set === 'quad' ? '' : `<div class="feeds">${strip.map(([s, lab, key]) => `<div class="ft ${key === active ? 'on' : ''}">${miniSet(s)}<span>${lab}</span></div>`).join('')}</div>`}
+  </div>`;
+}
+
+function lineHtml(S, st, fresh, L) {
+  if (!st || st.k === 'feed') return '';
+  if (st.k === 'bb') {
+    const bars = Array.from({ length: 28 }, (_, i) => `<i style="animation-delay:${(i * 73 % 900) / 1000}s;animation-duration:${.5 + (i * 37 % 50) / 100}s"></i>`).join('');
+    return `<div class="bbv ${fresh ? 'fresh' : ''}">${eyeSvg('eye')}<div class="who">BIG BROTHER</div><div class="tx">${st.t}</div><div class="wave">${bars}</div></div>`;
+  }
+  if (st.k === 'beat') return `<div class="cc"><span class="ccl">[ CC ]</span><span>${st.t}</span></div>`;
+  const kind = st.k === 'dr' ? 'dr' : st.k === 'host' ? 'host' : '';
+  const role = st.k === 'dr' ? 'Diary Room' : st.k === 'host' ? 'Host · Live' : st.by === HOH ? 'Head of Household' : L.nom.includes(st.by) && !L.out.includes(st.by) ? 'Nominated' : L.veto === st.by ? 'Veto holder' : 'Houseguest';
+  return `<div class="l3 ${kind} ${fresh ? 'fresh' : ''}" style="--c:${col(st.by)}"><div class="tagr"><span class="nm">${st.by}</span><span class="role">${role}</span></div>
+    <div class="body"><div class="tx" data-full="${esc(st.t)}">${fresh ? '' : st.t}</div></div></div>`;
+}
+
+function paint(fresh = false) {
+  clearInterval(typing); typing = null;
+  const S = SCREENS[cur];
+  const st = idx >= 0 ? S.steps[idx] : null;
+  const prevSt = idx > 0 ? S.steps[idx - 1] : null;
+  const L = ledger(cur, idx);
+  const isDr = st && st.k === 'dr';
+  stage.className = `stage ${S.nv && !isDr ? 'nv' : ''} ${st && st.k === 'bb' && S.set !== 'quad' ? 'bbspeaks' : ''} ${fresh && st && st.shake ? 'shake' : ''}`;
+  const camNow = S.set === 'quad' ? 'none' : camOf(S, idx);
+  const camPrev = fresh && idx > 0 ? camOf(S, idx - 1) : camNow;
+  const cut = fresh && prevSt && st && ((st.k === 'dr') !== (prevSt.k === 'dr'));
+  const onwall = !isDr && PHOTO.has(S.set) && ANCH[S.set] && (ANCH[S.set].panels || ANCH[S.set].wall);
+  let h = `<div class="cam" style="${camStyle(camPrev)}"><div class="lens ${cut ? 'cut' : ''}">${setHtml(S, st, prevSt, L, fresh).replace(/(<div class="set [^"]*"[^>]*><div class="floor"><\/div><\/div>)/, m => m + (onwall ? wallHtml(L, st, fresh, true) : ''))}</div></div>`;
+  h += `<div class="grain"></div><div class="vign"></div>`;
+  if (!onwall && S.wall && !isDr && (S.wall !== 'after' || (L.out.length && st && st.k !== 'host'))) h += wallHtml(L, st, fresh);
+  if (L.votes && !isDr && st && st.k === 'host') {
+    const named = L.out.length && S.id === 'evict';
+    h += `<div class="votes ${fresh && st.votes ? 'fresh' : ''}"><div class="v"><div class="n">${L.votes[0]}</div><div class="k">${named ? 'Evict Courtney' : 'Votes'}</div></div><i class="sep"></i><div class="v"><div class="n">${L.votes[1]}</div><div class="k">${named ? 'Evict Gwen' : 'Votes'}</div></div></div>`;
+  }
+  h += hudHtml(S, st, prevSt, fresh);
+  if (idx < 0) h += `<div class="rest">${eyeSvg('eye')}<div class="k">${S.kicker}</div><div class="t">${S.title}</div><div class="s">${S.sub}</div><div class="go">▶ PLAY</div></div>`;
+  else h += lineHtml(S, st, fresh, L);
+  if (fresh && st) {
+    const cast = isDr ? [[st.by, 50]] : castAt(S, idx);
+    for (const [n, label, tone, about] of st.pops || []) {
+      const p = cast.find(([m]) => m === n);
+      const [w0, w] = tone === 'down' ? ['70%', '38%'] : tone === 'deal' ? ['0%', '100%'] : ['40%', '72%'];
+      const bc = { up: '#12b76a', down: '#ff3355', deal: '#f5c542', love: '#ff4fb0' }[tone];
+      const sa = S.seated && S.seated[n] ? seatOf(S, n) : null;
+      h += `<div class="pop" style="left:${p ? p[1] : 50}%;${sa ? `bottom:${(sa.at[1] * 0.5625 + sa.w * 1.25 + 3).toFixed(2)}cqw` : ''}"><span class="d ${tone}">${tone === 'down' ? '▼' : tone === 'up' ? '▲' : tone === 'love' ? '♥' : '◆'} ${label}</span><b>${n} → ${about}</b><span class="bar" style="--w0:${w0};--w:${w};--bc:${bc}"><i></i></span></div>`;
+    }
+    if (st.toast) h += `<div class="toast" style="--tc:${st.toast[1]}"><b>${st.toast[0]}</b></div>`;
+    if (st.chip) h += `<div class="vchip">${st.chip.chip === 'choice' ? `<b>Houseguest's<br>choice</b>` : img(st.chip.chip)}<i>${st.chip.drawer} draws</i></div>`;
+    for (const [n, text] of st.react || []) {
+      const b = bgAt(S, idx).find(([m]) => m === n);
+      h += `<div class="rx" style="left:${b ? b[1] : 50}%">${text}</div>`;
+    }
+
+    if (cut) h += `<div class="flash"></div>`;
+    if (st.push && camPrev !== camNow) h += `<div class="zoom"><b>ZOOM 2.0×</b></div>`;
+  }
+  h += `<svg class="ap" id="ap" viewBox="0 0 160 90" preserveAspectRatio="none"></svg>`;
+  stage.innerHTML = h;
+  const c = stage.querySelector('.cam');
+  if (fresh && camPrev !== camNow) requestAnimationFrame(() => requestAnimationFrame(() => c.setAttribute('style', camStyle(camNow))));
+  else c.setAttribute('style', camStyle(camNow));
+  const tx = stage.querySelector('.tx[data-full]');
+  if (fresh && tx && !tx.textContent) typeOut(tx); else queueAuto();
+  chrome(L);
+}
+
+function typeOut(el) {
+  const full = unesc(el.dataset.full); let n = 0;
+  typing = setInterval(() => { n += 2; el.textContent = full.slice(0, n); if (n >= full.length) { clearInterval(typing); typing = null; queueAuto(); } }, 15);
+}
+function finishTyping() {
+  const el = stage.querySelector('.tx[data-full]');
+  clearInterval(typing); typing = null;
+  if (el) el.textContent = unesc(el.dataset.full);
+  queueAuto();
+}
+
+// ── the aperture: six blades close on the eye, the room changes, they open ──
+function aperture(p) {
+  const svg = document.getElementById('ap'); if (!svg) return;
+  if (p <= 0) { svg.innerHTML = ''; return; }
+  const cx = 80, cy = 45, R = (1 - p) * 110, rot = p * 70 * Math.PI / 180;
+  const pts = Array.from({ length: 6 }, (_, i) => { const a = rot + i * Math.PI / 3; return [cx + R * Math.cos(a), cy + R * Math.sin(a) * 1]; });
+  const hole = 'M' + pts.map(q => q.map(v => v.toFixed(2)).join(' ')).join('L') + 'Z';
+  const edges = pts.map((q, i) => { const a = rot + i * Math.PI / 3 + Math.PI / 2 + .55; return `<line x1="${q[0]}" y1="${q[1]}" x2="${q[0] + 200 * Math.cos(a)}" y2="${q[1] + 200 * Math.sin(a)}" stroke="#22e1ff" stroke-opacity=".35" stroke-width=".35"/>`; }).join('');
+  svg.innerHTML = `<path d="M-10 -10H170V100H-10Z ${hole}" fill="#02050b" fill-rule="evenodd"/>${edges}
+    ${p > .92 ? `<g transform="translate(80 45) scale(.62)" opacity="${((p - .92) / .08).toFixed(2)}"><path d="M-28 0 C-15 -17 15 -17 28 0 C15 17 -15 17 -28 0Z" fill="none" stroke="#22e1ff" stroke-width="1.6"/><circle r="10" fill="#22e1ff"/><circle r="3" fill="#02050b"/></g>` : ''}`;
+}
+function animate(from, to, ms, done) {
+  const t0 = performance.now();
+  const tick = t => { const k = Math.min(1, (t - t0) / ms); const e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2; aperture(from + (to - from) * e); if (k < 1) requestAnimationFrame(tick); else done && done(); };
+  requestAnimationFrame(tick);
+}
+
+// ── navigation ───────────────────────────────────────────────────────
+function next() {
+  if (busy) return;
+  if (typing) return finishTyping();
+  const S = SCREENS[cur];
+  if (idx < S.steps.length - 1) { idx++; paint(true); }
+  else if (cur < SCREENS.length - 1) { seen.add(cur); go(cur + 1); }
+  else { auto = false; syncAuto(); seen.add(cur); chrome(ledger(cur, idx)); }
+}
+function back() {
+  if (busy) return;
+  if (idx > -1) { idx--; paint(false); }
+  else if (cur > 0) { cur--; idx = SCREENS[cur].steps.length - 1; paint(false); }
+}
+function go(n) {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) { cur = n; idx = -1; paint(false); return; }
+  busy = true;
+  animate(0, 1, 380, () => {
+    cur = n; idx = -1; paint(false); aperture(1);
+    setTimeout(() => animate(1, 0, 460, () => { busy = false; queueAuto(); }), 120);
+  });
+}
+function queueAuto() {
+  clearTimeout(autoT);
+  if (!auto || busy) return;
+  const st = SCREENS[cur].steps[idx];
+  autoT = setTimeout(next, idx < 0 ? 1600 : 1000 + (st ? st.t.length * 26 : 0));
+}
+function syncAuto() { $('#auto').classList.toggle('on', auto); $('#auto').textContent = auto ? 'Auto ■' : 'Auto'; if (!auto) clearTimeout(autoT); }
+
+// ── chrome (gated by what has played) ────────────────────────────────
+function chrome(L) {
+  const S = SCREENS[cur];
+  $('#rundown').innerHTML = SCREENS.map((s, i) => {
+    const pct = i === cur ? Math.round(((idx + 1) / s.steps.length) * 100) : 0;
+    return `<button class="seg ${i === cur ? 'on' : ''} ${seen.has(i) ? 'done' : ''}" data-i="${i}"><span class="t">${String(i + 1).padStart(2, '0')} · ${s.time === 'LIVE' ? 'LIVE' : 'D' + s.day + ' ' + s.time}</span><b>${s.tab}</b><i class="bar" style="${i === cur ? `width:${pct}%` : ''}"></i></button>`;
+  }).join('');
+  $('#prog').textContent = `SEG ${cur + 1}/${SCREENS.length} · LINE ${Math.max(0, idx + 1)}/${S.steps.length}`;
+  $('#back').disabled = cur === 0 && idx < 0;
+  const lines = S.steps.slice(0, idx + 1).map((st, i) => {
+    const now = i === idx ? 'now' : '';
+    if (st.k === 'beat' || st.k === 'feed') return `<div class="ln ${now}"><span class="who ccx">[ CC ]</span><i>${st.t}</i></div>`;
+    if (st.k === 'bb') return `<div class="ln ${now}"><span class="who bb">Big Brother</span><span>${st.t}</span></div>`;
+    if (st.k === 'dr') return `<div class="ln ${now}"><span class="who dr">${st.by} · DR</span><span>${st.t}</span></div>`;
+    return `<div class="ln ${now}"><span class="who">${st.by}</span><span>${st.t}</span></div>`;
+  }).join('');
+  $('#script').innerHTML = `<h3>Transcript · ${S.title}</h3>${lines || '<div class="empty">Nothing has aired yet. Click the screen.</div>'}`;
+  const sc = $('#script'); sc.scrollTop = sc.scrollHeight;
+  const prow = (n, tag, cls) => `<div class="prow">${mini(n)}<span class="nm">${n}</span><span class="tag ${cls}">${tag}</span></div>`;
+  const moves = L.moves.slice(-7).reverse().map(([n, label, tone, about]) => `<div class="mv">${mini(n)}<span class="d ${tone}">${label}</span><span>${n} → ${about}</span></div>`).join('');
+  $('#side').innerHTML = `
+    <div class="panel"><h4><span>The week</span><span>Week 4</span></h4>
+      ${prow(HOH, 'HOH', 'hoh')}
+      ${L.nom.length ? L.nom.map(n => prow(n, L.out.includes(n) ? 'Evicted' : 'Nominated', L.out.includes(n) ? 'out' : 'nom')).join('') : '<div class="pend">No nominations yet.</div>'}
+      ${L.veto ? prow(L.veto, 'Veto', 'veto') : '<div class="pend">Veto not played yet.</div>'}</div>
+    <div class="panel"><h4><span>In the room</span><span>heard it</span></h4>
+      ${idx < 0 || S.set === 'quad' ? '<div class="pend">Nobody on camera yet.</div>' : [...castAt(S, idx).map(([n]) => [n, 'Talking']), ...bgAt(S, idx).map(([n, , d]) => [n, d])]
+        .map(([n, d]) => `<div class="prow">${mini(n)}<span class="nm">${n}</span><span class="tag out">${d}</span></div>`).join('')}</div>
+    ${L.vetoPlay.length ? `<div class="panel"><h4><span>Veto players</span><span>${L.vetoPlay.length}/6</span></h4>
+      <div class="grid9">${L.vetoPlay.map(n => mini(n)).join('')}</div></div>` : ''}
+    ${L.ballots.length ? `<div class="panel"><h4><span>The vote</span><span>the house can't see this</span></h4>
+      ${L.ballots.map(([v, e]) => `<div class="prow">${mini(v)}<span class="nm">${v}</span><span class="tag nom">evict ${e}</span></div>`).join('')}</div>` : ''}
+    <div class="panel"><h4><span>Deals seen</span><span>${L.deals.length}</span></h4>
+      ${L.deals.length ? L.deals.map(([a, b]) => `<div class="prow">${mini(a)}${mini(b)}<span class="nm" style="font-size:12px">${a} + ${b}</span><span class="tag hoh" style="background:#f5c54233;color:#c99a1a">Vote</span></div>`).join('') : '<div class="pend">None yet.</div>'}</div>
+    <div class="panel"><h4><span>What moved</span><span>${L.moves.length}</span></h4>${moves || '<div class="pend">Nothing yet.</div>'}</div>
+    <div class="panel"><h4><span>House</span><span>${HOUSE.length - L.out.length} left</span></h4>
+      <div class="grid9">${HOUSE.map(n => mini(n, L.out.includes(n) ? 'out' : '')).join('')}</div></div>`;
+}
+
+// ── wiring ───────────────────────────────────────────────────────────
+$('#logo').innerHTML = `${eyeSvg('eye')}<div><h1>BIG BROTHER<em>//</em>LIVE</h1><p>Mockup v2 · Week 4 · One click = one line</p></div>`;
+stage.addEventListener('click', next);
+$('#next').onclick = next;
+$('#back').onclick = back;
+$('#all').onclick = () => { finishTyping(); idx = SCREENS[cur].steps.length - 1; paint(false); };
+$('#restart').onclick = () => { idx = -1; paint(false); };
+$('#auto').onclick = () => { auto = !auto; syncAuto(); queueAuto(); };
+$('#tv').onclick = () => { document.body.classList.toggle('tvm'); $('#tv').classList.toggle('on'); };
+$('#rundown').addEventListener('click', e => { const b = e.target.closest('.seg'); if (b && !busy) go(+b.dataset.i); });
+// Each season's house: the same rooms redressed (tools/bb-house/house.py THEME_TD + DRESS).
+const SEASONS = [['default', 'The House'], ['temptation', 'Temptation'], ['machine', 'Machine Summer'], ['mystery', 'Mystery'],
+  ['high-rollers', "High Roller's"], ['summer-camp', 'Summer Camp'], ['summer-school', 'Summer School']];
+const ROOM_FILE = { kitchen: 'kitchen', ceremony: 'living', bedroom: 'bedroom', hoh: 'hoh', dr: 'dr', yard: 'yard', dining: 'dining' };
+let season = 'default';
+(() => {
+  const css = SEASONS.slice(1).map(([id]) => Object.entries(ROOM_FILE).map(([set, f]) =>
+    `body[data-season="${id}"] .set-${set}.photo{background-image:url('../assets/bb/house/${id}/${f}-td-b.webp?v=6')}`).join('\n')).join('\n');
+  const el = document.createElement('style'); el.textContent = css; document.head.appendChild(el);
+})();
+let seasonI = 0;
+$('#season').onclick = () => {
+  seasonI = (seasonI + 1) % SEASONS.length; season = SEASONS[seasonI][0];
+  document.body.dataset.season = season; $('#season').textContent = 'Season: ' + SEASONS[seasonI][1];
+  paint(false);
+};
+const HOUSES = [['b', 'TD B · Flat'], ['a', 'TD A · Cel (kitchen)'], ['c', 'TD C · Stage (kitchen)'], ['toon', 'Toon v1 (kitchen)'], ['real', 'Real (kitchen)']];
+let houseI = 0;
+$('#house').onclick = () => { houseI = (houseI + 1) % HOUSES.length; document.body.dataset.house = HOUSES[houseI][0]; $('#house').textContent = 'House: ' + HOUSES[houseI][1]; };
+$('#theme').onclick = () => {
+  const r = document.documentElement;
+  const dark = r.dataset.theme ? r.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+  r.dataset.theme = dark ? 'light' : 'dark';
+};
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); next(); }
+  if (e.key === 'ArrowLeft') { e.preventDefault(); back(); }
+});
+setInterval(() => {
+  const c = stage.querySelector('.clock'); if (!c || c.dataset.t === 'LIVE') return;
+  const s = Math.floor(Date.now() / 1000) % 60;
+  c.textContent = `${c.dataset.t}:${String(s).padStart(2, '0')}`;
+}, 1000);
+paint(false);
+</script>
+</body>
+</html>

@@ -24,11 +24,13 @@
 // moves who somebody sits next to for the next three days, and eventually
 // that moves a vote.
 import { pronouns } from '../players.js';
+import { gs } from '../core.js';
 import {
   pStats, bond, band, closestTo, furthestFrom, dislikes, trusts,
   sharesAlliance, resentmentOf, grudge, isVillainous, isNice, spotlightOrder,
 } from './_read.js';
 import { freshLine } from '../bb/aired.js';
+import { makeScene } from '../bb/script/scene.js';
 
 // Head-counts in prose follow the house. "Eleven other people" was written for
 // a house of twelve and printed over sixteen.
@@ -108,29 +110,89 @@ const _others = (house, ...ex) => house.filter(n => n && !ex.includes(n));
 // FALLING OUT OVER NOTHING
 // ══════════════════════════════════════════════════════════════════════
 
+/**
+ * How a kitchen row ends, decided before anybody says a word (spec §4.2).
+ *
+ * A short fuse and a bad history blow it up; somebody kind standing nearby,
+ * who likes the one who is angry, can talk it down; otherwise it stays small
+ * and gets remembered. Proportional to the stats, not thresholds: a calm
+ * houseguest CAN blow up, just rarely.
+ */
+function _kitchenEnding(house, annoyed, culprit, rng) {
+  // Measured on a 2x8-week read: at 0.06/0.04/0.015 two of every three kitchen rows were
+  // shouting matches. A blow-up should be the row people talk about, not the usual one.
+  const fuse = (10 - (pStats(annoyed).temperament || 5)) * 0.018
+    + Math.max(0, -bond(annoyed, culprit)) * 0.015
+    + (pStats(annoyed).boldness || 5) * 0.006;
+  const smoother = _others(house, culprit, annoyed)
+    .filter(n => isNice(n) && bond(n, annoyed) > 0)
+    .sort((x, y) => (pStats(y).social || 5) - (pStats(x).social || 5))[0] || null;
+  // Measured over 4x8 weeks at 0.15 + social*0.035: smoothed as often as sniped. Somebody
+  // stepping in is the nice surprise, not the default.
+  const calm = smoother ? 0.06 + (pStats(smoother).social || 5) * 0.02 : 0;
+  const r = rng();
+  if (r < fuse) return { ending: 'blowup', smoother: null };
+  if (smoother && r < fuse + calm) return { ending: 'smoothed', smoother };
+  return { ending: 'snipe', smoother: null };
+}
+
+/**
+ * Two people who already had a kitchen row this week. The pair the house
+ * grates on most is the same pair all week, so without this one pair had the
+ * dishes AND the food AND the dishes again by Thursday, and in dialogue that
+ * reads as a loop, not a feud.
+ */
+function _rowedThisWeek(cast, ctx) {
+  const week = ctx?.week?.num || 0;
+  const hist = gs.bb?.house?.eventHistory || [];
+  return hist.some(h => h.week === week && KITCHEN_ROWS.has(h.eventId)
+    && (h.players || []).includes(cast.culprit) && (h.players || []).includes(cast.annoyed));
+}
+const KITCHEN_ROWS = new Set(['friction-dishes', 'friction-food']);
+
+/** These two have done this before, in an earlier week: a line may say "again". */
+function _rowedBefore(a, b, ctx) {
+  const week = ctx?.week?.num || 0;
+  return (gs.bb?.house?.eventHistory || []).some(h => h.week < week && KITCHEN_ROWS.has(h.eventId)
+    && (h.players || []).includes(a) && (h.players || []).includes(b));
+}
+
+/** Who else is in the kitchen: they see it, so they know it. */
+const _kitchenCrowd = (house, ...ex) => _others(house, ...ex).slice(0, 2);
+
 /** The dishes. It is always, in the end, the dishes. */
 const theDishes = {
   id: 'friction-dishes',
   category: 'house-life',
   weight(house, ctx) {
     const cast = _grating(house, ctx);
-    return cast ? _w(3.2 + cast.heat * 0.5, ctx) : 0;
+    return cast ? _w(3.2 + cast.heat * 0.5, ctx) * (_rowedThisWeek(cast, ctx) ? 0.05 : 1) : 0;
   },
-  fire(house, ctx, api) {
+  fire(house, ctx, api, rng = Math.random) {
     const { culprit, annoyed } = _grating(house, ctx);
-    const text = _variant([
-      `${annoyed} has washed up after ${culprit} four days running and today decides not to. The pan sits there until dinner, and by the time somebody finally moves it the whole house knows exactly who was not going to.`,
-      `"I am not your mother." ${annoyed} says it lightly and it does not land lightly. ${culprit} says it was one bowl. ${annoyed} says it is never one bowl.`,
-      `There is a system for the dishes. ${culprit} has never once followed the system. ${annoyed} explains the system again, in front of people, in a voice that has stopped pretending.`,
-      `${culprit} leaves a pan soaking, which in this house means leaving it for somebody else. ${annoyed} finds it at midnight and does it, loudly, while ${culprit} is trying to sleep four feet away.`,
-    ], ctx, culprit, annoyed);
-    api.addBond(annoyed, culprit, -0.9);
-    api.remember(annoyed, culprit, 'never-cleans-up', 2, { about: 'the kitchen' });
-    // The room takes a side, and it is rarely the messy one.
-    _others(house, culprit, annoyed).slice(0, 2).forEach(w => api.addBond(w, annoyed, 0.2));
+    const { ending, smoother } = _kitchenEnding(house, annoyed, culprit, rng);
+    const crowd = _kitchenCrowd(house, culprit, annoyed, smoother);
+    if (ending === 'blowup') {
+      api.addBond(annoyed, culprit, -1.6);
+      api.remember(annoyed, culprit, 'never-cleans-up', 3, { about: 'the kitchen' });
+      // A row in front of people: the room notices who started shouting.
+      api.popDelta(annoyed, -0.5);
+      crowd.forEach(w => api.addBond(w, annoyed, 0.15));
+    } else if (ending === 'smoothed') {
+      api.addBond(annoyed, culprit, -0.4);
+      api.addBond(smoother, annoyed, 0.6);
+      api.addBond(smoother, culprit, 0.4);
+      api.popDelta(smoother, 1);
+    } else {
+      api.addBond(annoyed, culprit, -0.9);
+      api.remember(annoyed, culprit, 'never-cleans-up', 2, { about: 'the kitchen' });
+      // The room takes a side, and it is rarely the messy one.
+      crowd.forEach(w => api.addBond(w, annoyed, 0.2));
+    }
+    const scene = makeScene('friction.dishes', { a: annoyed, b: culprit, c: smoother }, { ending, again: _rowedBefore(annoyed, culprit, ctx) }, crowd, 'kitchen');
     return {
-      text, players: [annoyed, culprit],
-      badgeText: 'THE DISHES', badgeClass: 'grey',
+      scene, players: scene.seenBy.slice(0, 4),
+      badgeText: ending === 'blowup' ? 'THE DISHES, LOUDLY' : 'THE DISHES', badgeClass: 'grey',
     };
   },
 };
@@ -141,20 +203,27 @@ const theFood = {
   category: 'house-life',
   weight(house, ctx) {
     const cast = _grating(house, ctx);
-    return cast ? _w(3.4 + cast.heat * 0.4, ctx) : 0;
+    return cast ? _w(3.4 + cast.heat * 0.4, ctx) * (_rowedThisWeek(cast, ctx) ? 0.05 : 1) : 0;
   },
-  fire(house, ctx, api) {
+  fire(house, ctx, api, rng = Math.random) {
     const { culprit, annoyed } = _grating(house, ctx);
-    const text = _variant([
-      `${annoyed} had been saving it. Everybody in this house is saving something, because there is never enough of anything, and ${culprit} ate it without checking whether it was spoken for.`,
-      `The last of the good cereal goes at eleven in the morning. ${annoyed} finds the empty box still sitting in the cupboard, which somehow is the part that stings.`,
-      `${culprit} makes a portion for one that would comfortably do three. ${annoyed} watches the whole thing happen and says nothing, and saying nothing takes visible effort.`,
-      `"Did you eat the rest of that?" ${culprit} says yes, easily, with no idea that ${annoyed} has been thinking about it since breakfast.`,
-    ], ctx, culprit, annoyed);
-    api.addBond(annoyed, culprit, -0.8);
-    api.popDelta(culprit, -1);
+    const { ending, smoother } = _kitchenEnding(house, annoyed, culprit, rng);
+    const crowd = _kitchenCrowd(house, culprit, annoyed, smoother);
+    if (ending === 'blowup') {
+      api.addBond(annoyed, culprit, -1.4);
+      api.remember(annoyed, culprit, 'ate-my-food', 2, { about: 'the kitchen' });
+      api.popDelta(culprit, -1.5);
+    } else if (ending === 'smoothed') {
+      api.addBond(annoyed, culprit, -0.3);
+      api.addBond(smoother, annoyed, 0.6);
+      api.popDelta(smoother, 1);
+    } else {
+      api.addBond(annoyed, culprit, -0.8);
+      api.popDelta(culprit, -1);
+    }
+    const scene = makeScene('friction.food', { a: annoyed, b: culprit, c: smoother }, { ending, again: _rowedBefore(annoyed, culprit, ctx) }, crowd, 'kitchen');
     return {
-      text, players: [annoyed, culprit],
+      scene, players: scene.seenBy.slice(0, 4),
       badgeText: 'THERE WAS NEVER ENOUGH', badgeClass: 'grey',
     };
   },

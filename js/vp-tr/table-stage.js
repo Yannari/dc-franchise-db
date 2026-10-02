@@ -19,7 +19,7 @@
 //
 // Like every other file in this directory it imports no engine state.
 import { roundTableStageData } from './round-table.js';
-import { trsStageShell as stageShell, trsFold, trsReg as reg, trsEsc as esc, trsFace as face, trsLater as later } from './castle-stage.js';
+import { trsStageShell as stageShell, trsFold, trsReg as reg, trsEsc as esc, trsFace as face, trsLater as later, trsWords } from './castle-stage.js';
 import { TRScenery } from './cutaway-scenery.js';
 import { trPlay, trChalk, trMusic } from './sfx.js';
 import { beatLines } from './stage-lines.js';
@@ -347,12 +347,8 @@ function paintTable(root, S, fresh) {
   const type = (el, txt, speed, delay) => {
     if (!el) return;
     if (!fresh) { el.textContent = txt; return; }
-    el.textContent = '';
-    later(S, () => {
-      let k = 0;
-      const t = setInterval(() => { el.textContent = txt.slice(0, ++k); if (k >= txt.length) clearInterval(t); }, speed);
-      S.timers.push(t);
-    }, delay || 0);
+    // whole line, lit a word at a time (see `trsWords`); speed is unused now
+    trsWords(el, txt, delay || 0);
   };
   const q = s => '“' + s + '”';
   if (st.t === 'slate' && st.reason) type(rt.querySelector('.trt-q'), q(st.reason), 14, (begin + writeDur + .5) * 1000);

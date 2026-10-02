@@ -445,7 +445,7 @@ const grudgeHardens = {
       'blamed-me-for-a-vote-i-did-not-cast': 'false accusation', 'wrongly-accused': 'false accusation',
       'coming-for-me': 'plan against me', 'planning-the-cut': 'plan against me',
       'overheard-plot': 'plot I overheard', 'crossed-me': 'double-cross', 'cold-war': 'cold war',
-      'kept-me-awake': 'nights of noise', 'never-cleans-up': 'mess', irritation: 'constant needling',
+      'kept-me-awake': 'nights of noise', 'never-cleans-up': 'mess', 'ate-my-food': 'food-stealing', irritation: 'constant needling',
     })[kind] || null;
 
     const text = _variant([

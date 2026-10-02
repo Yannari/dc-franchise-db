@@ -159,7 +159,14 @@ function _numWord(n) { return _NUMW[n] || String(n); }
 function _fresh(pool, key) {
   if (!pool || !pool.length) return '';
   const n = pool.length;
-  const start = _hash(key) % n;
+  // ONE SEASON WALKS THROUGH A POOL rather than landing on the same few lines
+  // at table after table: every episode starts about a third of the pool
+  // further along (so a pool used five times in one table does not overlap the
+  // next night's), and the hash only nudges it by one. Within a table
+  // `_tableUsed` still skips anything already said.
+  const m = /^rt\|(\d+)\|/.exec(String(key));
+  const stride = Math.max(3, Math.ceil(n / 3));
+  const start = m ? (Number(m[1]) * stride + (_hash(key) % 2)) % n : _hash(key) % n;
   for (let i = 0; i < n; i++) {
     const v = pool[(start + i) % n];
     if (!_tableUsed.has(v)) { _tableUsed.add(v); return v; }
@@ -1672,6 +1679,10 @@ const ACCUSE_NOSRC = {
     'I don’t have evidence. I have a bad feeling about {T}.',
     'Call it instinct. It’s {T}.',
     'I’ve been watching {T}, and something isn’t right.',
+    'I can’t point to one thing. But every time something goes wrong in here, {T} is close by.',
+    'I don’t trust {T}. I’ve tried to, and I can’t.',
+    '{T}. I know I’ve got nothing solid. I’m saying it anyway.',
+    'It’s {T}. Ask me why and I’ll struggle, but I’m sure.',
   ],
 };
 const OTHER_CITED = [
@@ -1679,6 +1690,10 @@ const OTHER_CITED = [
   'Same name. {Who} {src}.',
   'I agree. {Who} {src}.',
   'It’s {T} for me as well. {Who} {src}.',
+  '{T} for me too. {Who} {src}.',
+  'I’ve been thinking it all day. {Who} {src}.',
+  'Me too, and here’s my reason. {Who} {src}.',
+  'I’ll add one thing. {Who} {src}.',
 ];
 // A JOINER WITH NO CITABLE REASON BUT A RECORD OF WHERE IT CAME FROM: the
 // person who said it to them, or a read they have carried for days. Both used
@@ -1688,10 +1703,15 @@ const OTHER_BARE = {
     '{F} said the same thing to me this afternoon. It’s {T}.',
     'I heard it from {F} earlier, and I think {F}’s right. {T}.',
     '{F} put {T} in my head today, and nothing since has talked me out of it.',
+    '{F} told me the same this afternoon. Hearing it again, I believe it. {T}.',
+    'It’s {T} for me. {F} said it to me earlier.',
+    '{F} mentioned {T} to me today. Now two of us are saying it.',
   ],
   'gone-cold': [
     'I’ve had {T} on my list for days.',
     '{T}. It was my name before tonight, too.',
+    'I’ve thought {T} for a while now.',
+    'Nothing’s changed for me. {T}.',
   ],
 };
 // THE QUIET END OF THE TABLE: somebody who has not spoken says the name they
@@ -1709,6 +1729,8 @@ const QUIET_CITED = [
 const QUIET_HEARSAY = [
   '{F} said it to me earlier, and I haven’t been able to shake it. {T}.',
   'I’ll say it, since nobody else has. {T}. {F} put it in my head.',
+  'I haven’t got my own reason. {F} made the case to me today, and it’s {T}.',
+  '{T}, for me. I’m going on what {F} told me.',
 ];
 // …and when that slate is turned over, they do not make the case twice
 const SLATE_SAID_EARLIER = [
@@ -1723,6 +1745,10 @@ const OTHER_AGREE = [
   'I agree with {A}.',
   '{A}’s right.',
   'I’ve got the same name.',
+  '{A} is saying what I’ve been thinking. {T}.',
+  'I don’t have more than {A} has, but I agree. {T}.',
+  'Put me down for {T} too.',
+  'I’m there as well. {T}.',
 ];
 // A Traitor burying a fellow: said as reluctance, true on both readings.
 const SACRIFICE_SAID = [
@@ -1756,24 +1782,32 @@ function _namedIn(n, text) {
   return !/[A-Za-z]/.test(before) && !/[A-Za-z]/.test(after);
 }
 const CITE_AGAIN = [
-  'I’m with {P}. {t}. The {v} thing, I can’t get past it either.',
-  '{t}. What {P} said about {v}. That’s mine too.',
+  'I’m with {P}. {t}. What happened with {v}, I can’t get past it either.',
+  '{t}. {P} said it about {v}, and I was thinking the same thing.',
   '{P}’s already said it, and {P}’s right. {t}.',
-  'Same as {P}. {t}. Nobody has explained {v} to me either.',
+  'Same as {P}. {t}. Nobody has given me an answer about {v} either.',
+  '{P} is right about {v}. I’ve got {t} too.',
+  'I had the same thought about {v} before {P} said a word. {t}.',
+  'What {P} said about {v} is exactly why I’m saying {t}.',
+  '{t}. {P} put it better than I would, but it’s {v} for me as well.',
 ];
 // THE HOST, WHEN THE ROOM TURNS: said to the accused after their answer, on
 // a name three or more people are carrying. {T} the accused, {n} how many.
 // and the same person saying their own point again, which a person does by
 // saying they are saying it again
 const CITE_OWN = [
-  'Like I said. {t}. The {v} thing.',
+  'Like I said. {t}. Think about what happened with {v}.',
   'I’ll say it again, then. {t}. Think about {v}.',
+  'I said it an hour ago and I’ll say it again. {t}, because of {v}.',
+  'Nothing’s changed since I said it. {t}.',
 ];
 // when the fact is about the accused themselves there is no separate {v} to
 // point at ("Nobody has explained Bridgette to me either", of Bridgette)
 const CITE_AGAIN_SELF = [
   '{P}’s already said it, and {P}’s right. {t}.',
   'I’m with {P}. It’s {t}.',
+  '{P} said it, and I agree. {t}.',
+  '{t}. I was going to say exactly what {P} said.',
 ];
 const CITE_OWN_SELF = [
   'Like I said. {t}.',
@@ -1782,6 +1816,12 @@ const CITE_OWN_SELF = [
 const HOST_PRESS = [
   '{T}, that is {n} people at this table. Would you like another go?',
   '{N} of them, {T}. I am not sure that answer is going to be enough.',
+  '{T}, I would think very carefully about the next thing you say.',
+  'That is {n} names in a row, {T}. The room is waiting.',
+];
+// only on the LAST name argued: "Anybody else? No?" over a debate that then
+// moved on to somebody else was the host contradicting the table
+const HOST_PRESS_LAST = [
   'Anybody else? No? Then {T}, I would start worrying.',
 ];
 
@@ -1792,30 +1832,79 @@ const MINDCHANGE_SAID = [
   '{A} has convinced me. I’m writing {t}.',
 ];
 // The clashes, spoken. `speaker` is which of the pair talks first; {o} the other.
+// THE CLASHES, SPOKEN, AS PAIRS: a line and the answer to THAT line. They
+// were drawn separately, so "This goes back further than tonight" could be
+// answered by "That was a long time ago", and with two of each the same
+// exchange played at nearly every table of a season (eleven times in one).
+// `speaker` is which of the two talks first; {o} the other, {p} for a pile-on
+// the speaker was part of a minute ago.
 const CLASH_SAID = {
-  counter: { speaker: 'b',
-    say: ['You’ve been pointing at me all night, {o}. What about you?', 'Why are you so sure, {o}?', 'I’ll answer when {o} explains why {o} is so keen.'],
-    reply: ['I’m not the one being asked.', 'Nice try.', 'Just answer the question.'] },
-  'ganged-up': { speaker: 'b',
-    say: ['That’s three of you with the same name in ten minutes. Who set that up?', 'Funny how you all landed on me at once.', 'Did you lot rehearse this?'],
-    reply: ['Nobody rehearsed anything.', 'We just agree.', 'Maybe we’re just right.'],
-    // THE SAME PERSON, ON THE OTHER END OF IT. Somebody who has just told the
-    // table "nobody rehearsed anything" and is then piled on themselves cannot
-    // ask "did you lot rehearse this?" with a straight face; they know it.
-    turned: ['Five minutes ago you were all on {p}. Now it’s me?', 'Oh, so now it’s my turn.', 'Right. So I’m {p} now, am I?'],
-    turnedReply: ['You did the same to {p}.', 'Now you know how {p} felt.', 'Yes. It’s your turn.'] },
-  'grievance-fresh': { speaker: 'a', keepLine: true,
-    say: ['We had this out yesterday, {o}, and I haven’t forgotten it.', 'This is about yesterday, {o}, and you know it.'],
-    reply: ['Neither have I.', 'Then let’s have it out properly.'] },
-  'old-grievance': { speaker: 'a', keepLine: true,
-    say: ['This goes back further than tonight, {o}.', 'You know exactly why I don’t trust you, {o}.'],
-    reply: ['Say it properly, then.', 'That was a long time ago.'] },
-  'grievance-old': { speaker: 'a', keepLine: true,
-    say: ['This goes back further than tonight, {o}.', 'You know exactly why I don’t trust you, {o}.'],
-    reply: ['Say it properly, then.', 'That was a long time ago.'] },
-  'broken-word': { speaker: 'a', keepLine: true,
-    say: ['You gave me your word, {o}.', 'We had a deal, {o}.'],
-    reply: ['Things changed.', 'I never promised that.'] },
+  counter: { speaker: 'b', pairs: [
+    ['You’ve been pointing at me all night, {o}. What about you?', 'I’m not the one being asked.'],
+    ['Why are you so sure, {o}?', 'Because I’ve been paying attention.'],
+    ['I’ll answer when {o} explains why {o} is so keen.', 'I’ve explained. You weren’t listening.'],
+    ['And where were you, {o}, while you were so busy watching me?', 'Right here. In plain sight.'],
+    ['You want to talk about suspicious, {o}? Let’s talk about you.', 'Nice try.'],
+    ['Funny that it’s you saying it, {o}.', 'Somebody had to.'],
+    ['Before anybody writes my name, ask {o} why {o} wants it so badly.', 'I want the truth. That’s all.'],
+    ['You’re very keen on my name tonight, {o}.', 'Just answer the question.'],
+  ] },
+  'ganged-up': { speaker: 'b', pairs: [
+    ['That’s three of you with the same name in ten minutes. Who set that up?', 'Nobody set anything up.'],
+    ['Funny how you all landed on me at once.', 'We just agree.'],
+    ['Did you lot rehearse this?', 'Nobody rehearsed anything.'],
+    ['So you’ve all decided. When did that happen?', 'Over the last hour. You were here for it.'],
+    ['It’s a pile-on. You can all see that, can’t you?', 'Or it’s the right name.'],
+    ['One of you starts and the rest follow. Is that how this works?', 'Maybe we’re just right.'],
+    ['I can count. That’s a lot of you, very quickly.', 'Then you know how it looks.'],
+  ],
+  // THE SAME PERSON, ON THE OTHER END OF IT. Somebody who has just told the
+  // table "nobody rehearsed anything" and is then piled on themselves cannot
+  // ask "did you lot rehearse this?" with a straight face; they know it.
+  turnedPairs: [
+    ['Five minutes ago you were all on {p}. Now it’s me?', 'You did the same to {p}.'],
+    ['Oh, so now it’s my turn.', 'Yes. It’s your turn.'],
+    ['Right. So I’m {p} now, am I?', 'Now you know how {p} felt.'],
+  ] },
+  'grievance-fresh': { speaker: 'a', keepLine: true, pairs: [
+    ['We had this out yesterday, {o}, and I haven’t forgotten it.', 'Neither have I.'],
+    ['This is about yesterday, {o}, and you know it.', 'Then let’s have it out properly.'],
+    ['You didn’t think I’d let yesterday go, did you, {o}?', 'I hoped you’d sleep on it.'],
+    ['What you said to me yesterday, {o}. Say it again, here.', 'I meant it then, and I mean it now.'],
+    ['I’ve thought about yesterday all day, {o}.', 'So have I. It doesn’t change anything.'],
+    ['Everyone should hear about yesterday, {o}.', 'Fine. Tell them all of it, not just your half.'],
+    ['You still owe me an answer from yesterday, {o}.', 'You didn’t like the one I gave you.'],
+    ['After yesterday I’m not pretending with you any more, {o}.', 'Good. I was tired of it too.'],
+  ] },
+  'old-grievance': { speaker: 'a', keepLine: true, pairs: [
+    ['This goes back further than tonight, {o}.', 'Then say it properly, in front of everyone.'],
+    ['You know exactly why I don’t trust you, {o}.', 'That was a long time ago.'],
+    ['I’ve watched you for days, {o}, and I don’t like what I’ve seen.', 'And I’ve watched you watching me. It’s getting old.'],
+    ['Every time something goes wrong in here, you’re right next to it, {o}.', 'So are you. Funny how that works.'],
+    ['I said I’d leave it, {o}. I can’t.', 'I knew you wouldn’t.'],
+    ['You’ve been against me since the first week, {o}.', 'Because you’ve given me every reason to be.'],
+    ['We’ve been circling this for days, {o}.', 'Then stop circling. Say it.'],
+    ['You’ve worked against me all week, {o}.', 'Worked? I’ve been trying to stay in, same as you.'],
+  ] },
+  'grievance-old': { speaker: 'a', keepLine: true, pairs: [
+    ['This has been going on all week, {o}, and I’m finishing it tonight.', 'You’ve said that before.'],
+    ['I’ve never once trusted you, {o}, and tonight I’m saying why.', 'Go on, then. Everyone’s listening.'],
+    ['Every day this week it’s been you and me, {o}.', 'And every day you’ve been wrong.'],
+    ['I’m done being polite about you, {o}.', 'You were never polite. You were quiet.'],
+    ['I’ve kept this to myself for a week, {o}. Not any more.', 'A week of keeping it to yourself? Everybody heard.'],
+    ['You and I both know how this started, {o}.', 'I know how you tell it. That isn’t the same thing.'],
+    ['It’s been a whole week of this, {o}.', 'Then let the room decide, and we can both stop.'],
+  ] },
+  'broken-word': { speaker: 'a', keepLine: true, pairs: [
+    ['You gave me your word, {o}.', 'Things changed.'],
+    ['We had a deal, {o}.', 'I never promised that.'],
+    ['You promised me, {o}. To my face.', 'I promised I’d think about it. I did.'],
+    ['We shook on it, {o}. Do you remember that?', 'I remember. I also remember what you did after.'],
+    ['You swore you’d never write my name, {o}.', 'And you believed me. That’s on you.'],
+    ['I kept my side of it, {o}. Every single night.', 'I never asked you to.'],
+    ['You told me we were in this together, {o}.', 'We were. Until we weren’t.'],
+    ['So a promise means nothing to you, {o}?', 'It means something. It doesn’t mean everything.'],
+  ] },
 };
 
 const ACCUSE_LINES = [
@@ -1862,9 +1951,145 @@ const ACCUSED_DEFENCE = [
   'I’m the easy name in this room. That doesn’t make me a Traitor.',
   'Ask yourselves who’s loudest about me tonight, and why they want me gone.',
   'If you send me out and I’m Faithful, you’ve done the Traitors’ job for them.',
-  'Every one of you had an hour today you can’t account for. Tonight you’ve decided it’s mine.',
   'Write my name if you’ve already decided. You’ll be back here next week with the same problem.',
+  'I’ve been straight with every one of you since the day I got here.',
+  'You want a name tonight, and mine is the one in front of you. That’s all this is.',
+  'I’m not going to beg. I’m Faithful, and you’ll find that out one way or another.',
 ];
+// ── THE ANSWER TO WHAT WAS ACTUALLY SAID ──────────────────────────────
+//
+// The accused used to answer from one pool of six lines whatever the charge:
+// "Every one of you had an hour today you can't account for" said back to a
+// point about a shield, a voting record or a hunch, and heard again at the
+// next table, and the one after (the user, 2026-10-01: "I heard that sentence
+// before ... it feels like they're talking in different conversations").
+// The defence now answers the KIND of reason the lead accuser gave. {A} is
+// the lead accuser, {v} the other person the reason is about, {F} the person a
+// rumour came from. Every line is first person, said by the accused.
+const DEFENCE_BY = {
+  // "kept X in on the night X was revealed": voted elsewhere when a Traitor was caught
+  caught: [
+    'I had another name that night, {A}. I was wrong about {v}. So were half of you a week ago.',
+    'Being wrong about {v} doesn’t make me {v}’s partner. It makes me wrong.',
+    'I didn’t see {v} coming. A Traitor would have voted with the room to look clean, and I didn’t.',
+    'I voted for who I suspected. It wasn’t {v}. That’s a mistake, not a pact.',
+    'If I’d known what {v} was, I’d have written it in capitals. I didn’t know.',
+    'You’re blaming me for one vote, {A}. One. Look at what I’ve done every other night.',
+  ],
+  // "wanted X gone the night X died": named somebody the Traitors then murdered
+  night: [
+    'I said {v}’s name because I believed it. The Traitors going for {v} too doesn’t mean I helped them.',
+    'Half this table suspected {v}. The Traitors went for {v} because {v} was dangerous to them, not because of me.',
+    'If I were a Traitor, the last thing I’d do is say {v}’s name out loud and then go for {v} the same night.',
+    'So saying a name at this table makes you a Traitor now? Then every one of you is a suspect.',
+    'I wanted {v} out by a vote, in front of everyone. That’s the opposite of what a Traitor does.',
+    'The Traitors read the same table I did, {A}. They saw who was in trouble, and they used it.',
+    'I wanted {v} gone. I didn’t want {v} dead. There’s a difference, {A}.',
+    'They took {v} because they knew the room would look at me. And look, it’s working.',
+    'You think I’d hand you that, {A}? My name and {v}’s on the same night? I’m not that stupid.',
+    'Everybody who said {v}’s name that night is a suspect, then. Shall we start with you?',
+  ],
+  shield: [
+    'I won that shield fair and square. They left me alone because they couldn’t touch me.',
+    'Of course they didn’t come for me. I had the shield. That’s the whole point of it.',
+    'I fought for that shield because I was scared of not waking up. A Traitor doesn’t need one.',
+    'They couldn’t get me, so they went for somebody they could. That’s not proof of anything, {A}.',
+  ],
+  // "never once voted against X, and X was a Traitor"
+  'pair-traitor': [
+    'I never wrote {v}’s name because I never suspected {v}. {v} fooled me. {v} fooled a lot of you too.',
+    'I trusted {v}, and I was wrong. It doesn’t make me one of them.',
+    'If {v} and I were working together, do you think I’d have been that obvious about it?',
+    '{v} lied to my face for days, {A}. You think that makes me feel good?',
+  ],
+  // "helped put X out, and X was a Faithful"
+  'faithful-out': [
+    'We all got {v} wrong. I wrote the name the same as most of you did.',
+    'I voted for {v} because I thought {v} was a Traitor. So did the rest of this table.',
+    'I feel terrible about {v}. But I wasn’t the only hand that wrote it.',
+    'You wrote {v} too, {A}, or you might as well have. Don’t put that one on me.',
+  ],
+  // "never once voted against X": a pair
+  pair: [
+    'I’ve never written {v}’s name because I’ve never suspected {v}. That’s not a pact. That’s an opinion.',
+    '{v} and I get on. That’s allowed in here, isn’t it?',
+    'So I trust {v}. You want me gone for having one friend in this castle?',
+    'If I never write {v}, it’s because {v} has never given me a reason to.',
+    'You’ve got me and {v} in a pact because we’re nice to each other. That’s all you’ve got.',
+  ],
+  follower: [
+    'I listen before I speak. In this castle that’s called being careful, not being a Traitor.',
+    'I vote with a good argument when I hear one. That’s what a vote is.',
+    'I’d rather follow a good case than start a bad one, {A}.',
+  ],
+  threw: [
+    'I lost that game because I was bad at it. That’s not a crime.',
+    'You think I threw money away on purpose? That money was mine too.',
+    'I panicked on that board. Ask anyone who was standing next to me.',
+  ],
+  solved: [
+    'So now being good at something makes me a Traitor?',
+    'I got lucky on that board. I wish I was that lucky tonight.',
+    'I worked hard on that board. Next time I’ll do it badly, if that’s what you want.',
+  ],
+  // something seen in the castle: an hour, a door, an empty bed
+  clue: [
+    'I’ve told you where I was. You just don’t like the answer.',
+    'You’ve taken one small thing and built a whole case on it, {A}.',
+    'That’s it? That’s everything you’ve got?',
+    'There’s a normal explanation for that, and I’ve already given it to you.',
+  ],
+  feeling: [
+    'You don’t have a reason, {A}. You said so yourself. It’s a feeling.',
+    'A bad feeling isn’t evidence. Give me one thing I’ve actually done.',
+    'You’re going on instinct, {A}, and your instinct has been wrong before.',
+    'I can’t argue with a feeling. That’s exactly why it’s dangerous.',
+    'You can’t name one thing I’ve done. Not one.',
+  ],
+  hearsay: [
+    'So you heard it from {F}. Has anybody asked {F} where it came from?',
+    'Second-hand, {A}? You’re going to write my name on something somebody else told you?',
+    'If {F} has something on me, {F} can say it to my face.',
+  ],
+  'gone-cold': [
+    'You’ve had my name for days, {A}, and you still can’t tell me why.',
+    'Same name, same nothing. You haven’t found one new thing.',
+    'You made your mind up about me days ago, and you stopped looking.',
+  ],
+};
+// AND THE ACCUSER COMES BACK ONCE, so the card is an exchange and not a
+// statement followed by a statement. Keyed the same way.
+const COMEBACK_BY = {
+  caught: ['Wrong once, fine. Wrong on the one night that mattered?', 'Everybody else saw it. You didn’t. That’s my point.',
+    'You had a week to see it, like the rest of us.', 'One vote. The one vote that would have caught {v}.'],
+  night: ['Then why your name, and why that night?', 'Maybe. But it keeps happening around you.',
+    'Once is a coincidence. I’m asking because it was you.', 'You said {v}. By breakfast {v} was gone. I can’t get past that.'],
+  shield: ['Or they knew you were safe because you’re one of them.', 'Or they didn’t bother, because they didn’t need to.',
+    'They test everybody. Everybody except you.'],
+  'pair-traitor': ['That long, and you never once had a doubt?', 'Fooled, or looked after?',
+    'Everyone else turned on {v} eventually. You never did.'],
+  'faithful-out': ['You didn’t just write it. You pushed for it.', 'Most of us followed. You led.',
+    'You were the loudest about {v}, and {v} was one of us.'],
+  pair: ['A friendship that never costs you a single vote. Funny, that.', 'Then name one thing about {v} you don’t trust.',
+    'Every night, {v} is safe with you. Every single night.'],
+  follower: ['Careful is one word for it.', 'Then start something. Say a name first, for once.',
+    'You’ve never once gone first. Not once.'],
+  threw: ['I was there. It didn’t look like panic.', 'Bad at it, on the one day it cost us the most.'],
+  solved: ['Nobody else could do it. You could. That’s my point.', 'Lucky, or you knew the answers?'],
+  clue: ['It’s not one thing. It’s one thing nobody else has.', 'Then explain it to the room, not to me.',
+    'You keep saying there’s an explanation. I’m still waiting for it.'],
+  feeling: ['It’s a feeling I’ve had all week, and I’m not the only one.', 'You haven’t made it go away, either.',
+    'Then give me a reason not to feel it.', 'I know what I’ve seen.'],
+  hearsay: ['It isn’t only {F} saying it.', 'I believe {F}. That’s enough for me.',
+    '{F} hasn’t been wrong yet.'],
+  'gone-cold': ['And you’ve given me nothing to change my mind.', 'Days, and you still haven’t answered it.',
+    'I’ll stop saying it when you give me a reason to.'],
+  generic: ['That’s not an answer.', 'You still haven’t told us why.', 'We’ll see.'],
+};
+// Which kind of reason a stored clue is, by the REASON_PHRASINGS entry it
+// matches (same order); anything else is something seen in the castle.
+const REASON_CAT = ['caught', 'night', 'night', 'shield', 'pair-traitor', 'faithful-out',
+  'pair', 'follower', 'threw', 'solved'];
 // AND SOMETIMES THROWS IT BACK — only at a name they ACTUALLY put up tonight
 // (`byTarget` says so), never an invented one. `{d}` is that name.
 const ACCUSED_DEFLECT = [
@@ -1939,7 +2164,7 @@ const REASON_PHRASINGS = [
     'defended {1} right up to the moment {1} turned out to be a Traitor. You protect your own',
     'never wrote {1}’s name, not even on the night the rest of us caught {1}. Why would a Faithful save a Traitor?',
     'stuck with {1} when the rest of the table had worked {1} out. That is not loyalty to a stranger, that is loyalty to a partner',
-    'was the one still looking the other way when {1}’s card turned over. Some of us were surprised. Not everybody',
+    'didn’t write {1}’s name even on the night the whole room had worked {1} out. Why protect a Traitor?',
     'kept {1} safe on the very night {1} was exposed. If you knew what {1} was, that is exactly what you would do',
   ]],
   [/^wanted (.+) gone the night .+ died$/, [
@@ -1949,7 +2174,7 @@ const REASON_PHRASINGS = [
     'named {1} at that table, and nobody saw {1} again. That is one way to make sure you win an argument',
     'was after {1} at the table, and by breakfast {1}’s chair was empty. I don’t believe in coincidences in this place',
     'tried to get {1} out with a vote, and the Traitors got {1} out that same night instead. Same target, two routes',
-    'argued for {1} to go, and {1} went, just not the way the rest of us voted. Somebody made sure',
+    'argued for {1} to go, and that same night the Traitors took {1}. That is a lot of agreement with the Traitors',
   ]],
   [/^wanted (.+) gone the night the Traitors came for .+$/, [
     'put {1}’s name up at the table, and that same night the Traitors came for {1}. Same name, same night, twice',
@@ -1957,8 +2182,8 @@ const REASON_PHRASINGS = [
   ]],
   [/^was the one person the Traitors could not touch, and they went nowhere near (.+)$/, [
     'had the shield, and the Traitors never even tried for it. Why waste a night on one of your own?',
-    'was holding the shield and the Traitors did not go near it. If you were a Traitor, you would know not to bother either',
-    'had the shield, and nobody upstairs so much as tested it. They only leave alone the people they don’t need to get rid of',
+    'held the shield, and the Traitors never once tested it. You test a Faithful’s shield. You leave your own alone',
+    'won the shield, and nobody upstairs even tried. If you were one of them, they wouldn’t bother either'
   ]],
   [/^never once voted against (.+), and .+ was a Traitor$/, [
     'never once voted against {1}, and {1} was a Traitor. You do not protect somebody that long by accident',
@@ -2980,11 +3205,36 @@ function _buildBeats(v) {
         + '<p>' + (rest.length === 1 ? _esc(rest[0]) + ' says the same name.'
           : _cap(_numWord(rest.length)) + ' more say the same name.') + '</p>';
     }
-    // THE ACCUSED GETS THE FLOOR, in their own voice.
+    // THE ACCUSED GETS THE FLOOR, in their own voice -- and answers WHAT WAS
+    // SAID, by the kind of reason the lead gave (see DEFENCE_BY)
     inner += '<p class="rt-dir">' + _fill(_fresh(ACCUSED_REPLY, key + '|rep|' + c.t), { T: _esc(c.t), pos: pr.pos }) + '</p>';
-    inner += _said(c.t, pickDefence(key + '|def|' + c.t));
+    const leadSp = speeches.find(x => x.speaker === lead) || null;
+    const leadSrc = leadSp && (leadSp.sources || []).length ? leadSp.sources[0].text : null;
+    let cat = leadSp ? (leadSp.reasonKind || 'feeling') : 'feeling';
+    if (leadSrc) {
+      const ix = REASON_PHRASINGS.findIndex(([re]) => re.test(leadSrc));
+      cat = ix >= 0 ? REASON_CAT[ix] : 'clue';
+    }
+    if (cat === 'hearsay' && !(leadSp && leadSp.hearsayFrom)) cat = 'feeling';
+    const other = leadSrc ? factAbout(leadSrc) : null;
+    const dsubs = { A: _esc(lead), v: _esc(other && other !== c.t ? other : ''),
+      F: _esc((leadSp && leadSp.hearsayFrom) || '') };
+    // a line about {v} needs a {v}; a reason about the accused alone has none
+    const fits = l => (dsubs.v || l.indexOf('{v}') < 0) && (dsubs.F || l.indexOf('{F}') < 0);
+    const defPool = (DEFENCE_BY[cat] || []).filter(fits);
+    const defLine = defPool.length
+      ? _fill(_fresh(defPool, key + '|def|' + c.t), dsubs)
+      : pickDefence(key + '|def|' + c.t);
+    usedDef.add(defLine);
+    inner += _said(c.t, defLine);
+    // THE LEAD COMES BACK, on most cards: the exchange, not two statements
+    if (_hash(key + '|cb|' + c.t) % 3 !== 0 && lead !== c.t) {
+      const cbPool = (COMEBACK_BY[cat] || COMEBACK_BY.generic).filter(fits);
+      if (cbPool.length) inner += _said(lead, _fill(_fresh(cbPool, key + '|cb|' + c.t), dsubs));
+    }
     if (c.acc.length >= 3 && !v.endgame) {
-      inner += _hostBand(_fill(_fresh(HOST_PRESS, key + '|press|' + c.t),
+      const pressPool = ci === clusters.length - 1 ? [...HOST_PRESS, ...HOST_PRESS_LAST] : HOST_PRESS;
+      inner += _hostBand(_fill(_fresh(pressPool, key + '|press|' + c.t),
         { T: _esc(c.t), n: _numWord(c.acc.length), N: _cap(_numWord(c.acc.length)) }));
     }
     // AND THROWS A NAME BACK — only one they actually put up tonight
@@ -3133,6 +3383,7 @@ function _buildBeats(v) {
     defended: 'Somebody else speaks up',
   };
   const kindSeen = new Set();
+  const narrSeen = new Set();
   const gangReplied = new Map();   // who defended a pile-on → against whom
   for (const c of (v.clashes || [])) {
     // SAID, NOT SUMMARISED. The engine's line reports the exchange ("Bowie
@@ -3144,19 +3395,26 @@ function _buildBeats(v) {
     if (cs) {
       const [sp, other] = cs.speaker === 'b' ? [c.b, c.a] : [c.a, c.b];
       const ck = key + '|clash|' + c.kind + '|' + c.a + '|' + c.b;
-      const turned = c.kind === 'ganged-up' && gangReplied.has(sp) && cs.turned;
+      const turned = c.kind === 'ganged-up' && gangReplied.has(sp) && cs.turnedPairs;
       const subs = { o: _esc(other), p: _esc(gangReplied.get(sp) || '') };
-      talk = _said(sp, _fill(_fresh(turned ? cs.turned : cs.say, ck), subs))
-        + (cs.reply ? _said(other, _fill(_fresh(turned ? cs.turnedReply : cs.reply, ck + '|r'), subs)) : '');
+      // the line, and the answer to that line (see CLASH_SAID)
+      const pairs = turned ? cs.turnedPairs : cs.pairs;
+      const first = _fresh(pairs.map(x => x[0]), ck);
+      const pair = pairs.find(x => x[0] === first) || pairs[0];
+      talk = _said(sp, _fill(pair[0], subs)) + _said(other, _fill(pair[1], subs));
       if (c.kind === 'ganged-up') gangReplied.set(other, sp);
     }
+    // THE SAME NARRATION TWICE, with only the first name changed ("Jo lays out
+    // the whole argument against Jasmine", then "Ezekiel lays out..."): the
+    // second card goes straight to the words
+    const narrShape = String(c.line || '').split(c.a).join('{a}').split(c.b).join('{b}').replace(/^\S+/, '');
     const heading = (kindSeen.has(c.kind) && CLASH_KIND_AGAIN[c.kind])
       || CLASH_KIND[c.kind] || 'It gets sharp';
     kindSeen.add(c.kind);
     push('debate', '<div class="rt-clash">'
       + '<div class="rt-clash-k">' + _ic('candles', 11)
       + _esc(heading) + '</div>'
-      + (cs && !cs.keepLine ? '' : '<p class="rt-clash-t">' + _esc(tidyNames(c.line)) + '</p>')
+      + (cs && !cs.keepLine ? '' : narrSeen.has(narrShape) ? '' : '<p class="rt-clash-t">' + _esc(tidyNames(c.line)) + '</p>')
       + talk
       // the defender is chosen before the chalk comes out, and can still
       // write the name: say so, rather than let the slate contradict the card
@@ -3176,6 +3434,7 @@ function _buildBeats(v) {
         ? '<p class="rt-clash-since"><b>How it started:</b> ' + _esc(c.since)
         + '</p>' : '') + '</div>',
     null, { kind: 'clash', pair: [c.a, c.b] });
+    narrSeen.add(narrShape);
   }
 
   // ── THE QUIET END OF THE TABLE ───────────────────────────────────
@@ -3196,6 +3455,11 @@ function _buildBeats(v) {
         && (((r.sources || []).length && r.reasonKind === 'cited')
           || (r.reasonKind === 'hearsay' && r.hearsayFrom && r.hearsayFrom !== r.voter)))
         .sort((x, y) => _hash(key + '|q|' + x.voter) - _hash(key + '|q|' + y.voter))
+        // a reason of their own first; at most one who only heard it, and
+        // three people in a row saying "Zoey put it in my head" read as one
+        .sort((x, y) => ((x.sources || []).length ? 0 : 1) - ((y.sources || []).length ? 0 : 1))
+        .filter((r, i, all) => (r.sources || []).length
+          || all.slice(0, i).filter(x => !(x.sources || []).length).length === 0)
         .slice(0, 3);
       if (quiet.length) {
         let qi = '<p>' + _esc(_pick(QUIET_LEAD, key + '|ql')) + '</p>';
@@ -4226,6 +4490,12 @@ const SLATE_SAME = [
   'You heard {P}. I think the same. {T}.',
   '{T}. I had the same thing in my head before {P} said it.',
   'Same as {P}, and for the same reason. {T}.',
+  '{T}. {P} took the words out of my mouth.',
+  'I wrote {T} for the same reason {P} did.',
+  '{P} said it first. I agree. {T}.',
+  'What {P} said, and I’ve thought it for a while. {T}.',
+  '{T}. I don’t need to say it twice. {P} said it.',
+  'Same name as {P}, same reason. {T}.',
 ];
 const SLATE_NOSRC = {
   hearsay: [
@@ -4241,6 +4511,12 @@ const SLATE_NOSRC = {
     '{T}, because {F} said it before anybody else did.',
     '{F} talked me into {T} today, and nothing tonight has talked me out of it.',
     '{T}. I listened to {F}, and I believe it.',
+    '{T}. {F} has been right before, so I’m trusting {F} on this.',
+    '{F} told me, and the more I watched {T}, the more it fitted.',
+    'I wouldn’t have got there on my own. {F} got me there. {T}.',
+    '{T}. It came from {F}, but it’s mine now.',
+    '{F} and I talked about {T} today. I came away sure.',
+    '{T}, because of what {F} said to me this afternoon.',
   ],
   public: [
     '{T}. It’s nothing secret. I was sitting right here when it happened.',

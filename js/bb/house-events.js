@@ -8,6 +8,7 @@ import { makeEndgameDeal, makeJuryPact, breakDeal, exposeDeal, tierOf } from './
 import { isDrinksNight, nightModifier } from '../bb-events/drinks-night.js';
 import { scheduleWeightedEvents } from '../event-scheduler.js';
 import { markAired } from './aired.js';
+import { writeScene } from './script/write.js';
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
@@ -501,7 +502,15 @@ export function scheduleHouseBeats(events, house, ctx, options = {}) {
       // rather than everything that has happened in the act so far.
       api._drainLedger();
       const worldBefore = _worldBefore();
-      const result = validateBeat(event, event.fire(house, beatCtx, api, rngArg), beatCtx);
+      // A converted event decides its scene and hands it back with no text: the
+      // words are picked now, from the record (bb/script/write.js), and the
+      // transcript fills `text` so every screen that prints text still works.
+      let raw = event.fire(house, beatCtx, api, rngArg);
+      if (raw && raw.scene && !raw.text) {
+        const written = writeScene(raw.scene, beatCtx, rngArg || Math.random);
+        raw = { ...raw, text: written.text, lines: written.lines, lineId: written.lineId, location: raw.location || raw.scene.room || undefined };
+      }
+      const result = validateBeat(event, raw, beatCtx);
       result.effects = [...api._drainLedger(), ..._worldMoved(worldBefore)];
       markAired(ctx.week?.num, result.text);
       recordBeat({ week: ctx.week?.num || 0, act: ctx.act, eventId: event.id, players: [...result.players] });

@@ -70,6 +70,7 @@ import {
 } from './strategy.js';
 import { scheduleHouseBeats } from './house-events.js';
 import { writeCeremony } from './script/ceremony.js';
+import { scriptBeat } from './script/inject.js';
 import { campaignArgument } from '../bb-events/_read.js';
 import { runBBCompetition } from './comps.js';
 import { runVoteOperation, resolveFinalPleas } from './vote-operation.js';
@@ -1202,6 +1203,9 @@ function _attachAllianceFallout(week, house) {
   // The cycle's own house. ORing in the global roster let alliance fallout
   // name somebody sealed off on the other side of a Split House wall.
   const inHouse = n => house.includes(n);
+  // Who is still in an alliance, by its name: the people a fallout scene is had with.
+  const membersOf = name => [...new Set(((gs.namedAlliances || []).find(a => a.name === name)?.members || []).filter(inHouse))];
+  const wctx = { week, act: 'eviction', hoh: week.hoh || null, room: 'living-room' };
 
   for (const incident of week.allianceChanges?.betrayals || []) {
     const { player, victim, alliance, repair, known } = incident;
@@ -1250,6 +1254,9 @@ function _attachAllianceFallout(week, house) {
       continue;
     }
 
+    // Written as a scene with somebody still in the alliance. The beat's
+    // players are left exactly as they were: the engine counts them.
+    const accuser = membersOf(alliance).find(n => n !== player && n !== victim) || null;
     beats.push({
       text: `<strong>${player}</strong> votes to evict <strong>${victim}</strong>, even though they `
         + `were together in <strong>${alliance}</strong>. By the time everyone gets back inside, `
@@ -1257,6 +1264,8 @@ function _attachAllianceFallout(week, house) {
       players: _reactingFaces([player, victim], week),
       badgeText: 'VOTED OUT AN ALLY', badgeClass: 'red',
       eventId: 'alliance-betrayal', category: 'deals', location: 'living-room',
+      ...(accuser && scriptBeat('alliance.betrayal', { a: accuser, b: player }, { ending: 'flipped', alliance, target: victim },
+        { ...wctx, seenBy: membersOf(alliance) }) || {}),
     });
 
     if (!repair) continue;
@@ -1272,9 +1281,13 @@ function _attachAllianceFallout(week, house) {
             badgeText: 'WORKING TRUCE', badgeClass: 'grey' }
         : { text: `${how}. The rest of <strong>${alliance}</strong> reject the explanation. The meeting ends with people leaving separately.`,
             badgeText: repair.outcome === 'fracture' ? 'FRACTURED' : 'REJECTED', badgeClass: 'red' };
+    const ending = repair.outcome === 'forgiven' ? 'forgiven' : repair.outcome === 'working-truce' ? 'truce' : 'rejected';
+    const approach = ['apology', 'strategic-explanation', 'refusal'].includes(repair.approach) ? repair.approach : 'denial';
     beats.push({
       ...outcome, players: [player].filter(inHouse),
       eventId: 'alliance-repair', category: 'deals', location: 'bedroom',
+      ...(accuser && inHouse(player) && scriptBeat('alliance.repair', { a: accuser, b: player }, { ending, reason: approach, alliance },
+        { ...wctx, room: 'bedroom', seenBy: membersOf(alliance) }) || {}),
     });
   }
 
@@ -1296,6 +1309,9 @@ function _attachAllianceFallout(week, house) {
       players: [...new Set(left)].slice(0, 4),
       badgeText: collapsed ? 'IT STOPS BEING TRUE' : 'OUT OF NUMBERS', badgeClass: 'red',
       eventId: 'alliance-collapsed', category: 'deals', location: 'living-room',
+      ...((collapsed ? left.length >= 2 : left.length >= 1)
+        && scriptBeat('alliance.collapsed', { a: left[0], b: collapsed ? left[1] : null }, { ending: collapsed ? 'faded' : 'numbers', alliance: alliance.name },
+          { ...wctx, seenBy: left }) || {}),
     });
   }
 
@@ -1998,6 +2014,8 @@ export function simulateBBWeek(options = {}) {
           badgeText: 'AN ALLIANCE INSIDE AN ALLIANCE', badgeClass: 'gold',
           eventId: 'alliance-inner-circle', category: 'deals', location: 'pantry',
           newAlliance: true, allianceName: alliance.name, allianceId: alliance.id,
+          ...(scriptBeat('alliance.formed', { a: members[0], b: members[1], c: members[2] || null },
+            { ending: 'inner', alliance: alliance.name, alliance2: alliance.parentName }, { week, hoh: week.hoh || null, room: 'pantry', seenBy: members }) || {}),
         };
       }
 
@@ -2009,6 +2027,8 @@ export function simulateBBWeek(options = {}) {
         badgeText: 'ALLIANCE FORMED', badgeClass: 'gold',
         eventId: 'alliance-formed', category: 'deals', location: 'bedroom',
         newAlliance: true, allianceName: alliance.name, allianceId: alliance.id,
+        ...(scriptBeat('alliance.formed', { a: members[0], b: members[1], c: members[2] || null },
+          { ending: 'formed', alliance: alliance.name }, { week, hoh: week.hoh || null, room: 'bedroom', seenBy: members }) || {}),
       };
     }
 
@@ -2025,6 +2045,8 @@ export function simulateBBWeek(options = {}) {
       badgeText: 'BROUGHT IN', badgeClass: 'blue',
       eventId: 'alliance-recruited', category: 'deals', location: 'bedroom',
       newAlliance: false, allianceName: alliance.name, allianceId: alliance.id, joined,
+      ...(scriptBeat('alliance.recruited', { a: joined, b: members.filter(n => n !== joined)[0] || null, c: members.filter(n => n !== joined)[1] || null },
+        { ending: 'joined', alliance: alliance.name }, { week, hoh: week.hoh || null, room: 'bedroom', seenBy: members }) || {}),
     };
   };
 

@@ -39,7 +39,16 @@ const PHASE6 = [
   // bb-events/alliance-life.js
   'alliance-missed-meeting', 'alliance-inner-two', 'alliance-overlap-compares-notes', 'alliance-unauthorized-vote-fear',
   'alliance-side-deal-protected', 'alliance-wrong-blame', 'alliance-name-slips',
+  // built inside the week engine (bb/script/inject.js)
+  'alliance-formed', 'alliance-inner-circle', 'alliance-recruited', 'alliance-betrayal', 'alliance-repair', 'alliance-collapsed',
 ];
+// Engine beats keep the players list the engine counts; a fallout scene is had
+// with an alliance member who is not on it, so these skip the speaker check.
+const OFF_CARD = new Set(['alliance-betrayal', 'alliance-repair']);
+// Engine beats fall back to their plain sentence when there is nobody to have
+// the scene with (an alliance down to its betrayer): those carry no script.
+const INJECTED = new Set(['alliance-formed', 'alliance-inner-circle', 'alliance-recruited', 'alliance-betrayal', 'alliance-repair', 'alliance-collapsed']);
+const scripted = b => EVENT_IDS.has(b.eventId) && (Array.isArray(b.lines) || !INJECTED.has(b.eventId));
 const EVENT_IDS = new Set([...Object.values(CONVERTED), ...PHASE6]);
 
 function playSeason(seed, shift) {
@@ -80,7 +89,7 @@ describe('every intent airs as a script', () => {
   it('fires each converted event as a written exchange', () => {
     const fired = new Set();
     for (const eps of seasons) for (const b of beatsOf(eps)) {
-      if (!EVENT_IDS.has(b.eventId)) continue;
+      if (!scripted(b)) continue;
       fired.add(b.eventId);
       // A script: at least one line somebody SAYS (a lone Diary Room counts), never only narration.
       expect(Array.isArray(b.lines) && b.lines.some(l => l.kind !== 'beat'), `${b.eventId} week ${b.week} has no script`).toBe(true);
@@ -90,10 +99,10 @@ describe('every intent airs as a script', () => {
 
   it('fills every slot, and only the people in the scene speak', () => {
     for (const eps of seasons) for (const b of beatsOf(eps)) {
-      if (!EVENT_IDS.has(b.eventId)) continue;
+      if (!scripted(b)) continue;
       for (const l of b.lines) {
         expect(l.text, `${b.lineId}`).not.toMatch(/[{}]|undefined|null/);
-        if (l.by) expect(b.players.includes(l.by), `${l.by} speaks in ${b.lineId} but is not in it`).toBe(true);
+        if (l.by && !OFF_CARD.has(b.eventId)) expect(b.players.includes(l.by), `${l.by} speaks in ${b.lineId} but is not in it`).toBe(true);
       }
     }
   });
@@ -104,7 +113,7 @@ describe('every intent airs as a script', () => {
       const heard = new Map();
       let lines = 0, repeats = 0, selfRepeats = 0;
       for (const b of beatsOf(eps)) {
-        if (!EVENT_IDS.has(b.eventId)) continue;
+        if (!scripted(b)) continue;
         const k = `${b.week}|${b.lineId}`;
         expect(week.has(k), `${b.lineId} twice in week ${b.week}`).toBe(false);
         week.add(k);
@@ -124,7 +133,7 @@ describe('every intent airs as a script', () => {
 
   it('puts nobody in the HOH room without the HOH', () => {
     for (const eps of seasons) for (const b of beatsOf(eps)) {
-      if (!EVENT_IDS.has(b.eventId) || b.location !== 'hoh-room' || !b.hoh) continue;
+      if (!scripted(b) || b.location !== 'hoh-room' || !b.hoh) continue;
       expect(b.players.includes(b.hoh), `${b.eventId} week ${b.week} is in the HOH room without ${b.hoh}`).toBe(true);
     }
   });

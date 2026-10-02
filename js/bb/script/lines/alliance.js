@@ -477,4 +477,351 @@ export default {
       { by: 'a', say: "Why? It's not a secret!" },
     ] },
   ],
+
+  'alliance.formed.formed': [
+    { id: 'af.f1', when: { room: ['bedroom'] }, turns: [
+      { beat: 'One by one, {a}, {b} and the others drift into the bedroom and close the door.' },
+      { by: 'a', say: "Okay. Are we doing this properly?" },
+      { by: 'b', say: "We're doing it properly. We need a name." },
+      { by: 'a', say: "{alliance}." },
+      { by: 'b', say: "...Fine. {alliance}. Nobody outside this room hears it." },
+    ] },
+    { id: 'af.f2', turns: [
+      { by: 'a', say: "Let's make it official. Us. An alliance." },
+      { by: 'b', say: "Does it need a name?" },
+      { by: 'a', say: "Everything needs a name. {alliance}." },
+      { by: 'b', dr: "I've been in alliances before. This is the first one I believe in." },
+    ] },
+    { id: 'af.f3', turns: [
+      { by: 'b', say: "Rules. Nobody makes a deal outside the group without telling the group." },
+      { by: 'a', say: "Agreed." },
+      { by: 'b', say: "And nobody says {alliance} out loud. Ever." },
+      { by: 'a', say: "You just said it out loud." },
+      { by: 'b', say: "That one doesn't count." },
+    ] },
+    { id: 'af.f4', when: { room: ['bedroom'] }, turns: [
+      { by: 'a', say: "Leave one at a time. Don't make it obvious." },
+      { beat: 'They leave the bedroom one at a time, at very obvious two-minute intervals.' },
+    ] },
+    { id: 'af.f5', turns: [
+      { by: 'a', dr: "We named it {alliance}. Is it a bit much? Probably. Do I love it? Absolutely." },
+    ] },
+    { id: 'af.f6', when: { third: true }, turns: [
+      { by: 'c', say: "So who's in charge?" },
+      { by: 'a', say: "Nobody's in charge. We decide together." },
+      { by: 'b', say: "That's what people say right before somebody's in charge." },
+    ] },
+    { id: 'af.f7', turns: [
+      { by: 'b', say: "Hands in. For {alliance}." },
+      { by: 'a', say: "We're doing hands in?" },
+      { by: 'b', say: "We're doing hands in." },
+      { beat: 'Hands go in. Somebody whispers "{alliance}", far too loudly.' },
+    ] },
+    { id: 'af.f8', when: { early: true }, turns: [
+      { by: 'a', say: "It's early. That's exactly why we should do this now, before everybody else does." },
+      { by: 'b', say: "Then let's be first. {alliance}." },
+    ] },
+  ],
+  'alliance.formed.inner': [
+    { id: 'af.i1', turns: [
+      { by: 'a', say: "We're still in {alliance2}. Nothing changes there." },
+      { by: 'b', say: "But between us?" },
+      { by: 'a', say: "Between us, we protect each other first. Always." },
+      { by: 'b', dr: "An alliance inside the alliance. We called it {alliance}. The others can never find out." },
+    ] },
+    { id: 'af.i2', turns: [
+      { by: 'b', say: "If {alliance2} ever has to cut somebody..." },
+      { by: 'a', say: "It won't be one of us." },
+      { by: 'b', say: "Then we've got a deal." },
+    ] },
+    { id: 'af.i3', turns: [
+      { by: 'a', dr: "{alliance2} is the big group. {alliance} is the real one. Only the people in it know there's a difference." },
+    ] },
+    { id: 'af.i4', turns: [
+      { by: 'b', say: "We go back out there and act completely normal." },
+      { by: 'a', say: "I always act completely normal." },
+      { by: 'b', say: "That's what worries me." },
+    ] },
+    { id: 'af.i5', turns: [
+      { by: 'a', say: "Do you trust everyone in {alliance2}?" },
+      { by: 'b', say: "Honestly? No." },
+      { by: 'a', say: "Neither do I. So let's trust each other." },
+    ] },
+    { id: 'af.i6', when: { room: ['pantry'] }, turns: [
+      { beat: '{a} and {b} come back from the storage room separately, two minutes apart, and rejoin the rest of {alliance2} as if nothing happened.' },
+      { by: 'b', dr: "Something happened. Something called {alliance}." },
+    ] },
+  ],
+  'alliance.recruited.joined': [
+    { id: 'ar.j1', turns: [
+      { by: 'b', say: "We'd like you in. With us. In {alliance}." },
+      { by: 'a', say: "...Yes. Absolutely yes." },
+      { by: 'a', say: "Who else knows about it?" },
+      { by: 'b', say: "Nobody outside this room. That's the point." },
+    ] },
+    { id: 'ar.j2', turns: [
+      { by: 'b', say: "There's a group. We think you belong in it." },
+      { by: 'a', say: "Why me?" },
+      { by: 'b', say: "Because you keep your mouth shut and you vote with your head." },
+      { by: 'a', say: "I'll take that as a compliment." },
+    ] },
+    { id: 'ar.j3', turns: [
+      { by: 'a', dr: "I've been invited into {alliance}. I've had my suspicions about them for days. Now I'm one of them." },
+    ] },
+    { id: 'ar.j4', turns: [
+      { by: 'b', say: "Before we tell you anything, are you in?" },
+      { by: 'a', say: "In what?" },
+      { by: 'b', say: "In or out?" },
+      { by: 'a', say: "...In." },
+      { by: 'b', say: "Good. Welcome to {alliance}." },
+    ] },
+    { id: 'ar.j5', when: { third: true }, turns: [
+      { by: 'c', say: "We wanted to talk to you before anyone else did." },
+      { by: 'a', say: "About what?" },
+      { by: 'b', say: "About joining us." },
+      { by: 'a', dr: "I knew something was going on. I didn't think they'd want me in it." },
+    ] },
+    { id: 'ar.j6', turns: [
+      { by: 'b', say: "We need one more vote, and we'd rather it was you." },
+      { by: 'a', say: "Honest. I like it." },
+      { by: 'b', say: "We're all honest in {alliance}." },
+      { by: 'a', say: "I'll believe that when I see it." },
+    ] },
+    { id: 'ar.j7', turns: [
+      { by: 'a', say: "So what happens now?" },
+      { by: 'b', say: "Now you tell us everything you hear. And we do the same." },
+      { by: 'a', say: "Everything?" },
+      { by: 'b', say: "Everything." },
+    ] },
+    { id: 'ar.j8', turns: [
+      { by: 'a', dr: "Being asked to join feels amazing. Then you wonder who they had to ask before they got to you." },
+    ] },
+    { id: 'ar.j9', when: { third: true }, turns: [
+      { by: 'b', say: "We've talked about it, and we'd like you with us." },
+      { by: 'c', say: "Properly with us. Not a maybe." },
+      { by: 'a', say: "I don't do maybes." },
+      { by: 'b', say: "Then you're in." },
+    ] },
+    { id: 'ar.j10', when: { early: false }, turns: [
+      { by: 'a', say: "Why now? Why not two weeks ago?" },
+      { by: 'b', say: "Two weeks ago we didn't need you." },
+      { by: 'a', say: "...At least you're honest." },
+    ] },
+    { id: 'ar.j11', turns: [
+      { by: 'b', say: "Here's the deal. We look after you. You look after us." },
+      { by: 'a', say: "And if I say no?" },
+      { by: 'b', say: "Then this conversation never happened." },
+      { by: 'a', say: "...I'm saying yes." },
+    ] },
+    { id: 'ar.j12', when: { room: ['bedroom'] }, turns: [
+      { beat: '{b} and the rest of {alliance} are sitting on the beds when {a} walks in. Nobody says anything for a second.' },
+      { by: 'a', say: "Is this an intervention?" },
+      { by: 'b', say: "It's an invitation." },
+    ] },
+    { id: 'ar.j13', when: { register: 'schemer' }, turns: [
+      { by: 'a', dr: "They think they recruited me. I've been working my way into {alliance} for a week. But let them think it was their idea." },
+    ] },
+    { id: 'ar.j14', when: { register: 'shy' }, turns: [
+      { by: 'a', say: "You want me? Really?" },
+      { by: 'b', say: "Really." },
+      { by: 'a', dr: "Nobody's ever picked me first for anything. I know I wasn't first here either. It still felt like it." },
+    ] },
+  ],
+  // a is still in the alliance; b voted out one of its own ({target}).
+  'alliance.betrayal.flipped': [
+    { id: 'ab.f1', when: { known: true }, turns: [
+      { by: 'a', say: "{alliance} had the numbers. So who voted {target} out?" },
+      { by: 'b', say: "Don't look at me." },
+      { by: 'a', say: "I'm looking at everybody. You're just the one looking away." },
+    ] },
+    { id: 'ab.f2', turns: [
+      { by: 'a', say: "Where was your vote, {b}?" },
+      { by: 'b', say: "Where do you think?" },
+      { by: 'a', say: "I think it wasn't where you said it would be." },
+    ] },
+    { id: 'ab.f3', when: { known: true }, turns: [
+      { by: 'a', dr: "{target} was one of us. One of us. And somebody in {alliance} wrote that name down. I know exactly who." },
+    ] },
+    { id: 'ab.f4', when: { room: ['living-room'] }, turns: [
+      { beat: 'The moment the front door closes, the rest of {alliance} are comparing votes in the living room.' },
+      { by: 'a', say: "That doesn't add up. Somebody went the other way." },
+      { by: 'b', say: "Maybe somebody outside the group flipped." },
+      { by: 'a', say: "Nobody outside the group could have changed that." },
+    ] },
+    { id: 'ab.f5', when: { known: true }, turns: [
+      { by: 'b', say: "I had to. {target} was going to come after me." },
+      { by: 'a', say: "{target} was in our alliance!" },
+      { by: 'b', say: "And I'm still in it. That's the point." },
+    ] },
+    { id: 'ab.f6', turns: [
+      { by: 'a', dr: "{b} flipped. Against {alliance}. Against us. I'm not even angry yet. I'm still doing the maths." },
+    ] },
+    { id: 'ab.f7', turns: [
+      { by: 'a', say: "Just tell me why." },
+      { by: 'b', say: "It was a game move." },
+      { by: 'a', say: "Against your own alliance." },
+      { by: 'b', say: "Especially against my own alliance. That's where the threats are." },
+    ] },
+    { id: 'ab.f8', when: { known: true }, turns: [
+      { by: 'a', say: "Everyone in {alliance} said {target}'s name was safe." },
+      { by: 'b', say: "Everyone said a lot of things." },
+      { by: 'a', dr: "That's not a denial. That's a confession with the corners sanded off." },
+    ] },
+  ],
+  // b voted out an ally; a is somebody in the alliance hearing the explanation.
+  'alliance.repair.forgiven': [
+    { id: 'aw.f1', when: { reason: 'apology' }, turns: [
+      { by: 'b', say: "I was wrong. I voted against us and I'm sorry." },
+      { by: 'a', say: "Why should we believe you?" },
+      { by: 'b', say: "You shouldn't, yet. Let me earn it back." },
+      { by: 'a', dr: "We're keeping {b}. Nobody's calling it trust. It's a second chance with conditions." },
+    ] },
+    { id: 'aw.f2', when: { reason: 'strategic-explanation' }, turns: [
+      { by: 'b', say: "Look at the numbers. If I'd voted with you, we'd have lost two of us next week, not one." },
+      { by: 'a', say: "...Walk me through it again." },
+      { beat: '{b} walks them through it again. It still works.' },
+      { by: 'a', dr: "I hate that {b} was right. I'm keeping {b} anyway." },
+    ] },
+    { id: 'aw.f3', when: { reason: 'refusal' }, turns: [
+      { by: 'b', say: "My vote was my game. I'm not going to explain it." },
+      { by: 'a', say: "Then we'll just have to keep working with you and wonder." },
+      { by: 'b', say: "That's fair." },
+    ] },
+    { id: 'aw.f4', when: { reason: 'denial' }, turns: [
+      { by: 'b', say: "It wasn't me. I swear it wasn't me." },
+      { by: 'a', say: "The numbers say otherwise." },
+      { by: 'b', say: "Then the numbers are wrong." },
+      { by: 'a', dr: "We're keeping {b}. Not because we believe the denial. Because we need the vote." },
+    ] },
+    { id: 'aw.f5', turns: [
+      { by: 'a', say: "Okay. One more chance." },
+      { by: 'b', say: "That's all I need." },
+      { by: 'a', say: "One. Not two." },
+    ] },
+    { id: 'aw.f6', turns: [
+      { by: 'a', dr: "{alliance} is keeping {b}. We talked for an hour. Nobody's saying the trust is back. We're saying we still need each other." },
+    ] },
+    { id: 'aw.f7', turns: [
+      { by: 'b', say: "Are we okay?" },
+      { by: 'a', say: "We're working together. Let's not call it okay yet." },
+    ] },
+  ],
+  'alliance.repair.truce': [
+    { id: 'aw.t1', when: { reason: 'apology' }, turns: [
+      { by: 'b', say: "I'm sorry. I mean it." },
+      { by: 'a', say: "Some of us believe you. Some of us don't." },
+      { by: 'b', say: "Which are you?" },
+      { by: 'a', say: "I'll tell you after the next vote." },
+    ] },
+    { id: 'aw.t2', when: { reason: 'strategic-explanation' }, turns: [
+      { by: 'b', say: "It was the only move that kept the rest of us safe." },
+      { by: 'a', say: "Maybe. You still made it without asking." },
+      { by: 'b', say: "There wasn't time to ask." },
+      { by: 'a', say: "There's always time to ask." },
+    ] },
+    { id: 'aw.t3', when: { reason: 'refusal' }, turns: [
+      { by: 'b', say: "I'm not discussing my vote." },
+      { by: 'a', say: "Then we work together until the next vote. And then we'll see." },
+    ] },
+    { id: 'aw.t4', when: { reason: 'denial' }, turns: [
+      { by: 'b', say: "I didn't flip." },
+      { by: 'a', say: "Somebody did." },
+      { by: 'b', say: "Not me." },
+      { by: 'a', dr: "Half of {alliance} believes {b}. I'm in the other half. We're working together for now. Just for now." },
+    ] },
+    { id: 'aw.t5', turns: [
+      { by: 'a', say: "We'll work with you. Until the next vote." },
+      { by: 'b', say: "And then?" },
+      { by: 'a', say: "And then you show us where your vote goes." },
+    ] },
+    { id: 'aw.t6', turns: [
+      { by: 'a', dr: "It's a truce. Not peace. A truce. In this house a truce lasts about as long as the next HOH." },
+    ] },
+    { id: 'aw.t7', turns: [
+      { by: 'b', say: "So am I still in?" },
+      { by: 'a', say: "You're in the group. You're not in the conversation." },
+    ] },
+  ],
+  'alliance.repair.rejected': [
+    { id: 'aw.r1', when: { reason: 'apology' }, turns: [
+      { by: 'b', say: "I'm sorry. I really am." },
+      { by: 'a', say: "Sorry doesn't bring them back." },
+      { by: 'b', say: "I know." },
+      { beat: 'The meeting ends with people leaving the room separately.' },
+    ] },
+    { id: 'aw.r2', when: { reason: 'strategic-explanation' }, turns: [
+      { by: 'b', say: "Let me explain the numbers." },
+      { by: 'a', say: "We don't need the numbers. We needed your vote." },
+      { by: 'b', say: "It was the right move." },
+      { by: 'a', say: "For you." },
+    ] },
+    { id: 'aw.r3', when: { reason: 'refusal' }, turns: [
+      { by: 'b', say: "My vote is my business." },
+      { by: 'a', say: "Then {alliance} is our business, and you're not in it." },
+    ] },
+    { id: 'aw.r4', when: { reason: 'denial' }, turns: [
+      { by: 'b', say: "It wasn't me!" },
+      { by: 'a', say: "The maths only works one way, {b}." },
+      { by: 'b', say: "Then do the maths again!" },
+      { by: 'a', say: "We did. Three times." },
+    ] },
+    { id: 'aw.r5', turns: [
+      { by: 'a', dr: "{b} talked for twenty minutes. I didn't hear a single thing that changed my mind. {alliance} is done with {b}." },
+    ] },
+    { id: 'aw.r6', turns: [
+      { by: 'b', say: "So that's it? After everything?" },
+      { by: 'a', say: "After everything, you voted against us. Yes. That's it." },
+    ] },
+    { id: 'aw.r7', turns: [
+      { beat: 'Nobody says it out loud. They just stop saving {b} a seat.' },
+      { by: 'b', dr: "I'm out of {alliance}. Nobody told me. I worked it out from the chairs." },
+    ] },
+  ],
+  'alliance.collapsed.faded': [
+    { id: 'ac.d1', turns: [
+      { by: 'a', dr: "Nobody called a meeting to end {alliance}. We just stopped telling each other things. Then we stopped saying the name." },
+    ] },
+    { id: 'ac.d2', turns: [
+      { by: 'a', say: "Are we still... a thing?" },
+      { by: 'b', say: "Honestly? I don't think so." },
+      { by: 'a', say: "Yeah. I don't think so either." },
+    ] },
+    { id: 'ac.d3', turns: [
+      { by: 'a', dr: "{alliance} didn't blow up. It just faded. That's almost worse. There's nobody to be angry at." },
+    ] },
+    { id: 'ac.d4', turns: [
+      { by: 'b', say: "When did we last have a meeting?" },
+      { by: 'a', say: "I can't remember." },
+      { by: 'b', say: "That's the answer, then." },
+    ] },
+    { id: 'ac.d5', turns: [
+      { by: 'a', dr: "I said {alliance} out loud today without thinking, and it sounded like the name of a band that split up years ago." },
+    ] },
+    { id: 'ac.d6', turns: [
+      { by: 'a', say: "Should we try to fix it?" },
+      { by: 'b', say: "Fix what? We never agreed it was broken." },
+      { by: 'a', say: "We never agreed anything any more." },
+    ] },
+  ],
+  'alliance.collapsed.numbers': [
+    { id: 'ac.n1', turns: [
+      { by: 'a', dr: "{alliance} is me now. Just me. An alliance of one isn't an alliance. It's a person on their own." },
+    ] },
+    { id: 'ac.n2', turns: [
+      { by: 'a', dr: "Everyone else in {alliance} has gone home. I'm the last one. I need new friends, and I need them by Thursday." },
+    ] },
+    { id: 'ac.n3', turns: [
+      { beat: '{a} sits alone in the spot where {alliance} used to meet.' },
+      { by: 'a', dr: "This was where we met. Now it's just a corner of a room." },
+    ] },
+    { id: 'ac.n4', turns: [
+      { by: 'a', dr: "There aren't enough of us left for {alliance} to mean anything. So it doesn't. Time to start again." },
+    ] },
+    { id: 'ac.n5', turns: [
+      { by: 'a', dr: "I'm the last one standing from {alliance}. That sounds heroic. It's actually just lonely." },
+    ] },
+    { id: 'ac.n6', turns: [
+      { by: 'a', dr: "{alliance} ran out of people. Not trust. People. You can't vote with an alliance of one." },
+    ] },
+  ],
 };

@@ -550,6 +550,33 @@ you it looks good. For every stage:
 
 ---
 
+## 6.6 Music and sound
+
+Every show with a stepped viewer keeps a **music list** in `docs/<show>-music.md`:
+one row per part of the game, with the file name, when it plays, and what it
+should sound like. Its sound module checks every file it names against that
+list. The lists so far:
+
+| Show | List | Sound module |
+|---|---|---|
+| The Circle | `docs/the-circle-music.md` | `js/vp-ci/sound.js` |
+| Big Brother | `docs/bb-music.md` | `js/vp-bb-ep/sound.js` (Phase 3) |
+| Perfect Match | (no list: hand-written manifest) | `js/vp-pm/sound.js` |
+| The Traitors | (no list) | `js/vp-tr/sfx.js` |
+
+The rules every show shares:
+
+- **Beds** loop under a screen, **stingers** mark a moment. A missing bed plays
+  silence, and a missing stinger plays a synth stand-in, so the show has sound
+  from day one.
+- **When** is read off the step being painted, never kept as a second list, so
+  a step cannot sound like something that is not on screen.
+- Only a click plays a stinger. Reveal all is silent.
+- Levels are **measured, not judged by ear**: beds at -17 dB and stingers at
+  -14 dB, re-encoded, with a per-file `lift` for a track that would clip.
+- Write the list from the real show: what each part of the night sounds like
+  on air, in search words someone can type into a music library.
+
 ## 7. The AI layer
 
 Three workers, and only one needs to know about your show:

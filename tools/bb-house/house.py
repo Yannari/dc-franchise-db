@@ -153,6 +153,8 @@ def _link(ob, coll=None):
     (coll or bpy.context.scene.collection).objects.link(ob)
     return ob
 
+NOINK = ('Slat', 'Jar', 'Plate', 'Leaf', 'Bloom', 'Fruit', 'Mug', 'DoorLine', 'Handle', 'UHandle', 'Trim', 'Can', 'Cord', 'LED', 'Bulb', 'ShadeIn', 'Soil')
+
 def box(name, size, loc, material=None, bevel=0.012, rot=(0, 0, 0)):
     me = bpy.data.meshes.new(name)
     bm = bmesh.new()
@@ -480,6 +482,122 @@ def render(room, theme='default', samples=160, w=1920, h=1080, preview=False):
     sc.render.image_settings.quality = 86
     d = os.path.join(OUT, theme); os.makedirs(d, exist_ok=True)
     path = os.path.join(d, f'{room}{"-preview" if preview else ""}.webp')
+    sc.render.filepath = path
+    sc.render.use_freestyle = False
+    bpy.ops.render.render(write_still=True)
+    return path
+
+# ══════════════════════════════════════════════════════════════════════
+# THE TOON HOUSE — Big Brother as if it were in the Total Drama world.
+# The same models, re-shaded: two or three flat bands of light per colour,
+# a hard highlight on anything glossy, ink outlines (Freestyle), flat glow
+# on the lights. Rendered in Eevee; written beside the real render as
+# <room>-toon.webp.
+# ══════════════════════════════════════════════════════════════════════
+INK = '#1b1424'
+
+def _toon(m):
+    nt = m.node_tree
+    p = nt.nodes.get('Principled BSDF')
+    out = nt.nodes.get('Material Output')
+    if not p or not out:
+        return
+    L = nt.links
+    base_link = p.inputs['Base Color'].links[0].from_socket if p.inputs['Base Color'].is_linked else None
+    base_val = tuple(p.inputs['Base Color'].default_value)
+    rough = p.inputs['Roughness'].default_value
+    metal = p.inputs['Metallic'].default_value
+    glass = p.inputs['Transmission Weight'].default_value > 0.5
+    emit = p.inputs['Emission Strength'].default_value
+    emit_col = tuple(p.inputs['Emission Color'].default_value)
+    if emit > 0.5:
+        e = nt.nodes.new('ShaderNodeEmission')
+        e.inputs['Color'].default_value = emit_col
+        e.inputs['Strength'].default_value = 2.2
+        L.new(e.outputs[0], out.inputs['Surface'])
+        return
+    # shade bands: a diffuse read, snapped to three steps
+    dif = nt.nodes.new('ShaderNodeBsdfDiffuse')
+    s2r = nt.nodes.new('ShaderNodeShaderToRGB')
+    band = nt.nodes.new('ShaderNodeValToRGB'); band.color_ramp.interpolation = 'CONSTANT'
+    el = band.color_ramp.elements
+    el[0].position, el[0].color = 0.0, (0.62, 0.6, 0.72, 1)      # shadow leans cool, like a painted cel
+    el[1].position, el[1].color = 0.1, (0.86, 0.84, 0.9, 1)
+    e3 = el.new(0.42); e3.color = (1.0, 1.0, 1.0, 1)
+    mul = nt.nodes.new('ShaderNodeMix'); mul.data_type = 'RGBA'; mul.blend_type = 'MULTIPLY'
+    mul.inputs['Factor'].default_value = 1.0
+    if glass:
+        mul.inputs['A'].default_value = (0.72, 0.86, 0.95, 1)
+    elif base_link is not None:
+        L.new(base_link, mul.inputs['A'])
+    else:
+        c = base_val
+        if metal > 0.5:   # a metal is drawn as its colour, a little lifted
+            c = tuple(min(1.0, x * 1.25 + 0.05) for x in c[:3]) + (1,)
+        mul.inputs['A'].default_value = c
+    L.new(dif.outputs[0], s2r.inputs[0])
+    L.new(s2r.outputs['Color'], band.inputs['Fac'])
+    L.new(band.outputs['Color'], mul.inputs['B'])
+    col = mul.outputs['Result']
+    # a hard white highlight on anything glossy or metal
+    if (rough < 0.35 or metal > 0.5) and m.name.split('.')[0] not in ('floor', 'splash', 'mirror', 'counter', 'glasstop'):
+        gl = nt.nodes.new('ShaderNodeBsdfGlossy'); gl.inputs['Roughness'].default_value = 0.25
+        s2 = nt.nodes.new('ShaderNodeShaderToRGB')
+        hi = nt.nodes.new('ShaderNodeValToRGB'); hi.color_ramp.interpolation = 'CONSTANT'
+        hi.color_ramp.elements[0].color = (0, 0, 0, 1)
+        hi.color_ramp.elements[1].position = 0.55; hi.color_ramp.elements[1].color = (1, 1, 1, 1)
+        add = nt.nodes.new('ShaderNodeMix'); add.data_type = 'RGBA'; add.blend_type = 'SCREEN'
+        add.inputs['Factor'].default_value = 0.55
+        L.new(gl.outputs[0], s2.inputs[0]); L.new(s2.outputs['Color'], hi.inputs['Fac'])
+        L.new(col, add.inputs['A']); L.new(hi.outputs['Color'], add.inputs['B'])
+        col = add.outputs['Result']
+    em = nt.nodes.new('ShaderNodeEmission')
+    em.inputs['Strength'].default_value = 1.0
+    L.new(col, em.inputs['Color'])
+    L.new(em.outputs[0], out.inputs['Surface'])
+
+def toonify(thickness=2.4):
+    for m in bpy.data.materials:
+        if m.use_nodes and m.users:
+            _toon(m)
+    noink = bpy.data.collections.get('NoInk') or bpy.data.collections.new('NoInk')
+    if noink.name not in bpy.context.scene.collection.children:
+        bpy.context.scene.collection.children.link(noink)
+    for ob in list(bpy.context.scene.collection.objects):
+        if ob.name.startswith(NOINK) or (ob.parent and ob.parent.name.startswith('NeonEye')):
+            noink.objects.link(ob)
+    # curves (the neon) and every object get drawn with ink
+    sc = bpy.context.scene
+    sc.render.use_freestyle = True
+    sc.render.line_thickness_mode = 'ABSOLUTE'
+    sc.render.line_thickness = thickness
+    vl = bpy.context.view_layer
+    vl.use_freestyle = True
+    fs = vl.freestyle_settings
+    fs.crease_angle = math.radians(128)
+    if not fs.linesets:
+        fs.linesets.new('Ink')
+    ls = fs.linesets[0]
+    ls.select_by_visibility = True
+    ls.select_silhouette = True; ls.select_border = True; ls.select_crease = True; ls.select_external_contour = True
+    ls.select_by_collection = True; ls.collection = noink; ls.collection_negation = 'EXCLUSIVE'
+    ls.linestyle.color = hexc(INK)[:3]
+    ls.linestyle.thickness = thickness
+
+def render_toon(room, theme='default', w=1920, h=1080, preview=False):
+    sc = bpy.context.scene
+    toonify(1.3 if preview else 2.4)
+    sc.render.engine = 'BLENDER_EEVEE'
+    sc.eevee.taa_render_samples = 32 if preview else 96
+    sc.render.resolution_x, sc.render.resolution_y = (w // 2, h // 2) if preview else (w, h)
+    sc.render.resolution_percentage = 100
+    sc.view_settings.view_transform = 'Standard'
+    sc.view_settings.look = 'None'
+    sc.view_settings.exposure = 0.0
+    sc.render.image_settings.file_format = 'WEBP'
+    sc.render.image_settings.quality = 88
+    d = os.path.join(OUT, theme); os.makedirs(d, exist_ok=True)
+    path = os.path.join(d, f'{room}-toon{"-preview" if preview else ""}.webp')
     sc.render.filepath = path
     bpy.ops.render.render(write_still=True)
     return path

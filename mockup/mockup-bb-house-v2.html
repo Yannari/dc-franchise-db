@@ -72,7 +72,7 @@ button{font:inherit;color:inherit}
 .ln{display:grid;grid-template-columns:96px 1fr;gap:10px;font-size:13.5px;line-height:1.5;padding:3px 0;color:var(--muted)}
 .ln.now{color:var(--ink)}
 .ln .who{font-weight:800;font-stretch:80%;text-transform:uppercase;letter-spacing:.4px;color:var(--ink);font-size:12.5px;padding-top:1px}
-.ln .who.dr{color:#d9a520}.ln .who.bb{color:var(--acc)}.ln .who.cc{color:var(--muted);font:600 10px 'Chakra Petch';letter-spacing:1.4px;padding-top:3px}
+.ln .who.dr{color:#d9a520}.ln .who.bb{color:var(--acc)}.ln .who.ccx{color:var(--muted);font:600 10px 'Chakra Petch';letter-spacing:1.4px;padding-top:3px}
 .ln i{font-style:italic}
 .empty{font-size:12.5px;color:var(--muted);font-style:italic}
 
@@ -144,7 +144,7 @@ button{font:inherit;color:inherit}
 @keyframes grain{33%{transform:translate(-2%,1%)}66%{transform:translate(1%,-2%)}}
 
 /* ── houseguests: glass tiles, tracked ───────────────────────────────── */
-.gt{position:absolute;bottom:19.4cqw;width:13.6cqw;transform:translateX(-50%);z-index:3;transition:filter .45s}
+.gt{position:absolute;bottom:18.6cqw;width:11.4cqw;transform:translateX(-50%);z-index:3;transition:filter .45s}
 .gt .tile{position:relative;aspect-ratio:4/5;border-radius:1.3cqw;overflow:hidden;background:linear-gradient(160deg,color-mix(in srgb,var(--c) 85%,#fff),color-mix(in srgb,var(--c) 45%,#000));
   box-shadow:inset 0 0 0 .14cqw rgba(255,255,255,.35),0 1.6cqw 3cqw rgba(0,0,0,.45);transform:perspective(50cqw) rotateY(var(--ry,0deg));transition:transform .5s cubic-bezier(.2,.8,.2,1),box-shadow .4s;
   -webkit-box-reflect:below .5cqw linear-gradient(transparent 58%,rgba(255,255,255,.22))}
@@ -343,7 +343,27 @@ button{font:inherit;color:inherit}
 /* rendered rooms (tools/bb-house/house.py): the photo replaces the light sketch */
 .set.photo{background-size:cover!important;background-position:center!important}
 .set.photo::before,.set.photo::after,.set.photo .floor{display:none}
-.set-kitchen.photo{background:url('../assets/bb/house/default/kitchen.webp')}
+.set-kitchen.photo{background:url('../assets/bb/house/default/kitchen-toon.webp')}
+body.real .set-kitchen.photo{background:url('../assets/bb/house/default/kitchen.webp')}
+
+/* background houseguests: in the room, not in the conversation. Further back,
+   so smaller, softer and dimmer; they never get a lower third. They are the
+   room's witnesses: whatever is said here, they heard. */
+.bgp{position:absolute;bottom:25.5cqw;width:7.6cqw;transform:translateX(-50%);z-index:2;transition:filter .5s,opacity .5s}
+.bgp .tile{position:relative;aspect-ratio:4/5;border-radius:.8cqw;overflow:hidden;background:var(--c);
+  box-shadow:inset 0 0 0 .1cqw rgba(255,255,255,.3),0 .8cqw 1.6cqw rgba(0,0,0,.35);
+  -webkit-mask:linear-gradient(180deg,#000 62%,transparent 96%);mask:linear-gradient(180deg,#000 62%,transparent 96%)}
+.bgp .tile img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 14%}
+.bgp{filter:blur(.12cqw) brightness(.78) saturate(.85)}
+.bgp .doing{position:absolute;left:50%;top:-1.9cqw;transform:translateX(-50%);white-space:nowrap;font:600 .78cqw 'Chakra Petch';letter-spacing:.08cqw;color:#fff;
+  background:rgba(5,9,18,.72);padding:.15cqw .55cqw;border-radius:.25cqw;text-transform:uppercase}
+.bgp.react{filter:none}
+.bgp.react .tile{box-shadow:inset 0 0 0 .14cqw #fff,0 0 1.6cqw rgba(255,255,255,.35)}
+.bgp.in{animation:bgin .7s ease-out both}
+@keyframes bgin{from{opacity:0;transform:translateX(-30%)}}
+.rx{position:absolute;z-index:9;bottom:39.5cqw;transform:translateX(-50%);white-space:nowrap;font:italic 600 1.05cqw Archivo;color:#fff;
+  background:rgba(5,9,18,.85);border:.1cqw solid rgba(255,255,255,.2);padding:.35cqw .8cqw;border-radius:.5cqw;animation:pop 2.6s cubic-bezier(.2,.8,.2,1) forwards}
+.rx::before{content:"";display:inline-block;width:.6cqw;height:.6cqw;border-radius:50%;background:#22e1ff;margin-right:.5cqw;vertical-align:.08cqw}
 /* the aperture wipe */
 .ap{position:absolute;inset:0;z-index:30;pointer-events:none;width:100%;height:100%}
 
@@ -372,6 +392,7 @@ body.tvm .main{grid-template-columns:1fr;max-width:1600px}
 <header class="top">
   <div class="logo" id="logo"></div>
   <div class="sp"></div>
+  <button class="tbtn" id="house">House: Cartoon</button>
   <button class="tbtn" id="theme">Theme</button>
 </header>
 <main class="main">
@@ -471,15 +492,16 @@ const SCREENS = [
 
   { id: 'kitchen', tab: 'The coffee', set: 'kitchen', cam: 2, room: 'Kitchen', day: 23, time: '09:14', kicker: 'Cam 02 · Kitchen', title: 'The coffee', sub: 'Morning, Day 23',
     cast: [['Gwen', 24], ['Bridgette', 48], ['Heather', 72]],
+    bg: [['Scott', 60, 'Eating cereal'], ['Zoey', 37, 'Making toast']],
     steps: [
-      { k: 'beat', t: `The coffee pot is empty. Gwen holds it up to the light as if that might help.` },
+      { k: 'beat', t: `The coffee pot is empty. Gwen holds it up to the light as if that might help. Behind her, Scott is eating cereal and Zoey is waiting on the toaster.` },
       { k: 'say', by: 'Gwen', t: `Who finished the coffee?` },
       { k: 'say', by: 'Heather', t: `I'm Head of Household, Gwen. I have a whole room upstairs. Why would I need your coffee?` },
       { k: 'say', by: 'Gwen', t: `Because it was full at eight, and you were the only one up at eight.`, push: true },
-      { k: 'say', by: 'Heather', t: `Wow. You've been timing me. That's not creepy at all.` },
+      { k: 'say', by: 'Heather', t: `Wow. You've been timing me. That's not creepy at all.`, react: [['Scott', 'Scott stops chewing.']] },
       { k: 'say', by: 'Bridgette', t: `There's another bag in the storage room. I'll grab it. Nobody needs to get nominated over coffee.`, pops: [['Gwen', 'Trust', 'up', 'Bridgette']] },
       { k: 'say', by: 'Heather', t: `Nobody's getting nominated over coffee.` },
-      { k: 'beat', t: `Heather takes a long sip from her mug. It is very clearly coffee.` },
+      { k: 'beat', t: `Heather takes a long sip from her mug. It is very clearly coffee. Zoey picks up her toast and quietly leaves the room.`, bgAt: [['Scott', 60, 'Eating cereal']] },
       { k: 'say', by: 'Heather', t: `Probably.`, push: true, pops: [['Gwen', 'Trust', 'down', 'Heather']] },
       { k: 'dr', by: 'Gwen', t: `She didn't even want the coffee. She wanted me to know she could take it. Which, fine. Message received.` },
     ] },
@@ -620,6 +642,7 @@ function ledger(si, ii) {
   return L;
 }
 function castAt(S, i) { for (let j = i; j >= 0; j--) if (S.steps[j]?.at) return S.steps[j].at; return S.cast || []; }
+function bgAt(S, i) { for (let j = i; j >= 0; j--) if (S.steps[j]?.bgAt) return S.steps[j].bgAt; return S.bg || []; }
 function chipsFor(n, L) {
   const c = [];
   if (n === HOH) c.push('<span class="chipx hoh">HOH</span>');
@@ -678,6 +701,12 @@ function setHtml(S, st, prevSt, L, fresh) {
   if (S.tvObj && !(L.out.length && st && st.k !== 'host')) h += `<div class="obj ledtv ${st && st.k === 'host' ? 'on' : ''} ${L.votes && st && st.k === 'host' ? 'dim' : ''}">${img('Valeria')}<div class="lb"><span>● LIVE · HOST</span>VALERIA</div></div>`;
   if (S.keybox && !L.nom.length) h += `<div class="obj kbox">${KBOX}</div>`;
   if (idx < 0) return h;
+  const reacting = new Set((st && st.react || []).map(r => r[0]));
+  const prevBg = idx > 0 ? bgAt(S, idx - 1).map(b => b[0]) : [];
+  for (const [n, x, doing] of bgAt(S, idx)) {
+    const entered = fresh && idx === 0;
+    h += `<div class="bgp ${reacting.has(n) ? 'react' : ''} ${entered ? 'in' : ''}" style="left:${x}%;--c:${col(n)}"><span class="doing">${n} · ${doing}</span><div class="tile">${img(n)}</div></div>`;
+  }
   const cast = castAt(S, idx);
   const prevCast = idx > 0 ? castAt(S, idx - 1) : null;
   const speaker = st && (st.k === 'say' || st.k === 'host') ? st.by : null;
@@ -766,6 +795,10 @@ function paint(fresh = false) {
       h += `<div class="pop" style="left:${p ? p[1] : 50}%"><span class="d ${tone}">${tone === 'down' ? '▼' : tone === 'up' ? '▲' : tone === 'love' ? '♥' : '◆'} ${label}</span><b>${n} → ${about}</b><span class="bar" style="--w0:${w0};--w:${w};--bc:${bc}"><i></i></span></div>`;
     }
     if (st.toast) h += `<div class="toast" style="--tc:${st.toast[1]}"><b>${st.toast[0]}</b></div>`;
+    for (const [n, text] of st.react || []) {
+      const b = bgAt(S, idx).find(([m]) => m === n);
+      h += `<div class="rx" style="left:${b ? b[1] : 50}%">${text}</div>`;
+    }
     if (st.key) h += `<div class="flykey" style="--dx:${(HOUSE.indexOf(st.key) - 4) * 6.6 - 8}cqw;--dy:-14cqw">${KEY}</div>`;
     if (cut) h += `<div class="flash"></div>`;
     if (st.push && camPrev !== camNow) h += `<div class="zoom"><b>ZOOM 2.0×</b></div>`;
@@ -849,7 +882,7 @@ function chrome(L) {
   $('#back').disabled = cur === 0 && idx < 0;
   const lines = S.steps.slice(0, idx + 1).map((st, i) => {
     const now = i === idx ? 'now' : '';
-    if (st.k === 'beat' || st.k === 'feed') return `<div class="ln ${now}"><span class="who cc">[ CC ]</span><i>${st.t}</i></div>`;
+    if (st.k === 'beat' || st.k === 'feed') return `<div class="ln ${now}"><span class="who ccx">[ CC ]</span><i>${st.t}</i></div>`;
     if (st.k === 'bb') return `<div class="ln ${now}"><span class="who bb">Big Brother</span><span>${st.t}</span></div>`;
     if (st.k === 'dr') return `<div class="ln ${now}"><span class="who dr">${st.by} · DR</span><span>${st.t}</span></div>`;
     return `<div class="ln ${now}"><span class="who">${st.by}</span><span>${st.t}</span></div>`;
@@ -863,6 +896,9 @@ function chrome(L) {
       ${prow(HOH, 'HOH', 'hoh')}
       ${L.nom.length ? L.nom.map(n => prow(n, L.out.includes(n) ? 'Evicted' : 'Nominated', L.out.includes(n) ? 'out' : 'nom')).join('') : '<div class="pend">No nominations yet.</div>'}
       ${L.veto ? prow(L.veto, 'Veto', 'veto') : '<div class="pend">Veto not played yet.</div>'}</div>
+    <div class="panel"><h4><span>In the room</span><span>heard it</span></h4>
+      ${idx < 0 || S.set === 'quad' ? '<div class="pend">Nobody on camera yet.</div>' : [...castAt(S, idx).map(([n]) => [n, 'Talking']), ...bgAt(S, idx).map(([n, , d]) => [n, d])]
+        .map(([n, d]) => `<div class="prow">${mini(n)}<span class="nm">${n}</span><span class="tag out">${d}</span></div>`).join('')}</div>
     <div class="panel"><h4><span>Deals seen</span><span>${L.deals.length}</span></h4>
       ${L.deals.length ? L.deals.map(([a, b]) => `<div class="prow">${mini(a)}${mini(b)}<span class="nm" style="font-size:12px">${a} + ${b}</span><span class="tag hoh" style="background:#f5c54233;color:#c99a1a">Vote</span></div>`).join('') : '<div class="pend">None yet.</div>'}</div>
     <div class="panel"><h4><span>What moved</span><span>${L.moves.length}</span></h4>${moves || '<div class="pend">Nothing yet.</div>'}</div>
@@ -880,6 +916,7 @@ $('#restart').onclick = () => { idx = -1; paint(false); };
 $('#auto').onclick = () => { auto = !auto; syncAuto(); queueAuto(); };
 $('#tv').onclick = () => { document.body.classList.toggle('tvm'); $('#tv').classList.toggle('on'); };
 $('#rundown').addEventListener('click', e => { const b = e.target.closest('.seg'); if (b && !busy) go(+b.dataset.i); });
+$('#house').onclick = () => { const r = document.body.classList.toggle('real'); $('#house').textContent = r ? 'House: Real' : 'House: Cartoon'; };
 $('#theme').onclick = () => {
   const r = document.documentElement;
   const dark = r.dataset.theme ? r.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;

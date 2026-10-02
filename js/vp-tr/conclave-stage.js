@@ -13,7 +13,6 @@
 // Like every other file in this directory it imports no engine state.
 import { conclaveStageData, conclaveVisibleTo } from './conclave.js';
 import { trsStageShell as stageShell, trsFold, trsReg as reg, trsEsc as esc, trsFace as face, trsLater as later } from './castle-stage.js';
-import { TRScenery } from './cutaway-scenery.js';
 import { trPlay } from './sfx.js';
 import { beatLines } from './stage-lines.js';
 import { footCard, playCard, CARD_CSS } from './stage-cards.js';
@@ -119,11 +118,26 @@ function stateAt(S) {
     ? { ...r, state: 'struck', label: 'Overruled' } : r)), letter };
 }
 
-// the pact, in an arc behind the table
+// THE ROOM IS A RENDER (assets/sets/traitors, built in Blender): the turret
+// with the table taken out, and the table alone on a transparent ground. The
+// pact stands between the two, so the stone table hides them from the waist
+// down the way a real table would.
+const PLATE = 'assets/sets/traitors/conclave-back.webp';
+const PLATE_TABLE = 'assets/sets/traitors/conclave-table.webp';
+const PLATE_W = 1920, PLATE_H = 1080;
+/** A point given as a fraction of the RENDER, in the view's pixels (the plates are drawn object-fit: cover). */
+function onPlate(fx, fy, W, H) {
+  const k = Math.max(W / PLATE_W, H / PLATE_H);
+  const dw = PLATE_W * k, dh = PLATE_H * k;
+  return { x: (W - dw) / 2 + fx * dw, y: (H - dh) / 2 + fy * dh, k };
+}
+
+// the pact, in an arc round the far side of the table. In perspective the
+// far half of a round table is a flat ellipse, so the arc is flat too.
 function seatAt(i, n, W, H) {
-  const a0 = Math.PI * (n > 4 ? 1.02 : 1.12), a1 = Math.PI * (n > 4 ? 1.98 : 1.88);
+  const a0 = Math.PI * (n > 4 ? 1.08 : 1.18), a1 = Math.PI * (n > 4 ? 1.92 : 1.82);
   const a = n === 1 ? Math.PI * 1.5 : a0 + (a1 - a0) * i / (n - 1);
-  return { x: W / 2 + Math.cos(a) * W * .27, y: H * .6 + Math.sin(a) * H * .27 };
+  return onPlate(.5 + Math.cos(a) * .23, .54 + Math.sin(a) * .05, W, H);
 }
 
 function paint(root, S, fresh) {
@@ -135,16 +149,19 @@ function paint(root, S, fresh) {
     s.classList.toggle('trs-done', S.idx >= 0 && s.dataset.k !== 'night'); s.classList.toggle('trs-now', S.idx >= 0 && s.dataset.k === 'night');
   });
   const start = root.querySelector('.trs-start');
-  let h = '<div class="trc-world">' + TRScenery.turretSet(W, H);
+  let h = '<div class="trc-world"><img class="trc-plate" src="' + PLATE + '" alt="">';
   const pact = D.turret.length ? D.turret : [];
   const st = S.idx >= 0 ? S.steps[S.idx] : null;
   const speaker = st && (st.t === 'say' ? st.who : st.focus || (st.t === 'slip' ? st.by : null));
-  const pw = Math.min(H * .2, W * .13);
+  // a standing figure is about a third of the render's height at that distance
+  const pw = onPlate(0, 0, W, H).k * PLATE_H * .21;
   pact.forEach((n, i) => {
     const p = seatAt(i, pact.length, W, H);
     h += `<div class="trc-seat${speaker === n ? ' trc-speak' : (speaker ? ' trc-quiet' : '')}" style="left:${p.x}px;top:${p.y}px;width:${pw}px">`
       + CLOAK + `<div class="trc-av">${face(n)}</div><div class="trc-nm">${esc(n)}</div></div>`;
   });
+  // and the table in front of them
+  h += '<img class="trc-plate trc-front" src="' + PLATE_TABLE + '" alt="">';
   if (!st) {
     el.innerHTML = h + '</div>' + AIR;
     start.innerHTML = `<b>The Conclave</b><span>${pact.length ? pact.length + ' in the turret' : 'The turret'} · press Next, or click the room</span>`;
@@ -236,6 +253,10 @@ function paint(root, S, fresh) {
 }
 
 // A HOODED CLOAK, the face inside the hood: the conclave's figure
+// the turret plates and where a cloak stands in them, for the selection stage's
+// first meeting, which is the same room
+export { PLATE as TRC_PLATE, PLATE_TABLE as TRC_PLATE_TABLE, seatAt as trcSeatAt, onPlate as trcOnPlate };
+
 export const CLOAK = '<svg class="trc-cloak" viewBox="0 0 100 130" aria-hidden="true"><defs>'
   + '<linearGradient id="trcCl" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#1e0408"/><stop offset=".35" stop-color="#5a0c16"/>'
   + '<stop offset=".6" stop-color="#3a060e"/><stop offset="1" stop-color="#120205"/></linearGradient></defs>'
@@ -278,10 +299,12 @@ const CSS = `
 .trc-av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 18%;z-index:1;filter:saturate(.85) brightness(.92)}
 .trc-hood{position:absolute;left:-18%;right:-18%;top:-16%;bottom:28%;border-radius:50% 50% 30% 30%/60% 60% 20% 20%;
   background:radial-gradient(60% 70% at 50% 60%,transparent 52%,#2a0508 54%,#12030a 100%);z-index:2;pointer-events:none}
-.trc-nm{position:absolute;left:50%;top:92%;transform:translateX(-50%);white-space:nowrap;padding:2px 8px;font-family:var(--v-display);font-weight:700;font-size:10px;letter-spacing:.2em;text-transform:uppercase;
+.trc-nm{position:absolute;left:50%;top:-9%;transform:translateX(-50%);white-space:nowrap;padding:2px 8px;font-family:var(--v-display);font-weight:700;font-size:10px;letter-spacing:.2em;text-transform:uppercase;
   color:#f3dcd8;background:rgba(20,4,6,.8);border:1px solid rgba(201,40,60,.4)}
 .trc-seat.trc-quiet{filter:brightness(.5)}
-.trc-seat.trc-speak{transform:translate(-50%,-50%) scale(1.14);z-index:20}
+.trc-seat.trc-speak{transform:translate(-50%,-50%) scale(1.14);z-index:11}
+.trc-plate{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none;user-select:none}
+.trc-front{z-index:12}
 .trc-seat.trc-speak .trc-cloak{filter:drop-shadow(0 0 22px rgba(201,40,60,.8)) drop-shadow(0 14px 18px rgba(0,0,0,.8))}
 .trc-cards{position:absolute;left:50%;top:60%;transform:translate(-50%,-50%);display:flex;gap:12px;z-index:15}
 .trc-card{padding:8px 8px 7px;text-align:center;background:linear-gradient(170deg,#efe5cc,#cdbd98);color:#241b11;box-shadow:0 12px 28px rgba(0,0,0,.7);transform:rotate(-2deg)}
@@ -315,7 +338,7 @@ const CSS = `
 .trc-shock{position:absolute;right:20px;bottom:16px;width:0;height:0;border-radius:50%;box-shadow:0 0 0 0 rgba(201,40,60,.8);opacity:0;pointer-events:none}
 .trc-letter.trc-fresh .trc-shock{animation:trcShock .9s ease-out 2.75s}
 @keyframes trcShock{0%{opacity:1;box-shadow:0 0 0 0 rgba(201,40,60,.85)}100%{opacity:0;box-shadow:0 0 0 160px rgba(201,40,60,0)}}
-.trs-view.trc-away .trc-world>svg,.trs-view.trc-away .trc-seat,.trs-view.trc-away .trc-cards,.trs-view.trc-away .trc-letter{filter:brightness(.3) saturate(.4);transition:filter .6s}
+.trs-view.trc-away .trc-plate,.trs-view.trc-away .trc-seat,.trs-view.trc-away .trc-cards,.trs-view.trc-away .trc-letter{filter:brightness(.3) saturate(.4);transition:filter .6s}
 .trc-downstairs{position:absolute;left:50%;top:36%;transform:translate(-50%,-50%);z-index:40;animation:trcDown .6s ease both}
 @keyframes trcDown{from{opacity:0;transform:translate(-50%,-44%)}}
 .trc-dframe{display:flex;gap:26px;padding:18px 26px 14px;background:radial-gradient(70% 90% at 50% 40%,rgba(143,166,194,.28),rgba(8,12,20,.92));

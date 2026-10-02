@@ -20,7 +20,7 @@ import { beatLines } from './stage-lines.js';
 import { footCard, playCard, CARD_CSS } from './stage-cards.js';
 import { trPlay } from './sfx.js';
 import { confessional, cutIn as cutInCard } from './stage-cutin.js';
-import { CLOAK } from './conclave-stage.js';
+import { CLOAK, TRC_PLATE, TRC_PLATE_TABLE, trcSeatAt, trcOnPlate } from './conclave-stage.js';
 
 const hash = s => { let h = 7; for (const c of String(s)) h = (Math.imul(h, 31) + c.charCodeAt(0)) >>> 0; return h; };
 const clean = s => String(s || '').replace(/\s+/g, ' ').trim();
@@ -177,8 +177,14 @@ function paint(root, S, fresh) {
   // THE TURRET: the chosen, arriving one at a time under the lamp
   if (r.turret && D.turret && D.turret.length) {
     if (!tur.classList.contains('tps-on')) {
-      tur.innerHTML = TRScenery.turretSet(W, H) + '<div class="tps-cloaks">' + D.turret.map(n =>
-        `<div class="tps-cloak" data-n="${esc(n)}">${CLOAK}<div class="tps-cav">${face(n)}</div><div class="tps-cnm">${esc(n)}</div></div>`).join('') + '</div>';
+      // THE SAME TURRET AS THE CONCLAVE (assets/sets/traitors): the room, the
+      // chosen standing round the far side of the table, and the table in front
+      const pw = trcOnPlate(0, 0, W, H).k * 1080 * .21, ph = pw * 1.5;
+      tur.innerHTML = `<img class="tps-plate" src="${TRC_PLATE}" alt="">` + '<div class="tps-cloaks">' + D.turret.map((n, i) => {
+        const p = trcSeatAt(i, D.turret.length, W, H);
+        return `<div class="tps-cloak" data-n="${esc(n)}" style="left:${p.x - pw / 2}px;top:${p.y - ph / 2}px;width:${pw}px">`
+          + `${CLOAK}<div class="tps-cav">${face(n)}</div><div class="tps-cnm">${esc(n)}</div></div>`;
+      }).join('') + '</div>' + `<img class="tps-plate tps-front" src="${TRC_PLATE_TABLE}" alt="">`;
       tur.classList.add('tps-on');
       if (fresh) trPlay('tr-door');
     }
@@ -273,20 +279,22 @@ const CSS = `
 /* the turret */
 .tps-turret{opacity:0;transition:opacity 1s;pointer-events:none;z-index:2000}
 .tps-turret.tps-on{opacity:1}
-.tps-cloaks{position:absolute;left:50%;top:44%;transform:translate(-50%,-55%);display:flex;gap:60px}
-.tps-cloak{position:relative;width:150px;aspect-ratio:100/150;text-align:center;opacity:0;transition:opacity .4s}
+.tps-plate{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none;user-select:none}
+.tps-front{z-index:3}
+.tps-cloaks{position:absolute;inset:0}
+.tps-cloak{position:absolute;aspect-ratio:100/150;text-align:center;opacity:0;transition:opacity .4s}
 .tps-cloak.tps-here{opacity:1}
 .tps-cloak.tps-new{animation:tpsArrive 1s ease both}
 .tps-cloak.tps-speaking{transform:scale(1.14);filter:drop-shadow(0 0 26px rgba(201,40,60,.8));z-index:2}
 .tps-cloak.tps-listen{filter:brightness(.55)}
 .tps-cloak{transition:opacity .4s,transform .4s,filter .4s}
-.tps-turret.tps-dim .tps-cloaks,.tps-turret.tps-dim>svg{filter:brightness(.45) blur(2px);transition:filter .5s}
+.tps-turret.tps-dim .tps-cloaks,.tps-turret.tps-dim>.tps-plate{filter:brightness(.45) blur(2px);transition:filter .5s}
 .tps-cloak .trc-cloak{position:absolute;left:0;top:0;width:100%;height:auto;filter:drop-shadow(0 14px 18px rgba(0,0,0,.8))}
 @keyframes tpsArrive{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
 .tps-hood{position:absolute;left:-22%;right:-22%;top:-18%;height:92%;border-radius:50% 50% 30% 30%/60% 60% 20% 20%;z-index:2;pointer-events:none;
   background:radial-gradient(60% 70% at 50% 62%,transparent 50%,#2a0508 53%,#12030a 100%)}
 .tps-cav{position:absolute;left:26%;top:16%;width:48%;aspect-ratio:1/1.1;overflow:hidden;border-radius:50% 50% 44% 44%;background:#140608;box-shadow:0 0 18px rgba(0,0,0,.9) inset}
 .tps-cav img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 18%;z-index:1}
-.tps-cnm{position:absolute;left:50%;top:92%;transform:translateX(-50%);white-space:nowrap;font-family:var(--v-display);font-weight:700;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#f3dcd8}
+.tps-cnm{position:absolute;left:50%;top:-9%;transform:translateX(-50%);white-space:nowrap;font-family:var(--v-display);font-weight:700;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#f3dcd8}
 @media (prefers-reduced-motion:reduce){.tps-seat .tps-band{animation:none!important}.tps-cloak{animation:none!important}}
 `;

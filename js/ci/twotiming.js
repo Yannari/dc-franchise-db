@@ -20,6 +20,13 @@
 //              other watches) give it away to the room.
 //   busted     the two of them bring the player into one group chat: they
 //              charm their way out (keeping one), come clean, or deny it.
+//   couple     two people together (a couple, married) sharing one profile and
+//              one apartment: always taken, by each other. Real flirting is
+//              rare (the partner is right there), but they can play it as a
+//              strategy they agree on. When one of them wants to send a flirty
+//              message, the other reacts: "it's a game move", or "you are NOT
+//              sending that" — and wins or loses. Whoever they flirted with
+//              who finds out it was a couple feels played.
 //   taken      a player who is in a relationship. If the profile says so,
 //              everyone knew, and being caught costs more at once; if it
 //              shows "Single", nobody can know until they come clean in the
@@ -42,10 +49,21 @@ export const PARTY_SLIP = 0.9;       // how careless a bold, disloyal player get
 
 const isActive = (state, h) => state.active.includes(h);
 const realOf = (state, h) => state.people[state.profiles[h]?.players[0]];
-/** Really in a relationship (whatever the profile says). */
-export const taken = (state, h) => { const s = realOf(state, h)?.status; return !!s && s !== 'Single'; };
+// How taken a status is (persona-data.js STATUSES): "Very single" is single,
+// "It's complicated" is half of it.
+const TAKEN_BY_STATUS = { Taken: 1, Married: 1, Engaged: 1, "It's complicated": 0.5 };
+export const takenness = status => TAKEN_BY_STATUS[status] || 0;
+export const COUPLE_ROOM = 0.6;      // how hard the partner in the room holds back real flirting
+export const COUPLE_PLAY = 1.2;      // the most a couple flirts as a strategy, by how strategic they are
+export const COUPLE_GAME = 0.9;      // how likely a couple's flirt is the agreed game move, at most
+const ROMANTIC = new Set(['couple', 'married']);
+/** Two people together, sharing one profile (shared.js relation). */
+export const romanticPair = (state, h) => (state.profiles[h]?.players?.length || 0) > 1 && ROMANTIC.has(state.profiles[h]?.relation);
+const takenOf = (state, h) => (romanticPair(state, h) ? 1 : takenness(realOf(state, h)?.status));
+/** Really in a relationship (whatever the profile says); a couple is, by each other. */
+export const taken = (state, h) => takenOf(state, h) >= 1;
 /** Says so on the profile? A taken player can show "Single" (profiles.js edits). */
-const showsSingle = (state, h) => (state.profiles[h]?.shown?.status ?? 'Single') === 'Single';
+const showsSingle = (state, h) => takenness(state.profiles[h]?.shown?.status) < 1;
 /** Taken, and everybody can see it on the profile. */
 export const openlyTaken = (state, h) => !showsSingle(state, h);
 
@@ -66,7 +84,9 @@ export function focusDamp(state, me, you) {
   const pull = others.reduce((m, f) => Math.max(m, clamp(rel(me, f.to, 'attraction') / 10, 0, 1)), 0);
   const loyal = S(state, me, 'loyalty') / 10;
   let k = 1 - FOCUS * loyal * pull;
-  if (taken(state, me)) k *= 1 - TAKEN_RESTRAINT * loyal;
+  k *= 1 - TAKEN_RESTRAINT * loyal * takenOf(state, me);
+  // The partner is sitting right there.
+  if (romanticPair(state, me)) k *= 1 - COUPLE_ROOM * loyal;
   return clamp(k, 0.05, 1);
 }
 
@@ -227,4 +247,49 @@ export function gameTwoTimer(state, rng, sc) {
     return sc.data.twoTimer;
   }
   return null;
+}
+
+/** A couple flirting as a game move: as strategic as they are, and as wanted as the profile is. */
+export function couplePlay(state, me, you) {
+  if (!romanticPair(state, me)) return 0;
+  return clamp(rel(you, me, 'attraction') / 10, 0, 1) * S(state, me, 'strategic') / 10 * COUPLE_PLAY;
+}
+
+/**
+ * One of a couple wants to send a flirty message (conversation.js runChat,
+ * before the effects). Either it's the game move they agreed on, or the other
+ * one objects — and wins (the message goes out tame: no more than neutral) or
+ * loses (it goes out, and the room gets tense). Returns the ending to use.
+ */
+export function coupleFlirt(state, rng, sc, ending) {
+  const h = sc.who[0];
+  if (sc.data.intent !== 'flirt' || !romanticPair(state, h)) return ending;
+  const p = state.profiles[h];
+  const flirter = sc.data.lead || p.roles?.face || p.players[0];
+  const other = p.players.find(n => n !== flirter);
+  const st = (n, k) => (state.people[n]?.stats?.[k] ?? 5) / 10;
+  const role = flirter === (p.roles?.face || p.players[0]) ? 'face' : 'brain';
+  const game = COUPLE_GAME * (st(flirter, 'strategic') + st(other, 'strategic')) / 2;
+  if (rng() < game) { sc.data.couple = { stance: 'game', outcome: 'sent', role }; return ending; }
+  const objection = st(other, 'loyalty') * 0.6 + (1 - st(other, 'temperament')) * 0.5 + rng();
+  const push = st(flirter, 'boldness') * 0.8 + rng();
+  const stopped = objection > push;
+  sc.data.couple = { stance: 'jealous', outcome: stopped ? 'stopped' : 'sent', role };
+  feel(state, h, 'stress', stopped ? 0.6 : 1.2);
+  (state.coupleTension ||= {})[h] = (state.coupleTension[h] || 0) + 1;
+  return stopped && ending === 'warm' ? 'neutral' : ending;
+}
+
+/**
+ * Somebody finds out who was behind a profile (reveal.js revealTo). If it was
+ * a couple who flirted with them, and they fell for it, they feel played.
+ */
+export function coupleRevealed(state, obs, h, scene) {
+  if (!romanticPair(state, h) || !state.flings?.[h]?.[obs] || rel(obs, h, 'attraction') < ROMANCE_AT) return false;
+  bump(obs, h, 'attraction', -3);
+  bump(obs, h, 'resentment', 1.5);
+  bump(obs, h, 'trust', -1);
+  feel(state, obs, 'stress', 0.8);
+  (state.coupleReveals ||= []).push({ obs, h, scene: scene?.id ?? null, day: state.day });
+  return true;
 }

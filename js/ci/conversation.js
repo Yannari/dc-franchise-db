@@ -17,7 +17,7 @@ import { revealTo } from './reveal.js';
 import { attractionOk, performedFlirt } from './chat.js';
 import { coverParts } from './cover.js';
 import { streamFor } from '../dr/rng.js';
-import { noteFlirt } from './twotiming.js';
+import { noteFlirt, coupleFlirt } from './twotiming.js';
 
 // What the receiver comes to feel toward the sender, by intent and ending.
 // How often a warm chat between close players goes deep, at most.
@@ -237,6 +237,8 @@ export function runChat(state, rng, plan, ctx = {}) {
   } else {
     ending = decideEnding(rng, reception(state, to, from, intent, sc));
   }
+  // A couple sharing a profile: the other one has a say in a flirty message (twotiming.js).
+  ending = coupleFlirt(state, streamFor(state.seed, `couple:${sc.id}`), sc, ending);
   sc.data.ending = ending;
   // A catfish flirting in character with no attraction behind it: an act,
   // harder to keep up (more slips) and it weighs on them.

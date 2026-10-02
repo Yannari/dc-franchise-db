@@ -16,6 +16,7 @@ import { rolesFor, pairRoles, RELATIONS } from './shared.js';
 import { clamp, personMayScheme } from './state.js';
 import { jobOf, tellsOf } from './persona-data.js';
 import { placeOf } from './topics.js';
+import { takenness } from './twotiming.js';
 
 // Most roster characters have no age, and a profile has to show one. It used
 // to be 25 for all of them (a season read: five players and a newcomer, all
@@ -229,7 +230,8 @@ function editsFor(t, median, rng) {
     if (fact === 'job') { shown.job = EDIT_JOBS[Math.floor(rng() * EDIT_JOBS.length)]; edits.push('job'); }
     if (fact === 'alum' || fact === 'rep') { if (!edits.includes('fame')) edits.push('fame'); }
   }
-  if (t.status !== 'Single' && rng() < (t.stats.strategic ?? 5) / 20) { shown.status = 'Single'; edits.push('status'); }
+  // Hiding a relationship ("Very single" has nothing to hide).
+  if (takenness(t.status) > 0 && rng() < (t.stats.strategic ?? 5) / 20) { shown.status = 'Single'; edits.push('status'); }
   if (!edits.length) { shown.job = EDIT_JOBS[Math.floor(rng() * EDIT_JOBS.length)]; edits.push('job'); }
   return { shown, edits };
 }

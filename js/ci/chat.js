@@ -12,7 +12,7 @@ import { belief } from './beliefs.js';
 import { mood } from './mind.js';
 import { contradictions } from './claims.js';
 import { isPair, SHARED_PACE } from './shared.js';
-import { focusDamp } from './twotiming.js';
+import { focusDamp, couplePlay } from './twotiming.js';
 
 export const INTENTS = ['bond', 'ally', 'flirt', 'probe', 'pump', 'compare', 'plant', 'credit',
   'repair', 'confront', 'checkin', 'pitch', 'confess', 'jealous', 'defend', 'debrief'];
@@ -122,13 +122,15 @@ export function utilities(state, me, you, ctx = {}, who = null) {
   return {
     bond: st('social') * (1 - Math.abs(aff) / 10) + lonely * 0.25,
     ally: aff > 0 && tr > 0 ? st('strategic') * (aff + tr) / 8 : 0,
-    flirt: Math.max(
+    flirt: Math.max(Math.max(
       (attractionOk(state, me, you) ? att / 10 * (0.5 + st('boldness') * 0.5) : 0)
         * (wouldReturn(state, me, you) ? 1 : CHASE_OFF) * (catfish && !personaInto(state, me, you) ? OUT_OF_CHARACTER : 1),
       performedFlirt(state, me, you) && !state.people[state.profiles[me].players[0]]?.ai
         ? rel(you, me, 'attraction') / 10 * st('strategic') * PERFORMED * (wouldReturn(state, me, you) ? 1 : CHASE_OFF) : 0)
       // A romance already going: the loyal focus on it, the taken hold back (twotiming.js).
       * focusDamp(state, me, you),
+      // A couple sharing a profile flirts as a game move they agree on (twotiming.js).
+      couplePlay(state, me, you)),
     probe: (1 - b.real) * st('intuition') * (1 + para),
     pump: ctx.newsOf?.includes(you) ? st('strategic') * 0.8 : 0,
     // Two stories that don't match: the sharper you are, the more you need to check.

@@ -397,7 +397,11 @@ const BLOCKS = {
     if (cb) out.push({ key: `callback.${cb.kind}.${cb.dir}`, cast: { a, b, text: { game: cb.game } } });
     // A shared profile argues over the message before it goes (spec §14.8).
     const pa = state.profiles[a];
-    if (s.data.lead && pa?.players.length > 1) {
+    // A couple sharing a profile: a flirty message is a game move, or the other one objects (twotiming.js).
+    if (s.data.couple) {
+      const c = s.data.couple;
+      out.push({ key: c.stance === 'game' ? 'couple.flirt.game' : `couple.flirt.jealous.${c.outcome}.${c.role}`, cast: { a, b } });
+    } else if (s.data.lead && pa?.players.length > 1) {
       const won = s.data.lead === (pa.roles?.face || pa.players[0]) ? 'faceWins' : 'brainWins';
       // What they are to each other picks the words; a parent and child by who won.
       const rel = pa.relation;
@@ -1117,7 +1121,16 @@ const BLOCKS = {
 
 
 export function sceneBlocks(state, scene) {
-  return (BLOCKS[scene.kind]?.(state, scene) || []).filter(b => b.cast.a);
+  const out = (BLOCKS[scene.kind]?.(state, scene) || []).filter(b => b.cast.a);
+  // Whoever found out here that the profile flirting with them was a couple
+  // (twotiming.js coupleRevealed): right after the moment they found out.
+  const told = (state.coupleReveals || []).filter(r => r.scene === scene.id).slice(0, 2)
+    .map(r => ({ key: 'couple.reveal', cast: { a: r.obs, b: r.h } }));
+  if (told.length) {
+    const at = out.findIndex(b => b.key === 'visit.sit' || /^meet\.(found|explain)/.test(b.key));
+    out.splice(at >= 0 ? at + 1 : out.length, 0, ...told);
+  }
+  return out;
 }
 
 // Scene kinds whose screens read each block's cast (js/vp-ci/moments.js).
@@ -1173,7 +1186,7 @@ function writeSceneNow(state, scene) {
   // block, which stays the chat's main block).
   const hello = scene.kind === 'chat' ? blocks.findIndex(x => x.key.startsWith('chat.hello')) : -1;
   if (hello > 0) { const [h] = blocks.splice(hello, 1); blocks[0].lines.unshift(...h.lines); (blocks[0].hello ||= h.key); }
-  for (const prefix of ['callback.', 'shared.argue.']) {
+  for (const prefix of ['callback.', 'shared.argue.', 'couple.flirt.']) {
     const at = blocks.findIndex(x => x.key.startsWith(prefix));
     if (at > 0) blocks.unshift(...blocks.splice(at, 1));
   }
@@ -1356,6 +1369,7 @@ export const POOL_KEYS = [
   ...BLOCK_WHY_.map(r => `block.announce.${r}`), 'block.react.self', 'block.react.friend', 'block.react.rival', 'block.react.relief',
   ...MOTIVES_.filter(m => m !== 'confront').flatMap(m => [`visit.choose.${m}`, `visit.talk.${m}`]), 'visit.choose.confront', 'visit.wait', 'visit.wait.catfish',
   // Playing two people, and getting caught (twotiming.js, lines/twotiming.js).
+  'couple.flirt.game', ...['sent', 'stopped'].flatMap(o => ['face', 'brain'].map(r => `couple.flirt.jealous.${o}.${r}`)), 'couple.reveal',
   'notes.find', 'notes.find.copy', 'notes.taken', 'notes.plan', 'busted.open', 'busted.accuse', 'busted.accuse.taken', 'busted.confess.cheat',
   ...['charm', 'confess', 'deny'].flatMap(k => [`busted.${k}`, `busted.end.${k}`]), 'party.twotime', 'game.twotime', 'goodbye.warning.playing',
   ...['fire', 'take', 'defend'].map(k => `visit.talk.confront.${k}`), ...['walkout', 'cooled'].flatMap(k => [`visit.talk2.confront.${k}`, `visit.bye.${k}`]), 'visit.after.confront',

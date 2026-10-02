@@ -293,6 +293,44 @@ export const TWOTIMING_LINES = {
       { by: 'a', say: "I thought {b} and I had something. Apparently {c} has something too." },
     ] },
   ]),
+  // ── A couple sharing a profile (face / brain: ci/shared.js) ───────────
+  // couple.flirt.game: a flirty message they agreed on, as a game move.
+  // couple.flirt.jealous.<sent|stopped>.<face|brain>: the one named wants to
+  // send it, the other objects; `sent`, it goes anyway; `stopped`, it goes
+  // out tame. b is who the message is to. couple.reveal: a finds out the
+  // profile flirting with them (b) was a couple the whole time.
+  ...E('couple.flirt.game', [
+    { turns: [{ by: 'face', say: "It's strategy. Nothing more." }, { by: 'brain', say: "Then make it convincing. {b} has to buy it." }] },
+    { turns: [{ by: 'brain', say: "{b} likes us. We need {b}. Flirt a little." }, { by: 'face', say: "I'm doing this for the game. Remember that." }], beat: '{a.face} and {a.brain} shake on it.' },
+    { turns: [{ by: 'face', say: "Is this weird? This is weird." }, { by: 'brain', say: "It's a game. Go. I'm right here." }] },
+    { turns: [{ by: 'brain', say: "A little wink emoji. That's all. For the game." }, { by: 'face', say: "One wink. And you're not allowed to be mad later." }] },
+  ]),
+  ...E('couple.flirt.jealous.sent.face', [
+    { turns: [{ by: 'brain', say: "Excuse me. Who are you flirting with?" }, { by: 'face', say: "It's harmless! Send." }], beat: '{a.brain} crosses both arms and does not say a word.' },
+    { turns: [{ by: 'brain', say: "You're NOT sending that." }, { by: 'face', say: "Watch me." }, { by: 'brain', say: "We're talking about this later." }] },
+    { turns: [{ by: 'brain', say: "Oh, so that's how you talk to {b}?" }, { by: 'face', say: "It's called being friendly." }, { by: 'brain', say: "It's called sleeping on the couch." }] },
+  ]),
+  ...E('couple.flirt.jealous.sent.brain', [
+    { turns: [{ by: 'face', say: "Since when do YOU flirt?" }, { by: 'brain', say: "Since it gets us votes. Send." }], beat: '{a.face} stares at {a.brain} like a stranger.' },
+    { turns: [{ by: 'face', say: "Absolutely not. Not with {b}." }, { by: 'brain', say: "It's a game. Message: send." }, { by: 'face', say: "Unbelievable." }] },
+    { turns: [{ by: 'face', say: "I'm sitting right here, you know." }, { by: 'brain', say: "And I'm winning us this game. Send." }] },
+  ]),
+  ...E('couple.flirt.jealous.stopped.face', [
+    { turns: [{ by: 'brain', say: "Delete that. Right now." }, { by: 'face', say: "...Fine. Something nice. Not flirty." }], beat: '{a.face} deletes the message one letter at a time.' },
+    { turns: [{ by: 'brain', say: "You put a heart on that? Take the heart off." }, { by: 'face', say: "Okay, okay. No heart." }] },
+    { turns: [{ by: 'brain', say: "Read that back to me." }, { by: 'face', say: "...Yeah, I'm changing it." }] },
+  ]),
+  ...E('couple.flirt.jealous.stopped.brain', [
+    { turns: [{ by: 'face', say: "If you send that, I'm leaving this apartment." }, { by: 'brain', say: "Fine. Something friendly." }] },
+    { turns: [{ by: 'face', say: "No flirting. We agreed. No flirting." }, { by: 'brain', say: "We did agree. Okay. Deleting." }] },
+    { turns: [{ by: 'face', say: "Strategy my foot. Change it." }, { by: 'brain', say: "Changing it. Calm down." }], beat: '{a.face} watches every letter until it is gone.' },
+  ]),
+  ...E('couple.reveal', [
+    { turns: [{ by: 'a', react: "Wait. You two are TOGETHER?" }, { by: 'a', say: "{b} was flirting with me! For days!" }] },
+    { turns: [{ by: 'a', react: "Oh my God. A couple. The whole time." }, { by: 'a', say: "So who was sending me the winky faces? Which one of you?" }] },
+    { turns: [{ by: 'a', say: "I had a crush on a couple. An actual couple." }], beat: '{a} sits down very slowly.' },
+    { turns: [{ by: 'a', react: "Are you kidding me?" }, { by: 'a', say: "Every flirty message. And you were sitting next to each other." }] },
+  ]),
   ...E('goodbye.warning.playing', [
     { turns: [{ by: 'a', video: "One more thing. {c} is a player. {c} was flirting with me and somebody else at the same time. Don't fall for it." }] },
     { turns: [{ by: 'a', video: "To whoever {c} is sweet-talking right now: you're not the only one. Trust me." }] },

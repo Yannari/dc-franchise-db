@@ -14,6 +14,7 @@
 //   flirted with under a false gender: the attraction turns to resentment.
 import { rel, peopleOf } from './state.js';
 import { setBelief } from './beliefs.js';
+import { coupleRevealed } from './twotiming.js';
 import { RELATIONSHIP_DIMENSIONS, setRelationshipDimension } from '../relationships.js';
 
 export const isRevealed = (state, obs, target) => !!state.revealed[obs]?.[target];
@@ -30,6 +31,8 @@ export function revealTo(state, obs, target, scene) {
   const truth = p.mode === 'catfish' ? 0 : p.mode === 'edited' ? 0.7 : 1;
   setBelief(state, obs, target, 'real', truth, scene);
   convertFeelings(state, obs, target);
+  // A couple who flirted with them, the whole time (twotiming.js).
+  coupleRevealed(state, obs, target, scene);
   return true;
 }
 

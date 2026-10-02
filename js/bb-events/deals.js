@@ -16,7 +16,6 @@
 // changed only through `api`, text chosen deterministically.
 
 import { gs } from '../core.js';
-import { pronouns } from '../players.js';
 import { endgameDealsOf, dealBetween, tierOf, sincerityOf, isEndgameDeal, juryPactsOf } from '../bb/deals.js';
 import { juryOpensAt } from '../bb/jury.js';
 import {
@@ -26,17 +25,10 @@ import {
   isNice, isVillainous, archetype, trustOf, obligationOf, respectOf, dangerOf,
   resentmentOf, beatsInvolving, spotlightOrder, actFacts,
 } from './_read.js';
-import { freshLine } from '../bb/aired.js';
 import { makeScene } from '../bb/script/scene.js';
 
 // ── helpers ───────────────────────────────────────────────────────────
 
-function _variant(list, ctx, ...salt) {
-  const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${ctx?.act || ''}|${salt.join('|')}`;
-  let hash = 0;
-  for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
-  return freshLine(list, hash, ctx);
-}
 
 const _others = (house, ...exclude) => house.filter(n => n && !exclude.includes(n));
 
@@ -271,14 +263,6 @@ const brokenPromise = {
   },
   fire(house, ctx, api) {
     const { victim, liar } = _brokenPromise(house, ctx);
-    const p = pronouns(victim);
-    const text = _variant([
-      `${victim} confronts ${liar}: “You gave me your word.” ${liar} immediately starts explaining why the promise had to be broken.`,
-      `The promise has been sitting between them since the day it was made. Today ${victim} puts it down, publicly, in front of two other people.`,
-      `"I'm not angry," ${victim} tells ${liar}, and is plainly furious. Nobody in the room corrects ${p.obj}.`,
-      `${liar} tries to explain what the promise had actually meant. ${victim} listens to the whole explanation and comes out of it certain of exactly one thing.`,
-    ], ctx, victim, liar);
-
     api.addBond(victim, liar, -1.8);
     api.remember(victim, liar, 'broken-promise', 3, {});
     api.setTarget(victim, liar, 'gave me their word and did not keep it');
@@ -287,7 +271,10 @@ const brokenPromise = {
       if (pStats(w).intuition >= 5) api.suspicion(w, liar, 0.9);
     });
     api.popDelta(liar, -1);
-    return { text, players: [victim, liar], badgeText: 'PROMISE BROKEN', badgeClass: 'red' };
+    // Called out in front of people: the house is in the room for it.
+    const scene = makeScene('deals.broken', { a: victim, b: liar }, { ending: 'confronted' }, _others(house, victim, liar),
+      _room(['kitchen', 'living-room', 'backyard'], ctx, victim, liar));
+    return { scene, players: [victim, liar], badgeText: 'PROMISE BROKEN', badgeClass: 'red' };
   },
 };
 
@@ -357,20 +344,7 @@ const defectionOffer = {
   },
   fire(house, ctx, api) {
     const { mark, outsider, alliance, allies } = _defector(house, ctx);
-    const p = pronouns(mark);
     const loyal = pStats(mark).loyalty >= 6 || isNice(mark);
-    const text = loyal ? _variant([
-      `${outsider} makes the offer and ${mark} turns it down without needing to think, then spends the rest of the night thinking about it.`,
-      `"You're fourth in that group and you know it." ${mark} does not argue with the number. ${p.Sub} turns the offer down anyway, and ${outsider} leaves knowing loyalty—not ignorance—is keeping ${p.obj} there.`,
-      `${mark} listens to the whole pitch out of politeness and reports most of it to ${alliance?.name || 'the others'} within the hour. Most of it.`,
-      `${outsider} offers ${mark} a better seat in a group ${p.sub} trusts less. ${mark} says, “Fourth with people I know is still better than second with you.”`,
-    ], ctx, mark, outsider) : _variant([
-      `${outsider} lays out where ${mark} actually stands in that alliance, with numbers, and ${mark} does not enjoy how accurate it is.`,
-      `"They'll take you to fourth and no further." It is true. ${mark} has known it for a while and has been waiting for somebody to say it out loud.`,
-      `${mark} does not agree to anything. ${p.Sub} also does not say no, and ${outsider} leaves knowing which of those matters.`,
-      `${outsider}'s offer is better than the position ${mark} has, and the only thing holding ${p.obj} in place was a habit ${p.sub} has just noticed.`,
-    ], ctx, mark, outsider);
-
     if (loyal) {
       api.addBond(mark, outsider, -0.5);
       api.suspicion(mark, outsider, 1.2);
@@ -380,8 +354,10 @@ const defectionOffer = {
       api.remember(mark, outsider, 'offer', 2, { offer: 'a better seat' });
       api.suspicion(mark, closestTo(mark, house) || outsider, 0.8);
     }
+    const scene = makeScene('deals.defection', { a: outsider, b: mark }, { ending: loyal ? 'refused' : 'tempted' }, [],
+      _room(['backyard', 'bedroom', 'pantry'], ctx, outsider, mark));
     return {
-      text, players: [mark, outsider],
+      scene, players: [mark, outsider],
       badgeText: loyal ? 'OFFER REFUSED' : 'TEMPTED',
       badgeClass: loyal ? 'blue' : 'red',
     };
@@ -442,19 +418,12 @@ const juryPact = {
   },
   fire(house, ctx, api) {
     const { a, b } = _juryPactPair(house, ctx);
-    const left = house.length - juryOpensAt();
-    const text = _variant([
-      `"${left} more. That is all we have to do." ${a} does not say get to the end, or win — just get to the part where losing still means something. ${b} shakes on it.`,
-      `${a} and ${b} work out how many evictions are left before the jury, decide it is survivable, and promise each other they will both be there for it.`,
-      `Neither of them mentions the final two, because neither of them means it. What they mean is that they would both like to be voting rather than watching, and they can do that together.`,
-      `"I am not asking you to take me to the end." ${a} says it plainly. "I am asking you not to be the reason I miss jury." ${b} agrees, and finds ${pronouns(b).obj}self meaning it.`,
-    ], ctx, a, b);
-
     api.addBond(a, b, 0.9);
     api.sideDeal?.(a, b, 'make-jury', { reason: 'get to jury together' });
     api.remember(a, b, 'promise', 2, { week: ctx.week?.num || 0, about: 'jury together' });
     api.remember(b, a, 'promise', 2, { week: ctx.week?.num || 0, about: 'jury together' });
-    return { text, players: [a, b], badgeText: 'TO THE JURY, TOGETHER', badgeClass: 'green' };
+    const scene = makeScene('deals.jury-pact', { a, b }, { ending: 'made' }, [], _room(['backyard', 'bedroom', 'kitchen'], ctx, a, b));
+    return { scene, players: [a, b], badgeText: 'TO THE JURY, TOGETHER', badgeClass: 'green' };
   },
 };
 
@@ -468,32 +437,14 @@ const juryManagement = {
   },
   fire(house, ctx, api) {
     const { player, mark } = _juryPair(house, ctx);
-    const p = pronouns(player);
-    const m = pronouns(mark);
     const clumsy = pStats(player).social <= 4;
-    // Written for somebody still in the house. The old pool apologised for a
-    // cut that has not happened — "why the vote against you was not personal",
-    // "somebody who has nothing but hard feelings" — to a houseguest who is
-    // still playing and might yet outlast the person apologising. What this
-    // conversation actually is: laying groundwork with a vote you expect to
-    // need, while pretending it is about anything else.
-    const text = clumsy ? _variant([
-      `${player} tells ${mark} there would be no hard feelings if it ever came to it, which informs ${mark} that ${p.sub} has already thought about it coming to it.`,
-      `The groundwork arrives about three weeks early and lands as exactly what it is. ${mark} files it.`,
-      `${player} explains ${p.posAdj} game to ${mark} at some length. ${m.Sub} comes away with a much clearer sense of who to vote against at the end.`,
-      `"If you go before me, I hope you'd still respect the play." ${mark} notes the word ${player} chose was "if".`,
-    ], ctx, player, mark) : _variant([
-      `${player} does not apologise for anything, because nothing has happened yet. ${p.Sub} simply makes sure ${mark} knows what ${p.posAdj} game has been, in the version ${p.sub} wants repeated in a jury house.`,
-      `"Whatever happens to either of us, I want you to think I played it straight." ${mark} recognises the sentence as an investment and takes it anyway.`,
-      `${player} starts building the case for the last night weeks before anybody else remembers there is one.`,
-      `It is not a conversation about tonight. ${mark} works out halfway through that it is a conversation about a vote ${m.sub} does not have yet, and answers accordingly.`,
-    ], ctx, player, mark);
-
     api.addBond(player, mark, clumsy ? -0.7 : 0.8);
     api.remember(mark, player, clumsy ? 'insult' : 'respect', 2, { about: 'jury management' });
     api.popDelta(player, clumsy ? -1 : 1);
+    const scene = makeScene('deals.jury-manage', { a: player, b: mark }, { ending: clumsy ? 'botched' : 'smooth' }, [],
+      _room(['backyard', 'bedroom', 'kitchen'], ctx, player, mark));
     return {
-      text, players: [player, mark],
+      scene, players: [player, mark],
       badgeText: clumsy ? 'BOTCHED IT' : 'PLAYING THE END',
       badgeClass: clumsy ? 'red' : 'gold',
     };
@@ -514,21 +465,14 @@ const competingDeals = {
     const player = house.find(n => _others(house, n).filter(m => remembers(n, m, 'final-two')).length >= 2);
     const partners = _others(house, player).filter(m => remembers(player, m, 'final-two')).slice(0, 2);
     const [x, y] = partners;
-    const p = pronouns(player);
-    const text = _variant([
-      `${player} has promised the end of the game to two different people and both of them mentioned it today, four hours apart, in almost identical words.`,
-      `${x} tells ${player} they are still final two. Later, ${y} says the same thing. ${player} realizes both deals are about to be compared.`,
-      `${player} gives ${x} one boot order and ${y} a different one. Halfway through the second conversation, `
-        + `${p.sub} forgets which version puts ${x} in fourth.`,
-      `${player} realises, mid-conversation with ${x}, that ${p.sub} cannot remember which version of the plan ${p.sub} told ${y}.`,
-    ], ctx, player, x, y);
-
     // The collision does not resolve yet — it becomes pressure, and a target.
     api.suspicion(x, player, 0.8);
     api.suspicion(y, player, 0.8);
     api.remember(player, x, 'overcommitted', 2, {});
     api.remember(player, y, 'overcommitted', 2, {});
-    return { text, players: [player, x, y].filter(Boolean), badgeText: 'TWO FINAL TWOS', badgeClass: 'red' };
+    const scene = makeScene('deals.competing', { a: player, b: x, c: y || null }, { ending: 'collide' }, [],
+      _room(['kitchen', 'backyard', 'bedroom'], ctx, player, x));
+    return { scene, players: [player, x, y].filter(Boolean), badgeText: 'TWO FINAL TWOS', badgeClass: 'red' };
   },
 };
 
@@ -548,21 +492,7 @@ const voteFlip = {
       noms.some(nom => remembers(n, nom, 'promise'))))[0] || _voters(house, ctx)[0];
     const promised = noms.find(n => remembers(voter, n, 'promise')) || noms[0];
     const other = noms.find(n => n !== promised) || noms[1];
-    const p = pronouns(voter);
     const keeps = pStats(voter).loyalty >= 6 || trustOf(voter, promised) >= 3;
-
-    const text = keeps ? _variant([
-      `${voter} told ${promised} ${p.sub} would vote to keep ${pronouns(promised).obj}, and ${p.sub} is going to, even though the room has moved.`,
-      `Everyone else has quietly changed their mind. ${voter} has not, and does not intend to explain ${p.ref} about it.`,
-      `"I said what I said." It costs ${voter} something to keep it and ${p.sub} keeps it anyway.`,
-      `${voter} has one vote and one promise and considers those the same object.`,
-    ], ctx, voter, promised) : _variant([
-      `${voter} promised ${promised} a vote and is not going to give it. ${p.Sub} works out a way to not be alone with ${pronouns(promised).obj} for the rest of the day.`,
-      `The house moved and ${voter} moved with it, which ${p.sub} would call being realistic and ${promised} will call something else.`,
-      `${voter} decides, somewhere between the kitchen and the bedroom, that the promise was made under different conditions.`,
-      `It is not a betrayal in ${voter}'s head. ${p.Sub} has a whole explanation ready that ${p.sub} will never be asked for.`,
-    ], ctx, voter, promised);
-
     if (keeps) {
       api.addBond(voter, promised, 1.2);
       api.remember(promised, voter, 'loyalty', 3, { kept: true });
@@ -572,8 +502,10 @@ const voteFlip = {
       api.remember(promised, voter, 'betrayal', 2, { about: 'a promised vote' });
       api.addBond(voter, other, 0.6);
     }
+    const scene = makeScene('deals.vote-flip', { a: voter, b: promised }, { ending: keeps ? 'kept' : 'flipped' }, [],
+      _room(['bedroom', 'backyard', 'kitchen'], ctx, voter, promised));
     return {
-      text, players: [voter, promised],
+      scene, players: [voter, promised],
       badgeText: keeps ? 'KEPT THEIR WORD' : 'QUIET FLIP',
       badgeClass: keeps ? 'green' : 'red',
     };
@@ -616,16 +548,11 @@ const finalThreePact = {
   },
   fire(house, ctx, api) {
     const { a, b, c } = _pactTrio(house);
-    const text = _variant([
-      `${a}, ${b} and ${c} end up alone together and finally discuss a final-three deal. Each promises to protect the other two until only three chairs remain; nobody asks what happens when one of them must finish third.`,
-      `"Three," ${a} says, holding up fingers. "Us three, all the way." ${b} and ${c} agree immediately. All three are already quietly working out which of the other two they would rather beat.`,
-      `${b} floats it carefully and ${a} finishes the sentence. ${c} is in before either of them asks. It is the easiest deal any of them have made and the one most likely to end badly.`,
-      `The three of them shake on a final three. It costs nothing today, which is exactly why all three of them mean it.`,
-    ], ctx, a, b, c);
     api.addBond(a, b, 1.1); api.addBond(a, c, 1.1); api.addBond(b, c, 1);
     api.endgameDeal?.(a, b, 'final-three', { third: c, about: 'the last three chairs' });
     [a, b, c].forEach(x => [a, b, c].forEach(y => { if (x !== y) api.remember(x, y, 'final-three', 2); }));
-    return { text, players: [a, b, c], badgeText: 'FINAL THREE', badgeClass: 'gold' };
+    const scene = makeScene('deals.final-three', { a, b, c }, { ending: 'made' }, [], _room(['bedroom', 'backyard', 'hoh-room'], ctx, a, b, c));
+    return { scene, players: [a, b, c], badgeText: 'FINAL THREE', badgeClass: 'gold' };
   },
 };
 
@@ -662,21 +589,13 @@ const hedgedDeal = {
   },
   fire(house, ctx, api) {
     const { a, mark, existing } = _hedger(house);
-    const p = pronouns(a);
-    const does = p.sub === 'they' ? 'do' : 'does';
-    const holds = p.sub === 'they' ? 'hold' : 'holds';
-    const tells = p.sub === 'they' ? 'tell' : 'tells';
-    const text = _variant([
-      `${mark} asks ${a} the question directly — final two, the pair of us — and ${a} says yes without hesitating. ${p.Sub} already said yes to ${existing}. One of those conversations was a lie and ${p.sub} ${does} not yet know which.`,
-      `${a} shakes on a final two with ${mark}. It is the second one ${p.sub} ${holds}. ${p.Sub} ${tells} ${p.ref} it is insurance rather than a lie, which is what everybody who does this tells themselves.`,
-      `"Me and you at the end," ${mark} says. ${a} agrees, but avoids naming who leaves before them. `
-        + `That missing name is where the first final two with ${existing} is hiding.`,
-      `${a} makes a second final two with ${mark} and walks out doing the arithmetic. Two deals, one seat. Somebody finds out eventually.`,
-    ], ctx, a, mark, existing);
     api.addBond(a, mark, 1.3);
     api.endgameDeal?.(a, mark, 'final-two', { about: 'the second one' });
     api.remember(mark, a, 'final-two', 3);
-    return { text, players: [a, mark], badgeText: 'SECOND DEAL', badgeClass: 'purple' };
+    // The first deal's partner is talked about, not in the room.
+    const scene = makeScene('deals.hedged', { a, b: mark, c: existing }, { ending: 'hedged' }, [], _room(['bedroom', 'backyard'], ctx, a, mark));
+    scene.seenBy = [a, mark];
+    return { scene, players: [a, mark], badgeText: 'SECOND DEAL', badgeClass: 'purple' };
   },
 };
 
@@ -708,16 +627,7 @@ const dealExposed = {
   fire(house, ctx, api) {
     const { finder, deal, members } = _exposure(house);
     const [x, y] = members;
-    const p = pronouns(finder);
-    const does = p.sub === 'they' ? 'do' : 'does';
-    const starts = p.sub === 'they' ? 'start' : 'starts';
     const tier = tierOf(deal) === 'final-two' ? 'final two' : 'final three';
-    const text = _variant([
-      `${finder} has watched ${x} and ${y} come out of the same room one after another all week, and finally says it out loud to somebody: they have a ${tier}. Saying it makes it true in a way that thinking it did not.`,
-      `It is ${y} who gives it away — a sentence half-finished, a look across the kitchen — and ${finder} puts it together on the spot. ${p.Sub} ${does} not confront either of them. ${p.Sub} ${starts} telling other people.`,
-      `${finder} asks ${x} a question with an obvious answer and watches ${pronouns(x).obj} pick a different one. Confirmation enough: ${x} and ${y} are going to the end together and everybody else here is furniture.`,
-      `The ${tier} between ${x} and ${y} stops being a secret the moment ${finder} decides it is worth more shared than kept.`,
-    ], ctx, finder, x, y);
     const told = _others(house, finder, ...members).slice(0, 3);
     api.exposeDeal?.(deal, [finder, ...told]);
     members.forEach(m => {
@@ -725,7 +635,11 @@ const dealExposed = {
       api.setTarget(finder, m, `found out about the ${tier}`);
       api.addBond(finder, m, -0.7);
     });
-    return { text, players: [finder, ...members], badgeText: 'DEAL EXPOSED', badgeClass: 'red' };
+    // Worked out alone; the pair are not in the room. `reason` is the deal's tier.
+    const scene = makeScene('deals.exposed', { a: finder, b: x, c: y || null }, { ending: 'found', reason: tierOf(deal) }, [],
+      _room(['backyard', 'bedroom', 'kitchen'], ctx, finder));
+    scene.seenBy = [finder];
+    return { scene, players: [finder, ...members], badgeText: 'DEAL EXPOSED', badgeClass: 'red' };
   },
 };
 

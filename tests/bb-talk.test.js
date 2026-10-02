@@ -33,6 +33,9 @@ const PHASE6 = [
   // bb-events/social.js
   'social-alliance-forms', 'social-late-night-trust', 'social-paranoia', 'social-rumour',
   'social-showmance-spark', 'social-grudge-hardens', 'social-drifting-out',
+  // bb-events/deals.js
+  'deals-exposed', 'deals-defection', 'deals-broken-promise', 'deals-jury-management', 'deals-final-three-pact',
+  'deals-competing', 'deals-hedged', 'deals-jury-pact', 'deals-vote-flip',
 ];
 const EVENT_IDS = new Set([...Object.values(CONVERTED), ...PHASE6]);
 
@@ -159,7 +162,7 @@ describe('the talk pools', () => {
   const FIXED = { 'talk.safety': 'hoh-room', 'talk.pitch-target': 'hoh-room', 'talk.hoh-visit': 'hoh-room', 'talk.hoh-decide': 'hoh-room' };
   it('only stages a room where the scene is', () => {
     for (const [key, pool] of Object.entries(POOLS)) {
-      if (!/^(talk|social)\./.test(key)) continue;
+      if (!/^(talk|social|deals)\./.test(key)) continue;
       const fixed = FIXED[key.split('.').slice(0, 2).join('.')];
       for (const e of pool) for (const t of e.turns) {
         if (!t.beat) continue;

@@ -1714,6 +1714,30 @@ with a comment saying why — or move your call to where the existing one alread
 happens. The same question applies to any per-episode cache a new system
 touches out of order.
 
+### V. A day written after it is played reads the evening's state
+
+On the day of a profile swap, every scene from the morning came out with the
+swapped people in it. Ripper's lines before the swap carried Ivy's stage
+directions and Ivy's pronouns ("RIPPER: Save me. Somebody. Please." / "Ivy
+refreshes the chat"), and the swap scene told each of them about the other's
+profile.
+
+The Circle writes a day's lines at the END of the day (`writeDay`), from
+`state`, which by then holds the evening. Anything a twist changes mid-day (who
+is behind a profile; the same holds for a name, a role or a team) is read by
+every scene of that day as if it had always been so. This is §11.5 B again,
+but between two moments of the same day, inside the writer, where no test of a
+screen will see it.
+
+**The rule: a change that the writer reads must be logged with the moment it
+happened, and the writer must read as of each scene.** The Circle logs who was
+behind each profile before a swap (`state.js noteIdentity`), and `peopleOf`
+answers as of the scene being written (`state._writing`). A line typed on a
+swapped profile names its typist ("IVY (for RIPPER)"), and an aired scene
+whose people differ from the day's end carries them for the screen. The test
+books a swap and checks the morning's stage directions name the owners; it
+fails with the as-of read switched off.
+
 ---
 
 ## 12. What will still be hardcoded when you are done
@@ -2451,3 +2475,228 @@ in 65-80% of off-seasons — a known gap, proposed but not built.
 6. Measure repetition per kind (plays vs distinct lines vs worst repeat) and
    frequency per kind (share of an episode's aired scenes) — both.
 7. Bisect any rate that moved without a reason, before tuning it back.
+
+---
+
+## 17. What the sixth show actually found
+
+The Circle is the first show where nearly everything that happens is a
+CONVERSATION: private chats, group chats, Circle Chat, the Hangout, the visit,
+the goodbye video. Nobody wins a challenge or casts a vote in a room; they type.
+It is also the first show built on its own episode viewer, one click per line.
+Both are worth copying for any dialogue-heavy show that follows. The code is
+`js/ci/` (engine and writing), `js/vp-ci/` (the viewer), `js/ci-run.js` (the
+run tab), `js/ci-cast-ui.js` (setup). The project memory `project_the_circle.md`
+carries the running notes.
+
+### 17.1 The dialogue-heavy engine: a scene is decided, then written
+
+A Circle day is a list of SCENES (`addScene(state, kind, who, data, seenBy)`),
+each with what it decided in `data`. The words come later, from the record.
+This is §16.1's order made strict, and it is the only reason a scene's lines
+never contradict what the numbers did.
+
+1. **The outcome first.** A private chat (`js/ci/conversation.js runChat`)
+   decides its ending (`warm | neutral | cold`) from the listener's feelings,
+   applies its effects, then rolls slips, then its intent's own consequence (a
+   pact, a claim learned, a belief nudged). Only then is a line picked, and the
+   line pool is keyed on the ending (`chat.<intent>.<ending>`). An intent is a
+   REASON to talk (`chat.js INTENTS`, each with a utility from stats, bonds and
+   beliefs); nothing is chosen for how it reads.
+2. **Knowledge has a witness.** A belief only moves through `nudgeBelief(...,
+   scene)`, which throws if the player was not in `scene.seenBy` (§11.5 D,
+   enforced at the source). A claim is learned from someone, in a scene. Talk
+   about what happened (`chat.js debriefTopic`) only picks topics both people
+   saw.
+3. **Pools are SCRIPTS, not templates.** An entry is `{ id, when, turns:[{ by,
+   say | send | react | video | post }], beat }`. `say` is spoken aloud in the
+   apartment, `send` is the message on the screen (and the spoken dictation is
+   derived from it), `react` is a line to the room, `beat` a stage direction.
+   Roles are `a` / `b` / `c` (and `host`); `{a}` is the PROFILE's name in speech
+   and the REAL person in a stage direction. `when` filters on facts from the
+   record (`script.js FACT_KEYS` is the whitelist; a test refuses any other
+   key). Every pool keeps at least three entries with no `when`.
+4. **The picker is where repetition is won** (`script.js pickEntry`). In order:
+   a line used on this pair is out; a line used today is out (by its WORDS,
+   every line of the exchange, not only its id: the same sentence lives in
+   several pools); a line in its pool's last half is out while anything else
+   fits (`RECENT`: the use decay alone forgets order, and once every line in a
+   small pool had aired once they were all equal again); each earlier use
+   multiplies by `USED_DECAY` 0.12; a sentence either speaker in the exchange
+   has said before weighs `SAID_AGAIN` (both sides: the REPLY repeats as surely
+   as the line). When nothing fits, the fallback still prefers what was not
+   heard today. Measure with `tests/ci-repetition.test.js` (under 12% of lines
+   repeat one already heard, under 1.5% a person repeating themselves) and the
+   spec audit's "hardest-worked pools" (plays, distinct lines, worst repeat).
+5. **The voice is a layer on top** (`js/ci/voice.js`). A pool writes a message
+   once with `{e:heart}` and `{t:Hashtag}` tokens; each sender's voice keeps or
+   drops them, applies their register (caps, ellipses, lowercase, catchphrases)
+   and, for a catfish, the persona's register until the cover cracks. **A token
+   that carries the meaning must survive:** a hashtag that OPENS a message is
+   the message and is always kept ("#CircleFam forever" from a player who never
+   hashtags printed "forever"). Two different raw lines can also converge after
+   styling ("Honestly I've been thinking the same thing" and "I've been
+   thinking the same thing 👀" are the same words in a blunt voice): if a
+   test counts repeats on rendered text, reword one of them.
+6. **A day is written after it is played** (`season.js` calls `writeDay` at the
+   day's end). Anything that changes WHO is behind a profile mid-day must leave
+   a record the writer can read as of each scene. See §11.5 V.
+7. **What airs is chosen** (`js/ci/airing.js`): `ALWAYS_AIRS` kinds, then the
+   private chats by drama (`DRAMA` per intent, a cold ending, a claim, a noticed
+   slip) up to `CHATS_PER_DAY`. A new intent with a high drama weight takes
+   screen time from the quiet ones; raise the cap when talk is ADDED rather
+   than swapped (17.5).
+
+### 17.2 The viewer: one click is one line
+
+`js/vp-ci/` replaces the column-of-cards episode with a TV programme. It builds
+on §6.5's pinned stage and goes further: every line is a step.
+
+- **`steps.js` is pure.** A played row in, a list of screens out, no DOM. One
+  screen per aired scene; one step per line (or stage direction); each step
+  carries its block's `key`, who it is about (`on: {a,b,c}`) and, for a game,
+  its beat. The stage, the script under it and the sidebar all read this one
+  list, so they never drift. `stageOf(kind)` maps a scene kind to its SET:
+  `apt` (the apartment: dictation, the send beam, the TV), `ui` (the Circle
+  itself, full screen), `alert`, `arrive` (who walks in and the profile the
+  room will see), and the big moments, each with its own set (`rate`,
+  `hangout`, `blocked`, `room` for the visit and the finale meet, `video`,
+  `studio`, `feed`, `game`, `vote`).
+- **Paint step N deterministically** (`stage.js stageInner(row, screen, idx,
+  fresh)`): the whole picture for "the first N lines have happened", with only
+  the newest line animating. A screen is a pure function of its index, so Next,
+  Back, Reveal all and Restart are trivial and nothing drifts. Never
+  `scrollIntoView` inside it (that scrolled the whole page on every click);
+  keep the chat's own `scrollTop`.
+- **Nothing before its line.** A test renders every step of every screen of
+  real seasons and checks a result is not on the stage before the step that
+  says it (`tests/ci-vp-moments.test.js`, `ci-vp-boards.test.js`). The sidebar
+  is gated by the steps played (`sidebar.js playedTo`).
+- **Show the data behind a reaction.** A game board drew only the three answers
+  said out loud, while the room reacted to everyone's ("The room is split";
+  "a friend who answered the other way"). From the results step the board now
+  shows every player in their column, the speakers large, the rest as name
+  chips. The general rule: if a line reacts to something, that something is on
+  screen by then.
+- **What the row carries.** A row keeps each aired scene's script and a
+  trimmed copy of its data for the sets (`season.js STAGE_DATA`, `BEAT_KEEP`):
+  never the engine's state. A scene whose people differ from the day's end
+  (a profile swap) carries `people`, and the screen draws it on a `rowView`
+  (§11.5 V). `tests/ci-run.test.js` round-trips rows through JSON.
+- **An episode, not a list of scenes.** `teasers.js` opens with "Previously",
+  closes with "Coming up" / "Next time" (never a key that gives away an
+  outcome); `web-stage.js` ends each episode with the relationship web and what
+  moved; `debug.js` is the last screen. Sound is per step (`sound.js`: a bed per
+  set, a cue on a step key). TV mode hides the chrome. Sizes are in `cqw` so a
+  set scales with its frame.
+- **Mockups first.** Every new set was a static HTML mockup the user approved
+  (`mockup/mockup-circle-*.html`) before a line of stage code.
+
+### 17.3 Bug classes the season reads found
+
+Each shipped, was read in a transcript, and has a test in
+`tests/ci-season-read.test.js` (or the file named).
+
+| class | example | the fix |
+|---|---|---|
+| **a standing claimed before anyone has one** | "Sienna is winning this", "You're winning, and I can't let you", "harder than last time" on the FIRST ratings night | lines that claim a standing need `early: false` (a ratings night behind them) |
+| **an invented default** | every roster character without an age was 25 (five players and a newcomer in one season); "from Swiss" (a nationality in the hometown field) | a steady per-person age until one is set (`profiles.js unknownAge`); `topics.js placeOf` drops demonyms and capitalizes ("Sao Paulo") |
+| **a line that is true of most people and false of this one** | "You look exactly like I pictured" to a catfish walking into the finale | gate on the fact (`catfish: false`) |
+| **a reveal that does not say whose it was** | a guess-game owner whose answer gave them away said only "Oh no, that doesn't sound like somebody my age" | an owner line claims the answer first |
+| **the same sentence twice in a day** | "Please don't be me. Please don't be me." is written into three pools; a gift game used up its thank-yous | the same-day rule goes by words; pools a single scene can drain get more lines; measured 16 same-day repeats in 390 days -> 0 |
+| **a pool too small for the cast** | three pairs of players set up their profiles with the same line (three lines for eight "best photos" players) | size a day-one pool by the cast, not by taste |
+| **a hashtag that was the meaning** | "forever" | an opening hashtag is kept (17.1 #5) |
+| **a talk nobody has** | a goodbye video warned the room about a player and not one chat that day mentioned it | morning-after intents (`defend`, `debrief`) built from what both saw; a goodbye warning is now talked over the same day 120 times in 124 |
+| **a pronoun for a known person** | "David is someone I love, and I played as them" | the slot's pronoun (`{a.obj}`) |
+
+### 17.4 The Season Timeline must be the engine's calendar
+
+- **The calendar.** `ci-run.js circleShapeOf` built the timeline's days with
+  `rhythmOf(cast.map(p => p.name))` over a list of NAMES: every name was
+  `undefined`, so the timeline hashed a different rhythm from the one the
+  engine played, and every card booked by episode ran a day early or late.
+  §16.3 found the same class on Perfect Match (a forgotten option); here it was
+  a type. **The guard is a test, not a review:** the timeline's days equal the
+  engine's schedule for several casts and with a shared profile
+  (`tests/ci-run.test.js`). Count what the engine counts (a pinned shared
+  apartment is one profile).
+- **Randomize books what it draws.** The Circle's Randomize used to say "the
+  Circle draws its own nights" and book nothing. It now runs the engine's own
+  draw (`timeline.js bookSeason`) around the cards booked by hand and writes it
+  onto the timeline as cards (`ci-run.js circleRandomDraw`); a drawn season is
+  `fixed`: nothing more is drawn behind the author's back.
+- **Surprises are an option.** Unbooked nights draw formats, powers, identity
+  twists and disrupters, like the real show. The user found that surprising,
+  so CIRCLE OPTIONS has "Surprise twists": off means only what is on the
+  timeline happens (`bookSeason({ surprises: false })`). Any show that draws
+  unbooked twists should offer the same switch.
+
+### 17.5 Calibration: displacement, and outcome rates are read-outs
+
+- **A new kind of chat that TAKES a slot changes the season.** Morning-after
+  chats first took the place of a player's social chats; catfish lost the warm
+  chats a persona earns its edge in, and catfish winners fell from 40% to 33%.
+  With every new effect switched off it was still 35%: the drop was the
+  displacement, not the mechanic. Found by switching the mechanism's effects
+  off one at a time through `globalThis` flags in a copied `*-audit.test.js`.
+  Strategic talk now comes ON TOP of the social budget (`chat.js EXTRA_TALK`),
+  with one more aired chat a day.
+- **Cap what a topic can take.** A warning took four chats on the same morning;
+  gossip passed a contradiction round until seven players compared notes with
+  one player. One topic, or one person to compare notes with, gets at most two
+  chats a day (`PER_TOPIC`).
+- **Weight strategy by the strategic stat.** Game talk is 14% of the least
+  strategic players' chats and 54% of the most strategic; the chill stay chill.
+- **The user's rule: an outcome rate is a read-out, not a target.** Do not tune
+  constants to move "catfish winners" toward the real show's 50%. Fix a
+  mechanism that is plainly broken (the displacement above) and let luck and
+  stats decide the rest.
+
+### 17.6 The cast: categories filled like tribes, and characters who do not play
+
+- The Circle's setup sorts the cast into three fixed categories (Day 1,
+  Newcomers, Catfish faces) on the TRIBE field (`js/ci/categories.js`). The
+  cast form's dropdown and the Cast Room's columns are Total Drama's, filled
+  with this list; the shuffle tools and the tribe-balance warnings are off.
+- **A character can be in the cast and not play.** A Catfish face is a real
+  roster character someone plays AS: out of `_cast()`, the calendar and the
+  draw; built into a persona from their profile (`ci-run.js facePersonas`,
+  portrait as photo); linked to the player by a Relationships-tab row (the
+  same row a shared apartment writes, so every show and later season reads
+  it); recorded on the season (`playedAs`). Any show that needs non-playing
+  characters (a guest, a parent, a host's pick) should use the same pattern:
+  a category, an exclusion at the cast boundary, a relationship row.
+
+### 17.7 Tools and operational traps
+
+- **Read seasons, three at a time, on the real roster** (`rosterCast`): a
+  scratch test writes `seasonText(...)` for a few seeds to files and you read
+  them. Then scan mechanically: unfilled slots, `undefined`, a speaker naming
+  themselves, the same line twice in a day, a speaker after their blocking,
+  a debrief about something one of the pair did not see. The scans find the
+  volume; reading finds the logic.
+- **A test that passes first time proves nothing until the code is mutated.**
+  Every fix this session was checked by putting the old code back and watching
+  the new test fail.
+- **Restoring files by basename collides.** `js/ci/profiles.js` and
+  `js/ci/lines/profiles.js` share a name; copying both to `$TEMP/profiles.js.new`
+  wrote the engine over the line pool. Save copies under their full path.
+- **An apostrophe inside a quoted heredoc breaks the shell tool.** Write Python
+  edit scripts with the file-writing tool, not a heredoc.
+- **A background dev server can be stopped for memory** while the session is
+  idle; restart it only when asked.
+
+### 17.8 What the seventh show should do
+
+1. Everything in §16.9.
+2. If the show is mostly talk, build 17.1's order: outcome, effects, then
+   words picked by facts, with a voice layer on top. Decide the picker's
+   repetition rules (pair, day, words, recency, both speakers) before writing
+   the second hundred lines.
+3. Build the viewer as steps (17.2): a pure step list, a stage that paints step
+   N, a test that renders every step of real seasons and checks nothing shows
+   before its line.
+4. Hold the timeline's calendar equal to the engine's with a test, and make
+   Randomize book what it draws.
+5. When adding a new kind of scene, measure what it displaces before you
+   measure what it does.

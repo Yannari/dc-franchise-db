@@ -25,6 +25,21 @@ export function newState(seed, options = {}) {
   };
 }
 
+// Twelve apartments, each its own room (the renders in assets/sets/circle/apt).
+// A player moves into the lowest-numbered room nobody on the Circle is in, and
+// keeps it: a newcomer takes the room a blocked player left, as on the show.
+export const ROOM_COUNT = 12;
+export function moveIn(state, h) {
+  state.rooms ??= {};
+  if (state.rooms[h] != null) return state.rooms[h];
+  const held = new Set(state.active.filter(x => x !== h).map(x => state.rooms[x]).filter(x => x != null));
+  let r = 0;
+  while (held.has(r) && r < ROOM_COUNT) r++;
+  // More than twelve on at once (no format books that): share by number.
+  state.rooms[h] = r < ROOM_COUNT ? r : Object.keys(state.rooms).length % ROOM_COUNT;
+  return state.rooms[h];
+}
+
 export function addScene(state, kind, who, data = {}, seenBy = who) {
   const scene = { id: ++state.seq, day: state.day, kind, who: [...who],
     seenBy: [...new Set(seenBy)], data, aired: true };

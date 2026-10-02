@@ -6,7 +6,7 @@
 // real season, each with a consequence: who they bond with first, who they
 // pass over, who notices. A newcomer is immune at their first blocking;
 // whether they rate or are rated follows the season's newcomer rule.
-import { rel, bump, addScene, S, makePact } from './state.js';
+import { rel, bump, addScene, S, makePact, moveIn } from './state.js';
 import { initMind, feel } from './mind.js';
 import { nudgeBelief, belief } from './beliefs.js';
 import { applyBlock } from './blocking.js';
@@ -15,7 +15,7 @@ import { mood } from './mind.js';
 import { streamFor } from '../dr/rng.js';
 
 function join(state, h, entry) {
-  state.active.push(h);
+  state.active.push(h); moveIn(state, h);
   state.joinedDay[h] = state.day;
   state.immuneNext[h] = true;
   state.unratedNext[h] = true;

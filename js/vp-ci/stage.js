@@ -24,7 +24,7 @@
 import { teaserStage } from './teaser-stage.js';
 import { webStage } from './web-stage.js';
 import { faceOf } from './steps.js';
-import { esc, hashify, faceUrl, ringOf, nameOf, realOf, isCatfish, bg, ringBg, avatar, THEMES, themeFor, aptNo,
+import { esc, hashify, faceUrl, ringOf, nameOf, realOf, isCatfish, bg, ringBg, avatar, THEMES, themeFor, aptNo, roomImg, ROOM_GEO,
   captionHtml, profileCard, starsText, facts } from './parts.js';
 import { MOMENTS } from './moments.js';
 import { PARTY_THEMES } from '../ci/games-data.js';
@@ -125,6 +125,18 @@ function aptOwner(screen, idx) {
   for (let i = idx; i >= 0; i--) if (screen.steps[i]?.who) return screen.steps[i].who;
   return screen.cast[0] || null;
 }
+// The room is the player's rendered apartment (parts.js roomImg), scaled and
+// slid so that its TV lands exactly where the live screen goes: the chat is
+// on that TV. With the chat window open the screen moves aside and the room
+// is scaled just enough to still fill the frame.
+const TV_AT = { L: [30, 9], R: [26, 9], Lwin: [20, 9], Rwin: [35, 9] };
+function roomFit(side, win) {
+  const [L, T] = TV_AT[side + (win ? 'win' : '')];
+  const [gx, gy, gw] = ROOM_GEO.tv;
+  const z = win ? Math.max((100 - L) / (100 - gx), L / gx) : 44 / gw;
+  const f = n => `${+n.toFixed(2)}%`;
+  return { img: `left:${f(L - gx * z)};top:${f(T - gy * z)};width:${f(100 * z)};height:${f(100 * z)}`, tv: `left:${f(L)};top:${f(T)};width:${f(gw * z)}` };
+}
 function aptStage(row, screen, idx, fresh) {
   const steps = screen.steps, st = idx >= 0 ? steps[idx] : null;
   const h = aptOwner(screen, Math.max(0, idx));
@@ -151,13 +163,11 @@ function aptStage(row, screen, idx, fresh) {
   // A face they know: the TV has their profile open, full screen.
   const tv = screen.kind === 'recognise' && peer !== h ? `<div class="civ-uibg"></div>${profileCard(row, peer, 'PROFILE')}` : tvUi;
   const win = CHATWIN.has(screen.kind);
+  const fit = roomFit(side, win);
   return `<div class="civ-layer civ-apt ${side}${win ? ' haswin' : ''}${sending ? ' push sent' : ''}${cut || (fresh && idx === 0) ? ' enter' : ''}">
     <div class="civ-room">
-      <div class="civ-wall" style="background:${t.pat ? `${t.pat},` : ''}${t.wall}"></div><div class="civ-dado" style="background:${t.dado}"></div><div class="civ-floor"></div>
-      <div class="civ-poster" style="${side === 'L' ? 'left:4%' : 'right:5%'};top:10%;width:17%;height:42%;background:${t.p1}"></div>
-      <div class="civ-poster" style="${side === 'L' ? 'right:5%' : 'left:4%'};top:6%;width:15%;height:34%;background:${t.p2}"></div>
-      <div class="civ-lamp" style="background:${t.lamp};${side === 'L' ? 'right' : 'left'}:0"></div>
-      <div class="civ-tvset" style="--bias:${t.bias}${side === 'R' ? ';left:26%' : ''}">${tv}</div>
+      <img class="civ-set" src="${roomImg(row, h)}" style="${fit.img}" alt="" aria-hidden="true">
+      <div class="civ-tvset" style="--bias:${t.bias};${fit.tv}">${tv}</div>
       ${ping ? '<div class="civ-ping"></div>' : ''}
       <div class="civ-rim" style="${side === 'L' ? 'left' : 'right'}:0;background:${ringOf(row, h)}"></div>
       <div class="civ-bust ${side}" data-cam="CAM ${aptNo(row, h)} · ${esc(real.toUpperCase())}" style="--glow:${ringOf(row, h)}${cam ? `;background-image:url('${esc(cam)}')` : ''}">${cam ? '' : esc(real[0] || '?')}</div>

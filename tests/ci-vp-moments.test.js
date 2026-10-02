@@ -6,6 +6,7 @@ import { setPlayers } from '../js/core.js';
 import { playCircleSeason } from '../js/ci/season.js';
 import { circleScreens } from '../js/vp-ci/steps.js';
 import { stageInner } from '../js/vp-ci/stage.js';
+import { roomImg } from '../js/vp-ci/parts.js';
 import { rosterCast, circleSetup } from './helpers/ci-cast.js';
 import { DEFAULT_POOL } from '../js/ci/default-pool.js';
 
@@ -117,12 +118,21 @@ describe('the visit and the meet', () => {
         expect(at(x, walk).querySelector('img.cvh-film')).not.toBeNull();
       }
       const waits = x.screen.steps.map((s, i) => (/^visit\.wait/.test(s.key || '') ? i : -1)).filter(i => i >= 0);
-      for (const i of waits) expect(at(x, i).querySelector('.cva-svg'), x.screen.steps[i].key).not.toBeNull();
+      // each waits in their own rendered apartment, door closed (parts.js roomImg)
+      for (const i of waits) {
+        const who = x.screen.steps[i].who;
+        const img = at(x, i).querySelector('img.cva-set');
+        expect(img, x.screen.steps[i].key).not.toBeNull();
+        if (who) expect(img.getAttribute('src')).toBe(roomImg(x.row, who));
+      }
+      // the door opens on the visited player's room, the couch in it
+      const together = firstIdx(x.screen, /^visit\.(door|sit|talk)/);
+      if (together >= 0) expect(at(x, together).querySelector('img.cva-set').getAttribute('src')).toBe(roomImg(x.row, x.screen.who[1], true));
       // whose door it is stays secret until the knock: the visited player waits last
       const lastSpeaker = [...waits].reverse().map(i => x.screen.steps[i].who).find(Boolean);
       expect(lastSpeaker).toBe(x.screen.who[1]);
-      expect(at(x, waits.at(-1)).querySelector('.cva-door.knock')).not.toBeNull();
-      expect(at(x, waits[0]).querySelector('.cva-door.knock')).toBeNull();
+      expect(at(x, waits.at(-1)).querySelector('.cva-knock')).not.toBeNull();
+      expect(at(x, waits[0]).querySelector('.cva-knock')).toBeNull();
     }
   });
   it('at the finale everyone who has arrived is in the room', () => {

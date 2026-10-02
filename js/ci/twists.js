@@ -16,7 +16,7 @@
 //                a secret second Influencer. (The real rule blocks both
 //                unless one sacrifices; here someone always goes, so the
 //                season still loses exactly the players it must.)
-import { rel, bump, S, addScene, noteIdentity } from './state.js';
+import { rel, bump, S, addScene, noteIdentity, moveIn } from './state.js';
 import { initMind, feel } from './mind.js';
 import { belief } from './beliefs.js';
 import { voiceOf, personaShown } from './profiles.js';
@@ -63,7 +63,7 @@ export const EVENTS = {
       state.profiles[clone] = { handle: clone, players: [person], mode: 'catfish', personaId: null, reason: 'strategic',
         shown: { ...o.shown }, edits: [], tells: [], gap: 2, voice: voiceOf(o.shown.age ?? 28, state.people[person].stats), clone: original };
       state.handleOf[person] = clone;
-      state.active.push(clone); state.joinedDay[clone] = state.day; initMind(state, clone);
+      state.active.push(clone); moveIn(state, clone); state.joinedDay[clone] = state.day; initMind(state, clone);
       // Everyone else votes which one is FAKE. They know the original's words;
       // the clone has a day's notes and the nerve to sell it.
       const votes = {};
@@ -101,7 +101,7 @@ export const EVENTS = {
         personaId: persona?.id ?? null, reason: persona ? 'strategic' : null, shown, edits: [], tells: persona ? tellsOf(persona) : [],
         gap: persona ? 2 : 0.5, voice: voiceOf(shown.age ?? 30, face.stats), personaVoice: persona?.chatVoice || null, secondChance: true };
       for (const n of people) state.handleOf[n] = handle;
-      state.active.push(handle); state.joinedDay[handle] = state.day; initMind(state, handle);
+      state.active.push(handle); moveIn(state, handle); state.joinedDay[handle] = state.day; initMind(state, handle);
       for (const b of from) for (const i of b.by) if (state.active.includes(i)) bump(handle, i, 'resentment', 2);
       for (const o of state.active) if (o !== handle) feel(state, o, 'paranoia', 0.5);
       // Back under their own faces, the room knows them from the goodbye videos.

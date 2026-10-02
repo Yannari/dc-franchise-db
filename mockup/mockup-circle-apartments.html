@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Circle Apartments</title>
+<style>
+:root{--bg:#0d0b16;--ink:#f4f0ff;--dim:#a99fc8;--pink:#ff4fb4}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.4 system-ui,sans-serif;padding:16px}
+h1{font-size:20px;margin:0 0 4px}p{color:var(--dim);margin:0 0 16px;max-width:900px}
+.tabs{display:flex;gap:8px;margin:0 0 12px;flex-wrap:wrap}
+.tabs button{background:#211b36;color:var(--ink);border:1px solid #3a3060;border-radius:999px;padding:6px 14px;cursor:pointer}
+.tabs button.on{background:var(--pink);border-color:var(--pink)}
+.stage{position:relative;max-width:1100px;aspect-ratio:16/9;container-type:inline-size;border-radius:12px;overflow:hidden;background:#000}
+.stage img.set{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+/* positions measured from the Blender camera (percent of the frame) */
+.door{position:absolute;left:10.9%;top:14.84%;width:13.25%;height:50.65%}
+.plate{position:absolute;left:15.28%;top:16.61%;width:4.01%;height:4.27%;display:grid;place-items:center;font:700 1.05cqw/1 system-ui;color:#3a2600;letter-spacing:.05em}
+.tv{position:absolute;left:40.69%;top:10.68%;width:33.26%;height:33.26%;border-radius:.3cqw;overflow:hidden}
+.knock{position:absolute;left:4%;top:68%;font:800 3.4cqw/1 system-ui;letter-spacing:.06em;text-shadow:0 0 2cqw var(--pink)}
+.knock small{display:block;font:600 1.1cqw system-ui;letter-spacing:.2em;color:#ffd8f0;margin-bottom:.6cqw}
+.door.glow{box-shadow:0 0 3cqw 1cqw rgba(255,79,180,.55);animation:k 1.2s ease-in-out infinite;border-radius:.2cqw}
+@keyframes k{50%{box-shadow:0 0 1cqw .3cqw rgba(255,79,180,.3)}}
+.feed{background:linear-gradient(160deg,#141030,#24164a);height:100%;padding:1.2cqw;box-sizing:border-box;display:flex;flex-direction:column;gap:.7cqw;font-size:1.15cqw}
+.feed .hd{font-weight:800;letter-spacing:.15em;color:var(--pink);font-size:.9cqw}
+.msg{background:#ffffff14;border-radius:1cqw;padding:.5cqw .9cqw;max-width:75%}.msg.me{align-self:flex-end;background:#ff4fb455}
+.bust{position:absolute;bottom:22%;width:12%;aspect-ratio:3/4;border-radius:1cqw;background:linear-gradient(#ffd0e8,#b35cff);display:grid;place-items:end center;font:700 1.2cqw system-ui;padding-bottom:.6cqw;box-sizing:border-box;color:#2a0a30;box-shadow:0 1cqw 2cqw #0008}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;margin-top:20px;max-width:1100px}
+.grid figure{margin:0;position:relative;cursor:pointer}.grid img{width:100%;border-radius:8px;display:block}
+.grid figcaption{font-size:12px;color:var(--dim);margin-top:4px}
+.grid figure.on img{outline:3px solid var(--pink)}
+</style></head><body>
+<h1>The Circle: 12 apartments (Blender, stylized 3D)</h1>
+<p>Each apartment is its own place: a beach shack, an arcade den, a glam suite, a boho nest, a sports den, a music room, a library, an artist's studio, a space room, a diner, a brick loft and a zen room. Apartment N gets room N, so up to 12 players on at once never share a room. A newcomer who moves into a blocked player's apartment takes over that room. Each room has two shots: the door closed (waiting, and the TV during chats) and the door open with the couch (a visit). The overlays below sit on positions measured from the camera, not eyeballed.</p>
+<div class="tabs" id="modes"></div>
+<div class="stage" id="stage"></div>
+<div class="grid" id="grid"></div>
+<script>
+const ROOMS=['beach','arcade','glam','boho','sports','music','library','artist','space','diner','loft','zen'];
+const src=(r,o)=>`../assets/sets/circle/apt/${r}${o?'-open':''}.webp`;
+let room=0,mode='wait';
+const MODES={wait:'Waiting (Whose door?)',knock:'Knock knock',chat:'Chat on the TV',visit:'Visit (door open, couch)'};
+function paint(){
+  const no=room+1,open=mode==='visit';
+  let o='';
+  if(mode==='wait'||mode==='knock')o=`<div class="door${mode==='knock'?' glow':''}"></div><div class="plate">${String(no).padStart(2,'0')}</div><div class="knock"><small>APARTMENT ${no}</small>${mode==='knock'?'KNOCK KNOCK':'Whose door?'}</div>`;
+  if(mode==='chat')o=`<div class="plate">${String(no).padStart(2,'0')}</div><div class="tv"><div class="feed"><div class="hd">CIRCLE CHAT</div><div class="msg">ok be honest, who is coming for me #nervous</div><div class="msg me">nobody babe, you're good lol</div><div class="msg">that's exactly what someone coming for me would say</div></div></div>`;
+  if(mode==='visit')o=`<div class="bust" style="left:41%">HOST</div><div class="bust" style="left:59%">GUEST</div>`;
+  document.getElementById('stage').innerHTML=`<img class="set" src="${src(ROOMS[room],open)}" alt="">${o}`;
+  document.querySelectorAll('#modes button').forEach(b=>b.classList.toggle('on',b.dataset.m===mode));
+  document.querySelectorAll('#grid figure').forEach((f,i)=>f.classList.toggle('on',i===room));
+}
+document.getElementById('modes').innerHTML=Object.entries(MODES).map(([k,v])=>`<button data-m="${k}">${v}</button>`).join('');
+document.getElementById('modes').onclick=e=>{if(e.target.dataset.m){mode=e.target.dataset.m;paint()}};
+document.getElementById('grid').innerHTML=ROOMS.map((r,i)=>`<figure data-i="${i}"><img src="${src(r,mode==='visit')}" alt=""><figcaption>Apartment ${i+1} · ${r}</figcaption></figure>`).join('');
+document.getElementById('grid').onclick=e=>{const f=e.target.closest('figure');if(f){room=+f.dataset.i;paint();window.scrollTo({top:0,behavior:'smooth'})}};
+paint();
+</script></body></html>

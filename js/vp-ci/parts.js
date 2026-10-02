@@ -55,6 +55,20 @@ export function themeFor(name) {
   return THEMES[key];
 }
 export const aptNo = (row, h) => Math.max(0, Object.keys(row.ci.profiles || {}).indexOf(h)) + 1;
+
+// ── the twelve rendered apartments (tools/blender/circle-apartments.py) ─
+// The engine moves each player into a room (ci/state.js moveIn); a season
+// saved before that falls back to the apartment number.
+export const ROOMS = ['beach', 'arcade', 'glam', 'boho', 'sports', 'music', 'library', 'artist', 'space', 'diner', 'loft', 'zen'];
+export function roomOf(row, h) {
+  const r = row.ci.profiles?.[h]?.room;
+  return ROOMS[(r ?? aptNo(row, h) - 1) % ROOMS.length];
+}
+export const roomImg = (row, h, open = false) => `assets/sets/circle/apt/${roomOf(row, h)}${open ? '-open' : ''}.webp`;
+// Where the door, its number plate and the TV screen sit in every render, in
+// percent of the frame (geo() in the build script measures them from the camera).
+export const ROOM_GEO = { door: [10.9, 14.84, 13.25, 50.65], plate: [15.28, 16.61, 4.01, 4.27], tv: [40.69, 10.68, 33.26, 33.26] };
+export const geoStyle = ([l, t, w, h]) => `left:${l}%;top:${t}%;width:${w}%;height:${h}%`;
 export const starsText = n => (n > 0 ? '★'.repeat(Math.floor(n)) + (n % 1 >= 0.5 ? '½' : '') : '');
 export const facts = (...xs) => xs.filter(x => x != null && x !== '').map(esc).join(' · ');
 export function captionHtml(st, fresh, cls = '') {

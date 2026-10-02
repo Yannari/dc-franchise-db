@@ -106,13 +106,9 @@ export const CIV_CSS = `
 @keyframes civPulse{50%{box-shadow:0 0 3.4cqw rgba(255,79,180,.8)}}
 .civ-win .who{position:absolute;left:.5cqw;bottom:.4cqw;font-weight:700;font-size:.8cqw;letter-spacing:.1em;background:rgba(0,0,0,.55);padding:.2cqw .5cqw;border-radius:.3cqw}
 /* apartments */
+.civ-set{position:absolute;max-width:none;object-fit:cover}
 .civ-room{position:absolute;inset:0;transition:transform 2.6s cubic-bezier(.3,.1,.2,1);transform-origin:50% 30%}
 .civ-apt.push .civ-room{transform:scale(1.1) translateY(2%)}
-.civ-wall{position:absolute;inset:0 0 18% 0}
-.civ-floor{position:absolute;left:0;right:0;bottom:0;height:18%;background:linear-gradient(#3a2a22,#1b120d)}
-.civ-dado{position:absolute;left:0;right:0;bottom:18%;height:22%;border-top:3px solid rgba(255,255,255,.12)}
-.civ-poster{position:absolute;border:.45cqw solid #c9a55a;outline:.9cqw solid #f4efe6;outline-offset:-1.35cqw;box-shadow:0 10px 30px rgba(0,0,0,.5)}
-.civ-lamp{position:absolute;border-radius:50%;filter:blur(30px);mix-blend-mode:screen;width:30%;height:40%;top:10%;opacity:.35}
 .civ-tvset{position:absolute;left:30%;width:44%;top:9%;aspect-ratio:16/9;border-radius:.5cqw;border:.45cqw solid #0c0c10;background:#000;overflow:hidden;box-shadow:0 0 0 1px #222,0 0 5cqw var(--bias,#3fd8ff),0 0 12cqw var(--bias,#3fd8ff);container-type:inline-size}
 .civ-tvset .civ-feed{left:10%;right:26%;gap:1.2cqw}
 .civ-tvset .civ-inbar{left:10%;right:26%}
@@ -154,8 +150,6 @@ export const CIV_CSS = `
 .civ-where{position:absolute;top:2.5%;left:50%;transform:translateX(-50%);z-index:12;font-weight:800;font-size:1cqw;letter-spacing:.16em;padding:.5cqw 1.2cqw;border-radius:99px;
   background:linear-gradient(90deg,rgba(47,123,255,.85),rgba(139,92,255,.85),rgba(255,79,180,.85));box-shadow:0 0 2cqw rgba(139,92,255,.5);white-space:nowrap;text-shadow:0 1px 3px rgba(0,0,0,.4)}
 .civ-apt .civ-hud{top:7.5%}
-.civ-apt.haswin .civ-tvset{width:34%;left:29%}
-.civ-apt.haswin.R .civ-tvset{left:37%!important}
 .civ-chatwin{position:absolute;z-index:8;top:12%;bottom:30%;width:31%;right:2.5%;display:flex;flex-direction:column;border-radius:1cqw;overflow:hidden;
   background:linear-gradient(180deg,rgba(14,17,52,.94),rgba(10,12,40,.94));border:1px solid rgba(63,216,255,.35);box-shadow:0 0 3cqw rgba(47,123,255,.35)}
 .civ-apt.R .civ-chatwin{right:auto;left:2.5%}

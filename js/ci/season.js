@@ -20,7 +20,7 @@ import { formAlliance, checkIn, activeAlliances, afterRatings, doubleAgents, dri
 import { gs, setGs, players } from '../core.js';
 import { streamFor } from '../dr/rng.js';
 import { CIRCLE_FORMAT } from '../shows.js';
-import { newState, addScene, bump, peopleOf, peopleAtScene } from './state.js';
+import { newState, addScene, bump, peopleOf, peopleAtScene, moveIn } from './state.js';
 import { truthOf, drawPersonas, buildProfiles } from './profiles.js';
 import { setBelief, nudgeBelief } from './beliefs.js';
 import { bioFor } from './persona-data.js';
@@ -217,7 +217,7 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
     const ds = name => streamFor(seed, turn ? `${name}#${turn}` : name);
     const rng = ds(`day:${d.day}`);
     if (d.day === 1) {
-      for (const h of starters) { state.active.push(h); state.joinedDay[h] = 1; initMind(state, h); noteJoin(state, h); }
+      for (const h of starters) { state.active.push(h); moveIn(state, h); state.joinedDay[h] = 1; initMind(state, h); noteJoin(state, h); }
       addScene(state, 'profiles', [...starters], {}, [...starters]);
     } else {
       for (const h of state.active) driftMind(state, h);
@@ -355,7 +355,7 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
           // face: what the room sees (a persona's `photo:<id>`, a player's
           // `portrait:<name>`, or null); age/job for the profile card. The
           // screens read these (js/vp-ci), never the engine's state.
-          [h, { name: p.shown?.name, people: [...p.players], mode: p.mode, face: p.shown?.face ?? null,
+          [h, { name: p.shown?.name, people: [...p.players], mode: p.mode, face: p.shown?.face ?? null, room: state.rooms?.[h] ?? null,
             age: p.shown?.age ?? null, job: p.shown?.job ?? null, personaId: p.personaId ?? null,
             status: p.shown?.status ?? null, reason: p.reason ?? null, edits: [...(p.edits || [])],
             bio: (() => { const pr = p.personaId && state.pool.find(x => x.id === p.personaId); return pr ? (pr.bio || bioFor(pr)) : null; })() }])),

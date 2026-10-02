@@ -265,18 +265,18 @@ button{font:inherit;color:inherit}
 .spy .q.hot span::after{content:" ● LIVE";color:#ff2e4d;animation:blink 1s steps(2) infinite}
 .spy .q .fig{position:absolute;bottom:8%;width:14%;aspect-ratio:3/4;border-radius:40% 40% .3cqw .3cqw;background:rgba(150,255,170,.6)}
 .spy .q.nvq .set{filter:grayscale(1) sepia(1) hue-rotate(62deg) saturate(2.4)}
-.ledtv{left:50%;top:7.2cqw;width:32cqw;margin-left:-16cqw;aspect-ratio:16/9;border-radius:.6cqw;overflow:hidden;background:#05070d;box-shadow:0 0 0 .3cqw #101624,0 0 4cqw rgba(255,46,77,.18);transition:box-shadow .4s,transform .5s}
+.ledtv{left:50%;top:5cqw;width:21cqw;margin-left:-10.5cqw;aspect-ratio:16/9;border-radius:.6cqw;overflow:hidden;background:#05070d;box-shadow:0 0 0 .3cqw #101624,0 0 4cqw rgba(255,46,77,.18);transition:box-shadow .4s,transform .5s}
 .ledtv.on{box-shadow:0 0 0 .3cqw #ff2e4d,0 0 5cqw rgba(255,46,77,.45);transform:scale(1.03)}
 .ledtv.dim img{filter:brightness(.28) blur(.2cqw)}
 .ledtv img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 14%}
 .ledtv::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,.18) 0 .12cqw,transparent .12cqw .3cqw),linear-gradient(0deg,rgba(0,0,0,.55),transparent 40%)}
 .ledtv .lb{position:absolute;left:1cqw;bottom:.8cqw;z-index:2;font:900 1.4cqw Archivo;font-stretch:72%;letter-spacing:.2cqw;color:#fff}
 .ledtv .lb span{display:block;font:700 .75cqw 'Chakra Petch';letter-spacing:.2cqw;color:#ff2e4d}
-.votes{position:absolute;left:50%;top:27.5%;transform:translate(-50%,-50%);z-index:9;display:flex;gap:2cqw;align-items:center}
+.votes{position:absolute;left:50%;top:19.5%;transform:translate(-50%,-50%);z-index:9;display:flex;gap:2cqw;align-items:center}
 .votes .v{text-align:center}
-.votes .n{font:700 8cqw/1 'Chakra Petch';color:#fff;text-shadow:0 0 3cqw rgba(255,46,77,.6);min-width:7cqw}
-.votes .k{font:800 1.2cqw Archivo;font-stretch:78%;letter-spacing:.3cqw;color:#ff9db0;text-transform:uppercase}
-.votes .sep{width:.2cqw;height:8cqw;background:linear-gradient(180deg,transparent,#ff2e4d,transparent)}
+.votes .n{font:700 5cqw/1 'Chakra Petch';color:#fff;text-shadow:0 0 3cqw rgba(255,46,77,.6);min-width:7cqw}
+.votes .k{font:800 .85cqw Archivo;font-stretch:78%;letter-spacing:.3cqw;color:#ff9db0;text-transform:uppercase}
+.votes .sep{width:.2cqw;height:5cqw;background:linear-gradient(180deg,transparent,#ff2e4d,transparent)}
 .votes.fresh .n{animation:roll .9s steps(8) both}
 @keyframes roll{0%{opacity:.2;filter:blur(.4cqw)}}
 .kbox{left:58%;bottom:20cqw;width:11cqw;transform:translateX(-50%)}
@@ -611,7 +611,8 @@ const SCREENS = [
     ] },
 
   { id: 'veto', tab: 'Veto meeting', set: 'ceremony', cam: 4, room: 'Living Room', day: 25, time: '14:00', kicker: 'Cam 04 · Living room', title: 'The veto meeting', sub: 'Bridgette won the Power of Veto',
-    cast: [['Gwen', 22], ['Courtney', 42], ['Bridgette', 70]], wall: true, medalOn: 'Bridgette',
+    seated: { Gwen: 'N-1', Courtney: 'N1', Bridgette: 'stand', Heather: 'B2', Duncan: 'B0', Geoff: 'B1', Alejandro: 'B4', Zoey: 'B3', Scott: 'R0' },
+    wall: true, medalOn: 'Bridgette',
     steps: [
       { k: 'bb', t: `This is the Power of Veto meeting.`, veto: 'Bridgette' },
       { k: 'say', by: 'Bridgette', t: `Both of you came to me, and both of you said things I'm going to remember for a long time.`, medal: 'on' },
@@ -624,7 +625,8 @@ const SCREENS = [
     ] },
 
   { id: 'evict', tab: 'Live eviction', set: 'ceremony', cam: 1, room: 'Living Room', day: 27, time: 'LIVE', kicker: 'Live · Eviction night', title: 'Eviction night', sub: 'Six votes, two nominees',
-    cast: [['Gwen', 22], ['Courtney', 78]], wall: 'after', tvObj: true,
+    seated: { Gwen: 'N-1', Courtney: 'N1', Heather: 'B2', Duncan: 'B0', Bridgette: 'B1', Geoff: 'B3', Alejandro: 'B4', Zoey: 'L1', Scott: 'R0' },
+    wall: 'after', tvObj: true,
     steps: [
       { k: 'host', by: 'Valeria', t: `Good evening, houseguests. The votes are in.` },
       { k: 'host', by: 'Valeria', t: `When I reveal the result, the evicted houseguest will have a few moments to say their goodbyes and walk out the front door.` },
@@ -634,7 +636,7 @@ const SCREENS = [
       { k: 'say', by: 'Courtney', t: `Win it. Please.` },
       { k: 'beat', t: `At the door she stops and turns round to Alejandro.`, at: [['Courtney', 38], ['Alejandro', 64]] },
       { k: 'say', by: 'Courtney', t: `You told me Scott. Remember that when it's your turn.`, push: true, pops: [['Alejandro', 'Grudge', 'down', 'Courtney']] },
-      { k: 'beat', t: `The front door closes behind her. On the memory wall, her picture goes grey.`, at: [['Alejandro', 64]] },
+      { k: 'beat', t: `The front door closes behind her. On the memory wall, her picture goes grey.`, exit: 'Courtney' },
     ] },
 ];
 
@@ -668,7 +670,11 @@ function ledger(si, ii) {
   return L;
 }
 function castAt(S, i) {
-  if (S.seated) return Object.keys(S.seated).map(n => [n, seatOf(S, n).at[0]]);
+  if (S.seated) {
+    // somebody who has walked out of the room is no longer in their seat
+    const gone = new Set(S.steps.slice(0, i + 1).filter(x => x.exit).map(x => x.exit));
+    return Object.keys(S.seated).filter(n => !gone.has(n)).map(n => [n, seatOf(S, n).at[0]]);
+  }
   for (let j = i; j >= 0; j--) if (S.steps[j]?.at) return S.steps[j].at; return S.cast || [];
 }
 function bgAt(S, i) { for (let j = i; j >= 0; j--) if (S.steps[j]?.bgAt) return S.steps[j].bgAt; return S.bg || []; }
@@ -678,7 +684,7 @@ function chipsFor(n, L) {
   if (L.out.includes(n)) c.push('<span class="chipx out">Evicted</span>');
   else if (L.nom.includes(n)) c.push('<span class="chipx nom">Nom</span>');
   if (L.veto === n) c.push('<span class="chipx veto">Veto</span>');
-  if (L.status[n] === 'safe' && SCREENS[cur].seated) c.push('<span class="chipx key">Key</span>');
+  if (L.status[n] === 'safe' && SCREENS[cur].set === 'dining') c.push('<span class="chipx key">Key</span>');
   return c.join('');
 }
 function camOf(S, i) {
@@ -701,12 +707,12 @@ function tileHtml(n, x, cls, L, lock, extra = '', more = '') {
 const PHOTO = new Set(['kitchen', 'ceremony', 'bedroom', 'hoh', 'dr', 'yard', 'dining']);
 // Projected by Blender: where each seat, key slot and memory-wall frame lands on screen
 // ([% from left, % from bottom, depth]). Regenerate with anchors() when a room changes.
-const ANCH = {"dining":{"head":{"at":[50.0,53.71,6.41],"w":7.89},"seats":{"L0":{"at":[5.14,4.12,1.61],"w":27.82},"R0":{"at":[94.86,4.12,1.61],"w":27.82},"L1":{"at":[18.07,23.2,2.262],"w":19.8},"R1":{"at":[81.93,23.2,2.262],"w":19.8},"L2":{"at":[25.21,33.75,2.914],"w":15.37},"R2":{"at":[74.79,33.75,2.914],"w":15.37},"L3":{"at":[29.74,40.44,3.565],"w":12.56},"R3":{"at":[70.26,40.44,3.565],"w":12.56},"L4":{"at":[32.87,45.06,4.217],"w":10.62},"R4":{"at":[67.13,45.06,4.217],"w":10.62},"L5":{"at":[35.17,48.44,4.869],"w":9.2},"R5":{"at":[64.83,48.44,4.869],"w":9.2},"L6":{"at":[36.92,51.03,5.521],"w":8.11},"R6":{"at":[63.08,51.03,5.521],"w":8.11}},"box":{"at":[50.0,56.94,5.481],"w":14.13},"slots":[[55.05,57.99,5.474],[54.54,58.3,5.619],[53.4,58.56,5.741],[51.82,58.73,5.823],[50.0,58.78,5.852],[48.18,58.73,5.823],[46.6,58.56,5.741],[45.46,58.3,5.619],[44.95,57.99,5.474],[45.21,57.65,5.33],[46.25,57.35,5.207],[47.94,57.15,5.125],[50.0,57.07,5.096],[52.06,57.15,5.125],[53.75,57.35,5.207],[54.79,57.65,5.33]],"wall":[{"r":0,"c":0,"x":27.13,"y":83.21,"w":4.65,"h":11.51},{"r":0,"c":1,"x":32.97,"y":83.21,"w":4.73,"h":11.51},{"r":0,"c":2,"x":38.8,"y":83.21,"w":4.81,"h":11.51},{"r":0,"c":3,"x":44.64,"y":83.21,"w":4.89,"h":11.51},{"r":0,"c":4,"x":50.47,"y":83.21,"w":4.97,"h":11.51},{"r":0,"c":5,"x":56.31,"y":83.21,"w":5.05,"h":11.51},{"r":0,"c":6,"x":62.14,"y":83.21,"w":5.13,"h":11.51},{"r":0,"c":7,"x":67.98,"y":83.21,"w":5.21,"h":11.51},{"r":1,"c":0,"x":27.48,"y":70.34,"w":4.58,"h":11.16},{"r":1,"c":1,"x":33.23,"y":70.34,"w":4.66,"h":11.16},{"r":1,"c":2,"x":38.97,"y":70.34,"w":4.74,"h":11.16},{"r":1,"c":3,"x":44.72,"y":70.34,"w":4.81,"h":11.16},{"r":1,"c":4,"x":50.46,"y":70.34,"w":4.89,"h":11.16},{"r":1,"c":5,"x":56.21,"y":70.34,"w":4.97,"h":11.16},{"r":1,"c":6,"x":61.96,"y":70.34,"w":5.04,"h":11.16},{"r":1,"c":7,"x":67.7,"y":70.34,"w":5.12,"h":11.16}]},"ceremony":{"wall":[{"r":0,"c":0,"x":33.15,"y":66.65,"w":3.54,"h":8.23},{"r":0,"c":1,"x":37.45,"y":66.65,"w":3.56,"h":8.23},{"r":0,"c":2,"x":41.75,"y":66.65,"w":3.58,"h":8.23},{"r":0,"c":3,"x":46.05,"y":66.65,"w":3.6,"h":8.23},{"r":0,"c":4,"x":50.35,"y":66.65,"w":3.62,"h":8.23},{"r":0,"c":5,"x":54.65,"y":66.65,"w":3.64,"h":8.23},{"r":0,"c":6,"x":58.94,"y":66.65,"w":3.66,"h":8.23},{"r":0,"c":7,"x":63.24,"y":66.65,"w":3.68,"h":8.23},{"r":1,"c":0,"x":33.24,"y":57.26,"w":3.53,"h":8.15},{"r":1,"c":1,"x":37.52,"y":57.26,"w":3.55,"h":8.15},{"r":1,"c":2,"x":41.79,"y":57.26,"w":3.57,"h":8.15},{"r":1,"c":3,"x":46.07,"y":57.26,"w":3.58,"h":8.15},{"r":1,"c":4,"x":50.34,"y":57.26,"w":3.6,"h":8.15},{"r":1,"c":5,"x":54.62,"y":57.26,"w":3.62,"h":8.15},{"r":1,"c":6,"x":58.9,"y":57.26,"w":3.64,"h":8.15},{"r":1,"c":7,"x":63.17,"y":57.26,"w":3.66,"h":8.15}]}};
+const ANCH = {"dining":{"head":{"at":[50.0,53.71,6.41],"w":7.89},"seats":{"L0":{"at":[5.14,4.12,1.61],"w":27.82},"R0":{"at":[94.86,4.12,1.61],"w":27.82},"L1":{"at":[18.07,23.2,2.262],"w":19.8},"R1":{"at":[81.93,23.2,2.262],"w":19.8},"L2":{"at":[25.21,33.75,2.914],"w":15.37},"R2":{"at":[74.79,33.75,2.914],"w":15.37},"L3":{"at":[29.74,40.44,3.565],"w":12.56},"R3":{"at":[70.26,40.44,3.565],"w":12.56},"L4":{"at":[32.87,45.06,4.217],"w":10.62},"R4":{"at":[67.13,45.06,4.217],"w":10.62},"L5":{"at":[35.17,48.44,4.869],"w":9.2},"R5":{"at":[64.83,48.44,4.869],"w":9.2},"L6":{"at":[36.92,51.03,5.521],"w":8.11},"R6":{"at":[63.08,51.03,5.521],"w":8.11}},"box":{"at":[50.0,56.94,5.481],"w":14.13},"slots":[[55.05,57.99,5.474],[54.54,58.3,5.619],[53.4,58.56,5.741],[51.82,58.73,5.823],[50.0,58.78,5.852],[48.18,58.73,5.823],[46.6,58.56,5.741],[45.46,58.3,5.619],[44.95,57.99,5.474],[45.21,57.65,5.33],[46.25,57.35,5.207],[47.94,57.15,5.125],[50.0,57.07,5.096],[52.06,57.15,5.125],[53.75,57.35,5.207],[54.79,57.65,5.33]],"wall":[{"r":0,"c":0,"x":27.13,"y":83.21,"w":4.65,"h":11.51},{"r":0,"c":1,"x":32.97,"y":83.21,"w":4.73,"h":11.51},{"r":0,"c":2,"x":38.8,"y":83.21,"w":4.81,"h":11.51},{"r":0,"c":3,"x":44.64,"y":83.21,"w":4.89,"h":11.51},{"r":0,"c":4,"x":50.47,"y":83.21,"w":4.97,"h":11.51},{"r":0,"c":5,"x":56.31,"y":83.21,"w":5.05,"h":11.51},{"r":0,"c":6,"x":62.14,"y":83.21,"w":5.13,"h":11.51},{"r":0,"c":7,"x":67.98,"y":83.21,"w":5.21,"h":11.51},{"r":1,"c":0,"x":27.48,"y":70.34,"w":4.58,"h":11.16},{"r":1,"c":1,"x":33.23,"y":70.34,"w":4.66,"h":11.16},{"r":1,"c":2,"x":38.97,"y":70.34,"w":4.74,"h":11.16},{"r":1,"c":3,"x":44.72,"y":70.34,"w":4.81,"h":11.16},{"r":1,"c":4,"x":50.46,"y":70.34,"w":4.89,"h":11.16},{"r":1,"c":5,"x":56.21,"y":70.34,"w":4.97,"h":11.16},{"r":1,"c":6,"x":61.96,"y":70.34,"w":5.04,"h":11.16},{"r":1,"c":7,"x":67.7,"y":70.34,"w":5.12,"h":11.16}]},"ceremony":{"wall":[{"r":0,"c":0,"x":33.15,"y":66.65,"w":3.54,"h":8.23},{"r":0,"c":1,"x":37.45,"y":66.65,"w":3.56,"h":8.23},{"r":0,"c":2,"x":41.75,"y":66.65,"w":3.58,"h":8.23},{"r":0,"c":3,"x":46.05,"y":66.65,"w":3.6,"h":8.23},{"r":0,"c":4,"x":50.35,"y":66.65,"w":3.62,"h":8.23},{"r":0,"c":5,"x":54.65,"y":66.65,"w":3.64,"h":8.23},{"r":0,"c":6,"x":58.94,"y":66.65,"w":3.66,"h":8.23},{"r":0,"c":7,"x":63.24,"y":66.65,"w":3.68,"h":8.23},{"r":1,"c":0,"x":33.24,"y":57.26,"w":3.53,"h":8.15},{"r":1,"c":1,"x":37.52,"y":57.26,"w":3.55,"h":8.15},{"r":1,"c":2,"x":41.79,"y":57.26,"w":3.57,"h":8.15},{"r":1,"c":3,"x":46.07,"y":57.26,"w":3.58,"h":8.15},{"r":1,"c":4,"x":50.34,"y":57.26,"w":3.6,"h":8.15},{"r":1,"c":5,"x":54.62,"y":57.26,"w":3.62,"h":8.15},{"r":1,"c":6,"x":58.9,"y":57.26,"w":3.64,"h":8.15},{"r":1,"c":7,"x":63.17,"y":57.26,"w":3.66,"h":8.15}],"seats":{"N-1":{"at":[34.13,41.9,4.428],"w":8.56},"N1":{"at":[65.87,41.9,4.428],"w":8.56},"B0":{"at":[35.99,48.13,8.304],"w":4.56},"B1":{"at":[42.99,48.13,8.304],"w":4.56},"B2":{"at":[50.0,48.13,8.304],"w":4.56},"B3":{"at":[57.01,48.13,8.304],"w":4.56},"B4":{"at":[64.01,48.13,8.304],"w":4.56},"L0":{"at":[20.21,46.56,7.017],"w":5.4},"R0":{"at":[84.61,44.93,6.038],"w":6.27},"L1":{"at":[15.39,44.93,6.038],"w":6.27},"R1":{"at":[79.79,46.56,7.017],"w":5.4},"stand":{"at":[72.29,50.38,5.209],"w":7.27}}}};
 // The HOH is the point of the shot: drawn standing behind the box, bigger than a seat at that depth.
 const seatOf = (S, n) => {
   const a = ANCH[S.set]; const id = S.seated[n];
   if (id === 'head') return { at: [a.head.at[0], a.box.at[1] + 1.5, a.box.at[2] + 0.4], w: a.head.w * 1.55 };
-  const t = a.seats[id]; return { at: t.at, w: t.w * 0.72 };
+  const t = a.seats[id]; return { at: t.at, w: t.w * (S.set === 'dining' ? 0.72 : 1.0) };
 };
 const zOf = a => Math.round(100 - a.at[2] * 10);
 const KEY_ORDER = S => S.steps.filter(x => x.key).map(x => x.key);
@@ -774,7 +780,9 @@ function setHtml(S, st, prevSt, L, fresh) {
   if (S.medalOn && L.veto === S.medalOn) {
     const p = cast.find(([n]) => n === S.medalOn);
     const on = S.steps.slice(0, idx + 1).some(s => s.medal);
-    if (p && on) h += `<div class="obj medal ${fresh && st.medal === 'on' ? 'fresh' : ''} ${fresh && st.medal === 'glint' ? 'glint' : ''}" style="left:${p[1]}%">${MEDAL}</div>`;
+    const ma = S.seated && S.seated[S.medalOn] ? seatOf(S, S.medalOn) : null;
+    const mpos = ma ? `left:${ma.at[0]}%;bottom:${(ma.at[1] * 0.5625 + ma.w * 1.25 * 0.15).toFixed(2)}cqw;width:${(ma.w * 0.42).toFixed(2)}cqw;z-index:${zOf(ma) + 1}` : `left:${p[1]}%`;
+    if (p && on) h += `<div class="obj medal ${fresh && st.medal === 'on' ? 'fresh' : ''} ${fresh && st.medal === 'glint' ? 'glint' : ''}" style="${mpos}">${MEDAL}</div>`;
   }
   return h;
 }

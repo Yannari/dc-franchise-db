@@ -1051,6 +1051,22 @@ def anchors(room, theme='default', w=1920, h=1080):
                            'w': round(abs(b.x - a.x) * 100, 2), 'h': round(abs(b.y - a.y) * 100, 2)})
     if frames:
         out['wall'] = sorted(frames, key=lambda f: (f['r'], f['c']))
+    if room == 'living':
+        # every place a houseguest sits in a living-room ceremony, at chest height (z 0.8): the two red
+        # nomination chairs (N-1 left, N1 right), the back sofa B0..B4, the side sofas L0/L1 and R0/R1,
+        # and where the veto holder stands to speak
+        D = 7.5
+        pts = {f'N{sx}': (sx * 1.15, 2.9, 0.85) for sx in (-1, 1)}
+        cw = (5.2 - 0.44) / 5
+        for i in range(5):
+            pts[f'B{i}'] = (-2.6 + 0.22 + cw * (i + 0.5), D - 0.72, 0.8)
+        cw2 = (2.4 - 0.44) / 2
+        for i in range(2):
+            lx = -1.2 + 0.22 + cw2 * (i + 0.5)
+            pts[f'L{i}'] = (-3.3 - 0.12, 5.0 - lx, 0.8)
+            pts[f'R{i}'] = (3.3 + 0.12, 5.0 + lx, 0.8)
+        pts['stand'] = (1.9, 3.7, 1.15)
+        out['seats'] = {k: {'at': px(co), 'w': width_pct(co, 0.62)} for k, co in pts.items()}
     if room == 'dining':
         seats = []
         for i in range(DINING_SEATS):

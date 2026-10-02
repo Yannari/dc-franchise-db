@@ -13,7 +13,7 @@
 // Like every other file in this directory it imports no engine state.
 import { arrivalStageData } from './arrival.js';
 import { trsStageShell as stageShell, trsFold, trsReg as reg, trsEsc as esc, trsFace as face } from './castle-stage.js';
-import { TRScenery } from './cutaway-scenery.js';
+import { RT_PLATE, rtPlateBox } from './table-stage.js';
 import { beatLines } from './stage-lines.js';
 import { footCard, playCard, CARD_CSS } from './stage-cards.js';
 import { trPlay } from './sfx.js';
@@ -167,9 +167,12 @@ export function arrivalStageScreen(ep, observer, pageHtml) {
 }
 
 // ── THE RING (as selection-stage.js) ─────────────────────────────────────
-const TABLE_CY = .44;
+// the Round Table room is the render (table-stage.js RT_PLATE); the ring is
+// placed in the image's coordinates, as there
+const TABLE_CY = .425;
 function ring(slots, W, H) {
-  const cx = W * .5, cy = H * TABLE_CY, rx = W * .4, ry = H * .24, N = 720;
+  const B = rtPlateBox(W, H);
+  const cx = B.x(.5), cy = B.y(TABLE_CY), rx = B.dw * .4, ry = B.dh * .24, N = 720;
   const ang = [], len = [0];
   let px = cx + rx * Math.cos(-Math.PI / 2), py = cy + ry * Math.sin(-Math.PI / 2);
   for (let i = 0; i <= N; i++) {
@@ -238,9 +241,12 @@ function paint(root, S, fresh) {
     el.innerHTML = '<div class="tpa-out"><div class="tpa-cam"><div class="tpa-set"></div><div class="tpa-car"></div><div class="tpa-folk"></div></div></div>'
       + '<div class="tpa-in"><div class="tpa-cam"><div class="tpa-set"></div><div class="tpa-cloths"></div><div class="tpa-ring"></div><div class="tpa-host"></div></div></div>'
       + '<div class="tpa-hud"></div>';
-    el.querySelector('.tpa-out .tpa-set').innerHTML = TRScenery.facade();
-    el.querySelector('.tpa-in .tpa-set').innerHTML = TRScenery.roundTableSet(W, H)
-      + TRScenery.roundTable(W * .5, H * (TABLE_CY + .005), W * .3, H * .16, slots);
+    // THE FRONT OF THE CASTLE AND THE CHAMBER ARE RENDERS (tools/blender/
+    // traitors-facade.py, traitors-roundtable.py). The facade is anchored to
+    // the bottom like the drawing it replaces: the cast and the cars are
+    // placed off the bottom of the frame, and the walls meet the gravel at .71.
+    el.querySelector('.tpa-out .tpa-set').innerHTML = '<img class="tpa-plate tpa-plate-out" src="assets/sets/traitors/facade.webp" alt="">';
+    el.querySelector('.tpa-in .tpa-set').innerHTML = `<img class="tpa-plate" src="${RT_PLATE}" alt="">`;
     const hp = R.at(0, 1.12);
     const hostEl = el.querySelector('.tpa-host');
     hostEl.style.left = hp.x + 'px'; hostEl.style.top = hp.y + 'px';
@@ -353,6 +359,8 @@ const CSS = `
 .tpa-out,.tpa-in,.tpa-hud{position:absolute;inset:0}
 .tpa-cam{position:absolute;inset:0;transform-origin:0 0;transition:transform 1.2s cubic-bezier(.65,0,.25,1)}
 .tpa-set,.tpa-folk,.tpa-ring,.tpa-cloths{position:absolute;inset:0}
+.tpa-plate{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none;user-select:none}
+.tpa-plate-out{object-position:50% 100%}
 .tpa-hud{pointer-events:none;z-index:3000}.tpa-hud>*{pointer-events:auto}
 /* the cut: the front of the castle falls away and the chamber comes up */
 .tpa-out{transition:opacity 1.1s ease,filter 1.1s ease}

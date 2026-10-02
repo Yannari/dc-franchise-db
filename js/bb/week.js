@@ -70,8 +70,8 @@ import {
 } from './strategy.js';
 import { scheduleHouseBeats } from './house-events.js';
 import { writeCeremony } from './script/ceremony.js';
-import { scriptBeat } from './script/inject.js';
-import { campaignArgument } from '../bb-events/_read.js';
+import { scriptBeat, joinScripts, numberWord } from './script/inject.js';
+import { campaignArgument, campaignCase } from '../bb-events/_read.js';
 import { runBBCompetition } from './comps.js';
 import { runVoteOperation, resolveFinalPleas } from './vote-operation.js';
 import { resolveBBCampaignAct, settleBBAllianceWeek, updateBBAllianceLifecycle, updateBBPerceptions, setBBTarget, getBBTarget } from './shared-strategy.js';
@@ -6580,6 +6580,21 @@ export function simulateBBWeek(options = {}) {
         const worn = before !== undefined;   // this is the follow-up that landed
         let words = '';
         try { words = campaignArgument(pitch.pitcher, response.voter, pitch.pitchTarget); } catch { words = ''; }
+        // The conversation, written: the case the engine chose and the reply
+        // the count produced (bb/script/lines/campaign.js). A return visit that
+        // lands is the reply alone; the case was heard the first time.
+        let script = null;
+        try {
+          const who = { a: pitch.pitcher, b: response.voter };
+          const sctx = { week, act: 'campaign', hoh: week.hoh || null, nominees: [...visibleBlock], room: 'bedroom', seenBy: [pitch.pitcher, response.voter] };
+          const reply = scriptBeat('campaign.reply', who, { ending: worn ? 'worn' : response.accepted ? 'receptive' : 'unmoved' }, sctx);
+          if (worn) script = joinScripts(reply);
+          else {
+            const c = campaignCase(pitch.pitcher, response.voter, pitch.pitchTarget);
+            script = joinScripts(scriptBeat('campaign.case', who, { ending: c.kind, target: c.opponent, partner: c.partner, alliance: c.alliance,
+              theirComps: numberWord(c.theirComps), myComps: numberWord(c.myComps) }, sctx), reply);
+          }
+        } catch { script = null; }
         return {
           text: worn
             ? `${pitch.pitcher} goes back to ${response.voter} — same argument, new day. This time ${response.voter} listens, and something in the count changes.`
@@ -6593,6 +6608,7 @@ export function simulateBBWeek(options = {}) {
           eventId: 'campaign-pitch', category: 'deals', location: 'bedroom',
           _fold: !response.accepted && !worn && words
             ? { pitcher: pitch.pitcher, voter: response.voter, words } : null,
+          ...(script || {}),
         };
       }).filter(Boolean));
     // The same argument to three people is one scene, not three. A nominee
@@ -6610,6 +6626,8 @@ export function simulateBBWeek(options = {}) {
         text: `${f.pitcher} makes the same case to ${list}, one at a time. ${f.words} `
           + `${voters.length === 2 ? 'Neither of them moves' : 'Not one of them moves'}.`,
         players: [f.pitcher, ...voters],
+        // One summary for several conversations: the first one's script no longer matches it.
+        lines: undefined, lineId: undefined,
       });
       for (const b of same) b._drop = true;
     }

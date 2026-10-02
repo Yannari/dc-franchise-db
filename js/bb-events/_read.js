@@ -601,11 +601,19 @@ export const bondFactor = value => Math.max(0, Math.min(1, (value + 10) / 20));
  * because that is the only argument that works: not "keep me", but "keeping me
  * is better for you than keeping them". Whichever is most true gets said.
  */
-export function campaignArgument(nominee, voter, opponent) {
+/**
+ * Which case a nominee makes to this voter, decided from what the nominee
+ * knows: { kind, opponent, partner, alliance, theirComps, myComps }. The kind
+ * is one of deal | hunted | pair | alliance | comps | beatable | clean | friend
+ * | count. campaignArgument() renders it as one sentence; the scripted
+ * campaign scenes (bb/script/lines/campaign.js) key their lines on it.
+ */
+export function campaignCase(nominee, voter, opponent) {
   const recOf = n => (gs.bb?.stats?.[n] || {});
   const compsOf = n => (recOf(n).hohWins || 0) + (recOf(n).vetoWins || 0) + (recOf(n).blockBusterWins || 0);
   const theirComps = opponent ? compsOf(opponent) : 0;
   const myComps = compsOf(nominee);
+  const base = { opponent: opponent || null, partner: null, alliance: null, theirComps, myComps };
 
   // ── the argument is a read of THIS voter, made from what the nominee KNOWS ──
   //
@@ -617,10 +625,7 @@ export function campaignArgument(nominee, voter, opponent) {
   // said out loud, and the old version was instead reciting alliance rosters
   // to a person who could recite them back.
   const house = gs.activePlayers || [];
-  const ourDeal = dealBetween(nominee, voter);
-  if (ourDeal) {
-    return `"We shook on something. I have not forgotten it and I do not think you have. Keep me here and it is still a plan; send me out and you are doing the rest of this alone."`;
-  }
+  if (dealBetween(nominee, voter)) return { ...base, kind: 'deal' };
   const pairedWith = opponent ? house.find(n =>
     n !== nominee && n !== voter && n !== opponent
     && believesDeal(nominee, opponent, n)) : null;
@@ -641,28 +646,29 @@ export function campaignArgument(nominee, voter, opponent) {
   const opponentVoted = !!opponent && (gs.episodeHistory || []).some(h => (h.votingLog || [])
     .some(b => b.voter === opponent && b.voted === voter));
 
-  if (huntsVoter) {
-    return `"Every time you leave the room, ${opponent} brings up your name. I am not the one you need to worry about."`;
+  if (huntsVoter) return { ...base, kind: 'hunted' };
+  if (pairedWith) return { ...base, kind: 'pair', partner: pairedWith };
+  if (theirAllies.length) return { ...base, kind: 'alliance', alliance: theirAllies[0].name };
+  if (theirComps >= 2 && theirComps > myComps) return { ...base, kind: 'comps' };
+  if (opponent && threat(opponent) > threat(nominee) + 1) return { ...base, kind: 'beatable' };
+  if (!everVoted && hasVoted(nominee) && opponentVoted) return { ...base, kind: 'clean' };
+  if (bond(nominee, voter) >= 2) return { ...base, kind: 'friend' };
+  return { ...base, kind: 'count' };
+}
+
+export function campaignArgument(nominee, voter, opponent) {
+  const c = campaignCase(nominee, voter, opponent);
+  switch (c.kind) {
+    case 'deal': return `"We shook on something. I have not forgotten it and I do not think you have. Keep me here and it is still a plan; send me out and you are doing the rest of this alone."`;
+    case 'hunted': return `"Every time you leave the room, ${opponent} brings up your name. I am not the one you need to worry about."`;
+    case 'pair': return `"${opponent} and ${c.partner} are a pair. Maybe you knew, maybe you didn't — but count it: keep ${opponent}, and you are the third person in a two-person plan. I am the only vote in this house that breaks that up."`;
+    case 'alliance': return `"${opponent} is in ${c.alliance} and you are not. Keep ${opponent} and you are voting for a group that has no seat for you."`;
+    case 'comps': return `"${opponent} has won ${c.theirComps} competitions. I have won ${c.myComps}. One of us becomes your problem when the numbers get smaller, and it is not me."`;
+    case 'beatable': return `"Look at who is left. ${opponent} beats you at the end. I do not, and I think we both know it. Take the one you can beat."`;
+    case 'clean': return `"I have never written your name down. Not once. ${opponent} cannot say the same, and I can."`;
+    case 'friend': return `"You do not owe me anything. But you need a number next week, and I will be one for you. ${opponent ? `${opponent} will not` : 'The other side will not'}."`;
+    default: return `"I am not asking you to like me. I am asking you to count. Without me you are one short of everything you want to do."`;
   }
-  if (pairedWith) {
-    return `"${opponent} and ${pairedWith} are a pair. Maybe you knew, maybe you didn't — but count it: keep ${opponent}, and you are the third person in a two-person plan. I am the only vote in this house that breaks that up."`;
-  }
-  if (theirAllies.length) {
-    return `"${opponent} is in ${theirAllies[0].name} and you are not. Keep ${opponent} and you are voting for a group that has no seat for you."`;
-  }
-  if (theirComps >= 2 && theirComps > myComps) {
-    return `"${opponent} has won ${theirComps} competitions. I have won ${myComps}. One of us becomes your problem when the numbers get smaller, and it is not me."`;
-  }
-  if (opponent && threat(opponent) > threat(nominee) + 1) {
-    return `"Look at who is left. ${opponent} beats you at the end. I do not, and I think we both know it. Take the one you can beat."`;
-  }
-  if (!everVoted && hasVoted(nominee) && opponentVoted) {
-    return `"I have never written your name down. Not once. ${opponent} cannot say the same, and I can."`;
-  }
-  if (bond(nominee, voter) >= 2) {
-    return `"You do not owe me anything. But you need a number next week, and I will be one for you. ${opponent ? `${opponent} will not` : 'The other side will not'}."`;
-  }
-  return `"I am not asking you to like me. I am asking you to count. Without me you are one short of everything you want to do."`;
 }
 
 // ── WHAT HAPPENED BEFORE THIS SEASON ──────────────────────────────────────

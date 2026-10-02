@@ -41,13 +41,15 @@ const PHASE6 = [
   'alliance-side-deal-protected', 'alliance-wrong-blame', 'alliance-name-slips',
   // built inside the week engine (bb/script/inject.js)
   'alliance-formed', 'alliance-inner-circle', 'alliance-recruited', 'alliance-betrayal', 'alliance-repair', 'alliance-collapsed',
+  'campaign-pitch',
 ];
 // Engine beats keep the players list the engine counts; a fallout scene is had
 // with an alliance member who is not on it, so these skip the speaker check.
 const OFF_CARD = new Set(['alliance-betrayal', 'alliance-repair']);
 // Engine beats fall back to their plain sentence when there is nobody to have
 // the scene with (an alliance down to its betrayer): those carry no script.
-const INJECTED = new Set(['alliance-formed', 'alliance-inner-circle', 'alliance-recruited', 'alliance-betrayal', 'alliance-repair', 'alliance-collapsed']);
+const INJECTED = new Set(['alliance-formed', 'alliance-inner-circle', 'alliance-recruited', 'alliance-betrayal', 'alliance-repair', 'alliance-collapsed',
+  'campaign-pitch']);   // a pitch folded into one summary for several voters keeps its sentence
 const scripted = b => EVENT_IDS.has(b.eventId) && (Array.isArray(b.lines) || !INJECTED.has(b.eventId));
 const EVENT_IDS = new Set([...Object.values(CONVERTED), ...PHASE6]);
 

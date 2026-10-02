@@ -14,7 +14,18 @@
 import { gs } from '../../core.js';
 import { stableRng } from '../knowledge.js';
 import { makeScene } from './scene.js';
-import { writeScene } from './write.js';
+import { writeScene, transcript } from './write.js';
+
+const WORDS = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
+/** A small number as a word, for a line that says it ("won three competitions"). */
+export const numberWord = n => WORDS[n] ?? String(n);
+
+/** Several written parts as one beat's script (a case and its reply), or null if any part is missing. */
+export function joinScripts(...parts) {
+  if (!parts.length || parts.some(p => !p)) return null;
+  const lines = parts.flatMap(p => p.lines);
+  return { lines, text: transcript(lines), lineId: parts.map(p => p.lineId).join('+') };
+}
 
 export function scriptBeat(kind, who, data, { week, act = 'house', hoh = null, nominees = [], room = null, seenBy = [] } = {}) {
   try {

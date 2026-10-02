@@ -691,90 +691,49 @@ def ring_light(name, loc, r, T):
     return ob
 
 def room_living(T):
-    """The living room: the memory wall, the couches, the two chairs nominees sit in."""
+    """The living room on a live night (BB27): two long sofas facing each other down the sides, the
+    nominees' two chairs at the back under the memory wall, the coffee table between, stools at the front."""
     W, D, H = 10.0, 7.5, 3.2
     shell(T, W, D, H, floor_mat=mat_planks('planks', T['wood_a'], T['wood_b'], seam=T['wood_b'], scale=0.9, rough=T['floor_rough']))
-    # the left wall: supergraphic and the camera mirrors, as in every room
     box('Graphic', (0.02, D + 2, H), (-W / 2 + 0.01, D / 2 - 0.5, H / 2), mat_graphic('graphic', T['graphic'], scale=0.3, angle=-35), bevel=0)
-    two_way_mirrors(T, -W / 2 + 0.03, (2.2, 4.9), z0=0.6, h=1.9, w=1.5)
-    # the back wall: a painted feature band, the memory wall above the long sofa
-    box('Band', (W, 0.02, 1.1), (0, D - 0.005, 0.55), mat('band', T['wall2'], 0.8), bevel=0)
-    memory_wall(T, 0, D - 0.06, 1.25)
-    sofa('BackSofa', (0, D - 0.6, 0), 5.2, 0, T['fabric2'], pillows=(T['accent'], T['pop'], '#ffffff', T['accent'], T['pop']))
-    # the U: two side sofas facing in, a rug, a coffee table
-    sofa('LeftSofa', (-3.3, 5.0, 0), 2.4, -90, T['fabric2'], pillows=(T['accent'], '#ffffff'))
-    sofa('RightSofa', (3.3, 5.0, 0), 2.4, 90, T['fabric2'], pillows=(T['pop'], T['accent']))
-    box('Rug', (4.6, 3.4, 0.012), (0, 4.6, 0.006), mat('rug', T['accent'], 0.95), bevel=0)
-    box('RugField', (4.2, 3.0, 0.014), (0, 4.6, 0.008), mat('rugfield', T['deep'], 0.95), bevel=0)
-    cyl('TableTop', 0.75, 0.06, (0, 4.6, 0.4), mat_wood('tablewood', T['wood_a'], T['wood_b']), bevel=0.01)
-    cyl('TableBase', 0.45, 0.36, (0, 4.6, 0.19), mat('tablebase', T['deep'], 0.4))
-    for i, (dx, c) in enumerate(((-0.25, T['accent']), (0.15, '#ffffff'), (0.3, T['pop']))):
-        box(f'Book{i}', (0.3, 0.22, 0.04), (dx * 0.6 - 0.15, 4.55 + 0.05 * i, 0.45 + 0.04 * i), mat(f'book{c}', c, 0.6), bevel=0.004)
-    cyl('Candle', 0.06, 0.14, (0.35, 4.75, 0.5), mat('candle', '#ffffff', 0.5))
-    # the two nomination chairs, front and centre
+    two_way_mirrors(T, -W / 2 + 0.03, (2.0, 5.2), z0=0.6, h=1.9, w=1.5)
+    memory_wall(T, 0, D - 0.06, 1.42)
+    # the nominees' chairs, side by side at the back, facing the room
     for sx in (-1, 1):
-        armchair(f'NomChair{sx}', (sx * 1.15, 2.9, 0), 0, T['pop'])
-    # corners: lamps and plants; the right wall: the sliding door out to the yard
+        armchair(f'NomChair{sx}', (sx * 0.6, LIVING_NOM_Y, 0), 0, T['pop'])
+    # the two long sofas, facing each other (a sofa faces its local -y; +90 turns it to face +x)
+    sofa('LeftSofa', (-LIVING_SOFA_X, LIVING_SOFA_Y, 0), LIVING_SOFA_L, 90, T['fabric2'], pillows=(T['accent'], '#ffffff', T['pop'], T['accent']))
+    sofa('RightSofa', (LIVING_SOFA_X, LIVING_SOFA_Y, 0), LIVING_SOFA_L, -90, T['fabric2'], pillows=(T['pop'], T['accent'], '#ffffff', T['pop']))
+    box('Rug', (4.0, 4.2, 0.012), (0, LIVING_SOFA_Y, 0.006), mat('rug', T['accent'], 0.95), bevel=0)
+    box('RugField', (3.6, 3.8, 0.014), (0, LIVING_SOFA_Y, 0.008), mat('rugfield', T['deep'], 0.95), bevel=0)
+    wood = mat_wood('tablewood', T['wood_a'], T['wood_b'])
+    box('CoffeeTop', (1.0, 2.2, 0.06), (0, LIVING_SOFA_Y, 0.42), wood, bevel=0.01)
+    for sy in (-1, 1):
+        box(f'CoffeeLeg{sy}', (0.8, 0.08, 0.38), (0, LIVING_SOFA_Y + sy * 0.9, 0.19), mat('tablebase', T['deep'], 0.4), bevel=0)
+    for i, (dy, c) in enumerate(((-0.4, T['accent']), (0.1, '#ffffff'), (0.5, T['pop']))):
+        box(f'Book{i}', (0.3, 0.22, 0.04), (0.1, LIVING_SOFA_Y + dy, 0.47), mat(f'book{c}', c, 0.6), bevel=0.004)
+    cyl('Candle', 0.06, 0.14, (-0.25, LIVING_SOFA_Y - 0.2, 0.52), mat('candle', '#ffffff', 0.5))
+    # two stools at the front corners of the rug
+    for sx in (-1, 1):
+        cyl(f'Stool{sx}', 0.24, 0.42, (sx * 1.65, 1.35, 0.21), mat('stool', T['accent'], 0.7))
     floor_lamp('LampL', (-4.3, D - 0.6, 0), T)
     floor_lamp('LampR', (4.3, D - 0.6, 0), T)
-    plant('PlantL', (-4.3, 3.0, 0), height=1.5, pot=T['deep'])
-    box('SlideFrame', (0.1, 2.4, 2.5), (W / 2 - 0.02, 2.3, 1.25), mat('slideframe', '#2a2d33', 0.4, 0.6), bevel=0.004)
-    box('SlideGlass', (0.04, 2.2, 2.35), (W / 2 + 0.01, 2.3, 1.2), mat('daylight', '#ffffff', emit='#cfe9ff', strength=2.5), bevel=0)
-    box('SlideMullion', (0.06, 0.06, 2.35), (W / 2 - 0.04, 2.3, 1.2), mat('slideframe', '#2a2d33', 0.4, 0.6), bevel=0)
-    neon_eye((W / 2 - 0.05, 5.3, 2.35), 0.5, rot=(90, 0, -90))
-    ring_light('Ring', (0, 3.0, H - 0.45), 0.85, T)
+    plant('PlantL', (-4.2, 1.2, 0), height=1.5, pot=T['deep'])
+    box('SlideFrame', (0.1, 2.4, 2.5), (W / 2 - 0.02, 1.9, 1.25), mat('slideframe', '#2a2d33', 0.4, 0.6), bevel=0.004)
+    box('SlideGlass', (0.04, 2.2, 2.35), (W / 2 + 0.01, 1.9, 1.2), mat('daylight', '#ffffff', emit='#cfe9ff', strength=2.5), bevel=0)
+    neon_eye((W / 2 - 0.05, 5.6, 2.35), 0.5, rot=(90, 0, -90))
+    ring_light('Ring', (0, LIVING_SOFA_Y, H - 0.45), 0.85, T)
     spot('wall', (3.75, D - 0.03, 1.9), 0, 0.9)
     spot('wall', (-3.75, D - 0.03, 1.9), 0, 0.9)
-    spot('floor', (4.2, 2.6, 0))
+    spot('floor', (4.2, 6.2, 0))
     downlights(T, (-3.4, 3.4), (2.0, 6.2), H, power=40)
     area('CeilSoft', (6, 3), (0, 4.0, H - 0.05), 80, T['light'])
     area('Fill', (5, 2), (0, -2.0, 2.0), 150, T['fill'], rot=(-80, 0, 0))
     world(T['world'], 0.4)
-    camera((0, -1.5, 1.45), (86.5, 0, 0), lens=22, dof=(6.0, 4.0))
+    camera((0, -1.5, 1.6), (85.5, 0, 0), lens=22, dof=(6.0, 4.0))
 
-
-def bed(name, loc, T, width=1.1, length=2.0, headboard='#3f7cc1', duvet='#efe4c9', throw=None, pillows=('#ffffff', '#ffffff'), hb_h=1.4, tufts=True):
-    """A bed with its head against the back wall: frame, mattress, duvet, pillows, a throw, an upholstered headboard."""
-    x, y, z = loc
-    frame = mat('bedframe', T['deep'], 0.5)
-    box(f'{name}Frame', (width + 0.1, length + 0.05, 0.3), (x, y - length / 2, 0.15), frame)
-    box(f'{name}Mattress', (width, length, 0.22), (x, y - length / 2, 0.41), mat('mattress', '#f4f1ea', 0.8), bevel=0.04)
-    box(f'{name}Duvet', (width + 0.06, length * 0.72, 0.1), (x, y - length * 0.62, 0.55), mat(f'duvet{duvet}', duvet, 0.85), bevel=0.04)
-    if throw:
-        box(f'{name}Throw', (width + 0.1, 0.45, 0.06), (x, y - length + 0.35, 0.6), mat(f'throw{throw}', throw, 0.9), bevel=0.02)
-    for i, c in enumerate(pillows):
-        dx = (i - (len(pillows) - 1) / 2) * (width / max(1, len(pillows)))
-        ob = box(f'{name}Pillow{i}', (width / len(pillows) - 0.06, 0.34, 0.16), (x + dx, y - 0.25, 0.6), mat(f'pillow{c}', c, 0.8), bevel=0.05)
-        ob.rotation_euler = (math.radians(-18), 0, 0)
-    hb = mat(f'headboard{headboard}', headboard, 0.7)
-    box(f'{name}Head', (width + 0.3, 0.12, hb_h), (x, y + 0.02, hb_h / 2), hb, bevel=0.05)
-    if tufts:
-        n = 4
-        for i in range(n):
-            box(f'{name}Tuft{i}', (0.02, 0.01, hb_h - 0.25), (x - (width + 0.3) / 2 + (i + 1) * (width + 0.3) / (n + 1), y - 0.045, hb_h / 2), mat(f'tuft{headboard}', _darker(headboard), 0.7), bevel=0)
-
-def _darker(hexcol, k=0.78):
-    h = hexcol.lstrip('#')
-    r, g, b = (int(h[i:i + 2], 16) for i in (0, 2, 4))
-    return '#%02x%02x%02x' % (int(r * k), int(g * k), int(b * k))
-
-def nightstand(name, loc, T, lamp=True):
-    x, y, z = loc
-    box(f'{name}Body', (0.5, 0.42, 0.55), (x, y, 0.275), mat_wood('standwood', T['wood_a'], T['wood_b']))
-    box(f'{name}Drawer', (0.42, 0.01, 0.16), (x, y - 0.215, 0.4), mat('drawerface', _darker(T['wood_a'], 0.9), 0.5), bevel=0)
-    if lamp:
-        cyl(f'{name}LampBase', 0.08, 0.26, (x, y, 0.68), mat('lampbase', T['accent'], 0.3, coat=0.6), r2=0.05)
-        cyl(f'{name}LampShade', 0.16, 0.2, (x, y, 0.9), mat('lampshade', '#f6ead0', 0.6), r2=0.12)
-        sphere(f'Bulb{name}', 0.04, (x, y, 0.86), mat('bulb', '#ffffff', emit=T['light'], strength=30))
-        point(f'{name}L', (x, y, 0.88), 25, T['light'], 0.06)
-
-def fairy_wall(T, x0, x1, z0, z1, y, n=60, seed=3):
-    """A wall of small warm lights."""
-    import random
-    rnd = random.Random(seed)
-    m = mat('fairy', '#ffffff', emit=T['light'], strength=20)
-    for i in range(n):
-        sphere(f'Fairy{i}', 0.025, (rnd.uniform(x0, x1), y, rnd.uniform(z0, z1)), m)
+LIVING_NOM_Y = 5.9
+LIVING_SOFA_X, LIVING_SOFA_Y, LIVING_SOFA_L = 2.75, 3.6, 3.8
 
 def neon_text(name, text, loc, size, color, rot=(90, 0, 0), strength=10, extrude=0.02):
     cu = bpy.data.curves.new(name, 'FONT')
@@ -1058,18 +1017,20 @@ def room_havenot(T):
 # through the camera and writes <room>.json beside the render, so the viewer
 # sits each houseguest in their own chair and each key in its own slot.
 # ══════════════════════════════════════════════════════════════════════
-DINING_SEATS = 7          # per side
-DINING_Y0, DINING_DY = 1.0, 0.66
-DINING_HEAD_Y = DINING_Y0 + DINING_DY * (DINING_SEATS - 1) + 0.95
-BOX_LOC = (0.0, DINING_HEAD_Y - 0.95, 0.78)
-BOX_SLOTS = 16
-BOX_K = 1.5
+# The nomination ceremony, as it runs now (BB26-28): the house round a ROUND table, the HOH standing
+# at its head beside a small box with one key per nominee, and a big NOMINATIONS screen on the wall
+# behind with a "?" slot for each. The HOH turns a key; that nominee's face fills a slot.
+DIN_TABLE = (0.0, 3.3)
+DIN_R = 1.75
+DIN_SEAT_DEG = [-14, 10, 34, 58, 122, 146, 170, 194]      # chairs round the far side; the near side stays open
+DIN_HOH = (2.05, 5.55, 1.05)
+DIN_BOX = (1.25, 4.6, 0.78)
 
 def dining_chair(name, loc, rot_z, fabric, tall=False, wood=None):
     g = _group(name, loc, rot_z)
     fm = mat(f'{name}fab', fabric, 0.7)
     _child(g, box(f'{name}Seat', (0.5, 0.5, 0.08), (0, 0, 0.47), fm, bevel=0.02))
-    bh = 0.95 if tall else 0.38
+    bh = 0.95 if tall else 0.42
     _child(g, box(f'{name}Back', (0.5, 0.07, bh), (0, 0.24, 0.5 + bh / 2), fm, bevel=0.03))
     lm = wood or mat('chairleg', '#2a2a2e', 0.4, 0.6)
     for sx in (-1, 1):
@@ -1077,65 +1038,57 @@ def dining_chair(name, loc, rot_z, fabric, tall=False, wood=None):
             _child(g, box(f'{name}Leg{sx}{sy}', (0.04, 0.04, 0.45), (sx * 0.21, sy * 0.21, 0.225), lm, bevel=0))
     return g
 
-def nomination_box(T, loc, slots=BOX_SLOTS):
-    """The Nomination Box: a round drum on a turntable, a numbered slot for every key, the eye on its dome."""
-    x, y, z = loc
-    k = BOX_K
-    body = mat('nombox', T['deep'], 0.3, 0.2)
-    trim = mat('nomtrim', T['accent'], 0.25, 1.0)
-    cyl('NomTurntable', 0.36 * k, 0.03 * k, (x, y, z + 0.015), trim, verts=96)
-    cyl('NomDrum', 0.32 * k, 0.14 * k, (x, y, z + 0.1 * k), body, verts=96)
-    cyl('NomRim', 0.325 * k, 0.02 * k, (x, y, z + 0.17 * k), trim, verts=96)
-    cyl('NomLED', 0.33 * k, 0.012 * k, (x, y, z + 0.05 * k), mat('nomled', '#ffffff', emit=T['accent2'], strength=14), verts=96, bevel=0)
-    slot = mat('nomslot', '#0c1018', 0.6)
-    num = mat('nomnum', '#ffffff', emit=T['accent'], strength=6)
-    for i in range(slots):
-        a = i * math.tau / slots
-        sx, sy = x + 0.255 * k * math.cos(a), y + 0.255 * k * math.sin(a)
-        ob = box(f'NomSlot{i}', (0.05 * k, 0.016 * k, 0.01), (sx, sy, z + 0.172 * k), slot, bevel=0)
-        ob.rotation_euler = (0, 0, a + math.pi / 2)
-        sphere(f'NomNum{i}', 0.008 * k, (x + 0.3 * k * math.cos(a), y + 0.3 * k * math.sin(a), z + 0.135 * k), num)
-    sphere('NomDome', 0.15 * k, (x, y, z + 0.17 * k), mat('nomdome', T['accent2'], 0.15, coat=0.8), scale=(1, 1, 0.5))
-    neon_eye((x, y, z + 0.25 * k), 0.16 * k, rot=(60, 0, 0))
+def nomination_screen(T, D, H):
+    """The NOMINATIONS screen: a lit, rounded frame on the back wall, a dark screen the viewer fills,
+    and the row of lit capsules underneath."""
+    frame = mat('nomframe', T['deep'], 0.4)
+    glow = mat('nomglow', '#ffffff', emit=T['led2'], strength=14)
+    box('NomFrame', (3.5, 0.12, 2.55), (0, D - 0.08, 1.75), frame, bevel=0.06)
+    for (sx, sz, x, z) in ((3.36, 0.035, 0, 3.0), (3.36, 0.035, 0, 0.5), (0.035, 2.5, -1.68, 1.75), (0.035, 2.5, 1.68, 1.75)):
+        box(f'NomGlow{x}{z}', (sx, 0.02, sz), (x, D - 0.15, z), glow, bevel=0)
+    box('NomScreen', (2.9, 0.03, 1.7), (0, D - 0.16, 1.95), mat('nomscreen', '#16224a', 0.3, emit='#1b2a5a', strength=1.0), bevel=0)
+    caps = mat('nomcaps', '#ffffff', emit='#4dff8a', strength=10)
+    for i in range(12):
+        c = cyl(f'NomCap{i}', 0.055, 0.22, (-1.1 + i * 0.2, D - 0.16, 0.86), caps, verts=16, bevel=0)
+    box('NomCapsBar', (2.7, 0.06, 0.34), (0, D - 0.12, 0.86), mat('nomcapsbar', '#9aa4b0', 0.3, 0.8), bevel=0.01)
 
 def room_dining(T):
-    """The dining table: the HOH at its head, fourteen chairs, the Nomination Box, the memory wall behind."""
-    W, D, H = 9.5, DINING_HEAD_Y + 1.6, 3.2
+    """The nomination table: a round table, the house round its far side, the screen behind, the key box."""
+    W, D, H = 9.0, 7.0, 3.2
     shell(T, W, D, H, floor_mat=mat_planks('planks', T['wood_a'], T['wood_b'], seam=T['wood_b'], scale=0.9, rough=T['floor_rough']))
     box('Graphic', (0.02, D + 2, H), (-W / 2 + 0.01, D / 2 - 0.5, H / 2), mat_graphic('graphic', T['graphic'], scale=0.32), bevel=0)
-    two_way_mirrors(T, -W / 2 + 0.03, (2.4, 5.4), z0=0.6, h=1.9, w=1.5)
-    two_way_mirrors(T, W / 2 - 0.03, (2.4, 5.4), z0=0.6, h=1.9, w=1.5)
-    memory_wall(T, 0, D - 0.06, 1.35)
-    spot('wall', (-3.55, D - 0.03, 1.85), 0, 0.8)
-    spot('wall', (3.55, D - 0.03, 1.85), 0, 0.8)
-    # the table: long, stone top, a runner, the chairs
-    L_ = DINING_DY * DINING_SEATS + 0.6
-    cy = DINING_Y0 + DINING_DY * (DINING_SEATS - 1) / 2 + 0.25
+    two_way_mirrors(T, -W / 2 + 0.03, (2.2, 5.0), z0=0.6, h=1.9, w=1.5)
+    two_way_mirrors(T, W / 2 - 0.03, (2.2, 5.0), z0=0.6, h=1.9, w=1.5)
+    nomination_screen(T, D, H)
+    tx, ty = DIN_TABLE
     top = mat_marble('counter') if T.get('counter') == 'marble' else mat('counter', T.get('counter', '#efe4c9'), 0.3)
-    box('TableTop', (1.5, L_, 0.06), (0, cy, 0.75), top, bevel=0.01)
-    box('TableApron', (1.3, L_ - 0.2, 0.1), (0, cy, 0.67), mat('apron', T['deep'], 0.5), bevel=0)
-    for sy in (-1, 1):
-        box(f'TableLeg{sy}', (1.0, 0.12, 0.66), (0, cy + sy * (L_ / 2 - 0.5), 0.33), mat('apron', T['deep'], 0.5), bevel=0)
-    box('Runner', (0.42, L_ - 0.5, 0.008), (0, cy - 0.2, 0.784), mat('runner', T['accent'], 0.9), bevel=0)
+    cyl('TableBase', 0.55, 0.7, (tx, ty, 0.35), mat('tablebase', T['deep'], 0.4), verts=64)
+    cyl('TableTop', DIN_R, 0.08, (tx, ty, 0.74), top, verts=128)
+    cyl('TableInlay', DIN_R - 0.3, 0.006, (tx, ty, 0.783), mat('inlay', T['accent2'], 0.5), verts=128, bevel=0)
+    cyl('TableHub', 0.5, 0.008, (tx, ty, 0.786), mat('hub', T['accent'], 0.5), verts=96, bevel=0)
+    ring('TableLED', (tx, ty, 0.7), DIN_R - 0.02, 0.018, mat('tableled', '#ffffff', emit=T['led'], strength=14), rot=(0, 0, 0))
+    tick = mat('tick', T['deep'], 0.5)
+    for i in range(24):
+        a = i * math.tau / 24
+        t_ = box(f'Tick{i}', (0.025, 0.14 if i % 6 else 0.24, 0.004), (tx + (DIN_R - 0.13) * math.cos(a), ty + (DIN_R - 0.13) * math.sin(a), 0.785), tick, bevel=0)
+        t_.rotation_euler = (0, 0, a + math.pi / 2)
     wood = mat_wood('chairwood', T['wood_a'], T['wood_b'])
-    for i in range(DINING_SEATS):
-        y = DINING_Y0 + i * DINING_DY
-        for sx in (-1, 1):
-            dining_chair(f'Chair{sx}{i}', (sx * 1.05, y, 0), 90 * sx, T['fabric2'], wood=wood)
-            # place settings: a plate and a glass in front of every seat
-            cyl(f'Plate{sx}{i}', 0.11, 0.012, (sx * 0.5, y, 0.786), mat('plate', '#ffffff', 0.2, coat=0.6), bevel=0)
-            cyl(f'Glass{sx}{i}', 0.03, 0.1, (sx * 0.5, y + 0.2, 0.83), mat('potglass', '#ddeeff', 0.03, transmission=1.0))
-    dining_chair('HohChair', (0, DINING_HEAD_Y, 0), 180, T['accent'], tall=True, wood=wood)
-    nomination_box(T, BOX_LOC)
-    # a long linear pendant over the table, a sideboard behind the HOH
-    area('PendantL', (0.2, L_ - 0.8), (0, cy, H - 1.0), 260, T['light'], rot=(0, 0, 0))
-    box('Sideboard', (3.2, 0.45, 0.8), (0, D - 0.3, 0.4), mat('cabinet', T['cabinet'], 0.18, coat=0.6))
+    for i, deg in enumerate(DIN_SEAT_DEG):
+        a = math.radians(deg)
+        dining_chair(f'Chair{i}', (tx + 2.2 * math.cos(a), ty + 2.2 * math.sin(a), 0), deg - 90, T['fabric2'], wood=wood)
+    # the key box: one key per nominee goes on top of it (the viewer draws the keys and turns them)
+    bx, by, bz = DIN_BOX
+    box('NomBoxBody', (0.42, 0.22, 0.16), (bx, by, bz + 0.08), mat_wood('boxwood', T['wood_a'], T['wood_b']), bevel=0.01)
+    box('NomBoxPlate', (0.44, 0.24, 0.02), (bx, by, bz + 0.17), mat('boxplate', T['cabinet'], 0.4), bevel=0.004)
     plant('PlantL', (-W / 2 + 0.6, D - 0.7, 0), height=1.5, pot=T['deep'])
     plant('PlantR', (W / 2 - 0.6, D - 0.7, 0), height=1.5, pot=T['deep'])
+    spot('wall', (-3.0, D - 0.03, 1.85), 0, 0.8)
+    spot('wall', (3.0, D - 0.03, 1.85), 0, 0.8)
+    area('TableL', (2.5, 2.5), (tx, ty, H - 0.6), 260, T['light'])
     downlights(T, (-3.2, 3.2), (2.0, 6.0), H, power=40)
     area('Fill', (5, 2), (0, -2.0, 2.4), 160, T['fill'], rot=(-75, 0, 0))
     world(T['world'], 0.4)
-    camera((0, -0.5, 1.6), (81, 0, 0), lens=26, dof=(5.0, 4.0))
+    camera((0, -0.7, 1.55), (83.5, 0, 0), lens=24, dof=(5.0, 4.0))
 
 def anchors(room, theme='default', w=1920, h=1080):
     """Project the room's seats and key slots through the camera; write <room>.json beside the render."""
@@ -1166,36 +1119,36 @@ def anchors(room, theme='default', w=1920, h=1080):
                            'w': round(abs(b.x - a.x) * 100, 2), 'h': round(abs(b.y - a.y) * 100, 2)})
     if frames:
         out['wall'] = sorted(frames, key=lambda f: (f['r'], f['c']))
+    def rect_of(name):
+        ob = sc.objects.get(name)
+        if not ob: return None
+        xs = [v.co.x for v in ob.data.vertices]; zs = [v.co.z for v in ob.data.vertices]
+        a_ = world_to_camera_view(sc, cam, ob.matrix_world @ Vector((min(xs), 0, min(zs))))
+        b_ = world_to_camera_view(sc, cam, ob.matrix_world @ Vector((max(xs), 0, max(zs))))
+        return {'x': round(min(a_.x, b_.x) * 100, 2), 'y': round(min(a_.y, b_.y) * 100, 2),
+                'w': round(abs(b_.x - a_.x) * 100, 2), 'h': round(abs(b_.y - a_.y) * 100, 2)}
     if room == 'living':
-        # every place a houseguest sits in a living-room ceremony, at chest height (z 0.8): the two red
-        # nomination chairs (N-1 left, N1 right), the back sofa B0..B4, the side sofas L0/L1 and R0/R1,
-        # and where the veto holder stands to speak
-        D = 7.5
-        pts = {f'N{sx}': (sx * 1.15, 2.9, 0.85) for sx in (-1, 1)}
-        cw = (5.2 - 0.44) / 5
-        for i in range(5):
-            pts[f'B{i}'] = (-2.6 + 0.22 + cw * (i + 0.5), D - 0.72, 0.8)
-        cw2 = (2.4 - 0.44) / 2
-        for i in range(2):
-            lx = -1.2 + 0.22 + cw2 * (i + 0.5)
-            pts[f'L{i}'] = (-3.3 - 0.12, 5.0 - lx, 0.8)
-            pts[f'R{i}'] = (3.3 + 0.12, 5.0 + lx, 0.8)
-        pts['stand'] = (1.9, 3.7, 1.15)
+        # where everybody is on a live night, at chest height: the nominees' chairs at the back
+        # (N-1 left, N1 right), four places on each long sofa (L0..L3, R0..R3, front to back), and
+        # where the veto holder stands to speak
+        pts = {f'N{sx}': (sx * 0.6, LIVING_NOM_Y, 0.85) for sx in (-1, 1)}
+        for i, lx in enumerate((-1.35, -0.45, 0.45, 1.35)):
+            pts[f'L{i}'] = (-LIVING_SOFA_X + 0.12, LIVING_SOFA_Y + lx, 0.8)
+            pts[f'R{i}'] = (LIVING_SOFA_X - 0.12, LIVING_SOFA_Y + lx, 0.8)
+        pts['stand'] = (-1.2, 2.3, 1.15)
         out['seats'] = {k: {'at': px(co), 'w': width_pct(co, 0.62)} for k, co in pts.items()}
     if room == 'dining':
-        seats = []
-        for i in range(DINING_SEATS):
-            y = DINING_Y0 + i * DINING_DY
-            for sx in (-1, 1):
-                co = (sx * 1.0, y, 0.78)       # where the houseguest's portrait stands: in the chair, at the table top
-                seats.append({'id': f'{"L" if sx < 0 else "R"}{i}', 'at': px(co), 'w': width_pct(co, 0.62)})
-        head = (0, DINING_HEAD_Y - 0.05, 0.78)
-        out['head'] = {'at': px(head), 'w': width_pct(head, 0.7)}
+        tx, ty = DIN_TABLE
+        seats = {}
+        for i, deg in enumerate(DIN_SEAT_DEG):
+            a_ = math.radians(deg)
+            co = (tx + 2.15 * math.cos(a_), ty + 2.15 * math.sin(a_), 0.76)
+            seats[f'S{i}'] = {'at': px(co), 'w': width_pct(co, 0.62)}
         out['seats'] = seats
-        x, y, z = BOX_LOC
-        k = BOX_K
-        out['box'] = {'at': px((x, y, z + 0.17 * k)), 'w': width_pct((x, y, z), 0.72 * k)}
-        out['slots'] = [px((x + 0.255 * k * math.cos(i * math.tau / BOX_SLOTS), y + 0.255 * k * math.sin(i * math.tau / BOX_SLOTS), z + 0.2 * k)) for i in range(BOX_SLOTS)]
+        out['head'] = {'at': px(DIN_HOH), 'w': width_pct(DIN_HOH, 0.7)}
+        bx, by, bz = DIN_BOX
+        out['box'] = {'at': px((bx, by, bz + 0.18)), 'w': width_pct((bx, by, bz), 0.44)}
+        out['screen'] = rect_of('NomScreen')
     d = os.path.join(OUT, theme); os.makedirs(d, exist_ok=True)
     path = os.path.join(d, f'{room}.json')
     open(path, 'w').write(json.dumps(out, indent=1))

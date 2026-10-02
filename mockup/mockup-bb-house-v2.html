@@ -265,14 +265,14 @@ button{font:inherit;color:inherit}
 .spy .q.hot span::after{content:" ● LIVE";color:#ff2e4d;animation:blink 1s steps(2) infinite}
 .spy .q .fig{position:absolute;bottom:8%;width:14%;aspect-ratio:3/4;border-radius:40% 40% .3cqw .3cqw;background:rgba(150,255,170,.6)}
 .spy .q.nvq .set{filter:grayscale(1) sepia(1) hue-rotate(62deg) saturate(2.4)}
-.ledtv{left:50%;top:5cqw;width:21cqw;margin-left:-10.5cqw;aspect-ratio:16/9;border-radius:.6cqw;overflow:hidden;background:#05070d;box-shadow:0 0 0 .3cqw #101624,0 0 4cqw rgba(255,46,77,.18);transition:box-shadow .4s,transform .5s}
+.ledtv{left:8%;top:9cqw;width:17cqw;margin-left:0;aspect-ratio:16/9;border-radius:.6cqw;overflow:hidden;background:#05070d;box-shadow:0 0 0 .3cqw #101624,0 0 4cqw rgba(255,46,77,.18);transition:box-shadow .4s,transform .5s}
 .ledtv.on{box-shadow:0 0 0 .3cqw #ff2e4d,0 0 5cqw rgba(255,46,77,.45);transform:scale(1.03)}
 .ledtv.dim img{filter:brightness(.28) blur(.2cqw)}
 .ledtv img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 14%}
 .ledtv::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,.18) 0 .12cqw,transparent .12cqw .3cqw),linear-gradient(0deg,rgba(0,0,0,.55),transparent 40%)}
 .ledtv .lb{position:absolute;left:1cqw;bottom:.8cqw;z-index:2;font:900 1.4cqw Archivo;font-stretch:72%;letter-spacing:.2cqw;color:#fff}
 .ledtv .lb span{display:block;font:700 .75cqw 'Chakra Petch';letter-spacing:.2cqw;color:#ff2e4d}
-.votes{position:absolute;left:50%;top:19.5%;transform:translate(-50%,-50%);z-index:9;display:flex;gap:2cqw;align-items:center}
+.votes{position:absolute;left:16.5%;top:23%;transform:translate(-50%,-50%);z-index:9;display:flex;gap:2cqw;align-items:center}
 .votes .v{text-align:center}
 .votes .n{font:700 5cqw/1 'Chakra Petch';color:#fff;text-shadow:0 0 3cqw rgba(255,46,77,.6);min-width:7cqw}
 .votes .k{font:800 .85cqw Archivo;font-stretch:78%;letter-spacing:.3cqw;color:#ff9db0;text-transform:uppercase}
@@ -344,16 +344,34 @@ button{font:inherit;color:inherit}
 .set.photo{background-size:cover!important;background-position:center!important}
 .set.photo::before,.set.photo::after,.set.photo .floor{display:none}
 /* the house in the chosen look (TD B · Flat); every room of the default season */
-.set-kitchen.photo{background:url('../assets/bb/house/default/kitchen-td-b.webp')}
-.set-ceremony.photo{background:url('../assets/bb/house/default/living-td-b.webp')}
-.set-bedroom.photo{background:url('../assets/bb/house/default/bedroom-td-b.webp')}
-.set-hoh.photo{background:url('../assets/bb/house/default/hoh-td-b.webp')}
-.set-dr.photo{background:url('../assets/bb/house/default/dr-td-b.webp')}
-.set-yard.photo{background:url('../assets/bb/house/default/yard-td-b.webp')}
-.set-dining.photo{background:url('../assets/bb/house/default/dining-td-b.webp')}
+.set-kitchen.photo{background:url('../assets/bb/house/default/kitchen-td-b.webp?v=5')}
+.set-ceremony.photo{background:url('../assets/bb/house/default/living-td-b.webp?v=5')}
+.set-bedroom.photo{background:url('../assets/bb/house/default/bedroom-td-b.webp?v=5')}
+.set-hoh.photo{background:url('../assets/bb/house/default/hoh-td-b.webp?v=5')}
+.set-dr.photo{background:url('../assets/bb/house/default/dr-td-b.webp?v=5')}
+.set-yard.photo{background:url('../assets/bb/house/default/yard-td-b.webp?v=5')}
+.set-dining.photo{background:url('../assets/bb/house/default/dining-td-b.webp?v=5')}
 .front{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
-.slotkey{position:absolute;width:2.3cqw;transform:translateX(-50%) rotate(-90deg);transform-origin:50% 50%;filter:drop-shadow(0 .2cqw .3cqw rgba(0,0,0,.5))}
-.slotkey svg{width:100%;display:block}
+.nomscreen{position:absolute;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4%;
+  background:radial-gradient(ellipse at 50% 20%,#ff5fb4,#d02c7a 55%,#7a1048);box-shadow:inset 0 0 0 .2cqw rgba(255,255,255,.25);overflow:hidden}
+.nomscreen::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(115deg,rgba(255,255,255,.07) 0 1cqw,transparent 1cqw 3cqw)}
+.nhead{position:relative;font:900 1.7cqw Archivo;font-stretch:75%;letter-spacing:.12cqw;color:#fff;padding:.25cqw 1.2cqw;
+  background:linear-gradient(180deg,#9b2d8f,#5e1660);box-shadow:0 0 0 .18cqw #f1c6e6;text-shadow:0 .15cqw 0 #3a0a3a}
+.nslots{position:relative;display:flex;gap:6%;width:84%;justify-content:center}
+.nslot{position:relative;width:34%;aspect-ratio:1;background:linear-gradient(180deg,#2b3ea8,#16226a);box-shadow:0 0 0 .22cqw #cfd6e6,inset 0 0 1.2cqw rgba(0,0,0,.5);
+  display:grid;place-items:center;overflow:hidden}
+.nslot i{font:900 5cqw/1 Archivo;font-style:normal;color:#fff;text-shadow:0 .25cqw 0 rgba(0,0,0,.35)}
+.nslot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 14%}
+.nslot b{position:absolute;left:0;right:0;bottom:0;font:800 .9cqw Archivo;font-stretch:80%;letter-spacing:.08cqw;color:#fff;background:rgba(122,16,72,.85);text-transform:uppercase;padding:.15cqw 0}
+.nslot.flip{animation:nflip .7s cubic-bezier(.3,.7,.2,1) both}
+@keyframes nflip{0%{transform:rotateY(90deg);filter:brightness(3)}100%{transform:none}}
+.nkeys{position:absolute;transform:translateX(-50%);display:flex;justify-content:center;gap:12%}
+.nkey{width:30%;aspect-ratio:1;clip-path:polygon(30% 0,70% 0,100% 30%,100% 70%,70% 100%,30% 100%,0 70%,0 30%);
+  background:radial-gradient(circle at 40% 35%,#ffd36b,#e0731f 60%,#a8430c);display:grid;place-items:center;transition:transform .5s}
+.nkey b{font:900 .8cqw Archivo;color:#5a1d00}
+.nkey.turned{transform:rotate(90deg)}
+.nkey.now{animation:nturn .6s cubic-bezier(.3,.8,.3,1.2) both}
+@keyframes nturn{from{transform:rotate(0)}to{transform:rotate(90deg)}}
 .chipx.key{background:#f5c542;color:#2a1d00}
 .vchip{position:absolute;left:50%;top:40%;z-index:60;width:11cqw;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;
   background:radial-gradient(circle at 35% 30%,#fff8d8,#f5c542 55%,#a87a10);box-shadow:0 0 0 .3cqw #fff3c4,0 1.2cqw 3cqw rgba(0,0,0,.5);
@@ -369,10 +387,10 @@ button{font:inherit;color:inherit}
 .set-dr.photo~.drring{display:none}
 
 /* the other looks, kitchen only, for comparison */
-body[data-house="a"] .set-kitchen.photo{background:url('../assets/bb/house/default/kitchen-td-a.webp')}
-body[data-house="c"] .set-kitchen.photo{background:url('../assets/bb/house/default/kitchen-td-c.webp')}
-body[data-house="toon"] .set-kitchen.photo{background:url('../assets/bb/house/default/kitchen-toon.webp')}
-body[data-house="real"] .set-kitchen.photo{background:url('../assets/bb/house/default/kitchen.webp')}
+body[data-house="a"] .set-kitchen.photo{background:url('../assets/bb/house/default/kitchen-td-a.webp?v=5')}
+body[data-house="c"] .set-kitchen.photo{background:url('../assets/bb/house/default/kitchen-td-c.webp?v=5')}
+body[data-house="toon"] .set-kitchen.photo{background:url('../assets/bb/house/default/kitchen-toon.webp?v=5')}
+body[data-house="real"] .set-kitchen.photo{background:url('../assets/bb/house/default/kitchen.webp?v=5')}
 
 /* background houseguests: in the room, not in the conversation. Further back,
    so smaller, softer and dimmer; they never get a lower third. They are the
@@ -580,32 +598,24 @@ const SCREENS = [
     ] },
 
   { id: 'noms', tab: 'Nominations', set: 'dining', cam: 3, room: 'Dining Room', day: 23, time: '13:30', kicker: 'Cam 03 · Dining room', title: 'Nomination ceremony', sub: 'Heather at the head of the table',
-    seated: { Heather: 'head', Duncan: 'L1', Gwen: 'R1', Alejandro: 'L2', Courtney: 'R2', Bridgette: 'L3', Scott: 'R3', Geoff: 'L4', Zoey: 'R4' },
-    wall: true,
+    seated: { Heather: 'head', Duncan: 'S0', Alejandro: 'S1', Gwen: 'S2', Bridgette: 'S3', Zoey: 'S4', Courtney: 'S5', Scott: 'S6', Geoff: 'S7' },
     steps: [
       { k: 'bb', t: `This is the nomination ceremony.` },
-      { k: 'say', by: 'Heather', t: `It is my responsibility as Head of Household to nominate two houseguests for eviction. The keys of everyone who is safe are in this box.` },
-      { k: 'say', by: 'Heather', t: `I'll pull the first key. If it's yours, you're safe.` },
-      { k: 'beat', t: `Heather pulls the first key, reads the face on it and spins the box round to Duncan.`, key: 'Duncan' },
-      { k: 'say', by: 'Duncan', t: `Thanks, Heather.` },
-      { k: 'beat', t: `Geoff's key is next. He hangs it round his neck and grins at nobody in particular.`, key: 'Geoff' },
-      { k: 'beat', t: `Zoey.`, key: 'Zoey' },
-      { k: 'beat', t: `Bridgette takes her key without looking at either of the two people still waiting.`, key: 'Bridgette' },
-      { k: 'beat', t: `Scott's key comes out. He lets go of a breath he has clearly been holding since Tuesday.`, key: 'Scott' },
-      { k: 'beat', t: `Alejandro takes his key, says thank you, and does not look across the table at Courtney.`, key: 'Alejandro' },
-      { k: 'beat', t: `The box is empty. Gwen and Courtney are the only two at the table without a key.`, nom: ['Gwen', 'Courtney'], toast: ['NOMINATED', '#ff3355'] },
-      { k: 'beat', t: `Heather stands up.` },
+      { k: 'say', by: 'Heather', t: `It is my responsibility as Head of Household to nominate two houseguests for eviction. I'm going to turn the first key.` },
+      { k: 'beat', t: `Heather turns the first key. A face fills the first slot on the screen.`, reveal: 'Gwen' },
+      { k: 'say', by: 'Gwen', t: `Shocker.` },
+      { k: 'beat', t: `Heather puts her hand on the second key and leaves it there a second longer than she needs to.` },
+      { k: 'beat', t: `She turns it.`, reveal: 'Courtney', nom: ['Gwen', 'Courtney'], toast: ['NOMINATED', '#ff3355'] },
       { k: 'say', by: 'Heather', t: `I have nominated you, Gwen, and you, Courtney. Gwen, you've made it very clear you don't want me here.`, push: true },
       { k: 'say', by: 'Heather', t: `Courtney, you made it clear at two in the morning, which is a choice.` },
-      { k: 'beat', t: `Courtney turns in her chair and looks straight across the table at Alejandro.` },
+      { k: 'beat', t: `Courtney looks straight across the table at Alejandro.` },
       { k: 'say', by: 'Courtney', t: `Scott. You said Scott.`, push: true },
       { k: 'say', by: 'Alejandro', t: `I said I'd give her a name. I never said she'd take it.`, pops: [['Courtney', 'Betrayed', 'down', 'Alejandro']] },
       { k: 'bb', t: `This nomination ceremony is adjourned.` },
-      { k: 'beat', t: `One by one the keys go back up on the memory wall. Two faces up there have gone red.` },
     ] },
 
   { id: 'vetopick', tab: 'Veto player pick', set: 'ceremony', cam: 4, room: 'Living Room', day: 24, time: '10:15', kicker: 'Cam 04 · Living room', title: 'Veto player pick', sub: 'The HOH and the nominees draw chips',
-    seated: { Heather: 'stand', Gwen: 'N-1', Courtney: 'N1', Duncan: 'B0', Geoff: 'B1', Alejandro: 'B2', Zoey: 'B3', Bridgette: 'B4', Scott: 'R0' },
+    seated: { Heather: 'stand', Gwen: 'N-1', Courtney: 'N1', Duncan: 'L0', Geoff: 'L1', Alejandro: 'L2', Zoey: 'R1', Bridgette: 'R2', Scott: 'R0' },
     wall: true,
     steps: [
       { k: 'bb', t: `Heather, Gwen and Courtney, please come to the living room for the veto player pick.` },
@@ -635,7 +645,7 @@ const SCREENS = [
     ] },
 
   { id: 'veto', tab: 'Veto meeting', set: 'ceremony', cam: 4, room: 'Living Room', day: 25, time: '14:00', kicker: 'Cam 04 · Living room', title: 'The veto meeting', sub: 'Bridgette won the Power of Veto',
-    seated: { Gwen: 'N-1', Courtney: 'N1', Bridgette: 'stand', Heather: 'B2', Duncan: 'B0', Geoff: 'B1', Alejandro: 'B4', Zoey: 'B3', Scott: 'R0' },
+    seated: { Gwen: 'N-1', Courtney: 'N1', Bridgette: 'stand', Heather: 'L1', Duncan: 'L0', Geoff: 'L2', Alejandro: 'R1', Zoey: 'R2', Scott: 'R0' },
     wall: true, medalOn: 'Bridgette',
     steps: [
       { k: 'bb', t: `This is the Power of Veto meeting.`, veto: 'Bridgette' },
@@ -651,7 +661,7 @@ const SCREENS = [
     ] },
 
   { id: 'evict', tab: 'Live eviction', set: 'ceremony', cam: 1, room: 'Living Room', day: 27, time: 'LIVE', kicker: 'Live · Eviction night', title: 'Eviction night', sub: 'Two nominees, six votes',
-    seated: { Gwen: 'N-1', Courtney: 'N1', Heather: 'B2', Duncan: 'B0', Bridgette: 'B1', Geoff: 'B3', Alejandro: 'B4', Zoey: 'L1', Scott: 'R0' },
+    seated: { Gwen: 'N-1', Courtney: 'N1', Heather: 'L1', Duncan: 'L0', Bridgette: 'L2', Geoff: 'R2', Alejandro: 'R1', Zoey: 'L3', Scott: 'R0' },
     wall: 'after', tvObj: true,
     steps: [
       { k: 'host', by: 'Valeria', t: `Good evening, houseguests. In a few moments one of you will be evicted. First, our nominees have a chance to make their final pleas. Gwen, you're first.` },
@@ -688,7 +698,7 @@ const esc = s => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replac
 const unesc = s => s.replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&amp;/g, '&');
 
 function ledger(si, ii) {
-  const L = { status: {}, nom: [], veto: null, deals: [], moves: [], out: [], votes: null, vetoPlay: [], ballots: [] };
+  const L = { status: {}, nom: [], veto: null, deals: [], moves: [], out: [], votes: null, vetoPlay: [], ballots: [], revealed: [] };
   HOUSE.forEach(n => L.status[n] = n === HOH ? 'hoh' : '');
   for (let s = 0; s <= si; s++) {
     const steps = SCREENS[s].steps; const upto = s < si ? steps.length - 1 : ii;
@@ -699,6 +709,7 @@ function ledger(si, ii) {
       if (st.veto) L.veto = st.veto;
       if (st.deal) L.deals.push(st.deal);
       if (st.vetoPlay) L.vetoPlay.push(...st.vetoPlay);
+      if (st.reveal && s === si) L.revealed.push(st.reveal);
       if (st.ballot && s === si) L.ballots.push(st.ballot);
       if (st.out) { L.out.push(st.out); L.status[st.out] = 'out'; L.nom.forEach(n => { if (n !== st.out) L.status[n] = ''; }); }
       if (st.votes && s === si) L.votes = st.votes;
@@ -722,7 +733,6 @@ function chipsFor(n, L) {
   if (L.out.includes(n)) c.push('<span class="chipx out">Evicted</span>');
   else if (L.nom.includes(n)) c.push('<span class="chipx nom">Nom</span>');
   if (L.veto === n) c.push('<span class="chipx veto">Veto</span>');
-  if (L.status[n] === 'safe' && SCREENS[cur].set === 'dining') c.push('<span class="chipx key">Key</span>');
   return c.join('');
 }
 function camOf(S, i) {
@@ -745,15 +755,34 @@ function tileHtml(n, x, cls, L, lock, extra = '', more = '') {
 const PHOTO = new Set(['kitchen', 'ceremony', 'bedroom', 'hoh', 'dr', 'yard', 'dining']);
 // Projected by Blender: where each seat, key slot and memory-wall frame lands on screen
 // ([% from left, % from bottom, depth]). Regenerate with anchors() when a room changes.
-const ANCH = {"dining":{"head":{"at":[50.0,53.71,6.41],"w":7.89},"seats":{"L0":{"at":[5.14,4.12,1.61],"w":27.82},"R0":{"at":[94.86,4.12,1.61],"w":27.82},"L1":{"at":[18.07,23.2,2.262],"w":19.8},"R1":{"at":[81.93,23.2,2.262],"w":19.8},"L2":{"at":[25.21,33.75,2.914],"w":15.37},"R2":{"at":[74.79,33.75,2.914],"w":15.37},"L3":{"at":[29.74,40.44,3.565],"w":12.56},"R3":{"at":[70.26,40.44,3.565],"w":12.56},"L4":{"at":[32.87,45.06,4.217],"w":10.62},"R4":{"at":[67.13,45.06,4.217],"w":10.62},"L5":{"at":[35.17,48.44,4.869],"w":9.2},"R5":{"at":[64.83,48.44,4.869],"w":9.2},"L6":{"at":[36.92,51.03,5.521],"w":8.11},"R6":{"at":[63.08,51.03,5.521],"w":8.11}},"box":{"at":[50.0,56.94,5.481],"w":14.13},"slots":[[55.05,57.99,5.474],[54.54,58.3,5.619],[53.4,58.56,5.741],[51.82,58.73,5.823],[50.0,58.78,5.852],[48.18,58.73,5.823],[46.6,58.56,5.741],[45.46,58.3,5.619],[44.95,57.99,5.474],[45.21,57.65,5.33],[46.25,57.35,5.207],[47.94,57.15,5.125],[50.0,57.07,5.096],[52.06,57.15,5.125],[53.75,57.35,5.207],[54.79,57.65,5.33]],"wall":[{"r":0,"c":0,"x":27.13,"y":83.21,"w":4.65,"h":11.51},{"r":0,"c":1,"x":32.97,"y":83.21,"w":4.73,"h":11.51},{"r":0,"c":2,"x":38.8,"y":83.21,"w":4.81,"h":11.51},{"r":0,"c":3,"x":44.64,"y":83.21,"w":4.89,"h":11.51},{"r":0,"c":4,"x":50.47,"y":83.21,"w":4.97,"h":11.51},{"r":0,"c":5,"x":56.31,"y":83.21,"w":5.05,"h":11.51},{"r":0,"c":6,"x":62.14,"y":83.21,"w":5.13,"h":11.51},{"r":0,"c":7,"x":67.98,"y":83.21,"w":5.21,"h":11.51},{"r":1,"c":0,"x":27.48,"y":70.34,"w":4.58,"h":11.16},{"r":1,"c":1,"x":33.23,"y":70.34,"w":4.66,"h":11.16},{"r":1,"c":2,"x":38.97,"y":70.34,"w":4.74,"h":11.16},{"r":1,"c":3,"x":44.72,"y":70.34,"w":4.81,"h":11.16},{"r":1,"c":4,"x":50.46,"y":70.34,"w":4.89,"h":11.16},{"r":1,"c":5,"x":56.21,"y":70.34,"w":4.97,"h":11.16},{"r":1,"c":6,"x":61.96,"y":70.34,"w":5.04,"h":11.16},{"r":1,"c":7,"x":67.7,"y":70.34,"w":5.12,"h":11.16}]},"ceremony":{"wall":[{"r":0,"c":0,"x":33.15,"y":66.65,"w":3.54,"h":8.23},{"r":0,"c":1,"x":37.45,"y":66.65,"w":3.56,"h":8.23},{"r":0,"c":2,"x":41.75,"y":66.65,"w":3.58,"h":8.23},{"r":0,"c":3,"x":46.05,"y":66.65,"w":3.6,"h":8.23},{"r":0,"c":4,"x":50.35,"y":66.65,"w":3.62,"h":8.23},{"r":0,"c":5,"x":54.65,"y":66.65,"w":3.64,"h":8.23},{"r":0,"c":6,"x":58.94,"y":66.65,"w":3.66,"h":8.23},{"r":0,"c":7,"x":63.24,"y":66.65,"w":3.68,"h":8.23},{"r":1,"c":0,"x":33.24,"y":57.26,"w":3.53,"h":8.15},{"r":1,"c":1,"x":37.52,"y":57.26,"w":3.55,"h":8.15},{"r":1,"c":2,"x":41.79,"y":57.26,"w":3.57,"h":8.15},{"r":1,"c":3,"x":46.07,"y":57.26,"w":3.58,"h":8.15},{"r":1,"c":4,"x":50.34,"y":57.26,"w":3.6,"h":8.15},{"r":1,"c":5,"x":54.62,"y":57.26,"w":3.62,"h":8.15},{"r":1,"c":6,"x":58.9,"y":57.26,"w":3.64,"h":8.15},{"r":1,"c":7,"x":63.17,"y":57.26,"w":3.66,"h":8.15}],"seats":{"N-1":{"at":[34.13,41.9,4.428],"w":8.56},"N1":{"at":[65.87,41.9,4.428],"w":8.56},"B0":{"at":[35.99,48.13,8.304],"w":4.56},"B1":{"at":[42.99,48.13,8.304],"w":4.56},"B2":{"at":[50.0,48.13,8.304],"w":4.56},"B3":{"at":[57.01,48.13,8.304],"w":4.56},"B4":{"at":[64.01,48.13,8.304],"w":4.56},"L0":{"at":[20.21,46.56,7.017],"w":5.4},"R0":{"at":[84.61,44.93,6.038],"w":6.27},"L1":{"at":[15.39,44.93,6.038],"w":6.27},"R1":{"at":[79.79,46.56,7.017],"w":5.4},"stand":{"at":[72.29,50.38,5.209],"w":7.27}}}};
+const ANCH = {"dining":{"seats":{"S0":{"at":[89.21,36.94,3.547],"w":11.65},"S1":{"at":[81.83,42.25,4.435],"w":9.32},"S2":{"at":[72.6,45.58,5.258],"w":7.86},"S3":{"at":[62.93,47.46,5.875],"w":7.04},"S4":{"at":[37.07,47.46,5.875],"w":7.04},"S5":{"at":[27.4,45.58,5.258],"w":7.86},"S6":{"at":[18.17,42.25,4.435],"w":9.32},"S7":{"at":[10.79,36.94,3.547],"w":11.65}},"head":{"at":[71.81,53.99,6.266],"w":7.45},"box":{"at":[65.63,50.31,5.333],"w":5.48},"screen":{"x":37.18,"y":56.39,"w":25.97,"h":27.4}},"ceremony":{"seats":{"N-1":{"at":[45.07,47.56,7.436],"w":5.1},"N1":{"at":[54.93,47.56,7.436],"w":5.1},"L0":{"at":[7.72,35.61,3.801],"w":9.97},"R0":{"at":[92.28,35.61,3.801],"w":9.97},"L1":{"at":[15.79,39.99,4.698],"w":8.06},"R1":{"at":[84.21,39.99,4.698],"w":8.06},"L2":{"at":[21.28,42.97,5.596],"w":6.77},"R2":{"at":[78.72,42.97,5.596],"w":6.77},"L3":{"at":[25.25,45.12,6.493],"w":5.84},"R3":{"at":[74.75,45.12,6.493],"w":5.84},"stand":{"at":[30.82,45.72,3.824],"w":9.91}},"wall":[{"r":0,"c":0,"x":33.1,"y":68.84,"w":3.54,"h":8.29},{"r":0,"c":1,"x":37.41,"y":68.84,"w":3.56,"h":8.29},{"r":0,"c":2,"x":41.72,"y":68.84,"w":3.59,"h":8.29},{"r":0,"c":3,"x":46.04,"y":68.84,"w":3.61,"h":8.29},{"r":0,"c":4,"x":50.35,"y":68.84,"w":3.64,"h":8.29},{"r":0,"c":5,"x":54.66,"y":68.84,"w":3.67,"h":8.29},{"r":0,"c":6,"x":58.97,"y":68.84,"w":3.69,"h":8.29},{"r":0,"c":7,"x":63.28,"y":68.84,"w":3.72,"h":8.29},{"r":1,"c":0,"x":33.21,"y":59.41,"w":3.51,"h":8.18},{"r":1,"c":1,"x":37.5,"y":59.41,"w":3.54,"h":8.18},{"r":1,"c":2,"x":41.78,"y":59.41,"w":3.56,"h":8.18},{"r":1,"c":3,"x":46.06,"y":59.41,"w":3.59,"h":8.18},{"r":1,"c":4,"x":50.35,"y":59.41,"w":3.62,"h":8.18},{"r":1,"c":5,"x":54.63,"y":59.41,"w":3.64,"h":8.18},{"r":1,"c":6,"x":58.91,"y":59.41,"w":3.67,"h":8.18},{"r":1,"c":7,"x":63.19,"y":59.41,"w":3.69,"h":8.18}]}};
 // The HOH is the point of the shot: drawn standing behind the box, bigger than a seat at that depth.
 const seatOf = (S, n) => {
   const a = ANCH[S.set]; const id = S.seated[n];
-  if (id === 'head') return { at: [a.head.at[0], a.box.at[1] + 1.5, a.box.at[2] + 0.4], w: a.head.w * 1.55 };
+  if (id === 'head') return { at: a.head.at, w: a.head.w * 1.25 };
   const t = a.seats[id]; return { at: t.at, w: t.w * (S.set === 'dining' ? 0.72 : 1.0) };
 };
 const zOf = a => Math.round(100 - a.at[2] * 10);
-const KEY_ORDER = S => S.steps.filter(x => x.key).map(x => x.key);
+// The nominations screen and the key box (modern BB): one key per nominee; a turned key fills a slot.
+const NOM_SLOTS = S => S.steps.filter(x => x.reveal).length;
+function nomScreenHtml(A, L, st, fresh, n) {
+  const r = A.screen;
+  const slots = Array.from({ length: n }, (_, i) => {
+    const who = L.revealed[i];
+    const flip = fresh && st && st.reveal && who === st.reveal;
+    return `<div class="nslot ${who ? 'on' : ''} ${flip ? 'flip' : ''}">${who ? `${img(who)}<b>${who}</b>` : '<i>?</i>'}</div>`;
+  }).join('');
+  return `<div class="nomscreen" style="left:${r.x}%;bottom:${r.y}%;width:${r.w}%;height:${r.h}%"><div class="nhead">NOMINATIONS</div><div class="nslots">${slots}</div></div>`;
+}
+function keyBoxHtml(A, L, st, fresh, n) {
+  const b = A.box;
+  const keys = Array.from({ length: n }, (_, i) => {
+    const turned = i < L.revealed.length;
+    const now = fresh && st && st.reveal && i === L.revealed.length - 1;
+    return `<span class="nkey ${turned ? 'turned' : ''} ${now ? 'now' : ''}"><b>BB</b></span>`;
+  }).join('');
+  return `<div class="nkeys" style="left:${b.at[0]}%;bottom:${(b.at[1] * 0.5625).toFixed(2)}cqw;width:${(b.w * 1.15).toFixed(2)}cqw;z-index:${zOf(b) + 2}">${keys}</div>`;
+}
 const photo = set => PHOTO.has(set) ? ' photo' : '';
 function miniSet(set, nv, people = []) {
   return `<div class="set set-${set}${photo(set)}" style="--hoh:${col(HOH)}"><div class="floor"></div></div>`;
@@ -807,13 +836,8 @@ function setHtml(S, st, prevSt, L, fresh) {
   }
   if (S.set === 'dining') {
     const A = ANCH.dining;
-    h += `<img class="front" src="../assets/bb/house/${season}/dining-td-b-nom.webp" alt="" style="z-index:${zOf(A.box)}">`;
-    // the keys still in the box: one per safe houseguest not yet drawn, standing in its slot
-    KEY_ORDER(S).forEach((n, i) => {
-      if (L.status[n] === 'safe') return;
-      const sl = A.slots[(i * 3 + 2) % A.slots.length];
-      h += `<span class="slotkey" style="left:${sl[0]}%;bottom:${(sl[1] * 0.5625 + 0.4).toFixed(2)}cqw;z-index:${zOf(A.box) + 1}">${KEY}</span>`;
-    });
+    h += `<img class="front" src="../assets/bb/house/${season}/dining-td-b-nombox.webp?v=5" alt="" style="z-index:${zOf(A.box)}">`;
+    h += nomScreenHtml(A, L, st, fresh, NOM_SLOTS(S)) + keyBoxHtml(A, L, st, fresh, NOM_SLOTS(S));
   }
   if (S.medalOn && L.veto === S.medalOn) {
     const p = cast.find(([n]) => n === S.medalOn);
@@ -907,11 +931,7 @@ function paint(fresh = false) {
       const b = bgAt(S, idx).find(([m]) => m === n);
       h += `<div class="rx" style="left:${b ? b[1] : 50}%">${text}</div>`;
     }
-    if (st.key && S.seated) {
-      const A = ANCH.dining, o = A.box.at, t = seatOf(S, st.key);
-      const dy = -((t.at[1] - o[1]) * 0.5625 + t.w * 1.25 * 0.55);
-      h += `<div class="flykey" style="left:${o[0]}%;bottom:${(o[1] * 0.5625 + 1).toFixed(2)}cqw;--dx:${(t.at[0] - o[0]).toFixed(2)}cqw;--dy:${dy.toFixed(2)}cqw;z-index:99">${KEY}</div>`;
-    } else if (st.key) h += `<div class="flykey" style="--dx:${(HOUSE.indexOf(st.key) - 4) * 6.6 - 8}cqw;--dy:-14cqw">${KEY}</div>`;
+
     if (cut) h += `<div class="flash"></div>`;
     if (st.push && camPrev !== camNow) h += `<div class="zoom"><b>ZOOM 2.0×</b></div>`;
   }
@@ -1039,7 +1059,7 @@ const ROOM_FILE = { kitchen: 'kitchen', ceremony: 'living', bedroom: 'bedroom', 
 let season = 'default';
 (() => {
   const css = SEASONS.slice(1).map(([id]) => Object.entries(ROOM_FILE).map(([set, f]) =>
-    `body[data-season="${id}"] .set-${set}.photo{background-image:url('../assets/bb/house/${id}/${f}-td-b.webp')}`).join('\n')).join('\n');
+    `body[data-season="${id}"] .set-${set}.photo{background-image:url('../assets/bb/house/${id}/${f}-td-b.webp?v=5')}`).join('\n')).join('\n');
   const el = document.createElement('style'); el.textContent = css; document.head.appendChild(el);
 })();
 let seasonI = 0;

@@ -162,6 +162,25 @@ def mat_marble(name, base='#f4f2ee', vein='#9a948c', rough=0.18):
     p.inputs['Coat Weight'].default_value = 0.3
     return m
 
+def mat_planks(name, a, b, seam='#6b4a2e', scale=1.0, rough=0.5):
+    """A plank floor: long boards, staggered, two tones, a thin seam."""
+    m = bpy.data.materials.new(name); m['tdcolor'] = a
+    nt, p = _bsdf(m)
+    tc = nt.nodes.new('ShaderNodeTexCoord')
+    br = nt.nodes.new('ShaderNodeTexBrick')
+    br.inputs['Scale'].default_value = scale
+    br.inputs['Mortar Size'].default_value = 0.008
+    br.inputs['Brick Width'].default_value = 1.6
+    br.inputs['Row Height'].default_value = 0.22
+    br.offset = 0.5
+    br.inputs['Color1'].default_value = hexc(a)
+    br.inputs['Color2'].default_value = hexc(b)
+    br.inputs['Mortar'].default_value = hexc(seam)
+    nt.links.new(tc.outputs['Object'], br.inputs['Vector'])
+    nt.links.new(br.outputs['Color'], p.inputs['Base Color'])
+    p.inputs['Roughness'].default_value = rough
+    return m
+
 def mat_tiles(name, a, b, grout='#8f887d', scale=1.2, rough=0.35):
     m = bpy.data.materials.new(name); m['tdcolor'] = a
     nt, p = _bsdf(m)
@@ -296,15 +315,16 @@ def mat_graphic(name, colors, scale=0.35, angle=35, rough=0.6):
     p.inputs['Roughness'].default_value = rough
     return m
 
-def shell(T, W=9.0, D=7.0, H=3.2, floor_mat=None, wall_mat=None):
+def shell(T, W=9.0, D=7.0, H=3.2, floor_mat=None, wall_mat=None, roof=True):
     wall = wall_mat or mat('wall', T['wall'], 0.8)
     fl = floor_mat or mat_tiles('floor', T['floor_a'], T['floor_b'], grout=T.get('grout', '#5e584f'), scale=T.get('floor_scale', 0.75), rough=T['floor_rough'])
     box('Floor', (W + 6, D + 6, 0.1), (0, D / 2 - 1, -0.05), fl, bevel=0)
     box('BackWall', (W, 0.2, H), (0, D + 0.1, H / 2), wall, bevel=0)
     box('LeftWall', (0.2, D + 6, H), (-W / 2 - 0.1, D / 2 - 1, H / 2), wall, bevel=0)
     box('RightWall', (0.2, D + 6, H), (W / 2 + 0.1, D / 2 - 1, H / 2), wall, bevel=0)
-    box('Ceiling', (W + 2, D + 6, 0.1), (0, D / 2 - 1, H + 0.05), mat('ceiling', T['ceiling'], 0.9), bevel=0)
-    box('Cove', (W - 0.2, 0.06, 0.04), (0, D - 0.05, H - 0.1), mat('cove', '#ffffff', emit=T['light'], strength=14), bevel=0)
+    if roof:
+        box('Ceiling', (W + 2, D + 6, 0.1), (0, D / 2 - 1, H + 0.05), mat('ceiling', T['ceiling'], 0.9), bevel=0)
+        box('Cove', (W - 0.2, 0.06, 0.04), (0, D - 0.05, H - 0.1), mat('cove', '#ffffff', emit=T['light'], strength=14), bevel=0)
     box('Skirt', (W, 0.03, 0.08), (0, D - 0.015, 0.04), mat('skirt', T['deep'], 0.5), bevel=0.003)
 
 def downlights(T, xs, ys, H, power=55, cone=70):
@@ -485,7 +505,368 @@ def room_kitchen(T):
     area('SlatWash', (8.5, 0.25), (0, D - 0.45, H - 0.08), 260, T['light'], rot=(28, 0, 0))
     camera((0, -1.4, 1.42), (87, 0, 0), lens=22, dof=(5.3, 4.0))
 
-ROOMS = {'kitchen': room_kitchen}
+
+# ── furniture shared by every room ─────────────────────────────────────
+def _group(name, loc, rot_z=0):
+    root = _link(bpy.data.objects.new(name, None))
+    root.location = loc; root.rotation_euler = (0, 0, math.radians(rot_z))
+    return root
+
+def _child(root, ob):
+    ob.parent = root
+    return ob
+
+def sofa(name, loc, length, rot_z, fabric, pillows=(), depth=0.95, legs='#2a2a2e'):
+    """A low modern sofa: plinth, back, arms, seat cushions, a few throw pillows."""
+    g = _group(name, loc, rot_z)
+    fm = mat(f'{name}fab', fabric, 0.75)
+    _child(g, box(f'{name}Base', (length, depth, 0.24), (0, 0, 0.2), fm, bevel=0.03))
+    _child(g, box(f'{name}Back', (length, 0.24, 0.5), (0, depth / 2 - 0.12, 0.55), fm, bevel=0.06))
+    for sx in (-1, 1):
+        _child(g, box(f'{name}Arm{sx}', (0.22, depth, 0.36), (sx * (length / 2 - 0.11), 0, 0.46), fm, bevel=0.05))
+    n = max(1, int((length - 0.44) // 0.8))
+    cw = (length - 0.44) / n
+    for i in range(n):
+        _child(g, box(f'{name}Seat{i}', (cw - 0.02, depth - 0.3, 0.16), (-length / 2 + 0.22 + cw * (i + 0.5), -0.12, 0.4), fm, bevel=0.05))
+    for i, c in enumerate(pillows):
+        x = -length / 2 + 0.45 + i * (length - 0.9) / max(1, len(pillows) - 1)
+        ob = _child(g, box(f'{name}Pillow{i}', (0.42, 0.14, 0.4), (x, depth / 2 - 0.32, 0.66), mat(f'pillow{c}', c, 0.8), bevel=0.06))
+        ob.rotation_euler = (math.radians(-12), 0, math.radians(8 * (1 if i % 2 else -1)))
+    lm = mat('sofaleg', legs, 0.4, 0.6)
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            _child(g, cyl(f'{name}Leg{sx}{sy}', 0.025, 0.08, (sx * (length / 2 - 0.12), sy * (depth / 2 - 0.12), 0.04), lm))
+    return g
+
+def armchair(name, loc, rot_z, fabric, legs='#2a2a2e'):
+    g = _group(name, loc, rot_z)
+    fm = mat(f'{name}fab', fabric, 0.7)
+    _child(g, box(f'{name}Seat', (0.8, 0.78, 0.2), (0, 0, 0.42), fm, bevel=0.05))
+    _child(g, box(f'{name}Back', (0.8, 0.18, 0.62), (0, 0.33, 0.78), fm, bevel=0.07))
+    for sx in (-1, 1):
+        _child(g, box(f'{name}Arm{sx}', (0.14, 0.72, 0.28), (sx * 0.38, 0.02, 0.62), fm, bevel=0.05))
+    lm = mat('chairleg', legs, 0.4, 0.6)
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            _child(g, cyl(f'{name}Leg{sx}{sy}', 0.022, 0.32, (sx * 0.32, sy * 0.3, 0.16), lm))
+    return g
+
+def floor_lamp(name, loc, T, shade='#f3ead6'):
+    x, y, z = loc
+    pm = mat('lamppole', '#2a2a2e', 0.35, 0.8)
+    cyl(f'{name}Base', 0.16, 0.03, (x, y, 0.015), pm)
+    cyl(f'{name}Pole', 0.015, 1.5, (x, y, 0.78), pm)
+    cyl(f'{name}Shade', 0.2, 0.32, (x, y, 1.62), mat(f'{name}shade', shade, 0.6), r2=0.15)
+    sphere(f'Bulb{name}', 0.05, (x, y, 1.55), mat('bulb', '#ffffff', emit=T['light'], strength=30))
+    point(f'{name}L', (x, y, 1.55), 40, T['light'], 0.08)
+
+def memory_wall(T, cx, y, z0, cols=8, rows=2, fw=0.52, fh=0.66, gap=0.1):
+    """The memory wall: a lit panel with a frame for every houseguest."""
+    W = cols * fw + (cols - 1) * gap + 0.5
+    Hh = rows * fh + (rows - 1) * gap + 0.5
+    box('MemPanel', (W, 0.08, Hh), (cx, y, z0 + Hh / 2), mat('mempanel', T['deep'], 0.4), bevel=0.01)
+    box('MemEdge', (W + 0.06, 0.04, Hh + 0.06), (cx, y + 0.03, z0 + Hh / 2), mat('memedge', '#ffffff', emit=T['accent2'], strength=8), bevel=0)
+    scr = mat('memscreen', '#1b2232', 0.15, coat=0.8)
+    rim = mat('memrim', '#ffffff', emit=T['accent'], strength=5)
+    for r in range(rows):
+        for c in range(cols):
+            x = cx - W / 2 + 0.25 + fw / 2 + c * (fw + gap)
+            z = z0 + Hh - 0.25 - fh / 2 - r * (fh + gap)
+            box(f'MemRim{r}{c}', (fw + 0.03, 0.02, fh + 0.03), (x, y - 0.045, z), rim, bevel=0)
+            box(f'MemScreen{r}{c}', (fw, 0.02, fh), (x, y - 0.06, z), scr, bevel=0)
+    # the title strip under the wall
+    box('MemStrip', (W * 0.6, 0.02, 0.12), (cx, y - 0.05, z0 + 0.12), mat('memstrip', '#ffffff', emit=T['accent'], strength=6), bevel=0)
+
+def ring_light(name, loc, r, T):
+    """A ring chandelier: a lit torus on three cables."""
+    bpy.ops.mesh.primitive_torus_add(major_radius=r, minor_radius=0.035, location=loc)
+    ob = bpy.context.active_object; ob.name = name
+    ob.data.materials.append(mat('ringlight', '#ffffff', emit=T['light'], strength=22))
+    for i in range(3):
+        a = i * math.tau / 3
+        cyl(f'{name}Cable{i}', 0.003, 0.9, (loc[0] + r * math.cos(a), loc[1] + r * math.sin(a), loc[2] + 0.45), mat('cord', '#111111', 0.6), bevel=0)
+    point(f'{name}L', loc, 220, T['light'], 0.6)
+    return ob
+
+def room_living(T):
+    """The living room: the memory wall, the couches, the two chairs nominees sit in."""
+    W, D, H = 10.0, 7.5, 3.2
+    shell(T, W, D, H, floor_mat=mat_planks('planks', T['wood_a'], T['wood_b'], seam=T['wood_b'], scale=0.9, rough=T['floor_rough']))
+    # the left wall: supergraphic and the camera mirrors, as in every room
+    box('Graphic', (0.02, D + 2, H), (-W / 2 + 0.01, D / 2 - 0.5, H / 2), mat_graphic('graphic', T['graphic'], scale=0.3, angle=-35), bevel=0)
+    two_way_mirrors(T, -W / 2 + 0.03, (2.2, 4.9), z0=0.6, h=1.9, w=1.5)
+    # the back wall: a painted feature band, the memory wall above the long sofa
+    box('Band', (W, 0.02, 1.1), (0, D - 0.005, 0.55), mat('band', T['wall2'], 0.8), bevel=0)
+    memory_wall(T, 0, D - 0.06, 1.25)
+    sofa('BackSofa', (0, D - 0.6, 0), 5.2, 0, T['fabric2'], pillows=(T['accent'], T['pop'], '#ffffff', T['accent'], T['pop']))
+    # the U: two side sofas facing in, a rug, a coffee table
+    sofa('LeftSofa', (-3.3, 5.0, 0), 2.4, -90, T['fabric2'], pillows=(T['accent'], '#ffffff'))
+    sofa('RightSofa', (3.3, 5.0, 0), 2.4, 90, T['fabric2'], pillows=(T['pop'], T['accent']))
+    box('Rug', (4.6, 3.4, 0.012), (0, 4.6, 0.006), mat('rug', T['accent'], 0.95), bevel=0)
+    box('RugField', (4.2, 3.0, 0.014), (0, 4.6, 0.008), mat('rugfield', T['deep'], 0.95), bevel=0)
+    cyl('TableTop', 0.75, 0.06, (0, 4.6, 0.4), mat_wood('tablewood', T['wood_a'], T['wood_b']), bevel=0.01)
+    cyl('TableBase', 0.45, 0.36, (0, 4.6, 0.19), mat('tablebase', T['deep'], 0.4))
+    for i, (dx, c) in enumerate(((-0.25, T['accent']), (0.15, '#ffffff'), (0.3, T['pop']))):
+        box(f'Book{i}', (0.3, 0.22, 0.04), (dx * 0.6 - 0.15, 4.55 + 0.05 * i, 0.45 + 0.04 * i), mat(f'book{c}', c, 0.6), bevel=0.004)
+    cyl('Candle', 0.06, 0.14, (0.35, 4.75, 0.5), mat('candle', '#ffffff', 0.5))
+    # the two nomination chairs, front and centre
+    for sx in (-1, 1):
+        armchair(f'NomChair{sx}', (sx * 1.15, 2.9, 0), 0, T['pop'])
+    # corners: lamps and plants; the right wall: the sliding door out to the yard
+    floor_lamp('LampL', (-4.3, D - 0.6, 0), T)
+    floor_lamp('LampR', (4.3, D - 0.6, 0), T)
+    plant('PlantL', (-4.3, 3.0, 0), height=1.5, pot=T['deep'])
+    box('SlideFrame', (0.1, 2.4, 2.5), (W / 2 - 0.02, 2.3, 1.25), mat('slideframe', '#2a2d33', 0.4, 0.6), bevel=0.004)
+    box('SlideGlass', (0.04, 2.2, 2.35), (W / 2 + 0.01, 2.3, 1.2), mat('daylight', '#ffffff', emit='#cfe9ff', strength=2.5), bevel=0)
+    box('SlideMullion', (0.06, 0.06, 2.35), (W / 2 - 0.04, 2.3, 1.2), mat('slideframe', '#2a2d33', 0.4, 0.6), bevel=0)
+    neon_eye((W / 2 - 0.05, 5.3, 2.35), 0.5, rot=(90, 0, -90))
+    ring_light('Ring', (0, 3.0, H - 0.45), 0.85, T)
+    downlights(T, (-3.4, 3.4), (2.0, 6.2), H, power=40)
+    area('CeilSoft', (6, 3), (0, 4.0, H - 0.05), 80, T['light'])
+    area('Fill', (5, 2), (0, -2.0, 2.0), 150, T['fill'], rot=(-80, 0, 0))
+    world(T['world'], 0.4)
+    camera((0, -1.5, 1.45), (86.5, 0, 0), lens=22, dof=(6.0, 4.0))
+
+
+def bed(name, loc, T, width=1.1, length=2.0, headboard='#3f7cc1', duvet='#efe4c9', throw=None, pillows=('#ffffff', '#ffffff'), hb_h=1.4, tufts=True):
+    """A bed with its head against the back wall: frame, mattress, duvet, pillows, a throw, an upholstered headboard."""
+    x, y, z = loc
+    frame = mat('bedframe', T['deep'], 0.5)
+    box(f'{name}Frame', (width + 0.1, length + 0.05, 0.3), (x, y - length / 2, 0.15), frame)
+    box(f'{name}Mattress', (width, length, 0.22), (x, y - length / 2, 0.41), mat('mattress', '#f4f1ea', 0.8), bevel=0.04)
+    box(f'{name}Duvet', (width + 0.06, length * 0.72, 0.1), (x, y - length * 0.62, 0.55), mat(f'duvet{duvet}', duvet, 0.85), bevel=0.04)
+    if throw:
+        box(f'{name}Throw', (width + 0.1, 0.45, 0.06), (x, y - length + 0.35, 0.6), mat(f'throw{throw}', throw, 0.9), bevel=0.02)
+    for i, c in enumerate(pillows):
+        dx = (i - (len(pillows) - 1) / 2) * (width / max(1, len(pillows)))
+        ob = box(f'{name}Pillow{i}', (width / len(pillows) - 0.06, 0.34, 0.16), (x + dx, y - 0.25, 0.6), mat(f'pillow{c}', c, 0.8), bevel=0.05)
+        ob.rotation_euler = (math.radians(-18), 0, 0)
+    hb = mat(f'headboard{headboard}', headboard, 0.7)
+    box(f'{name}Head', (width + 0.3, 0.12, hb_h), (x, y + 0.02, hb_h / 2), hb, bevel=0.05)
+    if tufts:
+        n = 4
+        for i in range(n):
+            box(f'{name}Tuft{i}', (0.02, 0.01, hb_h - 0.25), (x - (width + 0.3) / 2 + (i + 1) * (width + 0.3) / (n + 1), y - 0.045, hb_h / 2), mat(f'tuft{headboard}', _darker(headboard), 0.7), bevel=0)
+
+def _darker(hexcol, k=0.78):
+    h = hexcol.lstrip('#')
+    r, g, b = (int(h[i:i + 2], 16) for i in (0, 2, 4))
+    return '#%02x%02x%02x' % (int(r * k), int(g * k), int(b * k))
+
+def nightstand(name, loc, T, lamp=True):
+    x, y, z = loc
+    box(f'{name}Body', (0.5, 0.42, 0.55), (x, y, 0.275), mat_wood('standwood', T['wood_a'], T['wood_b']))
+    box(f'{name}Drawer', (0.42, 0.01, 0.16), (x, y - 0.215, 0.4), mat('drawerface', _darker(T['wood_a'], 0.9), 0.5), bevel=0)
+    if lamp:
+        cyl(f'{name}LampBase', 0.08, 0.26, (x, y, 0.68), mat('lampbase', T['accent'], 0.3, coat=0.6), r2=0.05)
+        cyl(f'{name}LampShade', 0.16, 0.2, (x, y, 0.9), mat('lampshade', '#f6ead0', 0.6), r2=0.12)
+        sphere(f'Bulb{name}', 0.04, (x, y, 0.86), mat('bulb', '#ffffff', emit=T['light'], strength=30))
+        point(f'{name}L', (x, y, 0.88), 25, T['light'], 0.06)
+
+def fairy_wall(T, x0, x1, z0, z1, y, n=60, seed=3):
+    """A wall of small warm lights."""
+    import random
+    rnd = random.Random(seed)
+    m = mat('fairy', '#ffffff', emit=T['light'], strength=20)
+    for i in range(n):
+        sphere(f'Fairy{i}', 0.025, (rnd.uniform(x0, x1), y, rnd.uniform(z0, z1)), m)
+
+def room_bedroom(T):
+    """A bedroom: three beds in a row, tall headboards, lamps between, a wall of little lights."""
+    W, D, H = 9.0, 6.5, 3.1
+    shell(T, W, D, H, floor_mat=mat_planks('planks', T['wood_a'], T['wood_b'], seam=T['wood_b'], scale=0.9, rough=T['floor_rough']))
+    box('BedWall', (W, 0.02, H), (0, D - 0.005, H / 2), mat('bedwall', T['deep'], 0.85), bevel=0)
+    fairy_wall(T, -4.2, 4.2, 1.7, 2.9, D - 0.03)
+    heads = [T['accent'], T['accent2'], T['pop']]
+    duvets = ['#efe4c9', '#ffffff', '#efe4c9']
+    for i, x in enumerate((-2.7, 0, 2.7)):
+        bed(f'Bed{i}', (x, D - 0.08, 0), T, width=1.3, length=2.1, headboard=heads[i], duvet=duvets[i], throw=heads[(i + 1) % 3],
+            pillows=('#ffffff', heads[(i + 2) % 3]))
+    for x in (-1.35, 1.35):
+        nightstand(f'Stand{x}', (x, D - 0.3, 0), T)
+    two_way_mirrors(T, -W / 2 + 0.03, (2.0, 4.4), z0=0.6, h=1.9, w=1.3)
+    box('Rug', (6.5, 1.6, 0.012), (0, 3.3, 0.006), mat('rug', T['accent2'], 0.95), bevel=0)
+    box('Dresser', (0.5, 1.6, 0.9), (W / 2 - 0.3, 2.8, 0.45), mat('dresser', T['cabinet'], 0.4))
+    for i in range(3):
+        box(f'DresserLine{i}', (0.01, 1.5, 0.006), (W / 2 - 0.56, 2.8, 0.3 + i * 0.25), mat('gap', '#07080a', 0.9), bevel=0)
+    plant('PlantR', (W / 2 - 0.4, 4.6, 0), height=1.3, pot=T['accent'])
+    neon_eye((W / 2 - 0.05, 2.8, 2.1), 0.42, rot=(90, 0, -90))
+    downlights(T, (-3.0, 3.0), (2.0, 5.0), H, power=30)
+    area('CeilSoft', (6, 3), (0, 3.5, H - 0.05), 60, T['light'])
+    area('Fill', (5, 2), (0, -2.0, 2.0), 140, T['fill'], rot=(-80, 0, 0))
+    world(T['world'], 0.4)
+    camera((0, -1.3, 1.5), (85.5, 0, 0), lens=22, dof=(6.0, 4.0))
+
+def room_hoh(T):
+    """The Head of Household suite: one big bed, a gold headboard, a lounge chair, the basket and the letter."""
+    W, D, H = 8.0, 6.0, 3.0
+    shell(T, W, D, H, floor_mat=mat_planks('planks', T['wood_a'], T['wood_b'], seam=T['wood_b'], scale=0.9, rough=T['floor_rough']))
+    # a gold arch behind the bed: the room is a reward and looks like one
+    box('HohWall', (W, 0.02, H), (0, D - 0.005, H / 2), mat('hohwall', T['wall2'], 0.85), bevel=0)
+    box('Arch', (2.8, 0.03, 1.6), (0, D - 0.02, 0.8), mat('arch', T['accent'], 0.6), bevel=0)
+    cyl('ArchTop', 1.4, 0.03, (0, D - 0.02, 1.6), mat('arch', T['accent'], 0.6), rot=(90, 0, 0), verts=96, bevel=0)
+    box('ArchInner', (2.4, 0.035, 1.6), (0, D - 0.035, 0.8), mat('archinner', T['deep'], 0.7), bevel=0)
+    cyl('ArchInnerTop', 1.2, 0.035, (0, D - 0.035, 1.6), mat('archinner', T['deep'], 0.7), rot=(90, 0, 0), verts=96, bevel=0)
+    bed('HohBed', (0, D - 0.1, 0), T, width=2.0, length=2.2, headboard=T['accent'], duvet='#ffffff', throw=T['pop'],
+        pillows=(T['accent'], '#ffffff', '#ffffff', T['accent']), hb_h=1.6)
+    nightstand('StandL', (-1.55, D - 0.3, 0), T)
+    nightstand('StandR', (1.55, D - 0.3, 0), T)
+    # the letter from home, framed, on the right stand; the snack basket on the bed
+    box('Frame', (0.22, 0.03, 0.28), (1.68, D - 0.35, 0.69), mat('frame', T['accent'], 0.3, 0.8), bevel=0.004, rot=(-10, 0, 0))
+    box('Photo', (0.17, 0.03, 0.22), (1.68, D - 0.37, 0.69), mat('photo', '#e9d8b8', 0.5), bevel=0, rot=(-10, 0, 0))
+    cyl('Basket', 0.28, 0.2, (0.6, D - 1.6, 0.72), mat('basket', '#c9955a', 0.8), r2=0.22)
+    for i, c in enumerate((T['pop'], T['accent2'], '#f2b134', '#ffffff', T['accent'])):
+        box(f'Snack{i}', (0.1, 0.06, 0.18), (0.48 + i * 0.06, D - 1.6 + 0.05 * (i % 2), 0.88), mat(f'snack{c}', c, 0.4), bevel=0.01, rot=(0, 10 * (i - 2), 0))
+    # left: the lounge chair under a reading lamp; right: a small desk and the mini fridge
+    armchair('Lounge', (-2.9, 3.3, 0), 30, T['accent2'])
+    floor_lamp('LampL', (-3.5, 4.4, 0), T)
+    box('Desk', (1.2, 0.55, 0.75), (3.1, D - 0.4, 0.375), mat('desk', T['cabinet'], 0.4))
+    box('MiniFridge', (0.5, 0.5, 0.6), (3.4, 3.4, 0.3), mat('steel', T['metal'], 0.22, 1.0))
+    plant('PlantR', (3.5, 2.3, 0), height=1.2, pot=T['deep'])
+    two_way_mirrors(T, -W / 2 + 0.03, (1.7,), z0=0.6, h=1.9, w=1.2)
+    box('Rug', (3.4, 2.4, 0.012), (0, 2.8, 0.006), mat('rug', T['pop'], 0.95), bevel=0)
+    downlights(T, (-2.6, 2.6), (2.0, 4.6), H, power=30)
+    area('CeilSoft', (5, 3), (0, 3.2, H - 0.05), 60, T['light'])
+    area('Fill', (5, 2), (0, -2.0, 2.0), 140, T['fill'], rot=(-80, 0, 0))
+    world(T['world'], 0.4)
+    camera((0, -1.1, 1.5), (85.5, 0, 0), lens=22, dof=(5.0, 4.0))
+
+def room_dr(T):
+    """The Diary Room: the chair, the backdrop behind it, the eye. Tighter, like the real cut."""
+    W, D, H = 5.0, 3.6, 3.0
+    shell(T, W, D, H, wall_mat=mat('drwall', T['deep'], 0.85), floor_mat=mat('drfloor', _darker(T['deep'], 0.8), 0.6))
+    # backdrop: vertical panels with light between them
+    for i in range(9):
+        x = -2.0 + i * 0.5
+        box(f'DrPanel{i}', (0.42, 0.06, 2.8), (x, D - 0.06, 1.4), mat('drpanel', T['wall2'], 0.6), bevel=0.01)
+        box(f'DrSlit{i}', (0.03, 0.02, 2.6), (x + 0.25, D - 0.02, 1.4), mat('drslit', '#ffffff', emit=T['accent2'], strength=10), bevel=0)
+    neon_eye((0, D - 0.12, 2.35), 0.6, rot=(90, 0, 0))
+    # the chair: a big rounded throne, the room's whole personality
+    fm = mat('drchair', T['accent'], 0.6)
+    inner = mat('drchairin', T['accent2'], 0.7)
+    # an egg chair: a tall rounded shell, a deep cushion inside it
+    sphere('DrShell', 0.8, (0, 2.15, 1.05), fm, scale=(1.0, 0.55, 1.12))
+    sphere('DrHollow', 0.66, (0, 1.72, 1.02), inner, scale=(0.84, 0.3, 0.98))
+    cyl('DrSeat', 0.62, 0.22, (0, 1.85, 0.5), fm)
+    cyl('DrCushion', 0.56, 0.08, (0, 1.82, 0.64), inner)
+    cyl('DrBase', 0.45, 0.3, (0, 1.95, 0.15), mat('drbase', T['deep'], 0.4))
+    cyl('DrStage', 1.2, 0.08, (0, 1.95, 0.04), mat('drstage', T['wall2'], 0.5))
+    box('DrStageLED', (2.2, 0.01, 0.01), (0, 0.8, 0.07), mat('ledacc', '#ffffff', emit=T['led2'], strength=30), bevel=0)
+    area('DrKey', (2, 1), (0, -0.5, 2.4), 300, T['light'], rot=(-60, 0, 0))
+    world(T['world'], 0.4)
+    camera((0, -2.0, 1.3), (88, 0, 0), lens=24, dof=(4.0, 4.0))
+
+def room_yard(T):
+    """The backyard: high walls, open sky, the pool, the hot tub, loungers, string lights."""
+    W, D, H = 14.0, 10.0, 4.2
+    shell(T, W, D, H, floor_mat=mat('turf', '#7fae55', 0.9), wall_mat=mat('yardwall', T['wall2'], 0.85), roof=False)
+    # a mural on the back wall: the eye, huge, painted
+    box('Mural', (7.0, 0.02, 3.2), (0, D - 0.01, 2.2), mat('mural', T['accent2'], 0.8), bevel=0)
+    neon_eye((0, D - 0.06, 2.5), 2.0, rot=(90, 0, 0))
+    # the pool, the deck round it, the hot tub
+    box('Deck', (8.0, 4.2, 0.12), (-1.0, 5.6, 0.06), mat('deck', '#e7dcc4', 0.7), bevel=0)
+    box('Pool', (6.4, 2.8, 0.13), (-1.0, 5.6, 0.07), mat('pool', '#45b6d6', 0.1), bevel=0)
+    for i in range(7):
+        box(f'Ripple{i}', (0.8 + 0.3 * (i % 3), 0.015, 0.005), (-3.6 + i * 0.9, 4.7 + 0.35 * (i % 4), 0.14), mat('ripple', '#d6f4fb', 0.2), bevel=0)
+    cyl('HotTub', 1.0, 0.55, (4.6, 6.6, 0.28), mat('tubshell', T['cabinet'], 0.4))
+    cyl('HotTubWater', 0.88, 0.02, (4.6, 6.6, 0.55), mat('pool', '#45b6d6', 0.1))
+    # loungers along the front of the pool, an umbrella
+    for i, x in enumerate((-3.4, -2.0, -0.6)):
+        g = _group(f'Lounger{i}', (x, 3.2, 0), 0)
+        _child(g, box(f'LgBed{i}', (0.65, 1.8, 0.12), (0, 0, 0.35), mat('lounger', '#ffffff', 0.5)))
+        b = _child(g, box(f'LgBack{i}', (0.65, 0.7, 0.1), (0, 0.85, 0.62), mat('lounger', '#ffffff', 0.5)))
+        b.rotation_euler = (math.radians(55), 0, 0)
+        _child(g, box(f'LgPad{i}', (0.6, 1.6, 0.06), (0, -0.05, 0.44), mat(f'pad{i}', [T['accent'], T['pop'], T['accent2']][i], 0.8)))
+        for sx in (-1, 1):
+            for sy in (-1, 1):
+                _child(g, cyl(f'LgLeg{i}{sx}{sy}', 0.02, 0.3, (sx * 0.28, sy * 0.8, 0.15), mat('chairleg', '#2a2a2e', 0.4, 0.6)))
+    cyl('UmbPole', 0.03, 2.4, (0.8, 3.6, 1.2), mat('chairleg', '#2a2a2e', 0.4, 0.6))
+    cyl('Umbrella', 1.3, 0.35, (0.8, 3.6, 2.35), mat('umbrella', T['pop'], 0.7), r2=0.05)
+    # string lights zig-zagging over the yard
+    bulb = mat('fairy', '#ffffff', emit=T['light'], strength=20)
+    cord = mat('cord', '#111111', 0.6)
+    for k in range(4):
+        y0 = 2.5 + k * 1.9
+        for i in range(14):
+            t = i / 13
+            x = -W / 2 + 0.3 + t * (W - 0.6)
+            z = H - 0.4 - 0.5 * math.sin(math.pi * t)
+            sphere(f'Bulb{k}{i}', 0.05, (x, y0, z), bulb).visible_shadow = False
+    # planters along the side walls, a basketball hoop on the right wall
+    for i, y in enumerate((3.0, 6.0, 8.8)):
+        plant(f'PlanterL{i}', (-W / 2 + 0.6, y, 0), height=1.6, pot=T['deep'])
+    box('Backboard', (0.05, 1.2, 0.8), (W / 2 - 0.05, 7.0, 3.0), mat('backboard', '#ffffff', 0.4), bevel=0.01)
+    bpy.ops.mesh.primitive_torus_add(major_radius=0.23, minor_radius=0.015, location=(W / 2 - 0.35, 7.0, 2.7))
+    rim = bpy.context.active_object; rim.name = 'HoopRim'; rim.data.materials.append(mat('hoop', '#e0673f', 0.4, 0.6))
+    sky = bpy.context.scene.world
+    world(T.get('sky', '#8fc8ef'), 1.0)
+    sd = bpy.data.lights.new('Sun', 'SUN'); sd.energy = 4.0
+    sun = _link(bpy.data.objects.new('Sun', sd))
+    sun.rotation_euler = (math.radians(45), 0, math.radians(-30))
+    camera((0, -1.6, 1.6), (85, 0, 0), lens=20, dof=(7.0, 4.0))
+
+def room_storage(T):
+    """The storage room: shelves to the ceiling, the slop, the second fridge."""
+    W, D, H = 7.0, 4.5, 3.0
+    shell(T, W, D, H, wall_mat=mat('storewall', T['cabinet'], 0.85), floor_mat=mat_tiles('storefloor', '#bfb8ac', '#b7b0a4', grout='#8f887d', scale=1.6, rough=0.5))
+    import random
+    rnd = random.Random(7)
+    shelf = mat('shelf', '#9aa2ad', 0.4, 0.7)
+    cols = [T['accent'], T['accent2'], T['pop'], '#ffffff', '#f2b134', '#7fae55', '#e0673f']
+    for x0, x1 in ((-3.3, -0.4), (0.4, 3.3)):
+        for z in (0.25, 0.85, 1.45, 2.05, 2.65):
+            box(f'Shelf{x0}{z}', (x1 - x0, 0.45, 0.03), ((x0 + x1) / 2, D - 0.25, z), shelf, bevel=0)
+            x = x0 + 0.08
+            while x < x1 - 0.15:
+                w = rnd.choice((0.12, 0.16, 0.22, 0.28))
+                h = rnd.choice((0.18, 0.24, 0.3, 0.36))
+                c = rnd.choice(cols)
+                if rnd.random() < 0.35:
+                    cyl(f'Can{x0}{z}{x:.2f}', w / 2.4, h, (x + w / 2, D - 0.3, z + h / 2 + 0.015), mat(f'can{c}', c, 0.35, 0.3))
+                else:
+                    box(f'Box{x0}{z}{x:.2f}', (w, 0.3, h), (x + w / 2, D - 0.3, z + h / 2 + 0.015), mat(f'box{c}', c, 0.6))
+                x += w + 0.04
+        for sx in (x0, x1):
+            box(f'Upright{sx}', (0.04, 0.45, H - 0.1), (sx, D - 0.25, (H - 0.1) / 2), shelf, bevel=0)
+    # the slop: a big grey bucket with a hand-written label
+    cyl('SlopBucket', 0.3, 0.55, (0, 1.8, 0.28), mat('slop', '#9aa0a6', 0.5), r2=0.26)
+    box('SlopLabel', (0.3, 0.01, 0.12), (0, 1.5, 0.35), mat('slopLabel', '#ffffff', 0.6), bevel=0)
+    box('Fridge2', (0.9, 0.7, 2.0), (-W / 2 + 0.5, 2.2, 1.0), mat('steel', T['metal'], 0.22, 1.0))
+    box('Washer', (0.7, 0.65, 0.85), (W / 2 - 0.45, 2.3, 0.43), mat('washer', '#ffffff', 0.3))
+    cyl('WasherDoor', 0.22, 0.02, (W / 2 - 0.8, 2.3, 0.48), mat('washerdoor', '#7a94b0', 0.1), rot=(0, 90, 0))
+    downlights(T, (-1.5, 1.5), (2.2,), H, power=60)
+    area('Fill', (4, 2), (0, -2.0, 2.0), 140, T['fill'], rot=(-80, 0, 0))
+    world(T['world'], 0.4)
+    camera((0, -1.2, 1.5), (86, 0, 0), lens=22, dof=(4.5, 4.0))
+
+def room_havenot(T):
+    """The have-not room: concrete, cots that are not beds, one bare bulb, a cold light."""
+    W, D, H = 7.5, 5.5, 3.0
+    shell(T, W, D, H, wall_mat=mat('concrete', '#9aa0a3', 0.95), floor_mat=mat_tiles('concretefloor', '#8d9294', '#878c8e', grout='#6d7275', scale=0.6, rough=0.8))
+    steel = mat('cot', '#6d7a86', 0.4, 0.8)
+    canvas = mat('canvas', '#b8b29a', 0.9)
+    for i, x in enumerate((-2.4, 0, 2.4)):
+        box(f'CotBed{i}', (0.8, 1.9, 0.05), (x, D - 1.15, 0.45), canvas, bevel=0)
+        for sx in (-1, 1):
+            box(f'CotRail{i}{sx}', (0.04, 1.95, 0.05), (x + sx * 0.42, D - 1.15, 0.45), steel, bevel=0)
+            for sy in (-1, 1):
+                box(f'CotLeg{i}{sx}{sy}', (0.04, 0.04, 0.45), (x + sx * 0.42, D - 1.15 + sy * 0.92, 0.225), steel, bevel=0)
+        box(f'CotBlanket{i}', (0.7, 0.5, 0.04), (x, D - 1.85, 0.5), mat('greyblanket', '#7c8288', 0.95), bevel=0.01)
+    # a chain-link panel and a stencil on the back wall
+    for i in range(16):
+        box(f'Chain{i}', (0.012, 0.01, 2.6), (-2.6 + i * 0.35, D - 0.02, 1.4), mat('chain', '#5f6a74', 0.4, 0.8), bevel=0, rot=(0, 30, 0))
+        box(f'ChainB{i}', (0.012, 0.01, 2.6), (-2.6 + i * 0.35, D - 0.02, 1.4), mat('chain', '#5f6a74', 0.4, 0.8), bevel=0, rot=(0, -30, 0))
+    box('Stencil', (2.4, 0.01, 0.35), (0, D - 0.04, 2.6), mat('stencil', T['pop'], 0.8), bevel=0)
+    cyl('Cord', 0.004, 0.9, (0, 3.0, H - 0.45), mat('cord', '#111111', 0.6), bevel=0)
+    sphere('Bulb', 0.07, (0, 3.0, H - 0.95), mat('bulb', '#ffffff', emit='#e8f4ff', strength=40))
+    point('BareBulb', (0, 3.0, H - 1.0), 160, '#e8f4ff', 0.03)
+    box('Bucket', (0.3, 0.3, 0.35), (3.2, 2.5, 0.175), mat('slop', '#9aa0a6', 0.5))
+    area('Fill', (4, 2), (0, -2.0, 2.0), 120, '#d8e6f2', rot=(-80, 0, 0))
+    world('#7d8a96', 0.4)
+    camera((0, -1.2, 1.5), (86, 0, 0), lens=22, dof=(4.5, 4.0))
+
+ROOMS = {'kitchen': room_kitchen, 'living': room_living, 'bedroom': room_bedroom, 'hoh': room_hoh, 'dr': room_dr,
+         'yard': room_yard, 'storage': room_storage, 'havenot': room_havenot}
 
 # ══════════════════════════════════════════════════════════════════════
 # Build and render
@@ -650,6 +1031,8 @@ def _shade(hexcol, k):
 TD_FLAT = {'mirror': '#3d4a66', 'mirror_frame': '#2c3348', 'acrylic': '#2e3a55', 'dark': '#2e3a55', 'gap': '#3b3a44',
            'toekick': '#3b3a44', 'glasstop': '#3b3a44', 'coffeeblack': '#3d3a40', 'stoolleg': '#3d3a44', 'cord': '#3d3a44', 'cantrim': '#8a8478'}
 
+TD_UNLIT = {'ceiling'}
+
 def _lift(hexcol):
     r, g, b, _ = hexc(hexcol)
     if 0.2126 * r + 0.7152 * g + 0.0722 * b < 0.02:
@@ -668,6 +1051,10 @@ def _td_material(m, look):
         return
     L = nt.links
     flat = m.get('tdcolor')
+    if key in TD_UNLIT and flat:   # ceilings are painted flat: a light's cone edge on them reads as a mistake
+        e = nt.nodes.new('ShaderNodeEmission'); e.inputs['Color'].default_value = hexc(flat); e.inputs['Strength'].default_value = 0.92
+        L.new(e.outputs[0], out.inputs['Surface'])
+        return
     if m.get('tdemit') or p.inputs['Emission Strength'].default_value > 0.5:
         e = nt.nodes.new('ShaderNodeEmission')
         e.inputs['Color'].default_value = hexc(m.get('tdemit') or '#fff0c8')
@@ -701,7 +1088,7 @@ def _td_material(m, look):
     # the line around this thing is this thing's colour, darker
     m.line_color = _shade(flat, 0.42) if flat else (0.08, 0.06, 0.08, 1)
 
-def render_td(room, theme='default', look='a', w=1920, h=1080, preview=False):
+def render_td(room, theme='default', look='b', w=1920, h=1080, preview=False):
     L = TD_LOOKS[look]
     sc = bpy.context.scene
     # crisp shapes: no bevels (every chamfer would draw a second line), no depth of field
@@ -737,13 +1124,20 @@ def render_td(room, theme='default', look='a', w=1920, h=1080, preview=False):
     # the room is closed, so the key is inside it: high, front-left, hard-edged
     key = bpy.data.lights.new('TDKey', 'SPOT'); key.energy = 2600; key.spot_size = math.radians(130); key.spot_blend = 0.2; key.shadow_soft_size = 0.02
     key.color = (1, 0.97, 0.9)
-    so = _link(bpy.data.objects.new('TDKey', key)); so.location = (-3.6, 0.2, 2.95)
-    tgt = Vector((1.2, 5.0, 0.0)) - so.location
+    # placed from the room's own walls: high, near the left wall, a little in front of the camera's subject
+    ob_ = bpy.data.objects
+    lx = ob_['LeftWall'].location.x + 0.5
+    rx = ob_['RightWall'].location.x
+    by = ob_['BackWall'].location.y
+    top = ob_['Ceiling'].location.z - 0.2 if 'Ceiling' in ob_ else 4.0
+    so = _link(bpy.data.objects.new('TDKey', key)); so.location = (lx, 0.2, top)
+    tgt = Vector((rx * 0.25, by * 0.7, 0.0)) - so.location
     so.rotation_euler = tgt.to_track_quat('-Z', 'Y').to_euler()
     for ob in sc.objects:
         if ob.type == 'LIGHT' and ob.name != 'TDKey':
             ob.data.energy = 0.0
-    sc.world.node_tree.nodes['Background'].inputs['Strength'].default_value = 0.55
+    # a room with a roof gets a soft ambient; the open yard keeps its sky bright
+    sc.world.node_tree.nodes['Background'].inputs['Strength'].default_value = 0.55 if 'Ceiling' in bpy.data.objects else 1.0
     sc.render.engine = 'BLENDER_EEVEE'
     sc.eevee.taa_render_samples = 32 if preview else 96
     sc.render.resolution_x, sc.render.resolution_y = (w // 2, h // 2) if preview else (w, h)

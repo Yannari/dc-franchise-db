@@ -343,8 +343,20 @@ button{font:inherit;color:inherit}
 /* rendered rooms (tools/bb-house/house.py): the photo replaces the light sketch */
 .set.photo{background-size:cover!important;background-position:center!important}
 .set.photo::before,.set.photo::after,.set.photo .floor{display:none}
-.set-kitchen.photo{background:url('../assets/bb/house/default/kitchen-td-a.webp')}
-body[data-house="b"] .set-kitchen.photo{background:url('../assets/bb/house/default/kitchen-td-b.webp')}
+/* the house in the chosen look (TD B · Flat); every room of the default season */
+.set-kitchen.photo{background:url('../assets/bb/house/default/kitchen-td-b.webp')}
+.set-ceremony.photo{background:url('../assets/bb/house/default/living-td-b.webp')}
+.set-bedroom.photo{background:url('../assets/bb/house/default/bedroom-td-b.webp')}
+.set-hoh.photo{background:url('../assets/bb/house/default/hoh-td-b.webp')}
+.set-dr.photo{background:url('../assets/bb/house/default/dr-td-b.webp')}
+.set-yard.photo{background:url('../assets/bb/house/default/yard-td-b.webp')}
+.set-dr.photo~.drring{display:none}
+.wall.onwall{left:32.6%;right:auto;width:34.8%;top:23.6%;display:grid;grid-template-columns:repeat(8,1fr);gap:.62cqw .66cqw;perspective:none;z-index:1}
+.wall.onwall .mw{width:auto;transform:none;border-radius:.2cqw}
+.wall.onwall .mw.nom{transform:none}
+.wall.onwall .mw .lb{font-size:.55cqw}
+/* the other looks, kitchen only, for comparison */
+body[data-house="a"] .set-kitchen.photo{background:url('../assets/bb/house/default/kitchen-td-a.webp')}
 body[data-house="c"] .set-kitchen.photo{background:url('../assets/bb/house/default/kitchen-td-c.webp')}
 body[data-house="toon"] .set-kitchen.photo{background:url('../assets/bb/house/default/kitchen-toon.webp')}
 body[data-house="real"] .set-kitchen.photo{background:url('../assets/bb/house/default/kitchen.webp')}
@@ -395,7 +407,7 @@ body.tvm .main{grid-template-columns:1fr;max-width:1600px}
 <header class="top">
   <div class="logo" id="logo"></div>
   <div class="sp"></div>
-  <button class="tbtn" id="house">House: TD A · Cel</button>
+  <button class="tbtn" id="house">House: TD B · Flat</button>
   <button class="tbtn" id="theme">Theme</button>
 </header>
 <main class="main">
@@ -670,7 +682,7 @@ function tileHtml(n, x, cls, L, lock, extra = '', more = '') {
     <div class="tile"><span class="i">${n[0]}</span>${img(n)}${extra}</div>
     <div class="plate"><b>${n}</b>${chipsFor(n, L)}</div></div>`;
 }
-const PHOTO = new Set(['kitchen']);
+const PHOTO = new Set(['kitchen', 'ceremony', 'bedroom', 'hoh', 'dr', 'yard']);
 const photo = set => PHOTO.has(set) ? ' photo' : '';
 function miniSet(set, nv, people = []) {
   return `<div class="set set-${set}${photo(set)}" style="--hoh:${col(HOH)}"><div class="floor"></div></div>`;
@@ -686,11 +698,11 @@ function setHtml(S, st, prevSt, L, fresh) {
   }
   const isDr = st && st.k === 'dr';
   if (S.drScreen || isDr) {
-    let h = `<div class="set set-dr"><div class="floor"></div></div><div class="drring">${DRRING}</div>`;
+    let h = `<div class="set set-dr${photo('dr')}"><div class="floor"></div></div><div class="drring">${DRRING}</div>`;
     const who = isDr ? st.by : null;
     if (who) {
       const lock = fresh && (!prevSt || prevSt.k !== 'dr' || prevSt.by !== who);
-      h += tileHtml(who, 50, 'speak', L, lock, '', 'width:18cqw;bottom:14.5cqw');
+      h += tileHtml(who, 50, 'speak', L, lock, '', 'width:15cqw;bottom:17cqw');
     }
     return h;
   }
@@ -727,8 +739,8 @@ function setHtml(S, st, prevSt, L, fresh) {
   return h;
 }
 
-function wallHtml(L, st, fresh) {
-  return `<div class="wall">${HOUSE.map((n, i) => {
+function wallHtml(L, st, fresh, onwall = false) {
+  return `<div class="wall${onwall ? ' onwall' : ''}">${HOUSE.map((n, i) => {
     const s = L.status[n];
     const d = i - (HOUSE.length - 1) / 2;
     const isFresh = fresh && st && (st.key === n || st.out === n || (st.nom || []).includes(n));
@@ -779,9 +791,10 @@ function paint(fresh = false) {
   const camNow = S.set === 'quad' ? 'none' : camOf(S, idx);
   const camPrev = fresh && idx > 0 ? camOf(S, idx - 1) : camNow;
   const cut = fresh && prevSt && st && ((st.k === 'dr') !== (prevSt.k === 'dr'));
-  let h = `<div class="cam" style="${camStyle(camPrev)}"><div class="lens ${cut ? 'cut' : ''}">${setHtml(S, st, prevSt, L, fresh)}</div></div>`;
+  const onwall = S.wall && !isDr && PHOTO.has(S.set) && S.set === 'ceremony' && (S.wall !== 'after' || (L.out.length && st && st.k !== 'host'));
+  let h = `<div class="cam" style="${camStyle(camPrev)}"><div class="lens ${cut ? 'cut' : ''}">${setHtml(S, st, prevSt, L, fresh).replace(/(<div class="set [^"]*"[^>]*><div class="floor"><\/div><\/div>)/, m => m + (onwall ? wallHtml(L, st, fresh, true) : ''))}</div></div>`;
   h += `<div class="grain"></div><div class="vign"></div>`;
-  if (S.wall && !isDr && (S.wall !== 'after' || (L.out.length && st && st.k !== 'host'))) h += wallHtml(L, st, fresh);
+  if (!onwall && S.wall && !isDr && (S.wall !== 'after' || (L.out.length && st && st.k !== 'host'))) h += wallHtml(L, st, fresh);
   if (L.votes && !isDr && st && st.k === 'host') {
     const named = L.out.length && S.id === 'evict';
     h += `<div class="votes ${fresh && st.votes ? 'fresh' : ''}"><div class="v"><div class="n">${L.votes[0]}</div><div class="k">${named ? 'Evict Courtney' : 'Votes'}</div></div><i class="sep"></i><div class="v"><div class="n">${L.votes[1]}</div><div class="k">${named ? 'Evict Gwen' : 'Votes'}</div></div></div>`;
@@ -919,7 +932,7 @@ $('#restart').onclick = () => { idx = -1; paint(false); };
 $('#auto').onclick = () => { auto = !auto; syncAuto(); queueAuto(); };
 $('#tv').onclick = () => { document.body.classList.toggle('tvm'); $('#tv').classList.toggle('on'); };
 $('#rundown').addEventListener('click', e => { const b = e.target.closest('.seg'); if (b && !busy) go(+b.dataset.i); });
-const HOUSES = [['a', 'TD A · Cel'], ['b', 'TD B · Flat'], ['c', 'TD C · Stage'], ['toon', 'Toon v1'], ['real', 'Real']];
+const HOUSES = [['b', 'TD B · Flat'], ['a', 'TD A · Cel (kitchen)'], ['c', 'TD C · Stage (kitchen)'], ['toon', 'Toon v1 (kitchen)'], ['real', 'Real (kitchen)']];
 let houseI = 0;
 $('#house').onclick = () => { houseI = (houseI + 1) % HOUSES.length; document.body.dataset.house = HOUSES[houseI][0]; $('#house').textContent = 'House: ' + HOUSES[houseI][1]; };
 $('#theme').onclick = () => {

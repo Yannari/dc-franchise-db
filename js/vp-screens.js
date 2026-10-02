@@ -14043,12 +14043,12 @@ export function buildVPScreens(epRecord) {
       // OPT-IN until it covers what the classic screens do for duo weeks, double and
       // triple evictions and the powers band (tests/bb-duos-screens, bb-triple-eviction,
       // bb-powers-visible). The switch is on both sets of screens.
-      let stepped = false;
-      try { stepped = window.localStorage?.getItem('bb-vp') === 'stepped'; } catch { /* storage can throw */ }
+      let stepped = true;
+      try { stepped = window.localStorage?.getItem('bb-vp') !== 'classic'; } catch { /* storage can throw */ }
       if (!stepped && vpScreens[0]) {
         vpScreens[0] = { ...vpScreens[0], html: `<div style="display:flex;justify-content:flex-end;margin:0 0 8px"><button type="button" class="bbx-switch" onclick="bbxSwitchViewer('stepped')" style="border:1px solid #22e1ff;background:#0d1220;color:#22e1ff;border-radius:8px;padding:7px 12px;font:600 11px monospace;letter-spacing:1px;cursor:pointer">▶ TRY THE NEW STEPPED VIEWER</button></div>${vpScreens[0].html}` };
       }
-      if (stepped && !epRecord.isFinale) {
+      if (stepped) {
         try {
           const _g = _coreGs || (typeof window !== 'undefined' ? window.gs : null);
           const priorEvicted = (_g?.episodeHistory || [])
@@ -27283,7 +27283,9 @@ export function rpBuildBBDebug(ep) {
     }
 
     const byCat = {};
-    beats.forEach(b => { byCat[b.category] = (byCat[b.category] || 0) + 1; });
+    // A beat written outside the event scheduler (a twist's fallout, the eviction night's
+    // own reactions) carries no category; it is counted as such, not printed as "undefined".
+    beats.forEach(b => { const c = b.category || 'unscheduled'; byCat[c] = (byCat[c] || 0) + 1; });
     const failed = ep.maintenanceErrors || [];
     html += dbgPanel('THE WEEK', 'grey',
       dbgRow('acts', acts.map(a => a.phase || a.type).join(' → '))

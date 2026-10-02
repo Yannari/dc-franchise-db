@@ -282,7 +282,12 @@ describe('The Hacker — on the surfaces', () => {
         || (/THE HACKER/.test(l) && /PLAYED ALONE/.test(l))
         || (/THE HACKER/.test(l) && /plays it alone/.test(lines[i + 1] || '')));
       expect(from, `${label}: the hacker act wrote no block of its own`).toBeGreaterThan(-1);
-      const section = lines.slice(from, from + 12);
+      // The act's block only: its lines are indented, so it ends at the first line that
+      // is blank or is not (the next block's header or a house beat). A fixed window of twelve
+      // ran into the next house beat on a short block and read "Millie points out..."
+      // over the dishes as Millie owning the hack.
+      const end = lines.findIndex((l, i) => i > from && (!l.trim() || !/^\s/.test(l)));
+      const section = lines.slice(from, end > from ? end : from + 12);
 
       // A HACKER WHO SAVES THEMSELVES IS VISIBLE, and that is the show. The
       // house watches a chair open and sees who walked out of it; what it never
@@ -299,6 +304,9 @@ describe('The Hacker — on the surfaces', () => {
       const publicFacts = [hk.blockHack?.down, hk.blockHack?.up].filter(Boolean);
       for (const line of section) {
         if (!line.includes(hk.winner)) continue;
+        // A house beat hung on the act ("[BADGE] text") is about something else entirely:
+        // the dishes, a joke. Only the act's own statements can attribute the hack.
+        if (/^\[/.test(line.trim())) continue;
         const attributes = /\bchooses\b|\bdecides\b|\bpicks\b|\bwanted\b|\bsees\b|\bbuilt\b/.test(line);
         const statesAFact = publicFacts.some(n => line.includes(n));
         expect(statesAFact && !attributes,

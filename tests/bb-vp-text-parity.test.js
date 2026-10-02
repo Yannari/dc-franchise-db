@@ -51,8 +51,6 @@ const CAST = [
  * without reading the transcript is how a hole gets legalised.
  */
 const REWORDED = new Map([
-  ['bb-vdraw', 'THE DRAW, inside POWER OF VETO — "reaches into the bag and pulls"'],
-  ['bb-vdraw-2', 'as bb-vdraw, second cycle'],
   ['bb-appstore', 'THE APP STORE — the shelf and the count, with the recipients withheld on purpose'],
   ['bb-americasnominee', "AMERICA'S NOMINEE — the third key on the wall"],
   ['bb-double', 'DOUBLE EVICTION — THE SECOND CYCLE, LIVE'],

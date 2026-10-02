@@ -6,7 +6,7 @@ import { gs, players, seasonConfig, relationships, setPlayers, setGs } from '../
 import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
 import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
 import { initGameState } from '../js/savestate.js';
-import { simulateBBEpisode } from '../js/bb-run.js';
+import { simulateBBEpisode, runBBFinale } from '../js/bb-run.js';
 import { bbWeekSteps } from '../js/vp-bb-ep/steps.js';
 import { stageHtml, ledgerAt } from '../js/vp-bb-ep/stage.js';
 import { bbStepScreens } from '../js/vp-bb-ep/screens.js';
@@ -141,10 +141,53 @@ describe('the twists stay', () => {
       .map(x => ({ label: x.id, html: '<div></div>', ...x }));
     const out = bbStepScreens(row, legacy, { host: 'Valeria' });
     const ids = out.map(x => x.id);
-    for (const gone of ['bb-hoh', 'bb-noms', 'bb-vdraw', 'bb-veto', 'bb-cer', 'bb-plans', 'bb-evict', 'bb-house-1']) expect(ids).not.toContain(gone);
+    expect(ids).not.toContain('bb-plans');
+    // the core screens are the stepped ones now, under the classic ids
+    for (const id of ['bb-noms', 'bb-cer', 'bb-evict']) expect(out.find(x => x.id === id)?.html, id).toContain('class="bbx"');
+    // a competition plays its own themed board (here the fixture's), in the stepped screen's slot
+    for (const id of ['bb-hoh', 'bb-veto']) expect(out.find(x => x.id === id)?.html, id).toBe('<div></div>');
+    // House Life stays: the classic feed is the week's record, every beat and the powers band
+    expect(ids).toContain('bb-house-1');
     expect(ids).toContain('bb-coin');
     expect(ids).toContain('bb-afterword');
-    expect(ids.indexOf('bb-coin')).toBeGreaterThan(ids.findIndex(i => i.startsWith('bb-hoh-v')));
-    expect(ids.indexOf('bb-coin')).toBeLessThan(ids.findIndex(i => i.startsWith('bb-noms-v')));
+    expect(ids.indexOf('bb-coin')).toBeGreaterThan(ids.indexOf('bb-hoh'));
+    expect(ids.indexOf('bb-coin')).toBeLessThan(ids.indexOf('bb-noms'));
+  });
+});
+
+// ── finale night ───────────────────────────────────────────────────────
+describe('finale night is in the viewer too', () => {
+  let fin = null, screens = [];
+  beforeAll(() => {
+    setGs(null);
+    const CAST10 = NAMES.slice(0, 10);
+    setPlayers(CAST10.map((name, i) => ({ name, slug: name.toLowerCase(), gender: i % 2 ? 'm' : 'f', sexuality: 'straight', archetype: ARCH[i],
+      stats: Object.fromEntries(KEYS.map((k, j) => [k, 1 + ((i * 7 + j * 3 + 5) % 10)])) })));
+    Object.assign(globalThis, { gs, players, seasonConfig, relationships, pStats, pronouns, ordinal, getBond, getPerceivedBond, bKey, bondLabel, romanticCompat });
+    Object.assign(seasonConfig, { format: 'big-brother', finaleSize: 3, jurySize: 5, bbHaveNots: 'off', bbSafetyMode: 'off', seasonNumber: 1 });
+    seasonConfig.twistSchedule = []; initGameState(); globalThis.gs = gs;
+    withSeededRandom(5, () => { for (let i = 0; i < 12 && gs.activePlayers.length > 3; i++) simulateBBEpisode(); runBBFinale(); });
+    fin = gs.episodeHistory.find(r => r.isFinale);
+    screens = bbWeekSteps(fin, { host: 'Valeria' });
+  }, 900000);
+
+  it('plays the whole night as steps: the three parts, the cut, the jury, the winner', () => {
+    expect(fin).toBeTruthy();
+    const kinds = screens.map(s => s.kind);
+    expect(kinds.filter(k => k === 'final-part')).toHaveLength(3);
+    for (const k of ['brief', 'final-cut', 'jury-q', 'closing', 'jury-vote', 'afp']) expect(kinds, k).toContain(k);
+  });
+  it('crowns the winner the record crowned, after every juror has voted', () => {
+    const S = screens.find(s => s.kind === 'jury-vote');
+    const crown = S.steps.findIndex(s => s.winner);
+    expect(S.steps[crown].winner).toBe(fin.winner);
+    expect(S.steps.slice(0, crown).filter(s => s.juryVote).length).toBe((fin.acts.find(a => a.type === 'jury-vote').reasoning || []).length);
+  });
+  it('evicts the one the final HOH cut', () => {
+    const S = screens.find(s => s.kind === 'final-cut');
+    expect(S.steps.find(s => s.out)?.out).toBe(fin.cut || fin.acts.find(a => a.type === 'final-cut').cut);
+  });
+  it('paints every step', () => {
+    screens.forEach((S, si) => { for (let i = -1; i < S.steps.length; i++) expect(stageHtml(screens, si, i, true, { season: 'default', host: 'Valeria' }).html).not.toMatch(/undefined|NaN/); });
   });
 });

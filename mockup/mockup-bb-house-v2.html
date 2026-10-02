@@ -355,6 +355,13 @@ button{font:inherit;color:inherit}
 .slotkey{position:absolute;width:2.3cqw;transform:translateX(-50%) rotate(-90deg);transform-origin:50% 50%;filter:drop-shadow(0 .2cqw .3cqw rgba(0,0,0,.5))}
 .slotkey svg{width:100%;display:block}
 .chipx.key{background:#f5c542;color:#2a1d00}
+.vchip{position:absolute;left:50%;top:40%;z-index:60;width:11cqw;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#fff8d8,#f5c542 55%,#a87a10);box-shadow:0 0 0 .3cqw #fff3c4,0 1.2cqw 3cqw rgba(0,0,0,.5);
+  display:grid;place-items:center;overflow:hidden;animation:chipin .9s cubic-bezier(.2,.9,.3,1.3) both}
+.vchip img{width:78%;height:78%;object-fit:cover;object-position:50% 14%;border-radius:50%;box-shadow:0 0 0 .2cqw #a87a10}
+.vchip b{font:900 1.3cqw/1.05 Archivo;font-stretch:80%;letter-spacing:.06cqw;color:#3d2a00;text-align:center;text-transform:uppercase}
+.vchip i{position:absolute;bottom:-3.2cqw;left:50%;transform:translateX(-50%);white-space:nowrap;font:700 .9cqw 'Chakra Petch';letter-spacing:.14cqw;color:#fff;text-transform:uppercase;font-style:normal}
+@keyframes chipin{from{transform:translate(-50%,40%) scale(.3) rotate(-120deg);opacity:0}}
 .wall.onwall{inset:0;left:0;right:0;top:0;display:block;perspective:none;z-index:1}
 .wall.onwall .mw{position:absolute;transform:none;border-radius:.15cqw;width:auto}
 .wall.onwall .mw .lb{font-size:.5cqw}
@@ -597,6 +604,22 @@ const SCREENS = [
       { k: 'beat', t: `One by one the keys go back up on the memory wall. Two faces up there have gone red.` },
     ] },
 
+  { id: 'vetopick', tab: 'Veto player pick', set: 'ceremony', cam: 4, room: 'Living Room', day: 24, time: '10:15', kicker: 'Cam 04 · Living room', title: 'Veto player pick', sub: 'The HOH and the nominees draw chips',
+    seated: { Heather: 'stand', Gwen: 'N-1', Courtney: 'N1', Duncan: 'B0', Geoff: 'B1', Alejandro: 'B2', Zoey: 'B3', Bridgette: 'B4', Scott: 'R0' },
+    wall: true,
+    steps: [
+      { k: 'bb', t: `Heather, Gwen and Courtney, please come to the living room for the veto player pick.` },
+      { k: 'say', by: 'Heather', t: `The two nominees and I play in the veto. Each of us draws one chip for the other three spots. If you pull houseguest's choice, you pick anybody you want.` },
+      { k: 'beat', t: `Heather reaches into the bag and pulls out the first chip.`, chip: { drawer: 'Heather', chip: 'Zoey' }, vetoPlay: ['Heather', 'Gwen', 'Courtney', 'Zoey'] },
+      { k: 'say', by: 'Zoey', t: `Okay! I'm in. Let's do this.` },
+      { k: 'beat', t: `Gwen draws next. The chip says HOUSEGUEST'S CHOICE.`, chip: { drawer: 'Gwen', chip: 'choice' } },
+      { k: 'say', by: 'Gwen', t: `Houseguest's choice. Bridgette, you're with me.`, vetoPlay: ['Bridgette'], push: true },
+      { k: 'say', by: 'Bridgette', t: `Of course.` },
+      { k: 'beat', t: `Courtney draws the last chip, looks at it, and laughs without smiling. It's Scott.`, chip: { drawer: 'Courtney', chip: 'Scott' }, vetoPlay: ['Scott'] },
+      { k: 'say', by: 'Scott', t: `Great. Love that for me.` },
+      { k: 'dr', by: 'Courtney', t: `Scott. Of course I pulled Scott. The name Alejandro was supposed to give Heather instead of mine. If Scott wins this veto, he is not using it on me.` },
+    ] },
+
   { id: 'yard', tab: 'Asked twice', set: 'yard', cam: 5, room: 'Backyard', day: 24, time: '16:22', kicker: 'Cam 05 · Backyard', title: 'Asked twice', sub: 'Afternoon, Day 24',
     cast: [['Bridgette', 38], ['Geoff', 64]],
     steps: [
@@ -616,28 +639,40 @@ const SCREENS = [
     wall: true, medalOn: 'Bridgette',
     steps: [
       { k: 'bb', t: `This is the Power of Veto meeting.`, veto: 'Bridgette' },
-      { k: 'say', by: 'Bridgette', t: `Both of you came to me, and both of you said things I'm going to remember for a long time.`, medal: 'on' },
+      { k: 'say', by: 'Bridgette', t: `I have called this meeting because I won the Power of Veto. I'm going to give the nominees a chance to tell me why I should use it on them. Gwen, you can go first.`, medal: 'on' },
+      { k: 'say', by: 'Gwen', t: `You know me, Bridge. I haven't lied to you once in this house, and I'm not starting now. Use it on me and I owe you. For real.`, push: true },
+      { k: 'say', by: 'Courtney', t: `I've been your friend since day one. Look at who is actually coming after me, and ask yourself why. That's all I'm going to say.`, push: true },
+      { k: 'say', by: 'Bridgette', t: `Both of you came to me this week, and both of you said things I'm going to remember for a long time.` },
       { k: 'say', by: 'Bridgette', t: `I've decided...`, medal: 'glint', push: true },
       { k: 'say', by: 'Bridgette', t: `...not to use the Power of Veto.`, push: true, toast: ['NOT USED', '#d99a10'] },
       { k: 'say', by: 'Bridgette', t: `I'm sorry. I couldn't pick one of you over the other, so I'm not picking at all.` },
       { k: 'say', by: 'Gwen', t: `That is picking, Bridge.`, push: true },
-      { k: 'say', by: 'Bridgette', t: `I know.`, pops: [['Gwen', 'Trust', 'down', 'Bridgette'], ['Courtney', 'Trust', 'down', 'Bridgette']] },
-      { k: 'bb', t: `This meeting is adjourned.` },
+      { k: 'say', by: 'Bridgette', t: `I know. This veto meeting is adjourned.`, pops: [['Gwen', 'Trust', 'down', 'Bridgette'], ['Courtney', 'Trust', 'down', 'Bridgette']] },
     ] },
 
-  { id: 'evict', tab: 'Live eviction', set: 'ceremony', cam: 1, room: 'Living Room', day: 27, time: 'LIVE', kicker: 'Live · Eviction night', title: 'Eviction night', sub: 'Six votes, two nominees',
+  { id: 'evict', tab: 'Live eviction', set: 'ceremony', cam: 1, room: 'Living Room', day: 27, time: 'LIVE', kicker: 'Live · Eviction night', title: 'Eviction night', sub: 'Two nominees, six votes',
     seated: { Gwen: 'N-1', Courtney: 'N1', Heather: 'B2', Duncan: 'B0', Bridgette: 'B1', Geoff: 'B3', Alejandro: 'B4', Zoey: 'L1', Scott: 'R0' },
     wall: 'after', tvObj: true,
     steps: [
-      { k: 'host', by: 'Valeria', t: `Good evening, houseguests. The votes are in.` },
-      { k: 'host', by: 'Valeria', t: `When I reveal the result, the evicted houseguest will have a few moments to say their goodbyes and walk out the front door.` },
+      { k: 'host', by: 'Valeria', t: `Good evening, houseguests. In a few moments one of you will be evicted. First, our nominees have a chance to make their final pleas. Gwen, you're first.` },
+      { k: 'say', by: 'Gwen', t: `I'm not going to stand here and make promises I can't keep. I'm loyal to the people who are loyal to me. Keep me, and you'll know exactly what you're getting.`, push: true },
+      { k: 'say', by: 'Courtney', t: `Everybody in this room knows I'd have been safe this week if one person had told the truth. I'm not naming names.`, push: true },
+      { k: 'say', by: 'Courtney', t: `Alejandro.`, pops: [['Alejandro', 'Exposed', 'down', 'Courtney']] },
+      { k: 'host', by: 'Valeria', t: `Thank you both. It's time for the live vote. One by one, you'll go to the Diary Room and vote to evict. Heather, as Head of Household, you only vote in the event of a tie. Duncan, you're first.` },
+      { k: 'dr', by: 'Duncan', t: `I vote to evict Courtney.`, ballot: ['Duncan', 'Courtney'] },
+      { k: 'dr', by: 'Alejandro', t: `I vote to evict Gwen.`, ballot: ['Alejandro', 'Gwen'] },
+      { k: 'dr', by: 'Bridgette', t: `I'm sorry, Gwen. I vote to evict Gwen.`, ballot: ['Bridgette', 'Gwen'] },
+      { k: 'dr', by: 'Geoff', t: `I vote to evict Courtney.`, ballot: ['Geoff', 'Courtney'] },
+      { k: 'dr', by: 'Scott', t: `Sorry, Courtney. Nothing personal. I vote to evict Courtney.`, ballot: ['Scott', 'Courtney'] },
+      { k: 'dr', by: 'Zoey', t: `I vote to evict Courtney.`, ballot: ['Zoey', 'Courtney'] },
+      { k: 'host', by: 'Valeria', t: `The votes are in. When I reveal the result, the evicted houseguest will have a few moments to say their goodbyes and walk out the front door.` },
       { k: 'host', by: 'Valeria', t: `By a vote of four to two...`, push: true, votes: [4, 2] },
       { k: 'host', by: 'Valeria', t: `...Courtney, you are evicted from the Big Brother house.`, out: 'Courtney', toast: ['EVICTED', '#ff3355'], shake: true },
-      { k: 'beat', t: `Bridgette is the first one up. Courtney hugs her and holds on a second longer than she has to.`, at: [['Gwen', 22], ['Courtney', 50], ['Bridgette', 72]] },
+      { k: 'beat', t: `Bridgette is the first one up. Courtney hugs her and holds on a second longer than she has to.` },
       { k: 'say', by: 'Courtney', t: `Win it. Please.` },
-      { k: 'beat', t: `At the door she stops and turns round to Alejandro.`, at: [['Courtney', 38], ['Alejandro', 64]] },
+      { k: 'beat', t: `At the door she stops and turns round to Alejandro.` },
       { k: 'say', by: 'Courtney', t: `You told me Scott. Remember that when it's your turn.`, push: true, pops: [['Alejandro', 'Grudge', 'down', 'Courtney']] },
-      { k: 'beat', t: `The front door closes behind her. On the memory wall, her picture goes grey.`, exit: 'Courtney' },
+      { k: 'beat', t: `The front door closes behind her. On the memory wall, her picture goes black and white.`, exit: 'Courtney' },
     ] },
 ];
 
@@ -653,7 +688,7 @@ const esc = s => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replac
 const unesc = s => s.replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&amp;/g, '&');
 
 function ledger(si, ii) {
-  const L = { status: {}, nom: [], veto: null, deals: [], moves: [], out: [], votes: null };
+  const L = { status: {}, nom: [], veto: null, deals: [], moves: [], out: [], votes: null, vetoPlay: [], ballots: [] };
   HOUSE.forEach(n => L.status[n] = n === HOH ? 'hoh' : '');
   for (let s = 0; s <= si; s++) {
     const steps = SCREENS[s].steps; const upto = s < si ? steps.length - 1 : ii;
@@ -663,6 +698,8 @@ function ledger(si, ii) {
       if (st.nom) { L.nom = st.nom.slice(); st.nom.forEach(n => L.status[n] = 'nom'); }
       if (st.veto) L.veto = st.veto;
       if (st.deal) L.deals.push(st.deal);
+      if (st.vetoPlay) L.vetoPlay.push(...st.vetoPlay);
+      if (st.ballot && s === si) L.ballots.push(st.ballot);
       if (st.out) { L.out.push(st.out); L.status[st.out] = 'out'; L.nom.forEach(n => { if (n !== st.out) L.status[n] = ''; }); }
       if (st.votes && s === si) L.votes = st.votes;
       (st.pops || []).forEach(p => L.moves.push(p));
@@ -865,6 +902,7 @@ function paint(fresh = false) {
       h += `<div class="pop" style="left:${p ? p[1] : 50}%;${sa ? `bottom:${(sa.at[1] * 0.5625 + sa.w * 1.25 + 3).toFixed(2)}cqw` : ''}"><span class="d ${tone}">${tone === 'down' ? '▼' : tone === 'up' ? '▲' : tone === 'love' ? '♥' : '◆'} ${label}</span><b>${n} → ${about}</b><span class="bar" style="--w0:${w0};--w:${w};--bc:${bc}"><i></i></span></div>`;
     }
     if (st.toast) h += `<div class="toast" style="--tc:${st.toast[1]}"><b>${st.toast[0]}</b></div>`;
+    if (st.chip) h += `<div class="vchip">${st.chip.chip === 'choice' ? `<b>Houseguest's<br>choice</b>` : img(st.chip.chip)}<i>${st.chip.drawer} draws</i></div>`;
     for (const [n, text] of st.react || []) {
       const b = bgAt(S, idx).find(([m]) => m === n);
       h += `<div class="rx" style="left:${b ? b[1] : 50}%">${text}</div>`;
@@ -973,6 +1011,10 @@ function chrome(L) {
     <div class="panel"><h4><span>In the room</span><span>heard it</span></h4>
       ${idx < 0 || S.set === 'quad' ? '<div class="pend">Nobody on camera yet.</div>' : [...castAt(S, idx).map(([n]) => [n, 'Talking']), ...bgAt(S, idx).map(([n, , d]) => [n, d])]
         .map(([n, d]) => `<div class="prow">${mini(n)}<span class="nm">${n}</span><span class="tag out">${d}</span></div>`).join('')}</div>
+    ${L.vetoPlay.length ? `<div class="panel"><h4><span>Veto players</span><span>${L.vetoPlay.length}/6</span></h4>
+      <div class="grid9">${L.vetoPlay.map(n => mini(n)).join('')}</div></div>` : ''}
+    ${L.ballots.length ? `<div class="panel"><h4><span>The vote</span><span>the house can't see this</span></h4>
+      ${L.ballots.map(([v, e]) => `<div class="prow">${mini(v)}<span class="nm">${v}</span><span class="tag nom">evict ${e}</span></div>`).join('')}</div>` : ''}
     <div class="panel"><h4><span>Deals seen</span><span>${L.deals.length}</span></h4>
       ${L.deals.length ? L.deals.map(([a, b]) => `<div class="prow">${mini(a)}${mini(b)}<span class="nm" style="font-size:12px">${a} + ${b}</span><span class="tag hoh" style="background:#f5c54233;color:#c99a1a">Vote</span></div>`).join('') : '<div class="pend">None yet.</div>'}</div>
     <div class="panel"><h4><span>What moved</span><span>${L.moves.length}</span></h4>${moves || '<div class="pend">Nothing yet.</div>'}</div>

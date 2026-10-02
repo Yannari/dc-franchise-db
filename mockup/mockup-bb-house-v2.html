@@ -343,8 +343,11 @@ button{font:inherit;color:inherit}
 /* rendered rooms (tools/bb-house/house.py): the photo replaces the light sketch */
 .set.photo{background-size:cover!important;background-position:center!important}
 .set.photo::before,.set.photo::after,.set.photo .floor{display:none}
-.set-kitchen.photo{background:url('../assets/bb/house/default/kitchen-toon.webp')}
-body.real .set-kitchen.photo{background:url('../assets/bb/house/default/kitchen.webp')}
+.set-kitchen.photo{background:url('../assets/bb/house/default/kitchen-td-a.webp')}
+body[data-house="b"] .set-kitchen.photo{background:url('../assets/bb/house/default/kitchen-td-b.webp')}
+body[data-house="c"] .set-kitchen.photo{background:url('../assets/bb/house/default/kitchen-td-c.webp')}
+body[data-house="toon"] .set-kitchen.photo{background:url('../assets/bb/house/default/kitchen-toon.webp')}
+body[data-house="real"] .set-kitchen.photo{background:url('../assets/bb/house/default/kitchen.webp')}
 
 /* background houseguests: in the room, not in the conversation. Further back,
    so smaller, softer and dimmer; they never get a lower third. They are the
@@ -392,7 +395,7 @@ body.tvm .main{grid-template-columns:1fr;max-width:1600px}
 <header class="top">
   <div class="logo" id="logo"></div>
   <div class="sp"></div>
-  <button class="tbtn" id="house">House: Cartoon</button>
+  <button class="tbtn" id="house">House: TD A · Cel</button>
   <button class="tbtn" id="theme">Theme</button>
 </header>
 <main class="main">
@@ -916,7 +919,9 @@ $('#restart').onclick = () => { idx = -1; paint(false); };
 $('#auto').onclick = () => { auto = !auto; syncAuto(); queueAuto(); };
 $('#tv').onclick = () => { document.body.classList.toggle('tvm'); $('#tv').classList.toggle('on'); };
 $('#rundown').addEventListener('click', e => { const b = e.target.closest('.seg'); if (b && !busy) go(+b.dataset.i); });
-$('#house').onclick = () => { const r = document.body.classList.toggle('real'); $('#house').textContent = r ? 'House: Real' : 'House: Cartoon'; };
+const HOUSES = [['a', 'TD A · Cel'], ['b', 'TD B · Flat'], ['c', 'TD C · Stage'], ['toon', 'Toon v1'], ['real', 'Real']];
+let houseI = 0;
+$('#house').onclick = () => { houseI = (houseI + 1) % HOUSES.length; document.body.dataset.house = HOUSES[houseI][0]; $('#house').textContent = 'House: ' + HOUSES[houseI][1]; };
 $('#theme').onclick = () => {
   const r = document.documentElement;
   const dark = r.dataset.theme ? r.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;

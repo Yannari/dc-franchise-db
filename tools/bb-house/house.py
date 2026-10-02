@@ -44,6 +44,36 @@ THEMES = {
 }
 
 # ══════════════════════════════════════════════════════════════════════
+# TOTAL DRAMA LOOKS. Big Brother as if it were in the Total Drama world: the
+# same rooms, drawn the way the show draws a set. Nearly flat colour, a hard
+# shadow shape rather than a gradient, thin lines in a darker shade of each
+# thing's own colour (never black), a dusty palette, nothing falls to black.
+# Three takes on it; the user keeps one.
+# ══════════════════════════════════════════════════════════════════════
+TD_PALETTE = {
+    'wall': '#566a8b', 'wall2': '#667b9c', 'ceiling': '#d2c4a4', 'accent': '#e2ab3a', 'accent2': '#3f7cc1', 'pop': '#d65a6c', 'deep': '#2f3d5c',
+    'cabinet': '#efe4c9', 'island': '#3f5f98', 'splash': '#5a95c9', 'floor_a': '#c6a679', 'floor_b': '#bd9c6e', 'floor_rough': 0.6,
+    'wood_a': '#b98552', 'wood_b': '#94653b', 'fabric': '#e2ab3a', 'metal': '#b9c1c9', 'handle': '#c99a45', 'floor_scale': 1.7, 'grout': '#9c8058',
+    'light': '#fff0c8', 'fill': '#e8eefc', 'world': '#9fb1c9', 'led': '#8cc8ff', 'led2': '#ffd66b',
+    'graphic': ['#2f3d5c', '#3f7cc1', '#e2ab3a', '#2f3d5c', '#d65a6c'],
+}
+TD_STAGE = {
+    'wall': '#7c3340', 'wall2': '#8d4250', 'ceiling': '#4d252c', 'accent': '#e8a33d', 'accent2': '#3d8c84', 'pop': '#e0673f', 'deep': '#3b1f2b',
+    'cabinet': '#ead7b4', 'island': '#2f6a66', 'splash': '#d98a4c', 'floor_a': '#d89b6b', 'floor_b': '#cd9061', 'floor_rough': 0.6,
+    'wood_a': '#a9683b', 'wood_b': '#7e4a28', 'fabric': '#3d8c84', 'metal': '#c9bba4', 'handle': '#d6a24a', 'floor_scale': 1.7, 'grout': '#a8704a',
+    'light': '#ffd28e', 'fill': '#ffe6cf', 'world': '#8a4c50', 'led': '#ffb45e', 'led2': '#ffd28e',
+    'graphic': ['#3b1f2b', '#e8a33d', '#3d8c84', '#3b1f2b', '#e0673f'],
+}
+TD_LOOKS = {
+    # A: cel. Two soft bands under the fill, lines in each thing's own darker colour.
+    'a': {'palette': TD_PALETTE, 'bands': [(0.0, (0.72, 0.7, 0.86)), (0.3, (0.88, 0.87, 0.95)), (0.7, (1, 1, 1))], 'ink': 'material', 'thick': 1.7},
+    # B: flat. One colour per thing, darkened only where a shadow actually falls.
+    'b': {'palette': TD_PALETTE, 'bands': [(0.0, (0.7, 0.68, 0.84)), (0.45, (1, 1, 1))], 'ink': 'material', 'thick': 1.5},
+    # C: the stage. A warm theatrical palette, brown ink, cel bands.
+    'c': {'palette': TD_STAGE, 'bands': [(0.0, (0.7, 0.62, 0.76)), (0.3, (0.88, 0.82, 0.88)), (0.7, (1, 1, 1))], 'ink': '#3a2420', 'thick': 2.0},
+}
+
+# ══════════════════════════════════════════════════════════════════════
 # Scene helpers
 # ══════════════════════════════════════════════════════════════════════
 def clear():
@@ -66,6 +96,8 @@ def mat(name, color, rough=0.5, metal=0.0, emit=None, strength=0.0, coat=0.0, al
         return _MATS[key]
     m = bpy.data.materials.new(name)
     nt, p = _bsdf(m)
+    if isinstance(color, str): m['tdcolor'] = color
+    if emit: m['tdemit'] = emit
     p.inputs['Base Color'].default_value = hexc(color) if isinstance(color, str) else color
     p.inputs['Roughness'].default_value = rough
     p.inputs['Metallic'].default_value = metal
@@ -89,7 +121,7 @@ def _ramp(nt, stops):
     return r
 
 def mat_wood(name, a, b, rough=0.45, scale=1.0, horizontal=True):
-    m = bpy.data.materials.new(name)
+    m = bpy.data.materials.new(name); m['tdcolor'] = a; m['tdgrain'] = b
     nt, p = _bsdf(m)
     tc = nt.nodes.new('ShaderNodeTexCoord')
     mp = nt.nodes.new('ShaderNodeMapping')
@@ -115,7 +147,7 @@ def mat_wood(name, a, b, rough=0.45, scale=1.0, horizontal=True):
     return m
 
 def mat_marble(name, base='#f4f2ee', vein='#9a948c', rough=0.18):
-    m = bpy.data.materials.new(name)
+    m = bpy.data.materials.new(name); m['tdcolor'] = base; m['tdflat'] = 1
     nt, p = _bsdf(m)
     tc = nt.nodes.new('ShaderNodeTexCoord')
     ns = nt.nodes.new('ShaderNodeTexNoise')
@@ -131,7 +163,7 @@ def mat_marble(name, base='#f4f2ee', vein='#9a948c', rough=0.18):
     return m
 
 def mat_tiles(name, a, b, grout='#8f887d', scale=1.2, rough=0.35):
-    m = bpy.data.materials.new(name)
+    m = bpy.data.materials.new(name); m['tdcolor'] = a
     nt, p = _bsdf(m)
     tc = nt.nodes.new('ShaderNodeTexCoord')
     br = nt.nodes.new('ShaderNodeTexBrick')
@@ -240,7 +272,7 @@ def world(color, strength=0.4):
 # ══════════════════════════════════════════════════════════════════════
 def mat_graphic(name, colors, scale=0.35, angle=35, rough=0.6):
     """A supergraphic: bold diagonal bands of the theme's colours, hard-edged."""
-    m = bpy.data.materials.new(name)
+    m = bpy.data.materials.new(name); m['tdcolor'] = colors[1]
     nt, p = _bsdf(m)
     tc = nt.nodes.new('ShaderNodeTexCoord')
     mp = nt.nodes.new('ShaderNodeMapping')
@@ -266,7 +298,7 @@ def mat_graphic(name, colors, scale=0.35, angle=35, rough=0.6):
 
 def shell(T, W=9.0, D=7.0, H=3.2, floor_mat=None, wall_mat=None):
     wall = wall_mat or mat('wall', T['wall'], 0.8)
-    fl = floor_mat or mat_tiles('floor', T['floor_a'], T['floor_b'], grout='#5e584f', scale=0.75, rough=T['floor_rough'])
+    fl = floor_mat or mat_tiles('floor', T['floor_a'], T['floor_b'], grout=T.get('grout', '#5e584f'), scale=T.get('floor_scale', 0.75), rough=T['floor_rough'])
     box('Floor', (W + 6, D + 6, 0.1), (0, D / 2 - 1, -0.05), fl, bevel=0)
     box('BackWall', (W, 0.2, H), (0, D + 0.1, H / 2), wall, bevel=0)
     box('LeftWall', (0.2, D + 6, H), (-W / 2 - 0.1, D / 2 - 1, H / 2), wall, bevel=0)
@@ -310,9 +342,12 @@ def two_way_mirrors(T, x, ys, z0=0.55, h=2.0, w=1.1):
     glass = mat('mirror', '#06080b', rough=0.03, metal=1.0)
     frame = mat('mirror_frame', '#0e1118', 0.4, 0.5)
     sgn = -1 if x < 0 else 1
+    streak = mat('streak', '#8fa3c4', 0.2)
     for i, y in enumerate(ys):
         box(f'MirrorFrame{i}', (0.03, w + 0.08, h + 0.08), (x - 0.01 * sgn, y, z0 + h / 2), frame, bevel=0.004)
         box(f'Mirror{i}', (0.02, w, h), (x - 0.025 * sgn, y, z0 + h / 2), glass, bevel=0)
+        for k, (dy, wd) in enumerate(((-0.15, 0.14), (0.12, 0.06)) if T.get('grout') else ()):
+            box(f'Streak{i}{k}', (0.004, wd, h * 0.8), (x - 0.037 * sgn, y + dy, z0 + h / 2), streak, bevel=0, rot=(28, 0, 0))
 
 def neon_eye(loc, scale=1.0, rot=(90, 0, 0), color='#ffffff', glow='#3fe0e6'):
     """The eye, as a neon sign: an almond tube, an iris ring, a lit pupil."""
@@ -455,9 +490,12 @@ ROOMS = {'kitchen': room_kitchen}
 # ══════════════════════════════════════════════════════════════════════
 # Build and render
 # ══════════════════════════════════════════════════════════════════════
-def build(room, theme='default'):
+def build(room, theme='default', td=None):
     clear(); _MATS.clear()
-    ROOMS[room](THEMES[theme])
+    T = dict(THEMES[theme])
+    if td:
+        T.update(TD_LOOKS[td]['palette'])
+    ROOMS[room](T)
 
 def render(room, theme='default', samples=160, w=1920, h=1080, preview=False):
     sc = bpy.context.scene
@@ -598,6 +636,122 @@ def render_toon(room, theme='default', w=1920, h=1080, preview=False):
     sc.render.image_settings.quality = 88
     d = os.path.join(OUT, theme); os.makedirs(d, exist_ok=True)
     path = os.path.join(d, f'{room}-toon{"-preview" if preview else ""}.webp')
+    sc.render.filepath = path
+    bpy.ops.render.render(write_still=True)
+    return path
+
+# ══════════════════════════════════════════════════════════════════════
+# render_td: the Total Drama looks. build(room, theme, td='a') first.
+# ══════════════════════════════════════════════════════════════════════
+def _shade(hexcol, k):
+    r, g, b, _ = hexc(hexcol)
+    return (r * k, g * k, b * k, 1)
+
+TD_FLAT = {'mirror': '#3d4a66', 'mirror_frame': '#2c3348', 'acrylic': '#2e3a55', 'dark': '#2e3a55', 'gap': '#3b3a44',
+           'toekick': '#3b3a44', 'glasstop': '#3b3a44', 'coffeeblack': '#3d3a40', 'stoolleg': '#3d3a44', 'cord': '#3d3a44', 'cantrim': '#8a8478'}
+
+def _lift(hexcol):
+    r, g, b, _ = hexc(hexcol)
+    if 0.2126 * r + 0.7152 * g + 0.0722 * b < 0.02:
+        return '#3b3a46'
+    return hexcol
+
+def _td_material(m, look):
+    nt = m.node_tree
+    key = m.name.split('.')[0]
+    if key in TD_FLAT:
+        m['tdcolor'] = TD_FLAT[key]; m['tdflat'] = 1
+    elif m.get('tdcolor'):
+        m['tdcolor'] = _lift(m['tdcolor'])
+    p = nt.nodes.get('Principled BSDF'); out = nt.nodes.get('Material Output')
+    if not p or not out:
+        return
+    L = nt.links
+    flat = m.get('tdcolor')
+    if m.get('tdemit') or p.inputs['Emission Strength'].default_value > 0.5:
+        e = nt.nodes.new('ShaderNodeEmission')
+        e.inputs['Color'].default_value = hexc(m.get('tdemit') or '#fff0c8')
+        e.inputs['Strength'].default_value = 1.0
+        L.new(e.outputs[0], out.inputs['Surface'])
+        return
+    glass = p.inputs['Transmission Weight'].default_value > 0.5
+    base_link = p.inputs['Base Color'].links[0].from_socket if p.inputs['Base Color'].is_linked and not m.get('tdflat') else None
+    dif = nt.nodes.new('ShaderNodeBsdfDiffuse')
+    s2r = nt.nodes.new('ShaderNodeShaderToRGB')
+    band = nt.nodes.new('ShaderNodeValToRGB'); band.color_ramp.interpolation = 'CONSTANT'
+    el = band.color_ramp.elements
+    stops = look['bands']
+    el[0].position, el[0].color = stops[0][0], stops[0][1] + (1,)
+    el[1].position, el[1].color = stops[1][0], stops[1][1] + (1,)
+    for pos, c in stops[2:]:
+        e = el.new(pos); e.color = c + (1,)
+    mul = nt.nodes.new('ShaderNodeMix'); mul.data_type = 'RGBA'; mul.blend_type = 'MULTIPLY'
+    mul.inputs['Factor'].default_value = 1.0
+    if glass:
+        mul.inputs['A'].default_value = hexc('#cfe6f2')
+    elif base_link is not None:
+        L.new(base_link, mul.inputs['A'])
+    elif flat:
+        mul.inputs['A'].default_value = hexc(flat)
+    else:
+        mul.inputs['A'].default_value = tuple(p.inputs['Base Color'].default_value)
+    L.new(dif.outputs[0], s2r.inputs[0]); L.new(s2r.outputs['Color'], band.inputs['Fac']); L.new(band.outputs['Color'], mul.inputs['B'])
+    em = nt.nodes.new('ShaderNodeEmission'); em.inputs['Strength'].default_value = 1.0
+    L.new(mul.outputs['Result'], em.inputs['Color']); L.new(em.outputs[0], out.inputs['Surface'])
+    # the line around this thing is this thing's colour, darker
+    m.line_color = _shade(flat, 0.42) if flat else (0.08, 0.06, 0.08, 1)
+
+def render_td(room, theme='default', look='a', w=1920, h=1080, preview=False):
+    L = TD_LOOKS[look]
+    sc = bpy.context.scene
+    # crisp shapes: no bevels (every chamfer would draw a second line), no depth of field
+    for ob in sc.objects:
+        for md in list(ob.modifiers):
+            if md.type == 'BEVEL': ob.modifiers.remove(md)
+        if ob.type == 'CAMERA': ob.data.dof.use_dof = False
+    for m in bpy.data.materials:
+        if m.use_nodes and m.users: _td_material(m, L)
+    noink = bpy.data.collections.get('NoInk') or bpy.data.collections.new('NoInk')
+    if noink.name not in sc.collection.children: sc.collection.children.link(noink)
+    for ob in list(sc.collection.objects):
+        if ob.name.startswith(NOINK) or (ob.parent and ob.parent.name.startswith('NeonEye')):
+            noink.objects.link(ob)
+    thick = L['thick'] * (0.55 if preview else 1.0)
+    sc.render.use_freestyle = True
+    sc.render.line_thickness_mode = 'ABSOLUTE'; sc.render.line_thickness = thick
+    vl = bpy.context.view_layer; vl.use_freestyle = True
+    fs = vl.freestyle_settings; fs.crease_angle = math.radians(120)
+    if not fs.linesets: fs.linesets.new('Ink')
+    ls = fs.linesets[0]
+    ls.select_by_visibility = True
+    ls.select_silhouette = True; ls.select_border = True; ls.select_crease = True; ls.select_external_contour = True
+    ls.select_by_collection = True; ls.collection = noink; ls.collection_negation = 'EXCLUSIVE'
+    st = ls.linestyle
+    for md in list(st.color_modifiers): st.color_modifiers.remove(md)
+    st.thickness = thick
+    if L['ink'] == 'material':
+        st.color = (0.1, 0.08, 0.1)
+        cm = st.color_modifiers.new('fromMaterial', 'MATERIAL'); cm.material_attribute = 'LINE'; cm.blend = 'MIX'; cm.influence = 1.0
+    else:
+        st.color = hexc(L['ink'])[:3]
+    # the room is closed, so the key is inside it: high, front-left, hard-edged
+    key = bpy.data.lights.new('TDKey', 'SPOT'); key.energy = 2600; key.spot_size = math.radians(130); key.spot_blend = 0.2; key.shadow_soft_size = 0.02
+    key.color = (1, 0.97, 0.9)
+    so = _link(bpy.data.objects.new('TDKey', key)); so.location = (-3.6, 0.2, 2.95)
+    tgt = Vector((1.2, 5.0, 0.0)) - so.location
+    so.rotation_euler = tgt.to_track_quat('-Z', 'Y').to_euler()
+    for ob in sc.objects:
+        if ob.type == 'LIGHT' and ob.name != 'TDKey':
+            ob.data.energy = 0.0
+    sc.world.node_tree.nodes['Background'].inputs['Strength'].default_value = 0.55
+    sc.render.engine = 'BLENDER_EEVEE'
+    sc.eevee.taa_render_samples = 32 if preview else 96
+    sc.render.resolution_x, sc.render.resolution_y = (w // 2, h // 2) if preview else (w, h)
+    sc.render.resolution_percentage = 100
+    sc.view_settings.view_transform = 'Standard'; sc.view_settings.look = 'None'; sc.view_settings.exposure = 0.0
+    sc.render.image_settings.file_format = 'WEBP'; sc.render.image_settings.quality = 90
+    d = os.path.join(OUT, theme); os.makedirs(d, exist_ok=True)
+    path = os.path.join(d, f'{room}-td-{look}{"-preview" if preview else ""}.webp')
     sc.render.filepath = path
     bpy.ops.render.render(write_still=True)
     return path

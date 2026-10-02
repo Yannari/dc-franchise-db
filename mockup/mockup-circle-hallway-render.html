@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Circle Hallway Render</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0d0f24;--fg:#eef0ff;--muted:#9aa3d6;--card:#161a3a}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]){--bg:#f3f2fa;--fg:#1b1d33;--muted:#5d6390;--card:#ffffff}}
+:root[data-theme="dark"]{--bg:#0d0f24;--fg:#eef0ff;--muted:#9aa3d6;--card:#161a3a}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:Montserrat,system-ui,sans-serif;padding:24px 16px}
+h1{font-size:22px;margin:0 0 4px}p.sub{margin:0 0 20px;color:var(--muted);font-size:14px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media (max-width:900px){.grid{grid-template-columns:1fr}}
+.cell h2{font-size:13px;letter-spacing:.14em;color:var(--muted);margin:0 0 8px}
+.frame{position:relative;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:#f4f2fa;container-type:inline-size;box-shadow:0 10px 40px rgba(0,0,0,.35)}
+.frame svg,.frame .shot{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;animation:push 14s ease-out infinite alternate;transform-origin:50% 46%}
+@keyframes push{from{transform:scale(1)}to{transform:scale(1.12)}}
+/* live light over the render: the ring breathes, a pulse runs down the runner's neon */
+.ringglow{position:absolute;left:50%;top:48%;width:16cqw;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;
+  background:radial-gradient(circle,rgba(190,120,255,.55),rgba(63,216,255,.18) 45%,transparent 70%);mix-blend-mode:screen;animation:breathe 3.2s ease-in-out infinite}
+@keyframes breathe{50%{opacity:.35;transform:translate(-50%,-50%) scale(.9)}}
+.pulse{position:absolute;bottom:0;width:1.1cqw;height:1.1cqw;border-radius:50%;background:#fff;box-shadow:0 0 1.6cqw .6cqw rgba(255,120,220,.9);mix-blend-mode:screen;opacity:0}
+.pulse.l{animation:runL 3.6s linear infinite}.pulse.r{animation:runR 3.6s linear infinite 1.8s}
+@keyframes runL{0%{left:36%;bottom:0;opacity:0}10%{opacity:1}100%{left:47.3%;bottom:40%;opacity:0;transform:scale(.3)}}
+@keyframes runR{0%{left:63%;bottom:0;opacity:0}10%{opacity:1}100%{left:52.4%;bottom:40%;opacity:0;transform:scale(.3)}}
+.flicker{position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,250,230,.10),transparent 30%);mix-blend-mode:screen;animation:fl 4s ease-in-out infinite}
+@keyframes fl{0%,100%{opacity:1}46%{opacity:.4}50%{opacity:.9}}
+.where{position:absolute;top:2.2cqw;left:50%;transform:translateX(-50%);padding:.6cqw 1.6cqw;border-radius:2cqw;font-weight:900;font-size:1.3cqw;letter-spacing:.14em;
+  color:#fff;background:linear-gradient(90deg,#3d6bff,#c33cff,#ff4fb4);white-space:nowrap}
+.cam{position:absolute;left:2.4cqw;bottom:2.4cqw;width:15cqw;aspect-ratio:4/5;border-radius:1cqw;background:linear-gradient(160deg,#ffd9a8,#c48b5a);border:.35cqw solid #fff;
+  box-shadow:0 1cqw 3cqw rgba(0,0,0,.35);display:grid;place-items:center;font-weight:900;font-size:5cqw;color:#7a4a2a}
+.cam small{position:absolute;top:.6cqw;left:.6cqw;font-size:.9cqw;letter-spacing:.1em;background:rgba(0,0,0,.6);color:#fff;padding:.2cqw .6cqw;border-radius:.4cqw}
+.dlg{position:absolute;right:2.4cqw;left:20cqw;bottom:2.4cqw;padding:1.2cqw 1.6cqw;border-radius:1cqw;background:rgba(20,22,58,.86);color:#fff;font-size:1.6cqw;font-weight:600}
+.dlg b{display:inline-block;margin-right:.8cqw;padding:.2cqw .8cqw;border-radius:.5cqw;background:linear-gradient(90deg,#3d6bff,#c33cff);font-size:1.1cqw;letter-spacing:.1em}
+.notes{margin-top:22px;background:var(--card);border-radius:12px;padding:14px 18px;font-size:14px;line-height:1.55;color:var(--fg)}
+.notes li{margin:4px 0}
+</style></head><body>
+<h1>The visit hallway: SVG now vs a Blender render</h1>
+<p class="sub">Same moment: the blocked player walks to a door. The render replaces only the room; the faces, captions and lights stay live on top.</p>
+<div class="grid">
+  <div class="cell"><h2>NOW · DRAWN IN SVG</h2>
+    <div class="frame"><svg class="cvh-svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><defs>
+    <linearGradient id="cvhWallL" x1="0" x2="1"><stop offset="0" stop-color="#f6f3fb"/><stop offset="1" stop-color="#d8d1ee"/></linearGradient>
+    <linearGradient id="cvhWallR" x1="1" x2="0"><stop offset="0" stop-color="#f6f3fb"/><stop offset="1" stop-color="#d8d1ee"/></linearGradient>
+    <linearGradient id="cvhFloor" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#cdd0e4"/><stop offset="1" stop-color="#e9eaf4"/></linearGradient>
+    <linearGradient id="cvhNeon" x1="0" x2="1"><stop offset="0" stop-color="#ff4fb4"/><stop offset=".5" stop-color="#8b5cff"/><stop offset="1" stop-color="#3fd8ff"/>
+      <animate attributeName="x1" values="0;1;0" dur="6s" repeatCount="indefinite"/><animate attributeName="x2" values="1;2;1" dur="6s" repeatCount="indefinite"/></linearGradient>
+    <linearGradient id="cvhDoor" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#3a3f7a"/><stop offset="1" stop-color="#262a58"/></linearGradient>
+    <radialGradient id="cvhGlow"><stop offset="0" stop-color="#fff6d8" stop-opacity=".95"/><stop offset="1" stop-color="#fff6d8" stop-opacity="0"/></radialGradient>
+    <filter id="cvhSoft"><feGaussianBlur stdDeviation="7"/></filter>
+  </defs><polygon points="0,0 1600,0 1000,270 600,270" fill="#fbfaff"/><rect class="cvh-strip" style="animation-delay:0s" x="580" y="13.59999999999999" width="440" height="14" rx="5" fill="#fffbe8"/><rect x="580" y="13.59999999999999" width="440" height="14" rx="5" fill="#fff6c8" opacity=".6" filter="url(#cvhSoft)"/><rect class="cvh-strip" style="animation-delay:0.35s" x="612" y="64.47999999999998" width="376" height="12" rx="5" fill="#fffbe8"/><rect x="612" y="64.47999999999998" width="376" height="12" rx="5" fill="#fff6c8" opacity=".6" filter="url(#cvhSoft)"/><rect class="cvh-strip" style="animation-delay:0.7s" x="644" y="115.36" width="312" height="10" rx="5" fill="#fffbe8"/><rect x="644" y="115.36" width="312" height="10" rx="5" fill="#fff6c8" opacity=".6" filter="url(#cvhSoft)"/><rect class="cvh-strip" style="animation-delay:1.0499999999999998s" x="676" y="166.23999999999995" width="248" height="8" rx="5" fill="#fffbe8"/><rect x="676" y="166.23999999999995" width="248" height="8" rx="5" fill="#fff6c8" opacity=".6" filter="url(#cvhSoft)"/><rect class="cvh-strip" style="animation-delay:1.4s" x="708" y="217.12000000000003" width="184" height="6" rx="5" fill="#fffbe8"/><rect x="708" y="217.12000000000003" width="184" height="6" rx="5" fill="#fff6c8" opacity=".6" filter="url(#cvhSoft)"/><polygon points="0,0 600,270 600,560 0,900" fill="url(#cvhWallL)"/><polygon points="1600,0 1000,270 1000,560 1600,900" fill="url(#cvhWallR)"/><polygon points="0,900 600,560 1000,560 1600,900" fill="url(#cvhFloor)"/><polygon points="520,900 730,560 870,560 1080,900" fill="#2a2360"/><polygon points="560,900 744,560 856,560 1040,900" fill="none" stroke="url(#cvhNeon)" stroke-width="5" opacity=".9"/><rect x="600" y="270" width="400" height="290" fill="#2b2466"/><circle class="cvh-ringglow" cx="800" cy="415" r="120" fill="url(#cvhNeon)" opacity=".25" filter="url(#cvhSoft)"/><circle cx="800" cy="415" r="92" fill="none" stroke="url(#cvhNeon)" stroke-width="22"/><circle cx="800" cy="323" r="11" fill="#fff"/><line x1="0" y1="522" x2="600" y2="438.2" stroke="url(#cvhNeon)" stroke-width="30" opacity=".3" filter="url(#cvhSoft)"/><line x1="0" y1="522" x2="600" y2="438.2" stroke="url(#cvhNeon)" stroke-width="9" stroke-linecap="round"/><line class="cvh-run" x1="0" y1="522" x2="600" y2="438.2" stroke="#ffffff" stroke-width="5" stroke-linecap="round" stroke-dasharray="40 900"/><line x1="0" y1="72" x2="600" y2="287.4" stroke="url(#cvhNeon)" stroke-width="5" opacity=".75"/><line x1="1600" y1="522" x2="1000" y2="438.2" stroke="url(#cvhNeon)" stroke-width="30" opacity=".3" filter="url(#cvhSoft)"/><line x1="1600" y1="522" x2="1000" y2="438.2" stroke="url(#cvhNeon)" stroke-width="9" stroke-linecap="round"/><line class="cvh-run" x1="1600" y1="522" x2="1000" y2="438.2" stroke="#ffffff" stroke-width="5" stroke-linecap="round" stroke-dasharray="40 900"/><line x1="1600" y1="72" x2="1000" y2="287.4" stroke="url(#cvhNeon)" stroke-width="5" opacity=".75"/><g class="cvh-door">
+    <ellipse class="cvh-sconce-glow" cx="160" cy="257.7066666666667" rx="89" ry="109" fill="url(#cvhGlow)"/>
+    <polygon points="70,860 70,247 250,280 250,758" fill="#fff" stroke="#fff" stroke-width="14.6" stroke-linejoin="round"/>
+    <polygon points="70,860 70,247 250,280 250,758" fill="url(#cvhDoor)"/>
+    <polygon points="95,775 95,323 225,335 225,713" fill="none" stroke="#5a60a8" stroke-width="3.7"/>
+    <rect x="135.1875" y="354.6361666666667" width="49.62499999999999" height="36.391666666666666" rx="6.616666666666666" fill="#ffd23f"/>
+    <text x="160" y="383.4186666666667" font-family="Montserrat,sans-serif" font-weight="900" font-size="28.12083333333333" text-anchor="middle" fill="#2a1d00">1</text>
+    <circle cx="228.4" cy="498.7814466666667" r="8.3" fill="#ffd23f"/>
+    <rect class="cvh-sconce" x="140.2" y="227.7066666666667" width="41.6" height="11" rx="4" fill="#fff4c8"/>
+  </g><g class="cvh-door">
+    <ellipse class="cvh-sconce-glow" cx="405" cy="319.7664285714286" rx="51.71428571428572" ry="63.42857142857143" fill="url(#cvhGlow)"/>
+    <polygon points="360,696 360,301 450,318 450,645" fill="#fff" stroke="#fff" stroke-width="8.8" stroke-linejoin="round"/>
+    <polygon points="360,696 360,301 450,318 450,645" fill="url(#cvhDoor)"/>
+    <polygon points="373,643 373,349 437,356 437,612" fill="none" stroke="#5a60a8" stroke-width="2.4571428571428573"/>
+    <rect x="389.25" y="369.906" width="31.5" height="23.1" rx="4.2" fill="#ffd23f"/>
+    <text x="405" y="388.17600000000004" font-family="Montserrat,sans-serif" font-weight="900" font-size="17.849999999999998" text-anchor="middle" fill="#2a1d00">3</text>
+    <circle cx="439.2" cy="466.55364000000003" r="5.4" fill="#ffd23f"/>
+    <rect class="cvh-sconce" x="394.3142857142857" y="289.7664285714286" width="23.371428571428574" height="6.857142857142858" rx="4" fill="#fff4c8"/>
+  </g><g class="cvh-door">
+    <ellipse class="cvh-sconce-glow" cx="540" cy="353.9742857142857" rx="31.14285714285714" ry="38.285714285714285" fill="url(#cvhGlow)"/>
+    <polygon points="520,605 520,331 560,338 560,583" fill="#fff" stroke="#fff" stroke-width="5.6" stroke-linejoin="round"/>
+    <polygon points="520,605 520,331 560,338 560,583" fill="url(#cvhDoor)"/>
+    <polygon points="526,570 526,364 554,367 554,556" fill="none" stroke="#5a60a8" stroke-width="1.7714285714285714"/>
+    <rect x="529.25" y="378.32466666666664" width="21.5" height="15.76666666666667" rx="2.866666666666667" fill="#ffd23f"/>
+    <text x="540" y="390.7946666666666" font-family="Montserrat,sans-serif" font-weight="900" font-size="12.183333333333334" text-anchor="middle" fill="#2a1d00">5</text>
+    <circle cx="555.2" cy="448.81917333333337" r="3.8" fill="#ffd23f"/>
+    <rect class="cvh-sconce" x="534.3428571428572" y="323.9742857142857" width="13.314285714285713" height="4.571428571428571" rx="4" fill="#fff4c8"/>
+  </g><g class="cvh-door">
+    <ellipse class="cvh-sconce-glow" cx="1440" cy="257.7066666666667" rx="89" ry="109" fill="url(#cvhGlow)"/>
+    <polygon points="1530,860 1530,247 1350,280 1350,758" fill="#fff" stroke="#fff" stroke-width="14.6" stroke-linejoin="round"/>
+    <polygon points="1530,860 1530,247 1350,280 1350,758" fill="url(#cvhDoor)"/>
+    <polygon points="1505,775 1505,323 1375,335 1375,713" fill="none" stroke="#5a60a8" stroke-width="3.7"/>
+    <rect x="1415.1875" y="354.6361666666667" width="49.62499999999999" height="36.391666666666666" rx="6.616666666666666" fill="#ffd23f"/>
+    <text x="1440" y="383.4186666666667" font-family="Montserrat,sans-serif" font-weight="900" font-size="28.12083333333333" text-anchor="middle" fill="#2a1d00">2</text>
+    <circle cx="1371.6" cy="498.7814466666667" r="8.3" fill="#ffd23f"/>
+    <rect class="cvh-sconce" x="1420.2" y="227.7066666666667" width="41.6" height="11" rx="4" fill="#fff4c8"/>
+  </g><g class="cvh-door">
+    <ellipse class="cvh-sconce-glow" cx="1195" cy="319.7664285714286" rx="51.71428571428572" ry="63.42857142857143" fill="url(#cvhGlow)"/>
+    <polygon points="1240,696 1240,301 1150,318 1150,645" fill="#fff" stroke="#fff" stroke-width="8.8" stroke-linejoin="round"/>
+    <polygon points="1240,696 1240,301 1150,318 1150,645" fill="url(#cvhDoor)"/>
+    <polygon points="1227,643 1227,349 1163,356 1163,612" fill="none" stroke="#5a60a8" stroke-width="2.4571428571428573"/>
+    <rect x="1179.25" y="369.906" width="31.5" height="23.1" rx="4.2" fill="#ffd23f"/>
+    <text x="1195" y="388.17600000000004" font-family="Montserrat,sans-serif" font-weight="900" font-size="17.849999999999998" text-anchor="middle" fill="#2a1d00">4</text>
+    <circle cx="1160.8" cy="466.55364000000003" r="5.4" fill="#ffd23f"/>
+    <rect class="cvh-sconce" x="1184.3142857142857" y="289.7664285714286" width="23.371428571428574" height="6.857142857142858" rx="4" fill="#fff4c8"/>
+  </g><g class="cvh-door">
+    <ellipse class="cvh-sconce-glow" cx="1060" cy="353.9742857142857" rx="31.14285714285714" ry="38.285714285714285" fill="url(#cvhGlow)"/>
+    <polygon points="1080,605 1080,331 1040,338 1040,583" fill="#fff" stroke="#fff" stroke-width="5.6" stroke-linejoin="round"/>
+    <polygon points="1080,605 1080,331 1040,338 1040,583" fill="url(#cvhDoor)"/>
+    <polygon points="1074,570 1074,364 1046,367 1046,556" fill="none" stroke="#5a60a8" stroke-width="1.7714285714285714"/>
+    <rect x="1049.25" y="378.32466666666664" width="21.5" height="15.76666666666667" rx="2.866666666666667" fill="#ffd23f"/>
+    <text x="1060" y="390.7946666666666" font-family="Montserrat,sans-serif" font-weight="900" font-size="12.183333333333334" text-anchor="middle" fill="#2a1d00">6</text>
+    <circle cx="1044.8" cy="448.81917333333337" r="3.8" fill="#ffd23f"/>
+    <rect class="cvh-sconce" x="1054.3428571428572" y="323.9742857142857" width="13.314285714285713" height="4.571428571428571" rx="4" fill="#fff4c8"/>
+  </g><rect x="626" y="514" width="28" height="40" rx="6" fill="#fff"/><ellipse cx="640" cy="494" rx="26" ry="32" fill="#3fbf7a"/><ellipse cx="626" cy="504" rx="14" ry="20" fill="#2f9a60"/><rect x="946" y="514" width="28" height="40" rx="6" fill="#fff"/><ellipse cx="960" cy="494" rx="26" ry="32" fill="#3fbf7a"/><ellipse cx="946" cy="504" rx="14" ry="20" fill="#2f9a60"/></svg>
+      <div class="where">A VISIT · THE BLOCKED PLAYER WALKS</div><div class="cam"><small>THE HALLWAY · CONNOR</small>C</div>
+      <div class="dlg"><b>CONNOR</b>I've talked to these people every day and I've never seen this hallway.</div></div></div>
+  <div class="cell"><h2>PROPOSED · RENDERED IN BLENDER (30 KB)</h2>
+    <div class="frame"><img class="shot" src="../assets/sets/circle/hallway.webp" alt="">
+      <div class="ringglow"></div><div class="flicker"></div><span class="pulse l"></span><span class="pulse r"></span>
+      <div class="where">A VISIT · THE BLOCKED PLAYER WALKS</div><div class="cam"><small>THE HALLWAY · CONNOR</small>C</div>
+      <div class="dlg"><b>CONNOR</b>I've talked to these people every day and I've never seen this hallway.</div></div></div>
+</div>
+<div class="notes"><ul>
+<li>The render is one still image of the room; the camera push, the ring breathing, the light pulse running down the runner's neon and the ceiling flicker are CSS on top, so it still moves.</li>
+<li>Six numbered doors, gold plates and knobs, sconces, the Circle's pink-purple-cyan neon on both walls and the runner, the ring on the far wall.</li>
+<li>If approved: the apartments (waiting and the visit on the couch) get the same treatment, then the other Circle sets, then Drag Race.</li>
+</ul></div>
+</body></html>

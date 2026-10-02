@@ -111,7 +111,11 @@ describe('the visit and the meet', () => {
   it('the walk is the hallway; each one waits in their own apartment; the last one waiting gets the knock', () => {
     for (const x of of('visit').filter(v => v.screen.steps.some(s => /^visit\.wait/.test(s.key || '')))) {
       const walk = firstIdx(x.screen, /^visit\.(choose|walk)/);
-      if (walk >= 0) expect(at(x, walk).querySelector('.cvh-svg')).not.toBeNull();
+      // the walk is the rendered hallway: a clip on the click that starts it, a still at rest
+      if (walk >= 0) {
+        expect(at(x, walk, true).querySelector('video.cvh-film[data-keep]')).not.toBeNull();
+        expect(at(x, walk).querySelector('img.cvh-film')).not.toBeNull();
+      }
       const waits = x.screen.steps.map((s, i) => (/^visit\.wait/.test(s.key || '') ? i : -1)).filter(i => i >= 0);
       for (const i of waits) expect(at(x, i).querySelector('.cva-svg'), x.screen.steps[i].key).not.toBeNull();
       // whose door it is stays secret until the knock: the visited player waits last

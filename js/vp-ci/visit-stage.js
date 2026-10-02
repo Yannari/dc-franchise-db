@@ -24,78 +24,17 @@ import { esc, faceUrl, ringOf, nameOf, realOf, isCatfish, bg, aptNo, themeFor, d
 import { faceOf } from './steps.js';
 
 // ── the hallway ───────────────────────────────────────────────────────
-const VX = 800, BL = 600, BR = 1000, BT = 270, BB = 560;
-const wallTop = x => (x <= BL ? BT * x / BL : BT * (1600 - x) / (1600 - BR));
-const wallBot = x => (x <= BL ? 900 - (900 - BB) * x / BL : 900 - (900 - BB) * (1600 - x) / (1600 - BR));
-const P = (x, y) => `${Math.round(x)},${Math.round(y)}`;
-
-function hallDoor(side, x1, x2, num) {
-  const X = x => (side === 'L' ? x : 1600 - x);
-  const pt = (x, f) => { const t = wallTop(x), b = wallBot(x); return [X(x), b - (b - t) * f]; };
-  const [a, b, c, d] = [pt(x1, 0), pt(x1, 0.74), pt(x2, 0.74), pt(x2, 0)];
-  const k = 1 - x1 / 700;
-  const mid = (p, q, f) => [p[0] + (q[0] - p[0]) * f, p[1] + (q[1] - p[1]) * f];
-  const top = mid(b, c, 0.5), lampY = top[1] - 40 * k;
-  const quad = (p1, p2, p3, p4) => `${P(...p1)} ${P(...p2)} ${P(...p3)} ${P(...p4)}`;
-  const p1 = mid(a, b, 0.12), p2 = mid(a, b, 0.88), p3 = mid(d, c, 0.88), p4 = mid(d, c, 0.12);
-  const plate = mid(mid(b, c, 0.5), mid(a, d, 0.5), 0.2), sz = 30 * (1 - x1 / 720) + 6;
-  const h = mid(mid(c, d, 0.45), mid(b, a, 0.45), 0.12);
-  return `<g class="cvh-door">
-    <ellipse class="cvh-sconce-glow" cx="${top[0]}" cy="${lampY + 30}" rx="${90 * k + 8}" ry="${110 * k + 10}" fill="url(#cvhGlow)"/>
-    <polygon points="${quad(a, b, c, d)}" fill="#fff" stroke="#fff" stroke-width="${14 * k + 2}" stroke-linejoin="round"/>
-    <polygon points="${quad(a, b, c, d)}" fill="url(#cvhDoor)"/>
-    <polygon points="${quad(mid(p1, p4, 0.14), mid(p2, p3, 0.14), mid(p3, p2, 0.14), mid(p4, p1, 0.14))}" fill="none" stroke="#5a60a8" stroke-width="${3 * k + 1}"/>
-    <rect x="${plate[0] - sz * 0.75}" y="${plate[1] - sz * 0.55}" width="${sz * 1.5}" height="${sz * 1.1}" rx="${sz * 0.2}" fill="#ffd23f"/>
-    <text x="${plate[0]}" y="${plate[1] + sz * 0.32}" font-family="Montserrat,sans-serif" font-weight="900" font-size="${sz * 0.85}" text-anchor="middle" fill="#2a1d00">${num}</text>
-    <circle cx="${h[0]}" cy="${h[1]}" r="${7 * k + 2}" fill="#ffd23f"/>
-    <rect class="cvh-sconce" x="${top[0] - 22 * k}" y="${lampY}" width="${44 * k + 2}" height="${10 * k + 2}" rx="4" fill="#fff4c8"/>
-  </g>`;
-}
-
-export function hallwaySvg() {
-  let s = `<defs>
-    <linearGradient id="cvhWallL" x1="0" x2="1"><stop offset="0" stop-color="#f6f3fb"/><stop offset="1" stop-color="#d8d1ee"/></linearGradient>
-    <linearGradient id="cvhWallR" x1="1" x2="0"><stop offset="0" stop-color="#f6f3fb"/><stop offset="1" stop-color="#d8d1ee"/></linearGradient>
-    <linearGradient id="cvhFloor" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#cdd0e4"/><stop offset="1" stop-color="#e9eaf4"/></linearGradient>
-    <linearGradient id="cvhNeon" x1="0" x2="1"><stop offset="0" stop-color="#ff4fb4"/><stop offset=".5" stop-color="#8b5cff"/><stop offset="1" stop-color="#3fd8ff"/>
-      <animate attributeName="x1" values="0;1;0" dur="6s" repeatCount="indefinite"/><animate attributeName="x2" values="1;2;1" dur="6s" repeatCount="indefinite"/></linearGradient>
-    <linearGradient id="cvhDoor" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#3a3f7a"/><stop offset="1" stop-color="#262a58"/></linearGradient>
-    <radialGradient id="cvhGlow"><stop offset="0" stop-color="#fff6d8" stop-opacity=".95"/><stop offset="1" stop-color="#fff6d8" stop-opacity="0"/></radialGradient>
-    <filter id="cvhSoft"><feGaussianBlur stdDeviation="7"/></filter>
-  </defs>`;
-  s += `<polygon points="0,0 1600,0 ${BR},${BT} ${BL},${BT}" fill="#fbfaff"/>`;
-  // ceiling light strips, nearer ones bigger, each glowing
-  for (let i = 0; i < 5; i++) {
-    const k = 1 - i / 5, y = BT * (1 - k * 0.92), w = 160 * k + 60;
-    s += `<rect class="cvh-strip" style="animation-delay:${i * 0.35}s" x="${VX - w}" y="${y - 6 * k - 2}" width="${w * 2}" height="${10 * k + 4}" rx="5" fill="#fffbe8"/>`;
-    s += `<rect x="${VX - w}" y="${y - 6 * k - 2}" width="${w * 2}" height="${10 * k + 4}" rx="5" fill="#fff6c8" opacity=".6" filter="url(#cvhSoft)"/>`;
-  }
-  s += `<polygon points="0,0 ${BL},${BT} ${BL},${BB} 0,900" fill="url(#cvhWallL)"/>`;
-  s += `<polygon points="1600,0 ${BR},${BT} ${BR},${BB} 1600,900" fill="url(#cvhWallR)"/>`;
-  s += `<polygon points="0,900 ${BL},${BB} ${BR},${BB} 1600,900" fill="url(#cvhFloor)"/>`;
-  // a Circle-coloured runner down the middle
-  s += `<polygon points="520,900 ${VX - 70},${BB} ${VX + 70},${BB} 1080,900" fill="#2a2360"/>`;
-  s += `<polygon points="560,900 ${VX - 56},${BB} ${VX + 56},${BB} 1040,900" fill="none" stroke="url(#cvhNeon)" stroke-width="5" opacity=".9"/>`;
-  // the far wall and the ring, breathing
-  s += `<rect x="${BL}" y="${BT}" width="${BR - BL}" height="${BB - BT}" fill="#2b2466"/>`;
-  s += `<circle class="cvh-ringglow" cx="${VX}" cy="${(BT + BB) / 2}" r="120" fill="url(#cvhNeon)" opacity=".25" filter="url(#cvhSoft)"/>`;
-  s += `<circle cx="${VX}" cy="${(BT + BB) / 2}" r="92" fill="none" stroke="url(#cvhNeon)" stroke-width="22"/><circle cx="${VX}" cy="${(BT + BB) / 2 - 92}" r="11" fill="#fff"/>`;
-  // the neon stripe along both walls, with a light running along it
-  for (const side of ['L', 'R']) {
-    const near = side === 'L' ? 0 : 1600, far = side === 'L' ? BL : BR;
-    const yNear = 900 * 0.58, yFar = wallBot(far) - (wallBot(far) - wallTop(far)) * 0.42;
-    s += `<line x1="${near}" y1="${yNear}" x2="${far}" y2="${yFar}" stroke="url(#cvhNeon)" stroke-width="30" opacity=".3" filter="url(#cvhSoft)"/>`;
-    s += `<line x1="${near}" y1="${yNear}" x2="${far}" y2="${yFar}" stroke="url(#cvhNeon)" stroke-width="9" stroke-linecap="round"/>`;
-    s += `<line class="cvh-run" x1="${near}" y1="${yNear}" x2="${far}" y2="${yFar}" stroke="#ffffff" stroke-width="5" stroke-linecap="round" stroke-dasharray="40 900"/>`;
-    // a second, higher stripe near the ceiling
-    const yNear2 = 900 * 0.08, yFar2 = wallTop(far) + (wallBot(far) - wallTop(far)) * 0.06;
-    s += `<line x1="${near}" y1="${yNear2}" x2="${far}" y2="${yFar2}" stroke="url(#cvhNeon)" stroke-width="5" opacity=".75"/>`;
-  }
-  s += hallDoor('L', 70, 250, 1) + hallDoor('L', 360, 450, 3) + hallDoor('L', 520, 560, 5)
-    + hallDoor('R', 70, 250, 2) + hallDoor('R', 360, 450, 4) + hallDoor('R', 520, 560, 6);
-  const plant = x => `<rect x="${x - 14}" y="${BB - 46}" width="28" height="40" rx="6" fill="#fff"/><ellipse cx="${x}" cy="${BB - 66}" rx="26" ry="32" fill="#3fbf7a"/><ellipse cx="${x - 14}" cy="${BB - 56}" rx="14" ry="20" fill="#2f9a60"/>`;
-  s += plant(BL + 40) + plant(BR - 40);
-  return `<svg class="cvh-svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${s}</svg>`;
+// Rendered in Blender (2026-10-02; user: the SVG hallway was "ugly ... the
+// doors don't even look like doors"; the render, "I like it"). The walk is a
+// real camera move down the hall (doors pass, the ring grows), played once
+// and held on its last frame; scaling a still only wobbled in place. The clip
+// is carried across redraws (stage.js paintStage keeps `video[data-keep]`), so
+// it keeps walking while the lines advance. At rest it is a still: the start
+// before the walk has begun, the end once it has.
+export const HALL = { film: 'assets/sets/circle/hallway-walk.mp4', start: 'assets/sets/circle/hallway.webp', end: 'assets/sets/circle/hallway-end.webp' };
+export function hallwayFilm(fresh, begun) {
+  if (fresh) return `<video class="cvh-film" data-keep="ci-hall-walk" src="${HALL.film}" poster="${HALL.start}" autoplay muted playsinline preload="auto" aria-hidden="true"></video>`;
+  return `<img class="cvh-film" src="${begun ? HALL.end : HALL.start}" alt="" aria-hidden="true">`;
 }
 
 // ── an apartment's furniture: the door, and (for the visit) the couch ─
@@ -187,26 +126,19 @@ export function visitStage(row, screen, idx, fresh) {
       ${where('A VISIT · EVERYBODY WAITS')}${dlg(row, st, fresh)}</div>`;
   }
   // The walk: down the hallway, centred, the camera pushing in.
-  return `<div class="civ-layer cvh">${hallwaySvg()}
+  return `<div class="civ-layer cvh">${hallwayFilm(fresh, idx >= 0)}
     <div class="cvh-walker">${cam(row, visitor, '', `THE HALLWAY · ${realOf(row, visitor).toUpperCase()}`)}</div>
     ${where('A VISIT · THE BLOCKED PLAYER WALKS')}${dlg(row, st, fresh)}</div>`;
 }
 
 export const VISIT_CSS = `
 .cvh{background:#f4f2fa;overflow:hidden}
-.cvh-svg,.cva-svg{position:absolute;inset:0;width:100%;height:100%}
-.cvh-svg{animation:cvhPush 14s ease-out both;transform-origin:50% 45%}
-@keyframes cvhPush{from{transform:scale(1)}to{transform:scale(1.12)}}
-.cvh-strip{animation:cvhFlicker 3.2s ease-in-out infinite}
-@keyframes cvhFlicker{0%,100%{opacity:1}45%{opacity:.82}50%{opacity:.95}}
-.cvh-sconce-glow{animation:cvhBreathe 2.8s ease-in-out infinite}
-.cvh-ringglow{animation:cvhBreathe 3.6s ease-in-out infinite}
-@keyframes cvhBreathe{50%{opacity:.45}}
-.cvh-run{stroke-dashoffset:940;animation:cvhRun 3s linear infinite;opacity:.9}
-@keyframes cvhRun{to{stroke-dashoffset:0}}
-.cvh-walker{position:absolute;left:50%;top:26%;width:15cqw;transform:translateX(-50%);z-index:5;animation:cvhStep 1.1s ease-in-out infinite}
+.cvh-film,.cva-svg{position:absolute;inset:0;width:100%;height:100%}
+.cvh-film{object-fit:cover}
+/* bottom-left, like every set's camera card: the walk heads for the ring, so nothing sits in front of it */
+.cvh-walker{position:absolute;left:3%;bottom:5%;width:15cqw;z-index:5;animation:cvhStep 1.7s ease-in-out infinite}
 .cvh-walker .civ-mcam{position:relative;width:100%;aspect-ratio:4/5}
-@keyframes cvhStep{50%{transform:translateX(-50%) translateY(-1.5%)}}
+@keyframes cvhStep{50%{transform:translateY(-1.2%)}}
 .cva{overflow:hidden;background:#2a1a10}
 .cva-wall{position:absolute;inset:0 0 22% 0}
 .cva-dado{position:absolute;left:0;right:0;bottom:22%;height:16%;border-top:3px solid rgba(255,255,255,.3)}
@@ -235,5 +167,5 @@ export const VISIT_CSS = `
 .cva-was.fake{background:rgba(120,10,60,.85)}.cva-was b{color:#ff9ad4}
 .cva-flash{position:absolute;inset:0;z-index:20;background:#fff8e6;pointer-events:none;animation:civFbFlash .8s ease-out both}
 .cva.open .cva-person{animation:civUp .6s .15s both}
-@media (prefers-reduced-motion: reduce){.cvh-svg,.cvh-strip,.cvh-sconce-glow,.cvh-ringglow,.cvh-run,.cvh-walker,.cva-door.knock,.cva-knockglow,.cva-under{animation:none}}
+@media (prefers-reduced-motion: reduce){.cvh-walker,.cva-door.knock,.cva-knockglow,.cva-under{animation:none}}
 `;

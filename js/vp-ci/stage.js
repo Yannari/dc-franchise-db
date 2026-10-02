@@ -283,7 +283,11 @@ export function paintStage(el, row, screen, idx, fresh = false) {
   // A chat does not redraw from the top: where each feed was scrolled is
   // kept, then it glides to the newest message.
   const was = [...el.querySelectorAll(FEEDS)].map(f => f.scrollTop);
+  // A clip that is already playing keeps playing across the redraw (the walk
+  // down the hallway, visit-stage.js): the new layout gets the same element.
+  const keep = Object.fromEntries([...el.querySelectorAll('video[data-keep]')].map(v => [v.dataset.keep, v]));
   el.innerHTML = stageInner(row, screen, idx, fresh);
+  for (const v of el.querySelectorAll('video[data-keep]')) if (keep[v.dataset.keep]) v.replaceWith(keep[v.dataset.keep]);
   const feeds = [...el.querySelectorAll(FEEDS)];
   feeds.forEach((f, i) => {
     if (was[i] != null) f.scrollTop = was[i];

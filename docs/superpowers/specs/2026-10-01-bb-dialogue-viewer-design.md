@@ -168,8 +168,9 @@ Mirrors `js/vp-ci/`:
 - `stage.js`: `stageInner(row, screen, idx, fresh)` paints "the first N lines
   have happened", with only the newest animating. Never `scrollIntoView`.
 - `sets/`: kitchen, bedroom, HOH room, Diary Room, ceremony, backyard (D3).
-  Later: have-not room, storage, jury house, comp arena. Scenery is SVG,
-  light-only, and works in both themes.
+  Later: have-not room, storage, jury house, comp arena. Sets are light and
+  colour rather than drawings, with SVG only for the game's objects
+  (section 4.7.1), and they work in both themes.
 - `sidebar.js` is gated by steps played: HOH, nominees, veto, alliances and
   the relationship lines that moved.
 - `teasers.js` ("Previously", "Coming up"; never a key that spoils an
@@ -178,6 +179,64 @@ Mirrors `js/vp-ci/`:
   step key).
 - **The text backlog is generated from the same steps,** so the transcript and
   the viewer cannot drift.
+
+### 4.7.1 Visual direction: the finished viewers' craft, BB's own look
+
+The bar is the two finished stepped viewers, Perfect Match (`js/vp-pm/`,
+mockup `mockup-pm-vp-v2.html`) and the Circle (`js/vp-ci/`, mockup
+`circle-stage-v3`). BB takes **their craft** and builds **its own look**.
+Porting one show's viewer onto another was rejected (memory: show visual
+originality), so nothing is reskinned.
+
+**Taken from them (the craft):**
+
+- **The visual-novel stage (PM):** portrait busts that slide in, a dialogue box
+  that types the line, a camera that pushes in on whoever is talking with
+  everyone else out of focus, pops for every feeling or bond that moved, and
+  toasts for the big moments.
+- **Light, not drawings (PM's verdict on its v1 mockup):** rooms are built from
+  light and colour (bloom, haze, beams, bokeh, practical lamps), with no drawn
+  furniture scenery. The one or two "objects" a set needs are inline SVG
+  (franchise rule).
+- **Moments that land (the Circle):** ALERT! slams in with a shockwave, flash
+  and glitch; the apartment cam card; the TV in the room; the camera push. BB
+  needs the same weight on its own moments.
+- **The programme around it (both):** a wipe between rooms, Auto play at
+  reading pace that rolls on to the next screen, TV mode that hides the
+  chrome, "Previously" and "Coming up" teasers, the end-of-episode relationship
+  web, and a debug screen at the end.
+- **Engineering:** classes and keyframes prefixed (`bbv-`), so the page's own
+  `.card` and `@keyframes` are never restyled; sizes in `cqw` (the stage is a
+  size container); the theme as the screen's own attribute, following the site
+  until the viewer picks one, and correct in both themes; `prefers-reduced-motion`
+  respected.
+
+**BB's own identity (what makes it not PM or the Circle):**
+
+- **It is watched.** The house is seen through cameras: a live-feed frame
+  (REC dot, timestamp, camera number in the corner) on house scenes; a quad
+  "feeds" grid for the cold open and for scenes in several rooms at once; a
+  fisheye lens and the camera whirring round to the speaker as BB's version of
+  the camera push.
+- **The eye.** The Big Brother eye is the motif: the wipe between rooms is an
+  iris closing and opening on the eye, the Diary Room is the eye-backed chair
+  at close-up, and "Big Brother" speaking (the voice over the house) has its
+  own treatment: the house lights dip and the line appears across the frame,
+  not in a bust's dialogue box.
+- **The game's objects:** the HOH key and the nomination keys, the gold veto
+  medallion, the memory wall with its lit and greyed portraits, the spy screen
+  in the HOH room. These are the only drawn things, and they carry the big
+  moments: keys turning on nominations, the medallion swinging on and off,
+  the memory wall portrait greying on an eviction.
+- **Palette and type:** BB's own palette is house-light neutrals with a
+  surveillance cyan for the feeds and gold for power (HOH and veto). Fonts are
+  chosen in Phase 0, not borrowed from PM's or the Circle's sets.
+- **Set changes:** the HOH room's colour follows the week's HOH; have-nots get
+  a colder, harsher light; night scenes go to night-vision green on the feeds.
+
+Phase 0 mocks up these primitives (feed frame, eye wipe, dialogue box, Diary
+Room cut, Big Brother's voice, keys and medallion) on the six D3 sets, and the
+mockup is approved before any stage code, as both PM and the Circle were.
 
 ### 4.8 Music and sound: `js/vp-bb-ep/sound.js` (new)
 
@@ -227,7 +286,7 @@ volume settings hold.
 
 | Phase | Deliverable | Done when |
 |---|---|---|
-| 0 | `mockup/mockup-bb-*.html`: the six D3 sets, static, both themes | You approve them |
+| 0 | `mockup/mockup-bb-*.html`: the six D3 sets with the section 4.7.1 primitives (feed frame, eye wipe, dialogue box and camera push, Diary Room cut, Big Brother's voice, keys and medallion), clickable through a sample scene, both themes; judged side by side with the PM and Circle viewers | You approve them |
 | 1 | `js/script/` extraction, `bb/scenes.js`, `writeWeek`, `BB_FACT_KEYS`, the witness rule | Circle tests pass unchanged; a BB season round-trips its scenes through JSON |
 | 2 | `js/vp-bb-ep/` viewer playing every week, with unconverted events as one-step narration and legacy screens embedded | Every week of 3 real-roster seasons renders, and the "nothing before its line" test passes |
 | 3 | Music and sound (section 4.8): bed catalog and step-driven switching, synthesized stings, `docs/bb-music.md` download list; your tracks processed and wired as they arrive | Sound test passes; one season played through with sound on |

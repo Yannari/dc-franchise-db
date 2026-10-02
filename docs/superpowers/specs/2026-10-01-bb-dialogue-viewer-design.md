@@ -94,10 +94,21 @@ system duplicated without its hard-won parts.
   causes goes through `nudgeBelief(..., scene)` and **throws** if the player is
   not in `scene.seenBy`. This sits in front of the existing `bb/knowledge.js`
   and `bb/deals.js` belief writes, not beside them.
-- **Written after it is played** (§11.5 V). `writeWeek(week)` runs at the end
-  of the week, over the recorded scenes, in order. A scene whose people differ
-  from the week's end (an eviction, a Battle Back return, a twin swap) carries
-  `people`, so the writer reads the house as it was at that scene.
+- **Written as of the scene** (§11.5 V). *Changed in Phase 1 (2026-10-02):*
+  a BB scene is written the moment its event fires
+  (`bb/house-events.js scheduleHouseBeats` → `bb/script/write.js writeScene`),
+  not by a `writeWeek` at the end of the week. Firing time IS the scene's
+  moment, so the writer reads the house exactly as it stood; the Circle needed
+  an end-of-day writer only because a profile can change hands mid-day. The
+  transcript fills the beat's `text`, so every screen that prints text keeps
+  working; `lines` carries the script for the stepped viewer.
+
+**Phase 1 status (2026-10-02):** `js/script/pick.js` (shared, the Circle runs
+on it), `js/bb/script/{scene,facts,write}.js`, pools in `js/bb/script/lines/`,
+`tests/bb-script.test.js`. Converted: `friction-dishes`, `friction-food`
+(endings blowup / snipe / smoothed; an `again` fact for a pair with history).
+Measured over 6 seeded 8-week seasons: 62% snipe, 27% blowup, 12% smoothed;
+0 of 52 pair-weeks with two rows.
 
 ### 4.3 BB's clock and facts
 

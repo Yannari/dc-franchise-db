@@ -164,6 +164,8 @@ function _options() {
     bookings: circleBookings(),
     // A season the Randomize button drew plays exactly what the timeline shows.
     fixed: (seasonConfig.twistSchedule || []).some(b => b?.random && _circleIds().has(b.type)),
+    // Surprise twists off: only what is on the timeline happens (ci/timeline.js).
+    surprises: seasonConfig.ciSurprises !== false,
   };
 }
 

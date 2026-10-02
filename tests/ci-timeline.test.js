@@ -110,3 +110,28 @@ describe('a drawn season (Randomize)', () => {
     }
   });
 });
+
+// The season option "Surprise twists" (user, 2026-10-01: "some twists happened
+// unscheduled, is it normal?" — yes, and now it can be switched off).
+describe('surprise twists off', () => {
+  it('only what is booked happens: standard nights, the usual way in, no power, twist or disrupter', () => {
+    for (const seed of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]) {
+      const s = bookSeason(skeleton(), streamFor(seed, 'timeline'), { total: 13, finalists: 5, surprises: false });
+      for (const d of s) {
+        if (d.night) expect(['standard', 'double']).toContain(d.night.format);
+        expect(d.night?.power).toBeFalsy();
+        expect(d.twist).toBeFalsy();
+        expect(d.disrupter).toBeFalsy();
+        if (d.arrivals > 0) expect(d.entry).toBe('snoop');
+      }
+    }
+  });
+  it('a card on the timeline still plays, and on (the default) the season still surprises', () => {
+    const s = bookSeason(skeleton(), streamFor(3, 'timeline'), { total: 13, finalists: 5, surprises: false,
+      bookings: { rating3: 'ci-sole-influencer', social1: 'ci-profile-swap' } });
+    expect(s.find(d => d.slot === 'rating3').night.format).toBe('sole');
+    expect(s.find(d => d.slot === 'social1').twist).toBe('swap');
+    const on = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(seed => bookSeason(skeleton(), streamFor(seed, 'timeline'), { total: 13, finalists: 5 }));
+    expect(on.some(s2 => s2.some(d => d.night && d.night.format !== 'standard' && d.night.format !== 'double'))).toBe(true);
+  });
+});

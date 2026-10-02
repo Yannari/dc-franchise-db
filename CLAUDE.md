@@ -19,7 +19,10 @@ generates about a season, read `docs/ADDING-A-SHOW.md`.** For a new show,
 §8.3 (an engine that plays in its own `gs` must read and write the franchise
 ledger itself — `js/franchise-carry.js`, `recordBuiltSeason`) and §16 (the
 fifth show: the build order that worked, the transcript as the main tool, and
-the writing bug classes to check in every new pool) come first. It lists every file
+the writing bug classes to check in every new pool) come first. A show that is
+mostly CONVERSATION reads §17 (the sixth show, The Circle: a scene decided then
+written, the line picker's repetition rules, and the one-click-per-line viewer in
+`js/vp-ci/`). The document lists every file
 that branches on show, the eight that still hold their own copy of the show
 list, and §13 has the commands to re-derive all of it when this drifts.
 

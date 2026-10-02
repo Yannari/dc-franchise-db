@@ -198,7 +198,8 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
     finalists: state.options.finalists, days: state.options.days, rhythm: state.options.rhythm ?? rhythmOf(cast) });
   // What each ratings night is: booked by slot, or drawn (Plan 3b).
   const booked = bookSeason(schedule, streamFor(seed, 'timeline'),
-    { total: handles.length, finalists: state.options.finalists, bookings: state.options.bookings || {}, fixed: !!state.options.fixed });
+    { total: handles.length, finalists: state.options.finalists, bookings: state.options.bookings || {}, fixed: !!state.options.fixed,
+      surprises: state.options.surprises !== false });
   schedule.splice(0, schedule.length, ...booked);
   state.schedule = schedule;
 

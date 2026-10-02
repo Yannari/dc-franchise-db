@@ -67,7 +67,13 @@ function weighted(rng, options) {
 // `fixed`: the timeline already holds a drawn season (the Randomize button,
 // ci-run.js circleRandomDraw), so nothing more is drawn behind the author's
 // back: no extra power, twist or disrupter the timeline does not show.
-export function bookSeason(schedule, rng, { total, finalists = 5, bookings = {}, fixed = false } = {}) {
+// `surprises: false` (the season option "Surprise twists" off): only what is
+// booked happens. An empty night is the standard Hangout, a newcomer comes in
+// the usual way (snoop), and nothing else is drawn. A night the season needs
+// to remove two (behind after a no-blocking night) is still a double: that is
+// the count, not a surprise.
+export function bookSeason(schedule, rng, { total, finalists = 5, bookings = {}, fixed = false, surprises = true } = {}) {
+  if (!surprises) fixed = true;
   const out = schedule.map(d => ({ ...d }));
   // Twists that change how many must be blocked, placed first: a second
   // chance brings one profile back (+1); an egg twist blocks a newcomer on
@@ -116,6 +122,7 @@ export function bookSeason(schedule, rng, { total, finalists = 5, bookings = {},
     // A booking that cannot run is standard (or a double, when the season is
     // behind), on record, never a surprise draw.
     else if (bookedId) night = { format: mustDouble && fits('double') ? 'double' : 'standard', fellBack: booked || bookedId };
+    else if (!surprises) night = { format: mustDouble && fits('double') ? 'double' : 'standard' };
     else {
       const options = (NIGHT_DRAWS[ctx.position] || [['standard', 1]]).filter(([f]) => fits(f))
         .map(([f, w]) => [f, f !== 'standard' && used.has(f) ? w * SEEN_AGAIN : w]);
@@ -161,7 +168,7 @@ export function bookSeason(schedule, rng, { total, finalists = 5, bookings = {},
   for (const d of out) {
     if (!(d.arrivals > 0) || d.entry === 'egg') continue;
     const booked = idsAt(bookings, d.slot).map(entryOfTwist).find(x => x && x !== 'egg');
-    let entry = booked || weighted(rng, ENTRY_DRAWS[d.arrivals >= 2 ? 'more' : 'one']);
+    let entry = booked || (surprises ? weighted(rng, ENTRY_DRAWS[d.arrivals >= 2 ? 'more' : 'one']) : 'snoop');
     if (entry === 'pair' && d.arrivals < 2) {
       const from = out.filter(x => x.day > d.day && x.arrivals > 0).at(-1);
       if (from) { from.arrivals--; d.arrivals++; d.pulledFrom = from.slot; }

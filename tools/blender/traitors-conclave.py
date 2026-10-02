@@ -141,7 +141,7 @@ def cloth(name, red, sheen):
 stone("trc_wall", (0.19, 0.17, 0.15), (0.11, 0.10, 0.09), (0.05, 0.045, 0.04), 0.88, 0.95, 0.42, 0.7, mortar_size=0.018)
 stone("trc_floor", (0.075, 0.068, 0.062), (0.05, 0.046, 0.042), (0.03, 0.028, 0.026), 0.45, 0.95, 0.72, 0.5)
 stone("trc_dressed", (0.20, 0.185, 0.165), (0.144, 0.13, 0.112), (0.07, 0.065, 0.06), 0.7, 0.9, 0.45, 0.3)
-stone("trc_tdress", (0.085, 0.077, 0.07), (0.06, 0.055, 0.05), (0.07, 0.065, 0.06), 0.5, 2.5, 0.6, 0.3)
+stone("trc_tdress", (0.2, 0.18, 0.16), (0.15, 0.135, 0.12), (0.09, 0.08, 0.07), 0.5, 2.5, 0.6, 0.3)   # light enough to read as stone under the cel bands
 simple("trc_iron", (0.03, 0.028, 0.026), 0.45, metal=0.9)
 simple("trc_gold", (0.6, 0.38, 0.12), 0.35, metal=1.0)
 simple("trc_wax", (0.85, 0.78, 0.62), 0.45, sss=0.5)
@@ -443,5 +443,14 @@ def render_plates():
     for o in room: o.hide_render = False; o.is_holdout = False
     sc.render.film_transparent = False; sc.render.image_settings.color_mode = 'RGB'
 
+
+# ── the illustrated look (tools/blender/traitors-toon.py), before any render ──
+def apply_toon(exposure=None):
+    repo = os.path.dirname(os.path.dirname(os.path.dirname(os.path.normpath(OUT))))
+    g = {}
+    exec(open(os.path.join(repo, "tools", "blender", "traitors-toon.py"), encoding="utf-8").read(), g)
+    g["toonify"](sc, exposure=exposure)
+
 if os.path.isdir(OUT):
+    apply_toon()
     render_plates()

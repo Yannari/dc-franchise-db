@@ -15,12 +15,12 @@
 // Like every other file in this directory it imports no engine state.
 import { selectionStageData } from './selection.js';
 import { trsStageShell as stageShell, trsFold, trsReg as reg, trsEsc as esc, trsFace as face, trsLater as later } from './castle-stage.js';
-import { TRScenery } from './cutaway-scenery.js';
 import { beatLines } from './stage-lines.js';
 import { footCard, playCard, CARD_CSS } from './stage-cards.js';
 import { trPlay } from './sfx.js';
 import { confessional, cutIn as cutInCard } from './stage-cutin.js';
 import { CLOAK, TRC_PLATE, TRC_PLATE_TABLE, trcSeatAt, trcOnPlate } from './conclave-stage.js';
+import { RT_PLATE, rtPlateBox } from './table-stage.js';
 
 const hash = s => { let h = 7; for (const c of String(s)) h = (Math.imul(h, 31) + c.charCodeAt(0)) >>> 0; return h; };
 const clean = s => String(s || '').replace(/\s+/g, ' ').trim();
@@ -63,9 +63,12 @@ export function selectionStageScreen(ep, observer, pageHtml) {
 }
 
 // ── THE RING: equal distances round the edge (see table-stage.js) ────────
-const TABLE_CY = .44;
+// the same room as the Round Table (table-stage.js RT_PLATE), placed in the
+// image's coordinates the same way
+const TABLE_CY = .425;
 function ring(slots, W, H) {
-  const cx = W * .5, cy = H * TABLE_CY, rx = W * .4, ry = H * .24, N = 720;
+  const B = rtPlateBox(W, H);
+  const cx = B.x(.5), cy = B.y(TABLE_CY), rx = B.dw * .4, ry = B.dh * .24, N = 720;
   const ang = [], len = [0];
   let px = cx + rx * Math.cos(-Math.PI / 2), py = cy + ry * Math.sin(-Math.PI / 2);
   for (let i = 0; i <= N; i++) {
@@ -125,8 +128,7 @@ function paint(root, S, fresh) {
     el.dataset.w = String(W);
     el.innerHTML = '<div class="tps-set"></div><div class="tps-ring"></div><div class="tps-host"></div>'
       + '<div class="tps-turret"></div><div class="tps-hud"></div>';
-    el.querySelector('.tps-set').innerHTML = TRScenery.roundTableSet(W, H)
-      + TRScenery.roundTable(W * .5, H * (TABLE_CY + .005), W * .3, H * .16, slots);
+    el.querySelector('.tps-set').innerHTML = `<img class="tps-plate" src="${RT_PLATE}" alt="">`;
     el.querySelector('.tps-host').innerHTML = `<div class="tps-glow"></div><div class="tps-hav">${face(D.host.name, D.host.slug)}</div>`;
     S.hostF = 0;
   }

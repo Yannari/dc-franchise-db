@@ -20,7 +20,6 @@
 // Like every other file in this directory it imports no engine state.
 import { roundTableStageData } from './round-table.js';
 import { trsStageShell as stageShell, trsFold, trsReg as reg, trsEsc as esc, trsFace as face, trsLater as later, trsWords } from './castle-stage.js';
-import { TRScenery } from './cutaway-scenery.js';
 import { trPlay, trChalk, trMusic } from './sfx.js';
 import { beatLines } from './stage-lines.js';
 
@@ -94,12 +93,25 @@ export function tableStageScreen(ep, observer, pageHtml) {
 // equal angles bunch the people at either end of the table and spread them
 // along the near and far sides, which is what the first build looked like.
 const TABLE_CY = .425;
+// THE ROOM IS A RENDER (tools/blender/traitors-roundtable.py): the table in it
+// is centred .5/.43 of the image with half-axes .3/.16, inside the seat ring
+// below. Everything is placed in the IMAGE's coordinates, which `object-fit:
+// cover` scales and centres, so a stage that is not 16:9 still seats people
+// round the table and not beside it.
+export const RT_PLATE = 'assets/sets/traitors/roundtable.webp';
+export function rtPlateBox(W, H) {
+  const k = Math.max(W / 1920, H / 1080), dw = 1920 * k, dh = 1080 * k;
+  return { ox: (W - dw) / 2, oy: (H - dh) / 2, dw, dh,
+    x: f => (W - dw) / 2 + f * dw, y: f => (H - dh) / 2 + f * dh };
+}
+const PLATE_IMG = `<img class="trt-plate" src="${RT_PLATE}" alt="">`;
 const _ringCache = new Map();
 function seatAt(slot, slots, W, H) {
   const k = slots + '|' + Math.round(W) + '|' + Math.round(H);
   let ring = _ringCache.get(k);
   if (!ring) {
-    const cx = W * .5, cy = H * TABLE_CY, rx = W * .41, ry = H * .235, N = 720;
+    const B = rtPlateBox(W, H);
+    const cx = B.x(.5), cy = B.y(TABLE_CY), rx = B.dw * .41, ry = B.dh * .235, N = 720;
     const pts = [], len = [0];
     for (let i = 0; i <= N; i++) {
       const a = -Math.PI / 2 + i / N * Math.PI * 2;
@@ -150,7 +162,7 @@ function paintTable(root, S, fresh) {
   });
   const start = root.querySelector('.trs-start');
   if (S.idx < 0) {
-    rt.innerHTML = TRScenery.roundTableSet(W, H) + TRScenery.roundTable(W * .5, H * (TABLE_CY + .005), W * .3, H * .16, D.seated.length + 1);
+    rt.innerHTML = PLATE_IMG;
     start.innerHTML = `<b>The Round Table</b><span>${D.seated.length} at the table · press Next, or click the table</span>`;
     start.classList.add('trs-in');
     root.querySelector('.trs-corner').classList.remove('trs-in');
@@ -169,7 +181,8 @@ function paintTable(root, S, fresh) {
   const pair = st.pair || [];
   const focus = st.t === 'say' || st.t === 'slate' || st.t === 'host' || pair.length > 0 || !!narrWho;
   let h = `<div class="trt-world">` + `<svg width="0" height="0" style="position:absolute"><filter id="trtChalk"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="4" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.6"/></filter></svg>`
-    + TRScenery.roundTableSet(W, H) + TRScenery.roundTable(W * .5, H * (TABLE_CY + .005), W * .3, H * .16, slots);
+    + PLATE_IMG;
+  const TB = rtPlateBox(W, H), tcx = TB.x(.5), tcy = TB.y(TABLE_CY);
   // the red threads: who has put whom up, the newest drawn as it is said
   const pos = n => { const i = D.seated.indexOf(n); const p = seatAt(i + 1, slots, W, H); return [p.x, p.y]; };
   if (r.phase === 'debate' || r.phase === 'gather' || st.t === 'say' || st.accs.length) {
@@ -177,7 +190,7 @@ function paintTable(root, S, fresh) {
     const fade = r.reads > 0;
     h += '<svg class="trt-threads">' + threads.map(([a, b]) => {
       const [x1, y1] = pos(a), [x2, y2] = pos(b);
-      const mx = (x1 + x2) / 2 + (W * .5 - (x1 + x2) / 2) * .35, my = (y1 + y2) / 2 + (H * TABLE_CY - (y1 + y2) / 2) * .35;
+      const mx = (x1 + x2) / 2 + (tcx - (x1 + x2) / 2) * .35, my = (y1 + y2) / 2 + (tcy - (y1 + y2) / 2) * .35;
       const isNew = fresh && st.t === 'say' && st.who === a && st.target === b;
       return `<path class="trt-thread${isNew ? '' : ' trt-old'}${fade ? ' trt-faded' : ''}" d="M${x1},${y1} Q${mx},${my} ${x2},${y2}"/>`;
     }).join('') + '</svg>';
@@ -191,7 +204,7 @@ function paintTable(root, S, fresh) {
   }
   // the count on the baize, while the slates are read
   if (st.t === 'slate' || (r.reads && !r.counted && !r.chair)) {
-    if (st.t !== 'slate') h += `<div class="trt-counter" style="left:${W * .5}px;top:${H * (TABLE_CY - .02)}px"><b>${r.ordN || r.reads} / ${r.total || D.seated.length}</b><span>Read aloud</span></div>`;
+    if (st.t !== 'slate') h += `<div class="trt-counter" style="left:${tcx}px;top:${tcy - TB.dh * .02}px"><b>${r.ordN || r.reads} / ${r.total || D.seated.length}</b><span>Read aloud</span></div>`;
   }
   // the host's place
   const hp = seatAt(0, slots, W, H);
@@ -416,6 +429,7 @@ const CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Kalam:wght@400;700&family=Gochi+Hand&family=Shadows+Into+Light&family=Reenie+Beanie&display=swap');
 .trt{position:absolute;inset:0;--t-bone:#ded6c4;--t-bone-dim:rgba(222,214,196,.62);--t-candle:#fff3d2;--t-chalk:#eef2ec;
   --t-slate:#20262c;--t-slate-2:#12171c;--t-blood:#8e1526;--t-blood-hot:#c9283c;--t-rule:rgba(222,214,196,.17)}
+.trt-plate{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none;user-select:none}
 .trt-seat{position:absolute;transform:translate(-50%,-50%);text-align:center;transition:filter .45s,transform .45s cubic-bezier(.2,1.2,.4,1)}
 .trt-av{position:relative;width:100%;aspect-ratio:1/1.12;overflow:hidden;border-radius:50% 50% 12% 12%/44% 44% 9% 9%;
   background:linear-gradient(162deg,#252b37,#080b11);box-shadow:0 0 0 2px rgba(222,214,196,.35),0 8px 20px rgba(0,0,0,.8)}

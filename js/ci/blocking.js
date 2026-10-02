@@ -100,12 +100,24 @@ export function standardBlocking(state, rng, ratingRow, { format = 'standard', s
   return { target: d.target, hangout, announcement, visit };
 }
 
+// A visit that turns into an argument (user, 2026-10-02: "is it possible we
+// have an argument during a visit?"). A blocked player who resents the
+// Influencer who did it goes to have it out: how much they resent them, times
+// how bold and how short-fused they are. A calm player still only wants
+// answers; the same grudge in a hothead is a fight.
+export const CONFRONT = { base: 2, heat: 1.35 };
+export const heatOf = (state, h) => S(state, h, 'boldness') / 10 * (1.6 - S(state, h, 'temperament') / 10);
+export function confrontWeight(state, h, c) {
+  return CONFRONT.base + Math.max(0, rel(h, c, 'resentment')) * heatOf(state, h) * CONFRONT.heat;
+}
+
 export function chooseVisit(state, rng, h, blockers) {
   const guilt = mood(state, h, 'guilt') / 10;
   return state.active.map(c => {
     const m = {
       friend: Math.max(0, rel(h, c, 'affection')),
       answers: blockers.includes(c) ? rel(h, c, 'resentment') + 2 : 0,
+      confront: blockers.includes(c) ? confrontWeight(state, h, c) : 0,
       truth: (1 - belief(state, h, c).real) * 8,
       apology: guilt * Math.max(0, rel(h, c, 'affection')) * 1.5,
     };
@@ -115,6 +127,31 @@ export function chooseVisit(state, rng, h, blockers) {
 }
 
 export const REPORT_LIE = 1.2;
+
+/**
+ * The argument: how the visited Influencer meets it, and how it ends.
+ *   fire    bold and short-fused: they give it right back, and it escalates
+ *   take    guilty or even-tempered: they let the blocked player say it all
+ *   defend  in between: they explain, and the two talk past each other
+ * It ends with a walk-out (no hug) or cooled down (a hug at the door). The
+ * style is a read of the host for the script; what it costs is proportional.
+ */
+export function clash(state, rng, h, to) {
+  const fire = heatOf(state, to);
+  const take = mood(state, to, 'guilt') / 10 + S(state, to, 'temperament') / 10 * 0.8;
+  const style = fire > take + 0.2 ? 'fire' : take > fire + 0.2 ? 'take' : 'defend';
+  const grudge = Math.max(0, rel(h, to, 'resentment')) / 10;
+  const walk = clamp(0.25 + grudge * 0.4 + fire * 0.35 - take * 0.3, 0.05, 0.9);
+  const end = rng() < walk ? 'walkout' : 'cooled';
+  // The host comes out of it shaken, more so after a shouting match.
+  feel(state, to, 'stress', 1 + fire * 1.5);
+  feel(state, to, 'paranoia', 0.8);
+  if (style === 'take') feel(state, to, 'guilt', 1.5);
+  bump(h, to, 'resentment', end === 'walkout' ? 1.5 : -0.5);
+  bump(to, h, 'resentment', fire * 1.5);
+  if (end === 'cooled') { bump(h, to, 'affection', 0.8); bump(to, h, 'affection', 0.8); }
+  return { style, end };
+}
 
 export function runVisit(state, rng, h, blockers, { to: forced = null, inPerson = false } = {}) {
   if (!state.active.length) return null;
@@ -126,6 +163,7 @@ export function runVisit(state, rng, h, blockers, { to: forced = null, inPerson 
   const { to, motive } = chosen;
   const sc = addScene(state, 'visit', [h, to], { motive, kiss: false, handed: null, by: [...blockers],
     ...(inPerson ? { inPerson: true } : {}) });
+  if (motive === 'confront') sc.data.clash = clash(state, rng, h, to);
   revealTo(state, to, h, sc);
   revealTo(state, h, to, sc);
   if (friend) { handOver(state, rng, h, to, power, sc); state.nightPower = null; }
@@ -137,7 +175,7 @@ export function runVisit(state, rng, h, blockers, { to: forced = null, inPerson 
     learn(state, to, c, h, sc);
     sc.data.handed = c.id;
   }
-  if (attractionOk(state, h, to) && attractionOk(state, to, h)
+  if (!sc.data.clash && attractionOk(state, h, to) && attractionOk(state, to, h)
     && rel(h, to, 'attraction') > 6 && rel(to, h, 'attraction') > 6) sc.data.kiss = true;
   if (schemeEligible(state, to)
     && rng() < clamp(S(state, to, 'strategic') / 10 * (REPORT_LIE - S(state, to, 'loyalty') / 10), 0, 0.9)) {

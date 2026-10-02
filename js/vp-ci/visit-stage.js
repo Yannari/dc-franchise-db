@@ -61,10 +61,16 @@ export function visitStage(row, screen, idx, fresh) {
     const person = h => `<div class="cva-person${h === st?.who ? ' talk' : ''}">${cam(row, h, 'big', realOf(row, h).toUpperCase())}
       ${isCatfish(row, h) ? `<div class="cva-was fake">played as <b>${esc(nameOf(row, h))}</b> · catfish</div>` : `<div class="cva-was">the real ${esc(nameOf(row, h))}</div>`}</div>`;
     const who = after ? [st?.who || host] : [visitor, host];
-    return `<div class="civ-layer cva visit${opening ? ' open' : ''}">${aptSet(row, host, { open: !after })}
+    // An argument (ci/blocking.js clash): the room runs hot from the first
+    // word of it to the door, and a raised line jolts its speaker's camera.
+    const heated = !!screen.d?.clash && !after && /^visit\.(talk|talk2|bye)/.test(k);
+    const jolt = heated && fresh && st?.who && /[!?]/.test(st.text || '');
+    const label = after ? 'AFTER THE VISIT' : heated ? 'THE VISIT · IT GETS HEATED' : `FACE TO FACE · ${realOf(row, host).toUpperCase()}'S APARTMENT`;
+    return `<div class="civ-layer cva visit${opening ? ' open' : ''}${heated ? ' heated' : ''}${jolt ? ' jolt' : ''}">${aptSet(row, host, { open: !after })}
+      ${heated ? '<div class="cva-heat"></div>' : ''}
       <div class="cva-two${after ? ' one' : ''}">${who.map(person).join('')}</div>
       ${opening ? '<div class="cva-flash"></div>' : ''}
-      ${where(after ? 'AFTER THE VISIT' : `FACE TO FACE · ${realOf(row, host).toUpperCase()}'S APARTMENT`)}${dlg(row, st, fresh)}</div>`;
+      ${where(label)}${dlg(row, st, fresh)}</div>`;
   }
   // Waiting: whoever the line is about, in their own apartment.
   const seen = upTo(screen, idx);
@@ -120,5 +126,12 @@ export const VISIT_CSS = `
 .cva-was.fake{background:rgba(120,10,60,.85)}.cva-was b{color:#ff9ad4}
 .cva-flash{position:absolute;inset:0;z-index:20;background:#fff8e6;pointer-events:none;animation:civFbFlash .8s ease-out both}
 .cva.open .cva-person{animation:civUp .6s .15s both}
-@media (prefers-reduced-motion: reduce){.cvh-walker,.cva-knock{animation:none}}
+/* an argument: a red heat over the room, the speaker's camera jolts on a raised line */
+.cva-heat{position:absolute;inset:0;z-index:3;pointer-events:none;background:radial-gradient(ellipse at 50% 60%,transparent 35%,rgba(200,20,50,.42) 100%);mix-blend-mode:multiply;animation:cvaHeat 2.4s ease-in-out infinite}
+.cva.heated .cva-set{filter:saturate(1.15) contrast(1.05)}
+@keyframes cvaHeat{50%{opacity:.6}}
+.cva.heated .cva-person.talk .civ-mcam{box-shadow:0 0 0 .4cqw rgba(255,60,80,.7),0 0 4cqw rgba(255,40,70,.8)}
+.cva.jolt .cva-person.talk{animation:cvaJolt .4s ease-out}
+@keyframes cvaJolt{20%{transform:translate(-1.2%,-3%) rotate(-1.5deg)}45%{transform:translate(1%,-2%) rotate(1.2deg)}70%{transform:translate(-.5%,-3%)}}
+@media (prefers-reduced-motion: reduce){.cvh-walker,.cva-knock,.cva-heat,.cva.jolt .cva-person.talk{animation:none}}
 `;

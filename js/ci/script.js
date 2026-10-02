@@ -913,9 +913,12 @@ const BLOCKS = {
     out.push({ key: 'visit.sit', cast: { a: guest, b: host } });
     // One Influencer, or two: "it was both of us" only when it was.
     const sole = (s.data.by?.length ?? 2) === 1;
-    out.push({ key: `visit.talk.${s.data.motive}`, cast: { a: h, b: to }, extra: { motive: s.data.motive, sole } });
+    // An argument (blocking.js clash): it opens by how the host meets it,
+    // and its second half is how it ends.
+    const cl = s.data.clash;
+    out.push({ key: cl ? `visit.talk.confront.${cl.style}` : `visit.talk.${s.data.motive}`, cast: { a: h, b: to }, extra: { motive: s.data.motive, sole } });
     // The conversation keeps going: on the real show a visit is a sit-down.
-    out.push({ key: `visit.talk2.${s.data.motive}`, cast: { a: h, b: to }, extra: { motive: s.data.motive, sole } });
+    out.push({ key: cl ? `visit.talk2.confront.${cl.end}` : `visit.talk2.${s.data.motive}`, cast: { a: h, b: to }, extra: { motive: s.data.motive, sole } });
     if (s.data.power) out.push({ key: `visit.power.${s.data.power}`, cast: { a: h, b: to } });
     if (s.data.handed) {
       const c0 = claimOf(state, s.data.handed);
@@ -923,8 +926,8 @@ const BLOCKS = {
     }
     if (s.data.kiss) out.push({ key: 'visit.kiss', cast: { a: h, b: to }, extra: { kiss: true } });
     // In person the Super Influencer is the one who leaves.
-    out.push(ip ? { key: 'visit.inperson.bye', cast: { a: to, b: h } } : { key: 'visit.bye', cast: { a: h, b: to } });
-    out.push(ip ? { key: 'visit.inperson.after', cast: { a: h, b: to } } : { key: 'visit.after', cast: { a: to, b: h } });
+    out.push(ip ? { key: 'visit.inperson.bye', cast: { a: to, b: h } } : { key: cl ? `visit.bye.${cl.end}` : 'visit.bye', cast: { a: h, b: to } });
+    out.push(ip ? { key: 'visit.inperson.after', cast: { a: h, b: to } } : { key: cl ? 'visit.after.confront' : 'visit.after', cast: { a: to, b: h } });
     return out;
   },
   report(state, s) {
@@ -1255,7 +1258,7 @@ const DEBRIEF_KEYS_ = [
 ];
 const REASONS_ = ['affection', 'trust', 'obligation', 'pact', 'alliance', 'protection', 'threat', 'suspicion', 'grudge', 'deserves'];
 const SLIPS_ = ['knowledge', 'body', 'voice', 'tooPerfect', 'overreach', 'name'];
-const MOTIVES_ = ['friend', 'answers', 'truth', 'apology'];
+const MOTIVES_ = ['friend', 'answers', 'truth', 'apology', 'confront'];
 const WHY_ = ['strategic', 'protective', 'experimental', 'family'];
 const BLOCK_WHY_ = ['fake', 'threat', 'grudge', 'noBond'];
 export const POOL_KEYS = [
@@ -1309,7 +1312,8 @@ export const POOL_KEYS = [
   'chosen.offer', 'chosen.pick', 'chosen.thanks', 'pairarrival.chat', 'alert.antivirus', 'antivirus.open', 'antivirus.pass', 'antivirus.got', 'antivirus.left', 'block.announce.antivirus',
   'hangout.agree', 'hangout.yield', 'hangout.trade', 'hangout.pact',
   ...BLOCK_WHY_.map(r => `block.announce.${r}`), 'block.react.self', 'block.react.friend', 'block.react.rival', 'block.react.relief',
-  ...MOTIVES_.flatMap(m => [`visit.choose.${m}`, `visit.talk.${m}`]), 'visit.wait', 'visit.wait.catfish',
+  ...MOTIVES_.filter(m => m !== 'confront').flatMap(m => [`visit.choose.${m}`, `visit.talk.${m}`]), 'visit.choose.confront', 'visit.wait', 'visit.wait.catfish',
+  ...['fire', 'take', 'defend'].map(k => `visit.talk.confront.${k}`), ...['walkout', 'cooled'].flatMap(k => [`visit.talk2.confront.${k}`, `visit.bye.${k}`]), 'visit.after.confront',
   'visit.door.real', 'visit.door.catfish', 'visit.door.caught', 'visit.door.both', 'visit.hand', 'visit.kiss', 'visit.bye', 'report',
   'goodbye.guess', ...['honest', 'polished', 'edited', 'shared'].map(m => `goodbye.video.${m}`),
   ...WHY_.map(w => `goodbye.video.catfish.${w}`), 'goodbye.warning.catfish', 'goodbye.warning.distrusts', 'goodbye.warning.seen',

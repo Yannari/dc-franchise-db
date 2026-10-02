@@ -27,10 +27,10 @@ export function joinScripts(...parts) {
   return { lines, text: transcript(lines), lineId: parts.map(p => p.lineId).join('+') };
 }
 
-export function scriptBeat(kind, who, data, { week, act = 'house', hoh = null, nominees = [], room = null, seenBy = [] } = {}) {
+export function scriptBeat(kind, who, data, { week, act = 'house', hoh = null, nominees = [], room = null, seenBy = [], salt = '' } = {}) {
   try {
     const scene = makeScene(kind, who, data, seenBy, room);
-    const rng = stableRng(gs.bb?.seasonSalt || 0, week?.num || 0, act, kind, Object.values(who).filter(Boolean).join('|'));
+    const rng = stableRng(gs.bb?.seasonSalt || 0, week?.num || 0, act, kind, Object.values(who).filter(Boolean).join('|'), salt);
     const written = writeScene(scene, { week, act, hoh, nominees }, rng);
     return { text: written.text, lines: written.lines, lineId: written.lineId };
   } catch { return null; }

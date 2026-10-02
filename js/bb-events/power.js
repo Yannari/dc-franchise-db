@@ -27,6 +27,8 @@ import {
 } from './_read.js';
 import { freshLine } from '../bb/aired.js';
 import { makeScene } from '../bb/script/scene.js';
+import { scriptBeat, joinScripts, numberWord } from '../bb/script/inject.js';
+import { campaignCase } from './_read.js';
 
 // ── helpers ───────────────────────────────────────────────────────────
 
@@ -68,6 +70,17 @@ const _noms = ctx => (ctx?.nominees || []).filter(Boolean);
 /** Least-seen first, weighted toward whoever this week is about. */
 const _quiet = pool => spotlightOrder(pool);
 const _first = list => list[0];
+
+/** Which room a scene happens in: by hash, never a die; the HOH room needs the HOH. */
+function _room(rooms, ctx, ...people) {
+  const hoh = _hoh(ctx);
+  const ok = rooms.filter(r => r !== 'hoh-room' || (hoh && people.includes(hoh)));
+  const pool = ok.length ? ok : ['backyard'];
+  const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${people.join('|')}`;
+  let hash = 0;
+  for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
+  return pool[hash % pool.length];
+}
 
 /** Is the block known yet? Everything on this list depends on that. */
 const _blockKnown = ctx => ['post-noms', 'post-veto', 'campaign', 'eviction'].includes(ctx?.phase)
@@ -151,27 +164,15 @@ const hohRoomTraffic = {
     const pool = _others(house, hoh);
     const visitors = pool.filter(n => perceived(hoh, n) >= 0).slice(0, 4);
     const absent = _quiet(pool.filter(n => !visitors.includes(n)))[0];
-    const p = pronouns(absent || hoh);
-
-    const text = absent ? _variant([
-      `The HOH room has a queue all afternoon. ${absent} is not in it, and ${hoh} counts the absence twice.`,
-      `Everybody finds a reason to come up and sit on the bed. Everybody except ${absent}, who suddenly has laundry.`,
-      `${hoh} notices who knocks. More usefully, ${hoh} notices that ${absent} has not, and that ${p.sub} has had all day.`,
-      `Four visits before dinner. ${absent} makes none of them, and by evening that is its own kind of statement.`,
-    ], ctx, hoh, absent) : _variant([
-      `The whole house files through the HOH room in ones and twos, each of them casual about it.`,
-      `${hoh} holds court on the good bed and learns more from the order people arrive in than from anything they say.`,
-      `By dinner, everybody has found an excuse to visit ${hoh}. The conversations differ, but every guest eventually asks the same question: “What are you thinking?”`,
-      `The HOH door barely closes all afternoon. ${hoh} hears congratulations, cautious advice and several promises that were not offered before the competition.`,
-    ], ctx, hoh);
-
     visitors.forEach(v => api.addBond(hoh, v, 0.25));
     if (absent) {
       api.suspicion(hoh, absent, 1.1);
       api.remember(hoh, absent, 'grievance', 1, { about: 'never came up' });
     }
+    const scene = makeScene('power.traffic', { a: hoh, b: absent || null }, { ending: absent ? 'snub' : 'queue' }, [], 'hoh-room');
+    scene.seenBy = [hoh];
     return {
-      text, players: [hoh, absent].filter(Boolean),
+      scene, players: [hoh, absent].filter(Boolean),
       badgeText: absent ? 'DID NOT COME UP' : 'THE QUEUE',
       badgeClass: absent ? 'red' : 'grey',
     };
@@ -196,23 +197,11 @@ const hohWeight = {
   fire(house, ctx, api) {
     const hoh = _hoh(ctx);
     const s = pStats(hoh);
-    const p = pronouns(hoh);
     const rattled = s.temperament <= 5;
-    const text = rattled ? _variant([
-      `${hoh} lies awake in the best bed in the house doing arithmetic that keeps coming out wrong.`,
-      `${hoh} sits alone in the HOH room with the door open. Twice, ${p.sub} hears someone on the stairs, but nobody comes in.`,
-      `${hoh} practises saying two names out loud. Neither of them sounds any better the fourth time.`,
-      `Everyone downstairs thinks ${hoh} is safe. ${hoh} is discovering that safe and comfortable are different words.`,
-    ], ctx, hoh) : _variant([
-      `${hoh} has known the two names since about an hour after winning, and spends the rest of the time deciding how to sell them.`,
-      `${hoh} writes nothing down — there is nowhere in this house to hide a list — and keeps the whole plan behind ${p.posAdj} teeth.`,
-      `${hoh} spends the quiet night comparing targets, replacement options and possible veto outcomes. By morning, ${p.sub} has chosen the initial nominees and the backup plan.`,
-      `${hoh} compares every possible pair of nominees, then returns to the first two names. The decision is made; the remaining work is making the house accept it.`,
-    ], ctx, hoh);
-
     if (rattled) api.popDelta(hoh, 1);
+    const scene = makeScene('power.weight', { a: hoh }, { ending: rattled ? 'rattled' : 'decided' }, [], 'hoh-room');
     return {
-      text, players: [hoh],
+      scene, players: [hoh],
       badgeText: rattled ? 'THE WEIGHT OF IT' : 'DECIDED ALREADY',
       badgeClass: rattled ? 'grey' : 'gold',
     };
@@ -238,23 +227,12 @@ const hohPromise = {
     const hoh = _hoh(ctx);
     const ally = closestTo(hoh, _others(house, hoh)) || _others(house, hoh)[0];
     const honest = perceived(hoh, ally) >= 2 && !willScheme(hoh);
-    const text = honest ? _variant([
-      `"You're not going up. Not this week, not while I've got it." ${hoh} means it, and ${ally} can tell.`,
-      `${hoh} tells ${ally} the plan before anyone else. ${ally} asks if this means their deal is still real. ${hoh} says it does.`,
-      `It is not a grand alliance. It is one sentence — you are safe with me — and ${ally} takes it as one.`,
-      `${ally} asks for a direct answer. ${hoh} gives one: “Your key is not coming out of that box.” For once, the reassurance matches the plan.`,
-    ], ctx, hoh, ally) : _variant([
-      `${hoh} promises ${ally} safety in a tone that costs nothing and buys a week of quiet.`,
-      `"You're fine." ${hoh} has said that to two people today, and only one of them is going to stay fine.`,
-      `${ally} leaves the room certain of something ${hoh} has not actually decided.`,
-      `${ally} asks whether ${pronouns(ally).posAdj} name is being considered. ${hoh} says no immediately, choosing a peaceful afternoon over an honest answer.`,
-    ], ctx, hoh, ally);
-
     api.sideDeal(hoh, ally, 'safety', { genuine: honest, about: 'a week of protection' });
     api.addBond(hoh, ally, honest ? 1.1 : 0.4);
     api.remember(ally, hoh, honest ? 'trust' : 'promise', 2, { about: 'told me I was safe' });
+    const scene = makeScene('power.promise', { a: hoh, b: ally }, { ending: honest ? 'real' : 'cheap' }, [], 'hoh-room');
     return {
-      text, players: [hoh, ally],
+      scene, players: [hoh, ally],
       badgeText: honest ? 'A REAL PROMISE' : 'CHEAP PROMISE',
       badgeClass: honest ? 'green' : 'grey',
     };
@@ -284,7 +262,6 @@ const nomCampaign = {
   fire(house, ctx, api, rng) {
     const noms = _noms(ctx);
     const nom = _quiet(noms)[0];
-    const p = pronouns(nom);
     const voters = _others(house, ...noms, _hoh(ctx));
     if (!voters.length) {
       return { text: `${nom} has run out of people to talk to.`, players: [nom],
@@ -298,19 +275,6 @@ const nomCampaign = {
     // somebody making "the only argument that matters" without ever saying
     // what it was.
     const other = _noms(ctx).find(n => n !== nom) || null;
-    const pitch = campaignArgument(nom, mark, other);
-    const text = works ? _variant([
-      `${nom} gets ${mark} alone by the ${_variant(['storage room', 'washroom door', 'back of the kitchen'], ctx, nom)}. ${pitch} ${mark} does not answer straight away, which is an answer.`,
-      `${nom} does not beg. ${pitch} ${mark} works through it and cannot find the hole in it.`,
-      `${pitch} ${mark} counts, and does not like the answer.`,
-      `${nom} works ${mark} for twenty minutes and gets there in the end. ${pitch} By the time ${p.sub} ${p.sub === 'they' ? 'leave' : 'leaves'}, ${mark} has stopped arguing.`,
-    ], ctx, nom, mark) : _variant([
-      `${pitch} ${mark} has heard it, agrees with all of it, and has already decided.`,
-      `${nom} makes the case one more time. ${pitch} "I'll think about it," ${mark} says. In this house that sentence has one meaning.`,
-      `${pitch} It is a good argument. ${mark} nods along and does not move an inch.`,
-      `${nom} runs out of argument in front of ${mark} and fills the gap with a promise ${p.sub} cannot keep.`,
-    ], ctx, nom, mark);
-
     api.addBond(nom, mark, works ? 1.0 : -0.3);
     if (works) {
       api.remember(mark, nom, 'trust', 1, { about: 'came to me honestly' });
@@ -318,8 +282,17 @@ const nomCampaign = {
     } else {
       api.remember(nom, mark, 'grievance', 1, { about: 'would not even look at me' });
     }
+    // The same two picks as a campaign pitch: the case, then the reply.
+    const room = _room(['backyard', 'bedroom', 'pantry'], ctx, nom, mark);
+    const sctx = { week: ctx?.week, act: ctx?.act || 'campaign', hoh: _hoh(ctx), nominees: noms, room, seenBy: [nom, mark], salt: 'nom-campaign' };
+    const c = campaignCase(nom, mark, other);
+    const script = joinScripts(
+      scriptBeat('campaign.case', { a: nom, b: mark }, { ending: c.kind, target: c.opponent, partner: c.partner, alliance: c.alliance,
+        theirComps: numberWord(c.theirComps), myComps: numberWord(c.myComps) }, sctx),
+      scriptBeat('campaign.reply', { a: nom, b: mark }, { ending: works ? 'receptive' : 'unmoved' }, sctx));
     return {
-      text, players: [nom, mark],
+      text: script?.text || `${nom} works ${mark} for a vote.`, lines: script?.lines, lineId: script?.lineId, location: room,
+      players: [nom, mark],
       badgeText: works ? 'A VOTE MOVES' : 'PITCH DIES',
       badgeClass: works ? 'green' : 'grey',
     };
@@ -343,31 +316,12 @@ const blockPressure = {
     const nom = _quiet(noms)[0];
     const s = pStats(nom);
     const arch = archetype(nom);
-    const p = pronouns(nom);
     const hoh = _hoh(ctx);
 
     // Angry, hollow, or focused — decided by who they are.
     const anger = (10 - s.temperament) * 0.6 + (['hothead', 'villain', 'chaos-agent'].includes(arch) ? 3 : 0);
     const collapse = (10 - s.boldness) * 0.5 + (['goat', 'floater', 'underdog'].includes(arch) ? 2.5 : 0);
     const mode = anger > collapse && anger > 4 ? 'anger' : collapse > 4 ? 'despair' : 'focus';
-
-    const text = mode === 'anger' ? _variant([
-      `${nom} slams a cupboard after another conversation ends with “we'll see.” The kitchen goes quiet; `
-        + `nobody needs clarification that the missing answer was about the veto.`,
-      `"Say it to me, then." ${nom} is looking straight at ${hoh || 'the room'}, and the temperature drops about ten degrees.`,
-      `${nom} has been polite since the nomination and runs out of it between one sentence and the next.`,
-      `It comes out sideways — a joke with too much in it, aimed at nobody, landing on everybody.`,
-    ], ctx, nom) : mode === 'despair' ? _variant([
-      `${nom} stops campaigning halfway through a sentence, and does not pick it back up.`,
-      `${nom} sits in the ${_variant(['backyard', 'washroom', 'storage room'], ctx, nom)} for most of an hour. Two people see ${p.obj}. Neither goes in.`,
-      `${nom} starts saying goodbye to people in ways that are not quite goodbyes.`,
-      `${nom} holds it together until somebody quietly asks if ${p.sub} ${p.sub === 'they' ? 'are' : 'is'} okay. ${p.Sub} tries to answer and cannot get the words out.`,
-    ], ctx, nom) : _variant([
-      `${nom} goes very quiet and very organised, and the house finds that more alarming than shouting.`,
-      `${nom} works out exactly how many votes ${p.sub} needs and exactly whose they are, and starts at the top of the list.`,
-      `Being on the block has clarified things for ${nom}. That is not good news for whoever put ${p.obj} there.`,
-      `${nom} writes down the voters, the promises and the order to approach them. By the time ${p.sub} leaves the bedroom, fear has become a campaign plan.`,
-    ], ctx, nom);
 
     if (mode === 'anger') {
       _others(house, nom).forEach(w => api.suspicion(w, nom, 0.4));
@@ -381,8 +335,11 @@ const blockPressure = {
       if (hoh) api.setTarget(nom, hoh, 'put me on the block');
       api.remember(nom, hoh, 'grievance', 2, { about: 'nominated me' });
     }
+    // The HOH is only in the room for the anger; the other two are the nominee's own.
+    const scene = makeScene('power.block', { a: nom, b: hoh || null }, { ending: mode }, [], _room(['kitchen', 'backyard', 'bedroom'], ctx, nom));
+    scene.seenBy = mode === 'anger' && hoh ? [nom, hoh] : [nom];
     return {
-      text, players: [nom, mode === 'anger' && hoh ? hoh : null].filter(Boolean),
+      scene, players: [nom, mode === 'anger' && hoh ? hoh : null].filter(Boolean),
       badgeText: mode === 'anger' ? 'BOILS OVER' : mode === 'despair' ? 'GIVES IN' : 'GOES COLD',
       badgeClass: mode === 'anger' ? 'red' : mode === 'despair' ? 'grey' : 'blue',
     };
@@ -413,19 +370,7 @@ const pawnResentment = {
   fire(house, ctx, api) {
     const { pawn, target } = actFacts(ctx);
     const hoh = _hoh(ctx);
-    const p = pronouns(pawn);
     const takesIt = pStats(pawn).loyalty >= 6 && perceived(pawn, hoh) >= 1;
-
-    const text = takesIt ? _variant([
-      `${pawn} accepts the pawn role without arguing, but remembers exactly who asked and how quickly the reassurance followed. The agreement does not erase the risk.`,
-      `"I get it. I'm the safe one." ${pawn} says it lightly. ${p.Sub} does not feel it lightly.`,
-      `${pawn} sits beside ${target || 'the target'} and does the maths on what happens if one vote wanders.`,
-    ], ctx, pawn) : _variant([
-      `${pawn} was told this was a formality. ${p.Sub} has now counted the votes twice and does not like how thin the word formality is.`,
-      `"Pawns go home." ${pawn} says it to nobody in particular, in a room with four people in it.`,
-      `Being used as furniture stops being funny to ${pawn} somewhere around the second day.`,
-      `${pawn} smiles through the ceremony and stops smiling the moment ${p.sub} is round the corner.`,
-    ], ctx, pawn);
 
     if (!takesIt && hoh) {
       api.addBond(pawn, hoh, -1.6);
@@ -435,8 +380,11 @@ const pawnResentment = {
     } else if (hoh) {
       api.remember(pawn, hoh, 'obligation', 1, { about: 'owes me for sitting there' });
     }
+    const scene = makeScene('power.pawn', { a: pawn, b: hoh || null, c: target || null }, { ending: takesIt ? 'takes' : 'resents' }, [],
+      _room(['bedroom', 'backyard', 'kitchen'], ctx, pawn));
+    scene.seenBy = [pawn, hoh].filter(Boolean);
     return {
-      text, players: [pawn, hoh].filter(Boolean),
+      scene, players: [pawn, hoh].filter(Boolean),
       badgeText: takesIt ? 'TAKES IT' : 'PAWNS GO HOME',
       badgeClass: takesIt ? 'grey' : 'red',
     };
@@ -473,15 +421,7 @@ const ceremonyConfrontation = {
     const noms = _noms(ctx);
     const accuser = noms.slice().sort((a, b) =>
       (10 - pStats(a).temperament) - (10 - pStats(b).temperament))[noms.length - 1];
-    const p = pronouns(accuser);
     const backs = _others(house, accuser, hoh).filter(n => bond(n, accuser) >= 2);
-
-    const text = _variant([
-      `The room does not empty after the ceremony. ${accuser} stays in ${p.posAdj} chair and asks ${hoh}, in front of everybody, to explain it.`,
-      `"You could have told me first." ${accuser} says it to ${hoh} with eleven people pretending to do something else.`,
-      `${hoh} gets three steps toward the stairs before ${accuser} says ${hoh}'s name in a voice that stops the whole room.`,
-      `It is not shouting. It is worse than shouting — ${accuser} asks ${hoh} one quiet question and waits for an answer in front of the entire house.`,
-    ], ctx, accuser, hoh);
 
     api.addBond(accuser, hoh, -2.0);
     api.remember(accuser, hoh, 'grievance', 3, { about: 'made me ask in public' });
@@ -493,8 +433,9 @@ const ceremonyConfrontation = {
       if (bond(w, accuser) >= 2) api.addBond(w, accuser, 0.4);
     });
     api.popDelta(accuser, backs.length ? 1 : -1);
+    const scene = makeScene('power.confront', { a: accuser, b: hoh }, { ending: 'asks' }, _others(house, accuser, hoh), 'living-room');
     return {
-      text, players: [accuser, hoh],
+      scene, players: [accuser, hoh],
       badgeText: 'IN FRONT OF EVERYBODY',
       badgeClass: 'red',
     };

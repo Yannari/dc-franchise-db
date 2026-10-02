@@ -59,7 +59,7 @@ describe('the pools keep their contract', () => {
     // ending, a nomination speech (the second nominee), and the talk families
     // about somebody who is not in the room. Anywhere else an entry may only
     // speak of c behind `when: { third: true }`; otherwise it prints a raw slot.
-    const WITH_C = [/\.smoothed$/, /^noms\.speech\./, /^talk\.(gossip|pitch-target|hoh-decide)\./, /^social\.rumour\./, /^deals\.(exposed|final-three|competing|hedged)\./, /^alliance\.(inner|overlap|protect|recruited|formed)\./];
+    const WITH_C = [/\.smoothed$/, /^noms\.speech\./, /^talk\.(gossip|pitch-target|hoh-decide)\./, /^social\.rumour\./, /^deals\.(exposed|final-three|competing|hedged)\./, /^alliance\.(inner|overlap|protect|recruited|formed)\./, /^power\.pawn\./];
     for (const [key, pool] of all) {
       if (WITH_C.some(re => re.test(key))) continue;
       for (const e of pool) {

@@ -42,6 +42,9 @@ const PHASE6 = [
   // built inside the week engine (bb/script/inject.js)
   'alliance-formed', 'alliance-inner-circle', 'alliance-recruited', 'alliance-betrayal', 'alliance-repair', 'alliance-collapsed',
   'campaign-pitch',
+  // bb-events/power.js
+  'power-nom-campaign', 'power-block-pressure', 'power-pawn-resents', 'power-ceremony-confrontation',
+  'power-hoh-traffic', 'power-hoh-weight', 'power-hoh-promise',
 ];
 // Engine beats keep the players list the engine counts; a fallout scene is had
 // with an alliance member who is not on it, so these skip the speaker check.
@@ -176,7 +179,7 @@ describe('the talk pools', () => {
   const FIXED = { 'talk.safety': 'hoh-room', 'talk.pitch-target': 'hoh-room', 'talk.hoh-visit': 'hoh-room', 'talk.hoh-decide': 'hoh-room' };
   it('only stages a room where the scene is', () => {
     for (const [key, pool] of Object.entries(POOLS)) {
-      if (!/^(talk|social|deals|alliance)\./.test(key)) continue;
+      if (!/^(talk|social|deals|alliance|power|campaign)\./.test(key)) continue;
       const fixed = FIXED[key.split('.').slice(0, 2).join('.')];
       for (const e of pool) for (const t of e.turns) {
         if (!t.beat) continue;

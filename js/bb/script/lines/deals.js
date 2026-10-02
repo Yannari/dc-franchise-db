@@ -31,21 +31,21 @@ export default {
       { by: 'a', dr: "{b} and {c} have come out of the same room, one after the other, four times this week. Nobody does that by accident." },
     ] },
     { id: 'de.f2', when: { room: ['kitchen'] }, turns: [
-      { beat: '{c} starts a sentence in the kitchen, sees {a}, and finishes it about the weather.' },
-      { by: 'a', dr: "That was not a sentence about the weather. {b} and {c} are working together, and they're working hard to hide it." },
+      { beat: '{c} is halfway through a sentence in the kitchen, sees {a}, and stops.' },
+      { by: 'a', dr: "{c} stopped talking the second I walked in. {b} and {c} are working together, and they don't want anyone to know." },
     ] },
     { id: 'de.f3', turns: [
-      { by: 'a', dr: "I asked {b} a simple question and watched {b} pick the wrong answer. {b} and {c} are going to the end together. I'd bet anything on it." },
+      { by: 'a', dr: "I asked {b} a simple question, and {b} lied. I could tell. {b} and {c} are going to the end together. I'd bet anything on it." },
     ] },
     { id: 'de.f4', turns: [
-      { by: 'a', dr: "Everybody thinks {b} and {c} barely talk. That's the point. People who barely talk don't get nominated together." },
+      { by: 'a', dr: "Everybody thinks {b} and {c} barely talk. I think they do it on purpose, so nobody suspects them." },
     ] },
     { id: 'de.f5', turns: [
       { by: 'a', dr: "I'm not going to confront them. I'm going to tell three people, and let the house do the rest." },
     ] },
     { id: 'de.f6', turns: [
       { beat: '{a} watches {b} and {c} pass each other in the hallway without a word, and then exchange a look.' },
-      { by: 'a', dr: "No words. Just the look. That look was a whole meeting." },
+      { by: 'a', dr: "They didn't say a word to each other. They didn't need to. They're working together." },
     ] },
     { id: 'de.f7', turns: [
       { by: 'a', dr: "{b} defended {c} at dinner. Out of nowhere. Nobody had even said {c}'s name. That's not friendship. That's a deal." },
@@ -57,19 +57,19 @@ export default {
       { by: 'a', dr: "{b} and {c} have a final two. I'd put money on it. And if I'm right, everybody else in this house is just playing for third." },
     ] },
     { id: 'de.f10', when: { reason: 'final-two' }, turns: [
-      { by: 'a', dr: "Final two. {b} and {c}. Saying it out loud makes it real, and I'm about to say it out loud to a lot of people." },
+      { by: 'a', dr: "{b} and {c} have a final two. And I'm going to make sure everyone knows." },
     ] },
     { id: 'de.f11', when: { reason: 'final-two' }, turns: [
-      { by: 'a', dr: "If {b} and {c} get to the end together, nobody else here even gets a chair. So they don't get to the end together." },
+      { by: 'a', dr: "If {b} and {c} get to the end together, the rest of us have no chance. I'm not letting that happen." },
     ] },
     { id: 'de.f12', when: { reason: 'final-three' }, turns: [
-      { by: 'a', dr: "{b}, {c} and somebody else. A final three. I can see the shape of it, and I'm not in it." },
+      { by: 'a', dr: "{b}, {c} and somebody else have a final three. I'm sure of it. And I'm not in it." },
     ] },
     { id: 'de.f13', when: { reason: 'final-three' }, turns: [
-      { by: 'a', dr: "There's a three in this house, and {b} and {c} are two of it. Three is a lot of votes. Three is a problem." },
+      { by: 'a', dr: "{b} and {c} are in a group of three. That's a lot of votes. That's a problem for me." },
     ] },
     { id: 'de.f14', when: { register: 'schemer' }, turns: [
-      { by: 'a', dr: "A secret is worth more when you sell it than when you keep it. And I've got a very good secret about {b} and {c}." },
+      { by: 'a', dr: "I know {b} and {c} have a deal. That's very useful to me. I just need to pick who to tell." },
     ] },
     { id: 'de.f15', when: { register: 'cool' }, turns: [
       { by: 'a', dr: "I've watched every vote. {b} and {c} have never once been on opposite sides. That isn't a coincidence. It's a plan." },
@@ -140,7 +140,7 @@ export default {
     { id: 'df.t3', turns: [
       { by: 'a', say: "I'm not asking for an answer tonight." },
       { by: 'b', say: "Good. Because I haven't got one." },
-      { by: 'a', dr: "{b} didn't say yes. But {b} didn't say no either. In here, that's a yes with a delay." },
+      { by: 'a', dr: "{b} didn't say yes. But {b} didn't say no either. In here, that usually means yes." },
     ] },
     { id: 'df.t4', turns: [
       { by: 'a', say: "With us, you're second. With them, you're the spare." },
@@ -209,7 +209,7 @@ export default {
       { by: 'a', say: "Everybody should know this. {b} made me a promise. Then {b} went back on it." },
       { by: 'b', say: "That's not the whole story." },
       { by: 'a', say: "Then tell them the whole story." },
-      { beat: '{b} doesn\'t. The room notices.' },
+      { beat: '{b} doesn\'t say anything. Everyone notices.' },
     ] },
     { id: 'db.c7', turns: [
       { by: 'a', say: "Do you remember what you said to me? The exact words?" },
@@ -240,7 +240,7 @@ export default {
       { by: 'a', say: "Whatever happens to either of us, I want you to think I played it straight." },
       { by: 'b', say: "Why are you telling me this now?" },
       { by: 'a', say: "Because now is when it's true. Later it would just sound like a speech." },
-      { by: 'b', dr: "I know exactly what that was. It was a jury vote, paid for in advance. I'll keep the receipt." },
+      { by: 'b', dr: "I know what that was. {a} is trying to get my jury vote early. I'll remember it." },
     ] },
     { id: 'dj.s2', turns: [
       { by: 'a', say: "I just want you to know where I've been all game. No surprises." },
@@ -253,7 +253,7 @@ export default {
       { by: 'a', say: "It isn't. It's just true." },
     ] },
     { id: 'dj.s4', turns: [
-      { by: 'a', dr: "Everyone forgets the jury until it's too late. I'm not forgetting. Every conversation now is an investment." },
+      { by: 'a', dr: "Everyone forgets about the jury until it's too late. I'm not going to. I'm being nice to the people who'll vote at the end." },
     ] },
     { id: 'dj.s5', turns: [
       { by: 'a', say: "If I ever have to make a move against you, I'll tell you to your face. That's a promise." },
@@ -264,7 +264,7 @@ export default {
       { by: 'b', say: "You've been really nice to me lately." },
       { by: 'a', say: "I've always been nice to you." },
       { by: 'b', say: "Lately, you've been nice on purpose." },
-      { by: 'a', dr: "{b} sees right through it. That's fine. Juries respect people who play on purpose." },
+      { by: 'a', dr: "{b} sees right through it. That's fine. I'd rather the jury knows I was playing properly." },
     ] },
     { id: 'dj.s7', turns: [
       { by: 'a', say: "Can I ask you something? What would you want from someone sitting in the final two?" },
@@ -319,7 +319,7 @@ export default {
       { by: 'a', say: "Three. Us three. All the way to the end." },
       { by: 'b', say: "All the way." },
       { by: 'c', say: "I'm in." },
-      { by: 'c', dr: "Three people, three chairs. Nobody asked who sits in third. Everyone was thinking it." },
+      { by: 'c', dr: "There are three of us, and only one can win. Nobody said it, but we were all thinking it." },
     ] },
     { id: 'd3.m2', turns: [
       { by: 'b', say: "What if it's just the three of us at the end?" },
@@ -354,7 +354,7 @@ export default {
       { by: 'a', say: "Nobody else knows about this. Nobody." },
       { by: 'b', say: "Who would we even tell?" },
       { by: 'c', say: "You'd be amazed who people tell in here." },
-      { by: 'a', dr: "Three people can keep a secret if two of them are evicted. I'm hoping we're the exception." },
+      { by: 'a', dr: "Three people keeping a secret in this house? I really hope we can do it." },
     ] },
     { id: 'd3.m8', when: { late: true }, turns: [
       { by: 'a', say: "Look around. There's barely anybody left. It could actually be us three." },
@@ -370,7 +370,7 @@ export default {
       { by: 'c', say: "So who goes when it's the four of us?" },
       { by: 'a', say: "Whoever isn't one of us three." },
       { by: 'b', say: "I like that answer." },
-      { by: 'c', dr: "Easy answer. The question that matters is the one after that, and nobody's going to ask it today." },
+      { by: 'c', dr: "Easy answer. The hard part is what happens when it's just the three of us. Nobody wanted to talk about that." },
     ] },
   ],
 
@@ -387,7 +387,7 @@ export default {
       { by: 'a', dr: "I've told {b} one order and {c} a different one. I've genuinely forgotten which one {b} got." },
     ] },
     { id: 'dc.c3', turns: [
-      { by: 'a', dr: "I promised the end of this game to two different people. Both of them meant it. I meant it twice. That's the problem." },
+      { by: 'a', dr: "I promised a final two to two different people. Both of them believe me. That's a problem." },
     ] },
     { id: 'dc.c4', turns: [
       { by: 'b', say: "{c} seems really sure of you lately." },
@@ -401,7 +401,7 @@ export default {
       { by: 'a', dr: "If those two ever compare notes, I'm finished." },
     ] },
     { id: 'dc.c6', turns: [
-      { by: 'a', dr: "Two final twos is one too many. Eventually somebody does the maths, and it's going to be one of them." },
+      { by: 'a', dr: "Two final twos is one too many. Sooner or later one of them is going to find out about the other." },
     ] },
   ],
 
@@ -424,7 +424,7 @@ export default {
     ] },
     { id: 'dh.h4', turns: [
       { by: 'a', say: "Final two. Shake on it." },
-      { beat: 'They shake on it. {a} walks out doing the arithmetic.' },
+      { beat: 'They shake on it. {a} walks out looking worried.' },
       { by: 'a', dr: "Two deals. One seat. Somebody finds out eventually. I'd rather it wasn't this week." },
     ] },
     { id: 'dh.h5', turns: [
@@ -494,7 +494,7 @@ export default {
       { by: 'b', dr: "One vote won't save me. But it's one person in this house I don't have to doubt." },
     ] },
     { id: 'dv.k5', turns: [
-      { by: 'a', dr: "I've got one vote and one promise. To me they're the same thing." },
+      { by: 'a', dr: "I promised {b} my vote. I'm keeping that promise." },
     ] },
     { id: 'dv.k6', turns: [
       { by: 'a', say: "People keep asking me to change my vote." },
@@ -512,7 +512,7 @@ export default {
       { by: 'a', dr: "That's the worst \"course\" I've ever said." },
     ] },
     { id: 'dv.f3', turns: [
-      { by: 'a', dr: "The house moved and I moved with it. I'd call that being realistic. {b} is going to call it something else." },
+      { by: 'a', dr: "The house changed its mind, and so did I. {b} is going to call that a betrayal." },
     ] },
     { id: 'dv.f4', turns: [
       { by: 'a', dr: "When I made that promise to {b}, the house looked completely different. That's what I'll say if anybody asks. Nobody will ask." },
@@ -525,7 +525,7 @@ export default {
       { by: 'b', say: "You've been avoiding me." },
       { by: 'a', say: "I haven't. It's just been a busy day." },
       { by: 'b', say: "In this house? Busy?" },
-      { by: 'a', dr: "{b} knows. {b} doesn't know that {b} knows yet." },
+      { by: 'a', dr: "{b} is starting to work it out." },
     ] },
   ],
 };

@@ -36,7 +36,7 @@ export default {
     ] },
     { id: 'pb.a4', when: { room: ['kitchen'] }, turns: [
       { by: 'a', say: "Oh, don't stop talking on my account. I know it was about me." },
-      { beat: 'Two people leave the room. The other two pretend to be very interested in the fridge.' },
+      { beat: 'Two people leave the room. The other two stay quiet.' },
     ] },
     { id: 'pb.a5', when: { hohB: true }, turns: [
       { by: 'a', say: "Funny how everyone's my friend until I'm on the block." },
@@ -53,7 +53,7 @@ export default {
     ] },
     { id: 'pb.a8', when: { register: 'fiery' }, turns: [
       { by: 'a', say: "You want a show? Fine! Here's your show!" },
-      { beat: 'Nobody wants a show. They get one anyway.' },
+      { beat: 'Nobody wants a scene, but they get one.' },
     ] },
     { id: 'pb.a9', turns: [{ by: 'a', dr: "Everybody wants me to be gracious about it. I'm not gracious. I'm on the block, and I'm furious." }] },
     { id: 'pb.a10', turns: [{ by: 'a', say: "Don't ask me if I'm okay. I'm on the block. Of course I'm not okay." }, { beat: 'The person who asked quietly backs out of the room.' }] },
@@ -65,7 +65,7 @@ export default {
     ] },
     { id: 'pb.d2', when: { room: ['backyard'] }, turns: [
       { beat: '{a} sits alone in the backyard for most of an hour. Two people see. Neither of them goes out.' },
-      { by: 'a', dr: "I don't need company. I need four votes. Company is easier to find." },
+      { by: 'a', dr: "I don't need company. I need four votes." },
     ] },
     { id: 'pb.d3', turns: [
       { by: 'a', dr: "I keep saying thank you to people like it's goodbye. I don't mean to. It just comes out." },
@@ -105,10 +105,10 @@ export default {
       { by: 'a', dr: "{b} put me here. Fine. I'll get myself off it, and then {b} and I are going to have a very different week." },
     ] },
     { id: 'pb.f6', turns: [
-      { by: 'a', dr: "Panic is for people with no plan. I've got a plan. It's got names on it." },
+      { by: 'a', dr: "I'm not panicking. I've got a plan, and I know who I need to talk to." },
     ] },
     { id: 'pb.f7', when: { register: 'cool' }, turns: [
-      { by: 'a', dr: "I've counted. I'm two votes short. Two votes is a conversation, not a crisis." },
+      { by: 'a', dr: "I've counted. I'm two votes short. I can get two votes." },
     ] },
     { id: 'pb.f8', when: { register: 'competitor' }, turns: [
       { by: 'a', dr: "The veto is the only vote I need. Win that, and none of this matters." },
@@ -118,17 +118,17 @@ export default {
   // ── the pawn ──────────────────────────────────────────────────────
   'power.pawn.takes': [
     { id: 'pw.t1', turns: [{ by: 'a', dr: "I said yes to being the pawn. I meant it. I'm also remembering exactly who asked, and how fast they said I'd be fine." }] },
-    { id: 'pw.t2', turns: [{ by: 'a', say: "I get it. I'm the safe one." }, { by: 'a', dr: "I said that lightly. I don't feel it lightly." }] },
-    { id: 'pw.t3', when: { third: true }, turns: [{ by: 'a', dr: "I'm sitting next to {c}, and I'm doing the maths on what happens if one vote wanders." }] },
+    { id: 'pw.t2', turns: [{ by: 'a', say: "I get it. I'm the safe one." }, { by: 'a', dr: "I said it like it was nothing. It isn't nothing." }] },
+    { id: 'pw.t3', when: { third: true }, turns: [{ by: 'a', dr: "I'm sitting next to {c}, and I keep thinking about what happens if one person changes their vote." }] },
     { id: 'pw.t4', turns: [{ by: 'a', dr: "{b} owes me now. I'm going to make sure {b} remembers that." }] },
     { id: 'pw.t5', turns: [{ by: 'b', say: "You know you're safe, right?" }, { by: 'a', say: "I know. I trust you." }, { by: 'a', dr: "I do trust {b}. I just trust the votes less." }] },
-    { id: 'pw.t6', turns: [{ by: 'a', dr: "Being the pawn is a favour. Favours in this house get paid back. I'm keeping the receipt." }] },
+    { id: 'pw.t6', turns: [{ by: 'a', dr: "Being the pawn is a favour. {b} owes me now, and I won't let {b.obj} forget it." }] },
   ],
   'power.pawn.resents': [
-    { id: 'pw.r1', turns: [{ by: 'a', dr: "I was told this was a formality. I've counted the votes twice now. \"Formality\" is a very thin word." }] },
+    { id: 'pw.r1', turns: [{ by: 'a', dr: "I was told this was a formality. I've counted the votes twice now. It doesn't feel like a formality to me." }] },
     { id: 'pw.r2', turns: [{ by: 'a', say: "Pawns go home. Everybody knows pawns go home." }, { beat: 'Nobody in the room answers.' }] },
-    { id: 'pw.r3', turns: [{ by: 'a', dr: "Being used as furniture stopped being funny somewhere around the second day." }] },
-    { id: 'pw.r4', turns: [{ beat: '{a} smiles through the rest of the day, and stops the moment the camera is behind {a.obj}.' }, { by: 'a', dr: "I smile for {b}. I don't smile for me." }] },
+    { id: 'pw.r3', turns: [{ by: 'a', dr: "Being used like this stopped being funny by the second day." }] },
+    { id: 'pw.r4', turns: [{ beat: '{a} smiles through the rest of the day, and stops the moment the camera is behind {a.obj}.' }, { by: 'a', dr: "I smile when {b} is around. I'm not happy about it." }] },
     { id: 'pw.r5', turns: [{ by: 'a', say: "Next time, ask somebody else to sit in the chair." }, { by: 'b', say: "You'll be fine." }, { by: 'a', say: "You keep saying that. It keeps not helping." }] },
     { id: 'pw.r6', turns: [{ by: 'a', dr: "If I go home as a pawn, {b} is the reason. I won't forget that from the jury house." }] },
   ],
@@ -193,7 +193,7 @@ export default {
   'power.traffic.snub': [
     { id: 'pt.s1', turns: [{ by: 'a', dr: "There's been a queue outside my door all afternoon. {b} isn't in it. I've noticed. Twice." }] },
     { id: 'pt.s2', turns: [{ by: 'a', dr: "Everybody's found a reason to come and sit on my bed. Everybody except {b}, who has suddenly got a lot of laundry." }] },
-    { id: 'pt.s3', turns: [{ by: 'a', dr: "Four visits before dinner. {b} made none of them. That's a statement, whether {b} meant it as one or not." }] },
+    { id: 'pt.s3', turns: [{ by: 'a', dr: "Everyone's been up to see me before dinner. Everyone except {b}. I've noticed." }] },
     { id: 'pt.s4', turns: [{ by: 'a', dr: "I'm not keeping a list of who came up. I'm just remembering. Very clearly. {b} didn't." }] },
     { id: 'pt.s5', turns: [{ beat: '{b} walks past the bottom of the HOH stairs and keeps going.' }, { by: 'a', dr: "Didn't even look up. Interesting." }] },
     { id: 'pt.s6', turns: [{ by: 'a', dr: "If you don't come and see the Head of Household, the Head of Household starts wondering why." }] },
@@ -209,7 +209,7 @@ export default {
 
   // ── the HOH, alone with it ──────────────────────────────────────
   'power.weight.rattled': [
-    { id: 'pg.r1', turns: [{ by: 'a', dr: "Best bed in the house, and I can't sleep in it. I keep doing the maths and it keeps coming out wrong." }] },
+    { id: 'pg.r1', turns: [{ by: 'a', dr: "Best bed in the house, and I can't sleep in it. I keep going over the nominations and I can't settle on anything." }] },
     { id: 'pg.r2', turns: [{ beat: '{a} sits in the HOH room with the door open. Twice there are footsteps on the stairs. Nobody comes in.' }, { by: 'a', dr: "I wanted company. I also didn't. That's this week." }] },
     { id: 'pg.r3', turns: [{ by: 'a', dr: "I've practised saying the two names out loud. They don't sound any better the fourth time." }] },
     { id: 'pg.r4', turns: [{ by: 'a', dr: "Everybody downstairs thinks I'm safe. I am. I just didn't realise safe and comfortable were different things." }] },
@@ -254,7 +254,7 @@ export default {
   ],
   'power.replaced.expected': [
     { id: 'pr.e1', turns: [{ by: 'a', dr: "I knew it'd be me the moment the veto came off the wall. I've had a speech ready since this morning." }] },
-    { id: 'pr.e2', turns: [{ beat: 'Nobody in the room is surprised, least of all {a}, who sits down like it is a job.' }, { by: 'a', dr: "I'd already written the speech in my head. Now I just have to give it." }] },
+    { id: 'pr.e2', turns: [{ beat: 'Nobody in the room is surprised, least of all {a}, who sits down like it is a job.' }, { by: 'a', dr: "I already knew it would be me. I'd been planning what to say for days." }] },
     { id: 'pr.e3', turns: [{ by: 'a', dr: "Walking to that chair, I was already working out who to talk to first. I'm not wasting a minute." }] },
     { id: 'pr.e4', turns: [{ by: 'a', say: "Fine. I expected that." }, { by: 'b', say: "It's nothing personal." }, { by: 'a', say: "It never is, with you." }] },
     { id: 'pr.e5', turns: [{ by: 'a', dr: "I'm not shocked. I'm annoyed I was right." }] },
@@ -267,13 +267,13 @@ export default {
     { id: 'ps.d2', turns: [{ by: 'a', dr: "I'm off the block. I should be celebrating. I can't, not while {b} is sitting in my chair." }] },
     { id: 'ps.d3', turns: [{ by: 'b', say: "I didn't ask for that." }, { by: 'a', say: "I know you didn't." }, { beat: 'Neither of them is sure the conversation helped.' }] },
     { id: 'ps.d4', turns: [{ by: 'a', say: "Whatever you need this week, I'll help. Votes, speeches, anything." }, { by: 'b', say: "That would've been more useful yesterday." }] },
-    { id: 'ps.d5', turns: [{ by: 'a', dr: "Being saved feels great until you see who paid for it." }] },
+    { id: 'ps.d5', turns: [{ by: 'a', dr: "Being saved feels great. Seeing {b} in my chair doesn't." }] },
     { id: 'ps.d6', turns: [{ by: 'a', say: "Can I sit with you for a bit?" }, { by: 'b', say: "You can sit. I'm not promising to talk." }] },
   ],
   'power.saved-guilt.cold': [
     { id: 'ps.c1', turns: [{ beat: '{a} is visibly relieved and does not hide it. {b} watches from the chair {a} just left.' }, { by: 'b', dr: "{a} could at least pretend to feel bad. Just for an afternoon." }] },
     { id: 'ps.c2', turns: [{ by: 'a', dr: "Do I feel bad that {b} went up? A bit. Do I feel worse than I'd feel on the block? Not even close." }] },
-    { id: 'ps.c3', turns: [{ by: 'b', dr: "{a} hasn't said a single word to me since the ceremony. Not one. That says everything." }] },
+    { id: 'ps.c3', turns: [{ by: 'b', dr: "{a} hasn't said a single word to me since the ceremony. Not one. I know where I stand now." }] },
     { id: 'ps.c4', turns: [{ by: 'a', say: "Good game today, everyone!" }, { by: 'b', say: "Good game for some of us." }] },
     { id: 'ps.c5', turns: [{ by: 'b', dr: "I kept waiting for {a} to come and find me. By dinner, I'd stopped waiting." }] },
     { id: 'ps.c6', turns: [{ by: 'a', dr: "Somebody had to go up. Better {b} than me. I'm allowed to think that." }] },
@@ -281,8 +281,8 @@ export default {
 
   // ── the HOH door stays shut ── a HOH, b turned away
   'power.refused.shut': [
-    { id: 'pf.s1', turns: [{ beat: '{b} knocks on the HOH door.' }, { by: 'a', say: "Now's not a good time." }, { beat: 'The stairs are very long on the way back down.' }] },
-    { id: 'pf.s2', turns: [{ by: 'b', say: "Can I come in?" }, { by: 'a', say: "I'm sleeping." }, { by: 'b', dr: "{a} wasn't sleeping. We both knew {a} wasn't sleeping. That was the message." }] },
+    { id: 'pf.s1', turns: [{ beat: '{b} knocks on the HOH door.' }, { by: 'a', say: "Now's not a good time." }, { beat: '{b} walks back down the stairs alone.' }] },
+    { id: 'pf.s2', turns: [{ by: 'b', say: "Can I come in?" }, { by: 'a', say: "I'm sleeping." }, { by: 'b', dr: "{a} wasn't sleeping. We both knew it. {a} just didn't want to talk to me." }] },
     { id: 'pf.s3', turns: [{ by: 'a', dr: "It's the only door in this house that locks. Today I used it on {b}." }] },
     { id: 'pf.s4', turns: [{ beat: 'The house watches {b} come back down without having gone in. Nobody asks how it went.' }, { by: 'b', dr: "Everybody saw. That's the part that hurts." }] },
     { id: 'pf.s5', turns: [{ by: 'b', say: "Five minutes?" }, { by: 'a', say: "Maybe tomorrow." }, { by: 'b', say: "Tomorrow's nominations." }, { by: 'a', say: "...I know." }] },
@@ -291,19 +291,19 @@ export default {
 
   // ── lobbying for the veto draw ── a HOH, b asker
   'power.draw-lobby.agrees': [
-    { id: 'pl.a1', turns: [{ by: 'b', say: "If I get drawn, I'll use it however you want it used." }, { beat: '{a} doesn\'t say yes out loud. {b} reads that correctly.' }] },
+    { id: 'pl.a1', turns: [{ by: 'b', say: "If I get drawn, I'll use it however you want it used." }, { beat: '{a} doesn\'t say yes, but {a} doesn\'t say no either.' }] },
     { id: 'pl.a2', turns: [{ by: 'b', say: "Pick me if you get houseguest's choice. I'll keep your nominations exactly where they are." }, { by: 'a', say: "Deal." }] },
-    { id: 'pl.a3', turns: [{ by: 'b', say: "I'm the safest pair of hands for that veto. You know it." }, { by: 'a', say: "I do know it." }, { by: 'b', dr: "We both knew what had just been traded. Nobody said it." }] },
+    { id: 'pl.a3', turns: [{ by: 'b', say: "I'm the safest pair of hands for that veto. You know it." }, { by: 'a', say: "I do know it." }, { by: 'b', dr: "We both knew what that meant. Neither of us said it." }] },
     { id: 'pl.a4', turns: [{ by: 'a', dr: "{b} wants in the veto, and {b} will play it my way. That's a good trade for a chip." }] },
     { id: 'pl.a5', turns: [{ by: 'b', say: "Put me in, and the veto stays in the box." }, { by: 'a', say: "Promise?" }, { by: 'b', say: "Promise." }] },
     { id: 'pl.a6', turns: [{ by: 'b', say: "I just want to help you keep your week the way you planned it." }, { by: 'a', say: "Then I'd like you in that draw." }] },
   ],
   'power.draw-lobby.declines': [
-    { id: 'pl.d1', turns: [{ by: 'b', say: "Pick me if you can." }, { by: 'a', say: "I can't promise anything." }, { by: 'b', dr: "No promise. In here, that's a no." }] },
+    { id: 'pl.d1', turns: [{ by: 'b', say: "Pick me if you can." }, { by: 'a', say: "I can't promise anything." }, { by: 'b', dr: "{a} wouldn't promise. That's a no." }] },
     { id: 'pl.d2', turns: [{ by: 'a', say: "I'd rather pick somebody neutral." }, { by: 'b', say: "Neutral." }, { by: 'b', dr: "I heard the word loud and clear. {a} doesn't trust me with the veto." }] },
-    { id: 'pl.d3', turns: [{ by: 'b', say: "Would you pick me for houseguest's choice?" }, { by: 'a', say: "Let's see what happens." }, { beat: '{a} changes the subject to the weather.' }] },
+    { id: 'pl.d3', turns: [{ by: 'b', say: "Would you pick me for houseguest's choice?" }, { by: 'a', say: "Let's see what happens." }, { beat: '{a} changes the subject.' }] },
     { id: 'pl.d4', turns: [{ by: 'a', dr: "{b} wants the veto very badly. That's exactly why {b} isn't getting near it." }] },
-    { id: 'pl.d5', turns: [{ by: 'b', say: "I'd play for you." }, { by: 'a', say: "Would you?" }, { by: 'b', say: "...Yes." }, { by: 'a', dr: "That pause cost {b} a chip." }] },
+    { id: 'pl.d5', turns: [{ by: 'b', say: "I'd play for you." }, { by: 'a', say: "Would you?" }, { by: 'b', say: "...Yes." }, { by: 'a', dr: "{b} hesitated. I'm not picking {b}." }] },
     { id: 'pl.d6', turns: [{ by: 'b', say: "Just keep me in mind." }, { by: 'a', say: "I'll keep everyone in mind." }] },
   ],
 
@@ -311,7 +311,7 @@ export default {
   'power.veto-promise.means': [
     { id: 'pv.m1', turns: [{ by: 'a', say: "The veto's coming off the wall, and you're coming off with it." }, { by: 'b', say: "...Seriously?" }, { by: 'a', say: "Seriously." }] },
     { id: 'pv.m2', turns: [{ by: 'a', say: "You're getting off that block." }, { beat: '{b} takes a second to work out that {a} means it.' }] },
-    { id: 'pv.m3', turns: [{ by: 'a', dr: "I told {b} before I told the HOH. Before I told anyone. That order is the whole message." }] },
+    { id: 'pv.m3', turns: [{ by: 'a', dr: "I told {b} before I told anyone else. I wanted {b} to know I meant it." }] },
     { id: 'pv.m4', turns: [{ by: 'b', say: "Are you going to use it?" }, { by: 'a', say: "On you. Yes." }, { by: 'b', say: "Thank you. I mean it. Thank you." }] },
     { id: 'pv.m5', turns: [{ by: 'a', say: "Stop campaigning. You don't need to. I've got you." }, { by: 'b', dr: "First good sleep I'll have had all week." }] },
     { id: 'pv.m6', turns: [{ by: 'a', dr: "{b} has had my back since the start. Today I've got the chance to have {b.posAdj}. Easy decision." }] },
@@ -320,8 +320,8 @@ export default {
     { id: 'pv.h1', turns: [{ by: 'a', say: "Don't worry. It's coming your way." }, { by: 'a', dr: "I haven't decided that at all. But {b} will stop campaigning now, and that's useful." }] },
     { id: 'pv.h2', turns: [{ by: 'a', say: "Don't stress about it. I've got you." }, { by: 'b', say: "You promise?" }, { by: 'a', say: "Promise." }, { by: 'a', dr: "That promise costs me nothing today. It'll cost {b} a lot on Thursday." }] },
     { id: 'pv.h3', turns: [{ by: 'b', dr: "{a} told me the veto's coming my way. So I stopped campaigning. I really hope that wasn't a mistake." }] },
-    { id: 'pv.h4', turns: [{ by: 'a', say: "Relax. I'll take care of it." }, { by: 'a', dr: "\"Take care of it\" is a lovely phrase. It doesn't actually mean anything." }] },
-    { id: 'pv.h5', turns: [{ by: 'b', say: "You're going to use it, right?" }, { by: 'a', say: "Trust me." }, { by: 'b', dr: "\"Trust me\" isn't yes. I'm choosing to hear yes." }] },
+    { id: 'pv.h4', turns: [{ by: 'a', say: "Relax. I'll take care of it." }, { by: 'a', dr: "\"I'll take care of it\" sounds nice. It doesn't mean I'll use it." }] },
+    { id: 'pv.h5', turns: [{ by: 'b', say: "You're going to use it, right?" }, { by: 'a', say: "Trust me." }, { by: 'b', dr: "{a} said \"trust me\", not yes. I'm going to believe it anyway." }] },
     { id: 'pv.h6', turns: [{ by: 'a', dr: "If I tell {b} the veto's coming, {b} stops working the house. That helps me whether I use it or not." }] },
   ],
 
@@ -332,7 +332,7 @@ export default {
     { id: 'pe.h3', turns: [{ by: 'a', say: "Photos first. Then letter. Then snacks." }, { beat: 'The photos go round the room. Everyone is very nice about them.' }] },
     { id: 'pe.h4', turns: [{ by: 'b', say: "Is that your family?" }, { by: 'a', say: "That's everyone I'm doing this for." }, { by: 'b', say: "No pressure, then." }] },
     { id: 'pe.h5', when: { third: true }, turns: [{ by: 'c', say: "Read us the letter!" }, { by: 'a', say: "Later. When it's just me." }, { by: 'b', say: "Respect." }] },
-    { id: 'pe.h6', turns: [{ by: 'a', dr: "For twenty minutes, that room was the warmest place in the house, and everyone in it meant it. I'll remember that when they're counting votes on me." }] },
+    { id: 'pe.h6', turns: [{ by: 'a', dr: "For twenty minutes, everyone up there was really happy for me. I'll remember that when they're voting." }] },
     { id: 'pe.h7', turns: [{ by: 'b', say: "How does it feel?" }, { by: 'a', say: "Like I should enjoy it while it lasts. So I'm going to." }] },
   ],
   'power.reveal.breaks': [
@@ -380,7 +380,7 @@ export default {
   // ── counting who goes up ── a the watcher; b the favourite, c the HOH (neither in the room)
   'power.spy.counts': [
     { id: 'py.c1', turns: [{ by: 'a', dr: "{b} has been up those stairs four times today. I've been up none. I'm not counting. I'm just aware." }] },
-    { id: 'py.c2', turns: [{ by: 'a', dr: "The door's closed behind {b} three times this week. Doors closing is the only reliable information in this house." }] },
+    { id: 'py.c2', turns: [{ by: 'a', dr: "The door's closed behind {b} three times this week. I notice these things." }] },
     { id: 'py.c3', turns: [{ by: 'a', dr: "Nobody tells me anything. They don't have to. I can hear {b} laughing through the ceiling." }] },
     { id: 'py.c4', turns: [{ beat: '{a} sits on the stairs, pretending to read, watching who goes up.' }, { by: 'a', dr: "Tally so far: {b}, a lot. Everybody else, barely." }] },
     { id: 'py.c5', turns: [{ by: 'a', dr: "If {b} spent any more time in the HOH room, {b} would need to pay rent." }] },
@@ -393,28 +393,28 @@ export default {
 
   // ── asking somebody to be the pawn ── a HOH, b the pawn
   'power.pawn-ask.willing': [
-    { id: 'pk.w1', turns: [{ by: 'a', say: "I need you beside the target. You're not the one going home." }, { by: 'b', say: "Yes. Okay. Yes." }, { by: 'a', dr: "{b} said yes before I'd finished. That's a debt now. A big one." }] },
+    { id: 'pk.w1', turns: [{ by: 'a', say: "I need you beside the target. You're not the one going home." }, { by: 'b', say: "Yes. Okay. Yes." }, { by: 'a', dr: "{b} said yes before I'd finished. I owe {b} a big favour now." }] },
     { id: 'pk.w2', turns: [{ by: 'a', say: "Would you be my pawn?" }, { by: 'b', say: "On one condition. If that ever changes, you tell me to my face." }, { by: 'a', say: "Deal." }] },
     { id: 'pk.w3', turns: [{ by: 'b', say: "I'll do it. For you." }, { by: 'a', say: "I won't forget it." }, { by: 'b', say: "Don't." }] },
-    { id: 'pk.w4', turns: [{ by: 'b', dr: "I'm taking the chair as a favour to a friend. That's exactly what {a} owes me now." }] },
+    { id: 'pk.w4', turns: [{ by: 'b', dr: "I'm taking the chair as a favour to a friend. {a} owes me now." }] },
     { id: 'pk.w5', turns: [{ by: 'a', say: "You're the only person I trust to sit there." }, { by: 'b', say: "That's either a compliment or a curse." }, { by: 'a', say: "Both." }] },
     { id: 'pk.w6', turns: [{ by: 'b', say: "If I go home as a pawn, I'm haunting this room." }, { by: 'a', say: "You won't go home." }] },
   ],
   'power.pawn-ask.grudging': [
     { id: 'pk.g1', turns: [{ by: 'a', say: "I need someone to be the pawn." }, { by: 'b', say: "Pawns go home." }, { by: 'a', say: "Not this week." }, { by: 'b', say: "...Fine. Yes." }] },
     { id: 'pk.g2', turns: [{ by: 'b', say: "I'll do it. But I'm not happy about it." }, { by: 'a', say: "I know." }, { by: 'b', say: "And you'll owe me." }] },
-    { id: 'pk.g3', turns: [{ by: 'b', dr: "I said yes the way people say yes to the dentist." }] },
+    { id: 'pk.g3', turns: [{ by: 'b', dr: "I said yes. I didn't want to." }] },
     { id: 'pk.g4', turns: [{ by: 'b', say: "Do you know how many pawns have gone home in this game?" }, { by: 'a', say: "This one won't." }, { by: 'b', say: "That's what they all hear." }] },
-    { id: 'pk.g5', turns: [{ by: 'b', say: "It's a yes. It's not a favour." }, { by: 'a', dr: "I'd better remember the difference." }] },
+    { id: 'pk.g5', turns: [{ by: 'b', say: "It's a yes. It's not a favour." }, { by: 'a', dr: "{b} said yes, but {b} wasn't happy about it. I need to remember that." }] },
     { id: 'pk.g6', turns: [{ by: 'b', say: "Somebody else said no first, didn't they?" }, { by: 'a', say: "...Yes." }, { by: 'b', say: "Great. I'm the backup pawn." }] },
   ],
   'power.pawn-ask.forced': [
     { id: 'pk.f1', turns: [{ by: 'b', say: "I already said no." }, { by: 'a', say: "I know." }, { by: 'b', dr: "{a} asked. I said no. I'm going up anyway. So it was never really a question." }] },
     { id: 'pk.f2', turns: [{ by: 'a', dr: "Nobody would volunteer for the chair. So I've stopped offering it." }] },
     { id: 'pk.f3', turns: [{ by: 'a', say: "You're going up as a pawn." }, { by: 'b', say: "I said no." }, { by: 'a', say: "I'm not asking any more." }] },
-    { id: 'pk.f4', turns: [{ by: 'b', dr: "Told, not asked. That difference is going to matter for a very long time." }] },
+    { id: 'pk.f4', turns: [{ by: 'b', dr: "{a} didn't ask me. {a} told me. I won't forget that." }] },
     { id: 'pk.f5', turns: [{ by: 'b', say: "So my answer didn't count." }, { by: 'a', say: "I needed somebody." }, { by: 'b', say: "You needed me. That's different. Remember it." }] },
-    { id: 'pk.f6', turns: [{ by: 'a', dr: "Everyone said no. I picked the person whose no I could survive. {b} won't see it that way." }] },
+    { id: 'pk.f6', turns: [{ by: 'a', dr: "Everyone said no. I picked the person I thought could take it. {b} won't see it that way." }] },
   ],
 
   // ── the real plan ── a HOH, b ally, c the real target (not in the room)
@@ -424,7 +424,7 @@ export default {
     { id: 'pd.p3', turns: [{ by: 'a', say: "If I'd put {c} up at nominations, {c} could have won the veto and walked straight off." }, { by: 'b', say: "So you waited." }, { by: 'a', say: "So I waited." }] },
     { id: 'pd.p4', turns: [{ by: 'b', say: "Why those two, then?" }, { by: 'a', say: "Because neither of them is the one I want." }, { by: 'b', dr: "{a} smiled when I asked. That's when I worked out the real name." }] },
     { id: 'pd.p5', turns: [{ by: 'a', say: "Nobody can know. Not even the nominees." }, { by: 'b', say: "Especially not {c}." }, { by: 'a', say: "Especially not {c}." }] },
-    { id: 'pd.p6', turns: [{ by: 'a', dr: "A backdoor only works if nobody sees the door. Now one person has. I hope I picked the right one." }] },
+    { id: 'pd.p6', turns: [{ by: 'a', dr: "A backdoor only works if it's a surprise. Now someone else knows. I hope I can trust {b}." }] },
   ],
 
   // ── the night before nominations ── a and b guessing; {target} their guess
@@ -450,7 +450,7 @@ export default {
     { id: 'pz.s1', turns: [{ by: 'a', dr: "I took myself off the block. Nobody in this house can take that away from me. {b} had to find another name, and {b} knows I made that happen." }] },
     { id: 'pz.s2', turns: [{ by: 'a', dr: "I don't feel like celebrating. Hearing my name at that ceremony once was enough to show me how easily they'll say it again." }] },
     { id: 'pz.s3', turns: [{ by: 'a', say: "I didn't have a choice." }, { by: 'b', say: "Nobody said you did." }, { by: 'a', say: "I know. I just keep saying it." }] },
-    { id: 'pz.s4', turns: [{ beat: 'There is a particular quiet after somebody saves themselves. Everybody else in the room is doing the maths.' }, { by: 'a', dr: "I can hear them counting. One chair short, and they're all wondering whose it'll be." }] },
+    { id: 'pz.s4', turns: [{ beat: 'The room goes quiet after the ceremony. Everyone knows somebody else has to go up now.' }, { by: 'a', dr: "Everyone's wondering who goes up now. At least it isn't me." }] },
     { id: 'pz.s5', turns: [{ by: 'a', dr: "Safe this week. Target next week. That's what saving yourself buys you. It's still worth it." }] },
     { id: 'pz.s6', turns: [{ by: 'b', dr: "{a} cost me a week. I won't forget it." }] },
   ],
@@ -476,14 +476,14 @@ export default {
     { id: 'pa.k1', turns: [{ by: 'a', say: "Congratulations on the veto. Thanks for being straight with me, {b}." }, { by: 'a', dr: "I'm counting votes before the room's even emptied." }] },
     { id: 'pa.k2', turns: [{ by: 'a', dr: "Within the hour I'd spoken to four people. {b} thought I was the easy option. {b} might want to check that." }] },
     { id: 'pa.k3', turns: [{ by: 'a', say: "That's the game." }, { by: 'b', dr: "{a} meant it. That's worse for me than if {a} had shouted." }] },
-    { id: 'pa.k4', turns: [{ by: 'a', dr: "Anger is a waste of four days. I'm using all four." }] },
-    { id: 'pa.k5', turns: [{ by: 'a', dr: "I'm not the replacement. I'm the problem {b} just created." }] },
-    { id: 'pa.k6', turns: [{ beat: '{a} shakes {b}\'s hand after the ceremony, calmly, and walks straight out to start working the house.' }, { by: 'a', dr: "Handshake first. Then I take {b}'s week apart." }] },
+    { id: 'pa.k4', turns: [{ by: 'a', dr: "I'm not wasting time being angry. I've got four days to campaign." }] },
+    { id: 'pa.k5', turns: [{ by: 'a', dr: "{b} thinks I'm the easy option. I'm going to prove {b} wrong." }] },
+    { id: 'pa.k6', turns: [{ beat: '{a} shakes {b}\'s hand after the ceremony, calmly, and walks straight out to start working the house.' }, { by: 'a', dr: "I shook {b}'s hand. Now I'm going to get myself off this block." }] },
   ],
 
   // ── the veto holder's fallout ── a holder, b HOH, c the one saved
   'power.veto-fallout.fallout': [
-    { id: 'pf2.f1', turns: [{ by: 'b', say: "You could have told me first." }, { by: 'a', say: "I know." }, { beat: 'Neither of them says the next thing.' }] },
+    { id: 'pf2.f1', turns: [{ by: 'b', say: "You could have told me first." }, { by: 'a', say: "I know." }, { beat: 'Neither of them knows what to say.' }] },
     { id: 'pf2.f2', turns: [{ by: 'a', dr: "{b} hasn't said a word about the veto. That's the problem. We're being extremely polite to each other, and the whole house can hear it." }] },
     { id: 'pf2.f3', turns: [{ by: 'a', dr: "I saved {c}. Now I live in a house where {b} knows exactly where I stand. I knew that would happen. I did it anyway." }] },
     { id: 'pf2.f4', turns: [{ by: 'b', dr: "{a} could have left my nominations alone. {a} didn't. Was that loyalty to {c}, or a warning to me? I'm going to find out." }] },
@@ -497,19 +497,19 @@ export default {
     { id: 'pu.f2', turns: [{ by: 'a', dr: "Nothing changed at the veto meeting. Everyone expected that. Nobody said it, in case it sounded like gloating." }] },
     { id: 'pu.f3', turns: [{ by: 'b', say: "What happened at the ceremony?" }, { by: 'a', say: "Nothing." }, { by: 'b', say: "Right." }, { beat: '{b} goes straight back to what {b} was doing.' }] },
     { id: 'pu.f4', turns: [{ by: 'a', dr: "Same two names this morning, same two names tonight. This week was decided days ago." }] },
-    { id: 'pu.f5', turns: [{ beat: 'Two people go straight back to bed after the ceremony.' }, { by: 'a', dr: "Even the ceremony was bored." }] },
+    { id: 'pu.f5', turns: [{ beat: 'Two people go straight back to bed after the ceremony.' }, { by: 'a', dr: "Even I was bored." }] },
     { id: 'pu.f6', turns: [{ by: 'a', say: "Well, that was predictable." }, { by: 'b', say: "Predictable is good. Predictable means nobody's coming for us." }] },
   ],
 
   // ── seeing the backdoor coming ── a the target, b HOH
   'power.fears-backdoor.sees': [
-    { id: 'pfb.s1', turns: [{ by: 'a', dr: "Two names on the block, and neither of them is the point. I can see the door. I'm standing in it." }] },
+    { id: 'pfb.s1', turns: [{ by: 'a', dr: "Two names on the block, and neither of them is the real target. I think the real target is me." }] },
     { id: 'pfb.s2', turns: [{ by: 'a', say: "I just want to play in the veto. That's all." }, { by: 'a', dr: "I've said that to four people now. Nobody believed the fourth one." }] },
-    { id: 'pfb.s3', turns: [{ by: 'a', dr: "If I win the veto, I can't be put up. That's the whole maths. Everybody else is pretending not to have done it." }] },
+    { id: 'pfb.s3', turns: [{ by: 'a', dr: "If I win the veto, I can't be put up. That's all I need to do this week." }] },
     { id: 'pfb.s4', turns: [{ by: 'a', say: "Am I safe this week?" }, { by: 'b', say: "Of course you're safe." }, { by: 'a', dr: "Of course. So I'm lobbying for a veto chip anyway." }] },
     { id: 'pfb.s5', turns: [{ by: 'a', say: "If you pull houseguest's choice, think of me." }, { by: 'a', dr: "I'm not asking to play. I'm asking to survive." }] },
-    { id: 'pfb.s6', turns: [{ by: 'a', dr: "{b} keeps smiling at me. Heads of Household don't smile at people they're keeping." }] },
-    { id: 'pfb.s7', when: { register: 'cool' }, turns: [{ by: 'a', dr: "The nominations make no sense unless the real target isn't on the block. I'm not on the block. I've done that maths." }] },
+    { id: 'pfb.s6', turns: [{ by: 'a', dr: "{b} keeps smiling at me. I don't trust it." }] },
+    { id: 'pfb.s7', when: { register: 'cool' }, turns: [{ by: 'a', dr: "The nominations don't make sense unless the real target isn't on the block. I'm not on the block. I think it's me." }] },
   ],
   // ── "pick me and I'll save you" ── a the seller, b the nominee
   'power.pick-me.bought': [

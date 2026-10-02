@@ -63,7 +63,7 @@ export default {
       { by: 'a', say: "It wasn't a meeting." },
       { by: 'b', say: "Everyone except me was in there." },
       { by: 'a', say: "That's a coincidence." },
-      { by: 'b', say: "That's not a coincidence. That's a guest list." },
+      { by: 'b', say: "That's not a coincidence. You left me out on purpose." },
     ] },
     { id: 'am.l8', turns: [
       { by: 'b', dr: "I'm in {alliance}. I think. I'm starting to feel like the member they tell things to afterwards." },
@@ -97,7 +97,7 @@ export default {
     { id: 'am.l15', turns: [
       { by: 'b', say: "Anything I should know?" },
       { by: 'a', say: "Not really." },
-      { by: 'b', dr: "\"Not really\" means yes, and it means nobody is going to tell me." },
+      { by: 'b', dr: "\"Not really\". So something happened, and nobody's going to tell me." },
     ] },
     { id: 'am.l16', turns: [
       { by: 'a', say: "Sorry, we should have waited for you." },
@@ -154,7 +154,7 @@ export default {
       { by: 'c', say: "...It's fine. Whatever you two decided." },
     ] },
     { id: 'ai.t6', turns: [
-      { beat: '{a} and {b} share a look across the table. {c} sees it, and sees that it was not meant to be seen.' },
+      { beat: '{a} and {b} share a look across the table. {c} sees it.' },
       { by: 'c', dr: "I'm not being cut out. I'm just never one of the first two people told. That's a different thing. It still hurts." },
     ] },
     { id: 'ai.t7', turns: [
@@ -165,7 +165,7 @@ export default {
     ] },
     { id: 'ai.t8', turns: [
       { by: 'a', dr: "{b} and I decide. Then we tell the others. It's not personal, it's efficient." },
-      { beat: 'Across the room, {c} is counting how many times this week that has happened.' },
+      { beat: 'Across the room, {c} looks annoyed.' },
     ] },
     { id: 'ai.t9', turns: [
       { by: 'b', say: "Don't worry, {c}, we'll talk it through with everyone." },
@@ -199,12 +199,12 @@ export default {
   // a is in both. b runs {alliance}; c runs {alliance2}.
   'alliance.overlap.differ': [
     { id: 'ao.d1', turns: [
-      { by: 'a', dr: "{b} explained the week to me in the pantry. Forty minutes later {c} explained the same week in the backyard. Same week. Different people at the bottom of it." },
+      { by: 'a', dr: "{b} told me the plan in the pantry. Then {c} told me a different plan in the backyard. They can't both be true." },
     ] },
     { id: 'ao.d2', turns: [
       { by: 'b', say: "Same page?" },
       { by: 'a', say: "Same page." },
-      { by: 'a', dr: "I've been on two pages since both groups formed. Today the two pages started arguing with each other." },
+      { by: 'a', dr: "I've been in both groups since they started. Today I found out they want different things." },
     ] },
     { id: 'ao.d3', turns: [
       { by: 'c', say: "So it's agreed. We protect the group." },
@@ -221,7 +221,7 @@ export default {
       { by: 'a', dr: "I nearly said the other group's name to the wrong group. I need to sleep more." },
     ] },
     { id: 'ao.d6', turns: [
-      { by: 'a', dr: "Both stories are true. That's the problem. {b} and {c} both want to protect the group. They just mean different lists of people." },
+      { by: 'a', dr: "{b} and {c} both say they're protecting the group. They just don't mean the same people." },
     ] },
     { id: 'ao.d7', turns: [
       { by: 'c', say: "You've been quiet. Something on your mind?" },
@@ -252,19 +252,19 @@ export default {
       { by: 'a', say: "I'm not locking anything in before the vote." },
       { by: 'b', say: "We're an alliance. Locking it in is the whole point." },
       { by: 'a', say: "Then the whole point can wait until Thursday." },
-      { beat: 'The temperature in the room drops about four degrees.' },
+      { beat: 'Nobody in the room says anything for a while.' },
     ] },
     { id: 'ah.r3', turns: [
       { by: 'b', say: "Just tell us where your vote's going." },
       { by: 'a', say: "Probably the same way as yours." },
       { by: 'b', say: "\"Probably\"?" },
-      { by: 'b', dr: "There is no version of the word \"probably\" that I like right now." },
+      { by: 'b', dr: "\"Probably\" isn't good enough. Not this week." },
     ] },
     { id: 'ah.r4', turns: [
       { by: 'a', say: "I want to hear both nominees out first." },
       { by: 'b', say: "Why? We know what we're doing." },
       { by: 'a', say: "You know what you're doing. I'm still deciding." },
-      { by: 'b', dr: "The most reasonable sentence anybody's said all day, and it's got every one of us worried." },
+      { by: 'b', dr: "It sounds reasonable. But it's got all of us worried." },
     ] },
     { id: 'ah.r5', when: { known: true }, turns: [
       { by: 'b', say: "{target}. Yes or no?" },
@@ -310,10 +310,10 @@ export default {
       { by: 'a', say: "Let's not waste a nomination on {b}." },
       { by: 'c', say: "Why are you so sure it'd be a waste?" },
       { by: 'a', say: "I just am." },
-      { by: 'c', dr: "\"I just am\" is what people say when they can't say why. {a} has got a deal with {b}. I'd bet on it." },
+      { by: 'c', dr: "{a} couldn't give me a reason. {a} has got a deal with {b}. I'd bet on it." },
     ] },
     { id: 'ap.c5', turns: [
-      { by: 'c', dr: "{a} never argues against {b}. {a} just always has someone better. It's a small thing. I'm keeping it." },
+      { by: 'c', dr: "{a} never argues against {b}. {a} just always has someone better. It's a small thing, but I'm going to remember it." },
     ] },
     { id: 'ap.c6', when: { register: 'schemer' }, turns: [
       { by: 'a', say: "{b}? Please. {b} couldn't win a game of cards." },
@@ -341,7 +341,7 @@ export default {
       { by: 'c', say: "...True." },
     ] },
     { id: 'ap.s3', turns: [
-      { by: 'a', dr: "I steer them off {b} the way you steer a car round a pothole. Smoothly, and without ever mentioning the pothole." },
+      { by: 'a', dr: "Every time {b}'s name comes up, I change the subject. Nobody's noticed yet." },
     ] },
     { id: 'ap.s4', turns: [
       { by: 'c', say: "{b} would be an easy vote." },
@@ -355,7 +355,7 @@ export default {
       { by: 'a', dr: "I agreed. I didn't say I'd stop talking." },
     ] },
     { id: 'ap.s6', turns: [
-      { by: 'a', dr: "Protecting someone in here is easy. You never say \"don't\". You just keep saying \"what about...\"." },
+      { by: 'a', dr: "Protecting someone is easy. I never argue. I just keep suggesting other names." },
     ] },
     { id: 'ap.s7', turns: [
       { by: 'c', say: "Should {b} be on our list?" },
@@ -377,10 +377,10 @@ export default {
       { by: 'b', say: "It wasn't me." },
       { by: 'a', say: "Okay." },
       { by: 'b', say: "It really wasn't me!" },
-      { by: 'a', dr: "Once, calmly? Fine. Twice, louder? That's how guilty people sound." },
+      { by: 'a', dr: "{b} said it once, calmly. Then again, louder. That sounds guilty to me." },
     ] },
     { id: 'ab.w3', turns: [
-      { by: 'b', dr: "I didn't do it. And every single person in {alliance} has decided that I did. Nobody's angry with me. That's how I know." },
+      { by: 'b', dr: "I didn't do it. And every single person in {alliance} has decided that I did. Nobody's even angry with me. They've just decided." },
     ] },
     { id: 'ab.w4', turns: [
       { by: 'a', say: "We just want the truth." },
@@ -390,7 +390,7 @@ export default {
     ] },
     { id: 'ab.w5', turns: [
       { beat: '{a} stops talking every time {b} walks into the room. By the evening, the rest of {alliance} has started doing the same.' },
-      { by: 'b', dr: "Nobody's accused me of anything. I've just been quietly found guilty." },
+      { by: 'b', dr: "Nobody's actually accused me. They've all just decided it was me." },
     ] },
     { id: 'ab.w6', turns: [
       { by: 'a', dr: "I haven't got proof it was {b}. I've got a feeling, and in here a feeling is usually enough." },
@@ -409,7 +409,7 @@ export default {
   'alliance.slip.name': [
     { id: 'an.n1', when: { room: ['kitchen'] }, turns: [
       { by: 'a', say: "Well, that's {alliance} for you, isn't it?" },
-      { beat: '{b} keeps drying the same plate for a lot longer than the plate needs.' },
+      { beat: '{b} keeps drying the same plate and doesn\'t say a word.' },
       { by: 'b', dr: "How does {a} know the name? Nobody outside the group is supposed to know there IS a name." },
     ] },
     { id: 'an.n2', turns: [
@@ -425,7 +425,7 @@ export default {
     ] },
     { id: 'an.n4', when: { room: ['kitchen'] }, turns: [
       { by: 'a', say: "Pass the salt. Unless {alliance} needs it for a meeting." },
-      { beat: 'Half the table laughs. The half that laughs is entirely people who are not in {alliance}.' },
+      { beat: 'Half the table laughs. Everybody laughing is somebody who isn\'t in {alliance}.' },
     ] },
     { id: 'an.n5', turns: [
       { by: 'a', dr: "They think nobody knows about {alliance}. I've known for days. I just said it at breakfast to watch their faces." },
@@ -437,7 +437,7 @@ export default {
       { by: 'b', say: "It's warm in here." },
     ] },
     { id: 'an.n7', turns: [
-      { by: 'b', dr: "{a} said our name out loud, casually, in front of everyone. If I react, I confirm it. If I don't, I confirm it. There's no good face to make." },
+      { by: 'b', dr: "{a} said our name out loud, casually, in front of everyone. I didn't know how to react. Anything I said would have given it away." },
     ] },
     { id: 'an.n8', turns: [
       { by: 'a', say: "So who's in {alliance}? Just out of interest." },
@@ -450,7 +450,7 @@ export default {
     { id: 'an.n10', turns: [
       { by: 'a', say: "Big {alliance} meeting tonight?" },
       { by: 'b', say: "I genuinely have no idea what you mean." },
-      { by: 'b', dr: "I had an idea exactly what {a} meant. So did every other member of {alliance} at the table." },
+      { by: 'b', dr: "I knew exactly what {a} meant. So did every other member of {alliance} at the table." },
     ] },
     { id: 'an.n11', turns: [
       { by: 'a', say: "Don't worry, I won't tell anyone about {alliance}." },
@@ -535,7 +535,7 @@ export default {
       { by: 'b', say: "Then we've got a deal." },
     ] },
     { id: 'af.i3', turns: [
-      { by: 'a', dr: "{alliance2} is the big group. {alliance} is the real one. Only the people in it know there's a difference." },
+      { by: 'a', dr: "{alliance2} is the big group. {alliance} is the one that really matters, and only we know about it." },
     ] },
     { id: 'af.i4', turns: [
       { by: 'b', say: "We go back out there and act completely normal." },
@@ -549,7 +549,7 @@ export default {
     ] },
     { id: 'af.i6', when: { room: ['pantry'] }, turns: [
       { beat: '{a} and {b} come back from the storage room separately, two minutes apart, and rejoin the rest of {alliance2} as if nothing happened.' },
-      { by: 'b', dr: "Something happened. Something called {alliance}." },
+      { by: 'b', dr: "Something did happen. We made {alliance}." },
     ] },
   ],
   'alliance.recruited.joined': [
@@ -594,7 +594,7 @@ export default {
       { by: 'b', say: "Everything." },
     ] },
     { id: 'ar.j8', turns: [
-      { by: 'a', dr: "Being asked to join feels amazing. Then you wonder who they had to ask before they got to you." },
+      { by: 'a', dr: "Being asked to join feels amazing. Then I started wondering who they asked before me." },
     ] },
     { id: 'ar.j9', when: { third: true }, turns: [
       { by: 'b', say: "We've talked about it, and we'd like you with us." },
@@ -654,7 +654,7 @@ export default {
       { by: 'b', say: "And I'm still in it. That's the point." },
     ] },
     { id: 'ab.f6', turns: [
-      { by: 'a', dr: "{b} flipped. Against {alliance}. Against us. I'm not even angry yet. I'm still doing the maths." },
+      { by: 'a', dr: "{b} flipped. Against {alliance}. Against us. I'm not even angry yet. I'm just shocked." },
     ] },
     { id: 'ab.f7', turns: [
       { by: 'a', say: "Just tell me why." },
@@ -665,7 +665,7 @@ export default {
     { id: 'ab.f8', when: { known: true }, turns: [
       { by: 'a', say: "Everyone in {alliance} said {target}'s name was safe." },
       { by: 'b', say: "Everyone said a lot of things." },
-      { by: 'a', dr: "That's not a denial. That's a confession with the corners sanded off." },
+      { by: 'a', dr: "That's not a denial. That's {b} admitting it." },
     ] },
   ],
   // b voted out an ally; a is somebody in the alliance hearing the explanation.
@@ -679,7 +679,7 @@ export default {
     { id: 'aw.f2', when: { reason: 'strategic-explanation' }, turns: [
       { by: 'b', say: "Look at the numbers. If I'd voted with you, we'd have lost two of us next week, not one." },
       { by: 'a', say: "...Walk me through it again." },
-      { beat: '{b} walks them through it again. It still works.' },
+      { beat: '{b} explains it again. It still makes sense.' },
       { by: 'a', dr: "I hate that {b} was right. I'm keeping {b} anyway." },
     ] },
     { id: 'aw.f3', when: { reason: 'refusal' }, turns: [
@@ -735,7 +735,7 @@ export default {
       { by: 'a', say: "And then you show us where your vote goes." },
     ] },
     { id: 'aw.t6', turns: [
-      { by: 'a', dr: "It's a truce. Not peace. A truce. In this house a truce lasts about as long as the next HOH." },
+      { by: 'a', dr: "It's a truce, not peace. I give it until the next HOH." },
     ] },
     { id: 'aw.t7', turns: [
       { by: 'b', say: "So am I still in?" },
@@ -761,8 +761,8 @@ export default {
     ] },
     { id: 'aw.r4', when: { reason: 'denial' }, turns: [
       { by: 'b', say: "It wasn't me!" },
-      { by: 'a', say: "The maths only works one way, {b}." },
-      { by: 'b', say: "Then do the maths again!" },
+      { by: 'a', say: "The votes only add up one way, {b}." },
+      { by: 'b', say: "Then count them again!" },
       { by: 'a', say: "We did. Three times." },
     ] },
     { id: 'aw.r5', turns: [
@@ -774,7 +774,7 @@ export default {
     ] },
     { id: 'aw.r7', turns: [
       { beat: 'Nobody says it out loud. They just stop saving {b} a seat.' },
-      { by: 'b', dr: "I'm out of {alliance}. Nobody told me. I worked it out from the chairs." },
+      { by: 'b', dr: "I'm out of {alliance}. Nobody told me. I just noticed nobody saves me a seat any more." },
     ] },
   ],
   'alliance.collapsed.faded': [
@@ -795,7 +795,7 @@ export default {
       { by: 'b', say: "That's the answer, then." },
     ] },
     { id: 'ac.d5', turns: [
-      { by: 'a', dr: "I said {alliance} out loud today without thinking, and it sounded like the name of a band that split up years ago." },
+      { by: 'a', dr: "I said {alliance} out loud today without thinking, and it felt strange. It doesn't really exist any more." },
     ] },
     { id: 'ac.d6', turns: [
       { by: 'a', say: "Should we try to fix it?" },
@@ -821,7 +821,7 @@ export default {
       { by: 'a', dr: "I'm the last one standing from {alliance}. That sounds heroic. It's actually just lonely." },
     ] },
     { id: 'ac.n6', turns: [
-      { by: 'a', dr: "{alliance} ran out of people. Not trust. People. You can't vote with an alliance of one." },
+      { by: 'a', dr: "{alliance} didn't fall apart. Everyone just got evicted. You can't vote with an alliance of one." },
     ] },
   ],
 };

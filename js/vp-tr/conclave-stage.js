@@ -257,12 +257,11 @@ function paint(root, S, fresh) {
 // first meeting, which is the same room
 export { PLATE as TRC_PLATE, PLATE_TABLE as TRC_PLATE_TABLE, seatAt as trcSeatAt, onPlate as trcOnPlate };
 
-export const CLOAK = '<svg class="trc-cloak" viewBox="0 0 100 130" aria-hidden="true"><defs>'
-  + '<linearGradient id="trcCl" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#1e0408"/><stop offset=".35" stop-color="#5a0c16"/>'
-  + '<stop offset=".6" stop-color="#3a060e"/><stop offset="1" stop-color="#120205"/></linearGradient></defs>'
-  + '<path d="M50 3 C21 3 11 30 13 58 C14 72 19 80 25 85 L6 130 H94 L75 85 C81 80 86 72 87 58 C89 30 79 3 50 3Z" fill="url(#trcCl)"/>'
-  + '<path d="M25 85 C35 95 65 95 75 85" stroke="#c9a24a" stroke-width="1.5" fill="none" opacity=".6"/>'
-  + '<ellipse cx="50" cy="50" rx="27" ry="31" fill="#070103"/></svg>';
+// A PAINTED RENDER (tools/blender/traitors-cloak.py): oxblood velvet, a
+// capelet over the shoulders, gold piping round the hood. The SVG it replaced
+// was "kinda giving svg" (the user, 2026-10-02). Its hood opening is framed to
+// .trc-av's box, so the face sits inside the hood.
+export const CLOAK = '<img class="trc-cloak" src="assets/sets/traitors/cloak.webp" alt="" draggable="false">';
 
 // the air of the turret: embers rising off the candles, and the light moving
 const AIR = '<div class="trc-air"><div class="trc-flicker"></div>' + Array.from({ length: 16 }, (_, i) =>

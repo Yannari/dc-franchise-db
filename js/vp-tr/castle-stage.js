@@ -445,6 +445,21 @@ function mount(root) {
   S.idx = -1; S.lastNight = null;
   chrome(root, S);
   paint(uid, false);
+  // A STAGE MOUNTS BEFORE ITS VIEW HAS SETTLED: the conclave's hooded figures
+  // were placed for a view 64px tall and hung off the top of the room until the
+  // first Next. Positions are pixels, so the stage repaints when the view's
+  // size actually changes, not only on a window resize.
+  const view = $(root, 'view');
+  if (view && typeof ResizeObserver !== 'undefined') {
+    let last = view.clientWidth + 'x' + view.clientHeight;
+    new ResizeObserver(() => {
+      const now = view.clientWidth + 'x' + view.clientHeight;
+      if (now === last || !view.clientWidth) return;
+      last = now;
+      S.set = null; const set = $(root, 'set'); if (set) set.dataset.k = '';
+      paint(uid, false);
+    }).observe(view);
+  }
 }
 export function trStageMountAll() {
   if (typeof document === 'undefined') return;

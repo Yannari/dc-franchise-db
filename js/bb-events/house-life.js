@@ -22,6 +22,7 @@ import {
   beatsInvolving, spotlightOrder,
 } from './_read.js';
 import { freshLine } from '../bb/aired.js';
+import { makeScene } from '../bb/script/scene.js';
 
 // ── helpers ───────────────────────────────────────────────────────────
 
@@ -36,6 +37,14 @@ const _others = (house, ...exclude) => house.filter(n => n && !exclude.includes(
 /** Least-seen first, weighted toward whoever this week is about. */
 const _leastSeen = pool => spotlightOrder(pool);
 const _nominees = ctx => (ctx?.nominees || []).filter(Boolean);
+
+/** Which room a scene happens in: by hash, never a die. */
+function _room(rooms, ctx, ...people) {
+  const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${people.join('|')}`;
+  let hash = 0;
+  for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
+  return rooms[hash % rooms.length];
+}
 
 /**
  * House life happens in the downtime and almost never during a ceremony.
@@ -148,21 +157,8 @@ const prank = {
   },
   fire(house, ctx, api) {
     const { joker, victim } = _prankPair(house, ctx);
-    const p = pronouns(victim);
     // Whether it lands is about the victim's temper, not the joke.
     const funny = pStats(victim).temperament >= 5 && !dislikes(victim, joker);
-    const text = funny ? _variant([
-      `${joker} rearranges every single item in ${victim}'s drawer and ${victim} takes forty minutes to notice, then laughs harder than ${joker} did.`,
-      `The prank is stupid, elaborate and genuinely funny, and for about an hour the house forgets what it is.`,
-      `${victim} walks into it, sees exactly what has happened, and says "${joker}" to an empty room with real affection.`,
-      `${joker} has been setting this up whenever ${victim} leaves the room. It works perfectly. ${victim} demands to know how and then demands to help with the next one.`,
-    ], ctx, joker, victim) : _variant([
-      `Everyone laughs at the prank except ${victim}. When ${joker} tries to explain it was harmless, ${victim} walks away.`,
-      `${victim} does not laugh. The room laughs, then notices ${p.sub} is not laughing, then stops.`,
-      `${joker} misjudges it badly. What was meant as a joke lands as a message about where ${victim} sits in this house.`,
-      `${joker} hides ${victim}'s suitcase and keeps the joke going after ${victim} asks for it back. When it finally reappears, ${victim} says, “Very funny,” without smiling and takes it straight to the bedroom.`,
-    ], ctx, joker, victim);
-
     if (funny) {
       api.addBond(joker, victim, 1.2);
       api.popDelta(joker, 1);
@@ -173,8 +169,9 @@ const prank = {
       api.suspicion(victim, joker, 0.7);
       api.popDelta(joker, -1);
     }
+    const scene = makeScene('life.prank', { a: joker, b: victim }, { ending: funny ? 'funny' : 'misfire' }, [], _room(['bedroom', 'kitchen', 'living-room'], ctx, joker, victim));
     return {
-      text, players: [joker, victim],
+      scene, players: [joker, victim],
       badgeText: funny ? 'PRANK' : 'PRANK MISFIRES',
       badgeClass: funny ? 'green' : 'red',
     };
@@ -192,28 +189,16 @@ const chores = {
   },
   fire(house, ctx, api) {
     const { tidy, slob } = _choreConflict(house, ctx);
-    const p = pronouns(tidy);
     const boils = resentmentOf(tidy, slob) > 2 || pStats(tidy).temperament <= 6;
-    const text = boils ? _variant([
-      `It is about the dishes and it is absolutely not about the dishes. ${tidy} has been counting every mess and tonight ${p.sub} says the number out loud.`,
-      `${tidy} cleans up after ${slob} for the last time, announces that it was the last time, and is cleaning up after ${pronouns(slob).obj} again by Thursday.`,
-      `"I'm not your mother." ${slob} points out, not unreasonably, that nobody asked ${tidy} to do it. This does not help.`,
-      `The same pan is in the sink again. ${tidy} puts it, still dirty, on ${slob}'s bed.`,
-    ], ctx, tidy, slob) : _variant([
-      `${tidy} does the dishes again and says nothing again, and files it with everything else ${p.sub} is not saying.`,
-      `Somebody has to do it. It is ${tidy}. It is always ${tidy}, and ${p.sub} has decided that being the person who does it is worth something.`,
-      `${tidy} cleans the kitchen at one in the morning because it is the only time it is quiet and the only thing ${p.sub} can control.`,
-      `${slob} thanks ${tidy} for cleaning, then leaves another plate on the counter. ${tidy} stares at it until ${slob} finally notices.`,
-    ], ctx, tidy, slob);
-
     api.addBond(tidy, slob, boils ? -1.1 : -0.4);
     api.remember(tidy, slob, 'grievance', boils ? 2 : 1, { about: 'the house' });
     if (boils) {
       _others(house, tidy, slob).forEach(w => api.suspicion(w, tidy, 0.2));
       api.popDelta(slob, -1);
     }
+    const scene = makeScene('life.chores', { a: tidy, b: slob }, { ending: boils ? 'boils' : 'quiet' }, [], 'kitchen');
     return {
-      text, players: [tidy, slob],
+      scene, players: [tidy, slob],
       badgeText: boils ? 'IT IS NOT ABOUT THE DISHES' : 'DOING IT AGAIN',
       badgeClass: boils ? 'red' : 'grey',
     };
@@ -228,30 +213,20 @@ const diaryRoom = {
   },
   fire(house, ctx, api) {
     const speaker = _leastSeen(house)[0];
-    const p = pronouns(speaker);
     const subject = targetOf(speaker) || closestTo(speaker, _others(house, speaker)) || _others(house, speaker)[0];
     const arch = archetype(speaker);
     // What somebody says alone to a camera is the truest thing they say all week.
-    const text = isVillainous(speaker) || willScheme(speaker) ? _variant([
-      `"Everyone in this house thinks they know what I'm doing." ${speaker} is enjoying this considerably more than ${p.sub} lets on out there.`,
-      `${speaker} explains the plan to the camera in full, in order, with names. It is a very good plan. ${p.Sub} has told nobody in the house any of it.`,
-      `"${subject} trusts me completely," ${speaker} says, "which is going to become a problem for ${pronouns(subject).obj} when the numbers get smaller."`,
-      `${speaker} smiles at the lens in a way ${p.sub} has been careful not to smile at anybody.`,
-    ], ctx, speaker, subject) : _variant([
-      `${speaker} sits down and, for the first time since the door closed behind ${p.obj}, stops performing. What comes out is mostly about being tired.`,
-      `"I don't know if I'm playing this right." Nobody in the house has heard ${speaker} say anything like that, and nobody will.`,
-      `${speaker} talks about ${subject} for four minutes and only works out halfway through that ${p.sub} is talking about ${p.ref}.`,
-      `${speaker} admits to the camera that ${p.sub} does not want to write ${subject}'s name down, and that ${p.sub} probably will.`,
-    ], ctx, speaker, subject);
-
-    // Saying it out loud is how a houseguest commits to it.
     if (targetOf(speaker) === subject) {
       api.remember(speaker, subject, 'resolve', 1, { said: 'in the diary room' });
     } else {
       api.remember(speaker, subject, 'confidence', 1, {});
     }
     api.popDelta(speaker, 1);
-    return { text, players: [speaker], badgeText: 'DIARY ROOM', badgeClass: 'blue' };
+    // The subject is talked about; the Diary Room holds one person.
+    const scheming = isVillainous(speaker) || willScheme(speaker);
+    const scene = makeScene('life.diary', { a: speaker, b: subject }, { ending: scheming ? 'scheming' : 'honest' }, [], 'diary-room');
+    scene.seenBy = [speaker];
+    return { scene, players: [speaker], badgeText: 'DIARY ROOM', badgeClass: 'blue' };
   },
 };
 
@@ -266,21 +241,13 @@ const sleepless = {
     const wired = _leastSeen(house.filter(n => pStats(n).temperament <= 6 || _nominees(ctx).includes(n)));
     const a = wired[0] || house[0];
     const companion = _others(house, a).find(n => bond(a, n) >= 2) || null;
-    const p = pronouns(a);
-    const text = _variant([
-      `${a} does not sleep. ${p.Sub} lies there running the same four names in the same order until it gets light.`,
-      `Three in the morning and ${a} is in the kitchen, not eating anything, just standing in the one room where nobody will ask ${p.obj} how ${p.sub} is doing.`,
-      `${a} has been awake so long that the plan has started to look like a different plan.`,
-      `Everybody else is asleep. ${a} listens to a house full of people breathing and has never felt further from any of them.`,
-    ], ctx, a);
-
-    // Exhaustion is a real handicap and a real bonding opportunity.
     api.popDelta(a, 1);
     if (companion) {
       api.addBond(a, companion, 0.6);
       api.remember(a, companion, 'kindness', 1, { when: 'the small hours' });
     }
-    return { text, players: [a, companion].filter(Boolean), badgeText: 'NO SLEEP', badgeClass: 'grey' };
+    const scene = makeScene('life.sleepless', { a, b: companion || null }, { ending: companion ? 'company' : 'alone' }, [], _room(['kitchen', 'bedroom'], ctx, a));
+    return { scene, players: [a, companion].filter(Boolean), badgeText: 'NO SLEEP', badgeClass: 'grey' };
   },
 };
 
@@ -295,20 +262,13 @@ const homesick = {
   fire(house, ctx, api) {
     const a = _leastSeen(house)[0];
     const helper = closestTo(a, _others(house, a));
-    const p = pronouns(a);
-    const text = _variant([
-      `${a} starts counting how many days ${p.sub} has been in the house, gets halfway through and decides ${p.sub} does not want the answer.`,
-      `Somebody mentions a birthday ${a} is going to miss and the whole table watches ${pronouns(a).obj} decide not to react.`,
-      `${a} has stopped talking about home, which everyone who has been in here long enough recognises as the bad sign rather than the good one.`,
-      `It arrives out of nothing, in the middle of an ordinary afternoon, and ${a} has to go and stand outside for a while.`,
-    ], ctx, a);
-
     if (helper) {
       api.addBond(a, helper, 1.0);
       api.remember(a, helper, 'kindness', 2, { when: 'homesick' });
     }
     api.popDelta(a, 1);
-    return { text, players: [a, helper].filter(Boolean), badgeText: 'HOMESICK', badgeClass: 'grey' };
+    const scene = makeScene('life.homesick', { a, b: helper || null }, { ending: helper ? 'helped' : 'alone' }, [], _room(['backyard', 'bedroom'], ctx, a));
+    return { scene, players: [a, helper].filter(Boolean), badgeText: 'HOMESICK', badgeClass: 'grey' };
   },
 };
 
@@ -321,20 +281,12 @@ const kitchenTable = {
   fire(house, ctx, api) {
     const group = _leastSeen(house).slice(0, 3);
     const [a, b, c] = group;
-    const text = _variant([
-      `${a}, ${b} and ${c} spend two hours at the kitchen table telling stories and making each other laugh. `
-        + `Nobody talks game, and nobody leaves early.`,
-      `${a} tells a story from work, loses the thread twice and has ${b} and ${c} laughing too hard to help. An hour later, the three of them are still at the table.`,
-      `The conversation is about food, and then about home, and then, without anyone steering it, about who has been acting strangely this week.`,
-      `${a}, ${b} and ${c} stay up until the lights dim around them. They never mention the vote; they do learn who listens, who interrupts and who cannot let a story end without topping it.`,
-    ], ctx, ...group);
-
-    // The most undervalued thing in the house: being liked by default.
     for (const x of group) {
       for (const y of group) if (x !== y) api.addBond(x, y, 0.5);
     }
     if (a) api.popDelta(a, 1);
-    return { text, players: group, badgeText: 'KITCHEN TABLE', badgeClass: 'green' };
+    const scene = makeScene('life.table', { a, b, c: c || null }, { ending: 'talk' }, group, 'kitchen');
+    return { scene, players: group, badgeText: 'KITCHEN TABLE', badgeClass: 'green' };
   },
 };
 
@@ -350,28 +302,14 @@ const showmanceDomestic = {
     const a = house.find(n => romanceOf(n) && house.includes(romanceOf(n)));
     const b = romanceOf(a);
     if (ctx?.week) ctx.week._domesticShowmance = true;
-    const p = pronouns(a);
     const strained = bond(a, b) < 3 || _nominees(ctx).includes(a) || _nominees(ctx).includes(b);
-    const text = strained ? _variant([
-      `${a} and ${b} have a muted argument in the bedroom. They stop when somebody enters, then spend `
-        + `the rest of the afternoon sitting on opposite sides of the house.`,
-      `Being seen as a pair was fun until the house started treating it as a target on two backs. ${a} says so, badly.`,
-      `${b} wants to talk about the vote. ${a} wants to not be in the house. Neither gets what they want.`,
-      `They are still together and they have both started thinking about the week where one of them has to write the other's name down.`,
-    ], ctx, a, b) : _variant([
-      `${a} and ${b} take up a whole afternoon doing nothing in particular, and the rest of the house watches two people forget there are cameras.`,
-      `${a} saves the seat beside ${pronouns(a).obj} for ${b}, makes ${b} a plate, and stops pretending `
-        + `either gesture is accidental.`,
-      `Somebody jokes that ${a} and ${b} are attached at the hip. ${b} usually denies it. This time, ${b} just smiles.`,
-      `${a} and ${b} are the only two people in this house who look properly rested, and everybody has noticed.`,
-    ], ctx, a, b);
-
     api.addBond(a, b, strained ? -0.8 : 1.3);
     // A visible couple is two votes nobody else can have.
     const witnesses = _others(house, a, b).filter(w => pStats(w).intuition >= 5).slice(0, 4);
     witnesses.forEach(w => api.suspicion(w, a, 0.6));
+    const scene = makeScene('life.couple', { a, b }, { ending: strained ? 'strained' : 'sweet' }, [], _room(['backyard', 'bedroom', 'living-room'], ctx, a, b));
     return {
-      text, players: [a, b, ...witnesses],
+      scene, players: [a, b, ...witnesses],
       badgeText: strained ? 'STRAIN' : 'THE PAIR',
       badgeClass: strained ? 'red' : 'gold',
     };

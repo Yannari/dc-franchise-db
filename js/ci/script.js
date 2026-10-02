@@ -25,6 +25,13 @@ export { SAME_DAY, SAID_AGAIN, USED_DECAY, RECENT };
 import { GAMES, PARTY_THEMES, NEVER_HAVE_I_EVER } from './games-data.js';
 import { TRIVIA, FACTS } from './games-content.js';
 import { topicsOf, wingsIt, JOB_TOPIC, townOf } from './topics.js';
+import { kinBetween, kinWord, TENSE } from './kin.js';
+// What a calls b, and b calls a, when they are family, partners or friends (ci/kin.js).
+const kinText = (state, a, b) => {
+  const k = kinBetween(state, a, b), r = kinBetween(state, b, a);
+  return { q: k ? kinWord(state, k.kin, k.me, k.them) : 'friend', x: r ? kinWord(state, r.kin, r.me, r.them) : 'friend' };
+};
+const kinTone = kin => (TENSE.has(kin) ? 'tense' : 'warm');
 
 // 'face' and 'brain': the two people behind a shared profile, speaking to
 // each other in their own apartment (spec §14.8).
@@ -347,6 +354,12 @@ function fearsFor(state, s, target) {
 const BLOCKS = {
   chat(state, s) {
     const [a, b] = s.who;
+    // Relatives who found each other (ci/kin.js): keep it quiet or tell; test a hidden one.
+    if (s.data.intent === 'kin') return [{ key: `kin.pact.${s.data.outcome}`, cast: { a, b, text: kinText(state, a, b) } }];
+    if (s.data.intent === 'kintold') return [{ key: 'kin.told', cast: { a, b, c: s.data.about, text: kinText(state, a, s.data.about) } }];
+    if (s.data.intent === 'kintest') {
+      return [{ key: s.data.outcome === 'admit' ? 'kin.test.admit' : `kin.test.dodge.${kinTone(s.data.kin)}`, cast: { a, b, text: kinText(state, a, b) } }];
+    }
     // Two people the same player is romancing, putting it together (twotiming.js).
     if (s.data.intent === 'notes') {
       const p = s.data.about;
@@ -485,6 +498,12 @@ const BLOCKS = {
       extra: { reasonKind: state.profiles[a].reason || undefined } }));
   },
   recognise(state, s) {
+    // A sister, an ex, a best friend (ci/kin.js): at a glance, both at once, or behind a catfish.
+    if (s.data.kin) {
+      const [obs] = s.who, h = s.data.profile;
+      const how = s.data.hidden ? 'hidden' : s.data.mutual ? 'mutual' : 'open';
+      return [{ key: `recognise.kin.${kinTone(s.data.kin)}.${how}`, cast: { a: obs, b: h, text: kinText(state, obs, h) } }];
+    }
     // A famous face (season.js recogniseFame), or a borrowed photo somebody knows.
     const key = s.data.fame ? (s.data.fame === 'celebrity' ? 'recognise.celebrity' : s.data.fame === 'villain' ? 'recognise.villain' : 'recognise.tv') : 'recognise';
     // One face never hears the same line twice, whoever is looking at it.
@@ -914,7 +933,8 @@ const BLOCKS = {
   visit(state, s) {
     const [h, to] = s.who;
     // In person (a Super Influencer came to the door): nobody chose, nobody waited.
-    const out = s.data.inPerson ? [] : [{ key: `visit.choose.${s.data.motive}`, cast: { a: h, b: to }, extra: { motive: s.data.motive } }];
+    const kt = s.data.motive === 'family' ? { text: kinText(state, h, to) } : {};
+    const out = s.data.inPerson ? [] : [{ key: `visit.choose.${s.data.motive}`, cast: { a: h, b: to, ...kt }, extra: { motive: s.data.motive } }];
     if (!s.data.inPerson) out.push({ key: 'visit.walk', cast: { a: h, b: to } });
     // Everybody waits, the one about to be visited included: nobody knows whose door it is.
     // The show keeps whose door it is for the knock: the others wait first,
@@ -931,15 +951,20 @@ const BLOCKS = {
     // In person the knock already happened in the blocking scene; only a reveal is new.
     if (door && !(ip && door === 'real')) out.push({ key: `visit.door.${door}`, cast: { a: host, b: guest } });
     if (fakeHost && !fakeGuest) out.push({ key: 'visit.door.caught', cast: { a: guest, b: host } });
+    // Family at the door, and somebody didn't know (ci/kin.js kinAtDoor).
+    if (s.data.kinDoor) {
+      const x = s.data.kinDoor.surprised[0], y = x === h ? to : h;
+      out.push({ key: `visit.kin.door.${kinTone(s.data.kinDoor.kin)}`, cast: { a: x, b: y, text: kinText(state, x, y) } });
+    }
     out.push({ key: 'visit.sit', cast: { a: guest, b: host } });
     // One Influencer, or two: "it was both of us" only when it was.
     const sole = (s.data.by?.length ?? 2) === 1;
     // An argument (blocking.js clash): it opens by how the host meets it,
     // and its second half is how it ends.
     const cl = s.data.clash;
-    out.push({ key: cl ? `visit.talk.confront.${cl.style}` : `visit.talk.${s.data.motive}`, cast: { a: h, b: to }, extra: { motive: s.data.motive, sole } });
+    out.push({ key: cl ? `visit.talk.confront.${cl.style}` : `visit.talk.${s.data.motive}`, cast: { a: h, b: to, ...kt }, extra: { motive: s.data.motive, sole } });
     // The conversation keeps going: on the real show a visit is a sit-down.
-    out.push({ key: cl ? `visit.talk2.confront.${cl.end}` : `visit.talk2.${s.data.motive}`, cast: { a: h, b: to }, extra: { motive: s.data.motive, sole } });
+    out.push({ key: cl ? `visit.talk2.confront.${cl.end}` : `visit.talk2.${s.data.motive}`, cast: { a: h, b: to, ...kt }, extra: { motive: s.data.motive, sole } });
     if (s.data.power) out.push({ key: `visit.power.${s.data.power}`, cast: { a: h, b: to } });
     if (s.data.handed) {
       const c0 = claimOf(state, s.data.handed);
@@ -973,6 +998,12 @@ const BLOCKS = {
       // Met in person at the visit: the warning is something seen, not a hunch.
       const seen = isRevealed(state, h, about) && state.profiles[about]?.mode === 'catfish';
       out.push({ key: seen ? 'goodbye.warning.seen' : `goodbye.warning.${kind}`, cast: { a: h, c: about } });
+    }
+    // To a relative still in (ci/kin.js kinGoodbye): openly, or in code when they hide behind a catfish.
+    const kg = s.data.kin;
+    if (kg && viewers.includes(kg.to)) {
+      out.push({ key: `goodbye.kin.${kg.open ? 'open' : 'hidden'}`, cast: { a: h, b: kg.to, text: kinText(state, h, kg.to) } });
+      out.push({ key: 'goodbye.kin.react', cast: { a: kg.to, b: h, text: kinText(state, kg.to, h) } });
     }
     const blockers = state.blocked.find(b => b.handle === h)?.by || [];
     const guilty = viewers.find(v => blockers.includes(v));
@@ -1313,7 +1344,7 @@ const DEBRIEF_KEYS_ = [
 ];
 const REASONS_ = ['affection', 'trust', 'obligation', 'pact', 'alliance', 'protection', 'threat', 'suspicion', 'grudge', 'deserves'];
 const SLIPS_ = ['knowledge', 'body', 'voice', 'tooPerfect', 'overreach', 'name'];
-const MOTIVES_ = ['friend', 'answers', 'truth', 'apology', 'confront'];
+const MOTIVES_ = ['friend', 'answers', 'truth', 'apology', 'confront', 'crush', 'family'];
 const WHY_ = ['strategic', 'protective', 'experimental', 'family'];
 const BLOCK_WHY_ = ['fake', 'threat', 'grudge', 'noBond'];
 export const POOL_KEYS = [
@@ -1369,6 +1400,10 @@ export const POOL_KEYS = [
   ...BLOCK_WHY_.map(r => `block.announce.${r}`), 'block.react.self', 'block.react.friend', 'block.react.rival', 'block.react.relief',
   ...MOTIVES_.filter(m => m !== 'confront').flatMap(m => [`visit.choose.${m}`, `visit.talk.${m}`]), 'visit.choose.confront', 'visit.wait', 'visit.wait.catfish',
   // Playing two people, and getting caught (twotiming.js, lines/twotiming.js).
+  // Family, partners and old friends in the cast (ci/kin.js, lines/kin.js).
+  ...['warm', 'tense'].flatMap(t => ['open', 'mutual', 'hidden'].map(h => `recognise.kin.${t}.${h}`)), 'kin.pact.secret', 'kin.pact.tell', 'kin.told',
+  'kin.test.admit', 'kin.test.dodge.warm', 'kin.test.dodge.tense', 'visit.kin.door.warm', 'visit.kin.door.tense',
+  'goodbye.kin.open', 'goodbye.kin.hidden', 'goodbye.kin.react',
   'couple.flirt.game', ...['sent', 'stopped'].flatMap(o => ['face', 'brain'].map(r => `couple.flirt.jealous.${o}.${r}`)), 'couple.reveal',
   'notes.find', 'notes.find.copy', 'notes.taken', 'notes.plan', 'busted.open', 'busted.accuse', 'busted.accuse.taken', 'busted.confess.cheat',
   ...['charm', 'confess', 'deny'].flatMap(k => [`busted.${k}`, `busted.end.${k}`]), 'party.twotime', 'game.twotime', 'goodbye.warning.playing',
@@ -1406,7 +1441,7 @@ export const POOL_KEYS = [
   'shared.argue.parentWins.parent', 'shared.argue.kidWins.parent',
   ...['couple', 'married', 'siblings', 'twins', 'parent', 'friends', 'cousins'].flatMap(k => [`life.pair.${k}`, `meet.explain.shared.${k}`, `goodbye.pair.${k}`]),
   'circle.more', 'circle.react', 'ratings.done', 'ratings.wait', 'final.open', 'final.done', 'block.wait', 'block.typing',
-  ...['friend', 'answers', 'truth', 'apology'].map(m => `visit.talk2.${m}`), 'visit.after', 'goodbye.after',
+  ...['friend', 'answers', 'truth', 'apology', 'crush', 'family'].map(m => `visit.talk2.${m}`), 'visit.after', 'goodbye.after',
   'meet.first', 'meet.react', 'meet.settle', 'meet.arrive.shared', 'meet.found.shared', 'meet.react.shared', 'meet.explain.shared', 'circle.leave', 'circle.final.look', 'block.after', 'visit.walk', 'visit.sit', 'rate.middle', 'party.dance', 'party.photo', 'party.jealous', 'party.flirt', 'party.banter', 'party.end',
   ...['named-bad', 'named-good', 'rival', 'gift', 'picked-last', 'jab', 'portrait-kind', 'flirted', 'asked-barbed', 'asked-catfish']
     .flatMap(k => [`callback.${k}.mine`, `callback.${k}.theirs`]), 'rate.callback.bad', 'rate.callback.good',

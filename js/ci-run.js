@@ -327,11 +327,15 @@ function _build(inputs, rerolls) {
       setupRel: setup[n].relation || setup[partner]?.relation || null });
     if (rel) setup[n].relation = rel; else delete setup[n].relation;
   }
+  // Family, partners and old friends who play as two separate profiles
+  // (ci/kin.js): the Relationships tab and the roster's ties, then what life
+  // and past seasons made of them. A pair sharing a profile is not on it.
+  const kin = startOf?.kin || circleKin(cast, setup, carried);
   const seed = _seed();
   const outer = gs;
   let result, inner, record = null;
   try {
-    result = playCircleSeason({ cast, setup, pool: inputs.pool, seed, carried, options: { ...inputs.options, rerolls } });
+    result = playCircleSeason({ cast, setup, pool: inputs.pool, seed, carried, kin, options: { ...inputs.options, rerolls } });
     inner = gs;
     // What this season leaves the franchise, read while its own relationship
     // layer is still the live one (ci/ledger-record.js). Recorded when the
@@ -346,7 +350,7 @@ function _build(inputs, rerolls) {
   const winner = result.result?.winner?.profile ?? result.result?.winner ?? null;
   const winnerPeople = winner ? (result.state.profiles[winner]?.players || []) : [];
   return { cast, setup, seed, rows: result.rows, inner, winnerPeople, fanFavorite: result.result?.fanFavorite || null,
-    dealt: result.state.dealt || {}, unused: result.state.dealtUnused || [], record, startOf: { known, carried } };
+    dealt: result.state.dealt || {}, unused: result.state.dealtUnused || [], record, startOf: { known, carried, kin } };
 }
 
 function _commit(built, inputs, rerolls, airedCount) {
@@ -464,3 +468,21 @@ export function rerunCircleEpisode(epNum) {
 }
 
 if (typeof window !== 'undefined') window._ciRunnable = true;
+
+/** Who in this cast is what to whom, by person (ci/kin.js). */
+export function circleKin(cast, setup = {}, carried = null) {
+  const out = [], seen = new Set();
+  const key = (a, b) => [a, b].sort().join('|');
+  const sharing = (a, b) => setup[a]?.partner === b || setup[b]?.partner === a;
+  for (let i = 0; i < cast.length; i++) for (let j = i + 1; j < cast.length; j++) {
+    const [a, b] = [cast[i], cast[j]];
+    if (sharing(a, b)) continue;
+    const k = kinshipBetween(a, b);
+    if (k && k !== 'none') { out.push({ a, b, kin: k }); seen.add(key(a, b)); }
+  }
+  for (const e of carried?.kin || []) {
+    if (!cast.includes(e.a) || !cast.includes(e.b) || seen.has(key(e.a, e.b)) || sharing(e.a, e.b)) continue;
+    out.push({ a: e.a, b: e.b, kin: e.kin }); seen.add(key(e.a, e.b));
+  }
+  return out;
+}

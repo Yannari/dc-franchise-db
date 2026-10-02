@@ -21,7 +21,9 @@ const DRAMA = { bond: 0.5, checkin: 0.8, ally: 1.2, flirt: 1.3, probe: 1.6, pump
   plant: 2, credit: 1.4, repair: 1.2, confront: 2, pitch: 1, confess: 2.5, jealous: 1.8,
   defend: 1.9, debrief: 1.2,
   // Two people working out that they are being played (twotiming.js): it always makes the episode.
-  notes: 9 };
+  notes: 9,
+  // Relatives (ci/kin.js): deciding whether to tell anyone, and the test of a hidden one.
+  kin: 5, kintest: 7, kintold: 4 };
 const TONE = { low: 2, high: 1.5, steady: 0.5 };
 
 export function chooseAired(state, day) {

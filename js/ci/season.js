@@ -29,6 +29,7 @@ import { initMind, driftMind } from './mind.js';
 import { seedAttraction, planChats, contextFor } from './chat.js';
 import { groupChats } from './groupchats.js';
 import { compareNotes } from './twotiming.js';
+import { kinRecognise } from './kin.js';
 import { runChat } from './conversation.js';
 import { morningFeed, runCircleChat } from './feed.js';
 import { runRating } from './ratings.js';
@@ -173,7 +174,7 @@ function recognise(state, carried) {
   }
 }
 
-export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, seed = 1, carried = null }) {
+export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, seed = 1, carried = null, kin = [] }) {
   setGs({ bonds: {}, perceivedBonds: {}, relationshipDimensions: {}, activePlayers: [],
     episodeHistory: [], popularity: {} });
   const state = newState(seed, options);
@@ -193,6 +194,8 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
   openLedger(state);
   seedAttraction(state, streamFor(seed, 'spark'));
   applyCarried(state, carried);
+  // Family, partners and old friends in the cast, by person (ci-run.js, ci/kin.js).
+  state.kin = (kin || []).filter(e => e && e.a !== e.b);
 
   const isNewcomer = h => peopleOf(state, h).every(n => state.people[n].role === 'newcomer');
   const starters = handles.filter(h => !isNewcomer(h));
@@ -269,6 +272,8 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
     }
     recognise(state, carried);
     recogniseFame(state, ds(`fame:${d.day}`));
+    // A sister, an ex, a best friend: recognised (ci/kin.js).
+    if (!d.finale) kinRecognise(state, ds(`kin:${d.day}`));
     // Day 1 opens like the show: the first Circle Chat, where the strangers
     // say hello, straight after the profiles and before any private chat.
     if (d.day === 1) runCircleChat(state, ds('open:1'), { first: true, when: 'day' });

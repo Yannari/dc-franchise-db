@@ -14,7 +14,7 @@ import { feel, mood } from './mind.js';
 import { makeClaim, learn, passOnWeight, contradictions } from './claims.js';
 import { rollSlips, probe } from './slips.js';
 import { revealTo } from './reveal.js';
-import { attractionOk, performedFlirt } from './chat.js';
+import { attractionOk, performedFlirt, ageFit } from './chat.js';
 import { coverParts } from './cover.js';
 import { streamFor } from '../dr/rng.js';
 import { noteFlirt, coupleFlirt } from './twotiming.js';
@@ -73,6 +73,8 @@ export function curatedFor(state, h) {
 }
 const LIKED = new Set(['affection', 'attraction']);
 const toward = (state, h, dim, v) => (v > 0 && LIKED.has(dim) ? v * (1 + curatedFor(state, h)) : v);
+// A flirt that lands grows the crush only as far as the ages fit (chat.js ageFit).
+const grows = (state, to, from, dim, v) => (dim === 'attraction' && v > 0 ? v * ageFit(state, to, from) : v);
 
 export function reception(state, to, from, intent, sc = null) {
   const base = (rel(to, from, 'affection') + rel(to, from, 'trust')) / 20
@@ -92,7 +94,7 @@ export function decideEnding(rng, rec) {
 
 function applyEffect(state, from, to, intent, ending) {
   const e = EFFECT[intent][ending];
-  for (const [dim, v] of Object.entries(e)) bump(to, from, dim, toward(state, from, dim, v));
+  for (const [dim, v] of Object.entries(e)) bump(to, from, dim, grows(state, to, from, dim, toward(state, from, dim, v)));
   if (ending !== 'cold') for (const dim of ['affection', 'trust']) if (e[dim] > 0) bump(from, to, dim, toward(state, to, dim, e[dim] * 0.6));
   if (ending === 'warm' && WARMING.has(intent)) {
     for (const [a, b] of [[from, to], [to, from]]) { const row = (state.ideal[a] ||= {}); row[b] = (row[b] || 0) + 0.4; }

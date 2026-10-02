@@ -88,9 +88,10 @@ describe('a tie that crowns everyone', () => {
 
 describe('the visit', () => {
   it('reveals both people to each other and hands over a suspicion', () => {
-    const s = room(['X', 'F', 'C'], {}, { C: 'catfish' });
+    // A social player with a close friend, and a doubt that is not yet a certainty: the friend gets the visit, and the warning.
+    const s = room(['X', 'F', 'C'], { X: { stats: { social: 10 } } }, { C: 'catfish' });
     bump('@x', '@f', 'affection', 9);
-    belief(s, '@x', '@c').real = 0.1;
+    belief(s, '@x', '@c').real = 0.45;
     s.active = ['@f', '@c'];
     const before = belief(s, '@f', '@c').real;
     const sc = runVisit(s, streamFor(4, 'v'), '@x', ['@c']);
@@ -98,6 +99,16 @@ describe('the visit', () => {
     expect(isRevealed(s, '@f', '@x') && isRevealed(s, '@x', '@f')).toBe(true);
     expect(sc.data.handed).toBeTruthy();
     expect(belief(s, '@f', '@c').real).toBeLessThan(before);
+  });
+
+  it('a strong doubt and a sharp mind: they go and see the suspect for themselves', () => {
+    const s = room(['X', 'F', 'C'], { X: { stats: { intuition: 9, social: 3 } } }, { C: 'catfish' });
+    bump('@x', '@f', 'affection', 4);
+    belief(s, '@x', '@c').real = 0.1;
+    s.active = ['@f', '@c'];
+    const sc = runVisit(s, streamFor(4, 'v'), '@x', []);
+    expect(sc.who).toEqual(['@x', '@c']);
+    expect(sc.data.motive).toBe('truth');
   });
 
   it('a scheming visited player may lie about it the next day', () => {

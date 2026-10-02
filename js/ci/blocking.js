@@ -20,6 +20,7 @@ import { deliberate } from './hangout.js';
 import { THEORY_LINE } from './slips.js';
 import { handOver } from './powers.js';
 import { rideOrDieTarget } from './twists.js';
+import { kinVisit, kinGoodbye, kinAtDoor } from './kin.js';
 
 export function atRiskOf(state, influencers) {
   const pool = state.active.filter(h => !influencers.includes(h));
@@ -105,21 +106,33 @@ export function standardBlocking(state, rng, ratingRow, { format = 'standard', s
 // Influencer who did it goes to have it out: how much they resent them, times
 // how bold and how short-fused they are. A calm player still only wants
 // answers; the same grudge in a hothead is a fight.
-export const CONFRONT = { base: 2, heat: 1.35 };
+export const CONFRONT = { base: 2.2, heat: 1.0 };
 export const heatOf = (state, h) => S(state, h, 'boldness') / 10 * (1.6 - S(state, h, 'temperament') / 10);
 export function confrontWeight(state, h, c) {
   return CONFRONT.base + Math.max(0, rel(h, c, 'resentment')) * heatOf(state, h) * CONFRONT.heat;
 }
 
+// Who a blocked player goes to see (user, 2026-10-02: "why the visit is always
+// someone that blocked you ... can they go see someone else like a flirt or
+// friend or someone they're suspicious of?"). Every reason is weighed by the
+// person: the strategic want answers, the social go to a friend, the bold to
+// a crush, the sharp to the profile they never believed, the guilty to
+// someone they wronged. Before this: 55% to an Influencer, 35% a friend, a
+// suspect once in 237 visits, an apology never, a crush never.
+export const VISIT_W = { friend: 1.0, crush: 0.62, answers: 2.4, truth: 1.8, apology: 1.6 };
 export function chooseVisit(state, rng, h, blockers) {
-  const guilt = mood(state, h, 'guilt') / 10;
+  const guilt = mood(state, h, 'guilt') / 10 + (state.profiles[h]?.mode === 'catfish' ? 0.25 : 0);
+  const st = k => S(state, h, k) / 10;
   return state.active.map(c => {
     const m = {
-      friend: Math.max(0, rel(h, c, 'affection')),
-      answers: blockers.includes(c) ? rel(h, c, 'resentment') + 2 : 0,
+      friend: Math.max(0, rel(h, c, 'affection')) * (0.5 + st('social') * 0.5) * VISIT_W.friend,
+      crush: attractionOk(state, h, c) ? Math.max(0, rel(h, c, 'attraction')) * (0.4 + st('boldness') * 0.6)
+        * (rel(c, h, 'attraction') >= 3 ? 1.2 : 0.7) * VISIT_W.crush : 0,
+      answers: blockers.includes(c) ? (Math.max(0, rel(h, c, 'resentment')) * 0.8 + VISIT_W.answers) * (0.6 + st('strategic') * 0.6) : 0,
       confront: blockers.includes(c) ? confrontWeight(state, h, c) : 0,
-      truth: (1 - belief(state, h, c).real) * 8,
-      apology: guilt * Math.max(0, rel(h, c, 'affection')) * 1.5,
+      truth: (1 - belief(state, h, c).real) * (2 + st('intuition') * 8) * VISIT_W.truth,
+      apology: guilt * (Math.max(0, rel(h, c, 'affection')) + Math.max(0, rel(c, h, 'resentment')) * 0.8) * VISIT_W.apology,
+      ...kinVisit(state, h, c),
     };
     const [motive, w] = Object.entries(m).sort((a, b) => b[1] - a[1])[0];
     return { to: c, motive, w: w + rng() * 1.5 };
@@ -166,6 +179,8 @@ export function runVisit(state, rng, h, blockers, { to: forced = null, inPerson 
   if (motive === 'confront') sc.data.clash = clash(state, rng, h, to);
   revealTo(state, to, h, sc);
   revealTo(state, h, to, sc);
+  // A relative behind the door, and one of them didn't know (ci/kin.js).
+  kinAtDoor(state, h, to, sc);
   if (friend) { handOver(state, rng, h, to, power, sc); state.nightPower = null; }
   const suspect = state.active.filter(o => o !== to).map(o => [o, belief(state, h, o).real])
     .sort((a, b) => a[1] - b[1])[0];
@@ -233,5 +248,8 @@ export function goodbyeVideo(state, rng, h) {
   }
   const b = state.blocked.find(x => x.handle === h);
   if (b && state.profiles[h].mode !== 'catfish') for (const i of b.by) if (isActive(state, i)) feel(state, i, 'guilt', 1.5);
+  // A word for a relative still in (ci/kin.js).
+  const kg = kinGoodbye(state, h, b?.by || [], sc);
+  if (kg) sc.data.kin = kg;
   return sc;
 }

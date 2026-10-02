@@ -59,12 +59,30 @@ export const PERFORMED = 0.8;
 export const performedFlirt = (state, me, you) => state.profiles[me]?.mode === 'catfish'
   && !attractionOk(state, me, you) && personaInto(state, me, you);
 
-/** First sparks: every compatible pair gets 0..SPARK attraction, one way at a time. */
+// Age (user, 2026-10-02: "someone in his 60-70 would easily be attracted by
+// someone in his age range, but very less to someone in their 20s"). The
+// range a person of age A is usually drawn to — the old "half your age plus
+// seven", up to twice their age less fourteen — and fast fading outside it.
+// Their own real age; the age the other PROFILE shows (a catfish posing as
+// 25 draws the 25-year-olds).
+export const AGE_FADE = 8;          // years outside the range that take the pull to nothing
+export const AGE_FLOOR = 0.06;      // what is left of it, far outside
+export function ageFit(state, me, you) {
+  const ages = (state.profiles[me]?.players || []).map(n => state.people[n]?.age).filter(x => x > 0);
+  const them = state.profiles[you]?.shown?.age;
+  if (!ages.length || !(them > 0)) return 1;
+  const a = ages.reduce((s, x) => s + x, 0) / ages.length;
+  const lo = Math.max(18, a / 2 + 7), hi = Math.max(a + 4, 2 * (a - 7));
+  const out = them < lo ? lo - them : them > hi ? them - hi : 0;
+  return Math.max(AGE_FLOOR, 1 - out / AGE_FADE);
+}
+
+/** First sparks: every compatible pair gets 0..SPARK attraction, one way at a time, as their ages fit. */
 export function seedAttraction(state, rng) {
   const all = Object.keys(state.profiles);
   for (const a of all) for (const b of all) {
     if (a !== b && attractionOk(state, a, b)) {
-      bump(a, b, 'attraction', rng() * SPARK * (state.profiles[b].mode === 'catfish' ? PERSONA_APPEAL : 1));
+      bump(a, b, 'attraction', rng() * SPARK * (state.profiles[b].mode === 'catfish' ? PERSONA_APPEAL : 1) * ageFit(state, a, b));
     }
   }
 }

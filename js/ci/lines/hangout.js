@@ -54,6 +54,19 @@ export const HANGOUT = {
       { by: 'a', send: "My gut says {c} is not who {c.sub} says {c.sub} is" },
       { by: 'b', react: "Hm. That's a big thing to say.", send: "I've had the same feeling. I just didn't want to say it first" },
     ] },
+    { id: 'hangout.view.fake.cut.04', turns: [
+      { by: 'a', send: "Has {c} ever said one specific thing about {c.posAdj} life? One?" },
+      { by: 'b', send: "Now that you mention it... no" },
+      { by: 'a', send: "That's my whole point" },
+    ] },
+    { id: 'hangout.view.fake.cut.05', turns: [
+      { by: 'b', send: "If we're blocking a catfish tonight, it's {c}" },
+      { by: 'a', react: "Oh, we agree. We totally agree.", send: "The answers are too rehearsed. Every time" },
+    ] },
+    { id: 'hangout.view.fake.cut.06', turns: [
+      { by: 'a', say: "I can't prove it. I just know it.", send: "I don't believe {c}'s pictures. Not one of them" },
+      { by: 'b', send: "Same. They look like a magazine" },
+    ], beat: "{b} pulls up {c}'s profile and squints at it." },
   ],
   'hangout.view.threat.cut': [
     { id: 'hangout.view.threat.cut.01', turns: [
@@ -97,6 +110,19 @@ export const HANGOUT = {
       { by: 'a', send: "I can't keep playing next to {c}. I just can't" },
       { by: 'b', send: "I hear you. {c.Sub} hasn't been great to me either" },
     ] },
+    { id: 'hangout.view.grudge.cut.04', turns: [
+      { by: 'a', send: "{c} threw shade at me in Circle Chat. In front of everybody" },
+      { by: 'b', send: "I saw that. It was not cute" },
+    ] },
+    { id: 'hangout.view.grudge.cut.05', turns: [
+      { by: 'b', send: "Be honest. Would {c} protect either of us?" },
+      { by: 'a', send: "Not in a million years" },
+      { by: 'b', react: "Then that's the answer." },
+    ] },
+    { id: 'hangout.view.grudge.cut.06', turns: [
+      { by: 'a', say: "I'm trying to keep my feelings out of this. I'm failing.", send: "I've tried to make peace with {c}. It didn't work" },
+      { by: 'b', send: "Then stop trying. That's what tonight is for" },
+    ] },
   ],
   'hangout.view.noBond.cut': [
     { id: 'hangout.view.noBond.cut.01', turns: [
@@ -113,6 +139,18 @@ export const HANGOUT = {
       { by: 'a', say: "This feels awful. I don't even know {c}.", send: "What has {c} actually said to you?" },
       { by: 'b', send: "Honestly? Nothing. Which kind of says something" },
     ] },
+    { id: 'hangout.view.noBond.cut.04', turns: [
+      { by: 'a', send: "If {c} left tomorrow, would either of us feel it?" },
+      { by: 'b', send: "Honestly? No. And I hate that I said that" },
+    ] },
+    { id: 'hangout.view.noBond.cut.05', turns: [
+      { by: 'b', send: "{c} never reached out to me. Not once" },
+      { by: 'a', send: "Me neither. That's a choice {c.sub} made" },
+    ] },
+    { id: 'hangout.view.noBond.cut.06', turns: [
+      { by: 'a', say: "This is the worst part of the whole game.", send: "We protect the people who protect us. {c} isn't one of them" },
+      { by: 'b', send: "Agreed. It's not personal" },
+    ], beat: '{a} sighs and rubs {a.posAdj} forehead.' },
   ],
   'hangout.view.noBond.keep': [
     { id: 'hangout.view.noBond.keep.01', turns: [

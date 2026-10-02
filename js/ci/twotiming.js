@@ -36,6 +36,7 @@
 import { rel, bump, S, clamp, addScene } from './state.js';
 import { feel, mood } from './mind.js';
 import { makeClaim, learn } from './claims.js';
+import { togetherInCast } from './kin.js';
 
 export const FOCUS = 0.75;           // how hard loyalty pulls a player toward one romance
 export const TAKEN_RESTRAINT = 0.6;  // how hard loyalty holds back someone who is taken
@@ -59,7 +60,8 @@ export const COUPLE_GAME = 0.9;      // how likely a couple's flirt is the agree
 const ROMANTIC = new Set(['couple', 'married']);
 /** Two people together, sharing one profile (shared.js relation). */
 export const romanticPair = (state, h) => (state.profiles[h]?.players?.length || 0) > 1 && ROMANTIC.has(state.profiles[h]?.relation);
-const takenOf = (state, h) => (romanticPair(state, h) ? 1 : takenness(realOf(state, h)?.status));
+// A couple sharing a profile, or a spouse/partner who is in the cast too (ci/kin.js).
+const takenOf = (state, h) => (romanticPair(state, h) || togetherInCast(state, h) ? 1 : takenness(realOf(state, h)?.status));
 /** Really in a relationship (whatever the profile says); a couple is, by each other. */
 export const taken = (state, h) => takenOf(state, h) >= 1;
 /** Says so on the profile? A taken player can show "Single" (profiles.js edits). */

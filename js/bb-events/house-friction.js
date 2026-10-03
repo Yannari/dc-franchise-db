@@ -23,7 +23,6 @@
 // the room reads somebody. A row about a frying pan does not move a vote. It
 // moves who somebody sits next to for the next three days, and eventually
 // that moves a vote.
-import { pronouns } from '../players.js';
 import { gs } from '../core.js';
 import {
   pStats, bond, band, closestTo, furthestFrom, dislikes, trusts,
@@ -271,7 +270,6 @@ const condescension = {
   },
   fire(house, ctx, api) {
     const { culprit, annoyed } = _grating(house, ctx);
-    const p = pronouns(annoyed);
     const witness = _others(house, culprit, annoyed)[0];
     api.addBond(annoyed, culprit, -1.1);
     api.remember(annoyed, culprit, 'talks-down-to-me', 2, { about: 'being spoken to' });
@@ -318,7 +316,6 @@ const theStory = {
     const pool = _live(house);
     const teller = pool.slice().sort((a, b) => (pStats(b).social || 5) - (pStats(a).social || 5))[0];
     const tired = _others(house, teller).slice(0, 2);
-    const p = pronouns(teller);
     api.popDelta(teller, -1);
     tired.forEach(n => api.addBond(n, tired.find(m => m !== n) || n, 0.3));
     const scene = makeScene('friction.story', { a: teller, b: tired[0] || null, c: tired[1] || null }, { ending: 'scene' }, [], _room(['kitchen', 'living-room'], ctx, teller));
@@ -345,7 +342,6 @@ const theSnap = {
     const snapper = pool.slice().sort((a, b) =>
       (pStats(a).temperament || 5) - (pStats(b).temperament || 5))[0];
     const at = _others(house, snapper)[0];
-    const p = pronouns(snapper);
     api.addBond(snapper, at, -0.4);
     // A house that watched somebody crack reads them differently afterwards.
     _others(house, snapper).slice(0, 3).forEach(w => api.suspicion(w, snapper, 0.2));
@@ -395,7 +391,6 @@ const theWorkout = {
   },
   fire(house, ctx, api) {
     const { a, b } = _casualPair(house, ctx);
-    const pb = pronouns(b);
     api.addBond(a, b, 1.1);
     const scene = makeScene('life.workout', { a, b }, { ending: 'scene' }, [], 'backyard');
     return {

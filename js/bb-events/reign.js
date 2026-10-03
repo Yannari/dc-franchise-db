@@ -19,22 +19,14 @@
 // alliance disagree with itself.
 
 import { gs } from '../core.js';
-import { pronouns } from '../players.js';
 import {
   pStats, bond, perceived, band, closestTo, furthestFrom, beatsInvolving, spotlightOrder,
   alliancesOf, archetype, targetOf,
 } from './_read.js';
 import { reignTemperament, reignMadeAnEnemy } from '../bb/reign.js';
-import { freshLine } from '../bb/aired.js';
 import { makeScene } from '../bb/script/scene.js';
 import { writeMeeting } from '../bb/script/meeting.js';
 
-function _variant(list, ctx, ...salt) {
-  const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${ctx?.act || ''}|${salt.join('|')}`;
-  let hash = 0;
-  for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
-  return freshLine(list, hash, ctx);
-}
 const _others = (house, ...exclude) => house.filter(n => n && !exclude.includes(n));
 /** Least-seen first, weighted toward whoever this week is about. */
 const _quiet = pool => spotlightOrder(pool);
@@ -82,19 +74,10 @@ const houseMeeting = {
     const hoh = ctx.hoh;
     _spend(this.id, ctx);
     const room = _others(house, hoh);
-    const p = pronouns(hoh);
-    const target = targetOf(hoh) || furthestFrom(hoh, room) || room[0];
     // Somebody says the quiet part in front of everybody, which is the entire
     // mechanism: the meeting does not fail because of the answer, it fails
     // because the question was asked in public.
     const honest = _quiet(room).find(n => pStats(n).boldness >= 6) || room[0];
-
-    const text = _variant([
-      `${hoh} calls everybody into the living room and opens with, “This is not a dictatorship.” A few people glance at each other before ${p.sub} reaches the end of the sentence.`,
-      `${hoh} spends most of the meeting explaining why nobody should take the nominations personally. ${_list(room.slice(0, 3))} leave together and immediately discuss how personal it sounded.`,
-      `${hoh} stands in the middle of the living room and asks, one at a time, who wants ${target} to stay. ${honest} answers honestly. Everybody watches ${hoh} hear it.`,
-      `${hoh} calls a house meeting to clear the air, then asks each person to declare where they stand. The answers grow shorter as the room gets more uncomfortable.`,
-    ], ctx, hoh, honest);
 
     room.forEach(n => {
       api.addBond(hoh, n, -0.9);
@@ -107,17 +90,11 @@ const houseMeeting = {
     api.popDelta(hoh, -3);
     const written = writeMeeting({ caller: hoh, about: honest, witness: room.find(n => n !== honest) || null,
       outcome: 'backfires', cause: 'power' }, ctx);
-    return { text: written ? written.text : text, players: [hoh, ...room], badgeText: 'HOUSE MEETING', badgeClass: 'red',
-      ...(written ? { lines: written.lines, lineId: written.lineId, location: 'living-room' } : {}),
+    return { text: written.text, players: [hoh, ...room], badgeText: 'HOUSE MEETING', badgeClass: 'red',
+      lines: written.lines, lineId: written.lineId, location: 'living-room',
       // Same scene, same treatment on the screen.
       meeting: { caller: hoh, about: honest, outcome: 'backfires', cause: 'power', room: [...room],
-        beats: written ? written.beats : [
-          { kind: 'call', who: hoh, text: `${hoh} does not shout it. ${p.Sub} ${p.sub === 'they' ? 'do' : 'does'} not have to — the Head of Household asking everybody to come to the living room is not a request, and all ${room.length} of them know it.` },
-          { kind: 'assemble', who: null, text: `They arrive in the order people arrive when they have been summoned rather than invited: quickly, and without talking on the way.` },
-          { kind: 'case', who: hoh, text: `"This is not a dictatorship." It is the first thing ${hoh} says and it is the only thing anybody will quote afterwards.` },
-          { kind: 'answer', who: honest, text: `${honest} admits ${p.posAdj} target has support. Someone behind the couch whispers, “Thank you,” and ${hoh} hears it.` },
-          { kind: 'verdict', who: null, text: `The meeting breaks up with ${hoh} still holding power and far fewer people willing to visit the HOH room alone.` },
-        ] } };
+        beats: written.beats } };
   },
 };
 

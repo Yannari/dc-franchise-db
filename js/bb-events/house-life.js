@@ -21,18 +21,10 @@ import {
   isNice, isVillainous, archetype, romanceOf, trustOf, resentmentOf,
   beatsInvolving, spotlightOrder,
 } from './_read.js';
-import { freshLine } from '../bb/aired.js';
 import { makeScene } from '../bb/script/scene.js';
 import { writeMeeting } from '../bb/script/meeting.js';
 
 // ── helpers ───────────────────────────────────────────────────────────
-
-function _variant(list, ctx, ...salt) {
-  const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${ctx?.act || ''}|${salt.join('|')}`;
-  let hash = 0;
-  for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
-  return freshLine(list, hash, ctx);
-}
 
 const _others = (house, ...exclude) => house.filter(n => n && !exclude.includes(n));
 /** Least-seen first, weighted toward whoever this week is about. */
@@ -357,7 +349,6 @@ const houseMeeting = {
     }
     const { caller, about, cause } = call;
     const room = _others(house, caller);
-    const p = pronouns(caller);
     const stats = pStats(caller);
 
     // Composure separates an accusation from a meltdown; having an actual case
@@ -382,26 +373,6 @@ const houseMeeting = {
     const outcome = feared ? 'nobody talks'
       : composed && hasACase ? 'lands'
       : composed ? 'fizzles' : 'backfires';
-
-    const text = outcome === 'nobody talks' ? _variant([
-      `${caller} calls everybody into the living room. ${about} takes a seat with the rest of them, and every person who encouraged ${caller} in private suddenly has nothing to add.`,
-      `${caller} asks who else heard what ${about} said. A few people look down; one starts picking at a cushion. ${about} waits for an answer that never comes.`,
-      `${caller} repeats the question with ${about} sitting a few feet away. Nobody backs ${caller} up, though several people were willing to do it behind a closed door.`,
-      `${caller} asks for a show of hands. The room checks ${about}'s face first, and every hand stays down.`,
-    ], ctx, caller, about) : outcome === 'lands' ? _variant([
-      `${caller} asks ${about} the same question twice. ${about} gives two different answers, and somebody at the end of the couch says, “Wait, that's not what you told me.”`,
-      `${caller} names the conversations, the rooms and the people who were there. Before ${about} can answer, two witnesses start filling in the missing parts.`,
-      `${caller} keeps ${p.posAdj} voice level and lets ${about} talk. The longer ${about} explains, the more people in the room begin interrupting with corrections.`,
-    ], ctx, caller, about) : outcome === 'fizzles' ? _variant([
-      `${caller} calls a house meeting about dirty dishes. Everybody agrees the kitchen is disgusting; nobody admits leaving anything in the sink.`,
-      `${caller} asks everyone to communicate more directly. The room nods, breaks up and immediately separates into smaller groups to discuss what ${caller} really meant.`,
-      `${caller} says ${p.posAdj} piece, several people apologize in general terms, and the meeting ends without either ${caller} or ${about} speaking directly to each other.`,
-    ], ctx, caller, about) : _variant([
-      `${caller} opens with, “Everybody has a problem with this.” Nobody confirms it. ${about} barely has to defend ${pronouns(about).ref}; the room is already backing away from ${caller}'s version of events.`,
-      `${caller} tries to put ${about} on trial, but keeps interrupting every answer. By the time somebody asks ${caller} to let ${about} finish, the room has chosen a side.`,
-      `${caller} delivers a speech that sounded better alone in the bedroom. In the living room it feels rehearsed, and ${about}'s quiet “Can I answer now?” gets the strongest reaction.`,
-      `${caller} says, “I'm not attacking anybody,” then lists everything ${about} has done wrong. Somebody near the door winces, and the rest of the room follows.`,
-    ], ctx, caller, about);
 
     if (outcome === 'lands') {
       room.filter(n => n !== about).forEach(n => {
@@ -437,17 +408,17 @@ const houseMeeting = {
       api.popDelta(caller, 1);
     }
 
-    // Written as one four-part script; the old paragraph stays only for a meeting with no words.
+    // Written as one four-part script (bb/script/meeting.js).
     const written = writeMeeting({ caller, about, witness: room.find(n => n !== about) || null, outcome, cause }, ctx);
     return {
-      text: written ? written.text : text, players: [caller, about].filter(Boolean),
-      ...(written ? { lines: written.lines, lineId: written.lineId, location: 'living-room' } : {}),
+      text: written.text, players: [caller, about].filter(Boolean),
+      lines: written.lines, lineId: written.lineId, location: 'living-room',
       // The whole room, so the screen can draw what a house meeting actually is
       // — everybody in one place — instead of two portraits like any other
       // conversation. This is the loudest thing that happens in a week and it
       // was rendering identically to an argument about the washing up.
       meeting: { caller, about, outcome, cause, room: [...room],
-        beats: written ? written.beats : _meetingBeats({ caller, about, outcome, cause, room, house, ctx }) },
+        beats: written.beats },
       badgeText: outcome === 'lands' ? 'THEY HAD RECEIPTS'
         : outcome === 'backfires' ? 'THE ROOM TURNS'
         : outcome === 'nobody talks' ? 'NOBODY WILL SAY IT' : 'NOTHING CHANGES',
@@ -457,94 +428,6 @@ const houseMeeting = {
     };
   },
 };
-
-/**
- * The meeting, moment by moment.
- *
- * A house meeting is not a paragraph, it is a sequence: somebody shouts, the
- * room fills, a case gets made, the person it is about answers or does not, and
- * then everybody finds out where they stand. Rendering it as one card
- * compressed the only scene of the week where all fourteen people are in shot
- * into the same shape as an argument about the washing up.
- *
- * Four to five beats, each attributed, so the screen can play them one at a
- * time and the room can visibly change between them.
- */
-function _meetingBeats({ caller, about, outcome, cause, room, house, ctx }) {
-  const p = pronouns(caller);
-  const q = about ? pronouns(about) : p;
-  const witness = room.find(n => n !== about) || null;
-
-  const called = _variant([
-    `“HOUSE MEETING.” ${caller} calls it from the kitchen, then walks to the living room and waits while bedroom doors begin opening.`,
-    `${caller} shouts for everybody to come to the living room. Conversations stop mid-sentence, and the house starts filing in.`,
-    `${caller} calls a house meeting. Chairs scrape, blankets arrive from the bedrooms, and ${room.length + 1} houseguests gather without knowing who has been named.`,
-    `${caller} walks from room to room telling everyone to meet in the living room. By the time the last person arrives, half the house already thinks the meeting is about them.`,
-  ], ctx, caller, 'call');
-
-  const assembled = _variant([
-    `${about || 'The last houseguest'} enters after most of the seats are taken. The space beside ${caller} remains conspicuously empty.`,
-    `Some people sit; others stay behind the couch. Nobody asks what this is about because everybody expects to find out soon enough.`,
-    `${about ? `${about} arrives, sees ${caller} standing in the middle of the room and chooses the seat nearest the door.` : 'The room fills, but nobody seems certain who should speak first.'}`,
-    `${caller} waits until every bedroom is empty and the kitchen is quiet. ${about ? `${about} takes the final seat and looks directly at ${caller}.` : 'Nobody volunteers to begin.'}`,
-  ], ctx, caller, 'assemble');
-
-  const theCase = cause === 'lie' ? _variant([
-    `${caller} does not raise ${p.posAdj} voice. ${p.Sub} repeats, exactly, what ${about} has been telling people about ${p.obj}, and asks ${about} to say it again now.`,
-    `"Somebody in this room has been telling people I offered deals I never offered." ${caller} does not `
-      + `name ${about}, but turns toward ${about} before anyone else can ask who the meeting is about.`,
-    `${caller} names the false story, who first repeated it and where it was supposedly said. Then ${p.sub} turns to ${about}: “Tell them where you got it.”`,
-    `${caller} asks three people to repeat what ${about} told them privately. The details differ, but every version puts ${caller} at the centre of the lie.`,
-  ], ctx, caller, 'case') : cause === 'nothing-to-lose' ? _variant([
-    `${caller} is on the block and done protecting conversations that have not protected ${p.obj}. ${p.Sub} starts naming the promises people made before the ceremony.`,
-    `“If I'm leaving, you should know what people have been saying.” ${caller} starts with one name, then follows the story through every room it reached.`,
-    `${caller} tells the room exactly who promised a vote and who has avoided ${p.obj} since. “If the plan is decided, at least own it in front of me.”`,
-    `${caller} has nothing left to protect and reads the house its own private promises: one deal, then another, with the people who made them sitting feet away.`,
-  ], ctx, caller, 'case') : _variant([
-    `${caller} has been repeating this argument alone for long enough to know every word. Once ${p.sub} starts, ${p.sub} does not pause until ${about}'s name is out.`,
-    `${caller} begins with a complaint about respect, then turns toward ${about} and finally says what the complaint is really about.`,
-    `${caller} explains the incident from the beginning, including the part ${about} keeps leaving out when telling other people. ${about} interrupts before ${caller} reaches the end.`,
-    `${caller} says this could have stayed private until ${about} started discussing it around the house. Now ${caller} wants the same conversation with witnesses.`,
-  ], ctx, caller, 'case');
-
-  const answer = outcome === 'nobody talks' ? _variant([
-    `${about} says nothing. ${q.Sub} ${q.sub === 'they' ? 'do' : 'does'} not need to — ${q.sub} ${q.sub === 'they' ? 'look' : 'looks'} around the room once, slowly, and three people who were nodding stop nodding.`,
-    `The silence goes on long enough to stop being a pause. ${witness || 'Somebody'} studies the carpet. ${about} waits, entirely comfortable, for somebody braver.`,
-    `${caller} asks ${about} for an answer twice. ${about} looks around the room and asks whether anyone else wants to speak first. Nobody does.`,
-    `${about} refuses to defend ${q.ref} in a room where nobody will admit what they said privately. The meeting stalls because every witness suddenly remembers less.`,
-  ], ctx, caller, 'answer') : outcome === 'lands' ? _variant([
-    `${about} answers, and then answers again slightly differently, and the second version is the one everybody remembers.`,
-    `${about} asks who else has a problem. It is meant as a challenge. Two hands go up and it stops being one.`,
-    `${about} denies the accusation, but ${witness || 'somebody on the couch'} supplies a detail only the original speaker could know. The room turns back toward ${about}.`,
-    `${about} tries to dismiss the story as game talk. Two people immediately describe separate promises that support ${caller}'s version.`,
-  ], ctx, caller, 'answer') : outcome === 'backfires' ? _variant([
-    `${about} does not interrupt. ${q.Sub} ${q.sub === 'they' ? 'let' : 'lets'} ${caller} keep talking until somebody else asks when ${about} will get a turn.`,
-    `“Are you finished?” ${about} asks without raising ${q.posAdj} voice. Someone on the couch mutters, “Let ${about} answer,” and the mood turns.`,
-    `${about} answers each accusation with a specific time, place and witness. By the third answer, people are checking ${caller}'s story instead.`,
-    `${caller} keeps adding complaints after ${about} answers the original one. The room notices the target moving and begins defending ${about}.`,
-  ], ctx, caller, 'answer') : _variant([
-    `${witness || 'Somebody'} breaks the silence with a joke about the dirty kitchen. Enough people laugh that ${caller} cannot pull the room back.`,
-    `${witness || 'Somebody'} asks why ${caller} did not speak to ${about} privately. Several people nod, and the meeting begins ending around them.`,
-    `${about} gives a short answer and leaves. Without a confrontation to watch, the rest of the house follows before ${caller} can restart the argument.`,
-    `Two side arguments begin before ${caller} finishes making the point. Within minutes the room is debating everything except what the meeting was called to address.`,
-  ], ctx, caller, 'answer');
-
-  const verdict = outcome === 'lands'
-    ? `It breaks up without anybody announcing an end. Before ${about} can leave the room, two people stop ${q.obj} to ask why ${q.posAdj} answers changed.`
-    : outcome === 'backfires'
-      ? `People drift out in twos, and every pair is talking about ${caller}. Not one of them is talking about ${about}.`
-      : outcome === 'nobody talks'
-        ? `Nothing was decided and everybody learned the same thing: this house does not say ${about}'s name out loud yet.`
-        : `Everybody promises to handle things differently. The meeting breaks up, and ${caller} and ${about} leave through separate doors.`;
-
-  return [
-    { kind: 'call', who: caller, text: called },
-    { kind: 'assemble', who: null, text: assembled },
-    { kind: 'case', who: caller, text: theCase },
-    { kind: 'answer', who: about, text: answer },
-    { kind: 'verdict', who: null, text: verdict },
-  ];
-}
 
 /**
  * Who would call one, and about what.

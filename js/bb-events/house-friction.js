@@ -28,7 +28,6 @@ import {
   pStats, bond, band, closestTo, furthestFrom, dislikes, trusts,
   sharesAlliance, resentmentOf, grudge, isVillainous, isNice, spotlightOrder,
 } from './_read.js';
-import { freshLine } from '../bb/aired.js';
 import { makeScene } from '../bb/script/scene.js';
 
 /** Which room a scene happens in: by hash, never a die. */
@@ -46,13 +45,6 @@ const _WORDS = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'ei
   'eighteen', 'nineteen', 'twenty'];
 const _countWord = n => _WORDS[n] || String(n);
 const _capWord = w => w.charAt(0).toUpperCase() + w.slice(1);
-
-function _variant(list, ctx, ...salt) {
-  const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${ctx?.act || ''}|${salt.join('|')}`;
-  let hash = 0;
-  for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
-  return freshLine(list, hash, ctx);
-}
 
 /**
  * Ordinary life happens in the gaps, and barely at all on a ceremony day.

@@ -18,6 +18,11 @@ import { getBond, setBond, getPerceivedBond, bKey, bondLabel, feelsFor, setLean 
 import { KINSHIP_EVENTS } from '../js/bb-events/kinship.js';
 import { HOUSE_EVENTS } from '../js/bb-events/index.js';
 import { seedGame } from './helpers/setup.js';
+import { scriptBeat } from '../js/bb/script/inject.js';
+
+// An event now returns a scene; this writes it the way a season does.
+const said_ = (beat, week = 1) => beat.text ?? scriptBeat(beat.scene.kind, beat.scene.who, beat.scene.data,
+  { week: { num: week }, room: beat.scene.room })?.text;
 
 const STAT_KEYS = ['physical', 'endurance', 'mental', 'social', 'strategic',
   'loyalty', 'boldness', 'intuition', 'temperament'];
@@ -207,8 +212,8 @@ describe('scenes that need the two numbers to disagree', () => {
     const api = stubApi();
     const beat = e.fire(NAMES, ctx(), api);
     expect(beat.players).toEqual(['Gus', 'Iris']);
-    expect(beat.text).toContain('Gus');
-    expect(beat.text).not.toMatch(/undefined|NaN|\[object|haves/);
+    expect(said_(beat)).toContain('Gus');
+    expect(said_(beat)).not.toMatch(/undefined|NaN|\[object|haves/);
     // It costs the person carrying it, which is the point of modelling it.
     expect(api.log.some(x => x[0] === 'bond')).toBe(true);
   });
@@ -287,7 +292,7 @@ describe('the weekly ones do not say the same thing twice', () => {
     const said = [];
     for (let w = 1; w <= 4; w++) {
       setLean('Gus', 'Iris', 8);  // hold the situation still
-      said.push(e.fire(NAMES, ctx(w), stubApi()).text);
+      said.push(said_(e.fire(NAMES, ctx(w), stubApi()), w));
     }
     // The ache between two exes printed the identical sentence three weeks
     // running when the variant was a hash of the week number.
@@ -308,7 +313,7 @@ describe('the prose', () => {
     for (const e of KINSHIP_EVENTS) {
       if (!e.weight(NAMES, ctx(4))) continue;
       const beat = e.fire(NAMES, ctx(4), stubApi(), () => 0.5);
-      const all = `${beat.text} ${beat.badgeText}`;
+      const all = `${said_(beat, 4)} ${beat.badgeText}`;
       expect(all, `${e.id}: ${all.slice(0, 90)}`)
         .not.toMatch(/your married|your siblings|YOUR MARRIED|YOUR SIBLINGS/);
       expect(all).not.toMatch(/undefined|NaN|\[object|haves\b/);

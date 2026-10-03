@@ -48,6 +48,7 @@ import VFALL from './vfall.js';
 import ENGINE2 from './engine2.js';
 import KIN from './kin.js';
 import PAST from './past.js';
+import ANON from './anon.js';
 
-export const POOLS = { ...FRICTION, ...CEREMONY, ...TALK, ...SOCIAL, ...DEALS, ...ALLIANCE, ...CAMPAIGN, ...POWER, ...LIFE, ...PHASE, ...BLOC, ...VENUE, ...FALLOUT, ...BOND, ...REIGN, ...SCHEME, ...FOLLOWUP, ...TEXTURE, ...EDITORIAL, ...ARC, ...COUPLE, ...JURY, ...PLAN, ...KNOWN, ...CER, ...ROMANCE, ...UPKEEP, ...ENGINE, ...DRINKS, ...MEETING, ...SLOP, ...WHACK, ...TWIST1, ...TWIST2, ...TWIST3, ...TWIST4, ...TWIST5, ...TWIST6, ...TWIST7, ...TWIST8, ...TWIST9, ...TWIST10, ...TWIST11, ...TWIST12, ...VFALL, ...ENGINE2, ...KIN, ...PAST };
+export const POOLS = { ...FRICTION, ...CEREMONY, ...TALK, ...SOCIAL, ...DEALS, ...ALLIANCE, ...CAMPAIGN, ...POWER, ...LIFE, ...PHASE, ...BLOC, ...VENUE, ...FALLOUT, ...BOND, ...REIGN, ...SCHEME, ...FOLLOWUP, ...TEXTURE, ...EDITORIAL, ...ARC, ...COUPLE, ...JURY, ...PLAN, ...KNOWN, ...CER, ...ROMANCE, ...UPKEEP, ...ENGINE, ...DRINKS, ...MEETING, ...SLOP, ...WHACK, ...TWIST1, ...TWIST2, ...TWIST3, ...TWIST4, ...TWIST5, ...TWIST6, ...TWIST7, ...TWIST8, ...TWIST9, ...TWIST10, ...TWIST11, ...TWIST12, ...VFALL, ...ENGINE2, ...KIN, ...PAST, ...ANON };
 export const POOL_KEYS = Object.keys(POOLS);

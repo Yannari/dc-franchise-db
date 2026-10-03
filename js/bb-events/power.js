@@ -18,7 +18,6 @@
 // The rule of the file: pitching, raging and pleading all change what somebody
 // does next, or they do not belong here.
 
-import { pronouns } from '../players.js';
 import {
   pStats, bond, band, perceived, closestTo, furthestFrom, trusts, dislikes, campaignArgument,
   sharesAlliance, grudge, remembers, suspicionOf, targetOf, threat, willScheme,
@@ -462,9 +461,11 @@ const replacementFallout = {
     }
     if (saved) api.remember(replacement, saved, 'grievance', 1, { about: 'came off and I went up' });
     api.popDelta(replacement, blindsided ? 2 : 0);
-    const scene = hoh ? makeScene('power.replaced', { a: replacement, b: hoh }, { ending: blindsided ? 'blindsided' : 'expected' }, house, 'living-room') : null;
+    // A secret HOH leaves nobody to face (lines/anon.js).
+    const scene = hoh ? makeScene('power.replaced', { a: replacement, b: hoh }, { ending: blindsided ? 'blindsided' : 'expected' }, house, 'living-room')
+      : makeScene('power.replaced', { a: replacement }, { ending: 'anon' }, house, 'living-room');
     return {
-      ...(scene ? { scene } : { text: `${replacement} takes the empty chair.` }), players: [replacement, hoh].filter(Boolean),
+      scene, players: [replacement, hoh].filter(Boolean),
       badgeText: blindsided ? 'TOLD I WAS SAFE' : 'THE REPLACEMENT',
       badgeClass: 'red',
     };
@@ -934,8 +935,9 @@ const savedThemselves = {
       api.suspicion(hoh, saved, 0.7);
       api.addBond(hoh, saved, -0.5);
     }
-    const scene = hoh ? makeScene('power.saved-self', { a: saved, b: hoh }, { ending: 'saved' }, house, 'living-room') : null;
-    return { ...(scene ? { scene } : { text: `${saved} took ${pronouns(saved).ref} off the block.` }),
+    const scene = hoh ? makeScene('power.saved-self', { a: saved, b: hoh }, { ending: 'saved' }, house, 'living-room')
+      : makeScene('power.saved-self', { a: saved }, { ending: 'anon' }, house, 'living-room');
+    return { scene,
       players: [saved, hoh].filter(Boolean), badgeText: 'SAVED THEMSELVES', badgeClass: 'green' };
   },
 };
@@ -965,10 +967,11 @@ const replacementReacts = {
     }
     if (saved) api.addBond(replacement, saved, -0.7);
     const scene = hoh ? makeScene('power.replaced-reacts', { a: replacement, b: hoh, c: saved || null }, { ending: mode }, [],
-      _room(['kitchen', 'bedroom', 'backyard'], ctx, replacement, hoh)) : null;
-    if (scene) scene.seenBy = [replacement, hoh];
+      _room(['kitchen', 'bedroom', 'backyard'], ctx, replacement, hoh))
+      : makeScene('power.replaced-reacts', { a: replacement }, { ending: 'anon' }, [], 'bedroom');
+    scene.seenBy = [replacement, hoh].filter(Boolean);
     return {
-      ...(scene ? { scene } : { text: `${replacement} takes the news.` }), players: [replacement, hoh].filter(Boolean),
+      scene, players: [replacement, hoh].filter(Boolean),
       badgeText: mode === 'angry' ? 'TAKES IT BADLY' : mode === 'crushed' ? 'SAYS IT IS FINE' : 'TAKES IT COLDLY',
       badgeClass: mode === 'angry' ? 'red' : mode === 'crushed' ? 'blue' : 'grey',
     };
@@ -1004,10 +1007,11 @@ const vetoHolderFallout = {
     if (saved) { api.addBond(holder, saved, 1.6); api.remember(saved, holder, 'saved-me', 3); }
     api.popDelta(holder, 1);
     const scene = hoh ? makeScene('power.veto-fallout', { a: holder, b: hoh, c: saved || null }, { ending: 'fallout' }, [],
-      _room(['kitchen', 'living-room'], ctx, holder, hoh)) : null;
-    if (scene) scene.seenBy = [holder, hoh];
-    return { ...(scene ? { scene } : { text: `${holder} used the veto on ${saved}.` }),
-      players: [holder, hoh].filter(Boolean), badgeText: 'BLOOD ON THEIR HANDS', badgeClass: 'red' };
+      _room(['kitchen', 'living-room'], ctx, holder, hoh))
+      : makeScene('power.veto-fallout', { a: holder, b: saved }, { ending: 'anon' }, [], 'living-room');
+    if (hoh) scene.seenBy = [holder, hoh];
+    return { scene,
+      players: [holder, hoh || saved].filter(Boolean), badgeText: 'BLOOD ON THEIR HANDS', badgeClass: 'red' };
   },
 };
 
@@ -1026,9 +1030,13 @@ const nobodySurprised = {
     const noms = _noms(ctx);
     const watchers = _quiet(_others(house, ...noms, _hoh(ctx))).slice(0, 2);
     noms.forEach(n => watchers.forEach(w => api.suspicion(w, n, 0.2)));
-    const scene = watchers.length >= 2 ? makeScene('power.no-surprise', { a: watchers[0], b: watchers[1] }, { ending: 'flat' }, [], 'living-room') : null;
+    // Two quiet watchers; in a small house, one; with nobody left off the block, a nominee.
+    const speaker = watchers.length ? null : noms[0] || null;
+    const scene = watchers.length >= 2 ? makeScene('power.no-surprise', { a: watchers[0], b: watchers[1] }, { ending: 'flat' }, [], 'living-room')
+      : watchers.length === 1 ? makeScene('power.no-surprise', { a: watchers[0] }, { ending: 'alone' }, [], 'living-room')
+        : speaker ? makeScene('power.no-surprise', { a: speaker }, { ending: 'nominee' }, [], 'living-room') : null;
     return { ...(scene ? { scene } : { text: 'The ceremony changes nothing, and nobody is surprised.' }),
-      players: watchers.filter(Boolean), badgeText: 'NOBODY IS SURPRISED', badgeClass: 'grey' };
+      players: speaker ? [speaker] : watchers.filter(Boolean), badgeText: 'NOBODY IS SURPRISED', badgeClass: 'grey' };
   },
 };
 

@@ -49,10 +49,10 @@ function placeOf(k, n) {
   return [a[0] + (b2[0] - a[0]) * f, a[1] + (b2[1] - a[1]) * f, a[2] + (b2[2] - a[2]) * f];
 }
 
-export function endgameStageScreen(ep, observer, pageHtml) {
-  if (!(ep && ep.tr && ep.tr.endgame)) return pageHtml;
+export function endgameStageScreen(ep, observer, pageHtml, seg = 'all') {
+  if (!(ep && ep.tr && ep.tr.endgame) || !pageHtml) return pageHtml;
   const init = () => {
-    const data = endgameStageData(ep, observer);
+    const data = endgameStageData(ep, observer, seg);
     if (!data) return { steps: [] };
     const steps = beatLines(data.beats, (n, part, ctx) => {
       // the slates and the tally are drawn by the count sentence after them; read raw they are names and digits
@@ -89,8 +89,8 @@ export function endgameStageScreen(ep, observer, pageHtml) {
     });
     return { data, steps };
   };
-  const uid = 'teg-' + String(ep.num) + '-' + (hash(observer) % 1e6);
-  reg()[uid] = { uid, steps: null, init, idx: -1, title: 'The Endgame',
+  const uid = 'teg-' + String(ep.num) + '-' + String(seg).replace(/\W/g, '') + '-' + (hash(observer) % 1e6);
+  reg()[uid] = { uid, steps: null, init, idx: -1, title: String(seg).startsWith('fire:') ? 'The Fire Of Truth' : 'The Endgame',
     day: (ep.tr && ep.tr.ep) || ep.num, pot: ep.tr && ep.tr.pot, timers: [], painter: paint };
   if (typeof queueMicrotask === 'function' && typeof window !== 'undefined' && window.trStageMountAll) {
     queueMicrotask(window.trStageMountAll);
@@ -101,15 +101,18 @@ export function endgameStageScreen(ep, observer, pageHtml) {
 /** Everything that has happened by step idx: who is still at the fire, what the fire is doing. */
 function stateAt(S) {
   const v = S.data.v;
-  const r = { gone: new Set(), turned: {}, fire: 'low', slip: null, thrown: false, money: false, dark: false, kind: '' };
+  const r = { gone: new Set(), turned: {}, fire: 'low', slip: null, thrown: false, money: false, dark: false, kind: '', party: false };
   for (let k = 0; k <= S.idx; k++) {
     const st = S.steps[k], m = st.meta || {};
     const first = (S.steps[k - 1] || {}).beat !== st.beat;
     r.kind = m.kind || '';
     r.slip = null; r.thrown = false;
     if (m.kind === 'ask') { r.fire = 'flare'; if (first) r.thrown = k; }
-    if (m.kind === 'answer') r.slip = { who: m.name, shown: m.shown };
-    if (m.kind === 'count') r.fire = m.unanimous ? 'settle' : 'roar';
+    // EVERY POUCH BURNS ITS COLOUR as it lands (the US format): green to end,
+    // red to banish again; the count leaves the fire on the answer
+    if (m.kind === 'answer') { r.slip = { who: m.name, shown: m.shown }; r.fire = m.shown === 'banish' ? 'redflame' : m.shown === 'end' ? 'green' : 'flare'; }
+    if (m.kind === 'count') r.fire = m.unanimous ? 'green' : 'redflame';
+    if (m.kind === 'celebrate') r.party = true;
     if (m.kind === 'table' && m.chosen) r.gone.add(m.chosen);
     if (m.kind === 'suspense') { r.fire = 'dim'; r.dark = true; }
     if (m.kind === 'unmask-open') { r.fire = 'low'; r.dark = false; }
@@ -133,7 +136,11 @@ function paint(root, S, fresh) {
   const r = st ? stateAt(S) : { gone: new Set(), turned: {}, fire: 'low', slip: null, thrown: false, money: false, dark: false, kind: '' };
   const m = (st && st.meta) || {};
   const firstOfBeat = st && (S.steps[S.idx - 1] || {}).beat !== st.beat;
-  const room = v.room.slice(0, 9);
+  // WHO IS AT THIS FIRE: the people asked this time, or (the finale) whoever is still standing
+  const seg = S.data.seg || 'all';
+  const fireN = String(seg).startsWith('fire:') ? Number(String(seg).split(':')[1]) || 0 : -1;
+  const room = (fireN >= 0 ? ((v.asks[fireN] || {}).living || v.room)
+    : seg === 'finale' && (v.reveals || []).length ? v.reveals.map(x => x.name) : v.room).slice(0, 9);
   const takers = new Set(v.takers || []);
   const speaker = st && (st.t === 'say' || st.react) ? st.who : null;
 
@@ -154,7 +161,7 @@ function paint(root, S, fresh) {
       + `<div class="teg-av">${face(name)}</div><div class="teg-nm">${esc(name)}</div>`
       + (role ? `<div class="teg-role">${role === 'traitor' ? 'Traitor' : 'Faithful'}</div>` : '')
       + (r.slip && r.slip.who === name
-        ? `<div class="teg-slip${fresh ? ' teg-unfold' : ''}" data-c="${esc(r.slip.shown)}">${r.slip.shown === 'banish' ? 'Another' : r.slip.shown === 'end' ? 'End it' : 'Sealed'}</div>` : '')
+        ? `<div class="teg-slip teg-pouch${fresh ? ' teg-unfold' : ''}" data-c="${esc(r.slip.shown)}">${r.slip.shown === 'banish' ? 'Red' : r.slip.shown === 'end' ? 'Green' : 'Sealed'}</div>` : '')
       + '</div>';
     // a slip thrown into the fire, from every hand still here
     if (r.thrown !== false && S.idx === r.thrown && fresh) {
@@ -178,6 +185,15 @@ function paint(root, S, fresh) {
   }
   h += '</div>';
   if (r.dark) h += '<div class="teg-dark"></div>';
+  // THE FIREWORKS, over the castle, for the winners
+  if (r.party) {
+    const cols = v.winner === 'traitors' ? ['#ff3a4a', '#ffd760', '#ff8a2a'] : ['#ffd760', '#9fe8ff', '#ffffff', '#7dff9a'];
+    h += '<div class="teg-fw">' + Array.from({ length: 7 }, (_, k) => {
+      const c = cols[k % cols.length];
+      return `<div class="teg-burst" style="left:${12 + (hash('fx' + k) % 76)}%;top:${8 + (hash('fy' + k) % 26)}%;--c:${c};animation-delay:${(k * .55).toFixed(2)}s">`
+        + Array.from({ length: 18 }, (_, j) => `<i style="--a:${j * 20}deg"></i>`).join('') + '</div>';
+    }).join('') + '</div>';
+  }
   // the pot, once it is the subject
   if (r.money) h += `<div class="teg-pot"><span>In the box</span><b>£${Number(v.pot || 0).toLocaleString('en-GB')}</b>`
     + `<em>${v.takers.length === 1 ? 'one of them takes it all' : v.takers.length + ' ways'}</em></div>`;
@@ -218,6 +234,7 @@ function paint(root, S, fresh) {
     else if (m.kind === 'suspense') trPlay('tr-heartbeat', 300);
     else if (m.kind === 'unmask') trPlay(m.role === 'traitor' ? 'tr-clang' : 'tr-slate', 300);
     else if (m.kind === 'money' && !m.act) trPlay('tr-coins', 400);
+    else if (m.kind === 'celebrate') trPlay('tr-coins', 200);
   }
   const corner = root.querySelector('.trs-corner');
   corner.innerHTML = `The fire · <b>${r.money ? 'The box' : r.kind === 'unmask' ? 'Turning over' : r.dark ? 'The held breath'
@@ -257,6 +274,19 @@ const CSS = `
 .teg-fire.teg-settle{--s:.85;--c1:#fff8dc;--c2:#ffd27a;--c3:#e8a040}
 .teg-fire.teg-dim{--s:.25;filter:brightness(.6)}
 .teg-fire.teg-red{--s:1.6;--c1:#ffd0d0;--c2:#ff3a4a;--c3:#8e0a1a}
+.teg-fire.teg-redflame{--s:1.75;--c1:#ffe0d8;--c2:#ff3b30;--c3:#a3101a}
+.teg-fire.teg-green{--s:1.35;--c1:#eaffe8;--c2:#5dff7a;--c3:#138a3a}
+.teg-light.teg-redflame{--lc:rgba(230,40,40,.62)}
+.teg-light.teg-green{--lc:rgba(70,230,110,.5)}
+.teg-slip.teg-pouch{font-family:var(--v-display);font-weight:900;font-size:clamp(12px,1.2vw,16px);letter-spacing:.2em;text-transform:uppercase;border-radius:40% 40% 14% 14%}
+.teg-slip.teg-pouch[data-c="banish"]{color:#fff;background:linear-gradient(170deg,#e0353a,#8e1018);box-shadow:0 0 22px rgba(230,40,40,.8),0 8px 18px rgba(0,0,0,.7)}
+.teg-slip.teg-pouch[data-c="end"]{color:#08260f;background:linear-gradient(170deg,#7dff9a,#2a9a4a);box-shadow:0 0 22px rgba(70,230,110,.8),0 8px 18px rgba(0,0,0,.7)}
+.teg-fw{position:absolute;inset:0;z-index:45;pointer-events:none;overflow:hidden}
+.teg-burst{position:absolute;width:2px;height:2px;animation:tegBurstGo 3.6s ease-out infinite}
+.teg-burst i{position:absolute;left:0;top:0;width:5px;height:5px;margin:-2px;border-radius:50%;background:var(--c);box-shadow:0 0 10px var(--c),0 0 20px var(--c);
+  transform:rotate(var(--a)) translateX(0);opacity:0;animation:inherit;animation-name:tegSpark2}
+@keyframes tegBurstGo{0%{opacity:1}100%{opacity:1}}
+@keyframes tegSpark2{0%{opacity:0;transform:rotate(var(--a)) translateX(0)}8%{opacity:1}70%{opacity:1}100%{opacity:0;transform:rotate(var(--a)) translateX(clamp(60px,9vw,130px)) translateY(30px)}}
 .teg-fire.teg-pale{--s:1.15;--c1:#ffffff;--c2:#fff1c8;--c3:#e8c270}
 .teg-fire.teg-gold{--s:1.5;--c1:#fffbe6;--c2:#ffd760;--c3:#e8a020}
 .teg-fire.teg-burst{animation:tegBurst 1.2s ease-out}

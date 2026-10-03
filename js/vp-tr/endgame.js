@@ -1494,47 +1494,30 @@ const LT_CSS = `
 // events and cannot share a pool with a number substituted in.
 
 const OPEN = [
-  'The table is set for a room that used to seat twenty. What is left of the castle sits '
-  + 'down at it and is not asked to accuse anybody. It is asked something else.',
-  'The candles have been let go out. Nobody lit them again, because there is no evening '
-  + 'left to get through -- only a question, put once and then put again.',
-  'They come in and take chairs that no longer have anybody either side of them. The room '
-  + 'is the same room. Everything about the question in it has changed.',
-  'What is left of the cast sits down in a hall built for four times as many. From here '
-  + 'the game stops asking who is lying and starts asking whether anybody wants to keep going.',
+  'Night has fallen on the castle. What is left of the game gathers outside, around a fire that has been burning since sunset.',
+  'The torches are lit around the fire pit, and the last players stand in a circle around it. Nobody is accusing anybody yet.',
+  'They walk out of the castle doors and down to the fire. Whatever happens here decides who goes home with the money.',
+  'The castle is lit up behind them, and the fire is burning in front of them. This is where the game ends, one way or another.',
 ];
 
 const RULE = [
-  'Each of them writes one word, in private, and folds it. One word for another table, '
-  + 'one word for the end of it. A single vote for another table is enough to force one '
-  + '-- the game does not stop until every hand in the room agrees to stop it.',
-  'The question goes to each of them alone and is answered on paper. Anybody can keep the '
-  + 'game running by themselves; nobody can end it by themselves. That asymmetry is the '
-  + 'whole of the last night.',
-  'One word each, folded and handed back. It takes the entire room to finish, and one '
-  + 'person to carry on -- so the quietest player at the table holds the same power as the '
-  + 'loudest one, and neither of them has to explain it.',
-  'They answer in writing and out of sight of each other. Unanimity ends it; anything else '
-  + 'sends them all back to the same chairs tomorrow with one of them missing.',
+  'Each of them is given two pouches: one marked End Game, one marked Banish Again. One at a time, they throw one into the fire, and everybody watches it burn. Green means end the game. Red means another Round Table.',
+  'The rule is simple. If every pouch burns green, the game is over. If even one burns red, they all sit down at the Round Table again, and somebody else goes home.',
+  'There is no hiding at this fire. Each choice burns in front of the whole group, so everybody will know who wanted to keep going.',
+  'One pouch each, in front of everyone. Green ends it. Red keeps it going. It only takes one red flame to send them back to the table.',
 ];
 
 const ASK_FIRST = [
-  'The question is put for the first time. Nobody in this room has been asked it before, '
-  + 'and nobody knows how anybody else is going to answer.',
-  'The first time of asking. They have spent the whole season reading each other and none '
-  + 'of that reaches across a folded piece of paper.',
-  'It is put to them cold, with no debate before it and no debate allowed after it.',
-  'The first ask. Whatever they decide, they decide it without saying a word to anybody.',
+  'The first time at the fire. Nobody knows what anybody else is going to throw.',
+  'This is the first vote at the fire, and every one of them knows that a single red flame is enough.',
+  'They step up to the fire for the first time, pouches in hand.',
+  'The first pouches are about to be thrown. Everybody is watching everybody else.',
 ];
 const ASK_AGAIN = [
-  'The question comes round again, to a room one chair emptier and no wiser than it was. '
-  + 'Nothing was explained in between.',
-  'Asked again. They have lost somebody since the last time and they still do not know '
-  + 'whether losing them helped.',
-  'The same question, the same paper, fewer hands. The last one cost somebody the game and '
-  + 'told the survivors nothing at all.',
-  'Round again. Every previous answer is still folded up in somebody else{apos}s pocket, and '
-  + 'the room has to guess at all of them a second time.',
+  'Back to the fire, with one person fewer than last time.',
+  'They return to the fire. The last Round Table took somebody, and now they have to decide again.',
+  'The same choice, with fewer people left to make it.',
+  'Back at the fire. Everybody remembers who threw red last time.',
 ];
 
 const SAY_END = [
@@ -1563,7 +1546,7 @@ const NOTE_END = [
 ];
 const NOTE_BANISH = [
   'Is not finished with somebody in this room.',
-  'Has a name and no way to say it out loud.',
+  'Has a name, and is going to say it at the table.',
   'Would rather be wrong tomorrow than robbed tonight.',
   'Thinks the castle still has a cloak in it and is prepared to spend a table proving it.',
   'Cannot look at one of these faces without hearing something that did not add up.',
@@ -1583,21 +1566,16 @@ const NOTE_SEALED = [
 ];
 
 const COUNT_SPLIT = [
-  'It is not unanimous, so it is not over. The room goes back to the same chairs and one '
-  + 'of them will not be sitting in theirs tomorrow.',
-  'Somebody wants another one. That is all it takes, and the room is not told who.',
-  'The count is short of the room, which means the game continues -- and every person at '
-  + 'this table now knows that at least one of the others is not finished with them.',
-  'Not one voice. So they sit down again, in a room that has just learned somebody in it '
-  + 'is still hunting.',
+  'At least one red flame. The game goes on, and everybody saw who threw it.',
+  'The fire burned red, so they have to go back to the Round Table. Somebody here is not finished yet.',
+  'Not everyone wants to stop. They will sit down at the Round Table one more time.',
+  'Red in the fire means another banishment. The people who threw green are now looking hard at the people who did not.',
 ];
 const COUNT_ONE_VOICE = [
-  'One voice, and it is the only one this game accepts. Nothing else is written down and '
-  + 'nothing else will be.',
-  'Every hand in the room says the same word. That ends it, and it ends it without a '
-  + 'single explanation.',
-  'Unanimous. The game stops exactly where it stands, whoever happens to be standing in it.',
-  'Nobody asks for another. The castle is finished with them and they are finished with it.',
+  'Every pouch burned green. The game is over.',
+  'Green, all the way round. Nobody wants another Round Table, so the game ends here.',
+  'All green. They have agreed to stop, and there is no going back now.',
+  'Not a single red flame. The game is finished.',
 ];
 
 const TABLE_SILENT = [
@@ -1717,23 +1695,16 @@ const REACT_ROBBED = [
 // THE BEAT BEFORE THE BOX. The room has stopped, the cloaks are still on, and
 // for one held moment nobody knows — the whole season narrows to this.
 const SUSPENSE = [
-  'They have agreed to stop. The strongbox is carried in and set on the table, and for '
-  + 'the length of one breath not one person at it knows what any of the others are.',
-  'The game is over and the cloaks are still on. That is the trick of the ending: the '
-  + 'money is decided, and the people it is being decided between are about to find out '
-  + 'with everyone else.',
-  'No more slates. No more asks. Just the box on the table and the last thing left to '
-  + 'do -- which is to find out, all at once, who has been sitting there the whole time.',
-  'The candles are let go out and nobody lights them. There is no evening left to get '
-  + 'through, only the box, and the answer folded up inside the people around it.',
+  'They have chosen to end the game. The strongbox is set down beside the fire, and for a moment nobody knows what anybody else really is.',
+  'The game is over, but the truth has not come out yet. Everybody in this circle is about to find out who they have been playing with.',
+  'No more votes. All that is left is the reveal, and the money in the box.',
+  'The fire settles. They stand around it and wait, because the next few minutes decide everything.',
 ];
 const SUSPENSE_HOST = [
-  'You have stopped the game. Now I get to tell you what you stopped it on.',
-  'Before anybody touches that box -- one of you already knows how this ends. The rest '
-  + 'of you are about to.',
-  'You decided to trust each other. In a moment you will learn exactly what that was '
-  + 'worth.',
-  'Hands off the box. Look at the faces around you first. Remember them like this.',
+  'You have chosen to end the game. Before anybody touches that money, each of you will tell this group whether you are a Faithful or a Traitor.',
+  'The game is over. Now we find out whether you ended it on the truth.',
+  'Every pouch burned green. In a moment, you will each reveal what you are, and we will see who takes the prize.',
+  'You have stopped the game. Stay where you are. It is time to reveal yourselves.',
 ];
 // ══════════════════════════════════════════════════════════════════════
 // THE UNMASKING
@@ -1753,29 +1724,16 @@ const SUSPENSE_HOST = [
 
 /** The host stopping the room. This is the speech, and it is said once. */
 const UNMASK_HOST = [
-  'Nobody move. You have played this game for {days} days without ever being told '
-  + 'the truth, and I am about to tell you all of it at once.',
-  'You have made your decision. Now I make mine, which is to stop lying to you. '
-  + 'One at a time, in this room, we find out what you all were.',
-  'Look around this table. Some of you are exactly what you said you were. At '
-  + 'least one of you has been sitting there since the first morning waiting for this.',
-  'There is nothing left to vote on. There is only the last thing, which is the '
-  + 'truth, and it has been in this room the whole time.',
-  'You came in here strangers and you are leaving as something. In a moment you '
-  + 'will all find out what.',
-  'This is the part nobody can lie through. When I ask, you answer, and the answer '
-  + 'is the one you have been carrying since the night I picked.',
+  'One at a time, I will ask you to reveal yourself. Tell everybody here whether you are a Faithful or a Traitor.',
+  'This is the final reveal. When I call your name, tell everyone what you are.',
+  'For {days} days you have either been lying to each other or being lied to. Now, one by one, tell the truth.',
+  'Let us begin. When I say your name, tell us: are you a Faithful, or a Traitor?',
 ];
 const UNMASK_LEAD = [
-  'Nobody sits down. The host goes round the table and asks the only question the '
-  + 'castle has ever cared about, and this time there is no vote attached to it.',
-  'The candles are behind them and the room has gone completely quiet. One at a '
-  + 'time, each of them is asked to say what they are, out loud, to the people they '
-  + 'played it with.',
-  'This is the moment the whole season has been arranged around. Not the money — '
-  + 'the turning over.',
-  'They stand where they are. There is no slate to write on and nowhere to look '
-  + 'except at each other while it happens.',
+  'The host goes around the circle. Each of them has to say, out loud, what they really are.',
+  'Nobody sits down. One at a time, they reveal themselves to the people they played the game with.',
+  'This is the moment the whole season has been building towards. Not the money: the truth.',
+  'They stand around the fire and wait for their name to be called.',
 ];
 
 /** A Faithful turning over. Relief, or the cost of having been honest. */
@@ -1881,27 +1839,23 @@ const MONEY_LEAD = {
 };
 
 const HOST_ASK = [
-  'One word. Fold it. Nobody is going to read these out.',
-  'Write what you want to happen next, and be careful what that is.',
-  'You may end this now, all of you together, or not at all.',
-  'I want a word from each of you and I do not want to hear a single one of them.',
+  'Each of you has two pouches. Green ends the game. Red means you want one more Round Table. One at a time, throw one into the fire.',
+  'This is the Fire of Truth. If every pouch burns green, the game is over. If even one burns red, you go back to the Round Table.',
+  'Look at the people beside you. If you trust every one of them, throw green. If you do not, throw red. Everyone will see your choice.',
+  'One pouch each, into the flames. Green if you are ready to end it. Red if you want one more banishment.',
 ];
 const HOST_CLOSE = {
   faithfuls: [
-    'You never found the last one, and it turns out there was not a last one to find. '
-    + 'Take it. All of you.',
-    'You spent weeks accusing each other and you were right at the end of it. That happens '
-    + 'less often than you would like.',
-    'A clean castle. I have watched a great many of these and I do not see that often.',
-    'You stopped at exactly the right moment, and you had no way of knowing that.',
+    'Congratulations. You found every Traitor, and the prize is yours to share.',
+    'There are no Traitors left. Faithfuls, you have won.',
+    'You trusted the right people at the right moment. The money is yours.',
+    'Not a single Traitor left at this fire. Well played, all of you.',
   ],
   traitors: [
-    'You were sitting across a table from that for a very long time.',
-    'You ended the game the moment you should have kept going, and there was no way for '
-    + 'you to know it. That is the format working.',
-    'Somebody in that room was never worried, and now you know why.',
-    'You wanted an answer at every table you sat at. Here is the one the castle owed you, '
-    + 'and it is late.',
+    'The Traitors have won. They stood beside you until the very end, and you never found them.',
+    'You ended the game with a Traitor among you, so the prize goes to them.',
+    'Congratulations to the Traitors. You deceived everyone, and the money is yours.',
+    'The game is over, and the Traitors take everything.',
   ],
 };
 
@@ -2052,8 +2006,10 @@ function _view(ep, observer) {
 
 /** May this observer read this person's paper? */
 function _mayRead(v, name) {
+  // THE FIRE IS PUBLIC (the US format): everybody standing at it watched every
+  // pouch burn. A player who had already left the game did not.
   if (v.isAudience) return true;
-  return !!v.watcher && v.watcher === name;
+  return !!v.present || (!!v.watcher && v.watcher === name);
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -2255,18 +2211,18 @@ function _sceneOf(b) {
 const FIRE_TALK = {
   dramatic: [
     'Look around this fire. One of us is about to walk away with everything, and I don’t trust half of you.',
-    'This is it. Whatever we write now, we live with for the rest of our lives.',
+    'This is it. Whatever we throw now, we live with for the rest of our lives.',
     '{b}, look me in the eye and tell me nobody here has lied to me.',
     'I’ve come too far to lose this on a guess.',
     'Somebody here has lied to me every single day. I can feel it.',
     'I didn’t survive all those nights to be fooled at the very last fire.',
   ],
   calm: [
-    'Let’s just be honest with ourselves before we write anything.',
-    'I’ve thought about it all day. I know what I’m writing.',
+    'Let’s just be honest with ourselves before we throw anything.',
+    'I’ve thought about it all day. I know which pouch I’m throwing.',
     'Whatever happens, it’s been a good game. Let’s finish it properly.',
     '{b}, you’ve been quiet. What are you thinking?',
-    'No speeches. Write what you believe and live with it.',
+    'No speeches. Throw what you believe and live with it.',
     'We’ve all had a long time to think about this. Trust your gut.',
   ],
   mean: [
@@ -2286,15 +2242,15 @@ const FIRE_TALK = {
     'I keep thinking about the ones who didn’t make it to this fire.',
   ],
   idgaf: [
-    'Let’s just write it and go and sit by a fire somewhere warmer.',
+    'Let’s just throw them and go and sit by a fire somewhere warmer.',
     'Honestly, whatever happens happens.',
-    'I’m not making a speech. I’m writing my word.',
+    'I’m not making a speech. I know what I’m throwing.',
     '{b}, stop staring at me. I’ve already decided.',
     'I’m cold, I’m tired, and I’d like to know how this ends.',
     'Big night. Can we get on with it?',
   ],
   idk: [
-    'I genuinely don’t know what to write. Does anyone? No? Great.',
+    'I genuinely don’t know which one to throw. Does anyone? No? Great.',
     'Every time I think I’ve worked it out, I change my mind again.',
     '{b}, are you sure about this? Because I’m not sure about anything any more.',
     'I keep looking at all of you and I can’t tell. I just can’t.',
@@ -2314,7 +2270,7 @@ const FIRE_REPLY = {
     'Rich, coming from you, {a}.', '{a}, you’ve been saying things like that all week.'],
   sad: ['I know, {a}. I know.', 'I want to believe in all of us, {a}. I really do.',
     '{a}, I just want this to be over.', 'Whatever happens, {a}, I’m glad you’re still here.'],
-  idgaf: ['Sure, {a}. Whatever you say.', '{a}, can we just write the thing?',
+  idgaf: ['Sure, {a}. Whatever you say.', '{a}, can we just throw the things?',
     'Noted, {a}. Moving on.', 'Okay. Lovely, {a}.'],
   idk: ['I don’t know, {a}. I really don’t.', 'Wait, {a}, what do you mean by that?',
     '{a}, now you’re making me doubt myself.', 'Maybe you’re right, {a}. I have no idea any more.'],
@@ -2432,12 +2388,88 @@ function _egSaid(who, line) {
     + '<cite>' + _esc(who) + '</cite></div></div>';
 }
 
+// a red pouch, answered by somebody who threw green before it
+const RED_REACT = {
+  dramatic: ['{a}? Red? Who are you looking at?', 'There it is. {a} isn’t finished with one of us.', 'Red. Of course it was you, {a}.'],
+  calm: ['Okay. {a} has somebody in mind. We’ll hear it at the table.', 'Fair enough, {a}. You can explain it at the table.', 'Red. Alright. We go again.'],
+  mean: ['Interesting, {a}. Very interesting.', 'Red from {a}. Nobody here is surprised.', 'So who is it you want gone, {a}?'],
+  sad: ['Oh, {a}. I really thought we were done.', '{a}, why? I thought we trusted each other.', 'Please tell me it isn’t me, {a}.'],
+  idgaf: ['Great. Another table.', 'Red. Fine. Let’s go.', 'Well, there goes my evening.'],
+  idk: ['Wait, {a} threw red? Why?', '{a}? I didn’t see that coming.', 'Red? Who do you think it is, {a}?'],
+};
+// the circle, watching somebody turn over
+const UNMASK_REACT = {
+  traitor: {
+    dramatic: ['No. No! Not you, {a}!', 'I stood next to you every single night, {a}!', 'You looked me in the eye, {a}!'],
+    calm: ['Well played, {a}. Honestly.', 'I had a feeling, {a}. I just never said it.', 'Wow. Okay. Well done, {a}.'],
+    mean: ['I knew it. I said it weeks ago.', 'You snake, {a}.', 'Unbelievable. You absolute liar, {a}.'],
+    sad: ['{a}, how could you?', 'I defended you, {a}. I defended you.', 'I trusted you more than anyone, {a}.'],
+    idgaf: ['Ha. Fair play, {a}.', 'Didn’t see that one. Nice, {a}.', 'Well. That explains a lot.'],
+    idk: ['Wait. What? {a}?', 'I genuinely had no idea, {a}.', 'Hold on. The whole time, {a}?'],
+  },
+  faithful: {
+    dramatic: ['Yes! {a}, I knew it!', 'Thank God. Thank God, {a}.', '{a}! I knew you were with us!'],
+    calm: ['Good. I believed you, {a}.', 'I never doubted you, {a}.', 'That’s a relief, {a}.'],
+    mean: ['Told you. {a} was always fine.', 'At least one of you was honest.', 'Good. Now the rest of you.'],
+    sad: ['Oh, {a}. I’m so glad.', '{a}, I’m sorry I ever doubted you.', 'I’m so happy it’s you, {a}.'],
+    idgaf: ['Cool. Next.', 'Nice one, {a}.', 'Sure. Moving on.'],
+    idk: ['Phew. Okay. One down.', 'So if you’re Faithful, {a}, then who…?', 'Okay, {a}. I think. Okay.'],
+  },
+};
+// THE FIREWORKS: the finale's last beat, and the room's big reaction
+const CELEBRATE = {
+  faithfuls: [
+    'Fireworks burst over the castle. The winners grab each other and do not let go, laughing and crying at the same time.',
+    'The sky above the castle fills with fireworks. The Faithfuls throw their arms around each other in the light of them.',
+    'A roar goes up around the fire, and then the fireworks start. Every one of them is shouting.',
+  ],
+  traitors: [
+    'Fireworks light up the castle. The Traitors raise their arms in the glow of them, while the Faithfuls stand very still.',
+    'The sky fills with fireworks over a circle that has just learned the truth. Half of it is celebrating. Half of it is in shock.',
+    'The fireworks start, and the winners hug each other while the people they fooled try to take it in.',
+  ],
+};
+const CELEBRATE_HOST = {
+  faithfuls: ['Faithfuls, this is yours. Enjoy every second of it.', 'Congratulations, all of you. You have earned this.'],
+  traitors: ['Traitors, congratulations. That was a masterclass.', 'To the winners: it was ruthless, and it worked.'],
+};
+const CHEER = {
+  dramatic: ['We did it! We actually did it!', 'This is the best night of my life!'],
+  calm: ['I need a minute. That was incredible.', 'What a way to end it.'],
+  mean: ['I’d like to thank absolutely nobody.', 'Worth every lie I had to sit through.'],
+  sad: ['I can’t stop crying. I’m so happy.', 'I wish my family could see this.'],
+  idgaf: ['Right. Champagne?', 'Not bad. Not bad at all.'],
+  idk: ['Is this actually happening?', 'Somebody pinch me.'],
+};
+
 /** The page's beats, for the stage (js/vp-tr/endgame-stage.js). Same gates as the page. */
-export function endgameStageData(ep, observer = 'audience') {
+export function endgameStageData(ep, observer = 'audience', seg = 'all') {
   const v = _view(ep, observer);
   if (!v) return null;
   const h = _host();
-  return { v, beats: _buildBeats(v), host: { name: h.name, slug: h.slug } };
+  return { v, seg, beats: _segBeats(_buildBeats(v), v, seg), host: { name: h.name, slug: h.slug } };
+}
+// ── THE ENDGAME IS SEVERAL SCREENS (2026-10-03) ─────────────────────────
+//
+// 'fire:N' is the N-th time at the fire (the throws and the count); each table
+// that a red flame forces is a full Round Table screen of its own
+// (js/vp-tr/screens.js); 'finale' is the reveal, the box and the fireworks.
+// 'all' is the whole thing on one page, which is what a reader that wants the
+// season's ending in one place (the export, the tests) still gets.
+const FINALE_KINDS = new Set(['suspense', 'unmask-open', 'unmask', 'sent-home', 'money', 'celebrate']);
+function _segBeats(beats, v, seg) {
+  if (!seg || seg === 'all') return beats;
+  if (seg === 'finale') {
+    return beats.filter(b => {
+      const k = (b.meta || {}).kind;
+      return FINALE_KINDS.has(k) || (k === 'open' && !v.asks.length);
+    });
+  }
+  const n = Number(String(seg).split(':')[1]) || 0;
+  return beats.filter(b => {
+    const m = b.meta || {};
+    return (m.kind === 'open' && n === 0) || (m.askIdx === n && ['ask', 'answer', 'count'].includes(m.kind));
+  });
 }
 
 function _buildBeats(v) {
@@ -2455,7 +2487,7 @@ function _buildBeats(v) {
     if (g && g.channel === 'murder') byDoor.night++; else byDoor.vote++;
   }
   push('open', _card('open', 'The Room At The End', 'cold',
-    '<h2 class="lt-h">Nobody Is Going To Be Turned Over</h2>'
+    '<h2 class="lt-h">' + (v.revealOn ? 'The Fire Of Truth' : 'Nobody Is Going To Be Turned Over') + '</h2>'
     + '<p>' + _apos(_pick(OPEN, key + '|open')) + '</p>'
     + '<p>' + _apos(_pick(RULE, key + '|rule')) + '</p>'
     + _sums([
@@ -2491,7 +2523,7 @@ function _buildBeats(v) {
     const said = new Set();
     for (const c of a.choices) {
       const readable = _mayRead(v, c.name);
-      const word = readable ? (c.choice === 'banish' ? 'Another' : 'End it') : 'Sealed';
+      const word = readable ? (c.choice === 'banish' ? 'Red — banish again' : 'Green — end the game') : 'Sealed';
       // SAID IN THEIR OWN VOICE, and only where this layer may read the slip
       const spoke = readable
         ? _pickAway((c.choice === 'banish' ? SAY_BANISH_BY : SAY_END_BY)[voice(c.name)], akey + '|' + c.name, spoken)
@@ -2508,7 +2540,15 @@ function _buildBeats(v) {
         + '<span class="lt-slip-w">' + _esc(word) + '</span></span>'
         + '<span class="lt-answer-note">' + _apos(_esc(note)) + '</span>'
         + '</div>'
-        + (spoke ? _egSaid(c.name, spoke) : '')),
+        + (spoke ? _egSaid(c.name, spoke) : '')
+        + (() => {
+          if (!readable || c.choice !== 'banish') return '';
+          const before = a.choices.slice(0, a.choices.indexOf(c)).filter(x => x.choice !== 'banish').map(x => x.name);
+          const greens = before.length ? before : a.choices.filter(x => x.choice !== 'banish').map(x => x.name);
+          if (!greens.length) return '';
+          const who = greens[_hash(akey + '|redreact|' + c.name) % greens.length];
+          return say(who, RED_REACT[voice(who)], akey + '|redr|' + c.name, { a: c.name });
+        })()),
       { kind: 'answer', askIdx: i, name: c.name,
         shown: readable ? c.choice : 'sealed' });
     }
@@ -2522,9 +2562,9 @@ function _buildBeats(v) {
       + '<span class="lt-count-n" data-tone="' + (a.unanimous ? 'cold' : 'wax') + '">'
       + (a.unanimous ? 'None' : String(a.banish)) + '</span>'
       + '<span class="lt-count-s">' + (a.unanimous
-        ? 'not one hand asked for another'
-        : (a.banish === 1 ? 'one hand, of ' + a.choices.length
-          : a.banish + ' hands, of ' + a.choices.length)) + '</span></div>'
+        ? 'every flame burned green'
+        : (a.banish === 1 ? 'red flame, of ' + a.choices.length
+          : 'red flames, of ' + a.choices.length)) + '</span></div>'
       + '<p>' + _apos(_pick(a.unanimous ? COUNT_ONE_VOICE : COUNT_SPLIT, akey + '|count'))
       + '</p>'),
     { kind: 'count', askIdx: i, unanimous: a.unanimous, banish: a.banish });
@@ -2686,6 +2726,18 @@ function _buildBeats(v) {
             obj: pr.obj || 'them', posAdj: pr.posAdj || 'their' })) + '</p>'
         + '</div></div>'
         + say(r.name, UNMASK_SAID[isT ? 'traitor' : 'faithful'][voice(r.name)], key + '|unsay|' + r.name)
+        + (() => {
+          const others = v.reveals.filter(x => x.name !== r.name).map(x => x.name);
+          if (!others.length) return '';
+          const start = _hash(key + '|ureact|' + r.name) % others.length;
+          const n = Math.min(isT ? 2 : 1, others.length);
+          let out = '';
+          for (let k = 0; k < n; k++) {
+            const who = others[(start + k) % others.length];
+            out += say(who, UNMASK_REACT[isT ? 'traitor' : 'faithful'][voice(who)], key + '|ur|' + r.name + '|' + who, { a: r.name });
+          }
+          return out;
+        })()
         + (reactor
           ? '<div class="lt-reacts"><span class="lt-react" data-tone="shock">'
             + _av(reactor, 34) + '<span class="lt-react-tx">'
@@ -2701,7 +2753,8 @@ function _buildBeats(v) {
     // AND WHAT THEY SENT HOME BLIND. No endgame banishment revealed anything,
     // so this is the first time anybody learns whether the room was right —
     // the difference between a clean win and one they arrived at by luck.
-    if (v.sentHome.length) {
+    // (with reveals on, every one of them turned over at their own table already)
+    if (v.sentHome.length && !v.revealOn) {
       const right = v.sentHome.filter(x => x.role === 'traitor').length;
       push('unmask', _card('unmask', 'And The Ones They Sent Home', 'part',
         '<p>' + _apos(_fill(_pick(SENTHOME_LEAD, key + '|sent-lead'),
@@ -2774,6 +2827,16 @@ function _buildBeats(v) {
     ])
     + _hostBand(_esc(_pick(HOST_CLOSE[side], key + '|close')))),
   { kind: 'money' });
+
+  // ── THE FIREWORKS ────────────────────────────────────────────────────
+  // The finale's big reaction: the sky over the castle lights up, and every
+  // winner says something; the host has the last word.
+  push('money', _card('money', 'The Celebration', 'read',
+    '<h2 class="lt-h">' + (solo ? 'One Winner' : 'The Winners') + '</h2>'
+    + '<p>' + _apos(_pick(CELEBRATE[side] || CELEBRATE.faithfuls, key + '|celebrate')) + '</p>'
+    + v.takers.map(n => say(n, CHEER[voice(n)], key + '|cheer|' + n)).join('')
+    + _hostBand(_esc(_pick(CELEBRATE_HOST[side] || CELEBRATE_HOST.faithfuls, key + '|cheerhost')))),
+  { kind: 'celebrate' });
 
   return beats;
 }
@@ -3048,8 +3111,9 @@ export function trEndgameToggleStage(suffix, total, epNum) {
  * live on. `observer` is `'audience'` or `'player:<Name>'`; see `_view` for
  * exactly what the difference is.
  */
-export function rpBuildEndgame(ep, observer = 'audience') {
-  const suffix = 'endgame';
+export function rpBuildEndgame(ep, observer = 'audience', seg = 'all') {
+  const segNo = seg === 'finale' ? 99 : (String(seg).startsWith('fire:') ? Number(String(seg).split(':')[1]) || 0 : 98);
+  const suffix = 'endgame' + (seg === 'all' ? '' : '-' + segNo);
   const vars = '--lt-grain-src:' + _noiseTile('0.9', 4, 43, 0.3, 210) + ';';
   const css = '<style>' + LT_CSS + FT_CSS + '</style>' + _filters();
   const v = _view(ep, observer);
@@ -3067,9 +3131,12 @@ export function rpBuildEndgame(ep, observer = 'audience') {
       + '</div></div></div></div>';
   }
 
-  const beats = _buildBeats(v);
+  const beats = _segBeats(_buildBeats(v), v, seg);
+  if (!beats.length) return '';
   const total = beats.length;
-  const epNum = ep.num || v.ep || 0;
+  // one reveal state per segment: a fire and the finale on the same episode
+  // must not share a counter
+  const epNum = (ep.num || v.ep || 0) * (seg === 'all' ? 1 : 100) + (seg === 'all' ? 0 : segNo);
   const st = _state(epNum, total);
   if (st.idx > total - 1) st.idx = total - 1;
 

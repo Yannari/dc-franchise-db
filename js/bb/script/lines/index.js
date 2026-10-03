@@ -40,6 +40,7 @@ import TWIST5 from './twist5.js';
 import TWIST6 from './twist6.js';
 import TWIST7 from './twist7.js';
 import TWIST8 from './twist8.js';
+import TWIST9 from './twist9.js';
 
-export const POOLS = { ...FRICTION, ...CEREMONY, ...TALK, ...SOCIAL, ...DEALS, ...ALLIANCE, ...CAMPAIGN, ...POWER, ...LIFE, ...PHASE, ...BLOC, ...VENUE, ...FALLOUT, ...BOND, ...REIGN, ...SCHEME, ...FOLLOWUP, ...TEXTURE, ...EDITORIAL, ...ARC, ...COUPLE, ...JURY, ...PLAN, ...KNOWN, ...CER, ...ROMANCE, ...UPKEEP, ...ENGINE, ...DRINKS, ...MEETING, ...SLOP, ...WHACK, ...TWIST1, ...TWIST2, ...TWIST3, ...TWIST4, ...TWIST5, ...TWIST6, ...TWIST7, ...TWIST8 };
+export const POOLS = { ...FRICTION, ...CEREMONY, ...TALK, ...SOCIAL, ...DEALS, ...ALLIANCE, ...CAMPAIGN, ...POWER, ...LIFE, ...PHASE, ...BLOC, ...VENUE, ...FALLOUT, ...BOND, ...REIGN, ...SCHEME, ...FOLLOWUP, ...TEXTURE, ...EDITORIAL, ...ARC, ...COUPLE, ...JURY, ...PLAN, ...KNOWN, ...CER, ...ROMANCE, ...UPKEEP, ...ENGINE, ...DRINKS, ...MEETING, ...SLOP, ...WHACK, ...TWIST1, ...TWIST2, ...TWIST3, ...TWIST4, ...TWIST5, ...TWIST6, ...TWIST7, ...TWIST8, ...TWIST9 };
 export const POOL_KEYS = Object.keys(POOLS);

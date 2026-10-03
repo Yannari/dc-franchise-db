@@ -102,6 +102,8 @@ const PHASE6 = [
   'plan-internal-dissent', 'plan-swing-courted-twice', 'plan-competing-counts', 'plan-organizer-overconfident',
   'plan-quiet-refusal-spreads', 'plan-lie-almost-caught', 'backdoor-target-played-veto', 'pawn-in-danger-panic',
   'plan-blame-forming', 'plan-flip-collapses', 'target-survives-regroup',
+  // bb-events/power-knowledge.js (twist-driven: a public power)
+  'powerknown-arithmetic', 'powerknown-wait', 'powerknown-flush', 'powerknown-spent-mark',
 ];
 // Engine beats keep the players list the engine counts; a fallout scene is had
 // with an alliance member who is not on it, so these skip the speaker check.
@@ -119,6 +121,9 @@ const EVENT_IDS = new Set([...Object.values(CONVERTED), ...PHASE6]);
 // reign-* ones need two Heads of Household, which only Battle of the Block gives;
 // a kiss trap needs a showmance and an accomplice the schemer is close to;
 // a young showmance hiding or naming itself, or campaigning apart, is as rare.
+// Fires only under a scheduled twist, which these plain seasons never run; read
+// in twist seasons by the Phase 6 harness instead.
+const TWIST_ONLY = new Set(['powerknown-arithmetic', 'powerknown-wait', 'powerknown-flush', 'powerknown-spent-mark']);
 const RARE = new Set(['bond-first-kiss', 'reign-carve-it-up', 'reign-works-both-rooms', 'scheme-kiss-trap',
   'showmance-hiding-it', 'showmance-defined', 'showmance-separate-campaigns', 'showmance-block-pressure']);
 
@@ -165,7 +170,7 @@ describe('every intent airs as a script', () => {
       // A script: at least one line somebody SAYS (a lone Diary Room counts), never only narration.
       expect(Array.isArray(b.lines) && b.lines.some(l => l.kind !== 'beat'), `${b.eventId} week ${b.week} has no script`).toBe(true);
     }
-    for (const id of EVENT_IDS) if (!RARE.has(id)) expect(fired.has(id), `${id} never fired in three seasons`).toBe(true);
+    for (const id of EVENT_IDS) if (!RARE.has(id) && !TWIST_ONLY.has(id)) expect(fired.has(id), `${id} never fired in three seasons`).toBe(true);
   });
 
   it('fills every slot, and only the people in the scene speak', () => {
@@ -257,7 +262,7 @@ describe('the talk pools', () => {
   const FIXED = { 'plan.seen': 'bedroom', 'plan.backdoor': 'bedroom', 'jury.face': 'kitchen', 'jury.payment': 'pantry', 'couple.hiding': 'bedroom', 'couple.fight': 'bedroom', 'couple.jealous': 'kitchen', 'couple.defined': 'bedroom', 'editorial.bedroom': 'bedroom', 'editorial.latenight': 'kitchen', 'editorial.spark': 'backyard', 'editorial.flip': 'bedroom', 'editorial.breakdown': 'pantry', 'editorial.meeting': 'bedroom', 'editorial.standoff': 'kitchen', 'texture.kitchen': 'kitchen', 'texture.backyard': 'backyard', 'texture.snoring': 'bedroom', 'texture.namedrop': 'pantry', 'texture.trial': 'living-room', 'followup.isolation': 'kitchen', 'followup.overheard': 'living-room', 'followup.damage': 'pantry', 'followup.aftershock': 'bedroom', 'reign.carve': 'hoh-room', 'reign.both': 'hoh-room', 'bond.kiss': 'bedroom', 'bond.quiet': 'bedroom', 'bond.bad-day': 'bedroom', 'bond.petty': 'kitchen', 'fallout.grief': 'bedroom', 'fallout.rogue': 'kitchen', 'bloc.blowup': 'kitchen', 'phase.hoh-room': 'hoh-room', 'phase.scramble': 'hoh-room', 'phase.targets': 'hoh-room', 'phase.leaned': 'hoh-room', 'friction.dishes': 'kitchen', 'friction.food': 'kitchen', 'life.chores': 'kitchen', 'life.table': 'kitchen', 'life.cook': 'kitchen', 'life.workout': 'backyard', 'talk.safety': 'hoh-room', 'talk.pitch-target': 'hoh-room', 'talk.hoh-visit': 'hoh-room', 'talk.hoh-decide': 'hoh-room' };
   it('only stages a room where the scene is', () => {
     for (const [key, pool] of Object.entries(POOLS)) {
-      if (!/^(talk|social|deals|alliance|power|campaign|life|friction|phase|bloc|venue|fallout|bond|reign|scheme|followup|texture|editorial|arc|couple|jury|plan)\./.test(key)) continue;
+      if (!/^(talk|social|deals|alliance|power|campaign|life|friction|phase|bloc|venue|fallout|bond|reign|scheme|followup|texture|editorial|arc|couple|jury|plan|known)\./.test(key)) continue;
       const fixed = FIXED[key.split('.').slice(0, 2).join('.')];
       for (const e of pool) for (const t of e.turns) {
         if (!t.beat) continue;

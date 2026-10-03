@@ -13,16 +13,9 @@
 // somebody to be angry at: a houseguest stood up and stopped the eviction in
 // front of everybody, and now everybody knows they had something.
 import { gs } from '../core.js';
-import { pronouns } from '../players.js';
 import { pStats, band } from './_read.js';
-import { freshLine } from '../bb/aired.js';
+import { makeScene } from '../bb/script/scene.js';
 
-function _variant(list, ctx, ...salt) {
-  const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${ctx?.act || ''}|${salt.join('|')}`;
-  let hash = 0;
-  for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
-  return freshLine(list, hash, ctx);
-}
 const _others = (house, ...exclude) => house.filter(n => n && !exclude.includes(n));
 /** Reactions land on the campaign, or on next week's house life. */
 const _reactable = ctx => ctx?.act === 'house' || ctx?.act === 'campaign';
@@ -67,22 +60,16 @@ const stillHere = {
     const cast = _hexCast(house, ctx);
     if (!cast) return null;
     const { spared, against } = cast;
-    const p = pronouns(spared);
     const named = against.slice(0, 3).join(', ');
     const namedVerb = Math.min(against.length, 3) === 1 ? 'is' : 'are';
-    const text = _variant([
-      `Every vote was read out and then nothing happened, so ${spared} is standing in the kitchen with a complete list of the people who wanted ${p.obj} gone. ${named} ${namedVerb} on it, and ${against.length === 1 ? 'that voter knows' : 'all of them know'} ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} it.`,
-      `${spared} has not said anything about the vote. ${p.Sub} ${p.sub === 'they' ? 'do' : 'does'} not need to — ${against.length} people in this house voted to remove ${p.obj}, it was announced out loud, and ${p.sub} ${p.sub === 'they' ? 'are' : 'is'} still here.`,
-      `The house gave ${spared} the one thing you are never supposed to hand somebody: a public, itemised list of their enemies, with nothing at the end of it.`,
-      `${named} ${against.length === 1 ? 'spends' : 'spend'} the day working out how to explain a vote that everybody heard and that cost ${against.length === 1 ? 'that voter' : 'them'} nothing except ${spared}'s trust.`,
-    ], ctx, spared, named);
+    const scene = makeScene('hex.list', { a: spared, b: against[0] }, { ending: 'scene', group: named }, [], 'kitchen');
     for (const voter of against) {
       api.addBond(spared, voter, -1.4);
       api.suspicion(spared, voter, 1.4);
       try { api.remember(spared, voter, 'voted-me-out', 2, { survived: true }); } catch { /* texture */ }
     }
     api.popDelta(spared, 1);
-    return { text, players: [spared, ...against.slice(0, 3)],
+    return { scene, players: [spared, ...against.slice(0, 3)],
       badgeText: 'THE LIST', badgeClass: 'red' };
   },
 };
@@ -99,17 +86,11 @@ const spentItOnYou = {
     const cast = _hexHolderCast(house, ctx);
     if (!cast) return null;
     const { hex, reader } = cast;
-    const p = pronouns(hex.holder);
-    const text = _variant([
-      `${hex.holder} had a power nobody knew about and spent it on ${hex.spared} rather than on ${p.ref}. ${reader} finds that more interesting than the cancelled eviction: whatever their deal is, ${hex.spared} was worth burning the power for.`,
-      `The Hex is gone and ${hex.holder} is not protected by anything any more. ${reader} works that out roughly four minutes after the announcement.`,
-      `"${hex.holder} just told us two things," ${reader} says. "That there was a power. And exactly who ${p.sub} ${p.sub === 'they' ? 'were' : 'was'} willing to lose it for."`,
-      `${hex.holder} saved somebody else in front of the entire house. Whatever ${hex.holder} and ${hex.spared} call their relationship, nobody can treat it as casual now.`,
-    ], ctx, hex.holder, reader);
+    const scene = makeScene('hex.spent', { a: hex.holder, b: hex.spared, c: reader }, { ending: 'scene' }, [], 'living-room');
     api.suspicion(reader, hex.holder, 1.5);
     api.addBond(hex.spared, hex.holder, 1.6);
     try { api.setTarget(reader, hex.holder, 'spent a secret power in public'); } catch { /* texture */ }
-    return { text, players: [hex.holder, hex.spared, reader],
+    return { scene, players: [hex.holder, hex.spared, reader],
       badgeText: 'A PARTNERSHIP, CONFIRMED', badgeClass: 'gold' };
   },
 };

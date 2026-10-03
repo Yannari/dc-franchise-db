@@ -174,7 +174,11 @@ function paint(root, S, fresh) {
   h += `<div class="teg-fire teg-${r.fire}${fresh && (m.kind === 'count' || m.kind === 'unmask' || m.kind === 'ask') && firstOfBeat ? ' teg-burst' : ''}" `
     + `style="left:${b.x(EG.pit.base[0])}px;top:${b.y(EG.pit.base[1]) - fh * .08}px;width:${fw}px;height:${fh}px">`
     + '<i class="f1"></i><i class="f2"></i><i class="f3"></i><i class="f4"></i>'
-    + Array.from({ length: 16 }, (_, i) => `<b style="left:${20 + (hash('s' + i) % 60)}%;animation-delay:-${(hash('d' + i) % 30) / 10}s;animation-duration:${2.2 + (hash('t' + i) % 18) / 10}s"></b>`).join('')
+    // SMOKE, NOT DOTS (the user, 2026-10-03: "the smoke is visually very bad
+    // its just point"): soft plumes that rise, widen and fade, tinted by the
+    // fire's state; and a handful of embers as short streaks
+    + Array.from({ length: 7 }, (_, i) => `<s style="left:${32 + (hash('p' + i) % 36)}%;--dx:${(hash('x' + i) % 120) - 60}px;animation-delay:-${(i * 1.1).toFixed(1)}s;animation-duration:${6.5 + (hash('u' + i) % 30) / 10}s"></s>`).join('')
+    + Array.from({ length: 6 }, (_, i) => `<b style="left:${30 + (hash('s' + i) % 40)}%;animation-delay:-${(hash('d' + i) % 30) / 10}s;animation-duration:${1.8 + (hash('t' + i) % 14) / 10}s"></b>`).join('')
     + '</div>';
   // THE STRONGBOX: shut until the end, then light pours out of it
   if (r.money) {
@@ -266,8 +270,17 @@ const CSS = `
 .teg-fire .f3{width:40%;height:calc(84% * var(--s));margin-left:-8%;background:radial-gradient(55% 70% at 50% 85%,var(--c2),var(--c3) 50%,transparent 70%);animation:tegF 1.25s ease-in-out -.8s infinite alternate}
 .teg-fire .f4{width:30%;height:calc(52% * var(--s));margin-left:-15%;background:radial-gradient(55% 65% at 50% 80%,var(--c1),var(--c2) 55%,transparent 75%);animation:tegF .9s ease-in-out -.2s infinite alternate}
 @keyframes tegF{0%{transform:scaleY(.9) scaleX(1.04) skewX(-3deg)}50%{transform:scaleY(1.08) scaleX(.95) skewX(2deg)}100%{transform:scaleY(.96) scaleX(1.02) skewX(-1deg)}}
-.teg-fire b{position:absolute;bottom:20%;width:4px;height:4px;border-radius:50%;background:var(--c1);box-shadow:0 0 8px var(--c2);opacity:0;animation:tegSpark 3s linear infinite}
-@keyframes tegSpark{0%{opacity:0;transform:translate(0,0)}10%{opacity:1}100%{opacity:0;transform:translate(calc(var(--s) * 30px),calc(var(--s) * -260px))}}
+.teg-fire b{position:absolute;bottom:30%;width:2px;height:9px;border-radius:2px;background:linear-gradient(0deg,transparent,var(--c1));box-shadow:0 0 6px var(--c2);
+  opacity:0;animation:tegSpark 2.4s ease-out infinite}
+@keyframes tegSpark{0%{opacity:0;transform:translate(0,0) rotate(0)}12%{opacity:1}100%{opacity:0;transform:translate(calc(var(--s) * 24px),calc(var(--s) * -170px)) rotate(25deg)}}
+.teg-fire s{position:absolute;bottom:80%;width:70%;aspect-ratio:1;margin-left:-35%;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle at 50% 50%,var(--sm,rgba(150,140,134,.62)),rgba(120,110,104,.3) 45%,transparent 70%);filter:blur(14px);
+  opacity:0;animation:tegSmoke 7s ease-out infinite}
+@keyframes tegSmoke{0%{opacity:0;transform:translate(0,0) scale(.35)}18%{opacity:.85}100%{opacity:0;transform:translate(var(--dx),calc(var(--s) * -340px)) scale(2.6)}}
+.teg-fire.teg-redflame,.teg-fire.teg-red{--sm:rgba(170,90,86,.6)}
+.teg-fire.teg-green{--sm:rgba(110,150,118,.55)}
+.teg-fire.teg-gold{--sm:rgba(170,150,110,.55)}
+.teg-fire.teg-dim s{animation-duration:12s}
 .teg-fire.teg-low{--s:.75}
 .teg-fire.teg-flare{--s:1.05}
 .teg-fire.teg-roar{--s:1.7;--c2:#ff9a2a;--c3:#d63a12}

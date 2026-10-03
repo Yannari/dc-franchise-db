@@ -29,7 +29,8 @@ function finale(seed) {
   return row || null;
 }
 const screenFor = row => {
-  const s = TRAITORS_SCREENS.find(x => x.when(row) && /end/i.test(x.id));
+  // the finale itself: the fires and the votes at them are screens of their own now
+  const s = TRAITORS_SCREENS.find(x => x.when(row) && x.id === 'tr-endgame');
   return s ? s.build(row, 'audience') : '';
 };
 const text = html => String(html || '').replace(/<[^>]+>/g, ' ')

@@ -263,7 +263,9 @@ describe('CASTLE EVENTS WRITE ZERO BELIEFS (the plan\'s #1 constraint)', () => {
   // runs a test or offers a truce, so a suspicion channel there would indict
   // an innocent person every single time. That file's own header carries the
   // measurement.
-  const LEARN_IMPORTERS = ['armoury.js', 'banish-or-murder.js', 'deduction.js',
+  // endgame.js (2026-10-03): the Fire of Truth is public, and a red pouch
+  // thrown against the room is priced there (FIRE_RED_DOUBT)
+  const LEARN_IMPORTERS = ['armoury.js', 'banish-or-murder.js', 'deduction.js', 'endgame.js',
     'murder-variants.js', 'powers.js', 'roles.js', 'roundtable.js', 'strategy.js'];
 
   it('only the priced channels import learn(), and the scene API is not one of them', () => {

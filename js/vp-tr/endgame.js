@@ -1546,7 +1546,7 @@ const NOTE_END = [
 ];
 const NOTE_BANISH = [
   'Is not finished with somebody in this room.',
-  'Has a name, and is going to say it at the table.',
+  'Has a name, and is going to say it at the fire.',
   'Would rather be wrong tomorrow than robbed tonight.',
   'Thinks the castle still has a cloak in it and is prepared to spend a table proving it.',
   'Cannot look at one of these faces without hearing something that did not add up.',

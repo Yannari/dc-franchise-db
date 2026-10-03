@@ -1472,6 +1472,18 @@ const RT_CSS = `
 // words: the host resolves through `_host()` and the words through `_verbs()`,
 // and tests/tr-vp.test.js scans this file for both.
 
+// THE SAME SLOTS, AT THE FIRE: a finale vote is held where the pouches burned
+const HOST_FIRE = {
+  open: ['Stay where you are. We will do this here, at the fire.', 'Nobody leaves the fire. One of you is going home tonight.',
+    'The fire burned red, so we vote. Right here, right now.'],
+  debate: ['Somebody threw red. Tell the others who you suspect, and why.', 'Speak now. Who do you think is still a Traitor?',
+    'This is your last chance to make your case. Who is it?'],
+  write: ['Take your slate and write the name of the person you want to banish.', 'Write one name on your slate. Everybody votes.',
+    'It is time. Write your vote.'],
+  read: ['One at a time, show us your slate and tell us why.', 'Turn your slates around, one by one.', 'Show the fire your vote.'],
+  count: ['The votes are in.', 'Every slate has been shown.', 'That is every vote.'],
+  silence: ['There will be no reveal. You will find out what they were at the very end.'],
+};
 const HOST_LINES = {
   open: [
     'Welcome to the Round Table. Please take your seats.',
@@ -3162,13 +3174,13 @@ function _buildBeats(v) {
   // ── the room sits down ──────────────────────────────────────────────
   const seats = v.seated.map(n => _faceChip(n, 28)).join('');
   push('gather', _card(
-    v.endgame ? 'What Is Left Of The Room' : 'The Room Sits Down',
+    v.endgame ? 'At The Fire' : 'The Room Sits Down',
     'The table', 'table',
     '<p>' + _cap(_numWord(v.seated.length)) + ' of them, and one chalkboard each. '
     + (v.endgameBlind
       ? 'This far in there is nothing to work with but each other, and no answer coming afterwards.'
       : v.endgame
-      ? 'The fire burned red, so they sit down one more time. Whoever goes will tell the room what they were.'
+      ? 'The fire burned red, so they vote right there, standing round it. Whoever goes will tell the others what they were.'
       : 'Whatever anybody has worked out since breakfast has to be said here or not at all.')
     + '</p><div class="rt-faces">' + seats + '</div>'
     + _murmur(key + '|m0')), 'open', { kind: 'gather' });
@@ -4567,8 +4579,9 @@ export function rpBuildRoundTable(ep, observer = 'audience') {
   // a different vote — banishing one of those names takes it off the list.
   const v = _view(rec, observer, (ep && ep.tr && ep.tr.trial) || null,
     (ep && ep.tr && ep.tr.strategy) || null);
-  // the endgame follows this table tonight: there is no night to send them to
-  if (v && ep && ep.tr && ep.tr.endgame) v.noNight = true;
+  // the endgame follows this table tonight: there is no night to send them to,
+  // and it is THE LAST ROUND TABLE, the last one before the Fire of Truth
+  if (v && ep && ep.tr && ep.tr.endgame) { v.noNight = true; if (!v.endgame) v.lastTable = true; }
   const beats = _buildBeats(v);
   const total = beats.length;
   const epNum = ep.num || v.ep || 0;
@@ -4620,7 +4633,7 @@ export function rpBuildRoundTable(ep, observer = 'audience') {
   const stream = beats.map((b, i) =>
     '<div class="rt-beat' + (i <= st.idx ? ' rt-vis' : '')
     + '" id="rt-step-' + suffix + '-' + i + '" data-phase="' + b.phase + '">'
-    + (b.hostSlot ? _hostBand(_fill(_pick(HOST_LINES[b.hostSlot],
+    + (b.hostSlot ? _hostBand(_fill(_pick((v.endgame && HOST_FIRE[b.hostSlot]) || HOST_LINES[b.hostSlot],
       'rt|host|' + b.hostSlot + '|' + seedEp + '|' + (v.chosen || '')),
     { Nm: _esc(v.chosen || ''), nm: _esc(v.chosen || ''),
       banish: _esc(_verbs().banish), Banish: _esc(_cap(_verbs().banish)) })) : '')
@@ -4655,15 +4668,15 @@ export function rpBuildRoundTable(ep, observer = 'audience') {
     // the table sits in the evening and the turret meets that night.
     + '<div class="rt-eyebrow">The Traitors &middot; Evening ' + (v.ep || epNum)
     + (v.endgameBlind ? ' &middot; No Answers From Here' : v.endgame ? ' &middot; The Final' : '') + '</div>'
-    + '<h1 class="rt-title">' + (v.endgame ? 'THE LAST ROUND TABLE' : 'THE ROUND TABLE') + '</h1>'
+    + '<h1 class="rt-title">' + (v.endgame ? 'THE VOTE AT THE FIRE' : v.lastTable ? 'THE LAST ROUND TABLE' : 'THE ROUND TABLE') + '</h1>'
     + '<div class="rt-title-rule"><i></i>' + _icon('seal', 40, '#8e1526') + '<i></i></div>'
     + '<p class="rt-sub">'
     + (v.endgameBlind
       ? 'The same table, the same chalk, and nothing turned over at the end of it. '
         + 'Whoever is left carries on with exactly the beliefs they walked in with.'
       : v.endgame
-      ? 'The fire burned red, so they sit down one more time. They argue, they write one name '
-        + 'each in chalk, and whoever goes turns over before they leave.'
+      ? 'The fire burned red, so they stay where they are. They argue around the fire, they write '
+        + 'one name each on a slate, and whoever goes turns over before they leave.'
       : 'They sit down together, argue in the open, and write one name each in chalk. '
         + 'It is the only hour of the day this castle is handed something true.')
     + '</p></div></div>'
@@ -4848,12 +4861,13 @@ export function roundTableStageData(ep, observer = 'audience') {
   _tableUsed = new Set();
   const v = _view(rec, observer, (ep && ep.tr && ep.tr.trial) || null,
     (ep && ep.tr && ep.tr.strategy) || null);
-  // the endgame follows this table tonight: there is no night to send them to
-  if (v && ep && ep.tr && ep.tr.endgame) v.noNight = true;
+  // the endgame follows this table tonight: there is no night to send them to,
+  // and it is THE LAST ROUND TABLE, the last one before the Fire of Truth
+  if (v && ep && ep.tr && ep.tr.endgame) { v.noNight = true; if (!v.endgame) v.lastTable = true; }
   const beats = _buildBeats(v);
   const seedEp = v.ep != null ? v.ep : (ep.num || 0);
   const key = 'rt|' + v.ep + '|' + (v.chosen || '');
-  const hostHtml = b => (b.hostSlot ? _hostBand(_fill(_pick(HOST_LINES[b.hostSlot],
+  const hostHtml = b => (b.hostSlot ? _hostBand(_fill(_pick((v.endgame && HOST_FIRE[b.hostSlot]) || HOST_LINES[b.hostSlot],
     'rt|host|' + b.hostSlot + '|' + seedEp + '|' + (v.chosen || '')),
   { Nm: _esc(v.chosen || ''), nm: _esc(v.chosen || ''),
     banish: _esc(_verbs().banish), Banish: _esc(_cap(_verbs().banish)) })) : '');

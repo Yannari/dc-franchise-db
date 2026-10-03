@@ -160,10 +160,29 @@ identically, a season read, and pools grown until under ~3% of lines repeat.
 New guards: no pool entry may be narration only; staging that names a room
 needs `when.room`. **Writing rule (user, 2026-10-02):** plain English, no
 clever writing, and the old prose is not a model — a plain-English pass
-rewrote ~200 lines. Still to convert, by airtime: venue, phases, blocs,
-consequence-arcs, story-followups, fallout, location-texture, reign, bonds,
-editorial-social, schemes, the house meeting, the ~22 engine beats with no
-event id, and the twist families. `freshLine` goes when the last caller does.
+rewrote ~200 lines.
+
+**Phase 6 status (2026-10-03):** also converted — phases, blocs, venue,
+fallout, bonds, reign (not its house meeting), schemes, story-followups,
+location-texture, editorial-social, consequence-arcs, showmance and
+showmance-arcs. Patterns worth keeping:
+- **Generators that return several results** (schemes.js →
+  social-manipulation.js): each result type maps to a scene, `scriptBeat`
+  writes each with the story's dice and `joinScripts` joins them; names a
+  result does not carry come from the event as `extra`, and the fold result
+  must carry `location` or it stages in the Diary Room.
+- **Events that picked text with the ENGINE's rng** (editorial-social.js):
+  the removed pick becomes a bare `rng()` so the draw is kept.
+- **Rare events** (a first kiss, Battle of the Block pairs, the kiss trap,
+  young showmances) sit in bb-talk's `RARE` set and are read rendered.
+- **A scene's room must be one of `BB_ROOMS`** — 'storage' or 'bathroom' is
+  dropped and the transcript's "in the Diary Room" wins; bb-talk now asserts
+  no converted beat with a spoken line is staged there.
+- People a scene is ABOUT are data (`{target}`, `{partner}`), never in `who`.
+Still to convert: vote-plans, jury-bubble, cliques, power-knowledge,
+havenot-life, kinship, franchise-history, the two house meetings and
+have-nots, the ~22 engine beats with no event id, and the twist families.
+`freshLine` goes when the last caller does.
 
 ### 4.3 BB's clock and facts
 

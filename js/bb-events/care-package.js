@@ -19,16 +19,10 @@
 // Rules: everything here is nameable — there is nothing to protect. The only
 // hidden fact in the family is who took the bribe, and that one stays hidden.
 import { gs } from '../core.js';
-import { pronouns } from '../players.js';
 import { pStats, band, perceived, closestTo, furthestFrom } from './_read.js';
-import { freshLine } from '../bb/aired.js';
+import { makeScene } from '../bb/script/scene.js';
+import { numberWord } from '../bb/script/inject.js';
 
-function _variant(list, ctx, ...salt) {
-  const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${ctx?.act || ''}|${salt.join('|')}`;
-  let hash = 0;
-  for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
-  return freshLine(list, hash, ctx);
-}
 const _others = (house, ...exclude) => house.filter(n => n && !exclude.includes(n));
 const _reactable = ctx => ctx?.act === 'house' || ctx?.act === 'campaign';
 
@@ -119,21 +113,12 @@ const countryHasAFavourite = {
     const cast = _favouriteCast(house, ctx);
     if (!cast) return null;
     const { c, who, stung } = cast;
-    const p = pronouns(stung);
     const weekNum = Math.max(1, Number(ctx?.week?.num) || 1);
-    const elapsed = `${weekNum} ${weekNum === 1 ? 'week' : 'weeks'}`;
-    const text = _variant([
-      `${stung} has spent ${elapsed} making sure every room notices ${p.obj}, and the box went to ${who}. `
-        + `There is nobody to be angry at about that, which is why ${p.sub} ${p.sub === 'they' ? 'are' : 'is'} angry at ${who}.`,
-      `The house has just been handed a ranking it did not ask for. ${who} is at the top of it and ${stung} `
-        + `is not, and ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} no way of appealing to a room ${p.sub} cannot enter.`,
-      `"They don't see what I do in here." ${stung} says it about ${who}'s package, and means it, and it does not help.`,
-      `${who} was chosen by the audience for something nobody in the house could earn. ${stung} keeps circling that point without saying the part that actually hurts: the audience chose somebody else.`,
-    ], ctx, who, stung);
+    const scene = makeScene('care.favourite', { a: stung, b: who }, { ending: 'scene', weeks: `${numberWord(weekNum)} ${weekNum === 1 ? 'week' : 'weeks'}` }, [], 'kitchen');
     api.suspicion(stung, who, 0.9);
     api.addBond(stung, who, -1);
     api.popDelta(who, 1.5);
-    return { text, players: [who, stung], badgeText: 'A RANKING NOBODY ASKED FOR', badgeClass: 'gold' };
+    return { scene, players: [who, stung], badgeText: 'A RANKING NOBODY ASKED FOR', badgeClass: 'gold' };
   },
 };
 
@@ -149,18 +134,11 @@ const passedOverAgain = {
     const cast = _passedOverCast(house, ctx);
     if (!cast) return null;
     const { who, friend } = cast;
-    const p = pronouns(who);
     const count = (gs?.bb?.carePackages || []).length;
-    const text = _variant([
-      `${count} packages have gone out and ${who} has not been named on one of them. `
-        + `${p.Sub} ${p.sub === 'they' ? 'have' : 'has'} started wondering, out loud to ${friend || 'nobody in particular'}, whether ${p.sub} ${p.sub === 'they' ? 'are' : 'is'} even on the show.`,
-      `${who} works out that ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} been eligible every single week and chosen none of them, and that this is a fact about ${p.posAdj} edit rather than ${p.posAdj} game.`,
-      `"Maybe that's good," ${who} tells ${friend || 'the mirror'}. "Nobody out there is watching me either." It is half a comfort and ${p.sub} ${p.sub === 'they' ? 'do' : 'does'} not believe the other half.`,
-      `Being invisible to the audience keeps ${who} off every target list in the building, and ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} decided to start calling that strategy.`,
-    ], ctx, who, friend);
+    const scene = makeScene('care.passed', { a: who, b: friend || null }, { ending: 'scene', intent: friend ? 'told' : 'alone', packages: numberWord(count) }, [], 'bedroom');
     api.popDelta(who, -0.5);
     if (friend) api.addBond(who, friend, 0.4);
-    return { text, players: [who, friend].filter(Boolean),
+    return { scene, players: [who, friend].filter(Boolean),
       badgeText: 'NEVER ONCE CALLED', badgeClass: 'grey' };
   },
 };
@@ -177,18 +155,11 @@ const theCostume = {
     const cast = _costumeCast(house, ctx);
     if (!cast) return null;
     const { who, watcher } = cast;
-    const p = pronouns(who);
-    const text = _variant([
-      `${who} has to wear the thing all week, so there is no hour of any day when the rest of the house `
-        + `is not being reminded that ${p.sub} ${p.sub === 'they' ? 'cannot' : 'cannot'} be touched and they can.`,
-      `${who} makes a joke of the costume at breakfast. ${watcher} laughs and does the sum underneath it: one fewer name available, all week, for nothing anybody in here decided.`,
-      `The safest houseguest in the game is dressed as a cartoon, and ${watcher} finds that harder to be around than the safety itself.`,
-      `"You look ridiculous." "I look ridiculous and safe." ${who} has said it four times today and it has worked less each time on ${watcher}.`,
-    ], ctx, who, watcher);
+    const scene = makeScene('care.costume', { a: who, b: watcher }, { ending: 'scene' }, [], 'kitchen');
     api.suspicion(watcher, who, 0.8);
     api.popDelta(who, 1);
     try { api.setTarget(watcher, who, 'untouchable all week and visible about it'); } catch { /* texture */ }
-    return { text, players: [who, watcher], badgeText: 'SAFE, AND DRESSED LIKE IT', badgeClass: 'gold' };
+    return { scene, players: [who, watcher], badgeText: 'SAFE, AND DRESSED LIKE IT', badgeClass: 'gold' };
   },
 };
 
@@ -204,18 +175,11 @@ const theAppointedCoHoh = {
     const cast = _coHohCast(house, ctx);
     if (!cast) return null;
     const { hoh, co } = cast;
-    const p = pronouns(hoh);
-    const text = _variant([
-      `${hoh} won a competition for this week and is now sharing it with ${co}, who won a popularity vote. `
-        + `${p.Sub} ${p.sub === 'they' ? 'have' : 'has'} been very gracious about it in every room with a camera in it.`,
-      `Half of ${hoh}'s block belongs to somebody else now. The half ${p.sub} had the plan for.`,
-      `"We're a team this week." ${hoh} says it to ${co} and the word lands somewhere between an agreement and a complaint.`,
-      `${co} is safe, holds a key, and did nothing in this house to earn either. ${hoh} keeps finding new ways to mention that ${p.sub} ${p.sub === 'they' ? 'do' : 'does'} not mind.`,
-    ], ctx, hoh, co);
+    const scene = makeScene('care.cohoh', { a: hoh, b: co }, { ending: 'scene' }, [], 'hoh-room');
     api.suspicion(hoh, co, 1.1);
     api.addBond(hoh, co, -0.9);
     api.popDelta(co, 1);
-    return { text, players: [hoh, co], badgeText: 'HALF A WEEK, GIVEN AWAY', badgeClass: 'red' };
+    return { scene, players: [hoh, co], badgeText: 'HALF A WEEK, GIVEN AWAY', badgeClass: 'red' };
   },
 };
 
@@ -231,20 +195,13 @@ const silencedInPublic = {
     const cast = _silencedCast(house, ctx);
     if (!cast) return null;
     const { c, who, all } = cast;
-    const p = pronouns(who);
-    const text = _variant([
-      `${who} was not allowed to vote at the eviction and does not have to wonder why. ${c.recipient} said ${p.posAdj} name in front of everybody, `
-        + `which removes the one comfort a silenced houseguest usually gets: not knowing.`,
-      `${all.join(' and ')} sat through the eviction without a vote between them, watching ${c.recipient} avoid looking over.`,
-      `"You could have picked anybody." ${who} says it to ${c.recipient} directly, because for once there is somebody to say it to.`,
-      `There was no mystery to solve afterwards. ${who} left the eviction with a name, witnesses and no way to get the vote back.`,
-    ], ctx, who, c.recipient);
+    const scene = makeScene('care.silenced', { a: who, b: c.recipient }, { ending: 'scene', intent: all.length > 1 ? 'pair' : 'solo', other: all[1] || '' }, [], 'living-room');
     for (const name of all) {
       api.suspicion(name, c.recipient, 1.6);
       api.addBond(name, c.recipient, -1.2);
       try { api.setTarget(name, c.recipient, 'took my vote in front of everybody'); } catch { /* texture */ }
     }
-    return { text, players: [...all, c.recipient],
+    return { scene, players: [...all, c.recipient],
       badgeText: 'STRUCK BY NAME', badgeClass: 'red' };
   },
 };
@@ -265,18 +222,10 @@ const publicMoney = {
     const guess = furthestFrom(hunter, _others(house, hunter, c.recipient))
       || _others(house, hunter, c.recipient)[0];
     const right = guess === c.bribe.mark && c.bribe.taken;
-    const text = _variant([
-      `Everybody watched five thousand dollars arrive in this house and nobody has seen where it went. `
-        + `${hunter} has decided it went to ${guess}, on the evidence of a mood ${guess} was in on Tuesday.`,
-      `${hunter} spends the evening pricing people. "What would you take? Honestly. What's the number?" `
-        + 'Nobody gives a real answer and every non-answer goes in the file.',
-      `The money is public and the spending is not, so ever since the eviction the house has been unable to tell `
-        + `an ordinary vote from a bought one. ${hunter} thinks ${guess}'s was bought.`,
-      `"It's not about the money, it's about who takes it." ${hunter} is right about that and wrong, probably, about ${guess}.`,
-    ], ctx, hunter, guess);
+    const scene = makeScene('care.money', { a: hunter, b: guess }, { ending: 'scene' }, [], 'kitchen');
     api.suspicion(hunter, guess, 1.2);
     if (!right) api.addBond(hunter, guess, -0.6);
-    return { text, players: [hunter, guess, c.recipient].filter(Boolean),
+    return { scene, players: [hunter, guess, c.recipient].filter(Boolean),
       badgeText: right ? 'THE RIGHT NAME, UNPROVABLE' : 'PRICING THE ROOM',
       badgeClass: right ? 'gold' : 'blue' };
   },

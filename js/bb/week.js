@@ -1314,8 +1314,10 @@ function _attachAllianceFallout(week, house) {
       players: _reactingFaces([player, victim], week),
       badgeText: 'VOTED OUT AN ALLY', badgeClass: 'red',
       eventId: 'alliance-betrayal', category: 'deals', location: 'living-room',
-      ...(accuser && scriptBeat('alliance.betrayal', { a: accuser, b: player }, { ending: 'flipped', alliance, target: victim },
-        { ...wctx, seenBy: membersOf(alliance) }) || {}),
+      ...((accuser ? scriptBeat('alliance.betrayal', { a: accuser, b: player }, { ending: 'flipped', alliance, target: victim },
+        { ...wctx, seenBy: membersOf(alliance) })
+        : scriptBeat('alliance.betrayal', { a: player }, { ending: 'alone', alliance, target: victim },
+          { ...wctx, room: 'diary-room', seenBy: [player] })) || {}),
     });
 
     if (!repair) continue;
@@ -1336,8 +1338,10 @@ function _attachAllianceFallout(week, house) {
     beats.push({
       ...outcome, players: [player].filter(inHouse),
       eventId: 'alliance-repair', category: 'deals', location: 'bedroom',
-      ...(accuser && inHouse(player) && scriptBeat('alliance.repair', { a: accuser, b: player }, { ending, reason: approach, alliance },
-        { ...wctx, room: 'bedroom', seenBy: membersOf(alliance) }) || {}),
+      ...(inHouse(player) && (accuser ? scriptBeat('alliance.repair', { a: accuser, b: player }, { ending, reason: approach, alliance },
+        { ...wctx, room: 'bedroom', seenBy: membersOf(alliance) })
+        : scriptBeat('alliance.repair', { a: player }, { ending: 'alone', alliance, target: victim },
+          { ...wctx, room: 'diary-room', seenBy: [player] })) || {}),
     });
   }
 
@@ -6642,6 +6646,7 @@ export function simulateBBWeek(options = {}) {
         // the count produced (bb/script/lines/campaign.js). A return visit that
         // lands is the reply alone; the case was heard the first time.
         let script = null;
+        let caseScript = null;
         try {
           const who = { a: pitch.pitcher, b: response.voter };
           const sctx = { week, act: 'campaign', hoh: week.hoh || null, nominees: [...visibleBlock], room: 'bedroom', seenBy: [pitch.pitcher, response.voter] };
@@ -6649,8 +6654,9 @@ export function simulateBBWeek(options = {}) {
           if (worn) script = joinScripts(reply);
           else {
             const c = campaignCase(pitch.pitcher, response.voter, pitch.pitchTarget);
-            script = joinScripts(scriptBeat('campaign.case', who, { ending: c.kind, target: c.opponent, partner: c.partner, alliance: c.alliance,
-              theirComps: numberWord(c.theirComps), myComps: numberWord(c.myComps) }, sctx), reply);
+            caseScript = scriptBeat('campaign.case', who, { ending: c.kind, target: c.opponent, partner: c.partner, alliance: c.alliance,
+              theirComps: numberWord(c.theirComps), myComps: numberWord(c.myComps) }, sctx);
+            script = joinScripts(caseScript, reply);
           }
         } catch { script = null; }
         return {
@@ -6665,7 +6671,7 @@ export function simulateBBWeek(options = {}) {
           badgeClass: response.accepted ? 'green' : 'grey',
           eventId: 'campaign-pitch', category: 'deals', location: 'bedroom',
           _fold: !response.accepted && !worn && words
-            ? { pitcher: pitch.pitcher, voter: response.voter, words } : null,
+            ? { pitcher: pitch.pitcher, voter: response.voter, words, caseScript } : null,
           ...(script || {}),
         };
       }).filter(Boolean));
@@ -6680,12 +6686,18 @@ export function simulateBBWeek(options = {}) {
       if (!same.length) continue;
       const voters = [f.voter, ...same.map(b => b._fold.voter)];
       const list = `${voters.slice(0, -1).join(', ')} and ${voters[voters.length - 1]}`;
+      // The case is heard once, then the same case goes round the rest.
+      const rest = scriptBeat('engine.samecase', { a: f.pitcher, b: voters[0], c: voters[1] },
+        { ending: voters.length === 2 ? 'two' : 'many', group: list },
+        { week, act: 'campaign', hoh: week.hoh || null, nominees: [...visibleBlock], room: 'bedroom',
+          seenBy: [f.pitcher, ...voters], salt: `samecase|${f.pitcher}` });
+      const folded = joinScripts(f.caseScript, rest);
       Object.assign(pitchBeats[i], {
         text: `${f.pitcher} makes the same case to ${list}, one at a time. ${f.words} `
           + `${voters.length === 2 ? 'Neither of them moves' : 'Not one of them moves'}.`,
         players: [f.pitcher, ...voters],
-        // One summary for several conversations: the first one's script no longer matches it.
         lines: undefined, lineId: undefined,
+        ...(folded ? { text: folded.text, lines: folded.lines, lineId: folded.lineId } : {}),
       });
       for (const b of same) b._drop = true;
     }

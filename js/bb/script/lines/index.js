@@ -21,6 +21,7 @@ import TEXTURE from './texture.js';
 import EDITORIAL from './editorial.js';
 import ARC from './arc.js';
 import COUPLE from './couple.js';
+import JURY from './jury.js';
 
-export const POOLS = { ...FRICTION, ...CEREMONY, ...TALK, ...SOCIAL, ...DEALS, ...ALLIANCE, ...CAMPAIGN, ...POWER, ...LIFE, ...PHASE, ...BLOC, ...VENUE, ...FALLOUT, ...BOND, ...REIGN, ...SCHEME, ...FOLLOWUP, ...TEXTURE, ...EDITORIAL, ...ARC, ...COUPLE };
+export const POOLS = { ...FRICTION, ...CEREMONY, ...TALK, ...SOCIAL, ...DEALS, ...ALLIANCE, ...CAMPAIGN, ...POWER, ...LIFE, ...PHASE, ...BLOC, ...VENUE, ...FALLOUT, ...BOND, ...REIGN, ...SCHEME, ...FOLLOWUP, ...TEXTURE, ...EDITORIAL, ...ARC, ...COUPLE, ...JURY };
 export const POOL_KEYS = Object.keys(POOLS);

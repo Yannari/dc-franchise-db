@@ -118,6 +118,8 @@ const PHASE6 = [
   // the have-not week (havenot-life.js, house-life's have-nots)
   'havenot-slop-argument', 'havenot-sleep-deprived-snap', 'havenot-cold-shower-solidarity', 'havenot-selection-resentment',
   'havenot-midnight-kitchen-watch', 'life-have-nots',
+  // bb-events/whacktivity.js (twist-driven)
+  'whack-declared-it', 'whack-crowded-room', 'whack-stayed-shut', 'whack-sat-it-out', 'whack-suspect-list', 'whack-hoh-watched', 'whack-being-normal', 'whack-still-watching',
 ];
 // Engine beats keep the players list the engine counts; a fallout scene is had
 // with an alliance member who is not on it, so these skip the speaker check.
@@ -151,7 +153,7 @@ const EVENT_IDS = new Set([...Object.values(CONVERTED), ...PHASE6, ...LAYER]);
 // a young showmance hiding or naming itself, or campaigning apart, is as rare.
 // Fires only under a scheduled twist, which these plain seasons never run; read
 // in twist seasons by the Phase 6 harness instead.
-const TWIST_ONLY = new Set(['havenot-slop-argument', 'havenot-sleep-deprived-snap', 'havenot-cold-shower-solidarity', 'havenot-selection-resentment', 'havenot-midnight-kitchen-watch', 'life-have-nots', 'twist-announcement-bravado', 'twist-announcement-recalc', 'twist-announcement-dread', 'powerknown-arithmetic', 'powerknown-wait', 'powerknown-flush', 'powerknown-spent-mark']);
+const TWIST_ONLY = new Set(['whack-declared-it', 'whack-crowded-room', 'whack-stayed-shut', 'whack-sat-it-out', 'whack-suspect-list', 'whack-hoh-watched', 'whack-being-normal', 'whack-still-watching', 'havenot-slop-argument', 'havenot-sleep-deprived-snap', 'havenot-cold-shower-solidarity', 'havenot-selection-resentment', 'havenot-midnight-kitchen-watch', 'life-have-nots', 'twist-announcement-bravado', 'twist-announcement-recalc', 'twist-announcement-dread', 'powerknown-arithmetic', 'powerknown-wait', 'powerknown-flush', 'powerknown-spent-mark']);
 const RARE = new Set(['alliance-deflected-blame', 'alliance-misattributed', 'alliance-betrayal-unseen', 'bond-first-kiss', 'reign-carve-it-up', 'reign-works-both-rooms', 'scheme-kiss-trap',
   'showmance-hiding-it', 'showmance-defined', 'showmance-separate-campaigns', 'showmance-block-pressure']);
 
@@ -290,7 +292,7 @@ describe('the talk pools', () => {
   const FIXED = { 'slop.argument': 'kitchen', 'slop.snap': 'kitchen', 'slop.kitchen': 'kitchen', 'slop.picked': 'bedroom', 'slop.solidarity': 'washroom', 'drinks.open': 'kitchen', 'drinks.grievance': 'kitchen', 'plan.seen': 'bedroom', 'plan.backdoor': 'bedroom', 'jury.face': 'kitchen', 'jury.payment': 'pantry', 'couple.hiding': 'bedroom', 'couple.fight': 'bedroom', 'couple.jealous': 'kitchen', 'couple.defined': 'bedroom', 'editorial.bedroom': 'bedroom', 'editorial.latenight': 'kitchen', 'editorial.spark': 'backyard', 'editorial.flip': 'bedroom', 'editorial.breakdown': 'pantry', 'editorial.meeting': 'bedroom', 'editorial.standoff': 'kitchen', 'texture.kitchen': 'kitchen', 'texture.backyard': 'backyard', 'texture.snoring': 'bedroom', 'texture.namedrop': 'pantry', 'texture.trial': 'living-room', 'followup.isolation': 'kitchen', 'followup.overheard': 'living-room', 'followup.damage': 'pantry', 'followup.aftershock': 'bedroom', 'reign.carve': 'hoh-room', 'reign.both': 'hoh-room', 'bond.kiss': 'bedroom', 'bond.quiet': 'bedroom', 'bond.bad-day': 'bedroom', 'bond.petty': 'kitchen', 'fallout.grief': 'bedroom', 'fallout.rogue': 'kitchen', 'bloc.blowup': 'kitchen', 'phase.hoh-room': 'hoh-room', 'phase.scramble': 'hoh-room', 'phase.targets': 'hoh-room', 'phase.leaned': 'hoh-room', 'friction.dishes': 'kitchen', 'friction.food': 'kitchen', 'life.chores': 'kitchen', 'life.table': 'kitchen', 'life.cook': 'kitchen', 'life.workout': 'backyard', 'talk.safety': 'hoh-room', 'talk.pitch-target': 'hoh-room', 'talk.hoh-visit': 'hoh-room', 'talk.hoh-decide': 'hoh-room' };
   it('only stages a room where the scene is', () => {
     for (const [key, pool] of Object.entries(POOLS)) {
-      if (!/^(talk|social|deals|alliance|power|campaign|life|friction|phase|bloc|venue|fallout|bond|reign|scheme|followup|texture|editorial|arc|couple|jury|plan|known|cer|romance|upkeep|engine|drinks|meeting|slop)\./.test(key)) continue;
+      if (!/^(talk|social|deals|alliance|power|campaign|life|friction|phase|bloc|venue|fallout|bond|reign|scheme|followup|texture|editorial|arc|couple|jury|plan|known|cer|romance|upkeep|engine|drinks|meeting|slop|whack)\./.test(key)) continue;
       const fixed = FIXED[key.split('.').slice(0, 2).join('.')];
       for (const e of pool) for (const t of e.turns) {
         if (!t.beat) continue;

@@ -31,6 +31,7 @@ import ENGINE from './engine.js';
 import DRINKS from './drinks.js';
 import MEETING from './meeting.js';
 import SLOP from './slop.js';
+import WHACK from './whack.js';
 
-export const POOLS = { ...FRICTION, ...CEREMONY, ...TALK, ...SOCIAL, ...DEALS, ...ALLIANCE, ...CAMPAIGN, ...POWER, ...LIFE, ...PHASE, ...BLOC, ...VENUE, ...FALLOUT, ...BOND, ...REIGN, ...SCHEME, ...FOLLOWUP, ...TEXTURE, ...EDITORIAL, ...ARC, ...COUPLE, ...JURY, ...PLAN, ...KNOWN, ...CER, ...ROMANCE, ...UPKEEP, ...ENGINE, ...DRINKS, ...MEETING, ...SLOP };
+export const POOLS = { ...FRICTION, ...CEREMONY, ...TALK, ...SOCIAL, ...DEALS, ...ALLIANCE, ...CAMPAIGN, ...POWER, ...LIFE, ...PHASE, ...BLOC, ...VENUE, ...FALLOUT, ...BOND, ...REIGN, ...SCHEME, ...FOLLOWUP, ...TEXTURE, ...EDITORIAL, ...ARC, ...COUPLE, ...JURY, ...PLAN, ...KNOWN, ...CER, ...ROMANCE, ...UPKEEP, ...ENGINE, ...DRINKS, ...MEETING, ...SLOP, ...WHACK };
 export const POOL_KEYS = Object.keys(POOLS);

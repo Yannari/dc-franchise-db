@@ -77,9 +77,17 @@ export function beatLines(beats, special) {
           if (who && /\b(I|I’m|I've|I’ve|me|my)\b/.test(rest)) push({ t: 'say', who, text: rest });
           else push({ t: 'narr', who: who || null, text: full, tag, react: true });
         } else if (ASIDES.has(part)) {
-          const head = n.querySelector('b, span');
+          // THE ASIDE'S WORDS, NOT ITS FURNITURE. Reading the whole element's
+          // text took the face chips' initials with it and ran the sentences
+          // together: "...that night.HHicksSSandersCCarrieHicks can say..."
+          // (the user, 2026-10-03). The heading is the first <b>; the body is
+          // every <span> sentence, each its own sentence.
+          const head = n.querySelector(':scope > b');
           const headText = clean(head?.textContent);
-          const body = clean(n.textContent).slice(headText.length).trim();
+          const spans = [...n.querySelectorAll(':scope > span')].map(x => clean(x.textContent)).filter(Boolean);
+          const body = spans.length ? spans.join(' ')
+            : clean([...n.childNodes].filter(x => x !== head && !(x.classList && [...x.classList].some(c => /faces|face-chip|chips/.test(c))))
+              .map(x => x.textContent).join(' '));
           if (body) push({ t: 'narr', tag: headText || 'What the room cannot see', text: body, aud: true });
         } else if (part === 'murmur') {
           push({ t: 'narr', tag: 'Around the room', text: clean(n.textContent), murmur: true });

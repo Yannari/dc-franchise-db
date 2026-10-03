@@ -2412,28 +2412,29 @@ const MINDCHANGE_MORE = [
 // `_view` before a player observer's screen is built, and never written at a
 // finale table.
 const IRONY_TRUE = [
-  'And the room is right — {t} really is a Traitor. They have no proof, but they have the right name.',
-  'Correct, even though the reasoning that got them here was wrong.',
-  'True — which at this table is a coincidence more often than it is a deduction.',
+  '{t} really is a Traitor. The room has no proof, but it has the right name.',
+  'They are right about {t}, even if their reasons are wrong.',
+  '{t} is a Traitor. The room got there by guessing, not by working it out.',
 ];
 // the same truth, on a name the room then lets go: these two say what is
 // about to happen, so they are only drawn when it does
 const IRONY_TRUE_LOST = [
-  'They have the right name. Watch how little that is worth in a minute.',
-  'The room has it. The room will now talk itself out of it.',
+  '{t} really is a Traitor, and the room is about to let {t} off.',
+  'They have the right name in {t}. In a minute they will talk themselves out of it.',
+  '{t} is one of the Traitors. The room is close, and it is about to look somewhere else.',
 ];
 const IRONY_FALSE = [
-  'And it is not true. Not a word of it.',
-  'Wrong, and expensively so.',
-  'This is a loyal player being taken apart for having an honest face.',
-  'Nothing here is true. The room built it out of nerves and one bad breakfast.',
-  'Innocent, and about to spend the rest of the hour proving a negative.',
+  '{t} is Faithful. None of this is true.',
+  '{t} is Faithful, and this mistake is going to cost the room.',
+  '{t} is a loyal player, being pulled apart for no good reason.',
+  '{t} is Faithful. The room has built this out of nerves and guesswork.',
+  '{t} is innocent, and will spend the next hour trying to prove it.',
 ];
 const IRONY_STEER = [
-  'And most of the hands pointing here belong to the people who did it.',
-  'Steered. The pact picked this name before the room did, and the room has not noticed.',
-  'The loudest accusers at this table have the most obvious reason to be loud.',
-  'A clean player, held up by the very people who know it.',
+  '{t} is Faithful, and most of the people accusing {t} are Traitors.',
+  'The Traitors picked {t} before the room did, and the room has not noticed.',
+  'The loudest voices against {t} are Traitors, and they know {t} is innocent.',
+  '{t} is Faithful. The people pushing hardest for {t} know it.',
 ];
 
 const WRITE_TEXT = [
@@ -3174,9 +3175,9 @@ function _buildBeats(v) {
       // NO RAW WEIGHTS IN A SENTENCE. "weight 0.58 against 0.49" is the
       // debug screen's language; the reason is that the room listens to one
       // of them more, and that is what the card says.
-      + '<span><b>' + _esc(t.by) + '</b> suspects both of them and has one vote. The room '
-      + 'listens to ' + _esc(t.against) + ' more, so ' + _esc(t.by) + ' votes for '
-      + _esc(t.against) + ' tonight and leaves ' + _esc(t.spared) + ' for later.</span>'
+      + '<span><b>' + _esc(t.by) + '</b> suspects both of them but only has one vote. The room '
+      + 'listens to ' + _esc(t.against) + ' more, so ' + _esc(t.by) + ' is going after '
+      + _esc(t.against) + ' tonight and leaving ' + _esc(t.spared) + ' for another day.</span>'
       + '<span>' + (t.shared
         ? _esc(t.circleName || 'Their own people') + ' know about it.'
         : 'Nobody else knows. Not even ' + _esc(t.circleName || 'their own circle') + '.')
@@ -3192,14 +3193,15 @@ function _buildBeats(v) {
   for (const pl of (v.plans || [])) {
     if (pl.outcome !== 'landed' || !(v.seated || []).includes(pl.by)) continue;
     push('debate', '<div class="rt-irony rt-deal"><b>What the room cannot see &middot; the test</b>'
-      + '<span>' + _esc(pl.by) + ' gave ' + _esc(pl.bait) + '&rsquo;s name to '
-      + _esc(pl.suspect) + ' and to nobody else, and the pact went for '
-      + _esc(pl.bait) + ' that night.</span>'
+      // SAID PLAINLY (2026-10-03): "gave Carrie's name to Sanders and to
+      // nobody else" made the reader work out what a test is. Say it.
+      + '<span>' + _esc(pl.by) + ' set a trap. ' + _esc(pl.by) + ' told only '
+      + _esc(pl.suspect) + ' that ' + _esc(pl.bait) + ' would be an easy target, and that night '
+      + 'the Traitors went straight for ' + _esc(pl.bait) + '.</span>'
       + '<div class="rt-faces">' + [pl.by, pl.suspect, pl.bait].map(n => _faceChip(n, 26)).join('')
       + '</div>'
-      + '<span>' + _esc(pl.by) + ' can say the name at this table. '
-      + _esc(pl.by) + ' cannot say how the name was got, because saying it means '
-      + 'admitting to handing somebody a target.</span></div>', null, { kind: 'test' });
+      + '<span>So ' + _esc(pl.by) + ' is now sure about ' + _esc(pl.suspect) + ', but cannot '
+      + 'explain why without admitting to using ' + _esc(pl.bait) + ' as bait.</span></div>', null, { kind: 'test' });
   }
 
   // ── AND WHAT IS HANGING OVER IT ─────────────────────────────────────
@@ -3474,8 +3476,8 @@ function _buildBeats(v) {
         : (steered ? IRONY_STEER : IRONY_FALSE);
       const betrayers = c.acc.filter(n => sacrificing.has(n + '>' + c.t));
       const line = betrayers.length
-        ? _esc(betrayers[0]) + ' is not agreeing with the room. ' + _esc(betrayers[0])
-          + ' is burying a fellow Traitor, before ' + _esc(c.t) + ' can be asked a question with an answer.'
+        ? _esc(betrayers[0]) + ' is not just going along with the room. ' + _esc(betrayers[0])
+          + ' is a Traitor getting rid of another Traitor, before anyone asks ' + _esc(c.t) + ' something awkward.'
         : _fill(_fresh(pool, key + '|iro|' + c.t), { t: _esc(c.t), T: _esc(c.t) });
       inner += '<div class="rt-irony"><b>What the room cannot see</b><span>' + line + '</span></div>';
     }
@@ -3965,11 +3967,10 @@ function _buildBeats(v) {
       + '<b>What the room cannot see &middot; ' + (held ? 'the deal held' : 'the deal is dead')
       + '</b><span>' + _esc(t.resolvedLine || '') + '</span>'
       + '<span>' + (held
-        ? _esc(t.by) + ' spent one vote and got the name ' + _esc(t.by) + ' wanted. '
-          + _esc(t.spared) + ' is still here, and still owes ' + _esc(t.by) + ' a week.'
-        : 'The room took ' + _esc(t.spared) + ' &mdash; the one name '
-          + _esc(t.by) + ' had promised not to say. A week of protection, spent on '
-          + 'somebody who is now walking out of the door.')
+        ? _esc(t.by) + ' used the vote and got the result ' + _esc(t.by) + ' wanted. '
+          + _esc(t.spared) + ' is still here, and now owes ' + _esc(t.by) + ' a favour.'
+        : 'The room picked ' + _esc(t.spared) + ' anyway: the one person '
+          + _esc(t.by) + ' had promised to protect. The deal is worth nothing now.')
       + '</span></div>', null, { kind: 'deal-out' });
   }
 

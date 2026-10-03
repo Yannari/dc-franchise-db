@@ -28,20 +28,13 @@
 // explicitly not a romantic prospect — the point is that it does not have to be.
 
 import { gs } from '../core.js';
-import { pronouns } from '../players.js';
 import {
   pStats, bond, band, beatsInvolving, spotlightOrder, romanceOn, suspicionOf,
 } from './_read.js';
-import { freshLine } from '../bb/aired.js';
+import { makeScene } from '../bb/script/scene.js';
 
 // ── helpers ───────────────────────────────────────────────────────────
 
-function _variant(list, ctx, ...salt) {
-  const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${ctx?.act || ''}|${salt.join('|')}`;
-  let hash = 0;
-  for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
-  return freshLine(list, hash, ctx);
-}
 
 const _others = (house, ...exclude) => house.filter(n => n && !exclude.includes(n));
 const _quiet = pool => spotlightOrder(pool);
@@ -117,24 +110,15 @@ const defined = {
     sh._arcDefined = true;
     const asks = _speaker(a, b);
     const answers = asks === a ? b : a;
-    const p = pronouns(asks);
-    const q = pronouns(answers);
 
-    const text = _variant([
-      `${asks} asks the question at two in the morning, badly, with three false starts. ${answers} says, “Yes, obviously,” and goes back to sleep, and ${asks} lies awake being pleased about it for an hour.`,
-      `“I need to know if this is a game thing.” ${asks} has been building up to that sentence for four days. ${answers} looks genuinely insulted, which turns out to be the answer.`,
-      `They agree on the word out loud, which neither of them has done before. It changes nothing about the game and everything about the next ten conversations either of them has.`,
-      `${answers} says it first, in the middle of something else, without stopping. ${asks} makes ${q.obj} say it again properly.`,
-      `${asks} and ${answers} decide, in a bedroom with four other beds in it, that whatever happens at the next eviction this is a real thing. ${q.Sub} ${q.sub === 'they' ? 'shake' : 'shakes'} on it, which they both find funny and neither of them mentions again.`,
-      `“I'm not doing the thing where we pretend.” ${asks} draws the line and ${answers} steps over it in the right direction. From here on they are a fact rather than a rumour.`,
-    ], ctx, this.id, a, b);
+    const scene = makeScene('couple.defined', { a: asks, b: answers }, { ending: 'scene' }, [], 'bedroom');
 
     api.addBond(a, b, 1.4);
     api.popDelta(a, 1);
     api.popDelta(b, 1);
     api.remember(a, b, 'we-said-what-this-is', 2, {});
     api.remember(b, a, 'we-said-what-this-is', 2, {});
-    return { text, players: [a, b], badgeText: 'THEY SAY IT OUT LOUD', badgeClass: 'gold' };
+    return { scene, players: [a, b], badgeText: 'THEY SAY IT OUT LOUD', badgeClass: 'gold' };
   },
 };
 
@@ -162,16 +146,8 @@ const underground = {
       || _others(house, a, b)[0];
     const planner = pStats(a).strategic >= pStats(b).strategic ? a : b;
     const other = planner === a ? b : a;
-    const p = pronouns(planner);
 
-    const text = _variant([
-      `${planner} sets the rules and ${other} agrees to all of them: separate rooms at night, no saving seats, thirty seconds between arrivals. It works on roughly half the ${house.length - 2} people it needs to work on.`,
-      `“We're two votes to them. We need to be one vote and a stranger.” ${planner} means it as strategy. ${other} hears it as being asked to be less, and agrees anyway.`,
-      `They stop going upstairs together. ${watcher} times the gap between the two of them leaving the kitchen on three separate evenings and gets thirty-one, thirty-four and twenty-nine seconds.`,
-      `${planner} and ${other} agree to be visibly bored of each other for a week. ${p.Sub} ${p.sub === 'they' ? 'are' : 'is'} very good at it. ${other} is not.`,
-      `The plan is to be seen apart. What ${watcher} actually sees is two people who never look at each other and always end up in the same room within a minute.`,
-      `${other} asks how long they have to do this for. ${planner} says “until the numbers are right,” which is the answer somebody gives when they do not have one.`,
-    ], ctx, this.id, planner, watcher);
+    const scene = makeScene('couple.underground', { a: planner, b: other, c: watcher || null }, { ending: 'scene' }, [], 'pantry');
 
     // Whether it fools the sharpest person in the room is proportional to how
     // sharp they actually are, and it costs them a little either way.
@@ -180,7 +156,7 @@ const underground = {
     api.suspicion(watcher, b, 0.3 + sees);
     api.remember(watcher, planner, 'they-are-hiding-something', sees > 0.7 ? 2 : 1, { about: other });
     api.addBond(a, b, 0.3);
-    return { text, players: [a, b, watcher].filter(Boolean),
+    return { scene, players: [a, b, watcher].filter(Boolean),
       badgeText: 'SEPARATE DOORS', badgeClass: 'blue' };
   },
 };
@@ -205,23 +181,15 @@ const separateCampaigns = {
     const room = _quiet(_others(house, a, b));
     const [first, second] = room;
     const noms = _noms(ctx);
-    const p = pronouns(a);
 
-    const text = _variant([
-      `They split the house down the middle and take half each. ${a} works ${first || 'the backyard'}, ${b} works ${second || 'the kitchen'}, and neither of them mentions the other once.`,
-      `${b} deliberately disagrees with ${a} about ${noms[0] || 'the vote'} in front of ${first || 'two other people'}. It is entirely performance and it is a very good performance.`,
-      `“If we walk in together we're one conversation.” ${a} campaigns before dinner and ${b} campaigns after it, and ${first || 'somebody'} comes away having been asked the same question twice by two different people.`,
-      `${a} and ${b} rehearse being separate players and then go and be separate players, which is more work than either of them expected and visibly better for both of them.`,
-      `The couple that spent a fortnight being one unit spends this week being two. ${second || 'The house'} notices, and rates them both higher for it, which was the point.`,
-      `${b} stops finishing ${p.posAdj} sentences in front of other people. ${a} stops answering questions aimed at ${b}. By eviction night there are two campaigns running, and neither looks like an extension of the other.`,
-    ], ctx, this.id, a, b);
+    const scene = makeScene('couple.apart', { a, b, c: first || null }, { ending: 'scene' }, [], 'backyard');
 
     api.popDelta(a, 1);
     api.popDelta(b, 1);
     api.remember(a, b, 'we-played-it-apart', 1, { about: 'the vote' });
     if (first) api.addBond(a, first, 0.4);
     if (second) api.addBond(b, second, 0.4);
-    return { text, players: [a, b, first].filter(Boolean),
+    return { scene, players: [a, b, first].filter(Boolean),
       badgeText: 'TWO CAMPAIGNS', badgeClass: 'green' };
   },
 };
@@ -255,17 +223,8 @@ const leakChannel = {
   },
   fire(house, ctx, api) {
     const { source, told, partner } = _leakCast(house, ctx);
-    const p = pronouns(source);
-    const q = pronouns(partner);
 
-    const text = _variant([
-      `${source} tells ${told} something in confidence at four in the afternoon. At nine that evening ${partner} uses the exact phrasing back at ${source}, and all three of them watch it happen.`,
-      `“Don't repeat this.” ${told} does not repeat it, in the sense that ${told} tells exactly one person, in bed, who was always going to be told.`,
-      `${source} works out the shape of it late: everything ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} ever said to ${told} has been heard by two people, and one of them was never in the room.`,
-      `${partner} answers a question ${source} never asked ${q.obj}. It takes about a second and a half for ${source} to understand where the answer came from.`,
-      `${told} would swear the conversation stayed private, and it did — inside a relationship. ${source} has stopped counting that as private.`,
-      `${source} tests it deliberately: one detail, slightly wrong, given only to ${told}. Before the next ceremony, it comes back out of ${partner}'s mouth wrong in exactly the same way.`,
-    ], ctx, this.id, source, told);
+    const scene = makeScene('couple.leak', { a: source, b: told, c: partner }, { ending: 'scene' }, [], 'bedroom');
 
     _spend(this.id, ctx);
     // The couple has not done anything hostile. It costs them anyway, because
@@ -275,7 +234,7 @@ const leakChannel = {
     api.addBond(source, told, -0.9);
     api.remember(source, told, 'tells-them-everything', 2, { about: partner });
     api.addBond(told, partner, 0.3);
-    return { text, players: [source, told, partner], badgeText: 'IT GOES STRAIGHT TO THEM', badgeClass: 'red' };
+    return { scene, players: [source, told, partner], badgeText: 'IT GOES STRAIGHT TO THEM', badgeClass: 'red' };
   },
 };
 
@@ -303,22 +262,14 @@ const jealousy = {
     const third = _quiet(_others(house, a, b))
       .sort((x, y) => bond(partner, y) - bond(partner, x) || (x < y ? -1 : 1))[0]
       || _others(house, a, b)[0];
-    const p = pronouns(jealous);
 
-    const text = _variant([
-      `${partner} and ${third} talk in the kitchen for an hour about absolutely nothing. ${jealous} walks past four times and counts every one of them.`,
-      `“What were you two laughing about?” ${jealous} asks it lightly. ${partner} cannot remember, which is true and is the worst possible answer.`,
-      `${third} touches ${partner}'s arm making a point about a competition. ${jealous} is across the room and does not stop watching until ${third} leaves.`,
-      `It is not about ${third}. ${jealous} knows it is not about ${third}, says so, and then spends the evening being noticeably cool with ${third} anyway.`,
-      `${partner} says ${third} is “easy to talk to.” ${jealous} agrees, pleasantly, and adds it to a list ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} not admitted to keeping.`,
-      `They are in a house with no doors and one kitchen. ${jealous} would like a version of this where ${p.sub} ${p.sub === 'they' ? 'do' : 'does'} not have to watch every conversation ${partner} has, and there is not one.`,
-    ], ctx, this.id, jealous, third);
+    const scene = makeScene('couple.jealous', { a: jealous, b: partner, c: third || null }, { ending: 'scene' }, [], 'kitchen');
 
     api.addBond(jealous, partner, -0.6);
     api.addBond(jealous, third, -0.7);
     api.remember(jealous, third, 'too-comfortable-with-my-person', 1, { about: partner });
     api.suspicion(jealous, third, 0.5);
-    return { text, players: [jealous, partner, third].filter(Boolean),
+    return { scene, players: [jealous, partner, third].filter(Boolean),
       badgeText: 'COUNTING THE MINUTES', badgeClass: 'grey' };
   },
 };
@@ -344,24 +295,16 @@ const blockPressure = {
     const noms = _noms(ctx);
     const nominee = noms.includes(a) ? a : b;
     const stressed = nominee === a ? b : a;
-    const p = pronouns(stressed);
     const room = _quiet(_others(house, a, b));
     const witness = room[0];
 
-    const text = _variant([
-      `${stressed} cannot eat, cannot sit down and cannot stop asking people where the vote is. By the second day ${witness || 'the house'} has stopped answering honestly just to make the conversation end.`,
-      `${nominee} is the one on the block and ${stressed} is the one crying in the pantry, and everybody in the house has now had to decide how they feel about that.`,
-      `“I'm fine.” ${stressed} says it to ${witness || 'somebody'} with red eyes at eight in the morning, having been up since four running the numbers on somebody else's eviction.`,
-      `${stressed} campaigns so hard for ${nominee} that two of the votes ${p.sub} ${p.sub === 'they' ? 'were' : 'was'} counting on start quietly reconsidering — not about ${nominee}, about ${p.obj}.`,
-      `${nominee} handles the block with more composure than ${stressed} handles watching it. ${witness || 'The room'} notices which of the two of them is actually playing this week.`,
-      `${stressed} snaps at ${witness || 'somebody'} over a dish and apologises within the minute. Everybody understands. Everybody also files it, because a person who breaks over a nomination that is not theirs is a person you can move.`,
-    ], ctx, this.id, stressed, nominee);
+    const scene = makeScene('couple.pressure', { a: stressed, b: nominee, c: witness || null }, { ending: 'scene' }, [], 'living-room');
 
     api.addBond(a, b, 0.7);
     api.popDelta(stressed, -1);
     api.remember(nominee, stressed, 'fell-apart-for-me', 2, {});
     room.slice(0, 3).forEach(n => api.suspicion(n, stressed, 0.4));
-    return { text, players: [stressed, nominee, witness].filter(Boolean),
+    return { scene, players: [stressed, nominee, witness].filter(Boolean),
       badgeText: 'CARRIES IT BADLY', badgeClass: 'red' };
   },
 };

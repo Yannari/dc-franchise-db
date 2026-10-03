@@ -165,7 +165,7 @@ const lieDisprovedLater = {
     // scene, not the verdict. The verdict was always going to be this.
     const kind = source && bond(holder, source) >= 2;
 
-    const scene = makeScene('arc.lie', { a: holder, b: source || null }, { ending: kind ? 'friend' : 'outsider', target: liar }, [], 'storage');
+    const scene = makeScene('arc.lie', { a: holder, b: source || null }, { ending: kind ? 'friend' : 'outsider', target: liar }, [], 'pantry');
 
     api.suspicion(holder, liar, 1.5);
     api.addBond(holder, liar, -1.3);
@@ -546,7 +546,7 @@ const threatenedRemembers = {
     const { a: voter, b: speaker, m } = pair;
     const exposed = m?.type === 'exposed-on-live';
 
-    const scene = makeScene('arc.threat', { a: voter, b: speaker }, { ending: exposed ? 'exposed' : 'threatened' }, [], 'bathroom');
+    const scene = makeScene('arc.threat', { a: voter, b: speaker }, { ending: exposed ? 'exposed' : 'threatened' }, [], 'washroom');
 
     api.suspicion(voter, speaker, 1.2);
     api.addBond(voter, speaker, -0.9);

@@ -612,7 +612,7 @@ function _conclaveRecord(ep, m, ballots, turret) {
  * exit verb as a literal (tests/tr-vp.test.js scans the sources), and a field
  * name is a literal the scan cannot tell from a sentence.
  */
-function _tableRecord(ep, { endgame = false } = {}) {
+function _tableRecord(ep, { endgame = false, reveal = false } = {}) {
   const round = (gs.tr?.rounds || []).find(r => r.ep === ep);
   if (!round) return null;
   const votes = traitorsRoundBallots(round);
@@ -637,6 +637,9 @@ function _tableRecord(ep, { endgame = false } = {}) {
   const rec = {
     ep,
     endgame: !!endgame,
+    // a finale table played with the author's reveals ON turns the banished
+    // over like any other table (the user, 2026-10-03)
+    endgameReveal: !!(endgame && reveal),
     votes,
     seated,
     ring,
@@ -701,7 +704,7 @@ function _tableRecord(ep, { endgame = false } = {}) {
       : null,
     pot: gs.tr?.pot ?? 0,
   };
-  if (!endgame) {
+  if (!endgame || reveal) {
     rec.chosenAlignment = round.banishedWasTraitor == null
       ? null : (round.banishedWasTraitor ? 'traitor' : 'faithful');
     // WHAT THE AUDIENCE KNOWS AND THE ROOM DOES NOT. Every seat's real
@@ -1186,6 +1189,78 @@ function _recruitmentRecord(night) {
  * comes from that one function so the money on the screen and the money in the
  * export cannot come to disagree.
  */
+// ══════════════════════════════════════════════════════════════════════
+// THE REUNION (2026-10-03)
+// ══════════════════════════════════════════════════════════════════════
+//
+// The user: "we need a last episode reunion after we're done all that and a
+// actual deep reunion". Everybody back in one room, nothing left to hide, and
+// the host going straight at the moments that made the season. This is the
+// record it is built from: only what the season actually did — who killed
+// whom and why, which Faithfuls the room sent home and who led it, the
+// recruits, the Traitors who turned on their own, the closest friendships and
+// the worst rivalries. Read off the episode rows, which are the season's own
+// record of itself, so the reunion cannot remember a different season.
+// Plain objects: survives a save.
+function _reunionRecord(endgame, rows) {
+  const lastEp = Number((rows[rows.length - 1] || {}).num) || 0;
+  const exitOf = {};                 // name -> { ep, channel }
+  for (const r of rows) for (const x of r.exits || []) if (x && x.name && !exitOf[x.name]) exitOf[x.name] = { ep: Number(r.num), channel: x.channel || 'banishment' };
+  const cast = [...new Set([...(gs.tr?.castOrder || []), ...Object.keys(exitOf), ...((endgame && endgame.survivors) || [])])];
+  const roleOf = n => (alignmentAt(n, exitOf[n] ? exitOf[n].ep : lastEp) === 'traitor' ? 'traitor' : 'faithful');
+  const traitors = cast.filter(n => roleOf(n) === 'traitor');
+  // THE MURDERS: the conclave's decision, where the target really died
+  const murdered = new Set(cast.filter(n => exitOf[n] && exitOf[n].channel === 'murder'));
+  const murders = [];
+  for (const r of rows) {
+    const c = r.tr && r.tr.conclave;
+    if (c && c.target && c.decidedBy && murdered.has(c.target) && !murders.some(m => m.victim === c.target)) {
+      murders.push({ ep: Number(r.num), victim: c.target, by: c.decidedBy, reason: c.reason || null });
+    }
+  }
+  // THE TABLES: every banishment, what they were, and who led it
+  const tables = [];
+  const addTable = (ep, t, role) => {
+    if (!t || !t.chosen) return;
+    const votes = (t.votes || []).filter(b => b.channel === 'banishment' && (b.target || b.voted));
+    const against = votes.filter(b => (b.target || b.voted) === t.chosen).map(b => b.voter);
+    const lead = ((t.speeches || []).find(sp => sp.target === t.chosen) || {}).speaker || against[0] || null;
+    tables.push({ ep, chosen: t.chosen, role: role || roleOf(t.chosen), votes: against.length, against, lead });
+  };
+  for (const r of rows) if (r.tr && r.tr.table) addTable(Number(r.num), r.tr.table, r.tr.table.chosenAlignment);
+  for (const t of ((endgame && endgame.tables) || [])) if (t.record) addTable(Number(t.ep), t.record, null);
+  // TRAITOR ON TRAITOR: a cloak whose own pact wrote the name
+  const turned = [];
+  for (const t of tables) {
+    if (t.role !== 'traitor') continue;
+    for (const v of t.against) if (traitors.includes(v) && v !== t.chosen) { turned.push({ ep: t.ep, by: v, target: t.chosen }); break; }
+  }
+  // THE RECRUITS
+  const recruits = [];
+  for (const r of rows) {
+    const x = r.tr && r.tr.recruitment;
+    if (x && x.recruiter && x.target) recruits.push({ ep: Number(r.num), by: x.recruiter, target: x.target, mode: x.mode || 'note', accepted: !!x.accepted });
+  }
+  // THE PEOPLE: the warmest and the coldest pairs in the room at the end
+  const pairs = [];
+  for (let i = 0; i < cast.length; i++) for (let j = i + 1; j < cast.length; j++) {
+    const b = getBond(cast[i], cast[j]);
+    if (Number.isFinite(b)) pairs.push({ a: cast[i], b: cast[j], bond: Math.round(b * 10) / 10 });
+  }
+  pairs.sort((x, y) => y.bond - x.bond);
+  const friends = pairs.filter(p => p.bond > 2).slice(0, 2);
+  const rivals = pairs.slice().reverse().filter(p => p.bond < -1).slice(0, 2);
+  return {
+    cast, lastEp,
+    exits: cast.map(n => ({ name: n, ep: exitOf[n] ? exitOf[n].ep : null, channel: exitOf[n] ? exitOf[n].channel : null, role: roleOf(n) })),
+    traitors, murders, tables, turned, recruits, friends, rivals,
+    takers: [...((endgame && endgame.takers) || [])],
+    losers: [...((endgame && endgame.losers) || [])],
+    winner: (endgame && endgame.winner) || null,
+    pot: (endgame && endgame.pot) || 0,
+  };
+}
+
 function _endgameRecord(e) {
   if (!e) return null;
   const asks = (e.ballots || []).map(b => {
@@ -1225,6 +1300,10 @@ function _endgameRecord(e) {
         ballots: (rv.ballots || []).map(b => ({ voter: b.voter, voted: b.voted })),
       })),
       revealedTraitor: revealed ? !!r.wasTraitor : null,
+      // THE WHOLE TABLE: the debate, the chalkboards and their reasons, the
+      // goodbye and the reveal. The endgame plays each of these as a full
+      // Round Table screen between the fires (js/vp-tr/screens.js).
+      record: _tableRecord(r.ep, { endgame: true, reveal: revealed }),
     })),
     winner: e.winner || null,
     // ── THE UNMASKING ─────────────────────────────────────────────────
@@ -3865,6 +3944,8 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     // Day Book read it to know which episode ended the season.
     _finaleRow.tr.finale = true;
     finaleEpisode = Number(_finaleRow.num);
+    // AND THEN, EVERYBODY BACK IN ONE ROOM (js/vp-tr/reunion.js)
+    _finaleRow.tr.reunion = _reunionRecord(_finaleRow.tr.endgame, _rows);
     const [_banishVerb] = exitVerbs(TRAITORS_FORMAT);
     for (const r of endgame.rounds || []) {
       if (r.banished) {

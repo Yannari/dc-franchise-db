@@ -1172,10 +1172,12 @@ describe('the endgame reveals nothing, on the record and on the screen', () => {
     const src = readFileSync(new URL('../' + 'js/vp-tr/round-table.js', import.meta.url), 'utf8')
       .replace(/\/\*[\s\S]*?\*\//g, ' ')
       .replace(new RegExp('(^|[^:])//[^\\n]*', 'g'), '$1 ');
-    expect(src, 'the view stopped stripping the alignment off a finale record')
-      .toContain('chosenAlignment: endgame ? null :');
+    // A finale table is blind when the author turned reveals OFF; with them on
+    // (the default since 2026-10-03, at the user's request) it reveals like any.
+    expect(src, 'the view stopped stripping the alignment off a blind finale record')
+      .toContain('chosenAlignment: (endgame && !rec.endgameReveal) ? null :');
     expect(src, 'the beat builder stopped refusing to draw one')
-      .toContain('if (!v.endgame && v.chosenAlignment)');
+      .toContain('if (!v.endgameBlind && v.chosenAlignment)');
   });
 
   // (The live "a real finale table shows the silence" arm retired with the
@@ -3429,7 +3431,13 @@ describe('the endgame turns nobody over', () => {
       for (const t of ep.tr.endgame.tables) {
         expect(Object.keys(t).sort(),
           `ep ${ep.num}: a finale table carries an unexpected field`)
-          .toEqual(['ballots', 'chosen', 'ep', 'revealedTraitor', 'revotes', 'tally']);
+          .toEqual(['ballots', 'chosen', 'ep', 'record', 'revealedTraitor', 'revotes', 'tally']);
+        // the whole table, for the Round Table screen it becomes; blind, so no
+        // alignment rides inside it either
+        if (t.record) {
+          expect(t.record.chosenAlignment, `ep ${ep.num}: a blind finale table record carries an alignment`).toBeUndefined();
+          expect(t.record.truth, `ep ${ep.num}: a blind finale table record carries the truth`).toBeUndefined();
+        }
         expect(t.revealedTraitor,
           `ep ${ep.num}: a reveals-off finale leaked an alignment onto the record`)
           .toBeNull();
@@ -3751,7 +3759,10 @@ describe('a player reads their own paper and nobody else\'s', () => {
     expect(slips, 'no slip was drawn at all').toBeGreaterThan(20);
   });
 
-  it('a player in the room reads exactly one slip per ask, and it is theirs', () => {
+  it('a player at the fire sees every pouch burn, because the fire is public', () => {
+    // THE US FORMAT (the user, 2026-10-03): each finalist throws a pouch into
+    // the fire in front of everybody, so a player who was at the fire reads
+    // every choice made there, not just their own.
     let checked = 0;
     for (const { ep } of ENDINGS.slice(0, 10)) {
       const e = ep.tr.endgame;
@@ -3759,10 +3770,8 @@ describe('a player reads their own paper and nobody else\'s', () => {
       for (const who of e.asks[0].living) {
         const drawn = slipsOf(endgameRevealed(ep, 'player:' + who));
         const open = drawn.filter(s => s.choice !== 'sealed');
-        expect(open.length, `ep ${ep.num}: ${who} read ${open.length} slips`)
-          .toBe(e.asks.filter(a => a.choices.some(c => c.name === who)).length);
-        expect(open.every(s => s.name === who),
-          `ep ${ep.num}: ${who} read somebody else's paper`).toBe(true);
+        expect(open.length, `ep ${ep.num}: ${who} saw ${open.length} pouches`)
+          .toBe(e.asks.reduce((k, a) => k + a.choices.length, 0));
         // and what they read is what they wrote
         for (const s of open) {
           const a = e.asks.find(x => x.choices.some(c => c.name === who));
@@ -3876,7 +3885,10 @@ describe('the endgame is reachable from a played season', () => {
   it('and it is the last screen of the last episode', () => {
     const r = END_RUNS[0];
     const ids = buildVPScreens(r.episodes[r.episodes.length - 1]).map(x => x.id);
-    expect(ids[ids.length - 1], 'the endgame is not the end of the episode')
+    // the reunion follows it (2026-10-03): the endgame is the last of the game
+    expect(ids[ids.length - 1], 'the reunion is not the end of the season')
+      .toBe('tr-reunion');
+    expect(ids[ids.length - 2], 'the endgame is not the end of the game')
       .toBe('tr-endgame');
   });
 });
@@ -4211,8 +4223,11 @@ describe('the transcript retranscribes every screen the night produced', () => {
     for (const ep of BACKLOG_ROWS) {
       for (const s of TRAITORS_SCREENS) if (s.when(ep)) kinds.add(s.id);
     }
-    expect([...kinds].sort(), 'a screen kind never appeared in the sample')
-      .toEqual(TRAITORS_SCREENS.map(s => s.id).sort());
+    // the second-and-later fires and tables only exist in a long finale: the
+    // first of each is a kind every sample must reach, the rest are slots
+    const SLOT = /^tr-endgame-(fire|table)-[1-7]$/;
+    expect([...kinds].filter(id => !SLOT.test(id)).sort(), 'a screen kind never appeared in the sample')
+      .toEqual(TRAITORS_SCREENS.map(s => s.id).filter(id => !SLOT.test(id)).sort());
   });
 
   it('every screen appears under its own heading, word for word', () => {
@@ -4507,11 +4522,14 @@ describe('every castle screen a season produces is reachable from buildVPScreens
     }
     expect(rows, 'no season was played').toBeGreaterThan(20);
     // Every registered screen appeared, or the sweep above never exercised it.
+    const SLOT = /^tr-endgame-(fire|table)-[1-7]$/;
     for (const s of TRAITORS_SCREENS) {
+      if (SLOT.test(s.id)) continue;
       expect(seen.get(s.id) || 0, `${s.id} was never reached by any night of any season`)
         .toBeGreaterThan(0);
     }
-    expect([...seen.keys()].sort()).toEqual(TRAITORS_SCREENS.map(s => s.id).sort());
+    expect([...seen.keys()].filter(id => !SLOT.test(id)).sort())
+      .toEqual(TRAITORS_SCREENS.map(s => s.id).filter(id => !SLOT.test(id)).sort());
   });
 
   it('and the debug tab is behind the flag, and is not one of the running order', () => {
@@ -8635,7 +8653,7 @@ describe('the sign-off is addressed to people who have not done it yet', () => {
         const html = rpBuildRoundTable(ep, 'audience');
         expect(html, `episode ${ep.num} tells them they have somebody to ${murdered}`)
           .not.toContain('somebody to ' + murdered);
-        if (/good luck/.test(html)) seen++;
+        if (/before (morning|the sun comes up)/.test(html)) seen++;
       }
     }
     expect(seen, 'the sign-off pool never drew the line this arm is about')

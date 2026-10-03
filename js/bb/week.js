@@ -1237,6 +1237,10 @@ function runHouseMaintenance(week, rng = Math.random) {
  * them there sets the same face beside itself. It also reads wrong — the
  * argument about who flipped is had by the people still in the room.
  */
+/** Spread a written script over an engine beat; with none, the beat keeps its sentence. */
+const _withScript = (beat, script) => (script
+  ? { ...beat, text: script.text, lines: script.lines, lineId: script.lineId } : beat);
+
 function _reactingFaces(names, week) {
   return [...new Set(names.filter(Boolean))].filter(n => n !== week?.evicted);
 }
@@ -1258,7 +1262,7 @@ function _attachAllianceFallout(week, house) {
     // anybody to accuse. The vote is read as a COUNT, so what the room actually
     // has is arithmetic that does not work, and the wrong person to suspect.
     if (!known) {
-      beats.push({
+      beats.push(_withScript({
         text: `The count does not work. <strong>${alliance}</strong> went into the vote sure of `
           + `its own numbers and came out of it one short, and nobody in that room is going to `
           + `admit which chair it came from. <strong>${player}</strong> asks the question twice, `
@@ -1270,14 +1274,15 @@ function _attachAllianceFallout(week, house) {
         players: _reactingFaces([player, victim], week),
         badgeText: 'THE NUMBERS DO NOT ADD UP', badgeClass: 'grey',
         eventId: 'alliance-betrayal-unseen', category: 'deals', location: 'living-room',
-      });
+      }, scriptBeat('engine.unseen', { a: player }, { ending: 'scene', group: alliance },
+        { ...wctx, salt: `unseen|${player}` })));
       // Somebody has to have done it, and the room has picked. This is the
       // half the viewer needs and the house never gets: the accusation lands
       // on a person who did nothing, and — when the real one steered it —
       // lands there because the real one put it there.
       const mis = incident.misattribution;
       if (mis) {
-        beats.push({
+        beats.push(_withScript({
           text: mis.deflected
             ? `<strong>${player}</strong> does not wait to be asked. By the time anybody has finished `
               + `counting, ${player} has walked <strong>${mis.reactor}</strong> through it twice and left `
@@ -1292,7 +1297,9 @@ function _attachAllianceFallout(week, house) {
           badgeClass: 'red',
           eventId: mis.deflected ? 'alliance-deflected-blame' : 'alliance-misattributed',
           category: 'deals', location: 'living-room',
-        });
+        }, scriptBeat('engine.blame', { a: mis.reactor, b: mis.wrongSuspect },
+          { ending: mis.deflected ? 'deflected' : 'blamed', source: player },
+          { ...wctx, salt: `blame|${mis.reactor}` })));
       }
       continue;
     }
@@ -2274,8 +2281,10 @@ export function simulateBBWeek(options = {}) {
     const firstWordLine = fw ? (who => fw.replace(/\{who\}/g, who)) : null;
     const schemer = byStat('strategic')[0];
     const bold = byStat('boldness').find(n => n !== schemer) || byStat('boldness')[0];
+    const register = paranoid ? 'paranoid' : dread ? 'dread' : 'power';
+    const actx = { week, act: 'hoh', hoh: null, room: 'living-room' };
     if (bold) {
-      beats.push({
+      beats.push(_withScript({
         text: paranoid
           ? `${bold} breaks the silence first, and does it by looking straight down the sofa: "Well. It's one of you." Half the room laughs. The other half works out where they were sitting.`
           : (dread && firstWordLine)
@@ -2290,14 +2299,16 @@ export function simulateBBWeek(options = {}) {
         players: [bold], badgeText: 'FIRST WORD', badgeClass: 'gold',
         eventId: 'twist-announcement-bravado', category: 'ceremonies', location: 'living-room',
         effects: [{ kind: 'pop', text: `${bold} +1`, delta: 1 }],
-      });
+      // A twist that brings its own first line keeps it.
+      }, (dread && firstWordLine) ? null
+        : scriptBeat('engine.bravado', { a: bold }, { ending: register }, { ...actx, salt: `bravado|${annIdx}` })));
       if (seasonConfig.popularityEnabled !== false) {
         if (!gs.popularity) gs.popularity = {};
         gs.popularity[bold] = (gs.popularity[bold] || 0) + 1;
       }
     }
     if (schemer && schemer !== bold) {
-      beats.push({
+      beats.push(_withScript({
         text: paranoid
           ? `${schemer} says nothing at all, and is already doing the only arithmetic that matters: ${house.length - 1} other people, one of them lying, and a whole season to find out which. Nobody in this room is going to be believed about anything again.`
           : dread
@@ -2307,7 +2318,8 @@ export function simulateBBWeek(options = {}) {
             : `${schemer} says nothing at all, which from ${schemer} is the loudest possible reaction. The rule has already been taken apart and reassembled twice behind those eyes.`,
         players: [schemer], badgeText: paranoid ? 'COUNTING THE ROOM' : dread ? 'NO TIME TO WORK' : 'RECALCULATING', badgeClass: 'grey',
         eventId: 'twist-announcement-recalc', category: 'ceremonies', location: 'living-room',
-      });
+      }, scriptBeat('engine.recalc', { a: schemer }, { ending: register, intent: noVetoThisWeek ? 'noveto' : 'veto' },
+        { ...actx, salt: `recalc|${annIdx}` })));
     }
     // The two people with the least power in the room hear the same rule and
     // reach for each other — shared dread is how outsiders become a pair. Under
@@ -2316,7 +2328,7 @@ export function simulateBBWeek(options = {}) {
     const outsiders = byStat('strategic').slice(-2);
     if (outsiders.length === 2 && getBond(outsiders[0], outsiders[1]) > -1) {
       _cappedBondWindow(() => addBond(outsiders[0], outsiders[1], 0.3));
-      beats.push({
+      beats.push(_withScript({
         text: paranoid
           ? `${outsiders[0]} and ${outsiders[1]} find each other before anybody has moved. Neither says the sentence out loud, because the sentence is "it isn't you, is it" and saying it makes it a question. They rule each other out, on nothing, and stay that way for weeks.`
           : dread
@@ -2325,7 +2337,8 @@ export function simulateBBWeek(options = {}) {
         players: [...outsiders], badgeText: paranoid ? 'RULING EACH OTHER OUT' : dread ? 'NOTHING TO ASK FOR' : 'SHARED DREAD', badgeClass: 'blue',
         eventId: 'twist-announcement-dread', category: 'ceremonies', location: 'living-room',
         effects: [{ kind: 'bond', text: `${outsiders[0]} & ${outsiders[1]} +0.3`, delta: 0.3 }],
-      });
+      }, scriptBeat('engine.outsiders', { a: outsiders[0], b: outsiders[1] }, { ending: register },
+        { ...actx, salt: `outsiders|${annIdx}` })));
     }
     // Only decorate a rule the contract already made public. The theme helper
     // also verifies that this exact week/type came from the theme's stamped
@@ -4678,13 +4691,15 @@ export function simulateBBWeek(options = {}) {
       const nomAct = _lastStagedAct(week) || {};
       const shielded = hohBloc.inHouse.filter(m => m !== hoh);
       shielded.forEach(m => _cappedBondWindow(() => addBond(hoh, m, 0.15)));
-      (nomAct.socialBeats ||= []).push({
+      (nomAct.socialBeats ||= []).push(_withScript({
         text: `Nobody says the name out loud, but the block has a shape: every member of ${hohBloc.name} is off it. ${shielded.slice(0, 3).join(', ')}${shielded.length > 3 ? ' and the rest' : ''} clock what ${hoh} just did for them — and so does everybody who is NOT in that room.`,
         players: [hoh, ...shielded.slice(0, 3)],
         badgeText: 'THE BLOC HOLDS', badgeClass: 'blue',
         eventId: 'alliance-shaped-block', category: 'ceremonies', location: 'living-room',
         effects: shielded.slice(0, 3).map(m => ({ kind: 'bond', text: `${hoh} & ${m} +0.15`, delta: 0.15 })),
-      });
+      }, scriptBeat('engine.block', { a: hoh, b: shielded[0] || null, c: shielded[1] || null },
+        { ending: 'scene', group: hohBloc.name },
+        { week, act: 'nominations', hoh, room: 'living-room', salt: `block|${hoh}` })));
       nomAct.allianceShield = { alliance: hohBloc.name, protected: shielded };
     }
   }
@@ -6737,12 +6752,14 @@ export function simulateBBWeek(options = {}) {
             : `${pitch.pitcher} does not campaign. ${p.Sub} knows the number and has decided that `
               + `walking up to people and asking would not change it — which may be the read of `
               + `the week, or the last mistake of a season.`;
-        quietBeats.push({
+        quietBeats.push(_withScript({
           text, players: [pitch.pitcher],
           badgeText: d.misread ? 'DOES NOT SEE IT' : 'SITS IT OUT',
           badgeClass: d.misread ? 'red' : 'grey',
           eventId: 'campaign-declined', category: 'deals', location: 'bedroom',
-        });
+        }, scriptBeat('engine.declined', { a: pitch.pitcher },
+          { ending: d.misread ? 'misread' : d.felt < 0.34 ? 'safe' : 'resigned' },
+          { week, act: 'campaign', hoh, room: 'bedroom', salt: `declined|${pitch.pitcher}` })));
       }
     }
 

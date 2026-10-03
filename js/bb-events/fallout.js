@@ -194,8 +194,8 @@ const findingTheCulprit = {
     const verdict = assignBlame(mourner.name, week);
     const gone = week.evicted;
     if (!verdict) {
-      return { text: `${mourner.name} spends the morning trying to work out who did it and gets nowhere.`,
-        players: [mourner.name], badgeText: 'NO ANSWER', badgeClass: 'grey' };
+      return { scene: makeScene('fallout.noanswer', { a: mourner.name }, { ending: 'scene', gone }, [], 'diary-room'),
+        location: 'diary-room', players: [mourner.name], badgeText: 'NO ANSWER', badgeClass: 'grey' };
     }
     const { blamed, correct, why } = verdict;
 
@@ -233,8 +233,8 @@ const itWasNotMe = {
       && bond(n, mourner.name) > -2))[0];
     const gone = week.evicted;
     if (!liar) {
-      return { text: `Nobody volunteers how they voted.`, players: [mourner.name],
-        badgeText: 'SILENCE', badgeClass: 'grey' };
+      return { scene: makeScene('fallout.silence', { a: mourner.name }, { ending: 'scene', gone }, [], 'diary-room'),
+        location: 'diary-room', players: [mourner.name], badgeText: 'SILENCE', badgeClass: 'grey' };
     }
     // ── THE COUNT IS PUBLIC, AND ARITHMETIC BEATS CHARM ──
     //
@@ -296,8 +296,8 @@ const somebodyStayedLoyal = {
     const loyal = _quiet(keptThem(week).filter(n => n !== mourner.name))[0];
     const gone = week.evicted;
     if (!loyal) {
-      return { text: `Nobody kept ${gone}. ${mourner.name} finds that out and stops asking.`,
-        players: [mourner.name], badgeText: 'ALONE IN IT', badgeClass: 'grey' };
+      return { scene: makeScene('fallout.alone', { a: mourner.name }, { ending: 'scene', gone }, [], 'diary-room'),
+        location: 'diary-room', players: [mourner.name], badgeText: 'ALONE IN IT', badgeClass: 'grey' };
     }
     // Whether these two were already close decides which story this is, and the
     // copy has to ask rather than assume. One variant called the loyal voter "a

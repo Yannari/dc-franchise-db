@@ -140,8 +140,8 @@ const testsTheAlliance = {
     const alliance = alliancesOf(hoh).find(a => (a?.members || []).some(n => n !== hoh && house.includes(n)));
     const mates = ((alliance?.members) || []).filter(n => n !== hoh && house.includes(n));
     if (!mates.length) {
-      return { text: `${hoh} looks for somebody to test and finds nobody worth testing.`,
-        players: [hoh], badgeText: 'NOBODY TO ASK', badgeClass: 'grey' };
+      return { scene: makeScene('reign.nobody', { a: hoh }, { ending: 'scene' }, [], 'diary-room'),
+        location: 'diary-room', players: [hoh], badgeText: 'NOBODY TO ASK', badgeClass: 'grey' };
     }
     const doubter = _quiet(mates).find(n => bond(n, hoh) < 4) || mates[0];
 

@@ -41,6 +41,7 @@ import { rpBuildSuspicion, trSuspicionRevealAll } from './suspicion.js';
 import { suspicionStageScreen } from './suspicion-stage.js';
 import { offerStageScreen } from './offer-stage.js';
 import { armouryStageScreen } from './armoury-stage.js';
+import { endgameStageScreen } from './endgame-stage.js';
 // The Alcove is folded into the night castle segment (Plan 11); only its gate
 // is needed here, for that segment's `when`.
 import { _hasConfessionals } from './confessionals.js';
@@ -282,7 +283,8 @@ export const TRAITORS_SCREENS = [
   { id: 'tr-endgame', label: 'The Endgame', suffix: 'endgame',
     badge: { text: 'Endgame', color: '#4cffb3' },
     when: r => !!(r.tr && r.tr.endgame),
-    build: rpBuildEndgame, revealAll: trEndgameRevealAll, revealAllName: 'trEndgameRevealAll' },
+    build: (r, o) => endgameStageScreen(r, o, rpBuildEndgame(r, o)),
+    revealAll: trEndgameRevealAll, revealAllName: 'trEndgameRevealAll' },
 ];
 
 /**

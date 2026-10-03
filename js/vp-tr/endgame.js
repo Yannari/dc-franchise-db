@@ -62,7 +62,7 @@
 // individually catchable, which is the point: the record's is caught by
 // reading the record, and the screen's is caught by handing it a forged one.
 import { seasonConfig, players } from '../core.js';
-import { pronouns } from '../players.js';
+import { pronouns, pStats } from '../players.js';
 import { exitVerbs, roundExits } from '../shows.js';
 import { HOSTS_BY_FORMAT } from '../shows.js';
 import { PORTRAIT_CSS, TR_NAV_TOP } from './style.js';
@@ -869,6 +869,9 @@ function _filters() {
 // THE VISUAL SYSTEM — ash and slate, and one warm card at the very end
 // ══════════════════════════════════════════════════════════════════════
 const LT_CSS = `
+.lt-said{display:flex;gap:12px;align-items:flex-start;margin:12px 0 2px}
+.lt-said-txt{font-family:var(--v-hand,Georgia),serif;font-style:italic;font-size:17px;line-height:1.45;color:#efe6d6}
+.lt-said cite{display:block;margin-top:4px;font-style:normal;font-size:10px;letter-spacing:.2em;text-transform:uppercase;opacity:.65}
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,400;9..144,600;9..144,700;9..144,900&family=IM+Fell+English:ital@0;1&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&display=swap');
 
 .lt-root{
@@ -1833,7 +1836,7 @@ const REACT_UNMASK = [
 const SENTHOME_LEAD = [
   'And the ones they sent home at the end — nobody was ever told what those were, '
   + 'not the room and not the people watching it. Here they are.',
-  'The last {door}s went out without a word. This is what the room actually '
+  'The last ones out went without a word. This is what the room actually '
   + 'did with them.',
   'Every chair emptied in this endgame was emptied blind. The castle finds out now, '
   + 'at the same time as everybody else.',
@@ -2231,10 +2234,220 @@ function _sceneOf(b) {
   }
 }
 
+// ══════════════════════════════════════════════════════════════════════
+// THE ENDGAME, SPOKEN (2026-10-03)
+// ══════════════════════════════════════════════════════════════════════
+//
+// The user: "redo the endgame with dialogue plenty of them with variants
+// based on personality and no repetition". The fire had one line per hand,
+// two to five words, from a pool shared by everybody ("One more.", "Stop.").
+// Now every beat has people speaking, in a TONE that is theirs (`_egTone`,
+// proportional on stats and archetype, the same six the Round Table's
+// goodbyes use): round the fire before the question, as they write their
+// word, on the way out of a table nobody turns over, as they turn over, and
+// at the box. One set holds everything said on the screen, so no line is
+// heard twice in a finale.
+//
+// The talk round the fire is PUBLIC and is not the word they write: it never
+// says which way they will go (a player layer sees the slips sealed, and
+// talk that gave the slip away would leak it). People lie at this fire.
+// {b} somebody else at the fire; {a} the person being answered.
+const FIRE_TALK = {
+  dramatic: [
+    'Look around this fire. One of us is about to walk away with everything, and I don’t trust half of you.',
+    'This is it. Whatever we write now, we live with for the rest of our lives.',
+    '{b}, look me in the eye and tell me nobody here has lied to me.',
+    'I’ve come too far to lose this on a guess.',
+    'Somebody here has lied to me every single day. I can feel it.',
+    'I didn’t survive all those nights to be fooled at the very last fire.',
+  ],
+  calm: [
+    'Let’s just be honest with ourselves before we write anything.',
+    'I’ve thought about it all day. I know what I’m writing.',
+    'Whatever happens, it’s been a good game. Let’s finish it properly.',
+    '{b}, you’ve been quiet. What are you thinking?',
+    'No speeches. Write what you believe and live with it.',
+    'We’ve all had a long time to think about this. Trust your gut.',
+  ],
+  mean: [
+    'Funny how quiet some of you have gone now the money’s in sight.',
+    '{b}, you’re sweating. Just saying.',
+    'I know exactly who I don’t trust, and they know it too.',
+    'If you’ve got nothing to hide, you’ve got nothing to worry about. Right, {b}?',
+    'Some of you haven’t earned a penny of what’s in that box.',
+    'I’ve watched every one of your faces for weeks. Some of them crack.',
+  ],
+  sad: [
+    'I can’t believe it’s nearly over. I’m going to miss this, even the awful bits.',
+    'I just want to trust the people I’ve got left. Is that so stupid?',
+    '{b}, whatever happens, I’m glad you’re still here.',
+    'I’ve lost so many friends in this game. Please don’t let it be for nothing.',
+    'My hands are shaking. I don’t know if I can do this.',
+    'I keep thinking about the ones who didn’t make it to this fire.',
+  ],
+  idgaf: [
+    'Let’s just write it and go and sit by a fire somewhere warmer.',
+    'Honestly, whatever happens happens.',
+    'I’m not making a speech. I’m writing my word.',
+    '{b}, stop staring at me. I’ve already decided.',
+    'I’m cold, I’m tired, and I’d like to know how this ends.',
+    'Big night. Can we get on with it?',
+  ],
+  idk: [
+    'I genuinely don’t know what to write. Does anyone? No? Great.',
+    'Every time I think I’ve worked it out, I change my mind again.',
+    '{b}, are you sure about this? Because I’m not sure about anything any more.',
+    'I keep looking at all of you and I can’t tell. I just can’t.',
+    'What if we’re wrong? What if we’ve been wrong the whole time?',
+    'I had a plan this morning. I don’t have one now.',
+  ],
+};
+// A REPLY HAS TO ANSWER WHATEVER WAS SAID: the opener might be grief,
+// suspicion or a shrug, so these answer any of them (the first draft had
+// "if you're accusing me, do it to my face" answering "I'm going to miss this").
+const FIRE_REPLY = {
+  dramatic: ['Then let’s finish it properly, {a}. No more lies.', '{a}, I’ve waited all season for this moment.',
+    'Whatever happens, {a}, I’m not going quietly.', 'You’ll get your answer soon enough, {a}.'],
+  calm: ['Fair enough, {a}. I’ve made my peace with it.', 'I hear you, {a}. Let’s see what the slips say.',
+    '{a}, I’m at peace with whatever happens.', 'We’ll know soon, {a}. That’s something.'],
+  mean: ['Interesting choice of words, {a}.', 'Keep talking, {a}. It’s very revealing.',
+    'Rich, coming from you, {a}.', '{a}, you’ve been saying things like that all week.'],
+  sad: ['I know, {a}. I know.', 'I want to believe in all of us, {a}. I really do.',
+    '{a}, I just want this to be over.', 'Whatever happens, {a}, I’m glad you’re still here.'],
+  idgaf: ['Sure, {a}. Whatever you say.', '{a}, can we just write the thing?',
+    'Noted, {a}. Moving on.', 'Okay. Lovely, {a}.'],
+  idk: ['I don’t know, {a}. I really don’t.', 'Wait, {a}, what do you mean by that?',
+    '{a}, now you’re making me doubt myself.', 'Maybe you’re right, {a}. I have no idea any more.'],
+};
+// what they say as they write it: the word, in their own voice
+const SAY_END_BY = {
+  dramatic: ['End it. I won’t lose a single friend more.', 'It’s over. I’m ending it.',
+    'End it, and heaven help the liars if there are any.', 'I believe in this fire. End it.'],
+  calm: ['End it. I trust who’s left.', 'I’m happy with this group. End it.',
+    'End it. I’ve made my choice.', 'I’m done hunting. End it.'],
+  mean: ['End it. If anyone’s lying, they’re cleverer than the rest of you.', 'End it, before somebody does something stupid.',
+    'End it. I’m not giving any of you another go at me.', 'End it. I’ve seen enough.'],
+  sad: ['Please let this be over. End it.', 'End it. I can’t watch anyone else go.',
+    'I trust you. I have to. End it.', 'End it. I just want to go home with my friends.'],
+  idgaf: ['End it. I’m cold.', 'End it. Done.', 'End it, obviously.', 'End. Can we go now?'],
+  idk: ['End it? Yes. I think. End it.', 'I’m going to say end it and hope I’m right.',
+    'End it. Probably. Yes.', 'I don’t know who it would even be. End it.'],
+};
+const SAY_BANISH_BY = {
+  dramatic: ['Not yet. There’s still a liar at this fire and I’m not leaving without them.', 'Another. I will not hand a liar the money.',
+    'One more. I owe it to everyone we’ve lost.', 'Another. This isn’t finished.'],
+  calm: ['One more. I’m not convinced yet.', 'Another. I’d rather be sure.',
+    'I want one more table. Just to be certain.', 'Another. Sorry. I have to.'],
+  mean: ['Another. And some of you know exactly why.', 'One more. I’m not splitting a penny with a liar.',
+    'Another. Somebody here should be very nervous.', 'Not a chance. Another.'],
+  sad: ['I’m sorry. One more. I’m so sorry.', 'Another. I hate this, but another.',
+    'I can’t end it while I still feel like this. Another.', 'One more. Please understand.'],
+  idgaf: ['Another. Why not.', 'One more. Keeps it interesting.', 'Another. Sue me.', 'One more, then.'],
+  idk: ['Another? I think? Yes. Another.', 'One more. Just in case. I don’t know.',
+    'Something’s off. I can’t say what. Another.', 'Another. I’ll probably regret it.'],
+};
+// sent home from a table nobody turns over: they leave not knowing either
+const BLIND_GOODBYE = {
+  dramatic: ['You’ll never know, will you? You’ll never know if you got it right.', 'Remember my face when that box opens.',
+    'Fine. Finish it without me. Good luck living with it.'],
+  calm: ['That’s fair. Good luck, all of you.', 'No hard feelings. Play it well.', 'I’ll be watching. Make it count.'],
+  mean: ['Enjoy the money. Some of you won’t deserve it.', 'Wrong again. Typical.', 'Well done. You’ve just made it easier for them.'],
+  sad: ['I really thought I’d make it to the end with you.', 'I love you all. Even now.', 'So close. I was so close.'],
+  idgaf: ['Whatever. Night, everyone.', 'Fair enough. I’m off to bed.', 'Cool. Enjoy your fire.'],
+  idk: ['Wait, me? Really? Okay…', 'I don’t even know what I did.', 'I thought it was going to be someone else.'],
+};
+// turning over: what they are, in their own voice
+const UNMASK_SAID = {
+  traitor: {
+    dramatic: ['I’m a Traitor. And I was one every single day.', 'Traitor. I fooled you right to the very end.', 'Yes. Traitor. And I’d do it all again.'],
+    calm: ['I’m a Traitor. Well played, all of you.', 'Traitor. I’m sorry, but it’s a game.', 'I’m a Traitor. Nothing personal.'],
+    mean: ['Traitor. You walked me all the way to the money.', 'I’m a Traitor, and none of you even came close.', 'Traitor. Look at your faces.'],
+    sad: ['I’m a Traitor. I’m sorry. I really am.', 'Traitor. Lying to you was the hardest part.', 'I’m a Traitor, and I hated every lie.'],
+    idgaf: ['Traitor. Surprise.', 'Yep. Traitor.', 'Traitor. Obviously.'],
+    idk: ['I’m a Traitor. Honestly, I can’t believe I got away with it.', 'Traitor. I thought you’d catch me weeks ago.', 'I’m a Traitor. Sorry? I think?'],
+  },
+  faithful: {
+    dramatic: ['I am a Faithful. I have been from the very first day.', 'Faithful. Every single day, Faithful.', 'I’m Faithful, and I fought for every one of you.'],
+    calm: ['I’m Faithful. Always have been.', 'Faithful. No surprises from me.', 'I’m a Faithful. I hope the rest of you are too.'],
+    mean: ['Faithful. Which some of you doubted, loudly.', 'I’m Faithful. You can apologise later.', 'Faithful. Told you so.'],
+    sad: ['I’m Faithful. Please, please let the rest of you be too.', 'Faithful. I just want us to have done this together.', 'I’m Faithful. My heart is pounding.'],
+    idgaf: ['Faithful. Next.', 'Faithful, obviously.', 'I’m Faithful. Can someone else go now?'],
+    idk: ['I’m Faithful. I think we got it right? Did we get it right?', 'Faithful. Now I’m scared of who’s next.', 'I’m Faithful. I don’t know what anyone else is.'],
+  },
+};
+// at the box: the ones who take it (keyed by the record's own word for who won)
+const WIN_SAID = {
+  faithfuls: {
+    dramatic: ['We did it! We actually did it!', 'Every single day was worth it for this.', 'They never beat us. Never.'],
+    calm: ['We got there. Together.', 'That’s the right ending.', 'Well played, all of you. Really.'],
+    mean: ['Told you I’d make it.', 'I always knew I’d be standing here.', 'Some of you should have trusted me sooner.'],
+    sad: ['I’m crying. I’m actually crying.', 'I wish the ones we lost could see this.', 'I can’t believe it. I really can’t.'],
+    idgaf: ['Nice. Very nice.', 'Not bad for a few weeks’ work.', 'Great. Where’s the bar?'],
+    idk: ['Wait, is that it? Did we win?', 'I don’t understand how I’m still here.', 'Is this real?'],
+  },
+  traitors: {
+    dramatic: ['You never saw it coming.', 'The Traitors take it all.', 'I told you I’d take it all.'],
+    calm: ['Well played, everyone. It just wasn’t your game.', 'Thank you. I mean it.', 'That’s how it ends.'],
+    mean: ['Thanks for the money.', 'You made it far too easy.', 'Better luck next time.'],
+    sad: ['I’m so sorry. But I’m also very rich.', 'I hope you can forgive me. One day.', 'I didn’t enjoy the lying. I will enjoy this.'],
+    idgaf: ['Cheers, all.', 'Well, that worked.', 'Easy money.'],
+    idk: ['I can’t believe that actually worked.', 'Did I really just win?', 'Wait, it’s all mine?'],
+  },
+};
+// and the ones who stood at the same fire and take nothing
+const LOSE_SAID = {
+  dramatic: ['No. No! I trusted you!', 'After everything, this is how it ends?', 'You lied to my face at that fire.'],
+  calm: ['Well played. I mean it.', 'Fair enough. You were better.', 'Congratulations. Genuinely.'],
+  mean: ['Enjoy it. You’ll have to live with it.', 'Unbelievable. Absolutely unbelievable.', 'I hope it was worth it.'],
+  sad: ['I really thought we’d done it.', 'I trusted you. I really did.', 'I feel sick.'],
+  idgaf: ['Oh well. It was fun.', 'Fair play.', 'Can’t win them all.'],
+  idk: ['I don’t understand. How?', 'Wait. What just happened?', 'I had no idea. None.'],
+};
+const _EG_NICE = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
+const _EG_VILLAIN = new Set(['villain', 'mastermind', 'schemer']);
+const _EG_DRIFT = new Set(['floater', 'wildcard', 'chaos-agent']);
+/** A person's voice at the fire: proportional on every stat, tilted by archetype, fixed for the finale. */
+function _egTone(name, key) {
+  const st = (typeof pStats === 'function' && pStats(name)) || {};
+  const g = k => (Number.isFinite(st[k]) ? st[k] : 5);
+  const arch = ((players || []).find(p => p && p.name === name) || {}).archetype || '';
+  const w = {
+    dramatic: g('boldness') * .6 + (10 - g('temperament')) * .6,
+    calm: g('temperament') * .7 + g('strategic') * .4,
+    mean: ((10 - g('temperament')) * .5 + (10 - g('loyalty')) * .5) * (_EG_NICE.has(arch) ? .25 : _EG_VILLAIN.has(arch) ? 1.5 : 1),
+    sad: g('social') * .35 + g('loyalty') * .45 + (_EG_NICE.has(arch) ? 1 : 0),
+    idgaf: g('boldness') * .3 + (10 - g('social')) * .4 + (_EG_DRIFT.has(arch) ? 2 : 0),
+    idk: (10 - g('intuition')) * .5 + (10 - g('strategic')) * .5,
+  };
+  const keys = Object.keys(w), sq = keys.map(k => Math.max(.1, w[k]) ** 2);
+  // a modulo, not a division by 2**32: near-identical keys must not decide alike
+  let r = ((_hash(key + '|tone|' + name) % 10007) / 10007) * sq.reduce((a, b) => a + b, 0);
+  for (let i = 0; i < keys.length; i++) { r -= sq[i]; if (r <= 0) return keys[i]; }
+  return keys[keys.length - 1];
+}
+/** A line out loud, with a face and a name: the same shape every castle screen uses. */
+function _egSaid(who, line) {
+  return '<div class="lt-said">' + _av(who, 40)
+    + '<div><div class="lt-said-txt">&ldquo;' + _esc(line) + '&rdquo;</div>'
+    + '<cite>' + _esc(who) + '</cite></div></div>';
+}
+
+/** The page's beats, for the stage (js/vp-tr/endgame-stage.js). Same gates as the page. */
+export function endgameStageData(ep, observer = 'audience') {
+  const v = _view(ep, observer);
+  if (!v) return null;
+  const h = _host();
+  return { v, beats: _buildBeats(v), host: { name: h.name, slug: h.slug } };
+}
+
 function _buildBeats(v) {
   const beats = [];
   const key = 'lt|' + v.ep + '|' + v.room.join(',');
   const push = (phase, html, meta) => beats.push({ phase, html, meta: meta || null });
+  // EVERYTHING SAID ON THIS SCREEN, so nobody says a line somebody already said
+  const spoken = new Set();
+  const voice = n => _egTone(n, key);
+  const say = (who, pool, k, subs) => _egSaid(who, _fill(_pickAway(pool, k, spoken), subs || {}));
 
   // ── the room at the end ─────────────────────────────────────────────
   const byDoor = { vote: 0, night: 0 };
@@ -2261,7 +2474,17 @@ function _buildBeats(v) {
       '<h2 class="lt-h">' + (i === 0 ? 'Banish Again, Or End It'
         : 'The Same Question, Fewer Hands') + '</h2>'
       + '<p>' + _apos(_pick(i === 0 ? ASK_FIRST : ASK_AGAIN, akey + '|ask')) + '</p>'
-      + _hostBand(_esc(_pick(HOST_ASK, akey + '|host')))),
+      + _hostBand(_esc(_pick(HOST_ASK, akey + '|host')))
+      // TWO OF THEM, ROUND THE FIRE, before anybody writes: a different pair
+      // each time the question is put
+      + (() => {
+        const L = a.living || [];
+        if (L.length < 2) return '';
+        const s1 = L[(i * 2) % L.length], s2 = L[(i * 2 + 1) % L.length];
+        if (s1 === s2) return '';
+        return say(s1, FIRE_TALK[voice(s1)], akey + '|talk|' + s1, { b: s2 })
+          + say(s2, FIRE_REPLY[voice(s2)], akey + '|reply|' + s2, { a: s1 });
+      })()),
     { kind: 'ask', askIdx: i });
 
     // Nobody at this table says what somebody else at it just said.
@@ -2269,8 +2492,9 @@ function _buildBeats(v) {
     for (const c of a.choices) {
       const readable = _mayRead(v, c.name);
       const word = readable ? (c.choice === 'banish' ? 'Another' : 'End it') : 'Sealed';
+      // SAID IN THEIR OWN VOICE, and only where this layer may read the slip
       const spoke = readable
-        ? _pickAway(c.choice === 'banish' ? SAY_BANISH : SAY_END, akey + '|' + c.name, said)
+        ? _pickAway((c.choice === 'banish' ? SAY_BANISH_BY : SAY_END_BY)[voice(c.name)], akey + '|' + c.name, spoken)
         : '';
       const note = readable
         ? _pickAway(c.choice === 'banish' ? NOTE_BANISH : NOTE_END, akey + '|n|' + c.name, said)
@@ -2282,9 +2506,9 @@ function _buildBeats(v) {
         + '<span class="lt-slip" data-choice="' + (readable ? c.choice : 'sealed') + '"'
         + ' data-name="' + _esc(c.name) + '">'
         + '<span class="lt-slip-w">' + _esc(word) + '</span></span>'
-        + '<span class="lt-answer-note">' + _apos(_esc(note))
-        + (spoke ? ' <em>&ldquo;' + _esc(spoke) + '&rdquo;</em>' : '') + '</span>'
-        + '</div>'),
+        + '<span class="lt-answer-note">' + _apos(_esc(note)) + '</span>'
+        + '</div>'
+        + (spoke ? _egSaid(c.name, spoke) : '')),
       { kind: 'answer', askIdx: i, name: c.name,
         shown: readable ? c.choice : 'sealed' });
     }
@@ -2336,7 +2560,9 @@ function _buildBeats(v) {
           + '</div><div class="lt-reveal-s">'
           + _apos(_esc(_fill(_pick(traitor ? REVEAL_TRAITOR : REVEAL_FAITHFUL,
             akey + '|rev'), { who: table.chosen, obj: pr.obj || 'them' })))
-          + '</div></div>' + reacts),
+          + '</div></div>'
+          + say(table.chosen, BLIND_GOODBYE[voice(table.chosen)], akey + '|bye|' + table.chosen)
+          + reacts),
         { kind: 'table', askIdx: i, chosen: table.chosen, revealed: side });
       } else {
         push('table', _card('table', 'What It Cost', 'part',
@@ -2347,7 +2573,9 @@ function _buildBeats(v) {
           + '<div class="lt-void"><div class="lt-void-w">Nothing Is Turned Over</div>'
           + '<div class="lt-void-s">There is no reveal at a table this late. Whatever '
           + _esc(table.chosen) + ' was, they took it out of the door with them.</div>'
-          + '</div>' + reacts),
+          + '</div>'
+          + say(table.chosen, BLIND_GOODBYE[voice(table.chosen)], akey + '|bye|' + table.chosen)
+          + reacts),
         { kind: 'table', askIdx: i, chosen: table.chosen });
       }
     }
@@ -2457,6 +2685,7 @@ function _buildBeats(v) {
           { a: '<b>' + _esc(r.name) + '</b>', sub: pr.sub || 'they',
             obj: pr.obj || 'them', posAdj: pr.posAdj || 'their' })) + '</p>'
         + '</div></div>'
+        + say(r.name, UNMASK_SAID[isT ? 'traitor' : 'faithful'][voice(r.name)], key + '|unsay|' + r.name)
         + (reactor
           ? '<div class="lt-reacts"><span class="lt-react" data-tone="shock">'
             + _av(reactor, 34) + '<span class="lt-react-tx">'
@@ -2528,6 +2757,9 @@ function _buildBeats(v) {
         + ' Ways') + '</h2>'
     + '<p>' + _apos(_pick(MONEY_LEAD[side], key + '|lead')) + '</p>'
     + '<div class="lt-winners" data-side="' + side + '">' + winnersHtml + '</div>'
+    // THE ONES WHO TAKE IT, AND THE ONES WHO DO NOT, SAY SO
+    + v.takers.slice(0, 4).map(n => say(n, (WIN_SAID[side] || WIN_SAID.faithfuls)[voice(n)], key + '|win|' + n)).join('')
+    + v.losers.slice(0, 3).map(n => say(n, LOSE_SAID[voice(n)], key + '|lose|' + n)).join('')
     + robbedHtml
     + (lostHtml ? '<p class="lt-say">And these were at the same table.</p>' + lostHtml : '')
     // THE ENGINE'S OWN SENTENCE, not a second copy of it. `resolvePot` picks

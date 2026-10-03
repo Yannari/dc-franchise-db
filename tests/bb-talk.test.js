@@ -67,6 +67,9 @@ const PHASE6 = [
   // bb-events/fallout.js
   'fallout-grief', 'fallout-hypocrisy', 'fallout-relief', 'fallout-blame', 'fallout-denial', 'fallout-recognition',
   'fallout-rogue-hunt', 'fallout-word-gets-around',
+  // bb-events/bonds.js
+  'bond-first-kiss', 'bond-quiet-night', 'bond-best-friends', 'bond-bad-day', 'bond-cold-war', 'bond-petty',
+  'bond-apology-refused',
 ];
 // Engine beats keep the players list the engine counts; a fallout scene is had
 // with an alliance member who is not on it, so these skip the speaker check.
@@ -79,6 +82,9 @@ const INJECTED = new Set(['alliance-formed', 'alliance-inner-circle', 'alliance-
   'power-replacement-fallout', 'power-saved-themselves', 'power-replacement-reacts', 'power-veto-fallout', 'power-veto-no-surprise']);
 const scripted = b => EVENT_IDS.has(b.eventId) && (Array.isArray(b.lines) || !INJECTED.has(b.eventId));
 const EVENT_IDS = new Set([...Object.values(CONVERTED), ...PHASE6]);
+// Converted, but too rare for three seasons to be sure of one: a first kiss needs a
+// showmance (not a spark) under two weeks old, about 0.4 a season.
+const RARE = new Set(['bond-first-kiss']);
 
 function playSeason(seed, shift) {
   const cast = Array.from({ length: 14 }, (_, i) => POOL[(i * 11 + 3 + shift) % POOL.length]).map(p => ({ name: p.name,
@@ -123,7 +129,7 @@ describe('every intent airs as a script', () => {
       // A script: at least one line somebody SAYS (a lone Diary Room counts), never only narration.
       expect(Array.isArray(b.lines) && b.lines.some(l => l.kind !== 'beat'), `${b.eventId} week ${b.week} has no script`).toBe(true);
     }
-    for (const id of EVENT_IDS) expect(fired.has(id), `${id} never fired in three seasons`).toBe(true);
+    for (const id of EVENT_IDS) if (!RARE.has(id)) expect(fired.has(id), `${id} never fired in three seasons`).toBe(true);
   });
 
   it('fills every slot, and only the people in the scene speak', () => {
@@ -200,10 +206,10 @@ describe('the talk pools', () => {
   // in the bedroom.
   const ROOM_WORDS = [['kitchen', /kitchen|cupboard/i], ['bedroom', /bedroom|between the beds|'s bed\b/i],
     ['backyard', /backyard|the grass/i], ['pantry', /storage room|pantry/i], ['living-room', /living room/i]];
-  const FIXED = { 'fallout.grief': 'bedroom', 'fallout.rogue': 'kitchen', 'bloc.blowup': 'kitchen', 'phase.hoh-room': 'hoh-room', 'phase.scramble': 'hoh-room', 'phase.targets': 'hoh-room', 'phase.leaned': 'hoh-room', 'friction.dishes': 'kitchen', 'friction.food': 'kitchen', 'life.chores': 'kitchen', 'life.table': 'kitchen', 'life.cook': 'kitchen', 'life.workout': 'backyard', 'talk.safety': 'hoh-room', 'talk.pitch-target': 'hoh-room', 'talk.hoh-visit': 'hoh-room', 'talk.hoh-decide': 'hoh-room' };
+  const FIXED = { 'bond.kiss': 'bedroom', 'bond.quiet': 'bedroom', 'bond.bad-day': 'bedroom', 'bond.petty': 'kitchen', 'fallout.grief': 'bedroom', 'fallout.rogue': 'kitchen', 'bloc.blowup': 'kitchen', 'phase.hoh-room': 'hoh-room', 'phase.scramble': 'hoh-room', 'phase.targets': 'hoh-room', 'phase.leaned': 'hoh-room', 'friction.dishes': 'kitchen', 'friction.food': 'kitchen', 'life.chores': 'kitchen', 'life.table': 'kitchen', 'life.cook': 'kitchen', 'life.workout': 'backyard', 'talk.safety': 'hoh-room', 'talk.pitch-target': 'hoh-room', 'talk.hoh-visit': 'hoh-room', 'talk.hoh-decide': 'hoh-room' };
   it('only stages a room where the scene is', () => {
     for (const [key, pool] of Object.entries(POOLS)) {
-      if (!/^(talk|social|deals|alliance|power|campaign|life|friction|phase|bloc|venue|fallout)\./.test(key)) continue;
+      if (!/^(talk|social|deals|alliance|power|campaign|life|friction|phase|bloc|venue|fallout|bond)\./.test(key)) continue;
       const fixed = FIXED[key.split('.').slice(0, 2).join('.')];
       for (const e of pool) for (const t of e.turns) {
         if (!t.beat) continue;

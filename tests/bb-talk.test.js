@@ -104,6 +104,10 @@ const PHASE6 = [
   'plan-blame-forming', 'plan-flip-collapses', 'target-survives-regroup',
   // bb-events/power-knowledge.js (twist-driven: a public power)
   'powerknown-arithmetic', 'powerknown-wait', 'powerknown-flush', 'powerknown-spent-mark',
+  // bb-events/ceremonies.js
+  'nom-speech-game', 'nom-speech-personal', 'nom-pawn-reassured', 'nom-blindside', 'nom-stoic',
+  'veto-saved-gratitude', 'veto-left-on-block', 'veto-backdoor-lands', 'veto-replacement-shock',
+  'evict-farewell-gracious', 'evict-farewell-scorched', 'evict-farewell-blindsided',
 ];
 // Engine beats keep the players list the engine counts; a fallout scene is had
 // with an alliance member who is not on it, so these skip the speaker check.
@@ -262,7 +266,7 @@ describe('the talk pools', () => {
   const FIXED = { 'plan.seen': 'bedroom', 'plan.backdoor': 'bedroom', 'jury.face': 'kitchen', 'jury.payment': 'pantry', 'couple.hiding': 'bedroom', 'couple.fight': 'bedroom', 'couple.jealous': 'kitchen', 'couple.defined': 'bedroom', 'editorial.bedroom': 'bedroom', 'editorial.latenight': 'kitchen', 'editorial.spark': 'backyard', 'editorial.flip': 'bedroom', 'editorial.breakdown': 'pantry', 'editorial.meeting': 'bedroom', 'editorial.standoff': 'kitchen', 'texture.kitchen': 'kitchen', 'texture.backyard': 'backyard', 'texture.snoring': 'bedroom', 'texture.namedrop': 'pantry', 'texture.trial': 'living-room', 'followup.isolation': 'kitchen', 'followup.overheard': 'living-room', 'followup.damage': 'pantry', 'followup.aftershock': 'bedroom', 'reign.carve': 'hoh-room', 'reign.both': 'hoh-room', 'bond.kiss': 'bedroom', 'bond.quiet': 'bedroom', 'bond.bad-day': 'bedroom', 'bond.petty': 'kitchen', 'fallout.grief': 'bedroom', 'fallout.rogue': 'kitchen', 'bloc.blowup': 'kitchen', 'phase.hoh-room': 'hoh-room', 'phase.scramble': 'hoh-room', 'phase.targets': 'hoh-room', 'phase.leaned': 'hoh-room', 'friction.dishes': 'kitchen', 'friction.food': 'kitchen', 'life.chores': 'kitchen', 'life.table': 'kitchen', 'life.cook': 'kitchen', 'life.workout': 'backyard', 'talk.safety': 'hoh-room', 'talk.pitch-target': 'hoh-room', 'talk.hoh-visit': 'hoh-room', 'talk.hoh-decide': 'hoh-room' };
   it('only stages a room where the scene is', () => {
     for (const [key, pool] of Object.entries(POOLS)) {
-      if (!/^(talk|social|deals|alliance|power|campaign|life|friction|phase|bloc|venue|fallout|bond|reign|scheme|followup|texture|editorial|arc|couple|jury|plan|known)\./.test(key)) continue;
+      if (!/^(talk|social|deals|alliance|power|campaign|life|friction|phase|bloc|venue|fallout|bond|reign|scheme|followup|texture|editorial|arc|couple|jury|plan|known|cer)\./.test(key)) continue;
       const fixed = FIXED[key.split('.').slice(0, 2).join('.')];
       for (const e of pool) for (const t of e.turns) {
         if (!t.beat) continue;

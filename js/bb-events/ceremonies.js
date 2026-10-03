@@ -23,7 +23,6 @@
 //     speeches are not written here — they would be dead code.
 
 import { housePlan } from '../bb/plans.js';
-import { pronouns } from '../players.js';
 import {
   pStats, bond, perceived, band, bondFactor, sharesAlliance, trusts, dislikes, actFacts,
   wasPromised, remembers, grudge, suspicionOf, willScheme, isVillainous, archetype, targetOf,
@@ -32,18 +31,12 @@ import { gs } from '../core.js';
 import { listBlocs, knowledgeOf, exposeBloc } from '../bb/blocs.js';
 import { knowsVote } from '../bb/knowledge.js';
 import { factId, learn } from '../knowledge.js';
-import { freshLine } from '../bb/aired.js';
+import { makeScene } from '../bb/script/scene.js';
 
 // ── helpers ───────────────────────────────────────────────────────────
 
 // Stable across replays of the same seed, different across a season. Mixing the
 // player names in is what stops every week's nomination speech reading alike.
-function _variant(list, ctx, ...salt) {
-  const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${salt.join('|')}`;
-  let hash = 0;
-  for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
-  return freshLine(list, hash, ctx);
-}
 
 function _nominees(ctx) {
   return (ctx?.nominees || []).filter(Boolean);
@@ -81,13 +74,7 @@ const nomSpeechGame = {
   },
   fire(house, ctx, api) {
     const [a, b] = _nominees(ctx);
-    const p = pronouns(ctx.hoh);
-    const text = _variant([
-      `${ctx.hoh} keeps the ceremony short. "${a}, ${b} — this is not personal, and I'm not going to insult either of you by pretending it was hard." Nobody in the room believes the second half.`,
-      `“I want to be clear,” ${ctx.hoh} says while turning the key. “${a}, ${b}, this is about where the numbers are. It isn't personal.” Several people avoid looking at the nominees.`,
-      `${ctx.hoh} names ${a} and ${b}, closes the box and sits down. There is no long speech and no apology. The room stays quiet.`,
-      `"${a}. ${b}." ${ctx.hoh} sets the keys down. "You'll both have a shot at the veto and I'd rather one of you take yourself off than have me explain myself twice." It lands as fair. It is also, precisely, a plan.`,
-    ], ctx, ctx.hoh, a, b);
+    const scene = makeScene('cer.nomgame', { a: ctx.hoh, b: a, c: b }, { ending: 'scene' }, house, 'living-room');
 
     // Composure reads as competence, and competence is a target.
     api.popDelta(ctx.hoh, 1);
@@ -96,7 +83,7 @@ const nomSpeechGame = {
     });
     api.addBond(ctx.hoh, a, -0.3);
     api.addBond(ctx.hoh, b, -0.3);
-    return { text, players: [ctx.hoh, a, b], badgeText: 'NOMINATIONS', badgeClass: 'blue' };
+    return { scene, players: [ctx.hoh, a, b], badgeText: 'NOMINATIONS', badgeClass: 'blue' };
   },
 };
 
@@ -135,13 +122,7 @@ const nomSpeechPersonal = {
   fire(house, ctx, api) {
     const target = ctx.target && _nominees(ctx).includes(ctx.target) ? ctx.target : _nominees(ctx)[0];
     const other = _nominees(ctx).find(n => n !== target) || _nominees(ctx)[1];
-    const p = pronouns(ctx.hoh);
-    const text = _variant([
-      `${ctx.hoh} does not keep it civil. "${target}, you've been running your mouth about me since we moved in, and you thought I wasn't hearing it." The room goes very still. ${other} stares at the floor, grateful and ashamed of being grateful.`,
-      `"People keep telling me to say it's just a game," ${ctx.hoh} says. "It isn't. ${target}, this one's personal." ${p.Sub} doesn't sit back down so much as drop into the chair, and half the house quietly moves ${p.posAdj} name up their list.`,
-      `${ctx.hoh} gets through ${target}'s nomination and then keeps going, three sentences past where the speech should have ended. By the last one ${other} has stopped looking relieved and started looking worried about the precedent.`,
-      `"I'm not going to lie to your face the way you lied to mine," ${ctx.hoh} tells ${target}. It is satisfying. It is also the moment ${p.sub} stops being an HOH with a plan and becomes an HOH with an enemy.`,
-    ], ctx, ctx.hoh, target);
+    const scene = makeScene('cer.nompersonal', { a: ctx.hoh, b: target, c: other || null }, { ending: 'scene' }, house, 'living-room');
 
     // A personal nomination buys a grudge and costs standing.
     api.addBond(ctx.hoh, target, -1.6);
@@ -149,7 +130,7 @@ const nomSpeechPersonal = {
     api.remember(target, ctx.hoh, 'humiliation', 2, { act: 'nominations' });
     api.popDelta(ctx.hoh, -1);
     _bystanders(house, ctx).forEach(watcher => api.suspicion(watcher, ctx.hoh, 0.4));
-    return { text, players: [ctx.hoh, target, other].filter(Boolean), badgeText: 'MADE IT PERSONAL', badgeClass: 'red' };
+    return { scene, players: [ctx.hoh, target, other].filter(Boolean), badgeText: 'MADE IT PERSONAL', badgeClass: 'red' };
   },
 };
 
@@ -169,19 +150,12 @@ const nomPawnReassured = {
   },
   fire(house, ctx, api) {
     const { pawn } = actFacts(ctx);
-    const p = pronouns(pawn);
     // A schemer's reassurance is worth less, and a pawn who already remembers a
     // broken promise from this person believes almost none of it.
     const honest = !willScheme(ctx.hoh);
     const burnedBefore = remembers(pawn, ctx.hoh, 'betrayal') || grudge(pawn, ctx.hoh) >= 2;
     const wary = suspicionOf(pawn, ctx.hoh);
-    const text = _variant([
-      `${ctx.hoh} finds ${pawn} in the storage room within the hour. "You're not the one going. I need you up there until the vote, and I need you to trust me." ${pawn} says yes. ${p.Sub} means it, mostly.`,
-      `"Say it to my face," ${pawn} says. ${ctx.hoh} does: "You are a pawn. You are safe. If that changes you'll hear it from me before you hear it from anyone else." It is the exact sentence every pawn in the history of this house has been told.`,
-      `${ctx.hoh} catches ${pawn} on the stairs and talks fast and low. ${pawn} nods along, and only afterwards, alone, works out that ${p.sub} never actually got a number — just a tone.`,
-      `While they wash dishes, ${ctx.hoh} tells ${pawn}, “You stay through the vote, then you're off the block and we never do this again.” ${pawn} asks whether the votes are really there.`,
-      ...(burnedBefore ? [`"You told me something like this before," ${pawn} says. ${ctx.hoh} does not have a good answer, and the pause where the answer should be is the whole conversation. ${pawn} agrees anyway, because on the block there is nothing else to agree to.`] : []),
-    ], ctx, ctx.hoh, pawn);
+    const scene = makeScene('cer.pawn', { a: ctx.hoh, b: pawn }, { ending: burnedBefore ? 'burned' : 'trusted' }, [], 'pantry');
 
     // A reassurance is worth what the relationship behind it is worth. Someone
     // already burned by this person takes almost nothing from it.
@@ -192,7 +166,7 @@ const nomPawnReassured = {
     api.remember(pawn, ctx.hoh, 'promise', honest ? 1 : 2, { promise: 'you are only a pawn', believed: Math.round(believed * 100) / 100 });
     if (!honest || burnedBefore) api.suspicion(pawn, ctx.hoh, burnedBefore ? 1.2 : 0.8);
     return {
-      text, players: [ctx.hoh, pawn],
+      scene, players: [ctx.hoh, pawn],
       badgeText: burnedBefore ? 'PAWN DEAL · DOUBTED' : 'PAWN DEAL',
       badgeClass: burnedBefore ? 'grey' : 'green',
     };
@@ -225,21 +199,13 @@ const nomBlindside = {
   },
   fire(house, ctx, api) {
     const victim = _blindsideVictim(ctx);
-    const p = pronouns(victim);
     const depth = bond(victim, ctx.hoh);
     const promised = wasPromised(victim, ctx.hoh, ctx?.week?.num || 0);
     const allied = sharesAlliance(victim, ctx.hoh);
     // Was this alliance visible? A public betrayal costs the HOH standing; a
     // secret one only costs them this one relationship, and nobody else learns.
     const wasVisible = perceived(victim, ctx.hoh) >= 2.5;
-    const text = _variant([
-      `${victim} does not move when ${p.posAdj} name is called. Not shock exactly — recalculation. Somewhere behind ${p.posAdj} eyes a week of conversations is being reread with the ending known.`,
-      `"Okay," ${victim} says, to nobody. Just that. ${ctx.hoh} keeps talking and ${victim} keeps not hearing it, already three moves into a game ${p.sub} did not know ${p.sub} was losing.`,
-      `When ${victim}'s key turns, ${p.sub} looks first at ${ctx.hoh} and then at the people who heard ${p.obj} defend the HOH twice this week. The embarrassment arrives before the anger.`,
-      `${victim} forces a smile through the rest of the ceremony. That night, ${p.sub} lies awake trying to work out which conversation was the lie.`,
-      ...(promised ? [`${ctx.hoh} had said the words out loud — "you are not going up" — and ${victim} had been stupid enough to find that comforting. ${p.Sub} hears ${p.posAdj} own name and thinks, first, not of the block but of that sentence.`] : []),
-      ...(allied ? [`They built something together and ${victim} finds out it was scaffolding. ${p.Sub} looks down the row at the others who were in that alliance, and every one of them looks somewhere else.`] : []),
-    ], ctx, victim, ctx.hoh);
+    const scene = makeScene('cer.blindside', { a: victim, b: ctx.hoh }, { ending: 'scene', intent: promised ? 'promised' : allied ? 'allied' : 'plain' }, house, 'living-room');
 
     // The damage scales with what was actually broken, rather than a flat
     // number — and its MAXIMUM sits inside the per-event bond cap (2.5), or
@@ -264,7 +230,7 @@ const nomBlindside = {
         }
       });
     }
-    return { text, players: [victim, ctx.hoh], badgeText: wasVisible ? 'BLINDSIDED' : 'QUIET BETRAYAL', badgeClass: 'red' };
+    return { scene, players: [victim, ctx.hoh], badgeText: wasVisible ? 'BLINDSIDED' : 'QUIET BETRAYAL', badgeClass: 'red' };
   },
 };
 
@@ -279,21 +245,14 @@ const nomStoic = {
   },
   fire(house, ctx, api) {
     const nominee = _nominees(ctx).sort((a, b) => pStats(b).temperament - pStats(a).temperament)[0];
-    const p = pronouns(nominee);
-    const text = _variant([
-      `${nominee} takes it without a flicker. No speech, no glare, no wounded look for the cameras — ${p.sub} just picks up ${p.posAdj} key and asks what time the veto players are drawn.`,
-      `${nominee} congratulates ${ctx.hoh}, asks what time the nomination meeting is, and goes to make coffee. `
-        + `The composure gives the room nothing to gossip about, which becomes its own topic.`,
-      `"Right," says ${nominee}, standing before the ceremony is properly over. "Then I'd better win the veto." Two people laugh. One of them stops when ${p.sub} realises ${nominee} was not joking.`,
-      `${nominee} does not give the room the reaction it came for. By dinner that composure has been discussed in three separate conversations, none of which ${p.sub} was in.`,
-    ], ctx, nominee);
+    const scene = makeScene('cer.stoic', { a: nominee }, { ending: 'scene' }, house, 'living-room');
 
     // Refusing to panic reads as strength — and strength on the block gets noticed.
     api.popDelta(nominee, 2);
     _bystanders(house, ctx).forEach(watcher => {
       if (pStats(watcher).intuition >= 5) api.suspicion(watcher, nominee, 0.5);
     });
-    return { text, players: [nominee], badgeText: 'UNSHAKEN', badgeClass: 'gold' };
+    return { scene, players: [nominee], badgeText: 'UNSHAKEN', badgeClass: 'gold' };
   },
 };
 
@@ -318,20 +277,12 @@ const vetoSavedGratitude = {
   fire(house, ctx, api) {
     const { saved } = actFacts(ctx);
     const holder = ctx.vetoWinner;
-    const p = pronouns(saved);
-    const text = _variant([
-      `${saved} does not say thank you in the room. ${p.Sub} waits until the house has scattered, finds ${holder} alone, and says it once, properly. It is worth more that way and they both know it.`,
-      `"You didn't have to do that." ${holder} shrugs. "I did, though." ${saved} decides, on the spot and without saying so, that this is a debt ${p.sub} intends to pay.`,
-      `${saved} comes off the block and the first thing ${p.sub} does is look for ${holder}. Not for the cameras — for the record. Some deals in this house are made in words and some are made in that.`,
-      `“I'm not going to forget it,” ${saved} tells ${holder}. ${p.Sub} ${p.sub === 'they' ? 'mean' : 'means'} the debt, and ${holder} can hear that.`,
-      `${saved} pulls ${holder} into a hug before the meeting fully breaks up. “Whatever you need next week, ask me first.”`,
-      `${saved} waits until they are alone and asks ${holder} why ${pronouns(holder).sub} did it. The answer matters enough that ${saved} repeats it back.`,
-    ], ctx, saved, holder);
+    const scene = makeScene('cer.saved', { a: saved, b: holder }, { ending: 'scene' }, [], 'living-room');
 
     api.addBond(saved, holder, 2.2);
     api.remember(saved, holder, 'debt', 3, { act: 'veto-ceremony' });
     api.popDelta(holder, 1);
-    return { text, players: [saved, holder], badgeText: 'SAVED', badgeClass: 'green' };
+    return { scene, players: [saved, holder], badgeText: 'SAVED', badgeClass: 'green' };
   },
 };
 
@@ -353,20 +304,10 @@ const vetoLeftOnBlock = {
   fire(house, ctx, api) {
     const stranded = _strandedNominee(ctx);
     const holder = ctx.vetoWinner;
-    const p = pronouns(stranded);
     const allied = sharesAlliance(stranded, holder);
     const closeness = bond(stranded, holder);
     const publicly = perceived(stranded, holder) >= 2.5;
-    const text = _variant([
-      `"I have decided not to use the Power of Veto." ${stranded} nods along with the sentence like ${p.sub} had known it was coming. ${p.Sub} had not known it was coming.`,
-      `The veto stays in ${holder}'s pocket. ${stranded} keeps looking at ${holder} after everyone else turns toward the nominees, making the broken expectation visible to the room.`,
-      `${holder} announces that the veto will not be used. ${stranded} says, “That's fine,” twice without looking at anyone.`,
-      `The veto stays in its box. ${stranded} nods through the decision, leaves before the kitchen fills, `
-        + `and spends the night counting votes instead of pretending the ceremony changed nothing.`,
-      `${stranded} watches ${holder} return the veto to its box. The apology ${holder} mouths across the room only makes ${p.obj} look away faster.`,
-      `${holder} says the nominations should stay the same. ${stranded} had asked for a different answer in private and now knows what that conversation was worth.`,
-      ...(allied ? [`${holder} and ${stranded} are supposed to be working together. When ${holder} keeps the veto, ${stranded} stares at ${pronouns(holder).obj} through the rest of the ceremony.`] : []),
-    ], ctx, stranded, holder);
+    const scene = makeScene('cer.left', { a: stranded, b: holder }, { ending: 'scene', intent: allied ? 'allied' : 'plain' }, house, 'living-room');
 
     // Abandonment scales with what was owed. A stranger who did not save you is
     // barely a story; an ally who did not is the story of the rest of your game.
@@ -382,7 +323,7 @@ const vetoLeftOnBlock = {
       });
     }
     return {
-      text, players: [stranded, holder],
+      scene, players: [stranded, holder],
       badgeText: allied ? 'LEFT BY AN ALLY' : 'VETO UNUSED', badgeClass: 'red',
     };
   },
@@ -405,15 +346,7 @@ const vetoBackdoorLands = {
   },
   fire(house, ctx, api) {
     const { replacement: victim } = actFacts(ctx);
-    const p = pronouns(victim);
-    const text = _variant([
-      `${ctx.hoh} names ${victim} as the replacement and the room understands the whole week at once — the nominations, the pawn, the conversations that went nowhere. ${victim} never played the veto because ${p.sub} was never meant to.`,
-      `"As the replacement nominee, I have to name... ${victim}." Somebody exhales. ${victim} does not, for several seconds. The backdoor closes with almost no sound at all.`,
-      `The plan was built before the veto was played. When ${victim}'s name is finally called, ${p.sub} walks to the chair like the floor has shifted.`,
-      `${victim} had spent the week being told ${p.sub} was not a target, by people who were counting on ${p.obj} believing it. ${p.Sub} did. That was the plan.`,
-      `${victim} looks first at the veto winner, then at ${ctx.hoh}, and understands why every reassuring conversation this week ended so quickly.`,
-      `${ctx.hoh} names ${victim}. A few people refuse to react, which tells ${victim} exactly how many of them already knew.`,
-    ], ctx, victim, ctx.hoh);
+    const scene = makeScene('cer.backdoor', { a: victim, b: ctx.hoh }, { ending: 'scene' }, house, 'living-room');
 
     api.addBond(victim, ctx.hoh, -2.4);
     api.setTarget(victim, ctx.hoh, 'backdoored me');
@@ -421,7 +354,7 @@ const vetoBackdoorLands = {
     // The whole house just watched what this HOH is capable of.
     _bystanders(house, ctx, victim).forEach(watcher => api.suspicion(watcher, ctx.hoh, 1.2));
     api.popDelta(ctx.hoh, 1);
-    return { text, players: [ctx.hoh, victim], badgeText: 'BACKDOORED', badgeClass: 'red' };
+    return { scene, players: [ctx.hoh, victim], badgeText: 'BACKDOORED', badgeClass: 'red' };
   },
 };
 
@@ -448,20 +381,12 @@ const vetoReplacementShock = {
     const { replacement: victim } = actFacts(ctx);
     const namer = ctx.week?.vetoDecision?.diamond
       ? (ctx.week.vetoDecision.chairAuthority || ctx.hoh) : ctx.hoh;
-    const p = pronouns(victim);
-    const text = _variant([
-      `${victim} is named as the replacement and takes the chair still holding the mug ${p.sub} brought in with ${p.obj}. Small detail. It is the one everyone remembers.`,
-      `"I need a replacement nominee." ${victim} already knows. ${p.Sub} knew from the moment the veto came off — there was only ever one name that made the numbers work.`,
-      `${victim} sits down hard. Not betrayed, exactly—spent. The distinction disappears as soon as the house starts counting votes.`,
-      `The replacement is ${victim}, and the strange thing is how ordinary it feels — no gasp, no drama, just the week rearranging itself around ${p.obj} while ${p.sub} watches.`,
-      `${victim}'s name lands without warning. ${p.Sub} asks ${namer}, “Was this always the plan?” and gets no answer before taking the chair.`,
-      `${victim} thought the veto would change somebody else's week. Then ${namer} says ${p.posAdj} name and every conversation becomes evidence.`,
-    ], ctx, victim, namer);
+    const scene = makeScene('cer.replace', { a: victim, b: namer }, { ending: 'scene' }, house, 'living-room');
 
     api.addBond(victim, namer, -1.1);
     api.remember(victim, namer, 'grudge', 1, { act: 'veto-ceremony' });
     api.popDelta(victim, 1);
-    return { text, players: [victim, namer], badgeText: 'REPLACEMENT', badgeClass: 'red' };
+    return { scene, players: [victim, namer], badgeText: 'REPLACEMENT', badgeClass: 'red' };
   },
 };
 
@@ -498,19 +423,10 @@ const evictionGracious = {
   },
   fire(house, ctx, api) {
     const gone = ctx.evicted;
-    const p = pronouns(gone);
     const closest = _nominees(ctx).includes(gone)
       ? house.filter(n => n !== gone).sort((a, b) => bond(gone, b) - bond(gone, a))[0]
       : null;
-    const text = _variant([
-      `${gone} hugs everybody on the way out, and means most of them. "Play hard. I'll be watching every second."`,
-      `"I'm not going to stand here and be bitter about a game I asked to be in." ${gone} says it lightly, and the room believes ${p.obj}, and that is worth more than ${p.sub} realises tonight.`,
-      `${gone} takes the long way to the door, saying one specific thing to each person. Several of them will remember exactly what ${p.sub} said when they are asked to vote for a winner.`,
-      `${gone} tells the surviving nominee to breathe, thanks the house for the game and refuses every whispered apology on the way to the door.`,
-      `“No hard feelings. Seriously.” ${gone} hugs the people nearest the door and leaves before anybody can turn the goodbye into an explanation.`,
-      `${gone} smiles through the shock and says, “Somebody had to be right and somebody had to leave.” The line releases the room enough for the hugs to begin.`,
-      ...(closest ? [`${gone} stops at ${closest} last. Whatever gets said is too quiet for the room, and ${closest} does not sit back down for a while after the door closes.`] : []),
-    ], ctx, gone);
+    const scene = makeScene('cer.gracious', { a: gone, b: closest || null }, { ending: 'scene', intent: closest ? 'close' : 'plain' }, house, 'living-room');
 
     // A gracious exit is remembered kindly, which matters when a jury forms.
     api.popDelta(gone, 3);
@@ -519,7 +435,7 @@ const evictionGracious = {
       api.remember(n, gone, 'respect', 1, { about: 'left with grace' });
     });
     if (closest) api.remember(closest, gone, 'kindness', 2, { when: 'the last night' });
-    return { text, players: [gone, closest].filter(Boolean), badgeText: 'GRACIOUS EXIT', badgeClass: 'gold' };
+    return { scene, players: [gone, closest].filter(Boolean), badgeText: 'GRACIOUS EXIT', badgeClass: 'gold' };
   },
 };
 
@@ -535,19 +451,10 @@ const evictionScorched = {
   },
   fire(house, ctx, api) {
     const gone = ctx.evicted;
-    const p = pronouns(gone);
     // Name the person they blame, which is who actually put them there.
     const blamed = targetOf(gone)
       || house.filter(n => n !== gone).sort((a, b) => grudge(gone, b) - grudge(gone, a))[0]
       || ctx.hoh;
-    const text = _variant([
-      `${gone} does not hug anybody. "${blamed}. You know what you did, and now so does everyone watching." The door closes on a silent room.`,
-      `“I'd say good luck, but I'd be lying.” ${gone} looks directly at ${blamed}, picks up ${p.posAdj} bag and walks out.`,
-      `${gone} uses the goodbye to repeat what ${blamed} promised, what ${blamed} did instead and who should compare notes after the door closes.`,
-      `${gone} turns the exit into a warning. “If ${blamed} told you the same thing, talk to each other before the next vote.”`,
-      `${gone} hugs around ${blamed}, stops at the door and says, “You got me. Now explain to them why they're next.”`,
-      `${gone} names the deal ${blamed} broke and the lie that protected it. Nobody has time to answer before ${gone} leaves.`,
-    ], ctx, gone, blamed);
 
     // A scorched exit is a gift and a curse: the house learns something true,
     // and the person who leaves it becomes somebody the jury remembers badly.
@@ -566,14 +473,14 @@ const evictionScorched = {
     // left to lose and a microphone, so whatever they genuinely know lands as
     // knowledge: strongest single revelation only, because a list read at the
     // door is a rant and one name is a detonation.
-    let revealed = '';
+    let reveal = { ending: 'plain' };
     try {
       // The group they are sure of, said in front of everybody.
       const bloc = listBlocs().find(b => b.members.includes(blamed)
         && !b.members.includes(gone) && knowledgeOf(gone, b.id) >= 0.55);
       if (bloc) {
         exposeBloc(bloc, { everybody: true, week: ctx?.week?.num || 0, how: 'named at the door' });
-        revealed = ` The name lands because the group behind it does: <strong>${bloc.label}</strong>, said out loud with everybody standing there, and there is no unhearing it.`;
+        reveal = { ending: 'bloc', group: bloc.label };
       } else {
         // The lie they were the victim of, hung on the liar in public.
         const claim = (gs.bb?.falseClaims || []).find(c => !c.exposed
@@ -585,7 +492,7 @@ const evictionScorched = {
             api.remember(n, claim.liar, 'made-it-up', 2, { about: gone });
           });
           api.popDelta(claim.liar, -2);
-          revealed = ` And on the way out, the receipts: the double-dealing story about ${gone} was invented, and <strong>${claim.liar}</strong> invented it.`;
+          reveal = { ending: 'lie', liar: claim.liar };
         } else {
           // Or a ballot they know about, made public from the doorway.
           const week = (gs.bb?.weeks || []).find(w => w.evicted
@@ -597,13 +504,14 @@ const evictionScorched = {
                   { sourceType: 'public', ep: ctx?.week?.num || 0 });
               } catch { /* the fact aged out */ }
             });
-            revealed = ` And one fact, left on the doorstep for whoever wants it: <strong>${blamed}</strong> voted out ${week.evicted}, whatever ${pronouns(blamed).sub} told you.`;
+            reveal = { ending: 'vote', voted: week.evicted };
           }
         }
       }
     } catch { /* the exit still burns without the receipts */ }
 
-    return { text: text + revealed, players: [gone, blamed], badgeText: 'SCORCHED EARTH', badgeClass: 'red' };
+    const scene = makeScene('cer.scorched', { a: gone, b: blamed }, reveal, house, 'living-room');
+    return { scene, players: [gone, blamed], badgeText: 'SCORCHED EARTH', badgeClass: 'red' };
   },
 };
 
@@ -622,19 +530,10 @@ const evictionBlindsided = {
   },
   fire(house, ctx, api) {
     const gone = ctx.evicted;
-    const p = pronouns(gone);
     const trusted = house.filter(n => n !== gone && trusts(gone, n, 2.5))
       .sort((a, b) => bond(gone, b) - bond(gone, a));
     const betrayer = trusted[0] || house.find(n => n !== gone);
-    const text = _variant([
-      `${gone} stands up before the vote is finished being read, because ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} already worked out that the number is too big to be anyone but ${p.posAdj} own side.`,
-      `When the vote is announced, ${gone} looks straight at ${betrayer}. ${betrayer} looks down at the floor and does not look up again.`,
-      `${gone} says "wow" once, quietly. ${p.Sub} does not say anything else on the way out, and the silence does more damage than a speech would have.`,
-      `${gone} had the votes counted this morning. ${p.Sub} had them counted wrong, and the difference is standing three feet away not making eye contact.`,
-      `${gone} looks from one trusted face to the next and finds the same apology waiting on all of them. “So everybody knew but me.”`,
-      `${gone} starts toward the door, stops beside ${betrayer} and asks, “Was any of it real?” The live-show clock moves before ${betrayer} answers.`,
-      `${betrayer} reaches for a goodbye hug. ${gone} steps around ${pronouns(betrayer).obj} and hugs the person behind ${pronouns(betrayer).obj} instead.`,
-    ], ctx, gone, betrayer);
+    const scene = makeScene('cer.blindsided', { a: gone, b: betrayer }, { ending: 'scene' }, house, 'living-room');
 
     api.popDelta(gone, 2);
     api.popDelta(betrayer, -1);
@@ -643,7 +542,7 @@ const evictionBlindsided = {
     house.filter(n => n !== gone && n !== betrayer).forEach(n => {
       api.suspicion(n, betrayer, 1.1 * (pStats(n).intuition / 10));
     });
-    return { text, players: [gone, betrayer], badgeText: 'BLINDSIDED ON THE WAY OUT', badgeClass: 'red' };
+    return { scene, players: [gone, betrayer], badgeText: 'BLINDSIDED ON THE WAY OUT', badgeClass: 'red' };
   },
 };
 

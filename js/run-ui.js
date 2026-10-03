@@ -808,6 +808,15 @@ export function renderRunTab() {
   }
 }
 
+// A CASTLE'S SEASON ENDS WITH THE REUNION (the user, 2026-10-03: "i cant
+// simulate a reunion episode it stoppeed at the endgame"). The castle is
+// complete after the Fire of Truth, but the button stays live until the
+// reunion has aired.
+function _trReunionPending() {
+  return !!(gs && isTraitorsSeason() && !gs._trReunionAired
+    && (gs.episodeHistory || []).some(e => e && e.tr && e.tr.reunion));
+}
+
 export function renderGameState() {
   const el = document.getElementById('gs-summary');
   const btn = document.getElementById('sim-btn');
@@ -841,8 +850,8 @@ export function renderGameState() {
   if (_spoilerFree) {
     html += `<div style="margin-top:12px;font-size:11px;color:var(--muted);font-style:italic;text-align:center">Spoiler-free mode — open Visual Player to watch the episode</div>`;
     el.innerHTML = html;
-    btn.textContent = d.phase === 'complete' ? 'Season Complete' : 'Simulate Next Episode';
-    btn.disabled = d.phase === 'complete';
+    btn.textContent = _trReunionPending() ? 'Air The Reunion' : d.phase === 'complete' ? 'Season Complete' : 'Simulate Next Episode';
+    btn.disabled = d.phase === 'complete' && !_trReunionPending();
     const _sf5 = document.getElementById('sim-5-btn');
     const _sfAll = document.getElementById('sim-all-btn');
     const _sfShow = d.phase !== 'complete' && d.phase !== 'finale';
@@ -970,6 +979,7 @@ export function renderGameState() {
   const simAllBtn = document.getElementById('sim-all-btn');
   if (gs.phase === 'complete' || gs.activePlayers.length <= 1) {
     btn.textContent = 'Season Complete'; btn.disabled = true;
+    if (_trReunionPending()) { btn.textContent = 'Air The Reunion'; btn.disabled = false; }
     if (sim5Btn) sim5Btn.style.display = 'none';
     if (simAllBtn) simAllBtn.style.display = 'none';
     let exportBtn = document.getElementById('export-season-btn');
@@ -1431,9 +1441,9 @@ export function renderEpisodeHistory() {
         <div>${_spoilerFree ? '' : _traitorsBadges(ep)}</div>
       </div>`
         // AND AFTER THE FINALE, THE REUNION: an episode of its own in the viewer
-        + (ep.tr && ep.tr.reunion
+        + (ep.tr && ep.tr.reunion && gs._trReunionAired
           ? `<div class="ep-hist-reunion" onclick="openVisualPlayer('reunion-${ep.num}')" style="cursor:pointer;padding:10px 12px;border:1px solid rgba(232,194,112,.45);background:rgba(232,194,112,.08);border-radius:6px">
-        <div class="ep-hist-ep">The Reunion</div>
+        <div class="ep-hist-ep">Episode ${ep.num + 1} · The Reunion</div>
         <div class="ep-hist-elim">Everybody back, nothing left to hide</div></div>` : '');
     }
     const riTag = ep.riChoice==='REDEMPTION ISLAND' ? `<span class="ep-hist-tag" style="background:rgba(249,115,22,0.15);color:#f97316">RI</span>` : ep.riChoice==='WENT HOME' ? `<span class="ep-hist-tag" style="background:rgba(148,163,184,0.1);color:var(--muted)">Home</span>` : '';
@@ -1745,6 +1755,17 @@ export function simulateNext() {
     _saveEpisodeCheckpoint();
     const trEp = simulateTraitorsEpisode();
     if (!trEp) {
+      // AFTER THE FINALE, THE REUNION AIRS (the user, 2026-10-03: "i cant
+      // simulate a reunion episode it stopped at the endgame"). The next press
+      // airs it as its own episode; after that the season really is complete.
+      const fin = (gs.episodeHistory || []).filter(e => e && e.tr && e.tr.reunion).pop();
+      if (fin && !gs._trReunionAired) {
+        gs._trReunionAired = true;
+        saveGameState();
+        renderRunTab();
+        window.openVisualPlayer?.('reunion-' + fin.num);
+        return;
+      }
       alert(gs.activePlayers && gs.activePlayers.length
         ? 'This castle season is already complete.'
         : 'Add players to Cast Builder first.');
@@ -3055,12 +3076,21 @@ export function buildEpisodeMap() {
       const trEps = [];
       let live = cast;
       for (const r of _trRows) {
-        trEps.push({ ep: r.num, active: live, phase: 'pre-merge',
+        trEps.push({ ep: r.num, active: live, phase: r.tr && r.tr.endgame ? 'finale' : 'pre-merge',
           engineType: twistMap[r.num] || null });
         live = Math.max(0, live - ((r.exits || []).length));
       }
-      trEps.push({ ep: (_trRows[_trRows.length - 1].num || 0) + 1,
-        active: live, phase: 'finale', engineType: null });
+      // THE REUNION IS AN EPISODE (the user, 2026-10-03: "make sure the reunion
+      // is also in the season timeline so we have the correct number of
+      // episode like in perfect match"). The night of the Fire of Truth is the
+      // finale and the reunion airs after it, so a played castle counts both —
+      // and a castle whose ending is not on a row yet keeps a finale slot first.
+      const _trLast = _trRows[_trRows.length - 1];
+      let _trNext = (_trLast.num || 0) + 1;
+      if (!(_trLast.tr && _trLast.tr.endgame)) {
+        trEps.push({ ep: _trNext++, active: live, phase: 'finale', engineType: null });
+      }
+      trEps.push({ ep: _trNext, active: cast, phase: 'finale', engineType: null, reunion: true });
       return trEps;
     }
 
@@ -3125,6 +3155,8 @@ export function buildEpisodeMap() {
       trEp++;
     }
     trEps.push({ ep: trEp, active: endgame, phase: 'finale', engineType: null });
+    // ...and the reunion after it, an episode of its own
+    trEps.push({ ep: trEp + 1, active: cast, phase: 'finale', engineType: null, reunion: true });
     return trEps;
   }
 
@@ -4050,7 +4082,7 @@ export function renderTimeline() {
   const _ciDays = isCircleSeason() ? circleTimelineDays() : null;
 
   let html = '';
-  epMap.forEach(({ ep, active, phase }) => {
+  epMap.forEach(({ ep, active, phase, reunion }) => {
     const isFinale   = phase === 'finale';
     const isMergeEp  = !isHouse && phase === 'post-merge'
       && epMap.find(e => e.ep === ep - 1)?.phase === 'pre-merge';
@@ -4420,7 +4452,7 @@ export function renderTimeline() {
     const _ciD = _ciDays?.get(ep) || null;
     const markerText  = _pmN && !isFinale ? (_pmN.end !== _pmN.start ? `${_pmN.start} → ${_pmN.end} in the villa` : `${_pmN.end} in the villa`)
       : _ciD ? (_ciD.end !== _ciD.start ? `${_ciD.start} → ${_ciD.end} in the Circle` : `${_ciD.end} in the Circle`)
-      : isFinale ? 'FINALE'
+      : isFinale ? (reunion ? 'REUNION' : 'FINALE')
       : isJuryEp ? `JURY · ${active} left`
         : isMergeEp ? `MERGE · ${active} left` : `${active} left`;
     // A castle has no tribes and no merge, so it has no PRE/POST to stamp — the

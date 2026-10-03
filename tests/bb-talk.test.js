@@ -73,6 +73,9 @@ const PHASE6 = [
   // bb-events/reign.js (the house meeting keeps its own screen)
   'reign-announces-target', 'reign-loyalty-test', 'reign-house-decides', 'reign-apologises', 'reign-reckoning',
   'reign-carve-it-up', 'reign-works-both-rooms',
+  // bb-events/schemes.js
+  'scheme-forge-note', 'scheme-spread-lies', 'scheme-whisper-campaign', 'scheme-campaign-rally', 'scheme-false-majority',
+  'scheme-kiss-trap', 'scheme-exposed', 'scheme-comfort-victim', 'scheme-false-accusation', 'scheme-accusation-collapses',
 ];
 // Engine beats keep the players list the engine counts; a fallout scene is had
 // with an alliance member who is not on it, so these skip the speaker check.
@@ -87,8 +90,9 @@ const scripted = b => EVENT_IDS.has(b.eventId) && (Array.isArray(b.lines) || !IN
 const EVENT_IDS = new Set([...Object.values(CONVERTED), ...PHASE6]);
 // Converted, but these three seasons cannot be sure of one: a first kiss needs a
 // showmance (not a spark) under two weeks old, about 0.4 a season; the two
-// reign-* ones need two Heads of Household, which only Battle of the Block gives.
-const RARE = new Set(['bond-first-kiss', 'reign-carve-it-up', 'reign-works-both-rooms']);
+// reign-* ones need two Heads of Household, which only Battle of the Block gives;
+// a kiss trap needs a showmance and an accomplice the schemer is close to.
+const RARE = new Set(['bond-first-kiss', 'reign-carve-it-up', 'reign-works-both-rooms', 'scheme-kiss-trap']);
 
 function playSeason(seed, shift) {
   const cast = Array.from({ length: 14 }, (_, i) => POOL[(i * 11 + 3 + shift) % POOL.length]).map(p => ({ name: p.name,
@@ -213,7 +217,7 @@ describe('the talk pools', () => {
   const FIXED = { 'reign.carve': 'hoh-room', 'reign.both': 'hoh-room', 'bond.kiss': 'bedroom', 'bond.quiet': 'bedroom', 'bond.bad-day': 'bedroom', 'bond.petty': 'kitchen', 'fallout.grief': 'bedroom', 'fallout.rogue': 'kitchen', 'bloc.blowup': 'kitchen', 'phase.hoh-room': 'hoh-room', 'phase.scramble': 'hoh-room', 'phase.targets': 'hoh-room', 'phase.leaned': 'hoh-room', 'friction.dishes': 'kitchen', 'friction.food': 'kitchen', 'life.chores': 'kitchen', 'life.table': 'kitchen', 'life.cook': 'kitchen', 'life.workout': 'backyard', 'talk.safety': 'hoh-room', 'talk.pitch-target': 'hoh-room', 'talk.hoh-visit': 'hoh-room', 'talk.hoh-decide': 'hoh-room' };
   it('only stages a room where the scene is', () => {
     for (const [key, pool] of Object.entries(POOLS)) {
-      if (!/^(talk|social|deals|alliance|power|campaign|life|friction|phase|bloc|venue|fallout|bond|reign)\./.test(key)) continue;
+      if (!/^(talk|social|deals|alliance|power|campaign|life|friction|phase|bloc|venue|fallout|bond|reign|scheme)\./.test(key)) continue;
       const fixed = FIXED[key.split('.').slice(0, 2).join('.')];
       for (const e of pool) for (const t of e.turns) {
         if (!t.beat) continue;

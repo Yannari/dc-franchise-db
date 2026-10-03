@@ -28,11 +28,11 @@
 // across the table from the people who tried.
 
 import { gs } from '../core.js';
-import { pronouns } from '../players.js';
 import {
   pStats, band, closestTo, spotlightOrder, isNice,
 } from './_read.js';
-import { freshLine } from '../bb/aired.js';
+import { makeScene } from '../bb/script/scene.js';
+import { numberWord } from '../bb/script/inject.js';
 
 // ── helpers ───────────────────────────────────────────────────────────
 
@@ -41,18 +41,10 @@ import { freshLine } from '../bb/aired.js';
  * word for word, and the beat index is already in the key so a second airing
  * of the same event picks different words.
  */
-function _variant(list, ctx, ...salt) {
-  const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${ctx?.act || ''}|${salt.filter(Boolean).join('|')}`;
-  let hash = 0;
-  for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
-  return freshLine(list, hash, ctx);
-}
 
 /** Least-seen first, weighted toward whoever this week is about. */
 const _quiet = pool => spotlightOrder([...new Set((pool || []).filter(Boolean))]);
 
-const _list = names => (names.length <= 1 ? (names[0] || '')
-  : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`);
 
 const _op = ctx => ctx?.week?.voteOperation || null;
 
@@ -155,20 +147,14 @@ const meetingSeen = {
     if (!observer || seen.length < 2) {
       return _fallback(`${observer || plan.organizer} counts the room and comes up with nothing worth saying.`, [observer || plan.organizer], 'NO PATTERN');
     }
-    const p = pronouns(observer);
 
-    const text = _variant([
-      `${seen[0]} goes to the storage room. ${seen[1]} follows about ninety seconds later, which is exactly long enough to look unrelated. ${observer} is on the sofa and counts to ninety twice more before anybody comes back.`,
-      `${observer} walks into the bedroom and a conversation stops in the middle of a word. ${_list(seen)} are both suddenly very interested in the laundry. ${p.Sub} ${p.sub === 'they' ? 'do' : 'does'} not ask what it was about, because the answer would be a lie and then ${p.sub} would know they lie.`,
-      `${seen[0]} and ${seen[1]} have gone into the same room separately, eleven minutes apart, and ${observer} has not been invited. ${p.Sub} ${p.sub === 'they' ? 'do' : 'does'} not know what they are deciding. ${p.Sub} ${p.sub === 'they' ? 'know' : 'knows'} something is being decided.`,
-      `${observer} has started noticing the leaving rather than the talking. ${seen[0]} first, then ${seen[1]}, never together, always within two minutes. Nobody leaves a room that carefully unless the room matters.`,
-    ], ctx, observer, plan.alliance, seen[0], seen[1]);
+    const scene = makeScene('plan.seen', { a: observer, b: seen[0], c: seen[1] }, { ending: 'scene' }, [], 'bedroom');
 
     // Noticing is not knowing. It makes them warier of the two people they
     // actually saw, which is what changes how they vote next week.
     seen.forEach(m => api.suspicion(observer, m, 0.7));
     api.remember(observer, seen[0], 'meets-in-private', 1, { about: `left the room with ${seen[1]}` });
-    return { text, players: [observer, ...seen],
+    return { scene, players: [observer, ...seen],
       badgeText: 'COUNTED THE ROOM', badgeClass: 'blue' };
   },
 };
@@ -209,30 +195,14 @@ const countOnFingers = {
     const short = plan.expected < plan.majority;
     const gap = Math.max(1, plan.majority - plan.expected);
 
-    const solidLine = solid.length
-      ? `${_list(solid.slice(0, 3))} ${solid.length > 1 ? 'do not need asking twice' : 'does not need asking twice'}`
-      : `nobody in this room is what ${org} would call solid`;
-    const tornLine = torn.length
-      ? `${_list(torn.slice(0, 2))} said yes with ${torn.length > 1 ? 'their' : 'a'} whole face doing something else`
-      : `the rest said yes and meant it as far as anybody can tell`;
-
-    const text = short ? _variant([
-      `${org} does it on ${pronouns(org).posAdj} fingers, out loud, for ${lieutenant}: ${solidLine}, ${tornLine}. It comes to ${plan.expected} against a majority of ${plan.majority}, and ${org} does the count a second time in case the second time is kinder.`,
-      `"${solid.length ? _list(solid.slice(0, 3)) : 'Nobody'}, us, and then it stops." ${org} lays the count out for ${lieutenant} and gets to ${plan.expected}. ${lieutenant} says the number back. Neither of them likes hearing it in somebody else's voice.`,
-      `${org} tells ${lieutenant} the room is fine and then keeps counting, which is how ${lieutenant} knows the room is not fine. ${gap === 1 ? 'One vote' : `${gap} votes`} short of ${plan.target}, with ${tornLine}.`,
-      `The count against ${plan.target} runs out ${gap === 1 ? 'a vote' : `${gap} votes`} early. ${org} does not panic in front of ${lieutenant} — ${org} just starts naming people who have not been asked yet, which is the same thing said slower.`,
-    ], ctx, org, lieutenant, plan.target) : _variant([
-      `${org} runs it past ${lieutenant} one more time. ${solidLine}, ${tornLine}, and ${plan.target} does not have the numbers to survive any of it. ${lieutenant} still makes ${org} say it twice.`,
-      `"Say them out loud." ${lieutenant} does not want the total, ${lieutenant} wants the names, and ${org} gives them: ${solid.length ? _list(solid.slice(0, 3)) : 'the room itself'} first, the rest after. ${plan.expected} of a needed ${plan.majority}.`,
-      `${org} has counted this so many times it has stopped meaning anything, so ${lieutenant} takes over and counts it back. ${plan.expected}. Comfortable. Both of them keep looking at the door anyway.`,
-      `It is ${plan.expected} to send ${plan.target} home and they need ${plan.majority}. ${org} says that to ${lieutenant} the way people say things they are trying to believe.`,
-    ], ctx, org, lieutenant, plan.target);
+    const scene = makeScene('plan.count', { a: org, b: lieutenant }, { ending: short ? 'short' : 'holds', intent: gap === 1 ? 'one' : 'many',
+      target: plan.target, expected: numberWord(plan.expected), majority: numberWord(plan.majority), gap: numberWord(gap) }, [], 'pantry');
 
     api.addBond(org, lieutenant, 0.6);
     api.remember(lieutenant, org, 'counted-it-with-me', 1,
       { about: `${plan.expected} of ${plan.majority} against ${plan.target}` });
     if (short) api.suspicion(org, torn[0] || plan.target, 0.5);
-    return { text, players: [org, lieutenant, ...solid.slice(0, 1)].filter(Boolean),
+    return { scene, players: [org, lieutenant, ...solid.slice(0, 1)].filter(Boolean),
       badgeText: short ? `${gap} SHORT` : 'THE COUNT HOLDS',
       badgeClass: short ? 'red' : 'blue' };
   },
@@ -259,21 +229,15 @@ const recruitReport = {
     if (!found) return _fallback(`Nobody has anything worth carrying across the house.`, house.slice(0, 1), 'NOTHING TO TELL');
     const { plan, approach, voter, listener } = found;
     const recruiter = approach.recruiter;
-    const p = pronouns(voter);
 
-    const text = _variant([
-      `${voter} tells ${listener} about it before the kettle has boiled. "${recruiter} got me alone about ${plan.target}." ${listener} asks what ${p.sub} said. ${voter} says "nothing", which is what everybody says.`,
-      `"You should know who is doing the asking." ${voter} repeats ${recruiter}'s pitch to ${listener} almost word for word — the argument, the numbers, the bit at the end where it stopped sounding like a question.`,
-      `${voter} does not think of it as betraying anybody. ${recruiter} came to ${p.obj} with ${plan.target}'s name and ${p.sub} ${p.sub === 'they' ? 'are' : 'is'} simply telling ${listener} that ${recruiter} came to ${p.obj} with ${plan.target}'s name.`,
-      `${listener} learns three things in under a minute: that there is a plan, that it is aimed at ${plan.target}, and that ${recruiter} is the one walking it around the house. Only the third one is news.`,
-    ], ctx, voter, listener, recruiter);
+    const scene = makeScene('plan.report', { a: voter, b: listener }, { ending: 'scene', target: plan.target, source: recruiter }, [], 'kitchen');
 
     // The recruiter's discretion is the thing that just died.
     api.suspicion(listener, recruiter, 1.2);
     api.remember(listener, recruiter, 'works-the-house', 2,
       { about: `pitched ${voter} on voting out ${plan.target}` });
     api.addBond(voter, listener, 0.5);
-    return { text, players: [voter, listener, recruiter],
+    return { scene, players: [voter, listener, recruiter],
       badgeText: 'THE PITCH TRAVELS', badgeClass: 'red' };
   },
 };
@@ -315,24 +279,13 @@ const falseCommitmentDoubt = {
     const found = _softYes(ctx, house);
     if (!found) return _fallback(`Everybody's word is good until the ballots prove otherwise.`, house.slice(0, 1), 'NO DOUBTS');
     const { plan, voter, doubter, outcome } = found;
-    const p = pronouns(doubter);
 
-    const text = outcome === 'lies' ? _variant([
-      `${doubter} cannot point at anything. ${voter} said yes, ${voter} has kept saying yes, and something about how quickly the answer came has felt wrong ever since.`,
-      `"${voter} agreed too fast." ${doubter} says it to nobody, in the mirror, brushing ${p.posAdj} teeth. It is not evidence. It is the only thing ${p.sub} ${p.sub === 'they' ? 'have' : 'has'}.`,
-      `${voter} keeps volunteering the same reassurance before ${doubter} can ask for it. The answer never changes; the need to keep giving it is what bothers ${doubter}.`,
-      `${voter} is a good liar and ${doubter} is a good reader, and in this house that produces nothing at all: ${doubter} is certain and cannot say why, so ${p.sub} ${p.sub === 'they' ? 'say' : 'says'} nothing.`,
-    ], ctx, doubter, voter) : _variant([
-      `${voter} still has not actually said the word yes about ${plan.target}, and ${doubter} has started noticing the shape of the sentences ${voter} uses instead.`,
-      `"Where are you when we vote?" ${voter} answers a slightly different question, warmly, and moves on. ${doubter} lets it go and does not forget it.`,
-      `${doubter} does the count in ${p.posAdj} head with ${voter} in it, then does it again with ${voter} out of it. The second number is the one ${p.sub} ${p.sub === 'they' ? 'believe' : 'believes'}.`,
-      `Nobody has lied to ${doubter}. ${voter} has simply not committed to anything in four days, which in here is the same information delivered politely.`,
-    ], ctx, doubter, voter);
+    const scene = makeScene('plan.doubt', { a: doubter, b: voter }, { ending: outcome === 'lies' ? 'lies' : 'undecided', target: plan.target }, [], 'washroom');
 
     api.suspicion(doubter, voter, 1.0);
     api.remember(doubter, voter, 'never-said-yes', 1,
       { about: `the vote against ${plan.target}`, proven: false });
-    return { text, players: [doubter, voter],
+    return { scene, players: [doubter, voter],
       badgeText: 'NOT SOLD ON IT', badgeClass: 'red' };
   },
 };
@@ -371,25 +324,14 @@ const internalDissent = {
     if (!found) return _fallback(`The room agrees with itself, which nobody trusts either.`, house.slice(0, 1), 'NO ARGUMENT');
     const { plan, voter, stance } = found;
     const org = plan.organizer;
-    const p = pronouns(voter);
 
-    const text = stance === 'refusing' ? _variant([
-      `"I am not writing ${plan.target}'s name and I am not going to pretend to think about it." ${voter} says it to ${org} with the door open, which ${org} minds considerably more than the refusal.`,
-      `${org} explains the plan to ${voter} twice, in slightly different words, as though the first version had been the problem. ${voter} says no both times and does not offer a third opportunity.`,
-      `${voter} came into the meeting firmly set on the other nominee and says so before ${org} finishes the pitch. ${org} asks what could change ${pronouns(voter).posAdj} mind. ${voter} says, “Not this conversation.”`,
-      `It is not really about ${plan.target}. ${voter} has decided ${org} makes decisions and then holds meetings, and this is the meeting where ${p.sub} ${p.sub === 'they' ? 'say' : 'says'} so.`,
-    ], ctx, org, voter, plan.target) : _variant([
-      `${voter} is voting with the room and wants ${org} to know it costs something. ${org} thanks ${p.obj}. It is not the tone ${voter} wanted.`,
-      `"You are asking me to do it, so I will do it. Do not tell me it is the obvious move." ${voter} and ${org} go around it twice before ${voter} walks out mid-sentence.`,
-      `${org} keeps saying ${plan.target} is the bigger threat. ${voter} keeps saying that is not the part ${p.sub} ${p.sub === 'they' ? 'are' : 'is'} arguing about, and neither of them ever gets to the part ${p.sub} ${p.sub === 'they' ? 'are' : 'is'} arguing about.`,
-      `${voter} agrees to the vote and then keeps talking, which is how ${org} learns this was a concession and not a decision.`,
-    ], ctx, org, voter, plan.target);
+    const scene = makeScene('plan.dissent', { a: org, b: voter }, { ending: stance === 'refusing' ? 'refusing' : 'conflicted', target: plan.target }, [], 'bedroom');
 
     api.addBond(org, voter, stance === 'refusing' ? -0.9 : -0.5);
     api.remember(org, voter, 'argued-in-the-room', stance === 'refusing' ? 2 : 1,
       { about: `the vote against ${plan.target}`, stance });
     api.suspicion(org, voter, stance === 'refusing' ? 0.9 : 0.4);
-    return { text, players: [org, voter],
+    return { scene, players: [org, voter],
       badgeText: stance === 'refusing' ? 'SAID NO TO THE ROOM' : 'GOING ALONG WITH IT',
       badgeClass: stance === 'refusing' ? 'red' : 'grey' };
   },
@@ -426,19 +368,8 @@ const swingCourtedTwice = {
     const { voter, plans, both } = found;
     const a = plans[0];
     const b = plans[1] || null;
-    const p = pronouns(voter);
 
-    const text = both && b ? _variant([
-      `${voter} does the arithmetic in the hammock and comes out of it changed. ${a.organizer} needs ${p.obj}. ${b.organizer} needs ${p.obj}. Neither of them can afford to be the one who found out ${p.sub} ${p.sub === 'they' ? 'were' : 'was'} lying.`,
-      `Two separate people have brought ${voter} coffee ${p.sub} did not ask for. ${voter} works out somewhere around the second cup that ${a.organizer} and ${b.organizer} are counting the same vote and it is ${p.posAdj}.`,
-      `"They both need me." ${voter} says it out loud, alone, testing whether it sounds as good as it feels. It does.`,
-      `${voter} has spent this season being told what the house is doing. This is the first week the house has needed to be told something by ${p.obj}, and ${p.sub} ${p.sub === 'they' ? 'notice' : 'notices'} the difference immediately.`,
-    ], ctx, voter, a.organizer, b.organizer) : _variant([
-      `${a.organizer}'s count does not reach without ${voter}, and ${voter} has finally noticed how carefully ${a.organizer} has been talking to ${p.obj} all week.`,
-      `${voter} was pitched on ${a.target} and has not answered. Three days later nobody has pushed, which tells ${voter} more about ${p.posAdj} value than any pitch would have.`,
-      `The room is one short and everybody in it knows which one. ${voter} works it out about an hour after they do and spends the rest of the evening being extremely relaxed.`,
-      `${voter} counts it the way ${a.organizer} must have counted it, gets the same number, and understands that ${p.sub} ${p.sub === 'they' ? 'are' : 'is'} the number.`,
-    ], ctx, voter, a.organizer, a.target);
+    const scene = makeScene('plan.swing', { a: voter }, { ending: both && b ? 'both' : 'one', target: a.target, org1: a.organizer, org2: b?.organizer || null }, [], 'backyard');
 
     // Leverage plays well and everybody can see it being enjoyed.
     api.popDelta(voter, 1);
@@ -446,7 +377,7 @@ const swingCourtedTwice = {
       { about: `the count against ${a.target}`, alsoCourtedBy: b?.organizer || null });
     if (b) api.remember(voter, b.organizer, 'needs-my-vote', 2, { about: `the count against ${b.target}` });
     api.suspicion(voter, a.organizer, 0.4);
-    return { text, players: [voter, a.organizer, b?.organizer].filter(Boolean),
+    return { scene, players: [voter, a.organizer, b?.organizer].filter(Boolean),
       badgeText: both ? 'THE NUMBER BOTH SIDES NEED' : 'WORTH SOMETHING THIS WEEK',
       badgeClass: 'gold' };
   },
@@ -515,24 +446,14 @@ const competingCounts = {
     const { voter, a, b } = found;
     const split = a.target !== b.target;
 
-    const text = split ? _variant([
-      `${a.organizer} has ${voter} down for ${a.target}. ${b.organizer} has ${voter} down for ${b.target}. The same vote is holding up two incompatible plans, and neither organizer knows which count has borrowed it.`,
-      `Two rooms, two whiteboards nobody is allowed to write on, one name on both of them. ${voter} has told ${a.organizer} and ${b.organizer} slightly different versions of the same sentence and neither has compared notes.`,
-      `${b.organizer} says "we have the votes" in front of ${a.organizer}, who also has the votes, using several of the same people. Neither of them asks the obvious follow-up.`,
-      `The problem is not that ${voter} lied to anybody. The problem is that ${a.organizer} and ${b.organizer} both counted ${voter} without asking whether anybody else had, and a house only has so many people in it.`,
-    ], ctx, a.organizer, b.organizer, voter) : _variant([
-      `${a.organizer} and ${b.organizer} are both taking credit for ${voter}'s vote against ${a.target}. The destination matches; the promises around it do not, and neither room realizes the other one is claiming the same person.`,
-      `${voter} agreed with two separate rooms about the same name on the same afternoon. Both rooms went away believing they had recruited ${voter}. Only one of them had spoken to ${voter} first.`,
-      `${a.organizer} and ${b.organizer} arrive at the same total by counting ${voter} in separate rooms. The number looks right, so neither asks how the other reached it.`,
-      `${a.organizer} lists the votes for ${a.target} in front of ${b.organizer} and includes ${voter}. ${b.organizer} says nothing, and starts wondering what else the two lists have in common.`,
-    ], ctx, a.organizer, b.organizer, a.target);
+    const scene = makeScene('plan.compete', { a: a.organizer, b: b.organizer }, { ending: split ? 'split' : 'same', swing: voter, targetA: a.target, targetB: b.target }, [], 'living-room');
 
     // Two organisers who have just found the edge of each other.
     api.suspicion(a.organizer, b.organizer, split ? 1.3 : 0.8);
     api.suspicion(b.organizer, a.organizer, split ? 1.3 : 0.8);
     api.remember(a.organizer, b.organizer, 'counted-my-vote', 2, { about: voter });
     if (split) api.addBond(a.organizer, b.organizer, -0.7);
-    return { text, players: [a.organizer, b.organizer, voter],
+    return { scene, players: [a.organizer, b.organizer, voter],
       badgeText: split ? 'BOTH COUNTS CANNOT BE RIGHT' : 'COUNTED TWICE',
       badgeClass: split ? 'red' : 'blue' };
   },
@@ -596,20 +517,14 @@ const organizerOverconfident = {
     const org = plan.organizer;
     const lieutenant = _lieutenant(plan, house);
     const air = plan.expected - plan.locked;
-    const p = pronouns(lieutenant);
 
-    const text = _variant([
-      `"It is done. ${plan.target} is gone and we can stop talking about it." ${org} says it lying down. ${lieutenant} is still sitting up, because ${plan.expected} people said yes and only ${plan.locked} of them are people ${p.sub} would bet on.`,
-      `${org} has started talking about next week. ${lieutenant} is still on this one — ${air === 1 ? 'one of those votes' : `${air} of those votes`} is somebody who said yes in a corridor, and corridors are where people say yes to get past you.`,
-      `"You are counting the maybes as votes." ${lieutenant} says it once, quietly, and ${org} laughs and says the maybes are votes. Neither of them brings it up again, which is the part that will matter.`,
-      `${org} is comfortable and ${lieutenant} cannot work out how. The room has ${plan.locked} it can prove and ${plan.expected} it can hope for, and ${org} has been saying the second number all day.`,
-    ], ctx, org, lieutenant, plan.target);
+    const scene = makeScene('plan.cocky', { a: org, b: lieutenant }, { ending: 'scene', target: plan.target, expected: numberWord(plan.expected), locked: numberWord(plan.locked) }, [], 'bedroom');
 
     api.remember(lieutenant, org, 'counting-yes-as-locked', 2,
       { about: `${plan.expected} claimed, ${plan.locked} certain, against ${plan.target}` });
     api.addBond(org, lieutenant, 0.3);
     api.suspicion(lieutenant, org, 0.5);
-    return { text, players: [org, lieutenant],
+    return { scene, players: [org, lieutenant],
       badgeText: `${plan.locked} LOCKED OF ${plan.expected}`, badgeClass: 'red' };
   },
 };
@@ -635,21 +550,15 @@ const quietRefusalSpreads = {
     if (!found) return _fallback(`Everybody who said no this week said it and left it there.`, house.slice(0, 1), 'KEPT QUIET');
     const { plan, voter, warned } = found;
     const org = plan.organizer;
-    const p = pronouns(voter);
 
-    const text = _variant([
-      `"I told them no and I am telling you it happened." ${voter} does not name every person in the room to ${warned}, only the one who runs it, which is the name that does the damage.`,
-      `${voter} finds ${warned} in the pantry and does not bother with a preamble: there is a plan, it is ${org}'s, and it is aimed at ${plan.target}. ${warned} realizes nobody from that room intended to mention it.`,
-      `${voter} said no when the plan was pitched and has been carrying it around since. ${warned} is the first person who asks a question ${p.sub} ${p.sub === 'they' ? 'want' : 'wants'} to answer honestly.`,
-      `"How many people do you think have been asked?" ${voter} lets ${warned} guess, twice, and then says the real number. ${warned} stops making the sandwich.`,
-    ], ctx, voter, warned, org);
+    const scene = makeScene('plan.refusal', { a: voter, b: warned }, { ending: 'scene', org, target: plan.target }, [], 'pantry');
 
     // The refusal was private. This is not.
     api.suspicion(warned, org, 1.3);
     api.remember(warned, org, 'runs-a-room-i-am-not-in', 2,
       { about: `the vote against ${plan.target}`, from: voter });
     api.addBond(voter, warned, 0.6);
-    return { text, players: [voter, warned, org],
+    return { scene, players: [voter, warned, org],
       badgeText: 'THE NO GETS AROUND', badgeClass: 'red' };
   },
 };
@@ -685,24 +594,13 @@ const lieAlmostCaught = {
     const found = _liarPress(ctx, house);
     if (!found) return _fallback(`Nobody is being pressed on anything tonight.`, house.slice(0, 1), 'NO PRESSURE');
     const { plan, liar, presser } = found;
-    const p = pronouns(liar);
     const smooth = pStats(liar).social + pStats(liar).strategic;
 
-    const text = smooth >= 12 ? _variant([
-      `"Say the name." ${presser} asks for it plainly and ${liar} says ${plan.target}'s name plainly back, and that is the end of it, because there is nothing after that question.`,
-      `${presser} runs ${liar} through the coming vote twice, looking for the seam. ${liar} gives the same answer at the same speed both times, which is either honesty or a great deal of practice.`,
-      `${liar} does not get defensive, which is what saves ${p.obj}. ${p.Sub} ${p.sub === 'they' ? 'ask' : 'asks'} ${presser} who else is wobbling, and by the end of it ${presser} is the one reassuring ${liar}.`,
-      `${presser} has one question left and does not ask it, because ${liar} has just spent four minutes being reasonable and there is no polite version of "I think you are lying to me."`,
-    ], ctx, presser, liar, plan.target) : _variant([
-      `${liar} confirms it. ${presser} says "good" and keeps standing there a second too long, and ${liar} fills the silence, which is exactly what ${presser} was waiting to see.`,
-      `"You are sure." "I am sure." ${liar} says it once more than ${presser} asked for, and ${presser} files that away without knowing what to do with it.`,
-      `${presser} asks ${liar} about the vote in the middle of a conversation about something else. ${liar} gives the expected answer after a pause just long enough to notice.`,
-      `The commitment holds. ${liar} walks away from ${presser} with ${p.posAdj} hands doing something they were not doing before, and ${presser} notices and has nothing to do with it.`,
-    ], ctx, presser, liar, plan.target);
+    const scene = makeScene('plan.press', { a: presser, b: liar }, { ending: smooth >= 12 ? 'smooth' : 'shaky', target: plan.target }, [], 'backyard');
 
     api.suspicion(presser, liar, 0.8);
     api.remember(presser, liar, 'made-me-ask-twice', 1, { about: `the vote against ${plan.target}` });
-    return { text, players: [presser, liar],
+    return { scene, players: [presser, liar],
       badgeText: 'THE LINE HOLDS', badgeClass: 'grey' };
   },
 };
@@ -756,25 +654,14 @@ const backdoorPlayedVeto = {
     _spend(this.id, ctx);
     const { target, hoh, won } = found;
     const confidant = closestTo(hoh, house.filter(n => n !== hoh && n !== target)) || null;
-    const p = pronouns(hoh);
 
-    const text = won ? _variant([
-      `${target} was the entire point of the week and ${target} is now holding the veto. ${hoh} shuts the bedroom door${confidant ? ` with ${confidant} still inside` : ''} and says nothing for long enough that it stops being a pause.`,
-      `The plan needed exactly one thing not to happen. ${hoh} watched it happen from six feet away and had to applaud.${confidant ? ` ${confidant} finds ${p.obj} afterwards, sitting on the end of the bed with ${p.posAdj} shoes still on.` : ''}`,
-      `"So we cannot touch ${target}." ${hoh} says it as a fact rather than a question, and ${confidant ? `${confidant} does not have a version of the week that survives it either` : 'nobody in the room has an answer'}.`,
-      `${hoh} built four days of reassurance around a nomination that was never going to be the nomination. ${target} pulled a chip out of a bag and undid all of it, and now somebody else has to go on the block.`,
-    ], ctx, hoh, target) : _variant([
-      `${target} drew to play and ${hoh} spent the entire competition doing arithmetic instead of watching. It did not land — but ${target} was one result away from walking out of this week untouchable.`,
-      `The bag had six names in it and one of them ended the week. ${hoh} got away with it${confidant ? ` and tells ${confidant} so twice, which is once more than somebody who feels safe would` : ''}.`,
-      `${target} played for the veto without ever knowing why the room went quiet when ${pronouns(target).posAdj} name came out. ${hoh} has not stopped thinking about it since.`,
-      `${target} loses the veto and the plan survives. ${hoh} looks relieved enough to reveal how close the week came to falling apart${confidant ? `; only ${confidant} hears ${p.obj} admit it` : ''}.`,
-    ], ctx, hoh, target);
+    const scene = makeScene('plan.backdoor', { a: hoh, b: confidant || null }, { ending: won ? 'won' : 'drew', intent: confidant ? 'told' : 'alone', target }, [], 'bedroom');
 
     api.remember(hoh, target, won ? 'slipped-the-backdoor' : 'nearly-slipped-the-backdoor', won ? 3 : 1,
       { about: 'drew into the veto the week it was built around them' });
     api.suspicion(hoh, target, won ? 1.4 : 0.6);
     if (confidant) api.addBond(hoh, confidant, 0.5);
-    return { text, players: [hoh, target, confidant].filter(Boolean),
+    return { scene, players: [hoh, target, confidant].filter(Boolean),
       badgeText: won ? 'THE BACKDOOR IS DEAD' : 'ONE RESULT AWAY',
       badgeClass: won ? 'red' : 'grey' };
   },
@@ -814,27 +701,16 @@ const pawnPanic = {
     const found = _pawnTrouble(ctx, house);
     if (!found) return _fallback(`Nobody sat down this week expecting to be safe.`, house.slice(0, 1), 'NO PAWN');
     const { pawn, asker, other } = found;
-    const p = pronouns(asker);
     const guilt = isNice(asker) || pStats(asker).loyalty >= 6;
 
-    const text = guilt ? _variant([
-      `${asker} asked ${pawn} to sit down and told ${pronouns(pawn).obj} it was a formality. Now the campaign is underway, nobody can tell ${asker} with any confidence that the votes are on ${other}, and ${asker} has started avoiding the kitchen.`,
-      `"You are fine." ${asker} says it to ${pawn} again, in the same words as before the nomination ceremony, and hears how much less it weighs the third time.`,
-      `${asker} counts the room for ${pawn}'s sake rather than ${p.posAdj} own, twice, and gets a different answer each time. Neither answer is one ${p.sub} ${p.sub === 'they' ? 'want' : 'wants'} to say out loud.`,
-      `${pawn} is not asking ${asker} for reassurance any more, which ${asker} finds significantly worse than being asked.`,
-    ], ctx, asker, pawn, other) : _variant([
-      `${asker} needs ${pawn} to stay calm for two more days, and works out somewhere around lunchtime that keeping ${pawn} calm and keeping ${pawn} in the house may not be the same job.`,
-      `The count against ${other} is not there. ${asker} knows it, ${pawn} suspects it, and neither of them says it, because saying it makes ${asker} responsible for it.`,
-      `"Has anybody actually told you they are voting ${other}?" ${pawn} asks it flatly. ${asker} lists three names and does not stand behind any of them.`,
-      `${asker} put ${pawn} in that chair with an argument about numbers. The numbers have moved, and ${asker} keeps making the same argument anyway because the alternative is an apology.`,
-    ], ctx, asker, pawn, other);
+    const scene = makeScene('plan.pawn', { a: asker, b: pawn }, { ending: guilt ? 'guilt' : 'cold', target: other }, [], 'kitchen');
 
     // A debt that will be collected next week, one way or the other.
     api.addBond(asker, pawn, -0.5);
     api.remember(asker, pawn, 'owe-them-the-block', 2,
       { about: `asked ${pawn} to sit as a pawn against ${other}` });
     api.suspicion(pawn, asker, 0.6);
-    return { text, players: [asker, pawn],
+    return { scene, players: [asker, pawn],
       badgeText: 'THE PAWN IS NOT SAFE', badgeClass: 'red' };
   },
 };
@@ -880,20 +756,14 @@ const blameForming = {
     if (!found) return _fallback(`Nobody has anything to pre-blame anybody for.`, house.slice(0, 1), 'NO BLAME');
     _spend(this.id, ctx);
     const { blamer, weak, target } = found;
-    const p = pronouns(blamer);
 
-    const text = _variant([
-      `Nobody has voted yet and ${blamer} has already decided who lost it. "${weak} has been strange for two days." ${p.Sub} ${p.sub === 'they' ? 'say' : 'says'} it to the bedroom in general, so that it is on the record before the record exists.`,
-      `${blamer} does not think the vote is going wrong. ${p.Sub} ${p.sub === 'they' ? 'have' : 'has'} simply started building the sentence ${p.sub} would need if it did, and ${weak}'s name is in it.`,
-      `"If this goes sideways it is ${weak}." ${blamer} says it early, quietly, to one person, which is how a thing becomes something everybody always thought.`,
-      `${blamer} has counted ${pronouns(blamer).posAdj} side to a majority four separate times today and still feels wrong about it, and being wrong about ${weak} is easier than being wrong about the count.`,
-    ], ctx, blamer, weak, target);
+    const scene = makeScene('plan.blame', { a: blamer, b: weak }, { ending: 'scene', target }, [], 'bedroom');
 
     api.suspicion(blamer, weak, 1.4);
     api.remember(blamer, weak, 'blamed-before-the-vote', 2,
       { about: `the count against ${target}`, proven: false });
     api.addBond(blamer, weak, -0.5);
-    return { text, players: [blamer, weak],
+    return { scene, players: [blamer, weak],
       badgeText: 'BLAME BEFORE THE VOTE', badgeClass: 'red' };
   },
 };
@@ -965,24 +835,13 @@ const flipCollapses = {
     _spend(this.id, ctx);
     const { plan, voter, kind } = found;
     const org = plan.organizer;
-    const p = pronouns(voter);
 
-    const text = kind === 'lied' ? _variant([
-      `${voter} told ${org}'s room ${plan.target} and wrote something else, and the extraordinary part is that ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} not looked nervous once all day.`,
-      `The room has ${voter} down as a yes. ${voter} decided on no as soon as the pitch ended and has spent the rest of the campaign making the yes look comfortable.`,
-      `${org} counted ${voter}. ${voter} let ${pronouns(org).obj} do it. Only ${voter} and the audience know the count was false before the first key is pulled.`,
-      `The lie was never in what ${voter} said. It was in how easy ${p.sub} made it for ${org} to stop asking.`,
-    ], ctx, org, voter, plan.target) : _variant([
-      `${voter} agreed to this before the campaigning started and the ballot does not say ${plan.target}. Somewhere between the room and the chair, somebody made a better case.`,
-      `${org} put ${voter} in the count and left ${p.obj} there. In the Diary Room, ${voter} votes the other way; whether ${org} can identify the missing vote from the final tally is a problem for tomorrow.`,
-      `${voter} does not think of it as breaking anything. The week changed, the count changed, and nobody in that room ever asked ${p.obj} to promise it twice.`,
-      `The flip is one vote. ${org} counted it as ${pronouns(org).posAdj}; ${voter} knew it was ${pronouns(voter).posAdj} all along. The difference between those two readings is the whole night.`,
-    ], ctx, org, voter, plan.target);
+    const scene = makeScene('plan.flip', { a: voter }, { ending: kind === 'lied' ? 'lied' : 'changed', target: plan.target, org }, [], 'diary-room');
 
     // The audience sees the ballot; the organizer does not. Do not grant the
     // house certainty about a secret Diary Room vote. The count-based follow-up
     // can create suspicion next week if the public positions make it traceable.
-    return { text, players: [org, voter],
+    return { scene, players: [org, voter],
       badgeText: kind === 'lied' ? 'THE YES WAS NEVER REAL' : 'THE FLIP FELL APART',
       badgeClass: 'red' };
   },
@@ -1038,24 +897,13 @@ const targetSurvivesRegroup = {
     if (!found) return _fallback(`Everybody the house went after last week went home.`, house.slice(0, 1), 'ALL CLEAR');
     _spend(this.id, ctx);
     const { survivor, org, plan } = found;
-    const p = pronouns(survivor);
     const s = pStats(survivor);
     // Proportional, as everything here is: a short fuse and some nerve turns a
     // survival into a campaign. A patient one turns it into a file.
     const heat = (10 - s.temperament) * 0.09 + s.boldness * 0.03;
     const retaliates = rng() < Math.max(0.15, Math.min(0.85, heat));
 
-    const text = retaliates ? _variant([
-      `${survivor} makes toast for two and gives the second slice to ${org}, who did not ask for it. Neither of them mentions that, before the eviction, ${org} was counting the votes to send ${p.obj} home.`,
-      `"You had four." ${survivor} says it to ${org} at the counter, pleasantly, with the numbers exactly right, and then asks whether ${org} wants coffee.`,
-      `${survivor} survived and has not stopped smiling since, which ${org} finds considerably worse than being shouted at. The smile has a name in it and both of them know whose.`,
-      `${org} tried to end ${survivor}'s season and did not, and now has to live in a house where ${survivor} gets to decide what happens next. ${survivor} takes the whole morning to make that point without saying a word of it.`,
-    ], ctx, survivor, org) : _variant([
-      `${survivor} is polite to ${org} all morning, which is the most alarming thing ${org} has seen this week.`,
-      `Nobody has told ${survivor} anything, and ${survivor} has still worked out that the push came from ${org}'s room. ${p.Sub} ${p.sub === 'they' ? 'have' : 'has'} decided that knowing it quietly is worth more than saying it too soon.`,
-      `${org} keeps finding reasons to be wherever ${survivor} is not. ${survivor} notices, files it, and goes back to the washing up.`,
-      `"No hard feelings." ${survivor} says it to ${org} and means the first word considerably more than the second.`,
-    ], ctx, survivor, org);
+    const scene = makeScene('plan.regroup', { a: survivor, b: org }, { ending: retaliates ? 'retaliates' : 'polite' }, [], 'kitchen');
 
     api.suspicion(survivor, org, 1.6);
     api.suspicion(org, survivor, 1.2);
@@ -1063,7 +911,7 @@ const targetSurvivesRegroup = {
       { about: `${plan.alliance} counted the votes to evict ${survivor}` });
     api.remember(org, survivor, 'survived-my-count', 2, { about: `week ${plan.week || ''}`.trim() });
     if (retaliates) api.setTarget(survivor, org, `counted the votes to send me home and came up short`);
-    return { text, players: [survivor, org],
+    return { scene, players: [survivor, org],
       badgeText: retaliates ? 'STILL HERE, AND COUNTING' : 'STILL HERE',
       badgeClass: retaliates ? 'red' : 'blue' };
   },

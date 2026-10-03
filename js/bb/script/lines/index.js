@@ -10,6 +10,7 @@ import CAMPAIGN from './campaign.js';
 import POWER from './power.js';
 import LIFE from './life.js';
 import PHASE from './phase.js';
+import BLOC from './bloc.js';
 
-export const POOLS = { ...FRICTION, ...CEREMONY, ...TALK, ...SOCIAL, ...DEALS, ...ALLIANCE, ...CAMPAIGN, ...POWER, ...LIFE, ...PHASE };
+export const POOLS = { ...FRICTION, ...CEREMONY, ...TALK, ...SOCIAL, ...DEALS, ...ALLIANCE, ...CAMPAIGN, ...POWER, ...LIFE, ...PHASE, ...BLOC };
 export const POOL_KEYS = Object.keys(POOLS);

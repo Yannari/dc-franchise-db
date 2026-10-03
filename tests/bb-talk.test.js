@@ -60,10 +60,12 @@ const PHASE6 = [
   'phase-safe-relief', 'phase-lobby-veto', 'phase-veto-holder-weighs', 'phase-last-night-equal', 'phase-outgoing-exposed',
   'phase-hoh-room', 'phase-targets-align', 'phase-nominee-reckons', 'phase-house-takes-sides', 'phase-hoh-pressures-veto',
   'phase-replacement-fear',
+  // bb-events/blocs.js
+  'bloc-noticed', 'bloc-vote-tell', 'bloc-target-picked', 'bloc-recruit', 'bloc-told', 'bloc-blowup',
 ];
 // Engine beats keep the players list the engine counts; a fallout scene is had
 // with an alliance member who is not on it, so these skip the speaker check.
-const OFF_CARD = new Set(['alliance-betrayal', 'alliance-repair']);
+const OFF_CARD = new Set(['alliance-betrayal', 'alliance-repair', 'bloc-recruit']);
 // Engine beats fall back to their plain sentence when there is nobody to have
 // the scene with (an alliance down to its betrayer): those carry no script.
 const INJECTED = new Set(['alliance-formed', 'alliance-inner-circle', 'alliance-recruited', 'alliance-betrayal', 'alliance-repair', 'alliance-collapsed',
@@ -193,10 +195,10 @@ describe('the talk pools', () => {
   // in the bedroom.
   const ROOM_WORDS = [['kitchen', /kitchen|cupboard/i], ['bedroom', /bedroom|between the beds|'s bed\b/i],
     ['backyard', /backyard|the grass/i], ['pantry', /storage room|pantry/i], ['living-room', /living room/i]];
-  const FIXED = { 'phase.hoh-room': 'hoh-room', 'phase.scramble': 'hoh-room', 'phase.targets': 'hoh-room', 'phase.leaned': 'hoh-room', 'friction.dishes': 'kitchen', 'friction.food': 'kitchen', 'life.chores': 'kitchen', 'life.table': 'kitchen', 'life.cook': 'kitchen', 'life.workout': 'backyard', 'talk.safety': 'hoh-room', 'talk.pitch-target': 'hoh-room', 'talk.hoh-visit': 'hoh-room', 'talk.hoh-decide': 'hoh-room' };
+  const FIXED = { 'bloc.blowup': 'kitchen', 'phase.hoh-room': 'hoh-room', 'phase.scramble': 'hoh-room', 'phase.targets': 'hoh-room', 'phase.leaned': 'hoh-room', 'friction.dishes': 'kitchen', 'friction.food': 'kitchen', 'life.chores': 'kitchen', 'life.table': 'kitchen', 'life.cook': 'kitchen', 'life.workout': 'backyard', 'talk.safety': 'hoh-room', 'talk.pitch-target': 'hoh-room', 'talk.hoh-visit': 'hoh-room', 'talk.hoh-decide': 'hoh-room' };
   it('only stages a room where the scene is', () => {
     for (const [key, pool] of Object.entries(POOLS)) {
-      if (!/^(talk|social|deals|alliance|power|campaign|life|friction|phase)\./.test(key)) continue;
+      if (!/^(talk|social|deals|alliance|power|campaign|life|friction|phase|bloc)\./.test(key)) continue;
       const fixed = FIXED[key.split('.').slice(0, 2).join('.')];
       for (const e of pool) for (const t of e.turns) {
         if (!t.beat) continue;

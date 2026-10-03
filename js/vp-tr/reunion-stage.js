@@ -15,7 +15,17 @@ import { footCard, playCard, CARD_CSS } from './stage-cards.js';
 import { trPlay } from './sfx.js';
 
 const hash = s => { let h = 7; for (const c of String(s)) h = (Math.imul(h, 31) + c.charCodeAt(0)) >>> 0; return h; };
-const PLATE = 'assets/sets/traitors/roundtable.webp';
+// THE STUDIO (tools/blender/traitors-reunion.py): a castle great hall dressed
+// as a studio, the cast on two curved velvet tiers, the host in a wingback
+// chair at the front. Head positions per seat, as fractions of the render,
+// front tier then back tier, left to right; and the host's chair.
+const PLATE = 'assets/sets/traitors/reunion.webp';
+const SEATS = [[0.1985, 0.6295, 0], [0.2547, 0.6138, 0], [0.3102, 0.6021, 0], [0.3651, 0.5938, 0], [0.4193, 0.5887, 0], [0.4731, 0.5863, 0], [0.5266, 0.5867, 0], [0.5803, 0.5897, 0], [0.6342, 0.5956, 0], [0.6885, 0.6047, 0], [0.7433, 0.6173, 0], [0.7983, 0.6343, 0], [0.1319, 0.5631, 1], [0.2055, 0.5496, 1], [0.2752, 0.5399, 1], [0.342, 0.5332, 1], [0.4067, 0.5291, 1], [0.4702, 0.5272, 1], [0.5333, 0.5275, 1], [0.5968, 0.5299, 1], [0.6615, 0.5347, 1], [0.7281, 0.5421, 1], [0.7977, 0.5526, 1], [0.8709, 0.5672, 1]];
+const HOST = [0.1121, 0.7067];
+function box(W, H) {
+  const k = Math.max(W / 1920, H / 1080), dw = 1920 * k, dh = 1080 * k, ox = (W - dw) / 2, oy = (H - dh) / 2;
+  return { dw, dh, x: f => ox + f * dw, y: f => oy + f * dh };
+}
 
 export function reunionStageScreen(ep, observer, pageHtml) {
   if (!(ep && ep.tr && ep.tr.reunion) || !pageHtml) return pageHtml;
@@ -34,12 +44,15 @@ export function reunionStageScreen(ep, observer, pageHtml) {
   return trsFold(stageShell(uid, '<div class="tru"></div><div class="trs-corner"></div><div class="trs-start"></div>', CARD_CSS + CSS), pageHtml);
 }
 
-// two curved rows, the back row higher and smaller
+// the cast on the sofas: spread over the seats (front tier first), each face
+// a little above where a seated head is, sized for its tier
 function seatOf(i, n, W, H) {
-  const back = n > 10 ? Math.ceil(n / 2) : n, row = i < back ? 0 : 1, k = row ? i - back : i, m = row ? n - back : back;
-  const t = m <= 1 ? .5 : k / (m - 1);
-  const x = W * (.12 + .76 * t), y = H * (row ? .6 : .44) + Math.sin(t * Math.PI) * H * -.05;
-  return { x, y, w: Math.min(H * (row ? .09 : .075), W * .7 / Math.max(6, m)) };
+  const b = box(W, H), front = SEATS.filter(s => s[2] === 0), back = SEATS.filter(s => s[2] === 1);
+  const nf = Math.min(front.length, Math.ceil(n / 2) + (n > 20 ? 1 : 0)), nb = n - nf;
+  const pick = (row, k, m) => row[Math.round((row.length - 1) * (m <= 1 ? .5 : k / (m - 1)))];
+  const s = i < nf ? pick(front, i, nf) : pick(back, i - nf, nb);
+  const w = b.dw * (s[2] === 0 ? .042 : .036);
+  return { x: b.x(s[0]), y: b.y(s[1]) - w * .2, w };
 }
 
 function paint(root, S, fresh) {
@@ -55,6 +68,10 @@ function paint(root, S, fresh) {
   const focus = speaker || m.focus || null;
   const traitors = new Set(R.traitors || []), takers = new Set(R.takers || []);
   let h = '<div class="tru-world"><img class="tru-plate" src="' + PLATE + '" alt="" draggable="false"><div class="tru-shade"></div>';
+  // the host, in the wingback
+  { const b = box(W, H), w = b.dw * .05, hostSpeaking = st && st.t === 'host';
+    h += `<div class="tru-p tru-host${hostSpeaking ? ' tru-speak' : (speaker ? ' tru-quiet' : '')}" style="left:${b.x(HOST[0])}px;top:${b.y(HOST[1]) - w * .2}px;width:${w}px;z-index:${hostSpeaking ? 50 : 12}">`
+      + `<div class="tru-av">${S.data.host && S.data.host.slug ? face(S.data.host.name, S.data.host.slug) : ''}</div><div class="tru-nm">${esc((S.data.host || {}).name || 'The host')}</div></div>`; }
   R.cast.forEach((n, i) => {
     const p = seatOf(i, R.cast.length, W, H);
     const cls = ['tru-p', n === speaker ? 'tru-speak' : (speaker ? 'tru-quiet' : ''), n === focus && !speaker ? 'tru-lit' : '',
@@ -84,8 +101,9 @@ function paint(root, S, fresh) {
 const CSS = `
 .tru{position:absolute;inset:0;overflow:hidden;background:#06050a}
 .tru-world{position:absolute;inset:0}
-.tru-plate{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.7) saturate(.9)}
-.tru-shade{position:absolute;inset:0;background:radial-gradient(70% 60% at 50% 45%,rgba(0,0,0,.05),rgba(0,0,0,.6))}
+.tru-plate{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.tru-shade{position:absolute;inset:0;background:radial-gradient(80% 70% at 50% 50%,transparent,rgba(0,0,0,.45));pointer-events:none}
+.tru-p.tru-host .tru-av{box-shadow:0 0 0 2px #c9a24a,0 8px 18px rgba(0,0,0,.85)}
 .tru-p{position:absolute;transform:translate(-50%,-50%);text-align:center;transition:filter .45s,transform .45s}
 .tru-av{position:relative;width:100%;aspect-ratio:1/1.12;overflow:hidden;border-radius:50% 50% 12% 12%/44% 44% 9% 9%;background:#0b0e14;
   box-shadow:0 0 0 2px rgba(222,214,196,.3),0 8px 18px rgba(0,0,0,.85)}

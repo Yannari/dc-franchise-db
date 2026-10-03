@@ -1429,7 +1429,12 @@ export function renderEpisodeHistory() {
           ? `<button class="ep-hist-replay" title="Re-run this episode" onclick="event.stopPropagation();replayEpisode(${ep.num})">↺</button>` : ''}</div>
         <div class="ep-hist-elim">${gone}</div>
         <div>${_spoilerFree ? '' : _traitorsBadges(ep)}</div>
-      </div>`;
+      </div>`
+        // AND AFTER THE FINALE, THE REUNION: an episode of its own in the viewer
+        + (ep.tr && ep.tr.reunion
+          ? `<div class="ep-hist-reunion" onclick="openVisualPlayer('reunion-${ep.num}')" style="cursor:pointer;padding:10px 12px;border:1px solid rgba(232,194,112,.45);background:rgba(232,194,112,.08);border-radius:6px">
+        <div class="ep-hist-ep">The Reunion</div>
+        <div class="ep-hist-elim">Everybody back, nothing left to hide</div></div>` : '');
     }
     const riTag = ep.riChoice==='REDEMPTION ISLAND' ? `<span class="ep-hist-tag" style="background:rgba(249,115,22,0.15);color:#f97316">RI</span>` : ep.riChoice==='WENT HOME' ? `<span class="ep-hist-tag" style="background:rgba(148,163,184,0.1);color:var(--muted)">Home</span>` : '';
     const mergeTag = ep.isMerge ? `<span class="ep-hist-tag" style="background:rgba(16,185,129,0.15);color:var(--accent)">MERGE</span>` : '';

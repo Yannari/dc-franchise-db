@@ -3944,7 +3944,11 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     // Day Book read it to know which episode ended the season.
     _finaleRow.tr.finale = true;
     finaleEpisode = Number(_finaleRow.num);
-    // AND THEN, EVERYBODY BACK IN ONE ROOM (js/vp-tr/reunion.js)
+    // AND THEN, EVERYBODY BACK IN ONE ROOM (js/vp-tr/reunion.js). Carried on
+    // the finale row and AIRED AS ITS OWN EPISODE by the viewer (the user,
+    // 2026-10-03: "the reunion deserve its own episode"): a row of its own in
+    // the season's history would be a game episode to every reader that counts
+    // them, which it is not.
     _finaleRow.tr.reunion = _reunionRecord(_finaleRow.tr.endgame, _rows);
     const [_banishVerb] = exitVerbs(TRAITORS_FORMAT);
     for (const r of endgame.rounds || []) {

@@ -300,8 +300,8 @@ export const TRAITORS_SCREENS = [
       when: r => !!(r.tr && r.tr.endgame && (r.tr.endgame.asks || [])[n]),
       build: (r, o) => endgameStageScreen(r, o, rpBuildEndgame(r, o, 'fire:' + n), 'fire:' + n),
       revealAll: trEndgameRevealAll, revealAllName: 'trEndgameRevealAll' },
-    { id: 'tr-endgame-table-' + n, label: 'The Last Round Table' + (n ? ' · ' + (n + 1) : ''), suffix: 'roundtable',
-      badge: n ? undefined : { text: 'Last Table', color: '#b91c3c' },
+    { id: 'tr-endgame-table-' + n, label: 'The Vote At The Fire' + (n ? ' · ' + (n + 1) : ''), suffix: 'roundtable',
+      badge: n ? undefined : { text: 'The Vote', color: '#b91c3c' },
       when: r => !!(r.tr && r.tr.endgame && ((r.tr.endgame.tables || [])[n] || {}).record),
       build: (r, o) => {
         const t = r.tr.endgame.tables[n];
@@ -318,7 +318,8 @@ export const TRAITORS_SCREENS = [
   // AND THEN EVERYBODY COMES BACK (2026-10-03): the season's last screen
   { id: 'tr-reunion', label: 'The Reunion', suffix: 'reunion',
     badge: { text: 'Reunion', color: '#e8c270' },
-    when: r => !!(r.tr && r.tr.reunion && (r.tr.reunion.cast || []).length),
+    // only on the reunion's own episode (js/vp-ui.js `_reunionEpisode`)
+    when: r => !!(r.tr && r.tr.reunionEpisode && r.tr.reunion && (r.tr.reunion.cast || []).length),
     build: (r, o) => reunionStageScreen(r, o, rpBuildReunion(r)) },
 ];
 

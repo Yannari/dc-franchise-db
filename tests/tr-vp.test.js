@@ -3882,13 +3882,29 @@ describe('the endgame is reachable from a played season', () => {
     expect(refused, 'every season was one episode long').toBeGreaterThan(40);
   });
 
+  it('and the reunion is an episode of its own after it, with only the reunion on it', () => {
+    let built = 0;
+    for (const r of END_RUNS.slice(0, 4)) {
+      const fin = r.episodes[r.episodes.length - 1];
+      expect(fin.tr.reunion, 'the finale row carries no reunion').toBeTruthy();
+      expect(buildVPScreens(fin).some(x => x.id === 'tr-reunion'), 'the reunion is a screen of the finale').toBe(false);
+      // the episode the viewer airs it as (js/vp-ui.js `_reunionEpisode`)
+      const rep = { num: 'reunion-' + fin.num, format: 'traitors', exits: [],
+        tr: { reunion: fin.tr.reunion, reunionEpisode: true, ep: (fin.tr.ep || fin.num) + 1 } };
+      const ids = buildVPScreens(rep).map(x => x.id);
+      expect(ids, 'the reunion episode airs something other than the reunion').toEqual(['tr-reunion']);
+      const html = buildVPScreens(rep)[0].html;
+      expect(strip(html).length, 'the reunion rendered nothing').toBeGreaterThan(400);
+      built++;
+    }
+    expect(built).toBeGreaterThan(0);
+  });
+
   it('and it is the last screen of the last episode', () => {
     const r = END_RUNS[0];
     const ids = buildVPScreens(r.episodes[r.episodes.length - 1]).map(x => x.id);
-    // the reunion follows it (2026-10-03): the endgame is the last of the game
-    expect(ids[ids.length - 1], 'the reunion is not the end of the season')
-      .toBe('tr-reunion');
-    expect(ids[ids.length - 2], 'the endgame is not the end of the game')
+    // (the reunion is its own episode in the viewer, not a screen of this one)
+    expect(ids[ids.length - 1], 'the endgame is not the end of the episode')
       .toBe('tr-endgame');
   });
 });
@@ -4225,7 +4241,8 @@ describe('the transcript retranscribes every screen the night produced', () => {
     }
     // the second-and-later fires and tables only exist in a long finale: the
     // first of each is a kind every sample must reach, the rest are slots
-    const SLOT = /^tr-endgame-(fire|table)-[1-7]$/;
+    // (the reunion is aired as its own episode by the viewer, and has its own arm below)
+    const SLOT = /^tr-endgame-(fire|table)-[1-7]$|^tr-reunion$/;
     expect([...kinds].filter(id => !SLOT.test(id)).sort(), 'a screen kind never appeared in the sample')
       .toEqual(TRAITORS_SCREENS.map(s => s.id).filter(id => !SLOT.test(id)).sort());
   });
@@ -4522,7 +4539,7 @@ describe('every castle screen a season produces is reachable from buildVPScreens
     }
     expect(rows, 'no season was played').toBeGreaterThan(20);
     // Every registered screen appeared, or the sweep above never exercised it.
-    const SLOT = /^tr-endgame-(fire|table)-[1-7]$/;
+    const SLOT = /^tr-endgame-(fire|table)-[1-7]$|^tr-reunion$/;
     for (const s of TRAITORS_SCREENS) {
       if (SLOT.test(s.id)) continue;
       expect(seen.get(s.id) || 0, `${s.id} was never reached by any night of any season`)

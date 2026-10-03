@@ -16,7 +16,7 @@ import { isBespokeMissionRec } from './mission-bespoke.js';
 import { trsStageShell as stageShell, trsFold, trsReg as reg, trsEsc as esc, trsFace as face, trsLater as later } from './castle-stage.js';
 import { trPlay } from './sfx.js';
 import { beatLines } from './stage-lines.js';
-import { footCard, playCard, CARD_CSS } from './stage-cards.js';
+import { footCard, playCard, CARD_CSS, relicReveal, relicBadge } from './stage-cards.js';
 
 const hash = s => { let h = 7; for (const c of String(s)) h = (Math.imul(h, 31) + c.charCodeAt(0)) >>> 0; return h; };
 const clean = s => String(s || '').replace(/\s+/g, ' ').trim();
@@ -37,8 +37,10 @@ function parse(data) {
       const known = holder && !/did not see/i.test(holder) ? holder : null;
       const notes = [...n.querySelectorAll('.mi-relic-note')].map(x => clean(x.textContent)).filter(Boolean);
       const tag = clean(n.querySelector('.mi-relic-k')?.textContent);
+      // what the stage needs to SHOW it: which relic, whether it came back, whose it is (when seen)
+      const relic = { kind: n.dataset.kind || 'shield', awarded: n.dataset.awarded === '1', holder: n.dataset.known === '1' ? known : null };
       return (notes.length ? notes : [holder || tag]).map((t, i) => ({ t: 'narr', tag: i ? null : tag,
-        who: known, react: !!known, text: t }));
+        who: known, react: !!known, text: t, relic, relicFirst: i === 0 }));
     }
     return null;
   };
@@ -78,6 +80,9 @@ function paint(root, S, fresh) {
   const teamsShown = seen.some(s => (s.meta || {}).kind === 'field');
   const counted = seen.some(s => s.t === 'count');
   const extras = seen.filter(s => s.t === 'extra');
+  // the relic, once the page has reached it: who wears it from here on
+  const relicAt = seen.find(s => s.relic);
+  const wearer = relicAt && relicAt.relic.awarded ? relicAt.relic.holder : null;
   // THE FIELD IS A RENDER (tools/blender/traitors-field.py): teams stand on the
   // grass at .53/.65, the chest between them, the horizon at about .31
   let h = '<img class="trs-plate" src="assets/sets/traitors/field.webp" alt="">';
@@ -95,8 +100,9 @@ function paint(root, S, fresh) {
         const y = H * (.53 + row * .12);
         const ex = extras.find(e => e.who === m);
         const speaking = st && (st.who === m);
-        h += `<div class="trm-p${speaking ? ' trm-speak' : (st && st.who ? ' trm-quiet' : '')}${!teamsShown ? ' trm-ghost' : ''}" style="left:${x}px;top:${y}px;width:${pw}px">`
+        h += `<div class="trm-p${speaking ? ' trm-speak' : (st && st.who ? ' trm-quiet' : '')}${!teamsShown ? ' trm-ghost' : ''}${wearer === m ? ' trs-relic-holder' : ''}" style="left:${x}px;top:${y}px;width:${pw}px">`
           + `<div class="trm-av">${face(m)}</div><div class="trm-nm">${esc(m)}</div>`
+          + (wearer === m ? relicBadge(relicAt.relic.kind) : '')
           + (ex ? `<div class="trm-bonus${ex.won ? '' : ' trm-none'}${fresh && st === ex ? ' trm-pop' : ''}">${esc(ex.money)}</div>` : '')
           + '</div>';
       });
@@ -121,6 +127,8 @@ function paint(root, S, fresh) {
     return;
   }
   start.classList.remove('trs-in');
+  // THE RELIC RISES while the page is on it
+  if (st.relic) h += relicReveal(st.relic, fresh && st.relicFirst);
   const card = st.t === 'extra' ? { t: 'narr', react: true, who: st.who, text: st.text, tag: st.won ? 'Done — ' + st.money : 'Not done' } : st;
   h += st.t === 'count' ? '' : footCard(card, D.host);
   el.innerHTML = h;

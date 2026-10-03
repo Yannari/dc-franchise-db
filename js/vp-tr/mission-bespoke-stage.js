@@ -15,7 +15,7 @@
 // Like every other file in this directory it imports no engine state.
 import { bespokeStageData, isBespokeMissionRec } from './mission-bespoke.js';
 import { trsStageShell as stageShell, trsFold, trsReg as reg, trsEsc as esc, trsFace as face } from './castle-stage.js';
-import { footCard, playCard, CARD_CSS } from './stage-cards.js';
+import { footCard, playCard, CARD_CSS, relicReveal, relicBadge } from './stage-cards.js';
 import { confessional } from './stage-cutin.js';
 import { trPlay } from './sfx.js';
 
@@ -46,7 +46,8 @@ function stepsOf(v) {
     if ((ph.teams || []).length) out.push({ t: 'score', ph, k: 'score' });
   });
   if (v.shield && Array.isArray(v.shield.lines)) {
-    v.shield.lines.forEach((l, i) => out.push({ t: 'narr', tag: i ? null : 'The shield', text: l, who: v.shield.holder || null, k: 'shield' }));
+    const relic = { kind: v.shield.kind || 'shield', awarded: v.shield.awarded != null ? !!v.shield.awarded : !!v.shield.holder, holder: v.shield.holder || null };
+    v.shield.lines.forEach((l, i) => out.push({ t: 'narr', tag: i ? null : 'The shield', text: l, who: v.shield.holder || null, k: 'shield', relic, relicFirst: i === 0 }));
   }
   out.push({ t: 'money', k: 'money' });
   if (v.summary) out.push({ t: 'narr', tag: 'The afternoon', text: v.summary, k: 'end' });
@@ -102,6 +103,9 @@ function paint(root, S, fresh) {
   for (let k = 0; k <= S.idx; k++) { const x = S.steps[k]; if (x.k === 'beat' && x.who) tone[x.who] = x.tone; }
   const paid = st && S.steps.slice(0, S.idx + 1).some(x => x.t === 'money');
   const lit = new Set(st ? [st.who, st.to, ...(st.whoList || [])].filter(Boolean) : []);
+  // the relic, once reached: who wears it from here on
+  const relicAt = S.steps.slice(0, S.idx + 1).find(x => x.relic);
+  const wearer = relicAt && relicAt.relic.awarded ? relicAt.relic.holder : null;
   let h = '<div class="trq-world">' + (S.data.scene ? `<div class="trq-floor"></div><section class="${S.data.sceneCls === 'fx' ? 'fx' : 'ms'} trq-ms" data-phase="rest" data-scene="proc">${S.data.scene}</section>` : '<img class="trs-plate" src="assets/sets/traitors/field.webp" alt="">')
     + '<div class="trq-shade"></div>';
   teams.forEach(t => {
@@ -112,7 +116,8 @@ function paint(root, S, fresh) {
     const p = pos[name];
     const cls = ['trq-p', lit.has(name) ? 'trq-lit' : (lit.size ? 'trq-dim' : ''), tone[name] ? 'trq-' + tone[name] : '',
       st && st.k === 'beat' && st.who === name && fresh ? 'trq-now' : ''].join(' ');
-    h += `<div class="${cls}" style="left:${p.x}px;top:${p.y}px;width:${p.s}px"><div class="trq-av">${face(name)}</div><div class="trq-nm" data-n="${esc(name)}"></div></div>`;
+    h += `<div class="${cls}${wearer === name ? ' trs-relic-holder' : ''}" style="left:${p.x}px;top:${p.y}px;width:${p.s}px"><div class="trq-av">${face(name)}</div><div class="trq-nm" data-n="${esc(name)}"></div>`
+      + (wearer === name ? relicBadge(relicAt.relic.kind) : '') + '</div>';
   }
   h += '</div>';
   // THE PLAYER, BROUGHT FORWARD for their beat: large, lit for how it went
@@ -138,6 +143,8 @@ function paint(root, S, fresh) {
       + (fresh ? '<div class="trq-coins">' + Array.from({ length: 22 }, (_, i) => `<i style="left:${(hash('c' + i) % 100)}%;animation-delay:${(i * .07).toFixed(2)}s"></i>`).join('') + '</div>' : '') + '</div>';
   }
   if (S.idx === 0 && fresh && S.data.title) h += `<div class="trq-title">${S.data.title}</div>`;
+  // THE RELIC RISES while the page is on it
+  if (st && st.relic) h += relicReveal(st.relic, fresh && st.relicFirst);
   // CONFESSIONAL: cut away to the chair
   if (st && st.t === 'cam') h += confessional({ who: st.who, fresh });
   const start = root.querySelector('.trs-start');

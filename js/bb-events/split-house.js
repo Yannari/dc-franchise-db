@@ -19,16 +19,10 @@
 // Nominations, competitions, votes, evictions: never. Anything that leaks the
 // other half's week is the twist undoing itself.
 import { gs } from '../core.js';
-import { pronouns } from '../players.js';
 import { pStats, band, perceived, closestTo, furthestFrom } from './_read.js';
-import { freshLine } from '../bb/aired.js';
+import { makeScene } from '../bb/script/scene.js';
+import { numberWord } from '../bb/script/inject.js';
 
-function _variant(list, ctx, ...salt) {
-  const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${ctx?.act || ''}|${salt.join('|')}`;
-  let hash = 0;
-  for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
-  return freshLine(list, hash, ctx);
-}
 const _others = (house, ...exclude) => house.filter(n => n && !exclude.includes(n));
 
 /** This side, or null when the house is whole. */
@@ -149,17 +143,11 @@ const pickedLast = {
     const cast = _pickCast(house, ctx);
     if (!cast) return null;
     const { picked, by } = cast;
-    const p = pronouns(picked);
-    const text = _variant([
-      `${picked} was the last name called, and everybody standing in that room heard the order. ${p.Sub} ${p.sub === 'they' ? 'say' : 'says'} it does not matter before anybody asks, which is how the room knows it does.`,
-      `Being picked last is a fact with a number attached, and ${picked} has the number. ${by} chose everybody else first and now has to live in a very small house with the evidence.`,
-      `${picked} laughs about going last. The laugh is fine. The look at ${by} immediately afterwards is the part worth watching.`,
-      `Nobody says anything about the order the sides were picked in, which is how ${picked} knows everybody else remembers it too.`,
-    ], ctx, picked, by);
+    const scene = makeScene('split.picked', { a: picked, b: by }, { ending: 'scene' }, [], 'living-room');
     api.addBond(picked, by, -0.7);
     api.suspicion(picked, by, 0.6);
     try { api.remember(picked, by, 'picked-me-last', 1, { twist: 'bb-split-house' }); } catch { /* texture */ }
-    return { text, players: [picked, by], badgeText: 'LAST NAME CALLED', badgeClass: 'red' };
+    return { scene, players: [picked, by], badgeText: 'LAST NAME CALLED', badgeClass: 'red' };
   },
 };
 
@@ -175,27 +163,16 @@ const missingAlly = {
     const cast = _missingCast(house, ctx);
     if (!cast) return null;
     const { name, gone } = cast;
-    const p = pronouns(name);
     const confidant = closestTo(name, _others(house, name));
     // Early splits happen between people who were only starting something;
     // later ones cut through a real alliance. The line has to fit both.
     const deep = (cast.score || 0) >= 2.5;
-    const text = deep ? _variant([
-      `${name} keeps starting sentences that were meant for ${gone} and finishing them at whoever is nearest. The person ${p.sub} ${p.sub === 'they' ? 'need' : 'needs'} to talk to this week is on the other side of a wall.`,
-      `Every plan ${name} has made in this house had ${gone} in it. ${p.Sub} ${p.sub === 'they' ? 'have' : 'has'} five days and none of them do.`,
-      `${name} does the count on this side twice, hoping it comes out differently. ${gone} is still not on it.`,
-      `"I don't have a single person in here." ${name} says it to ${confidant || 'the ceiling'}, forgetting for a second that ${confidant || 'whoever is listening'} is a person in here, which is exactly the problem ${gone} would have pointed out.`,
-    ], ctx, name, gone) : _variant([
-      `${name} had spent three days building something with ${gone} and gets to spend this week finding out whether three days was enough to survive not speaking.`,
-      `The one person ${name} had started to trust walked out with the other side. ${p.Sub} ${p.sub === 'they' ? 'have' : 'has'} to start again, in here, from nothing, with ${house.length - 1} strangers.`,
-      `${name} watches ${gone} leave with the other half and does the maths on how much of a game ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} left in this room. It is not a long calculation.`,
-      `${name} is not friendless in here so much as unfinished — everything ${p.sub} ${p.sub === 'they' ? 'were' : 'was'} in the middle of is on the wrong side of a wall.`,
-    ], ctx, name, gone);
+    const scene = makeScene('split.missing', { a: name, b: confidant || null }, { ending: deep ? 'deep' : 'unfinished', intent: confidant ? 'told' : 'alone', gone }, [], 'bedroom');
     // A week apart is a week of not being protected, and it shows when the
     // wall comes down.
     api.addBond(name, gone, -0.2);
     if (confidant) api.addBond(name, confidant, 0.3);
-    return { text, players: [name, confidant].filter(Boolean),
+    return { scene, players: [name, confidant].filter(Boolean),
       badgeText: 'ON THE OTHER SIDE', badgeClass: 'blue' };
   },
 };
@@ -212,16 +189,10 @@ const smallRoom = {
     const cast = _smallRoomCast(house, ctx);
     if (!cast) return null;
     const { talker, quiet } = cast;
-    const p = pronouns(quiet);
-    const text = _variant([
-      `There is nowhere in this half of the house to have a conversation that is not the whole house having it. ${talker} tries anyway. ${quiet} can hear every word from the next room and does not pretend otherwise.`,
-      `${house.length} people, four rooms, and no such thing as a private word. ${talker} has started talking in a whisper that carries further than ${p.posAdj} normal voice.`,
-      `Whatever gets said on this side gets said in front of everybody on this side, which means every alliance here is public and every one of them knows it.`,
-      `${quiet} has stopped leaving the room when people talk strategy, because leaving the room in a house this size is itself a statement.`,
-    ], ctx, talker, quiet);
+    const scene = makeScene('split.small', { a: talker, b: quiet }, { ending: 'scene', size: numberWord(house.length) }, [], 'living-room');
     api.suspicion(quiet, talker, 0.4);
     api.addBond(talker, quiet, -0.2);
-    return { text, players: [talker, quiet], badgeText: 'NO ROOM TO WHISPER', badgeClass: 'grey' };
+    return { scene, players: [talker, quiet], badgeText: 'NO ROOM TO WHISPER', badgeClass: 'grey' };
   },
 };
 
@@ -237,15 +208,9 @@ const throughTheWall = {
     const cast = _wallCast(house, ctx);
     if (!cast) return null;
     const { listener, away } = cast;
-    const p = pronouns(listener);
     const named = away.slice(0, 2).join(' or ');
-    const text = _variant([
-      `Something happens on the other side loud enough to come through the wall — a horn, and then shouting, and then nothing. ${listener} stands under the vent for a while and learns precisely nothing.`,
-      `${listener} has worked out that ${p.sub} can hear the other side's doors, and has started timing them. Doors are not information. ${p.Sub} ${p.sub === 'they' ? 'listen' : 'listens'} anyway.`,
-      `A cheer goes up somewhere behind the wall. It could be ${named}. It could be anybody. This side spends twenty minutes deciding what it means and gets nowhere, because there is nowhere to get.`,
-      `Whatever the other half just did, they did it loudly. ${listener} tells the room ${p.sub} ${p.sub === 'they' ? 'think' : 'thinks'} it was a competition. That is a guess wearing a fact's coat, and the room takes it as one.`,
-    ], ctx, listener, named);
-    return { text, players: [listener], badgeText: 'THROUGH THE WALL', badgeClass: 'grey' };
+    const scene = makeScene('split.wall', { a: listener, b: null }, { ending: 'scene', named }, [], 'living-room');
+    return { scene, players: [listener], badgeText: 'THROUGH THE WALL', badgeClass: 'grey' };
   },
 };
 
@@ -261,15 +226,10 @@ const oddCouple = {
     const cast = _oddCoupleCast(house, ctx);
     if (!cast) return null;
     const { a, b } = cast;
-    const text = _variant([
-      `${a} and ${b} would not have said four words to each other with a full house to choose from. There is no full house this week, so they say considerably more than four, and by the end of it they have something that will still exist when the wall comes down.`,
-      `Necessity does what charm never managed: ${a} sits down with ${b}, and neither of them mentions that this is the first real conversation they have had.`,
-      `${a} counts the people on this side, works out that a majority of ${house.length} needs ${b} in it, and goes and gets ${b}. It is not friendship. It works like one for now.`,
-      `${b} agrees to something with ${a} that ${b} would have laughed at last week, and both of them know exactly why the offer got made.`,
-    ], ctx, a, b);
+    const scene = makeScene('split.odd', { a, b }, { ending: 'scene' }, [], 'backyard');
     api.addBond(a, b, 1.1);
     try { api.remember(b, a, 'worked-with-me-when-nobody-else-was-there', 1, { twist: 'bb-split-house' }); } catch { /* texture */ }
-    return { text, players: [a, b], badgeText: 'NOBODY ELSE TO ASK', badgeClass: 'gold' };
+    return { scene, players: [a, b], badgeText: 'NOBODY ELSE TO ASK', badgeClass: 'gold' };
   },
 };
 
@@ -285,15 +245,9 @@ const rehearsingReunion = {
     const cast = _reunionCast(house, ctx);
     if (!cast) return null;
     const { planner, target } = cast;
-    const p = pronouns(planner);
-    const text = _variant([
-      `${planner} is not playing this week so much as writing the first five minutes of next week: what gets said when the wall comes down, in what order, and to whom.`,
-      `"When we're all back in, nobody on this side says a word about what happened in here." ${planner} proposes it as loyalty. It is a story, and ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} just made everybody a character in it.`,
-      `${planner} has already decided what to tell ${target} about this week, and has started arranging events so the story will be almost true.`,
-      `The wall comes down eventually and everybody has to explain themselves. ${planner} intends to explain first, which ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} correctly identified as most of the advantage.`,
-    ], ctx, planner, target);
+    const scene = makeScene('split.reunion', { a: planner, b: null }, { ending: 'scene', target }, [], 'bedroom');
     api.popDelta(planner, 0.5);
-    return { text, players: [planner], badgeText: 'WRITING THE STORY', badgeClass: 'blue' };
+    return { scene, players: [planner], badgeText: 'WRITING THE STORY', badgeClass: 'blue' };
   },
 };
 
@@ -311,18 +265,10 @@ const comparingWeeks = {
     const { asker, teller } = cast;
     // Whoever is best at this gets to decide what last week was.
     const spun = pStats(teller).strategic >= 6 && pStats(asker).intuition < 7;
-    const text = spun ? _variant([
-      `${asker} asks ${teller} what happened on the other side. ${teller} gives a clean account with every name and decision in place, then redirects each follow-up to a detail that makes ${pronouns(teller).obj} look better.`,
-      `${teller} tells this half of the house about last week in the order that suits ${pronouns(teller).obj} best. Every fact in it is true. The sentence they add up to is not.`,
-      `"You had to be there." ${teller} says it about four different moments, and each time it closes a question ${asker} was halfway through asking.`,
-    ], ctx, asker, teller) : _variant([
-      `${asker} pushes ${teller} on the other side's week and catches a gap — a name that comes up twice and gets explained differently both times.`,
-      `The two halves compare notes and the notes do not match. Nobody can prove which version is wrong, which is somehow worse than knowing.`,
-      `${asker} listens to ${teller}'s account, then asks the same two questions in reverse order. One answer changes. ${asker} does not challenge it yet.`,
-    ], ctx, asker, teller);
+    const scene = makeScene('split.compare', { a: asker, b: teller }, { ending: spun ? 'spun' : 'caught' }, [], 'kitchen');
     api.suspicion(asker, teller, spun ? 0.4 : 1.3);
     if (!spun) api.addBond(asker, teller, -0.4);
-    return { text, players: [asker, teller],
+    return { scene, players: [asker, teller],
       badgeText: spun ? 'THE OFFICIAL VERSION' : 'THE STORIES DO NOT MATCH',
       badgeClass: spun ? 'gold' : 'red' };
   },

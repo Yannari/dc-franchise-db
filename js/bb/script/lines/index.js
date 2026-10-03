@@ -14,6 +14,7 @@ import BLOC from './bloc.js';
 import VENUE from './venue.js';
 import FALLOUT from './fallout.js';
 import BOND from './bond.js';
+import REIGN from './reign.js';
 
-export const POOLS = { ...FRICTION, ...CEREMONY, ...TALK, ...SOCIAL, ...DEALS, ...ALLIANCE, ...CAMPAIGN, ...POWER, ...LIFE, ...PHASE, ...BLOC, ...VENUE, ...FALLOUT, ...BOND };
+export const POOLS = { ...FRICTION, ...CEREMONY, ...TALK, ...SOCIAL, ...DEALS, ...ALLIANCE, ...CAMPAIGN, ...POWER, ...LIFE, ...PHASE, ...BLOC, ...VENUE, ...FALLOUT, ...BOND, ...REIGN };
 export const POOL_KEYS = Object.keys(POOLS);

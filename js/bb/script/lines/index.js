@@ -12,6 +12,7 @@ import LIFE from './life.js';
 import PHASE from './phase.js';
 import BLOC from './bloc.js';
 import VENUE from './venue.js';
+import FALLOUT from './fallout.js';
 
-export const POOLS = { ...FRICTION, ...CEREMONY, ...TALK, ...SOCIAL, ...DEALS, ...ALLIANCE, ...CAMPAIGN, ...POWER, ...LIFE, ...PHASE, ...BLOC, ...VENUE };
+export const POOLS = { ...FRICTION, ...CEREMONY, ...TALK, ...SOCIAL, ...DEALS, ...ALLIANCE, ...CAMPAIGN, ...POWER, ...LIFE, ...PHASE, ...BLOC, ...VENUE, ...FALLOUT };
 export const POOL_KEYS = Object.keys(POOLS);

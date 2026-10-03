@@ -25,7 +25,6 @@ import { gs } from '../core.js';
 import {
   pStats, band, perceived, furthestFrom, closestTo, isVillainous,
 } from './_read.js';
-import { freshLine } from '../bb/aired.js';
 import { makeScene } from '../bb/script/scene.js';
 
 function _pick(list, ctx, ...salt) {
@@ -33,7 +32,7 @@ function _pick(list, ctx, ...salt) {
   const key = `${ctx?.week?.num || 0}|${salt.join('|')}`;
   let hash = 0;
   for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
-  return freshLine(list, hash, ctx);
+  return list[hash % list.length];
 }
 
 const _others = (house, ...exclude) => house.filter(n => n && !exclude.includes(n));

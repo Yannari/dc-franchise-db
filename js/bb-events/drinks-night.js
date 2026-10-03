@@ -25,19 +25,12 @@
 // event is cosmetic: bonds move, things get remembered, and somebody wakes up
 // having told a person something they cannot take back.
 import { gs } from '../core.js';
-import { pronouns } from '../players.js';
 import {
   pStats, bond, band, closestTo, trusts, dislikes, sharesAlliance,
   grudge, resentmentOf, isVillainous, spotlightOrder,
 } from './_read.js';
-import { freshLine } from '../bb/aired.js';
+import { makeScene } from '../bb/script/scene.js';
 
-function _variant(list, ctx, ...salt) {
-  const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${ctx?.act || ''}|${salt.join('|')}`;
-  let hash = 0;
-  for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
-  return freshLine(list, hash, ctx);
-}
 
 /**
  * Is tonight the night?
@@ -155,14 +148,8 @@ const drinksNight = {
     // the single most useful thing they do all week.
     const sober = pool.slice().sort((a, b) => _looseness(a) - _looseness(b))[0];
     const loudest = pool.slice().sort((a, b) => _looseness(b) - _looseness(a))[0];
-    const p = pronouns(sober);
 
-    const text = _variant([
-      `The storage room door opens on a case of beer and a bottle of wine for the whole house, and the night changes shape around it. ${loudest} is three drinks in before anybody else has finished one. ${sober} pours a glass, holds it, and does not drink it.`,
-      `Alcohol arrives. It is never enough for everybody and everybody knows the arithmetic, so the first ten minutes are elaborately polite and the next hour is not. ${sober} watches ${loudest} get loud and files it.`,
-      `It is the one night a week the house is allowed to stop being careful, and it takes about forty minutes for the carefulness to go. ${loudest} is the first to say something ${p.sub} would not have said at noon. ${sober} is still on the first glass at midnight.`,
-      `The bottle comes out. Somebody makes a toast that is meant to be funny and lands as sincere, and the room goes quiet for a second before deciding to laugh. ${sober} laughs a beat late, because ${p.sub} ${p.sub === 'they' ? 'were' : 'was'} watching who did not.`,
-    ], ctx, sober, loudest);
+    const scene = makeScene('drinks.open', { a: sober, b: loudest !== sober ? loudest : null }, { ending: 'scene' }, house, 'kitchen');
 
     // Everybody who let their guard down ends the night a little closer to
     // everybody else who did. It is small and it is real, and it is why houses
@@ -183,7 +170,7 @@ const drinksNight = {
     api.popDelta(loudest, 1);
 
     return {
-      text, players: [sober, loudest].filter(Boolean),
+      scene, players: [sober, loudest].filter(Boolean),
       badgeText: 'THE HOUSE GETS ALCOHOL', badgeClass: 'gold',
     };
   },
@@ -206,15 +193,9 @@ const drunkConfession = {
   },
   fire(house, ctx, api) {
     const { teller, listener } = _confessPair(house, ctx);
-    const p = pronouns(teller);
     const close = bond(teller, listener) >= 3;
 
-    const text = _variant([
-      `${teller} tells ${listener} something ${p.sub} had decided at the start of the week not to tell anybody. It is not a lie and it is not a strategy, which is what makes it dangerous.`,
-      `Halfway through a conversation about nothing, ${teller} says the quiet part: who ${p.sub} actually ${p.sub === 'they' ? 'trust' : 'trusts'}, and who ${p.sub} ${p.sub === 'they' ? 'do' : 'does'} not. ${listener} does not have to ask a single question.`,
-      `"Can I tell you something?" ${teller} asks, and ${listener} says yes, and what follows is the most honest ninety seconds either of them has had in this house.`,
-      `${teller} means to say one small thing to ${listener} and says four large ones. ${p.Sub} ${p.sub === 'they' ? 'know' : 'knows'} it while it is happening and ${p.sub === 'they' ? 'keep' : 'keeps'} going anyway.`,
-    ], ctx, teller, listener);
+    const scene = makeScene('drinks.confess', { a: teller, b: listener }, { ending: close ? 'close' : 'wrong' }, [], 'backyard');
 
     // Told is told. The listener knows it in the morning whatever the teller
     // remembers, which is the whole reason this event exists.
@@ -226,7 +207,7 @@ const drunkConfession = {
     }
 
     return {
-      text, players: [teller, listener],
+      scene, players: [teller, listener],
       badgeText: close ? 'SAID OUT LOUD' : 'TOLD THE WRONG PERSON',
       badgeClass: close ? 'blue' : 'red',
     };
@@ -266,15 +247,9 @@ const drunkGrievance = {
   },
   fire(house, ctx, api) {
     const { angry, at, heat } = _grievancePair(house, ctx);
-    const p = pronouns(angry);
     const witnesses = _live(house, ctx).filter(n => n !== angry && n !== at).slice(0, 3);
 
-    const text = _variant([
-      `${angry} has been carrying this since the ceremony and tonight there is nothing in the way of it. It comes out in the kitchen, at volume, in front of everybody.`,
-      `It starts as a joke about ${at} and stops being a joke in the middle of the sentence. ${angry} does not walk it back. Nobody in the room pretends not to have heard.`,
-      `${angry} asks ${at} the question ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} been not-asking for a week, and asks it the way ${p.sub} actually ${p.sub === 'they' ? 'mean' : 'means'} it.`,
-      `Four days of being fine about it end in about nine seconds. ${at} says ${angry} is drunk. ${angry} says that is not a denial.`,
-    ], ctx, angry, at);
+    const scene = makeScene('drinks.grievance', { a: angry, b: at, c: witnesses[0] || null }, { ending: 'scene' }, house, 'kitchen');
 
     api.addBond(angry, at, -(1.4 + heat * 0.2));
     api.remember(at, angry, 'came-at-me-in-public', 3, { about: 'the night the house drank' });
@@ -287,7 +262,7 @@ const drunkGrievance = {
     api.popDelta(angry, isVillainous(angry) ? 1 : -1);
 
     return {
-      text, players: [angry, at, ...witnesses].filter(Boolean),
+      scene, players: [angry, at, ...witnesses].filter(Boolean),
       badgeText: 'IT COMES OUT', badgeClass: 'red',
     };
   },
@@ -341,15 +316,9 @@ const stayedSharp = {
   fire(house, ctx, api) {
     const pool = _live(house, ctx);
     const sober = pool.slice().sort((a, b) => _looseness(a) - _looseness(b))[0];
-    const p = pronouns(sober);
     const loose = pool.filter(n => n !== sober && _looseness(n) > 0.5).slice(0, 3);
 
-    const text = _variant([
-      `${sober} spends the whole night with the same drink and both ears open. By two in the morning ${p.sub} ${p.sub === 'they' ? 'know' : 'knows'} who is actually working with whom, and nobody knows ${p.sub} ${p.sub === 'they' ? 'were' : 'was'} counting.`,
-      `Everybody assumes ${sober} is drinking because ${p.sub} ${p.sub === 'they' ? 'are' : 'is'} holding a cup. ${p.Sub} ${p.sub === 'they' ? 'are' : 'is'} not, and by morning ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} three things ${p.sub} did not have at dinner.`,
-      `${sober} tops everybody else up and never ${p.sub === 'they' ? 'their' : 'their'} own glass. It is not subtle if you are watching for it. Nobody is watching for it.`,
-      `The best move anybody makes tonight is ${sober} deciding, at about nine o'clock, to stay exactly this sober.`,
-    ], ctx, sober);
+    const scene = makeScene('drinks.sharp', { a: sober }, { ending: 'scene' }, [], 'living-room');
 
     // What it buys: a clearer read on everybody who did not hold back.
     loose.forEach(n => {
@@ -358,7 +327,7 @@ const stayedSharp = {
     });
 
     return {
-      text, players: [sober, ...loose].filter(Boolean),
+      scene, players: [sober, ...loose].filter(Boolean),
       badgeText: 'STAYED SHARP', badgeClass: 'blue',
     };
   },

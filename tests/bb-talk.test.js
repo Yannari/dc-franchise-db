@@ -55,6 +55,11 @@ const PHASE6 = [
   'friction-noise', 'friction-condescended', 'friction-space', 'friction-same-story', 'friction-snapped', 'friction-joke-lands-wrong',
   'life-workout', 'life-cooks-for-everybody', 'life-invented-game', 'life-real-conversation', 'life-grooming', 'life-talking-about-home',
   'life-boredom', 'life-inside-joke',
+  // bb-events/phases.js
+  'phase-open-field', 'phase-pre-positioning', 'phase-scramble', 'phase-power-changes-people', 'phase-block-isolation',
+  'phase-safe-relief', 'phase-lobby-veto', 'phase-veto-holder-weighs', 'phase-last-night-equal', 'phase-outgoing-exposed',
+  'phase-hoh-room', 'phase-targets-align', 'phase-nominee-reckons', 'phase-house-takes-sides', 'phase-hoh-pressures-veto',
+  'phase-replacement-fear',
 ];
 // Engine beats keep the players list the engine counts; a fallout scene is had
 // with an alliance member who is not on it, so these skip the speaker check.
@@ -188,10 +193,10 @@ describe('the talk pools', () => {
   // in the bedroom.
   const ROOM_WORDS = [['kitchen', /kitchen|cupboard/i], ['bedroom', /bedroom|between the beds|'s bed\b/i],
     ['backyard', /backyard|the grass/i], ['pantry', /storage room|pantry/i], ['living-room', /living room/i]];
-  const FIXED = { 'friction.dishes': 'kitchen', 'friction.food': 'kitchen', 'life.chores': 'kitchen', 'life.table': 'kitchen', 'life.cook': 'kitchen', 'life.workout': 'backyard', 'talk.safety': 'hoh-room', 'talk.pitch-target': 'hoh-room', 'talk.hoh-visit': 'hoh-room', 'talk.hoh-decide': 'hoh-room' };
+  const FIXED = { 'phase.hoh-room': 'hoh-room', 'phase.scramble': 'hoh-room', 'phase.targets': 'hoh-room', 'phase.leaned': 'hoh-room', 'friction.dishes': 'kitchen', 'friction.food': 'kitchen', 'life.chores': 'kitchen', 'life.table': 'kitchen', 'life.cook': 'kitchen', 'life.workout': 'backyard', 'talk.safety': 'hoh-room', 'talk.pitch-target': 'hoh-room', 'talk.hoh-visit': 'hoh-room', 'talk.hoh-decide': 'hoh-room' };
   it('only stages a room where the scene is', () => {
     for (const [key, pool] of Object.entries(POOLS)) {
-      if (!/^(talk|social|deals|alliance|power|campaign|life|friction)\./.test(key)) continue;
+      if (!/^(talk|social|deals|alliance|power|campaign|life|friction|phase)\./.test(key)) continue;
       const fixed = FIXED[key.split('.').slice(0, 2).join('.')];
       for (const e of pool) for (const t of e.turns) {
         if (!t.beat) continue;

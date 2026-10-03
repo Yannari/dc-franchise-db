@@ -25,16 +25,9 @@
 // public owner to resent, and naming one would out them — the reach-around
 // gotcha that has bitten this format twice.
 import { gs } from '../core.js';
-import { pronouns } from '../players.js';
 import { pStats, band, perceived, closestTo, furthestFrom, isVillainous } from './_read.js';
-import { freshLine } from '../bb/aired.js';
+import { makeScene } from '../bb/script/scene.js';
 
-function _variant(list, ctx, ...salt) {
-  const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${ctx?.act || ''}|${salt.join('|')}`;
-  let hash = 0;
-  for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
-  return freshLine(list, hash, ctx);
-}
 const _others = (house, ...exclude) => house.filter(n => n && !exclude.includes(n));
 
 /** The box, but only when it has a public owner to talk about. */
@@ -131,18 +124,12 @@ const thePrice = {
     const cast = _priceCast(house, ctx);
     if (!cast) return null;
     const { box, sore } = cast;
-    const p = pronouns(sore);
-    const text = _variant([
-      `${sore}'s entire week of laundry is on the line on the wrong side of a locked door, and ${box.hoh} is inside explaining about ${box.publicClaim}. ${p.Sub} ${p.sub === 'they' ? 'do' : 'does'} the arithmetic on that trade out loud, at length.`,
-      `"We are locked out of the yard. For ${box.publicClaim}." ${sore} repeats the trade whenever somebody defends it, and it sounds worse each time.`,
-      `The doors lock, and ${sore} looks at ${box.hoh} the way you look at somebody who has spent your money. Nothing gets said directly. It does not need to be.`,
-      `${sore} has been counting the hours of lockdown against the value of ${box.publicClaim} and has arrived at a number ${p.sub} ${p.sub === 'they' ? 'want' : 'wants'} the whole house to hear.`,
-    ], ctx, sore, box.hoh);
+    const scene = makeScene('pan.price', { a: sore, b: box.hoh }, { ending: 'scene', claim: box.publicClaim }, [], 'living-room');
     api.addBond(sore, box.hoh, -0.6);
     api.suspicion(sore, box.hoh, 0.5);
     api.popDelta(sore, 0.5);
     try { api.remember(sore, box.hoh, 'cost-the-house', 1, { twist: 'bb-pandoras-box' }); } catch { /* texture */ }
-    return { text, players: [sore, box.hoh], badgeText: 'THE HOUSE PAYS', badgeClass: 'red' };
+    return { scene, players: [sore, box.hoh], badgeText: 'THE HOUSE PAYS', badgeClass: 'red' };
   },
 };
 
@@ -161,23 +148,14 @@ const storyTested = {
     // Selling it is a social stat. Selling it badly makes the lie the story.
     const st = pStats(box.hoh);
     const holds = st.social * 0.6 + st.strategic * 0.4 >= 6;
-    const p = pronouns(box.hoh);
-    const text = holds ? _variant([
-      `${tester} asks ${box.hoh} to describe the box again — the door, the room, what was actually sitting in it. ${box.hoh} tells it the same way twice, bored, with the same small details. ${tester} runs out of questions before ${box.hoh} runs out of answers.`,
-      `"So it was just ${box.publicClaim}." ${box.hoh} shrugs. "It was just ${box.publicClaim}." ${p.Sub} ${p.sub === 'they' ? 'do' : 'does'} not embellish, which is the single hardest part and the reason ${tester} lets it go.`,
-      `${tester} sets a small trap in the retelling and ${box.hoh} walks around it without appearing to notice it was there${audience ? `. ${audience} notices, and does not say so` : ''}.`,
-    ], ctx, box.hoh, tester) : _variant([
-      `${tester} asks one question too many and ${box.hoh} answers it with two details nobody asked for. ${audience ? `${audience} has stopped listening to the words and started listening to the number of them.` : 'The extra details are the whole confession.'}`,
-      `${box.hoh} explains about ${box.publicClaim} again, unprompted, to a room that had moved on. ${tester} lets ${p.obj} finish and then says nothing at all, which is worse than any follow-up.`,
-      `"Show me it, then." ${tester} says it lightly, like a joke. ${box.hoh} laughs. ${box.hoh} does not show ${p.obj} it.`,
-    ], ctx, box.hoh, tester);
+    const scene = makeScene('pan.test', { a: box.hoh, b: tester, c: audience || null }, { ending: holds ? 'holds' : 'cracks', claim: box.publicClaim }, [], 'kitchen');
     api.suspicion(tester, box.hoh, holds ? 0.4 : 1.5);
     if (!holds) {
       api.addBond(tester, box.hoh, -0.5);
       if (audience) api.suspicion(audience, box.hoh, 0.7);
       try { api.remember(tester, box.hoh, 'told-the-house-a-story', 1, { twist: 'bb-pandoras-box' }); } catch { /* texture */ }
     }
-    return { text, players: [box.hoh, tester, audience].filter(Boolean),
+    return { scene, players: [box.hoh, tester, audience].filter(Boolean),
       badgeText: holds ? 'THE STORY HOLDS' : 'THE STORY DOES NOT HOLD',
       badgeClass: holds ? 'grey' : 'red' };
   },
@@ -195,16 +173,11 @@ const doubtersCompare = {
     const cast = _compareCast(house, ctx);
     if (!cast) return null;
     const { box, a, b } = cast;
-    const text = _variant([
-      `${a} and ${b} arrive at the same sentence from opposite ends of the house: nobody locks a backyard over ${box.publicClaim}. Neither of them knows what it WAS. Both of them now know it was something.`,
-      `"You believe that?" "Do you?" ${a} and ${b} establish in about nine words that neither of them believes ${box.hoh}, and that they are now the two people in this house who have said so out loud.`,
-      `${a} lays out the timings — how long ${box.hoh} was in there, how fast the doors locked — and ${b} adds the part ${a} was missing. The conclusion is not evidence. It is close enough for two people to act on.`,
-      `${b} says the quiet version: "Whatever ${box.hoh} came out of that room with, it was not ${box.publicClaim}." ${a} does not argue, and a small alliance of suspicion gets made without anybody proposing one.`,
-    ], ctx, a, b);
+    const scene = makeScene('pan.compare', { a, b }, { ending: 'scene', claim: box.publicClaim, holder: box.hoh }, [], 'bedroom');
     api.suspicion(a, box.hoh, 0.9);
     api.suspicion(b, box.hoh, 0.9);
     api.addBond(a, b, 0.5);
-    return { text, players: [a, b, box.hoh], badgeText: 'COMPARING NOTES', badgeClass: 'blue' };
+    return { scene, players: [a, b, box.hoh], badgeText: 'COMPARING NOTES', badgeClass: 'blue' };
   },
 };
 
@@ -224,17 +197,12 @@ const wouldYouOpen = {
     const cast = _debateCast(house, ctx);
     if (!cast) return null;
     const { box, bold, careful } = cast;
-    const text = _variant([
-      `"I'd have opened it in about four seconds." ${bold} says it like a virtue. ${careful} says ${careful === bold ? '' : 'the opposite'}, at length, and the room quietly files both of them under something.`,
-      `The sofas run the hypothetical for an hour: would you open it. ${bold} would, immediately, for anything. ${careful} would not, for anything, and is a little smug about it. Everybody in the room now knows which of them is easier to bait.`,
-      `${careful} explains that a mystery door with a question mark on it is a trap by definition. ${bold} points out that ${box.hoh} ${box.opened ? 'opened it and is fine' : 'left it closed and got nothing'}, which is not the argument ${careful} was having.`,
-      `${bold} and ${careful} disagree about the box loudly enough that it stops being about the box. Neither of them notices they have just told the whole house how they play.`,
-    ], ctx, bold, careful);
+    const scene = makeScene('pan.debate', { a: bold, b: careful }, { ending: box.opened ? 'opened' : 'shut', holder: box.hoh }, [], 'living-room');
     // Saying it out loud is information the house keeps.
     api.suspicion(careful, bold, 0.4);
     api.addBond(bold, careful, -0.2);
     api.popDelta(bold, 0.5);
-    return { text, players: [bold, careful], badgeText: 'WOULD YOU OPEN IT', badgeClass: 'grey' };
+    return { scene, players: [bold, careful], badgeText: 'WOULD YOU OPEN IT', badgeClass: 'grey' };
   },
 };
 
@@ -250,16 +218,10 @@ const watchingForIt = {
     const cast = _watcherCast(house, ctx);
     if (!cast) return null;
     const { box, watcher } = cast;
-    const p = pronouns(watcher);
-    const text = _variant([
-      `${watcher} stops trying to work out what was in the box and starts watching ${box.hoh} for the moment ${box.hoh} needs it. That is a different kind of attention and it does not switch off.`,
-      `${watcher} has decided the interesting question is not WHAT ${box.hoh} came out with. It is when ${box.hoh} will have to use it, and what the week will look like on either side of that.`,
-      `"Whatever it is, it has a shelf life." ${watcher} says it to nobody, filing ${p.posAdj} own theory away, and spends the rest of the week watching ${box.hoh} being careful.`,
-      `${watcher} counts the days since the door opened, out loud, once, and then stops mentioning it — which is the point at which ${p.sub} ${p.sub === 'they' ? 'become' : 'becomes'} genuinely dangerous to ${box.hoh}.`,
-    ], ctx, watcher, box.hoh);
+    const scene = makeScene('pan.watch', { a: watcher, b: box.hoh }, { ending: 'scene' }, [], 'kitchen');
     api.suspicion(watcher, box.hoh, 1.3);
     try { api.remember(watcher, box.hoh, 'holding-something', 1, { twist: 'bb-pandoras-box' }); } catch { /* texture */ }
-    return { text, players: [watcher, box.hoh], badgeText: 'WAITING FOR IT', badgeClass: 'gold' };
+    return { scene, players: [watcher, box.hoh], badgeText: 'WAITING FOR IT', badgeClass: 'gold' };
   },
 };
 
@@ -275,16 +237,10 @@ const oversell = {
     const cast = _oversellCast(house, ctx);
     if (!cast) return null;
     const { box, mark } = cast;
-    const p = pronouns(box.hoh);
-    const text = _variant([
-      `${box.hoh} brings up ${box.publicClaim} a fourth time, to ${mark}, who had not asked and was not thinking about it. Nobody mentions a thing that unimportant that often.`,
-      `${box.hoh} has started making jokes about ${box.publicClaim}. ${mark} laughs in the right places and privately moves ${box.hoh} up a list.`,
-      `"Honestly, ${box.publicClaim}, I was gutted." ${box.hoh} performs the disappointment slightly too well, and ${mark} — who was not suspicious an hour ago — is now.`,
-      `${box.hoh} keeps offering ${mark} details about the box that ${mark} never requested. ${p.Sub} ${p.sub === 'they' ? 'are' : 'is'} arguing with a case nobody has made.`,
-    ], ctx, box.hoh, mark);
+    const scene = makeScene('pan.oversell', { a: box.hoh, b: mark }, { ending: 'scene', claim: box.publicClaim }, [], 'kitchen');
     api.suspicion(mark, box.hoh, 1.1);
     api.popDelta(box.hoh, -0.5);
-    return { text, players: [box.hoh, mark], badgeText: 'PROTESTING TOO MUCH', badgeClass: 'red' };
+    return { scene, players: [box.hoh, mark], badgeText: 'PROTESTING TOO MUCH', badgeClass: 'red' };
   },
 };
 
@@ -300,17 +256,11 @@ const leftClosed = {
     const cast = _closedCast(house, ctx);
     if (!cast) return null;
     const { box, confidant } = cast;
-    const p = pronouns(box.hoh);
     const villainish = isVillainous(confidant);
-    const text = _variant([
-      `${box.hoh} tells ${confidant} about the door with the question mark on it, and about deciding not to. ${confidant} ${villainish ? 'says that was very sensible, and thinks it was very soft' : 'says that was the right call, and mostly means it'}.`,
-      `"There was a whole thing in there. I didn't touch it." ${box.hoh} says it lightly. ${confidant} can hear ${p.obj} still turning it over.`,
-      `${box.hoh} spends the evening not thinking about the box, which ${confidant} can tell because ${p.sub} ${p.sub === 'they' ? 'mention' : 'mentions'} not thinking about it twice.`,
-      `${box.hoh} admits to ${confidant} that ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} no idea what was behind that door and will not for the rest of ${p.posAdj} life. ${confidant} points out that nobody else knows either, which helps for about a minute.`,
-    ], ctx, box.hoh, confidant);
+    const scene = makeScene('pan.closed', { a: box.hoh, b: confidant }, { ending: 'scene', intent: villainish ? 'villain' : 'kind' }, [], 'hoh-room');
     api.addBond(box.hoh, confidant, 0.5);
     if (villainish) api.suspicion(confidant, box.hoh, 0.3);
-    return { text, players: [box.hoh, confidant], badgeText: 'THE DOOR STAYED SHUT', badgeClass: 'grey' };
+    return { scene, players: [box.hoh, confidant], badgeText: 'THE DOOR STAYED SHUT', badgeClass: 'grey' };
   },
 };
 
@@ -326,15 +276,10 @@ const stillPaying = {
     const cast = _stillPayingCast(house, ctx);
     if (!cast) return null;
     const { hoh, sore, claim } = cast;
-    const text = _variant([
-      `Somebody mentions the lockdown in passing and ${sore} is immediately back in it, a week later, still doing the sum: a locked yard, for ${claim}.`,
-      `${sore} has turned the box into a bit. Every inconvenience in this house is now "well, at least it's not ${claim}", and ${hoh} laughs along a beat late every time.`,
-      `The story about ${claim} has become the thing this house says when it means "we do not entirely trust ${hoh}", and nobody had to decide that out loud.`,
-      `${hoh} thought the box was last week's problem. ${sore} brings it up in front of four people, cheerfully, and it is not last week's problem.`,
-    ], ctx, hoh, sore);
+    const scene = makeScene('pan.paying', { a: sore, b: hoh }, { ending: 'scene', claim }, [], 'kitchen');
     api.suspicion(sore, hoh, 0.6);
     api.addBond(sore, hoh, -0.3);
-    return { text, players: [sore, hoh], badgeText: 'STILL PAYING FOR IT', badgeClass: 'grey' };
+    return { scene, players: [sore, hoh], badgeText: 'STILL PAYING FOR IT', badgeClass: 'grey' };
   },
 };
 

@@ -124,14 +124,8 @@ const haveNots = {
     // "again" has to have happened before. Counted off the weeks, not asserted.
     const repeat = _slopWeeks(first);
     const p = pronouns(first);
-    const text = _variant([
-      `${picked.join(', ')} carry their bags into the have-not room. ${first} tests one of the beds, hears it creak and decides standing is better for now.`,
-      `The slop containers come out for ${picked.join(', ')}. ${first} laughs with everybody else, then goes quiet while measuring out dinner.`,
-      `${picked.join(', ')} finish at the bottom and inherit cold showers, bad beds and a week of watching everybody else eat.`,
-      repeat >= 2
-        ? `${first} counts it up: this is ${pronouns(first).posAdj} ${repeat === 2 ? 'second' : repeat === 3 ? 'third' : `${repeat}th`} week on slop. ${second} stops joking when ${first} says the number aloud.`
-        : `${first} insists the slop is fine, swallows one spoonful and quietly pushes the bowl away. ${second} slides over a glass of water.`,
-    ], ctx, ...picked);
+    const scene = makeScene('slop.picked', { a: first, b: second || null }, { ending: 'scene', intent: repeat >= 2 ? 'repeat' : 'once',
+      nth: repeat === 2 ? 'second' : repeat === 3 ? 'third' : `${repeat}th`, group: picked.join(', ') }, [], 'bedroom');
 
     // Being cold and hungry costs you the week. Nobody chose it out of malice —
     // they finished last — which is its own kind of humiliation.
@@ -144,7 +138,7 @@ const haveNots = {
     });
     // Suffering together builds something the game cannot easily break.
     if (second) api.addBond(first, second, 1.1);
-    return { text, players: picked, badgeText: 'HAVE-NOTS', badgeClass: 'grey' };
+    return { scene, players: picked, badgeText: 'HAVE-NOTS', badgeClass: 'grey' };
   },
 };
 

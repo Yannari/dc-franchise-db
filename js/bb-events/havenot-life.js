@@ -27,25 +27,16 @@
 // day and the nice archetypes know it; comfort is what they have to give.
 
 import { gs } from '../core.js';
-import { pronouns } from '../players.js';
 import {
   pStats, bond, band, spotlightOrder, isNice, closestTo, furthestFrom,
 } from './_read.js';
 import { punishedHaveNots } from '../bb/punishments.js';
-import { freshLine } from '../bb/aired.js';
+import { makeScene } from '../bb/script/scene.js';
 
 // ── helpers ───────────────────────────────────────────────────────────
 
-function _variant(list, ctx, ...salt) {
-  const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${ctx?.act || ''}|${salt.join('|')}`;
-  let hash = 0;
-  for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
-  return freshLine(list, hash, ctx);
-}
 
 const _quiet = pool => spotlightOrder(pool);
-const _list = names => (names.length <= 1 ? (names[0] || '')
-  : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`);
 
 /**
  * Who is ACTUALLY on slop this week.
@@ -123,24 +114,15 @@ const slopArgument = {
   },
   fire(house, ctx, api) {
     const { slop, first, second } = _argumentCast(house, ctx);
-    const p = pronouns(first);
-    const q = pronouns(second);
     const weeks = _slopWeeks(first);
 
-    const text = _variant([
-      `There is one packet of the flavouring left and two people entitled to it. ${first} and ${second} manage about ninety seconds of being reasonable about that.`,
-      `“You had the last of it yesterday.” ${second} did not have the last of it yesterday. ${first} is certain, loudly, and wrong, and does not find out ${p.sub} ${p.sub === 'they' ? 'were' : 'was'} wrong until after the apology.`,
-      `${first} portions the slop into ${slop.length} bowls with a precision nobody asked for. ${second} points out that one bowl is bigger and neither of them is prepared to let it go.`,
-      `It is about a jar of pickles. Genuinely, literally, a jar of pickles — ${first} was saving it and ${second} did not know that, and by the end of it ${_list(slop)} are not speaking.`,
-      `${second} eats standing at the counter to avoid the conversation. ${first} follows ${q.obj} to the counter to have it anyway.`,
-      `${weeks >= 2 ? `${first} is on ${p.posAdj} ${_ordinal(weeks)} week of this and has stopped being able to be funny about it.` : `${first} has been on slop since the competition and has stopped being able to be funny about it.`} ${second} makes a joke about the food and gets a look that ends the meal.`,
-    ], ctx, this.id, first, second);
+    const scene = makeScene('slop.argument', { a: first, b: second }, { ending: 'scene', intent: weeks >= 2 ? 'repeat' : 'once', nth: _ordinal(weeks) }, [], 'kitchen');
 
     api.addBond(first, second, -0.9);
     api.popDelta(first, -1);
     api.popDelta(second, 1);
     api.remember(second, first, 'grievance', 1, { about: 'the have-not room' });
-    return { text, players: [first, second], badgeText: 'OVER A JAR', badgeClass: 'red' };
+    return { scene, players: [first, second], badgeText: 'OVER A JAR', badgeClass: 'red' };
   },
 };
 
@@ -170,23 +152,14 @@ const sleepDeprivedSnap = {
   },
   fire(house, ctx, api) {
     const { snapper, target } = _snapCast(house, ctx);
-    const p = pronouns(snapper);
-    const q = pronouns(target);
 
-    const text = _variant([
-      `${target} asks ${snapper} a completely ordinary question about the laundry and gets an answer with about four days of no sleep behind it. The kitchen goes quiet.`,
-      `${target} is cooking something that smells extremely good and has committed no other crime. ${snapper} tells ${q.obj} exactly what ${p.sub} ${p.sub === 'they' ? 'think' : 'thinks'} of the timing.`,
-      `“Could you not do that in here?” ${snapper} does not raise ${p.posAdj} voice, which somehow makes it worse. ${target} takes the plate to the backyard and has told two people what happened before sitting down.`,
-      `${snapper} has been awake since half past four on a bed with a metal frame. ${target} says good morning. It goes badly out of all proportion to the greeting.`,
-      `It is not really about the sandwich. ${target} knows it is not really about the sandwich, and still spends the afternoon deciding ${snapper} is somebody who cracks under pressure.`,
-      `${snapper} apologises within ten minutes and means it. ${target} accepts it, and adds the original ten minutes to a list that has ${snapper}'s name at the top of it.`,
-    ], ctx, this.id, snapper, target);
+    const scene = makeScene('slop.snap', { a: snapper, b: target }, { ending: 'scene' }, [], 'kitchen');
 
     api.addBond(snapper, target, -1.0);
     api.suspicion(target, snapper, 0.7);
     api.remember(target, snapper, 'cracks-under-it', 2, { about: 'slop week' });
     api.popDelta(snapper, -1);
-    return { text, players: [snapper, target], badgeText: 'NO SLEEP, NO PATIENCE', badgeClass: 'red' };
+    return { scene, players: [snapper, target], badgeText: 'NO SLEEP, NO PATIENCE', badgeClass: 'red' };
   },
 };
 
@@ -205,17 +178,9 @@ const solidarity = {
     const slop = _haveNots(house, ctx);
     const first = _quiet(slop)[0];
     const second = _quiet(slop.filter(n => n !== first))[0];
-    const p = pronouns(first);
     const together = Math.min(_slopWeeks(first), _slopWeeks(second));
 
-    const text = _variant([
-      `${first} comes out of the cold shower unable to speak for about eight seconds. ${second} is waiting with a towel and the specific laugh of somebody who has to go next.`,
-      `They work out a system — thirty seconds in, thirty seconds out — and it does not help at all, and by the third night they are doing it anyway and timing each other.`,
-      `${second} says the worst part is not the cold, it is knowing it is coming all day. ${first} agrees, and for the first time this season the two of them are agreeing about something that is not the game.`,
-      `Nobody else in this house understands and ${first} and ${second} both know it. That is most of what an alliance is, and neither of them has said the word.`,
-      `${first} and ${second} sit on the have-not beds at two in the morning listing every meal they are going to eat when they get out. It takes an hour and neither of them wants it to end.`,
-      `${together >= 2 ? `Second week in the same room for both of them. ` : ''}${first} says, “At least it's you,” and ${second} does not have anything clever to say back, which is unusual.`,
-    ], ctx, this.id, first, second);
+    const scene = makeScene('slop.solidarity', { a: first, b: second }, { ending: 'scene', intent: together >= 2 ? 'repeat' : 'once' }, [], 'washroom');
 
     api.addBond(first, second, 1.3);
     api.remember(first, second, 'shared-hardship', 2, { about: 'the have-not room' });
@@ -226,7 +191,7 @@ const solidarity = {
     if ((rng ? rng() : 1) < 0.22) {
       api.sideDeal(first, second, 'working', { genuine: true, about: 'we look after each other' });
     }
-    return { text, players: [first, second], badgeText: 'THE SAME ROOM', badgeClass: 'green' };
+    return { scene, players: [first, second], badgeText: 'THE SAME ROOM', badgeClass: 'green' };
   },
 };
 
@@ -260,23 +225,15 @@ const selectionResentment = {
   },
   fire(house, ctx, api) {
     const { slop, hoh, stewing, lucky } = _resentCast(house, ctx);
-    const p = pronouns(stewing);
     const weeks = _slopWeeks(stewing);
 
-    const text = _variant([
-      `${stewing} keeps coming back to the same thing: the competition decided the bottom, but somebody still had to write the names down, and ${hoh} wrote them.`,
-      `“It's not personal.” ${hoh} says it in passing on the way upstairs. ${stewing} has been lying on a metal bed frame for three nights working out precisely how personal it is.`,
-      `${lucky ? `${lucky} finished one place above ${stewing} and is currently eating a full dinner. ` : ''}${stewing} has done the arithmetic on that gap approximately forty times today.`,
-      `${stewing} is not going to say anything, because saying it makes ${p.obj} the person who complained about slop. ${p.Sub} ${p.sub === 'they' ? 'just add' : 'just adds'} ${hoh} to a list instead.`,
-      `${weeks >= 2 ? `This is the ${_ordinal(weeks)} week ${stewing} has been on slop, and ${hoh} chose one of them. ` : `${stewing} watches ${hoh} carry a plate up to the Head of Household room. `}${stewing} waits until ${hoh} is upstairs, then tells the person beside ${p.obj}, “I won't forget who put me down here.”`,
-      `${_list(slop)} are on slop and none of them chose it. ${stewing} is the only one who has noticed that ${hoh} has not once come into the have-not room this week.`,
-    ], ctx, this.id, stewing, hoh);
+    const scene = makeScene('slop.resent', { a: stewing, b: hoh }, { ending: 'scene', intent: lucky ? 'lucky' : 'plain', partner: lucky || null, again: weeks >= 2, nth: _ordinal(weeks) }, [], 'bedroom');
 
     api.suspicion(stewing, hoh, 1.0);
     api.addBond(stewing, hoh, -0.6);
     api.remember(stewing, hoh, 'put-me-on-slop', 2, { week: ctx?.week?.num || 0 });
     if (lucky) api.suspicion(stewing, lucky, 0.3);
-    return { text, players: [stewing, hoh, lucky].filter(Boolean),
+    return { scene, players: [stewing, hoh, lucky].filter(Boolean),
       badgeText: 'SOMEBODY WROTE THE NAMES', badgeClass: 'blue' };
   },
 };
@@ -307,24 +264,15 @@ const midnightKitchen = {
   },
   fire(house, ctx, api) {
     const { watcher, kind } = _kindCast(house, ctx);
-    const p = pronouns(watcher);
-    const q = pronouns(kind);
 
     // Nobody breaks a rule. The house is on camera and everybody knows it —
     // what is on offer is company, which is the only thing that is free.
-    const text = _variant([
-      `Midnight in the kitchen and four people are eating properly. ${watcher} sits at the end of the table with a glass of water, watching, not saying anything. ${kind} moves down and sits next to ${p.obj} without a plate.`,
-      `${kind} finishes eating, then makes a cup of tea ${q.sub} ${q.sub === 'they' ? 'do' : 'does'} not want so that ${watcher} has somebody to sit with while everybody else clears up.`,
-      `${watcher} says ${p.sub} ${p.sub === 'they' ? 'are' : 'is'} fine and ${p.sub} ${p.sub === 'they' ? 'do' : 'does'} not mind watching. ${kind} takes ${q.posAdj} plate into the other room and eats it out of sight instead.`,
-      `Nobody hands ${watcher} anything — there are cameras in every corner and both of them know exactly what that would cost. ${kind} just stays up until ${watcher} goes to bed, which takes until nearly two.`,
-      `${kind} describes what ${q.sub} ${q.sub === 'they' ? 'are' : 'is'} eating, in detail, as a joke. Then ${q.sub} ${q.sub === 'they' ? 'stop' : 'stops'} when ${watcher}'s smile disappears, and ${q.sub} ${q.sub === 'they' ? 'spend' : 'spends'} the next twenty minutes talking about anything else.`,
-      `${watcher} will remember two things about this week: the cold, and ${kind} sitting on the counter at midnight keeping ${p.obj} company for no strategic reason whatsoever.`,
-    ], ctx, this.id, watcher, kind);
+    const scene = makeScene('slop.kitchen', { a: watcher, b: kind }, { ending: 'scene' }, [], 'kitchen');
 
     api.addBond(watcher, kind, 1.2);
     api.remember(watcher, kind, 'kindness', 2, { when: 'slop week' });
     api.popDelta(kind, 1);
-    return { text, players: [watcher, kind], badgeText: 'SAT WITH ME', badgeClass: 'green' };
+    return { scene, players: [watcher, kind], badgeText: 'SAT WITH ME', badgeClass: 'green' };
   },
 };
 

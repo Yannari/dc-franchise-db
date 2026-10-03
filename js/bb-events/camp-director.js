@@ -15,16 +15,9 @@
 //
 // Week one only by construction — everything gates on `week.campDirector`,
 // which only the first week ever carries.
-import { pronouns } from '../players.js';
 import { pStats, band, perceived, firedThisWeek } from './_read.js';
-import { freshLine } from '../bb/aired.js';
+import { makeScene } from '../bb/script/scene.js';
 
-function _variant(list, ctx, ...salt) {
-  const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${ctx?.act || ''}|${salt.join('|')}`;
-  let hash = 0;
-  for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
-  return freshLine(list, hash, ctx);
-}
 const _others = (house, ...exclude) => house.filter(n => n && !exclude.includes(n));
 const _reactable = ctx => ctx?.act === 'house' || ctx?.act === 'campaign';
 
@@ -50,7 +43,6 @@ const needled = {
   fire(house, ctx, api) {
     const cd = _camp(ctx, house);
     const director = cd.director;
-    const p = pronouns(director);
     const asker = _others(house, director, ...cd.banished)
       .sort((a, b) => pStats(b).boldness - pStats(a).boldness)[0];
     if (!asker) return null;
@@ -58,23 +50,15 @@ const needled = {
     // Social carries the defence; a low-social Director makes it worse.
     const smooth = st.social >= 5.5;
     if (smooth) {
-      const text = _variant([
-        `${asker} brings up the four names at dinner, casually, like a knife left on the table. ${director} picks it up and hands it back: "Somebody had to write a list. Would you rather it had been yours?" The table decides to laugh.`,
-        `${director} has the answer ready by now — the job made ${p.obj} do it, the job everybody voted ${p.obj} into. It is a good answer. ${asker} notes how POLISHED it has become.`,
-        `${asker} pokes at it; ${director} takes it with a grace that costs nothing and buys a lot. Half the room admires the composure. The other half remembers that composure is a skill.`,
-      ], ctx, director, asker);
+      const scene = makeScene('director.needled', { a: director, b: asker }, { ending: 'smooth' }, [], 'kitchen');
       api.popDelta(director, 0.5);
       api.remember(asker, director, 'answers-too-well', 1, { twist: 'camp-director' });
-      return { text, players: [director, asker], badgeText: 'ASKED ABOUT THE LIST', badgeClass: 'blue' };
+      return { scene, players: [director, asker], badgeText: 'ASKED ABOUT THE LIST', badgeClass: 'blue' };
     }
-    const text = _variant([
-      `${asker} asks about the four names and ${director} over-explains — the reasons multiply, contradict, and by the third one the kitchen has stopped believing any of them.`,
-      `${director} snaps that ${p.sub} did not ASK for the job, which is true and lands like a confession. ${asker} lets the silence do the rest.`,
-      `${director} tries "it was basically random" on ${asker}, who was standing right there when it was not. The room files the lie next to the list.`,
-    ], ctx, director, asker);
+    const scene = makeScene('director.needled', { a: director, b: asker }, { ending: 'flustered' }, [], 'kitchen');
     api.popDelta(director, -1);
     api.addBond(asker, director, -0.5);
-    return { text, players: [director, asker], badgeText: 'THE LIST COMES UP', badgeClass: 'red' };
+    return { scene, players: [director, asker], badgeText: 'THE LIST COMES UP', badgeClass: 'red' };
   },
 };
 
@@ -98,31 +82,22 @@ const survivorSettles = {
     if (!who) return null;
     const director = cd.director;
     const st = pStats(who);
-    const p = pronouns(who);
     // Temperament forgives; the rest keep the receipt.
     const squashes = st.temperament >= 5.5;
     if (squashes) {
-      const text = _variant([
-        `${who} finds ${director} alone and squashes it in one sentence: "You did what the job made you do, and I ran fast enough. We're fine." ${director} exhales for the first time all day.`,
-        `${who} makes a point of sitting next to ${director} at breakfast where everybody can see it. The message is for the room as much as for ${director}: this one is settled.`,
-        `"If I'd won that vote I'd have named four people too." ${who} says it plainly, and ${director} could kiss ${p.obj}.`,
-      ], ctx, who);
+      const scene = makeScene('director.survivor', { a: who, b: director }, { ending: 'settled' }, [], 'kitchen');
       api.addBond(who, director, 1.2);
       api.popDelta(who, 0.5);
-      return { text, players: [who, director], badgeText: 'SETTLED IT', badgeClass: 'gold' };
+      return { scene, players: [who, director], badgeText: 'SETTLED IT', badgeClass: 'gold' };
     }
     const listener = _others(house, who, director)
       .sort((a, b) => perceived(who, b) - perceived(who, a))[0];
-    const text = _variant([
-      `${who} is perfectly pleasant to ${director} all day, and tells ${listener || 'the garden'} the truth at dusk: "${p.Sub === 'They' ? 'They don’t' : p.Sub + ' doesn’t'} get to pick me for the backyard and then get my vote. Ever."`,
-      `${who} has forgiven nothing. ${p.Sub} ${p.sub === 'they' ? 'are' : 'is'} simply waiting for a week when the grudge is affordable, and ${listener || 'somebody'} now knows it.`,
-      `${who} keeps the receipt where it is useful — folded, quiet, and dated night one. ${listener || 'A listener'} is told exactly once, which is how you tell somebody a plan.`,
-    ], ctx, who);
+    const scene = makeScene('director.survivor', { a: who, b: listener || null }, { ending: 'grudge', intent: listener ? 'told' : 'alone', target: director }, [], 'backyard');
     if (listener) {
       api.remember(listener, director, 'marked-by-a-survivor', 1, { twist: 'camp-director' });
     }
     api.remember(who, director, 'the-receipt', 1.5, { twist: 'camp-director' });
-    return { text, players: [who, listener].filter(Boolean),
+    return { scene, players: [who, listener].filter(Boolean),
       badgeText: 'KEEPS THE RECEIPT', badgeClass: 'grey' };
   },
 };
@@ -154,14 +129,10 @@ const emptyChair = {
     const speaker = _others(house, director)
       .sort((a, b) => pStats(b).social - pStats(a).social)[0];
     if (!speaker) return null;
-    const text = _variant([
-      `Somebody sets one place too many at dinner, out of habit, and the table goes quiet around the gap where ${cd.evicted} would be. ${speaker} says the name once, gently, and everybody looks anywhere but at ${director}.`,
-      `${speaker} raises a glass of squash "to ${cd.evicted}, who never even got a week." It is kind, and it is also aimed, and ${director} drinks to it because refusing would be worse.`,
-      `The first story anybody tells about ${cd.evicted} gets a laugh, and then the laugh runs out, because the person in the story has been gone since before the game had rules — and everyone at the table can trace the line back to one list.`,
-    ], ctx, cd.evicted);
+    const scene = makeScene('director.chair', { a: speaker, b: director }, { ending: 'scene', gone: cd.evicted }, [], 'kitchen');
     api.popDelta(director, -0.5);
     api.remember(speaker, director, 'the-first-name', 1, { twist: 'camp-director' });
-    return { text, players: [speaker, director], badgeText: 'ONE PLACE TOO MANY', badgeClass: 'grey' };
+    return { scene, players: [speaker, director], badgeText: 'ONE PLACE TOO MANY', badgeClass: 'grey' };
   },
 };
 

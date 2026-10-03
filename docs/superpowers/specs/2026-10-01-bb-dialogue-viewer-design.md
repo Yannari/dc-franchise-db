@@ -179,10 +179,36 @@ showmance-arcs. Patterns worth keeping:
   dropped and the transcript's "in the Diary Room" wins; bb-talk now asserts
   no converted beat with a spoken line is staged there.
 - People a scene is ABOUT are data (`{target}`, `{partner}`), never in `who`.
-Still to convert: vote-plans, jury-bubble, cliques, power-knowledge,
-havenot-life, kinship, franchise-history, the two house meetings and
-have-nots, the ~22 engine beats with no event id, and the twist families.
-`freshLine` goes when the last caller does.
+
+**Phase 6 done (2026-10-03).** Every file in `bb-events/` is a scene — the
+house meetings (`bb/script/meeting.js`, four parts), have-nots, vote plans,
+the jury bubble, power knowledge, kinship, franchise history and all
+twenty-odd twist families — and so are the week engine's own beats: the
+veto ceremony's consequences (`bb/veto-fallout.js`, lines/vfall.js), the
+folded campaign pitch, the alliance with nobody left to react, and the
+veto week with a secret HOH (lines/anon.js). `aired.js` and `freshLine`
+are deleted: the last callers were picking PEOPLE, and a name is never an
+aired line. Measured: no beat in the five seeded seasons carries text
+without a script, and they replay identically. More patterns:
+- **Twist-only and setup-only events** read in seasons that run them (the
+  scratch harness scheduled one twist per season, at a chosen week, with a
+  theme, declared kin or a seeded franchise ledger); registered in
+  bb-talk's `TWIST_ONLY`.
+- **Secrets stay secret in the Diary Room too**: the Invisible HOH, the
+  Hacker, America's MVP, the Coin winner and whoever took the Den's offer
+  are never named as such; a right guess shows only on the badge.
+- **Speech says the person, not the form**: kinship's `{kinword}` is "my
+  brother", "my wife" by the person's pronouns; the ledger's "(Season 3)"
+  becomes `{when}`, and nothing it does not record is said.
+- **A number or a list goes mid-sentence** ("There are {campers} people…"),
+  and a line that needs two or more is gated (`intent: 'many'`).
+Left for Phase 7, by design: the twists' own ACT narration (Safety Suite,
+Chain of Safety, the Hidden Power hunt, the prize exchange, Duo Week, the
+comeback rounds, the White Locust chain, Pandora's box opening, and so on —
+about 250 beats across one season of each twist), which the section 5 plan
+gives a stepped set and a mockup each. Three cases with nobody in them
+("nothing to trade", an alliance down to nobody, an empty-house meeting)
+keep their sentence.
 
 ### 4.3 BB's clock and facts
 

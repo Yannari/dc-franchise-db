@@ -114,12 +114,26 @@ const PHASE6 = [
 const OFF_CARD = new Set(['alliance-betrayal', 'alliance-repair', 'bloc-recruit']);
 // Engine beats fall back to their plain sentence when there is nobody to have
 // the scene with (an alliance down to its betrayer): those carry no script.
-const INJECTED = new Set(['alliance-formed', 'alliance-inner-circle', 'alliance-recruited', 'alliance-betrayal', 'alliance-repair', 'alliance-collapsed',
+// The shared romance and end-of-week layers, as week.js builds them (Phase 6).
+// Which of these fires is a matter of luck, so the fires-check skips them; a
+// type without words keeps its old sentence.
+const LAYER = new Set([
+  'romance-showmanceSabotage',
+  'romance-affairCaught', 'romance-affairChoice', 'romance-affairExposed', 'romance-affairRumor',
+  'romance-affairSecret', 'romance-affairSilent', 'romance-firstMove', 'romance-friendshipJealousy',
+  'romance-showmanceBreakup', 'romance-showmanceHoneymoon', 'romance-showmanceJealousy', 'romance-showmanceNoticed',
+  'romance-showmanceRekindle', 'romance-showmanceRideOrDie', 'romance-showmanceSpark', 'romance-showmanceTarget',
+  'romance-triangleConfrontation', 'romance-triangleCut', 'romance-triangleEscalation', 'romance-triangleLonely',
+  'romance-trianglePublicFight', 'romance-triangleResolved', 'romance-triangleTension', 'romance-triangleUltimatum',
+  'upkeep-allianceBlindspot', 'upkeep-betrayalDenial', 'upkeep-goatKeeping', 'upkeep-perceptionRealization',
+  'upkeep-providerEntitlement', 'upkeep-showmanceBlindspot', 'upkeep-swapLoyaltyAssumption', 'upkeep-villainManipulation',
+]);
+const INJECTED = new Set([...LAYER, 'alliance-formed', 'alliance-inner-circle', 'alliance-recruited', 'alliance-betrayal', 'alliance-repair', 'alliance-collapsed',
   'campaign-pitch',     // a pitch folded into one summary for several voters keeps its sentence
   // with no HOH to name (an Invisible HOH week) these keep a plain sentence
   'power-replacement-fallout', 'power-saved-themselves', 'power-replacement-reacts', 'power-veto-fallout', 'power-veto-no-surprise']);
 const scripted = b => EVENT_IDS.has(b.eventId) && (Array.isArray(b.lines) || !INJECTED.has(b.eventId));
-const EVENT_IDS = new Set([...Object.values(CONVERTED), ...PHASE6]);
+const EVENT_IDS = new Set([...Object.values(CONVERTED), ...PHASE6, ...LAYER]);
 // Converted, but these three seasons cannot be sure of one: a first kiss needs a
 // showmance (not a spark) under two weeks old, about 0.4 a season; the two
 // reign-* ones need two Heads of Household, which only Battle of the Block gives;
@@ -174,7 +188,7 @@ describe('every intent airs as a script', () => {
       // A script: at least one line somebody SAYS (a lone Diary Room counts), never only narration.
       expect(Array.isArray(b.lines) && b.lines.some(l => l.kind !== 'beat'), `${b.eventId} week ${b.week} has no script`).toBe(true);
     }
-    for (const id of EVENT_IDS) if (!RARE.has(id) && !TWIST_ONLY.has(id)) expect(fired.has(id), `${id} never fired in three seasons`).toBe(true);
+    for (const id of EVENT_IDS) if (!RARE.has(id) && !TWIST_ONLY.has(id) && !LAYER.has(id)) expect(fired.has(id), `${id} never fired in three seasons`).toBe(true);
   });
 
   it('fills every slot, and only the people in the scene speak', () => {
@@ -266,7 +280,7 @@ describe('the talk pools', () => {
   const FIXED = { 'plan.seen': 'bedroom', 'plan.backdoor': 'bedroom', 'jury.face': 'kitchen', 'jury.payment': 'pantry', 'couple.hiding': 'bedroom', 'couple.fight': 'bedroom', 'couple.jealous': 'kitchen', 'couple.defined': 'bedroom', 'editorial.bedroom': 'bedroom', 'editorial.latenight': 'kitchen', 'editorial.spark': 'backyard', 'editorial.flip': 'bedroom', 'editorial.breakdown': 'pantry', 'editorial.meeting': 'bedroom', 'editorial.standoff': 'kitchen', 'texture.kitchen': 'kitchen', 'texture.backyard': 'backyard', 'texture.snoring': 'bedroom', 'texture.namedrop': 'pantry', 'texture.trial': 'living-room', 'followup.isolation': 'kitchen', 'followup.overheard': 'living-room', 'followup.damage': 'pantry', 'followup.aftershock': 'bedroom', 'reign.carve': 'hoh-room', 'reign.both': 'hoh-room', 'bond.kiss': 'bedroom', 'bond.quiet': 'bedroom', 'bond.bad-day': 'bedroom', 'bond.petty': 'kitchen', 'fallout.grief': 'bedroom', 'fallout.rogue': 'kitchen', 'bloc.blowup': 'kitchen', 'phase.hoh-room': 'hoh-room', 'phase.scramble': 'hoh-room', 'phase.targets': 'hoh-room', 'phase.leaned': 'hoh-room', 'friction.dishes': 'kitchen', 'friction.food': 'kitchen', 'life.chores': 'kitchen', 'life.table': 'kitchen', 'life.cook': 'kitchen', 'life.workout': 'backyard', 'talk.safety': 'hoh-room', 'talk.pitch-target': 'hoh-room', 'talk.hoh-visit': 'hoh-room', 'talk.hoh-decide': 'hoh-room' };
   it('only stages a room where the scene is', () => {
     for (const [key, pool] of Object.entries(POOLS)) {
-      if (!/^(talk|social|deals|alliance|power|campaign|life|friction|phase|bloc|venue|fallout|bond|reign|scheme|followup|texture|editorial|arc|couple|jury|plan|known|cer)\./.test(key)) continue;
+      if (!/^(talk|social|deals|alliance|power|campaign|life|friction|phase|bloc|venue|fallout|bond|reign|scheme|followup|texture|editorial|arc|couple|jury|plan|known|cer|romance|upkeep)\./.test(key)) continue;
       const fixed = FIXED[key.split('.').slice(0, 2).join('.')];
       for (const e of pool) for (const t of e.turns) {
         if (!t.beat) continue;

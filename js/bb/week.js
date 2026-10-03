@@ -973,11 +973,46 @@ function runHouseRomance(week, rng) {
   }
   week.coupleTargets = consequences;
 
-  return [...ep.campEvents.merge.pre, ...ep.campEvents.merge.post].map(e => {
+  // The scene each beat plays: its cast in the pipeline's player order, and an
+  // ending decided by the same facts the old sentences branched on.
+  const romanceScene = (e, hit) => {
+    const [a, b, c, d] = (e.players || []).filter(Boolean);
+    const who = { a: a || null, b: b || null, c: c || null };
+    switch (e.type) {
+      case 'showmanceTarget':
+        return [who, hit ? { ending: 'scene', intent: 'hit', target: hit.target } : { ending: 'scene' }];
+      case 'triangleTension':
+        return [who, { ending: (e.sourceType || 'dual-showmance') === 'dual-showmance' ? 'dual' : 'onesided' }];
+      case 'triangleEscalation':
+        return d ? [{ a }, { ending: 'schemed', first: b, centre: c, second: d }] : [who, { ending: 'three' }];
+      case 'triangleResolved': {
+        if (e.kind !== 'chose') return [who, { ending: 'faded' }];
+        const arch = (players.find(x => x.name === c) || {}).archetype || '';
+        let st = {};
+        try { st = pStats(c) || {}; } catch { st = {}; }
+        if (['villain', 'schemer', 'mastermind'].includes(arch)) return [who, { ending: 'villain' }];
+        if ((st.strategic ?? 5) >= 7 && (st.loyalty ?? 5) <= 4) return [who, { ending: 'cool' }];
+        return [who, { ending: 'hurt' }];
+      }
+      case 'triangleCut':
+        return [who, { ending: e.kind === 'center-gone' ? 'centre' : e.byTheirHand ? 'hand' : 'house' }];
+      case 'affairExposed':
+        return [{ a: a || null, b: b || null }, { ending: 'scene', target: c }];
+      default:
+        return [who, { ending: 'scene' }];
+    }
+  };
+
+  return [...ep.campEvents.merge.pre, ...ep.campEvents.merge.post].map((e, i) => {
     const hit = e.type === 'showmanceTarget'
       && consequences.find(c => c.plotter === (e.players || [])[0]);
+    const [who, data] = romanceScene(e, hit);
+    const script = Object.values(data).some(v => v === undefined) ? null
+      : scriptBeat(`romance.${e.type}`, who, data, { week, act: 'house', room: 'bedroom', salt: `romance|${i}` });
     return {
-      text: bbRomanceText(e) + (hit ? ` ${hit.plotter} settles on ${hit.target} — ${hit.why}.` : ''),
+      text: script ? script.text
+        : bbRomanceText(e) + (hit ? ` ${hit.plotter} settles on ${hit.target} — ${hit.why}.` : ''),
+      ...(script ? { lines: script.lines, lineId: script.lineId } : {}),
       players: (e.players || []).filter(Boolean),
       badgeText: hit ? 'A NAME, NOT A COMPLAINT' : (e.badgeText || 'SHOWMANCE'),
       badgeClass: hit ? 'red' : (e.badgeClass || 'gold'),
@@ -1164,11 +1199,19 @@ function runHouseMaintenance(week, rng = Math.random) {
           .replace(/\bthe camp\b/g, 'the house').replace(/\bcamp\b/g, 'the house');
     }
   };
-  return ep.campEvents.merge.pre.map(e => ({
-    text: bbMaintenanceText(e), players: (e.players || []).filter(Boolean),
-    badgeText: e.badgeText || 'THE HOUSE SHIFTS', badgeClass: e.badgeClass || 'grey',
-    eventId: `upkeep-${e.type || 'beat'}`, category: 'social', location: 'living-room',
-  })).filter(b => b.text);
+  return ep.campEvents.merge.pre.map((e, i) => {
+    const [a, b] = (e.players || []).filter(Boolean);
+    const script = a ? scriptBeat(`upkeep.${e.type}`, { a, b: b || null },
+      { ending: 'scene', intent: b ? 'pair' : 'solo' },
+      { week, act: 'house', room: 'living-room', salt: `upkeep|${i}` }) : null;
+    return {
+      text: script ? script.text : bbMaintenanceText(e),
+      ...(script ? { lines: script.lines, lineId: script.lineId } : {}),
+      players: (e.players || []).filter(Boolean),
+      badgeText: e.badgeText || 'THE HOUSE SHIFTS', badgeClass: e.badgeClass || 'grey',
+      eventId: `upkeep-${e.type || 'beat'}`, category: 'social', location: 'living-room',
+    };
+  }).filter(b => b.text);
 }
 
 /**

@@ -19,16 +19,10 @@
 // and cast them as a voter or a nominee. This family reaches for them on
 // purpose, and only for the things a camper can actually do.
 import { gs } from '../core.js';
-import { pronouns } from '../players.js';
 import { pStats, band, closestTo, furthestFrom } from './_read.js';
-import { freshLine } from '../bb/aired.js';
+import { makeScene } from '../bb/script/scene.js';
+import { numberWord } from '../bb/script/inject.js';
 
-function _variant(list, ctx, ...salt) {
-  const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${ctx?.act || ''}|${salt.join('|')}`;
-  let hash = 0;
-  for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
-  return freshLine(list, hash, ctx);
-}
 const _others = (house, ...exclude) => house.filter(n => n && !exclude.includes(n));
 const _reactable = ctx => ctx?.act === 'house' || ctx?.act === 'campaign';
 
@@ -84,21 +78,11 @@ const stillAtTheTable = {
     const cast = _voterCast(house, ctx);
     if (!cast) return null;
     const { who, voter, all } = cast;
-    const p = pronouns(voter);
-    const text = _variant([
-      `${voter} voted ${who} out and has to pass ${pronouns(who).obj} the milk every morning. `
-        + `${p.Sub} ${p.sub === 'they' ? 'have' : 'has'} started taking breakfast late.`,
-      `There is a version of this house where ${who} left and ${voter} never thought about it again. `
-        + 'This is not that house.',
-      `${all.length} people voted ${who} out and all ${all.length} of them are being extremely normal about it, `
-        + `which ${who} finds funnier every day.`,
-      `"You can stop apologising." ${who} says it kindly and ${voter} cannot, because the apology is the only `
-        + 'thing making it bearable and it is only bearable for one of them.',
-    ], ctx, who, voter);
+    const scene = makeScene('camp.table', { a: who, b: voter }, { ending: 'scene', intent: all.length > 1 ? 'many' : 'one', tally: numberWord(all.length) }, [], 'kitchen');
     api.addBond(who, voter, -0.9);
     api.popDelta(who, 1);
     try { api.remember(who, voter, 'voted-me-out-and-lives-with-me', 2, { twist: 'bb-camp-comeback' }); } catch { /* texture */ }
-    return { text, players: [who, voter], badgeText: 'STILL AT THE TABLE', badgeClass: 'red' };
+    return { scene, players: [who, voter], badgeText: 'STILL AT THE TABLE', badgeClass: 'red' };
   },
 };
 
@@ -114,21 +98,11 @@ const theOnlyHonestVoice = {
     const cast = _truthCast(house, ctx);
     if (!cast) return null;
     const { who, mark } = cast;
-    const p = pronouns(who);
-    const text = _variant([
-      `${who} says the thing out loud at the kitchen table — the one about ${mark} that everybody has `
-        + `worked out and nobody will say — because there is nothing left in this house that can be done to ${p.obj}.`,
-      `A camper cannot be nominated, cannot be voted out and cannot be bought, so when ${who} tells the room `
-        + `exactly what ${mark} has been doing, the room has to deal with the fact that ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} no reason to lie.`,
-      `${mark} has spent weeks managing what people believe. ${who} undoes days of that work in one sentence `
-        + 'over the washing up, and cannot be punished for it.',
-      `"What are you going to do, evict me?" ${who} does not even say it unkindly. ${mark} has no answer, `
-        + 'which the rest of the table also notices.',
-    ], ctx, who, mark);
+    const scene = makeScene('camp.honest', { a: who, b: mark }, { ending: 'scene' }, [], 'kitchen');
     api.addBond(mark, who, -0.8);
     for (const n of _others(house, mark).slice(0, 3)) api.suspicion(n, mark, 0.8);
     api.popDelta(who, 1.5);
-    return { text, players: [who, mark], badgeText: 'NOTHING LEFT TO LOSE', badgeClass: 'gold' };
+    return { scene, players: [who, mark], badgeText: 'NOTHING LEFT TO LOSE', badgeClass: 'gold' };
   },
 };
 
@@ -144,18 +118,9 @@ const oneIsComingBack = {
     const cast = _dreadCast(house, ctx);
     if (!cast) return null;
     const { camp, worried, threat } = cast;
-    const text = _variant([
-      `${worried} does the count out loud: ${camp.length} people comparing what they were promised before `
-        + `they left, and one of them coming back through the door. ${threat} is the name that keeps coming up.`,
-      `The house has started being extremely warm to the camp, which is the clearest possible signal that `
-        + 'everybody has worked out one of them is coming back.',
-      `“Whoever walks out of that room has receipts on all of us.” ${worried} says it once and then cannot `
-        + 'stop thinking about which of their own conversations are on the list.',
-      `${threat} has been quiet, pleasant and completely attentive since entering camp, and ${worried} finds that `
-        + 'considerably more frightening than the ones who have been angry.',
-    ], ctx, worried, threat);
+    const scene = makeScene('camp.door', { a: worried, b: threat }, { ending: 'scene', campers: numberWord(camp.length) }, [], 'living-room');
     api.suspicion(worried, threat, 1.2);
-    return { text, players: [worried, threat], badgeText: 'ONE DOOR', badgeClass: 'red' };
+    return { scene, players: [worried, threat], badgeText: 'ONE DOOR', badgeClass: 'red' };
   },
 };
 
@@ -171,19 +136,11 @@ const theCampRoom = {
     const cast = _campCast(house, ctx);
     if (!cast) return null;
     const { camp, who } = cast;
-    const p = pronouns(who);
     const friend = closestTo(who, _others(house, ...camp)) || _others(house, ...camp)[0];
-    const text = _variant([
-      `${who} watches a competition replay on the camp-room television and calls every mistake before it happens. Nobody playing can hear ${p.obj}.`,
-      `The camp room has a bad bed, a small screen and no door onto the game. ${who} has started narrating `
-        + `the competitions to ${camp.length > 1 ? 'the others' : 'the wall'} like a man commentating on his own funeral.`,
-      `${friend ? `${friend} comes and sits in the camp room for an hour, which nobody asked ${friend} to do` : `${who} sits in the camp room alone`}. `
-        + 'It is the kindest thing that happens all week and changes nothing about where ${who} sleeps that night.',
-      `${who} knows the whole house better than anybody still playing it, from a bed nobody else would sleep in.`,
-    ], ctx, who, friend);
+    const scene = makeScene('camp.room', { a: who, b: friend || null }, { ending: 'scene', intent: friend ? 'visited' : 'alone' }, [], 'bedroom');
     if (friend) api.addBond(who, friend, 0.7);
     api.popDelta(who, 0.5);
-    return { text, players: [who, friend].filter(Boolean),
+    return { scene, players: [who, friend].filter(Boolean),
       badgeText: 'THE SMALL TELEVISION', badgeClass: 'grey' };
   },
 };

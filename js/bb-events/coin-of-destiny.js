@@ -20,17 +20,12 @@
 // may state that the call went a particular way for a particular person. Who
 // bought in is public and fair game — that is the material.
 import { gs } from '../core.js';
-import { pronouns } from '../players.js';
 import { pStats, band, perceived, closestTo, furthestFrom } from './_read.js';
-import { freshLine } from '../bb/aired.js';
+import { makeScene } from '../bb/script/scene.js';
+import { numberWord } from '../bb/script/inject.js';
 
-function _variant(list, ctx, ...salt) {
-  const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${ctx?.act || ''}|${salt.join('|')}`;
-  let hash = 0;
-  for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
-  return freshLine(list, hash, ctx);
-}
 const _others = (house, ...exclude) => house.filter(n => n && !exclude.includes(n));
+const _list = names => names.length < 2 ? names.join('') : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
 const _reactable = ctx => ctx?.act === 'house' || ctx?.act === 'campaign';
 
 const _coin = ctx => ctx?.week?.coin || null;
@@ -92,20 +87,13 @@ const dethronedByNobody = {
     const cast = _dethronedCast(house, ctx);
     if (!cast) return null;
     const { hoh, buyers } = cast;
-    const p = pronouns(hoh);
-    const named = buyers.slice(0, 3).join(', ');
-    const text = _variant([
-      `${hoh} has lost the week and has nobody to lose it to. ${buyers.length} people bought in — ${named} — one of them took it, and ${p.sub} ${p.sub === 'they' ? 'are' : 'is'} going to spend the rest of the week looking at all of them.`,
-      `A Coup would at least have given ${hoh} a name. This gave ${p.obj} a receipt: everybody who paid, and no way to narrow it down further than that.`,
-      `"One of you is sitting there knowing." ${hoh} says it to a room containing ${named}, and every one of them looks equally innocent because every one of them is equally suspicious.`,
-      `${hoh} won a competition, ran a week, and had it taken by somebody ${p.sub} will never be able to name. That is the part that will still be there at the final vote.`,
-    ], ctx, hoh, named);
+    const scene = makeScene('coin.dethroned', { a: hoh, b: buyers[0] }, { ending: 'scene', intent: buyers.length > 1 ? 'many' : 'one', group: _list(buyers.slice(0, 3)), buyers: numberWord(buyers.length) }, [], 'living-room');
     for (const b of buyers) {
       api.suspicion(hoh, b, 1.1);
       api.addBond(hoh, b, -0.8);
     }
     api.popDelta(hoh, -0.5);
-    return { text, players: [hoh, ...buyers.slice(0, 3)],
+    return { scene, players: [hoh, ...buyers.slice(0, 3)],
       badgeText: 'A ROOM FULL OF SUSPECTS', badgeClass: 'red' };
   },
 };
@@ -122,16 +110,10 @@ const paidInPublic = {
     const cast = _buyerCast(house, ctx);
     if (!cast) return null;
     const { who, watcher, buyers } = cast;
-    const p = pronouns(who);
-    const text = _variant([
-      `${who} paid to try to take the nominations in front of everybody. Whether ${p.sub} won the power is secret; wanting it badly enough to pay is not.`,
-      `Buying in is a sentence with only one meaning, and ${who} said it out loud with money. ${watcher} heard it.`,
-      `"${who} wanted it enough to pay." ${watcher} keeps the observation short, because it does not need help.`,
-      `${buyers.length} people bought in and every one of them told the house the same thing about how safe they feel. ${who} was the loudest about it.`,
-    ], ctx, who, watcher);
+    const scene = makeScene('coin.paid', { a: who, b: watcher }, { ending: 'scene' }, [], 'kitchen');
     api.suspicion(watcher, who, 1.2);
     try { api.remember(watcher, who, 'paid-for-power', 1, { twist: 'bb-coin-of-destiny' }); } catch { /* texture */ }
-    return { text, players: [who, watcher], badgeText: 'PAID IN PUBLIC', badgeClass: 'gold' };
+    return { scene, players: [who, watcher], badgeText: 'PAID IN PUBLIC', badgeClass: 'gold' };
   },
 };
 
@@ -147,15 +129,9 @@ const keptTheirMoney = {
     const cast = _abstainerCast(house, ctx);
     if (!cast) return null;
     const { who, reader } = cast;
-    const p = pronouns(who);
-    const text = _variant([
-      `${who} did not buy in. ${reader} finds that more interesting than any of the people who did — you only decline a swing at the whole week if you already believe the week cannot touch you.`,
-      `Everybody who paid told the house they were worried. ${who} told it the opposite, by keeping ${p.posAdj} hands in ${p.posAdj} pockets, and ${reader} noticed that too.`,
-      `"You didn't want it?" ${reader} asks it lightly. ${who} gives an answer that is a shrug with words attached, and ${reader} keeps the question.`,
-      `${who} watched the whole thing from the sofa and paid nothing. That is either the calmest read in the house or the most comfortable, and ${reader} intends to find out which.`,
-    ], ctx, who, reader);
+    const scene = makeScene('coin.kept', { a: who, b: reader }, { ending: 'scene' }, [], 'living-room');
     api.suspicion(reader, who, 0.9);
-    return { text, players: [who, reader], badgeText: 'KEPT OUT OF IT', badgeClass: 'grey' };
+    return { scene, players: [who, reader], badgeText: 'KEPT OUT OF IT', badgeClass: 'grey' };
   },
 };
 
@@ -171,18 +147,12 @@ const seatedByNobody = {
     const cast = _seatedCast(house, ctx);
     if (!cast) return null;
     const { who, buyers } = cast;
-    const p = pronouns(who);
     const suspect = buyers[0];
-    const text = _variant([
-      `${who} is on the block and the Head of Household did not put ${p.obj} there. The person who did is in this room, paid to be able to, and is not going to say so.`,
-      `${who} works the room and gets nowhere, because there is nobody to work: the hand that wrote ${p.posAdj} name down is anonymous and the only clue is a list of people who bought in.`,
-      `${who} settles on ${suspect}, for no better reason than that ${suspect} paid. It is not evidence. It is the only thing available.`,
-      `Being nominated by nobody is a strange kind of insult, and ${who} spends the evening trying to work out who to take it from.`,
-    ], ctx, who, suspect);
+    const scene = makeScene('coin.seated', { a: who, b: suspect }, { ending: 'scene' }, [], 'living-room');
     api.suspicion(who, suspect, 1.3);
     api.addBond(who, suspect, -0.8);
     api.popDelta(who, 1);
-    return { text, players: [who, suspect], badgeText: 'NOMINATED BY NOBODY', badgeClass: 'red' };
+    return { scene, players: [who, suspect], badgeText: 'NOMINATED BY NOBODY', badgeClass: 'red' };
   },
 };
 
@@ -200,21 +170,12 @@ const calledItQuietly = {
     const { c, w, watcher } = cast;
     const st = pStats(w);
     const overplayed = pStats(watcher).intuition >= 7 && st.strategic <= 6;
-    const p = pronouns(w);
-    const text = overplayed ? _variant([
-      `${w} has opinions about the new nominations that are a shade too complete for somebody who found out when everybody else did. ${watcher} listens to all of them.`,
-      `${w} keeps saying "whoever did it" with a warmth nobody else is managing. ${watcher} notices the warmth before the words.`,
-      `${watcher} invents a detail about how the call was made and watches ${w} agree with something that did not happen.`,
-    ], ctx, w, watcher) : _variant([
-      `${w} earned the right to make a private call, then returned without volunteering a word about it. Every other buyer is being just as careful, which gives the house nothing to compare.`,
-      `Somebody asks ${w} how the call went. "They don't tell you anything in there." It is a good answer and it is even mostly true.`,
-      `${w} is as blank about the coin as everybody who did not touch it, and ${p.sub} ${p.sub === 'they' ? 'stay' : 'stays'} blank for the rest of the week.`,
-    ], ctx, w, watcher);
+    const scene = makeScene('coin.winner', { a: w, b: watcher }, { ending: overplayed ? 'overplayed' : 'quiet' }, [], 'kitchen');
     if (overplayed) {
       api.suspicion(watcher, w, 1.5);
       try { api.remember(watcher, w, 'suspected-the-coin', 1, { twist: 'bb-coin-of-destiny' }); } catch { /* texture */ }
     }
-    return { text, players: [w, watcher],
+    return { scene, players: [w, watcher],
       badgeText: overplayed ? 'KNOWS TOO MUCH ABOUT IT' : 'AS BLANK AS ANYBODY',
       badgeClass: overplayed ? 'gold' : 'grey' };
   },

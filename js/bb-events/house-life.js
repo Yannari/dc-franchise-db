@@ -23,6 +23,7 @@ import {
 } from './_read.js';
 import { freshLine } from '../bb/aired.js';
 import { makeScene } from '../bb/script/scene.js';
+import { writeMeeting } from '../bb/script/meeting.js';
 
 // ── helpers ───────────────────────────────────────────────────────────
 
@@ -442,14 +443,17 @@ const houseMeeting = {
       api.popDelta(caller, 1);
     }
 
+    // Written as one four-part script; the old paragraph stays only for a meeting with no words.
+    const written = writeMeeting({ caller, about, witness: room.find(n => n !== about) || null, outcome, cause }, ctx);
     return {
-      text, players: [caller, about].filter(Boolean),
+      text: written ? written.text : text, players: [caller, about].filter(Boolean),
+      ...(written ? { lines: written.lines, lineId: written.lineId, location: 'living-room' } : {}),
       // The whole room, so the screen can draw what a house meeting actually is
       // — everybody in one place — instead of two portraits like any other
       // conversation. This is the loudest thing that happens in a week and it
       // was rendering identically to an argument about the washing up.
       meeting: { caller, about, outcome, cause, room: [...room],
-        beats: _meetingBeats({ caller, about, outcome, cause, room, house, ctx }) },
+        beats: written ? written.beats : _meetingBeats({ caller, about, outcome, cause, room, house, ctx }) },
       badgeText: outcome === 'lands' ? 'THEY HAD RECEIPTS'
         : outcome === 'backfires' ? 'THE ROOM TURNS'
         : outcome === 'nobody talks' ? 'NOBODY WILL SAY IT' : 'NOTHING CHANGES',

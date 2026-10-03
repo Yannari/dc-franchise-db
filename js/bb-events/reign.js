@@ -27,6 +27,7 @@ import {
 import { reignTemperament, reignMadeAnEnemy } from '../bb/reign.js';
 import { freshLine } from '../bb/aired.js';
 import { makeScene } from '../bb/script/scene.js';
+import { writeMeeting } from '../bb/script/meeting.js';
 
 function _variant(list, ctx, ...salt) {
   const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${ctx?.act || ''}|${salt.join('|')}`;
@@ -104,10 +105,13 @@ const houseMeeting = {
     room.forEach((a, i) => { const b = room[i + 1]; if (b) api.addBond(a, b, 0.5); });
     api.remember(honest, hoh, 'made-me-say-it-out-loud', 2, {});
     api.popDelta(hoh, -3);
-    return { text, players: [hoh, ...room], badgeText: 'HOUSE MEETING', badgeClass: 'red',
+    const written = writeMeeting({ caller: hoh, about: honest, witness: room.find(n => n !== honest) || null,
+      outcome: 'backfires', cause: 'power' }, ctx);
+    return { text: written ? written.text : text, players: [hoh, ...room], badgeText: 'HOUSE MEETING', badgeClass: 'red',
+      ...(written ? { lines: written.lines, lineId: written.lineId, location: 'living-room' } : {}),
       // Same scene, same treatment on the screen.
       meeting: { caller: hoh, about: honest, outcome: 'backfires', cause: 'power', room: [...room],
-        beats: [
+        beats: written ? written.beats : [
           { kind: 'call', who: hoh, text: `${hoh} does not shout it. ${p.Sub} ${p.sub === 'they' ? 'do' : 'does'} not have to — the Head of Household asking everybody to come to the living room is not a request, and all ${room.length} of them know it.` },
           { kind: 'assemble', who: null, text: `They arrive in the order people arrive when they have been summoned rather than invited: quickly, and without talking on the way.` },
           { kind: 'case', who: hoh, text: `"This is not a dictatorship." It is the first thing ${hoh} says and it is the only thing anybody will quote afterwards.` },

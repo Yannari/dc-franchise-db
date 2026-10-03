@@ -31,23 +31,19 @@ import {
 } from './_read.js';
 import { endgameDealsOf, tierOf } from '../bb/deals.js';
 import { seatedJurors } from '../bb/jury.js';
-import { freshLine } from '../bb/aired.js';
+import { makeScene } from '../bb/script/scene.js';
+import { numberWord } from '../bb/script/inject.js';
 
 // ── shared plumbing ───────────────────────────────────────────────────
 
 /** Deterministic prose pick: a hash of the week, the beat and who is in it. */
-function variant(lines, ctx, ...salt) {
-  const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${ctx?.act || ''}|${salt.join('|')}`;
-  let h = 2166136261;
-  for (const ch of key) h = Math.imul(h ^ ch.charCodeAt(0), 16777619) >>> 0;
-  return freshLine(lines, h, ctx);
-}
 
 /** Least-seen first, weighted toward whoever this week is about. */
 const quiet = pool => spotlightOrder((pool || []).filter(Boolean));
 
-const result = (text, players, badgeText, badgeClass) =>
-  ({ text, players: (players || []).filter(Boolean), badgeText, badgeClass });
+const result = (body, players, badgeText, badgeClass) =>
+  ({ ...(typeof body === 'string' ? { text: body } : { scene: body }),
+    players: (players || []).filter(Boolean), badgeText, badgeClass });
 
 /**
  * These are conversations, not ceremonies.
@@ -165,28 +161,17 @@ const lieDisprovedLater = {
       || { a: house[0], b: house[1], m: null };
     const source = quiet(house.filter(n => n !== holder && n !== liar))[0] || house.find(n => n !== holder && n !== liar);
     const what = memoryPhrase(m);
-    const p = pronouns(holder);
     // Whether the confirmation arrives as a favour or as gossip changes the
     // scene, not the verdict. The verdict was always going to be this.
     const kind = source && bond(holder, source) >= 2;
 
-    const text = kind ? variant([
-      `${source} does not make a moment of it. "${liar} told me the same thing ${p.sub} told you, except the dates were different." ${holder} had spent a week deciding to let ${what} go, and does not any more.`,
-      `${holder} asks ${source} a question about last week purely to change the subject, and gets an answer that lines up with ${what} exactly wrong. ${liar}'s version cannot survive both accounts and ${holder} knows it by the end of the sentence.`,
-      `"You already knew, right?" ${source} says it apologetically, halfway into the storage room, and only realises from ${holder}'s face that ${p.sub} did not. What ${liar} said is now a thing with two witnesses and one liar.`,
-      `${source} repeats a conversation ${liar} had on the other side of the house, without any idea what it confirms. ${holder} thanks ${p.obj} for nothing in particular and stands in the storage room for a while afterwards.`,
-    ], ctx, holder, liar, source) : variant([
-      `${source} brings it up to be interesting rather than to be helpful, and it is both: ${liar} said one thing to ${holder} and a different thing to the room. ${what} stops being a suspicion.`,
-      `The confirmation arrives sideways, from ${source}, who has no reason to protect either of them. ${holder} does not react in front of ${pronouns(source).obj} — but ${holder} has stopped listening to the rest of what ${source} is saying.`,
-      `${holder} has been treating ${what} as possibly a misunderstanding. ${source} destroys that possibility in one sentence and then asks what everybody wants for dinner.`,
-      `${source} mentions, casually, the version ${liar} gave everybody else. ${holder} counts backwards through the week and finds the seam. There is no innocent reading of it left.`,
-    ], ctx, holder, liar, source);
+    const scene = makeScene('arc.lie', { a: holder, b: source || null }, { ending: kind ? 'friend' : 'outsider', target: liar }, [], 'storage');
 
     api.suspicion(holder, liar, 1.5);
     api.addBond(holder, liar, -1.3);
     api.remember(holder, liar, 'lie-confirmed', 3, { about: what, via: source || null });
     if (source) api.remember(holder, source, 'told-me-something-real', 1, { about: liar });
-    return result(text, [holder, liar, source], 'THE LIE HOLDS NO MORE', 'red');
+    return result(scene, [holder, liar, source], 'THE LIE HOLDS NO MORE', 'red');
   },
 };
 
@@ -209,29 +194,18 @@ const apologyWithoutTrust = {
     const { a: wronged, b: sorry, m } = pairFromMemory(house, BETRAYAL_TYPES, 'apology-noted', ctx)
       || { a: house[0], b: house[1], m: null };
     const what = memoryPhrase(m);
-    const p = pronouns(wronged);
     // Whether it is accepted OUT LOUD is a personality question. Whether it is
     // believed is not a question at all.
     const aloud = nice(wronged) || pStats(wronged).temperament >= 6;
 
-    const text = aloud ? variant([
-      `${sorry} apologises for ${what} properly, without a single "but", and ${wronged} says it is fine and means the sentence rather than the thing underneath it. They talk about something else for twenty minutes and it is almost comfortable.`,
-      `"I should not have done it that way." ${wronged} accepts the apology from ${sorry} the way ${p.sub} would accept a parcel — takes it, says thank you, does not open it.`,
-      `${wronged} lets ${sorry} finish the whole apology in the backyard without interrupting once, which ${sorry} reads as forgiveness. It is not that. It is ${wronged} listening for the part where ${sorry} explains what ${p.sub} would do differently, and that part never comes.`,
-      `${sorry} says sorry for ${what} and ${wronged} says, "I know why you did it," which sounds like absolution and is in fact a full description of the problem. Both of them leave the conversation happy with different things.`,
-    ], ctx, wronged, sorry, aloud) : variant([
-      `${sorry} apologises for ${what}. ${wronged} looks at ${pronouns(sorry).obj} long enough for it to be a decision, then says, "Okay," and goes inside. Nothing about the week is repaired and both of them know exactly how much.`,
-      `"I am not going to pretend that was not what it was," ${sorry} says. ${wronged} answers that ${p.sub} appreciates the honesty and does not offer any of ${p.posAdj} own in return.`,
-      `The apology is real and ${wronged} does not want it. "You are allowed to be sorry," ${p.sub} tells ${sorry} in the backyard. "I am allowed to still count."`,
-      `${sorry} gets most of the way through before ${wronged} interrupts to ask whether the apology comes with the vote. It does not. ${wronged} nods as if that had settled something, because it had.`,
-    ], ctx, wronged, sorry, aloud);
+    const scene = makeScene('arc.apology', { a: wronged, b: sorry }, { ending: aloud ? 'aloud' : 'cold' }, [], 'backyard');
 
     // The bond moves. The trust does not — an apology noted is a data point
     // about how this person handles being caught, and it goes in the file.
     api.addBond(wronged, sorry, aloud ? 0.9 : 0.4);
     api.suspicion(wronged, sorry, 0.5);
     api.remember(wronged, sorry, 'apology-noted', 2, { about: what, aloud });
-    return result(text, [wronged, sorry], aloud ? 'SAYS IT IS FINE' : 'HEARD, NOT BELIEVED',
+    return result(scene, [wronged, sorry], aloud ? 'SAYS IT IS FINE' : 'HEARD, NOT BELIEVED',
       aloud ? 'blue' : 'grey');
   },
 };
@@ -262,13 +236,7 @@ const fightSplitsTheRoom = {
     const forHurt = closestTo(hurt, rest) || rest[0];
     const forOther = closestTo(other, rest.filter(n => n !== forHurt)) || rest.find(n => n !== forHurt) || rest[1];
 
-    const text = variant([
-      `Nobody calls it taking sides. ${forHurt} starts sitting where ${hurt} sits and ${forOther} stops coming into that room, and by the next afternoon the living room has split into two obvious halves.`,
-      `${forHurt} says the argument was one-sided and ${forOther} says it certainly was, and the two of them realise about a beat too late that they are describing different sides. ${hurt} and ${other} are not even in the room.`,
-      `The house does the arithmetic it always does after a fight: who was louder, who was right, and who is more useful. ${forHurt} lands on ${hurt}. ${forOther} lands on ${other}. Neither of them says so out loud and everybody can see it anyway.`,
-      `${forOther} defends ${other}'s version of the fight in the living room and finds ${forHurt} looking at ${pronouns(forOther).obj} the way you look at somebody who has just picked. Which is what has happened.`,
-      `It takes two days and one conversation about the dishes for the room to divide. ${forHurt} is with ${hurt}; ${forOther} is with ${other}; and the people left in the middle spend the evening being extremely pleasant to everybody.`,
-    ], ctx, hurt, other, forHurt, forOther);
+    const scene = makeScene('arc.sides', { a: forHurt, b: forOther || null }, { ending: 'scene', target: hurt, partner: other }, [], 'living-room');
 
     if (forHurt) {
       api.addBond(forHurt, hurt, 0.9);
@@ -280,7 +248,7 @@ const fightSplitsTheRoom = {
     }
     if (forHurt && forOther) api.addBond(forHurt, forOther, -0.6);
     api.remember(hurt, other, 'house-picked-sides', 2, { with: forHurt || null, against: forOther || null });
-    return result(text, [hurt, other, forHurt, forOther], 'THE ROOM PICKS', 'red');
+    return result(scene, [hurt, other, forHurt, forOther], 'THE ROOM PICKS', 'red');
   },
 };
 
@@ -354,23 +322,14 @@ const promiseExposedByCount = {
       return result(`Nobody can make last week's numbers add up.`, [a], 'THE COUNT IS OFF', 'grey');
     }
     const { voter, promisee, promised, cast } = found;
-    const p = pronouns(promisee);
     const gone = found.week?.evicted;
     // A liar with a story ready is a different scene from one caught flat.
     const ready = pStats(voter).social * 0.5 + pStats(voter).strategic * 0.4
       > pStats(promisee).intuition * 0.7 + 2;
 
-    const text = ready ? variant([
-      `${promisee} works through the public vote promises over breakfast. The count does not prove who lied, but ${voter} said ${promised} all week and is now defending a result that required somebody to write ${cast}. ${voter} has an explanation ready and delivers it well.`,
-      `${promisee} asks why ${voter} spent all week saying ${promised} when the vote${gone ? ` that sent ${gone} out` : ''} came back differently. ${voter} never admits writing ${cast}; the speed of the explanation is what ${promisee} remembers.`,
-      `${voter} explains that the room moved late and there was no time to come and find ${promisee}. It is a good explanation. It is also the third good explanation ${voter} has produced this month, and ${promisee} has started keeping them in order.`,
-      `${promisee} asks ${voter} one question in the kitchen — not accusing, just counting out loud — and ${voter} answers it smoothly enough that ${p.sub} ${p.sub === 'they' ? 'know' : 'knows'} the answer was prepared before the question existed.`,
-    ], ctx, promisee, voter, cast) : variant([
-      `${promisee} repeats the count and watches ${voter}'s face do the arithmetic a half second too slowly. It is not proof. It is enough to make ${promisee} keep asking.`,
-      `"You told everybody ${promised}," ${promisee} says in the kitchen. ${voter} starts an answer three separate times. ${promisee} waits through all three and then leaves before the fourth.`,
-      `The vote came back differently from the count ${voter} helped sell. When ${promisee} asks whether ${voter} wrote ${cast}, ${voter} stops talking instead of saying no.`,
-      `${promisee} does not shout. ${p.Sub} repeats the name ${voter} said before the vote, then the name somebody secretly wrote, and asks why ${voter}'s story changed overnight.`,
-    ], ctx, promisee, voter, cast);
+    const scene = makeScene('arc.count', { a: promisee, b: voter }, { ending: ready ? 'smooth' : 'caught', target: promised, partner: cast,
+      // the names are quoted only when neither is somebody in the scene
+      intent: [promised, cast].some(n => n === promisee || n === voter) ? 'plain' : 'named' }, [], 'kitchen');
 
     api.remember(promisee, voter, 'broke-word-found-out', 3, { promised, cast });
     api.addBond(promisee, voter, -1.5);
@@ -381,7 +340,7 @@ const promiseExposedByCount = {
     if (rng() < Math.min(0.85, (s.strategic + s.boldness) / 22 + 0.1)) {
       api.setTarget(promisee, voter, `promised me ${promised} and wrote ${cast}`);
     }
-    return result(text, [promisee, voter], ready ? 'A GOOD EXPLANATION' : 'CAUGHT BY THE COUNT', 'red');
+    return result(scene, [promisee, voter], ready ? 'A GOOD EXPLANATION' : 'CAUGHT BY THE COUNT', 'red');
   },
 };
 
@@ -408,28 +367,17 @@ const comfortBecomesLoyalty = {
     const { a: owes, b: owed } = pair;
     const critic = quiet(house.filter(n => n !== owes && n !== owed))[0]
       || house.find(n => n !== owes && n !== owed);
-    const p = pronouns(owes);
     // Loyalty plus what they actually feel they owe. A working deal is somebody
     // deciding the debt is a position rather than a feeling.
     const formal = pStats(owes).loyalty * 0.5 + obligationOf(owes, owed) * 0.4 >= 4;
 
-    const text = formal ? variant([
-      `${critic} floats ${owed}'s name in the bedroom and ${owes} kills it immediately — not with an argument, with a flat "no". ${critic} has never heard ${owes} be flat about anything before.`,
-      `"${owed} sat with me when nobody else would." ${owes} says it once, to ${critic}, and then makes it a position: whatever the house does this week, it does not do it to ${owed}. They shake on it before the lights go out.`,
-      `${owes} has not told anybody who ${p.sub} is with. ${critic} finds out in the bedroom by floating ${owed}'s name and watching ${owes} shut the idea down before it is finished.`,
-      `${critic} expects ${owes} to be flexible, because ${owes} has been flexible about everything. Instead ${owes} says ${p.sub} owes ${owed} a week, and would like to pay it now while it is still worth something.`,
-    ], ctx, owes, owed, critic) : variant([
-      `${critic} says something small and unkind about ${owed}. ${owes} does not argue — just does not laugh, and lets the silence sit there until ${critic} moves on to somebody else.`,
-      `${owes} corrects ${critic}'s version of ${owed} in the bedroom, quietly, on one detail. It is the smallest possible defence and ${critic} files it anyway.`,
-      `Nobody asks ${owes} to defend ${owed}, which is exactly why ${p.sub} does. ${critic} notices that the room now has a person in it who cannot be recruited against ${owed}.`,
-      `"I would not put ${owed} up." ${owes} offers no reason, and ${critic}, who has been counting who is soft on whom, writes it down mentally and changes the subject.`,
-    ], ctx, owes, owed, critic);
+    const scene = makeScene('arc.debt', { a: owes, b: owed, c: critic || null }, { ending: formal ? 'deal' : 'defend' }, [], 'bedroom');
 
     api.addBond(owes, owed, formal ? 1.4 : 0.8);
     api.remember(owes, owed, 'acted-on-the-debt', formal ? 3 : 2, { defendedFrom: critic || null });
     if (formal) api.sideDeal(owes, owed, 'vote', { about: 'I am not the vote that takes you out' });
     if (critic) api.remember(critic, owes, 'they-are-a-pair', 2, { about: owed });
-    return result(text, [owes, owed, critic], formal ? 'THE DEBT BECOMES A DEAL' : 'QUIETLY DEFENDED',
+    return result(scene, [owes, owed, critic], formal ? 'THE DEBT BECOMES A DEAL' : 'QUIETLY DEFENDED',
       formal ? 'green' : 'blue');
   },
 };
@@ -469,16 +417,11 @@ const blindsideRewatch = {
     const name = worst.voter;
     const gone = week?.evicted;
     const amused = quiet(house.filter(n => n !== name)).slice(0, 2);
-    const p = pronouns(name);
     const off = Math.abs(worst.error || 0);
 
-    const text = variant([
-      `The house retells the eviction for the fourth time and it is still ${name}'s face that carries it. ${p.Sub} had the count at ${worst.believed} and the count was ${worst.truth}${gone ? `, and ${gone} was gone before ${p.sub} finished turning around` : ''}. ${amused[0]} does the face. Everybody laughs, including ${name}, slightly late.`,
-      `"Say it again. Say how many you thought you had." ${amused[0]} has made this a bit, and ${name} has decided the only way through it is to be a good sport, which is working less well each time.`,
-      `${amused[0]} and ${amused[1] || 'the kitchen'} reconstruct the vote out loud, beat by beat, purely to arrive at the moment ${name} was ${off} votes wrong about ${p.posAdj} own side of the house.`,
-      `Somebody starts it as a genuine question — how did nobody see it — and it becomes, within about a minute, a very specific question about ${name}. ${p.Sub} answers it honestly, which makes it funnier and worse.`,
-      `${name} maintains that the room changed at the last minute. ${amused[0]} points out, gently, that ${name} was the last minute.`,
-    ], ctx, name, amused[0], gone);
+    const counted = Number.isFinite(worst.believed) && Number.isFinite(worst.truth);
+    const scene = makeScene('arc.rewatch', { a: name, b: amused[0] || null, c: amused[1] || null },
+      { ending: 'scene', intent: counted ? 'counted' : 'vague', ...(counted ? { had: numberWord(worst.believed), real: numberWord(worst.truth) } : {}) }, [], 'kitchen');
 
     // Being the person who was most wrong is a story the house tells about you,
     // and stories about you are the only currency that is not votes.
@@ -488,7 +431,7 @@ const blindsideRewatch = {
       if (amused[1]) api.addBond(amused[0], amused[1], 0.6);
       else api.addBond(amused[0], name, -0.3);
     }
-    return result(text, [name, ...amused], 'STILL TALKING ABOUT THE VOTE', 'grey');
+    return result(scene, [name, ...amused], 'STILL TALKING ABOUT THE VOTE', 'grey');
   },
 };
 
@@ -541,25 +484,14 @@ const rogueVoteDenial = {
     }
     const { denier, doubter, lying, losing, week } = scene;
     const gone = week?.evicted;
-    const p = pronouns(denier);
 
-    const text = lying ? variant([
-      `"It was not me, and I am tired of the question." ${denier} says it to the living room rather than to any one person, which is the tell ${doubter} has been waiting for — nobody addresses a room unless they are worried about a specific chair in it.`,
-      `${denier} volunteers the denial before anybody has asked ${p.obj} anything. ${doubter} watches it land, agrees warmly that of course it was not, and adds a name to a list.`,
-      `${denier} explains ${p.posAdj} vote for ${gone || 'the majority'} in a level of detail nobody requested. ${doubter} listens to all of it and thinks about how much easier the truth is to describe.`,
-      `"Whoever it was, they should just say." ${denier} is extremely comfortable with this conversation, which ${doubter} finds interesting, given the arithmetic.`,
-    ], ctx, denier, doubter) : variant([
-      `${denier} denies being the stray vote and is telling the truth, which does not help at all — ${doubter} has decided otherwise on grounds that have nothing to do with the ballot.`,
-      `"I voted with the house." ${denier} did. ${doubter} nods at ${p.obj} in a way ${denier} spends the rest of the evening trying to interpret.`,
-      `${denier} gets in front of it in the living room and finds ${doubter} already there, already sceptical, already asking why ${denier} felt the need to raise it.`,
-      `The one person who did not cast the stray vote is the one person defending ${pronouns(denier).ref || 'themselves'} about it, and ${doubter} thinks that is exactly the kind of thing a guilty person would do.`,
-    ], ctx, denier, doubter);
+    const said = makeScene('arc.denial', { a: denier, b: doubter }, { ending: lying ? 'lying' : 'truthful', target: losing }, [], 'living-room');
 
     api.suspicion(doubter, denier, 1.3);
     api.addBond(doubter, denier, -0.5);
     api.remember(doubter, denier, 'denied-the-stray-vote', 2,
       { about: `the vote to keep ${losing}`, believed: false, truthful: !lying });
-    return result(text, [denier, doubter], lying ? 'DENIES IT FLATLY' : 'TELLING THE TRUTH BADLY',
+    return result(said, [denier, doubter], lying ? 'DENIES IT FLATLY' : 'TELLING THE TRUTH BADLY',
       lying ? 'red' : 'grey');
   },
 };
@@ -581,28 +513,17 @@ const wrongPersonBlamedLingers = {
   fire(house, ctx, api) {
     const { a: accused, b: accuser } = pairFromMemory(house, ACCUSED_TYPES, 'accuser-confronted', ctx)
       || { a: house[0], b: house[1] };
-    const p = pronouns(accused);
     // Days later, and with the room having moved on, an accusation nobody
     // withdrew is the only thing still attached to a name.
     const owns = pStats(accuser).temperament >= 6 || nice(accuser);
 
-    const text = owns ? variant([
-      `${accused} waits until the backyard is empty and asks ${accuser} to say, once, that it was not ${p.obj}. ${accuser} does, and adds that ${pronouns(accuser).sub} should have said it a week ago when it would have cost something.`,
-      `"You told the whole house it was me." ${accuser} does not argue the point. ${pronouns(accuser).Sub} explains what ${pronouns(accuser).sub} thought ${pronouns(accuser).sub} knew, agrees it was thin, and takes it back out loud to the two people who mattered.`,
-      `${accused} has been carrying it for days and it comes out badly, in the middle of a conversation about laundry. ${accuser} lets ${p.obj} finish and then apologises properly, which ${accused} was not prepared for.`,
-      `${accuser} retracts it — genuinely, in the backyard, without an audience. It does not undo the week ${accused} spent being looked at, and ${accuser} says so before ${accused} has to.`,
-    ], ctx, accused, accuser, owns) : variant([
-      `${accused} asks ${accuser} to name one thing that made it ${p.obj}. ${accuser} names a conversation that did not happen and then a feeling, and the backyard goes very quiet.`,
-      `"You were wrong about me and you have not said so once." ${accuser} answers that ${pronouns(accuser).sub} never actually accused anybody, which is not what the house heard and not what ${accused} heard either.`,
-      `Days later, ${accused} is still the person it was probably. ${p.Sub} says that out loud to ${accuser}, who calls it dramatic, which is precisely the word ${accused} needed to stop being reasonable.`,
-      `${accuser} tries to move the conversation to what the house believes now. ${accused} keeps it exactly where it is: on the sentence ${accuser} said, to those people, on that day.`,
-    ], ctx, accused, accuser, owns);
+    const scene = makeScene('arc.wronged', { a: accused, b: accuser }, { ending: owns ? 'retracts' : 'refuses' }, [], 'backyard');
 
     api.addBond(accused, accuser, owns ? -0.5 : -1.4);
     api.popDelta(accuser, owns ? 1 : -1);
     api.remember(accused, accuser, 'accuser-confronted', owns ? 1 : 3, { retracted: owns });
     if (!owns) api.suspicion(accused, accuser, 1.1);
-    return result(text, [accused, accuser], owns ? 'TAKES IT BACK' : 'NEVER TOOK IT BACK',
+    return result(scene, [accused, accuser], owns ? 'TAKES IT BACK' : 'NEVER TOOK IT BACK',
       owns ? 'blue' : 'red');
   },
 };
@@ -624,19 +545,8 @@ const threatenedRemembers = {
       || { a: house[0], b: house[1], m: null };
     const { a: voter, b: speaker, m } = pair;
     const exposed = m?.type === 'exposed-on-live';
-    const p = pronouns(voter);
 
-    const text = exposed ? variant([
-      `${speaker} used a live plea to say out loud what ${voter} had told ${pronouns(speaker).obj} in private. ${voter} has been perfectly polite ever since, in the way you are polite to a stranger, and ${speaker} has finally noticed the difference.`,
-      `${voter} passes ${speaker} in the bathroom doorway and does not move out of the way or into it. ${speaker} says ${p.posAdj} name. ${voter} keeps walking. Whatever ${speaker} bought by saying it on the floor, this is the price.`,
-      `"You put my name in your speech." ${voter} says it once, brushing ${p.posAdj} teeth, without looking round, and does not stay for the answer ${speaker} spends the rest of the night preparing.`,
-      `${speaker} tries to restart the friendship as though the plea were a thing that happened to both of them. ${voter} agrees pleasantly with every sentence and gives ${pronouns(speaker).obj} nothing at all.`,
-    ], ctx, voter, speaker) : variant([
-      `${speaker} promised, on the floor, in front of everybody, to come for whoever kept ${pronouns(speaker).obj} here. ${voter} has been counting the days since and has decided ${p.sub} would rather not find out whether ${speaker} meant it.`,
-      `${voter} stops telling ${speaker} things. Not dramatically — ${p.sub} just answers questions with the answer and nothing after it, and before the next competition ${speaker} realizes the speech cost ${pronouns(speaker).obj} a person.`,
-      `"You said it to the room." ${voter} does not raise ${p.posAdj} voice in the bathroom. "I was in the room." That is the entire conversation and ${speaker} thinks about it all week.`,
-      `${speaker} looks for ${voter} to explain that the plea was a plea and not a plan. ${voter} listens, says ${p.sub} understands, and continues doing precisely what ${p.sub} was doing before, which is nothing.`,
-    ], ctx, voter, speaker);
+    const scene = makeScene('arc.threat', { a: voter, b: speaker }, { ending: exposed ? 'exposed' : 'threatened' }, [], 'bathroom');
 
     api.suspicion(voter, speaker, 1.2);
     api.addBond(voter, speaker, -0.9);
@@ -645,7 +555,7 @@ const threatenedRemembers = {
     if (rng() < Math.min(0.8, (s.strategic + s.boldness) / 24 + 0.15)) {
       api.setTarget(voter, speaker, exposed ? 'said my private business on the floor' : 'promised to come for me live');
     }
-    return result(text, [voter, speaker], exposed ? 'NOT FORGOTTEN' : 'THE SPEECH COST SOMETHING', 'red');
+    return result(scene, [voter, speaker], exposed ? 'NOT FORGOTTEN' : 'THE SPEECH COST SOMETHING', 'red');
   },
 };
 
@@ -688,21 +598,14 @@ const endgameSoleVoterCourt = {
       + respectOf(voter, n) * 0.1 + (rng() - 0.5) * 2;
     const ranked = noms.slice().sort((a, b) => score(b) - score(a));
     const [better, worse] = ranked;
-    const p = pronouns(voter);
 
-    const text = variant([
-      `Both of them get ${voter} alone before dinner and both make the same argument: the other person wins at the end. ${better} makes it about what ${voter} needs when the decision arrives. ${worse} makes it about what ${worse} deserves, and that is the whole difference.`,
-      `There is one vote left in this house and it belongs to ${voter}, who spends the afternoon being courted in two separate rooms by two people who keep passing each other in the corridor. ${better}'s pitch is the one ${p.sub} is still thinking about at midnight.`,
-      `${worse} goes first and talks for a long time. ${better} goes second and asks ${voter} a question instead, which is the first time all week anybody has asked ${p.obj} anything.`,
-      `${voter} has never had this much power and does not enjoy it. ${better} makes it easy — lays out the final three, where ${voter} sits in it, and stops talking. ${worse} does not stop talking.`,
-      `"You are picking who you sit next to at the end." ${better} says it plainly in the HOH room. ${worse} says the same thing an hour later and it lands differently, because by then ${voter} has already started leaning.`,
-    ], ctx, voter, better, worse);
+    const said = makeScene('arc.court', { a: voter, b: better, c: worse }, { ending: 'scene' }, [], 'bedroom');
 
     api.addBond(voter, better, 1.2);
     api.addBond(voter, worse, -0.4);
     api.remember(voter, better, 'plea', 2, { about: 'the final four campaign' });
     api.remember(better, voter, 'came-to-me', 2, { about: 'the only vote left' });
-    return result(text, [voter, better, worse], 'ONE VOTE, TWO CASES', 'gold');
+    return result(said, [voter, better, worse], 'ONE VOTE, TWO CASES', 'gold');
   },
 };
 
@@ -740,7 +643,6 @@ const endgameCutCalculus = {
       return result(`Nobody in this house is holding anything that reaches the end.`,
         [a, b], 'NOTHING TO BREAK', 'grey');
     }
-    const p = pronouns(actor);
     const tier = tierOf(deal) === 'final-two' ? 'final two' : 'final three';
     // Entirely proportional: how much of a planner they are, how dangerous the
     // partner has become, and how much loyalty pulls the other way.
@@ -749,23 +651,13 @@ const endgameCutCalculus = {
       s.strategic / 14 + dangerOf(actor, partner) * 0.018 - s.loyalty / 26 + 0.08));
     const cutting = rng() < pull;
 
-    const text = cutting ? variant([
-      `${actor} does the sum in the Diary Room and does not like the answer: the ${tier} with ${partner} was made when there were eleven people to hide behind, and there are ${house.length}. ${p.Sub} does not say the word out loud. ${p.Sub} does not have to.`,
-      `"${partner} beats me." ${actor} tries three different ways of arranging the last chairs and ${partner} wins all three. The deal was real when ${p.sub} made it, which is the part that is going to be hard to explain later.`,
-      `${actor} has kept every promise ${p.sub} has made in here and is now looking directly at the one ${p.sub} cannot afford to. ${partner} would take ${p.obj} to the end. That is exactly the problem.`,
-      `The ${tier} has been ${actor}'s most useful relationship so far, but keeping ${partner} is becoming dangerous. ${p.Sub} starts asking what the next eviction would look like without ${partner}.`,
-    ], ctx, actor, partner) : variant([
-      `${actor} runs the numbers on cutting ${partner} and finds them fine, and does not care. The ${tier} was made on a night that mattered, and ${p.sub} would rather lose to ${partner} than get to the end without ${pronouns(partner).obj}.`,
-      `"I know what everybody would do here." ${actor} says it to the Diary Room and then says the other thing too: that ${p.sub} shook on the ${tier} with ${partner} and intends to be somebody who meant it.`,
-      `${actor} weighs the seat against the promise for about a minute, which is longer than ${p.sub} expected to and much shorter than the house would guess. ${partner} is going with ${p.obj}.`,
-      `Everybody left is doing this arithmetic. ${actor} does it, arrives at ${partner}, and decides the ${tier} is the only thing ${p.sub} will still be able to describe honestly when this is over.`,
-    ], ctx, actor, partner);
+    const scene = makeScene('arc.cut', { a: actor, b: partner }, { ending: cutting ? 'cutting' : 'keeping', deal: tier }, [], 'diary-room');
 
     api.remember(actor, partner, cutting ? 'planning-the-cut' : 'resolve', cutting ? 3 : 2,
       { tier, kept: !cutting });
     api.addBond(actor, partner, cutting ? -0.7 : 1.1);
     if (!cutting) api.suspicion(actor, partner, -0.4);
-    return result(text, [actor, partner], cutting ? 'WEIGHING THE CUT' : 'KEEPING IT',
+    return result(scene, [actor, partner], cutting ? 'WEIGHING THE CUT' : 'KEEPING IT',
       cutting ? 'red' : 'green');
   },
 };
@@ -791,20 +683,9 @@ const endgameUnbeatable = {
       api.suspicion(a, b, 0.4);
       return result(`Nobody wants to name the favourite.`, [a, b], 'UNSAID', 'grey');
     }
-    const p = pronouns(actor);
     const strong = respectOf(actor, unbeatable) >= 4 || villain(actor);
 
-    const text = strong ? variant([
-      `${actor} says it to ${third} in the backyard like a fact rather than a complaint: nobody sitting next to ${unbeatable} at the end wins, and that includes both of them. It is the first honest sentence either of them has said this week.`,
-      `"Name one person on that jury who does not vote for ${unbeatable}." ${third} tries. ${third} cannot. ${actor} lets the silence do the rest of the argument.`,
-      `${actor} has been avoiding the thought for two weeks and hands it to ${third} fully formed: ${unbeatable} wins from any chair, against anybody, and there is exactly one week left in which that is a solvable problem.`,
-      `${actor} does not dress it up. "${unbeatable} beats me. ${unbeatable} beats you. That is the whole conversation." ${third} does not disagree, which is the same as agreeing to something.`,
-    ], ctx, actor, unbeatable, third) : variant([
-      `${actor} works up to it slowly, and the thing ${p.sub} eventually says to ${third} is that ${p.sub} does not think ${p.sub} can beat ${unbeatable}, which is a much harder sentence than the strategic version of it.`,
-      `"Am I mad, or —" ${actor} does not finish it, and ${third} finishes it for ${p.obj}, with ${unbeatable}'s name. Both of them look slightly ill.`,
-      `${actor} counts the jury on ${p.posAdj} fingers for ${third}, in the backyard, quietly, and gets to a number for ${unbeatable} that ends the conversation.`,
-      `${third} asks ${actor} who ${p.sub} wants to sit next to at the end. ${actor} answers by listing everybody except ${unbeatable}, and hears how that sounds a second after saying it.`,
-    ], ctx, actor, unbeatable, third);
+    const scene = makeScene('arc.favourite', { a: actor, b: third && third !== actor ? third : null }, { ending: strong ? 'blunt' : 'worried', target: unbeatable }, [], 'backyard');
 
     api.setTarget(actor, unbeatable, `cannot be beaten at the end`);
     api.remember(actor, unbeatable, 'respect', 3, { about: 'wins from any chair' });
@@ -813,7 +694,7 @@ const endgameUnbeatable = {
       api.suspicion(third, unbeatable, 0.9);
       api.addBond(actor, third, 0.5);
     }
-    return result(text, [actor, unbeatable, third], 'NAMES THE FAVOURITE', 'gold');
+    return result(scene, [actor, unbeatable, third], 'NAMES THE FAVOURITE', 'gold');
   },
 };
 
@@ -852,15 +733,8 @@ const endgamePromisesCompared = {
     }
     const { suspect } = found;
     const [one, two] = quiet(found.holders);
-    const p = pronouns(one);
 
-    const text = variant([
-      `It comes out sideways, the way it always does: ${one} says "when the three of us get there" and ${two} says "which three", and the answer both of them give has ${suspect} in it and only one of them has the third chair.`,
-      `${one} and ${two} compare notes in the bedroom, expecting to find they are on the same page, and find instead that they are on two identical pages ${suspect} wrote separately.`,
-      `"${suspect} told you that? Word for word?" ${two} repeats the promise back and ${one} recognises ${p.posAdj} own conversation in somebody else's mouth. Neither of them raises their voice. It is worse than if they had.`,
-      `Two houseguests, one bedroom, and the same guarantee from the same person. ${one} and ${two} take a long time to say the obvious thing, and once it is said neither of them can put it back.`,
-      `${two} mentions the deal casually, as a thing already settled. ${one} asks ${pronouns(two).obj} to say the date. It is the same date. ${suspect} shook on the end twice in one evening.`,
-    ], ctx, one, two, suspect);
+    const scene = makeScene('arc.compare', { a: one, b: two }, { ending: 'scene', target: suspect }, [], 'bedroom');
 
     api.suspicion(one, suspect, 1.6);
     api.suspicion(two, suspect, 1.6);
@@ -869,7 +743,7 @@ const endgamePromisesCompared = {
     api.addBond(one, two, 0.9);
     api.addBond(one, suspect, -1.2);
     api.addBond(two, suspect, -1.2);
-    return result(text, [one, two, suspect], 'THE SAME PROMISE, TWICE', 'red');
+    return result(scene, [one, two, suspect], 'THE SAME PROMISE, TWICE', 'red');
   },
 };
 
@@ -906,18 +780,11 @@ const endgameJuryMath = {
       return result(`${counter} counts the jury and gets a number ${pronouns(counter).sub} does not want.`,
         [counter], 'BAD ARITHMETIC', 'grey');
     }
-    const p = pronouns(counter);
     const listener = others.find(n => n !== beloved) || beloved;
     const names = jury.slice(-3).join(', ');
     const margin = juryLove(beloved) - juryLove(counter);
 
-    const text = variant([
-      `${counter} lists the jury out loud in the HOH room — ${names} — and stops at the third name, because ${p.sub} has just realised that all three of them liked ${beloved} and none of them owe ${p.obj} anything.`,
-      `"Go through them with me." ${counter} makes ${listener} do it one by one, and the exercise produces exactly one conclusion, which is that ${beloved} has been making friends out of everybody ${p.sub} has been beating.`,
-      `${counter} has been playing the house. ${beloved} has been playing the people leaving it. Sitting in the HOH room with ${names} written out in ${p.posAdj} head, ${counter} works out which of those two games the last night belongs to.`,
-      `The jury is ${jury.length} people now, and ${counter} can name what every one of them thinks of ${pronouns(beloved).obj}. ${p.Sub} cannot name what a single one of them thinks of ${p.obj}, and that gap is roughly ${Math.max(1, Math.round(Math.abs(margin)))} votes wide.`,
-      `${counter} tells ${listener} that the game is not the block any more, it is ${names} and whoever else is sitting out there. Then ${p.sub} says ${beloved}'s name, and ${listener} understands it as the plan it is.`,
-    ], ctx, counter, beloved, listener);
+    const scene = makeScene('arc.jury', { a: counter, b: listener && listener !== beloved ? listener : null }, { ending: 'scene', target: beloved, jury: names }, [], 'living-room');
 
     api.remember(counter, beloved, 'watching-who-wants-it', 2, { about: 'the jury likes them' });
     api.addBond(counter, beloved, -0.5);
@@ -926,7 +793,7 @@ const endgameJuryMath = {
     if (rng() < Math.min(0.9, s.strategic / 12 + 0.15)) {
       api.setTarget(counter, beloved, 'the jury already loves them');
     }
-    return result(text, [counter, beloved, listener], 'COUNTING THE JURY', 'gold');
+    return result(scene, [counter, beloved, listener], 'COUNTING THE JURY', 'gold');
   },
 };
 

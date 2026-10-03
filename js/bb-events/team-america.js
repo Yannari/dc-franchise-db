@@ -22,17 +22,11 @@
 // team as a team or say a member is on it. Everything here is what an outsider
 // could actually observe.
 import { gs } from '../core.js';
-import { pronouns } from '../players.js';
 import { pStats, band, perceived, furthestFrom } from './_read.js';
-import { freshLine } from '../bb/aired.js';
+import { makeScene } from '../bb/script/scene.js';
 
-function _variant(list, ctx, ...salt) {
-  const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${ctx?.act || ''}|${salt.join('|')}`;
-  let hash = 0;
-  for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
-  return freshLine(list, hash, ctx);
-}
 const _others = (house, ...exclude) => house.filter(n => n && !exclude.includes(n));
+const _list = names => names.length < 2 ? names.join('') : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
 const _reactable = ctx => ctx?.act === 'house' || ctx?.act === 'campaign';
 
 /** Internal casting only — never narrated as membership. */
@@ -106,18 +100,9 @@ const theTell = {
     const cast = _tellCast(house, ctx);
     if (!cast) return null;
     const { team, watcher } = cast;
-    const named = team.slice(0, 3).join(', ');
-    const text = _variant([
-      `${watcher} has started counting rooms. ${named} keep turning out to be in the same one, and none of `
-        + 'them can give a reason for it that sounds like a reason.',
-      `"They are not even friends." ${watcher} says it to nobody, about ${named}, and then cannot stop `
-        + 'turning it over — people who are not friends do not keep finding each other.',
-      `${named} are not usually a group, which is precisely why ${watcher} notices when they disappear into the same room again.`,
-      `Every alliance in this house announced itself eventually. ${watcher} is fairly sure one of them has `
-        + `not, and is fairly sure it involves ${team[0]}.`,
-    ], ctx, named, watcher);
+    const scene = makeScene('team.tell', { a: watcher, b: team[0] }, { ending: 'scene', group: _list(team.slice(0, 3)) }, [], 'living-room');
     for (const n of team) api.suspicion(watcher, n, 1.1);
-    return { text, players: [...team.slice(0, 3), watcher],
+    return { scene, players: [...team.slice(0, 3), watcher],
       badgeText: 'THE SAME ROOM, AGAIN', badgeClass: 'red' };
   },
 };
@@ -134,20 +119,11 @@ const theSaboteur = {
     const cast = _saboteurCast(house, ctx);
     if (!cast) return null;
     const { accuser, blamed } = cast;
-    const text = _variant([
-      `${accuser} is certain the house is being pushed and has decided the hand belongs to ${blamed}. `
-        + 'It does not. There is no evidence because there is no crime, in the ordinary sense, to find.',
-      `"Somebody has been working us." ${accuser} is entirely right, and lands on ${blamed}, who has done `
-        + 'nothing at all except be slightly hard to read.',
-      `The house cannot accept being steered without a name to attach to it, so it makes one. This week `
-        + `it is ${blamed}.`,
-      `${blamed} spends the evening defending a plan ${pronouns(blamed).sub} was never part of, to a room `
-        + 'that has already decided.',
-    ], ctx, accuser, blamed);
+    const scene = makeScene('team.saboteur', { a: accuser, b: blamed }, { ending: 'scene' }, [], 'kitchen');
     api.suspicion(accuser, blamed, 1.6);
     api.addBond(blamed, accuser, -0.9);
     try { api.remember(blamed, accuser, 'called-me-a-saboteur', 2, { twist: 'bb-team-america' }); } catch { /* texture */ }
-    return { text, players: [accuser, blamed], badgeText: 'A HAND, ANY HAND', badgeClass: 'red' };
+    return { scene, players: [accuser, blamed], badgeText: 'A HAND, ANY HAND', badgeClass: 'red' };
   },
 };
 
@@ -163,19 +139,9 @@ const theReluctance = {
     const cast = _reluctantCast(house, ctx);
     if (!cast) return null;
     const { a, b } = cast;
-    const p = pronouns(a);
-    const text = _variant([
-      `${a} would like ${b} out of this house and has to keep finding excuses to be alone in a room with `
-        + `${pronouns(b).obj} anyway. It is the most exhausting week ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} had.`,
-      `Whatever is holding ${a} and ${b} together, it is not affection — they are civil in a way that reads, `
-        + 'from outside, as two people who have agreed about something and do not want to say what.',
-      `${a} spends twenty minutes being warm to ${b}, walks out, and immediately tells somebody else that `
-        + `${b} cannot be trusted. Both of those are true and ${p.sub} ${p.sub === 'they' ? 'know' : 'knows'} it.`,
-      `"We are not close." ${a} says it about ${b} unprompted, twice, to different people, which is the sort `
-        + 'of thing only somebody managing a problem says.',
-    ], ctx, a, b);
+    const scene = makeScene('team.reluctant', { a, b }, { ending: 'scene' }, [], 'backyard');
     api.addBond(a, b, -0.4);
-    return { text, players: [a, b], badgeText: 'NOT EVEN FRIENDS', badgeClass: 'blue' };
+    return { scene, players: [a, b], badgeText: 'NOT EVEN FRIENDS', badgeClass: 'blue' };
   },
 };
 
@@ -191,19 +157,9 @@ const theCover = {
     const cast = _coverCast(house, ctx);
     if (!cast) return null;
     const { who, asked } = cast;
-    const p = pronouns(who);
-    const text = _variant([
-      `${asked} asks ${who} straight out what that conversation was about. The answer is quick, complete `
-        + `and slightly too good, and ${asked} spends the rest of the night deciding what to do with that.`,
-      `${who} burns a genuine piece of information on ${asked} — real, useful, damaging to somebody else — `
-        + 'purely to stop being asked about something unrelated. It works, and it cost more than it looks.',
-      `"It was nothing." It was not nothing, and ${asked} has been in this house long enough to hear the `
-        + 'difference.',
-      `${who} explains ${p.posAdj} way out of it and walks off knowing ${asked} did not buy a word, which is `
-        + 'now a second problem sitting on top of the first.',
-    ], ctx, who, asked);
+    const scene = makeScene('team.cover', { a: who, b: asked }, { ending: 'scene' }, [], 'backyard');
     api.suspicion(asked, who, 1.3);
-    return { text, players: [who, asked], badgeText: 'SLIGHTLY TOO GOOD', badgeClass: 'gold' };
+    return { scene, players: [who, asked], badgeText: 'SLIGHTLY TOO GOOD', badgeClass: 'gold' };
   },
 };
 

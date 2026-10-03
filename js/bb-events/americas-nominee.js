@@ -20,16 +20,9 @@
 // Rules: the MVP is never named as the MVP, and no beat may state that the
 // audience chose a particular name — the house does not get to see the vote.
 import { gs } from '../core.js';
-import { pronouns } from '../players.js';
 import { pStats, band, perceived, closestTo, furthestFrom } from './_read.js';
-import { freshLine } from '../bb/aired.js';
+import { makeScene } from '../bb/script/scene.js';
 
-function _variant(list, ctx, ...salt) {
-  const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${ctx?.act || ''}|${salt.join('|')}`;
-  let hash = 0;
-  for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
-  return freshLine(list, hash, ctx);
-}
 const _others = (house, ...exclude) => house.filter(n => n && !exclude.includes(n));
 
 const _an = ctx => ctx?.week?.americasNominee || null;
@@ -87,16 +80,10 @@ const theChair = {
     const cast = _chairCast(house, ctx);
     if (!cast) return null;
     const { who, confidant } = cast;
-    const p = pronouns(who);
-    const text = _variant([
-      `${who} is on the block and there is nobody to campaign to about the decision. The Head of Household did not make it, and whoever did cannot be pulled into the storage room for a conversation.`,
-      `"Who do I even talk to?" ${who} asks ${confidant || 'the ceiling'}, and it is a real question with no answer in this building.`,
-      `${who} has spent a week being liked by everybody in here and nominated anyway. ${p.Sub} ${p.sub === 'they' ? 'are' : 'is'} starting to work out that the room ${p.sub} needed to be liked by was never in here.`,
-      `Every other nominee this season could look at somebody and know who named them. ${who} looks around the kitchen and sees ${Math.max(0, house.length - 1)} faces that may have had nothing to do with it.`,
-    ], ctx, who);
+    const scene = makeScene('an.chair', { a: who, b: confidant || null }, { ending: 'scene', intent: confidant ? 'told' : 'alone' }, [], 'kitchen');
     api.popDelta(who, 1.5);
     if (confidant) api.addBond(who, confidant, 0.4);
-    return { text, players: [who, confidant].filter(Boolean),
+    return { scene, players: [who, confidant].filter(Boolean),
       badgeText: 'NOBODY TO CAMPAIGN TO', badgeClass: 'red' };
   },
 };
@@ -116,16 +103,11 @@ const huntAnyway = {
     // In the direct variant there is genuinely nobody to catch, which does not
     // slow the house down at all.
     const guiltyExists = a.style === 'mvp';
-    const text = _variant([
-      `${accuser} does not believe for a second that nobody in this house had a hand in it, and has decided that somebody is ${accused}. There is no evidence because there is, in the ordinary sense, no crime.`,
-      `"Somebody in here knows." ${accuser} says it in three separate rooms, and by the third one ${accused} is the name attached to it.`,
-      `${accuser} builds a case out of who has been quiet and who has been odd, and arrives at ${accused}, who has been neither.`,
-      `The house cannot accept an anonymous chair without a culprit, so it makes one. This week it is ${accused}.`,
-    ], ctx, accuser, accused);
+    const scene = makeScene('an.hunt', { a: accuser, b: accused }, { ending: 'scene' }, [], 'kitchen');
     api.suspicion(accuser, accused, 1.3);
     api.addBond(accused, accuser, -0.7);
     try { api.remember(accused, accuser, 'grudge', 1, { twist: 'bb-americas-nominee', guiltyExists }); } catch { /* texture */ }
-    return { text, players: [accuser, accused],
+    return { scene, players: [accuser, accused],
       badgeText: guiltyExists ? 'A NAME, PROBABLY WRONG' : 'GUILTY OF NOTHING, NECESSARILY',
       badgeClass: 'red' };
   },
@@ -143,13 +125,8 @@ const theOutsideRoom = {
     const cast = _outsideCast(house, ctx);
     if (!cast) return null;
     const { reader, mark } = cast;
-    const text = _variant([
-      `${reader} says the quiet thing: there is a whole room voting on this game that none of them can see, has never met them, and has already decided who it likes. Nothing any of them do in here reaches it directly.`,
-      `"We are being watched by people with an opinion." ${reader} says it as strategy, not paranoia, and ${mark || 'the room'} does not enjoy how obviously true it is.`,
-      `${reader} points out that every argument in this house has now had an audience with a vote in it, which changes what an argument is for.`,
-      `The third chair keeps filling and nobody in this room fills it. ${reader} has stopped hunting and started wondering what the people outside actually want.`,
-    ], ctx, reader, mark);
-    return { text, players: [reader, mark].filter(Boolean),
+    const scene = makeScene('an.outside', { a: reader, b: mark || null }, { ending: 'scene', intent: mark ? 'heard' : 'alone' }, [], 'living-room');
+    return { scene, players: [reader, mark].filter(Boolean),
       badgeText: 'A ROOM THEY CANNOT SEE', badgeClass: 'blue' };
   },
 };
@@ -166,16 +143,10 @@ const playingToCamera = {
     const cast = _cameraCast(house, ctx);
     if (!cast) return null;
     const { performer, watcher } = cast;
-    const p = pronouns(performer);
-    const text = _variant([
-      `${performer} has started addressing the cameras directly — not the diary room, the wall ones — and doing it where people can see ${p.obj} do it. There is a vote out there and ${p.sub} ${p.sub === 'they' ? 'intend' : 'intends'} to be its favourite.`,
-      `${performer} is suddenly very kind to everybody, very loudly, in the rooms with the most cameras in them. ${watcher || 'The house'} has noticed the geography of it.`,
-      `Somebody out there is choosing, so ${performer} has started performing for them and stopped bothering to hide it.`,
-      `"They're watching all of it." ${performer} says it like a warning and behaves like it is an opportunity.`,
-    ], ctx, performer, watcher);
+    const scene = makeScene('an.camera', { a: performer, b: watcher || null }, { ending: 'scene', intent: watcher ? 'seen' : 'alone' }, [], 'living-room');
     api.popDelta(performer, 1.5);
     if (watcher) api.suspicion(watcher, performer, 0.6);
-    return { text, players: [performer, watcher].filter(Boolean),
+    return { scene, players: [performer, watcher].filter(Boolean),
       badgeText: 'PLAYING TO THE ROOM OUTSIDE', badgeClass: 'gold' };
   },
 };
@@ -194,21 +165,12 @@ const theMvp = {
     const { a, mvp, watcher } = cast;
     const st = pStats(mvp);
     const overplayed = pStats(watcher).intuition >= 7 && st.strategic <= 6;
-    const p = pronouns(mvp);
-    const text = overplayed ? _variant([
-      `${mvp} is extremely interested in who might have done this, and has a theory ready, and asks ${watcher} for ${p.posAdj} theory first. ${watcher} notices the order those happened in.`,
-      `${mvp} defends ${a.nominee} more warmly than anybody else in the house, which is either kindness or the specific guilt of somebody who put them there.`,
-      `${watcher} floats an invented detail about how the third nominee gets chosen and watches ${mvp} not correct it fast enough.`,
-    ], ctx, mvp, watcher) : _variant([
-      `${mvp} is exactly as baffled as everybody else about the third chair, and says so once, and then talks about something else for the rest of the night.`,
-      `Somebody asks ${mvp} who ${p.sub} ${p.sub === 'they' ? 'think' : 'thinks'} did it. ${p.Sub} ${p.sub === 'they' ? 'shrug' : 'shrugs'} and names the country, which is both a joke and the truth.`,
-      `${mvp} spends the evening being unhelpfully vague about a subject ${p.sub} ${p.sub === 'they' ? 'know' : 'knows'} more about than anybody in the house.`,
-    ], ctx, mvp, watcher);
+    const scene = makeScene('an.mvp', { a: mvp, b: watcher }, { ending: overplayed ? 'overplayed' : 'quiet', nominee: a.nominee }, [], 'kitchen');
     if (overplayed) {
       api.suspicion(watcher, mvp, 1.4);
       try { api.remember(watcher, mvp, 'suspected-mvp', 1, { twist: 'bb-americas-nominee' }); } catch { /* texture */ }
     }
-    return { text, players: [mvp, watcher],
+    return { scene, players: [mvp, watcher],
       badgeText: overplayed ? 'A LITTLE TOO INVESTED' : 'AS BAFFLED AS ANYBODY',
       badgeClass: overplayed ? 'gold' : 'grey' };
   },

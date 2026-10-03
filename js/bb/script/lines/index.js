@@ -36,6 +36,7 @@ import TWIST1 from './twist1.js';
 import TWIST2 from './twist2.js';
 import TWIST3 from './twist3.js';
 import TWIST4 from './twist4.js';
+import TWIST5 from './twist5.js';
 
-export const POOLS = { ...FRICTION, ...CEREMONY, ...TALK, ...SOCIAL, ...DEALS, ...ALLIANCE, ...CAMPAIGN, ...POWER, ...LIFE, ...PHASE, ...BLOC, ...VENUE, ...FALLOUT, ...BOND, ...REIGN, ...SCHEME, ...FOLLOWUP, ...TEXTURE, ...EDITORIAL, ...ARC, ...COUPLE, ...JURY, ...PLAN, ...KNOWN, ...CER, ...ROMANCE, ...UPKEEP, ...ENGINE, ...DRINKS, ...MEETING, ...SLOP, ...WHACK, ...TWIST1, ...TWIST2, ...TWIST3, ...TWIST4 };
+export const POOLS = { ...FRICTION, ...CEREMONY, ...TALK, ...SOCIAL, ...DEALS, ...ALLIANCE, ...CAMPAIGN, ...POWER, ...LIFE, ...PHASE, ...BLOC, ...VENUE, ...FALLOUT, ...BOND, ...REIGN, ...SCHEME, ...FOLLOWUP, ...TEXTURE, ...EDITORIAL, ...ARC, ...COUPLE, ...JURY, ...PLAN, ...KNOWN, ...CER, ...ROMANCE, ...UPKEEP, ...ENGINE, ...DRINKS, ...MEETING, ...SLOP, ...WHACK, ...TWIST1, ...TWIST2, ...TWIST3, ...TWIST4, ...TWIST5 };
 export const POOL_KEYS = Object.keys(POOLS);

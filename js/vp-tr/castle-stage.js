@@ -647,6 +647,10 @@ const CSS = `
   background:linear-gradient(162deg,#252b37,#080b11);box-shadow:0 0 0 2px rgba(224,160,73,.45),0 16px 40px rgba(0,0,0,.8)}
 .trs-av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 18%;z-index:1}
 .trs-ini{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--v-display);font-weight:900;font-size:26px;color:rgba(232,221,193,.5)}
+/* THE INITIALS ARE A FALLBACK, NOT A LABEL: while the photo is there they stay
+   out of sight (they were drawn over the faces on the fire and the reunion);
+   a photo that fails to load removes itself and they come back */
+img ~ .trs-ini{visibility:hidden}
 .trs-nm{margin-top:8px;text-align:center;white-space:nowrap;font-family:var(--v-display);font-weight:700;font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:var(--v-vellum-2);text-shadow:0 2px 8px #000}
 .trs-nm em{font-style:normal;color:#e0606a}
 .trs-fig.trs-quiet{filter:brightness(.42) saturate(.6)}

@@ -68,11 +68,13 @@ export function sendToCamp({ week, evicted, house = [], rng = Math.random } = {}
   // twist in one sentence.
   const against = (week?.ballots || []).filter(b => b.evict === evicted)
     .map(b => b.voter).filter(n => house.includes(n));
-  if (against.length) {
+  // Not for the last camper: camp is full and the door opens tonight, so they
+  // never have a breakfast with anybody.
+  const full = campers().length >= CAMP_SIZE;
+  if (against.length && !full) {
     beats.push(beat(`${against.slice(0, 3).join(', ')} voted ${evicted} out and still live with ${evicted}.`,
       [evicted, ...against.slice(0, 3)], 'STILL AT THE TABLE', 'red', 'voters'));
   }
-  const full = campers().length >= CAMP_SIZE;
   return {
     type: 'camp-comeback', week: week?.num || 0, secret: false,
     arrival: evicted, camp: campers(), nth, size: CAMP_SIZE, full, beats,

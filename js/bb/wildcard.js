@@ -32,14 +32,16 @@
 // (drawn, not chosen; safety, at a price; in public) is kept whole. If assigned
 // teams ever land, the draw is the only function here that has to change.
 import { gs } from '../core.js';
-import { pStats, pronouns } from '../players.js';
+import { pStats } from '../players.js';
 import { getPerceivedBond, addBond } from '../bonds.js';
-import { aptitude, makePicker, clamp } from '../bb-comps/_shared.js';
+import { aptitude, clamp } from '../bb-comps/_shared.js';
 import { stableRng } from './knowledge.js';
 import { drawPunishment, applyPunishment, BB_PUNISHMENTS } from './punishments.js';
 
-const beat = (text, players, badgeText, badgeClass = 'gold') =>
-  ({ text, players: [...players].filter(Boolean), badgeText, badgeClass });
+// Beats are plain facts with a `part`; the words are written by
+// bb/script/ceremony.js from lines/wildact.js.
+const beat = (text, players, badgeText, badgeClass = 'gold', part = null, extra = {}) =>
+  ({ text, players: [...players].filter(Boolean), badgeText, badgeClass, ...(part ? { part } : {}), ...extra });
 
 /** How many names come out of the hat. */
 export const WILDCARD_DRAW = 3;
@@ -63,58 +65,6 @@ const WILDCARD_MIX = { mental: 0.32, intuition: 0.28, temperament: 0.22, physica
  * At a higher rate it would stop being an outrage and start being the weather.
  */
 const HOUSE_PRICE_RATE = 0.35;
-
-// ── FIRST OUT OF THE HAT IS ITS OWN LINE, AND ONLY FOR THE FIRST ──
-//
-// These pools used to be one, and one of its lines said "${n}'s name comes out
-// first" — which the writer happily printed about the person drawn THIRD,
-// under a list that had just named the other two above them. A variant that
-// claims a position has to be gated on actually holding it.
-const DRAWN_FIRST = [
-  (n, p) => `${n}'s name comes out first, and ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} about a second to decide what face to make about it.`,
-  (n) => `The first name out is ${n}, who was not doing anything in particular and now is.`,
-  (n, p) => `${n} goes in first. ${p.Sub} ${p.sub === 'they' ? 'do' : 'does'} not get to see how anybody else reacts before deciding how to.`,
-  (n) => `First out of the hat: ${n}. The room turns to look, which is the last quiet second of the week.`,
-];
-const DRAWN = [
-  (n) => `${n} is drawn. Nobody in this house asked to be, which is the part that makes it worth watching.`,
-  (n, p) => `${n} hears ${p.posAdj} own name and is already doing the arithmetic on what winning would cost.`,
-  (n, p) => `${n} is drawn and does not look pleased about it. ${p.Sub} ${p.sub === 'they' ? 'were' : 'was'} having a quiet week.`,
-  (n) => `The hat gives up ${n}, who came into this room with no intention of playing anything today.`,
-  (n, p) => `${n} is next out, and spends the walk over deciding what ${p.sub} would say to an offer.`,
-];
-const NOT_DRAWN = [
-  (n, p) => `${n} is not drawn, and spends the next hour telling people ${p.sub} would have won it, which is free to say.`,
-  (n) => `${n} does not get a name out of the hat and is visibly, unhelpfully relieved.`,
-  (n, p) => `${n} watches three other people get a decision ${p.sub} does not have to make, and cannot decide whether that is luck.`,
-];
-const PLAYED = [
-  (n, p, s) => `${n} plays it fast and plays it clean, and comes off the board with ${s}.`,
-  (n, p, s) => `${n} takes ${p.posAdj} time, gets it wrong twice, and still finishes on ${s}.`,
-  (n, p, s) => `${n} is talking the whole way through, mostly to ${p.ref}, and posts ${s}.`,
-  (n, p, s) => `${n} stops halfway, works something out that nobody else spotted, and finishes with ${s}.`,
-  (n, p, s) => `${n} never settles, never stops moving, and it is worth exactly ${s}.`,
-];
-// Accepted, and the bill is theirs alone.
-const TOOK_IT_SOLO = [
-  (n, p, pun) => `${n} takes the safety and takes ${pun} with it. ${p.Sub} will be wearing the week ${p.sub} bought.`,
-  (n, p, pun) => `"Yes." ${n} does not pretend to think about it, and is handed ${pun} before the sentence is finished.`,
-  (n, p, pun) => `${n} accepts. Safe for the week, and ${pun} for the same week — the house gets to watch both at once.`,
-  (n, p, pun) => `${n} says yes, and the room makes the noise a room makes when somebody has just paid too much in public.`,
-];
-// Accepted, and everybody else is paying for it.
-const TOOK_IT_HOUSE = [
-  (n, p, pun) => `${n} takes it, and the bill goes to the house: ${pun}, for everybody who is not ${n}. The room is very quiet about that.`,
-  (n, p, pun) => `${n} accepts safety and hands the entire house ${pun}. Nobody says anything. Everybody remembers.`,
-  (n, p, pun) => `The price is ${pun} — for the house, not for ${n} — and ${n} takes it anyway, in front of the people who will be serving it.`,
-  (n, p, pun) => `${n} is safe. Everybody else is ${pun}. Both of those things were decided by one person in one second.`,
-];
-const REFUSED = [
-  (n, p) => `${n} turns it down. No safety, no punishment, and a claim ${p.sub} has just made in public about not needing either.`,
-  (n, p, pun) => `${n} looks at ${pun}, looks at the block, and says no. It is either principle or arithmetic and the house cannot tell which.`,
-  (n, p) => `"I'll take my chances." ${n} says it lightly, and half this room decides on the spot that ${p.sub} must have the votes.`,
-  (n, p) => `${n} refuses. The safety goes back in the box, and ${n} spends the week being the person who did not want it.`,
-];
 
 /** Who has already been drawn this season, so the hat does not repeat itself. */
 function drawn() {
@@ -175,7 +125,7 @@ export function runWildcard({ week, house, hoh, nominees = [],
   rng = stableRng('bb-wildcard', gs?.bb?.seasonSalt || 0, week?.num || 0) } = {}) {
   const room = (house || []).filter(Boolean);
   if (room.length < 5) return null;
-  const say = makePicker(rng);
+  const say = () => rng();   // each beat's wording used to be one draw here; the draw stays
   const beats = [];
 
   // ── the draw ──
@@ -198,13 +148,14 @@ export function runWildcard({ week, house, hoh, nominees = [],
   for (const name of players) if (!seen.includes(name)) seen.push(name);
 
   players.forEach((name, i) => {
-    beats.push(beat(say(i === 0 ? DRAWN_FIRST : DRAWN)(name, pronouns(name)),
-      [name], i === 0 ? 'FIRST OUT' : 'DRAWN', 'blue'));
+    say();
+    beats.push(beat(`${name} is drawn${i === 0 ? ' first' : ''}.`, [name], i === 0 ? 'FIRST OUT' : 'DRAWN', 'blue', 'drawn', { first: i === 0 }));
   });
   const missed = pool.filter(n => !players.includes(n));
   if (missed.length) {
     const who = missed[Math.floor(rng() * missed.length)] || missed[0];
-    beats.push(beat(say(NOT_DRAWN)(who, pronouns(who)), [who], 'NOT DRAWN', 'grey'));
+    say();
+    beats.push(beat(`${who} is not drawn.`, [who], 'NOT DRAWN', 'grey', 'missed'));
   }
 
   // ── the competition ──
@@ -212,10 +163,11 @@ export function runWildcard({ week, house, hoh, nominees = [],
     name,
     score: aptitude(name, WILDCARD_MIX) + (rng() - 0.5) * 5.2,
   })).sort((a, b) => b.score - a.score);
-  for (const s of scores) {
-    beats.push(beat(say(PLAYED)(s.name, pronouns(s.name), s.score.toFixed(1)),
-      [s.name], 'PLAYED IT', 'blue'));
-  }
+  scores.forEach((s, i) => {
+    say();
+    beats.push(beat(`${s.name} scores ${s.score.toFixed(1)}.`, [s.name], 'PLAYED IT', 'blue', 'played',
+      { score: +s.score.toFixed(1), place: i + 1 }));
+  });
   const winner = scores[0].name;
 
   // ── the offer, and who the bill goes to ──
@@ -235,13 +187,13 @@ export function runWildcard({ week, house, hoh, nominees = [],
     served: [], hoh: hoh || null, beats,
   };
 
-  const p = pronouns(winner);
   if (rng() < acceptPull(winner, { hoh, house: room, houseWide })) {
     act.accepted = true;
     act.safe = [winner];
-    beats.push(beat(say(houseWide ? TOOK_IT_HOUSE : TOOK_IT_SOLO)(winner, p, label),
+    say();
+    beats.push(beat(houseWide ? `${winner} takes safety, and the house serves ${label}.` : `${winner} takes safety, and serves ${label}.`,
       [winner], houseWide ? 'THE HOUSE PAYS' : 'SAFE, AND PAYING FOR IT',
-      houseWide ? 'red' : 'gold'));
+      houseWide ? 'red' : 'gold', 'took', { houseWide }));
 
     if (houseWide) {
       // ── AND IT COSTS THEM SOMETHING REAL ──
@@ -261,10 +213,8 @@ export function runWildcard({ week, house, hoh, nominees = [],
       const angriest = act.served
         .sort((a, b) => (pStats(a).temperament ?? 5) - (pStats(b).temperament ?? 5))[0];
       if (angriest) {
-        beats.push(beat(
-          `${angriest} does the arithmetic out loud so that everybody can hear it being done: one person is safe, `
-            + `${act.served.length} people are paying, and the vote on Thursday belongs to the ${act.served.length}.`,
-          [angriest, winner], 'THE BILL IS NOTED', 'red'));
+        beats.push(beat(`${angriest} is angry that ${act.served.length} people pay for ${winner}'s safety.`,
+          [angriest, winner], 'THE BILL IS NOTED', 'red', 'bill', { count: act.served.length }));
       }
     } else {
       applyPunishment(winner, punishmentId, { week: week?.num || 1 });
@@ -275,7 +225,8 @@ export function runWildcard({ week, house, hoh, nominees = [],
       gs.popularity[winner] = (gs.popularity[winner] || 0) + 1;
     }
   } else {
-    beats.push(beat(say(REFUSED)(winner, p, label), [winner], 'TURNED IT DOWN', 'grey'));
+    say();
+    beats.push(beat(`${winner} turns down safety.`, [winner], 'TURNED IT DOWN', 'grey', 'refused'));
     // ── REFUSING IS A CLAIM, AND CLAIMS MOVE THE ROOM ──
     //
     // Turning down safety in front of the house reads as somebody who knows
@@ -291,10 +242,7 @@ export function runWildcard({ week, house, hoh, nominees = [],
       if (b > 0) { try { addBond(name, winner, 0.4); } catch { /* texture */ } }
     }
     if (nominees.includes(winner)) {
-      beats.push(beat(
-        `${winner} is sitting on the block right now and has just handed back the one thing that takes ${p.obj} off it. `
-          + 'Either the count is already won, or this is the most expensive gesture of the season.',
-        [winner], 'ON THE BLOCK, AND SAID NO', 'red'));
+      beats.push(beat(`${winner} is on the block and turned down safety.`, [winner], 'ON THE BLOCK, AND SAID NO', 'red', 'blocked'));
     }
   }
   return act;

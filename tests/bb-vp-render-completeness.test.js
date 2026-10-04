@@ -144,7 +144,11 @@ describe('the Big Brother viewing party as a whole', () => {
           if (!b || typeof b.text !== 'string' || b.text.length < 40) continue;
           if (RETOLD.has(b.badgeText)) continue;
           checked++;
-          const probe = flat(b.text).slice(0, 45);
+          // A scripted beat's `text` is only its transcript ("X, in the Diary
+          // Room: ..."); a stepped screen shows the LINES, one per step. Probe
+          // the longest of them, which is the one least likely to match by luck.
+          const said = (b.lines || []).map(l => l?.text || '').sort((x, y) => y.length - x.length)[0];
+          const probe = flat(said || b.text).slice(0, 45);
           if (!html.includes(probe) && !missing.has(act.type)) {
             missing.set(act.type, `${twist} — "${probe}"`);
           }

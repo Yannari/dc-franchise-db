@@ -53,6 +53,19 @@ export const BBX_WHACK_CSS = `
 .bbx .stage .cres b{font:800 .62cqw 'Chakra Petch';letter-spacing:.12cqw;color:#f5c542}
 .bbx .stage .cres.wrong b{color:#9aa4b2}
 .bbx .stage .cres.wrong .cn{filter:grayscale(1)}
+.bbx .stage .v2board{position:absolute;left:50%;transform:translateX(-50%);top:7.2cqw;z-index:7;padding:.6cqw 1.2cqw .8cqw;border-radius:1cqw;
+  background:linear-gradient(180deg,rgba(24,18,4,.88),rgba(24,18,4,.64));box-shadow:0 0 0 .1cqw rgba(245,197,66,.45);backdrop-filter:blur(.6cqw)}
+.bbx .stage .v2board .v2h{display:block;text-align:center;font:700 .74cqw 'Chakra Petch';letter-spacing:.22cqw;color:#f5c542;margin-bottom:.5cqw}
+.bbx .stage .v2r{display:flex;justify-content:center;gap:.7cqw}
+.bbx .stage .v2c{width:6.2cqw;display:flex;flex-direction:column;align-items:center;gap:.2cqw;padding:.4cqw .3cqw .45cqw;border-radius:.6cqw;background:rgba(255,51,85,.1);box-shadow:inset 0 0 0 .14cqw #ff3355}
+.bbx .stage .v2f{position:relative;width:4.4cqw;aspect-ratio:1;border-radius:.4cqw;overflow:hidden;background:var(--c)}
+.bbx .stage .v2f img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 14%}
+.bbx .stage .v2c b{font:800 .58cqw Archivo;text-transform:uppercase;color:#fff;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bbx .stage .v2c i{font:700 .5cqw 'Chakra Petch';letter-spacing:.1cqw;font-style:normal;color:#ff8aa0}
+.bbx .stage .v2c.off{background:rgba(245,197,66,.12);box-shadow:inset 0 0 0 .14cqw #f5c542;opacity:.75}
+.bbx .stage .v2c.off i{color:#f5c542}
+.bbx .stage .v2c.new{box-shadow:inset 0 0 0 .18cqw #ff3355,0 0 1.6cqw rgba(255,51,85,.55)}
+.bbx .stage .v2c.now{animation:bbx-whin .5s cubic-bezier(.2,1.4,.4,1) both}
 @keyframes bbx-coinflip{0%{transform:rotateX(0)}60%{transform:rotateX(1080deg)}100%{transform:rotateX(1080deg)}}
 @media (prefers-reduced-motion:reduce){.bbx .stage .cres{animation:none}}
 @keyframes bbx-whin{from{transform:translateY(-.6cqw);opacity:.3}}

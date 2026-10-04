@@ -1283,6 +1283,42 @@ function coinScreens(act, ctx) {
   }];
 }
 
+// ── The second veto (Phase 7) ───────────────────────────────────────────
+// A Double, a Secret or a found veto: the meeting ends, and then it does not.
+// Big Brother explains the second medallion, then either nobody stands up
+// (the holder kept it) or the holder does, somebody comes down, and a chair
+// that had just been settled fills again. An anonymous medallion's hand is
+// never shown. The block on the board changes in front of the viewer.
+function secondVetoScreens(act, ctx) {
+  const linesOf = b => (b && b.lines?.length ? scriptSteps(b.lines) : []);
+  const beats = act.beats || [];
+  const anon = !!act.anonymous, found = !!act.hidden;
+  const steps = [
+    { k: 'bb', t: found ? 'Houseguests, a second Power of Veto was hidden in this house, and somebody found it.'
+      : anon ? 'Houseguests, there is a second Power of Veto this week, and its holder is anonymous.'
+        : 'Houseguests, there is a second Power of Veto this week.', rule: 1 },
+    { k: 'bb', t: 'It can be used now that the first veto meeting is over.', rule: 2 },
+    { k: 'bb', t: 'If it is used, the nominee it saves comes off the block, and a replacement is named.', rule: 3 },
+  ];
+  const before = (act.nominees || []).map(n => (n === act.replacement ? act.saved : n));
+  for (const b of beats) {
+    if (b.part === 'still' || b.part === 'kept' || b.part === 'stand' || b.part === 'cost') steps.push(...linesOf(b));
+    if (b.part === 'used') steps.push({ k: 'beat', t: anon ? `${act.saved} comes off the block. Nobody sees who did it.`
+      : act.saved === act.holder ? `${act.holder} uses the second veto to come off the block.` : `${act.holder} uses the second veto on ${act.saved}.`, v2Save: act.saved, toast: ['THE SECOND VETO', '#f5c542'] }, ...linesOf(b));
+    if (b.part === 'chair') steps.push({ k: 'beat', t: `${act.authority} names ${act.replacement} as the replacement nominee.`, v2Rep: act.replacement, toast: ['ONE MORE CHAIR', '#ff3355'] }, ...linesOf(b));
+  }
+  if (!act.used) steps.push({ k: 'beat', t: anon ? 'The second veto is not used.' : `${act.holder} does not use it. The block stays as it is.`, v2Kept: true });
+  return [{
+    id: `bb-veto2-w${ctx.week}`, kind: 'veto2', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: 'Living Room', cam: 4, time: ACT_TIME['veto-ceremony'],
+    kicker: 'Cam 04 · Living room', title: act.kind === 'secret' ? 'The Secret Veto' : found ? 'The Found Veto' : 'The Second Veto',
+    label: act.kind === 'secret' ? 'Secret Veto' : 'Second Veto', sub: 'The meeting ends twice',
+    seated: seatLiving(before, ctx.house.filter(n => !before.includes(n) && n !== ctx.hoh), ctx.hoh), veto2: { before, holder: anon ? null : act.holder },
+    rules: [['A SECOND VETO', found ? 'found hidden in the house' : anon ? 'held anonymously' : 'won in the competition'], ['AFTER THE MEETING', 'used once the first ceremony is over'],
+      ['ONE MORE CHAIR', 'whoever comes down is replaced']],
+    rulesTitle: 'THE SECOND VETO · HOW IT WORKS', steps,
+  }];
+}
+
 // Twist acts whose classic screen goes exactly where the act happened.
 const TWIST_SLOT = /^(rivals-|twist-announcement|duos-open|twin-|saboteur-|hacker|roadkill|coin|pandoras|power-played|interrogation|mystery-)/;
 
@@ -1378,6 +1414,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       case 'hidden-power': flush(); for (const scr of huntScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'secret-power-comp': flush(); for (const scr of secretPowerScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'power-played': { const pw = powerScreens(act, ctx); if (pw) { flush(); for (const scr of pw) ceremony(scr); } else { flush(); out.push({ slot: act.type }); } beatsOf(act); break; }
+      case 'second-veto': flush(); for (const scr of secondVetoScreens(act, ctx)) ceremony(scr); if (act.used) ctx.nominees = [...(act.nominees || ctx.nominees)]; beatsOf(act); break;
       case 'coin-of-destiny': flush(); for (const scr of coinScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'power-expired': flush(); for (const scr of expiredScreens(act, ctx)) ceremony(scr); break;
       case 'whacktivity': flush(); for (const scr of whackScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
@@ -1412,7 +1449,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
 }
 
 /** Ids of the legacy screens these steps replace. Everything else is a twist and stays. */
-export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard|secret-power|timecapsule|power-hoh-interrogation|power-deepfake-hoh|whacktivity|power-hoh-gatekeeper|power-the-cloud|power-buy-off|power-coup-d-etat|coin)(-\d+)?$/;
+export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard|secret-power|timecapsule|power-hoh-interrogation|power-deepfake-hoh|whacktivity|power-hoh-gatekeeper|power-the-cloud|power-buy-off|power-coup-d-etat|coin|secondveto-[a-z]+)(-\d+)?$/;
 export const ANCHOR_OF = id => {
   const base = id.replace(/-\d+$/, '');
   return /^bb-(final-hoh|final-cut|jury|ftc-questions|ftc-speeches|afh|reunion|finale-brief)$/.test(base) || /^bb-final-hoh$/.test(base) ? 'finale'

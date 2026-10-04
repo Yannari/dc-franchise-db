@@ -430,6 +430,25 @@ export function writeCeremony(act, week, house, extra = {}) {
     }
   }
 
+  // ── The second veto: a meeting that ends twice ──
+  if (act.type === 'second-veto') {
+    const fresh = freshWriter(ctx, house);
+    for (const b of act.beats || []) {
+      const p = (b.players || []).filter(Boolean);
+      const salt = `v2|${b.part}|${p.join('|')}`;
+      const anon = act.anonymous;
+      let lines = null;
+      if (b.part === 'still' && p[0]) lines = fresh('secact.still', { a: p[0] }, { ending: 'scene' }, salt);
+      if (b.part === 'kept' && p[0]) lines = fresh('secact.kept', { a: p[0] }, { ending: 'scene' }, salt);
+      if (b.part === 'stand' && p[0]) lines = fresh('secact.stand', { a: p[0] }, { ending: anon ? 'anon' : 'public' }, salt);
+      if (b.part === 'used' && p.length >= 2) lines = fresh('secact.used', { a: p[0], b: p[1] }, { ending: anon ? 'anon' : b.hidden ? 'found' : 'public' }, salt);
+      if (b.part === 'used' && p.length === 1) lines = fresh('secact.used', { a: p[0] }, { ending: anon ? 'selfanon' : 'self' }, salt);
+      if (b.part === 'chair' && p.length >= 2) lines = fresh('secact.chair', { a: p[0], b: p[1] }, { ending: b.byHoh ? 'hoh' : 'holder' }, salt);
+      if (b.part === 'cost' && p.length >= 2) lines = fresh('secact.cost', { a: p[0], b: p[1] }, { ending: anon ? 'anon' : 'public' }, salt);
+      if (Array.isArray(lines) && lines.length) { b.lines = lines; b.text = transcript(lines); }
+    }
+  }
+
   // ── The Coin of Destiny: pay in, play, call it in private ──
   if (act.type === 'coin-of-destiny') {
     const fresh = freshWriter(ctx, house);

@@ -308,6 +308,16 @@ function pxHtml(S, L, st, fresh) {
   return `<div class="pxtable"><span class="pt">THE BOXES · ONE HOLDS THE VETO</span><div class="pxr">${boxes}</div></div>`;
 }
 
+// ── The second veto's block (Phase 7) ──────────────────────────────────
+function veto2Html(S, L, st, fresh, idx) {
+  const V = S.veto2 || {};
+  const seen = S.steps.slice(0, idx + 1);
+  const saved = seen.find(x => x.v2Save)?.v2Save, rep = seen.find(x => x.v2Rep)?.v2Rep;
+  const chip = (n, cls) => `<div class="v2c ${cls} ${fresh && (st?.v2Save === n || st?.v2Rep === n) ? 'now' : ''}"><span class="v2f" style="--c:${col(n)}">${img(n)}</span><b>${esc(n)}</b><i>${cls === 'off' ? 'SAVED' : cls === 'new' ? 'REPLACEMENT' : 'NOMINATED'}</i></div>`;
+  const chips = (V.before || []).map(n => chip(n, n === saved ? 'off' : '')).join('') + (rep ? chip(rep, 'new') : '');
+  return `<div class="v2board"><span class="v2h">THE BLOCK${seen.some(x => x.v2Kept) ? ' · UNCHANGED' : ''}</span><div class="v2r">${chips}</div></div>`;
+}
+
 // ── The Coin of Destiny's table (Phase 7) ──────────────────────────────
 const COIN_SVG = `<svg viewBox="0 0 20 20" class="cn"><circle cx="10" cy="10" r="8.5" fill="#f5c542" stroke="#a57c12" stroke-width="1.4"/><circle cx="10" cy="10" r="5.6" fill="none" stroke="#a57c12" stroke-width="1"/></svg>`;
 function coinHtml(S, L, st, fresh, idx) {
@@ -561,6 +571,7 @@ export function stageHtml(screens, si, idx, fresh, o) {
   if (S.expired && idx >= 0) h += expiredHtml(S, L, st, fresh, idx);
   if (S.power && !isDr && idx >= 0 && !(st && st.rule != null)) h += powerCardHtml(S, L, st, fresh, idx);
   if (S.coin && !isDr && idx >= 0 && !(st && st.rule != null)) h += coinHtml(S, L, st, fresh, idx);
+  if (S.veto2 && !isDr && idx >= 0 && !(st && st.rule != null)) h += veto2Html(S, L, st, fresh, idx);
   if (L.bill && S.steps.some(x => x.bill) && !isDr) h += billHtml(L, st, fresh);
   if (L.votes && st && st.k === 'host') {
     h += `<div class="votes ${fresh && st.votes ? 'fresh' : ''}"><div class="v"><div class="n">${L.votes[0]}</div><div class="k">Votes</div></div><i class="sep"></i><div class="v"><div class="n">${L.votes[1]}</div><div class="k">Votes</div></div></div>`;

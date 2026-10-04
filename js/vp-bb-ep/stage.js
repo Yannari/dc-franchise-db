@@ -308,6 +308,27 @@ function pxHtml(S, L, st, fresh) {
   return `<div class="pxtable"><span class="pt">THE BOXES · ONE HOLDS THE VETO</span><div class="pxr">${boxes}</div></div>`;
 }
 
+// ── The Wildcard's hat board (Phase 7) ─────────────────────────────────
+function wildHtml(S, L, st, fresh, idx) {
+  const W = S.wild || {};
+  const seen = S.steps.slice(0, idx + 1);
+  const drawn = seen.filter(x => x.wcDraw).map(x => x.wcDraw);
+  const score = Object.fromEntries(seen.filter(x => x.wcScore).map(x => x.wcScore));
+  const win = seen.find(x => x.wcWin)?.wcWin;
+  const offer = seen.some(x => x.wcOffer);
+  const took = seen.some(x => x.wcTook), refused = seen.some(x => x.wcRefused);
+  const card = i => {
+    const n = drawn[i];
+    if (!n) return `<div class="wc hid"><span class="wcf">?</span><i>IN THE HAT</i></div>`;
+    const now = fresh && (st?.wcDraw === n || st?.wcScore?.[0] === n);
+    return `<div class="wc ${n === win ? 'win' : ''} ${win && n !== win ? 'lost' : ''} ${now ? 'now' : ''}"><span class="wcf" style="--c:${col(n)}">${img(n)}</span><b>${esc(n)}</b>`
+      + `<i>${score[n] != null ? esc(String(score[n])) : 'DRAWN'}</i></div>`;
+  };
+  const price = offer ? `<div class="wcp ${took ? 'took' : ''} ${refused ? 'no' : ''}"><span>THE PRICE${W.houseWide ? ' · THE HOUSE PAYS' : ''}</span><b>${esc(W.price || '')}</b>`
+    + `${took ? '<em>ACCEPTED</em>' : refused ? '<em>TURNED DOWN</em>' : ''}</div>` : '';
+  return `<div class="wildboard"><span class="wh">THE WILDCARD</span><div class="wr">${Array.from({ length: W.n || 3 }, (_, i) => card(i)).join('')}${price}</div></div>`;
+}
+
 // ── Camp Comeback's board of bunks (Phase 7) ───────────────────────────
 function campHtml(S, L, st, fresh, idx) {
   const C = S.camp || {};
@@ -427,6 +448,7 @@ export function stageHtml(screens, si, idx, fresh, o) {
   if (S.px && !isDr && idx >= 0 && !(st && st.rule != null)) h += pxHtml(S, L, st, fresh);
   if (S.duo && !isDr && idx >= 0 && !(st && st.rule != null)) h += duoHtml(S, L, st, fresh, idx);
   if (S.camp && !isDr && idx >= 0 && !(st && st.rule != null)) h += campHtml(S, L, st, fresh, idx);
+  if (S.wild && !isDr && idx >= 0 && !(st && st.rule != null)) h += wildHtml(S, L, st, fresh, idx);
   if (L.bill && S.steps.some(x => x.bill) && !isDr) h += billHtml(L, st, fresh);
   if (L.votes && st && st.k === 'host') {
     h += `<div class="votes ${fresh && st.votes ? 'fresh' : ''}"><div class="v"><div class="n">${L.votes[0]}</div><div class="k">Votes</div></div><i class="sep"></i><div class="v"><div class="n">${L.votes[1]}</div><div class="k">Votes</div></div></div>`;

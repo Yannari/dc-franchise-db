@@ -188,7 +188,8 @@ export function writeCeremony(act, week, house, extra = {}) {
     const first = entrants[0] || (act.held || [])[0];
     const suite = { enter: {}, short: {} };
     if (first) suite.open = part('suiteact.open', h && h !== first ? { a: first, b: h } : { a: first }, h && h !== first ? 'hoh' : 'plain', sctx, house, `open|${first}`);
-    entrants.forEach((n, i) => { const l = part('suiteact.enter', { a: n }, i ? 'next' : 'first', sctx, house, `enter|${n}`); if (l) suite.enter[n] = l; });
+    // the swipe screen speaks for the first three; the rest "swipe too" in one line
+    entrants.slice(0, 3).forEach((n, i) => { const l = part('suiteact.enter', { a: n }, i ? 'next' : 'first', sctx, house, `enter|${n}`); if (l) suite.enter[n] = l; });
     for (const b of act.beats || []) {
       const who = (b.players || [])[0];
       if (b.part === 'hold' && who) suite.hold = part('suiteact.hold', { a: who }, 'scene', sctx, house, `hold|${who}`);
@@ -332,6 +333,25 @@ export function writeCeremony(act, week, house, extra = {}) {
           if (Array.isArray(lines) && Array.isArray(more)) lines = [...lines, ...more];
         }
       }
+      if (Array.isArray(lines) && lines.length) { b.lines = lines; b.text = transcript(lines); }
+    }
+  }
+
+  // ── The Wildcard: three names from a hat, a puzzle, and an offer with a price ──
+  if (act.type === 'wildcard') {
+    const fresh = freshWriter(ctx, house);
+    const WORDS = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen'];
+    for (const b of act.beats || []) {
+      const p = (b.players || []).filter(Boolean);
+      const salt = `wild|${b.part}|${p.join('|')}`;
+      let lines = null;
+      if (b.part === 'drawn' && p[0]) lines = fresh('wildact.drawn', { a: p[0] }, { ending: b.first ? 'first' : 'next' }, salt);
+      if (b.part === 'missed' && p[0]) lines = fresh('wildact.missed', { a: p[0] }, { ending: 'scene' }, salt);
+      if (b.part === 'played' && p[0]) lines = fresh('wildact.played', { a: p[0] }, { ending: b.place === 1 ? 'best' : 'rest' }, salt);
+      if (b.part === 'took' && p[0]) lines = fresh('wildact.took', { a: p[0] }, { ending: b.houseWide ? 'house' : 'solo' }, salt);
+      if (b.part === 'bill' && p.length === 2) lines = fresh('wildact.bill', { a: p[0], b: p[1] }, { ending: 'scene', count: WORDS[b.count] || String(b.count) }, salt);
+      if (b.part === 'refused' && p[0]) lines = fresh('wildact.refused', { a: p[0] }, { ending: 'scene' }, salt);
+      if (b.part === 'blocked' && p[0]) lines = fresh('wildact.blocked', { a: p[0] }, { ending: 'scene' }, salt);
       if (Array.isArray(lines) && lines.length) { b.lines = lines; b.text = transcript(lines); }
     }
   }

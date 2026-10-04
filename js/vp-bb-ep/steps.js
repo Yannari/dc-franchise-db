@@ -958,6 +958,59 @@ function campScreens(act, ctx) {
 }
 const CAMP_ORD = { 2: 'second', 3: 'third', 4: 'fourth', 5: 'fifth', 6: 'sixth' };
 
+// ── The Wildcard (Phase 7) ──────────────────────────────────────────────
+// Three names out of a hat, a puzzle, and an offer. Big Brother explains it on
+// a rules card, the hat board fills with each name drawn, the scores come in
+// lowest first so the winner is the last card to light, and then the offer is
+// made out loud: safety, and what it costs (and who pays). Taking it or
+// turning it down is the last thing on the board. Words: lines/wildact.js.
+function wildcardScreens(act, ctx) {
+  const linesOf = b => (b && b.lines?.length ? scriptSteps(b.lines) : []);
+  const beats = act.beats || [];
+  const drawnN = (act.players || []).length;
+  const steps = [
+    { k: 'bb', t: `Houseguests, it is time for the Wildcard. I will draw ${word(drawnN)} names from this hat. Nobody chooses to play.`, rule: 1 },
+    { k: 'bb', t: 'The houseguests drawn will play one puzzle. The best score wins.', rule: 2 },
+    { k: 'bb', t: 'The winner will be offered safety for this week.', rule: 3 },
+    { k: 'bb', t: 'But safety has a price. The winner can take it and pay, or turn it down.', rule: 4 },
+  ];
+  for (const b of beats.filter(x => x.part === 'drawn')) {
+    const n = b.players[0];
+    steps.push({ k: 'bb', t: b.first ? `The first name is... ${n}.` : `The next name is... ${n}.`, wcDraw: n }, ...linesOf(b));
+  }
+  for (const b of beats.filter(x => x.part === 'missed')) steps.push(...linesOf(b));
+  const played = beats.filter(x => x.part === 'played').slice().reverse();   // lowest first
+  if (played.length) steps.push({ k: 'bb', t: `${listNames(act.players || [])}, the puzzle starts now.` });
+  for (const b of played) {
+    const n = b.players[0];
+    const won = b.place === 1;
+    steps.push({ k: 'bb', t: won ? `${n} scores ${b.score}. ${n}, you have won the Wildcard.` : `${n} scores ${b.score}.`,
+      wcScore: [n, b.score], ...(won ? { wcWin: n, toast: ['WILDCARD WINNER', '#f5c542'] } : {}) }, ...linesOf(b));
+  }
+  const w = act.winner;
+  if (w) {
+    steps.push({ k: 'bb', t: `${w}, you can be safe this week. The price: ${act.punishmentLabel}.${act.punishmentBlurb ? ' ' + act.punishmentBlurb : ''}`, wcOffer: true });
+    if (act.houseWide) steps.push({ k: 'bb', t: `And you will not pay it. Everyone else in the house will.`, wcOffer: true });
+    steps.push({ k: 'bb', t: `${w}, do you accept?` });
+  }
+  for (const b of beats) {
+    if (b.part === 'took') steps.push({ k: 'beat', t: `${w} accepts.`, wcTook: true,
+      toast: act.houseWide ? ['THE HOUSE PAYS', '#ff3355'] : ['SAFE, AT A PRICE', '#f5c542'] }, ...linesOf(b));
+    if (b.part === 'refused') steps.push({ k: 'beat', t: `${w} turns it down.`, wcRefused: true, toast: ['TURNED IT DOWN', '#9aa4b2'] }, ...linesOf(b));
+    if (b.part === 'bill' || b.part === 'blocked') steps.push(...linesOf(b));
+  }
+  return [{
+    id: `bb-wild-w${ctx.week}`, kind: 'wild', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: 'Living Room', cam: 4, time: '12:15',
+    kicker: 'Cam 04 · Living room', title: 'The Wildcard', label: 'The Wildcard', sub: 'Three names, one offer',
+    seated: seatLiving([], ctx.house.filter(n => n !== ctx.hoh), ctx.hoh),
+    wild: { n: drawnN, price: act.punishmentLabel, houseWide: !!act.houseWide },
+    rules: [['THE HAT', `${word(drawnN)} names are drawn — nobody chooses to play`], ['ONE PUZZLE', 'the best score wins'],
+      ['THE OFFER', 'the winner is offered safety this week'], ['THE PRICE', 'take it and pay a punishment, or turn it down']],
+    rulesTitle: 'THE WILDCARD · HOW IT WORKS', steps,
+  }];
+}
+const listNames = ns => ns.length < 2 ? ns.join('') : `${ns.slice(0, -1).join(', ')} and ${ns.at(-1)}`;
+
 // Twist acts whose classic screen goes exactly where the act happened.
 const TWIST_SLOT = /^(rivals-|twist-announcement|duos-open|twin-|saboteur-|hacker|roadkill|coin|pandoras|power-played|interrogation|mystery-)/;
 
@@ -1051,6 +1104,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       case 'prize-exchange': flush(); for (const scr of pxScreens(act, ctx)) ceremony(scr);
         ctx.vetoHolder = act.vetoHolder || ctx.vetoHolder; beatsOf(act); break;
       case 'hidden-power': flush(); for (const scr of huntScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
+      case 'wildcard': flush(); for (const scr of wildcardScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'safety-suite': flush(); for (const scr of suiteScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'rivals-hoh':
         // the latecomers walk in here: from now on they are in the house
@@ -1079,7 +1133,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
 }
 
 /** Ids of the legacy screens these steps replace. Everything else is a twist and stays. */
-export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor)(-\d+)?$/;
+export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard)(-\d+)?$/;
 export const ANCHOR_OF = id => {
   const base = id.replace(/-\d+$/, '');
   return /^bb-(final-hoh|final-cut|jury|ftc-questions|ftc-speeches|afh|reunion|finale-brief)$/.test(base) || /^bb-final-hoh$/.test(base) ? 'finale'

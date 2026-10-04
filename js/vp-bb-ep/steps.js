@@ -1086,6 +1086,58 @@ function capsuleScreens(act, ctx) {
   }];
 }
 
+// ── The Interrogation, and the Deepfake (Phase 7) ──────────────────────
+// A secret power takes the Head of Household's week before nominations. The
+// Interrogation is public: Big Brother explains it, the deposed HOH questions
+// the house one room at a time while a tally of the names given builds on the
+// board, then names one, and is right or wrong. The Deepfake is not public at
+// all, so its card is the narrator's, not Big Brother's, and only the taker
+// speaks, in the Diary Room. Words: lines/intact.js.
+function interrogationScreens(act, ctx) {
+  const linesOf = b => (b && b.lines?.length ? scriptSteps(b.lines) : []);
+  const beats = act.beats || [];
+  const deposed = act.deposed, holder = act.holder;
+  if (act.creditsDeposed) {
+    const steps = [
+      { k: 'beat', t: `${holder} has a secret power that takes somebody else's Head of Household.`, rule: 1 },
+      { k: 'beat', t: `${holder} uses it on ${deposed}. ${deposed} is not told.`, rule: 2 },
+      { k: 'beat', t: `When the nominations are read out, the wall will use ${deposed}'s voice.`, rule: 3 },
+    ];
+    for (const b of beats) steps.push(...linesOf(b));
+    return [{
+      id: `bb-deepfake-w${ctx.week}`, kind: 'interro', anchor: ctx.anchor, day: ctx.day, set: 'dr', room: ROOM_NAME.dr, cam: CAM.dr, time: '12:40',
+      kicker: 'Cam 01 · Diary room', title: 'The Deepfake', label: 'The Deepfake', sub: 'Only the viewer knows',
+      cast: [[holder, 50]], rules: [['THE POWER', `${holder} takes the Head of Household`], ['IN SECRET', `${deposed} is never told`],
+        ['THE WALL', `nominations are read in ${deposed}'s voice`]], rulesTitle: 'THE DEEPFAKE · ONLY YOU KNOW', steps,
+    }];
+  }
+  const steps = [
+    { k: 'bb', t: `Houseguests, somebody in this house has used a secret power to take ${deposed}'s Head of Household.`, rule: 1 },
+    { k: 'bb', t: `${deposed} will now question every one of you, one at a time.`, rule: 2 },
+    { k: 'bb', t: `Then ${deposed} will name the houseguest who took it.`, rule: 3 },
+    { k: 'bb', t: `If ${deposed} is right, ${deposed} keeps the week. If not, the taker is Head of Household, and nobody will be told who.`, rule: 4 },
+  ];
+  for (const b of beats) {
+    if (b.part === 'dethroned' || b.part === 'ally') steps.push(...linesOf(b));
+    if (b.part === 'room') {
+      const said = linesOf(b);
+      const mark = { intRoom: b.players[0], ...(b.points && b.kind !== 'silent' ? { intPoint: b.points } : {}) };
+      if (said.length) { said[0] = { ...said[0], ...mark }; steps.push(...said); }
+    }
+    if (b.part === 'name') steps.push({ k: 'bb', t: `${deposed}, who took your Head of Household?` }, ...linesOf(b).map((x, i) => i ? x : { ...x, intName: b.accused || '' }));
+    if (b.part === 'caught') steps.push({ k: 'bb', t: `${deposed}, you are correct. You remain Head of Household.`, intEnd: 'caught', toast: ['CAUGHT', '#ff3355'] }, ...linesOf(b));
+    if (b.part === 'wrong') steps.push({ k: 'bb', t: b.accused ? `${deposed}, that is not correct. Your reign as Head of Household is over.` : `${deposed}, without a name, your reign as Head of Household is over.`, intEnd: 'wrong', toast: ['THE WRONG NAME', '#f5c542'] }, ...linesOf(b));
+  }
+  return [{
+    id: `bb-interrogation-w${ctx.week}`, kind: 'interro', anchor: ctx.anchor, day: ctx.day, set: 'hoh', room: ROOM_NAME.hoh, cam: CAM.hoh, time: '12:40',
+    kicker: `Cam ${String(CAM.hoh).padStart(2, '0')} · HOH room`, title: 'The Interrogation', label: 'The Interrogation', sub: `${deposed} wants a name`,
+    cast: [[deposed, 50]], interro: { deposed },
+    rules: [['TAKEN', `a secret power took ${deposed}'s Head of Household`], ['QUESTIONS', `${deposed} questions every houseguest, alone`],
+      ['ONE NAME', `${deposed} names who did it`], ['RIGHT OR WRONG', 'right keeps the week; wrong, and the taker is HOH in secret']],
+    rulesTitle: 'THE INTERROGATION · HOW IT WORKS', steps,
+  }];
+}
+
 // Twist acts whose classic screen goes exactly where the act happened.
 const TWIST_SLOT = /^(rivals-|twist-announcement|duos-open|twin-|saboteur-|hacker|roadkill|coin|pandoras|power-played|interrogation|mystery-)/;
 
@@ -1180,6 +1232,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
         ctx.vetoHolder = act.vetoHolder || ctx.vetoHolder; beatsOf(act); break;
       case 'hidden-power': flush(); for (const scr of huntScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'secret-power-comp': flush(); for (const scr of secretPowerScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
+      case 'interrogation': flush(); for (const scr of interrogationScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'time-capsule': flush(); for (const scr of capsuleScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'wildcard': flush(); for (const scr of wildcardScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'safety-suite': flush(); for (const scr of suiteScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
@@ -1210,7 +1263,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
 }
 
 /** Ids of the legacy screens these steps replace. Everything else is a twist and stays. */
-export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard|secret-power|timecapsule)(-\d+)?$/;
+export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard|secret-power|timecapsule|power-hoh-interrogation|power-deepfake-hoh)(-\d+)?$/;
 export const ANCHOR_OF = id => {
   const base = id.replace(/-\d+$/, '');
   return /^bb-(final-hoh|final-cut|jury|ftc-questions|ftc-speeches|afh|reunion|finale-brief)$/.test(base) || /^bb-final-hoh$/.test(base) ? 'finale'

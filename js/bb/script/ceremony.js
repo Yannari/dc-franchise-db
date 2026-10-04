@@ -388,6 +388,30 @@ export function writeCeremony(act, week, house, extra = {}) {
     }
   }
 
+  // ── The Interrogation (and the Deepfake): a stolen Head of Household ──
+  if (act.type === 'interrogation') {
+    const fresh = freshWriter(ctx, house);
+    for (const b of act.beats || []) {
+      const p = (b.players || []).filter(Boolean);
+      const salt = `int|${b.part}|${b.kind || ''}|${p.join('|')}`;
+      let lines = null;
+      if (b.part === 'dethroned' && p[0]) lines = fresh('intact.dethroned', { a: p[0] }, { ending: 'scene' }, salt);
+      if (b.part === 'room' && p.length === 2) {
+        const named = ['tells', 'covers', 'reads', 'guesses'].includes(b.kind) && b.points;
+        const ending = b.kind === 'denies' ? (b.points ? 'denies' : 'deniesplain') : named ? b.kind : 'silent';
+        lines = fresh('intact.room', { a: p[0], b: p[1] }, { ending, who: b.points || '' }, salt);
+      }
+      if (b.part === 'name' && p[0]) lines = fresh('intact.name', { a: p[0] }, { ending: b.accused ? 'named' : 'none', who: b.accused || '' }, salt);
+      if (b.part === 'caught' && p.length === 2) lines = fresh('intact.caught', { a: p[0], b: p[1] }, { ending: 'scene' }, salt);
+      if (b.part === 'wrong') lines = b.accused && p.length === 2
+        ? fresh('intact.wrong', { a: p[0], b: p[1] }, { ending: 'named' }, salt)
+        : fresh('intact.wrong', { a: p[0] }, { ending: 'none' }, salt);
+      if (b.part === 'deepfake' && p.length === 2) lines = fresh('intact.deepfake', { a: p[1], b: p[0] }, { ending: 'scene' }, salt);
+      if (b.part === 'ally' && p.length === 2) lines = fresh('intact.ally', { a: p[0], b: p[1] }, { ending: 'scene' }, salt);
+      if (Array.isArray(lines) && lines.length) { b.lines = lines; b.text = transcript(lines); }
+    }
+  }
+
   for (const k of Object.keys(script)) {
     const v = script[k];
     if (!v || (typeof v === 'object' && !Array.isArray(v) && !Object.keys(v).length)) delete script[k];

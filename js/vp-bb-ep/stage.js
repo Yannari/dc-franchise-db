@@ -308,6 +308,24 @@ function pxHtml(S, L, st, fresh) {
   return `<div class="pxtable"><span class="pt">THE BOXES · ONE HOLDS THE VETO</span><div class="pxr">${boxes}</div></div>`;
 }
 
+// ── The Interrogation's tally of names (Phase 7) ───────────────────────
+function interroHtml(S, L, st, fresh, idx) {
+  const seen = S.steps.slice(0, idx + 1);
+  const asked = seen.filter(x => x.intRoom).length;
+  const tally = new Map();
+  for (const x of seen) if (x.intPoint) tally.set(x.intPoint, (tally.get(x.intPoint) || 0) + 1);
+  const named = seen.find(x => x.intName != null)?.intName;
+  const end = seen.find(x => x.intEnd)?.intEnd;
+  const top = Math.max(1, ...tally.values());
+  const rows = [...tally.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5).map(([n, c]) => {
+    const now = fresh && st?.intPoint === n;
+    return `<div class="ir ${n === named ? (end === 'caught' ? 'caught' : 'named') : ''} ${now ? 'now' : ''}"><span class="irf" style="--c:${col(n)}">${img(n)}</span>`
+      + `<b>${esc(n)}</b><span class="irb"><i style="width:${((c / top) * 100).toFixed(0)}%"></i></span><em>${c}</em></div>`;
+  }).join('');
+  const foot = end === 'caught' ? 'CAUGHT' : end === 'wrong' ? 'WRONG NAME' : named != null ? `NAMED: ${esc(named || 'NOBODY')}` : `${asked} QUESTIONED`;
+  return `<div class="intboard"><span class="ih">NAMES GIVEN</span>${rows || '<div class="ie">nobody has named anyone yet</div>'}<span class="ift ${end || ''}">${foot}</span></div>`;
+}
+
 // ── The Time Capsule's meter (Phase 7) ─────────────────────────────────
 function capsuleHtml(S, L, st, fresh, idx) {
   const C = S.capsule || {};
@@ -486,6 +504,7 @@ export function stageHtml(screens, si, idx, fresh, o) {
   if (S.wild && !isDr && idx >= 0 && !(st && st.rule != null)) h += wildHtml(S, L, st, fresh, idx);
   if (S.spower && !isDr && idx >= 0 && !(st && st.rule != null)) h += spowerHtml(S, L, st, fresh, idx);
   if (S.capsule && !isDr && idx >= 0 && !(st && st.rule != null)) h += capsuleHtml(S, L, st, fresh, idx);
+  if (S.interro && !isDr && idx >= 0 && !(st && st.rule != null)) h += interroHtml(S, L, st, fresh, idx);
   if (L.bill && S.steps.some(x => x.bill) && !isDr) h += billHtml(L, st, fresh);
   if (L.votes && st && st.k === 'host') {
     h += `<div class="votes ${fresh && st.votes ? 'fresh' : ''}"><div class="v"><div class="n">${L.votes[0]}</div><div class="k">Votes</div></div><i class="sep"></i><div class="v"><div class="n">${L.votes[1]}</div><div class="k">Votes</div></div></div>`;

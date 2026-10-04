@@ -28,7 +28,7 @@
 // }
 // A line is { kind: 'say' | 'dr' | 'beat', by, text }. A part the act does not
 // have is left out; the viewer falls back to the format's own words.
-import { gs } from '../../core.js';
+import { gs, players } from '../../core.js';
 import { getBond } from '../../bonds.js';
 import { stableRng } from '../knowledge.js';
 import { makeScene } from './scene.js';
@@ -427,6 +427,32 @@ export function writeCeremony(act, week, house, extra = {}) {
       if (b.part === 'won' && p[0]) lines = fresh('whact.won', { a: p[0] }, { ending: 'scene' }, salt);
       if (b.part === 'missed' && p[0]) lines = fresh('whact.missed', { a: p[0] }, { ending: 'scene' }, salt);
       if (Array.isArray(lines) && lines.length) { b.lines = lines; b.text = transcript(lines); }
+    }
+  }
+
+  // ── Move-in day: each houseguest walks in, in their own voice ──
+  if (act.type === 'move-in') {
+    const fresh = freshWriter(ctx, house);
+    const NICE = ['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat', 'floater'];
+    const archOf = n => { try { return (players || []).find(p => p.name === n)?.archetype; } catch { return null; } };
+    const arrived = [];
+    for (const b of act.beats || []) {
+      const a = (b.players || [])[0];
+      if (!a) continue;
+      const arch = archOf(a) || 'floater';
+      let lines = fresh('moveinact.arrive', { a }, { ending: arch }, `mi|${a}`)
+        || fresh('moveinact.arrive', { a }, { ending: 'floater' }, `mi|${a}|f`);
+      // every third arrival has a first impression of somebody already inside
+      if (arrived.length && b.order % 3 === 2) {
+        // somebody who walked in just before them: the people you meet first are the ones near the door
+        const other = arrived[Math.max(0, arrived.length - 1 - (b.order % 2))];
+        const tone = NICE.includes(arch) ? 'warm' : 'wary';
+        const more = fresh('moveinact.meet', { a, b: other }, { ending: tone }, `mi|meet|${a}`);
+        if (Array.isArray(lines) && Array.isArray(more)) lines = [...lines, ...more];
+        b.met = other;
+      }
+      if (Array.isArray(lines) && lines.length) { b.lines = lines; b.text = transcript(lines); }
+      arrived.push(a);
     }
   }
 

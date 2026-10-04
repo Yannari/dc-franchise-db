@@ -1761,6 +1761,32 @@ function rewindScreens(act, ctx) {
   }];
 }
 
+// ── Move-in day ─────────────────────────────────────────────────────────
+// Always the first screen of the season. The host opens the show, then the
+// front door opens again and again: each houseguest walks in and says hello
+// in their own voice (some share a first impression of somebody already
+// inside), and the wall of frames above the living room fills face by face.
+// Big Brother speaks once everybody is in. Words: lines/moveinact.js.
+function moveInScreen(act, ctx, host) {
+  const arrivals = act.arrivals || [];
+  const steps = [
+    { k: 'host', by: host, t: `Good evening, and welcome to Big Brother. ${titleCase(word(arrivals.length))} strangers are about to move into this house, and only one of them will leave with the prize.` },
+  ];
+  for (const b of act.beats || []) {
+    const n = b.players?.[0];
+    if (!n) continue;
+    steps.push({ k: 'beat', t: b.order === 0 ? `The front door opens. The first houseguest through it is ${n}.` : `The front door opens again. It's ${n}.`, miIn: n, at: [[n, 50]] });
+    steps.push(...(b.lines?.length ? scriptSteps(b.lines) : []));
+  }
+  steps.push({ k: 'bb', t: 'Houseguests, welcome to the Big Brother house.', toast: ['THE HOUSE IS FULL', '#f5c542'] });
+  steps.push({ k: 'beat', t: 'The competition for the first Head of Household begins tonight.' });
+  return {
+    id: 'bb-movein-v', kind: 'movein', anchor: 'start', day: 1, set: 'ceremony', room: 'Living Room', cam: 4, time: '19:00',
+    kicker: 'Cam 04 · Living room', title: 'Move-In Day', label: 'Move-In Day', sub: `${arrivals.length} strangers, one house`,
+    cast: [], movein: { arrivals: [...arrivals] }, steps,
+  };
+}
+
 // Twist acts whose classic screen goes exactly where the act happened.
 const TWIST_SLOT = /^(rivals-|twist-announcement|duos-open|twin-|saboteur-|hacker|roadkill|coin|pandoras|power-played|interrogation|mystery-)/;
 
@@ -1858,6 +1884,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       case 'hidden-power': flush(); for (const scr of huntScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'secret-power-comp': flush(); for (const scr of secretPowerScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'power-played': { const pw = powerScreens(act, ctx); if (pw) { flush(); for (const scr of pw) ceremony(scr); } else { flush(); out.push({ slot: act.type }); } beatsOf(act); break; }
+      case 'move-in': flush(); ceremony(moveInScreen(act, ctx, host)); break;
       case 'rewind': case 'white-locust': flush(); for (const scr of rewindScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'no-eviction': case 'dead-last': flush(); for (const scr of quietScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'halting-hex': flush(); for (const scr of hexScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
@@ -1906,7 +1933,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
 }
 
 /** Ids of the legacy screens these steps replace. Everything else is a twist and stays. */
-export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard|secret-power|timecapsule|power-hoh-interrogation|power-deepfake-hoh|whacktivity|power-hoh-gatekeeper|power-the-cloud|power-buy-off|power-coup-d-etat|coin|secondveto-[a-z]+|temptation|nightmare|battleback|bonuslife|teamamerica|power-mystery-competitor|power-mystery-veto|veto2|premiere|haltinghex|no-eviction|deadlast|rewind|whitelocust)(-\d+)?$/;
+export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard|secret-power|timecapsule|power-hoh-interrogation|power-deepfake-hoh|whacktivity|power-hoh-gatekeeper|power-the-cloud|power-buy-off|power-coup-d-etat|coin|secondveto-[a-z]+|temptation|nightmare|battleback|bonuslife|teamamerica|power-mystery-competitor|power-mystery-veto|veto2|premiere|haltinghex|no-eviction|deadlast|rewind|whitelocust|cold)(-\d+)?$/;
 export const ANCHOR_OF = id => {
   const base = id.replace(/-\d+$/, '');
   return /^bb-(final-hoh|final-cut|jury|ftc-questions|ftc-speeches|afh|reunion|finale-brief)$/.test(base) || /^bb-final-hoh$/.test(base) ? 'finale'

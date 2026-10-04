@@ -318,6 +318,18 @@ function teamHtml(S, L, st, fresh, idx) {
     + `<b>${esc(T.name || '')}</b><i>${done === 'done' ? 'COMPLETE' : done === 'failed' ? 'FAILED' : 'IN PLAY'}${noticed ? ' · NOTICED' : ''}</i></div>`;
 }
 
+// ── Move-in day: the wall of frames filling ────────────────────────────
+function moveInHtml(S, L, st, fresh, idx) {
+  const M = S.movein || {};
+  const seen = new Set(S.steps.slice(0, idx + 1).filter(x => x.miIn).map(x => x.miIn));
+  const tiles = (M.arrivals || []).map(n => {
+    if (!seen.has(n)) return '<span class="mif empty">?</span>';
+    const now = fresh && st?.miIn === n;
+    return `<span class="mif ${now ? 'now' : ''}" style="--c:${col(n)}" title="${esc(n)}">${img(n)}</span>`;
+  }).join('');
+  return `<div class="miboard"><span class="mih">MOVE-IN DAY · ${seen.size} OF ${(M.arrivals || []).length}</span><div class="mir">${tiles}</div></div>`;
+}
+
 // ── The White Locust's call-out chain (Phase 7) ────────────────────────
 function locustHtml(S, L, st, fresh, idx) {
   const seen = S.steps.slice(0, idx + 1);
@@ -613,6 +625,7 @@ export function stageHtml(screens, si, idx, fresh, o) {
   if (S.veto2 && !isDr && idx >= 0 && !(st && st.rule != null)) h += veto2Html(S, L, st, fresh, idx);
   if (S.battleback && !isDr && idx >= 0 && !(st && st.rule != null)) h += battleBackHtml(S, L, st, fresh, idx);
   if (S.locust && !isDr && idx >= 0 && !(st && st.rule != null)) h += locustHtml(S, L, st, fresh, idx);
+  if (S.movein && !isDr && idx >= 0) h += moveInHtml(S, L, st, fresh, idx);
   if (S.team && idx >= 0 && !(st && st.rule != null)) h += teamHtml(S, L, st, fresh, idx);
   if (L.bill && S.steps.some(x => x.bill) && !isDr) h += billHtml(L, st, fresh);
   if (L.votes && st && st.k === 'host') {

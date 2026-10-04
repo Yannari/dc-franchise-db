@@ -70,7 +70,7 @@ const BED_BY_KIND = {
   whack: 'bb-comp', power: 'bb-confused', expired: 'bb-deals', coin: 'bb-secret', veto2: 'bb-veto-meeting',
   den: 'bb-secret', curse: 'bb-drama', nightmare: 'bb-confused', battleback: 'bb-comp', bonuslife: 'bb-comp',
   team: 'bb-scheming', mystery: 'bb-secret', premiere: 'bb-confused', hex: 'bb-confused', quiet: 'bb-house',
-  rewind: 'bb-confused', locust: 'bb-comp',
+  rewind: 'bb-confused', locust: 'bb-comp', movein: 'bb-post-hoh',
 };
 // A house scene sounds like what it is: a fight, a deal, or just the house.
 const BED_BY_MOOD = { drama: 'bb-drama', deals: 'bb-deals', scheming: 'bb-scheming', ceremony: 'bb-brewing', secret: 'bb-secret', house: 'bb-house' };
@@ -173,6 +173,7 @@ export function soundFor(screen, idx) {
   if (st.bkBack || st.campBack) return { cue: 'bb-hoh-crown', bed: 'bb-celebration' };
   if (isOut(st)) return { cue: 'bb-comp-out', bed: null };
   if (st.coinIn) return { cue: 'bb-coin', bed: null };
+  if (st.miIn) return { cue: 'bb-door', bed: null };
   if (st.rule === 1 || (st.rule != null && !(prev && prev.rule != null))) return { cue: 'bb-twist', bed: null };
   if (st.k === 'dr' && (!prev || prev.k !== 'dr')) return { cue: 'bb-dr-cut', bed: null };
   if (st.k === 'bb' && !(prev && prev.k === 'bb')) return { cue: 'bb-voice', bed: null };

@@ -1631,6 +1631,18 @@ export function simulateBBWeek(options = {}) {
   // not. See bbThreatProfile's quirk term.
   if (!gs.bb.seasonSalt) gs.bb.seasonSalt = Math.floor(rng() * 2147483647) || 1;
   const week = { num: gs.bb.weeks.length + 1, format: 'big-brother', acts: [], houseAtStart: house };
+  // ── MOVE-IN: always first ──
+  // Week one opens on the house filling up, before any scene, alliance or
+  // competition — nobody can form an alliance with somebody who has not walked
+  // in yet. Plain facts (one per arrival, in order); the words are
+  // lines/moveinact.js, written here without addBeats so move-in schedules no
+  // house scenes of its own.
+  if (week.num === 1) {
+    const moveIn = { type: 'move-in', week: 1, arrivals: [...house],
+      beats: house.map((n, i) => ({ text: `${n} moves into the house.`, players: [n], badgeText: 'MOVE-IN', badgeClass: 'gold', part: 'arrive', order: i })) };
+    try { writeCeremony(moveIn, week, house, {}); } catch { /* words never stop a week */ }
+    week.acts.push(moveIn);
+  }
 
   // A week of living in the same building, before anybody does anything.
   //

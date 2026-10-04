@@ -92,6 +92,14 @@ export const BBX_WHACK_CSS = `
 .bbx .stage .taboard.done{box-shadow:0 0 0 .16cqw #f5c542,0 0 2cqw rgba(245,197,66,.4)}
 .bbx .stage .taboard.done i{color:#f5c542}
 .bbx .stage .taboard.failed i{color:#9aa4b2}
+.bbx .stage .miboard{position:absolute;left:50%;transform:translateX(-50%);top:7.2cqw;z-index:7;max-width:80cqw;padding:.6cqw 1cqw .7cqw;border-radius:1cqw;
+  background:linear-gradient(180deg,rgba(6,12,24,.86),rgba(6,12,24,.62));box-shadow:0 0 0 .1cqw rgba(245,197,66,.4);backdrop-filter:blur(.6cqw)}
+.bbx .stage .miboard .mih{display:block;text-align:center;font:700 .7cqw 'Chakra Petch';letter-spacing:.22cqw;color:#f5c542;margin-bottom:.45cqw}
+.bbx .stage .mir{display:flex;flex-wrap:wrap;justify-content:center;gap:.35cqw;max-width:60cqw}
+.bbx .stage .mif{position:relative;width:3.2cqw;aspect-ratio:1;border-radius:.35cqw;overflow:hidden;background:var(--c);box-shadow:inset 0 0 0 .1cqw rgba(255,255,255,.25)}
+.bbx .stage .mif img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 14%}
+.bbx .stage .mif.empty{background:rgba(255,255,255,.04);box-shadow:inset 0 0 0 .1cqw rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font:800 1cqw Archivo;color:rgba(255,255,255,.25)}
+.bbx .stage .mif.now{box-shadow:0 0 0 .14cqw #f5c542,0 0 1.2cqw rgba(245,197,66,.6);animation:bbx-whin .5s cubic-bezier(.2,1.4,.4,1) both}
 @keyframes bbx-coinflip{0%{transform:rotateX(0)}60%{transform:rotateX(1080deg)}100%{transform:rotateX(1080deg)}}
 @media (prefers-reduced-motion:reduce){.bbx .stage .cres{animation:none}}
 @keyframes bbx-whin{from{transform:translateY(-.6cqw);opacity:.3}}

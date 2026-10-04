@@ -1526,6 +1526,76 @@ function teamAmericaScreens(act, ctx) {
   }];
 }
 
+// ── The Mystery Competitor, the Mystery Veto, and its ceremony (Phase 7) ─
+// Two secret powers that rewrite the veto. The Mystery Competitor: Big
+// Brother explains that a former houseguest has been summoned to play for
+// somebody (never who), the door opens, a drawn player is bumped. The Mystery
+// Veto: a second competition played alone against a par on the Time
+// Capsule's meter, and then, after the meeting everybody thought had ended,
+// the house is called back and the block changes again. Words: lines/mvact.js.
+function mysteryScreens(act, ctx) {
+  const linesOf = b => (b && b.lines?.length ? scriptSteps(b.lines) : []);
+  const beats = act.beats || [];
+  if (act.type === 'mystery-competitor') {
+    const g = act.guest;
+    const steps = [
+      { k: 'bb', t: 'Houseguests, somebody in this house holds a secret power: the Mystery Competitor.', rule: 1 },
+      { k: 'bb', t: 'A former houseguest has been called back to take one of the drawn veto spots.', rule: 2 },
+      { k: 'bb', t: 'If they win, the Power of Veto goes to the houseguest who summoned them. You will not be told who that is.', rule: 3 },
+    ];
+    for (const b of beats) {
+      if (b.part === 'arrive') continue;
+      if (b.part === 'door') steps.push({ k: 'beat', t: `The front door opens. It is ${g}.`, at: [[g, 50]], toast: [act.visiting ? 'NOT EVEN FROM THIS SHOW' : 'A FACE FROM THE PAST', '#f5c542'] }, ...linesOf(b));
+      else steps.push(...linesOf(b));
+    }
+    return [{
+      id: `bb-mysterycomp-w${ctx.week}`, kind: 'mystery', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: 'Living Room', cam: 4, time: '11:40',
+      kicker: 'Cam 04 · Living room', title: 'The Mystery Competitor', label: 'The Mystery Competitor', sub: `${g} walks back in`,
+      seated: seatLiving([], ctx.house.filter(n => n !== ctx.hoh), ctx.hoh),
+      rules: [['A SECRET POWER', 'somebody summons a former houseguest'], ['ONE SPOT', 'the guest takes a drawn veto spot'], ['FOR THE HOLDER', 'win, and the veto is theirs']],
+      rulesTitle: 'THE MYSTERY COMPETITOR · HOW IT WORKS', steps,
+    }];
+  }
+  if (act.type === 'mystery-veto') {
+    const h = act.holder;
+    const steps = [
+      { k: 'beat', t: `${h} holds a secret power: the Mystery Veto.`, rule: 1 },
+      { k: 'beat', t: 'After the veto meeting, they play one more veto competition, alone, against a par.', rule: 2 },
+      { k: 'beat', t: 'Beat the par, and they hold a real veto to use before the eviction.', rule: 3 },
+    ];
+    for (const b of beats) {
+      if (b.part === 'second' || b.part === 'alone') steps.push(...linesOf(b));
+      if (b.part === 'solowon' || b.part === 'sololost') steps.push({ k: 'beat', t: `${h} posts ${Number(b.posted).toFixed(1)}, against a par of ${Number(b.par).toFixed(1)}.`,
+        capStage: [1, b.part === 'solowon' ? 'good' : 'bad', b.posted] }, { k: 'beat', t: b.part === 'solowon' ? `${h} beats it.` : `${h} misses it.`, capEnd: b.part === 'solowon' ? 'won' : 'lost',
+        toast: b.part === 'solowon' ? ['A REAL VETO', '#f5c542'] : ['NOT BEATEN', '#ff3355'] }, ...linesOf(b));
+    }
+    return [{
+      id: `bb-mysteryveto-w${ctx.week}`, kind: 'mystery', anchor: ctx.anchor, day: ctx.day, set: 'yard', room: ROOM_NAME.yard, cam: CAM.yard, time: '22:40',
+      kicker: 'Cam 05 · Backyard', title: 'The Mystery Veto', label: 'The Mystery Veto', sub: `${act.competition?.name || 'One more veto'}, alone`,
+      cast: [[h, 50]], capsule: { n: 1, target: act.competition?.par, name: act.competition?.name || 'THE MYSTERY VETO' },
+      rules: [['A SECRET POWER', 'one houseguest holds the Mystery Veto'], ['ALONE', 'one more veto competition, against a par'], ['WIN IT', 'and use it after the meeting']],
+      rulesTitle: 'THE MYSTERY VETO · ONLY YOU KNOW', steps,
+    }];
+  }
+  // the second ceremony
+  const removed = act.removed || [], seated = act.seated || [];
+  const before = (act.nominees || []).filter(n => !seated.includes(n)).concat(removed);
+  const steps = [];
+  for (const b of beats) {
+    if (b.part === 'called') steps.push(...linesOf(b), { k: 'bb', t: 'Houseguests, a second Power of Veto has been won, and it will be used now.', rule: 1 });
+    if (b.part === 'used') steps.push({ k: 'beat', t: `${act.holder} uses it. ${listOf(removed)} ${removed.length > 1 ? 'come' : 'comes'} off the block.`, v2Save: removed[0], toast: ['THE MYSTERY VETO', '#f5c542'] }, ...linesOf(b));
+    if (b.part === 'pair') steps.push(...linesOf(b));
+    if (b.part === 'chair') steps.push({ k: 'beat', t: `${listOf(seated)} ${seated.length > 1 ? 'go' : 'goes'} up instead.`, v2Rep: seated[0], toast: ['ONE MORE CHAIR', '#ff3355'] }, ...linesOf(b));
+    if (b.part === 'empty') steps.push({ k: 'beat', t: 'Nobody can fill the chair. It stays empty.', v2Kept: true }, ...linesOf(b));
+  }
+  return [{
+    id: `bb-veto2b-w${ctx.week}`, kind: 'veto2', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: 'Living Room', cam: 4, time: '23:30',
+    kicker: 'Cam 04 · Living room', title: 'The Mystery Veto Ceremony', label: 'The Mystery Veto Ceremony', sub: 'The meeting ends twice',
+    seated: seatLiving(before, ctx.house.filter(n => !before.includes(n) && n !== ctx.hoh), ctx.hoh), veto2: { before },
+    rules: [['A SECOND VETO', 'won in secret, used after the meeting']], rulesTitle: 'THE MYSTERY VETO · CALLED BACK', steps,
+  }];
+}
+
 // Twist acts whose classic screen goes exactly where the act happened.
 const TWIST_SLOT = /^(rivals-|twist-announcement|duos-open|twin-|saboteur-|hacker|roadkill|coin|pandoras|power-played|interrogation|mystery-)/;
 
@@ -1621,6 +1691,10 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       case 'hidden-power': flush(); for (const scr of huntScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'secret-power-comp': flush(); for (const scr of secretPowerScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'power-played': { const pw = powerScreens(act, ctx); if (pw) { flush(); for (const scr of pw) ceremony(scr); } else { flush(); out.push({ slot: act.type }); } beatsOf(act); break; }
+      case 'mystery-competitor': case 'mystery-veto': case 'second-veto-ceremony':
+        flush(); for (const scr of mysteryScreens(act, ctx)) ceremony(scr);
+        if (act.type === 'second-veto-ceremony') ctx.nominees = [...(act.nominees || ctx.nominees)];
+        beatsOf(act); break;
       case 'team-america': flush(); for (const scr of teamAmericaScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'bonus-life': flush(); for (const scr of bonusLifeScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'battle-back': flush(); for (const scr of battleBackScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
@@ -1661,7 +1735,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
 }
 
 /** Ids of the legacy screens these steps replace. Everything else is a twist and stays. */
-export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard|secret-power|timecapsule|power-hoh-interrogation|power-deepfake-hoh|whacktivity|power-hoh-gatekeeper|power-the-cloud|power-buy-off|power-coup-d-etat|coin|secondveto-[a-z]+|temptation|nightmare|battleback|bonuslife|teamamerica)(-\d+)?$/;
+export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard|secret-power|timecapsule|power-hoh-interrogation|power-deepfake-hoh|whacktivity|power-hoh-gatekeeper|power-the-cloud|power-buy-off|power-coup-d-etat|coin|secondveto-[a-z]+|temptation|nightmare|battleback|bonuslife|teamamerica|power-mystery-competitor|power-mystery-veto|veto2)(-\d+)?$/;
 export const ANCHOR_OF = id => {
   const base = id.replace(/-\d+$/, '');
   return /^bb-(final-hoh|final-cut|jury|ftc-questions|ftc-speeches|afh|reunion|finale-brief)$/.test(base) || /^bb-final-hoh$/.test(base) ? 'finale'

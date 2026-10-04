@@ -335,71 +335,10 @@ export function playInterrogation({ week, house = [], hoh, rng = Math.random } =
  * player database for everybody who has finished a season) and this module
  * should not learn it.
  */
-/** One line out of a pool, so the same arrival is not written twice a season. */
-const pickFrom = (pool, rng) => pool[Math.floor(rng() * pool.length)];
 
 /** Where they played, when the caller knows — some rosters carry no seasons. */
 const seasonOf = pick => (pick && typeof pick === 'object' && pick.seasonName) || null;
 
-const ANNOUNCE = [
-  (g, h, sn) => 'The house is called to the living room without being told why, which by now they '
-    + `know means something. "Houseguests. In a moment, this door is going to open, and the person `
-    + `walking through it does not live here."${sn ? ` Somebody in that room has already worked out that a season just got named.` : ''}`,
-  (g, h) => 'They are told to sit down and not to touch anything, and then they are left there for '
-    + 'four minutes with nothing to look at but the door. By minute three somebody has said the '
-    + `word "returnee" out loud and the room has stopped being able to sit still.`,
-  (g, h, sn) => `"There is one spot in this week's veto competition that has not been drawn yet." `
-    + 'That is the entire announcement. Nobody says who, nobody says how, and every person on that '
-    + `sofa starts counting the people who are missing from it.`,
-  (g, h) => 'The screen in the living room comes on and stays black. It does that for long enough '
-    + 'that two of them start laughing at it, and then the front door lock goes, which is a sound '
-    + 'this house has not heard since move-in.',
-];
-
-const ARRIVAL = [
-  (g, house, sn) => `${g} walks in${sn ? ` — ${sn}, and half this room grew up watching it` : ''}. `
-    + 'The screaming is genuine. Somebody is crying who has not cried all season, and for about '
-    + 'ninety seconds nobody in that living room is playing this game at all.',
-  (g, house, sn) => `${g} comes through the door with a bag, which is the detail that lands: a bag `
-    + `means staying. It is explained that it does not, ${g} is here for one afternoon and one `
-    + 'competition, and the disappointment goes round that room like weather.',
-  (g) => `${g} does not say anything at first. ${g} walks the length of the living room, looks at `
-    + 'the memory wall, finds the frames of people who are already gone, and only then turns round '
-    + 'to a house that has gone completely silent.',
-  (g, house) => `${g} is hugged by every single person in that room, including three who have `
-    + `spent the last week trying to evict each other. ${house.length > 6 ? 'It is the friendliest this house has been in a fortnight' : 'It is the friendliest this house has been all season'}, and it lasts until somebody `
-    + 'thinks to ask the obvious question, which is why now.',
-];
-
-const HANDOFF = [
-  (g, h, comp) => `${h} gets ${g} alone by the storage door for ninety seconds. It is not a `
-    + `strategy meeting — there is no time — it is ${h} saying who is dangerous and ${g} listening `
-    + `to a house ${g} has never lived in, and then it is ${comp} and no more talking.`,
-  (g, h) => `${g} finds ${h} before anybody else does, because ${g} has been told whose afternoon `
-    + `this is. "So you're the one." ${h} does not answer that where people can hear it, and the `
-    + 'two of them go outside.',
-  (g, h, comp) => `They get one conversation and ${h} spends it apologising, which ${g} waves off. `
-    + `"I've been sitting at home for a year. You think I'm not going to play ${comp}?"`,
-  (g, h) => `${h} tries to explain the block, the votes, who is lying to whom, and gets about a `
-    + `third of the way through before ${g} cuts in. "I don't need the `
-    + `house. I need the comp." That is the whole meeting.`,
-];
-
-const DIARY = [
-  (g, h, comp) => `${g}, in the diary room chair, in the same chair as a season ago: "I got a `
-    + `phone call four days ago. That's it. That's all the warning I had." A beat. "And now I'm `
-    + `playing ${comp} for somebody I have never met, because somebody bought me. I'd be insulted `
-    + `if it wasn't so flattering."`,
-  (g, h) => `${g}: "Do I want ${h} to win this game? I have no idea who ${h} is. But somebody in `
-    + 'there spent something real to get me through that door, and I have never in my life been '
-    + 'the thing somebody spent a power on."',
-  (g, h, comp) => `${g}: "The weird part is the smell. You forget that. Then you walk in and it's `
-    + `${comp} in twenty minutes and you're back like you never left, except everyone's a stranger `
-    + 'and you go home tonight either way."',
-  (g, h) => `${g}: "They told me the rules on the drive in. I play, I win, I hand it to ${h}, I `
-    + `leave. I don't get a vote, I don't get a bed, I don't get a say." ${g} laughs at the ceiling. `
-    + '"Best day I have had in a year."',
-];
 
 export function playMysteryCompetitor({ week, nominees = [], players = [], alumni = [],
   library = [], hoh = null, house = [], rng = Math.random } = {}) {
@@ -485,7 +424,7 @@ export function playMysteryCompetitor({ week, nominees = [], players = [], alumn
       + `${pick?.seasonName ? `, out of ${pick.seasonName}` : ''}`
       + `${visiting ? ' — a different show, a different set of rules, and not one night spent in here' : ''}`
       + `${pick?.winner ? ', who won it' : pick?.finalist ? ', who sat at the end of it' : ''}.`,
-    [guest, inst.holder], visiting ? 'NOT EVEN FROM THIS SHOW' : 'A NAME NOBODY EXPECTED', 'gold')];
+    [guest, inst.holder], visiting ? 'NOT EVEN FROM THIS SHOW' : 'A NAME NOBODY EXPECTED', 'gold', 'arrive', { visiting: !!visiting })];
   // ── THEY ARE A PERSON, NOT A DIE ROLL ──
   //
   // The whole scene was: a name comes out of the bag, somebody is bumped, a
@@ -493,26 +432,23 @@ export function playMysteryCompetitor({ week, nominees = [], players = [], alumn
   // of the biggest things this format can do and it was over in three lines,
   // with the guest never speaking, never being greeted, and never once being in
   // a room with the person who paid to summon them.
-  beats.push(beat(
-    pickFrom(ANNOUNCE, rng)(guest, inst.holder, seasonOf(pick)),
-    [guest, inst.holder], 'HOUSEGUESTS, TO THE LIVING ROOM', 'blue'));
-  beats.push(beat(
-    pickFrom(ARRIVAL, rng)(guest, house, seasonOf(pick)),
-    [guest, inst.holder], 'THE DOOR OPENS', 'gold'));
+  // Plain facts with a `part`; the words are lines/mvact.js. Each pick used to
+  // be one draw, and the draws stay in place.
+  rng();
+  beats.push(beat('The house is called to the living room for an unannounced arrival.',
+    [inst.holder, guest], 'HOUSEGUESTS, TO THE LIVING ROOM', 'blue', 'announce'));
+  rng();
+  beats.push(beat(`${guest} walks through the front door.`, [guest, inst.holder], 'THE DOOR OPENS', 'gold', 'door',
+    { visiting: !!visiting }));
   if (displaced) {
-    beats.push(beat(
-      `${displaced} is out of the draw and did nothing to deserve it, which is the part nobody `
-        + 'will be able to explain to them.',
-      [displaced, guest], 'BUMPED', 'red'));
+    beats.push(beat(`${displaced} loses a veto spot to ${guest}.`, [displaced, guest], 'BUMPED', 'red', 'bumped'));
   }
   // The room they are put in together, which is the only place the transaction
   // is visible: one of them bought this and both of them know it.
-  beats.push(beat(
-    pickFrom(HANDOFF, rng)(guest, inst.holder, compName),
-    [guest, inst.holder], 'A QUIET WORD', 'blue'));
-  beats.push(beat(
-    pickFrom(DIARY, rng)(guest, inst.holder, compName),
-    [guest, inst.holder], 'DIARY ROOM', 'grey'));
+  rng();
+  beats.push(beat(`${inst.holder} and ${guest} get a quiet word before ${compName}.`, [guest, inst.holder], 'A QUIET WORD', 'blue', 'handoff'));
+  rng();
+  beats.push(beat(`${guest} talks to the Diary Room about being summoned.`, [guest, inst.holder], 'DIARY ROOM', 'grey', 'diary'));
 
   return {
     type: 'mystery-competitor', holder: inst.holder, guest, displaced,
@@ -569,34 +505,18 @@ export function mysteryCompetitorResult({ act, competition, winner } = {}) {
   // result of a competition the viewer had not watched yet. The arrival is the
   // arrival. What happened in the yard belongs to the yard, and the goodbye
   // belongs there too, because that is where they actually leave from.
-  const beats = [beat(
-    `${guest} plays ${name} against the whole room, and is scored like anybody else out there.`,
-    [guest, holder], 'A STRANGER IN THE YARD', 'blue')];
+  // Social beats on the veto act: plain facts with a `part`, worded by
+  // lines/mvact.js (written where they are attached, in week.js).
+  const beats = [beat(`${guest} plays ${name} against the whole room.`,
+    [guest, holder], 'A STRANGER IN THE YARD', 'blue', 'stranger')];
   beats.push(won
-    ? beat(`${score}. ${guest} wins it and hands it straight to ${holder}, who has been on the `
-      + 'block all week and is now not going anywhere. Somebody paid for that, weeks ago, in private.',
-    [guest, holder], `${score} v ${bar}`, 'gold')
-    : beat(`${score}, against ${bar}. ${guest} loses, and ${holder} has bought a body in the draw `
-      + 'and nothing else.',
-    [guest, holder], `${score} v ${bar}`, 'red'));
-  beats.push(beat(pickFrom(GOODBYE, () => (Number.isFinite(mine) ? Math.abs(mine % 1) : 0.5))(guest, holder, won),
-    [guest, holder], 'AND THEN THEY GO', 'grey'));
+    ? beat(`${score}. ${guest} wins the veto and hands it to ${holder}.`, [guest, holder], `${score} v ${bar}`, 'gold', 'guestwon')
+    : beat(`${score}, against ${bar}. ${guest} loses.`, [guest, holder], `${score} v ${bar}`, 'red', 'guestlost'));
+  beats.push(beat(`${guest} leaves the house again.`, [guest, holder], 'AND THEN THEY GO', 'grey', 'goodbye'));
   act.resultBeats = beats;
   return act;
 }
 
-const GOODBYE = [
-  (g, h, won) => `${g} is walked back out through the same door, an hour and a half after coming `
-    + `through it. ${won ? `Whatever happens to ${h} now, ${g} will read about it.` : 'No goodbyes '
-      + 'from anybody who was not already awake, and the house is quieter for the rest of the night.'}`,
-  (g, h, won) => `${g} hands the microphone back, says "good luck, seriously" to a room that is `
-    + `already arguing about something else, and is gone. ${won ? 'The medallion stays.' : 'Nothing stays.'}`,
-  (g, h, won) => `The front door goes for the second time today and does not open again. ${g} does `
-    + `not live here${won ? ', and left something behind anyway' : ' and did not manage to change that'}.`,
-  (g, h) => `${g} is out of the house before the yard lights are off. Two houseguests will spend `
-    + `the next week arguing about whether ${g} was ever really there, which is what happens when `
-    + 'somebody arrives and leaves inside one afternoon.',
-];
 
 /**
  * The Mystery Veto.
@@ -676,24 +596,15 @@ export function playMysteryVeto({ week, nominees = [], house = [], library = [],
   const posted = Math.round((score(inst.holder) + (rng() * 3 - 1.2)) * 10) / 10;
   const won = posted >= par;
 
-  const beats = [beat(
-    'The veto ceremony is over and this week was supposed to be settled. It is not. There is a '
-      + `second competition in the yard tonight — ${comp.name} — and exactly one houseguest is `
-      + 'allowed to play in it.',
-    [inst.holder], 'A SECOND VETO', 'gold')];
-  beats.push(beat(
-    `${inst.holder} plays it alone against the clock. The number to beat is ${par.toFixed(1)}: what `
-      + 'this house would have posted between them, which is the only opponent out there tonight.',
-    [inst.holder], 'ALONE, AGAINST A NUMBER', 'blue'));
-  const forWhom = onBlock ? 'themselves'
-    : `${ally?.name}, the one person on that block ${inst.holder} actually wants to keep`;
+  const beats = [beat(`A second veto competition, ${comp.name}, is played after the ceremony.`,
+    [inst.holder], 'A SECOND VETO', 'gold', 'second', { comp: comp.name })];
+  beats.push(beat(`${inst.holder} plays ${comp.name} alone against a par of ${par.toFixed(1)}.`,
+    [inst.holder], 'ALONE, AGAINST A NUMBER', 'blue', 'alone', { par }));
   beats.push(won
-    ? beat(`${posted.toFixed(1)}. ${inst.holder} beats it, and walks back inside holding a real `
-      + `veto for ${forWhom} on a block everybody had already stopped thinking about.`,
-    [inst.holder], `${posted.toFixed(1)} v ${par.toFixed(1)}`, 'gold')
-    : beat(`${posted.toFixed(1)}, against ${par.toFixed(1)}. Nobody was standing in the way and it `
-      + 'was still lost, and the house now knows the power existed and did nothing.',
-    [inst.holder], `${posted.toFixed(1)} v ${par.toFixed(1)}`, 'red'));
+    ? beat(`${posted.toFixed(1)}. ${inst.holder} beats the par of ${par.toFixed(1)} and wins a real veto, for ${onBlock ? 'themselves' : ally?.name}.`,
+    [inst.holder], `${posted.toFixed(1)} v ${par.toFixed(1)}`, 'gold', 'solowon', { posted, par, self: onBlock })
+    : beat(`${posted.toFixed(1)}, against ${par.toFixed(1)}. ${inst.holder} misses the par.`,
+    [inst.holder], `${posted.toFixed(1)} v ${par.toFixed(1)}`, 'red', 'sololost', { posted, par }));
 
   return {
     type: 'mystery-veto', holder: inst.holder, won,

@@ -74,6 +74,6 @@ describe('the Interrogation and the Deepfake on the stepped stage', () => {
   it('replaces the classic power screens for both', () => {
     expect(REPLACED.test('bb-power-hoh-interrogation')).toBe(true);
     expect(REPLACED.test('bb-power-deepfake-hoh')).toBe(true);
-    expect(REPLACED.test('bb-power-mystery-veto')).toBe(false);
+    expect(REPLACED.test('bb-power-halting-hex')).toBe(false);
   });
 });

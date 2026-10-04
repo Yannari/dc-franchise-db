@@ -5239,6 +5239,8 @@ export function simulateBBWeek(options = {}) {
     // — which was opening by telling you the result of a competition you had
     // not watched yet.
     if (pendingGuestBeats) {
+      // Their words (lines/mvact.js), written here because these ride the veto act.
+      try { writeCeremony({ type: 'mystery-guest-result', week: week.num, beats: pendingGuestBeats }, week, house, {}); } catch { /* words never stop a week */ }
       vetoAct.socialBeats = [...pendingGuestBeats, ...(vetoAct.socialBeats || [])];
     }
     week.acts.push(vetoAct);
@@ -6044,7 +6046,7 @@ export function simulateBBWeek(options = {}) {
         // for a scene that is four sentences long and happens after everybody
         // has already gone to bed.
         week.acts.push(addBeats({
-          type: 'second-veto-ceremony', holder: solo.holder, saved: solo.saves,
+          type: 'second-veto-ceremony', week: week.num, holder: solo.holder, saved: solo.saves,
           replacement: replacement2, nominees: [...nominees],
           // What MOVED, which is not the same as the block. The power screen
           // was reading `nominees` as "named instead" and printing the whole
@@ -6055,14 +6057,11 @@ export function simulateBBWeek(options = {}) {
           powerId: 'mystery-veto', name: 'The Mystery Veto',
           timing: 'veto-ceremony', visibility: 'secret', secret: true,
           detail: `${solo.holder} used a veto nobody knew existed, after the meeting had ended.`,
+          // Plain facts with a `part`; the words are lines/mvact.js.
           beats: [
-            { text: 'The house is called back into the living room. Nobody has been told why, and '
-                + 'the veto meeting finished hours ago.',
-              players: [...house].slice(0, 5), badgeText: 'CALLED BACK', badgeClass: 'gold' },
-            { text: `${solo.holder} is holding a second veto. ${takenDown.join(' and ')} `
-                + `${takenDown.length > 1 ? 'come' : 'comes'} off a block the whole house had `
-                + 'already accepted, and every plan made since the last meeting was made about a '
-                + 'block that no longer exists.',
+            { text: 'The house is called back into the living room after the veto meeting.',
+              players: [...house].slice(0, 5), badgeText: 'CALLED BACK', badgeClass: 'gold', part: 'called' },
+            { text: `${solo.holder} uses a second veto: ${takenDown.join(' and ')} ${takenDown.length > 1 ? 'come' : 'comes'} off the block.`, part: 'used',
               // Deduped: on a self-save the holder and the person coming down
               // are the same houseguest, and the card drew their face twice
               // side by side. Exactly the fault the Halting Hex was fixed for,
@@ -6070,17 +6069,14 @@ export function simulateBBWeek(options = {}) {
               // anything shared.
               players: [...new Set([solo.holder, ...takenDown])], badgeText: 'USED AGAIN', badgeClass: 'gold' },
             ...(duoPartnerDown ? [{
-              text: `${duoPartnerDown} was never the point. The rule takes the pair, and it takes `
-                + 'it at one in the morning with nobody in the room expecting it.',
+              text: `${duoPartnerDown} comes down too, as half of the pair.`, part: 'pair',
               players: [duoPartnerDown], badgeText: 'THE PAIR GOES TOO', badgeClass: 'blue',
             }] : []),
             ...(seated2.length ? [{
-              text: `${hoh} has to fill ${seated2.length > 1 ? 'two chairs that were' : 'a chair that was'} `
-                + `settled an hour ago. "${seated2.join(', ')} — take a seat."`,
+              text: `${hoh} names ${seated2.join(' and ')} as ${seated2.length > 1 ? 'replacements' : 'the replacement'}.`, part: 'chair',
               players: [...new Set([hoh, ...seated2])], badgeText: 'AND ONE MORE', badgeClass: 'red',
             }] : [{
-              text: `Nobody in this house is eligible to fill the chair, so it stays empty and the `
-                + 'block is simply smaller than it was an hour ago.',
+              text: 'Nobody is eligible to fill the chair, so it stays empty.', part: 'empty',
               players: [hoh], badgeText: 'AN EMPTY CHAIR', badgeClass: 'red',
             }]),
           ],

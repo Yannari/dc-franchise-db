@@ -80,6 +80,6 @@ describe('powers played and never played, on the stepped stage', () => {
 
   it('replaces the classic cards of the powers it draws, and only those', () => {
     for (const id of DRAWN) expect(REPLACED.test(`bb-power-${id}`)).toBe(true);
-    expect(REPLACED.test('bb-power-mystery-competitor')).toBe(false);
+    expect(REPLACED.test('bb-power-halting-hex')).toBe(false);
   });
 });

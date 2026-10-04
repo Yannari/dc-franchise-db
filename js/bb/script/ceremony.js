@@ -430,6 +430,26 @@ export function writeCeremony(act, week, house, extra = {}) {
     }
   }
 
+  // ── The Mystery Competitor, the Mystery Veto, and its second ceremony ──
+  if (['mystery-competitor', 'mystery-guest-result', 'mystery-veto', 'second-veto-ceremony'].includes(act.type)) {
+    const fresh = freshWriter(ctx, house);
+    for (const b of act.beats || []) {
+      const p = (b.players || []).filter(Boolean);
+      const salt = `mv|${act.type}|${b.part}|${p.join('|')}`;
+      let lines = null;
+      // the holder speaks first in the announce beat's players; the guest elsewhere
+      if (b.part === 'announce' && p[0]) lines = fresh('mvact.announce', { a: p[0] }, { ending: 'scene' }, salt);
+      if (b.part === 'door' && p[0]) lines = fresh('mvact.door', { a: p[0] }, { ending: b.visiting ? 'visiting' : 'native' }, salt);
+      if (['bumped', 'handoff', 'guestwon', 'guestlost'].includes(b.part) && p.length >= 2) lines = fresh(`mvact.${b.part}`, { a: p[0], b: p[1] }, { ending: 'scene' }, salt);
+      if (['diary', 'stranger', 'goodbye', 'second', 'alone', 'pair', 'empty'].includes(b.part) && p[0]) lines = fresh(`mvact.${b.part}`, { a: p[0] }, { ending: 'scene' }, salt);
+      if (b.part === 'solowon' || b.part === 'sololost') lines = fresh('mvact.solo', { a: p[0] }, { ending: b.part === 'solowon' ? 'won' : 'lost' }, salt);
+      if (b.part === 'called' && p[0]) lines = fresh('mvact.called', { a: p[(act.week || 0) % p.length] }, { ending: 'scene' }, salt);
+      if (b.part === 'used' && p[0]) lines = p.length >= 2 ? fresh('mvact.used', { a: p[0], b: p[1] }, { ending: 'other' }, salt) : fresh('mvact.used', { a: p[0] }, { ending: 'self' }, salt);
+      if (b.part === 'chair' && p.length >= 2) lines = fresh('mvact.chair', { a: p[0], b: p[1] }, { ending: 'scene' }, salt);
+      if (Array.isArray(lines) && lines.length) { b.lines = lines; b.text = transcript(lines); }
+    }
+  }
+
   // ── Team America: a secret team, a mission a week ──
   if (act.type === 'team-america') {
     const fresh = freshWriter(ctx, house);

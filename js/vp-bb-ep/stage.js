@@ -308,6 +308,26 @@ function pxHtml(S, L, st, fresh) {
   return `<div class="pxtable"><span class="pt">THE BOXES · ONE HOLDS THE VETO</span><div class="pxr">${boxes}</div></div>`;
 }
 
+// ── Camp Comeback's board of bunks (Phase 7) ───────────────────────────
+function campHtml(S, L, st, fresh, idx) {
+  const C = S.camp || {};
+  const seen = S.steps.slice(0, idx + 1);
+  const names = C.reveal && !seen.some(x => x.campIn) ? C.names.filter(n => n !== C.reveal) : C.names;
+  const out = new Set(seen.filter(x => x.campOut).map(x => x.campOut));
+  const back = seen.find(x => x.campBack)?.campBack;
+  const slots = Array.from({ length: Math.max(C.size || 4, names.length) }, (_, i) => names[i] || null);
+  const tile = n => {
+    if (!n) return `<div class="cb empty"><span class="cbf"></span><i>EMPTY BUNK</i></div>`;
+    const cls = n === back ? 'back' : out.has(n) ? 'gone' : '';
+    const now = fresh && (st?.campIn === n || st?.campOut === n || st?.campBack === n);
+    const tag = n === back ? 'BACK IN' : out.has(n) ? 'GONE' : 'CAMPER';
+    return `<div class="cb ${cls} ${now ? 'now' : ''}"><span class="cbf" style="--c:${col(n)}">${img(n)}</span><b>${esc(n)}</b><i>${tag}</i></div>`;
+  };
+  const left = names.length - out.size;
+  const head = back ? `THE DOOR · ${esc(back)} IS BACK IN` : out.size ? `THE DOOR · ${left} STILL PLAYING` : `CAMP · ${names.length} OF ${C.size || 4}`;
+  return `<div class="campboard"><span class="ch">${head}</span><div class="cr">${slots.map(tile).join('')}</div></div>`;
+}
+
 // ── Duo Week's board of pairs (Phase 7) ─────────────────────────────────
 const DUOLINK = `<svg class="dl" viewBox="0 0 24 12"><rect x="1" y="2" width="12" height="8" rx="4" fill="none" stroke="#22e1ff" stroke-width="2"/><rect x="11" y="2" width="12" height="8" rx="4" fill="none" stroke="#22e1ff" stroke-width="2"/></svg>`;
 function duoHtml(S, L, st, fresh, idx) {
@@ -406,6 +426,7 @@ export function stageHtml(screens, si, idx, fresh, o) {
   if (S.hunt && !isDr && idx >= 0 && !(st && st.rule != null)) h += huntHtml(S, L, st, fresh);
   if (S.px && !isDr && idx >= 0 && !(st && st.rule != null)) h += pxHtml(S, L, st, fresh);
   if (S.duo && !isDr && idx >= 0 && !(st && st.rule != null)) h += duoHtml(S, L, st, fresh, idx);
+  if (S.camp && !isDr && idx >= 0 && !(st && st.rule != null)) h += campHtml(S, L, st, fresh, idx);
   if (L.bill && S.steps.some(x => x.bill) && !isDr) h += billHtml(L, st, fresh);
   if (L.votes && st && st.k === 'host') {
     h += `<div class="votes ${fresh && st.votes ? 'fresh' : ''}"><div class="v"><div class="n">${L.votes[0]}</div><div class="k">Votes</div></div><i class="sep"></i><div class="v"><div class="n">${L.votes[1]}</div><div class="k">Votes</div></div></div>`;

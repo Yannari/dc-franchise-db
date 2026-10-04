@@ -894,6 +894,70 @@ function duoWeekScreens(act, ctx) {
   })];
 }
 
+// ── Camp Comeback (Phase 7) ─────────────────────────────────────────────
+// The first evictions do not send anybody home. Each one is its own short
+// screen straight after the vote: the evictee is turned round at the door and
+// takes a bunk on the camp board (Big Brother explains the rules on the first
+// one); the board fills to four. The night it is full, the four play in the
+// backyard for one place back in the game, and the board empties one face at
+// a time, last place first. Words: lines/campact.js on the acts' beats.
+function campScreens(act, ctx) {
+  const linesOf = b => (b && b.lines?.length ? scriptSteps(b.lines) : []);
+  const size = act.size || 4;
+  if (act.type === 'camp-comeback') {
+    const a = act.arrival, nth = act.nth || (act.camp || []).length;
+    const steps = [{ k: 'beat', t: `The front door opens again, and ${a} is called back inside.` }];
+    const rules = nth === 1;
+    if (rules) {
+      steps.push({ k: 'host', by: ctx.host, t: `${a}, you have been evicted from the Big Brother house. But you are not leaving.` });
+      steps.push(
+        { k: 'bb', t: `Houseguests, the first ${word(size)} people evicted this season will not leave the house.`, rule: 1 },
+        { k: 'bb', t: 'They will live here as campers. Campers cannot compete, cannot vote and cannot be nominated.', rule: 2 },
+        { k: 'bb', t: `When camp holds ${word(size)}, they will play one competition. The winner comes back into the game.`, rule: 3 },
+        { k: 'bb', t: 'Everyone else in camp will leave the house for good.', rule: 4 });
+      steps.push({ k: 'bb', t: `${a}, you are the first camper.`, campIn: a, toast: ['NOT LEAVING', '#ff8a3d'] });
+    } else {
+      steps.push({ k: 'host', by: ctx.host, t: `${a}, you are evicted. And like the others, you are staying in camp.`,
+        campIn: a, toast: ['NOT LEAVING', '#ff8a3d'] });
+      steps.push({ k: 'bb', t: nth >= size ? `Camp is full. Tonight, one camper comes back into the game.`
+        : `Camp now holds ${word(nth)} of ${word(size)}. Campers cannot compete, vote or be nominated.` });
+    }
+    for (const b of act.beats || []) steps.push(...linesOf(b));
+    return [{
+      id: `bb-camp-w${ctx.week}`, kind: 'camp', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: 'Living Room', cam: 4,
+      time: 'LIVE', kicker: 'Cam 04 · Living room', title: rules ? 'Camp Comeback' : 'Not leaving', label: rules ? 'Camp Comeback' : 'Camp Comeback · not leaving',
+      sub: `${a} stays in the house`, cast: [[a, 50]], camp: { names: (act.camp || [a]).slice(), size, reveal: a },
+      ...(rules ? { rules: [['NOT LEAVING', `the first ${word(size)} evicted stay in the house`], ['NO GAME', 'campers cannot compete, vote or be nominated'],
+        ['ONE WAY BACK', `when camp holds ${word(size)}, they play for one place`], ['THE REST GO', 'everyone else in camp leaves for good']],
+        rulesTitle: 'CAMP COMEBACK · HOW IT WORKS' } : {}),
+      steps,
+    }];
+  }
+  // the door
+  const played = (act.played || []).slice();
+  const steps = [
+    { k: 'bb', t: `Campers, camp is full. ${titleCase(word(played.length))} of you have been living here with no game to play.`, rule: 1 },
+    { k: 'bb', t: 'You will play one competition. The winner comes back into the game tonight.', rule: 2 },
+    { k: 'bb', t: 'Everyone else will leave the house for good.', rule: 3 },
+  ];
+  for (const b of act.beats || []) {
+    const p = b.players || [];
+    if (b.part === 'out') steps.push({ k: 'bb', t: `${p[0]}, you finished ${CAMP_ORD[b.place] || 'behind'}. Your time in this house is over.`, campOut: p[0] }, ...linesOf(b));
+    else if (b.part === 'back') steps.push({ k: 'bb', t: `${p[0]}, you have won. You are back in the game.`, campBack: p[0], toast: ['BACK IN THE GAME', '#f5c542'] }, ...linesOf(b));
+    else steps.push(...linesOf(b));
+  }
+  return [{
+    id: `bb-campdoor-w${ctx.week}`, kind: 'camp', anchor: ctx.anchor, day: ctx.day, set: 'yard', room: ROOM_NAME.yard, cam: CAM.yard,
+    time: '22:10', kicker: 'Cam 05 · Backyard', title: 'The Door', label: 'Camp Comeback · the door', sub: 'One camper comes back',
+    cast: played.map((n, i) => [n, Math.round(20 + i * (60 / Math.max(1, played.length - 1)))]),
+    camp: { names: played, size: played.length },
+    rules: [['CAMP IS FULL', `${word(played.length)} evicted houseguests, still in the house`], ['ONE COMPETITION', 'the winner is back in the game'],
+      ['THE REST GO', 'everyone else leaves for good']],
+    rulesTitle: 'THE DOOR · HOW IT WORKS', steps,
+  }];
+}
+const CAMP_ORD = { 2: 'second', 3: 'third', 4: 'fourth', 5: 'fifth', 6: 'sixth' };
+
 // Twist acts whose classic screen goes exactly where the act happened.
 const TWIST_SLOT = /^(rivals-|twist-announcement|duos-open|twin-|saboteur-|hacker|roadkill|coin|pandoras|power-played|interrogation|mystery-)/;
 
@@ -982,6 +1046,8 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
         flush(); for (const scr of duoWeekScreens(act, { ...ctx, host })) ceremony(scr);
         if (act.type === 'duo-week-open') ctx.duoWeek = { pairs: (act.pairs || []).map(p => [...p]), solo: act.solo || null };
         beatsOf(act); break;
+      case 'camp-comeback': case 'camp-return':
+        flush(); for (const scr of campScreens(act, { ...ctx, host })) ceremony(scr); beatsOf(act); break;
       case 'prize-exchange': flush(); for (const scr of pxScreens(act, ctx)) ceremony(scr);
         ctx.vetoHolder = act.vetoHolder || ctx.vetoHolder; beatsOf(act); break;
       case 'hidden-power': flush(); for (const scr of huntScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
@@ -1013,7 +1079,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
 }
 
 /** Ids of the legacy screens these steps replace. Everything else is a twist and stays. */
-export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out)(-\d+)?$/;
+export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor)(-\d+)?$/;
 export const ANCHOR_OF = id => {
   const base = id.replace(/-\d+$/, '');
   return /^bb-(final-hoh|final-cut|jury|ftc-questions|ftc-speeches|afh|reunion|finale-brief)$/.test(base) || /^bb-final-hoh$/.test(base) ? 'finale'

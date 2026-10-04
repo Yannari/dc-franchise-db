@@ -308,6 +308,23 @@ function pxHtml(S, L, st, fresh) {
   return `<div class="pxtable"><span class="pt">THE BOXES · ONE HOLDS THE VETO</span><div class="pxr">${boxes}</div></div>`;
 }
 
+// ── The Whacktivity's corridor of doors (Phase 7) ──────────────────────
+function whackHtml(S, L, st, fresh, idx) {
+  const W = S.whack || {};
+  const seen = S.steps.slice(0, idx + 1);
+  const picked = new Set(seen.filter(x => x.whPick != null).map(x => x.whPick));
+  const openAt = seen.find(x => x.whOpen != null)?.whOpen;
+  const win = seen.find(x => x.whWin)?.whWin, miss = seen.find(x => x.whMiss)?.whMiss;
+  const doors = (W.rooms || []).map((r, i) => {
+    const shown = picked.has(i);
+    const state = openAt == null ? '' : openAt === i ? 'open' : 'shut';
+    const now = fresh && (st?.whPick === i || st?.whOpen === i);
+    const faces = shown ? (r.entrants.length ? r.entrants.map(n => `<span class="whf ${n === win ? 'win' : ''} ${n === miss ? 'miss' : ''}" style="--c:${col(n)}" title="${esc(n)}">${img(n)}</span>`).join('') : '<em>NOBODY</em>') : '';
+    return `<div class="wd ${state} ${now ? 'now' : ''}"><span class="wdn">DOOR ${i + 1}</span><b>${esc(r.power)}</b><div class="whr">${faces}</div><i>${state === 'shut' ? 'DOES NOT OPEN' : state === 'open' ? (win ? `${esc(win)} WINS` : miss ? 'NOT BEATEN' : 'OPEN') : ''}</i></div>`;
+  }).join('');
+  return `<div class="whboard"><span class="whh">THE WHACKTIVITY</span><div class="wdr">${doors}</div></div>`;
+}
+
 // ── The Interrogation's tally of names (Phase 7) ───────────────────────
 function interroHtml(S, L, st, fresh, idx) {
   const seen = S.steps.slice(0, idx + 1);
@@ -505,6 +522,7 @@ export function stageHtml(screens, si, idx, fresh, o) {
   if (S.spower && !isDr && idx >= 0 && !(st && st.rule != null)) h += spowerHtml(S, L, st, fresh, idx);
   if (S.capsule && !isDr && idx >= 0 && !(st && st.rule != null)) h += capsuleHtml(S, L, st, fresh, idx);
   if (S.interro && !isDr && idx >= 0 && !(st && st.rule != null)) h += interroHtml(S, L, st, fresh, idx);
+  if (S.whack && !isDr && idx >= 0 && !(st && st.rule != null)) h += whackHtml(S, L, st, fresh, idx);
   if (L.bill && S.steps.some(x => x.bill) && !isDr) h += billHtml(L, st, fresh);
   if (L.votes && st && st.k === 'host') {
     h += `<div class="votes ${fresh && st.votes ? 'fresh' : ''}"><div class="v"><div class="n">${L.votes[0]}</div><div class="k">Votes</div></div><i class="sep"></i><div class="v"><div class="n">${L.votes[1]}</div><div class="k">Votes</div></div></div>`;

@@ -28,7 +28,7 @@
 import { gs, players } from '../core.js';
 import { pStats, pronouns } from '../players.js';
 import { addBond, getPerceivedBond } from '../bonds.js';
-import { aptitude, makePicker, clamp } from '../bb-comps/_shared.js';
+import { aptitude, clamp } from '../bb-comps/_shared.js';
 import { BB_POWER_DEFINITIONS, grantPower } from './powers.js';
 
 /** How many may play any one of them. BB21's number. */
@@ -46,52 +46,14 @@ const WHACK_MIX = Object.freeze({
 });
 const DEFAULT_MIX = Object.freeze({ mental: 0.3, endurance: 0.26, physical: 0.24, strategic: 0.2 });
 
-const beat = (text, players, badgeText, badgeClass = 'twist') =>
-  ({ type: 'whacktivity', text, players: [...players].filter(Boolean), badgeText, badgeClass });
+// Beats are plain facts with a `part`; the words are written by
+// bb/script/ceremony.js from lines/whact.js.
+const beat = (text, players, badgeText, badgeClass = 'twist', part = null, extra = {}) =>
+  ({ type: 'whacktivity', text, players: [...players].filter(Boolean), badgeText, badgeClass, ...(part ? { part } : {}), ...extra });
 
 const noise = (rng, amt = 2.5) => (rng() - 0.5) * amt * 2;
 const round2 = v => Math.round(v * 100) / 100;
 
-const PICKED = [
-  (n, p, power) => `${n} walks into the one offering ${power} without breaking stride. ${p.Sub} has known which door ${p.sub} wanted since the rules were read out.`,
-  (n, p, power) => `${n} stands in the corridor for a while and then picks ${power}. Whatever ${p.sub} decided, ${p.sub} decided it about ${p.posAdj} own week.`,
-  (n, p, power) => `${n} goes for ${power}, and does not look at who is following ${n} in.`,
-  (n, p, power) => `${n} takes ${power}. ${p.Sub} counted the room first, which is the only sensible way to pick a door nobody can see through.`,
-];
-
-const SAT_OUT = [
-  (n, p) => `${n} does not play at all. Walking into any of those rooms tells the house you think you need something, and ${p.sub} would rather nobody thought that.`,
-  (n) => `${n} stays on the sofa. There is a version of this game where wanting power visibly is the thing that gets you nominated.`,
-  (n, p) => `${n} sits it out. ${p.Sub} is comfortable this week and comfortable is worth more than a lottery ticket.`,
-];
-
-const CROWDED = [
-  (power, k) => `${k} of them chose the same door. Whatever else happens, ${k - 1} people are about to find out they were not the only one who wanted ${power}.`,
-  (power, k) => `The room offering ${power} fills up — ${k} houseguests, one prize, and every one of them now knows exactly who else is hunting.`,
-];
-
-// Every variant in these arrays is called as fn(name, pronouns, powerName).
-// A variant that declares (n, power) binds the PRONOUNS OBJECT to `power` and
-// narrates "wins [object Object]" — keep the full signature even where a
-// variant does not use every argument.
-const ALONE = [
-  (n, p, power) => `${n} is the only one who wanted ${power}, and finds out that being alone in there is not the same as winning it. The clock runs whether anybody is racing ${p.obj} or not.`,
-  (n, p, power) => `Nobody else picked ${power}. ${n} still has to beat it.`,
-];
-
-const WON = [
-  (n, p, power) => `${n} takes it, and is told in a room with the door shut. ${p.Sub} walks back out with ${power} and a face that is trying very hard to be a normal face.`,
-  (n, p, power) => `${n} wins ${power}. The house is told nothing at all, which is the only reason it is worth having.`,
-  (n, p) => `${n} wins, and spends the rest of the night practising looking disappointed.`,
-];
-
-const LOST_SOLO = [
-  (n, p) => `${n} misses it. ${p.Sub} walked in alone, walked out with nothing, and everybody watched ${p.obj} do both.`,
-];
-
-const NOBODY = [
-  power => `Nobody wanted ${power} badly enough to gamble on it. The room stays dark and the power goes back in the box.`,
-];
 
 /**
  * How much this houseguest wants THIS power, given the week they are having.
@@ -211,7 +173,7 @@ export function runWhacktivity({ week, house, hoh, nominees = [], rng = Math.ran
   if (!shelf.length || room.length < 5) return null;
 
   const weekNum = Number(week?.num) || (gs.bb?.weeks?.length || 0) + 1;
-  const say = makePicker(rng);
+  const say = () => rng();   // each beat's wording used to be one draw here; the draw stays
   const beats = [];
   const eligible = room.filter(n => n !== hoh);
 
@@ -265,12 +227,8 @@ export function runWhacktivity({ week, house, hoh, nominees = [], rng = Math.ran
       // Chose a door that stayed shut. They are not out of the game, they are
       // out of THIS one, and everybody saw them pick it.
       if (field.length) {
-        beats.push(beat(
-          `The room offering ${def.name} does not open tonight. ${
-            field.length === 1 ? `${field[0].name} picked it` : `${field.map(f => f.name).join(', ')} picked it`
-          } and ${field.length === 1 ? 'goes' : 'go'} back to the sofas having told the house exactly what ${
-            field.length === 1 ? 'they wanted' : 'they wanted'} and won nothing for it.`,
-          field.map(f => f.name).slice(0, 4), 'DID NOT OPEN', 'grey'));
+        beats.push(beat(`${field.map(f => f.name).join(', ')} picked ${def.name}, which does not open tonight.`,
+          field.map(f => f.name).slice(0, 4), 'DID NOT OPEN', 'grey', 'shut', { powerId: id, power: def.name }));
       }
       rooms.push({
         powerId: id, power: def.name, opened: false, empty: !field.length,
@@ -280,18 +238,20 @@ export function runWhacktivity({ week, house, hoh, nominees = [], rng = Math.ran
     }
 
     if (!field.length) {
-      beats.push(beat(say(NOBODY)(def.name), [], 'NOBODY PLAYED', 'grey'));
+      say();
+      beats.push(beat(`Nobody picked ${def.name}.`, [], 'NOBODY PLAYED', 'grey', 'nobody', { powerId: id, power: def.name }));
       rooms.push({ powerId: id, power: def.name, entrants: [], winner: null, empty: true, opened: true });
       continue;
     }
 
     for (const entrant of field) {
-      const pr = pronouns(entrant.name);
-      beats.push(beat(say(PICKED)(entrant.name, pr, def.name), [entrant.name], 'PICKED A DOOR', 'gold'));
+      say();
+      beats.push(beat(`${entrant.name} picks ${def.name}.`, [entrant.name], 'PICKED A DOOR', 'gold', 'picked', { powerId: id, power: def.name }));
     }
     if (field.length >= 3) {
-      beats.push(beat(say(CROWDED)(def.name, field.length), field.map(f => f.name).slice(0, 4),
-        'A CROWDED ROOM', 'red'));
+      say();
+      beats.push(beat(`${field.length} houseguests picked ${def.name}.`, field.map(f => f.name).slice(0, 4),
+        'A CROWDED ROOM', 'red', 'crowded', { count: field.length }));
     }
 
     const scores = field.map(f => ({
@@ -304,17 +264,19 @@ export function runWhacktivity({ week, house, hoh, nominees = [], rng = Math.ran
     if (field.length === 1) {
       // BB22's rule, and the better one: walking in alone is not winning.
       const solo = scores[0];
-      const pr = pronouns(solo.name);
-      beats.push(beat(say(ALONE)(solo.name, pr, def.name), [solo.name], 'ALONE IN THERE', 'grey'));
+      say();
+      beats.push(beat(`${solo.name} is alone in ${def.name}, and still has to beat it.`, [solo.name], 'ALONE IN THERE', 'grey', 'alone'));
       if (solo.score < 5.6) { winner = null; soloFailed = true; }
     }
 
     if (winner) {
       grantPower(id, winner, { week: weekNum, visibility: 'secret', source: 'bb-whacktivity' });
-      beats.push(beat(say(WON)(winner, pronouns(winner), def.name), [winner], 'WON IN PRIVATE', 'gold'));
+      say();
+      beats.push(beat(`${winner} wins ${def.name}, in private.`, [winner], 'WON IN PRIVATE', 'gold', 'won', { powerId: id, power: def.name }));
     } else if (soloFailed) {
-      beats.push(beat(say(LOST_SOLO)(scores[0].name, pronouns(scores[0].name)),
-        [scores[0].name], 'MISSED IT', 'red'));
+      say();
+      beats.push(beat(`${scores[0].name} played ${def.name} alone and missed it.`,
+        [scores[0].name], 'MISSED IT', 'red', 'missed'));
     }
 
     rooms.push({

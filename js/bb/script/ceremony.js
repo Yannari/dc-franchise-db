@@ -412,6 +412,24 @@ export function writeCeremony(act, week, house, extra = {}) {
     }
   }
 
+  // ── The Whacktivity: three doors, one opens ──
+  if (act.type === 'whacktivity') {
+    const fresh = freshWriter(ctx, house);
+    for (const b of act.beats || []) {
+      const p = (b.players || []).filter(Boolean);
+      const salt = `wh|${b.part}|${b.powerId || ''}|${p.join('|')}`;
+      const who = p[(act.week || 0) % Math.max(1, p.length)];
+      let lines = null;
+      if (b.part === 'picked' && p[0]) lines = fresh('whact.picked', { a: p[0] }, { ending: 'scene' }, salt);
+      if (b.part === 'crowded' && who) lines = fresh('whact.crowded', { a: who }, { ending: 'scene' }, salt);
+      if (b.part === 'alone' && p[0]) lines = fresh('whact.alone', { a: p[0] }, { ending: 'scene' }, salt);
+      if (b.part === 'shut' && who) lines = fresh('whact.shut', { a: who }, { ending: 'scene' }, salt);
+      if (b.part === 'won' && p[0]) lines = fresh('whact.won', { a: p[0] }, { ending: 'scene' }, salt);
+      if (b.part === 'missed' && p[0]) lines = fresh('whact.missed', { a: p[0] }, { ending: 'scene' }, salt);
+      if (Array.isArray(lines) && lines.length) { b.lines = lines; b.text = transcript(lines); }
+    }
+  }
+
   for (const k of Object.keys(script)) {
     const v = script[k];
     if (!v || (typeof v === 'object' && !Array.isArray(v) && !Object.keys(v).length)) delete script[k];

@@ -1138,6 +1138,48 @@ function interrogationScreens(act, ctx) {
   }];
 }
 
+// ── The Whacktivity (Phase 7) ───────────────────────────────────────────
+// Three doors in a corridor, each a competition for a different power. Big
+// Brother explains it; the house picks doors in public (the board fills with
+// faces under each); only ONE door opens, and the rest of the corridor finds
+// out it chose a door that never played. The winner is told in private, so
+// they only talk about it in the Diary Room. Words: lines/whact.js.
+function whackScreens(act, ctx) {
+  const linesOf = b => (b && b.lines?.length ? scriptSteps(b.lines) : []);
+  const beats = act.beats || [];
+  const rooms = act.rooms || [];
+  const open = rooms.find(r => r.powerId === act.openId);
+  const n = rooms.length;
+  const steps = [
+    { k: 'bb', t: `Houseguests, behind each of these ${word(n)} doors is a competition for a different power.`, rule: 1 },
+    { k: 'bb', t: `Choose one door. Up to ${word(5)} of you can play each one. ${act.hoh ? `${act.hoh}, as Head of Household, you cannot play.` : ''}`.trim(), rule: 2 },
+    { k: 'bb', t: 'Only one door will open tonight. You will not know which until you have chosen.', rule: 3 },
+    { k: 'bb', t: 'The winner will be told in private. Nobody else will be told anything.', rule: 4 },
+  ];
+  rooms.forEach((r, i) => {
+    const list = r.entrants || [];
+    steps.push({ k: 'beat', t: list.length ? `${listOf(list)} ${list.length === 1 ? 'picks' : 'pick'} ${r.power}.` : `Nobody picks ${r.power}.`, whPick: i });
+  });
+  if (open) steps.push({ k: 'bb', t: `The door that opens tonight is... ${open.power}.`, whOpen: rooms.indexOf(open), toast: ['ONE DOOR OPENS', '#ff8a3d'] });
+  // the players of the open door, heard only once it is known to be theirs
+  for (const b of beats.filter(x => x.part === 'picked')) steps.push(...linesOf(b));
+  for (const b of beats.filter(x => x.part === 'shut')) steps.push(...linesOf(b));
+  for (const b of beats.filter(x => x.part === 'crowded' || x.part === 'alone')) steps.push(...linesOf(b));
+  for (const b of beats) {
+    if (b.part === 'nobody') steps.push({ k: 'beat', t: `Nobody is standing behind it. The power goes back in the box.` });
+    if (b.part === 'won') steps.push({ k: 'beat', t: `${b.players[0]} wins, and is told in private.`, whWin: b.players[0], toast: ['WON IN PRIVATE', '#f5c542'] }, ...linesOf(b));
+    if (b.part === 'missed') steps.push({ k: 'beat', t: `${b.players[0]} played alone, and did not beat it.`, whMiss: b.players[0] }, ...linesOf(b));
+  }
+  return [{
+    id: `bb-whack-w${ctx.week}`, kind: 'whack', anchor: ctx.anchor, day: ctx.day, set: 'yard', room: ROOM_NAME.yard, cam: CAM.yard, time: '19:30',
+    kicker: 'Cam 05 · Backyard', title: 'The Whacktivity', label: 'The Whacktivity', sub: `${word(n)} doors, one opens`,
+    cast: [], whack: { rooms: rooms.map(r => ({ power: r.power, entrants: (r.entrants || []).slice(0, 5) })) },
+    rules: [['THE DOORS', `${word(n)} competitions, each for a different power`], ['PICK ONE', 'up to five per door; the HOH cannot play'],
+      ['ONE OPENS', 'only one door plays tonight'], ['IN PRIVATE', 'the winner is told alone']],
+    rulesTitle: 'THE WHACKTIVITY · HOW IT WORKS', steps,
+  }];
+}
+
 // Twist acts whose classic screen goes exactly where the act happened.
 const TWIST_SLOT = /^(rivals-|twist-announcement|duos-open|twin-|saboteur-|hacker|roadkill|coin|pandoras|power-played|interrogation|mystery-)/;
 
@@ -1232,6 +1274,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
         ctx.vetoHolder = act.vetoHolder || ctx.vetoHolder; beatsOf(act); break;
       case 'hidden-power': flush(); for (const scr of huntScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'secret-power-comp': flush(); for (const scr of secretPowerScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
+      case 'whacktivity': flush(); for (const scr of whackScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'interrogation': flush(); for (const scr of interrogationScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'time-capsule': flush(); for (const scr of capsuleScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'wildcard': flush(); for (const scr of wildcardScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
@@ -1263,7 +1306,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
 }
 
 /** Ids of the legacy screens these steps replace. Everything else is a twist and stays. */
-export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard|secret-power|timecapsule|power-hoh-interrogation|power-deepfake-hoh)(-\d+)?$/;
+export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard|secret-power|timecapsule|power-hoh-interrogation|power-deepfake-hoh|whacktivity)(-\d+)?$/;
 export const ANCHOR_OF = id => {
   const base = id.replace(/-\d+$/, '');
   return /^bb-(final-hoh|final-cut|jury|ftc-questions|ftc-speeches|afh|reunion|finale-brief)$/.test(base) || /^bb-final-hoh$/.test(base) ? 'finale'

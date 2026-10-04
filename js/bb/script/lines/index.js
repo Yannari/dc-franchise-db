@@ -57,6 +57,9 @@ import PXACT from './pxact.js';
 import DUOACT from './duoact.js';
 import CAMPACT from './campact.js';
 import WILDACT from './wildact.js';
+import SPACT from './spact.js';
+import CAPACT from './capact.js';
+import INTACT from './intact.js';
 
-export const POOLS = { ...FRICTION, ...CEREMONY, ...TALK, ...SOCIAL, ...DEALS, ...ALLIANCE, ...CAMPAIGN, ...POWER, ...LIFE, ...PHASE, ...BLOC, ...VENUE, ...FALLOUT, ...BOND, ...REIGN, ...SCHEME, ...FOLLOWUP, ...TEXTURE, ...EDITORIAL, ...ARC, ...COUPLE, ...JURY, ...PLAN, ...KNOWN, ...CER, ...ROMANCE, ...UPKEEP, ...ENGINE, ...DRINKS, ...MEETING, ...SLOP, ...WHACK, ...TWIST1, ...TWIST2, ...TWIST3, ...TWIST4, ...TWIST5, ...TWIST6, ...TWIST7, ...TWIST8, ...TWIST9, ...TWIST10, ...TWIST11, ...TWIST12, ...VFALL, ...ENGINE2, ...KIN, ...PAST, ...ANON, ...SOLO, ...SUITEACT, ...CHAINACT, ...HUNTACT, ...PXACT, ...DUOACT, ...CAMPACT, ...WILDACT };
+export const POOLS = { ...FRICTION, ...CEREMONY, ...TALK, ...SOCIAL, ...DEALS, ...ALLIANCE, ...CAMPAIGN, ...POWER, ...LIFE, ...PHASE, ...BLOC, ...VENUE, ...FALLOUT, ...BOND, ...REIGN, ...SCHEME, ...FOLLOWUP, ...TEXTURE, ...EDITORIAL, ...ARC, ...COUPLE, ...JURY, ...PLAN, ...KNOWN, ...CER, ...ROMANCE, ...UPKEEP, ...ENGINE, ...DRINKS, ...MEETING, ...SLOP, ...WHACK, ...TWIST1, ...TWIST2, ...TWIST3, ...TWIST4, ...TWIST5, ...TWIST6, ...TWIST7, ...TWIST8, ...TWIST9, ...TWIST10, ...TWIST11, ...TWIST12, ...VFALL, ...ENGINE2, ...KIN, ...PAST, ...ANON, ...SOLO, ...SUITEACT, ...CHAINACT, ...HUNTACT, ...PXACT, ...DUOACT, ...CAMPACT, ...WILDACT, ...SPACT, ...CAPACT, ...INTACT };
 export const POOL_KEYS = Object.keys(POOLS);

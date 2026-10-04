@@ -16,7 +16,6 @@
 // Six of them, each asking for a different pair of stats, so the capsule is not
 // secretly the same competition every week and the same houseguest is not
 // quietly favoured all season.
-import { pStats, pronouns } from '../players.js';
 import { aptitude } from '../bb-comps/_shared.js';
 
 /**
@@ -77,24 +76,8 @@ export const CAPSULE_CHALLENGES = [
 
 const pick = (rng, list) => list[Math.floor(rng() * list.length)] || list[0];
 
-const GOOD = [
-  (n, c, i) => `${n} takes the ${c.verb} clean and does not celebrate it, which is the right instinct with the clock still going.`,
-  (n, c, i) => `Stage ${i}: ${n} gets it first time. The room does not acknowledge it and neither does ${pronouns(n).sub}.`,
-  (n, c, i) => `${n} reads it, commits, and is right. That is ${i} down.`,
-  (n, c, i) => `A clean ${c.verb} from ${n}. ${pronouns(n).Sub} ${pronouns(n).sub === 'they' ? 'have' : 'has'} found the rhythm of the thing.`,
-];
-const NEAR = [
-  (n, c, i) => `${n} has it, hesitates, and changes ${pronouns(n).posAdj} mind at exactly the wrong moment. It half-counts and the clock does not care.`,
-  (n, c, i) => `Stage ${i} goes to ${n} on the second attempt, which is a stage taken and a chunk of the clock gone.`,
-  (n, c, i) => `${n} gets there, slowly. Slowly is the expensive way.`,
-  (n, c, i) => `Not clean, not a disaster — ${n} takes the ${c.verb} with the timer eating into what is left.`,
-];
-const BAD = [
-  (n, c, i) => `${n} goes wrong on stage ${i} and the penalty lands exactly as the rules promised it would.`,
-  (n, c, i) => `A bad ${c.verb} from ${n}. ${pronouns(n).Sub} ${pronouns(n).sub === 'they' ? 'know' : 'knows'} it before the machine tells ${pronouns(n).obj}.`,
-  (n, c, i) => `${n} loses stage ${i} to impatience rather than to the challenge, which will be the part ${pronouns(n).sub} ${pronouns(n).sub === 'they' ? 'replay' : 'replays'} later.`,
-  (n, c, i) => `Stage ${i} beats ${n} outright. There is no time to be annoyed about it and ${pronouns(n).sub} ${pronouns(n).sub === 'they' ? 'are' : 'is'} annoyed about it.`,
-];
+// The play-by-play is lines/capact.js now (`capact.stage.<grade>`), written by
+// bb/script/ceremony.js; the stage keeps its draw so the season replays the same.
 
 /**
  * Run a capsule attempt, stage by stage.
@@ -125,10 +108,10 @@ export function runCapsuleAttempt(name, rng = Math.random, forcedId = null) {
     const roll = base + (rng() - 0.5) * 4.4;
     const par = challenge.target / challenge.stages;
     const grade = roll >= par * 1.08 ? 'good' : roll >= par * 0.82 ? 'near' : 'bad';
-    const pool = grade === 'good' ? GOOD : grade === 'near' ? NEAR : BAD;
+    rng();   // the draw that used to pick this stage's wording
     stages.push({
       index: i, grade, score: roll,
-      text: pick(rng, pool)(name, challenge, i),
+      text: `Stage ${i}: ${grade === 'good' ? 'clean' : grade === 'near' ? 'slow' : 'missed'}.`,
     });
     total += roll;
   }

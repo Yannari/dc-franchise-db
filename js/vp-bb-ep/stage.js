@@ -308,6 +308,59 @@ function pxHtml(S, L, st, fresh) {
   return `<div class="pxtable"><span class="pt">THE BOXES · ONE HOLDS THE VETO</span><div class="pxr">${boxes}</div></div>`;
 }
 
+// ── The Interrogation's tally of names (Phase 7) ───────────────────────
+function interroHtml(S, L, st, fresh, idx) {
+  const seen = S.steps.slice(0, idx + 1);
+  const asked = seen.filter(x => x.intRoom).length;
+  const tally = new Map();
+  for (const x of seen) if (x.intPoint) tally.set(x.intPoint, (tally.get(x.intPoint) || 0) + 1);
+  const named = seen.find(x => x.intName != null)?.intName;
+  const end = seen.find(x => x.intEnd)?.intEnd;
+  const top = Math.max(1, ...tally.values());
+  const rows = [...tally.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5).map(([n, c]) => {
+    const now = fresh && st?.intPoint === n;
+    return `<div class="ir ${n === named ? (end === 'caught' ? 'caught' : 'named') : ''} ${now ? 'now' : ''}"><span class="irf" style="--c:${col(n)}">${img(n)}</span>`
+      + `<b>${esc(n)}</b><span class="irb"><i style="width:${((c / top) * 100).toFixed(0)}%"></i></span><em>${c}</em></div>`;
+  }).join('');
+  const foot = end === 'caught' ? 'CAUGHT' : end === 'wrong' ? 'WRONG NAME' : named != null ? `NAMED: ${esc(named || 'NOBODY')}` : `${asked} QUESTIONED`;
+  return `<div class="intboard"><span class="ih">NAMES GIVEN</span>${rows || '<div class="ie">nobody has named anyone yet</div>'}<span class="ift ${end || ''}">${foot}</span></div>`;
+}
+
+// ── The Time Capsule's meter (Phase 7) ─────────────────────────────────
+function capsuleHtml(S, L, st, fresh, idx) {
+  const C = S.capsule || {};
+  const seen = S.steps.slice(0, idx + 1);
+  const done = seen.filter(x => x.capStage).map(x => x.capStage);
+  const end = seen.find(x => x.capEnd)?.capEnd;
+  const total = done.reduce((s, x) => s + (x[2] || 0), 0);
+  const pct = C.target ? Math.max(0, Math.min(100, (total / C.target) * 100)) : 0;
+  const segs = Array.from({ length: C.n || 0 }, (_, i) => {
+    const d = done[i];
+    const now = fresh && d && st?.capStage?.[0] === d[0];
+    return `<span class="cs ${d ? d[1] : ''} ${now ? 'now' : ''}">${i + 1}</span>`;
+  }).join('');
+  return `<div class="capboard ${end || ''}"><span class="cph">THE TIME CAPSULE · ${esc((C.name || '').toUpperCase())}</span>`
+    + `<div class="csr">${segs}</div><div class="cbar"><i style="width:${pct.toFixed(1)}%"></i><em></em></div>`
+    + `<span class="cpf">${end === 'won' ? 'BEATEN' : end === 'lost' ? 'OUT OF TIME' : 'TARGET'}</span></div>`;
+}
+
+// ── The Secret Power Competition's doors (Phase 7) ─────────────────────
+function spowerHtml(S, L, st, fresh, idx) {
+  const D = S.spower || {};
+  const seen = S.steps.slice(0, idx + 1);
+  const shown = new Set(seen.filter(x => x.spDoor != null).map(x => x.spDoor));
+  const opened = new Map(seen.filter(x => x.spOpen).map(x => [x.spOpen[0], x.spOpen[1]]));
+  const names = Object.fromEntries(S.steps.filter(x => x.spDoor != null).map(x => [x.spDoor, x.spName]));
+  const door = i => {
+    const now = fresh && (st?.spDoor === i || st?.spOpen?.[0] === i);
+    if (!shown.has(i)) return `<div class="spd shut"><span class="spn">${i + 1}</span><i>DOOR ${i + 1}</i></div>`;
+    const who = opened.get(i);
+    const face = who ? `<span class="spf" style="--c:${col(who)}">${img(who)}</span><b>${esc(who)}</b>` : opened.has(i) ? `<span class="spf none">—</span><b>UNCLAIMED</b>` : `<span class="spf none">?</span><b>&nbsp;</b>`;
+    return `<div class="spd ${who ? 'won' : opened.has(i) ? 'none' : 'open'} ${now ? 'now' : ''}">${face}<i>${esc(names[i] || '')}</i></div>`;
+  };
+  return `<div class="spboard"><span class="sph">SECRET POWERS · THE HOUSE NEVER SEES THIS</span><div class="spr">${Array.from({ length: D.doors || 3 }, (_, i) => door(i)).join('')}</div></div>`;
+}
+
 // ── The Wildcard's hat board (Phase 7) ─────────────────────────────────
 function wildHtml(S, L, st, fresh, idx) {
   const W = S.wild || {};
@@ -449,6 +502,9 @@ export function stageHtml(screens, si, idx, fresh, o) {
   if (S.duo && !isDr && idx >= 0 && !(st && st.rule != null)) h += duoHtml(S, L, st, fresh, idx);
   if (S.camp && !isDr && idx >= 0 && !(st && st.rule != null)) h += campHtml(S, L, st, fresh, idx);
   if (S.wild && !isDr && idx >= 0 && !(st && st.rule != null)) h += wildHtml(S, L, st, fresh, idx);
+  if (S.spower && !isDr && idx >= 0 && !(st && st.rule != null)) h += spowerHtml(S, L, st, fresh, idx);
+  if (S.capsule && !isDr && idx >= 0 && !(st && st.rule != null)) h += capsuleHtml(S, L, st, fresh, idx);
+  if (S.interro && !isDr && idx >= 0 && !(st && st.rule != null)) h += interroHtml(S, L, st, fresh, idx);
   if (L.bill && S.steps.some(x => x.bill) && !isDr) h += billHtml(L, st, fresh);
   if (L.votes && st && st.k === 'host') {
     h += `<div class="votes ${fresh && st.votes ? 'fresh' : ''}"><div class="v"><div class="n">${L.votes[0]}</div><div class="k">Votes</div></div><i class="sep"></i><div class="v"><div class="n">${L.votes[1]}</div><div class="k">Votes</div></div></div>`;

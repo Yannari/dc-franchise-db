@@ -356,6 +356,62 @@ export function writeCeremony(act, week, house, extra = {}) {
     }
   }
 
+  // ── The Secret Power Competition: the doors in the yard ──
+  if (act.type === 'secret-power-comp') {
+    const fresh = freshWriter(ctx, house);
+    for (const b of act.beats || []) {
+      const p = (b.players || []).filter(Boolean);
+      const salt = `sp|${b.part}|${b.door || ''}|${p.join('|')}`;
+      let lines = null;
+      if (b.part === 'open' && p[0]) lines = fresh('spact.open', { a: p[(act.week || 0) % p.length] }, { ending: 'scene' }, salt);
+      if (b.part === 'barred' && p[0]) lines = fresh('spact.barred', { a: p[0] }, { ending: 'scene' }, salt);
+      if (b.part === 'won' && p[0]) lines = fresh('spact.won', { a: p[0] }, { ending: b.rivals ? 'beat' : 'alone' }, salt);
+      if (b.part === 'price' && p[0]) lines = fresh('spact.price', { a: p[0] }, { ending: 'scene' }, salt);
+      if (b.part === 'handed' && p[0]) lines = fresh('spact.handed', { a: p[0] }, { ending: 'scene' }, salt);
+      if (Array.isArray(lines) && lines.length) { b.lines = lines; b.text = transcript(lines); }
+    }
+  }
+
+  // ── The Time Capsule: America's favourite, alone in a room ──
+  if (act.type === 'time-capsule') {
+    const fresh = freshWriter(ctx, house);
+    for (const b of act.beats || []) {
+      const p = (b.players || []).filter(Boolean);
+      const salt = `cap|${b.part}|${b.index || ''}|${p.join('|')}`;
+      let lines = null;
+      if (b.part === 'entry' && p[0]) lines = fresh('capact.entry', { a: p[0] }, { ending: 'scene' }, salt);
+      if (b.part === 'stage' && p[0]) lines = fresh('capact.stage', { a: p[0] }, { ending: b.grade || 'near' }, salt);
+      if (b.part === 'won' && p[0]) lines = fresh('capact.won', { a: p[0] }, { ending: 'scene' }, salt);
+      if (b.part === 'lost' && p[0]) lines = fresh('capact.lost', { a: p[0] }, { ending: b.costume ? 'costume' : 'slop' }, salt);
+      if (b.part === 'tether' && p.length === 2) lines = fresh('capact.tether', { a: p[0], b: p[1] }, { ending: 'scene' }, salt);
+      if (Array.isArray(lines) && lines.length) { b.lines = lines; b.text = transcript(lines); }
+    }
+  }
+
+  // ── The Interrogation (and the Deepfake): a stolen Head of Household ──
+  if (act.type === 'interrogation') {
+    const fresh = freshWriter(ctx, house);
+    for (const b of act.beats || []) {
+      const p = (b.players || []).filter(Boolean);
+      const salt = `int|${b.part}|${b.kind || ''}|${p.join('|')}`;
+      let lines = null;
+      if (b.part === 'dethroned' && p[0]) lines = fresh('intact.dethroned', { a: p[0] }, { ending: 'scene' }, salt);
+      if (b.part === 'room' && p.length === 2) {
+        const named = ['tells', 'covers', 'reads', 'guesses'].includes(b.kind) && b.points;
+        const ending = b.kind === 'denies' ? (b.points ? 'denies' : 'deniesplain') : named ? b.kind : 'silent';
+        lines = fresh('intact.room', { a: p[0], b: p[1] }, { ending, who: b.points || '' }, salt);
+      }
+      if (b.part === 'name' && p[0]) lines = fresh('intact.name', { a: p[0] }, { ending: b.accused ? 'named' : 'none', who: b.accused || '' }, salt);
+      if (b.part === 'caught' && p.length === 2) lines = fresh('intact.caught', { a: p[0], b: p[1] }, { ending: 'scene' }, salt);
+      if (b.part === 'wrong') lines = b.accused && p.length === 2
+        ? fresh('intact.wrong', { a: p[0], b: p[1] }, { ending: 'named' }, salt)
+        : fresh('intact.wrong', { a: p[0] }, { ending: 'none' }, salt);
+      if (b.part === 'deepfake' && p.length === 2) lines = fresh('intact.deepfake', { a: p[1], b: p[0] }, { ending: 'scene' }, salt);
+      if (b.part === 'ally' && p.length === 2) lines = fresh('intact.ally', { a: p[0], b: p[1] }, { ending: 'scene' }, salt);
+      if (Array.isArray(lines) && lines.length) { b.lines = lines; b.text = transcript(lines); }
+    }
+  }
+
   for (const k of Object.keys(script)) {
     const v = script[k];
     if (!v || (typeof v === 'object' && !Array.isArray(v) && !Object.keys(v).length)) delete script[k];

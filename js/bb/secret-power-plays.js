@@ -24,8 +24,10 @@ import { nominationScore } from './strategy.js';
 import { allyStake } from './shared-strategy.js';
 import { believesPowerHeld, learnBBPower } from './knowledge.js';
 
-const beat = (text, players, badgeText, badgeClass) =>
-  ({ text, players: [...(players || [])], badgeText, badgeClass });
+// Beats carry a `part` where the words are scripted (bb/script/ceremony.js;
+// lines/intact.js for the Interrogation and the Deepfake).
+const beat = (text, players, badgeText, badgeClass, part = null, extra = {}) =>
+  ({ text, players: [...(players || [])], badgeText, badgeClass, ...(part ? { part } : {}), ...extra });
 const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
 
 /** Weighted pick, so the door opens on somebody worth opening it for. */
@@ -196,32 +198,22 @@ export function playInterrogation({ week, house = [], hoh, rng = Math.random } =
       ...shown(inst, 'nominations',
         `${inst.holder} is Head of Household and the wall will say it was ${hoh}.`),
       beats: [
-        beat(`${hoh} is not Head of Household any more and will not be told. `
-          + `${inst.holder} has the week, the wall will read the nominations out in `
-          + `${hoh}'s voice, and the house is going to spend it blaming ${hoh} for a `
-          + 'block nobody in this room watched them choose.',
-        [hoh, inst.holder], 'THE WALL LIES', 'red'),
-        ...(forAlly ? [beat(
-          `${inst.holder} was never the one in trouble this week. ${protecting} was — and `
-          + `${protecting} will never know, because there is nothing to find out.`,
-          [inst.holder, protecting], 'NOT FOR THEMSELVES', 'gold')] : []),
+        beat(`${inst.holder} takes ${hoh}'s Head of Household in secret; the wall will use ${hoh}'s voice.`,
+          [hoh, inst.holder], 'THE WALL LIES', 'red', 'deepfake'),
+        ...(forAlly ? [beat(`${inst.holder} used it to protect ${protecting}.`,
+          [inst.holder, protecting], 'NOT FOR THEMSELVES', 'gold', 'ally')] : []),
       ],
     };
   }
 
-  const beats = [beat(
-    `${hoh} is not Head of Household any more. Somebody in this house has taken it, the wall will `
-      + 'not say who, and every houseguest here is about to be asked the same question one at a time.',
-    [hoh], 'DETHRONED', 'red')];
+  const beats = [beat(`Somebody has taken ${hoh}'s Head of Household, and ${hoh} will question the house.`,
+    [hoh], 'DETHRONED', 'red', 'dethroned')];
   if (forAlly) {
     // Said out loud, because a power spent on somebody else is the only version
     // of this that costs the holder anything, and it read as self-preservation
     // with no way to tell the difference.
-    beats.push(beat(
-      `${inst.holder} was never the one in trouble this week. ${protecting} was, and ${protecting} `
-        + `does not know that ${inst.holder} has just spent a week of cover taking the ceremony away `
-        + 'before it could be read out.',
-      [inst.holder, protecting], 'NOT FOR THEMSELVES', 'gold'));
+    beats.push(beat(`${inst.holder} used it to protect ${protecting}.`,
+      [inst.holder, protecting], 'NOT FOR THEMSELVES', 'gold', 'ally'));
   }
 
   const interviews = [];
@@ -272,32 +264,10 @@ export function playInterrogation({ week, house = [], hoh, rng = Math.random } =
   const BADGE = { tells: 'HANDED OVER', covers: 'COVERING', reads: 'A GOOD READ',
     guesses: 'A GUESS', silent: 'SAYS NOTHING', denies: 'TO THEIR FACE' };
   for (const i of shownRooms) {
-    const p = pronouns(i.name);
-    const are = p.sub === 'they' ? 'are' : 'is';
-    const has = p.sub === 'they' ? 'have' : 'has';
-    const say = p.sub === 'they' ? 'say' : 'says';
-    let line;
-    if (i.kind === 'tells') {
-      line = `${i.name} does not hesitate. ${p.Sub} ${say} ${inst.holder}, ${p.sub} ${are} right, `
-        + `and ${p.sub} ${has} just made an enemy for the rest of the season.`;
-    } else if (i.kind === 'covers') {
-      line = `${i.name} knows exactly who it was and hands ${hoh} a different name entirely. `
-        + 'Whatever that friendship is worth, it is being spent right now.';
-    } else if (i.kind === 'reads') {
-      line = `${i.name} has no idea and says ${inst.holder} anyway, on nothing but the way `
-        + `${inst.holder} has been standing since the competition ended.`;
-    } else if (i.kind === 'guesses') {
-      line = `${i.name} names ${i.points}, which is a guess in a confident voice. ${i.points} is `
-        + 'going to hear about this by the end of the night.';
-    } else if (i.kind === 'silent') {
-      line = `${i.name} will not give a name. ${p.Sub} ${are} not handing anybody to a Head of `
-        + 'Household who could be back in power in ten minutes.';
-    } else {
-      line = `${inst.holder} sits down opposite ${hoh} and lies about it`
-        + (i.points ? `, then offers ${i.points} as a helpful suggestion.` : ', calmly, at length.');
-    }
-    beats.push(beat(line, [i.name], BADGE[i.kind],
-      i.kind === 'tells' || i.kind === 'reads' ? 'red' : i.kind === 'denies' ? 'gold' : 'blue'));
+    const said = i.kind === 'silent' ? 'gives no name' : i.points ? `names ${i.points}` : 'gives no name';
+    beats.push(beat(`${i.name} is questioned (${i.kind}) and ${said}.`, [i.name, hoh], BADGE[i.kind],
+      i.kind === 'tells' || i.kind === 'reads' ? 'red' : i.kind === 'denies' ? 'gold' : 'blue',
+      'room', { kind: i.kind, points: i.points || null }));
   }
 
   // ── the name ──
@@ -311,17 +281,12 @@ export function playInterrogation({ week, house = [], hoh, rng = Math.random } =
     : (rivals[Math.floor(rng() * Math.max(1, rivals.length))] || null);
   const caught = accused === inst.holder;
 
-  beats.push(beat(
-    `Everybody is called back in. ${hoh} has one name and the whole house watches ${hoh} say it: `
-      + `${accused || 'nobody at all'}.`,
-    [hoh, accused].filter(Boolean), 'THE NAME', 'gold'));
+  beats.push(beat(`${hoh} names ${accused || 'nobody'}.`, [hoh, accused].filter(Boolean), 'THE NAME', 'gold', 'name',
+    { accused: accused || null }));
 
   if (caught) {
-    beats.push(beat(
-      `It is the right name. ${inst.holder} does not get to argue. ${hoh} keeps the week, the power `
-        + `is spent for nothing, and every person here has just learned what ${inst.holder} is `
-        + 'willing to do quietly.',
-      [hoh, inst.holder], 'CAUGHT', 'red'));
+    beats.push(beat(`${inst.holder} is caught. ${hoh} keeps Head of Household.`,
+      [inst.holder, hoh], 'CAUGHT', 'red', 'caught'));
     for (const n of house) {
       if (n === inst.holder) continue;
       try {
@@ -331,13 +296,9 @@ export function playInterrogation({ week, house = [], hoh, rng = Math.random } =
       addBond(n, inst.holder, -1.4);
     }
   } else {
-    beats.push(beat(
-      accused
-        ? `It is the wrong name. ${accused} has to stand there while the whole house looks at them, `
-          + `and ${inst.holder} is Head of Household with nobody in this building any the wiser.`
-        : `${hoh} cannot make the call, and that is an answer too. ${inst.holder} is Head of `
-          + 'Household and nobody knows it.',
-      [hoh, accused].filter(Boolean), 'THE WRONG NAME', 'gold'));
+    beats.push(beat(accused ? `${accused} is the wrong name. ${inst.holder} is Head of Household in secret.`
+      : `${hoh} names nobody. ${inst.holder} is Head of Household in secret.`,
+      [accused, hoh].filter(Boolean), 'THE WRONG NAME', 'gold', 'wrong', { accused: accused || null }));
     // Being named for something you did not do costs you anyway — the room
     // heard it, and rooms remember accusations better than corrections.
     if (accused) {

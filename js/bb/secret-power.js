@@ -22,19 +22,17 @@
 // change. What is behind each door is the schedule's decision, not this
 // module's.
 import { gs } from '../core.js';
-import { pStats, pronouns } from '../players.js';
+import { pStats } from '../players.js';
 import { BB_POWER_DEFINITIONS, grantPower } from './powers.js';
 
 /** How many doors the competition can hide. The show ran three. */
 export const SECRET_POWER_DOORS = 3;
 
 const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
-/** Capitalised subject pronoun, so a variant can start a sentence with one. */
-const p2 = name => {
-  try { return pronouns(name).Sub; } catch { return 'They'; }
-};
-const beat = (text, players, badgeText, badgeClass) =>
-  ({ text, players: [...(players || [])], badgeText, badgeClass });
+// Beats are plain facts with a `part`; the words are written by
+// bb/script/ceremony.js from lines/spact.js.
+const beat = (text, players, badgeText, badgeClass, part = null, extra = {}) =>
+  ({ text, players: [...(players || [])], badgeText, badgeClass, ...(part ? { part } : {}), ...extra });
 
 /**
  * How badly one houseguest wants a power rather than the crown.
@@ -115,16 +113,11 @@ export function runSecretPowerComp({
     if (gambler) chasing.set(gambler, doorFor(gambler, doors, rng));
   }
 
-  const beats = [beat(
-    'The yard is not what it looks like. Three of the things out here are not the Head of '
-      + 'Household at all, and every houseguest has already decided in private which one they '
-      + 'are actually playing for.',
-    field.slice(0, 6), 'SOMETHING ELSE IS ON THE LINE', 'gold')];
+  const beats = [beat(`The Head of Household competition hides ${doors.length} secret ${doors.length === 1 ? 'power' : 'powers'}.`,
+    field.slice(0, 6), 'SOMETHING ELSE IS ON THE LINE', 'gold', 'open')];
   if (outgoingHoh) {
-    beats.push(beat(
-      `${outgoingHoh} cannot win this back and everybody knows it, which for one week makes the `
-        + 'outgoing Head of Household the only person out here with nothing to lose.',
-      [outgoingHoh], 'NOTHING TO LOSE', 'blue'));
+    beats.push(beat(`${outgoingHoh} cannot win Head of Household back, so has nothing to lose.`,
+      [outgoingHoh], 'NOTHING TO LOSE', 'blue', 'barred'));
   }
 
   // ── the crown ──
@@ -155,41 +148,14 @@ export function runSecretPowerComp({
       // well would have been the second of five callers each remembering
       // separately, which is how four of them come to forget.
       if (instance) granted.push({ name: room.winner, power: id });
-      // ── not the same sentence three times ──
-      //
-      // Three doors open on one night, so a single line here printed three
-      // near-identical paragraphs in a row with only the name changed, which is
-      // the most obvious tell a room is generated. The pool is drawn by
-      // POSITION rather than at random so a night never repeats itself, and the
-      // lines say different things: what they gave up, what they now hold, what
-      // the room saw.
-      const won = [
-        () => `${room.winner} was never running for Head of Household. ${room.winner} was running `
-          + `for this, and has it, and has an expiry date on it.`,
-        () => `Nobody watched ${room.winner} lose that competition, because ${room.winner} did not `
-          + `enter it. ${p2(room.winner)} entered a different one, alone, and won.`,
-        () => `${room.winner} gave up the best week in this house for an envelope. Whether that was `
-          + 'clever is a question with an answer, and the answer arrives later.',
-        () => `The door closes on ${room.winner} holding something nobody else in this building `
-          + 'knows exists. That is worth more tonight than it will be in a month.',
-        () => `${room.winner} walks out with it. No announcement, no name on a wall — just a `
-          + 'houseguest who is now playing a slightly different game to everybody else.',
-      ][rooms.length % 5];
-      const b = beat(won(), [room.winner], 'A PRIVATE WIN', 'gold');
+      const b = beat(`${room.winner} wins ${room.name}, in secret.`, [room.winner], 'A PRIVATE WIN', 'gold', 'won',
+        { power: room.name, rivals: entrants.length - 1, blurb: BB_POWER_DEFINITIONS[id]?.blurb || '' });
       // Tagged so the screen can open THIS door on THIS card rather than
       // holding all three until the end.
       b.door = id;
       beats.push(b);
     } else {
-      const nobody = [
-        () => 'Nobody went for that one. It goes back in the box and the house finishes this '
-          + 'season without ever learning what was in it.',
-        () => 'One of the three had no takers at all. Somewhere a producer is disappointed and '
-          + 'nobody in this building will ever know why.',
-        () => 'That door does not open. Everybody who might have wanted it wanted the crown more, '
-          + 'which is its own kind of answer.',
-      ][rooms.length % 3];
-      const b = beat(nobody(), [], 'UNCLAIMED', 'grey');
+      const b = beat(`Nobody goes for ${room.name}.`, [], 'UNCLAIMED', 'grey', 'unclaimed', { power: room.name, blurb: BB_POWER_DEFINITIONS[id]?.blurb || '' });
       b.door = id;
       beats.push(b);
     }
@@ -200,17 +166,11 @@ export function runSecretPowerComp({
   const gambled = [...chasing.keys()].filter(n => n !== outgoingHoh);
   const lost = gambled.filter(n => order.indexOf(n) === 0);
   if (lost.length) {
-    beats.push(beat(
-      `${lost[0]} had the best afternoon out there by some distance and is not the Head of `
-        + 'Household, because that is not what they were playing for. Nobody in this house will '
-        + 'understand why for weeks.',
-      [lost[0]], 'THE PRICE', 'red'));
+    beats.push(beat(`${lost[0]} had the best score but was not playing for Head of Household.`,
+      [lost[0]], 'THE PRICE', 'red', 'price'));
   } else if (gambled.length && winner) {
-    beats.push(beat(
-      `${winner} takes the Head of Household. ${winner} also had ${gambled.length} `
-        + `${gambled.length === 1 ? 'person' : 'people'} out there not competing for it, and will `
-        + 'never be told which.',
-      [winner], 'HANDED A WEEK', 'blue'));
+    beats.push(beat(`${winner} wins Head of Household while ${gambled.length} ${gambled.length === 1 ? 'person was' : 'people were'} playing for something else.`,
+      [winner], 'HANDED A WEEK', 'blue', 'handed', { count: gambled.length }));
   }
 
   return {

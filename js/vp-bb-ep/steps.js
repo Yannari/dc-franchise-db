@@ -1011,6 +1011,133 @@ function wildcardScreens(act, ctx) {
 }
 const listNames = ns => ns.length < 2 ? ns.join('') : `${ns.slice(0, -1).join(', ')} and ${ns.at(-1)}`;
 
+// ── The Secret Power Competition (Phase 7) ──────────────────────────────
+// Straight after the Head of Household it was hiding inside: Big Brother's
+// rules, then the doors in the yard opened one at a time on a board. A won
+// door shows its winner (to the viewer only; the house never learns) and
+// what the power does; an unclaimed one stays dark. Then the price: whoever
+// had the best score and gave the crown away for it. Words: lines/spact.js.
+function secretPowerScreens(act, ctx) {
+  const linesOf = b => (b && b.lines?.length ? scriptSteps(b.lines) : []);
+  const beats = act.beats || [];
+  const n = (act.doors || []).length;
+  const steps = [
+    { k: 'bb', t: `Houseguests, this Head of Household competition was hiding ${word(n)} secret ${n === 1 ? 'power' : 'powers'}, each behind a door in the yard.`, rule: 1 },
+    { k: 'bb', t: 'Before it started, each of you chose: play for Head of Household, or play for a door.', rule: 2 },
+    { k: 'bb', t: 'If you chose a door, you could not win Head of Household, however well you did.', rule: 3 },
+    { k: 'bb', t: 'Whoever went furthest for a door wins its power. Nobody else will ever be told who.', rule: 4 },
+  ];
+  for (const b of beats.filter(x => x.part === 'open' || x.part === 'barred')) steps.push(...linesOf(b));
+  const order = (act.doors || []);
+  for (const b of beats.filter(x => x.part === 'won' || x.part === 'unclaimed')) {
+    const i = order.indexOf(b.door);
+    steps.push({ k: 'beat', t: `Door ${word(i + 1)}: ${b.power}.${b.blurb ? ' ' + b.blurb : ''}`, spDoor: i, spName: b.power });
+    if (b.part === 'won') steps.push({ k: 'beat', t: `${b.players[0]} gets there first.`, spOpen: [i, b.players[0]], toast: ['A SECRET POWER', '#b07cff'] }, ...linesOf(b));
+    else steps.push({ k: 'beat', t: `Nobody went for it. It goes back in the box.`, spOpen: [i, null] });
+  }
+  for (const b of beats.filter(x => x.part === 'price' || x.part === 'handed')) steps.push(...linesOf(b));
+  return [{
+    id: `bb-secretpower-w${ctx.week}`, kind: 'spower', anchor: ctx.anchor, day: ctx.day, set: 'yard', room: ROOM_NAME.yard, cam: CAM.yard, time: '21:40',
+    kicker: 'Cam 05 · Backyard', title: 'Secret Powers', label: 'Secret Powers', sub: 'The competition behind the competition',
+    cast: [], spower: { doors: n },
+    rules: [['THE DOORS', `${word(n)} secret powers, hidden in the competition`], ['ONE CHOICE', 'play for HOH, or for a door'],
+      ['NO CROWN', 'choose a door and you cannot win HOH'], ['SECRET', 'nobody is told who won a power']],
+    rulesTitle: 'SECRET POWERS · HOW IT WORKS', steps,
+  }];
+}
+
+// ── The Time Capsule (Phase 7) ──────────────────────────────────────────
+// America picks a favourite, who goes into the capsule alone. Big Brother
+// explains it on a rules card, the challenge says what is in the room, and the
+// run plays stage by stage against a meter that fills toward the target. Beat
+// it and they come out holding a secret power (never named); lose it and they
+// come out wearing a punishment in front of everybody. Words: lines/capact.js.
+function capsuleScreens(act, ctx) {
+  const linesOf = b => (b && b.lines?.length ? scriptSteps(b.lines) : []);
+  const beats = act.beats || [];
+  const a = act.recipient;
+  const n = act.challenge?.stages || beats.filter(b => b.part === 'stage').length;
+  const steps = [
+    { k: 'bb', t: 'Houseguests, America has voted for its favourite houseguest. Each of you can be picked once a season.', rule: 1 },
+    { k: 'bb', t: 'America\'s favourite will go into the Time Capsule alone and face one challenge.', rule: 2 },
+    { k: 'bb', t: 'Beat it, and they come out with a power from a past season. Only they will know what it is.', rule: 3 },
+    { k: 'bb', t: 'Lose, and they come out with a punishment from a past season, for everyone to see.', rule: 4 },
+    { k: 'bb', t: `${a}, America has chosen you. Please go to the Time Capsule.`, toast: ["AMERICA'S FAVOURITE", '#f5c542'] },
+  ];
+  for (const b of beats) {
+    if (b.part === 'entry') steps.push(...linesOf(b));
+    if (b.part === 'room') steps.push({ k: 'beat', t: b.text, capRoom: true });
+    if (b.part === 'stage') {
+      const said = linesOf(b);
+      const mark = { capStage: [b.index, b.grade, b.score] };
+      steps.push({ k: 'beat', t: `Stage ${word(b.index)} of ${word(n)}: ${b.grade === 'good' ? 'clean' : b.grade === 'near' ? 'slow, but done' : 'missed'}.`, ...mark }, ...said);
+    }
+    if (b.part === 'won') steps.push({ k: 'beat', t: `${a} beats the Time Capsule and comes out holding something.`, capEnd: 'won', toast: ['THE CAPSULE IS BEATEN', '#f5c542'] }, ...linesOf(b));
+    if (b.part === 'lost') steps.push({ k: 'beat', t: `${a} does not beat the clock, and comes out ${act.punishmentVerb || 'wearing'} ${act.punishment}.`, capEnd: 'lost', toast: ['THE CAPSULE WINS', '#ff3355'] }, ...linesOf(b));
+    if (b.part === 'tether') steps.push(...linesOf(b));
+  }
+  return [{
+    id: `bb-capsule-w${ctx.week}`, kind: 'capsule', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: 'Living Room', cam: 4, time: '15:00',
+    kicker: 'Cam 04 · Living room', title: 'The Time Capsule', label: 'The Time Capsule', sub: `${act.challenge?.name || 'One challenge'}, alone`,
+    cast: [[a, 50]], capsule: { n, target: act.target, name: act.challenge?.name || '' },
+    rules: [["AMERICA'S PICK", 'the country chooses one houseguest, once a season each'], ['THE CAPSULE', 'they go in alone and face one challenge'],
+      ['BEAT IT', 'a secret power from a past season'], ['LOSE IT', 'a punishment from a past season, in public']],
+    rulesTitle: 'THE TIME CAPSULE · HOW IT WORKS', steps,
+  }];
+}
+
+// ── The Interrogation, and the Deepfake (Phase 7) ──────────────────────
+// A secret power takes the Head of Household's week before nominations. The
+// Interrogation is public: Big Brother explains it, the deposed HOH questions
+// the house one room at a time while a tally of the names given builds on the
+// board, then names one, and is right or wrong. The Deepfake is not public at
+// all, so its card is the narrator's, not Big Brother's, and only the taker
+// speaks, in the Diary Room. Words: lines/intact.js.
+function interrogationScreens(act, ctx) {
+  const linesOf = b => (b && b.lines?.length ? scriptSteps(b.lines) : []);
+  const beats = act.beats || [];
+  const deposed = act.deposed, holder = act.holder;
+  if (act.creditsDeposed) {
+    const steps = [
+      { k: 'beat', t: `${holder} has a secret power that takes somebody else's Head of Household.`, rule: 1 },
+      { k: 'beat', t: `${holder} uses it on ${deposed}. ${deposed} is not told.`, rule: 2 },
+      { k: 'beat', t: `When the nominations are read out, the wall will use ${deposed}'s voice.`, rule: 3 },
+    ];
+    for (const b of beats) steps.push(...linesOf(b));
+    return [{
+      id: `bb-deepfake-w${ctx.week}`, kind: 'interro', anchor: ctx.anchor, day: ctx.day, set: 'dr', room: ROOM_NAME.dr, cam: CAM.dr, time: '12:40',
+      kicker: 'Cam 01 · Diary room', title: 'The Deepfake', label: 'The Deepfake', sub: 'Only the viewer knows',
+      cast: [[holder, 50]], rules: [['THE POWER', `${holder} takes the Head of Household`], ['IN SECRET', `${deposed} is never told`],
+        ['THE WALL', `nominations are read in ${deposed}'s voice`]], rulesTitle: 'THE DEEPFAKE · ONLY YOU KNOW', steps,
+    }];
+  }
+  const steps = [
+    { k: 'bb', t: `Houseguests, somebody in this house has used a secret power to take ${deposed}'s Head of Household.`, rule: 1 },
+    { k: 'bb', t: `${deposed} will now question every one of you, one at a time.`, rule: 2 },
+    { k: 'bb', t: `Then ${deposed} will name the houseguest who took it.`, rule: 3 },
+    { k: 'bb', t: `If ${deposed} is right, ${deposed} keeps the week. If not, the taker is Head of Household, and nobody will be told who.`, rule: 4 },
+  ];
+  for (const b of beats) {
+    if (b.part === 'dethroned' || b.part === 'ally') steps.push(...linesOf(b));
+    if (b.part === 'room') {
+      const said = linesOf(b);
+      const mark = { intRoom: b.players[0], ...(b.points && b.kind !== 'silent' ? { intPoint: b.points } : {}) };
+      if (said.length) { said[0] = { ...said[0], ...mark }; steps.push(...said); }
+    }
+    if (b.part === 'name') steps.push({ k: 'bb', t: `${deposed}, who took your Head of Household?` }, ...linesOf(b).map((x, i) => i ? x : { ...x, intName: b.accused || '' }));
+    if (b.part === 'caught') steps.push({ k: 'bb', t: `${deposed}, you are correct. You remain Head of Household.`, intEnd: 'caught', toast: ['CAUGHT', '#ff3355'] }, ...linesOf(b));
+    if (b.part === 'wrong') steps.push({ k: 'bb', t: b.accused ? `${deposed}, that is not correct. Your reign as Head of Household is over.` : `${deposed}, without a name, your reign as Head of Household is over.`, intEnd: 'wrong', toast: ['THE WRONG NAME', '#f5c542'] }, ...linesOf(b));
+  }
+  return [{
+    id: `bb-interrogation-w${ctx.week}`, kind: 'interro', anchor: ctx.anchor, day: ctx.day, set: 'hoh', room: ROOM_NAME.hoh, cam: CAM.hoh, time: '12:40',
+    kicker: `Cam ${String(CAM.hoh).padStart(2, '0')} · HOH room`, title: 'The Interrogation', label: 'The Interrogation', sub: `${deposed} wants a name`,
+    cast: [[deposed, 50]], interro: { deposed },
+    rules: [['TAKEN', `a secret power took ${deposed}'s Head of Household`], ['QUESTIONS', `${deposed} questions every houseguest, alone`],
+      ['ONE NAME', `${deposed} names who did it`], ['RIGHT OR WRONG', 'right keeps the week; wrong, and the taker is HOH in secret']],
+    rulesTitle: 'THE INTERROGATION · HOW IT WORKS', steps,
+  }];
+}
+
 // Twist acts whose classic screen goes exactly where the act happened.
 const TWIST_SLOT = /^(rivals-|twist-announcement|duos-open|twin-|saboteur-|hacker|roadkill|coin|pandoras|power-played|interrogation|mystery-)/;
 
@@ -1104,6 +1231,9 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       case 'prize-exchange': flush(); for (const scr of pxScreens(act, ctx)) ceremony(scr);
         ctx.vetoHolder = act.vetoHolder || ctx.vetoHolder; beatsOf(act); break;
       case 'hidden-power': flush(); for (const scr of huntScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
+      case 'secret-power-comp': flush(); for (const scr of secretPowerScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
+      case 'interrogation': flush(); for (const scr of interrogationScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
+      case 'time-capsule': flush(); for (const scr of capsuleScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'wildcard': flush(); for (const scr of wildcardScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'safety-suite': flush(); for (const scr of suiteScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'rivals-hoh':
@@ -1133,7 +1263,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
 }
 
 /** Ids of the legacy screens these steps replace. Everything else is a twist and stays. */
-export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard)(-\d+)?$/;
+export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard|secret-power|timecapsule|power-hoh-interrogation|power-deepfake-hoh)(-\d+)?$/;
 export const ANCHOR_OF = id => {
   const base = id.replace(/-\d+$/, '');
   return /^bb-(final-hoh|final-cut|jury|ftc-questions|ftc-speeches|afh|reunion|finale-brief)$/.test(base) || /^bb-final-hoh$/.test(base) ? 'finale'

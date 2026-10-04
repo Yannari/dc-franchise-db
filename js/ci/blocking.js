@@ -21,7 +21,7 @@ import { THEORY_LINE } from './slips.js';
 import { handOver } from './powers.js';
 import { rideOrDieTarget } from './twists.js';
 import { kinVisit, kinGoodbye, kinAtDoor } from './kin.js';
-import { focusDamp, noteKiss } from './twotiming.js';
+import { focusDamp, noteKiss, romanticPair } from './twotiming.js';
 import { streamFor } from '../dr/rng.js';
 
 export function atRiskOf(state, influencers) {
@@ -195,7 +195,8 @@ export function runVisit(state, rng, h, blockers, { to: forced = null, inPerson 
   // A kiss at the door: both want it, and somebody who is taken holds back as
   // much as they are loyal (twotiming.js focusDamp). If they kiss anyway with a
   // partner in the building, it is cheating, and it can come out (noteKiss).
-  if (!sc.data.clash && attractionOk(state, h, to) && attractionOk(state, to, h)
+  // A couple sharing one profile never kisses at the door: the other one is standing right there.
+  if (!sc.data.clash && !romanticPair(state, h) && !romanticPair(state, to) && attractionOk(state, h, to) && attractionOk(state, to, h)
     && rel(h, to, 'attraction') > 6 && rel(to, h, 'attraction') > 6
     && streamFor(state.seed, `kiss:${sc.id}`)() < focusDamp(state, h, to)) {
     sc.data.kiss = true;

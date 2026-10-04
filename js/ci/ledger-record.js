@@ -23,6 +23,7 @@
 // builds it right after playing the season).
 import { rel, peopleOf } from './state.js';
 import { CIRCLE_FORMAT } from '../shows.js';
+import { romanticPair } from './twotiming.js';
 
 // Friends both ways (the relationship layer's affection, 0-10).
 const ALLY_AFFECTION = 5;
@@ -74,8 +75,10 @@ export function ciLedgerRecord(rows = [], state = null, { cast = null, winners =
     const rivals = others(h).filter(o => Math.max(rel(h, o, 'resentment'), rel(o, h, 'resentment')) >= RIVAL_RESENTMENT)
       .flatMap(peopleOfAll).filter(o => !allies.includes(o));
     // A romance both felt and acted on; a kiss at the door is acting on it, flirts or not.
-    const showmances = others(h).filter(o => (rel(h, o, 'attraction') >= ROMANCE_ATTRACTION && rel(o, h, 'attraction') >= ROMANCE_ATTRACTION
-      && (flirts.get(pairKey(h, o)) || 0) >= ROMANCE_FLIRTS) || kissed.has(pairKey(h, o)))
+    // A couple sharing a profile flirts as a game move: their romance is each other.
+    const showmances = others(h).filter(o => !romanticPair(state, h) && !romanticPair(state, o)
+      && ((rel(h, o, 'attraction') >= ROMANCE_ATTRACTION && rel(o, h, 'attraction') >= ROMANCE_ATTRACTION
+        && (flirts.get(pairKey(h, o)) || 0) >= ROMANCE_FLIRTS) || kissed.has(pairKey(h, o))))
       .flatMap(o => peopleOfAll(o).map(partner => ({ partner,
         ended: (met.has(h) && met.has(o)) || kissed.has(pairKey(h, o)) ? 'intact' : 'breakup' })));
     rec.players[n] = {

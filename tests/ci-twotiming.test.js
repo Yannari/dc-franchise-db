@@ -10,6 +10,7 @@ import { initMind } from '../js/ci/mind.js';
 import { focusDamp, caught, gameTwoTimer, flingsOf, coupleFlirt, coupleRevealed, taken, noteKiss, kissFallout } from '../js/ci/twotiming.js';
 import { makeClaim, learn } from '../js/ci/claims.js';
 import { ciLedgerRecord } from '../js/ci/ledger-record.js';
+import { runVisit } from '../js/ci/blocking.js';
 import { addScene } from '../js/ci/state.js';
 import { makePlayers, makePool } from './helpers/ci-cast.js';
 import { playCircleSeason } from '../js/ci/season.js';
@@ -159,6 +160,35 @@ describe('a couple playing one profile together', () => {
     const sc = { id: 'y', who: ['@ml', '@b'], data: { intent: 'flirt', lead: 'M' } };
     expect(coupleFlirt(s, () => 0.1, sc, 'warm')).toBe('warm');
     expect(sc.data.couple.stance).toBe('game');
+  });
+  it('never kisses at the door, coming or going: the other one is standing right there', () => {
+    // Twenty doors each way (a single roll could miss a kiss by chance).
+    let kisses = 0;
+    for (let seed = 1; seed <= 20; seed++) {
+      setGs({ bonds: {}, relationshipDimensions: {}, episodeHistory: [] });
+      // visited: a crush both ways, but B is knocking on a couple's door
+      const s = couple(); s.seed = seed;
+      bump('@b', '@ml', 'attraction', 9); bump('@ml', '@b', 'attraction', 9);
+      s.active = ['@ml'];
+      if (runVisit(s, streamFor(seed, 'v'), '@b', [], { to: '@ml' }).data.kiss) kisses++;
+      setGs({ bonds: {}, relationshipDimensions: {}, episodeHistory: [] });
+      // visiting: the couple is blocked and goes to see B
+      const t = couple(); t.seed = seed;
+      bump('@b', '@ml', 'attraction', 9); bump('@ml', '@b', 'attraction', 9);
+      t.active = ['@b'];
+      if (runVisit(t, streamFor(seed, 'w'), '@ml', [], { to: '@b' }).data.kiss) kisses++;
+    }
+    expect(kisses).toBe(0);
+  });
+  it('their flirting is a game move: the season records no romance for either of them', () => {
+    const s = couple();
+    bump('@b', '@ml', 'attraction', 9); bump('@ml', '@b', 'attraction', 9);
+    for (let i = 0; i < 3; i++) s.scenes.push({ id: `f${i}`, kind: 'chat', who: ['@ml', '@b'], data: { intent: 'flirt', ending: 'warm' } });
+    s.scenes.push({ id: 'v9', kind: 'visit', who: ['@ml', '@b'], data: { kiss: true } });
+    Object.assign(s.handleOf, { M: '@ml', L: '@ml', B: '@b' });
+    const rec = ciLedgerRecord([{}, {}], s, { cast: ['M', 'L', 'B'] });
+    expect(rec.players.M.showmances).toEqual([]);
+    expect(rec.players.L.showmances).toEqual([]);
   });
   it('whoever fell for the flirting feels played when they find out it was a couple', () => {
     const s = couple();

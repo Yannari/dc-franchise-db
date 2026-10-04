@@ -294,4 +294,9 @@ export function bbxSwitchViewer(which) {
   } catch { location.reload(); }
 }
 if (typeof window !== 'undefined') Object.assign(window, { bbxNext, bbxBack, bbxAll, bbxReset, bbxAuto, bbxTv, bbxSwitchViewer });
+// Closing the Viewing Party only hides it: stop every Auto run and the line typing out,
+// or Auto keeps clicking through the week (and its music) behind a closed window.
+if (typeof document !== 'undefined') document.addEventListener('vp:close', () => {
+  for (const R of Object.values(reg())) { if (R) { stopAuto(R); clearInterval(R.typing); } }
+});
 void eyeSvg;

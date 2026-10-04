@@ -184,6 +184,9 @@ export function soundFor(screen, idx) {
 export function playStep(screen, idx) {
   const a = typeof window !== 'undefined' ? window.audio : null;
   if (!a || typeof a.sfx !== 'function') return;
+  // A closed Viewing Party is only hidden: never start music behind it.
+  const vp = typeof document !== 'undefined' ? document.getElementById('visual-player') : null;
+  if (vp && vp.style.display === 'none') return;
   const { cue, bed } = soundFor(screen, idx);
   try {
     if (bed && typeof a.ambient === 'function') a.ambient(variantOf(bed, screen));

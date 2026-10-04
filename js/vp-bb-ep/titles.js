@@ -49,7 +49,7 @@ const engine = () => (typeof window !== 'undefined' ? window.audio : null);
 
 /** Follow the site's volume and mute, then play. A browser that blocks it gets a play button. */
 export function bbxTitleReady(v) {
-  if (!v || v.dataset.started) return;
+  if (!v || v.dataset.started || !viewerOpen()) return;
   v.dataset.started = '1';
   try { const a = engine(); if (a) { v.volume = Math.max(0, Math.min(1, a.getVolume?.() ?? 0.7)); v.muted = !!a.isMuted?.(); } } catch { /* defaults */ }
   const p = v.play?.();
@@ -70,7 +70,24 @@ export function bbxTitleFallback(v) {
 export function bbxTitleDone(el) {
   const v = videoOf(el);
   try { v?.pause?.(); } catch { /* fine */ }
+  if (!viewerOpen()) return;
   if (typeof window !== 'undefined' && typeof window.vpNext === 'function') window.vpNext();
 }
 
+/** Is the Viewing Party actually on screen? Closing it only hides it. */
+export function viewerOpen() {
+  const vp = typeof document !== 'undefined' ? document.getElementById('visual-player') : null;
+  return !!vp && vp.style.display !== 'none';
+}
+/** Silence every title video (closing the viewer hides it, and a hidden video keeps playing). */
+export function stopTitles() {
+  if (typeof document === 'undefined') return;
+  document.querySelectorAll('.bbt video').forEach(v => { try { v.pause(); v.dataset.started = ''; } catch { /* fine */ } });
+}
+
 if (typeof window !== 'undefined') Object.assign(window, { bbxTitleReady, bbxTitlePlay, bbxTitleFallback, bbxTitleDone });
+if (typeof document !== 'undefined') {
+  document.addEventListener('vp:close', stopTitles);
+  // the browser tab goes to the background: no titles playing to nobody
+  document.addEventListener('visibilitychange', () => { if (document.hidden) stopTitles(); });
+}

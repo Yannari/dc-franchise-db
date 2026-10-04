@@ -94,10 +94,10 @@ describe('the host opens the episode on the cliffhanger, and says good morning a
         expect(aired[0].script.blocks[0].key, `day ${row.day}`).toBe('host.cold.night');
         const firstMorning = aired.findIndex(a => !NIGHT.includes(a.kind));
         aired.forEach((a, i) => {
-          const colds = a.script.blocks.filter(b => /^host\.cold\.(blocking|quiet|arrival)$/.test(b.key));
+          const colds = a.script.blocks.filter(b => /^host\.cold\.(blocking|quiet|arrival|final|finale)$/.test(b.key));
           if (i < firstMorning) expect(colds, `day ${row.day} scene ${i}`).toEqual([]);
         });
-        if (firstMorning > 0) expect(aired[firstMorning].script.blocks[0].key, `day ${row.day}`).toMatch(/^host\.cold\.(blocking|quiet)$/);
+        if (firstMorning > 0) expect(aired[firstMorning].script.blocks[0].key, `day ${row.day}`).toMatch(/^host\.cold\.(blocking|quiet|final)$/);
       }
     }
   });

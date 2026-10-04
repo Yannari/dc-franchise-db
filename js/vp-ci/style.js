@@ -370,6 +370,11 @@ export const CIV_CSS = `
 .civ-seatplace{position:absolute;left:50%;bottom:-1.6cqw;transform:translateX(-50%);font-weight:900;font-size:.85cqw;letter-spacing:.12em;padding:.2cqw .6cqw;border-radius:99px;background:#1b1f45;border:1px solid rgba(255,255,255,.35);white-space:nowrap;animation:civUp .4s both}
 .civ-seatplace.gold{background:#ffd23f;color:#2a1d00;border-color:#ffd23f}
 .civ-seatfan{position:absolute;left:50%;top:-1.6cqw;transform:translateX(-50%);font-weight:900;font-size:.7cqw;letter-spacing:.12em;padding:.2cqw .6cqw;border-radius:99px;background:#ff4fb4;white-space:nowrap;animation:civUp .5s both}
+.civ-guests{position:absolute;left:4%;right:4%;top:11%;z-index:6;text-align:center}
+.civ-guests .hd{font-weight:800;font-size:.85cqw;letter-spacing:.2em;color:#c9bfff;margin-bottom:1.4cqw}
+.civ-guests .row{display:flex;justify-content:center;flex-wrap:wrap;gap:1cqw}
+.civ-guests .civ-seat{width:6.6cqw}
+.civ-guests .civ-seat.talk .civ-mcam,.civ-studio .civ-couch .civ-seat.talk .civ-mcam{box-shadow:0 0 0 .3cqw #3fd8ff,0 0 3cqw rgba(63,216,255,.8)}
 .civ-crowd{position:absolute;left:3%;top:9%;z-index:6;display:flex;flex-wrap:wrap;gap:.45cqw;max-width:22%;align-items:center}
 .civ-crowd .hd{width:100%;font-weight:800;font-size:.75cqw;letter-spacing:.2em;color:#c9bfff}
 .civ-crowd span:not(.hd){width:2.6cqw;aspect-ratio:1;border-radius:50%;background:#1b1f45 center 25%/cover;border:.15cqw solid rgba(255,255,255,.4);opacity:.7;display:grid;place-items:center;font-size:.9cqw;font-weight:800;transition:all .3s}

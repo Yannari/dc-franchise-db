@@ -88,6 +88,7 @@ export const STAGE_DATA = {
   visit: d => ({ motive: d.motive || null, clash: d.clash || null }),
   blocking: d => ({ target: d.target ?? null, by: d.by || [], channel: d.channel || null, secret: !!d.secret, reason: d.reason || null }),
   // The seats are in the order they arrived: the screen's layout must never hint at the result.
+  reunion: d => ({ seats: d.seats || null, talks: (d.talks || []).map(t => [t.a, t.b]) }),
   reveal: d => ({ placements: (d.placements || []).map(p => ({ profile: p.profile, place: p.place })), seats: d.seats || null, fan: d.fan || null }),
   party: d => ({ theme: d.theme, props: d.props || [] }),
   // The Newsfeed: how many likes each player's post got this morning.

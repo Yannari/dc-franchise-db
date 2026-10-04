@@ -267,7 +267,13 @@ const ORD = n => `${n}${n % 10 === 1 && n !== 11 ? 'ST' : n % 10 === 2 && n !== 
 function studioStage(row, screen, idx, fresh) {
   const st = idx >= 0 ? screen.steps[idx] : null;
   const k = st?.key || '';
-  const pl = [...(screen.d?.placements || [])].sort((a, b) => a.place - b.place);
+  // The reunion plays on the same set before the board: no places yet, and
+  // the two people settling something are lit up, wherever they sit.
+  const reunion = screen.kind === 'reunion';
+  const pl = reunion ? (screen.d?.seats || []).map((h, i) => ({ profile: h, place: i + 1 }))
+    : [...(screen.d?.placements || [])].sort((a, b) => a.place - b.place);
+  const pair = reunion && /^reunion\.(talk|ask)\./.test(k) ? [st.on?.a, st.on?.b].filter(Boolean) : [];
+  const lit = h => h === st?.who || pair.includes(h);
   const finalists = pl.map(p => p.profile);
   const seen = upTo(screen, idx);
   const winnerOut = seen.some(x => x.key === 'reveal.winner');
@@ -294,19 +300,22 @@ function studioStage(row, screen, idx, fresh) {
   const speech = /^reveal\.speech/.test(k);
   const couch = order.map(h => {
     const placed = shown.has(h);
-    const cls = [h === st?.who ? 'talk' : '', h === winner ? 'win' : '', final2 && standing.includes(h) ? 'stand' : '', final2 && !standing.includes(h) ? 'dim' : '',
+    const cls = [lit(h) ? 'talk' : '', h === winner ? 'win' : '', final2 && standing.includes(h) ? 'stand' : '', final2 && !standing.includes(h) ? 'dim' : '',
       !placed && k === 'reveal.suspense' ? 'tense' : '', speech && h === winner ? 'spot' : ''].filter(Boolean).join(' ');
     return `<div class="civ-seat ${cls}">${cam(row, h, 'seat', realOf(row, h).toUpperCase())}${placed ? `<span class="civ-seatplace${h === winner ? ' gold' : ''}">${h === winner ? 'WINNER' : ORD(placeOf(h))}</span>` : ''}${fanSeen === h ? '<span class="civ-seatfan">FAN FAVORITE</span>' : ''}</div>`;
   }).join('');
   // The blocked players are in the studio audience; the host talks with some of them first.
   const audience = (screen.cast || []).filter(h => !finalists.includes(h));
-  const crowd = audience.length ? `<div class="civ-crowd"><span class="hd">IN THE AUDIENCE</span>${audience.map(h => {
+  // At the reunion the blocked players are on stage, a row of their own above the couch.
+  const guests = reunion && audience.length ? `<div class="civ-guests"><div class="hd">THE BLOCKED PLAYERS</div><div class="row">${audience.map(h =>
+    `<div class="civ-seat${lit(h) ? ' talk' : ''}">${cam(row, h, 'seat', realOf(row, h).toUpperCase())}</div>`).join('')}</div></div>` : '';
+  const crowd = reunion ? guests : audience.length ? `<div class="civ-crowd"><span class="hd">IN THE AUDIENCE</span>${audience.map(h => {
     const u = faceUrl(faceOf(row, h, 'profile'));
-    return `<span class="${h === st?.who ? 'talk' : ''}${fanSeen === h ? ' fan' : ''}"${bg(u)}>${u ? '' : esc(nameOf(row, h)[0] || '?')}</span>`;
+    return `<span class="${lit(h) ? 'talk' : ''}${fanSeen === h ? ' fan' : ''}"${bg(u)}>${u ? '' : esc(nameOf(row, h)[0] || '?')}</span>`;
   }).join('')}</div>` : '';
-  const label = speech ? "THE WINNER'S SPEECH" : final2 ? 'THE FINALE · THE LAST TWO' : 'THE FINALE · LIVE';
+  const label = reunion ? 'THE FINALE · THE REUNION' : speech ? "THE WINNER'S SPEECH" : final2 ? 'THE FINALE · THE LAST TWO' : 'THE FINALE · LIVE';
   return `<div class="civ-layer civ-studio${final2 ? ' final2' : ''}">${setImg('studio')}
-    <div class="civ-board studio"><div class="hd">THE FINAL BOARD</div>${board}</div>
+    ${reunion ? '' : `<div class="civ-board studio"><div class="hd">THE FINAL BOARD</div>${board}</div>`}
     ${crowd}<div class="civ-couch">${couch}</div>
     ${final2 ? '<div class="civ-spot"></div>' : ''}
     ${winner && fresh && k === 'reveal.winner' ? '<div class="civ-confetti"></div><div class="civ-winner">WINNER</div>' : ''}

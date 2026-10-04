@@ -1,0 +1,381 @@
+// ══════════════════════════════════════════════════════════════════════
+// ci/lines/reunion.js — the reunion before the results, last words to the Circle
+// ══════════════════════════════════════════════════════════════════════
+//
+// ci/finale.js decides every talk and its outcome; these are its words.
+//   reunion.open / .enter(.one) / .close   the host; the blocked players walk in (a, b: two of them; c: a finalist)
+//   reunion.ask.<kind>        the host puts the storyline to a and b
+//   reunion.talk.<kind>(.<outcome>)  they settle it:
+//     twotimer.forgive/cold   a was played by b, the two-timer
+//     blocker.clear/clash     a was blocked by b
+//     catfishfriend.forgive/hurt  a is the catfish, b their friend, meeting for the first time
+//     knewit / wrongsuspect   a suspected b: right, or wrong
+//     visited                 a, blocked, once walked into b's apartment
+//     cheer                   a, blocked, rooting for b, a finalist
+//     ally                    two blocked players who were close
+//     flirt.spark/awkward, rival.clear/clash, kin ({q}: what a calls b), kin.tense.thaw/cold
+//   farewell.open / .close    the Circle's own last words, on every screen
+//   farewell.word.<kind>      a's last message to the Circle (b: the one it is about)
+const E = (key, list) => ({ [key]: list.map((x, i) => ({ id: `${key}.${String(i + 1).padStart(2, '0')}`, ...x })) });
+const host = (t, extra = {}) => ({ turns: [{ by: 'host', say: t }], ...extra });
+
+export const REUNION_LINES = {
+  // ── The host opens the last two days (script.js coldOpens) ─────────
+  ...E('host.cold.final', [
+    host("Good morning, Players. This is it: the final day in The Circle."),
+    host("Rise and shine, finalists! Today, the last ratings. Tonight, the end."),
+    host("It's the final day! One more chat, one more rating, and then it's all over."),
+    host("Morning, everybody. Our finalists are waking up for the very last time in these apartments."),
+    host("Good morning! The finalists don't know it yet, but today is going to be very emotional."),
+    host("Final day, Players. Every friendship, every flirt, every lie comes down to one last rating."),
+  ]),
+  ...E('host.cold.finale', [
+    host("The ratings are done, the bags are packed, and the finalists are about to meet face to face."),
+    host("It's finale day. One last goodbye to the apartments, and then the truth."),
+    host("Good morning, finalists. Today, everybody finally finds out who they were talking to."),
+    host("This is the day. The Circle closes, and the faces come out."),
+    host("Finale day! No more typing. Today, they talk for real."),
+    host("Our finalists are about to say goodbye to The Circle. And hello to each other."),
+  ]),
+  // ── The host, the blocked players walk in ─────────────────────────
+  ...E('reunion.open', [
+    host("Welcome to the finale of The Circle! Before we find out who won, there are some people our finalists need to see."),
+    host("Good evening, everybody, and welcome to finale night. The ratings are in, but first, a few old friends are here to say hello."),
+    host("It's finale night! The finalists have met each other. Now it's time they met everyone else."),
+    host("Welcome back to The Circle. Tonight somebody wins, but before that, we've got some unfinished business."),
+    host("Hello and welcome to the finale! Everybody who was blocked this season is right here, and they have things to say."),
+    host("Finale night is here. Finalists, you've seen each other's faces. Now meet the people you blocked."),
+  ]),
+  ...E('reunion.enter', [
+    { turns: [{ by: 'host', say: "Please welcome back the blocked Players!" }, { by: 'c', react: "Oh no. Oh, they're all here." }], beat: '{a}, {b} and the rest of the blocked players walk in to a huge cheer.' },
+    { turns: [{ by: 'a', react: "Hi, everybody! Remember me?" }, { by: 'b', say: "We've been waiting weeks for this." }], beat: 'The doors open and the blocked players pour in.' },
+    { turns: [{ by: 'c', react: "Wait. Is that {a}? And {b}?" }, { by: 'a', say: "Surprise! Did you miss us?" }], beat: 'The finalists jump up as the blocked players come in.' },
+    { turns: [{ by: 'host', say: "Finalists, look who's back." }, { by: 'b', react: "Hello again!" }], beat: 'The blocked players file in, waving, and the couch erupts.' },
+    { turns: [{ by: 'a', say: "Okay, I've been practicing this face in the mirror for weeks." }, { by: 'c', react: "Oh my God, get over here!" }], beat: '{a} leads the blocked players in, with {b} right behind.' },
+    { turns: [{ by: 'host', say: "Finalists, the people you blocked have been watching. All of it." }, { by: 'c', react: "All of it?" }, { by: 'b', say: "All of it." }], beat: 'The blocked players walk in, grinning.' },
+  ]),
+  ...E('reunion.enter.one', [
+    { turns: [{ by: 'host', say: "Finalists, one more face to meet. Please welcome back {a}!" }, { by: 'c', react: "{a}!" }], beat: '{a} walks in to a huge cheer.' },
+    { turns: [{ by: 'a', react: "Hi! Did you forget about me?" }, { by: 'c', say: "Never. Come here!" }], beat: '{a} runs over to the couch.' },
+    { turns: [{ by: 'host', say: "There's somebody here who's been waiting a long time to see you all." }, { by: 'a', say: "Hello, everybody!" }], beat: 'The doors open on {a}.' },
+  ]),
+  ...E('reunion.close', [
+    host("Okay. Thank you, everybody. It's time to talk about why we're really here."),
+    host("I love this. I could do this all night. But there's a prize to give away."),
+    host("Alright, everybody, take your seats. The moment you've all been waiting for is next."),
+    host("That's a lot of closure for one night. Now let's find out who won The Circle."),
+    host("Some of you made up, some of you didn't. Either way, it's time for the results."),
+    host("Okay, deep breaths, everyone. The final ratings are in."),
+  ]),
+
+  // ── The host asks ─────────────────────────────────────────────────
+  ...E('reunion.ask.twotimer', [
+    host("{a}, there's somebody here who was flirting with you and somebody else at the same time."),
+    host("{a}, {b}. We all saw what happened. Who wants to go first?"),
+    host("{b}, you were talking to {a} and someone else. Anything you want to say?"),
+    host("{a}, how did it feel when you found out about {b}?"),
+    host("Now, {a} and {b}. This one got messy."),
+    host("{b}, I think you owe {a} a conversation."),
+  ]),
+  ...E('reunion.ask.blocker', [
+    host("{a}, you're sitting across from the person who blocked you."),
+    host("{a}, {b} sent you home. Anything you want to say to them?"),
+    host("{b}, you blocked {a}. Do you want to explain?"),
+    host("{a}, did you know it was {b}?"),
+    host("{a}, you've had weeks to think about this. Here's {b}."),
+    host("So, {a} and {b}. Let's talk about that blocking."),
+  ]),
+  ...E('reunion.ask.kin', [
+    host("{a}, there's family in this room."),
+    host("{a} and {b}, you two have a lot in common, don't you?"),
+    host("We have family in the building! {a}, {b}, come on up."),
+    host("{a}, how was it playing in the same Circle as your {q}?"),
+    host("{b}, you didn't get to see {a} for weeks. How does it feel?"),
+    host("{a}, {b}, the whole family is watching at home right now."),
+  ]),
+  ...E('reunion.ask.kin.tense', [
+    host("{a}, I know things with {b} are complicated."),
+    host("{a} and {b}. You two don't always get along, do you?"),
+    host("{a}, how was it knowing your {q} was in the building?"),
+    host("{b}, anything you want to say to {a} tonight?"),
+    host("I have to ask. {a}, {b}, are you two okay?"),
+    host("{a}, {b}, this might be the first time you've talked in a while."),
+  ]),
+  ...E('reunion.ask.catfishfriend', [
+    host("{b}, you got blocked before you ever met the real {a}. Ready?"),
+    host("{b}, you were close with {a}. Do you know who you were talking to?"),
+    host("{a}, I think you have something to tell {b}."),
+    host("{b}, meet {a}. The real one."),
+    host("{a}, {b} was one of your best friends in there. Time to come clean."),
+    host("{b}, there's a friend of yours here you haven't actually met."),
+  ]),
+  ...E('reunion.ask.flirt', [
+    host("Now, {a} and {b}. There was some serious flirting going on."),
+    host("{a}, {b}, everybody wants to know. What's happening with you two?"),
+    host("{a}, this is the first time you've seen {b} in person. Well?"),
+    host("I have to ask about {a} and {b}. The messages were very spicy."),
+    host("{b}, you and {a} had a little something in there, didn't you?"),
+    host("{a}, {b}, is the chemistry still there in real life?"),
+  ]),
+  ...E('reunion.ask.rival', [
+    host("{a} and {b}. You two did not get along in there."),
+    host("{a}, there's someone here you clashed with a lot."),
+    host("{b}, anything you want to say to {a} now that it's over?"),
+    host("{a}, {b}, I need to know. Are we good, or are we not good?"),
+    host("Okay. {a} and {b}. Let's clear the air."),
+    host("{a}, you said some things about {b} in there."),
+  ]),
+  ...E('reunion.ask.knewit', [
+    host("{a}, you said from the start that {b} was a catfish."),
+    host("{a}, you were suspicious of {b} the whole time. Were you right?"),
+    host("{b}, {a} had your number, didn't they?"),
+    host("{a}, here's {b}. Tell us what you thought."),
+    host("{a}, you called it early on {b}."),
+    host("Let's talk about {a}'s detective work."),
+  ]),
+  ...E('reunion.ask.wrongsuspect', [
+    host("{a}, you were sure {b} was a catfish."),
+    host("{b}, did you know {a} thought you were fake?"),
+    host("{a}, I think you owe {b} an apology."),
+    host("{a}, look at {b}. Real or fake?"),
+    host("{a}, you told everyone {b} wasn't real. How's that looking now?"),
+    host("{b}, {a} had some doubts about you."),
+  ]),
+  ...E('reunion.ask.visited', [
+    host("{b}, the last time you saw {a}, {a} was standing in your apartment."),
+    host("{a}, you chose to visit {b}. Why?"),
+    host("{a}, {b}. The visit. Let's talk about it."),
+    host("{b}, what went through your head when {a} walked through your door?"),
+    host("{a}, of everyone in the Circle, you went to see {b}."),
+    host("{b}, you got a visitor that night. Here's {a} again."),
+  ]),
+  ...E('reunion.ask.cheer', [
+    host("{a}, who are you rooting for tonight?"),
+    host("{a}, you've been cheering for one finalist the whole time."),
+    host("{a}, anything you want to say to {b} before the results?"),
+    host("{b}, you've got a big fan in the audience."),
+    host("{a}, you look like you're about to cry for {b}."),
+    host("{a}, I saw you screaming for {b} from backstage."),
+  ]),
+  ...E('reunion.ask.ally', [
+    host("{a} and {b}. The blocked buddies."),
+    host("{a}, {b}, you two were close in there."),
+    host("{a}, did you and {b} get to talk after you were both blocked?"),
+    host("{a}, {b}. Best friends in the Circle, best friends out here?"),
+    host("{a} and {b}, you've been sitting together all night."),
+    host("{b}, how is it seeing {a} again?"),
+  ]),
+
+  // ── They settle it ────────────────────────────────────────────────
+  ...E('reunion.talk.twotimer.forgive', [
+    { turns: [{ by: 'b', say: "I'm sorry. I got caught up in the game and I hurt you." }, { by: 'a', say: "It hurt. But I'm not going to stay mad at you forever." }], beat: '{a} and {b} hug, a little stiffly.' },
+    { turns: [{ by: 'a', say: "I was so angry when I found out." }, { by: 'b', say: "You had every right to be." }, { by: 'a', say: "It's done. Let's leave it in the Circle." }] },
+    { turns: [{ by: 'b', say: "I should have been honest with you." }, { by: 'a', say: "Yeah, you should have. But I can laugh about it now. Mostly." }] },
+    { turns: [{ by: 'a', react: "Hi." }, { by: 'b', say: "Hi. I owe you a real apology. In person." }, { by: 'a', say: "Okay. Apology accepted." }] },
+    { turns: [{ by: 'a', say: "You know what? I'm glad I found out. I'd rather know." }, { by: 'b', say: "And I'm glad you're still talking to me." }] },
+    { turns: [{ by: 'b', say: "I was playing too many games at once." }, { by: 'a', say: "Clearly." }, { by: 'a', say: "But you're not a bad person. Come here." }] },
+  ]),
+  ...E('reunion.talk.twotimer.cold', [
+    { turns: [{ by: 'b', say: "I'm sorry, okay?" }, { by: 'a', say: "You're sorry you got caught." }], beat: 'The studio goes very quiet.' },
+    { turns: [{ by: 'a', say: "I don't have anything to say to you." }, { by: 'b', say: "That's fair." }], beat: '{a} looks away.' },
+    { turns: [{ by: 'b', say: "It was the game. I was trying to get further." }, { by: 'a', say: "Then I hope it was worth it." }] },
+    { turns: [{ by: 'a', say: "You told me I was the only one." }, { by: 'b', react: "I know." }, { by: 'a', say: "Then we're done here." }] },
+    { turns: [{ by: 'a', react: "Nope. Not doing this." }, { by: 'b', say: "Can we talk after the show, at least?" }, { by: 'a', say: "Maybe. Not tonight." }] },
+    { turns: [{ by: 'b', say: "I really did like you." }, { by: 'a', say: "You had a funny way of showing it." }], beat: 'The audience gasps.' },
+  ]),
+  ...E('reunion.talk.blocker.clear', [
+    { turns: [{ by: 'b', say: "It was a game move. Nothing personal. I hope you know that." }, { by: 'a', say: "I know. I'd probably have done the same thing." }], beat: '{a} and {b} shake hands, then hug.' },
+    { turns: [{ by: 'a', say: "I was so mad at you that night." }, { by: 'b', say: "And now?" }, { by: 'a', say: "Now I get it. You played the game." }] },
+    { turns: [{ by: 'a', say: "Just so you know, I saw it coming." }, { by: 'b', react: "You did not." }, { by: 'a', say: "Okay, I did not. No hard feelings." }], beat: 'The audience laughs.' },
+    { turns: [{ by: 'b', say: "That was the hardest choice I made in the whole game." }, { by: 'a', say: "I believe you. It's okay." }] },
+    { turns: [{ by: 'a', say: "Honestly? Respect. It was a smart move." }, { by: 'b', say: "Thank you for saying that. I felt terrible." }] },
+    { turns: [{ by: 'b', say: "I'm sorry I sent you home." }, { by: 'a', say: "Don't be. I got a free vacation out of it." }], beat: '{a} pulls {b} into a hug.' },
+  ]),
+  ...E('reunion.talk.blocker.clash', [
+    { turns: [{ by: 'a', say: "You smiled at me in every chat, and then you blocked me." }, { by: 'b', say: "That's the game." }, { by: 'a', say: "Then it's a nasty game." }] },
+    { turns: [{ by: 'b', say: "It wasn't personal." }, { by: 'a', say: "It felt pretty personal from where I was sitting." }], beat: '{a} crosses {a.posAdj} arms.' },
+    { turns: [{ by: 'a', say: "I trusted you. That's what gets me." }, { by: 'b', say: "I'm not going to apologize for playing." }], beat: 'Nobody in the studio says a word.' },
+    { turns: [{ by: 'b', say: "You would have blocked me first." }, { by: 'a', react: "Oh, so that's the excuse?" }] },
+    { turns: [{ by: 'a', say: "I hope the view from the final is nice." }, { by: 'b', say: "It is, actually." }], beat: 'The audience lets out a long "ooh."' },
+    { turns: [{ by: 'a', say: "Just tell me why." }, { by: 'b', say: "You were a threat. That's all it was." }, { by: 'a', say: "Well, I'm still upset about it." }] },
+  ]),
+  ...E('reunion.talk.catfishfriend.forgive', [
+    { turns: [{ by: 'a', say: "Hi. So. I'm not exactly who you thought." }, { by: 'b', react: "You're kidding me!" }, { by: 'b', say: "I don't care. You were still my friend." }], beat: '{b} wraps {a} in a hug.' },
+    { turns: [{ by: 'b', react: "Wait. You're {a}?" }, { by: 'a', say: "The one and only. Well, sort of." }, { by: 'b', say: "That's amazing. I love you anyway." }] },
+    { turns: [{ by: 'a', say: "I'm so sorry I couldn't tell you. You were one of the good ones." }, { by: 'b', say: "I understand. Honestly, I'd have done the same thing." }] },
+    { turns: [{ by: 'b', say: "I got blocked defending you!" }, { by: 'a', react: "I know. I watched it. I cried." }, { by: 'b', say: "Worth it. Come here." }] },
+    { turns: [{ by: 'a', say: "My name is {a.real}. Everything else I told you was true." }, { by: 'b', say: "Then it's nice to finally meet you." }] },
+    { turns: [{ by: 'b', say: "So the pictures weren't you." }, { by: 'a', say: "No. But every message was." }, { by: 'b', say: "That's what matters." }] },
+  ]),
+  ...E('reunion.talk.catfishfriend.hurt', [
+    { turns: [{ by: 'b', react: "You're not even close to your pictures." }, { by: 'a', say: "I know. I'm sorry." }, { by: 'b', say: "I need a little time with this." }] },
+    { turns: [{ by: 'a', say: "I'm {a.real}. I was {a} the whole time." }, { by: 'b', say: "I told you things I don't tell anybody." }, { by: 'a', say: "And I kept every one of them." }], beat: '{b} does not look convinced.' },
+    { turns: [{ by: 'b', say: "I went home defending you, and you weren't even real." }, { by: 'a', say: "The friendship was real." }, { by: 'b', say: "It doesn't feel like it right now." }] },
+    { turns: [{ by: 'b', say: "Wow. Okay." }, { by: 'a', say: "Please say something." }, { by: 'b', say: "I just feel stupid." }], beat: '{a} reaches for {b}, and {b} steps back.' },
+    { turns: [{ by: 'a', say: "I wanted to tell you so many times." }, { by: 'b', say: "But you didn't." }] },
+    { turns: [{ by: 'b', say: "Do you know how much I trusted you?" }, { by: 'a', react: "I do. That's why this is hard." }], beat: 'The studio goes quiet.' },
+  ]),
+  ...E('reunion.talk.flirt.spark', [
+    { turns: [{ by: 'a', say: "I've been thinking about this moment since I got blocked." }, { by: 'b', say: "Me too. Come here." }], beat: '{a} and {b} kiss, and the audience screams.' },
+    { turns: [{ by: 'b', react: "Okay, you're even better in person." }, { by: 'a', say: "I was going to say the same thing." }], beat: 'They can’t stop smiling at each other.' },
+    { turns: [{ by: 'a', say: "So, about that date we kept talking about." }, { by: 'b', say: "Tomorrow. I'm not waiting any longer." }], beat: 'The audience cheers.' },
+    { turns: [{ by: 'b', say: "I was so worried you'd be different." }, { by: 'a', say: "Am I?" }, { by: 'b', say: "No. You're exactly you." }] },
+    { turns: [{ by: 'a', react: "Hi." }, { by: 'b', react: "Hi." }], beat: '{a} and {b} hug for so long the host has to clear their throat.' },
+    { turns: [{ by: 'a', say: "I kept every message you sent me." }, { by: 'b', say: "I'm going to send you a lot more." }] },
+  ]),
+  ...E('reunion.talk.flirt.awkward', [
+    { turns: [{ by: 'a', say: "So. Hi. In person." }, { by: 'b', say: "Hi. This is... different." }], beat: 'They go for a hug and bump heads.' },
+    { turns: [{ by: 'b', say: "We were very good at texting." }, { by: 'a', say: "We really were." }, { by: 'b', say: "Friends?" }, { by: 'a', say: "Friends." }] },
+    { turns: [{ by: 'a', say: "I think the Circle made us braver than we are." }, { by: 'b', react: "Yeah. Much braver." }], beat: 'They both laugh nervously.' },
+    { turns: [{ by: 'b', say: "You're nice. You're just not who I pictured." }, { by: 'a', say: "Honestly, same. No offense." }, { by: 'b', say: "None taken." }] },
+    { turns: [{ by: 'a', say: "Should we just shake hands?" }, { by: 'b', react: "Let's shake hands." }], beat: 'The audience groans and laughs.' },
+    { turns: [{ by: 'b', say: "The messages were a lot spicier than this." }, { by: 'a', say: "The messages had time to think." }] },
+  ]),
+  ...E('reunion.talk.rival.clear', [
+    { turns: [{ by: 'a', say: "Okay. I was wrong about you." }, { by: 'b', say: "And I was wrong about you. Truce?" }, { by: 'a', say: "Truce." }] },
+    { turns: [{ by: 'b', say: "We were the two strongest players. That's why we fought." }, { by: 'a', say: "Fair. Respect." }], beat: '{a} and {b} bump fists.' },
+    { turns: [{ by: 'a', say: "Out here, I think I'd actually like you." }, { by: 'b', say: "Let's find out. Drinks after?" }] },
+    { turns: [{ by: 'b', say: "I said some things in there I'm not proud of." }, { by: 'a', say: "Me too. Let's call it even." }] },
+    { turns: [{ by: 'a', say: "I'm too tired to stay mad." }, { by: 'b', react: "Same. Hug it out?" }], beat: 'They hug, and the audience cheers.' },
+    { turns: [{ by: 'b', say: "You played a great game." }, { by: 'a', say: "So did you. I just hated it." }], beat: 'Both of them laugh.' },
+  ]),
+  ...E('reunion.talk.rival.clash', [
+    { turns: [{ by: 'a', say: "You were fake in there and you're fake out here." }, { by: 'b', react: "Wow. Okay." }], beat: 'The audience lets out a long "ooh."' },
+    { turns: [{ by: 'b', say: "I don't have anything nice to say." }, { by: 'a', say: "That's never stopped you before." }] },
+    { turns: [{ by: 'a', say: "I'm not going to pretend we're friends for the cameras." }, { by: 'b', say: "Good. Neither am I." }] },
+    { turns: [{ by: 'b', say: "You talked about me every chance you got." }, { by: 'a', say: "Because you gave me so much to talk about." }], beat: 'The host steps between them.' },
+    { turns: [{ by: 'a', react: "Oh, here we go." }, { by: 'b', say: "Yeah, here we go. You started it." }] },
+    { turns: [{ by: 'b', say: "Some things don't change when you meet in person." }, { by: 'a', say: "Like you." }] },
+  ]),
+  ...E('reunion.talk.knewit', [
+    { turns: [{ by: 'a', react: "I KNEW IT! I said it from day one!" }, { by: 'b', say: "You did. You were the only one." }] },
+    { turns: [{ by: 'a', say: "Everybody laughed at me. Who's laughing now?" }, { by: 'b', say: "Okay, okay. You win this one." }], beat: '{a} takes a bow.' },
+    { turns: [{ by: 'b', say: "You scared me so much. I thought you'd expose me." }, { by: 'a', say: "I tried! Nobody listened!" }] },
+    { turns: [{ by: 'a', say: "I'm not even surprised. Your messages gave you away." }, { by: 'b', react: "Which ones?" }, { by: 'a', say: "All of them." }] },
+    { turns: [{ by: 'a', react: "Hello, catfish." }, { by: 'b', say: "Hello, detective." }], beat: 'They both burst out laughing.' },
+    { turns: [{ by: 'b', say: "If they had listened to you, I'd have been gone weeks ago." }, { by: 'a', say: "I know. It still annoys me." }] },
+  ]),
+  ...E('reunion.talk.wrongsuspect', [
+    { turns: [{ by: 'a', react: "You're REAL?" }, { by: 'b', say: "I told you a hundred times!" }, { by: 'a', say: "I'm so sorry. I was so sure." }] },
+    { turns: [{ by: 'b', say: "So. You thought I was a catfish." }, { by: 'a', say: "Your pictures were too good! That's on you." }, { by: 'b', say: "I'll take that as a compliment." }] },
+    { turns: [{ by: 'a', say: "I owe you the biggest apology." }, { by: 'b', say: "You owe me a hug, is what you owe me." }], beat: '{a} hugs {b}, laughing.' },
+    { turns: [{ by: 'b', say: "You told everyone I was fake." }, { by: 'a', react: "I know. I'm an idiot." }, { by: 'b', say: "A little bit, yeah." }] },
+    { turns: [{ by: 'a', say: "Let me look at you. You're actually real." }, { by: 'b', say: "Real since day one." }] },
+    { turns: [{ by: 'b', say: "I almost got blocked because of you." }, { by: 'a', say: "And I'm going to feel bad about it forever." }] },
+  ]),
+  ...E('reunion.talk.visited', [
+    { turns: [{ by: 'b', say: "When you walked into my apartment, I nearly fell off the couch." }, { by: 'a', say: "I could tell. You screamed." }] },
+    { turns: [{ by: 'a', say: "I came to you because I needed to see one real face." }, { by: 'b', say: "I'm really glad it was mine." }] },
+    { turns: [{ by: 'b', say: "That visit stayed with me for the rest of the game." }, { by: 'a', say: "Good. That was the plan." }] },
+    { turns: [{ by: 'a', say: "Your apartment was a mess, by the way." }, { by: 'b', react: "I wasn't expecting company!" }], beat: 'The audience laughs.' },
+    { turns: [{ by: 'b', say: "You told me everything I needed to know that night." }, { by: 'a', say: "And you used it well. Look where you are." }] },
+    { turns: [{ by: 'a', say: "Out of everyone, I picked you." }, { by: 'b', say: "I know. I still don't know what I did to deserve it." }] },
+  ]),
+  ...E('reunion.talk.cheer', [
+    { turns: [{ by: 'a', say: "{b}, whatever happens tonight, you already won to me." }, { by: 'b', react: "Stop, you're going to make me cry." }] },
+    { turns: [{ by: 'a', say: "I've been yelling at the TV for you every single night." }, { by: 'b', say: "I could feel it. I promise." }] },
+    { turns: [{ by: 'a', say: "{b} is the realest person in this whole room. That's all." }], beat: '{b} blows {a} a kiss.' },
+    { turns: [{ by: 'a', say: "When I got blocked, I told {b} to go win it for both of us." }, { by: 'b', say: "And I'm trying!" }] },
+    { turns: [{ by: 'a', say: "I don't care about anybody else's result. Only {b}'s." }, { by: 'b', react: "I love you!" }] },
+    { turns: [{ by: 'a', say: "{b}, I'm so proud of you." }, { by: 'b', say: "I wouldn't be here without you." }], beat: 'The audience applauds.' },
+  ]),
+  ...E('reunion.talk.ally', [
+    { turns: [{ by: 'a', say: "We got blocked a day apart, and we've been texting ever since." }, { by: 'b', say: "Real life best friends now." }] },
+    { turns: [{ by: 'b', say: "{a} was my person in there. Still is." }, { by: 'a', react: "Stop it." }], beat: '{a} and {b} hold hands.' },
+    { turns: [{ by: 'a', say: "The Circle took us out, but it gave me a best friend." }, { by: 'b', say: "That's the real prize." }] },
+    { turns: [{ by: 'b', say: "Remember our first chat?" }, { by: 'a', say: "You spelled my name wrong." }, { by: 'b', say: "And you still talked to me!" }] },
+    { turns: [{ by: 'a', say: "I already booked a trip to see {b}." }, { by: 'b', react: "It's happening!" }] },
+    { turns: [{ by: 'b', say: "If I had to get blocked, I'm glad I got blocked next to you." }, { by: 'a', say: "Same. Team blocked." }] },
+  ]),
+  ...E('reunion.talk.kin', [
+    { turns: [{ by: 'a', react: "My {q}!" }, { by: 'b', say: "We did it. We both made it on TV together." }], beat: '{a} and {b} hold on to each other.' },
+    { turns: [{ by: 'a', say: "The whole family is going to watch this a thousand times." }, { by: 'b', say: "They already have." }] },
+    { turns: [{ by: 'b', say: "I knew you'd be fine in there." }, { by: 'a', say: "I knew you'd be trouble in there." }], beat: 'The audience laughs.' },
+    { turns: [{ by: 'a', say: "It was so weird not being able to just call you." }, { by: 'b', say: "Never again. You're stuck with me." }] },
+    { turns: [{ by: 'a', say: "That's my {q}, everybody!" }, { by: 'b', react: "Stop it!" }], beat: 'The audience cheers.' },
+    { turns: [{ by: 'b', say: "I'm proud of you. I don't say it enough." }, { by: 'a', say: "Say it more. I like it." }] },
+  ]),
+  ...E('reunion.talk.kin.tense.thaw', [
+    { turns: [{ by: 'a', say: "I missed you. Don't make it weird." }, { by: 'b', react: "Too late. It's weird." }], beat: 'They both laugh, a little.' },
+    { turns: [{ by: 'b', say: "Maybe we can talk. Properly. After this." }, { by: 'a', say: "I'd like that." }] },
+    { turns: [{ by: 'a', say: "Seeing you in there made me think about a lot of things." }, { by: 'b', say: "Me too." }], beat: '{a} and {b} share a small, careful hug.' },
+    { turns: [{ by: 'b', say: "We've been fighting for too long." }, { by: 'a', say: "Yeah. Let's stop." }] },
+    { turns: [{ by: 'a', say: "I'm not saying everything's fixed." }, { by: 'b', say: "But it's a start." }] },
+    { turns: [{ by: 'b', say: "I was rooting for you. Even when I didn't want to." }, { by: 'a', react: "Really?" }, { by: 'b', say: "Really." }] },
+  ]),
+  ...E('reunion.talk.kin.tense.cold', [
+    { turns: [{ by: 'a', say: "Same old {b}." }, { by: 'b', say: "Nice to see you too." }], beat: 'They don’t hug.' },
+    { turns: [{ by: 'b', say: "We don't have to do this on TV." }, { by: 'a', say: "Good. Because I'm not going to." }] },
+    { turns: [{ by: 'a', say: "Some things the Circle can't fix." }, { by: 'b', say: "Agreed." }], beat: 'The host moves on quickly.' },
+    { turns: [{ by: 'b', say: "I'm not here to fight." }, { by: 'a', say: "Then don't." }] },
+    { turns: [{ by: 'a', react: "Great. My {q}." }, { by: 'b', say: "Let's just get through tonight." }] },
+    { turns: [{ by: 'b', say: "You haven't changed." }, { by: 'a', say: "Neither have you. That's the problem." }] },
+  ]),
+
+  // ── Last words to the Circle ──────────────────────────────────────
+  ...E('farewell.open', [
+    { stage: 'Every screen in the building lights up: "Players, this is your last chance to send a message to The Circle."', turns: [{ by: 'a', react: "My last message. Okay. No pressure." }] },
+    { stage: 'An alert, for the last time: "Players, The Circle would like to hear your final words."', turns: [{ by: 'a', react: "Final words? I'm going to cry." }] },
+    { stage: 'The screens turn gold: "Players, before you leave, you may send one last message."', turns: [{ by: 'a', say: "This is it. The last time I talk to the TV." }] },
+    { stage: 'One last alert sounds in every apartment: "Players, The Circle is listening, one more time."', turns: [{ by: 'a', react: "Oh no. That sound. I'm going to miss that sound." }] },
+    { stage: 'On every screen: "Players, this is your final message. Make it count."', turns: [{ by: 'a', say: "Okay. Deep breath. What do I want to say?" }] },
+    { stage: 'The Circle opens a chat with just one word on it: "Goodbye?"', turns: [{ by: 'a', react: "Don't do this to me, Circle." }] },
+  ]),
+  ...E('farewell.word.plain', [
+    { turns: [{ by: 'a', send: "Circle, thank you for the best weeks of my life. I'll never forget this." }] },
+    { turns: [{ by: 'a', send: "I came in here nervous and I'm leaving with a hundred friends. Thank you, Circle." }] },
+    { turns: [{ by: 'a', send: "Thank you for letting me be myself. Even the weird parts." }], beat: '{a} smiles at the screen.' },
+    { turns: [{ by: 'a', send: "Circle, you were the best roommate I ever had. You never ate my food." }] },
+    { turns: [{ by: 'a', send: "Whatever happens tonight, I already won something in here. Thank you." }] },
+    { turns: [{ by: 'a', send: "To everyone I talked to in here: thank you for every single message." }] },
+    { turns: [{ by: 'a', send: "Goodbye, Circle. I'm going to talk to my TV at home and it won't answer. That's going to be hard." }] },
+  ]),
+  ...E('farewell.word.friend', [
+    { turns: [{ by: 'a', send: "Circle, tell {b} that I meant every word. Best friend for life." }] },
+    { turns: [{ by: 'a', send: "My last message is for {b}. You made this place feel like home." }] },
+    { turns: [{ by: 'a', send: "Thank you, Circle, for {b}. That's the best thing I'm taking home." }], beat: '{a} wipes {a.posAdj} eyes.' },
+    { turns: [{ by: 'a', send: "{b}, I can't wait to hug you for real. Like, right now." }] },
+    { turns: [{ by: 'a', send: "I came for the money, and I'm leaving with {b}. Not a bad trade." }] },
+    { turns: [{ by: 'a', send: "Circle, whatever happens, make sure {b} knows I'm proud of them." }] },
+  ]),
+  ...E('farewell.word.crush', [
+    { turns: [{ by: 'a', send: "Circle, my last message is a wink. {b} knows what it means." }] },
+    { turns: [{ by: 'a', send: "{b}, I'm about to see your face. Please be real. Please be real." }] },
+    { turns: [{ by: 'a', send: "Goodbye, Circle. Hello, {b}. Finally." }], beat: '{a} fixes {a.posAdj} hair in the screen.' },
+    { turns: [{ by: 'a', send: "Circle, thank you for introducing me to {b}. I owe you one." }] },
+    { turns: [{ by: 'a', send: "My final words are for {b}: I hope you're as cute as your messages." }] },
+    { turns: [{ by: 'a', send: "I didn't come here to fall for anybody. Then {b} happened." }] },
+  ]),
+  ...E('farewell.word.rival', [
+    { turns: [{ by: 'a', send: "Circle, thank you for everything. Almost everything. Not {b}." }] },
+    { turns: [{ by: 'a', send: "To {b}: see you in a minute. Let's keep it civil." }] },
+    { turns: [{ by: 'a', send: "My last message is peace. Even for {b}. Probably." }], beat: '{a} laughs at {a.ref}.' },
+    { turns: [{ by: 'a', send: "Circle, I'm leaving my grudge with {b} right here in the apartment." }] },
+    { turns: [{ by: 'a', send: "Goodbye, Circle. I'm going to shake {b}'s hand today. Wish me luck." }] },
+    { turns: [{ by: 'a', send: "Final words: {b}, you were a worthy opponent. That's all you're getting." }] },
+  ]),
+  ...E('farewell.word.catfish', [
+    { turns: [{ by: 'a', send: "Circle, I'm about to show everyone my real face. Tell {b} I'm sorry in advance." }] },
+    { turns: [{ by: 'a', send: "Goodbye, profile. You did your job. Now it's time for the real me." }], beat: '{a} looks at the profile picture one last time.' },
+    { turns: [{ by: 'a', send: "{b}, everything I told you was real except the face. I hope that's enough." }] },
+    { turns: [{ by: 'a', send: "Circle, thank you for letting me be someone else. Today I get to be me." }] },
+    { turns: [{ by: 'a', send: "My last message as this profile: thank you, {b}. You'll meet the real me soon." }] },
+    { turns: [{ by: 'a', send: "I'm terrified. In an hour, {b} finds out who I really am." }] },
+  ]),
+  ...E('farewell.word.catfish.alone', [
+    { turns: [{ by: 'a', send: "Goodbye, profile. Today the real me walks out of this door." }] },
+    { turns: [{ by: 'a', send: "Circle, thank you for keeping my secret. It's time to stop hiding." }] },
+    { turns: [{ by: 'a', send: "Last message as somebody else. Next time, it's all me." }], beat: '{a} takes a long breath.' },
+    { turns: [{ by: 'a', send: "I hope they like the real face as much as the fake one." }] },
+    { turns: [{ by: 'a', send: "Circle, I'm about to be the biggest surprise in that room." }] },
+    { turns: [{ by: 'a', send: "Goodbye to the pictures. Hello to the real me." }] },
+  ]),
+  ...E('farewell.close', [
+    { stage: 'The screen fades to the Circle logo: "Thank you, Players. The Circle is now closed."', turns: [{ by: 'a', react: "No! Don't close!" }] },
+    { stage: 'One last message on every screen: "Goodbye, Players. It was a pleasure."', turns: [{ by: 'a', say: "Goodbye, Circle. I mean it." }] },
+    { stage: 'The screens go dark, one apartment at a time. The last words: "The Circle has enjoyed every one of you."', turns: [{ by: 'a', react: "Okay, now I'm crying." }] },
+    { stage: 'On every screen: "Players, please leave your apartments. Your fellow Players are waiting."', turns: [{ by: 'a', react: "They're waiting. They're actually waiting!" }] },
+    { stage: 'The Circle signs off: "This conversation has ended. Goodbye."', turns: [{ by: 'a', say: "That's the saddest thing a TV has ever said to me." }] },
+    { stage: 'A final alert: "Thank you for playing The Circle. Time to meet face to face."', turns: [{ by: 'a', react: "Face to face. Oh my God." }] },
+  ]),
+};

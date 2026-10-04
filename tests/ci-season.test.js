@@ -32,10 +32,10 @@ describe('a whole season', () => {
     }
   });
 
-  it('plays nothing on finale day but the goodbye to the apartments, the meet and the placements', () => {
+  it('plays nothing on finale day but the last words, the goodbye to the apartments, the meet, the reunion and the placements', () => {
     const { state, rows } = play();
     const last = rows.at(-1).day;
-    expect([...new Set(state.scenes.filter(s => s.day === last).map(s => s.kind))].sort()).toEqual(['life', 'meet', 'reveal']);
+    expect([...new Set(state.scenes.filter(s => s.day === last).map(s => s.kind))].sort()).toEqual(['farewell', 'life', 'meet', 'reunion', 'reveal']);
     expect(state.scenes.filter(s => s.day === last && s.kind === 'life').every(s => s.data.event === 'final.leave')).toBe(true);
   });
 

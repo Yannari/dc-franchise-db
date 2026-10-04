@@ -1110,10 +1110,31 @@ const BLOCKS = {
   // FINALE NIGHT (finale.js): the host and the blocked players, then the
   // board from last to first — every name after a pause, every placement
   // landing on its face — then the last two, the winner, the speech, the fans.
+  // THE REUNION (finale.js reunionTalks): the blocked players walk in, the
+  // host puts each storyline to the two people in it, and they settle it.
+  reunion(state, s) {
+    const [first, second] = s.data.arrive;
+    const out = [{ key: 'reunion.open', cast: { a: first } },
+      { key: s.data.arrive.length > 1 ? 'reunion.enter' : 'reunion.enter.one', cast: { a: first, b: second || s.data.seats[0], c: s.data.seats[0] } }];
+    for (const t of s.data.talks || []) {
+      const [x, y] = t.kind === 'catfishfriend' ? [t.catfish, t.catfish === t.a ? t.b : t.a]
+        : t.kind === 'knewit' || t.kind === 'wrongsuspect' ? [t.who, t.about] : [t.a, t.b];
+      const cast = { a: x, b: y, ...(t.kind.startsWith('kin') ? { text: kinText(state, x, y) } : {}) };
+      out.push({ key: `reunion.ask.${t.kind}`, cast }, { key: `reunion.talk.${t.kind}${t.outcome ? `.${t.outcome}` : ''}`, cast });
+    }
+    out.push({ key: 'reunion.close', cast: { a: s.data.seats[0] } });
+    return out;
+  },
+  // LAST WORDS TO THE CIRCLE (finale.js lastWord): one message each, then the Circle signs off.
+  farewell(state, s) {
+    return [{ key: 'farewell.open', cast: { a: s.who[0] } },
+      ...s.data.words.map(w => ({ key: `farewell.word.${w.kind}${w.to ? '' : w.kind === 'catfish' ? '.alone' : ''}`, cast: { a: w.h, b: w.to || w.h } })),
+      { key: 'farewell.close', cast: { a: s.who.at(-1) } }];
+  },
   reveal(state, s) {
     const pl = s.data.placements;
-    const out = [{ key: 'reveal.open', cast: { a: pl[0].profile } }];
-    for (const t of s.data.studio || []) out.push({ key: `studio.${t.kind}`, cast: { a: t.a, b: t.b } });
+    // After a reunion the host has already welcomed everyone: straight to the board.
+    const out = s.data.reunion ? [] : [{ key: 'reveal.open', cast: { a: pl[0].profile } }];
     out.push({ key: 'reveal.board', cast: { a: pl[0].profile } });
     for (const x of pl.slice(2).reverse()) {
       out.push({ key: 'reveal.suspense', cast: { a: x.profile }, extra: { place: PLACE_WORDS[x.place - 1] } },
@@ -1237,7 +1258,7 @@ export function sceneBlocks(state, scene) {
 }
 
 // Scene kinds whose screens read each block's cast (js/vp-ci/moments.js).
-export const ON_STAGE = new Set(['ratings', 'final-ratings', 'hangout', 'blocking', 'visit', 'meet', 'reveal', 'goodbye']);
+export const ON_STAGE = new Set(['ratings', 'final-ratings', 'hangout', 'blocking', 'visit', 'meet', 'reveal', 'reunion', 'goodbye']);
 
 export function writeScene(state, scene) {
   // Who is behind each profile is read as of this scene (state.js peopleOf).
@@ -1372,7 +1393,9 @@ export function writeDay(state, day) {
     if (entry) aired[0].script.blocks.unshift({ key: 'host.cold.night', ...renderEntry(state, entry, { a: aired[0].who[0] }, rng) });
   }
   const yesterday = state.scenes.filter(s => s.day === day - 1);
-  const tone = day === 1 ? 'first' : (morning > 0 ? blockedToday : yesterday.some(s => s.kind === 'blocking')) ? 'blocking'
+  // The last day and finale day open on what they are, not on last night.
+  const today = new Set(state.scenes.filter(s => s.day === day).map(s => s.kind));
+  const tone = today.has('farewell') ? 'finale' : today.has('final-ratings') ? 'final' : day === 1 ? 'first' : (morning > 0 ? blockedToday : yesterday.some(s => s.kind === 'blocking')) ? 'blocking'
     : yesterday.some(s => s.kind === 'arrival') ? 'arrival' : 'quiet';
   const first = aired[morning];
   if (first) {
@@ -1484,14 +1507,22 @@ export const POOL_KEYS = [
   'goodbye.guess', 'meet.all', 'meet.reflect', 'final.rate.tease', 'final.rate.middle', 'final.morning', 'final.morning.friend', 'final.leave', 'final.video.friend', 'final.video.home',
   ...['kin', 'ally', 'knewit', 'wrongsuspect'].map(k => `meet.talk.${k}`), 'meet.talk.catfishfriend.forgive', 'meet.talk.catfishfriend.hurt',
   'meet.talk.flirt.spark', 'meet.talk.flirt.awkward', 'meet.talk.rival.clear', 'meet.talk.rival.clash', 'meet.talk.kin.tense.thaw', 'meet.talk.kin.tense.cold',
-  'reveal.open', 'studio.confront', 'studio.cheer', 'reveal.board', 'reveal.suspense', 'reveal.final2',
+  'reveal.open', 'reveal.board',
+  'reunion.open', 'reunion.enter', 'reunion.enter.one', 'reunion.close',
+  ...['twotimer', 'blocker', 'kin', 'kin.tense', 'catfishfriend', 'flirt', 'rival', 'knewit', 'wrongsuspect', 'visited', 'cheer', 'ally'].map(k => `reunion.ask.${k}`),
+  'reunion.talk.twotimer.forgive', 'reunion.talk.twotimer.cold', 'reunion.talk.blocker.clear', 'reunion.talk.blocker.clash',
+  'reunion.talk.kin', 'reunion.talk.kin.tense.thaw', 'reunion.talk.kin.tense.cold', 'reunion.talk.catfishfriend.forgive', 'reunion.talk.catfishfriend.hurt',
+  'reunion.talk.flirt.spark', 'reunion.talk.flirt.awkward', 'reunion.talk.rival.clear', 'reunion.talk.rival.clash',
+  'reunion.talk.knewit', 'reunion.talk.wrongsuspect', 'reunion.talk.visited', 'reunion.talk.cheer', 'reunion.talk.ally',
+  'farewell.open', 'farewell.close', 'farewell.word.catfish', 'farewell.word.catfish.alone', 'farewell.word.crush', 'farewell.word.friend',
+  'farewell.word.rival', 'farewell.word.plain', 'reveal.suspense', 'reveal.final2',
   ...['proud', 'surprised', 'gutted', 'shocked', 'second', 'win'].map(t => `reveal.react.${t}`), 'reveal.witness.smirk', 'reveal.witness.cheer',
   'reveal.speech', 'reveal.speech.catfish', 'reveal.fan',
   'meet.explain.family.kin', ...['honest', 'polished', 'edited', 'shared'].map(m => `goodbye.video.${m}`),
   ...WHY_.map(w => `goodbye.video.catfish.${w}`), 'goodbye.warning.catfish', 'goodbye.warning.distrusts', 'goodbye.warning.seen',
   'goodbye.react.guilty', 'goodbye.react.warned', 'goodbye.react.vindicated', 'goodbye.react.surprised',
   'meet.arrive.real', 'meet.arrive.catfish', 'meet.found', 'meet.both', ...WHY_.map(w => `meet.explain.${w}`),
-  'reveal.place', 'reveal.winner', 'goodbye.shout', ...['first', 'blocking', 'arrival', 'quiet', 'night'].map(t => `host.cold.${t}`), 'host.chat', 'host.status', 'host.circle',
+  'reveal.place', 'reveal.winner', 'goodbye.shout', ...['first', 'blocking', 'arrival', 'quiet', 'night', 'final', 'finale'].map(t => `host.cold.${t}`), 'host.chat', 'host.status', 'host.circle',
   // Plan 3a: games, parties, apartment life, videos from home.
   'game.open', 'game.statement.agree', 'game.statement.disagree', 'game.statement.lone',
   'game.name.good', 'game.name.bad', 'game.name.funny',

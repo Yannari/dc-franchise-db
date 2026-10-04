@@ -20,13 +20,13 @@
 import { TITLES } from '../ci/transcript.js';
 import { GAMES } from '../ci/games-data.js';
 
-const APT = new Set(['group-chat', 'welcome', 'chat', 'date', 'plead', 'joker-chat', 'life', 'home-video', 'report', 'recognise', 'lurk', 'hack-undone', 'after-party', 'pair-arrival']);
+const APT = new Set(['group-chat', 'welcome', 'chat', 'date', 'plead', 'joker-chat', 'life', 'home-video', 'report', 'recognise', 'lurk', 'hack-undone', 'after-party', 'pair-arrival', 'farewell']);
 const ALERT = new Set(['alert', 'power-reveal', 'disrupter', 'hack', 'no-block', 'mission']);
 // Meet the players: who walks in, who they really are, and the profile built.
 const ARRIVE = new Set(['profiles', 'arrival']);
 // The big moments (js/vp-ci/moments.js), each on its own set.
 const MOMENT = { audience: 'vote', likes: 'feed', game: 'game', ratings: 'rate', 'final-ratings': 'rate', hangout: 'hangout', blocking: 'blocked',
-  visit: 'room', meet: 'room', goodbye: 'video', reveal: 'studio' };
+  visit: 'room', meet: 'room', goodbye: 'video', reveal: 'studio', reunion: 'studio' };
 export const stageOf = kind => MOMENT[kind] || (ARRIVE.has(kind) ? 'arrive' : APT.has(kind) ? 'apt' : ALERT.has(kind) ? 'alert' : 'ui');
 
 // Whose arrival a block is: the player making their profile, or, for a

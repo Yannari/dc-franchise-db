@@ -24,7 +24,7 @@
 // A tie goes to whoever had the most first places across the whole season
 // (UK 3: Natalya over Manrika).
 import { addScene, peopleOf, rel, bump, S, clamp } from './state.js';
-import { revealTo } from './reveal.js';
+import { revealTo, isRevealed } from './reveal.js';
 import { runCircleChat } from './feed.js';
 import { runRating } from './ratings.js';
 import { belief } from './beliefs.js';
@@ -118,9 +118,89 @@ function settleTalk(state, rng, t, x, y) {
     case 'kin.tense': t.outcome = rng() < 0.4 ? 'thaw' : 'cold'; if (t.outcome === 'thaw') both((a, b) => bump(a, b, 'resentment', -1)); break;
     case 'knewit': bump(t.who, t.about, 'strategicRespect', 0.5); break;
     case 'wrongsuspect': bump(t.who, t.about, 'affection', 0.8); bump(t.about, t.who, 'affection', 0.5); break;
-    case 'ally': both((a, b) => bump(a, b, 'affection', 0.8)); break;
+    case 'ally': case 'cheer': case 'visited': both((a, b) => bump(a, b, 'affection', 0.8)); break;
+    case 'blocker': {
+      // Face to face with who blocked them: it was the game, or it still stings.
+      const calm = S(state, t.a, 'temperament') / 10;
+      t.outcome = rng() < clamp(0.3 + calm * 0.5 - rel(t.a, t.b, 'resentment') / 20, 0.1, 0.85) ? 'clear' : 'clash';
+      bump(t.a, t.b, 'resentment', t.outcome === 'clear' ? -1.5 : 0.8);
+      break;
+    }
+    case 'twotimer': {
+      // The one who was played, and the player: closure, or not.
+      const p = clamp(0.25 + S(state, t.a, 'temperament') / 25 + rel(t.a, t.b, 'affection') / 25, 0.1, 0.8);
+      t.outcome = rng() < p ? 'forgive' : 'cold';
+      bump(t.a, t.b, 'resentment', t.outcome === 'forgive' ? -1.5 : 1);
+      break;
+    }
   }
   return t;
+}
+
+// -- The reunion ------------------------------------------------------
+// User (2026-10-04): "it's missing some more closure, maybe have a reunion
+// before the final results". On the real finale the blocked players walk in
+// on the finalists and the host gets every storyline settled before the
+// board: who blocked whom, the catfish they never met, the flirt, the
+// two-timer, the visit. x is always somebody blocked; y anyone in the studio.
+const RWEIGHT = { twotimer: 8, blocker: 7, kin: 6, 'kin.tense': 6, catfishfriend: 5, flirt: 5, rival: 4, knewit: 3, wrongsuspect: 3, visited: 3, cheer: 2, ally: 2 };
+function reunionKind(state, x, y) {
+  const c = (state.caught || []).find(k => (k.player === x && k.pair.includes(y)) || (k.player === y && k.pair.includes(x)));
+  if (c) return { kind: 'twotimer', a: c.player === x ? y : x, b: c.player };
+  const by = state.blocked.find(b => b.handle === x && (b.by || []).includes(y)) ? [x, y]
+    : state.blocked.find(b => b.handle === y && (b.by || []).includes(x)) ? [y, x] : null;
+  if (by) return { kind: 'blocker', a: by[0], b: by[1] };
+  let t = talkKind(state, x, y);
+  // A catfish their friend already met at the door (a visit) is no news.
+  if (t?.kind === 'catfishfriend' && isRevealed(state, t.catfish === x ? y : x, t.catfish)) t = null;
+  if (t?.kind === 'knewit' || t?.kind === 'wrongsuspect') return t;
+  const visit = state.scenes.find(s => s.kind === 'visit' && s.who[0] === x && s.who[1] === y);
+  if ((!t || t.kind === 'ally') && visit) return { kind: 'visited', a: x, b: y };
+  if (t?.kind === 'ally' && state.active.includes(y)) return { kind: 'cheer', a: x, b: y };
+  return t;
+}
+
+export function reunionTalks(state, rng, blockedOut) {
+  const room = [...state.active, ...blockedOut];
+  const cands = [];
+  for (const x of blockedOut) for (const y of room) {
+    if (x === y || (blockedOut.includes(y) && y < x)) continue;
+    const t = reunionKind(state, x, y);
+    if (t) cands.push({ a: x, b: y, ...t, w: RWEIGHT[t.kind] + rng() });
+  }
+  // The strongest storylines first, but a night of one kind is not a reunion:
+  // each kind already told counts against the next of its kind, two at most.
+  const used = {}, told = {};
+  const out = [];
+  while (out.length < 6) {
+    // One "who blocked me" per blocked player: the rest of their night is about somebody else.
+    const open = cands.filter(t => !t.done && (told[t.kind] || 0) < 2 && (used[t.a] || 0) < 2 && (used[t.b] || 0) < 2
+      && !(t.kind === 'blocker' && out.some(o => o.kind === 'blocker' && o.a === t.a)));
+    if (!open.length) break;
+    const t = open.sort((p, q) => (q.w - 4 * (told[q.kind] || 0)) - (p.w - 4 * (told[p.kind] || 0)))[0];
+    t.done = true;
+    used[t.a] = (used[t.a] || 0) + 1; used[t.b] = (used[t.b] || 0) + 1; told[t.kind] = (told[t.kind] || 0) + 1;
+    const { w, done, ...talk } = t;
+    out.push(settleTalk(state, rng, talk, talk.a, talk.b));
+  }
+  return out;
+}
+
+// -- Last words to the Circle -----------------------------------------
+// Before they leave: one last message, to the Circle itself, about the
+// person who mattered most, then the Circle signs off.
+function lastWord(state, h) {
+  const others = state.active.concat(state.blocked.map(b => b.handle)).filter((o, i, l) => o !== h && l.indexOf(o) === i && state.profiles[o]);
+  const top = k => others.slice().sort((x, y) => rel(h, y, k) - rel(h, x, k))[0];
+  const crush = top('attraction'), friend = top('affection'), rival = top('resentment');
+  if (fake(state, h)) return { kind: 'catfish', to: friend && rel(h, friend, 'affection') >= 3 ? friend : null };
+  // Whoever stands out most, by how far past the line they are.
+  const opts = [
+    crush && attractionOk(state, h, crush) && { kind: 'crush', to: crush, by: rel(h, crush, 'attraction') - 6 },
+    friend && { kind: 'friend', to: friend, by: rel(h, friend, 'affection') - 4 },
+    rival && { kind: 'rival', to: rival, by: rel(h, rival, 'resentment') - 3 },
+  ].filter(o => o && o.by > 0).sort((p, q) => q.by - p.by);
+  return opts[0] ? { kind: opts[0].kind, to: opts[0].to } : { kind: 'plain', to: null };
 }
 
 // ── Finale night ─────────────────────────────────────────────────────
@@ -144,15 +224,17 @@ function toneOf(state, place, expected, h) {
 
 export function finaleDay(state, rng, finalRow, { fan = null } = {}) {
   const order = state.active.map(h => [h, rng()]).sort((a, b) => a[1] - b[1]).map(([h]) => h);
-  // Goodbye to the apartment, then the walk to the meeting room.
+  // Last words to the Circle, goodbye to the apartment, then the walk to the meeting room.
+  addScene(state, 'farewell', [...order], { words: order.map(h => ({ h, ...lastWord(state, h) })) }, [...order]);
   for (const h of order) addScene(state, 'life', [h], { habit: 'final', event: 'final.leave' }, [h]);
   const present = [];
   for (const h of order) {
     const sc = addScene(state, 'meet', [h, ...present], { arrives: h, talks: [] }, [h, ...present]);
-    for (const p of present) { revealTo(state, p, h, sc); revealTo(state, h, p, sc); }
     // The arrival talks with whoever they have the most to settle with: two at most.
+    // Read before the faces are seen: "I knew it" is about what they thought until now.
     const talks = present.map(p => ({ p, t: talkKind(state, h, p) })).filter(x => x.t)
       .sort((a, b) => WEIGHT[b.t.kind] - WEIGHT[a.t.kind] || (rng() - 0.5)).slice(0, 2);
+    for (const p of present) { revealTo(state, p, h, sc); revealTo(state, h, p, sc); }
     for (const { p, t } of talks) sc.data.talks.push({ a: h, b: p, ...settleTalk(state, rng, t, h, p) });
     present.push(h);
   }
@@ -160,20 +242,13 @@ export function finaleDay(state, rng, finalRow, { fan = null } = {}) {
   if (present.length > 1) addScene(state, 'meet', [...present], { all: true }, [...present]);
 
   const placements = placementsOf(state, finalRow);
-  // The studio: the blocked players are there. The host talks with a few of
-  // them first — one blocked by a finalist, face to face with them.
-  const blockedOut = [...new Set(state.blocked.map(b => b.handle))].filter(b => !state.active.includes(b));
-  const studio = [];
-  for (const b of [...state.blocked].reverse()) {
-    if (studio.length >= 2) break;
-    const by = (b.by || []).find(i => state.active.includes(i));
-    if (by && !studio.some(s => s.a === b.handle)) studio.push({ kind: 'confront', a: b.handle, b: by });
-  }
-  const friendOut = blockedOut.filter(b => !studio.some(s => s.a === b))
-    .map(b => [b, Math.max(...state.active.map(f => rel(b, f, 'affection')))]).sort((x, y) => y[1] - x[1])[0];
-  if (friendOut && friendOut[1] > 3) {
-    const f = state.active.slice().sort((x, y) => rel(friendOut[0], y, 'affection') - rel(friendOut[0], x, 'affection'))[0];
-    studio.push({ kind: 'cheer', a: friendOut[0], b: f });
+  // The reunion: the blocked players walk in, and the host settles every storyline before the board.
+  const blockedOut = [...new Set(state.blocked.map(b => b.handle))].filter(b => !state.active.includes(b) && state.profiles[b]);
+  const room = [...state.active, ...blockedOut];
+  if (blockedOut.length) {
+    const talks = reunionTalks(state, rng, blockedOut);
+    const sc = addScene(state, 'reunion', room, { talks, seats: order, arrive: blockedOut }, room);
+    for (const x of room) for (const y of room) if (x !== y) revealTo(state, x, y, sc);
   }
   // How each placement lands, and who in the room feels it most.
   const finalists = placements.map(p => p.profile);
@@ -190,7 +265,6 @@ export function finaleDay(state, rng, finalRow, { fan = null } = {}) {
   const w = placements[0]?.profile;
   const thanks = w ? state.active.concat(blockedOut).filter(o => o !== w).sort((x, y) => rel(w, y, 'affection') - rel(w, x, 'affection'))[0] : null;
   const fanH = fan ? Object.keys(state.profiles).find(h => (state.profiles[h].players || []).includes(fan)) : null;
-  addScene(state, 'reveal', [...state.active, ...studio.map(s => s.a)].filter((x, i, l) => l.indexOf(x) === i),
-    { placements, seats: order, studio, thanks, fan: fanH }, [...state.active, ...blockedOut]);
+  addScene(state, 'reveal', room, { placements, seats: order, thanks, fan: fanH, reunion: blockedOut.length > 0 }, room);
   return { placements, winner: placements[0] };
 }

@@ -13,8 +13,6 @@
 //     flirt.spark/awkward, rival.clear/clash, ally, kin ({q}: what a calls b), kin.tense.thaw/cold
 //   meet.all                 all of them, one room (a, b, c among them)
 //   reveal.open / reveal.board / reveal.suspense   the host
-//   studio.confront          a, blocked by b, face to face in the studio
-//   studio.cheer             a, blocked, cheering for b, still in
 //   reveal.react.<tone>      a hears their place: proud, surprised, gutted, shocked
 //   reveal.witness.smirk/cheer  a watches b's place land
 //   reveal.final2            the last two, a and b (in name order: it gives nothing away)
@@ -153,7 +151,7 @@ export const FINALE_NIGHT = {
     { turns: [{ by: 'a', say: "I'm so glad you're exactly who you said you were." }, { by: 'b', say: "And you're even better." }] },
   ]),
   ...E('meet.talk.kin', [
-    { turns: [{ by: 'a', react: "My {q}! My {q} made the final!" }, { by: 'b', say: "We both did! Mom is going to lose her mind." }], beat: '{a} and {b} hold on to each other.' },
+    { turns: [{ by: 'a', react: "My {q}! My {q} made the final!" }, { by: 'b', say: "We both did! The family is going to lose it." }], beat: '{a} and {b} hold on to each other.' },
     { turns: [{ by: 'a', say: "Weeks in the same building, and I couldn't even knock on your door." }, { by: 'b', say: "Now we never have to text each other again." }] },
     { turns: [{ by: 'b', say: "Whatever happens tonight, one of us did good." }, { by: 'a', say: "Both of us did good. That's my {q}." }] },
     { turns: [{ by: 'a', react: "Get over here!" }, { by: 'b', say: "Do you know how hard it was not to message you every day?" }], beat: '{a} lifts {b} off the ground.' },
@@ -189,18 +187,6 @@ export const FINALE_NIGHT = {
     host("Welcome to the finale of The Circle! Tonight, one of our finalists wins it all."),
     host("It's finale night. Everybody who was blocked is here, the finalists are here, and in a few minutes we find out who won."),
     host("Good evening and welcome to finale night. The ratings are in. Nobody on that couch knows how this ends."),
-  ]),
-  ...E('studio.confront', [
-    { turns: [{ by: 'host', say: "{a}, you're sitting right across from the person who blocked you." }, { by: 'a', say: "Oh, I know. Hi, {b}." },
-      { by: 'b', say: "It was a game move. I hope you know that." }, { by: 'a', say: "I know. Still hurt, though." }] },
-    { turns: [{ by: 'host', say: "{a}, anything you want to say to {b}?" }, { by: 'a', say: "Just that I saw it coming. You weren't as subtle as you think." },
-      { by: 'b', react: "Okay. That's fair." }], beat: 'The audience laughs.' },
-    { turns: [{ by: 'a', say: "{b}, I've had a lot of time to think about it." }, { by: 'b', say: "And?" }, { by: 'a', say: "And I'd have done the same thing. Respect." }] },
-  ]),
-  ...E('studio.cheer', [
-    { turns: [{ by: 'a', say: "{b}, I'm screaming for you. Whatever happens, you already won to me." }, { by: 'b', react: "Stop, you're going to make me cry on camera." }] },
-    { turns: [{ by: 'host', say: "{a}, who are you rooting for?" }, { by: 'a', say: "{b}. Obviously. Since day one." }] },
-    { turns: [{ by: 'a', react: "{b}! That's my favorite person in this whole room!" }], beat: '{b} blows a kiss across the studio.' },
   ]),
   ...E('reveal.board', [
     host("Finalists, your final ratings are in. Let's find out where you placed."),

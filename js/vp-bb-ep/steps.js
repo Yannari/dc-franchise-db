@@ -1232,6 +1232,8 @@ function powerScreens(act, ctx) {
   const steps = [
     { k: 'bb', t: `Houseguests, ${who} has played a power: ${act.name}.`, rule: 1 },
     ...(act.blurb ? [{ k: 'bb', t: act.blurb, rule: 2 }] : []),
+    // the limitation people misremember, said out loud
+    ...(act.catch ? [{ k: 'bb', t: act.catch, rule: act.blurb ? 3 : 2 }] : []),
   ];
   const set = POWER_ROOM[act.powerId] || 'ceremony';
   for (const b of beats) {
@@ -1247,7 +1249,7 @@ function powerScreens(act, ctx) {
     time: act.timing === 'veto-ceremony' ? ACT_TIME['veto-ceremony'] : act.powerId === 'hoh-gatekeeper' ? '18:30' : ACT_TIME.nominations,
     kicker: `Cam ${String(CAM[set]).padStart(2, '0')} · ${ROOM_NAME[set]}`, title: act.name, label: act.name, sub: `${who} plays it`,
     cast: [[who, 50]], power: { name: act.name, holder: who },
-    rules: [['THE POWER', act.name], ...(act.blurb ? [['WHAT IT DOES', act.blurb]] : [])],
+    rules: [['THE POWER', act.name], ...(act.blurb ? [['WHAT IT DOES', act.blurb]] : []), ...(act.catch ? [['THE CATCH', act.catch]] : [])],
     rulesTitle: `${String(act.name).toUpperCase()} · PLAYED`, steps,
   }];
 }

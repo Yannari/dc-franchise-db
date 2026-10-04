@@ -136,7 +136,8 @@ describe('a power being played', () => {
     const { ep, act } = hit;
     Object.keys(_tvState).forEach(k => delete _tvState[k]);
     const screens = buildVPScreens(ep);
-    const screen = screens.find(s => s.id.includes(`bb-power-${act.powerId}`));
+    // the classic card, or (for the powers the stepped viewer draws) its stepped screen
+    const screen = screens.find(s => s.id.includes(`bb-power-${act.powerId}`) || s.id.includes(`bb-pw-${act.powerId}`));
     expect(screen, `${act.powerId} fired with no screen`).toBeTruthy();
     expect(screen.html).toContain(act.holder);
     // What it did this week, and the limitation people misremember. The
@@ -144,7 +145,8 @@ describe('a power being played', () => {
     // so asserting on the catch is what holds for both shapes.
     expect(screen.html, 'the screen does not state the power\'s limitation')
       .toContain(BB_POWER_DEFINITIONS[act.powerId].catch);
-    if (act.detail) expect(screen.html).toContain(act.detail);
+    // A stepped screen says what it did in its own steps; the classic card prints the detail.
+    if (act.detail && screen.id.includes('bb-power-')) expect(screen.html).toContain(act.detail);
     expect(screen.html).not.toMatch(/undefined|NaN|\[object Object\]/);
 
     for (const [label, text] of [

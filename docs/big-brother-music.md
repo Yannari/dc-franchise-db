@@ -68,3 +68,27 @@ without clipping gets the difference back on playback (`lift`).
 | winner-crowd.mp3 | the winner of the season |
 | comp-out.mp3 | out of a competition |
 | coin.mp3 | money changes hands (the Coin) |
+
+## The opening titles and the closing
+
+Rendered in Blender 5.1 with the season's own cast: `tools/bb-intro/intro.py`
+builds the studio (navy, a cyan floor grid, light strips, a soft halo), the
+Big Brother eye (a pointed almond, cyan iris), the title and a wall of lit
+portrait screens; `tools/bb-intro/render.py` renders a season's pair headless:
+
+    python tools/bb-intro/render.py bb-1        # assets/bb/intro/bb-1-intro.mp4, bb-1-outro.mp4
+    python tools/bb-intro/render.py --generic   # the logo-only pair, for seasons with no render
+
+- **The opening** (39.6 s, the theme muxed in): the eye opens out of the dark,
+  BIG BROTHER and the season line, then the camera visits each houseguest's
+  portrait as it lights up, and pulls back to the whole house under the eye.
+- **The closing** (26 s, the ending music, faded): the whole house on the
+  wall, a slow drift across it, the title, and the eye closes. It never shows
+  a result: it plays after every episode, the first included, and the wall is
+  alphabetical so even the order says nothing.
+
+`js/vp-bb-ep/titles.js` puts the opening first and the closing last in every
+episode of the stepped viewer. Both have a Skip button, follow the site's
+volume and mute, stop the music bed while they play (`data-ambient="none"`),
+show a Play button if the browser blocks autoplay, and fall back to the
+generic pair when a season has no render of its own.

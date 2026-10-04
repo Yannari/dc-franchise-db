@@ -2677,7 +2677,7 @@ export function simulateBBWeek(options = {}) {
       week.acts.push(addBeats({
         type: 'power-played', powerId: 'hoh-gatekeeper', holder: relic.holder,
         name: BB_POWER_DEFINITIONS['hoh-gatekeeper'].name, timing: 'nominations',
-        blurb: BB_POWER_DEFINITIONS['hoh-gatekeeper'].blurb || '',
+        blurb: BB_POWER_DEFINITIONS['hoh-gatekeeper'].blurb || '', catch: BB_POWER_DEFINITIONS['hoh-gatekeeper'].catch || '',
         secret: relic.visibility === 'secret', visibility: relic.visibility,
         eligible: [...hohPlayers], includedSelf: hohPlayers.includes(relic.holder),
         detail: `${relic.holder} names the only four houseguests allowed to play for this week's `
@@ -3417,7 +3417,7 @@ export function simulateBBWeek(options = {}) {
       secret: cloud.visibility === 'secret', visibility: cloud.visibility,
       detail: `${cloud.holder} cannot be nominated at this ceremony. It does not cover the veto ceremony, `
         + 'and everybody who can count knows that.',
-      blurb: BB_POWER_DEFINITIONS['the-cloud'].blurb || '', hoh,
+      blurb: BB_POWER_DEFINITIONS['the-cloud'].blurb || '', catch: BB_POWER_DEFINITIONS['the-cloud'].catch || '', hoh,
       beats: [{ text: `${cloud.holder} plays ${BB_POWER_DEFINITIONS['the-cloud'].name} and cannot be nominated.`,
         players: [cloud.holder, hoh].filter(Boolean), badgeText: 'UNDER THE CLOUD', badgeClass: 'gold', part: 'cloud' }],
     }, { players: [cloud.holder] }));
@@ -5735,7 +5735,7 @@ export function simulateBBWeek(options = {}) {
               + `${hoh} has no say in it — ${replacementUp} goes up in their place, named on the `
               + 'spot in front of the room.',
             hoh, replacement: replacementUp, amount: 10000,
-            blurb: BB_POWER_DEFINITIONS['buy-off'].blurb || '',
+            blurb: BB_POWER_DEFINITIONS['buy-off'].blurb || '', catch: BB_POWER_DEFINITIONS['buy-off'].catch || '',
             beats: [{
               text: `${bo.holder} pays ${hoh} $10,000 to come off the block; ${replacementUp} goes up instead.`,
               part: 'buyoff', who: replacementUp,
@@ -5827,7 +5827,7 @@ export function simulateBBWeek(options = {}) {
             detail: `${coup.holder} takes ${taken.join(' and ')} off the block and puts up `
               + `${named.join(' and ')}. ${hoh} watches a week of work come apart from a chair `
               + 'nobody can put them in.',
-            blurb: BB_POWER_DEFINITIONS['coup-d-etat'].blurb || '', hoh,
+            blurb: BB_POWER_DEFINITIONS['coup-d-etat'].blurb || '', catch: BB_POWER_DEFINITIONS['coup-d-etat'].catch || '', hoh,
             beats: [{ text: `${coup.holder} plays ${BB_POWER_DEFINITIONS['coup-d-etat'].name}: ${taken.join(' and ')} come down, ${named.join(' and ')} go up.`,
               players: [coup.holder, hoh].filter(Boolean), badgeText: "COUP D'ÉTAT", badgeClass: 'red', part: 'coup',
               removed: [...taken], named: [...named] }],

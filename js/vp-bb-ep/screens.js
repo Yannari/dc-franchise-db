@@ -25,6 +25,8 @@ import { BBX_CAPSULE_CSS } from './style-capsule.js';
 import { BBX_INTERRO_CSS } from './style-interro.js';
 import { BBX_WHACK_CSS } from './style-whack.js';
 import { bedFor, playStep } from './sound.js';
+import { titleScreen } from './titles.js';
+import { seasonId } from '../shows.js';
 
 const reg = () => (typeof window !== 'undefined' ? (window._bbx ||= {}) : (globalThis._bbx ||= {}));
 const SHELL_CSS = `
@@ -193,6 +195,12 @@ export function bbStepScreens(row, legacy = [], { host = 'Valeria', priorEvicted
     if (at >= 0) out.splice(at + 1, 0, ...after[k]); else out.push(...after[k]);
     placed.add(k);
   }
+  // Every episode opens on the titles and closes on the closing (vp-bb-ep/titles.js),
+  // both rendered in Blender with this season's cast, both skippable.
+  const sc = (typeof globalThis !== 'undefined' && globalThis.seasonConfig) || {};
+  const key = seasonId('big-brother', sc.seasonNumber || row.seasonNumber || 1);
+  out.unshift(titleScreen('intro', key));
+  out.push(titleScreen('outro', key));
   return out;
 }
 

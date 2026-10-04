@@ -81,6 +81,17 @@ export const BBX_WHACK_CSS = `
 .bbx .stage .bkt.champ{box-shadow:inset 0 0 0 .16cqw #f5c542}
 .bbx .stage .bkt.now{animation:bbx-whin .5s cubic-bezier(.2,1.4,.4,1) both}
 .bbx .stage .bkvs{font:800 1cqw Archivo;color:#f5c542;padding:0 .3cqw}
+.bbx .stage .taboard{position:absolute;right:3cqw;top:7.2cqw;z-index:7;width:18cqw;padding:.7cqw 1cqw .8cqw;border-radius:1cqw;text-align:center;
+  background:linear-gradient(180deg,rgba(8,14,34,.9),rgba(8,14,34,.7));box-shadow:0 0 0 .12cqw rgba(91,141,255,.55);backdrop-filter:blur(.6cqw)}
+.bbx .stage .taboard .tah{display:block;font:700 .62cqw 'Chakra Petch';letter-spacing:.18cqw;color:#8fb0ff;margin-bottom:.45cqw}
+.bbx .stage .tar{display:flex;justify-content:center;gap:.35cqw;margin-bottom:.45cqw}
+.bbx .stage .taf{position:relative;width:3.4cqw;aspect-ratio:1;border-radius:.4cqw;overflow:hidden;background:var(--c)}
+.bbx .stage .taf img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 14%}
+.bbx .stage .taboard b{display:block;font:800 .82cqw Archivo;color:#fff;line-height:1.2}
+.bbx .stage .taboard i{display:block;margin-top:.35cqw;font:700 .58cqw 'Chakra Petch';letter-spacing:.16cqw;font-style:normal;color:#8fb0ff}
+.bbx .stage .taboard.done{box-shadow:0 0 0 .16cqw #f5c542,0 0 2cqw rgba(245,197,66,.4)}
+.bbx .stage .taboard.done i{color:#f5c542}
+.bbx .stage .taboard.failed i{color:#9aa4b2}
 @keyframes bbx-coinflip{0%{transform:rotateX(0)}60%{transform:rotateX(1080deg)}100%{transform:rotateX(1080deg)}}
 @media (prefers-reduced-motion:reduce){.bbx .stage .cres{animation:none}}
 @keyframes bbx-whin{from{transform:translateY(-.6cqw);opacity:.3}}

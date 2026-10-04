@@ -1491,6 +1491,41 @@ function bonusLifeScreens(act, ctx) {
   }];
 }
 
+// ── Team America (Phase 7) ──────────────────────────────────────────────
+// A secret team the audience picked, a mission a week. Big Brother explains
+// it to the team in the Diary Room the first week (the house is never told);
+// every week the card names the mission, the team's lead tries it, and what
+// it does plays out in the open house among people who do not know they were
+// steered. Words: lines/teamact.js.
+function teamAmericaScreens(act, ctx) {
+  const linesOf = b => (b && b.lines?.length ? scriptSteps(b.lines) : []);
+  const beats = act.beats || [];
+  const first = act.missionNumber === 1;
+  const m = act.mission || {};
+  const steps = first ? [
+    { k: 'bb', t: `${listOf(act.members || [])}, America has made you a team.`, rule: 1 },
+    { k: 'bb', t: 'Every week, you will be given a mission. Complete it, and you will each be paid.', rule: 2 },
+    { k: 'bb', t: 'Fail it, and nothing happens. Get caught, and the house will start to look for you.', rule: 3 },
+    { k: 'bb', t: 'Nobody else in this house can know that the team exists.', rule: 4 },
+  ] : [];
+  for (const b of beats) {
+    if (b.part === 'opening') steps.push(...linesOf(b));
+    if (b.part === 'mission') steps.push({ k: 'bb', t: `Team America, this week's mission: ${m.ask}`, taMission: true }, ...linesOf(b));
+    if (b.part === 'done') steps.push({ k: 'beat', t: `${m.lead} pulls it off.`, taDone: 'done', toast: ['MISSION COMPLETE', '#f5c542'] }, ...linesOf(b));
+    if (b.part === 'failed') steps.push({ k: 'beat', t: `${m.lead} tries, and it does not work.`, taDone: 'failed', toast: ['MISSION FAILED', '#9aa4b2'] }, ...linesOf(b));
+    if (b.part === 'effect') steps.push(...linesOf(b));
+    if (b.part === 'noticed') steps.push({ k: 'beat', t: 'Somebody in the house has noticed they are being steered.', taNoticed: true }, ...linesOf(b));
+  }
+  return [{
+    id: `bb-team-w${ctx.week}`, kind: 'team', anchor: ctx.anchor, day: ctx.day, set: 'dr', room: ROOM_NAME.dr, cam: CAM.dr, time: '10:15',
+    kicker: 'Cam 01 · Diary room', title: 'Team America', label: 'Team America', sub: `Mission ${act.missionNumber}: ${m.name || ''}`,
+    cast: [], team: { members: [...(act.members || [])], name: m.name || '', number: act.missionNumber },
+    ...(first ? { rules: [['THE TEAM', 'three houseguests, picked by America'], ['A MISSION A WEEK', 'complete it and get paid'],
+      ['CAUGHT', 'the house starts hunting'], ['SECRET', 'nobody else may know']], rulesTitle: 'TEAM AMERICA · HOW IT WORKS' } : {}),
+    steps,
+  }];
+}
+
 // Twist acts whose classic screen goes exactly where the act happened.
 const TWIST_SLOT = /^(rivals-|twist-announcement|duos-open|twin-|saboteur-|hacker|roadkill|coin|pandoras|power-played|interrogation|mystery-)/;
 
@@ -1586,6 +1621,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       case 'hidden-power': flush(); for (const scr of huntScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'secret-power-comp': flush(); for (const scr of secretPowerScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'power-played': { const pw = powerScreens(act, ctx); if (pw) { flush(); for (const scr of pw) ceremony(scr); } else { flush(); out.push({ slot: act.type }); } beatsOf(act); break; }
+      case 'team-america': flush(); for (const scr of teamAmericaScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'bonus-life': flush(); for (const scr of bonusLifeScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'battle-back': flush(); for (const scr of battleBackScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'nightmare-power': flush(); for (const scr of nightmareScreens(act, ctx)) ceremony(scr); ctx.nominees = [...(act.nominees || ctx.nominees)]; beatsOf(act); break;
@@ -1625,7 +1661,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
 }
 
 /** Ids of the legacy screens these steps replace. Everything else is a twist and stays. */
-export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard|secret-power|timecapsule|power-hoh-interrogation|power-deepfake-hoh|whacktivity|power-hoh-gatekeeper|power-the-cloud|power-buy-off|power-coup-d-etat|coin|secondveto-[a-z]+|temptation|nightmare|battleback|bonuslife)(-\d+)?$/;
+export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard|secret-power|timecapsule|power-hoh-interrogation|power-deepfake-hoh|whacktivity|power-hoh-gatekeeper|power-the-cloud|power-buy-off|power-coup-d-etat|coin|secondveto-[a-z]+|temptation|nightmare|battleback|bonuslife|teamamerica)(-\d+)?$/;
 export const ANCHOR_OF = id => {
   const base = id.replace(/-\d+$/, '');
   return /^bb-(final-hoh|final-cut|jury|ftc-questions|ftc-speeches|afh|reunion|finale-brief)$/.test(base) || /^bb-final-hoh$/.test(base) ? 'finale'

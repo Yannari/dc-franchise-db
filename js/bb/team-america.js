@@ -24,15 +24,17 @@
 import { gs } from '../core.js';
 import { pStats, pronouns } from '../players.js';
 import { getPerceivedBond } from '../bonds.js';
-import { clamp, makePicker } from '../bb-comps/_shared.js';
+import { clamp } from '../bb-comps/_shared.js';
 import { addBBRelationship, bbHeat } from './shared-strategy.js';
 import { recordBBFalseClaim } from './knowledge.js';
 import { applyPunishment, BB_PUNISHMENTS } from './punishments.js';
 import { makeEndgameDeal, exposeDeal, dealBetween, endgameDealsOf,
   MAX_ENDGAME_DEALS } from './deals.js';
 
-const beat = (text, players, badgeText, badgeClass = 'gold') =>
-  ({ text, players: [...players].filter(Boolean), badgeText, badgeClass });
+// Beats are plain facts with a `part`; the words are written by
+// bb/script/ceremony.js from lines/teamact.js.
+const beat = (text, players, badgeText, badgeClass = 'gold', part = null, extra = {}) =>
+  ({ text, players: [...players].filter(Boolean), badgeText, badgeClass, ...(part ? { part } : {}), ...extra });
 
 /** What the audience asks for. Three members, so three people can be seen. */
 export const TEAM_SIZE = 3;
@@ -256,10 +258,6 @@ function _effectRumour({ team, lead, house, week }) {
   return {
     players: [lead, victim, ...believers], victims: [victim],
     note: `${believers.length} houseguests now believe something about ${victim} that is not true.`,
-    beat: `It goes out sideways and comes back four days later — ${believers[0]} tells ${lead} the story `
-      + `${lead} started, having heard it from somebody who heard it from somebody. ${victim} cannot work `
-      + 'out why the room has gone cold, and there is nobody to ask, because everybody heard it from '
-      + 'somebody else.',
     badge: 'IT CAME BACK AROUND',
   };
 }
@@ -286,9 +284,6 @@ function _effectSaboteur({ team, house }) {
   return {
     players: [scapegoat, ...team], victims: [scapegoat],
     note: `The house is hunting ${scapegoat}, and has stopped looking anywhere near the three people doing it.`,
-    beat: `The house decides there is somebody working it from the inside, and it is right. It decides that `
-      + `somebody is ${scapegoat}, and it is wrong. Every eye in the building turns ninety degrees away from `
-      + 'the three people who put the idea there.',
     badge: 'LOOKING THE WRONG WAY',
   };
 }
@@ -323,10 +318,6 @@ function _effectBlock({ team, house, plan, hoh, week }) {
   return {
     players: [mark, spared, hoh].filter(Boolean), victims: [mark],
     note: `${mark} goes up in place of ${spared}, and nobody suggested it.`,
-    beat: `${spared} was going up this week. ${mark} goes up instead, and if you asked `
-      + `${hoh || 'the Head of Household'} to explain the change ${hoh ? 'they' : 'she'} would talk for a `
-      + 'minute and land on nothing, because the reason was assembled out of six conversations that were '
-      + 'never about nominations at all.',
     badge: 'A NAME NOBODY SUGGESTED',
   };
 }
@@ -355,9 +346,6 @@ function _effectArgument({ team, house }) {
   return {
     players: [a, b], victims: [a, b],
     note: `${a} and ${b} are no longer speaking, and neither of them can name who started it.`,
-    beat: `${a} and ${b} go up in the kitchen over something small enough that neither of them can `
-      + 'reconstruct it afterwards. The house hears all of it. Nobody on the team is in the room, which '
-      + 'took more arranging than the argument did.',
     badge: 'NOT IN THE ROOM',
   };
 }
@@ -379,8 +367,6 @@ function _effectCostume({ team, lead, house, week, rng }) {
   return {
     players: [lead, victim], victims: [victim],
     note: `${victim} is in ${def.name} for the week, and thinks it was ${victim === lead ? 'their' : 'their own'} idea.`,
-    beat: `${victim} spends the week in ${def.name}, having proposed it personally, enthusiastically, and `
-      + `to a room that had been softened up for two days. ${def.cost}`,
     badge: 'THEIR OWN IDEA',
   };
 }
@@ -393,9 +379,6 @@ function _effectMeeting({ team, house }) {
   return {
     players: [...team], victims: [],
     note: 'Ten minutes in the open, and the house filed it as nothing.',
-    beat: 'All three of them, in the same room, in front of everybody, for ten minutes, talking about the '
-      + 'game. Not one person in that house describes it afterwards as a meeting. It is the single most '
-      + 'dangerous thing they have done and it is the only week nobody is watching them.',
     badge: 'NOT A MEETING',
   };
 }
@@ -413,9 +396,6 @@ function _effectExpose({ team, lead, house, week, rng }) {
   return {
     players: [told, ...pair], victims: [...pair],
     note: `${told} now knows ${pair[0]} and ${pair[1]} promised each other the end.`,
-    beat: `${pair[0]} and ${pair[1]} have been careful about this for weeks, and it comes apart in a `
-      + `conversation neither of them is in. ${told} hears the shape of it first and the whole thing `
-      + 'about a minute later, and does not have to be told what it means.',
     badge: 'SAID OUT LOUD',
   };
 }
@@ -432,9 +412,6 @@ function _effectDeal({ team, house, week }) {
   return {
     players: [a, b], victims: [a, b],
     note: `${a} and ${b} have a final two, and neither can remember whose idea it was.`,
-    beat: `${a} and ${b} say it to each other twice, which is how you know they mean it. Neither of them `
-      + 'can quite reconstruct who raised it first, and both of them have decided it must have been '
-      + 'themselves, because the alternative is a question nobody wants to sit with.',
     badge: 'SHOOK ON IT',
   };
 }
@@ -445,11 +422,6 @@ const MISSION_EFFECTS = {
   expose: _effectExpose, deal: _effectDeal,
 };
 
-const OPENING = [
-  (names) => `${names.join(', ')} are told, separately and in private, that the country has put them on a team together. None of them chose this and none of them can refuse it.`,
-  (names) => `Three names, picked by people none of them have met: ${names.join(', ')}. They are an alliance now whether or not they can stand each other.`,
-  (names) => `${names.join(', ')} get the same message on the same night. The team exists. Nobody in the house is supposed to find out it does.`,
-];
 
 /**
  * Run this week's mission.
@@ -470,8 +442,6 @@ export function runMission({ week, house = [], rng = Math.random, forced = null,
   const t = store();
   const team = teamMembers(house);
   if (team.length < 2) return null;
-  const say = makePicker(rng);
-
   // What the country asks for this week.
   //
   // This used to be `TEAM_MISSIONS[missions.length % TEAM_MISSIONS.length]`,
@@ -530,19 +500,15 @@ export function runMission({ week, house = [], rng = Math.random, forced = null,
 
   const beats = [];
   if (!t.missions.length) {
-    beats.push(beat(say(OPENING)(team), team, 'ASSIGNED, NOT CHOSEN', 'gold'));
+    rng();   // the draw that used to pick the opening's wording
+    beats.push(beat(`${team.join(', ')} are made a secret team by the audience.`, team, 'ASSIGNED, NOT CHOSEN', 'gold', 'opening'));
   }
-  beats.push(beat(
-    `The mission: ${mission.ask}`, team, 'THIS WEEK’S MISSION', 'blue'));
+  beats.push(beat(`The mission: ${mission.ask}`, team, 'THIS WEEK’S MISSION', 'blue', 'mission', { id: mission.id }));
 
-  const p = pronouns(lead);
   let effect = null;
   if (done) {
     t.earned += MISSION_FEE;
-    beats.push(beat(
-      `${lead} carries it, and it lands. ${mission.name} — done, without a single person in that house `
-        + `being able to say who started it. All three of them are paid for a job the house does not know happened.`,
-      team, 'MISSION COMPLETE', 'gold'));
+    beats.push(beat(`${lead} completes the mission: ${mission.name}.`, [lead, ...team.filter(n => n !== lead)], 'MISSION COMPLETE', 'gold', 'done'));
     // Pulling one of these off is, before it is anything else, television.
     // Popularity is the audience's currency in this format — it weights the
     // App Store, the Care Package, America's Nominee and this twist's own
@@ -556,12 +522,9 @@ export function runMission({ week, house = [], rng = Math.random, forced = null,
       const apply = MISSION_EFFECTS[mission.id];
       effect = apply ? apply({ mission, team, lead, house, week, plan, hoh, rng }) : null;
     } catch { effect = null; }
-    if (effect) beats.push(beat(effect.beat, effect.players, effect.badge, 'blue'));
+    if (effect) beats.push(beat(effect.note, effect.players, effect.badge, 'blue', 'effect', { kind: mission.id }));
   } else {
-    beats.push(beat(
-      `${lead} tries and it does not take. ${p.Sub} ${p.sub === 'they' ? 'get' : 'gets'} most of the way there and `
-        + 'the last piece will not move, which is the difference between running a house and living in one.',
-      [lead], 'MISSION FAILED', 'red'));
+    beats.push(beat(`${lead} tries the mission and fails.`, [lead], 'MISSION FAILED', 'red', 'failed'));
   }
   if (noticed) {
     // Being caught is the only thing in this twist that costs the team
@@ -576,10 +539,8 @@ export function runMission({ week, house = [], rng = Math.random, forced = null,
     // thing on the broadcast all week, so being caught RAISES the edit while
     // it wrecks the game — which is the trade the twist is actually about.
     for (const m of team) popShift(m, 0.4);
-    beats.push(beat(
-      'Somebody in this house has worked out that they are being steered. Not by whom — just that it is happening, '
-        + 'which is enough to make everybody look sideways at everybody for a week.',
-      team, 'THE HOUSE SMELLS IT', 'red'));
+    beats.push(beat(`${watcher || 'Somebody'} notices that the house is being steered.`, [watcher, ...team].filter(Boolean),
+      'THE HOUSE SMELLS IT', 'red', 'noticed'));
   }
 
   const record = {

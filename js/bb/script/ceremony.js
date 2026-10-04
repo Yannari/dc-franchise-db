@@ -430,6 +430,30 @@ export function writeCeremony(act, week, house, extra = {}) {
     }
   }
 
+  // ── Team America: a secret team, a mission a week ──
+  if (act.type === 'team-america') {
+    const fresh = freshWriter(ctx, house);
+    // Who plays which seat in each effect, by the order the engine cast it.
+    const SEATS = {
+      rumour: p => ({ a: p[2] || p[0], b: p[0], c: p[1] }), saboteur: p => ({ a: p[0], b: p[1] }),
+      block: p => ({ a: p[0], b: p[1], c: p[2] || p[1] }), argument: p => ({ a: p[0], b: p[1] }),
+      costume: p => ({ a: p[0], b: p[1] }), meeting: p => ({ a: p[0], b: p[1], c: p[2] || p[1] }),
+      expose: p => ({ a: p[0], b: p[1], c: p[2] || p[1] }), deal: p => ({ a: p[0], b: p[1] }),
+    };
+    for (const b of act.beats || []) {
+      const p = (b.players || []).filter(Boolean);
+      const salt = `ta|${b.part}|${b.kind || ''}|${p.join('|')}`;
+      let lines = null;
+      if (b.part === 'opening' && p.length >= 3) lines = fresh('teamact.opening', { a: p[0], b: p[1], c: p[2] }, { ending: 'scene' }, salt);
+      if (b.part === 'mission' && p[0]) lines = fresh('teamact.mission', { a: p[(act.week || 0) % p.length] }, { ending: 'scene' }, salt);
+      if (b.part === 'done' && p[0]) lines = fresh('teamact.done', { a: p[0], b: p[1] || p[0] }, { ending: 'scene' }, salt);
+      if (b.part === 'failed' && p[0]) lines = fresh('teamact.failed', { a: p[0] }, { ending: 'scene' }, salt);
+      if (b.part === 'noticed' && p[0]) lines = fresh('teamact.noticed', { a: p[0] }, { ending: 'scene' }, salt);
+      if (b.part === 'effect' && SEATS[b.kind] && p.length >= 2) lines = fresh('teamact.effect', SEATS[b.kind](p), { ending: b.kind }, salt);
+      if (Array.isArray(lines) && lines.length) { b.lines = lines; b.text = transcript(lines); }
+    }
+  }
+
   // ── Battle Back (and the door a Bonus Life opens) ──
   if (act.type === 'battle-back' || act.type === 'bonus-life') {
     const fresh = freshWriter(ctx, house);

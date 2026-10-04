@@ -308,6 +308,16 @@ function pxHtml(S, L, st, fresh) {
   return `<div class="pxtable"><span class="pt">THE BOXES · ONE HOLDS THE VETO</span><div class="pxr">${boxes}</div></div>`;
 }
 
+// ── Team America's mission card (Phase 7) ──────────────────────────────
+function teamHtml(S, L, st, fresh, idx) {
+  const T = S.team || {};
+  const seen = S.steps.slice(0, idx + 1);
+  const done = seen.find(x => x.taDone)?.taDone, noticed = seen.some(x => x.taNoticed);
+  const faces = (T.members || []).map(n => `<span class="taf" style="--c:${col(n)}" title="${esc(n)}">${img(n)}</span>`).join('');
+  return `<div class="taboard ${done || ''}"><span class="tah">TEAM AMERICA · MISSION ${T.number || ''}</span><div class="tar">${faces}</div>`
+    + `<b>${esc(T.name || '')}</b><i>${done === 'done' ? 'COMPLETE' : done === 'failed' ? 'FAILED' : 'IN PLAY'}${noticed ? ' · NOTICED' : ''}</i></div>`;
+}
+
 // ── Battle Back's field (Phase 7) ──────────────────────────────────────
 function battleBackHtml(S, L, st, fresh, idx) {
   const B = S.battleback || {};
@@ -590,6 +600,7 @@ export function stageHtml(screens, si, idx, fresh, o) {
   if (S.coin && !isDr && idx >= 0 && !(st && st.rule != null)) h += coinHtml(S, L, st, fresh, idx);
   if (S.veto2 && !isDr && idx >= 0 && !(st && st.rule != null)) h += veto2Html(S, L, st, fresh, idx);
   if (S.battleback && !isDr && idx >= 0 && !(st && st.rule != null)) h += battleBackHtml(S, L, st, fresh, idx);
+  if (S.team && idx >= 0 && !(st && st.rule != null)) h += teamHtml(S, L, st, fresh, idx);
   if (L.bill && S.steps.some(x => x.bill) && !isDr) h += billHtml(L, st, fresh);
   if (L.votes && st && st.k === 'host') {
     h += `<div class="votes ${fresh && st.votes ? 'fresh' : ''}"><div class="v"><div class="n">${L.votes[0]}</div><div class="k">Votes</div></div><i class="sep"></i><div class="v"><div class="n">${L.votes[1]}</div><div class="k">Votes</div></div></div>`;
